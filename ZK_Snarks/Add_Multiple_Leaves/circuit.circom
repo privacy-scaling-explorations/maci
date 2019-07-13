@@ -77,7 +77,7 @@ template ProcessUpdate(k,n){
 	    }
 
 		    // (5) make sure that computed root equals the given root
-	   computed_root[j].out <== tree_root[j+1];
+	   computed_root[j].out === tree_root[j+1];
 
     }
 

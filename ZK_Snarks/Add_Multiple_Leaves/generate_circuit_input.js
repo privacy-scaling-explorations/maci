@@ -45,12 +45,11 @@ const txAHash = mimcjs.multiHash(
 );
 const signatureA = eddsa.signMiMC(alicePrvKey, txAHash)
 
-
 // Bob sign tx
 const txBHash = mimcjs.multiHash(
     [txB.from[0], txB.from[1], txB.detail, txB.updated_pubkey[0], txB.updated_pubkey[1]]
 );
-const signatureB = eddsa.signMiMC(alicePrvKey, txBHash)
+const signatureB = eddsa.signMiMC(bobPrvKey, txBHash)
 
 
 // update Alice account
@@ -108,7 +107,7 @@ console.log("txBHash: " + txBHash.toString());
 
 
 const inputs = {
-    "tree_roots": [tree_root.toString(),intermediate_root.toString(),final_root.toString()],
+    "tree_root": [tree_root.toString(),intermediate_root.toString(),final_root.toString()],
     "accounts_pubkeys": [
         [Alice.pubkey[0].toString(), Alice.pubkey[1].toString()], 
         [Bob.pubkey[0].toString(), Bob.pubkey[1].toString()]
@@ -121,10 +120,10 @@ const inputs = {
     "signature_R8x": [signatureA['R8'][0].toString(),signatureB['R8'][0].toString()],
     "signature_R8y": [signatureA['R8'][1].toString(),signatureB['R8'][1].toString()],
     "signature_S": [signatureA['S'].toString(),signatureB['S'].toString()],
-    "sender_proof": [bobHash.toString(),newAliceHash.toString()], 
-    "sender_proof_pos": [1,0],
-    "final_tree_proof": [newBobHash.toString(),newAliceHash.toString()], 
-    "final_tree_proof_pos": [1,0]
+    "sender_proof": [[bobHash.toString()],[newAliceHash.toString()]], 
+    "sender_proof_pos": [[1],[0]],
+    "final_tree_proof": [[newBobHash.toString()],[newAliceHash.toString()]], 
+    "final_tree_proof_pos": [[1],[0]]
 }
 
 fs.writeFileSync(
@@ -132,3 +131,5 @@ fs.writeFileSync(
     JSON.stringify(inputs),
     "utf-8"
 );
+
+
