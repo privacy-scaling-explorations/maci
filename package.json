@@ -1,0 +1,26 @@
+{
+  "name": "maci",
+  "version": "1.0.0",
+  "description": "Minimal anti collusion infrastructure",
+  "main": "index.js",
+  "dependencies": {
+    "assert": "^2.0.0",
+    "circom": "0.0.30",
+    "circomlib": "0.0.10",
+    "mocha": "^6.1.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "node node_modules/mocha/bin/mocha ZK_Snarks/Encryption/Decrypt_test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/barryWhiteHat/maci.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/barryWhiteHat/maci/issues"
+  },
+  "homepage": "https://github.com/barryWhiteHat/maci#readme"
+}
