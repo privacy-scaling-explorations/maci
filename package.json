@@ -4,14 +4,17 @@
   "description": "Minimal anti collusion infrastructure",
   "main": "index.js",
   "dependencies": {
-    "assert": "^2.0.0",
-    "circom": "0.0.30",
+    "mocha": "^6.1.4",
+    "snarkjs": "^0.1.14",
+    "wasmbuilder": "0.0.3",
+    "big-integer": "^1.6.42",
+    "circom": "^0.0.30",
     "circomlib": "0.0.10",
-    "mocha": "^6.1.4"
+    "websnark": "^0.0.4"
   },
   "devDependencies": {},
   "scripts": {
-    "test": "node node_modules/mocha/bin/mocha ZK_Snarks/Encryption/Decrypt_test.js"
+    "test": "node node_modules/mocha/bin/mocha --exit ZK_Snarks/Encryption/Decrypt_test.js"
   },
   "repository": {
     "type": "git",
