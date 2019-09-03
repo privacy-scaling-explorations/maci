@@ -1,9 +1,21 @@
 # maci
 Minimal anti collusion infrastructure
 
-# Intro
-
 This project is based upon https://ethresear.ch/t/minimal-anti-collusion-infrastructure
+
+# Developers
+
+This project has been written to be compatible with node `v10.16.3`. You can install specific node versions via [nvm](https://github.com/nvm-sh/nvm).
+
+Install yarn if you haven't already: `npm install -g yarn`.
+
+```bash
+yarn install
+
+yarn run circuit:compile
+yarn run circuit:setup
+```
+
 
 # Contribution
 

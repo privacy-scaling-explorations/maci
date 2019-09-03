@@ -1,0 +1,19 @@
+{
+  "name": "maci",
+  "version": "0.0.1a",
+  "description": "Minimal Anti-Collusion Infrastructure",
+  "main": "index.js",
+  "repository": "git@github.com:kendricktan/maci.git",
+  "author": "Kendrick Tan <kendricktan0814@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "circuit:compile": "mkdir -p compiled_circuits && circom circuits/circuit.circom -o compiled_circuits/circuit.json",
+    "circuit:setup": "cd compiled_circuits && snarkjs setup",
+    "circuit:generateverifier": "cd compiled_circuits && snarkjs generateverifier"
+  },
+  "dependencies": {
+    "circom": "^0.0.31",
+    "circomlib": "^0.0.14",
+    "snarkjs": "^0.1.18"
+  }
+}
