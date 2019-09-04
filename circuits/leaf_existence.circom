@@ -4,8 +4,8 @@ include "../node_modules/circomlib/circuits/mimc.circom";
 // checks for existence of leaf in tree of depth k
 
 template LeafExistence(k, l){
-// k is depth of tree
-// l is length of preimage of leaf
+    // k is depth of tree
+    // l is length of preimage of leaf
 
     signal private input preimage[l]; 
     signal input root;

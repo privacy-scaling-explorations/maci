@@ -1,7 +1,7 @@
 include "../node_modules/circomlib/circuits/mimc.circom";
 
 template GetMerkleRoot(k){
-// k is depth of tree
+    // k is depth of tree
 
     signal input leaf;
     signal input paths2_root[k];
