@@ -17,7 +17,8 @@
     "eject": "react-scripts eject",
     "circuit:compile": "mkdir -p src/circuits && circom circuits/circuit.circom -o src/circuits/circuit.json",
     "circuit:setup": "cd src/circuits && snarkjs setup",
-    "circuit:generateverifier": "mkdir -p contracts && cd src/circuits && snarkjs generateverifier && mv verifier.sol ../../contracts/Verifier.sol"
+    "circuit:generateverifier": "mkdir -p contracts && cd src/circuits && snarkjs generateverifier && mv verifier.sol ../../contracts/Verifier.sol",
+    "gg": "node src/legacy/Add_New_Leaf/generate_circuit_input.js"
   },
   "eslintConfig": {
     "extends": [
