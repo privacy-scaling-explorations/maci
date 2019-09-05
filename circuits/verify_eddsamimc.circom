@@ -9,7 +9,7 @@ template VerifyEdDSAMiMC(k) {
     signal input S;
     signal private input preimage[k];
     
-    component M = MultiMiMC7(k,91);
+    component M = MultiMiMC7(k, 91);
     for (var i = 0; i < k; i++){
         M.in[i] <== preimage[i];
     }

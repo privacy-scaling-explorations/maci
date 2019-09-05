@@ -48,11 +48,12 @@ template ProcessUpdate(k){
     signatureCheck.preimage[2] <== sender_updated_detail;
     signatureCheck.preimage[3] <== sender_updated_pubkey[0];
     signatureCheck.preimage[4] <== sender_updated_pubkey[1];
+
     // change voter leave and hash
     component newSenderLeaf = MultiMiMC7(3,91){
         newSenderLeaf.in[0] <== sender_updated_pubkey[0];
         newSenderLeaf.in[1] <== sender_updated_pubkey[1];
-	newSenderLeaf.in[2] <== sender_updated_detail;
+	    newSenderLeaf.in[2] <== sender_updated_detail;
     }
 
     // update tree_root
@@ -73,7 +74,6 @@ template ProcessUpdate(k){
         senderExistence2.paths2_root_pos[i] <== sender_proof_pos[i];
         senderExistence2.paths2_root[i] <== sender_proof[i];
     }
-
 
     // output final tree_root
     new_tree_root <== computed_final_root.out;

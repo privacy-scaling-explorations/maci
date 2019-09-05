@@ -5,6 +5,8 @@ This project is based upon https://ethresear.ch/t/minimal-anti-collusion-infrast
 
 # Developing MACI
 
+MACI is tested with `node v10.16.3`
+
 ```bash
 yarn install
 
