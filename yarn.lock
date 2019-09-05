@@ -2144,7 +2144,7 @@ bcrypt-pbkdf@^1.0.0:
   dependencies:
     tweetnacl "^0.14.3"
 
-big-integer@^1.6.32, big-integer@^1.6.43:
+big-integer@^1.6.32, big-integer@^1.6.42, big-integer@^1.6.43:
   version "1.6.44"
   resolved "https://registry.yarnpkg.com/big-integer/-/big-integer-1.6.44.tgz#4ee9ae5f5839fc11ade338fea216b4513454a539"
   integrity sha512-7MzElZPTyJ2fNvBkPxtFQ2fWIkVmuzw41+BZHSzpEq3ymB2MfeKp1+yXl/tS75xCx+WnyV+yb0kp+K1C3UNwmQ==
@@ -2204,6 +2204,11 @@ blake2b@^2.1.3:
   dependencies:
     blake2b-wasm "^1.1.0"
     nanoassert "^1.0.0"
+
+blakejs@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/blakejs/-/blakejs-1.1.0.tgz#69df92ef953aa88ca51a32df6ab1c54a155fc7a5"
+  integrity sha1-ad+S75U6qIylGjLfarHFShVfx6U=
 
 bluebird@^3.5.0, bluebird@^3.5.5:
   version "3.5.5"
@@ -11677,6 +11682,14 @@ webpack@4.39.1:
     terser-webpack-plugin "^1.4.1"
     watchpack "^1.6.0"
     webpack-sources "^1.4.1"
+
+websnark@^0.0.5:
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/websnark/-/websnark-0.0.5.tgz#7327a967f37da9bb7abc1e5c5bc90b6188dea51e"
+  integrity sha512-JRJDLYa6GyHgRp7RQmauZBLgClx7OGclEnJLfW2uUyRFYDCBGdgirIH7E2g1s1BR6GUqEBb0uHneqBKvO6Bt9A==
+  dependencies:
+    big-integer "^1.6.42"
+    blakejs "^1.1.0"
 
 websocket-driver@>=0.5.1:
   version "0.7.3"
