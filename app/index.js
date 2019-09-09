@@ -22,17 +22,25 @@ const publicKey = ethers.utils.computePublicKey(
 )
 
 // Types
+type PublicKey = String
+
 type Action = "Alice" | "Bob";
 
-type User = {
-  publicKey: string, // Compressed public key
+type UserAction = {
+  publicKey: PublicKey, // Compressed public key
   action: Action // Whom we voting for
 };
 
-// TODO: 1. Save these things to a database instead of being in memory
-const users = []
+type State = Array<UserAction>
 
-// TODO: Make this listen to events on smart contract for admitting users
+// TODO: 1. Save these things to a database instead of being in memory
+const users: Array<PublicKey> = []
+const states: Array<UserAction> = []
+
+// TODO: Change these endpoints to some event happening
+// on the smart contract
+
+// Create new user
 app.post('/user', (req: $Request, res: $Response) => {
   const publicKey = req.body.publicKey
   const validPublicKey =
@@ -49,17 +57,31 @@ app.post('/user', (req: $Request, res: $Response) => {
   // Append to list of users
   users.push(publicKey)
 
+  // Return user index
   res.send({ index: users.length - 1 })
 })
 
+// Set new action
+app.put('/user/:idx/action', (req: $Request, res: $Response) => {
+  res.send({ action: 'hello' })
+})
+
+// Set new user key
+app.put('/user/:idx/key', (req: $Request, res: $Response) => {
+  res.send({ key: 'hello' })
+})
+
+// Gets merkle root
+app.get('/merkleroot', (req: $Request, res: $Response) => {
+  res.send('Merkle root')
+})
+
+// Returns public key to user
 app.get('/publickey', (req: $Request, res: $Response) => {
   res.send({ publicKey: signingKey.publicKey, compressed: true })
 })
 
-app.get('/', (req: $Request, res: $Response) => {
-  res.send('Hello World!')
-})
-
+// Entrypoint
 app.listen(port, () => {
   console.log(`Coordinator servive listening on port ${port}!`)
   console.log(`Public Key: ${publicKey}`)
