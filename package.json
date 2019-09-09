@@ -10,7 +10,8 @@
     "dev": "nodemon \"flow-node app/index.js\"",
     "circuit:compile": "mkdir -p app/circuits && circom circuits/circuit.circom -o app/circuits/circuit.json",
     "circuit:setup": "cd app/circuits && snarkjs setup",
-    "circuit:generateverifier": "mkdir -p contracts && cd app/circuits && snarkjs generateverifier && mv verifier.sol ../../contracts/Verifier.sol"
+    "circuit:generateverifier": "mkdir -p contracts && cd app/circuits && snarkjs generateverifier && mv verifier.sol ../../contracts/Verifier.sol",
+    "gg": "flow-node app/utils/crypto.js"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
@@ -29,6 +30,7 @@
     "eslint-config-standard": "^14.1.0",
     "eslint-config-standard-flow": "^1.0.1",
     "eslint-plugin-flowtype": "^4.3.0",
+    "eslint-plugin-node": "^10.0.0",
     "nodemon": "^1.19.2"
   }
 }

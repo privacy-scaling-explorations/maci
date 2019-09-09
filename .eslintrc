@@ -8,6 +8,9 @@
         "standard",
         "standard-flow"
     ],
+    "globals": {
+        "BigInt": "readonly"
+    },
     "rules": {
         "flowtype/boolean-style": [
             2,
@@ -23,7 +26,6 @@
             "never"
         ],
         "flowtype/no-mixed": 2,
-        "flowtype/no-primitive-constructor-types": 2,
         "flowtype/no-types-missing-file-annotation": 2,
         "flowtype/no-weak-types": 2,
         "flowtype/object-type-delimiter": [
