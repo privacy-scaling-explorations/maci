@@ -15,9 +15,9 @@ yarn circuit:compile
 yarn circuit:setup
 yarn circuit:generateverifier
 
-# Deploy contract
-
 # Run coordinator
+yarn start
+yarn dev
 ```
 
 # Contribution
