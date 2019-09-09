@@ -97,3 +97,5 @@ circuit.json
 input.json
 
 src/circuits
+
+.vscode/

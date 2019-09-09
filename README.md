@@ -10,10 +10,14 @@ MACI is tested with `node v10.16.3`
 ```bash
 yarn install
 
-# To compile the circuits
+# To generate the files
 yarn circuit:compile
 yarn circuit:setup
 yarn circuit:generateverifier
+
+# Deploy contract
+
+# Run coordinator
 ```
 
 # Contribution
