@@ -5,47 +5,17 @@ type MiMicSignature = {
   S: BigInt
 };
 
+const crypto = require('crypto')
 const { babyJub, eddsa, mimc7 } = require('circomlib')
 
-const rand256 = (): Number => {
-  let n = 0n
-  for (let i=0; i<9; i++) {
-    const x = Math.floor(Math.random()*(1<<30))
-    n = (n << 30n) + BigInt(x)
-  }
-  return n % (1n<<256n)
-}
-
-const stringifyBigInts = (o: BigInt): String => {
-  if ((typeof o === 'bigint') || (o instanceof BigInt)) {
-    return o.toString(10)
-  } else if (Array.isArray(o)) {
-    return o.map(stringifyBigInts)
-  } else if (typeof o === 'object') {
-    const res = {}
-    for (const k in o) {
-      res[k] = stringifyBigInts(o[k])
-    }
-    return res
-  } else {
-    return o
-  }
-}
-
-const unstringifyBigInts = (o: String): BigInt => {
-  if ((typeof (o) === 'string') && (/^[0-9]+$/.test(o))) {
-    return BigInt(o)
-  } else if (Array.isArray(o)) {
-    return o.map(unstringifyBigInts)
-  } else if (typeof o === 'object') {
-    const res = {}
-    for (const k in o) {
-      res[k] = unstringifyBigInts(o[k])
-    }
-    return res
-  } else {
-    return o
-  }
+const randomBigInt = (): Buffer => {
+  return Buffer.from(
+    Array(64)
+      .fill(0)
+      .map((): Number => parseInt(Math.random()*10))
+      .join(''),
+    'hex'
+  )
 }
 
 const serializeMsg = (msg: String): Array<Number> => {
@@ -59,19 +29,28 @@ const deserializeMsg = (m: Array<Number>): String => {
 // Usage example
 
 // Coordinator keys
-const coordinatorPrivKey = rand256()
-const coordinatorPublicKey = babyJub.mulPointEscalar(
-  babyJub.Base8,
-  coordinatorPrivKey % babyJub.subOrder
-)
+const coordinatorPrivKey = Buffer.from('0001020304050607080900010203040506070809000102030405060708090001', 'hex')
+const coordinatorPublicKey = eddsa.prv2pub(coordinatorPrivKey)
 
 // User keys
-const userPrivKey = rand256()
-const userPubKey = babyJub.mulPointEscalar(
-  babyJub.Base8,
-  userPrivKey % babyJub.subOrder
-)
+const userPrivKey = Buffer.from('0001020304050607080900010203040506070809000102030405060708090002', 'hex')
+const userPubKey = eddsa.prv2pub(userPrivKey)
 
+// Calculate Shared key
+// In order to encrypt and decrypt input
+const edh = babyJub.mulPointEscalar(
+  coordinatorPublicKey,
+  BigInt(userPrivKey.toString('hex'))
+)[0]
+const edh2 = babyJub.mulPointEscalar(
+  userPubKey,
+  BigInt(coordinatorPrivKey.toString('hex'))
+)[0]
+console.log(edh)
+console.log(edh2)
+console.log(`EDH valid: ${edh === edh2}`)
+
+// Original message
 const msgJson = {
   msg: 'hello world',
   key: userPubKey.map((x: BigInt): String => x.toString())
@@ -81,11 +60,9 @@ const msgSerialized: Array<BigInt> = serializeMsg(JSON.stringify(msgJson))
   .map((x: Number): BigInt => BigInt(x))
 const msgHash = mimc7.multiHash(msgSerialized)
 
-// Shared key
-const edh = babyJub.mulPointEscalar(coordinatorPublicKey, userPrivKey)[0]
-
+// // Sign message
 const msgSignatureObj: MiMicSignature = eddsa.signMiMC(
-  Buffer.from(edh.toString(16).padStart(64, '0'), 'hex'),
+  userPrivKey.toString(),
   msgHash
 )
 const msgSignature = {
@@ -95,6 +72,12 @@ const msgSignature = {
   ],
   S: msgSignatureObj.S.toString()
 }
+
+const validSignature = eddsa.verifyMiMC(
+  msgHash,
+  msgSignatureObj,
+  userPubKey
+)
 
 const msgWithSignature = Object.assign(
   msgJson, { signature: msgSignature }
@@ -117,9 +100,5 @@ const decryptedMsg: Array<Number> = encryptedMsg
     return Number(x)
   })
 
-console.log(`Original Message: ${deserializeMsg(m)}`)
-console.log(`Decrypted Message: ${deserializeMsg(decryptedMsg)}`)
-
-// console.log(`private key: ${privKey}`)
-// console.log(`public key: ${pubKey}`)
-// console.log(`edh: ${edh}`)
+console.log(`Valid Signature: ${validSignature}`)
+console.log(`Decrypted Msg == Original Msg: ${deserializeMsg(m) === deserializeMsg(decryptedMsg)}`)
