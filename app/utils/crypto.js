@@ -5,17 +5,21 @@ type MiMicSignature = {
   S: BigInt
 };
 
-const crypto = require('crypto')
+const { bigInt } = require('snarkjs')
+const createBlakeHash = require('blake-hash')
 const { babyJub, eddsa, mimc7 } = require('circomlib')
 
-const randomBigInt = (): Buffer => {
-  return Buffer.from(
+const randomPrivateKey = (): BigInt => {
+  return BigInt(
     Array(64)
       .fill(0)
-      .map((): Number => parseInt(Math.random()*10))
-      .join(''),
-    'hex'
-  )
+      .map((x: Any): Int => parseInt(Math.random()*10))
+      .join('')
+  ) % babyJub.subOrder
+}
+
+const bigInt2Buffer = (i: BigInt): Buffer => {
+  return Buffer.from(i.toString())
 }
 
 const serializeMsg = (msg: String): Array<Number> => {
@@ -29,25 +33,44 @@ const deserializeMsg = (m: Array<Number>): String => {
 // Usage example
 
 // Coordinator keys
-const coordinatorPrivKey = Buffer.from('0001020304050607080900010203040506070809000102030405060708090001', 'hex')
-const coordinatorPublicKey = eddsa.prv2pub(coordinatorPrivKey)
+const coordinatorPrivKey = randomPrivateKey()
+const coordinatorPublicKey = eddsa.prv2pub(
+  bigInt2Buffer(coordinatorPrivKey)
+)
+//  babyJub.mulPointEscalar(
+//   babyJub.Base8,
+//   coordinatorPrivKey
+// )
 
 // User keys
-const userPrivKey = Buffer.from('0001020304050607080900010203040506070809000102030405060708090002', 'hex')
-const userPubKey = eddsa.prv2pub(userPrivKey)
+const userPrivKey = randomPrivateKey()
+const userPubKey = eddsa.prv2pub(
+  bigInt2Buffer(userPrivKey)
+)
+// babyJub.mulPointEscalar(
+//   babyJub.Base8,
+//   userPrivKey
+// )
 
 // Calculate Shared key
 // In order to encrypt and decrypt input
+const skTransformation = (priv: Buffer): BigInt => {
+  const h1 = createBlakeHash('blake512').update(priv).digest()
+  const sBuff = eddsa.pruneBuffer(h1.slice(0, 32))
+  const s = bigInt.leBuff2int(sBuff).shr(3)
+  return s
+}
+
 const edh = babyJub.mulPointEscalar(
   coordinatorPublicKey,
-  BigInt(userPrivKey.toString('hex'))
+  skTransformation(bigInt2Buffer(userPrivKey))
 )[0]
+
 const edh2 = babyJub.mulPointEscalar(
   userPubKey,
-  BigInt(coordinatorPrivKey.toString('hex'))
+  skTransformation(bigInt2Buffer(coordinatorPrivKey))
 )[0]
-console.log(edh)
-console.log(edh2)
+
 console.log(`EDH valid: ${edh === edh2}`)
 
 // Original message
@@ -60,7 +83,7 @@ const msgSerialized: Array<BigInt> = serializeMsg(JSON.stringify(msgJson))
   .map((x: Number): BigInt => BigInt(x))
 const msgHash = mimc7.multiHash(msgSerialized)
 
-// // Sign message
+// Sign message
 const msgSignatureObj: MiMicSignature = eddsa.signMiMC(
   userPrivKey.toString(),
   msgHash
