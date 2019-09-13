@@ -5,7 +5,13 @@ type MiMicSignature = {
   S: BigInt
 };
 
-const { bigInt } = require('snarkjs')
+const provingKey = require('../circuits/proving_key.json')
+const verificationKey = require('../circuits/verification_key.json')
+const circuitDef = require('../circuits/circuit.json')
+const { Circuit, bigInt } = require('snarkjs')
+const zkSnark = require('snarkjs').original
+const { stringifyBigInts, unstringifyBigInts } = require('snarkjs/src/stringifybigint')
+const buildGroth16 = require('websnark/src/bn128.js')
 const createBlakeHash = require('blake-hash')
 const { babyJub, eddsa, mimc7 } = require('circomlib')
 
@@ -34,7 +40,8 @@ const ecdh = (priv: BigInt, pub: Tuple<BigInt>): BigInt => {
   const privBuff = bigInt2Buffer(priv)
 
   // Prepare private key xformation
-  // (similar to how eddsa.prv2pub does it)
+  // (similar to how eddsa.prv2pub prepares
+  // the private key)
   const h1 = createBlakeHash('blake512').update(privBuff).digest()
   const sBuff = eddsa.pruneBuffer(h1.slice(0, 32))
   const s = bigInt.leBuff2int(sBuff).shr(3)
@@ -43,6 +50,34 @@ const ecdh = (priv: BigInt, pub: Tuple<BigInt>): BigInt => {
     pub,
     s
   )[0]
+}
+
+const encrypt = (
+  msg: Array<BigInt>,
+  priv: BigInt,
+  pub: Tuple<BigInt>
+): Array<BigInt> => {
+  // Encrypts a message
+  const sharedKey = ecdh(priv, pub)
+  const iv = mimc7.multiHash(msg, BigInt(0))
+  return [
+    iv, ...msg.map((e: BigInt, i: Number): BigInt => {
+      return e + mimc7.hash(sharedKey, iv + BigInt(i))
+    })
+  ]
+}
+
+const decrypt = (
+  msg: Array<BigInt>,
+  priv: BigInt,
+  pub: Tuple<BigInt>
+): Array<BigInt> => {
+  // Decrypts
+  const sharedKey = ecdh(priv, pub)
+  const iv = msg[0]
+  return msg.slice(1).map((e: BigInt, i: Number): BigInt => {
+    return e - mimc7.hash(sharedKey, iv + BigInt(i))
+  })
 }
 
 // Usage example
@@ -61,6 +96,11 @@ const userPubKey = eddsa.prv2pub(
 
 const edh = ecdh(userPrivKey, coordinatorPublicKey)
 const edh2 = ecdh(coordinatorPrivKey, userPubKey)
+
+if (edh !== edh2) {
+  console.log('Invalid shared keys')
+  process.exit(1)
+}
 
 // Original message
 const msg = [
@@ -87,19 +127,15 @@ const m = [
   signature.S
 ]
 
-// Shared property
-const iv = mimc7.multiHash(m.map((x: Number): BigInt => BigInt(x)), BigInt(0))
-
 // Encrypt message
-const encryptedMsg = m.map((e: Number, i: Number): Array<Number> => {
-  return BigInt(e) + mimc7.hash(edh, iv + BigInt(i))
-})
+const encryptedMsg = encrypt(
+  m, userPrivKey, coordinatorPublicKey
+)
 
 // Decrypt encrypted message
-const decryptedMsg: Array<BigInt> = encryptedMsg
-  .map((e: BigInt, i: Number): BigInt => {
-    return e - mimc7.hash(edh, iv + BigInt(i))
-  })
+const decryptedMsg = decrypt(
+  encryptedMsg, coordinatorPrivKey, userPubKey
+)
 
 // Check if signature valid
 const decryptedMsgHash = mimc7.multiHash(decryptedMsg.slice(0, 3))
@@ -117,7 +153,40 @@ const validSignature = eddsa.verifyMiMC(
   userPubKey
 )
 
+// Making sure params are generated valid
 console.log(`Message length: ${m.length}`)
 console.log(`EDH valid: ${edh === edh2}`)
 console.log(`Valid Signature: ${validSignature}`)
 console.log(`Message decrypted: ${JSON.stringify(decryptedMsg.map(bigInt2num)) === JSON.stringify(m.map(bigInt2num))}`)
+
+// Ensuring inputs passes the circuits
+const checkcircuit = async () => {
+  const circuit = new Circuit(circuitDef)
+
+  const circuitInput = {
+    message: encryptedMsg,
+    sharedPrivateKey: edh,
+    decmessage: decryptedMsg
+  }
+
+  console.log('Setting up circuit...')
+  const setup = zkSnark.setup(circuit)
+
+  console.log('Calculating witnesses....')
+  const witness = circuit.calculateWitness(circuitInput)
+
+  console.log('Generating proof....')
+  const { proof, publicSignals } = zkSnark.genProof(
+    setup.vk_proof, witness
+  )
+
+  const isValid = zkSnark.isValid(
+    setup.vk_verifier,
+    proof,
+    publicSignals
+  )
+
+  console.log(`Inputs passes circuit: ${isValid}`)
+}
+
+checkcircuit()

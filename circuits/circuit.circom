@@ -82,13 +82,12 @@ template ProcessUpdate(k){
 
 template DecryptTest(N) {
     signal input message[N+1];
-
-    signal input privkey;
-    signal input pubkey[2];
-
+    signal input sharedPrivateKey;
     signal input decmessage[N];
 
     component decrypt = Decrypt(N);
+
+    decrypt.sharedPrivateKey <== sharedPrivateKey;
 
     for (var i=0; i<N+1; i++) {
         decrypt.message[i] <== message[i];
@@ -97,11 +96,6 @@ template DecryptTest(N) {
     for (var i=0; i<N; i++) {
         decrypt.out[i] === decmessage[i];
     }
-
-    decrypt.pubkey[0] <== pubkey[0];
-    decrypt.pubkey[1] <== pubkey[1];
-
-    decrypt.privkey <== privkey;
 }
 
 // component main = ProcessUpdate(1);

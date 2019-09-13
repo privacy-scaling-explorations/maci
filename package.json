@@ -11,7 +11,7 @@
     "circuit:compile": "mkdir -p app/circuits && circom circuits/circuit.circom -o app/circuits/circuit.json",
     "circuit:setup": "cd app/circuits && snarkjs setup",
     "circuit:generateverifier": "mkdir -p contracts && cd app/circuits && snarkjs generateverifier && mv verifier.sol ../../contracts/Verifier.sol",
-    "gg": "flow-node app/utils/crypto.js"
+    "gg": "flow-node --experimental-worker app/utils/crypto.js"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
@@ -22,6 +22,7 @@
     "flow-bin": "^0.107.0",
     "flow-remove-types": "^2.107.0",
     "snarkjs": "^0.1.19",
+    "wasmbuilder": "^0.0.8",
     "websnark": "^0.0.5"
   },
   "devDependencies": {

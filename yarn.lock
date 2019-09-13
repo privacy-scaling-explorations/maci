@@ -4882,6 +4882,13 @@ vlq@^0.2.1:
   resolved "https://registry.yarnpkg.com/vlq/-/vlq-0.2.3.tgz#8f3e4328cf63b1540c0d67e1b2778386f8975b26"
   integrity sha512-DRibZL6DsNhIgYQ+wNdWDL2SL3bKPlVrRiBqV5yuMm++op8W4kGFtaQfCs4KEJn0wBZcHVHJ3eoywX8983k1ow==
 
+wasmbuilder@^0.0.8:
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/wasmbuilder/-/wasmbuilder-0.0.8.tgz#f19e175a32ef1e09707e6fbad18f3fd07473ef35"
+  integrity sha512-d63cIsDmHnybA5hTlRRLadgys5r3Tl4W8SbcBRh13FauEPOo48dqjgzdL1xefpZkpKKybDRlFqgm+9cX04B3+w==
+  dependencies:
+    big-integer "^1.6.43"
+
 web3-bzz@1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/web3-bzz/-/web3-bzz-1.2.1.tgz#c3bd1e8f0c02a13cd6d4e3c3e9e1713f144f6f0d"
