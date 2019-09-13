@@ -44,6 +44,7 @@ template ProcessUpdate(k){
     signatureCheck.R8x <== signature_R8x;
     signatureCheck.R8y <== signature_R8y;
     signatureCheck.S <== signature_S;
+    
     signatureCheck.preimage[0] <== sender_pubkey[0];
     signatureCheck.preimage[1] <== sender_pubkey[1];
     signatureCheck.preimage[2] <== sender_updated_detail;
@@ -80,7 +81,8 @@ template ProcessUpdate(k){
     new_tree_root <== computed_final_root.out;
 }
 
-template DecryptTest(N) {
+template DecryptAndVerifyMessage(N) {
+    // N is the length of the messages
     signal input message[N+1];
     signal input sharedPrivateKey;
     signal input decmessage[N];
@@ -96,7 +98,28 @@ template DecryptTest(N) {
     for (var i=0; i<N; i++) {
         decrypt.out[i] === decmessage[i];
     }
+
+    // Verify the signature of the decrypted message
+    component signatureCheck = VerifyEdDSAMiMC(3);
+    
+    signatureCheck.preimage[0] <== decmessage[0];
+    signatureCheck.preimage[1] <== decmessage[1];
+    signatureCheck.preimage[2] <== decmessage[2];
+
+    signatureCheck.from_x <== decmessage[1]; // public key x
+    signatureCheck.from_y <== decmessage[2]; // public key y
+    signatureCheck.R8x <== decmessage[3]; // sig R8x
+    signatureCheck.R8y <== decmessage[4]; // sig R8y
+    signatureCheck.S <== decmessage[5]; // sig S
 }
 
 // component main = ProcessUpdate(1);
-component main = DecryptTest(6);
+// Message contains 6 parts:
+// [0]: Action
+// [1]: pub key x
+// [2]: pub key y
+// [3]: sig r8 x
+// [4]: sig r8 y
+// [5]: sig s
+// encrypted message contains [6+1] parts due to the iv component
+component main = DecryptAndVerifyMessage(6);
