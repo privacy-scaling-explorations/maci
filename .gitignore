@@ -88,7 +88,7 @@ typings/
 .dynamodb/
 
 # Stuff we can auto-generate
-proving_jey.json
+proving_key.json
 verification_key.json
 witness.json
 public.json
@@ -96,6 +96,6 @@ proof.json
 circuit.json
 input.json
 
-src/circuits
+app/circuits/
 
 .vscode/

@@ -59,30 +59,30 @@ console.log('sender_detail: ' + Alice.detail.toString())
 console.log('sender_updated_pubkey[0]: ' + newAlice.pubkey[0].toString())
 console.log('sender_updated_pubkey[1]: ' + newAlice.pubkey[1].toString())
 console.log('sender_updated_detail: ' + newAlice.detail.toString())
-console.log("signature['R8'][0]: " + signature['R8'][0].toString())
-console.log("signature['R8'][1]: " + signature['R8'][1].toString())
-console.log("signature['S']: " + signature['S'].toString())
+console.log("signature['R8'][0]: " + signature.R8[0].toString())
+console.log("signature['R8'][1]: " + signature.R8[1].toString())
+console.log("signature['S']: " + signature.S.toString())
 console.log('aliceHash: ' + aliceHash.toString())
 console.log('bobHash: ' + bobHash.toString())
 console.log('newAliceHash: ' + newAliceHash.toString())
 console.log('txHash: ' + txHash.toString())
 
 const inputs = {
-  'tree_root': tree_root.toString(),
-  'accounts_pubkeys': [
+  tree_root: tree_root.toString(),
+  accounts_pubkeys: [
     [Alice.pubkey[0].toString(), Alice.pubkey[1].toString()],
     [Bob.pubkey[0].toString(), Bob.pubkey[1].toString()]
   ],
-  'accounts_detail': [Alice.detail, Bob.detail],
-  'sender_pubkey': [Alice.pubkey[0].toString(), Alice.pubkey[1].toString()],
-  'sender_detail': Alice.detail,
-  'sender_updated_pubkey': [newAlice.pubkey[0].toString(), newAlice.pubkey[1].toString()],
-  'sender_updated_detail': newAlice.detail,
-  'signature_R8x': signature['R8'][0].toString(),
-  'signature_R8y': signature['R8'][1].toString(),
-  'signature_S': signature['S'].toString(),
-  'sender_proof': [bobHash.toString()],
-  'sender_proof_pos': [1]
+  accounts_detail: [Alice.detail, Bob.detail],
+  sender_pubkey: [Alice.pubkey[0].toString(), Alice.pubkey[1].toString()],
+  sender_detail: Alice.detail,
+  sender_updated_pubkey: [newAlice.pubkey[0].toString(), newAlice.pubkey[1].toString()],
+  sender_updated_detail: newAlice.detail,
+  signature_R8x: signature.R8[0].toString(),
+  signature_R8y: signature.R8[1].toString(),
+  signature_S: signature.S.toString(),
+  sender_proof: [bobHash.toString()],
+  sender_proof_pos: [1]
 }
 
 // fs.writeFileSync(

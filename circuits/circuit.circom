@@ -1,6 +1,7 @@
 include "./leaf_existence.circom";
 include "./verify_eddsamimc.circom";
 include "./get_merkle_root.circom";
+include "./decrypt.circom";
 include "../node_modules/circomlib/circuits/mimc.circom";
 
 template ProcessUpdate(k){
@@ -79,4 +80,29 @@ template ProcessUpdate(k){
     new_tree_root <== computed_final_root.out;
 }
 
-component main = ProcessUpdate(1);
+template DecryptTest(N) {
+    signal input message[N+1];
+
+    signal input privkey;
+    signal input pubkey[2];
+
+    signal input decmessage[N];
+
+    component decrypt = Decrypt(N);
+
+    for (var i=0; i<N+1; i++) {
+        decrypt.message[i] <== message[i];
+    }
+
+    for (var i=0; i<N; i++) {
+        decrypt.out[i] === decmessage[i];
+    }
+
+    decrypt.pubkey[0] <== pubkey[0];
+    decrypt.pubkey[1] <== pubkey[1];
+
+    decrypt.privkey <== privkey;
+}
+
+// component main = ProcessUpdate(1);
+component main = DecryptTest(6);

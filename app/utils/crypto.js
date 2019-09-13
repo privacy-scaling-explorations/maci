@@ -22,12 +22,27 @@ const bigInt2Buffer = (i: BigInt): Buffer => {
   return Buffer.from(i.toString())
 }
 
-const serializeMsg = (msg: String): Array<Number> => {
-  return msg.split('').map((x: String): Number => x.charCodeAt(0))
+const num2bigInt = (n: Number): BigInt => {
+  return BigInt(n)
 }
 
-const deserializeMsg = (m: Array<Number>): String => {
-  return m.map((x: Number): String => String.fromCharCode(x)).join('')
+const bigInt2num = (i: BigInt): Number => {
+  return Number(i)
+}
+
+const ecdh = (priv: BigInt, pub: Tuple<BigInt>): BigInt => {
+  const privBuff = bigInt2Buffer(priv)
+
+  // Prepare private key xformation
+  // (similar to how eddsa.prv2pub does it)
+  const h1 = createBlakeHash('blake512').update(privBuff).digest()
+  const sBuff = eddsa.pruneBuffer(h1.slice(0, 32))
+  const s = bigInt.leBuff2int(sBuff).shr(3)
+
+  return babyJub.mulPointEscalar(
+    pub,
+    s
+  )[0]
 }
 
 // Usage example
@@ -37,91 +52,72 @@ const coordinatorPrivKey = randomPrivateKey()
 const coordinatorPublicKey = eddsa.prv2pub(
   bigInt2Buffer(coordinatorPrivKey)
 )
-//  babyJub.mulPointEscalar(
-//   babyJub.Base8,
-//   coordinatorPrivKey
-// )
 
 // User keys
 const userPrivKey = randomPrivateKey()
 const userPubKey = eddsa.prv2pub(
   bigInt2Buffer(userPrivKey)
 )
-// babyJub.mulPointEscalar(
-//   babyJub.Base8,
-//   userPrivKey
-// )
 
-// Calculate Shared key
-// In order to encrypt and decrypt input
-const skTransformation = (priv: Buffer): BigInt => {
-  const h1 = createBlakeHash('blake512').update(priv).digest()
-  const sBuff = eddsa.pruneBuffer(h1.slice(0, 32))
-  const s = bigInt.leBuff2int(sBuff).shr(3)
-  return s
-}
-
-const edh = babyJub.mulPointEscalar(
-  coordinatorPublicKey,
-  skTransformation(bigInt2Buffer(userPrivKey))
-)[0]
-
-const edh2 = babyJub.mulPointEscalar(
-  userPubKey,
-  skTransformation(bigInt2Buffer(coordinatorPrivKey))
-)[0]
-
-console.log(`EDH valid: ${edh === edh2}`)
+const edh = ecdh(userPrivKey, coordinatorPublicKey)
+const edh2 = ecdh(coordinatorPrivKey, userPubKey)
 
 // Original message
-const msgJson = {
-  msg: 'hello world',
-  key: userPubKey.map((x: BigInt): String => x.toString())
-}
+const msg = [
+  0, // Action
+  userPubKey[0],
+  userPubKey[1]
+].map(num2bigInt)
 
-const msgSerialized: Array<BigInt> = serializeMsg(JSON.stringify(msgJson))
-  .map((x: Number): BigInt => BigInt(x))
-const msgHash = mimc7.multiHash(msgSerialized)
+const msgHash = mimc7.multiHash(msg)
 
 // Sign message
-const msgSignatureObj: MiMicSignature = eddsa.signMiMC(
+const signature: MiMicSignature = eddsa.signMiMC(
   userPrivKey.toString(),
   msgHash
 )
-const msgSignature = {
-  R8: [
-    msgSignatureObj.R8[0].toString(),
-    msgSignatureObj.R8[1].toString()
-  ],
-  S: msgSignatureObj.S.toString()
-}
 
-const validSignature = eddsa.verifyMiMC(
-  msgHash,
-  msgSignatureObj,
-  userPubKey
-)
+// Insert signature into message
+const m = [
+  msg[0],
+  msg[1],
+  msg[2],
+  signature.R8[0],
+  signature.R8[1],
+  signature.S
+]
 
-const msgWithSignature = Object.assign(
-  msgJson, { signature: msgSignature }
-)
-
-const msg = JSON.stringify(msgWithSignature)
-
-const m = serializeMsg(msg)
-
+// Shared property
 const iv = mimc7.multiHash(m.map((x: Number): BigInt => BigInt(x)), BigInt(0))
 
+// Encrypt message
 const encryptedMsg = m.map((e: Number, i: Number): Array<Number> => {
   return BigInt(e) + mimc7.hash(edh, iv + BigInt(i))
 })
-const decryptedMsg: Array<Number> = encryptedMsg
+
+// Decrypt encrypted message
+const decryptedMsg: Array<BigInt> = encryptedMsg
   .map((e: BigInt, i: Number): BigInt => {
     return e - mimc7.hash(edh, iv + BigInt(i))
   })
-  .map((x: BigInt): Number => {
-    return Number(x)
-  })
 
+// Check if signature valid
+const decryptedMsgHash = mimc7.multiHash(decryptedMsg.slice(0, 3))
+const decryptedSignature = {
+  R8: [
+    decryptedMsg[3],
+    decryptedMsg[4]
+  ],
+  S: decryptedMsg[5]
+}
+
+const validSignature = eddsa.verifyMiMC(
+  decryptedMsgHash,
+  decryptedSignature,
+  userPubKey
+)
+
+console.log(`Message length: ${m.length}`)
+console.log(`EDH valid: ${edh === edh2}`)
 console.log(`Valid Signature: ${validSignature}`)
-console.log(`Decrypted Msg == Original Msg: ${deserializeMsg(m) === deserializeMsg(decryptedMsg)}`)
+console.log(`Message decrypted: ${JSON.stringify(decryptedMsg.map(bigInt2num)) === JSON.stringify(m.map(bigInt2num))}`)
