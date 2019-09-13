@@ -10,8 +10,7 @@ const verificationKey = require('../circuits/verification_key.json')
 const circuitDef = require('../circuits/circuit.json')
 const { Circuit, bigInt } = require('snarkjs')
 const zkSnark = require('snarkjs').original
-const { stringifyBigInts, unstringifyBigInts } = require('snarkjs/src/stringifybigint')
-const buildGroth16 = require('websnark/src/bn128.js')
+const { unstringifyBigInts } = require('snarkjs/src/stringifybigint')
 const createBlakeHash = require('blake-hash')
 const { babyJub, eddsa, mimc7 } = require('circomlib')
 
@@ -169,19 +168,16 @@ const checkcircuit = async () => {
     decmessage: decryptedMsg
   }
 
-  console.log('Setting up circuit...')
-  const setup = zkSnark.setup(circuit)
-
   console.log('Calculating witnesses....')
   const witness = circuit.calculateWitness(circuitInput)
 
   console.log('Generating proof....')
   const { proof, publicSignals } = zkSnark.genProof(
-    setup.vk_proof, witness
+    unstringifyBigInts(provingKey), witness
   )
 
   const isValid = zkSnark.isValid(
-    setup.vk_verifier,
+    unstringifyBigInts(verificationKey),
     proof,
     publicSignals
   )
