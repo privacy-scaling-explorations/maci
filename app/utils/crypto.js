@@ -5,7 +5,7 @@ type MiMicSignature = {
   S: BigInt
 };
 
-const { unstringifyBigInts } = require('snarkjs/src/stringifybigint')
+const { stringifyBigInts, unstringifyBigInts } = require('snarkjs/src/stringifybigint')
 const { Circuit, bigInt, original } = require('snarkjs')
 const createBlakeHash = require('blake-hash')
 const { babyJub, eddsa, mimc7 } = require('circomlib')
@@ -202,6 +202,9 @@ console.log('Generating proof....')
 const { proof, publicSignals } = zkSnark.genProof(
   unstringifyBigInts(provingKey), witness
 )
+
+console.log(JSON.stringify(stringifyBigInts(proof)))
+console.log(JSON.stringify(stringifyBigInts(publicSignals)))
 
 const isValid = zkSnark.isValid(
   unstringifyBigInts(verificationKey),
