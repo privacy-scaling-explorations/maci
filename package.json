@@ -11,8 +11,7 @@
     "circuit:compile": "mkdir -p app/circuits && circom circuits/circuit.circom -o app/circuits/circuit.json",
     "circuit:setup": "cd app/circuits && snarkjs setup",
     "circuit:generateverifier": "mkdir -p contracts && cd app/circuits && snarkjs generateverifier && mv verifier.sol ../../contracts/Verifier.sol",
-    "gg": "flow-node --experimental-worker app/utils/crypto.js",
-    "gg2": "node app/utils/generate_circuit_input.js"
+    "circuit:test": "flow-node --experimental-worker app/utils/crypto.js"
   },
   "dependencies": {
     "body-parser": "^1.19.0",

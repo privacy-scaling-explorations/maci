@@ -5,14 +5,16 @@ type MiMicSignature = {
   S: BigInt
 };
 
+const { unstringifyBigInts } = require('snarkjs/src/stringifybigint')
+const { Circuit, bigInt, original } = require('snarkjs')
+const createBlakeHash = require('blake-hash')
+const { babyJub, eddsa, mimc7 } = require('circomlib')
+
 const provingKey = require('../circuits/proving_key.json')
 const verificationKey = require('../circuits/verification_key.json')
 const circuitDef = require('../circuits/circuit.json')
-const { Circuit, bigInt } = require('snarkjs')
-const zkSnark = require('snarkjs').original
-const { unstringifyBigInts } = require('snarkjs/src/stringifybigint')
-const createBlakeHash = require('blake-hash')
-const { babyJub, eddsa, mimc7 } = require('circomlib')
+
+const zkSnark = original
 
 const randomPrivateKey = (): BigInt => {
   return BigInt(
@@ -87,85 +89,110 @@ const coordinatorPublicKey = eddsa.prv2pub(
   bigInt2Buffer(coordinatorPrivKey)
 )
 
-// User keys
-const userPrivKey = randomPrivateKey()
-const userPubKey = eddsa.prv2pub(
-  bigInt2Buffer(userPrivKey)
+// Alice
+const alicePrvKey = randomPrivateKey()
+const alicePubKey: Array<BigInt> = eddsa.prv2pub(
+  bigInt2Buffer(alicePrvKey)
 )
 
-const edh = ecdh(userPrivKey, coordinatorPublicKey)
-const edh2 = ecdh(coordinatorPrivKey, userPubKey)
+const aliceEcdh = ecdh(
+  alicePrvKey,
+  coordinatorPublicKey
+)
 
-if (edh !== edh2) {
-  console.log('Invalid shared keys')
-  process.exit(1)
-}
+// Alice's current vote in the tree
+const alicePosition = [
+  ...alicePubKey,
+  1 // action
+]
 
-// Original message
-const _msg = [
-  userPubKey[0],
-  userPubKey[1],
+const aliceHash = mimc7.multiHash(alicePosition)
+
+// Bob
+const bobPrvKey = randomPrivateKey()
+const bobPubKey: Array<BigInt> = eddsa.prv2pub(
+  bigInt2Buffer(bobPrvKey)
+)
+
+// Bob's current position in tree
+const bobPosition = [
+  ...bobPubKey,
   0 // action
+]
+
+const bobHash = mimc7.multiHash(bobPosition)
+
+// Calculate tree root
+// NOTE: Tree root is basically what has "happended"
+const treeRoot = mimc7.multiHash([aliceHash, bobHash])
+
+// Alice's new transaction
+const aliceTx = [
+  ...alicePosition,
+  ...alicePubKey,
+  1 // Alice changed her vote to `1`
 ].map(num2bigInt)
 
-// msg = [pubx, puby, action, new_pubx, new_puby, new_action]
-const msg = [..._msg, ..._msg]
-
-const msgHash = mimc7.multiHash(msg)
+const aliceTxHash = mimc7.multiHash(aliceTx)
 
 // Sign message
 const signature: MiMicSignature = eddsa.signMiMC(
-  userPrivKey.toString(),
-  msgHash
+  alicePrvKey.toString(),
+  aliceTxHash
 )
 
-// Insert signature into message
-const m = [
-  ...msg,
+// Insert signature into tx
+const aliceFinalTx = [
+  ...aliceTx,
   signature.R8[0],
   signature.R8[1],
   signature.S
 ]
 
 // Encrypt message
-const encryptedMsg = encrypt(
-  m, userPrivKey, coordinatorPublicKey
+const aliceEncryptedTx = encrypt(
+  aliceFinalTx,
+  alicePrvKey,
+  coordinatorPublicKey
 )
 
 // Decrypt encrypted message
-const decryptedMsg = decrypt(
-  encryptedMsg, coordinatorPrivKey, userPubKey
+const aliceDecryptedTx = decrypt(
+  aliceEncryptedTx, coordinatorPrivKey, alicePubKey
 )
 
 // Check if signature valid
-const decryptedMsgHash = mimc7.multiHash(decryptedMsg.slice(0, 3))
+const decryptedTxHash = mimc7.multiHash(aliceDecryptedTx.slice(0, -3))
 const decryptedSignature = {
   R8: [
-    decryptedMsg[3],
-    decryptedMsg[4]
+    aliceDecryptedTx.slice(-3)[0],
+    aliceDecryptedTx.slice(-3)[1]
   ],
-  S: decryptedMsg[5]
+  S: aliceDecryptedTx.slice(-3)[2]
 }
 
 const validSignature = eddsa.verifyMiMC(
-  decryptedMsgHash,
+  decryptedTxHash,
   decryptedSignature,
-  userPubKey
+  alicePubKey
 )
 
 // Making sure params are generated valid
-console.log(`Message length: ${m.length}`)
-console.log(`EDH valid: ${edh === edh2}`)
+console.log(`ECDH Pass check: ${ecdh(coordinatorPrivKey, alicePubKey) === aliceEcdh}`)
 console.log(`Valid Signature: ${validSignature}`)
-console.log(`Message decrypted: ${JSON.stringify(decryptedMsg.map(bigInt2num)) === JSON.stringify(m.map(bigInt2num))}`)
+console.log(`Message decrypted: ${JSON.stringify(aliceDecryptedTx.map(bigInt2num)) === JSON.stringify(aliceFinalTx.map(bigInt2num))}`)
 
 // Ensuring inputs passes the circuits
 const circuit = new Circuit(circuitDef)
 
 const circuitInput = {
-  encrypted_data: encryptedMsg,
-  shared_private_key: edh,
-  decrypted_data: decryptedMsg
+  tree_root: treeRoot,
+  accounts_pubkeys: [alicePubKey, bobPubKey],
+  encrypted_data: aliceEncryptedTx,
+  shared_private_key: aliceEcdh,
+  decrypted_data: aliceDecryptedTx,
+  sender_proof: [bobHash], // What ????
+  sender_proof_pos: [1]
 }
 
 console.log('Calculating witnesses....')

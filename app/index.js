@@ -10,47 +10,15 @@ const port = 3000
 // Parse application/json
 app.use(bodyParser.json())
 
-// Generate private key and public key on the fly
+// TODO: Generate private key and public key on the fly
 // TODO: Read from file, etc
 
-// Types
-type PublicKey = String;
-
-type Action = "Alice" | "Bob";
-
-type UserAction = {
-  publicKey: PublicKey, // Compressed public key
-  action: Action // Whom we voting for
-};
-
-type State = Array<UserAction>;
-
-// TODO: 1. Save these things to a database instead of being in memory
-const users: Array<PublicKey> = []
-const states: Array<UserAction> = []
-
 // TODO: Change these endpoints to some event happening
-// on the smart contract
+// on the smart contract. I.e. pub/sub events
 
 // Create new user
 app.post('/user', (req: $Request, res: $Response) => {
-  const publicKey = req.body.publicKey
-  const validPublicKey =
-    typeof publicKey === 'string' &&
-    publicKey.length === 68 // 64 bytes + "0x" + 2 bytes for pos / neg
-
-  // Don't add it to the array if its not a valid public key
-  if (publicKey === undefined || !validPublicKey) {
-    res.send({ error: 'publicKey (compressed) required' })
-    res.status(400)
-    return
-  }
-
-  // Append to list of users
-  users.push(publicKey)
-
-  // Return user index
-  res.send({ index: users.length - 1 })
+  res.send('user')
 })
 
 // Set new action
