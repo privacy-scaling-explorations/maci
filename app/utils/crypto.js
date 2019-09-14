@@ -102,11 +102,14 @@ if (edh !== edh2) {
 }
 
 // Original message
-const msg = [
-  0, // Action
+const _msg = [
   userPubKey[0],
-  userPubKey[1]
+  userPubKey[1],
+  0 // action
 ].map(num2bigInt)
+
+// msg = [pubx, puby, action, new_pubx, new_puby, new_action]
+const msg = [..._msg, ..._msg]
 
 const msgHash = mimc7.multiHash(msg)
 
@@ -118,9 +121,7 @@ const signature: MiMicSignature = eddsa.signMiMC(
 
 // Insert signature into message
 const m = [
-  msg[0],
-  msg[1],
-  msg[2],
+  ...msg,
   signature.R8[0],
   signature.R8[1],
   signature.S
@@ -162,9 +163,9 @@ console.log(`Message decrypted: ${JSON.stringify(decryptedMsg.map(bigInt2num)) =
 const circuit = new Circuit(circuitDef)
 
 const circuitInput = {
-  message: encryptedMsg,
-  sharedPrivateKey: edh,
-  decmessage: decryptedMsg
+  encrypted_data: encryptedMsg,
+  shared_private_key: edh,
+  decrypted_data: decryptedMsg
 }
 
 console.log('Calculating witnesses....')

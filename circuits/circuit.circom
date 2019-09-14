@@ -80,46 +80,83 @@ template ProcessUpdate(k){
     new_tree_root <== computed_final_root.out;
 }
 
-template DecryptAndVerifyMessage(N) {
-    // N is the length of the messages
-    signal input message[N+1];
-    signal input sharedPrivateKey;
-    signal input decmessage[N];
 
-    component decrypt = Decrypt(N);
+template TreeReducer(k) {
+    // k is the depth of accounts tree
 
-    decrypt.sharedPrivateKey <== sharedPrivateKey;
+    // Tree info (where accounts are stored)
+    // signal input tree_root;
+    // signal private input accounts_pubkeys[2**k, 2];
 
-    for (var i=0; i<N+1; i++) {
-        decrypt.message[i] <== message[i];
+    // Shared private key
+    signal private input shared_private_key;
+
+    // Length of the decrypted data
+    var data_length = 9;
+
+    // vote action(s) - encrypted
+    // NOTE: Last 3 elements in the dats will
+    // ALWAYS BE THE SIGNATURE!
+    /*
+        [0] - iv (generated when msg is encrypted)
+        [1] - publickey_x
+        [2] - publickey_y
+        [3] - action
+        [4] - new_publickey_x
+        [5] - new_publickey_y
+        [6] - new_action
+        [7] - signature_r8x
+        [8] - signature_r8y
+        [9] - signature_s
+     */
+    signal input encrypted_data[data_length + 1];
+
+    // vote action(s) - decrypted
+    // 1 less than encrypted data as it doesn't have `iv`
+    signal private input decrypted_data[data_length];
+
+    // Decrypt encrypted data
+    // make sure its the same as the decrypted data
+    // supplied by the coordinator
+    component decryptor = Decrypt(data_length);
+
+    decryptor.private_key <== shared_private_key;
+
+    for (var i=0; i<data_length + 1; i++) {
+        decryptor.message[i] <== encrypted_data[i];
+    }
+    for (var i=0; i<data_length; i++) {
+        decryptor.out[i] === decrypted_data[i];
     }
 
-    for (var i=0; i<N; i++) {
-        decrypt.out[i] === decmessage[i];
+    // Verify sender account exists in tree_root
+    // component senderExistence = LeafExistence(k, 3);
+
+    // senderExistence.preimage[0] <== decrypted_data[0];
+    // senderExistence.preimage[1] <== decrypted_data[1];
+    // senderExistence.preimage[2] <== decrypted_data[2];
+    // senderExistence.root <== tree_root;
+
+    // for (var i=0; i<k; i++) {
+    //     senderExistence.paths2_root_pos[i] <== sender_proof_pos[i];
+    //     senderExistence.paths2_root[i] <== sender_proof[i];
+    // }
+
+
+    // Verify Signature
+    // Hash uses `data_length - 3` components
+    // as the data_length has 3 parts signature to it
+    component signatureVerifier = VerifyEdDSAMiMC(data_length - 3);
+
+    signatureVerifier.from_x <== decrypted_data[0]; // public key x
+    signatureVerifier.from_y <== decrypted_data[1]; // public key y
+    signatureVerifier.R8x <== decrypted_data[data_length - 3]; // sig R8x
+    signatureVerifier.R8y <== decrypted_data[data_length - 2]; // sig R8x
+    signatureVerifier.S <== decrypted_data[data_length - 1]; // sig S
+
+    for (var i=0; i<data_length - 3;i++) {
+        signatureVerifier.preimage[i] <== decrypted_data[i];
     }
-
-    // Verify the signature of the decrypted message
-    component signature = VerifyEdDSAMiMC(3);
-
-    signature.from_x <== decmessage[1]; // public key x
-    signature.from_y <== decmessage[2]; // public key y
-    signature.R8x <== decmessage[3]; // sig R8x
-    signature.R8y <== decmessage[4]; // sig R8y
-    signature.S <== decmessage[5]; // sig S
-
-    signature.preimage[0] <== decmessage[0];
-    signature.preimage[1] <== decmessage[1];
-    signature.preimage[2] <== decmessage[2];
 }
 
-component main = ProcessUpdate(1);
-// Message contains 6 parts:
-// [0]: Action
-// [1]: pub key x
-// [2]: pub key y
-// [3]: sig r8 x
-// [4]: sig r8 y
-// [5]: sig s
-// encrypted message contains [6+1] parts due to the iv component
-// which is at the 0th index
-// component main = ProcessUpdate(6);
+component main = TreeReducer(1);
