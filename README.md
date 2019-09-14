@@ -21,9 +21,15 @@ yarn circuit:test
 
 ## With Docker
 
-```
+```bash
 docker build -t maci .
-docker run exec -it maci -- /bin/bash
+docker exec -it $(docker run -t -d maci) /bin/bash
+
+yarn circuit:compile
+yarn circuit:setup
+yarn circuit:generateverifier
+
+yarn circuit:test # app/utils/crypto.js
 ```
 
 # Contribution
