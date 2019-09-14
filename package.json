@@ -11,13 +11,13 @@
     "circuit:compile": "mkdir -p app/circuits && circom circuits/circuit.circom -o app/circuits/circuit.json",
     "circuit:setup": "cd app/circuits && snarkjs setup",
     "circuit:generateverifier": "mkdir -p contracts && cd app/circuits && snarkjs generateverifier && mv verifier.sol ../../contracts/Verifier.sol",
-    "gg": "flow-node --experimental-worker app/utils/crypto.js"
+    "gg": "flow-node --experimental-worker app/utils/crypto.js",
+    "gg2": "node app/utils/generate_circuit_input.js"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
     "circom": "0.0.31",
     "circomlib": "0.0.6",
-    "ethers": "^4.0.37",
     "express": "^4.17.1",
     "flow-bin": "^0.107.0",
     "flow-remove-types": "^2.107.0",

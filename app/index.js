@@ -7,22 +7,14 @@ const bodyParser = require('body-parser')
 const app = express()
 const port = 3000
 
-const ethers = require('ethers')
-
 // Parse application/json
 app.use(bodyParser.json())
 
 // Generate private key and public key on the fly
 // TODO: Read from file, etc
-const wallet = ethers.Wallet.createRandom()
-const signingKey = new ethers.utils.SigningKey(wallet.privateKey)
-const publicKey = ethers.utils.computePublicKey(
-  signingKey.publicKey,
-  true
-)
 
 // Types
-type PublicKey = String
+type PublicKey = String;
 
 type Action = "Alice" | "Bob";
 
@@ -31,7 +23,7 @@ type UserAction = {
   action: Action // Whom we voting for
 };
 
-type State = Array<UserAction>
+type State = Array<UserAction>;
 
 // TODO: 1. Save these things to a database instead of being in memory
 const users: Array<PublicKey> = []
@@ -44,7 +36,7 @@ const states: Array<UserAction> = []
 app.post('/user', (req: $Request, res: $Response) => {
   const publicKey = req.body.publicKey
   const validPublicKey =
-    typeof publicKey === String &&
+    typeof publicKey === 'string' &&
     publicKey.length === 68 // 64 bytes + "0x" + 2 bytes for pos / neg
 
   // Don't add it to the array if its not a valid public key
@@ -78,11 +70,10 @@ app.get('/merkleroot', (req: $Request, res: $Response) => {
 
 // Returns public key to user
 app.get('/publickey', (req: $Request, res: $Response) => {
-  res.send({ publicKey: signingKey.publicKey, compressed: true })
+  res.send('Public key')
 })
 
 // Entrypoint
 app.listen(port, () => {
   console.log(`Coordinator servive listening on port ${port}!`)
-  console.log(`Public Key: ${publicKey}`)
 })
