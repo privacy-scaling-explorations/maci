@@ -16,7 +16,7 @@
   "dependencies": {
     "body-parser": "^1.19.0",
     "circom": "0.0.31",
-    "circomlib": "0.0.16",
+    "circomlib": "0.0.6",
     "ethers": "^4.0.37",
     "express": "^4.17.1",
     "flow-bin": "^0.107.0",

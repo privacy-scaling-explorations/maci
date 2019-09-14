@@ -448,7 +448,7 @@ bcrypt-pbkdf@^1.0.0:
   dependencies:
     tweetnacl "^0.14.3"
 
-big-integer@^1.6.32, big-integer@^1.6.42, big-integer@^1.6.43:
+big-integer@^1.6.32, big-integer@^1.6.35, big-integer@^1.6.42, big-integer@^1.6.43:
   version "1.6.44"
   resolved "https://registry.yarnpkg.com/big-integer/-/big-integer-1.6.44.tgz#4ee9ae5f5839fc11ade338fea216b4513454a539"
   integrity sha512-7MzElZPTyJ2fNvBkPxtFQ2fWIkVmuzw41+BZHSzpEq3ymB2MfeKp1+yXl/tS75xCx+WnyV+yb0kp+K1C3UNwmQ==
@@ -481,21 +481,6 @@ blake-hash@^1.1.0:
     bindings "^1.2.1"
     inherits "^2.0.3"
     nan "^2.2.1"
-
-blake2b-wasm@^1.1.0:
-  version "1.1.7"
-  resolved "https://registry.yarnpkg.com/blake2b-wasm/-/blake2b-wasm-1.1.7.tgz#e4d075da10068e5d4c3ec1fb9accc4d186c55d81"
-  integrity sha512-oFIHvXhlz/DUgF0kq5B1CqxIDjIJwh9iDeUUGQUcvgiGz7Wdw03McEO7CfLBy7QKGdsydcMCgO9jFNBAFCtFcA==
-  dependencies:
-    nanoassert "^1.0.0"
-
-blake2b@^2.1.3:
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/blake2b/-/blake2b-2.1.3.tgz#f5388be424768e7c6327025dad0c3c6d83351bca"
-  integrity sha512-pkDss4xFVbMb4270aCyGD3qLv92314Et+FsKzilCLxDz5DuZ2/1g3w4nmBbu6nKApPspnjG7JcwTjGZnduB1yg==
-  dependencies:
-    blake2b-wasm "^1.1.0"
-    nanoassert "^1.0.0"
 
 blakejs@^1.1.0:
   version "1.1.0"
@@ -739,7 +724,7 @@ caseless@~0.12.0:
   resolved "https://registry.yarnpkg.com/caseless/-/caseless-0.12.0.tgz#1b681c21ff84033c826543090689420d187151dc"
   integrity sha1-G2gcIf+EAzyCZUMJBolCDRhxUdw=
 
-chai@^4.2.0:
+chai@^4.1.2, chai@^4.2.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/chai/-/chai-4.2.0.tgz#760aa72cf20e3795e84b12877ce0e83737aa29e5"
   integrity sha512-XQU3bhBukrOsQCuwZndwGcCVQHyZi53fQ6Ys1Fym7E4olpIqqZZhhoFJoaKVvV17lWQoXYwgWN2nF5crA8J2jw==
@@ -818,7 +803,7 @@ cipher-base@^1.0.0, cipher-base@^1.0.1, cipher-base@^1.0.3:
     inherits "^2.0.1"
     safe-buffer "^5.0.1"
 
-circom@^0.0.31:
+circom@0.0.31:
   version "0.0.31"
   resolved "https://registry.yarnpkg.com/circom/-/circom-0.0.31.tgz#c4cd5ab6a82611bb5753e635173c1ff52cbea6c7"
   integrity sha512-KtMgJ3fkUGelR9SijMBJUjLAkPC1/dAmaLUdunKaYZEVks5hupLwQ8dtdCbpwOGfiwvBnPLYqM2wyWrgmIAbbw==
@@ -827,16 +812,14 @@ circom@^0.0.31:
     optimist "^0.6.1"
     yargs "^12.0.2"
 
-circomlib@^0.0.16:
-  version "0.0.16"
-  resolved "https://registry.yarnpkg.com/circomlib/-/circomlib-0.0.16.tgz#5735985849af439cc6c6e127526ef54ce7b56dc2"
-  integrity sha512-kdlrCaZkNBhljbWeyOSXHPpszkoMERH3DXdm3/t2YD7OXwSQt9duwQHVsQCfzfYaP9erX+g0dkCzSDSodFII+g==
+circomlib@0.0.6:
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/circomlib/-/circomlib-0.0.6.tgz#46678fd8325064d7de58bc21db40a8ea2a0270ca"
+  integrity sha512-9mXtZBTsqUZ1RNVAEqaeOyFd06TJedM/3YnE3JUHeqWWSe5tVHA8GyjDo/0GkXbvIIHxbcCFG39fe1qpZvMmmg==
   dependencies:
     blake-hash "^1.1.0"
-    blake2b "^2.1.3"
-    snarkjs "^0.1.19"
-    typedarray-to-buffer "^3.1.5"
-    web3 "^1.0.0-beta.55"
+    snarkjs "0.1.11"
+    web3 "^1.0.0-beta.36"
 
 class-utils@^0.3.5:
   version "0.3.6"
@@ -1573,7 +1556,7 @@ eslint-visitor-keys@^1.0.0:
   resolved "https://registry.yarnpkg.com/eslint-visitor-keys/-/eslint-visitor-keys-1.1.0.tgz#e2a82cea84ff246ad6fb57f9bde5b46621459ec2"
   integrity sha512-8y9YjtM1JBJU/A9Kc+SbaOV4y29sSWckBwMHa+FGtVj5gN/sbnKDf6xJUl+8g7FAij9LVaP8C24DUiH/f/2Z9A==
 
-eslint@^5.16.0:
+eslint@^5.16.0, eslint@^5.3.0:
   version "5.16.0"
   resolved "https://registry.yarnpkg.com/eslint/-/eslint-5.16.0.tgz#a1e3ac1aae4a3fbd8296fcf8f7ab7314cbb6abea"
   integrity sha512-S3Rz11i7c8AA5JPv7xAH+dOyq/Cu/VXHiHXBPOU1k/JAM5dXqQPt3qcrhpHSorXmrpu2g0gkIBVXAqCpzfoZIg==
@@ -3254,11 +3237,6 @@ nano-json-stream-parser@^0.1.2:
   resolved "https://registry.yarnpkg.com/nano-json-stream-parser/-/nano-json-stream-parser-0.1.2.tgz#0cc8f6d0e2b622b479c40d499c46d64b755c6f5f"
   integrity sha1-DMj20OK2IrR5xA1JnEbWS3Vcb18=
 
-nanoassert@^1.0.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/nanoassert/-/nanoassert-1.1.0.tgz#4f3152e09540fde28c76f44b19bbcd1d5a42478d"
-  integrity sha1-TzFS4JVA/eKMdvRLGbvNHVpCR40=
-
 nanomatch@^1.2.9:
   version "1.2.13"
   resolved "https://registry.yarnpkg.com/nanomatch/-/nanomatch-1.2.13.tgz#b87a8aa4fc0de8fe6be88895b38983ff265bd119"
@@ -4311,6 +4289,17 @@ snapdragon@^0.8.1:
     source-map-resolve "^0.5.0"
     use "^3.1.0"
 
+snarkjs@0.1.11:
+  version "0.1.11"
+  resolved "https://registry.yarnpkg.com/snarkjs/-/snarkjs-0.1.11.tgz#7af641b274cdab3eddcd25a31f025992c01a0b57"
+  integrity sha512-NoMNn03Uwbt18V340ZlHSZscyfIu8F6fMOL7LT9Xr1zQY/nmzScM8442ATyJfzSI5bDTAz1QQGbCerP2BCKljA==
+  dependencies:
+    big-integer "^1.6.35"
+    chai "^4.1.2"
+    escape-string-regexp "^1.0.5"
+    eslint "^5.3.0"
+    yargs "^12.0.2"
+
 snarkjs@^0.1.19:
   version "0.1.19"
   resolved "https://registry.yarnpkg.com/snarkjs/-/snarkjs-0.1.19.tgz#1c89215cc7cf2844c887348b3208d3e170a80813"
@@ -5106,7 +5095,7 @@ web3-utils@1.2.1:
     underscore "1.9.1"
     utf8 "3.0.0"
 
-web3@^1.0.0-beta.55:
+web3@^1.0.0-beta.36:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/web3/-/web3-1.2.1.tgz#5d8158bcca47838ab8c2b784a2dee4c3ceb4179b"
   integrity sha512-nNMzeCK0agb5i/oTWNdQ1aGtwYfXzHottFP2Dz0oGIzavPMGSKyVlr8ibVb1yK5sJBjrWVnTdGaOC2zKDFuFRw==
