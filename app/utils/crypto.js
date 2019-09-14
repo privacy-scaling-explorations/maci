@@ -159,30 +159,26 @@ console.log(`Valid Signature: ${validSignature}`)
 console.log(`Message decrypted: ${JSON.stringify(decryptedMsg.map(bigInt2num)) === JSON.stringify(m.map(bigInt2num))}`)
 
 // Ensuring inputs passes the circuits
-const checkcircuit = async () => {
-  const circuit = new Circuit(circuitDef)
+const circuit = new Circuit(circuitDef)
 
-  const circuitInput = {
-    message: encryptedMsg,
-    sharedPrivateKey: edh,
-    decmessage: decryptedMsg
-  }
-
-  console.log('Calculating witnesses....')
-  const witness = circuit.calculateWitness(circuitInput)
-
-  console.log('Generating proof....')
-  const { proof, publicSignals } = zkSnark.genProof(
-    unstringifyBigInts(provingKey), witness
-  )
-
-  const isValid = zkSnark.isValid(
-    unstringifyBigInts(verificationKey),
-    proof,
-    publicSignals
-  )
-
-  console.log(`Inputs passes circuit: ${isValid}`)
+const circuitInput = {
+  message: encryptedMsg,
+  sharedPrivateKey: edh,
+  decmessage: decryptedMsg
 }
 
-checkcircuit()
+console.log('Calculating witnesses....')
+const witness = circuit.calculateWitness(circuitInput)
+
+console.log('Generating proof....')
+const { proof, publicSignals } = zkSnark.genProof(
+  unstringifyBigInts(provingKey), witness
+)
+
+const isValid = zkSnark.isValid(
+  unstringifyBigInts(verificationKey),
+  proof,
+  publicSignals
+)
+
+console.log(`Inputs passes circuit: ${isValid}`)

@@ -15,8 +15,9 @@ template VerifyEdDSAMiMC(k) {
         M.in[i] <== preimage[i];
     }
     
-    component verifier = EdDSAMiMCVerifier();   
-    verifier.enabled <== 1;
+    component verifier = EdDSAMiMCVerifier();
+
+    verifier.enabled <== 0;
     verifier.Ax <== from_x;
     verifier.Ay <== from_y;
     verifier.R8x <== R8x;
