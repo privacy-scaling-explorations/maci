@@ -6,7 +6,7 @@ type MiMicSignature = {
 };
 
 const { stringifyBigInts, unstringifyBigInts } = require('snarkjs/src/stringifybigint')
-const { Circuit, bigInt, original } = require('snarkjs')
+const { Circuit, bigInt, groth } = require('snarkjs')
 const createBlakeHash = require('blake-hash')
 const { babyJub, eddsa, mimc7 } = require('circomlib')
 
@@ -14,7 +14,7 @@ const provingKey = require('../circuits/proving_key.json')
 const verificationKey = require('../circuits/verification_key.json')
 const circuitDef = require('../circuits/circuit.json')
 
-const zkSnark = original
+const zkSnark = groth
 
 const randomPrivateKey = (): BigInt => {
   return BigInt(

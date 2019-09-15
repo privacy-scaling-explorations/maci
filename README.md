@@ -18,8 +18,7 @@ yarn circuit:generateverifier
 # Will make it prettier dw
 yarn circuit:test
 
-# Run this twice to deploy the contracts
-# Currently a bug with deploying the MiMC contract (which is built from a .js file...)
+# Deploy contracts
 truffle migrate --network development
 ```
 

@@ -1,15 +1,13 @@
 pragma solidity ^0.5.0;
 
 import "./Verifier.sol";
-import "./MerkleTreeLib.sol";
+import "./MerkleTree.sol";
 import "./Ownable.sol";
 
-contract MACI is Verifier, MultipleMerkleTree, Ownable {
+contract MACI is Verifier, MerkleTree, Ownable {
     // The external_nullifier helps to prevent double-signalling by the same
     // user.
     uint256 public external_nullifier;
-
-    uint8 public id_tree_index;
 
     // Whether broadcastSignal() can only be called by the owner of this
     // contract. This is the case as a safe default.
@@ -41,7 +39,7 @@ contract MACI is Verifier, MultipleMerkleTree, Ownable {
 
     constructor(uint8 tree_levels, uint256 zero_value, uint256 external_nullifier_in) Ownable() public {
         external_nullifier = external_nullifier_in;
-        id_tree_index = init_tree(tree_levels, zero_value);
+        initTree(tree_levels, zero_value);
     }
 
 
@@ -52,8 +50,8 @@ contract MACI is Verifier, MultipleMerkleTree, Ownable {
      *                            nullifier (a random 31-byte value)
      */
     function insertIdentity(uint256 identity_commitment) public onlyOwner {
-        insert(id_tree_index, identity_commitment);
-        root_history[tree_roots[id_tree_index]] = true;
+        insert(identity_commitment);
+        root_history[treeRoot] = true;
     }
 
     /*
@@ -71,8 +69,8 @@ contract MACI is Verifier, MultipleMerkleTree, Ownable {
         uint256[] memory old_path,
         uint256[] memory path
     ) public onlyOwner {
-        update(id_tree_index, old_leaf, leaf, leaf_index, old_path, path);
-        root_history[tree_roots[id_tree_index]] = true;
+        update(old_leaf, leaf, leaf_index, old_path, path);
+        root_history[treeRoot] = true;
     }
 
     /*
@@ -105,7 +103,7 @@ contract MACI is Verifier, MultipleMerkleTree, Ownable {
         uint[2] memory a,
         uint[2][2] memory b,
         uint[2] memory c,
-        uint[4] memory input,
+        uint[12] memory input,
         uint256 signal_hash
     ) public view returns (bool) {
         return hasNullifier(input[1]) == false &&
@@ -128,7 +126,7 @@ contract MACI is Verifier, MultipleMerkleTree, Ownable {
         uint[2] memory a,
         uint[2][2] memory b,
         uint[2] memory c,
-        uint[4] memory input
+        uint[12] memory input
     ) {
         // Hash the signal
         uint256 signal_hash = uint256(keccak256(signal)) >> 8;
@@ -154,8 +152,8 @@ contract MACI is Verifier, MultipleMerkleTree, Ownable {
         uint[2] memory a,
         uint[2][2] memory b,
         uint[2] memory c,
-        uint[4] memory input // (root, nullifiers_hash, signal_hash, external_nullifier)
-    ) public 
+        uint[12] memory input // (root, nullifiers_hash, signal_hash, external_nullifier)
+    ) public
     onlyOwnerIfPermissioned
     isValidSignalAndProof(signal, a, b, c, input)
     {
@@ -169,8 +167,8 @@ contract MACI is Verifier, MultipleMerkleTree, Ownable {
      * @param tree_index The tree in question
      * @return The Merkle root
      */
-    function root(uint8 tree_index) public view returns (uint256) {
-      return tree_roots[tree_index];
+    function root() public view returns (uint256) {
+      return treeRoot;
     }
 
     /*
@@ -178,7 +176,7 @@ contract MACI is Verifier, MultipleMerkleTree, Ownable {
      * @return The leaves of the tree
      */
     function leaves(uint8 tree_index) public view returns (uint256[] memory) {
-      return tree_leaves[tree_index];
+      return treeLeaves;
     }
 
     /*
@@ -186,15 +184,8 @@ contract MACI is Verifier, MultipleMerkleTree, Ownable {
      * @param leaf_index The index of the leaf to fetch
      * @return The leaf at leaf_index of the tree with index tree_index
      */
-    function leaf(uint8 tree_index, uint256 leaf_index) public view returns (uint256) {
-      return tree_leaves[tree_index][leaf_index];
-    }
-
-    /*
-     * @return The index of the identity tree in MultipleMerkleTree
-     */
-    function getIdTreeIndex() public view returns (uint8) {
-      return id_tree_index;
+    function leaf(uint256 leafIndex) public view returns (uint256) {
+      return treeLeaves[leafIndex];
     }
 
     /*

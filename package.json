@@ -8,10 +8,11 @@
   "scripts": {
     "start": "flow-node app/index.js",
     "dev": "nodemon \"flow-node app/index.js\"",
-    "clean": "rm -r app/circuits/* && rm -r app/contracts/*",
+    "clean": "rm -rf app/circuits/* && rm -rf app/contracts/*",
+    "merkle": "flow-node scripts/merkletree.js",
     "circuit:compile": "mkdir -p app/circuits && circom circuits/circuit.circom -o app/circuits/circuit.json",
-    "circuit:setup": "cd app/circuits && snarkjs setup",
-    "circuit:generateverifier": "mkdir -p contracts && cd app/circuits && snarkjs generateverifier && mv verifier.sol ../../contracts/Verifier.sol",
+    "circuit:setup": "cd app/circuits && snarkjs setup --protocol groth",
+    "circuit:generateverifier": "mkdir -p contracts && cd app/circuits && snarkjs generateverifier --protocol groth && mv verifier.sol ../../contracts/Verifier.sol",
     "circuit:test": "flow-node --experimental-worker app/utils/crypto.js"
   },
   "dependencies": {
