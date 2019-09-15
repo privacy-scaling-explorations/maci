@@ -7,25 +7,23 @@ import "./Ownable.sol";
 contract MACI is Verifier, MerkleTree, Ownable {
     // The external_nullifier helps to prevent double-signalling by the same
     // user.
-    uint256 public external_nullifier;
+    uint256 public externalNullifier;
 
     // Whether broadcastSignal() can only be called by the owner of this
     // contract. This is the case as a safe default.
-    bool public is_broadcast_permissioned = true;
+    bool public isBroadcastPermissioned = true;
 
     // Whether the contract has already seen a particular Merkle tree root
-    mapping (uint256 => bool) root_history;
-
-    uint8 current_root_index = 0;
+    mapping (uint256 => bool) rootHistory;
 
     // Whether the contract has already seen a particular nullifier hash
-    mapping (uint => bool) nullifier_hash_history;
+    mapping (uint => bool) nullifierHashHistory;
 
     // All signals broadcasted
     mapping (uint => bytes) public signals;
 
     // The higest index of the `signals` mapping
-    uint public current_signal_index = 0;
+    uint public currentSignalIndex = 0;
 
     event SignalBroadcast(bytes signal, uint256 nullifiers_hash, uint256 external_nullifier);
 
@@ -33,13 +31,13 @@ contract MACI is Verifier, MerkleTree, Ownable {
      * If broadcastSignal is permissioned, check if msg.sender is the contract owner
      */
     modifier onlyOwnerIfPermissioned() {
-        require(!is_broadcast_permissioned || isOwner(), "Semaphore: broadcast permission denied");
+        require(!isBroadcastPermissioned || isOwner(), "Semaphore: broadcast permission denied");
         _;
     }
 
-    constructor(uint8 tree_levels, uint256 zero_value, uint256 external_nullifier_in) Ownable() public {
-        external_nullifier = external_nullifier_in;
-        initTree(tree_levels, zero_value);
+    constructor(uint8 treeLevels, uint256 zeroValue, uint256 _externalNullifier) Ownable() public {
+        externalNullifier = _externalNullifier;
+        initTree(treeLevels, zeroValue);
     }
 
 
@@ -51,7 +49,7 @@ contract MACI is Verifier, MerkleTree, Ownable {
      */
     function insertIdentity(uint256 identity_commitment) public onlyOwner {
         insert(identity_commitment);
-        root_history[treeRoot] = true;
+        rootHistory[treeRoot] = true;
     }
 
     /*
@@ -70,7 +68,7 @@ contract MACI is Verifier, MerkleTree, Ownable {
         uint256[] memory path
     ) public onlyOwner {
         update(old_leaf, leaf, leaf_index, old_path, path);
-        root_history[treeRoot] = true;
+        rootHistory[treeRoot] = true;
     }
 
     /*
@@ -79,7 +77,7 @@ contract MACI is Verifier, MerkleTree, Ownable {
      *         contract
      */
     function hasNullifier(uint n) public view returns (bool) {
-        return nullifier_hash_history[n];
+        return nullifierHashHistory[n];
     }
 
     /*
@@ -88,7 +86,7 @@ contract MACI is Verifier, MerkleTree, Ownable {
      *         contract
      */
     function isInRootHistory(uint n) public view returns (bool) {
-        return root_history[n];
+        return rootHistory[n];
     }
 
     /*
@@ -108,7 +106,7 @@ contract MACI is Verifier, MerkleTree, Ownable {
     ) public view returns (bool) {
         return hasNullifier(input[1]) == false &&
             signal_hash == input[2] &&
-            external_nullifier == input[3] &&
+            externalNullifier == input[3] &&
             isInRootHistory(input[0]) &&
             verifyProof(a, b, c, input);
     }
@@ -133,7 +131,7 @@ contract MACI is Verifier, MerkleTree, Ownable {
 
         require(hasNullifier(input[1]) == false, "Semaphore: nullifier already seen");
         require(signal_hash == input[2], "Semaphore: signal hash mismatch");
-        require(external_nullifier == input[3], "Semaphore: external nullifier mismatch");
+        require(externalNullifier == input[3], "Semaphore: external nullifier mismatch");
         require(isInRootHistory(input[0]), "Semaphore: root not seen");
         require(verifyProof(a, b, c, input), "Semaphore: invalid proof");
         _;
@@ -158,9 +156,9 @@ contract MACI is Verifier, MerkleTree, Ownable {
     isValidSignalAndProof(signal, a, b, c, input)
     {
         uint nullifiers_hash = input[1];
-        signals[current_signal_index++] = signal;
-        nullifier_hash_history[nullifiers_hash] = true;
-        emit SignalBroadcast(signal, nullifiers_hash, external_nullifier);
+        signals[currentSignalIndex++] = signal;
+        nullifierHashHistory[nullifiers_hash] = true;
+        emit SignalBroadcast(signal, nullifiers_hash, externalNullifier);
     }
 
     /*
@@ -175,7 +173,7 @@ contract MACI is Verifier, MerkleTree, Ownable {
      * @param tree_index The tree in question
      * @return The leaves of the tree
      */
-    function leaves(uint8 tree_index) public view returns (uint256[] memory) {
+    function leaves() public view returns (uint256[] memory) {
       return treeLeaves;
     }
 
@@ -192,8 +190,8 @@ contract MACI is Verifier, MerkleTree, Ownable {
      * Sets a new external nullifier for the contract. Only the owner can do this.
      * @param new_external_nullifier The new external nullifier to set
      */
-    function setExternalNullifier(uint256 new_external_nullifier) public onlyOwner {
-      external_nullifier = new_external_nullifier;
+    function setExternalNullifier(uint256 _externalNullifier) public onlyOwner {
+      externalNullifier = _externalNullifier;
     }
 
     /*
@@ -202,6 +200,6 @@ contract MACI is Verifier, MerkleTree, Ownable {
      * owner.
      */
     function setPermissioning(bool _newPermission) public onlyOwner {
-      is_broadcast_permissioned = _newPermission;
+      isBroadcastPermissioned = _newPermission;
     }
 }
