@@ -13,10 +13,14 @@ class MerkleTreeClass {
     this.filledSubtrees = {
       0: zeroValue
     }
+    this.filledPaths = {
+      0: {}
+    }
 
     for (let i = 1; i < treeLevel; i++) {
       this.zeros[i] = this.hashLeftRight(this.zeros[i - 1], this.zeros[i - 1])
       this.filledSubtrees[i] = this.zeros[i]
+      this.filledPaths[i] = {}
     }
 
     this.treeRoot = this.hashLeftRight(
@@ -52,10 +56,18 @@ class MerkleTreeClass {
     for (let i = 0; i < this.treeLevel; i++) {
       if (curIdx % 2 === 0) {
         left = currentLevelHash
-        right = this.zeros[i] || this.zeroValue
+        right = this.zeros[i]
+
+        this.filledSubtrees[i] = currentLevelHash
+
+        this.filledPaths[i][curIdx] = left
+        this.filledPaths[i][curIdx + 1] = right
       } else {
-        left = this.filledSubtrees[i] || this.zeroValue
+        left = this.filledSubtrees[i]
         right = currentLevelHash
+
+        this.filledPaths[i][curIdx - 1] = left
+        this.filledPaths[i][curIdx] = right
       }
 
       currentLevelHash = this.hashLeftRight(left, right)
@@ -91,9 +103,14 @@ class MerkleTreeClass {
       curIdx = parseInt(curIdx / 2)
     }
 
+    console.log('successful!')
+
     if (this.treeRoot !== currentLevelHash) {
       throw new Error('MerkleTree: tree root / current level has mismatch')
     }
+
+    curIdx = leafIndex
+    currentLevelHash = leaf
 
     for (let i = 0; i < this.treeLevel; i++) {
       if (curIdx % 2 === 0) {
@@ -111,11 +128,79 @@ class MerkleTreeClass {
     this.treeRoot = currentLevelHash
     this.treeLeaves[leafIndex] = leaf
   }
+
+  getPath (leafIndex: Number): Array<BigInt> {
+    let currentLevelHash = this.treeLeaves[leafIndex]
+    let curIdx = leafIndex
+    let left
+    let right
+
+    const path = []
+
+    for (let i = 0; i < this.treeLevel; i++) {
+      if (curIdx % 2 === 0) {
+        left = currentLevelHash
+        right = this.filledPaths[i][curIdx + 1]
+
+        path.push(right)
+      } else {
+        left = this.filledPaths[i][curIdx - 1]
+        right = currentLevelHash
+
+        path.push(left)
+      }
+
+      currentLevelHash = this.hashLeftRight(left, right)
+      curIdx = parseInt(curIdx / 2)
+    }
+
+    return path
+  }
+
+  getNewPath (newLeaf: BigInt, leafIndex: Number): Array<BigInt> {
+    let currentLevelHash = newLeaf
+    let curIdx = leafIndex
+    let left
+    let right
+
+    const path = []
+
+    for (let i = 0; i < this.treeLevel; i++) {
+      if (curIdx % 2 === 0) {
+        left = currentLevelHash
+        right = this.filledPaths[i][curIdx + 1]
+
+        path.push(right)
+      } else {
+        left = this.filledPaths[i][curIdx - 1]
+        right = currentLevelHash
+
+        path.push(left)
+      }
+
+      currentLevelHash = this.hashLeftRight(left, right)
+      curIdx = parseInt(curIdx / 2)
+    }
+
+    return path
+  }
 }
 
-const m = new MerkleTreeClass(7, BigInt(0))
+const m = new MerkleTreeClass(4, BigInt(0))
 
-console.log(m.hashLeftRight(BigInt(0), BigInt(0)))
+m.insert(BigInt(100))
+m.insert(BigInt(2000))
+
+const oldPath = m.getPath(0)
+const path = m.getNewPath(BigInt(50), 0)
+
+m.update(
+  BigInt(100),
+  BigInt(50),
+  0,
+  oldPath,
+  path
+)
 
 module.exports = {
 }
