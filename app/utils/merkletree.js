@@ -103,8 +103,6 @@ class MerkleTreeClass {
       curIdx = parseInt(curIdx / 2)
     }
 
-    console.log('successful!')
-
     if (this.treeRoot !== currentLevelHash) {
       throw new Error('MerkleTree: tree root / current level has mismatch')
     }
@@ -116,9 +114,15 @@ class MerkleTreeClass {
       if (curIdx % 2 === 0) {
         left = currentLevelHash
         right = path[i]
+
+        this.filledPaths[i][curIdx] = left
+        this.filledPaths[i][curIdx + 1] = right
       } else {
         left = path[i]
         right = currentLevelHash
+
+        this.filledPaths[i][curIdx - 1] = left
+        this.filledPaths[i][curIdx] = right
       }
 
       currentLevelHash = this.hashLeftRight(left, right)
@@ -191,13 +195,24 @@ const m = new MerkleTreeClass(4, BigInt(0))
 m.insert(BigInt(100))
 m.insert(BigInt(2000))
 
-const oldPath = m.getPath(0)
-const path = m.getNewPath(BigInt(50), 0)
+let oldPath = m.getPath(0)
+let path = m.getNewPath(BigInt(50), 0)
 
 m.update(
   BigInt(100),
   BigInt(50),
   0,
+  oldPath,
+  path
+)
+
+oldPath = m.getPath(1)
+path = m.getNewPath(BigInt(42), 1)
+
+m.update(
+  BigInt(2000),
+  BigInt(42),
+  1,
   oldPath,
   path
 )
