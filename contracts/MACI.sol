@@ -31,7 +31,7 @@ contract MACI is Verifier, MerkleTree, Ownable {
      * If broadcastSignal is permissioned, check if msg.sender is the contract owner
      */
     modifier onlyOwnerIfPermissioned() {
-        require(!isBroadcastPermissioned || isOwner(), "Semaphore: broadcast permission denied");
+        require(!isBroadcastPermissioned || isOwner(), "MACI: broadcast permission denied");
         _;
     }
 

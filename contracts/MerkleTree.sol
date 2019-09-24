@@ -100,7 +100,13 @@ contract MerkleTree {
         emit LeafAdded(leaf, leafIndex);
     }
 
-    function update(uint256 oldLeaf, uint256 leaf, uint32 leafIndex, uint256[] memory oldPath, uint256[] memory path) internal {
+    function update(
+        uint256 oldLeaf,
+        uint256 leaf,
+        uint32 leafIndex,
+        uint256[] memory oldPath,
+        uint256[] memory path
+    ) internal {
         uint32 currentIndex = leafIndex;
 
         uint256 currentLevelHash = oldLeaf;
