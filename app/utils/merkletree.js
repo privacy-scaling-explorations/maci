@@ -90,6 +90,10 @@ class MerkleTree {
 
   /* Updates merkletree leaf at `leafIndex` with `newLeafValue` */
   update (leafIndex: Number, newLeafValue: BigInt) {
+    if (leafIndex >= this.nextIndex) {
+      throw new Error("Can't update leafIndex which hasn't been inserted yet!")
+    }
+
     this._update(
       leafIndex,
       newLeafValue,
@@ -180,8 +184,14 @@ const m = new MerkleTree(4, BigInt(0))
 
 m.insert(BigInt(100))
 m.insert(BigInt(2000))
+m.insert(BigInt(600))
+
+console.log(m.leafs)
+
 m.update(0, BigInt(500))
 m.update(1, BigInt(42))
+m.update(2, BigInt(32767))
+m.insert(BigInt(32323232))
 
 console.log(m.leafs)
 
