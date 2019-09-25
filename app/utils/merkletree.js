@@ -94,6 +94,9 @@ class MerkleTree {
     const oldPath = this.getPath(leafIndex)
     const path = this.getNewPath(leafIndex, newLeaf)
 
+    // console.log(oldPath)
+    // console.log(path)
+
     const oldLeaf = this.leafs[leafIndex]
 
     this._update(
@@ -165,41 +168,20 @@ class MerkleTree {
     this.leafs[leafIndex] = leaf
   }
 
-  /*  Gets the path needed to reconstruct the current tree root
+  /*  Gets the path needed to construct a the tree root
    *  Used for quick verification.
    *  Runs in O(log(N)), where N is the number of leafs
    */
   getPath (leafIndex: Number): Array<BigInt> {
-    const leaf = this.leafs[leafIndex]
-    return this.getNewPath(leafIndex, leaf)
-  }
-
-  /*  Gets the path needed to construct a new tree root
-   *  Used for quick verification.
-   *  Runs in O(log(N)), where N is the number of leafs
-   */
-  getNewPath (leafIndex: Number, newLeaf: BigInt): Array<BigInt> {
-    let currentLevelHash = newLeaf
     let curIdx = leafIndex
-    let left
-    let right
-
     const path = []
 
     for (let i = 0; i < this.depth; i++) {
       if (curIdx % 2 === 0) {
-        left = currentLevelHash
-        right = this.filledPaths[i][curIdx + 1]
-
-        path.push(right)
+        path.push(this.filledPaths[i][curIdx + 1])
       } else {
-        left = this.filledPaths[i][curIdx - 1]
-        right = currentLevelHash
-
-        path.push(left)
+        path.push(this.filledPaths[i][curIdx - 1])
       }
-
-      currentLevelHash = this.hashLeftRight(left, right)
       curIdx = parseInt(curIdx / 2)
     }
 
@@ -212,25 +194,23 @@ const m = new MerkleTree(4, BigInt(0))
 m.insert(BigInt(100))
 m.insert(BigInt(2000))
 
-let oldPath = m.getPath(0)
-let path = m.getNewPath(0, BigInt(50))
+let path = m.getPath(0)
 
 m._update(
   BigInt(100),
   BigInt(50),
   0,
-  oldPath,
+  path,
   path
 )
 
-oldPath = m.getPath(1)
-path = m.getNewPath(1, BigInt(42))
+path = m.getPath(1)
 
 m._update(
   BigInt(2000),
   BigInt(42),
   1,
-  oldPath,
+  path,
   path
 )
 
