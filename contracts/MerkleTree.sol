@@ -43,12 +43,12 @@ contract MerkleTree {
 
         treeLevel = _treeLevel;
 
-        zeros[0] = _zeroValue;
-        filledSubtrees[0] = zeros[0];
+        zeros.push(_zeroValue);
+        filledSubtrees.push(zeros[0]);
 
         for (uint8 i = 1; i < treeLevel; i++) {
-            zeros[i] = hashLeftRight(zeros[i-1], zeros[i-1]);
-            filledSubtrees[i] = zeros[i];
+            zeros.push(hashLeftRight(zeros[i-1], zeros[i-1]));
+            filledSubtrees.push(zeros[i]);
         }
 
         treeRoot = hashLeftRight(zeros[treeLevel - 1], zeros[treeLevel - 1]);

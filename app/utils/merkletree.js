@@ -1,4 +1,5 @@
 // @flow
+
 const { mimc7 } = require('circomlib')
 
 class MerkleTree {
@@ -103,14 +104,19 @@ class MerkleTree {
 
   /*  _Verbose_ API to update the value of the leaf in the current tree.
    *  The reason why its so verbose is because I wanted to maintain compatibility
-   *  with the smart contract.
-   *  (which is very expensive to update if we do it naively)
+   *  with the merkletree smart contract obtained from semaphore.
+   *  (https://github.com/kobigurk/semaphore/blob/2933bce0e41c6d4df82b444b66b4e84793c90893/semaphorejs/contracts/MerkleTreeLib.sol)
+   *  It is also very expensive to update if we do it naively on the EVM
    */
   _update (
     leafIndex: Number,
     leaf: BigInt,
     path: Array<BigInt>
   ) {
+    if (leafIndex >= this.nextIndex) {
+      throw new Error("Can't update leafIndex which hasn't been inserted yet!")
+    }
+
     let curIdx = leafIndex
     let currentLevelHash = this.leafs[leafIndex]
     let left
@@ -164,6 +170,10 @@ class MerkleTree {
    *  Runs in O(log(N)), where N is the number of leafs
    */
   getPath (leafIndex: Number): Array<BigInt> {
+    if (leafIndex >= this.nextIndex) {
+      throw new Error('Path not constructed yet, leafIndex >= nextIndex')
+    }
+
     let curIdx = leafIndex
     const path = []
 
@@ -180,26 +190,24 @@ class MerkleTree {
   }
 }
 
-const m = new MerkleTree(4, BigInt(0))
-
-m.insert(BigInt(100))
-m.insert(BigInt(2000))
-m.insert(BigInt(600))
-
-console.log(m.leafs)
-
-m.update(0, BigInt(500))
-m.update(1, BigInt(42))
-m.update(2, BigInt(32767))
-m.insert(BigInt(32323232))
-
-console.log(m.leafs)
-
-// Abstract away `new` keyword for API
+// Helper function to abstract away `new` keyword for API
 const createMerkleTree = (
   treeDepth: Number,
   zeroValue: BigInt
 ): MerkleTree => new MerkleTree(treeDepth, zeroValue)
+
+const m = createMerkleTree(2, BigInt(0))
+
+m.insert(BigInt(32767))
+m.insert(BigInt(32767))
+
+m.update(0, BigInt(0))
+
+console.log(m)
+
+m.update(1, BigInt(5))
+
+console.log(m)
 
 module.exports = {
   createMerkleTree

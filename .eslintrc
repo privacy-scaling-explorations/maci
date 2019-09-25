@@ -4,9 +4,8 @@
         "flowtype"
     ],
     "extends": [
-        "plugin:flowtype/recommended",
-        "standard",
-        "standard-flow"
+        "standard-flow",
+        "plugin:flowtype/recommended"
     ],
     "globals": {
         "BigInt": "readonly"
