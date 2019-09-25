@@ -36,7 +36,6 @@ class MerkleTree {
     )
 
     this.nextIndex = 0
-    this.leafs.push(BigInt(0))
   }
 
   /*  Helper function to hash the left and right values
@@ -89,22 +88,12 @@ class MerkleTree {
     this.leafs.push(leaf)
   }
 
-  /* Updates MerkleTree leaf at `leafIndex` with `newLeaf` */
-  update (leafIndex: Number, newLeaf: BigInt) {
-    const oldPath = this.getPath(leafIndex)
-    const path = this.getNewPath(leafIndex, newLeaf)
-
-    // console.log(oldPath)
-    // console.log(path)
-
-    const oldLeaf = this.leafs[leafIndex]
-
+  /* Updates merkletree leaf at `leafIndex` with `newLeafValue` */
+  update (leafIndex: Number, newLeafValue: BigInt) {
     this._update(
-      oldLeaf,
-      newLeaf,
       leafIndex,
-      oldPath,
-      path
+      newLeafValue,
+      this.getPath(leafIndex)
     )
   }
 
@@ -114,23 +103,21 @@ class MerkleTree {
    *  (which is very expensive to update if we do it naively)
    */
   _update (
-    oldLeaf: BigInt,
-    leaf: BigInt,
     leafIndex: Number,
-    oldPath: Array<BigInt>,
+    leaf: BigInt,
     path: Array<BigInt>
   ) {
     let curIdx = leafIndex
-    let currentLevelHash = oldLeaf
+    let currentLevelHash = this.leafs[leafIndex]
     let left
     let right
 
     for (let i = 0; i < this.depth; i++) {
       if (curIdx % 2 === 0) {
         left = currentLevelHash
-        right = oldPath[i]
+        right = path[i]
       } else {
-        left = oldPath[i]
+        left = path[i]
         right = currentLevelHash
       }
 
@@ -193,26 +180,10 @@ const m = new MerkleTree(4, BigInt(0))
 
 m.insert(BigInt(100))
 m.insert(BigInt(2000))
+m.update(0, BigInt(500))
+m.update(1, BigInt(42))
 
-let path = m.getPath(0)
-
-m._update(
-  BigInt(100),
-  BigInt(50),
-  0,
-  path,
-  path
-)
-
-path = m.getPath(1)
-
-m._update(
-  BigInt(2000),
-  BigInt(42),
-  1,
-  path,
-  path
-)
+console.log(m.leafs)
 
 // Abstract away `new` keyword for API
 const createMerkleTree = (
