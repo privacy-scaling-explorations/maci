@@ -55,6 +55,10 @@ contract MerkleTree {
         nextIndex = 0;
     }
 
+    function mimcHashTest(uint h, uint j) public pure returns (uint256) {
+        return MiMC.MiMCpe7(h, j);
+    }
+
     function hashLeftRight(uint256 left, uint256 right) public pure returns (uint256 mimc_hash) {
         uint256 k = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
         uint256 R = 0;

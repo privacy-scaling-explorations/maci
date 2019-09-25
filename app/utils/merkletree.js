@@ -198,16 +198,15 @@ const createMerkleTree = (
 
 const m = createMerkleTree(2, BigInt(0))
 
-// m.insert(BigInt(32767))
-// m.insert(BigInt(32767))
+m.insert(BigInt(32767))
+m.insert(BigInt(32767))
 
-// m.update(0, BigInt(0))
+m.update(0, BigInt(0))
 
-// console.log(m)
+console.log(m)
 
-// m.update(1, BigInt(5))
+m.update(1, BigInt(5))
 
-console.log(m.hashLeftRight(BigInt(0), BigInt(0)).toString(16))
 
 module.exports = {
   createMerkleTree
