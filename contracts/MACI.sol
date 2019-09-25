@@ -61,13 +61,11 @@ contract MACI is Verifier, MerkleTree, Ownable {
      * @param path The Merkle path to the new identity commitment
      */
     function updateIdentity(
-        uint256 old_leaf,
-        uint256 leaf,
         uint32 leaf_index,
-        uint256[] memory old_path,
+        uint256 leaf,
         uint256[] memory path
     ) public onlyOwner {
-        update(old_leaf, leaf, leaf_index, old_path, path);
+        update(leaf_index, leaf, path);
         rootHistory[treeRoot] = true;
     }
 

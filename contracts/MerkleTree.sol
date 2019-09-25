@@ -53,8 +53,6 @@ contract MerkleTree {
 
         treeRoot = hashLeftRight(zeros[treeLevel - 1], zeros[treeLevel - 1]);
         nextIndex = 0;
-
-        treeLeaves.push(0);
     }
 
     function hashLeftRight(uint256 left, uint256 right) public pure returns (uint256 mimc_hash) {
@@ -101,24 +99,24 @@ contract MerkleTree {
     }
 
     function update(
-        uint256 oldLeaf,
-        uint256 leaf,
         uint32 leafIndex,
-        uint256[] memory oldPath,
+        uint256 leaf,
         uint256[] memory path
     ) internal {
+        require(leafIndex < nextIndex, "Can't update a leaf which hasn't been inserted!");
+
         uint32 currentIndex = leafIndex;
 
-        uint256 currentLevelHash = oldLeaf;
+        uint256 currentLevelHash = treeLeaves[leafIndex];
         uint256 left;
         uint256 right;
 
         for (uint8 i = 0; i < treeLevel; i++) {
             if (currentIndex % 2 == 0) {
                 left = currentLevelHash;
-                right = oldPath[i];
+                right = path[i];
             } else {
-                left = oldPath[i];
+                left = path[i];
                 right = currentLevelHash;
             }
 
