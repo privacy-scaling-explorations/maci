@@ -14,6 +14,7 @@ class MerkleTree {
     this.depth = depth
     this.zeroValue = zeroValue
     this.leafs = []
+    this.leafNumber = Math.pow(2, depth)
 
     this.zeros = {
       0: zeroValue
@@ -169,24 +170,27 @@ class MerkleTree {
    *  Used for quick verification on updates.
    *  Runs in O(log(N)), where N is the number of leafs
    */
-  getPath (leafIndex: Number): Array<BigInt> {
+  getPath (leafIndex: Number): [Array<BigInt>, Array<Number>] {
     if (leafIndex >= this.nextIndex) {
       throw new Error('Path not constructed yet, leafIndex >= nextIndex')
     }
 
     let curIdx = leafIndex
     const path = []
+    const pathPos = []
 
     for (let i = 0; i < this.depth; i++) {
       if (curIdx % 2 === 0) {
         path.push(this.filledPaths[i][curIdx + 1])
+        pathPos.push(0)
       } else {
         path.push(this.filledPaths[i][curIdx - 1])
+        pathPos.push(1)
       }
       curIdx = parseInt(curIdx / 2)
     }
 
-    return path
+    return [path, pathPos]
   }
 }
 
@@ -195,15 +199,6 @@ const createMerkleTree = (
   treeDepth: Number,
   zeroValue: BigInt
 ): MerkleTree => new MerkleTree(treeDepth, zeroValue)
-
-const m = createMerkleTree(1, BigInt(0))
-
-// for (let i = 0; i < Math.pow(2, 3) - 1; i++) {
-m.insert(BigInt(0))
-m.insert(BigInt(1))
-// }
-
-console.log(m.getPath(1))
 
 module.exports = {
   createMerkleTree

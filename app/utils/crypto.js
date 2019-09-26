@@ -5,6 +5,8 @@ type MiMicSignature = {
   S: BigInt
 };
 
+const { flipBits } = require('./helpers')
+const { createMerkleTree } = require('./merkletree')
 const { stringifyBigInts, unstringifyBigInts } = require('snarkjs/src/stringifybigint')
 const { Circuit, bigInt, groth } = require('snarkjs')
 const createBlakeHash = require('blake-hash')
@@ -124,7 +126,13 @@ const bobHash = mimc7.multiHash(bobPosition)
 
 // Calculate tree root
 // NOTE: Tree root is basically what has "happended"
-const treeRoot = mimc7.multiHash([aliceHash, bobHash])
+const merkletree = createMerkleTree(1, BigInt(0))
+merkletree.insert(aliceHash)
+merkletree.insert(bobHash)
+const treeRoot = merkletree.root
+console.log(treeRoot)
+console.log(mimc7.multiHash([aliceHash, bobHash]))
+// const treeRoot = mimc7.multiHash([aliceHash, bobHash])
 
 // Alice's new transaction
 const aliceTx = [
@@ -185,14 +193,20 @@ console.log(`Message decrypted: ${JSON.stringify(aliceDecryptedTx.map(bigInt2num
 // Ensuring inputs passes the circuits
 const circuit = new Circuit(circuitDef)
 
+// Calculate merkle tree params
+
+const aliceIndex = 0
+const [senderProof, senderProofPos] = merkletree.getPath(aliceIndex)
+const senderProofPosFlipped = flipBits(senderProofPos)
+
 const circuitInput = {
   tree_root: treeRoot,
   accounts_pubkeys: [alicePubKey, bobPubKey],
   encrypted_data: aliceEncryptedTx,
   shared_private_key: aliceEcdh,
   decrypted_data: aliceDecryptedTx,
-  sender_proof: [bobHash], // What ????
-  sender_proof_pos: [1]
+  sender_proof: senderProof,
+  sender_proof_pos: senderProofPosFlipped
 }
 
 console.log('Calculating witnesses....')
