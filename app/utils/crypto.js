@@ -129,10 +129,12 @@ const bobHash = mimc7.multiHash(bobPosition)
 const merkletree = createMerkleTree(1, BigInt(0))
 merkletree.insert(aliceHash)
 merkletree.insert(bobHash)
-const treeRoot = merkletree.root
-console.log(treeRoot)
-console.log(mimc7.multiHash([aliceHash, bobHash]))
-// const treeRoot = mimc7.multiHash([aliceHash, bobHash])
+// const treeRoot = merkletree.root
+console.log(`Merkle treeRoot: ${merkletree.root}`)
+const treeRoot = mimc7.multiHash([aliceHash, bobHash])
+console.log(`aliceHash: ${aliceHash}`)
+console.log(`bobHash: ${bobHash}`)
+console.log(`treeRoot ${treeRoot}`)
 
 // Alice's new transaction
 const aliceTx = [

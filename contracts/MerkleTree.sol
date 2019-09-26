@@ -55,24 +55,16 @@ contract MerkleTree {
         nextIndex = 0;
     }
 
-    function mimcHashTest(uint h, uint j) public pure returns (uint256) {
-        return MiMC.MiMCpe7(h, j);
-    }
-
     function hashLeftRight(uint256 left, uint256 right) public pure returns (uint256 mimc_hash) {
-        uint256 k = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
-        uint256 R = 0;
+        uint256 r = 15021630795539610737508582392395901278341266317943626182700664337106830745361;
 
-        R = addmod(R, left, k);
-        R = MiMC.MiMCpe7(R, 0);
+        r = MiMC.MiMCpe7(r, left);
+        r = MiMC.MiMCpe7(r, right);
 
-        R = addmod(R, right, k);
-        R = MiMC.MiMCpe7(R, 0);
-
-        mimc_hash = R;
+        mimc_hash = r;
     }
 
-    function insert(uint256 leaf) internal {
+    function insert(uint256 leaf) public {
         uint32 leafIndex = nextIndex;
         uint32 currentIndex = nextIndex;
         nextIndex += 1;
@@ -106,7 +98,7 @@ contract MerkleTree {
         uint32 leafIndex,
         uint256 leaf,
         uint256[] memory path
-    ) internal {
+    ) public {
         require(leafIndex < nextIndex, "Can't update a leaf which hasn't been inserted!");
 
         uint32 currentIndex = leafIndex;

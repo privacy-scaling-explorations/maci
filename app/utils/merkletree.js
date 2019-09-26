@@ -44,16 +44,7 @@ class MerkleTree {
    *  of the leafs
    */
   hashLeftRight (left: BigInt, right: BigInt): BigInt {
-    const k = BigInt(21888242871839275222246405745257275088548364400416034343698204186575808495617)
-    let R = BigInt(0)
-
-    R = R + left % k
-    R = mimc7.hash(R, BigInt(0))
-
-    R = R + right % k
-    R = mimc7.hash(R, BigInt(0))
-
-    return R
+    return mimc7.multiHash([left, right])
   }
 
   /* Inserts a new value into the merkle tree */

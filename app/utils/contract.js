@@ -3,19 +3,34 @@
 const ethers = require('ethers')
 // const provider = ethers.getDefaultProvider()
 const provider = new ethers.providers.JsonRpcProvider('http://localhost:8545')
+const privateKey = '0x94a9f52a9ef7933f3865a91766cb5e12d25f62d6aecf1d768508d95526bfee29'
+const wallet = new ethers.Wallet(privateKey, provider)
 
-const maciContractAddress = '0x76ccadf30aA8adc54dF391216805c46E39bdc78a'
+const maciContractAddress = '0xBEC29E762f02c316153Bb1D0d58a83A9dc387Bdb'
 const maciContractDef = require('../contracts/MACI.json')
-const maciContract = new ethers.Contract(maciContractAddress, maciContractDef.abi, provider)
+// const maciContract = new ethers.Contract(maciContractAddress, maciContractDef.abi, provider)
+const maciContract = new ethers.Contract(maciContractAddress, maciContractDef.abi, wallet)
+
+const { mimc7 } = require('circomlib')
+const { createMerkleTree } = require('./merkletree')
 
 const main = async () => {
-  const a = await maciContract.hashLeftRight(1, 2)
+  const aliceHash = '3841988603089958993112099136734571073807184520215994098488092942051012412900'
+  const bobHash = '12694174380082353188486235573921130397364225560561109825645490486049324271853'
+  // const realTreeRoot = '4035488248118855347271251960478993090777861856688670815823976937279433442094'
 
-  console.log(a.toString())
+  await maciContract.insert(aliceHash)
+  await maciContract.insert(bobHash)
 
-  // const b = mimc7.hash(1, 2, 91).toString()
+  const maciRoot = await maciContract.root()
+  console.log(`MACI Root: ${maciRoot}`)
 
-  // console.log(b)
+  const m = createMerkleTree(1, BigInt(0))
+
+  m.insert(BigInt(aliceHash))
+  m.insert(BigInt(bobHash))
+
+  console.log(`merkletree root: ${m.root}`)
 }
 
 main()
