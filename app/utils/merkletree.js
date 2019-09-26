@@ -166,7 +166,7 @@ class MerkleTree {
   }
 
   /*  Gets the path needed to construct a the tree root
-   *  Used for quick verification.
+   *  Used for quick verification on updates.
    *  Runs in O(log(N)), where N is the number of leafs
    */
   getPath (leafIndex: Number): Array<BigInt> {
@@ -196,17 +196,14 @@ const createMerkleTree = (
   zeroValue: BigInt
 ): MerkleTree => new MerkleTree(treeDepth, zeroValue)
 
-const m = createMerkleTree(2, BigInt(0))
+const m = createMerkleTree(1, BigInt(0))
 
-m.insert(BigInt(32767))
-m.insert(BigInt(32767))
+// for (let i = 0; i < Math.pow(2, 3) - 1; i++) {
+m.insert(BigInt(0))
+m.insert(BigInt(1))
+// }
 
-m.update(0, BigInt(0))
-
-console.log(m)
-
-m.update(1, BigInt(5))
-
+console.log(m.getPath(1))
 
 module.exports = {
   createMerkleTree
