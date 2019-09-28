@@ -1,10 +1,11 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.5.11;
 
 import "./Verifier.sol";
 import "./MerkleTree.sol";
-import "./Ownable.sol";
 
-contract MACI is Verifier, MerkleTree, Ownable {
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+
+contract MACI is Verifier, Ownable {
     // The external_nullifier helps to prevent double-signalling by the same
     // user.
     uint256 public externalNullifier;
@@ -37,7 +38,7 @@ contract MACI is Verifier, MerkleTree, Ownable {
 
     constructor(uint8 treeLevels, uint256 zeroValue, uint256 _externalNullifier) Ownable() public {
         externalNullifier = _externalNullifier;
-        initTree(treeLevels, zeroValue);
+        // initTree(treeLevels, zeroValue);
     }
 
 
@@ -48,8 +49,8 @@ contract MACI is Verifier, MerkleTree, Ownable {
      *                            nullifier (a random 31-byte value)
      */
     function insertIdentity(uint256 identity_commitment) public onlyOwner {
-        insert(identity_commitment);
-        rootHistory[treeRoot] = true;
+        // insert(identity_commitment);
+        // rootHistory[treeRoot] = true;
     }
 
     /*
@@ -65,8 +66,8 @@ contract MACI is Verifier, MerkleTree, Ownable {
         uint256 leaf,
         uint256[] memory path
     ) public onlyOwner {
-        update(leaf_index, leaf, path);
-        rootHistory[treeRoot] = true;
+        // update(leaf_index, leaf, path);
+        // rootHistory[treeRoot] = true;
     }
 
     /*
@@ -157,31 +158,6 @@ contract MACI is Verifier, MerkleTree, Ownable {
         signals[currentSignalIndex++] = signal;
         nullifierHashHistory[nullifiers_hash] = true;
         emit SignalBroadcast(signal, nullifiers_hash, externalNullifier);
-    }
-
-    /*
-     * @param tree_index The tree in question
-     * @return The Merkle root
-     */
-    function root() public view returns (uint256) {
-      return treeRoot;
-    }
-
-    /*
-     * @param tree_index The tree in question
-     * @return The leaves of the tree
-     */
-    function leaves() public view returns (uint256[] memory) {
-      return treeLeaves;
-    }
-
-    /*
-     * @param tree_index The tree in question
-     * @param leaf_index The index of the leaf to fetch
-     * @return The leaf at leaf_index of the tree with index tree_index
-     */
-    function leaf(uint256 leafIndex) public view returns (uint256) {
-      return treeLeaves[leafIndex];
     }
 
     /*

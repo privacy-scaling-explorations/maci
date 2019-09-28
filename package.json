@@ -24,6 +24,7 @@
     "express": "^4.17.1",
     "flow-bin": "^0.107.0",
     "flow-remove-types": "^2.107.0",
+    "openzeppelin-solidity": "2.3.0",
     "snarkjs": "^0.1.19",
     "wasmbuilder": "^0.0.8",
     "websnark": "^0.0.5"

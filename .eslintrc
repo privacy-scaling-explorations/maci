@@ -8,7 +8,11 @@
         "plugin:flowtype/recommended"
     ],
     "globals": {
-        "BigInt": "readonly"
+        "BigInt": "readonly",
+        "web3": false,
+        "contract": false,
+        "artifacts": false,
+        "deployer": false
     },
     "rules": {
         "flowtype/boolean-style": [

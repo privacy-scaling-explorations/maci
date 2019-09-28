@@ -1,6 +1,7 @@
 /*
  * semaphorejs - Zero-knowledge signaling on Ethereum
  * Copyright (C) 2019 Kobi Gurkan <kobigurk@gmail.com>
+ * Copyright (C) 2019 Kendrick Tan <kendricktan0814@gmail.com>
  *
  * This file is part of semaphorejs.
  *
@@ -18,44 +19,59 @@
  * along with semaphorejs.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-pragma solidity ^0.5.0;
+pragma solidity 0.5.11;
+
+import "./Whitelist.sol";
 
 library MiMC {
     function MiMCpe7(uint256 in_x, uint256 in_k) public pure returns (uint256 out_x);
 }
 
-contract MerkleTree {
-    uint8 treeLevel;
+contract MerkleTree is Whitelist {
+    // Depth of the merkle tree.
+    // Number of leaves = 2^depth
+    uint8 depth;
 
-    uint256 internal treeRoot;
-    uint256[] filledSubtrees;
-    uint256[] zeros;
+    // Current tree root
+    uint256 root;
 
-    uint32 nextIndex;
+    // Value of the leaves
+    uint256[] leaves;
 
-    uint256[] internal treeLeaves;
+    // Index to keep track of how many
+    // leaves have been inserted in the tree
+    uint32 nextLeafIndex;
+
+    // Filled 'subtrees' - used for optimized
+    // inserting of new leaves
+    uint256[] internal filledSubtrees;
+
+    // Stores hashes of zeros
+    uint256[] internal zeros;
 
     event LeafAdded(uint256 leaf, uint32 leafIndex);
     event LeafUpdated(uint256 leaf, uint32 leafIndex);
 
-    function initTree(uint8 _treeLevel, uint256 _zeroValue) public {
-        require(treeLevel == 0, "MerkleTree Already Initialized");
+    constructor(uint8 _depth, uint256 _zeroValue) public {
+        // Depth of the tree
+        depth = _depth;
 
-        treeLevel = _treeLevel;
-
+        // 'Caches' zero values and filledSubTrees
+        // for optimized inserts later on
         zeros.push(_zeroValue);
         filledSubtrees.push(zeros[0]);
 
-        for (uint8 i = 1; i < treeLevel; i++) {
-            zeros.push(hashLeftRight(zeros[i-1], zeros[i-1]));
+        for (uint8 i = 1; i < depth; i++) {
+            zeros.push(hashPair(zeros[i-1], zeros[i-1]));
             filledSubtrees.push(zeros[i]);
         }
 
-        treeRoot = hashLeftRight(zeros[treeLevel - 1], zeros[treeLevel - 1]);
-        nextIndex = 0;
+        // Calculate current root
+        root = hashPair(zeros[depth - 1], zeros[depth - 1]);
+        nextLeafIndex = 0;
     }
 
-    function hashLeftRight(uint256 left, uint256 right) public pure returns (uint256 mimc_hash) {
+    function hashPair(uint256 left, uint256 right) public pure returns (uint256 mimc_hash) {
         uint256 r = 15021630795539610737508582392395901278341266317943626182700664337106830745361;
 
         r = MiMC.MiMCpe7(r, left);
@@ -64,16 +80,18 @@ contract MerkleTree {
         mimc_hash = r;
     }
 
-    function insert(uint256 leaf) public {
-        uint32 leafIndex = nextIndex;
-        uint32 currentIndex = nextIndex;
-        nextIndex += 1;
+    // Inserts (appends) a new leaf into the
+    // merkle tree
+    function insert(uint256 leaf) public whitelisted {
+        uint32 leafIndex = nextLeafIndex;
+        uint32 currentIndex = nextLeafIndex;
+        nextLeafIndex += 1;
 
         uint256 currentLevelHash = leaf;
         uint256 left;
         uint256 right;
 
-        for (uint8 i = 0; i < treeLevel; i++) {
+        for (uint8 i = 0; i < depth; i++) {
             if (currentIndex % 2 == 0) {
                 left = currentLevelHash;
                 right = zeros[i];
@@ -84,30 +102,31 @@ contract MerkleTree {
                 right = currentLevelHash;
             }
 
-            currentLevelHash = hashLeftRight(left, right);
+            currentLevelHash = hashPair(left, right);
             currentIndex /= 2;
         }
 
-        treeRoot = currentLevelHash;
-        treeLeaves.push(leaf);
+        root = currentLevelHash;
+        leaves.push(leaf);
 
         emit LeafAdded(leaf, leafIndex);
     }
 
+    // Updates leaf of merkle tree at index `leafIndex`
     function update(
         uint32 leafIndex,
         uint256 leaf,
         uint256[] memory path
-    ) public {
-        require(leafIndex < nextIndex, "Can't update a leaf which hasn't been inserted!");
+    ) public whitelisted {
+        require(leafIndex < nextLeafIndex, "Can't update a leaf which hasn't been inserted!");
 
         uint32 currentIndex = leafIndex;
 
-        uint256 currentLevelHash = treeLeaves[leafIndex];
+        uint256 currentLevelHash = leaves[leafIndex];
         uint256 left;
         uint256 right;
 
-        for (uint8 i = 0; i < treeLevel; i++) {
+        for (uint8 i = 0; i < depth; i++) {
             if (currentIndex % 2 == 0) {
                 left = currentLevelHash;
                 right = path[i];
@@ -116,17 +135,16 @@ contract MerkleTree {
                 right = currentLevelHash;
             }
 
-            currentLevelHash = hashLeftRight(left, right);
-
+            currentLevelHash = hashPair(left, right);
             currentIndex /= 2;
         }
 
-        require(treeRoot == currentLevelHash, "MerkleTree: tree root / current level hash mismatch");
+        require(root == currentLevelHash, "MerkleTree: tree root / current level hash mismatch");
 
         currentIndex = leafIndex;
         currentLevelHash = leaf;
 
-        for (uint8 i = 0; i < treeLevel; i++) {
+        for (uint8 i = 0; i < depth; i++) {
             if (currentIndex % 2 == 0) {
                 left = currentLevelHash;
                 right = path[i];
@@ -135,13 +153,30 @@ contract MerkleTree {
                 right = currentLevelHash;
             }
 
-            currentLevelHash = hashLeftRight(left, right);
+            currentLevelHash = hashPair(left, right);
             currentIndex /= 2;
         }
 
-        treeRoot = currentLevelHash;
-        treeLeaves[leafIndex] = leaf;
+        root = currentLevelHash;
+        leaves[leafIndex] = leaf;
 
         emit LeafUpdated(leaf, leafIndex);
+    }
+
+    /*** Getters ***/
+    function getRoot() public view returns (uint256) {
+        return root;
+    }
+
+    function getDepth() public view returns (uint256) {
+        return depth;
+    }
+
+    function getLeafAt(uint256 leafIndex) public view returns (uint256) {
+        return leaves[leafIndex];
+    }
+
+    function getInsertedLeavesNo() public view returns (uint256) {
+        return nextLeafIndex;
     }
 }

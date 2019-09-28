@@ -22,8 +22,8 @@ template TreeReducer(k) {
     var data_length = 9;
 
     // vote action(s) - encrypted
-    // NOTE: Last 3 elements in the dats will
-    // ALWAYS BE THE SIGNATURE!
+    // NOTE: Last 3 elements in the arr
+    // MUST BE THE SIGNATURE!
     /*
         [0] - iv (generated when msg is encrypted)
         [1] - publickey_x

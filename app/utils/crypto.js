@@ -193,8 +193,8 @@ const circuit = new Circuit(circuitDef)
 // Calculate merkle tree params
 
 const aliceIndex = 0
-const [senderProof, senderProofPos] = merkletree.getPath(aliceIndex)
-const senderProofPosFlipped = flipBits(senderProofPos)
+const [merkleTreePath, merkleTreePathPos] = merkletree.getPath(aliceIndex)
+const merkleTreePathPosFlipped = flipBits(merkleTreePathPos)
 
 const circuitInput = {
   tree_root: treeRoot,
@@ -202,8 +202,8 @@ const circuitInput = {
   encrypted_data: aliceEncryptedTx,
   shared_private_key: aliceEcdh,
   decrypted_data: aliceDecryptedTx,
-  sender_proof: senderProof,
-  sender_proof_pos: senderProofPosFlipped
+  sender_proof: merkleTreePath,
+  sender_proof_pos: merkleTreePathPosFlipped
 }
 
 console.log('Calculating witnesses....')
