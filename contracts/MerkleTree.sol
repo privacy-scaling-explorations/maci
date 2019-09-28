@@ -40,7 +40,8 @@ contract MerkleTree is Whitelist {
 
     // Index to keep track of how many
     // leaves have been inserted in the tree
-    uint32 nextLeafIndex;
+    uint256 nextLeafIndex;
+    uint256 maxLeafIndex;
 
     // Filled 'subtrees' - used for optimized
     // inserting of new leaves
@@ -49,12 +50,13 @@ contract MerkleTree is Whitelist {
     // Stores hashes of zeros
     uint256[] internal zeros;
 
-    event LeafAdded(uint256 leaf, uint32 leafIndex);
-    event LeafUpdated(uint256 leaf, uint32 leafIndex);
+    event LeafAdded(uint256 leaf, uint256 leafIndex);
+    event LeafUpdated(uint256 leaf, uint256 leafIndex);
 
     constructor(uint8 _depth, uint256 _zeroValue) public {
         // Depth of the tree
         depth = _depth;
+        maxLeafIndex = 2**_depth;
 
         // 'Caches' zero values and filledSubTrees
         // for optimized inserts later on
@@ -71,7 +73,10 @@ contract MerkleTree is Whitelist {
         nextLeafIndex = 0;
     }
 
-    function hashPair(uint256 left, uint256 right) public pure returns (uint256 mimc_hash) {
+    function hashPair(
+        uint256 left,
+        uint256 right
+    ) public pure returns (uint256 mimc_hash) {
         uint256 r = 15021630795539610737508582392395901278341266317943626182700664337106830745361;
 
         r = MiMC.MiMCpe7(r, left);
@@ -83,8 +88,10 @@ contract MerkleTree is Whitelist {
     // Inserts (appends) a new leaf into the
     // merkle tree
     function insert(uint256 leaf) public whitelisted {
-        uint32 leafIndex = nextLeafIndex;
-        uint32 currentIndex = nextLeafIndex;
+        require(nextLeafIndex < maxLeafIndex, "Merkle Tree at max capacity");
+
+        uint256 leafIndex = nextLeafIndex;
+        uint256 currentIndex = nextLeafIndex;
         nextLeafIndex += 1;
 
         uint256 currentLevelHash = leaf;
@@ -114,13 +121,13 @@ contract MerkleTree is Whitelist {
 
     // Updates leaf of merkle tree at index `leafIndex`
     function update(
-        uint32 leafIndex,
+        uint256 leafIndex,
         uint256 leaf,
         uint256[] memory path
     ) public whitelisted {
         require(leafIndex < nextLeafIndex, "Can't update a leaf which hasn't been inserted!");
 
-        uint32 currentIndex = leafIndex;
+        uint256 currentIndex = leafIndex;
 
         uint256 currentLevelHash = leaves[leafIndex];
         uint256 left;

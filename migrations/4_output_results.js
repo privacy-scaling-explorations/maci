@@ -1,10 +1,5 @@
-const Verifier = artifacts.require('Verifier')
-const MiMC = artifacts.require('MiMC')
-const MACI = artifacts.require('MACI')
-
-module.exports = async (deployer) => {
+module.exports = async (_) => {
   console.log(JSON.stringify({
-    MACI: MACI.address,
-    Verifier: Verifier.address
+    ...global.contractAddresses
   }, null, 4))
 }

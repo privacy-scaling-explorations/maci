@@ -1,6 +1,6 @@
 module.exports = {
   merkleTreeConfig: {
-    treeDepth: 8,
+    treeDepth: 5,
     zeroValue: 0
   }
 }
