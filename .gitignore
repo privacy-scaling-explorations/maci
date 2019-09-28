@@ -96,6 +96,7 @@ proof.json
 circuit.json
 input.json
 
-app/circuits/
+app/circuits/*
+app/contracts/*
 
 .vscode/

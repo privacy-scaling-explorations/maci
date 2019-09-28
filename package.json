@@ -8,29 +8,38 @@
   "scripts": {
     "start": "flow-node app/index.js",
     "dev": "nodemon \"flow-node app/index.js\"",
+    "clean": "rm -rf app/circuits/* && rm -rf app/contracts/*",
+    "merkle": "flow-node app/utils/merkletree.js",
+    "contract": "flow-node app/utils/contract.js",
     "circuit:compile": "mkdir -p app/circuits && circom circuits/circuit.circom -o app/circuits/circuit.json",
-    "circuit:setup": "cd app/circuits && snarkjs setup",
-    "circuit:generateverifier": "mkdir -p contracts && cd app/circuits && snarkjs generateverifier && mv verifier.sol ../../contracts/Verifier.sol",
+    "circuit:setup": "cd app/circuits && snarkjs setup --protocol groth",
+    "circuit:generateverifier": "mkdir -p contracts && cd app/circuits && snarkjs generateverifier --protocol groth && mv verifier.sol ../../contracts/Verifier.sol",
     "circuit:test": "flow-node --experimental-worker app/utils/crypto.js"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
     "circom": "0.0.31",
     "circomlib": "0.0.6",
+    "ethers": "^4.0.37",
     "express": "^4.17.1",
     "flow-bin": "^0.107.0",
     "flow-remove-types": "^2.107.0",
+    "openzeppelin-solidity": "2.3.0",
     "snarkjs": "^0.1.19",
+    "truffle-hdwallet-provider": "^1.0.17",
     "wasmbuilder": "^0.0.8",
     "websnark": "^0.0.5"
   },
   "devDependencies": {
     "@babel/preset-flow": "^7.0.0",
+    "@truffle/artifactor": "^4.0.32",
     "babel-eslint": "^10.0.3",
     "eslint-config-standard": "^14.1.0",
     "eslint-config-standard-flow": "^1.0.1",
     "eslint-plugin-flowtype": "^4.3.0",
     "eslint-plugin-node": "^10.0.0",
-    "nodemon": "^1.19.2"
+    "ganache-cli": "^6.7.0",
+    "nodemon": "^1.19.2",
+    "truffle": "^5.0.36"
   }
 }

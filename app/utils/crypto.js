@@ -5,8 +5,10 @@ type MiMicSignature = {
   S: BigInt
 };
 
-const { unstringifyBigInts } = require('snarkjs/src/stringifybigint')
-const { Circuit, bigInt, original } = require('snarkjs')
+const { flipBits } = require('./helpers')
+const { createMerkleTree } = require('./merkletree')
+const { stringifyBigInts, unstringifyBigInts } = require('snarkjs/src/stringifybigint')
+const { Circuit, bigInt, groth } = require('snarkjs')
 const createBlakeHash = require('blake-hash')
 const { babyJub, eddsa, mimc7 } = require('circomlib')
 
@@ -14,7 +16,7 @@ const provingKey = require('../circuits/proving_key.json')
 const verificationKey = require('../circuits/verification_key.json')
 const circuitDef = require('../circuits/circuit.json')
 
-const zkSnark = original
+const zkSnark = groth
 
 const randomPrivateKey = (): BigInt => {
   return BigInt(
@@ -124,7 +126,10 @@ const bobHash = mimc7.multiHash(bobPosition)
 
 // Calculate tree root
 // NOTE: Tree root is basically what has "happended"
-const treeRoot = mimc7.multiHash([aliceHash, bobHash])
+const merkletree = createMerkleTree(1, BigInt(0))
+merkletree.insert(aliceHash)
+merkletree.insert(bobHash)
+const treeRoot = merkletree.root
 
 // Alice's new transaction
 const aliceTx = [
@@ -185,14 +190,20 @@ console.log(`Message decrypted: ${JSON.stringify(aliceDecryptedTx.map(bigInt2num
 // Ensuring inputs passes the circuits
 const circuit = new Circuit(circuitDef)
 
+// Calculate merkle tree params
+
+const aliceIndex = 0
+const [merkleTreePath, merkleTreePathPos] = merkletree.getPath(aliceIndex)
+const merkleTreePathPosFlipped = flipBits(merkleTreePathPos)
+
 const circuitInput = {
   tree_root: treeRoot,
   accounts_pubkeys: [alicePubKey, bobPubKey],
   encrypted_data: aliceEncryptedTx,
   shared_private_key: aliceEcdh,
   decrypted_data: aliceDecryptedTx,
-  sender_proof: [bobHash], // What ????
-  sender_proof_pos: [1]
+  sender_proof: merkleTreePath,
+  sender_proof_pos: merkleTreePathPosFlipped
 }
 
 console.log('Calculating witnesses....')
@@ -202,6 +213,9 @@ console.log('Generating proof....')
 const { proof, publicSignals } = zkSnark.genProof(
   unstringifyBigInts(provingKey), witness
 )
+
+console.log(JSON.stringify(stringifyBigInts(proof)))
+console.log(JSON.stringify(stringifyBigInts(publicSignals)))
 
 const isValid = zkSnark.isValid(
   unstringifyBigInts(verificationKey),

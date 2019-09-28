@@ -17,6 +17,13 @@ yarn circuit:generateverifier
 # Runs app/utils/crypto.js .... for now ....
 # Will make it prettier dw
 yarn circuit:test
+
+# Deploy contracts
+npx truffle migrate --network development
+
+# Update the contract addresses in `app/utils/contract.js`
+# then run (for testing...)
+yarn contract
 ```
 
 ## With Docker
