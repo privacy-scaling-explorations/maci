@@ -19,7 +19,11 @@ yarn circuit:generateverifier
 yarn circuit:test
 
 # Deploy contracts
-truffle migrate --network development
+npx truffle migrate --network development
+
+# Update the contract addresses in `app/utils/contract.js`
+# then run (for testing...)
+yarn contract
 ```
 
 ## With Docker
