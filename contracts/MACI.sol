@@ -16,7 +16,9 @@ contract MACI is Verifier, Ownable {
 
     // Events
     event MessagePublished(
-        uint256[] encryptedMessage, uint256 hashedEncryptedMessage
+        uint256[] encryptedMessage,
+        uint256[2] publisherPublicKey,
+        uint256 hashedEncryptedMessage
     );
     event MessageInserted(
         uint256 hashedEncryptedMessage
@@ -58,10 +60,15 @@ contract MACI is Verifier, Ownable {
     // and the signature can be verified
     // then the executionStateMT is appended with the message
     function pubishMessage(
-        uint256[] memory encryptedMessage
+        uint256[] memory encryptedMessage,
+        uint256[2] memory publisherPublicKey
     ) public {
         uint256 hashedEncryptedMessaghe = hashMulti(encryptedMessage);
-        emit MessagePublished(encryptedMessage, hashedEncryptedMessaghe);
+        emit MessagePublished(
+            encryptedMessage,
+            publisherPublicKey,
+            hashedEncryptedMessaghe
+        );
     }
 
     // Updates executionStateMT should the decryption of
