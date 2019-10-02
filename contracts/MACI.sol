@@ -7,12 +7,18 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 
 contract MACI is Verifier, Ownable {
-    // Append-only merkle tree to represent internal state
+    // Append-only merkle tree to represent
+    // internal state transitions
     // i.e. update function isn't used
-    MerkleTree executionStateMT;
+    MerkleTree stateTree;
 
-    // Merkle tree to store all whitelisted public keys
-    MerkleTree registryMT;
+    // Merkle tree to store all the
+    // result of the users votes
+    MerkleTree resultTree;
+
+    // TODO: Implement whitelist for Public-keys
+    // hashMulti(publicKey) => uint256
+    mapping (uint256 => bool) whitelistedPublickeys;
 
     // Events
     event MessagePublished(
@@ -24,7 +30,8 @@ contract MACI is Verifier, Ownable {
         uint256 hashedEncryptedMessage
     );
     event UserInserted(
-        uint256 hashedEncryptedMessage, uint256 userIndex
+        uint256 hashedEncryptedMessage,
+        uint256 userIndex
     );
     event UserUpdated(
         uint256 oldHashedEncryptedMessage,
@@ -34,11 +41,11 @@ contract MACI is Verifier, Ownable {
 
     // Register our merkle trees
     constructor(
-        address executionStateMTAddress,
-        address registryMTAddress
+        address stateTreeAddress,
+        address resultTreeAddress
     ) Ownable() public {
-        executionStateMT = MerkleTree(executionStateMTAddress);
-        registryMT = MerkleTree(registryMTAddress);
+        stateTree = MerkleTree(stateTreeAddress);
+        resultTree = MerkleTree(resultTreeAddress);
     }
 
     // mimc7.hashMulti function
@@ -58,7 +65,7 @@ contract MACI is Verifier, Ownable {
     // The message is the `encryptedData`
     // If the message can be decrypted successfully
     // and the signature can be verified
-    // then the executionStateMT is appended with the message
+    // then the stateTree is appended with the message
     function pubishMessage(
         uint256[] memory encryptedMessage,
         uint256[2] memory publisherPublicKey
@@ -71,12 +78,12 @@ contract MACI is Verifier, Ownable {
         );
     }
 
-    // Updates executionStateMT should the decryption of
+    // Updates stateTree should the decryption of
     // the message is successful
     function insertMessage(
         uint256 hashedEncryptedMessage
     ) public onlyOwner {
-        executionStateMT.insert(hashedEncryptedMessage);
+        stateTree.insert(hashedEncryptedMessage);
         emit MessageInserted(hashedEncryptedMessage);
     }
 
@@ -84,8 +91,8 @@ contract MACI is Verifier, Ownable {
     function insertUser(
         uint256 hashedEncryptedMessage
     ) public onlyOwner {
-        uint256 userIndex = registryMT.getInsertedLeavesNo();
-        registryMT.insert(hashedEncryptedMessage);
+        uint256 userIndex = resultTree.getInsertedLeavesNo();
+        resultTree.insert(hashedEncryptedMessage);
         emit UserInserted(hashedEncryptedMessage, userIndex);
     }
 
@@ -95,8 +102,8 @@ contract MACI is Verifier, Ownable {
         uint256 hashedEncryptedMessage,
         uint256[] memory path
     ) public onlyOwner {
-        uint256 oldHashedEncryptedMessage = registryMT.getLeafAt(userIndex);
-        registryMT.update(userIndex, hashedEncryptedMessage, path);
+        uint256 oldHashedEncryptedMessage = resultTree.getLeafAt(userIndex);
+        resultTree.update(userIndex, hashedEncryptedMessage, path);
         emit UserUpdated(
             oldHashedEncryptedMessage,
             hashedEncryptedMessage,

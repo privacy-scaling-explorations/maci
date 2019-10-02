@@ -5,11 +5,29 @@ type MiMicSignature = {
     S: BigInt
   };
 
-const { maciContract } = require('./utils/contracts')
+const ethers = require('ethers')
+const { contractAddresses } = require('./utils/contracts')
 const { randomPrivateKey, privateToPublicKey, encrypt } = require('./utils/crypto')
 const { stringifyBigInts } = require('./utils/helpers')
 
 const { eddsa, mimc7 } = require('circomlib')
+
+const provider = new ethers.providers.JsonRpcProvider('http://localhost:8545')
+const privateKey = '0x989d5b4da447ba1c7f5d48e3b4310d0eec08d4abd0f126b58249598abd8f4c37'
+const wallet = new ethers.Wallet(privateKey, provider)
+
+const maciContractDef = require('./contracts/MACI.json')
+const maciContract = new ethers.Contract(
+  contractAddresses['maciAddress'],
+  maciContractDef.abi,
+  wallet
+)
+
+const sleep = (ms) => {
+  return new Promise(resolve => {
+    setTimeout(resolve, ms)
+  })
+}
 
 const coordinatorPublicKey = [
   8402309255917934552493441178688540331230154087974620916960889785696677656809n,
@@ -19,43 +37,86 @@ const coordinatorPublicKey = [
 const userPrvKey = randomPrivateKey()
 const userPubKey = privateToPublicKey(userPrvKey)
 
-const userPosition: Array<BigInt> = [
-  ...userPubKey,
-  1n // Action
-]
-
-const userMessage = [
-  ...userPosition,
-  ...userPubKey,
-  0n // New position
-]
-
-const userMessageHash = mimc7.multiHash(userMessage)
-
-const signature: MiMicSignature = eddsa.signMiMC(
-  userPrvKey.toString(),
-  userMessageHash
-)
-
-// Insert signature into tx
-const userFinalMessage = [
-  ...userMessage,
-  signature.R8[0],
-  signature.R8[1],
-  signature.S
-]
-
-const userEncryptedMessage = encrypt(
-  userFinalMessage,
-  userPrvKey,
-  coordinatorPublicKey
-)
-
 const main = async () => {
-  const msg = stringifyBigInts(userEncryptedMessage)
   const pk = stringifyBigInts(userPubKey)
-  await maciContract.pubishMessage(msg, pk)
-  console.log('Submitted!')
+
+  // First message (insert new user)
+  const userPosition: Array<BigInt> = [
+    ...userPubKey,
+    0n // Action
+  ]
+
+  const userInitialMessage = [
+    ...userPosition,
+    0n, 0n, 0n
+  ]
+
+  const userMessageHash = mimc7.multiHash(userInitialMessage)
+
+  const signature: MiMicSignature = eddsa.signMiMC(
+    userPrvKey.toString(),
+    userMessageHash
+  )
+
+  // Insert signature into tx
+  const userInitialMessage2 = [
+    ...userInitialMessage,
+    signature.R8[0],
+    signature.R8[1],
+    signature.S
+  ]
+
+  const userInitialEncryptedMessage = encrypt(
+    userInitialMessage2,
+    userPrvKey,
+    coordinatorPublicKey
+  )
+
+  // Publish first message
+  await maciContract.pubishMessage(stringifyBigInts(userInitialEncryptedMessage), pk)
+
+  console.log('Submitted initial message')
+
+  // Wait 10 seconds
+  console.log('Sleeping 10 seconds...')
+  await sleep(10000)
+  console.log('Woken up')
+
+  // Construct 2nd message
+  const userSecondMessage = [
+    ...userPosition,
+    ...userPubKey,
+    1n // New position
+  ]
+
+  const userSecondMessageHash = mimc7.multiHash(userSecondMessage)
+
+  const secondSignature: MiMicSignature = eddsa.signMiMC(
+    userPrvKey.toString(),
+    userSecondMessageHash
+  )
+
+  // Insert signature into tx
+  const userSecondMessage2 = [
+    ...userSecondMessage,
+    secondSignature.R8[0],
+    secondSignature.R8[1],
+    secondSignature.S
+  ]
+
+  const userSecondEncryptedMessage = encrypt(
+    userSecondMessage2,
+    userPrvKey,
+    coordinatorPublicKey
+  )
+
+  await maciContract.pubishMessage(
+    stringifyBigInts(userSecondEncryptedMessage),
+    pk
+  )
+
+  // Update
+  console.log('Submitted update message')
 }
 
 main()

@@ -37,6 +37,7 @@ const registryMTContract = new ethers.Contract(
 )
 
 module.exports = {
+  contractAddresses,
   maciContract,
   executionStateMTContract,
   registryMTContract
