@@ -100,3 +100,5 @@ app/circuits/*
 app/contracts/*
 
 .vscode/
+
+_build/

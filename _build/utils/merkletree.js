@@ -1,4 +1,4 @@
-// @flow
+//      
 
 const { mimc7 } = require('circomlib')
 
@@ -10,7 +10,7 @@ class MerkleTree {
    *       and the 1st level is initialized with
    *       hashLeftRight(`zeroValue`, `zeroValue`)
    */
-  constructor (depth: Number, zeroValue: BigInt) {
+  constructor (depth        , zeroValue        ) {
     this.depth = depth
     this.zeroValue = zeroValue
     this.leafs = []
@@ -43,12 +43,12 @@ class MerkleTree {
   /*  Helper function to hash the left and right values
    *  of the leafs
    */
-  hashLeftRight (left: BigInt, right: BigInt): BigInt {
+  hashLeftRight (left        , right        )         {
     return mimc7.multiHash([left, right])
   }
 
   /* Inserts a new value into the merkle tree */
-  insert (leaf: BigInt) {
+  insert (leaf        ) {
     let curIdx = this.nextIndex
     this.nextIndex += 1
 
@@ -82,7 +82,7 @@ class MerkleTree {
   }
 
   /* Updates merkletree leaf at `leafIndex` with `newLeafValue` */
-  update (leafIndex: Number, newLeafValue: BigInt) {
+  update (leafIndex        , newLeafValue        ) {
     if (leafIndex >= this.nextIndex) {
       throw new Error("Can't update leafIndex which hasn't been inserted yet!")
     }
@@ -104,9 +104,9 @@ class MerkleTree {
    *  It is also very expensive to update if we do it naively on the EVM
    */
   _update (
-    leafIndex: Number,
-    leaf: BigInt,
-    path: Array<BigInt>
+    leafIndex        ,
+    leaf        ,
+    path               
   ) {
     if (leafIndex >= this.nextIndex) {
       throw new Error("Can't update leafIndex which hasn't been inserted yet!")
@@ -164,7 +164,7 @@ class MerkleTree {
    *  Used for quick verification on updates.
    *  Runs in O(log(N)), where N is the number of leafs
    */
-  getPath (leafIndex: Number): [Array<BigInt>, Array<Number>] {
+  getPath (leafIndex        )                                 {
     if (leafIndex >= this.nextIndex) {
       throw new Error('Path not constructed yet, leafIndex >= nextIndex')
     }
@@ -190,9 +190,9 @@ class MerkleTree {
 
 // Helper function to abstract away `new` keyword for API
 const createMerkleTree = (
-  treeDepth: Number,
-  zeroValue: BigInt
-): MerkleTree => new MerkleTree(treeDepth, zeroValue)
+  treeDepth        ,
+  zeroValue        
+)             => new MerkleTree(treeDepth, zeroValue)
 
 module.exports = {
   createMerkleTree

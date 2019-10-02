@@ -9,7 +9,8 @@
     "start": "flow-node app/index.js",
     "dev": "nodemon \"flow-node app/index.js\"",
     "clean": "rm -rf app/circuits/* && rm -rf app/contracts/*",
-    "interact": "flow-node app/interact.js",
+    "test": "yarn app:build && truffle test",
+    "app:build": "flow-remove-types app/ -d _build/ && cp -r app/contracts _build/contracts && cp -r app/circuits _build/circuits",
     "circuit:compile": "mkdir -p app/circuits && circom circuits/circuit.circom -o app/circuits/circuit.json",
     "circuit:setup": "cd app/circuits && snarkjs setup --protocol groth",
     "circuit:generateverifier": "mkdir -p contracts && cd app/circuits && snarkjs generateverifier --protocol groth && mv verifier.sol ../../contracts/Verifier.sol",
@@ -22,7 +23,7 @@
     "ethers": "^4.0.37",
     "express": "^4.17.1",
     "flow-bin": "^0.107.0",
-    "flow-remove-types": "^2.107.0",
+    "flow-remove-types": "^2.108.0",
     "openzeppelin-solidity": "2.3.0",
     "snarkjs": "^0.1.19",
     "truffle-hdwallet-provider": "^1.0.17",
@@ -30,6 +31,8 @@
     "websnark": "^0.0.5"
   },
   "devDependencies": {
+    "@babel/cli": "^7.6.2",
+    "@babel/core": "^7.6.2",
     "@babel/preset-flow": "^7.0.0",
     "@truffle/artifactor": "^4.0.32",
     "babel-eslint": "^10.0.3",
