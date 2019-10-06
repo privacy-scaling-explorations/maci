@@ -221,3 +221,7 @@ app.get('/publickey', (req: $Request, res: $Response) => {
 app.listen(port, () => {
   console.log(`Coordinator service listening on port ${port}!`)
 })
+
+module.exports = {
+  app
+}
