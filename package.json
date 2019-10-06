@@ -9,12 +9,12 @@
     "start": "flow-node app/index.js",
     "dev": "nodemon \"flow-node app/index.js\"",
     "clean": "rm -rf app/circuits/* && rm -rf app/contracts/*",
-    "test": "yarn app:build && truffle test",
+    "test": "yarn app:build && truffle migrate --reset --network development && truffle test",
+    "ganache": "ganache-cli -l 8000000 -m helloworld",
     "app:build": "flow-remove-types app/ -d _build/ && cp -r app/contracts _build/contracts && cp -r app/circuits _build/circuits",
     "circuit:compile": "mkdir -p app/circuits && circom circuits/circuit.circom -o app/circuits/circuit.json",
     "circuit:setup": "cd app/circuits && snarkjs setup --protocol groth",
-    "circuit:generateverifier": "mkdir -p contracts && cd app/circuits && snarkjs generateverifier --protocol groth && mv verifier.sol ../../contracts/Verifier.sol",
-    "circuit:test": "flow-node --experimental-worker app/utils/crypto.js"
+    "circuit:generateverifier": "mkdir -p contracts && cd app/circuits && snarkjs generateverifier --protocol groth && mv verifier.sol ../../contracts/Verifier.sol"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
