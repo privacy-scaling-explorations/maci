@@ -2,10 +2,12 @@
 const supertest = require('supertest')
 const ethers = require('ethers')
 
-const { unstringifyBigInts } = require('../_build/utils/helpers')
-const { randomPrivateKey, privateToPublicKey, decrypt } = require('../_build/utils/crypto')
+const { stringifyBigInts, unstringifyBigInts } = require('../_build/utils/helpers')
+const { randomPrivateKey, privateToPublicKey, encrypt } = require('../_build/utils/crypto')
 const { app } = require('../_build/index')
 const { getLatestDeployedAddress } = require('../_build/utils/helpers')
+
+const { eddsa, mimc7 } = require('circomlib')
 
 // Settings up provider and contract instance
 const provider = new ethers.providers.JsonRpcProvider('http://localhost:8545')
@@ -22,16 +24,22 @@ const maciContract = new ethers.Contract(
 const merkleTreeContractDef = require('../_build/contracts/MerkleTree.json')
 const merkleTreeNetworkTimestamps = Object.keys(merkleTreeContractDef.networks)
   .sort((a, b) => b-a)
-const executionStateMT = new ethers.Contract(
+const stateTree = new ethers.Contract(
   merkleTreeContractDef.networks[merkleTreeNetworkTimestamps[1]].address,
   merkleTreeContractDef.abi,
   wallet
 )
-const registryMT = new ethers.Contract(
+const result = new ethers.Contract(
   merkleTreeContractDef.networks[merkleTreeNetworkTimestamps[0]].address,
   merkleTreeContractDef.abi,
   wallet
 )
+
+const sleep = (ms) => {
+  return new Promise(resolve => {
+    setTimeout(resolve, ms)
+  })
+}
 
 describe('GET /', function () {
   let coordinatorPublicKey
@@ -52,6 +60,75 @@ describe('GET /', function () {
   })
 
   it('testing coordinator logic', async () => {
-    // const merkleRootResp = 
+    // User's voteing position
+    const userPosition = [
+      ...userPubKey,
+      0n // Action
+    ]
+
+    // Initial message (to obtain signature)
+    const userInitialMessage = [
+      ...userPosition,
+      0n, 0n, 0n
+    ]
+
+    const userMessageHash = mimc7.multiHash(userInitialMessage)
+    const signature = eddsa.signMiMC(
+      userPrvKey.toString(),
+      userMessageHash
+    )
+
+    // Insert signature into message
+    const userInitialMessageWithSig = [
+      ...userInitialMessage,
+      signature.R8[0],
+      signature.R8[1],
+      signature.S
+    ]
+
+    // Encrypt message with shared key
+    const userInitialEncryptedMessage = encrypt(
+      userInitialMessageWithSig,
+      userPrvKey,
+      coordinatorPublicKey
+    )
+
+    // Get current merkletree root
+    const stateTreeRoot = await stateTree.getRoot()
+    let sameStateTreeRoot = true
+    let loopIter = 0
+
+    // Publish message
+    await maciContract.pubishMessage(
+      stringifyBigInts(userInitialEncryptedMessage),
+      stringifyBigInts(userPubKey)
+    )
+
+    // Wait until merkle tree updates
+    while (sameStateTreeRoot) {
+      const curStateTreeRoot = await stateTree.getRoot()
+      sameStateTreeRoot = curStateTreeRoot.toString() === stateTreeRoot.toString()
+
+      if (sameStateTreeRoot) {
+        await sleep(5000) // Sleep 5 seconds
+        loopIter += 1
+
+        // Wait 1 minute max
+        if (loopIter > 12) {
+          throw new Error('Taking too long for `MessagePublished` event to be admitted')
+        }
+      }
+    }
+
+    // This means that new user should be published
+    // make sure the merkleroot is the same
+    const newUserStateTreeRoot = await stateTree.getRoot()
+    const coordinatorRoots = await supertest(app).get('/merkleroots')
+    const coordinatorStateTreeRoot = coordinatorRoots.body.stateTree
+    const newUserStateTreeRootStr = newUserStateTreeRoot.toString()
+
+    // TODO: Use database to store stuff
+    console.log(coordinatorStateTreeRoot)
+    console.log(newUserStateTreeRootStr)
   })
 })
