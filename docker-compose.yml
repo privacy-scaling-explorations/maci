@@ -1,0 +1,19 @@
+version: "3.7"
+services:
+  postgres:
+    image: postgres:11-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: maci
+      POSTGRES_PASSWORD: maci
+      POSTGRES_DB: maci
+    healthcheck:
+      test: pg_isready -U maci
+      interval: 5s
+      timeout: 3s
+      retries: 5
+  webserver_test:
+    image: nginx:1.17.4
+    ports:
+      - "8080:80"
