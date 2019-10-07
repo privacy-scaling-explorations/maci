@@ -29,7 +29,7 @@ const stateTree = new ethers.Contract(
   merkleTreeContractDef.abi,
   wallet
 )
-const result = new ethers.Contract(
+const resultTree = new ethers.Contract(
   merkleTreeContractDef.networks[merkleTreeNetworkTimestamps[0]].address,
   merkleTreeContractDef.abi,
   wallet

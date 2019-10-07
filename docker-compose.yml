@@ -13,7 +13,12 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-  webserver_test:
-    image: nginx:1.17.4
+  ganache:
+    image: trufflesuite/ganache-cli:v6.7.0
+    entrypoint: /bin/sh -c "ganache-cli -m helloworld"
     ports:
-      - "8080:80"
+      - "8545:8545"
+  maci:
+    build: .
+    image: maci:dockercompose
+    entrypoint: /bin/sh -c "yarn start"

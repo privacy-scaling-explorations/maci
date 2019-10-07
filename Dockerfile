@@ -10,4 +10,4 @@ RUN yarn install
 # RUN yarn circuit:setup
 # RUN yarn circuit:generatewitness
 
-ENTRYPOINT [ "/bin/bash", "-c", "sleep 10000" ]
+ENTRYPOINT [ "/bin/bash", "-c", "yarn start" ]
