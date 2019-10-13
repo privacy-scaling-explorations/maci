@@ -18,7 +18,7 @@ services:
     entrypoint: /bin/sh -c "ganache-cli -m helloworld"
     ports:
       - "8545:8545"
-  maci:
-    build: .
-    image: maci:dockercompose
-    entrypoint: /bin/sh -c "yarn start"
+  # maci:
+  #   build: .
+  #   image: maci:dockercompose
+  #   entrypoint: /bin/sh -c "yarn start"
