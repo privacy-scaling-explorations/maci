@@ -8,6 +8,7 @@ const { createMerkleTree } = require('./utils/merkletree')
 const { stringifyBigInts, unstringifyBigInts } = require('./utils/helpers')
 
 const { eddsa, mimc7 } = require('circomlib')
+const { initDb } = require('./utils/db')
 
 const express = require('express')
 const bodyParser = require('body-parser')
@@ -218,8 +219,11 @@ app.get('/publickey', (req: $Request, res: $Response) => {
 })
 
 // Entrypoint
-app.listen(port, () => {
+app.listen(port, async () => {
   console.log(`Coordinator service listening on port ${port}!`)
+
+  console.log('Initializing database....')
+  await initDb()
 })
 
 module.exports = {

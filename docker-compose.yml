@@ -15,7 +15,7 @@ services:
       retries: 5
   ganache:
     image: trufflesuite/ganache-cli:v6.7.0
-    entrypoint: /bin/sh -c "ganache-cli -m helloworld"
+    entrypoint: /bin/sh -c "npx ganache-cli -m helloworld"
     ports:
       - "8545:8545"
   # maci:

@@ -57,28 +57,32 @@ const getDbCredentials = (): DbCredentials => {
   const DB_PASSWORD = process.env.DB_PASSWORD
   const DB_HOST = process.env.DB_HOST
   const DB_PORT = process.env.DB_PORT
+  const DB_NAME = process.env.DB_NAME
 
   if (envType === 'DEV') {
     return {
       DB_USER: DB_USER || 'maci',
       DB_PASSWORD: DB_PASSWORD || 'maci',
       DB_HOST: DB_HOST || '127.0.0.1',
-      DB_PORT: DB_PORT || 5432
+      DB_PORT: DB_PORT || 5432,
+      DB_NAME: DB_NAME || 'maci'
     }
   } else if (envType === 'PROD') {
     // Otherwise get addresses from the ENV Variables
     if (DB_USER === undefined ||
         DB_PASSWORD === undefined ||
         DB_HOST === undefined ||
-        DB_PORT === undefined) {
+        DB_PORT === undefined ||
+        DB_NAME === undefined) {
       throw new Error('ENV_TYPE = PROD, however not all contract addresses are provided.')
     }
 
     return {
-      DB_USER: DB_USER,
-      DB_PASSWORD: DB_PASSWORD,
-      DB_HOST: DB_HOST,
-      DB_PORT: DB_PORT
+      DB_USER,
+      DB_PASSWORD,
+      DB_HOST,
+      DB_PORT,
+      DB_NAME
     }
   }
 
