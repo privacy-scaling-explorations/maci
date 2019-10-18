@@ -33,7 +33,7 @@ const initDb = async () => {
     await pool.query(`
       CREATE TABLE vault (
         name TEXT,
-        private_key BIGINT
+        private_key TEXT
       );
     `)
   }
@@ -46,7 +46,7 @@ const initDb = async () => {
       CREATE TABLE users (
         id SERIAL PRIMARY KEY,
         index INTEGER NOT NULL,
-        public_key BIGINT[] NOT NULL
+        public_key TEXT[] NOT NULL
       );
     `)
   }
@@ -64,42 +64,39 @@ const initDb = async () => {
     `)
   }
 
-  // Merkle Tree state
+  // Merkle Tree (cache)
+  try {
+    await pool.query('SELECT * FROM merkletrees LIMIT 1;')
+  } catch (e) {
+    await pool.query(`
+      CREATE TABLE merkletrees (
+        id SERIAL PRIMARY KEY,
+        name TEXT UNIQUE NOT NULL,
+        depth INTEGER NOT NULL,
+        next_index INTEGER NOT NULL,
+        root TEXT NOT NULL,
+        zero_value TEXT NOT NULL,
+        zeros JSONB NOT NULL,
+        filled_sub_trees JSONB NOT NULL,
+        filled_paths JSONB NOT NULL
+      );
+    `)
+  }
+
+  // Merkle Tree (leaf value)
   try {
     await pool.query('SELECT * FROM leaves LIMIT 1;')
   } catch (e) {
     await pool.query(`
       CREATE TABLE leaves (
-        index INTEGER NOT NULL PRIMARY KEY,
-        data JSONB not NULL,
-        hash BIGINT not null,
-        message_id INTEGER REFERENCES messages(id)
+        merkletree_id INTEGER REFERENCES merkletrees(id),
+        data JSONB NOT NULL,
+        hash TEXT NOT NULL
       );
     `)
   }
 
-  try {
-    await pool.query('SELECT * FROM sub_trees LIMIT 1;')
-  } catch (e) {
-    await pool.query(`
-      CREATE TABLE sub_trees (
-        index INTEGER NOT NULL,
-        hash BIGINT NOT NULL
-      );
-    `)
-  }
-
-  try {
-    await pool.query('SELECT * FROM tree_paths LIMIT 1;')
-  } catch (e) {
-    await pool.query(`
-      CREATE TABLE tree_paths (
-        depth INTEGER NOT NULL,
-        index INTEGER NOT NULL,
-        hash BIGINT NOT NULL
-      );
-    `)
-  }
+  console.log('Database initialized successfully')
 }
 
 module.exports = {

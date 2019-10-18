@@ -1,6 +1,9 @@
 // @flow
+import type { Pool } from 'pg'
 
 const { mimc7 } = require('circomlib')
+
+const { stringifyBigInts, unstringifyBigInts } = require('./helpers')
 
 class MerkleTree {
   /*  Creates an optimized MerkleTree with `treeDepth` depth,
@@ -194,6 +197,89 @@ const createMerkleTree = (
   zeroValue: BigInt
 ): MerkleTree => new MerkleTree(treeDepth, zeroValue)
 
+// Helper function to save merkletree into a database
+const saveMerkleTreeToDb = async (
+  pool: Pool,
+  mkName: String,
+  mk: MerkleTree,
+) => {
+  // See if there's alrea
+  const query = {
+    text: `INSERT INTO
+      merkletrees(
+        name,
+        depth,
+        next_index,
+        root,
+        zero_value,
+        zeros,
+        filled_sub_trees,
+        filled_paths
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8
+      ) ON CONFLICT (name) DO UPDATE SET
+        name = excluded.name,
+        depth = excluded.depth,
+        next_index = excluded.next_index,
+        root = excluded.root,
+        zero_value = excluded.zero_value,
+        zeros = excluded.zeros,
+        filled_sub_trees = excluded.filled_sub_trees,
+        filled_paths = excluded.filled_paths
+      ;`,
+    values: [
+      mkName,
+      mk.depth,
+      mk.nextIndex,
+      stringifyBigInts(mk.root),
+      stringifyBigInts(mk.zeroValue),
+      stringifyBigInts(mk.zeros),
+      stringifyBigInts(mk.filledSubtrees),
+      stringifyBigInts(mk.filledPaths)
+    ]
+  }
+
+  try {
+    await pool.query(query)
+  } catch (e) {
+    console.log(`Error: ${e}`)
+  }
+}
+
+// Help function to load merkletree from a database
+const loadMerkleTreeFromDb = async (
+  pool: Pool,
+  mkName: String,
+): MerkleTree => {
+  const query = {
+    text: 'SELECT * FROM merkletrees WHERE name = $1 LIMIT 1',
+    values: [mkName]
+  }
+  const results = await pool.query(query)
+
+  if (results.rows.length === 0) {
+    throw new Error(`MerkleTree named ${mkName} not found in database`)
+  }
+
+  const res = results.rows[0]
+  const resBigInt = unstringifyBigInts(results.rows[0])
+
+  const mk = createMerkleTree(
+    res.depth,
+    resBigInt.zero_value
+  )
+
+  mk.nextIndex = res.next_index
+  mk.root = resBigInt.root
+  mk.zeros = resBigInt.zeros
+  mk.filledSubtrees = resBigInt.filled_sub_trees
+  mk.filledPaths = resBigInt.filled_paths
+
+  return mk
+}
+
 module.exports = {
-  createMerkleTree
+  createMerkleTree,
+  saveMerkleTreeToDb,
+  loadMerkleTreeFromDb
 }
