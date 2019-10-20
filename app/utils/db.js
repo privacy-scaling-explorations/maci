@@ -90,6 +90,7 @@ const initDb = async () => {
     await pool.query(`
       CREATE TABLE leaves (
         merkletree_id INTEGER REFERENCES merkletrees(id),
+        index INTEGER NOT NULL,
         data JSONB NOT NULL,
         hash TEXT NOT NULL
       );

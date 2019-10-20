@@ -16,7 +16,8 @@ class MerkleTree {
   constructor (depth: Number, zeroValue: BigInt) {
     this.depth = depth
     this.zeroValue = zeroValue
-    this.leafs = []
+    this.leaves = [] // Hash value of the leaves
+    this.leavesRaw = [] // Values to create the hash values of the leaves
     this.leafNumber = Math.pow(2, depth)
 
     this.zeros = {
@@ -44,14 +45,16 @@ class MerkleTree {
   }
 
   /*  Helper function to hash the left and right values
-   *  of the leafs
+   *  of the leaves
    */
   hashLeftRight (left: BigInt, right: BigInt): BigInt {
     return mimc7.multiHash([left, right])
   }
 
   /* Inserts a new value into the merkle tree */
-  insert (leaf: BigInt) {
+  insert (leafRaw: Array<BigInt>) {
+    const leaf = mimc7.multiHash(leafRaw)
+
     let curIdx = this.nextIndex
     this.nextIndex += 1
 
@@ -81,11 +84,15 @@ class MerkleTree {
     }
 
     this.root = currentLevelHash
-    this.leafs.push(leaf)
+    this.leaves.push(leaf)
+    this.leavesRaw.push(leafRaw)
   }
 
   /* Updates merkletree leaf at `leafIndex` with `newLeafValue` */
-  update (leafIndex: Number, newLeafValue: BigInt) {
+  update (
+    leafIndex: Number,
+    newLeafValueRaw: Array<BigInt>
+  ) {
     if (leafIndex >= this.nextIndex) {
       throw new Error("Can't update leafIndex which hasn't been inserted yet!")
     }
@@ -95,7 +102,7 @@ class MerkleTree {
 
     this._update(
       leafIndex,
-      newLeafValue,
+      newLeafValueRaw,
       path
     )
   }
@@ -108,15 +115,18 @@ class MerkleTree {
    */
   _update (
     leafIndex: Number,
-    leaf: BigInt,
+    leafRaw: Array<BigInt>,
     path: Array<BigInt>
   ) {
     if (leafIndex >= this.nextIndex) {
       throw new Error("Can't update leafIndex which hasn't been inserted yet!")
     }
 
+    // Get leaf hash value
+    const leaf = mimc7.multiHash(leafRaw)
+
     let curIdx = leafIndex
-    let currentLevelHash = this.leafs[leafIndex]
+    let currentLevelHash = this.leaves[leafIndex]
     let left
     let right
 
@@ -160,12 +170,13 @@ class MerkleTree {
     }
 
     this.root = currentLevelHash
-    this.leafs[leafIndex] = leaf
+    this.leaves[leafIndex] = leaf
+    this.leavesRaw[leafIndex] = leafRaw
   }
 
   /*  Gets the path needed to construct a the tree root
    *  Used for quick verification on updates.
-   *  Runs in O(log(N)), where N is the number of leafs
+   *  Runs in O(log(N)), where N is the number of leaves
    */
   getPath (leafIndex: Number): [Array<BigInt>, Array<Number>] {
     if (leafIndex >= this.nextIndex) {
@@ -201,10 +212,10 @@ const createMerkleTree = (
 const saveMerkleTreeToDb = async (
   pool: Pool,
   mkName: String,
-  mk: MerkleTree,
+  mk: MerkleTree
 ) => {
   // See if there's alrea
-  const query = {
+  const mkQuery = {
     text: `INSERT INTO
       merkletrees(
         name,
@@ -240,7 +251,34 @@ const saveMerkleTreeToDb = async (
   }
 
   try {
-    await pool.query(query)
+    // Saves merkle tree state
+    await pool.query(mkQuery)
+
+    // Get merkletree id from db
+    const mkTreeRes = await pool.query({
+      text: 'SELECT * FROM merkletrees WHERE name = $1 LIMIT 1;',
+      values: [mkName]
+    })
+    const mkTreeId = mkTreeRes.rows[0].id
+
+    // Current leaf index
+    const leafIdx = mk.nextIndex - 1
+
+    const leafQuery = {
+      text: `INSERT INTO 
+        leaves(merkletree_id, index, data, hash)
+        VALUES($1, $2, $3, $4)
+        `,
+      values: [
+        mkTreeId,
+        leafIdx,
+        { data: stringifyBigInts(mk.leavesRaw[leafIdx]) },
+        stringifyBigInts(mk.leaves[leafIdx])
+      ]
+    }
+
+    // Saves latest leaf to merkletree id
+    await pool.query(leafQuery)
   } catch (e) {
     console.log(`Error: ${e}`)
   }
@@ -251,29 +289,44 @@ const loadMerkleTreeFromDb = async (
   pool: Pool,
   mkName: String,
 ): MerkleTree => {
-  const query = {
+  const mkQuery = {
     text: 'SELECT * FROM merkletrees WHERE name = $1 LIMIT 1',
     values: [mkName]
   }
-  const results = await pool.query(query)
+  const mkResp = await pool.query(mkQuery)
 
-  if (results.rows.length === 0) {
+  if (mkResp.rows.length === 0) {
     throw new Error(`MerkleTree named ${mkName} not found in database`)
   }
 
-  const res = results.rows[0]
-  const resBigInt = unstringifyBigInts(results.rows[0])
+  // Get MerkleTree result
+  const mkRes = mkResp.rows[0]
+  const mkResBigInt = unstringifyBigInts(mkResp.rows[0])
 
   const mk = createMerkleTree(
-    res.depth,
-    resBigInt.zero_value
+    mkRes.depth,
+    mkResBigInt.zero_value
   )
 
-  mk.nextIndex = res.next_index
-  mk.root = resBigInt.root
-  mk.zeros = resBigInt.zeros
-  mk.filledSubtrees = resBigInt.filled_sub_trees
-  mk.filledPaths = resBigInt.filled_paths
+  mk.nextIndex = mkRes.next_index
+  mk.root = mkResBigInt.root
+  mk.zeros = mkResBigInt.zeros
+  mk.filledSubtrees = mkResBigInt.filled_sub_trees
+  mk.filledPaths = mkResBigInt.filled_paths
+
+  // Get leaves
+  const leavesQuery = {
+    text: 'SELECT * FROM leaves WHERE merkletree_id = $1 ORDER BY index ASC',
+    values: [mkRes.id]
+  }
+  const leavesResp = await pool.query(leavesQuery)
+
+  // Get leaves values
+  const leaves = leavesResp.rows.map((x: Any): BigInt => unstringifyBigInts(x.hash))
+  const leavesRaw = leavesResp.rows.map((x: Any): Array<BigInt> => unstringifyBigInts(x.data).data)
+
+  mk.leaves = leaves
+  mk.leavesRaw = leavesRaw
 
   return mk
 }
