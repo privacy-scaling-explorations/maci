@@ -28,14 +28,12 @@ const getContractAddresses = (): ContractAddresses => {
 
   if (envType === 'DEV' || envType === 'TEST') {
     // If its development, just read from the compiled contract
-    const maciContractDef = require('../contracts/MACI.json')
-    const merkleTreeContractDef = require('../contracts/MerkleTree.json')
-    const merkleTreeNetworkTimestamps = Object.keys(merkleTreeContractDef.networks)
+    const deployedAddresses = require('../contracts/DeployedAddresses.json')
 
     return {
-      MACI_CONTRACT_ADDRESS: getLatestDeployedAddress(maciContractDef),
-      STATE_TREE_ADDRESS: merkleTreeContractDef.networks[merkleTreeNetworkTimestamps[1]].address,
-      RESULT_TREE_ADDRESS: merkleTreeContractDef.networks[merkleTreeNetworkTimestamps[0]].address
+      MACI_CONTRACT_ADDRESS: deployedAddresses.maciAddress,
+      STATE_TREE_ADDRESS: deployedAddresses.stateTreeAddress,
+      RESULT_TREE_ADDRESS: deployedAddresses.resultsTreeAddress
     }
   } else if (envType === 'PROD') {
     // Otherwise get addresses from the ENV Variables

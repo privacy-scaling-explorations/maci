@@ -5,7 +5,6 @@ const ethers = require('ethers')
 const { stringifyBigInts, unstringifyBigInts } = require('../_build/utils/helpers')
 const { randomPrivateKey, privateToPublicKey, encrypt } = require('../_build/utils/crypto')
 const { app } = require('../_build/index')
-const { getLatestDeployedAddress } = require('../_build/utils/helpers')
 
 const { eddsa, mimc7 } = require('circomlib')
 
@@ -14,23 +13,28 @@ const provider = new ethers.providers.JsonRpcProvider('http://localhost:8545')
 const privateKey = '0x989d5b4da447ba1c7f5d48e3b4310d0eec08d4abd0f126b58249598abd8f4c37'
 const wallet = new ethers.Wallet(privateKey, provider)
 
+const { getContractAddresses } = require('../_build/utils/settings')
+const {
+  MACI_CONTRACT_ADDRESS,
+  STATE_TREE_ADDRESS,
+  RESULT_TREE_ADDRESS
+} = getContractAddresses()
+
 const maciContractDef = require('../_build/contracts/MACI.json')
 const maciContract = new ethers.Contract(
-  getLatestDeployedAddress(maciContractDef),
+  MACI_CONTRACT_ADDRESS,
   maciContractDef.abi,
   wallet
 )
 
 const merkleTreeContractDef = require('../_build/contracts/MerkleTree.json')
-const merkleTreeNetworkTimestamps = Object.keys(merkleTreeContractDef.networks)
-  .sort((a, b) => b-a)
-const stateTree = new ethers.Contract(
-  merkleTreeContractDef.networks[merkleTreeNetworkTimestamps[1]].address,
+const stateTreeContract = new ethers.Contract(
+  STATE_TREE_ADDRESS,
   merkleTreeContractDef.abi,
   wallet
 )
-const resultTree = new ethers.Contract(
-  merkleTreeContractDef.networks[merkleTreeNetworkTimestamps[0]].address,
+const resultTreeContract = new ethers.Contract(
+  RESULT_TREE_ADDRESS,
   merkleTreeContractDef.abi,
   wallet
 )
@@ -95,7 +99,7 @@ describe('GET /', function () {
     )
 
     // Get current merkletree root
-    const stateTreeRoot = await stateTree.getRoot()
+    const stateTreeRoot = await stateTreeContract.getRoot()
     let sameStateTreeRoot = true
     let loopIter = 0
 
@@ -107,7 +111,7 @@ describe('GET /', function () {
 
     // Wait until merkle tree updates
     while (sameStateTreeRoot) {
-      const curStateTreeRoot = await stateTree.getRoot()
+      const curStateTreeRoot = await stateTreeContract.getRoot()
       sameStateTreeRoot = curStateTreeRoot.toString() === stateTreeRoot.toString()
 
       if (sameStateTreeRoot) {
@@ -123,13 +127,13 @@ describe('GET /', function () {
 
     // This means that new user should be published
     // make sure the merkleroot is the same
-    const newUserStateTreeRoot = await stateTree.getRoot()
-    const coordinatorRoots = await supertest(app).get('/merkleroots')
-    const coordinatorStateTreeRoot = coordinatorRoots.body.stateTree
-    const newUserStateTreeRootStr = newUserStateTreeRoot.toString()
+    // const newUserStateTreeRoot = await stateTree.getRoot()
+    // const coordinatorRoots = await supertest(app).get('/merkleroots')
+    // const coordinatorStateTreeRoot = coordinatorRoots.body.stateTree
+    // const newUserStateTreeRootStr = newUserStateTreeRoot.toString()
 
     // TODO: Use database to store stuff
-    console.log(coordinatorStateTreeRoot)
-    console.log(newUserStateTreeRootStr)
+    // console.log(coordinatorStateTreeRoot)
+    // console.log(newUserStateTreeRootStr)
   })
 })

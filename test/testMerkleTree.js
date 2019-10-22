@@ -1,6 +1,12 @@
-const MerkleTree = artifacts.require('./MerkleTree.sol')
+const ethers = require('ethers')
 const { createMerkleTree } = require('../_build/utils/merkletree')
 const { mimc7 } = require('circomlib')
+const merkletreeDef = require('../_build/contracts/MerkleTree.json')
+const provider = new ethers.providers.JsonRpcProvider('http://localhost:8545')
+const privateKey = '0x989d5b4da447ba1c7f5d48e3b4310d0eec08d4abd0f126b58249598abd8f4c37'
+const wallet = new ethers.Wallet(privateKey, provider)
+
+const merkleTreeFactory = new ethers.ContractFactory(merkletreeDef.abi, merkletreeDef.bytecode, wallet)
 
 contract('MerkleTree', ([owner]) => {
   const n1 = [
@@ -37,7 +43,8 @@ contract('MerkleTree', ([owner]) => {
   let merkleTreeJS
 
   beforeEach('Setup contract for each test', async () => {
-    merkleTreeContract = await MerkleTree.new(4, 0)
+    merkleTreeContract = await merkleTreeFactory.deploy(4, 0)
+    await merkleTreeContract.deployed()
     await merkleTreeContract.whitelistAddress(owner)
 
     merkleTreeJS = createMerkleTree(4, BigInt(0))

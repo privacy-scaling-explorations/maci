@@ -11,15 +11,15 @@ module.exports = async (deployer) => {
 
   // Deploy execution state merkle tree
   // (The append-only merkle tree)
-  const executionStateMT = await deployer.deploy(
+  const stateTree = await deployer.deploy(
     MerkleTree,
     merkleTreeConfig.treeDepth,
     merkleTreeConfig.zeroValue
   )
 
-  // Deploy registry merkle tree
-  // (Merkle tree to store 'registered' users)
-  const registryMT = await deployer.deploy(
+  // Deploy results merkle tree
+  // (Merkle tree to store 'registered' users and their associated votes)
+  const resultsTree = await deployer.deploy(
     MerkleTree,
     merkleTreeConfig.treeDepth,
     merkleTreeConfig.zeroValue
@@ -27,19 +27,20 @@ module.exports = async (deployer) => {
 
   const maci = await deployer.deploy(
     MACI,
-    executionStateMT.address,
-    registryMT.address
+    stateTree.address,
+    resultsTree.address
   )
 
   // Allow MACI contract to call `insert` and `update` methods
   // on the MerkleTrees
-  await executionStateMT.whitelistAddress(maci.address)
-  await registryMT.whitelistAddress(maci.address)
+  await stateTree.whitelistAddress(maci.address)
+  await resultsTree.whitelistAddress(maci.address)
 
   // Saves addresses
   global.contractAddresses = {
+    mimcAddress: MiMC.address,
     maciAddress: maci.address,
-    executionStateMTAddress: executionStateMT.address,
-    registryMTAddress: registryMT.address
+    stateTreeAddress: stateTree.address,
+    resultsTreeAddress: resultsTree.address
   }
 }

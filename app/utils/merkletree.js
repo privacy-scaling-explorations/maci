@@ -293,7 +293,7 @@ const loadMerkleTreeFromDb = async (
   mkName: String,
 ): MerkleTree => {
   const mkQuery = {
-    text: 'SELECT * FROM merkletrees WHERE name = $1 LIMIT 1',
+    text: 'SELECT * FROM merkletrees WHERE name = $1 LIMIT 1;',
     values: [mkName]
   }
   const mkResp = await pool.query(mkQuery)
@@ -319,7 +319,7 @@ const loadMerkleTreeFromDb = async (
 
   // Get leaves
   const leavesQuery = {
-    text: 'SELECT * FROM leaves WHERE merkletree_id = $1 ORDER BY index ASC',
+    text: 'SELECT * FROM leaves WHERE merkletree_id = $1 ORDER BY index ASC;',
     values: [mkRes.id]
   }
   const leavesResp = await pool.query(leavesQuery)
