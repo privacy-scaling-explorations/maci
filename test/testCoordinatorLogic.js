@@ -46,7 +46,7 @@ const sleep = (ms) => {
   })
 }
 
-describe('GET /', function () {
+describe('GET /', () => {
   let coordinatorPublicKey
 
   const userPrvKey = randomPrivateKey()

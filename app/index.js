@@ -194,7 +194,6 @@ maciContract.on('UserInserted', async (
 
   // Invalid index, something went wrong....
   // TODO: Test to make sure this never happens
-  console.log(userIndex.toString(), 'userIndex')
   if (!(resultTree.nextIndex.toString() === userIndex.toString())) {
     throw new Error('[UserInserted] userIndex and resultTree out of sync....')
   }

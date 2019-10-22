@@ -1,14 +1,28 @@
 const ethers = require('ethers')
+
+const { mimcAddress } = require('../_build/contracts/DeployedAddresses.json')
 const { createMerkleTree } = require('../_build/utils/merkletree')
 const { mimc7 } = require('circomlib')
+
 const merkletreeDef = require('../_build/contracts/MerkleTree.json')
 const provider = new ethers.providers.JsonRpcProvider('http://localhost:8545')
 const privateKey = '0x989d5b4da447ba1c7f5d48e3b4310d0eec08d4abd0f126b58249598abd8f4c37'
 const wallet = new ethers.Wallet(privateKey, provider)
 
-const merkleTreeFactory = new ethers.ContractFactory(merkletreeDef.abi, merkletreeDef.bytecode, wallet)
+// Workaround to link external libraries
+// https://github.com/ethers-io/ethers.js/issues/195#issuecomment-396350174
+const linkLibraries = (bytecode, libName, libAddress) => {
+  let symbol = '__' + libName + '_'.repeat(40 - libName.length - 2)
+  return bytecode.split(symbol).join(libAddress.toLowerCase().substr(2))
+}
 
-contract('MerkleTree', ([owner]) => {
+const merkleTreeFactory = new ethers.ContractFactory(
+  merkletreeDef.abi,
+  linkLibraries(merkletreeDef.bytecode, 'MiMC', mimcAddress),
+  wallet
+)
+
+describe('MerkleTree', () => {
   const n1 = [
     2797420674019184276147165048582285497712289330881034162721130566n,
     8427934753412846593442005159092452875457323490236044611796073070n,
@@ -45,7 +59,7 @@ contract('MerkleTree', ([owner]) => {
   beforeEach('Setup contract for each test', async () => {
     merkleTreeContract = await merkleTreeFactory.deploy(4, 0)
     await merkleTreeContract.deployed()
-    await merkleTreeContract.whitelistAddress(owner)
+    await merkleTreeContract.whitelistAddress(wallet.address)
 
     merkleTreeJS = createMerkleTree(4, BigInt(0))
   })
