@@ -35,6 +35,7 @@ const resultTree = new ethers.Contract(
   wallet
 )
 
+// Sleep to ensure events are emitted
 const sleep = (ms) => {
   return new Promise(resolve => {
     setTimeout(resolve, ms)

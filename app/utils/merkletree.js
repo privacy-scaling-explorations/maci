@@ -337,5 +337,6 @@ const loadMerkleTreeFromDb = async (
 module.exports = {
   createMerkleTree,
   saveMerkleTreeToDb,
-  loadMerkleTreeFromDb
+  loadMerkleTreeFromDb,
+  MerkleTree
 }

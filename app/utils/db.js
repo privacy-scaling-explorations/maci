@@ -23,8 +23,14 @@ const initDb = async () => {
     throw new Error('Unable to connect to database')
   }
 
-  // Initializes the database if needed
+  // If test then drop all tables
+  if (process.env.ENV_TYPE === 'TEST') {
+    await pool.query('DROP SCHEMA public CASCADE;')
+    await pool.query('CREATE SCHEMA public;')
+    console.log('Dropping database tables')
+  }
 
+  // Initializes the database if needed
   // Vault (private and public key)
   try {
     await pool.query('SELECT * FROM vault;')

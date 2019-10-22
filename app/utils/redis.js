@@ -13,17 +13,24 @@ const redisClient = redis.createClient({
 const redisGet = promisify(redisClient.get).bind(redisClient)
 const redisSet = promisify(redisClient.set).bind(redisClient)
 const redisOn = promisify(redisClient.on).bind(redisClient)
+const redisFlushAll = promisify(redisClient.flushall).bind(redisClient)
 
 // Init redis
 const initRedis = async () => {
   // redisOn doesn't work for some reason
   // Try setting a value that expires after 10 seconds
   await redisSet('42', 42, 'EX', 10)
+
+  if (process.env.ENV_TYPE === 'TEST') {
+    await redisFlushAll('ASYNC')
+    console.log('Flushing redis cache')
+  }
 }
 
 module.exports = {
   redisGet,
   redisSet,
   redisOn,
+  redisFlushAll,
   initRedis
 }

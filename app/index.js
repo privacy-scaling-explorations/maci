@@ -4,7 +4,7 @@ import type { $Request, $Response } from 'express'
 
 const { maciContract } = require('./utils/contracts')
 const { privateToPublicKey, decrypt } = require('./utils/crypto')
-const { createMerkleTree } = require('./utils/merkletree')
+const { createMerkleTree, saveMerkleTreeToDb, loadMerkleTreeFromDb, MerkleTree } = require('./utils/merkletree')
 const { stringifyBigInts, unstringifyBigInts } = require('./utils/helpers')
 
 const { eddsa, mimc7 } = require('circomlib')
@@ -37,8 +37,26 @@ app.use(bodyParser.json())
 const privateKey: BigInt = BigInt('7967026810230244945878656285404800478023519231012520937555019323290519989206')
 const publicKey: BigInt = privateToPublicKey(privateKey)
 
-const stateTree = createMerkleTree(4, BigInt(0))
-const resultTree = createMerkleTree(4, BigInt(0))
+const treeDepth = 4
+const stateTreeName = 'StateTree'
+const resultTreeName = 'ResultTree'
+
+const getMerkleTree = async (name: String): MerkleTree => {
+  try {
+    const t = await loadMerkleTreeFromDb(dbPool, name)
+    return t
+  } catch (e) {
+    return createMerkleTree(treeDepth, 0n)
+  }
+}
+
+const getStateTree = async (): MerkleTree => {
+  return getMerkleTree(stateTreeName)
+}
+
+const getResultTree = async (): MerkleTree => {
+  return getMerkleTree(resultTreeName)
+}
 
 /** Pub/Sub Events on the contract **/
 maciContract.on('MessagePublished', async (
@@ -112,6 +130,9 @@ maciContract.on('MessagePublished', async (
     // Get user index
     const curUser: User = oldPublicKeyRes.rows[0]
 
+    // Try get merkletree
+    const resultTree = await getResultTree()
+
     // Get merkle tree path
     // eslint-disable-next-line no-unused-vars
     const [treePath, treePathPos] = resultTree.getPath(Number(curUser.index))
@@ -146,7 +167,9 @@ maciContract.on('MessageInserted', async (_hashedEncryptedMessage: BigInt) => {
   const encryptedMessage: MessageCache = unstringifyBigInts(JSON.parse(encryptedMessageStr))
 
   // Insert into local state
+  const stateTree = await getStateTree()
   stateTree.insert(encryptedMessage.original)
+  await saveMerkleTreeToDb(dbPool, stateTreeName, stateTree)
 })
 
 maciContract.on('UserInserted', async (
@@ -165,6 +188,9 @@ maciContract.on('UserInserted', async (
     console.log('[UserInserted] Missing decrypted message.... returning')
     return
   }
+
+  // Try get merkletree
+  const resultTree = await getResultTree()
 
   // Invalid index, something went wrong....
   // TODO: Test to make sure this never happens
@@ -192,6 +218,7 @@ maciContract.on('UserInserted', async (
     ]
   })
   resultTree.insert(encryptedMessage.original)
+  await saveMerkleTreeToDb(dbPool, resultTreeName, resultTree)
 })
 
 maciContract.on('UserUpdated', async (
@@ -243,13 +270,18 @@ maciContract.on('UserUpdated', async (
   })
 
   // Update results tree
+  const resultTree = await getResultTree()
   resultTree.update(Number(userIndex), newEncryptedMessage.original)
+  await saveMerkleTreeToDb(dbPool, resultTreeName, resultTree)
 })
 
 /** API Endpoints **/
 // Create new user
 // Gets merkle root
-app.get('/merkleroots', (req: $Request, res: $Response) => {
+app.get('/merkleroots', async (req: $Request, res: $Response) => {
+  const stateTree = await getStateTree()
+  const resultTree = await getResultTree()
+
   res.send(stringifyBigInts({
     stateTree: stateTree.root,
     resultTree: resultTree.root

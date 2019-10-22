@@ -1,7 +1,7 @@
 // @flow
 const { getLatestDeployedAddress } = require('./helpers')
 
-export type EnvType = "DEV" | "PROD";
+export type EnvType = "TEST" | "DEV" | "PROD";
 
 export type ContractAddresses = {
     MACI_CONTRACT_ADDRESS: ?String,
@@ -26,7 +26,7 @@ const getContractAddresses = (): ContractAddresses => {
   // Development by default
   const envType: EnvType = process.env.ENV_TYPE || 'DEV'
 
-  if (envType === 'DEV') {
+  if (envType === 'DEV' || envType === 'TEST') {
     // If its development, just read from the compiled contract
     const maciContractDef = require('../contracts/MACI.json')
     const merkleTreeContractDef = require('../contracts/MerkleTree.json')
@@ -59,13 +59,13 @@ const getDbCredentials = (): DbCredentials => {
   // Development by default
   const envType: EnvType = process.env.ENV_TYPE || 'DEV'
 
-  const DB_USER = process.env.ENV_TYPE
+  const DB_USER = process.env.DB_USER
   const DB_PASSWORD = process.env.DB_PASSWORD
   const DB_HOST = process.env.DB_HOST
   const DB_PORT = process.env.DB_PORT
   const DB_NAME = process.env.DB_NAME
 
-  if (envType === 'DEV') {
+  if (envType === 'DEV' || envType === 'TEST') {
     return {
       DB_USER: DB_USER || 'maci',
       DB_PASSWORD: DB_PASSWORD || 'maci',
@@ -103,7 +103,7 @@ const getRedisCredentials = (): RedisCredentials => {
   const REDIS_PORT = process.env.REDIS_PORT
   const REDIS_PASSWORD = process.env.REDIS_PASSWORD
 
-  if (envType === 'DEV') {
+  if (envType === 'DEV' || envType === 'TEST') {
     return {
       REDIS_HOST: REDIS_HOST || '127.0.0.1',
       REDIS_PORT: REDIS_PORT || '6379',

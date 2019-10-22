@@ -9,7 +9,7 @@
     "start": "flow-node app/index.js",
     "dev": "nodemon \"flow-node app/index.js\"",
     "clean": "rm -rf app/circuits/* && rm -rf app/contracts/*",
-    "test": "yarn app:build && truffle migrate --reset --network development && truffle test",
+    "test": "export ENV_TYPE=TEST && yarn app:build && truffle migrate --reset --network development && truffle test",
     "ganache": "ganache-cli -l 8000000 -m helloworld",
     "app:build": "flow-remove-types app/ -d _build/ && cp -r app/contracts _build/contracts && cp -r app/circuits _build/circuits",
     "circuit:compile": "mkdir -p app/circuits && circom circuits/circuit.circom -o app/circuits/circuit.json",
