@@ -95,11 +95,14 @@ const initDb = async () => {
   try {
     await pool.query('SELECT * FROM leaves LIMIT 1;')
   } catch (e) {
+    // public_key is the user's public key used to
+    // encrypt the data in `data` column (with a structure of { data: BigInt[] })
     await pool.query(`
       CREATE TABLE leaves (
         merkletree_id INTEGER REFERENCES merkletrees(id),
         index INTEGER NOT NULL,
         data JSONB NOT NULL,
+        public_key TEXT[] NOT NULL,
         hash TEXT NOT NULL
       );
     `)

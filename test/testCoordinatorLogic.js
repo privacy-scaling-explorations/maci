@@ -98,10 +98,15 @@ describe('GET /', () => {
       coordinatorPublicKey
     )
 
-    // Get current merkletree root
+    // Get current merkletree root (contract)
     const stateTreeRoot = await stateTreeContract.getRoot()
     let sameStateTreeRoot = true
     let loopIter = 0
+
+    // Get current merkletree root (local db)
+    const coordinatorRoots = await supertest(app).get('/merkleroots')
+    const coordinatorStateTreeRoot = coordinatorRoots.body.stateTree
+    let sameCoordinatorStateTreeRoot = true
 
     // Publish message
     await maciContract.pubishMessage(
@@ -109,12 +114,29 @@ describe('GET /', () => {
       stringifyBigInts(userPubKey)
     )
 
-    // Wait until merkle tree updates
+    // Wait until merkle tree updates in smart contract
     while (sameStateTreeRoot) {
       const curStateTreeRoot = await stateTreeContract.getRoot()
       sameStateTreeRoot = curStateTreeRoot.toString() === stateTreeRoot.toString()
 
       if (sameStateTreeRoot) {
+        await sleep(5000) // Sleep 5 seconds
+        loopIter += 1
+
+        // Wait 1 minute max
+        if (loopIter > 12) {
+          throw new Error('Taking too long for StateTree MerkleTree to be updated')
+        }
+      }
+    }
+
+    // Wait until merkle tree updates in database
+    loopIter = 0
+    while (sameCoordinatorStateTreeRoot) {
+      const curCoordinatorRoots = await supertest(app).get('/merkleroots')
+      sameCoordinatorStateTreeRoot = coordinatorStateTreeRoot.toString() === curCoordinatorRoots.body.stateTree.toString()
+
+      if (sameCoordinatorStateTreeRoot) {
         await sleep(5000) // Sleep 5 seconds
         loopIter += 1
 
@@ -127,13 +149,12 @@ describe('GET /', () => {
 
     // This means that new user should be published
     // make sure the merkleroot is the same
-    // const newUserStateTreeRoot = await stateTree.getRoot()
-    // const coordinatorRoots = await supertest(app).get('/merkleroots')
-    // const coordinatorStateTreeRoot = coordinatorRoots.body.stateTree
-    // const newUserStateTreeRootStr = newUserStateTreeRoot.toString()
+    const newUserStateTreeRoot = await stateTreeContract.getRoot()
+    const newUserStateTreeRootStr = newUserStateTreeRoot.toString()
 
-    // TODO: Use database to store stuff
-    // console.log(coordinatorStateTreeRoot)
-    // console.log(newUserStateTreeRootStr)
+    const newCoordinatorRoots = await supertest(app).get('/merkleroots')
+    const newCoordinatorStateTreeRoot = newCoordinatorRoots.body.stateTree
+
+    assert.equal(newCoordinatorStateTreeRoot.toString(), newUserStateTreeRootStr)
   })
 })

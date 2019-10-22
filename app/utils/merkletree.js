@@ -17,11 +17,14 @@ class MerkleTree {
     this.depth = depth
     this.zeroValue = zeroValue
     this.leaves = [] // Hash value of the leaves
+    this.leafNumber = Math.pow(2, depth)
 
     // Values to create the hash values of the leaves
-    // NOTE: LeavesRaw contains values of the encrypted values
-    this.leavesRaw = []
-    this.leafNumber = Math.pow(2, depth)
+    // NOTE: encryptedValues contains values of the encrypted values
+    this.encryptedValues = []
+    // Public keys used to decrypt the encrypted values
+    // (decryption key is generated via ecdh)
+    this.ecdhPublicKeys = []
 
     this.zeros = {
       0: zeroValue
@@ -55,8 +58,8 @@ class MerkleTree {
   }
 
   /* Inserts a new value into the merkle tree */
-  insert (leafRaw: Array<BigInt>) {
-    const leaf = mimc7.multiHash(leafRaw)
+  insert (encryptedValue: Array<BigInt>, publicKey: Array<BigInt>) {
+    const leaf = mimc7.multiHash(encryptedValue)
 
     let curIdx = this.nextIndex
     this.nextIndex += 1
@@ -88,13 +91,15 @@ class MerkleTree {
 
     this.root = currentLevelHash
     this.leaves.push(leaf)
-    this.leavesRaw.push(leafRaw)
+    this.encryptedValues.push(encryptedValue)
+    this.ecdhPublicKeys.push(publicKey)
   }
 
   /* Updates merkletree leaf at `leafIndex` with `newLeafValue` */
   update (
     leafIndex: Number,
-    newLeafValueRaw: Array<BigInt>
+    encryptedValue: Array<BigInt>,
+    publicKey: Array<BigInt>
   ) {
     if (leafIndex >= this.nextIndex) {
       throw new Error("Can't update leafIndex which hasn't been inserted yet!")
@@ -105,7 +110,8 @@ class MerkleTree {
 
     this._update(
       leafIndex,
-      newLeafValueRaw,
+      encryptedValue,
+      publicKey,
       path
     )
   }
@@ -118,7 +124,8 @@ class MerkleTree {
    */
   _update (
     leafIndex: Number,
-    leafRaw: Array<BigInt>,
+    encryptedValue: Array<BigInt>,
+    publicKey: Array<BigInt>,
     path: Array<BigInt>
   ) {
     if (leafIndex >= this.nextIndex) {
@@ -126,7 +133,7 @@ class MerkleTree {
     }
 
     // Get leaf hash value
-    const leaf = mimc7.multiHash(leafRaw)
+    const leaf = mimc7.multiHash(encryptedValue)
 
     let curIdx = leafIndex
     let currentLevelHash = this.leaves[leafIndex]
@@ -174,7 +181,8 @@ class MerkleTree {
 
     this.root = currentLevelHash
     this.leaves[leafIndex] = leaf
-    this.leavesRaw[leafIndex] = leafRaw
+    this.encryptedValues[leafIndex] = encryptedValue
+    this.ecdhPublicKeys[leafIndex] = publicKey
   }
 
   /*  Gets the path needed to construct a the tree root
@@ -253,38 +261,35 @@ const saveMerkleTreeToDb = async (
     ]
   }
 
-  try {
-    // Saves merkle tree state
-    await pool.query(mkQuery)
+  // Saves merkle tree state
+  await pool.query(mkQuery)
 
-    // Get merkletree id from db
-    const mkTreeRes = await pool.query({
-      text: 'SELECT * FROM merkletrees WHERE name = $1 LIMIT 1;',
-      values: [mkName]
-    })
-    const mkTreeId = mkTreeRes.rows[0].id
+  // Get merkletree id from db
+  const mkTreeRes = await pool.query({
+    text: 'SELECT * FROM merkletrees WHERE name = $1 LIMIT 1;',
+    values: [mkName]
+  })
+  const mkTreeId = mkTreeRes.rows[0].id
 
-    // Current leaf index
-    const leafIdx = mk.nextIndex - 1
+  // Current leaf index
+  const leafIdx = mk.nextIndex - 1
 
-    const leafQuery = {
-      text: `INSERT INTO 
-        leaves(merkletree_id, index, data, hash)
-        VALUES($1, $2, $3, $4)
+  const leafQuery = {
+    text: `INSERT INTO 
+        leaves(merkletree_id, index, data, public_key, hash)
+        VALUES($1, $2, $3, $4, $5)
         `,
-      values: [
-        mkTreeId,
-        leafIdx,
-        { data: stringifyBigInts(mk.leavesRaw[leafIdx]) },
-        stringifyBigInts(mk.leaves[leafIdx])
-      ]
-    }
-
-    // Saves latest leaf to merkletree id
-    await pool.query(leafQuery)
-  } catch (e) {
-    console.log(`Error: ${e}`)
+    values: [
+      mkTreeId,
+      leafIdx,
+      { data: stringifyBigInts(mk.encryptedValues[leafIdx]) },
+      stringifyBigInts(mk.ecdhPublicKeys[leafIdx]),
+      stringifyBigInts(mk.leaves[leafIdx])
+    ]
   }
+
+  // Saves latest leaf to merkletree id
+  await pool.query(leafQuery)
 }
 
 // Help function to load merkletree from a database
@@ -326,10 +331,12 @@ const loadMerkleTreeFromDb = async (
 
   // Get leaves values
   const leaves = leavesResp.rows.map((x: Any): BigInt => unstringifyBigInts(x.hash))
-  const leavesRaw = leavesResp.rows.map((x: Any): Array<BigInt> => unstringifyBigInts(x.data).data)
+  const encryptedValues = leavesResp.rows.map((x: Any): Array<BigInt> => unstringifyBigInts(x.data).data)
+  const ecdhPublicKeys = leavesResp.rows.map((x: Any): Array<BigInt> => unstringifyBigInts(x.public_key))
 
   mk.leaves = leaves
-  mk.leavesRaw = leavesRaw
+  mk.encryptedValues = encryptedValues
+  mk.ecdhPublicKeys = ecdhPublicKeys
 
   return mk
 }

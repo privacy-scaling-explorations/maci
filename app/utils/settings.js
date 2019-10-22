@@ -94,7 +94,6 @@ const getDbCredentials = (): DbCredentials => {
 }
 
 const getRedisCredentials = (): RedisCredentials => {
-  // TODO: Write redis config
   const envType: EnvType = process.env.ENV_TYPE || 'DEV'
 
   const REDIS_HOST = process.env.REDIS_HOST

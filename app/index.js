@@ -24,8 +24,10 @@ type User = {
 };
 
 type MessageCache = {
-  original: Array<BigInt>,
-  decrypted: Array<BigInt>
+  original: Array<BigInt>, // Original submitted format (encrypted)
+  userOldPublicKey: Array<BigInt>, // User's old selected public key
+  userNewPublicKey: Array<BigInt>, // User's new selected public key
+  ecdhPublicKey: Array<BigInt> // public_key broadcasted along with the message (perform ecdh to get the decryption key)
 };
 
 // type DecryptedMessage = Array<BigInt>;
@@ -113,7 +115,9 @@ maciContract.on('MessagePublished', async (
     stringifyBigInts(hashedEncryptedMessage),
     JSON.stringify({
       original: stringifyBigInts(encryptedMessage),
-      decrypted: stringifyBigInts(decryptedMessage)
+      userOldPublicKey: stringifyBigInts(decryptedMessage.slice(0, 2)),
+      userNewPublicKey: stringifyBigInts(decryptedMessage.slice(3, 5)),
+      ecdhPublicKey: stringifyBigInts(publisherPublicKey)
     })
   )
 
@@ -145,8 +149,7 @@ maciContract.on('MessagePublished', async (
     )
   }
 
-  /** Smart contract state **/
-  // Insert into state tree
+  // If able to decrypt message, then insert message
   await maciContract.insertMessage(stringifyBigInts(hashedEncryptedMessage))
 })
 
@@ -163,12 +166,12 @@ maciContract.on('MessageInserted', async (_hashedEncryptedMessage: BigInt) => {
     return
   }
 
-  // Reconstruct the encrypted message
-  const encryptedMessage: MessageCache = unstringifyBigInts(JSON.parse(encryptedMessageStr))
+  // Reconstruct the cached message
+  const msgCache: MessageCache = unstringifyBigInts(JSON.parse(encryptedMessageStr))
 
   // Insert into local state
   const stateTree = await getStateTree()
-  stateTree.insert(encryptedMessage.original)
+  stateTree.insert(msgCache.original, msgCache.ecdhPublicKey)
   await saveMerkleTreeToDb(dbPool, stateTreeName, stateTree)
 })
 
@@ -199,8 +202,8 @@ maciContract.on('UserInserted', async (
   }
 
   // Reconstruct the encrypted message
-  const encryptedMessage: MessageCache = unstringifyBigInts(JSON.parse(encryptedMessageStr))
-  const userPublicKey = [encryptedMessage.decrypted[0], encryptedMessage.decrypted[1]]
+  const msgCache: MessageCache = unstringifyBigInts(JSON.parse(encryptedMessageStr))
+  const userPublicKey = msgCache.userOldPublicKey // Using old as we're inserting, not updating
 
   // TODO: Make sure the hashes are the same
 
@@ -217,7 +220,7 @@ maciContract.on('UserInserted', async (
       stringifyBigInts(hashedEncryptedMessage)
     ]
   })
-  resultTree.insert(encryptedMessage.original)
+  resultTree.insert(msgCache.original, msgCache.ecdhPublicKey)
   await saveMerkleTreeToDb(dbPool, resultTreeName, resultTree)
 })
 
@@ -241,14 +244,9 @@ maciContract.on('UserUpdated', async (
     return
   }
 
-  const newEncryptedMessage: MessageCache = unstringifyBigInts(JSON.parse(newEncryptedMessageStr))
+  const msgCache: MessageCache = unstringifyBigInts(JSON.parse(newEncryptedMessageStr))
 
-  const decryptedMessage = newEncryptedMessage.decrypted
-  // const oldPublicKey = decryptedMessage.slice(0, 2)
-  // const oldPublicKeyHash = mimc7.multiHash(oldPublicKey)
-
-  const newPublicKey = decryptedMessage.slice(3, 5)
-  // const newVoteResult = decryptedMessage[5]
+  const newPublicKey = msgCache.userNewPublicKey
   const newPublicKeyHash = mimc7.multiHash(newPublicKey)
 
   // Update user
@@ -271,7 +269,7 @@ maciContract.on('UserUpdated', async (
 
   // Update results tree
   const resultTree = await getResultTree()
-  resultTree.update(Number(userIndex), newEncryptedMessage.original)
+  resultTree.update(Number(userIndex), msgCache.original, msgCache.ecdhPublicKey)
   await saveMerkleTreeToDb(dbPool, resultTreeName, resultTree)
 })
 
@@ -294,6 +292,7 @@ app.get('/publickey', (req: $Request, res: $Response) => {
 })
 
 // Entrypoint
+// TODO: Make database initialization run before app is listening
 app.listen(port, async () => {
   console.log(`Coordinator service listening on port ${port}!`)
 

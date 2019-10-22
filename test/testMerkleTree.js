@@ -69,7 +69,7 @@ describe('MerkleTree', () => {
       const h = mimc7.multiHash(n)
 
       await merkleTreeContract.insert(h.toString())
-      merkleTreeJS.insert(n)
+      merkleTreeJS.insert(n, [0n, 0n])
     }
 
     for (let i = 0; i < ns.length; i++) {
@@ -83,7 +83,7 @@ describe('MerkleTree', () => {
       const h = mimc7.multiHash(n)
 
       await merkleTreeContract.insert(h.toString())
-      merkleTreeJS.insert(n)
+      merkleTreeJS.insert(n, [0n, 0n])
     }
 
     const leafIndex = 1
@@ -96,7 +96,7 @@ describe('MerkleTree', () => {
       newLeafValue.toString(),
       path.map(x => x.toString())
     )
-    merkleTreeJS.update(leafIndex, newLeafRawValue)
+    merkleTreeJS.update(leafIndex, newLeafRawValue, [0n, 0n])
 
     const newRoot = await merkleTreeContract.getRoot()
     assert.equal(merkleTreeJS.root.toString(), newRoot.toString())
@@ -107,7 +107,7 @@ describe('MerkleTree', () => {
       const h = mimc7.multiHash(n)
 
       await merkleTreeContract.insert(h.toString())
-      merkleTreeJS.insert(n)
+      merkleTreeJS.insert(n, [0n, 0n])
     }
 
     try {
@@ -137,7 +137,7 @@ describe('MerkleTree', () => {
       const h = mimc7.multiHash(n)
 
       await merkleTreeContract.insert(h.toString())
-      merkleTreeJS.insert(n)
+      merkleTreeJS.insert(n, [0n, 0n])
 
       contractRoot = await merkleTreeContract.getRoot()
       assert.equal(merkleTreeJS.root.toString(), contractRoot)
