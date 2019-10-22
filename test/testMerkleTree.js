@@ -1,11 +1,37 @@
 const MerkleTree = artifacts.require('./MerkleTree.sol')
 const { createMerkleTree } = require('../_build/utils/merkletree')
+const { mimc7 } = require('circomlib')
 
 contract('MerkleTree', ([owner]) => {
-  const n1 = 21279832585910446005428488706555013844945993997473560159322188895856273092398n
-  const n2 = 58046938963330851846154927853078139681080522834976871470120681972862700314410n
-  const n3 = 48869896598428919793041129478133279178294567853142276261094715426824301555925n
-  const n4 = 2051216592422994937886755928875470173110996771989424329915454080846834603127n
+  const n1 = [
+    2797420674019184276147165048582285497712289330881034162721130566n,
+    8427934753412846593442005159092452875457323490236044611796073070n,
+    9469411125398348049965633920124821744896988621636234325004950105n,
+    2923302930217940454917090977863765617169883907003492572894363522n,
+    0n
+  ]
+  const n2 = [
+    1330609023410448726619682254666295116250929207613706337286188962n,
+    7283492628341460800002638659392299735744302068883365423320392808n,
+    96864075774826222663476299560881317026395539922755910892839713n,
+    2456138780885236327953645884408972334942885107455927146618659151n,
+    1n
+  ]
+  const n3 = [
+    6936974700787696040635595887625314144179272410714180932753872117n,
+    6250380342377444598507603048104066119476512507053655992814127749n,
+    5668013437164926280306746546748473260430823993035190591406122953n,
+    1585442726572570137149962979954409407260045685953150336947296067n,
+    5n
+  ]
+  const n4 = [
+    5229547711681003634222565892199961035333819119411843822418215696n,
+    7706096548158393230435363596458038582375557031601041353397380351n,
+    3909458901148920235564639377356912641542827392978411156375333476n,
+    1969937445135844943809267310847101382855620527876925674981003198n,
+    9n
+  ]
+  const ns = [n1, n2, n3, n4]
 
   let merkleTreeContract
   let merkleTreeJS
@@ -18,25 +44,30 @@ contract('MerkleTree', ([owner]) => {
   })
 
   it('MerkleTree Insert', async () => {
-    for (let n in [n1, n2, n3, n4]) {
-      await merkleTreeContract.insert(n.toString())
+    for (let n in ns) {
+      const h = mimc7.multiHash(n)
+
+      await merkleTreeContract.insert(h.toString())
       merkleTreeJS.insert(n)
     }
 
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < ns.length; i++) {
       const leaf = await merkleTreeContract.getLeafAt(i.toString())
-      assert.equal(merkleTreeJS.leafs[i].toString(), leaf.toString())
+      assert.equal(merkleTreeJS.leaves[i].toString(), leaf.toString())
     }
   })
 
   it('MerkleTree Update', async () => {
-    for (let n in [n1, n2, n3, n4]) {
-      await merkleTreeContract.insert(n.toString())
+    for (let n in ns) {
+      const h = mimc7.multiHash(n)
+
+      await merkleTreeContract.insert(h.toString())
       merkleTreeJS.insert(n)
     }
 
     const leafIndex = 1
-    const newLeafValue = 72497820010176822798624954500809185021417527136581916487624992483771957765132n
+    const newLeafRawValue = [1n, 2n, 3n, 4n, 5n]
+    const newLeafValue = mimc7.multiHash(newLeafRawValue)
 
     const [path, _] = merkleTreeJS.getPath(leafIndex)
     await merkleTreeContract.update(
@@ -44,15 +75,17 @@ contract('MerkleTree', ([owner]) => {
       newLeafValue.toString(),
       path.map(x => x.toString())
     )
-    merkleTreeJS.update(leafIndex, newLeafValue)
+    merkleTreeJS.update(leafIndex, newLeafRawValue)
 
     const newRoot = await merkleTreeContract.getRoot()
     assert.equal(merkleTreeJS.root.toString(), newRoot.toString())
   })
 
   it('MerkleTree Update Fails', async () => {
-    for (let n in [n1, n2, n3, n4]) {
-      await merkleTreeContract.insert(n.toString())
+    for (let n in ns) {
+      const h = mimc7.multiHash(n)
+
+      await merkleTreeContract.insert(h.toString())
       merkleTreeJS.insert(n)
     }
 
@@ -68,7 +101,7 @@ contract('MerkleTree', ([owner]) => {
       // Line above should throw an exception
       // this assertion should never be reached
       assert.equal(true, false)
-    } catch(e) {}
+    } catch (e) {}
   })
 
   it('Merkle Tree Root Calculation', async () => {
@@ -79,8 +112,10 @@ contract('MerkleTree', ([owner]) => {
     assert.equal(merkleTreeJS.root.toString(), contractRoot.toString())
 
     // Insert items and validate the root will be the same
-    for (let n in [n1, n2, n3, n4]) {
-      await merkleTreeContract.insert(n.toString())
+    for (let n in ns) {
+      const h = mimc7.multiHash(n)
+
+      await merkleTreeContract.insert(h.toString())
       merkleTreeJS.insert(n)
 
       contractRoot = await merkleTreeContract.getRoot()
