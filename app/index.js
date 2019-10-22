@@ -182,7 +182,7 @@ maciContract.on('UserInserted', async (
   // TODO: Make sure the resultTree and user inserted successfully
   await dbPool.query({
     text: `INSERT INTO 
-    users(index, public_key, public_key_hash=)
+    users(index, public_key, public_key_hash)
     VALUES($1, $2, $3)
     `,
     values: [
