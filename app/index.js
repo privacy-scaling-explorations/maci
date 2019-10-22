@@ -8,7 +8,8 @@ const { createMerkleTree } = require('./utils/merkletree')
 const { stringifyBigInts, unstringifyBigInts } = require('./utils/helpers')
 
 const { eddsa, mimc7 } = require('circomlib')
-const { initDb } = require('./utils/db')
+const { initDb, dbPool } = require('./utils/db')
+const { initRedis, redisGet, redisSet } = require('./utils/redis')
 
 const express = require('express')
 const bodyParser = require('body-parser')
@@ -17,11 +18,17 @@ const port = 3000
 
 // Types
 type User = {
-  idx: Number,
-  vote: Number // 0 or 1 (for now...)
+  index: Number,
+  public_key: Array<BigInt>,
+  public_key_hash: BigInt
 };
 
-type DecryptedMessage = Array<BigInt>;
+type MessageCache = {
+  original: Array<BigInt>,
+  decrypted: Array<BigInt>
+};
+
+// type DecryptedMessage = Array<BigInt>;
 
 // Parse application/json
 app.use(bodyParser.json())
@@ -32,12 +39,6 @@ const publicKey: BigInt = privateToPublicKey(privateKey)
 
 const stateTree = createMerkleTree(4, BigInt(0))
 const resultTree = createMerkleTree(4, BigInt(0))
-
-// users: { hash(publicKey): User }
-const users: { BigInt: User } = {}
-
-// messages: { hashedEncryptedMessage: DecryptedMessage }
-const messages: { BigInt: DecryptedMessage } = {}
 
 /** Pub/Sub Events on the contract **/
 maciContract.on('MessagePublished', async (
@@ -89,23 +90,35 @@ maciContract.on('MessagePublished', async (
   }
 
   /** Coordinator state **/
-  // Save the decryptedMessage into local storage first to be retrieved later
-  messages[hashedEncryptedMessage] = decryptedMessage
+  // Save the decryptedMessage into a cacheto be retrieved later
+  await redisSet(
+    stringifyBigInts(hashedEncryptedMessage),
+    JSON.stringify({
+      original: stringifyBigInts(encryptedMessage),
+      decrypted: stringifyBigInts(decryptedMessage)
+    })
+  )
 
-  if (!(oldPublicKeyHash in users)) {
+  // Try and get oldPublicKeyHash from postgres
+  const oldPublicKeyRes = await dbPool.query({
+    text: 'SELECT * FROM USERS WHERE public_key_hash = $1',
+    values: [stringifyBigInts(oldPublicKeyHash)]
+  })
+
+  if (oldPublicKeyRes.rows.length === 0) {
     // If its a new user, call the 'insertUser' function on the smart contract
     await maciContract.insertUser(stringifyBigInts(hashedEncryptedMessage))
   } else {
     // Get user index
-    const curUser: User = users[oldPublicKeyHash]
+    const curUser: User = oldPublicKeyRes.rows[0]
 
     // Get merkle tree path
     // eslint-disable-next-line no-unused-vars
-    const [treePath, treePathPos] = resultTree.getPath(Number(curUser.idx))
+    const [treePath, treePathPos] = resultTree.getPath(Number(curUser.index))
 
     // If its an existing user then update the users
     await maciContract.updateUser(
-      curUser.idx.toString(),
+      curUser.index.toString(),
       stringifyBigInts(hashedEncryptedMessage),
       treePath.map((x: BigInt): String => x.toString())
     )
@@ -121,13 +134,19 @@ maciContract.on('MessageInserted', async (_hashedEncryptedMessage: BigInt) => {
 
   const hashedEncryptedMessage = unstringifyBigInts(_hashedEncryptedMessage.toString())
 
-  if (!(hashedEncryptedMessage in messages)) {
+  // Retrieve encrypted message from cache
+  const encryptedMessageStr = await redisGet(stringifyBigInts(hashedEncryptedMessage))
+
+  if (encryptedMessageStr === null) {
     console.log('[MessageInserted] Missing decrypted message...., returning')
     return
   }
 
+  // Reconstruct the encrypted message
+  const encryptedMessage: MessageCache = unstringifyBigInts(JSON.parse(encryptedMessageStr))
+
   // Insert into local state
-  stateTree.insert(hashedEncryptedMessage)
+  stateTree.insert(encryptedMessage.original)
 })
 
 maciContract.on('UserInserted', async (
@@ -139,7 +158,10 @@ maciContract.on('UserInserted', async (
   const hashedEncryptedMessage = unstringifyBigInts(_hashedEncryptedMessage.toString())
   const userIndex = unstringifyBigInts(_userIndex.toString())
 
-  if (!(hashedEncryptedMessage in messages)) {
+  // Retrieve encrypted message from cache
+  const encryptedMessageStr = await redisGet(stringifyBigInts(hashedEncryptedMessage))
+
+  if (encryptedMessageStr === null) {
     console.log('[UserInserted] Missing decrypted message.... returning')
     return
   }
@@ -147,23 +169,29 @@ maciContract.on('UserInserted', async (
   // Invalid index, something went wrong....
   // TODO: Test to make sure this never happens
   if (!(resultTree.nextIndex.toString() === userIndex.toString())) {
-    console.log('[UserInserted] Something went wrong oof....')
+    console.log('[UserInserted] userIndex and resultTree out of sync....')
   }
 
-  // Deconstruct message and obtain relevant parameters
-  const decryptedMessage: DecryptedMessage = messages[hashedEncryptedMessage]
-  const initialPublicKey = decryptedMessage.slice(0, 2)
-  const initialVoteResult = decryptedMessage[2]
-  const initialPublicKeyHash = mimc7.multiHash(initialPublicKey)
+  // Reconstruct the encrypted message
+  const encryptedMessage: MessageCache = unstringifyBigInts(JSON.parse(encryptedMessageStr))
+  const userPublicKey = [encryptedMessage.decrypted[0], encryptedMessage.decrypted[1]]
 
-  // Insert into user storage
-  users[initialPublicKeyHash] = {
-    idx: userIndex,
-    vote: initialVoteResult
-  }
+  // TODO: Make sure the hashes are the same
 
   // Insert user and their corresponding vote into our own tree
-  resultTree.insert(hashedEncryptedMessage)
+  // TODO: Make sure the resultTree and user inserted successfully
+  await dbPool.query({
+    text: `INSERT INTO 
+    users(index, public_key, public_key_hash=)
+    VALUES($1, $2, $3)
+    `,
+    values: [
+      resultTree.nextIndex,
+      stringifyBigInts(userPublicKey),
+      stringifyBigInts(hashedEncryptedMessage)
+    ]
+  })
+  resultTree.insert(encryptedMessage.original)
 })
 
 maciContract.on('UserUpdated', async (
@@ -177,30 +205,45 @@ maciContract.on('UserUpdated', async (
   const newHashedEncryptedMessage = unstringifyBigInts(_newHashedEncryptedMessage.toString())
   const userIndex = unstringifyBigInts(_userIndex.toString())
 
-  if (!(oldHashedEncryptedMessage in messages || newHashedEncryptedMessage in messages)) {
-    console.log('[UserUpdate] Missing decrypted message.... returning')
+  // Read from cache
+  const oldEncryptedMessageStr = await redisGet(stringifyBigInts(oldHashedEncryptedMessage))
+  const newEncryptedMessageStr = await redisGet(stringifyBigInts(newHashedEncryptedMessage))
+
+  if (oldEncryptedMessageStr === null || newEncryptedMessageStr === null) {
+    console.log('[UserUpdate] `oldEncryptedMessageStr` or `newEncryptedMessageStr` not found in cache, returning')
     return
   }
 
-  const decryptedMessage: DecryptedMessage = messages[newHashedEncryptedMessage]
-  const oldPublicKey = decryptedMessage.slice(0, 2)
-  const oldPublicKeyHash = mimc7.multiHash(oldPublicKey)
+  const newEncryptedMessage: MessageCache = unstringifyBigInts(JSON.parse(newEncryptedMessageStr))
+
+  const decryptedMessage = newEncryptedMessage.decrypted
+  // const oldPublicKey = decryptedMessage.slice(0, 2)
+  // const oldPublicKeyHash = mimc7.multiHash(oldPublicKey)
 
   const newPublicKey = decryptedMessage.slice(3, 5)
-  const newVoteResult = decryptedMessage[5]
+  // const newVoteResult = decryptedMessage[5]
   const newPublicKeyHash = mimc7.multiHash(newPublicKey)
 
-  // Remove old vote
-  users[oldPublicKeyHash] = {}
-
-  // Insert new vote
-  users[newPublicKeyHash] = {
-    idx: userIndex,
-    vote: newVoteResult
-  }
+  // Update user
+  // TODO: Save vote result?
+  await dbPool.query({
+    text: `
+      UPDATE users
+      SET
+        public_key = $1
+        public_key_hash = $2
+      WHERE
+        index = $3
+    `,
+    values: [
+      stringifyBigInts(newPublicKey),
+      stringifyBigInts(newPublicKeyHash),
+      userIndex
+    ]
+  })
 
   // Update results tree
-  resultTree.update(Number(userIndex), newHashedEncryptedMessage)
+  resultTree.update(Number(userIndex), newEncryptedMessage.original)
 })
 
 /** API Endpoints **/
@@ -222,8 +265,13 @@ app.get('/publickey', (req: $Request, res: $Response) => {
 app.listen(port, async () => {
   console.log(`Coordinator service listening on port ${port}!`)
 
-  console.log('Initializing database....')
+  console.log('Connecting to database....')
   await initDb()
+  console.log('Connected to database')
+
+  console.log('Connecting to Redis....')
+  await initRedis()
+  console.log('Connected to Redis')
 })
 
 module.exports = {

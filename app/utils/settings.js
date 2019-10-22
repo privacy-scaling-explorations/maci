@@ -16,6 +16,12 @@ export type DbCredentials = {
     DB_PORT: Number
 };
 
+export type RedisCredentials = {
+  REDIS_HOST: String,
+  REDIS_PORT: String,
+  REDIS_PASSWORD: String
+};
+
 const getContractAddresses = (): ContractAddresses => {
   // Development by default
   const envType: EnvType = process.env.ENV_TYPE || 'DEV'
@@ -74,7 +80,7 @@ const getDbCredentials = (): DbCredentials => {
         DB_HOST === undefined ||
         DB_PORT === undefined ||
         DB_NAME === undefined) {
-      throw new Error('ENV_TYPE = PROD, however not all contract addresses are provided.')
+      throw new Error('ENV_TYPE = PROD, however not all database credentials are provided.')
     }
 
     return {
@@ -89,7 +95,40 @@ const getDbCredentials = (): DbCredentials => {
   throw new Error('Environment variable ENV_TYPE is invalid')
 }
 
+const getRedisCredentials = (): RedisCredentials => {
+  // TODO: Write redis config
+  const envType: EnvType = process.env.ENV_TYPE || 'DEV'
+
+  const REDIS_HOST = process.env.REDIS_HOST
+  const REDIS_PORT = process.env.REDIS_PORT
+  const REDIS_PASSWORD = process.env.REDIS_PASSWORD
+
+  if (envType === 'DEV') {
+    return {
+      REDIS_HOST: REDIS_HOST || '127.0.0.1',
+      REDIS_PORT: REDIS_PORT || '6379',
+      REDIS_PASSWORD: REDIS_PASSWORD || 'maci'
+    }
+  } else if (envType === 'PROD') {
+    // Otherwise get addresses from the ENV Variables
+    if (REDIS_HOST === undefined ||
+        REDIS_PORT === undefined ||
+        REDIS_PASSWORD === undefined) {
+      throw new Error('ENV_TYPE = PROD, however not all redis credentials are provided.')
+    }
+
+    return {
+      REDIS_HOST,
+      REDIS_PORT,
+      REDIS_PASSWORD
+    }
+  }
+
+  throw new Error('Environment variable ENV_TYPE is invalid')
+}
+
 module.exports = {
   getContractAddresses,
-  getDbCredentials
+  getDbCredentials,
+  getRedisCredentials
 }

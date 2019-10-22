@@ -17,7 +17,10 @@ class MerkleTree {
     this.depth = depth
     this.zeroValue = zeroValue
     this.leaves = [] // Hash value of the leaves
-    this.leavesRaw = [] // Values to create the hash values of the leaves
+
+    // Values to create the hash values of the leaves
+    // NOTE: LeavesRaw contains values of the encrypted values
+    this.leavesRaw = []
     this.leafNumber = Math.pow(2, depth)
 
     this.zeros = {

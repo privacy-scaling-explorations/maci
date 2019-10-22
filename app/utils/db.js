@@ -18,7 +18,6 @@ const initDb = async () => {
   // Tries to connect to database
   try {
     await pool.query('SELECT NOW();')
-    console.log('Database connected')
   } catch (e) {
     console.log(e)
     throw new Error('Unable to connect to database')
@@ -42,11 +41,14 @@ const initDb = async () => {
   try {
     await pool.query('SELECT * FROM users LIMIT 1;')
   } catch (e) {
+    // Note: index in user corresponds to the index its
+    // located in the merkletree
     await pool.query(`
       CREATE TABLE users (
         id SERIAL PRIMARY KEY,
         index INTEGER NOT NULL,
-        public_key TEXT[] NOT NULL
+        public_key TEXT[] NOT NULL,
+        public_key_hash TEXT NOT NULL
       );
     `)
   }
@@ -96,8 +98,6 @@ const initDb = async () => {
       );
     `)
   }
-
-  console.log('Database initialized successfully')
 }
 
 module.exports = {

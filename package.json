@@ -26,6 +26,7 @@
     "flow-remove-types": "^2.108.0",
     "openzeppelin-solidity": "2.3.0",
     "pg": "^7.12.1",
+    "redis": "^2.8.0",
     "snarkjs": "^0.1.19",
     "truffle-hdwallet-provider": "^1.0.17",
     "wasmbuilder": "^0.0.8",
