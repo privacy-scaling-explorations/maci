@@ -1,6 +1,4 @@
 // @flow
-const { getLatestDeployedAddress } = require('./helpers')
-
 export type EnvType = "TEST" | "DEV" | "PROD";
 
 export type ContractAddresses = {

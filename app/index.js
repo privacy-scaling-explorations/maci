@@ -1,5 +1,4 @@
 // @flow
-
 import type { $Request, $Response } from 'express'
 
 const { maciContract } = require('./utils/contracts')
@@ -43,6 +42,7 @@ const treeDepth = 4
 const stateTreeName = 'StateTree'
 const resultTreeName = 'ResultTree'
 
+// Helper function to load merkletree
 const getMerkleTree = async (name: String): MerkleTree => {
   try {
     const t = await loadMerkleTreeFromDb(dbPool, name)
@@ -205,8 +205,6 @@ maciContract.on('UserInserted', async (
   const msgCache: MessageCache = unstringifyBigInts(JSON.parse(encryptedMessageStr))
   const userPublicKey = msgCache.userOldPublicKey // Using old as we're inserting, not updating
 
-  // TODO: Make sure the hashes are the same
-
   // Insert user and their corresponding vote into our own tree
   // TODO: Make sure the resultTree and user inserted successfully
   await dbPool.query({
@@ -250,7 +248,6 @@ maciContract.on('UserUpdated', async (
   const newPublicKeyHash = mimc7.multiHash(newPublicKey)
 
   // Update user
-  // TODO: Save vote result?
   await dbPool.query({
     text: `
       UPDATE users

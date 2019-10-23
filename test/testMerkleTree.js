@@ -1,7 +1,9 @@
 const ethers = require('ethers')
 
 const { mimcAddress } = require('../_build/contracts/DeployedAddresses.json')
-const { createMerkleTree } = require('../_build/utils/merkletree')
+const { dbPool } = require('../_build/utils/db')
+const { stringifyBigInts } = require('../_build/utils/helpers')
+const { createMerkleTree, saveMerkleTreeToDb, loadMerkleTreeFromDb } = require('../_build/utils/merkletree')
 const { mimc7 } = require('circomlib')
 
 const merkletreeDef = require('../_build/contracts/MerkleTree.json')
@@ -102,7 +104,7 @@ describe('MerkleTree', () => {
     assert.equal(merkleTreeJS.root.toString(), newRoot.toString())
   })
 
-  it('MerkleTree Update Fails', async () => {
+  it('MerkleTree Invalid Update Fails', async () => {
     for (let n in ns) {
       const h = mimc7.multiHash(n)
 
@@ -142,5 +144,30 @@ describe('MerkleTree', () => {
       contractRoot = await merkleTreeContract.getRoot()
       assert.equal(merkleTreeJS.root.toString(), contractRoot)
     }
+  })
+
+  it('Merkle Tree Serialization to/from Db', async () => {
+    const mkName = 'TEST_MERKLE_TREE'
+    const mk1 = createMerkleTree(4, 0n)
+
+    // Need to save on every insert
+    mk1.insert(n1, [42n, 32n])
+    await saveMerkleTreeToDb(dbPool, mkName, mk1)
+    mk1.insert(n2, [52n, 32n])
+    await saveMerkleTreeToDb(dbPool, mkName, mk1)
+
+    const mk2 = await loadMerkleTreeFromDb(dbPool, mkName)
+
+    const stringify = (x) => JSON.stringify(stringifyBigInts(x))
+
+    assert.equal(mk1.nextIndex, mk2.nextIndex)
+    assert.equal(mk1.depth.toString(), mk2.depth.toString())
+    assert.equal(mk1.leafNumber.toString(), mk2.leafNumber.toString())
+    assert.equal(mk1.root.toString(), mk2.root.toString())
+    assert.equal(stringify(mk1.filledPaths), stringify(mk2.filledPaths))
+    assert.equal(stringify(mk1.filledSubtrees), stringify(mk2.filledSubtrees))
+    assert.equal(stringify(mk1.leaves), stringify(mk2.leaves))
+    assert.equal(stringify(mk1.ecdhPublicKeys), stringify(mk2.ecdhPublicKeys))
+    assert.equal(stringify(mk1.encryptedValues), stringify(mk2.encryptedValues))
   })
 })

@@ -46,6 +46,26 @@ const sleep = (ms) => {
   })
 }
 
+// Generic function to wait for root value changes
+const waitTillRootValueChanges = async (originalVal, f, errMsg) => {
+  let sameRoot = true
+  let loopIter = 0
+  while (sameRoot) {
+    const curRoot = await f()
+    sameRoot = originalVal.toString() === curRoot.toString()
+
+    if (sameRoot) {
+      await sleep(5000) // Sleep 5 seconds
+      loopIter += 1
+
+      // Wait 1 minute max
+      if (loopIter > 12) {
+        throw new Error(errMsg)
+      }
+    }
+  }
+}
+
 describe('GET /', () => {
   let coordinatorPublicKey
 
@@ -100,13 +120,10 @@ describe('GET /', () => {
 
     // Get current merkletree root (contract)
     const stateTreeRoot = await stateTreeContract.getRoot()
-    let sameStateTreeRoot = true
-    let loopIter = 0
 
     // Get current merkletree root (local db)
     const coordinatorRoots = await supertest(app).get('/merkleroots')
     const coordinatorStateTreeRoot = coordinatorRoots.body.stateTree
-    let sameCoordinatorStateTreeRoot = true
 
     // Publish message
     await maciContract.pubishMessage(
@@ -115,40 +132,24 @@ describe('GET /', () => {
     )
 
     // Wait until merkle tree updates in smart contract
-    while (sameStateTreeRoot) {
-      const curStateTreeRoot = await stateTreeContract.getRoot()
-      sameStateTreeRoot = curStateTreeRoot.toString() === stateTreeRoot.toString()
-
-      if (sameStateTreeRoot) {
-        await sleep(5000) // Sleep 5 seconds
-        loopIter += 1
-
-        // Wait 1 minute max
-        if (loopIter > 12) {
-          throw new Error('Taking too long for StateTree MerkleTree to be updated')
-        }
-      }
-    }
+    await waitTillRootValueChanges(
+      stateTreeRoot.toString(),
+      async () => stateTreeContract.getRoot(),
+      'StateTreeRoot values not updated after 60 seconds'
+    )
 
     // Wait until merkle tree updates in database
-    loopIter = 0
-    while (sameCoordinatorStateTreeRoot) {
-      const curCoordinatorRoots = await supertest(app).get('/merkleroots')
-      sameCoordinatorStateTreeRoot = coordinatorStateTreeRoot.toString() === curCoordinatorRoots.body.stateTree.toString()
+    await waitTillRootValueChanges(
+      coordinatorStateTreeRoot.toString(),
+      async () => {
+        const res = await supertest(app).get('/merkleroots')
+        return res.body.stateTree.toString()
+      },
+      'Taking too long for `MessagePublished` event to be admitted'
+    )
 
-      if (sameCoordinatorStateTreeRoot) {
-        await sleep(5000) // Sleep 5 seconds
-        loopIter += 1
-
-        // Wait 1 minute max
-        if (loopIter > 12) {
-          throw new Error('Taking too long for `MessagePublished` event to be admitted')
-        }
-      }
-    }
-
-    // This means that new user should be published
-    // make sure the merkleroot is the same
+    // This means that new user is published
+    // the merkleroot for the two statetrees should be the same
     const newUserStateTreeRoot = await stateTreeContract.getRoot()
     const newUserStateTreeRootStr = newUserStateTreeRoot.toString()
 
@@ -156,5 +157,10 @@ describe('GET /', () => {
     const newCoordinatorStateTreeRoot = newCoordinatorRoots.body.stateTree
 
     assert.equal(newCoordinatorStateTreeRoot.toString(), newUserStateTreeRootStr)
+
+    // TODO: Write 'beforeAll' test to accomodate
+    // insert -> insert -> update
+
+    // insert -> insert (fail) -> insert
   })
 })
