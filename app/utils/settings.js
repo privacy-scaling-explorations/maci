@@ -15,9 +15,9 @@ export type DbCredentials = {
 };
 
 export type RedisCredentials = {
-  REDIS_HOST: String,
-  REDIS_PORT: String,
-  REDIS_PASSWORD: String
+    REDIS_HOST: String,
+    REDIS_PORT: String,
+    REDIS_PASSWORD: String
 };
 
 const getContractAddresses = (): ContractAddresses => {

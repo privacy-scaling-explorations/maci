@@ -13,21 +13,16 @@ const flipBits = (x: Array<Number>): Array<Number> => {
 const _stringifyBigInts = (x: BigInt): String => stringifyBigInts(x)
 const _unstringifyBigInts = (x: Any): BigInt => unstringifyBigInts(x)
 
-const getLatestDeployedAddress = (contractJson: Object): String => {
-  const { networks } = contractJson
-
-  if (networks === undefined || networks.length === 0) {
-    throw new Error('Contract not deployed yet!')
-  }
-
-  const latestTimestamp = Object.keys(networks).sort((a, b) => b - a)[0]
-
-  return networks[latestTimestamp].address
+// Workaround to link external libraries
+// https://github.com/ethers-io/ethers.js/issues/195#issuecomment-396350174
+const linkLibraries = (bytecode, libName, libAddress) => {
+  let symbol = '__' + libName + '_'.repeat(40 - libName.length - 2)
+  return bytecode.split(symbol).join(libAddress.toLowerCase().substr(2))
 }
 
 module.exports = {
   flipBits,
-  getLatestDeployedAddress,
+  linkLibraries,
   stringifyBigInts: _stringifyBigInts,
   unstringifyBigInts: _unstringifyBigInts
 }

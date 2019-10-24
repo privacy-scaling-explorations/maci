@@ -18,15 +18,15 @@ const port = 3000
 // Types
 type User = {
   index: Number,
-  public_key: Array<BigInt>,
-  public_key_hash: BigInt
+  public_key: BigInt[],
+  public_key_hash: BigInt[],
 };
 
 type MessageCache = {
-  original: Array<BigInt>, // Original submitted format (encrypted)
-  userOldPublicKey: Array<BigInt>, // User's old selected public key
-  userNewPublicKey: Array<BigInt>, // User's new selected public key
-  ecdhPublicKey: Array<BigInt> // public_key broadcasted along with the message (perform ecdh to get the decryption key)
+  original: BigInt[], // Original submitted format (encrypted)
+  userOldPublicKey: BigInt[], // User's old selected public key
+  userNewPublicKey: BigInt[], // User's new selected public key
+  ecdhPublicKey: BigInt[] // public_key broadcasted along with the message (perform ecdh to get the decryption key)
 };
 
 // type DecryptedMessage = Array<BigInt>;

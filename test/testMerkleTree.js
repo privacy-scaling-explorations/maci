@@ -2,7 +2,7 @@ const ethers = require('ethers')
 
 const { mimcAddress } = require('../_build/contracts/DeployedAddresses.json')
 const { dbPool } = require('../_build/utils/db')
-const { stringifyBigInts } = require('../_build/utils/helpers')
+const { stringifyBigInts, linkLibraries } = require('../_build/utils/helpers')
 const { createMerkleTree, saveMerkleTreeToDb, loadMerkleTreeFromDb } = require('../_build/utils/merkletree')
 const { mimc7 } = require('circomlib')
 
@@ -10,13 +10,6 @@ const merkletreeDef = require('../_build/contracts/MerkleTree.json')
 const provider = new ethers.providers.JsonRpcProvider('http://localhost:8545')
 const privateKey = '0x989d5b4da447ba1c7f5d48e3b4310d0eec08d4abd0f126b58249598abd8f4c37'
 const wallet = new ethers.Wallet(privateKey, provider)
-
-// Workaround to link external libraries
-// https://github.com/ethers-io/ethers.js/issues/195#issuecomment-396350174
-const linkLibraries = (bytecode, libName, libAddress) => {
-  let symbol = '__' + libName + '_'.repeat(40 - libName.length - 2)
-  return bytecode.split(symbol).join(libAddress.toLowerCase().substr(2))
-}
 
 const merkleTreeFactory = new ethers.ContractFactory(
   merkletreeDef.abi,
@@ -169,5 +162,17 @@ describe('MerkleTree', () => {
     assert.equal(stringify(mk1.leaves), stringify(mk2.leaves))
     assert.equal(stringify(mk1.ecdhPublicKeys), stringify(mk2.ecdhPublicKeys))
     assert.equal(stringify(mk1.encryptedValues), stringify(mk2.encryptedValues))
+
+    // Delete from merkletree
+    await dbPool.query({
+      text: `DELETE FROM leaves
+             WHERE merkletree_id=(SELECT id from merkletrees WHERE name=$1);`,
+      values: [mkName]
+    })
+
+    await dbPool.query({
+      text: `DELETE FROM merkletrees WHERE name=$1`,
+      values: [mkName]
+    })
   })
 })

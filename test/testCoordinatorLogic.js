@@ -66,6 +66,66 @@ const waitTillRootValueChanges = async (originalVal, f, errMsg) => {
   }
 }
 
+// Creates a message in an encrypted message format
+// this is so it can broadcast it to the smart contract
+const createMsg = (
+  coordinatorPublicKey,
+  userPrivateKey,
+  voteAction, // Previous vote action, if its an initial message then it'll be the primary one
+  newPrivateKey = null, // Used when user wants to update their position
+  newVoteAction = null,
+  initialMessage = false // is this an initial message?
+) => {
+  const userPublicKey = privateToPublicKey(userPrivateKey)
+
+  const userPosition = [
+    ...userPublicKey,
+    voteAction
+  ]
+
+  let userMessage 
+
+  // Creates initial message
+  if (initialMessage) {
+    userMessage = [
+      ...userPosition,
+      0n, 0n, voteAction
+    ]
+  } else {
+    const newPublicKey = newPrivateKey !== null ? privateToPublicKey(newPrivateKey) : userPublicKey
+    const newVote = newVoteAction !== null ? newVoteAction : voteAction
+
+    userMessage = [
+      ...userPosition,
+      ...newPublicKey,
+      newVote
+    ]
+  }
+
+  const userMessageHash = mimc7.multiHash(userMessage)
+  const signature = eddsa.signMiMC(
+    userPrivateKey.toString(),
+    userMessageHash
+  )
+
+  // Insert signature into message
+  const userMessageWithSig = [
+    ...userMessage,
+    signature.R8[0],
+    signature.R8[1],
+    signature.S
+  ]
+
+  // Encrypt message with shared key
+  const userEncryptedMessage = encrypt(
+    userMessageWithSig,
+    newPrivateKey !== null ? newPrivateKey : userPrivateKey,
+    coordinatorPublicKey
+  )
+
+  return userEncryptedMessage
+}
+
 describe('GET /', () => {
   let coordinatorPublicKey
 
@@ -85,37 +145,11 @@ describe('GET /', () => {
   })
 
   it('testing coordinator logic', async () => {
-    // User's voteing position
-    const userPosition = [
-      ...userPubKey,
-      0n // Action
-    ]
-
-    // Initial message (to obtain signature)
-    const userInitialMessage = [
-      ...userPosition,
-      0n, 0n, 0n
-    ]
-
-    const userMessageHash = mimc7.multiHash(userInitialMessage)
-    const signature = eddsa.signMiMC(
-      userPrvKey.toString(),
-      userMessageHash
-    )
-
-    // Insert signature into message
-    const userInitialMessageWithSig = [
-      ...userInitialMessage,
-      signature.R8[0],
-      signature.R8[1],
-      signature.S
-    ]
-
-    // Encrypt message with shared key
-    const userInitialEncryptedMessage = encrypt(
-      userInitialMessageWithSig,
+    // User's voting position
+    const userInitialEncryptedMessage = createMsg(
+      coordinatorPublicKey,
       userPrvKey,
-      coordinatorPublicKey
+      0n
     )
 
     // Get current merkletree root (contract)
@@ -158,7 +192,6 @@ describe('GET /', () => {
 
     assert.equal(newCoordinatorStateTreeRoot.toString(), newUserStateTreeRootStr)
 
-    // TODO: Write 'beforeAll' test to accomodate
     // insert -> insert -> update
 
     // insert -> insert (fail) -> insert
