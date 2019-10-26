@@ -291,10 +291,7 @@ app.get('/publickey', (req: $Request, res: $Response) => {
 })
 
 // Entrypoint
-// TODO: Make database initialization run before app is listening
-app.listen(port, async () => {
-  console.log(`Coordinator service listening on port ${port}!`)
-
+const initAndStartApp = async (): object => {
   console.log('Connecting to database....')
   await initDb()
   console.log('Connected to database')
@@ -302,8 +299,19 @@ app.listen(port, async () => {
   console.log('Connecting to Redis....')
   await initRedis()
   console.log('Connected to Redis')
-})
+
+  app.listen(port, async () => {
+    console.log(`Coordinator service listening on port ${port}!`)
+  })
+
+  return app
+}
+
+// Starts app if this is the main module
+if (typeof require !== 'undefined' && require.main === module) {
+  initAndStartApp()
+}
 
 module.exports = {
-  app
+  initAndStartApp
 }
