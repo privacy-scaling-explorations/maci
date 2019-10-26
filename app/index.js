@@ -19,9 +19,11 @@ const port = 3000
 type User = {
   index: Number,
   public_key: BigInt[],
-  public_key_hash: BigInt[],
+  public_key_hash: BigInt[]
 };
 
+// Redis component, votes are coconsciously not included
+// just the publicKeys
 type MessageCache = {
   original: BigInt[], // Original submitted format (encrypted)
   userOldPublicKey: BigInt[], // User's old selected public key
@@ -29,12 +31,10 @@ type MessageCache = {
   ecdhPublicKey: BigInt[] // public_key broadcasted along with the message (perform ecdh to get the decryption key)
 };
 
-// type DecryptedMessage = Array<BigInt>;
-
 // Parse application/json
 app.use(bodyParser.json())
 
-// TODO: Save these stuff to a database
+// TODO: Save keys to a database
 const privateKey: BigInt = BigInt('7967026810230244945878656285404800478023519231012520937555019323290519989206')
 const publicKey: BigInt = privateToPublicKey(privateKey)
 
@@ -42,7 +42,7 @@ const treeDepth = 4
 const stateTreeName = 'StateTree'
 const resultTreeName = 'ResultTree'
 
-// Helper function to load merkletree
+// Helper functions to load merkletree
 const getMerkleTree = async (name: String): MerkleTree => {
   try {
     const t = await loadMerkleTreeFromDb(dbPool, name)
@@ -110,7 +110,7 @@ maciContract.on('MessagePublished', async (
   }
 
   /** Coordinator state **/
-  // Save the decryptedMessage into a cacheto be retrieved later
+  // Save the decryptedMessage into a cache to be retrieved later
   await redisSet(
     stringifyBigInts(hashedEncryptedMessage),
     JSON.stringify({

@@ -3,6 +3,7 @@ const ethers = require('ethers')
 const { mimcAddress } = require('../_build/contracts/DeployedAddresses.json')
 const { dbPool } = require('../_build/utils/db')
 const { stringifyBigInts, linkLibraries } = require('../_build/utils/helpers')
+const { merkleTreeConfig } = require('./config')
 const { createMerkleTree, saveMerkleTreeToDb, loadMerkleTreeFromDb } = require('../_build/utils/merkletree')
 const { mimc7 } = require('circomlib')
 
@@ -56,7 +57,10 @@ describe('MerkleTree', () => {
     await merkleTreeContract.deployed()
     await merkleTreeContract.whitelistAddress(wallet.address)
 
-    merkleTreeJS = createMerkleTree(4, BigInt(0))
+    merkleTreeJS = createMerkleTree(
+      merkleTreeConfig.treeDepth,
+      merkleTreeConfig.zeroValue
+    )
   })
 
   it('MerkleTree Insert', async () => {
@@ -171,7 +175,7 @@ describe('MerkleTree', () => {
     })
 
     await dbPool.query({
-      text: `DELETE FROM merkletrees WHERE name=$1`,
+      text: 'DELETE FROM merkletrees WHERE name=$1',
       values: [mkName]
     })
   })

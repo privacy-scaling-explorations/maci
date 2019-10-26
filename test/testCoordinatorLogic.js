@@ -1,14 +1,14 @@
-
 const supertest = require('supertest')
 const ethers = require('ethers')
 
+const { merkleTreeConfig } = require('./config')
+const { createMerkleTree } = require('../_build/utils/merkletree')
 const { stringifyBigInts, unstringifyBigInts } = require('../_build/utils/helpers')
 const { randomPrivateKey, privateToPublicKey, encrypt } = require('../_build/utils/crypto')
 const { app } = require('../_build/index')
 
 const { eddsa, mimc7 } = require('circomlib')
 
-// Settings up provider and contract instance
 const provider = new ethers.providers.JsonRpcProvider('http://localhost:8545')
 const privateKey = '0x989d5b4da447ba1c7f5d48e3b4310d0eec08d4abd0f126b58249598abd8f4c37'
 const wallet = new ethers.Wallet(privateKey, provider)
@@ -74,7 +74,6 @@ const createMsg = (
   voteAction, // Previous vote action, if its an initial message then it'll be the primary one
   newPrivateKey = null, // Used when user wants to update their position
   newVoteAction = null,
-  initialMessage = false // is this an initial message?
 ) => {
   const userPublicKey = privateToPublicKey(userPrivateKey)
 
@@ -83,24 +82,14 @@ const createMsg = (
     voteAction
   ]
 
-  let userMessage 
+  const newPublicKey = newPrivateKey !== null ? privateToPublicKey(newPrivateKey) : userPublicKey
+  const newVote = newVoteAction !== null ? newVoteAction : voteAction
 
-  // Creates initial message
-  if (initialMessage) {
-    userMessage = [
-      ...userPosition,
-      0n, 0n, voteAction
-    ]
-  } else {
-    const newPublicKey = newPrivateKey !== null ? privateToPublicKey(newPrivateKey) : userPublicKey
-    const newVote = newVoteAction !== null ? newVoteAction : voteAction
-
-    userMessage = [
-      ...userPosition,
-      ...newPublicKey,
-      newVote
-    ]
-  }
+  const userMessage = [
+    ...userPosition,
+    ...newPublicKey,
+    newVote
+  ]
 
   const userMessageHash = mimc7.multiHash(userMessage)
   const signature = eddsa.signMiMC(
@@ -129,8 +118,14 @@ const createMsg = (
 describe('GET /', () => {
   let coordinatorPublicKey
 
-  const userPrvKey = randomPrivateKey()
-  const userPubKey = privateToPublicKey(userPrvKey)
+  const stateTreeJS = createMerkleTree(
+    merkleTreeConfig.treeDepth,
+    merkleTreeConfig.zeroValue
+  )
+  const resultTreeJS = createMerkleTree(
+    merkleTreeConfig.treeDepth,
+    merkleTreeConfig.zeroValue
+  )
 
   before('Setup Contract for coordinator test', async () => {
     const resp = await supertest(app).get('/publickey')
@@ -145,52 +140,173 @@ describe('GET /', () => {
   })
 
   it('testing coordinator logic', async () => {
-    // User's voting position
-    const userInitialEncryptedMessage = createMsg(
+    // Tests coordinator logic
+    // 1. Inserts new user and checks stateTree
+    //    and resultTree merkleroots
+    // 2. Inserts new user and checks if stateTree
+    //    and resultTree merkleroots are updated
+    // 3. Insert a new user (but with invalidSignature)
+    //    stateTree should update, but resultTree shouldn't
+    // 4. Updates a new user (both stateTree and resultTree should update)
+
+    // User's initial private key
+    const user1PrivateKey = randomPrivateKey()
+    const user1PublicKey = privateToPublicKey(user1PrivateKey)
+
+    const user2PrivateKey = randomPrivateKey()
+    const user2PublicKey = privateToPublicKey(user2PrivateKey)
+
+    // User1 initial message
+    const user1Message1 = createMsg(
       coordinatorPublicKey,
-      userPrvKey,
+      user1PrivateKey,
       0n
     )
 
-    // Get current merkletree root (contract)
-    const stateTreeRoot = await stateTreeContract.getRoot()
-
-    // Get current merkletree root (local db)
-    const coordinatorRoots = await supertest(app).get('/merkleroots')
-    const coordinatorStateTreeRoot = coordinatorRoots.body.stateTree
+    // Get current merkletree roots
+    let stateTreeRoot = await stateTreeContract.getRoot()
+    let resultTreeRoot = await resultTreeContract.getRoot()
+    let coordinatorRoots = await supertest(app).get('/merkleroots')
 
     // Publish message
     await maciContract.pubishMessage(
-      stringifyBigInts(userInitialEncryptedMessage),
-      stringifyBigInts(userPubKey)
+      stringifyBigInts(user1Message1),
+      stringifyBigInts(user1PublicKey)
     )
 
     // Wait until merkle tree updates in smart contract
     await waitTillRootValueChanges(
       stateTreeRoot.toString(),
       async () => stateTreeContract.getRoot(),
-      'StateTreeRoot values not updated after 60 seconds'
+      'stateTreeContract root value not updated after 60 seconds'
+    )
+    await waitTillRootValueChanges(
+      resultTreeRoot.toString(),
+      async () => resultTreeContract.getRoot(),
+      'resultTreeContract root value not updated after 60 seconds'
     )
 
     // Wait until merkle tree updates in database
     await waitTillRootValueChanges(
-      coordinatorStateTreeRoot.toString(),
+      coordinatorRoots.body.stateTree.toString(),
       async () => {
         const res = await supertest(app).get('/merkleroots')
         return res.body.stateTree.toString()
       },
-      'Taking too long for `MessagePublished` event to be admitted'
+      'coordinator stateTree root value not updated after 60 seconds'
+    )
+    await waitTillRootValueChanges(
+      coordinatorRoots.body.resultTree.toString(),
+      async () => {
+        const res = await supertest(app).get('/merkleroots')
+        return res.body.resultTree.toString()
+      },
+      'coordinator resultTree root value not updated after 60 seconds'
     )
 
     // This means that new user is published
     // the merkleroot for the two statetrees should be the same
-    const newUserStateTreeRoot = await stateTreeContract.getRoot()
-    const newUserStateTreeRootStr = newUserStateTreeRoot.toString()
+    resultTreeRoot = await resultTreeContract.getRoot()
+    stateTreeRoot = await stateTreeContract.getRoot()
+    coordinatorRoots = await supertest(app).get('/merkleroots')
 
-    const newCoordinatorRoots = await supertest(app).get('/merkleroots')
-    const newCoordinatorStateTreeRoot = newCoordinatorRoots.body.stateTree
+    // Assert roots are the same
+    assert.equal(
+      coordinatorRoots.body.stateTree.toString(),
+      stateTreeRoot.toString()
+    )
 
-    assert.equal(newCoordinatorStateTreeRoot.toString(), newUserStateTreeRootStr)
+    assert.equal(
+      stateTreeRoot.toString(),
+      resultTreeRoot.toString()
+    )
+
+    // Update local state
+    stateTreeJS.insert(user1Message1)
+    resultTreeJS.insert(user1Message1)
+
+    // Ensure local state syncs up
+    assert.equal(
+      stateTreeRoot.toString(),
+      stateTreeJS.root.toString(),
+    )
+
+    assert.equal(
+      stateTreeRoot.toString(),
+      resultTreeJS.root.toString(),
+    )
+
+    // User2 Initial Message
+    const user2Message1 = createMsg(
+      coordinatorPublicKey,
+      user2PrivateKey,
+      0n
+    )
+
+    // Publish (should succeed)
+    await maciContract.pubishMessage(
+      stringifyBigInts(user2Message1),
+      stringifyBigInts(user2PublicKey)
+    )
+
+    // Wait until merkle tree updates in smart contract
+    await waitTillRootValueChanges(
+      stateTreeRoot.toString(),
+      async () => stateTreeContract.getRoot(),
+      'stateTreeContract root value not updated after 60 seconds'
+    )
+    await waitTillRootValueChanges(
+      resultTreeRoot.toString(),
+      async () => resultTreeContract.getRoot(),
+      'resultTreeContract root value not updated after 60 seconds'
+    )
+
+    // Wait until merkle tree updates in database
+    await waitTillRootValueChanges(
+      coordinatorRoots.body.stateTree.toString(),
+      async () => {
+        const res = await supertest(app).get('/merkleroots')
+        return res.body.stateTree.toString()
+      },
+      'coordinator stateTree root value not updated after 60 seconds'
+    )
+    await waitTillRootValueChanges(
+      coordinatorRoots.body.resultTree.toString(),
+      async () => {
+        const res = await supertest(app).get('/merkleroots')
+        return res.body.resultTree.toString()
+      },
+      'coordinator resultTree root value not updated after 60 seconds'
+    )
+
+    resultTreeRoot = await resultTreeContract.getRoot()
+    stateTreeRoot = await stateTreeContract.getRoot()
+    coordinatorRoots = await supertest(app).get('/merkleroots')
+
+    assert.equal(
+      coordinatorRoots.body.stateTree.toString(),
+      stateTreeRoot.toString()
+    )
+
+    assert.equal(
+      stateTreeRoot.toString(),
+      resultTreeRoot.toString()
+    )
+
+    // Update local state
+    stateTreeJS.insert(user2Message1)
+    resultTreeJS.insert(user2Message1)
+
+    // Ensure local state syncs up
+    assert.equal(
+      stateTreeRoot.toString(),
+      stateTreeJS.root.toString(),
+    )
+
+    assert.equal(
+      stateTreeRoot.toString(),
+      resultTreeJS.root.toString(),
+    )
 
     // insert -> insert -> update
 
