@@ -153,6 +153,9 @@ describe('GET /', () => {
     const user1PrivateKey = randomPrivateKey()
     const user1PublicKey = privateToPublicKey(user1PrivateKey)
 
+    const user1NewPrivateKey = randomPrivateKey()
+    const user1NewPublicKey = privateToPublicKey(user1NewPrivateKey)
+
     const user2PrivateKey = randomPrivateKey()
     const user2PublicKey = privateToPublicKey(user2PrivateKey)
 
@@ -215,7 +218,10 @@ describe('GET /', () => {
       coordinatorRoots.body.stateTree.toString(),
       stateTreeRoot.toString()
     )
-
+    assert.equal(
+      coordinatorRoots.body.resultTree.toString(),
+      resultTreeRoot.toString()
+    )
     assert.equal(
       stateTreeRoot.toString(),
       resultTreeRoot.toString()
@@ -230,7 +236,6 @@ describe('GET /', () => {
       stateTreeRoot.toString(),
       stateTreeJS.root.toString(),
     )
-
     assert.equal(
       stateTreeRoot.toString(),
       resultTreeJS.root.toString(),
@@ -287,7 +292,10 @@ describe('GET /', () => {
       coordinatorRoots.body.stateTree.toString(),
       stateTreeRoot.toString()
     )
-
+    assert.equal(
+      coordinatorRoots.body.resultTree.toString(),
+      resultTreeRoot.toString()
+    )
     assert.equal(
       stateTreeRoot.toString(),
       resultTreeRoot.toString()
@@ -302,13 +310,58 @@ describe('GET /', () => {
       stateTreeRoot.toString(),
       stateTreeJS.root.toString(),
     )
-
     assert.equal(
       stateTreeRoot.toString(),
       resultTreeJS.root.toString(),
     )
 
-    // insert -> insert -> update
+    // Insert an invalid message
+    // make sure root values DON'T change
+    const invalidMessage = [
+      randomPrivateKey(),
+      randomPrivateKey(),
+      randomPrivateKey(),
+      randomPrivateKey(),
+      randomPrivateKey(),
+      randomPrivateKey(),
+      randomPrivateKey()
+    ]
+
+    // Publish message, should fail
+    await maciContract.pubishMessage(
+      stringifyBigInts(invalidMessage),
+      stringifyBigInts(user2PublicKey)
+    )
+
+    // Sleep (10 seconds)
+    // enough time for the db values to update etc
+    await sleep(10000)
+
+    resultTreeRoot = await resultTreeContract.getRoot()
+    stateTreeRoot = await stateTreeContract.getRoot()
+    coordinatorRoots = await supertest(app).get('/merkleroots')
+
+    // Make sure nothing changed
+    assert.equal(
+      coordinatorRoots.body.stateTree.toString(),
+      stateTreeRoot.toString()
+    )
+    assert.equal(
+      coordinatorRoots.body.resultTree.toString(),
+      resultTreeRoot.toString()
+    )
+    assert.equal(
+      stateTreeRoot.toString(),
+      resultTreeRoot.toString()
+    )
+    assert.equal(
+      stateTreeRoot.toString(),
+      stateTreeJS.root.toString(),
+    )
+    assert.equal(
+      resultTreeRoot.toString(),
+      resultTreeJS.root.toString(),
+    )
 
     // insert -> insert (fail) -> insert
   })
