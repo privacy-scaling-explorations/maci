@@ -15,6 +15,9 @@ const bodyParser = require('body-parser')
 const app = express()
 const port = 3000
 
+// Prepends timestamp to console.log
+require('log-timestamp')
+
 // Types
 type User = {
   index: Number,
@@ -66,16 +69,19 @@ maciContract.on('MessagePublished', async (
   _publisherPublicKey: [BigInt, BigInt],
   _hashedEncryptedMessage: BigInt
 ) => {
-  console.log('[MessagePublished]')
+  const _encryptedMessageStr = _encryptedMessage.map((x: Any): String => x.toString())
+  const _publisherPublicKeyStr = _publisherPublicKey.map((x: Any): String => x.toString())
+  const _hashedEncryptedMessageStr = _hashedEncryptedMessage.toString()
+
+  console.log('[INFO]', '[MessagePublished]')
+  console.log(`encryptedMessage: ${_encryptedMessageStr}`)
+  console.log(`publisherPublicKey: ${_publisherPublicKeyStr}`)
+  console.log(`hashedEncryptedMessage: ${_hashedEncryptedMessageStr}`)
 
   // Convert values into big int
-  const encryptedMessage = unstringifyBigInts(
-    _encryptedMessage.map((x: Any): String => x.toString())
-  )
-  const publisherPublicKey = unstringifyBigInts(
-    _publisherPublicKey.map((x: Any): String => x.toString())
-  )
-  const hashedEncryptedMessage = unstringifyBigInts(_hashedEncryptedMessage.toString())
+  const encryptedMessage = unstringifyBigInts(_encryptedMessageStr)
+  const publisherPublicKey = unstringifyBigInts(_publisherPublicKeyStr)
+  const hashedEncryptedMessage = unstringifyBigInts(_hashedEncryptedMessageStr)
 
   // Decrypt message
   const decryptedMessage = decrypt(
@@ -105,7 +111,7 @@ maciContract.on('MessagePublished', async (
   )
 
   if (!validSignature) {
-    console.log('[MessagePublished] Invalid signature, ignoring message')
+    console.log('[ERROR]', '[MessagePublished] Invalid signature, ignoring message')
     return
   }
 
@@ -154,15 +160,18 @@ maciContract.on('MessagePublished', async (
 })
 
 maciContract.on('MessageInserted', async (_hashedEncryptedMessage: BigInt) => {
-  console.log('[MessageInserted]')
+  const _hashedEncryptedMessageStr = _hashedEncryptedMessage.toString()
 
-  const hashedEncryptedMessage = unstringifyBigInts(_hashedEncryptedMessage.toString())
+  console.log('[INFO]', '[MessageInserted]')
+  console.log(`hashedEncryptedMessage: ${_hashedEncryptedMessageStr}`)
+
+  const hashedEncryptedMessage = unstringifyBigInts(_hashedEncryptedMessageStr)
 
   // Retrieve encrypted message from cache
   const encryptedMessageStr = await redisGet(stringifyBigInts(hashedEncryptedMessage))
 
   if (encryptedMessageStr === null) {
-    console.log('[MessageInserted] Missing decrypted message...., returning')
+    console.log('[ERROR]', '[MessageInserted] Missing decrypted message...., returning')
     return
   }
 
@@ -179,16 +188,19 @@ maciContract.on('UserInserted', async (
   _hashedEncryptedMessage: BigInt,
   _userIndex: Number
 ) => {
-  console.log('[UserInserted]')
+  const _hashedEncryptedMessageStr = _hashedEncryptedMessage.toString()
 
-  const hashedEncryptedMessage = unstringifyBigInts(_hashedEncryptedMessage.toString())
+  console.log('[INFO]', '[UserInserted]')
+  console.log(`hashedEncryptedMessage: ${_hashedEncryptedMessageStr}`)
+
+  const hashedEncryptedMessage = unstringifyBigInts(_hashedEncryptedMessageStr)
   const userIndex = unstringifyBigInts(_userIndex.toString())
 
   // Retrieve encrypted message from cache
   const encryptedMessageStr = await redisGet(stringifyBigInts(hashedEncryptedMessage))
 
   if (encryptedMessageStr === null) {
-    console.log('[UserInserted] Missing decrypted message.... returning')
+    console.log('[ERROR]', '[UserInserted] Missing decrypted message.... returning')
     return
   }
 
@@ -228,18 +240,25 @@ maciContract.on('UserUpdated', async (
   _newHashedEncryptedMessage: BigInt,
   _userIndex: BigInt
 ) => {
-  console.log('[UserUpdated]')
+  const _oldHashedEncryptedMessageStr = _oldHashedEncryptedMessage.toString()
+  const _newHashedEncryptedMessageStr = _newHashedEncryptedMessage.toString()
+  const _userIndexStr = _userIndex.toString()
 
-  const oldHashedEncryptedMessage = unstringifyBigInts(_oldHashedEncryptedMessage.toString())
-  const newHashedEncryptedMessage = unstringifyBigInts(_newHashedEncryptedMessage.toString())
-  const userIndex = unstringifyBigInts(_userIndex.toString())
+  console.log('[INFO]', '[UserUpdated]')
+  console.log(`oldHashedEncryptedMessage: ${_oldHashedEncryptedMessageStr}`)
+  console.log(`newHashedEncryptedMessage: ${_newHashedEncryptedMessageStr}`)
+  console.log(`userIndex: ${_userIndexStr}`)
+
+  const oldHashedEncryptedMessage = unstringifyBigInts(_oldHashedEncryptedMessageStr)
+  const newHashedEncryptedMessage = unstringifyBigInts(_newHashedEncryptedMessageStr)
+  const userIndex = unstringifyBigInts(_userIndexStr)
 
   // Read from cache
   const oldEncryptedMessageStr = await redisGet(stringifyBigInts(oldHashedEncryptedMessage))
   const newEncryptedMessageStr = await redisGet(stringifyBigInts(newHashedEncryptedMessage))
 
   if (oldEncryptedMessageStr === null || newEncryptedMessageStr === null) {
-    console.log('[UserUpdate] `oldEncryptedMessageStr` or `newEncryptedMessageStr` not found in cache, returning')
+    console.log('[ERROR]', '[UserUpdate] `oldEncryptedMessageStr` or `newEncryptedMessageStr` not found in cache, returning')
     return
   }
 
@@ -292,16 +311,16 @@ app.get('/publickey', (req: $Request, res: $Response) => {
 
 // Entrypoint
 const initAndStartApp = async (): object => {
-  console.log('Connecting to database....')
+  console.log('[STATUS]', 'Connecting to database....')
   await initDb()
-  console.log('Connected to database')
+  console.log('[STATUS]', 'Connected to database')
 
-  console.log('Connecting to Redis....')
+  console.log('[STATUS]', 'Connecting to Redis....')
   await initRedis()
-  console.log('Connected to Redis')
+  console.log('[STATUS]', 'Connected to Redis')
 
   app.listen(port, async () => {
-    console.log(`Coordinator service listening on port ${port}!`)
+    console.log('[STATUS]', `Coordinator service listening on port ${port}!`)
   })
 
   return app
