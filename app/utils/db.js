@@ -19,7 +19,7 @@ const initDb = async () => {
   try {
     await pool.query('SELECT NOW();')
   } catch (e) {
-    console.log(e)
+    console.log('[ERROR]', e)
     throw new Error('Unable to connect to database')
   }
 
@@ -27,7 +27,7 @@ const initDb = async () => {
   if (process.env.ENV_TYPE === 'TEST') {
     await pool.query('DROP SCHEMA public CASCADE;')
     await pool.query('CREATE SCHEMA public;')
-    console.log('Dropping database tables')
+    console.log('[STATUS]', 'Dropping database tables')
   }
 
   // Initializes the database if needed

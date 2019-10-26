@@ -23,7 +23,7 @@ const initRedis = async () => {
 
   if (process.env.ENV_TYPE === 'TEST') {
     await redisFlushAll('ASYNC')
-    console.log('Flushing redis cache')
+    console.log('[STATUS]', 'Flushing redis cache')
   }
 }
 
