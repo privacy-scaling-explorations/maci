@@ -8,20 +8,29 @@ This project is based upon https://ethresear.ch/t/minimal-anti-collusion-infrast
 MACI is tested with `node v10.16.3`
 
 ```bash
+# Install dependencies
 yarn install
 
+# Generate the circuits
 yarn circuit:compile
 yarn circuit:setup
 yarn circuit:generateverifier
 
 # Deploy contracts
+yarn ganache
 npx truffle migrate --network development
-```
 
-## With Docker
+# Running coordinator service
+yarn start
 
-```bash
-docker-compose up
+# Running coordinator service (development mode)
+yarn dev
+
+# Running tests
+# NOTE: You'll need to have postgresql and redis setup
+#       You can setup the infrastructure with `docker-compose up`
+#       in another terminal
+yarn test
 ```
 
 # Contribution
