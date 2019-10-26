@@ -123,7 +123,7 @@ maciContract.on('MessagePublished', async (
 
   // Try and get oldPublicKeyHash from postgres
   const oldPublicKeyRes = await dbPool.query({
-    text: 'SELECT * FROM USERS WHERE public_key_hash = $1',
+    text: 'SELECT * FROM users WHERE public_key_hash = $1',
     values: [stringifyBigInts(oldPublicKeyHash)]
   })
 
@@ -204,6 +204,7 @@ maciContract.on('UserInserted', async (
   // Reconstruct the encrypted message
   const msgCache: MessageCache = unstringifyBigInts(JSON.parse(encryptedMessageStr))
   const userPublicKey = msgCache.userOldPublicKey // Using old as we're inserting, not updating
+  const userPublicKeyHash = mimc7.multiHash(userPublicKey)
 
   // Insert user and their corresponding vote into our own tree
   // TODO: Make sure the resultTree and user inserted successfully
@@ -215,7 +216,7 @@ maciContract.on('UserInserted', async (
     values: [
       resultTree.nextIndex,
       stringifyBigInts(userPublicKey),
-      stringifyBigInts(hashedEncryptedMessage)
+      stringifyBigInts(userPublicKeyHash)
     ]
   })
   resultTree.insert(msgCache.original, msgCache.ecdhPublicKey)
@@ -252,15 +253,16 @@ maciContract.on('UserUpdated', async (
     text: `
       UPDATE users
       SET
-        public_key = $1
+        public_key = $1,
         public_key_hash = $2
       WHERE
         index = $3
+      ;
     `,
     values: [
       stringifyBigInts(newPublicKey),
       stringifyBigInts(newPublicKeyHash),
-      userIndex
+      Number(userIndex)
     ]
   })
 
