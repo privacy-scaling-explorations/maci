@@ -1,27 +1,26 @@
 include "./leaf_existence.circom";
 include "./verify_eddsamimc.circom";
-include "./get_merkle_root.circom";
+include "./merkle_root_op.circom";
 include "./decrypt.circom";
 include "../node_modules/circomlib/circuits/mimc.circom";
 
 
+// CommandTreeReducer
 template TreeReducer(k) {
-    // k is the depth of accounts tree
+    // k is the depth of the tree
 
-    // output
+    // New merkle
     signal output new_tree_root;
 
-    // Tree info (where accounts are stored)
+    // Current tree root
     signal input tree_root;
-    signal private input accounts_pubkeys[2**k, 2];
-
+    
     // Shared private key
     signal private input shared_private_key;
 
     // Length of the decrypted data
     var data_length = 9;
 
-    // vote action(s) - encrypted
     // NOTE: Last 3 elements in the arr
     // MUST BE THE SIGNATURE!
     /*
@@ -36,11 +35,12 @@ template TreeReducer(k) {
         [8] - signature_r8y
         [9] - signature_s
      */
+    // encrypted_data has data_length + 1 to store the `iv` value
     signal input encrypted_data[data_length + 1];
 
-    // vote action(s) - decrypted
-    // 1 less than encrypted data as it doesn't have `iv`
-    signal private input decrypted_data[data_length];
+    // Public key of the user who
+    // published the encrypted_data
+    signal input publisher_public_key[2];
 
     // Last proof submitted
     signal private input sender_proof[k]
@@ -53,20 +53,17 @@ template TreeReducer(k) {
 
     decryptor.private_key <== shared_private_key;
 
-    for (var i=0; i<data_length + 1; i++) {
+    for (var i=0; i < data_length + 1; i++) {
         decryptor.message[i] <== encrypted_data[i];
-    }
-    for (var i=0; i<data_length; i++) {
-        decryptor.out[i] === decrypted_data[i];
     }
 
     // Verify account exists in tree_root
     // i.e. check existing hash exists in the tree
     component senderExistence = LeafExistence(k, 3);
 
-    senderExistence.preimage[0] <== decrypted_data[0]; // publickey_x
-    senderExistence.preimage[1] <== decrypted_data[1]; // publickey_y
-    senderExistence.preimage[2] <== decrypted_data[2]; // action
+    senderExistence.preimage[0] <== decryptor.out[0]; // publickey_x
+    senderExistence.preimage[1] <== decryptor.out[1]; // publickey_y
+    senderExistence.preimage[2] <== decryptor.out[2]; // action
     senderExistence.root <== tree_root;
 
     for (var i=0; i<k; i++) {
@@ -75,25 +72,25 @@ template TreeReducer(k) {
     }
 
     // Verify signature
-    // Hash uses `data_length - 3` components
-    // as the data_length has 3 parts signature to it
     component signatureVerifier = VerifyEdDSAMiMC(data_length - 3);
 
-    signatureVerifier.from_x <== decrypted_data[0]; // public key x
-    signatureVerifier.from_y <== decrypted_data[1]; // public key y
-    signatureVerifier.R8x <== decrypted_data[data_length - 3]; // sig R8x
-    signatureVerifier.R8y <== decrypted_data[data_length - 2]; // sig R8x
-    signatureVerifier.S <== decrypted_data[data_length - 1]; // sig S
+    signatureVerifier.from_x <== publisher_public_key[0]; // public key x
+    signatureVerifier.from_y <== publisher_public_key[1]; // public key y
+    signatureVerifier.R8x <== decryptor.out[data_length - 3]; // sig R8x
+    signatureVerifier.R8y <== decryptor.out[data_length - 2]; // sig R8x
+    signatureVerifier.S <== decryptor.out[data_length - 1]; // sig S
 
-    for (var i=0; i<data_length - 3;i++) {
-        signatureVerifier.preimage[i] <== decrypted_data[i];
+    // Hash uses `data_length - 3` components
+    // as the data_length has 3 parts signature to it
+    for (var i=0; i < data_length - 3;i++) {
+        signatureVerifier.preimage[i] <== decryptor.out[i];
     }
 
     // Update voter leaf
     component newSenderLeaf = MultiMiMC7(3,91){
-        newSenderLeaf.in[0] <== decrypted_data[3]; // new_pubkey_x
-        newSenderLeaf.in[1] <== decrypted_data[4]; // new_pubkey_y
-        newSenderLeaf.in[2] <== decrypted_data[5]; // new_action
+        newSenderLeaf.in[0] <== decryptor.out[3]; // new_pubkey_x
+        newSenderLeaf.in[1] <== decryptor.out[4]; // new_pubkey_y
+        newSenderLeaf.in[2] <== decryptor.out[5]; // new_action
     }
 
     // Update tree root
@@ -106,9 +103,9 @@ template TreeReducer(k) {
 
     // Verify leaf has been updated
     component senderExistence2 = LeafExistence(k, 3);
-    senderExistence2.preimage[0] <== decrypted_data[3]; // new_pubkey_x
-    senderExistence2.preimage[1] <== decrypted_data[4]; // new_pubkey_y
-    senderExistence2.preimage[2] <== decrypted_data[5]; // new_action
+    senderExistence2.preimage[0] <== decryptor.out[3]; // new_pubkey_x
+    senderExistence2.preimage[1] <== decryptor.out[4]; // new_pubkey_y
+    senderExistence2.preimage[2] <== decryptor.out[5]; // new_action
     senderExistence2.root <== computed_final_root.out;
     for (var i = 0; i < k; i++){
         senderExistence2.paths2_root_pos[i] <== sender_proof_pos[i];

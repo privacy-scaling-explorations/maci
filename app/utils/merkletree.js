@@ -106,7 +106,7 @@ class MerkleTree {
     }
 
     // eslint-disable-next-line no-unused-vars
-    const [path, _] = this.getPath(leafIndex)
+    const [path, _] = this.getPathUpdate(leafIndex)
 
     this._update(
       leafIndex,
@@ -189,7 +189,7 @@ class MerkleTree {
    *  Used for quick verification on updates.
    *  Runs in O(log(N)), where N is the number of leaves
    */
-  getPath (leafIndex: Number): [Array<BigInt>, Array<Number>] {
+  getPathUpdate (leafIndex: Number): [Array<BigInt>, Array<Number>] {
     if (leafIndex >= this.nextIndex) {
       throw new Error('Path not constructed yet, leafIndex >= nextIndex')
     }
