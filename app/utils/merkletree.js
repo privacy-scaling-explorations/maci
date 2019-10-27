@@ -196,20 +196,45 @@ class MerkleTree {
 
     let curIdx = leafIndex
     const path = []
-    const pathPos = []
+    const pathIndex = []
 
     for (let i = 0; i < this.depth; i++) {
       if (curIdx % 2 === 0) {
         path.push(this.filledPaths[i][curIdx + 1])
-        pathPos.push(0)
+        pathIndex.push(0)
       } else {
         path.push(this.filledPaths[i][curIdx - 1])
-        pathPos.push(1)
+        pathIndex.push(1)
       }
       curIdx = parseInt(curIdx / 2)
     }
 
-    return [path, pathPos]
+    return [path, pathIndex]
+  }
+
+  /*  Gets the path needed to construct a the tree root
+   *  Used for quick verification on inserts.
+   *  Runs in O(log(N)), where N is the number of leaves
+   */
+  getPathInsert (): [Array<BigInt>, Array<Number>, Array<Number>] {
+    let curIdx = this.nextIndex
+
+    const pathIndex = []
+
+    for (let i = 0; i < this.depth; i++) {
+      if (curIdx % 2 === 0) {
+        pathIndex.push(0)
+      } else {
+        pathIndex.push(1)
+      }
+      curIdx = parseInt(curIdx / 2)
+    }
+
+    return [
+      this.zeros,
+      this.filledSubtrees,
+      pathIndex
+    ]
   }
 }
 
