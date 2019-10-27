@@ -43,9 +43,6 @@ app.use(bodyParser.json())
 const privateKey: BigInt = BigInt('7967026810230244945878656285404800478023519231012520937555019323290519989206')
 const publicKey: BigInt = privateToPublicKey(privateKey)
 
-const stateTreeName = 'StateTree'
-const resultTreeName = 'ResultTree'
-
 // Helper functions to load merkletree
 const getMerkleTree = async (name: String): MerkleTree => {
   try {
@@ -60,11 +57,11 @@ const getMerkleTree = async (name: String): MerkleTree => {
 }
 
 const getStateTree = async (): MerkleTree => {
-  return getMerkleTree(stateTreeName)
+  return getMerkleTree(merkleTreeConfig.stateTreeName)
 }
 
 const getResultTree = async (): MerkleTree => {
-  return getMerkleTree(resultTreeName)
+  return getMerkleTree(merkleTreeConfig.resultTreeName)
 }
 
 /** Pub/Sub Events on the contract **/
@@ -185,7 +182,7 @@ maciContract.on('MessageInserted', async (_hashedEncryptedMessage: BigInt) => {
   // Insert into local state
   const stateTree = await getStateTree()
   stateTree.insert(msgCache.original, msgCache.ecdhPublicKey)
-  await saveMerkleTreeToDb(dbPool, stateTreeName, stateTree)
+  await saveMerkleTreeToDb(dbPool, merkleTreeConfig.stateTreeName, stateTree)
 })
 
 maciContract.on('UserInserted', async (
@@ -236,7 +233,7 @@ maciContract.on('UserInserted', async (
     ]
   })
   resultTree.insert(msgCache.original, msgCache.ecdhPublicKey)
-  await saveMerkleTreeToDb(dbPool, resultTreeName, resultTree)
+  await saveMerkleTreeToDb(dbPool, merkleTreeConfig.resultTreeName, resultTree)
 })
 
 maciContract.on('UserUpdated', async (
@@ -292,7 +289,7 @@ maciContract.on('UserUpdated', async (
   // Update results tree
   const resultTree = await getResultTree()
   resultTree.update(Number(userIndex), msgCache.original, msgCache.ecdhPublicKey)
-  await saveMerkleTreeToDb(dbPool, resultTreeName, resultTree)
+  await saveMerkleTreeToDb(dbPool, merkleTreeConfig.resultTreeName, resultTree)
 })
 
 /** API Endpoints **/

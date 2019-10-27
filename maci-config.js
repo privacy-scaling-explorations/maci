@@ -1,5 +1,7 @@
 module.exports = {
   merkleTreeConfig: {
+    stateTreeName: process.env.STATE_TREE_NAME || 'StateTree',
+    resultTreeName: process.env.RESULT_TREE_NAME || 'ResultTree',
     treeDepth: process.env.MERKLE_TREE_DEPTH || 4,
     zeroValue: 0n
   },

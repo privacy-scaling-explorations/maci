@@ -56,6 +56,8 @@ yarn test
 
 ### Optional
 - `MERKLE_TREE_DEPTH`: Depth of the merkle tree (Defaults to 4)
+- `STATE_TREE_NAME`: Name of the stateTree (to be saved into postgres)
+- `RESULT_TREE_NAME`: Name of the resultTree (to be saved into postgres)
 
 
 # Contribution
