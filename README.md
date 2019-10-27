@@ -33,6 +33,17 @@ yarn dev
 yarn test
 ```
 
+# Deployment
+
+## Environment variables
+
+### Required
+
+### Optional
+- ``
+- `MERKLE_TREE_DEPTH`: Depth of the merkle tree (Defaults to 4)
+
+
 # Contribution
 We are actively seeking help on implementing this project please join https://t.me/joinchat/LUgOpE7J2gstRcZqdERyvw and ask about contributions
 

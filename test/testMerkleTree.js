@@ -1,17 +1,17 @@
 const ethers = require('ethers')
+const { mimc7 } = require('circomlib')
 
 const { mimcAddress } = require('../_build/contracts/DeployedAddresses.json')
 const { dbPool } = require('../_build/utils/db')
 const { stringifyBigInts, linkLibraries } = require('../_build/utils/helpers')
-const { merkleTreeConfig } = require('./config')
 const { createMerkleTree, saveMerkleTreeToDb, loadMerkleTreeFromDb } = require('../_build/utils/merkletree')
-const { mimc7 } = require('circomlib')
+const { ganacheConfig, merkleTreeConfig } = require('../maci-config')
 
-const merkletreeDef = require('../_build/contracts/MerkleTree.json')
-const provider = new ethers.providers.JsonRpcProvider('http://localhost:8545')
-const privateKey = '0x989d5b4da447ba1c7f5d48e3b4310d0eec08d4abd0f126b58249598abd8f4c37'
+const provider = new ethers.providers.JsonRpcProvider(ganacheConfig.host)
+const privateKey = ganacheConfig.privateKey
 const wallet = new ethers.Wallet(privateKey, provider)
 
+const merkletreeDef = require('../_build/contracts/MerkleTree.json')
 const merkleTreeFactory = new ethers.ContractFactory(
   merkletreeDef.abi,
   linkLibraries(merkletreeDef.bytecode, 'MiMC', mimcAddress),
@@ -53,7 +53,11 @@ describe('MerkleTree', () => {
   let merkleTreeJS
 
   beforeEach('Setup contract for each test', async () => {
-    merkleTreeContract = await merkleTreeFactory.deploy(4, 0)
+    merkleTreeContract = await merkleTreeFactory.deploy(
+      merkleTreeConfig.treeDepth,
+      stringifyBigInts(merkleTreeConfig.zeroValue)
+    )
+
     await merkleTreeContract.deployed()
     await merkleTreeContract.whitelistAddress(wallet.address)
 
@@ -89,6 +93,7 @@ describe('MerkleTree', () => {
     const newLeafRawValue = [1n, 2n, 3n, 4n, 5n]
     const newLeafValue = mimc7.multiHash(newLeafRawValue)
 
+    // eslint-disable-next-line
     const [path, _] = merkleTreeJS.getPath(leafIndex)
     await merkleTreeContract.update(
       leafIndex,
@@ -110,6 +115,7 @@ describe('MerkleTree', () => {
     }
 
     try {
+      // eslint-disable-next-line
       const [path, _] = merkleTreeJS.getPath(0)
 
       await merkleTreeContract.update(

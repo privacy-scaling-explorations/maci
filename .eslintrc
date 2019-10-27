@@ -15,6 +15,7 @@
         "deployer": false,
         "describe": false,
         "before": false,
+        "beforeEach": false,
         "it": false,
         "assert": false
     },

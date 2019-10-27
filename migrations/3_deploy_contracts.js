@@ -2,7 +2,7 @@ const MerkleTree = artifacts.require('MerkleTree')
 const MiMC = artifacts.require('MiMC')
 const MACI = artifacts.require('MACI')
 
-const { merkleTreeConfig } = require('./config')
+const { merkleTreeConfig } = require('../maci-config')
 
 module.exports = async (deployer) => {
   // Link MiMC with the merkle tree
@@ -14,7 +14,7 @@ module.exports = async (deployer) => {
   const stateTree = await deployer.deploy(
     MerkleTree,
     merkleTreeConfig.treeDepth,
-    merkleTreeConfig.zeroValue
+    merkleTreeConfig.zeroValue.toString()
   )
 
   // Deploy results merkle tree
@@ -22,7 +22,7 @@ module.exports = async (deployer) => {
   const resultsTree = await deployer.deploy(
     MerkleTree,
     merkleTreeConfig.treeDepth,
-    merkleTreeConfig.zeroValue
+    merkleTreeConfig.zeroValue.toString()
   )
 
   const maci = await deployer.deploy(

@@ -10,6 +10,8 @@ const { eddsa, mimc7 } = require('circomlib')
 const { initDb, dbPool } = require('./utils/db')
 const { initRedis, redisGet, redisSet } = require('./utils/redis')
 
+const { merkleTreeConfig } = require('../maci-config')
+
 const express = require('express')
 const bodyParser = require('body-parser')
 const app = express()
@@ -41,7 +43,6 @@ app.use(bodyParser.json())
 const privateKey: BigInt = BigInt('7967026810230244945878656285404800478023519231012520937555019323290519989206')
 const publicKey: BigInt = privateToPublicKey(privateKey)
 
-const treeDepth = 4
 const stateTreeName = 'StateTree'
 const resultTreeName = 'ResultTree'
 
@@ -51,7 +52,10 @@ const getMerkleTree = async (name: String): MerkleTree => {
     const t = await loadMerkleTreeFromDb(dbPool, name)
     return t
   } catch (e) {
-    return createMerkleTree(treeDepth, 0n)
+    return createMerkleTree(
+      merkleTreeConfig.treeDepth,
+      merkleTreeConfig.zeroValue
+    )
   }
 }
 

@@ -1,7 +1,7 @@
 const supertest = require('supertest')
 const ethers = require('ethers')
 
-const { merkleTreeConfig } = require('./config')
+const { ganacheConfig, merkleTreeConfig } = require('../maci-config')
 const { createMerkleTree } = require('../_build/utils/merkletree')
 const { stringifyBigInts, unstringifyBigInts } = require('../_build/utils/helpers')
 const { randomPrivateKey, privateToPublicKey, encrypt } = require('../_build/utils/crypto')
@@ -9,8 +9,8 @@ const { initAndStartApp } = require('../_build/index')
 
 const { eddsa, mimc7 } = require('circomlib')
 
-const provider = new ethers.providers.JsonRpcProvider('http://localhost:8545')
-const privateKey = '0x989d5b4da447ba1c7f5d48e3b4310d0eec08d4abd0f126b58249598abd8f4c37'
+const provider = new ethers.providers.JsonRpcProvider(ganacheConfig.host)
+const privateKey = ganacheConfig.privateKey
 const wallet = new ethers.Wallet(privateKey, provider)
 
 const { getContractAddresses } = require('../_build/utils/settings')
@@ -115,7 +115,7 @@ const createMsg = (
   return userEncryptedMessage
 }
 
-describe('GET /', () => {
+describe('Coordinator Logic Tests', () => {
   let app
   let coordinatorPublicKey
 
@@ -141,7 +141,7 @@ describe('GET /', () => {
       .expect(404)
   })
 
-  it('testing coordinator logic', async () => {
+  it('Coordinator Logic - Insert & Update', async () => {
     // Tests coordinator logic
     // 1. Inserts new user and checks stateTree
     //    and resultTree merkleroots
