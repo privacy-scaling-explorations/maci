@@ -38,9 +38,23 @@ yarn test
 ## Environment variables
 
 ### Required
+- `ENV_TYPE`: 'PROD' | 'DEV' | 'TEST'
+
+- `MACI_CONTRACT_ADDRESS`: Address of deployed MACI contract
+- `STATE_TREE_ADDRESS`: Address of deployed stateTree contract
+- `RESULT_TREE_ADDRESS`: Address of deployed resultTree contract
+
+- `DB_USER`: Postgres DB username
+- `DB_PASSWORD`: Postgres DB password
+- `DB_HOST`: Postgres host
+- `DB_PORT`: Postgres port
+- `DB_NAME`: Postgres database name
+
+- `REDIS_HOST`: Redis host
+- `REDIS_PORT`: Redis port
+- `REDIS_PASSWORD`: Redis password
 
 ### Optional
-- ``
 - `MERKLE_TREE_DEPTH`: Depth of the merkle tree (Defaults to 4)
 
 
