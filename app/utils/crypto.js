@@ -1,20 +1,8 @@
 // @flow
 
-type MiMicSignature = {
-  R8: Tuple<BigInt>,
-  S: BigInt
-};
-
-const { unstringifyBigInts } = require('snarkjs/src/stringifybigint')
-const { Circuit, bigInt, original } = require('snarkjs')
+const { bigInt } = require('snarkjs')
 const createBlakeHash = require('blake-hash')
 const { babyJub, eddsa, mimc7 } = require('circomlib')
-
-const provingKey = require('../circuits/proving_key.json')
-const verificationKey = require('../circuits/verification_key.json')
-const circuitDef = require('../circuits/circuit.json')
-
-const zkSnark = original
 
 const randomPrivateKey = (): BigInt => {
   return BigInt(
@@ -25,16 +13,12 @@ const randomPrivateKey = (): BigInt => {
   ) % babyJub.subOrder
 }
 
+const privateToPublicKey = (sk: BigInt): [BigInt, BigInt] => {
+  return eddsa.prv2pub(bigInt2Buffer(sk))
+}
+
 const bigInt2Buffer = (i: BigInt): Buffer => {
   return Buffer.from(i.toString())
-}
-
-const num2bigInt = (n: Number): BigInt => {
-  return BigInt(n)
-}
-
-const bigInt2num = (i: BigInt): Number => {
-  return Number(i)
 }
 
 const ecdh = (priv: BigInt, pub: Tuple<BigInt>): BigInt => {
@@ -81,132 +65,10 @@ const decrypt = (
   })
 }
 
-// Usage example
-
-// Coordinator keys
-const coordinatorPrivKey = randomPrivateKey()
-const coordinatorPublicKey = eddsa.prv2pub(
-  bigInt2Buffer(coordinatorPrivKey)
-)
-
-// Alice
-const alicePrvKey = randomPrivateKey()
-const alicePubKey: Array<BigInt> = eddsa.prv2pub(
-  bigInt2Buffer(alicePrvKey)
-)
-
-const aliceEcdh = ecdh(
-  alicePrvKey,
-  coordinatorPublicKey
-)
-
-// Alice's current vote in the tree
-const alicePosition = [
-  ...alicePubKey,
-  1 // action
-]
-
-const aliceHash = mimc7.multiHash(alicePosition)
-
-// Bob
-const bobPrvKey = randomPrivateKey()
-const bobPubKey: Array<BigInt> = eddsa.prv2pub(
-  bigInt2Buffer(bobPrvKey)
-)
-
-// Bob's current position in tree
-const bobPosition = [
-  ...bobPubKey,
-  0 // action
-]
-
-const bobHash = mimc7.multiHash(bobPosition)
-
-// Calculate tree root
-// NOTE: Tree root is basically what has "happended"
-const treeRoot = mimc7.multiHash([aliceHash, bobHash])
-
-// Alice's new transaction
-const aliceTx = [
-  ...alicePosition,
-  ...alicePubKey,
-  1 // Alice changed her vote to `1`
-].map(num2bigInt)
-
-const aliceTxHash = mimc7.multiHash(aliceTx)
-
-// Sign message
-const signature: MiMicSignature = eddsa.signMiMC(
-  alicePrvKey.toString(),
-  aliceTxHash
-)
-
-// Insert signature into tx
-const aliceFinalTx = [
-  ...aliceTx,
-  signature.R8[0],
-  signature.R8[1],
-  signature.S
-]
-
-// Encrypt message
-const aliceEncryptedTx = encrypt(
-  aliceFinalTx,
-  alicePrvKey,
-  coordinatorPublicKey
-)
-
-// Decrypt encrypted message
-const aliceDecryptedTx = decrypt(
-  aliceEncryptedTx, coordinatorPrivKey, alicePubKey
-)
-
-// Check if signature valid
-const decryptedTxHash = mimc7.multiHash(aliceDecryptedTx.slice(0, -3))
-const decryptedSignature = {
-  R8: [
-    aliceDecryptedTx.slice(-3)[0],
-    aliceDecryptedTx.slice(-3)[1]
-  ],
-  S: aliceDecryptedTx.slice(-3)[2]
+module.exports = {
+  randomPrivateKey,
+  privateToPublicKey,
+  ecdh,
+  encrypt,
+  decrypt
 }
-
-const validSignature = eddsa.verifyMiMC(
-  decryptedTxHash,
-  decryptedSignature,
-  alicePubKey
-)
-
-// Making sure params are generated valid
-console.log(`ECDH Pass check: ${ecdh(coordinatorPrivKey, alicePubKey) === aliceEcdh}`)
-console.log(`Valid Signature: ${validSignature}`)
-console.log(`Message decrypted: ${JSON.stringify(aliceDecryptedTx.map(bigInt2num)) === JSON.stringify(aliceFinalTx.map(bigInt2num))}`)
-
-// Ensuring inputs passes the circuits
-const circuit = new Circuit(circuitDef)
-
-const circuitInput = {
-  tree_root: treeRoot,
-  accounts_pubkeys: [alicePubKey, bobPubKey],
-  encrypted_data: aliceEncryptedTx,
-  shared_private_key: aliceEcdh,
-  decrypted_data: aliceDecryptedTx,
-  sender_proof: [bobHash], // What ????
-  sender_proof_pos: [1]
-}
-
-console.log('Calculating witnesses....')
-const witness = circuit.calculateWitness(circuitInput)
-
-console.log('Generating proof....')
-const { proof, publicSignals } = zkSnark.genProof(
-  unstringifyBigInts(provingKey), witness
-)
-
-const isValid = zkSnark.isValid(
-  unstringifyBigInts(verificationKey),
-  proof,
-  publicSignals
-)
-
-console.log(`Inputs passes circuit: ${isValid}`)

@@ -87,15 +87,4 @@ typings/
 # DynamoDB Local files
 .dynamodb/
 
-# Stuff we can auto-generate
-proving_key.json
-verification_key.json
-witness.json
-public.json
-proof.json
-circuit.json
-input.json
-
-app/circuits/
-
 .vscode/

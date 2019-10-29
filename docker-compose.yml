@@ -1,0 +1,29 @@
+version: "3.7"
+services:
+  redis:
+    image: redis:alpine3.10
+    command: redis-server --requirepass maci 
+    ports:
+      - "6379:6379"
+  postgres:
+    image: postgres:11-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: maci
+      POSTGRES_PASSWORD: maci
+      POSTGRES_DB: maci
+    healthcheck:
+      test: pg_isready -U maci
+      interval: 5s
+      timeout: 3s
+      retries: 5
+  ganache:
+    image: trufflesuite/ganache-cli:v6.7.0
+    entrypoint: /bin/sh -c "npx ganache-cli -m helloworld"
+    ports:
+      - "8545:8545"
+  # maci:
+  #   build: .
+  #   image: maci:dockercompose
+  #   entrypoint: /bin/sh -c "yarn start"

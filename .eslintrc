@@ -4,12 +4,20 @@
         "flowtype"
     ],
     "extends": [
-        "plugin:flowtype/recommended",
-        "standard",
-        "standard-flow"
+        "standard-flow",
+        "plugin:flowtype/recommended"
     ],
     "globals": {
-        "BigInt": "readonly"
+        "BigInt": "readonly",
+        "web3": false,
+        "contract": false,
+        "artifacts": false,
+        "deployer": false,
+        "describe": false,
+        "before": false,
+        "beforeEach": false,
+        "it": false,
+        "assert": false
     },
     "rules": {
         "flowtype/boolean-style": [
@@ -67,7 +75,7 @@
     },
     "settings": {
         "flowtype": {
-            "onlyFilesWithFlowAnnotation": false
+            "onlyFilesWithFlowAnnotation": true
         }
     }
 }
