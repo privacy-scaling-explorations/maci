@@ -46,7 +46,6 @@ template MerkleTreeUpdate(levels) {
   // Computes new merkletree root on update
   // NOTE: path_elements and path_index can be
   //       obtained from merkletree.js `getPath` function
-  
   signal input leaf;
 
   signal private input path_elements[levels];
@@ -139,4 +138,26 @@ template MerkleTreeInsert(levels) {
   }
 
   root <== hashers[levels - 1].hash;
+}
+
+
+template LeafExists(levels){
+  // Ensures that a leaf exists within a merkletree with given `root`
+
+  // levels is depth of tree
+  signal input leaf;
+
+  signal private input path_elements[levels];
+  signal private input path_index[levels];
+
+  signal input root;
+
+  component merkletree = MerkleTreeUpdate(levels);
+  merkletree.leaf <== leaf;
+  for (var i = 0; i < levels; i++) {
+    merkletree.path_index[i] <== path_index[i];
+    merkletree.path_elements[i] <== path_elements[i];
+  }
+
+  root === merkletree.root;
 }
