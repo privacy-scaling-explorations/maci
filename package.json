@@ -14,7 +14,8 @@
     "app:build": "flow-remove-types app/ -d _build/ && mkdir -p _build/contracts && mkdir -p _build/circuits && cp app/contracts/* _build/contracts/ && cp app/circuits/* _build/circuits/ | true",
     "circuit:compile": "mkdir -p app/circuits && circom circuits/circuit.circom -o app/circuits/circuit.json",
     "circuit:setup": "cd app/circuits && snarkjs setup --protocol groth",
-    "circuit:generateverifier": "mkdir -p contracts && cd app/circuits && snarkjs generateverifier --protocol groth && mv verifier.sol ../../contracts/Verifier.sol"
+    "circuit:generateverifier": "mkdir -p contracts && cd app/circuits && snarkjs generateverifier --protocol groth && mv verifier.sol ../../contracts/Verifier.sol",
+    "circuit:test": "flow-node app/circuits-interactions.js"
   },
   "dependencies": {
     "body-parser": "^1.19.0",

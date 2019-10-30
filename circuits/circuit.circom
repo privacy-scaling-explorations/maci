@@ -20,7 +20,10 @@ template MACI(levels) {
   signal private input state_tree_path_index[levels];
 
   // Length of the encrypted data
-  var data_length = 7;
+  var encrypted_data_length = 7;
+
+  // Length of the message (without signature, decrypted)
+  var message_length = 3;
 
   // Hashing rounds
   var rounds = 91;
@@ -36,21 +39,21 @@ template MACI(levels) {
       [5] - signature_r8y
       [6] - signature_s
    */
-  signal input new_encrypted_data[data_length];
-  signal input old_encrypted_data[data_length];
+  signal input new_encrypted_data[encrypted_data_length];
+  signal input old_encrypted_data[encrypted_data_length];
 
   // Shared private key
   signal private input new_ecdh_private_key;
   signal private input old_ecdh_private_key;
 
   // Construct leaf values
-  component new_encrypted_data_hash = MultiMiMC7(data_length, rounds);
-  for (var i = 0; i < data_length; i++) {
+  component new_encrypted_data_hash = MultiMiMC7(encrypted_data_length, rounds);
+  for (var i = 0; i < encrypted_data_length; i++) {
     new_encrypted_data_hash.in[i] <== new_encrypted_data[i];
   }
 
-  component old_encrypted_data_hash = MultiMiMC7(data_length, rounds);
-  for (var i = 0; i < data_length; i++) {
+  component old_encrypted_data_hash = MultiMiMC7(encrypted_data_length, rounds);
+  for (var i = 0; i < encrypted_data_length; i++) {
     old_encrypted_data_hash.in[i] <== old_encrypted_data[i];
   }
 
@@ -73,29 +76,29 @@ template MACI(levels) {
   }
 
   // **** 3.1 Decrypt data **** //
-  component new_decrypted_data = Decrypt(data_length);
+  component new_decrypted_data = Decrypt(encrypted_data_length - 1);
   new_decrypted_data.private_key <== new_ecdh_private_key;
-  for (var i = 0; i < data_length; i++) {
+  for (var i = 0; i < encrypted_data_length; i++) {
     new_decrypted_data.message[i] <== new_encrypted_data[i];
   }
 
-  component old_decrypted_data = Decrypt(data_length);
+  component old_decrypted_data = Decrypt(encrypted_data_length - 1);
   old_decrypted_data.private_key <== old_ecdh_private_key;
-  for (var i = 0; i < data_length; i++) {
+  for (var i = 0; i < encrypted_data_length; i++) {
     old_decrypted_data.message[i] <== old_encrypted_data[i];
   }
 
   // **** 3.2 Validate signature against old_encrypted_data **** //
-  component signature_verifier = VerifyEdDSAMiMC(data_length - 3);
+  component signature_verifier = VerifyEdDSAMiMC(message_length);
 
   signature_verifier.from_x <== old_decrypted_data.out[0]; // public key x
   signature_verifier.from_y <== old_decrypted_data.out[1]; // public key y
 
-  signature_verifier.R8x <== new_decrypted_data.out[data_length - 3]; // sig R8x
-  signature_verifier.R8y <== new_decrypted_data.out[data_length - 2]; // sig R8x
-  signature_verifier.S <== new_decrypted_data.out[data_length - 1]; // sig S
+  signature_verifier.R8x <== new_decrypted_data.out[message_length]; // sig R8x
+  signature_verifier.R8y <== new_decrypted_data.out[message_length + 1]; // sig R8x
+  signature_verifier.S <== new_decrypted_data.out[message_length + 2]; // sig S
 
-  for (var i=0; i < data_length - 3; i++) {
+  for (var i=0; i < message_length; i++) {
     signature_verifier.preimage[i] <== new_decrypted_data.out[i];
   }
 
