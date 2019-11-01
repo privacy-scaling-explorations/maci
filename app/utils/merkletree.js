@@ -2,7 +2,6 @@
 import type { Pool } from 'pg'
 
 const { mimc7 } = require('circomlib')
-
 const { stringifyBigInts, unstringifyBigInts } = require('./helpers')
 
 class MerkleTree {
@@ -17,6 +16,7 @@ class MerkleTree {
     this.depth = depth
     this.zeroValue = zeroValue
     this.leaves = [] // Hash value of the leaves
+    this.leavesRaw = [] // Raw hash value of the leaves
     this.leafNumber = Math.pow(2, depth)
 
     // Values to create the hash values of the leaves
@@ -50,6 +50,10 @@ class MerkleTree {
     this.nextIndex = 0
   }
 
+  hash (values: Array<BigInt>): BigInt {
+    return mimc7.multiHash(values)
+  }
+
   /*  Helper function to hash the left and right values
    *  of the leaves
    */
@@ -58,9 +62,7 @@ class MerkleTree {
   }
 
   /* Inserts a new value into the merkle tree */
-  insert (encryptedValue: Array<BigInt>, publicKey: Array<BigInt>) {
-    const leaf = mimc7.multiHash(encryptedValue)
-
+  insert (leaf: BigInt, rawValue: object) {
     let curIdx = this.nextIndex
     this.nextIndex += 1
 
@@ -91,15 +93,14 @@ class MerkleTree {
 
     this.root = currentLevelHash
     this.leaves.push(leaf)
-    this.encryptedValues.push(encryptedValue)
-    this.ecdhPublicKeys.push(publicKey)
+    this.leavesRaw.push(rawValue || {})
   }
 
   /* Updates merkletree leaf at `leafIndex` with `newLeafValue` */
   update (
     leafIndex: Number,
-    encryptedValue: Array<BigInt>,
-    publicKey: Array<BigInt>
+    leaf: BigInt,
+    rawValue: object
   ) {
     if (leafIndex >= this.nextIndex) {
       throw new Error("Can't update leafIndex which hasn't been inserted yet!")
@@ -110,8 +111,8 @@ class MerkleTree {
 
     this._update(
       leafIndex,
-      encryptedValue,
-      publicKey,
+      leaf,
+      rawValue,
       path
     )
   }
@@ -124,16 +125,13 @@ class MerkleTree {
    */
   _update (
     leafIndex: Number,
-    encryptedValue: Array<BigInt>,
-    publicKey: Array<BigInt>,
+    leaf: BigInt,
+    rawValue: object,
     path: Array<BigInt>
   ) {
     if (leafIndex >= this.nextIndex) {
       throw new Error("Can't update leafIndex which hasn't been inserted yet!")
     }
-
-    // Get leaf hash value
-    const leaf = mimc7.multiHash(encryptedValue)
 
     let curIdx = leafIndex
     let currentLevelHash = this.leaves[leafIndex]
@@ -181,8 +179,7 @@ class MerkleTree {
 
     this.root = currentLevelHash
     this.leaves[leafIndex] = leaf
-    this.encryptedValues[leafIndex] = encryptedValue
-    this.ecdhPublicKeys[leafIndex] = publicKey
+    this.leavesRaw[leafIndex] = rawValue || {}
   }
 
   /*  Gets the path needed to construct a the tree root
@@ -301,14 +298,13 @@ const saveMerkleTreeToDb = async (
 
   const leafQuery = {
     text: `INSERT INTO 
-        leaves(merkletree_id, index, data, public_key, hash)
+        leaves(merkletree_id, index, raw, hash)
         VALUES($1, $2, $3, $4, $5)
         `,
     values: [
       mkTreeId,
       leafIdx,
-      { data: stringifyBigInts(mk.encryptedValues[leafIdx]) },
-      stringifyBigInts(mk.ecdhPublicKeys[leafIdx]),
+      { data: stringifyBigInts(mk.leavesRaw[leafIdx]) },
       stringifyBigInts(mk.leaves[leafIdx])
     ]
   }
@@ -356,12 +352,10 @@ const loadMerkleTreeFromDb = async (
 
   // Get leaves values
   const leaves = leavesResp.rows.map((x: Any): BigInt => unstringifyBigInts(x.hash))
-  const encryptedValues = leavesResp.rows.map((x: Any): Array<BigInt> => unstringifyBigInts(x.data).data)
-  const ecdhPublicKeys = leavesResp.rows.map((x: Any): Array<BigInt> => unstringifyBigInts(x.public_key))
+  const leavesRaw = leavesResp.rows.map((x: Any): Array<BigInt> => unstringifyBigInts(x.raw).data)
 
   mk.leaves = leaves
-  mk.encryptedValues = encryptedValues
-  mk.ecdhPublicKeys = ecdhPublicKeys
+  mk.leavesRaw = leavesRaw
 
   return mk
 }

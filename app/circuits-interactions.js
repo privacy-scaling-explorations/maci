@@ -29,6 +29,7 @@ const user1EncryptedMsg = signAndEncrypt(
   user1SecretKey,
   coordinatorPublicKey
 )
+const user1Leaf = cmdTree.hash(user1EncryptedMsg)
 
 const user2SecretKey = randomPrivateKey()
 const user2PublicKey = privateToPublicKey(user2SecretKey)
@@ -39,6 +40,7 @@ const user2EncryptedMsg = signAndEncrypt(
   user2SecretKey,
   coordinatorPublicKey
 )
+const user2Leaf = cmdTree.hash(user2EncryptedMsg)
 
 const user3SecretKey = randomPrivateKey()
 const user3PublicKey = privateToPublicKey(user3SecretKey)
@@ -49,15 +51,17 @@ const user3EncryptedMsg = signAndEncrypt(
   user3SecretKey,
   coordinatorPublicKey
 )
+const user3Leaf = cmdTree.hash(user3EncryptedMsg)
 
 // Insert users into the cmdTree and stateTree
-cmdTree.insert(user1EncryptedMsg, user1PublicKey)
-cmdTree.insert(user2EncryptedMsg, user2PublicKey)
-cmdTree.insert(user3EncryptedMsg, user3PublicKey)
+cmdTree.insert(user1Leaf)
+cmdTree.insert(user2Leaf)
+cmdTree.insert(user3Leaf)
 
-stateTree.insert(user1EncryptedMsg, user1PublicKey)
-stateTree.insert(user2EncryptedMsg, user2PublicKey)
-stateTree.insert(user3EncryptedMsg, user3PublicKey)
+// Only the stateTree saves the raw values
+stateTree.insert(user1Leaf, user1Message)
+stateTree.insert(user2Leaf, user2Message)
+stateTree.insert(user3Leaf, user3Message)
 
 // User 2 wants to choose their vote and change public key
 const user2NewSecretKey = randomPrivateKey()
@@ -69,9 +73,10 @@ const user2NewEncryptedMsg = signAndEncrypt(
   user2NewSecretKey,
   coordinatorPublicKey
 )
+const user2NewLeaf = cmdTree.hash(user2NewEncryptedMsg)
 
 // Submits it to the smart contract
-cmdTree.insert(user2NewEncryptedMsg, user2NewPublicKey)
+cmdTree.insert(user2NewLeaf, user2NewMessage)
 
 // Construct circuit inputs
 const [cmdTreePathElements, cmdTreePathIndex] = cmdTree.getPathUpdate(cmdTree.nextIndex - 1)
@@ -79,12 +84,7 @@ const [cmdTreePathElements, cmdTreePathIndex] = cmdTree.getPathUpdate(cmdTree.ne
 // 1st index because we're getting user 2
 const [stateTreePathElements, stateTreePathIndex] = stateTree.getPathUpdate(1)
 
-const oldEcdhPrivateKey = ecdh(
-  user2SecretKey,
-  coordinatorPublicKey
-)
-
-const newEcdhPrivateKey = ecdh(
+const ecdhPrivateKey = ecdh(
   user2NewSecretKey,
   coordinatorPublicKey
 )
@@ -104,10 +104,10 @@ const circuitInput = {
   state_tree_root: stringifyBigInts(stateTree.root),
   state_tree_path_elements: stringifyBigInts(stateTreePathElements),
   state_tree_path_index: stringifyBigInts(stateTreePathIndex),
-  old_encrypted_data: stringifyBigInts(user2EncryptedMsg),
-  new_encrypted_data: stringifyBigInts(user2NewEncryptedMsg),
-  new_ecdh_private_key: stringifyBigInts(newEcdhPrivateKey),
-  old_ecdh_private_key: stringifyBigInts(oldEcdhPrivateKey)
+  encrypted_data: stringifyBigInts(user2NewEncryptedMsg),
+  existing_public_key: stringifyBigInts(user2PublicKey),
+  existing_state_tree_leaf: stringifyBigInts(user2Leaf),
+  ecdh_private_key: stringifyBigInts(ecdhPrivateKey)
 }
 
 const witness = circuit.calculateWitness(circuitInput)
@@ -117,7 +117,7 @@ console.log('Calculated witness!')
 const newRootIdx = circuit.getSignalIdx('main.new_state_tree_root')
 const newRoot = witness[newRootIdx]
 
-stateTree.update(1, user2NewEncryptedMsg, user2NewPublicKey)
+stateTree.update(1, user2NewLeaf, user2NewMessage)
 
 console.log(`Local new_state_tree_root: ${stateTree.root.toString()}`)
 console.log(`Snark new_state_tree_root: ${newRoot}`)
