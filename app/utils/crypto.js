@@ -65,10 +65,76 @@ const decrypt = (
   })
 }
 
+const signAndEncrypt = (
+  msg: Array<BigInt>,
+  privSign: BigInt, // Private key to sign message
+  privEcdh: BigInt, // Private key of ecdh
+  pubEcdh: Tuple<BigInt> // Public key of ecdh
+): Array<BigInt> => {
+  // Get message hash
+  const msgHash = mimc7.multiHash(msg)
+
+  // Sign message
+  const signature = eddsa.signMiMC(
+    privSign.toString(),
+    msgHash
+  )
+
+  // Insert signature into message
+  const msgWithSignature = [
+    ...msg,
+    signature.R8[0],
+    signature.R8[1],
+    signature.S
+  ]
+
+  // Encrypt message
+  return encrypt(
+    msgWithSignature,
+    privEcdh,
+    pubEcdh
+  )
+}
+
+const decryptAndVerify = (
+  encryptedMsg: Array<BigInt>,
+  pubSign: Array<BigInt>, // Public key of signer
+  privEcdh: Array<BigInt>,
+  pubEcdh: Array<BigInt>
+): Bool => {
+  // Decrypt message
+  const decryptedMsg = decrypt(
+    encryptedMsg,
+    privEcdh,
+    pubEcdh
+  )
+
+  // Get original message (without the signatures)
+  const originalMsg = decryptedMsg.slice(0, -3)
+  const originalMsgHash = mimc7.multiHash(originalMsg)
+
+  // Validate signature
+  const signature = {
+    R8: [
+      decryptedMsg.slice(-3)[0],
+      decryptedMsg.slice(-3)[1]
+    ],
+    S: decryptedMsg.slice(-3)[2]
+  }
+
+  return eddsa.verifyMiMC(
+    originalMsgHash,
+    signature,
+    pubSign
+  )
+}
+
 module.exports = {
   randomPrivateKey,
   privateToPublicKey,
   ecdh,
   encrypt,
-  decrypt
+  decrypt,
+  signAndEncrypt,
+  decryptAndVerify
 }

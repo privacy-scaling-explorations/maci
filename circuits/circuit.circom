@@ -1,122 +1,108 @@
-include "./leaf_existence.circom";
+include "./merkletree.circom";
 include "./verify_eddsamimc.circom";
-include "./get_merkle_root.circom";
 include "./decrypt.circom";
+
 include "../node_modules/circomlib/circuits/mimc.circom";
 
+template MACI(levels) {
+  // levels is depth of tree
+  
+  // Output : new state tree root
+  signal output new_state_tree_root;
 
-template TreeReducer(k) {
-    // k is the depth of accounts tree
+  // Input(s)
+  signal input cmd_tree_root;
+  signal private input cmd_tree_path_elements[levels];
+  signal private input cmd_tree_path_index[levels];
 
-    // output
-    signal output new_tree_root;
+  signal input state_tree_root;
+  signal private input state_tree_path_elements[levels];
+  signal private input state_tree_path_index[levels];
 
-    // Tree info (where accounts are stored)
-    signal input tree_root;
-    signal private input accounts_pubkeys[2**k, 2];
+  // Length of the encrypted data
+  var encrypted_data_length = 7;
 
-    // Shared private key
-    signal private input shared_private_key;
+  // Length of the message (without signature, decrypted)
+  var message_length = 3;
 
-    // Length of the decrypted data
-    var data_length = 9;
+  // Hashing rounds
+  var rounds = 91;
 
-    // vote action(s) - encrypted
-    // NOTE: Last 3 elements in the arr
-    // MUST BE THE SIGNATURE!
-    /*
-        [0] - iv (generated when msg is encrypted)
-        [1] - publickey_x
-        [2] - publickey_y
-        [3] - action
-        [4] - new_publickey_x
-        [5] - new_publickey_y
-        [6] - new_action
-        [7] - signature_r8x
-        [8] - signature_r8y
-        [9] - signature_s
-     */
-    signal input encrypted_data[data_length + 1];
+  // NOTE: Last 3 elements in the arr
+  // MUST BE THE SIGNATURE!
+  /*
+      [0] - iv (generated when msg is encrypted)
+      [1] - publickey_x
+      [2] - publickey_y
+      [3] - action
+      [4] - signature_r8x
+      [5] - signature_r8y
+      [6] - signature_s
+   */
+  signal input encrypted_data[encrypted_data_length];
 
-    // vote action(s) - decrypted
-    // 1 less than encrypted data as it doesn't have `iv`
-    signal private input decrypted_data[data_length];
+  // Shared private key to decrypt encrypted data
+  signal private input ecdh_private_key;
 
-    // Last proof submitted
-    signal private input sender_proof[k]
-    signal private input sender_proof_pos[k];
+  // Inputs that are currently in the state tree
+  // that wants to be updated
+  signal private input existing_public_key[2];
+  signal private input existing_state_tree_leaf;
 
-    // Decrypt encrypted data
-    // make sure its the same as the decrypted data
-    // supplied by the coordinator
-    component decryptor = Decrypt(data_length);
+  // Construct leaf values
+  component encrypted_data_hash = MultiMiMC7(encrypted_data_length, rounds);
+  for (var i = 0; i < encrypted_data_length; i++) {
+    encrypted_data_hash.in[i] <== encrypted_data[i];
+  }
 
-    decryptor.private_key <== shared_private_key;
+  // **** 1. Make sure the leaf exists in the cmd tree **** //
+  component cmd_tree_value_exists = LeafExists(levels);
+  cmd_tree_value_exists.root <== cmd_tree_root;
+  cmd_tree_value_exists.leaf <== encrypted_data_hash.out;
+  for (var i = 0; i < levels; i++) {
+    cmd_tree_value_exists.path_elements[i] <== cmd_tree_path_elements[i];
+    cmd_tree_value_exists.path_index[i] <== cmd_tree_path_index[i];
+  }
 
-    for (var i=0; i<data_length + 1; i++) {
-        decryptor.message[i] <== encrypted_data[i];
-    }
-    for (var i=0; i<data_length; i++) {
-        decryptor.out[i] === decrypted_data[i];
-    }
+  // **** 2. Make sure the state root hash is valid **** //
+  component state_tree_valid = LeafExists(levels);
+  state_tree_valid.root <== state_tree_root;
+  state_tree_valid.leaf <== existing_state_tree_leaf;
+  for (var i = 0; i < levels; i++) {
+    state_tree_valid.path_elements[i] <== state_tree_path_elements[i];
+    state_tree_valid.path_index[i] <== state_tree_path_index[i];
+  }
 
-    // Verify account exists in tree_root
-    // i.e. check existing hash exists in the tree
-    component senderExistence = LeafExistence(k, 3);
+  // **** 3.1 Decrypt data **** //
+  component decrypted_data = Decrypt(encrypted_data_length - 1);
+  decrypted_data.private_key <== ecdh_private_key;
+  for (var i = 0; i < encrypted_data_length; i++) {
+    decrypted_data.message[i] <== encrypted_data[i];
+  }
 
-    senderExistence.preimage[0] <== decrypted_data[0]; // publickey_x
-    senderExistence.preimage[1] <== decrypted_data[1]; // publickey_y
-    senderExistence.preimage[2] <== decrypted_data[2]; // action
-    senderExistence.root <== tree_root;
+  // **** 3.2 Validate signature against existing public key **** //
+  component signature_verifier = VerifyEdDSAMiMC(message_length);
 
-    for (var i=0; i<k; i++) {
-        senderExistence.paths2_root_pos[i] <== sender_proof_pos[i];
-        senderExistence.paths2_root[i] <== sender_proof[i];
-    }
+  signature_verifier.from_x <== existing_public_key[0]; // public key x
+  signature_verifier.from_y <== existing_public_key[1]; // public key y
 
-    // Verify signature
-    // Hash uses `data_length - 3` components
-    // as the data_length has 3 parts signature to it
-    component signatureVerifier = VerifyEdDSAMiMC(data_length - 3);
+  signature_verifier.R8x <== decrypted_data.out[message_length]; // sig R8x
+  signature_verifier.R8y <== decrypted_data.out[message_length + 1]; // sig R8x
+  signature_verifier.S <== decrypted_data.out[message_length + 2]; // sig S
 
-    signatureVerifier.from_x <== decrypted_data[0]; // public key x
-    signatureVerifier.from_y <== decrypted_data[1]; // public key y
-    signatureVerifier.R8x <== decrypted_data[data_length - 3]; // sig R8x
-    signatureVerifier.R8y <== decrypted_data[data_length - 2]; // sig R8x
-    signatureVerifier.S <== decrypted_data[data_length - 1]; // sig S
+  for (var i=0; i < message_length; i++) {
+    signature_verifier.preimage[i] <== decrypted_data.out[i];
+  }
 
-    for (var i=0; i<data_length - 3;i++) {
-        signatureVerifier.preimage[i] <== decrypted_data[i];
-    }
+  // **** 4. If signature valid, update leaf **** //
+  component new_state_tree = MerkleTreeUpdate(levels);
+  new_state_tree.leaf <== encrypted_data_hash.out;
+  for (var i = 0; i < levels; i++) {
+    new_state_tree.path_elements[i] <== state_tree_path_elements[i];
+    new_state_tree.path_index[i] <== state_tree_path_index[i];
+  }
 
-    // Update voter leaf
-    component newSenderLeaf = MultiMiMC7(3,91){
-        newSenderLeaf.in[0] <== decrypted_data[3]; // new_pubkey_x
-        newSenderLeaf.in[1] <== decrypted_data[4]; // new_pubkey_y
-        newSenderLeaf.in[2] <== decrypted_data[5]; // new_action
-    }
-
-    // Update tree root
-    component computed_final_root = GetMerkleRoot(k);
-    computed_final_root.leaf <== newSenderLeaf.out;
-    for (var i = 0; i < k; i++){
-        computed_final_root.paths2_root_pos[i] <== sender_proof_pos[i];
-        computed_final_root.paths2_root[i] <== sender_proof[i];
-    }
-
-    // Verify leaf has been updated
-    component senderExistence2 = LeafExistence(k, 3);
-    senderExistence2.preimage[0] <== decrypted_data[3]; // new_pubkey_x
-    senderExistence2.preimage[1] <== decrypted_data[4]; // new_pubkey_y
-    senderExistence2.preimage[2] <== decrypted_data[5]; // new_action
-    senderExistence2.root <== computed_final_root.out;
-    for (var i = 0; i < k; i++){
-        senderExistence2.paths2_root_pos[i] <== sender_proof_pos[i];
-        senderExistence2.paths2_root[i] <== sender_proof[i];
-    }
-
-    // output final tree_root
-    new_tree_root <== computed_final_root.out;
+  new_state_tree_root <== new_state_tree.root;
 }
 
-component main = TreeReducer(1);
+component main = MACI(4);
