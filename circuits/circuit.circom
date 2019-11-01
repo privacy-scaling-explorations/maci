@@ -41,13 +41,13 @@ template MACI(levels) {
    */
   signal input encrypted_data[encrypted_data_length];
 
+  // Shared private key to decrypt encrypted data
+  signal private input ecdh_private_key;
+
   // Inputs that are currently in the state tree
   // that wants to be updated
   signal private input existing_public_key[2];
   signal private input existing_state_tree_leaf;
-
-  // Shared private key
-  signal private input ecdh_private_key;
 
   // Construct leaf values
   component encrypted_data_hash = MultiMiMC7(encrypted_data_length, rounds);
