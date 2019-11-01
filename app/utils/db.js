@@ -101,9 +101,9 @@ const initDb = async () => {
       CREATE TABLE leaves (
         merkletree_id INTEGER REFERENCES merkletrees(id),
         index INTEGER NOT NULL,
-        data JSONB NOT NULL,
-        public_key TEXT[] NOT NULL,
-        hash TEXT NOT NULL
+        raw JSONB NOT NULL,
+        hash TEXT NOT NULL,
+        CONSTRAINT same_tree_unique_idx UNIQUE (merkletree_id, index)
       );
     `)
   }

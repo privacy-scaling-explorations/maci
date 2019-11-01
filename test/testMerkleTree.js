@@ -72,7 +72,7 @@ describe('MerkleTree', () => {
       const h = mimc7.multiHash(n)
 
       await merkleTreeContract.insert(h.toString())
-      merkleTreeJS.insert(n, [0n, 0n])
+      merkleTreeJS.insert(h)
     }
 
     for (let i = 0; i < ns.length; i++) {
@@ -86,7 +86,7 @@ describe('MerkleTree', () => {
       const h = mimc7.multiHash(n)
 
       await merkleTreeContract.insert(h.toString())
-      merkleTreeJS.insert(n, [0n, 0n])
+      merkleTreeJS.insert(h)
     }
 
     const leafIndex = 1
@@ -94,13 +94,13 @@ describe('MerkleTree', () => {
     const newLeafValue = mimc7.multiHash(newLeafRawValue)
 
     // eslint-disable-next-line
-    const [path, _] = merkleTreeJS.getPath(leafIndex)
+    const [path, _] = merkleTreeJS.getPathUpdate(leafIndex)
     await merkleTreeContract.update(
       leafIndex,
       newLeafValue.toString(),
       path.map(x => x.toString())
     )
-    merkleTreeJS.update(leafIndex, newLeafRawValue, [0n, 0n])
+    merkleTreeJS.update(leafIndex, newLeafValue)
 
     const newRoot = await merkleTreeContract.getRoot()
     assert.equal(merkleTreeJS.root.toString(), newRoot.toString())
@@ -111,12 +111,12 @@ describe('MerkleTree', () => {
       const h = mimc7.multiHash(n)
 
       await merkleTreeContract.insert(h.toString())
-      merkleTreeJS.insert(n, [0n, 0n])
+      merkleTreeJS.insert(h)
     }
 
     try {
       // eslint-disable-next-line
-      const [path, _] = merkleTreeJS.getPath(0)
+      const [path, _] = merkleTreeJS.getPathUpdate(0)
 
       await merkleTreeContract.update(
         0,
@@ -142,7 +142,7 @@ describe('MerkleTree', () => {
       const h = mimc7.multiHash(n)
 
       await merkleTreeContract.insert(h.toString())
-      merkleTreeJS.insert(n, [0n, 0n])
+      merkleTreeJS.insert(h)
 
       contractRoot = await merkleTreeContract.getRoot()
       assert.equal(merkleTreeJS.root.toString(), contractRoot)
@@ -150,28 +150,42 @@ describe('MerkleTree', () => {
   })
 
   it('Merkle Tree Serialization to/from Db', async () => {
-    const mkName = 'TEST_MERKLE_TREE'
+    const mkName = 'TestMerkleTree42'
     const mk1 = createMerkleTree(4, 0n)
 
     // Need to save on every insert
-    mk1.insert(n1, [42n, 32n])
-    await saveMerkleTreeToDb(dbPool, mkName, mk1)
-    mk1.insert(n2, [52n, 32n])
+    const h1 = mimc7.multiHash(n1)
+    const h2 = mimc7.multiHash(n2)
+    const h3 = mimc7.multiHash(n3)
+
+    mk1.insert(h1)
+    mk1.insert(h2)
+    mk1.insert(h3)
+
+    // Saves index 0 to merkletree (h1)
+    await saveMerkleTreeToDb(dbPool, mkName, mk1, 0)
+
+    // Saves index 1 to merkletree (h2)
+    await saveMerkleTreeToDb(dbPool, mkName, mk1, 1)
+
+    // Saves latest index to merkletree (h3)
     await saveMerkleTreeToDb(dbPool, mkName, mk1)
 
     const mk2 = await loadMerkleTreeFromDb(dbPool, mkName)
 
-    const stringify = (x) => JSON.stringify(stringifyBigInts(x))
+    assert.equal(true, mk1.equals(mk2))
 
-    assert.equal(mk1.nextIndex, mk2.nextIndex)
-    assert.equal(mk1.depth.toString(), mk2.depth.toString())
-    assert.equal(mk1.leafNumber.toString(), mk2.leafNumber.toString())
-    assert.equal(mk1.root.toString(), mk2.root.toString())
-    assert.equal(stringify(mk1.filledPaths), stringify(mk2.filledPaths))
-    assert.equal(stringify(mk1.filledSubtrees), stringify(mk2.filledSubtrees))
-    assert.equal(stringify(mk1.leaves), stringify(mk2.leaves))
-    assert.equal(stringify(mk1.ecdhPublicKeys), stringify(mk2.ecdhPublicKeys))
-    assert.equal(stringify(mk1.encryptedValues), stringify(mk2.encryptedValues))
+    // Update second element
+    const h2New = mimc7.multiHash([h1, h2, h3])
+    mk1.update(1, h2New)
+
+    // Saves updated leave to database
+    await saveMerkleTreeToDb(dbPool, mkName, mk1, 1)
+
+    // Compare trees
+    const mk3 = await loadMerkleTreeFromDb(dbPool, mkName)
+
+    assert.equal(true, mk1.equals(mk3))
 
     // Delete from merkletree
     await dbPool.query({

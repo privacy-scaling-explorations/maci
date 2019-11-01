@@ -50,6 +50,21 @@ class MerkleTree {
     this.nextIndex = 0
   }
 
+  equals (mk2: MerkleTree): Boolean {
+    // eslint-disable-next-line
+    const stringify = (x) => JSON.stringify(stringifyBigInts(x))
+
+    return (this.nextIndex.toString() === mk2.nextIndex.toString()) &&
+      (this.depth.toString() === mk2.depth.toString()) &&
+      (this.leafNumber.toString() === mk2.leafNumber.toString()) &&
+      (this.root.toString() === mk2.root.toString()) &&
+      (stringify(this.filledPaths) === stringify(mk2.filledPaths)) &&
+      (stringify(this.filledSubtrees) === stringify(mk2.filledSubtrees)) &&
+      (stringify(this.leaves) === stringify(mk2.leaves)) &&
+      (stringify(this.ecdhPublicKeys) === stringify(mk2.ecdhPublicKeys)) &&
+      (stringify(this.encryptedValues) === stringify(mk2.encryptedValues))
+  }
+
   hash (values: Array<BigInt>): BigInt {
     return mimc7.multiHash(values)
   }
@@ -62,7 +77,7 @@ class MerkleTree {
   }
 
   /* Inserts a new value into the merkle tree */
-  insert (leaf: BigInt, rawValue: object) {
+  insert (leaf: BigInt, rawValue: ?object) {
     let curIdx = this.nextIndex
     this.nextIndex += 1
 
@@ -100,7 +115,7 @@ class MerkleTree {
   update (
     leafIndex: Number,
     leaf: BigInt,
-    rawValue: object
+    rawValue: ?object
   ) {
     if (leafIndex >= this.nextIndex) {
       throw new Error("Can't update leafIndex which hasn't been inserted yet!")
@@ -242,12 +257,13 @@ const createMerkleTree = (
 ): MerkleTree => new MerkleTree(treeDepth, zeroValue)
 
 // Helper function to save merkletree into a database
+// If leafIndex is not defined, it saves the latest leaf
 const saveMerkleTreeToDb = async (
   pool: Pool,
   mkName: String,
-  mk: MerkleTree
+  mk: MerkleTree,
+  leafIndex: ?Number
 ) => {
-  // See if there's alrea
   const mkQuery = {
     text: `INSERT INTO
       merkletrees(
@@ -294,18 +310,23 @@ const saveMerkleTreeToDb = async (
   const mkTreeId = mkTreeRes.rows[0].id
 
   // Current leaf index
-  const leafIdx = mk.nextIndex - 1
+  const selectedLeafIndex = leafIndex === undefined ? mk.nextIndex - 1 : leafIndex
 
   const leafQuery = {
     text: `INSERT INTO 
         leaves(merkletree_id, index, raw, hash)
-        VALUES($1, $2, $3, $4, $5)
+        VALUES($1, $2, $3, $4)
+        ON CONFLICT(merkletree_id, index) DO UPDATE SET
+          merkletree_id = excluded.merkletree_id,
+          index = excluded.index,
+          raw = excluded.raw,
+          hash = excluded.hash
         `,
     values: [
       mkTreeId,
-      leafIdx,
-      { data: stringifyBigInts(mk.leavesRaw[leafIdx]) },
-      stringifyBigInts(mk.leaves[leafIdx])
+      selectedLeafIndex,
+      { data: stringifyBigInts(mk.leavesRaw[selectedLeafIndex]) },
+      stringifyBigInts(mk.leaves[selectedLeafIndex])
     ]
   }
 
