@@ -30,7 +30,7 @@ library MiMC {
 contract MerkleTree is Whitelist {
     // Depth of the merkle tree.
     // Number of leaves = 2^depth
-    uint8 depth;
+    uint256 depth;
 
     // Current tree root
     uint256 root;
@@ -53,7 +53,7 @@ contract MerkleTree is Whitelist {
     event LeafAdded(uint256 leaf, uint256 leafIndex);
     event LeafUpdated(uint256 leaf, uint256 leafIndex);
 
-    constructor(uint8 _depth, uint256 _zeroValue) public {
+    constructor(uint256 _depth, uint256 _zeroValue) public {
         // Depth of the tree
         depth = _depth;
         maxLeafIndex = 2**_depth;
