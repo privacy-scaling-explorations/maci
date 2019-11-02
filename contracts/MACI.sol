@@ -3,10 +3,14 @@ pragma solidity 0.5.11;
 import "./Verifier.sol";
 import "./MerkleTree.sol";
 import "./SignUpToken.sol";
+import "./Hasher.sol";
 
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 
 contract MACI is Verifier, Ownable, IERC721Receiver {
+    // Hasher
+    Hasher hasher;
+
     // Append-only merkle tree to represent
     // internal state transitions
     // i.e. update function isn't used
@@ -29,31 +33,24 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
         uint256 newCmdTreeRoot
     );
 
-    constructor(address cmdTreeAddress) Ownable() public {
+    constructor(
+      address cmdTreeAddress,
+      address hasherAddress
+    ) Ownable() public {
         cmdTree = MerkleTree(cmdTreeAddress);
+        hasher = Hasher(hasherAddress);
     }
 
     // On ERC721 transferred to the contract, this function is called.
     // This acts as the way to allow users to sign up to the contract.
     // i.e. Only users who have the `SignUpToken` is allowed to publish
     //      a message, once
-    function onERC721Received(address sender, uint256, bytes memory) public returns(bytes4) {
+    function onERC721Received(address sender, address, uint256, bytes memory) public returns(bytes4) {
         whitelistedAddresses[sender] = true;
 
         // Equals to `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
         // Which is the expected magic number to return for this interface
-        return 0x150b7a02;
-    }
-
-    // mimc7.hashMulti convinience function
-    function hashMulti(uint256[] memory array) public pure returns (uint256) {
-        uint256 r = 15021630795539610737508582392395901278341266317943626182700664337106830745361;
-
-        for (uint i = 0; i < array.length; i++){
-            r = MiMC.MiMCpe7(r, array[i]);
-        }
-
-        return r;
+        return this.onERC721Received.selector;
     }
 
     // Publishes a command to the cmdTree
@@ -65,7 +62,7 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
         require(signedUpAddresses[msg.sender] == false, "Address is not whitelisted!");
 
         // Calculate leaf value
-        uint256 leaf = hashMulti(encryptedMessage);
+        uint256 leaf = hasher.hashMulti(encryptedMessage);
 
         // Insert the new leaf into the cmdTree
         cmdTree.insert(leaf);
