@@ -24,7 +24,8 @@ module.exports = async (deployer) => {
   const maci = await deployer.deploy(
     MACI,
     cmdTree.address,
-    hasher.address
+    hasher.address,
+    merkleTreeConfig.durationSignUpBlockNumbers
   )
 
   // Allow MACI contract to call `insert` and `update` methods

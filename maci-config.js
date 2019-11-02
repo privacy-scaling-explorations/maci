@@ -1,9 +1,10 @@
 module.exports = {
   merkleTreeConfig: {
     stateTreeName: process.env.STATE_TREE_NAME || 'StateTree',
-    resultTreeName: process.env.RESULT_TREE_NAME || 'ResultTree',
+    cmdTreeName: process.env.CMD_TREE_NAME || 'CmdTree',
     treeDepth: process.env.MERKLE_TREE_DEPTH || 4,
-    zeroValue: 0n
+    zeroValue: 0n,
+    durationSignUpBlockNumbers: process.env.SIGNUP_BLOCK_DURATION || 20
   },
   ganacheConfig: {
     mnemonic: 'helloworld',

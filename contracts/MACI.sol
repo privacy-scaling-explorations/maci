@@ -16,16 +16,23 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
     // i.e. update function isn't used
     MerkleTree cmdTree;
 
-    // NOTE: This is only used to represent the
-    // initial stage of the stateTree
-    // i.e. Used to sign users up
-    MerkleTree stateTree;
+    // What block did the contract get deployed
+    uint256 deployedBlockNumber;
+
+    // Duration of the sign up process, in block numbers
+    uint256 durationSignUpBlockNumbers;
 
     // Whitelisted address (make sure they have signed up)
     mapping (address => bool) whitelistedAddresses;
     mapping (address => bool) signedUpAddresses;
 
     // Events
+    event SignedUp(
+        uint256[] encryptedMessage,
+        uint256[2] ecdhPublicKey,
+        uint256 hashedEncryptedMessage,
+        uint256 newCmdTreeRoot
+    );
     event CommandPublished(
         uint256[] encryptedMessage,
         uint256[2] ecdhPublicKey,
@@ -35,10 +42,14 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
 
     constructor(
       address cmdTreeAddress,
-      address hasherAddress
+      address hasherAddress,
+      uint256 _durationSignUpBlockNumber
     ) Ownable() public {
         cmdTree = MerkleTree(cmdTreeAddress);
         hasher = Hasher(hasherAddress);
+
+        deployedBlockNumber = block.number;
+        durationSignUpBlockNumbers = _durationSignUpBlockNumber;
     }
 
     // On ERC721 transferred to the contract, this function is called.
@@ -53,11 +64,15 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
         return this.onERC721Received.selector;
     }
 
-    // Publishes a command to the cmdTree
-    function publishCommand(
+    // Signs a user up
+    function signUp(
         uint256[] memory encryptedMessage,
         uint256[2] memory ecdhPublicKey
     ) public {
+        require(
+          block.number <= deployedBlockNumber + durationSignUpBlockNumbers,
+          "Sign up process ended!"
+        );
         require(whitelistedAddresses[msg.sender] == true, "Address is not whitelisted!");
         require(signedUpAddresses[msg.sender] == false, "Address is not whitelisted!");
 
@@ -73,6 +88,33 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
         // Each user can only sign up once
         signedUpAddresses[msg.sender] = true;
 
+        emit SignedUp(
+            encryptedMessage,
+            ecdhPublicKey,
+            leaf,
+            newCmdTreeRoot
+        );
+    }
+
+    // Publishes commands
+    function publishCommand(
+        uint256[] memory encryptedMessage,
+        uint256[2] memory ecdhPublicKey
+    ) public {
+        require(
+          block.number > deployedBlockNumber + durationSignUpBlockNumbers,
+          "Sign up process ongoing!"
+        );
+
+        // Calculate leaf value
+        uint256 leaf = hasher.hashMulti(encryptedMessage);
+
+        // Insert the new leaf into the cmdTree
+        cmdTree.insert(leaf);
+
+        // Get new cmd tree root
+        uint256 newCmdTreeRoot = cmdTree.getRoot();
+
         emit CommandPublished(
             encryptedMessage,
             ecdhPublicKey,
@@ -81,5 +123,9 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
         );
     }
 
+    // Gets meta information concerning deployment time
+    function getMetaInfo() public view returns (uint256, uint256) {
+      return (deployedBlockNumber, durationSignUpBlockNumbers);
+    }
 }
 
