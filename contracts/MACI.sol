@@ -12,6 +12,11 @@ contract MACI is Verifier, Ownable {
     // i.e. update function isn't used
     MerkleTree cmdTree;
 
+    // resultsTree
+    // NOTE: This is only used to represent the
+    // initial stages
+    MerkleTree stateTree;
+
     // TODO: Implement whitelist for Public-keys
     // hashMulti(publicKey) => uint256
     mapping (uint256 => bool) whitelistedPublickeys;
@@ -26,7 +31,7 @@ contract MACI is Verifier, Ownable {
 
     // Register our merkle trees
     constructor(
-        address cmdTreeAddress,
+        address cmdTreeAddress
     ) Ownable() public {
         cmdTree = MerkleTree(cmdTreeAddress);
     }
@@ -53,12 +58,12 @@ contract MACI is Verifier, Ownable {
         uint256 leaf = hashMulti(encryptedMessage);
 
         // Insert the new leaf into the cmdTree
-        cmdTree.insert(leaf)
+        cmdTree.insert(leaf);
 
         // Get new cmd tree root
         uint256 newCmdTreeRoot = cmdTree.getRoot();
 
-        emit MessagePublished(
+        emit CommandPublished(
             encryptedMessage,
             publisherPublicKey,
             leaf,
