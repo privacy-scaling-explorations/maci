@@ -10,42 +10,25 @@ contract MACI is Verifier, Ownable {
     // Append-only merkle tree to represent
     // internal state transitions
     // i.e. update function isn't used
-    MerkleTree stateTree;
-
-    // Merkle tree to store all the
-    // result of the users votes
-    MerkleTree resultTree;
+    MerkleTree cmdTree;
 
     // TODO: Implement whitelist for Public-keys
     // hashMulti(publicKey) => uint256
     mapping (uint256 => bool) whitelistedPublickeys;
 
     // Events
-    event MessagePublished(
+    event CommandPublished(
         uint256[] encryptedMessage,
         uint256[2] publisherPublicKey,
-        uint256 hashedEncryptedMessage
-    );
-    event MessageInserted(
-        uint256 hashedEncryptedMessage
-    );
-    event UserInserted(
         uint256 hashedEncryptedMessage,
-        uint256 userIndex
-    );
-    event UserUpdated(
-        uint256 oldHashedEncryptedMessage,
-        uint256 newHashedEncryptedMessage,
-        uint256 userIndex
+        uint256 newCmdTreeRoot
     );
 
     // Register our merkle trees
     constructor(
-        address stateTreeAddress,
-        address resultTreeAddress
+        address cmdTreeAddress,
     ) Ownable() public {
-        stateTree = MerkleTree(stateTreeAddress);
-        resultTree = MerkleTree(resultTreeAddress);
+        cmdTree = MerkleTree(cmdTreeAddress);
     }
 
     // mimc7.hashMulti function
@@ -61,54 +44,25 @@ contract MACI is Verifier, Ownable {
         return r;
     }
 
-    // Publishes a message to the registry
-    // The message is the `encryptedData`
-    // If the message can be decrypted successfully
-    // and the signature can be verified
-    // then the stateTree is appended with the message
-    function pubishMessage(
+    // Publishes a command to the registry
+    function publishCommand(
         uint256[] memory encryptedMessage,
         uint256[2] memory publisherPublicKey
     ) public {
-        uint256 hashedEncryptedMessaghe = hashMulti(encryptedMessage);
+        // Calculate leaf value
+        uint256 leaf = hashMulti(encryptedMessage);
+
+        // Insert the new leaf into the cmdTree
+        cmdTree.insert(leaf)
+
+        // Get new cmd tree root
+        uint256 newCmdTreeRoot = cmdTree.getRoot();
+
         emit MessagePublished(
             encryptedMessage,
             publisherPublicKey,
-            hashedEncryptedMessaghe
+            leaf,
+            newCmdTreeRoot
         );
     }
-
-    // Updates stateTree should the decryption of
-    // the message is successful
-    function insertMessage(
-        uint256 hashedEncryptedMessage
-    ) public onlyOwner {
-        stateTree.insert(hashedEncryptedMessage);
-        emit MessageInserted(hashedEncryptedMessage);
-    }
-
-    // Inserts a new user
-    function insertUser(
-        uint256 hashedEncryptedMessage
-    ) public onlyOwner {
-        uint256 userIndex = resultTree.getInsertedLeavesNo();
-        resultTree.insert(hashedEncryptedMessage);
-        emit UserInserted(hashedEncryptedMessage, userIndex);
-    }
-
-    // Updates user
-    function updateUser(
-        uint256 userIndex,
-        uint256 hashedEncryptedMessage,
-        uint256[] memory path
-    ) public onlyOwner {
-        uint256 oldHashedEncryptedMessage = resultTree.getLeafAt(userIndex);
-        resultTree.update(userIndex, hashedEncryptedMessage, path);
-        emit UserUpdated(
-            oldHashedEncryptedMessage,
-            hashedEncryptedMessage,
-            userIndex
-        );
-    }
-
 }
