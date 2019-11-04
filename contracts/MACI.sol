@@ -26,6 +26,9 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
     mapping (address => bool) whitelistedAddresses;
     mapping (address => bool) signedUpAddresses;
 
+    // Address of the SignUpToken
+    address signUpTokenAddress;
+
     // Events
     event SignedUp(
         uint256[] encryptedMessage,
@@ -43,6 +46,7 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
     constructor(
       address cmdTreeAddress,
       address hasherAddress,
+      address _signUpTokenAddress,
       uint256 _durationSignUpBlockNumber
     ) Ownable() public {
         cmdTree = MerkleTree(cmdTreeAddress);
@@ -50,6 +54,7 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
 
         deployedBlockNumber = block.number;
         durationSignUpBlockNumbers = _durationSignUpBlockNumber;
+        signUpTokenAddress = _signUpTokenAddress;
     }
 
     // On ERC721 transferred to the contract, this function is called.
@@ -57,6 +62,7 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
     // i.e. Only users who have the `SignUpToken` is allowed to publish
     //      a message, once
     function onERC721Received(address sender, address, uint256, bytes memory) public returns(bytes4) {
+        require(msg.sender == signUpTokenAddress, "Contract does not accept the provided ERC721 tokens");
         whitelistedAddresses[sender] = true;
 
         // Equals to `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`

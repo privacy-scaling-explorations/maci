@@ -2,6 +2,7 @@ const MerkleTree = artifacts.require('MerkleTree')
 const MiMC = artifacts.require('MiMC')
 const MACI = artifacts.require('MACI')
 const Hasher = artifacts.require('Hasher')
+const SignUpToken = artifacts.require('SignUpToken')
 
 const { merkleTreeConfig } = require('../maci-config')
 
@@ -11,6 +12,10 @@ module.exports = async (deployer) => {
 
   // Deploy hasher
   const hasher = await deployer.deploy(Hasher)
+
+  // Deploy SignUpToken
+  // (This is how we sign up to the contract)
+  const signUpToken = await deployer.deploy(SignUpToken)
 
   // Deploy execution state merkle tree
   // (The append-only merkle tree)
@@ -25,6 +30,7 @@ module.exports = async (deployer) => {
     MACI,
     cmdTree.address,
     hasher.address,
+    signUpToken.address,
     merkleTreeConfig.durationSignUpBlockNumbers
   )
 
@@ -33,9 +39,10 @@ module.exports = async (deployer) => {
   await cmdTree.whitelistAddress(maci.address)
 
   // Saves addresses
-  global.contractAddresses = {
+  global.contracts = {
     mimcAddress: MiMC.address,
     maciAddress: maci.address,
-    cmdTree: cmdTree.address
+    cmdTreeAddress: cmdTree.address,
+    signUpTokenAddress: signUpToken.address
   }
 }
