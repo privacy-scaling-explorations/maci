@@ -3,7 +3,7 @@ const path = require('path')
 
 module.exports = async (_) => {
   const data = JSON.stringify({
-    ...global.contractAddresses
+    ...global.contracts
   }, null, 4)
 
   console.log(data)

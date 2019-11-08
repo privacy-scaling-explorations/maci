@@ -15,9 +15,11 @@
     "circuit:compile": "mkdir -p app/circuits && circom circuits/circuit.circom -o app/circuits/circuit.json",
     "circuit:setup": "cd app/circuits && snarkjs setup --protocol groth",
     "circuit:generateverifier": "mkdir -p contracts && cd app/circuits && snarkjs generateverifier --protocol groth && mv verifier.sol ../../contracts/Verifier.sol",
-    "circuit:test": "flow-node app/circuits-interactions.js"
+    "circuit:test": "flow-node app/circuits-interactions.js",
+    "contract:test": "flow-node app/contract-interactions.js"
   },
   "dependencies": {
+    "@openzeppelin/contracts": "2.4.0",
     "body-parser": "^1.19.0",
     "circom": "0.0.31",
     "circomlib": "0.0.6",
@@ -26,7 +28,6 @@
     "flow-bin": "^0.107.0",
     "flow-remove-types": "^2.108.0",
     "log-timestamp": "^0.3.0",
-    "openzeppelin-solidity": "2.3.0",
     "pg": "^7.12.1",
     "redis": "^2.8.0",
     "snarkjs": "^0.1.19",

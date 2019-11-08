@@ -1,46 +1,48 @@
 const MerkleTree = artifacts.require('MerkleTree')
 const MiMC = artifacts.require('MiMC')
 const MACI = artifacts.require('MACI')
+const Hasher = artifacts.require('Hasher')
+const SignUpToken = artifacts.require('SignUpToken')
 
 const { merkleTreeConfig } = require('../maci-config')
 
 module.exports = async (deployer) => {
-  // Link MiMC with the merkle tree
-  await deployer.link(MiMC, MerkleTree)
-  await deployer.link(MiMC, MACI)
+  // Link MiMC with the Hasher object
+  await deployer.link(MiMC, Hasher)
+
+  // Deploy hasher
+  const hasher = await deployer.deploy(Hasher)
+
+  // Deploy SignUpToken
+  // (This is how we sign up to the contract)
+  const signUpToken = await deployer.deploy(SignUpToken)
 
   // Deploy execution state merkle tree
   // (The append-only merkle tree)
-  const stateTree = await deployer.deploy(
+  const cmdTree = await deployer.deploy(
     MerkleTree,
     merkleTreeConfig.treeDepth,
-    merkleTreeConfig.zeroValue.toString()
-  )
-
-  // Deploy results merkle tree
-  // (Merkle tree to store 'registered' users and their associated votes)
-  const resultsTree = await deployer.deploy(
-    MerkleTree,
-    merkleTreeConfig.treeDepth,
-    merkleTreeConfig.zeroValue.toString()
+    merkleTreeConfig.zeroValue.toString(),
+    hasher.address
   )
 
   const maci = await deployer.deploy(
     MACI,
-    stateTree.address,
-    resultsTree.address
+    cmdTree.address,
+    hasher.address,
+    signUpToken.address,
+    merkleTreeConfig.durationSignUpBlockNumbers
   )
 
   // Allow MACI contract to call `insert` and `update` methods
   // on the MerkleTrees
-  await stateTree.whitelistAddress(maci.address)
-  await resultsTree.whitelistAddress(maci.address)
+  await cmdTree.whitelistAddress(maci.address)
 
   // Saves addresses
-  global.contractAddresses = {
+  global.contracts = {
     mimcAddress: MiMC.address,
     maciAddress: maci.address,
-    stateTreeAddress: stateTree.address,
-    resultsTreeAddress: resultsTree.address
+    cmdTreeAddress: cmdTree.address,
+    signUpTokenAddress: signUpToken.address
   }
 }
