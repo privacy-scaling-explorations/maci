@@ -22,12 +22,18 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
     // Duration of the sign up process, in block numbers
     uint256 durationSignUpBlockNumbers;
 
-    // Whitelisted address (make sure they have signed up)
-    mapping (address => bool) whitelistedAddresses;
-    mapping (address => bool) signedUpAddresses;
+    // Address that has been allocated an account
+    // Note: An address can sign up multiple times
+    //       if they have > 1 ERC721 tokens
+    //       ensure that addressAccountAllocated[address] > 0
+    //       before allowing them to sign up
+    mapping (address => uint256) addressAccountAllocated;
 
     // Address of the SignUpToken
     address signUpTokenAddress;
+
+    // Owner can also forcefully terminate voting period
+    bool signUpForceEnded = false;
 
     // Events
     event SignedUp(
@@ -63,7 +69,7 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
     //      a message, once
     function onERC721Received(address sender, address, uint256, bytes memory) public returns(bytes4) {
         require(msg.sender == signUpTokenAddress, "Contract does not accept the provided ERC721 tokens");
-        whitelistedAddresses[sender] = true;
+        addressAccountAllocated[sender] += 1;
 
         // Equals to `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
         // Which is the expected magic number to return for this interface
@@ -76,11 +82,10 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
         uint256[2] memory ecdhPublicKey
     ) public {
         require(
-          block.number <= deployedBlockNumber + durationSignUpBlockNumbers,
+          block.number <= deployedBlockNumber + durationSignUpBlockNumbers && !signUpForceEnded,
           "Sign up process ended!"
         );
-        require(whitelistedAddresses[msg.sender] == true, "Address is not whitelisted!");
-        require(signedUpAddresses[msg.sender] == false, "Address is not whitelisted!");
+        require(addressAccountAllocated[msg.sender] > 0, "Address is not whitelisted!");
 
         // Calculate leaf value
         uint256 leaf = hasher.hashMulti(encryptedMessage);
@@ -91,8 +96,7 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
         // Get new cmd tree root
         uint256 newCmdTreeRoot = cmdTree.getRoot();
 
-        // Each user can only sign up once
-        signedUpAddresses[msg.sender] = true;
+        addressAccountAllocated[msg.sender] -= 1;
 
         emit SignedUp(
             encryptedMessage,
@@ -108,7 +112,7 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
         uint256[2] memory ecdhPublicKey
     ) public {
         require(
-          block.number > deployedBlockNumber + durationSignUpBlockNumbers,
+          block.number > deployedBlockNumber + durationSignUpBlockNumbers || signUpForceEnded,
           "Sign up process ongoing!"
         );
 
@@ -127,6 +131,11 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
             leaf,
             newCmdTreeRoot
         );
+    }
+
+    // Forcefully ends sign up period
+    function endSignUpPeriod() public onlyOwner {
+      signUpForceEnded = true;
     }
 
     // Gets meta information concerning deployment time

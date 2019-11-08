@@ -36,9 +36,36 @@ const user1EncryptedMsg = signAndEncrypt(
   coordinatorPublicKey
 )
 
+const user2SecretKey = randomPrivateKey()
+const user2PublicKey = privateToPublicKey(user2SecretKey)
+const user2Message = [...user2PublicKey, 0n]
+const user2EncryptedMsg = signAndEncrypt(
+  user2Message,
+  user2SecretKey,
+  user2SecretKey,
+  coordinatorPublicKey
+)
+
 const main = async () => {
-  // Try and sign up, make sure they fail
+  // Variable declaration
+  let oldRoot
+  let newRoot
+
   const maciUser1Contract = maciContract.connect(user1Wallet)
+  const maciUser2Contract = maciContract.connect(user2Wallet)
+
+  // Try and publish a command, it needs to fail
+  try {
+    await maciContract.publishCommand(
+      stringifyBigInts(user1EncryptedMsg),
+      stringifyBigInts(user1PublicKey)
+    )
+    throw new Error('Should not be able to publish commands yet')
+  } catch (e) {}
+
+  // Try and sign up, make sure it fails
+  // Fails because user1 and user2 hasn't sent
+  // any erc721 tokens to the contract yet
   try {
     await maciUser1Contract.signUp(
       stringifyBigInts(user1EncryptedMsg),
@@ -47,20 +74,36 @@ const main = async () => {
     throw new Error('User 1 should not be able to sign up yet')
   } catch (e) {}
 
+  try {
+    await maciUser2Contract.signUp(
+      stringifyBigInts(user2EncryptedMsg),
+      stringifyBigInts(user2PublicKey)
+    )
+    throw new Error('User 2 should not be able to sign up yet')
+  } catch (e) {}
+
   // 1. Mint some tokens and xfer to user1 and user2
   const signUpTokenOwnerContract = signUpTokenContract.connect(coordinatorWallet)
+  // User 1 gets 2 tokens (make sure force close logic works)
   await signUpTokenOwnerContract.giveToken(user1Wallet.address)
+  await signUpTokenOwnerContract.giveToken(user1Wallet.address)
+  // User 2 gets 1 token
   await signUpTokenOwnerContract.giveToken(user2Wallet.address)
 
-  // 2. User sends token to contract
+  // 2. User 1 sends token to contract
   const signUpTokenUser1Contract = signUpTokenContract.connect(user1Wallet)
   await signUpTokenUser1Contract.safeTransferFrom(
     user1Wallet.address.toString(),
     maciContract.address.toString(),
-    0
+    1 // Token id starts at 1
+  )
+  await signUpTokenUser1Contract.safeTransferFrom(
+    user1Wallet.address.toString(),
+    maciContract.address.toString(),
+    2 // Note: token id changed
   )
 
-  const oldRoot = await cmdTreeContract.getRoot()
+  oldRoot = await cmdTreeContract.getRoot()
 
   // Now user should be able to sign up
   await maciUser1Contract.signUp(
@@ -68,10 +111,66 @@ const main = async () => {
     stringifyBigInts(user1PublicKey)
   )
 
-  const newRoot = await cmdTreeContract.getRoot()
+  newRoot = await cmdTreeContract.getRoot()
 
-  console.log(`Old root: ${oldRoot.toString()}`)
-  console.log(`New root: ${newRoot.toString()}`)
+  // Make sure that when user signs up,
+  // contract commandTree updates its root
+  if (oldRoot.toString() === newRoot.toString()) {
+    throw new Error('commandTree in contract not updated for user 1!')
+  }
+
+  // 3. User 2 sends token to contract
+  const signUpTokenUser2Contract = signUpTokenContract.connect(user2Wallet)
+  await signUpTokenUser2Contract.safeTransferFrom(
+    user2Wallet.address.toString(),
+    maciContract.address.toString(),
+    3 // Note: Token id has changed
+  )
+
+  oldRoot = await cmdTreeContract.getRoot()
+
+  // Now user should be able to sign up
+  await maciUser2Contract.signUp(
+    stringifyBigInts(user2EncryptedMsg),
+    stringifyBigInts(user2PublicKey)
+  )
+
+  newRoot = await cmdTreeContract.getRoot()
+
+  // Make sure that when user signs up,
+  // contract commandTree updates its root
+  if (oldRoot.toString() === newRoot.toString()) {
+    throw new Error('commandTree in contract not updated for user 2!')
+  }
+
+  // 4. Forcefully close signup period
+  await maciContract.endSignUpPeriod()
+
+  // 5. Make sure users can't vote anymore
+  // (Even though they have sent some tokens)
+  try {
+    await maciUser1Contract.signUp(
+      stringifyBigInts(user1EncryptedMsg),
+      stringifyBigInts(user1PublicKey)
+    )
+    throw new Error('User 1 should not be able to sign up anymore')
+  } catch (e) {}
+
+  // 6. Make sure users can publish new commands now
+  // Note: Everyone can publish a command, the coordinator
+  //       to be able to decrypt it in order to add it into the state tree
+  oldRoot = await cmdTreeContract.getRoot()
+  await maciUser1Contract.publishCommand(
+    stringifyBigInts(user1EncryptedMsg),
+    stringifyBigInts(user1PublicKey)
+  )
+  newRoot = await cmdTreeContract.getRoot()
+
+  // Make sure that when user signs up,
+  // contract commandTree updates its root
+  if (oldRoot.toString() === newRoot.toString()) {
+    throw new Error('commandTree in contract not updated for publishCommand!')
+  }
 }
 
 main()
