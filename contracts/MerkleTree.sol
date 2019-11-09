@@ -21,16 +21,17 @@
 
 pragma solidity 0.5.11;
 
+import "./Hasher.sol";
 import "./Whitelist.sol";
 
-library MiMC {
-    function MiMCpe7(uint256 in_x, uint256 in_k) public pure returns (uint256 out_x);
-}
 
 contract MerkleTree is Whitelist {
+    // Hasher object
+    Hasher hasher;
+
     // Depth of the merkle tree.
     // Number of leaves = 2^depth
-    uint8 depth;
+    uint256 depth;
 
     // Current tree root
     uint256 root;
@@ -53,7 +54,14 @@ contract MerkleTree is Whitelist {
     event LeafAdded(uint256 leaf, uint256 leafIndex);
     event LeafUpdated(uint256 leaf, uint256 leafIndex);
 
-    constructor(uint8 _depth, uint256 _zeroValue) public {
+    constructor(
+      uint256 _depth,
+      uint256 _zeroValue,
+      address hasherAddress
+    ) public {
+        // Hasher object
+        hasher = Hasher(hasherAddress);
+
         // Depth of the tree
         depth = _depth;
         maxLeafIndex = 2**_depth;
@@ -64,26 +72,15 @@ contract MerkleTree is Whitelist {
         filledSubtrees.push(zeros[0]);
 
         for (uint8 i = 1; i < depth; i++) {
-            zeros.push(hashPair(zeros[i-1], zeros[i-1]));
+            zeros.push(hasher.hashPair(zeros[i-1], zeros[i-1]));
             filledSubtrees.push(zeros[i]);
         }
 
         // Calculate current root
-        root = hashPair(zeros[depth - 1], zeros[depth - 1]);
+        root = hasher.hashPair(zeros[depth - 1], zeros[depth - 1]);
         nextLeafIndex = 0;
     }
 
-    function hashPair(
-        uint256 left,
-        uint256 right
-    ) public pure returns (uint256 mimc_hash) {
-        uint256 r = 15021630795539610737508582392395901278341266317943626182700664337106830745361;
-
-        r = MiMC.MiMCpe7(r, left);
-        r = MiMC.MiMCpe7(r, right);
-
-        mimc_hash = r;
-    }
 
     // Inserts (appends) a new leaf into the
     // merkle tree
@@ -109,7 +106,7 @@ contract MerkleTree is Whitelist {
                 right = currentLevelHash;
             }
 
-            currentLevelHash = hashPair(left, right);
+            currentLevelHash = hasher.hashPair(left, right);
             currentIndex /= 2;
         }
 
@@ -142,7 +139,7 @@ contract MerkleTree is Whitelist {
                 right = currentLevelHash;
             }
 
-            currentLevelHash = hashPair(left, right);
+            currentLevelHash = hasher.hashPair(left, right);
             currentIndex /= 2;
         }
 
@@ -160,7 +157,7 @@ contract MerkleTree is Whitelist {
                 right = currentLevelHash;
             }
 
-            currentLevelHash = hashPair(left, right);
+            currentLevelHash = hasher.hashPair(left, right);
             currentIndex /= 2;
         }
 

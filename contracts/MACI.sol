@@ -2,113 +2,145 @@ pragma solidity 0.5.11;
 
 import "./Verifier.sol";
 import "./MerkleTree.sol";
+import "./SignUpToken.sol";
+import "./Hasher.sol";
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 
+contract MACI is Verifier, Ownable, IERC721Receiver {
+    // Hasher
+    Hasher hasher;
 
-contract MACI is Verifier, Ownable {
     // Append-only merkle tree to represent
     // internal state transitions
     // i.e. update function isn't used
-    MerkleTree stateTree;
+    MerkleTree cmdTree;
 
-    // Merkle tree to store all the
-    // result of the users votes
-    MerkleTree resultTree;
+    // What block did the contract get deployed
+    uint256 deployedBlockNumber;
 
-    // TODO: Implement whitelist for Public-keys
-    // hashMulti(publicKey) => uint256
-    mapping (uint256 => bool) whitelistedPublickeys;
+    // Duration of the sign up process, in block numbers
+    uint256 durationSignUpBlockNumbers;
+
+    // Address that has been allocated an account
+    // Note: An address can sign up multiple times
+    //       if they have > 1 ERC721 tokens
+    //       ensure that addressAccountAllocated[address] > 0
+    //       before allowing them to sign up
+    mapping (address => uint256) addressAccountAllocated;
+
+    // Address of the SignUpToken
+    address signUpTokenAddress;
+
+    // Owner can also forcefully terminate voting period
+    bool signUpForceEnded = false;
 
     // Events
-    event MessagePublished(
+    event SignedUp(
         uint256[] encryptedMessage,
-        uint256[2] publisherPublicKey,
-        uint256 hashedEncryptedMessage
-    );
-    event MessageInserted(
-        uint256 hashedEncryptedMessage
-    );
-    event UserInserted(
+        uint256[2] ecdhPublicKey,
         uint256 hashedEncryptedMessage,
-        uint256 userIndex
+        uint256 newCmdTreeRoot
     );
-    event UserUpdated(
-        uint256 oldHashedEncryptedMessage,
-        uint256 newHashedEncryptedMessage,
-        uint256 userIndex
+    event CommandPublished(
+        uint256[] encryptedMessage,
+        uint256[2] ecdhPublicKey,
+        uint256 hashedEncryptedMessage,
+        uint256 newCmdTreeRoot
     );
 
-    // Register our merkle trees
     constructor(
-        address stateTreeAddress,
-        address resultTreeAddress
+      address cmdTreeAddress,
+      address hasherAddress,
+      address _signUpTokenAddress,
+      uint256 _durationSignUpBlockNumber
     ) Ownable() public {
-        stateTree = MerkleTree(stateTreeAddress);
-        resultTree = MerkleTree(resultTreeAddress);
+        cmdTree = MerkleTree(cmdTreeAddress);
+        hasher = Hasher(hasherAddress);
+
+        deployedBlockNumber = block.number;
+        durationSignUpBlockNumbers = _durationSignUpBlockNumber;
+        signUpTokenAddress = _signUpTokenAddress;
     }
 
-    // mimc7.hashMulti function
-    function hashMulti(
-        uint256[] memory array
-    ) public view returns (uint256) {
-        uint256 r = 15021630795539610737508582392395901278341266317943626182700664337106830745361;
+    // On ERC721 transferred to the contract, this function is called.
+    // This acts as the way to allow users to sign up to the contract.
+    // i.e. Only users who have the `SignUpToken` is allowed to publish
+    //      a message, once
+    function onERC721Received(address sender, address, uint256, bytes memory) public returns(bytes4) {
+        require(msg.sender == signUpTokenAddress, "Contract does not accept the provided ERC721 tokens");
+        addressAccountAllocated[sender] += 1;
 
-        for (uint i = 0; i < array.length; i++){
-            r = MiMC.MiMCpe7(r, array[i]);
-        }
-
-        return r;
+        // Equals to `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
+        // Which is the expected magic number to return for this interface
+        return this.onERC721Received.selector;
     }
 
-    // Publishes a message to the registry
-    // The message is the `encryptedData`
-    // If the message can be decrypted successfully
-    // and the signature can be verified
-    // then the stateTree is appended with the message
-    function pubishMessage(
+    // Signs a user up
+    function signUp(
         uint256[] memory encryptedMessage,
-        uint256[2] memory publisherPublicKey
+        uint256[2] memory ecdhPublicKey
     ) public {
-        uint256 hashedEncryptedMessaghe = hashMulti(encryptedMessage);
-        emit MessagePublished(
+        require(
+          block.number <= deployedBlockNumber + durationSignUpBlockNumbers && !signUpForceEnded,
+          "Sign up process ended!"
+        );
+        require(addressAccountAllocated[msg.sender] > 0, "Address is not whitelisted!");
+
+        // Calculate leaf value
+        uint256 leaf = hasher.hashMulti(encryptedMessage);
+
+        // Insert the new leaf into the cmdTree
+        cmdTree.insert(leaf);
+
+        // Get new cmd tree root
+        uint256 newCmdTreeRoot = cmdTree.getRoot();
+
+        addressAccountAllocated[msg.sender] -= 1;
+
+        emit SignedUp(
             encryptedMessage,
-            publisherPublicKey,
-            hashedEncryptedMessaghe
+            ecdhPublicKey,
+            leaf,
+            newCmdTreeRoot
         );
     }
 
-    // Updates stateTree should the decryption of
-    // the message is successful
-    function insertMessage(
-        uint256 hashedEncryptedMessage
-    ) public onlyOwner {
-        stateTree.insert(hashedEncryptedMessage);
-        emit MessageInserted(hashedEncryptedMessage);
-    }
+    // Publishes commands
+    function publishCommand(
+        uint256[] memory encryptedMessage,
+        uint256[2] memory ecdhPublicKey
+    ) public {
+        require(
+          block.number > deployedBlockNumber + durationSignUpBlockNumbers || signUpForceEnded,
+          "Sign up process ongoing!"
+        );
 
-    // Inserts a new user
-    function insertUser(
-        uint256 hashedEncryptedMessage
-    ) public onlyOwner {
-        uint256 userIndex = resultTree.getInsertedLeavesNo();
-        resultTree.insert(hashedEncryptedMessage);
-        emit UserInserted(hashedEncryptedMessage, userIndex);
-    }
+        // Calculate leaf value
+        uint256 leaf = hasher.hashMulti(encryptedMessage);
 
-    // Updates user
-    function updateUser(
-        uint256 userIndex,
-        uint256 hashedEncryptedMessage,
-        uint256[] memory path
-    ) public onlyOwner {
-        uint256 oldHashedEncryptedMessage = resultTree.getLeafAt(userIndex);
-        resultTree.update(userIndex, hashedEncryptedMessage, path);
-        emit UserUpdated(
-            oldHashedEncryptedMessage,
-            hashedEncryptedMessage,
-            userIndex
+        // Insert the new leaf into the cmdTree
+        cmdTree.insert(leaf);
+
+        // Get new cmd tree root
+        uint256 newCmdTreeRoot = cmdTree.getRoot();
+
+        emit CommandPublished(
+            encryptedMessage,
+            ecdhPublicKey,
+            leaf,
+            newCmdTreeRoot
         );
     }
 
+    // Forcefully ends sign up period
+    function endSignUpPeriod() public onlyOwner {
+      signUpForceEnded = true;
+    }
+
+    // Gets meta information concerning deployment time
+    function getMetaInfo() public view returns (uint256, uint256) {
+      return (deployedBlockNumber, durationSignUpBlockNumbers);
+    }
 }
+

@@ -3,8 +3,8 @@ export type EnvType = "TEST" | "DEV" | "PROD";
 
 export type ContractAddresses = {
     MACI_CONTRACT_ADDRESS: ?String,
-    STATE_TREE_ADDRESS: ?String,
-    RESULT_TREE_ADDRESS: ?String
+    CMD_TREE_ADDRESS: ?String,
+    SIGN_UP_TOKEN_ADDRESS: ?String
 };
 
 export type DbCredentials = {
@@ -30,21 +30,21 @@ const getContractAddresses = (): ContractAddresses => {
 
     return {
       MACI_CONTRACT_ADDRESS: deployedAddresses.maciAddress,
-      STATE_TREE_ADDRESS: deployedAddresses.stateTreeAddress,
-      RESULT_TREE_ADDRESS: deployedAddresses.resultsTreeAddress
+      CMD_TREE_ADDRESS: deployedAddresses.cmdTreeAddress,
+      SIGN_UP_TOKEN_ADDRESS: deployedAddresses.signUpTokenAddress
     }
   } else if (envType === 'PROD') {
     // Otherwise get addresses from the ENV Variables
     if (process.env.MACI_CONTRACT_ADDRESS === undefined ||
-        process.env.STATE_TREE_ADDRESS === undefined ||
-        process.env.RESULT_TREE_ADDRESS === undefined) {
+        process.env.SIGN_UP_TOKEN_ADDRESS === undefined ||
+        process.env.CMD_TREE_ADDRESS === undefined) {
       throw new Error('ENV_TYPE = PROD, however not all contract addresses are provided.')
     }
 
     return {
       MACI_CONTRACT_ADDRESS: process.env.MACI_CONTRACT_ADDRESS,
-      STATE_TREE_ADDRESS: process.env.STATE_TREE_ADDRESS,
-      RESULT_TREE_ADDRESS: process.env.RESULT_TREE_ADDRESS
+      CMD_TREE_ADDRESS: process.env.CMD_TREE_ADDRESS,
+      SIGN_UP_TOKEN_ADDRESS: process.env.SIGN_UP_TOKEN_ADDRESS
     }
   }
 
