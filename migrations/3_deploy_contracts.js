@@ -4,7 +4,10 @@ const MACI = artifacts.require('MACI')
 const Hasher = artifacts.require('Hasher')
 const SignUpToken = artifacts.require('SignUpToken')
 
-const { merkleTreeConfig } = require('../maci-config')
+const { coordinatorConfig, merkleTreeConfig } = require('../maci-config')
+const { privateToPublicKey } = require('../_build/utils/crypto.js')
+
+const coordinatorPublicKey = privateToPublicKey(coordinatorConfig.privateKey)
 
 module.exports = async (deployer) => {
   // Link MiMC with the Hasher object
@@ -31,7 +34,9 @@ module.exports = async (deployer) => {
     cmdTree.address,
     hasher.address,
     signUpToken.address,
-    merkleTreeConfig.durationSignUpBlockNumbers
+    merkleTreeConfig.durationSignUpBlockNumbers,
+    coordinatorPublicKey[0].toString(),
+    coordinatorPublicKey[1].toString()
   )
 
   // Allow MACI contract to call `insert` and `update` methods
