@@ -16,8 +16,12 @@ yarn circuit:compile
 yarn circuit:setup
 yarn circuit:generateverifier
 
-# Deploy contracts
+# Run Ganache
 yarn ganache
+
+# NOTE: Before running migrate, make sure you've built
+#       the app (used to strip flow types)
+yarn app:build
 npx truffle migrate --network development
 
 # Test contracts

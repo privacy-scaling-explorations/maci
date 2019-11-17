@@ -1,5 +1,7 @@
 module.exports = {
   merkleTreeConfig: {
+    cmdTreeName: process.env.CMD_TREE_NAME || 'CmdTree',
+    stateTreeName: process.env.STATE_TREE_NAME || 'StateTree',
     treeDepth: process.env.MERKLE_TREE_DEPTH || 4,
     zeroValue: 0n,
     durationSignUpBlockNumbers: process.env.SIGN_UP_BLOCK_DURATION || 20
