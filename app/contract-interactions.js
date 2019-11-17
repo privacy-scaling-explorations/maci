@@ -6,7 +6,7 @@ const {
 } = require('./utils/contracts')
 
 const { stringifyBigInts } = require('./utils/helpers')
-const { ganacheConfig, coordinatorConfig } = require('../maci-config')
+const { ganacheConfig } = require('../maci-config')
 const { randomPrivateKey, privateToPublicKey, signAndEncrypt } = require('./utils/crypto')
 
 const ethers = require('ethers')
@@ -23,43 +23,59 @@ const user2Wallet = new ethers.Wallet(
   provider
 )
 
-const coordinatorSecretKey = BigInt(coordinatorConfig.privateKey)
-const coordinatorPublicKey = privateToPublicKey(coordinatorSecretKey)
-
-const user1SecretKey = randomPrivateKey()
-const user1PublicKey = privateToPublicKey(user1SecretKey)
-const user1Message = [...user1PublicKey, 0n]
-const user1EncryptedMsg = signAndEncrypt(
-  user1Message,
-  user1SecretKey,
-  user1SecretKey,
-  coordinatorPublicKey
-)
-// Change votes, and add in user index
-const user1NewEncryptedMsg = signAndEncrypt(
-  [0n, ...user1Message], // New message needs to have index in the first value
-  user1SecretKey,
-  user1SecretKey,
-  coordinatorPublicKey
-)
-
-const user2SecretKey = randomPrivateKey()
-const user2PublicKey = privateToPublicKey(user2SecretKey)
-const user2Message = [...user2PublicKey, 0n]
-const user2EncryptedMsg = signAndEncrypt(
-  user2Message,
-  user2SecretKey,
-  user2SecretKey,
-  coordinatorPublicKey
-)
-
 const main = async () => {
+  // Setup User messages etc
+  const coordinatorPublicKeyRaw = await maciContract.getCoordinatorPublicKey()
+  // eslint-disable-next-line
+  const coordinatorPublicKey = coordinatorPublicKeyRaw.map(x => BigInt(x.toString()))
+
+  const user1SecretKey = randomPrivateKey()
+  const user1PublicKey = privateToPublicKey(user1SecretKey)
+  const user1Message = [...user1PublicKey, 0n]
+  const user1EncryptedMsg = signAndEncrypt(
+    user1Message,
+    user1SecretKey,
+    user1SecretKey,
+    coordinatorPublicKey
+  )
+  // Change votes, and add in user index
+  const user1NewEncryptedMsg = signAndEncrypt(
+    [0n, ...user1Message], // New message needs to have index in the first value
+    user1SecretKey,
+    user1SecretKey,
+    coordinatorPublicKey
+  )
+
+  const user2SecretKey = randomPrivateKey()
+  const user2PublicKey = privateToPublicKey(user2SecretKey)
+  const user2Message = [...user2PublicKey, 0n]
+  const user2EncryptedMsg = signAndEncrypt(
+    user2Message,
+    user2SecretKey,
+    user2SecretKey,
+    coordinatorPublicKey
+  )
+
   // Variable declaration
   let oldRoot
   let newRoot
 
+  // User sign up tokens
+  let user1TokenIds = []
+  let user2TokenIds = []
+
+  let curTokenId
+
   const maciUser1Contract = maciContract.connect(user1Wallet)
   const maciUser2Contract = maciContract.connect(user2Wallet)
+
+  // Checks if sign up period has ended
+  const signUpPeriodEnded = await maciContract.hasSignUpPeriodEnded()
+
+  if (signUpPeriodEnded) {
+    console.log('Sign Up period ended! Please deploy a new contract to test!')
+    return
+  }
 
   // Try and publish a command, it needs to fail
   try {
@@ -91,10 +107,19 @@ const main = async () => {
 
   // 1. Mint some tokens and xfer to user1 and user2
   const signUpTokenOwnerContract = signUpTokenContract.connect(coordinatorWallet)
+
   // User 1 gets 2 tokens (make sure force close logic works)
+  curTokenId = await signUpTokenOwnerContract.getCurrentSupply()
+  user1TokenIds.push(curTokenId.toString())
   await signUpTokenOwnerContract.giveToken(user1Wallet.address)
+
+  curTokenId = await signUpTokenOwnerContract.getCurrentSupply()
+  user1TokenIds.push(curTokenId.toString())
   await signUpTokenOwnerContract.giveToken(user1Wallet.address)
+
   // User 2 gets 1 token
+  curTokenId = await signUpTokenOwnerContract.getCurrentSupply()
+  user2TokenIds.push(curTokenId.toString())
   await signUpTokenOwnerContract.giveToken(user2Wallet.address)
 
   // 2. User 1 sends token to contract
@@ -102,12 +127,12 @@ const main = async () => {
   await signUpTokenUser1Contract.safeTransferFrom(
     user1Wallet.address.toString(),
     maciContract.address.toString(),
-    1 // Token id starts at 1
+    user1TokenIds.pop() // Note: This is the token id param
   )
   await signUpTokenUser1Contract.safeTransferFrom(
     user1Wallet.address.toString(),
     maciContract.address.toString(),
-    2 // Note: token id changed
+    user1TokenIds.pop() // Note: This is the token id param
   )
 
   oldRoot = await cmdTreeContract.getRoot()
@@ -131,7 +156,7 @@ const main = async () => {
   await signUpTokenUser2Contract.safeTransferFrom(
     user2Wallet.address.toString(),
     maciContract.address.toString(),
-    3 // Note: Token id has changed
+    user2TokenIds.pop() // Note: Token id has changed
   )
 
   oldRoot = await cmdTreeContract.getRoot()

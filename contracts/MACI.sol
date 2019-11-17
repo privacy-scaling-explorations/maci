@@ -149,6 +149,11 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
       signUpForceEnded = true;
     }
 
+    // Checks if sign up period has ended
+    function hasSignUpPeriodEnded() public view returns (bool) {
+      return (block.number > deployedBlockNumber + durationSignUpBlockNumbers) || signUpForceEnded;
+    }
+
     // Gets meta information concerning deployment time
     function getMetaInfo() public view returns (uint256, uint256) {
       return (deployedBlockNumber, durationSignUpBlockNumbers);
