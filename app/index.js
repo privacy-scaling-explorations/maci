@@ -37,24 +37,24 @@ const getMerkleTree = async (name: String): MerkleTree => {
   }
 }
 
-const getStateTree = async (): MerkleTree => {
-  return getMerkleTree(merkleTreeConfig.stateTreeName)
+const getCmdTree = async (): MerkleTree => {
+  return getMerkleTree(merkleTreeConfig.cmdTreeName)
 }
 
-const getResultTree = async (): MerkleTree => {
-  return getMerkleTree(merkleTreeConfig.resultTreeName)
+const getStateTree = async (): MerkleTree => {
+  return getMerkleTree(merkleTreeConfig.stateTreeName)
 }
 
 /** API Endpoints **/
 // Create new user
 // Gets merkle root
 app.get('/merkleroots', async (req: $Request, res: $Response) => {
+  const cmdTree = await getCmdTree()
   const stateTree = await getStateTree()
-  const resultTree = await getResultTree()
 
   res.send(stringifyBigInts({
-    stateTree: stateTree.root,
-    resultTree: resultTree.root
+    cmd: cmdTree.root,
+    stateTree: stateTree.root
   }))
 })
 
@@ -63,7 +63,7 @@ app.get('/publickey', (req: $Request, res: $Response) => {
   res.send(stringifyBigInts({coordinatorPublicKey}))
 })
 
-// Entrypoint
+// Entry Point
 const initAndStartApp = async (): object => {
   console.log('[STATUS]', 'Connecting to database....')
   await initDb()

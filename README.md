@@ -16,15 +16,19 @@ yarn circuit:compile
 yarn circuit:setup
 yarn circuit:generateverifier
 
-# Deploy contracts
+# Run Ganache
 yarn ganache
+
+# NOTE: Before running migrate, make sure you've built
+#       the app (used to strip flow types)
+yarn app:build
 npx truffle migrate --network development
 
-# Running coordinator service
-yarn start
+# Test contracts
+yarn contract:test
 
-# Running coordinator service (development mode)
-yarn dev
+# Test circuits
+yarn circuit:test
 
 # Running tests
 # NOTE: You'll need to have postgresql and redis setup
@@ -37,12 +41,12 @@ yarn test
 
 ## Environment variables
 
-### Required
+### Recommended
 - `ENV_TYPE`: 'PROD' | 'DEV' | 'TEST'
 
 - `MACI_CONTRACT_ADDRESS`: Address of deployed MACI contract
-- `STATE_TREE_ADDRESS`: Address of deployed stateTree contract
-- `RESULT_TREE_ADDRESS`: Address of deployed resultTree contract
+- `CMD_TREE_ADDRESS`: Address of deployed merkle tree contract
+- `SIGN_UP_TOKEN_ADDRESS`: Address of deployed ERC721 token contract
 
 - `DB_USER`: Postgres DB username
 - `DB_PASSWORD`: Postgres DB password
@@ -56,9 +60,9 @@ yarn test
 
 ### Optional
 - `MERKLE_TREE_DEPTH`: Depth of the merkle tree (Defaults to 4)
-- `STATE_TREE_NAME`: Name of the stateTree (to be saved into postgres)
-- `RESULT_TREE_NAME`: Name of the resultTree (to be saved into postgres)
+- `SIGN_UP_BLOCK_DURATION`: Number of blocks allocated for the sign up process (default: 20)
 
+- `COORDINATOR_PRIVATE_KEY`: Private key of the Coordinator 
 
 # Contribution
 We are actively seeking help on implementing this project please join https://t.me/joinchat/LUgOpE7J2gstRcZqdERyvw and ask about contributions

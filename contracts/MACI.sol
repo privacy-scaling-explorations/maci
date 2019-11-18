@@ -8,7 +8,7 @@ import "./Hasher.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 
 contract MACI is Verifier, Ownable, IERC721Receiver {
-    // Hasher
+    // Hashing function
     Hasher hasher;
 
     // Append-only merkle tree to represent
@@ -35,6 +35,10 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
     // Owner can also forcefully terminate voting period
     bool signUpForceEnded = false;
 
+    // Coordinator Public Key
+    uint256 coordinatorPublicKeyX;
+    uint256 coordinatorPublicKeyY;
+
     // Events
     event SignedUp(
         uint256[] encryptedMessage,
@@ -54,7 +58,9 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
       address cmdTreeAddress,
       address hasherAddress,
       address _signUpTokenAddress,
-      uint256 _durationSignUpBlockNumber
+      uint256 _durationSignUpBlockNumber,
+      uint256 _coordinatorPublicKeyX,
+      uint256 _coordinatorPublicKeyY
     ) Ownable() public {
         cmdTree = MerkleTree(cmdTreeAddress);
         hasher = Hasher(hasherAddress);
@@ -62,6 +68,9 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
         deployedBlockNumber = block.number;
         durationSignUpBlockNumbers = _durationSignUpBlockNumber;
         signUpTokenAddress = _signUpTokenAddress;
+
+        coordinatorPublicKeyX = _coordinatorPublicKeyX;
+        coordinatorPublicKeyY = _coordinatorPublicKeyY;
     }
 
     // On ERC721 transferred to the contract, this function is called.
@@ -140,9 +149,19 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
       signUpForceEnded = true;
     }
 
+    // Checks if sign up period has ended
+    function hasSignUpPeriodEnded() public view returns (bool) {
+      return (block.number > deployedBlockNumber + durationSignUpBlockNumbers) || signUpForceEnded;
+    }
+
     // Gets meta information concerning deployment time
     function getMetaInfo() public view returns (uint256, uint256) {
       return (deployedBlockNumber, durationSignUpBlockNumbers);
+    }
+
+    // Gets coordinator public key
+    function getCoordinatorPublicKey() public view returns (uint256, uint256) {
+      return (coordinatorPublicKeyX, coordinatorPublicKeyY);
     }
 }
 

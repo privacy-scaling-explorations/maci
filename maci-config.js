@@ -1,9 +1,10 @@
 module.exports = {
   merkleTreeConfig: {
     cmdTreeName: process.env.CMD_TREE_NAME || 'CmdTree',
+    stateTreeName: process.env.STATE_TREE_NAME || 'StateTree',
     treeDepth: process.env.MERKLE_TREE_DEPTH || 4,
     zeroValue: 0n,
-    durationSignUpBlockNumbers: process.env.SIGNUP_BLOCK_DURATION || 20
+    durationSignUpBlockNumbers: process.env.SIGN_UP_BLOCK_DURATION || 20
   },
   ganacheConfig: {
     mnemonic: 'helloworld',
@@ -11,6 +12,6 @@ module.exports = {
     privateKey: '0x94a9f52a9ef7933f3865a91766cb5e12d25f62d6aecf1d768508d95526bfee29'
   },
   coordinatorConfig: {
-    privateKey: '7320473111418094673250215182902171603871183593344656923519201805'
+    privateKey: process.env.COORDINATOR_PRIVATE_KEY || '7320473111418094673250215182902171603871183593344656923519201805'
   }
 }
