@@ -40,7 +40,8 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
         uint256[] encryptedMessage,
         uint256[2] ecdhPublicKey,
         uint256 hashedEncryptedMessage,
-        uint256 newCmdTreeRoot
+        uint256 newCmdTreeRoot,
+        uint256 userIndex
     );
     event CommandPublished(
         uint256[] encryptedMessage,
@@ -102,7 +103,8 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
             encryptedMessage,
             ecdhPublicKey,
             leaf,
-            newCmdTreeRoot
+            newCmdTreeRoot,
+            cmdTree.getInsertedLeavesNo() - 1
         );
     }
 

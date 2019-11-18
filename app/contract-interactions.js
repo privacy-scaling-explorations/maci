@@ -6,7 +6,7 @@ const {
 } = require('./utils/contracts')
 
 const { stringifyBigInts } = require('./utils/helpers')
-const { ganacheConfig }= require('../maci-config')
+const { ganacheConfig, coordinatorConfig } = require('../maci-config')
 const { randomPrivateKey, privateToPublicKey, signAndEncrypt } = require('./utils/crypto')
 
 const ethers = require('ethers')
@@ -23,7 +23,7 @@ const user2Wallet = new ethers.Wallet(
   provider
 )
 
-const coordinatorSecretKey = randomPrivateKey()
+const coordinatorSecretKey = BigInt(coordinatorConfig.privateKey)
 const coordinatorPublicKey = privateToPublicKey(coordinatorSecretKey)
 
 const user1SecretKey = randomPrivateKey()
@@ -31,6 +31,13 @@ const user1PublicKey = privateToPublicKey(user1SecretKey)
 const user1Message = [...user1PublicKey, 0n]
 const user1EncryptedMsg = signAndEncrypt(
   user1Message,
+  user1SecretKey,
+  user1SecretKey,
+  coordinatorPublicKey
+)
+// Change votes, and add in user index
+const user1NewEncryptedMsg = signAndEncrypt(
+  [0n, ...user1Message], // New message needs to have index in the first value
   user1SecretKey,
   user1SecretKey,
   coordinatorPublicKey
@@ -161,7 +168,7 @@ const main = async () => {
   //       to be able to decrypt it in order to add it into the state tree
   oldRoot = await cmdTreeContract.getRoot()
   await maciUser1Contract.publishCommand(
-    stringifyBigInts(user1EncryptedMsg),
+    stringifyBigInts(user1NewEncryptedMsg),
     stringifyBigInts(user1PublicKey)
   )
   newRoot = await cmdTreeContract.getRoot()
