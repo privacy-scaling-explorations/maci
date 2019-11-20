@@ -11,10 +11,17 @@ const provider = new ethers.providers.JsonRpcProvider(ganacheConfig.host)
 const privateKey = ganacheConfig.privateKey
 const wallet = new ethers.Wallet(privateKey, provider)
 
+const hasherDef = require('../_build/contracts/Hasher.json')
+const hasherFactory = new ethers.ContractFactory(
+  hasherDef.abi,
+  linkLibraries(hasherDef.bytecode, 'MiMC', mimcAddress),
+  wallet
+)
+
 const merkletreeDef = require('../_build/contracts/MerkleTree.json')
 const merkleTreeFactory = new ethers.ContractFactory(
   merkletreeDef.abi,
-  linkLibraries(merkletreeDef.bytecode, 'MiMC', mimcAddress),
+  merkletreeDef.bytecode,
   wallet
 )
 
@@ -49,13 +56,19 @@ describe('MerkleTree', () => {
   ]
   const ns = [n1, n2, n3, n4]
 
+  let hasherContract
   let merkleTreeContract
   let merkleTreeJS
+
+  before('Setup Hasher Library', async () => {
+    hasherContract = await hasherFactory.deploy()
+  })
 
   beforeEach('Setup contract for each test', async () => {
     merkleTreeContract = await merkleTreeFactory.deploy(
       merkleTreeConfig.treeDepth,
-      stringifyBigInts(merkleTreeConfig.zeroValue)
+      stringifyBigInts(merkleTreeConfig.zeroValue),
+      hasherContract.address
     )
 
     await merkleTreeContract.deployed()
@@ -149,54 +162,54 @@ describe('MerkleTree', () => {
     }
   })
 
-  it('Merkle Tree Serialization to/from Db', async () => {
-    const mkName = 'TestMerkleTree42'
-    const mk1 = createMerkleTree(4, 0n)
+  // it('Merkle Tree Serialization to/from Db', async () => {
+  //  const mkName = 'TestMerkleTree42'
+  //  const mk1 = createMerkleTree(4, 0n)
 
-    // Need to save on every insert
-    const h1 = mimc7.multiHash(n1)
-    const h2 = mimc7.multiHash(n2)
-    const h3 = mimc7.multiHash(n3)
+  //  // Need to save on every insert
+  //  const h1 = mimc7.multiHash(n1)
+  //  const h2 = mimc7.multiHash(n2)
+  //  const h3 = mimc7.multiHash(n3)
 
-    mk1.insert(h1)
-    mk1.insert(h2)
-    mk1.insert(h3)
+  //  mk1.insert(h1)
+  //  mk1.insert(h2)
+  //  mk1.insert(h3)
 
-    // Saves index 0 to merkletree (h1)
-    await saveMerkleTreeToDb(dbPool, mkName, mk1, 0)
+  //  // Saves index 0 to merkletree (h1)
+  //  await saveMerkleTreeToDb(dbPool, mkName, mk1, 0)
 
-    // Saves index 1 to merkletree (h2)
-    await saveMerkleTreeToDb(dbPool, mkName, mk1, 1)
+  //  // Saves index 1 to merkletree (h2)
+  //  await saveMerkleTreeToDb(dbPool, mkName, mk1, 1)
 
-    // Saves latest index to merkletree (h3)
-    await saveMerkleTreeToDb(dbPool, mkName, mk1)
+  //  // Saves latest index to merkletree (h3)
+  //  await saveMerkleTreeToDb(dbPool, mkName, mk1)
 
-    const mk2 = await loadMerkleTreeFromDb(dbPool, mkName)
+  //  const mk2 = await loadMerkleTreeFromDb(dbPool, mkName)
 
-    assert.equal(true, mk1.equals(mk2))
+  //  assert.equal(true, mk1.equals(mk2))
 
-    // Update second element
-    const h2New = mimc7.multiHash([h1, h2, h3])
-    mk1.update(1, h2New)
+  //  // Update second element
+  //  const h2New = mimc7.multiHash([h1, h2, h3])
+  //  mk1.update(1, h2New)
 
-    // Saves updated leave to database
-    await saveMerkleTreeToDb(dbPool, mkName, mk1, 1)
+  //  // Saves updated leave to database
+  //  await saveMerkleTreeToDb(dbPool, mkName, mk1, 1)
 
-    // Compare trees
-    const mk3 = await loadMerkleTreeFromDb(dbPool, mkName)
+  //  // Compare trees
+  //  const mk3 = await loadMerkleTreeFromDb(dbPool, mkName)
 
-    assert.equal(true, mk1.equals(mk3))
+  //  assert.equal(true, mk1.equals(mk3))
 
-    // Delete from merkletree
-    await dbPool.query({
-      text: `DELETE FROM leaves
-             WHERE merkletree_id=(SELECT id from merkletrees WHERE name=$1);`,
-      values: [mkName]
-    })
+  //  // Delete from merkletree
+  //  await dbPool.query({
+  //    text: `DELETE FROM leaves
+  //           WHERE merkletree_id=(SELECT id from merkletrees WHERE name=$1);`,
+  //    values: [mkName]
+  //  })
 
-    await dbPool.query({
-      text: 'DELETE FROM merkletrees WHERE name=$1',
-      values: [mkName]
-    })
-  })
+  //  await dbPool.query({
+  //    text: 'DELETE FROM merkletrees WHERE name=$1',
+  //    values: [mkName]
+  //  })
+  // })
 })
