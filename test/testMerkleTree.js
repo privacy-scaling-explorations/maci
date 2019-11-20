@@ -1,3 +1,4 @@
+const assert = require('chai').assert
 const ethers = require('ethers')
 const { mimc7 } = require('circomlib')
 
