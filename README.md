@@ -24,15 +24,9 @@ yarn ganache
 yarn app:build
 npx truffle migrate --network development
 
-# Test contracts
-yarn contract:test
-
-# Test circuits
-yarn circuit:test
-
 # Running tests
-# NOTE: You'll need to have postgresql and redis setup
-#       You can setup the infrastructure with `docker-compose up`
+# NOTE: You'll need to have services running
+#       You can setup the services with `docker-compose up`
 #       in another terminal
 yarn test
 ```
