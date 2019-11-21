@@ -12,9 +12,12 @@
     "test": "export ENV_TYPE=TEST && truffle migrate --reset --network development && yarn app:build && mocha test --timeout 60000",
     "ganache": "ganache-cli -l 8000000 -m helloworld",
     "app:build": "flow-remove-types app/ -d _build/ && mkdir -p _build/contracts && mkdir -p _build/circuits && cp app/contracts/* _build/contracts/ && cp app/circuits/* _build/circuits/ | true",
-    "circuit:compile": "mkdir -p app/circuits && circom circuits/circuit.circom -o app/circuits/circuit.json",
-    "circuit:setup": "cd app/circuits && snarkjs setup --protocol groth",
-    "circuit:generateverifier": "mkdir -p contracts && cd app/circuits && snarkjs generateverifier --protocol groth && mv verifier.sol ../../contracts/Verifier.sol",
+    "circuit:compile": "yarn circuit:updatestatetree:compile",
+    "circuit:setup": "yarn circuit:updatestatetree:setup",
+    "circuit:generateverifier": "yarn circuit:updatestatetree:generateverifier",
+    "circuit:updatestatetree:compile": "mkdir -p app/circuits && circom circuits/update_state_tree.circom -o app/circuits/update_state_tree.json",
+    "circuit:updatestatetree:setup": "cd app/circuits && snarkjs setup --protocol groth -c update_state_tree.json --pk update_state_tree_proving_key.json --vk update_tree_state_verifying_key.json",
+    "circuit:updatestatetree:generateverifier": "mkdir -p contracts && cd app/circuits && snarkjs generateverifier --protocol groth --vk update_tree_state_verifying_key.json -v UpdateStateTreeVerifier.sol && mv UpdateStateTreeVerifier.sol ../../contracts/UpdateStateTreeVerifier.sol",
     "scan": "flow-node app/scanner.js"
   },
   "dependencies": {

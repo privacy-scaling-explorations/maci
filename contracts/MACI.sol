@@ -1,13 +1,17 @@
 pragma solidity 0.5.11;
 
-import "./Verifier.sol";
+import "./UpdateStateTreeVerifier.sol";
+
 import "./MerkleTree.sol";
 import "./SignUpToken.sol";
 import "./Hasher.sol";
 
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 
-contract MACI is Verifier, Ownable, IERC721Receiver {
+contract MACI is Ownable, IERC721Receiver {
+    // Verifier Contracts
+    UpdateStateTreeVerifier updateStateTreeVerifier;
+
     // Hashing function
     Hasher hasher;
 
@@ -57,6 +61,7 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
     constructor(
       address cmdTreeAddress,
       address hasherAddress,
+      address updateStateTreeVerifierAddress,
       address _signUpTokenAddress,
       uint256 _durationSignUpBlockNumber,
       uint256 _coordinatorPublicKeyX,
@@ -64,6 +69,7 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
     ) Ownable() public {
         cmdTree = MerkleTree(cmdTreeAddress);
         hasher = Hasher(hasherAddress);
+        updateStateTreeVerifier = UpdateStateTreeVerifier(updateStateTreeVerifierAddress);
 
         deployedBlockNumber = block.number;
         durationSignUpBlockNumbers = _durationSignUpBlockNumber;

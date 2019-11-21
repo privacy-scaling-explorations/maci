@@ -10,9 +10,9 @@ const { createMerkleTree } = require('../_build/utils/merkletree')
 const { stringifyBigInts, unstringifyBigInts } = require('../_build/utils/helpers')
 const { ecdh, randomPrivateKey, privateToPublicKey, signAndEncrypt } = require('../_build/utils/crypto')
 
-const provingKey = require('../_build/circuits/proving_key.json')
-const verificationKey = require('../_build/circuits/verification_key.json')
-const circuitDef = require('../_build/circuits/circuit.json')
+const provingKey = require('../_build/circuits/update_state_tree_proving_key.json')
+const verificationKey = require('../_build/circuits/update_tree_state_verifying_key.json')
+const circuitDef = require('../_build/circuits/update_state_tree.json')
 
 const { Circuit, groth } = require('snarkjs')
 

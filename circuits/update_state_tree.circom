@@ -4,7 +4,7 @@ include "./decrypt.circom";
 
 include "../node_modules/circomlib/circuits/mimc.circom";
 
-template MACI(levels) {
+template UpdateStateTree(levels) {
   // levels is depth of tree
   
   // Output : new state tree root
@@ -105,4 +105,4 @@ template MACI(levels) {
   new_state_tree_root <== new_state_tree.root;
 }
 
-component main = MACI(4);
+component main = UpdateStateTree(4);
