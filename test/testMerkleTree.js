@@ -3,9 +3,8 @@ const ethers = require('ethers')
 const { mimc7 } = require('circomlib')
 
 const { mimcAddress } = require('../_build/contracts/DeployedAddresses.json')
-const { dbPool } = require('../_build/utils/db')
 const { stringifyBigInts, linkLibraries } = require('../_build/utils/helpers')
-const { createMerkleTree, saveMerkleTreeToDb, loadMerkleTreeFromDb } = require('../_build/utils/merkletree')
+const { createMerkleTree } = require('../_build/utils/merkletree')
 const { ganacheConfig, merkleTreeConfig } = require('../maci-config')
 
 const provider = new ethers.providers.JsonRpcProvider(ganacheConfig.host)
@@ -81,7 +80,7 @@ describe('MerkleTree', () => {
     )
   })
 
-  it('MerkleTree Insert', async () => {
+  it('#Insert', async () => {
     for (let n in ns) {
       const h = mimc7.multiHash(n)
 
@@ -95,7 +94,7 @@ describe('MerkleTree', () => {
     }
   })
 
-  it('MerkleTree Update', async () => {
+  it('#Update', async () => {
     for (let n in ns) {
       const h = mimc7.multiHash(n)
 
@@ -120,7 +119,7 @@ describe('MerkleTree', () => {
     assert.equal(merkleTreeJS.root.toString(), newRoot.toString())
   })
 
-  it('MerkleTree Invalid Update Fails', async () => {
+  it('#InvalidUpdate', async () => {
     for (let n in ns) {
       const h = mimc7.multiHash(n)
 
@@ -144,7 +143,7 @@ describe('MerkleTree', () => {
     } catch (e) {}
   })
 
-  it('Merkle Tree Root Calculation', async () => {
+  it('#RootCalculation', async () => {
     let contractRoot
 
     // Make sure initial root is the same
@@ -162,55 +161,4 @@ describe('MerkleTree', () => {
       assert.equal(merkleTreeJS.root.toString(), contractRoot)
     }
   })
-
-  // it('Merkle Tree Serialization to/from Db', async () => {
-  //  const mkName = 'TestMerkleTree42'
-  //  const mk1 = createMerkleTree(4, 0n)
-
-  //  // Need to save on every insert
-  //  const h1 = mimc7.multiHash(n1)
-  //  const h2 = mimc7.multiHash(n2)
-  //  const h3 = mimc7.multiHash(n3)
-
-  //  mk1.insert(h1)
-  //  mk1.insert(h2)
-  //  mk1.insert(h3)
-
-  //  // Saves index 0 to merkletree (h1)
-  //  await saveMerkleTreeToDb(dbPool, mkName, mk1, 0)
-
-  //  // Saves index 1 to merkletree (h2)
-  //  await saveMerkleTreeToDb(dbPool, mkName, mk1, 1)
-
-  //  // Saves latest index to merkletree (h3)
-  //  await saveMerkleTreeToDb(dbPool, mkName, mk1)
-
-  //  const mk2 = await loadMerkleTreeFromDb(dbPool, mkName)
-
-  //  assert.equal(true, mk1.equals(mk2))
-
-  //  // Update second element
-  //  const h2New = mimc7.multiHash([h1, h2, h3])
-  //  mk1.update(1, h2New)
-
-  //  // Saves updated leave to database
-  //  await saveMerkleTreeToDb(dbPool, mkName, mk1, 1)
-
-  //  // Compare trees
-  //  const mk3 = await loadMerkleTreeFromDb(dbPool, mkName)
-
-  //  assert.equal(true, mk1.equals(mk3))
-
-  //  // Delete from merkletree
-  //  await dbPool.query({
-  //    text: `DELETE FROM leaves
-  //           WHERE merkletree_id=(SELECT id from merkletrees WHERE name=$1);`,
-  //    values: [mkName]
-  //  })
-
-  //  await dbPool.query({
-  //    text: 'DELETE FROM merkletrees WHERE name=$1',
-  //    values: [mkName]
-  //  })
-  // })
 })

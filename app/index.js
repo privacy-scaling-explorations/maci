@@ -2,12 +2,11 @@
 import type { $Request, $Response } from 'express'
 
 const { privateToPublicKey } = require('./utils/crypto')
-const { initDb, dbPool } = require('./utils/db')
+const { initDb } = require('./utils/db')
 const { initRedis } = require('./utils/redis')
 const { stringifyBigInts } = require('./utils/helpers')
-const { createMerkleTree, loadMerkleTreeFromDb } = require('./utils/merkletree')
 
-const { merkleTreeConfig, coordinatorConfig } = require('../maci-config')
+const { coordinatorConfig } = require('../maci-config')
 
 const express = require('express')
 const bodyParser = require('body-parser')
@@ -24,39 +23,7 @@ app.use(bodyParser.json())
 const coordinatorPrivateKey: BigInt = BigInt(coordinatorConfig.privateKey)
 const coordinatorPublicKey: BigInt = privateToPublicKey(coordinatorPrivateKey)
 
-// Helper functions to load merkletree
-const getMerkleTree = async (name: String): MerkleTree => {
-  try {
-    const t = await loadMerkleTreeFromDb(dbPool, name)
-    return t
-  } catch (e) {
-    return createMerkleTree(
-      merkleTreeConfig.treeDepth,
-      merkleTreeConfig.zeroValue
-    )
-  }
-}
-
-const getCmdTree = async (): MerkleTree => {
-  return getMerkleTree(merkleTreeConfig.cmdTreeName)
-}
-
-const getStateTree = async (): MerkleTree => {
-  return getMerkleTree(merkleTreeConfig.stateTreeName)
-}
-
 /** API Endpoints **/
-// Create new user
-// Gets merkle root
-app.get('/merkleroots', async (req: $Request, res: $Response) => {
-  const cmdTree = await getCmdTree()
-  const stateTree = await getStateTree()
-
-  res.send(stringifyBigInts({
-    cmd: cmdTree.root,
-    stateTree: stateTree.root
-  }))
-})
 
 // Returns public key to user
 app.get('/publickey', (req: $Request, res: $Response) => {

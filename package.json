@@ -15,8 +15,6 @@
     "circuit:compile": "mkdir -p app/circuits && circom circuits/circuit.circom -o app/circuits/circuit.json",
     "circuit:setup": "cd app/circuits && snarkjs setup --protocol groth",
     "circuit:generateverifier": "mkdir -p contracts && cd app/circuits && snarkjs generateverifier --protocol groth && mv verifier.sol ../../contracts/Verifier.sol",
-    "circuit:test": "flow-node app/circuits-interactions.js",
-    "contract:test": "flow-node app/contract-interactions.js",
     "scan": "flow-node app/scanner.js"
   },
   "dependencies": {

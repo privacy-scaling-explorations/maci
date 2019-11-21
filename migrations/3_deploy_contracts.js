@@ -34,7 +34,7 @@ module.exports = async (deployer) => {
     cmdTree.address,
     hasher.address,
     signUpToken.address,
-    merkleTreeConfig.durationSignUpBlockNumbers,
+    merkleTreeConfig.durationSignUpBlockNumbers.toString(),
     coordinatorPublicKey[0].toString(),
     coordinatorPublicKey[1].toString()
   )
