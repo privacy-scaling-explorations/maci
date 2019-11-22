@@ -10,9 +10,9 @@ const { createMerkleTree } = require('../_build/utils/merkletree')
 const { stringifyBigInts, unstringifyBigInts } = require('../_build/utils/helpers')
 const { ecdh, randomPrivateKey, privateToPublicKey, signAndEncrypt } = require('../_build/utils/crypto')
 
-const provingKey = require('../_build/circuits/update_state_tree_proving_key.json')
-const verificationKey = require('../_build/circuits/update_tree_state_verifying_key.json')
-const circuitDef = require('../_build/circuits/update_state_tree.json')
+const updateStateTreeProvingKey = require('../_build/circuits/update_state_tree_proving_key.json')
+const updateStateTreeVerificationKey = require('../_build/circuits/update_tree_state_verifying_key.json')
+const updateStateTreeCircuitDef = require('../_build/circuits/update_state_tree.json')
 
 const { Circuit, groth } = require('snarkjs')
 
@@ -21,9 +21,11 @@ const { ganacheConfig } = require('../maci-config')
 const ethers = require('ethers')
 const provider = new ethers.providers.JsonRpcProvider(ganacheConfig.host)
 
+const snarkScalarField = 21888242871839275222246405745257275088548364400416034343698204186575808495617n
+
 describe('MACI', () => {
   describe('#SmartContract', () => {
-    it('Logic sequence should suceed', async () => {
+    it('Logic sequence testing', async () => {
       // Wallet setup
       const coordinatorWallet = new ethers.Wallet(ganacheConfig.privateKey, provider)
 
@@ -298,7 +300,8 @@ describe('MACI', () => {
         coordinatorPublicKey
       )
 
-      const circuit = new Circuit(circuitDef)
+      const circuit = new Circuit(updateStateTreeCircuitDef)
+
       const circuitInput = {
         cmd_tree_root: stringifyBigInts(cmdTree.root),
         cmd_tree_path_elements: stringifyBigInts(cmdTreePathElements),
@@ -312,27 +315,37 @@ describe('MACI', () => {
         ecdh_private_key: stringifyBigInts(ecdhPrivateKey)
       }
 
+      console.log('Calculating witness...')
       const witness = circuit.calculateWitness(circuitInput)
+      assert(circuit.checkWitness(witness))
 
       const newRootIdx = circuit.getSignalIdx('main.new_state_tree_root')
       const newRoot = witness[newRootIdx]
 
       stateTree.update(1, user2NewLeaf, user2NewMessage)
-
       assert.equal(stateTree.root.toString(), newRoot.toString())
 
-      // const { proof, publicSignals } = zkSnark.genProof(
-      //   unstringifyBigInts(provingKey), witness
-      // )
+      console.log('Generating proof, this will take a while...')
 
-      // const isValid = zkSnark.isValid(
-      //   unstringifyBigInts(verificationKey),
-      //   proof,
-      //   publicSignals
-      // )
+      const { proof, publicSignals } = zkSnark.genProof(
+        unstringifyBigInts(updateStateTreeProvingKey), witness
+      )
 
-      // console.log(`merkletree valid: ${isValid}`)
-      // console.log(publicSignals)
+      const isValid = zkSnark.isValid(
+        unstringifyBigInts(updateStateTreeVerificationKey),
+        proof,
+        publicSignals
+      )
+      assert.equal(isValid, true, 'Local Snark Proof is not valid!')
+
+      const isValidOnChain = await maciContract.verifyUpdateStateTreeProof(
+        stringifyBigInts(proof.pi_a).slice(0, 2),
+        stringifyBigInts(proof.pi_b).slice(0, 2),
+        stringifyBigInts(proof.pi_c).slice(0, 2),
+        stringifyBigInts(publicSignals.map(x => x % snarkScalarField))
+      )
+
+      assert.equal(isValidOnChain, true, 'Snark Proof failed on chain verification!')
     })
   })
 })

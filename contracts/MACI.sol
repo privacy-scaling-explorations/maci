@@ -150,6 +150,16 @@ contract MACI is Ownable, IERC721Receiver {
         );
     }
 
+    // Submits proof for updating state tree
+    function verifyUpdateStateTreeProof(
+      uint[2] memory a,
+      uint[2][2] memory b,
+      uint[2] memory c,
+      uint[10] memory input
+    ) public view returns (bool) {
+      return updateStateTreeVerifier.verifyProof(a, b, c, input);
+    }
+
     // Forcefully ends sign up period
     function endSignUpPeriod() public onlyOwner {
       signUpForceEnded = true;
