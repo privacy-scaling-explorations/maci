@@ -1,16 +1,20 @@
 // @flow
 
+const crypto = require('crypto')
 const { bigInt } = require('snarkjs')
 const createBlakeHash = require('blake-hash')
 const { babyJub, eddsa, mimc7 } = require('circomlib')
 
+const hash = (x: BigInt, k: BigInt): BigInt => {
+  return mimc7.hash(x, k)
+}
+
+const multiHash = (arr: Array<BigInt>): BigInt => {
+  return mimc7.multiHash(arr, BigInt(0))
+}
+
 const randomPrivateKey = (): BigInt => {
-  return BigInt(
-    Array(64)
-      .fill(0)
-      .map((x: Any): Int => parseInt(Math.random()*10))
-      .join('')
-  ) % babyJub.subOrder
+  return BigInt('0x' + crypto.randomBytes(32).toString('hex')) % babyJub.subOrder
 }
 
 const privateToPublicKey = (sk: BigInt): [BigInt, BigInt] => {
@@ -44,10 +48,10 @@ const encrypt = (
 ): Array<BigInt> => {
   // Encrypts a message
   const sharedKey = ecdh(priv, pub)
-  const iv = mimc7.multiHash(msg, BigInt(0))
+  const iv = multiHash(msg, BigInt(0))
   return [
     iv, ...msg.map((e: BigInt, i: Number): BigInt => {
-      return e + mimc7.hash(sharedKey, iv + BigInt(i))
+      return e + hash(sharedKey, iv + BigInt(i))
     })
   ]
 }
@@ -61,7 +65,7 @@ const decrypt = (
   const sharedKey = ecdh(priv, pub)
   const iv = msg[0]
   return msg.slice(1).map((e: BigInt, i: Number): BigInt => {
-    return e - mimc7.hash(sharedKey, iv + BigInt(i))
+    return e - hash(sharedKey, iv + BigInt(i))
   })
 }
 
@@ -72,7 +76,7 @@ const signAndEncrypt = (
   pubEcdh: Tuple<BigInt> // Public key of ecdh
 ): Array<BigInt> => {
   // Get message hash
-  const msgHash = mimc7.multiHash(msg)
+  const msgHash = multiHash(msg)
 
   // Sign message
   const signature = eddsa.signMiMC(
@@ -111,7 +115,7 @@ const decryptAndVerify = (
 
   // Get original message (without the signatures)
   const originalMsg = decryptedMsg.slice(0, -3)
-  const originalMsgHash = mimc7.multiHash(originalMsg)
+  const originalMsgHash = multiHash(originalMsg)
 
   // Validate signature
   const signature = {
@@ -136,5 +140,7 @@ module.exports = {
   encrypt,
   decrypt,
   signAndEncrypt,
-  decryptAndVerify
+  decryptAndVerify,
+  hash,
+  multiHash
 }

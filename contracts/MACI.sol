@@ -104,7 +104,7 @@ contract MACI is Ownable, IERC721Receiver {
         require(addressAccountAllocated[msg.sender] > 0, "Address is not whitelisted!");
 
         // Calculate leaf value
-        uint256 leaf = hasher.hashMulti(encryptedMessage);
+        uint256 leaf = hasher.hashMulti(encryptedMessage, 0);
 
         // Insert the new leaf into the cmdTree
         cmdTree.insert(leaf);
@@ -134,7 +134,7 @@ contract MACI is Ownable, IERC721Receiver {
         );
 
         // Calculate leaf value
-        uint256 leaf = hasher.hashMulti(encryptedMessage);
+        uint256 leaf = hasher.hashMulti(encryptedMessage, 0);
 
         // Insert the new leaf into the cmdTree
         cmdTree.insert(leaf);
