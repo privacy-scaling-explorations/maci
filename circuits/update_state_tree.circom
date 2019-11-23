@@ -2,7 +2,7 @@ include "./merkletree.circom";
 include "./verify_eddsamimc.circom";
 include "./decrypt.circom";
 
-include "../node_modules/circomlib/circuits/mimc.circom";
+include "./hasher.circom";
 
 template UpdateStateTree(levels) {
   // levels is depth of tree
@@ -24,9 +24,6 @@ template UpdateStateTree(levels) {
 
   // Length of the message (without signature, decrypted)
   var message_length = 3;
-
-  // Hashing rounds
-  var rounds = 91;
 
   // NOTE: Last 3 elements in the arr
   // MUST BE THE SIGNATURE!
@@ -50,7 +47,7 @@ template UpdateStateTree(levels) {
   signal private input existing_state_tree_leaf;
 
   // Construct leaf values
-  component encrypted_data_hash = MultiMiMC7(encrypted_data_length, rounds);
+  component encrypted_data_hash = Hasher(encrypted_data_length);
   for (var i = 0; i < encrypted_data_length; i++) {
     encrypted_data_hash.in[i] <== encrypted_data[i];
   }
@@ -58,7 +55,7 @@ template UpdateStateTree(levels) {
   // **** 1. Make sure the leaf exists in the cmd tree **** //
   component cmd_tree_value_exists = LeafExists(levels);
   cmd_tree_value_exists.root <== cmd_tree_root;
-  cmd_tree_value_exists.leaf <== encrypted_data_hash.out;
+  cmd_tree_value_exists.leaf <== encrypted_data_hash.hash;
   for (var i = 0; i < levels; i++) {
     cmd_tree_value_exists.path_elements[i] <== cmd_tree_path_elements[i];
     cmd_tree_value_exists.path_index[i] <== cmd_tree_path_index[i];
@@ -96,7 +93,7 @@ template UpdateStateTree(levels) {
 
   // **** 4. If signature valid, update leaf **** //
   component new_state_tree = MerkleTreeUpdate(levels);
-  new_state_tree.leaf <== encrypted_data_hash.out;
+  new_state_tree.leaf <== encrypted_data_hash.hash;
   for (var i = 0; i < levels; i++) {
     new_state_tree.path_elements[i] <== state_tree_path_elements[i];
     new_state_tree.path_index[i] <== state_tree_path_index[i];

@@ -325,27 +325,27 @@ describe('MACI', () => {
       stateTree.update(1, user2NewLeaf, user2NewMessage)
       assert.equal(stateTree.root.toString(), newRoot.toString())
 
-      // console.log('Generating proof, this will take a while...')
+      console.log('Generating proof, this will take a while...')
 
-      // const { proof, publicSignals } = zkSnark.genProof(
-      //   unstringifyBigInts(updateStateTreeProvingKey), witness
-      // )
+      const { proof, publicSignals } = zkSnark.genProof(
+        unstringifyBigInts(updateStateTreeProvingKey), witness
+      )
 
-      // const isValid = zkSnark.isValid(
-      //   unstringifyBigInts(updateStateTreeVerificationKey),
-      //   proof,
-      //   publicSignals
-      // )
-      // assert.equal(isValid, true, 'Local Snark Proof is not valid!')
+      const isValid = zkSnark.isValid(
+        unstringifyBigInts(updateStateTreeVerificationKey),
+        proof,
+        publicSignals
+      )
+      assert.equal(isValid, true, 'Local Snark Proof is not valid!')
 
-      // const isValidOnChain = await maciContract.verifyUpdateStateTreeProof(
-      //   stringifyBigInts(proof.pi_a).slice(0, 2),
-      //   stringifyBigInts(proof.pi_b).slice(0, 2),
-      //   stringifyBigInts(proof.pi_c).slice(0, 2),
-      //   stringifyBigInts(publicSignals.map(x => x % snarkScalarField))
-      // )
+      const isValidOnChain = await maciContract.verifyUpdateStateTreeProof(
+        stringifyBigInts(proof.pi_a).slice(0, 2),
+        stringifyBigInts(proof.pi_b).slice(0, 2),
+        stringifyBigInts(proof.pi_c).slice(0, 2),
+        stringifyBigInts(publicSignals.map(x => x % snarkScalarField))
+      )
 
-      // assert.equal(isValidOnChain, true, 'Snark Proof failed on chain verification!')
+      assert.equal(isValidOnChain, true, 'Snark Proof failed on chain verification!')
     })
   })
 })
