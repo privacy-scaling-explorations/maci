@@ -965,14 +965,14 @@ circom@0.0.34:
     optimist "^0.6.1"
     yargs "^12.0.2"
 
-circomlib@0.0.16:
-  version "0.0.16"
-  resolved "https://registry.yarnpkg.com/circomlib/-/circomlib-0.0.16.tgz#5735985849af439cc6c6e127526ef54ce7b56dc2"
-  integrity sha512-kdlrCaZkNBhljbWeyOSXHPpszkoMERH3DXdm3/t2YD7OXwSQt9duwQHVsQCfzfYaP9erX+g0dkCzSDSodFII+g==
+circomlib@0.0.19:
+  version "0.0.19"
+  resolved "https://registry.yarnpkg.com/circomlib/-/circomlib-0.0.19.tgz#8f95e5d74b32bffd689e999eda5f6639be6b8b42"
+  integrity sha512-0Jei/2BplQM/XFx3lC8+kcaSCxKHhE3w1MrjfWCFSTyT+VRRbBwHH1Kd7HYqYsQ4XMJELIEHmIhtQnKpC9Rr5w==
   dependencies:
     blake-hash "^1.1.0"
     blake2b "^2.1.3"
-    snarkjs "^0.1.19"
+    snarkjs "^0.1.20"
     typedarray-to-buffer "^3.1.5"
     web3 "^1.0.0-beta.55"
 
@@ -4913,7 +4913,7 @@ snarkjs@0.1.19:
     keccak "^2.0.0"
     yargs "^12.0.5"
 
-snarkjs@^0.1.19:
+snarkjs@^0.1.20:
   version "0.1.20"
   resolved "https://registry.yarnpkg.com/snarkjs/-/snarkjs-0.1.20.tgz#4284217e823e71d9c7ded01eb439ace5190b90e1"
   integrity sha512-tYmWiVm1sZiB44aIh5w/3HUaTntTUC4fv+CWs4rR0gfkt2KbHTpArOqZW++/Lxujrn9IypXVhdKVUr/eE6Hxfg==
