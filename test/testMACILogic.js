@@ -6,7 +6,7 @@ const {
   signUpTokenContract
 } = require('../_build/utils/contracts')
 
-const { binarifyPublicSignals, binarifyProvingKey } = require('../_build/utils/binarify')
+const { binarifyWitness, binarifyProvingKey } = require('../_build/utils/binarify')
 const { createMerkleTree } = require('../_build/utils/merkletree')
 const { stringifyBigInts, unstringifyBigInts } = require('../_build/utils/helpers')
 const { ecdh, randomPrivateKey, privateToPublicKey, signAndEncrypt } = require('../_build/utils/crypto')
@@ -220,7 +220,7 @@ describe('MACI', () => {
     })
   })
 
-  describe('#CircomCircuit', () => {
+  describe('#CircomCircuit (Long)', () => {
     it('Circuit Root Generation', async () => {
       const wasmBn128 = await buildBn128()
       const zkSnark = groth
@@ -318,7 +318,6 @@ describe('MACI', () => {
         ecdh_private_key: stringifyBigInts(ecdhPrivateKey)
       }
 
-      console.log('Calculating witness...')
       const witness = circuit.calculateWitness(circuitInput)
       assert(circuit.checkWitness(witness))
 
@@ -328,21 +327,15 @@ describe('MACI', () => {
       stateTree.update(1, user2NewLeaf, user2NewMessage)
       assert.equal(stateTree.root.toString(), newRoot.toString())
 
-      console.log('Generating proof, this will take a while...')
-
       const publicSignals = witness.slice(1, circuit.nPubInputs + circuit.nOutputs + 1)
 
-      const publicSignalsBin = binarifyPublicSignals(publicSignals)
+      const witnessBin = binarifyWitness(witness)
       const updateStateTreeProvingKeyBin = binarifyProvingKey(updateStateTreeProvingKey)
 
-      const proof = await wasmBn128.groth16GenProof(
-        publicSignalsBin,
+      const proof= await wasmBn128.groth16GenProof(
+        witnessBin,
         updateStateTreeProvingKeyBin
       )
-
-      // const { proof, npublicSignals } = zkSnark.genProof(
-      //   unstringifyBigInts(updateStateTreeProvingKey), witness
-      // )
 
       const isValid = zkSnark.isValid(
         unstringifyBigInts(updateStateTreeVerificationKey),

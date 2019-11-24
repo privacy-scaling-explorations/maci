@@ -7,7 +7,7 @@ const { unstringifyBigInts } = require('websnark/tools/stringifybigint')
 const assert = require('assert')
 const bigInt = require('big-integer')
 
-const binarifyPublicSignals = (_publicSignals) => {
+const binarifyWitness = (_publicSignals) => {
   const publicSignals = _publicSignals.map(x => bigInt(x))
 
   function writeUint32 (h, val) {
@@ -198,5 +198,5 @@ const binarifyProvingKey = (_provingKey) => {
 
 module.exports = {
   binarifyProvingKey,
-  binarifyPublicSignals
+  binarifyWitness
 }
