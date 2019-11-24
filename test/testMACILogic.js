@@ -6,6 +6,7 @@ const {
   signUpTokenContract
 } = require('../_build/utils/contracts')
 
+const { binarifyPublicSignals, binarifyProvingKey } = require('../_build/utils/binarify')
 const { createMerkleTree } = require('../_build/utils/merkletree')
 const { stringifyBigInts, unstringifyBigInts } = require('../_build/utils/helpers')
 const { ecdh, randomPrivateKey, privateToPublicKey, signAndEncrypt } = require('../_build/utils/crypto')
@@ -14,6 +15,7 @@ const updateStateTreeProvingKey = require('../_build/circuits/update_state_tree_
 const updateStateTreeVerificationKey = require('../_build/circuits/update_tree_state_verifying_key.json')
 const updateStateTreeCircuitDef = require('../_build/circuits/update_state_tree.json')
 
+const { buildBn128 } = require('websnark')
 const { Circuit, groth } = require('snarkjs')
 
 const { ganacheConfig } = require('../maci-config')
@@ -220,6 +222,7 @@ describe('MACI', () => {
 
   describe('#CircomCircuit', () => {
     it('Circuit Root Generation', async () => {
+      const wasmBn128 = await buildBn128()
       const zkSnark = groth
 
       // Command and State Tree
@@ -327,14 +330,24 @@ describe('MACI', () => {
 
       console.log('Generating proof, this will take a while...')
 
-      const { proof, publicSignals } = zkSnark.genProof(
-        unstringifyBigInts(updateStateTreeProvingKey), witness
+      const publicSignals = witness.slice(1, circuit.nPubInputs + circuit.nOutputs + 1)
+
+      const publicSignalsBin = binarifyPublicSignals(publicSignals)
+      const updateStateTreeProvingKeyBin = binarifyProvingKey(updateStateTreeProvingKey)
+
+      const proof = await wasmBn128.groth16GenProof(
+        publicSignalsBin,
+        updateStateTreeProvingKeyBin
       )
+
+      // const { proof, npublicSignals } = zkSnark.genProof(
+      //   unstringifyBigInts(updateStateTreeProvingKey), witness
+      // )
 
       const isValid = zkSnark.isValid(
         unstringifyBigInts(updateStateTreeVerificationKey),
-        proof,
-        publicSignals
+        unstringifyBigInts(proof),
+        unstringifyBigInts(publicSignals)
       )
       assert.equal(isValid, true, 'Local Snark Proof is not valid!')
 
