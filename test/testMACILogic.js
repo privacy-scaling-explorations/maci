@@ -340,7 +340,7 @@ describe('MACI', () => {
 
       const isValidOnChain = await maciContract.verifyUpdateStateTreeProof(
         stringifyBigInts(proof.pi_a).slice(0, 2),
-        stringifyBigInts(proof.pi_b).slice(0, 2),
+        stringifyBigInts(proof.pi_b).map(x => x.reverse()).slice(0, 2),
         stringifyBigInts(proof.pi_c).slice(0, 2),
         stringifyBigInts(publicSignals.map(x => x % snarkScalarField))
       )
