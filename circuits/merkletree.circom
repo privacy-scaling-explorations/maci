@@ -1,19 +1,6 @@
 // Referenced https://github.com/peppersec/tornado-mixer/blob/master/circuits/merkleTree.circom
 
-include "../node_modules/circomlib/circuits/mimc.circom"
-
-template HashLeftRight() {
-  signal input left;
-  signal input right;
-
-  signal output hash;
-
-  component hasher = MultiMiMC7(2, 91);
-  hasher.in[0] <== left;
-  hasher.in[1] <== right;
-
-  hash <== hasher.out;
-}
+include "./hasher.circom";
 
 // if path_index == 0 returns (left = input_element, right = path_element)
 // if path_index == 1 returns (left = path_element, right = input_element)
