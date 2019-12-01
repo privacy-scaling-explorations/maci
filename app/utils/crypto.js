@@ -1,16 +1,12 @@
 // @flow
 
+const crypto = require('crypto')
 const { bigInt } = require('snarkjs')
 const createBlakeHash = require('blake-hash')
 const { babyJub, eddsa, mimc7 } = require('circomlib')
 
 const randomPrivateKey = (): BigInt => {
-  return BigInt(
-    Array(64)
-      .fill(0)
-      .map((x: Any): Int => parseInt(Math.random()*10))
-      .join('')
-  ) % babyJub.subOrder
+  return BigInt('0x' + crypto.randomBytes(32).toString('hex'))
 }
 
 const privateToPublicKey = (sk: BigInt): [BigInt, BigInt] => {
