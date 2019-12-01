@@ -1,5 +1,5 @@
 include "../node_modules/circomlib/circuits/eddsamimc.circom";
-include "../node_modules/circomlib/circuits/mimc.circom";
+include "./hasher.circom";
 
 template VerifyEdDSAMiMC(k) {
   signal input from_x;
@@ -9,7 +9,7 @@ template VerifyEdDSAMiMC(k) {
   signal input S;
   signal private input preimage[k];
   
-  component M = MultiMiMC7(k, 91);
+  component M = Hasher(k);
   for (var i = 0; i < k; i++){
     M.in[i] <== preimage[i];
   }
@@ -22,5 +22,5 @@ template VerifyEdDSAMiMC(k) {
   verifier.R8x <== R8x;
   verifier.R8y <== R8y;
   verifier.S <== S;
-  verifier.M <== M.out;
+  verifier.M <== M.hash;
 }
