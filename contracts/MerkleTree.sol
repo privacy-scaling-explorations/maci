@@ -167,6 +167,10 @@ contract MerkleTree is Whitelist {
         emit LeafUpdated(leaf, leafIndex);
     }
 
+    function hashLeftRight(uint256 left, uint256 right) public view returns (uint256) {
+      return hasher.hashPair(left, right);
+    }
+
     /*** Getters ***/
     function getRoot() public view returns (uint256) {
         return root;

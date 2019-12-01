@@ -3,6 +3,7 @@ const MiMC = artifacts.require('MiMC')
 const MACI = artifacts.require('MACI')
 const Hasher = artifacts.require('Hasher')
 const SignUpToken = artifacts.require('SignUpToken')
+const UpdateStateTreeVerifier = artifacts.require('UpdateStateTreeVerifier')
 
 const { coordinatorConfig, merkleTreeConfig } = require('../maci-config')
 const { privateToPublicKey } = require('../_build/utils/crypto.js')
@@ -20,6 +21,9 @@ module.exports = async (deployer) => {
   // (This is how we sign up to the contract)
   const signUpToken = await deployer.deploy(SignUpToken)
 
+  // Deploy UpdateStateTreeVerifier
+  const updateStateTreeVerifier = await deployer.deploy(UpdateStateTreeVerifier)
+
   // Deploy execution state merkle tree
   // (The append-only merkle tree)
   const cmdTree = await deployer.deploy(
@@ -33,6 +37,7 @@ module.exports = async (deployer) => {
     MACI,
     cmdTree.address,
     hasher.address,
+    updateStateTreeVerifier.address,
     signUpToken.address,
     merkleTreeConfig.durationSignUpBlockNumbers.toString(),
     coordinatorPublicKey[0].toString(),

@@ -1,6 +1,5 @@
 const assert = require('chai').assert
 const ethers = require('ethers')
-const { mimc7 } = require('circomlib')
 
 const { mimcAddress } = require('../_build/contracts/DeployedAddresses.json')
 const { stringifyBigInts, linkLibraries } = require('../_build/utils/helpers')
@@ -80,9 +79,19 @@ describe('MerkleTree', () => {
     )
   })
 
+  it('#Hashing Function', async () => {
+    const left = n1[0]
+    const right = n1[1]
+
+    const cHash = await merkleTreeContract.hashLeftRight(left.toString(), right.toString())
+    const lHash = merkleTreeJS.hashLeftRight(left, right)
+
+    assert.equal(cHash.toString(), lHash.toString())
+  })
+
   it('#Insert', async () => {
     for (let n in ns) {
-      const h = mimc7.multiHash(n)
+      const h = merkleTreeJS.hash(n)
 
       await merkleTreeContract.insert(h.toString())
       merkleTreeJS.insert(h)
@@ -96,7 +105,7 @@ describe('MerkleTree', () => {
 
   it('#Update', async () => {
     for (let n in ns) {
-      const h = mimc7.multiHash(n)
+      const h = merkleTreeJS.hash(n)
 
       await merkleTreeContract.insert(h.toString())
       merkleTreeJS.insert(h)
@@ -104,7 +113,7 @@ describe('MerkleTree', () => {
 
     const leafIndex = 1
     const newLeafRawValue = [1n, 2n, 3n, 4n, 5n]
-    const newLeafValue = mimc7.multiHash(newLeafRawValue)
+    const newLeafValue = merkleTreeJS.hash(newLeafRawValue)
 
     // eslint-disable-next-line
     const [path, _] = merkleTreeJS.getPathUpdate(leafIndex)
@@ -121,7 +130,7 @@ describe('MerkleTree', () => {
 
   it('#InvalidUpdate', async () => {
     for (let n in ns) {
-      const h = mimc7.multiHash(n)
+      const h = merkleTreeJS.hash(n)
 
       await merkleTreeContract.insert(h.toString())
       merkleTreeJS.insert(h)
@@ -152,7 +161,7 @@ describe('MerkleTree', () => {
 
     // Insert items and validate the root will be the same
     for (let n in ns) {
-      const h = mimc7.multiHash(n)
+      const h = merkleTreeJS.hash(n)
 
       await merkleTreeContract.insert(h.toString())
       merkleTreeJS.insert(h)

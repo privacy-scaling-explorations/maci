@@ -16,7 +16,7 @@ yarn circuit:compile
 yarn circuit:setup
 yarn circuit:generateverifier
 
-# Run Ganache
+# Run Ganache (in another terminal)
 yarn ganache
 
 # NOTE: Before running migrate, make sure you've built
