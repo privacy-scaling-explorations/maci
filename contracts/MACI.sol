@@ -1,13 +1,17 @@
 pragma solidity 0.5.11;
 
-import "./Verifier.sol";
+import "./UpdateStateTreeVerifier.sol";
+
 import "./MerkleTree.sol";
 import "./SignUpToken.sol";
 import "./Hasher.sol";
 
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 
-contract MACI is Verifier, Ownable, IERC721Receiver {
+contract MACI is Ownable, IERC721Receiver {
+    // Verifier Contracts
+    UpdateStateTreeVerifier updateStateTreeVerifier;
+
     // Hashing function
     Hasher hasher;
 
@@ -57,6 +61,7 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
     constructor(
       address cmdTreeAddress,
       address hasherAddress,
+      address updateStateTreeVerifierAddress,
       address _signUpTokenAddress,
       uint256 _durationSignUpBlockNumber,
       uint256 _coordinatorPublicKeyX,
@@ -64,6 +69,7 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
     ) Ownable() public {
         cmdTree = MerkleTree(cmdTreeAddress);
         hasher = Hasher(hasherAddress);
+        updateStateTreeVerifier = UpdateStateTreeVerifier(updateStateTreeVerifierAddress);
 
         deployedBlockNumber = block.number;
         durationSignUpBlockNumbers = _durationSignUpBlockNumber;
@@ -98,7 +104,7 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
         require(addressAccountAllocated[msg.sender] > 0, "Address is not whitelisted!");
 
         // Calculate leaf value
-        uint256 leaf = hasher.hashMulti(encryptedMessage);
+        uint256 leaf = hasher.hashMulti(encryptedMessage, 0);
 
         // Insert the new leaf into the cmdTree
         cmdTree.insert(leaf);
@@ -128,7 +134,7 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
         );
 
         // Calculate leaf value
-        uint256 leaf = hasher.hashMulti(encryptedMessage);
+        uint256 leaf = hasher.hashMulti(encryptedMessage, 0);
 
         // Insert the new leaf into the cmdTree
         cmdTree.insert(leaf);
@@ -142,6 +148,16 @@ contract MACI is Verifier, Ownable, IERC721Receiver {
             leaf,
             newCmdTreeRoot
         );
+    }
+
+    // Submits proof for updating state tree
+    function verifyUpdateStateTreeProof(
+      uint[2] memory a,
+      uint[2][2] memory b,
+      uint[2] memory c,
+      uint[10] memory input
+    ) public view returns (bool) {
+      return updateStateTreeVerifier.verifyProof(a, b, c, input);
     }
 
     // Forcefully ends sign up period

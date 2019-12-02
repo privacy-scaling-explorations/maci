@@ -3,10 +3,10 @@ import type { ContractAddresses } from './settings'
 
 const ethers = require('ethers')
 const { getContractAddresses } = require('./settings')
-const maciConfig = require('../../maci-config')
+const { ganacheConfig } = require('../../maci-config')
 
-const provider = new ethers.providers.JsonRpcProvider('http://localhost:8545')
-const privateKey = maciConfig.ganacheConfig.privateKey
+const provider = new ethers.providers.JsonRpcProvider(ganacheConfig.host)
+const privateKey = ganacheConfig.privateKey
 const wallet = new ethers.Wallet(privateKey, provider)
 
 const contractAddresses: ContractAddresses = getContractAddresses()

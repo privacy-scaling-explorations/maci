@@ -1,7 +1,7 @@
 // @flow
 import type { Pool } from 'pg'
 
-const { mimc7 } = require('circomlib')
+const { multiHash } = require('./crypto')
 const { stringifyBigInts, unstringifyBigInts } = require('./helpers')
 
 class MerkleTree {
@@ -65,15 +65,19 @@ class MerkleTree {
       (stringify(this.encryptedValues) === stringify(mk2.encryptedValues))
   }
 
-  hash (values: Array<BigInt>): BigInt {
-    return mimc7.multiHash(values)
+  hash (values: Any | Array<Any>): BigInt {
+    if (Array.isArray(values)) {
+      return BigInt(multiHash(values.map((x: Any): BigInt => BigInt(x))))
+    }
+
+    return BigInt(multiHash(BigInt(values), 91))
   }
 
   /*  Helper function to hash the left and right values
    *  of the leaves
    */
   hashLeftRight (left: BigInt, right: BigInt): BigInt {
-    return mimc7.multiHash([left, right])
+    return this.hash([left, right])
   }
 
   /* Inserts a new value into the merkle tree */

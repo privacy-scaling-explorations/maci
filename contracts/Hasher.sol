@@ -12,15 +12,16 @@ library MiMC {
 }
 
 contract Hasher {
-    uint256 constant R = 15021630795539610737508582392395901278341266317943626182700664337106830745361;
+    uint256 constant R = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
 
-    function hashMulti(uint256[] memory array) public pure returns (uint256) {
-        uint256 r = R;
+    function hashMulti(uint256[] memory array, uint256 key) public pure returns (uint256) {
+        uint256 r = key;
 
-        for (uint i = 0; i < array.length; i++){
-            r = MiMC.MiMCpe7(r, array[i]);
+        for (uint256 i = 0; i < array.length; i++)
+        {
+            r = (r + array[i] + MiMC.MiMCpe7(array[i], r)) % R;
         }
-
+        
         return r;
     }
 
@@ -29,6 +30,6 @@ contract Hasher {
         arr[0] = left;
         arr[1] = right;
 
-        return hashMulti(arr);
+        return hashMulti(arr, 0);
     }
 }
