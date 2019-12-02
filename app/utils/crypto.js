@@ -6,7 +6,22 @@ const createBlakeHash = require('blake-hash')
 const { babyJub, eddsa, mimc7 } = require('circomlib')
 
 const randomPrivateKey = (): BigInt => {
-  return BigInt('0x' + crypto.randomBytes(32).toString('hex'))
+  const SNARK_FIELD_SIZE = BigInt('21888242871839275222246405745257275088548364400416034343698204186575808495617')
+
+  const min = ((BigInt(2) ** BigInt(256)) - SNARK_FIELD_SIZE) % SNARK_FIELD_SIZE
+
+  let rand: BigInt
+
+  while (true) {
+    rand = BigInt('0x' + crypto.randomBytes(32).toString('hex'))
+
+    if (rand >= min) {
+      break
+    }
+
+  }
+
+  return rand % SNARK_FIELD_SIZE
 }
 
 const privateToPublicKey = (sk: BigInt): [BigInt, BigInt] => {
