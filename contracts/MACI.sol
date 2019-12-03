@@ -19,6 +19,7 @@ contract MACI is Ownable, IERC721Receiver {
     // internal state transitions
     // i.e. update function isn't used
     MerkleTree cmdTree;
+    MerkleTree stateTree;
 
     // What block did the contract get deployed
     uint256 deployedBlockNumber;
@@ -48,7 +49,7 @@ contract MACI is Ownable, IERC721Receiver {
         uint256[] encryptedMessage,
         uint256[2] ecdhPublicKey,
         uint256 hashedEncryptedMessage,
-        uint256 newCmdTreeRoot,
+        uint256 newStateTreeRoot,
         uint256 userIndex
     );
     event CommandPublished(
@@ -60,6 +61,7 @@ contract MACI is Ownable, IERC721Receiver {
 
     constructor(
       address cmdTreeAddress,
+      address stateTreeAddress,
       address hasherAddress,
       address updateStateTreeVerifierAddress,
       address _signUpTokenAddress,
@@ -68,6 +70,7 @@ contract MACI is Ownable, IERC721Receiver {
       uint256 _coordinatorPublicKeyY
     ) Ownable() public {
         cmdTree = MerkleTree(cmdTreeAddress);
+        stateTree = MerkleTree(stateTreeAddress);
         hasher = Hasher(hasherAddress);
         updateStateTreeVerifier = UpdateStateTreeVerifier(updateStateTreeVerifierAddress);
 
@@ -106,11 +109,10 @@ contract MACI is Ownable, IERC721Receiver {
         // Calculate leaf value
         uint256 leaf = hasher.hashMulti(encryptedMessage, 0);
 
-        // Insert the new leaf into the cmdTree
-        cmdTree.insert(leaf);
+        stateTree.insert(leaf);
 
         // Get new cmd tree root
-        uint256 newCmdTreeRoot = cmdTree.getRoot();
+        uint256 newStateTreeRoot = stateTree.getRoot();
 
         addressAccountAllocated[msg.sender] -= 1;
 
@@ -118,8 +120,8 @@ contract MACI is Ownable, IERC721Receiver {
             encryptedMessage,
             ecdhPublicKey,
             leaf,
-            newCmdTreeRoot,
-            cmdTree.getInsertedLeavesNo() - 1
+            newStateTreeRoot,
+            stateTree.getInsertedLeavesNo() - 1
         );
     }
 

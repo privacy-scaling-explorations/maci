@@ -27,6 +27,11 @@ const cmdTreeContract = new ethers.Contract(
   merkleTreeContractDef.abi,
   wallet
 )
+const stateTreeContract = new ethers.Contract(
+  contractAddresses.STATE_TREE_ADDRESS,
+  merkleTreeContractDef.abi,
+  wallet
+)
 const signUpTokenContract = new ethers.Contract(
   contractAddresses.SIGN_UP_TOKEN_ADDRESS,
   signUpTokenContractDef.abi,
@@ -37,5 +42,6 @@ module.exports = {
   contractAddresses,
   maciContract,
   cmdTreeContract,
+  stateTreeContract,
   signUpTokenContract
 }

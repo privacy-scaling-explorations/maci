@@ -2,10 +2,12 @@ const assert = require('chai').assert
 
 const {
   maciContract,
+  stateTreeContract,
   cmdTreeContract,
   signUpTokenContract
 } = require('../_build/utils/contracts')
 
+const { binarifyWitness, binarifyProvingKey } = require('../_build/utils/binarify')
 const { createMerkleTree } = require('../_build/utils/merkletree')
 const { stringifyBigInts, unstringifyBigInts } = require('../_build/utils/helpers')
 const { ecdh, randomPrivateKey, privateToPublicKey, signAndEncrypt } = require('../_build/utils/crypto')
@@ -14,6 +16,7 @@ const updateStateTreeProvingKey = require('../_build/circuits/update_state_tree_
 const updateStateTreeVerificationKey = require('../_build/circuits/update_tree_state_verifying_key.json')
 const updateStateTreeCircuitDef = require('../_build/circuits/update_state_tree.json')
 
+const { buildBn128 } = require('websnark')
 const { Circuit, groth } = require('snarkjs')
 
 const { ganacheConfig } = require('../maci-config')
@@ -147,7 +150,7 @@ describe('MACI', () => {
         throw new Error('Sign Up period ended!')
       }
 
-      oldRoot = await cmdTreeContract.getRoot()
+      oldRoot = await stateTreeContract.getRoot()
 
       // Now user should be able to sign up
       await maciUser1Contract.signUp(
@@ -155,12 +158,12 @@ describe('MACI', () => {
         stringifyBigInts(user1PublicKey)
       )
 
-      newRoot = await cmdTreeContract.getRoot()
+      newRoot = await stateTreeContract.getRoot()
 
       // Make sure that when user signs up,
-      // contract commandTree updates its root
+      // contract stateTree updates its root
       if (oldRoot.toString() === newRoot.toString()) {
-        throw new Error('commandTree in contract not updated for user 1!')
+        throw new Error('stateTree in contract not updated for user 1!')
       }
 
       // 3. User 2 sends token to contract
@@ -171,7 +174,7 @@ describe('MACI', () => {
         user2TokenIds.pop() // Note: Token id has changed
       )
 
-      oldRoot = await cmdTreeContract.getRoot()
+      oldRoot = await stateTreeContract.getRoot()
 
       // Now user should be able to sign up
       await maciUser2Contract.signUp(
@@ -179,12 +182,12 @@ describe('MACI', () => {
         stringifyBigInts(user2PublicKey)
       )
 
-      newRoot = await cmdTreeContract.getRoot()
+      newRoot = await stateTreeContract.getRoot()
 
       // Make sure that when user signs up,
       // contract commandTree updates its root
       if (oldRoot.toString() === newRoot.toString()) {
-        throw new Error('commandTree in contract not updated for user 2!')
+        throw new Error('stateTree in contract not updated for user 2!')
       }
 
       // 4. Forcefully close signup period
@@ -218,8 +221,9 @@ describe('MACI', () => {
     })
   })
 
-  describe('#CircomCircuit', () => {
+  describe('#CircomCircuit (Long)', () => {
     it('Circuit Root Generation', async () => {
+      const wasmBn128 = await buildBn128()
       const zkSnark = groth
 
       // Command and State Tree
@@ -315,7 +319,6 @@ describe('MACI', () => {
         ecdh_private_key: stringifyBigInts(ecdhPrivateKey)
       }
 
-      console.log('Calculating witness...')
       const witness = circuit.calculateWitness(circuitInput)
       assert(circuit.checkWitness(witness))
 
@@ -325,16 +328,20 @@ describe('MACI', () => {
       stateTree.update(1, user2NewLeaf, user2NewMessage)
       assert.equal(stateTree.root.toString(), newRoot.toString())
 
-      console.log('Generating proof, this will take a while...')
+      const publicSignals = witness.slice(1, circuit.nPubInputs + circuit.nOutputs + 1)
 
-      const { proof, publicSignals } = zkSnark.genProof(
-        unstringifyBigInts(updateStateTreeProvingKey), witness
+      const witnessBin = binarifyWitness(witness)
+      const updateStateTreeProvingKeyBin = binarifyProvingKey(updateStateTreeProvingKey)
+
+      const proof = await wasmBn128.groth16GenProof(
+        witnessBin,
+        updateStateTreeProvingKeyBin
       )
 
       const isValid = zkSnark.isValid(
         unstringifyBigInts(updateStateTreeVerificationKey),
-        proof,
-        publicSignals
+        unstringifyBigInts(proof),
+        unstringifyBigInts(publicSignals)
       )
       assert.equal(isValid, true, 'Local Snark Proof is not valid!')
 

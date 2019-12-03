@@ -24,9 +24,14 @@ module.exports = async (deployer) => {
   // Deploy UpdateStateTreeVerifier
   const updateStateTreeVerifier = await deployer.deploy(UpdateStateTreeVerifier)
 
-  // Deploy execution state merkle tree
-  // (The append-only merkle tree)
+  // Deploy merkle tree
   const cmdTree = await deployer.deploy(
+    MerkleTree,
+    merkleTreeConfig.treeDepth,
+    merkleTreeConfig.zeroValue.toString(),
+    hasher.address
+  )
+  const stateTree = await deployer.deploy(
     MerkleTree,
     merkleTreeConfig.treeDepth,
     merkleTreeConfig.zeroValue.toString(),
@@ -36,6 +41,7 @@ module.exports = async (deployer) => {
   const maci = await deployer.deploy(
     MACI,
     cmdTree.address,
+    stateTree.address,
     hasher.address,
     updateStateTreeVerifier.address,
     signUpToken.address,
@@ -47,12 +53,14 @@ module.exports = async (deployer) => {
   // Allow MACI contract to call `insert` and `update` methods
   // on the MerkleTrees
   await cmdTree.whitelistAddress(maci.address)
+  await stateTree.whitelistAddress(maci.address)
 
   // Saves addresses
   global.contracts = {
     mimcAddress: MiMC.address,
     maciAddress: maci.address,
     cmdTreeAddress: cmdTree.address,
+    stateTreeAddress: stateTree.address,
     signUpTokenAddress: signUpToken.address
   }
 }
