@@ -2,6 +2,7 @@ const assert = require('chai').assert
 
 const {
   maciContract,
+  stateTreeContract,
   cmdTreeContract,
   signUpTokenContract
 } = require('../_build/utils/contracts')
@@ -149,7 +150,7 @@ describe('MACI', () => {
         throw new Error('Sign Up period ended!')
       }
 
-      oldRoot = await cmdTreeContract.getRoot()
+      oldRoot = await stateTreeContract.getRoot()
 
       // Now user should be able to sign up
       await maciUser1Contract.signUp(
@@ -157,12 +158,12 @@ describe('MACI', () => {
         stringifyBigInts(user1PublicKey)
       )
 
-      newRoot = await cmdTreeContract.getRoot()
+      newRoot = await stateTreeContract.getRoot()
 
       // Make sure that when user signs up,
-      // contract commandTree updates its root
+      // contract stateTree updates its root
       if (oldRoot.toString() === newRoot.toString()) {
-        throw new Error('commandTree in contract not updated for user 1!')
+        throw new Error('stateTree in contract not updated for user 1!')
       }
 
       // 3. User 2 sends token to contract
@@ -173,7 +174,7 @@ describe('MACI', () => {
         user2TokenIds.pop() // Note: Token id has changed
       )
 
-      oldRoot = await cmdTreeContract.getRoot()
+      oldRoot = await stateTreeContract.getRoot()
 
       // Now user should be able to sign up
       await maciUser2Contract.signUp(
@@ -181,12 +182,12 @@ describe('MACI', () => {
         stringifyBigInts(user2PublicKey)
       )
 
-      newRoot = await cmdTreeContract.getRoot()
+      newRoot = await stateTreeContract.getRoot()
 
       // Make sure that when user signs up,
       // contract commandTree updates its root
       if (oldRoot.toString() === newRoot.toString()) {
-        throw new Error('commandTree in contract not updated for user 2!')
+        throw new Error('stateTree in contract not updated for user 2!')
       }
 
       // 4. Forcefully close signup period
@@ -332,7 +333,7 @@ describe('MACI', () => {
       const witnessBin = binarifyWitness(witness)
       const updateStateTreeProvingKeyBin = binarifyProvingKey(updateStateTreeProvingKey)
 
-      const proof= await wasmBn128.groth16GenProof(
+      const proof = await wasmBn128.groth16GenProof(
         witnessBin,
         updateStateTreeProvingKeyBin
       )
