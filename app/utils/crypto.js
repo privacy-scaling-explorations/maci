@@ -2,10 +2,13 @@
 
 const crypto = require('crypto')
 const { bigInt } = require('snarkjs')
-const createBlakeHash = require('blake-hash')
 const { babyJub, eddsa, mimc7 } = require('circomlib')
 
 const hash = (x: BigInt, k: BigInt): BigInt => {
+  if (k === undefined) {
+    return mimc7.hash(x, 91n)
+  }
+
   return mimc7.hash(x, k)
 }
 
@@ -26,28 +29,37 @@ const randomPrivateKey = (): BigInt => {
     if (rand >= min) {
       break
     }
-
   }
 
   return rand % SNARK_FIELD_SIZE
-}
-
-const privateToPublicKey = (sk: BigInt): [BigInt, BigInt] => {
-  return eddsa.prv2pub(bigInt2Buffer(sk))
 }
 
 const bigInt2Buffer = (i: BigInt): Buffer => {
   return Buffer.from(i.toString())
 }
 
-const ecdh = (priv: BigInt, pub: Tuple<BigInt>): BigInt => {
-  const privBuff = bigInt2Buffer(priv)
+const buffer2BigInt = (b: Buffer): BigInt => {
+  return bigInt(parseInt(b.toString('hex'), 16))
+}
 
-  // Prepare private key xformation
-  // (similar to how eddsa.prv2pub prepares
-  // the private key)
-  const h1 = createBlakeHash('blake512').update(privBuff).digest()
-  const sBuff = eddsa.pruneBuffer(h1.slice(0, 32))
+const privateToPublicKey = (sk: BigInt): [BigInt, BigInt] => {
+  const sBuff = eddsa.pruneBuffer(
+    bigInt2Buffer(hash(sk))
+      .slice(0, 32)
+  )
+  const s = bigInt.leBuff2int(sBuff).shr(3)
+
+  return babyJub.mulPointEscalar(
+    babyJub.Base8,
+    s
+  )
+}
+
+const ecdh = (priv: BigInt, pub: Tuple<BigInt>): BigInt => {
+  const sBuff = eddsa.pruneBuffer(
+    bigInt2Buffer(hash(priv))
+      .slice(0, 32)
+  )
   const s = bigInt.leBuff2int(sBuff).shr(3)
 
   return babyJub.mulPointEscalar(
@@ -84,6 +96,30 @@ const decrypt = (
   })
 }
 
+const signMiMC = (prv: BigInt, msg: BigInt): { R8: BigInt, S: BigInt } => {
+  const h1 = bigInt2Buffer(hash(prv))
+  const sBuff = eddsa.pruneBuffer(h1.slice(0, 32))
+  const s = bigInt.leBuff2int(sBuff)
+  const A = babyJub.mulPointEscalar(babyJub.Base8, s.shr(3))
+
+  const msgBuff = bigInt.leInt2Buff(msg, 32)
+
+  const rBuff = bigInt2Buffer(hash(
+    buffer2BigInt(Buffer.concat(
+      [h1.slice(32, 64), msgBuff]
+    ))
+  ))
+  let r = bigInt.leBuff2int(rBuff)
+  r = r.mod(babyJub.subOrder)
+  const R8 = babyJub.mulPointEscalar(babyJub.Base8, r)
+  const hm = mimc7.multiHash([R8[0], R8[1], A[0], A[1], msg])
+  const S = r.add(hm.mul(s)).mod(babyJub.subOrder)
+  return {
+    R8: R8,
+    S: S
+  }
+}
+
 const signAndEncrypt = (
   msg: Array<BigInt>,
   privSign: BigInt, // Private key to sign message
@@ -94,8 +130,8 @@ const signAndEncrypt = (
   const msgHash = multiHash(msg)
 
   // Sign message
-  const signature = eddsa.signMiMC(
-    privSign.toString(),
+  const signature = signMiMC(
+    privSign,
     msgHash
   )
 
@@ -154,7 +190,9 @@ module.exports = {
   ecdh,
   encrypt,
   decrypt,
+  signMiMC,
   signAndEncrypt,
+  verifyMiMC: eddsa.verifyMiMC,
   decryptAndVerify,
   hash,
   multiHash
