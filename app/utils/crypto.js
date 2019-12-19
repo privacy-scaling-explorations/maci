@@ -6,7 +6,7 @@ const { babyJub, eddsa, mimc7 } = require('circomlib')
 
 const hash = (x: BigInt, k: BigInt): BigInt => {
   if (k === undefined) {
-    return mimc7.hash(x, 91n)
+    return mimc7.hash(x, 0n)
   }
 
   return mimc7.hash(x, k)
