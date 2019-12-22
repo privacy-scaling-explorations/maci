@@ -2,18 +2,24 @@
 
 const crypto = require('crypto')
 const { bigInt } = require('snarkjs')
-const { babyJub, eddsa, mimc7 } = require('circomlib')
+const { babyJub, eddsa, mimcsponge } = require('circomlib')
 
-const hash = (x: BigInt, k: BigInt): BigInt => {
+const hash = (msg: BigInt, k: BigInt): BigInt => {
   if (k === undefined) {
-    return mimc7.hash(x, 0n)
+    return multiHash([msg], 0n, 1)
   }
 
-  return mimc7.hash(x, k)
+  return multiHash([msg], k, 1)
 }
 
-const multiHash = (arr: Array<BigInt>): BigInt => {
-  return mimc7.multiHash(arr, BigInt(0))
+const multiHash = (arr: Array<BigInt>, key: ?BigInt, outputs: ?number): BigInt => {
+  const ret = mimcsponge.multiHash(arr, key, outputs)
+
+  if (Array.isArray(ret)) {
+    return ret.map((x: Any): BigInt => bigInt(x))
+  }
+
+  return bigInt(ret)
 }
 
 const randomPrivateKey = (): BigInt => {
@@ -75,10 +81,10 @@ const encrypt = (
 ): Array<BigInt> => {
   // Encrypts a message
   const sharedKey = ecdh(priv, pub)
-  const iv = multiHash(msg, BigInt(0))
+  const iv = multiHash(msg)
   return [
     iv, ...msg.map((e: BigInt, i: Number): BigInt => {
-      return e + hash(sharedKey, iv + BigInt(i))
+      return e + hash(sharedKey, iv + bigInt(i))
     })
   ]
 }
@@ -92,11 +98,11 @@ const decrypt = (
   const sharedKey = ecdh(priv, pub)
   const iv = msg[0]
   return msg.slice(1).map((e: BigInt, i: Number): BigInt => {
-    return e - hash(sharedKey, iv + BigInt(i))
+    return e - hash(sharedKey, iv + bigInt(i))
   })
 }
 
-const signMiMC = (prv: BigInt, msg: BigInt): { R8: BigInt, S: BigInt } => {
+const sign = (prv: BigInt, msg: BigInt): { R8: BigInt, S: BigInt } => {
   const h1 = bigInt2Buffer(hash(prv))
   const sBuff = eddsa.pruneBuffer(h1.slice(0, 32))
   const s = bigInt.leBuff2int(sBuff)
@@ -112,12 +118,20 @@ const signMiMC = (prv: BigInt, msg: BigInt): { R8: BigInt, S: BigInt } => {
   let r = bigInt.leBuff2int(rBuff)
   r = r.mod(babyJub.subOrder)
   const R8 = babyJub.mulPointEscalar(babyJub.Base8, r)
-  const hm = mimc7.multiHash([R8[0], R8[1], A[0], A[1], msg])
+  const hm = multiHash([R8[0], R8[1], A[0], A[1], msg])
   const S = r.add(hm.mul(s)).mod(babyJub.subOrder)
   return {
     R8: R8,
     S: S
   }
+}
+
+const verify = (
+  msg: Array<BigInt>,
+  sig: { R8: BigInt, S: BigInt },
+  pubKey: Array<BigInt>
+): Boolean => {
+  return eddsa.verifyMiMCSponge(msg, sig, pubKey)
 }
 
 const signAndEncrypt = (
@@ -130,7 +144,7 @@ const signAndEncrypt = (
   const msgHash = multiHash(msg)
 
   // Sign message
-  const signature = signMiMC(
+  const signature = sign(
     privSign,
     msgHash
   )
@@ -177,7 +191,7 @@ const decryptAndVerify = (
     S: decryptedMsg.slice(-3)[2]
   }
 
-  return eddsa.verifyMiMC(
+  return verify(
     originalMsgHash,
     signature,
     pubSign
@@ -190,9 +204,9 @@ module.exports = {
   ecdh,
   encrypt,
   decrypt,
-  signMiMC,
+  sign,
   signAndEncrypt,
-  verifyMiMC: eddsa.verifyMiMC,
+  verify,
   decryptAndVerify,
   hash,
   multiHash

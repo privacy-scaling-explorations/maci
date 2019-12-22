@@ -7,22 +7,23 @@
 
 pragma solidity 0.5.11;
 
-library MiMC {
-    function MiMCpe7(uint256 in_x, uint256 in_k) public pure returns (uint256 out_x);
+library CircomLib {
+    function MiMCSponge(uint256 xL_in, uint256 xR_in, uint256 k) public pure returns (uint256 xL, uint256 xR);
 }
 
 contract Hasher {
-    uint256 constant R = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
-
     function hashMulti(uint256[] memory array, uint256 key) public pure returns (uint256) {
-        uint256 r = key;
+        uint256 k = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
+        uint256 R = 0;
+        uint256 C = 0;
 
         for (uint256 i = 0; i < array.length; i++)
         {
-            r = (r + array[i] + MiMC.MiMCpe7(array[i], r)) % R;
+            R = addmod(R, array[i], k);
+            (R, C) = CircomLib.MiMCSponge(R, C, 0);
         }
         
-        return r;
+        return R;
     }
 
     function hashPair(uint256 left, uint256 right) public pure returns (uint256) {

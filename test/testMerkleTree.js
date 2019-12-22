@@ -1,7 +1,7 @@
 const assert = require('chai').assert
 const ethers = require('ethers')
 
-const { mimcAddress } = require('../_build/contracts/DeployedAddresses.json')
+const { circomLibAddress } = require('../_build/contracts/DeployedAddresses.json')
 const { stringifyBigInts, linkLibraries } = require('../_build/utils/helpers')
 const { createMerkleTree } = require('../_build/utils/merkletree')
 const { ganacheConfig, merkleTreeConfig } = require('../maci-config')
@@ -13,7 +13,7 @@ const wallet = new ethers.Wallet(privateKey, provider)
 const hasherDef = require('../_build/contracts/Hasher.json')
 const hasherFactory = new ethers.ContractFactory(
   hasherDef.abi,
-  linkLibraries(hasherDef.bytecode, 'MiMC', mimcAddress),
+  linkLibraries(hasherDef.bytecode, 'CircomLib', circomLibAddress),
   wallet
 )
 

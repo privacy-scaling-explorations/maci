@@ -70,7 +70,7 @@ class MerkleTree {
       return BigInt(multiHash(values.map((x: Any): BigInt => BigInt(x))))
     }
 
-    return BigInt(multiHash(BigInt(values), 91))
+    return BigInt(multiHash([BigInt(values)]))
   }
 
   /*  Helper function to hash the left and right values

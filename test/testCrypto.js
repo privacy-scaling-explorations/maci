@@ -5,8 +5,8 @@ const {
   decrypt,
   randomPrivateKey,
   privateToPublicKey,
-  signMiMC,
-  verifyMiMC,
+  sign,
+  verify,
   ecdh,
   multiHash,
   signAndEncrypt,
@@ -28,7 +28,7 @@ describe('Crypto.js', () => {
       assert.equal(sharedKey1.toString(), sharedKey2.toString())
     })
 
-    it('Encrypt and Decrypting', async () => {
+    it('Encrypt and Decrypt', async () => {
       const sk1 = randomPrivateKey()
       const sk2 = randomPrivateKey()
 
@@ -54,9 +54,9 @@ describe('Crypto.js', () => {
 
       const msg = multiHash([32767n])
 
-      const signature = signMiMC(sk1, msg)
+      const signature = sign(sk1, msg)
 
-      const validSignature = verifyMiMC(
+      const validSignature = verify(
         msg,
         signature,
         pk1

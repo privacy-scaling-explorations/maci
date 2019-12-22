@@ -1,5 +1,5 @@
 const MerkleTree = artifacts.require('MerkleTree')
-const MiMC = artifacts.require('MiMC')
+const CircomLib = artifacts.require('CircomLib')
 const MACI = artifacts.require('MACI')
 const Hasher = artifacts.require('Hasher')
 const SignUpToken = artifacts.require('SignUpToken')
@@ -12,7 +12,7 @@ const coordinatorPublicKey = privateToPublicKey(coordinatorConfig.privateKey)
 
 module.exports = async (deployer) => {
   // Link MiMC with the Hasher object
-  await deployer.link(MiMC, Hasher)
+  await deployer.link(CircomLib, Hasher)
 
   // Deploy hasher
   const hasher = await deployer.deploy(Hasher)
@@ -40,8 +40,8 @@ module.exports = async (deployer) => {
 
   const maci = await deployer.deploy(
     MACI,
-    cmdTree.address,
     stateTree.address,
+    cmdTree.address,
     hasher.address,
     updateStateTreeVerifier.address,
     signUpToken.address,
@@ -53,11 +53,11 @@ module.exports = async (deployer) => {
   // Allow MACI contract to call `insert` and `update` methods
   // on the MerkleTrees
   await cmdTree.whitelistAddress(maci.address)
-  await stateTree.whitelistAddress(maci.address)
+  await cmdTree.whitelistAddress(maci.address)
 
   // Saves addresses
   global.contracts = {
-    mimcAddress: MiMC.address,
+    circomLibAddress: CircomLib.address,
     maciAddress: maci.address,
     cmdTreeAddress: cmdTree.address,
     stateTreeAddress: stateTree.address,
