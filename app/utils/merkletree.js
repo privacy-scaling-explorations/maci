@@ -1,7 +1,8 @@
 // @flow
 import type { Pool } from 'pg'
 
-const { multiHash } = require('./crypto')
+const { bigInt } = require('snarkjs')
+const { hashLeftRight, multiHash } = require('./crypto')
 const { stringifyBigInts, unstringifyBigInts } = require('./helpers')
 
 class MerkleTree {
@@ -67,17 +68,17 @@ class MerkleTree {
 
   hash (values: Any | Array<Any>): BigInt {
     if (Array.isArray(values)) {
-      return BigInt(multiHash(values.map((x: Any): BigInt => BigInt(x))))
+      return BigInt(multiHash(values.map((x: Any): BigInt => bigInt(x))))
     }
 
-    return BigInt(multiHash([BigInt(values)]))
+    return bigInt(multiHash([BigInt(values)]))
   }
 
   /*  Helper function to hash the left and right values
    *  of the leaves
    */
   hashLeftRight (left: BigInt, right: BigInt): BigInt {
-    return this.hash([left, right])
+    return hashLeftRight(left, right)
   }
 
   /* Inserts a new value into the merkle tree */

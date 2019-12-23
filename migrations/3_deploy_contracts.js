@@ -40,8 +40,8 @@ module.exports = async (deployer) => {
 
   const maci = await deployer.deploy(
     MACI,
-    stateTree.address,
     cmdTree.address,
+    stateTree.address,
     hasher.address,
     updateStateTreeVerifier.address,
     signUpToken.address,
@@ -53,7 +53,7 @@ module.exports = async (deployer) => {
   // Allow MACI contract to call `insert` and `update` methods
   // on the MerkleTrees
   await cmdTree.whitelistAddress(maci.address)
-  await cmdTree.whitelistAddress(maci.address)
+  await stateTree.whitelistAddress(maci.address)
 
   // Saves addresses
   global.contracts = {

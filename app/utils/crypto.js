@@ -12,6 +12,10 @@ const hash = (msg: BigInt, k: BigInt): BigInt => {
   return multiHash([msg], k, 1)
 }
 
+const hashLeftRight = (left: BigInt, right: BigInt): BigInt => {
+  return bigInt(multiHash([bigInt(left), bigInt(right)]))
+}
+
 const multiHash = (arr: Array<BigInt>, key: ?BigInt, outputs: ?number): BigInt => {
   const ret = mimcsponge.multiHash(arr, key, outputs)
 
@@ -209,5 +213,6 @@ module.exports = {
   verify,
   decryptAndVerify,
   hash,
+  hashLeftRight,
   multiHash
 }

@@ -10,6 +10,7 @@ template VerifyEdDSAMiMC(k) {
   signal private input preimage[k];
   
   component M = Hasher(k);
+  M.key <== 0;
   for (var i = 0; i < k; i++){
     M.in[i] <== preimage[i];
   }

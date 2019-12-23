@@ -20,7 +20,7 @@ contract Hasher {
         for (uint256 i = 0; i < array.length; i++)
         {
             R = addmod(R, array[i], k);
-            (R, C) = CircomLib.MiMCSponge(R, C, 0);
+            (R, C) = CircomLib.MiMCSponge(R, C, key);
         }
         
         return R;
