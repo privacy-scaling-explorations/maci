@@ -1,7 +1,7 @@
 const path = require('path')
 const { assert } = require('chai')
 const compiler = require('circom')
-const { stringifyBigInts, unstringifyBigInts } = require('../_build/utils/helpers')
+const { stringifyBigInts } = require('../_build/utils/helpers')
 const { Circuit } = require('snarkjs')
 const { hashLeftRight } = require('../_build/utils/crypto')
 
@@ -96,6 +96,24 @@ describe('Circom Ciruits', () => {
       // If circuit can calculate witness
       // then verification has passed
       circuit.calculateWitness(circuitInputs)
+    })
+  })
+
+  describe('Edch', () => {
+    it('#KeyDerivation', async () => {
+      const circuitDef = await compiler(path.join(__dirname, 'ecdh.circom'))
+      const circuit = new Circuit(circuitDef)
+
+      const sk1 = randomPrivateKey()
+      const pk1 = privateToPublicKey(sk1)
+
+      const circuitInputs = {
+        'public_key': stringifyBigInts(pk1),
+        'private_key': stringifyBigInts(sk1)
+      }
+
+      const witness = circuit.calculateWitness(circuitInputs)
+      console.log(witness[witness.outputIdx(0)].toString())
     })
   })
 })
