@@ -106,13 +106,21 @@ const decrypt = (
   })
 }
 
-const sign = (prv: BigInt, msg: BigInt): { R8: BigInt, S: BigInt } => {
+const sign = (prv: BigInt, _msg: BigInt): { R8: BigInt, S: BigInt } => {
+  // Doing this as bigInt2Buffer requires a custom
+  // methods 'greater' than isn't in the standard bigint
+  // object (its a snarkjs custom bigint obj method)
+  const msg = bigInt(_msg)
+
   const h1 = bigInt2Buffer(hash(prv))
   const sBuff = eddsa.pruneBuffer(h1.slice(0, 32))
   const s = bigInt.leBuff2int(sBuff)
   const A = babyJub.mulPointEscalar(babyJub.Base8, s.shr(3))
 
-  const msgBuff = bigInt.leInt2Buff(msg, 32)
+  const msgBuff = bigInt.leInt2Buff(
+    msg,
+    32
+  )
 
   const rBuff = bigInt2Buffer(hash(
     buffer2BigInt(Buffer.concat(

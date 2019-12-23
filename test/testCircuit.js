@@ -1,7 +1,7 @@
 const path = require('path')
 const { assert } = require('chai')
 const compiler = require('circom')
-const { stringifyBigInts } = require('../_build/utils/helpers')
+const { stringifyBigInts, unstringifyBigInts } = require('../_build/utils/helpers')
 const { Circuit } = require('snarkjs')
 const { hashLeftRight } = require('../_build/utils/crypto')
 
@@ -9,8 +9,9 @@ const {
   randomPrivateKey,
   privateToPublicKey,
   encrypt,
-  decrypt,
-  ecdh
+  sign,
+  ecdh,
+  multiHash
 } = require('../_build/utils/crypto')
 
 describe('Circom Ciruits', () => {
@@ -67,6 +68,34 @@ describe('Circom Ciruits', () => {
         const idx = circuit.outputIdx(i)
         assert.equal(msg[i].toString(), witness[idx].toString())
       }
+    })
+  })
+
+  describe('Verify Signature', () => {
+    it('#Verification', async () => {
+      const circuitDef = await compiler(path.join(__dirname, 'verify_signature_test.circom'))
+      const circuit = new Circuit(circuitDef)
+
+      const sk1 = randomPrivateKey()
+      const pk1 = privateToPublicKey(sk1)
+
+      const msg = [3n, 4n, 5n, 32767n]
+      const msgHash = multiHash(msg)
+
+      const signature = sign(sk1, msgHash)
+
+      const circuitInputs = {
+        'from_x': stringifyBigInts(pk1[0]),
+        'from_y': stringifyBigInts(pk1[1]),
+        'R8x': stringifyBigInts(signature.R8[0]),
+        'R8y': stringifyBigInts(signature.R8[1]),
+        'S': stringifyBigInts(signature.S),
+        'preimage': stringifyBigInts(msg)
+      }
+
+      // If circuit can calculate witness
+      // then verification has passed
+      circuit.calculateWitness(circuitInputs)
     })
   })
 })
