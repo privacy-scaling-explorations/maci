@@ -1,6 +1,9 @@
+const path = require('path')
 const assert = require('chai').assert
 const ethers = require('ethers')
 
+const compiler = require('circom')
+const { Circuit } = require('snarkjs')
 const { circomLibAddress } = require('../_build/contracts/DeployedAddresses.json')
 const { stringifyBigInts, linkLibraries } = require('../_build/utils/helpers')
 const { createMerkleTree } = require('../_build/utils/merkletree')
@@ -58,9 +61,13 @@ describe('MerkleTree', () => {
   let hasherContract
   let merkleTreeContract
   let merkleTreeJS
+  let circuitDef
+  let circuit
 
   before('Setup Hasher Library', async () => {
     hasherContract = await hasherFactory.deploy()
+    circuitDef = await compiler(path.join(__dirname, '../test/merkleTreeInsert_test.circom'))
+    circuit = new Circuit(circuitDef)
   })
 
   beforeEach('Setup contract for each test', async () => {
@@ -95,6 +102,29 @@ describe('MerkleTree', () => {
 
       await merkleTreeContract.insert(h.toString())
       merkleTreeJS.insert(h)
+
+			const merkleProofData = stringifyBigInts(merkleTreeJS.getPathInsert())
+			const circuitInputs = {
+				'leaf': h,
+				'zeros[0]': merkleProofData[0][0],
+				'zeros[1]': merkleProofData[0][1],
+				'zeros[2]': merkleProofData[0][2],
+				'zeros[3]': merkleProofData[0][3],
+				'filled_sub_trees[0]': merkleProofData[1][0],
+				'filled_sub_trees[1]': merkleProofData[1][1],
+				'filled_sub_trees[2]': merkleProofData[1][2],
+				'filled_sub_trees[3]': merkleProofData[1][3],
+				'path_index[0]': merkleProofData[2][0],
+				'path_index[1]': merkleProofData[2][1],
+				'path_index[2]': merkleProofData[2][2],
+				'path_index[3]': merkleProofData[2][3],
+				'root': stringifyBigInts(merkleTreeJS.root),
+			}
+      const witness = circuit.calculateWitness(circuitInputs)
+
+      const output = witness[circuit.getSignalIdx('main.root')]
+
+			assert.equal(output, merkleTreeJS.root)
     }
 
     for (let i = 0; i < ns.length; i++) {
@@ -103,71 +133,77 @@ describe('MerkleTree', () => {
     }
   })
 
-  it('#Update', async () => {
-    for (let n in ns) {
-      const h = merkleTreeJS.hash(n)
+	it('#Update', async () => {
+		for (let n in ns) {
+			const h = merkleTreeJS.hash(n)
 
-      await merkleTreeContract.insert(h.toString())
-      merkleTreeJS.insert(h)
-    }
+			await merkleTreeContract.insert(h.toString())
+			merkleTreeJS.insert(h)
+		}
 
-    const leafIndex = 1
-    const newLeafRawValue = [1n, 2n, 3n, 4n, 5n]
-    const newLeafValue = merkleTreeJS.hash(newLeafRawValue)
+		const leafIndex = 1
+		const newLeafRawValue = [1n, 2n, 3n, 4n, 5n]
+		const newLeafValue = merkleTreeJS.hash(newLeafRawValue)
 
-    // eslint-disable-next-line
-    const [path, _] = merkleTreeJS.getPathUpdate(leafIndex)
-    await merkleTreeContract.update(
-      leafIndex,
-      newLeafValue.toString(),
-      path.map(x => x.toString())
-    )
-    merkleTreeJS.update(leafIndex, newLeafValue)
+		// eslint-disable-next-line
+		const [path, _] = merkleTreeJS.getPathUpdate(leafIndex)
+		await merkleTreeContract.update(
+			leafIndex,
+			newLeafValue.toString(),
+			path.map(x => x.toString())
+		)
+		merkleTreeJS.update(leafIndex, newLeafValue)
 
-    const newRoot = await merkleTreeContract.getRoot()
-    assert.equal(merkleTreeJS.root.toString(), newRoot.toString())
-  })
+		const newRoot = await merkleTreeContract.getRoot()
+		assert.equal(merkleTreeJS.root.toString(), newRoot.toString())
+	})
 
-  it('#InvalidUpdate', async () => {
-    for (let n in ns) {
-      const h = merkleTreeJS.hash(n)
+	it('#InvalidUpdate', async () => {
+		for (let n in ns) {
+			const h = merkleTreeJS.hash(n)
 
-      await merkleTreeContract.insert(h.toString())
-      merkleTreeJS.insert(h)
-    }
+			await merkleTreeContract.insert(h.toString())
+			merkleTreeJS.insert(h)
+		}
 
-    try {
-      // eslint-disable-next-line
-      const [path, _] = merkleTreeJS.getPathUpdate(0)
+		let caught = false
+		try {
+			// eslint-disable-next-line
+			const [path, _] = merkleTreeJS.getPathUpdate(0)
 
-      await merkleTreeContract.update(
-        0,
-        n1.toString(),
-        path.map(x => x.toString())
-      )
+			await merkleTreeContract.update(
+				0,
+				n1.toString(),
+				path.map(x => x.toString())
+			)
 
-      // Line above should throw an exception
-      // this assertion should never be reached
-      assert.equal(true, false)
-    } catch (e) {}
-  })
+			// Line above should throw an exception
+			// this assertion should never be reached
+			assert.equal(true, false)
+		} catch (e) {
+			caught = true
+		}
 
-  it('#RootCalculation', async () => {
-    let contractRoot
+		// Ensure that the contract threw an error
+		assert.isTrue(caught)
+	})
 
-    // Make sure initial root is the same
-    contractRoot = await merkleTreeContract.getRoot()
-    assert.equal(merkleTreeJS.root.toString(), contractRoot.toString())
+	it('#RootCalculation', async () => {
+		let contractRoot
 
-    // Insert items and validate the root will be the same
-    for (let n in ns) {
-      const h = merkleTreeJS.hash(n)
+		// Make sure initial root is the same
+		contractRoot = await merkleTreeContract.getRoot()
+		assert.equal(merkleTreeJS.root.toString(), contractRoot.toString())
 
-      await merkleTreeContract.insert(h.toString())
-      merkleTreeJS.insert(h)
+		// Insert items and validate the root will be the same
+		for (let n in ns) {
+			const h = merkleTreeJS.hash(n)
 
-      contractRoot = await merkleTreeContract.getRoot()
-      assert.equal(merkleTreeJS.root.toString(), contractRoot)
-    }
-  })
+			await merkleTreeContract.insert(h.toString())
+			merkleTreeJS.insert(h)
+
+			contractRoot = await merkleTreeContract.getRoot()
+			assert.equal(merkleTreeJS.root.toString(), contractRoot)
+		}
+	})
 })
