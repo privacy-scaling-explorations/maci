@@ -19,13 +19,8 @@ yarn circuit:generateverifier
 # Run Ganache (in another terminal)
 yarn ganache
 
-# NOTE: Before running migrate, make sure you've built
-#       the app (used to strip flow types)
-yarn app:build
-npx truffle migrate --network development
-
 # Running tests
-# NOTE: You'll need to have services running
+# NOTE: You'll need to have services running (eg ganache)
 #       You can setup the services with `docker-compose up`
 #       in another terminal
 yarn test
