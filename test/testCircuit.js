@@ -97,6 +97,21 @@ describe('Circom Ciruits', () => {
       // If circuit can calculate witness
       // then verification has passed
       circuit.calculateWitness(circuitInputs)
+
+      try {
+        const invalidCircuitInputs = {
+          'from_x': stringifyBigInts(0n),
+          'from_y': stringifyBigInts(1n),
+          'R8x': stringifyBigInts(signature.R8[0]),
+          'R8y': stringifyBigInts(signature.R8[1]),
+          'S': stringifyBigInts(signature.S),
+          'preimage': stringifyBigInts(msg)
+        }
+        circuit.calculateWitness(invalidCircuitInputs)
+
+        // This line shouldn't be reached
+        throw new Error('Invalid signature is recognized as valid!')
+      } catch (e) {}
     })
   })
 
