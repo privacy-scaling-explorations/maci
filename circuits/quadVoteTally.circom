@@ -1,3 +1,5 @@
+include "./merkletree.circom";
+
 template QuadVoteTally(numVoteOptions, numUsers) {
     // Each element in `voteLeaves` is an array of the square roots of a user's
     // voice credits per option.

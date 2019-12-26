@@ -61,13 +61,24 @@ describe('MerkleTree', () => {
   let hasherContract
   let merkleTreeContract
   let merkleTreeJS
-  let circuitDef
-  let circuit
+  let mtInsertCircuit
+  let mtLeafExistsCircuit
 
   before('Setup Hasher Library', async () => {
     hasherContract = await hasherFactory.deploy()
-    circuitDef = await compiler(path.join(__dirname, '../test/merkleTreeInsert_test.circom'))
-    circuit = new Circuit(circuitDef)
+
+    // Load circuits
+    mtInsertCircuit = new Circuit(
+      await compiler(path.join(__dirname, '../test/merkleTreeInsert_test.circom'))
+    )
+
+    mtLeafExistsCircuit = new Circuit(
+      await compiler(path.join(__dirname, '../test/merkleTreeLeafExists_test.circom'))
+    )
+
+    mtCheckRootCircuit = new Circuit(
+      await compiler(path.join(__dirname, '../test/merkleTreeCheckRoot_test.circom'))
+    )
   })
 
   beforeEach('Setup contract for each test', async () => {
@@ -97,113 +108,153 @@ describe('MerkleTree', () => {
   })
 
   it('#Insert', async () => {
+    let i = 0
+    let leaves = []
+    for (let n in ns) {
+      const h = merkleTreeJS.hash(n)
+      leaves.push(h)
+
+      await merkleTreeContract.insert(h.toString())
+      merkleTreeJS.insert(h)
+
+      // Test the merkle tree insertion circuit
+      const mtInsertProof = stringifyBigInts(merkleTreeJS.getPathInsert())
+      const mtInsertCircuitInputs = {
+        'leaf': h,
+        'zeros[0]': mtInsertProof[0][0],
+        'zeros[1]': mtInsertProof[0][1],
+        'zeros[2]': mtInsertProof[0][2],
+        'zeros[3]': mtInsertProof[0][3],
+        'filled_sub_trees[0]': mtInsertProof[1][0],
+        'filled_sub_trees[1]': mtInsertProof[1][1],
+        'filled_sub_trees[2]': mtInsertProof[1][2],
+        'filled_sub_trees[3]': mtInsertProof[1][3],
+        'path_index[0]': mtInsertProof[2][0],
+        'path_index[1]': mtInsertProof[2][1],
+        'path_index[2]': mtInsertProof[2][2],
+        'path_index[3]': mtInsertProof[2][3],
+        'root': stringifyBigInts(merkleTreeJS.root),
+      }
+      const mtInsertWitness = mtInsertCircuit.calculateWitness(mtInsertCircuitInputs)
+      assert.equal(mtInsertWitness[mtInsertCircuit.getSignalIdx('main.root')], merkleTreeJS.root)
+
+      const mtUpdateProof = stringifyBigInts(merkleTreeJS.getPathUpdate(i))
+      // Test the leaf existence circuit
+      const mtLeafExistsInputs = {
+        'leaf': h,
+        'path_elements[0]': mtUpdateProof[0][0],
+        'path_elements[1]': mtUpdateProof[0][1],
+        'path_elements[2]': mtUpdateProof[0][2],
+        'path_elements[3]': mtUpdateProof[0][3],
+        'path_index[0]': mtUpdateProof[1][0],
+        'path_index[1]': mtUpdateProof[1][1],
+        'path_index[2]': mtUpdateProof[1][2],
+        'path_index[3]': mtUpdateProof[1][3],
+        'root': stringifyBigInts(merkleTreeJS.root),
+      }
+      const mtLeafExistsWitness = mtLeafExistsCircuit.calculateWitness(mtLeafExistsInputs)
+      assert.equal(mtLeafExistsWitness[mtLeafExistsCircuit.getSignalIdx('main.root')], merkleTreeJS.root)
+
+      i++
+    }
+
+    // Compare the leaves stored in the contract with those in merkleTreeJS
+    for (let i = 0; i < ns.length; i++) {
+      const leaf = await merkleTreeContract.getLeafAt(i.toString())
+      assert.equal(merkleTreeJS.leaves[i].toString(), leaf.toString())
+    }
+
+
+    const mtCheckRootInputs = {
+    }
+
+    for (let i = 0; i < merkleTreeJS.leaves.length; i++) {
+      mtCheckRootInputs['leaves[' + i + ']'] = stringifyBigInts(merkleTreeJS.leaves[i])
+    }
+
+    for (let i = merkleTreeJS.leaves.length; i < 2 ** merkleTreeJS.leaves.length; i++) {
+      mtCheckRootInputs['leaves[' + i + ']'] = '0'
+    }
+
+    const mtCheckRootWitness = mtCheckRootCircuit.calculateWitness(mtCheckRootInputs)
+
+    assert.equal(
+      mtCheckRootWitness[mtCheckRootCircuit.getSignalIdx('main.root')].toString(),
+      merkleTreeJS.root.toString()
+    )
+  })
+
+  it('#Update', async () => {
+    for (let n in ns) {
+      const h = merkleTreeJS.hash(n)
+
+      await merkleTreeContract.insert(h.toString())
+      merkleTreeJS.insert(h)
+    }
+
+    const leafIndex = 1
+    const newLeafRawValue = [1n, 2n, 3n, 4n, 5n]
+    const newLeafValue = merkleTreeJS.hash(newLeafRawValue)
+
+    // eslint-disable-next-line
+    const [path, _] = merkleTreeJS.getPathUpdate(leafIndex)
+    await merkleTreeContract.update(
+      leafIndex,
+      newLeafValue.toString(),
+      path.map(x => x.toString())
+    )
+    merkleTreeJS.update(leafIndex, newLeafValue)
+
+    const newRoot = await merkleTreeContract.getRoot()
+    assert.equal(merkleTreeJS.root.toString(), newRoot.toString())
+  })
+
+  it('#InvalidUpdate', async () => {
+    for (let n in ns) {
+      const h = merkleTreeJS.hash(n)
+
+      await merkleTreeContract.insert(h.toString())
+      merkleTreeJS.insert(h)
+    }
+
+    let caught = false
+    try {
+      // eslint-disable-next-line
+      const [path, _] = merkleTreeJS.getPathUpdate(0)
+
+      await merkleTreeContract.update(
+        0,
+        n1.toString(),
+        path.map(x => x.toString())
+      )
+
+      // Line above should throw an exception
+      // this assertion should never be reached
+      assert.equal(true, false)
+    } catch (e) {
+      caught = true
+    }
+
+    // Ensure that the contract threw an error
+    assert.isTrue(caught)
+  })
+
+  it('#RootCalculation', async () => {
+    let contractRoot
+
+    // Make sure initial root is the same
+    contractRoot = await merkleTreeContract.getRoot()
+    assert.equal(merkleTreeJS.root.toString(), contractRoot.toString())
+
+    // Insert items and validate the root will be the same
     for (let n in ns) {
       const h = merkleTreeJS.hash(n)
 
       await merkleTreeContract.insert(h.toString())
       merkleTreeJS.insert(h)
 
-			const merkleProofData = stringifyBigInts(merkleTreeJS.getPathInsert())
-			const circuitInputs = {
-				'leaf': h,
-				'zeros[0]': merkleProofData[0][0],
-				'zeros[1]': merkleProofData[0][1],
-				'zeros[2]': merkleProofData[0][2],
-				'zeros[3]': merkleProofData[0][3],
-				'filled_sub_trees[0]': merkleProofData[1][0],
-				'filled_sub_trees[1]': merkleProofData[1][1],
-				'filled_sub_trees[2]': merkleProofData[1][2],
-				'filled_sub_trees[3]': merkleProofData[1][3],
-				'path_index[0]': merkleProofData[2][0],
-				'path_index[1]': merkleProofData[2][1],
-				'path_index[2]': merkleProofData[2][2],
-				'path_index[3]': merkleProofData[2][3],
-				'root': stringifyBigInts(merkleTreeJS.root),
-			}
-      const witness = circuit.calculateWitness(circuitInputs)
-
-      const output = witness[circuit.getSignalIdx('main.root')]
-
-			assert.equal(output, merkleTreeJS.root)
-    }
-
-    for (let i = 0; i < ns.length; i++) {
-      const leaf = await merkleTreeContract.getLeafAt(i.toString())
-      assert.equal(merkleTreeJS.leaves[i].toString(), leaf.toString())
+      contractRoot = await merkleTreeContract.getRoot()
+      assert.equal(merkleTreeJS.root.toString(), contractRoot)
     }
   })
-
-	it('#Update', async () => {
-		for (let n in ns) {
-			const h = merkleTreeJS.hash(n)
-
-			await merkleTreeContract.insert(h.toString())
-			merkleTreeJS.insert(h)
-		}
-
-		const leafIndex = 1
-		const newLeafRawValue = [1n, 2n, 3n, 4n, 5n]
-		const newLeafValue = merkleTreeJS.hash(newLeafRawValue)
-
-		// eslint-disable-next-line
-		const [path, _] = merkleTreeJS.getPathUpdate(leafIndex)
-		await merkleTreeContract.update(
-			leafIndex,
-			newLeafValue.toString(),
-			path.map(x => x.toString())
-		)
-		merkleTreeJS.update(leafIndex, newLeafValue)
-
-		const newRoot = await merkleTreeContract.getRoot()
-		assert.equal(merkleTreeJS.root.toString(), newRoot.toString())
-	})
-
-	it('#InvalidUpdate', async () => {
-		for (let n in ns) {
-			const h = merkleTreeJS.hash(n)
-
-			await merkleTreeContract.insert(h.toString())
-			merkleTreeJS.insert(h)
-		}
-
-		let caught = false
-		try {
-			// eslint-disable-next-line
-			const [path, _] = merkleTreeJS.getPathUpdate(0)
-
-			await merkleTreeContract.update(
-				0,
-				n1.toString(),
-				path.map(x => x.toString())
-			)
-
-			// Line above should throw an exception
-			// this assertion should never be reached
-			assert.equal(true, false)
-		} catch (e) {
-			caught = true
-		}
-
-		// Ensure that the contract threw an error
-		assert.isTrue(caught)
-	})
-
-	it('#RootCalculation', async () => {
-		let contractRoot
-
-		// Make sure initial root is the same
-		contractRoot = await merkleTreeContract.getRoot()
-		assert.equal(merkleTreeJS.root.toString(), contractRoot.toString())
-
-		// Insert items and validate the root will be the same
-		for (let n in ns) {
-			const h = merkleTreeJS.hash(n)
-
-			await merkleTreeContract.insert(h.toString())
-			merkleTreeJS.insert(h)
-
-			contractRoot = await merkleTreeContract.getRoot()
-			assert.equal(merkleTreeJS.root.toString(), contractRoot)
-		}
-	})
 })
