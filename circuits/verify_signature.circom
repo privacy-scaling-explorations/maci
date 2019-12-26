@@ -1,7 +1,7 @@
-include "../node_modules/circomlib/circuits/eddsamimc.circom";
+include "../node_modules/circomlib/circuits/eddsamimcsponge.circom";
 include "./hasher.circom";
 
-template VerifyEdDSAMiMC(k) {
+template VerifySignature(k) {
   signal input from_x;
   signal input from_y;
   signal input R8x;
@@ -10,17 +10,18 @@ template VerifyEdDSAMiMC(k) {
   signal private input preimage[k];
   
   component M = Hasher(k);
+  M.key <== 0;
   for (var i = 0; i < k; i++){
     M.in[i] <== preimage[i];
   }
   
-  component verifier = EdDSAMiMCVerifier();
+  component verifier = EdDSAMiMCSpongeVerifier();
 
   verifier.enabled <== 1;
   verifier.Ax <== from_x;
   verifier.Ay <== from_y;
+  verifier.S <== S;
   verifier.R8x <== R8x;
   verifier.R8y <== R8y;
-  verifier.S <== S;
   verifier.M <== M.hash;
 }

@@ -1,5 +1,5 @@
 include "./merkletree.circom";
-include "./verify_eddsamimc.circom";
+include "./verify_signature.circom";
 include "./decrypt.circom";
 
 include "./hasher.circom";
@@ -48,6 +48,7 @@ template UpdateStateTree(levels) {
 
   // Construct leaf values
   component encrypted_data_hash = Hasher(encrypted_data_length);
+  encrypted_data_hash.key <== 0;
   for (var i = 0; i < encrypted_data_length; i++) {
     encrypted_data_hash.in[i] <== encrypted_data[i];
   }
@@ -78,7 +79,7 @@ template UpdateStateTree(levels) {
   }
 
   // **** 3.2 Validate signature against existing public key **** //
-  component signature_verifier = VerifyEdDSAMiMC(message_length);
+  component signature_verifier = VerifySignature(message_length);
 
   signature_verifier.from_x <== existing_public_key[0]; // public key x
   signature_verifier.from_y <== existing_public_key[1]; // public key y

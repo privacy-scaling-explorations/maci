@@ -1,5 +1,5 @@
 const MerkleTree = artifacts.require('MerkleTree')
-const MiMC = artifacts.require('MiMC')
+const CircomLib = artifacts.require('CircomLib')
 const MACI = artifacts.require('MACI')
 const Hasher = artifacts.require('Hasher')
 const SignUpToken = artifacts.require('SignUpToken')
@@ -12,7 +12,7 @@ const coordinatorPublicKey = privateToPublicKey(coordinatorConfig.privateKey)
 
 module.exports = async (deployer) => {
   // Link MiMC with the Hasher object
-  await deployer.link(MiMC, Hasher)
+  await deployer.link(CircomLib, Hasher)
 
   // Deploy hasher
   const hasher = await deployer.deploy(Hasher)
@@ -57,7 +57,7 @@ module.exports = async (deployer) => {
 
   // Saves addresses
   global.contracts = {
-    mimcAddress: MiMC.address,
+    circomLibAddress: CircomLib.address,
     maciAddress: maci.address,
     cmdTreeAddress: cmdTree.address,
     stateTreeAddress: stateTree.address,
