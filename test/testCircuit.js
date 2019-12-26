@@ -1,7 +1,7 @@
 const path = require('path')
 const { assert } = require('chai')
 const compiler = require('circom')
-const { stringifyBigInts, unstringifyBigInts } = require('../_build/utils/helpers')
+const { stringifyBigInts } = require('../_build/utils/helpers')
 const { Circuit } = require('snarkjs')
 const { hashLeftRight } = require('../_build/utils/crypto')
 
@@ -11,13 +11,14 @@ const {
   encrypt,
   sign,
   ecdh,
-  multiHash
+  multiHash,
+  babyJubJubPrivateKey
 } = require('../_build/utils/crypto')
 
 describe('Circom Ciruits', () => {
   describe('Hasher', () => {
     it('#HashOutput', async () => {
-      const circuitDef = await compiler(path.join(__dirname, 'hashleftright_test.circom'))
+      const circuitDef = await compiler(path.join(__dirname, 'circuits', 'hashleftright_test.circom'))
       const circuit = new Circuit(circuitDef)
 
       const left = 32767n
@@ -41,7 +42,7 @@ describe('Circom Ciruits', () => {
 
   describe('Decrypt', () => {
     it('#Decryption', async () => {
-      const circuitDef = await compiler(path.join(__dirname, 'decrypt_test.circom'))
+      const circuitDef = await compiler(path.join(__dirname, 'circuits', 'decrypt_test.circom'))
       const circuit = new Circuit(circuitDef)
 
       const sk1 = randomPrivateKey()
@@ -73,7 +74,7 @@ describe('Circom Ciruits', () => {
 
   describe('Verify Signature', () => {
     it('#Verification', async () => {
-      const circuitDef = await compiler(path.join(__dirname, 'verify_signature_test.circom'))
+      const circuitDef = await compiler(path.join(__dirname, 'circuits', 'verify_signature_test.circom'))
       const circuit = new Circuit(circuitDef)
 
       const sk1 = randomPrivateKey()
@@ -111,6 +112,54 @@ describe('Circom Ciruits', () => {
         // This line shouldn't be reached
         throw new Error('Invalid signature is recognized as valid!')
       } catch (e) {}
+    })
+  })
+
+  describe('PublicKey', () => {
+    it('#KeyDerivation', async () => {
+      const circuitDef = await compiler(path.join(__dirname, 'circuits', 'publickey_derivation_test.circom'))
+      const circuit = new Circuit(circuitDef)
+
+      const sk1 = randomPrivateKey()
+      const pk1 = privateToPublicKey(sk1)
+
+      const circuitInputs = {
+        'private_key': stringifyBigInts(
+          babyJubJubPrivateKey(sk1)
+        )
+      }
+
+      const witness = circuit.calculateWitness(circuitInputs)
+
+      assert.equal(pk1[0].toString(), witness[circuit.outputIdx(0)].toString())
+      assert.equal(pk1[1].toString(), witness[circuit.outputIdx(1)].toString())
+    })
+  })
+
+  describe('Ecdh', () => {
+    it('#KeyDerivation', async () => {
+      const circuitDef = await compiler(path.join(__dirname, 'circuits', 'ecdh_test.circom'))
+      const circuit = new Circuit(circuitDef)
+
+      const sk1 = randomPrivateKey()
+      const pk1 = privateToPublicKey(sk1)
+
+      const sk2 = randomPrivateKey()
+      const pk2 = privateToPublicKey(sk2)
+
+      const sharedKey = ecdh(sk2, pk1)
+
+      const circuitInputs = {
+        'private_key': stringifyBigInts(
+          babyJubJubPrivateKey(sk1)
+        ),
+        'public_key': stringifyBigInts(pk2)
+      }
+
+      const witness = circuit.calculateWitness(circuitInputs)
+
+      const idx = circuit.outputIdx(0)
+      assert.equal(sharedKey.toString(), witness[idx].toString())
     })
   })
 })

@@ -16,7 +16,8 @@
     "circuit:generateverifier": "yarn circuit:updatestatetree:generateverifier",
     "circuit:updatestatetree:compile": "mkdir -p app/circuits && circom circuits/update_state_tree.circom -o app/circuits/update_state_tree.json",
     "circuit:updatestatetree:setup": "cd app/circuits && snarkjs setup --protocol groth -c update_state_tree.json --pk update_state_tree_proving_key.json --vk update_tree_state_verifying_key.json",
-    "circuit:updatestatetree:generateverifier": "mkdir -p contracts && cd app/circuits && snarkjs generateverifier --protocol groth --vk update_tree_state_verifying_key.json -v UpdateStateTreeVerifier.sol && mv UpdateStateTreeVerifier.sol ../../contracts/UpdateStateTreeVerifier.sol && cd ../../contracts && sed -i.bak -e \"s/Verifier/UpdateStateTreeVerifier/g\" -- UpdateStateTreeVerifier.sol && rm -- UpdateStateTreeVerifier.sol.bak"
+    "circuit:updatestatetree:generateverifier": "mkdir -p contracts && cd app/circuits && snarkjs generateverifier --protocol groth --vk update_tree_state_verifying_key.json -v UpdateStateTreeVerifier.sol && mv UpdateStateTreeVerifier.sol ../../contracts/UpdateStateTreeVerifier.sol && cd ../../contracts && sed -i.bak -e \"s/Verifier/UpdateStateTreeVerifier/g\" -- UpdateStateTreeVerifier.sol && rm -- UpdateStateTreeVerifier.sol.bak",
+    "gg": "node test/gg.js"
   },
   "dependencies": {
     "@openzeppelin/contracts": "2.4.0",
