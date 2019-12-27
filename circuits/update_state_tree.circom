@@ -51,6 +51,8 @@ template UpdateStateTree(depth, vote_options_tree_depth) {
   // the schema
   var state_tree_data_length = 5;
 
+  // Vote options tree root (supplied by coordinator)
+  signal private input vote_options_tree_root;
   signal input existing_state_tree_leaf;
   signal private input existing_state_tree_data[state_tree_data_length];
   signal input state_tree_max_leaf_index;
@@ -139,10 +141,27 @@ template UpdateStateTree(depth, vote_options_tree_depth) {
     signature_verifier.preimage[i] <== decrypted_command.out[i];
   }
 
-  // If signature valid, update root
+  // TODO: Check if user has enough vote option balance
+  // TODO: Make sure nonce is + 1
+  // decrypted_command.out[5] === existing_state_tree_data[4] + 1;
+
+  // Update root with newly constructed state leaf
+  var new_state_tree_data = [
+    decrypted_command.out[1],
+    decrypted_command.out[2],
+    vote_options_tree_root,
+    existing_state_tree_data[3] - (decrypted_command.out[4] * decrypted_command.out[4]),
+    decrypted_command.out[5]
+  ];
+
+  component new_state_tree_leaf = Hasher(state_tree_data_length);
+  new_state_tree_leaf.key <== 0;
+  for (var i = 0; i < state_tree_data_length; i++) {
+    new_state_tree_leaf.in[i] <== new_state_tree_data[i];
+  }
+
   component new_state_tree = MerkleTreeUpdate(depth);
-  // TODO: Using decrypted data, make new state_tree msg format
-  new_state_tree.leaf <== msg_hash.hash;
+  new_state_tree.leaf <== new_state_tree_leaf.hash;
   for (var i = 0; i < depth; i++) {
     new_state_tree.path_elements[i] <== state_tree_path_elements[i];
     new_state_tree.path_index[i] <== state_tree_path_index[i];

@@ -147,6 +147,7 @@ const m = async () => {
       'msg_tree_root': stringifyBigInts(msgTree.root),
       'msg_tree_path_elements': stringifyBigInts(msgTreePathElements),
       'msg_tree_path_index': stringifyBigInts(msgTreePathIndexes),
+      'vote_options_tree_root': stringifyBigInts(user1VoteOptionTree.root),
       'existing_state_tree_leaf': stringifyBigInts(existingStateTreeLeaf),
       'existing_state_tree_data': stringifyBigInts(user1ExistingStateTreeData),
       'state_tree_max_leaf_index': stringifyBigInts(stateTreeMaxIndex),
@@ -166,7 +167,22 @@ const m = async () => {
     const witness = circuit.calculateWitness(circuitInputs)
 
     const idx = circuit.getSignalIdx('main.new_state_tree_root')
-    console.log(witness[idx].toString())
+    console.log('New state root from circuit: ', witness[idx].toString())
+
+    // Update state tree leaf
+    const newStateTreeLeaf = [
+      user1Pk[0],
+      user1Pk[1],
+      user1VoteOptionTree.root,
+      125n - 25n,
+      1
+    ]
+    stateTree.update(
+      user1StateTreeIndex,
+      multiHash(newStateTreeLeaf)
+    )
+
+    console.log('New state root from JS: ', stateTree.root.toString())
   } catch (e) {
     console.log(e)
   }
