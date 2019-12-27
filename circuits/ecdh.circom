@@ -5,7 +5,6 @@ include "../node_modules/circomlib/circuits/escalarmulfix.circom";
 template EscalarMulFix_patch(n) {
   // Patch to fix EscalarMulFix
   // as BASE can't be a signal input
-
   signal input e[n];              // Input in binary format
   signal input BASE[2];
   signal output out[2];           // Point (Twisted format)
