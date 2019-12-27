@@ -6,6 +6,7 @@ const { Circuit } = require('snarkjs')
 const {
   randomPrivateKey,
   privateToPublicKey,
+  sign,
   signAndEncrypt,
   hash,
   multiHash,
@@ -62,13 +63,15 @@ const m = async () => {
     user1VoteOptionTree.insert(hash(0n))
 
     // Registers user 1
-    stateTree.insert(multiHash([
+    const user1ExistingStateTreeData = [
       user1Pk[0], // public key x
       user1Pk[1], // public key y
       user1VoteOptionTree.root, // vote option tree root
       125n, // credit balance (100 is arbitrary for now)
       0n // nonce
-    ]))
+    ]
+
+    stateTree.insert(multiHash(user1ExistingStateTreeData))
 
     const user1StateTreeIndex = stateTree.nextIndex - 1
 
@@ -87,6 +90,11 @@ const m = async () => {
       1n, // Nonce
       randomPrivateKey() // Random salt
     ]
+
+    const user1CommandSignature = sign(
+      user1Sk,
+      multiHash(user1Command)
+    )
 
     // Sign and encrypt user message
     const user1Message = signAndEncrypt(
@@ -125,12 +133,22 @@ const m = async () => {
 
     const stateTreeMaxIndex = BigInt(stateTree.nextIndex - 1)
 
+    const existingStateTreeLeaf = stateTree.leaves[user1StateTreeIndex]
+
     const circuitInputs = {
       'coordinator_public_key': stringifyBigInts(coordinatorPk),
       'message': stringifyBigInts(user1Message),
+      'command': stringifyBigInts([
+        ...user1Command,
+        user1CommandSignature.R8[0],
+        user1CommandSignature.R8[1],
+        user1CommandSignature.S
+      ]),
       'msg_tree_root': stringifyBigInts(msgTree.root),
       'msg_tree_path_elements': stringifyBigInts(msgTreePathElements),
       'msg_tree_path_index': stringifyBigInts(msgTreePathIndexes),
+      'existing_state_tree_leaf': stringifyBigInts(existingStateTreeLeaf),
+      'existing_state_tree_data': stringifyBigInts(user1ExistingStateTreeData),
       'state_tree_max_leaf_index': stringifyBigInts(stateTreeMaxIndex),
       'state_tree_root': stringifyBigInts(stateTree.root),
       'state_tree_path_elements': stringifyBigInts(stateTreePathElements),
@@ -148,7 +166,6 @@ const m = async () => {
     const witness = circuit.calculateWitness(circuitInputs)
 
     const idx = circuit.getSignalIdx('main.new_state_tree_root')
-    console.log(user1Command[6])
     console.log(witness[idx].toString())
   } catch (e) {
     console.log(e)
