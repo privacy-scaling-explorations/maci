@@ -157,9 +157,12 @@ template CheckRoot(levels) {
 
     // Circom has some perticularities which limit the code patterns we can
     // use.
-    // First of all, you can only assign a value to a signal once.
+
+    // You can only assign a value to a signal once.
+
     // A component's input signal must only be wired to another component's output
-    // signal
+    // signal.
+
     // Variables are only used for loops, declaring sizes of things, and anything
     // that is not related to inputs of a circuit.
 
