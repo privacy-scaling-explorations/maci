@@ -6,7 +6,10 @@ include "./publickey_derivation.circom"
 include "./verify_signature.circom";
 
 
-template UpdateStateTree(depth, vote_options_tree_depth) {
+template UpdateStateTree(
+  depth,
+  vote_options_tree_depth
+) {
   // params:
   //    depth: the depth of the state tree and the command tree
   //    vote_options_tree_depth: depth of the vote tree
@@ -42,19 +45,30 @@ template UpdateStateTree(depth, vote_options_tree_depth) {
   // But doesn't have the iv
   signal input command[message_length - 1];
 
-  signal input msg_tree_root;
-  signal input msg_tree_path_elements[depth];
-  signal input msg_tree_path_index[depth];
-
   // Note: State tree data length is the
   // command parsed, and then massaged to fit
   // the schema
   var state_tree_data_length = 5;
 
+  // Select vote option index's weight
+  // (a.k.a the raw value of the leaf pre-hash)
+  signal private input cur_vote_options_leaf_raw;
+
   // Vote options tree root (supplied by coordinator)
   signal private input vote_options_tree_root;
+  signal private input vote_options_tree_path_elements[vote_options_tree_depth];
+  signal private input vote_options_tree_path_index[vote_options_tree_depth];
+
+  // Message tree
+  signal input msg_tree_root;
+  signal input msg_tree_path_elements[depth];
+  signal input msg_tree_path_index[depth];
+
+  // State tree
   signal input existing_state_tree_leaf;
+
   signal private input existing_state_tree_data[state_tree_data_length];
+
   signal input state_tree_max_leaf_index;
   signal input state_tree_root;
   signal private input state_tree_path_elements[depth];
@@ -65,13 +79,14 @@ template UpdateStateTree(depth, vote_options_tree_depth) {
   signal private input random_leaf_path_elements[depth];
   signal private input random_leaf_path_index[depth];
 
-  signal private input no_op;
-
+  // Shared keys
   signal private input ecdh_private_key;
   signal input ecdh_public_key[2];
 
-  // Assert coordinator is using the correct
-  // private key
+  // Logic parameters
+  signal private input no_op;
+
+  // Check 1. Coordinator is using correct private key
   component derived_pub_key = PublicKey();
   derived_pub_key.private_key <== ecdh_private_key;
 
@@ -83,7 +98,7 @@ template UpdateStateTree(depth, vote_options_tree_depth) {
   ecdh.public_key[0] <== ecdh_public_key[0];
   ecdh.public_key[1] <== ecdh_public_key[1];
 
-  // Decrypt the message and assert the coordinator got the same
+  // Check 2. Assert decrypted messages are the same
   component decrypted_command = Decrypt(message_length - 1);
   decrypted_command.private_key <== ecdh.shared_key;
   for (var i = 0; i < message_length; i++) {
@@ -101,7 +116,7 @@ template UpdateStateTree(depth, vote_options_tree_depth) {
     msg_hash.in[i] <== message[i];
   }
 
-  // Make sure the leaf exists in the cmd tree
+  // Check 3. Make sure the leaf exists in the msg tree
   component msg_tree_leaf_exists = LeafExists(depth);
   msg_tree_leaf_exists.root <== msg_tree_root;
   msg_tree_leaf_exists.leaf <== msg_hash.hash;
@@ -110,7 +125,7 @@ template UpdateStateTree(depth, vote_options_tree_depth) {
     msg_tree_leaf_exists.path_index[i] <== msg_tree_path_index[i];
   }
 
-  // Make sure the leaf exists in the state tree
+  // Check 4. Make sure the leaf exists in the state tree
   component state_tree_valid = LeafExists(depth);
   state_tree_valid.root <== state_tree_root;
   state_tree_valid.leaf <== existing_state_tree_leaf;
@@ -119,7 +134,8 @@ template UpdateStateTree(depth, vote_options_tree_depth) {
     state_tree_valid.path_index[i] <== state_tree_path_index[i];
   }
 
-  // Make sure the hash of the data equals to the existing_state_tree_leaf
+  // Check 5. Make sure the hash of the data corresponds to the 
+  //          existing leaf in the state tree
   component existing_state_tree_leaf_hash = Hasher(state_tree_data_length);
   existing_state_tree_leaf_hash.key <== 0;
   for (var i = 0; i < state_tree_data_length; i++) {
@@ -127,7 +143,7 @@ template UpdateStateTree(depth, vote_options_tree_depth) {
   }
   existing_state_tree_leaf_hash.hash === existing_state_tree_leaf;
 
-  // Verify signature against existing public key
+  // Check 6. Verify signature against existing public key
   component signature_verifier = VerifySignature(message_length - 4);
 
   signature_verifier.from_x <== existing_state_tree_data[0]; // public key x
@@ -141,7 +157,34 @@ template UpdateStateTree(depth, vote_options_tree_depth) {
     signature_verifier.preimage[i] <== decrypted_command.out[i];
   }
 
+  // Check 7. Verify the current vote weight exists in the
+  //          user's vote_option_tree_root index
+  component vote_options_hash = Hasher(1);
+  vote_options_hash.key <== 0;
+  vote_options_hash.in[0] <== cur_vote_options_leaf_raw;
+  
+  component vote_options_tree_valid = LeafExists(vote_options_tree_depth);
+  vote_options_tree_valid.root <== vote_options_tree_root;
+  vote_options_tree_valid.leaf <== vote_options_hash.hash;
+  for (var i = 0; i < vote_options_tree_depth; i++) {
+    vote_options_tree_valid.path_elements[i] <== vote_options_tree_path_elements[i];
+    vote_options_tree_valid.path_index[i] <== vote_options_tree_path_index[i];
+  }
+
+  // Update vote_option_tree_root with newly updated vote weight
+  component new_vote_options_leaf = Hasher(1);
+  new_vote_options_leaf.key <== 0;
+  new_vote_options_leaf.in[0] <== cur_vote_options_leaf_raw + decrypted_command.out[4]
+
+  component new_vote_options_tree = MerkleTreeUpdate(vote_options_tree_depth);
+  new_vote_options_tree.leaf <== new_vote_options_leaf.hash;
+  for (var i = 0; i < vote_options_tree_depth; i++) {
+    new_vote_options_tree.path_elements[i] <== vote_options_tree_path_elements[i];
+    new_vote_options_tree.path_index[i] <== vote_options_tree_path_index[i];
+  }
+
   // TODO: Check if user has enough vote option balance
+
   // TODO: Make sure nonce is + 1
   // decrypted_command.out[5] === existing_state_tree_data[4] + 1;
 
@@ -149,7 +192,7 @@ template UpdateStateTree(depth, vote_options_tree_depth) {
   var new_state_tree_data = [
     decrypted_command.out[1],
     decrypted_command.out[2],
-    vote_options_tree_root,
+    new_vote_options_tree.root,
     existing_state_tree_data[3] - (decrypted_command.out[4] * decrypted_command.out[4]),
     decrypted_command.out[5]
   ];

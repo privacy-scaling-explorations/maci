@@ -57,7 +57,8 @@ const m = async () => {
 
     // User 1 vote option tree
     const user1VoteOptionTree = createMerkleTree(2, 0n)
-    user1VoteOptionTree.insert(hash(0n))
+    // insert first candidate with raw values
+    user1VoteOptionTree.insert(hash(1n), 1n) // Assume we've already voted for candidate 1
     user1VoteOptionTree.insert(hash(0n))
     user1VoteOptionTree.insert(hash(0n))
     user1VoteOptionTree.insert(hash(0n))
@@ -81,12 +82,14 @@ const m = async () => {
 
     // Construct user 1 command
     // Note: command is unencrypted, message is encrypted
+    const user1VoteOptionIndex = 0
+    const user1VoteOptionWeight = 5
     const user1Command = [
       BigInt(user1StateTreeIndex), // user index in state tree
       user1Pk[0], // Same public key
       user1Pk[1], // Same public key
-      0n, // Vote option index (voting for candidate 0)
-      5n, // sqrt of the number of voice credits user wishes to spend (spending 25 credit balance)
+      BigInt(user1VoteOptionIndex), // Vote option index (voting for candidate 0)
+      BigInt(user1VoteOptionWeight), // sqrt of the number of voice credits user wishes to spend (spending 25 credit balance)
       1n, // Nonce
       randomPrivateKey() // Random salt
     ]
@@ -131,6 +134,14 @@ const m = async () => {
       randomLeafPathIndexes
     ] = stateTree.getPathUpdate(0)
 
+    // Get the vote options tree path elements
+    const [
+      user1VoteOptionsPathElements,
+      user1VoteOptionsPathIndexes
+    ] = user1VoteOptionTree.getPathUpdate(user1VoteOptionIndex)
+
+    const curVoteOptionTreeLeafRaw = user1VoteOptionTree.leavesRaw[user1VoteOptionIndex]
+
     const stateTreeMaxIndex = BigInt(stateTree.nextIndex - 1)
 
     const existingStateTreeLeaf = stateTree.leaves[user1StateTreeIndex]
@@ -147,7 +158,10 @@ const m = async () => {
       'msg_tree_root': stringifyBigInts(msgTree.root),
       'msg_tree_path_elements': stringifyBigInts(msgTreePathElements),
       'msg_tree_path_index': stringifyBigInts(msgTreePathIndexes),
+      'cur_vote_options_leaf_raw': stringifyBigInts(curVoteOptionTreeLeafRaw),
       'vote_options_tree_root': stringifyBigInts(user1VoteOptionTree.root),
+      'vote_options_tree_path_elements': stringifyBigInts(user1VoteOptionsPathElements),
+      'vote_options_tree_path_index': stringifyBigInts(user1VoteOptionsPathIndexes),
       'existing_state_tree_leaf': stringifyBigInts(existingStateTreeLeaf),
       'existing_state_tree_data': stringifyBigInts(user1ExistingStateTreeData),
       'state_tree_max_leaf_index': stringifyBigInts(stateTreeMaxIndex),
@@ -167,22 +181,28 @@ const m = async () => {
     const witness = circuit.calculateWitness(circuitInputs)
 
     const idx = circuit.getSignalIdx('main.new_state_tree_root')
-    console.log('New state root from circuit: ', witness[idx].toString())
+    console.log('New state root from circuit:\t', witness[idx].toString())
+
+    // Update user vote option tree
+    user1VoteOptionTree.update(
+      user1VoteOptionIndex,
+      hash(BigInt(curVoteOptionTreeLeafRaw) + BigInt(user1VoteOptionWeight))
+    )
 
     // Update state tree leaf
     const newStateTreeLeaf = [
       user1Pk[0],
       user1Pk[1],
       user1VoteOptionTree.root,
-      125n - 25n,
-      1
+      125n - 25n, // Vote Balance
+      1 // Nonce
     ]
     stateTree.update(
       user1StateTreeIndex,
       multiHash(newStateTreeLeaf)
     )
 
-    console.log('New state root from JS: ', stateTree.root.toString())
+    console.log('New state root from JS:\t\t', stateTree.root.toString())
   } catch (e) {
     console.log(e)
   }
