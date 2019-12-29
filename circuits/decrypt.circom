@@ -1,4 +1,4 @@
-include "./hasher.circom";
+include "../node_modules/circomlib/circuits/mimc.circom";
 include "../node_modules/circomlib/circuits/escalarmulany.circom";
 
 
@@ -13,9 +13,9 @@ template Decrypt(N) {
   component hasher[N];
 
   for(var i=0; i<N; i++) {
-    hasher[i] = Hasher(1);
-    hasher[i].in[0] <== private_key;
-    hasher[i].key <== message[0] + i;
-    out[i] <== message[i+1] - hasher[i].hash
+    hasher[i] = MiMC7(91);
+    hasher[i].x_in <== private_key;
+    hasher[i].k <== message[0] + i;
+    out[i] <== message[i+1] - hasher[i].out;
   }
 }

@@ -144,6 +144,8 @@ const m = async () => {
 
     const stateTreeMaxIndex = BigInt(stateTree.nextIndex - 1)
 
+    const user1VoteOptionsTreeMaxIndex = BigInt(stateTree.nextIndex - 1)
+
     const existingStateTreeLeaf = stateTree.leaves[user1StateTreeIndex]
 
     const circuitInputs = {
@@ -158,12 +160,13 @@ const m = async () => {
       'msg_tree_root': stringifyBigInts(msgTree.root),
       'msg_tree_path_elements': stringifyBigInts(msgTreePathElements),
       'msg_tree_path_index': stringifyBigInts(msgTreePathIndexes),
-      'cur_vote_options_leaf_raw': stringifyBigInts(curVoteOptionTreeLeafRaw),
+      'vote_options_leaf_raw': stringifyBigInts(curVoteOptionTreeLeafRaw),
       'vote_options_tree_root': stringifyBigInts(user1VoteOptionTree.root),
       'vote_options_tree_path_elements': stringifyBigInts(user1VoteOptionsPathElements),
       'vote_options_tree_path_index': stringifyBigInts(user1VoteOptionsPathIndexes),
-      'existing_state_tree_leaf': stringifyBigInts(existingStateTreeLeaf),
-      'existing_state_tree_data': stringifyBigInts(user1ExistingStateTreeData),
+      'vote_options_max_leaf_index': stringifyBigInts(user1VoteOptionsTreeMaxIndex),
+      'state_tree_leaf': stringifyBigInts(existingStateTreeLeaf),
+      'state_tree_data': stringifyBigInts(user1ExistingStateTreeData),
       'state_tree_max_leaf_index': stringifyBigInts(stateTreeMaxIndex),
       'state_tree_root': stringifyBigInts(stateTree.root),
       'state_tree_path_elements': stringifyBigInts(stateTreePathElements),
@@ -171,7 +174,7 @@ const m = async () => {
       'random_leaf': stringifyBigInts(randomPrivateKey()),
       'random_leaf_path_elements': stringifyBigInts(randomLeafPathElements),
       'random_leaf_path_index': stringifyBigInts(randomLeafPathIndexes),
-      'no_op': stringifyBigInts(0n),
+      'no_op': stringifyBigInts(1n),
       'ecdh_private_key': stringifyBigInts(
         babyJubJubPrivateKey(coordinatorSk)
       ),
