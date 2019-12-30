@@ -4,17 +4,12 @@ const compiler = require('circom')
 const { stringifyBigInts, unstringifyBigInts } = require('../_build/utils/helpers')
 const { Circuit } = require('snarkjs')
 const { hashLeftRight } = require('../_build/utils/crypto')
+const { createMerkleTree } = require('../_build/utils/merkletree')
+const { multiHash } = require('../_build/utils/crypto')
 
-const {
-  randomPrivateKey,
-  privateToPublicKey,
-  encrypt,
-  sign,
-  ecdh,
-  multiHash
-} = require('../_build/utils/crypto')
+const ZERO_VALUE = 0
 
-describe('Circom Ciruits', () => {
+describe('Quadratic vote tallying circuit', () => {
   it('CalculateTotal', async () => {
     const circuitDef = await compiler(path.join(__dirname, 'calculateTotal_test.circom'))
     const circuit = new Circuit(circuitDef)
@@ -33,44 +28,112 @@ describe('Circom Ciruits', () => {
     assert.equal(result.toString(), sum.toString())
   })
 
-  //it('QuadVoteTally', async () => {
-    //const circuitDef = await compiler(path.join(__dirname, 'quadVoteTally_test.circom'))
-    //const circuit = new Circuit(circuitDef)
+  it('QuadVoteTally', async () => {
+    // Set inputs
+    let circuitInputs = {}
 
-    //const NUM_VOTE_OPTIONS = 2
-    //const expectedResults = []
+    // as set in quadVoteTally_test.circom
+    const fullStateTreeDepth = 4
+    const intermediateStateTreeDepth = 2
+    const voteOptionTreeDepth = 3
+    const messageLength = 5
+    const numUsers = 2 ** intermediateStateTreeDepth
+    const numVoteOptions = 2 ** voteOptionTreeDepth
 
-    //const userVoteLeaves = [
-      //[0, 0], // the zero leaf, which the circuit will ignore
-      //[3, 5],
-      //[7, 11]
-    //]
+    // Generate sample votes
+    let voteLeaves = []
+    for (let i = 0; i < 2 ** fullStateTreeDepth; i++) {
+      const j = Math.round(Math.random() * 10)
+      voteLeaves.push([j, j, j, j, j, j, j, j])
+    }
 
-    //for (let i = 0; i < NUM_VOTE_OPTIONS; i++) {
-      //let subtotal = 0
-      //for (let j = 0; j < userVoteLeaves.length; j++) {
-        //subtotal += userVoteLeaves[j][i]
-      //}
-      //expectedResults.push(subtotal)
-    //}
+    const fullStateTree = createMerkleTree(fullStateTreeDepth, ZERO_VALUE)
 
-    //const circuitInputs = {
-      ////'results[0]': expectedResults[0],
-      ////'results[1]': 22, //expectedResults[1],
-      //'voteLeaves[0][0]': userVoteLeaves[0][0],
-      //'voteLeaves[0][1]': userVoteLeaves[0][1],
-      //'voteLeaves[1][0]': userVoteLeaves[1][0],
-      //'voteLeaves[1][1]': userVoteLeaves[1][1],
-      //'voteLeaves[2][0]': userVoteLeaves[2][0],
-      //'voteLeaves[2][1]': userVoteLeaves[2][1],
-    //}
+    let rawStateLeaves = []
+    let voteOptionTrees = []
 
-    //const witness = circuit.calculateWitness(circuitInputs)
-    //const result0iIdx = circuit.getSignalIdx('main.results[0]')
-    //const result1iIdx = circuit.getSignalIdx('main.results[1]')
-    //const result0 = witness[result0iIdx]
-    //const result1 = witness[result1iIdx]
+    // Populate the state tree
+    for (let i = 0; i < 2 ** fullStateTreeDepth; i++) {
 
-    //console.log(result0, result1)
-  //})
+      // Insert the vote option leaves to calculate the voteOptionRoot
+      const voteOptionMT = createMerkleTree(voteOptionTreeDepth, ZERO_VALUE)
+
+      for (let j = 0; j < voteLeaves[i].length; j++) {
+        voteOptionMT.insert(voteLeaves[i][j])
+      }
+
+      const rawStateLeaf = [0, 0, voteOptionMT.root, 0, 0]
+      rawStateLeaves.push(rawStateLeaf)
+
+      // Insert the state leaf
+      fullStateTree.insert(multiHash(rawStateLeaf))
+    }
+
+    // The batch #
+    let intermediatePathIndex = 0
+
+    // The depth at which the intermediate state tree leaves exist in the full state tree
+    const k = fullStateTreeDepth - intermediateStateTreeDepth
+
+    // The leaves of the intermediate state tree (which are the roots of each batch)
+    let intermediateLeaves = []
+    const batchSize = 2 ** intermediateStateTreeDepth
+    
+    // Compute the Merkle proof for the batch
+    const intermediateStateTree = createMerkleTree(k, ZERO_VALUE)
+
+    for (let i = 0; i < fullStateTree.leaves.length; i += batchSize) {
+      const tree = createMerkleTree(intermediateStateTreeDepth, ZERO_VALUE)
+      for (let j = 0; j < batchSize; j++) {
+        tree.insert(fullStateTree.leaves[i + j])
+      }
+      intermediateLeaves.push(tree.root)
+      intermediateStateTree.insert(tree.root)
+    }
+
+    const intermediatePathElements = intermediateStateTree.getPathUpdate(intermediatePathIndex)[0]
+
+    for (let i = 0; i < intermediatePathElements.length; i++) {
+      circuitInputs['intermediatePathElements[' + i + ']'] = stringifyBigInts(intermediatePathElements[i])
+    }
+
+    for (let i = 0; i < batchSize; i++) {
+      for (let j = 0; j < numVoteOptions; j++) {
+        circuitInputs['voteLeaves[' + i + '][' + j + ']'] = stringifyBigInts(voteLeaves[i][j])
+      }
+
+      for (let j = 0; j < messageLength; j++) {
+        circuitInputs['stateLeaves[' + i + '][' + j + ']'] = stringifyBigInts(rawStateLeaves[intermediatePathIndex * batchSize + i][j])
+      }
+    }
+
+    for (let i = 0; i < numVoteOptions; i++) {
+        circuitInputs['currentResults[' + i + ']'] = stringifyBigInts(0)
+    }
+
+    circuitInputs['fullStateRoot'] = stringifyBigInts(fullStateTree.root)
+    circuitInputs['intermediateStateRoot'] = stringifyBigInts(intermediateStateTree.leaves[intermediatePathIndex])
+    circuitInputs['intermediatePathIndex'] = stringifyBigInts(intermediatePathIndex)
+
+    // Compile circuit
+    const circuitDef = await compiler(path.join(__dirname, 'quadVoteTally_test.circom'))
+    const circuit = new Circuit(circuitDef)
+    
+    const witness = circuit.calculateWitness(circuitInputs)
+
+    for (let i = 0; i < numVoteOptions; i++) {
+      const result = witness[circuit.getSignalIdx('main.newResults[' + i + ']')]
+
+      let expected = 0
+      for (let j = 0; j < batchSize; j++){
+        if (j === 0 && intermediatePathIndex === 0) {
+          continue
+        }
+        expected += voteLeaves[j][i]
+      }
+
+      assert.equal(result.toString(), expected.toString())
+    }
+
+  })
 })

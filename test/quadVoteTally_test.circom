@@ -1,3 +1,3 @@
 include "../circuits/quadVoteTally.circom"
 
-component main = QuadVoteTally(2, 3);
+component main = QuadVoteTally(4, 2, 3);

@@ -23,6 +23,9 @@ class MerkleTree {
     // Values to create the hash values of the leaves
     // NOTE: encryptedValues contains values of the encrypted values
     this.encryptedValues = []
+
+    // TODO: WJ suggests that we separate encryption code from Merkle Tree code
+ 
     // Public keys used to decrypt the encrypted values
     // (decryption key is generated via ecdh)
     this.ecdhPublicKeys = []
