@@ -4,6 +4,13 @@ const crypto = require('crypto')
 const { bigInt } = require('snarkjs')
 const { babyJub, eddsa, mimcsponge } = require('circomlib')
 
+const bigInt2Buffer = (i: BigInt): Buffer => {
+  return Buffer.from(i.toString())
+}
+
+const buffer2BigInt = (b: Buffer): BigInt => {
+  return bigInt(parseInt(b.toString('hex'), 16))
+}
 const hash = (msg: BigInt, k: BigInt): BigInt => {
   if (k === undefined) {
     return multiHash([msg], 0n, 1)
@@ -26,6 +33,23 @@ const multiHash = (arr: Array<BigInt>, key: ?BigInt, outputs: ?number): BigInt =
   return bigInt(ret)
 }
 
+const babyJubJubPrivateKey = (priv: BigInt): BigInt => {
+  // Formats private key to be babyJubJub compatiable
+
+  // https://tools.ietf.org/html/rfc8032
+  // Because of the "buff[0] & 0xF8" part which makes sure you have a point with order that 8 divides
+  // (^ pruneBuffer)
+  // Every point in babyjubjub is of the form: aP + bH, where H has order 8 and P has a big large prime order
+  // Guaranteeing that any low order points in babyjubjub get deleted
+  // ^From Kobi
+  const sBuff = eddsa.pruneBuffer(
+    bigInt2Buffer(hash(priv))
+      .slice(0, 32)
+  )
+
+  return bigInt.leBuff2int(sBuff).shr(3)
+}
+
 const randomPrivateKey = (): BigInt => {
   const SNARK_FIELD_SIZE = BigInt('21888242871839275222246405745257275088548364400416034343698204186575808495617')
 
@@ -44,20 +68,8 @@ const randomPrivateKey = (): BigInt => {
   return rand % SNARK_FIELD_SIZE
 }
 
-const bigInt2Buffer = (i: BigInt): Buffer => {
-  return Buffer.from(i.toString())
-}
-
-const buffer2BigInt = (b: Buffer): BigInt => {
-  return bigInt(parseInt(b.toString('hex'), 16))
-}
-
 const privateToPublicKey = (sk: BigInt): [BigInt, BigInt] => {
-  const sBuff = eddsa.pruneBuffer(
-    bigInt2Buffer(hash(sk))
-      .slice(0, 32)
-  )
-  const s = bigInt.leBuff2int(sBuff).shr(3)
+  const s = babyJubJubPrivateKey(sk)
 
   return babyJub.mulPointEscalar(
     babyJub.Base8,
@@ -66,11 +78,7 @@ const privateToPublicKey = (sk: BigInt): [BigInt, BigInt] => {
 }
 
 const ecdh = (priv: BigInt, pub: Tuple<BigInt>): BigInt => {
-  const sBuff = eddsa.pruneBuffer(
-    bigInt2Buffer(hash(priv))
-      .slice(0, 32)
-  )
-  const s = bigInt.leBuff2int(sBuff).shr(3)
+  const s = babyJubJubPrivateKey(priv)
 
   return babyJub.mulPointEscalar(
     pub,
@@ -211,6 +219,7 @@ const decryptAndVerify = (
 }
 
 module.exports = {
+  babyJubJubPrivateKey,
   randomPrivateKey,
   privateToPublicKey,
   ecdh,

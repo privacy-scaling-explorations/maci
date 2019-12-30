@@ -1,6 +1,5 @@
 include "./hasher.circom";
 include "../node_modules/circomlib/circuits/escalarmulany.circom";
-include "../node_modules/circomlib/circuits/bitify.circom";
 
 
 template Decrypt(N) {
