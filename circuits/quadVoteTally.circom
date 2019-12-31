@@ -12,7 +12,8 @@ template Add() {
 
     sum <== first + second;
 
-    // TODO: should we also do range checks here? e.g. first <= sum and second <= sum?
+    // TODO: should we also do range checks here?
+    // e.g. first <= sum and second <= sum
 }
 
 // This circuit returns the sum of the inputs.
@@ -29,13 +30,18 @@ template CalculateTotal(n) {
         adders[i] = Add();
         adders[i].first <== adders[i-1].sum;
         adders[i].second <== nums[i];
+        // TODO: should we also do range checks here?
+        // e.g. nums[i] <= adders[i].sum
     }
     sum <== adders[n - 1].sum;
 }
 
 // This circuit tallies the votes from a batch of state leaves, and produces an
 // intermediate state root. 
+
 // TODO: break this circuit up in to smaller ones
+// TODO: rename the inputs so that they are more intuitive
+
 template QuadVoteTally(
     // The depth of the full state tree
     fullStateTreeDepth,
@@ -70,6 +76,7 @@ template QuadVoteTally(
     // [x, y] means x for option 0, and y for option 1.
 
     var numVoteOptions = 2 ** voteOptionTreeDepth;
+
     // `currentResults` is the vote tally of all prior batches of state leaves	
     signal output currentResults[numVoteOptions];
 
@@ -86,11 +93,12 @@ template QuadVoteTally(
 
     // --- END inputs
 
-    // --- BEGIN check the intermediate state root
+    // --- BEGIN check the full state root
 
     var i;
     var j;
 
+    // Convert the intermediate path index to bits
     component intermediatePathIndexBits = Num2Bits_strict();
     intermediatePathIndexBits.in <== intermediatePathIndex;
 
@@ -102,6 +110,10 @@ template QuadVoteTally(
         fullStateRootChecker.path_elements[i] <== intermediatePathElements[i];
         fullStateRootChecker.path_index[i] <== intermediatePathIndexBits.out[i];
     }
+
+    // --- END
+
+    // --- BEGIN check the intermediate state root
 
     component stateLeafHashers[numUsers];
     component intermediateStateRootChecker = CheckRoot(intermediateStateTreeDepth);
@@ -131,11 +143,10 @@ template QuadVoteTally(
 
     // --- BEGIN check vote tally and vote option root
 
-    // Prepare the CalculateTotal components to add up (a) the current vote
-    // tally and the votes in `voteLeaves`
-
     component voteOptionSubtotals[numVoteOptions];
 
+    // Prepare the CalculateTotal components to add up (a) the current vote
+    // tally and the votes in `voteLeaves`
     for (i=0; i < numVoteOptions; i++) {
         voteOptionSubtotals[i] = CalculateTotal(numUsers + 1);
 
