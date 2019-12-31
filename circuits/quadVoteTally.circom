@@ -35,6 +35,7 @@ template CalculateTotal(n) {
 
 // This circuit tallies the votes from a batch of state leaves, and produces an
 // intermediate state root. 
+// TODO: break this circuit up in to smaller ones
 template QuadVoteTally(
     // The depth of the full state tree
     fullStateTreeDepth,
@@ -154,12 +155,15 @@ template QuadVoteTally(
     // Otherwise, it should be voteLeaves[0][...]
 
     component mux[numVoteOptions];
-
     for (i = 0; i < numVoteOptions; i++) {
         mux[i] = Mux1();
+
+        // The selector.
+        mux[i].s <== isZero.out;
         mux[i].c[0] <== voteLeaves[0][i];
         mux[i].c[1] <== 0;
-        mux[i].s <== isZero.out;
+
+        //`mux.out` returns mux.c[0] if s == 0 and mux.c[1] otherwise
         voteOptionRootChecker[0].leaves[i] <== mux[i].out;
         voteOptionSubtotals[i].nums[0] <== mux[i].out;
     }
