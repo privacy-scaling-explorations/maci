@@ -3,7 +3,7 @@ const { assert } = require('chai')
 const compiler = require('circom')
 const { stringifyBigInts, unstringifyBigInts } = require('../_build/utils/helpers')
 const { Circuit } = require('snarkjs')
-const { hashLeftRight } = require('../_build/utils/crypto')
+const { hashLeftRight, randomPrivateKey } = require('../_build/utils/crypto')
 const { createMerkleTree } = require('../_build/utils/merkletree')
 const { multiHash } = require('../_build/utils/crypto')
 
@@ -39,6 +39,8 @@ describe('Quadratic vote tallying circuit', () => {
     const messageLength = 5
     const numUsers = 2 ** intermediateStateTreeDepth
     const numVoteOptions = 2 ** voteOptionTreeDepth
+
+    const salt = randomPrivateKey()
 
     // The depth at which the intermediate state tree leaves exist in the full state tree
     const k = fullStateTreeDepth - intermediateStateTreeDepth
@@ -120,6 +122,7 @@ describe('Quadratic vote tallying circuit', () => {
       circuitInputs['fullStateRoot'] = stringifyBigInts(fullStateTree.root)
       circuitInputs['intermediateStateRoot'] = stringifyBigInts(intermediateStateTree.leaves[intermediatePathIndex])
       circuitInputs['intermediatePathIndex'] = stringifyBigInts(intermediatePathIndex)
+      circuitInputs['salt'] = stringifyBigInts(salt)
 
       // Compile circuit
       const circuitDef = await compiler(path.join(__dirname, 'quadVoteTally_test.circom'))
@@ -127,19 +130,24 @@ describe('Quadratic vote tallying circuit', () => {
 
       const witness = circuit.calculateWitness(circuitInputs)
 
+      let expected = []
       for (let i = 0; i < numVoteOptions; i++) {
-        const result = witness[circuit.getSignalIdx('main.newResults[' + i + ']')]
 
-        let expected = 0
+        let subtotal = 0
         for (let j = 0; j < batchSize; j++){
           if (j === 0 && intermediatePathIndex === 0) {
             continue
           }
-          expected += voteLeaves[intermediatePathIndex * batchSize + j][i]
+          subtotal += voteLeaves[intermediatePathIndex * batchSize + j][i]
         }
 
-        assert.equal(result.toString(), expected.toString())
+        expected.push(subtotal)
+
       }
+
+      const result = witness[circuit.getSignalIdx('main.newResultsCommitment')]
+      const expectedCommitment = multiHash([...expected, salt])
+      assert.equal(result.toString(), expectedCommitment.toString())
     }
 
   })

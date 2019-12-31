@@ -78,10 +78,13 @@ template QuadVoteTally(
     var numVoteOptions = 2 ** voteOptionTreeDepth;
 
     // `currentResults` is the vote tally of all prior batches of state leaves	
-    signal output currentResults[numVoteOptions];
+    signal input currentResults[numVoteOptions];
 
-    /*// `newResults` is the vote tally of this batch of state leaves*/
-    signal output newResults[numVoteOptions];
+    // `newResults` is the vote tally of this batch of state leaves
+    signal output newResultsCommitment;
+
+    // The salt to hash with the computed results in order to produce newResultsCommitment
+    signal private input salt;
 
     // The batch of state leaves to tally
     var messageLength = 5;
@@ -198,7 +201,13 @@ template QuadVoteTally(
         voteOptionRootChecker[i].root === stateLeaves[i][2];
     }
 
+    component newResultsCommitmentHasher = Hasher(numVoteOptions + 1);
+
+    newResultsCommitmentHasher.key <== 0;
+    newResultsCommitmentHasher.in[numVoteOptions] <== salt;
     for (i = 0; i < numVoteOptions; i++) {
-        newResults[i] <== voteOptionSubtotals[i].sum;
+        newResultsCommitmentHasher.in[i] <== voteOptionSubtotals[i].sum;
     }
+
+    newResultsCommitment <== newResultsCommitmentHasher.hash;
 }
