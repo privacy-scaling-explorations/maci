@@ -254,6 +254,14 @@ template UpdateStateTree(
   }
 
   new_state_tree_root <== new_state_tree.root;
-}
 
-// component main = UpdateStateTree(4, 2);
+  // Make sure selected_tree_hash exists in the tree
+
+  component new_state_tree_valid = LeafExists(depth);
+  new_state_tree_valid.root <== new_state_tree.root;
+  new_state_tree_valid.leaf <== selected_state_tree_hash;
+  for (var i = 0; i < depth; i++) {
+    new_state_tree_valid.path_elements[i] <== selected_state_tree_path_elements[i];
+    new_state_tree_valid.path_index[i] <== selected_state_tree_path_index[i];
+  }
+}
