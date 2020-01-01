@@ -157,7 +157,7 @@ contract MACI is Ownable, IERC721Receiver {
       uint[2] memory a,
       uint[2][2] memory b,
       uint[2] memory c,
-      uint[10] memory input
+      uint[40] memory input
     ) public view returns (bool) {
       return updateStateTreeVerifier.verifyProof(a, b, c, input);
     }

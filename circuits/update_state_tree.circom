@@ -256,7 +256,6 @@ template UpdateStateTree(
   new_state_tree_root <== new_state_tree.root;
 
   // Make sure selected_tree_hash exists in the tree
-
   component new_state_tree_valid = LeafExists(depth);
   new_state_tree_valid.root <== new_state_tree.root;
   new_state_tree_valid.leaf <== selected_state_tree_hash;
