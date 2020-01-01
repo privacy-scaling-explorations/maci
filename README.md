@@ -1,7 +1,13 @@
-# MACI
-Minimal Anti-Collusion Infrastructure
+# Minimal Anti-Collusion Infrastructure
 
-This project is based upon https://ethresear.ch/t/minimal-anti-collusion-infrastructure
+Please refer to the [implementation
+spec](./SPEC.md) for technical details, and the
+original 
+[ethresear.ch post](https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413)
+for a high-level view.
+
+We welcome contributions to this project. Please join our
+[Telegram group](https://t.me/joinchat/LUgOpE7J2gstRcZqdERyvw) to discuss.
 
 # Developing on MACI
 
