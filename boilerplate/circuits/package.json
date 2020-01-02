@@ -1,0 +1,16 @@
+{
+    "name": "maci-config",
+    "version": "1.0.0",
+    "description": "",
+    "main": "build/index.js",
+    "scripts": {
+        "watch": "tsc --watch",
+        "build": "tsc"
+    },
+    "dependencies": {},
+    "devDependencies": {
+        "@types/node": "^13.1.2",
+        "circom": "0.0.35",
+        "circomlib": "https://github.com/kobigurk/circomlib.git#347822604996bf25f659f96ee0f02810a1f71bb0"
+    }
+}
