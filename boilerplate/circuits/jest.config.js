@@ -16,9 +16,6 @@ module.exports = {
         'json',
         'node'
     ],
-    moduleNameMapper: {
-       "^@maci-contracts(.*)$": "<rootDir>./$1",
-    },
     globals: {
         'ts-jest': {
             diagnostics: {

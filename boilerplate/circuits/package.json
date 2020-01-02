@@ -5,12 +5,18 @@
     "main": "build/index.js",
     "scripts": {
         "watch": "tsc --watch",
-        "build": "tsc"
+        "build": "tsc",
+        "test": "jest"
     },
     "dependencies": {},
     "devDependencies": {
+        "@types/jest": "^24.0.25",
         "@types/node": "^13.1.2",
-        "circom": "0.0.35",
-        "circomlib": "https://github.com/kobigurk/circomlib.git#347822604996bf25f659f96ee0f02810a1f71bb0"
+        "ts-jest": "^24.2.0",
+        "jest": "^24.9.0",
+        "circom": "0.0.34",
+        "circomlib": "0.0.19",
+        "snarkjs": "https://github.com/weijiekoh/snarkjs.git#5c338cade297a32f5ed4a7bc74f5e5d3cea31abc",
+        "websnark": "0.0.5"
     }
 }
