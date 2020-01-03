@@ -11,6 +11,18 @@ We welcome contributions to this project. Please join our
 
 ## Local development and testing
 
+You should have Node 11.14.0 installed. Use
+[`nvm`](https://github.com/nvm-sh/nvm) to install it.
+
+Clone this repository, install dependencies, and build the source code:
+
+```bash
+git clone git@github.com:barryWhiteHat/maci.git && \
+npm i && \
+npm run bootstrap && \
+npm run build
+```
+
 ### Requirements
 
 ### Local development
