@@ -5,6 +5,10 @@ include "./merkletree.circom";
 include "./publickey_derivation.circom"
 include "./verify_signature.circom";
 
+include "../node_modules/circomlib/circuits/comparators.circom";
+include "../node_modules/circomlib/circuits/mux1.circom";
+include "../node_modules/circomlib/circuits/mux2.circom";
+
 
 template UpdateStateTree(
   depth,
@@ -85,6 +89,20 @@ template UpdateStateTree(
 
   // Logic parameters
   signal private input no_op;
+
+  // Check 0: Make sure max indexes are valid
+
+  // Assume that there is no more than 255 possible candidates to vote for
+  component valid_vote_options_max_leaf_index = LessEqThan(8);
+  valid_vote_options_max_leaf_index.in[0] <== vote_options_max_leaf_index;
+  valid_vote_options_max_leaf_index.in[1] <== 2 ** vote_options_tree_depth;
+  valid_vote_options_max_leaf_index.out === 1;
+
+  // Assume that there is no more than 2.1 bil users registered (32 bit)
+  component valid_state_tree_max_leaf_index = LessEqThan(32);
+  valid_state_tree_max_leaf_index.in[0] <== state_tree_max_leaf_index;
+  valid_state_tree_max_leaf_index.in[1] <== 2 ** depth;
+  valid_state_tree_max_leaf_index.out === 1;
 
   // Check 1. Coordinator is using correct private key
   component derived_pub_key = PublicKey();
@@ -201,56 +219,72 @@ template UpdateStateTree(
     new_state_tree_leaf.in[i] <== new_state_tree_data[i];
   }
 
-  // Checks to see if we should update the
-  // random leaf (Note: 0 is true, anything non-zero is false)
-  signal valid_signature;
-  valid_signature <-- signature_verifier.valid == 0 ? 0 : 1;
+  // Checks to see if we should update the random leaf
+  // Or the specified leaf
+  component valid_signature = IsZero();
+  valid_signature.in <== signature_verifier.valid;
 
-  signal sufficient_vote_credits;
-  sufficient_vote_credits <-- new_vote_credits > 0 ? 0 : 1;
+  component sufficient_vote_credits = GreaterThan(32);
+  sufficient_vote_credits.in[0] <== new_vote_credits;
+  sufficient_vote_credits.in[1] <== 0;
 
-  signal correct_nonce;
-  correct_nonce <-- decrypted_command.out[5] == (state_tree_data[4] + 1) ? 0 : 1;
+  component correct_nonce = IsEqual();
+  correct_nonce.in[0] <== decrypted_command.out[5];
+  correct_nonce.in[1] <== state_tree_data[4] + 1;
 
-  signal valid_state_leaf_index;
-  valid_state_leaf_index <-- decrypted_command.out[0] <= state_tree_max_leaf_index ? 0 : 1;
+  component valid_state_leaf_index = LessEqThan(32);
+  valid_state_leaf_index.in[0] <== decrypted_command.out[0];
+  valid_state_leaf_index.in[1] <== state_tree_max_leaf_index;
 
-  signal valid_vote_options_leaf_index;
-  valid_vote_options_leaf_index <-- decrypted_command.out[3] <= vote_options_max_leaf_index ? 0 : 1;
+  component valid_vote_options_leaf_index = LessEqThan(8);
+  valid_vote_options_leaf_index.in[0] <== decrypted_command.out[3];
+  valid_vote_options_leaf_index.in[1] <== vote_options_max_leaf_index;
 
-  signal valid_update;
-  valid_update = valid_signature + sufficient_vote_credits + correct_nonce + valid_state_leaf_index + valid_vote_options_leaf_index;
-
+  component valid_update = IsEqual();
+  valid_update.in[1] <== valid_signature.out + sufficient_vote_credits.out + correct_nonce.out + valid_state_leaf_index.out + valid_vote_options_leaf_index.out;
+  valid_update.in[0] <== 5;
 
   // If any of the above checks return false
   // We update the random leaf instead
+  component selected_state_tree_hash = Mux1();
+  selected_state_tree_hash.c[0] <== random_leaf;
+  selected_state_tree_hash.c[1] <== new_state_tree_leaf.hash;
+  selected_state_tree_hash.s <== valid_update.out;
 
-  // Note: valid_update 0 is true, 1 is false
-  signal selected_state_tree_hash;
-  selected_state_tree_hash <-- valid_update == 0 ? new_state_tree_leaf.hash : random_leaf;
-
-  signal selected_state_tree_path_elements[depth];
+  component selected_state_tree_path_elements = MultiMux1(depth);
+  selected_state_tree_path_elements.s <== valid_update.out;
   for (var i = 0; i < depth; i++) {
-    selected_state_tree_path_elements[i] <-- valid_update == 0 ? state_tree_path_elements[i] : random_leaf_path_elements[i];
+    selected_state_tree_path_elements.c[i][0] <== random_leaf_path_elements[i];
+    selected_state_tree_path_elements.c[i][1] <== state_tree_path_elements[i];
   }
 
-  signal selected_state_tree_path_index[depth];
+  component selected_state_tree_path_index = MultiMux1(depth);
+  selected_state_tree_path_index.s <== valid_update.out;
   for (var i = 0; i < depth; i++) {
-    selected_state_tree_path_index[i] <-- valid_update == 0 ? state_tree_path_index[i] : random_leaf_path_index[i];
+    selected_state_tree_path_index.c[i][0] <== random_leaf_path_index[i];
+    selected_state_tree_path_index.c[i][1] <== state_tree_path_index[i];
   }
 
-  // selected_state_tree_hash can only be the random leaf
-  // if the no_op flag is set to true (1)
-  signal no_op_valid_update;
-  no_op_valid_update <-- valid_update == 0 ? new_state_tree_leaf.hash : no_op * random_leaf;
+  // If: valid_update and no_op, then new_state_tree_leaf.hash
+  // If: valid_update and !no_op, then new_state_tree_leaf.hash
+  // If: !valid_update and no_op, then random_leaf;
+  // If: !valid_update and !no_op, then 0
+  component no_op_valid_update = Mux2();
+  no_op_valid_update.c[3] <== new_state_tree_leaf.hash;
+  no_op_valid_update.c[2] <== new_state_tree_leaf.hash;
+  no_op_valid_update.c[1] <== random_leaf;
+  no_op_valid_update.c[0] <== 0;
+
+  no_op_valid_update.s[1] <== valid_update.out;
+  no_op_valid_update.s[0] <== no_op;
   
-  selected_state_tree_hash === no_op_valid_update;
+  no_op_valid_update.out === selected_state_tree_hash.out;
 
   component new_state_tree = MerkleTreeUpdate(depth);
-  new_state_tree.leaf <== selected_state_tree_hash;
+  new_state_tree.leaf <== selected_state_tree_hash.out;
   for (var i = 0; i < depth; i++) {
-    new_state_tree.path_elements[i] <== selected_state_tree_path_elements[i];
-    new_state_tree.path_index[i] <== selected_state_tree_path_index[i];
+    new_state_tree.path_elements[i] <== selected_state_tree_path_elements.out[i];
+    new_state_tree.path_index[i] <== selected_state_tree_path_index.out[i];
   }
 
   new_state_tree_root <== new_state_tree.root;
@@ -258,9 +292,9 @@ template UpdateStateTree(
   // Make sure selected_tree_hash exists in the tree
   component new_state_tree_valid = LeafExists(depth);
   new_state_tree_valid.root <== new_state_tree.root;
-  new_state_tree_valid.leaf <== selected_state_tree_hash;
+  new_state_tree_valid.leaf <== selected_state_tree_hash.out;
   for (var i = 0; i < depth; i++) {
-    new_state_tree_valid.path_elements[i] <== selected_state_tree_path_elements[i];
-    new_state_tree_valid.path_index[i] <== selected_state_tree_path_index[i];
+    new_state_tree_valid.path_elements[i] <== selected_state_tree_path_elements.out[i];
+    new_state_tree_valid.path_index[i] <== selected_state_tree_path_index.out[i];
   }
 }
