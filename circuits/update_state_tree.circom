@@ -24,6 +24,18 @@ template UpdateStateTree(
   // Input(s)
   signal input coordinator_public_key[2];
 
+  // Indexes for convinience
+  var CMD_STATE_TREE_INDEX_IDX = 0;
+  var CMD_PUBLIC_KEY_X_IDX = 1;
+  var CMD_PUBLIC_KEY_Y_IDX = 2;
+  var CMD_VOTE_OPTION_INDEX_IDX = 3;
+  var CMD_VOTE_WEIGHT_IDX = 4;
+  var CMD_NONCE_IDX = 5;
+  var CMD_SALT_IDX = 6;
+  var CMD_SIG_R8X_IDX = 7;
+  var CMD_SIG_R8Y_IDX = 8;
+  var CMD_SIG_S_IDX = 9;
+
   // Note: message is the encrypted command
   var message_length = 11;
   /* let n = vote_options_tree_depth
@@ -52,6 +64,12 @@ template UpdateStateTree(
   // Note: State tree data length is the
   // command parsed, and then massaged to fit
   // the schema
+  var STATE_TREE_PUBLIC_KEY_X_IDX = 0;
+  var STATE_TREE_PUBLIC_KEY_Y_IDX = 1;
+  var STATE_TREE_VOTE_OPTION_TREE_ROOT_IDX = 2;
+  var STATE_TREE_VOTE_BALANCE_IDX = 3;
+  var STATE_TREE_NONCE_IDX = 4;
+
   var state_tree_data_length = 5;
 
   // Select vote option index's weight
@@ -70,8 +88,7 @@ template UpdateStateTree(
   signal input msg_tree_path_index[depth];
 
   // State tree
-  signal input state_tree_leaf;
-  signal private input state_tree_data[state_tree_data_length];
+  signal private input state_tree_data_raw[state_tree_data_length];
 
   signal input state_tree_max_leaf_index;
   signal input state_tree_root;
@@ -143,23 +160,22 @@ template UpdateStateTree(
     msg_tree_leaf_exists.path_index[i] <== msg_tree_path_index[i];
   }
 
-  // Check 4. Make sure the leaf exists in the state tree
+  // Check 4. Make sure the hash of the data corresponds to the 
+  //          existing leaf in the state tree
+  component existing_state_tree_leaf_hash = Hasher(state_tree_data_length);
+  existing_state_tree_leaf_hash.key <== 0;
+  for (var i = 0; i < state_tree_data_length; i++) {
+    existing_state_tree_leaf_hash.in[i] <== state_tree_data_raw[i];
+  }
+
   component state_tree_valid = LeafExists(depth);
   state_tree_valid.root <== state_tree_root;
-  state_tree_valid.leaf <== state_tree_leaf;
+  state_tree_valid.leaf <== existing_state_tree_leaf_hash.hash;
   for (var i = 0; i < depth; i++) {
     state_tree_valid.path_elements[i] <== state_tree_path_elements[i];
     state_tree_valid.path_index[i] <== state_tree_path_index[i];
   }
 
-  // Check 5. Make sure the hash of the data corresponds to the 
-  //          existing leaf in the state tree
-  component existing_state_tree_leaf_hash = Hasher(state_tree_data_length);
-  existing_state_tree_leaf_hash.key <== 0;
-  for (var i = 0; i < state_tree_data_length; i++) {
-    existing_state_tree_leaf_hash.in[i] <== state_tree_data[i];
-  }
-  existing_state_tree_leaf_hash.hash === state_tree_leaf;
 
   // Check 6. Verify the current vote weight exists in the
   //          user's vote_option_tree_root index
@@ -178,7 +194,7 @@ template UpdateStateTree(
   // Update vote_option_tree_root with newly updated vote weight
   component new_vote_options_leaf = Hasher(1);
   new_vote_options_leaf.key <== 0;
-  new_vote_options_leaf.in[0] <== vote_options_leaf_raw + decrypted_command.out[4]
+  new_vote_options_leaf.in[0] <== vote_options_leaf_raw + decrypted_command.out[CMD_VOTE_WEIGHT_IDX]
 
   component new_vote_options_tree = MerkleTreeUpdate(vote_options_tree_depth);
   new_vote_options_tree.leaf <== new_vote_options_leaf.hash;
@@ -190,27 +206,27 @@ template UpdateStateTree(
   // Verify signature against existing public key
   component signature_verifier = VerifySignature(message_length - 4);
 
-  signature_verifier.from_x <== state_tree_data[0]; // public key x
-  signature_verifier.from_y <== state_tree_data[1]; // public key y
+  signature_verifier.from_x <== state_tree_data_raw[STATE_TREE_PUBLIC_KEY_X_IDX]; // public key x
+  signature_verifier.from_y <== state_tree_data_raw[STATE_TREE_PUBLIC_KEY_Y_IDX]; // public key y
 
-  signature_verifier.R8x <== decrypted_command.out[message_length - 4]; // sig R8x
-  signature_verifier.R8y <== decrypted_command.out[message_length - 3]; // sig R8x
-  signature_verifier.S <== decrypted_command.out[message_length - 2]; // sig S
+  signature_verifier.R8x <== decrypted_command.out[CMD_SIG_R8X_IDX]; // sig R8x
+  signature_verifier.R8y <== decrypted_command.out[CMD_SIG_R8Y_IDX]; // sig R8x
+  signature_verifier.S <== decrypted_command.out[CMD_SIG_S_IDX]; // sig S
 
   for (var i = 0; i < message_length - 4; i++) {
     signature_verifier.preimage[i] <== decrypted_command.out[i];
   }
 
   // Calculate new vote credits
-  var new_vote_credits = state_tree_data[3] - (decrypted_command.out[4] * decrypted_command.out[4]);
+  var new_vote_credits = state_tree_data_raw[STATE_TREE_VOTE_BALANCE_IDX] - (decrypted_command.out[CMD_VOTE_WEIGHT_IDX] * decrypted_command.out[CMD_VOTE_WEIGHT_IDX]);
 
   // Construct new state tree data (and its hash)
   var new_state_tree_data = [
-    decrypted_command.out[1],
-    decrypted_command.out[2],
+    decrypted_command.out[CMD_PUBLIC_KEY_X_IDX],
+    decrypted_command.out[CMD_PUBLIC_KEY_Y_IDX],
     new_vote_options_tree.root,
     new_vote_credits,
-    decrypted_command.out[5]
+    decrypted_command.out[CMD_NONCE_IDX]
   ];
 
   component new_state_tree_leaf = Hasher(state_tree_data_length);
@@ -229,15 +245,15 @@ template UpdateStateTree(
   sufficient_vote_credits.in[1] <== 0;
 
   component correct_nonce = IsEqual();
-  correct_nonce.in[0] <== decrypted_command.out[5];
-  correct_nonce.in[1] <== state_tree_data[4] + 1;
+  correct_nonce.in[0] <== decrypted_command.out[CMD_NONCE_IDX];
+  correct_nonce.in[1] <== state_tree_data_raw[STATE_TREE_NONCE_IDX] + 1;
 
   component valid_state_leaf_index = LessEqThan(32);
-  valid_state_leaf_index.in[0] <== decrypted_command.out[0];
+  valid_state_leaf_index.in[0] <== decrypted_command.out[CMD_STATE_TREE_INDEX_IDX];
   valid_state_leaf_index.in[1] <== state_tree_max_leaf_index;
 
   component valid_vote_options_leaf_index = LessEqThan(8);
-  valid_vote_options_leaf_index.in[0] <== decrypted_command.out[3];
+  valid_vote_options_leaf_index.in[0] <== decrypted_command.out[CMD_VOTE_OPTION_INDEX_IDX];
   valid_vote_options_leaf_index.in[1] <== vote_options_max_leaf_index;
 
   component valid_update = IsEqual();
@@ -246,10 +262,10 @@ template UpdateStateTree(
 
   // If any of the above checks return false
   // We update the random leaf instead
-  component selected_state_tree_hash = Mux1();
-  selected_state_tree_hash.c[0] <== random_leaf;
-  selected_state_tree_hash.c[1] <== new_state_tree_leaf.hash;
-  selected_state_tree_hash.s <== valid_update.out;
+  component selected_state_tree_leaf = Mux1();
+  selected_state_tree_leaf.c[0] <== random_leaf;
+  selected_state_tree_leaf.c[1] <== new_state_tree_leaf.hash;
+  selected_state_tree_leaf.s <== valid_update.out;
 
   component selected_state_tree_path_elements = MultiMux1(depth);
   selected_state_tree_path_elements.s <== valid_update.out;
@@ -278,23 +294,24 @@ template UpdateStateTree(
   no_op_valid_update.s[1] <== valid_update.out;
   no_op_valid_update.s[0] <== no_op;
   
-  no_op_valid_update.out === selected_state_tree_hash.out;
+  no_op_valid_update.out === selected_state_tree_leaf.out;
 
   component new_state_tree = MerkleTreeUpdate(depth);
-  new_state_tree.leaf <== selected_state_tree_hash.out;
+  new_state_tree.leaf <== selected_state_tree_leaf.out;
   for (var i = 0; i < depth; i++) {
     new_state_tree.path_elements[i] <== selected_state_tree_path_elements.out[i];
     new_state_tree.path_index[i] <== selected_state_tree_path_index.out[i];
   }
 
-  new_state_tree_root <== new_state_tree.root;
-
   // Make sure selected_tree_hash exists in the tree
   component new_state_tree_valid = LeafExists(depth);
   new_state_tree_valid.root <== new_state_tree.root;
-  new_state_tree_valid.leaf <== selected_state_tree_hash.out;
+  new_state_tree_valid.leaf <== selected_state_tree_leaf.out;
   for (var i = 0; i < depth; i++) {
     new_state_tree_valid.path_elements[i] <== selected_state_tree_path_elements.out[i];
     new_state_tree_valid.path_index[i] <== selected_state_tree_path_index.out[i];
   }
+  
+  // Output
+  new_state_tree_root <== new_state_tree.root;
 }

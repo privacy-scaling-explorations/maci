@@ -2,8 +2,11 @@ const path = require('path')
 const compiler = require('circom')
 const { assert } = require('chai')
 const { stringifyBigInts, unstringifyBigInts } = require('../_build/utils/helpers')
-const { Circuit } = require('snarkjs')
+const { Circuit, groth } = require('snarkjs')
+const { buildBn128 } = require('websnark')
+const { binarifyWitness, binarifyProvingKey } = require('../_build/utils/binarify')
 
+const { maciContract } = require('../_build/utils/contracts')
 const {
   randomPrivateKey,
   privateToPublicKey,
@@ -23,6 +26,11 @@ const str2BigInt = s => {
     Buffer.from(s).toString('hex'), 16
   ))
 }
+
+const snarkScalarField = 21888242871839275222246405745257275088548364400416034343698204186575808495617n
+
+const updateStateTreeProvingKey = require('../_build/circuits/update_state_tree_proving_key.json')
+const updateStateTreeVerificationKey = require('../_build/circuits/update_tree_state_verifying_key.json')
 
 describe('Update State Tree Ciruit', () => {
   const user1Sk = randomPrivateKey()
@@ -148,8 +156,6 @@ describe('Update State Tree Ciruit', () => {
 
     const user1VoteOptionsTreeMaxIndex = BigInt(stateTree.nextIndex - 1)
 
-    const existingStateTreeLeaf = stateTree.leaves[user1StateTreeIndex]
-
     const circuitInputs = stringifyBigInts({
       'coordinator_public_key': coordinatorPk,
       'message': user1Message,
@@ -167,8 +173,7 @@ describe('Update State Tree Ciruit', () => {
       'vote_options_tree_path_elements': user1VoteOptionsPathElements,
       'vote_options_tree_path_index': user1VoteOptionsPathIndexes,
       'vote_options_max_leaf_index': user1VoteOptionsTreeMaxIndex,
-      'state_tree_leaf': existingStateTreeLeaf,
-      'state_tree_data': user1ExistingStateTreeData,
+      'state_tree_data_raw': user1ExistingStateTreeData,
       'state_tree_max_leaf_index': stateTreeMaxIndex,
       'state_tree_root': stateTree.root,
       'state_tree_path_elements': stateTreePathElements,
@@ -216,7 +221,9 @@ describe('Update State Tree Ciruit', () => {
 
     const circuitDef = await compiler(path.join(__dirname, 'circuits', 'update_state_tree_test.circom'))
     const circuit = new Circuit(circuitDef)
+
     const witness = circuit.calculateWitness(circuitInputs)
+    assert(circuit.checkWitness(witness))
 
     const idx = circuit.getSignalIdx('main.new_state_tree_root')
     const circuitNewStateRoot = witness[idx].toString()
@@ -244,6 +251,35 @@ describe('Update State Tree Ciruit', () => {
 
     // Make sure js generated root and circuit root is similar
     assert.equal(circuitNewStateRoot, jsNewStateRoot)
+
+    const wasmBn128 = await buildBn128()
+    const zkSnark = groth
+
+    const publicSignals = witness.slice(1, circuit.nPubInputs + circuit.nOutputs + 1)
+
+    const witnessBin = binarifyWitness(witness)
+    const updateStateTreeProvingKeyBin = binarifyProvingKey(updateStateTreeProvingKey)
+
+    const proof = await wasmBn128.groth16GenProof(
+      witnessBin,
+      updateStateTreeProvingKeyBin
+    )
+
+    const isValid = zkSnark.isValid(
+      unstringifyBigInts(updateStateTreeVerificationKey),
+      unstringifyBigInts(proof),
+      unstringifyBigInts(publicSignals)
+    )
+    assert.equal(isValid, true, 'Local Snark Proof is not valid!')
+
+    const isValidOnChain = await maciContract.verifyUpdateStateTreeProof(
+      stringifyBigInts(proof.pi_a).slice(0, 2),
+      stringifyBigInts(proof.pi_b).map(x => x.reverse()).slice(0, 2),
+      stringifyBigInts(proof.pi_c).slice(0, 2),
+      stringifyBigInts(publicSignals.map(x => x % snarkScalarField))
+    )
+
+    assert.equal(isValidOnChain, true, 'Snark Proof failed on chain verification!')
   })
 
   it('Invalid Nonce', async () => {
