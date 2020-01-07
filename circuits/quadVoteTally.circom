@@ -4,36 +4,20 @@ include "../node_modules/circomlib/circuits/comparators.circom";
 include "./merkletree.circom";
 include "./hasher.circom";
 
-// This circuit returns the sum of the two inputs
-template Add() {
-    signal input first;
-    signal input second;
-    signal output sum;
-
-    sum <== first + second;
-
-    // TODO: should we also do range checks here?
-    // e.g. first <= sum and second <= sum
-}
-
 // This circuit returns the sum of the inputs.
 // n must be greater than 0.
 template CalculateTotal(n) {
     signal input nums[n];
     signal output sum;
 
-    component adders[n];
-    adders[0] = Add();
-    adders[0].first <== 0;
-    adders[0].second <== nums[0];
+    signal sums[n];
+    sums[0] <== nums[0];
+
     for (var i=1; i < n; i++) {
-        adders[i] = Add();
-        adders[i].first <== adders[i-1].sum;
-        adders[i].second <== nums[i];
-        // TODO: should we also do range checks here?
-        // e.g. nums[i] <= adders[i].sum
+        sums[i] <== sums[i - 1] + nums[i];
     }
-    sum <== adders[n - 1].sum;
+
+    sum <== sums[n - 1];
 }
 
 // This circuit tallies the votes from a batch of state leaves, and produces an
@@ -62,7 +46,7 @@ template QuadVoteTally(
     var k = fullStateTreeDepth - intermediateStateTreeDepth;
 
     //	The Merkle path elements from `intermediateStateRoot` to `stateRoot`.
-    signal input intermediatePathElements[k];
+    signal private input intermediatePathElements[k];
 
     // The Merkle path index from `intermediateStateRoot` to `stateRoot`.
     signal input intermediatePathIndex;
@@ -78,7 +62,10 @@ template QuadVoteTally(
     var numVoteOptions = 2 ** voteOptionTreeDepth;
 
     // `currentResults` is the vote tally of all prior batches of state leaves	
-    signal input currentResults[numVoteOptions];
+    signal private input currentResults[numVoteOptions];
+
+    signal input currentResultsCommitment;
+    signal private input currentResultsSalt;
 
     // `newResults` is the vote tally of this batch of state leaves
     signal output newResultsCommitment;
@@ -92,9 +79,11 @@ template QuadVoteTally(
 
     // Each element in `voteLeaves` is an array of the square roots of a user's
     // voice credits per option.
-    signal input voteLeaves[numUsers][numVoteOptions];
+    signal private input voteLeaves[numUsers][numVoteOptions];
 
     // --- END inputs
+
+    var STATE_TREE_VOTE_OPTION_TREE_ROOT_IDX = 2;
 
     // --- BEGIN check the full state root
 
@@ -102,7 +91,7 @@ template QuadVoteTally(
     var j;
 
     // Convert the intermediate path index to bits
-    component intermediatePathIndexBits = Num2Bits_strict();
+    component intermediatePathIndexBits = Num2Bits(k);
     intermediatePathIndexBits.in <== intermediatePathIndex;
 
     // Check that the intermediate root is part of the full state tree
@@ -140,7 +129,7 @@ template QuadVoteTally(
 
     // Ensure via a constraint that the `intermediateStateRoot` is the correct
     // Merkle root of the stateLeaves passed into this snark
-    intermediateStateRoot <== intermediateStateRootChecker.root;
+    intermediateStateRoot === intermediateStateRootChecker.root;
 
     // --- END
 
@@ -163,9 +152,10 @@ template QuadVoteTally(
     // `isZero.out` is 1 only if intermediatePathIndex equals 0
     component isZero = IsZero();
     isZero.in <== intermediatePathIndex;
-    var start = isZero.out;
 
-    // If intermediatePathIndex equals 0, the first leaf should be [0, 0, ...].
+    // If intermediatePathIndex equals 0, the first leaf should be [0, 0, ...]
+    // (just zeros).
+
     // Otherwise, it should be voteLeaves[0][...]
 
     component mux[numVoteOptions];
@@ -182,7 +172,7 @@ template QuadVoteTally(
         voteOptionSubtotals[i].nums[0] <== mux[i].out;
     }
 
-    for (i = start; i < numUsers; i++) {
+    for (i = 1; i < numUsers; i++) {
         //  Note that we ignore user 0 (leaf 0 of the state tree) which
         //  only contains random data
 
@@ -198,8 +188,13 @@ template QuadVoteTally(
 
         // Check that the computed vote option tree root matches the
         // corresponding value in the state leaf
-        voteOptionRootChecker[i].root === stateLeaves[i][2];
+
+        voteOptionRootChecker[i].root === stateLeaves[i][STATE_TREE_VOTE_OPTION_TREE_ROOT_IDX];
     }
+
+    component currentResultsCommitmentHasher = Hasher(numVoteOptions + 1);
+    currentResultsCommitmentHasher.key <== 0;
+    currentResultsCommitmentHasher.in[numVoteOptions] <== currentResultsSalt;
 
     component newResultsCommitmentHasher = Hasher(numVoteOptions + 1);
 
@@ -207,7 +202,10 @@ template QuadVoteTally(
     newResultsCommitmentHasher.in[numVoteOptions] <== salt;
     for (i = 0; i < numVoteOptions; i++) {
         newResultsCommitmentHasher.in[i] <== voteOptionSubtotals[i].sum;
+        currentResultsCommitmentHasher.in[i] <== currentResults[i];
     }
+
+    currentResultsCommitment === currentResultsCommitmentHasher.hash;
 
     newResultsCommitment <== newResultsCommitmentHasher.hash;
 }

@@ -40,13 +40,13 @@ describe('Quadratic vote tallying circuit', () => {
     const numUsers = 2 ** intermediateStateTreeDepth
     const numVoteOptions = 2 ** voteOptionTreeDepth
 
-    const salt = randomPrivateKey()
-
     // The depth at which the intermediate state tree leaves exist in the full state tree
     const k = fullStateTreeDepth - intermediateStateTreeDepth
 
     // The batch #
     for (let intermediatePathIndex = 0; intermediatePathIndex < 2 ** k; intermediatePathIndex ++) {
+      const salt = randomPrivateKey()
+      const currentResultsSalt = randomPrivateKey()
 
       // Generate sample votes
       let voteLeaves = []
@@ -115,14 +115,30 @@ describe('Quadratic vote tallying circuit', () => {
         }
       }
 
+      // Calculate the commitment to the current results
+      let currentResults = []
       for (let i = 0; i < numVoteOptions; i++) {
-        circuitInputs['currentResults[' + i + ']'] = stringifyBigInts(0)
+        currentResults.push(0)
+      }
+
+      for (let i = 0; i < intermediatePathIndex * batchSize; i++) {
+        for (let j = 0; j < numVoteOptions; j++) {
+          currentResults[j] += voteLeaves[i][j]
+        }
+      }
+
+      const currentResultsCommitment = multiHash([...currentResults, currentResultsSalt])
+
+      for (let i = 0; i < numVoteOptions; i++) {
+        circuitInputs['currentResults[' + i + ']'] = stringifyBigInts(currentResults[i])
       }
 
       circuitInputs['fullStateRoot'] = stringifyBigInts(fullStateTree.root)
       circuitInputs['intermediateStateRoot'] = stringifyBigInts(intermediateStateTree.leaves[intermediatePathIndex])
       circuitInputs['intermediatePathIndex'] = stringifyBigInts(intermediatePathIndex)
       circuitInputs['salt'] = stringifyBigInts(salt)
+      circuitInputs['currentResultsSalt'] = stringifyBigInts(currentResultsSalt)
+      circuitInputs['currentResultsCommitment'] = stringifyBigInts(currentResultsCommitment)
 
       // Compile circuit
       const circuitDef = await compiler(path.join(__dirname, 'quadVoteTally_test.circom'))
@@ -133,7 +149,7 @@ describe('Quadratic vote tallying circuit', () => {
       let expected = []
       for (let i = 0; i < numVoteOptions; i++) {
 
-        let subtotal = 0
+        let subtotal = currentResults[i]
         for (let j = 0; j < batchSize; j++){
           if (j === 0 && intermediatePathIndex === 0) {
             continue
@@ -142,13 +158,11 @@ describe('Quadratic vote tallying circuit', () => {
         }
 
         expected.push(subtotal)
-
       }
 
       const result = witness[circuit.getSignalIdx('main.newResultsCommitment')]
       const expectedCommitment = multiHash([...expected, salt])
       assert.equal(result.toString(), expectedCommitment.toString())
     }
-
   })
 })
