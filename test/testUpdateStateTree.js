@@ -10,7 +10,6 @@ const { maciContract } = require('../_build/utils/contracts')
 const {
   randomPrivateKey,
   privateToPublicKey,
-  sign,
   signAndEncrypt,
   hash,
   multiHash,
@@ -42,7 +41,7 @@ describe('Update State Tree Ciruit', () => {
   const coordinatorSk = randomPrivateKey()
   const coordinatorPk = privateToPublicKey(coordinatorSk)
 
-  const getUpdateStateTreeParams = (userCmd, cmdSignOptions = {}) => {
+  const getUpdateStateTreeParams = async (userCmd, cmdSignOptions = {}) => {
     // Since there's not types here:
     // userCmd:
     /* [
@@ -55,6 +54,10 @@ describe('Update State Tree Ciruit', () => {
       [6] - Random salt
     ]
     */
+
+    // Circuit definition
+    const circuitDef = await compiler(path.join(__dirname, 'circuits', 'update_state_tree_test.circom'))
+    const circuit = new Circuit(circuitDef)
 
     // Contruct the tree(s))
     const voteOptionTree = createMerkleTree(2, 0n)
@@ -103,12 +106,6 @@ describe('Update State Tree Ciruit', () => {
     const user1VoteOptionIndex = 0
     const user1Command = userCmd
 
-    // Get signature (used as inputs to circuit)
-    const user1CommandSignature = sign(
-      cmdSignOptions.privateKey === undefined ? user1Sk : cmdSignOptions.privateKey,
-      multiHash(user1Command)
-    )
-
     // Sign and encrypt user message
     const user1Message = signAndEncrypt(
       user1Command,
@@ -138,12 +135,6 @@ describe('Update State Tree Ciruit', () => {
       stateTreePathIndexes
     ] = stateTree.getPathUpdate(user1StateTreeIndex)
 
-    // Random leaf is at index 0
-    const [
-      randomLeafPathElements,
-      randomLeafPathIndexes
-    ] = stateTree.getPathUpdate(0)
-
     // Get the vote options tree path elements
     const [
       user1VoteOptionsPathElements,
@@ -159,12 +150,6 @@ describe('Update State Tree Ciruit', () => {
     const circuitInputs = stringifyBigInts({
       'coordinator_public_key': coordinatorPk,
       'message': user1Message,
-      'command': [
-        ...user1Command,
-        user1CommandSignature.R8[0],
-        user1CommandSignature.R8[1],
-        user1CommandSignature.S
-      ],
       'msg_tree_root': msgTree.root,
       'msg_tree_path_elements': msgTreePathElements,
       'msg_tree_path_index': msgTreePathIndexes,
@@ -178,15 +163,12 @@ describe('Update State Tree Ciruit', () => {
       'state_tree_root': stateTree.root,
       'state_tree_path_elements': stateTreePathElements,
       'state_tree_path_index': stateTreePathIndexes,
-      'random_leaf': randomPrivateKey(),
-      'random_leaf_path_elements': randomLeafPathElements,
-      'random_leaf_path_index': randomLeafPathIndexes,
-      'no_op': 1n,
       'ecdh_private_key': babyJubJubPrivateKey(coordinatorSk),
       'ecdh_public_key': ephemeralPk
     })
 
     return {
+      circuit,
       circuitInputs,
       stateTree,
       msgTree,
@@ -210,17 +192,15 @@ describe('Update State Tree Ciruit', () => {
     ]
 
     const {
+      circuit,
       circuitInputs,
       stateTree,
       userVoteOptionTree
-    } = getUpdateStateTreeParams(user1Command)
+    } = await getUpdateStateTreeParams(user1Command)
 
     // Get some variables
     const user1VoteOptionTree = userVoteOptionTree
     const curVoteOptionTreeLeafRaw = user1VoteOptionTree.leavesRaw[user1VoteOptionIndex]
-
-    const circuitDef = await compiler(path.join(__dirname, 'circuits', 'update_state_tree_test.circom'))
-    const circuit = new Circuit(circuitDef)
 
     const witness = circuit.calculateWitness(circuitInputs)
     assert(circuit.checkWitness(witness))
@@ -229,18 +209,19 @@ describe('Update State Tree Ciruit', () => {
     const circuitNewStateRoot = witness[idx].toString()
 
     // Update user vote option tree
+    // (It replaces the value)
     user1VoteOptionTree.update(
       user1VoteOptionIndex,
-      hash(BigInt(curVoteOptionTreeLeafRaw) + BigInt(user1VoteOptionWeight))
+      hash(BigInt(user1VoteOptionWeight))
     )
 
-    // Update state tree leaf
+    // Update state tree leaf (refer to user1Command)
     const newStateTreeLeaf = [
       user1Pk[0], // New private key x
       user1Pk[1], // New private key y
       user1VoteOptionTree.root, // User new vote option tree
-      125n - 25n, // Vote Balance
-      1 // Nonce
+      125n + BigInt(curVoteOptionTreeLeafRaw * curVoteOptionTreeLeafRaw) - BigInt(user1VoteOptionWeight * user1VoteOptionWeight), // Vote Balance
+      1n // Nonce
     ]
     stateTree.update(
       user1StateTreeIndex,
@@ -298,37 +279,19 @@ describe('Update State Tree Ciruit', () => {
     ]
 
     const {
+      circuit,
       circuitInputs,
       stateTree
-    } = getUpdateStateTreeParams(user1Command)
+    } = await getUpdateStateTreeParams(user1Command)
 
-    // No-op for circuit
-    circuitInputs['no_op'] = 1n
-
-    const circuitDef = await compiler(path.join(__dirname, 'circuits', 'update_state_tree_test.circom'))
-    const circuit = new Circuit(circuitDef)
     const witness = circuit.calculateWitness(circuitInputs)
-
     const idx = circuit.getSignalIdx('main.new_state_tree_root')
     const circuitNewStateRoot = witness[idx].toString()
-
-    stateTree.update(
-      0,
-      unstringifyBigInts(circuitInputs['random_leaf'])
-    )
 
     const jsNewStateRoot = stateTree.root.toString()
 
     // Make sure js generated root and circuit root is similar
     assert.equal(circuitNewStateRoot, jsNewStateRoot)
-
-    // No-op for circuit
-    circuitInputs['no_op'] = 0n
-
-    try {
-      circuit.calculateWitness(circuitInputs)
-      throw new Error('Circuit should fail if no-op is false and has an invalid nonce')
-    } catch { }
   })
 
   it('Invalid Signature', async () => {
@@ -347,37 +310,18 @@ describe('Update State Tree Ciruit', () => {
     ]
 
     const {
+      circuit,
       circuitInputs,
       stateTree
-    } = getUpdateStateTreeParams(user1Command, { privateKey: randomPrivateKey() })
-
-    // No-op for circuit
-    circuitInputs['no_op'] = 1n
-
-    const circuitDef = await compiler(path.join(__dirname, 'circuits', 'update_state_tree_test.circom'))
-    const circuit = new Circuit(circuitDef)
+    } = await getUpdateStateTreeParams(user1Command, { privateKey: randomPrivateKey() })
 
     const witness = circuit.calculateWitness(circuitInputs)
     const idx = circuit.getSignalIdx('main.new_state_tree_root')
     const circuitNewStateRoot = witness[idx].toString()
 
-    stateTree.update(
-      0,
-      unstringifyBigInts(circuitInputs['random_leaf'])
-    )
-
     const jsNewStateRoot = stateTree.root.toString()
 
-    // Make sure js generated root and circuit root is similar
     assert.equal(circuitNewStateRoot, jsNewStateRoot)
-
-    // No-op for circuit
-    circuitInputs['no_op'] = 0n
-
-    try {
-      circuit.calculateWitness(circuitInputs)
-      throw new Error('Circuit should fail if no-op is false and has an invalid signature')
-    } catch { }
   })
 
   it('Insufficient Voice Credits', async () => {
@@ -396,37 +340,19 @@ describe('Update State Tree Ciruit', () => {
     ]
 
     const {
+      circuit,
       circuitInputs,
       stateTree
-    } = getUpdateStateTreeParams(user1Command)
-
-    // No-op for circuit
-    circuitInputs['no_op'] = 1n
-
-    const circuitDef = await compiler(path.join(__dirname, 'circuits', 'update_state_tree_test.circom'))
-    const circuit = new Circuit(circuitDef)
+    } = await getUpdateStateTreeParams(user1Command)
 
     const witness = circuit.calculateWitness(circuitInputs)
     const idx = circuit.getSignalIdx('main.new_state_tree_root')
     const circuitNewStateRoot = witness[idx].toString()
 
-    stateTree.update(
-      0,
-      unstringifyBigInts(circuitInputs['random_leaf'])
-    )
-
     const jsNewStateRoot = stateTree.root.toString()
 
     // Make sure js generated root and circuit root is similar
     assert.equal(circuitNewStateRoot, jsNewStateRoot)
-
-    // No-op for circuit
-    circuitInputs['no_op'] = 0n
-
-    try {
-      circuit.calculateWitness(circuitInputs)
-      throw new Error('Circuit should fail if no-op is false and has an insufficient vote credits')
-    } catch { }
   })
 
   it('Invalid State Leaf Index', async () => {
@@ -445,36 +371,18 @@ describe('Update State Tree Ciruit', () => {
     ]
 
     const {
+      circuit,
       circuitInputs,
       stateTree
-    } = getUpdateStateTreeParams(user1Command)
-
-    // No-op for circuit
-    circuitInputs['no_op'] = 1n
-
-    const circuitDef = await compiler(path.join(__dirname, 'circuits', 'update_state_tree_test.circom'))
-    const circuit = new Circuit(circuitDef)
+    } = await getUpdateStateTreeParams(user1Command)
 
     const witness = circuit.calculateWitness(circuitInputs)
     const idx = circuit.getSignalIdx('main.new_state_tree_root')
     const circuitNewStateRoot = witness[idx].toString()
 
-    stateTree.update(
-      0,
-      unstringifyBigInts(circuitInputs['random_leaf'])
-    )
-
     const jsNewStateRoot = stateTree.root.toString()
 
     // Make sure js generated root and circuit root is similar
     assert.equal(circuitNewStateRoot, jsNewStateRoot)
-
-    // Do the same for no_op
-    circuitInputs['no_op'] = 0n
-
-    try {
-      circuit.calculateWitness(circuitInputs)
-      throw new Error('Circuit should fail if no-op is false and has an invalid leaf index')
-    } catch { }
   })
 })

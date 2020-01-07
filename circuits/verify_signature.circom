@@ -1,9 +1,11 @@
 include "../node_modules/circomlib/circuits/compconstant.circom";
+include "../node_modules/circomlib/circuits/comparators.circom";
 include "../node_modules/circomlib/circuits/pointbits.circom";
 include "../node_modules/circomlib/circuits/mimcsponge.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
 include "../node_modules/circomlib/circuits/escalarmulany.circom";
 include "../node_modules/circomlib/circuits/escalarmulfix.circom";
+
 include "./hasher.circom";
 
 
@@ -90,7 +92,19 @@ template EdDSAMiMCSpongeVerifier_patched() {
   }
 
   // Valid should equal to 0 if its valid
-  valid <== (mulFix.out[0] - addRight.xout) + (mulFix.out[1] - addRight.yout);
+  component rightValid = IsEqual();
+  rightValid.in[0] <== mulFix.out[0];
+  rightValid.in[1] <== addRight.xout;
+
+  component leftValid = IsEqual();
+  leftValid.in[0] <== mulFix.out[1];
+  leftValid.in[1] <== addRight.yout;
+
+  component isValid = IsEqual();
+  isValid.in[0] <== rightValid.out + leftValid.out;
+  isValid.in[1] <== 2
+
+  valid <== isValid.out;
 }
 
 
