@@ -113,7 +113,12 @@ class MerkleTree {
 
     this.root = currentLevelHash
     this.leaves.push(leaf)
-    this.leavesRaw.push(rawValue || {})
+
+    if (rawValue === undefined) {
+      this.leavesRaw.push(null)
+    } else {
+      this.leavesRaw.push(rawValue)
+    }
   }
 
   /* Updates merkletree leaf at `leafIndex` with `newLeafValue` */
