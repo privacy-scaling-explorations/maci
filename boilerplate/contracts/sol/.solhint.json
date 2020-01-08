@@ -1,0 +1,25 @@
+{
+    "extends": "solhint:recommended",
+    "rules": {
+        "indent": [
+            "error",
+            4
+        ],
+        "bracket-align": "off",
+        "reason-string": [
+            "warn",
+            {
+                "maxLength": 128
+            }
+        ],
+        "separate-by-one-line-in-contract": "warn",
+        "no-empty-blocks": "off",
+        "compiler-fixed": "off",
+        "not-rely-on-time": "off",
+        "mark-callable-contracts": "off",
+        "compiler-version": [
+            "error",
+            "^0.5.0"
+        ]
+    }
+}
