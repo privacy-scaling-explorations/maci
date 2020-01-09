@@ -10,9 +10,16 @@ import {
 type MaciPrivKey = SnarkBigInt
 type MaciPubKey = SnarkBigInt[]
 type MaciEcdhSharedKey = SnarkBigInt
-type Ciphertext = SnarkBigInt[]
-type Plaintext = SnarkBigInt[]
-interface Signature {
+type MaciCiphertext = SnarkBigInt[]
+type MaciPlaintext = SnarkBigInt[]
+
+// TODO
+//interface MaciCiphertext {
+    //iv: SnarkBigInt,
+    //data: SnarkBigInt[],
+//}
+
+interface MaciSignature {
     R8: SnarkBigInt[],
     S: SnarkBigInt,
 }
@@ -29,18 +36,12 @@ const buffer2BigInt = (b: Buffer): BigInt => {
   return snarkjs.bigInt('0x' + b.toString('hex'))
 }
 
-const multiHash = (
-    arr: SnarkBigInt[], 
-    key?: SnarkBigInt,
-    outputs?: number
-): SnarkBigInt => {
-  const ret = mimcsponge.multiHash(arr, key, outputs)
-
-  if (Array.isArray(ret)) {
-    return ret.map((x: any): SnarkBigInt => snarkjs.bigInt(x))
-  }
-
-  return snarkjs.bigInt(ret)
+/*
+ * A convenience function for a few functions which use mimcsponge to hash one
+ * value with key 0 and require only 1 output
+ */
+const mimcspongeHashOne = (preImage: SnarkBigInt): SnarkBigInt => {
+    return mimcsponge.multiHash([preImage], 0, 1)
 }
 
 /*
@@ -72,8 +73,13 @@ const genPrivKey: MaciPrivKey = () => {
         }
     }
 
-    const unformatted = rand % SNARK_FIELD_SIZE
-    assert(unformatted < SNARK_FIELD_SIZE)
+    const privKey = rand % SNARK_FIELD_SIZE
+    assert(privKey < SNARK_FIELD_SIZE)
+
+    return privKey
+}
+
+const formatPrivKeyForBabyJub = (privKey: MaciPrivKey) => {
 
     // TODO: clarify this explanation
     // https://tools.ietf.org/html/rfc8032
@@ -84,11 +90,11 @@ const genPrivKey: MaciPrivKey = () => {
     // Guaranteeing that any low order points in babyjubjub get deleted
     const sBuff = eddsa.pruneBuffer(
         bigInt2Buffer(
-            mimcsponge.multiHash([unformatted], 0, 1)
+            mimcspongeHashOne(privKey)
         ).slice(0, 32)
     )
 
-  return snarkjs.bigInt.leBuff2int(sBuff).shr(3)
+    return snarkjs.bigInt.leBuff2int(sBuff).shr(3)
 }
 
 /*
@@ -102,7 +108,10 @@ const genPubKey = (privKey: MaciPrivKey): MaciPubKey => {
     // TODO: check whether privKey is valid (i.e. that the prune buffer step
     // worked)
 
-    const pubKey = babyJub.mulPointEscalar(babyJub.Base8, privKey)
+    const pubKey = babyJub.mulPointEscalar(
+        babyJub.Base8,
+        formatPrivKeyForBabyJub(privKey),
+    )
 
     // TODO: assert that pubKey is valid
     // TODO: figure out how to check if pubKey is valid
@@ -115,23 +124,23 @@ const genEcdhSharedKey = (
     pubKey: MaciPubKey,
 ): MaciEcdhSharedKey => {
 
-    return babyJub.mulPointEscalar(pubKey, privKey)[0]
+    return babyJub.mulPointEscalar(pubKey, formatPrivKeyForBabyJub(privKey))[0]
 }
 
 const encrypt = (
-    plaintext: Plaintext,
+    MaciPlaintext: MaciPlaintext,
     sharedKey: MaciEcdhSharedKey,
-): Ciphertext => {
+): MaciCiphertext => {
 
     // Generate the IV
-    const iv = mimcsponge.multiHash(plaintext, 0, 1)
+    const iv = mimcsponge.multiHash(MaciPlaintext, 0, 1)
 
-    // The ciphertext is an array where the 0th element is the IV, and each
+    // The MaciCiphertext is an array where the 0th element is the IV, and each
     // subsequent element is the MiMCSponge encryption of an element in the
-    // plaintext
-    const ciphertext = [
+    // MaciPlaintext
+    const MaciCiphertext = [
         iv, 
-        ...plaintext.map((e: SnarkBigInt, i: Number): SnarkBigInt => {
+        ...MaciPlaintext.map((e: SnarkBigInt, i: Number): SnarkBigInt => {
             return e + mimcsponge.multiHash(
                 [sharedKey], 
                 iv + snarkjs.bigInt(i),
@@ -141,16 +150,16 @@ const encrypt = (
     ]
 
     // TODO: add asserts here
-    return ciphertext
+    return MaciCiphertext
 }
 
 const decrypt = (
-    ciphertext: Ciphertext,
+    MaciCiphertext: MaciCiphertext,
     sharedKey: MaciEcdhSharedKey,
-): Plaintext => {
+): MaciPlaintext => {
 
-    const iv = ciphertext[0]
-    return ciphertext.slice(1).map((e: SnarkBigInt, i: Number): SnarkBigInt => {
+    const iv = MaciCiphertext[0]
+    return MaciCiphertext.slice(1).map((e: SnarkBigInt, i: Number): SnarkBigInt => {
         return e - mimcsponge.multiHash(
             [sharedKey],
             iv + snarkjs.bigInt(i),
@@ -162,10 +171,10 @@ const decrypt = (
 const sign = (
     privKey: MaciPrivKey,
     message: SnarkBigInt,
-): Signature => {
-    const h1 = bigInt2Buffer(
-        mimcsponge.multiHash([privKey], 0, 1)
-    )
+): MaciSignature => {
+
+    // TODO: make these intermediate variables have more meaningful names
+    const h1 = bigInt2Buffer(mimcspongeHashOne(privKey))
 
     const sBuff = eddsa.pruneBuffer(h1.slice(0, 32))
     const s = snarkjs.bigInt.leBuff2int(sBuff)
@@ -177,23 +186,34 @@ const sign = (
     )
 
     const rBuff = bigInt2Buffer(
-        mimcsponge.multiHash([
+        mimcspongeHashOne(
             buffer2BigInt(Buffer.concat(
                 [h1.slice(32, 64), msgBuff]
             ))
-        ], 0, 1)
+        )
     )
+
     let r = snarkjs.bigInt.leBuff2int(rBuff)
     r = r.mod(babyJub.subOrder)
+
     const R8 = babyJub.mulPointEscalar(babyJub.Base8, r)
     const hm = mimcsponge.multiHash([R8[0], R8[1], A[0], A[1], message], 0, 1)
     const S = r.add(hm.mul(s)).mod(babyJub.subOrder)
 
-    return {
-        R8: R8,
-        S: S
-    }
+    const signature: MaciSignature = { R8, S }
+
+    return signature
 }
+
+const verifySignature = (
+    message: SnarkBigInt,
+    signature: MaciSignature,
+    publicKey: MaciPubKey,
+): boolean => {
+
+  return eddsa.verifyMiMCSponge(message, signature, publicKey)
+}
+
 
 export {
     genPrivKey,
@@ -202,8 +222,9 @@ export {
     encrypt,
     decrypt,
     sign,
+    verifySignature,
     MaciPrivKey,
     MaciPubKey,
     MaciEcdhSharedKey,
-    Ciphertext,
+    MaciCiphertext,
 }

@@ -5,6 +5,7 @@ import {
     encrypt,
     decrypt,
     sign,
+    verifySignature,
 } from '../'
 
 import * as snarkjs from 'snarkjs'
@@ -80,12 +81,26 @@ describe('Cryptographic operations', () => {
     })
 
     describe('Signature generation and verification', () => {
-        const message = snarkjs.bigInt(Date.now())
+        const message = snarkjs.bigInt(
+            Math.floor(Math.random() * 100000)
+        )
         const signature = sign(privKey, message)
 
-        it ('The signature should be valid', () => {
+        it ('The signature should have the correct format', () => {
             expect(signature).toHaveProperty('R8')
             expect(signature).toHaveProperty('S')
+            expect(signature.R8[0].lt(SNARK_FIELD_SIZE)).toBeTruthy()
+            expect(signature.R8[1].lt(SNARK_FIELD_SIZE)).toBeTruthy()
+            expect(signature.S.lt(SNARK_FIELD_SIZE)).toBeTruthy()
+        })
+
+        it ('The signature should be valid', () => {
+            const valid = verifySignature(
+                message,
+                signature,
+                pubKey,
+            )
+            expect(valid).toBeTruthy()
         })
     })
 })
