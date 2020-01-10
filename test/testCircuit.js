@@ -16,6 +16,7 @@ const {
 } = require('../_build/utils/crypto')
 
 describe('Circom Ciruits', () => {
+
   describe('Hasher', () => {
     it('#HashOutput', async () => {
       const circuitDef = await compiler(path.join(__dirname, 'circuits', 'hashleftright_test.circom'))
