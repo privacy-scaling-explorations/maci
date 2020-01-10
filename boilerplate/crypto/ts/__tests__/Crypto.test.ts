@@ -1,10 +1,12 @@
 import {
     genPrivKey,
     genPubKey,
+    genKeyPair,
     genEcdhSharedKey,
     encrypt,
     decrypt,
     sign,
+    hash,
     verifySignature,
 } from '../'
 
@@ -13,10 +15,12 @@ import * as snarkjs from 'snarkjs'
 const SNARK_FIELD_SIZE = snarkjs.bigInt('21888242871839275222246405745257275088548364400416034343698204186575808495617')
 
 describe('Cryptographic operations', () => {
-    const privKey = genPrivKey()
-    const pubKey = genPubKey(privKey)
-    const privKey1 = genPrivKey()
-    const pubKey1 = genPubKey(privKey1)
+    const { privKey, pubKey } = genKeyPair()
+    const k = genKeyPair()
+
+    const privKey1 = k.privKey
+    const pubKey1 = k.pubKey
+
     const ecdhSharedKey = genEcdhSharedKey(privKey, pubKey1)
     const ecdhSharedKey1 = genEcdhSharedKey(privKey1, pubKey)
 
@@ -27,6 +31,13 @@ describe('Cryptographic operations', () => {
 
     const ciphertext = encrypt(plaintext, ecdhSharedKey)
     const decryptedCiphertext = decrypt(ciphertext, ecdhSharedKey)
+
+    describe('Hashing', () => {
+        it('The hash of a plaintext should be valid', () => {
+            const h = hash(plaintext)
+            expect(h.lt(SNARK_FIELD_SIZE)).toBeTruthy()
+        })
+    })
 
     describe('Public and private keys', () => {
         it('The private keys should be valid', () => {

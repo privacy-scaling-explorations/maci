@@ -3,24 +3,32 @@ import * as crypto from 'crypto'
 import * as snarkjs from 'snarkjs'
 import { babyJub, eddsa, mimcsponge } from 'circomlib'
 
-import {
-    SnarkBigInt,
-} from 'libsemaphore'
-
+type SnarkBigInt = snarkjs.bigInt
 type PrivKey = SnarkBigInt
 type PubKey = SnarkBigInt[]
 type EcdhSharedKey = SnarkBigInt
 type Plaintext = SnarkBigInt[]
 
-interface Ciphertext {
-    iv: SnarkBigInt,
-    data: SnarkBigInt[],
+interface KeyPair {
+    privKey: PrivKey,
+    pubKey: PubKey,
 }
 
-interface Signature {
-    R8: SnarkBigInt[],
-    S: SnarkBigInt,
+interface Ciphertext {
+    // The initialisation vector
+    iv: SnarkBigInt;
+
+    // The encrypted data
+    data: SnarkBigInt[];
 }
+
+// TODO: document what R8 and S mean
+interface Signature {
+    R8: SnarkBigInt[];
+    S: SnarkBigInt;
+}
+
+const bigInt = snarkjs.bigInt
 
 const SNARK_FIELD_SIZE = snarkjs.bigInt(
     '21888242871839275222246405745257275088548364400416034343698204186575808495617'
@@ -39,7 +47,17 @@ const buffer2BigInt = (b: Buffer): BigInt => {
  * value with key 0 and require only 1 output
  */
 const mimcspongeHashOne = (preImage: SnarkBigInt): SnarkBigInt => {
+
     return mimcsponge.multiHash([preImage], 0, 1)
+}
+
+/*
+ * A convenience function for to use mimcsponge to hash a Plaintext with
+ * key 0 and require only 1 output
+ */
+const hash = (plaintext: Plaintext): SnarkBigInt => {
+
+    return mimcsponge.multiHash(plaintext, 0, 1)
 }
 
 /*
@@ -47,16 +65,15 @@ const mimcspongeHashOne = (preImage: SnarkBigInt): SnarkBigInt => {
  * We create it by first generating a random value (initially 256 bits large)
  * modulo the snark field size as described in EIP197. This results in a key
  * size of roughly 253 bits and no more than 254 bits. To prevent modulo bias,
- * we use this efficient algorithm:
+ * we then use this efficient algorithm:
  * http://cvsweb.openbsd.org/cgi-bin/cvsweb/~checkout~/src/lib/libc/crypt/arc4random_uniform.c
- * Next, we use a 'prune buffer' technique (TODO: clarify this) to format it to
- * be compatible with BabyJubJub.
  */
 const genPrivKey: PrivKey = () => {
 
+    // Check whether we are using the correct value for SNARK_FIELD_SIZE
     assert(SNARK_FIELD_SIZE.eq(snarkjs.bn128.r))
 
-    // This algorithm prevents modulo bias
+    // Prevent modulo bias
     const min = (
         (snarkjs.bigInt(2).pow(snarkjs.bigInt(256))) - SNARK_FIELD_SIZE
     ) % SNARK_FIELD_SIZE
@@ -121,6 +138,15 @@ const genPubKey = (privKey: PrivKey): PubKey => {
     return pubKey
 }
 
+const genKeyPair = (): KeyPair => {
+    const privKey = genPrivKey()
+    const pubKey = genPubKey(privKey)
+
+    const keypair: KeyPair = { privKey, pubKey }
+
+    return keypair
+}
+
 /*
  * Generates an Elliptic-curve Diffie–Hellman shared key given a private key
  * and a public key.
@@ -170,13 +196,15 @@ const decrypt = (
     sharedKey: EcdhSharedKey,
 ): Plaintext => {
 
-    const plaintext: Plaintext = ciphertext.data.map((e: SnarkBigInt, i: Number): SnarkBigInt => {
-        return e - mimcsponge.multiHash(
-            [sharedKey],
-            ciphertext.iv + snarkjs.bigInt(i),
-            1,
-        )
-    })
+    const plaintext: Plaintext = ciphertext.data.map(
+        (e: SnarkBigInt, i: Number): SnarkBigInt => {
+            return e - mimcsponge.multiHash(
+                [sharedKey],
+                ciphertext.iv + snarkjs.bigInt(i),
+                1,
+            )
+        }
+    )
 
     return plaintext
 }
@@ -187,18 +215,20 @@ const decrypt = (
  */
 const sign = (
     privKey: PrivKey,
-    message: Plaintext,
+    plaintext: Plaintext,
 ): Signature => {
 
     // TODO: make these intermediate variables have more meaningful names
     const h1 = bigInt2Buffer(mimcspongeHashOne(privKey))
 
+    // TODO: document these steps
     const sBuff = eddsa.pruneBuffer(h1.slice(0, 32))
     const s = snarkjs.bigInt.leBuff2int(sBuff)
     const A = babyJub.mulPointEscalar(babyJub.Base8, s.shr(3))
 
+    debugger
     const msgBuff = snarkjs.bigInt.leInt2Buff(
-        message,
+        plaintext,
         32
     )
 
@@ -214,7 +244,7 @@ const sign = (
     r = r.mod(babyJub.subOrder)
 
     const R8 = babyJub.mulPointEscalar(babyJub.Base8, r)
-    const hm = mimcsponge.multiHash([R8[0], R8[1], A[0], A[1], message], 0, 1)
+    const hm = mimcsponge.multiHash([R8[0], R8[1], A[0], A[1], plaintext], 0, 1)
     const S = r.add(hm.mul(s)).mod(babyJub.subOrder)
 
     const signature: Signature = { R8, S }
@@ -228,26 +258,30 @@ const sign = (
  * @return True if the signature is valid, and false otherwise.
  */
 const verifySignature = (
-    message: Plaintext,
+    plaintext: Plaintext,
     signature: Signature,
-    publicKey: PubKey,
+    pubKey: PubKey,
 ): boolean => {
 
-  return eddsa.verifyMiMCSponge(message, signature, publicKey)
+  return eddsa.verifyMiMCSponge(plaintext, signature, pubKey)
 }
 
-
 export {
+    SnarkBigInt,
     genPrivKey,
     genPubKey,
+    genKeyPair,
     genEcdhSharedKey,
     encrypt,
     decrypt,
     sign,
+    hash,
     verifySignature,
     PrivKey,
     PubKey,
+    KeyPair,
     EcdhSharedKey,
     Ciphertext,
     Plaintext,
+    bigInt,
 }

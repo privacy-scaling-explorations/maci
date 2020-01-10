@@ -2,7 +2,8 @@
   "packages": [
     "contracts",
     "circuits",
-    "crypto"
+    "crypto",
+    "domainobjs"
   ],
   "version": "0.0.1",
   "npmClient": "npm"
