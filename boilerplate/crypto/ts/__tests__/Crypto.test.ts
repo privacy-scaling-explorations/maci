@@ -29,12 +29,12 @@ describe('Cryptographic operations', () => {
     const decryptedCiphertext = decrypt(ciphertext, ecdhSharedKey)
 
     describe('Public and private keys', () => {
-        it('Private keys should be valid', () => {
+        it('The private keys should be valid', () => {
             expect(privKey.lt(SNARK_FIELD_SIZE)).toBeTruthy()
             // TODO: add tests to ensure that the prune buffer step worked
         })
 
-        it('Public keys should be valid', () => {
+        it('The public keys should be valid', () => {
             // TODO: Figure out if these checks are correct and enough
             expect(pubKey[0].lt(SNARK_FIELD_SIZE)).toBeTruthy()
             expect(pubKey[1].lt(SNARK_FIELD_SIZE)).toBeTruthy()
@@ -43,39 +43,57 @@ describe('Cryptographic operations', () => {
 
     describe('ECDH shared key generation', () => {
 
-        it ('Shared keys should match', () => {
+        it ('The shared keys should match', () => {
             expect(ecdhSharedKey.toString()).toEqual(ecdhSharedKey1.toString())
         })
 
-        it ('Shared keys should be valid', () => {
+        it ('The shared keys should be valid', () => {
             // TODO: Figure out if this check is correct and enough
             expect(ecdhSharedKey.lt(SNARK_FIELD_SIZE)).toBeTruthy()
         })
     })
 
     describe('Encryption and decryption', () => {
-        it ('Ciphertext should be of the correct format', () => {
-            expect(ciphertext).toHaveLength(plaintext.length + 1)
+        it ('The ciphertext should be of the correct format', () => {
+            expect(ciphertext).toHaveProperty('iv')
+            expect(ciphertext).toHaveProperty('data')
+            expect(ciphertext.data).toHaveLength(plaintext.length)
         })
 
-        it ('Ciphertext should differ from the plaintext', () => {
+        it ('The ciphertext should differ from the plaintext', () => {
             expect.assertions(plaintext.length)
             for (let i = 0; i < plaintext.length; i++) {
                 expect(plaintext[i] !== ciphertext[i+1]).toBeTruthy()
             }
         })
 
-        it ('Ciphertext should be valid', () => {
-            for (let i = 0; i < ciphertext.length; i++) {
+        it ('The ciphertext should be valid', () => {
+            expect(ciphertext.iv.lt(SNARK_FIELD_SIZE)).toBeTruthy()
+            for (let i = 0; i < ciphertext.data.length; i++) {
                 // TODO: Figure out if this check is correct and enough
-                expect(ciphertext[i].lt(SNARK_FIELD_SIZE)).toBeTruthy()
+                expect(ciphertext.data[i].lt(SNARK_FIELD_SIZE)).toBeTruthy()
             }
         })
 
         it ('The decrypted ciphertext should be correct', () => {
             expect.assertions(decryptedCiphertext.length)
+
             for (let i = 0; i < decryptedCiphertext.length; i++) {
                 expect(decryptedCiphertext[i]).toEqual(plaintext[i])
+            }
+        })
+
+        it ('The plaintext should be incorrect if decrypted with a different key', () => {
+            const sk = privKey + snarkjs.bigInt(1)
+            const pk = genPubKey(sk)
+            const differentKey = genEcdhSharedKey(sk, pk)
+
+            const invalidPlaintext = decrypt(ciphertext, differentKey)
+
+            expect.assertions(invalidPlaintext.length)
+
+            for (let i = 0; i < decryptedCiphertext.length; i++) {
+                expect(invalidPlaintext[i].eq(plaintext[i])).toBeFalsy()
             }
         })
     })
@@ -101,6 +119,36 @@ describe('Cryptographic operations', () => {
                 pubKey,
             )
             expect(valid).toBeTruthy()
+        })
+
+        it ('The signature should be invalid for a different message', () => {
+            const valid = verifySignature(
+                message + snarkjs.bigInt(1),
+                signature,
+                pubKey,
+            )
+            expect(valid).toBeFalsy()
+        })
+
+        it ('The signature should be invalid if tampered with', () => {
+            const valid = verifySignature(
+                message,
+                {
+                    R8: signature.R8,
+                    S: signature.S + snarkjs.bigInt(1),
+                },
+                pubKey,
+            )
+            expect(valid).toBeFalsy()
+        })
+
+        it ('The signature should be invalid for a different public key', () => {
+            const valid = verifySignature(
+                message,
+                signature,
+                pubKey1,
+            )
+            expect(valid).toBeFalsy()
         })
     })
 })

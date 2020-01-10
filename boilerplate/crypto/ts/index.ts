@@ -7,19 +7,17 @@ import {
     SnarkBigInt,
 } from 'libsemaphore'
 
-type MaciPrivKey = SnarkBigInt
-type MaciPubKey = SnarkBigInt[]
-type MaciEcdhSharedKey = SnarkBigInt
-type MaciCiphertext = SnarkBigInt[]
-type MaciPlaintext = SnarkBigInt[]
+type PrivKey = SnarkBigInt
+type PubKey = SnarkBigInt[]
+type EcdhSharedKey = SnarkBigInt
+type Plaintext = SnarkBigInt[]
 
-// TODO
-//interface MaciCiphertext {
-    //iv: SnarkBigInt,
-    //data: SnarkBigInt[],
-//}
+interface Ciphertext {
+    iv: SnarkBigInt,
+    data: SnarkBigInt[],
+}
 
-interface MaciSignature {
+interface Signature {
     R8: SnarkBigInt[],
     S: SnarkBigInt,
 }
@@ -54,7 +52,7 @@ const mimcspongeHashOne = (preImage: SnarkBigInt): SnarkBigInt => {
  * Next, we use a 'prune buffer' technique (TODO: clarify this) to format it to
  * be compatible with BabyJubJub.
  */
-const genPrivKey: MaciPrivKey = () => {
+const genPrivKey: PrivKey = () => {
 
     assert(SNARK_FIELD_SIZE.eq(snarkjs.bn128.r))
 
@@ -79,7 +77,11 @@ const genPrivKey: MaciPrivKey = () => {
     return privKey
 }
 
-const formatPrivKeyForBabyJub = (privKey: MaciPrivKey) => {
+/*
+ * An internal function which formats a random private key to be compatible
+ * with the BabyJub curve.
+ */
+const formatPrivKeyForBabyJub = (privKey: PrivKey) => {
 
     // TODO: clarify this explanation
     // https://tools.ietf.org/html/rfc8032
@@ -101,7 +103,7 @@ const formatPrivKeyForBabyJub = (privKey: MaciPrivKey) => {
  * @param privKey A private key generated using genPrivKey()
  * @return A public key associated with the private key
  */
-const genPubKey = (privKey: MaciPrivKey): MaciPubKey => {
+const genPubKey = (privKey: PrivKey): PubKey => {
     // Check whether privKey is a field element
     assert(privKey < SNARK_FIELD_SIZE)
 
@@ -119,59 +121,74 @@ const genPubKey = (privKey: MaciPrivKey): MaciPubKey => {
     return pubKey
 }
 
+/*
+ * Generates an Elliptic-curve Diffie–Hellman shared key given a private key
+ * and a public key.
+ * @return The ECDH shared key.
+ */
 const genEcdhSharedKey = (
-    privKey: MaciPrivKey,
-    pubKey: MaciPubKey,
-): MaciEcdhSharedKey => {
+    privKey: PrivKey,
+    pubKey: PubKey,
+): EcdhSharedKey => {
 
     return babyJub.mulPointEscalar(pubKey, formatPrivKeyForBabyJub(privKey))[0]
 }
 
+/*
+ * Encrypts a plaintext using a given key.
+ * @return The ciphertext.
+ */
 const encrypt = (
-    MaciPlaintext: MaciPlaintext,
-    sharedKey: MaciEcdhSharedKey,
-): MaciCiphertext => {
+    plaintext: Plaintext,
+    sharedKey: EcdhSharedKey,
+): Ciphertext => {
 
     // Generate the IV
-    const iv = mimcsponge.multiHash(MaciPlaintext, 0, 1)
+    const iv = mimcsponge.multiHash(plaintext, 0, 1)
 
-    // The MaciCiphertext is an array where the 0th element is the IV, and each
-    // subsequent element is the MiMCSponge encryption of an element in the
-    // MaciPlaintext
-    const MaciCiphertext = [
-        iv, 
-        ...MaciPlaintext.map((e: SnarkBigInt, i: Number): SnarkBigInt => {
+    const ciphertext: Ciphertext = {
+        iv,
+        data: plaintext.map((e: SnarkBigInt, i: Number): SnarkBigInt => {
             return e + mimcsponge.multiHash(
                 [sharedKey], 
                 iv + snarkjs.bigInt(i),
                 1,
             )
-        })
-    ]
+        }),
+    }
 
     // TODO: add asserts here
-    return MaciCiphertext
+    return ciphertext
 }
 
+/*
+ * Decrypts a ciphertext using a given key.
+ * @return The plaintext.
+ */
 const decrypt = (
-    MaciCiphertext: MaciCiphertext,
-    sharedKey: MaciEcdhSharedKey,
-): MaciPlaintext => {
+    ciphertext: Ciphertext,
+    sharedKey: EcdhSharedKey,
+): Plaintext => {
 
-    const iv = MaciCiphertext[0]
-    return MaciCiphertext.slice(1).map((e: SnarkBigInt, i: Number): SnarkBigInt => {
+    const plaintext: Plaintext = ciphertext.data.map((e: SnarkBigInt, i: Number): SnarkBigInt => {
         return e - mimcsponge.multiHash(
             [sharedKey],
-            iv + snarkjs.bigInt(i),
+            ciphertext.iv + snarkjs.bigInt(i),
             1,
         )
     })
+
+    return plaintext
 }
 
+/*
+ * Generates a signature given a private key and plaintext.
+ * @return The signature.
+ */
 const sign = (
-    privKey: MaciPrivKey,
-    message: SnarkBigInt,
-): MaciSignature => {
+    privKey: PrivKey,
+    message: Plaintext,
+): Signature => {
 
     // TODO: make these intermediate variables have more meaningful names
     const h1 = bigInt2Buffer(mimcspongeHashOne(privKey))
@@ -200,15 +217,20 @@ const sign = (
     const hm = mimcsponge.multiHash([R8[0], R8[1], A[0], A[1], message], 0, 1)
     const S = r.add(hm.mul(s)).mod(babyJub.subOrder)
 
-    const signature: MaciSignature = { R8, S }
+    const signature: Signature = { R8, S }
 
     return signature
 }
 
+/*
+ * Checks whether the signature of the given plaintext was created using the
+ * private key associated with the given public key.
+ * @return True if the signature is valid, and false otherwise.
+ */
 const verifySignature = (
-    message: SnarkBigInt,
-    signature: MaciSignature,
-    publicKey: MaciPubKey,
+    message: Plaintext,
+    signature: Signature,
+    publicKey: PubKey,
 ): boolean => {
 
   return eddsa.verifyMiMCSponge(message, signature, publicKey)
@@ -223,8 +245,9 @@ export {
     decrypt,
     sign,
     verifySignature,
-    MaciPrivKey,
-    MaciPubKey,
-    MaciEcdhSharedKey,
-    MaciCiphertext,
+    PrivKey,
+    PubKey,
+    EcdhSharedKey,
+    Ciphertext,
+    Plaintext,
 }
