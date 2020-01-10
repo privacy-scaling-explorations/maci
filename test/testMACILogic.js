@@ -1,4 +1,8 @@
-const assert = require('chai').assert
+const {
+  randomPrivateKey,
+  privateToPublicKey,
+  signAndEncrypt
+} = require('../_build/utils/crypto')
 
 const {
   maciContract,
@@ -7,24 +11,12 @@ const {
   signUpTokenContract
 } = require('../_build/utils/contracts')
 
-const { binarifyWitness, binarifyProvingKey } = require('../_build/utils/binarify')
-const { createMerkleTree } = require('../_build/utils/merkletree')
-const { stringifyBigInts, unstringifyBigInts } = require('../_build/utils/helpers')
-const { ecdh, randomPrivateKey, privateToPublicKey, signAndEncrypt } = require('../_build/utils/crypto')
-
-const updateStateTreeProvingKey = require('../_build/circuits/update_state_tree_proving_key.json')
-const updateStateTreeVerificationKey = require('../_build/circuits/update_tree_state_verifying_key.json')
-const updateStateTreeCircuitDef = require('../_build/circuits/update_state_tree.json')
-
-const { buildBn128 } = require('websnark')
-const { Circuit, groth } = require('snarkjs')
+const { stringifyBigInts } = require('../_build/utils/helpers')
 
 const { ganacheConfig } = require('../maci-config')
 
 const ethers = require('ethers')
 const provider = new ethers.providers.JsonRpcProvider(ganacheConfig.host)
-
-const snarkScalarField = 21888242871839275222246405745257275088548364400416034343698204186575808495617n
 
 describe('MACI', () => {
   describe('#SmartContract', () => {
@@ -218,141 +210,6 @@ describe('MACI', () => {
       if (oldRoot.toString() === newRoot.toString()) {
         throw new Error('commandTree in contract not updated for publishCommand!')
       }
-    })
-  })
-
-  describe('#CircomCircuit (Long)', () => {
-    it('Circuit Root Generation', async () => {
-      const wasmBn128 = await buildBn128()
-      const zkSnark = groth
-
-      // Command and State Tree
-      const cmdTree = createMerkleTree(4, 0n)
-      const stateTree = createMerkleTree(4, 0n)
-
-      // Coordinator keys
-      const coordinatorSecretKey = randomPrivateKey()
-      const coordinatorPublicKey = privateToPublicKey(coordinatorSecretKey)
-
-      // Create 3 users (for registration)
-      const user1SecretKey = randomPrivateKey()
-      const user1PublicKey = privateToPublicKey(user1SecretKey)
-      const user1Message = [...user1PublicKey, 0n]
-      const user1EncryptedMsg = signAndEncrypt(
-        user1Message,
-        user1SecretKey,
-        user1SecretKey,
-        coordinatorPublicKey
-      )
-      const user1Leaf = cmdTree.hash(user1EncryptedMsg)
-
-      const user2SecretKey = randomPrivateKey()
-      const user2PublicKey = privateToPublicKey(user2SecretKey)
-      const user2Message = [...user2PublicKey, 0n]
-      const user2EncryptedMsg = signAndEncrypt(
-        user2Message,
-        user2SecretKey,
-        user2SecretKey,
-        coordinatorPublicKey
-      )
-      const user2Leaf = cmdTree.hash(user2EncryptedMsg)
-
-      const user3SecretKey = randomPrivateKey()
-      const user3PublicKey = privateToPublicKey(user3SecretKey)
-      const user3Message = [...user3PublicKey, 0n]
-      const user3EncryptedMsg = signAndEncrypt(
-        user3Message,
-        user3SecretKey,
-        user3SecretKey,
-        coordinatorPublicKey
-      )
-      const user3Leaf = cmdTree.hash(user3EncryptedMsg)
-
-      // Insert users into the cmdTree and stateTree
-      cmdTree.insert(user1Leaf)
-      cmdTree.insert(user2Leaf)
-      cmdTree.insert(user3Leaf)
-
-      // Only the stateTree saves the raw values
-      stateTree.insert(user1Leaf, user1Message)
-      stateTree.insert(user2Leaf, user2Message)
-      stateTree.insert(user3Leaf, user3Message)
-
-      // User 2 wants to choose their vote and change public key
-      const user2NewSecretKey = randomPrivateKey()
-      const user2NewPublicKey = privateToPublicKey(user2NewSecretKey)
-      const user2NewMessage = [...user2NewPublicKey, 1n]
-      const user2NewEncryptedMsg = signAndEncrypt(
-        user2NewMessage,
-        user2SecretKey, // Using old secret key to sign tx as thats what the circuit is validating against
-        user2NewSecretKey,
-        coordinatorPublicKey
-      )
-      const user2NewLeaf = cmdTree.hash(user2NewEncryptedMsg)
-
-      // Submits it to the smart contract
-      cmdTree.insert(user2NewLeaf, user2NewMessage)
-
-      // Construct circuit inputs
-      const [cmdTreePathElements, cmdTreePathIndex] = cmdTree.getPathUpdate(cmdTree.nextIndex - 1)
-
-      // 1st index because we're getting user 2
-      const [stateTreePathElements, stateTreePathIndex] = stateTree.getPathUpdate(1)
-
-      const ecdhPrivateKey = ecdh(
-        user2NewSecretKey,
-        coordinatorPublicKey
-      )
-
-      const circuit = new Circuit(updateStateTreeCircuitDef)
-
-      const circuitInput = {
-        cmd_tree_root: stringifyBigInts(cmdTree.root),
-        cmd_tree_path_elements: stringifyBigInts(cmdTreePathElements),
-        cmd_tree_path_index: stringifyBigInts(cmdTreePathIndex),
-        state_tree_root: stringifyBigInts(stateTree.root),
-        state_tree_path_elements: stringifyBigInts(stateTreePathElements),
-        state_tree_path_index: stringifyBigInts(stateTreePathIndex),
-        encrypted_data: stringifyBigInts(user2NewEncryptedMsg),
-        existing_public_key: stringifyBigInts(user2PublicKey),
-        existing_state_tree_leaf: stringifyBigInts(user2Leaf),
-        ecdh_private_key: stringifyBigInts(ecdhPrivateKey)
-      }
-
-      const witness = circuit.calculateWitness(circuitInput)
-      assert(circuit.checkWitness(witness))
-
-      const newRootIdx = circuit.getSignalIdx('main.new_state_tree_root')
-      const newRoot = witness[newRootIdx]
-
-      stateTree.update(1, user2NewLeaf, user2NewMessage)
-      assert.equal(stateTree.root.toString(), newRoot.toString())
-
-      const publicSignals = witness.slice(1, circuit.nPubInputs + circuit.nOutputs + 1)
-
-      const witnessBin = binarifyWitness(witness)
-      const updateStateTreeProvingKeyBin = binarifyProvingKey(updateStateTreeProvingKey)
-
-      const proof = await wasmBn128.groth16GenProof(
-        witnessBin,
-        updateStateTreeProvingKeyBin
-      )
-
-      const isValid = zkSnark.isValid(
-        unstringifyBigInts(updateStateTreeVerificationKey),
-        unstringifyBigInts(proof),
-        unstringifyBigInts(publicSignals)
-      )
-      assert.equal(isValid, true, 'Local Snark Proof is not valid!')
-
-      const isValidOnChain = await maciContract.verifyUpdateStateTreeProof(
-        stringifyBigInts(proof.pi_a).slice(0, 2),
-        stringifyBigInts(proof.pi_b).map(x => x.reverse()).slice(0, 2),
-        stringifyBigInts(proof.pi_c).slice(0, 2),
-        stringifyBigInts(publicSignals.map(x => x % snarkScalarField))
-      )
-
-      assert.equal(isValidOnChain, true, 'Snark Proof failed on chain verification!')
     })
   })
 })

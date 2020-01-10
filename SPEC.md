@@ -509,6 +509,8 @@ The MACI contract's `quadraticVoteTally()` function should verify a proof create
 | `intermediatePathElements[k]` | Public | The Merkle path elements from `intermediateStateRoot` to `stateRoot`. | Contract |
 | `intermediatePathIndex` | Public | The Merkle path index from `intermediateStateRoot` to `stateRoot`. | Contract |
 | `currentResults[n]` | Public | The vote tally of all prior batches of state leaves | Coordinator |
+| `currentResultsSalt` | Private | A random value to hash with the vote tally for state leaves up to the current batch |  Coordinator |
+| `currentResultsCommitment` | Public | The salted hash of the values in `currentResults` |  Coordinator |
 | `newResultsCommitment` | Public | The salted hash of the vote tally for this batch of leaves plus the vote tally from `currentResults` |  Coordinator |
 | `salt` | Private | A random value to hash with the culmulate vote tally for this batch of state leaves |  Coordinator |
 | `stateLeaves[m]` | Private | The batch of leaves of the state tree to tally. | Coordinator |
@@ -566,11 +568,19 @@ for i as start to m: // we ignore leaf 0 on purpose
         computedResults[j] += voteLeaves[i][j]
         
         
+// Ensure via a constraint that the commitment to the current results is
+// correct
+
+assert(
+    hash(currentResults, currentResultsSalt) == 
+    currentResultsCommitment
+)
+
 // Ensure via a constraint that the final result
 // is correct
 assert(
-    hash(salt, computedResults) == 
-    hash(salt, newResultsCommitment)
+    hash(computedResults, salt) == 
+    newResultsCommitment
 )
 ```
 

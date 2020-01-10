@@ -2,7 +2,7 @@
 
 const crypto = require('crypto')
 const { bigInt } = require('snarkjs')
-const { babyJub, eddsa, mimcsponge } = require('circomlib')
+const { babyJub, eddsa, mimc7, mimcsponge } = require('circomlib')
 
 const bigInt2Buffer = (i: BigInt): Buffer => {
   return Buffer.from(i.toString())
@@ -93,10 +93,10 @@ const encrypt = (
 ): Array<BigInt> => {
   // Encrypts a message
   const sharedKey = ecdh(priv, pub)
-  const iv = multiHash(msg)
+  const iv = mimc7.multiHash(msg, BigInt(0))
   return [
     iv, ...msg.map((e: BigInt, i: Number): BigInt => {
-      return e + hash(sharedKey, iv + bigInt(i))
+      return e + mimc7.hash(sharedKey, iv + bigInt(i))
     })
   ]
 }
@@ -110,7 +110,7 @@ const decrypt = (
   const sharedKey = ecdh(priv, pub)
   const iv = msg[0]
   return msg.slice(1).map((e: BigInt, i: Number): BigInt => {
-    return e - hash(sharedKey, iv + bigInt(i))
+    return e - mimc7.hash(sharedKey, iv + bigInt(i))
   })
 }
 
