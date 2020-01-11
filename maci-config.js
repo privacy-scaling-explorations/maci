@@ -3,7 +3,7 @@ module.exports = {
     cmdTreeName: process.env.CMD_TREE_NAME || 'CmdTree',
     stateTreeName: process.env.STATE_TREE_NAME || 'StateTree',
     treeDepth: process.env.MERKLE_TREE_DEPTH || 4,
-    zeroValue: 0n,
+    zeroValue: 5503045433092194285660061905880311622788666850989422096966288514930349325741n,
     durationSignUpBlockNumbers: process.env.SIGN_UP_BLOCK_DURATION || 20
   },
   ganacheConfig: {

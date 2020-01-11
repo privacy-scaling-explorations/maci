@@ -6,8 +6,8 @@ const { Circuit } = require('snarkjs')
 const { hashLeftRight, randomPrivateKey } = require('../_build/utils/crypto')
 const { createMerkleTree } = require('../_build/utils/merkletree')
 const { multiHash } = require('../_build/utils/crypto')
+const { merkleTreeConfig } = require('../maci-config')
 
-const ZERO_VALUE = 0
 
 describe('Quadratic vote tallying circuit', () => {
   it('CalculateTotal', async () => {
@@ -58,7 +58,7 @@ describe('Quadratic vote tallying circuit', () => {
         voteLeaves.push(votes)
       }
 
-      const fullStateTree = createMerkleTree(fullStateTreeDepth, ZERO_VALUE)
+      const fullStateTree = createMerkleTree(fullStateTreeDepth, merkleTreeConfig.zeroValue)
 
       let rawStateLeaves = []
       let voteOptionTrees = []
@@ -67,7 +67,7 @@ describe('Quadratic vote tallying circuit', () => {
       for (let i = 0; i < 2 ** fullStateTreeDepth; i++) {
 
         // Insert the vote option leaves to calculate the voteOptionRoot
-        const voteOptionMT = createMerkleTree(voteOptionTreeDepth, ZERO_VALUE)
+        const voteOptionMT = createMerkleTree(voteOptionTreeDepth, merkleTreeConfig.zeroValue)
 
         for (let j = 0; j < voteLeaves[i].length; j++) {
           voteOptionMT.insert(voteLeaves[i][j])
@@ -85,12 +85,12 @@ describe('Quadratic vote tallying circuit', () => {
       const batchSize = 2 ** intermediateStateTreeDepth
 
       // Compute the Merkle proof for the batch
-      const intermediateStateTree = createMerkleTree(k, ZERO_VALUE)
+      const intermediateStateTree = createMerkleTree(k, merkleTreeConfig.zeroValue)
 
       // For each batch, create a tree of the leaves in the batch, and insert the
       // tree root into another tree
       for (let i = 0; i < fullStateTree.leaves.length; i += batchSize) {
-        const tree = createMerkleTree(intermediateStateTreeDepth, ZERO_VALUE)
+        const tree = createMerkleTree(intermediateStateTreeDepth, merkleTreeConfig.zeroValue)
         for (let j = 0; j < batchSize; j++) {
           tree.insert(fullStateTree.leaves[i + j])
         }
