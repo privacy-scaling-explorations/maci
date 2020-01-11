@@ -59,6 +59,12 @@ contract MerkleTree is Whitelist {
       uint256 _zeroValue,
       address hasherAddress
     ) public {
+        // Nothing up my sleeve zero value
+        uint256 SNARK_SCALAR_FIELD = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
+        uint ZERO_VALUE = uint256(keccak256(abi.encodePacked('MACI'))) % SNARK_SCALAR_FIELD;
+
+        assert(_zeroValue == ZERO_VALUE);
+
         // Hasher object
         hasher = Hasher(hasherAddress);
 
