@@ -2,6 +2,12 @@ import * as assert from 'assert'
 import * as crypto from 'crypto'
 import * as snarkjs from 'snarkjs'
 import { babyJub, eddsa, mimcsponge } from 'circomlib'
+import { createMerkleTree } from './merkleTree'
+import { storage, hashers, tree } from 'semaphore-merkle-tree'
+const MemStorage = storage.MemStorage
+const MerkleTree = tree.MerkleTree
+const MimcSpongeHasher = hashers.MimcSpongeHasher
+
 
 type SnarkBigInt = snarkjs.bigInt
 type PrivKey = SnarkBigInt
@@ -60,15 +66,25 @@ const hash = (plaintext: Plaintext): SnarkBigInt => {
     return mimcsponge.multiHash(plaintext, 0, 1)
 }
 
+const hashOne = (preImage: SnarkBigInt): SnarkBigInt => {
+
+    return mimcsponge.multiHash([preImage], 0, 1)
+}
+
+const hashLeftRight = (left: SnarkBigInt, right: SnarkBigInt): SnarkBigInt => {
+
+    return mimcsponge.multiHash([left, right], 0, 1)
+}
+
 /*
- * @return A BabyJub-compatible private key.
+ * @return A BabyJub-compatible random value.
  * We create it by first generating a random value (initially 256 bits large)
  * modulo the snark field size as described in EIP197. This results in a key
  * size of roughly 253 bits and no more than 254 bits. To prevent modulo bias,
  * we then use this efficient algorithm:
  * http://cvsweb.openbsd.org/cgi-bin/cvsweb/~checkout~/src/lib/libc/crypt/arc4random_uniform.c
  */
-const genPrivKey: PrivKey = () => {
+const genRandomBabyJubValue: SnarkBigInt = () => {
 
     // Check whether we are using the correct value for SNARK_FIELD_SIZE
     assert(SNARK_FIELD_SIZE.eq(snarkjs.bn128.r))
@@ -92,6 +108,22 @@ const genPrivKey: PrivKey = () => {
     assert(privKey < SNARK_FIELD_SIZE)
 
     return privKey
+}
+
+/*
+ * @return A BabyJub-compatible private key.
+ */
+const genPrivKey: PrivKey = () => {
+
+    return genRandomBabyJubValue()
+}
+
+/*
+ * @return A BabyJub-compatible salt.
+ */
+const genRandomSalt: PrivKey = () => {
+
+    return genRandomBabyJubValue()
 }
 
 /*
@@ -266,8 +298,25 @@ const verifySignature = (
   return eddsa.verifyMiMCSponge(plaintext, signature, pubKey)
 }
 
+const setupTree = (
+    levels: number,
+    zeroValue: number = 0,
+) => {
+
+    const tree2 = new MerkleTree(
+        'maci',
+        new storage.MemStorage(),
+        new hashers.MimcSpongeHasher(),
+        levels,
+        zeroValue,
+    )
+
+    return tree2
+}
+
 export {
     SnarkBigInt,
+    genRandomSalt,
     genPrivKey,
     genPubKey,
     genKeyPair,
@@ -276,6 +325,8 @@ export {
     decrypt,
     sign,
     hash,
+    hashOne,
+    hashLeftRight,
     verifySignature,
     PrivKey,
     PubKey,
@@ -284,4 +335,5 @@ export {
     Ciphertext,
     Plaintext,
     bigInt,
+    setupTree,
 }

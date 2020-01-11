@@ -6,13 +6,20 @@
     "scripts": {
         "watch": "tsc --watch",
         "build": "tsc",
-        "test": "jest"
+        "test": "jest",
+        "test-hasher": "jest Hasher.test.ts",
+        "test-hasher-debug": "node --inspect-brk ./node_modules/.bin/jest Hasher.test.ts",
+        "test-mt": "jest MerkleTree.test.ts",
+        "test-mt-debug": "node --inspect-brk ./node_modules/.bin/jest MerkleTree.test.ts",
+        "test-quadVoteTally": "jest QuadVoteTally.test.ts",
+        "test-quadVoteTally-debug": "node --inspect-brk ./node_modules/.bin/jest QuadVoteTally.test.ts"
     },
     "dependencies": {},
     "devDependencies": {
         "@types/jest": "^24.0.25",
         "@types/node": "^13.1.2",
         "ts-jest": "^24.2.0",
+        "maci-crypto": "1.0.0",
         "jest": "^24.9.0",
         "circom": "0.0.34",
         "circomlib": "0.0.19",

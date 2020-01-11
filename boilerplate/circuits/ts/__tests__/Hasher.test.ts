@@ -1,15 +1,31 @@
 import * as path from 'path'
 import { Circuit } from 'snarkjs'
 const compiler = require('circom')
+import {
+    emptyTree,
+} from 'maci-crypto'
 
 describe('MiMC hash circuits', () => {
-    beforeAll(async () => {
-        const circuitDef = await compiler(path.join(__dirname, 'circuits', '../../../circom/test/hashleftright_test.circom'))
-      const circuit = new Circuit(circuitDef)
-    })
-
     describe('HashLeftRight', () => {
-        it('correctly hashes a random value', async () => {
+
+        it('correctly hashes two random values', async () => {
+            const circuitDef = await compiler(path.join(__dirname, 'circuits', '../../../circom/test/hashleftright_test.circom'))
+            const circuit = new Circuit(circuitDef)
+
+            const left = Math.floor(Math.random() * 10000)
+            const right = Math.floor(Math.random() * 10000)
+
+            const circuitInputs = { left, right }
+
+            const witness = circuit.calculateWitness(circuitInputs)
+
+            const outputIdx = circuit.getSignalIdx('main.hash')
+            const output = witness[outputIdx]
+
+            const tree = emptyTree(1)
+            const outputJS = tree.hasher.hash(left, right)
+
+            expect(output.toString()).toEqual(outputJS.toString())
         })
     })
 })
