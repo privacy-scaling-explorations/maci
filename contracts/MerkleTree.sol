@@ -56,14 +56,12 @@ contract MerkleTree is Whitelist {
 
     constructor(
       uint256 _depth,
-      uint256 _zeroValue,
       address hasherAddress
     ) public {
         // Nothing up my sleeve zero value
-        uint256 SNARK_SCALAR_FIELD = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
-        uint ZERO_VALUE = uint256(keccak256(abi.encodePacked('MACI'))) % SNARK_SCALAR_FIELD;
-
-        assert(_zeroValue == ZERO_VALUE);
+        // Should be equal to 5503045433092194285660061905880311622788666850989422096966288514930349325741
+        uint256 snarkScalarField = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
+        uint zeroValue = uint256(keccak256(abi.encodePacked('MACI'))) % snarkScalarField;
 
         // Hasher object
         hasher = Hasher(hasherAddress);
@@ -74,7 +72,7 @@ contract MerkleTree is Whitelist {
 
         // 'Caches' zero values and filledSubTrees
         // for optimized inserts later on
-        zeros.push(_zeroValue);
+        zeros.push(zeroValue);
         filledSubtrees.push(zeros[0]);
 
         for (uint8 i = 1; i < depth; i++) {

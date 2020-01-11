@@ -84,7 +84,6 @@ describe('MerkleTree', () => {
   beforeEach('Setup contract for each test', async () => {
     merkleTreeContract = await merkleTreeFactory.deploy(
       merkleTreeConfig.treeDepth,
-      stringifyBigInts(merkleTreeConfig.zeroValue),
       hasherContract.address
     )
 
