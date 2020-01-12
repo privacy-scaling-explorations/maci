@@ -5,6 +5,7 @@ const { stringifyBigInts, unstringifyBigInts } = require('../_build/utils/helper
 const { Circuit, groth } = require('snarkjs')
 const { buildBn128 } = require('websnark')
 const { binarifyWitness, binarifyProvingKey } = require('../_build/utils/binarify')
+const { merkleTreeConfig } = require('../maci-config')
 
 const { maciContract } = require('../_build/utils/contracts')
 const {
@@ -60,9 +61,9 @@ describe('Update State Tree Ciruit', () => {
     const circuit = new Circuit(circuitDef)
 
     // Contruct the tree(s))
-    const voteOptionTree = createMerkleTree(2, 0n)
-    const msgTree = createMerkleTree(4, 0n)
-    const stateTree = createMerkleTree(4, 0n)
+    const voteOptionTree = createMerkleTree(2, merkleTreeConfig.zeroValue)
+    const msgTree = createMerkleTree(4, merkleTreeConfig.zeroValue)
+    const stateTree = createMerkleTree(4, merkleTreeConfig.zeroValue)
 
     // Insert candidates into vote option tree
     voteOptionTree.insert(hash(str2BigInt('candidate 1')))
@@ -77,7 +78,7 @@ describe('Update State Tree Ciruit', () => {
     stateTree.insert(hash(str2BigInt('random data')))
 
     // User 1 vote option tree
-    const user1VoteOptionTree = createMerkleTree(2, 0n)
+    const user1VoteOptionTree = createMerkleTree(2, merkleTreeConfig.zeroValue)
     // insert first candidate with raw values
     user1VoteOptionTree.insert(hash(1n), 1n) // Assume we've already voted for candidate 1
     user1VoteOptionTree.insert(hash(0n))
