@@ -28,13 +28,11 @@ module.exports = async (deployer) => {
   const cmdTree = await deployer.deploy(
     MerkleTree,
     merkleTreeConfig.treeDepth,
-    merkleTreeConfig.zeroValue.toString(),
     hasher.address
   )
   const stateTree = await deployer.deploy(
     MerkleTree,
     merkleTreeConfig.treeDepth,
-    merkleTreeConfig.zeroValue.toString(),
     hasher.address
   )
 

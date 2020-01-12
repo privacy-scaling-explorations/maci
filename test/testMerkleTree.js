@@ -84,7 +84,6 @@ describe('MerkleTree', () => {
   beforeEach('Setup contract for each test', async () => {
     merkleTreeContract = await merkleTreeFactory.deploy(
       merkleTreeConfig.treeDepth,
-      stringifyBigInts(merkleTreeConfig.zeroValue),
       hasherContract.address
     )
 
@@ -115,10 +114,12 @@ describe('MerkleTree', () => {
       leaves.push(h)
 
       await merkleTreeContract.insert(h.toString())
-      merkleTreeJS.insert(h)
 
       // Test the merkle tree insertion circuit
       const mtInsertProof = stringifyBigInts(merkleTreeJS.getPathInsert())
+
+      merkleTreeJS.insert(h)
+
       const mtInsertCircuitInputs = {
         'leaf': h,
         'zeros[0]': mtInsertProof[0][0],
@@ -133,7 +134,7 @@ describe('MerkleTree', () => {
         'path_index[1]': mtInsertProof[2][1],
         'path_index[2]': mtInsertProof[2][2],
         'path_index[3]': mtInsertProof[2][3],
-        'root': stringifyBigInts(merkleTreeJS.root),
+        'root': stringifyBigInts(merkleTreeJS.root)
       }
       const mtInsertWitness = mtInsertCircuit.calculateWitness(mtInsertCircuitInputs)
       assert.equal(mtInsertWitness[mtInsertCircuit.getSignalIdx('main.root')], merkleTreeJS.root)
@@ -150,7 +151,7 @@ describe('MerkleTree', () => {
         'path_index[1]': mtUpdateProof[1][1],
         'path_index[2]': mtUpdateProof[1][2],
         'path_index[3]': mtUpdateProof[1][3],
-        'root': stringifyBigInts(merkleTreeJS.root),
+        'root': stringifyBigInts(merkleTreeJS.root)
       }
       const mtLeafExistsWitness = mtLeafExistsCircuit.calculateWitness(mtLeafExistsInputs)
       assert.equal(mtLeafExistsWitness[mtLeafExistsCircuit.getSignalIdx('main.root')], merkleTreeJS.root)
@@ -163,7 +164,6 @@ describe('MerkleTree', () => {
       const leaf = await merkleTreeContract.getLeafAt(i.toString())
       assert.equal(merkleTreeJS.leaves[i].toString(), leaf.toString())
     }
-
 
     const mtCheckRootInputs = {
     }
