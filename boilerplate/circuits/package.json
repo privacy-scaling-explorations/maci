@@ -12,7 +12,9 @@
         "test-mt": "jest MerkleTree.test.ts",
         "test-mt-debug": "node --inspect-brk ./node_modules/.bin/jest MerkleTree.test.ts",
         "test-quadVoteTally": "jest QuadVoteTally.test.ts",
-        "test-quadVoteTally-debug": "node --inspect-brk ./node_modules/.bin/jest QuadVoteTally.test.ts"
+        "test-quadVoteTally-debug": "node --inspect-brk ./node_modules/.bin/jest QuadVoteTally.test.ts",
+        "test-updateStateTree": "jest UpdateStateTree.test.ts",
+        "test-updateStateTree-debug": "node --inspect-brk ./node_modules/.bin/jest UpdateStateTree.test.ts"
     },
     "dependencies": {},
     "devDependencies": {
