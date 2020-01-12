@@ -2,7 +2,7 @@ import * as path from 'path'
 import { Circuit } from 'snarkjs'
 const compiler = require('circom')
 import {
-    emptyTree,
+    hashLeftRight,
 } from 'maci-crypto'
 
 describe('MiMC hash circuits', () => {
@@ -22,8 +22,7 @@ describe('MiMC hash circuits', () => {
             const outputIdx = circuit.getSignalIdx('main.hash')
             const output = witness[outputIdx]
 
-            const tree = emptyTree(1)
-            const outputJS = tree.hasher.hash(left, right)
+            const outputJS = hashLeftRight(left, right)
 
             expect(output.toString()).toEqual(outputJS.toString())
         })

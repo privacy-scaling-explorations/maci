@@ -4,6 +4,7 @@ const compiler = require('circom')
 import {
     setupTree,
     genRandomSalt,
+    Plaintext,
     bigInt,
     hashOne,
     hash,
@@ -62,18 +63,17 @@ describe('Quadratic vote tallying circuit', () => {
             // Generate sample votes
             let voteLeaves: SnarkBigInt[] = []
             for (let i = 0; i < 2 ** fullStateTreeDepth; i++) {
-                let votes: SnarkBigInt[] = []
+                const votes: SnarkBigInt[] = []
                 for (let j = 0; j < numVoteOptions; j++) {
-                    votes.push(bigInt(Math.floor(Math.random() * 10)))
+                    votes.push(bigInt(Math.round(Math.random() * 10)))
                 }
                 voteLeaves.push(votes)
             }
 
             const fullStateTree = setupTree(fullStateTreeDepth, ZERO_VALUE)
 
-            let rawStateLeaves: any[] = []
-            let fullStateTreeLeaves: SnarkBigInt[] = []
-            let voteOptionTrees: SnarkBigInt[] = []
+            let rawStateLeaves: Plaintext[] = []
+            let voteOptionTrees = []
 
             // Populate the state tree
             for (let i = 0; i < 2 ** fullStateTreeDepth; i++) {
@@ -82,18 +82,14 @@ describe('Quadratic vote tallying circuit', () => {
                 const voteOptionMT = setupTree(voteOptionTreeDepth, ZERO_VALUE)
 
                 for (let j = 0; j < voteLeaves[i].length; j++) {
-                    await voteOptionMT.update(j, voteLeaves[i][j])
+                    voteOptionMT.insert(voteLeaves[i][j])
                 }
 
-                const root = await voteOptionMT.root()
-                const rawStateLeaf = [0, 0, root, 0, 0]
+                const rawStateLeaf = [0, 0, voteOptionMT.root, 0, 0]
                 rawStateLeaves.push(rawStateLeaf)
 
                 // Insert the state leaf
-                const h = hash(rawStateLeaf)
-                await fullStateTree.update(i, h)
-
-                fullStateTreeLeaves.push(h)
+                fullStateTree.insert(hash(rawStateLeaf))
             }
 
             // The leaves of the intermediate state tree (which are the roots of each batch)
@@ -105,23 +101,21 @@ describe('Quadratic vote tallying circuit', () => {
 
             // For each batch, create a tree of the leaves in the batch, and insert the
             // tree root into another tree
-            for (let i = 0; i <  2 ** fullStateTreeDepth; i += batchSize) {
+            for (let i = 0; i < fullStateTree.leaves.length; i += batchSize) {
                 const tree = setupTree(intermediateStateTreeDepth, ZERO_VALUE)
                 for (let j = 0; j < batchSize; j++) {
-                    await tree.update(j, fullStateTreeLeaves[i + j])
+                    tree.insert(fullStateTree.leaves[i + j])
                 }
+                intermediateLeaves.push(tree.root)
 
-                const root = await tree.root()
-                intermediateLeaves.push(root)
-
-                await intermediateStateTree.update(i, root)
+                intermediateStateTree.insert(tree.root)
             }
 
-            const intermediatePath = await intermediateStateTree.path(intermediatePathIndex)
-            const intermediatePathElements = intermediatePath.path_elements
+            const intermediatePathElements = intermediateStateTree.getPathUpdate(intermediatePathIndex)[0]
 
             for (let i = 0; i < intermediatePathElements.length; i++) {
-                circuitInputs['intermediatePathElements[' + i + ']'] = intermediatePathElements[i].toString()
+                circuitInputs['intermediatePathElements[' + i + ']'] = 
+                    intermediatePathElements[i].toString()
             }
 
             for (let i = 0; i < batchSize; i++) {
@@ -131,7 +125,7 @@ describe('Quadratic vote tallying circuit', () => {
                 }
 
                 for (let j = 0; j < messageLength; j++) {
-                    circuitInputs['stateLeaves[' + i + '][' + j + ']'] = 
+                    circuitInputs['stateLeaves[' + i + '][' + j + ']'] =
                         rawStateLeaves[intermediatePathIndex * batchSize + i][j].toString()
                 }
             }
@@ -154,14 +148,8 @@ describe('Quadratic vote tallying circuit', () => {
                 circuitInputs['currentResults[' + i + ']'] = currentResults[i].toString()
             }
 
-            const fullStateRoot = await fullStateTree.root()
-            circuitInputs['fullStateRoot'] = fullStateRoot
-
-            //// TODO: check if this is correct
-            //circuitInputs['intermediateStateRoot'] = intermediateLeaves[intermediatePathIndex].toString()
-            circuitInputs['intermediateStateRoot'] = 
-                intermediateStateTree.leaves[intermediatePathIndex].toString()
-
+            circuitInputs['fullStateRoot'] = fullStateTree.root.toString()
+            circuitInputs['intermediateStateRoot'] = intermediateStateTree.leaves[intermediatePathIndex].toString()
             circuitInputs['intermediatePathIndex'] = intermediatePathIndex.toString()
             circuitInputs['salt'] = salt.toString()
             circuitInputs['currentResultsSalt'] = currentResultsSalt.toString()
@@ -180,15 +168,12 @@ describe('Quadratic vote tallying circuit', () => {
                     subtotal += voteLeaves[intermediatePathIndex * batchSize + j][i]
                 }
 
-                expected.push(bigInt(subtotal))
+                expected.push(subtotal)
             }
-
-            expect(circuit.checkWitness(witness)).toBeTruthy()
 
             const result = witness[circuit.getSignalIdx('main.newResultsCommitment')]
             const expectedCommitment = hash([...expected, salt])
             expect(result.toString()).toEqual(expectedCommitment.toString())
         }
     })
-
 })

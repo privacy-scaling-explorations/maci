@@ -9,6 +9,8 @@ import {
 } from 'maci-crypto'
 
 const LEVELS = 4
+const ZERO_VALUE = 0
+
 describe('Merkle Tree circuits', () => {
     describe('LeafExists', () => {
         let circuit
@@ -19,24 +21,24 @@ describe('Merkle Tree circuits', () => {
         })
 
         it('Valid LeafExists inputs should work', async () => {
-            const tree = setupTree(LEVELS)
+            const tree = setupTree(LEVELS, ZERO_VALUE)
             let leaves: SnarkBigInt[] = []
 
             for (let i = 0; i < 2 ** LEVELS; i++) {
                 const randomVal = Math.floor(Math.random() * 1000)
                 const leaf = hashOne(randomVal)
-                await tree.update(i, leaf)
+                tree.insert(leaf)
                 leaves.push(leaf)
             }
 
-            const root = await tree.root()
+            const root = tree.root
 
             for (let i = 0; i < 2 ** LEVELS; i++) {
-                const proof = await tree.path(i)
+                const proof = tree.getPathUpdate(i)
                 const circuitInputs = {
                     leaf: leaves[i],
-                    path_elements: proof.path_elements,
-                    path_index: proof.path_index,
+                    path_elements: proof[0],
+                    path_index: proof[1],
                     root,
                 }
                 const witness = circuit.calculateWitness(circuitInputs)
@@ -45,25 +47,25 @@ describe('Merkle Tree circuits', () => {
         })
 
         it('Invalid LeafExists inputs should not work', async () => {
-            const tree = setupTree(LEVELS)
+            const tree = setupTree(LEVELS, ZERO_VALUE)
             let leaves: SnarkBigInt[] = []
 
             for (let i = 0; i < 2 ** LEVELS; i++) {
                 const randomVal = Math.floor(Math.random() * 1000)
                 const leaf = hashOne(randomVal)
-                await tree.update(i, leaf)
+                tree.insert(leaf)
                 leaves.push(leaf)
             }
 
-            const root = await tree.root()
+            const root = tree.root
 
             for (let i = 0; i < 2 ** LEVELS; i++) {
-                const proof = await tree.path(i)
+                const proof = tree.getPathUpdate(i)
                 const circuitInputs = {
                     leaf: leaves[i],
                     // The following are swapped to delibrately create an error
-                    path_elements: proof.path_index,
-                    path_index: proof.path_elements,
+                    path_elements: proof[1],
+                    path_index: proof[0],
                     root,
                 }
                 expect(() => {
@@ -82,17 +84,17 @@ describe('Merkle Tree circuits', () => {
         })
 
         it('Valid CheckRoot inputs should work', async () => {
-            const tree = setupTree(LEVELS)
+            const tree = setupTree(LEVELS, ZERO_VALUE)
             let leaves: SnarkBigInt[] = []
 
             for (let i = 0; i < 2 ** LEVELS; i++) {
                 const randomVal = Math.floor(Math.random() * 1000)
                 const leaf = hashOne(randomVal)
-                await tree.update(i, leaf)
+                tree.insert(leaf)
                 leaves.push(leaf)
             }
 
-            const root = await tree.root()
+            const root = tree.root
 
             const circuitInputs = { leaves }
 
@@ -105,18 +107,18 @@ describe('Merkle Tree circuits', () => {
         })
 
         it('Different leaves should generate a different root', async () => {
-            const tree = setupTree(LEVELS)
+            const tree = setupTree(LEVELS, ZERO_VALUE)
             let leaves: SnarkBigInt[] = []
             for (let i = 0; i < 2 ** LEVELS; i++) {
                 const randomVal = Math.floor(Math.random() * 1000)
                 const leaf = hashOne(randomVal)
-                await tree.update(i, leaf)
+                tree.insert(leaf)
 
                 // Give the circuit a different leaf
                 leaves.push(bigInt(randomVal + 1))
             }
 
-            const root = await tree.root()
+            const root = tree.root
             const circuitInputs = { leaves }
             const witness = circuit.calculateWitness(circuitInputs)
             expect(witness[circuit.getSignalIdx('main.root')].toString())
@@ -134,31 +136,30 @@ describe('Merkle Tree circuits', () => {
         })
 
         it('Valid update proofs should work', async () => {
-            const tree = setupTree(LEVELS)
+            const tree = setupTree(LEVELS, ZERO_VALUE)
 
             let leaves: SnarkBigInt[] = []
             // Populate the tree
             for (let i = 0; i < 2 ** LEVELS; i++) {
                 const randomVal = Math.floor(Math.random() * 1000)
                 const leaf = hashOne(randomVal)
-                await tree.update(i, leaf)
-
+                tree.insert(leaf)
             }
 
             for (let i = 0; i < 2 ** LEVELS; i++) {
                 const randomVal = Math.floor(Math.random() * 1000)
                 const leaf = hashOne(randomVal).toString()
 
-                await tree.update(i, leaf)
+                tree.update(i, leaf)
 
-                const proof = await tree.path(i)
+                const proof = tree.getPathUpdate(i)
 
-                const root = await tree.root()
+                const root = tree.root
 
                 const circuitInputs = {
                     leaf: leaf.toString(),
-                    path_elements: proof.path_elements,
-                    path_index: proof.path_index,
+                    path_elements: proof[0],
+                    path_index: proof[1],
                 }
 
                 const witness = circuit.calculateWitness(circuitInputs)
@@ -171,30 +172,30 @@ describe('Merkle Tree circuits', () => {
         })
 
         it('Invalid update proofs should not work', async () => {
-            const tree = setupTree(LEVELS)
+            const tree = setupTree(LEVELS, ZERO_VALUE)
 
             // Populate the tree
             for (let i = 0; i < 2 ** LEVELS; i++) {
                 const randomVal = Math.floor(Math.random() * 1000)
                 const leaf = hashOne(randomVal)
-                await tree.update(i, leaf)
+                tree.insert(leaf)
             }
 
             for (let i = 0; i < 2 ** LEVELS; i++) {
                 const randomVal = Math.floor(Math.random() * 1000)
                 const leaf = hashOne(randomVal).toString()
 
-                await tree.update(i, leaf)
+                tree.insert(leaf)
 
-                const proof = await tree.path(i)
+                const proof = tree.getPathUpdate(i)
 
-                const root = await tree.root()
+                const root = tree.root
 
                 const circuitInputs = {
                     leaf: leaf.toString(),
                     // The following are swapped to delibrately create an error
-                    path_elements: proof.path_index,
-                    path_index: proof.path_elements,
+                    path_elements: proof[1],
+                    path_index: proof[0],
                 }
 
                 expect(() => {

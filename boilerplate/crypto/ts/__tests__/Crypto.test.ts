@@ -14,6 +14,8 @@ import * as snarkjs from 'snarkjs'
 
 const SNARK_FIELD_SIZE = snarkjs.bigInt('21888242871839275222246405745257275088548364400416034343698204186575808495617')
 
+// TODO: Merkle tree tests
+
 describe('Cryptographic operations', () => {
     const { privKey, pubKey } = genKeyPair()
     const k = genKeyPair()

@@ -24,9 +24,9 @@ class MerkleTree {
     public root: SnarkBigInt
     public nextIndex: number
 
-    constructor (depth: number, zeroValue: SnarkBigInt) {
+    constructor (depth: number, zeroValue: number) {
         this.depth = depth
-        this.zeroValue = zeroValue
+        this.zeroValue = bigInt(zeroValue)
         this.leaves = [] // Hash value of the leaves
         this.leavesRaw = [] // Raw hash value of the leaves
         this.leafNumber = Math.pow(2, depth)
@@ -254,7 +254,7 @@ class MerkleTree {
 // Helper function to abstract away `new` keyword for API
 const createMerkleTree = (
     treeDepth: number,
-    zeroValue: BigInt
+    zeroValue: number,
 ): MerkleTree => new MerkleTree(treeDepth, zeroValue)
 
 

@@ -3,11 +3,6 @@ import * as crypto from 'crypto'
 import * as snarkjs from 'snarkjs'
 import { babyJub, eddsa, mimcsponge } from 'circomlib'
 import { createMerkleTree } from './merkleTree'
-import { storage, hashers, tree } from 'semaphore-merkle-tree'
-const MemStorage = storage.MemStorage
-const MerkleTree = tree.MerkleTree
-const MimcSpongeHasher = hashers.MimcSpongeHasher
-
 
 type SnarkBigInt = snarkjs.bigInt
 type PrivKey = SnarkBigInt
@@ -303,15 +298,9 @@ const setupTree = (
     zeroValue: number = 0,
 ) => {
 
-    const tree2 = new MerkleTree(
-        'maci',
-        new storage.MemStorage(),
-        new hashers.MimcSpongeHasher(),
-        levels,
-        zeroValue,
-    )
+    const tree = createMerkleTree(levels, zeroValue)
 
-    return tree2
+    return tree
 }
 
 export {
