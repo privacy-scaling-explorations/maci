@@ -1,3 +1,4 @@
+const { assert } = require('chai')
 const path = require('path')
 const compiler = require('circom')
 const { Circuit } = require('snarkjs')
@@ -317,7 +318,7 @@ describe('Batch Update State Tree Ciruit', () => {
     const idx = circuit.getSignalIdx('main.new_state_tree_root')
     const circuitNewStateRoot = witness[idx].toString()
 
-    console.log(stateTree.root.toString(), circuitNewStateRoot)
+    assert.equal(stateTree.root.toString(), circuitNewStateRoot)
 
     // Process all the commands, then update random leaf
     // stateTree.update(0, randomLeaf)
