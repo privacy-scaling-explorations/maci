@@ -260,8 +260,8 @@ describe('Batch Update State Tree Ciruit', () => {
       // Can write to memory as it makes a new user every turn
       user.userVoteOptionTree.update(
         parseInt(userCmdVoteOptionIndex),
-        hash(BigInt(userCmdVoteOptionCredit * userCmdVoteOptionCredit)),
-        BigInt(userCmdVoteOptionCredit * userCmdVoteOptionCredit)
+        hash(BigInt(userCmdVoteOptionCredit)),
+        BigInt(userCmdVoteOptionCredit)
       )
 
       const userNewStateTreeData = [
