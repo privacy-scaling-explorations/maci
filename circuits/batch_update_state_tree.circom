@@ -1,0 +1,105 @@
+include "./update_state_tree.circom";
+
+template BatchUpdateStateTree(
+  depth,
+  vote_options_tree_depth,
+  batch_size
+) {
+  // params:
+  //    depth: the depth of the state tree and the command tree
+  //    vote_options_tree_depth: depth of the vote tree
+  //    batch_size: that we're processing
+
+  // Output: New state tree root
+  signal output new_state_tree_root;
+
+  // Input(s)
+  signal input coordinator_public_key[2];
+
+  var message_length = 11;
+  signal input message[batch_size][message_length];
+
+  // Select vote option index's weight
+  // (a.k.a the raw value of the leaf pre-hash)
+  signal private input vote_options_leaf_raw[batch_size];
+
+  // Vote options tree root (supplied by coordinator)
+  signal private input vote_options_tree_root[batch_size];
+  signal private input vote_options_tree_path_elements[batch_size][vote_options_tree_depth];
+  signal private input vote_options_tree_path_index[batch_size][vote_options_tree_depth];
+  signal input vote_options_max_leaf_index;
+
+  // Message tree
+  signal input msg_tree_root;
+  signal input msg_tree_path_elements[batch_size][depth];
+  signal input msg_tree_path_index[batch_size][depth];
+
+  // Random leaf (updated every batch)
+  signal private input random_leaf;
+  signal private input random_leaf_path_elements[depth];
+  signal private input random_leaf_path_index[depth];
+
+  // State tree
+  var state_tree_data_length = 5;
+  signal private input state_tree_data_raw[batch_size][state_tree_data_length];
+
+  signal input state_tree_max_leaf_index;
+  signal input state_tree_root[batch_size];
+  signal private input state_tree_path_elements[batch_size][depth];
+  signal private input state_tree_path_index[batch_size][depth];
+
+  // Shared keys
+  signal private input ecdh_private_key;
+  signal input ecdh_public_key[batch_size][2];
+
+  component calc_new_state_tree[batch_size];
+  for (var i = 0; i < batch_size; i++) {
+    calc_new_state_tree[i] = UpdateStateTree(depth, vote_options_tree_depth);
+
+    // Public Key
+    calc_new_state_tree[i].coordinator_public_key[0] <== coordinator_public_key[0];
+    calc_new_state_tree[i].coordinator_public_key[1] <== coordinator_public_key[1];
+
+    // Message
+    for (var j = 0; j < message_length; j++) {
+      calc_new_state_tree[i].message[j] <== message[i][j];
+    }
+
+    // Vote Options Tree
+    calc_new_state_tree[i].vote_options_leaf_raw <== vote_options_leaf_raw[i];
+    calc_new_state_tree[i].vote_options_tree_root <== vote_options_tree_root[i];
+    for (var j = 0; j < vote_options_tree_depth; j++) {
+      calc_new_state_tree[i].vote_options_tree_path_elements[j] <== vote_options_tree_path_elements[i][j];
+      calc_new_state_tree[i].vote_options_tree_path_index[j] <== vote_options_tree_path_index[i][j];
+    }
+    calc_new_state_tree[i].vote_options_max_leaf_index <== vote_options_max_leaf_index;
+
+    // Message Tree
+    calc_new_state_tree[i].msg_tree_root <== msg_tree_root;
+    for (var j = 0; j < depth; j++) {
+      calc_new_state_tree[i].msg_tree_path_elements[j] <== msg_tree_path_elements[i][j];
+      calc_new_state_tree[i].msg_tree_path_index[j] <== msg_tree_path_index[i][j];
+    }
+
+    // State Tree
+    calc_new_state_tree[i].state_tree_root <== state_tree_root[i];
+    for (var j = 0; j < state_tree_data_length; j++) {
+      calc_new_state_tree[i].state_tree_data_raw[j] <== state_tree_data_raw[i][j];
+    }
+    for (var j = 0; j < depth; j++) {
+      calc_new_state_tree[i].state_tree_path_elements[j] <== state_tree_path_elements[i][j];
+      calc_new_state_tree[i].state_tree_path_index[j] <== state_tree_path_index[i][j];
+    }
+    calc_new_state_tree[i].state_tree_max_leaf_index <== state_tree_max_leaf_index;
+
+    // Shared Keys
+    calc_new_state_tree[i].ecdh_private_key <== ecdh_private_key;
+
+    calc_new_state_tree[i].ecdh_public_key[0] <== ecdh_public_key[i][0];
+    calc_new_state_tree[i].ecdh_public_key[1] <== ecdh_public_key[i][1];
+  }
+
+  // TODO: Update random leaf at index 0
+
+  new_state_tree_root <== calc_new_state_tree[batch_size - 1].new_state_tree_root;
+}

@@ -32,7 +32,7 @@ const snarkScalarField = 2188824287183927522224640574525727508854836440041603434
 const updateStateTreeProvingKey = require('../_build/circuits/update_state_tree_proving_key.json')
 const updateStateTreeVerificationKey = require('../_build/circuits/update_tree_state_verifying_key.json')
 
-describe('Update State Tree Ciruit', () => {
+describe('Batch Update State Tree Ciruit', () => {
   const user1Sk = randomPrivateKey()
   const user1Pk = privateToPublicKey(user1Sk)
 
