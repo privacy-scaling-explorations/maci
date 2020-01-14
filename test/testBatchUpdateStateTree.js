@@ -2,12 +2,14 @@ const { assert } = require('chai')
 const path = require('path')
 const compiler = require('circom')
 const { Circuit } = require('snarkjs')
-const { stringifyBigInts } = require('../_build/utils/helpers')
+const { stringifyBigInts, unstringifyBigInts } = require('../_build/utils/helpers')
 const { merkleTreeConfig } = require('../maci-config')
 
 const {
   randomPrivateKey,
   privateToPublicKey,
+  decrypt,
+  verify,
   signAndEncrypt,
   hash,
   multiHash,
@@ -66,6 +68,115 @@ describe('Batch Update State Tree Ciruit', () => {
     ]
   }
 
+  const processMessage = (ecdhPriv, ecdhPub, _msg, _stateTree, _userVoteOptionTree) => {
+    // Make copies to the BigInt objects / classes
+    const msg = unstringifyBigInts(
+      unstringifyBigInts(_msg)
+    )
+    const stateTree = Object.assign(Object.create(Object.getPrototypeOf(_stateTree)), _stateTree)
+    const userVoteOptionTree = Object.assign(Object.create(Object.getPrototypeOf(_userVoteOptionTree)), _userVoteOptionTree)
+
+    // Decrypt the msg and extract relevant parts of it
+    const msgDecrypted = decrypt(
+      msg,
+      ecdhPriv,
+      ecdhPub
+    )
+
+    const [
+      userCmdIndex,
+      userCmdPubX,
+      userCmdPubY,
+      userCmdVoteOptionIndex,
+      userCmdVoteOptionCredit,
+      userCmdNonce, // eslint-disable-line
+      userCmdSalt,  // eslint-disable-line
+      userCmdSigR8X,
+      userCmdSigR8Y,
+      userCmdSigS
+    ] = msgDecrypted
+
+    // User data in state tree
+    const [
+      userStatePubX, // eslint-disable-line
+      userStatePubY, // eslint-disable-line
+      userStateVoteRoot, // eslint-disable-line
+      userStateVoteBalance,
+      userStateNonce
+    ] = stateTree.leavesRaw[parseInt(userCmdIndex)]
+
+    const cmd = msgDecrypted.slice(0, -3)
+
+    const msgSig = {
+      R8: [userCmdSigR8X, userCmdSigR8Y],
+      S: userCmdSigS
+    }
+
+    const msgSigPubKey = [
+      userStatePubX, userStatePubY
+    ]
+
+    // If Index is invalid, return
+    if (parseInt(userCmdIndex) >= parseInt(stateTree.nextIndex)) {
+      return [
+        stateTree,
+        userVoteOptionTree
+      ]
+    }
+
+    // If signature isn't valid, do nothing
+    if (!verify(multiHash(cmd), msgSig, msgSigPubKey)) {
+      return [
+        stateTree,
+        userVoteOptionTree
+      ]
+    }
+
+    // If nonce isn't valid, do nothing
+    if (parseInt(userCmdNonce) !== parseInt(userStateNonce + 1n)) {
+      return [
+        stateTree,
+        userVoteOptionTree
+      ]
+    }
+
+    // If insufficient vote credits, do nothing
+    const userPrevSpentCred = userVoteOptionTree.leavesRaw[parseInt(userCmdVoteOptionIndex)]
+    const voteCreditsLeft = BigInt(userStateVoteBalance + BigInt(userPrevSpentCred * userPrevSpentCred) - BigInt(userCmdVoteOptionCredit * userCmdVoteOptionCredit))
+    if (parseInt(voteCreditsLeft) < 0) {
+      return [
+        stateTree,
+        userVoteOptionTree
+      ]
+    }
+
+    userVoteOptionTree.update(
+      parseInt(userCmdVoteOptionIndex),
+      // Replace voted credits new new command
+      hash(BigInt(userCmdVoteOptionCredit)),
+      BigInt(userCmdVoteOptionCredit)
+    )
+
+    const userNewStateTreeData = [
+      userCmdPubX,
+      userCmdPubY,
+      userVoteOptionTree.root,
+      voteCreditsLeft,
+      userStateNonce + 1n
+    ]
+
+    stateTree.update(
+      parseInt(userCmdIndex),
+      multiHash(userNewStateTreeData),
+      userNewStateTreeData
+    )
+
+    return [
+      stateTree,
+      userVoteOptionTree
+    ]
+  }
+
   it('Valid Inputs', async () => {
     // Since there's not types here:
     // userCmd:
@@ -89,7 +200,7 @@ describe('Batch Update State Tree Ciruit', () => {
 
     // Contruct the tree(s)
     const msgTree = createMerkleTree(treeDepth, merkleTreeConfig.zeroValue)
-    const stateTree = createMerkleTree(treeDepth, merkleTreeConfig.zeroValue)
+    let stateTree = createMerkleTree(treeDepth, merkleTreeConfig.zeroValue)
     const voteOptionTree = createMerkleTree(voteOptionTreeDepth, merkleTreeConfig.zeroValue)
 
     // Insert candidates into vote option tree
@@ -195,6 +306,7 @@ describe('Batch Update State Tree Ciruit', () => {
     for (let i = 0; i < batchSize; i++) {
       // Get relevant PATHs
       const cmd = cmds[i]
+      const msg = msgs[i]
       const user = users[i]
 
       const [
@@ -234,57 +346,23 @@ describe('Batch Update State Tree Ciruit', () => {
       ecdhPublicKeyBatch.push(user.ephemeralPk)
 
       // Process command in state tree
-      // TODO: Abstract this out into a function
-      // TODO: Add logic for handling invalid commands, ATM every function is valid
-      // User command
-      const [
-        userCmdIndex,
-        userCmdPubX,
-        userCmdPubY,
-        userCmdVoteOptionIndex,
-        userCmdVoteOptionCredit,
-        userCmdNonce,
-        userCmdSalt
-      ] = cmd
-
-      // User data in state tree
-      const [
-        userStatePubX,
-        userStatePubY,
-        userStateVoteRoot,
-        userStateVoteBalance,
-        userStateNonce
-      ] = stateTree.leavesRaw[userCmdIndex]
-
-      const userPrevSpentCred = user.userVoteOptionTree.leavesRaw[parseInt(userCmdVoteOptionIndex)]
-
-      // Can write to memory as it makes a new user every turn
-      user.userVoteOptionTree.update(
-        parseInt(userCmdVoteOptionIndex),
-        hash(BigInt(userCmdVoteOptionCredit)),
-        BigInt(userCmdVoteOptionCredit)
+      // acc stands for accumulator
+      const [ accStateTree, accUserVoteOptionTree ] = processMessage(
+        coordinatorSk,
+        user.ephemeralPk,
+        msg,
+        stateTree,
+        user.userVoteOptionTree
       )
 
-      const userNewStateTreeData = [
-        userCmdPubX,
-        userCmdPubY,
-        user.userVoteOptionTree.root,
-        BigInt(userStateVoteBalance + BigInt(userPrevSpentCred * userPrevSpentCred) - BigInt(userCmdVoteOptionCredit * userCmdVoteOptionCredit)),
-        userStateNonce + 1n
-      ]
-
-      // Can write to memory as it makes a new user every turn
-      // TODO: make this not a reference
-      stateTree.update(
-        parseInt(userCmdIndex),
-        multiHash(userNewStateTreeData),
-        userNewStateTreeData
-      )
+      stateTree = accStateTree
+      user.userVoteOptionTree = accUserVoteOptionTree
     }
 
     const stateTreeMaxIndex = BigInt(stateTree.nextIndex - 1)
     const voteOptionsMaxIndex = BigInt(voteOptionTree.nextIndex - 1)
 
+    // After processing all commands, insert random leaf
     const randomLeafRoot = stateTree.root
     const randomLeaf = randomPrivateKey()
     const [
