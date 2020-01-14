@@ -192,10 +192,12 @@ template QuadVoteTally(
         voteOptionRootChecker[i].root === stateLeaves[i][STATE_TREE_VOTE_OPTION_TREE_ROOT_IDX];
     }
 
+    // Salt and hash the results up to the current batch
     component currentResultsCommitmentHasher = Hasher(numVoteOptions + 1);
     currentResultsCommitmentHasher.key <== 0;
     currentResultsCommitmentHasher.in[numVoteOptions] <== currentResultsSalt;
 
+    // Also salt and hash the result of the current batch
     component newResultsCommitmentHasher = Hasher(numVoteOptions + 1);
 
     newResultsCommitmentHasher.key <== 0;
@@ -205,6 +207,7 @@ template QuadVoteTally(
         currentResultsCommitmentHasher.in[i] <== currentResults[i];
     }
 
+    // Check if the salted hash of the results up to the current batch is valid
     currentResultsCommitment === currentResultsCommitmentHasher.hash;
 
     newResultsCommitment <== newResultsCommitmentHasher.hash;

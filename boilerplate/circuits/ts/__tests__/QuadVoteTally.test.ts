@@ -29,9 +29,8 @@ describe('Quadratic vote tallying circuit', () => {
         const nums = [3, 3, 3, 3, 2, 4]
         const sum = nums.reduce((a, b) => a + b, 0)
 
-        const circuitInputs = {}
-        for (let i=0; i < nums.length; i++) {
-            circuitInputs['nums[' + i.toString() + ']'] = nums[i].toString()
+        const circuitInputs = {
+            nums,
         }
 
         const witness = ctCircuit.calculateWitness(circuitInputs)
@@ -41,9 +40,6 @@ describe('Quadratic vote tallying circuit', () => {
     })
 
     it('QuadVoteTally should correctly tally a set of votes', async () => {
-        // Set inputs
-        let circuitInputs = {}
-
         // as set in quadVoteTally_test.circom
         const fullStateTreeDepth = 4
         const intermediateStateTreeDepth = 2
@@ -113,9 +109,9 @@ describe('Quadratic vote tallying circuit', () => {
 
             const intermediatePathElements = intermediateStateTree.getPathUpdate(intermediatePathIndex)[0]
 
-            for (let i = 0; i < intermediatePathElements.length; i++) {
-                circuitInputs['intermediatePathElements[' + i + ']'] = 
-                    intermediatePathElements[i].toString()
+            // Set inputs
+            let circuitInputs = {
+                intermediatePathElements,
             }
 
             for (let i = 0; i < batchSize; i++) {
@@ -144,10 +140,7 @@ describe('Quadratic vote tallying circuit', () => {
 
             const currentResultsCommitment = hash([...currentResults, currentResultsSalt])
 
-            for (let i = 0; i < numVoteOptions; i++) {
-                circuitInputs['currentResults[' + i + ']'] = currentResults[i].toString()
-            }
-
+            circuitInputs['currentResults'] = currentResults
             circuitInputs['fullStateRoot'] = fullStateTree.root.toString()
             circuitInputs['intermediateStateRoot'] = intermediateStateTree.leaves[intermediatePathIndex].toString()
             circuitInputs['intermediatePathIndex'] = intermediatePathIndex.toString()
