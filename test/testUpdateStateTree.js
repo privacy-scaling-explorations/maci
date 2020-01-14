@@ -206,7 +206,7 @@ describe('Batch Update State Tree Ciruit', () => {
     const witness = circuit.calculateWitness(circuitInputs)
     assert(circuit.checkWitness(witness))
 
-    const idx = circuit.getSignalIdx('main.new_state_tree_root')
+    const idx = circuit.getSignalIdx('main.root')
     const circuitNewStateRoot = witness[idx].toString()
 
     // Update user vote option tree
@@ -286,7 +286,7 @@ describe('Batch Update State Tree Ciruit', () => {
     } = await getUpdateStateTreeParams(user1Command)
 
     const witness = circuit.calculateWitness(circuitInputs)
-    const idx = circuit.getSignalIdx('main.new_state_tree_root')
+    const idx = circuit.getSignalIdx('main.root')
     const circuitNewStateRoot = witness[idx].toString()
 
     const jsNewStateRoot = stateTree.root.toString()
@@ -317,7 +317,7 @@ describe('Batch Update State Tree Ciruit', () => {
     } = await getUpdateStateTreeParams(user1Command, { privateKey: randomPrivateKey() })
 
     const witness = circuit.calculateWitness(circuitInputs)
-    const idx = circuit.getSignalIdx('main.new_state_tree_root')
+    const idx = circuit.getSignalIdx('main.root')
     const circuitNewStateRoot = witness[idx].toString()
 
     const jsNewStateRoot = stateTree.root.toString()
@@ -347,7 +347,7 @@ describe('Batch Update State Tree Ciruit', () => {
     } = await getUpdateStateTreeParams(user1Command)
 
     const witness = circuit.calculateWitness(circuitInputs)
-    const idx = circuit.getSignalIdx('main.new_state_tree_root')
+    const idx = circuit.getSignalIdx('main.root')
     const circuitNewStateRoot = witness[idx].toString()
 
     const jsNewStateRoot = stateTree.root.toString()
@@ -378,7 +378,7 @@ describe('Batch Update State Tree Ciruit', () => {
     } = await getUpdateStateTreeParams(user1Command)
 
     const witness = circuit.calculateWitness(circuitInputs)
-    const idx = circuit.getSignalIdx('main.new_state_tree_root')
+    const idx = circuit.getSignalIdx('main.root')
     const circuitNewStateRoot = witness[idx].toString()
 
     const jsNewStateRoot = stateTree.root.toString()

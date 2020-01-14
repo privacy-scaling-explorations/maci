@@ -285,6 +285,7 @@ describe('Batch Update State Tree Ciruit', () => {
     const stateTreeMaxIndex = BigInt(stateTree.nextIndex - 1)
     const voteOptionsMaxIndex = BigInt(voteOptionTree.nextIndex - 1)
 
+    const randomLeafRoot = stateTree.root
     const randomLeaf = randomPrivateKey()
     const [
       randomLeafPathElements,
@@ -298,6 +299,7 @@ describe('Batch Update State Tree Ciruit', () => {
       'msg_tree_path_elements': msgTreeBatchPathElements,
       'msg_tree_path_index': msgTreeBatchPathIndexes,
       'random_leaf': randomLeaf,
+      'random_leaf_root': randomLeafRoot,
       'random_leaf_path_elements': randomLeafPathElements,
       'random_leaf_path_index': randomLeafPathIndexes,
       'vote_options_leaf_raw': voteOptionTreeBatchLeafRaw,
@@ -315,12 +317,12 @@ describe('Batch Update State Tree Ciruit', () => {
     })
 
     const witness = circuit.calculateWitness(circuitInputs)
-    const idx = circuit.getSignalIdx('main.new_state_tree_root')
+    const idx = circuit.getSignalIdx('main.root')
     const circuitNewStateRoot = witness[idx].toString()
 
-    assert.equal(stateTree.root.toString(), circuitNewStateRoot)
+    // Finally update state tree random leaf
+    stateTree.update(0, randomLeaf)
 
-    // Process all the commands, then update random leaf
-    // stateTree.update(0, randomLeaf)
+    assert.equal(stateTree.root.toString(), circuitNewStateRoot)
   })
 })
