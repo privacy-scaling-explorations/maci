@@ -1,4 +1,8 @@
+include "../node_modules/circomlib/circuits/bitify.circom";
+
 include "./update_state_tree.circom";
+include "./merkletree.circom";
+
 
 template BatchUpdateStateTree(
   depth,
@@ -32,12 +36,19 @@ template BatchUpdateStateTree(
   // Message tree
   signal input msg_tree_root;
   signal input msg_tree_path_elements[batch_size][depth];
-  signal input msg_tree_path_index[batch_size][depth];
+  signal input msg_tree_batch_start_index; // Starting index of the batch
+
+  component msg_tree_path_index[batch_size];
+  for (var i = 0; i < batch_size; i++) {
+    msg_tree_path_index[i] = Num2Bits(depth);
+    msg_tree_path_index[i].in <== msg_tree_batch_start_index + i;
+  }
 
   // Random leaf (updated every batch)
   signal private input random_leaf;
   signal private input random_leaf_path_elements[depth];
-  signal private input random_leaf_path_index[depth];
+  component random_leaf_path_index = Num2Bits(depth);
+  random_leaf_path_index.in <== 0;
 
   // Root when random leaf is inserted
   // As the random leaf is inserted at th end,
@@ -84,7 +95,7 @@ template BatchUpdateStateTree(
     new_state_tree[i].msg_tree_root <== msg_tree_root;
     for (var j = 0; j < depth; j++) {
       new_state_tree[i].msg_tree_path_elements[j] <== msg_tree_path_elements[i][j];
-      new_state_tree[i].msg_tree_path_index[j] <== msg_tree_path_index[i][j];
+      new_state_tree[i].msg_tree_path_index[j] <== msg_tree_path_index[i].out[j];
     }
 
     // State Tree
@@ -107,10 +118,10 @@ template BatchUpdateStateTree(
 
   // Update random leaf at index 0
   component final_state_tree = MerkleTreeUpdate(depth);
-  final_state_tree.leaf <== random_leaf
+  final_state_tree.leaf <== random_leaf;
   for (var i = 0; i < depth; i++) {
     final_state_tree.path_elements[i] <== random_leaf_path_elements[i];
-    final_state_tree.path_index[i] <== random_leaf_path_index[i];
+    final_state_tree.path_index[i] <== random_leaf_path_index.out[i];
   }
 
   // Assert root calculations are valid

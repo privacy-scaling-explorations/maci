@@ -289,6 +289,7 @@ describe('Batch Update State Tree Ciruit', () => {
     // Generate circuit inputs
     let msgTreeBatchPathElements = []
     let msgTreeBatchPathIndexes = []
+    const msgTreeBatchStartIndex = msgIdxs[0]
 
     let stateTreeBatchRaw = []
     let stateTreeBatchRoot = []
@@ -367,7 +368,7 @@ describe('Batch Update State Tree Ciruit', () => {
     const randomLeaf = randomPrivateKey()
     const [
       randomLeafPathElements,
-      randomLeafPathIndexes
+      _
     ] = stateTree.getPathUpdate(0)
 
     const circuitInputs = stringifyBigInts({
@@ -375,11 +376,10 @@ describe('Batch Update State Tree Ciruit', () => {
       'message': msgs,
       'msg_tree_root': msgTree.root,
       'msg_tree_path_elements': msgTreeBatchPathElements,
-      'msg_tree_path_index': msgTreeBatchPathIndexes,
+      'msg_tree_batch_start_index': msgTreeBatchStartIndex,
       'random_leaf': randomLeaf,
       'random_leaf_root': randomLeafRoot,
       'random_leaf_path_elements': randomLeafPathElements,
-      'random_leaf_path_index': randomLeafPathIndexes,
       'vote_options_leaf_raw': voteOptionTreeBatchLeafRaw,
       'vote_options_tree_root': userVoteOptionsBatchRoot,
       'vote_options_tree_path_elements': userVoteOptionsBatchPathElements,
