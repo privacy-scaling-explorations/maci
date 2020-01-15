@@ -12,7 +12,7 @@ template BatchUpdateStateTree(
   // params:
   //    depth: the depth of the state tree and the command tree
   //    vote_options_tree_depth: depth of the vote tree
-  //    batch_size: that we're processing
+  //    batch_size: the number of messages to process
 
   // Output: New state tree root
   signal output root;

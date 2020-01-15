@@ -30,7 +30,7 @@ const getRandom = (min, max) => {
   return parseInt(Math.random() * (max - min) + min)
 }
 
-describe('Batch Update State Tree Ciruit', () => {
+describe('Batch Update State Tree Circuit', () => {
   const coordinatorSk = randomPrivateKey()
   const coordinatorPk = privateToPublicKey(coordinatorSk)
 
