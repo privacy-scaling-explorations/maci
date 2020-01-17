@@ -19,7 +19,7 @@ template UpdateStateTree(
   //    vote_options_tree_depth: depth of the vote tree
 
   // Output: New state tree root
-  signal output new_state_tree_root;
+  signal output root;
 
   // Input(s)
   signal input coordinator_public_key[2];
@@ -279,5 +279,5 @@ template UpdateStateTree(
   selected_state_tree_root.c[1] <== new_state_tree.root;
   selected_state_tree_root.s <== valid_update.out;
 
-  new_state_tree_root <== selected_state_tree_root.out;
+  root <== selected_state_tree_root.out;
 }
