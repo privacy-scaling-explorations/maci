@@ -3,6 +3,8 @@ import * as crypto from 'crypto'
 import * as snarkjs from 'snarkjs'
 import { babyJub, eddsa, mimcsponge } from 'circomlib'
 import { createMerkleTree } from './merkleTree'
+const stringifyBigInts: (obj: object) => object = snarkjs.stringifyBigInts
+const unstringifyBigInts: (obj: object) => object = snarkjs.unstringifyBigInts
 
 type SnarkBigInt = snarkjs.bigInt
 type PrivKey = SnarkBigInt
@@ -161,6 +163,8 @@ const genPubKey = (privKey: PrivKey): PubKey => {
 
     // TODO: assert that pubKey is valid
     // TODO: figure out how to check if pubKey is valid
+ 
+    assert(pubKey.length === 2)
 
     return pubKey
 }
@@ -253,7 +257,6 @@ const sign = (
     const s = snarkjs.bigInt.leBuff2int(sBuff)
     const A = babyJub.mulPointEscalar(babyJub.Base8, s.shr(3))
 
-    debugger
     const msgBuff = snarkjs.bigInt.leInt2Buff(
         plaintext,
         32
@@ -325,4 +328,7 @@ export {
     Plaintext,
     bigInt,
     setupTree,
+    stringifyBigInts,
+    unstringifyBigInts,
+    formatPrivKeyForBabyJub,
 }
