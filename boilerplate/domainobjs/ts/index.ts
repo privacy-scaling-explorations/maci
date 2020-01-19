@@ -25,7 +25,30 @@ interface VoteOptionTreeLeaf {
     votes: SnarkBigInt;
 }
 
-type Message = Ciphertext
+class Message {
+    public iv: SnarkBigInt
+    public data: SnarkBigInt[]
+
+    constructor (
+        iv: SnarkBigInt,
+        data: SnarkBigInt[],
+    ) {
+        this.iv = iv
+        this.data = data
+    }
+
+    private asArray = (): SnarkBigInt[] => {
+
+        return [
+            this.iv,
+            ...this.data,
+        ]
+    }
+
+    public asCircuitInputs = (): SnarkBigInt[] => {
+        return this.asArray()
+    }
+}
 
 class StateLeaf implements IStateLeaf {
     public pubKey: PubKey
@@ -44,23 +67,41 @@ class StateLeaf implements IStateLeaf {
         this.voiceCreditBalance = voiceCreditBalance
         this.nonce = nonce
     }
+
+    private asArray = (): SnarkBigInt[] => {
+        return [
+            this.pubKey[0],
+            this.pubKey[1],
+            this.voteOptionTreeRoot,
+            this.voiceCreditBalance,
+            this.nonce,
+        ]
+    }
+
+    public asCircuitInputs = (): SnarkBigInt[] => {
+        return this.asArray()
+    }
+
+    public hash = (): SnarkBigInt => {
+        return hash(this.asArray())
+    }
 }
 
 interface ICommand {
     stateIndex: SnarkBigInt;
-    encPubKey: PubKey;
+    //encPubKey: PubKey;
     newPubKey: PubKey;
     voteOptionIndex: SnarkBigInt;
     newVoteWeight: SnarkBigInt;
     nonce: SnarkBigInt;
 
     sign: (PrivKey) => Signature;
-    encrypt: (EcdhSharedKey, Signature) => Ciphertext;
+    encrypt: (EcdhSharedKey, Signature) => Message;
 }
 
 class Command implements ICommand {
     public stateIndex: SnarkBigInt
-    public encPubKey: PubKey
+    //public encPubKey: PubKey
     public newPubKey: PubKey
     public voteOptionIndex: SnarkBigInt
     public newVoteWeight: SnarkBigInt
@@ -68,26 +109,26 @@ class Command implements ICommand {
 
     constructor (
         stateIndex: SnarkBigInt,
-        encPubKey: PubKey,
+        //encPubKey: PubKey,
         newPubKey: PubKey,
         voteOptionIndex: SnarkBigInt,
         newVoteWeight: SnarkBigInt,
         nonce: SnarkBigInt,
     ) {
         this.stateIndex = stateIndex
-        this.encPubKey = encPubKey
+        //this.encPubKey = encPubKey
         this.newPubKey = newPubKey
         this.voteOptionIndex = voteOptionIndex
         this.newVoteWeight = newVoteWeight
         this.nonce = nonce
     }
 
-    private asArray = () => {
+    public asArray = (): SnarkBigInt[] => {
 
         return [
             this.stateIndex,
-            this.encPubKey[0],
-            this.encPubKey[1],
+            //this.encPubKey[0],
+            //this.encPubKey[1],
             this.newPubKey[0],
             this.newPubKey[1],
             this.voteOptionIndex,
@@ -101,8 +142,8 @@ class Command implements ICommand {
      */
     public equals = (command: Command): boolean => {
         return this.stateIndex == command.stateIndex &&
-            this.encPubKey[0] == command.encPubKey[0] &&
-            this.encPubKey[1] == command.encPubKey[1] &&
+            //this.encPubKey[0] == command.encPubKey[0] &&
+            //this.encPubKey[1] == command.encPubKey[1] &&
             this.newPubKey[0] == command.newPubKey[0] &&
             this.newPubKey[1] == command.newPubKey[1] &&
             this.voteOptionIndex == command.voteOptionIndex &&
@@ -152,9 +193,10 @@ class Command implements ICommand {
             signature.S,
         ]
 
-        const ciphertext: Message = encrypt(plaintext, sharedKey)
+        const ciphertext: Ciphertext = encrypt(plaintext, sharedKey)
+        const message = new Message(ciphertext.iv, ciphertext.data)
         
-        return ciphertext
+        return message
     }
 
     /*
@@ -170,11 +212,19 @@ class Command implements ICommand {
         return new Command(
             decrypted[0],
             [decrypted[1], decrypted[2]],
-            [decrypted[3], decrypted[4]],
+            decrypted[3],
+            decrypted[4],
             decrypted[5],
-            decrypted[6],
-            decrypted[7],
         )
+
+        //return new Command(
+            //decrypted[0],
+            //[decrypted[1], decrypted[2]],
+            //[decrypted[3], decrypted[4]],
+            //decrypted[5],
+            //decrypted[6],
+            //decrypted[7],
+        //)
     }
 }
 
