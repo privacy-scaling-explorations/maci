@@ -1,5 +1,5 @@
 {
-    "name": "maci-config",
+    "name": "maci-circuits",
     "version": "1.0.0",
     "description": "",
     "main": "build/index.js",
@@ -22,6 +22,8 @@
         "@types/node": "^13.1.2",
         "ts-jest": "^24.2.0",
         "maci-crypto": "1.0.0",
+        "maci-domainobjs": "1.0.0",
+        "maci-config": "1.0.0",
         "jest": "^24.9.0",
         "circom": "0.0.34",
         "circomlib": "0.0.19",
