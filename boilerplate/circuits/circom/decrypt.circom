@@ -4,7 +4,7 @@ include "../node_modules/circomlib/circuits/escalarmulany.circom";
 
 template Decrypt(N) {
   // Where N is the length of the
-  // decrypted message output of the
+  // decrypted message
   signal input message[N+1];
   signal input private_key;
   signal output out[N];

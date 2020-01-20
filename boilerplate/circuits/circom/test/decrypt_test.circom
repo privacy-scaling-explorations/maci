@@ -1,3 +1,3 @@
 include "../decrypt.circom"
 
-component main = Decrypt(10);
+component main = Decrypt(5);
