@@ -11,6 +11,7 @@ import {
     sign,
     hash,
     verifySignature,
+    genRandomSalt,
 } from 'maci-crypto'
 
 
@@ -46,7 +47,13 @@ class Message {
     }
 
     public asCircuitInputs = (): SnarkBigInt[] => {
+
         return this.asArray()
+    }
+
+    public hash = (): SnarkBigInt => {
+
+        return hash(this.asArray())
     }
 }
 
@@ -69,6 +76,7 @@ class StateLeaf implements IStateLeaf {
     }
 
     private asArray = (): SnarkBigInt[] => {
+
         return [
             this.pubKey[0],
             this.pubKey[1],
@@ -79,10 +87,12 @@ class StateLeaf implements IStateLeaf {
     }
 
     public asCircuitInputs = (): SnarkBigInt[] => {
+
         return this.asArray()
     }
 
     public hash = (): SnarkBigInt => {
+
         return hash(this.asArray())
     }
 }
@@ -106,34 +116,34 @@ class Command implements ICommand {
     public voteOptionIndex: SnarkBigInt
     public newVoteWeight: SnarkBigInt
     public nonce: SnarkBigInt
+    public salt: SnarkBigInt
 
     constructor (
         stateIndex: SnarkBigInt,
-        //encPubKey: PubKey,
         newPubKey: PubKey,
         voteOptionIndex: SnarkBigInt,
         newVoteWeight: SnarkBigInt,
         nonce: SnarkBigInt,
+        salt: SnarkBigInt = genRandomSalt(),
     ) {
         this.stateIndex = stateIndex
-        //this.encPubKey = encPubKey
         this.newPubKey = newPubKey
         this.voteOptionIndex = voteOptionIndex
         this.newVoteWeight = newVoteWeight
         this.nonce = nonce
+        this.salt = salt
     }
 
     public asArray = (): SnarkBigInt[] => {
 
         return [
             this.stateIndex,
-            //this.encPubKey[0],
-            //this.encPubKey[1],
             this.newPubKey[0],
             this.newPubKey[1],
             this.voteOptionIndex,
             this.newVoteWeight,
             this.nonce,
+            this.salt,
         ]
     }
 
@@ -141,14 +151,14 @@ class Command implements ICommand {
      * Check whether this command has deep equivalence to another command
      */
     public equals = (command: Command): boolean => {
+
         return this.stateIndex == command.stateIndex &&
-            //this.encPubKey[0] == command.encPubKey[0] &&
-            //this.encPubKey[1] == command.encPubKey[1] &&
             this.newPubKey[0] == command.newPubKey[0] &&
             this.newPubKey[1] == command.newPubKey[1] &&
             this.voteOptionIndex == command.voteOptionIndex &&
             this.newVoteWeight == command.newVoteWeight &&
-            this.nonce == command.nonce
+            this.nonce == command.nonce &&
+            this.salt == command.salt
     }
 
     /*
@@ -215,16 +225,8 @@ class Command implements ICommand {
             decrypted[3],
             decrypted[4],
             decrypted[5],
+            decrypted[6],
         )
-
-        //return new Command(
-            //decrypted[0],
-            //[decrypted[1], decrypted[2]],
-            //[decrypted[3], decrypted[4]],
-            //decrypted[5],
-            //decrypted[6],
-            //decrypted[7],
-        //)
     }
 }
 

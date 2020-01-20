@@ -32,7 +32,6 @@ describe('Domain objects', () => {
 
     const command: Command = new Command(
         bigInt(10),
-        //encPubKey,
         newPubKey,
         bigInt(0),
         bigInt(9),
