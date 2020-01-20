@@ -1,7 +1,7 @@
 import * as assert from 'assert'
 import * as crypto from 'crypto'
 import * as snarkjs from 'snarkjs'
-import { babyJub, eddsa, mimcsponge } from 'circomlib'
+import { babyJub, eddsa, mimcsponge, mimc7 } from 'circomlib'
 import { createMerkleTree } from './merkleTree'
 const stringifyBigInts: (obj: object) => object = snarkjs.stringifyBigInts
 const unstringifyBigInts: (obj: object) => object = snarkjs.unstringifyBigInts
@@ -201,15 +201,14 @@ const encrypt = (
 ): Ciphertext => {
 
     // Generate the IV
-    const iv = mimcsponge.multiHash(plaintext, 0, 1)
+    const iv = mimc7.multiHash(plaintext, bigInt(0))
 
     const ciphertext: Ciphertext = {
         iv,
         data: plaintext.map((e: SnarkBigInt, i: Number): SnarkBigInt => {
-            return e + mimcsponge.multiHash(
-                [sharedKey], 
+            return e + mimc7.hash(
+                sharedKey, 
                 iv + snarkjs.bigInt(i),
-                1,
             )
         }),
     }
@@ -229,10 +228,9 @@ const decrypt = (
 
     const plaintext: Plaintext = ciphertext.data.map(
         (e: SnarkBigInt, i: Number): SnarkBigInt => {
-            return e - mimcsponge.multiHash(
-                [sharedKey],
+            return e - mimc7.hash(
+                sharedKey,
                 ciphertext.iv + snarkjs.bigInt(i),
-                1,
             )
         }
     )
