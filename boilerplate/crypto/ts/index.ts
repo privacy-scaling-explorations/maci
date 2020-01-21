@@ -2,7 +2,7 @@ import * as assert from 'assert'
 import * as crypto from 'crypto'
 import * as snarkjs from 'snarkjs'
 import { babyJub, eddsa, mimcsponge, mimc7 } from 'circomlib'
-import { createMerkleTree } from './merkleTree'
+import { createMerkleTree, MerkleTree } from './merkleTree'
 const stringifyBigInts: (obj: object) => object = snarkjs.stringifyBigInts
 const unstringifyBigInts: (obj: object) => object = snarkjs.unstringifyBigInts
 
@@ -330,4 +330,5 @@ export {
     stringifyBigInts,
     unstringifyBigInts,
     formatPrivKeyForBabyJub,
+    MerkleTree
 }

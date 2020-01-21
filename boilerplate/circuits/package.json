@@ -24,7 +24,9 @@
         "test-leafExists": "jest LeafExists.test.ts",
         "test-leafExists-debug": "node --inspect-brk ./node_modules/.bin/jest LeafExists.test.ts",
         "test-updateStateTree": "jest UpdateStateTree.test.ts",
-        "test-updateStateTree-debug": "node --inspect-brk ./node_modules/.bin/jest UpdateStateTree.test.ts"
+        "test-updateStateTree-debug": "node --inspect-brk ./node_modules/.bin/jest UpdateStateTree.test.ts",
+        "test-batchUpdateStateTree": "jest BatchUpdateStateTree.test.ts",
+        "test-batchUpdateStateTree-debug": "node --inspect-brk ./node_modules/.bin/jest BatchUpdateStateTree.test.ts"
     },
     "dependencies": {},
     "devDependencies": {

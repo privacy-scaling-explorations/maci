@@ -111,7 +111,6 @@ interface ICommand {
 
 class Command implements ICommand {
     public stateIndex: SnarkBigInt
-    //public encPubKey: PubKey
     public newPubKey: PubKey
     public voteOptionIndex: SnarkBigInt
     public newVoteWeight: SnarkBigInt
@@ -215,11 +214,11 @@ class Command implements ICommand {
     public static decrypt = (
         sharedKey: EcdhSharedKey,
         message: Message,
-    ): Command => {
+    ) => {
 
         const decrypted = decrypt(message, sharedKey)
 
-        return new Command(
+        const command = new Command(
             decrypted[0],
             [decrypted[1], decrypted[2]],
             decrypted[3],
@@ -227,6 +226,13 @@ class Command implements ICommand {
             decrypted[5],
             decrypted[6],
         )
+
+        const signature = {
+            R8: [decrypted[7], decrypted[8]],
+            S: decrypted[9],
+        }
+
+        return { command, signature }
     }
 }
 

@@ -57,7 +57,21 @@ class MerkleTree {
         this.nextIndex = 0
     }
 
-    public hash (values: any[]): BigInt {
+    public copy(): MerkleTree {
+        const tree = new MerkleTree(this.depth, this.zeroValue)
+        tree.leaves = this.leaves
+        tree.leavesRaw = this.leavesRaw
+        tree.leafNumber = this.leafNumber
+        tree.zeros = this.zeros
+        tree.filledSubtrees = this.filledSubtrees
+        tree.filledPaths = this.filledPaths
+        tree.root = this.root
+        tree.nextIndex = this.nextIndex
+
+        return tree
+    }
+
+    public hash (values: any[]): SnarkBigInt {
         if (Array.isArray(values)) {
             return hash(values.map((x: any): SnarkBigInt => bigInt(x)))
         }
@@ -68,7 +82,7 @@ class MerkleTree {
     /*  Helper function to hash the left and right values
      *  of the leaves
      */
-    public hashLeftRight (left: BigInt, right: BigInt): BigInt {
+    public hashLeftRight (left: SnarkBigInt, right: SnarkBigInt): SnarkBigInt {
         return hashLeftRight(left, right)
     }
 
@@ -141,7 +155,7 @@ class MerkleTree {
      */
     private _update (
         leafIndex: number,
-        leaf: BigInt,
+        leaf: SnarkBigInt,
         rawValue: object,
         path: SnarkBigInt[],
     ) {

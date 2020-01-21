@@ -47,8 +47,11 @@ describe('Domain objects', () => {
         })
         
         it ('A decrypted message should match the original command', () => {
-            const decryptedCommand = Command.decrypt(ecdhSharedKey, message)
-            expect(decryptedCommand.equals(command)).toBeTruthy()
+            const decrypted = Command.decrypt(ecdhSharedKey, message)
+            expect(decrypted.command.equals(command)).toBeTruthy()
+            expect(decrypted.signature.R8[0]).toEqual(signature.R8[0])
+            expect(decrypted.signature.R8[1]).toEqual(signature.R8[1])
+            expect(decrypted.signature.S).toEqual(signature.S)
         })
     })
 })
