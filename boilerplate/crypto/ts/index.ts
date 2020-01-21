@@ -125,7 +125,8 @@ const genRandomSalt: PrivKey = () => {
 
 /*
  * An internal function which formats a random private key to be compatible
- * with the BabyJub curve.
+ * with the BabyJub curve. This is the format which should be passed into the
+ * PublicKey and other circuits.
  */
 const formatPrivKeyForBabyJub = (privKey: PrivKey) => {
 
