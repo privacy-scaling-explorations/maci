@@ -202,7 +202,10 @@ class MerkleTree {
      *  Used for quick verification on updates.
      *  Runs in O(log(N)), where N is the number of leaves
      */
-    getPathUpdate (leafIndex: number): [SnarkBigInt[], number[]] {
+    getPathUpdate (_leafIndex: number | SnarkBigInt): [SnarkBigInt[], number[]] {
+
+        const leafIndex = parseInt(_leafIndex.toString(), 10)
+
         if (leafIndex >= this.nextIndex) {
             throw new Error('Path not constructed yet, leafIndex >= nextIndex')
         }
