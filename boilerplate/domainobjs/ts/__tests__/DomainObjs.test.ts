@@ -41,17 +41,21 @@ describe('Domain objects', () => {
     describe('Commands and Messages', () => {
         const signature = command.sign(privKey)
         const message = command.encrypt(ecdhSharedKey, signature)
+        const decrypted = Command.decrypt(ecdhSharedKey, message)
 
         it ('command.sign() should produce a valid signature', () => {
             expect(command.verifySignature(signature, pubKey)).toBeTruthy()
         })
         
         it ('A decrypted message should match the original command', () => {
-            const decrypted = Command.decrypt(ecdhSharedKey, message)
             expect(decrypted.command.equals(command)).toBeTruthy()
             expect(decrypted.signature.R8[0]).toEqual(signature.R8[0])
             expect(decrypted.signature.R8[1]).toEqual(signature.R8[1])
             expect(decrypted.signature.S).toEqual(signature.S)
+        })
+
+        it ('A decrypted message should have a valid signature', () => {
+            expect(decrypted.command.verifySignature(decrypted.signature, pubKey)).toBeTruthy()
         })
     })
 })

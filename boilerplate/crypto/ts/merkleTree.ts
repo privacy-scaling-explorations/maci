@@ -128,10 +128,13 @@ class MerkleTree {
 
     /* Updates merkletree leaf at `leafIndex` with `newLeafValue` */
     public update (
-        leafIndex: number,
+        _leafIndex: number | SnarkBigInt,
         leaf: SnarkBigInt,
         rawValue?: any,
     ) {
+
+        const leafIndex = parseInt(bigInt(_leafIndex).toString(), 10)
+
         if (leafIndex >= this.nextIndex) {
             throw new Error("Can't update leafIndex which hasn't been inserted yet!")
         }

@@ -27,14 +27,9 @@ import {
 } from 'maci-crypto'
 
 import { config } from 'maci-config'
+import { str2BigInt } from './utils'
 
 const ZERO_VALUE = bigInt(config.merkleTrees.zeroValue)
-
-const str2BigInt = (s: string): SnarkBigInt => {
-  return bigInt(parseInt(
-    Buffer.from(s).toString('hex'), 16
-  ))
-}
 
 const getUpdateStateTreeParams = async (
     userCmd: Command, 

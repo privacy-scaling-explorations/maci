@@ -1,6 +1,6 @@
 include "../node_modules/circomlib/circuits/bitify.circom";
 
-include "./update_state_tree.circom";
+include "./updateStateTree.circom";
 include "./merkletree.circom";
 
 
