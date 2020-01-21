@@ -14,7 +14,7 @@ type Plaintext = SnarkBigInt[]
 
 interface KeyPair {
     privKey: PrivKey,
-    pubKey: PubKey,
+        pubKey: PubKey,
 }
 
 interface Ciphertext {
@@ -38,11 +38,11 @@ const SNARK_FIELD_SIZE = snarkjs.bigInt(
 )
 
 const bigInt2Buffer = (i: SnarkBigInt): Buffer => {
-  return Buffer.from(i.toString(16))
+    return Buffer.from(i.toString(16))
 }
 
 const buffer2BigInt = (b: Buffer): BigInt => {
-  return snarkjs.bigInt('0x' + b.toString('hex'))
+    return snarkjs.bigInt('0x' + b.toString('hex'))
 }
 
 /*
@@ -163,7 +163,7 @@ const genPubKey = (privKey: PrivKey): PubKey => {
 
     // TODO: assert that pubKey is valid
     // TODO: figure out how to check if pubKey is valid
- 
+
     assert(pubKey.length === 2)
 
     return pubKey
@@ -286,12 +286,12 @@ const sign = (
  * @return True if the signature is valid, and false otherwise.
  */
 const verifySignature = (
-    plaintext: Plaintext,
+    hashedData: SnarkBigInt,
     signature: Signature,
     pubKey: PubKey,
 ): boolean => {
 
-  return eddsa.verifyMiMCSponge(plaintext, signature, pubKey)
+    return eddsa.verifyMiMCSponge(hashedData, signature, pubKey)
 }
 
 const setupTree = (
