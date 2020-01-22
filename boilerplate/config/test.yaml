@@ -1,5 +1,18 @@
 ---
 env: 'local-dev'
 
+maci:
+  signupDurationInBlocks: 20
+  coordinatorPublicKey:
+    - 0
+    - 1
+
+chain:
+  privateKeysPath: './'
+  testMnemonic: "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
+  url: "http://localhost:8545"
+
 merkleTrees:
   zeroValue: 5503045433092194285660061905880311622788666850989422096966288514930349325741
+  commandTreeDepth: 4
+  stateTreeDepth: 4
