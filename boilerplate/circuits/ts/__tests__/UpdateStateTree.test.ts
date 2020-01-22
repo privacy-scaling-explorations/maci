@@ -91,7 +91,7 @@ const getUpdateStateTreeParams = async (
 
     // Sign and encrypt the user's message
     const sig = userCmd.sign(user.privKey)
-    const user1Message: Message = userCmd.encrypt(ecdhSharedKey, sig)
+    const user1Message: Message = userCmd.encrypt(sig, ecdhSharedKey)
 
     // Insert random data (as we just want to process 1 command)
     msgTree.insert(hash([bigInt(0), genPrivKey()]))

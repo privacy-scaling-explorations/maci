@@ -191,8 +191,8 @@ class Command implements ICommand {
      * Encrypts this command along with a signature to produce a Message.
      */
     public encrypt = (
-        sharedKey: EcdhSharedKey,
         signature: Signature,
+        sharedKey: EcdhSharedKey,
     ): Message => {
 
         const plaintext: Plaintext = [
@@ -212,8 +212,8 @@ class Command implements ICommand {
      * Decrypts a Message to produce a Command.
      */
     public static decrypt = (
-        sharedKey: EcdhSharedKey,
         message: Message,
+        sharedKey: EcdhSharedKey,
     ) => {
 
         const decrypted = decrypt(message, sharedKey)

@@ -82,7 +82,7 @@ const processMessage = (
 
     // Decrypt the msg and extract relevant parts of it
     const sharedKey = genEcdhSharedKey(privKey, pubKey)
-    const { command, signature } = Command.decrypt(sharedKey, msg)
+    const { command, signature } = Command.decrypt(msg, sharedKey)
 
     const stateLeaf = stateTree.leavesRaw[command.stateIndex]
 
@@ -237,7 +237,7 @@ describe('Batch state tree root update verification circuit', () => {
             const sig = cmd.sign(user.user.privKey)
 
             const sharedKey = genEcdhSharedKey(user.ephemeralKeypair.privKey, coordinator.pubKey)
-            const msg = cmd.encrypt(sharedKey, sig)
+            const msg = cmd.encrypt(sig, sharedKey)
 
             cmds.push(cmd)
             msgs.push(msg)

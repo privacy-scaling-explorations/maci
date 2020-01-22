@@ -40,8 +40,8 @@ describe('Domain objects', () => {
 
     describe('Commands and Messages', () => {
         const signature = command.sign(privKey)
-        const message = command.encrypt(ecdhSharedKey, signature)
-        const decrypted = Command.decrypt(ecdhSharedKey, message)
+        const message = command.encrypt(signature, ecdhSharedKey)
+        const decrypted = Command.decrypt(message, ecdhSharedKey)
 
         it ('command.sign() should produce a valid signature', () => {
             expect(command.verifySignature(signature, pubKey)).toBeTruthy()
