@@ -1,3 +1,4 @@
+deployedAddresses.json
 .etherlime-store
 **/build/
 boilerplate/circuits/build
@@ -7,6 +8,8 @@ contracts/compiled
 node_modules
 blake2sdef.json
 build/.snark_checksum
+
+.DS_Store
 
 # Stuff we can auto-generate
 proving_key.json

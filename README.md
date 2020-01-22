@@ -1,65 +1,121 @@
 # Minimal Anti-Collusion Infrastructure
 
-Please refer to the [implementation
-spec](./SPEC.md) for technical details, and the
-original 
-[ethresear.ch post](https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413)
-for a high-level view.
+Please refer to the [implementation spec](./SPEC.md) for technical details, and
+the original [ethresear.ch
+post](https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413) for a
+high-level view.
 
 We welcome contributions to this project. Please join our
 [Telegram group](https://t.me/joinchat/LUgOpE7J2gstRcZqdERyvw) to discuss.
 
-# Developing on MACI
+## Local development and testing
 
-MACI is tested with `node v10.16.3`
+### Requirements
+
+You should have Node 11.14.0 installed. Use
+[`nvm`](https://github.com/nvm-sh/nvm) to install it.
+
+**TODO:** Test this with Node 12 LTS.
+
+### Get started
+
+Clone this repository, install dependencies, and build the source code:
 
 ```bash
-# Install dependencies
-yarn install
-
-# Generate the circuits
-yarn circuit:compile
-yarn circuit:setup
-yarn circuit:generateverifier
-
-# Run Ganache (in another terminal)
-yarn ganache
-
-# Running tests
-# NOTE: You'll need to have services running (eg ganache)
-#       You can setup the services with `docker-compose up`
-#       in another terminal
-yarn test
+git clone git@github.com:barryWhiteHat/maci.git && \
+npm i && \
+npm run bootstrap && \
+npm run build
 ```
 
-# Deployment
+### Local development
 
-## Environment variables
+This repository is organised as Lerna submodules. Each submodule contains its
+own unit tests.
 
-### Recommended
-- `ENV_TYPE`: 'PROD' | 'DEV' | 'TEST'
+- `config`: project-wide configuration files. Includes config files for both
+  testing and production.
+- `crypto`: low-level cryptographic operations.
+- `circuits`: zk-SNARK circuits.
+- `contracts`: Solidity contracts and deployment code.
+- `domainobjs`: Classes which represent high-level [domain
+  objects](https://wiki.c2.com/?DomainObject) particular to this project.
 
-- `MACI_CONTRACT_ADDRESS`: Address of deployed MACI contract
-- `CMD_TREE_ADDRESS`: Address of deployed merkle tree contract
-- `SIGN_UP_TOKEN_ADDRESS`: Address of deployed ERC721 token contract
+Subdirectories which are not Lerna submodules are:
 
-- `DB_USER`: Postgres DB username
-- `DB_PASSWORD`: Postgres DB password
-- `DB_HOST`: Postgres host
-- `DB_PORT`: Postgres port
-- `DB_NAME`: Postgres database name
+- `docker`: Docker files for testing and deployment.
 
-- `REDIS_HOST`: Redis host
-- `REDIS_PORT`: Redis port
-- `REDIS_PASSWORD`: Redis password
+### Testing
 
-### Optional
-- `MERKLE_TREE_DEPTH`: Depth of the merkle tree (Defaults to 4)
-- `SIGN_UP_BLOCK_DURATION`: Number of blocks allocated for the sign up process (default: 20)
+#### Unit tests
 
-- `COORDINATOR_PRIVATE_KEY`: Private key of the Coordinator 
+The following submodules contain unit tests: `crypto`, `circuits`, `contracts`, and `domainobjs`.
 
-# Contribution
-We are actively seeking help on implementing this project please join https://t.me/joinchat/LUgOpE7J2gstRcZqdERyvw and ask about contributions
+Except for the `contracts` submodule, run unit tests as such (the following
+example is for `crypto`):
 
-And check the help wanted issues.
+```bash
+cd crypto
+npm run test
+```
+
+For the `contracts` unit tests, run the tests one by one. This prevents
+incorrect nonce errors.
+
+First, start a Ganache instance in a separate terminal:
+
+```bash
+cd contracts
+npm run ganache
+```
+
+In another terminal, run the tests individually:
+
+```bash
+cd contracts
+npm run test-hasher
+npm run test-maci
+npm run ...
+```
+
+## Deploying contracts to the local testnet
+
+Assuming that you have a Ganache node set up and listening to the path
+configured in `config/test.yaml`:
+
+```bash
+cd contracts
+npm run deploy
+```
+
+The addresses which the contracts have been deployed to will be saved in
+`contracts/deployedAddresses.json`.
+
+**TODO**: when we develop the CLI, this command should also copy the deployed
+addresses to the CLI submodule.
+
+## Deploying contracts to an Ethereum testnet or the mainnet
+
+First, set the private key you need to deploy the contracts. The account
+associated with the key should already have some ETH in it. Create this file in
+your home directory (e.g. `/home/user/kovanPrivKey.json`) and replace the value
+between the quote marks with the private key.
+
+```json
+["0x................................................................"]
+```
+
+There is an existing `kovan.yml` file in the `config` submodule. We will use it
+as an example of deploying to the Kovan testnet.
+
+```bash
+cd contracts
+NODE_ENV=kovan npm run deploy
+```
+
+If the deployment fails because of an error from the Ethereum node, change it in `kovan.yml`:
+
+```yml
+chain:
+  url: "https://kovan.infura.io/v3/<your infura key>"
+```
