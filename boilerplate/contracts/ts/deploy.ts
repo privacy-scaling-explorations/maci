@@ -57,8 +57,11 @@ const deployAllContracts = async (deployer) => {
     )
 
     console.log('Whitelisting the MACI contract in the Merkle trees')
-    await commandTreeContract.whitelistAddress(maciContract.contractAddress)
-    await commandTreeContract.whitelistAddress(maciContract.contractAddress)
+    let tx = await commandTreeContract.whitelistAddress(maciContract.contractAddress)
+    await tx.wait()
+
+    tx = await commandTreeContract.whitelistAddress(maciContract.contractAddress)
+    await tx.wait()
 
     return {
         mimcContract,
@@ -67,6 +70,7 @@ const deployAllContracts = async (deployer) => {
         updateStateTreeVerifierContract,
         commandTreeContract,
         stateTreeContract,
+        maciContract,
     }
 }
 
@@ -111,6 +115,7 @@ const main = async () => {
         updateStateTreeVerifierContract,
         commandTreeContract,
         stateTreeContract,
+        maciContract,
     } = await deployAllContracts(
         deployer,
     )
@@ -122,6 +127,7 @@ const main = async () => {
         UpdateStateTreeVerifier: updateStateTreeVerifierContract.contractAddress,
         CommandTree: commandTreeContract.contractAddress,
         StateTree: stateTreeContract.contractAddress,
+        MACI: maciContract.contractAddress,
     }
 
     const addressJsonPath = path.join(__dirname, '..', outputAddressFile)

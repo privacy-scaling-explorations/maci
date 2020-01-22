@@ -6,7 +6,8 @@
     "scripts": {
         "watch": "tsc --watch",
         "ganache": "./scripts/runGanache.sh",
-        "build": "tsc && ./scripts/compileSol.sh"
+        "build": "tsc && ./scripts/compileSol.sh",
+        "deploy": "node build/deploy.js -o deployedAddresses.json"
     },
     "_moduleAliases": {
         "@maci-contracts": "."

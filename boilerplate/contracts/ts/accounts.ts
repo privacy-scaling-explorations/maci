@@ -5,7 +5,8 @@ const privateKeys = config.get('chain.privateKeysPath')
 const mnemonic = config.chain.testMnemonic
 
 const genAccounts = () => {
-    return privateKeys.map((pk: string) => {
+    const keys = require(privateKeys)
+    return keys.map((pk: string) => {
         return new ethers.Wallet(pk)
     })
 }

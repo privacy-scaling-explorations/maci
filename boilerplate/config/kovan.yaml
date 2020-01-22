@@ -1,16 +1,15 @@
 ---
-env: 'test'
+env: 'kovan'
 
 maci:
-  signupDurationInBlocks: 20
+  signupDurationInBlocks: 1000
   coordinatorPublicKey:
     - 0
     - 1
 
 chain:
-  privateKeysPath: './'
-  testMnemonic: "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
-  url: "http://localhost:8545"
+  privateKeysPath: "/home/user/kovanPrivkey.json"
+  url: "https://kovan.infura.io/v3/865ab3c804cb47caa962010c897b40c5"
 
 merkleTrees:
   zeroValue: 5503045433092194285660061905880311622788666850989422096966288514930349325741
