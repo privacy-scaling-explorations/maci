@@ -45,6 +45,17 @@ Subdirectories which are not Lerna submodules are:
 
 - `docker`: Docker files for testing and deployment.
 
+### Trusted setup
+
+For development purposes, you can generate the proving and verifying keys for
+the zk-SNARK circuits, along with their Solidity verifier contracts as such:
+
+```bash
+cd circuits
+npm run buildBatchUpdateStateTreeSnark
+npm run buildQuadVoteTallySnark
+```
+
 ### Testing
 
 #### Unit tests
