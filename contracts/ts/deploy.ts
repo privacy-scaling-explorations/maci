@@ -146,3 +146,7 @@ if (require.main === module) {
         console.error(err)
     }
 }
+
+export {
+    deployAllContracts,
+}

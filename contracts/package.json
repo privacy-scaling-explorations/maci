@@ -7,7 +7,9 @@
         "watch": "tsc --watch",
         "ganache": "./scripts/runGanache.sh",
         "build": "tsc && ./scripts/compileSol.sh",
-        "deploy": "node build/deploy.js -o deployedAddresses.json"
+        "deploy": "node build/deploy.js -o deployedAddresses.json",
+        "test-hasher": "jest Hasher.test.ts",
+        "test-hasher-debug": "node --inspect-brk ./node_modules/.bin/jest Hasher.test.ts"
     },
     "_moduleAliases": {
         "@maci-contracts": "."
@@ -19,6 +21,7 @@
         "module-alias": "^2.2.2"
     },
     "devDependencies": {
+        "maci-crypto": "1.0.0",
         "@types/node": "^13.1.2",
         "etherlime": "^2.2.4",
         "@types/jest": "^24.0.25",
