@@ -8,6 +8,8 @@
         "ganache": "./scripts/runGanache.sh",
         "build": "tsc && ./scripts/compileSol.sh",
         "deploy": "node build/deploy.js -o deployedAddresses.json",
+        "test-maci": "jest Maci.test.ts",
+        "test-maci-debug": "node --inspect-brk ./node_modules/.bin/jest Maci.test.ts",
         "test-hasher": "jest Hasher.test.ts",
         "test-hasher-debug": "node --inspect-brk ./node_modules/.bin/jest Hasher.test.ts"
     },
