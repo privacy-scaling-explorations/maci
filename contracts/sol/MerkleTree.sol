@@ -1,7 +1,7 @@
 /*
  * semaphorejs - Zero-knowledge signaling on Ethereum
- * Copyright (C) 2019 Kobi Gurkan <kobigurk@gmail.com>
- * Copyright (C) 2019 Kendrick Tan <kendricktan0814@gmail.com>
+ * Copyright (C) 2020 Kobi Gurkan <kobigurk@gmail.com>
+ * Copyright (C) 2020 Kendrick Tan <kendricktan0814@gmail.com>
  *
  * This file is part of semaphorejs.
  *
