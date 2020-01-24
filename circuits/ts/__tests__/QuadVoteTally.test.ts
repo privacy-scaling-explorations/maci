@@ -144,7 +144,7 @@ describe('Quadratic vote tallying circuit', () => {
             circuitInputs['fullStateRoot'] = fullStateTree.root.toString()
             circuitInputs['intermediateStateRoot'] = intermediateStateTree.leaves[intermediatePathIndex].toString()
             circuitInputs['intermediatePathIndex'] = intermediatePathIndex.toString()
-            circuitInputs['salt'] = salt.toString()
+            circuitInputs['newResultsSalt'] = salt.toString()
             circuitInputs['currentResultsSalt'] = currentResultsSalt.toString()
             circuitInputs['currentResultsCommitment'] = currentResultsCommitment.toString()
 

@@ -71,7 +71,7 @@ template QuadVoteTally(
     signal output newResultsCommitment;
 
     // The salt to hash with the computed results in order to produce newResultsCommitment
-    signal private input salt;
+    signal private input newResultsSalt;
 
     // The batch of state leaves to tally
     var messageLength = 5;
@@ -188,9 +188,40 @@ template QuadVoteTally(
 
         // Check that the computed vote option tree root matches the
         // corresponding value in the state leaf
-
         voteOptionRootChecker[i].root === stateLeaves[i][STATE_TREE_VOTE_OPTION_TREE_ROOT_IDX];
     }
+
+    // --- END
+
+    // --- BEGIN verify commitments to results
+
+    component resultCommitmentVerifier = ResultCommitmentVerifier(numVoteOptions);
+    resultCommitmentVerifier.currentResultsSalt <== currentResultsSalt;
+    resultCommitmentVerifier.currentResultsCommitment <== currentResultsCommitment;
+    resultCommitmentVerifier.newResultsSalt <== newResultsSalt;
+    for (i = 0; i < numVoteOptions; i++) {
+        resultCommitmentVerifier.newResults[i] <== voteOptionSubtotals[i].sum;
+        resultCommitmentVerifier.currentResults[i] <== currentResults[i];
+    }
+
+    // Output a commitment to the new results
+    newResultsCommitment <== resultCommitmentVerifier.newResultsCommitment;
+
+    // --- END
+}
+
+/*
+ * Verifies the commitment to the current results. Also computes and outputs a
+ * commitment to the new results.
+ */
+template ResultCommitmentVerifier(numVoteOptions) {
+    signal input currentResultsSalt;
+    signal input currentResultsCommitment;
+    signal input currentResults[numVoteOptions];
+
+    signal input newResultsSalt;
+    signal input newResults[numVoteOptions];
+    signal output newResultsCommitment;
 
     // Salt and hash the results up to the current batch
     component currentResultsCommitmentHasher = Hasher(numVoteOptions + 1);
@@ -201,9 +232,9 @@ template QuadVoteTally(
     component newResultsCommitmentHasher = Hasher(numVoteOptions + 1);
 
     newResultsCommitmentHasher.key <== 0;
-    newResultsCommitmentHasher.in[numVoteOptions] <== salt;
-    for (i = 0; i < numVoteOptions; i++) {
-        newResultsCommitmentHasher.in[i] <== voteOptionSubtotals[i].sum;
+    newResultsCommitmentHasher.in[numVoteOptions] <== newResultsSalt;
+    for (var i = 0; i < numVoteOptions; i++) {
+        newResultsCommitmentHasher.in[i] <== newResults[i];
         currentResultsCommitmentHasher.in[i] <== currentResults[i];
     }
 
