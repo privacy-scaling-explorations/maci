@@ -37,6 +37,7 @@
         "circom": "0.0.34",
         "circomlib": "0.0.19",
         "jest": "^24.9.0",
+        "libsemaphore": "^1.0.5",
         "maci-config": "1.0.0",
         "maci-crypto": "1.0.0",
         "maci-domainobjs": "1.0.0",

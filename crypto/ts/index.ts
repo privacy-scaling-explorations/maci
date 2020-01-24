@@ -330,5 +330,5 @@ export {
     stringifyBigInts,
     unstringifyBigInts,
     formatPrivKeyForBabyJub,
-    MerkleTree
+    MerkleTree,
 }

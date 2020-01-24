@@ -20,6 +20,8 @@
         "argparse": "^1.0.10",
         "etherlime-lib": "^1.1.5",
         "maci-config": "1.0.0",
+        "circomlib": "0.0.19",
+        "openzeppelin-solidity": "^2.4.0",
         "module-alias": "^2.2.2"
     },
     "devDependencies": {

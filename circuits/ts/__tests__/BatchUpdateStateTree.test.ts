@@ -1,6 +1,7 @@
 import * as path from 'path'
 import { Circuit } from 'snarkjs'
 const compiler = require('circom')
+import * as fs from 'fs'
 import {
     StateLeaf,
     Command,
@@ -28,10 +29,27 @@ import {
     Keypair,
 } from 'maci-crypto'
 
+import {
+    SnarkProvingKey,
+    SnarkVerifyingKey,
+    genProof,
+    genPublicSignals,
+    verifyProof,
+    parseVerifyingKeyJson,
+} from 'libsemaphore'
+
 import { config } from 'maci-config'
 import { str2BigInt } from './utils'
 
+jest.setTimeout(90000)
+
 const ZERO_VALUE = bigInt(config.merkleTrees.zeroValue)
+
+const provingKeyPath = path.join(__dirname, '../../build/batchUstPk.bin')
+const provingKey: SnarkProvingKey = fs.readFileSync(provingKeyPath)
+
+const verifyingKeyPath = path.join(__dirname, '../../build/batchUstVk.json')
+const verifyingKey: SnarkVerifyingKey = parseVerifyingKeyJson(fs.readFileSync(verifyingKeyPath).toString())
 
 const randomRange = (min: number, max:number) => {
   return Math.floor(Math.random() * (max - min) + min)
@@ -368,5 +386,12 @@ describe('Batch state tree root update verification circuit', () => {
         stateTree.update(0, randomLeaf)
 
         expect(stateTree.root.toString()).toEqual(circuitNewStateRoot)
+
+        // Generate a proof. This is commented as it takes several minutes to run.
+        //const proof = await genProof(witness, provingKey)
+        //const publicSignals = genPublicSignals(witness, circuit)
+
+        //const isValid = verifyProof(verifyingKey, proof, publicSignals)
+        //expect(isValid).toBeTruthy()
     })
 })
