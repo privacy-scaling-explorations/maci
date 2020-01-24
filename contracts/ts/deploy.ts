@@ -9,22 +9,42 @@ import { genAccounts, genTestAccounts } from './accounts'
 const MiMC = require('@maci-contracts/compiled/MiMC.json')
 const Hasher = require('@maci-contracts/compiled/Hasher.json')
 const SignUpToken = require('@maci-contracts/compiled/SignUpToken.json')
-const UpdateStateTreeVerifier = require('@maci-contracts/compiled/UpdateStateTreeVerifier.json')
+
+const BatchUpdateStateTreeVerifier = require('@maci-contracts/compiled/BatchUpdateStateTreeVerifier.json')
 const MerkleTree = require('@maci-contracts/compiled/MerkleTree.json')
 const MACI = require('@maci-contracts/compiled/MACI.json')
 
-const deployAllContracts = async (deployer) => {
+const getDeployer = (
+    privateKey: string,
+) => {
+    return new etherlime.JSONRPCPrivateKeyDeployer(
+        privateKey,
+        config.get('chain.url'),
+        {
+            gasLimit: 8800000,
+        },
+    )
+}
+
+const deploySignupToken = async (deployer) => {
+    console.log('Deploying SignUpToken')
+    const signUpTokenContract = await deployer.deploy(SignUpToken, {})
+
+    return signUpTokenContract
+}
+
+const deployMaci = async (
+    deployer,
+    signUpTokenAddress: string,
+) => {
     console.log('Deploying MiMC')
     const mimcContract = await deployer.deploy(MiMC, {})
 
     console.log('Deploying Hasher')
     const hasherContract = await deployer.deploy(Hasher, { CircomLib: mimcContract.contractAddress })
 
-    console.log('Deploying SignUpToken')
-    const signUpTokenContract = await deployer.deploy(SignUpToken, {})
-
-    console.log('Deploying UpdateStateTreeVerifier')
-    const updateStateTreeVerifierContract = await deployer.deploy(UpdateStateTreeVerifier, {})
+    console.log('Deploying BatchUpdateStateTreeVerifier')
+    const batchUpdateStateTreeVerifierContract = await deployer.deploy(BatchUpdateStateTreeVerifier, {})
 
     console.log('Deploying Command Tree')
     const commandTreeContract = await deployer.deploy(
@@ -49,8 +69,8 @@ const deployAllContracts = async (deployer) => {
         commandTreeContract.contractAddress,
         stateTreeContract.contractAddress,
         hasherContract.contractAddress,
-        updateStateTreeVerifierContract.contractAddress,
-        signUpTokenContract.contractAddress,
+        batchUpdateStateTreeVerifierContract.contractAddress,
+        signUpTokenAddress,
         config.maci.signupDurationInBlocks.toString(),
         config.maci.coordinatorPublicKey[0].toString(),
         config.maci.coordinatorPublicKey[1].toString(),
@@ -66,8 +86,7 @@ const deployAllContracts = async (deployer) => {
     return {
         mimcContract,
         hasherContract,
-        signUpTokenContract,
-        updateStateTreeVerifierContract,
+        batchUpdateStateTreeVerifierContract,
         commandTreeContract,
         stateTreeContract,
         maciContract,
@@ -97,8 +116,17 @@ const main = async () => {
         }
     )
 
+    parser.addArgument(
+        ['-s', '--signUpToken'],
+        {
+            help: 'The address of the signup token (e.g. POAP)',
+            required: false
+        }
+    )
+
     const args = parser.parseArgs()
     const outputAddressFile = args.output
+    const signUpToken = args.signUpToken
 
     const deployer = new etherlime.JSONRPCPrivateKeyDeployer(
         admin.privateKey,
@@ -108,23 +136,31 @@ const main = async () => {
         },
     )
 
+
+    let signUpTokenAddress
+    if (signUpToken) {
+        signUpTokenAddress = signUpToken
+    } else {
+        const signUpTokenContract = await deploySignupToken(deployer)
+        signUpTokenAddress = signUpTokenContract.contractAddress
+    }
+
     const {
         mimcContract,
         hasherContract,
-        signUpTokenContract,
-        updateStateTreeVerifierContract,
+        batchUpdateStateTreeVerifierContract,
         commandTreeContract,
         stateTreeContract,
         maciContract,
-    } = await deployAllContracts(
+    } = await deployMaci(
         deployer,
+        signUpTokenAddress,
     )
 
     const addresses = {
         MiMC: mimcContract.contractAddress,
         Hasher: hasherContract.contractAddress,
-        SignUpToken: signUpTokenContract.contractAddress,
-        UpdateStateTreeVerifier: updateStateTreeVerifierContract.contractAddress,
+        BatchUpdateStateTreeVerifier: batchUpdateStateTreeVerifierContract.contractAddress,
         CommandTree: commandTreeContract.contractAddress,
         StateTree: stateTreeContract.contractAddress,
         MACI: maciContract.contractAddress,
@@ -148,5 +184,7 @@ if (require.main === module) {
 }
 
 export {
-    deployAllContracts,
+    deployMaci,
+    deploySignupToken,
+    getDeployer,
 }

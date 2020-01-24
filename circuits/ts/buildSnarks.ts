@@ -67,14 +67,23 @@ const main = async () => {
         }
     )
 
+    parser.addArgument(
+        ['-vs', '--verifier-name'],
+        {
+            help: 'The desired name of the verifier contract',
+            required: true
+        }
+    )
+
+
     const args = parser.parseArgs()
     const inputFile = args.input
     const circuitJsonOut = args.json_out
     const pkOut = args.pk_out
     const vkOut = args.vk_out
     const solOut = args.sol_out
+    const verifierName = args.verifier_name
     const override = args.override
-
 
     // Check if the input circom file exists
     const inputFileExists = fileExists(inputFile)
@@ -126,6 +135,12 @@ const main = async () => {
         console.log('Generating Solidity verifier...')
         const cmd = `snarkjs generateverifier --vk ${vkOut} -v ${solOut}`
         shell.exec(cmd)
+
+        // Replace the name of the verifier contract with the specified name as
+        // we have two verifier contracts and we want to avoid conflicts
+        const contractSource = fs.readFileSync(solOut).toString()
+        const newSource = contractSource.replace('\ncontract Verifier {', `\ncontract ${verifierName} {`)
+        fs.writeFileSync(solOut, newSource)
     }
 }
 

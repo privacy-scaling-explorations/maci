@@ -141,7 +141,7 @@ library Pairing {
     }
 }
 
-contract Verifier {
+contract QuadVoteTallyVerifier {
 
     using Pairing for *;
 

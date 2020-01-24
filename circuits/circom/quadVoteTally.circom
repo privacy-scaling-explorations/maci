@@ -23,7 +23,6 @@ template CalculateTotal(n) {
 // This circuit tallies the votes from a batch of state leaves, and produces an
 // intermediate state root. 
 
-// TODO: break this circuit up in to smaller ones
 // TODO: rename the inputs so that they are more intuitive
 
 template QuadVoteTally(

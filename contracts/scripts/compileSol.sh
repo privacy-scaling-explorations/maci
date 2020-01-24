@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+cd "$(dirname "$0")"
+cd ..
 echo 'Building contracts'
 
 # Delete old files
@@ -10,7 +12,7 @@ mkdir -p ./compiled/abis
 
 # Copy the Semaphore contracts from the submodule into solidity/
 
-npx etherlime compile --solcVersion=native --buildDirectory=compiled --workingDirectory=sol --exportAbi 
+npx etherlime compile --solcVersion=native --buildDirectory=compiled --workingDirectory=sol --exportAbi --runs 200
 
 # Build the MiMC contract from bytecode
 node build/buildMiMC.js

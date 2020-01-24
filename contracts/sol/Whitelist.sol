@@ -1,6 +1,6 @@
 pragma solidity 0.5.11;
 
-import "@openzeppelin/contracts/ownership/Ownable.sol";
+import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
 
 contract Whitelist is Ownable {
     mapping (address => bool) whitelist;

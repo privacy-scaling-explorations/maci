@@ -5,7 +5,7 @@ const main = async () => {
     const files = [
         {
             name: 'BatchUpdateStateTreeVerifier.sol',
-            url: 'https://www.dropbox.com/s/j5igd12smolafwt/BatchUpdateStateTreeVerifier.sol?dl=1',
+            url: 'https://www.dropbox.com/s/wzhuhzfl3xbiw8c/BatchUpdateStateTreeVerifier.sol?dl=1',
         },
         {
             name: 'batchUstCircuit.json',
@@ -21,7 +21,7 @@ const main = async () => {
         },
         {
             name: 'QuadVoteTallyVerifier.sol',
-            url: 'https://www.dropbox.com/s/rrvlj781umrrxul/QuadVoteTallyVerifier.sol?dl=1'
+            url: 'https://www.dropbox.com/s/m8sea4aitys017j/QuadVoteTallyVerifier.sol?dl=1',
         },
         {
             name: 'qvtCircuit.json',
@@ -40,7 +40,7 @@ const main = async () => {
 	for (let i = 0; i < files.length; i++) {
         const file = files[i]
         const filePath = path.join(__dirname, file.name)
-        const cmd = `wget --quiet ${file.url} -O ${filePath}`
+        const cmd = `wget -nc --quiet ${file.url} -O ${filePath}`
 
         console.log('Downloading', file.name)
         await shell.exec(cmd)

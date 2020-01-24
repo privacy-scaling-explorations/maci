@@ -6,6 +6,7 @@
     "scripts": {
         "watch": "tsc --watch",
         "ganache": "./scripts/runGanache.sh",
+        "compileSol": "./scripts/compileSol.sh",
         "build": "tsc && ./scripts/compileSol.sh",
         "deploy": "node build/deploy.js -o deployedAddresses.json",
         "test-maci": "jest Maci.test.ts",
@@ -17,12 +18,13 @@
         "@maci-contracts": "."
     },
     "dependencies": {
+        "@openzeppelin/contracts": "^2.4.0",
         "argparse": "^1.0.10",
+        "circomlib": "0.0.19",
         "etherlime-lib": "^1.1.5",
         "maci-config": "1.0.0",
-        "circomlib": "0.0.19",
-        "openzeppelin-solidity": "^2.4.0",
-        "module-alias": "^2.2.2"
+        "module-alias": "^2.2.2",
+        "openzeppelin-solidity": "^2.4.0"
     },
     "devDependencies": {
         "maci-crypto": "1.0.0",

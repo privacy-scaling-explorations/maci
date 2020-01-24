@@ -1,16 +1,17 @@
 pragma solidity 0.5.11;
 
-import "./UpdateStateTreeVerifier.sol";
+import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
+import { IERC721Receiver } from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 
-import "./MerkleTree.sol";
-import "./SignUpToken.sol";
-import "./Hasher.sol";
+import { Hasher } from "./Hasher.sol";
+import { MerkleTree } from "./MerkleTree.sol";
+import { SignUpToken } from "./SignUpToken.sol";
 
-import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import { BatchUpdateStateTreeVerifier } from "./BatchUpdateStateTreeVerifier.sol";
 
 contract MACI is Ownable, IERC721Receiver {
     // Verifier Contracts
-    UpdateStateTreeVerifier updateStateTreeVerifier;
+    BatchUpdateStateTreeVerifier batchUstVerifier;
 
     // Hashing function
     Hasher hasher;
@@ -63,7 +64,7 @@ contract MACI is Ownable, IERC721Receiver {
       address cmdTreeAddress,
       address stateTreeAddress,
       address hasherAddress,
-      address updateStateTreeVerifierAddress,
+      address batchUpdateStateTreeVerifierAddress,
       address _signUpTokenAddress,
       uint256 _durationSignUpBlockNumber,
       uint256 _coordinatorPublicKeyX,
@@ -72,7 +73,7 @@ contract MACI is Ownable, IERC721Receiver {
         cmdTree = MerkleTree(cmdTreeAddress);
         stateTree = MerkleTree(stateTreeAddress);
         hasher = Hasher(hasherAddress);
-        updateStateTreeVerifier = UpdateStateTreeVerifier(updateStateTreeVerifierAddress);
+        batchUstVerifier = BatchUpdateStateTreeVerifier(batchUpdateStateTreeVerifierAddress);
 
         deployedBlockNumber = block.number;
         durationSignUpBlockNumbers = _durationSignUpBlockNumber;
@@ -159,7 +160,9 @@ contract MACI is Ownable, IERC721Receiver {
       uint[2] memory c,
       uint[28] memory input
     ) public view returns (bool) {
-      return updateStateTreeVerifier.verifyProof(a, b, c, input);
+      //return batchUstVerifier.verifyProof(a, b, c, input);
+      // TODO: submit a batch of messages
+      return true;
     }
 
     // Forcefully ends sign up period

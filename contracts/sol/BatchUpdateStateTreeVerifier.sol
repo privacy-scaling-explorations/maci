@@ -141,7 +141,7 @@ library Pairing {
     }
 }
 
-contract Verifier {
+contract BatchUpdateStateTreeVerifier {
 
     using Pairing for *;
 

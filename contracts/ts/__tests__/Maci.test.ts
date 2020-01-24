@@ -3,22 +3,49 @@ import { genAccounts, genTestAccounts } from '../accounts'
 import { config } from 'maci-config'
 import * as etherlime from 'etherlime-lib'
 
-import { deployAllContracts } from '../deploy'
+import {
+    deployMaci,
+    deploySignupToken,
+    getDeployer,
+} from '../deploy'
+
+import {
+    genKeyPair,
+} from 'maci-crypto'
 
 const accounts = genTestAccounts()
-let deployer
+const deployer = getDeployer(accounts[0].privateKey)
 let maciContract
+let signUpTokenContract
+
 describe('MACI', () => {
+    // set up users
+    const user1 = {
+        wallet: accounts[1],
+        keypair: genKeyPair(),
+    }
+
+    const user2 = {
+        wallet: accounts[1],
+        keypair: genKeyPair(),
+    }
+
     beforeAll(async () => {
-        deployer = new etherlime.JSONRPCPrivateKeyDeployer(
-            accounts[0].privateKey,
-            config.get('chain.url'),
-            {
-                gasLimit: 8800000,
-            },
-        )
-        const contracts = await deployAllContracts(deployer)
+        signUpTokenContract = await deploySignupToken(deployer)
+        const contracts = await deployMaci(deployer, signUpTokenContract.contractAddress)
         maciContract = contracts.maciContract
+
+        // give away a signUpToken to each user
+        await signUpTokenContract.giveToken(user1.wallet.address)
+        await signUpTokenContract.giveToken(user2.wallet.address)
+    })
+
+    it('each user should own a token', async () => {
+        const ownerOfToken1 = await signUpTokenContract.ownerOf(1)
+        expect(ownerOfToken1).toEqual(user1.wallet.address)
+
+        const ownerOfToken2 = await signUpTokenContract.ownerOf(2)
+        expect(ownerOfToken2).toEqual(user2.wallet.address)
     })
 
     it('should be deployed', async () => {
