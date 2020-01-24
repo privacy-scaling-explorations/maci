@@ -8,6 +8,7 @@
         "build": "tsc",
         "buildBatchUpdateStateTreeSnark": "./scripts/buildBatchUpdateStateTreeSnark.sh",
         "buildQuadVoteTallySnark": "./scripts/buildQuadVoteTallySnark.sh",
+        "downloadAllSnarks": "./scripts/downloadAllSnarks.sh",
         "test": "jest",
         "test-hasher": "jest Hasher.test.ts",
         "test-hasher-debug": "node --inspect-brk ./node_modules/.bin/jest Hasher.test.ts",

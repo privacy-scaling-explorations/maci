@@ -56,6 +56,13 @@ npm run buildBatchUpdateStateTreeSnark
 npm run buildQuadVoteTallySnark
 ```
 
+Alternatively, you can save time by downloading the files from Dropbox:
+
+```
+cd circuits
+npm run downloadAllSnarks
+```
+
 ### Testing
 
 #### Unit tests
