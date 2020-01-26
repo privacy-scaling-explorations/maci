@@ -9,16 +9,15 @@ import { SignUpToken } from "./SignUpToken.sol";
 
 import { BatchUpdateStateTreeVerifier } from "./BatchUpdateStateTreeVerifier.sol";
 
-contract MACI is Ownable, IERC721Receiver {
+contract MACI is Hasher, Ownable, IERC721Receiver {
     // Verifier Contracts
     BatchUpdateStateTreeVerifier batchUstVerifier;
 
-    // Hashing function
-    Hasher hasher;
-
-    // Append-only merkle tree to represent
-    // internal state transitions
+    // Append-only merkle tree to represent internal state transitions
     // i.e. update function isn't used
+    // TODO: deploy these contracts within the MACI constructor to ensure
+    // atomicity.
+    // TODO: remove the update function if it isn't used
     MerkleTree cmdTree;
     MerkleTree stateTree;
 
@@ -45,6 +44,11 @@ contract MACI is Ownable, IERC721Receiver {
     uint256 coordinatorPublicKeyX;
     uint256 coordinatorPublicKeyY;
 
+    // A nothing up my sleeve zero value
+    // Should be equal to 5503045433092194285660061905880311622788666850989422096966288514930349325741
+    uint256 SNARK_SCALAR_FIELD = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
+    uint256 ZERO_VALUE = uint256(keccak256(abi.encodePacked('MACI'))) % SNARK_SCALAR_FIELD;
+
     // Events
     event SignedUp(
         uint256[] encryptedMessage,
@@ -61,18 +65,21 @@ contract MACI is Ownable, IERC721Receiver {
     );
 
     constructor(
-      address cmdTreeAddress,
-      address stateTreeAddress,
-      address hasherAddress,
+      uint8 cmdTreeDepth,
+      uint8 stateTreeDepth,
       address batchUpdateStateTreeVerifierAddress,
       address _signUpTokenAddress,
       uint256 _durationSignUpBlockNumber,
       uint256 _coordinatorPublicKeyX,
       uint256 _coordinatorPublicKeyY
     ) Ownable() public {
-        cmdTree = MerkleTree(cmdTreeAddress);
-        stateTree = MerkleTree(stateTreeAddress);
-        hasher = Hasher(hasherAddress);
+
+        cmdTree = new MerkleTree(cmdTreeDepth, ZERO_VALUE);
+        stateTree = new MerkleTree(stateTreeDepth, ZERO_VALUE);
+
+        cmdTree.whitelistAddress(address(this));
+        stateTree.whitelistAddress(address(this));
+
         batchUstVerifier = BatchUpdateStateTreeVerifier(batchUpdateStateTreeVerifierAddress);
 
         deployedBlockNumber = block.number;
@@ -108,7 +115,7 @@ contract MACI is Ownable, IERC721Receiver {
         require(addressAccountAllocated[msg.sender] > 0, "Address is not whitelisted!");
 
         // Calculate leaf value
-        uint256 leaf = hasher.hashMulti(encryptedMessage, 0);
+        uint256 leaf = hashMulti(encryptedMessage, 0);
 
         stateTree.insert(leaf);
 
@@ -137,7 +144,7 @@ contract MACI is Ownable, IERC721Receiver {
         );
 
         // Calculate leaf value
-        uint256 leaf = hasher.hashMulti(encryptedMessage, 0);
+        uint256 leaf = hashMulti(encryptedMessage, 0);
 
         // Insert the new leaf into the cmdTree
         cmdTree.insert(leaf);

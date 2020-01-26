@@ -40,35 +40,15 @@ const deployMaci = async (
     console.log('Deploying MiMC')
     const mimcContract = await deployer.deploy(MiMC, {})
 
-    console.log('Deploying Hasher')
-    const hasherContract = await deployer.deploy(Hasher, { CircomLib: mimcContract.contractAddress })
-
     console.log('Deploying BatchUpdateStateTreeVerifier')
     const batchUpdateStateTreeVerifierContract = await deployer.deploy(BatchUpdateStateTreeVerifier, {})
-
-    console.log('Deploying Command Tree')
-    const commandTreeContract = await deployer.deploy(
-        MerkleTree,
-        {},
-        config.merkleTrees.commandTreeDepth,
-        hasherContract.contractAddress,
-    )
-
-    console.log('Deploying State Tree')
-    const stateTreeContract = await deployer.deploy(
-        MerkleTree,
-        {},
-        config.merkleTrees.stateTreeDepth,
-        hasherContract.contractAddress,
-    )
 
     console.log('Deploying MACI')
     const maciContract = await deployer.deploy(
         MACI,
-        {},
-        commandTreeContract.contractAddress,
-        stateTreeContract.contractAddress,
-        hasherContract.contractAddress,
+        { CircomLib: mimcContract.contractAddress },
+        config.merkleTrees.commandTreeDepth,
+        config.merkleTrees.stateTreeDepth,
         batchUpdateStateTreeVerifierContract.contractAddress,
         signUpTokenAddress,
         config.maci.signupDurationInBlocks.toString(),
@@ -76,19 +56,9 @@ const deployMaci = async (
         config.maci.coordinatorPublicKey[1].toString(),
     )
 
-    console.log('Whitelisting the MACI contract in the Merkle trees')
-    let tx = await commandTreeContract.whitelistAddress(maciContract.contractAddress)
-    await tx.wait()
-
-    tx = await commandTreeContract.whitelistAddress(maciContract.contractAddress)
-    await tx.wait()
-
     return {
         mimcContract,
-        hasherContract,
         batchUpdateStateTreeVerifierContract,
-        commandTreeContract,
-        stateTreeContract,
         maciContract,
     }
 }
@@ -147,10 +117,7 @@ const main = async () => {
 
     const {
         mimcContract,
-        hasherContract,
         batchUpdateStateTreeVerifierContract,
-        commandTreeContract,
-        stateTreeContract,
         maciContract,
     } = await deployMaci(
         deployer,
@@ -159,10 +126,7 @@ const main = async () => {
 
     const addresses = {
         MiMC: mimcContract.contractAddress,
-        Hasher: hasherContract.contractAddress,
         BatchUpdateStateTreeVerifier: batchUpdateStateTreeVerifierContract.contractAddress,
-        CommandTree: commandTreeContract.contractAddress,
-        StateTree: stateTreeContract.contractAddress,
         MACI: maciContract.contractAddress,
     }
 
