@@ -15,8 +15,6 @@ contract MACI is Hasher, Ownable, IERC721Receiver {
 
     // Append-only merkle tree to represent internal state transitions
     // i.e. update function isn't used
-    // TODO: deploy these contracts within the MACI constructor to ensure
-    // atomicity.
     // TODO: remove the update function if it isn't used
     MerkleTree cmdTree;
     MerkleTree stateTree;
@@ -74,11 +72,9 @@ contract MACI is Hasher, Ownable, IERC721Receiver {
       uint256 _coordinatorPublicKeyY
     ) Ownable() public {
 
+        // Create the Merkle trees
         cmdTree = new MerkleTree(cmdTreeDepth, ZERO_VALUE);
         stateTree = new MerkleTree(stateTreeDepth, ZERO_VALUE);
-
-        cmdTree.whitelistAddress(address(this));
-        stateTree.whitelistAddress(address(this));
 
         batchUstVerifier = BatchUpdateStateTreeVerifier(batchUpdateStateTreeVerifierAddress);
 

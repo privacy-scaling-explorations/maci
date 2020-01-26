@@ -22,10 +22,10 @@
 pragma solidity 0.5.11;
 
 import { Hasher } from "./Hasher.sol";
-import { Whitelist } from "./Whitelist.sol";
+import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
 
 
-contract MerkleTree is Whitelist, Hasher {
+contract MerkleTree is Ownable, Hasher {
     // Hasher object
     Hasher hasher;
 
@@ -80,7 +80,7 @@ contract MerkleTree is Whitelist, Hasher {
 
     // Inserts (appends) a new leaf into the
     // merkle tree
-    function insert(uint256 leaf) public whitelisted {
+    function insert(uint256 leaf) public onlyOwner {
         require(nextLeafIndex < maxLeafIndex, "Merkle Tree at max capacity");
 
         uint256 leafIndex = nextLeafIndex;
@@ -117,7 +117,7 @@ contract MerkleTree is Whitelist, Hasher {
         uint256 leafIndex,
         uint256 leaf,
         uint256[] memory path
-    ) public whitelisted {
+    ) public onlyOwner {
         require(leafIndex < nextLeafIndex, "Can't update a leaf which hasn't been inserted!");
 
         uint256 currentIndex = leafIndex;
