@@ -19,7 +19,7 @@
  * along with semaphorejs.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-pragma solidity 0.5.11;
+pragma solidity ^0.5.0;
 
 import { Hasher } from "./Hasher.sol";
 import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
@@ -113,6 +113,7 @@ contract MerkleTree is Ownable, Hasher {
     }
 
     // Updates leaf of merkle tree at index `leafIndex`
+    // TODO: remove the update function if it isn't used
     function update(
         uint256 leafIndex,
         uint256 leaf,

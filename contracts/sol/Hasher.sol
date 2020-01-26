@@ -5,7 +5,7 @@
  * This file is part of maci
  */
 
-pragma solidity 0.5.11;
+pragma solidity ^0.5.0;
 
 library CircomLib {
     function MiMCSponge(uint256 xL_in, uint256 xR_in, uint256 k) public pure returns (uint256 xL, uint256 xR);
