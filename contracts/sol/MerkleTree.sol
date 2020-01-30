@@ -29,7 +29,7 @@ contract MerkleTree is Ownable, Hasher {
     // Hasher object
     Hasher hasher;
 
-    // Depth of the merkle tree.
+    // Depth of the Merkle tree.
     // Number of leaves = 2^depth
     uint256 depth;
 
@@ -56,7 +56,7 @@ contract MerkleTree is Ownable, Hasher {
 
     constructor(
         uint256 _depth,
-        uint256 zeroValue
+        uint256 _zeroValue
     ) public {
         // Depth of the tree
         depth = _depth;
@@ -64,7 +64,7 @@ contract MerkleTree is Ownable, Hasher {
 
         // 'Caches' zero values and filledSubTrees
         // for optimized inserts later on
-        zeros.push(zeroValue);
+        zeros.push(_zeroValue);
         filledSubtrees.push(zeros[0]);
 
         for (uint8 i = 1; i < depth; i++) {
@@ -110,6 +110,15 @@ contract MerkleTree is Ownable, Hasher {
         leaves.push(leaf);
 
         emit LeafAdded(leaf, leafIndex);
+    }
+
+    /*
+     * Make subsequent insertions start from leaf #1.
+     * Leaf #0 will remain the zero value.
+     */
+    function insertBlankAtZerothLeaf() public onlyOwner {
+        require(nextLeafIndex == 0, "MerkleTree: this function can only be called on an empty tree");
+        nextLeafIndex += 1;
     }
 
     // Updates leaf of merkle tree at index `leafIndex`
