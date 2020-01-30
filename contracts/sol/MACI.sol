@@ -1,17 +1,17 @@
+pragma experimental ABIEncoderV2;
 pragma solidity ^0.5.0;
 
-import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
-import { IERC721Receiver } from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-
 import { Hasher } from "./Hasher.sol";
-import { MerkleTree } from "./MerkleTree.sol";
-import { SignUpToken } from "./SignUpToken.sol";
-
+import { DomainObjs } from './DomainObjs.sol';
+import { MerkleTree, EmptyMerkleTreeRoots } from "./MerkleTree.sol";
+import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
+import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
 import { BatchUpdateStateTreeVerifier } from "./BatchUpdateStateTreeVerifier.sol";
 
-contract MACI is Hasher, Ownable, IERC721Receiver {
+contract MACI is Hasher, Ownable, DomainObjs, EmptyMerkleTreeRoots {
+
     // Verifier Contracts
-    BatchUpdateStateTreeVerifier batchUstVerifier;
+    BatchUpdateStateTreeVerifier internal batchUstVerifier;
 
     // Append-only merkle tree to represent internal state transitions
     // i.e. update function isn't used
@@ -19,173 +19,171 @@ contract MACI is Hasher, Ownable, IERC721Receiver {
     MerkleTree cmdTree;
     MerkleTree stateTree;
 
-    // What block did the contract get deployed
-    uint256 deployedBlockNumber;
+    uint256 public emptyVoteOptionTreeRoot;
 
-    // Duration of the sign up process, in block numbers
-    uint256 durationSignUpBlockNumbers;
+    // When the contract was deployed. We assume that the signup period starts
+    // immediately upon deployment.
+    uint256 public signUpTimestamp;
 
-    // Address that has been allocated an account
-    // Note: An address can sign up multiple times
-    //       if they have > 1 ERC721 tokens
-    //       ensure that addressAccountAllocated[address] > 0
-    //       before allowing them to sign up
-    mapping (address => uint256) addressAccountAllocated;
+    // Duration of the sign-up period, in seconds
+    uint256 public signUpDurationSeconds;
 
-    // Address of the SignUpToken
-    address signUpTokenAddress;
+    // Address of the SignUpGatekeeper, which determines whether a user may
+    // sign up to vote
+    SignUpGatekeeper public signUpGatekeeper;
 
-    // Owner can also forcefully terminate voting period
-    bool signUpForceEnded = false;
+    // The coordinator can also forcefully end the sign-up period
+    bool public signUpForceEnded = false;
 
-    // Coordinator Public Key
-    uint256 coordinatorPublicKeyX;
-    uint256 coordinatorPublicKeyY;
+    // The coordinator's public key
+    PubKey public coordinatorPubKey;
+
+    // TODO: store these values in a Constants.sol
+    uint256 SNARK_SCALAR_FIELD = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
 
     // A nothing up my sleeve zero value
     // Should be equal to 5503045433092194285660061905880311622788666850989422096966288514930349325741
-    uint256 SNARK_SCALAR_FIELD = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
-    uint256 ZERO_VALUE = uint256(keccak256(abi.encodePacked('MACI'))) % SNARK_SCALAR_FIELD;
+    uint256 ZERO_VALUE = uint256(keccak256(abi.encodePacked('Maci'))) % SNARK_SCALAR_FIELD;
 
-    // Events
-    event SignedUp(
-        uint256[] encryptedMessage,
-        uint256[2] ecdhPublicKey,
-        uint256 hashedEncryptedMessage,
-        uint256 newStateTreeRoot,
-        uint256 userIndex
-    );
-    event CommandPublished(
-        uint256[] encryptedMessage,
-        uint256[2] ecdhPublicKey,
-        uint256 hashedEncryptedMessage,
-        uint256 newCmdTreeRoot
-    );
+
+    //// Events
+    //event SignedUp(
+        //uint256[] encryptedMessage,
+        //uint256[2] ecdhPublicKey,
+        //uint256 hashedEncryptedMessage,
+        //uint256 newStateTreeRoot,
+        //uint256 userIndex
+    //);
+    //event CommandPublished(
+        //uint256[] encryptedMessage,
+        //uint256[2] ecdhPublicKey,
+        //uint256 hashedEncryptedMessage,
+        //uint256 newCmdTreeRoot
+    //);
 
     constructor(
-      uint8 cmdTreeDepth,
-      uint8 stateTreeDepth,
-      address batchUpdateStateTreeVerifierAddress,
-      address _signUpTokenAddress,
-      uint256 _durationSignUpBlockNumber,
-      uint256 _coordinatorPublicKeyX,
-      uint256 _coordinatorPublicKeyY
+        uint8 _cmdTreeDepth,
+        uint8 _stateTreeDepth,
+        uint8 voteOptionTreeDepth,
+        BatchUpdateStateTreeVerifier _batchUstVerifier,
+        SignUpGatekeeper _signUpGatekeeper,
+        uint256 _signUpDurationSeconds,
+        PubKey memory _coordinatorPubKey
     ) Ownable() public {
 
         // Create the Merkle trees
-        cmdTree = new MerkleTree(cmdTreeDepth, ZERO_VALUE);
-        stateTree = new MerkleTree(stateTreeDepth, ZERO_VALUE);
+        cmdTree = new MerkleTree(_cmdTreeDepth, ZERO_VALUE);
+        stateTree = new MerkleTree(_stateTreeDepth, ZERO_VALUE);
 
-        batchUstVerifier = BatchUpdateStateTreeVerifier(batchUpdateStateTreeVerifierAddress);
+        // Calculate and store the root of an empty vote option tree
+        emptyVoteOptionTreeRoot = emptyMerkleTreeRoots[voteOptionTreeDepth - 1];
 
-        deployedBlockNumber = block.number;
-        durationSignUpBlockNumbers = _durationSignUpBlockNumber;
-        signUpTokenAddress = _signUpTokenAddress;
+        batchUstVerifier = _batchUstVerifier;
 
-        coordinatorPublicKeyX = _coordinatorPublicKeyX;
-        coordinatorPublicKeyY = _coordinatorPublicKeyY;
+        signUpTimestamp = now;
+        signUpDurationSeconds = _signUpDurationSeconds;
+        signUpGatekeeper = _signUpGatekeeper;
+
+        coordinatorPubKey = _coordinatorPubKey;
     }
 
-    // On ERC721 transferred to the contract, this function is called.
-    // This acts as the way to allow users to sign up to the contract.
-    // i.e. Only users who have the `SignUpToken` is allowed to publish
-    //      a message, once
-    function onERC721Received(address sender, address, uint256, bytes memory) public returns(bytes4) {
-        require(msg.sender == signUpTokenAddress, "Contract does not accept the provided ERC721 tokens");
-        addressAccountAllocated[sender] += 1;
+    /*
+     * Returns the deadline to sign up.
+     */
+    function calcSignUpDeadline() public view returns (uint256) {
+        return signUpTimestamp + signUpDurationSeconds;
+    }
 
-        // Equals to `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
-        // Which is the expected magic number to return for this interface
-        return this.onERC721Received.selector;
+    /*
+     * Ensures that the calling function only continues execution if the
+     * current block time is before the sign-up deadline.
+     */
+    modifier isBeforeSignUpDeadline() {
+        require(now < calcSignUpDeadline(), "MACI: the sign-up period has passed");
+        _;
+    }
+
+    /*
+     * Ensures that the calling function only continues execution if the
+     * current block time is after or equal to the sign-up deadline.
+     */
+    modifier isAfterSignUpDeadline() {
+        require(now >= calcSignUpDeadline(), "MACI: the sign-up period is not over");
+        _;
     }
 
     // Signs a user up
+    // TODO: should we construct a fresh state tree leaf rather than accept it
+    // as a message from the user?
     function signUp(
-        uint256[] memory encryptedMessage,
-        uint256[2] memory ecdhPublicKey
-    ) public {
-        require(
-          block.number <= deployedBlockNumber + durationSignUpBlockNumbers && !signUpForceEnded,
-          "Sign up process ended!"
-        );
-        require(addressAccountAllocated[msg.sender] > 0, "Address is not whitelisted!");
+        //uint256[] memory encryptedMessage,
+        //uint256[2] memory ecdhPublicKey,
+        bytes memory _signUpGatekeeperData
+    ) 
+    isBeforeSignUpDeadline
+    public {
+        signUpGatekeeper.register(msg.sender, _signUpGatekeeperData);
 
-        // Calculate leaf value
-        uint256 leaf = hashMulti(encryptedMessage, 0);
+        //// Calculate leaf value
+        //uint256 leaf = hashMulti(encryptedMessage, 0);
 
-        stateTree.insert(leaf);
+        //stateTree.insert(leaf);
 
-        // Get new cmd tree root
-        uint256 newStateTreeRoot = stateTree.getRoot();
+        //// Get new cmd tree root
+        //uint256 newStateTreeRoot = stateTree.getRoot();
 
-        addressAccountAllocated[msg.sender] -= 1;
-
-        emit SignedUp(
-            encryptedMessage,
-            ecdhPublicKey,
-            leaf,
-            newStateTreeRoot,
-            stateTree.getInsertedLeavesNo() - 1
-        );
+        //emit SignedUp(
+            //encryptedMessage,
+            //ecdhPublicKey,
+            //leaf,
+            //newStateTreeRoot,
+            //stateTree.getInsertedLeavesNo() - 1
+        //);
     }
 
-    // Publishes commands
-    function publishCommand(
-        uint256[] memory encryptedMessage,
-        uint256[2] memory ecdhPublicKey
-    ) public {
-        require(
-          block.number > deployedBlockNumber + durationSignUpBlockNumbers || signUpForceEnded,
-          "Sign up process ongoing!"
-        );
+    //// Publishes commands
+    //function publishCommand(
+        //uint256[] memory encryptedMessage,
+        //uint256[2] memory ecdhPublicKey
+    //) 
+    //isAfterSignUpDeadline
+    //public 
+    //{
 
-        // Calculate leaf value
-        uint256 leaf = hashMulti(encryptedMessage, 0);
+        //require(signUpForceEnded == false, "MACI: the coordinator has force-ended the sign-up period");
 
-        // Insert the new leaf into the cmdTree
-        cmdTree.insert(leaf);
+        //// Calculate leaf value
+        //uint256 leaf = hashMulti(encryptedMessage, 0);
 
-        // Get new cmd tree root
-        uint256 newCmdTreeRoot = cmdTree.getRoot();
+        //// Insert the new leaf into the cmdTree
+        //cmdTree.insert(leaf);
 
-        emit CommandPublished(
-            encryptedMessage,
-            ecdhPublicKey,
-            leaf,
-            newCmdTreeRoot
-        );
-    }
+        //// Get new cmd tree root
+        //uint256 newCmdTreeRoot = cmdTree.getRoot();
 
-    // Submits proof for updating state tree
-    function verifyUpdateStateTreeProof(
-      uint[2] memory a,
-      uint[2][2] memory b,
-      uint[2] memory c,
-      uint[28] memory input
-    ) public view returns (bool) {
-      //return batchUstVerifier.verifyProof(a, b, c, input);
-      // TODO: submit a batch of messages
-      return true;
-    }
+        //emit CommandPublished(
+            //encryptedMessage,
+            //ecdhPublicKey,
+            //leaf,
+            //newCmdTreeRoot
+        //);
+    //}
 
-    // Forcefully ends sign up period
-    function endSignUpPeriod() public onlyOwner {
-      signUpForceEnded = true;
-    }
+    //// Submits proof for updating state tree
+    //function verifyUpdateStateTreeProof(
+      //uint[2] memory,
+      //uint[2][2] memory,
+      //uint[2] memory,
+      //uint[28] memory 
+    //) public pure returns (bool) {
+      ////return batchUstVerifier.verifyProof(a, b, c, input);
+      //// TODO: submit a batch of messages
+      //return true;
+    //}
 
-    // Checks if sign up period has ended
-    function hasSignUpPeriodEnded() public view returns (bool) {
-      return (block.number > deployedBlockNumber + durationSignUpBlockNumbers) || signUpForceEnded;
-    }
-
-    // Gets meta information concerning deployment time
-    function getMetaInfo() public view returns (uint256, uint256) {
-      return (deployedBlockNumber, durationSignUpBlockNumbers);
-    }
-
-    // Gets coordinator public key
-    function getCoordinatorPublicKey() public view returns (uint256, uint256) {
-      return (coordinatorPublicKeyX, coordinatorPublicKeyY);
-    }
+    //// Forcefully ends sign up period
+    //function endSignUpPeriod() public onlyOwner {
+      //signUpForceEnded = true;
+    //}
 }
 

@@ -1,24 +1,30 @@
 require('module-alias/register')
+jest.setTimeout(90000)
 import { genAccounts, genTestAccounts } from '../accounts'
 import { config } from 'maci-config'
 import * as etherlime from 'etherlime-lib'
+import * as ethers from 'ethers'
 
 import {
     deployMaci,
     deploySignupToken,
-    getDeployer,
+    deploySignupTokenGatekeeper,
+    genDeployer,
 } from '../deploy'
 
 import {
     genKeyPair,
+    setupTree,
+    NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
 
-const accounts = genTestAccounts()
-const deployer = getDeployer(accounts[0].privateKey)
-let maciContract
-let signUpTokenContract
+const accounts = genTestAccounts(5)
+const deployer = genDeployer(accounts[0].privateKey)
 
 describe('MACI', () => {
+    let maciContract
+    let signUpTokenContract
+    let signUpTokenGatekeeperContract
     // set up users
     const user1 = {
         wallet: accounts[1],
@@ -26,15 +32,44 @@ describe('MACI', () => {
     }
 
     const user2 = {
-        wallet: accounts[1],
+        wallet: accounts[2],
+        keypair: genKeyPair(),
+    }
+
+    const badUser = {
+        wallet: accounts[3],
         keypair: genKeyPair(),
     }
 
     beforeAll(async () => {
         signUpTokenContract = await deploySignupToken(deployer)
-        const contracts = await deployMaci(deployer, signUpTokenContract.contractAddress)
+        signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(
+            deployer,
+            signUpTokenContract.contractAddress,
+        )
+        const contracts = await deployMaci(
+            deployer,
+            signUpTokenGatekeeperContract.contractAddress,
+        )
+
         maciContract = contracts.maciContract
 
+        const numEth = 0.5
+        for (let i = 1; i < accounts.length; i++) {
+            const tx = await deployer.provider.sendTransaction(
+                accounts[0].sign({
+                    nonce: await deployer.provider.getTransactionCount(accounts[0].address),
+                    gasPrice: ethers.utils.parseUnits('10', 'gwei'),
+                    gasLimit: 21000,
+                    to: accounts[i].address,
+                    value: ethers.utils.parseUnits('1', 'ether'),
+                    data: '0x'
+                })
+            )
+            const receipt = await tx.wait()
+            console.log(`Gave away ${numEth} ETH to`, accounts[i].address)
+        }
+        
         // give away a signUpToken to each user
         await signUpTokenContract.giveToken(user1.wallet.address)
         await signUpTokenContract.giveToken(user2.wallet.address)
@@ -48,8 +83,87 @@ describe('MACI', () => {
         expect(ownerOfToken2).toEqual(user2.wallet.address)
     })
 
-    it('should be deployed', async () => {
-        expect(maciContract.contractAddress.startsWith('0x')).toBeTruthy()
+    it('emptyVoteOptionTreeRoot should be correct', async () => {
+        const tree = setupTree(
+            config.merkleTrees.voteOptionTreeDepth,
+            NOTHING_UP_MY_SLEEVE,
+        )
+        const root = await maciContract.emptyVoteOptionTreeRoot()
+        expect(tree.root.toString()).toEqual(root.toString())
+    })
+
+    it('a user who does not own a SignUpToken should not be able to sign up', async () => {
+        expect.assertions(1)
+
+        const wallet = user1.wallet.connect(deployer.provider as any)
+        const contract = new ethers.Contract(
+            maciContract.contractAddress,
+            maciContract.interface.abi,
+            wallet,
+        )
+
+        try {
+            await contract.signUp(
+                ethers.utils.defaultAbiCoder.encode(['uint256'], [2]),
+                { gasLimit: 100000 },
+            )
+        } catch (e) {
+            expect(e.message.endsWith('SignUpTokenGatekeeper: this user does not own the token')).toBeTruthy()
+        }
+    })
+
+    it('a user owns a SignUpToken should be able to sign up', async () => {
+        const wallet = user1.wallet.connect(deployer.provider as any)
+        const contract = new ethers.Contract(
+            maciContract.contractAddress,
+            maciContract.interface.abi,
+            wallet,
+        )
+        const tx = await contract.signUp(
+            ethers.utils.defaultAbiCoder.encode(['uint256'], [1]),
+            { gasLimit: 100000 },
+        )
+        const receipt = await tx.wait()
+
+        expect(receipt.status).toEqual(1)
+    })
+
+    it('a user who uses a previously used SignUpToken to sign up should not be able to', async () => {
+        expect.assertions(3)
+        const wallet = user1.wallet.connect(deployer.provider as any)
+        const contract = new ethers.Contract(
+            signUpTokenContract.contractAddress,
+            signUpTokenContract.interface.abi,
+            wallet,
+        )
+        const tx = await contract.safeTransferFrom(
+            user1.wallet.address,
+            user2.wallet.address,
+            1,
+            { gasLimit: 500000 },
+        )
+
+        const receipt = await tx.wait()
+        expect(receipt.status).toEqual(1)
+
+        const ownerOfToken1 = await signUpTokenContract.ownerOf(1)
+        expect(ownerOfToken1).toEqual(user2.wallet.address)
+
+        try {
+            const wallet2 = user2.wallet.connect(deployer.provider as any)
+            const contract2 = new ethers.Contract(
+                maciContract.contractAddress,
+                maciContract.interface.abi,
+                wallet2,
+            )
+            await contract2.signUp(
+                ethers.utils.defaultAbiCoder.encode(['uint256'], [1]),
+                { gasLimit: 400000 },
+            )
+        } catch (e) {
+            console.log(e.message)
+            expect(e.message.endsWith('SignUpTokenGatekeeper: this token has already been used to sign up')).toBeTruthy()
+        }
     })
 })
 

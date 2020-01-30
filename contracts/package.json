@@ -9,6 +9,7 @@
         "compileSol": "./scripts/compileSol.sh",
         "build": "tsc && ./scripts/compileSol.sh",
         "deploy": "node build/deploy.js -o deployedAddresses.json",
+        "deploy-debug": "node --inspect-brk build/deploy.js -o deployedAddresses.json",
         "test-maci": "jest Maci.test.ts",
         "test-maci-debug": "node --inspect-brk ./node_modules/.bin/jest Maci.test.ts",
         "test-hasher": "jest Hasher.test.ts",
