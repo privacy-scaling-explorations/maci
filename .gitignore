@@ -1,3 +1,32 @@
+deployedAddresses.json
+.etherlime-store
+**/build/
+boilerplate/circuits/build
+boilerplate/contracts/compiled
+circuits/build
+contracts/compiled
+node_modules
+blake2sdef.json
+build/.snark_checksum
+
+.DS_Store
+
+# Stuff we can auto-generate
+proving_key.json
+verification_key.json
+witness.json
+public.json
+proof.json
+circuit.json
+input.json
+
+app/circuits/*
+app/contracts/*
+
+.vscode/
+
+_build/
+
 # Logs
 logs
 *.log
@@ -38,7 +67,6 @@ bower_components
 build/Release
 
 # Dependency directories
-node_modules/
 jspm_packages/
 
 # TypeScript v1 declaration files
@@ -86,19 +114,3 @@ typings/
 
 # DynamoDB Local files
 .dynamodb/
-
-# Stuff we can auto-generate
-proving_key.json
-verification_key.json
-witness.json
-public.json
-proof.json
-circuit.json
-input.json
-
-app/circuits/*
-app/contracts/*
-
-.vscode/
-
-_build/

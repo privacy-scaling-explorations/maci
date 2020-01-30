@@ -1,0 +1,11 @@
+{
+  "packages": [
+    "contracts",
+    "circuits",
+    "crypto",
+    "config",
+    "domainobjs"
+  ],
+  "version": "0.0.1",
+  "npmClient": "npm"
+}

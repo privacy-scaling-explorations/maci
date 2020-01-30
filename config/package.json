@@ -1,0 +1,17 @@
+{
+    "name": "maci-config",
+    "version": "1.0.0",
+    "main": "build/index.js",
+    "scripts": {
+        "watch": "tsc --watch",
+        "build": "tsc"
+    },
+    "dependencies": {
+        "config": "^3.2.4",
+        "js-yaml": "^3.13.1",
+        "path": "^0.12.7"
+    },
+    "devDependencies": {
+        "@types/node": "^13.1.2"
+    }
+}

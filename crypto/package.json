@@ -1,0 +1,25 @@
+{
+    "name": "maci-crypto",
+    "version": "1.0.0",
+    "description": "",
+    "main": "build/index.js",
+    "scripts": {
+        "watch": "tsc --watch",
+        "build": "tsc",
+        "test": "jest",
+        "test-crypto": "jest Crypto.test.ts",
+        "test--crypto-debug": "node --inspect-brk ./node_modules/.bin/jest Crypto.test.ts",
+        "test-mt": "jest MerkleTree.test.ts",
+        "test-mt-debug": "node --inspect-brk ./node_modules/.bin/jest MerkleTree.test.ts"
+    },
+    "dependencies": {},
+    "devDependencies": {
+        "@types/jest": "^24.0.25",
+        "@types/node": "^13.1.2",
+        "ts-jest": "^24.2.0",
+        "jest": "^24.9.0",
+        "circom": "0.0.34",
+        "circomlib": "0.0.19",
+        "snarkjs": "https://github.com/weijiekoh/snarkjs.git#5c338cade297a32f5ed4a7bc74f5e5d3cea31abc"
+    }
+}

@@ -1,0 +1,39 @@
+{
+    "name": "maci-contracts",
+    "version": "1.0.0",
+    "description": "",
+    "main": "build/index.js",
+    "scripts": {
+        "watch": "tsc --watch",
+        "ganache": "./scripts/runGanache.sh",
+        "compileSol": "./scripts/compileSol.sh",
+        "build": "tsc && ./scripts/compileSol.sh",
+        "deploy": "node build/deploy.js -o deployedAddresses.json",
+        "test-maci": "jest Maci.test.ts",
+        "test-maci-debug": "node --inspect-brk ./node_modules/.bin/jest Maci.test.ts",
+        "test-hasher": "jest Hasher.test.ts",
+        "test-hasher-debug": "node --inspect-brk ./node_modules/.bin/jest Hasher.test.ts"
+    },
+    "_moduleAliases": {
+        "@maci-contracts": "."
+    },
+    "dependencies": {
+        "@openzeppelin/contracts": "^2.4.0",
+        "argparse": "^1.0.10",
+        "circomlib": "0.0.19",
+        "etherlime-lib": "^1.1.5",
+        "maci-config": "1.0.0",
+        "module-alias": "^2.2.2",
+        "openzeppelin-solidity": "^2.4.0"
+    },
+    "devDependencies": {
+        "maci-crypto": "1.0.0",
+        "@types/node": "^13.1.2",
+        "etherlime": "^2.2.4",
+        "@types/jest": "^24.0.25",
+        "ts-jest": "^24.2.0",
+        "jest": "^24.9.0",
+        "ganache-cli": "^6.7.0",
+        "truffle-artifactor": "^4.0.30"
+    }
+}

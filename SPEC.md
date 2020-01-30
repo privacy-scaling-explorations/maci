@@ -593,7 +593,7 @@ Some terms in this specification are similar to one another but should not be us
 | Term | Meaning |
 |-|-|
 | Command | Unencrypted data whose fields include the user's public key, vote etc. |
-| Message | An encrypted command. |
+| Message | An encrypted command and signature (`Encrypt([Command, Signature], Key)`. |
 | State | The mapping between each user's public key and the full set of information about which options they voted for and the weight per vote. Note that this does not refer to the Ethereum state as defined in the Yellow Paper. |
 | Vote | The options which the user voted for |
 | Vote option | One out of many possible choices which a user may vote for |

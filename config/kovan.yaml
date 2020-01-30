@@ -1,0 +1,17 @@
+---
+env: 'kovan'
+
+maci:
+  signupDurationInBlocks: 1000
+  coordinatorPublicKey:
+    - 0
+    - 1
+
+chain:
+  privateKeysPath: "/home/user/kovanPrivkey.json"
+  url: "https://kovan.infura.io/v3/865ab3c804cb47caa962010c897b40c5"
+
+merkleTrees:
+  zeroValue: 5503045433092194285660061905880311622788666850989422096966288514930349325741
+  commandTreeDepth: 4
+  stateTreeDepth: 4
