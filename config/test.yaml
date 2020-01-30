@@ -2,6 +2,7 @@
 env: 'test'
 
 maci:
+  initialVoiceCreditBalance: 100
   signupDurationInSeconds: 3600 # 1 hour
   coordinatorPublicKey:
     - 0

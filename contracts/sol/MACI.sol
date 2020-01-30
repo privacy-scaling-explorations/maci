@@ -35,6 +35,9 @@ contract MACI is Hasher, Ownable, DomainObjs, EmptyMerkleTreeRoots {
     // The coordinator can also forcefully end the sign-up period
     bool public signUpForceEnded = false;
 
+    // The initial voice credit balance per user
+    uint256 public initialVoiceCreditBalance;
+
     // The coordinator's public key
     PubKey public coordinatorPubKey;
 
@@ -45,15 +48,9 @@ contract MACI is Hasher, Ownable, DomainObjs, EmptyMerkleTreeRoots {
     // Should be equal to 5503045433092194285660061905880311622788666850989422096966288514930349325741
     uint256 ZERO_VALUE = uint256(keccak256(abi.encodePacked('Maci'))) % SNARK_SCALAR_FIELD;
 
+    // Events
+    event SignUp(PubKey indexed _userPubKey);
 
-    //// Events
-    //event SignedUp(
-        //uint256[] encryptedMessage,
-        //uint256[2] ecdhPublicKey,
-        //uint256 hashedEncryptedMessage,
-        //uint256 newStateTreeRoot,
-        //uint256 userIndex
-    //);
     //event CommandPublished(
         //uint256[] encryptedMessage,
         //uint256[2] ecdhPublicKey,
@@ -68,23 +65,39 @@ contract MACI is Hasher, Ownable, DomainObjs, EmptyMerkleTreeRoots {
         BatchUpdateStateTreeVerifier _batchUstVerifier,
         SignUpGatekeeper _signUpGatekeeper,
         uint256 _signUpDurationSeconds,
+        uint256 _initialVoiceCreditBalance,
         PubKey memory _coordinatorPubKey
     ) Ownable() public {
 
-        // Create the Merkle trees
-        cmdTree = new MerkleTree(_cmdTreeDepth, ZERO_VALUE);
-        stateTree = new MerkleTree(_stateTreeDepth, ZERO_VALUE);
-
-        // Calculate and store the root of an empty vote option tree
-        emptyVoteOptionTreeRoot = emptyMerkleTreeRoots[voteOptionTreeDepth - 1];
-
+        // Set the verifier contract addresses
         batchUstVerifier = _batchUstVerifier;
 
+        // Set the sign-up duration
         signUpTimestamp = now;
         signUpDurationSeconds = _signUpDurationSeconds;
+        
+        // Set the sign-up gatekeeper contract
         signUpGatekeeper = _signUpGatekeeper;
+        
+        // Set the initial voice credit balance
+        initialVoiceCreditBalance = _initialVoiceCreditBalance;
 
+        // Set the coordinator's public key
         coordinatorPubKey = _coordinatorPubKey;
+
+        // Store the root of an empty vote option tree. Note that this value is
+        // hardcoded into the contract source.
+        emptyVoteOptionTreeRoot = emptyMerkleTreeRoots[voteOptionTreeDepth - 1];
+
+        // Create the command tree
+        cmdTree = new MerkleTree(_cmdTreeDepth, ZERO_VALUE);
+
+        // Set the state tree root
+        stateTree = new MerkleTree(_stateTreeDepth, ZERO_VALUE);
+
+        // Make subsequent insertions start from leaf #1, as leaf #0 is only
+        // updated with random data if a command is invalid.
+        stateTree.insertBlankAtZerothLeaf();
     }
 
     /*
@@ -112,33 +125,41 @@ contract MACI is Hasher, Ownable, DomainObjs, EmptyMerkleTreeRoots {
         _;
     }
 
-    // Signs a user up
-    // TODO: should we construct a fresh state tree leaf rather than accept it
-    // as a message from the user?
+    /*
+     * Allows a user who is eligible to sign up to do so. The sign-up
+     * gatekeeper will prevent double sign-ups or ineligible users from signing
+     * up. This function will only succeed if the sign-up deadline has not
+     * passed. It also inserts a fresh state leaf into the state tree.
+     * @param _userPubKey The user's desired public key.
+     * @param _signUpGatekeeperData Data to pass to the sign-up gatekeeper's
+     *     register() function. For instance, the POAPGatekeeper or
+     *     SignUpTokenGatekeeper requires this value to be the ABI-encoded
+     *     token ID.
+     */
     function signUp(
-        //uint256[] memory encryptedMessage,
-        //uint256[2] memory ecdhPublicKey,
+        PubKey memory _userPubKey,
         bytes memory _signUpGatekeeperData
     ) 
     isBeforeSignUpDeadline
     public {
+
+        // Register the user via the sign-up gatekeeper. This function should
+        // throw if the user has already registered or if ineligible to do so.
         signUpGatekeeper.register(msg.sender, _signUpGatekeeperData);
 
-        //// Calculate leaf value
-        //uint256 leaf = hashMulti(encryptedMessage, 0);
+        // Create, hahs, and insert a fresh state leaf
+        StateLeaf memory stateLeaf = StateLeaf({
+            pubKey: _userPubKey,
+            voteOptionTreeRoot: emptyVoteOptionTreeRoot,
+            voiceCreditBalance: initialVoiceCreditBalance,
+            nonce: 0
+        });
 
-        //stateTree.insert(leaf);
+        uint256 hashedLeaf = hashStateLeaf(stateLeaf);
 
-        //// Get new cmd tree root
-        //uint256 newStateTreeRoot = stateTree.getRoot();
+        stateTree.insert(hashedLeaf);
 
-        //emit SignedUp(
-            //encryptedMessage,
-            //ecdhPublicKey,
-            //leaf,
-            //newStateTreeRoot,
-            //stateTree.getInsertedLeavesNo() - 1
-        //);
+        emit SignUp(_userPubKey);
     }
 
     //// Publishes commands

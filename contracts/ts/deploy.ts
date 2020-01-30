@@ -75,6 +75,7 @@ const deployMaci = async (
         batchUpdateStateTreeVerifierContract.contractAddress,
         signUpTokenGatekeeperAddress,
         config.maci.signupDurationInSeconds.toString(),
+        config.maci.initialVoiceCreditBalance,
         {
             x: config.maci.coordinatorPublicKey[0].toString(),
             y: config.maci.coordinatorPublicKey[1].toString(),
