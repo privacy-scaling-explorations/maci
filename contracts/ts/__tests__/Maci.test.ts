@@ -4,6 +4,7 @@ import { genAccounts, genTestAccounts } from '../accounts'
 import { config } from 'maci-config'
 import * as etherlime from 'etherlime-lib'
 import * as ethers from 'ethers'
+import { timeTravel } from '../../node_modules/etherlime/cli-commands/etherlime-test/time-travel.js'
 
 import {
     deployMaci,
@@ -94,7 +95,7 @@ describe('MACI', () => {
         expect(tree.root.toString()).toEqual(root.toString())
     })
 
-    describe('sign-ups', async () => {
+    describe('Sign-ups', () => {
 
         it('a user who does not own a SignUpToken should not be able to sign up', async () => {
             expect.assertions(1)
@@ -181,7 +182,6 @@ describe('MACI', () => {
                     { gasLimit: 2000000 },
                 )
             } catch (e) {
-                console.log(e.message)
                 expect(e.message.endsWith('SignUpTokenGatekeeper: this token has already been used to sign up')).toBeTruthy()
             }
 
@@ -204,6 +204,22 @@ describe('MACI', () => {
 
             ownerOfToken1 = await signUpTokenContract.ownerOf(1)
             expect(ownerOfToken1).toEqual(user1.wallet.address)
+        })
+
+        it('nobody can sign up after the sign-up period passes', async () => {
+            await timeTravel(deployer.provider, config.maci.signupDurationInSeconds + 1)
+            try {
+                await maciContract.signUp(
+                    { 
+                        x: user1.keypair.pubKey[0].toString(),
+                        y: user1.keypair.pubKey[1].toString(),
+                    },
+                    ethers.utils.defaultAbiCoder.encode(['uint256'], [1]),
+                    { gasLimit: 2000000 },
+                )
+            } catch (e) {
+                expect(e.message.endsWith('MACI: the sign-up period has passed')).toBeTruthy()
+            }
         })
     })
 })

@@ -25,9 +25,9 @@ const genProvider = () => {
 const genDeployer = (
     privateKey: string,
 ) => {
-    return new etherlime.JSONRPCPrivateKeyDeployer(
+    return new etherlime.EtherlimeGanacheDeployer(
         privateKey,
-        config.get('chain.url'),
+        config.get('chain.ganache.port'),
         {
             gasLimit: 8800000,
         },

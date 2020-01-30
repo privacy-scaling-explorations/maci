@@ -12,6 +12,8 @@ chain:
   privateKeysPath: './'
   testMnemonic: "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
   url: "http://localhost:8545"
+  ganache:
+    port: 8545
 
 merkleTrees:
   commandTreeDepth: 4

@@ -13,7 +13,7 @@ contract SignUpTokenGatekeeper is SignUpGatekeeper {
         token = _token;
     }
 
-    function decodeTokenId(bytes memory _data) internal returns (uint256) {
+    function decodeTokenId(bytes memory _data) internal pure returns (uint256) {
 
         return abi.decode(_data, (uint256));
     }
