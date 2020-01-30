@@ -32,9 +32,6 @@ contract MACI is Hasher, Ownable, DomainObjs, EmptyMerkleTreeRoots {
     // sign up to vote
     SignUpGatekeeper public signUpGatekeeper;
 
-    // The coordinator can also forcefully end the sign-up period
-    bool public signUpForceEnded = false;
-
     // The initial voice credit balance per user
     uint256 public initialVoiceCreditBalance;
 
@@ -171,8 +168,6 @@ contract MACI is Hasher, Ownable, DomainObjs, EmptyMerkleTreeRoots {
     //public 
     //{
 
-        //require(signUpForceEnded == false, "MACI: the coordinator has force-ended the sign-up period");
-
         //// Calculate leaf value
         //uint256 leaf = hashMulti(encryptedMessage, 0);
 
@@ -200,11 +195,6 @@ contract MACI is Hasher, Ownable, DomainObjs, EmptyMerkleTreeRoots {
       ////return batchUstVerifier.verifyProof(a, b, c, input);
       //// TODO: submit a batch of messages
       //return true;
-    //}
-
-    //// Forcefully ends sign up period
-    //function endSignUpPeriod() public onlyOwner {
-      //signUpForceEnded = true;
     //}
 }
 
