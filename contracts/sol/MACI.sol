@@ -13,10 +13,10 @@ contract MACI is Hasher, Ownable, DomainObjs, EmptyMerkleTreeRoots {
     // Verifier Contracts
     BatchUpdateStateTreeVerifier internal batchUstVerifier;
 
-    // Append-only merkle tree to represent internal state transitions
-    // i.e. update function isn't used
     // TODO: remove the update function if it isn't used
-    MerkleTree cmdTree;
+    MerkleTree messageTree;
+
+    // 
     MerkleTree stateTree;
 
     uint256 public emptyVoteOptionTreeRoot;
@@ -48,15 +48,15 @@ contract MACI is Hasher, Ownable, DomainObjs, EmptyMerkleTreeRoots {
     // Events
     event SignUp(PubKey indexed _userPubKey);
 
-    //event CommandPublished(
+    //event PublishMessage(
         //uint256[] encryptedMessage,
         //uint256[2] ecdhPublicKey,
         //uint256 hashedEncryptedMessage,
-        //uint256 newCmdTreeRoot
+        //uint256 newMessageTreeRoot
     //);
 
     constructor(
-        uint8 _cmdTreeDepth,
+        uint8 _messageTreeDepth,
         uint8 _stateTreeDepth,
         uint8 voteOptionTreeDepth,
         BatchUpdateStateTreeVerifier _batchUstVerifier,
@@ -86,8 +86,8 @@ contract MACI is Hasher, Ownable, DomainObjs, EmptyMerkleTreeRoots {
         // hardcoded into the contract source.
         emptyVoteOptionTreeRoot = emptyMerkleTreeRoots[voteOptionTreeDepth - 1];
 
-        // Create the command tree
-        cmdTree = new MerkleTree(_cmdTreeDepth, ZERO_VALUE);
+        // Create the message tree
+        messageTree = new MerkleTree(_messageTreeDepth, ZERO_VALUE);
 
         // Set the state tree root
         stateTree = new MerkleTree(_stateTreeDepth, ZERO_VALUE);
@@ -160,7 +160,7 @@ contract MACI is Hasher, Ownable, DomainObjs, EmptyMerkleTreeRoots {
     }
 
     //// Publishes commands
-    //function publishCommand(
+    //function publishMessage(
         //uint256[] memory encryptedMessage,
         //uint256[2] memory ecdhPublicKey
     //) 
@@ -171,17 +171,16 @@ contract MACI is Hasher, Ownable, DomainObjs, EmptyMerkleTreeRoots {
         //// Calculate leaf value
         //uint256 leaf = hashMulti(encryptedMessage, 0);
 
-        //// Insert the new leaf into the cmdTree
-        //cmdTree.insert(leaf);
+        //// Insert the new leaf into the message tree
+        //messageTree.insert(leaf);
 
-        //// Get new cmd tree root
-        //uint256 newCmdTreeRoot = cmdTree.getRoot();
+        //uint256 newMessageTreeRoot = messageTree.getRoot();
 
-        //emit CommandPublished(
+        //emit PublishMessage(
             //encryptedMessage,
             //ecdhPublicKey,
             //leaf,
-            //newCmdTreeRoot
+            //newMessageTreeRoot
         //);
     //}
 

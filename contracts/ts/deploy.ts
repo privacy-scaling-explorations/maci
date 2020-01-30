@@ -69,7 +69,7 @@ const deployMaci = async (
     const maciContract = await deployer.deploy(
         MACI,
         { CircomLib: mimcContract.contractAddress },
-        config.merkleTrees.commandTreeDepth,
+        config.merkleTrees.messageTreeDepth,
         config.merkleTrees.stateTreeDepth,
         config.merkleTrees.voteOptionTreeDepth,
         batchUpdateStateTreeVerifierContract.contractAddress,
