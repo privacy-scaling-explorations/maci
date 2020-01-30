@@ -9,12 +9,20 @@ import { genAccounts, genTestAccounts } from './accounts'
 const MiMC = require('@maci-contracts/compiled/MiMC.json')
 const Hasher = require('@maci-contracts/compiled/Hasher.json')
 const SignUpToken = require('@maci-contracts/compiled/SignUpToken.json')
+const SignUpTokenGatekeeper = require('@maci-contracts/compiled/SignUpTokenGatekeeper.json')
 
 const BatchUpdateStateTreeVerifier = require('@maci-contracts/compiled/BatchUpdateStateTreeVerifier.json')
 const MerkleTree = require('@maci-contracts/compiled/MerkleTree.json')
 const MACI = require('@maci-contracts/compiled/MACI.json')
 
-const getDeployer = (
+const genProvider = () => {
+    const rpcUrl = config.get('chain.url')
+    const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
+
+    return provider
+}
+
+const genDeployer = (
     privateKey: string,
 ) => {
     return new etherlime.JSONRPCPrivateKeyDeployer(
@@ -33,9 +41,23 @@ const deploySignupToken = async (deployer) => {
     return signUpTokenContract
 }
 
-const deployMaci = async (
+const deploySignupTokenGatekeeper = async (
     deployer,
     signUpTokenAddress: string,
+) => {
+    console.log('Deploying SignUpTokenGatekeeper')
+    const signUpTokenGatekeeperContract = await deployer.deploy(
+        SignUpTokenGatekeeper,
+        {},
+        signUpTokenAddress,
+    )
+
+    return signUpTokenGatekeeperContract
+}
+
+const deployMaci = async (
+    deployer,
+    signUpTokenGatekeeperAddress: string,
 ) => {
     console.log('Deploying MiMC')
     const mimcContract = await deployer.deploy(MiMC, {})
@@ -49,11 +71,14 @@ const deployMaci = async (
         { CircomLib: mimcContract.contractAddress },
         config.merkleTrees.commandTreeDepth,
         config.merkleTrees.stateTreeDepth,
+        config.merkleTrees.voteOptionTreeDepth,
         batchUpdateStateTreeVerifierContract.contractAddress,
-        signUpTokenAddress,
-        config.maci.signupDurationInBlocks.toString(),
-        config.maci.coordinatorPublicKey[0].toString(),
-        config.maci.coordinatorPublicKey[1].toString(),
+        signUpTokenGatekeeperAddress,
+        config.maci.signupDurationInSeconds.toString(),
+        {
+            x: config.maci.coordinatorPublicKey[0].toString(),
+            y: config.maci.coordinatorPublicKey[1].toString(),
+        },
     )
 
     return {
@@ -66,7 +91,7 @@ const deployMaci = async (
 const main = async () => {
     let accounts
     if (config.env === 'local-dev' || config.env === 'test') {
-        accounts = genTestAccounts()
+        accounts = genTestAccounts(1)
     } else {
         accounts = genAccounts()
     }
@@ -108,6 +133,7 @@ const main = async () => {
 
 
     let signUpTokenAddress
+    let signUpTokenGatekeeperAddress
     if (signUpToken) {
         signUpTokenAddress = signUpToken
     } else {
@@ -115,13 +141,18 @@ const main = async () => {
         signUpTokenAddress = signUpTokenContract.contractAddress
     }
 
+    const signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(
+        deployer,
+        signUpTokenAddress,
+    )
+
     const {
         mimcContract,
         batchUpdateStateTreeVerifierContract,
         maciContract,
     } = await deployMaci(
         deployer,
-        signUpTokenAddress,
+        signUpTokenGatekeeperContract.contractAddress,
     )
 
     const addresses = {
@@ -150,5 +181,7 @@ if (require.main === module) {
 export {
     deployMaci,
     deploySignupToken,
-    getDeployer,
+    deploySignupTokenGatekeeper,
+    genDeployer,
+    genProvider,
 }
