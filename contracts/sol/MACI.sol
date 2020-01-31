@@ -14,10 +14,10 @@ contract MACI is Hasher, Ownable, DomainObjs, EmptyMerkleTreeRoots {
     BatchUpdateStateTreeVerifier internal batchUstVerifier;
 
     // TODO: remove the update function if it isn't used
-    MerkleTree messageTree;
+    MerkleTree public messageTree;
 
     // 
-    MerkleTree stateTree;
+    MerkleTree public stateTree;
 
     uint256 public emptyVoteOptionTreeRoot;
 
@@ -48,12 +48,10 @@ contract MACI is Hasher, Ownable, DomainObjs, EmptyMerkleTreeRoots {
     // Events
     event SignUp(PubKey indexed _userPubKey);
 
-    //event PublishMessage(
-        //uint256[] encryptedMessage,
-        //uint256[2] ecdhPublicKey,
-        //uint256 hashedEncryptedMessage,
-        //uint256 newMessageTreeRoot
-    //);
+    event PublishMessage(
+        Message indexed _message,
+        PubKey indexed _encPubKey
+    );
 
     constructor(
         uint8 _messageTreeDepth,
@@ -159,30 +157,31 @@ contract MACI is Hasher, Ownable, DomainObjs, EmptyMerkleTreeRoots {
         emit SignUp(_userPubKey);
     }
 
-    //// Publishes commands
-    //function publishMessage(
-        //uint256[] memory encryptedMessage,
-        //uint256[2] memory ecdhPublicKey
-    //) 
-    //isAfterSignUpDeadline
-    //public 
-    //{
+    /*
+     * Allows anyone to publish a message (an encrypted command and signature).
+     * This function also inserts it into the message tree.  @param _userPubKey
+     * The user's desired public key.
+     * @param _message The message to publish
+     * @param _pubKey An epheremal public key which can be combined with the
+     *     coordinator's private key to generate an ECDH shared key which which was
+     *     used to encrypt the message.
+     */
+    function publishMessage(
+        Message memory _message,
+        PubKey memory _encPubKey
+    ) 
+    isAfterSignUpDeadline
+    public 
+    {
 
-        //// Calculate leaf value
-        //uint256 leaf = hashMulti(encryptedMessage, 0);
+        // Calculate leaf value
+        uint256 leaf = hashMessage(_message);
 
-        //// Insert the new leaf into the message tree
-        //messageTree.insert(leaf);
+        // Insert the new leaf into the message tree
+        messageTree.insert(leaf);
 
-        //uint256 newMessageTreeRoot = messageTree.getRoot();
-
-        //emit PublishMessage(
-            //encryptedMessage,
-            //ecdhPublicKey,
-            //leaf,
-            //newMessageTreeRoot
-        //);
-    //}
+        emit PublishMessage(_message, _encPubKey);
+    }
 
     //// Submits proof for updating state tree
     //function verifyUpdateStateTreeProof(
@@ -195,5 +194,9 @@ contract MACI is Hasher, Ownable, DomainObjs, EmptyMerkleTreeRoots {
       //// TODO: submit a batch of messages
       //return true;
     //}
+
+    function getMessageTreeRoot() public view returns (uint256) {
+        return messageTree.getRoot();
+    }
 }
 

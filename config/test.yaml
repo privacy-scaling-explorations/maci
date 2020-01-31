@@ -4,9 +4,7 @@ env: 'test'
 maci:
   initialVoiceCreditBalance: 100
   signupDurationInSeconds: 3600 # 1 hour
-  coordinatorPublicKey:
-    - 0
-    - 1
+  coordinatorPrivKey: "2922056879163902553431241761119057960280734584214105336279476766401963593688"
 
 chain:
   privateKeysPath: './'
