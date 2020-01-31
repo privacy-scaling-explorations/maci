@@ -24,12 +24,11 @@ import {
     genEcdhSharedKey,
     genPubKey,
     Keypair,
+    NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
 
 import { config } from 'maci-config'
 import { str2BigInt } from './utils'
-
-const ZERO_VALUE = bigInt(config.merkleTrees.zeroValue)
 
 const getUpdateStateTreeParams = async (
     userCmd: Command, 
@@ -39,9 +38,9 @@ const getUpdateStateTreeParams = async (
 ) => {
 
     // Construct the trees
-    const voteOptionTree = setupTree(2, ZERO_VALUE)
-    const msgTree = setupTree(4, ZERO_VALUE)
-    const stateTree = setupTree(4, ZERO_VALUE)
+    const voteOptionTree = setupTree(2, NOTHING_UP_MY_SLEEVE)
+    const msgTree = setupTree(4, NOTHING_UP_MY_SLEEVE)
+    const stateTree = setupTree(4, NOTHING_UP_MY_SLEEVE)
 
     // Insert candidates into vote option tree
     voteOptionTree.insert(hashOne(str2BigInt('candidate 1')))
@@ -55,7 +54,7 @@ const getUpdateStateTreeParams = async (
     stateTree.insert(hashOne(str2BigInt('random data')))
 
     // User 1's vote option tree
-    const user1VoteOptionTree = setupTree(2, ZERO_VALUE)
+    const user1VoteOptionTree = setupTree(2, NOTHING_UP_MY_SLEEVE)
 
     // Insert this user's votes into the vote option tree
 
