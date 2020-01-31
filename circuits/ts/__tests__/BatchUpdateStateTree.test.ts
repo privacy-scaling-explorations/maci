@@ -27,6 +27,7 @@ import {
     genEcdhSharedKey,
     genPubKey,
     Keypair,
+    NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
 
 import {
@@ -42,8 +43,6 @@ import { config } from 'maci-config'
 import { str2BigInt } from './utils'
 
 jest.setTimeout(90000)
-
-const ZERO_VALUE = bigInt(config.merkleTrees.zeroValue)
 
 const provingKeyPath = path.join(__dirname, '../../build/batchUstPk.bin')
 const provingKey: SnarkProvingKey = fs.readFileSync(provingKeyPath)
@@ -65,7 +64,7 @@ const createUser = (
 
     const ephemeralKeypair = genKeyPair()
 
-    const userVoteOptionTree = setupTree(2, ZERO_VALUE)
+    const userVoteOptionTree = setupTree(2, NOTHING_UP_MY_SLEEVE)
     for (let i = 0; i < voteOptionLength; i++) {
         // Vote for no-one by default
         userVoteOptionTree.insert(hashOne(bigInt(0)), bigInt(0))
@@ -189,9 +188,9 @@ describe('Batch state tree root update verification circuit', () => {
         const treeDepth = 4
         const voteOptionTreeDepth = 2
         // Construct the trees
-        const msgTree = setupTree(treeDepth, ZERO_VALUE)
-        let stateTree = setupTree(treeDepth, ZERO_VALUE)
-        const voteOptionTree = setupTree(voteOptionTreeDepth, ZERO_VALUE)
+        const msgTree = setupTree(treeDepth, NOTHING_UP_MY_SLEEVE)
+        let stateTree = setupTree(treeDepth, NOTHING_UP_MY_SLEEVE)
+        const voteOptionTree = setupTree(voteOptionTreeDepth, NOTHING_UP_MY_SLEEVE)
 
         // Insert candidates into vote option tree
         voteOptionTree.insert(hashOne(str2BigInt('candidate 1')))
