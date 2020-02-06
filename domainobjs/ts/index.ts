@@ -1,3 +1,4 @@
+import * as assert from 'assert'
 import {
     Ciphertext,
     Plaintext,
@@ -26,6 +27,9 @@ interface VoteOptionTreeLeaf {
     votes: SnarkBigInt;
 }
 
+/*
+ * An encrypted command and signature.
+ */
 class Message {
     public iv: SnarkBigInt
     public data: SnarkBigInt[]
@@ -34,6 +38,8 @@ class Message {
         iv: SnarkBigInt,
         data: SnarkBigInt[],
     ) {
+        // TODO: add an assert on the length of data
+        assert(data.length === 10)
         this.iv = iv
         this.data = data
     }
@@ -44,6 +50,13 @@ class Message {
             this.iv,
             ...this.data,
         ]
+    }
+
+    public asContractParam = () => {
+        return {
+            iv: this.iv.toString(),
+            data: this.data.map((x) => x.toString()),
+        }
     }
 
     public asCircuitInputs = (): SnarkBigInt[] => {

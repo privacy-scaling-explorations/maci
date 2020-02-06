@@ -14,10 +14,17 @@ import {
 } from '../deploy'
 
 import {
+    bigInt,
     genKeyPair,
     setupTree,
+    genPubKey,
+    genEcdhSharedKey,
     NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
+import {
+    Message,
+    Command,
+} from 'maci-domainobjs'
 
 const accounts = genTestAccounts(5)
 const deployer = genDeployer(accounts[0].privateKey)
@@ -28,6 +35,9 @@ describe('MACI', () => {
     let signUpTokenGatekeeperContract
 
     // Set up users
+    const coordinatorPrivKey = bigInt(config.maci.coordinatorPrivKey)
+    const coordinatorPubKey = genPubKey(coordinatorPrivKey)
+
     // TODO: create a domain object for public keys
     const user1 = {
         wallet: accounts[1],
@@ -43,6 +53,18 @@ describe('MACI', () => {
         wallet: accounts[3],
         keypair: genKeyPair(),
     }
+
+    const encKeypair = genKeyPair()
+    const ecdhSharedKey = genEcdhSharedKey(encKeypair.privKey, coordinatorPubKey)
+    const command: Command = new Command(
+        bigInt(10),
+        encKeypair.pubKey,
+        bigInt(0),
+        bigInt(9),
+        bigInt(123),
+    )
+    const signature = command.sign(user1.keypair.privKey)
+    const message = command.encrypt(signature, ecdhSharedKey)
 
     beforeAll(async () => {
         signUpTokenContract = await deploySignupToken(deployer)
@@ -206,7 +228,23 @@ describe('MACI', () => {
             expect(ownerOfToken1).toEqual(user1.wallet.address)
         })
 
+        it('nobody can publish a message before the sign-up period passes', async () => {
+            expect.assertions(1)
+            try {
+                await maciContract.publishMessage(
+                    message.asContractParam(),
+                    {
+                        x: encKeypair.pubKey[0].toString(),
+                        y: encKeypair.pubKey[1].toString(),
+                    },
+                )
+            } catch (e) {
+                expect(e.message.endsWith('MACI: the sign-up period is not over')).toBeTruthy()
+            }
+        })
+
         it('nobody can sign up after the sign-up period passes', async () => {
+            expect.assertions(1)
             await timeTravel(deployer.provider, config.maci.signupDurationInSeconds + 1)
             try {
                 await maciContract.signUp(
@@ -220,6 +258,34 @@ describe('MACI', () => {
             } catch (e) {
                 expect(e.message.endsWith('MACI: the sign-up period has passed')).toBeTruthy()
             }
+        })
+    })
+
+    describe('Publish messages', () => {
+        it('publishMessage should add a leaf to the message tree', async () => {
+            expect.assertions(3)
+
+            // Check the on-chain message tree root against a root computed off-chain
+            const tree = setupTree(config.merkleTrees.messageTreeDepth, NOTHING_UP_MY_SLEEVE)
+            let root = await maciContract.getMessageTreeRoot()
+
+            expect(root.toString()).toEqual(tree.root.toString())
+
+            // Insert the message and do the same
+            tree.insert(message.hash())
+
+            const tx = await maciContract.publishMessage(
+                message.asContractParam(),
+                {
+                    x: encKeypair.pubKey[0].toString(),
+                    y: encKeypair.pubKey[1].toString(),
+                },
+            )
+            const receipt = await tx.wait()
+            expect(receipt.status).toEqual(1)
+
+            root = await maciContract.getMessageTreeRoot()
+            expect(root.toString()).toEqual(tree.root.toString())
         })
     })
 })

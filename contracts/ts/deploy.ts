@@ -5,6 +5,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as etherlime from 'etherlime-lib'
 import { config } from 'maci-config'
+import { genPubKey, bigInt } from 'maci-crypto'
 import { genAccounts, genTestAccounts } from './accounts'
 const MiMC = require('@maci-contracts/compiled/MiMC.json')
 const Hasher = require('@maci-contracts/compiled/Hasher.json')
@@ -14,6 +15,8 @@ const SignUpTokenGatekeeper = require('@maci-contracts/compiled/SignUpTokenGatek
 const BatchUpdateStateTreeVerifier = require('@maci-contracts/compiled/BatchUpdateStateTreeVerifier.json')
 const MerkleTree = require('@maci-contracts/compiled/MerkleTree.json')
 const MACI = require('@maci-contracts/compiled/MACI.json')
+
+const coordinatorPublicKey = genPubKey(bigInt(config.maci.coordinatorPrivKey))
 
 const genProvider = () => {
     const rpcUrl = config.get('chain.url')
@@ -69,7 +72,7 @@ const deployMaci = async (
     const maciContract = await deployer.deploy(
         MACI,
         { CircomLib: mimcContract.contractAddress },
-        config.merkleTrees.commandTreeDepth,
+        config.merkleTrees.messageTreeDepth,
         config.merkleTrees.stateTreeDepth,
         config.merkleTrees.voteOptionTreeDepth,
         batchUpdateStateTreeVerifierContract.contractAddress,
@@ -77,8 +80,8 @@ const deployMaci = async (
         config.maci.signupDurationInSeconds.toString(),
         config.maci.initialVoiceCreditBalance,
         {
-            x: config.maci.coordinatorPublicKey[0].toString(),
-            y: config.maci.coordinatorPublicKey[1].toString(),
+            x: coordinatorPublicKey[0].toString(),
+            y: coordinatorPublicKey[1].toString(),
         },
     )
 
