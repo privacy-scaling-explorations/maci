@@ -3,12 +3,12 @@ pragma solidity ^0.5.0;
 
 import { Hasher } from "./Hasher.sol";
 import { DomainObjs } from './DomainObjs.sol';
-import { MerkleTree, EmptyMerkleTreeRoots } from "./MerkleTree.sol";
+import { MerkleTree } from "./MerkleTree.sol";
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
 import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
 import { BatchUpdateStateTreeVerifier } from "./BatchUpdateStateTreeVerifier.sol";
 
-contract MACI is Hasher, Ownable, DomainObjs, EmptyMerkleTreeRoots {
+contract MACI is Hasher, Ownable, DomainObjs {
 
     // Verifier Contracts
     BatchUpdateStateTreeVerifier internal batchUstVerifier;
@@ -16,7 +16,6 @@ contract MACI is Hasher, Ownable, DomainObjs, EmptyMerkleTreeRoots {
     // TODO: remove the update function if it isn't used
     MerkleTree public messageTree;
 
-    // 
     MerkleTree public stateTree;
 
     uint256 public emptyVoteOptionTreeRoot;
@@ -80,15 +79,22 @@ contract MACI is Hasher, Ownable, DomainObjs, EmptyMerkleTreeRoots {
         // Set the coordinator's public key
         coordinatorPubKey = _coordinatorPubKey;
 
-        // Store the root of an empty vote option tree. Note that this value is
-        // hardcoded into the contract source.
-        emptyVoteOptionTreeRoot = emptyMerkleTreeRoots[voteOptionTreeDepth - 1];
-
         // Create the message tree
         messageTree = new MerkleTree(_messageTreeDepth, ZERO_VALUE);
 
-        // Set the state tree root
+        // Create the state tree
         stateTree = new MerkleTree(_stateTreeDepth, ZERO_VALUE);
+
+        // Calculate the vote option tree root.
+        // Re-use a computed root to save gas if the depth is the same.
+        if (voteOptionTreeDepth == _messageTreeDepth) {
+            emptyVoteOptionTreeRoot = messageTree.getRoot();
+        } else if (voteOptionTreeDepth == _stateTreeDepth) {
+            emptyVoteOptionTreeRoot = stateTree.getRoot();
+        } else {
+            MerkleTree tempTree = new MerkleTree(voteOptionTreeDepth, ZERO_VALUE);
+            emptyVoteOptionTreeRoot = tempTree.getRoot();
+        }
 
         // Make subsequent insertions start from leaf #1, as leaf #0 is only
         // updated with random data if a command is invalid.
@@ -142,7 +148,7 @@ contract MACI is Hasher, Ownable, DomainObjs, EmptyMerkleTreeRoots {
         // throw if the user has already registered or if ineligible to do so.
         signUpGatekeeper.register(msg.sender, _signUpGatekeeperData);
 
-        // Create, hahs, and insert a fresh state leaf
+        // Create, hash, and insert a fresh state leaf
         StateLeaf memory stateLeaf = StateLeaf({
             pubKey: _userPubKey,
             voteOptionTreeRoot: emptyVoteOptionTreeRoot,

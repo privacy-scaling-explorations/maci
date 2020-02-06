@@ -68,12 +68,4 @@ describe('Merkle Tree', () => {
         expect(tree.root).toEqual(copiedTree.root)
         expect(tree.nextIndex).toEqual(copiedTree.nextIndex)
     })
-
-    it('just print out roots of up to 32 levels with the MACI zero value', () => {
-        // Used to generate the values in the EmptyMerkleTreeRoots contract
-        for (let i = 1; i < 33; i ++) {
-            const tree = setupTree(i, NOTHING_UP_MY_SLEEVE)
-            console.log(tree.root)
-        }
-    })
 })
