@@ -18,7 +18,9 @@ jobs:
           keys:
             - v1.1-dependencies-{{ checksum "package-lock.json" }}
 
-      - run: npm install
+      - run: 
+          name: Install NPM dependencies
+          command: npm install
 
       - save_cache:
           paths:
@@ -51,12 +53,12 @@ jobs:
 
       # build snarks
       - run:
-          name: Build  the batch update state tree snark
+          name: Build the batch update state tree snark
           command: cd circuits && npm run buildBatchUpdateStateTreeSnark
           no_output_timeout: 600m
 
       - run:
-          name: Build  the quad vote tally snark
+          name: Build the quad vote tally snark
           command: cd circuits && npm run buildQuadVoteTallySnark
           no_output_timeout: 600m
 
@@ -74,7 +76,7 @@ jobs:
             - circuits/build/qvtVk.json
 
       - run:
-          name: compile-contracts
+          name: Compile contracts
           command: cd contracts && npm run compileSol
 
       - run:
