@@ -24,7 +24,7 @@
         "test-publicKey-debug": "node --inspect-brk ./node_modules/.bin/jest PublicKey.test.ts",
         "test-decrypt": "jest Decrypt.test.ts",
         "test-decrypt-debug": "node --inspect-brk ./node_modules/.bin/jest Decrypt.test.ts",
-        "test-updateStateTree": "jest UpdateStateTree.test.ts",
+        "test-updateStateTree": "jest ts/__tests__/UpdateStateTree.test.ts",
         "test-updateStateTree-debug": "node --inspect-brk ./node_modules/.bin/jest UpdateStateTree.test.ts",
         "test-batchUpdateStateTree": "jest BatchUpdateStateTree.test.ts",
         "test-batchUpdateStateTree-debug": "node --inspect-brk ./node_modules/.bin/jest BatchUpdateStateTree.test.ts"

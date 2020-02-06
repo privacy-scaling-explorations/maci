@@ -2,6 +2,7 @@ import * as path from 'path'
 import { Circuit } from 'snarkjs'
 const compiler = require('circom')
 import {
+    Keypair,
     StateLeaf,
     Command,
     Message,
@@ -16,14 +17,8 @@ import {
     SnarkBigInt,
     PrivKey,
     bigInt,
-    genKeyPair,
     genPrivKey,
     stringifyBigInts,
-    unstringifyBigInts,
-    formatPrivKeyForBabyJub,
-    genEcdhSharedKey,
-    genPubKey,
-    Keypair,
     NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
 
@@ -78,25 +73,25 @@ const getUpdateStateTreeParams = async (
     const user1StateTreeIndex = stateTree.nextIndex - 1
 
     // Insert more random data as we just want to validate user 1
-    stateTree.insert(hashOne(genPrivKey()))
-    stateTree.insert(hashOne(genPrivKey()))
+    stateTree.insert(hashOne(genRandomSalt()))
+    stateTree.insert(hashOne(genRandomSalt()))
 
     // Construct user 1 command
     // Note: command is unencrypted, message is encrypted
     const user1VoteOptionIndex = 0
 
     // Generate an ECDH shared key
-    const ecdhSharedKey = genEcdhSharedKey(ephemeralKeypair.privKey, coordinator.pubKey)
+    const ecdhSharedKey = Keypair.genEcdhSharedKey(ephemeralKeypair.privKey, coordinator.pubKey)
 
     // Sign and encrypt the user's message
     const sig = userCmd.sign(user.privKey)
     const user1Message: Message = userCmd.encrypt(sig, ecdhSharedKey)
 
     // Insert random data (as we just want to process 1 command)
-    msgTree.insert(hash([bigInt(0), genPrivKey()]))
-    msgTree.insert(hash([bigInt(1), genPrivKey()]))
-    msgTree.insert(hash([bigInt(2), genPrivKey()]))
-    msgTree.insert(hash([bigInt(3), genPrivKey()]))
+    msgTree.insert(hash([bigInt(0), genRandomSalt()]))
+    msgTree.insert(hash([bigInt(1), genRandomSalt()]))
+    msgTree.insert(hash([bigInt(2), genRandomSalt()]))
+    msgTree.insert(hash([bigInt(3), genRandomSalt()]))
 
     // Insert user 1's command into command tree
     msgTree.insert(user1Message.hash()) // Note that this is at index 4
@@ -123,7 +118,9 @@ const getUpdateStateTreeParams = async (
     const user1VoteOptionsTreeMaxIndex = bigInt(stateTree.nextIndex - 1)
 
     const circuitInputs = stringifyBigInts({
-        'coordinator_public_key': coordinator.pubKey,
+        'coordinator_public_key': coordinator.pubKey.asCircuitInputs(),
+        'ecdh_private_key': coordinator.privKey.asCircuitInputs(),
+        'ecdh_public_key': ephemeralKeypair.pubKey.asCircuitInputs(),
         'message': user1Message.asCircuitInputs(),
         'msg_tree_root': msgTree.root,
         'msg_tree_path_elements': msgTreePathElements,
@@ -138,11 +135,7 @@ const getUpdateStateTreeParams = async (
         'state_tree_root': stateTree.root,
         'state_tree_path_elements': stateTreePathElements,
         'state_tree_path_index': stateTreePathIndexes,
-        'ecdh_private_key': formatPrivKeyForBabyJub(coordinator.privKey),
-        'ecdh_public_key': ephemeralKeypair.pubKey,
     })
-
-    debugger
 
     return {
         circuitInputs,
@@ -157,9 +150,9 @@ describe('State tree root update verification circuit', () => {
     let circuit 
 
     // Set up keypairs
-    const user1 = genKeyPair()
-    const coordinator = genKeyPair()
-    const ephemeralKeypair = genKeyPair()
+    const user1 = new Keypair()
+    const coordinator = new Keypair()
+    const ephemeralKeypair = new Keypair()
 
     beforeAll(async () => {
         // Compile circuit
@@ -289,8 +282,8 @@ describe('State tree root update verification circuit', () => {
             bigInt(0),
         )
 
-        const wrongUser = genKeyPair() // A random keypair which should not be the user's
-        expect(wrongUser.privKey.toString()).not.toEqual(user1.privKey.toString())
+        const wrongUser = new Keypair() // A random Keypair which should not be the user's
+        expect(wrongUser.privKey.rawPrivKey.toString()).not.toEqual(user1.privKey.rawPrivKey.toString())
 
         const {
             circuitInputs,

@@ -3,14 +3,13 @@ import { Circuit } from 'snarkjs'
 const compiler = require('circom')
 
 import { 
-    genKeyPair,
     bigInt,
     stringifyBigInts,
     encrypt,
-    genEcdhSharedKey,
 } from 'maci-crypto'
 
 import {
+    Keypair,
     Command,
     Message,
 } from 'maci-domainobjs'
@@ -24,9 +23,9 @@ describe('Decryption circuit', () => {
     })
 
     it('Should decrypt a message inside the snark', async () => {
-        const keypair = genKeyPair()
-        const keypair2 = genKeyPair()
-        const sharedKey = genEcdhSharedKey(
+        const keypair = new Keypair()
+        const keypair2 = new Keypair()
+        const sharedKey = Keypair.genEcdhSharedKey(
             keypair.privKey,
             keypair2.pubKey,
         )

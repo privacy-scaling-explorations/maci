@@ -13,9 +13,9 @@ type PubKey = SnarkBigInt[]
 type EcdhSharedKey = SnarkBigInt
 type Plaintext = SnarkBigInt[]
 
-interface KeyPair {
-    privKey: PrivKey,
-        pubKey: PubKey,
+interface Keypair {
+    privKey: PrivKey;
+    pubKey: PubKey;
 }
 
 interface Ciphertext {
@@ -174,13 +174,13 @@ const genPubKey = (privKey: PrivKey): PubKey => {
     return pubKey
 }
 
-const genKeyPair = (): KeyPair => {
+const genKeypair = (): Keypair => {
     const privKey = genPrivKey()
     const pubKey = genPubKey(privKey)
 
-    const keypair: KeyPair = { privKey, pubKey }
+    const Keypair: Keypair = { privKey, pubKey }
 
-    return keypair
+    return Keypair
 }
 
 /*
@@ -314,7 +314,7 @@ export {
     genRandomSalt,
     genPrivKey,
     genPubKey,
-    genKeyPair,
+    genKeypair,
     genEcdhSharedKey,
     encrypt,
     decrypt,
@@ -325,7 +325,7 @@ export {
     verifySignature,
     PrivKey,
     PubKey,
-    KeyPair,
+    Keypair,
     EcdhSharedKey,
     Ciphertext,
     Plaintext,

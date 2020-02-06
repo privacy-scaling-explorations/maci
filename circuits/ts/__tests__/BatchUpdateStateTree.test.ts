@@ -3,6 +3,7 @@ import { Circuit } from 'snarkjs'
 const compiler = require('circom')
 import * as fs from 'fs'
 import {
+    Keypair,
     StateLeaf,
     Command,
     Message,
@@ -19,14 +20,7 @@ import {
     PrivKey,
     PubKey,
     bigInt,
-    genKeyPair,
-    genPrivKey,
     stringifyBigInts,
-    unstringifyBigInts,
-    formatPrivKeyForBabyJub,
-    genEcdhSharedKey,
-    genPubKey,
-    Keypair,
     NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
 
@@ -60,9 +54,9 @@ const createUser = (
     nonce: SnarkBigInt = bigInt(0)
 ) => {
     // Helper function to create a user and their associated vote option tree
-    const user = genKeyPair()
+    const user = new Keypair()
 
-    const ephemeralKeypair = genKeyPair()
+    const ephemeralKeypair = new Keypair()
 
     const userVoteOptionTree = setupTree(2, NOTHING_UP_MY_SLEEVE)
     for (let i = 0; i < voteOptionLength; i++) {
@@ -98,7 +92,7 @@ const processMessage = (
     const userVoteOptionTree = oldUserVoteOptionTree.copy()
 
     // Decrypt the msg and extract relevant parts of it
-    const sharedKey = genEcdhSharedKey(privKey, pubKey)
+    const sharedKey = Keypair.genEcdhSharedKey(privKey, pubKey)
     const { command, signature } = Command.decrypt(msg, sharedKey)
 
     const stateLeaf = stateTree.leavesRaw[command.stateIndex]
@@ -174,9 +168,9 @@ describe('Batch state tree root update verification circuit', () => {
     let circuit
 
     // Set up keypairs
-    const user1 = genKeyPair()
-    const coordinator = genKeyPair()
-    const ephemeralKeypair = genKeyPair()
+    const user1 = new Keypair()
+    const coordinator = new Keypair()
+    const ephemeralKeypair = new Keypair()
 
     beforeAll(async () => {
         // Compile circuit
@@ -253,7 +247,7 @@ describe('Batch state tree root update verification circuit', () => {
 
             const sig = cmd.sign(user.user.privKey)
 
-            const sharedKey = genEcdhSharedKey(user.ephemeralKeypair.privKey, coordinator.pubKey)
+            const sharedKey = Keypair.genEcdhSharedKey(user.ephemeralKeypair.privKey, coordinator.pubKey)
             const msg = cmd.encrypt(sig, sharedKey)
 
             cmds.push(cmd)
@@ -353,8 +347,10 @@ describe('Batch state tree root update verification circuit', () => {
         ] = stateTree.getPathUpdate(0)
 
         const d = {
-            'coordinator_public_key': coordinator.pubKey,
+            'coordinator_public_key': coordinator.pubKey.asCircuitInputs(),
             'message': msgs.map((x) => x.asCircuitInputs()),
+            'ecdh_private_key': coordinator.privKey.asCircuitInputs(),
+            'ecdh_public_key': ecdhPublicKeyBatch.map((x) => x.asCircuitInputs()),
             'msg_tree_root': msgTree.root,
             'msg_tree_path_elements': msgTreeBatchPathElements,
             'msg_tree_batch_start_index': msgTreeBatchStartIndex,
@@ -371,8 +367,6 @@ describe('Batch state tree root update verification circuit', () => {
             'state_tree_root': stateTreeBatchRoot,
             'state_tree_path_elements': stateTreeBatchPathElements,
             'state_tree_path_index': stateTreeBatchPathIndexes,
-            'ecdh_private_key': formatPrivKeyForBabyJub(coordinator.privKey),
-            'ecdh_public_key': ecdhPublicKeyBatch
         }
 
         const circuitInputs = stringifyBigInts(d)

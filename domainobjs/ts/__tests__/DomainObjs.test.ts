@@ -1,6 +1,7 @@
 import {
     Command,
     Message,
+    Keypair,
 } from '../'
 
 import {
@@ -8,27 +9,26 @@ import {
     sign,
     decrypt,
     verifySignature,
-    genKeyPair,
-    genEcdhSharedKey,
+    genKeypair,
     bigInt,
 } from 'maci-crypto'
 
 describe('Domain objects', () => {
-    const { privKey, pubKey } = genKeyPair()
-    const k = genKeyPair()
+    const { privKey, pubKey } = new Keypair()
+    const k = new Keypair()
 
     const privKey1 = k.privKey
     const pubKey1 = k.pubKey
 
-    const encKeypair = genKeyPair()
+    const encKeypair = new Keypair()
     const encPrivKey = k.privKey
     const encPubKey = k.pubKey
 
-    const newKeypair = genKeyPair()
+    const newKeypair = new Keypair()
     const newPrivKey = k.privKey
     const newPubKey = k.pubKey
 
-    const ecdhSharedKey = genEcdhSharedKey(privKey, pubKey1)
+    const ecdhSharedKey = Keypair.genEcdhSharedKey(privKey, pubKey1)
 
     const command: Command = new Command(
         bigInt(10),
