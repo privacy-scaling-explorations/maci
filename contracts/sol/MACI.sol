@@ -5,13 +5,16 @@ import { Hasher } from "./Hasher.sol";
 import { DomainObjs } from './DomainObjs.sol';
 import { MerkleTree } from "./MerkleTree.sol";
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
-import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
 import { BatchUpdateStateTreeVerifier } from "./BatchUpdateStateTreeVerifier.sol";
+import { QuadVoteTallyVerifier } from "./QuadVoteTallyVerifier.sol";
+
+import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
 
 contract MACI is Hasher, Ownable, DomainObjs {
 
     // Verifier Contracts
     BatchUpdateStateTreeVerifier internal batchUstVerifier;
+    QuadVoteTallyVerifier internal qvtVerifier;
 
     // TODO: remove the update function if it isn't used
     MerkleTree public messageTree;
@@ -56,15 +59,15 @@ contract MACI is Hasher, Ownable, DomainObjs {
         uint8 _messageTreeDepth,
         uint8 _stateTreeDepth,
         uint8 voteOptionTreeDepth,
-        BatchUpdateStateTreeVerifier _batchUstVerifier,
         SignUpGatekeeper _signUpGatekeeper,
         uint256 _signUpDurationSeconds,
         uint256 _initialVoiceCreditBalance,
         PubKey memory _coordinatorPubKey
     ) Ownable() public {
 
-        // Set the verifier contract addresses
-        batchUstVerifier = _batchUstVerifier;
+        // Deploy the verifier contracts
+        batchUstVerifier = new BatchUpdateStateTreeVerifier();
+        qvtVerifier = new QuadVoteTallyVerifier();
 
         // Set the sign-up duration
         signUpTimestamp = now;
