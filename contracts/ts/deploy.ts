@@ -12,7 +12,6 @@ const Hasher = require('@maci-contracts/compiled/Hasher.json')
 const SignUpToken = require('@maci-contracts/compiled/SignUpToken.json')
 const SignUpTokenGatekeeper = require('@maci-contracts/compiled/SignUpTokenGatekeeper.json')
 
-const BatchUpdateStateTreeVerifier = require('@maci-contracts/compiled/BatchUpdateStateTreeVerifier.json')
 const MerkleTree = require('@maci-contracts/compiled/MerkleTree.json')
 const MACI = require('@maci-contracts/compiled/MACI.json')
 
@@ -65,9 +64,6 @@ const deployMaci = async (
     console.log('Deploying MiMC')
     const mimcContract = await deployer.deploy(MiMC, {})
 
-    console.log('Deploying BatchUpdateStateTreeVerifier')
-    const batchUpdateStateTreeVerifierContract = await deployer.deploy(BatchUpdateStateTreeVerifier, {})
-
     console.log('Deploying MACI')
     const maciContract = await deployer.deploy(
         MACI,
@@ -75,7 +71,6 @@ const deployMaci = async (
         config.merkleTrees.messageTreeDepth,
         config.merkleTrees.stateTreeDepth,
         config.merkleTrees.voteOptionTreeDepth,
-        batchUpdateStateTreeVerifierContract.contractAddress,
         signUpTokenGatekeeperAddress,
         config.maci.signupDurationInSeconds.toString(),
         config.maci.initialVoiceCreditBalance,
@@ -87,7 +82,6 @@ const deployMaci = async (
 
     return {
         mimcContract,
-        batchUpdateStateTreeVerifierContract,
         maciContract,
     }
 }
@@ -152,7 +146,6 @@ const main = async () => {
 
     const {
         mimcContract,
-        batchUpdateStateTreeVerifierContract,
         maciContract,
     } = await deployMaci(
         deployer,
@@ -161,7 +154,6 @@ const main = async () => {
 
     const addresses = {
         MiMC: mimcContract.contractAddress,
-        BatchUpdateStateTreeVerifier: batchUpdateStateTreeVerifierContract.contractAddress,
         MACI: maciContract.contractAddress,
     }
 
