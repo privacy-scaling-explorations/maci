@@ -12,7 +12,7 @@ library CircomLib {
 }
 
 contract Hasher {
-    function hashMulti(uint256[] memory array, uint256 key) public pure returns (uint256) {
+    function hash(uint256[] memory array) public pure returns (uint256) {
         uint256 k = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
         uint256 R = 0;
         uint256 C = 0;
@@ -20,17 +20,17 @@ contract Hasher {
         for (uint256 i = 0; i < array.length; i++)
         {
             R = addmod(R, array[i], k);
-            (R, C) = CircomLib.MiMCSponge(R, C, key);
+            (R, C) = CircomLib.MiMCSponge(R, C, 0);
         }
         
         return R;
     }
 
-    function hashPair(uint256 left, uint256 right) public pure returns (uint256) {
+    function hashLeftRight(uint256 left, uint256 right) public pure returns (uint256) {
         uint256[] memory arr = new uint256[](2);
         arr[0] = left;
         arr[1] = right;
 
-        return hashMulti(arr, 0);
+        return hash(arr);
     }
 }

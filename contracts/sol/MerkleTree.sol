@@ -68,12 +68,12 @@ contract MerkleTree is Ownable, Hasher {
         filledSubtrees.push(zeros[0]);
 
         for (uint8 i = 1; i < depth; i++) {
-            zeros.push(hashPair(zeros[i-1], zeros[i-1]));
+            zeros.push(hashLeftRight(zeros[i-1], zeros[i-1]));
             filledSubtrees.push(zeros[i]);
         }
 
         // Calculate current root
-        root = hashPair(zeros[depth - 1], zeros[depth - 1]);
+        root = hashLeftRight(zeros[depth - 1], zeros[depth - 1]);
         nextLeafIndex = 0;
     }
 
@@ -102,7 +102,7 @@ contract MerkleTree is Ownable, Hasher {
                 right = currentLevelHash;
             }
 
-            currentLevelHash = hashPair(left, right);
+            currentLevelHash = hashLeftRight(left, right);
             currentIndex /= 2;
         }
 
@@ -145,7 +145,7 @@ contract MerkleTree is Ownable, Hasher {
                 right = currentLevelHash;
             }
 
-            currentLevelHash = hashPair(left, right);
+            currentLevelHash = hashLeftRight(left, right);
             currentIndex /= 2;
         }
 
@@ -163,7 +163,7 @@ contract MerkleTree is Ownable, Hasher {
                 right = currentLevelHash;
             }
 
-            currentLevelHash = hashPair(left, right);
+            currentLevelHash = hashLeftRight(left, right);
             currentIndex /= 2;
         }
 
@@ -173,11 +173,6 @@ contract MerkleTree is Ownable, Hasher {
         emit LeafUpdated(leaf, leafIndex);
     }
 
-    function hashLeftRight(uint256 left, uint256 right) public pure returns (uint256) {
-        return hashPair(left, right);
-    }
-
-    /*** Getters ***/
     function getRoot() public view returns (uint256) {
         return root;
     }

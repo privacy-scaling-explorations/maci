@@ -30,7 +30,7 @@ contract DomainObjs is Hasher {
         plaintext[3] = _stateLeaf.voiceCreditBalance;
         plaintext[4] = _stateLeaf.nonce;
 
-        return hashMulti(plaintext, 0);
+        return hash(plaintext);
     }
 
     function hashMessage(Message memory _message) public pure returns (uint256) {
@@ -42,6 +42,6 @@ contract DomainObjs is Hasher {
             plaintext[i+1] = _message.data[i];
         }
 
-        return hashMulti(plaintext, 0);
+        return hash(plaintext);
     }
 }

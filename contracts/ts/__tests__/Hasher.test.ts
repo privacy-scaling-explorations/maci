@@ -34,31 +34,31 @@ describe('Hasher', () => {
         hasherContract = await deployer.deploy(Hasher, { CircomLib: mimcContract.contractAddress })
     })
 
-    it('maci-crypto.hashLeftRight should match hasher.hashPair', async () => {
+    it('maci-crypto.hashLeftRight should match hasher.hashLeftRight', async () => {
         const left = genRandomSalt()
         const right = genRandomSalt()
         const hashed = hashLeftRight(left, right)
 
-        const onChainHash = await hasherContract.hashPair(left.toString(), right.toString())
+        const onChainHash = await hasherContract.hashLeftRight(left.toString(), right.toString())
         expect(onChainHash.toString()).toEqual(hashed.toString())
     })
 
-    it('maci-crypto.hash should match hasher.hashMulti', async () => {
+    it('maci-crypto.hash should match hasher.hash', async () => {
         let values: string[] = []
         for (let i=0; i < 10; i++) {
             values.push(genRandomSalt().toString())
         }
         const hashed = hash(values)
 
-        const onChainHash = await hasherContract.hashMulti(values, 0)
+        const onChainHash = await hasherContract.hash(values)
         expect(onChainHash.toString()).toEqual(hashed.toString())
     })
 
-    it('maci-crypto.hashOne should match hasher.hashMulti with one value', async () => {
+    it('maci-crypto.hashOne should match hasher.hash with one value', async () => {
         let values = [genRandomSalt().toString()]
         const hashed = hash(values)
 
-        const onChainHash = await hasherContract.hashMulti(values, 0)
+        const onChainHash = await hasherContract.hash(values)
         expect(onChainHash.toString()).toEqual(hashed.toString())
     })
 })
