@@ -1,7 +1,6 @@
 pragma experimental ABIEncoderV2;
 pragma solidity ^0.5.0;
 
-import { Hasher } from "./Hasher.sol";
 import { DomainObjs } from './DomainObjs.sol';
 import { MerkleTree } from "./MerkleTree.sol";
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
@@ -10,7 +9,7 @@ import { QuadVoteTallyVerifier } from "./QuadVoteTallyVerifier.sol";
 
 import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
 
-contract MACI is Hasher, Ownable, DomainObjs {
+contract MACI is Ownable, DomainObjs {
 
     // Verifier Contracts
     BatchUpdateStateTreeVerifier internal batchUstVerifier;
