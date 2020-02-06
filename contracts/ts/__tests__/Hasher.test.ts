@@ -12,7 +12,7 @@ import * as etherlime from 'etherlime-lib'
 const MiMC = require('@maci-contracts/compiled/MiMC.json')
 const Hasher = require('@maci-contracts/compiled/Hasher.json')
 
-const accounts = genTestAccounts()
+const accounts = genTestAccounts(1)
 let deployer
 let hasherContract
 let mimcContract

@@ -11,10 +11,12 @@ const genAccounts = () => {
     })
 }
 
-const genTestAccounts = () => {
+const genTestAccounts = (
+    numAccounts: number,
+) => {
     let accounts: ethers.Wallet[] = []
 
-    for (let i=0; i<10; i++) {
+    for (let i=0; i<numAccounts; i++) {
         const path = `m/44'/60'/${i}'/0/0`
         const wallet = ethers.Wallet.fromMnemonic(mnemonic, path)
         accounts.push(wallet)

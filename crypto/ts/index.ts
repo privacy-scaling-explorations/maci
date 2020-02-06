@@ -1,5 +1,6 @@
 import * as assert from 'assert'
 import * as crypto from 'crypto'
+import * as ethers from 'ethers'
 import * as snarkjs from 'snarkjs'
 import { babyJub, eddsa, mimcsponge, mimc7 } from 'circomlib'
 import { createMerkleTree, MerkleTree } from './merkleTree'
@@ -36,6 +37,9 @@ const bigInt = snarkjs.bigInt
 const SNARK_FIELD_SIZE = snarkjs.bigInt(
     '21888242871839275222246405745257275088548364400416034343698204186575808495617'
 )
+
+const NOTHING_UP_MY_SLEEVE =
+    bigInt(ethers.utils.solidityKeccak256(['bytes'], [ethers.utils.toUtf8Bytes('Maci')])) % SNARK_FIELD_SIZE
 
 const bigInt2Buffer = (i: SnarkBigInt): Buffer => {
     return Buffer.from(i.toString(16))
@@ -331,4 +335,5 @@ export {
     unstringifyBigInts,
     formatPrivKeyForBabyJub,
     MerkleTree,
+    NOTHING_UP_MY_SLEEVE,
 }

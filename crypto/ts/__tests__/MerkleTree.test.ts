@@ -1,3 +1,4 @@
+import * as ethers from 'ethers'
 import {
     MerkleTree,
     setupTree,
@@ -5,6 +6,7 @@ import {
     genRandomSalt,
     SnarkBigInt,
     hashLeftRight,
+    NOTHING_UP_MY_SLEEVE,
 } from '../'
 
 const ZERO_VALUE = 0
