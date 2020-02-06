@@ -1,7 +1,7 @@
 import {
     genPrivKey,
     genPubKey,
-    genKeyPair,
+    genKeypair,
     genEcdhSharedKey,
     encrypt,
     decrypt,
@@ -15,8 +15,8 @@ import * as snarkjs from 'snarkjs'
 const SNARK_FIELD_SIZE = snarkjs.bigInt('21888242871839275222246405745257275088548364400416034343698204186575808495617')
 
 describe('Cryptographic operations', () => {
-    const { privKey, pubKey } = genKeyPair()
-    const k = genKeyPair()
+    const { privKey, pubKey } = genKeypair()
+    const k = genKeypair()
 
     const privKey1 = k.privKey
     const pubKey1 = k.pubKey

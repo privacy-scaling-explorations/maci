@@ -5,16 +5,79 @@ import {
     EcdhSharedKey,
     Signature,
     SnarkBigInt,
-    PubKey,
-    PrivKey,
+    PubKey as RawPubKey,
+    PrivKey as RawPrivKey,
     encrypt,
     decrypt,
     sign,
     hash,
     verifySignature,
     genRandomSalt,
+    genKeypair,
+    formatPrivKeyForBabyJub,
+    genEcdhSharedKey,
 } from 'maci-crypto'
 
+interface Keypair {
+    privKey: RawPrivKey,
+    pubKey: RawPubKey,
+}
+
+class Keypair implements Keypair {
+    public privKey: RawPrivKey
+    public pubKey: RawPubKey
+
+    constructor () {
+        const rawKeyPair = genKeypair()
+        this.privKey = new PrivKey(rawKeyPair.privKey)
+        this.pubKey = new PubKey(rawKeyPair.pubKey)
+    }
+    
+    public static genEcdhSharedKey(
+        privKey: PrivKey,
+        pubKey: PubKey,
+    ) {
+        return genEcdhSharedKey(privKey.rawPrivKey, pubKey.rawPubKey)
+    }
+}
+
+class PrivKey {
+    public rawPrivKey: RawPrivKey
+
+    constructor (rawPrivKey: RawPrivKey) {
+        this.rawPrivKey = rawPrivKey
+    }
+
+    public asCircuitInputs = () => {
+        return formatPrivKeyForBabyJub(this.rawPrivKey).toString()
+    }
+}
+
+class PubKey {
+    public rawPubKey: RawPubKey
+
+    constructor (rawPubKey: RawPubKey) {
+        this.rawPubKey = rawPubKey
+    }
+
+    public asContractParam = () => {
+        return { 
+            x: this.rawPubKey[0].toString(),
+            y: this.rawPubKey[1].toString(),
+        }
+    }
+
+    public asCircuitInputs = () => {
+        return this.rawPubKey.map((x) => x.toString())
+    }
+
+    public asArray = (): SnarkBigInt[] => {
+        return [
+            this.rawPubKey[0],
+            this.rawPubKey[1],
+        ]
+    }
+}
 
 interface IStateLeaf {
     pubKey: PubKey;
@@ -70,6 +133,9 @@ class Message {
     }
 }
 
+/*
+ * A leaf in the state tree, which maps public keys to votes
+ */
 class StateLeaf implements IStateLeaf {
     public pubKey: PubKey
     public voteOptionTreeRoot: SnarkBigInt
@@ -91,8 +157,7 @@ class StateLeaf implements IStateLeaf {
     private asArray = (): SnarkBigInt[] => {
 
         return [
-            this.pubKey[0],
-            this.pubKey[1],
+            ...this.pubKey.asArray(),
             this.voteOptionTreeRoot,
             this.voiceCreditBalance,
             this.nonce,
@@ -112,7 +177,6 @@ class StateLeaf implements IStateLeaf {
 
 interface ICommand {
     stateIndex: SnarkBigInt;
-    //encPubKey: PubKey;
     newPubKey: PubKey;
     voteOptionIndex: SnarkBigInt;
     newVoteWeight: SnarkBigInt;
@@ -122,6 +186,9 @@ interface ICommand {
     encrypt: (EcdhSharedKey, Signature) => Message;
 }
 
+/*
+ * Unencrypted data whose fields include the user's public key, vote etc.
+ */
 class Command implements ICommand {
     public stateIndex: SnarkBigInt
     public newPubKey: PubKey
@@ -150,8 +217,7 @@ class Command implements ICommand {
 
         return [
             this.stateIndex,
-            this.newPubKey[0],
-            this.newPubKey[1],
+            ...this.newPubKey.asArray(),
             this.voteOptionIndex,
             this.newVoteWeight,
             this.nonce,
@@ -180,7 +246,7 @@ class Command implements ICommand {
         privKey: PrivKey,
     ): Signature => {
 
-        return sign(privKey, hash(this.asArray()))
+        return sign(privKey.rawPrivKey, hash(this.asArray()))
     }
 
     /*
@@ -196,7 +262,7 @@ class Command implements ICommand {
         return verifySignature(
             hash(this.asArray()),
             signature,
-            pubKey,
+            pubKey.rawPubKey,
         )
     }
 
@@ -233,7 +299,7 @@ class Command implements ICommand {
 
         const command = new Command(
             decrypted[0],
-            [decrypted[1], decrypted[2]],
+            new PubKey([decrypted[1], decrypted[2]]),
             decrypted[3],
             decrypted[4],
             decrypted[5],
@@ -254,4 +320,7 @@ export {
     VoteOptionTreeLeaf,
     Command,
     Message,
+    Keypair,
+    PubKey,
+    PrivKey,
 }

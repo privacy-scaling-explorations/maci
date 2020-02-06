@@ -4,13 +4,13 @@ const compiler = require('circom')
 
 import {
     stringifyBigInts,
-    genKeyPair,
     verifySignature,
     bigInt,
     hash,
 } from 'maci-crypto'
 
 import {
+    Keypair,
     Command,
 } from 'maci-domainobjs'
 
@@ -19,23 +19,24 @@ describe('Signature verification circuit', () => {
         const circuitDef = await compiler(path.join(__dirname, 'circuits', '../../../circom/test/verifySignature_test.circom'))
         const circuit = new Circuit(circuitDef)
 
+        const keypair = new Keypair()
         const command = new Command(
             bigInt(0),
-            genKeyPair().pubKey,
+            keypair.pubKey,
             bigInt(123),
             bigInt(123),
             bigInt(1),
         )
 
-        const signer = genKeyPair()
+        const signer = new Keypair()
         const sig = command.sign(signer.privKey)
         const plaintext = hash(command.asArray())
 
-        expect(verifySignature(plaintext, sig, signer.pubKey)).toBeTruthy()
+        expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).toBeTruthy()
 
         const circuitInputs = stringifyBigInts({
-            'from_x': stringifyBigInts(signer.pubKey[0]),
-            'from_y': stringifyBigInts(signer.pubKey[1]),
+            'from_x': stringifyBigInts(signer.pubKey.rawPubKey[0]),
+            'from_y': stringifyBigInts(signer.pubKey.rawPubKey[1]),
             'R8x': stringifyBigInts(sig.R8[0]),
             'R8y': stringifyBigInts(sig.R8[1]),
             'S': stringifyBigInts(sig.S),
@@ -54,31 +55,32 @@ describe('Signature verification circuit', () => {
         const circuitDef = await compiler(path.join(__dirname, 'circuits', '../../../circom/test/verifySignature_test.circom'))
         const circuit = new Circuit(circuitDef)
 
+        const keypair = new Keypair()
         const command = new Command(
             bigInt(0),
-            genKeyPair().pubKey,
+            keypair.pubKey,
             bigInt(123),
             bigInt(123),
             bigInt(1),
         )
 
-        const signer = genKeyPair()
-        const wrongSigner = genKeyPair()
+        const signer = new Keypair()
+        const wrongSigner = new Keypair()
 
-        expect(signer.privKey).not.toEqual(wrongSigner.privKey)
+        expect(signer.privKey.rawPrivKey).not.toEqual(wrongSigner.privKey.rawPrivKey)
         const sig = command.sign(signer.privKey)
 
         const plaintext = hash(command.asArray())
 
-        expect(verifySignature(plaintext, sig, wrongSigner.pubKey)).toBeFalsy()
+        expect(verifySignature(plaintext, sig, wrongSigner.pubKey.rawPubKey)).toBeFalsy()
 
         const circuitInputs = stringifyBigInts({
-            'from_x': stringifyBigInts(wrongSigner.pubKey[0]),
-            'from_y': stringifyBigInts(wrongSigner.pubKey[1]),
-            'R8x': stringifyBigInts(sig.R8[0]),
-            'R8y': stringifyBigInts(sig.R8[1]),
-            'S': stringifyBigInts(sig.S),
-            'preimage': stringifyBigInts(command.asArray())
+            'from_x': wrongSigner.pubKey.rawPubKey[0],
+            'from_y': wrongSigner.pubKey.rawPubKey[1],
+            'R8x': sig.R8[0],
+            'R8y': sig.R8[1],
+            'S': sig.S,
+            'preimage': command.asArray()
         })
 
         const witness = circuit.calculateWitness(circuitInputs)

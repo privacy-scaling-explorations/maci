@@ -24,6 +24,8 @@ import {
 import {
     Message,
     Command,
+    Keypair,
+    PubKey,
 } from 'maci-domainobjs'
 
 const accounts = genTestAccounts(5)
@@ -36,26 +38,25 @@ describe('MACI', () => {
 
     // Set up users
     const coordinatorPrivKey = bigInt(config.maci.coordinatorPrivKey)
-    const coordinatorPubKey = genPubKey(coordinatorPrivKey)
+    const coordinatorPubKey = new PubKey(genPubKey(coordinatorPrivKey))
 
-    // TODO: create a domain object for public keys
     const user1 = {
         wallet: accounts[1],
-        keypair: genKeyPair(),
+        keypair: new Keypair(),
     }
 
     const user2 = {
         wallet: accounts[2],
-        keypair: genKeyPair(),
+        keypair: new Keypair(),
     }
 
     const badUser = {
         wallet: accounts[3],
-        keypair: genKeyPair(),
+        keypair: new Keypair(),
     }
 
-    const encKeypair = genKeyPair()
-    const ecdhSharedKey = genEcdhSharedKey(encKeypair.privKey, coordinatorPubKey)
+    const encKeypair = new Keypair()
+    const ecdhSharedKey = Keypair.genEcdhSharedKey(encKeypair.privKey, coordinatorPubKey)
     const command: Command = new Command(
         bigInt(10),
         encKeypair.pubKey,
@@ -131,10 +132,7 @@ describe('MACI', () => {
 
             try {
                 await contract.signUp(
-                    { 
-                        x: user1.keypair.pubKey[0].toString(),
-                        y: user1.keypair.pubKey[1].toString(),
-                    },
+                    user1.keypair.pubKey.asContractParam(),
                     ethers.utils.defaultAbiCoder.encode(['uint256'], [2]),
                     { gasLimit: 2000000 },
                 )
@@ -151,10 +149,7 @@ describe('MACI', () => {
                 wallet,
             )
             const tx = await contract.signUp(
-                { 
-                    x: user1.keypair.pubKey[0].toString(),
-                    y: user1.keypair.pubKey[1].toString(),
-                },
+                user1.keypair.pubKey.asContractParam(),
                 ethers.utils.defaultAbiCoder.encode(['uint256'], [1]),
                 { gasLimit: 2000000 },
             )
@@ -196,10 +191,7 @@ describe('MACI', () => {
                     wallet2,
                 )
                 await maciContract2.signUp(
-                    { 
-                        x: user2.keypair.pubKey[0].toString(),
-                        y: user2.keypair.pubKey[1].toString(),
-                    },
+                    user2.keypair.pubKey.asContractParam(),
                     ethers.utils.defaultAbiCoder.encode(['uint256'], [1]),
                     { gasLimit: 2000000 },
                 )
@@ -233,10 +225,7 @@ describe('MACI', () => {
             try {
                 await maciContract.publishMessage(
                     message.asContractParam(),
-                    {
-                        x: encKeypair.pubKey[0].toString(),
-                        y: encKeypair.pubKey[1].toString(),
-                    },
+                    encKeypair.pubKey.asContractParam(),
                 )
             } catch (e) {
                 expect(e.message.endsWith('MACI: the sign-up period is not over')).toBeTruthy()
@@ -248,10 +237,7 @@ describe('MACI', () => {
             await timeTravel(deployer.provider, config.maci.signupDurationInSeconds + 1)
             try {
                 await maciContract.signUp(
-                    { 
-                        x: user1.keypair.pubKey[0].toString(),
-                        y: user1.keypair.pubKey[1].toString(),
-                    },
+                    user1.keypair.pubKey.asContractParam(),
                     ethers.utils.defaultAbiCoder.encode(['uint256'], [1]),
                     { gasLimit: 2000000 },
                 )
@@ -276,10 +262,7 @@ describe('MACI', () => {
 
             const tx = await maciContract.publishMessage(
                 message.asContractParam(),
-                {
-                    x: encKeypair.pubKey[0].toString(),
-                    y: encKeypair.pubKey[1].toString(),
-                },
+                encKeypair.pubKey.asContractParam(),
             )
             const receipt = await tx.wait()
             expect(receipt.status).toEqual(1)
