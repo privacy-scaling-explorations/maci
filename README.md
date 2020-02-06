@@ -17,6 +17,8 @@ You should have Node 11.14.0 installed. Use
 
 **TODO:** Test this with Node 12 LTS.
 
+You also need [Solidity 0.5.16](https://github.com/ethereum/solidity/releases/tag/v0.5.16) installed in your `PATH`.
+
 ### Get started
 
 Clone this repository, install dependencies, and build the source code:
