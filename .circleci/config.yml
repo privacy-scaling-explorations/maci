@@ -1,12 +1,7 @@
-# Javascript Node CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-javascript/ for more details
-#
 version: 2
 jobs:
   build:
     docker:
-      # specify the version you desire here
       - image: circleci/node:11.14.0
 
     working_directory: ~/maci/
@@ -21,18 +16,20 @@ jobs:
 
       - restore_cache:
           keys:
-            - v1.0-dependencies-{{ checksum "package-lock.json" }}
+            - v1.1-dependencies-{{ checksum "package-lock.json" }}
 
-      - run: npm install
+      - run: 
+          name: Install NPM dependencies
+          command: npm install
 
       - save_cache:
           paths:
             - node_modules
-          key: v1.0-dependencies-{{ checksum "package-lock.json" }}
+          key: v1.1-dependencies-{{ checksum "package-lock.json" }}
 
       - restore_cache:
           keys:
-            - v1.0-dependencies-{{ checksum "contracts/package-lock.json" }}-{{ checksum "circuits/package-lock.json" }}-{{ checksum "config/package-lock.json" }}-{{ checksum "domainobjs/package-lock.json" }}-{{ checksum "coordinator/package-lock.json" }}
+            - v1.1-dependencies-{{ checksum "contracts/package-lock.json" }}-{{ checksum "circuits/package-lock.json" }}-{{ checksum "config/package-lock.json" }}-{{ checksum "domainobjs/package-lock.json" }}-{{ checksum "coordinator/package-lock.json" }}
 
       - run: npm run bootstrap && npm run build
 
@@ -41,44 +38,45 @@ jobs:
             - contracts/node_modules
             - config/node_modules
             - circuits/node_modules
-          key: v1.0-dependencies-{{ checksum "contracts/package-lock.json" }}-{{ checksum "circuits/package-lock.json" }}-{{ checksum "config/package-lock.json" }}-{{ checksum "domainobjs/package-lock.json" }}-{{ checksum "coordinator/package-lock.json" }}
+            - domainobjs/node_modules
+          key: v1.1-dependencies-{{ checksum "contracts/package-lock.json" }}-{{ checksum "circuits/package-lock.json" }}-{{ checksum "config/package-lock.json" }}-{{ checksum "domainobjs/package-lock.json" }}-{{ checksum "coordinator/package-lock.json" }}
 
-      ## checksum the snarks definitions
-      #- run:
-          #name: Checksum snark files
-          #command: cd circuits/ && ./scripts/checksumSnarks.sh
+      # checksum the snarks definitions
+      - run:
+          name: Checksum snark files
+          command: cd circuits/ && ./scripts/checksumSnarks.sh
 
-      #- restore_cache:
-          #name: restore-snark-cache
-          #keys:
-            #- v1.0-dependencies-{{ checksum "circuits/build/.snark_checksum" }}
+      - restore_cache:
+          name: restore-snark-cache
+          keys:
+            - v1.1-dependencies-{{ checksum "circuits/build/.snark_checksum" }}
 
-      ## build snarks
-      #- run:
-          #name: Build  the batch update state tree snark
-          #command: cd circuits && npm run buildBatchUpdateStateTreeSnark && npm run buildQuadVoteTallySnark
-          #no_output_timeout: 600m
-          #
-      #- run:
-          #name: Build  the quad vote tally snark
-          #command: cd circuits && npm run buildQuadVoteTallySnark
-          #no_output_timeout: 600m
-
-      ## cache generated snark circuit and keys
-      #- save_cache:
-          #key: v1.0-dependencies-{{ checksum "circuits/build/.snark_checksum" }}
-          #paths:
-            #- circuits/build/BatchUpdateStateTreeVerifier.sol
-            #- circuits/build/batchUstCircuit.json
-            #- circuits/build/batchUstPk.bin
-            #- circuits/build/batchUstVk.json
-            #- circuits/build/QuadVoteTallyVerifier.sol
-            #- circuits/build/qvtCircuit.json
-            #- circuits/build/qvtPk.bin
-            #- circuits/build/qvtVk.json
+      # build snarks
+      - run:
+          name: Build the batch update state tree snark
+          command: cd circuits && npm run buildBatchUpdateStateTreeSnark
+          no_output_timeout: 600m
 
       - run:
-          name: compile-contracts
+          name: Build the quad vote tally snark
+          command: cd circuits && npm run buildQuadVoteTallySnark
+          no_output_timeout: 600m
+
+      # cache generated snark circuit and keys
+      - save_cache:
+          key: v1.1-dependencies-{{ checksum "circuits/build/.snark_checksum" }}
+          paths:
+            - circuits/build/BatchUpdateStateTreeVerifier.sol
+            - circuits/build/batchUstCircuit.json
+            - circuits/build/batchUstPk.bin
+            - circuits/build/batchUstVk.json
+            - circuits/build/QuadVoteTallyVerifier.sol
+            - circuits/build/qvtCircuit.json
+            - circuits/build/qvtPk.bin
+            - circuits/build/qvtVk.json
+
+      - run:
+          name: Compile contracts
           command: cd contracts && npm run compileSol
 
       - run:
@@ -89,13 +87,13 @@ jobs:
           name: Run domainobjs tests
           command: cd domainobjs && npm run test
           
-      #- run:
-          #name: Run circuit tests
-          #command: cd circuits && ./scripts/runTestsInCircleCi.sh
+      - run:
+          name: Run circuit tests
+          command: cd circuits && ./scripts/runTestsInCircleCi.sh
 
-      #- run:
-          #name: Run contract tests
-          #command: cd contracts && ./scripts/runTestsInCircleCi.sh
+      - run:
+          name: Run contract tests
+          command: cd contracts && ./scripts/runTestsInCircleCi.sh
 
-      #- store_artifacts:
-          #path: circuits/build
+      - store_artifacts:
+          path: circuits/build

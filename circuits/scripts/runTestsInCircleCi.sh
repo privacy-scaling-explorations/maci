@@ -3,4 +3,5 @@
 cd "$(dirname "$0")"
 cd ..
 
-npx jest --force-exit
+npm run test-minor
+npm run test-major

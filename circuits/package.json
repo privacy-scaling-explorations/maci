@@ -10,6 +10,8 @@
         "buildQuadVoteTallySnark": "./scripts/buildQuadVoteTallySnark.sh",
         "downloadAllSnarks": "./scripts/downloadAllSnarks.sh",
         "test": "jest",
+        "test-minor": "jest --force-exit Hasher.test.ts MerkleTree.test.ts VerifySignature.test.ts Ecdh.test.ts PublicKey.test.ts Decrypt.test.ts",
+        "test-major": "jest --force-exit QuadVoteTally.test.ts UpdateStateTree.test.ts",
         "test-hasher": "jest Hasher.test.ts",
         "test-hasher-debug": "node --inspect-brk ./node_modules/.bin/jest Hasher.test.ts",
         "test-mt": "jest MerkleTree.test.ts",
