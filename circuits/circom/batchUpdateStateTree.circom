@@ -35,7 +35,7 @@ template BatchUpdateStateTree(
 
   // Message tree
   signal input msg_tree_root;
-  signal input msg_tree_path_elements[batch_size][depth];
+  signal private input msg_tree_path_elements[batch_size][depth];
   signal input msg_tree_batch_start_index; // Starting index of the batch
 
   component msg_tree_path_index[batch_size];

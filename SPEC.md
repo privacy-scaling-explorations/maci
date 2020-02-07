@@ -51,6 +51,7 @@ Refer to the [Glossary](#Glossary) for defintions of terms.
         - If the command is valid, also update the user's state leaf.
     - Generate a zk-SNARK proof that this state root transition is valid. (Note that "state root" refers to the root of the state tree in the contract, not the Ethereum state root as defined in the Yellow Paper.)
     - An invalid message can one which is signed by a public key which a user had already replaced with another key. To allow a bribee to plausibly claim that they have voted correctly even if they use an old public key, we insert a random leaf at index `0` whether or not the message is valid.
+
 7. The above can also be done in batches.
 
 ![](https://i.imgur.com/kNQR9ks.png)
@@ -143,30 +144,28 @@ This function ensures that the current block time is past the signup period, inc
 
 This function must be public and anyone should be able to call it.
 
-#### `processMessage(...)`
+#### `batchProcessMessage(...)`
 
 The parameters are:
 
 ```
-uint256[2] a,
-uint256[2][2] b,
-uint256[2] c,
-uint256 message,
+Proof memory proof,
+Message[] memory messages,
+BatchUstPublicInput[] memory publicInputs,
 uint256 newStateRoot
 ```
 
-This function accepts a state root transition zk-SNARK proof (`a`, `b`, and `c`) and the above public inputs (the other parameters). It verifies the proof, updates the processed message counter, and updates the state root in storage with `newStateRoot`. 
+This function accepts a batch update state root transition zk-SNARK proof (`_proof`) and public inputs to the zk-SNARK.
+
+It verifies the proof, updates the processed message counter, and updates the state root in storage with `newStateRoot`. 
+
+If the proof is valid, this means that the coordinator has correctly updated the state tree root according to the commands in the given batch of messages.
 
 It also increments the message tree index by the number of commands whose processing is verified by the given zk-SNARK proof.
 
 This function should, however, only do so if the processed message counter indicates that all previous messages have already been processed.
 
 Only the coordinator may invoke this function.
-
-
-#### `batchProcessMessage(...)`
-
-This function accepts a list of proofs, messages, and state roots, and runs `processMessage()` on each of them.
 
 #### `proveVoteTally()`
 

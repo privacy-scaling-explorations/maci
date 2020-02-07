@@ -380,9 +380,11 @@ describe('Batch state tree root update verification circuit', () => {
 
         expect(stateTree.root.toString()).toEqual(circuitNewStateRoot)
 
+        const publicSignals = genPublicSignals(witness, circuit)
+        debugger
+
         // Generate a proof. This is commented as it takes several minutes to run.
         //const proof = await genProof(witness, provingKey)
-        //const publicSignals = genPublicSignals(witness, circuit)
 
         //const isValid = verifyProof(verifyingKey, proof, publicSignals)
         //expect(isValid).toBeTruthy()

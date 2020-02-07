@@ -11,16 +11,35 @@ import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
 
 contract MACI is Ownable, DomainObjs {
 
+    // TODO: store these values in a Constants.sol
+    uint256 SNARK_SCALAR_FIELD = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
+
+    // A nothing up my sleeve zero value
+    // Should be equal to 5503045433092194285660061905880311622788666850989422096966288514930349325741
+    uint256 ZERO_VALUE = uint256(keccak256(abi.encodePacked('Maci'))) % SNARK_SCALAR_FIELD;
+
     // Verifier Contracts
     BatchUpdateStateTreeVerifier internal batchUstVerifier;
     QuadVoteTallyVerifier internal qvtVerifier;
 
+    uint8 internal messageBatchSize;
+    uint256 internal messageBatchStartIndex = 0;
+
     // TODO: remove the update function if it isn't used
     MerkleTree public messageTree;
 
+    // The state tree that tracks the sign-up messages.
     MerkleTree public stateTree;
 
+    // The Merkle root of the state tree after the sign-up period. The
+    // stateTree defined above will not be updated by publishMessage. Rather,
+    // publishMessage will directly update postSignUpStateRoot.
+    // During the sign-up period, it is set to the nothing-up-my-sleeve zero value.
+    uint256 public postSignUpStateRoot = ZERO_VALUE;
+
     uint256 public emptyVoteOptionTreeRoot;
+    uint256 internal voteOptionsMaxLeafIndex;
+    uint256 internal stateTreeMaxLeafIndex;
 
     // When the contract was deployed. We assume that the signup period starts
     // immediately upon deployment.
@@ -39,13 +58,6 @@ contract MACI is Ownable, DomainObjs {
     // The coordinator's public key
     PubKey public coordinatorPubKey;
 
-    // TODO: store these values in a Constants.sol
-    uint256 SNARK_SCALAR_FIELD = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
-
-    // A nothing up my sleeve zero value
-    // Should be equal to 5503045433092194285660061905880311622788666850989422096966288514930349325741
-    uint256 ZERO_VALUE = uint256(keccak256(abi.encodePacked('Maci'))) % SNARK_SCALAR_FIELD;
-
     // Events
     event SignUp(PubKey indexed _userPubKey);
 
@@ -55,14 +67,17 @@ contract MACI is Ownable, DomainObjs {
     );
 
     constructor(
+        uint8 _messageBatchSize,
         uint8 _messageTreeDepth,
         uint8 _stateTreeDepth,
-        uint8 voteOptionTreeDepth,
+        uint8 _voteOptionTreeDepth,
         SignUpGatekeeper _signUpGatekeeper,
         uint256 _signUpDurationSeconds,
         uint256 _initialVoiceCreditBalance,
         PubKey memory _coordinatorPubKey
     ) Ownable() public {
+
+        messageBatchSize = _messageBatchSize;
 
         // Deploy the verifier contracts
         batchUstVerifier = new BatchUpdateStateTreeVerifier();
@@ -89,14 +104,20 @@ contract MACI is Ownable, DomainObjs {
 
         // Calculate the vote option tree root.
         // Re-use a computed root to save gas if the depth is the same.
-        if (voteOptionTreeDepth == _messageTreeDepth) {
+        if (_voteOptionTreeDepth == _messageTreeDepth) {
             emptyVoteOptionTreeRoot = messageTree.getRoot();
-        } else if (voteOptionTreeDepth == _stateTreeDepth) {
+        } else if (_voteOptionTreeDepth == _stateTreeDepth) {
             emptyVoteOptionTreeRoot = stateTree.getRoot();
         } else {
-            MerkleTree tempTree = new MerkleTree(voteOptionTreeDepth, ZERO_VALUE);
+            MerkleTree tempTree = new MerkleTree(_voteOptionTreeDepth, ZERO_VALUE);
             emptyVoteOptionTreeRoot = tempTree.getRoot();
         }
+
+        // Calculate the max number of leaves of the vote option tree and the
+        // state tree. This is stored once as it is a public input to the batch
+        // update state tree snark.
+        voteOptionsMaxLeafIndex = uint256(2) ** _voteOptionTreeDepth;
+        stateTreeMaxLeafIndex = uint256(2) ** _stateTreeDepth;
 
         // Make subsequent insertions start from leaf #1, as leaf #0 is only
         // updated with random data if a command is invalid.
@@ -179,8 +200,22 @@ contract MACI is Ownable, DomainObjs {
         PubKey memory _encPubKey
     ) 
     isAfterSignUpDeadline
-    public 
-    {
+    public {
+
+        // When this function is called for the first time, set
+        // postSignUpStateRoot to the last known state root, and destroy the
+        // state tree contract to free up space. We do so as the
+        // batchProcessMessage function can only update the state root as a
+        // variable and has no way to use MerkleTree.insert() anyway.
+        if (postSignUpStateRoot == ZERO_VALUE) {
+            // It is exceedingly improbable that the zero value is a tree root
+            assert(postSignUpStateRoot != stateTree.getRoot());
+
+            postSignUpStateRoot = stateTree.getRoot();
+
+            // Destroy the state tree contract
+            stateTree.selfDestruct();
+        }
 
         // Calculate leaf value
         uint256 leaf = hashMessage(_message);
@@ -191,17 +226,70 @@ contract MACI is Ownable, DomainObjs {
         emit PublishMessage(_message, _encPubKey);
     }
 
-    //// Submits proof for updating state tree
-    //function verifyUpdateStateTreeProof(
-      //uint[2] memory,
-      //uint[2][2] memory,
-      //uint[2] memory,
-      //uint[28] memory 
-    //) public pure returns (bool) {
-      ////return batchUstVerifier.verifyProof(a, b, c, input);
-      //// TODO: submit a batch of messages
-      //return true;
-    //}
+    function unpackProof(
+        uint256[8] memory _proof
+    ) public pure returns (
+        uint256[2] memory,
+        uint256[2][2] memory,
+        uint256[2] memory
+    ) {
+
+        return (
+            [_proof[0], _proof[1]],
+            [
+                [_proof[2], _proof[3]],
+                [_proof[4], _proof[5]]
+            ],
+            [_proof[6], _proof[7]]
+        );
+    }
+
+    function batchProcessMessage(
+        uint256 _newStateRoot,
+        uint256[] memory _stateTreeRoots,
+        PubKey[] memory _ecdhPubKeys,
+        uint256[8] memory _proof
+    ) public {
+        // Assemble the public inputs to the snark
+        uint256[19] memory publicSignals;
+        publicSignals[0] = _newStateRoot;
+        publicSignals[1] = coordinatorPubKey.x;
+        publicSignals[2] = coordinatorPubKey.y;
+        publicSignals[3] = voteOptionsMaxLeafIndex;
+        publicSignals[4] = messageTree.getRoot();
+        publicSignals[5] = messageBatchStartIndex;
+        publicSignals[6] = stateTreeMaxLeafIndex;
+
+        for (uint8 i = 0; i < messageBatchSize; i++) {
+            uint8 x = 7 + i;
+            uint8 y = x + messageBatchSize;
+            uint8 z = y + 1;
+            publicSignals[x] = _stateTreeRoots[i];
+            publicSignals[y] = _ecdhPubKeys[i].x;
+            publicSignals[z] = _ecdhPubKeys[i].y;
+        }
+
+        for (uint8 i=0; i < publicSignals.length; i++) {
+            require(
+                publicSignals[i] < SNARK_SCALAR_FIELD,
+                "MACI: all public signals must be lt the snark scalar field"
+            );
+        }
+
+        // Unpack the zk-SNARK proof
+        (uint256[2] memory a, uint256[2][2] memory b, uint256[2] memory c) = unpackProof(_proof);
+
+        bool isValid = batchUstVerifier.verifyProof(a, b, c, publicSignals);
+
+        require(isValid == true, "MACI: invalid batch UST proof");
+
+        // Increase the message batch start index to ensure that the message
+        // batches are processed in order
+        messageBatchStartIndex += messageBatchSize;
+
+        // Update the state root
+        postSignUpStateRoot = _newStateRoot;
+    }
 
     function getMessageTreeRoot() public view returns (uint256) {
         return messageTree.getRoot();
