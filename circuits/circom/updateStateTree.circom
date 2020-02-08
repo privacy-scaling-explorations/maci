@@ -13,7 +13,7 @@ include "../node_modules/circomlib/circuits/mux2.circom";
 template UpdateStateTree(
         depth,
         vote_options_tree_depth
-        ) {
+) {
     // params:
     //    depth: the depth of the state tree and the command tree
     //    vote_options_tree_depth: depth of the vote tree
@@ -115,10 +115,10 @@ template UpdateStateTree(
     component derived_pub_key = PublicKey();
     derived_pub_key.private_key <== ecdh_private_key;
 
-    derived_pub_key.public_key[0] === coordinator_public_key[0]
-        derived_pub_key.public_key[1] === coordinator_public_key[1]
+    derived_pub_key.public_key[0] === coordinator_public_key[0];
+    derived_pub_key.public_key[1] === coordinator_public_key[1];
 
-        component ecdh = Ecdh();
+    component ecdh = Ecdh();
     ecdh.private_key <== ecdh_private_key;
     ecdh.public_key[0] <== ecdh_public_key[0];
     ecdh.public_key[1] <== ecdh_public_key[1];
