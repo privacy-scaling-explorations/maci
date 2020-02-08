@@ -29,7 +29,8 @@ jobs:
 
       - restore_cache:
           keys:
-            - v1.1-dependencies-{{ checksum "contracts/package-lock.json" }}-{{ checksum "circuits/package-lock.json" }}-{{ checksum "config/package-lock.json" }}-{{ checksum "domainobjs/package-lock.json" }}-{{ checksum "coordinator/package-lock.json" }}
+            - v1.1-dependencies-{{ checksum "contracts/package-lock.json" }}-{{ checksum "circuits/package-lock.json" }}-{{ checksum "config/package-lock.json" }}-{{ checksum "domainobjs/package-lock.json" }}-{{ checksum "coordinator/package-lock.json" }}-{{ checksum "core/package-lock.json" }}
+
 
       - run: npm run bootstrap && npm run build
 
@@ -37,11 +38,12 @@ jobs:
           paths:
             - contracts/node_modules
             - config/node_modules
+            - core/node_modules
             - circuits/node_modules
             - domainobjs/node_modules
-          key: v1.1-dependencies-{{ checksum "contracts/package-lock.json" }}-{{ checksum "circuits/package-lock.json" }}-{{ checksum "config/package-lock.json" }}-{{ checksum "domainobjs/package-lock.json" }}-{{ checksum "coordinator/package-lock.json" }}
+          key: v1.1-dependencies-{{ checksum "contracts/package-lock.json" }}-{{ checksum "circuits/package-lock.json" }}-{{ checksum "config/package-lock.json" }}-{{ checksum "domainobjs/package-lock.json" }}-{{ checksum "coordinator/package-lock.json" }}-{{ checksum "core/package-lock.json" }}
 
-      # checksum the snarks definitions
+      # checksum the circuit code
       - run:
           name: Checksum snark files
           command: cd circuits/ && ./scripts/checksumSnarks.sh
@@ -51,7 +53,7 @@ jobs:
           keys:
             - v1.1-dependencies-{{ checksum "circuits/build/.snark_checksum" }}
 
-      # build snarks
+      # run trusted setups
       - run:
           name: Build the batch update state tree snark
           command: cd circuits && npm run buildBatchUpdateStateTreeSnark
@@ -86,6 +88,10 @@ jobs:
       - run:
           name: Run domainobjs tests
           command: cd domainobjs && npm run test
+
+      - run:
+          name: Run core (business logic) tests
+          command: cd core && npm run test
           
       - run:
           name: Run circuit tests

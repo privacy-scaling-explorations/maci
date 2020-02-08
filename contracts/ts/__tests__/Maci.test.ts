@@ -55,17 +55,29 @@ describe('MACI', () => {
         keypair: new Keypair(),
     }
 
-    const encKeypair = new Keypair()
-    const ecdhSharedKey = Keypair.genEcdhSharedKey(encKeypair.privKey, coordinatorPubKey)
-    const command: Command = new Command(
-        bigInt(10),
-        encKeypair.pubKey,
-        bigInt(0),
-        bigInt(9),
-        bigInt(123),
-    )
-    const signature = command.sign(user1.keypair.privKey)
-    const message = command.encrypt(signature, ecdhSharedKey)
+    let batch: any[] = []
+    for (let i = 0; i < config.maci.messageBatchSize; i++) {
+        const encKeypair = new Keypair()
+        const ecdhSharedKey = Keypair.genEcdhSharedKey(encKeypair.privKey, coordinatorPubKey)
+        const command: Command = new Command(
+            bigInt(10),
+            encKeypair.pubKey,
+            bigInt(0),
+            bigInt(9),
+            bigInt(123),
+        )
+
+        const signature = command.sign(user1.keypair.privKey)
+        const message = command.encrypt(signature, ecdhSharedKey)
+
+        batch.push({
+            encKeypair,
+            ecdhSharedKey,
+            command,
+            signature,
+            message,
+        })
+    }
 
     beforeAll(async () => {
         signUpTokenContract = await deploySignupToken(deployer)
@@ -111,7 +123,7 @@ describe('MACI', () => {
 
     it('the emptyVoteOptionTreeRoot value should be correct', async () => {
         const tree = setupTree(
-            config.merkleTrees.voteOptionTreeDepth,
+            config.maci.merkleTrees.voteOptionTreeDepth,
             NOTHING_UP_MY_SLEEVE,
         )
         const root = await maciContract.emptyVoteOptionTreeRoot()
@@ -224,8 +236,8 @@ describe('MACI', () => {
             expect.assertions(1)
             try {
                 await maciContract.publishMessage(
-                    message.asContractParam(),
-                    encKeypair.pubKey.asContractParam(),
+                    batch[0].message.asContractParam(),
+                    batch[0].encKeypair.pubKey.asContractParam(),
                 )
             } catch (e) {
                 expect(e.message.endsWith('MACI: the sign-up period is not over')).toBeTruthy()
@@ -249,26 +261,33 @@ describe('MACI', () => {
 
     describe('Publish messages', () => {
         it('publishMessage should add a leaf to the message tree', async () => {
-            expect.assertions(3)
+            expect.assertions(3 * config.maci.messageBatchSize)
 
-            // Check the on-chain message tree root against a root computed off-chain
-            const tree = setupTree(config.merkleTrees.messageTreeDepth, NOTHING_UP_MY_SLEEVE)
-            let root = await maciContract.getMessageTreeRoot()
+            const tree = setupTree(config.maci.merkleTrees.messageTreeDepth, NOTHING_UP_MY_SLEEVE)
 
-            expect(root.toString()).toEqual(tree.root.toString())
+            // Publish all messages so we can process them as a batch later on
+            for (let i = 0; i < config.maci.messageBatchSize; i++) {
+                // Check the on-chain message tree root against a root computed off-chain
+                let root = await maciContract.getMessageTreeRoot()
 
-            // Insert the message and do the same
-            tree.insert(message.hash())
+                expect(root.toString()).toEqual(tree.root.toString())
 
-            const tx = await maciContract.publishMessage(
-                message.asContractParam(),
-                encKeypair.pubKey.asContractParam(),
-            )
-            const receipt = await tx.wait()
-            expect(receipt.status).toEqual(1)
+                // Insert the message and do the same
+                tree.insert(batch[i].message.hash())
 
-            root = await maciContract.getMessageTreeRoot()
-            expect(root.toString()).toEqual(tree.root.toString())
+                const tx = await maciContract.publishMessage(
+                    batch[i].message.asContractParam(),
+                    batch[i].encKeypair.pubKey.asContractParam(),
+                )
+                const receipt = await tx.wait()
+                expect(receipt.status).toEqual(1)
+
+                root = await maciContract.getMessageTreeRoot()
+                expect(root.toString()).toEqual(tree.root.toString())
+            }
         })
+    })
+
+    describe('Process messages', () => {
     })
 })

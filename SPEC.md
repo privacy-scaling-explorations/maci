@@ -149,10 +149,10 @@ This function must be public and anyone should be able to call it.
 The parameters are:
 
 ```
-Proof memory proof,
-Message[] memory messages,
-BatchUstPublicInput[] memory publicInputs,
-uint256 newStateRoot
+uint256 _newStateRoot,
+uint256[] memory _stateTreeRoots,
+PubKey[] memory _ecdhPubKeys,
+uint256[8] memory _proof
 ```
 
 This function accepts a batch update state root transition zk-SNARK proof (`_proof`) and public inputs to the zk-SNARK.

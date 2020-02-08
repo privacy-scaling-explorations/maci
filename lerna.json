@@ -4,7 +4,8 @@
     "circuits",
     "crypto",
     "config",
-    "domainobjs"
+    "domainobjs",
+    "core"
   ],
   "version": "0.0.1",
   "npmClient": "npm"

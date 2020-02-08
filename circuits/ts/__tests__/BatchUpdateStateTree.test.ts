@@ -2,6 +2,9 @@ import * as path from 'path'
 import { Circuit } from 'snarkjs'
 const compiler = require('circom')
 import * as fs from 'fs'
+import { 
+    processMessage,
+} from 'maci-core'
 import {
     Keypair,
     StateLeaf,
@@ -80,89 +83,10 @@ const createUser = (
     }
 }
 
-const processMessage = (
-    privKey: PrivKey,
-    pubKey: PubKey,
-    msg: Message,
-    oldStateTree: MerkleTree,
-    oldUserVoteOptionTree: MerkleTree,
-) => {
-
-    const stateTree = oldStateTree.copy()
-    const userVoteOptionTree = oldUserVoteOptionTree.copy()
-
-    // Decrypt the msg and extract relevant parts of it
-    const sharedKey = Keypair.genEcdhSharedKey(privKey, pubKey)
-    const { command, signature } = Command.decrypt(msg, sharedKey)
-
-    const stateLeaf = stateTree.leavesRaw[command.stateIndex]
-
-    const msgSigPubKey = stateLeaf.pubKey
-
-    // If Index is invalid, return
-    if (parseInt(command.stateIndex) >= parseInt(stateTree.nextIndex)) {
-        return [
-            stateTree,
-            userVoteOptionTree
-        ]
-    }
-
-    // If the signature isn't valid, do nothing
-    if (!command.verifySignature(signature, msgSigPubKey)) {
-        return {
-            stateTree,
-            userVoteOptionTree
-        }
-    }
-
-    // If the nonce isn't valid, do nothing
-    if (!command.nonce.equals(stateLeaf.nonce + bigInt(1))) {
-        return [
-            stateTree,
-            userVoteOptionTree
-        ]
-    }
-
-    // If there are insufficient vote credits, do nothing
-    const userPrevSpentCred =
-        userVoteOptionTree.leavesRaw[
-            parseInt(command.voteOptionIndex)
-        ]
-    const userCmdVoteOptionCredit = command.newVoteWeight
-
-    const voteCreditsLeft = stateLeaf.voiceCreditBalance + (userPrevSpentCred * userPrevSpentCred) - (userCmdVoteOptionCredit * userCmdVoteOptionCredit)
-
-    if (voteCreditsLeft < 0) {
-        return [
-            stateTree,
-            userVoteOptionTree
-        ]
-    }
-
-    userVoteOptionTree.update(
-        bigInt(command.voteOptionIndex),
-        hashOne(bigInt(userCmdVoteOptionCredit)),
-        bigInt(userCmdVoteOptionCredit)
-    )
-
-    const newStateLeaf = new StateLeaf(
-        command.newPubKey,
-        userVoteOptionTree.root,
-        voteCreditsLeft,
-        stateLeaf.nonce + bigInt(1)
-    )
-
-    stateTree.update(
-        command.stateIndex,
-        newStateLeaf.hash(),
-        newStateLeaf,
-    )
-
-    return {
-        stateTree,
-        userVoteOptionTree
-    }
-}
+/*
+ * Returns a state tree and vote option tree based on a supplied message.
+ * The trees returned are 
+ */
 
 describe('Batch state tree root update verification circuit', () => {
     let circuit
@@ -181,6 +105,7 @@ describe('Batch state tree root update verification circuit', () => {
     it('should process valid inputs correctly', async () => {
         const treeDepth = 4
         const voteOptionTreeDepth = 2
+
         // Construct the trees
         const msgTree = setupTree(treeDepth, NOTHING_UP_MY_SLEEVE)
         let stateTree = setupTree(treeDepth, NOTHING_UP_MY_SLEEVE)
@@ -321,9 +246,8 @@ describe('Batch state tree root update verification circuit', () => {
 
             ecdhPublicKeyBatch.push(user.ephemeralKeypair.pubKey)
 
-            // Process command in state tree
-            // acc stands for accumulator
-            const accData: any = processMessage(
+            // Process the message
+            const data = processMessage(
                 coordinator.privKey,
                 user.ephemeralKeypair.pubKey,
                 msg,
@@ -331,20 +255,17 @@ describe('Batch state tree root update verification circuit', () => {
                 user.userVoteOptionTree
             )
 
-            stateTree = accData.stateTree
-            user.userVoteOptionTree = accData.userVoteOptionTree
+            stateTree = data.stateTree
+            user.userVoteOptionTree = data.userVoteOptionTree
         }
 
         const stateTreeMaxIndex = bigInt(stateTree.nextIndex - 1)
         const voteOptionsMaxIndex = bigInt(voteOptionTree.nextIndex - 1)
 
-        // After processing all commands, insert random leaf
+        // After processing all commands, insert a random leaf
         const randomLeafRoot = stateTree.root
         const randomLeaf = genRandomSalt()
-        const [
-            randomLeafPathElements,
-            _
-        ] = stateTree.getPathUpdate(0)
+        const [randomLeafPathElements, _] = stateTree.getPathUpdate(0)
 
         const d = {
             'coordinator_public_key': coordinator.pubKey.asCircuitInputs(),
