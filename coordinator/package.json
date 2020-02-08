@@ -1,0 +1,26 @@
+{
+  "name": "maci-coordinator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "build/index.js",
+  "scripts": {
+    "watch": "tsc --watch",
+    "build": "tsc",
+    "test": "jest",
+    "test-debug": "node --inspect-brk ./node_modules/.bin/jest"
+  },
+  "dependencies": {
+    "pg": "^7.18.1",
+    "redis": "^2.8.0",
+    "solc": "0.5.11"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.25",
+    "@types/node": "^13.1.2",
+    "jest": "^24.9.0",
+    "maci-contracts": "1.0.0",
+    "maci-config": "1.0.0",
+    "maci-crypto": "1.0.0",
+    "ts-jest": "^24.2.0"
+  }
+}

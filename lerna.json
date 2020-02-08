@@ -1,6 +1,7 @@
 {
   "packages": [
     "contracts",
+    "coordinator",
     "circuits",
     "crypto",
     "config",
