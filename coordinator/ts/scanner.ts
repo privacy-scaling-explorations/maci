@@ -1,7 +1,7 @@
 // Getting events
 // https://github.com/ethers-io/ethers.js/issues/463
 
-import * as maciContractDef from "maci-contracts/build/MACI.json";
+import * as maciContractDef from "maci-contracts/compiled/MACI.json";
 import { ethers } from "ethers";
 import { getContractAddresses } from "./settings";
 
