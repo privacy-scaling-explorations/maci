@@ -1,6 +1,11 @@
 import * as path from 'path'
 import { Circuit } from 'snarkjs'
 const compiler = require('circom')
+
+import {
+    compileAndLoadCircuit,
+} from '../'
+
 import {
     stringifyBigInts,
     genRandomSalt,
@@ -9,10 +14,11 @@ import {
 } from 'maci-crypto'
 
 describe('MiMC hash circuits', () => {
+    let circuit
+
     describe('Hasher', () => {
         it('correctly hashes one random value', async () => {
-            const circuitDef = await compiler(path.join(__dirname, 'circuits', '../../../circom/test/hasher_test.circom'))
-            const circuit = new Circuit(circuitDef)
+        circuit = await compileAndLoadCircuit('hasher_test.circom')
             const preImage = genRandomSalt()
             const circuitInputs = stringifyBigInts({
                 in: [preImage],

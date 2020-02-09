@@ -185,7 +185,7 @@ class MerkleTree {
         }
 
         if (this.root !== currentLevelHash) {
-            throw new Error('MerkleTree: tree root / current level has mismatch')
+            throw new Error('MerkleTree: tree root / current level hash mismatch')
         }
 
         curIdx = leafIndex

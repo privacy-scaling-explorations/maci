@@ -14,8 +14,7 @@ import {
 } from 'maci-crypto'
 
 const processMessage = (
-    privKey: PrivKey,
-    pubKey: PubKey,
+    sharedKey: PrivKey,
     msg: Message,
     oldStateTree: MerkleTree,
     oldUserVoteOptionTree: MerkleTree,
@@ -25,9 +24,6 @@ const processMessage = (
     const stateTree = oldStateTree.copy()
     const userVoteOptionTree = oldUserVoteOptionTree.copy()
 
-    // Generate the ECDH shared key
-    const sharedKey = Keypair.genEcdhSharedKey(privKey, pubKey)
-
     // Decrypt the message
     const { command, signature } = Command.decrypt(msg, sharedKey)
 
@@ -35,17 +31,17 @@ const processMessage = (
 
     // If the state tree index in the command is invalid, do nothing
     if (parseInt(command.stateIndex) >= parseInt(stateTree.nextIndex)) {
-        return [stateTree, userVoteOptionTree]
+        return { stateTree, userVoteOptionTree }
     }
 
     // If the signature is invalid, do nothing
     if (!command.verifySignature(signature, stateLeaf.pubKey)) {
-        return [stateTree, userVoteOptionTree]
+        return { stateTree, userVoteOptionTree }
     }
 
     // If the nonce is invalid, do nothing
     if (!command.nonce.equals(stateLeaf.nonce + bigInt(1))) {
-        return [stateTree, userVoteOptionTree]
+        return { stateTree, userVoteOptionTree }
     }
 
     // If there are insufficient vote credits, do nothing
@@ -62,7 +58,7 @@ const processMessage = (
 
     // If the voice credits spent is invalid, do nothing
     if (voteCreditsLeft < 0) {
-        return [stateTree, userVoteOptionTree]
+        return { stateTree, userVoteOptionTree }
     }
 
     // Update the user's vote option tree
@@ -86,10 +82,7 @@ const processMessage = (
         newStateLeaf,
     )
 
-    return {
-        stateTree,
-        userVoteOptionTree
-    }
+    return { stateTree, userVoteOptionTree }
 }
 
 export {

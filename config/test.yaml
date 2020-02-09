@@ -9,7 +9,7 @@ maci:
   merkleTrees:
     messageTreeDepth: 4
     stateTreeDepth: 4
-    voteOptionTreeDepth: 4
+    voteOptionTreeDepth: 2
 
 chain:
   privateKeysPath: './'

@@ -3,13 +3,18 @@ import { Circuit } from 'snarkjs'
 const compiler = require('circom')
 
 import {
+    compileAndLoadCircuit,
+} from '../'
+
+import {
     Keypair,
 } from 'maci-domainobjs'
 
 describe('Public key derivation circuit', () => {
+    let circuit
+
     it('correctly computes a public key', async () => {
-        const circuitDef = await compiler(path.join(__dirname, 'circuits', '../../../circom/test/ecdh_test.circom'))
-        const circuit = new Circuit(circuitDef)
+        circuit = await compileAndLoadCircuit('ecdh_test.circom')
 
         const keypair = new Keypair()
         const keypair2 = new Keypair()

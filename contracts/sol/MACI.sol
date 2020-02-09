@@ -73,6 +73,8 @@ contract MACI is Ownable, DomainObjs {
         uint8 _stateTreeDepth,
         uint8 _voteOptionTreeDepth,
         SignUpGatekeeper _signUpGatekeeper,
+        BatchUpdateStateTreeVerifier _batchUstVerifier,
+        QuadVoteTallyVerifier _qvtVerifier,
         uint256 _signUpDurationSeconds,
         uint256 _initialVoiceCreditBalance,
         PubKey memory _coordinatorPubKey
@@ -80,9 +82,9 @@ contract MACI is Ownable, DomainObjs {
 
         messageBatchSize = _messageBatchSize;
 
-        // Deploy the verifier contracts
-        batchUstVerifier = new BatchUpdateStateTreeVerifier();
-        qvtVerifier = new QuadVoteTallyVerifier();
+        // Set the verifier contracts
+        batchUstVerifier = _batchUstVerifier;
+        qvtVerifier = _qvtVerifier;
 
         // Set the sign-up duration
         signUpTimestamp = now;
@@ -110,6 +112,9 @@ contract MACI is Ownable, DomainObjs {
         } else if (_voteOptionTreeDepth == _stateTreeDepth) {
             emptyVoteOptionTreeRoot = stateTree.getRoot();
         } else {
+            // TODO: should the zero value for the vote option tree be just 0
+            // instead of the nothing-up-my sleeve value? After all, each leaf
+            // is the square root of the voice credits spent for the option.
             MerkleTree tempTree = new MerkleTree(_voteOptionTreeDepth, ZERO_VALUE);
             emptyVoteOptionTreeRoot = tempTree.getRoot();
         }
@@ -117,8 +122,8 @@ contract MACI is Ownable, DomainObjs {
         // Calculate and cache the max number of leaves for each tree.
         // They are used as public inputs to the batch update state tree snark.
         voteOptionsMaxLeafIndex = uint256(2) ** _voteOptionTreeDepth;
-        stateTreeMaxLeafIndex = uint256(2) ** _stateTreeDepth;
         messageTreeMaxLeafIndex = uint256(2) ** _messageTreeDepth;
+        stateTreeMaxLeafIndex = uint256(2) ** _stateTreeDepth;
 
         // Make subsequent insertions start from leaf #1, as leaf #0 is only
         // updated with random data if a command is invalid.
@@ -340,5 +345,9 @@ contract MACI is Ownable, DomainObjs {
 
     function getMessageTreeRoot() public view returns (uint256) {
         return messageTree.getRoot();
+    }
+
+    function getStateTreeRoot() public view returns (uint256) {
+        return stateTree.getRoot();
     }
 }

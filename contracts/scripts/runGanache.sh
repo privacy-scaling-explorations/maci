@@ -6,7 +6,7 @@
 # Etherlime's ganache command works differently from ganache-cli. It
 # concatenates `--count minus 10` new accounts generated from `--mnemonic`. The
 # first 10 are predefined.
-npx etherlime ganache --mnemonic "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat" --gasLimit=8800000 count=10
+npx etherlime ganache --mnemonic "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat" --gasLimit=10000000 count=10
 
 #npx ganache-cli -a 10 -m='candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' --gasLimit=8800000 --port 8545
 

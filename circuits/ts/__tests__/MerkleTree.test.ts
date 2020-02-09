@@ -1,6 +1,11 @@
 import * as path from 'path'
 import { Circuit } from 'snarkjs'
 const compiler = require('circom')
+
+import {
+    compileAndLoadCircuit,
+} from '../'
+
 import {
     setupTree,
     hashOne,
@@ -16,8 +21,7 @@ describe('Merkle Tree circuits', () => {
         let circuit
 
         beforeAll(async () => {
-            const circuitDef = await compiler(path.join(__dirname, 'circuits', '../../../circom/test/merkleTreeLeafExists_test.circom'))
-            circuit = new Circuit(circuitDef)
+            circuit = await compileAndLoadCircuit('merkleTreeLeafExists_test.circom')
         })
 
         it('Valid LeafExists inputs should work', async () => {
@@ -79,8 +83,7 @@ describe('Merkle Tree circuits', () => {
         let circuit
 
         beforeAll(async () => {
-            const circuitDef = await compiler(path.join(__dirname, 'circuits', '../../../circom/test/merkleTreeCheckRoot_test.circom'))
-            circuit = new Circuit(circuitDef)
+            circuit = await compileAndLoadCircuit('merkleTreeCheckRoot_test.circom')
         })
 
         it('Valid CheckRoot inputs should work', async () => {
@@ -131,8 +134,7 @@ describe('Merkle Tree circuits', () => {
         let circuit
 
         beforeAll(async () => {
-            const circuitDef = await compiler(path.join(__dirname, 'circuits', '../../../circom/test/merkleTreeUpdate_test.circom'))
-            circuit = new Circuit(circuitDef)
+            circuit = await compileAndLoadCircuit('merkleTreeUpdate_test.circom')
         })
 
         it('Valid update proofs should work', async () => {
@@ -166,8 +168,6 @@ describe('Merkle Tree circuits', () => {
                 expect(witness[circuit.getSignalIdx('main.root')].toString())
                     .toEqual(root.toString())
                 expect(circuit.checkWitness(witness)).toBeTruthy()
-
-                // TODO: generate proof and verify
             }
         })
 

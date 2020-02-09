@@ -1,5 +1,6 @@
 import * as assert from 'assert'
 import {
+    bigInt,
     Ciphertext,
     Plaintext,
     EcdhSharedKey,
@@ -14,6 +15,7 @@ import {
     verifySignature,
     genRandomSalt,
     genKeypair,
+    genPubKey,
     formatPrivKeyForBabyJub,
     genEcdhSharedKey,
 } from 'maci-crypto'
@@ -27,10 +29,17 @@ class Keypair implements Keypair {
     public privKey: RawPrivKey
     public pubKey: RawPubKey
 
-    constructor () {
-        const rawKeyPair = genKeypair()
-        this.privKey = new PrivKey(rawKeyPair.privKey)
-        this.pubKey = new PubKey(rawKeyPair.pubKey)
+    constructor (
+        privKey?: PrivKey,
+    ) {
+        if (privKey) {
+            this.privKey = privKey
+            this.pubKey = new PubKey(genPubKey(privKey.rawPrivKey))
+        } else {
+            const rawKeyPair = genKeypair()
+            this.privKey = new PrivKey(rawKeyPair.privKey)
+            this.pubKey = new PubKey(rawKeyPair.pubKey)
+        }
     }
     
     public static genEcdhSharedKey(
@@ -38,6 +47,26 @@ class Keypair implements Keypair {
         pubKey: PubKey,
     ) {
         return genEcdhSharedKey(privKey.rawPrivKey, pubKey.rawPubKey)
+    }
+
+    public equals(
+        keypair: Keypair,
+    ): boolean {
+
+        const equalPrivKey = this.privKey.rawPrivKey === keypair.privKey.rawPrivKey
+        const equalPubKey =
+            this.pubKey.rawPubKey[0] === keypair.pubKey.rawPubKey[0] &&
+            this.pubKey.rawPubKey[1] === keypair.pubKey.rawPubKey[1]
+
+        // If this assertion fails, something is very wrong and this function
+        // should not return anything 
+        // XOR is equivalent to: (x && !y) || (!x && y ) 
+        const x = (equalPrivKey && equalPubKey) 
+        const y = (!equalPrivKey && !equalPubKey) 
+
+        assert((x && !y) || (!x && y))
+
+        return equalPrivKey
     }
 }
 
@@ -152,6 +181,19 @@ class StateLeaf implements IStateLeaf {
         this.voteOptionTreeRoot = voteOptionTreeRoot
         this.voiceCreditBalance = voiceCreditBalance
         this.nonce = nonce
+    }
+
+    public static genFreshLeaf(
+        pubKey: PubKey,
+        voteOptionTreeRoot: SnarkBigInt,
+        voiceCreditBalance: SnarkBigInt,
+    ) {
+        return new StateLeaf(
+            pubKey,
+            voteOptionTreeRoot,
+            bigInt(voiceCreditBalance),
+            bigInt(0),
+        )
     }
 
     private asArray = (): SnarkBigInt[] => {
