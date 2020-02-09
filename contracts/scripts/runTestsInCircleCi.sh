@@ -5,5 +5,5 @@ cd ..
 
 npm run ganache &
 sleep 3 &&
-npx jest --force-exit Maci.test.ts &&
+NODE_OPTIONS=--max-old-space-size=4096 npx jest --force-exit Maci.test.ts &&
 npx jest --force-exit Hasher.test.ts
