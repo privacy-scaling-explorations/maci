@@ -1,6 +1,6 @@
 require('module-alias/register')
 
-jest.setTimeout(90000)
+jest.setTimeout(1200000)
 
 import * as fs from 'fs'
 import * as path from 'path'
@@ -11,6 +11,8 @@ import { genAccounts, genTestAccounts } from '../accounts'
 import { timeTravel } from '../../node_modules/etherlime/cli-commands/etherlime-test/time-travel.js'
 
 import { config } from 'maci-config'
+
+import { formatProofForVerifierContract } from '../utils'
 
 import {
     deployMaci,
@@ -29,6 +31,7 @@ import {
     SnarkBigInt,
     genEcdhSharedKey,
     NOTHING_UP_MY_SLEEVE,
+    unstringifyBigInts,
 } from 'maci-crypto'
 
 import {
@@ -381,6 +384,7 @@ describe('MACI', () => {
     })
 
     describe('Process messages', () => {
+
         it('batchProcessMessage should verify a proof and update the postSignUpStateRoot', async () => {
             let results: any[] = []
             let ecdhPublicKeyBatch: any[] = []
@@ -451,7 +455,7 @@ describe('MACI', () => {
                 stateTree = result.stateTree
             }
 
-            const stateTreeMaxIndex = config.maci.messageBatchSize - 1
+            const stateTreeMaxIndex = bigInt(stateTree.nextIndex - 1)
             const voteOptionsMaxIndex = bigInt(
                 2 ** config.maci.merkleTrees.voteOptionTreeDepth - 1
             )
@@ -496,11 +500,39 @@ describe('MACI', () => {
             const publicSignals = genPublicSignals(witness, circuit)
             expect(publicSignals).toHaveLength(19)
 
+            const contractPublicSignals = await maciContract.genBatchUstPublicSignals(
+                stateTree.root.toString(),
+                stateTreeBatchRoot.map((x) => x.toString()),
+                ecdhPublicKeyBatch.map((x) => x.asContractParam()),
+            )
+
+            expect(JSON.stringify(publicSignals.map((x) => x.toString()))).toEqual(
+                JSON.stringify(contractPublicSignals.map((x) => x.toString()))
+            )
+
             console.log('Generating proof...')
             const proof = await genProof(witness, provingKey)
 
             const isValid = verifyProof(verifyingKey, proof, publicSignals)
             expect(isValid).toBeTruthy()
+
+            //const tx = await maciContract.batchProcessMessage2(
+                //stateTree.root.toString(),
+                //stateTreeBatchRoot.map((x) => x.toString()),
+                //ecdhPublicKeyBatch.map((x) => x.asContractParam()),
+                //formatProofForVerifierContract(proof),
+            //)
+
+            const tx = await maciContract.batchProcessMessage(
+                stateTree.root.toString(),
+                stateTreeBatchRoot.map((x) => x.toString()),
+                ecdhPublicKeyBatch.map((x) => x.asContractParam()),
+                formatProofForVerifierContract(proof)
+            )
+
+            const receipt = await tx.wait()
+            expect(receipt.status).toEqual(1)
+
         })
     })
 })

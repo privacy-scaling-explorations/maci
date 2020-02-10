@@ -181,7 +181,6 @@ describe('Batch state tree root update verification circuit', () => {
 
             batch.push({ command, message })
         }
-            console.log(stateTree.root)
 
         // Generate circuit inputs
         let msgTreeBatchPathElements: SnarkBigInt[] = []
@@ -220,7 +219,6 @@ describe('Batch state tree root update verification circuit', () => {
             stateTreeBatchRaw.push(stateTree.leavesRaw[user.userIndex])
 
             stateTreeBatchRoot.push(stateTree.root)
-            console.log(stateTree.root)
             stateTreeBatchPathElements.push(stateTreePathElements)
             stateTreeBatchPathIndices.push(stateTreePathIndices)
 
@@ -303,9 +301,10 @@ describe('Batch state tree root update verification circuit', () => {
         expect(publicSignals).toHaveLength(19)
 
         // Generate a proof. This is commented as it takes several minutes to run.
-        //const proof = await genProof(witness, provingKey)
+        const proof = await genProof(witness, provingKey)
 
-        //const isValid = verifyProof(verifyingKey, proof, publicSignals)
-        //expect(isValid).toBeTruthy()
+        const isValid = verifyProof(verifyingKey, proof, publicSignals)
+        expect(isValid).toBeTruthy()
+        debugger
     })
 })

@@ -16,7 +16,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - v1.1-dependencies-{{ checksum "package-lock.json" }}
+            - v1.2-dependencies-{{ checksum "package-lock.json" }}
 
       - run: 
           name: Install NPM dependencies
@@ -25,11 +25,11 @@ jobs:
       - save_cache:
           paths:
             - node_modules
-          key: v1.1-dependencies-{{ checksum "package-lock.json" }}
+          key: v1.2-dependencies-{{ checksum "package-lock.json" }}
 
       - restore_cache:
           keys:
-            - v1.1-dependencies-{{ checksum "contracts/package-lock.json" }}-{{ checksum "circuits/package-lock.json" }}-{{ checksum "config/package-lock.json" }}-{{ checksum "domainobjs/package-lock.json" }}-{{ checksum "coordinator/package-lock.json" }}-{{ checksum "core/package-lock.json" }}
+            - v1.2-dependencies-{{ checksum "contracts/package-lock.json" }}-{{ checksum "circuits/package-lock.json" }}-{{ checksum "config/package-lock.json" }}-{{ checksum "domainobjs/package-lock.json" }}-{{ checksum "coordinator/package-lock.json" }}-{{ checksum "core/package-lock.json" }}
 
 
       - run: npm run bootstrap && npm run build
@@ -41,7 +41,7 @@ jobs:
             - core/node_modules
             - circuits/node_modules
             - domainobjs/node_modules
-          key: v1.1-dependencies-{{ checksum "contracts/package-lock.json" }}-{{ checksum "circuits/package-lock.json" }}-{{ checksum "config/package-lock.json" }}-{{ checksum "domainobjs/package-lock.json" }}-{{ checksum "coordinator/package-lock.json" }}-{{ checksum "core/package-lock.json" }}
+          key: v1.2-dependencies-{{ checksum "contracts/package-lock.json" }}-{{ checksum "circuits/package-lock.json" }}-{{ checksum "config/package-lock.json" }}-{{ checksum "domainobjs/package-lock.json" }}-{{ checksum "coordinator/package-lock.json" }}-{{ checksum "core/package-lock.json" }}
 
       # checksum the circuit code
       - run:
@@ -51,7 +51,7 @@ jobs:
       - restore_cache:
           name: restore-snark-cache
           keys:
-            - v1.1-dependencies-{{ checksum "circuits/build/.snark_checksum" }}
+            - v1.2-dependencies-{{ checksum "circuits/build/.snark_checksum" }}
 
       # run trusted setups
       - run:
@@ -66,7 +66,7 @@ jobs:
 
       # cache generated snark circuit and keys
       - save_cache:
-          key: v1.1-dependencies-{{ checksum "circuits/build/.snark_checksum" }}
+          key: v1.2-dependencies-{{ checksum "circuits/build/.snark_checksum" }}
           paths:
             - circuits/build/BatchUpdateStateTreeVerifier.sol
             - circuits/build/batchUstCircuit.json

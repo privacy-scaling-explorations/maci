@@ -20,6 +20,6 @@
         "jest": "^24.9.0",
         "circom": "0.0.34",
         "circomlib": "0.0.19",
-        "snarkjs": "https://github.com/weijiekoh/snarkjs.git#5c338cade297a32f5ed4a7bc74f5e5d3cea31abc"
+        "snarkjs": "https://github.com/weijiekoh/snarkjs.git#ef8bbbbe5a7d37f59cdb45d3fdf2c1dcf7dd9c7a"
     }
 }

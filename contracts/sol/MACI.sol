@@ -59,6 +59,8 @@ contract MACI is Ownable, DomainObjs {
     // The coordinator's public key
     PubKey public coordinatorPubKey;
 
+    uint256 numSignUps = 0;
+
     // Events
     event SignUp(PubKey indexed _userPubKey);
 
@@ -121,9 +123,9 @@ contract MACI is Ownable, DomainObjs {
 
         // Calculate and cache the max number of leaves for each tree.
         // They are used as public inputs to the batch update state tree snark.
-        voteOptionsMaxLeafIndex = uint256(2) ** _voteOptionTreeDepth;
-        messageTreeMaxLeafIndex = uint256(2) ** _messageTreeDepth;
-        stateTreeMaxLeafIndex = uint256(2) ** _stateTreeDepth;
+        voteOptionsMaxLeafIndex = uint256(2) ** _voteOptionTreeDepth - 1;
+        messageTreeMaxLeafIndex = uint256(2) ** _messageTreeDepth - 1;
+        stateTreeMaxLeafIndex = uint256(2) ** _stateTreeDepth - 1;
 
         // Make subsequent insertions start from leaf #1, as leaf #0 is only
         // updated with random data if a command is invalid.
@@ -189,6 +191,8 @@ contract MACI is Ownable, DomainObjs {
 
         stateTree.insert(hashedLeaf);
 
+        numSignUps ++;
+
         emit SignUp(_userPubKey);
     }
 
@@ -253,11 +257,19 @@ contract MACI is Ownable, DomainObjs {
         );
     }
 
+    /*
+     * A helper function to create the publicSignals array from meaningful
+     * parameters.
+     * @param _newStateRoot The new state root after all messages are processed
+     * @param _stateTreeRoots The intermediate state roots
+     * @param _ecdhPubKeys The public key used to generated the ECDH shared key
+     *                     to decrypt the message
+     */
     function genBatchUstPublicSignals(
         uint256 _newStateRoot,
         uint256[] memory _stateTreeRoots,
         PubKey[] memory _ecdhPubKeys
-    ) internal view returns (uint256[19] memory) {
+    ) public view returns (uint256[19] memory) {
         uint256[19] memory publicSignals;
         publicSignals[0] = _newStateRoot;
         publicSignals[1] = coordinatorPubKey.x;
@@ -265,7 +277,8 @@ contract MACI is Ownable, DomainObjs {
         publicSignals[3] = voteOptionsMaxLeafIndex;
         publicSignals[4] = messageTree.getRoot();
         publicSignals[5] = messageBatchStartIndex;
-        publicSignals[6] = stateTreeMaxLeafIndex;
+        //publicSignals[6] = stateTreeMaxLeafIndex;
+        publicSignals[6] = numSignUps;
 
         for (uint8 i = 0; i < messageBatchSize; i++) {
             uint8 x = 7 + i;
@@ -279,6 +292,15 @@ contract MACI is Ownable, DomainObjs {
         return publicSignals;
     }
 
+    /*
+     * Update the postSignupStateRoot if the batch update state root proof is
+     * valid.
+     * @param _newStateRoot The new state root after all messages are processed
+     * @param _stateTreeRoots The intermediate state roots
+     * @param _ecdhPubKeys The public key used to generated the ECDH shared key
+     *                     to decrypt the message
+     * @param _proof The zk-SNARK proof
+     */
     function batchProcessMessage(
         uint256 _newStateRoot,
         uint256[] memory _stateTreeRoots,
@@ -328,6 +350,7 @@ contract MACI is Ownable, DomainObjs {
             uint256[2] memory c
         ) = unpackProof(_proof);
 
+        // Verify the proof
         bool isValid = batchUstVerifier.verifyProof(a, b, c, publicSignals);
 
         require(isValid == true, "MACI: invalid batch UST proof");
@@ -336,7 +359,8 @@ contract MACI is Ownable, DomainObjs {
         // batch is processed in order
         messageBatchStartIndex += messageBatchSize;
 
-        // The message batch start index should never exceed the maximum allowed value
+        // The message batch start index should never exceed the maximum
+        // allowed value
         assert(messageBatchStartIndex <= messageTreeMaxLeafIndex - messageBatchSize);
 
         // Update the state root
