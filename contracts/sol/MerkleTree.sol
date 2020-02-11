@@ -174,13 +174,6 @@ contract MerkleTree is Ownable, Hasher {
         emit LeafUpdated(leaf, leafIndex);
     }
 
-    /*
-     * Destroy this contract to free up space
-     */
-    function selfDestruct() public onlyOwner {
-        selfdestruct(0x0000000000000000000000000000000000000000);
-    }
-
     function getRoot() public view returns (uint256) {
         return root;
     }

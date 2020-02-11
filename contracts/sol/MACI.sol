@@ -74,6 +74,7 @@ contract MACI is Ownable, DomainObjs {
         uint8 _messageTreeDepth,
         uint8 _stateTreeDepth,
         uint8 _voteOptionTreeDepth,
+        uint8 _voteOptionsMaxLeafIndex,
         SignUpGatekeeper _signUpGatekeeper,
         BatchUpdateStateTreeVerifier _batchUstVerifier,
         QuadVoteTallyVerifier _qvtVerifier,
@@ -121,9 +122,12 @@ contract MACI is Ownable, DomainObjs {
             emptyVoteOptionTreeRoot = tempTree.getRoot();
         }
 
+        // Do a no-op in the batch UST snark if the user votes for an option
+        // which has no meaning attached to it
+        voteOptionsMaxLeafIndex = _voteOptionsMaxLeafIndex;
+
         // Calculate and cache the max number of leaves for each tree.
         // They are used as public inputs to the batch update state tree snark.
-        voteOptionsMaxLeafIndex = uint256(2) ** _voteOptionTreeDepth - 1;
         messageTreeMaxLeafIndex = uint256(2) ** _messageTreeDepth - 1;
         stateTreeMaxLeafIndex = uint256(2) ** _stateTreeDepth - 1;
 
@@ -225,9 +229,6 @@ contract MACI is Ownable, DomainObjs {
 
             // This is exceedingly unlikely to occur
             assert(postSignUpStateRoot != 0);
-
-            // Destroy the state tree contract
-            stateTree.selfDestruct();
         }
 
         // Calculate leaf value
