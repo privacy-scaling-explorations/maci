@@ -80,6 +80,7 @@ const deployMaci = async (
         config.maci.merkleTrees.messageTreeDepth,
         config.maci.merkleTrees.stateTreeDepth,
         config.maci.merkleTrees.voteOptionTreeDepth,
+        config.maci.voteOptionsMaxLeafIndex,
         signUpTokenGatekeeperAddress,
         batchUstVerifierContract.contractAddress,
         quadVoteTallyVerifierContract.contractAddress,
