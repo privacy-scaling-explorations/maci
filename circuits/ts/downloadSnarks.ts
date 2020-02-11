@@ -21,19 +21,19 @@ const main = async () => {
         },
         {
             name: 'QuadVoteTallyVerifier.sol',
-            url: 'https://www.dropbox.com/s/m8sea4aitys017j/QuadVoteTallyVerifier.sol?dl=1',
+            url: 'https://www.dropbox.com/s/8rc30ka6o9k0hyv/QuadVoteTallyVerifier.sol?dl=1',
         },
         {
             name: 'qvtCircuit.json',
-            url: 'https://www.dropbox.com/s/fiy5j3dhbdcxmw4/qvtCircuit.json?dl=1'
+            url: 'https://www.dropbox.com/s/uufh10dj2gqg2vb/qvtCircuit.json?dl=1',
         },
         {
             name: 'qvtPk.bin',
-            url: 'https://www.dropbox.com/s/7bacxvwlysvmr6y/qvtPk.bin?dl=1'
+            url: 'https://www.dropbox.com/s/3vc5mnyaye4q93j/qvtPk.bin?dl=1',
         },
         {
             name: 'qvtVk.json',
-            url: 'https://www.dropbox.com/s/p7m1ofv4mjyu00z/qvtVk.json?dl=1'
+            url: 'https://www.dropbox.com/s/9i47a2hk8k0qop0/qvtVk.json?dl=1',
         },
     ]
 
