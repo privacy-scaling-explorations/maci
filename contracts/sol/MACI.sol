@@ -229,9 +229,6 @@ contract MACI is Ownable, DomainObjs {
 
             // This is exceedingly unlikely to occur
             assert(postSignUpStateRoot != 0);
-
-            // Destroy the state tree contract
-            stateTree.selfDestruct();
         }
 
         // Calculate leaf value
