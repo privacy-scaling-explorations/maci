@@ -78,8 +78,9 @@ contract MerkleTree is Ownable, Hasher {
     }
 
 
-    // Inserts (appends) a new leaf into the
-    // merkle tree
+    /*
+     * Insert a new leaf
+     */
     function insert(uint256 leaf) public onlyOwner {
         require(nextLeafIndex < maxLeafIndex, "Merkle Tree at max capacity");
 

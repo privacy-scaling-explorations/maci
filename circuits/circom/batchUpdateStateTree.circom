@@ -21,7 +21,7 @@ template BatchUpdateStateTree(
   signal input coordinator_public_key[2];
 
   var message_length = 11;
-  signal input message[batch_size][message_length];
+  signal private input message[batch_size][message_length];
 
   // Select vote option index's weight
   // (a.k.a the raw value of the leaf pre-hash)
@@ -35,7 +35,7 @@ template BatchUpdateStateTree(
 
   // Message tree
   signal input msg_tree_root;
-  signal input msg_tree_path_elements[batch_size][depth];
+  signal private input msg_tree_path_elements[batch_size][depth];
   signal input msg_tree_batch_start_index; // Starting index of the batch
 
   component msg_tree_path_index[batch_size];

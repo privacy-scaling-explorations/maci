@@ -10,7 +10,9 @@
         "build": "tsc && ./scripts/compileSol.sh",
         "deploy": "node build/deploy.js -o deployedAddresses.json",
         "deploy-debug": "node --inspect-brk build/deploy.js -o deployedAddresses.json",
-        "test-maci": "jest Maci.test.ts",
+        "test-mt": "jest MerkleTree.test.ts",
+        "test-mt-debug": "node --inspect-brk ./node_modules/.bin/jest MerkleTree.test.ts",
+        "test-maci": "NODE_OPTIONS=--max-old-space-size=4096 jest Maci.test.ts",
         "test-maci-debug": "node --inspect-brk ./node_modules/.bin/jest Maci.test.ts",
         "test-hasher": "jest Hasher.test.ts",
         "test-hasher-debug": "node --inspect-brk ./node_modules/.bin/jest Hasher.test.ts"
@@ -29,6 +31,8 @@
     },
     "devDependencies": {
         "maci-crypto": "1.0.0",
+        "maci-circuits": "1.0.0",
+        "maci-core": "1.0.0",
         "maci-domainobjs": "1.0.0",
         "@types/node": "^13.1.2",
         "etherlime": "^2.2.4",
@@ -36,6 +40,7 @@
         "ts-jest": "^24.2.0",
         "jest": "^24.9.0",
         "ganache-cli": "^6.7.0",
+        "libsemaphore": "^1.0.5",
         "truffle-artifactor": "^4.0.30"
     }
 }

@@ -14,10 +14,14 @@ import {
     Command,
 } from 'maci-domainobjs'
 
+import {
+    compileAndLoadCircuit,
+} from '../'
+
 describe('Signature verification circuit', () => {
+    let circuit
     it('verifies a valid signature', async () => {
-        const circuitDef = await compiler(path.join(__dirname, 'circuits', '../../../circom/test/verifySignature_test.circom'))
-        const circuit = new Circuit(circuitDef)
+        circuit = await compileAndLoadCircuit('verifySignature_test.circom')
 
         const keypair = new Keypair()
         const command = new Command(

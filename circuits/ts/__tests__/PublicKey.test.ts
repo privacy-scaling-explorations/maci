@@ -13,11 +13,15 @@ import {
     Keypair,
 } from 'maci-domainobjs'
 
+import {
+    compileAndLoadCircuit,
+} from '../'
 
 describe('Public key derivation circuit', () => {
+    let circuit
+
     it('correctly computes a public key', async () => {
-        const circuitDef = await compiler(path.join(__dirname, 'circuits', '../../../circom/test/publicKey_test.circom'))
-        const circuit = new Circuit(circuitDef)
+        circuit = await compileAndLoadCircuit('publicKey_test.circom')
 
         const keypair = new Keypair()
 

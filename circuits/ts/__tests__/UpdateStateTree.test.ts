@@ -1,6 +1,11 @@
 import * as path from 'path'
 import { Circuit } from 'snarkjs'
 const compiler = require('circom')
+
+import {
+    compileAndLoadCircuit,
+} from '../'
+
 import {
     Keypair,
     StateLeaf,
@@ -33,15 +38,8 @@ const getUpdateStateTreeParams = async (
 ) => {
 
     // Construct the trees
-    const voteOptionTree = setupTree(2, NOTHING_UP_MY_SLEEVE)
     const msgTree = setupTree(4, NOTHING_UP_MY_SLEEVE)
     const stateTree = setupTree(4, NOTHING_UP_MY_SLEEVE)
-
-    // Insert candidates into vote option tree
-    voteOptionTree.insert(hashOne(str2BigInt('candidate 1')))
-    voteOptionTree.insert(hashOne(str2BigInt('candidate 2')))
-    voteOptionTree.insert(hashOne(str2BigInt('candidate 3')))
-    voteOptionTree.insert(hashOne(str2BigInt('candidate 4')))
 
     // Register users into the stateTree.
     // stateTree index 0 is a random leaf used to insert random data when the
@@ -155,10 +153,7 @@ describe('State tree root update verification circuit', () => {
     const ephemeralKeypair = new Keypair()
 
     beforeAll(async () => {
-        // Compile circuit
-        const circuitDef = await compiler(path.join(__dirname, 'circuits', '../../../circom/test/updateStateTree_test.circom'))
-        circuit = new Circuit(circuitDef)
-
+        circuit = await compileAndLoadCircuit('updateStateTree_test.circom')
     })
 
     it('UpdateStateTree should produce the correct state root', async () => {

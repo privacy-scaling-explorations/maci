@@ -42,6 +42,7 @@ own unit tests.
 - `contracts`: Solidity contracts and deployment code.
 - `domainobjs`: Classes which represent high-level [domain
   objects](https://wiki.c2.com/?DomainObject) particular to this project.
+- `core`: Business logic functions for message processing and vote tallying.
 
 Subdirectories which are not Lerna submodules are:
 

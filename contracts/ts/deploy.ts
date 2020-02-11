@@ -11,6 +11,8 @@ const MiMC = require('@maci-contracts/compiled/MiMC.json')
 const Hasher = require('@maci-contracts/compiled/Hasher.json')
 const SignUpToken = require('@maci-contracts/compiled/SignUpToken.json')
 const SignUpTokenGatekeeper = require('@maci-contracts/compiled/SignUpTokenGatekeeper.json')
+const BatchUpdateStateTreeVerifier = require('@maci-contracts/compiled/BatchUpdateStateTreeVerifier.json')
+const QuadVoteTallyVerifier = require('@maci-contracts/compiled/QuadVoteTallyVerifier.json')
 
 const MerkleTree = require('@maci-contracts/compiled/MerkleTree.json')
 const MACI = require('@maci-contracts/compiled/MACI.json')
@@ -31,7 +33,7 @@ const genDeployer = (
         privateKey,
         config.get('chain.ganache.port'),
         {
-            gasLimit: 8800000,
+            gasLimit: 10000000,
         },
     )
 }
@@ -64,14 +66,24 @@ const deployMaci = async (
     console.log('Deploying MiMC')
     const mimcContract = await deployer.deploy(MiMC, {})
 
+    console.log('Deploying BatchUpdateStateTreeVerifier')
+    const batchUstVerifierContract = await deployer.deploy(BatchUpdateStateTreeVerifier, {})
+
+    console.log('Deploying QuadVoteTallyVerifier')
+    const quadVoteTallyVerifierContract = await deployer.deploy(QuadVoteTallyVerifier, {})
+
     console.log('Deploying MACI')
     const maciContract = await deployer.deploy(
         MACI,
         { CircomLib: mimcContract.contractAddress },
-        config.merkleTrees.messageTreeDepth,
-        config.merkleTrees.stateTreeDepth,
-        config.merkleTrees.voteOptionTreeDepth,
+        config.maci.messageBatchSize,
+        config.maci.merkleTrees.messageTreeDepth,
+        config.maci.merkleTrees.stateTreeDepth,
+        config.maci.merkleTrees.voteOptionTreeDepth,
+        config.maci.voteOptionsMaxLeafIndex,
         signUpTokenGatekeeperAddress,
+        batchUstVerifierContract.contractAddress,
+        quadVoteTallyVerifierContract.contractAddress,
         config.maci.signupDurationInSeconds.toString(),
         config.maci.initialVoiceCreditBalance,
         {
@@ -81,6 +93,8 @@ const deployMaci = async (
     )
 
     return {
+        batchUstVerifierContract,
+        quadVoteTallyVerifierContract,
         mimcContract,
         maciContract,
     }
@@ -121,14 +135,7 @@ const main = async () => {
     const outputAddressFile = args.output
     const signUpToken = args.signUpToken
 
-    const deployer = new etherlime.JSONRPCPrivateKeyDeployer(
-        admin.privateKey,
-        config.chain.url,
-        {
-            gasLimit: 8800000,
-        },
-    )
-
+    const deployer = genDeployer(admin.privateKey)
 
     let signUpTokenAddress
     let signUpTokenGatekeeperAddress
@@ -147,6 +154,8 @@ const main = async () => {
     const {
         mimcContract,
         maciContract,
+        batchUstVerifierContract,
+        quadVoteTallyVerifierContract,
     } = await deployMaci(
         deployer,
         signUpTokenGatekeeperContract.contractAddress,
@@ -154,6 +163,8 @@ const main = async () => {
 
     const addresses = {
         MiMC: mimcContract.contractAddress,
+        BatchUpdateStateTreeVerifier: batchUstVerifierContract.contractAddress,
+        QuadraticVoteTallyVerifier: quadVoteTallyVerifierContract.contractAddress,
         MACI: maciContract.contractAddress,
     }
 

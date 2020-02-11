@@ -1,10 +1,18 @@
 require('module-alias/register')
-jest.setTimeout(90000)
-import { genAccounts, genTestAccounts } from '../accounts'
-import { config } from 'maci-config'
-import * as etherlime from 'etherlime-lib'
+
+jest.setTimeout(1200000)
+
+import * as fs from 'fs'
+import * as path from 'path'
 import * as ethers from 'ethers'
+import * as etherlime from 'etherlime-lib'
+
+import { genAccounts, genTestAccounts } from '../accounts'
 import { timeTravel } from '../../node_modules/etherlime/cli-commands/etherlime-test/time-travel.js'
+
+import { config } from 'maci-config'
+
+import { formatProofForVerifierContract } from '../utils'
 
 import {
     deployMaci,
@@ -15,30 +23,73 @@ import {
 
 import {
     bigInt,
+    hashOne,
     genKeyPair,
     setupTree,
     genPubKey,
+    genRandomSalt,
+    SnarkBigInt,
     genEcdhSharedKey,
     NOTHING_UP_MY_SLEEVE,
+    unstringifyBigInts,
 } from 'maci-crypto'
+
 import {
+    StateLeaf,
     Message,
     Command,
     Keypair,
     PubKey,
+    PrivKey,
 } from 'maci-domainobjs'
+
+import {
+    processMessage,
+} from 'maci-core'
+
+import {
+    compileAndLoadCircuit,
+    genBatchUstInputs,
+} from 'maci-circuits'
+
+import {
+    SnarkProvingKey,
+    SnarkVerifyingKey,
+    genProof,
+    verifyProof,
+    parseVerifyingKeyJson,
+    genPublicSignals,
+} from 'libsemaphore'
 
 const accounts = genTestAccounts(5)
 const deployer = genDeployer(accounts[0].privateKey)
+let emptyVoteOptionTreeRoot
+
+const messageTree = setupTree(
+    config.maci.merkleTrees.messageTreeDepth,
+    NOTHING_UP_MY_SLEEVE,
+)
+
+let stateTree = setupTree(
+    config.maci.merkleTrees.stateTreeDepth,
+    NOTHING_UP_MY_SLEEVE,
+)
+
+const provingKeyPath = path.join(__dirname, '../../../circuits/build/batchUstPk.bin')
+const provingKey: SnarkProvingKey = fs.readFileSync(provingKeyPath)
+
+const verifyingKeyPath = path.join(__dirname, '../../../circuits/build/batchUstVk.json')
+const verifyingKey: SnarkVerifyingKey = parseVerifyingKeyJson(fs.readFileSync(verifyingKeyPath).toString())
 
 describe('MACI', () => {
+
+    let circuit
     let maciContract
     let signUpTokenContract
     let signUpTokenGatekeeperContract
 
     // Set up users
-    const coordinatorPrivKey = bigInt(config.maci.coordinatorPrivKey)
-    const coordinatorPubKey = new PubKey(genPubKey(coordinatorPrivKey))
+    const coordinator = new Keypair(new PrivKey(bigInt(config.maci.coordinatorPrivKey)))
 
     const user1 = {
         wallet: accounts[1],
@@ -55,19 +106,48 @@ describe('MACI', () => {
         keypair: new Keypair(),
     }
 
-    const encKeypair = new Keypair()
-    const ecdhSharedKey = Keypair.genEcdhSharedKey(encKeypair.privKey, coordinatorPubKey)
-    const command: Command = new Command(
-        bigInt(10),
-        encKeypair.pubKey,
-        bigInt(0),
-        bigInt(9),
-        bigInt(123),
-    )
-    const signature = command.sign(user1.keypair.privKey)
-    const message = command.encrypt(signature, ecdhSharedKey)
+    // This array contains four commands from the same user
+    let batch: any[] = []
+    for (let i = 0; i < config.maci.messageBatchSize; i++) {
+        const voteOptionTree = setupTree(
+            config.maci.merkleTrees.voteOptionTreeDepth,
+            NOTHING_UP_MY_SLEEVE,
+        )
+
+        const voteOptionIndex = bigInt(0)
+        const newVoteWeight = bigInt(9)
+
+        voteOptionTree.insert( hashOne(newVoteWeight), newVoteWeight)
+
+        const ephemeralKeypair = new Keypair()
+        const ecdhSharedKey = Keypair.genEcdhSharedKey(
+            ephemeralKeypair.privKey,
+            coordinator.pubKey,
+        )
+
+        const command: Command = new Command(
+            bigInt(1),
+            ephemeralKeypair.pubKey,
+            voteOptionIndex,
+            newVoteWeight,
+            bigInt(i),
+        )
+
+        const signature = command.sign(user1.keypair.privKey)
+        const message = command.encrypt(signature, ecdhSharedKey)
+
+        batch.push({
+            ephemeralKeypair,
+            ecdhSharedKey,
+            command,
+            signature,
+            message,
+            voteOptionTree,
+        })
+    }
 
     beforeAll(async () => {
+        circuit = await compileAndLoadCircuit('batchUpdateStateTree_test.circom')
         signUpTokenContract = await deploySignupToken(deployer)
         signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(
             deployer,
@@ -88,7 +168,7 @@ describe('MACI', () => {
                     gasPrice: ethers.utils.parseUnits('10', 'gwei'),
                     gasLimit: 21000,
                     to: accounts[i].address,
-                    value: ethers.utils.parseUnits('1', 'ether'),
+                    value: ethers.utils.parseUnits(numEth.toString(), 'ether'),
                     data: '0x'
                 })
             )
@@ -99,6 +179,17 @@ describe('MACI', () => {
         // give away a signUpToken to each user
         await signUpTokenContract.giveToken(user1.wallet.address)
         await signUpTokenContract.giveToken(user2.wallet.address)
+
+        // Insert a zero value in the off-chain state tree
+        stateTree.insert(NOTHING_UP_MY_SLEEVE)
+
+        // Cache an empty vote option tree root
+        const temp = setupTree(
+            config.maci.merkleTrees.voteOptionTreeDepth,
+            NOTHING_UP_MY_SLEEVE,
+        )
+
+        emptyVoteOptionTreeRoot = temp.root
     })
 
     it('each user should own a token', async () => {
@@ -111,11 +202,16 @@ describe('MACI', () => {
 
     it('the emptyVoteOptionTreeRoot value should be correct', async () => {
         const tree = setupTree(
-            config.merkleTrees.voteOptionTreeDepth,
+            config.maci.merkleTrees.voteOptionTreeDepth,
             NOTHING_UP_MY_SLEEVE,
         )
         const root = await maciContract.emptyVoteOptionTreeRoot()
         expect(tree.root.toString()).toEqual(root.toString())
+    })
+
+    it('the stateTree root should be correct', async () => {
+        const root = await maciContract.getStateTreeRoot()
+        expect(stateTree.root.toString()).toEqual(root.toString())
     })
 
     describe('Sign-ups', () => {
@@ -156,6 +252,17 @@ describe('MACI', () => {
             const receipt = await tx.wait()
 
             expect(receipt.status).toEqual(1)
+
+            const stateLeaf = StateLeaf.genFreshLeaf(
+                user1.keypair.pubKey,
+                emptyVoteOptionTreeRoot,
+                bigInt(config.maci.initialVoiceCreditBalance),
+            )
+
+            stateTree.insert(stateLeaf.hash(), stateLeaf)
+
+            const root = await maciContract.getStateTreeRoot()
+            expect(stateTree.root.toString()).toEqual(root.toString())
         })
 
         it('a user who uses a previously used SignUpToken to sign up should not be able to do so', async () => {
@@ -224,8 +331,8 @@ describe('MACI', () => {
             expect.assertions(1)
             try {
                 await maciContract.publishMessage(
-                    message.asContractParam(),
-                    encKeypair.pubKey.asContractParam(),
+                    batch[0].message.asContractParam(),
+                    batch[0].ephemeralKeypair.pubKey.asContractParam(),
                 )
             } catch (e) {
                 expect(e.message.endsWith('MACI: the sign-up period is not over')).toBeTruthy()
@@ -248,27 +355,182 @@ describe('MACI', () => {
     })
 
     describe('Publish messages', () => {
+
         it('publishMessage should add a leaf to the message tree', async () => {
-            expect.assertions(3)
+            expect.assertions(3 * config.maci.messageBatchSize)
 
-            // Check the on-chain message tree root against a root computed off-chain
-            const tree = setupTree(config.merkleTrees.messageTreeDepth, NOTHING_UP_MY_SLEEVE)
-            let root = await maciContract.getMessageTreeRoot()
 
-            expect(root.toString()).toEqual(tree.root.toString())
+            // Publish all messages so we can process them as a batch later on
+            for (let i = 0; i < config.maci.messageBatchSize; i++) {
+                // Check the on-chain message tree root against a root computed off-chain
+                let root = await maciContract.getMessageTreeRoot()
 
-            // Insert the message and do the same
-            tree.insert(message.hash())
+                expect(root.toString()).toEqual(messageTree.root.toString())
 
-            const tx = await maciContract.publishMessage(
-                message.asContractParam(),
-                encKeypair.pubKey.asContractParam(),
+                // Insert the message and do the same
+                messageTree.insert(batch[i].message.hash())
+
+                const tx = await maciContract.publishMessage(
+                    batch[i].message.asContractParam(),
+                    batch[i].ephemeralKeypair.pubKey.asContractParam(),
+                )
+                const receipt = await tx.wait()
+                expect(receipt.status).toEqual(1)
+
+                root = await maciContract.getMessageTreeRoot()
+                expect(root.toString()).toEqual(messageTree.root.toString())
+            }
+        })
+    })
+
+    describe('Process messages', () => {
+
+        it('batchProcessMessage should verify a proof and update the postSignUpStateRoot', async () => {
+            expect.assertions(7)
+
+            let results: any[] = []
+            let ecdhPublicKeyBatch: any[] = []
+
+            let stateTreeBatchRaw: SnarkBigInt[] = []
+            let stateTreeBatchRoot: SnarkBigInt[] = []
+            let stateTreeBatchPathElements: SnarkBigInt[] = []
+            let stateTreeBatchPathIndices: SnarkBigInt[] = []
+            let messageTreeBatchPathElements: SnarkBigInt[] = []
+            const messageTreeBatchStartIndex = 0
+
+            let userVoteOptionsBatchRoot: SnarkBigInt[] = []
+            let userVoteOptionsBatchPathElements: SnarkBigInt[] = []
+            let userVoteOptionsBatchPathIndices: SnarkBigInt[] = []
+            let voteOptionTreeBatchLeafRaw: SnarkBigInt[] = []
+
+            // Iterate through the batch of messages
+            for (let i = 0; i < config.maci.messageBatchSize; i++) {
+                const {
+                    ephemeralKeypair,
+                    ecdhSharedKey,
+                    command,
+                    signature,
+                    message,
+                    voteOptionTree,
+                } = batch[i]
+
+                ecdhPublicKeyBatch.push(ephemeralKeypair.pubKey)
+
+                const [ messageTreePathElements, _ ] = messageTree.getPathUpdate(i)
+
+                // Note that all the messages are from the same user, whose
+                // leaf is at index 1
+
+                const [
+                    stateTreePathElements,
+                    stateTreePathIndices
+                ] = stateTree.getPathUpdate(1)
+
+                stateTreeBatchRaw.push(stateTree.leavesRaw[1])
+
+                stateTreeBatchRoot.push(stateTree.root)
+                stateTreeBatchPathElements.push(stateTreePathElements)
+                stateTreeBatchPathIndices.push(stateTreePathIndices)
+
+                messageTreeBatchPathElements.push(messageTreePathElements)
+
+                const [
+                    userVoteOptionsPathElements,
+                    userVoteOptionsPathIndices
+                ] = voteOptionTree.getPathUpdate(command.voteOptionIndex)
+
+                userVoteOptionsBatchRoot.push(voteOptionTree.root)
+                userVoteOptionsBatchPathElements.push(userVoteOptionsPathElements)
+                userVoteOptionsBatchPathIndices.push(userVoteOptionsPathIndices)
+
+                voteOptionTreeBatchLeafRaw.push(voteOptionTree.leavesRaw[command.voteOptionIndex])
+
+                const result = processMessage(
+                    ecdhSharedKey,
+                    message,
+                    stateTree,
+                    voteOptionTree,
+                )
+
+                results.push(result)
+
+                stateTree = result.stateTree
+            }
+
+            const stateTreeMaxIndex = bigInt(stateTree.nextIndex - 1)
+            const voteOptionsMaxIndex = bigInt(
+                2 ** config.maci.merkleTrees.voteOptionTreeDepth - 1
             )
+
+            const randomLeafRoot = stateTree.root
+            const randomLeaf = genRandomSalt()
+            const [randomLeafPathElements, _] = stateTree.getPathUpdate(0)
+
+            const circuitInputs = genBatchUstInputs(
+                coordinator,
+                batch.map((r) => r.message),
+                ecdhPublicKeyBatch,
+                messageTree,
+                messageTreeBatchPathElements,
+                messageTreeBatchStartIndex,
+                randomLeaf,
+                randomLeafRoot,
+                randomLeafPathElements,
+                voteOptionTreeBatchLeafRaw,
+                userVoteOptionsBatchRoot,
+                userVoteOptionsBatchPathElements,
+                userVoteOptionsBatchPathIndices,
+                voteOptionsMaxIndex,
+                stateTreeBatchRaw,
+                stateTreeMaxIndex,
+                stateTreeBatchRoot,
+                stateTreeBatchPathElements,
+                stateTreeBatchPathIndices,
+            )
+
+            const witness = circuit.calculateWitness(circuitInputs)
+            expect(circuit.checkWitness(witness)).toBeTruthy()
+
+            const idx = circuit.getSignalIdx('main.root')
+            const circuitNewStateRoot = witness[idx].toString()
+
+            // Update the state tree with a random leaf
+            stateTree.update(0, randomLeaf)
+
+            expect(stateTree.root.toString()).toEqual(circuitNewStateRoot)
+
+            const publicSignals = genPublicSignals(witness, circuit)
+            expect(publicSignals).toHaveLength(19)
+
+            const contractPublicSignals = await maciContract.genBatchUstPublicSignals(
+                stateTree.root.toString(),
+                stateTreeBatchRoot.map((x) => x.toString()),
+                ecdhPublicKeyBatch.map((x) => x.asContractParam()),
+            )
+
+            expect(JSON.stringify(publicSignals.map((x) => x.toString()))).toEqual(
+                JSON.stringify(contractPublicSignals.map((x) => x.toString()))
+            )
+
+            console.log('Generating proof...')
+            const proof = await genProof(witness, provingKey)
+
+            const isValid = verifyProof(verifyingKey, proof, publicSignals)
+            expect(isValid).toBeTruthy()
+
+            const tx = await maciContract.batchProcessMessage(
+                stateTree.root.toString(),
+                stateTreeBatchRoot.map((x) => x.toString()),
+                ecdhPublicKeyBatch.map((x) => x.asContractParam()),
+                formatProofForVerifierContract(proof),
+                { gasLimit: 2000000 },
+            )
+
             const receipt = await tx.wait()
             expect(receipt.status).toEqual(1)
 
-            root = await maciContract.getMessageTreeRoot()
-            expect(root.toString()).toEqual(tree.root.toString())
+            const postSignUpStateRoot = await maciContract.postSignUpStateRoot()
+            expect(postSignUpStateRoot.toString()).toEqual(stateTree.root.toString())
         })
     })
 })

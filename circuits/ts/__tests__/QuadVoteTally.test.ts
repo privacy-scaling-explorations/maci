@@ -11,15 +11,17 @@ import {
     SnarkBigInt,
 } from 'maci-crypto'
 
+import {
+    compileAndLoadCircuit,
+} from '../'
+
 const ZERO_VALUE = 0
 
 describe('Quadratic vote tallying circuit', () => {
     let circuit 
 
     beforeAll(async () => {
-        // Compile circuit
-        const circuitDef = await compiler(path.join(__dirname, 'circuits', '../../../circom/test/quadVoteTally_test.circom'))
-        circuit = new Circuit(circuitDef)
+        circuit = await compileAndLoadCircuit('quadVoteTally_test.circom')
     })
 
     it('CalculateTotal should correctly sum a list of values', async () => {

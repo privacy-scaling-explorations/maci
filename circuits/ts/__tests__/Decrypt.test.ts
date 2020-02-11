@@ -2,6 +2,10 @@ import * as path from 'path'
 import { Circuit } from 'snarkjs'
 const compiler = require('circom')
 
+import {
+    compileAndLoadCircuit,
+} from '../'
+
 import { 
     bigInt,
     stringifyBigInts,
@@ -17,9 +21,7 @@ import {
 describe('Decryption circuit', () => {
     let circuit 
     beforeAll(async () => {
-        // Compile circuit
-        const circuitDef = await compiler(path.join(__dirname, 'circuits', '../../../circom/test/decrypt_test.circom'))
-        circuit = new Circuit(circuitDef)
+        circuit = await compileAndLoadCircuit('decrypt_test.circom')
     })
 
     it('Should decrypt a message inside the snark', async () => {

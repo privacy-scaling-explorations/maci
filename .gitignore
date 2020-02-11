@@ -1,8 +1,6 @@
 deployedAddresses.json
 .etherlime-store
 **/build/
-boilerplate/circuits/build
-boilerplate/contracts/compiled
 circuits/build
 contracts/compiled
 node_modules
