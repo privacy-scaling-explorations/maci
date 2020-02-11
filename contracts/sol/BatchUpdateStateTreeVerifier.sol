@@ -199,7 +199,7 @@ contract BatchUpdateStateTreeVerifier {
         uint256[2][2] memory b,
         uint256[2] memory c,
         uint256[19] memory input
-    ) public view returns (bool r) {
+    ) public view returns (bool) {
 
         Proof memory proof;
         proof.A = Pairing.G1Point(a[0], a[1]);

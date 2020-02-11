@@ -277,7 +277,6 @@ contract MACI is Ownable, DomainObjs {
         publicSignals[3] = voteOptionsMaxLeafIndex;
         publicSignals[4] = messageTree.getRoot();
         publicSignals[5] = messageBatchStartIndex;
-        //publicSignals[6] = stateTreeMaxLeafIndex;
         publicSignals[6] = numSignUps;
 
         for (uint8 i = 0; i < messageBatchSize; i++) {

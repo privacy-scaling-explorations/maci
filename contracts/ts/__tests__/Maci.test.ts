@@ -386,6 +386,8 @@ describe('MACI', () => {
     describe('Process messages', () => {
 
         it('batchProcessMessage should verify a proof and update the postSignUpStateRoot', async () => {
+            expect.assertions(7)
+
             let results: any[] = []
             let ecdhPublicKeyBatch: any[] = []
 
@@ -516,23 +518,19 @@ describe('MACI', () => {
             const isValid = verifyProof(verifyingKey, proof, publicSignals)
             expect(isValid).toBeTruthy()
 
-            //const tx = await maciContract.batchProcessMessage2(
-                //stateTree.root.toString(),
-                //stateTreeBatchRoot.map((x) => x.toString()),
-                //ecdhPublicKeyBatch.map((x) => x.asContractParam()),
-                //formatProofForVerifierContract(proof),
-            //)
-
             const tx = await maciContract.batchProcessMessage(
                 stateTree.root.toString(),
                 stateTreeBatchRoot.map((x) => x.toString()),
                 ecdhPublicKeyBatch.map((x) => x.asContractParam()),
-                formatProofForVerifierContract(proof)
+                formatProofForVerifierContract(proof),
+                { gasLimit: 2000000 },
             )
 
             const receipt = await tx.wait()
             expect(receipt.status).toEqual(1)
 
+            const postSignUpStateRoot = await maciContract.postSignUpStateRoot()
+            expect(postSignUpStateRoot.toString()).toEqual(stateTree.root.toString())
         })
     })
 })

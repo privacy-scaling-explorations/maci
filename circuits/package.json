@@ -45,7 +45,7 @@
         "maci-crypto": "1.0.0",
         "maci-domainobjs": "1.0.0",
         "shelljs": "^0.8.3",
-        "snarkjs": "https://github.com/weijiekoh/snarkjs.git#ef8bbbbe5a7d37f59cdb45d3fdf2c1dcf7dd9c7a",
+        "snarkjs": "https://github.com/weijiekoh/snarkjs.git#52e0ceba0256bc9bf94cbc9500139dfc37018f91",
         "temp-dir": "^2.0.0",
         "ts-jest": "^24.2.0",
         "websnark": "0.0.5"

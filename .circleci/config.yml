@@ -51,7 +51,7 @@ jobs:
       - restore_cache:
           name: restore-snark-cache
           keys:
-            - v1.2-dependencies-{{ checksum "circuits/build/.snark_checksum" }}
+            - v1.2.1-dependencies-{{ checksum "circuits/build/.snark_checksum" }}
 
       # run trusted setups
       - run:
@@ -66,7 +66,7 @@ jobs:
 
       # cache generated snark circuit and keys
       - save_cache:
-          key: v1.2-dependencies-{{ checksum "circuits/build/.snark_checksum" }}
+          key: v1.2.1-dependencies-{{ checksum "circuits/build/.snark_checksum" }}
           paths:
             - circuits/build/BatchUpdateStateTreeVerifier.sol
             - circuits/build/batchUstCircuit.json
