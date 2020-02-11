@@ -367,6 +367,53 @@ contract MACI is Ownable, DomainObjs {
         postSignUpStateRoot = _newStateRoot;
     }
 
+    function genQvtPublicSignals(
+        uint8 _batchNum,
+        uint256 _intermediateStateRoot,
+        uint256 _currentResultsCommitment,
+        uint256 _newResultsCommitment
+    ) public view returns (uint256[5] memory) {
+        uint256[5] memory publicSignals;
+        publicSignals[0] = _newResultsCommitment;
+        publicSignals[1] = postSignUpStateRoot;
+        publicSignals[2] = uint256(_batchNum);
+        publicSignals[3] = _intermediateStateRoot;
+        publicSignals[4] = _currentResultsCommitment;
+
+        return publicSignals;
+    }
+
+    function proveVoteTallyBatch(
+        // TODO: _batchNum should be from storage and there should be a
+        // maxBatchNum set in the constructor
+        // TODO: reveal the results from the previous batch
+        uint8 _batchNum,
+        uint256 _intermediateStateRoot,
+        uint256 _currentResultsCommitment,
+        uint256 _newResultsCommitment,
+        uint256[8] memory _proof
+    ) public {
+
+        uint256[5] memory publicSignals = genQvtPublicSignals(
+            _batchNum,
+            _intermediateStateRoot,
+            _currentResultsCommitment,
+            _newResultsCommitment
+        );
+
+        // Unpack the snark proof
+        (
+            uint256[2] memory a,
+            uint256[2][2] memory b,
+            uint256[2] memory c
+        ) = unpackProof(_proof);
+
+        // Verify the proof
+        bool isValid = qvtVerifier.verifyProof(a, b, c, publicSignals);
+
+        require(isValid == true, "MACI: invalid quadratic vote tally proof");
+    }
+
     function getMessageTreeRoot() public view returns (uint256) {
         return messageTree.getRoot();
     }

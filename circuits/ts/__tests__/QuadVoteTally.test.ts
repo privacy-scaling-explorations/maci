@@ -20,6 +20,10 @@ import {
     compileAndLoadCircuit,
 } from '../'
 
+import {
+    genPublicSignals,
+} from 'libsemaphore'
+
 const ZERO_VALUE = 0
 
 describe('Quadratic vote tallying circuit', () => {
@@ -56,6 +60,8 @@ describe('Quadratic vote tallying circuit', () => {
 
         // The depth at which the intermediate state tree leaves exist in the full state tree
         const k = fullStateTreeDepth - intermediateStateTreeDepth
+
+        expect.assertions(7 * 2 ** k)
 
         // The batch #
         for (let intermediatePathIndex = 0; intermediatePathIndex < 2 ** k; intermediatePathIndex ++) {
@@ -173,6 +179,15 @@ describe('Quadratic vote tallying circuit', () => {
             const result = witness[circuit.getSignalIdx('main.newResultsCommitment')]
             const expectedCommitment = hash([...expected, salt])
             expect(result.toString()).toEqual(expectedCommitment.toString())
+
+            const publicSignals = genPublicSignals(witness, circuit)
+            expect(publicSignals).toHaveLength(5)
+
+            expect(publicSignals[0].toString()).toEqual(expectedCommitment.toString())
+            expect(publicSignals[1].toString()).toEqual(fullStateTree.root.toString())
+            expect(publicSignals[2].toString()).toEqual(intermediatePathIndex.toString())
+            expect(publicSignals[3].toString()).toEqual(intermediateStateTree.leaves[intermediatePathIndex].toString())
+            expect(publicSignals[4].toString()).toEqual(currentResultsCommitment.toString())
         }
     })
 })
