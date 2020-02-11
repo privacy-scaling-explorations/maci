@@ -25,8 +25,7 @@ describe('Quadratic vote tallying circuit', () => {
     })
 
     it('CalculateTotal should correctly sum a list of values', async () => {
-        const circuitDef = await compiler(path.join(__dirname, 'circuits', '../../../circom/test/calculateTotal_test.circom'))
-        const ctCircuit = new Circuit(circuitDef)
+        const ctCircuit = await compileAndLoadCircuit('calculateTotal_test.circom')
 
         const nums = [3, 3, 3, 3, 2, 4]
         const sum = nums.reduce((a, b) => a + b, 0)

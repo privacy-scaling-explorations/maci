@@ -485,15 +485,17 @@ For instance, if a user has 99 voice credits, they may spend them this way (each
 | B | 25 |
 | C | 64 |
 
-As seen above, even though the user had a disproportionate preference for option C (64 voice credits), their impact on the tallied vote (8 votes) was merely the square root of the voice credits they had spent. This prevents them from having an outsized influence on the results simply by virtue of their willingness to spend as many voice credits on that option as they had.
-
-Additionally, we consider that votes are cumulative. This means that the user spent 10 voice credits on option A.
+The outcome is as such:
 
 | Option | Tallied votes |
 |-|-|
 | A | 3.16 |
 | B | 5 |
 | C | 8 |
+
+Even though the user has a disproportionate preference for option C (64 voice credits), their impact on the tallied vote (8 votes) is merely the square root of the voice credits they have spent. This prevents them from having an outsized influence on the results simply by virtue of their willingness to spend as many voice credits on that option as they had.
+
+Additionally, we consider that votes are cumulative. This means that the user spent 10 voice credits on option A.
 
 The MACI contract's `quadraticVoteTally()` function should verify a proof created using this circuit to compute the results of tallying a set of state leaves. This also proves that these state leaves have an intermediate root `A`, as well that `A` is part of the tree with final state root `R`. This allows the coordinator to prove the final tally in batches. The function keeps track of the index of each intermediate root to ensure that they are processed consecutively.
 
