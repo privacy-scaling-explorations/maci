@@ -12,6 +12,11 @@ import {
 } from 'maci-crypto'
 
 import {
+    Keypair,
+    StateLeaf,
+} from 'maci-domainobjs'
+
+import {
     compileAndLoadCircuit,
 } from '../'
 
@@ -69,7 +74,7 @@ describe('Quadratic vote tallying circuit', () => {
 
             const fullStateTree = setupTree(fullStateTreeDepth, ZERO_VALUE)
 
-            let rawStateLeaves: Plaintext[] = []
+            let stateLeaves: StateLeaf[] = []
             let voteOptionTrees = []
 
             // Populate the state tree
@@ -82,11 +87,13 @@ describe('Quadratic vote tallying circuit', () => {
                     voteOptionMT.insert(voteLeaves[i][j])
                 }
 
-                const rawStateLeaf = [0, 0, voteOptionMT.root, 0, 0]
-                rawStateLeaves.push(rawStateLeaf)
+                const keypair = new Keypair()
+
+                const stateLeaf = new StateLeaf(keypair.pubKey, voteOptionMT.root, 0, 0)
+                stateLeaves.push(stateLeaf)
 
                 // Insert the state leaf
-                fullStateTree.insert(hash(rawStateLeaf))
+                fullStateTree.insert(stateLeaf.hash())
             }
 
             // The leaves of the intermediate state tree (which are the roots of each batch)
@@ -121,10 +128,8 @@ describe('Quadratic vote tallying circuit', () => {
                         voteLeaves[intermediatePathIndex * batchSize + i][j].toString()
                 }
 
-                for (let j = 0; j < messageLength; j++) {
-                    circuitInputs['stateLeaves[' + i + '][' + j + ']'] =
-                        rawStateLeaves[intermediatePathIndex * batchSize + i][j].toString()
-                }
+                circuitInputs['stateLeaves[' + i + ']'] =
+                    stateLeaves[intermediatePathIndex * batchSize + i].asCircuitInputs()
             }
 
             // Calculate the commitment to the current results

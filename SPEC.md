@@ -167,20 +167,21 @@ This function should, however, only do so if the processed message counter indic
 
 Only the coordinator may invoke this function.
 
-#### `proveVoteTally()`
+#### `proveVoteTallyBatch()`
 
 The parameters are:
 
 ```
-uint256[2] a,
-uint256[2][2] b,
-uint256[2] c,
-uint256[n] results
+uint256 _intermediateStateRoot,
+uint8 _batchNum,
+uint256 _currentResultsCommitment,
+uint256 _newResultsCommitment,
+uint256[8] memory _proof
 ```
 
 where `n` is the number of vote options.
 
-This function verifies the zk-SNARK proof (`a`, `b`, and `c`), with the state root in the contract and the given list of tallied votes (`results`) as public inputs. This allows anyone to verify that the vote tally results are correct. 
+This allows the coordinator to prove the correctness of their vote tally. They do this in batches of state leaves. Each batch of state leaves is accumulated into an intermediate state root, and the Merkle root of all the intermediate state roots is the full state root. The proof shows that the result of adding the votes in the current batch to the culmulative results is computed correctly, but hides the results by salting and hashing them.
 
 ### State leaves
 
