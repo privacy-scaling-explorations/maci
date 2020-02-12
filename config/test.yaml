@@ -3,8 +3,9 @@ env: 'test'
 
 maci:
   initialVoiceCreditBalance: 100
-  signupDurationInSeconds: 3600 # 1 hour
-  coordinatorPrivKey: "2922056879163902553431241761119057960280734584214105336279476766401963593688"
+  signUpDurationInSeconds: 3600 # 1 hour
+  votingDurationInSeconds: 3600 # 1 hour
+  coordinatorPrivKey: "2222222222263902553431241761119057960280734584214105336279476766401963593688"
   messageBatchSize: 4
   stateLeafBatchSize: 4
   voteOptionsMaxLeafIndex: 3
