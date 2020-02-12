@@ -531,8 +531,8 @@ describe('MACI', () => {
                 expect(e.message.endsWith('MACI: the voting period is not over')).toBeTruthy()
             }
 
-            //// Move forward in time
-            //await timeTravel(deployer.provider, config.maci.votingDurationInSeconds + 1)
+            // Move forward in time
+            await timeTravel(deployer.provider, config.maci.votingDurationInSeconds + 1)
 
             const tx = await maciContract.batchProcessMessage(
                 stateTree.root.toString(),
