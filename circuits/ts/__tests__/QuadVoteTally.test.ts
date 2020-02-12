@@ -1,6 +1,7 @@
 import * as path from 'path'
 import { Circuit } from 'snarkjs'
 const compiler = require('circom')
+import { config } from 'maci-config'
 import {
     setupTree,
     genRandomSalt,
@@ -35,9 +36,9 @@ describe('Quadratic vote tallying circuit', () => {
 
     it('QuadVoteTally should correctly tally a set of votes', async () => {
         // as set in quadVoteTally_test.circom
-        const fullStateTreeDepth = 4
-        const intermediateStateTreeDepth = 2
-        const voteOptionTreeDepth = 4
+        const fullStateTreeDepth = config.maci.merkleTrees.stateTreeDepth
+        const voteOptionTreeDepth = config.maci.merkleTrees.voteOptionTreeDepth
+        const intermediateStateTreeDepth = config.maci.merkleTrees.intermediateStateTreeDepth
         const numVoteOptions = 2 ** voteOptionTreeDepth
 
         // The depth at which the intermediate state tree leaves exist in the full state tree

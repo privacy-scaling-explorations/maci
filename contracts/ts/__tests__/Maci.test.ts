@@ -363,7 +363,6 @@ describe('MACI', () => {
 
             expect.assertions(3 * config.maci.messageBatchSize)
 
-
             // Publish all messages so we can process them as a batch later on
             for (let i = 0; i < config.maci.messageBatchSize; i++) {
                 // Check the on-chain message tree root against a root computed off-chain
@@ -547,6 +546,39 @@ describe('MACI', () => {
 
             const postSignUpStateRoot = await maciContract.postSignUpStateRoot()
             expect(postSignUpStateRoot.toString()).toEqual(stateTree.root.toString())
+        })
+    })
+
+    describe('Tally votes', () => {
+
+        beforeAll(() => {
+        })
+
+        it('should not tally votes if the state tree is not padded', async () => {
+            expect.assertions(2)
+            try {
+                await maciContract.proveVoteTallyBatch(
+                    0,
+                    0,
+                    0,
+                    [0, 0, 0, 0, 0, 0, 0, 0],
+                )
+            } catch (e) {
+                expect(e.message.endsWith('MACI: the state tree needs to be padded with blank leaves')).toBeTruthy()
+            }
+
+            await maciContract.padStateTree(3)
+
+            try {
+                await maciContract.proveVoteTallyBatch(
+                    0,
+                    0,
+                    0,
+                    [0, 0, 0, 0, 0, 0, 0, 0],
+                )
+            } catch (e) {
+                expect(e.message.endsWith('MACI: the state tree needs to be padded with blank leaves')).toBeFalsy()
+            }
         })
     })
 })

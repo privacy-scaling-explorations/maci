@@ -32,6 +32,7 @@ contract MACI is Ownable, DomainObjs {
     // The current state leaf batch index for the vote tally snark
     uint8 internal currentStateLeafIndex;
 
+    // The number of state leaves to tally per batch via the vote tally snark
     uint8 internal stateLeafBatchSize;
 
     // TODO: remove the update function if it isn't used
@@ -72,7 +73,7 @@ contract MACI is Ownable, DomainObjs {
     // The coordinator's public key
     PubKey public coordinatorPubKey;
 
-    uint256 numSignUps = 0;
+    uint256 public numSignUps = 0;
 
     // Events
     event SignUp(PubKey indexed _userPubKey);
@@ -104,8 +105,8 @@ contract MACI is Ownable, DomainObjs {
         PubKey memory _coordinatorPubKey
     ) Ownable() public {
 
-        messageBatchSize = _messageBatchSize;
         stateLeafBatchSize = _stateLeafBatchSize;
+        messageBatchSize = _messageBatchSize;
 
         // Set the verifier contracts
         batchUstVerifier = _batchUstVerifier;
@@ -443,6 +444,49 @@ contract MACI is Ownable, DomainObjs {
 
         return publicSignals;
     }
+    
+    function hashedBlankStateLeaf() public view returns (uint256) {
+        StateLeaf memory stateLeaf = StateLeaf({
+            pubKey: PubKey({
+                x: 0,
+                y: 0
+            }),
+            voteOptionTreeRoot: emptyVoteOptionTreeRoot,
+            voiceCreditBalance: initialVoiceCreditBalance,
+            nonce: 0
+        });
+
+        return hashStateLeaf(stateLeaf);
+    }
+
+    function padStateTree(
+        uint8 numRepetitions
+    ) 
+    onlyOwner
+    isAfterVotingDeadline
+    public {
+
+        require(numRepetitions < stateLeafBatchSize, "MACI: numRepetitions must be less than stateLeafBatchSize");
+
+        for (uint8 i = 0; i < numRepetitions; i++) {
+            if (numSignUps % stateLeafBatchSize == 0) {
+                break;
+            }
+
+            stateTree.insert(hashedBlankStateLeaf());
+
+            numSignUps ++;
+        }
+    }
+
+    modifier stateTreeIsPadded() {
+        require(
+            numSignUps % stateLeafBatchSize == 0,
+            "MACI: the state tree needs to be padded with blank leaves"
+        );
+
+        _;
+    }
 
     function proveVoteTallyBatch(
         // TODO: reveal the results of the final batch
@@ -450,7 +494,9 @@ contract MACI is Ownable, DomainObjs {
         uint256 _currentResultsCommitment,
         uint256 _newResultsCommitment,
         uint256[8] memory _proof
-    ) public {
+    ) 
+    stateTreeIsPadded
+    public {
 
         // Ensure that the batch # is within range
         require(
