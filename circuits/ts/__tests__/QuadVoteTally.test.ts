@@ -10,6 +10,7 @@ import {
     hashOne,
     hash,
     SnarkBigInt,
+    NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
 
 import {
@@ -25,7 +26,6 @@ import {
     genPublicSignals,
 } from 'libsemaphore'
 
-const ZERO_VALUE = 0
 
 describe('Quadratic vote tallying circuit', () => {
     let circuit 
@@ -38,7 +38,7 @@ describe('Quadratic vote tallying circuit', () => {
         // as set in quadVoteTally_test.circom
         const fullStateTreeDepth = config.maci.merkleTrees.stateTreeDepth
         const voteOptionTreeDepth = config.maci.merkleTrees.voteOptionTreeDepth
-        const intermediateStateTreeDepth = config.maci.merkleTrees.intermediateStateTreeDepth
+        const intermediateStateTreeDepth = config.maci.intermediateStateTreeDepth
         const numVoteOptions = 2 ** voteOptionTreeDepth
 
         // The depth at which the intermediate state tree leaves exist in the full state tree
@@ -61,7 +61,7 @@ describe('Quadratic vote tallying circuit', () => {
                 voteLeaves.push(votes)
             }
 
-            const fullStateTree = setupTree(fullStateTreeDepth, ZERO_VALUE)
+            const fullStateTree = setupTree(fullStateTreeDepth, NOTHING_UP_MY_SLEEVE)
 
             let stateLeaves: StateLeaf[] = []
             let voteOptionTrees = []
@@ -70,7 +70,7 @@ describe('Quadratic vote tallying circuit', () => {
             for (let i = 0; i < 2 ** fullStateTreeDepth; i++) {
 
                 // Insert the vote option leaves to calculate the voteOptionRoot
-                const voteOptionMT = setupTree(voteOptionTreeDepth, ZERO_VALUE)
+                const voteOptionMT = setupTree(voteOptionTreeDepth, NOTHING_UP_MY_SLEEVE)
 
                 for (let j = 0; j < voteLeaves[i].length; j++) {
                     voteOptionMT.insert(voteLeaves[i][j])
@@ -90,12 +90,12 @@ describe('Quadratic vote tallying circuit', () => {
             const batchSize = 2 ** intermediateStateTreeDepth
 
             // Compute the Merkle proof for the batch
-            const intermediateStateTree = setupTree(k, ZERO_VALUE)
+            const intermediateStateTree = setupTree(k, NOTHING_UP_MY_SLEEVE)
 
             // For each batch, create a tree of the leaves in the batch, and insert the
             // tree root into another tree
             for (let i = 0; i < fullStateTree.leaves.length; i += batchSize) {
-                const tree = setupTree(intermediateStateTreeDepth, ZERO_VALUE)
+                const tree = setupTree(intermediateStateTreeDepth, NOTHING_UP_MY_SLEEVE)
                 for (let j = 0; j < batchSize; j++) {
                     tree.insert(fullStateTree.leaves[i + j])
                 }
@@ -106,16 +106,17 @@ describe('Quadratic vote tallying circuit', () => {
 
             const intermediatePathElements = intermediateStateTree.getPathUpdate(intermediatePathIndex)[0]
 
-            // Set inputs
+            // The inputs to the circuit
             let circuitInputs = {}
 
+            // Set the voteLeaves and stateLeaves inputs
             for (let i = 0; i < batchSize; i++) {
                 for (let j = 0; j < numVoteOptions; j++) {
-                    circuitInputs['voteLeaves[' + i + '][' + j + ']'] = 
+                    circuitInputs[`voteLeaves[${i}][${j}]`] = 
                         voteLeaves[intermediatePathIndex * batchSize + i][j].toString()
                 }
 
-                circuitInputs['stateLeaves[' + i + ']'] =
+                circuitInputs[`stateLeaves[${i}]`] =
                     stateLeaves[intermediatePathIndex * batchSize + i].asCircuitInputs()
             }
 
