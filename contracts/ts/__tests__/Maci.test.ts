@@ -339,9 +339,12 @@ describe('MACI', () => {
             }
         })
 
-        it('nobody can sign up after the sign-up period passes', async () => {
+        it('nobody can sign up after the sign-up period is over', async () => {
             expect.assertions(1)
-            await timeTravel(deployer.provider, config.maci.signupDurationInSeconds + 1)
+            
+            // Move forward in time
+            await timeTravel(deployer.provider, config.maci.signUpDurationInSeconds + 1)
+
             try {
                 await maciContract.signUp(
                     user1.keypair.pubKey.asContractParam(),
@@ -357,6 +360,7 @@ describe('MACI', () => {
     describe('Publish messages', () => {
 
         it('publishMessage should add a leaf to the message tree', async () => {
+
             expect.assertions(3 * config.maci.messageBatchSize)
 
 
@@ -386,7 +390,6 @@ describe('MACI', () => {
     describe('Process messages', () => {
 
         it('batchProcessMessage should verify a proof and update the postSignUpStateRoot', async () => {
-            expect.assertions(7)
 
             let results: any[] = []
             let ecdhPublicKeyBatch: any[] = []
@@ -515,6 +518,21 @@ describe('MACI', () => {
 
             const isValid = verifyProof(verifyingKey, proof, publicSignals)
             expect(isValid).toBeTruthy()
+
+            try {
+                await maciContract.batchProcessMessage(
+                    stateTree.root.toString(),
+                    stateTreeBatchRoot.map((x) => x.toString()),
+                    ecdhPublicKeyBatch.map((x) => x.asContractParam()),
+                    formatProofForVerifierContract(proof),
+                    { gasLimit: 2000000 },
+                )
+            } catch (e) {
+                expect(e.message.endsWith('MACI: the voting period is not over')).toBeTruthy()
+            }
+
+            //// Move forward in time
+            //await timeTravel(deployer.provider, config.maci.votingDurationInSeconds + 1)
 
             const tx = await maciContract.batchProcessMessage(
                 stateTree.root.toString(),

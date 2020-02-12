@@ -58,8 +58,9 @@ contract MACI is Ownable, DomainObjs {
     // immediately upon deployment.
     uint256 public signUpTimestamp;
 
-    // Duration of the sign-up period, in seconds
+    // Duration of the sign-up and voting periods, in seconds
     uint256 public signUpDurationSeconds;
+    uint256 public votingDurationSeconds;
 
     // Address of the SignUpGatekeeper, a contract which determines whether a
     // user may sign up to vote
@@ -98,6 +99,7 @@ contract MACI is Ownable, DomainObjs {
         BatchUpdateStateTreeVerifier _batchUstVerifier,
         QuadVoteTallyVerifier _qvtVerifier,
         uint256 _signUpDurationSeconds,
+        uint256 _votingDurationSeconds,
         uint256 _initialVoiceCreditBalance,
         PubKey memory _coordinatorPubKey
     ) Ownable() public {
@@ -112,6 +114,7 @@ contract MACI is Ownable, DomainObjs {
         // Set the sign-up duration
         signUpTimestamp = now;
         signUpDurationSeconds = _signUpDurationSeconds;
+        votingDurationSeconds = _votingDurationSeconds;
         
         // Set the sign-up gatekeeper contract
         signUpGatekeeper = _signUpGatekeeper;
@@ -181,6 +184,31 @@ contract MACI is Ownable, DomainObjs {
     }
 
     /*
+     * Returns the deadline to vote
+     */
+    function calcVotingDeadline() public view returns (uint256) {
+        return calcSignUpDeadline() + votingDurationSeconds;
+    }
+
+    /*
+     * Ensures that the calling function only continues execution if the
+     * current block time is before the voting deadline.
+     */
+    modifier isBeforeVotingDeadline() {
+        require(now < calcVotingDeadline(), "MACI: the voting period has passed");
+        _;
+    }
+
+    /*
+     * Ensures that the calling function only continues execution if the
+     * current block time is after or equal to the voting deadline.
+     */
+    modifier isAfterVotingDeadline() {
+        require(now >= calcVotingDeadline(), "MACI: the voting period is not over");
+        _;
+    }
+
+    /*
      * Allows a user who is eligible to sign up to do so. The sign-up
      * gatekeeper will prevent double sign-ups or ineligible users from signing
      * up. This function will only succeed if the sign-up deadline has not
@@ -233,6 +261,7 @@ contract MACI is Ownable, DomainObjs {
         PubKey memory _encPubKey
     ) 
     isAfterSignUpDeadline
+    isBeforeVotingDeadline
     public {
 
         // When this function is called for the first time, set
@@ -259,6 +288,10 @@ contract MACI is Ownable, DomainObjs {
         emit PublishMessage(_message, _encPubKey);
     }
 
+    /*
+     * A helper function to convert an array of 8 uint256 values into the a, b,
+     * and c array values that the zk-SNARK verifier's verifyProof accepts.
+     */
     function unpackProof(
         uint256[8] memory _proof
     ) public pure returns (
@@ -325,7 +358,9 @@ contract MACI is Ownable, DomainObjs {
         uint256[] memory _stateTreeRoots,
         PubKey[] memory _ecdhPubKeys,
         uint256[8] memory _proof
-    ) public {
+    ) 
+    isAfterVotingDeadline
+    public {
         
         // Ensure that the array of state tree roots and the array of ECDH
         // public keys are of the correct length

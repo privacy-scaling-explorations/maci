@@ -87,7 +87,8 @@ const deployMaci = async (
         signUpTokenGatekeeperAddress,
         batchUstVerifierContract.contractAddress,
         quadVoteTallyVerifierContract.contractAddress,
-        config.maci.signupDurationInSeconds.toString(),
+        config.maci.signUpDurationInSeconds.toString(),
+        config.maci.votingDurationInSeconds.toString(),
         config.maci.initialVoiceCreditBalance,
         {
             x: coordinatorPublicKey[0].toString(),
