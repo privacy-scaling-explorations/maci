@@ -31,7 +31,9 @@ Even if Alice reveals the cleartext of her vote to Bob, she just needs to not sh
 Refer to the [Glossary](#Glossary) for defintions of terms.
 
 1. The coordinator deploys the MACI contract to an Ethereum blockchain and starts the sign-up period. The same transaction that deploys the contract also stores the value of an empty vote option tree.
-2. To sign up, each user creates an EdDSA keypair and invokes the contract's `signUp()` function. Alternatively, there is a mechanism where some contract function checks if the user owns a particular ERC721 token and adds them to the whitelist. It in turn generates a new leaf to the state tree and updates the state tree root. Additionally, the user must pay a deposit, which discourages them from sharing their EdDSA private key with a potential briber. The user may redeem this deposit anytime after the voting period starts.
+2. To sign up, each user creates an EdDSA keypair and invokes the contract's `signUp()` function. Alternatively, there is a mechanism where some contract function checks if the user owns a particular ERC721 token and adds them to the whitelist. It in turn generates a new leaf to the state tree and updates the state tree root.
+
+<!--Additionally, the user must pay a deposit, which discourages them from sharing their EdDSA private key with a potential briber. The user may redeem this deposit anytime after the voting period starts.-->
 
 3. The signup period ends after a fixed amount of time. From that point onwards, users may no longer invoke `signUp()` in this contract.
 
@@ -128,15 +130,17 @@ During a sign-up period, any user who owns a recgonised ERC721 token can invoke 
 
 Next, it adds a new leaf to the state tree, starting from index `1` (as index 0 is reserved for invalid leaves). This leaf is the hash of the public key, the user's voice credits, the nonce `0`, and the root of an empty vote option tree.
 
-Additionally, this function requires a deposit of `depositAmt` ETH to discourage users from sharing their EdDSA private keys with potential bribers.
+<!--Additionally, this function requires a deposit of `depositAmt` ETH to discourage users from sharing their EdDSA private keys with potential bribers.-->
 
 The sign-up period ends after a predefined deadline. A later version of MACI will allow ongoing sign-ups where state trees will be merged once per week.
 
+<!--
 #### `redeemDeposit(uint256 _signature)`
 
 This function returns the user's deposit if `_signature` is a signature of the user's Ethereum address signed with their EdDSA private key. It can only be invoked after the voting period finishes.
 
 This may need to accept a zk-SNARK proof in addition to the signature if there isn't a good Solidity implementation of EdDSA signature verification.
+-->
 
 #### `publishMessage(uint256 _msg, EddsaPubKey _encPubKey)`
 
