@@ -6,12 +6,13 @@ maci:
   signupDurationInSeconds: 3600 # 1 hour
   coordinatorPrivKey: "2922056879163902553431241761119057960280734584214105336279476766401963593688"
   messageBatchSize: 4
+  stateLeafBatchSize: 4
   voteOptionsMaxLeafIndex: 3
 
   merkleTrees:
-    messageTreeDepth: 4
     stateTreeDepth: 4
-    voteOptionTreeDepth: 2
+    messageTreeDepth: 4
+    voteOptionTreeDepth: 4
 
 chain:
   privateKeysPath: './'

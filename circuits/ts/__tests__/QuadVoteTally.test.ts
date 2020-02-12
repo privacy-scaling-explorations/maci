@@ -33,29 +33,11 @@ describe('Quadratic vote tallying circuit', () => {
         circuit = await compileAndLoadCircuit('quadVoteTally_test.circom')
     })
 
-    it('CalculateTotal should correctly sum a list of values', async () => {
-        const ctCircuit = await compileAndLoadCircuit('calculateTotal_test.circom')
-
-        const nums = [3, 3, 3, 3, 2, 4]
-        const sum = nums.reduce((a, b) => a + b, 0)
-
-        const circuitInputs = {
-            nums,
-        }
-
-        const witness = ctCircuit.calculateWitness(circuitInputs)
-        const resultIdx = ctCircuit.getSignalIdx('main.sum')
-        const result = witness[resultIdx]
-        expect(result.toString()).toEqual(sum.toString())
-    })
-
     it('QuadVoteTally should correctly tally a set of votes', async () => {
         // as set in quadVoteTally_test.circom
         const fullStateTreeDepth = 4
         const intermediateStateTreeDepth = 2
-        const voteOptionTreeDepth = 3
-        const messageLength = 5
-        const numUsers = 2 ** intermediateStateTreeDepth
+        const voteOptionTreeDepth = 4
         const numVoteOptions = 2 ** voteOptionTreeDepth
 
         // The depth at which the intermediate state tree leaves exist in the full state tree
@@ -124,9 +106,7 @@ describe('Quadratic vote tallying circuit', () => {
             const intermediatePathElements = intermediateStateTree.getPathUpdate(intermediatePathIndex)[0]
 
             // Set inputs
-            let circuitInputs = {
-                intermediatePathElements,
-            }
+            let circuitInputs = {}
 
             for (let i = 0; i < batchSize; i++) {
                 for (let j = 0; j < numVoteOptions; j++) {
@@ -152,6 +132,7 @@ describe('Quadratic vote tallying circuit', () => {
 
             const currentResultsCommitment = hash([...currentResults, currentResultsSalt])
 
+            circuitInputs['intermediatePathElements'] = intermediatePathElements
             circuitInputs['currentResults'] = currentResults
             circuitInputs['fullStateRoot'] = fullStateTree.root.toString()
             circuitInputs['intermediateStateRoot'] = intermediateStateTree.leaves[intermediatePathIndex].toString()

@@ -172,8 +172,6 @@ Only the coordinator may invoke this function.
 The parameters are:
 
 ```
-uint256 _intermediateStateRoot,
-uint8 _batchNum,
 uint256 _currentResultsCommitment,
 uint256 _newResultsCommitment,
 uint256[8] memory _proof

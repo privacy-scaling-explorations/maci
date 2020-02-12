@@ -22,8 +22,17 @@ contract MACI is Ownable, DomainObjs {
     BatchUpdateStateTreeVerifier internal batchUstVerifier;
     QuadVoteTallyVerifier internal qvtVerifier;
 
+    // The number of messages which the batch update state tree snark can
+    // process per batch
     uint8 internal messageBatchSize;
-    uint256 internal messageBatchStartIndex = 0;
+
+    // The current message batch index
+    uint256 internal currentMessageBatchIndex;
+
+    // The current state leaf batch index for the vote tally snark
+    uint8 internal currentStateLeafIndex;
+
+    uint8 internal stateLeafBatchSize;
 
     // TODO: remove the update function if it isn't used
     MerkleTree public messageTree;
@@ -39,6 +48,9 @@ contract MACI is Ownable, DomainObjs {
 
     uint256 public emptyVoteOptionTreeRoot;
     uint256 internal voteOptionsMaxLeafIndex;
+
+    // Cached results of 2 ** depth - 1 where depth is the state tree depth and
+    // message tree depth
     uint256 internal stateTreeMaxLeafIndex;
     uint256 internal messageTreeMaxLeafIndex;
 
@@ -69,11 +81,18 @@ contract MACI is Ownable, DomainObjs {
         PubKey indexed _encPubKey
     );
 
+    // This struct helps to reduce the number of parameters to the constructor
+    // and avoid a stack overflow error during compilation
+    struct TreeDepths {
+        uint8 stateTreeDepth;
+        uint8 messageTreeDepth;
+        uint8 voteOptionTreeDepth;
+    }
+
     constructor(
+        TreeDepths memory _treeDepths,
+        uint8 _stateLeafBatchSize,
         uint8 _messageBatchSize,
-        uint8 _messageTreeDepth,
-        uint8 _stateTreeDepth,
-        uint8 _voteOptionTreeDepth,
         uint8 _voteOptionsMaxLeafIndex,
         SignUpGatekeeper _signUpGatekeeper,
         BatchUpdateStateTreeVerifier _batchUstVerifier,
@@ -84,6 +103,7 @@ contract MACI is Ownable, DomainObjs {
     ) Ownable() public {
 
         messageBatchSize = _messageBatchSize;
+        stateLeafBatchSize = _stateLeafBatchSize;
 
         // Set the verifier contracts
         batchUstVerifier = _batchUstVerifier;
@@ -102,34 +122,33 @@ contract MACI is Ownable, DomainObjs {
         // Set the coordinator's public key
         coordinatorPubKey = _coordinatorPubKey;
 
-        // Create the message tree
-        messageTree = new MerkleTree(_messageTreeDepth, ZERO_VALUE);
-
-        // Create the state tree
-        stateTree = new MerkleTree(_stateTreeDepth, ZERO_VALUE);
+        // Create the message tree and state tree
+        messageTree = new MerkleTree(_treeDepths.messageTreeDepth, ZERO_VALUE);
+        stateTree = new MerkleTree(_treeDepths.stateTreeDepth, ZERO_VALUE);
 
         // Calculate the vote option tree root. If its depth is the same as
         // that of anothet tree, re-use the root.
-        if (_voteOptionTreeDepth == _messageTreeDepth) {
+        if (_treeDepths.voteOptionTreeDepth == _treeDepths.messageTreeDepth) {
             emptyVoteOptionTreeRoot = messageTree.getRoot();
-        } else if (_voteOptionTreeDepth == _stateTreeDepth) {
+        } else if (_treeDepths.voteOptionTreeDepth == _treeDepths.stateTreeDepth) {
             emptyVoteOptionTreeRoot = stateTree.getRoot();
         } else {
             // TODO: should the zero value for the vote option tree be just 0
             // instead of the nothing-up-my sleeve value? After all, each leaf
             // is the square root of the voice credits spent for the option.
-            MerkleTree tempTree = new MerkleTree(_voteOptionTreeDepth, ZERO_VALUE);
+            MerkleTree tempTree = new MerkleTree(_treeDepths.voteOptionTreeDepth, ZERO_VALUE);
             emptyVoteOptionTreeRoot = tempTree.getRoot();
         }
 
-        // Do a no-op in the batch UST snark if the user votes for an option
+        // The maximum number of leaves, minus one, of meaningful vote options.
+        // This allows the snark to do a no-op if the user votes for an option
         // which has no meaning attached to it
         voteOptionsMaxLeafIndex = _voteOptionsMaxLeafIndex;
 
         // Calculate and cache the max number of leaves for each tree.
         // They are used as public inputs to the batch update state tree snark.
-        messageTreeMaxLeafIndex = uint256(2) ** _messageTreeDepth - 1;
-        stateTreeMaxLeafIndex = uint256(2) ** _stateTreeDepth - 1;
+        messageTreeMaxLeafIndex = uint256(2) ** _treeDepths.messageTreeDepth - 1;
+        stateTreeMaxLeafIndex = uint256(2) ** _treeDepths.stateTreeDepth - 1;
 
         // Make subsequent insertions start from leaf #1, as leaf #0 is only
         // updated with random data if a command is invalid.
@@ -277,7 +296,7 @@ contract MACI is Ownable, DomainObjs {
         publicSignals[2] = coordinatorPubKey.y;
         publicSignals[3] = voteOptionsMaxLeafIndex;
         publicSignals[4] = messageTree.getRoot();
-        publicSignals[5] = messageBatchStartIndex;
+        publicSignals[5] = currentMessageBatchIndex;
         publicSignals[6] = numSignUps;
 
         for (uint8 i = 0; i < messageBatchSize; i++) {
@@ -320,10 +339,10 @@ contract MACI is Ownable, DomainObjs {
             "MACI: incorrect _ecdhPubKeys length"
         );
 
-        // Ensure that messageBatchStartIndex is within range
+        // Ensure that currentMessageBatchIndex is within range
         require(
-            messageBatchStartIndex <= messageTreeMaxLeafIndex - messageBatchSize,
-            "MACI: messageBatchStartIndex not within range"
+            currentMessageBatchIndex <= messageTreeMaxLeafIndex - messageBatchSize,
+            "MACI: currentMessageBatchIndex not within range"
         );
 
         // Assemble the public inputs to the snark
@@ -357,47 +376,65 @@ contract MACI is Ownable, DomainObjs {
 
         // Increase the message batch start index to ensure that each message
         // batch is processed in order
-        messageBatchStartIndex += messageBatchSize;
+        currentMessageBatchIndex += messageBatchSize;
 
         // The message batch start index should never exceed the maximum
         // allowed value
-        assert(messageBatchStartIndex <= messageTreeMaxLeafIndex - messageBatchSize);
+        assert(currentMessageBatchIndex <= messageTreeMaxLeafIndex - messageBatchSize);
 
         // Update the state root
         postSignUpStateRoot = _newStateRoot;
     }
 
+    uint256 internal currentQvtBatchNum;
+    uint256 internal currentResultsCommitment;
+
+    /*
+     * Returns the public signals required to verify a quadratic vote tally
+     * snark.
+     */
     function genQvtPublicSignals(
-        uint8 _batchNum,
         uint256 _intermediateStateRoot,
-        uint256 _currentResultsCommitment,
         uint256 _newResultsCommitment
     ) public view returns (uint256[5] memory) {
+
         uint256[5] memory publicSignals;
+
         publicSignals[0] = _newResultsCommitment;
         publicSignals[1] = postSignUpStateRoot;
-        publicSignals[2] = uint256(_batchNum);
+        publicSignals[2] = currentQvtBatchNum;
         publicSignals[3] = _intermediateStateRoot;
-        publicSignals[4] = _currentResultsCommitment;
+        publicSignals[4] = currentResultsCommitment;
 
         return publicSignals;
     }
 
     function proveVoteTallyBatch(
-        // TODO: _batchNum should be from storage and there should be a
-        // maxBatchNum set in the constructor
-        // TODO: reveal the results from the previous batch
-        uint8 _batchNum,
+        // TODO: reveal the results of the final batch
         uint256 _intermediateStateRoot,
         uint256 _currentResultsCommitment,
         uint256 _newResultsCommitment,
         uint256[8] memory _proof
     ) public {
 
+        // Ensure that the batch # is within range
+        require(
+            currentQvtBatchNum < numSignUps / stateLeafBatchSize,
+            "MACI: all batches have already been tallied"
+        );
+
+        // For the first batch of state leaves, the coordinator must provide
+        // the commitment to the current results (which happen to be salted
+        // blank results). Subsequent invocations of this function do not need
+        // to do so.
+        require(
+            currentQvtBatchNum != 0 || currentResultsCommitment == _currentResultsCommitment,
+            "MACI: missing current results commitment on the first invocation of proveVoteTallyBatch"
+        );
+
+        // Generate the public signals
         uint256[5] memory publicSignals = genQvtPublicSignals(
-            _batchNum,
             _intermediateStateRoot,
-            _currentResultsCommitment,
             _newResultsCommitment
         );
 
@@ -412,6 +449,12 @@ contract MACI is Ownable, DomainObjs {
         bool isValid = qvtVerifier.verifyProof(a, b, c, publicSignals);
 
         require(isValid == true, "MACI: invalid quadratic vote tally proof");
+
+        // Save the commitment to the new results for the next batch
+        currentResultsCommitment = _newResultsCommitment;
+
+        // Increment the batch #
+        currentQvtBatchNum ++;
     }
 
     function getMessageTreeRoot() public view returns (uint256) {

@@ -11,11 +11,13 @@ include "../node_modules/circomlib/circuits/mux2.circom";
 
 
 template UpdateStateTree(
-        depth,
-        vote_options_tree_depth
+    state_tree_depth,
+    message_tree_depth,
+    vote_options_tree_depth
 ) {
     // params:
-    //    depth: the depth of the state tree and the command tree
+    //    state_tree_depth: the depth of the state tree
+    //    message_tree_depth: the depth of the message tree
     //    vote_options_tree_depth: depth of the vote tree
 
     // Indices for convenience
@@ -80,23 +82,23 @@ template UpdateStateTree(
 
     // Message tree
     signal input msg_tree_root;
-    signal input msg_tree_path_elements[depth];
-    signal input msg_tree_path_index[depth];
+    signal input msg_tree_path_elements[message_tree_depth];
+    signal input msg_tree_path_index[message_tree_depth];
 
     // State tree
     signal private input state_tree_data_raw[state_tree_data_length];
 
     signal input state_tree_max_leaf_index;
     signal input state_tree_root;
-    signal private input state_tree_path_elements[depth];
-    signal private input state_tree_path_index[depth];
+    signal private input state_tree_path_elements[state_tree_depth];
+    signal private input state_tree_path_index[state_tree_depth];
 
     // Shared keys
     signal private input ecdh_private_key;
     signal input ecdh_public_key[2];
 
     var vote_options_max_leaves = 2 ** vote_options_tree_depth;
-    var state_tree_max_leaves = 2 ** depth;
+    var state_tree_max_leaves = 2 ** state_tree_depth;
 
     // Check 0: Make sure max indexes are valid
     // Assume that there is no more than 255 possible candidates to vote for
@@ -138,10 +140,10 @@ template UpdateStateTree(
     }
 
     // Check 3. Make sure the leaf exists in the msg tree
-    component msg_tree_leaf_exists = LeafExists(depth);
+    component msg_tree_leaf_exists = LeafExists(message_tree_depth);
     msg_tree_leaf_exists.root <== msg_tree_root;
     msg_tree_leaf_exists.leaf <== msg_hash.hash;
-    for (var i = 0; i < depth; i++) {
+    for (var i = 0; i < message_tree_depth; i++) {
         msg_tree_leaf_exists.path_elements[i] <== msg_tree_path_elements[i];
         msg_tree_leaf_exists.path_index[i] <== msg_tree_path_index[i];
     }
@@ -154,10 +156,10 @@ template UpdateStateTree(
         existing_state_tree_leaf_hash.in[i] <== state_tree_data_raw[i];
     }
 
-    component state_tree_valid = LeafExists(depth);
+    component state_tree_valid = LeafExists(state_tree_depth);
     state_tree_valid.root <== state_tree_root;
     state_tree_valid.leaf <== existing_state_tree_leaf_hash.hash;
-    for (var i = 0; i < depth; i++) {
+    for (var i = 0; i < state_tree_depth; i++) {
         state_tree_valid.path_elements[i] <== state_tree_path_elements[i];
         state_tree_valid.path_index[i] <== state_tree_path_index[i];
     }
@@ -253,18 +255,18 @@ template UpdateStateTree(
     valid_update.in[1] <== valid_signature.out + sufficient_vote_credits.out + correct_nonce.out + valid_state_leaf_index.out + valid_vote_options_leaf_index.out;
 
     // Compute the Merkle root of the new state tree
-    component new_state_tree = MerkleTreeUpdate(depth);
+    component new_state_tree = MerkleTreeUpdate(state_tree_depth);
     new_state_tree.leaf <== new_state_tree_leaf.hash;
-    for (var i = 0; i < depth; i++) {
+    for (var i = 0; i < state_tree_depth; i++) {
         new_state_tree.path_elements[i] <== state_tree_path_elements[i];
         new_state_tree.path_index[i] <== state_tree_path_index[i];
     }
 
     // Make sure selected_tree_hash exists in the tree
-    component new_state_tree_valid = LeafExists(depth);
+    component new_state_tree_valid = LeafExists(state_tree_depth);
     new_state_tree_valid.root <== new_state_tree.root;
     new_state_tree_valid.leaf <== new_state_tree_leaf.hash;
-    for (var i = 0; i < depth; i++) {
+    for (var i = 0; i < state_tree_depth; i++) {
         new_state_tree_valid.path_elements[i] <== state_tree_path_elements[i];
         new_state_tree_valid.path_index[i] <== state_tree_path_index[i];
     }

@@ -458,9 +458,7 @@ describe('MACI', () => {
             }
 
             const stateTreeMaxIndex = bigInt(stateTree.nextIndex - 1)
-            const voteOptionsMaxIndex = bigInt(
-                2 ** config.maci.merkleTrees.voteOptionTreeDepth - 1
-            )
+            const voteOptionsMaxIndex = config.maci.voteOptionsMaxLeafIndex
 
             const randomLeafRoot = stateTree.root
             const randomLeaf = genRandomSalt()

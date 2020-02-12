@@ -3,6 +3,9 @@ import * as path from 'path'
 import { Circuit } from 'snarkjs'
 const compiler = require('circom')
 
+import { str2BigInt } from './utils'
+import { config } from 'maci-config'
+
 import { 
     genBatchUstInputs,
     compileAndLoadCircuit,
@@ -19,6 +22,7 @@ import {
     Message,
     PubKey,
 } from 'maci-domainobjs'
+
 import {
     MerkleTree,
     setupTree,
@@ -43,10 +47,7 @@ import {
     parseVerifyingKeyJson,
 } from 'libsemaphore'
 
-import { config } from 'maci-config'
-import { str2BigInt } from './utils'
-
-jest.setTimeout(90000)
+jest.setTimeout(1200000)
 
 const provingKeyPath = path.join(__dirname, '../../build/batchUstPk.bin')
 const provingKey: SnarkProvingKey = fs.readFileSync(provingKeyPath)
@@ -68,7 +69,7 @@ const createUser = (
 
     const ephemeralKeypair = new Keypair()
 
-    const userVoteOptionTree = setupTree(2, NOTHING_UP_MY_SLEEVE)
+    const userVoteOptionTree = setupTree(voteOptionTreeDepth, NOTHING_UP_MY_SLEEVE)
     const voteWeight = bigInt(0)
     for (let i = 0; i < voteOptionLength; i++) {
         // Vote for no-one by default
@@ -96,6 +97,10 @@ const createUser = (
  * The trees returned are 
  */
 
+const stateTreeDepth = config.maci.merkleTrees.stateTreeDepth
+const messageTreeDepth = config.maci.merkleTrees.messageTreeDepth
+const voteOptionTreeDepth = config.maci.merkleTrees.voteOptionTreeDepth
+
 describe('Batch state tree root update verification circuit', () => {
     let circuit
 
@@ -109,12 +114,9 @@ describe('Batch state tree root update verification circuit', () => {
     })
 
     it('should process valid inputs correctly', async () => {
-        const treeDepth = 4
-        const voteOptionTreeDepth = 2
-
         // Construct the trees
-        const msgTree = setupTree(treeDepth, NOTHING_UP_MY_SLEEVE)
-        let stateTree = setupTree(treeDepth, NOTHING_UP_MY_SLEEVE)
+        const msgTree = setupTree(messageTreeDepth, NOTHING_UP_MY_SLEEVE)
+        let stateTree = setupTree(stateTreeDepth, NOTHING_UP_MY_SLEEVE)
 
         // Register users into the stateTree.
         // stateTree index 0 is a random leaf used to insert random data when the
@@ -300,11 +302,10 @@ describe('Batch state tree root update verification circuit', () => {
 
         expect(publicSignals).toHaveLength(19)
 
-        // Generate a proof. This is commented as it takes several minutes to run.
-        const proof = await genProof(witness, provingKey)
+        //// Generate a proof. This is commented as it takes several minutes to run.
+        //const proof = await genProof(witness, provingKey)
 
-        const isValid = verifyProof(verifyingKey, proof, publicSignals)
-        expect(isValid).toBeTruthy()
-        debugger
+        //const isValid = verifyProof(verifyingKey, proof, publicSignals)
+        //expect(isValid).toBeTruthy()
     })
 })
