@@ -79,9 +79,8 @@ const deployMaci = async (
         { 
             stateTreeDepth: config.maci.merkleTrees.stateTreeDepth,
             messageTreeDepth: config.maci.merkleTrees.messageTreeDepth,
-            voteOptionTreeDepth: config.maci.merkleTrees.voteOptionTreeDepth,
         },
-        2 ** config.maci.intermediateStateTreeDepth,
+        2 ** config.maci.merkleTrees.intermediateStateTreeDepth,
         config.maci.messageBatchSize,
         config.maci.voteOptionsMaxLeafIndex,
         signUpTokenGatekeeperAddress,

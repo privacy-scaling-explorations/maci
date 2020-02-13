@@ -47,7 +47,9 @@ contract MACI is Ownable, DomainObjs {
     // signals.
     uint256 public postSignUpStateRoot;
 
-    uint256 public emptyVoteOptionTreeRoot;
+    // For now, we hardcode the root of a tree with 16 leaves each with the
+    // value of hashOne(0)
+    uint256 public emptyVoteOptionTreeRoot = 21209824670086443676951025294328812549916724758546546871114494678033103541127;
     uint256 internal voteOptionsMaxLeafIndex;
 
     // Cached results of 2 ** depth - 1 where depth is the state tree depth and
@@ -88,7 +90,6 @@ contract MACI is Ownable, DomainObjs {
     struct TreeDepths {
         uint8 stateTreeDepth;
         uint8 messageTreeDepth;
-        uint8 voteOptionTreeDepth;
     }
 
     constructor(
@@ -129,20 +130,6 @@ contract MACI is Ownable, DomainObjs {
         // Create the message tree and state tree
         messageTree = new MerkleTree(_treeDepths.messageTreeDepth, ZERO_VALUE);
         stateTree = new MerkleTree(_treeDepths.stateTreeDepth, ZERO_VALUE);
-
-        // Calculate the vote option tree root. If its depth is the same as
-        // that of anothet tree, re-use the root.
-        if (_treeDepths.voteOptionTreeDepth == _treeDepths.messageTreeDepth) {
-            emptyVoteOptionTreeRoot = messageTree.getRoot();
-        } else if (_treeDepths.voteOptionTreeDepth == _treeDepths.stateTreeDepth) {
-            emptyVoteOptionTreeRoot = stateTree.getRoot();
-        } else {
-            // TODO: should the zero value for the vote option tree be just 0
-            // instead of the nothing-up-my sleeve value? After all, each leaf
-            // is the square root of the voice credits spent for the option.
-            MerkleTree tempTree = new MerkleTree(_treeDepths.voteOptionTreeDepth, ZERO_VALUE);
-            emptyVoteOptionTreeRoot = tempTree.getRoot();
-        }
 
         // The maximum number of leaves, minus one, of meaningful vote options.
         // This allows the snark to do a no-op if the user votes for an option
@@ -264,6 +251,7 @@ contract MACI is Ownable, DomainObjs {
     isAfterSignUpDeadline
     isBeforeVotingDeadline
     public {
+        require(numSignUps > 0, "MACI: nobody signed up");
 
         // When this function is called for the first time, set
         // postSignUpStateRoot to the last known state root, and destroy the
@@ -431,6 +419,7 @@ contract MACI is Ownable, DomainObjs {
      */
     function genQvtPublicSignals(
         uint256 _intermediateStateRoot,
+        uint256 _currentResultsCommitment,
         uint256 _newResultsCommitment
     ) public view returns (uint256[5] memory) {
 
@@ -440,7 +429,7 @@ contract MACI is Ownable, DomainObjs {
         publicSignals[1] = postSignUpStateRoot;
         publicSignals[2] = currentQvtBatchNum;
         publicSignals[3] = _intermediateStateRoot;
-        publicSignals[4] = currentResultsCommitment;
+        publicSignals[4] = _currentResultsCommitment;
 
         return publicSignals;
     }
@@ -489,18 +478,21 @@ contract MACI is Ownable, DomainObjs {
     }
 
     function proveVoteTallyBatch(
-        // TODO: reveal the results of the final batch
         uint256 _intermediateStateRoot,
         uint256 _currentResultsCommitment,
         uint256 _newResultsCommitment,
+        uint256[] memory _finalSaltedResults,
         uint256[8] memory _proof
     ) 
     stateTreeIsPadded
     public {
 
+        require(numSignUps > 0, "MACI: nobody signed up");
+        uint256 totalBatches = 1 + (numSignUps / stateLeafBatchSize);
+
         // Ensure that the batch # is within range
         require(
-            currentQvtBatchNum < numSignUps / stateLeafBatchSize,
+            currentQvtBatchNum < totalBatches,
             "MACI: all batches have already been tallied"
         );
 
@@ -509,13 +501,23 @@ contract MACI is Ownable, DomainObjs {
         // blank results). Subsequent invocations of this function do not need
         // to do so.
         require(
-            currentQvtBatchNum != 0 || currentResultsCommitment == _currentResultsCommitment,
+            currentQvtBatchNum != 0 || _currentResultsCommitment != 0,
             "MACI: missing current results commitment on the first invocation of proveVoteTallyBatch"
         );
+
+        // If the batch # is the final batch, reveal the final tallied results
+        if (currentQvtBatchNum == totalBatches - 1) {
+            uint256 hashed = hash(_finalSaltedResults);
+            require(
+                _newResultsCommitment == hashed,
+                "MACI: the hash of the salted final results provided does not match the commitment"
+            );
+        }
 
         // Generate the public signals
         uint256[5] memory publicSignals = genQvtPublicSignals(
             _intermediateStateRoot,
+            _currentResultsCommitment,
             _newResultsCommitment
         );
 

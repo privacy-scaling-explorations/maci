@@ -261,7 +261,7 @@ describe('Batch state tree root update verification circuit', () => {
 
         // After processing all commands, insert a random leaf
         const randomLeafRoot = stateTree.root
-        const randomLeaf = genRandomSalt()
+        const randomStateLeaf = StateLeaf.genRandomLeaf()
         const [randomLeafPathElements, _] = stateTree.getPathUpdate(0)
 
         const circuitInputs = genBatchUstInputs(
@@ -271,7 +271,7 @@ describe('Batch state tree root update verification circuit', () => {
             msgTree,
             msgTreeBatchPathElements,
             msgTreeBatchStartIndex,
-            randomLeaf,
+            randomStateLeaf,
             randomLeafRoot,
             randomLeafPathElements,
             voteOptionTreeBatchLeafRaw,
@@ -294,7 +294,7 @@ describe('Batch state tree root update verification circuit', () => {
         const circuitNewStateRoot = witness[idx].toString()
 
         // Update the state tree with a random leaf
-        stateTree.update(0, randomLeaf)
+        stateTree.update(0, randomStateLeaf.hash(), randomStateLeaf)
 
         expect(stateTree.root.toString()).toEqual(circuitNewStateRoot)
 

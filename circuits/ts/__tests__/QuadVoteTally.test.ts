@@ -38,7 +38,7 @@ describe('Quadratic vote tallying circuit', () => {
         // as set in quadVoteTally_test.circom
         const fullStateTreeDepth = config.maci.merkleTrees.stateTreeDepth
         const voteOptionTreeDepth = config.maci.merkleTrees.voteOptionTreeDepth
-        const intermediateStateTreeDepth = config.maci.intermediateStateTreeDepth
+        const intermediateStateTreeDepth = config.maci.merkleTrees.intermediateStateTreeDepth
         const numVoteOptions = 2 ** voteOptionTreeDepth
 
         // The depth at which the intermediate state tree leaves exist in the full state tree
@@ -73,7 +73,7 @@ describe('Quadratic vote tallying circuit', () => {
                 const voteOptionMT = setupTree(voteOptionTreeDepth, NOTHING_UP_MY_SLEEVE)
 
                 for (let j = 0; j < voteLeaves[i].length; j++) {
-                    voteOptionMT.insert(voteLeaves[i][j])
+                    voteOptionMT.insert(hashOne(voteLeaves[i][j]))
                 }
 
                 const keypair = new Keypair()
@@ -85,8 +85,6 @@ describe('Quadratic vote tallying circuit', () => {
                 fullStateTree.insert(stateLeaf.hash())
             }
 
-            // The leaves of the intermediate state tree (which are the roots of each batch)
-            let intermediateLeaves: SnarkBigInt[] = []
             const batchSize = 2 ** intermediateStateTreeDepth
 
             // Compute the Merkle proof for the batch
@@ -95,16 +93,13 @@ describe('Quadratic vote tallying circuit', () => {
             // For each batch, create a tree of the leaves in the batch, and insert the
             // tree root into another tree
             for (let i = 0; i < fullStateTree.leaves.length; i += batchSize) {
-                const tree = setupTree(intermediateStateTreeDepth, NOTHING_UP_MY_SLEEVE)
+                const batchTree = setupTree(intermediateStateTreeDepth, NOTHING_UP_MY_SLEEVE)
                 for (let j = 0; j < batchSize; j++) {
-                    tree.insert(fullStateTree.leaves[i + j])
+                    batchTree.insert(fullStateTree.leaves[i + j])
                 }
-                intermediateLeaves.push(tree.root)
 
-                intermediateStateTree.insert(tree.root)
+                intermediateStateTree.insert(batchTree.root)
             }
-
-            const intermediatePathElements = intermediateStateTree.getPathUpdate(intermediatePathIndex)[0]
 
             // The inputs to the circuit
             let circuitInputs = {}
@@ -120,7 +115,7 @@ describe('Quadratic vote tallying circuit', () => {
                     stateLeaves[intermediatePathIndex * batchSize + i].asCircuitInputs()
             }
 
-            // Calculate the commitment to the current results
+            // Calculate the current results
             let currentResults: SnarkBigInt[] = []
             for (let i = 0; i < numVoteOptions; i++) {
                 currentResults.push(bigInt(0))
@@ -134,10 +129,12 @@ describe('Quadratic vote tallying circuit', () => {
 
             const currentResultsCommitment = hash([...currentResults, currentResultsSalt])
 
-            circuitInputs['intermediatePathElements'] = intermediatePathElements
+            const [intermediatePathElements, _] = intermediateStateTree.getPathUpdate(intermediatePathIndex)
+
             circuitInputs['currentResults'] = currentResults
             circuitInputs['fullStateRoot'] = fullStateTree.root.toString()
             circuitInputs['intermediateStateRoot'] = intermediateStateTree.leaves[intermediatePathIndex].toString()
+            circuitInputs['intermediatePathElements'] = intermediatePathElements
             circuitInputs['intermediatePathIndex'] = intermediatePathIndex.toString()
             circuitInputs['newResultsSalt'] = salt.toString()
             circuitInputs['currentResultsSalt'] = currentResultsSalt.toString()

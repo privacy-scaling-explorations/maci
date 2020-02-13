@@ -13,6 +13,7 @@ import {
     Keypair,
     PubKey,
     Message,
+    StateLeaf,
 } from 'maci-domainobjs'
 
 const compileAndLoadCircuit = async (
@@ -29,7 +30,7 @@ const genBatchUstInputs = (
     msgTree: MerkleTree,
     msgTreeBatchPathElements: SnarkBigInt[],
     msgTreeBatchStartIndex: SnarkBigInt,
-    randomLeaf: SnarkBigInt,
+    randomStateLeaf: StateLeaf,
     randomLeafRoot: SnarkBigInt,
     randomLeafPathElements: SnarkBigInt[],
     voteOptionTreeBatchLeafRaw: SnarkBigInt[],
@@ -52,7 +53,7 @@ const genBatchUstInputs = (
         'msg_tree_root': msgTree.root,
         'msg_tree_path_elements': msgTreeBatchPathElements,
         'msg_tree_batch_start_index': msgTreeBatchStartIndex,
-        'random_leaf': randomLeaf,
+        'random_leaf': randomStateLeaf.hash(),
         'random_leaf_root': randomLeafRoot,
         'random_leaf_path_elements': randomLeafPathElements,
         'vote_options_leaf_raw': voteOptionTreeBatchLeafRaw,

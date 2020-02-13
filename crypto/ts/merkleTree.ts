@@ -137,11 +137,10 @@ class MerkleTree {
             throw new Error("Can't update leafIndex which hasn't been inserted yet!")
         }
 
-        // eslint-disable-next-line no-unused-vars
         const [path, _] = this.getPathUpdate(leafIndex)
 
         this.leaves[leafIndex] = leaf
-        this.leavesRaw[leafIndex] = rawValue || {} // or null?
+        this.leavesRaw[leafIndex] = rawValue
 
         const newTree = new MerkleTree(this.depth, this.zeroValue)
         for (let i = 0; i < this.leaves.length; i++) {
