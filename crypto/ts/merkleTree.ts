@@ -1,3 +1,4 @@
+import * as assert from 'assert'
 import {
     SnarkBigInt,
     hashLeftRight,
@@ -15,7 +16,7 @@ class MerkleTree {
      */
     public depth: number
     public zeroValue: SnarkBigInt
-    public leaves: any[] = []
+    public leaves: SnarkBigInt[] = []
     public leavesRaw: any[] = [] // Raw hash value of the leaves
     public leafNumber: number
     public zeros: any
@@ -32,11 +33,11 @@ class MerkleTree {
         this.leafNumber = Math.pow(2, depth)
 
         this.zeros = {
-            0: zeroValue
+            0: this.zeroValue
         }
 
         this.filledSubtrees = {
-            0: zeroValue
+            0: this.zeroValue
         }
 
         this.filledPaths = {
@@ -59,19 +60,16 @@ class MerkleTree {
 
     public copy(): MerkleTree {
         const tree = new MerkleTree(this.depth, this.zeroValue)
-        tree.leaves = this.leaves
-        tree.leavesRaw = this.leavesRaw
-        tree.leafNumber = this.leafNumber
-        tree.zeros = this.zeros
-        tree.filledSubtrees = this.filledSubtrees
-        tree.filledPaths = this.filledPaths
-        tree.root = this.root
-        tree.nextIndex = this.nextIndex
+        for (let i = 0; i < this.leaves.length; i++) {
+            tree.insert(this.leaves[i], this.leavesRaw[i])
+        }
+
+        assert(tree.root.equals(this.root))
 
         return tree
     }
 
-    public hash (values: any[]): SnarkBigInt {
+    public hash(values: any[]): SnarkBigInt {
         if (Array.isArray(values)) {
             return hash(values.map((x: any): SnarkBigInt => bigInt(x)))
         }
@@ -87,7 +85,7 @@ class MerkleTree {
     }
 
     /* Inserts a new value into the merkle tree */
-    public insert (leaf: SnarkBigInt, rawValue?: any) {
+    public insert(leaf: SnarkBigInt, rawValue?: any) {
         let curIdx = this.nextIndex
         this.nextIndex += 1
 
@@ -127,7 +125,7 @@ class MerkleTree {
     }
 
     /* Updates merkletree leaf at `leafIndex` with `newLeafValue` */
-    public update (
+    public update(
         _leafIndex: number | SnarkBigInt,
         leaf: SnarkBigInt,
         rawValue?: any,
@@ -142,84 +140,29 @@ class MerkleTree {
         // eslint-disable-next-line no-unused-vars
         const [path, _] = this.getPathUpdate(leafIndex)
 
-        this._update(
-            leafIndex,
-            leaf,
-            rawValue,
-            path
-        )
-    }
-
-    /*  _Verbose_ API to update the value of the leaf in the current tree.
-     *  The reason why its so verbose is because I wanted to maintain compatibility
-     *  with the merkletree smart contract obtained from semaphore.
-     *  (https://github.com/kobigurk/semaphore/blob/2933bce0e41c6d4df82b444b66b4e84793c90893/semaphorejs/contracts/MerkleTreeLib.sol)
-     *  It is also very expensive to update if we do it naively on the EVM
-     */
-    private _update (
-        leafIndex: number,
-        leaf: SnarkBigInt,
-        rawValue: object,
-        path: SnarkBigInt[],
-    ) {
-        if (leafIndex >= this.nextIndex) {
-            throw new Error("Can't update leafIndex which hasn't been inserted yet!")
-        }
-
-        let curIdx = leafIndex
-        let currentLevelHash = this.leaves[leafIndex]
-        let left
-        let right
-
-        for (let i = 0; i < this.depth; i++) {
-            if (curIdx % 2 === 0) {
-                left = currentLevelHash
-                right = path[i]
-            } else {
-                left = path[i]
-                right = currentLevelHash
-            }
-
-            currentLevelHash = this.hashLeftRight(left, right)
-            curIdx = Math.floor(curIdx / 2)
-        }
-
-        if (this.root !== currentLevelHash) {
-            throw new Error('MerkleTree: tree root / current level hash mismatch')
-        }
-
-        curIdx = leafIndex
-        currentLevelHash = leaf
-
-        for (let i = 0; i < this.depth; i++) {
-            if (curIdx % 2 === 0) {
-                left = currentLevelHash
-                right = path[i]
-
-                this.filledPaths[i][curIdx] = left
-                this.filledPaths[i][curIdx + 1] = right
-            } else {
-                left = path[i]
-                right = currentLevelHash
-
-                this.filledPaths[i][curIdx - 1] = left
-                this.filledPaths[i][curIdx] = right
-            }
-
-            currentLevelHash = this.hashLeftRight(left, right)
-            curIdx = Math.floor(curIdx / 2)
-        }
-
-        this.root = currentLevelHash
         this.leaves[leafIndex] = leaf
-        this.leavesRaw[leafIndex] = rawValue || {}
+        this.leavesRaw[leafIndex] = rawValue || {} // or null?
+
+        const newTree = new MerkleTree(this.depth, this.zeroValue)
+        for (let i = 0; i < this.leaves.length; i++) {
+            newTree.insert(this.leaves[i], this.leavesRaw[i])
+        }
+        
+        this.leaves = newTree.leaves
+        this.leavesRaw = newTree.leavesRaw
+        this.leafNumber = newTree.leafNumber
+        this.zeros = newTree.zeros
+        this.filledSubtrees = newTree.filledSubtrees
+        this.filledPaths = newTree.filledPaths
+        this.root = newTree.root
+        this.nextIndex = newTree.nextIndex
     }
 
     /*  Gets the path needed to construct a the tree root
      *  Used for quick verification on updates.
      *  Runs in O(log(N)), where N is the number of leaves
      */
-    getPathUpdate (_leafIndex: number | SnarkBigInt): [SnarkBigInt[], number[]] {
+    getPathUpdate(_leafIndex: number | SnarkBigInt): [SnarkBigInt[], number[]] {
 
         const leafIndex = parseInt(_leafIndex.toString(), 10)
 
