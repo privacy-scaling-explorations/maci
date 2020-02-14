@@ -52,6 +52,13 @@ contract MACI is Ownable, DomainObjs {
     uint256 public emptyVoteOptionTreeRoot = 21209824670086443676951025294328812549916724758546546871114494678033103541127;
     uint256 internal voteOptionsMaxLeafIndex;
 
+    // The batch # for the quote tally function
+    uint256 internal currentQvtBatchNum;
+
+    // A commitment to a 0-salted list of 0-results (currently hardcoded
+    // to 16 + 1 elements)
+    uint256 internal currentResultsCommitment = 13168338010003725451955781056997656821184424038696131784497995360771729497580;
+
     // Cached results of 2 ** depth - 1 where depth is the state tree depth and
     // message tree depth
     uint256 internal stateTreeMaxLeafIndex;
@@ -254,10 +261,10 @@ contract MACI is Ownable, DomainObjs {
         require(numSignUps > 0, "MACI: nobody signed up");
 
         // When this function is called for the first time, set
-        // postSignUpStateRoot to the last known state root, and destroy the
-        // state tree contract to free up space. We do so as the
-        // batchProcessMessage function can only update the state root as a
-        // variable and has no way to use MerkleTree.insert() anyway.
+        // postSignUpStateRoot to the last known state root.
+        // We do so as the batchProcessMessage function can only update the
+        // state root as a variable and has no way to use MerkleTree.insert()
+        // anyway.
         if (postSignUpStateRoot == 0) {
             // It is exceedingly improbable that the zero value is a tree root
             assert(postSignUpStateRoot != stateTree.getRoot());
@@ -410,16 +417,12 @@ contract MACI is Ownable, DomainObjs {
         postSignUpStateRoot = _newStateRoot;
     }
 
-    uint256 internal currentQvtBatchNum;
-    uint256 internal currentResultsCommitment;
-
     /*
      * Returns the public signals required to verify a quadratic vote tally
      * snark.
      */
     function genQvtPublicSignals(
         uint256 _intermediateStateRoot,
-        uint256 _currentResultsCommitment,
         uint256 _newResultsCommitment
     ) public view returns (uint256[5] memory) {
 
@@ -429,7 +432,7 @@ contract MACI is Ownable, DomainObjs {
         publicSignals[1] = postSignUpStateRoot;
         publicSignals[2] = currentQvtBatchNum;
         publicSignals[3] = _intermediateStateRoot;
-        publicSignals[4] = _currentResultsCommitment;
+        publicSignals[4] = currentResultsCommitment;
 
         return publicSignals;
     }
@@ -452,7 +455,7 @@ contract MACI is Ownable, DomainObjs {
         uint8 numRepetitions
     ) 
     onlyOwner
-    isAfterVotingDeadline
+    isAfterSignUpDeadline
     public {
 
         require(numRepetitions < stateLeafBatchSize, "MACI: numRepetitions must be less than stateLeafBatchSize");
@@ -470,7 +473,7 @@ contract MACI is Ownable, DomainObjs {
 
     modifier stateTreeIsPadded() {
         require(
-            numSignUps % stateLeafBatchSize == 0,
+            (1 + numSignUps) % stateLeafBatchSize == 0,
             "MACI: the state tree needs to be padded with blank leaves"
         );
 
@@ -479,7 +482,6 @@ contract MACI is Ownable, DomainObjs {
 
     function proveVoteTallyBatch(
         uint256 _intermediateStateRoot,
-        uint256 _currentResultsCommitment,
         uint256 _newResultsCommitment,
         uint256[] memory _finalSaltedResults,
         uint256[8] memory _proof
@@ -496,15 +498,6 @@ contract MACI is Ownable, DomainObjs {
             "MACI: all batches have already been tallied"
         );
 
-        // For the first batch of state leaves, the coordinator must provide
-        // the commitment to the current results (which happen to be salted
-        // blank results). Subsequent invocations of this function do not need
-        // to do so.
-        require(
-            currentQvtBatchNum != 0 || _currentResultsCommitment != 0,
-            "MACI: missing current results commitment on the first invocation of proveVoteTallyBatch"
-        );
-
         // If the batch # is the final batch, reveal the final tallied results
         if (currentQvtBatchNum == totalBatches - 1) {
             uint256 hashed = hash(_finalSaltedResults);
@@ -517,7 +510,6 @@ contract MACI is Ownable, DomainObjs {
         // Generate the public signals
         uint256[5] memory publicSignals = genQvtPublicSignals(
             _intermediateStateRoot,
-            _currentResultsCommitment,
             _newResultsCommitment
         );
 
