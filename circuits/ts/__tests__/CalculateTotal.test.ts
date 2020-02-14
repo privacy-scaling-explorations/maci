@@ -26,14 +26,14 @@ import {
 
 const ZERO_VALUE = 0
 
-describe('Quadratic vote tallying circuit', () => {
+describe('CalculateTotal circuit', () => {
     let circuit 
 
     beforeAll(async () => {
         circuit = await compileAndLoadCircuit('quadVoteTally_test.circom')
     })
 
-    it('CalculateTotal should correctly sum a list of values', async () => {
+    it('should correctly sum a list of values', async () => {
         const ctCircuit = await compileAndLoadCircuit('calculateTotal_test.circom')
 
         let nums: number[] = []
