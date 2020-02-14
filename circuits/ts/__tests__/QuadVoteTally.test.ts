@@ -1,6 +1,7 @@
 import * as path from 'path'
 import { Circuit } from 'snarkjs'
 const compiler = require('circom')
+import { config } from 'maci-config'
 import {
     setupTree,
     genRandomSalt,
@@ -9,13 +10,22 @@ import {
     hashOne,
     hash,
     SnarkBigInt,
+    NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
+
+import {
+    Keypair,
+    StateLeaf,
+} from 'maci-domainobjs'
 
 import {
     compileAndLoadCircuit,
 } from '../'
 
-const ZERO_VALUE = 0
+import {
+    genPublicSignals,
+} from 'libsemaphore'
+
 
 describe('Quadratic vote tallying circuit', () => {
     let circuit 
@@ -24,34 +34,17 @@ describe('Quadratic vote tallying circuit', () => {
         circuit = await compileAndLoadCircuit('quadVoteTally_test.circom')
     })
 
-    it('CalculateTotal should correctly sum a list of values', async () => {
-        const circuitDef = await compiler(path.join(__dirname, 'circuits', '../../../circom/test/calculateTotal_test.circom'))
-        const ctCircuit = new Circuit(circuitDef)
-
-        const nums = [3, 3, 3, 3, 2, 4]
-        const sum = nums.reduce((a, b) => a + b, 0)
-
-        const circuitInputs = {
-            nums,
-        }
-
-        const witness = ctCircuit.calculateWitness(circuitInputs)
-        const resultIdx = ctCircuit.getSignalIdx('main.sum')
-        const result = witness[resultIdx]
-        expect(result.toString()).toEqual(sum.toString())
-    })
-
     it('QuadVoteTally should correctly tally a set of votes', async () => {
         // as set in quadVoteTally_test.circom
-        const fullStateTreeDepth = 4
-        const intermediateStateTreeDepth = 2
-        const voteOptionTreeDepth = 3
-        const messageLength = 5
-        const numUsers = 2 ** intermediateStateTreeDepth
+        const fullStateTreeDepth = config.maci.merkleTrees.stateTreeDepth
+        const voteOptionTreeDepth = config.maci.merkleTrees.voteOptionTreeDepth
+        const intermediateStateTreeDepth = config.maci.merkleTrees.intermediateStateTreeDepth
         const numVoteOptions = 2 ** voteOptionTreeDepth
 
         // The depth at which the intermediate state tree leaves exist in the full state tree
         const k = fullStateTreeDepth - intermediateStateTreeDepth
+
+        expect.assertions(7 * 2 ** k)
 
         // The batch #
         for (let intermediatePathIndex = 0; intermediatePathIndex < 2 ** k; intermediatePathIndex ++) {
@@ -68,67 +61,61 @@ describe('Quadratic vote tallying circuit', () => {
                 voteLeaves.push(votes)
             }
 
-            const fullStateTree = setupTree(fullStateTreeDepth, ZERO_VALUE)
+            const fullStateTree = setupTree(fullStateTreeDepth, NOTHING_UP_MY_SLEEVE)
 
-            let rawStateLeaves: Plaintext[] = []
+            let stateLeaves: StateLeaf[] = []
             let voteOptionTrees = []
 
             // Populate the state tree
             for (let i = 0; i < 2 ** fullStateTreeDepth; i++) {
 
                 // Insert the vote option leaves to calculate the voteOptionRoot
-                const voteOptionMT = setupTree(voteOptionTreeDepth, ZERO_VALUE)
+                const voteOptionMT = setupTree(voteOptionTreeDepth, NOTHING_UP_MY_SLEEVE)
 
                 for (let j = 0; j < voteLeaves[i].length; j++) {
-                    voteOptionMT.insert(voteLeaves[i][j])
+                    voteOptionMT.insert(hashOne(voteLeaves[i][j]))
                 }
 
-                const rawStateLeaf = [0, 0, voteOptionMT.root, 0, 0]
-                rawStateLeaves.push(rawStateLeaf)
+                const keypair = new Keypair()
+
+                const stateLeaf = new StateLeaf(keypair.pubKey, voteOptionMT.root, 0, 0)
+                stateLeaves.push(stateLeaf)
 
                 // Insert the state leaf
-                fullStateTree.insert(hash(rawStateLeaf))
+                fullStateTree.insert(stateLeaf.hash())
             }
 
-            // The leaves of the intermediate state tree (which are the roots of each batch)
-            let intermediateLeaves: SnarkBigInt[] = []
             const batchSize = 2 ** intermediateStateTreeDepth
 
             // Compute the Merkle proof for the batch
-            const intermediateStateTree = setupTree(k, ZERO_VALUE)
+            const intermediateStateTree = setupTree(k, NOTHING_UP_MY_SLEEVE)
 
             // For each batch, create a tree of the leaves in the batch, and insert the
             // tree root into another tree
             for (let i = 0; i < fullStateTree.leaves.length; i += batchSize) {
-                const tree = setupTree(intermediateStateTreeDepth, ZERO_VALUE)
+                const batchTree = setupTree(intermediateStateTreeDepth, NOTHING_UP_MY_SLEEVE)
                 for (let j = 0; j < batchSize; j++) {
-                    tree.insert(fullStateTree.leaves[i + j])
+                    batchTree.insert(fullStateTree.leaves[i + j])
                 }
-                intermediateLeaves.push(tree.root)
 
-                intermediateStateTree.insert(tree.root)
+                intermediateStateTree.insert(batchTree.root)
             }
 
-            const intermediatePathElements = intermediateStateTree.getPathUpdate(intermediatePathIndex)[0]
+            // The inputs to the circuit
+            let circuitInputs = {}
 
-            // Set inputs
-            let circuitInputs = {
-                intermediatePathElements,
-            }
-
+            // Set the voteLeaves and stateLeaves inputs
             for (let i = 0; i < batchSize; i++) {
                 for (let j = 0; j < numVoteOptions; j++) {
-                    circuitInputs['voteLeaves[' + i + '][' + j + ']'] = 
+                    circuitInputs[`voteLeaves[${i}][${j}]`] = 
                         voteLeaves[intermediatePathIndex * batchSize + i][j].toString()
                 }
 
-                for (let j = 0; j < messageLength; j++) {
-                    circuitInputs['stateLeaves[' + i + '][' + j + ']'] =
-                        rawStateLeaves[intermediatePathIndex * batchSize + i][j].toString()
-                }
+                circuitInputs[`stateLeaves[${i}]`] =
+                    stateLeaves[intermediatePathIndex * batchSize + i].asCircuitInputs()
             }
 
-            // Calculate the commitment to the current results
+            // Calculate the current results
             let currentResults: SnarkBigInt[] = []
             for (let i = 0; i < numVoteOptions; i++) {
                 currentResults.push(bigInt(0))
@@ -142,9 +129,12 @@ describe('Quadratic vote tallying circuit', () => {
 
             const currentResultsCommitment = hash([...currentResults, currentResultsSalt])
 
+            const [intermediatePathElements, _] = intermediateStateTree.getPathUpdate(intermediatePathIndex)
+
             circuitInputs['currentResults'] = currentResults
             circuitInputs['fullStateRoot'] = fullStateTree.root.toString()
             circuitInputs['intermediateStateRoot'] = intermediateStateTree.leaves[intermediatePathIndex].toString()
+            circuitInputs['intermediatePathElements'] = intermediatePathElements
             circuitInputs['intermediatePathIndex'] = intermediatePathIndex.toString()
             circuitInputs['newResultsSalt'] = salt.toString()
             circuitInputs['currentResultsSalt'] = currentResultsSalt.toString()
@@ -169,6 +159,15 @@ describe('Quadratic vote tallying circuit', () => {
             const result = witness[circuit.getSignalIdx('main.newResultsCommitment')]
             const expectedCommitment = hash([...expected, salt])
             expect(result.toString()).toEqual(expectedCommitment.toString())
+
+            const publicSignals = genPublicSignals(witness, circuit)
+            expect(publicSignals).toHaveLength(5)
+
+            expect(publicSignals[0].toString()).toEqual(expectedCommitment.toString())
+            expect(publicSignals[1].toString()).toEqual(fullStateTree.root.toString())
+            expect(publicSignals[2].toString()).toEqual(intermediatePathIndex.toString())
+            expect(publicSignals[3].toString()).toEqual(intermediateStateTree.leaves[intermediatePathIndex].toString())
+            expect(publicSignals[4].toString()).toEqual(currentResultsCommitment.toString())
         }
     })
 })

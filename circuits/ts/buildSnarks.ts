@@ -60,7 +60,7 @@ const main = async () => {
     parser.addArgument(
         ['-r', '--override'],
         {
-            help: 'The filepath to save the Solidity verifier contract',
+            help: 'Override existing files if set to true; otherwise (and by default), skip generation if a file already exists',
             action: 'storeTrue',
             required: false,
             argumentDefault: false,
@@ -77,13 +77,13 @@ const main = async () => {
 
 
     const args = parser.parseArgs()
-    const inputFile = args.input
-    const circuitJsonOut = args.json_out
     const pkOut = args.pk_out
     const vkOut = args.vk_out
     const solOut = args.sol_out
-    const verifierName = args.verifier_name
+    const inputFile = args.input
     const override = args.override
+    const circuitJsonOut = args.json_out
+    const verifierName = args.verifier_name
 
     // Check if the input circom file exists
     const inputFileExists = fileExists(inputFile)
@@ -99,6 +99,7 @@ const main = async () => {
 
     // Check if the circuitJsonOut file exists and if we should not override files
     const circuitJsonOutFileExists = fileExists(circuitJsonOut)
+
     if (!override && circuitJsonOutFileExists) {
         console.log(circuitJsonOut, 'exists. Skipping compilation.')
     } else {
@@ -109,29 +110,41 @@ const main = async () => {
     // Check if the pkOut and vkOut files exist and if we should not override files
     const pkOutFileExists = fileExists(pkOut)
     const vkOutFileExists = fileExists(vkOut)
+
     if (!override && pkOutFileExists && vkOutFileExists) {
+
         console.log('Proving and verification keys exist. Skipping setup.')
+
     } else {
+
         console.log('Generating proving and verification keys...')
         const tempPkJsonPath = path.join(tmpDir, Date.now().toString() + 'pk.json')
-        shell.exec(`snarkjs setup -c ${circuitJsonOut} --protocol groth --pk ${tempPkJsonPath} --vk ${vkOut}`)
+        shell.exec(
+            `snarkjs setup -c ${circuitJsonOut} --protocol groth --pk ${tempPkJsonPath} --vk ${vkOut}`
+        )
 
         const buildpkeyFilePath = path.join(
             __dirname,
             '..',
             './node_modules/websnark/tools/buildpkey.js',
         )
+
         const cmd = `node ${buildpkeyFilePath} -i ${tempPkJsonPath} -o ${pkOut}`
         shell.exec(cmd)
         shell.rm('-f', tempPkJsonPath)
+
         console.log('Generated', pkOut, 'and', vkOut)
     }
 
     // Check if the solOut file exists and if we should not override files
     const solOutFileExists = fileExists(solOut)
+
     if (!override && solOutFileExists) {
+
         console.log('Solidity verifier exists. Skipping generation.')
+
     } else {
+
         console.log('Generating Solidity verifier...')
         const cmd = `snarkjs generateverifier --vk ${vkOut} -v ${solOut}`
         shell.exec(cmd)
@@ -139,7 +152,10 @@ const main = async () => {
         // Replace the name of the verifier contract with the specified name as
         // we have two verifier contracts and we want to avoid conflicts
         const contractSource = fs.readFileSync(solOut).toString()
-        const newSource = contractSource.replace('\ncontract Verifier {', `\ncontract ${verifierName} {`)
+        const newSource = contractSource.replace(
+            '\ncontract Verifier {', `\ncontract ${verifierName} {`,
+        )
+
         fs.writeFileSync(solOut, newSource)
     }
 }

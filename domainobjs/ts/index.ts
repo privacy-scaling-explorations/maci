@@ -196,6 +196,15 @@ class StateLeaf implements IStateLeaf {
         )
     }
 
+    public static genRandomLeaf() {
+        return new StateLeaf(
+            new PubKey([genRandomSalt(), genRandomSalt()]),
+            genRandomSalt(),
+            genRandomSalt(),
+            genRandomSalt(),
+        )
+    }
+
     private asArray = (): SnarkBigInt[] => {
 
         return [

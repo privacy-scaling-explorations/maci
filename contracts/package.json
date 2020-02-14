@@ -13,7 +13,7 @@
         "test-mt": "jest MerkleTree.test.ts",
         "test-mt-debug": "node --inspect-brk ./node_modules/.bin/jest MerkleTree.test.ts",
         "test-maci": "NODE_OPTIONS=--max-old-space-size=4096 jest Maci.test.ts",
-        "test-maci-debug": "node --inspect-brk ./node_modules/.bin/jest Maci.test.ts",
+        "test-maci-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest Maci.test.ts",
         "test-hasher": "jest Hasher.test.ts",
         "test-hasher-debug": "node --inspect-brk ./node_modules/.bin/jest Hasher.test.ts"
     },

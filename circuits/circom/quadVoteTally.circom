@@ -171,15 +171,22 @@ template QuadVoteTally(
         voteOptionSubtotals[i].nums[0] <== mux[i].out;
     }
 
+    component voteLeafHashers[numUsers - 1][numVoteOptions];
+
     for (i = 1; i < numUsers; i++) {
         //  Note that we ignore user 0 (leaf 0 of the state tree) which
         //  only contains random data
 
         for (j = 0; j < numVoteOptions; j++) {
             // Ensure that the voteLeaves for this user is correct (such that
-            // when each vote leaf is inserted into an MT, the Merkle root
+            // when each hashed vote leaf is inserted into an MT, the Merkle root
             // matches the `voteOptionTreeRoot` field of the state leaf)
-            voteOptionRootChecker[i].leaves[j] <== voteLeaves[i][j];
+
+            voteLeafHashers[i-1][j] = Hasher(1);
+            voteLeafHashers[i-1][j].key <== 0;
+            voteLeafHashers[i-1][j].in[0] <== voteLeaves[i][j];
+
+            voteOptionRootChecker[i].leaves[j] <== voteLeafHashers[i-1][j].hash;
 
             // Calculate the sum of votes for each option.
             voteOptionSubtotals[j].nums[i] <== voteLeaves[i][j];

@@ -7,6 +7,6 @@ cd "$(dirname "$0")"
 mkdir -p ../build
 cd ../build
 
-find ../circom -type f -exec md5sum {} \; | sort -k 2 | md5sum > ./.snark_checksum
+find ../circom -not -path "../circom/test/*" -type f -exec md5sum {} \; | sort -k 2 | md5sum > .snark_checksum
 echo 'snark checksum:'
 cat .snark_checksum

@@ -38,16 +38,23 @@ const getUpdateStateTreeParams = async (
 ) => {
 
     // Construct the trees
-    const msgTree = setupTree(4, NOTHING_UP_MY_SLEEVE)
-    const stateTree = setupTree(4, NOTHING_UP_MY_SLEEVE)
+    const stateTree = setupTree(
+        config.maci.merkleTrees.stateTreeDepth,
+        NOTHING_UP_MY_SLEEVE,
+    )
+    const msgTree = setupTree(
+        config.maci.merkleTrees.messageTreeDepth,
+        NOTHING_UP_MY_SLEEVE,
+    )
+    const user1VoteOptionTree = setupTree(
+        config.maci.merkleTrees.voteOptionTreeDepth, 
+        NOTHING_UP_MY_SLEEVE,
+    )
 
     // Register users into the stateTree.
     // stateTree index 0 is a random leaf used to insert random data when the
     // decryption fails
     stateTree.insert(hashOne(str2BigInt('random data')))
-
-    // User 1's vote option tree
-    const user1VoteOptionTree = setupTree(2, NOTHING_UP_MY_SLEEVE)
 
     // Insert this user's votes into the vote option tree
 

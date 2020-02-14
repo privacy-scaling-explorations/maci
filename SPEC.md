@@ -31,7 +31,9 @@ Even if Alice reveals the cleartext of her vote to Bob, she just needs to not sh
 Refer to the [Glossary](#Glossary) for defintions of terms.
 
 1. The coordinator deploys the MACI contract to an Ethereum blockchain and starts the sign-up period. The same transaction that deploys the contract also stores the value of an empty vote option tree.
-2. To sign up, each user creates an EdDSA keypair and invokes the contract's `signUp()` function. Alternatively, there is a mechanism where some contract function checks if the user owns a particular ERC721 token and adds them to the whitelist. It in turn generates a new leaf to the state tree and updates the state tree root. Additionally, the user must pay a deposit, which discourages them from sharing their EdDSA private key with a potential briber. The user may redeem this deposit anytime after the voting period starts.
+2. To sign up, each user creates an EdDSA keypair and invokes the contract's `signUp()` function. Alternatively, there is a mechanism where some contract function checks if the user owns a particular ERC721 token and adds them to the whitelist. It in turn generates a new leaf to the state tree and updates the state tree root.
+
+<!--Additionally, the user must pay a deposit, which discourages them from sharing their EdDSA private key with a potential briber. The user may redeem this deposit anytime after the voting period starts.-->
 
 3. The signup period ends after a fixed amount of time. From that point onwards, users may no longer invoke `signUp()` in this contract.
 
@@ -128,15 +130,17 @@ During a sign-up period, any user who owns a recgonised ERC721 token can invoke 
 
 Next, it adds a new leaf to the state tree, starting from index `1` (as index 0 is reserved for invalid leaves). This leaf is the hash of the public key, the user's voice credits, the nonce `0`, and the root of an empty vote option tree.
 
-Additionally, this function requires a deposit of `depositAmt` ETH to discourage users from sharing their EdDSA private keys with potential bribers.
+<!--Additionally, this function requires a deposit of `depositAmt` ETH to discourage users from sharing their EdDSA private keys with potential bribers.-->
 
 The sign-up period ends after a predefined deadline. A later version of MACI will allow ongoing sign-ups where state trees will be merged once per week.
 
+<!--
 #### `redeemDeposit(uint256 _signature)`
 
 This function returns the user's deposit if `_signature` is a signature of the user's Ethereum address signed with their EdDSA private key. It can only be invoked after the voting period finishes.
 
 This may need to accept a zk-SNARK proof in addition to the signature if there isn't a good Solidity implementation of EdDSA signature verification.
+-->
 
 #### `publishMessage(uint256 _msg, EddsaPubKey _encPubKey)`
 
@@ -167,20 +171,22 @@ This function should, however, only do so if the processed message counter indic
 
 Only the coordinator may invoke this function.
 
-#### `proveVoteTally()`
+#### `proveVoteTallyBatch()`
 
 The parameters are:
 
 ```
-uint256[2] a,
-uint256[2][2] b,
-uint256[2] c,
-uint256[n] results
+uint256 _intermediateStateRoot,
+uint256 _newResultsCommitment,
+uint256[] memory _finalSaltedResults,
+uint256[8] memory _proof
 ```
 
 where `n` is the number of vote options.
 
-This function verifies the zk-SNARK proof (`a`, `b`, and `c`), with the state root in the contract and the given list of tallied votes (`results`) as public inputs. This allows anyone to verify that the vote tally results are correct. 
+This allows the coordinator to prove the correctness of their vote tally (in `_finalSaltedResults`). They do this in batches of state leaves. Each batch of state leaves is accumulated into an intermediate state root, and the Merkle root of all the intermediate state roots is the full state root. The proof shows that the result of adding the votes in the current batch to the culmulative results is computed correctly, but hides the results by salting and hashing them.
+
+`_finalSaltedResults` can be any value but for the final batch, it must be the correct quadratic vote tally.
 
 ### State leaves
 
@@ -485,15 +491,17 @@ For instance, if a user has 99 voice credits, they may spend them this way (each
 | B | 25 |
 | C | 64 |
 
-As seen above, even though the user had a disproportionate preference for option C (64 voice credits), their impact on the tallied vote (8 votes) was merely the square root of the voice credits they had spent. This prevents them from having an outsized influence on the results simply by virtue of their willingness to spend as many voice credits on that option as they had.
-
-Additionally, we consider that votes are cumulative. This means that the user spent 10 voice credits on option A.
+The outcome is as such:
 
 | Option | Tallied votes |
 |-|-|
 | A | 3.16 |
 | B | 5 |
 | C | 8 |
+
+Even though the user has a disproportionate preference for option C (64 voice credits), their impact on the tallied vote (8 votes) is merely the square root of the voice credits they have spent. This prevents them from having an outsized influence on the results simply by virtue of their willingness to spend as many voice credits on that option as they had.
+
+Additionally, we consider that votes are cumulative. This means that the user spent 10 voice credits on option A.
 
 The MACI contract's `quadraticVoteTally()` function should verify a proof created using this circuit to compute the results of tallying a set of state leaves. This also proves that these state leaves have an intermediate root `A`, as well that `A` is part of the tree with final state root `R`. This allows the coordinator to prove the final tally in batches. The function keeps track of the index of each intermediate root to ensure that they are processed consecutively.
 

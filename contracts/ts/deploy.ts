@@ -76,15 +76,18 @@ const deployMaci = async (
     const maciContract = await deployer.deploy(
         MACI,
         { CircomLib: mimcContract.contractAddress },
+        { 
+            stateTreeDepth: config.maci.merkleTrees.stateTreeDepth,
+            messageTreeDepth: config.maci.merkleTrees.messageTreeDepth,
+        },
+        2 ** config.maci.merkleTrees.intermediateStateTreeDepth,
         config.maci.messageBatchSize,
-        config.maci.merkleTrees.messageTreeDepth,
-        config.maci.merkleTrees.stateTreeDepth,
-        config.maci.merkleTrees.voteOptionTreeDepth,
         config.maci.voteOptionsMaxLeafIndex,
         signUpTokenGatekeeperAddress,
         batchUstVerifierContract.contractAddress,
         quadVoteTallyVerifierContract.contractAddress,
-        config.maci.signupDurationInSeconds.toString(),
+        config.maci.signUpDurationInSeconds.toString(),
+        config.maci.votingDurationInSeconds.toString(),
         config.maci.initialVoiceCreditBalance,
         {
             x: coordinatorPublicKey[0].toString(),

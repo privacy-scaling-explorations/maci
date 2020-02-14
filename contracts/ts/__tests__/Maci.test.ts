@@ -23,6 +23,7 @@ import {
 
 import {
     bigInt,
+    hash,
     hashOne,
     genKeyPair,
     setupTree,
@@ -32,6 +33,7 @@ import {
     genEcdhSharedKey,
     NOTHING_UP_MY_SLEEVE,
     unstringifyBigInts,
+    stringifyBigInts,
 } from 'maci-crypto'
 
 import {
@@ -64,6 +66,10 @@ import {
 const accounts = genTestAccounts(5)
 const deployer = genDeployer(accounts[0].privateKey)
 let emptyVoteOptionTreeRoot
+const stateTreeDepth = config.maci.merkleTrees.stateTreeDepth
+const voteOptionTreeDepth = config.maci.merkleTrees.voteOptionTreeDepth
+const numVoteOptions = 2 ** voteOptionTreeDepth
+const intermediateStateTreeDepth = config.maci.merkleTrees.intermediateStateTreeDepth
 
 const messageTree = setupTree(
     config.maci.merkleTrees.messageTreeDepth,
@@ -75,15 +81,26 @@ let stateTree = setupTree(
     NOTHING_UP_MY_SLEEVE,
 )
 
-const provingKeyPath = path.join(__dirname, '../../../circuits/build/batchUstPk.bin')
-const provingKey: SnarkProvingKey = fs.readFileSync(provingKeyPath)
+const loadPk = (binName: string): SnarkProvingKey => {
+    const p = path.join(__dirname, '../../../circuits/build/' + binName + '.bin')
+    return fs.readFileSync(p)
+}
 
-const verifyingKeyPath = path.join(__dirname, '../../../circuits/build/batchUstVk.json')
-const verifyingKey: SnarkVerifyingKey = parseVerifyingKeyJson(fs.readFileSync(verifyingKeyPath).toString())
+const loadkVk = (jsonName: string): SnarkVerifyingKey => {
+    const p = path.join(__dirname, '../../../circuits/build/' + jsonName + '.json')
+    return parseVerifyingKeyJson(fs.readFileSync(p).toString())
+}
+
+const batchUstPk: SnarkProvingKey = loadPk('batchUstPk')
+const qvtPk: SnarkProvingKey = loadPk('qvtPk')
+
+const batchUstVk: SnarkVerifyingKey = loadkVk('batchUstVk')
+const qvtVk: SnarkVerifyingKey = loadkVk('qvtVk')
+
+let qvtCircuit
+let batchUstCircuit
 
 describe('MACI', () => {
-
-    let circuit
     let maciContract
     let signUpTokenContract
     let signUpTokenGatekeeperContract
@@ -109,15 +126,15 @@ describe('MACI', () => {
     // This array contains four commands from the same user
     let batch: any[] = []
     for (let i = 0; i < config.maci.messageBatchSize; i++) {
-        const voteOptionTree = setupTree(
-            config.maci.merkleTrees.voteOptionTreeDepth,
-            NOTHING_UP_MY_SLEEVE,
-        )
+        const voteOptionTree = setupTree(voteOptionTreeDepth, NOTHING_UP_MY_SLEEVE)
 
         const voteOptionIndex = bigInt(0)
         const newVoteWeight = bigInt(9)
 
-        voteOptionTree.insert( hashOne(newVoteWeight), newVoteWeight)
+        voteOptionTree.insert(hashOne(newVoteWeight), newVoteWeight)
+        for (let i = 1; i < 2 ** voteOptionTreeDepth; i++) {
+            voteOptionTree.insert(hashOne(bigInt(0)), bigInt(0))
+        }
 
         const ephemeralKeypair = new Keypair()
         const ecdhSharedKey = Keypair.genEcdhSharedKey(
@@ -143,11 +160,13 @@ describe('MACI', () => {
             signature,
             message,
             voteOptionTree,
+            newVoteWeight,
+            voteOptionIndex,
         })
     }
 
     beforeAll(async () => {
-        circuit = await compileAndLoadCircuit('batchUpdateStateTree_test.circom')
+        qvtCircuit = await compileAndLoadCircuit('quadVoteTally_test.circom')
         signUpTokenContract = await deploySignupToken(deployer)
         signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(
             deployer,
@@ -184,10 +203,11 @@ describe('MACI', () => {
         stateTree.insert(NOTHING_UP_MY_SLEEVE)
 
         // Cache an empty vote option tree root
-        const temp = setupTree(
-            config.maci.merkleTrees.voteOptionTreeDepth,
-            NOTHING_UP_MY_SLEEVE,
-        )
+        const temp = setupTree(voteOptionTreeDepth, NOTHING_UP_MY_SLEEVE)
+
+        for (let i = 0; i < 2 ** voteOptionTreeDepth; i++) {
+            temp.insert(hashOne(bigInt(0)))
+        }
 
         emptyVoteOptionTreeRoot = temp.root
     })
@@ -201,12 +221,8 @@ describe('MACI', () => {
     })
 
     it('the emptyVoteOptionTreeRoot value should be correct', async () => {
-        const tree = setupTree(
-            config.maci.merkleTrees.voteOptionTreeDepth,
-            NOTHING_UP_MY_SLEEVE,
-        )
         const root = await maciContract.emptyVoteOptionTreeRoot()
-        expect(tree.root.toString()).toEqual(root.toString())
+        expect(emptyVoteOptionTreeRoot.toString()).toEqual(root.toString())
     })
 
     it('the stateTree root should be correct', async () => {
@@ -237,7 +253,7 @@ describe('MACI', () => {
             }
         })
 
-        it('a user owns a SignUpToken should be able to sign up', async () => {
+        it('a user who owns a SignUpToken should be able to sign up', async () => {
             const wallet = user1.wallet.connect(deployer.provider as any)
             const contract = new ethers.Contract(
                 maciContract.contractAddress,
@@ -339,9 +355,12 @@ describe('MACI', () => {
             }
         })
 
-        it('nobody can sign up after the sign-up period passes', async () => {
+        it('nobody can sign up after the sign-up period is over', async () => {
             expect.assertions(1)
-            await timeTravel(deployer.provider, config.maci.signupDurationInSeconds + 1)
+            
+            // Move forward in time
+            await timeTravel(deployer.provider, config.maci.signUpDurationInSeconds + 1)
+
             try {
                 await maciContract.signUp(
                     user1.keypair.pubKey.asContractParam(),
@@ -357,8 +376,8 @@ describe('MACI', () => {
     describe('Publish messages', () => {
 
         it('publishMessage should add a leaf to the message tree', async () => {
-            expect.assertions(3 * config.maci.messageBatchSize)
 
+            expect.assertions(3 * config.maci.messageBatchSize)
 
             // Publish all messages so we can process them as a batch later on
             for (let i = 0; i < config.maci.messageBatchSize; i++) {
@@ -383,20 +402,49 @@ describe('MACI', () => {
         })
     })
 
+    describe('batchProcessMessage before padding the state tree', () => {
+        it('should not tally votes if the state tree is not padded', async () => {
+            //expect.assertions(2)
+
+            const errorMsg = 'MACI: the state tree needs to be padded with blank leaves'
+            try {
+                await maciContract.proveVoteTallyBatch(
+                    0, 0, [], [0, 0, 0, 0, 0, 0, 0, 0],
+                )
+            } catch (e) {
+                debugger
+                expect(e.message.endsWith(errorMsg)).toBeTruthy()
+            }
+        })
+
+    })
+
     describe('Process messages', () => {
 
         it('batchProcessMessage should verify a proof and update the postSignUpStateRoot', async () => {
-            expect.assertions(7)
+
+            // First, pad the state tree
+            const blankStateLeaf = StateLeaf.genFreshLeaf(
+                new PubKey([0, 0]),
+                emptyVoteOptionTreeRoot,
+                bigInt(config.maci.initialVoiceCreditBalance),
+            )
+
+            await maciContract.padStateTree(2)
+            stateTree.insert(blankStateLeaf.hash(), blankStateLeaf)
+            stateTree.insert(blankStateLeaf.hash(), blankStateLeaf)
+
+            batchUstCircuit = await compileAndLoadCircuit('batchUpdateStateTree_test.circom')
 
             let results: any[] = []
             let ecdhPublicKeyBatch: any[] = []
 
+            const messageTreeBatchStartIndex = 0
             let stateTreeBatchRaw: SnarkBigInt[] = []
             let stateTreeBatchRoot: SnarkBigInt[] = []
             let stateTreeBatchPathElements: SnarkBigInt[] = []
             let stateTreeBatchPathIndices: SnarkBigInt[] = []
             let messageTreeBatchPathElements: SnarkBigInt[] = []
-            const messageTreeBatchStartIndex = 0
 
             let userVoteOptionsBatchRoot: SnarkBigInt[] = []
             let userVoteOptionsBatchPathElements: SnarkBigInt[] = []
@@ -458,12 +506,10 @@ describe('MACI', () => {
             }
 
             const stateTreeMaxIndex = bigInt(stateTree.nextIndex - 1)
-            const voteOptionsMaxIndex = bigInt(
-                2 ** config.maci.merkleTrees.voteOptionTreeDepth - 1
-            )
+            const voteOptionsMaxIndex = config.maci.voteOptionsMaxLeafIndex
 
             const randomLeafRoot = stateTree.root
-            const randomLeaf = genRandomSalt()
+            const randomStateLeaf = StateLeaf.genRandomLeaf()
             const [randomLeafPathElements, _] = stateTree.getPathUpdate(0)
 
             const circuitInputs = genBatchUstInputs(
@@ -473,7 +519,7 @@ describe('MACI', () => {
                 messageTree,
                 messageTreeBatchPathElements,
                 messageTreeBatchStartIndex,
-                randomLeaf,
+                randomStateLeaf,
                 randomLeafRoot,
                 randomLeafPathElements,
                 voteOptionTreeBatchLeafRaw,
@@ -488,18 +534,18 @@ describe('MACI', () => {
                 stateTreeBatchPathIndices,
             )
 
-            const witness = circuit.calculateWitness(circuitInputs)
-            expect(circuit.checkWitness(witness)).toBeTruthy()
+            const witness = batchUstCircuit.calculateWitness(circuitInputs)
+            expect(batchUstCircuit.checkWitness(witness)).toBeTruthy()
 
-            const idx = circuit.getSignalIdx('main.root')
+            const idx = batchUstCircuit.getSignalIdx('main.root')
             const circuitNewStateRoot = witness[idx].toString()
 
-            // Update the state tree with a random leaf
-            stateTree.update(0, randomLeaf)
+            // Update the first leaf in the state tree with a random value
+            stateTree.update(0, randomStateLeaf.hash(), randomStateLeaf)
 
             expect(stateTree.root.toString()).toEqual(circuitNewStateRoot)
 
-            const publicSignals = genPublicSignals(witness, circuit)
+            const publicSignals = genPublicSignals(witness, batchUstCircuit)
             expect(publicSignals).toHaveLength(19)
 
             const contractPublicSignals = await maciContract.genBatchUstPublicSignals(
@@ -513,16 +559,34 @@ describe('MACI', () => {
             )
 
             console.log('Generating proof...')
-            const proof = await genProof(witness, provingKey)
+            const proof = await genProof(witness, batchUstPk)
+            //const proof = [0, 0, 0, 0, 0, 0, 0, 0]
 
-            const isValid = verifyProof(verifyingKey, proof, publicSignals)
+            const isValid = verifyProof(batchUstVk, proof, publicSignals)
             expect(isValid).toBeTruthy()
+
+            try {
+                await maciContract.batchProcessMessage(
+                    stateTree.root.toString(),
+                    stateTreeBatchRoot.map((x) => x.toString()),
+                    ecdhPublicKeyBatch.map((x) => x.asContractParam()),
+                    formatProofForVerifierContract(proof),
+                    //proof,
+                    { gasLimit: 2000000 },
+                )
+            } catch (e) {
+                expect(e.message.endsWith('MACI: the voting period is not over')).toBeTruthy()
+            }
+
+            // Move forward in time
+            await timeTravel(deployer.provider, config.maci.votingDurationInSeconds + 1)
 
             const tx = await maciContract.batchProcessMessage(
                 stateTree.root.toString(),
                 stateTreeBatchRoot.map((x) => x.toString()),
                 ecdhPublicKeyBatch.map((x) => x.asContractParam()),
                 formatProofForVerifierContract(proof),
+                //proof,
                 { gasLimit: 2000000 },
             )
 
@@ -531,6 +595,156 @@ describe('MACI', () => {
 
             const postSignUpStateRoot = await maciContract.postSignUpStateRoot()
             expect(postSignUpStateRoot.toString()).toEqual(stateTree.root.toString())
+        })
+    })
+
+    describe('Tally votes', () => {
+
+        const salt = genRandomSalt()
+        const currentResultsSalt = bigInt(0)
+        const batchSize = 2 ** config.maci.merkleTrees.intermediateStateTreeDepth
+
+        let voteOptionTrees = []
+        let intermediateLeaf
+
+        const intermediateStateTree = setupTree(
+            stateTreeDepth - intermediateStateTreeDepth,
+            NOTHING_UP_MY_SLEEVE,
+        )
+
+        let qvtWitness
+        let intermediateStateRoot: SnarkBigInt
+        let currentResultsCommitment: SnarkBigInt
+        let newResultsCommitment: SnarkBigInt
+        let finalSaltedResults: string[]
+
+        it('the inputs and witness should be valid', async () => {
+            let circuitInputs = {}
+
+            // Compute the Merkle proof for the batch
+            const batchTree = setupTree(intermediateStateTreeDepth, NOTHING_UP_MY_SLEEVE)
+            const emptyBatchTreeRoot = batchTree.root
+            const batchSize = 2 ** intermediateStateTreeDepth
+
+            for (let i = 0; i < batchSize; i++) {
+                batchTree.insert(stateTree.leaves[i])
+            }
+
+            intermediateStateTree.insert(batchTree.root)
+            for (let i = 1; i < 2 ** intermediateStateTreeDepth; i++) {
+                intermediateStateTree.insert(emptyBatchTreeRoot)
+            }
+
+            expect(intermediateStateTree.root.toString()).toEqual(stateTree.root.toString())
+            const intermediatePathIndex = 0
+            const [intermediatePathElements, _] = intermediateStateTree.getPathUpdate(intermediatePathIndex)
+
+            // Calculate the commitment to the current results (all zero)
+            let currentResults: SnarkBigInt[] = []
+            for (let i = 0; i < numVoteOptions; i++) {
+                currentResults.push(bigInt(0))
+            }
+
+            // Set the vote leaves
+            // signal private input voteLeaves[numUsers][numVoteOptions];
+            let voteLeaves: any[] = []
+            for (let i = 0; i < batchSize; i++) {
+                let votes: any[] = []
+                for (let j = 0; j < numVoteOptions; j++) {
+                    votes.push(bigInt(0))
+                }
+                if (i === 1) {
+                    votes[batch[i].voteOptionIndex] = batch[i].newVoteWeight
+                }
+                voteLeaves.push(votes)
+            }
+
+            currentResultsCommitment = hash([...currentResults, currentResultsSalt])
+            // Hardcoded to the hash of 17 zeros (2 ** 4 + 1) where the vote
+            // option tree has 4 levels
+            expect(currentResultsCommitment.toString()).toEqual('13168338010003725451955781056997656821184424038696131784497995360771729497580')
+
+            circuitInputs['voteLeaves'] = voteLeaves
+            circuitInputs['currentResults'] = currentResults
+            circuitInputs['fullStateRoot'] = stateTree.root.toString()
+            circuitInputs['newResultsSalt'] = salt.toString()
+            circuitInputs['currentResultsSalt'] = currentResultsSalt.toString()
+            circuitInputs['currentResultsCommitment'] = currentResultsCommitment.toString()
+            circuitInputs['intermediateStateRoot'] = intermediateStateTree.leaves[intermediatePathIndex]
+            circuitInputs['intermediatePathElements'] = intermediatePathElements
+            circuitInputs['intermediatePathIndex'] = intermediatePathIndex
+            circuitInputs['stateLeaves'] = stateTree.leavesRaw.map((x) => x.asCircuitInputs())
+
+            qvtWitness = qvtCircuit.calculateWitness(stringifyBigInts(circuitInputs))
+            expect(qvtCircuit.checkWitness(qvtWitness)).toBeTruthy()
+
+            const expected = [bigInt(9)]
+            for (let i = 0; i < 2 ** voteOptionTreeDepth - 1; i++) {
+                expected.push(bigInt(0))
+            }
+            const expectedCommitment = hash([...expected, salt])
+
+            finalSaltedResults = [...expected, salt].map((x) => x.toString())
+
+            newResultsCommitment = qvtWitness[qvtCircuit.getSignalIdx('main.newResultsCommitment')]
+            expect(newResultsCommitment.toString()).toEqual(expectedCommitment.toString())
+
+            intermediateStateRoot = intermediateStateTree.leaves[intermediatePathIndex]
+        })
+
+        it('should not tally a batch of votes if the final results are invalid', async () => {
+            expect.assertions(1)
+
+            let invalidResults: string[] = []
+            for (let i = 0; i < finalSaltedResults.length; i++) {
+                invalidResults.push('0')
+            }
+
+            try {
+                await maciContract.proveVoteTallyBatch(
+                    intermediateStateRoot.toString(),
+                    newResultsCommitment.toString(),
+                    invalidResults,
+                    [0, 0, 0, 0, 0, 0, 0, 0],
+                )
+            } catch (e) {
+                expect(e.message.endsWith("MACI: the hash of the salted final results provided do not match the commitment")).toBeFalsy()
+            }
+        })
+
+        it('should tally a batch of votes', async () => {
+            const publicSignals = genPublicSignals(qvtWitness, qvtCircuit)
+
+            expect(publicSignals[0].toString()).toEqual(newResultsCommitment.toString())
+            expect(publicSignals[1].toString()).toEqual(stateTree.root.toString())
+            expect(publicSignals[2].toString()).toEqual('0')
+            expect(publicSignals[3].toString()).toEqual(intermediateStateRoot.toString())
+            expect(publicSignals[4].toString()).toEqual(currentResultsCommitment.toString())
+
+            const contractPublicSignals = await maciContract.genQvtPublicSignals(
+                intermediateStateRoot.toString(),
+                newResultsCommitment.toString(),
+            )
+
+            expect(JSON.stringify(publicSignals.map((x) => x.toString()))).toEqual(
+                JSON.stringify(contractPublicSignals.map((x) => x.toString()))
+            )
+
+            console.log('Generating proof...')
+            const proof = await genProof(qvtWitness, qvtPk)
+
+            const isValid = verifyProof(qvtVk, proof, publicSignals)
+            expect(isValid).toBeTruthy()
+
+            const tx = await maciContract.proveVoteTallyBatch(
+                intermediateStateRoot.toString(),
+                newResultsCommitment.toString(),
+                finalSaltedResults,
+                formatProofForVerifierContract(proof),
+                { gasLimit: 2000000 },
+            )
+            const receipt = await tx.wait()
+            expect(receipt.status).toEqual(1)
         })
     })
 })
