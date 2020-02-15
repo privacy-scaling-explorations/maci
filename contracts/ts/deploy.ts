@@ -11,6 +11,7 @@ const MiMC = require('@maci-contracts/compiled/MiMC.json')
 const Hasher = require('@maci-contracts/compiled/Hasher.json')
 const SignUpToken = require('@maci-contracts/compiled/SignUpToken.json')
 const SignUpTokenGatekeeper = require('@maci-contracts/compiled/SignUpTokenGatekeeper.json')
+const ConstantInitialVoiceCreditProxy = require('@maci-contracts/compiled/ConstantInitialVoiceCreditProxy.json')
 const BatchUpdateStateTreeVerifier = require('@maci-contracts/compiled/BatchUpdateStateTreeVerifier.json')
 const QuadVoteTallyVerifier = require('@maci-contracts/compiled/QuadVoteTallyVerifier.json')
 
@@ -38,11 +39,14 @@ const genDeployer = (
     )
 }
 
+const deployInitialVoiceCreditProxy = async (deployer, amount: number) => {
+    console.log('Deploying InitialVoiceCreditProxy')
+    return await deployer.deploy(ConstantInitialVoiceCreditProxy, {}, amount)
+}
+
 const deploySignupToken = async (deployer) => {
     console.log('Deploying SignUpToken')
-    const signUpTokenContract = await deployer.deploy(SignUpToken, {})
-
-    return signUpTokenContract
+    return await deployer.deploy(SignUpToken, {})
 }
 
 const deploySignupTokenGatekeeper = async (
@@ -62,6 +66,7 @@ const deploySignupTokenGatekeeper = async (
 const deployMaci = async (
     deployer,
     signUpTokenGatekeeperAddress: string,
+    initialVoiceCreditProxy: string,
 ) => {
     console.log('Deploying MiMC')
     const mimcContract = await deployer.deploy(MiMC, {})
@@ -88,7 +93,7 @@ const deployMaci = async (
         quadVoteTallyVerifierContract.contractAddress,
         config.maci.signUpDurationInSeconds.toString(),
         config.maci.votingDurationInSeconds.toString(),
-        config.maci.initialVoiceCreditBalance,
+        initialVoiceCreditProxy,
         {
             x: coordinatorPublicKey[0].toString(),
             y: coordinatorPublicKey[1].toString(),
@@ -134,9 +139,18 @@ const main = async () => {
         }
     )
 
+    parser.addArgument(
+        ['-p', '--initialVoiceCreditProxy'],
+        {
+            help: 'The address of the contract which provides the initial voice credit balance',
+            required: false
+        }
+    )
+
     const args = parser.parseArgs()
     const outputAddressFile = args.output
     const signUpToken = args.signUpToken
+    const initialVoiceCreditProxy = args.initialVoiceCreditProxy
 
     const deployer = genDeployer(admin.privateKey)
 
@@ -147,6 +161,17 @@ const main = async () => {
     } else {
         const signUpTokenContract = await deploySignupToken(deployer)
         signUpTokenAddress = signUpTokenContract.contractAddress
+    }
+
+    let initialVoiceCreditBalanceAddress
+    if (initialVoiceCreditProxy) {
+        initialVoiceCreditBalanceAddress = initialVoiceCreditProxy
+    } else {
+        const initialVoiceCreditProxyContract = await deployInitialVoiceCreditProxy(
+            deployer,
+            config.maci.initialVoiceCreditBalance,
+        )
+        initialVoiceCreditBalanceAddress = initialVoiceCreditProxyContract.contractAddress
     }
 
     const signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(
@@ -162,6 +187,7 @@ const main = async () => {
     } = await deployMaci(
         deployer,
         signUpTokenGatekeeperContract.contractAddress,
+        initialVoiceCreditBalanceAddress,
     )
 
     const addresses = {
@@ -192,6 +218,7 @@ export {
     deployMaci,
     deploySignupToken,
     deploySignupTokenGatekeeper,
+    deployInitialVoiceCreditProxy,
     genDeployer,
     genProvider,
 }
