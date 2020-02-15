@@ -434,6 +434,9 @@ describe('MACI', () => {
 
         it('batchProcessMessage should verify a proof and update the postSignUpStateRoot', async () => {
 
+            // Move forward in time
+            await timeTravel(deployer.provider, config.maci.votingDurationInSeconds + 1)
+
             // First, pad the state tree
             const blankStateLeaf = StateLeaf.genFreshLeaf(
                 new PubKey([0, 0]),
@@ -588,9 +591,6 @@ describe('MACI', () => {
             } catch (e) {
                 expect(e.message.endsWith('MACI: the voting period is not over')).toBeTruthy()
             }
-
-            // Move forward in time
-            await timeTravel(deployer.provider, config.maci.votingDurationInSeconds + 1)
 
             const tx = await maciContract.batchProcessMessage(
                 stateTree.root.toString(),

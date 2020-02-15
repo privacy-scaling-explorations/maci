@@ -465,6 +465,7 @@ contract MACI is Ownable, DomainObjs {
     ) 
     onlyOwner
     isAfterSignUpDeadline
+    isAfterVotingDeadline
     public {
 
         require(numRepetitions < stateLeafBatchSize, "MACI: numRepetitions must be less than stateLeafBatchSize");
