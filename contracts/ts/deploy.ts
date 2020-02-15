@@ -165,9 +165,12 @@ const main = async () => {
 
     let initialVoiceCreditBalanceAddress
     if (initialVoiceCreditProxy) {
-        initialVoiceCreditBalanceAddress = initialVoiceCreditBalanceAddress
+        initialVoiceCreditBalanceAddress = initialVoiceCreditProxy
     } else {
-        const initialVoiceCreditProxyContract = await deployInitialVoiceCreditProxy(deployer, config.maci.initialVoiceCreditBalance)
+        const initialVoiceCreditProxyContract = await deployInitialVoiceCreditProxy(
+            deployer,
+            config.maci.initialVoiceCreditBalance,
+        )
         initialVoiceCreditBalanceAddress = initialVoiceCreditProxyContract.contractAddress
     }
 
