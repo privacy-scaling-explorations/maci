@@ -33,7 +33,7 @@ const main = async () => {
         },
         {
             name: 'qvtVk.json',
-            url: 'https://www.dropbox.com/s/wojxgte376dynat/qvtPk.bin?dl=1',
+            url: 'https://www.dropbox.com/s/kq81sd40gp9pjod/qvtVk.json?dl=1',
         },
     ]
 
