@@ -5,7 +5,7 @@ const main = async () => {
     const files = [
         {
             name: 'BatchUpdateStateTreeVerifier.sol',
-            url: 'https://www.dropbox.com/s/rr7b84uqzqea6qa/BatchUpdateStateTreeVerifier.sol?dl=1',
+            url: 'https://www.dropbox.com/s/latwoz9j201j4k0/BatchUpdateStateTreeVerifier.sol?dl=1',
         },
         {
             name: 'batchUstCircuit.json',
