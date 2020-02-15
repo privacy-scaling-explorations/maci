@@ -450,6 +450,18 @@ describe('MACI', () => {
 
         it('batchProcessMessage should verify a proof and update the postSignUpStateRoot', async () => {
 
+            try {
+                await maciContract.batchProcessMessage(
+                    stateTree.root.toString(),
+                    [],
+                    [],
+                    [0, 0, 0, 0, 0, 0, 0, 0],
+                    { gasLimit: 2000000 },
+                )
+            } catch (e) {
+                expect(e.message.endsWith('MACI: the voting period is not over')).toBeTruthy()
+            }
+
             // Move forward in time
             await timeTravel(deployer.provider, config.maci.votingDurationInSeconds + 1)
 
@@ -585,30 +597,18 @@ describe('MACI', () => {
 
             console.log('Generating proof...')
             const proof = await genProof(witness, batchUstPk)
-            //const proof = [0, 0, 0, 0, 0, 0, 0, 0]
-
             const isValid = verifyProof(batchUstVk, proof, publicSignals)
             expect(isValid).toBeTruthy()
 
-            try {
-                await maciContract.batchProcessMessage(
-                    stateTree.root.toString(),
-                    stateTreeBatchRoot.map((x) => x.toString()),
-                    ecdhPublicKeyBatch.map((x) => x.asContractParam()),
-                    formatProofForVerifierContract(proof),
-                    //proof,
-                    { gasLimit: 2000000 },
-                )
-            } catch (e) {
-                expect(e.message.endsWith('MACI: the voting period is not over')).toBeTruthy()
-            }
+
+            //const formattedProof = [0, 0, 0, 0, 0, 0, 0, 0]
+            const formattedProof = formatProofForVerifierContract(proof)
 
             const tx = await maciContract.batchProcessMessage(
                 stateTree.root.toString(),
                 stateTreeBatchRoot.map((x) => x.toString()),
                 ecdhPublicKeyBatch.map((x) => x.asContractParam()),
-                formatProofForVerifierContract(proof),
-                //proof,
+                formattedProof,
                 { gasLimit: 2000000 },
             )
 
@@ -758,11 +758,12 @@ describe('MACI', () => {
             const isValid = verifyProof(qvtVk, proof, publicSignals)
             expect(isValid).toBeTruthy()
 
+            const formattedProof = formatProofForVerifierContract(proof)
             const tx = await maciContract.proveVoteTallyBatch(
                 intermediateStateRoot.toString(),
                 newResultsCommitment.toString(),
                 finalSaltedResults,
-                formatProofForVerifierContract(proof),
+                formattedProof,
                 { gasLimit: 2000000 },
             )
             const receipt = await tx.wait()
