@@ -18,6 +18,7 @@ import {
     deployMaci,
     deploySignupToken,
     deploySignupTokenGatekeeper,
+    deployInitialVoiceCreditProxy,
     genDeployer,
 } from '../deploy'
 
@@ -103,6 +104,7 @@ let batchUstCircuit
 describe('MACI', () => {
     let maciContract
     let signUpTokenContract
+    let constantIntialVoiceCreditProxyContract
     let signUpTokenGatekeeperContract
 
     // Set up users
@@ -168,6 +170,10 @@ describe('MACI', () => {
     beforeAll(async () => {
         qvtCircuit = await compileAndLoadCircuit('quadVoteTally_test.circom')
         signUpTokenContract = await deploySignupToken(deployer)
+        constantIntialVoiceCreditProxyContract = await deployInitialVoiceCreditProxy(
+            deployer,
+            config.maci.initialVoiceCreditBalance,
+        )
         signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(
             deployer,
             signUpTokenContract.contractAddress,
@@ -175,6 +181,7 @@ describe('MACI', () => {
         const contracts = await deployMaci(
             deployer,
             signUpTokenGatekeeperContract.contractAddress,
+            constantIntialVoiceCreditProxyContract.contractAddress,
         )
 
         maciContract = contracts.maciContract
@@ -246,6 +253,7 @@ describe('MACI', () => {
                 await contract.signUp(
                     user1.keypair.pubKey.asContractParam(),
                     ethers.utils.defaultAbiCoder.encode(['uint256'], [2]),
+                    ethers.utils.defaultAbiCoder.encode(['uint256'], [0]), // Any value is fine as the ConstantInitialVoiceCreditProxy will ignore it
                     { gasLimit: 2000000 },
                 )
             } catch (e) {
@@ -263,6 +271,7 @@ describe('MACI', () => {
             const tx = await contract.signUp(
                 user1.keypair.pubKey.asContractParam(),
                 ethers.utils.defaultAbiCoder.encode(['uint256'], [1]),
+                ethers.utils.defaultAbiCoder.encode(['uint256'], [0]),
                 { gasLimit: 2000000 },
             )
             const receipt = await tx.wait()
@@ -316,6 +325,7 @@ describe('MACI', () => {
                 await maciContract2.signUp(
                     user2.keypair.pubKey.asContractParam(),
                     ethers.utils.defaultAbiCoder.encode(['uint256'], [1]),
+                    ethers.utils.defaultAbiCoder.encode(['uint256'], [0]),
                     { gasLimit: 2000000 },
                 )
             } catch (e) {
@@ -365,6 +375,7 @@ describe('MACI', () => {
                 await maciContract.signUp(
                     user1.keypair.pubKey.asContractParam(),
                     ethers.utils.defaultAbiCoder.encode(['uint256'], [1]),
+                    ethers.utils.defaultAbiCoder.encode(['uint256'], [0]),
                     { gasLimit: 2000000 },
                 )
             } catch (e) {
@@ -427,7 +438,7 @@ describe('MACI', () => {
             const blankStateLeaf = StateLeaf.genFreshLeaf(
                 new PubKey([0, 0]),
                 emptyVoteOptionTreeRoot,
-                bigInt(config.maci.initialVoiceCreditBalance),
+                bigInt(0),
             )
 
             await maciContract.padStateTree(2)

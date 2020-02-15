@@ -6,6 +6,7 @@ import { MerkleTree } from "./MerkleTree.sol";
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
 import { BatchUpdateStateTreeVerifier } from "./BatchUpdateStateTreeVerifier.sol";
 import { QuadVoteTallyVerifier } from "./QuadVoteTallyVerifier.sol";
+import { InitialVoiceCreditProxy } from './initialVoiceCreditProxy/InitialVoiceCreditProxy.sol';
 
 import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
 
@@ -50,14 +51,15 @@ contract MACI is Ownable, DomainObjs {
     // For now, we hardcode the root of a tree with 16 leaves each with the
     // value of hashOne(0)
     uint256 public emptyVoteOptionTreeRoot = 21209824670086443676951025294328812549916724758546546871114494678033103541127;
-    uint256 internal voteOptionsMaxLeafIndex;
-
-    // The batch # for the quote tally function
-    uint256 internal currentQvtBatchNum;
 
     // A commitment to a 0-salted list of 0-results (currently hardcoded
     // to 16 + 1 elements)
     uint256 internal currentResultsCommitment = 13168338010003725451955781056997656821184424038696131784497995360771729497580;
+
+    uint256 internal voteOptionsMaxLeafIndex;
+
+    // The batch # for the quote tally function
+    uint256 internal currentQvtBatchNum;
 
     // Cached results of 2 ** depth - 1 where depth is the state tree depth and
     // message tree depth
@@ -76,8 +78,9 @@ contract MACI is Ownable, DomainObjs {
     // user may sign up to vote
     SignUpGatekeeper public signUpGatekeeper;
 
-    // The initial voice credit balance per user
-    uint256 public initialVoiceCreditBalance;
+    // The contract which provides the values of the initial voice credit
+    // balance per user
+    InitialVoiceCreditProxy public initialVoiceCreditProxy;
 
     // The coordinator's public key
     PubKey public coordinatorPubKey;
@@ -109,7 +112,7 @@ contract MACI is Ownable, DomainObjs {
         QuadVoteTallyVerifier _qvtVerifier,
         uint256 _signUpDurationSeconds,
         uint256 _votingDurationSeconds,
-        uint256 _initialVoiceCreditBalance,
+        InitialVoiceCreditProxy _initialVoiceCreditProxy,
         PubKey memory _coordinatorPubKey
     ) Ownable() public {
 
@@ -128,8 +131,8 @@ contract MACI is Ownable, DomainObjs {
         // Set the sign-up gatekeeper contract
         signUpGatekeeper = _signUpGatekeeper;
         
-        // Set the initial voice credit balance
-        initialVoiceCreditBalance = _initialVoiceCreditBalance;
+        // Set the initial voice credit balance proxy
+        initialVoiceCreditProxy = _initialVoiceCreditProxy;
 
         // Set the coordinator's public key
         coordinatorPubKey = _coordinatorPubKey;
@@ -216,7 +219,8 @@ contract MACI is Ownable, DomainObjs {
      */
     function signUp(
         PubKey memory _userPubKey,
-        bytes memory _signUpGatekeeperData
+        bytes memory _signUpGatekeeperData,
+        bytes memory _initialVoiceCreditProxyData
     ) 
     isBeforeSignUpDeadline
     public {
@@ -225,11 +229,16 @@ contract MACI is Ownable, DomainObjs {
         // throw if the user has already registered or if ineligible to do so.
         signUpGatekeeper.register(msg.sender, _signUpGatekeeperData);
 
+        uint256 voiceCreditBalance = initialVoiceCreditProxy.getVoiceCredits(
+            msg.sender,
+            _initialVoiceCreditProxyData
+        );
+
         // Create, hash, and insert a fresh state leaf
         StateLeaf memory stateLeaf = StateLeaf({
             pubKey: _userPubKey,
             voteOptionTreeRoot: emptyVoteOptionTreeRoot,
-            voiceCreditBalance: initialVoiceCreditBalance,
+            voiceCreditBalance: voiceCreditBalance,
             nonce: 0
         });
 
@@ -444,7 +453,7 @@ contract MACI is Ownable, DomainObjs {
                 y: 0
             }),
             voteOptionTreeRoot: emptyVoteOptionTreeRoot,
-            voiceCreditBalance: initialVoiceCreditBalance,
+            voiceCreditBalance: 0,
             nonce: 0
         });
 
