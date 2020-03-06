@@ -75,8 +75,6 @@ The coordinator may decrypt all commands.
 
 Each participant may only decrypt their own messages, and should not be able to decrypt other users' messages or access their commands.
 
-Everyone else should not be able to decrypt any messages.
-
 No-one else should be able to decrypt any messages.
 
 ## System components

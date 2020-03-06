@@ -73,7 +73,7 @@ describe('Quadratic vote tallying circuit', () => {
                 const voteOptionMT = setupTree(voteOptionTreeDepth, NOTHING_UP_MY_SLEEVE)
 
                 for (let j = 0; j < voteLeaves[i].length; j++) {
-                    voteOptionMT.insert(hashOne(voteLeaves[i][j]))
+                    voteOptionMT.insert(voteLeaves[i][j])
                 }
 
                 const keypair = new Keypair()
