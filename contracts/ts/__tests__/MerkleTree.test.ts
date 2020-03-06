@@ -11,7 +11,7 @@ import {
 
 import * as etherlime from 'etherlime-lib'
 const MiMC = require('@maci-contracts/compiled/MiMC.json')
-const MerkleTree = require('@maci-contracts/compiled/MerkleTree.json')
+const IncrementalMerkleTree = require('@maci-contracts/compiled/IncrementalMerkleTree.json')
 
 const accounts = genTestAccounts(1)
 let deployer
@@ -20,7 +20,7 @@ let mimcContract
 
 const DEPTH = 4
 
-describe('MerkleTree', () => {
+describe('IncrementalMerkleTree', () => {
     beforeAll(async () => {
         deployer = new etherlime.JSONRPCPrivateKeyDeployer(
             accounts[0].privateKey,
@@ -33,10 +33,10 @@ describe('MerkleTree', () => {
         console.log('Deploying MiMC')
         mimcContract = await deployer.deploy(MiMC, {})
 
-        console.log('Deploying MerkleTree')
+        console.log('Deploying IncrementalMerkleTree')
         mtContract = await deployer.deploy(
-            MerkleTree,
-            { CircomLib: mimcContract.contractAddress },
+            IncrementalMerkleTree,
+            { MiMC: mimcContract.contractAddress },
             DEPTH,
             NOTHING_UP_MY_SLEEVE.toString(),
         )
@@ -44,11 +44,11 @@ describe('MerkleTree', () => {
 
     it('insertBlankAtZerothLeaf should have the same behaviour as inserting a zero value', async () => {
         const tree = setupTree(DEPTH, NOTHING_UP_MY_SLEEVE)
-        const root1 = await mtContract.getRoot()
+        const root1 = await mtContract.root()
         expect(tree.root.toString()).toEqual(root1.toString())
 
         await mtContract.insertBlankAtZerothLeaf()
-        const root2 = await mtContract.getRoot()
+        const root2 = await mtContract.root()
         tree.insert(NOTHING_UP_MY_SLEEVE)
 
         expect(tree.root.toString()).toEqual(root2.toString())
@@ -57,8 +57,8 @@ describe('MerkleTree', () => {
 
         const leaf = hashOne(Date.now())
 
-        await mtContract.insert(leaf.toString())
-        const root3 = await mtContract.getRoot()
+        await mtContract.insertLeaf(leaf.toString())
+        const root3 = await mtContract.root()
         tree.insert(leaf)
 
         expect(root1.toString() !== root3.toString()).toBeTruthy()
