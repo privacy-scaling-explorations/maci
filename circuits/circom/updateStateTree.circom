@@ -175,13 +175,9 @@ template UpdateStateTree(
         vote_options_tree_valid.path_index[i] <== vote_options_tree_path_index[i];
     }
 
-    // Update vote_option_tree_root with newly updated vote weight
-    component new_vote_options_leaf = Hasher(1);
-    new_vote_options_leaf.key <== 0;
-    new_vote_options_leaf.in[0] <== decrypted_command.out[CMD_VOTE_WEIGHT_IDX];
-
+    // Update vote_option_tree_root with the newly updated vote weight
     component new_vote_options_tree = MerkleTreeUpdate(vote_options_tree_depth);
-    new_vote_options_tree.leaf <== new_vote_options_leaf.hash;
+    new_vote_options_tree.leaf <== decrypted_command.out[CMD_VOTE_WEIGHT_IDX];
     for (var i = 0; i < vote_options_tree_depth; i++) {
         new_vote_options_tree.path_elements[i] <== vote_options_tree_path_elements[i];
         new_vote_options_tree.path_index[i] <== vote_options_tree_path_index[i];
