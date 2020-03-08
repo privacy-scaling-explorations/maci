@@ -31,7 +31,7 @@ describe('Hasher', () => {
         mimcContract = await deployer.deploy(MiMC, {})
 
         console.log('Deploying Hasher')
-        hasherContract = await deployer.deploy(Hasher, { CircomLib: mimcContract.contractAddress })
+        hasherContract = await deployer.deploy(Hasher, { MiMC: mimcContract.contractAddress })
     })
 
     it('maci-crypto.hashLeftRight should match hasher.hashLeftRight', async () => {

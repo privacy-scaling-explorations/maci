@@ -2,18 +2,16 @@ pragma experimental ABIEncoderV2;
 pragma solidity ^0.5.0;
 
 import { DomainObjs } from './DomainObjs.sol';
-import { MerkleTree } from "./MerkleTree.sol";
+import { IncrementalMerkleTree } from "./IncrementalMerkleTree.sol";
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
 import { BatchUpdateStateTreeVerifier } from "./BatchUpdateStateTreeVerifier.sol";
 import { QuadVoteTallyVerifier } from "./QuadVoteTallyVerifier.sol";
 import { InitialVoiceCreditProxy } from './initialVoiceCreditProxy/InitialVoiceCreditProxy.sol';
+import { SnarkConstants } from './SnarkConstants.sol';
 
 import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
 
 contract MACI is Ownable, DomainObjs {
-
-    // TODO: store these values in a Constants.sol
-    uint256 SNARK_SCALAR_FIELD = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
 
     // A nothing up my sleeve zero value
     // Should be equal to 5503045433092194285660061905880311622788666850989422096966288514930349325741
@@ -36,11 +34,10 @@ contract MACI is Ownable, DomainObjs {
     // The number of state leaves to tally per batch via the vote tally snark
     uint8 internal stateLeafBatchSize;
 
-    // TODO: remove the update function if it isn't used
-    MerkleTree public messageTree;
+    IncrementalMerkleTree public messageTree;
 
     // The state tree that tracks the sign-up messages.
-    MerkleTree public stateTree;
+    IncrementalMerkleTree public stateTree;
 
     // The Merkle root of the state tree after the sign-up period.
     // publishMessage() will not update the state tree. Rather, it will
@@ -138,8 +135,8 @@ contract MACI is Ownable, DomainObjs {
         coordinatorPubKey = _coordinatorPubKey;
 
         // Create the message tree and state tree
-        messageTree = new MerkleTree(_treeDepths.messageTreeDepth, ZERO_VALUE);
-        stateTree = new MerkleTree(_treeDepths.stateTreeDepth, ZERO_VALUE);
+        messageTree = new IncrementalMerkleTree(_treeDepths.messageTreeDepth, ZERO_VALUE);
+        stateTree = new IncrementalMerkleTree(_treeDepths.stateTreeDepth, ZERO_VALUE);
 
         // The maximum number of leaves, minus one, of meaningful vote options.
         // This allows the snark to do a no-op if the user votes for an option
@@ -153,7 +150,7 @@ contract MACI is Ownable, DomainObjs {
 
         // Make subsequent insertions start from leaf #1, as leaf #0 is only
         // updated with random data if a command is invalid.
-        stateTree.insertBlankAtZerothLeaf();
+        stateTree.insertLeaf(ZERO_VALUE);
     }
 
     /*
@@ -244,7 +241,7 @@ contract MACI is Ownable, DomainObjs {
 
         uint256 hashedLeaf = hashStateLeaf(stateLeaf);
 
-        stateTree.insert(hashedLeaf);
+        stateTree.insertLeaf(hashedLeaf);
 
         numSignUps ++;
 
@@ -272,13 +269,13 @@ contract MACI is Ownable, DomainObjs {
         // When this function is called for the first time, set
         // postSignUpStateRoot to the last known state root.
         // We do so as the batchProcessMessage function can only update the
-        // state root as a variable and has no way to use MerkleTree.insert()
-        // anyway.
+        // state root as a variable and has no way to use
+        // IncrementalMerkleTree.insertLeaf() anyway.
         if (postSignUpStateRoot == 0) {
             // It is exceedingly improbable that the zero value is a tree root
-            assert(postSignUpStateRoot != stateTree.getRoot());
+            assert(postSignUpStateRoot != stateTree.root());
 
-            postSignUpStateRoot = stateTree.getRoot();
+            postSignUpStateRoot = stateTree.root();
 
             // This is exceedingly unlikely to occur
             assert(postSignUpStateRoot != 0);
@@ -288,7 +285,7 @@ contract MACI is Ownable, DomainObjs {
         uint256 leaf = hashMessage(_message);
 
         // Insert the new leaf into the message tree
-        messageTree.insert(leaf);
+        messageTree.insertLeaf(leaf);
 
         emit PublishMessage(_message, _encPubKey);
     }
@@ -333,7 +330,7 @@ contract MACI is Ownable, DomainObjs {
         publicSignals[1] = coordinatorPubKey.x;
         publicSignals[2] = coordinatorPubKey.y;
         publicSignals[3] = voteOptionsMaxLeafIndex;
-        publicSignals[4] = messageTree.getRoot();
+        publicSignals[4] = messageTree.root();
         publicSignals[5] = currentMessageBatchIndex;
         publicSignals[6] = numSignUps;
 
@@ -475,7 +472,7 @@ contract MACI is Ownable, DomainObjs {
                 break;
             }
 
-            stateTree.insert(hashedBlankStateLeaf());
+            stateTree.insertLeaf(hashedBlankStateLeaf());
 
             numSignUps ++;
         }
@@ -543,10 +540,10 @@ contract MACI is Ownable, DomainObjs {
     }
 
     function getMessageTreeRoot() public view returns (uint256) {
-        return messageTree.getRoot();
+        return messageTree.root();
     }
 
     function getStateTreeRoot() public view returns (uint256) {
-        return stateTree.getRoot();
+        return stateTree.root();
     }
 }

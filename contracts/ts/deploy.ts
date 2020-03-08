@@ -14,8 +14,6 @@ const SignUpTokenGatekeeper = require('@maci-contracts/compiled/SignUpTokenGatek
 const ConstantInitialVoiceCreditProxy = require('@maci-contracts/compiled/ConstantInitialVoiceCreditProxy.json')
 const BatchUpdateStateTreeVerifier = require('@maci-contracts/compiled/BatchUpdateStateTreeVerifier.json')
 const QuadVoteTallyVerifier = require('@maci-contracts/compiled/QuadVoteTallyVerifier.json')
-
-const MerkleTree = require('@maci-contracts/compiled/MerkleTree.json')
 const MACI = require('@maci-contracts/compiled/MACI.json')
 
 const coordinatorPublicKey = genPubKey(bigInt(config.maci.coordinatorPrivKey))
@@ -80,7 +78,7 @@ const deployMaci = async (
     console.log('Deploying MACI')
     const maciContract = await deployer.deploy(
         MACI,
-        { CircomLib: mimcContract.contractAddress },
+        { MiMC: mimcContract.contractAddress },
         { 
             stateTreeDepth: config.maci.merkleTrees.stateTreeDepth,
             messageTreeDepth: config.maci.merkleTrees.messageTreeDepth,
