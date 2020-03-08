@@ -39,19 +39,26 @@ Refer to the [Glossary](#Glossary) for defintions of terms.
 
 4. Each user votes. To do this, they:
 
-    -  Sign their message using the key which they had signed up with and then use a random (ephemeral) key as well as the coordinator's public key to generate a shared key (via ECDH) encrypt it.
+    -  Sign their command using the key which they had signed up with and then use a random (ephemeral) key as well as the coordinator's public key to generate a shared key (via ECDH) encrypt it.
+
         -  If they are bribed, the user should sign it using an old public key which has already been replaced with a new one.
+
         -  Otherwise, the user should use the most current public key they have registered.
-    -  Submit the the signed message that is message, as well as the epheremal public key in the clear to the contract using its `publishMessage()` function, which hashes the command and inserts it into the message tree.
+
+    -  Submit the the message, as well as the epheremal public key in the clear to the contract using its `publishMessage()` function, which hashes the command and inserts it into the message tree.
 
 5. The coordinator processes all the commands after the voting period ends.
 
 6. For each command, they perform the following steps:
     
     - Generate a new state root which reflects the following:
+
         - Leaf 0 is updated with a random leaf
-        - If the command is valid, also update the user's state leaf.
+
+        - If the command is valid, the user's state leaf is updated
+
     - Generate a zk-SNARK proof that this state root transition is valid. (Note that "state root" refers to the root of the state tree in the contract, not the Ethereum state root as defined in the Yellow Paper.)
+
     - An invalid message can one which is signed by a public key which a user had already replaced with another key. To allow a bribee to plausibly claim that they have voted correctly even if they use an old public key, we insert a random leaf at index `0` whether or not the message is valid.
 
 7. The above can also be done in batches.
@@ -67,8 +74,6 @@ Refer to the [Glossary](#Glossary) for defintions of terms.
 The coordinator may decrypt all commands.
 
 Each participant may only decrypt their own messages, and should not be able to decrypt other users' messages or access their commands.
-
-Everyone else should not be able to decrypt any messages.
 
 No-one else should be able to decrypt any messages.
 

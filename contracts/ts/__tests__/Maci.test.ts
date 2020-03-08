@@ -133,9 +133,9 @@ describe('MACI', () => {
         const voteOptionIndex = bigInt(0)
         const newVoteWeight = bigInt(9)
 
-        voteOptionTree.insert(hashOne(newVoteWeight), newVoteWeight)
+        voteOptionTree.insert(newVoteWeight, newVoteWeight)
         for (let i = 1; i < 2 ** voteOptionTreeDepth; i++) {
-            voteOptionTree.insert(hashOne(bigInt(0)), bigInt(0))
+            voteOptionTree.insert(bigInt(0), bigInt(0))
         }
 
         const ephemeralKeypair = new Keypair()
@@ -213,7 +213,7 @@ describe('MACI', () => {
         const temp = setupTree(voteOptionTreeDepth, NOTHING_UP_MY_SLEEVE)
 
         for (let i = 0; i < 2 ** voteOptionTreeDepth; i++) {
-            temp.insert(hashOne(bigInt(0)))
+            temp.insert(bigInt(0))
         }
 
         emptyVoteOptionTreeRoot = temp.root

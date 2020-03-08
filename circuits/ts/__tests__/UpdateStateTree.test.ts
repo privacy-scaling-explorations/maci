@@ -59,11 +59,11 @@ const getUpdateStateTreeParams = async (
     // Insert this user's votes into the vote option tree
 
     // Vote for option 1
-    user1VoteOptionTree.insert(hashOne(bigInt(1)), bigInt(1)) 
+    user1VoteOptionTree.insert(bigInt(1), bigInt(1)) 
 
-    user1VoteOptionTree.insert(hashOne(bigInt(0)))
-    user1VoteOptionTree.insert(hashOne(bigInt(0)))
-    user1VoteOptionTree.insert(hashOne(bigInt(0)))
+    user1VoteOptionTree.insert(bigInt(0))
+    user1VoteOptionTree.insert(bigInt(0))
+    user1VoteOptionTree.insert(bigInt(0))
 
     // Register user 1
     const user1ExistingStateLeaf = new StateLeaf(
@@ -204,7 +204,7 @@ describe('State tree root update verification circuit', () => {
         // (It replaces the value)
         user1VoteOptionTree.update(
             user1VoteOptionIndex,
-            hashOne(bigInt(user1VoteOptionWeight))
+            bigInt(user1VoteOptionWeight)
         )
 
         // Update state tree leaf (refer to user1Command)

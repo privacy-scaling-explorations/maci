@@ -73,12 +73,12 @@ const createUser = (
     const voteWeight = bigInt(0)
     for (let i = 0; i < voteOptionLength; i++) {
         // Vote for no-one by default
-        userVoteOptionTree.insert(hashOne(voteWeight), voteWeight)
+        userVoteOptionTree.insert(voteWeight, voteWeight)
     }
 
     const userStateLeaf = new StateLeaf(
         user.pubKey,
-        userVoteOptionTree.root, // User new vote option tree
+        userVoteOptionTree.root,
         creditBalance,
         nonce,
     )

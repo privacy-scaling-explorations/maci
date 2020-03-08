@@ -15,8 +15,6 @@ We welcome contributions to this project. Please join our
 You should have Node 11.14.0 installed. Use
 [`nvm`](https://github.com/nvm-sh/nvm) to install it.
 
-**TODO:** Test this with Node 12 LTS.
-
 You also need [Solidity 0.5.16](https://github.com/ethereum/solidity/releases/tag/v0.5.16) installed in your `PATH`.
 
 ### Get started
@@ -70,7 +68,8 @@ npm run downloadAllSnarks
 
 #### Unit tests
 
-The following submodules contain unit tests: `crypto`, `circuits`, `contracts`, and `domainobjs`.
+The following submodules contain unit tests: `crypto`, `circuits`, `contracts`,
+and `domainobjs`.
 
 Except for the `contracts` submodule, run unit tests as such (the following
 example is for `crypto`):
