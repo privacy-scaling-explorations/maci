@@ -150,7 +150,7 @@ contract MACI is Ownable, DomainObjs {
 
         // Make subsequent insertions start from leaf #1, as leaf #0 is only
         // updated with random data if a command is invalid.
-        stateTree.insertBlankAtZerothLeaf();
+        stateTree.insertLeaf(ZERO_VALUE);
     }
 
     /*

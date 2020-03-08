@@ -154,15 +154,6 @@ contract IncrementalMerkleTree is Ownable, SnarkConstants {
     }
 
     /*
-     * Make subsequent insertions start from leaf #1.
-     * Leaf #0 will remain the zero value.
-     */
-    function insertBlankAtZerothLeaf() public onlyOwner {
-        require(nextLeafIndex == 0, "MerkleTree: this function can only be called on an empty tree");
-        nextLeafIndex = 1;
-    }
-
-    /*
      * Concatenates and hashes two `uint256` values (left and right) using
      * a combination of MiMCSponge and `addmod`.
      * @param _left The first value
