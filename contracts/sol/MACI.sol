@@ -46,8 +46,8 @@ contract MACI is Ownable, DomainObjs {
     uint256 public postSignUpStateRoot;
 
     // For now, we hardcode the root of a tree with 16 leaves each with the
-    // value of hashOne(0)
-    uint256 public emptyVoteOptionTreeRoot = 21209824670086443676951025294328812549916724758546546871114494678033103541127;
+    // value of 0
+    uint256 public emptyVoteOptionTreeRoot = 18097266179879782427361438755277450939722755112152115227098348943187633376449;
 
     // A commitment to a 0-salted list of 0-results (currently hardcoded
     // to 16 + 1 elements)

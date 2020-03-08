@@ -101,19 +101,19 @@ template UpdateStateTree(
     var state_tree_max_leaves = 2 ** state_tree_depth;
 
     // Check 0: Make sure max indexes are valid
-    // Assume that there is no more than 255 possible candidates to vote for
+    // We assume that there are no more than 255 possible candidates to vote for
     component valid_vote_options_max_leaf_index = LessEqThan(8);
     valid_vote_options_max_leaf_index.in[0] <== vote_options_max_leaf_index;
-    valid_vote_options_max_leaf_index.in[1] <== vote_options_max_leaves; // TODO: Const /var
+    valid_vote_options_max_leaf_index.in[1] <== vote_options_max_leaves;
     valid_vote_options_max_leaf_index.out === 1;
 
-    // Assume that there is no more than 2.1 bil users registered (32 bit)
+    // We assume that there are no more than 2.1 bil users registered
     component valid_state_tree_max_leaf_index = LessEqThan(32);
     valid_state_tree_max_leaf_index.in[0] <== state_tree_max_leaf_index;
     valid_state_tree_max_leaf_index.in[1] <== state_tree_max_leaves;
     valid_state_tree_max_leaf_index.out === 1;
 
-    // Check 1. Coordinator is using correct private key
+    // Check 1. The coordinator's private key key is correct
     component derived_pub_key = PublicKey();
     derived_pub_key.private_key <== ecdh_private_key;
 
@@ -125,13 +125,14 @@ template UpdateStateTree(
     ecdh.public_key[0] <== ecdh_public_key[0];
     ecdh.public_key[1] <== ecdh_public_key[1];
 
-    // Check 2. Assert decrypted messages are the same
+    // Check 2. The decrypted message matches the given message
     component decrypted_command = Decrypt(message_length - 1);
     decrypted_command.private_key <== ecdh.shared_key;
     for (var i = 0; i < message_length; i++) {
         decrypted_command.message[i] <== message[i];
     }
 
+    // TODO: combine this loop with the above
     // Compute the leaf, which is the hash of the message
     component msg_hash = Hasher(message_length);
     msg_hash.key <== 0;
@@ -139,7 +140,7 @@ template UpdateStateTree(
         msg_hash.in[i] <== message[i];
     }
 
-    // Check 3. Make sure the leaf exists in the msg tree
+    // Check 3. The leaf exists in the message tree
     component msg_tree_leaf_exists = LeafExists(message_tree_depth);
     msg_tree_leaf_exists.root <== msg_tree_root;
     msg_tree_leaf_exists.leaf <== msg_hash.hash;
@@ -166,25 +167,17 @@ template UpdateStateTree(
 
     // Check 5. Verify the current vote weight exists in the
     //          user's vote_option_tree_root index
-    component vote_options_hash = Hasher(1);
-    vote_options_hash.key <== 0;
-    vote_options_hash.in[0] <== vote_options_leaf_raw;
-
     component vote_options_tree_valid = LeafExists(vote_options_tree_depth);
     vote_options_tree_valid.root <== vote_options_tree_root;
-    vote_options_tree_valid.leaf <== vote_options_hash.hash;
+    vote_options_tree_valid.leaf <== vote_options_leaf_raw;
     for (var i = 0; i < vote_options_tree_depth; i++) {
         vote_options_tree_valid.path_elements[i] <== vote_options_tree_path_elements[i];
         vote_options_tree_valid.path_index[i] <== vote_options_tree_path_index[i];
     }
 
-    // Update vote_option_tree_root with newly updated vote weight
-    component new_vote_options_leaf = Hasher(1);
-    new_vote_options_leaf.key <== 0;
-    new_vote_options_leaf.in[0] <== decrypted_command.out[CMD_VOTE_WEIGHT_IDX];
-
+    // Update vote_option_tree_root with the newly updated vote weight
     component new_vote_options_tree = MerkleTreeUpdate(vote_options_tree_depth);
-    new_vote_options_tree.leaf <== new_vote_options_leaf.hash;
+    new_vote_options_tree.leaf <== decrypted_command.out[CMD_VOTE_WEIGHT_IDX];
     for (var i = 0; i < vote_options_tree_depth; i++) {
         new_vote_options_tree.path_elements[i] <== vote_options_tree_path_elements[i];
         new_vote_options_tree.path_index[i] <== vote_options_tree_path_index[i];
