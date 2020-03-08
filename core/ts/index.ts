@@ -10,7 +10,6 @@ import {
 import {
     bigInt,
     MerkleTree,
-    hashOne,
 } from 'maci-crypto'
 
 const processMessage = (
@@ -64,7 +63,7 @@ const processMessage = (
     // Update the user's vote option tree
     userVoteOptionTree.update(
         bigInt(command.voteOptionIndex),
-        hashOne(bigInt(userCmdVoteOptionCredit)),
+        bigInt(userCmdVoteOptionCredit),
         bigInt(userCmdVoteOptionCredit)
     )
 

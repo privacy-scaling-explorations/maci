@@ -78,7 +78,7 @@ const createUser = (
 
     const userStateLeaf = new StateLeaf(
         user.pubKey,
-        userVoteOptionTree.root, // User new vote option tree
+        userVoteOptionTree.root,
         creditBalance,
         nonce,
     )
