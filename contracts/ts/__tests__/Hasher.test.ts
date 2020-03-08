@@ -34,7 +34,6 @@ describe('Hasher', () => {
         hasherContract = await deployer.deploy(Hasher, { MiMC: mimcContract.contractAddress })
     })
 
-    // TODO: use IncrementalMerkleTree.hashLeftRight
     it('maci-crypto.hashLeftRight should match hasher.hashLeftRight', async () => {
         const left = genRandomSalt()
         const right = genRandomSalt()
