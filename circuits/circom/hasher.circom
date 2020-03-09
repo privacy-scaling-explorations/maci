@@ -5,7 +5,7 @@ template Hasher(length) {
   signal input key;
   signal output hash;
 
-  component hasher = MiMCSponge(length, 220, 1);
+  component hasher = MiMCSponge(length, 1);
   hasher.k <== key;
 
   for (var i = 0; i < length; i++) {
@@ -21,10 +21,10 @@ template HashLeftRight() {
 
   signal output hash;
 
-  component hasher = Hasher(2);
-  hasher.key <== 0;
-  hasher.in[0] <== left;
-  hasher.in[1] <== right;
+  component hasher = MiMCSponge(2, 1);
+  left ==> hasher.ins[0];
+  right ==> hasher.ins[1];
+  hasher.k <== 0;
 
-  hash <== hasher.hash;
+  hash <== hasher.outs[0];
 }

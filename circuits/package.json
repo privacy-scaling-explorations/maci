@@ -39,7 +39,7 @@
         "@types/node": "^13.1.2",
         "argparse": "^1.0.10",
         "circom": "0.0.34",
-        "circomlib": "0.0.19",
+        "circomlib": "git+https://github.com/kobigurk/circomlib.git#4284dc1ef984a204db08864f5da530c97f9376ef",
         "jest": "^24.9.0",
         "libsemaphore": "^1.0.5",
         "maci-config": "1.0.0",
