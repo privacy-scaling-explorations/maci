@@ -1,32 +1,29 @@
 // Referenced https://github.com/peppersec/tornado-mixer/blob/master/circuits/merkleTree.circom
 
+include "../node_modules/circomlib/circuits/mux1.circom";
 include "./hasher.circom";
 
-// if path_index == 0 returns (left = input_element, right = path_element)
-// if path_index == 1 returns (left = path_element, right = input_element)
-template UpdateSelector() {
-  signal input input_element;
-  signal input path_element;
+template Selector() {
+  signal input input_elem;
+  signal input path_elem;
   signal input path_index;
 
   signal output left;
   signal output right;
 
-  signal leftSelector1;
-  signal leftSelector2;
-  signal rightSelector1;
-  signal rightSelector2;
-
-  // Ensure that path_index is either 0 or 1
   path_index * (1-path_index) === 0
 
-  leftSelector1 <== (1 - path_index) * input_element;
-  leftSelector2 <== (path_index) * path_element;
-  rightSelector1 <== (path_index) * input_element;
-  rightSelector2 <== (1 - path_index) * path_element;
+  component mux = MultiMux1(2);
+  mux.c[0][0] <== input_elem;
+  mux.c[0][1] <== path_elem;
 
-  left <== leftSelector1 + leftSelector2;
-  right <== rightSelector1 + rightSelector2;
+  mux.c[1][0] <== path_elem;
+  mux.c[1][1] <== input_elem;
+
+  mux.s <== path_index;
+
+  left <== mux.out[0];
+  right <== mux.out[1];
 }
 
 
@@ -45,20 +42,20 @@ template MerkleTreeUpdate(levels) {
   component hashers[levels];
 
   for (var i = 0; i < levels; i++) {
-    selectors[i] = UpdateSelector();
+    selectors[i] = Selector();
     hashers[i] = HashLeftRight();
 
-    selectors[i].path_element <== path_elements[i];
+    selectors[i].path_elem <== path_elements[i];
     selectors[i].path_index <== path_index[i];
 
     hashers[i].left <== selectors[i].left;
     hashers[i].right <== selectors[i].right;
   }
 
-  selectors[0].input_element <== leaf;
+  selectors[0].input_elem <== leaf;
 
   for (var i = 1; i < levels; i++) {
-    selectors[i].input_element <== hashers[i-1].hash;
+    selectors[i].input_elem <== hashers[i-1].hash;
   }
 
   root <== hashers[levels - 1].hash;
