@@ -26,39 +26,33 @@ template Selector() {
   right <== mux.out[1];
 }
 
+template MerkleTreeInclusionProof(n_levels) {
+    signal input leaf;
+    signal input path_index[n_levels];
+    signal input path_elements[n_levels];
+    signal output root;
 
-template MerkleTreeUpdate(levels) {
-  // Computes new merkletree root on update
-  // NOTE: path_elements and path_index can be
-  //       obtained from merkletree.js's `getPathUpdate` function
-  signal input leaf;
+    component selectors[n_levels];
+    component hashers[n_levels];
 
-  signal private input path_elements[levels];
-  signal private input path_index[levels];
+    for (var i = 0; i < n_levels; i++) {
+      selectors[i] = Selector();
+      hashers[i] = HashLeftRight();
 
-  signal output root;
+      path_index[i] ==> selectors[i].path_index;
+      path_elements[i] ==> selectors[i].path_elem;
 
-  component selectors[levels];
-  component hashers[levels];
+      selectors[i].left ==> hashers[i].left;
+      selectors[i].right ==> hashers[i].right;
+    }
 
-  for (var i = 0; i < levels; i++) {
-    selectors[i] = Selector();
-    hashers[i] = HashLeftRight();
+    leaf ==> selectors[0].input_elem;
 
-    selectors[i].path_elem <== path_elements[i];
-    selectors[i].path_index <== path_index[i];
+    for (var i = 1; i < n_levels; i++) {
+      hashers[i-1].hash ==> selectors[i].input_elem;
+    }
 
-    hashers[i].left <== selectors[i].left;
-    hashers[i].right <== selectors[i].right;
-  }
-
-  selectors[0].input_elem <== leaf;
-
-  for (var i = 1; i < levels; i++) {
-    selectors[i].input_elem <== hashers[i-1].hash;
-  }
-
-  root <== hashers[levels - 1].hash;
+    root <== hashers[n_levels - 1].hash;
 }
 
 
@@ -73,7 +67,7 @@ template LeafExists(levels){
 
   signal input root;
 
-  component merkletree = MerkleTreeUpdate(levels);
+  component merkletree = MerkleTreeInclusionProof(levels);
   merkletree.leaf <== leaf;
   for (var i = 0; i < levels; i++) {
     merkletree.path_index[i] <== path_index[i];

@@ -16,8 +16,8 @@
         "test-hasher-debug": "node --inspect-brk ./node_modules/.bin/jest Hasher.test.ts",
         "test-mt": "jest MerkleTree.test.ts",
         "test-mt-debug": "node --inspect-brk ./node_modules/.bin/jest MerkleTree.test.ts",
-        "test-quadVoteTally": "jest QuadVoteTally.test.ts",
-        "test-quadVoteTally-debug": "node --inspect-brk ./node_modules/.bin/jest QuadVoteTally.test.ts",
+        "test-quadVoteTally": "NODE_OPTIONS=--max-old-space-size=4096 jest QuadVoteTally.test.ts",
+        "test-quadVoteTally-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest QuadVoteTally.test.ts",
         "test-verifySignature": "jest VerifySignature.test.ts",
         "test-verifySignature-debug": "node --inspect-brk ./node_modules/.bin/jest VerifySignature.test.ts",
         "test-ecdh": "jest Ecdh.test.ts",
@@ -28,10 +28,10 @@
         "test-decrypt-debug": "node --inspect-brk ./node_modules/.bin/jest Decrypt.test.ts",
         "test-calculateTotal": "jest CalculateTotal.test.ts",
         "test-calculateTotal-debug": "node --inspect-brk ./node_modules/.bin/jest CalculateTotal.test.ts",
-        "test-updateStateTree": "jest ts/__tests__/UpdateStateTree.test.ts",
-        "test-updateStateTree-debug": "node --inspect-brk ./node_modules/.bin/jest UpdateStateTree.test.ts",
-        "test-batchUpdateStateTree": "jest BatchUpdateStateTree.test.ts",
-        "test-batchUpdateStateTree-debug": "node --inspect-brk ./node_modules/.bin/jest BatchUpdateStateTree.test.ts"
+        "test-updateStateTree": "NODE_OPTIONS=--max-old-space-size=4096 jest ts/__tests__/UpdateStateTree.test.ts",
+        "test-updateStateTree-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest UpdateStateTree.test.ts",
+        "test-batchUpdateStateTree": "NODE_OPTIONS=--max-old-space-size=4096 jest BatchUpdateStateTree.test.ts",
+        "test-batchUpdateStateTree-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest BatchUpdateStateTree.test.ts"
     },
     "dependencies": {},
     "devDependencies": {
