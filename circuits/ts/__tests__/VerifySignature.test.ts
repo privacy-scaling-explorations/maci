@@ -7,6 +7,7 @@ import {
     verifySignature,
     bigInt,
     hash,
+    bigInt2Buffer,
 } from 'maci-crypto'
 
 import {
@@ -17,9 +18,47 @@ import {
 import {
     compileAndLoadCircuit,
 } from '../'
+import * as circomlib from 'circomlib'
 
 describe('Signature verification circuit', () => {
     let circuit
+    it('verifies a valid signature created with circomlib', async () => {
+        circuit = await compileAndLoadCircuit('verifySignature_test.circom')
+
+        const keypair = new Keypair()
+        const command = new Command(
+            bigInt(0),
+            keypair.pubKey,
+            bigInt(123),
+            bigInt(123),
+            bigInt(1),
+        )
+
+        const signer = new Keypair()
+        const privKey = bigInt2Buffer(signer.privKey.rawPrivKey)
+        const pubKey = circomlib.eddsa.prv2pub(privKey)
+        const plaintext = hash(command.asArray())
+        const sig = circomlib.eddsa.signMiMCSponge(privKey, plaintext)
+
+        expect(verifySignature(plaintext, sig, pubKey)).toBeTruthy()
+
+        const circuitInputs = stringifyBigInts({
+            'from_x': stringifyBigInts(pubKey[0]),
+            'from_y': stringifyBigInts(pubKey[1]),
+            'R8x': stringifyBigInts(sig.R8[0]),
+            'R8y': stringifyBigInts(sig.R8[1]),
+            'S': stringifyBigInts(sig.S),
+            'preimage': stringifyBigInts(command.asArray())
+        })
+
+        const witness = circuit.calculateWitness(circuitInputs)
+        expect(circuit.checkWitness(witness)).toBeTruthy()
+
+        const idx = circuit.getSignalIdx('main.valid')
+        const isValid = witness[idx].toString()
+        expect(isValid).toEqual('1')
+    })
+
     it('verifies a valid signature', async () => {
         circuit = await compileAndLoadCircuit('verifySignature_test.circom')
 

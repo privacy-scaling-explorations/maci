@@ -13,7 +13,7 @@ import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
 
 contract MACI is Ownable, DomainObjs {
 
-    // A nothing up my sleeve zero value
+    // A nothing-up-my-sleeve zero value
     // Should be equal to 5503045433092194285660061905880311622788666850989422096966288514930349325741
     uint256 ZERO_VALUE = uint256(keccak256(abi.encodePacked('Maci'))) % SNARK_SCALAR_FIELD;
 

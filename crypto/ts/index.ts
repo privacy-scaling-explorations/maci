@@ -26,6 +26,7 @@ interface Ciphertext {
     data: SnarkBigInt[];
 }
 
+// An EdDSA signature.
 // TODO: document what R8 and S mean
 interface Signature {
     R8: SnarkBigInt[];
@@ -34,6 +35,8 @@ interface Signature {
 
 const bigInt = snarkjs.bigInt
 
+// A nothing-up-my-sleeve zero value
+// Should be equal to 5503045433092194285660061905880311622788666850989422096966288514930349325741
 const SNARK_FIELD_SIZE = snarkjs.bigInt(
     '21888242871839275222246405745257275088548364400416034343698204186575808495617'
 )
@@ -41,21 +44,18 @@ const SNARK_FIELD_SIZE = snarkjs.bigInt(
 const NOTHING_UP_MY_SLEEVE =
     bigInt(ethers.utils.solidityKeccak256(['bytes'], [ethers.utils.toUtf8Bytes('Maci')])) % SNARK_FIELD_SIZE
 
+/*
+ * Convert a SnarkBigInt to a Buffer
+ */
 const bigInt2Buffer = (i: SnarkBigInt): Buffer => {
     return Buffer.from(i.toString(16))
 }
 
+/*
+ * Convert a Buffer to a SnarkBigInt
+ */
 const buffer2BigInt = (b: Buffer): BigInt => {
     return snarkjs.bigInt('0x' + b.toString('hex'))
-}
-
-/*
- * A convenience function for a few functions which use mimcsponge to hash one
- * value with key 0 and require only 1 output
- */
-const mimcspongeHashOne = (preImage: SnarkBigInt): SnarkBigInt => {
-
-    return mimcsponge.multiHash([preImage], 0, 1)
 }
 
 /*
@@ -67,11 +67,19 @@ const hash = (plaintext: Plaintext): SnarkBigInt => {
     return mimcsponge.multiHash(plaintext, 0, 1)
 }
 
+/*
+ * A convenience function for to use mimcsponge to hash a single SnarkBigInt
+ * with key 0 and require only 1 output
+ */
 const hashOne = (preImage: SnarkBigInt): SnarkBigInt => {
 
     return mimcsponge.multiHash([preImage], 0, 1)
 }
 
+/*
+ * A convenience function for to use mimcsponge to hash two SnarkBigInts
+ * with key 0 and require only 1 output
+ */
 const hashLeftRight = (left: SnarkBigInt, right: SnarkBigInt): SnarkBigInt => {
 
     return mimcsponge.multiHash([left, right], 0, 1)
@@ -143,7 +151,7 @@ const formatPrivKeyForBabyJub = (privKey: PrivKey) => {
     // Guaranteeing that any low order points in babyjubjub get deleted
     const sBuff = eddsa.pruneBuffer(
         bigInt2Buffer(
-            mimcspongeHashOne(privKey)
+            hashOne(privKey)
         ).slice(0, 32)
     )
 
@@ -249,24 +257,19 @@ const decrypt = (
  */
 const sign = (
     privKey: PrivKey,
-    plaintext: Plaintext,
+    hashedData: SnarkBigInt,
 ): Signature => {
 
     // TODO: make these intermediate variables have more meaningful names
-    const h1 = bigInt2Buffer(mimcspongeHashOne(privKey))
+    const h1 = bigInt2Buffer(hashOne(privKey))
 
     // TODO: document these steps
     const sBuff = eddsa.pruneBuffer(h1.slice(0, 32))
     const s = snarkjs.bigInt.leBuff2int(sBuff)
     const A = babyJub.mulPointEscalar(babyJub.Base8, s.shr(3))
-
-    const msgBuff = snarkjs.bigInt.leInt2Buff(
-        plaintext,
-        32
-    )
-
+    const msgBuff = snarkjs.bigInt.leInt2Buff(hashedData, 32) 
     const rBuff = bigInt2Buffer(
-        mimcspongeHashOne(
+        hashOne(
             buffer2BigInt(Buffer.concat(
                 [h1.slice(32, 64), msgBuff]
             ))
@@ -277,7 +280,7 @@ const sign = (
     r = r.mod(babyJub.subOrder)
 
     const R8 = babyJub.mulPointEscalar(babyJub.Base8, r)
-    const hm = mimcsponge.multiHash([R8[0], R8[1], A[0], A[1], plaintext], 0, 1)
+    const hm = hash([R8[0], R8[1], A[0], A[1], hashedData])
     const S = r.add(hm.mul(s)).mod(babyJub.subOrder)
 
     const signature: Signature = { R8, S }
@@ -336,4 +339,5 @@ export {
     formatPrivKeyForBabyJub,
     MerkleTree,
     NOTHING_UP_MY_SLEEVE,
+    bigInt2Buffer,
 }
