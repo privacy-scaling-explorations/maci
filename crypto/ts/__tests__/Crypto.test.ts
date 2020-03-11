@@ -7,12 +7,16 @@ import {
     decrypt,
     sign,
     hash,
+    hashOne,
     verifySignature,
+    bigInt,
+    bigInt2Buffer,
 } from '../'
 
 import * as snarkjs from 'snarkjs'
+import * as circomlib from 'circomlib'
 
-const SNARK_FIELD_SIZE = snarkjs.bigInt('21888242871839275222246405745257275088548364400416034343698204186575808495617')
+const SNARK_FIELD_SIZE = bigInt('21888242871839275222246405745257275088548364400416034343698204186575808495617')
 
 describe('Cryptographic operations', () => {
     const { privKey, pubKey } = genKeypair()
@@ -26,26 +30,26 @@ describe('Cryptographic operations', () => {
 
     let plaintext: any[] = []
     for (let i = 0; i < 5; i ++) {
-        plaintext.push(snarkjs.bigInt(Math.floor(Math.random() * 50)))
+        plaintext.push(bigInt(Math.floor(Math.random() * 50)))
     }
 
     const ciphertext = encrypt(plaintext, ecdhSharedKey)
     const decryptedCiphertext = decrypt(ciphertext, ecdhSharedKey)
 
     describe('Hashing', () => {
-        it('The hash of a plaintext should be valid', () => {
+        it('The hash of a plaintext should be smaller than the snark field size', () => {
             const h = hash(plaintext)
             expect(h.lt(SNARK_FIELD_SIZE)).toBeTruthy()
         })
     })
 
     describe('Public and private keys', () => {
-        it('The private keys should be valid', () => {
+        it('A private key should be smaller than the snark field size', () => {
             expect(privKey.lt(SNARK_FIELD_SIZE)).toBeTruthy()
             // TODO: add tests to ensure that the prune buffer step worked
         })
 
-        it('The public keys should be valid', () => {
+        it('A public key\'s constitutent values should be smaller than the snark field size', () => {
             // TODO: Figure out if these checks are correct and enough
             expect(pubKey[0].lt(SNARK_FIELD_SIZE)).toBeTruthy()
             expect(pubKey[1].lt(SNARK_FIELD_SIZE)).toBeTruthy()
@@ -58,7 +62,7 @@ describe('Cryptographic operations', () => {
             expect(ecdhSharedKey.toString()).toEqual(ecdhSharedKey1.toString())
         })
 
-        it ('The shared keys should be valid', () => {
+        it ('A shared key should be smaller than the snark field size', () => {
             // TODO: Figure out if this check is correct and enough
             expect(ecdhSharedKey.lt(SNARK_FIELD_SIZE)).toBeTruthy()
         })
@@ -78,7 +82,7 @@ describe('Cryptographic operations', () => {
             }
         })
 
-        it ('The ciphertext should be valid', () => {
+        it ('The ciphertext should be smaller than the snark field size', () => {
             expect(ciphertext.iv.lt(SNARK_FIELD_SIZE)).toBeTruthy()
             for (let i = 0; i < ciphertext.data.length; i++) {
                 // TODO: Figure out if this check is correct and enough
@@ -95,7 +99,7 @@ describe('Cryptographic operations', () => {
         })
 
         it ('The plaintext should be incorrect if decrypted with a different key', () => {
-            const sk = privKey + snarkjs.bigInt(1)
+            const sk = privKey + bigInt(1)
             const pk = genPubKey(sk)
             const differentKey = genEcdhSharedKey(sk, pk)
 
@@ -110,12 +114,10 @@ describe('Cryptographic operations', () => {
     })
 
     describe('Signature generation and verification', () => {
-        const message = snarkjs.bigInt(
-            Math.floor(Math.random() * 100000)
-        )
+        const message = bigInt(Math.floor(Math.random() * 1000000000))
         const signature = sign(privKey, message)
 
-        it ('The signature should have the correct format', () => {
+        it ('The signature should have the correct format and it constitutent parts should be smaller than the snark field size', () => {
             expect(signature).toHaveProperty('R8')
             expect(signature).toHaveProperty('S')
             expect(signature.R8[0].lt(SNARK_FIELD_SIZE)).toBeTruthy()
@@ -134,7 +136,7 @@ describe('Cryptographic operations', () => {
 
         it ('The signature should be invalid for a different message', () => {
             const valid = verifySignature(
-                message + snarkjs.bigInt(1),
+                message + bigInt(1),
                 signature,
                 pubKey,
             )
@@ -146,7 +148,7 @@ describe('Cryptographic operations', () => {
                 message,
                 {
                     R8: signature.R8,
-                    S: signature.S + snarkjs.bigInt(1),
+                    S: signature.S + bigInt(1),
                 },
                 pubKey,
             )

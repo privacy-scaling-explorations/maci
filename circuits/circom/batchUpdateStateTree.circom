@@ -119,7 +119,7 @@ template BatchUpdateStateTree(
     }
 
     // Update random leaf at index 0
-    component final_state_tree = MerkleTreeUpdate(state_tree_depth);
+    component final_state_tree = MerkleTreeInclusionProof(state_tree_depth);
     final_state_tree.leaf <== random_leaf;
     for (var i = 0; i < state_tree_depth; i++) {
         final_state_tree.path_elements[i] <== random_leaf_path_elements[i];

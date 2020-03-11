@@ -1,67 +1,58 @@
 // Referenced https://github.com/peppersec/tornado-mixer/blob/master/circuits/merkleTree.circom
 
+include "../node_modules/circomlib/circuits/mux1.circom";
 include "./hasher.circom";
 
-// if path_index == 0 returns (left = input_element, right = path_element)
-// if path_index == 1 returns (left = path_element, right = input_element)
-template UpdateSelector() {
-  signal input input_element;
-  signal input path_element;
+template Selector() {
+  signal input input_elem;
+  signal input path_elem;
   signal input path_index;
 
   signal output left;
   signal output right;
 
-  signal leftSelector1;
-  signal leftSelector2;
-  signal rightSelector1;
-  signal rightSelector2;
-
-  // Ensure that path_index is either 0 or 1
   path_index * (1-path_index) === 0
 
-  leftSelector1 <== (1 - path_index) * input_element;
-  leftSelector2 <== (path_index) * path_element;
-  rightSelector1 <== (path_index) * input_element;
-  rightSelector2 <== (1 - path_index) * path_element;
+  component mux = MultiMux1(2);
+  mux.c[0][0] <== input_elem;
+  mux.c[0][1] <== path_elem;
 
-  left <== leftSelector1 + leftSelector2;
-  right <== rightSelector1 + rightSelector2;
+  mux.c[1][0] <== path_elem;
+  mux.c[1][1] <== input_elem;
+
+  mux.s <== path_index;
+
+  left <== mux.out[0];
+  right <== mux.out[1];
 }
 
+template MerkleTreeInclusionProof(n_levels) {
+    signal input leaf;
+    signal input path_index[n_levels];
+    signal input path_elements[n_levels];
+    signal output root;
 
-template MerkleTreeUpdate(levels) {
-  // Computes new merkletree root on update
-  // NOTE: path_elements and path_index can be
-  //       obtained from merkletree.js's `getPathUpdate` function
-  signal input leaf;
+    component selectors[n_levels];
+    component hashers[n_levels];
 
-  signal private input path_elements[levels];
-  signal private input path_index[levels];
+    for (var i = 0; i < n_levels; i++) {
+      selectors[i] = Selector();
+      hashers[i] = HashLeftRight();
 
-  signal output root;
+      path_index[i] ==> selectors[i].path_index;
+      path_elements[i] ==> selectors[i].path_elem;
 
-  component selectors[levels];
-  component hashers[levels];
+      selectors[i].left ==> hashers[i].left;
+      selectors[i].right ==> hashers[i].right;
+    }
 
-  for (var i = 0; i < levels; i++) {
-    selectors[i] = UpdateSelector();
-    hashers[i] = HashLeftRight();
+    leaf ==> selectors[0].input_elem;
 
-    selectors[i].path_element <== path_elements[i];
-    selectors[i].path_index <== path_index[i];
+    for (var i = 1; i < n_levels; i++) {
+      hashers[i-1].hash ==> selectors[i].input_elem;
+    }
 
-    hashers[i].left <== selectors[i].left;
-    hashers[i].right <== selectors[i].right;
-  }
-
-  selectors[0].input_element <== leaf;
-
-  for (var i = 1; i < levels; i++) {
-    selectors[i].input_element <== hashers[i-1].hash;
-  }
-
-  root <== hashers[levels - 1].hash;
+    root <== hashers[n_levels - 1].hash;
 }
 
 
@@ -76,7 +67,7 @@ template LeafExists(levels){
 
   signal input root;
 
-  component merkletree = MerkleTreeUpdate(levels);
+  component merkletree = MerkleTreeInclusionProof(levels);
   merkletree.leaf <== leaf;
   for (var i = 0; i < levels; i++) {
     merkletree.path_index[i] <== path_index[i];

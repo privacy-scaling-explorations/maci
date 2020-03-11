@@ -1,4 +1,4 @@
 include "../merkletree.circom"
 
-component main = MerkleTreeUpdate(4);
+component main = MerkleTreeInclusionProof(4);
 

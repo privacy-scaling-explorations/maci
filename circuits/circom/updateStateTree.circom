@@ -176,7 +176,7 @@ template UpdateStateTree(
     }
 
     // Update vote_option_tree_root with the newly updated vote weight
-    component new_vote_options_tree = MerkleTreeUpdate(vote_options_tree_depth);
+    component new_vote_options_tree = MerkleTreeInclusionProof(vote_options_tree_depth);
     new_vote_options_tree.leaf <== decrypted_command.out[CMD_VOTE_WEIGHT_IDX];
     for (var i = 0; i < vote_options_tree_depth; i++) {
         new_vote_options_tree.path_elements[i] <== vote_options_tree_path_elements[i];
@@ -248,7 +248,7 @@ template UpdateStateTree(
     valid_update.in[1] <== valid_signature.out + sufficient_vote_credits.out + correct_nonce.out + valid_state_leaf_index.out + valid_vote_options_leaf_index.out;
 
     // Compute the Merkle root of the new state tree
-    component new_state_tree = MerkleTreeUpdate(state_tree_depth);
+    component new_state_tree = MerkleTreeInclusionProof(state_tree_depth);
     new_state_tree.leaf <== new_state_tree_leaf.hash;
     for (var i = 0; i < state_tree_depth; i++) {
         new_state_tree.path_elements[i] <== state_tree_path_elements[i];
