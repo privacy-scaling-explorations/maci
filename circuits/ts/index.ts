@@ -5,7 +5,7 @@ const compiler = require('circom')
 
 import {
     stringifyBigInts,
-    MerkleTree,
+    IncrementalMerkleTree,
     SnarkBigInt,
 } from 'maci-crypto'
 
@@ -27,7 +27,7 @@ const genBatchUstInputs = (
     coordinator: Keypair,
     msgs: Message[],
     ecdhPublicKeyBatch: PubKey[],
-    msgTree: MerkleTree,
+    msgTree: IncrementalMerkleTree,
     msgTreeBatchPathElements: SnarkBigInt[],
     msgTreeBatchStartIndex: SnarkBigInt,
     randomStateLeaf: StateLeaf,
@@ -38,7 +38,7 @@ const genBatchUstInputs = (
     userVoteOptionsBatchPathElements: SnarkBigInt[],
     userVoteOptionsBatchPathIndexes: SnarkBigInt[],
     voteOptionsMaxIndex: SnarkBigInt,
-    stateTreeBatchRaw: SnarkBigInt[],
+    stateTreeBatch: StateLeaf[],
     stateTreeMaxIndex: SnarkBigInt,
     stateTreeBatchRoot: SnarkBigInt[],
     stateTreeBatchPathElements: SnarkBigInt[],
@@ -61,7 +61,7 @@ const genBatchUstInputs = (
         'vote_options_tree_path_elements': userVoteOptionsBatchPathElements,
         'vote_options_tree_path_index': userVoteOptionsBatchPathIndexes,
         'vote_options_max_leaf_index': voteOptionsMaxIndex,
-        'state_tree_data_raw': stateTreeBatchRaw.map((x) => x.asCircuitInputs()),
+        'state_tree_data_raw': stateTreeBatch.map((x) => x.asCircuitInputs()),
         'state_tree_max_leaf_index': stateTreeMaxIndex,
         'state_tree_root': stateTreeBatchRoot,
         'state_tree_path_elements': stateTreeBatchPathElements,

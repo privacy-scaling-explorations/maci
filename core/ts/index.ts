@@ -9,14 +9,15 @@ import {
 
 import {
     bigInt,
-    MerkleTree,
+    IncrementalMerkleTree,
 } from 'maci-crypto'
 
 const processMessage = (
     sharedKey: PrivKey,
     msg: Message,
-    oldStateTree: MerkleTree,
-    oldUserVoteOptionTree: MerkleTree,
+    stateLeaf: StateLeaf,
+    oldStateTree: IncrementalMerkleTree,
+    oldUserVoteOptionTree: IncrementalMerkleTree,
 ) => {
 
     // Deep-copy the trees
@@ -26,28 +27,25 @@ const processMessage = (
     // Decrypt the message
     const { command, signature } = Command.decrypt(msg, sharedKey)
 
-    const stateLeaf = stateTree.leavesRaw[command.stateIndex]
-
     // If the state tree index in the command is invalid, do nothing
     if (parseInt(command.stateIndex) >= parseInt(stateTree.nextIndex)) {
-        return { stateTree, userVoteOptionTree }
+        return { stateTree, userVoteOptionTree, stateLeaf }
     }
 
     // If the signature is invalid, do nothing
     if (!command.verifySignature(signature, stateLeaf.pubKey)) {
-        return { stateTree, userVoteOptionTree }
+        return { stateTree, userVoteOptionTree, stateLeaf }
     }
 
     // If the nonce is invalid, do nothing
     if (!command.nonce.equals(stateLeaf.nonce + bigInt(1))) {
-        return { stateTree, userVoteOptionTree }
+        return { stateTree, userVoteOptionTree, stateLeaf }
     }
 
     // If there are insufficient vote credits, do nothing
     const userPrevSpentCred =
-        userVoteOptionTree.leavesRaw[
-            parseInt(command.voteOptionIndex)
-        ]
+        userVoteOptionTree.getLeaf(parseInt(command.voteOptionIndex))
+
     const userCmdVoteOptionCredit = command.newVoteWeight
 
     const voteCreditsLeft = 
@@ -57,14 +55,13 @@ const processMessage = (
 
     // If the voice credits spent is invalid, do nothing
     if (voteCreditsLeft < 0) {
-        return { stateTree, userVoteOptionTree }
+        return { stateTree, userVoteOptionTree, stateLeaf }
     }
 
     // Update the user's vote option tree
     userVoteOptionTree.update(
         bigInt(command.voteOptionIndex),
         bigInt(userCmdVoteOptionCredit),
-        bigInt(userCmdVoteOptionCredit)
     )
 
     // Update the state tree
@@ -78,10 +75,9 @@ const processMessage = (
     stateTree.update(
         command.stateIndex,
         newStateLeaf.hash(),
-        newStateLeaf,
     )
 
-    return { stateTree, userVoteOptionTree }
+    return { stateTree, userVoteOptionTree, newStateLeaf }
 }
 
 export {

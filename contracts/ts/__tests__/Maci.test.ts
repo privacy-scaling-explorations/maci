@@ -27,9 +27,9 @@ import {
     hash,
     hashOne,
     genKeyPair,
-    setupTree,
     genPubKey,
     genRandomSalt,
+    IncrementalMerkleTree,
     SnarkBigInt,
     genEcdhSharedKey,
     NOTHING_UP_MY_SLEEVE,
@@ -72,15 +72,17 @@ const voteOptionTreeDepth = config.maci.merkleTrees.voteOptionTreeDepth
 const numVoteOptions = 2 ** voteOptionTreeDepth
 const intermediateStateTreeDepth = config.maci.merkleTrees.intermediateStateTreeDepth
 
-const messageTree = setupTree(
+const messageTree = new IncrementalMerkleTree(
     config.maci.merkleTrees.messageTreeDepth,
     NOTHING_UP_MY_SLEEVE,
 )
 
-let stateTree = setupTree(
+let stateTree = new IncrementalMerkleTree(
     config.maci.merkleTrees.stateTreeDepth,
     NOTHING_UP_MY_SLEEVE,
 )
+
+let stateLeaves: StateLeaf[] = []
 
 const loadPk = (binName: string): SnarkProvingKey => {
     const p = path.join(__dirname, '../../../circuits/build/' + binName + '.bin')
@@ -128,14 +130,14 @@ describe('MACI', () => {
     // This array contains four commands from the same user
     let batch: any[] = []
     for (let i = 0; i < config.maci.messageBatchSize; i++) {
-        const voteOptionTree = setupTree(voteOptionTreeDepth, NOTHING_UP_MY_SLEEVE)
+        const voteOptionTree = new IncrementalMerkleTree(voteOptionTreeDepth, NOTHING_UP_MY_SLEEVE)
 
         const voteOptionIndex = bigInt(0)
         const newVoteWeight = bigInt(9)
 
-        voteOptionTree.insert(newVoteWeight, newVoteWeight)
+        voteOptionTree.insert(newVoteWeight)
         for (let i = 1; i < 2 ** voteOptionTreeDepth; i++) {
-            voteOptionTree.insert(bigInt(0), bigInt(0))
+            voteOptionTree.insert(bigInt(0))
         }
 
         const ephemeralKeypair = new Keypair()
@@ -208,9 +210,10 @@ describe('MACI', () => {
 
         // Insert a zero value in the off-chain state tree
         stateTree.insert(NOTHING_UP_MY_SLEEVE)
+        stateLeaves.push(NOTHING_UP_MY_SLEEVE)
 
         // Cache an empty vote option tree root
-        const temp = setupTree(voteOptionTreeDepth, NOTHING_UP_MY_SLEEVE)
+        const temp = new IncrementalMerkleTree(voteOptionTreeDepth, NOTHING_UP_MY_SLEEVE)
 
         for (let i = 0; i < 2 ** voteOptionTreeDepth; i++) {
             temp.insert(bigInt(0))
@@ -284,7 +287,8 @@ describe('MACI', () => {
                 bigInt(config.maci.initialVoiceCreditBalance),
             )
 
-            stateTree.insert(stateLeaf.hash(), stateLeaf)
+            stateTree.insert(stateLeaf.hash())
+            stateLeaves.push(stateLeaf)
 
             const root = await maciContract.getStateTreeRoot()
             expect(stateTree.root.toString()).toEqual(root.toString())
@@ -415,7 +419,7 @@ describe('MACI', () => {
 
     describe('batchProcessMessage before padding the state tree', () => {
         it('should not tally votes if the state tree is not padded', async () => {
-            //expect.assertions(2)
+            expect.assertions(1)
 
             const errorMsg = 'MACI: the state tree needs to be padded with blank leaves'
             try {
@@ -468,8 +472,10 @@ describe('MACI', () => {
             // First, pad the state tree
 
             await maciContract.padStateTree(2)
-            stateTree.insert(blankStateLeafHash, blankStateLeaf)
-            stateTree.insert(blankStateLeafHash, blankStateLeaf)
+            stateTree.insert(blankStateLeafHash)
+            stateTree.insert(blankStateLeafHash)
+            stateLeaves.push(blankStateLeaf)
+            stateLeaves.push(blankStateLeaf)
 
             batchUstCircuit = await compileAndLoadCircuit('batchUpdateStateTree_test.circom')
 
@@ -501,7 +507,7 @@ describe('MACI', () => {
 
                 ecdhPublicKeyBatch.push(ephemeralKeypair.pubKey)
 
-                const [ messageTreePathElements, _ ] = messageTree.getPathUpdate(i)
+                const [messageTreePathElements, _] = messageTree.getPathUpdate(i)
 
                 // Note that all the messages are from the same user, whose
                 // leaf is at index 1
@@ -511,12 +517,10 @@ describe('MACI', () => {
                     stateTreePathIndices
                 ] = stateTree.getPathUpdate(1)
 
-                stateTreeBatchRaw.push(stateTree.leavesRaw[1])
-
+                stateTreeBatchRaw.push(stateLeaves[1])
                 stateTreeBatchRoot.push(stateTree.root)
                 stateTreeBatchPathElements.push(stateTreePathElements)
                 stateTreeBatchPathIndices.push(stateTreePathIndices)
-
                 messageTreeBatchPathElements.push(messageTreePathElements)
 
                 const [
@@ -527,12 +531,12 @@ describe('MACI', () => {
                 userVoteOptionsBatchRoot.push(voteOptionTree.root)
                 userVoteOptionsBatchPathElements.push(userVoteOptionsPathElements)
                 userVoteOptionsBatchPathIndices.push(userVoteOptionsPathIndices)
-
-                voteOptionTreeBatchLeafRaw.push(voteOptionTree.leavesRaw[command.voteOptionIndex])
+                voteOptionTreeBatchLeafRaw.push(voteOptionTree.getLeaf(command.voteOptionIndex))
 
                 const result = processMessage(
                     ecdhSharedKey,
                     message,
+                    stateLeaves[1],
                     stateTree,
                     voteOptionTree,
                 )
@@ -540,6 +544,9 @@ describe('MACI', () => {
                 results.push(result)
 
                 stateTree = result.stateTree
+                if (i === 1) {
+                    stateLeaves[1] = result.newStateLeaf
+                }
             }
 
             const stateTreeMaxIndex = bigInt(stateTree.nextIndex - 1)
@@ -578,7 +585,8 @@ describe('MACI', () => {
             const circuitNewStateRoot = witness[idx].toString()
 
             // Update the first leaf in the state tree with a random value
-            stateTree.update(0, randomStateLeaf.hash(), randomStateLeaf)
+            stateTree.update(0, randomStateLeaf.hash())
+            stateLeaves[0] = randomStateLeaf
 
             expect(stateTree.root.toString()).toEqual(circuitNewStateRoot)
 
@@ -629,7 +637,7 @@ describe('MACI', () => {
         let voteOptionTrees = []
         let intermediateLeaf
 
-        const intermediateStateTree = setupTree(
+        const intermediateStateTree = new IncrementalMerkleTree(
             stateTreeDepth - intermediateStateTreeDepth,
             NOTHING_UP_MY_SLEEVE,
         )
@@ -644,12 +652,12 @@ describe('MACI', () => {
             let circuitInputs = {}
 
             // Compute the Merkle proof for the batch
-            const batchTree = setupTree(intermediateStateTreeDepth, NOTHING_UP_MY_SLEEVE)
+            const batchTree = new IncrementalMerkleTree(intermediateStateTreeDepth, NOTHING_UP_MY_SLEEVE)
             const emptyBatchTreeRoot = batchTree.root
             const batchSize = 2 ** intermediateStateTreeDepth
 
             for (let i = 0; i < batchSize; i++) {
-                batchTree.insert(stateTree.leaves[i])
+                batchTree.insert(stateTree.getLeaf(i))
             }
 
             intermediateStateTree.insert(batchTree.root)
@@ -695,7 +703,8 @@ describe('MACI', () => {
             circuitInputs['intermediateStateRoot'] = intermediateStateTree.leaves[intermediatePathIndex]
             circuitInputs['intermediatePathElements'] = intermediatePathElements
             circuitInputs['intermediatePathIndex'] = intermediatePathIndex
-            circuitInputs['stateLeaves'] = stateTree.leavesRaw.map((x) => x.asCircuitInputs())
+            circuitInputs['stateLeaves'] = stateLeaves.map((x) => x.asCircuitInputs())
+            debugger
 
             qvtWitness = qvtCircuit.calculateWitness(stringifyBigInts(circuitInputs))
             expect(qvtCircuit.checkWitness(qvtWitness)).toBeTruthy()

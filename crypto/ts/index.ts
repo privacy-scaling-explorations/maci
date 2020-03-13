@@ -3,7 +3,7 @@ import * as crypto from 'crypto'
 import * as ethers from 'ethers'
 import * as snarkjs from 'snarkjs'
 import { babyJub, eddsa, mimcsponge, mimc7 } from 'circomlib'
-import { createMerkleTree, MerkleTree } from './merkleTree'
+import { IncrementalMerkleTree } from './IncrementalMerkleTree'
 const stringifyBigInts: (obj: object) => object = snarkjs.stringifyBigInts
 const unstringifyBigInts: (obj: object) => object = snarkjs.unstringifyBigInts
 
@@ -302,16 +302,6 @@ const verifySignature = (
     return eddsa.verifyMiMCSponge(hashedData, signature, pubKey)
 }
 
-const setupTree = (
-    levels: number,
-    zeroValue: number = 0,
-) => {
-
-    const tree = createMerkleTree(levels, zeroValue)
-
-    return tree
-}
-
 export {
     SnarkBigInt,
     genRandomSalt,
@@ -333,11 +323,11 @@ export {
     Ciphertext,
     Plaintext,
     bigInt,
-    setupTree,
     stringifyBigInts,
     unstringifyBigInts,
     formatPrivKeyForBabyJub,
-    MerkleTree,
+    IncrementalMerkleTree,
     NOTHING_UP_MY_SLEEVE,
+    SNARK_FIELD_SIZE,
     bigInt2Buffer,
 }
