@@ -9,8 +9,8 @@
         "test": "jest",
         "test-crypto": "jest Crypto.test.ts",
         "test--crypto-debug": "node --inspect-brk ./node_modules/.bin/jest Crypto.test.ts",
-        "test-mt": "jest MerkleTree.test.ts",
-        "test-mt-debug": "node --inspect-brk ./node_modules/.bin/jest MerkleTree.test.ts"
+        "test-mt": "jest IncrementalMerkleTree.test.ts",
+        "test-mt-debug": "node --inspect-brk ./node_modules/.bin/jest IncrementalMerkleTree.test.ts"
     },
     "dependencies": {},
     "devDependencies": {

@@ -13,7 +13,7 @@ import {
     Message,
 } from 'maci-domainobjs'
 import {
-    setupTree,
+    IncrementalMerkleTree,
     genRandomSalt,
     Plaintext,
     Ciphertext,
@@ -38,15 +38,15 @@ const getUpdateStateTreeParams = async (
 ) => {
 
     // Construct the trees
-    const stateTree = setupTree(
+    const stateTree = new IncrementalMerkleTree(
         config.maci.merkleTrees.stateTreeDepth,
         NOTHING_UP_MY_SLEEVE,
     )
-    const msgTree = setupTree(
+    const msgTree = new IncrementalMerkleTree(
         config.maci.merkleTrees.messageTreeDepth,
         NOTHING_UP_MY_SLEEVE,
     )
-    const user1VoteOptionTree = setupTree(
+    const user1VoteOptionTree = new IncrementalMerkleTree(
         config.maci.merkleTrees.voteOptionTreeDepth, 
         NOTHING_UP_MY_SLEEVE,
     )
@@ -54,13 +54,12 @@ const getUpdateStateTreeParams = async (
     // Register users into the stateTree.
     // stateTree index 0 is a random leaf used to insert random data when the
     // decryption fails
-    stateTree.insert(hashOne(str2BigInt('random data')))
+    stateTree.insert(genRandomSalt())
 
     // Insert this user's votes into the vote option tree
 
     // Vote for option 1
-    user1VoteOptionTree.insert(bigInt(1), bigInt(1)) 
-
+    user1VoteOptionTree.insert(bigInt(1))
     user1VoteOptionTree.insert(bigInt(0))
     user1VoteOptionTree.insert(bigInt(0))
     user1VoteOptionTree.insert(bigInt(0))
@@ -78,8 +77,8 @@ const getUpdateStateTreeParams = async (
     const user1StateTreeIndex = stateTree.nextIndex - 1
 
     // Insert more random data as we just want to validate user 1
-    stateTree.insert(hashOne(genRandomSalt()))
-    stateTree.insert(hashOne(genRandomSalt()))
+    stateTree.insert(genRandomSalt())
+    stateTree.insert(genRandomSalt())
 
     // Construct user 1 command
     // Note: command is unencrypted, message is encrypted
@@ -93,10 +92,10 @@ const getUpdateStateTreeParams = async (
     const user1Message: Message = userCmd.encrypt(sig, ecdhSharedKey)
 
     // Insert random data (as we just want to process 1 command)
-    msgTree.insert(hash([bigInt(0), genRandomSalt()]))
-    msgTree.insert(hash([bigInt(1), genRandomSalt()]))
-    msgTree.insert(hash([bigInt(2), genRandomSalt()]))
-    msgTree.insert(hash([bigInt(3), genRandomSalt()]))
+    msgTree.insert(genRandomSalt())
+    msgTree.insert(genRandomSalt())
+    msgTree.insert(genRandomSalt())
+    msgTree.insert(genRandomSalt())
 
     // Insert user 1's command into command tree
     msgTree.insert(user1Message.hash()) // Note that this is at index 4
@@ -116,7 +115,7 @@ const getUpdateStateTreeParams = async (
     // Get the vote options tree path elements
     const voteOptionsProof = user1VoteOptionTree.getPathUpdate(user1VoteOptionIndex)
 
-    const curVoteOptionTreeLeafRaw = user1VoteOptionTree.leavesRaw[user1VoteOptionIndex]
+    const curVoteOptionTreeLeafRaw = user1VoteOptionTree.getLeaf(user1VoteOptionIndex)
 
     const stateTreeMaxIndex = bigInt(stateTree.nextIndex - 1)
 
@@ -198,13 +197,13 @@ describe('State tree root update verification circuit', () => {
         const circuitNewStateRoot = witness[idx].toString()
         
         const user1VoteOptionTree = userVoteOptionTree
-        const curVoteOptionTreeLeafRaw = user1VoteOptionTree.leavesRaw[user1VoteOptionIndex]
+        const curVoteOptionTreeLeafRaw = user1VoteOptionTree.getLeaf(user1VoteOptionIndex)
 
         // Update user vote option tree
         // (It replaces the value)
         user1VoteOptionTree.update(
             user1VoteOptionIndex,
-            bigInt(user1VoteOptionWeight)
+            bigInt(user1VoteOptionWeight),
         )
 
         // Update state tree leaf (refer to user1Command)
@@ -219,7 +218,7 @@ describe('State tree root update verification circuit', () => {
 
         stateTree.update(
             user1StateTreeIndex,
-            newStateTreeLeaf.hash()
+            newStateTreeLeaf.hash(),
         )
 
         const jsNewStateRoot = stateTree.root.toString()

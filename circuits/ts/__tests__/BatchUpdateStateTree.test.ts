@@ -24,8 +24,7 @@ import {
 } from 'maci-domainobjs'
 
 import {
-    MerkleTree,
-    setupTree,
+    IncrementalMerkleTree,
     genRandomSalt,
     Plaintext,
     Ciphertext,
@@ -69,11 +68,11 @@ const createUser = (
 
     const ephemeralKeypair = new Keypair()
 
-    const userVoteOptionTree = setupTree(voteOptionTreeDepth, NOTHING_UP_MY_SLEEVE)
+    const userVoteOptionTree = new IncrementalMerkleTree(voteOptionTreeDepth, NOTHING_UP_MY_SLEEVE)
     const voteWeight = bigInt(0)
     for (let i = 0; i < voteOptionLength; i++) {
         // Vote for no-one by default
-        userVoteOptionTree.insert(voteWeight, voteWeight)
+        userVoteOptionTree.insert(voteWeight)
     }
 
     const userStateLeaf = new StateLeaf(
@@ -115,13 +114,23 @@ describe('Batch state tree root update verification circuit', () => {
 
     it('should process valid inputs correctly', async () => {
         // Construct the trees
-        const msgTree = setupTree(messageTreeDepth, NOTHING_UP_MY_SLEEVE)
-        let stateTree = setupTree(stateTreeDepth, NOTHING_UP_MY_SLEEVE)
+        const msgTree = new IncrementalMerkleTree(
+            messageTreeDepth,
+            NOTHING_UP_MY_SLEEVE,
+        )
+
+        let stateTree = new IncrementalMerkleTree(
+            stateTreeDepth,
+            NOTHING_UP_MY_SLEEVE,
+        )
+
+        let stateLeaves: StateLeaf[] = []
 
         // Register users into the stateTree.
         // stateTree index 0 is a random leaf used to insert random data when the
         // decryption fails
         stateTree.insert(NOTHING_UP_MY_SLEEVE)
+        stateLeaves.push(NOTHING_UP_MY_SLEEVE)
 
         // Vote option length (not tree depth)
         const voteOptionLength = 2 ** voteOptionTreeDepth
@@ -138,7 +147,8 @@ describe('Batch state tree root update verification circuit', () => {
                 userVoteOptionTree,
             } = createUser(voteOptionLength)
 
-            stateTree.insert(userStateLeaf.hash(), userStateLeaf)
+            stateTree.insert(userStateLeaf.hash())
+            stateLeaves.push(userStateLeaf)
 
             const stateTreeIndex = bigInt(stateTree.nextIndex - 1)
 
@@ -185,20 +195,16 @@ describe('Batch state tree root update verification circuit', () => {
         }
 
         // Generate circuit inputs
-        let msgTreeBatchPathElements: SnarkBigInt[] = []
         const msgTreeBatchStartIndex = 0
-
-        let stateTreeBatchRaw: SnarkBigInt[] = []
+        let msgTreeBatchPathElements: SnarkBigInt[] = []
+        let stateTreeBatch: StateLeaf[] = []
         let stateTreeBatchRoot: SnarkBigInt[] = []
         let stateTreeBatchPathElements: SnarkBigInt[] = []
         let stateTreeBatchPathIndices: SnarkBigInt[] = []
-
         let userVoteOptionsBatchRoot: SnarkBigInt[] = []
         let userVoteOptionsBatchPathElements: SnarkBigInt[] = []
         let userVoteOptionsBatchPathIndices: SnarkBigInt[] = []
-
         let voteOptionTreeBatchLeafRaw: SnarkBigInt[] = []
-
         let ecdhPublicKeyBatch: PubKey[] = []
 
         for (let i = 0; i < batchSize; i++) {
@@ -218,7 +224,7 @@ describe('Batch state tree root update verification circuit', () => {
                 stateTreePathIndices
             ] = stateTree.getPathUpdate(user.userIndex)
 
-            stateTreeBatchRaw.push(stateTree.leavesRaw[user.userIndex])
+            stateTreeBatch.push(stateLeaves[user.userIndex])
 
             stateTreeBatchRoot.push(stateTree.root)
             stateTreeBatchPathElements.push(stateTreePathElements)
@@ -235,7 +241,7 @@ describe('Batch state tree root update verification circuit', () => {
             userVoteOptionsBatchPathElements.push(userVoteOptionsPathElements)
             userVoteOptionsBatchPathIndices.push(userVoteOptionsPathIndices)
 
-            voteOptionTreeBatchLeafRaw.push(user.userVoteOptionTree.leavesRaw[userVoteOptionIndex])
+            voteOptionTreeBatchLeafRaw.push(user.userVoteOptionTree.getLeaf(userVoteOptionIndex))
 
             ecdhPublicKeyBatch.push(user.ephemeralKeypair.pubKey)
 
@@ -248,6 +254,7 @@ describe('Batch state tree root update verification circuit', () => {
             const data = processMessage(
                 ecdhSharedKey,
                 message,
+                stateLeaves[command.stateIndex],
                 stateTree,
                 user.userVoteOptionTree
             )
@@ -279,7 +286,7 @@ describe('Batch state tree root update verification circuit', () => {
             userVoteOptionsBatchPathElements,
             userVoteOptionsBatchPathIndices,
             voteOptionsMaxIndex,
-            stateTreeBatchRaw,
+            stateTreeBatch,
             stateTreeMaxIndex,
             stateTreeBatchRoot,
             stateTreeBatchPathElements,
@@ -294,7 +301,8 @@ describe('Batch state tree root update verification circuit', () => {
         const circuitNewStateRoot = witness[idx].toString()
 
         // Update the state tree with a random leaf
-        stateTree.update(0, randomStateLeaf.hash(), randomStateLeaf)
+        stateTree.update(0, randomStateLeaf.hash())
+        stateLeaves[0] = randomStateLeaf
 
         expect(stateTree.root.toString()).toEqual(circuitNewStateRoot)
 

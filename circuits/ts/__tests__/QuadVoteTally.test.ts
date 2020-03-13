@@ -3,7 +3,7 @@ import { Circuit } from 'snarkjs'
 const compiler = require('circom')
 import { config } from 'maci-config'
 import {
-    setupTree,
+    IncrementalMerkleTree,
     genRandomSalt,
     Plaintext,
     bigInt,
@@ -11,6 +11,7 @@ import {
     hash,
     SnarkBigInt,
     NOTHING_UP_MY_SLEEVE,
+    stringifyBigInts,
 } from 'maci-crypto'
 
 import {
@@ -61,7 +62,10 @@ describe('Quadratic vote tallying circuit', () => {
                 voteLeaves.push(votes)
             }
 
-            const fullStateTree = setupTree(fullStateTreeDepth, NOTHING_UP_MY_SLEEVE)
+            const fullStateTree = new IncrementalMerkleTree(
+                fullStateTreeDepth,
+                NOTHING_UP_MY_SLEEVE,
+            )
 
             let stateLeaves: StateLeaf[] = []
             let voteOptionTrees = []
@@ -70,7 +74,7 @@ describe('Quadratic vote tallying circuit', () => {
             for (let i = 0; i < 2 ** fullStateTreeDepth; i++) {
 
                 // Insert the vote option leaves to calculate the voteOptionRoot
-                const voteOptionMT = setupTree(voteOptionTreeDepth, NOTHING_UP_MY_SLEEVE)
+                const voteOptionMT = new IncrementalMerkleTree(voteOptionTreeDepth, NOTHING_UP_MY_SLEEVE)
 
                 for (let j = 0; j < voteLeaves[i].length; j++) {
                     voteOptionMT.insert(voteLeaves[i][j])
@@ -88,14 +92,17 @@ describe('Quadratic vote tallying circuit', () => {
             const batchSize = 2 ** intermediateStateTreeDepth
 
             // Compute the Merkle proof for the batch
-            const intermediateStateTree = setupTree(k, NOTHING_UP_MY_SLEEVE)
+            const intermediateStateTree = new IncrementalMerkleTree(k, NOTHING_UP_MY_SLEEVE)
 
             // For each batch, create a tree of the leaves in the batch, and insert the
             // tree root into another tree
-            for (let i = 0; i < fullStateTree.leaves.length; i += batchSize) {
-                const batchTree = setupTree(intermediateStateTreeDepth, NOTHING_UP_MY_SLEEVE)
+            for (let i = 0; i < fullStateTree.nextIndex; i += batchSize) {
+                const batchTree = new IncrementalMerkleTree(
+                    intermediateStateTreeDepth, 
+                    NOTHING_UP_MY_SLEEVE,
+                )
                 for (let j = 0; j < batchSize; j++) {
-                    batchTree.insert(fullStateTree.leaves[i + j])
+                    batchTree.insert(stateLeaves[i + j].hash())
                 }
 
                 intermediateStateTree.insert(batchTree.root)
@@ -131,16 +138,16 @@ describe('Quadratic vote tallying circuit', () => {
 
             const [intermediatePathElements, _] = intermediateStateTree.getPathUpdate(intermediatePathIndex)
 
+            circuitInputs['newResultsSalt'] = salt
             circuitInputs['currentResults'] = currentResults
-            circuitInputs['fullStateRoot'] = fullStateTree.root.toString()
-            circuitInputs['intermediateStateRoot'] = intermediateStateTree.leaves[intermediatePathIndex].toString()
+            circuitInputs['fullStateRoot'] = fullStateTree.root
+            circuitInputs['currentResultsSalt'] = currentResultsSalt
+            circuitInputs['currentResultsCommitment'] = currentResultsCommitment
             circuitInputs['intermediatePathElements'] = intermediatePathElements
-            circuitInputs['intermediatePathIndex'] = intermediatePathIndex.toString()
-            circuitInputs['newResultsSalt'] = salt.toString()
-            circuitInputs['currentResultsSalt'] = currentResultsSalt.toString()
-            circuitInputs['currentResultsCommitment'] = currentResultsCommitment.toString()
+            circuitInputs['intermediatePathIndex'] = intermediatePathIndex
+            circuitInputs['intermediateStateRoot'] = intermediateStateTree.getLeaf(intermediatePathIndex)
 
-            const witness = circuit.calculateWitness(circuitInputs)
+            const witness = circuit.calculateWitness(stringifyBigInts(circuitInputs))
 
             let expected: SnarkBigInt[] = []
             for (let i = 0; i < numVoteOptions; i++) {
@@ -166,7 +173,7 @@ describe('Quadratic vote tallying circuit', () => {
             expect(publicSignals[0].toString()).toEqual(expectedCommitment.toString())
             expect(publicSignals[1].toString()).toEqual(fullStateTree.root.toString())
             expect(publicSignals[2].toString()).toEqual(intermediatePathIndex.toString())
-            expect(publicSignals[3].toString()).toEqual(intermediateStateTree.leaves[intermediatePathIndex].toString())
+            expect(publicSignals[3].toString()).toEqual(intermediateStateTree.getLeaf(intermediatePathIndex).toString())
             expect(publicSignals[4].toString()).toEqual(currentResultsCommitment.toString())
         }
     })
