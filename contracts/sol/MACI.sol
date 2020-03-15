@@ -136,7 +136,7 @@ contract MACI is Ownable, DomainObjs {
 
         // Create the message tree and state tree
         messageTree = new IncrementalMerkleTree(_treeDepths.messageTreeDepth, ZERO_VALUE);
-        stateTree = new IncrementalMerkleTree(_treeDepths.stateTreeDepth, ZERO_VALUE);
+        stateTree = new IncrementalMerkleTree(_treeDepths.stateTreeDepth, hashedBlankStateLeaf());
 
         // The maximum number of leaves, minus one, of meaningful vote options.
         // This allows the snark to do a no-op if the user votes for an option
@@ -250,8 +250,8 @@ contract MACI is Ownable, DomainObjs {
 
     /*
      * Allows anyone to publish a message (an encrypted command and signature).
-     * This function also inserts it into the message tree.  @param _userPubKey
-     * The user's desired public key.
+     * This function also inserts it into the message tree.
+     * @param _userPubKey The user's desired public key.
      * @param _message The message to publish
      * @param _encPubKey An epheremal public key which can be combined with the
      *     coordinator's private key to generate an ECDH shared key which which was
@@ -457,43 +457,12 @@ contract MACI is Ownable, DomainObjs {
         return hashStateLeaf(stateLeaf);
     }
 
-    function padStateTree(
-        uint8 numRepetitions
-    ) 
-    onlyOwner
-    isAfterSignUpDeadline
-    isAfterVotingDeadline
-    public {
-
-        require(numRepetitions < stateLeafBatchSize, "MACI: numRepetitions must be less than stateLeafBatchSize");
-
-        for (uint8 i = 0; i < numRepetitions; i++) {
-            if (numSignUps % stateLeafBatchSize == 0) {
-                break;
-            }
-
-            stateTree.insertLeaf(hashedBlankStateLeaf());
-
-            numSignUps ++;
-        }
-    }
-
-    modifier stateTreeIsPadded() {
-        require(
-            (1 + numSignUps) % stateLeafBatchSize == 0,
-            "MACI: the state tree needs to be padded with blank leaves"
-        );
-
-        _;
-    }
-
     function proveVoteTallyBatch(
         uint256 _intermediateStateRoot,
         uint256 _newResultsCommitment,
         uint256[] memory _finalSaltedResults,
         uint256[8] memory _proof
     ) 
-    stateTreeIsPadded
     public {
 
         require(numSignUps > 0, "MACI: nobody signed up");
