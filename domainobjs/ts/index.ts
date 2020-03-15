@@ -26,8 +26,8 @@ interface Keypair {
 }
 
 class Keypair implements Keypair {
-    public privKey: RawPrivKey
-    public pubKey: RawPubKey
+    public privKey: PrivKey
+    public pubKey: PubKey
 
     constructor (
         privKey?: PrivKey,
@@ -40,6 +40,10 @@ class Keypair implements Keypair {
             this.privKey = new PrivKey(rawKeyPair.privKey)
             this.pubKey = new PubKey(rawKeyPair.pubKey)
         }
+    }
+
+    public copy = (): Keypair => {
+        return new Keypair(this.privKey.copy())
     }
     
     public static genEcdhSharedKey(
@@ -73,6 +77,10 @@ class Keypair implements Keypair {
 class PrivKey {
     public rawPrivKey: RawPrivKey
 
+    public copy = (): PrivKey => {
+        return new PrivKey(bigInt(this.rawPrivKey))
+    }
+
     constructor (rawPrivKey: RawPrivKey) {
         this.rawPrivKey = rawPrivKey
     }
@@ -87,6 +95,15 @@ class PubKey {
 
     constructor (rawPubKey: RawPubKey) {
         this.rawPubKey = rawPubKey
+    }
+
+    public copy = (): PubKey => {
+        return new PubKey(
+            [
+                bigInt(this.rawPubKey[0]),
+                bigInt(this.rawPubKey[1]),
+            ]
+        )
     }
 
     public asContractParam = () => {
@@ -130,7 +147,6 @@ class Message {
         iv: SnarkBigInt,
         data: SnarkBigInt[],
     ) {
-        // TODO: add an assert on the length of data
         assert(data.length === 10)
         this.iv = iv
         this.data = data
@@ -147,7 +163,7 @@ class Message {
     public asContractParam = () => {
         return {
             iv: this.iv.toString(),
-            data: this.data.map((x) => x.toString()),
+            data: this.data.map((x: SnarkBigInt) => x.toString()),
         }
     }
 
@@ -159,6 +175,14 @@ class Message {
     public hash = (): SnarkBigInt => {
 
         return hash(this.asArray())
+    }
+
+    public copy = (): Message => {
+
+        return new Message(
+            bigInt(this.iv.toString()),
+            this.data.map((x: SnarkBigInt) => x.toString()),
+        )
     }
 }
 
@@ -262,6 +286,18 @@ class Command implements ICommand {
         this.newVoteWeight = newVoteWeight
         this.nonce = nonce
         this.salt = salt
+    }
+
+    public copy = (): Command => {
+
+        return new Command(
+            bigInt(this.stateIndex.toString()),
+            this.newPubKey.copy(),
+            bigInt(this.voteOptionIndex.toString()),
+            bigInt(this.newVoteWeight.toString()),
+            bigInt(this.nonce.toString()),
+            bigInt(this.salt.toString()),
+        )
     }
 
     public asArray = (): SnarkBigInt[] => {

@@ -159,15 +159,12 @@ describe('MACI', () => {
     // This array contains four commands from the same user
     let batch: any[] = []
     for (let i = 0; i < config.maci.messageBatchSize; i++) {
-        const voteOptionTree = new IncrementalMerkleTree(voteOptionTreeDepth, NOTHING_UP_MY_SLEEVE)
+        const voteOptionTree = new IncrementalMerkleTree(voteOptionTreeDepth, bigInt(0))
 
         const voteOptionIndex = bigInt(0)
         const newVoteWeight = bigInt(9)
 
         voteOptionTree.insert(newVoteWeight)
-        for (let i = 1; i < 2 ** voteOptionTreeDepth; i++) {
-            voteOptionTree.insert(bigInt(0))
-        }
 
         const ephemeralKeypair = new Keypair()
         const ecdhSharedKey = Keypair.genEcdhSharedKey(

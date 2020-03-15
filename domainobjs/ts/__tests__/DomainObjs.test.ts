@@ -55,6 +55,65 @@ describe('Domain objects', () => {
             expect(rawKeyPair.pubKey[0]).toEqual(k.pubKey.rawPubKey[0])
             expect(rawKeyPair.pubKey[1]).toEqual(k.pubKey.rawPubKey[1])
         })
+
+        it('PrivKey.copy() should produce a deep copy', () => {
+            const k = new Keypair()
+            const sk1 = k.privKey
+
+            // shallow copy
+            const sk2 = sk1
+
+            expect(sk1.rawPrivKey.toString()).toEqual(sk2.rawPrivKey.toString())
+            sk1.rawPrivKey = 0
+            expect(sk1.rawPrivKey.toString()).toEqual(sk2.rawPrivKey.toString())
+
+            // deep copy
+            const k1 = new Keypair()
+            const sk3 = k1.privKey
+            const sk4 = sk3.copy()
+            expect(sk3.rawPrivKey.toString()).toEqual(sk4.rawPrivKey.toString())
+            sk4.rawPrivKey = 0
+            expect(sk3.rawPrivKey.toString()).not.toEqual(sk4.rawPrivKey.toString())
+        })
+
+        it('PubKey.copy() should produce a deep copy', () => {
+            const k = new Keypair()
+            const pk1 = k.pubKey
+
+            // shallow copy
+            const pk2 = pk1
+
+            expect(pk1.rawPubKey.toString()).toEqual(pk2.rawPubKey.toString())
+            pk1.rawPubKey = 0
+            expect(pk1.rawPubKey.toString()).toEqual(pk2.rawPubKey.toString())
+
+            // deep copy
+            const k1 = new Keypair()
+            const pk3 = k1.pubKey
+            const pk4 = pk3.copy()
+            expect(pk3.rawPubKey.toString()).toEqual(pk4.rawPubKey.toString())
+            pk4.rawPubKey = 0
+            expect(pk3.rawPubKey.toString()).not.toEqual(pk4.rawPubKey.toString())
+        })
+
+        it('Keypair.copy() should produce a deep copy', () => {
+            const k1 = new Keypair()
+
+            // shallow copy
+            const k2 = k1
+
+            expect(k1.privKey.rawPrivKey.toString()).toEqual(k2.privKey.rawPrivKey.toString())
+            k1.privKey.rawPrivKey = 0
+            expect(k1.privKey.rawPrivKey.toString()).toEqual(k2.privKey.rawPrivKey.toString())
+
+            // deep copy
+            const k3 = new Keypair()
+            const k4 = k3.copy()
+            expect(k3.privKey.rawPrivKey.toString()).toEqual(k4.privKey.rawPrivKey.toString())
+
+            k3.privKey.rawPrivKey = 0
+            expect(k3.privKey.rawPrivKey.toString()).not.toEqual(k4.privKey.rawPrivKey.toString())
+        })
     })
 
     describe('Commands and Messages', () => {
@@ -75,6 +134,40 @@ describe('Domain objects', () => {
 
         it ('A decrypted message should have a valid signature', () => {
             expect(decrypted.command.verifySignature(decrypted.signature, pubKey)).toBeTruthy()
+        })
+
+        it('Command.copy() should perform a deep copy', () => {
+            const c1: Command = new Command(
+                bigInt(10),
+                newPubKey,
+                bigInt(0),
+                bigInt(9),
+                bigInt(123),
+            )
+
+            // shallow copy
+            const c2 = c1
+            c1.nonce = bigInt(9999)
+            expect(c1.nonce.toString()).toEqual(c2.nonce.toString())
+
+            // deep copy
+            const c3 = c1.copy()
+            c1.nonce = bigInt(8888)
+
+            expect(c1.nonce.toString()).not.toEqual(c3.nonce.toString())
+        })
+
+        it('Message.copy() should perform a deep copy', () => {
+            const c = command.copy()
+            const m1 = c.encrypt(signature, ecdhSharedKey)
+
+            const m2 = m1
+            m1.iv = bigInt(9999)
+            expect(m1.iv.toString()).toEqual(m2.iv.toString())
+
+            const m3 = m1.copy()
+            m1.iv = bigInt(8888)
+            expect(m1.iv.toString()).not.toEqual(m3.iv.toString())
         })
     })
 })
