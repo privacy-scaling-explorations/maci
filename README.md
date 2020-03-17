@@ -64,6 +64,10 @@ cd circuits
 npm run downloadAllSnarks
 ```
 
+Note that if you change the circuits and recompile them, you should
+also update and recompile the verifier contracts in `contracts/sol`
+with their new versions, or the tests will fail.
+
 ### Testing
 
 #### Unit tests
