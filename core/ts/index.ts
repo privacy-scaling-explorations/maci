@@ -21,14 +21,6 @@ interface IUser {
     nonce: SnarkBigInt
 }
 
-interface IMaciState {
-    coordinatorKeypair: Keypair
-    users: User[]
-    voteOptionTreeDepth: SnarkBigInt
-    messages: Message[]
-    zerothStateLeaf: SnarkBigInt
-}
-
 class User implements IUser {
     public pubKey: PubKey
     public votes: SnarkBigInt[]
@@ -62,7 +54,7 @@ class User implements IUser {
     }
 }
 
-class MaciState implements IMaciState {
+class MaciState {
     public coordinatorKeypair: Keypair
     public users: User[] = []
     public stateTreeDepth: SnarkBigInt
@@ -178,8 +170,8 @@ class MaciState implements IMaciState {
      * Add a new user to the list of users.
      */
     public signUp = (
-        pubKey: PubKey,
-        initialVoiceCreditBalance: SnarkBigInt,
+        _pubKey: PubKey,
+        _initialVoiceCreditBalance: SnarkBigInt,
     ) => {
 
         // Note that we do not insert a state leaf to any state tree here. This
@@ -188,9 +180,9 @@ class MaciState implements IMaciState {
         // severe performance issues, but it is currently worth the tradeoff.
         this.users.push(
             new User(
-                pubKey,
+                _pubKey,
                 this.genBlankVotes(),
-                initialVoiceCreditBalance,
+                _initialVoiceCreditBalance,
                 0,
             )
         )
@@ -211,13 +203,13 @@ class MaciState implements IMaciState {
     }
 
     public processMessage = (
-        index: number,
+        _index: number,
         _randomZerothStateLeaf: SnarkBigInt,
     ) => {
         this.zerothStateLeaf = _randomZerothStateLeaf
 
-        const message = this.messages[index]
-        const encPubKey = this.encPubKeys[index]
+        const message = this.messages[_index]
+        const encPubKey = this.encPubKeys[_index]
 
         const sharedKey = Keypair.genEcdhSharedKey(this.coordinatorKeypair, encPubKey)
         const { command, signature } = Command.decrypt(message, sharedKey)
@@ -228,20 +220,20 @@ class MaciState implements IMaciState {
         }
 
         // If the signature is invalid, do nothing
-        if (!command.verifySignature(signature, this.users[index].pubKey)) {
+        if (!command.verifySignature(signature, this.users[_index].pubKey)) {
             return
         }
 
         // If the nonce is invalid, do nothing
-        if (!command.nonce.equals(this.users[index].nonce + bigInt(1))) {
+        if (!command.nonce.equals(this.users[_index].nonce + bigInt(1))) {
             return
         }
 
         // If there are insufficient vote credits, do nothing
-        const prevSpentCred = this.users[index].votes[command.voteOptionIndex]
+        const prevSpentCred = this.users[_index].votes[command.voteOptionIndex]
 
         const voiceCreditsLeft = 
-            this.users[index].voiceCreditBalance + 
+            this.users[_index].voiceCreditBalance + 
             (prevSpentCred * prevSpentCred) -
             (command.newVoteWeight * command.newVoteWeight)
 
@@ -256,16 +248,16 @@ class MaciState implements IMaciState {
             if (i === command.voteOptionIndex) {
                 newVotesArr.push(command.newVoteWeight)
             } else {
-                newVotesArr.push(bigInt(this.users[index].votes[i].toString()))
+                newVotesArr.push(bigInt(this.users[_index].votes[i].toString()))
             }
         }
 
-        const newUser = this.users[index].copy()
+        const newUser = this.users[_index].copy()
         newUser.nonce = newUser.nonce + bigInt(1)
-        newUser.votes[index] = command.newVoteWeight
+        newUser.votes[_index] = command.newVoteWeight
         newUser.voiceCreditBalance = voiceCreditsLeft
 
-        this.users[index] = newUser
+        this.users[_index] = newUser
     }
 }
 

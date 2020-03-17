@@ -17,30 +17,41 @@ This avoids duplication of code which copies state data.
 
 ### State data
 
-We denote all state data as `MaciState`.
+We denote all state data as attributes of a `MaciState` object.
 
-Only the coordinator should access `MaciState`. Each user can only access their
-own keypair, commands, and on-chain state and message tree roots.
+Only the coordinator should have access to state data. Each user can only
+access their own keypair, commands, and on-chain state and message tree roots.
 
-`MaciState` contains the following:
+`MaciState` contains the following attributes:
 
 ```ts
 {
-    coordinatorKeypair: Keypair,
-    users: User[],
-    messages: Message[],
-    encPubKeys: PubKey[],
-    zerothStateLeaf: SnarkBigInt,
+    coordinatorKeypair: Keypair
+    stateTreeDepth: SnarkBigInt
+    messageTreeDepth: SnarkBigInt
+    voteOptionTreeDepth: SnarkBigInt
+    zerothStateLeaf: SnarkBigInt
+    messages: Message[]
+    users: User[]
 }
 ```
 
-#### **`coordinatorKeypair`**
+- `coordinatorKeypair`: The coordinator's keypair.
+- `stateTreeDepth:`: The depth of the state tree.
+- `messageTreeDepth:`: The depth of the message tree.
+- `voteOptionTreeDepth:`: The depth of each user's vote option tree.
+- `zerothStateLeaf`: The value of the zeroth leaf of the state tree. There
+  should not be any known `StateLeaf` preimage for it as it is just a random
+  value.
+- `encPubKeys`: An array of `PubKey` objects used to generate ephermeral ECDH
+  shared keys with which to encrypt commands to messages. For each `PubKey` in
+  `encPubKey`, its corresponding `Message` in `messages` shares the same array
+  index.
+- `messages`: An array of all published `Message` objects
+- `users`: An array of `User` objects.
 
-The coordinator's keypair.
 
-#### **`users`**
-
-An array of `User` dicts with the following structure:
+Each `User object has the following attributes:
 
 ```ts
 {
@@ -51,70 +62,61 @@ An array of `User` dicts with the following structure:
 }
 ```
 
-#### **`messages`**
-
-An array of all published messages.
-
-#### **`encPubKeys`**
-
-An array of all public keys used to generate ephermeral ECDH shared keys with
-which to encrypt commands to messages. For each `PubKey` in `encPubKey`, its
-corresponding `Message` in `messages` shares the same array index.
-
-#### **`zerothStateLeaf:`**
-
-The value of the zeroth leaf of the state tree. There should not be any known
-`StateLeaf` preimage for it as it is just a random value.
-
 ### Functions
 
-The following function descriptions use the following format:
+The following functions modify the state:
 
-```haskell
-arg_1: Type_1 ->
-...
-arg_n: Type_n ->
-output: Type
-```
+- `signUp()`
+- `publishMessage()`
+- `processMessage()`
 
-where `arg_` to `arg_n` are arguments to a function which returns `output`.
+The following functions do not modify the state:
+
+- `genStateRoot()`
+- `genMessageRoot()`
+- `copy()`
 
 #### **`signUp`**
 
 Function signature:
 
-```haskell
-
-pubKey: PubKey -> 
-initialVoiceCreditBalance: SnarkBigInt -> 
-oldState: MaciState -> 
-newState: MaciState
+```ts
+(
+    _pubKey: PubKey,
+    _initialVoiceCreditBalance: SnarkBigInt,
+): void
 ```
 
 Appends a `User` with the specified public key and initial voice credit balance
-to `oldState` to generate `newState`.
+to the `users` array.
 
 #### **`publishMessage`**
 
 Function signature:
 
-```haskell
-message: Message ->
-encPubKey: PubKey ->
-oldState: MaciState ->
-newState: MaciState
+```ts
+public publishMessage = (
+    _message: Message,
+    _encPubKey: PubKey,
+): void
 ```
 
-Appends a message to the `messages` array of `oldState` to generate `newState`.
+Appends a `Message` to the `messages` array. It also appends the public key
+used to generate the ECDH shared key which encrypts `_message` to the
+`encPubKeys` array.
 
 #### **`processMessage`**
 
-```haskell
-index: number ->
-oldState: MaciState ->
-newState: MaciState
+```ts
+processMessage = (
+    _index: number,
+    _randomZerothStateLeaf: SnarkBigInt,
+): void
 ```
 
-1. Generates a shared key using `encPubKey` and `oldState.coordinatorKeyPair.pubKey`
-2. Decrypts the message to derive a `Command`
-3. Updates `oldState` to derive `newState`
+This function:
+
+1. Generates a shared key using `encPubKeys[index]` and `coordinatorKeyPair.pubKey`
+2. Decrypts `messages[_index]` to derive a `Command`
+3. If the message is invalid, do nothing and return
+4. If the message is valid, update the user's public key and vote at `_index`.
