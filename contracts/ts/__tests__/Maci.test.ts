@@ -22,7 +22,7 @@ import * as ethers from 'ethers'
 import * as etherlime from 'etherlime-lib'
 
 import { genAccounts, genTestAccounts } from '../accounts'
-import { timeTravel } from '../../node_modules/etherlime/cli-commands/etherlime-test/time-travel.js'
+import { timeTravel } from '../'
 
 import { config } from 'maci-config'
 
@@ -32,7 +32,7 @@ import {
     deployMaci,
     deploySignupToken,
     deploySignupTokenGatekeeper,
-    deployInitialVoiceCreditProxy,
+    deployConstantInitialVoiceCreditProxy,
     genDeployer,
 } from '../deploy'
 
@@ -198,7 +198,7 @@ describe('MACI', () => {
     beforeAll(async () => {
         qvtCircuit = await compileAndLoadCircuit('quadVoteTally_test.circom')
         signUpTokenContract = await deploySignupToken(deployer)
-        constantIntialVoiceCreditProxyContract = await deployInitialVoiceCreditProxy(
+        constantIntialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
             deployer,
             config.maci.initialVoiceCreditBalance,
         )
