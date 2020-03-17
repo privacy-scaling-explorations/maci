@@ -95,7 +95,7 @@ to the `users` array.
 Function signature:
 
 ```ts
-public publishMessage = (
+(
     _message: Message,
     _encPubKey: PubKey,
 ): void
@@ -107,8 +107,10 @@ used to generate the ECDH shared key which encrypts `_message` to the
 
 #### **`processMessage`**
 
+Function signature:
+
 ```ts
-processMessage = (
+(
     _index: number,
     _randomZerothStateLeaf: SnarkBigInt,
 ): void
@@ -120,3 +122,34 @@ This function:
 2. Decrypts `messages[_index]` to derive a `Command`
 3. If the message is invalid, do nothing and return
 4. If the message is valid, update the user's public key and vote at `_index`.
+
+**`genStateRoot()`**
+
+Function signature:
+
+```ts
+(): SnarkBigInt
+```
+
+This function computes the state root given the data stored in `users` and
+`zerothStateLeaf`.
+
+**`genMessageRoot()`**
+
+Function signature:
+
+```ts
+(): SnarkBigInt
+```
+
+This function computes the state root given the data stored in `messsages`.
+
+**`copy()`**
+
+Function signature:
+
+```ts
+(): MaciState
+```
+
+This function returns a deep-copied `MaciState` object.

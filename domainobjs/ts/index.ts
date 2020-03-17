@@ -77,12 +77,12 @@ class Keypair implements Keypair {
 class PrivKey {
     public rawPrivKey: RawPrivKey
 
-    public copy = (): PrivKey => {
-        return new PrivKey(bigInt(this.rawPrivKey))
-    }
-
     constructor (rawPrivKey: RawPrivKey) {
         this.rawPrivKey = rawPrivKey
+    }
+
+    public copy = (): PrivKey => {
+        return new PrivKey(bigInt(this.rawPrivKey.toString()))
     }
 
     public asCircuitInputs = () => {
@@ -98,12 +98,11 @@ class PubKey {
     }
 
     public copy = (): PubKey => {
-        return new PubKey(
-            [
-                bigInt(this.rawPubKey[0]),
-                bigInt(this.rawPubKey[1]),
-            ]
-        )
+
+        return new PubKey([
+            bigInt(this.rawPubKey[0].toString()),
+            bigInt(this.rawPubKey[1].toString()),
+        ])
     }
 
     public asContractParam = () => {
@@ -181,7 +180,7 @@ class Message {
 
         return new Message(
             bigInt(this.iv.toString()),
-            this.data.map((x: SnarkBigInt) => x.toString()),
+            this.data.map((x: SnarkBigInt) => bigInt(x.toString())),
         )
     }
 }

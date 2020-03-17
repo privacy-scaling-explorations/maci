@@ -14,14 +14,7 @@ import {
     IncrementalMerkleTree,
 } from 'maci-crypto'
 
-interface IUser {
-    pubKey: PubKey
-    votes: SnarkBigInt[]
-    voiceCreditBalance: SnarkBigInt
-    nonce: SnarkBigInt
-}
-
-class User implements IUser {
+class User {
     public pubKey: PubKey
     public votes: SnarkBigInt[]
     public voiceCreditBalance: SnarkBigInt
@@ -62,11 +55,11 @@ class MaciState {
     public voteOptionTreeDepth: SnarkBigInt
     public messages: Message[] = []
     public zerothStateLeaf: SnarkBigInt
-
-    // Public keys used to generate ephemeral shared keys which encrypt each
-    // message
     public encPubKeys: PubKey[] = []
     private emptyVoteOptionTreeRoot
+
+    // encPubKeys contains the public keys used to generate ephemeral shared
+    // keys which encrypt each message
 
     constructor(
         _coordinatorKeypair: Keypair,
@@ -162,6 +155,7 @@ class MaciState {
 
         copied.users = this.users.map((x: User) => x.copy())
         copied.messages = this.messages.map((x: Message) => x.copy())
+        copied.encPubKeys = this.encPubKeys.map((x: PubKey) => x.copy())
 
         return copied
     }
@@ -331,4 +325,5 @@ const processMessage = (
 export {
     processMessage,
     MaciState,
+    User,
 }

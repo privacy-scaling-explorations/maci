@@ -6,6 +6,8 @@
     "scripts": {
         "watch": "tsc --watch",
         "build": "tsc",
+        "test-macistate": "jest MaciState.test.ts",
+        "test-macistatedebug": "node --inspect-brk ./node_modules/.bin/jest MaciState.test.ts",
         "test": "jest",
         "test-debug": "node --inspect-brk ./node_modules/.bin/jest"
     },
