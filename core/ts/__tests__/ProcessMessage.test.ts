@@ -18,6 +18,7 @@ const stateTreeDepth = config.maci.merkleTrees.stateTreeDepth
 const messageTreeDepth = config.maci.merkleTrees.messageTreeDepth
 const voteOptionTreeDepth = config.maci.merkleTrees.voteOptionTreeDepth
 const initialVoiceCreditBalance = config.maci.initialVoiceCreditBalance
+const maxVoteOptionIndex = config.maci.voteOptionsMaxLeafIndex
 
 const user = new Keypair()
 
@@ -27,6 +28,7 @@ const maciState = new MaciState(
     messageTreeDepth,
     voteOptionTreeDepth,
     NOTHING_UP_MY_SLEEVE,
+    maxVoteOptionIndex,
 )
 
 const genMessage = (command: Command): Message => {

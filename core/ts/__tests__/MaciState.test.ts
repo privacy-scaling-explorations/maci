@@ -22,6 +22,7 @@ const m1 = new MaciState(
     bigInt(4),
     bigInt(4),
     bigInt(0),
+    bigInt(4),
 )
 
 describe('MaciState', () => {
@@ -85,5 +86,10 @@ describe('MaciState', () => {
         m1.encPubKeys.push(keypair.pubKey)
         expect(m2.encPubKeys.length).toEqual(m1.encPubKeys.length)
         expect(m3.encPubKeys.length).not.toEqual(m1.encPubKeys.length)
+
+        // Modify maxVoteOptionIndex
+        m1.maxVoteOptionIndex = bigInt(5)
+        expect(m2.maxVoteOptionIndex).toEqual(m1.maxVoteOptionIndex)
+        expect(m3.maxVoteOptionIndex).not.toEqual(m1.maxVoteOptionIndex)
     })
 })

@@ -36,6 +36,7 @@ const stateTreeDepth = config.maci.merkleTrees.stateTreeDepth
 const messageTreeDepth = config.maci.merkleTrees.messageTreeDepth
 const voteOptionTreeDepth = config.maci.merkleTrees.voteOptionTreeDepth
 const initialVoiceCreditBalance = config.maci.initialVoiceCreditBalance
+const voteOptionsMaxIndex = config.maci.voteOptionsMaxLeafIndex
 
 // Set up keypairs
 const user = new Keypair()
@@ -70,6 +71,7 @@ describe('State tree root update verification circuit', () => {
         messageTreeDepth,
         voteOptionTreeDepth,
         NOTHING_UP_MY_SLEEVE,
+        voteOptionsMaxIndex,
     )
 
     beforeAll(async () => {

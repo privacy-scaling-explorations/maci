@@ -80,6 +80,7 @@ class MaciState {
     public voteOptionTreeDepth: SnarkBigInt
     public messages: Message[] = []
     public zerothStateLeaf: SnarkBigInt
+    public maxVoteOptionIndex: SnarkBigInt
     public encPubKeys: PubKey[] = []
     private emptyVoteOptionTreeRoot
 
@@ -92,6 +93,7 @@ class MaciState {
         _messageTreeDepth: SnarkBigInt,
         _voteOptionTreeDepth: SnarkBigInt,
         _zerothStateLeaf: SnarkBigInt,
+        _maxVoteOptionIndex: SnarkBigInt,
     ) {
 
         this.coordinatorKeypair = _coordinatorKeypair
@@ -99,6 +101,7 @@ class MaciState {
         this.messageTreeDepth = bigInt(_messageTreeDepth)
         this.voteOptionTreeDepth = bigInt(_voteOptionTreeDepth)
         this.zerothStateLeaf = bigInt(_zerothStateLeaf)
+        this.maxVoteOptionIndex = bigInt(_maxVoteOptionIndex)
 
         const emptyVoteOptionTree = new IncrementalMerkleTree(
             this.voteOptionTreeDepth,
@@ -170,6 +173,7 @@ class MaciState {
             bigInt(this.messageTreeDepth.toString()),
             bigInt(this.voteOptionTreeDepth.toString()),
             bigInt(this.zerothStateLeaf.toString()),
+            bigInt(this.maxVoteOptionIndex.toString()),
         )
 
         copied.users = this.users.map((x: User) => x.copy())
@@ -234,21 +238,24 @@ class MaciState {
             return 
         }
 
+        const userIndex = command.stateIndex - bigInt(1)
+        const user = this.users[userIndex]
+
         // If the signature is invalid, do nothing
-        if (! command.verifySignature(signature, this.users[_index].pubKey)) {
+        if (! command.verifySignature(signature, user.pubKey)) {
             return
         }
 
         // If the nonce is invalid, do nothing
-        if (command.nonce !== this.users[_index].nonce + bigInt(1)) {
+        if (command.nonce !== user.nonce + bigInt(1)) {
             return
         }
 
         // If there are insufficient vote credits, do nothing
-        const prevSpentCred = this.users[_index].votes[command.voteOptionIndex]
+        const prevSpentCred = user.votes[command.voteOptionIndex]
 
         const voiceCreditsLeft = 
-            this.users[_index].voiceCreditBalance + 
+            user.voiceCreditBalance + 
             (prevSpentCred * prevSpentCred) -
             (command.newVoteWeight * command.newVoteWeight)
 
@@ -263,23 +270,21 @@ class MaciState {
             if (i === command.voteOptionIndex) {
                 newVotesArr.push(command.newVoteWeight)
             } else {
-                newVotesArr.push(bigInt(this.users[_index].votes[i].toString()))
+                newVotesArr.push(bigInt(user.votes[i].toString()))
             }
         }
 
-        const newUser = this.users[_index].copy()
+        const newUser = user.copy()
         newUser.nonce = newUser.nonce + bigInt(1)
         newUser.votes[_index] = command.newVoteWeight
         newUser.voiceCreditBalance = voiceCreditsLeft
 
-        this.users[_index] = newUser
+        this.users[userIndex] = newUser
     }
 
     /*
-     * Generates inputs to the UpdateStateTree circuit.  Only after calling
-     * this function, use oldState.processMessage() to generate the newState
-     * object. 
-     * )
+     * Generates inputs to the UpdateStateTree circuit. Do not call
+     * processMessage() before this function.
      */
     public genUpdateStateTreeCircuitInputs = (
         _index: number,
@@ -314,8 +319,6 @@ class MaciState {
         const [ voteOptionTreePathElements, voteOptionTreeIndices ]
             = voteOptionTree.getPathUpdate(command.voteOptionIndex)
 
-        const voteOptionTreeMaxIndex = bigInt(2).pow(this.voteOptionTreeDepth) - bigInt(1)
-
         const stateLeaf = user.genStateLeaf(this.voteOptionTreeDepth)
         const [ stateTreePathElements, stateTreePathIndices ]
             = stateTree.getPathUpdate(command.stateIndex)
@@ -332,7 +335,7 @@ class MaciState {
             'vote_options_tree_root': voteOptionTree.root,
             'vote_options_tree_path_elements': voteOptionTreePathElements,
             'vote_options_tree_path_index': voteOptionTreeIndices,
-            'vote_options_max_leaf_index': voteOptionTreeMaxIndex,
+            'vote_options_max_leaf_index': this.maxVoteOptionIndex,
             'state_tree_data_raw': stateLeaf.asCircuitInputs(),
             'state_tree_max_leaf_index': stateTreeMaxIndex,
             'state_tree_root': stateTree.root,
@@ -340,77 +343,107 @@ class MaciState {
             'state_tree_path_index': stateTreePathIndices,
         })
     }
-}
 
-const processMessage = (
-    sharedKey: PrivKey,
-    msg: Message,
-    stateLeaf: StateLeaf,
-    oldStateTree: IncrementalMerkleTree,
-    oldUserVoteOptionTree: IncrementalMerkleTree,
-) => {
+    public genBatchUpdateStateTreeCircuitInputs = (
+        _index: number,
+        _batchSize: number,
+        _randomStateLeaf: StateLeaf,
+    ) => {
 
-    // Deep-copy the trees
-    const stateTree = oldStateTree.copy()
-    const userVoteOptionTree = oldUserVoteOptionTree.copy()
+        let stateTree
+        let stateLeaves: StateLeaf[] = []
+        let stateRoots: SnarkBigInt[] = []
+        let stateTreePathElements: SnarkBigInt[][] = []
+        let stateTreePathIndices: SnarkBigInt[][] = []
+        let voteOptionLeaves: SnarkBigInt[] = []
+        let voteOptionTreeRoots: SnarkBigInt[] = []
+        let voteOptionTreePathElements: SnarkBigInt[][] = []
+        let voteOptionTreePathIndices: SnarkBigInt[][] = []
+        let messageTreePathElements: any[] = []
+        const messageTree = this.genMessageTree()
 
-    // Decrypt the message
-    const { command, signature } = Command.decrypt(msg, sharedKey)
+        for (let i = 0; i < _batchSize; i++) {
+            const [ elements, _ ] = messageTree.getPathUpdate(i)
 
-    // If the state tree index in the command is invalid, do nothing
-    if (parseInt(command.stateIndex) >= parseInt(stateTree.nextIndex)) {
-        return { stateTree, userVoteOptionTree, stateLeaf }
+            messageTreePathElements.push(elements)
+        }
+
+        let clonedMaciState = this.copy()
+
+        for (let i = 0; i < _batchSize; i++) {
+            const messageIndex = _index + i
+            const message = clonedMaciState.messages[messageIndex]
+            const sharedKey = Keypair.genEcdhSharedKey(
+                clonedMaciState.coordinatorKeypair.privKey,
+                clonedMaciState.encPubKeys[messageIndex],
+            )
+
+            const { command, signature } = Command.decrypt(message, sharedKey)
+
+            stateTree = clonedMaciState.genStateTree()
+            stateRoots.push(stateTree.root)
+
+            const [elements, indices] = stateTree.getPathUpdate(command.stateIndex)
+            stateTreePathElements.push(elements)
+            stateTreePathIndices.push(indices)
+
+            const userIndex = bigInt(command.stateIndex) - bigInt(1)
+            const user = clonedMaciState.users[userIndex]
+
+            const stateLeaf = user.genStateLeaf(clonedMaciState.voteOptionTreeDepth)
+            stateLeaves.push(stateLeaf)
+
+            const currentVoteWeight = user.votes[command.voteOptionIndex]
+            voteOptionLeaves.push(currentVoteWeight)
+
+            const voteOptionTree = new IncrementalMerkleTree(
+                clonedMaciState.voteOptionTreeDepth,
+                bigInt(0),
+            )
+            for (let vote of user.votes) {
+                voteOptionTree.insert(vote)
+            }
+
+            voteOptionTreeRoots.push(voteOptionTree.root)
+
+            const [ vElements, vIndices ]
+                = voteOptionTree.getPathUpdate(command.voteOptionIndex)
+            voteOptionTreePathElements.push(vElements)
+            voteOptionTreePathIndices.push(vIndices)
+
+            clonedMaciState.processMessage(messageIndex)
+        }
+
+        const randomStateLeafHash = _randomStateLeaf.hash()
+        stateTree.insert(randomStateLeafHash)
+        const [randomStateLeafPathElements, _] = stateTree.getPathUpdate(0)
+
+        return stringifyBigInts({
+            'coordinator_public_key': clonedMaciState.coordinatorKeypair.pubKey.asCircuitInputs(),
+            'message': clonedMaciState.messages.map((x) => x.asCircuitInputs()),
+            'ecdh_private_key': clonedMaciState.coordinatorKeypair.privKey.asCircuitInputs(),
+            'ecdh_public_key': clonedMaciState.encPubKeys.map((x) => x.asCircuitInputs()),
+            'msg_tree_root': messageTree.root,
+            'msg_tree_path_elements': messageTreePathElements,
+            'msg_tree_batch_start_index': _index,
+            'random_leaf': randomStateLeafHash,
+            'state_tree_root': stateRoots,
+            'state_tree_path_elements': stateTreePathElements,
+            'state_tree_path_index': stateTreePathIndices,
+            'random_leaf_root': stateTree.root,
+            'random_leaf_path_elements': randomStateLeafPathElements,
+            'vote_options_leaf_raw': voteOptionLeaves,
+            'state_tree_data_raw': stateLeaves.map((x) => x.asCircuitInputs()),
+            'state_tree_max_leaf_index': bigInt(stateTree.nextIndex - 1),
+            'vote_options_max_leaf_index': clonedMaciState.maxVoteOptionIndex,
+            'vote_options_tree_root': voteOptionTreeRoots,
+            'vote_options_tree_path_elements': voteOptionTreePathElements,
+            'vote_options_tree_path_index': voteOptionTreePathIndices,
+        })
     }
-
-    // If the signature is invalid, do nothing
-    if (!command.verifySignature(signature, stateLeaf.pubKey)) {
-        return { stateTree, userVoteOptionTree, stateLeaf }
-    }
-
-    // If the nonce is invalid, do nothing
-    if (!command.nonce.equals(stateLeaf.nonce + bigInt(1))) {
-        return { stateTree, userVoteOptionTree, stateLeaf }
-    }
-
-    // If there are insufficient vote credits, do nothing
-    const userPrevSpentCred =
-        userVoteOptionTree.getLeaf(parseInt(command.voteOptionIndex))
-
-    const userCmdVoteOptionCredit = command.newVoteWeight
-
-    const voteCreditsLeft = 
-        stateLeaf.voiceCreditBalance + 
-        (userPrevSpentCred * userPrevSpentCred) -
-        (userCmdVoteOptionCredit * userCmdVoteOptionCredit)
-
-    if (voteCreditsLeft < 0) {
-        return { stateTree, userVoteOptionTree, stateLeaf }
-    }
-
-    // Update the user's vote option tree
-    userVoteOptionTree.update(
-        bigInt(command.voteOptionIndex),
-        bigInt(userCmdVoteOptionCredit),
-    )
-
-    // Update the state tree
-    const newStateLeaf = new StateLeaf(
-        command.newPubKey,
-        userVoteOptionTree.root,
-        voteCreditsLeft,
-        stateLeaf.nonce + bigInt(1)
-    )
-
-    stateTree.update(
-        command.stateIndex,
-        newStateLeaf.hash(),
-    )
-
-    return { stateTree, userVoteOptionTree, newStateLeaf }
 }
 
 export {
-    processMessage,
     MaciState,
     User,
 }
