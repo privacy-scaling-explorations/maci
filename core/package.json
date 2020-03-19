@@ -6,6 +6,8 @@
     "scripts": {
         "watch": "tsc --watch",
         "build": "tsc",
+        "test-processMessage": "jest ProcessMessage.test.ts",
+        "test-processMessage-debug": "node --inspect-brk ./node_modules/.bin/jest ProcessMessage.test.ts",
         "test-macistate": "jest MaciState.test.ts",
         "test-macistatedebug": "node --inspect-brk ./node_modules/.bin/jest MaciState.test.ts",
         "test": "jest",
@@ -18,6 +20,7 @@
         "ts-jest": "^24.2.0",
         "jest": "^24.9.0",
         "maci-crypto": "1.0.0",
+        "maci-config": "1.0.0",
         "maci-domainobjs": "1.0.0"
     }
 }
