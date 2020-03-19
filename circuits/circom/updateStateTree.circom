@@ -46,6 +46,7 @@ template CheckValidUpdate() {
 
 template PerformChecksBeforeUpdate(
     message_length,
+    message_without_signature_length,
     message_tree_depth,
     state_tree_data_length,
     state_tree_depth,
@@ -111,7 +112,7 @@ template PerformChecksBeforeUpdate(
     for (var i = 0; i < message_length; i++) {
         decrypted_command.message[i] <== message[i];
     }
-    for (var i = 0; i < message_length; i++) {
+    for (var i = 0; i < message_length - 1; i++) {
         decrypted_command_out[i] <== decrypted_command.out[i];
     }
 
@@ -281,6 +282,7 @@ template UpdateStateTree(
 
     component perform_checks_before_update = PerformChecksBeforeUpdate(
         message_length,
+	message_without_signature_length,
         message_tree_depth,
         state_tree_data_length,
         state_tree_depth,
