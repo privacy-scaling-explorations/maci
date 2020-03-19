@@ -24,7 +24,6 @@ import {
     deployConstantInitialVoiceCreditProxy,
 } from 'maci-contracts'
 
-const initialVoiceCreditBalance = config.maci.initialVoiceCreditBalance
 
 const accounts = genTestAccounts(5)
 const deployer = genDeployer(accounts[0].privateKey)
@@ -35,6 +34,7 @@ const coordinator = new Keypair(new PrivKey(bigInt(config.maci.coordinatorPrivKe
 const stateTreeDepth = config.maci.merkleTrees.stateTreeDepth
 const messageTreeDepth = config.maci.merkleTrees.messageTreeDepth
 const voteOptionTreeDepth = config.maci.merkleTrees.voteOptionTreeDepth
+const initialVoiceCreditBalance = config.maci.initialVoiceCreditBalance
 
 const maciState = new MaciState(
     coordinator,

@@ -195,7 +195,9 @@ This allows the coordinator to prove the correctness of their vote tally (in `_f
 
 ### State leaves
 
-Each state leaf contains a user's public key, the Merkle root of their unique vote option tree, the number of voice credits they have left, and the nonce of their most recent valid command.
+Each state leaf contains a user's public key, the Merkle root of their unique vote option tree, the number of voice credits they have left, and the nonce.
+
+The nonce is either 0 or that of their most recent valid command. For instance, a user who has published 0 valid commands has a nonce of `0`, and their first valid command should have the nonce `1`.
 
 Each user's public key is associated with exactly one state leaf. This leaf is the single source of truth of their vote option tree. Additionally, since a user may vote for multiple options, and allocate different amounts of voice credits to each option, we represent their votes as a Merkle tree.
 

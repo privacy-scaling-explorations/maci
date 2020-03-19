@@ -179,10 +179,10 @@ class IncrementalMerkleTree {
         for (let i = 0; i < this.depth; i++) {
             if (curIdx % 2 === 0) {
                 path.push(this.filledPaths[i][curIdx + 1])
-                pathIndex.push(0)
+                pathIndex.push(bigInt(0))
             } else {
                 path.push(this.filledPaths[i][curIdx - 1])
-                pathIndex.push(1)
+                pathIndex.push(bigInt(1))
             }
             curIdx = Math.floor(curIdx / 2)
         }

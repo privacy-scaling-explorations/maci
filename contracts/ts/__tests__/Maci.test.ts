@@ -87,11 +87,7 @@ const numVoteOptions = 2 ** voteOptionTreeDepth
 const intermediateStateTreeDepth = config.maci.merkleTrees.intermediateStateTreeDepth
 
 // Cache an empty vote option tree root
-const temp = new IncrementalMerkleTree(voteOptionTreeDepth, NOTHING_UP_MY_SLEEVE)
-
-for (let i = 0; i < 2 ** voteOptionTreeDepth; i++) {
-    temp.insert(bigInt(0))
-}
+const temp = new IncrementalMerkleTree(voteOptionTreeDepth, bigInt(0))
 
 const emptyVoteOptionTreeRoot = temp.root
 

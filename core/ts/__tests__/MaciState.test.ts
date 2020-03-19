@@ -38,10 +38,10 @@ describe('MaciState', () => {
         expect(m3.coordinatorKeypair.privKey.rawPrivKey)
             .not.toEqual(m1.coordinatorKeypair.privKey.rawPrivKey)
 
-        //Modify users
+        // Modify users
         m1.users.push(new User(
             keypair.pubKey,
-            bigInt(0),
+            [],
             bigInt(0),
             bigInt(0),
         ))

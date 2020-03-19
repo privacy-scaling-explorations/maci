@@ -94,6 +94,7 @@ class PubKey {
     public rawPubKey: RawPubKey
 
     constructor (rawPubKey: RawPubKey) {
+        assert(rawPubKey.length === 2)
         this.rawPubKey = rawPubKey
     }
 
@@ -203,6 +204,9 @@ class StateLeaf implements IStateLeaf {
         this.pubKey = pubKey
         this.voteOptionTreeRoot = voteOptionTreeRoot
         this.voiceCreditBalance = voiceCreditBalance
+        // The this is the current nonce. i.e. a user who has published 0 valid
+        // command should have this value at 0, and the first command should
+        // have a nonce of 1
         this.nonce = nonce
     }
 

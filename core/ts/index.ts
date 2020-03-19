@@ -10,6 +10,7 @@ import {
 import {
     bigInt,
     SnarkBigInt,
+    stringifyBigInts,
     NOTHING_UP_MY_SLEEVE,
     IncrementalMerkleTree,
 } from 'maci-crypto'
@@ -18,6 +19,10 @@ class User {
     public pubKey: PubKey
     public votes: SnarkBigInt[]
     public voiceCreditBalance: SnarkBigInt
+
+    // The this is the current nonce. i.e. a user who has published 0 valid
+    // command should have this value at 0, and the first command should
+    // have a nonce of 1
     public nonce: SnarkBigInt
 
     constructor(
@@ -27,9 +32,9 @@ class User {
         _nonce: SnarkBigInt,
     ) {
         this.pubKey = _pubKey
-        this.votes = _votes
-        this.voiceCreditBalance = _voiceCreditBalance
-        this.nonce = _nonce
+        this.votes = _votes.map(bigInt)
+        this.voiceCreditBalance = bigInt(_voiceCreditBalance)
+        this.nonce = bigInt(_nonce)
     }
 
     public copy = (): User => {
@@ -43,6 +48,26 @@ class User {
             newVotesArr,
             bigInt(this.voiceCreditBalance.toString()),
             bigInt(this.nonce.toString()),
+        )
+    }
+
+    public genStateLeaf = (
+        _voteOptionTreeDepth: number,
+    ): StateLeaf => {
+        const voteOptionTree = new IncrementalMerkleTree(
+            _voteOptionTreeDepth,
+            bigInt(0),
+        )
+
+        for (let vote of this.votes) {
+            voteOptionTree.insert(vote)
+        }
+
+        return new StateLeaf(
+            this.pubKey,
+            voteOptionTree.root,
+            this.voiceCreditBalance,
+            this.nonce,
         )
     }
 }
@@ -91,10 +116,7 @@ class MaciState {
         return votes
     }
 
-    /*
-     * Computes the state root
-     */
-    public genStateRoot = (): SnarkBigInt => {
+    public genStateTree = (): IncrementalMerkleTree => {
         const blankStateLeaf = StateLeaf.genFreshLeaf(
             new PubKey([0, 0]),
             this.emptyVoteOptionTreeRoot,
@@ -108,27 +130,20 @@ class MaciState {
 
         stateTree.insert(this.zerothStateLeaf)
         for (let user of this.users) {
-            const voteOptionTree = new IncrementalMerkleTree(
-                this.voteOptionTreeDepth,
-                bigInt(0),
-            )
-
-            for (let vote of user.votes) {
-                voteOptionTree.insert(vote)
-            }
-
-            const stateLeaf = new StateLeaf(
-                user.pubKey,
-                voteOptionTree.root,
-                user.voiceCreditBalance,
-                user.nonce,
-            )
+            const stateLeaf = user.genStateLeaf(this.voteOptionTreeDepth)
             stateTree.insert(stateLeaf.hash())
         }
-        return stateTree.root
+        return stateTree
     }
 
-    public genMessageRoot = (): SnarkBigInt => {
+    /*
+     * Computes the state root
+     */
+    public genStateRoot = (): SnarkBigInt => {
+        return this.genStateTree().root
+    }
+
+    public genMessageTree = (): IncrementalMerkleTree => {
         const messageTree = new IncrementalMerkleTree(
             this.messageTreeDepth,
             NOTHING_UP_MY_SLEEVE,
@@ -138,7 +153,11 @@ class MaciState {
             messageTree.insert(message.hash())
         }
 
-        return messageTree.root
+        return messageTree
+    }
+
+    public genMessageRoot = (): SnarkBigInt => {
+        return this.genMessageTree().root
     }
 
     /*
@@ -177,7 +196,7 @@ class MaciState {
                 _pubKey,
                 this.genBlankVotes(),
                 _initialVoiceCreditBalance,
-                0,
+                bigInt(0),
             )
         )
     }
@@ -196,30 +215,32 @@ class MaciState {
         this.messages.push(_message)
     }
 
+    /*
+     * Process the message at index 0 of the message array. Note that this is
+     * not the state leaf index, as leaf 0 of the state tree is a random value.
+     */
     public processMessage = (
         _index: number,
-        _randomZerothStateLeaf: SnarkBigInt,
     ) => {
-        this.zerothStateLeaf = _randomZerothStateLeaf
 
         const message = this.messages[_index]
         const encPubKey = this.encPubKeys[_index]
 
-        const sharedKey = Keypair.genEcdhSharedKey(this.coordinatorKeypair, encPubKey)
+        const sharedKey = Keypair.genEcdhSharedKey(this.coordinatorKeypair.privKey, encPubKey)
         const { command, signature } = Command.decrypt(message, sharedKey)
 
         // If the state tree index in the command is invalid, do nothing
-        if (command.stateIndex >= this.users.length) {
+        if (command.stateIndex > this.users.length) {
             return 
         }
 
         // If the signature is invalid, do nothing
-        if (!command.verifySignature(signature, this.users[_index].pubKey)) {
+        if (! command.verifySignature(signature, this.users[_index].pubKey)) {
             return
         }
 
         // If the nonce is invalid, do nothing
-        if (!command.nonce.equals(this.users[_index].nonce + bigInt(1))) {
+        if (command.nonce !== this.users[_index].nonce + bigInt(1)) {
             return
         }
 
@@ -252,6 +273,72 @@ class MaciState {
         newUser.voiceCreditBalance = voiceCreditsLeft
 
         this.users[_index] = newUser
+    }
+
+    /*
+     * Generates inputs to the UpdateStateTree circuit.  Only after calling
+     * this function, use oldState.processMessage() to generate the newState
+     * object. 
+     * )
+     */
+    public genUpdateStateTreeCircuitInputs = (
+        _index: number,
+    ) => {
+        const message = this.messages[_index]
+        const encPubKey = this.encPubKeys[_index]
+        const sharedKey = Keypair.genEcdhSharedKey(
+            this.coordinatorKeypair.privKey,
+            encPubKey,
+        )
+        const { command, signature } = Command.decrypt(message, sharedKey)
+
+        const messageTree = this.genMessageTree()
+        const [ msgTreePathElements, msgTreePathIndices ]
+            = messageTree.getPathUpdate(_index)
+
+        const stateTree = this.genStateTree()
+        const stateTreeMaxIndex = bigInt(stateTree.nextIndex) - bigInt(1)
+
+        const user = this.users[bigInt(command.stateIndex) - bigInt(1)]
+
+        const currentVoteWeight = user.votes[command.voteOptionIndex]
+
+        const voteOptionTree = new IncrementalMerkleTree(
+            this.voteOptionTreeDepth,
+            bigInt(0),
+        )
+        for (let vote of user.votes) {
+            voteOptionTree.insert(vote)
+        }
+
+        const [ voteOptionTreePathElements, voteOptionTreeIndices ]
+            = voteOptionTree.getPathUpdate(command.voteOptionIndex)
+
+        const voteOptionTreeMaxIndex = bigInt(2).pow(this.voteOptionTreeDepth) - bigInt(1)
+
+        const stateLeaf = user.genStateLeaf(this.voteOptionTreeDepth)
+        const [ stateTreePathElements, stateTreePathIndices ]
+            = stateTree.getPathUpdate(command.stateIndex)
+
+        return stringifyBigInts({
+            'coordinator_public_key': this.coordinatorKeypair.pubKey.asCircuitInputs(),
+            'ecdh_private_key': this.coordinatorKeypair.privKey.asCircuitInputs(),
+            'ecdh_public_key': encPubKey.asCircuitInputs(),
+            'message': message.asCircuitInputs(),
+            'msg_tree_root': messageTree.root,
+            'msg_tree_path_elements': msgTreePathElements,
+            'msg_tree_path_index': msgTreePathIndices,
+            'vote_options_leaf_raw': currentVoteWeight,
+            'vote_options_tree_root': voteOptionTree.root,
+            'vote_options_tree_path_elements': voteOptionTreePathElements,
+            'vote_options_tree_path_index': voteOptionTreeIndices,
+            'vote_options_max_leaf_index': voteOptionTreeMaxIndex,
+            'state_tree_data_raw': stateLeaf.asCircuitInputs(),
+            'state_tree_max_leaf_index': stateTreeMaxIndex,
+            'state_tree_root': stateTree.root,
+            'state_tree_path_elements': stateTreePathElements,
+            'state_tree_path_index': stateTreePathIndices,
+        })
     }
 }
 
