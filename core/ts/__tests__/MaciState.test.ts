@@ -77,10 +77,10 @@ describe('MaciState', () => {
         expect(m2.messages.length).toEqual(m1.messages.length)
         expect(m3.messages.length).not.toEqual(m1.messages.length)
 
-        // Modify zerothStateLeaf
-        m1.zerothStateLeaf = bigInt(5)
-        expect(m2.zerothStateLeaf).toEqual(m1.zerothStateLeaf)
-        expect(m3.zerothStateLeaf).not.toEqual(m1.zerothStateLeaf)
+        // Modify zerothStateLeafHash
+        m1.zerothStateLeafHash = bigInt(5)
+        expect(m2.zerothStateLeafHash).toEqual(m1.zerothStateLeafHash)
+        expect(m3.zerothStateLeafHash).not.toEqual(m1.zerothStateLeafHash)
 
         // Modify encPubKeys
         m1.encPubKeys.push(keypair.pubKey)
