@@ -343,6 +343,8 @@ describe('State tree root update verification circuit', () => {
         const witness = circuitChecks.calculateWitness(circuitInputs)
         expect(circuitChecks.checkWitness(witness)).toBeTruthy()
 
+
+
         const idx = circuitChecks.getSignalIdx('main.signature_verifier_valid')
         const circuitSignatureValid = witness[idx].toString()
         expect(circuitSignatureValid.toString()).toEqual('1')
