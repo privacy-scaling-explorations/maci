@@ -50,7 +50,9 @@ template PerformChecksBeforeUpdate(
     message_tree_depth,
     state_tree_data_length,
     state_tree_depth,
+    state_tree_max_leaves,
     vote_options_tree_depth,
+    vote_options_max_leaves,
     CMD_VOTE_WEIGHT_IDX,
     STATE_TREE_PUBLIC_KEY_X_IDX,
     STATE_TREE_PUBLIC_KEY_Y_IDX,
@@ -59,9 +61,7 @@ template PerformChecksBeforeUpdate(
     CMD_SIG_S_IDX
 ) {
     signal input vote_options_max_leaf_index;
-    signal input vote_options_max_leaves;
     signal input state_tree_max_leaf_index;
-    signal input state_tree_max_leaves;
 
     signal input ecdh_private_key;
     signal input coordinator_public_key[2];
@@ -82,7 +82,7 @@ template PerformChecksBeforeUpdate(
     signal input vote_options_tree_path_elements[vote_options_tree_depth];
     signal input vote_options_tree_path_index[vote_options_tree_depth];
 
-    signal output decrypted_command_out[message_length];
+    signal output decrypted_command_out[message_length-1];
     signal output new_vote_options_tree_root;
     signal output signature_verifier_valid;
 
@@ -195,6 +195,8 @@ template UpdateStateTree(
     //    message_tree_depth: the depth of the message tree
     //    vote_options_tree_depth: depth of the vote tree
 
+    // *************** BEGIN definitions ***************
+
     // Indices for convenience
     var CMD_STATE_TREE_INDEX_IDX = 0;
     var CMD_PUBLIC_KEY_X_IDX = 1;
@@ -273,20 +275,25 @@ template UpdateStateTree(
     signal input ecdh_public_key[2];
 
     // Internal variables for passing between templates
-    signal decrypted_command_out[message_length];
+    signal decrypted_command_out[message_length - 1];
     signal new_vote_options_tree_root;
     signal signature_verifier_valid;
 
     var vote_options_max_leaves = 2 ** vote_options_tree_depth;
     var state_tree_max_leaves = 2 ** state_tree_depth;
 
+    // *************** END definitions ***************
+
+    // *************** BEGIN perform checks before update ***************
     component perform_checks_before_update = PerformChecksBeforeUpdate(
         message_length,
-	message_without_signature_length,
+      	message_without_signature_length,
         message_tree_depth,
         state_tree_data_length,
         state_tree_depth,
+        state_tree_max_leaves,
         vote_options_tree_depth,
+        vote_options_max_leaves,
         CMD_VOTE_WEIGHT_IDX,
         STATE_TREE_PUBLIC_KEY_X_IDX,
         STATE_TREE_PUBLIC_KEY_Y_IDX,
@@ -296,9 +303,8 @@ template UpdateStateTree(
     );
 
     perform_checks_before_update.vote_options_max_leaf_index <== vote_options_max_leaf_index;
-    perform_checks_before_update.vote_options_max_leaves <== vote_options_max_leaves;
     perform_checks_before_update.state_tree_max_leaf_index <== state_tree_max_leaf_index;
-    perform_checks_before_update.state_tree_max_leaves <== state_tree_max_leaves;
+
     perform_checks_before_update.ecdh_private_key <== ecdh_private_key;
     for (var i = 0; i < 2; i++) {
         perform_checks_before_update.coordinator_public_key[i] <== coordinator_public_key[i];
@@ -317,17 +323,27 @@ template UpdateStateTree(
         perform_checks_before_update.state_tree_data_raw[i] <== state_tree_data_raw[i];
     }
     perform_checks_before_update.state_tree_root <== state_tree_root;
+    for (var i = 0; i < state_tree_depth; i++) {
+        perform_checks_before_update.state_tree_path_elements[i] <== state_tree_path_elements[i];
+        perform_checks_before_update.state_tree_path_index[i] <== state_tree_path_index[i];
+    }
+
+    perform_checks_before_update.vote_options_tree_root <== vote_options_tree_root;
+    perform_checks_before_update.vote_options_leaf_raw <== vote_options_leaf_raw;
     for (var i = 0; i < vote_options_tree_depth; i++) {
         perform_checks_before_update.vote_options_tree_path_elements[i] <== vote_options_tree_path_elements[i];
         perform_checks_before_update.vote_options_tree_path_index[i] <== vote_options_tree_path_index[i];
     }
 
-    for (var i = 0; i < message_length; i++) {
+    for (var i = 0; i < message_length - 1; i++) {
         decrypted_command_out[i] <== perform_checks_before_update.decrypted_command_out[i];
     }
     new_vote_options_tree_root <== perform_checks_before_update.new_vote_options_tree_root;
     signature_verifier_valid <== perform_checks_before_update.signature_verifier_valid;
 
+    // *************** END perform checks before update ***************
+
+    // *************** BEGIN perform update ***************
     // Calculate new vote credits
     signal vote_options_leaf_squared;
     vote_options_leaf_squared <== vote_options_leaf_raw * vote_options_leaf_raw;
@@ -406,4 +422,5 @@ template UpdateStateTree(
     selected_state_tree_root.s <== check_valid_update.out;
 
     root <== selected_state_tree_root.out;
+    // *************** END perform update ***************
 }

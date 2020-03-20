@@ -152,7 +152,6 @@ const getUpdateStateTreeParams = async (
 
 describe('State tree root update verification circuit', () => {
     let circuit 
-    let circuitChecks
 
     // Set up keypairs
     const user1 = new Keypair()
@@ -161,7 +160,6 @@ describe('State tree root update verification circuit', () => {
 
     beforeAll(async () => {
         circuit = await compileAndLoadCircuit('updateStateTree_test.circom')
-        circuitChecks = await compileAndLoadCircuit('performChecksBeforeUpdate_test.circom')
     })
 
     it('UpdateStateTree should produce the correct state root', async () => {
@@ -311,41 +309,4 @@ describe('State tree root update verification circuit', () => {
         // Make sure js generated root and circuit root match
         expect(circuitNewStateRoot.toString()).toEqual(jsNewStateRoot.toString())
     })
-
-    it('PerformChecksBeforeUpdate should confirm signature is valid on valid inputs', async () => {
-        const user1StateTreeIndex = 1
-        const user1VoteOptionIndex = 0
-        const user1VoteOptionWeight = 5
-
-        const user1Command = new Command(
-            bigInt(user1StateTreeIndex), // user index in state tree
-            user1.pubKey,
-            // Vote option index (voting for candidate 0)
-            bigInt(user1VoteOptionIndex),
-            // sqrt of the number of voice credits user wishes to spend (spending 25 credit balance)
-            bigInt(user1VoteOptionWeight),
-            // Nonce
-            bigInt(1),
-        )
-
-        const {
-            circuitInputs,
-            userVoteOptionTree,
-            stateTree,
-            msgTree,
-        } = await getUpdateStateTreeParams(
-            user1Command,
-            user1,
-            coordinator,
-            ephemeralKeypair,
-        )
-
-        const witness = circuitChecks.calculateWitness(circuitInputs)
-        expect(circuitChecks.checkWitness(witness)).toBeTruthy()
-
-        const idx = circuitChecks.getSignalIdx('main.signature_verifier_valid')
-        const circuitSignatureValid = witness[idx].toString()
-        expect(circuitSignatureValid.toString()).toEqual('1')
-    })
-
 })

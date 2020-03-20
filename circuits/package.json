@@ -50,6 +50,7 @@
         "snarkjs": "https://github.com/weijiekoh/snarkjs.git#52e0ceba0256bc9bf94cbc9500139dfc37018f91",
         "temp-dir": "^2.0.0",
         "ts-jest": "^24.2.0",
+        "typescript": "^3.8.3",
         "websnark": "0.0.5"
     }
 }
