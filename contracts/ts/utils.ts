@@ -2,6 +2,14 @@ import {
     SnarkProof,
 } from 'libsemaphore'
 
+import {
+    genDeployer,
+    genTestAccounts,
+    deployMaci,
+    deployFreeForAllSignUpGatekeeper,
+    deployConstantInitialVoiceCreditProxy,
+} from './'
+
 const formatProofForVerifierContract = (
     _proof: SnarkProof,
 ) => {
@@ -18,6 +26,32 @@ const formatProofForVerifierContract = (
     ]).map((x) => x.toString())
 }
 
+const deployTestContracts = async (
+    deployer,
+    initialVoiceCreditBalance,
+) => {
+    const freeForAllSignUpGatekeeperContract = await deployFreeForAllSignUpGatekeeper(deployer)
+    const constantIntialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
+        deployer,
+        initialVoiceCreditBalance,
+    )
+
+    const contracts = await deployMaci(
+        deployer,
+        freeForAllSignUpGatekeeperContract.contractAddress,
+        constantIntialVoiceCreditProxyContract.contractAddress,
+    )
+
+    const maciContract = contracts.maciContract
+
+    return {
+        freeForAllSignUpGatekeeperContract,
+        constantIntialVoiceCreditProxyContract,
+        maciContract,
+    }
+}
+
 export {
+    deployTestContracts,
     formatProofForVerifierContract,
 }

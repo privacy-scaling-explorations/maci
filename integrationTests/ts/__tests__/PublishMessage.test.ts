@@ -9,10 +9,12 @@ import {
     genRandomSalt,
     NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
+
 import {
     PrivKey,
     Command,
     Keypair,
+    StateLeaf,
 } from 'maci-domainobjs'
 
 import {
@@ -44,7 +46,7 @@ const maciState = new MaciState(
     NOTHING_UP_MY_SLEEVE,
 )
 
-describe('Sign-ups', () => {
+describe('Publishing messages', () => {
     beforeAll(async () => {
         freeForAllSignUpGatekeeperContract = await deployFreeForAllSignUpGatekeeper(deployer)
         constantIntialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
@@ -67,6 +69,29 @@ describe('Sign-ups', () => {
             ethers.utils.defaultAbiCoder.encode(['uint256'], [0]),
         )
         await tx.wait()
+    })
+
+    it('nobody can publish a message before the sign-up period passes', async () => {
+        expect.assertions(1)
+        const keypair = new Keypair()
+        const command = new Command(
+            bigInt(0),
+            keypair.pubKey,
+            bigInt(0),
+            bigInt(0),
+            bigInt(0),
+            genRandomSalt(),
+        )
+        const signature = command.sign(keypair.privKey)
+        const message = command.encrypt(signature, bigInt(0))
+        try {
+            await maciContract.publishMessage(
+                message.asContractParam(),
+                keypair.pubKey.asContractParam(),
+            )
+        } catch (e) {
+            expect(e.message.endsWith('MACI: the sign-up period is not over')).toBeTruthy()
+        }
     })
 
     it('The empty message tree should have the correct root', async () => {

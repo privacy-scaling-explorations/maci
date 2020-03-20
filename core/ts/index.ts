@@ -1,3 +1,4 @@
+import * as assert from 'assert'
 import {
     PrivKey,
     PubKey,
@@ -8,6 +9,7 @@ import {
 } from 'maci-domainobjs'
 
 import {
+    hash,
     bigInt,
     SnarkBigInt,
     genRandomSalt,
@@ -86,7 +88,7 @@ class MaciState {
     public messageTreeDepth: SnarkBigInt
     public voteOptionTreeDepth: SnarkBigInt
     public messages: Message[] = []
-    public zerothStateLeafHash: SnarkBigInt
+    public zerothStateLeaf: StateLeaf
     public maxVoteOptionIndex: SnarkBigInt
     public encPubKeys: PubKey[] = []
     private emptyVoteOptionTreeRoot
@@ -99,7 +101,6 @@ class MaciState {
         _stateTreeDepth: SnarkBigInt,
         _messageTreeDepth: SnarkBigInt,
         _voteOptionTreeDepth: SnarkBigInt,
-        _zerothStateLeafHash: SnarkBigInt,
         _maxVoteOptionIndex: SnarkBigInt,
     ) {
 
@@ -107,7 +108,6 @@ class MaciState {
         this.stateTreeDepth = bigInt(_stateTreeDepth)
         this.messageTreeDepth = bigInt(_messageTreeDepth)
         this.voteOptionTreeDepth = bigInt(_voteOptionTreeDepth)
-        this.zerothStateLeafHash = bigInt(_zerothStateLeafHash)
         this.maxVoteOptionIndex = bigInt(_maxVoteOptionIndex)
 
         const emptyVoteOptionTree = new IncrementalMerkleTree(
@@ -115,6 +115,9 @@ class MaciState {
             bigInt(0),
         )
         this.emptyVoteOptionTreeRoot = emptyVoteOptionTree.root
+
+        this.zerothStateLeaf 
+            = StateLeaf.genBlankLeaf(this.emptyVoteOptionTreeRoot)
     }
 
     /*
@@ -131,14 +134,12 @@ class MaciState {
 
     /*
      * Return an IncrementalMerkleTree where the zeroth leaf is
-     * this.zerothStateLeafHash and the other leaves are the Users as hashed
+     * this.zerothStateLeaf and the other leaves are the Users as hashed
      * StateLeaf objects
      */
     public genStateTree = (): IncrementalMerkleTree => {
-        const blankStateLeaf = StateLeaf.genFreshLeaf(
-            new PubKey([0, 0]),
+        const blankStateLeaf = StateLeaf.genBlankLeaf(
             this.emptyVoteOptionTreeRoot,
-            bigInt(0),
         )
 
         const stateTree = new IncrementalMerkleTree(
@@ -146,7 +147,7 @@ class MaciState {
             blankStateLeaf.hash(),
         )
 
-        stateTree.insert(this.zerothStateLeafHash)
+        stateTree.insert(this.zerothStateLeaf.hash())
         for (let user of this.users) {
             const stateLeaf = user.genStateLeaf(this.voteOptionTreeDepth)
             stateTree.insert(stateLeaf.hash())
@@ -187,7 +188,6 @@ class MaciState {
             bigInt(this.stateTreeDepth.toString()),
             bigInt(this.messageTreeDepth.toString()),
             bigInt(this.voteOptionTreeDepth.toString()),
-            bigInt(this.zerothStateLeafHash.toString()),
             bigInt(this.maxVoteOptionIndex.toString()),
         )
 
@@ -278,6 +278,11 @@ class MaciState {
             return
         }
 
+        // If the vote option index is invalid, do nothing
+        if (command.voteOptionIndex > this.maxVoteOptionIndex) {
+            return
+        }
+
         // Update the user's vote option tree, pubkey, voice credit balance,
         // and nonce
         let newVotesArr: SnarkBigInt[] = []
@@ -299,18 +304,18 @@ class MaciState {
 
     /*
      * Process _batchSize messages starting from _index, and then update
-     * zerothStateLeafHash.
+     * zerothStateLeaf.
      */
     public batchProcessMessage = (
         _index: number,
         _batchSize: number,
-        _randomStateLeafHash: SnarkBigInt,
+        _randomStateLeaf: StateLeaf,
     ) => {
         for (let i = 0; i < _batchSize; i++) {
             const messageIndex: number = _index + i;
             this.processMessage(messageIndex)
         }
-        this.zerothStateLeafHash = _randomStateLeafHash
+        this.zerothStateLeaf = _randomStateLeaf
     }
 
     /*
@@ -382,7 +387,7 @@ class MaciState {
     public genBatchUpdateStateTreeCircuitInputs = (
         _index: number,
         _batchSize: number,
-        _randomStateLeafHash: SnarkBigInt,
+        _randomStateLeaf: StateLeaf,
     ) => {
 
         let stateLeaves: StateLeaf[] = []
@@ -424,7 +429,7 @@ class MaciState {
         const randomLeafRoot = stateTree.root
 
         // Insert the random leaf
-        stateTree.update(0, _randomStateLeafHash)
+        stateTree.update(0, _randomStateLeaf.hash())
 
         const [randomStateLeafPathElements, _] = stateTree.getPathUpdate(0)
 
@@ -436,7 +441,7 @@ class MaciState {
             'msg_tree_root': messageTree.root,
             'msg_tree_path_elements': messageTreePathElements,
             'msg_tree_batch_start_index': _index,
-            'random_leaf': _randomStateLeafHash,
+            'random_leaf': _randomStateLeaf.hash(),
             'state_tree_root': stateRoots,
             'state_tree_path_elements': stateTreePathElements,
             'state_tree_path_index': stateTreePathIndices,
@@ -451,77 +456,226 @@ class MaciState {
             'vote_options_tree_path_index': voteOptionTreePathIndices,
         })
     }
+
+    /*
+     * Compute the vote tally up to the specified state tree index. Ignores the
+     * zeroth state leaf.
+     * @param _startIndex The state tree index. Only leaves before this index
+     *                    are included in the tally.
+     */ 
+    public computeCumulativeVoteTally = (
+        _startIndex: SnarkBigInt,
+    ): SnarkBigInt[] => {
+        assert(bigInt(this.users.length) > _startIndex)
+
+        // results should start off with 0s
+        let results: SnarkBigInt[] = []
+        for (let i = 0; i < bigInt(2).pow(this.voteOptionTreeDepth); i ++) {
+            results.push(bigInt(0))
+        }
+
+        // Compute the cumulative total up till startIndex - 1 (since we should
+        // ignore the 0th leaf)
+        for (let i = bigInt(0); i < bigInt(_startIndex) - bigInt(1); i++) {
+            const user = this.users[i]
+            for (let j = 0; j < user.votes.length; j ++) {
+                results[j] += user.votes[j]
+            }
+        }
+
+        return results
+    }
+
+    /*
+     * Tallies the votes for a batch of users. This does not perform a
+     * cumulative tally. This works as long as the _startIndex is lower than
+     * the total number of users. e.g. if _batchSize is 4, there are 10 users,
+     * and _startIndex is 8, this function will tally the votes from the last 2
+     * users.
+     * @param _startIndex The index of the first user in the batch
+     * @param _batchSize The number of users to tally.
+     */
+    public computeBatchVoteTally = (
+        _startIndex: SnarkBigInt,
+        _batchSize: SnarkBigInt,
+    ): SnarkBigInt[] => {
+
+        // Check whether _startIndex is within range.
+        assert(_startIndex >= 0 && _startIndex < this.users.length)
+
+        // Check whether _startIndex is a multiple of _batchSize
+        assert(bigInt(_startIndex) % bigInt(_batchSize) === bigInt(0))
+
+        // Fill results with 0s
+        let results: SnarkBigInt[] = []
+        for (let i = 0; i < bigInt(2).pow(this.voteOptionTreeDepth); i++) {
+            results.push(bigInt(0))
+        }
+
+        // Compute the tally
+        if (_startIndex === 0) {
+            _batchSize = _batchSize - bigInt(1)
+            _startIndex = bigInt(1)
+        }
+
+        for (let i = 0; i < _batchSize; i ++) {
+            const userIndex = bigInt(_startIndex) + bigInt(i)
+            if (userIndex < this.users.length) {
+                const votes = this.users[userIndex].votes
+                for (let j = 0; j < votes.length; j++) {
+                    results[j] += votes[j]
+                }
+            } else {
+                break
+            }
+        }
+
+        return results
+    }
+
+    /*
+     * Generates circuit inputs to the QuadVoteTally function.
+     * @param _startIndex The index of the first state leaf in the tree
+     * @param _batchSize The number of leaves per batch of state leaves
+     * @param _currentResultsSalt The salt for the cumulative vote tally
+     * @param _newResultsSalt The salt for the new vote tally
+     */
+    public genQuadVoteTallyCircuitInputs = (
+        _startIndex: SnarkBigInt,
+        _batchSize: SnarkBigInt,
+        _currentResultsSalt: SnarkBigInt,
+        _newResultsSalt: SnarkBigInt,
+    ) => {
+        _startIndex = bigInt(_startIndex)
+        _batchSize = bigInt(_batchSize)
+
+        const currentResults = this.computeCumulativeVoteTally(_startIndex)
+        const batchResults = this.computeBatchVoteTally(_startIndex, _batchSize)
+
+        assert(currentResults.length === batchResults.length)
+
+        let newResults: SnarkBigInt[] = []
+        for (let i = 0; i < currentResults.length; i++) {
+            newResults[i] = currentResults[i] + batchResults[i]
+        }
+
+        const currentResultsCommitment = hash([
+            ...currentResults,
+            _currentResultsSalt
+        ])
+
+        const blankStateLeaf = StateLeaf.genBlankLeaf(
+            this.emptyVoteOptionTreeRoot,
+        )
+
+        const blankStateLeafHash = blankStateLeaf.hash()
+        const batchTreeDepth = bigInt(Math.sqrt(_batchSize.toString()))
+
+        let stateLeaves: StateLeaf[] = []
+        let voteLeaves: StateLeaf[][] = []
+
+        if (_startIndex === bigInt(0)) {
+            stateLeaves.push(this.zerothStateLeaf)
+            voteLeaves.push(this.genBlankVotes())
+        }
+
+        for (let i = bigInt(0); i < _batchSize; i++) {
+            debugger
+            if (_startIndex === bigInt(0) && i === bigInt(0)) {
+                continue
+            }
+
+            const userIndex = _startIndex + i - bigInt(1)
+            if (userIndex < this.users.length) {
+                stateLeaves.push(
+                    this.users[userIndex]
+                        .genStateLeaf(this.voteOptionTreeDepth)
+                )
+                voteLeaves.push(this.users[userIndex].votes)
+            } else {
+                stateLeaves.push(blankStateLeaf)
+                voteLeaves.push(this.genBlankVotes())
+            }
+        }
+
+        // We need to generate the following in order to create the
+        // intermediate tree path:
+        // 1. The tree whose leaves are the state leaves are the roots of
+        //    subtrees (the intermediate tree)
+        // 2. Each batch tree whose leaves are state leaves
+
+        const emptyBatchTree = new IncrementalMerkleTree(
+            batchTreeDepth,
+            blankStateLeafHash,
+        )
+
+        const intermediateTree = new IncrementalMerkleTree(
+            this.stateTreeDepth - batchTreeDepth,
+            emptyBatchTree.root,
+        )
+
+        // For each batch, create a tree of the leaves in the batch, and insert the
+        // tree root into the intermediate tree
+        for (let i = bigInt(0); i < bigInt(2).pow(this.stateTreeDepth); i += _batchSize) {
+
+            // Use this batchTree to accumulate the leaves in the batch
+            const batchTree = emptyBatchTree.copy()
+
+            for (let j = bigInt(0); j < _batchSize; j ++) {
+                if (i === bigInt(0) && j === bigInt(0)) {
+                    batchTree.insert(this.zerothStateLeaf.hash())
+                } else {
+                    const userIndex = i + j - bigInt(1)
+                    if (userIndex < this.users.length) {
+                        const leaf = this.users[userIndex]
+                            .genStateLeaf(this.voteOptionTreeDepth).hash()
+                        batchTree.insert(leaf)
+                    }
+                }
+            }
+
+            // Insert the root of the batch tree
+            intermediateTree.insert(batchTree.root)
+        }
+
+        assert(intermediateTree.root === this.genStateRoot())
+
+        const intermediatePathIndex = _startIndex / _batchSize
+        const intermediateStateRoot = intermediateTree.leaves[_startIndex / _batchSize]
+        const [intermediatePathElements, _] 
+            = intermediateTree.getPathUpdate(intermediatePathIndex)
+
+        const circuitInputs = stringifyBigInts({
+            voteLeaves,
+            stateLeaves: stateLeaves.map((x) => x.asCircuitInputs()),
+            currentResults,
+            fullStateRoot: this.genStateTree().root,
+            currentResultsSalt: _currentResultsSalt,
+            newResultsSalt: _newResultsSalt,
+            currentResultsCommitment,
+            intermediatePathElements,
+            intermediatePathIndex,
+            intermediateStateRoot,
+        })
+
+        return circuitInputs
+    }
 }
 
-const processMessage = (
-    sharedKey: PrivKey,
-    msg: Message,
-    stateLeaf: StateLeaf,
-    oldStateTree: IncrementalMerkleTree,
-    oldUserVoteOptionTree: IncrementalMerkleTree,
-) => {
+/*
+ * A helper function which hashes a list of results with a salt.
+ */
+const genTallyResultCommitment = (
+    results: SnarkBigInt[],
+    salt: SnarkBigInt,
+): SnarkBigInt => {
 
-    // Deep-copy the trees
-    const stateTree = oldStateTree.copy()
-    const userVoteOptionTree = oldUserVoteOptionTree.copy()
+    return hash([...results, salt])
 
-    // Decrypt the message
-    const { command, signature } = Command.decrypt(msg, sharedKey)
-
-    // If the state tree index in the command is invalid, do nothing
-    if (parseInt(command.stateIndex) >= parseInt(stateTree.nextIndex)) {
-        return { stateTree, userVoteOptionTree, stateLeaf }
-    }
-
-    // If the signature is invalid, do nothing
-    if (!command.verifySignature(signature, stateLeaf.pubKey)) {
-        return { stateTree, userVoteOptionTree, stateLeaf }
-    }
-
-    // If the nonce is invalid, do nothing
-    if (!command.nonce.equals(stateLeaf.nonce + bigInt(1))) {
-        return { stateTree, userVoteOptionTree, stateLeaf }
-    }
-
-    // If there are insufficient vote credits, do nothing
-    const userPrevSpentCred =
-        userVoteOptionTree.getLeaf(parseInt(command.voteOptionIndex))
-
-    const userCmdVoteOptionCredit = command.newVoteWeight
-
-    const voteCreditsLeft = 
-        stateLeaf.voiceCreditBalance + 
-        (userPrevSpentCred * userPrevSpentCred) -
-        (userCmdVoteOptionCredit * userCmdVoteOptionCredit)
-
-    if (voteCreditsLeft < 0) {
-        return { stateTree, userVoteOptionTree, stateLeaf }
-    }
-
-    // Update the user's vote option tree
-    userVoteOptionTree.update(
-        bigInt(command.voteOptionIndex),
-        bigInt(userCmdVoteOptionCredit),
-    )
-
-    // Update the state tree
-    const newStateLeaf = new StateLeaf(
-        command.newPubKey,
-        userVoteOptionTree.root,
-        voteCreditsLeft,
-        stateLeaf.nonce + bigInt(1)
-    )
-
-    stateTree.update(
-        command.stateIndex,
-        newStateLeaf.hash(),
-    )
-
-    return { stateTree, userVoteOptionTree, newStateLeaf }
 }
 
 export {
-    processMessage,
+    genTallyResultCommitment,
     MaciState,
     User,
 }

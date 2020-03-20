@@ -10,8 +10,6 @@ said data. This makes it easier to reason about the system, write tests, and
 implement functionality. It also allows us to implement the smart contracts in
 discrete components which are easy to test.
 
-TODO: change this to document the objects, not pseudocode
-
 Note that the actual implementation uses objects instead of pure functions.
 This avoids duplication of code which copies state data.
 
@@ -30,7 +28,7 @@ access their own keypair, commands, and on-chain state and message tree roots.
     stateTreeDepth: SnarkBigInt
     messageTreeDepth: SnarkBigInt
     voteOptionTreeDepth: SnarkBigInt
-    zerothStateLeaf: SnarkBigInt
+    zerothStateLeaf: StateLeaf
     messages: Message[]
     users: User[]
 }
@@ -40,9 +38,7 @@ access their own keypair, commands, and on-chain state and message tree roots.
 - `stateTreeDepth:`: The depth of the state tree.
 - `messageTreeDepth:`: The depth of the message tree.
 - `voteOptionTreeDepth:`: The depth of each user's vote option tree.
-- `zerothStateLeaf`: The value of the zeroth leaf of the state tree. There
-  should not be any known `StateLeaf` preimage for it as it is just a random
-  value.
+- `zerothStateLeaf`: The leaf of the state tree at index 0.
 - `encPubKeys`: An array of `PubKey` objects used to generate ephermeral ECDH
   shared keys with which to encrypt commands to messages. For each `PubKey` in
   `encPubKey`, its corresponding `Message` in `messages` shares the same array
@@ -122,6 +118,22 @@ This function:
 2. Decrypts `messages[_index]` to derive a `Command`
 3. If the message is invalid, do nothing and return
 4. If the message is valid, update the user's public key and vote at `_index`.
+
+#### **`batchProcessMessage`**
+
+Function signature:
+
+```ts
+(
+    _index: number,
+    _batchSize: number,
+    _randomStateLeaf: StateLeaf,
+): void
+```
+
+This function runs `processMessage()` on a batch of `_batchSize` leaves
+starting from index `_index`, and then replaces the zeroth leaf with
+`_randomStateLeaf`.
 
 **`genStateRoot()`**
 

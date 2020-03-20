@@ -4,9 +4,10 @@ import { Circuit } from 'snarkjs'
 const compiler = require('circom')
 
 import {
+    hash,
+    SnarkBigInt,
     stringifyBigInts,
     IncrementalMerkleTree,
-    SnarkBigInt,
 } from 'maci-crypto'
 
 import {
@@ -16,10 +17,19 @@ import {
     StateLeaf,
 } from 'maci-domainobjs'
 
+import {
+    genNewResultsCommitment,
+    genResultCommitmentVerifierCircuitInputs,
+} from 'maci-core'
+
 const compileAndLoadCircuit = async (
     circuitFilename: string
 ) => {
-    const circuitDef = await compiler(path.join(__dirname, 'circuits', `../../circom/test/${circuitFilename}`))
+    const circuitDef = await compiler(path.join(
+        __dirname,
+        'circuits',
+        `../../circom/test/${circuitFilename}`,
+    ))
     return new Circuit(circuitDef)
 }
 

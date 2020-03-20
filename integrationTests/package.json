@@ -10,8 +10,8 @@
         "test-debug": "node --inspect-brk ./node_modules/.bin/jest",
         "test-publishMessage": "jest PublishMessage.test.ts",
         "test-publishMessage-debug": "node --inspect-brk ./node_modules/.bin/jest PublishMessage.test.ts",
-        "test-signup": "jest SignUp.test.ts",
-        "test-signup-debug": "node --inspect-brk ./node_modules/.bin/jest SignUp.test.ts"
+        "test-signUp": "jest SignUp.test.ts",
+        "test-signUp-debug": "node --inspect-brk ./node_modules/.bin/jest SignUp.test.ts"
     },
     "dependencies": {
     },

@@ -9,9 +9,11 @@ import {
     genRandomSalt,
     NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
+
 import {
     PrivKey,
     Keypair,
+    StateLeaf,
 } from 'maci-domainobjs'
 
 import {

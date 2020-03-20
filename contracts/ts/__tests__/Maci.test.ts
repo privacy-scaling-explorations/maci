@@ -7,11 +7,11 @@ The user signs up
 End the signup period
 The user publishes config.maci.messageBatchSize messages, all signed with their public key. Note that all the messages have the vote (9 credits to vote option 0)
 End the voting period
-Pad the state tree (such that we add 2 blank state leaves)
 For each message, update the off-chain state tree
 Generate circuit inputs, generate proof, call batchProcessMessage()
 Tally the votes
- */
+*/
+
 require('module-alias/register')
 
 jest.setTimeout(1200000)
@@ -91,10 +91,8 @@ const temp = new IncrementalMerkleTree(voteOptionTreeDepth, bigInt(0))
 
 const emptyVoteOptionTreeRoot = temp.root
 
-const blankStateLeaf = StateLeaf.genFreshLeaf(
-    new PubKey([0, 0]),
+const blankStateLeaf = StateLeaf.genBlankLeaf(
     emptyVoteOptionTreeRoot,
-    bigInt(0),
 )
 
 const messageTree = new IncrementalMerkleTree(
@@ -144,11 +142,6 @@ describe('MACI', () => {
 
     const user2 = {
         wallet: accounts[2],
-        keypair: new Keypair(),
-    }
-
-    const badUser = {
-        wallet: accounts[3],
         keypair: new Keypair(),
     }
 

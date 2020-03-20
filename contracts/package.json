@@ -14,6 +14,10 @@
         "test-mt-debug": "node --inspect-brk ./node_modules/.bin/jest IncrementalMerkleTree.test.ts",
         "test-maci": "NODE_OPTIONS=--max-old-space-size=4096 jest Maci.test.ts",
         "test-maci-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest Maci.test.ts",
+        "test-signUp": "NODE_OPTIONS=--max-old-space-size=4096 jest SignUp.test.ts",
+        "test-signUp-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest SignUp.test.ts",
+        "test-batchProcessMessage": "NODE_OPTIONS=--max-old-space-size=4096 jest BatchProcessMessage.test.ts",
+        "test-batchProcessMessage-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest BatchProcessMessage.test.ts",
         "test-hasher": "jest Hasher.test.ts",
         "test-hasher-debug": "node --inspect-brk ./node_modules/.bin/jest Hasher.test.ts"
     },

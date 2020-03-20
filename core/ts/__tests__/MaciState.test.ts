@@ -8,6 +8,7 @@ import {
     Message,
     Keypair,
     PrivKey,
+    StateLeaf,
 } from 'maci-domainobjs'
 
 import {
@@ -21,7 +22,6 @@ const m1 = new MaciState(
     bigInt(4),
     bigInt(4),
     bigInt(4),
-    bigInt(0),
     bigInt(4),
 )
 
@@ -77,10 +77,10 @@ describe('MaciState', () => {
         expect(m2.messages.length).toEqual(m1.messages.length)
         expect(m3.messages.length).not.toEqual(m1.messages.length)
 
-        // Modify zerothStateLeafHash
-        m1.zerothStateLeafHash = bigInt(5)
-        expect(m2.zerothStateLeafHash).toEqual(m1.zerothStateLeafHash)
-        expect(m3.zerothStateLeafHash).not.toEqual(m1.zerothStateLeafHash)
+        // Modify zerothStateLeaf
+        m1.zerothStateLeaf = StateLeaf.genRandomLeaf()
+        expect(m2.zerothStateLeaf.nonce).toEqual(m1.zerothStateLeaf.nonce)
+        expect(m3.zerothStateLeaf.nonce).not.toEqual(m1.zerothStateLeaf.nonce)
 
         // Modify encPubKeys
         m1.encPubKeys.push(keypair.pubKey)

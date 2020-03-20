@@ -210,15 +210,22 @@ class StateLeaf implements IStateLeaf {
         this.nonce = nonce
     }
 
-    public static genFreshLeaf(
-        pubKey: PubKey,
-        voteOptionTreeRoot: SnarkBigInt,
-        voiceCreditBalance: SnarkBigInt,
-    ) {
+    public copy(): StateLeaf {
         return new StateLeaf(
-            pubKey,
-            voteOptionTreeRoot,
-            bigInt(voiceCreditBalance),
+            this.pubKey.copy(),
+            bigInt(this.voteOptionTreeRoot.toString()),
+            bigInt(this.voiceCreditBalance.toString()),
+            bigInt(this.nonce.toString()),
+        )
+    }
+
+    public static genBlankLeaf(
+        emptyVoteOptionTreeRoot: SnarkBigInt,
+    ): StateLeaf {
+        return new StateLeaf(
+            new PubKey([0, 0]),
+            emptyVoteOptionTreeRoot,
+            bigInt(0),
             bigInt(0),
         )
     }

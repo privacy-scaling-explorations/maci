@@ -70,7 +70,6 @@ describe('State tree root update verification circuit', () => {
         stateTreeDepth,
         messageTreeDepth,
         voteOptionTreeDepth,
-        NOTHING_UP_MY_SLEEVE,
         voteOptionsMaxIndex,
     )
 

@@ -68,7 +68,6 @@ describe('State tree root update verification circuit', () => {
         stateTreeDepth,
         messageTreeDepth,
         voteOptionTreeDepth,
-        NOTHING_UP_MY_SLEEVE,
         voteOptionsMaxIndex,
     )
 
@@ -106,14 +105,14 @@ describe('State tree root update verification circuit', () => {
             maciState.publishMessage(message, user.pubKey)
         }
 
-        const randomStateLeafHash = genRandomSalt()
+        const randomStateLeaf = StateLeaf.genRandomLeaf()
 
         // Generate circuit inputs
         const circuitInputs = 
             maciState.genBatchUpdateStateTreeCircuitInputs(
                 0,
                 batchSize,
-                randomStateLeafHash,
+                randomStateLeaf,
             )
 
         // Calculate the witness
@@ -128,7 +127,7 @@ describe('State tree root update verification circuit', () => {
         maciState.batchProcessMessage(
             0,
             batchSize,
-            randomStateLeafHash
+            randomStateLeaf,
         )
 
         const stateRootAfter = maciState.genStateRoot()

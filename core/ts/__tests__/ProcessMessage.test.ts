@@ -7,6 +7,7 @@ import {
     NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
 import {
+    StateLeaf,
     PrivKey,
     Command,
     Message,
@@ -27,7 +28,6 @@ const maciState = new MaciState(
     stateTreeDepth,
     messageTreeDepth,
     voteOptionTreeDepth,
-    NOTHING_UP_MY_SLEEVE,
     maxVoteOptionIndex,
 )
 
@@ -58,14 +58,17 @@ describe('Process one message', () => {
 
         const message = genMessage(command)
 
+        const copiedState = maciState.copy()
+
         // Publish a message
-        maciState.publishMessage(message, user.pubKey)
-        const oldState = maciState.copy()
-        maciState.processMessage(0)
-        const newStateRoot = maciState.genStateRoot()
+        copiedState.publishMessage(message, user.pubKey)
+        expect(copiedState.messages.length).toEqual(1)
+        const oldState = copiedState.copy()
+        copiedState.processMessage(0)
+        const newStateRoot = copiedState.genStateRoot()
 
         expect(newStateRoot.toString()).not.toEqual(oldState.genStateRoot().toString())
-        expect(maciState.users[0].voiceCreditBalance.toString())
+        expect(copiedState.users[0].voiceCreditBalance.toString())
             .toEqual((bigInt(initialVoiceCreditBalance) - voteWeight.pow(bigInt(2))).toString())
     })
 
@@ -81,11 +84,14 @@ describe('Process one message', () => {
 
         const message = genMessage(command)
 
+        const copiedState = maciState.copy()
+
         // Publish a message
-        maciState.publishMessage(message, user.pubKey)
-        const oldState = maciState.copy()
-        maciState.processMessage(0)
-        const newStateRoot = maciState.genStateRoot()
+        copiedState.publishMessage(message, user.pubKey)
+        expect(copiedState.messages.length).toEqual(1)
+        const oldState = copiedState.copy()
+        copiedState.processMessage(0)
+        const newStateRoot = copiedState.genStateRoot()
 
         expect(newStateRoot.toString()).toEqual(oldState.genStateRoot().toString())
     })
@@ -102,11 +108,14 @@ describe('Process one message', () => {
 
         const message = genMessage(command)
 
+        const copiedState = maciState.copy()
+
         // Publish a message
-        maciState.publishMessage(message, user.pubKey)
-        const oldState = maciState.copy()
-        maciState.processMessage(0)
-        const newStateRoot = maciState.genStateRoot()
+        copiedState.publishMessage(message, user.pubKey)
+        expect(copiedState.messages.length).toEqual(1)
+        const oldState = copiedState.copy()
+        copiedState.processMessage(0)
+        const newStateRoot = copiedState.genStateRoot()
 
         expect(newStateRoot.toString()).toEqual(oldState.genStateRoot().toString())
     })
@@ -123,11 +132,14 @@ describe('Process one message', () => {
 
         const message = genMessage(command)
 
+        const copiedState = maciState.copy()
+
         // Publish a message
-        maciState.publishMessage(message, user.pubKey)
-        const oldState = maciState.copy()
-        maciState.processMessage(0)
-        const newStateRoot = maciState.genStateRoot()
+        copiedState.publishMessage(message, user.pubKey)
+        expect(copiedState.messages.length).toEqual(1)
+        const oldState = copiedState.copy()
+        copiedState.processMessage(0)
+        const newStateRoot = copiedState.genStateRoot()
 
         expect(newStateRoot.toString()).toEqual(oldState.genStateRoot().toString())
     })
@@ -147,11 +159,40 @@ describe('Process one message', () => {
         const sharedKey = Keypair.genEcdhSharedKey(user.privKey, coordinator.pubKey)
         const message = command.encrypt(signature, sharedKey)
 
+        const copiedState = maciState.copy()
+
         // Publish a message
-        maciState.publishMessage(message, user.pubKey)
-        const oldState = maciState.copy()
-        maciState.processMessage(0)
-        const newStateRoot = maciState.genStateRoot()
+        copiedState.publishMessage(message, user.pubKey)
+        expect(copiedState.messages.length).toEqual(1)
+        const oldState = copiedState.copy()
+        copiedState.processMessage(0)
+        const newStateRoot = copiedState.genStateRoot()
+
+        expect(newStateRoot.toString()).toEqual(oldState.genStateRoot().toString())
+    })
+
+    it('processMessage() should not process a message with an invalid maxVoteOptionIndex', async () => {
+        const command = new Command(
+            bigInt(1),
+            user.pubKey,
+            bigInt(maxVoteOptionIndex + 1),
+            bigInt(9),
+            bigInt(1),
+            genRandomSalt(),
+        )
+
+        const signature = command.sign(user.privKey)
+        const sharedKey = Keypair.genEcdhSharedKey(user.privKey, coordinator.pubKey)
+        const message = command.encrypt(signature, sharedKey)
+
+        const copiedState = maciState.copy()
+
+        // Publish a message
+        copiedState.publishMessage(message, user.pubKey)
+        expect(copiedState.messages.length).toEqual(1)
+        const oldState = copiedState.copy()
+        copiedState.processMessage(0)
+        const newStateRoot = copiedState.genStateRoot()
 
         expect(newStateRoot.toString()).toEqual(oldState.genStateRoot().toString())
     })
