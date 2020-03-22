@@ -102,7 +102,6 @@ const voteOptionTreeDepth = config.maci.merkleTrees.voteOptionTreeDepth
 
 describe('Batch state tree root update verification circuit', () => {
     let circuit
-    let circuitChecks
 
     // Set up keypairs
     const user1 = new Keypair()
@@ -111,10 +110,9 @@ describe('Batch state tree root update verification circuit', () => {
 
     beforeAll(async () => {
         circuit = await compileAndLoadCircuit('batchUpdateStateTree_test.circom')
-        circuitChecks = await compileAndLoadCircuit('batchPerformChecksBeforeUpdate_test.circom')
     })
 
-    const genTestData = () => {
+    it('should process valid inputs correctly', async () => {
         // Construct the trees
         const msgTree = new IncrementalMerkleTree(
             messageTreeDepth,
@@ -295,13 +293,6 @@ describe('Batch state tree root update verification circuit', () => {
             stateTreeBatchPathIndices,
         )
 
-        return {circuitInputs, stateTree, stateLeaves, randomStateLeaf}
-    }
-
-    it('should process valid inputs correctly', async () => {
-
-	const {circuitInputs, stateTree, stateLeaves, randomStateLeaf} = genTestData()
-
         const witness = circuit.calculateWitness(circuitInputs)
 
         expect(circuit.checkWitness(witness)).toBeTruthy()
@@ -324,28 +315,5 @@ describe('Batch state tree root update verification circuit', () => {
 
         //const isValid = verifyProof(verifyingKey, proof, publicSignals)
         //expect(isValid).toBeTruthy()
-    })
-
-    it('should validate valid inputs correctly', async () => {
-
-        let {circuitInputs} = genTestData()
-
-        circuitInputs.message = circuitInputs.message[0]
-
-        const witness = circuit.calculateWitness(circuitInputs)
-
-        expect(circuit.checkWitness(witness)).toBeTruthy()
-    })
-
-    it('should not accept invalid state root', async () => {
-
-        let {circuitInputs} = genTestData()
-
-        circuitInputs.message = circuitInputs.message[0]
-        circuitInputs['vote_options_tree_root'] = circuitInputs['msg_tree_root']
-
-        const witness = circuit.calculateWitness(circuitInputs)
-
-        expect(circuit.checkWitness(witness)).toBeTruthy()
     })
 })
