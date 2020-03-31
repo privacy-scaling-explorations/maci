@@ -33,7 +33,8 @@
         "test-updateStateTree": "NODE_OPTIONS=--max-old-space-size=4096 jest ts/__tests__/UpdateStateTree.test.ts",
         "test-updateStateTree-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest ts/__tests__/UpdateStateTree.test.ts",
         "test-batchUpdateStateTree": "NODE_OPTIONS=--max-old-space-size=4096 jest BatchUpdateStateTree.test.ts",
-        "test-batchUpdateStateTree-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest BatchUpdateStateTree.test.ts"
+        "test-batchUpdateStateTree-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest BatchUpdateStateTree.test.ts",
+        "profile": "npm run build && node build/profiling.js"
     },
     "dependencies": {},
     "devDependencies": {
@@ -52,6 +53,7 @@
         "snarkjs": "https://github.com/weijiekoh/snarkjs.git#52e0ceba0256bc9bf94cbc9500139dfc37018f91",
         "temp-dir": "^2.0.0",
         "ts-jest": "^24.2.0",
+        "typescript": "^3.8.3",
         "websnark": "0.0.5"
     }
 }
