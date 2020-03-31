@@ -2,7 +2,7 @@ include "../node_modules/circomlib/circuits/mux1.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
 include "../node_modules/circomlib/circuits/comparators.circom";
 include "./merkletree.circom";
-include "./hasher.circom";
+include "./hasherPoseidon.circom";
 
 // This circuit returns the sum of the inputs.
 // n must be greater than 0.
@@ -114,7 +114,7 @@ template QuadVoteTally(
     // components in the same loop
     for (i=0; i < numUsers; i++) {
         voteOptionRootChecker[i] = CheckRoot(voteOptionTreeDepth);
-        stateLeafHashers[i] = Hasher(messageLength);
+        stateLeafHashers[i] = Hasher5(messageLength);
         stateLeafHashers[i].key <== 0;
 
         // Hash each state leaf
@@ -224,12 +224,12 @@ template ResultCommitmentVerifier(numVoteOptions) {
     signal output newResultsCommitment;
 
     // Salt and hash the results up to the current batch
-    component currentResultsCommitmentHasher = Hasher(numVoteOptions + 1);
+    component currentResultsCommitmentHasher = Hasher17(numVoteOptions + 1);
     currentResultsCommitmentHasher.key <== 0;
     currentResultsCommitmentHasher.in[numVoteOptions] <== currentResultsSalt;
 
     // Also salt and hash the result of the current batch
-    component newResultsCommitmentHasher = Hasher(numVoteOptions + 1);
+    component newResultsCommitmentHasher = Hasher17(numVoteOptions + 1);
 
     newResultsCommitmentHasher.key <== 0;
     newResultsCommitmentHasher.in[numVoteOptions] <== newResultsSalt;
