@@ -35,12 +35,12 @@ interface Signature {
 
 const bigInt = snarkjs.bigInt
 
-// A nothing-up-my-sleeve zero value
-// Should be equal to 5503045433092194285660061905880311622788666850989422096966288514930349325741
 const SNARK_FIELD_SIZE = snarkjs.bigInt(
     '21888242871839275222246405745257275088548364400416034343698204186575808495617'
 )
 
+// A nothing-up-my-sleeve zero value
+// Should be equal to 5503045433092194285660061905880311622788666850989422096966288514930349325741
 const NOTHING_UP_MY_SLEEVE =
     bigInt(ethers.utils.solidityKeccak256(['bytes'], [ethers.utils.toUtf8Bytes('Maci')])) % SNARK_FIELD_SIZE
 

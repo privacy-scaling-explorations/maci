@@ -134,9 +134,11 @@ contract MACI is Ownable, DomainObjs {
         // Set the coordinator's public key
         coordinatorPubKey = _coordinatorPubKey;
 
+        uint256 h = hashedBlankStateLeaf();
+
         // Create the message tree and state tree
         messageTree = new IncrementalMerkleTree(_treeDepths.messageTreeDepth, ZERO_VALUE);
-        stateTree = new IncrementalMerkleTree(_treeDepths.stateTreeDepth, hashedBlankStateLeaf());
+        stateTree = new IncrementalMerkleTree(_treeDepths.stateTreeDepth, h);
 
         // The maximum number of leaves, minus one, of meaningful vote options.
         // This allows the snark to do a no-op if the user votes for an option
@@ -150,7 +152,7 @@ contract MACI is Ownable, DomainObjs {
 
         // Make subsequent insertions start from leaf #1, as leaf #0 is only
         // updated with random data if a command is invalid.
-        stateTree.insertLeaf(ZERO_VALUE);
+        stateTree.insertLeaf(h);
     }
 
     /*

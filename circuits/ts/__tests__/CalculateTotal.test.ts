@@ -27,12 +27,6 @@ import {
 const ZERO_VALUE = 0
 
 describe('CalculateTotal circuit', () => {
-    let circuit 
-
-    beforeAll(async () => {
-        circuit = await compileAndLoadCircuit('quadVoteTally_test.circom')
-    })
-
     it('should correctly sum a list of values', async () => {
         const ctCircuit = await compileAndLoadCircuit('calculateTotal_test.circom')
 
@@ -47,6 +41,7 @@ describe('CalculateTotal circuit', () => {
         }
 
         const witness = ctCircuit.calculateWitness(circuitInputs)
+        expect(ctCircuit.checkWitness(witness)).toBeTruthy()
         const resultIdx = ctCircuit.getSignalIdx('main.sum')
         const result = witness[resultIdx]
         expect(result.toString()).toEqual(sum.toString())

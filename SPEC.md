@@ -8,7 +8,7 @@ Join the [Telegram group](https://t.me/joinchat/LUgOpE7J2gstRcZqdERyvw) to discu
 
 ## Introduction
 
-This specification is for an implementation of Minimum Anti-Collusion Infrastructure (MACI). Originally proposed by Vitalik Buterin in [this ethresear.ch post](https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413), systems built with MACI make collusion among participants difficult, while retaining the censorship resistance and correct-execution benefits of smart contracts. Although MACI can provide collusion resistance only if the coordinator is honest, a dishonest coordinator neither censor nor tamper with its execution. 
+This specification is for an implementation of Minimum Anti-Collusion Infrastructure (MACI). Originally proposed by Vitalik Buterin in [this ethresear.ch post](https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413), systems built with MACI make collusion among participants difficult, while retaining the censorship resistance and correct-execution benefits of smart contracts. Although MACI can provide collusion resistance only if the coordinator is honest, a dishonest coordinator can neither censor nor tamper with its execution. 
 
 Note that MACI presumes an identity system where each legitimate member controls a unique Ethereum private key.
 
@@ -195,7 +195,9 @@ This allows the coordinator to prove the correctness of their vote tally (in `_f
 
 ### State leaves
 
-Each state leaf contains a user's public key, the Merkle root of their unique vote option tree, the number of voice credits they have left, and the nonce of their most recent valid command.
+Each state leaf contains a user's public key, the Merkle root of their unique vote option tree, the number of voice credits they have left, and the nonce.
+
+The nonce is either 0 or that of their most recent valid command. For instance, a user who has published 0 valid commands has a nonce of `0`, and their first valid command should have the nonce `1`.
 
 Each user's public key is associated with exactly one state leaf. This leaf is the single source of truth of their vote option tree. Additionally, since a user may vote for multiple options, and allocate different amounts of voice credits to each option, we represent their votes as a Merkle tree.
 

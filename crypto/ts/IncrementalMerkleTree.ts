@@ -33,11 +33,11 @@ class IncrementalMerkleTree {
     public hashLeftRight: (left: SnarkBigInt, right: SnarkBigInt) => SnarkBigInt
 
     constructor (
-        _depth: number,
+        _depth: number | SnarkBigInt,
         _zeroValue: SnarkBigInt,
         _hashLeftRight: (left: SnarkBigInt, right: SnarkBigInt) => SnarkBigInt = hashLeftRight,
     ) {
-        this.depth = _depth
+        this.depth = parseInt(_depth.toString(), 10)
         this.zeroValue = _zeroValue
         this.nextIndex = 0
         this.zeros = { 0: this.zeroValue }
@@ -179,10 +179,10 @@ class IncrementalMerkleTree {
         for (let i = 0; i < this.depth; i++) {
             if (curIdx % 2 === 0) {
                 path.push(this.filledPaths[i][curIdx + 1])
-                pathIndex.push(0)
+                pathIndex.push(bigInt(0))
             } else {
                 path.push(this.filledPaths[i][curIdx - 1])
-                pathIndex.push(1)
+                pathIndex.push(bigInt(1))
             }
             curIdx = Math.floor(curIdx / 2)
         }

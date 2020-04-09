@@ -101,5 +101,9 @@ jobs:
           name: Run contract tests
           command: cd contracts && ./scripts/runTestsInCircleCi.sh
 
+      - run:
+          name: Run integration tests
+          command: cd integrationTests && ./scripts/runTestsInCircleCi.sh
+
       - store_artifacts:
           path: circuits/build

@@ -11,6 +11,7 @@ const MiMC = require('@maci-contracts/compiled/MiMC.json')
 const Hasher = require('@maci-contracts/compiled/Hasher.json')
 const SignUpToken = require('@maci-contracts/compiled/SignUpToken.json')
 const SignUpTokenGatekeeper = require('@maci-contracts/compiled/SignUpTokenGatekeeper.json')
+const FreeForAllSignUpGatekeeper = require('@maci-contracts/compiled/FreeForAllGatekeeper.json')
 const ConstantInitialVoiceCreditProxy = require('@maci-contracts/compiled/ConstantInitialVoiceCreditProxy.json')
 const BatchUpdateStateTreeVerifier = require('@maci-contracts/compiled/BatchUpdateStateTreeVerifier.json')
 const QuadVoteTallyVerifier = require('@maci-contracts/compiled/QuadVoteTallyVerifier.json')
@@ -37,7 +38,7 @@ const genDeployer = (
     )
 }
 
-const deployInitialVoiceCreditProxy = async (deployer, amount: number) => {
+const deployConstantInitialVoiceCreditProxy = async (deployer, amount: number) => {
     console.log('Deploying InitialVoiceCreditProxy')
     return await deployer.deploy(ConstantInitialVoiceCreditProxy, {}, amount)
 }
@@ -61,9 +62,19 @@ const deploySignupTokenGatekeeper = async (
     return signUpTokenGatekeeperContract
 }
 
+const deployFreeForAllSignUpGatekeeper = async (
+    deployer,
+) => {
+    console.log('Deploying FreeForAllSignUpGatekeeper')
+    return await deployer.deploy(
+        FreeForAllSignUpGatekeeper,
+        {},
+    )
+}
+
 const deployMaci = async (
     deployer,
-    signUpTokenGatekeeperAddress: string,
+    signUpGatekeeperAddress: string,
     initialVoiceCreditProxy: string,
 ) => {
     console.log('Deploying MiMC')
@@ -83,10 +94,10 @@ const deployMaci = async (
             stateTreeDepth: config.maci.merkleTrees.stateTreeDepth,
             messageTreeDepth: config.maci.merkleTrees.messageTreeDepth,
         },
-        2 ** config.maci.merkleTrees.intermediateStateTreeDepth,
+        config.maci.quadVoteTallyBatchSize,
         config.maci.messageBatchSize,
         config.maci.voteOptionsMaxLeafIndex,
-        signUpTokenGatekeeperAddress,
+        signUpGatekeeperAddress,
         batchUstVerifierContract.contractAddress,
         quadVoteTallyVerifierContract.contractAddress,
         config.maci.signUpDurationInSeconds.toString(),
@@ -165,7 +176,7 @@ const main = async () => {
     if (initialVoiceCreditProxy) {
         initialVoiceCreditBalanceAddress = initialVoiceCreditProxy
     } else {
-        const initialVoiceCreditProxyContract = await deployInitialVoiceCreditProxy(
+        const initialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
             deployer,
             config.maci.initialVoiceCreditBalance,
         )
@@ -216,7 +227,8 @@ export {
     deployMaci,
     deploySignupToken,
     deploySignupTokenGatekeeper,
-    deployInitialVoiceCreditProxy,
+    deployConstantInitialVoiceCreditProxy,
+    deployFreeForAllSignUpGatekeeper,
     genDeployer,
     genProvider,
 }

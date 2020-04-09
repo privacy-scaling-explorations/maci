@@ -26,8 +26,8 @@ interface Keypair {
 }
 
 class Keypair implements Keypair {
-    public privKey: RawPrivKey
-    public pubKey: RawPubKey
+    public privKey: PrivKey
+    public pubKey: PubKey
 
     constructor (
         privKey?: PrivKey,
@@ -40,6 +40,10 @@ class Keypair implements Keypair {
             this.privKey = new PrivKey(rawKeyPair.privKey)
             this.pubKey = new PubKey(rawKeyPair.pubKey)
         }
+    }
+
+    public copy = (): Keypair => {
+        return new Keypair(this.privKey.copy())
     }
     
     public static genEcdhSharedKey(
@@ -77,6 +81,10 @@ class PrivKey {
         this.rawPrivKey = rawPrivKey
     }
 
+    public copy = (): PrivKey => {
+        return new PrivKey(bigInt(this.rawPrivKey.toString()))
+    }
+
     public asCircuitInputs = () => {
         return formatPrivKeyForBabyJub(this.rawPrivKey).toString()
     }
@@ -86,7 +94,16 @@ class PubKey {
     public rawPubKey: RawPubKey
 
     constructor (rawPubKey: RawPubKey) {
+        assert(rawPubKey.length === 2)
         this.rawPubKey = rawPubKey
+    }
+
+    public copy = (): PubKey => {
+
+        return new PubKey([
+            bigInt(this.rawPubKey[0].toString()),
+            bigInt(this.rawPubKey[1].toString()),
+        ])
     }
 
     public asContractParam = () => {
@@ -130,7 +147,6 @@ class Message {
         iv: SnarkBigInt,
         data: SnarkBigInt[],
     ) {
-        // TODO: add an assert on the length of data
         assert(data.length === 10)
         this.iv = iv
         this.data = data
@@ -147,7 +163,7 @@ class Message {
     public asContractParam = () => {
         return {
             iv: this.iv.toString(),
-            data: this.data.map((x) => x.toString()),
+            data: this.data.map((x: SnarkBigInt) => x.toString()),
         }
     }
 
@@ -159,6 +175,14 @@ class Message {
     public hash = (): SnarkBigInt => {
 
         return hash(this.asArray())
+    }
+
+    public copy = (): Message => {
+
+        return new Message(
+            bigInt(this.iv.toString()),
+            this.data.map((x: SnarkBigInt) => bigInt(x.toString())),
+        )
     }
 }
 
@@ -180,18 +204,28 @@ class StateLeaf implements IStateLeaf {
         this.pubKey = pubKey
         this.voteOptionTreeRoot = voteOptionTreeRoot
         this.voiceCreditBalance = voiceCreditBalance
+        // The this is the current nonce. i.e. a user who has published 0 valid
+        // command should have this value at 0, and the first command should
+        // have a nonce of 1
         this.nonce = nonce
     }
 
-    public static genFreshLeaf(
-        pubKey: PubKey,
-        voteOptionTreeRoot: SnarkBigInt,
-        voiceCreditBalance: SnarkBigInt,
-    ) {
+    public copy(): StateLeaf {
         return new StateLeaf(
-            pubKey,
-            voteOptionTreeRoot,
-            bigInt(voiceCreditBalance),
+            this.pubKey.copy(),
+            bigInt(this.voteOptionTreeRoot.toString()),
+            bigInt(this.voiceCreditBalance.toString()),
+            bigInt(this.nonce.toString()),
+        )
+    }
+
+    public static genBlankLeaf(
+        emptyVoteOptionTreeRoot: SnarkBigInt,
+    ): StateLeaf {
+        return new StateLeaf(
+            new PubKey([0, 0]),
+            emptyVoteOptionTreeRoot,
+            bigInt(0),
             bigInt(0),
         )
     }
@@ -262,6 +296,18 @@ class Command implements ICommand {
         this.newVoteWeight = newVoteWeight
         this.nonce = nonce
         this.salt = salt
+    }
+
+    public copy = (): Command => {
+
+        return new Command(
+            bigInt(this.stateIndex.toString()),
+            this.newPubKey.copy(),
+            bigInt(this.voteOptionIndex.toString()),
+            bigInt(this.newVoteWeight.toString()),
+            bigInt(this.nonce.toString()),
+            bigInt(this.salt.toString()),
+        )
     }
 
     public asArray = (): SnarkBigInt[] => {
