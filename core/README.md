@@ -5,15 +5,48 @@ processes.
 
 ## Overview
 
-We conceive of MACI as a state machine with data and functions which transform
-said data. This makes it easier to reason about the system, write tests, and
-implement functionality. It also allows us to implement the smart contracts in
-discrete components which are easy to test.
+One may conceive of MACI as a state machine with 1) data and 2) functions which
+transform said data. This makes it easier to reason about the system, write
+tests, and implement functionality. It also allows us to implement the smart
+contracts in discrete components which are easy to test.
 
-Note that the actual implementation uses objects instead of pure functions.
-This avoids duplication of code which copies state data.
+To this end, we this submodule exposes a `MaciState` class and a `User` class.
 
-### State data
+## **`User`**
+
+Each `User object has the following attributes:
+
+`pubKey: PubKey`: The user's public key.
+
+`votes: SnarkBigInt[]`: The voice credits assigned to each vote option. 
+
+`voiceCreditBalance: SnarkBigInt`: The user's remaining voice credit balance.
+
+### Functions
+
+#### **`genStateLeaf`**
+
+Function signature:
+
+```ts
+(_voteOptionTreeDepth: number): StateLeaf
+```
+
+Generates and returns an equivalent `StateLeaf` [domain
+object](../domainobjs/). This function helps `MaciState` to generate a state
+tree.
+
+#### **`copy`**
+
+Function signature:
+
+```ts
+(): User
+```
+
+Deep-copies and returns this object.
+
+## `MaciState`
 
 We denote all state data as attributes of a `MaciState` object.
 
@@ -22,41 +55,30 @@ access their own keypair, commands, and on-chain state and message tree roots.
 
 `MaciState` contains the following attributes:
 
-```ts
-{
-    coordinatorKeypair: Keypair
-    stateTreeDepth: SnarkBigInt
-    messageTreeDepth: SnarkBigInt
-    voteOptionTreeDepth: SnarkBigInt
-    zerothStateLeaf: StateLeaf
-    messages: Message[]
-    users: User[]
-}
-```
+`coordinatorKeypair: Keypair`: The coordinator's keypair.
 
-- `coordinatorKeypair`: The coordinator's keypair.
-- `stateTreeDepth:`: The depth of the state tree.
-- `messageTreeDepth:`: The depth of the message tree.
-- `voteOptionTreeDepth:`: The depth of each user's vote option tree.
-- `zerothStateLeaf`: The leaf of the state tree at index 0.
-- `encPubKeys`: An array of `PubKey` objects used to generate ephermeral ECDH
-  shared keys with which to encrypt commands to messages. For each `PubKey` in
-  `encPubKey`, its corresponding `Message` in `messages` shares the same array
-  index.
-- `messages`: An array of all published `Message` objects
-- `users`: An array of `User` objects.
+`users: User[]`: An array of `User` objects, each of which represents the current state of a user.
 
+`stateTreeDepth: SnarkBigInt`: The depth of the state tree.
 
-Each `User object has the following attributes:
+`messageTreeDepth: SnarkBigInt`: The depth of the message tree.
 
-```ts
-{
-    index: SnarkBigInt,
-    pubKey: PubKey,
-    votes: SnarkBigInt[],
-    voiceCreditBalance: SnarkBigInt,
-}
-```
+`voteOptionTreeDepth: SnarkBigInt`: The depth of each user's vote option tree.
+
+`messages: Message[]`: An array of all published messages.
+
+`zerothStateLeaf: StateLeaf`: The leaf of the state tree at index 0. This means
+that the zeroth user in `users` has index 1 in the state tree.
+
+`maxVoteOptionIndex: SnarkBigInt`: The maximum allowed vote options. For
+instance, even if the vote option tree supports up to 16 vote options, this
+value can be set to 12 so as to enforce the fact that there are only 12 options
+to choose from.
+
+`encPubKeys: PubKey[]`: An array of public keys used to generate ephermeral
+ECDH shared keys with which to encrypt commands to messages. For each `PubKey`
+in `encPubKey`, its corresponding `Message` in `messages` shares the same array
+index.
 
 ### Functions
 
@@ -65,12 +87,18 @@ The following functions modify the state:
 - `signUp()`
 - `publishMessage()`
 - `processMessage()`
+- `batchProcessMessage()`
 
 The following functions do not modify the state:
 
-- `genStateRoot()`
-- `genMessageRoot()`
 - `copy()`
+- `genStateTree()`
+- `genStateRoot()`
+- `genMessageTree()`
+- `genMessageRoot()`
+- `computeCumulativeVoteTally()`
+- `genUpdateStateTreeCircuitInputs()`
+- `genBatchUpdateStateTreeCircuitInputs()`
 
 #### **`signUp`**
 
@@ -106,10 +134,7 @@ used to generate the ECDH shared key which encrypts `_message` to the
 Function signature:
 
 ```ts
-(
-    _index: number,
-    _randomZerothStateLeaf: SnarkBigInt,
-): void
+(_index: number): void
 ```
 
 This function:
@@ -135,6 +160,17 @@ This function runs `processMessage()` on a batch of `_batchSize` leaves
 starting from index `_index`, and then replaces the zeroth leaf with
 `_randomStateLeaf`.
 
+
+**`genStateTree()`**
+
+Function signature:
+
+```ts
+(): IncrementalMerkleTree
+```
+
+Generates and returns the state tree as an incremental Merkle tree.
+
 **`genStateRoot()`**
 
 Function signature:
@@ -146,6 +182,16 @@ Function signature:
 This function computes the state root given the data stored in `users` and
 `zerothStateLeaf`.
 
+**`genMessageTree()`**
+
+Function signature:
+
+```ts
+(): IncrementalMerkleTree
+```
+
+Generates and returns the message tree as an incremental Merkle tree.
+
 **`genMessageRoot()`**
 
 Function signature:
@@ -155,6 +201,98 @@ Function signature:
 ```
 
 This function computes the state root given the data stored in `messsages`.
+
+**`genUpdateStateTreeCircuitInputs`**
+
+Function signature:
+
+```ts
+genUpdateStateTreeCircuitInputs = (_index: number): object
+```
+
+Generates the circuit inputs (both public and private) for the
+`UpdateStateTree` circuit, as an object with the following attributes:
+
+- `coordinator_public_key`
+- `ecdh_private_key`
+- `ecdh_public_key`
+- `message`
+- `msg_tree_root`
+- `msg_tree_path_elements`
+- `msg_tree_path_index`
+- `vote_options_leaf_raw`
+- `vote_options_tree_root`
+- `vote_options_tree_path_elements`
+- `vote_options_tree_path_index`
+- `vote_options_max_leaf_index`
+- `state_tree_data_raw`
+- `state_tree_max_leaf_index`
+- `state_tree_root`
+- `state_tree_path_elements`
+- `state_tree_path_index`
+
+**`genBatchUpdateStateTreeCircuitInputs`**
+
+Function signature:
+
+```ts
+genBatchUpdateStateTreeCircuitInputs = (
+        _index: number,
+        _batchSize: number,
+        _randomStateLeaf: StateLeaf,
+) => object
+```
+
+Generates the circuit inputs (both public and private) for the
+`BatchUpdateStateTree` circuit, as an object with the following attributes:
+
+- `coordinator_public_key`
+- `message`
+- `ecdh_private_key`
+- `ecdh_public_key`
+- `msg_tree_root`
+- `msg_tree_path_elements`
+- `msg_tree_batch_start_index`
+- `random_leaf`
+- `state_tree_root`
+- `state_tree_path_elements`
+- `state_tree_path_index`
+- `random_leaf_root`
+- `random_leaf_path_elements`
+- `vote_options_leaf_raw`
+- `state_tree_data_raw`
+- `state_tree_max_leaf_index`
+- `vote_options_max_leaf_index`
+- `vote_options_tree_root`
+- `vote_options_tree_path_elements`
+- `vote_options_tree_path_index`
+
+**`genQuadVoteTallyCircuitInputs`**
+
+Function signature:
+
+```ts
+genQuadVoteTallyCircuitInputs = (
+    _startIndex: SnarkBigInt,
+    _batchSize: SnarkBigInt,
+    _currentResultsSalt: SnarkBigInt,
+    _newResultsSalt: SnarkBigInt,
+): object
+```
+
+Generates the circuit inputs (both public and private) for the
+`QuadVoteTally` circuit, as an object with the following attributes:
+
+- `voteLeaves`
+- `stateLeaves`
+- `currentResults`
+- `fullStateRoot`
+- `currentResultsSalt`
+- `newResultsSalt`
+- `currentResultsCommitment`
+- `intermediatePathElements`
+- `intermediatePathIndex`
+- `intermediateStateRoot`
 
 **`copy()`**
 

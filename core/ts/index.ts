@@ -663,7 +663,12 @@ class MaciState {
 }
 
 /*
- * A helper function which hashes a list of results with a salt.
+ * A helper function which hashes a list of results with a salt and returns the
+ * hash.
+ *
+ * @param results A list of vote weights
+ * @parm salt A random salt
+ * @return The hash of the results and the salt, with the salt last
  */
 const genTallyResultCommitment = (
     results: SnarkBigInt[],
