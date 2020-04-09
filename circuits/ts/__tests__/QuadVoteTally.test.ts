@@ -72,6 +72,7 @@ describe('Quadratic vote tallying circuit', () => {
         // Sign up the user
         maciState.signUp(user.pubKey, initialVoiceCreditBalance)
 
+        // Publish and process a message
         const voteOptionIndex = randomRange(0, voteOptionsMaxIndex)
         const voteWeight = bigInt(9)
         const command = new Command(

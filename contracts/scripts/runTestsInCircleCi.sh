@@ -5,7 +5,7 @@ cd ..
 
 npm run ganache &
 sleep 3 &&
-NODE_OPTIONS=--max-old-space-size=4096 npx jest --force-exit BatchProcessMesssge.test.ts &&
+NODE_OPTIONS=--max-old-space-size=4096 npx jest --force-exit batchProcessMessageAndQuadVoteTally.test.ts &&
 npx jest --force-exit SignUp.test.ts &&
 npx jest --force-exit Hasher.test.ts &&
 npx jest --force-exit IncrementalMerkleTree.test.ts
