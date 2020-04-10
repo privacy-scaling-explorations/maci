@@ -50,7 +50,7 @@ const profileHashLeftRight = async circuit => {
 const main = async () => {
   const hasher5 = await compileAndLoadCircuit('hasher5_test.circom')
   const hasher10 = await compileAndLoadCircuit('hasher10_test.circom')
-  const hashLeftRight = await compileAndLoadCircuit('hashleftright_test.circom')
+  const hashLeftRight = await compileAndLoadCircuit('hashLeftRight_test.circom')
   await profileHasherN(5, hasher5)
   await profileHasherN(10, hasher10)
   await profileHashLeftRight(hashLeftRight)
