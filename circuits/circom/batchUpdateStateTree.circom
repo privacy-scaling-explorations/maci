@@ -1,8 +1,7 @@
-include "../node_modules/circomlib/circuits/bitify.circom";
-
-include "./updateStateTree.circom";
 include "./merkletree.circom";
-
+include "./updateStateTree.circom";
+include "../node_modules/circomlib/circuits/mux1.circom";
+include "../node_modules/circomlib/circuits/bitify.circom";
 
 template BatchUpdateStateTree(
     state_tree_depth,
@@ -10,26 +9,24 @@ template BatchUpdateStateTree(
     vote_options_tree_depth,
     batch_size
 ) {
-    // params:
-    //    state_tree_depth: the depth of the state tree
-    //    message_tree_depth: the depth of the message tree
-    //    vote_options_tree_depth: depth of the vote tree
-    //    batch_size: the number of messages to process
+    // state_tree_depth: the depth of the state tree
+    // message_tree_depth: the depth of the message tree
+    // vote_options_tree_depth: depth of the vote tree
+    // batch_size: the number of messages to process
 
-    // Output: New state tree root
+    // The new state tree root
     signal output root;
 
-    // Input(s)
+    // The coordinator's public key
     signal input coordinator_public_key[2];
 
-    var message_length = 11;
-    signal private input message[batch_size][message_length];
+    var MESSAGE_LENGTH = 11;
+    signal private input message[batch_size][MESSAGE_LENGTH];
 
-    // Select vote option index's weight
-    // (a.k.a the raw value of the leaf pre-hash)
+    //  The vote option index's weight, which is an unhashed value
     signal private input vote_options_leaf_raw[batch_size];
 
-    // Vote options tree root (supplied by coordinator)
+    // The vote option tree root
     signal private input vote_options_tree_root[batch_size];
     signal private input vote_options_tree_path_elements[batch_size][vote_options_tree_depth];
     signal private input vote_options_tree_path_index[batch_size][vote_options_tree_depth];
@@ -38,34 +35,57 @@ template BatchUpdateStateTree(
     // Message tree
     signal input msg_tree_root;
     signal private input msg_tree_path_elements[batch_size][message_tree_depth];
-    signal input msg_tree_batch_start_index; // Starting index of the batch
+    signal input msg_tree_batch_start_index;
+    signal input msg_tree_batch_end_index;
+    signal message_indices[batch_size];
 
+    component msg_tree_path_index_selectors[batch_size];
+    component msg_tree_path_index_comparators[batch_size];
     component msg_tree_path_index[batch_size];
+
+    // Ensure that msg_tree_batch_start_index <= msg_tree_batch_end_index
+    component msg_tree_index_checker = LessEqThan(32);
+    msg_tree_index_checker.in[0] <== msg_tree_batch_start_index;
+    msg_tree_index_checker.in[1] <== msg_tree_batch_end_index;
+    msg_tree_index_checker.out === 1;
+
     for (var i = 0; i < batch_size; i++) {
+        // Compare message_indices[i] and msg_tree_batch_end_index
+        // if msg_tree_batch_end_index < message_indices[i], use msg_tree_batch_end_index
+        // if msg_tree_batch_end_index >= message_indices[i], use message_indices[i]
+
+        message_indices[i] = msg_tree_batch_start_index + i;
+
+        msg_tree_path_index_comparators[i] = LessThan(32);
+        msg_tree_path_index_comparators[i].in[0] <== msg_tree_batch_end_index;
+        msg_tree_path_index_comparators[i].in[1] <== message_indices[i];
+
+        msg_tree_path_index_selectors[i] = Mux1();
+        msg_tree_path_index_selectors[i].c[0] <== message_indices[i];
+        msg_tree_path_index_selectors[i].c[1] <== msg_tree_batch_end_index;
+        msg_tree_path_index_selectors[i].s <== msg_tree_path_index_comparators[i].out;
+
         msg_tree_path_index[i] = Num2Bits(message_tree_depth);
-        msg_tree_path_index[i].in <== msg_tree_batch_start_index + i;
+        msg_tree_path_index[i].in <== msg_tree_path_index_selectors[i].out;
     }
 
-    // Random leaf (updated every batch)
+    // The random leaf
     signal private input random_leaf;
     signal private input random_leaf_path_elements[state_tree_depth];
     component random_leaf_path_index = Num2Bits(state_tree_depth);
     random_leaf_path_index.in <== 0;
 
-    // Root when random leaf is inserted
-    // As the random leaf is inserted at th end,
-    // the random_leaf_root is the end root after all the commands
-    // has been processed
+    // The root after we insert the random leaf. This is the final root after
+    // all commands have been processed.
     signal private input random_leaf_root;
 
     // State tree
     var state_tree_data_length = 5;
-    signal private input state_tree_data_raw[batch_size][state_tree_data_length];
-
     signal input state_tree_max_leaf_index;
     signal input state_tree_root[batch_size];
     signal private input state_tree_path_elements[batch_size][state_tree_depth];
     signal private input state_tree_path_index[batch_size][state_tree_depth];
+    signal private input state_tree_data_raw[batch_size][state_tree_data_length];
 
     // Shared keys
     signal private input ecdh_private_key;
@@ -80,7 +100,7 @@ template BatchUpdateStateTree(
         new_state_tree[i].coordinator_public_key[1] <== coordinator_public_key[1];
 
         // Message
-        for (var j = 0; j < message_length; j++) {
+        for (var j = 0; j < MESSAGE_LENGTH; j++) {
             new_state_tree[i].message[j] <== message[i][j];
         }
 
@@ -131,7 +151,6 @@ template BatchUpdateStateTree(
         new_state_tree[i].root === state_tree_root[i + 1];
     }
     new_state_tree[batch_size - 1].root === random_leaf_root;
-
 
     root <== final_state_tree.root;
 }

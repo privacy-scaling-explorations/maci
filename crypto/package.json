@@ -8,18 +8,20 @@
         "build": "tsc",
         "test": "jest",
         "test-crypto": "jest Crypto.test.ts",
-        "test--crypto-debug": "node --inspect-brk ./node_modules/.bin/jest Crypto.test.ts",
+        "test-crypto-debug": "node --inspect-brk ./node_modules/.bin/jest Crypto.test.ts",
         "test-mt": "jest IncrementalMerkleTree.test.ts",
         "test-mt-debug": "node --inspect-brk ./node_modules/.bin/jest IncrementalMerkleTree.test.ts"
     },
-    "dependencies": {},
+    "dependencies": {
+        "argon2": "0.26.2",
+        "circom": "0.0.34",
+        "circomlib": "0.0.19",
+        "snarkjs": "https://github.com/weijiekoh/snarkjs.git#52e0ceba0256bc9bf94cbc9500139dfc37018f91"
+    },
     "devDependencies": {
         "@types/jest": "^24.0.25",
         "@types/node": "^13.1.2",
         "ts-jest": "^24.2.0",
-        "jest": "^24.9.0",
-        "circom": "0.0.34",
-        "circomlib": "0.0.19",
-        "snarkjs": "https://github.com/weijiekoh/snarkjs.git#52e0ceba0256bc9bf94cbc9500139dfc37018f91"
+        "jest": "^24.9.0"
     }
 }

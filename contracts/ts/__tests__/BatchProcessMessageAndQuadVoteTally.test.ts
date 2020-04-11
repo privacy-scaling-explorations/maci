@@ -71,13 +71,15 @@ const loadPk = (binName: string): SnarkProvingKey => {
     return fs.readFileSync(p)
 }
 
-const loadkVk = (jsonName: string): SnarkVerifyingKey => {
+const loadVk = (jsonName: string): SnarkVerifyingKey => {
     const p = path.join(__dirname, '../../../circuits/build/' + jsonName + '.json')
     return parseVerifyingKeyJson(fs.readFileSync(p).toString())
 }
 
 const batchUstPk: SnarkProvingKey = loadPk('batchUstPk')
-const batchUstVk: SnarkVerifyingKey = loadkVk('batchUstVk')
+const batchUstVk: SnarkVerifyingKey = loadVk('batchUstVk')
+const qvtPk: SnarkProvingKey = loadPk('qvtPk')
+const qvtVk: SnarkVerifyingKey = loadVk('qvtVk')
 
 const accounts = genTestAccounts(5)
 const deployer = genDeployer(accounts[0].privateKey)
@@ -88,7 +90,6 @@ const messageTreeDepth = config.maci.merkleTrees.messageTreeDepth
 const voteOptionTreeDepth = config.maci.merkleTrees.voteOptionTreeDepth
 const voteOptionsMaxIndex = config.maci.voteOptionsMaxLeafIndex
 const numVoteOptions = 2 ** voteOptionTreeDepth
-const intermediateStateTreeDepth = config.maci.merkleTrees.intermediateStateTreeDepth
 const quadVoteTallyBatchSize = config.maci.quadVoteTallyBatchSize
 
 const coordinator = new Keypair(new PrivKey(bigInt(config.maci.coordinatorPrivKey)))
@@ -231,7 +232,7 @@ describe('BatchProcessMessage', () => {
 
             const stateRootAfter = maciState.genStateRoot()
 
-            const circuit = await compileAndLoadCircuit('batchUpdateStateTree_test.circom')
+            const circuit = await compileAndLoadCircuit('test/batchUpdateStateTree_test.circom')
 
             // Calculate the witness
             const witness = circuit.calculateWitness(circuitInputs)
@@ -249,13 +250,16 @@ describe('BatchProcessMessage', () => {
 
             const publicSignals = genPublicSignals(witness, circuit)
 
-            expect(publicSignals).toHaveLength(19)
+            expect(publicSignals).toHaveLength(20)
 
             let ecdhPubKeys: PubKey[] = []
             for (let p of circuitInputs['ecdh_public_key']) {
                 const pubKey = new PubKey(p)
                 ecdhPubKeys.push(pubKey)
             }
+
+            const numMessages = await maciContract.numMessages()
+            const messageBatchSize = await maciContract.messageBatchSize()
 
             const contractPublicSignals = await maciContract.genBatchUstPublicSignals(
                 '0x' + stateRootAfter.toString(16),
@@ -293,10 +297,8 @@ describe('BatchProcessMessage', () => {
     describe('Tally votes', () => {
         it('should tally a batch of votes', async () => {
             const startIndex = bigInt(0)
-            const currentResults = maciState.computeCumulativeVoteTally(startIndex, quadVoteTallyBatchSize)
 
             const tally = maciState.computeBatchVoteTally(startIndex, quadVoteTallyBatchSize)
-            const currentResultsSalt = genRandomSalt()
             const newResultsSalt = genRandomSalt()
 
             // Generate circuit inputs
@@ -304,17 +306,52 @@ describe('BatchProcessMessage', () => {
                 = maciState.genQuadVoteTallyCircuitInputs(
                     startIndex,
                     quadVoteTallyBatchSize,
-                    currentResultsSalt,
                     newResultsSalt,
                 )
 
-            const circuit = await compileAndLoadCircuit('quadVoteTally_test.circom')
+            const circuit = await compileAndLoadCircuit('test/quadVoteTally_test.circom')
             const witness = circuit.calculateWitness(stringifyBigInts(circuitInputs))
             expect(circuit.checkWitness(witness)).toBeTruthy()
-            const result = witness[circuit.getSignalIdx('main.newResultsCommitment')]
-            const expectedCommitment = genTallyResultCommitment(tally, newResultsSalt)
 
+            const result = witness[circuit.getSignalIdx('main.newResultsCommitment')]
+
+            const expectedCommitment = genTallyResultCommitment(tally, newResultsSalt)
             expect(result.toString()).toEqual(expectedCommitment.toString())
+
+            console.log('Generating proof...')
+            const proof = await genProof(witness, qvtPk)
+            const publicSignals = genPublicSignals(witness, circuit)
+
+            const contractPublicSignals = await maciContract.genQvtPublicSignals(
+                circuitInputs.intermediateStateRoot.toString(),
+                expectedCommitment.toString(),
+            )
+
+            expect(JSON.stringify(publicSignals.map((x) => x.toString()))).toEqual(
+                JSON.stringify(contractPublicSignals.map((x) => x.toString()))
+            )
+
+            expect(publicSignals[0].toString()).toEqual(expectedCommitment.toString())
+            expect(publicSignals[1].toString()).toEqual(maciState.genStateRoot().toString())
+            expect(publicSignals[2].toString()).toEqual('0')
+            expect(publicSignals[3].toString()).toEqual(circuitInputs.intermediateStateRoot.toString())
+            expect(publicSignals[4].toString()).toEqual(circuitInputs.currentResultsCommitment.toString())
+
+            const isValid = verifyProof(qvtVk, proof, publicSignals)
+            expect(isValid).toBeTruthy()
+
+            const formattedProof = formatProofForVerifierContract(proof)
+
+            const tx = await maciContract.proveVoteTallyBatch(
+                circuitInputs.intermediateStateRoot.toString(),
+                expectedCommitment.toString(),
+                [...tally, newResultsSalt].map((x) => x.toString()),
+                formattedProof,
+                { gasLimit: 1000000 },
+            )
+
+            const receipt = await tx.wait()
+            expect(receipt.status).toEqual(1)
         })
     })
 })

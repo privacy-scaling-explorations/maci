@@ -21,7 +21,7 @@ describe('Merkle Tree circuits', () => {
         let circuit
 
         beforeAll(async () => {
-            circuit = await compileAndLoadCircuit('merkleTreeLeafExists_test.circom')
+            circuit = await compileAndLoadCircuit('test/merkleTreeLeafExists_test.circom')
         })
 
         it('Valid LeafExists inputs should work', async () => {
@@ -81,7 +81,7 @@ describe('Merkle Tree circuits', () => {
         let circuit
 
         beforeAll(async () => {
-            circuit = await compileAndLoadCircuit('merkleTreeCheckRoot_test.circom')
+            circuit = await compileAndLoadCircuit('test/merkleTreeCheckRoot_test.circom')
         })
 
         it('Valid CheckRoot inputs should work', async () => {
@@ -131,7 +131,7 @@ describe('Merkle Tree circuits', () => {
         let circuit
 
         beforeAll(async () => {
-            circuit = await compileAndLoadCircuit('merkleTreeUpdate_test.circom')
+            circuit = await compileAndLoadCircuit('test/merkleTreeUpdate_test.circom')
         })
 
         it('Valid update proofs should work', async () => {

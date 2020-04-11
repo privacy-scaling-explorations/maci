@@ -21,3 +21,6 @@ npx etherlime ganache --mnemonic "candy maple cake sugar pudding cream honey ric
 #7: 0x0f4f2ac550a1b4e2280d04c21cea7ebd822934b5
 #8: 0x6330a553fc93768f612722bb8c2ec78ac90b3bbc
 #9: 0x5aeda56215b167893e80b4fe645ba6d5bab767de
+
+# Private keys
+#0 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3

@@ -61,7 +61,7 @@ describe('Quadratic vote tallying circuit', () => {
     )
 
     beforeAll(async () => {
-        circuit = await compileAndLoadCircuit('quadVoteTally_test.circom')
+        circuit = await compileAndLoadCircuit('test/quadVoteTally_test.circom')
     })
 
     it('should correctly tally results for 1 user with 1 message in 1 batch', async () => {
@@ -116,7 +116,6 @@ describe('Quadratic vote tallying circuit', () => {
             = maciState.genQuadVoteTallyCircuitInputs(
                 startIndex,
                 quadVoteTallyBatchSize,
-                currentResultsSalt,
                 newResultsSalt,
             )
 

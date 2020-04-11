@@ -1,8 +1,10 @@
 import {
+    StateLeaf,
     Command,
     Message,
     Keypair,
     PrivKey,
+    PubKey,
 } from '../'
 
 import {
@@ -12,6 +14,7 @@ import {
     verifySignature,
     genKeypair,
     bigInt,
+    unpackPubKey,
 } from 'maci-crypto'
 
 describe('Domain objects', () => {
@@ -39,6 +42,24 @@ describe('Domain objects', () => {
         bigInt(123),
     )
 
+    describe('State leaves', () => {
+        it('The serialize() and unserialize() functions should work correctly', () => {
+            const stateLeaf = new StateLeaf(
+                pubKey,
+                bigInt(123),
+                bigInt(456),
+                bigInt(789),
+            )
+
+            const serialized = stateLeaf.serialize()
+            const unserialized = StateLeaf.unserialize(serialized)
+
+            expect(unserialized.voteOptionTreeRoot.toString()).toEqual(stateLeaf.voteOptionTreeRoot.toString())
+            expect(unserialized.voiceCreditBalance.toString()).toEqual(stateLeaf.voiceCreditBalance.toString())
+            expect(unserialized.nonce.toString()).toEqual(stateLeaf.nonce.toString())
+        })
+    })
+
     describe('Keypairs', () => {
         it('the Keypair constructor should generate a random keypair if not provided a private key', () => {
             const k1 = new Keypair()
@@ -54,6 +75,51 @@ describe('Domain objects', () => {
             const k = new Keypair(new PrivKey(rawKeyPair.privKey))
             expect(rawKeyPair.pubKey[0]).toEqual(k.pubKey.rawPubKey[0])
             expect(rawKeyPair.pubKey[1]).toEqual(k.pubKey.rawPubKey[1])
+        })
+
+        it('PrivKey.serialize() and unserialize() should work correctly', () => {
+            const k = new Keypair()
+            const sk1 = k.privKey
+
+            const s = sk1.serialize()
+            expect(s.startsWith('macisk.')).toBeTruthy()
+
+            const d = '0x' + s.slice(7)
+            expect(sk1.rawPrivKey.toString()).toEqual(bigInt(d).toString())
+
+            const c = PrivKey.unserialize(s)
+            expect(sk1.rawPrivKey.toString()).toEqual(bigInt(c.rawPrivKey).toString())
+        })
+
+        it('PrivKey.isValidSerializedPrivKey() should work correctly', () => {
+            const k = new Keypair()
+            const s = k.privKey.serialize()
+
+            expect(PrivKey.isValidSerializedPrivKey(s)).toBeTruthy()
+            expect(PrivKey.isValidSerializedPrivKey(s.slice(1))).toBeFalsy()
+        })
+
+        it('PubKey.isValidSerializedPubKey() should work correctly', () => {
+            const k = new Keypair()
+            const s = k.pubKey.serialize()
+
+            expect(PubKey.isValidSerializedPubKey(s)).toBeTruthy()
+            expect(PubKey.isValidSerializedPubKey(s + 'ffffffffffffffffffffffffffffff')).toBeFalsy()
+            expect(PubKey.isValidSerializedPubKey(s.slice(1))).toBeFalsy()
+        })
+
+        it('PubKey.serialize() and unserialize() should work correctly', () => {
+            const k = new Keypair()
+            const pk1 = k.pubKey
+
+            const s = pk1.serialize()
+            expect(s.startsWith('macipk.')).toBeTruthy()
+
+            const d = s.slice(7)
+            const unpacked = unpackPubKey(Buffer.from(d, 'hex'))
+
+            expect(unpacked[0].toString()).toEqual(pk1.rawPubKey[0].toString())
+            expect(unpacked[1].toString()).toEqual(pk1.rawPubKey[1].toString())
         })
 
         it('PrivKey.copy() should produce a deep copy', () => {

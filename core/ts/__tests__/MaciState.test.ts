@@ -1,3 +1,4 @@
+const MACI = require('@maci-contracts/compiled/MACI.json')
 import { 
     User,
     MaciState,
@@ -26,6 +27,7 @@ const m1 = new MaciState(
 )
 
 describe('MaciState', () => {
+
     it('should correctly deep-copy a MaciState object', () => {
         const m2 = m1
         const m3 = m1.copy()

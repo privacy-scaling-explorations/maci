@@ -8,10 +8,16 @@
         "build": "tsc",
         "test": "jest",
         "test-debug": "node --inspect-brk ./node_modules/.bin/jest",
-        "test-publishMessage": "jest PublishMessage.test.ts",
-        "test-publishMessage-debug": "node --inspect-brk ./node_modules/.bin/jest PublishMessage.test.ts",
-        "test-signUp": "jest SignUp.test.ts",
-        "test-signUp-debug": "node --inspect-brk ./node_modules/.bin/jest SignUp.test.ts"
+        "test-cli-create": "jest cli-create.test.ts",
+        "test-cli-create-debug": "node --inspect-brk ./node_modules/.bin/jest cli-create.test.ts",
+        "test-cli-signupAndPublish": "jest cli-signupAndPublish.test.ts",
+        "test-cli-signupAndPublish-debug": "node --inspect-brk ./node_modules/.bin/jest cli-signupAndPublish.test.ts",
+        "test-cli-processTallyProve": "NODE_OPTIONS=--max-old-space-size=4096 jest cli-processTallyProve.test.ts",
+        "test-cli-processTallyProve-debug": "node --inspect-brk ./node_modules/.bin/jest cli-processTallyProve.test.ts",
+        "test-cli-genMaciKeypair": "jest cli-genMaciKeypair.test.ts",
+        "test-cli-genMaciKeypair-debug": "node --inspect-brk ./node_modules/.bin/jest cli-genMaciKeypair.test.ts",
+        "test-cli-genMaciPubkey": "jest cli-genMaciPubkey.test.ts",
+        "test-cli-genMaciPubkey-debug": "node --inspect-brk ./node_modules/.bin/jest cli-genMaciPubkey.test.ts"
     },
     "dependencies": {
     },
@@ -23,6 +29,7 @@
         "@types/node": "^13.1.2",
         "ts-jest": "^24.2.0",
         "module-alias": "^2.2.2",
+        "shelljs": "^0.8.3",
         "ethers": "^4.0.45",
         "jest": "^24.9.0",
         "maci-config": "1.0.0",

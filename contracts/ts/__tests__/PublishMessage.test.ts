@@ -24,7 +24,7 @@ import {
     deployMaci,
     deployFreeForAllSignUpGatekeeper,
     deployConstantInitialVoiceCreditProxy,
-} from 'maci-contracts'
+} from '../'
 
 
 const accounts = genTestAccounts(5)
