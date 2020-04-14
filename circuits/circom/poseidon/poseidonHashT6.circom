@@ -3,7 +3,7 @@ include "./common.circom";
 template PoseidonHashT6() {
 
     var nRoundsF = 8;
-    var nRoundsP = 57;
+    var nRoundsP = 50;
     var t = 6;
     var nInputs = 5;
 

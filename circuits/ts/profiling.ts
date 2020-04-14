@@ -2,7 +2,12 @@ import { compileAndLoadCircuit } from '.'
 import { stringifyBigInts, genRandomSalt, hashLeftRight } from 'maci-crypto'
 import { mimcsponge, poseidon } from 'circomlib'
 
-const poseidonT = (t: number) => poseidon.createHash(t, 8, 57, 'poseidon')
+
+// Get the parameters from `python ./scripts/find.py 256 <T>`
+const poseidonT3 = poseidon.createHash(3, 8, 49, 'poseidon')
+const poseidonT6 = poseidon.createHash(6, 8, 50, 'poseidon')
+const poseidonT11 = poseidon.createHash(11, 8, 51, 'poseidon')
+
 
 // mimcsponge setting
 
@@ -33,7 +38,7 @@ const profileHasherN = async (n, circuit) => {
   console.assert(output.toString() === outputJS.toString())
 }
 
-const profileHasherNPoseidon = async (n, circuit) => {
+const profileHasherNPoseidon = async (n, circuit, hasherJS) => {
   const preImages = Array.from({ length: n }, () => genRandomSalt())
   const circuitInputs = stringifyBigInts({ in: preImages })
 
@@ -44,7 +49,7 @@ const profileHasherNPoseidon = async (n, circuit) => {
   console.assert(circuit.checkWitness(witness))
   const outputIdx = circuit.getSignalIdx('main.hash')
   const output = witness[outputIdx]
-  const outputJS = poseidonT(n + 1)(preImages)
+  const outputJS = hasherJS(preImages)
   console.assert(output.toString() === outputJS.toString())
 }
 
@@ -64,8 +69,6 @@ const profileHashLeftRight = async (circuit, check) => {
   console.assert(output.toString() === outputJS.toString())
 }
 
-const HashLeftRightPoseidon = (left, right) => poseidonT(3)([left, right])
-
 const main = async () => {
   const hasher5 = await compileAndLoadCircuit('hasher5_test.circom')
   const hasher10 = await compileAndLoadCircuit('hasher10_test.circom')
@@ -83,9 +86,9 @@ const main = async () => {
 
   console.log('=========Poseidon=========')
 
-  await profileHasherNPoseidon(5, hasher5Poseidon)
-  await profileHasherNPoseidon(10, hasher10Poseidon)
-  await profileHashLeftRight(hashLeftRightPoseidon, HashLeftRightPoseidon)
+  await profileHasherNPoseidon(5, hasher5Poseidon, poseidonT6)
+  await profileHasherNPoseidon(10, hasher10Poseidon, poseidonT11)
+  await profileHashLeftRight(hashLeftRightPoseidon, (left, right) => poseidonT3([left, right]))
 }
 
 main()
