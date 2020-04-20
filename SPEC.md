@@ -187,13 +187,11 @@ uint256[] memory _finalSaltedResults,
 uint256[8] memory _proof
 ```
 
-where `n` is the number of vote options?
-
 This allows the coordinator to prove the correctness of their vote tally (in `_finalSaltedResults`). They do this in batches of state leaves. Each batch of state leaves is accumulated into an intermediate state root, and the Merkle root of all the intermediate state roots is the full state root. The proof shows that the result of adding the votes in the current batch to the culmulative results is computed correctly, but hides the results by salting and hashing them.
 
 `_finalSaltedResults` can be any value but for the final batch, it must be the correct quadratic vote tally.
 
-only coordinator?
+Only the coordinator may invoke this function.
 
 ### State leaves
 
