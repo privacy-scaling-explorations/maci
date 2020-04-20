@@ -147,7 +147,7 @@ This function returns the user's deposit if `_signature` is a signature of the u
 This may need to accept a zk-SNARK proof in addition to the signature if there isn't a good Solidity implementation of EdDSA signature verification.
 -->
 
-#### `publishMessage(uint256 _msg, EddsaPubKey _encPubKey)`
+#### `publishMessage(uint256 _msg, PubKey _encPubKey)`
 
 This function ensures that the current block time is past the signup period, increments the message counter, and then updates the state root.
 
@@ -174,7 +174,7 @@ It also increments the message tree index by the number of commands whose proces
 
 This function should, however, only do so if the processed message counter indicates that all previous messages have already been processed.
 
-Only the coordinator may invoke this function.
+Only the coordinator may invoke this function?
 
 #### `proveVoteTallyBatch()`
 
@@ -187,11 +187,13 @@ uint256[] memory _finalSaltedResults,
 uint256[8] memory _proof
 ```
 
-where `n` is the number of vote options.
+where `n` is the number of vote options?
 
 This allows the coordinator to prove the correctness of their vote tally (in `_finalSaltedResults`). They do this in batches of state leaves. Each batch of state leaves is accumulated into an intermediate state root, and the Merkle root of all the intermediate state roots is the full state root. The proof shows that the result of adding the votes in the current batch to the culmulative results is computed correctly, but hides the results by salting and hashing them.
 
 `_finalSaltedResults` can be any value but for the final batch, it must be the correct quadratic vote tally.
+
+only coordinator?
 
 ### State leaves
 
@@ -310,7 +312,7 @@ For the sake of simplicity, in this specification, we assume that there is no ba
 
 ##### Check 1: That the message has been encrypted with the correct key
 
-```
+```javascript
 // Derive the coordinator's public key from
 // their private key 
 var derivedCoordinatorPubKey = eddsaDerivePubKey(coordinatorPrivKey)
