@@ -278,6 +278,8 @@ Note that the circuit pseudocode in this specification does not describe zk-SNAR
 
 #### The state root transition proof circuit
 
+This circuit proves the correctness of each state root transition.
+
 ##### Public Inputs
 
 All public inputs are set by the contract.
@@ -315,8 +317,6 @@ All private inputs are set by the coordinator, except for `encPubKey`, which is 
 | `userPubKey` | The user's public key |
 | `encPubKey` | The ephermeral public key. |
 | `coordinatorPrivKey` | The coordinator's public key. |
-
-This circuit proves the correctness of each state root transition.
 
 For the sake of simplicity, in this specification, we assume that there is no batching of commands and we handle each command one at a time.
 
