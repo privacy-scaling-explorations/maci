@@ -295,7 +295,7 @@ All public inputs are set by the contract.
 
 ##### Private Inputs
 
-All private inputs are set by the coordinator, except for `encPubKey`, which is set by the contract.
+All private inputs are set by the coordinator.
 
 | Pseudocode name | Description |
 |-|-|
