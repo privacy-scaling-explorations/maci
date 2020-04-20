@@ -174,7 +174,7 @@ It also increments the message tree index by the number of commands whose proces
 
 This function should, however, only do so if the processed message counter indicates that all previous messages have already been processed.
 
-Only the coordinator may invoke this function?
+Although anyone may call this contract function, only the coordinator should know the ECDH shared keys used to encrypt the messages.
 
 #### `proveVoteTallyBatch()`
 
@@ -191,7 +191,7 @@ This allows the coordinator to prove the correctness of their vote tally (in `_f
 
 `_finalSaltedResults` can be any value but for the final batch, it must be the correct quadratic vote tally.
 
-Only the coordinator may invoke this function.
+It does not matter that the contract does or does not restrict access to this function as anyone who can produce a valid proof should be able to tally the votes, and it should not be possible for anyone to tamper with the results anyway.
 
 ### State leaves
 
@@ -312,9 +312,9 @@ All private inputs are set by the coordinator.
 | `userCurrentLeaf` | The user's latest valid state leaf |
 | `command` | The command to process. Includes all the details in the leaf. |
 | `noOp` | The no-op flag |
-| `userPubKey` | The user's public key |
-| `encPubKey` | The ephermeral public key. |
-| `coordinatorPrivKey` | The coordinator's public key. |
+| `userPubKey` | The public key associated with the private key used to sign the command |
+| `encPubKey` | The ephermeral public key used to generate the ECDH shared key which was used to encrypt the command. |
+| `coordinatorPrivKey` | The coordinator's private key. |
 
 For the sake of simplicity, in this specification, we assume that there is no batching of commands and we handle each command one at a time.
 
