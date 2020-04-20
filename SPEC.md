@@ -278,33 +278,43 @@ Note that the circuit pseudocode in this specification does not describe zk-SNAR
 
 #### The state root transition proof circuit
 
-##### Inputs
+##### Public Inputs
 
-| Pseudocode name | zk-SNARK input type | Description | Set by |
-|-|-|-|-|
-| `coordinatorPubKey` | Public | The coordinator's public key | Contract |
-| `currentStateRoot` | Public | The current state root | Contract |
-| `msgTreeRoot` | Public | The Merkle root of the message tree | Contract |
-| `msgTreePathIndex` | Public | The Merkle path index of the message in the message tree | Contract |
-| `maxStateLeafIndex` | Public | The maximum leaf index of the state tree | Contract |
-| `userCurrentLeafPathIndex` | Public | The Merkle path index from the user's latest valid state leaf to the current state root | Contract |
-| `newStateRoot` | Public | The new state root | Contract |
-| `userCurrentLeafPathElements` | Private | The Merkle path elements from the user's latest valid state leaf to the current state root | Coordinator |
-| `currentVoteOptionPathElements[n]` | Private <!--`253` * vote option tree depth--> | The Merkle path needed to prove the existence of the current vote option leaf. | Coordinator |
-| `newVoteOptionPathElements[n]` | Private <!--`253` * vote option tree depth--> | The Merkle path needed to update the vote option tree root in the state leaf. | Coordinator |
-| `currentVoteWeight` | Private <!--32--> | In the quadratic voting use case, this is the square root of the number of voice credits a user wishes to spend on this vote. | Coordinator |
-| `message` | Private | The message | Coordinator |
-| `msgTreePathElements` | Private | The Merkle path elements to the message tree root from the message leaf | Coordinator |
-| `randomLeaf` | Private | Random data | Coordinator |
-| `newStateTreePathIndex` | Private |The Merkle path index to the new state root from the new state leaf | Coordinator |
-| `newStateTreePathElements` | Private |The Merkle path elements to the new state root from the new state leaf | Coordinator |
-| `newStateTreePathElementsToZero` | Private |The Merkle path elements to the new state root from leaf 0, **after** the new state leaf has been updated | Coordinator |
-| `userCurrentLeaf` | Private | The user's latest valid state leaf | Coordinator |
-| `command` | Private | The command to process. Includes all the details in the leaf. | Coordinator |
-| `noOp` | Private | The no-op flag | Coordinator |
-| `userPubKey` | Private | The user's public key | Coordinator |
-| `encPubKey` | Private | The ephermeral public key | Contract |
-| `coordinatorPrivKey` | Private | The coordinator's public key |  Coordinator |
+All public inputs are set by the contract.
+
+| Pseudocode name | Description |
+|-|-|
+| `coordinatorPubKey` | The coordinator's public key |
+| `currentStateRoot` | The current state root |
+| `msgTreeRoot` | The Merkle root of the message tree |
+| `msgTreePathIndex` | The Merkle path index of the message in the message tree |
+| `maxStateLeafIndex` | The maximum leaf index of the state tree |
+| `userCurrentLeafPathIndex` | The Merkle path index from the user's latest valid state leaf to the current state root |
+| `newStateRoot` | The new state root |
+
+
+##### Private Inputs
+
+All private inputs are set by the coordinator, except for `encPubKey`, which is set by the contract.
+
+| Pseudocode name | Description |
+|-|-|
+| `userCurrentLeafPathElements` | The Merkle path elements from the user's latest valid state leaf to the current state root |
+| `currentVoteOptionPathElements[n]` | The Merkle path needed to prove the existence of the current vote option leaf. Size is `253` * `vote_option_tree_depth` bits |
+| `newVoteOptionPathElements[n]` | The Merkle path needed to update the vote option tree root in the state leaf. Size is `253` * `vote_option_tree_depth` bits|
+| `currentVoteWeight` | In the quadratic voting use case, this is the square root of the number of voice credits a user wishes to spend on this vote. Size is 32 bits. |
+| `message` | The message |
+| `msgTreePathElements` | The Merkle path elements to the message tree root from the message leaf |
+| `randomLeaf` | Random data |
+| `newStateTreePathIndex` |The Merkle path index to the new state root from the new state leaf |
+| `newStateTreePathElements` |The Merkle path elements to the new state root from the new state leaf |
+| `newStateTreePathElementsToZero` |The Merkle path elements to the new state root from leaf 0, **after** the new state leaf has been updated |
+| `userCurrentLeaf` | The user's latest valid state leaf |
+| `command` | The command to process. Includes all the details in the leaf. |
+| `noOp` | The no-op flag |
+| `userPubKey` | The user's public key |
+| `encPubKey` | The ephermeral public key. |
+| `coordinatorPrivKey` | The coordinator's public key. |
 
 This circuit proves the correctness of each state root transition.
 
