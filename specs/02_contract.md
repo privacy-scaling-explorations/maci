@@ -6,11 +6,11 @@ There is an Ethereum contract (`MACI`) which provides the following interface:
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
-  - [Merkle trees in storage](#merkle-trees-in-storage)
-  - [`signUp(PubKey _pubKey) payable`](#signuppubkey-_pubkey-payable)
-  - [`publishMessage(uint256 _msg, PubKey _encPubKey)`](#publishmessageuint256-_msg-pubkey-_encpubkey)
-  - [`batchProcessMessage(...)`](#batchprocessmessage)
-  - [`proveVoteTallyBatch()`](#provevotetallybatch)
+- [Merkle trees in storage](#merkle-trees-in-storage)
+- [`signUp(PubKey _pubKey) payable`](#signuppubkey-_pubkey-payable)
+- [`publishMessage(uint256 _msg, PubKey _encPubKey)`](#publishmessageuint256-_msg-pubkey-_encpubkey)
+- [`batchProcessMessage(...)`](#batchprocessmessage)
+- [`proveVoteTallyBatch()`](#provevotetallybatch)
 - [State leaves](#state-leaves)
   - [Schema](#schema)
 - [Commands](#commands)
@@ -106,7 +106,7 @@ This allows the coordinator to prove the correctness of their vote tally (in `_f
 
 It does not matter that the contract does or does not restrict access to this function as anyone who can produce a valid proof should be able to tally the votes, and it should not be possible for anyone to tamper with the results anyway.
 
-# State leaves
+## State leaves
 
 Each state leaf contains a user's public key, the Merkle root of their unique vote option tree, the number of voice credits they have left, and the nonce.
 
@@ -114,7 +114,7 @@ The nonce is either 0 or that of their most recent valid command. For instance, 
 
 Each user's public key is associated with exactly one state leaf. This leaf is the single source of truth of their vote option tree. Additionally, since a user may vote for multiple options, and allocate different amounts of voice credits to each option, we represent their votes as a Merkle tree.
 
-## Schema
+### Schema
 
 | Data | Bits | Comments |
 |-|-|-|
@@ -130,11 +130,11 @@ The schema for leaves of the vote option tree, which we dub *vote leaves*, is as
 |-|-|-|
 | `votes` | 32 | In the quadratic voting use case, this is the square root of the voice credits spent for this option. |
 
-# Commands
+## Commands
 
 Each command may convey a key-change request, a vote, or both. There is only one schema for all commands.
 
-## Schema
+### Schema
 
 Be careful not to confuse the following leaf schema for commands with the state leaf schema. Each user may submit multiple commands, but should only be associated with one state leaf.
 
@@ -151,7 +151,7 @@ Be careful not to confuse the following leaf schema for commands with the state 
 
 A useful rule of thumb is that the coordinator -- not the user --  should provide information that they know if they possess it. As such, the command does not contain information such as the Merkle path to the root of the vote option tree, since the coordinator should have it.
 
-## About nonces
+### About nonces
 
 The first message that a user submits should have a nonce of `0`. The nonce of subsequent messages now depends on whether the user is bribed and has to reveal their vote to the briber.
 
@@ -167,7 +167,7 @@ could encrypt and submit this invalid message:
 
 where `Ka` is an invalid key. When the user decrypts this message and reveals it to the briber, the briber not only has no way to tell if this message is valid, they also have no reason to think that the user had not previously submitted valid messages, as the nonce is `0`.
 
-# Message verification
+## Message verification
 
 Given a `command` from a user Alice, we say that the state transition from an `oldStateRoot` to a `newStateRoot` is *valid* if and only if (not in order of processing):
 
