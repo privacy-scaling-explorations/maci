@@ -1,0 +1,10 @@
+{
+  "name": "maci-specs",
+  "version": "0.0.1",
+  "scripts": {
+    "build": "doctoc . --github"
+  },
+  "devDependencies": {
+    "doctoc": "^1.4.0"
+  }
+}
