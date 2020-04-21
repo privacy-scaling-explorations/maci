@@ -2,8 +2,22 @@
 
 *Barry WhiteHat, Kendrick Tan, Kobi Gurkan, and Koh Wei Jie*
 
-<!-- START doctoc -->
-<!-- END doctoc -->
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+
+- [Introduction](#introduction)
+- [High-level process](#high-level-process)
+- [Technical process](#technical-process)
+- [Availability and visibility of messages](#availability-and-visibility-of-messages)
+- [System components](#system-components)
+  - [Roles](#roles)
+  - [Cryptographic operations](#cryptographic-operations)
+    - [Key generation](#key-generation)
+    - [Command signing and encryption](#command-signing-and-encryption)
+- [Glossary](#glossary)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Introduction
 
