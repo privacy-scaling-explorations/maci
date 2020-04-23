@@ -32,6 +32,15 @@ Public key:  macipk.483e37f5f4a11713d1a9c9df79fc7195f0e1e303e1d3bb823822e1930e1b
 
 This command deploys an instance of a MACI contract.
 
+Note that all the example commands default to a local Ethereum testnet at
+`http://localhost:8545`. For testing purposes, you can run one using:
+
+```bash
+
+# in maci/contracts
+npm run ganache
+```
+
 Fields that the coordinator has to set:
 
 `maci-cli create <options>`
@@ -39,7 +48,7 @@ Fields that the coordinator has to set:
 Example usage:
 
 ```
-$ node build/index.js create -sk macisk.23d007423d56475d7e39dcd5053c5aa98f57a69ee85bc7813ccbf4c5e688307  -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 -u 32768 -m 32768
+$ node build/index.js create -sk macisk.23d007423d56475d7e39dcd5053c5aa98f57a69ee85bc7813ccbf4c5e688307  -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 -u 15 -m 15
 ```
 
 Example output:
