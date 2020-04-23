@@ -66,7 +66,7 @@ MACI: 0xE28158eCFde143e2536761c3254C7C31efd97271
 | Batch size for processing messages | `-bm` or `--message-batch-size` | Default: 4 |
 | Batch size for tallying votes | `-bv` or `--tally-batch-size` | Default: 4 |
 
-### Process, tally and prove outcome
+### Coordinator: Process, tally and prove outcome
 
 These three commands share the same option flags.
 
