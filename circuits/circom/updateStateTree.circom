@@ -45,10 +45,10 @@ template CheckValidUpdate() {
 }
 
 template PerformChecksBeforeUpdate(
-    message_length,
-    message_without_signature_length,
+    MESSAGE_LENGTH,
+    MESSAGE_WITHOUT_SIGNATURE_LENGTH,
     message_tree_depth,
-    state_tree_data_length,
+    STATE_TREE_DATA_LENGTH,
     state_tree_depth,
     state_tree_max_leaves,
     vote_options_tree_depth,
@@ -67,12 +67,12 @@ template PerformChecksBeforeUpdate(
     signal input coordinator_public_key[2];
     signal input ecdh_public_key[2];
 
-    signal input message[message_length];
+    signal input message[MESSAGE_LENGTH];
     signal input msg_tree_root;
     signal input msg_tree_path_elements[message_tree_depth];
     signal input msg_tree_path_index[message_tree_depth];
 
-    signal input state_tree_data_raw[state_tree_data_length];
+    signal input state_tree_data_raw[STATE_TREE_DATA_LENGTH];
     signal input state_tree_root;
     signal input state_tree_path_elements[state_tree_depth];
     signal input state_tree_path_index[state_tree_depth];
@@ -82,7 +82,7 @@ template PerformChecksBeforeUpdate(
     signal input vote_options_tree_path_elements[vote_options_tree_depth];
     signal input vote_options_tree_path_index[vote_options_tree_depth];
 
-    signal output decrypted_command_out[message_length-1];
+    signal output decrypted_command_out[MESSAGE_LENGTH-1];
     signal output new_vote_options_tree_root;
     signal output signature_verifier_valid;
 
@@ -107,20 +107,20 @@ template PerformChecksBeforeUpdate(
     ecdh.public_key[1] <== ecdh_public_key[1];
 
     // Check 2. The decrypted message matches the given message
-    component decrypted_command = Decrypt(message_length - 1);
+    component decrypted_command = Decrypt(MESSAGE_LENGTH - 1);
     decrypted_command.private_key <== ecdh.shared_key;
-    for (var i = 0; i < message_length; i++) {
+    for (var i = 0; i < MESSAGE_LENGTH; i++) {
         decrypted_command.message[i] <== message[i];
     }
-    for (var i = 0; i < message_length - 1; i++) {
+    for (var i = 0; i < MESSAGE_LENGTH - 1; i++) {
         decrypted_command_out[i] <== decrypted_command.out[i];
     }
 
     // TODO: combine this loop with the above
     // Compute the leaf, which is the hash of the message
-    component msg_hash = Hasher(message_length);
+    component msg_hash = Hasher(MESSAGE_LENGTH);
     msg_hash.key <== 0;
-    for (var i = 0; i < message_length; i++) {
+    for (var i = 0; i < MESSAGE_LENGTH; i++) {
         msg_hash.in[i] <== message[i];
     }
 
@@ -135,9 +135,9 @@ template PerformChecksBeforeUpdate(
 
     // Check 4. Make sure the hash of the data corresponds to the 
     //          existing leaf in the state tree
-    component existing_state_tree_leaf_hash = Hasher(state_tree_data_length);
+    component existing_state_tree_leaf_hash = Hasher(STATE_TREE_DATA_LENGTH);
     existing_state_tree_leaf_hash.key <== 0;
-    for (var i = 0; i < state_tree_data_length; i++) {
+    for (var i = 0; i < STATE_TREE_DATA_LENGTH; i++) {
         existing_state_tree_leaf_hash.in[i] <== state_tree_data_raw[i];
     }
 
@@ -169,7 +169,7 @@ template PerformChecksBeforeUpdate(
     new_vote_options_tree_root <== new_vote_options_tree.root;
 
     // Verify signature against existing public key
-    component signature_verifier = VerifySignature(message_without_signature_length);
+    component signature_verifier = VerifySignature(MESSAGE_WITHOUT_SIGNATURE_LENGTH);
 
     signature_verifier.from_x <== state_tree_data_raw[STATE_TREE_PUBLIC_KEY_X_IDX]; // public key x
     signature_verifier.from_y <== state_tree_data_raw[STATE_TREE_PUBLIC_KEY_Y_IDX]; // public key y
@@ -178,7 +178,7 @@ template PerformChecksBeforeUpdate(
     signature_verifier.R8y <== decrypted_command.out[CMD_SIG_R8Y_IDX]; // sig R8x
     signature_verifier.S <== decrypted_command.out[CMD_SIG_S_IDX]; // sig S
 
-    for (var i = 0; i < message_without_signature_length; i++) {
+    for (var i = 0; i < MESSAGE_WITHOUT_SIGNATURE_LENGTH; i++) {
         signature_verifier.preimage[i] <== decrypted_command.out[i];
     }
     signature_verifier_valid <== signature_verifier.valid;
@@ -216,9 +216,9 @@ template UpdateStateTree(
     signal input coordinator_public_key[2];
 
     // Note: a message is an encrypted command
-    var message_length = 11;
-    var message_signature_length = 4;
-    var message_without_signature_length = message_length - message_signature_length;
+    var MESSAGE_LENGTH = 11;
+    var MESSAGE_SIGNATURE_LENGTH = 4;
+    var MESSAGE_WITHOUT_SIGNATURE_LENGTH = MESSAGE_LENGTH - MESSAGE_SIGNATURE_LENGTH;
     /* let n = vote_options_tree_depth
 
        anything > 0 is encrypted
@@ -235,7 +235,7 @@ template UpdateStateTree(
        [9]  - signature_r8y
        [10] - signature_s
      */
-    signal input message[message_length];
+    signal input message[MESSAGE_LENGTH];
 
     // Note: State tree data length is the command parsed, and then massaged to
     // fit the schema
@@ -245,7 +245,7 @@ template UpdateStateTree(
     var STATE_TREE_VOTE_BALANCE_IDX = 3;
     var STATE_TREE_NONCE_IDX = 4;
 
-    var state_tree_data_length = 5;
+    var STATE_TREE_DATA_LENGTH = 5;
 
     // Select vote option index's weight
     // (a.k.a the raw value of the leaf pre-hash)
@@ -263,7 +263,7 @@ template UpdateStateTree(
     signal input msg_tree_path_index[message_tree_depth];
 
     // State tree
-    signal private input state_tree_data_raw[state_tree_data_length];
+    signal private input state_tree_data_raw[STATE_TREE_DATA_LENGTH];
 
     signal input state_tree_max_leaf_index;
     signal input state_tree_root;
@@ -275,7 +275,7 @@ template UpdateStateTree(
     signal input ecdh_public_key[2];
 
     // Internal variables for passing between templates
-    signal decrypted_command_out[message_length - 1];
+    signal decrypted_command_out[MESSAGE_LENGTH - 1];
     signal new_vote_options_tree_root;
     signal signature_verifier_valid;
 
@@ -286,10 +286,10 @@ template UpdateStateTree(
 
     // *************** BEGIN perform checks before update ***************
     component perform_checks_before_update = PerformChecksBeforeUpdate(
-        message_length,
-      	message_without_signature_length,
+        MESSAGE_LENGTH,
+      	MESSAGE_WITHOUT_SIGNATURE_LENGTH,
         message_tree_depth,
-        state_tree_data_length,
+        STATE_TREE_DATA_LENGTH,
         state_tree_depth,
         state_tree_max_leaves,
         vote_options_tree_depth,
@@ -310,7 +310,7 @@ template UpdateStateTree(
         perform_checks_before_update.coordinator_public_key[i] <== coordinator_public_key[i];
         perform_checks_before_update.ecdh_public_key[i] <== ecdh_public_key[i];
     }
-    for (var i = 0; i < message_length; i++) {
+    for (var i = 0; i < MESSAGE_LENGTH; i++) {
         perform_checks_before_update.message[i] <== message[i];
     }
     perform_checks_before_update.msg_tree_root <== msg_tree_root;
@@ -319,7 +319,7 @@ template UpdateStateTree(
         perform_checks_before_update.msg_tree_path_index[i] <== msg_tree_path_index[i];
     }
 
-    for (var i = 0; i < state_tree_data_length; i++) {
+    for (var i = 0; i < STATE_TREE_DATA_LENGTH; i++) {
         perform_checks_before_update.state_tree_data_raw[i] <== state_tree_data_raw[i];
     }
     perform_checks_before_update.state_tree_root <== state_tree_root;
@@ -335,7 +335,7 @@ template UpdateStateTree(
         perform_checks_before_update.vote_options_tree_path_index[i] <== vote_options_tree_path_index[i];
     }
 
-    for (var i = 0; i < message_length - 1; i++) {
+    for (var i = 0; i < MESSAGE_LENGTH - 1; i++) {
         decrypted_command_out[i] <== perform_checks_before_update.decrypted_command_out[i];
     }
     new_vote_options_tree_root <== perform_checks_before_update.new_vote_options_tree_root;
@@ -355,16 +355,16 @@ template UpdateStateTree(
     new_vote_credits <== state_tree_data_raw[STATE_TREE_VOTE_BALANCE_IDX] + vote_options_leaf_squared - user_vote_weight_squared;
 
     // Construct new state tree data (and its hash)
-    signal new_state_tree_data[state_tree_data_length];
+    signal new_state_tree_data[STATE_TREE_DATA_LENGTH];
     new_state_tree_data[0] <== decrypted_command_out[CMD_PUBLIC_KEY_X_IDX];
     new_state_tree_data[1] <== decrypted_command_out[CMD_PUBLIC_KEY_Y_IDX];
     new_state_tree_data[2] <== new_vote_options_tree_root;
     new_state_tree_data[3] <== new_vote_credits;
     new_state_tree_data[4] <== decrypted_command_out[CMD_NONCE_IDX];
 
-    component new_state_tree_leaf = Hasher(state_tree_data_length);
+    component new_state_tree_leaf = Hasher(STATE_TREE_DATA_LENGTH);
     new_state_tree_leaf.key <== 0;
-    for (var i = 0; i < state_tree_data_length; i++) {
+    for (var i = 0; i < STATE_TREE_DATA_LENGTH; i++) {
         new_state_tree_leaf.in[i] <== new_state_tree_data[i];
     }
 
