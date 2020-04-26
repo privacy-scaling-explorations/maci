@@ -1,7 +1,7 @@
 {
     "name": "Happy path",
-    "description": "Quarter tree, 1 batch, no bribers",
-    "numUsers": 7,
+    "description": "Full tree, 4 batches, no bribers",
+    "numUsers": 15,
     "commands": [
         {
             "user": 0,
@@ -44,7 +44,55 @@
             "voteOptionIndex": 6,
             "voteWeight": 1,
             "nonce": 1
+        },
+        {
+            "user": 7,
+            "voteOptionIndex": 7,
+            "voteWeight": 1,
+            "nonce": 1
+        },
+        {
+            "user": 8,
+            "voteOptionIndex": 8,
+            "voteWeight": 1,
+            "nonce": 1
+        },
+        {
+            "user": 9,
+            "voteOptionIndex": 9,
+            "voteWeight": 1,
+            "nonce": 1
+        },
+        {
+            "user": 10,
+            "voteOptionIndex": 10,
+            "voteWeight": 1,
+            "nonce": 1
+        },
+        {
+            "user": 11,
+            "voteOptionIndex": 11,
+            "voteWeight": 1,
+            "nonce": 1
+        },
+        {
+            "user": 12,
+            "voteOptionIndex": 12,
+            "voteWeight": 1,
+            "nonce": 1
+        },
+        {
+            "user": 13,
+            "voteOptionIndex": 13,
+            "voteWeight": 1,
+            "nonce": 1
+        },
+        {
+            "user": 14,
+            "voteOptionIndex": 14,
+            "voteWeight": 1,
+            "nonce": 1
         }
     ],
-    "expectedTally": [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    "expectedTally": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]
 }

@@ -266,6 +266,8 @@ const tally = async (args: any) => {
     }
 
     const circuit = await compileAndLoadCircuit('test/quadVoteTally_test.circom')
+    const qvtPk = loadPk('qvtPk')
+    const qvtVk = loadVk('qvtVk')
 
     const batchSize = bigInt((await maciContract.tallyBatchSize()).toString())
 
@@ -340,8 +342,6 @@ const tally = async (args: any) => {
             return
         }
 
-        const qvtPk = loadPk('qvtPk')
-        const qvtVk = loadVk('qvtVk')
         const proof = await genProof(witness, qvtPk)
 
         const isValid = verifyProof(qvtVk, proof, publicSignals)
@@ -362,8 +362,10 @@ const tally = async (args: any) => {
                 expectedCommitment.toString(),
                 [...cumulativeTally, newResultsSalt].map((x) => x.toString()),
                 formattedProof,
+                { gasLimit: 2000000 },
             )
         } catch (e) {
+            console.error('Error: proveVoteTallyBatch() failed')
             console.error(txErr)
             console.error(e)
             break

@@ -188,9 +188,9 @@ const processMessages = async (args: any) => {
     )
 
     // Check whether there are any remaining batches to process
-    const currentMessageBatchIndex = await maciContract.currentMessageBatchIndex()
+    const currentMessageBatchIndex = (await maciContract.currentMessageBatchIndex()).toNumber()
+    const messageTreeMaxLeafIndex = (await maciContract.messageTreeMaxLeafIndex()).toNumber()
     const numMessages = await maciContract.numMessages()
-    const messageTreeMaxLeafIndex = await maciContract.messageTreeMaxLeafIndex()
 
     if (! (await maciContract.hasUnprocessedMessages())) {
         console.error('Error: all messages have already been processed')
@@ -217,6 +217,8 @@ const processMessages = async (args: any) => {
     }
 
     const circuit = await compileAndLoadCircuit('test/batchUpdateStateTree_test.circom')
+    const batchUstPk = loadPk('batchUstPk')
+    const batchUstVk = loadVk('batchUstVk')
 
     const messageBatchSize  = await maciContract.messageBatchSize()
     let randomStateLeaf 
@@ -261,9 +263,6 @@ const processMessages = async (args: any) => {
         }
 
         const publicSignals = genPublicSignals(witness, circuit)
-
-        const batchUstPk = loadPk('batchUstPk')
-        const batchUstVk = loadVk('batchUstVk')
 
         const proof = await genProof(witness, batchUstPk)
         const isValid = verifyProof(batchUstVk, proof, publicSignals)

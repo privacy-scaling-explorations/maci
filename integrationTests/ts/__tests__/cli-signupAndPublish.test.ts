@@ -456,7 +456,7 @@ describe('signup and publish CLI subcommands', () => {
                 ` -v ${voteOptionIndex}` +
                 ` -w ${newVoteWeight}` +
                 ` -n ${nonce}` +
-                ` -s 0xa`
+                ` -s 0xx`
             const output = exec(publishCommand).stderr
             expect(output).toEqual('Error: the salt should be a 32-byte hexadecimal string\n')
         })

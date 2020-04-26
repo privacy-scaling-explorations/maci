@@ -36,9 +36,6 @@ import {
     voteOptionTreeDepth,
 } from './params'
 
-const signupDuration = 60
-const votingDuration = 60
-
 const loadData = (name: string) => {
     return require('@maci-integrationTests/ts/__tests__/suites/' + name)
 }
@@ -73,6 +70,9 @@ const executeSuite = async (data: any, expect: any) => {
         voteOptionTreeDepth,
         maxVoteOptions,
     )
+
+    const signupDuration = data.numUsers * 10
+    const votingDuration = data.numUsers * 10
 
     // Run the create subcommand
     const createCommand = `node ../cli/build/index.js create` +
@@ -116,8 +116,6 @@ const executeSuite = async (data: any, expect: any) => {
         if (signupExec.stderr) {
             console.error(signupExec.stderr)
             return false
-        //} else {
-            //console.log(signupExec.stdout)
         }
 
         maciState.signUp(
@@ -147,7 +145,7 @@ const executeSuite = async (data: any, expect: any) => {
             continue
         }
 
-        const userKeypair = userKeypairs[i]
+        const userKeypair = userKeypairs[data.commands[i].user]
         const stateIndex = i + 1
         const voteOptionIndex = data.commands[i].voteOptionIndex
         const newVoteWeight  = data.commands[i].voteWeight
@@ -204,13 +202,13 @@ const executeSuite = async (data: any, expect: any) => {
             )
         )
 
-        // Check whether the message tree root is correct
         maciState.publishMessage(
             message,
             encPubKey,
         )
     }
 
+    // Check whether the message tree root is correct
     expect(maciState.genMessageRoot().toString()).toEqual((await maciContract.getMessageTreeRoot()).toString())
 
     const votingDeadline = await maciContract.calcVotingDeadline()
@@ -219,30 +217,24 @@ const executeSuite = async (data: any, expect: any) => {
     await delay(1000 * (votingDeadline.toNumber() - nowTimestamp))
 
     // Process messages
-    const processBatchCommand = `NODE_OPTIONS=--max-old-space-size=4096 node ../cli/build/index.js process` +
+    const processCommand = `NODE_OPTIONS=--max-old-space-size=4096 node ../cli/build/index.js process` +
         ` -sk ${coordinatorKeypair.privKey.serialize()}` +
         ` -d ${userPrivKey}` +
         ` -x ${maciAddress}` +
         ` --repeat`
 
-    console.log(processBatchCommand)
+    console.log(processCommand)
 
-    const e = exec(processBatchCommand)
+    const e = exec(processCommand)
 
-    if (e.stderr) {
-        console.log(e)
-    }
+    console.log(e)
+
     const output = e.stdout.trim()
-    console.log(output)
 
     // Check whether the transaction succeeded
     const processRegMatch = output.match(
         /Processed batch starting at index ([0-9]+)\nTransaction hash: (0x[a-fA-F0-9]{64})\nRandom state leaf: (.+)$/
     )
-
-    if (!processRegMatch) {
-        console.log(e.stderr)
-    }
 
     expect(processRegMatch).toBeTruthy()
 
@@ -254,7 +246,7 @@ const executeSuite = async (data: any, expect: any) => {
 
     const randomLeaf = StateLeaf.unserialize(processRegMatch[3])
 
-    const tallyCommand = `node ../cli/build/index.js tally` +
+    const tallyCommand = `NODE_OPTIONS=--max-old-space-size=4096 node ../cli/build/index.js tally` +
         ` -sk ${coordinatorKeypair.privKey.serialize()}` +
         ` -d ${userPrivKey}` +
         ` -x ${maciAddress}` +
@@ -268,7 +260,6 @@ const executeSuite = async (data: any, expect: any) => {
 
     if (tallyOutput.stderr) {
         console.log(tallyOutput.stderr)
-        return false
     }
 
     console.log(tallyOutput.stdout)

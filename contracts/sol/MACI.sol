@@ -446,7 +446,7 @@ contract MACI is Ownable, DomainObjs {
 
         // Ensure that currentMessageBatchIndex is within range
         require(
-            currentMessageBatchIndex <= messageTreeMaxLeafIndex - messageBatchSize,
+            currentMessageBatchIndex <= messageTreeMaxLeafIndex,
             "MACI: currentMessageBatchIndex not within range"
         );
 
@@ -483,10 +483,6 @@ contract MACI is Ownable, DomainObjs {
         // Increase the message batch start index to ensure that each message
         // batch is processed in order
         currentMessageBatchIndex += messageBatchSize;
-
-        // The message batch start index should never exceed the maximum
-        // allowed value
-        assert(currentMessageBatchIndex <= messageTreeMaxLeafIndex - messageBatchSize);
 
         // Update the state root
         postSignUpStateRoot = _newStateRoot;

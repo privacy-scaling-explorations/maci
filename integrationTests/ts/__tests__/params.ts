@@ -3,7 +3,7 @@ import { calcTreeDepthFromMaxLeaves } from './utils'
 const maxUsers = 2 ** 4 - 1
 const maxMessages = 2 ** 4 - 1
 const maxVoteOptions = 15
-const signupDuration = 10 
+const signupDuration = 15 
 const votingDuration = 60
 const messageBatchSize = 4
 const tallyBatchSize = 4
