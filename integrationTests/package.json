@@ -17,12 +17,15 @@
         "test-cli-genMaciKeypair": "jest cli-genMaciKeypair.test.ts",
         "test-cli-genMaciKeypair-debug": "node --inspect-brk ./node_modules/.bin/jest cli-genMaciKeypair.test.ts",
         "test-cli-genMaciPubkey": "jest cli-genMaciPubkey.test.ts",
-        "test-cli-genMaciPubkey-debug": "node --inspect-brk ./node_modules/.bin/jest cli-genMaciPubkey.test.ts"
+        "test-cli-genMaciPubkey-debug": "node --inspect-brk ./node_modules/.bin/jest cli-genMaciPubkey.test.ts",
+        "test-suites": "NODE_OPTIONS=--max-old-space-size=4096 jest suites.test.ts",
+        "test-suites-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest suites.test.ts"
     },
     "dependencies": {
     },
     "_moduleAliases": {
-        "@maci-contracts": "../contracts/"
+        "@maci-contracts": "../contracts/",
+        "@maci-integrationTests": "./"
     },
     "devDependencies": {
         "@types/jest": "^24.0.25",

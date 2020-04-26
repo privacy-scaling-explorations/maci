@@ -216,27 +216,28 @@ const processMessages = async (args: any) => {
         return
     }
 
+    const circuit = await compileAndLoadCircuit('test/batchUpdateStateTree_test.circom')
+
     const messageBatchSize  = await maciContract.messageBatchSize()
     let randomStateLeaf 
 
     while (true) {
         randomStateLeaf = StateLeaf.genRandomLeaf()
+        const messageBatchIndex = await maciContract.currentMessageBatchIndex()
         const circuitInputs = maciState.genBatchUpdateStateTreeCircuitInputs(
-            currentMessageBatchIndex.toNumber(),
+            messageBatchIndex.toNumber(),
             messageBatchSize,
             randomStateLeaf,
         )
 
         // Process the batch of messages
         maciState.batchProcessMessage(
-            currentMessageBatchIndex.toNumber(),
+            messageBatchIndex.toNumber(),
             messageBatchSize,
             randomStateLeaf,
         )
 
         const stateRootAfter = maciState.genStateRoot()
-
-        const circuit = await compileAndLoadCircuit('test/batchUpdateStateTree_test.circom')
 
         // Calculate the witness
         const witness = circuit.calculateWitness(circuitInputs)
@@ -253,6 +254,12 @@ const processMessages = async (args: any) => {
             return
         }
 
+        let ecdhPubKeys: PubKey[] = []
+        for (let p of circuitInputs['ecdh_public_key']) {
+            const pubKey = new PubKey(p)
+            ecdhPubKeys.push(pubKey)
+        }
+
         const publicSignals = genPublicSignals(witness, circuit)
 
         const batchUstPk = loadPk('batchUstPk')
@@ -265,13 +272,8 @@ const processMessages = async (args: any) => {
             return
         }
 
-        let ecdhPubKeys: PubKey[] = []
-        for (let p of circuitInputs['ecdh_public_key']) {
-            const pubKey = new PubKey(p)
-            ecdhPubKeys.push(pubKey)
-        }
-
         const formattedProof = formatProofForVerifierContract(proof)
+        //const formattedProof = [0, 0, 0, 0, 0, 0, 0, 0]
         const txErr = 'Error: batchProcessMessage() failed'
         let tx
 
@@ -286,14 +288,14 @@ const processMessages = async (args: any) => {
         } catch (e) {
             console.error(txErr)
             console.error(e)
-            return
+            break
         }
 
         const receipt = await tx.wait()
 
         if (receipt.status !== 1) {
             console.error(txErr)
-            return
+            break
         }
 
         const postSignUpStateRoot = await maciContract.postSignUpStateRoot()
@@ -302,6 +304,7 @@ const processMessages = async (args: any) => {
             return
         }
 
+        console.log(`Processed batch starting at index ${messageBatchIndex}`)
         console.log(`Transaction hash: ${tx.hash}`)
         console.log(`Random state leaf: ${randomStateLeaf.serialize()}`)
 

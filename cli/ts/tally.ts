@@ -1,7 +1,7 @@
 import * as assert from 'assert'
 import * as ethers from 'ethers'
 
-import { bigInt, genRandomSalt } from 'maci-crypto'
+import { bigInt, genRandomSalt, SnarkBigInt } from 'maci-crypto'
 
 import { 
     genTallyResultCommitment,
@@ -38,6 +38,8 @@ import {
     promptPwd,
     validateEthSk,
     validateEthAddress,
+    validateSaltSize,
+    validateSaltFormat,
     contractExists,
     genMaciStateFromContract,
     checkDeployerProviderConnection,
@@ -126,9 +128,32 @@ const configureSubparser = (subparsers: any) => {
             help: 'Process all message batches instead of just the next one',
         }
     )
+
+    parser.addArgument(
+        ['-c', '--current-salt'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The secret salt which is hashed along with the current results to produce the current result commitment input to the snark.',
+        }
+    )
 }
 
 const tally = async (args: any) => {
+
+    // Current result salt
+
+    if (!validateSaltFormat(args.current_salt)) {
+        console.error('Error: the salt should be a 32-byte hexadecimal string')
+        return
+    }
+
+    if (!validateSaltSize(args.current_salt)) {
+        console.error('Error: the salt should less than the BabyJub field size')
+        return
+    }
+
+    let currentResultsSalt = bigInt(args.current_salt)
 
     // Zeroth leaf
     const serialized = args.leaf_zero
@@ -240,21 +265,51 @@ const tally = async (args: any) => {
         return
     }
 
+    const circuit = await compileAndLoadCircuit('test/quadVoteTally_test.circom')
+
     const batchSize = bigInt((await maciContract.tallyBatchSize()).toString())
 
+    let cumulativeTally
+
     while (true) {
-        const startIndex = bigInt((await maciContract.currentQvtBatchNum()).toString())
+        const hasUntalliedStateLeaves = await maciContract.hasUntalliedStateLeaves()
+        if (! hasUntalliedStateLeaves) {
+            break
+        }
+
+        const currentQvtBatchNum = bigInt((await maciContract.currentQvtBatchNum()).toString())
+        const startIndex: SnarkBigInt = currentQvtBatchNum * batchSize
+
+        cumulativeTally = maciState.computeCumulativeVoteTally(startIndex)
+
         const tally = maciState.computeBatchVoteTally(startIndex, batchSize)
+
+        for (let i = 0; i < tally.length; i++) {
+            cumulativeTally[i] = bigInt(cumulativeTally[i]) + bigInt(tally[i])
+        }
+
+        if (startIndex.equals(bigInt(0)) && !currentResultsSalt.equals(bigInt(0))) {
+            console.error('Error: the first current result salt should be zero')
+            return
+        }
+
+        if (startIndex.equals(bigInt(0))) {
+            currentResultsSalt = bigInt(0)
+        }
+
         const newResultsSalt = genRandomSalt()
         // Generate circuit inputs
         const circuitInputs 
             = maciState.genQuadVoteTallyCircuitInputs(
                 startIndex,
                 batchSize,
+                currentResultsSalt,
                 newResultsSalt,
             )
 
-        const circuit = await compileAndLoadCircuit('test/quadVoteTally_test.circom')
+        // Update currentResultsSalt for the next iteration
+        currentResultsSalt = bigInt(circuitInputs.newResultsSalt)
+
         const witness = circuit.calculateWitness(circuitInputs)
 
         if (!circuit.checkWitness(witness)) {
@@ -264,7 +319,7 @@ const tally = async (args: any) => {
 
         const result = witness[circuit.getSignalIdx('main.newResultsCommitment')]
 
-        const expectedCommitment = genTallyResultCommitment(tally, newResultsSalt)
+        const expectedCommitment = genTallyResultCommitment(cumulativeTally, newResultsSalt)
         if (result.toString() !== expectedCommitment.toString()) {
             console.error('Error: result commitment mismatch')
             return
@@ -296,6 +351,7 @@ const tally = async (args: any) => {
         }
 
         const formattedProof = formatProofForVerifierContract(proof)
+        //const formattedProof = [0, 0, 0, 0, 0, 0, 0, 0]
 
         let tx
         const txErr = 'Error: proveVoteTallyBatch() failed'
@@ -304,23 +360,26 @@ const tally = async (args: any) => {
             tx = await maciContract.proveVoteTallyBatch(
                 circuitInputs.intermediateStateRoot.toString(),
                 expectedCommitment.toString(),
-                [...tally, newResultsSalt].map((x) => x.toString()),
+                [...cumulativeTally, newResultsSalt].map((x) => x.toString()),
                 formattedProof,
             )
         } catch (e) {
             console.error(txErr)
             console.error(e)
-            return
+            break
         }
 
         const receipt = await tx.wait()
 
         if (receipt.status !== 1) {
             console.error(txErr)
-            return
+            break
         }
 
         console.log(`Transaction hash: ${tx.hash}`)
+        if (args.repeat) {
+            console.log(`Current results salt: 0x${currentResultsSalt.toString(16)}`)
+        }
         if (!args.repeat || ! (await maciContract.hasUntalliedStateLeaves())) {
             break
         }

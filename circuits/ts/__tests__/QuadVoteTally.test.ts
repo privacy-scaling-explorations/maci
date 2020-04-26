@@ -108,7 +108,7 @@ describe('Quadratic vote tallying circuit', () => {
         expect(tally.length.toString()).toEqual((2 ** voteOptionTreeDepth).toString())
         expect(tally[voteOptionIndex].toString()).toEqual(voteWeight.toString())
 
-        const currentResultsSalt = genRandomSalt()
+        const currentResultsSalt = bigInt(0)
         const newResultsSalt = genRandomSalt()
 
         // Generate circuit inputs
@@ -116,6 +116,7 @@ describe('Quadratic vote tallying circuit', () => {
             = maciState.genQuadVoteTallyCircuitInputs(
                 startIndex,
                 quadVoteTallyBatchSize,
+                currentResultsSalt,
                 newResultsSalt,
             )
 

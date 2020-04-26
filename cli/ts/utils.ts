@@ -198,7 +198,7 @@ const checkDeployerProviderConnection = async (
 }
 
 const validateSaltFormat = (salt: string): boolean => {
-    return salt.match(/^0x[a-fA-F0-9]{64}$/) != null
+    return salt.match(/^0x[a-fA-F0-9]+$/) != null
 }
 
 const validateSaltSize = (salt: string): boolean => {

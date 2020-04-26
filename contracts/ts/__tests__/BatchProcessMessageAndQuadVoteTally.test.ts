@@ -277,6 +277,7 @@ describe('BatchProcessMessage', () => {
             expect(isValid).toBeTruthy()
 
             const formattedProof = formatProofForVerifierContract(proof)
+            //const formattedProof = [0, 0, 0, 0, 0, 0, 0, 0]
 
             const tx = await maciContract.batchProcessMessage(
                 '0x' + stateRootAfter.toString(16),
@@ -300,12 +301,14 @@ describe('BatchProcessMessage', () => {
 
             const tally = maciState.computeBatchVoteTally(startIndex, quadVoteTallyBatchSize)
             const newResultsSalt = genRandomSalt()
+            const currentResultsSalt = bigInt(0)
 
             // Generate circuit inputs
             const circuitInputs 
                 = maciState.genQuadVoteTallyCircuitInputs(
                     startIndex,
                     quadVoteTallyBatchSize,
+                    currentResultsSalt,
                     newResultsSalt,
                 )
 

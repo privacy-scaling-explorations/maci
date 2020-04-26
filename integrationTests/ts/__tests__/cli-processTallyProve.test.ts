@@ -2,10 +2,7 @@ jest.setTimeout(500000)
 import * as ethers from 'ethers'
 
 import { MaciState } from 'maci-core'
-
-import { bigInt,
-    SNARK_FIELD_SIZE,
-} from 'maci-crypto'
+import { bigInt } from 'maci-crypto'
 
 import {
     PubKey,
@@ -17,7 +14,6 @@ import {
 
 import {
     maciContractAbi,
-    initialVoiceCreditProxyAbi,
     genTestAccounts,
 } from 'maci-contracts'
 
@@ -27,34 +23,33 @@ import { config } from 'maci-config'
 
 import { exec, delay } from './utils'
 
-const accounts = genTestAccounts(2)
+import {
+    maxUsers,
+    maxMessages,
+    maxVoteOptions,
+    signupDuration,
+    votingDuration,
+    messageBatchSize,
+    tallyBatchSize,
+    initialVoiceCredits,
+    stateTreeDepth,
+    messageTreeDepth,
+    voteOptionTreeDepth,
+} from './params'
 
-const calcTreeDepthFromMaxLeaves = (maxLeaves: number) => {
-    return Math.ceil(Math.log(maxLeaves) / Math.log(2))
-}
+const accounts = genTestAccounts(2)
 
 let maciContract
 let maciAddress: string
 let maciState: MaciState
 let stateIndex: string
+
 const providerUrl = config.get('chain.url')
 const coordinatorKeypair = new Keypair()
 const userKeypair = new Keypair()
 const maciPrivkey = coordinatorKeypair.privKey.serialize()
 const deployerPrivKey = accounts[0].privateKey
 const userPrivKey = accounts[1].privateKey
-const maxUsers = 2 ** 4 - 1
-const maxMessages = 2 ** 4 - 1
-const maxVoteOptions = 15
-const signupDuration = 15
-const votingDuration = 15
-const messageBatchSize = 4
-const tallyBatchSize = 4
-const initialVoiceCredits = 1000
-
-const stateTreeDepth = calcTreeDepthFromMaxLeaves(maxUsers)
-const messageTreeDepth = calcTreeDepthFromMaxLeaves(maxMessages)
-const voteOptionTreeDepth = calcTreeDepthFromMaxLeaves(maxVoteOptions)
 
 maciState = new MaciState(
     coordinatorKeypair,
@@ -63,7 +58,6 @@ maciState = new MaciState(
     voteOptionTreeDepth,
     maxVoteOptions,
 )
-
 
 describe('process, tally, and prove CLI subcommands', () => {
     let maciContract
@@ -219,11 +213,11 @@ describe('process, tally, and prove CLI subcommands', () => {
             const tallyCommand = `NODE_OPTIONS=--max-old-space-size=4096 node ../cli/build/index.js tally` + ` -sk ${coordinatorKeypair.privKey.serialize()}` +
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
-                ` -z ${StateLeaf.genRandomLeaf().serialize()}`
+                ` -z ${StateLeaf.genRandomLeaf().serialize()}` +
+                ` -c 0x0000000000000000000000000000000000000000`
 
             const e = exec(tallyCommand)
             expect(e.stderr.trim()).toEqual('Error: not all messages have been processed')
-            debugger
         })
     })
 
@@ -231,16 +225,16 @@ describe('process, tally, and prove CLI subcommands', () => {
 
         it('should process a batch of state leaves', async () =>{
             const messageIndexBefore = await maciContract.currentMessageBatchIndex()
-            // Run the processBatch command
-            const processBatchCommand = `NODE_OPTIONS=--max-old-space-size=4096 node ../cli/build/index.js process` +
+            // Run the process command
+            const processCommand = `NODE_OPTIONS=--max-old-space-size=4096 node ../cli/build/index.js process` +
                 ` -sk ${coordinatorKeypair.privKey.serialize()}` +
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}`
 
             console.log('Start:', new Date())
-            console.log(processBatchCommand)
+            console.log(processCommand)
 
-            const e = exec(processBatchCommand)
+            const e = exec(processCommand)
 
             console.log('End:', new Date())
 
@@ -252,7 +246,7 @@ describe('process, tally, and prove CLI subcommands', () => {
 
             // Check whether the transaction succeeded
             const regMatch = output.match(
-                /^Transaction hash: (0x[a-fA-F0-9]{64})\nRandom state leaf: ([\w\d]+)/
+                /Transaction hash: (0x[a-fA-F0-9]{64})\nRandom state leaf: ([\w\d]+)/
             )
             if (!regMatch) {
                 console.log(e.stderr)
@@ -270,41 +264,41 @@ describe('process, tally, and prove CLI subcommands', () => {
             const hasUnprocessedMessages = await maciContract.hasUnprocessedMessages()
             expect(hasUnprocessedMessages).toBeFalsy()
 
-            const processBatchCommand = `NODE_OPTIONS=--max-old-space-size=4096 node ../cli/build/index.js process` +
+            const processCommand = `NODE_OPTIONS=--max-old-space-size=4096 node ../cli/build/index.js process` +
                 ` -sk ${coordinatorKeypair.privKey.serialize()}` +
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}`
 
-            const e = exec(processBatchCommand)
+            const e = exec(processCommand)
             expect(e.stderr.trim()).toEqual('Error: all messages have already been processed')
         })
 
         it('should reject an invalid MACI contract address', async () =>{
-            const processBatchCommand = `node ../cli/build/index.js process` +
+            const processCommand = `node ../cli/build/index.js process` +
                 ` -sk ${coordinatorKeypair.privKey.serialize()}` +
                 ` -d ${userPrivKey}` +
                 ` -x 0xxx`
 
-            const output = exec(processBatchCommand).stderr
+            const output = exec(processCommand).stderr
             expect(output).toEqual('Error: invalid MACI contract address\n')
         })
 
         it('should reject a contract address that does not have MACI deployed to it', async () => {
-            const processBatchCommand = `node ../cli/build/index.js process` +
+            const processCommand = `node ../cli/build/index.js process` +
                 ` -sk ${coordinatorKeypair.privKey.serialize()}` +
                 ` -d ${userPrivKey}` +
                 ` -x 0xxx`
 
-            const output = exec(processBatchCommand).stderr
+            const output = exec(processCommand).stderr
             expect(output).toEqual('Error: invalid MACI contract address\n')
         })
 
         it('should reject an invalid Ethereum private key', async () => {
-            const processBatchCommand = `node ../cli/build/index.js process` +
+            const processCommand = `node ../cli/build/index.js process` +
                 ` -sk ${coordinatorKeypair.privKey.serialize()}` +
                 ` -d ${userPrivKey}` +
                 ` -x 0x0000000000000000000000000000000000000000`
-            const output = exec(processBatchCommand).stderr
+            const output = exec(processCommand).stderr
             expect(output).toEqual('Error: there is no contract deployed at the specified address\n')
         })
     })
@@ -316,7 +310,8 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -sk ${coordinatorKeypair.privKey.serialize()}` +
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
-                ` -z ${randomLeaf.serialize()}`
+                ` -z ${randomLeaf.serialize()}` +
+                ` -c 0x0000000000000000000000000000000000000000`
 
             console.log(tallyCommand)
 
@@ -336,7 +331,8 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -sk ${coordinatorKeypair.privKey.serialize()}` +
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
-                ` -z ${randomLeaf.serialize()}`
+                ` -z ${randomLeaf.serialize()}` +
+                ` -c 0x0000000000000000000000000000000000000000`
 
             console.log(tallyCommand)
 
@@ -349,7 +345,9 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -sk ${userKeypair.privKey.serialize()}` +
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
-                ` -z xxxxxxx`
+                ` -z xxxxxxx` +
+                ` -c 0x0000000000000000000000000000000000000000`
+
             const output = exec(tallyCommand).stderr
             expect(output).toEqual('Error: invalid zeroth state leaf\n')
         })
@@ -359,7 +357,8 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -sk ${userKeypair.privKey.serialize()}` +
                 ` -d ${userPrivKey}` +
                 ` -x 0xxx` +
-                ` -z ${randomLeaf.serialize()}`
+                ` -z ${randomLeaf.serialize()}` +
+                ` -c 0x0000000000000000000000000000000000000000`
 
             const output = exec(tallyCommand).stderr
             expect(output).toEqual('Error: invalid MACI contract address\n')
@@ -370,7 +369,8 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -sk ${userKeypair.privKey.serialize()}` +
                 ` -d ${userPrivKey}` +
                 ` -x 0xxx` +
-                ` -z ${randomLeaf.serialize()}`
+                ` -z ${randomLeaf.serialize()}` +
+                ` -c 0x0000000000000000000000000000000000000000`
 
             const output = exec(tallyCommand).stderr
             expect(output).toEqual('Error: invalid MACI contract address\n')
@@ -378,12 +378,38 @@ describe('process, tally, and prove CLI subcommands', () => {
 
         it('should reject an invalid Ethereum private key', async () => {
             const tallyCommand = `node ../cli/build/index.js tally` +
+                ` -sk ${coordinatorKeypair.privKey.serialize()}` +
+                ` -d 0xxx` +
+                ` -x ${maciAddress}` +
+                ` -z ${randomLeaf.serialize()}` +
+                ` -c 0x0000000000000000000000000000000000000000`
+
+            const output = exec(tallyCommand).stderr
+            expect(output).toEqual('Error: invalid Ethereum private key\n')
+        })
+
+        it('should reject an oversized salt', async () => {
+            const tallyCommand = `node ../cli/build/index.js tally` +
                 ` -sk ${userKeypair.privKey.serialize()}` +
                 ` -d ${userPrivKey}` +
-                ` -x 0x0000000000000000000000000000000000000000` +
-                ` -z ${randomLeaf.serialize()}`
+                ` -x ${maciAddress}` +
+                ` -z ${randomLeaf.serialize()}` +
+                ` -c 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`
+
             const output = exec(tallyCommand).stderr
-            expect(output).toEqual('Error: there is no contract deployed at the specified address\n')
+            expect(output).toEqual('Error: the salt should less than the BabyJub field size\n')
+        })
+
+        it('should reject an invalid salt', async () => {
+            const tallyCommand = `node ../cli/build/index.js tally` +
+                ` -sk ${userKeypair.privKey.serialize()}` +
+                ` -d ${userPrivKey}` +
+                ` -x ${maciAddress}` +
+                ` -z ${randomLeaf.serialize()}` +
+                ` -c 0xx`
+
+            const output = exec(tallyCommand).stderr
+            expect(output).toEqual('Error: the salt should be a 32-byte hexadecimal string\n')
         })
     })
 })

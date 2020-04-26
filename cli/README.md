@@ -192,3 +192,4 @@ Fields that the coordinator has to set:
 | Prompt for the coordinator's Ethereum private key | `-dp` or `--prompt-for-eth-privkey` | If specified, ignores `-d / --eth-privkey` and prompts the coordinator to input their Ethereum private key |
 | Repeat until all votes have been processed | `-r` or `--repeat` | Default: false |
 | The serialised state leaf preimage at index 0 | `-z` or `--leaf-zero` | |
+| The current result salt | `-c` or `--current-salt` | The secret salt which is hashed along with the current results to produce the current result commitment input to the snark. |

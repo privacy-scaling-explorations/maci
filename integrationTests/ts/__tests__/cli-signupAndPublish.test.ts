@@ -3,7 +3,8 @@ import * as ethers from 'ethers'
 
 import { MaciState } from 'maci-core'
 
-import { bigInt,
+import {
+    bigInt,
     SNARK_FIELD_SIZE,
 } from 'maci-crypto'
 
@@ -16,7 +17,6 @@ import {
 
 import {
     maciContractAbi,
-    initialVoiceCreditProxyAbi,
     genTestAccounts,
 } from 'maci-contracts'
 
@@ -26,11 +26,21 @@ import { config } from 'maci-config'
 
 import { exec, delay } from './utils'
 
-const accounts = genTestAccounts(2)
+import {
+    maxUsers,
+    maxMessages,
+    maxVoteOptions,
+    signupDuration,
+    votingDuration,
+    messageBatchSize,
+    tallyBatchSize,
+    initialVoiceCredits,
+    stateTreeDepth,
+    messageTreeDepth,
+    voteOptionTreeDepth,
+} from './params'
 
-const calcTreeDepthFromMaxLeaves = (maxLeaves: number) => {
-    return Math.ceil(Math.log(maxLeaves) / Math.log(2))
-}
+const accounts = genTestAccounts(2)
 
 let maciContract
 let maciAddress: string
@@ -44,18 +54,7 @@ const userKeypair = new Keypair()
 const maciPrivkey = coordinatorKeypair.privKey.serialize()
 const deployerPrivKey = accounts[0].privateKey
 const userPrivKey = accounts[1].privateKey
-const maxUsers = 2 ** 4 - 1
-const maxMessages = 2 ** 4 - 1
-const maxVoteOptions = 15
-const signupDuration = 10 
-const votingDuration = 60
-const messageBatchSize = 4
-const tallyBatchSize = 4
-const initialVoiceCredits = 1000
 
-const stateTreeDepth = calcTreeDepthFromMaxLeaves(maxUsers)
-const messageTreeDepth = calcTreeDepthFromMaxLeaves(maxMessages)
-const voteOptionTreeDepth = calcTreeDepthFromMaxLeaves(maxVoteOptions)
 maciState = new MaciState(
     coordinatorKeypair,
     stateTreeDepth,

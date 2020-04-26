@@ -36,9 +36,9 @@ template UpdateStateTree(
     signal input coordinator_public_key[2];
 
     // Note that a message is an encrypted command
-    var message_length = 11;
-    var message_signature_length = 4;
-    var message_without_signature_length = message_length - message_signature_length;
+    var MESSAGE_LENGTH = 11;
+    var MESSAGE_SIGNATURE_LENGTH = 4;
+    var MESSAGE_WITHOUT_SIGNATURE_LENGTH = MESSAGE_LENGTH - MESSAGE_SIGNATURE_LENGTH;
     /* let n = vote_options_tree_depth
 
        anything > 0 is encrypted
@@ -55,7 +55,7 @@ template UpdateStateTree(
        [9]  - signature_r8y
        [10] - signature_s
      */
-    signal input message[message_length];
+    signal input message[MESSAGE_LENGTH];
 
     var STATE_TREE_PUBLIC_KEY_X_IDX = 0;
     var STATE_TREE_PUBLIC_KEY_Y_IDX = 1;
@@ -121,14 +121,14 @@ template UpdateStateTree(
     ecdh.public_key[1] <== ecdh_public_key[1];
 
     // Check 2. The decrypted message matches the given message
-    component decrypted_command = Decrypt(message_length - 1);
+    component decrypted_command = Decrypt(MESSAGE_LENGTH - 1);
     decrypted_command.private_key <== ecdh.shared_key;
 
     // Compute the leaf, which is the hash of the message
-    component msg_hash = Hasher(message_length);
+    component msg_hash = Hasher(MESSAGE_LENGTH);
     msg_hash.key <== 0;
 
-    for (var i = 0; i < message_length; i++) {
+    for (var i = 0; i < MESSAGE_LENGTH; i++) {
         decrypted_command.message[i] <== message[i];
         msg_hash.in[i] <== message[i];
     }
@@ -175,7 +175,7 @@ template UpdateStateTree(
     }
 
     // Verify signature against existing public key
-    component signature_verifier = VerifySignature(message_without_signature_length);
+    component signature_verifier = VerifySignature(MESSAGE_WITHOUT_SIGNATURE_LENGTH);
 
     signature_verifier.from_x <== state_tree_data_raw[STATE_TREE_PUBLIC_KEY_X_IDX]; // public key x
     signature_verifier.from_y <== state_tree_data_raw[STATE_TREE_PUBLIC_KEY_Y_IDX]; // public key y
@@ -184,7 +184,7 @@ template UpdateStateTree(
     signature_verifier.R8y <== decrypted_command.out[CMD_SIG_R8Y_IDX]; // sig R8x
     signature_verifier.S <== decrypted_command.out[CMD_SIG_S_IDX]; // sig S
 
-    for (var i = 0; i < message_without_signature_length; i++) {
+    for (var i = 0; i < MESSAGE_WITHOUT_SIGNATURE_LENGTH; i++) {
         signature_verifier.preimage[i] <== decrypted_command.out[i];
     }
 

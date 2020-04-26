@@ -32,6 +32,7 @@ class MaciState {
     public maxVoteOptionIndex: SnarkBigInt
     public encPubKeys: PubKey[] = []
     private emptyVoteOptionTreeRoot
+    private currentResultsSalt: SnarkBigInt
 
     // encPubKeys contains the public keys used to generate ephemeral shared
     // keys which encrypt each message
@@ -469,7 +470,7 @@ class MaciState {
     public computeCumulativeVoteTally = (
         _startIndex: SnarkBigInt,
     ): SnarkBigInt[] => {
-        assert(bigInt(this.users.length) > _startIndex)
+        assert(bigInt(this.users.length) >= _startIndex)
 
         // results should start off with 0s
         let results: SnarkBigInt[] = []
@@ -502,9 +503,11 @@ class MaciState {
         _startIndex: SnarkBigInt,
         _batchSize: SnarkBigInt,
     ): SnarkBigInt[] => {
+        _startIndex = bigInt(_startIndex)
+        _batchSize = bigInt(_batchSize)
 
         // Check whether _startIndex is within range.
-        assert(_startIndex >= 0 && _startIndex < this.users.length)
+        assert(_startIndex >= 0 && _startIndex <= this.users.length)
 
         // Check whether _startIndex is a multiple of _batchSize
         assert(bigInt(_startIndex) % bigInt(_batchSize) === bigInt(0))
@@ -516,9 +519,10 @@ class MaciState {
         }
 
         // Compute the tally
-        if (_startIndex === 0) {
+        if (_startIndex.equals(0)) {
             _batchSize = _batchSize - bigInt(1)
-            _startIndex = bigInt(1)
+        } else {
+            _startIndex = _startIndex - bigInt(1)
         }
 
         for (let i = 0; i < _batchSize; i ++) {
@@ -550,12 +554,17 @@ class MaciState {
     public genQuadVoteTallyCircuitInputs = (
         _startIndex: SnarkBigInt,
         _batchSize: SnarkBigInt,
+        _currentResultsSalt: SnarkBigInt,
         _newResultsSalt: SnarkBigInt,
     ) => {
         _startIndex = bigInt(_startIndex)
         _batchSize = bigInt(_batchSize)
+        _currentResultsSalt = bigInt(_currentResultsSalt)
+        _newResultsSalt = bigInt(_newResultsSalt)
 
-        const currentResultsSalt = _startIndex.equals(bigInt(0)) ? bigInt(0) : genRandomSalt()
+        if (_startIndex.equals(bigInt(0))) {
+            assert(_currentResultsSalt.equals(bigInt(0)))
+        }
 
         const currentResults = this.computeCumulativeVoteTally(_startIndex)
         const batchResults = this.computeBatchVoteTally(_startIndex, _batchSize)
@@ -569,7 +578,7 @@ class MaciState {
 
         const currentResultsCommitment = hash([
             ...currentResults,
-            currentResultsSalt
+            _currentResultsSalt
         ])
 
         const blankStateLeaf = this.genBlankLeaf()
@@ -655,7 +664,7 @@ class MaciState {
             stateLeaves: stateLeaves.map((x) => x.asCircuitInputs()),
             currentResults,
             fullStateRoot: this.genStateRoot(),
-            currentResultsSalt: currentResultsSalt,
+            currentResultsSalt: _currentResultsSalt,
             newResultsSalt: _newResultsSalt,
             currentResultsCommitment,
             intermediatePathElements,
