@@ -21,7 +21,7 @@ describe('Public key derivation circuit', () => {
     let circuit
 
     it('correctly computes a public key', async () => {
-        circuit = await compileAndLoadCircuit('publicKey_test.circom')
+        circuit = await compileAndLoadCircuit('test/publicKey_test.circom')
 
         const keypair = new Keypair()
 

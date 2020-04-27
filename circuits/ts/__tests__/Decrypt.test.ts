@@ -21,7 +21,7 @@ import {
 describe('Decryption circuit', () => {
     let circuit 
     beforeAll(async () => {
-        circuit = await compileAndLoadCircuit('decrypt_test.circom')
+        circuit = await compileAndLoadCircuit('test/decrypt_test.circom')
     })
 
     it('Should decrypt a message inside the snark', async () => {

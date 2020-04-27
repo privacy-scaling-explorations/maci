@@ -11,6 +11,7 @@ import {
     verifySignature,
     bigInt,
     bigInt2Buffer,
+    passphraseToPrivKey,
 } from '../'
 
 import * as snarkjs from 'snarkjs'
@@ -53,6 +54,13 @@ describe('Cryptographic operations', () => {
             // TODO: Figure out if these checks are correct and enough
             expect(pubKey[0].lt(SNARK_FIELD_SIZE)).toBeTruthy()
             expect(pubKey[1].lt(SNARK_FIELD_SIZE)).toBeTruthy()
+        })
+
+        it('passphraseToPrivKey() should produce a valid private key', async () => {
+            const passphrase = 'hello world'
+            const privKey = await passphraseToPrivKey(passphrase)
+            expect(privKey.lt(SNARK_FIELD_SIZE)).toBeTruthy()
+            expect(privKey.toString(16)).toEqual('2b8194406b135f1296f454f450c374aee58693384ba4610da1e5acb88ccc80cc')
         })
     })
 

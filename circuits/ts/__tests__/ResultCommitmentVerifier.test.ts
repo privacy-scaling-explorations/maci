@@ -66,7 +66,7 @@ describe('ResultCommitmentVerifier circuit', () => {
     let circuit 
 
     beforeAll(async () => {
-        circuit = await compileAndLoadCircuit('resultCommitmentVerifier_test.circom')
+        circuit = await compileAndLoadCircuit('test/resultCommitmentVerifier_test.circom')
     })
 
     it('should correctly verify the hashes of a set of inputs and results', async () => {

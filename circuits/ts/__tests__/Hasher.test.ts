@@ -18,7 +18,7 @@ describe('MiMC hash circuits', () => {
 
     describe('Hasher', () => {
         it('correctly hashes one random value', async () => {
-        circuit = await compileAndLoadCircuit('hasher_test.circom')
+            circuit = await compileAndLoadCircuit('test/hasher_test.circom')
             const preImage = genRandomSalt()
             const circuitInputs = stringifyBigInts({
                 in: [preImage],

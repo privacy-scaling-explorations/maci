@@ -21,7 +21,9 @@ import {
 import { MaciState } from 'maci-core'
 
 import {
+    hash,
     bigInt,
+    SnarkBigInt,
     IncrementalMerkleTree,
     genEcdhSharedKey,
     NOTHING_UP_MY_SLEEVE,
@@ -43,11 +45,6 @@ const messageTreeDepth = config.maci.merkleTrees.messageTreeDepth
 const voteOptionTreeDepth = config.maci.merkleTrees.voteOptionTreeDepth
 const numVoteOptions = 2 ** voteOptionTreeDepth
 const intermediateStateTreeDepth = config.maci.merkleTrees.intermediateStateTreeDepth
-
-// Cache an empty vote option tree root
-const temp = new IncrementalMerkleTree(voteOptionTreeDepth, bigInt(0))
-
-const emptyVoteOptionTreeRoot = temp.root
 
 const coordinator = new Keypair(new PrivKey(bigInt(config.maci.coordinatorPrivKey)))
 const maciState = new MaciState(
@@ -140,8 +137,22 @@ describe('MACI', () => {
     })
 
     it('the emptyVoteOptionTreeRoot value should be correct', async () => {
+        const temp = new IncrementalMerkleTree(voteOptionTreeDepth, bigInt(0))
+        const emptyVoteOptionTreeRoot = temp.root
+
         const root = await maciContract.emptyVoteOptionTreeRoot()
         expect(emptyVoteOptionTreeRoot.toString()).toEqual(root.toString())
+    })
+
+    it('the currentResultsCommitment value should be correct', async () => {
+        const crc = await maciContract.currentResultsCommitment()
+        const a: SnarkBigInt = []
+        for (let i = 0; i < 2 ** voteOptionTreeDepth + 1; i++) {
+            a.push(bigInt(0))
+        }
+        const expected = hash(a)
+
+        expect(crc.toString()).toEqual(expected.toString())
     })
 
     it('the stateTree root should be correct', async () => {
@@ -150,6 +161,11 @@ describe('MACI', () => {
     })
 
     describe('Sign-ups', () => {
+
+        it('An empty MaciState should have the correct state root', async () => {
+            const contractStateRoot = await maciContract.getStateTreeRoot()
+            expect(contractStateRoot.toString()).toEqual(maciState.genStateRoot().toString())
+        })
 
         it('a user who does not own a SignUpToken should not be able to sign up', async () => {
             expect.assertions(1)
@@ -168,6 +184,7 @@ describe('MACI', () => {
                     ethers.utils.defaultAbiCoder.encode(['uint256'], [0]), // Any value is fine as the ConstantInitialVoiceCreditProxy will ignore it
                     { gasLimit: 2000000 },
                 )
+
             } catch (e) {
                 expect(e.message.endsWith('SignUpTokenGatekeeper: this user does not own the token')).toBeTruthy()
             }
@@ -197,8 +214,13 @@ describe('MACI', () => {
 
             expect(receipt.status).toEqual(1)
 
+            // The roots should match
             const root = await maciContract.getStateTreeRoot()
             expect(maciState.genStateRoot().toString()).toEqual(root.toString())
+
+            const iface = new ethers.utils.Interface(maciContract.interface.abi)
+            const index = iface.parseLog(receipt.logs[1]).values._stateIndex
+            expect(index.toString()).toEqual(maciState.users.length.toString())
         })
 
         it('a user who uses a previously used SignUpToken to sign up should not be able to do so', async () => {

@@ -18,6 +18,9 @@ import {
     genPubKey,
     formatPrivKeyForBabyJub,
     genEcdhSharedKey,
+    packPubKey,
+    unpackPubKey,
+    SNARK_FIELD_SIZE
 } from 'maci-crypto'
 
 interface Keypair {
@@ -74,6 +77,8 @@ class Keypair implements Keypair {
     }
 }
 
+const SERIALIZED_PRIV_KEY_PREFIX = 'macisk.'
+
 class PrivKey {
     public rawPrivKey: RawPrivKey
 
@@ -88,13 +93,40 @@ class PrivKey {
     public asCircuitInputs = () => {
         return formatPrivKeyForBabyJub(this.rawPrivKey).toString()
     }
+
+    public serialize = (): string => {
+        return SERIALIZED_PRIV_KEY_PREFIX + this.rawPrivKey.toString(16)
+    }
+
+    public static unserialize = (s: string): PrivKey => {
+        const x = s.slice(SERIALIZED_PRIV_KEY_PREFIX.length)
+        return new PrivKey(bigInt('0x' + x))
+    }
+
+    public static isValidSerializedPrivKey = (s: string): boolean => {
+        const correctPrefix = s.startsWith(SERIALIZED_PRIV_KEY_PREFIX)
+        const x = s.slice(SERIALIZED_PRIV_KEY_PREFIX.length)
+
+        let validValue = false
+        try {
+            const value = bigInt('0x' + x)
+            validValue = value < SNARK_FIELD_SIZE
+        } catch {
+        }
+
+        return correctPrefix && validValue
+    }
 }
+
+const SERIALIZED_PUB_KEY_PREFIX = 'macipk.'
 
 class PubKey {
     public rawPubKey: RawPubKey
 
     constructor (rawPubKey: RawPubKey) {
         assert(rawPubKey.length === 2)
+        assert(rawPubKey[0] < SNARK_FIELD_SIZE)
+        assert(rawPubKey[1] < SNARK_FIELD_SIZE)
         this.rawPubKey = rawPubKey
     }
 
@@ -122,6 +154,42 @@ class PubKey {
             this.rawPubKey[0],
             this.rawPubKey[1],
         ]
+    }
+
+    public serialize = (): string => {
+        // Blank leaves have pubkey [0, 0], which packPubKey does not support
+        if (
+            bigInt(this.rawPubKey[0]).equals(bigInt(0)) && 
+            bigInt(this.rawPubKey[1]).equals(bigInt(0))
+        ) {
+            return SERIALIZED_PUB_KEY_PREFIX + 'z'
+        }
+        const packed = packPubKey(this.rawPubKey).toString('hex')
+        return SERIALIZED_PUB_KEY_PREFIX + packed.toString(16)
+    }
+
+    public static unserialize = (s: string): PubKey => {
+        // Blank leaves have pubkey [0, 0], which packPubKey does not support
+        if (s === SERIALIZED_PUB_KEY_PREFIX + 'z') {
+            return new PubKey([0, 0])
+        }
+
+        const len = SERIALIZED_PUB_KEY_PREFIX.length
+        const packed = Buffer.from(s.slice(len), 'hex')
+        return new PubKey(unpackPubKey(packed))
+    }
+
+    public static isValidSerializedPubKey = (s: string): boolean => {
+        const correctPrefix = s.startsWith(SERIALIZED_PUB_KEY_PREFIX)
+
+        let validValue = false
+        try {
+            const unserialized = PubKey.unserialize(s)
+            validValue = true
+        } catch {
+        }
+
+        return correctPrefix && validValue
     }
 }
 
@@ -231,8 +299,9 @@ class StateLeaf implements IStateLeaf {
     }
 
     public static genRandomLeaf() {
+        const keypair = new Keypair()
         return new StateLeaf(
-            new PubKey([genRandomSalt(), genRandomSalt()]),
+            keypair.pubKey,
             genRandomSalt(),
             genRandomSalt(),
             genRandomSalt(),
@@ -257,6 +326,27 @@ class StateLeaf implements IStateLeaf {
     public hash = (): SnarkBigInt => {
 
         return hash(this.asArray())
+    }
+
+    public serialize = (): string => {
+        const j = {
+            pubKey: this.pubKey.serialize(),
+            voteOptionTreeRoot: this.voteOptionTreeRoot.toString(16),
+            voiceCreditBalance: this.voiceCreditBalance.toString(16),
+            nonce: this.nonce.toString(16),
+        }
+
+        return Buffer.from(JSON.stringify(j, null, 0), 'utf8').toString('base64')
+    }
+
+    static unserialize = (serialized: string): StateLeaf => {
+        const j = JSON.parse(Buffer.from(serialized, 'base64').toString('utf8'))
+        return new StateLeaf(
+            PubKey.unserialize(j.pubKey),
+            bigInt('0x' + j.voteOptionTreeRoot),
+            bigInt('0x' + j.voiceCreditBalance),
+            bigInt('0x' + j.nonce),
+        )
     }
 }
 

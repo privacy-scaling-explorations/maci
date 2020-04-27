@@ -22,8 +22,11 @@ import * as circomlib from 'circomlib'
 
 describe('Signature verification circuit', () => {
     let circuit
+    beforeAll(async () => {
+        circuit = await compileAndLoadCircuit('test/verifySignature_test.circom')
+    })
+
     it('verifies a valid signature created with circomlib', async () => {
-        circuit = await compileAndLoadCircuit('verifySignature_test.circom')
 
         const keypair = new Keypair()
         const command = new Command(
@@ -60,7 +63,6 @@ describe('Signature verification circuit', () => {
     })
 
     it('verifies a valid signature', async () => {
-        circuit = await compileAndLoadCircuit('verifySignature_test.circom')
 
         const keypair = new Keypair()
         const command = new Command(

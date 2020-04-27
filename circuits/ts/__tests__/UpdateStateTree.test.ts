@@ -76,8 +76,8 @@ describe('State tree root update verification circuit', () => {
     )
 
     beforeAll(async () => {
-        circuit = await compileAndLoadCircuit('updateStateTree_test.circom')
-        circuitChecks = await compileAndLoadCircuit('performChecksBeforeUpdate_test.circom')
+        circuit = await compileAndLoadCircuit('test/updateStateTree_test.circom')
+        circuitChecks = await compileAndLoadCircuit('test/performChecksBeforeUpdate_test.circom')
 
         // Sign up the user
         maciState.signUp(user.pubKey, initialVoiceCreditBalance)

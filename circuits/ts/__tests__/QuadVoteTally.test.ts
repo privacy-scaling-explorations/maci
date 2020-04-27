@@ -61,7 +61,7 @@ describe('Quadratic vote tallying circuit', () => {
     )
 
     beforeAll(async () => {
-        circuit = await compileAndLoadCircuit('quadVoteTally_test.circom')
+        circuit = await compileAndLoadCircuit('test/quadVoteTally_test.circom')
     })
 
     it('should correctly tally results for 1 user with 1 message in 1 batch', async () => {
@@ -108,7 +108,7 @@ describe('Quadratic vote tallying circuit', () => {
         expect(tally.length.toString()).toEqual((2 ** voteOptionTreeDepth).toString())
         expect(tally[voteOptionIndex].toString()).toEqual(voteWeight.toString())
 
-        const currentResultsSalt = genRandomSalt()
+        const currentResultsSalt = bigInt(0)
         const newResultsSalt = genRandomSalt()
 
         // Generate circuit inputs

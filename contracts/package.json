@@ -14,6 +14,8 @@
         "test-mt-debug": "node --inspect-brk ./node_modules/.bin/jest IncrementalMerkleTree.test.ts",
         "test-signUp": "NODE_OPTIONS=--max-old-space-size=4096 jest SignUp.test.ts",
         "test-signUp-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest SignUp.test.ts",
+        "test-publishMessage": "jest PublishMessage.test.ts",
+        "test-publishMessage-debug": "node --inspect-brk ./node_modules/.bin/jest PublishMessage.test.ts",
         "test-batchProcessMessageAndQuadVoteTally": "NODE_OPTIONS=--max-old-space-size=4096 jest batchProcessMessageAndQuadVoteTally.test.ts",
         "test-batchProcessMessageAndQuadVoteTally-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest batchProcessMessageAndQuadVoteTally.test.ts",
         "test-hasher": "jest Hasher.test.ts",

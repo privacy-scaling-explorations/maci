@@ -23,20 +23,18 @@ contract MACI is Ownable, DomainObjs {
 
     // The number of messages which the batch update state tree snark can
     // process per batch
-    uint8 internal messageBatchSize;
-
-    // The current message batch index
-    uint256 internal currentMessageBatchIndex;
-
-    // The current state leaf batch index for the vote tally snark
-    uint8 internal currentStateLeafIndex;
+    uint8 public messageBatchSize;
 
     // The number of state leaves to tally per batch via the vote tally snark
-    uint8 internal stateLeafBatchSize;
+    uint8 public tallyBatchSize;
 
+    // The current message batch index
+    uint256 public currentMessageBatchIndex;
+
+    // The tree that tracks the sign-up messages.
     IncrementalMerkleTree public messageTree;
 
-    // The state tree that tracks the sign-up messages.
+    // The tree that tracks each user's public key and votes
     IncrementalMerkleTree public stateTree;
 
     // The Merkle root of the state tree after the sign-up period.
@@ -45,23 +43,29 @@ contract MACI is Ownable, DomainObjs {
     // signals.
     uint256 public postSignUpStateRoot;
 
-    // For now, we hardcode the root of a tree with 16 leaves each with the
-    // value of 0
-    uint256 public emptyVoteOptionTreeRoot = 18097266179879782427361438755277450939722755112152115227098348943187633376449;
+    // To store the Merkle root of a tree with 2 **
+    // _treeDepths.voteOptionTreeDepth leaves of value 0
+    uint256 public emptyVoteOptionTreeRoot;
 
-    // A commitment to a 0-salted list of 0-results (currently hardcoded
-    // to 16 + 1 elements)
-    uint256 internal currentResultsCommitment = 13168338010003725451955781056997656821184424038696131784497995360771729497580;
+    // To store the hash of an array of 2 ** _treeDepths.voteOptionTreeDepth
+    // zeros
+    uint256 public currentResultsCommitment;
 
-    uint256 internal voteOptionsMaxLeafIndex;
+    // The maximum number of leaves, minus one, of meaningful vote options.
+    uint256 public voteOptionsMaxLeafIndex;
 
     // The batch # for the quote tally function
-    uint256 internal currentQvtBatchNum;
+    uint256 public currentQvtBatchNum;
 
     // Cached results of 2 ** depth - 1 where depth is the state tree depth and
     // message tree depth
-    uint256 internal stateTreeMaxLeafIndex;
-    uint256 internal messageTreeMaxLeafIndex;
+    uint256 public messageTreeMaxLeafIndex;
+
+    // The maximum number of signups allowed
+    uint256 public maxUsers;
+
+    // The maximum number of messages allowed
+    uint256 public maxMessages;
 
     // When the contract was deployed. We assume that the signup period starts
     // immediately upon deployment.
@@ -83,9 +87,16 @@ contract MACI is Ownable, DomainObjs {
     PubKey public coordinatorPubKey;
 
     uint256 public numSignUps = 0;
+    uint256 public numMessages = 0;
+
+    TreeDepths public treeDepths;
 
     // Events
-    event SignUp(PubKey indexed _userPubKey);
+    event SignUp(
+        PubKey indexed _userPubKey,
+        uint256 indexed _stateIndex,
+        uint256 indexed _voiceCreditBalance
+    );
 
     event PublishMessage(
         Message indexed _message,
@@ -97,13 +108,24 @@ contract MACI is Ownable, DomainObjs {
     struct TreeDepths {
         uint8 stateTreeDepth;
         uint8 messageTreeDepth;
+        uint8 voteOptionTreeDepth;
+    }
+
+    struct BatchSizes {
+        uint8 tallyBatchSize;
+        uint8 messageBatchSize;
+    }
+
+    struct MaxValues {
+        uint256 maxUsers;
+        uint256 maxMessages;
+        uint256 maxVoteOptions;
     }
 
     constructor(
         TreeDepths memory _treeDepths,
-        uint8 _stateLeafBatchSize,
-        uint8 _messageBatchSize,
-        uint8 _voteOptionsMaxLeafIndex,
+        BatchSizes memory _batchSizes,
+        MaxValues memory _maxValues,
         SignUpGatekeeper _signUpGatekeeper,
         BatchUpdateStateTreeVerifier _batchUstVerifier,
         QuadVoteTallyVerifier _qvtVerifier,
@@ -113,8 +135,10 @@ contract MACI is Ownable, DomainObjs {
         PubKey memory _coordinatorPubKey
     ) Ownable() public {
 
-        stateLeafBatchSize = _stateLeafBatchSize;
-        messageBatchSize = _messageBatchSize;
+        treeDepths = _treeDepths;
+
+        tallyBatchSize = _batchSizes.tallyBatchSize;
+        messageBatchSize = _batchSizes.messageBatchSize;
 
         // Set the verifier contracts
         batchUstVerifier = _batchUstVerifier;
@@ -134,21 +158,36 @@ contract MACI is Ownable, DomainObjs {
         // Set the coordinator's public key
         coordinatorPubKey = _coordinatorPubKey;
 
+        // Calculate and cache the max number of leaves for each tree.
+        // They are used as public inputs to the batch update state tree snark.
+        messageTreeMaxLeafIndex = uint256(2) ** _treeDepths.messageTreeDepth - 1;
+
+        // Check and store the maximum number of signups
+        // It is the user's responsibility to ensure that the state tree depth
+        // is just large enough and not more, or they will waste gas.
+        uint256 stateTreeMaxLeafIndex = uint256(2) ** _treeDepths.stateTreeDepth - 1;
+        require(_maxValues.maxUsers <= stateTreeMaxLeafIndex, "MACI: invalid maxUsers value");
+        maxUsers = _maxValues.maxUsers;
+
+        // The maximum number of messages
+        require(_maxValues.maxMessages <= messageTreeMaxLeafIndex, "MACI: invalid maxMessages value");
+        maxMessages = _maxValues.maxMessages;
+
+        // The maximum number of leaves, minus one, of meaningful vote options.
+        // This allows the snark to do a no-op if the user votes for an option
+        // which has no meaning attached to it
+        voteOptionsMaxLeafIndex = _maxValues.maxVoteOptions;
+
+        // Calculate and store the empty vote option tree root. This value must
+        // be set before we call hashedBlankStateLeaf() later
+        emptyVoteOptionTreeRoot = calcEmptyVoteOptionTreeRoot(_treeDepths.voteOptionTreeDepth);
+        currentResultsCommitment = hashZeros(2 ** uint256(_treeDepths.voteOptionTreeDepth) + 1);
+
         uint256 h = hashedBlankStateLeaf();
 
         // Create the message tree and state tree
         messageTree = new IncrementalMerkleTree(_treeDepths.messageTreeDepth, ZERO_VALUE);
         stateTree = new IncrementalMerkleTree(_treeDepths.stateTreeDepth, h);
-
-        // The maximum number of leaves, minus one, of meaningful vote options.
-        // This allows the snark to do a no-op if the user votes for an option
-        // which has no meaning attached to it
-        voteOptionsMaxLeafIndex = _voteOptionsMaxLeafIndex;
-
-        // Calculate and cache the max number of leaves for each tree.
-        // They are used as public inputs to the batch update state tree snark.
-        messageTreeMaxLeafIndex = uint256(2) ** _treeDepths.messageTreeDepth - 1;
-        stateTreeMaxLeafIndex = uint256(2) ** _treeDepths.stateTreeDepth - 1;
 
         // Make subsequent insertions start from leaf #1, as leaf #0 is only
         // updated with random data if a command is invalid.
@@ -224,6 +263,8 @@ contract MACI is Ownable, DomainObjs {
     isBeforeSignUpDeadline
     public {
 
+        require(numSignUps < maxUsers, "MACI: maximum number of signups reached");
+
         // Register the user via the sign-up gatekeeper. This function should
         // throw if the user has already registered or if ineligible to do so.
         signUpGatekeeper.register(msg.sender, _signUpGatekeeperData);
@@ -247,7 +288,9 @@ contract MACI is Ownable, DomainObjs {
 
         numSignUps ++;
 
-        emit SignUp(_userPubKey);
+        // numSignUps is equal to the state index of the leaf which was just
+        // added to the state tree above
+        emit SignUp(_userPubKey, numSignUps, voiceCreditBalance);
     }
 
     /*
@@ -266,6 +309,9 @@ contract MACI is Ownable, DomainObjs {
     isAfterSignUpDeadline
     isBeforeVotingDeadline
     public {
+
+        require(numMessages < maxMessages, "MACI: message limit reached");
+
         require(numSignUps > 0, "MACI: nobody signed up");
 
         // When this function is called for the first time, set
@@ -288,6 +334,8 @@ contract MACI is Ownable, DomainObjs {
 
         // Insert the new leaf into the message tree
         messageTree.insertLeaf(leaf);
+
+        numMessages ++;
 
         emit PublishMessage(_message, _encPubKey);
     }
@@ -326,19 +374,28 @@ contract MACI is Ownable, DomainObjs {
         uint256 _newStateRoot,
         uint256[] memory _stateTreeRoots,
         PubKey[] memory _ecdhPubKeys
-    ) public view returns (uint256[19] memory) {
-        uint256[19] memory publicSignals;
+    ) public view returns (uint256[20] memory) {
+
+        uint256 messageBatchEndIndex;
+        if (currentMessageBatchIndex + messageBatchSize <= numMessages) {
+            messageBatchEndIndex = currentMessageBatchIndex + messageBatchSize - 1;
+        } else {
+            messageBatchEndIndex = numMessages - 1;
+        }
+
+        uint256[20] memory publicSignals;
         publicSignals[0] = _newStateRoot;
         publicSignals[1] = coordinatorPubKey.x;
         publicSignals[2] = coordinatorPubKey.y;
         publicSignals[3] = voteOptionsMaxLeafIndex;
         publicSignals[4] = messageTree.root();
         publicSignals[5] = currentMessageBatchIndex;
-        publicSignals[6] = numSignUps;
+        publicSignals[6] = messageBatchEndIndex;
+        publicSignals[7] = numSignUps;
 
         for (uint8 i = 0; i < messageBatchSize; i++) {
-            uint8 x = 7 + i;
-            uint8 y = 7 + messageBatchSize + i * 2;
+            uint8 x = 8 + i;
+            uint8 y = 8 + messageBatchSize + i * 2;
             uint8 z = y + 1;
             publicSignals[x] = _stateTreeRoots[i];
             publicSignals[y] = _ecdhPubKeys[i].x;
@@ -346,6 +403,10 @@ contract MACI is Ownable, DomainObjs {
         }
 
         return publicSignals;
+    }
+
+    function hasUnprocessedMessages() public view returns (bool) {
+        return currentMessageBatchIndex < numMessages;
     }
 
     /*
@@ -365,6 +426,11 @@ contract MACI is Ownable, DomainObjs {
     ) 
     isAfterVotingDeadline
     public {
+        // Ensure that the current batch index is within range
+        require(
+            hasUnprocessedMessages(),
+            "MACI: no more messages left to process"
+        );
         
         // Ensure that the array of state tree roots and the array of ECDH
         // public keys are of the correct length
@@ -380,12 +446,12 @@ contract MACI is Ownable, DomainObjs {
 
         // Ensure that currentMessageBatchIndex is within range
         require(
-            currentMessageBatchIndex <= messageTreeMaxLeafIndex - messageBatchSize,
+            currentMessageBatchIndex <= messageTreeMaxLeafIndex,
             "MACI: currentMessageBatchIndex not within range"
         );
 
         // Assemble the public inputs to the snark
-        uint256[19] memory publicSignals = genBatchUstPublicSignals(
+        uint256[20] memory publicSignals = genBatchUstPublicSignals(
             _newStateRoot,
             _stateTreeRoots,
             _ecdhPubKeys
@@ -409,17 +475,14 @@ contract MACI is Ownable, DomainObjs {
         ) = unpackProof(_proof);
 
         // Verify the proof
-        bool isValid = batchUstVerifier.verifyProof(a, b, c, publicSignals);
-
-        require(isValid == true, "MACI: invalid batch UST proof");
+        require(
+            batchUstVerifier.verifyProof(a, b, c, publicSignals),
+            "MACI: invalid batch UST proof"
+        );
 
         // Increase the message batch start index to ensure that each message
         // batch is processed in order
         currentMessageBatchIndex += messageBatchSize;
-
-        // The message batch start index should never exceed the maximum
-        // allowed value
-        assert(currentMessageBatchIndex <= messageTreeMaxLeafIndex - messageBatchSize);
 
         // Update the state root
         postSignUpStateRoot = _newStateRoot;
@@ -459,6 +522,20 @@ contract MACI is Ownable, DomainObjs {
         return hashStateLeaf(stateLeaf);
     }
 
+    function hasUntalliedStateLeaves() public view returns (bool) {
+        return currentQvtBatchNum < (1 + (numSignUps / tallyBatchSize));
+    }
+
+    /*
+     * Tally the next batch of state leaves.
+     * @param _intermediateStateRoot The intermediate state root, which is
+     *     generated from the current batch of state leaves 
+     * @param _newResultsCommitment A hash of the tallied results so far
+     *     (cumulative)
+     * @param _finalSaltedResults The final invocation of this function should
+     *     provide the preimage of the commitment to the final tally
+     * @param _proof The zk-SNARK proof
+     */
     function proveVoteTallyBatch(
         uint256 _intermediateStateRoot,
         uint256 _newResultsCommitment,
@@ -468,7 +545,7 @@ contract MACI is Ownable, DomainObjs {
     public {
 
         require(numSignUps > 0, "MACI: nobody signed up");
-        uint256 totalBatches = 1 + (numSignUps / stateLeafBatchSize);
+        uint256 totalBatches = 1 + (numSignUps / tallyBatchSize);
 
         // Ensure that the batch # is within range
         require(
@@ -508,6 +585,18 @@ contract MACI is Ownable, DomainObjs {
 
         // Increment the batch #
         currentQvtBatchNum ++;
+    }
+
+    // TODO: optimise this as we don't need to create a new
+    // IncrementalMerkleTree just to calculate a root
+    function calcEmptyVoteOptionTreeRoot(uint8 _levels) public returns (uint256) {
+        IncrementalMerkleTree tree = new IncrementalMerkleTree(_levels, 0);
+        return tree.root();
+    }
+
+    function hashZeros(uint256 _numZeros) public pure returns (uint256) {
+        uint256[] memory zeros = new uint256[](_numZeros);
+        return hash(zeros);
     }
 
     function getMessageTreeRoot() public view returns (uint256) {

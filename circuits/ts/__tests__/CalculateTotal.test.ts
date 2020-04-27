@@ -28,7 +28,7 @@ const ZERO_VALUE = 0
 
 describe('CalculateTotal circuit', () => {
     it('should correctly sum a list of values', async () => {
-        const ctCircuit = await compileAndLoadCircuit('calculateTotal_test.circom')
+        const ctCircuit = await compileAndLoadCircuit('test/calculateTotal_test.circom')
 
         let nums: number[] = []
         for (let i=0; i < 6; i++) {

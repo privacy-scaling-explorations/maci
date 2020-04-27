@@ -2,6 +2,7 @@
   "packages": [
     "contracts",
     "circuits",
+    "cli",
     "crypto",
     "config",
     "domainobjs",

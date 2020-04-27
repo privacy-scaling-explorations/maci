@@ -29,8 +29,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - v1.2-dependencies-{{ checksum "contracts/package-lock.json" }}-{{ checksum "circuits/package-lock.json" }}-{{ checksum "config/package-lock.json" }}-{{ checksum "domainobjs/package-lock.json" }}-{{ checksum "coordinator/package-lock.json" }}-{{ checksum "core/package-lock.json" }}
-
+            - v1.2-dependencies-{{ checksum "contracts/package-lock.json" }}-{{ checksum "circuits/package-lock.json" }}-{{ checksum "config/package-lock.json" }}-{{ checksum "domainobjs/package-lock.json" }}-{{ checksum "cli/package-lock.json" }}-{{ checksum "core/package-lock.json" }}-{{ checksum "integrationTests/package-lock.json" }}
 
       - run: npm run bootstrap && npm run build
 
@@ -41,7 +40,7 @@ jobs:
             - core/node_modules
             - circuits/node_modules
             - domainobjs/node_modules
-          key: v1.2-dependencies-{{ checksum "contracts/package-lock.json" }}-{{ checksum "circuits/package-lock.json" }}-{{ checksum "config/package-lock.json" }}-{{ checksum "domainobjs/package-lock.json" }}-{{ checksum "coordinator/package-lock.json" }}-{{ checksum "core/package-lock.json" }}
+          key: v1.2-dependencies-{{ checksum "contracts/package-lock.json" }}-{{ checksum "circuits/package-lock.json" }}-{{ checksum "config/package-lock.json" }}-{{ checksum "domainobjs/package-lock.json" }}-{{ checksum "cli/package-lock.json" }}-{{ checksum "core/package-lock.json" }}-{{ checksum "integrationTests/package-lock.json" }}
 
       # checksum the circuit code
       - run:

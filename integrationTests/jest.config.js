@@ -18,6 +18,7 @@ module.exports = {
     ],
     moduleNameMapper: {
       "^@maci-contracts(.*)$": "<rootDir>../contracts/$1",
+      "^@maci-integrationTests(.*)$": "<rootDir>./$1",
     },
     globals: {
         'ts-jest': {
