@@ -19,4 +19,11 @@ describe('Test suites', () => {
 
         expect(result).toBeTruthy()
     })
+
+    it('Suite 2 - 1 briber, partial tree', async () => {
+        const data = loadData('suite2_bribe.json')
+        const result = await executeSuite(data, expect)
+
+        expect(result).toBeTruthy()
+    })
 })
