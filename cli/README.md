@@ -43,7 +43,7 @@ npm run ganache
 
 Fields that the coordinator has to set:
 
-`maci-cli create <options>`
+`node build/index.js create <options>`
 
 Example usage:
 
@@ -79,11 +79,11 @@ MACI: 0xE28158eCFde143e2536761c3254C7C31efd97271
 
 These three commands share the same option flags.
 
-`maci-cli process <options>`
+`node build/index.js process <options>`
 
-`maci-cli tally <options>`
+`node build/index.js tally <options>`
 
-`maci-cli prove <options>`
+`node build/index.js prove <options>`
 
 Fields that the coordinator has to set:
 
@@ -100,7 +100,7 @@ automatically resume a job halfway done.
 
 ### User: Generate MACI keypair
 
-`maci-cli genMaciKeypair <options>`
+`node build/index.js genMaciKeypair <options>`
 
 | Option | Flags | About |
 |-|-|-|
@@ -115,7 +115,7 @@ reasons, the passphrase must be at least 32 characters long.
 
 ### User: Generate MACI public key
 
-`maci-cli genMaciPubkey <options>`
+`node build/index.js genMaciPubkey <options>`
 
 | Option | Flags | About |
 |-|-|-|
@@ -125,7 +125,7 @@ The output of this command is a serialised public key derived from the given pri
 
 ### User: Sign up
 
-`maci-cli signup <options>`
+`node build/index.js signup <options>`
 
 Fields that the user has to set:
 
@@ -141,7 +141,7 @@ Fields that the user has to set:
 
 ### User: Change key / vote
 
-`maci-cli publish <options>`
+`node build/index.js publish <options>`
 
 Fields that the user has to set:
 
@@ -162,7 +162,7 @@ Fields that the user has to set:
 
 ### Coordinator: Process messages
 
-`maci-cli process <options>`
+`NODE_OPTIONS=--max-old-space-size=4096 node build/index.js process <options>`
 
 Fields that the coordinator has to set:
 
@@ -178,7 +178,7 @@ Fields that the coordinator has to set:
 
 ### Coordinator: Tally votes
 
-`maci-cli tally <options>`
+`NODE_OPTIONS=--max-old-space-size=4096 node build/index.js tally <options>`
 
 Fields that the coordinator has to set:
 
