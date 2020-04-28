@@ -10,9 +10,18 @@ jobs:
       - checkout:
           path: ~/maci/
 
+      - restore_cache:
+          keys:
+            - v1.2-dependencies-{{ checksum "circuits/scripts/installZkutil.sh" }}
+
       - run:
           name: Install zkutil
           command: ./circuits/scripts/installZkutil.sh
+
+      - save_cache:
+          paths:
+            - ~/.cargo/bin/zkutil
+          key: v1.2-dependencies-{{ checksum "circuits/scripts/installZkutil.sh" }}
 
       - run:
           name: Install solc

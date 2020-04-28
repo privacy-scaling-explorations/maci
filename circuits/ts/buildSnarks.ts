@@ -12,13 +12,6 @@ const fileExists = (filepath: string): boolean => {
 }
 
 const main = async () => {
-    // Check if zkutil exists
-    const output = shell.exec('zkutil -V')
-    if (output.stderr) {
-        console.error('zkutil not found. Please refer to the README for installation instructions.')
-        return
-    }
-
     const parser = new argparse.ArgumentParser({ 
         description: 'Compile a circom circuit and generate its proving key, verification key, and Solidity verifier'
     })
@@ -89,6 +82,14 @@ const main = async () => {
         }
     )
 
+    parser.addArgument(
+        ['-z', '--zkutil'],
+        {
+            help: 'The path to the zkutil binary',
+            required: true
+        }
+    )
+
 
     const args = parser.parseArgs()
     const pkOut = args.pk_out
@@ -99,6 +100,15 @@ const main = async () => {
     const override = args.override
     const circuitJsonOut = args.json_out
     const verifierName = args.verifier_name
+    const zkutilPath = args.zkutil
+
+    // Check if zkutil exists
+    const output = shell.exec(zkutilPath + ' -V')
+    if (output.stderr) {
+        console.error('zkutil not found. Please refer to the README for installation instructions.')
+        return
+    }
+
 
     // Check if the input circom file exists
     const inputFileExists = fileExists(inputFile)
@@ -133,11 +143,11 @@ const main = async () => {
     } else {
 
         console.log('Generating params file...')
-        shell.exec(`zkutil setup -c ${circuitJsonOut} -p ${paramsOut}`)
+        shell.exec(`${zkutilPath} setup -c ${circuitJsonOut} -p ${paramsOut}`)
 
         console.log('Exporting proving and verification keys...')
         shell.exec(
-            `zkutil export-keys -c ${circuitJsonOut} -p ${paramsOut}` +
+            `${zkutilPath} export-keys -c ${circuitJsonOut} -p ${paramsOut}` +
             ` --pk ${pkOut} --vk ${vkOut}`
         )
 

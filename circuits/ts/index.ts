@@ -3,6 +3,7 @@ import * as path from 'path'
 import { Circuit } from 'snarkjs'
 const compiler = require('circom')
 import * as shell from 'shelljs'
+import { config } from 'maci-config'
 
 import {
     SnarkProvingKey,
@@ -84,7 +85,7 @@ const genProofAndPublicSignals = (
 
     fs.writeFileSync(witnessPath, JSON.stringify(stringifyBigInts(witness)))
 
-    const cmd = `zkutil prove -c ${circuitPath} -p ${paramsPath} ` +
+    const cmd = `${config.zkutil_bin} prove -c ${circuitPath} -p ${paramsPath} ` +
         `-r ${proofPath} -i ${publicSignalsPath} -w ${witnessPath}`
 
     shell.exec(cmd)

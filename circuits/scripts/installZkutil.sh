@@ -4,6 +4,12 @@
 # that it can cache them.
 
 cd "$(dirname "$0")"
+
+if [[ -f ~/.cargo/bin/zkutil ]]
+then
+    exit
+fi
+
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o rust.sh
 chmod a+x rust.sh
 sh rust.sh -y
