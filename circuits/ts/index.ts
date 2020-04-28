@@ -88,7 +88,7 @@ const genProofAndPublicSignals = (
     const cmd = `${config.zkutil_bin} prove -c ${circuitPath} -p ${paramsPath} ` +
         `-r ${proofPath} -i ${publicSignalsPath} -w ${witnessPath}`
 
-    shell.exec(cmd)
+    shell.exec(cmd, { silent: true })
 
     const proof = unstringifyBigInts(
         JSON.parse(fs.readFileSync(proofPath).toString())

@@ -133,9 +133,8 @@ const executeSuite = async (data: any, expect: any) => {
     expect(maciState.genStateRoot().toString()).toEqual((await maciContract.getStateTreeRoot()).toString())
 
     const signUpTimestamp = await maciContract.signUpTimestamp()
-    let nowTimestamp = Math.floor(Date.now() / 1000)
 
-    await delay(1000 * ((signUpTimestamp.toNumber() + signupDuration) - nowTimestamp))
+    await delay(1000 * signupDuration)
 
     // Publish messages
     console.log(`Publishing messages`)
@@ -211,10 +210,7 @@ const executeSuite = async (data: any, expect: any) => {
     // Check whether the message tree root is correct
     expect(maciState.genMessageRoot().toString()).toEqual((await maciContract.getMessageTreeRoot()).toString())
 
-    const votingDeadline = await maciContract.calcVotingDeadline()
-    nowTimestamp = Math.floor(Date.now() / 1000)
-
-    await delay(1000 * (votingDeadline.toNumber() - nowTimestamp))
+    await delay(1000 * votingDuration)
 
     // Process messages
     const processCommand = `NODE_OPTIONS=--max-old-space-size=4096 node ../cli/build/index.js process` +
