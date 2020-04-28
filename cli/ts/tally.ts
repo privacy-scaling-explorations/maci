@@ -14,9 +14,9 @@ import {
 } from 'maci-contracts'
 
 import {
-    loadPk,
     loadVk,
     compileAndLoadCircuit,
+    genQvtProofAndPublicSignals,
 } from 'maci-circuits'
 
 import {
@@ -29,7 +29,6 @@ import {
 } from 'maci-domainobjs'
 
 import {
-    genProof,
     verifyProof,
     genPublicSignals,
 } from 'libsemaphore'
@@ -266,7 +265,6 @@ const tally = async (args: any) => {
     }
 
     const circuit = await compileAndLoadCircuit('test/quadVoteTally_test.circom')
-    const qvtPk = loadPk('qvtPk')
     const qvtVk = loadVk('qvtVk')
 
     const batchSize = bigInt((await maciContract.tallyBatchSize()).toString())
@@ -319,6 +317,8 @@ const tally = async (args: any) => {
             return
         }
 
+        const { proof, publicSignals } = genQvtProofAndPublicSignals(witness)
+
         const result = witness[circuit.getSignalIdx('main.newResultsCommitment')]
 
         const expectedCommitment = genTallyResultCommitment(cumulativeTally, newResultsSalt)
@@ -326,8 +326,6 @@ const tally = async (args: any) => {
             console.error('Error: result commitment mismatch')
             return
         }
-
-        const publicSignals = genPublicSignals(witness, circuit)
 
         const contractPublicSignals = await maciContract.genQvtPublicSignals(
             circuitInputs.intermediateStateRoot.toString(),
@@ -341,8 +339,6 @@ const tally = async (args: any) => {
             console.error('Error: public signal mismatch')
             return
         }
-
-        const proof = await genProof(witness, qvtPk)
 
         const isValid = verifyProof(qvtVk, proof, publicSignals)
         if (!isValid) {

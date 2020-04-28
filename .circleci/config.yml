@@ -11,6 +11,10 @@ jobs:
           path: ~/maci/
 
       - run:
+          name: Install zkutil
+          command: ./circuits/scripts/installZkutil.sh
+
+      - run:
           name: Install solc
           command: wget https://github.com/ethereum/solidity/releases/download/v0.5.16/solc-static-linux && chmod a+x solc-static-linux && sudo mv solc-static-linux /usr/bin/solc
 
@@ -69,12 +73,12 @@ jobs:
           paths:
             - circuits/build/BatchUpdateStateTreeVerifier.sol
             - circuits/build/batchUstCircuit.json
-            - circuits/build/batchUstPk.bin
             - circuits/build/batchUstVk.json
+            - circuits/build/batchUst.params
             - circuits/build/QuadVoteTallyVerifier.sol
             - circuits/build/qvtCircuit.json
-            - circuits/build/qvtPk.bin
             - circuits/build/qvtVk.json
+            - circuits/build/qvt.params
 
       - run:
           name: Compile contracts
