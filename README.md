@@ -19,13 +19,28 @@ You also need [Solidity 0.5.16](https://github.com/ethereum/solidity/releases/ta
 
 ### Get started
 
-Clone this repository, install dependencies, and build the source code:
+Clone this repository, install NodeJS dependencies, and build the source code:
 
 ```bash
 git clone git@github.com:barryWhiteHat/maci.git && \
 npm i && \
 npm run bootstrap && \
 npm run build
+```
+
+Next, install Rust:
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+Also install [`zkutil`](https://github.com/poma/zkutil) v0.2.1 and ensure that
+the `zkutil` binary is in the `~/.cargo/bin/` directory. You can configure the
+path to this binary via `maci-config` (see `config/test.yaml` for an example).
+
+```bash
+cargo install zkutil --version 0.2.1 &&
+zkutil --help
 ```
 
 ### Local development
@@ -43,6 +58,10 @@ own unit tests.
 - `core`: Business logic functions for message processing, vote tallying,
   and circuit input generation through `MaciState`, a state machine
   abstraction.
+- `cli`: A command-line interface with which one can deploy and interact with
+  an instance of MACI.
+- `integrationTests`: Integration tests which uses the command-line interface
+  to perform end-to-end tests.
 
 ### Trusted setup
 
@@ -70,8 +89,8 @@ with their new versions, or the tests will fail.
 
 #### Unit tests
 
-The following submodules contain unit tests: `crypto`, `circuits`, `contracts`,
-and `domainobjs`.
+The following submodules contain unit tests: `core`, `crypto`, `circuits`,
+`contracts`, and `domainobjs`.
 
 Except for the `contracts` submodule, run unit tests as such (the following
 example is for `crypto`):
@@ -95,49 +114,20 @@ In another terminal, run the tests individually:
 
 ```bash
 cd contracts
-npm run test-hasher
-npm run test-maci
-npm run ...
+./scripts/runTestsInCircleCi.sh
 ```
 
-## Deploying contracts to the local testnet
+You can ignore the Ganache errors which this script emits as you should already
+have Ganache running in a separate terminal.
 
-Assuming that you have a Ganache node set up and listening to the path
-configured in `config/test.yaml`:
+#### Integration tests
+
+To run integration tests:
 
 ```bash
-cd contracts
-npm run deploy
+cd integrationTests &&
+./scripts/runTestsInCircleCi.sh
 ```
 
-The addresses which the contracts have been deployed to will be saved in
-`contracts/deployedAddresses.json`.
-
-**TODO**: when we develop the CLI, this command should also copy the deployed
-addresses to the CLI submodule.
-
-## Deploying contracts to an Ethereum testnet or the mainnet
-
-First, set the private key you need to deploy the contracts. The account
-associated with the key should already have some ETH in it. Create this file in
-your home directory (e.g. `/home/user/kovanPrivKey.json`) and replace the value
-between the quote marks with the private key.
-
-```json
-["0x................................................................"]
-```
-
-There is an existing `kovan.yml` file in the `config` submodule. We will use it
-as an example of deploying to the Kovan testnet.
-
-```bash
-cd contracts
-NODE_ENV=kovan npm run deploy
-```
-
-If the deployment fails because of an error from the Ethereum node, change it in `kovan.yml`:
-
-```yml
-chain:
-  url: "https://kovan.infura.io/v3/<your infura key>"
-```
+You can ignore the Ganache errors which this script emits as you should already
+have Ganache running in a separate terminal.

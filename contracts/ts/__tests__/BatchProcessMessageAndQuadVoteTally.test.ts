@@ -54,31 +54,21 @@ import {
 
 import {
     compileAndLoadCircuit,
-    genBatchUstInputs,
+    loadPk,
+    loadVk,
+    genBatchUstProofAndPublicSignals,
+    genQvtProofAndPublicSignals,
 } from 'maci-circuits'
 
 import {
     SnarkProvingKey,
     SnarkVerifyingKey,
-    genProof,
     verifyProof,
     parseVerifyingKeyJson,
     genPublicSignals,
 } from 'libsemaphore'
 
-const loadPk = (binName: string): SnarkProvingKey => {
-    const p = path.join(__dirname, '../../../circuits/build/' + binName + '.bin')
-    return fs.readFileSync(p)
-}
-
-const loadVk = (jsonName: string): SnarkVerifyingKey => {
-    const p = path.join(__dirname, '../../../circuits/build/' + jsonName + '.json')
-    return parseVerifyingKeyJson(fs.readFileSync(p).toString())
-}
-
-const batchUstPk: SnarkProvingKey = loadPk('batchUstPk')
 const batchUstVk: SnarkVerifyingKey = loadVk('batchUstVk')
-const qvtPk: SnarkProvingKey = loadPk('qvtPk')
 const qvtVk: SnarkVerifyingKey = loadVk('qvtVk')
 
 const accounts = genTestAccounts(5)
@@ -248,7 +238,12 @@ describe('BatchProcessMessage', () => {
             expect(stateRootBefore.toString()).not.toEqual(stateRootAfter)
             expect(circuitNewStateRoot.toString()).toEqual(stateRootAfter.toString())
 
-            const publicSignals = genPublicSignals(witness, circuit)
+            console.log('Generating proof...')
+
+            const { proof, publicSignals } = genBatchUstProofAndPublicSignals(witness)
+
+            const isValid = verifyProof(batchUstVk, proof, publicSignals)
+            expect(isValid).toBeTruthy()
 
             expect(publicSignals).toHaveLength(20)
 
@@ -270,11 +265,6 @@ describe('BatchProcessMessage', () => {
             expect(JSON.stringify(publicSignals.map((x) => x.toString()))).toEqual(
                 JSON.stringify(contractPublicSignals.map((x) => x.toString()))
             )
-
-            console.log('Generating proof...')
-            const proof = await genProof(witness, batchUstPk)
-            const isValid = verifyProof(batchUstVk, proof, publicSignals)
-            expect(isValid).toBeTruthy()
 
             const formattedProof = formatProofForVerifierContract(proof)
             //const formattedProof = [0, 0, 0, 0, 0, 0, 0, 0]
@@ -322,8 +312,7 @@ describe('BatchProcessMessage', () => {
             expect(result.toString()).toEqual(expectedCommitment.toString())
 
             console.log('Generating proof...')
-            const proof = await genProof(witness, qvtPk)
-            const publicSignals = genPublicSignals(witness, circuit)
+            const { proof, publicSignals } = genQvtProofAndPublicSignals(witness)
 
             const contractPublicSignals = await maciContract.genQvtPublicSignals(
                 circuitInputs.intermediateStateRoot.toString(),

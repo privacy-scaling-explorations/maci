@@ -21,3 +21,5 @@ chain:
   url: "http://localhost:8545"
   ganache:
     port: 8545
+
+zkutil_bin: "~/.cargo/bin/zkutil"

@@ -2,7 +2,6 @@ import * as argparse from 'argparse'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as shell from 'shelljs'
-import * as tmpDir from 'temp-dir'
 
 const fileExists = (filepath: string): boolean => {
     const currentPath = path.join(__dirname, '..')
@@ -58,9 +57,17 @@ const main = async () => {
     )
 
     parser.addArgument(
+        ['-m', '--params-out'],
+        {
+            help: 'The filepath to save the Bellman params file',
+            required: true
+        }
+    )
+
+    parser.addArgument(
         ['-r', '--override'],
         {
-            help: 'Override existing files if set to true; otherwise (and by default), skip generation if a file already exists',
+            help: 'Override an existing compiled circuit, proving key, and verifying key if set to true; otherwise (and by default), skip generation if a file already exists',
             action: 'storeTrue',
             required: false,
             argumentDefault: false,
@@ -75,15 +82,33 @@ const main = async () => {
         }
     )
 
+    parser.addArgument(
+        ['-z', '--zkutil'],
+        {
+            help: 'The path to the zkutil binary',
+            required: true
+        }
+    )
+
 
     const args = parser.parseArgs()
     const pkOut = args.pk_out
     const vkOut = args.vk_out
+    const paramsOut = args.params_out
     const solOut = args.sol_out
     const inputFile = args.input
     const override = args.override
     const circuitJsonOut = args.json_out
     const verifierName = args.verifier_name
+    const zkutilPath = args.zkutil
+
+    // Check if zkutil exists
+    const output = shell.exec(zkutilPath + ' -V')
+    if (output.stderr) {
+        console.error('zkutil not found. Please refer to the README for installation instructions.')
+        return
+    }
+
 
     // Check if the input circom file exists
     const inputFileExists = fileExists(inputFile)
@@ -103,61 +128,49 @@ const main = async () => {
     if (!override && circuitJsonOutFileExists) {
         console.log(circuitJsonOut, 'exists. Skipping compilation.')
     } else {
+        console.log(`Compiling ${inputFile}...`)
+        // Compile the .circom file
         shell.exec(`circom ${inputFile} -o ${circuitJsonOut}`)
         console.log('Generated', circuitJsonOut)
     }
 
-    // Check if the pkOut and vkOut files exist and if we should not override files
+    const paramsFileExists = fileExists(paramsOut)
     const pkOutFileExists = fileExists(pkOut)
     const vkOutFileExists = fileExists(vkOut)
 
-    if (!override && pkOutFileExists && vkOutFileExists) {
-
-        console.log('Proving and verification keys exist. Skipping setup.')
-
+    if (!override && pkOutFileExists && vkOutFileExists && paramsFileExists) {
+        console.log('Params file exists. Skipping setup.')
     } else {
 
-        console.log('Generating proving and verification keys...')
-        const tempPkJsonPath = path.join(tmpDir, Date.now().toString() + 'pk.json')
+        console.log('Generating params file...')
+        shell.exec(`${zkutilPath} setup -c ${circuitJsonOut} -p ${paramsOut}`)
+
+        console.log('Exporting proving and verification keys...')
         shell.exec(
-            `snarkjs setup -c ${circuitJsonOut} --protocol groth --pk ${tempPkJsonPath} --vk ${vkOut}`
+            `${zkutilPath} export-keys -c ${circuitJsonOut} -p ${paramsOut}` +
+            ` --pk ${pkOut} --vk ${vkOut}`
         )
 
-        const buildpkeyFilePath = path.join(
-            __dirname,
-            '..',
-            './node_modules/websnark/tools/buildpkey.js',
-        )
-
-        const cmd = `node ${buildpkeyFilePath} -i ${tempPkJsonPath} -o ${pkOut}`
-        shell.exec(cmd)
-        shell.rm('-f', tempPkJsonPath)
-
-        console.log('Generated', pkOut, 'and', vkOut)
+        console.log(`Generated ${paramsOut}, ${pkOut} and ${vkOut}`)
     }
 
-    // Check if the solOut file exists and if we should not override files
-    const solOutFileExists = fileExists(solOut)
+    console.log('Generating Solidity verifier...')
+    const snarkjsPath = path.join(
+        __dirname,
+        '..',
+        './node_modules/snarkjs/cli.js',
+    )
 
-    if (!override && solOutFileExists) {
+    shell.exec(`${snarkjsPath} generateverifier --vk ${vkOut} -v ${solOut}`)
 
-        console.log('Solidity verifier exists. Skipping generation.')
+    // Replace the name of the verifier contract with the specified name as
+    // we have two verifier contracts and we want to avoid conflicts
+    const contractSource = fs.readFileSync(solOut).toString()
+    const newSource = contractSource.replace(
+        '\ncontract Verifier {', `\ncontract ${verifierName} {`,
+    )
 
-    } else {
-
-        console.log('Generating Solidity verifier...')
-        const cmd = `snarkjs generateverifier --vk ${vkOut} -v ${solOut}`
-        shell.exec(cmd)
-
-        // Replace the name of the verifier contract with the specified name as
-        // we have two verifier contracts and we want to avoid conflicts
-        const contractSource = fs.readFileSync(solOut).toString()
-        const newSource = contractSource.replace(
-            '\ncontract Verifier {', `\ncontract ${verifierName} {`,
-        )
-
-        fs.writeFileSync(solOut, newSource)
-    }
+    fs.writeFileSync(solOut, newSource)
 }
 
 if (require.main === module) {

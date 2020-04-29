@@ -5,35 +5,35 @@ const main = async () => {
     const files = [
         {
             name: 'BatchUpdateStateTreeVerifier.sol',
-            url: 'https://www.dropbox.com/s/r1a4hzpge88x8zz/BatchUpdateStateTreeVerifier.sol?dl=1',
+            url: 'https://www.dropbox.com/s/274mzvyiizhsval/BatchUpdateStateTreeVerifier.sol?dl=1',
         },
         {
             name: 'batchUstCircuit.json',
-            url: 'https://www.dropbox.com/s/joqpdx8uoizwcw8/batchUstCircuit.json?dl=1',
+            url: 'https://www.dropbox.com/s/4b1ziz37eeergx2/batchUstCircuit.json?dl=1',
         },
         {
-            name: 'batchUstPk.bin',
-            url: 'https://www.dropbox.com/s/f6ulhrlolq1nhpp/batchUstPk.bin?dl=1',
+            name: 'batchUst.params',
+            url: 'https://www.dropbox.com/s/c44qytgvqlob9ye/batchUst.params?dl=1',
         },
         {
             name: 'batchUstVk.json',
-            url: 'https://www.dropbox.com/s/9xv2h9tpzntgor5/batchUstVk.json?dl=1',
+            url: 'https://www.dropbox.com/s/pyggzvn5hqwi3qz/batchUstVk.json?dl=1',
         },
         {
             name: 'QuadVoteTallyVerifier.sol',
-            url: 'https://www.dropbox.com/s/645qu3wy7t11q4t/QuadVoteTallyVerifier.sol?dl=1',
+            url: 'https://www.dropbox.com/s/it1o3rput47n26m/QuadVoteTallyVerifier.sol?dl=1',
         },
         {
             name: 'qvtCircuit.json',
-            url: 'https://www.dropbox.com/s/kzok3svmn7acp0s/qvtCircuit.json?dl=1',
+            url: 'https://www.dropbox.com/s/7u7iunswmg67pso/qvt.params?dl=1',
         },
         {
-            name: 'qvtPk.bin',
-            url: 'https://www.dropbox.com/s/5jjniz2lyype7yy/qvtPk.bin?dl=1',
+            name: 'qvt.params',
+            url: 'https://www.dropbox.com/s/7u7iunswmg67pso/qvt.params?dl=1'
         },
         {
             name: 'qvtVk.json',
-            url: 'https://www.dropbox.com/s/i1br45cu8elftvy/qvtVk.json?dl=1',
+            url: 'https://www.dropbox.com/s/wp96mtjq7zbxceh/qvtVk.json?dl=1',
         },
     ]
 

@@ -11,9 +11,9 @@ import {
 } from 'maci-contracts'
 
 import {
-    loadPk,
     loadVk,
     compileAndLoadCircuit,
+    genBatchUstProofAndPublicSignals,
 } from 'maci-circuits'
 
 import {
@@ -26,9 +26,7 @@ import {
 } from 'maci-domainobjs'
 
 import {
-    genProof,
     verifyProof,
-    genPublicSignals,
 } from 'libsemaphore'
 
 import {
@@ -217,7 +215,6 @@ const processMessages = async (args: any) => {
     }
 
     const circuit = await compileAndLoadCircuit('test/batchUpdateStateTree_test.circom')
-    const batchUstPk = loadPk('batchUstPk')
     const batchUstVk = loadVk('batchUstVk')
 
     const messageBatchSize  = await maciContract.messageBatchSize()
@@ -262,9 +259,8 @@ const processMessages = async (args: any) => {
             ecdhPubKeys.push(pubKey)
         }
 
-        const publicSignals = genPublicSignals(witness, circuit)
+        const { proof, publicSignals } = genBatchUstProofAndPublicSignals(witness)
 
-        const proof = await genProof(witness, batchUstPk)
         const isValid = verifyProof(batchUstVk, proof, publicSignals)
         if (!isValid) {
             console.error('Error: could not generate a valid proof or the verifying key is incorrect')

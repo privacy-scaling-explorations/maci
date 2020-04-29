@@ -320,7 +320,7 @@ describe('process, tally, and prove CLI subcommands', () => {
             console.log(output)
 
             const regMatch = output.match(
-                /^Transaction hash: (0x[a-fA-F0-9]{64})\n$/
+                /Transaction hash: (0x[a-fA-F0-9]{64})\n$/
             )
 
             expect(regMatch).toBeTruthy()
