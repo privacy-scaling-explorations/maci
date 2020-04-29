@@ -114,8 +114,7 @@ template QuadVoteTally(
     // components in the same loop
     for (i=0; i < numUsers; i++) {
         voteOptionRootChecker[i] = CheckRoot(voteOptionTreeDepth);
-        stateLeafHashers[i] = Hasher5(messageLength);
-        stateLeafHashers[i].key <== 0;
+        stateLeafHashers[i] = Hasher5();
 
         // Hash each state leaf
         for (j=0; j < messageLength; j++) {
@@ -224,14 +223,12 @@ template ResultCommitmentVerifier(numVoteOptions) {
     signal output newResultsCommitment;
 
     // Salt and hash the results up to the current batch
-    component currentResultsCommitmentHasher = Hasher17(numVoteOptions + 1);
-    currentResultsCommitmentHasher.key <== 0;
+    component currentResultsCommitmentHasher = Hasher17();  // numVoteOptions + 1
     currentResultsCommitmentHasher.in[numVoteOptions] <== currentResultsSalt;
 
     // Also salt and hash the result of the current batch
-    component newResultsCommitmentHasher = Hasher17(numVoteOptions + 1);
+    component newResultsCommitmentHasher = Hasher17();  // numVoteOptions + 1
 
-    newResultsCommitmentHasher.key <== 0;
     newResultsCommitmentHasher.in[numVoteOptions] <== newResultsSalt;
     for (var i = 0; i < numVoteOptions; i++) {
         newResultsCommitmentHasher.in[i] <== newResults[i];
