@@ -114,7 +114,7 @@ template QuadVoteTally(
     // components in the same loop
     for (i=0; i < numUsers; i++) {
         voteOptionRootChecker[i] = CheckRoot(voteOptionTreeDepth);
-        stateLeafHashers[i] = Hasher5(messageLength);
+        stateLeafHashers[i] = Hasher5();
         stateLeafHashers[i].key <== 0;
 
         // Hash each state leaf

@@ -37,14 +37,14 @@ template EdDSAMiMCSpongeVerifier_patched() {
 
   // Calculate the h = H(R,A, msg)
   component hash = Hasher5()
-  hash.ins[0] <== R8x;
-  hash.ins[1] <== R8y;
-  hash.ins[2] <== Ax;
-  hash.ins[3] <== Ay;
-  hash.ins[4] <== M;
+  hash.in[0] <== R8x;
+  hash.in[1] <== R8y;
+  hash.in[2] <== Ax;
+  hash.in[3] <== Ay;
+  hash.in[4] <== M;
 
   component h2bits = Num2Bits_strict();
-  h2bits.in <== hash.outs[0];
+  h2bits.in <== hash.hash;
 
   // Calculate second part of the right side:  right2 = h*8*A
 
@@ -117,7 +117,7 @@ template VerifySignature(k) {
 
   signal output valid;
   
-  component M = Hasher11(k);
+  component M = Hasher11();
   for (var i = 0; i < k; i++){
     M.in[i] <== preimage[i];
   }
