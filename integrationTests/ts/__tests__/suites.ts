@@ -71,8 +71,8 @@ const executeSuite = async (data: any, expect: any) => {
         maxVoteOptions,
     )
 
-    const signupDuration = data.numUsers * 10
-    const votingDuration = data.numUsers * 10
+    const signupDuration = data.numUsers * 12
+    const votingDuration = data.numUsers * 12
 
     // Run the create subcommand
     const createCommand = `node ../cli/build/index.js create` +
