@@ -339,7 +339,7 @@ describe('BatchProcessMessage', () => {
                 circuitInputs.intermediateStateRoot.toString(),
                 expectedCommitment.toString(),
                 tally.map((x) => x.toString()),
-                newResultsSalt,
+                newResultsSalt.toString(),
                 formattedProof,
                 { gasLimit: 1000000 },
             )
