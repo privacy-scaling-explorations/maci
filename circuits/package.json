@@ -8,7 +8,6 @@
         "build": "tsc",
         "buildBatchUpdateStateTreeSnark": "./scripts/buildBatchUpdateStateTreeSnark.sh",
         "buildQuadVoteTallySnark": "./scripts/buildQuadVoteTallySnark.sh",
-        "downloadAllSnarks": "./scripts/downloadAllSnarks.sh",
         "test": "jest",
         "test-minor": "jest --force-exit Hasher.test.ts IncrementalMerkleTree.test.ts VerifySignature.test.ts Ecdh.test.ts PublicKey.test.ts Decrypt.test.ts CalculateTotal.test.ts ResultCommitmentVerifier.test.ts",
         "test-major": "jest --force-exit QuadVoteTally.test.ts UpdateStateTree.test.ts",

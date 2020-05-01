@@ -74,12 +74,7 @@ npm run buildBatchUpdateStateTreeSnark
 npm run buildQuadVoteTallySnark
 ```
 
-Alternatively, you can save time by downloading the files from Dropbox:
-
-```
-cd circuits
-npm run downloadAllSnarks
-```
+This should take no more than 3 minutes as we use `zkutil` under the hood.
 
 Note that if you change the circuits and recompile them, you should
 also update and recompile the verifier contracts in `contracts/sol`
@@ -100,7 +95,7 @@ cd crypto
 npm run test
 ```
 
-For the `contracts` unit tests, run the tests one by one. This prevents
+For `contracts` and `integrationTests`, run the tests one by one. This prevents
 incorrect nonce errors.
 
 First, start a Ganache instance in a separate terminal:
@@ -108,6 +103,13 @@ First, start a Ganache instance in a separate terminal:
 ```bash
 cd contracts
 npm run ganache
+```
+
+or
+
+```bash
+cd integrationTests &&
+./scripts/runTestsInCircleCi.sh
 ```
 
 In another terminal, run the tests individually:
@@ -118,16 +120,5 @@ cd contracts
 ```
 
 You can ignore the Ganache errors which this script emits as you should already
-have Ganache running in a separate terminal.
-
-#### Integration tests
-
-To run integration tests:
-
-```bash
-cd integrationTests &&
-./scripts/runTestsInCircleCi.sh
-```
-
-You can ignore the Ganache errors which this script emits as you should already
-have Ganache running in a separate terminal.
+have Ganache running in a separate terminal. Otherwise, you will have to exit
+Ganache using the `kill` command.
