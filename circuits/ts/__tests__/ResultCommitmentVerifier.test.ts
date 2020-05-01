@@ -26,7 +26,8 @@ import {
     genPublicSignals,
 } from 'libsemaphore'
 
-const NUM_OPTIONS = 4
+const DEPTH = 2
+const NUM_OPTIONS = 2 ** DEPTH
 
 const randVal = () => {
     return bigInt(Math.floor(Math.random() * 1000000000).toString())
@@ -46,11 +47,13 @@ const genResultCommitmentVerifierCircuitInputs = (
     const currentResultsCommitment = genTallyResultCommitment(
         currentResults,
         currentResultsSalt,
+        DEPTH,
     )
 
     const newResultsCommitment = genTallyResultCommitment(
         newResults,
         newResultsSalt,
+        DEPTH,
     )
 
     return {
@@ -82,7 +85,7 @@ describe('ResultCommitmentVerifier circuit', () => {
             newResults.push(randVal())
         }
 
-        const newResultsCommitment = genTallyResultCommitment(newResults, newResultsSalt)
+        const newResultsCommitment = genTallyResultCommitment(newResults, newResultsSalt, DEPTH)
 
         const circuitInputs = genResultCommitmentVerifierCircuitInputs(
             currentResults,

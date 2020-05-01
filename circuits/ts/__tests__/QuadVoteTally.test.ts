@@ -125,7 +125,7 @@ describe('Quadratic vote tallying circuit', () => {
         const witness = circuit.calculateWitness(stringifyBigInts(circuitInputs))
         expect(circuit.checkWitness(witness)).toBeTruthy()
         const result = witness[circuit.getSignalIdx('main.newResultsCommitment')]
-        const expectedCommitment = genTallyResultCommitment(tally, newResultsSalt)
+        const expectedCommitment = genTallyResultCommitment(tally, newResultsSalt, voteOptionTreeDepth)
 
         expect(result.toString()).toEqual(expectedCommitment.toString())
     })

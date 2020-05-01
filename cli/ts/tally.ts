@@ -321,7 +321,7 @@ const tally = async (args: any) => {
 
         const result = witness[circuit.getSignalIdx('main.newResultsCommitment')]
 
-        const expectedCommitment = genTallyResultCommitment(cumulativeTally, newResultsSalt)
+        const expectedCommitment = genTallyResultCommitment(cumulativeTally, newResultsSalt, maciState.voteOptionTreeDepth)
         if (result.toString() !== expectedCommitment.toString()) {
             console.error('Error: result commitment mismatch')
             return
@@ -356,7 +356,8 @@ const tally = async (args: any) => {
             tx = await maciContract.proveVoteTallyBatch(
                 circuitInputs.intermediateStateRoot.toString(),
                 expectedCommitment.toString(),
-                [...cumulativeTally, newResultsSalt].map((x) => x.toString()),
+                cumulativeTally.map((x) => x.toString()),
+                newResultsSalt.toString(),
                 formattedProof,
                 { gasLimit: 2000000 },
             )

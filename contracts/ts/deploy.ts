@@ -158,6 +158,7 @@ const deployMaci = async (
             x: coordinatorPubKey.rawPubKey[0].toString(),
             y: coordinatorPubKey.rawPubKey[1].toString(),
         },
+        { gasLimit: 10000000 },
     )
 
     return {

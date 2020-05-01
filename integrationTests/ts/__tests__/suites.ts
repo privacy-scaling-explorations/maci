@@ -275,9 +275,9 @@ const executeSuite = async (data: any, expect: any) => {
         ethers.utils.hexDataSlice(finalTallyTx.data, 4),
     )
 
-    const finalTallyOnChain = tallyTxData._finalSaltedResults.map((x) => parseInt(x.toString(), 10))
+    const finalTallyOnChain = tallyTxData._finalResults.map((x) => parseInt(x.toString(), 10))
 
-    expect(JSON.stringify(finalTallyOnChain.slice(0, -1)))
+    expect(JSON.stringify(finalTallyOnChain))
         .toEqual(JSON.stringify(data.expectedTally))
 
     return true

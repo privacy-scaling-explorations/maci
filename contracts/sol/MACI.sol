@@ -8,10 +8,10 @@ import { BatchUpdateStateTreeVerifier } from "./BatchUpdateStateTreeVerifier.sol
 import { QuadVoteTallyVerifier } from "./QuadVoteTallyVerifier.sol";
 import { InitialVoiceCreditProxy } from './initialVoiceCreditProxy/InitialVoiceCreditProxy.sol';
 import { SnarkConstants } from './SnarkConstants.sol';
-
+import { ComputeRoot } from './ComputeRoot.sol';
 import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
 
-contract MACI is Ownable, DomainObjs {
+contract MACI is Ownable, DomainObjs, ComputeRoot {
 
     // A nothing-up-my-sleeve zero value
     // Should be equal to 5503045433092194285660061905880311622788666850989422096966288514930349325741
@@ -47,8 +47,7 @@ contract MACI is Ownable, DomainObjs {
     // _treeDepths.voteOptionTreeDepth leaves of value 0
     uint256 public emptyVoteOptionTreeRoot;
 
-    // To store the hash of an array of 2 ** _treeDepths.voteOptionTreeDepth
-    // zeros
+    // To store hashLeftRight(Merkle root of 2 ** voteOptionTreeDepth zeros, 0)
     uint256 public currentResultsCommitment;
 
     // The maximum number of leaves, minus one, of meaningful vote options.
@@ -178,15 +177,24 @@ contract MACI is Ownable, DomainObjs {
         // which has no meaning attached to it
         voteOptionsMaxLeafIndex = _maxValues.maxVoteOptions;
 
+        // Create the message tree
+        messageTree = new IncrementalMerkleTree(_treeDepths.messageTreeDepth, ZERO_VALUE);
+
         // Calculate and store the empty vote option tree root. This value must
         // be set before we call hashedBlankStateLeaf() later
         emptyVoteOptionTreeRoot = calcEmptyVoteOptionTreeRoot(_treeDepths.voteOptionTreeDepth);
-        currentResultsCommitment = hashZeros(2 ** uint256(_treeDepths.voteOptionTreeDepth) + 1);
 
+        // Calculate and store a commitment to 2 ** voteOptionTreeDepth zeros,
+        // and the salt of 0.
+        currentResultsCommitment = hashLeftRight(
+            computeEmptyRoot(_treeDepths.voteOptionTreeDepth, 0),
+            0
+        );
+
+        // Compute the hash of a blank state leaf
         uint256 h = hashedBlankStateLeaf();
 
-        // Create the message tree and state tree
-        messageTree = new IncrementalMerkleTree(_treeDepths.messageTreeDepth, ZERO_VALUE);
+        // Create the state tree
         stateTree = new IncrementalMerkleTree(_treeDepths.stateTreeDepth, h);
 
         // Make subsequent insertions start from leaf #1, as leaf #0 is only
@@ -539,7 +547,8 @@ contract MACI is Ownable, DomainObjs {
     function proveVoteTallyBatch(
         uint256 _intermediateStateRoot,
         uint256 _newResultsCommitment,
-        uint256[] memory _finalSaltedResults,
+        uint256[] memory _finalResults,
+        uint256 _finalSalt,
         uint256[8] memory _proof
     ) 
     public {
@@ -555,7 +564,10 @@ contract MACI is Ownable, DomainObjs {
 
         // If the batch # is the final batch, reveal the final tallied results
         if (currentQvtBatchNum == totalBatches - 1) {
-            uint256 hashed = hash(_finalSaltedResults);
+            uint256 hashed = hashLeftRight(
+                computeRoot(treeDepths.voteOptionTreeDepth, _finalResults),
+                _finalSalt
+            );
             require(
                 _newResultsCommitment == hashed,
                 "MACI: the hash of the salted final results provided does not match the commitment"
@@ -587,11 +599,8 @@ contract MACI is Ownable, DomainObjs {
         currentQvtBatchNum ++;
     }
 
-    // TODO: optimise this as we don't need to create a new
-    // IncrementalMerkleTree just to calculate a root
-    function calcEmptyVoteOptionTreeRoot(uint8 _levels) public returns (uint256) {
-        IncrementalMerkleTree tree = new IncrementalMerkleTree(_levels, 0);
-        return tree.root();
+    function calcEmptyVoteOptionTreeRoot(uint8 _levels) public pure returns (uint256) {
+        return computeEmptyRoot(_levels, 0);
     }
 
     function hashZeros(uint256 _numZeros) public pure returns (uint256) {
