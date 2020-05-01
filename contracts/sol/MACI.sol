@@ -540,8 +540,10 @@ contract MACI is Ownable, DomainObjs, ComputeRoot {
      *     generated from the current batch of state leaves 
      * @param _newResultsCommitment A hash of the tallied results so far
      *     (cumulative)
-     * @param _finalSaltedResults The final invocation of this function should
-     *     provide the preimage of the commitment to the final tally
+     * @param _finalResults The final invocation of this function should
+     *     provide this final tally
+     * @param _finalSalt The salt which, when combined with _finalResults, will
+     *     produce the preimage to the commitment to the final tally
      * @param _proof The zk-SNARK proof
      */
     function proveVoteTallyBatch(
