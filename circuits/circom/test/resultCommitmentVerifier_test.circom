@@ -1,3 +1,3 @@
 include "../quadVoteTally.circom"
 
-component main = ResultCommitmentVerifier(4);
+component main = ResultCommitmentVerifier(2);

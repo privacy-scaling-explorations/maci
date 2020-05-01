@@ -48,8 +48,8 @@ const genMaciStateFromContract = async (
 
     const treeDepths = await maciContract.treeDepths()
     const stateTreeDepth = bigInt(treeDepths[0].toString())
-    const messageTreeDepth = bigInt(treeDepths[0].toString())
-    const voteOptionTreeDepth = bigInt(treeDepths[0].toString())
+    const messageTreeDepth = bigInt(treeDepths[1].toString())
+    const voteOptionTreeDepth = bigInt(treeDepths[2].toString())
     const maxVoteOptionIndex = bigInt((
             await maciContract.voteOptionsMaxLeafIndex()
         ).toString())
