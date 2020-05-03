@@ -540,17 +540,11 @@ contract MACI is Ownable, DomainObjs, ComputeRoot {
      *     generated from the current batch of state leaves 
      * @param _newResultsCommitment A hash of the tallied results so far
      *     (cumulative)
-     * @param _finalResults The final invocation of this function should
-     *     provide this final tally
-     * @param _finalSalt The salt which, when combined with _finalResults, will
-     *     produce the preimage to the commitment to the final tally
      * @param _proof The zk-SNARK proof
      */
     function proveVoteTallyBatch(
         uint256 _intermediateStateRoot,
         uint256 _newResultsCommitment,
-        uint256[] memory _finalResults,
-        uint256 _finalSalt,
         uint256[8] memory _proof
     ) 
     public {
@@ -563,18 +557,6 @@ contract MACI is Ownable, DomainObjs, ComputeRoot {
             currentQvtBatchNum < totalBatches,
             "MACI: all batches have already been tallied"
         );
-
-        // If the batch # is the final batch, reveal the final tallied results
-        if (currentQvtBatchNum == totalBatches - 1) {
-            uint256 hashed = hashLeftRight(
-                computeRoot(treeDepths.voteOptionTreeDepth, _finalResults),
-                _finalSalt
-            );
-            require(
-                _newResultsCommitment == hashed,
-                "MACI: the hash of the salted final results provided does not match the commitment"
-            );
-        }
 
         // Generate the public signals
         uint256[5] memory publicSignals = genQvtPublicSignals(

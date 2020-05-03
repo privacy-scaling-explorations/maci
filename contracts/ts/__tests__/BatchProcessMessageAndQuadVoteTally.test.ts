@@ -338,8 +338,6 @@ describe('BatchProcessMessage', () => {
             const tx = await maciContract.proveVoteTallyBatch(
                 circuitInputs.intermediateStateRoot.toString(),
                 expectedCommitment.toString(),
-                tally.map((x) => x.toString()),
-                newResultsSalt.toString(),
                 formattedProof,
                 { gasLimit: 1000000 },
             )

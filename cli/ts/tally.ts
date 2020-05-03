@@ -356,8 +356,6 @@ const tally = async (args: any) => {
             tx = await maciContract.proveVoteTallyBatch(
                 circuitInputs.intermediateStateRoot.toString(),
                 expectedCommitment.toString(),
-                cumulativeTally.map((x) => x.toString()),
-                newResultsSalt.toString(),
                 formattedProof,
                 { gasLimit: 2000000 },
             )

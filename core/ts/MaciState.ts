@@ -693,7 +693,7 @@ const genTallyResultCommitment = (
 
     const tree = new IncrementalMerkleTree(voteOptionTreeDepth, bigInt(0))
     for (let result of results) {
-        tree.insert(result)
+        tree.insert(bigInt(result))
     }
     return hash([tree.root, salt])
 }
