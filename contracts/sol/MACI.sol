@@ -587,11 +587,6 @@ contract MACI is Ownable, DomainObjs, ComputeRoot {
         return computeEmptyRoot(_levels, 0);
     }
 
-    function hashZeros(uint256 _numZeros) public pure returns (uint256) {
-        uint256[] memory zeros = new uint256[](_numZeros);
-        return hash(zeros);
-    }
-
     function getMessageTreeRoot() public view returns (uint256) {
         return messageTree.root();
     }
