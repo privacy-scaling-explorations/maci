@@ -64,15 +64,6 @@ describe('IncrementalMerkleTree', () => {
         expect(tree.root.toString()).toEqual(emptyRoot.toString())
     })
 
-    it('computeRoot() should generate the correct root', async () => {
-        const leaves: SnarkBigInt[] = []
-        for (let i = 0; i < 2 ** DEPTH; i++) {
-            leaves.push(NOTHING_UP_MY_SLEEVE.toString())
-        }
-        const root = await crContract.computeRoot(DEPTH, leaves);
-        expect(tree.root.toString()).toEqual(root.toString())
-    })
-
     it('the on-chain root should match an off-chain root after various insertions', async () => {
         expect.assertions(6)
         for (let i=0; i < 6; i++) {
