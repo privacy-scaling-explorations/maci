@@ -62,25 +62,25 @@ Refer to the [Glossary](#Glossary) for defintions of terms.
 
 5. The coordinator processes all the commands after the voting period ends.
 
-6. For each command, they perform the following steps:
+6. For each batch of commands, they perform the following steps:
     
-    - Generate a new state root which reflects the following:
+    - Generate a new state root which is the result of:
 
-        - Leaf 0 is updated with a random leaf
+        - For each valid command, update the state leaf accordingly
 
-        - If the command is valid, the user's state leaf is updated
+        - Ignore all invalid commands
+
+        - Update leaf 0 with a random leaf
 
     - Generate a zk-SNARK proof that this state root transition is valid. (Note that "state root" refers to the root of the state tree in the contract, not the Ethereum state root as defined in the Yellow Paper.)
 
-    - An invalid message can one which is signed by a public key which a user had already replaced with another key. To allow a bribee to plausibly claim that they have voted correctly even if they use an old public key, we insert a random leaf at index `0` whether or not the message is valid.
-
-7. The above can also be done in batches.
+    - An invalid message can one which is signed by a public key which a user had already replaced with another key, among other criteria. To allow a bribee to plausibly claim that they have voted correctly even if they use an old public key, we insert a random leaf at index `0` whether or not the message is valid.
 
 ![](https://i.imgur.com/kNQR9ks.png)
 
 *Figure 1: The relationship between each users, the coordinator, the contract functions, as well as the state tree and the message tree.*
 
-8. When the voting period ends, the coordinator tallies all the votes. It then generates zk-SNARK proof that the computed result is valid without revealing the plaintext of the votes. While this specification specifically describes a quadratic voting use case, the circuit used to generate this proof should differ based on the particular nature of the voting system.
+7. When the voting period ends, the coordinator tallies all the votes. It then generates zk-SNARK proof that the computed result is valid without revealing the plaintext of the votes. While this specification specifically describes a quadratic voting use case, the circuit used to generate this proof should differ based on the particular nature of the voting system.
 
 ## Availability and visibility of messages
 
@@ -108,14 +108,11 @@ We define an EdDSA private key as a random value (initially 256 bits large) modu
 
 The following steps are needed to sign and encrypt a message:
 
-1. Hash the command using `MiMCSponge`.
-2. Sign the hash with the user's private key using `EdDSAMimcSponge`.
+1. Hash the command
+2. Sign the hash with the user's EdDSA private key
 3. Generate an ECDH shared key using a random private key (the ephemeral key) and the coordinator's public key.
-4. Encrypt both the signature and the data included in the command with the shared key using Poseidon.
+4. Encrypt both the signature and the data included in the command with the shared key
 5. Note that when we call `publishMessage`, we pass in the encrypted data, the signing public key, and random public key.
-
-**Suggested `libMaci` function name: `signAndEncrypt()`**
-
 
 ## Glossary
 

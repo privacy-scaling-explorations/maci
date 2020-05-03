@@ -22,7 +22,7 @@ There is an Ethereum contract (`MACI`) which provides the following interface:
 
 ## Merkle trees in storage
 
-We maintain the roots of 2 Merkle trees in the MACI contract:
+We maintain two Merkle roots in the MACI contract:
 
 | Tree root | Represents |
 |-|-|
@@ -42,27 +42,19 @@ which is equal to:
 5503045433092194285660061905880311622788666850989422096966288514930349325741
 ```
 
-## `signUp(PubKey _pubKey) payable`
+## `signUp(PubKey _userPubKey, bytes memory _signUpGatekeeperData, bytes memory _initialVoiceCreditProxyData)`
 
-During a sign-up period, any user who owns a recgonised ERC721 token can invoke `signUp()`. This function tracks the ERC721 token ID and prevents double sign-ups with the same token ID.
+Signups can only occur during the signup period. The `signUp` function passes the sender's address, along with the `_signUpGatekeeperData` to a `SignUpGateway` contract, which determines whether or not to allow the user to sign up. For instance, this contract can be a simple whitelist.
+
+The `signUp` function also passes `_initialVoiceCreditProxyData` to an `InitialVoiceCreditProxy` contract which determines how many voice credits the user should have initially. This can be a constant value for all users, or a different credits per user.
 
 Next, it adds a new leaf to the state tree, starting from index `1` (as index 0 is reserved for invalid leaves). This leaf is the hash of the public key, the user's voice credits, the nonce `0`, and the root of an empty vote option tree.
 
-<!--Additionally, this function requires a deposit of `depositAmt` ETH to discourage users from sharing their EdDSA private keys with potential bribers.-->
-
 The sign-up period ends after a predefined deadline. A later version of MACI will allow ongoing sign-ups where state trees will be merged once per week.
-
-<!--
-#### `redeemDeposit(uint256 _signature)`
-
-This function returns the user's deposit if `_signature` is a signature of the user's Ethereum address signed with their EdDSA private key. It can only be invoked after the voting period finishes.
-
-This may need to accept a zk-SNARK proof in addition to the signature if there isn't a good Solidity implementation of EdDSA signature verification.
--->
 
 ## `publishMessage(uint256 _msg, PubKey _encPubKey)`
 
-This function ensures that the current block time is past the signup period, increments the message counter, and then updates the state root.
+This function ensures that the current block time is past the signup period, increments the message counter, and then updates the message root.
 
 This function must be public and anyone should be able to call it.
 
@@ -173,9 +165,9 @@ Given a `command` from a user Alice, we say that the state transition from an `o
 
 1. The nonce equals the total number of valid commands from Alice processed by the coordinator in order to produce `oldStateRoot`, minus one. See the section on nonces.
 2. The decrypted message is signed by Alice's current EdDSA private key.
-3. The signature is valid. This includes edge cases such as whether the points of the signature (like `R8`) are valid points.
-4. The command has the correct length.
-5. Each command field has the correct length.
+3. The signature is valid. <!--This includes edge cases such as whether the points of the signature (like `R8`) are valid points.-->
+<!--4. The command has the correct length.-->
+<!--5. Each command field has the correct length.-->
 6. The specified vote option is indeed a choice that the user may make in the system.
 7. The user has enough voice credits left.
 8. Inserting the newly produced state leaf into the current state tree with `oldStateRoot` results in a new state tree with a root equal to `newStateRoot`.
