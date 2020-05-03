@@ -12,13 +12,10 @@ contract ComputeRoot is Hasher {
             _treeLevels > 0 && _treeLevels <= 32,
             "ComputeRoot: _treeLevels must be between 0 and 33"
         );
-        uint256[32] memory z;
-        z[0] = _zeroValue;
 
         uint256 currentZero = _zeroValue;
         for (uint8 i = 1; i < _treeLevels; i++) {
             uint256 hashed = hashLeftRight(currentZero, currentZero);
-            z[i] = hashed;
             currentZero = hashed;
         }
 
