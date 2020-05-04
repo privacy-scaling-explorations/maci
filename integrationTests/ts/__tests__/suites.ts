@@ -7,7 +7,11 @@ import {
     StateLeaf,
 } from 'maci-domainobjs'
 
-import { MaciState } from 'maci-core'
+import { 
+    genTallyResultCommitment,
+    MaciState,
+} from 'maci-core'
+
 import {
     bigInt,
     genRandomSalt,
@@ -71,8 +75,8 @@ const executeSuite = async (data: any, expect: any) => {
         maxVoteOptions,
     )
 
-    const signupDuration = data.numUsers * 12
-    const votingDuration = data.numUsers * 12
+    const signupDuration = data.numUsers * 15
+    const votingDuration = data.numUsers * 15
 
     // Run the create subcommand
     const createCommand = `node ../cli/build/index.js create` +
@@ -223,7 +227,10 @@ const executeSuite = async (data: any, expect: any) => {
 
     const e = exec(processCommand)
 
-    console.log(e)
+    if (e.stderr) {
+        console.log(e.stderr)
+    }
+    console.log(e.stdout)
 
     const output = e.stdout.trim()
 
@@ -266,19 +273,16 @@ const executeSuite = async (data: any, expect: any) => {
 
     expect(tallyRegMatch).toBeTruthy()
 
-    const finalTallyTx = await provider.getTransaction(tallyRegMatch[1])
+    const salt = bigInt(tallyRegMatch[2])
 
-    const iface = new ethers.utils.Interface(maciContractAbi)
-
-    const tallyTxData = ethers.utils.defaultAbiCoder.decode(
-        iface.functions.proveVoteTallyBatch.inputs,
-        ethers.utils.hexDataSlice(finalTallyTx.data, 4),
+    const finalTallyCommitment = await maciContract.currentResultsCommitment()
+    const expectedTallyCommitment = genTallyResultCommitment(
+        data.expectedTally,
+        salt,
+        voteOptionTreeDepth,
     )
 
-    const finalTallyOnChain = tallyTxData._finalSaltedResults.map((x) => parseInt(x.toString(), 10))
-
-    expect(JSON.stringify(finalTallyOnChain.slice(0, -1)))
-        .toEqual(JSON.stringify(data.expectedTally))
+    expect(finalTallyCommitment.toString()).toEqual(expectedTallyCommitment.toString())
 
     return true
 }

@@ -198,6 +198,7 @@ describe('BatchProcessMessage', () => {
                 emptyVoteOptionTreeRoot,
             )
             expect(onChainHash.toString()).toEqual(blankStateLeaf.hash().toString())
+            expect((await maciContract.emptyVoteOptionTreeRoot()).toString()).toEqual(emptyVoteOptionTreeRoot.toString())
         })
 
         it('batchProcessMessage should verify a proof and update the postSignUpStateRoot', async () => {
@@ -308,7 +309,7 @@ describe('BatchProcessMessage', () => {
 
             const result = witness[circuit.getSignalIdx('main.newResultsCommitment')]
 
-            const expectedCommitment = genTallyResultCommitment(tally, newResultsSalt)
+            const expectedCommitment = genTallyResultCommitment(tally, newResultsSalt, voteOptionTreeDepth)
             expect(result.toString()).toEqual(expectedCommitment.toString())
 
             console.log('Generating proof...')
@@ -337,7 +338,6 @@ describe('BatchProcessMessage', () => {
             const tx = await maciContract.proveVoteTallyBatch(
                 circuitInputs.intermediateStateRoot.toString(),
                 expectedCommitment.toString(),
-                [...tally, newResultsSalt].map((x) => x.toString()),
                 formattedProof,
                 { gasLimit: 1000000 },
             )

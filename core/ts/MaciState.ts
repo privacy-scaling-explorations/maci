@@ -576,10 +576,11 @@ class MaciState {
             newResults[i] = currentResults[i] + batchResults[i]
         }
 
-        const currentResultsCommitment = hash([
-            ...currentResults,
-            _currentResultsSalt
-        ])
+        const currentResultsCommitment = genTallyResultCommitment(
+            currentResults,
+            _currentResultsSalt,
+            this.voteOptionTreeDepth,
+        )
 
         const blankStateLeaf = this.genBlankLeaf()
 
@@ -687,10 +688,14 @@ class MaciState {
 const genTallyResultCommitment = (
     results: SnarkBigInt[],
     salt: SnarkBigInt,
+    voteOptionTreeDepth: number,
 ): SnarkBigInt => {
 
-    return hash([...results, salt])
-
+    const tree = new IncrementalMerkleTree(voteOptionTreeDepth, bigInt(0))
+    for (let result of results) {
+        tree.insert(bigInt(result))
+    }
+    return hash([tree.root, salt])
 }
 
 export {

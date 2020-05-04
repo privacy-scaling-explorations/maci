@@ -195,7 +195,7 @@ template QuadVoteTally(
 
     // --- BEGIN verify commitments to results
 
-    component resultCommitmentVerifier = ResultCommitmentVerifier(numVoteOptions);
+    component resultCommitmentVerifier = ResultCommitmentVerifier(voteOptionTreeDepth);
     resultCommitmentVerifier.currentResultsSalt <== currentResultsSalt;
     resultCommitmentVerifier.currentResultsCommitment <== currentResultsCommitment;
     resultCommitmentVerifier.newResultsSalt <== newResultsSalt;
@@ -214,7 +214,9 @@ template QuadVoteTally(
  * Verifies the commitment to the current results. Also computes and outputs a
  * commitment to the new results.
  */
-template ResultCommitmentVerifier(numVoteOptions) {
+template ResultCommitmentVerifier(voteOptionTreeDepth) {
+    var numVoteOptions = 2 ** voteOptionTreeDepth;
+
     signal input currentResultsSalt;
     signal input currentResultsCommitment;
     signal input currentResults[numVoteOptions];
@@ -224,19 +226,23 @@ template ResultCommitmentVerifier(numVoteOptions) {
     signal output newResultsCommitment;
 
     // Salt and hash the results up to the current batch
-    component currentResultsCommitmentHasher = Hasher(numVoteOptions + 1);
+    component currentResultsTree = CheckRoot(voteOptionTreeDepth);
+    component newResultsTree = CheckRoot(voteOptionTreeDepth);
+    for (var i = 0; i < numVoteOptions; i++) {
+        newResultsTree.leaves[i] <== newResults[i];
+        currentResultsTree.leaves[i] <== currentResults[i];
+    }
+
+    component currentResultsCommitmentHasher = Hasher(2);
     currentResultsCommitmentHasher.key <== 0;
-    currentResultsCommitmentHasher.in[numVoteOptions] <== currentResultsSalt;
+    currentResultsCommitmentHasher.in[0] <== currentResultsTree.root;
+    currentResultsCommitmentHasher.in[1] <== currentResultsSalt;
 
     // Also salt and hash the result of the current batch
-    component newResultsCommitmentHasher = Hasher(numVoteOptions + 1);
-
+    component newResultsCommitmentHasher = Hasher(2);
     newResultsCommitmentHasher.key <== 0;
-    newResultsCommitmentHasher.in[numVoteOptions] <== newResultsSalt;
-    for (var i = 0; i < numVoteOptions; i++) {
-        newResultsCommitmentHasher.in[i] <== newResults[i];
-        currentResultsCommitmentHasher.in[i] <== currentResults[i];
-    }
+    newResultsCommitmentHasher.in[0] <== newResultsTree.root;
+    newResultsCommitmentHasher.in[1] <== newResultsSalt;
 
     // Check if the salted hash of the results up to the current batch is valid
     currentResultsCommitment === currentResultsCommitmentHasher.hash;
