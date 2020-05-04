@@ -186,10 +186,7 @@ contract MACI is Ownable, DomainObjs, ComputeRoot {
 
         // Calculate and store a commitment to 2 ** voteOptionTreeDepth zeros,
         // and the salt of 0.
-        currentResultsCommitment = hashLeftRight(
-            computeEmptyRoot(_treeDepths.voteOptionTreeDepth, 0),
-            0
-        );
+        currentResultsCommitment = hashLeftRight(emptyVoteOptionTreeRoot, 0);
 
         // Compute the hash of a blank state leaf
         uint256 h = hashedBlankStateLeaf();
