@@ -13,5 +13,5 @@ We have these hash functions defined:
 | ---------- | -----------------: | -------------------------------------- |
 | t = 3      |                  2 | Build Merkle tree with HashLeftRight   |
 | t = 6      |                  5 | Hash stateLeaf                         |
-| t = 12     |                 11 | Get message hash                       |
-| t = 18     |                 17 | Hash 16 vote options and a result salt |
+
+The Message has 11 elements and we hash it with a Hasher11, which is a combination of t3 and t6.
