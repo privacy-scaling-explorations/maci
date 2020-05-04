@@ -35,9 +35,7 @@ template Hasher11() {
 
   for (var i = 0; i < 5; i++) {
     hasher5_1.inputs[i] <== in[i];
-  }
-  for (var i = 5; i < 10; i++) {
-    hasher5_2.inputs[i] <== in[i];
+    hasher5_2.inputs[i] <== in[i+5];
   }
   hasher2_1.inputs[0] <== hasher5_1.out;
   hasher2_1.inputs[1] <== hasher5_2.out;
