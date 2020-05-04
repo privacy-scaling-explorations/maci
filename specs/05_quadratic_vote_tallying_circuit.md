@@ -49,8 +49,8 @@ The MACI contract's `quadraticVoteTally()` function should verify a proof create
 | `intermediatePathIndex` | Public | The Merkle path index from `intermediateStateRoot` to `stateRoot`. | Contract |
 | `currentResults[n]` | Private | The vote tally of all prior batches of state leaves | Coordinator |
 | `currentResultsSalt` | Private | A random value to hash with the vote tally for state leaves up to the current batch | Coordinator |
-| `currentResultsCommitment` | Public | The salted hash of the values in `currentResults` | Contract |
-| `newResultsCommitment` | Public | The salted hash of the vote tally for this batch of leaves plus the vote tally from `currentResults` | Contract |
+| `currentResultsCommitment` | Public | The salted commitment of the values in `currentResults` | Contract |
+| `newResultsCommitment` | Public | The salted commitment of the vote tally for this batch of leaves plus the vote tally from `currentResults` | Contract |
 | `salt` | Private | A random value to hash with the culmulate vote tally for this batch of state leaves | Coordinator |
 | `stateLeaves[m][p]` | Private | The batch of leaves of the state tree to tally. | Coordinator |
 | `voteLeaves[m][n]` | Private | The vote leaves for each user in this batch of state leaves. | Coordinator |
@@ -59,6 +59,13 @@ The MACI contract's `quadraticVoteTally()` function should verify a proof create
 `m` is the number of state leaves in this batch.
 `k` is `fullStateTreeDepth - intermediateStateTreeDepth`
 `p` is the message length
+
+A result commitment is the hash of a Merkle root of all the vote leaves, and a salt. For instance:
+
+```javascript
+root = genTree(results)
+hash(root, salt)
+```
 
 ## Circuit pseudocode
 
@@ -112,14 +119,14 @@ for i as start to m: // we ignore leaf 0 on purpose
 // correct
 
 assert(
-    hash(currentResults, currentResultsSalt) == 
+    hash(genTree(currentResults), currentResultsSalt) == 
     currentResultsCommitment
 )
 
 // Ensure via a constraint that the final result
 // is correct
 assert(
-    hash(computedResults, salt) == 
+    hash(genTree(computedResults), salt) == 
     newResultsCommitment
 )
 ```
