@@ -87,15 +87,22 @@ const hash5 = (elements: Plaintext): SnarkBigInt => {
  * no more than 11 elements
  */
 const hash11 = (elements: Plaintext): SnarkBigInt => {
-    if (elements.length > 11) {
-        throw new Error(`elements length should not greater than 11, got ${elements.length}`)
+    const elementLength = elements.length
+    if (elementLength > 11) {
+        throw new TypeError(`elements length should not greater than 11, got ${elementLength}`)
+    }
+    let elementsPadded = elements.slice()
+    if (elementLength < 11) {
+        for (let i = elementLength; i < 11; i ++){
+            elementsPadded.push(bigInt(0))
+        }
     }
     return poseidonT3([
         poseidonT3([
-            poseidonT6(elements.slice(0, 5)),
-            poseidonT6(elements.slice(5, 10))
+            poseidonT6(elementsPadded.slice(0, 5)),
+            poseidonT6(elementsPadded.slice(5, 10))
         ])
-        , elements[10]
+        , elementsPadded[10]
     ])
 }
 
@@ -423,8 +430,9 @@ export {
     encrypt,
     decrypt,
     sign,
-    hash,
     hashOne,
+    hash5,
+    hash11,
     hashLeftRight,
     verifySignature,
     PrivKey,
