@@ -40,6 +40,8 @@ const SNARK_FIELD_SIZE = snarkjs.bigInt(
     '21888242871839275222246405745257275088548364400416034343698204186575808495617'
 )
 
+const POSEIDON_SEED = 'poseidon'
+
 // A nothing-up-my-sleeve zero value
 // Should be equal to 5503045433092194285660061905880311622788666850989422096966288514930349325741
 const NOTHING_UP_MY_SLEEVE =
@@ -60,10 +62,10 @@ const buffer2BigInt = (b: Buffer): BigInt => {
 }
 
 // Hash up to 2 elements
-const poseidonT3 = poseidon.createHash(3, 8, 49)
+const poseidonT3 = poseidon.createHash(3, 8, 49, POSEIDON_SEED)
 
 // Hash up to 5 elements
-const poseidonT6 = poseidon.createHash(6, 8, 50)
+const poseidonT6 = poseidon.createHash(6, 8, 50, POSEIDON_SEED)
 
 
 /*
