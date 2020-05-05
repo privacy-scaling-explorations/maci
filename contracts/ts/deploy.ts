@@ -57,7 +57,7 @@ const genDeployer = (
 const deployConstantInitialVoiceCreditProxy = async (
     deployer,
     amount: number,
-    quiet: boolean = false
+    quiet = false
 ) => {
     log('Deploying InitialVoiceCreditProxy', quiet)
     return await deployer.deploy(ConstantInitialVoiceCreditProxy, {}, amount)
@@ -71,7 +71,7 @@ const deploySignupToken = async (deployer) => {
 const deploySignupTokenGatekeeper = async (
     deployer,
     signUpTokenAddress: string,
-    quiet: boolean = false
+    quiet = false
 ) => {
     log('Deploying SignUpTokenGatekeeper', quiet)
     const signUpTokenGatekeeperContract = await deployer.deploy(
@@ -85,7 +85,7 @@ const deploySignupTokenGatekeeper = async (
 
 const deployFreeForAllSignUpGatekeeper = async (
     deployer,
-    quiet: boolean = false
+    quiet = false
 ) => {
     log('Deploying FreeForAllSignUpGatekeeper', quiet)
     return await deployer.deploy(
@@ -113,7 +113,7 @@ const deployMaci = async (
     signUpDurationInSeconds: number = config.maci.signUpDurationInSeconds,
     votingDurationInSeconds: number = config.maci.votingDurationInSeconds,
     coordinatorPubKey?: PubKey,
-    quiet: boolean = false,
+    quiet = false,
 ) => {
     log('Deploying MiMC', quiet)
 

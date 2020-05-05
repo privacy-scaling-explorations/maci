@@ -253,8 +253,8 @@ const processMessages = async (args: any) => {
             return
         }
 
-        let ecdhPubKeys: PubKey[] = []
-        for (let p of circuitInputs['ecdh_public_key']) {
+        const ecdhPubKeys: PubKey[] = []
+        for (const p of circuitInputs['ecdh_public_key']) {
             const pubKey = new PubKey(p)
             ecdhPubKeys.push(pubKey)
         }

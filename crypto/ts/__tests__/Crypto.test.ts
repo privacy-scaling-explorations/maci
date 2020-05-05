@@ -29,7 +29,7 @@ describe('Cryptographic operations', () => {
     const ecdhSharedKey = genEcdhSharedKey(privKey, pubKey1)
     const ecdhSharedKey1 = genEcdhSharedKey(privKey1, pubKey)
 
-    let plaintext: any[] = []
+    const plaintext: any[] = []
     for (let i = 0; i < 5; i ++) {
         plaintext.push(bigInt(Math.floor(Math.random() * 50)))
     }

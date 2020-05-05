@@ -30,7 +30,7 @@ describe('CalculateTotal circuit', () => {
     it('should correctly sum a list of values', async () => {
         const ctCircuit = await compileAndLoadCircuit('test/calculateTotal_test.circom')
 
-        let nums: number[] = []
+        const nums: number[] = []
         for (let i=0; i < 6; i++) {
             nums.push(Math.floor(Math.random() * 100))
         }

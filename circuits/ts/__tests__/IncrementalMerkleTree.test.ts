@@ -26,7 +26,7 @@ describe('Merkle Tree circuits', () => {
 
         it('Valid LeafExists inputs should work', async () => {
             const tree = new IncrementalMerkleTree(LEVELS, ZERO_VALUE)
-            let leaves: SnarkBigInt[] = []
+            const leaves: SnarkBigInt[] = []
 
             for (let i = 0; i < 2 ** LEVELS; i++) {
                 const randomVal = Math.floor(Math.random() * 1000)
@@ -51,7 +51,7 @@ describe('Merkle Tree circuits', () => {
 
         it('Invalid LeafExists inputs should not work', async () => {
             const tree = new IncrementalMerkleTree(LEVELS, ZERO_VALUE)
-            let leaves: SnarkBigInt[] = []
+            const leaves: SnarkBigInt[] = []
 
             for (let i = 0; i < 2 ** LEVELS; i++) {
                 const randomVal = Math.floor(Math.random() * 1000)
@@ -86,7 +86,7 @@ describe('Merkle Tree circuits', () => {
 
         it('Valid CheckRoot inputs should work', async () => {
             const tree = new IncrementalMerkleTree(LEVELS, ZERO_VALUE)
-            let leaves: SnarkBigInt[] = []
+            const leaves: SnarkBigInt[] = []
 
             for (let i = 0; i < 2 ** LEVELS; i++) {
                 const randomVal = Math.floor(Math.random() * 1000)
@@ -108,7 +108,7 @@ describe('Merkle Tree circuits', () => {
 
         it('Different leaves should generate a different root', async () => {
             const tree = new IncrementalMerkleTree(LEVELS, ZERO_VALUE)
-            let leaves: SnarkBigInt[] = []
+            const leaves: SnarkBigInt[] = []
             for (let i = 0; i < 2 ** LEVELS; i++) {
                 const randomVal = Math.floor(Math.random() * 1000)
                 const leaf = hashOne(randomVal)
@@ -137,7 +137,7 @@ describe('Merkle Tree circuits', () => {
         it('Valid update proofs should work', async () => {
             const tree = new IncrementalMerkleTree(LEVELS, ZERO_VALUE)
 
-            let leaves: SnarkBigInt[] = []
+            const leaves: SnarkBigInt[] = []
             // Populate the tree
             for (let i = 0; i < 2 ** LEVELS; i++) {
                 const randomVal = Math.floor(Math.random() * 1000)

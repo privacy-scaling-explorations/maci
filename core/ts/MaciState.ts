@@ -64,7 +64,7 @@ class MaciState {
      * Return an array of zeroes (0) of length voteOptionTreeDepth
      */
     private genBlankVotes = () => {
-        let votes: SnarkBigInt[] = []
+        const votes: SnarkBigInt[] = []
         for (let i = 0; i < bigInt(2).pow(this.voteOptionTreeDepth); i ++) {
             votes.push(bigInt(0))
         }
@@ -85,7 +85,7 @@ class MaciState {
 
         stateTree.insert(this.zerothStateLeaf.hash())
 
-        for (let user of this.users) {
+        for (const user of this.users) {
             const stateLeaf = user.genStateLeaf(this.voteOptionTreeDepth)
             stateTree.insert(stateLeaf.hash())
         }
@@ -108,7 +108,7 @@ class MaciState {
             NOTHING_UP_MY_SLEEVE,
         )
 
-        for (let message of this.messages) {
+        for (const message of this.messages) {
             messageTree.insert(message.hash())
         }
 
@@ -234,7 +234,7 @@ class MaciState {
 
         // Update the user's vote option tree, pubkey, voice credit balance,
         // and nonce
-        let newVotesArr: SnarkBigInt[] = []
+        const newVotesArr: SnarkBigInt[] = []
         for (let i = 0; i < this.users.length; i++) {
             if (i === command.voteOptionIndex) {
                 newVotesArr.push(command.newVoteWeight)
@@ -317,7 +317,7 @@ class MaciState {
             bigInt(0),
         )
 
-        for (let vote of user.votes) {
+        for (const vote of user.votes) {
             voteOptionTree.insert(vote)
         }
 
@@ -362,19 +362,19 @@ class MaciState {
         assert(this.messages.length > _index)
         assert(this.encPubKeys.length === this.messages.length)
 
-        let stateLeaves: StateLeaf[] = []
-        let stateRoots: SnarkBigInt[] = []
-        let stateTreePathElements: SnarkBigInt[][] = []
-        let stateTreePathIndices: SnarkBigInt[][] = []
-        let voteOptionLeaves: SnarkBigInt[] = []
-        let voteOptionTreeRoots: SnarkBigInt[] = []
-        let voteOptionTreePathElements: SnarkBigInt[][] = []
-        let voteOptionTreePathIndices: SnarkBigInt[][] = []
-        let messageTreePathElements: any[] = []
-        let messages: any[] = []
-        let encPubKeys: any[] = []
+        const stateLeaves: StateLeaf[] = []
+        const stateRoots: SnarkBigInt[] = []
+        const stateTreePathElements: SnarkBigInt[][] = []
+        const stateTreePathIndices: SnarkBigInt[][] = []
+        const voteOptionLeaves: SnarkBigInt[] = []
+        const voteOptionTreeRoots: SnarkBigInt[] = []
+        const voteOptionTreePathElements: SnarkBigInt[][] = []
+        const voteOptionTreePathIndices: SnarkBigInt[][] = []
+        const messageTreePathElements: any[] = []
+        const messages: any[] = []
+        const encPubKeys: any[] = []
 
-        let clonedMaciState = this.copy()
+        const clonedMaciState = this.copy()
         const messageTree = clonedMaciState.genMessageTree()
 
         // prevInputs is the most recent set of UST circuit inputs generated from the
@@ -390,7 +390,7 @@ class MaciState {
         let prevEncPubKey
         let numRealMessages = bigInt(0)
 
-        let messageIndices: number[] = []
+        const messageIndices: number[] = []
         for (let i = 0; i < _batchSize; i ++) {
             const j = _index + i
             if (j < bigInt(clonedMaciState.messages.length)) {
@@ -473,7 +473,7 @@ class MaciState {
         assert(bigInt(this.users.length) >= _startIndex)
 
         // results should start off with 0s
-        let results: SnarkBigInt[] = []
+        const results: SnarkBigInt[] = []
         for (let i = 0; i < bigInt(2).pow(this.voteOptionTreeDepth); i ++) {
             results.push(bigInt(0))
         }
@@ -513,7 +513,7 @@ class MaciState {
         assert(bigInt(_startIndex) % bigInt(_batchSize) === bigInt(0))
 
         // Fill results with 0s
-        let results: SnarkBigInt[] = []
+        const results: SnarkBigInt[] = []
         for (let i = 0; i < bigInt(2).pow(this.voteOptionTreeDepth); i++) {
             results.push(bigInt(0))
         }
@@ -571,7 +571,7 @@ class MaciState {
 
         assert(currentResults.length === batchResults.length)
 
-        let newResults: SnarkBigInt[] = []
+        const newResults: SnarkBigInt[] = []
         for (let i = 0; i < currentResults.length; i++) {
             newResults[i] = currentResults[i] + batchResults[i]
         }
@@ -587,8 +587,8 @@ class MaciState {
         const blankStateLeafHash = blankStateLeaf.hash()
         const batchTreeDepth = bigInt(Math.sqrt(_batchSize.toString()))
 
-        let stateLeaves: StateLeaf[] = []
-        let voteLeaves: StateLeaf[][] = []
+        const stateLeaves: StateLeaf[] = []
+        const voteLeaves: StateLeaf[][] = []
 
         if (_startIndex === bigInt(0)) {
             stateLeaves.push(this.zerothStateLeaf)
@@ -692,7 +692,7 @@ const genTallyResultCommitment = (
 ): SnarkBigInt => {
 
     const tree = new IncrementalMerkleTree(voteOptionTreeDepth, bigInt(0))
-    for (let result of results) {
+    for (const result of results) {
         tree.insert(bigInt(result))
     }
     return hash([tree.root, salt])

@@ -80,7 +80,7 @@ describe('Merkle Tree', () => {
         expect(tree1.root).not.toEqual(tree2.root)
 
         const tree3 = new IncrementalMerkleTree(2, ZERO_VALUE)
-        for (let leaf of tree1.leaves) {
+        for (const leaf of tree1.leaves) {
             tree3.insert(leaf)
         }
         expect(tree1.root).toEqual(tree3.root)
@@ -115,7 +115,7 @@ describe('Merkle Tree', () => {
 
         const b = subTree.root
 
-        for (let leaf of leaves) {
+        for (const leaf of leaves) {
             largeTree.insert(leaf)
             subTree.insert(leaf)
         }

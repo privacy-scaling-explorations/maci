@@ -73,7 +73,7 @@ const genMaciStateFromContract = async (
     })
 
     const iface = new ethers.utils.Interface(maciContractAbi)
-    for (let log of signUpLogs) {
+    for (const log of signUpLogs) {
         const events = iface.parseLog(log)
         const voiceCreditBalance = bigInt(events.values._voiceCreditBalance.toString())
         let pubKey
@@ -103,7 +103,7 @@ const genMaciStateFromContract = async (
         )
     }
 
-    for (let log of publishMessageLogs) {
+    for (const log of publishMessageLogs) {
         let message: Message
         let encPubKey: PubKey
 

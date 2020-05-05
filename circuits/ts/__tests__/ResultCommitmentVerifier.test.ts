@@ -77,8 +77,8 @@ describe('ResultCommitmentVerifier circuit', () => {
         const currentResultsSalt = genRandomSalt()
         const newResultsSalt = genRandomSalt()
 
-        let currentResults: SnarkBigInt[] = []
-        let newResults: SnarkBigInt[] = []
+        const currentResults: SnarkBigInt[] = []
+        const newResults: SnarkBigInt[] = []
 
         for (let i = 0; i < NUM_OPTIONS; i ++) {
             currentResults.push(randVal())

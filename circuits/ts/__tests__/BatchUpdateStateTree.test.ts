@@ -46,7 +46,7 @@ const voteOptionTreeDepth = config.maci.merkleTrees.voteOptionTreeDepth
 const voteOptionsMaxIndex = config.maci.voteOptionsMaxLeafIndex
 const initialVoiceCreditBalance = config.maci.initialVoiceCreditBalance
 
-const randomRange = (min: number, max:number) => {
+const randomRange = (min: number, max: number) => {
   return Math.floor(Math.random() * (max - min) + min)
 }
 
@@ -76,7 +76,7 @@ describe('State tree root update verification circuit', () => {
 
     it('BatchUpdateStateTree should produce the correct state root from a partially filled batch', async () => {
         // Generate one messages
-        let messages: Message[] = []
+        const messages: Message[] = []
         const stateRootBefore = maciState.genStateRoot()
 
         const command = new Command(
@@ -129,7 +129,7 @@ describe('State tree root update verification circuit', () => {
 
     it('BatchUpdateStateTree should produce the correct state root from a full batch', async () => {
         // Generate four valid messages from the same user
-        let messages: Message[] = []
+        const messages: Message[] = []
         const stateRootBefore = maciState.genStateRoot()
 
         for (let i = 0; i < 4; i++) {

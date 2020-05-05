@@ -139,7 +139,7 @@ describe('BatchProcessMessage', () => {
     describe('Sign-ups', () => {
         it('The state root should be correct after signing up four users', async () => {
             // Sign the users up
-            for (let user of users) {
+            for (const user of users) {
                 maciState.signUp(
                     user.keypair.pubKey, 
                     bigInt(
@@ -169,7 +169,7 @@ describe('BatchProcessMessage', () => {
 
             stateRootBefore = maciState.genStateRoot()
 
-            for (let user of users) {
+            for (const user of users) {
 
                 maciState.publishMessage(user.message, user.ephemeralKeypair.pubKey)
 
@@ -248,8 +248,8 @@ describe('BatchProcessMessage', () => {
 
             expect(publicSignals).toHaveLength(20)
 
-            let ecdhPubKeys: PubKey[] = []
-            for (let p of circuitInputs['ecdh_public_key']) {
+            const ecdhPubKeys: PubKey[] = []
+            for (const p of circuitInputs['ecdh_public_key']) {
                 const pubKey = new PubKey(p)
                 ecdhPubKeys.push(pubKey)
             }
