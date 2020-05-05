@@ -14,5 +14,5 @@ mkdir -p ./compiled/abis
 
 npx etherlime compile --solcVersion=native --buildDirectory=compiled --workingDirectory=sol --exportAbi --runs 200
 
-# Build the MiMC contract from bytecode
-node build/buildMiMC.js
+# Build the Poseidon contract from bytecode
+node build/buildPoseidon.js

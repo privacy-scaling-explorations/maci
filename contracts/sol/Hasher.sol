@@ -18,35 +18,20 @@ contract Hasher is SnarkConstants {
     }
 
     function hash11(uint256[] memory array) public pure returns (uint256) {
-        if (array.length < 11) {
-            for (i = array.length; i < 11; i++) {
-                array.push(0);
-            }
+        uint256[] memory first5 = new uint256[](5);
+        uint256[] memory second5 = new uint256[](5);
+        for (uint256 i = 0; i < 5; i++) {
+            first5[i] = array[i];
+            second5[i] = array[i + 5];
         }
-        return
-            PoseidonT3.poseidon(
-                [
-                    PoseidonT3.poseidon(
-                        [
-                            PoseidonT6.poseidon(
-                                array[0],
-                                array[1],
-                                array[2],
-                                array[3],
-                                array[4]
-                            ),
-                            PoseidonT6.poseidon(
-                                array[5],
-                                array[6],
-                                array[7],
-                                array[8],
-                                array[9]
-                            )
-                        ]
-                    ),
-                    array[10]
-                ]
-            );
+
+        uint256[] memory first2 = new uint256[](2);
+        first2[0] = PoseidonT6.poseidon(first5);
+        first2[1] = PoseidonT6.poseidon(second5);
+        uint256[] memory second2 = new uint256[](2);
+        second2[0] = PoseidonT3.poseidon(first2);
+        second2[1] = array[10];
+        return PoseidonT3.poseidon(second2);
     }
 
     function hashLeftRight(uint256 _left, uint256 _right)
@@ -54,6 +39,9 @@ contract Hasher is SnarkConstants {
         pure
         returns (uint256)
     {
-        return PoseidonT3.poseidon([_left, _right]);
+        uint256[] memory input = new uint256[](2);
+        input[0] = _left;
+        input[1] = _right;
+        return PoseidonT3.poseidon(input);
     }
 }
