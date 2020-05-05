@@ -3,7 +3,7 @@ import * as crypto from 'crypto'
 import * as ethers from 'ethers'
 import * as snarkjs from 'snarkjs'
 import * as argon2 from 'argon2'
-import { babyJub, eddsa, mimcsponge, mimc7 } from 'circomlib'
+import { babyJub, eddsa, mimcsponge, mimc7, poseidon } from 'circomlib'
 import { IncrementalMerkleTree } from './IncrementalMerkleTree'
 const stringifyBigInts: (obj: object) => object = snarkjs.stringifyBigInts
 const unstringifyBigInts: (obj: object) => object = snarkjs.unstringifyBigInts
@@ -59,6 +59,13 @@ const buffer2BigInt = (b: Buffer): BigInt => {
     return snarkjs.bigInt('0x' + b.toString('hex'))
 }
 
+// Hash up to 2 elements
+const poseidonT3 = poseidon.createHash(3, 8, 49)
+
+// Hash up to 5 elements
+const poseidonT6 = poseidon.createHash(6, 8, 50)
+
+
 /*
  * A convenience function for to use mimcsponge to hash a Plaintext with
  * key 0 and require only 1 output
@@ -68,22 +75,43 @@ const hash = (plaintext: Plaintext): SnarkBigInt => {
     return mimcsponge.multiHash(plaintext, 0, 1)
 }
 
-/*
- * A convenience function for to use mimcsponge to hash a single SnarkBigInt
- * with key 0 and require only 1 output
- */
-const hashOne = (preImage: SnarkBigInt): SnarkBigInt => {
-
-    return mimcsponge.multiHash([preImage], 0, 1)
+const hash5 = (elements: Plaintext): SnarkBigInt => {
+    if (elements.length > 5) {
+        throw new Error(`elements length should not greater than 11, got ${elements.length}`)
+    }
+    return poseidonT6(elements)
 }
 
 /*
- * A convenience function for to use mimcsponge to hash two SnarkBigInts
- * with key 0 and require only 1 output
+ * A convenience function for to use Poseidon to hash a Plaintext with
+ * no more than 11 elements
+ */
+const hash11 = (elements: Plaintext): SnarkBigInt => {
+    if (elements.length > 11) {
+        throw new Error(`elements length should not greater than 11, got ${elements.length}`)
+    }
+    return poseidonT3([
+        poseidonT3([
+            poseidonT6(elements.slice(0, 5)),
+            poseidonT6(elements.slice(5, 10))
+        ])
+        , elements[10]
+    ])
+}
+
+/*
+ * A convenience function for to use poseidon to hash a single SnarkBigInt
+ */
+const hashOne = (preImage: SnarkBigInt): SnarkBigInt => {
+
+    return poseidonT3([preImage, bigInt(0)])
+}
+
+/*
+ * A convenience function for to use poseidon to hash two SnarkBigInts
  */
 const hashLeftRight = (left: SnarkBigInt, right: SnarkBigInt): SnarkBigInt => {
-
-    return mimcsponge.multiHash([left, right], 0, 1)
+    return poseidonT3([left, right])
 }
 
 /*
