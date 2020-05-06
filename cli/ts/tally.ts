@@ -141,7 +141,7 @@ const configureSubparser = (subparsers: any) => {
     parser.addArgument(
         ['-t', '--tally-file'],
         {
-            required: false,
+            required: true,
             type: 'string',
             help: 'A filepath in which to save the final vote tally and salt.',
         }
@@ -398,12 +398,15 @@ const tally = async (args: any) => {
             if (args.tally_file) {
                 // Write tally to a file
                 const d = {
-                    txHash: tx.hash,
+                    provider: ethProvider,
+                    maci: maciContract.address,
+                    commitment: `0x${c.toString(16)}`,
                     tally: tally.map((x) => x.toString()),
                     salt: '0x' + currentResultsSalt.toString(16),
-                    commitment: `0x${c.toString(16)}`,
                 }
-                fs.writeFileSync(args.tally_file, JSON.stringify(d))
+
+                // Format the JSON file with spaces
+                fs.writeFileSync(args.tally_file, JSON.stringify(d, null, 4))
             }
             break
         }

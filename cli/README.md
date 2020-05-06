@@ -195,6 +195,16 @@ Fields that the coordinator has to set:
 | The current result salt | `-c` or `--current-salt` | The secret salt which is hashed along with the current results to produce the current result commitment input to the snark. |
 | The final tally file | `-t` or `--tally-file` | A filepath in which to save the final vote tally and salt. |
 
+### Anyone: Verify a vote tally
+
+`node build/index.js verify <options>`
+
+Fields to set:
+
+| Option | Flags | About |
+|-|-|-|
+| The final tally file | `-t` or `--tally-file` | The final tally file created by the `tally` subcommand. |
+
 ## Demonstration
 
 This section contains a sequence of commands which will be useful for a live
@@ -387,3 +397,10 @@ Transaction hash: 0x9ef0ab94d534650445c4ff748a43eacdedff1602929bd6a1bd568573374d
 Current results salt: 0xa54b75db545fcda278ce882cae90d069c6fcf81368778264550d9b66af05a42
 Result commitment: 0x25deb6f675ed4f08742e1776eee130c627d168106fd813627963b241c1ba0754
 ```
+
+The file `tally.json` will now contain something like the following:
+
+```json
+```
+
+Anyone can now run `verify` to check if the tally is correct:

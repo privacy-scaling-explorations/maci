@@ -254,6 +254,7 @@ const executeSuite = async (data: any, expect: any) => {
         ` -d ${userPrivKey}` +
         ` -x ${maciAddress}` +
         ` -z ${randomLeaf.serialize()}` +
+        ` -t test_tally.json` +
         ` -c 0x0000000000000000000000000000000000000000000000000000000000000000` +
         ` -r`
 
@@ -283,6 +284,8 @@ const executeSuite = async (data: any, expect: any) => {
     )
 
     expect(finalTallyCommitment.toString()).toEqual(expectedTallyCommitment.toString())
+
+    // TODO: run the verify subcommand 
 
     return true
 }

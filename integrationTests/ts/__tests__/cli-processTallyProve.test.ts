@@ -214,6 +214,7 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
                 ` -z ${StateLeaf.genRandomLeaf().serialize()}` +
+                ` -t test_tally.json` +
                 ` -c 0x0000000000000000000000000000000000000000`
 
             const e = exec(tallyCommand)
@@ -311,6 +312,7 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
                 ` -z ${randomLeaf.serialize()}` +
+                ` -t test_tally.json` +
                 ` -c 0x0000000000000000000000000000000000000000`
 
             console.log(tallyCommand)
@@ -339,6 +341,7 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
                 ` -z ${randomLeaf.serialize()}` +
+                ` -t test_tally.json` +
                 ` -c 0x0000000000000000000000000000000000000000`
 
             console.log(tallyCommand)
@@ -353,6 +356,7 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
                 ` -z xxxxxxx` +
+                ` -t test_tally.json` +
                 ` -c 0x0000000000000000000000000000000000000000`
 
             const output = exec(tallyCommand).stderr
@@ -365,6 +369,7 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x 0xxx` +
                 ` -z ${randomLeaf.serialize()}` +
+                ` -t test_tally.json` +
                 ` -c 0x0000000000000000000000000000000000000000`
 
             const output = exec(tallyCommand).stderr
@@ -377,6 +382,7 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x 0xxx` +
                 ` -z ${randomLeaf.serialize()}` +
+                ` -t test_tally.json` +
                 ` -c 0x0000000000000000000000000000000000000000`
 
             const output = exec(tallyCommand).stderr
@@ -389,6 +395,7 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -d 0xxx` +
                 ` -x ${maciAddress}` +
                 ` -z ${randomLeaf.serialize()}` +
+                ` -t test_tally.json` +
                 ` -c 0x0000000000000000000000000000000000000000`
 
             const output = exec(tallyCommand).stderr
@@ -401,6 +408,7 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
                 ` -z ${randomLeaf.serialize()}` +
+                ` -t test_tally.json` +
                 ` -c 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`
 
             const output = exec(tallyCommand).stderr
@@ -413,6 +421,7 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
                 ` -z ${randomLeaf.serialize()}` +
+                ` -t test_tally.json` +
                 ` -c 0xx`
 
             const output = exec(tallyCommand).stderr
