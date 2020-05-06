@@ -315,12 +315,19 @@ describe('process, tally, and prove CLI subcommands', () => {
 
             console.log(tallyCommand)
 
-            const output = exec(tallyCommand).stdout
+            const e = exec(tallyCommand)
+            const output = e.stdout
 
-            console.log(output)
+            if (output) {
+                console.log(output)
+            }
+
+            if (e.stderr) {
+                console.log(e.stderr)
+            }
 
             const regMatch = output.match(
-                /Transaction hash: (0x[a-fA-F0-9]{64})\n$/
+                /Transaction hash: (0x[a-fA-F0-9]{64})\nResult commitment: 0x[a-fA-F0-9]+\n$/
             )
 
             expect(regMatch).toBeTruthy()
