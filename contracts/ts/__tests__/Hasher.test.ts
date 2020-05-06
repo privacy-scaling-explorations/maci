@@ -45,7 +45,7 @@ describe('Hasher', () => {
         const right = genRandomSalt()
         const hashed = hashLeftRight(left, right)
 
-        const onChainHash = await t3Contract.poseidon([left.toString(), right.toString()])
+        const onChainHash = await hasherContract.hashLeftRight(left.toString(), right.toString())
         expect(onChainHash.toString()).toEqual(hashed.toString())
     })
 
@@ -60,14 +60,25 @@ describe('Hasher', () => {
         expect(onChainHash.toString()).toEqual(hashed.toString())
     })
 
-    it('maci-crypto.hash11 should match hasher.hash11', async () => {
+    it('maci-crypto.hash11 should match hasher.hash11 for 10 elements', async () => {
         const values: string[] = []
         for (let i = 0; i < 10; i++) {
             values.push(genRandomSalt().toString())
         }
         const hashed = hash11(values)
-
         const onChainHash = await hasherContract.hash11(values)
+
+        expect(onChainHash.toString()).toEqual(hashed.toString())
+    })
+
+    it('maci-crypto.hash11 should match hasher.hash11 for 11 elements', async () => {
+        let values: string[] = []
+        for (let i = 0; i < 11; i++) {
+            values.push(genRandomSalt().toString())
+        }
+        const hashed = hash11(values)
+        const onChainHash = await hasherContract.hash11(values)
+
         expect(onChainHash.toString()).toEqual(hashed.toString())
     })
 })
