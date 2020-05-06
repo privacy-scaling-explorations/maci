@@ -1,6 +1,5 @@
 import {
     maciContractAbi,
-    genJsonRpcDeployer,
 } from 'maci-contracts'
 
 import {
@@ -12,10 +11,7 @@ import {
 
 import {
     bigInt,
-    genPubKey,
     genRandomSalt,
-    passphraseToPrivKey,
-    SNARK_FIELD_SIZE,
 } from 'maci-crypto'
 
 import {
@@ -32,8 +28,6 @@ import * as ethers from 'ethers'
 
 import {
     DEFAULT_ETH_PROVIDER,
-    DEFAULT_SG_DATA,
-    DEFAULT_IVCP_DATA,
 } from './defaults'
 
 const DEFAULT_SALT = genRandomSalt()
@@ -212,7 +206,6 @@ const publish = async (args: any) => {
     }
 
     const userMaciPrivkey = PrivKey.unserialize(serializedPrivkey)
-    const userKeypair = new Keypair(userMaciPrivkey)
     
     // State index
     const stateIndex = bigInt(args.state_index)
@@ -333,8 +326,7 @@ const publish = async (args: any) => {
         }
         return
     }
-
-    const receipt = await tx.wait()
+    await tx.wait()
 }
 
 export {

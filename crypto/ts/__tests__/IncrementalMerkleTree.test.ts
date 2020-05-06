@@ -1,4 +1,3 @@
-import * as ethers from 'ethers'
 import {
     IncrementalMerkleTree,
     bigInt,
@@ -6,7 +5,6 @@ import {
     SnarkBigInt,
     hashOne,
     hashLeftRight,
-    NOTHING_UP_MY_SLEEVE,
     stringifyBigInts,
 } from '../'
 

@@ -1,6 +1,3 @@
-import * as path from 'path'
-import { Circuit } from 'snarkjs'
-const compiler = require('circom')
 
 import {
     compileAndLoadCircuit,
@@ -15,20 +12,12 @@ import {
 import {
     IncrementalMerkleTree,
     genRandomSalt,
-    Plaintext,
-    Ciphertext,
-    hashOne,
-    hash,
-    SnarkBigInt,
-    PrivKey,
     bigInt,
-    genPrivKey,
     stringifyBigInts,
     NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
 
 import { config } from 'maci-config'
-import { str2BigInt } from './utils'
 
 const getUpdateStateTreeParams = async (
     userCmd: Command, 
@@ -182,7 +171,6 @@ describe('State tree root update verification circuit', () => {
             circuitInputs,
             userVoteOptionTree,
             stateTree,
-            msgTree,
         } = await getUpdateStateTreeParams(
             user1Command,
             user1,
@@ -245,9 +233,7 @@ describe('State tree root update verification circuit', () => {
 
         const {
             circuitInputs,
-            userVoteOptionTree,
             stateTree,
-            msgTree,
         } = await getUpdateStateTreeParams(
             user1Command,
             user1,
@@ -288,9 +274,7 @@ describe('State tree root update verification circuit', () => {
 
         const {
             circuitInputs,
-            userVoteOptionTree,
             stateTree,
-            msgTree,
         } = await getUpdateStateTreeParams(
             user1Command,
             wrongUser,

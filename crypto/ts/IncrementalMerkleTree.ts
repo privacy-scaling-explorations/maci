@@ -1,10 +1,8 @@
 import * as assert from 'assert'
 import {
     SnarkBigInt,
-    hashOne,
     hashLeftRight,
     bigInt,
-    SNARK_FIELD_SIZE,
 } from './'
 
 /* 

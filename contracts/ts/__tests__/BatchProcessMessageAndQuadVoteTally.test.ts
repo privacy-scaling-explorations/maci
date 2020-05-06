@@ -2,10 +2,7 @@ require('module-alias/register')
 
 jest.setTimeout(1200000)
 
-import * as fs from 'fs'
-import * as path from 'path'
 import * as ethers from 'ethers'
-import * as etherlime from 'etherlime-lib'
 
 import { genTestAccounts } from '../accounts'
 import { timeTravel } from '../'
@@ -16,31 +13,18 @@ import { config } from 'maci-config'
 import { formatProofForVerifierContract } from '../utils'
 
 import {
-    deployMaci,
-    deploySignupToken,
-    deploySignupTokenGatekeeper,
-    deployConstantInitialVoiceCreditProxy,
     genDeployer,
 } from '../deploy'
 
 import {
     bigInt,
-    hash,
-    hashOne,
-    genKeyPair,
-    genPubKey,
     genRandomSalt,
     IncrementalMerkleTree,
-    SnarkBigInt,
-    genEcdhSharedKey,
-    NOTHING_UP_MY_SLEEVE,
-    unstringifyBigInts,
     stringifyBigInts,
 } from 'maci-crypto'
 
 import {
     StateLeaf,
-    Message,
     Command,
     Keypair,
     PubKey,
@@ -54,18 +38,14 @@ import {
 
 import {
     compileAndLoadCircuit,
-    loadPk,
     loadVk,
     genBatchUstProofAndPublicSignals,
     genQvtProofAndPublicSignals,
 } from 'maci-circuits'
 
 import {
-    SnarkProvingKey,
     SnarkVerifyingKey,
     verifyProof,
-    parseVerifyingKeyJson,
-    genPublicSignals,
 } from 'libsemaphore'
 
 const batchUstVk: SnarkVerifyingKey = loadVk('batchUstVk')
@@ -79,7 +59,6 @@ const stateTreeDepth = config.maci.merkleTrees.stateTreeDepth
 const messageTreeDepth = config.maci.merkleTrees.messageTreeDepth
 const voteOptionTreeDepth = config.maci.merkleTrees.voteOptionTreeDepth
 const voteOptionsMaxIndex = config.maci.voteOptionsMaxLeafIndex
-const numVoteOptions = 2 ** voteOptionTreeDepth
 const quadVoteTallyBatchSize = config.maci.quadVoteTallyBatchSize
 
 const coordinator = new Keypair(new PrivKey(bigInt(config.maci.coordinatorPrivKey)))
@@ -253,9 +232,6 @@ describe('BatchProcessMessage', () => {
                 const pubKey = new PubKey(p)
                 ecdhPubKeys.push(pubKey)
             }
-
-            const numMessages = await maciContract.numMessages()
-            const messageBatchSize = await maciContract.messageBatchSize()
 
             const contractPublicSignals = await maciContract.genBatchUstPublicSignals(
                 '0x' + stateRootAfter.toString(16),

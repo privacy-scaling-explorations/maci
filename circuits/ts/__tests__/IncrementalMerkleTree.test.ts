@@ -1,7 +1,3 @@
-import * as path from 'path'
-import { Circuit } from 'snarkjs'
-const compiler = require('circom')
-
 import {
     compileAndLoadCircuit,
 } from '../'
@@ -137,7 +133,6 @@ describe('Merkle Tree circuits', () => {
         it('Valid update proofs should work', async () => {
             const tree = new IncrementalMerkleTree(LEVELS, ZERO_VALUE)
 
-            const leaves: SnarkBigInt[] = []
             // Populate the tree
             for (let i = 0; i < 2 ** LEVELS; i++) {
                 const randomVal = Math.floor(Math.random() * 1000)
@@ -185,8 +180,6 @@ describe('Merkle Tree circuits', () => {
                 tree.insert(leaf)
 
                 const proof = tree.getPathUpdate(i)
-
-                const root = tree.root
 
                 const circuitInputs = {
                     leaf: leaf.toString(),

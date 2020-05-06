@@ -1,7 +1,6 @@
 import {
     PubKey,
     PrivKey,
-    Keypair,
 } from 'maci-domainobjs'
 
 import {

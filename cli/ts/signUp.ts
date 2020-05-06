@@ -1,6 +1,3 @@
-import {
-    genJsonRpcDeployer,
-} from 'maci-contracts'
 
 import {
     maciContractAbi,
@@ -8,14 +5,8 @@ import {
 
 import {
     PubKey,
-    PrivKey,
-    Keypair,
 } from 'maci-domainobjs'
 
-import {
-    passphraseToPrivKey,
-    genPubKey,
-} from 'maci-crypto'
 
 import {
     promptPwd,

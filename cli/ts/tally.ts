@@ -1,11 +1,9 @@
-import * as assert from 'assert'
 import * as ethers from 'ethers'
 
 import { bigInt, genRandomSalt, SnarkBigInt } from 'maci-crypto'
 
 import { 
     genTallyResultCommitment,
-    MaciState,
 } from 'maci-core'
 
 import {
@@ -20,17 +18,13 @@ import {
 } from 'maci-circuits'
 
 import {
-    PubKey,
     PrivKey,
     Keypair,
-    Message,
-    Command,
     StateLeaf,
 } from 'maci-domainobjs'
 
 import {
     verifyProof,
-    genPublicSignals,
 } from 'libsemaphore'
 
 import {
@@ -46,7 +40,6 @@ import {
 
 import {
     DEFAULT_ETH_PROVIDER,
-    DEFAULT_MESSAGE_BATCH_SIZE,
 } from './defaults'
 
 const configureSubparser = (subparsers: any) => {
@@ -161,8 +154,7 @@ const tally = async (args: any) => {
     try {
         zerothLeaf = StateLeaf.unserialize(serialized)
         isValidZerothStateLeaf = true
-    } catch {
-    }
+    } catch {}
 
     if (!isValidZerothStateLeaf) {
         console.error('Error: invalid zeroth state leaf')
@@ -236,10 +228,6 @@ const tally = async (args: any) => {
         maciContractAbi,
         wallet,
     )
-
-    // Proceed only if all messages have been processed
-    const currentMessageBatchIndex = await maciContract.currentMessageBatchIndex()
-
     if (await maciContract.hasUnprocessedMessages()) {
         console.error('Error: not all messages have been processed')
         return

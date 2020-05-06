@@ -1,11 +1,10 @@
 require('module-alias/register')
-import { genAccounts, genTestAccounts } from '../accounts'
+import { genTestAccounts } from '../accounts'
 import { config } from 'maci-config'
 import {
     hashLeftRight,
     hash,
     genRandomSalt,
-    SnarkBigInt,
 } from 'maci-crypto'
 
 import * as etherlime from 'etherlime-lib'

@@ -42,7 +42,6 @@ import {
 
 const accounts = genTestAccounts(2)
 
-let maciContract
 let maciAddress: string
 let stateIndex: string
 const providerUrl = config.get('chain.url')

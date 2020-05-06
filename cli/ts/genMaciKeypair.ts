@@ -1,12 +1,10 @@
 import {
-    PubKey,
     PrivKey,
     Keypair,
 } from 'maci-domainobjs'
 
 import {
     passphraseToPrivKey,
-    genPubKey,
 } from 'maci-crypto'
 
 const configureSubparser = (subparsers: any) => {

@@ -12,24 +12,10 @@ import {
 } from 'libsemaphore'
 
 import {
-    hash,
-    SnarkBigInt,
     stringifyBigInts,
     unstringifyBigInts,
-    IncrementalMerkleTree,
 } from 'maci-crypto'
 
-import {
-    Keypair,
-    PubKey,
-    Message,
-    StateLeaf,
-} from 'maci-domainobjs'
-
-import {
-    genNewResultsCommitment,
-    genResultCommitmentVerifierCircuitInputs,
-} from 'maci-core'
 
 /*
  * @param circuitPath The subpath to the circuit file (e.g.

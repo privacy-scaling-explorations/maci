@@ -1,9 +1,5 @@
-import * as assert from 'assert'
 import * as ethers from 'ethers'
 
-import { bigInt } from 'maci-crypto'
-
-import { MaciState } from 'maci-core'
 
 import {
     maciContractAbi,
@@ -20,8 +16,6 @@ import {
     PubKey,
     PrivKey,
     Keypair,
-    Message,
-    Command,
     StateLeaf,
 } from 'maci-domainobjs'
 
@@ -40,7 +34,6 @@ import {
 
 import {
     DEFAULT_ETH_PROVIDER,
-    DEFAULT_MESSAGE_BATCH_SIZE,
 } from './defaults'
 
 const configureSubparser = (subparsers: any) => {
@@ -188,7 +181,6 @@ const processMessages = async (args: any) => {
     // Check whether there are any remaining batches to process
     const currentMessageBatchIndex = (await maciContract.currentMessageBatchIndex()).toNumber()
     const messageTreeMaxLeafIndex = (await maciContract.messageTreeMaxLeafIndex()).toNumber()
-    const numMessages = await maciContract.numMessages()
 
     if (! (await maciContract.hasUnprocessedMessages())) {
         console.error('Error: all messages have already been processed')

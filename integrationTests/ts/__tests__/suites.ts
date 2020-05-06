@@ -136,7 +136,7 @@ const executeSuite = async (data: any, expect: any) => {
 
     expect(maciState.genStateRoot().toString()).toEqual((await maciContract.getStateTreeRoot()).toString())
 
-    const signUpTimestamp = await maciContract.signUpTimestamp()
+    await maciContract.signUpTimestamp()
 
     await delay(1000 * signupDuration)
 

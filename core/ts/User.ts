@@ -1,21 +1,12 @@
-import * as ethers from 'ethers'
-import * as assert from 'assert'
+
 import {
-    PrivKey,
     PubKey,
-    Command,
-    Message,
-    Keypair,
     StateLeaf,
 } from 'maci-domainobjs'
 
 import {
-    hash,
     bigInt,
     SnarkBigInt,
-    genRandomSalt,
-    stringifyBigInts,
-    NOTHING_UP_MY_SLEEVE,
     IncrementalMerkleTree,
 } from 'maci-crypto'
 

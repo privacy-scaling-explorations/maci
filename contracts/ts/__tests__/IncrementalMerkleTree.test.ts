@@ -1,11 +1,9 @@
 require('module-alias/register')
 jest.setTimeout(60000)
-import { genAccounts, genTestAccounts } from '../accounts'
+import { genTestAccounts } from '../accounts'
 import { config } from 'maci-config'
 import {
     genRandomSalt,
-    hashOne,
-    SnarkBigInt,
     NOTHING_UP_MY_SLEEVE,
     IncrementalMerkleTree,
 } from 'maci-crypto'

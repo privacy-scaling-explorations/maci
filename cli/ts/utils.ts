@@ -12,7 +12,6 @@ import {
 
 import {
     PubKey,
-    PrivKey,
     Keypair,
     Message,
     StateLeaf,
@@ -107,7 +106,6 @@ const genMaciStateFromContract = async (
         let message: Message
         let encPubKey: PubKey
 
-        const events = iface.parseLog(log)
         if (log.transactionHash) {
             const tx = await provider.getTransaction(log.transactionHash)
             const data = ethers.utils.defaultAbiCoder.decode(

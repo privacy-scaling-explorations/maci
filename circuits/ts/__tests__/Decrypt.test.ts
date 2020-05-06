@@ -1,6 +1,3 @@
-import * as path from 'path'
-import { Circuit } from 'snarkjs'
-const compiler = require('circom')
 
 import {
     compileAndLoadCircuit,
@@ -14,8 +11,6 @@ import {
 
 import {
     Keypair,
-    Command,
-    Message,
 } from 'maci-domainobjs'
 
 describe('Decryption circuit', () => {

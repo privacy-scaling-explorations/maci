@@ -1,4 +1,4 @@
-import * as ethers from 'ethers'
+
 import {
     genJsonRpcDeployer,
     deployMaci,
@@ -7,14 +7,10 @@ import {
 } from 'maci-contracts'
 
 import {
-    PubKey,
     PrivKey,
     Keypair,
 } from 'maci-domainobjs'
 
-import {
-    genPubKey,
-} from 'maci-crypto'
 
 import {
     promptPwd,

@@ -1,28 +1,18 @@
-import * as path from 'path'
-import { Circuit } from 'snarkjs'
-const compiler = require('circom')
+
 import { config } from 'maci-config'
 import { 
     genTallyResultCommitment,
     MaciState,
 } from 'maci-core'
 import {
-    IncrementalMerkleTree,
     genRandomSalt,
-    Plaintext,
     bigInt,
-    hashOne,
-    hash,
-    SnarkBigInt,
-    NOTHING_UP_MY_SLEEVE,
     stringifyBigInts,
 } from 'maci-crypto'
 
 import {
     Keypair,
-    StateLeaf,
     Command,
-    Message,
 } from 'maci-domainobjs'
 
 import {
@@ -35,23 +25,16 @@ const voteOptionTreeDepth = config.maci.merkleTrees.voteOptionTreeDepth
 const initialVoiceCreditBalance = config.maci.initialVoiceCreditBalance
 const voteOptionsMaxIndex = config.maci.voteOptionsMaxLeafIndex
 const quadVoteTallyBatchSize = config.maci.quadVoteTallyBatchSize
-const intermediateStateTreeDepth = config.maci.merkleTrees.intermediateStateTreeDepth
-const numVoteOptions = 2 ** voteOptionTreeDepth
 
 const randomRange = (min: number, max: number) => {
   return bigInt(Math.floor(Math.random() * (max - min) + min))
 }
 
-const emptyVoteOptionTree = new IncrementalMerkleTree(
-    voteOptionTreeDepth,
-    bigInt(0),
-)
 
 const coordinator = new Keypair()
 
 describe('Quadratic vote tallying circuit', () => {
-    let circuit 
-    const randomStateLeaf = StateLeaf.genRandomLeaf()
+    let circuit
     const maciState = new MaciState(
         coordinator,
         stateTreeDepth,
