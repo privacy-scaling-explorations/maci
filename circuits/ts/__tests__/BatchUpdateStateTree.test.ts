@@ -1,9 +1,4 @@
-import * as fs from 'fs'
-import * as path from 'path'
-import { Circuit } from 'snarkjs'
-const compiler = require('circom')
 
-import { str2BigInt } from './utils'
 import { compileAndLoadCircuit } from '../'
 import { config } from 'maci-config'
 import { MaciState } from 'maci-core'
@@ -13,29 +8,12 @@ import {
     StateLeaf,
     Command,
     Message,
-    PubKey,
 } from 'maci-domainobjs'
 
 import {
-    IncrementalMerkleTree,
     genRandomSalt,
-    Plaintext,
-    hash,
-    SnarkBigInt,
-    PrivKey,
     bigInt,
-    stringifyBigInts,
-    NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
-
-import {
-    SnarkProvingKey,
-    SnarkVerifyingKey,
-    genProof,
-    genPublicSignals,
-    verifyProof,
-    parseVerifyingKeyJson,
-} from 'libsemaphore'
 
 jest.setTimeout(1200000)
 
@@ -46,9 +24,6 @@ const voteOptionTreeDepth = config.maci.merkleTrees.voteOptionTreeDepth
 const voteOptionsMaxIndex = config.maci.voteOptionsMaxLeafIndex
 const initialVoiceCreditBalance = config.maci.initialVoiceCreditBalance
 
-const randomRange = (min: number, max:number) => {
-  return Math.floor(Math.random() * (max - min) + min)
-}
 
 // Set up keypairs
 const user = new Keypair()
@@ -57,7 +32,6 @@ const coordinator = new Keypair()
 describe('State tree root update verification circuit', () => {
     let circuit 
     const voteWeight = bigInt(2)
-    const totalVoiceCreditsSpent = bigInt(4) * voteWeight.pow(bigInt(2))
 
     const maciState = new MaciState(
         coordinator,
@@ -75,8 +49,6 @@ describe('State tree root update verification circuit', () => {
     })
 
     it('BatchUpdateStateTree should produce the correct state root from a partially filled batch', async () => {
-        // Generate one messages
-        let messages: Message[] = []
         const stateRootBefore = maciState.genStateRoot()
 
         const command = new Command(
@@ -129,7 +101,7 @@ describe('State tree root update verification circuit', () => {
 
     it('BatchUpdateStateTree should produce the correct state root from a full batch', async () => {
         // Generate four valid messages from the same user
-        let messages: Message[] = []
+        const messages: Message[] = []
         const stateRootBefore = maciState.genStateRoot()
 
         for (let i = 0; i < 4; i++) {

@@ -1,14 +1,3 @@
-import * as path from 'path'
-import { Circuit } from 'snarkjs'
-const compiler = require('circom')
-
-import {
-    genKeyPair,
-    bigInt,
-    stringifyBigInts,
-    formatPrivKeyForBabyJub,
-} from 'maci-crypto'
-
 import {
     Keypair,
 } from 'maci-domainobjs'

@@ -42,9 +42,7 @@ import {
 
 const accounts = genTestAccounts(2)
 
-let maciContract
 let maciAddress: string
-let maciState: MaciState
 let stateIndex: string
 const providerUrl = config.get('chain.url')
 const coordinatorKeypair = new Keypair(
@@ -55,7 +53,7 @@ const maciPrivkey = coordinatorKeypair.privKey.serialize()
 const deployerPrivKey = accounts[0].privateKey
 const userPrivKey = accounts[1].privateKey
 
-maciState = new MaciState(
+const maciState = new MaciState(
     coordinatorKeypair,
     stateTreeDepth,
     messageTreeDepth,

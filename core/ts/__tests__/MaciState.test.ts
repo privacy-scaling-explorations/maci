@@ -1,14 +1,11 @@
-const MACI = require('@maci-contracts/compiled/MACI.json')
 import { 
     User,
     MaciState,
 } from '../'
 
 import {
-    Command,
     Message,
     Keypair,
-    PrivKey,
     StateLeaf,
 } from 'maci-domainobjs'
 

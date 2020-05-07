@@ -24,58 +24,10 @@ import {
 } from 'maci-crypto'
 
 interface Keypair {
-    privKey: RawPrivKey,
-    pubKey: RawPubKey,
+    privKey: RawPrivKey;
+    pubKey: RawPubKey;
 }
 
-class Keypair implements Keypair {
-    public privKey: PrivKey
-    public pubKey: PubKey
-
-    constructor (
-        privKey?: PrivKey,
-    ) {
-        if (privKey) {
-            this.privKey = privKey
-            this.pubKey = new PubKey(genPubKey(privKey.rawPrivKey))
-        } else {
-            const rawKeyPair = genKeypair()
-            this.privKey = new PrivKey(rawKeyPair.privKey)
-            this.pubKey = new PubKey(rawKeyPair.pubKey)
-        }
-    }
-
-    public copy = (): Keypair => {
-        return new Keypair(this.privKey.copy())
-    }
-    
-    public static genEcdhSharedKey(
-        privKey: PrivKey,
-        pubKey: PubKey,
-    ) {
-        return genEcdhSharedKey(privKey.rawPrivKey, pubKey.rawPubKey)
-    }
-
-    public equals(
-        keypair: Keypair,
-    ): boolean {
-
-        const equalPrivKey = this.privKey.rawPrivKey === keypair.privKey.rawPrivKey
-        const equalPubKey =
-            this.pubKey.rawPubKey[0] === keypair.pubKey.rawPubKey[0] &&
-            this.pubKey.rawPubKey[1] === keypair.pubKey.rawPubKey[1]
-
-        // If this assertion fails, something is very wrong and this function
-        // should not return anything 
-        // XOR is equivalent to: (x && !y) || (!x && y ) 
-        const x = (equalPrivKey && equalPubKey) 
-        const y = (!equalPrivKey && !equalPubKey) 
-
-        assert((x && !y) || (!x && y))
-
-        return equalPrivKey
-    }
-}
 
 const SERIALIZED_PRIV_KEY_PREFIX = 'macisk.'
 
@@ -112,6 +64,7 @@ class PrivKey {
             const value = bigInt('0x' + x)
             validValue = value < SNARK_FIELD_SIZE
         } catch {
+            // comment to make linter happy 
         }
 
         return correctPrefix && validValue
@@ -184,14 +137,65 @@ class PubKey {
 
         let validValue = false
         try {
-            const unserialized = PubKey.unserialize(s)
+            PubKey.unserialize(s)
             validValue = true
         } catch {
+            // comment to make linter happy
         }
 
         return correctPrefix && validValue
     }
 }
+
+class Keypair implements Keypair {
+    public privKey: PrivKey
+    public pubKey: PubKey
+
+    constructor (
+        privKey?: PrivKey,
+    ) {
+        if (privKey) {
+            this.privKey = privKey
+            this.pubKey = new PubKey(genPubKey(privKey.rawPrivKey))
+        } else {
+            const rawKeyPair = genKeypair()
+            this.privKey = new PrivKey(rawKeyPair.privKey)
+            this.pubKey = new PubKey(rawKeyPair.pubKey)
+        }
+    }
+
+    public copy = (): Keypair => {
+        return new Keypair(this.privKey.copy())
+    }
+    
+    public static genEcdhSharedKey(
+        privKey: PrivKey,
+        pubKey: PubKey,
+    ) {
+        return genEcdhSharedKey(privKey.rawPrivKey, pubKey.rawPubKey)
+    }
+
+    public equals(
+        keypair: Keypair,
+    ): boolean {
+
+        const equalPrivKey = this.privKey.rawPrivKey === keypair.privKey.rawPrivKey
+        const equalPubKey =
+            this.pubKey.rawPubKey[0] === keypair.pubKey.rawPubKey[0] &&
+            this.pubKey.rawPubKey[1] === keypair.pubKey.rawPubKey[1]
+
+        // If this assertion fails, something is very wrong and this function
+        // should not return anything 
+        // XOR is equivalent to: (x && !y) || (!x && y ) 
+        const x = (equalPrivKey && equalPubKey) 
+        const y = (!equalPrivKey && !equalPubKey) 
+
+        assert((x && !y) || (!x && y))
+
+        return equalPrivKey
+    }
+}
+
 
 interface IStateLeaf {
     pubKey: PubKey;

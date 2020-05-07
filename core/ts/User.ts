@@ -1,21 +1,12 @@
-import * as ethers from 'ethers'
-import * as assert from 'assert'
+
 import {
-    PrivKey,
     PubKey,
-    Command,
-    Message,
-    Keypair,
     StateLeaf,
 } from 'maci-domainobjs'
 
 import {
-    hash,
     bigInt,
     SnarkBigInt,
-    genRandomSalt,
-    stringifyBigInts,
-    NOTHING_UP_MY_SLEEVE,
     IncrementalMerkleTree,
 } from 'maci-crypto'
 
@@ -56,7 +47,7 @@ class User {
      * Return a deep copy of this User
      */
     public copy = (): User => {
-        let newVotesArr: SnarkBigInt[] = []
+        const newVotesArr: SnarkBigInt[] = []
         for (let i = 0; i < this.votes.length; i++) {
             newVotesArr.push(bigInt(this.votes[i].toString()))
         }
@@ -76,7 +67,7 @@ class User {
     public static genBlankUser = (
         _voteOptionTreeDepth: number,
     ): User => {
-        let votes: SnarkBigInt[] = []
+        const votes: SnarkBigInt[] = []
         for (let i = 0; i < _voteOptionTreeDepth; i ++) {
             votes.push(bigInt(0))
         }
@@ -101,7 +92,7 @@ class User {
             bigInt(0),
         )
 
-        for (let vote of this.votes) {
+        for (const vote of this.votes) {
             voteOptionTree.insert(vote)
         }
 

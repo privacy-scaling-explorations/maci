@@ -1,10 +1,8 @@
 import * as assert from 'assert'
 import {
     SnarkBigInt,
-    hashOne,
     hashLeftRight,
     bigInt,
-    SNARK_FIELD_SIZE,
 } from './'
 
 /* 
@@ -131,7 +129,7 @@ class IncrementalMerkleTree {
             throw new Error('The leaf index specified is too large')
         }
 
-        let temp = this.leaves
+        const temp = this.leaves
         temp[_leafIndex] = _value
 
         const newTree = new IncrementalMerkleTree(
@@ -173,8 +171,8 @@ class IncrementalMerkleTree {
         }
 
         let curIdx = leafIndex
-        let path: any[] = []
-        let pathIndex: any[] = []
+        const path: any[] = []
+        const pathIndex: any[] = []
 
         for (let i = 0; i < this.depth; i++) {
             if (curIdx % 2 === 0) {
@@ -197,7 +195,7 @@ class IncrementalMerkleTree {
     public getPathInsert (): [SnarkBigInt[], SnarkBigInt[], SnarkBigInt[]] {
         let curIdx = this.nextIndex
 
-        let pathIndex: SnarkBigInt[] = []
+        const pathIndex: SnarkBigInt[] = []
 
         for (let i = 0; i < this.depth; i++) {
             if (curIdx % 2 === 0) {

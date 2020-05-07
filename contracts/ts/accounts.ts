@@ -14,7 +14,7 @@ const genAccounts = () => {
 const genTestAccounts = (
     numAccounts: number,
 ) => {
-    let accounts: ethers.Wallet[] = []
+    const accounts: ethers.Wallet[] = []
 
     for (let i=0; i<numAccounts; i++) {
         const path = `m/44'/60'/${i}'/0/0`

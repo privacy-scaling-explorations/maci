@@ -6,7 +6,6 @@ import * as ethers from 'ethers'
 
 import { genTestAccounts } from '../accounts'
 import { timeTravel } from '../'
-import { deployTestContracts } from '../utils'
 
 import { config } from 'maci-config'
 
@@ -23,17 +22,12 @@ import { MaciState } from 'maci-core'
 import {
     hash,
     bigInt,
-    SnarkBigInt,
     IncrementalMerkleTree,
-    genEcdhSharedKey,
     NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
 
 import {
-    StateLeaf,
-    Command,
     Keypair,
-    PubKey,
     PrivKey,
 } from 'maci-domainobjs'
 
@@ -43,8 +37,6 @@ const deployer = genDeployer(accounts[0].privateKey)
 const stateTreeDepth = config.maci.merkleTrees.stateTreeDepth
 const messageTreeDepth = config.maci.merkleTrees.messageTreeDepth
 const voteOptionTreeDepth = config.maci.merkleTrees.voteOptionTreeDepth
-const numVoteOptions = 2 ** voteOptionTreeDepth
-const intermediateStateTreeDepth = config.maci.merkleTrees.intermediateStateTreeDepth
 
 const coordinator = new Keypair(new PrivKey(bigInt(config.maci.coordinatorPrivKey)))
 const maciState = new MaciState(
@@ -77,16 +69,9 @@ describe('MACI', () => {
     for (let i = 0; i < config.maci.messageBatchSize; i++) {
         const voteOptionTree = new IncrementalMerkleTree(voteOptionTreeDepth, bigInt(0))
 
-        const voteOptionIndex = bigInt(0)
         const newVoteWeight = bigInt(9)
 
         voteOptionTree.insert(newVoteWeight)
-
-        const ephemeralKeypair = new Keypair()
-        const ecdhSharedKey = Keypair.genEcdhSharedKey(
-            ephemeralKeypair.privKey,
-            coordinator.pubKey,
-        )
     }
 
     beforeAll(async () => {
@@ -119,7 +104,7 @@ describe('MACI', () => {
                     data: '0x'
                 })
             )
-            const receipt = await tx.wait()
+            await tx.wait()
             console.log(`Gave away ${numEth} ETH to`, accounts[i].address)
         }
 
