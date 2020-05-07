@@ -36,15 +36,16 @@ template EdDSAMiMCSpongeVerifier_patched() {
   compConstant.out === 0;
 
   // Calculate the h = H(R,A, msg)
-  component hash = Hasher5()
-  hash.in[0] <== R8x;
-  hash.in[1] <== R8y;
-  hash.in[2] <== Ax;
-  hash.in[3] <== Ay;
-  hash.in[4] <== M;
+  component hash = MiMCSponge(5, 1);
+  hash.ins[0] <== R8x;
+  hash.ins[1] <== R8y;
+  hash.ins[2] <== Ax;
+  hash.ins[3] <== Ay;
+  hash.ins[4] <== M;
+  hash.k <== 0;
 
   component h2bits = Num2Bits_strict();
-  h2bits.in <== hash.hash;
+  h2bits.in <==  hash.outs[0];
 
   // Calculate second part of the right side:  right2 = h*8*A
 
@@ -120,6 +121,9 @@ template VerifySignature(k) {
   component M = Hasher11();
   for (var i = 0; i < k; i++){
     M.in[i] <== preimage[i];
+  }
+  for (var i = k; i < 11; i++){
+    M.in[i] <== 0;
   }
   
   component verifier = EdDSAMiMCSpongeVerifier_patched();
