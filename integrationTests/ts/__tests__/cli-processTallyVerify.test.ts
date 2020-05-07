@@ -301,7 +301,7 @@ describe('process, tally, and prove CLI subcommands', () => {
         })
     })
 
-    describe('The tally subcommand (2)', () => {
+    describe('The tally and verify subcommands (2)', () => {
 
         it('should tally all state leaves', async () =>{
             const tallyCommand = `node ../cli/build/index.js tally` +
@@ -330,6 +330,16 @@ describe('process, tally, and prove CLI subcommands', () => {
             )
 
             expect(regMatch).toBeTruthy()
+
+            const verifyCommand = `node ../cli/build/index.js verify` +
+                ` -t test_tally.json`
+
+            const verifyExec = exec(verifyCommand)
+            const verifyOutput = verifyExec.stdout
+            const verifyRegMatch = verifyOutput.match(
+                /The commitment in the specified file is correct given the tally and salt\nThe commitment in the MACI contract on-chain is valid\n/
+            )
+            expect(verifyRegMatch).toBeTruthy()
         })
 
         it('should report an error if all state leaves have been tallied', async () =>{
