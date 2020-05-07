@@ -34,7 +34,7 @@ describe('IncrementalMerkleTree', () => {
             },
         )
 
-        console.log('Deploying MiMC')
+        console.log('Deploying PoseidonT3Contract')
         PoseidonT3Contract = await deployer.deploy(PoseidonT3, {})
         PoseidonT6Contract = await deployer.deploy(PoseidonT6, {})
 
