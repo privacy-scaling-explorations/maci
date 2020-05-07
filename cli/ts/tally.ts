@@ -308,7 +308,6 @@ const tally = async (args: any) => {
         // Update currentResultsSalt for the next iteration
         currentResultsSalt = bigInt(circuitInputs.newResultsSalt)
 
-        debugger
         const witness = circuit.calculateWitness(circuitInputs)
 
         if (!circuit.checkWitness(witness)) {

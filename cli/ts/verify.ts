@@ -6,7 +6,6 @@ import {
 
 import {
     maciContractAbi,
-    genJsonRpcDeployer,
 } from 'maci-contracts'
 
 import {
@@ -14,10 +13,8 @@ import {
 } from 'maci-crypto'
 
 import {
-    validateEthSk,
     validateEthAddress,
     contractExists,
-    checkDeployerProviderConnection,
 } from './utils'
 
 import * as ethers from 'ethers'
@@ -99,6 +96,13 @@ const verify = async (args: any) => {
     // Ethereum provider
     const ethProvider = data.provider
     const provider = new ethers.providers.JsonRpcProvider(ethProvider)
+
+    try {
+        await provider.getBlockNumber()
+    } catch {
+        console.error('Error: unable to connect to the Ethereum provider at', ethProvider)
+        return
+    }
 
     if (! (await contractExists(provider, maciAddress))) {
         console.error('Error: there is no contract deployed at the specified address')
