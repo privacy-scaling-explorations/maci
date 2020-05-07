@@ -373,11 +373,9 @@ const tally = async (args: any) => {
 
         console.log(`Transaction hash: ${tx.hash}`)
 
-        if (args.repeat) {
-            console.log(`Current results salt: 0x${currentResultsSalt.toString(16)}`)
-        }
 
         if (!args.repeat || ! (await maciContract.hasUntalliedStateLeaves())) {
+            console.log(`Current results salt: 0x${currentResultsSalt.toString(16)}`)
 			const currentResultsCommitment = await maciContract.currentResultsCommitment()
             const c = bigInt(currentResultsCommitment.toString())
             console.log(`Result commitment: 0x${c.toString(16)}`)

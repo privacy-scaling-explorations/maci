@@ -329,7 +329,7 @@ describe('process, tally, and prove CLI subcommands', () => {
             }
 
             const regMatch = output.match(
-                /Transaction hash: (0x[a-fA-F0-9]{64})\nResult commitment: 0x[a-fA-F0-9]+\n$/
+                /Transaction hash: (0x[a-fA-F0-9]{64})\nCurrent results salt: (0x[a-fA-F0-9]+)\nResult commitment: 0x[a-fA-F0-9]+\n$/
             )
 
             expect(regMatch).toBeTruthy()

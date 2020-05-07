@@ -269,8 +269,13 @@ const executeSuite = async (data: any, expect: any) => {
     console.log(tallyOutput.stdout)
 
     const tallyRegMatch = tallyOutput.match(
-        /Transaction hash: (0x[a-fA-F0-9]{64})\nCurrent results salt: (0x[a-fA-F0-9]+)\n$/
+        /Transaction hash: (0x[a-fA-F0-9]{64})\nCurrent results salt: (0x[a-fA-F0-9]+)\nResult commitment: 0x[a-fA-F0-9]+\n$/
     )
+
+    if (!tallyRegMatch) {
+        console.log('Mismatch:')
+        console.log(tallyOutput)
+    }
 
     expect(tallyRegMatch).toBeTruthy()
 
