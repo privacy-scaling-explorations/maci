@@ -16,7 +16,7 @@ const PoseidonT6 = require('@maci-contracts/compiled/PoseidonT6.json')
 const accounts = genTestAccounts(1)
 let deployer
 let hasherContract
-let t3Contract, t6Contract
+let PoseidonT3Contract, PoseidonT6Contract
 
 describe('Hasher', () => {
     beforeAll(async () => {
@@ -30,13 +30,13 @@ describe('Hasher', () => {
 
         console.log('Deploying Poseidon')
 
-        t3Contract = await deployer.deploy(PoseidonT3, {})
-        t6Contract = await deployer.deploy(PoseidonT6, {})
+        PoseidonT3Contract = await deployer.deploy(PoseidonT3, {})
+        PoseidonT6Contract = await deployer.deploy(PoseidonT6, {})
 
         console.log('Deploying Hasher')
         hasherContract = await deployer.deploy(Hasher, {
-            PoseidonT3: t3Contract.contractAddress,
-            PoseidonT6: t6Contract.contractAddress
+            PoseidonT3: PoseidonT3Contract.contractAddress,
+            PoseidonT6: PoseidonT6Contract.contractAddress
         })
     })
 
