@@ -72,7 +72,7 @@ describe('Hasher', () => {
     })
 
     it('maci-crypto.hash11 should match hasher.hash11 for 11 elements', async () => {
-        let values: string[] = []
+        const values: string[] = []
         for (let i = 0; i < 11; i++) {
             values.push(genRandomSalt().toString())
         }

@@ -46,7 +46,7 @@ describe('Cryptographic operations', () => {
             expect(h.lt(SNARK_FIELD_SIZE)).toBeTruthy()
         })
         it('Hashsing more than 11 elements should throw', () => {
-            let arrayOf12: any[] = []
+            const arrayOf12: any[] = []
             for (let i = 0; i < 12; i++) {
                 arrayOf12.push(bigInt(i))
             }

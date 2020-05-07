@@ -93,7 +93,7 @@ const hash11 = (elements: Plaintext): SnarkBigInt => {
     if (elementLength > 11) {
         throw new TypeError(`elements length should not greater than 11, got ${elementLength}`)
     }
-    let elementsPadded = elements.slice()
+    const elementsPadded = elements.slice()
     if (elementLength < 11) {
         for (let i = elementLength; i < 11; i ++){
             elementsPadded.push(bigInt(0))
