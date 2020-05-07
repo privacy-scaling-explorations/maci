@@ -14,7 +14,6 @@ import {
     PrivKey,
     Command,
     Keypair,
-    StateLeaf,
 } from 'maci-domainobjs'
 
 import {

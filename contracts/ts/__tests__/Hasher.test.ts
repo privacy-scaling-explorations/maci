@@ -1,11 +1,10 @@
 require('module-alias/register')
-import { genAccounts, genTestAccounts } from '../accounts'
+import { genTestAccounts } from '../accounts'
 import { config } from 'maci-config'
 import {
     hashLeftRight,
     hash,
     genRandomSalt,
-    SnarkBigInt,
 } from 'maci-crypto'
 
 import * as etherlime from 'etherlime-lib'
@@ -44,7 +43,7 @@ describe('Hasher', () => {
     })
 
     it('maci-crypto.hash should match hasher.hash', async () => {
-        let values: string[] = []
+        const values: string[] = []
         for (let i=0; i < 10; i++) {
             values.push(genRandomSalt().toString())
         }
@@ -55,7 +54,7 @@ describe('Hasher', () => {
     })
 
     it('maci-crypto.hashOne should match hasher.hash with one value', async () => {
-        let values = [genRandomSalt().toString()]
+        const values = [genRandomSalt().toString()]
         const hashed = hash(values)
 
         const onChainHash = await hasherContract.hash(values)

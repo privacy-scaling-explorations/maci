@@ -94,6 +94,10 @@ jobs:
           command: cd contracts && npm run compileSol
 
       - run:
+          name: Lint
+          command: npm run lint
+
+      - run:
           name: Run crypto tests
           command: cd crypto && npm run test
  

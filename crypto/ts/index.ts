@@ -301,7 +301,7 @@ const encrypt = (
 
     const ciphertext: Ciphertext = {
         iv,
-        data: plaintext.map((e: SnarkBigInt, i: Number): SnarkBigInt => {
+        data: plaintext.map((e: SnarkBigInt, i: number): SnarkBigInt => {
             return e + mimc7.hash(
                 sharedKey, 
                 iv + snarkjs.bigInt(i),
@@ -323,7 +323,7 @@ const decrypt = (
 ): Plaintext => {
 
     const plaintext: Plaintext = ciphertext.data.map(
-        (e: SnarkBigInt, i: Number): SnarkBigInt => {
+        (e: SnarkBigInt, i: number): SnarkBigInt => {
             return e - mimc7.hash(
                 sharedKey,
                 ciphertext.iv + snarkjs.bigInt(i),

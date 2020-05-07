@@ -1,17 +1,12 @@
 import {
     StateLeaf,
     Command,
-    Message,
     Keypair,
     PrivKey,
     PubKey,
 } from '../'
 
 import {
-    encrypt,
-    sign,
-    decrypt,
-    verifySignature,
     genKeypair,
     bigInt,
     unpackPubKey,
@@ -21,15 +16,8 @@ describe('Domain objects', () => {
     const { privKey, pubKey } = new Keypair()
     const k = new Keypair()
 
-    const privKey1 = k.privKey
     const pubKey1 = k.pubKey
 
-    const encKeypair = new Keypair()
-    const encPrivKey = k.privKey
-    const encPubKey = k.pubKey
-
-    const newKeypair = new Keypair()
-    const newPrivKey = k.privKey
     const newPubKey = k.pubKey
 
     const ecdhSharedKey = Keypair.genEcdhSharedKey(privKey, pubKey1)

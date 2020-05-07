@@ -1,6 +1,4 @@
-import * as path from 'path'
-import { Circuit } from 'snarkjs'
-const compiler = require('circom')
+
 
 import {
     compileAndLoadCircuit,
@@ -10,24 +8,11 @@ import { MaciState } from 'maci-core'
 
 import {
     Keypair,
-    StateLeaf,
     Command,
-    Message,
 } from 'maci-domainobjs'
 import {
-    IncrementalMerkleTree,
     genRandomSalt,
-    Plaintext,
-    Ciphertext,
-    hashOne,
-    hash,
-    SnarkBigInt,
-    PrivKey,
     bigInt,
-    genPrivKey,
-    genEcdhSharedKey,
-    stringifyBigInts,
-    NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
 
 import { config } from 'maci-config'
@@ -41,7 +26,6 @@ const voteOptionsMaxIndex = config.maci.voteOptionsMaxLeafIndex
 // Set up keypairs
 const user = new Keypair()
 const coordinator = new Keypair()
-const ephemeralKeypair = new Keypair()
 
 const stateIndex = bigInt(1)
 const voteOptionIndex = bigInt(0)

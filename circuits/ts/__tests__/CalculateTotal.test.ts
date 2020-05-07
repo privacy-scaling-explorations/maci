@@ -1,36 +1,14 @@
-import * as path from 'path'
-import { Circuit } from 'snarkjs'
-const compiler = require('circom')
-import {
-    setupTree,
-    genRandomSalt,
-    Plaintext,
-    bigInt,
-    hashOne,
-    hash,
-    SnarkBigInt,
-} from 'maci-crypto'
-
-import {
-    Keypair,
-    StateLeaf,
-} from 'maci-domainobjs'
 
 import {
     compileAndLoadCircuit,
 } from '../'
 
-import {
-    genPublicSignals,
-} from 'libsemaphore'
-
-const ZERO_VALUE = 0
 
 describe('CalculateTotal circuit', () => {
     it('should correctly sum a list of values', async () => {
         const ctCircuit = await compileAndLoadCircuit('test/calculateTotal_test.circom')
 
-        let nums: number[] = []
+        const nums: number[] = []
         for (let i=0; i < 6; i++) {
             nums.push(Math.floor(Math.random() * 100))
         }

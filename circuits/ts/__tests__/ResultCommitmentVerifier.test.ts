@@ -1,18 +1,8 @@
-import * as path from 'path'
-import { Circuit } from 'snarkjs'
-const compiler = require('circom')
 import {
     genRandomSalt,
     bigInt,
-    hash,
-    stringifyBigInts,
     SnarkBigInt,
 } from 'maci-crypto'
-
-import {
-    Keypair,
-    StateLeaf,
-} from 'maci-domainobjs'
 
 import {
     compileAndLoadCircuit,
@@ -21,10 +11,6 @@ import {
 import {
     genTallyResultCommitment,
 } from 'maci-core'
-
-import {
-    genPublicSignals,
-} from 'libsemaphore'
 
 const DEPTH = 2
 const NUM_OPTIONS = 2 ** DEPTH
@@ -50,12 +36,6 @@ const genResultCommitmentVerifierCircuitInputs = (
         DEPTH,
     )
 
-    const newResultsCommitment = genTallyResultCommitment(
-        newResults,
-        newResultsSalt,
-        DEPTH,
-    )
-
     return {
         currentResultsSalt,
         currentResultsCommitment,
@@ -77,8 +57,8 @@ describe('ResultCommitmentVerifier circuit', () => {
         const currentResultsSalt = genRandomSalt()
         const newResultsSalt = genRandomSalt()
 
-        let currentResults: SnarkBigInt[] = []
-        let newResults: SnarkBigInt[] = []
+        const currentResults: SnarkBigInt[] = []
+        const newResults: SnarkBigInt[] = []
 
         for (let i = 0; i < NUM_OPTIONS; i ++) {
             currentResults.push(randVal())

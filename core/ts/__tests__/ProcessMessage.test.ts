@@ -3,11 +3,8 @@ import { config } from 'maci-config'
 import {
     bigInt,
     genRandomSalt,
-    genEcdhSharedKey,
-    NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
 import {
-    StateLeaf,
     PrivKey,
     Command,
     Message,

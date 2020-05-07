@@ -9,7 +9,6 @@ import { genPubKey, bigInt } from 'maci-crypto'
 import { PubKey } from 'maci-domainobjs'
 import { genAccounts, genTestAccounts } from './accounts'
 const MiMC = require('@maci-contracts/compiled/MiMC.json')
-const Hasher = require('@maci-contracts/compiled/Hasher.json')
 const SignUpToken = require('@maci-contracts/compiled/SignUpToken.json')
 const SignUpTokenGatekeeper = require('@maci-contracts/compiled/SignUpTokenGatekeeper.json')
 const FreeForAllSignUpGatekeeper = require('@maci-contracts/compiled/FreeForAllGatekeeper.json')
@@ -18,8 +17,6 @@ const ConstantInitialVoiceCreditProxy = require('@maci-contracts/compiled/Consta
 const BatchUpdateStateTreeVerifier = require('@maci-contracts/compiled/BatchUpdateStateTreeVerifier.json')
 const QuadVoteTallyVerifier = require('@maci-contracts/compiled/QuadVoteTallyVerifier.json')
 const MACI = require('@maci-contracts/compiled/MACI.json')
-
-const coordinatorPublicKey = genPubKey(bigInt(config.maci.coordinatorPrivKey))
 
 const maciContractAbi = MACI.abi
 const initialVoiceCreditProxyAbi = InitialVoiceCreditProxy.abi
@@ -57,7 +54,7 @@ const genDeployer = (
 const deployConstantInitialVoiceCreditProxy = async (
     deployer,
     amount: number,
-    quiet: boolean = false
+    quiet = false
 ) => {
     log('Deploying InitialVoiceCreditProxy', quiet)
     return await deployer.deploy(ConstantInitialVoiceCreditProxy, {}, amount)
@@ -71,7 +68,7 @@ const deploySignupToken = async (deployer) => {
 const deploySignupTokenGatekeeper = async (
     deployer,
     signUpTokenAddress: string,
-    quiet: boolean = false
+    quiet = false
 ) => {
     log('Deploying SignUpTokenGatekeeper', quiet)
     const signUpTokenGatekeeperContract = await deployer.deploy(
@@ -85,7 +82,7 @@ const deploySignupTokenGatekeeper = async (
 
 const deployFreeForAllSignUpGatekeeper = async (
     deployer,
-    quiet: boolean = false
+    quiet = false
 ) => {
     log('Deploying FreeForAllSignUpGatekeeper', quiet)
     return await deployer.deploy(
@@ -113,7 +110,7 @@ const deployMaci = async (
     signUpDurationInSeconds: number = config.maci.signUpDurationInSeconds,
     votingDurationInSeconds: number = config.maci.votingDurationInSeconds,
     coordinatorPubKey?: PubKey,
-    quiet: boolean = false,
+    quiet = false,
 ) => {
     log('Deploying MiMC', quiet)
 
@@ -215,7 +212,6 @@ const main = async () => {
     const deployer = genDeployer(admin.privateKey)
 
     let signUpTokenAddress
-    let signUpTokenGatekeeperAddress
     if (signUpToken) {
         signUpTokenAddress = signUpToken
     } else {

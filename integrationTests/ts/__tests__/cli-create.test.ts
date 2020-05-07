@@ -3,8 +3,6 @@ import * as ethers from 'ethers'
 import { MaciState } from 'maci-core'
 
 import {
-    PubKey,
-    PrivKey,
     Keypair,
 } from 'maci-domainobjs'
 
@@ -13,8 +11,6 @@ import {
     initialVoiceCreditProxyAbi,
     genTestAccounts,
 } from 'maci-contracts'
-
-import { genPubKey } from 'maci-crypto'
 
 import { config } from 'maci-config'
 
@@ -27,7 +23,6 @@ const calcTreeDepthFromMaxLeaves = (maxLeaves: number) => {
 }
 
 describe('create CLI subcommand', () => {
-    let maciContract
 
     const coordinatorKeypair = new Keypair()
 

@@ -3,8 +3,6 @@ import {
 } from 'libsemaphore'
 
 import {
-    genDeployer,
-    genTestAccounts,
     deployMaci,
     deployFreeForAllSignUpGatekeeper,
     deployConstantInitialVoiceCreditProxy,
