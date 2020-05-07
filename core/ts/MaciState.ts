@@ -245,6 +245,7 @@ class MaciState {
         newUser.nonce = newUser.nonce + bigInt(1)
         newUser.votes[command.voteOptionIndex] = command.newVoteWeight
         newUser.voiceCreditBalance = voiceCreditsLeft
+        newUser.pubKey = command.newPubKey.copy()
 
         // Replace the entry in this.users
         this.users[userIndex] = newUser

@@ -254,7 +254,7 @@ Please store your private key in a safe place and do not reveal it to anyone.
 node ./build/index.js create -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
 	-e http://localhost:8545 \
-	-s 20 \
+	-s 15 \
 	-o 60 \
 	-bm 4 \
 	-bv 4

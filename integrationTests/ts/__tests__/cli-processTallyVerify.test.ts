@@ -128,11 +128,14 @@ describe('process, tally, and prove CLI subcommands', () => {
         // Wait for the signup period to pass
         await delay(1000 * signupDuration)
 
+        // This command is to vote for option 0 with 9*9 voice credits and to
+        // change the user's public key
         const stateIndex = 1
         const voteOptionIndex = 0
         const newVoteWeight = 9
         const nonce = 1
         const salt = '0x0333333333333333333333333333333333333333333333333333333333333333'
+        const newPubKey = (new Keypair()).pubKey
 
         // Retrieve the coordinator's public key
         const coordinatorPubKeyOnChain = await maciContract.coordinatorPubKey()
@@ -144,7 +147,7 @@ describe('process, tally, and prove CLI subcommands', () => {
         // Run the publish command
         const publishCommand = `node ../cli/build/index.js publish` +
             ` -sk ${userKeypair.privKey.serialize()}` +
-            ` -p ${userKeypair.pubKey.serialize()}` +
+            ` -p ${newPubKey.serialize()}` +
             ` -d ${userPrivKey}` +
             ` -x ${maciAddress}` +
             ` -i ${stateIndex}` +
@@ -174,7 +177,7 @@ describe('process, tally, and prove CLI subcommands', () => {
 
         const command = new Command(
             bigInt(stateIndex),
-            userKeypair.pubKey,
+            newPubKey,
             bigInt(voteOptionIndex),
             bigInt(newVoteWeight),
             bigInt(nonce),

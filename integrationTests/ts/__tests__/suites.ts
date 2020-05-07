@@ -285,8 +285,6 @@ const executeSuite = async (data: any, expect: any) => {
 
     expect(finalTallyCommitment.toString()).toEqual(expectedTallyCommitment.toString())
 
-    // TODO: run the verify subcommand 
-
     return true
 }
 
