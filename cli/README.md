@@ -292,7 +292,7 @@ node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241
 	-p macipk.9ea5fe597048b222d9b5f9321d7e443e3423d622f47a30e4232ddab0e551eb1f \
 	-i 1 \
 	-v 0 \
-	-w 10 \
+	-w 9 \
 	-n 1
 ```
 
@@ -328,7 +328,7 @@ node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241
 	-p macipk.87c3e51b1f58af9f7e6edd70083b445d3c6c8c4e40abe933a8ff382889d4c5ac \
 	-i 1 \
 	-v 0 \
-	-w 10 \
+	-w 9 \
 	-n 2
 ```
 
@@ -349,7 +349,7 @@ node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241
 	-p macipk.9ea5fe597048b222d9b5f9321d7e443e3423d622f47a30e4232ddab0e551eb1f \
 	-i 1 \
 	-v 1 \
-	-w 10 \
+	-w 9 \
 	-n 3
 ```
 
@@ -401,6 +401,41 @@ Result commitment: 0x25deb6f675ed4f08742e1776eee130c627d168106fd813627963b241c1b
 The file `tally.json` will now contain something like the following:
 
 ```json
+{
+    "provider": "http://localhost:8545",
+    "maci": "0x9FBDa871d559710256a2502A2517b794B482Db40",
+    "commitment": "0x27d994084f2288c880e4d8c28e67a557a9f2239bb50a595fc4bff3024dfe2c11",
+    "tally": [
+        "9",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+    ],
+    "salt": "0x2ffd5bffbbfc263060411ad3bdb605bebaa641b7fac870cf1041c766b9c0f509"
+}
 ```
 
 Anyone can now run `verify` to check if the tally is correct:
+
+```bash
+node build/index.js verify -t tally.json
+```
+
+Example output:
+
+```
+The commitment in the specified file is correct given the tally and salt
+The commitment in the MACI contract on-chain is valid
+```

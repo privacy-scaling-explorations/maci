@@ -82,9 +82,9 @@ const verify = async (args: any) => {
 
     const expectedCommitment = genTallyResultCommitment(tally, salt, depth)
     if (expectedCommitment.toString() === commitment.toString()) {
-        console.log('Valid off-chain commitment')
+        console.log('The commitment in the specified file is correct given the tally and salt')
     } else {
-        console.error('Error: the commitment does not match the tally and salt')
+        console.error('Error: the commitment in the specified file is incorrect')
         return
     }
 
@@ -113,7 +113,7 @@ const verify = async (args: any) => {
 
     const onChainCommitment = bigInt((await maciContract.currentResultsCommitment()).toString())
     if (onChainCommitment.toString() === expectedCommitment.toString()) {
-        console.log('Valid on-chain commitment')
+        console.log('The commitment in the MACI contract on-chain is valid')
     } else {
         console.error('Error: the commitment in the MACI contract does not match the expected commitment')
     }
