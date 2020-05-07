@@ -2,7 +2,6 @@ import * as assert from 'assert'
 import * as crypto from 'crypto'
 import * as ethers from 'ethers'
 import * as snarkjs from 'snarkjs'
-import * as argon2 from 'argon2'
 import { babyJub, eddsa, mimcsponge, mimc7 } from 'circomlib'
 import { IncrementalMerkleTree } from './IncrementalMerkleTree'
 const stringifyBigInts: (obj: object) => object = snarkjs.stringifyBigInts
@@ -84,66 +83,6 @@ const hashOne = (preImage: SnarkBigInt): SnarkBigInt => {
 const hashLeftRight = (left: SnarkBigInt, right: SnarkBigInt): SnarkBigInt => {
 
     return mimcsponge.multiHash([left, right], 0, 1)
-}
-
-/*
- * Given a passphrase and a nonce, generate an expensive Argon2id hash of the
- * concatenation of the passphrase and the nonce.
- * @param p The passphrase
- * @param nonce The nonce
- * @return A Promise which will resolve to a Buffer representation of the hash
- *         of p + nonce.toString()
- */
-const hashPassphrase = (p: string, nonce: number): Promise<Buffer> => {
-    // We set the salt to a constant value so that argon2.hash() becomes
-    // deterministic.
-
-    const SALT = Buffer.from('27864203c107e4b8c39e80eca12b7637', 'hex')
-    const options = {
-        type: argon2.argon2id,
-        timeCost: 30,
-        memoryCost: 40960,
-        raw: true,
-        salt: SALT,
-    }
-
-    // @ts-ignore
-    return argon2.hash(p + nonce.toString(), options)
-}
-
-/*
- * Given a passphrase, generate a BabyJub-compatible private key.
- * This function uses Argon2id to hash the passphrase and a nonce. If the hash
- * is not a valid BabyJub-compatible private key (i.e. it is greater than the
- * snark field size), it will increment the nonce and try again.
- * @param p The passphrase
- * @return A Promise which will resolve to a PrivKey
- */
-const passphraseToPrivKey = async (p: string): Promise<PrivKey> => {
-    let nonce = 0
-
-    const min = (
-        (snarkjs.bigInt(2).pow(snarkjs.bigInt(256))) - SNARK_FIELD_SIZE
-    ) % SNARK_FIELD_SIZE
-
-    let rand: SnarkBigInt
-
-    // Increment the nonce until the hash of (p + nonce) is within range
-    while (true) {
-        const hash = await hashPassphrase(p, nonce)
-        rand = snarkjs.bigInt('0x' + hash.toString('hex'))
-
-        if (rand >= min) {
-            break
-        }
-
-        nonce ++
-    }
-
-    const privKey: PrivKey = rand % SNARK_FIELD_SIZE
-    assert(privKey < SNARK_FIELD_SIZE)
-
-    return privKey
 }
 
 /*
@@ -415,5 +354,4 @@ export {
     bigInt2Buffer,
     packPubKey,
     unpackPubKey,
-    passphraseToPrivKey,
 }
