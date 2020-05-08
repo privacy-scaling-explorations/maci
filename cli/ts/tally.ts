@@ -1,3 +1,4 @@
+import * as fs from 'fs'
 import * as ethers from 'ethers'
 
 import { bigInt, genRandomSalt, SnarkBigInt } from 'maci-crypto'
@@ -127,6 +128,15 @@ const configureSubparser = (subparsers: any) => {
             required: true,
             type: 'string',
             help: 'The secret salt which is hashed along with the current results to produce the current result commitment input to the snark.',
+        }
+    )
+
+    parser.addArgument(
+        ['-t', '--tally-file'],
+        {
+            required: true,
+            type: 'string',
+            help: 'A filepath in which to save the final vote tally and salt.',
         }
     )
 }
@@ -362,10 +372,27 @@ const tally = async (args: any) => {
         }
 
         console.log(`Transaction hash: ${tx.hash}`)
-        if (args.repeat) {
-            console.log(`Current results salt: 0x${currentResultsSalt.toString(16)}`)
-        }
+
+
         if (!args.repeat || ! (await maciContract.hasUntalliedStateLeaves())) {
+            console.log(`Current results salt: 0x${currentResultsSalt.toString(16)}`)
+			const currentResultsCommitment = await maciContract.currentResultsCommitment()
+            const c = bigInt(currentResultsCommitment.toString())
+            console.log(`Result commitment: 0x${c.toString(16)}`)
+
+            if (args.tally_file) {
+                // Write tally to a file
+                const d = {
+                    provider: ethProvider,
+                    maci: maciContract.address,
+                    commitment: `0x${c.toString(16)}`,
+                    tally: tally.map((x) => x.toString()),
+                    salt: '0x' + currentResultsSalt.toString(16),
+                }
+
+                // Format the JSON file with spaces
+                fs.writeFileSync(args.tally_file, JSON.stringify(d, null, 4))
+            }
             break
         }
     }

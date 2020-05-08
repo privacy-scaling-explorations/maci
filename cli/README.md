@@ -185,3 +185,249 @@ Fields that the coordinator has to set:
 | Repeat until all votes have been processed | `-r` or `--repeat` | Default: false |
 | The serialised state leaf preimage at index 0 | `-z` or `--leaf-zero` | |
 | The current result salt | `-c` or `--current-salt` | The secret salt which is hashed along with the current results to produce the current result commitment input to the snark. |
+| The final tally file | `-t` or `--tally-file` | A filepath in which to save the final vote tally and salt. |
+
+### Anyone: Verify a vote tally
+
+`node build/index.js verify <options>`
+
+Fields to set:
+
+| Option | Flags | About |
+|-|-|-|
+| The final tally file | `-t` or `--tally-file` | The final tally file created by the `tally` subcommand. |
+
+## Demonstration
+
+This section contains a sequence of commands which will be useful for a live
+demonstration. They simulate the following scenario:
+
+1. Alice votes for Party A
+2. Alice changes her key
+3. Eve tries to bribe Alice to change her vote to Party B
+4. Alice submits an invalid vote for Party B
+5. The coordinator processes the votes and computes the final tally
+6. The expected result is: Party A has 1 vote and Party B has 0 votes. Alice’s
+   invalid vote was not counted, and Eve had no way to tell.
+
+**Coordinator: create keypair**
+
+```
+node ./build/index.js genMaciKeypair
+```
+
+Example output:
+
+```
+Private key: macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c
+Public key:  macipk.f2accdb00311dc1af2ec6e00505e6bf62dcc0614eac2276fa01846dc7bad840a
+
+Please store your private key in a safe place and do not reveal it to anyone.
+```
+
+**Alice: create keypair**
+
+```
+node ./build/index.js genMaciKeypair
+```
+
+Example output:
+
+```
+Private key: macisk.53c8bc722a9f9d4c7bd478c8c8b01177f82d9c68d1ce15078e93ea84f198644
+Public key:  macipk.9ea5fe597048b222d9b5f9321d7e443e3423d622f47a30e4232ddab0e551eb1f
+
+Please store your private key in a safe place and do not reveal it to anyone.
+```
+
+**Coordinator: create election**
+
+```
+node ./build/index.js create -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+	-sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
+	-e http://localhost:8545 \
+	-s 15 \
+	-o 60 \
+	-bm 4 \
+	-bv 4
+```
+
+Example output:
+
+```
+MACI: 0x9FBDa871d559710256a2502A2517b794B482Db40
+```
+
+**Alice: sign up**
+
+```
+node ./build/index.js signup -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+	-e http://localhost:8545 \
+	-p macipk.9ea5fe597048b222d9b5f9321d7e443e3423d622f47a30e4232ddab0e551eb1f \
+	-x 0x9FBDa871d559710256a2502A2517b794B482Db40
+```
+
+Example output:
+
+```
+Transaction hash: 0x3cd2e6e805b54a6dfaff840dcf496092447400a1b26ba9f3c31bd78c3fe15723
+State index: 1
+```
+
+**Alice: vote for party A**
+
+```
+node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+	-e http://localhost:8545 \
+	-x 0x9FBDa871d559710256a2502A2517b794B482Db40 \
+	-sk macisk.53c8bc722a9f9d4c7bd478c8c8b01177f82d9c68d1ce15078e93ea84f198644 \
+	-p macipk.9ea5fe597048b222d9b5f9321d7e443e3423d622f47a30e4232ddab0e551eb1f \
+	-i 1 \
+	-v 0 \
+	-w 9 \
+	-n 1
+```
+
+Example output:
+
+```
+Transaction hash: 0xc52ff70c3bbcc91457fd61738cd00d09d8bac96c56094910e275e474132ff741
+Ephemeral private key: macisk.1e3233eec8d0ccf722f2576ba5cb1b361939f0617ac3583a3eb025e4944b0e40
+```
+
+**Alice: create new key**
+
+```
+node ./build/index.js genMaciKeypair
+```
+
+Example output:
+
+```
+Private key: macisk.55c301b490600f21b0f495205fe4e8d5013b21fae96561ed2e88e5a900db5ff
+Public key:  macipk.87c3e51b1f58af9f7e6edd70083b445d3c6c8c4e40abe933a8ff382889d4c5ac
+
+Please store your private key in a safe place and do not reveal it to anyone.
+```
+
+**Alice: change key**
+
+```
+node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+	-e http://localhost:8545 \
+	-x 0x9FBDa871d559710256a2502A2517b794B482Db40 \
+	-sk macisk.53c8bc722a9f9d4c7bd478c8c8b01177f82d9c68d1ce15078e93ea84f198644 \
+	-p macipk.87c3e51b1f58af9f7e6edd70083b445d3c6c8c4e40abe933a8ff382889d4c5ac \
+	-i 1 \
+	-v 0 \
+	-w 9 \
+	-n 2
+```
+
+Example output:
+
+```
+Transaction hash: 0x812dc6345e2515bced4f15e7ca3842d3d343c22f6729fe3216b946fa97bffc1e
+Ephemeral private key: macisk.24115d8d585b7dd8f7ea1975668b3d4f34dcf8b1bcc6617bdefbed7e41b89846
+```
+
+**Alice: vote for party B with old key**
+
+```
+node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+	-e http://localhost:8545 \
+	-x 0x9FBDa871d559710256a2502A2517b794B482Db40 \
+	-sk macisk.53c8bc722a9f9d4c7bd478c8c8b01177f82d9c68d1ce15078e93ea84f198644 \
+	-p macipk.9ea5fe597048b222d9b5f9321d7e443e3423d622f47a30e4232ddab0e551eb1f \
+	-i 1 \
+	-v 1 \
+	-w 9 \
+	-n 3
+```
+
+Example output:
+
+```
+Transaction hash: 0x45ae379b056a6fc647a3718bd356268a1bcda35e6645bb7a1aba44cb76418c98
+Ephemeral private key: macisk.2b23e978301d029e46117ef0138f860e277ffed0f008712f3d7ca2c40f1a6768
+```
+
+**Coordinator: process all messages** 
+```
+NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js process -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+	-e http://localhost:8545 \
+	-x 0x9FBDa871d559710256a2502A2517b794B482Db40 \
+	-sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
+	-r
+```
+
+Example output:
+
+```
+Processed batch starting at index 0
+Transaction hash: 0xbd1bbe86cd4fc72f34911220db428751e8a483b3afcc9d30c1a15989a7b6a031
+Random state leaf: <RANDOM STATE LEAF>
+```
+
+**Coordinator: tally all votes**
+
+```
+NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js tally -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+	-e http://localhost:8545 \
+	-x 0x9FBDa871d559710256a2502A2517b794B482Db40 \
+	-sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
+	-r \
+	-c 0x0 \
+	-t tally.json \
+	-z <PASTE RANDOM STATE LEAF HERE>
+```
+
+Example output:
+
+```
+Transaction hash: 0x9ef0ab94d534650445c4ff748a43eacdedff1602929bd6a1bd568573374ddca2
+Current results salt: 0xa54b75db545fcda278ce882cae90d069c6fcf81368778264550d9b66af05a42
+Result commitment: 0x25deb6f675ed4f08742e1776eee130c627d168106fd813627963b241c1ba0754
+```
+
+The file `tally.json` will now contain something like the following:
+
+```json
+{
+    "provider": "http://localhost:8545",
+    "maci": "0x9FBDa871d559710256a2502A2517b794B482Db40",
+    "commitment": "0x27d994084f2288c880e4d8c28e67a557a9f2239bb50a595fc4bff3024dfe2c11",
+    "tally": [
+        "9",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+    ],
+    "salt": "0x2ffd5bffbbfc263060411ad3bdb605bebaa641b7fac870cf1041c766b9c0f509"
+}
+```
+
+Anyone can now run `verify` to check if the tally is correct:
+
+```bash
+node build/index.js verify -t tally.json
+```
+
+Example output:
+
+```
+The commitment in the specified file is correct given the tally and salt
+The commitment in the MACI contract on-chain is valid
+```

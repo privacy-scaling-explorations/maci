@@ -254,6 +254,7 @@ const executeSuite = async (data: any, expect: any) => {
         ` -d ${userPrivKey}` +
         ` -x ${maciAddress}` +
         ` -z ${randomLeaf.serialize()}` +
+        ` -t test_tally.json` +
         ` -c 0x0000000000000000000000000000000000000000000000000000000000000000` +
         ` -r`
 
@@ -268,8 +269,13 @@ const executeSuite = async (data: any, expect: any) => {
     console.log(tallyOutput.stdout)
 
     const tallyRegMatch = tallyOutput.match(
-        /Transaction hash: (0x[a-fA-F0-9]{64})\nCurrent results salt: (0x[a-fA-F0-9]+)\n$/
+        /Transaction hash: (0x[a-fA-F0-9]{64})\nCurrent results salt: (0x[a-fA-F0-9]+)\nResult commitment: 0x[a-fA-F0-9]+\n$/
     )
+
+    if (!tallyRegMatch) {
+        console.log('Mismatch:')
+        console.log(tallyOutput)
+    }
 
     expect(tallyRegMatch).toBeTruthy()
 

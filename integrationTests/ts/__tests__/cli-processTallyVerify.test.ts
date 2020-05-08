@@ -128,11 +128,14 @@ describe('process, tally, and prove CLI subcommands', () => {
         // Wait for the signup period to pass
         await delay(1000 * signupDuration)
 
+        // This command is to vote for option 0 with 9*9 voice credits and to
+        // change the user's public key
         const stateIndex = 1
         const voteOptionIndex = 0
         const newVoteWeight = 9
         const nonce = 1
         const salt = '0x0333333333333333333333333333333333333333333333333333333333333333'
+        const newPubKey = (new Keypair()).pubKey
 
         // Retrieve the coordinator's public key
         const coordinatorPubKeyOnChain = await maciContract.coordinatorPubKey()
@@ -144,7 +147,7 @@ describe('process, tally, and prove CLI subcommands', () => {
         // Run the publish command
         const publishCommand = `node ../cli/build/index.js publish` +
             ` -sk ${userKeypair.privKey.serialize()}` +
-            ` -p ${userKeypair.pubKey.serialize()}` +
+            ` -p ${newPubKey.serialize()}` +
             ` -d ${userPrivKey}` +
             ` -x ${maciAddress}` +
             ` -i ${stateIndex}` +
@@ -174,7 +177,7 @@ describe('process, tally, and prove CLI subcommands', () => {
 
         const command = new Command(
             bigInt(stateIndex),
-            userKeypair.pubKey,
+            newPubKey,
             bigInt(voteOptionIndex),
             bigInt(newVoteWeight),
             bigInt(nonce),
@@ -211,6 +214,7 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
                 ` -z ${StateLeaf.genRandomLeaf().serialize()}` +
+                ` -t test_tally.json` +
                 ` -c 0x0000000000000000000000000000000000000000`
 
             const e = exec(tallyCommand)
@@ -300,7 +304,7 @@ describe('process, tally, and prove CLI subcommands', () => {
         })
     })
 
-    describe('The tally subcommand (2)', () => {
+    describe('The tally and verify subcommands (2)', () => {
 
         it('should tally all state leaves', async () =>{
             const tallyCommand = `node ../cli/build/index.js tally` +
@@ -308,19 +312,37 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
                 ` -z ${randomLeaf.serialize()}` +
+                ` -t test_tally.json` +
                 ` -c 0x0000000000000000000000000000000000000000`
 
             console.log(tallyCommand)
 
-            const output = exec(tallyCommand).stdout
+            const e = exec(tallyCommand)
+            const output = e.stdout
 
-            console.log(output)
+            if (output) {
+                console.log(output)
+            }
+
+            if (e.stderr) {
+                console.log(e.stderr)
+            }
 
             const regMatch = output.match(
-                /Transaction hash: (0x[a-fA-F0-9]{64})\n$/
+                /Transaction hash: (0x[a-fA-F0-9]{64})\nCurrent results salt: (0x[a-fA-F0-9]+)\nResult commitment: 0x[a-fA-F0-9]+\n$/
             )
 
             expect(regMatch).toBeTruthy()
+
+            const verifyCommand = `node ../cli/build/index.js verify` +
+                ` -t test_tally.json`
+
+            const verifyExec = exec(verifyCommand)
+            const verifyOutput = verifyExec.stdout
+            const verifyRegMatch = verifyOutput.match(
+                /The commitment in the specified file is correct given the tally and salt\nThe commitment in the MACI contract on-chain is valid\n/
+            )
+            expect(verifyRegMatch).toBeTruthy()
         })
 
         it('should report an error if all state leaves have been tallied', async () =>{
@@ -329,6 +351,7 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
                 ` -z ${randomLeaf.serialize()}` +
+                ` -t test_tally.json` +
                 ` -c 0x0000000000000000000000000000000000000000`
 
             console.log(tallyCommand)
@@ -343,6 +366,7 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
                 ` -z xxxxxxx` +
+                ` -t test_tally.json` +
                 ` -c 0x0000000000000000000000000000000000000000`
 
             const output = exec(tallyCommand).stderr
@@ -355,6 +379,7 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x 0xxx` +
                 ` -z ${randomLeaf.serialize()}` +
+                ` -t test_tally.json` +
                 ` -c 0x0000000000000000000000000000000000000000`
 
             const output = exec(tallyCommand).stderr
@@ -367,6 +392,7 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x 0xxx` +
                 ` -z ${randomLeaf.serialize()}` +
+                ` -t test_tally.json` +
                 ` -c 0x0000000000000000000000000000000000000000`
 
             const output = exec(tallyCommand).stderr
@@ -379,6 +405,7 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -d 0xxx` +
                 ` -x ${maciAddress}` +
                 ` -z ${randomLeaf.serialize()}` +
+                ` -t test_tally.json` +
                 ` -c 0x0000000000000000000000000000000000000000`
 
             const output = exec(tallyCommand).stderr
@@ -391,6 +418,7 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
                 ` -z ${randomLeaf.serialize()}` +
+                ` -t test_tally.json` +
                 ` -c 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`
 
             const output = exec(tallyCommand).stderr
@@ -403,6 +431,7 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
                 ` -z ${randomLeaf.serialize()}` +
+                ` -t test_tally.json` +
                 ` -c 0xx`
 
             const output = exec(tallyCommand).stderr
