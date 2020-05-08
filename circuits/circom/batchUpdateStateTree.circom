@@ -54,7 +54,7 @@ template BatchUpdateStateTree(
         // if msg_tree_batch_end_index < message_indices[i], use msg_tree_batch_end_index
         // if msg_tree_batch_end_index >= message_indices[i], use message_indices[i]
 
-        message_indices[i] = msg_tree_batch_start_index + i;
+        message_indices[i] <== msg_tree_batch_start_index + i;
 
         msg_tree_path_index_comparators[i] = LessThan(32);
         msg_tree_path_index_comparators[i].in[0] <== msg_tree_batch_end_index;

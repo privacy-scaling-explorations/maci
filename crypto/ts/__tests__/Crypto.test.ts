@@ -5,7 +5,8 @@ import {
     encrypt,
     decrypt,
     sign,
-    hash,
+    hash5,
+    hash11,
     verifySignature,
     bigInt,
     passphraseToPrivKey,
@@ -34,8 +35,23 @@ describe('Cryptographic operations', () => {
 
     describe('Hashing', () => {
         it('The hash of a plaintext should be smaller than the snark field size', () => {
-            const h = hash(plaintext)
+            const h = hash5(plaintext)
             expect(h.lt(SNARK_FIELD_SIZE)).toBeTruthy()
+        })
+    })
+
+    describe('Hash11', () => {
+        it('Hashsing smaller array should work', () => {
+            const h = hash11([bigInt(1), bigInt(2), bigInt(3)])
+            expect(h.lt(SNARK_FIELD_SIZE)).toBeTruthy()
+        })
+        it('Hashsing more than 11 elements should throw', () => {
+            const arrayOf12: any[] = []
+            for (let i = 0; i < 12; i++) {
+                arrayOf12.push(bigInt(i))
+            }
+
+            expect(() => hash11(arrayOf12)).toThrow(TypeError)
         })
     })
 

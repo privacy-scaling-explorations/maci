@@ -8,7 +8,7 @@ import {
 } from 'maci-domainobjs'
 
 import {
-    hash,
+    hashLeftRight,
     bigInt,
     SnarkBigInt,
     stringifyBigInts,
@@ -689,7 +689,7 @@ const genTallyResultCommitment = (
     for (const result of results) {
         tree.insert(bigInt(result))
     }
-    return hash([tree.root, salt])
+    return hashLeftRight(tree.root, salt)
 }
 
 export {

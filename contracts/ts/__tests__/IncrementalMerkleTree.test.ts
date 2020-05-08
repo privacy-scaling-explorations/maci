@@ -9,7 +9,9 @@ import {
 } from 'maci-crypto'
 
 import * as etherlime from 'etherlime-lib'
-const MiMC = require('@maci-contracts/compiled/MiMC.json')
+const PoseidonT3 = require('@maci-contracts/compiled/PoseidonT3.json')
+const PoseidonT6 = require('@maci-contracts/compiled/PoseidonT6.json')
+
 const IncrementalMerkleTreeAbi = require('@maci-contracts/compiled/IncrementalMerkleTree.json')
 const ComputeRootAbi = require('@maci-contracts/compiled/ComputeRoot.json')
 
@@ -17,7 +19,7 @@ const accounts = genTestAccounts(1)
 let deployer
 let mtContract
 let crContract
-let mimcContract
+let PoseidonT3Contract, PoseidonT6Contract
 
 const DEPTH = 4
 
@@ -32,13 +34,17 @@ describe('IncrementalMerkleTree', () => {
             },
         )
 
-        console.log('Deploying MiMC')
-        mimcContract = await deployer.deploy(MiMC, {})
+        console.log('Deploying PoseidonT3Contract')
+        PoseidonT3Contract = await deployer.deploy(PoseidonT3, {})
+        PoseidonT6Contract = await deployer.deploy(PoseidonT6, {})
 
         console.log('Deploying IncrementalMerkleTree')
         mtContract = await deployer.deploy(
             IncrementalMerkleTreeAbi,
-            { MiMC: mimcContract.contractAddress },
+            {
+                PoseidonT3: PoseidonT3Contract.contractAddress,
+                PoseidonT6: PoseidonT6Contract.contractAddress
+            },
             DEPTH,
             NOTHING_UP_MY_SLEEVE.toString(),
         )
@@ -46,7 +52,10 @@ describe('IncrementalMerkleTree', () => {
         console.log('Deploying ComputeRoot')
         crContract = await deployer.deploy(
             ComputeRootAbi,
-            { MiMC: mimcContract.contractAddress },
+            {
+                PoseidonT3: PoseidonT3Contract.contractAddress,
+                PoseidonT6: PoseidonT6Contract.contractAddress
+            },
         )
 
         tree = new IncrementalMerkleTree(DEPTH, NOTHING_UP_MY_SLEEVE)
@@ -56,7 +65,7 @@ describe('IncrementalMerkleTree', () => {
         const root1 = await mtContract.root()
         expect(tree.root.toString()).toEqual(root1.toString())
     })
-    
+
     it('computeEmptyRoot() should generate the correct root', async () => {
         const emptyRoot = await crContract.computeEmptyRoot(DEPTH, NOTHING_UP_MY_SLEEVE.toString())
         expect(tree.root.toString()).toEqual(emptyRoot.toString())
@@ -64,7 +73,7 @@ describe('IncrementalMerkleTree', () => {
 
     it('the on-chain root should match an off-chain root after various insertions', async () => {
         expect.assertions(6)
-        for (let i=0; i < 6; i++) {
+        for (let i = 0; i < 6; i++) {
             const leaf = genRandomSalt()
 
             const tx = await mtContract.insertLeaf(leaf.toString())

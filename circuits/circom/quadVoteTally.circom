@@ -2,7 +2,7 @@ include "../node_modules/circomlib/circuits/mux1.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
 include "../node_modules/circomlib/circuits/comparators.circom";
 include "./merkletree.circom";
-include "./hasher.circom";
+include "./hasherPoseidon.circom";
 
 // This circuit returns the sum of the inputs.
 // n must be greater than 0.
@@ -114,8 +114,7 @@ template QuadVoteTally(
     // components in the same loop
     for (i=0; i < numUsers; i++) {
         voteOptionRootChecker[i] = CheckRoot(voteOptionTreeDepth);
-        stateLeafHashers[i] = Hasher(messageLength);
-        stateLeafHashers[i].key <== 0;
+        stateLeafHashers[i] = Hasher5();
 
         // Hash each state leaf
         for (j=0; j < messageLength; j++) {
@@ -233,16 +232,14 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
         currentResultsTree.leaves[i] <== currentResults[i];
     }
 
-    component currentResultsCommitmentHasher = Hasher(2);
-    currentResultsCommitmentHasher.key <== 0;
-    currentResultsCommitmentHasher.in[0] <== currentResultsTree.root;
-    currentResultsCommitmentHasher.in[1] <== currentResultsSalt;
+    component currentResultsCommitmentHasher = HashLeftRight();
+    currentResultsCommitmentHasher.left <== currentResultsTree.root;
+    currentResultsCommitmentHasher.right <== currentResultsSalt;
 
     // Also salt and hash the result of the current batch
-    component newResultsCommitmentHasher = Hasher(2);
-    newResultsCommitmentHasher.key <== 0;
-    newResultsCommitmentHasher.in[0] <== newResultsTree.root;
-    newResultsCommitmentHasher.in[1] <== newResultsSalt;
+    component newResultsCommitmentHasher = HashLeftRight();
+    newResultsCommitmentHasher.left <== newResultsTree.root;
+    newResultsCommitmentHasher.right <== newResultsSalt;
 
     // Check if the salted hash of the results up to the current batch is valid
     currentResultsCommitment === currentResultsCommitmentHasher.hash;

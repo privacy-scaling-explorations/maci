@@ -20,7 +20,7 @@ import {
 import { MaciState } from 'maci-core'
 
 import {
-    hash,
+    hashLeftRight,
     bigInt,
     IncrementalMerkleTree,
     NOTHING_UP_MY_SLEEVE,
@@ -132,7 +132,7 @@ describe('MACI', () => {
     it('the currentResultsCommitment value should be correct', async () => {
         const crc = await maciContract.currentResultsCommitment()
         const tree = new IncrementalMerkleTree(voteOptionTreeDepth, 0)
-        const expected = hash([tree.root, bigInt(0)])
+        const expected = hashLeftRight(tree.root, bigInt(0))
 
         expect(crc.toString()).toEqual(expected.toString())
     })
