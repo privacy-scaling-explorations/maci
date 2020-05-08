@@ -61,11 +61,40 @@ const buffer2BigInt = (b: Buffer): BigInt => {
     return snarkjs.bigInt('0x' + b.toString('hex'))
 }
 
+/* Poseidon parameters are generated from a script to meet the security requirements described in the papar.
+ * Check circuits/README.md for detail.
+ */
+interface PoseidonParams {
+    t: number;
+    roundFull: number;
+    roundPartial: number;
+    seed: string;
+}
+
+
+const POSEIDON_T3_PARAMS: PoseidonParams = {
+    t: 3,
+    roundFull: 8,
+    roundPartial: 49,
+    seed: POSEIDON_SEED
+}
+
+const POSEIDON_T6_PARAMS: PoseidonParams = {
+    t: 6,
+    roundFull: 8,
+    roundPartial: 50,
+    seed: POSEIDON_SEED
+}
+
+const poseidonCreateHash = (param: PoseidonParams) => {
+    return poseidon.createHash(param.t, param.roundFull, param.roundPartial, param.seed)
+}
+
 // Hash up to 2 elements
-const poseidonT3 = poseidon.createHash(3, 8, 49, POSEIDON_SEED)
+const poseidonT3 = poseidonCreateHash(POSEIDON_T3_PARAMS)
 
 // Hash up to 5 elements
-const poseidonT6 = poseidon.createHash(6, 8, 50, POSEIDON_SEED)
+const poseidonT6 = poseidonCreateHash(POSEIDON_T6_PARAMS)
 
 
 /*
@@ -95,7 +124,7 @@ const hash11 = (elements: Plaintext): SnarkBigInt => {
     }
     const elementsPadded = elements.slice()
     if (elementLength < 11) {
-        for (let i = elementLength; i < 11; i ++){
+        for (let i = elementLength; i < 11; i++) {
             elementsPadded.push(bigInt(0))
         }
     }
@@ -174,7 +203,7 @@ const passphraseToPrivKey = async (p: string): Promise<PrivKey> => {
             break
         }
 
-        nonce ++
+        nonce++
     }
 
     const privKey: PrivKey = rand % SNARK_FIELD_SIZE
@@ -340,7 +369,7 @@ const encrypt = (
         iv,
         data: plaintext.map((e: SnarkBigInt, i: number): SnarkBigInt => {
             return e + mimc7.hash(
-                sharedKey, 
+                sharedKey,
                 iv + snarkjs.bigInt(i),
             )
         }),
@@ -387,7 +416,7 @@ const sign = (
     const sBuff = eddsa.pruneBuffer(h1.slice(0, 32))
     const s = snarkjs.bigInt.leBuff2int(sBuff)
     const A = babyJub.mulPointEscalar(babyJub.Base8, s.shr(3))
-    const msgBuff = snarkjs.bigInt.leInt2Buff(hashedData, 32) 
+    const msgBuff = snarkjs.bigInt.leInt2Buff(hashedData, 32)
     const rBuff = bigInt2Buffer(
         hashOne(
             buffer2BigInt(Buffer.concat(
@@ -433,6 +462,9 @@ export {
     decrypt,
     sign,
     hashOne,
+    PoseidonParams,
+    POSEIDON_T3_PARAMS,
+    POSEIDON_T6_PARAMS,
     hash5,
     hash11,
     hashLeftRight,
