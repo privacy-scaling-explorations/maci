@@ -35,6 +35,11 @@ import {
     configureSubparser as configureSubparserForTally,
 } from './tally'
 
+import {
+    verify,
+    configureSubparser as configureSubparserForVerify,
+} from './verify'
+
 const main = async () => {
     const parser = new argparse.ArgumentParser({ 
         description: 'Minimal Anti-Collusion Infrastructure',
@@ -66,6 +71,9 @@ const main = async () => {
     // Subcommand: tally
     configureSubparserForTally(subparsers)
 
+    // Subcommand: verify
+    configureSubparserForVerify(subparsers)
+
     const args = parser.parseArgs()
 
     // Execute the subcommand method
@@ -83,6 +91,8 @@ const main = async () => {
         await processMessages(args)
     } else if (args.subcommand === 'tally') {
         await tally(args)
+    } else if (args.subcommand === 'verify') {
+        await verify(args)
     }
 }
 

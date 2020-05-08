@@ -18,9 +18,9 @@
         {
             "user": 2,
             "voteOptionIndex": 2,
-            "voteWeight": 1,
+            "voteWeight": 10,
             "nonce": 1
         }
     ],
-    "expectedTally": [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    "expectedTally": [1, 1, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 }

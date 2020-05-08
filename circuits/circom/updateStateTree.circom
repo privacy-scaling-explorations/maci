@@ -373,7 +373,7 @@ template UpdateStateTree(
     valid_signature.in[0] <== signature_verifier_valid;
     valid_signature.in[1] <== 1;
 
-    component sufficient_vote_credits = GreaterThan(32);
+    component sufficient_vote_credits = GreaterEqThan(32);
     sufficient_vote_credits.in[0] <== new_vote_credits;
     sufficient_vote_credits.in[1] <== 0;
 
