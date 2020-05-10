@@ -312,8 +312,8 @@ node ./build/index.js genMaciKeypair
 Example output:
 
 ```
-Private key: macisk.55c301b490600f21b0f495205fe4e8d5013b21fae96561ed2e88e5a900db5ff
-Public key:  macipk.87c3e51b1f58af9f7e6edd70083b445d3c6c8c4e40abe933a8ff382889d4c5ac
+Private key: macisk.ff3ae0e7855e4c62237e2b7c72de109865f087bd5f792cf4589d3cdc495d8f2
+Public key:  macipk.90833965a98a890dc0ddb32f95cd077a32d235fc6222fe9fea8aad9fd17feaa9
 
 Please store your private key in a safe place and do not reveal it to anyone.
 ```
@@ -325,7 +325,7 @@ node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241
 	-e http://localhost:8545 \
 	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
 	-sk macisk.53c8bc722a9f9d4c7bd478c8c8b01177f82d9c68d1ce15078e93ea84f198644 \
-	-p macipk.87c3e51b1f58af9f7e6edd70083b445d3c6c8c4e40abe933a8ff382889d4c5ac \
+	-p macipk.90833965a98a890dc0ddb32f95cd077a32d235fc6222fe9fea8aad9fd17feaa9
 	-i 1 \
 	-v 0 \
 	-w 9 \
@@ -362,7 +362,8 @@ Ephemeral private key: macisk.2b23e978301d029e46117ef0138f860e277ffed0f008712f3d
 
 **Coordinator: process all messages** 
 ```
-NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js process -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js process \
+    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-e http://localhost:8545 \
 	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
 	-sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
@@ -380,7 +381,8 @@ Random state leaf: <RANDOM STATE LEAF>
 **Coordinator: tally all votes**
 
 ```
-NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js tally -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js tally \
+    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-e http://localhost:8545 \
 	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
 	-sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
