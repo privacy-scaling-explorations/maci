@@ -325,7 +325,7 @@ node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241
 	-e http://localhost:8545 \
 	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
 	-sk macisk.53c8bc722a9f9d4c7bd478c8c8b01177f82d9c68d1ce15078e93ea84f198644 \
-	-p macipk.90833965a98a890dc0ddb32f95cd077a32d235fc6222fe9fea8aad9fd17feaa9
+	-p macipk.90833965a98a890dc0ddb32f95cd077a32d235fc6222fe9fea8aad9fd17feaa9 \
 	-i 1 \
 	-v 0 \
 	-w 9 \
