@@ -43,6 +43,10 @@ cargo install zkutil --version 0.2.1 &&
 zkutil --help
 ```
 
+### Demo
+
+You can use the MACI command-line interface to run a demo. See: https://github.com/barryWhiteHat/maci/tree/master/cli#demonstration
+
 ### Local development
 
 This repository is organised as Lerna submodules. Each submodule contains its
