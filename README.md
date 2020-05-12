@@ -43,6 +43,26 @@ cargo install zkutil --version 0.2.1 &&
 zkutil --help
 ```
 
+Next, perform a trusted setup.
+
+For development purposes, you can generate the proving and verifying keys for
+the zk-SNARK circuits, along with their Solidity verifier contracts as such:
+
+```bash
+cd circuits
+npm run buildBatchUpdateStateTreeSnark
+npm run buildQuadVoteTallySnark
+```
+
+This should take no more than 3 minutes as we use `zkutil` under the hood.
+We used to provide download links to working versions of the keys and
+compiiled circuit files, but now that we can use `zkutil` to produce them
+very quickly, we no longer maintain them.
+
+Note that if you change the circuits and recompile them, you should
+also update and recompile the verifier contracts in `contracts/sol`
+with their new versions, or the tests will fail.
+
 ### Demo
 
 You can use the MACI command-line interface to run a demo. See: https://github.com/barryWhiteHat/maci/tree/master/cli#demonstration
@@ -66,23 +86,6 @@ own unit tests.
   an instance of MACI.
 - `integrationTests`: Integration tests which uses the command-line interface
   to perform end-to-end tests.
-
-### Trusted setup
-
-For development purposes, you can generate the proving and verifying keys for
-the zk-SNARK circuits, along with their Solidity verifier contracts as such:
-
-```bash
-cd circuits
-npm run buildBatchUpdateStateTreeSnark
-npm run buildQuadVoteTallySnark
-```
-
-This should take no more than 3 minutes as we use `zkutil` under the hood.
-
-Note that if you change the circuits and recompile them, you should
-also update and recompile the verifier contracts in `contracts/sol`
-with their new versions, or the tests will fail.
 
 ### Testing
 
