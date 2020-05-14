@@ -1,6 +1,6 @@
 include "./decrypt.circom";
 include "./ecdh.circom"
-include "./hasher.circom";
+include "./hasherPoseidon.circom";
 include "./merkletree.circom";
 include "./publickey_derivation.circom"
 include "./verify_signature.circom";
@@ -118,8 +118,7 @@ template PerformChecksBeforeUpdate(
 
     // TODO: combine this loop with the above
     // Compute the leaf, which is the hash of the message
-    component msg_hash = Hasher(MESSAGE_LENGTH);
-    msg_hash.key <== 0;
+    component msg_hash = Hasher11();
     for (var i = 0; i < MESSAGE_LENGTH; i++) {
         msg_hash.in[i] <== message[i];
     }
@@ -135,8 +134,7 @@ template PerformChecksBeforeUpdate(
 
     // Check 4. Make sure the hash of the data corresponds to the 
     //          existing leaf in the state tree
-    component existing_state_tree_leaf_hash = Hasher(STATE_TREE_DATA_LENGTH);
-    existing_state_tree_leaf_hash.key <== 0;
+    component existing_state_tree_leaf_hash = Hasher5();
     for (var i = 0; i < STATE_TREE_DATA_LENGTH; i++) {
         existing_state_tree_leaf_hash.in[i] <== state_tree_data_raw[i];
     }
@@ -362,8 +360,7 @@ template UpdateStateTree(
     new_state_tree_data[3] <== new_vote_credits;
     new_state_tree_data[4] <== decrypted_command_out[CMD_NONCE_IDX];
 
-    component new_state_tree_leaf = Hasher(STATE_TREE_DATA_LENGTH);
-    new_state_tree_leaf.key <== 0;
+    component new_state_tree_leaf = Hasher5();
     for (var i = 0; i < STATE_TREE_DATA_LENGTH; i++) {
         new_state_tree_leaf.in[i] <== new_state_tree_data[i];
     }

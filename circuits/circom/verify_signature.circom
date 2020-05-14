@@ -6,7 +6,7 @@ include "../node_modules/circomlib/circuits/bitify.circom";
 include "../node_modules/circomlib/circuits/escalarmulany.circom";
 include "../node_modules/circomlib/circuits/escalarmulfix.circom";
 
-include "./hasher.circom";
+include "./hasherPoseidon.circom";
 
 
 template EdDSAMiMCSpongeVerifier_patched() {
@@ -45,7 +45,7 @@ template EdDSAMiMCSpongeVerifier_patched() {
   hash.k <== 0;
 
   component h2bits = Num2Bits_strict();
-  h2bits.in <== hash.outs[0];
+  h2bits.in <==  hash.outs[0];
 
   // Calculate second part of the right side:  right2 = h*8*A
 
@@ -118,10 +118,12 @@ template VerifySignature(k) {
 
   signal output valid;
   
-  component M = Hasher(k);
-  M.key <== 0;
+  component M = Hasher11();
   for (var i = 0; i < k; i++){
     M.in[i] <== preimage[i];
+  }
+  for (var i = k; i < 11; i++){
+    M.in[i] <== 0;
   }
   
   component verifier = EdDSAMiMCSpongeVerifier_patched();

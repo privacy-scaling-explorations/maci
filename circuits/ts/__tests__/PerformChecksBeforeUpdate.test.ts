@@ -148,7 +148,7 @@ describe('State tree root update verification circuit', () => {
     const ephemeralKeypair = new Keypair()
 
     beforeAll(async () => {
-        circuit = await compileAndLoadCircuit('updateStateTree_test.circom')
+        circuit = await compileAndLoadCircuit('test/updateStateTree_test.circom')
     })
 
     it('UpdateStateTree should produce the correct state root', async () => {

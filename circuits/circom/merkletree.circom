@@ -1,7 +1,7 @@
 // Referenced https://github.com/peppersec/tornado-mixer/blob/master/circuits/merkleTree.circom
 
 include "../node_modules/circomlib/circuits/mux1.circom";
-include "./hasher.circom";
+include "./hasherPoseidon.circom";
 
 template Selector() {
   signal input input_elem;

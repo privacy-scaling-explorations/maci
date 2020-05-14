@@ -235,7 +235,7 @@ Example output:
 
 ```
 Private key: macisk.53c8bc722a9f9d4c7bd478c8c8b01177f82d9c68d1ce15078e93ea84f198644
-Public key:  macipk.9ea5fe597048b222d9b5f9321d7e443e3423d622f47a30e4232ddab0e551eb1f
+Public key:  macipk.a200c5991d633c0aefbe594de2d9cf8d1afbfbc935a1a39b0a7edc93b5a1abad
 
 Please store your private key in a safe place and do not reveal it to anyone.
 ```
@@ -255,7 +255,7 @@ node ./build/index.js create -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e
 Example output:
 
 ```
-MACI: 0x9FBDa871d559710256a2502A2517b794B482Db40
+MACI: 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4
 ```
 
 **Alice: sign up**
@@ -263,8 +263,8 @@ MACI: 0x9FBDa871d559710256a2502A2517b794B482Db40
 ```
 node ./build/index.js signup -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-e http://localhost:8545 \
-	-p macipk.9ea5fe597048b222d9b5f9321d7e443e3423d622f47a30e4232ddab0e551eb1f \
-	-x 0x9FBDa871d559710256a2502A2517b794B482Db40
+	-p macipk.a200c5991d633c0aefbe594de2d9cf8d1afbfbc935a1a39b0a7edc93b5a1abad \
+	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4
 ```
 
 Example output:
@@ -279,9 +279,9 @@ State index: 1
 ```
 node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-e http://localhost:8545 \
-	-x 0x9FBDa871d559710256a2502A2517b794B482Db40 \
+	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
 	-sk macisk.53c8bc722a9f9d4c7bd478c8c8b01177f82d9c68d1ce15078e93ea84f198644 \
-	-p macipk.9ea5fe597048b222d9b5f9321d7e443e3423d622f47a30e4232ddab0e551eb1f \
+	-p macipk.a200c5991d633c0aefbe594de2d9cf8d1afbfbc935a1a39b0a7edc93b5a1abad \
 	-i 1 \
 	-v 0 \
 	-w 9 \
@@ -304,8 +304,8 @@ node ./build/index.js genMaciKeypair
 Example output:
 
 ```
-Private key: macisk.55c301b490600f21b0f495205fe4e8d5013b21fae96561ed2e88e5a900db5ff
-Public key:  macipk.87c3e51b1f58af9f7e6edd70083b445d3c6c8c4e40abe933a8ff382889d4c5ac
+Private key: macisk.ff3ae0e7855e4c62237e2b7c72de109865f087bd5f792cf4589d3cdc495d8f2
+Public key:  macipk.90833965a98a890dc0ddb32f95cd077a32d235fc6222fe9fea8aad9fd17feaa9
 
 Please store your private key in a safe place and do not reveal it to anyone.
 ```
@@ -315,9 +315,9 @@ Please store your private key in a safe place and do not reveal it to anyone.
 ```
 node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-e http://localhost:8545 \
-	-x 0x9FBDa871d559710256a2502A2517b794B482Db40 \
+	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
 	-sk macisk.53c8bc722a9f9d4c7bd478c8c8b01177f82d9c68d1ce15078e93ea84f198644 \
-	-p macipk.87c3e51b1f58af9f7e6edd70083b445d3c6c8c4e40abe933a8ff382889d4c5ac \
+	-p macipk.90833965a98a890dc0ddb32f95cd077a32d235fc6222fe9fea8aad9fd17feaa9 \
 	-i 1 \
 	-v 0 \
 	-w 9 \
@@ -336,9 +336,9 @@ Ephemeral private key: macisk.24115d8d585b7dd8f7ea1975668b3d4f34dcf8b1bcc6617bde
 ```
 node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-e http://localhost:8545 \
-	-x 0x9FBDa871d559710256a2502A2517b794B482Db40 \
+	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
 	-sk macisk.53c8bc722a9f9d4c7bd478c8c8b01177f82d9c68d1ce15078e93ea84f198644 \
-	-p macipk.9ea5fe597048b222d9b5f9321d7e443e3423d622f47a30e4232ddab0e551eb1f \
+	-p macipk.a200c5991d633c0aefbe594de2d9cf8d1afbfbc935a1a39b0a7edc93b5a1abad \
 	-i 1 \
 	-v 1 \
 	-w 9 \
@@ -354,9 +354,10 @@ Ephemeral private key: macisk.2b23e978301d029e46117ef0138f860e277ffed0f008712f3d
 
 **Coordinator: process all messages** 
 ```
-NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js process -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js process \
+    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-e http://localhost:8545 \
-	-x 0x9FBDa871d559710256a2502A2517b794B482Db40 \
+	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
 	-sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
 	-r
 ```
@@ -372,9 +373,10 @@ Random state leaf: <RANDOM STATE LEAF>
 **Coordinator: tally all votes**
 
 ```
-NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js tally -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js tally \
+    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-e http://localhost:8545 \
-	-x 0x9FBDa871d559710256a2502A2517b794B482Db40 \
+	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
 	-sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
 	-r \
 	-c 0x0 \
@@ -395,7 +397,7 @@ The file `tally.json` will now contain something like the following:
 ```json
 {
     "provider": "http://localhost:8545",
-    "maci": "0x9FBDa871d559710256a2502A2517b794B482Db40",
+    "maci": "0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4",
     "commitment": "0x27d994084f2288c880e4d8c28e67a557a9f2239bb50a595fc4bff3024dfe2c11",
     "tally": [
         "9",
