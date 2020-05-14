@@ -5,6 +5,7 @@ import * as snarkjs from 'snarkjs'
 import * as argon2 from 'argon2'
 import { babyJub, eddsa, mimcsponge, mimc7, poseidon } from 'circomlib'
 import { IncrementalMerkleTree } from './IncrementalMerkleTree'
+import { IncrementalQuadTree } from './IncrementalQuadTree'
 const stringifyBigInts: (obj: object) => object = snarkjs.stringifyBigInts
 const unstringifyBigInts: (obj: object) => object = snarkjs.unstringifyBigInts
 
@@ -480,6 +481,7 @@ export {
     unstringifyBigInts,
     formatPrivKeyForBabyJub,
     IncrementalMerkleTree,
+    IncrementalQuadTree,
     NOTHING_UP_MY_SLEEVE,
     SNARK_FIELD_SIZE,
     bigInt2Buffer,

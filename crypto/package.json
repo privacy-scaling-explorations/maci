@@ -9,6 +9,8 @@
         "test": "jest",
         "test-crypto": "jest Crypto.test.ts",
         "test-crypto-debug": "node --inspect-brk ./node_modules/.bin/jest Crypto.test.ts",
+        "test-quad-mt": "jest IncrementalQuadTree.test.ts",
+        "test-quad-mt-debug": "node --inspect-brk ./node_modules/.bin/jest IncrementalQuadTree.test.ts",
         "test-mt": "jest IncrementalMerkleTree.test.ts",
         "test-mt-debug": "node --inspect-brk ./node_modules/.bin/jest IncrementalMerkleTree.test.ts"
     },

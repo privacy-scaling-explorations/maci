@@ -20,8 +20,9 @@ class IncrementalMerkleTree {
     public root: SnarkBigInt
 
     // The the smallest empty leaf index
-    public nextIndex: number
+    public nextIndex: SnarkBigInt
 
+    // All leaves in the tree
     public leaves: SnarkBigInt[] = []
 
     // Cached values required to compute Merkle proofs
@@ -186,31 +187,6 @@ class IncrementalMerkleTree {
         }
 
         return [path, pathIndex]
-    }
-
-    /*  Gets the path needed to construct a the tree root
-     *  Used for quick verification on inserts.
-     *  Runs in O(log(N)), where N is the number of leaves
-     */
-    public getPathInsert (): [SnarkBigInt[], SnarkBigInt[], SnarkBigInt[]] {
-        let curIdx = this.nextIndex
-
-        const pathIndex: SnarkBigInt[] = []
-
-        for (let i = 0; i < this.depth; i++) {
-            if (curIdx % 2 === 0) {
-                pathIndex.push(bigInt(0))
-            } else {
-                pathIndex.push(bigInt(1))
-            }
-            curIdx = Math.floor(curIdx / 2)
-        }
-
-        return [
-            this.zeros,
-            this.filledSubtrees,
-            pathIndex
-        ]
     }
 }
 
