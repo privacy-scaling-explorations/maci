@@ -75,8 +75,8 @@ class IncrementalMerkleTree {
         this.nextIndex += 1
 
         let currentLevelHash = _value
-        let left
-        let right
+        let left: SnarkBigInt
+        let right: SnarkBigInt
 
         for (let i = 0; i < this.depth; i++) {
             if (curIdx % 2 === 0) {
