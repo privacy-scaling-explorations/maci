@@ -98,6 +98,7 @@ class IncrementalMerkleTree {
             currentLevelHash = hashLeftRight(left, right)
             curIdx = Math.floor(curIdx / 2)
         }
+        debugger
 
         this.root = currentLevelHash
         this.leaves.push(_value)

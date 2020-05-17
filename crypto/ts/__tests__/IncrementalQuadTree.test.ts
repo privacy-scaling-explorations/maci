@@ -89,59 +89,6 @@ describe('Quad Merkle Tree', () => {
             .toEqual(tree.root.toString())
     })
 
-    describe('Merkle path generation and verification', () => {
-        let tree
-        const numToInsert = LEAVES_PER_NODE + 2
-
-        beforeAll(() => {
-            tree = new IncrementalQuadTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
-            for (let i = 0; i < numToInsert; i ++) {
-                const leaf = bigInt(i + 1)
-                tree.insert(leaf)
-            }
-        })
-
-        it('genMerklePath() should calculate a correct Merkle path', () => {
-
-            const path = tree.genMerklePath(numToInsert - 1)
-
-            const isValid = IncrementalQuadTree.verifyMerklePath(
-                path,
-                tree.hashFunc,
-                tree.depth,
-                tree.root,
-            )
-
-            expect(isValid).toBeTruthy()
-        })
-
-        it('verifyMerklePath() should reject an invalid proof (with the right format)', () => {
-            const path = tree.genMerklePath(numToInsert - 1)
-            path.pathElements[0][0] = bigInt(123)
-            const isValid = IncrementalQuadTree.verifyMerklePath(
-                path,
-                tree.hashFunc,
-                tree.depth,
-                tree.root,
-            )
-
-            expect(isValid).toBeFalsy()
-        })
-
-        it('verifyMerklePath() should reject an invalid proof (with the wrong format)', () => {
-            const path = tree.genMerklePath(numToInsert - 1)
-            path.pathElements[0] = null
-            expect(() => {
-                IncrementalQuadTree.verifyMerklePath(
-                    path,
-                    tree.hashFunc,
-                    tree.depth,
-                    tree.root,
-                )
-            }).toThrow()
-        })
-    })
-
     it('update() should calculate a correct root', () => {
         const tree = new IncrementalQuadTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
         const numToInsert = LEAVES_PER_NODE * 2
@@ -181,18 +128,103 @@ describe('Quad Merkle Tree', () => {
         newTree.update(0, leaf)
         expect(tree.root.toString()).toEqual(newTree.root.toString())
 
-        const path1 = JSON.stringify(stringifyBigInts(tree.genMerklePath(2)))
-        const path2 = JSON.stringify(stringifyBigInts(newTree.genMerklePath(2)))
-        expect(path1).toEqual(path2)
+        const path1 = tree.genMerklePath(2)
+        const path2 = newTree.genMerklePath(2)
+        expect(JSON.stringify(stringifyBigInts(path1))).toEqual(JSON.stringify(stringifyBigInts(path2)))
     })
 
-    describe('Merkle Tree with 4 leaves per node', () => {
+    describe('Tree with 4 leaves per node', () => {
         it ('should compute the correct root', () => {
             const tree = new IncrementalQuadTree(DEPTH, ZERO_VALUE, 4)
             for (let i = 0; i < 6; i ++) {
                 tree.insert(i)
             }
-            console.log(tree.root)
+            const leaves = [0, 1, 2, 3, 0, 4, 5]
+            for (let i = leaves.length; i < 5 ** DEPTH; i ++) {
+                leaves.push(0)
+            }
+            expect(tree.root.toString()).toEqual(computeRootFromLeaves(leaves).toString())
+        })
+    })
+
+    describe('Path generation and verification', () => {
+        let tree
+        const numToInsert = 5 ** DEPTH
+
+        beforeAll(() => {
+            tree = new IncrementalQuadTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
+            for (let i = 0; i < numToInsert; i ++) {
+                const leaf = bigInt(i + 1)
+                tree.insert(leaf)
+            }
+        })
+
+        it('genMerklePath() should fail if the index is invalid', () => {
+            expect(() => {
+                tree.genMerklePath(numToInsert)
+            }).toThrow()
+        })
+
+        it('verifyMerklePath() should reject an invalid proof (with the right format)', () => {
+            const path = tree.genMerklePath(numToInsert - 1)
+            path.pathElements[0][0] = bigInt(123)
+            debugger
+            const isValid = IncrementalQuadTree.verifyMerklePath(
+                path,
+                tree.hashFunc,
+                tree.depth,
+                tree.root,
+            )
+
+            expect(isValid).toBeFalsy()
+        })
+
+        it('verifyMerklePath() should reject an invalid proof (with the wrong format)', () => {
+            const path = tree.genMerklePath(numToInsert - 1)
+            path.pathElements[0] = null
+            expect(() => {
+                IncrementalQuadTree.verifyMerklePath(
+                    path,
+                    tree.hashFunc,
+                    tree.depth,
+                    tree.root,
+                )
+            }).toThrow()
+        })
+
+        it('genMerklePath() should calculate a correct Merkle path', () => {
+
+            const path = tree.genMerklePath(30)
+
+            const isValid = IncrementalQuadTree.verifyMerklePath(
+                path,
+                tree.hashFunc,
+                tree.depth,
+                tree.root,
+            )
+
+            expect(isValid).toBeTruthy()
+        })
+
+        it('genMerklePath() should calculate a correct Merkle path for each most recently inserted leaf', () => {
+            const tree = new IncrementalQuadTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
+            const numToInsert = LEAVES_PER_NODE * 2
+
+            expect.assertions(numToInsert)
+            for (let i = 0; i < numToInsert; i ++) {
+                const leaf = bigInt(i + 1)
+                tree.insert(leaf)
+
+                const path = tree.genMerklePath(i)
+                const isValid = IncrementalQuadTree.verifyMerklePath(
+                    path,
+                    tree.hashFunc,
+                    tree.depth,
+                    tree.root,
+                )
+        
+                expect(isValid).toBeTruthy()
+            }
         })
     })
 })

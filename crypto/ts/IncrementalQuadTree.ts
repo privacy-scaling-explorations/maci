@@ -63,7 +63,7 @@ class IncrementalQuadTree {
     constructor (
         _depth: number,
         _zeroValue: SnarkBigInt,
-        _leavesPerNode: number | SnarkBigInt,
+        _leavesPerNode: number | SnarkBigInt = 5,
     ) {
         // This class supports a maximum of 5 leaves per node, as this is the
         // largest number of inputs which circomlib's Poseidon EVM hash
@@ -88,7 +88,6 @@ class IncrementalQuadTree {
 
         this.zeros = [this.zeroValue]
         this.filledSubtrees = []
-        this.filledPaths = { 0: {} }
 
         // Calculate intermediate values
         for (let i = 1; i < _depth; i++) {
@@ -99,6 +98,7 @@ class IncrementalQuadTree {
             const h = this.hash(z)
             this.zeros.push(h)
             this.filledSubtrees.push(z)
+            this.filledPaths[i - 1] = []
         }
 
         // Calculate the root
@@ -120,14 +120,14 @@ class IncrementalQuadTree {
     public insert(
         _value: Leaf,
     ) {
+        // Ensure that _value is a SnarkBigInt
         _value = bigInt(_value)
-        let currentIndex: SnarkBigInt = this.nextIndex
 
         // A node is one level above the leaf
         // m is the leaf's relative position within its node
-        let m = currentIndex % this.leavesPerNode
+        let m = this.nextIndex % this.leavesPerNode
 
-        // Zero out the level
+        // Zero out the level in filledSubtrees
         if (m === bigInt(0)) {
             for (let j = 1; j < this.leavesPerNode; j ++) {
                 this.filledSubtrees[0][j] = this.zeros[0]
@@ -136,17 +136,13 @@ class IncrementalQuadTree {
 
         this.filledSubtrees[0][m] = _value
 
-        const c = bigInt(currentIndex / this.leavesPerNode).toJSNumber()
-        this.filledPaths[c] = {}
-        this.filledPaths[c][0] = deepCopyBigIntArray(this.filledSubtrees[0])
-
+        let currentIndex: SnarkBigInt = this.nextIndex
         for (let i = 1; i < this.depth; i++) {
-            const hashed = this.hash(this.filledSubtrees[i-1])
-
+            // currentIndex is the leaf or node's absolute index
             currentIndex /= this.leavesPerNode
-            m = currentIndex % this.leavesPerNode
 
-            this.filledSubtrees[i][m] = hashed
+            // m is the leaf's relative position within its node
+            m = currentIndex % this.leavesPerNode
 
             // Zero out the level
             if (m === bigInt(0)) {
@@ -154,14 +150,22 @@ class IncrementalQuadTree {
                     this.filledSubtrees[i][j] = this.zeros[i]
                 }
             }
-            this.filledPaths[c][i] = deepCopyBigIntArray(this.filledSubtrees[i])
+
+            const hashed = this.hash(this.filledSubtrees[i - 1])
+            this.filledSubtrees[i][m] = hashed
+
+            if (this.filledPaths[i - 1].length <= currentIndex) {
+                this.filledPaths[i - 1].push(hashed)
+            } else {
+                this.filledPaths[i - 1][currentIndex] = hashed
+            }
         }
 
+        this.leaves.push(_value)
+        this.nextIndex += bigInt(1)
         this.root = this.hash(
             this.filledSubtrees[this.filledSubtrees.length - 1],
         )
-        this.leaves.push(_value)
-        this.nextIndex += bigInt(1)
     }
 
     /* 
@@ -208,7 +212,6 @@ class IncrementalQuadTree {
     }
 
     /*  Generates a Merkle proof from a leaf to the root.
-     *  TODO
      */
     public genMerklePath(_index: number): MerkleProof {
         if (_index < 0) {
@@ -218,21 +221,43 @@ class IncrementalQuadTree {
             throw new Error('The leaf index is too large')
         }
 
-        let r = Math.floor((bigInt(_index).div(this.leavesPerNode)).toJSNumber())
-        const proof: MerkleProof = {
-            pathElements: this.filledPaths[r],
-            indices: [r],
+        const pathElements: SnarkBigInt[][] = []
+        const indices: SnarkBigInt[] = []
+
+        let r = bigInt(_index).div(this.leavesPerNode)
+
+        for (let i = 0; i < this.depth; i ++) {
+            const s: SnarkBigInt[] = []
+            if (i === 0) {
+                // Get a slice of leaves, padded with zeros
+                const leafStartIndex = bigInt(_index) - (bigInt(_index) % this.leavesPerNode)
+                const leafEndIndex = leafStartIndex + this.leavesPerNode
+                for (let j = leafStartIndex; j < leafEndIndex; j ++) {
+                    if (j < this.leaves.length) {
+                        s.push(this.leaves[j])
+                    } else {
+                        s.push(this.zeros[i])
+                    }
+                }
+            } else {
+                for (let j = 0; j < this.leavesPerNode; j ++) {
+                    const x = r.mul(this.leavesPerNode) + bigInt(j)
+                    if (this.filledPaths[i - 1].length <= x) {
+                        s.push(this.zeros[i])
+                    } else {
+                        const e = this.filledPaths[i - 1][x]
+                        s.push(e)
+                    }
+                }
+            }
+
+            pathElements.push(s)
+            indices.push(r % this.leavesPerNode)
+
+            r = r.div(this.leavesPerNode)
         }
 
-        let currentIndex = _index
-        for (let i = 1; i < this.depth; i ++) {
-            r = Math.floor((bigInt(currentIndex).div(this.leavesPerNode)).toJSNumber())
-            currentIndex = r
-
-            proof.indices.push(r)
-        }
-
-        return proof
+        return { pathElements, indices }
     }
 
     public static verifyMerklePath(
@@ -252,7 +277,7 @@ class IncrementalQuadTree {
         // Verify the proof
         for (let i = 1; i < _depth; i ++) {
             const v = _hashFunc(_proof.pathElements[i-1])
-                .equals(_proof.pathElements[i][_proof.indices[i]])
+                .equals(_proof.pathElements[i][_proof.indices[i - 1]])
 
             if (!v) {
                 return false
