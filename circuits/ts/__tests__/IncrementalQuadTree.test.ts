@@ -40,6 +40,29 @@ describe('Quad Merkle Tree circuits', () => {
             const witness = circuit.calculateWitness(circuitInputs)
             expect(circuit.checkWitness(witness)).toBeTruthy()
         })
+
+        it('Invalid QuadTreeInsertionProof inputs should not work', async () => {
+            const tree = new IncrementalQuadTree(LEVELS, ZERO_VALUE)
+
+            for (let i = 0; i < 30; i++) {
+                const randomVal = genRandomSalt()
+                tree.insert(randomVal)
+            }
+            const path = tree.genMerklePath(7)
+            const isValid = IncrementalQuadTree.verifyMerklePath(
+                path,
+                tree.hashFunc,
+                tree.depth,
+                tree.root,
+            )
+            expect(isValid).toBeTruthy()
+
+            path.pathElements[0][0] += bigInt(1)
+
+            expect(() => {
+                circuit.calculateWitness(path)
+            }).toThrow()
+        })
     })
 
     describe('QuadCheckRoot', () => {
@@ -91,6 +114,69 @@ describe('Quad Merkle Tree circuits', () => {
             const circuitRoot = witness[circuit.getSignalIdx('main.root')].toString()
 
             expect(circuitRoot).not.toEqual(root.toString())
+        })
+    })
+
+    describe('QuadLeafExists', () => {
+        let circuit
+
+        beforeAll(async () => {
+            circuit = await compileAndLoadCircuit('test/quadTreeLeafExists_test.circom')
+        })
+
+        it('Valid QuadLeafExists inputs should work', async () => {
+            const tree = new IncrementalQuadTree(LEVELS, ZERO_VALUE)
+
+            const index = 7
+            for (let i = 0; i < 30; i++) {
+                const randomVal = genRandomSalt()
+                tree.insert(randomVal)
+            }
+            const path = tree.genMerklePath(index)
+            const isValid = IncrementalQuadTree.verifyMerklePath(
+                path,
+                tree.hashFunc,
+                tree.depth,
+                tree.root,
+            )
+            expect(isValid).toBeTruthy()
+
+            const circuitInputs = {
+                ...path,
+                leaf: tree.leaves[index],
+                root: tree.root,
+            }
+            const witness = circuit.calculateWitness(circuitInputs)
+            expect(circuit.checkWitness(witness)).toBeTruthy()
+        })
+
+        it('Invalid QuadLeafExists inputs should not work', async () => {
+            const tree = new IncrementalQuadTree(LEVELS, ZERO_VALUE)
+
+            const index = 7
+            for (let i = 0; i < 30; i++) {
+                const randomVal = genRandomSalt()
+                tree.insert(randomVal)
+            }
+            const path = tree.genMerklePath(index)
+            const isValid = IncrementalQuadTree.verifyMerklePath(
+                path,
+                tree.hashFunc,
+                tree.depth,
+                tree.root,
+            )
+            expect(isValid).toBeTruthy()
+
+            path.pathElements[0][0] += bigInt(1)
+
+            const circuitInputs = {
+                ...path,
+                leaf: tree.leaves[index],
+                root: tree.root,
+            }
+            expect(() => {
+                circuit.calculateWitness(circuitInputs)
+            }).toThrow()
         })
     })
 })

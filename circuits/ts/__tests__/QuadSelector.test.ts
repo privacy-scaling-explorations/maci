@@ -13,7 +13,7 @@ describe('QuadSelector circuit', () => {
     })
 
     it('Should return the nth value given an index', async () => {
-        const items = [0, 1, 2, 3]
+        const items = [0, 1, 2, 3, 4]
 
         for (let i = 0; i < items.length; i ++) {
             const circuitInputs = stringifyBigInts({ items, index: i })

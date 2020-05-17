@@ -32,7 +32,7 @@ template QuadCheckRoot(levels) {
     var numLeafHashers = LEAVES_PER_NODE ** (levels - 1);
 
     // Inputs to the snark
-    signal private input leaves[totalLeaves];
+    signal input leaves[totalLeaves];
 
     // The output
     signal output root;
@@ -66,7 +66,7 @@ template QuadCheckRoot(levels) {
         for (j = 0; j < LEAVES_PER_NODE; j ++){
             hashers[i].in[j] <== hashers[k * LEAVES_PER_NODE + j].hash;
         }
-        k++;
+        k ++;
     }
 
     // Wire the output of the final hash to this circuit's output
@@ -147,4 +147,66 @@ template QuadTreeInclusionProof(levels) {
         rootHasher.in[i] <== pathElements[levels - 1][i];
     }
     root <== rootHasher.hash;
+}
+
+/*
+ * Outputs 1 if the target element is in the given list of items, and 0
+ * otherwise. This supports only up to 8 elements.
+ */
+template QuadIncludes(numItems) {
+    signal input target;
+    signal input items[numItems];
+    signal output result;
+
+    // The loop will increment r by 1 every time there is a match
+    var r = 0;
+
+    component eqs[numItems];
+    for (var i = 0; i < numItems; i ++) {
+        eqs[i] = IsEqual();
+        eqs[i].in[0] <== target;
+        eqs[i].in[1] <== items[i];
+        r += eqs[i].out;
+    }
+
+    // If there is a match, then r >= 1
+    component geq = GreaterEqThan(3);
+    geq.in[0] <== r;
+    geq.in[1] <== 1;
+    
+    result <== geq.out;
+}
+
+template QuadLeafExists(levels){
+    // Ensures that a leaf exists within a quadtree with given `root`
+
+    var LEAVES_PER_NODE = 5;
+    var i;
+    var j;
+
+    signal input leaf;
+    signal input pathElements[levels][LEAVES_PER_NODE];
+    signal input indices[levels];
+    signal input root;
+
+    // Check if the leaf exists in the first subarray of pathElements
+    component includes = QuadIncludes(LEAVES_PER_NODE);
+
+    includes.target <== leaf;
+    for (i = 0; i < LEAVES_PER_NODE; i ++) {
+        includes.items[i] <== pathElements[0][i];
+    }
+
+    includes.result === 1;
+
+    // Verify the Merkle path
+    component verifier = QuadTreeInclusionProof(levels);
+    for (i = 0; i < levels; i ++) {
+        verifier.indices[i] <== indices[i];
+        for (j = 0; j < LEAVES_PER_NODE; j ++) {
+            verifier.pathElements[i][j] <== pathElements[i][j];
+        }
+    }
+
+    root === verifier.root;
 }

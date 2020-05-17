@@ -1,3 +1,3 @@
 include "../quadMerkleTree.circom"
 
-component main = QuadSelector(5);
+component main = QuadLeafExists(3);
