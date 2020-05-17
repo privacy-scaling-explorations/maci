@@ -1,3 +1,3 @@
-include "../quadVoteTally.circom"
+include "../calculateTotal.circom"
 
 component main = CalculateTotal(6);
