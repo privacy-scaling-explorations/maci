@@ -108,12 +108,15 @@ template EdDSAMiMCSpongeVerifier_patched() {
 }
 
 
-template VerifySignature(k) {
+template VerifySignature7() {
+  // Verify the signature of a Command, which has exactly 7 elements in the preimage
   signal input from_x;
   signal input from_y;
   signal input R8x;
   signal input R8y;
   signal input S;
+
+  var k = 7;
   signal private input preimage[k];
 
   signal output valid;
