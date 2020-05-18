@@ -176,7 +176,7 @@ template PerformChecksBeforeUpdate(
     new_vote_options_tree_root <== new_vote_options_tree.root;
 
     // Verify signature against existing public key
-    component signature_verifier = VerifySignature(MESSAGE_WITHOUT_SIGNATURE_LENGTH);
+    component signature_verifier = VerifySignature7();
 
     signature_verifier.from_x <== state_tree_data_raw[STATE_TREE_PUBLIC_KEY_X_IDX]; // public key x
     signature_verifier.from_y <== state_tree_data_raw[STATE_TREE_PUBLIC_KEY_Y_IDX]; // public key y
