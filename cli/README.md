@@ -102,16 +102,8 @@ automatically resume a job halfway done.
 
 `node build/index.js genMaciKeypair <options>`
 
-| Option | Flags | About |
-|-|-|-|
-| Passphrase | `-p` or `--passphrase` | If unspecified, this command will randomly generate a private key and its associated public key |
-
 The output of this command is a serialised private key and serialised
 public key.
-
-If a passphrase is specified, this command will apply a cryptographic
-key-stretching algorithm to it and produce a private key. For security
-reasons, the passphrase must be at least 32 characters long.
 
 ### User: Generate MACI public key
 
@@ -119,7 +111,7 @@ reasons, the passphrase must be at least 32 characters long.
 
 | Option | Flags | About |
 |-|-|-|
-| Passphrase | `-sk` or `--privKey` | A serialised private key |
+| Private key | `-sk` or `--privKey` | A serialised private key |
 
 The output of this command is a serialised public key derived from the given private key.
 
