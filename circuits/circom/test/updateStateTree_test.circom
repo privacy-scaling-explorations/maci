@@ -4,4 +4,4 @@ include "../updateStateTree.circom"
 // message_tree_depth,
 // vote_options_tree_depth
 
-component main = UpdateStateTree(2, 2, 2);
+component main = UpdateStateTree(4, 4, 2);

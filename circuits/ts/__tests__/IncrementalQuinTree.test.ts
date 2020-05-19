@@ -4,7 +4,7 @@ import {
 
 import {
     genRandomSalt,
-    IncrementalQuadTree,
+    IncrementalQuinTree,
     SnarkBigInt,
     bigInt,
 } from 'maci-crypto'
@@ -12,16 +12,16 @@ import {
 const LEVELS = 3
 const ZERO_VALUE = 0
 
-describe('Quad Merkle Tree circuits', () => {
-    describe('QuadTreeInsertionProof', () => {
+describe('Quin Merkle Tree circuits', () => {
+    describe('QuinTreeInsertionProof', () => {
         let circuit
 
         beforeAll(async () => {
-            circuit = await compileAndLoadCircuit('test/quadTreeInclusionProof_test.circom')
+            circuit = await compileAndLoadCircuit('test/quinTreeInclusionProof_test.circom')
         })
 
-        it('Valid QuadTreeInsertionProof inputs should work', async () => {
-            const tree = new IncrementalQuadTree(LEVELS, ZERO_VALUE)
+        it('Valid QuinTreeInsertionProof inputs should work', async () => {
+            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE)
 
             for (let i = 0; i < 30; i++) {
                 const randomVal = genRandomSalt()
@@ -29,7 +29,7 @@ describe('Quad Merkle Tree circuits', () => {
             }
             const index = 7
             const path = tree.genMerklePath(index)
-            const isValid = IncrementalQuadTree.verifyMerklePath(
+            const isValid = IncrementalQuinTree.verifyMerklePath(
                 path,
                 tree.hashFunc,
             )
@@ -47,7 +47,7 @@ describe('Quad Merkle Tree circuits', () => {
         })
 
         it('An modified Merkle proof should produce a different root', async () => {
-            const tree = new IncrementalQuadTree(LEVELS, ZERO_VALUE)
+            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE)
 
             for (let i = 0; i < 30; i++) {
                 const randomVal = genRandomSalt()
@@ -55,7 +55,7 @@ describe('Quad Merkle Tree circuits', () => {
             }
             const index = 7
             const path = tree.genMerklePath(index)
-            const isValid = IncrementalQuadTree.verifyMerklePath(
+            const isValid = IncrementalQuinTree.verifyMerklePath(
                 path,
                 tree.hashFunc,
                 tree.depth,
@@ -78,15 +78,15 @@ describe('Quad Merkle Tree circuits', () => {
         })
     })
 
-    describe('QuadCheckRoot', () => {
+    describe('QuinCheckRoot', () => {
         let circuit
 
         beforeAll(async () => {
-            circuit = await compileAndLoadCircuit('test/quadTreeCheckRoot_test.circom')
+            circuit = await compileAndLoadCircuit('test/quinTreeCheckRoot_test.circom')
         })
 
         it('Valid CheckRoot inputs should work', async () => {
-            const tree = new IncrementalQuadTree(LEVELS, ZERO_VALUE)
+            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE)
             const leaves: SnarkBigInt[] = []
 
             for (let i = 0; i < 5 ** LEVELS; i++) {
@@ -107,7 +107,7 @@ describe('Quad Merkle Tree circuits', () => {
         })
 
         it('Different leaves should generate a different root', async () => {
-            const tree = new IncrementalQuadTree(LEVELS, ZERO_VALUE)
+            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE)
             const leaves: SnarkBigInt[] = []
 
             for (let i = 0; i < 5 ** LEVELS; i++) {
@@ -130,15 +130,15 @@ describe('Quad Merkle Tree circuits', () => {
         })
     })
 
-    describe('QuadLeafExists', () => {
+    describe('QuinLeafExists', () => {
         let circuit
 
         beforeAll(async () => {
-            circuit = await compileAndLoadCircuit('test/quadTreeLeafExists_test.circom')
+            circuit = await compileAndLoadCircuit('test/quinTreeLeafExists_test.circom')
         })
 
-        it('Valid QuadLeafExists inputs should work', async () => {
-            const tree = new IncrementalQuadTree(LEVELS, ZERO_VALUE)
+        it('Valid QuinLeafExists inputs should work', async () => {
+            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE)
 
             const index = 7
             for (let i = 0; i < 30; i++) {
@@ -146,7 +146,7 @@ describe('Quad Merkle Tree circuits', () => {
                 tree.insert(randomVal)
             }
             const path = tree.genMerklePath(index)
-            const isValid = IncrementalQuadTree.verifyMerklePath(
+            const isValid = IncrementalQuinTree.verifyMerklePath(
                 path,
                 tree.hashFunc,
                 tree.depth,
@@ -164,8 +164,8 @@ describe('Quad Merkle Tree circuits', () => {
             expect(circuit.checkWitness(witness)).toBeTruthy()
         })
 
-        it('Invalid QuadLeafExists inputs should not work', async () => {
-            const tree = new IncrementalQuadTree(LEVELS, ZERO_VALUE)
+        it('Invalid QuinLeafExists inputs should not work', async () => {
+            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE)
 
             const index = 7
             for (let i = 0; i < 30; i++) {
@@ -173,7 +173,7 @@ describe('Quad Merkle Tree circuits', () => {
                 tree.insert(randomVal)
             }
             const path = tree.genMerklePath(index)
-            const isValid = IncrementalQuadTree.verifyMerklePath(
+            const isValid = IncrementalQuinTree.verifyMerklePath(
                 path,
                 tree.hashFunc,
                 tree.depth,

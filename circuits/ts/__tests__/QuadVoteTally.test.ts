@@ -103,7 +103,7 @@ describe('Quadratic vote tallying circuit', () => {
                 newResultsSalt,
             )
 
-        expect(circuitInputs.stateLeaves.length).toEqual(5)
+        expect(circuitInputs.stateLeaves.length).toEqual(quadVoteTallyBatchSize)
 
         const witness = circuit.calculateWitness(stringifyBigInts(circuitInputs))
         expect(circuit.checkWitness(witness)).toBeTruthy()

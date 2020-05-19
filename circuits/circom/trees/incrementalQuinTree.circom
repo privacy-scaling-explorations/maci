@@ -2,8 +2,9 @@ include "../../node_modules/circomlib/circuits/mux1.circom";
 include "../../node_modules/circomlib/circuits/comparators.circom";
 include "../hasherPoseidon.circom";
 include "./calculateTotal.circom";
+include "./checkRoot.circom";
 
-// This file contains circuits for quad Merkle tree verifcation.
+// This file contains circuits for quintary Merkle tree verifcation.
 // It assumes that each node contains 5 leaves, as we use the PoseidonT6
 // circuit to hash leaves, which supports up to 5 input elements.
 
@@ -17,69 +18,13 @@ Note: circom has some particularities which limit the code patterns we can use.
 - You can't use a signal as a list index.
 */
 
-template QuadCheckRoot(levels) {
-    // Given a quad Merkle root and a list of leaves, check if the root is the
-    // correct result of inserting all the leaves into the tree in the given
-    // order.
-
-    var LEAVES_PER_NODE = 5;
-
-    // The total number of leaves
-    var totalLeaves = LEAVES_PER_NODE ** levels;
-
-    // The number of Hasher5 components which will be used to hash the
-    // leaves
-    var numLeafHashers = LEAVES_PER_NODE ** (levels - 1);
-
-    // Inputs to the snark
-    signal input leaves[totalLeaves];
-
-    // The output
-    signal output root;
-
-    var i;
-    var j;
-
-    // The total number of hashers
-    var numHashers = 0;
-    for (i = 0; i < levels; i ++) {
-        numHashers += LEAVES_PER_NODE ** i;
-    }
-
-    component hashers[numHashers];
-
-    // Instantiate all hashers
-    for (i = 0; i < numHashers; i ++) {
-        hashers[i] = Hasher5();
-    }
-
-    // Wire the leaf values into the leaf hashers
-    for (i = 0; i < numLeafHashers; i ++){
-        for (j = 0; j < LEAVES_PER_NODE; j ++){
-            hashers[i].in[j] <== leaves[i * LEAVES_PER_NODE + j];
-        }
-    }
-
-    // Wire the outputs of the leaf hashers to the intermediate hasher inputs
-    var k = 0;
-    for (i = numLeafHashers; i < numHashers; i ++) {
-        for (j = 0; j < LEAVES_PER_NODE; j ++){
-            hashers[i].in[j] <== hashers[k * LEAVES_PER_NODE + j].hash;
-        }
-        k ++;
-    }
-
-    // Wire the output of the final hash to this circuit's output
-    root <== hashers[numHashers-1].hash;
-}
 
 /*
  * Given a list of items and an index, output the item at the position denoted
  * by the index. The number of items must be less than 8, and the index must
  * be less than the number of items.
  */
-
-template QuadSelector(choices) {
+template QuinSelector(choices) {
     signal input in[choices];
     signal input index;
     signal output out;
@@ -125,7 +70,7 @@ template Splicer(numItems) {
 
     component greaterThan[NUM_OUTPUT_ITEMS];
     component isLeafIndex[NUM_OUTPUT_ITEMS];
-    component quadSelectors[NUM_OUTPUT_ITEMS];
+    component quinSelectors[NUM_OUTPUT_ITEMS];
     component muxes[NUM_OUTPUT_ITEMS];
 
     var i;
@@ -157,8 +102,8 @@ template Splicer(numItems) {
         4. if index = 2 and i = 3, then s = 2
         5. if index = 2 and i = 4, then s = 3
 
-        We then wire `s`, as well as each item in `in` to a QuadSelector.
-        The output signal from the QuadSelector is <item from in> and gets
+        We then wire `s`, as well as each item in `in` to a QuinSelector.
+        The output signal from the QuinSelector is <item from in> and gets
         wired to Mux1 (as above).
     */
     for (i = 0; i < numItems + 1; i ++) {
@@ -167,17 +112,17 @@ template Splicer(numItems) {
         greaterThan[i].in[0] <== i;
         greaterThan[i].in[1] <== index;
 
-        quadSelectors[i] = QuadSelector(numItems + 1);
+        quinSelectors[i] = QuinSelector(numItems + 1);
 
         // Select the value from `in` at index i - greaterThan[i].out.
         // e.g. if index = 2 and i = 1, greaterThan[i].out = 0, so 1 - 0 = 0
         // but if index = 2 and i = 3, greaterThan[i].out = 1, so 3 - 1 = 2
-        quadSelectors[i].index <== i - greaterThan[i].out;
+        quinSelectors[i].index <== i - greaterThan[i].out;
 
         for (j = 0; j < numItems; j ++) {
-            quadSelectors[i].in[j] <== in[j];
+            quinSelectors[i].in[j] <== in[j];
         }
-        quadSelectors[i].in[numItems] <== 0;
+        quinSelectors[i].in[numItems] <== 0;
 
         isLeafIndex[i] = IsEqual();
         isLeafIndex[i].in[0] <== index;
@@ -185,14 +130,14 @@ template Splicer(numItems) {
 
         muxes[i] = Mux1();
         muxes[i].s <== isLeafIndex[i].out;
-        muxes[i].c[0] <== quadSelectors[i].out;
+        muxes[i].c[0] <== quinSelectors[i].out;
         muxes[i].c[1] <== leaf;
 
         out[i] <== muxes[i].out;
     }
 }
 
-template QuadTreeInclusionProof(levels) {
+template QuinTreeInclusionProof(levels) {
     // Each node has 5 leaves
     var LEAVES_PER_NODE = 5;
     var LEAVES_PER_PATH_LEVEL = LEAVES_PER_NODE - 1;
@@ -240,8 +185,8 @@ template QuadTreeInclusionProof(levels) {
     root <== hashers[levels - 1].hash;
 }
 
-template QuadLeafExists(levels){
-    // Ensures that a leaf exists within a quadtree with given `root`
+template QuinLeafExists(levels){
+    // Ensures that a leaf exists within a quintree with given `root`
 
     var LEAVES_PER_NODE = 5;
     var LEAVES_PER_PATH_LEVEL = LEAVES_PER_NODE - 1;
@@ -255,7 +200,7 @@ template QuadLeafExists(levels){
     signal input root;
 
     // Verify the Merkle path
-    component verifier = QuadTreeInclusionProof(levels);
+    component verifier = QuinTreeInclusionProof(levels);
     verifier.leaf <== leaf;
     for (i = 0; i < levels; i ++) {
         verifier.path_index[i] <== path_index[i];
@@ -268,11 +213,11 @@ template QuadLeafExists(levels){
 }
 
 /*
- * Given a tree index, generate the indices which QuadTreeInclusionProof and
- * QuadLeafExists require. e.g. if the index is 30 and the number of levels is
+ * Given a tree index, generate the indices which QuinTreeInclusionProof and
+ * QuinLeafExists require. e.g. if the index is 30 and the number of levels is
  * 4, the output should be [1, 1, 0, 0]
  */
-template QuadGeneratePathIndices(levels) {
+template QuinGeneratePathIndices(levels) {
     var BASE = 5;
     signal input in; 
     signal output out[levels];

@@ -19,10 +19,10 @@ const toBase5 = (x: number) => {
     return result
 }
 
-describe('QuadGeneratePathIndices circuit', () => {
+describe('QuinGeneratePathIndices circuit', () => {
     let circuit 
     beforeAll(async () => {
-        circuit = await compileAndLoadCircuit('test/quadGeneratePathIndices_test.circom')
+        circuit = await compileAndLoadCircuit('test/quinGeneratePathIndices_test.circom')
     })
 
     it('Should return the correct result', async () => {

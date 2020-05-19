@@ -28,7 +28,7 @@ import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
 /*
  * An incremental Merkle tree which supports up to 5 leaves per node.
  */
-contract IncrementalQuadTree is Ownable, Hasher {
+contract IncrementalQuinTree is Ownable, Hasher {
     // The maximum tree depth
     uint8 internal constant MAX_DEPTH = 32;
 
@@ -69,7 +69,7 @@ contract IncrementalQuadTree is Ownable, Hasher {
         // Limit the Merkle tree to MAX_DEPTH levels
         require(
             _treeLevels > 0 && _treeLevels <= MAX_DEPTH,
-            "IncrementalQuadTree: _treeLevels must be between 0 and 33"
+            "IncrementalQuinTree: _treeLevels must be between 0 and 33"
         );
         
         /*
@@ -112,13 +112,13 @@ contract IncrementalQuadTree is Ownable, Hasher {
     function insertLeaf(uint256 _leaf) public onlyOwner returns (uint256) {
         require(
             _leaf < SNARK_SCALAR_FIELD,
-            "IncrementalQuadTree: insertLeaf argument must be < SNARK_SCALAR_FIELD"
+            "IncrementalQuinTree: insertLeaf argument must be < SNARK_SCALAR_FIELD"
         );
 
         // Ensure that the tree is not full
         require(
             nextLeafIndex < uint256(LEAVES_PER_NODE) ** uint256(treeLevels),
-            "IncrementalQuadTree: tree is full"
+            "IncrementalQuinTree: tree is full"
         );
 
         uint256 currentIndex = nextLeafIndex;

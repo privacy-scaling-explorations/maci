@@ -1,6 +1,6 @@
 {
     "name": "Happy path",
-    "description": "Full tree, 5 batches, no bribers",
+    "description": "Full tree, 4 batches, no bribers",
     "numUsers": 15,
     "commands": [
         {
@@ -92,66 +92,7 @@
             "voteOptionIndex": 14,
             "voteWeight": 1,
             "nonce": 1
-        },
-        {
-            "user": 15,
-            "voteOptionIndex": 15,
-            "voteWeight": 1,
-            "nonce": 1
-        },
-        {
-            "user": 16,
-            "voteOptionIndex": 16,
-            "voteWeight": 1,
-            "nonce": 1
-        },
-        {
-            "user": 17,
-            "voteOptionIndex": 17,
-            "voteWeight": 1,
-            "nonce": 1
-        },
-        {
-            "user": 18,
-            "voteOptionIndex": 18,
-            "voteWeight": 1,
-            "nonce": 1
-        {
-            "user": 19,
-            "voteOptionIndex": 19,
-            "voteWeight": 1,
-            "nonce": 1
-        },
-        {
-            "user": 20,
-            "voteOptionIndex": 20,
-            "voteWeight": 1,
-            "nonce": 1
-        },
-        {
-            "user": 21,
-            "voteOptionIndex": 21,
-            "voteWeight": 1,
-            "nonce": 1
-        },
-        {
-            "user": 22,
-            "voteOptionIndex": 22,
-            "voteWeight": 1,
-            "nonce": 1
-        },
-        {
-            "user": 23,
-            "voteOptionIndex": 23,
-            "voteWeight": 1,
-            "nonce": 1
-        },
-        {
-            "user": 24,
-            "voteOptionIndex": 24,
-            "voteWeight": 1,
-            "nonce": 1
         }
     ],
-    "expectedTally": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]
+    "expectedTally": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0]
 }

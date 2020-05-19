@@ -52,7 +52,6 @@ describe('create CLI subcommand', () => {
             ` -bv ${tallyBatchSize}` +
             ` -c ${initialVoiceCredits}`
         
-        debugger
         const output = exec(command).stdout.trim()
 
         console.log(command)

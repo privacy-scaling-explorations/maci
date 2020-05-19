@@ -2,7 +2,8 @@ pragma experimental ABIEncoderV2;
 pragma solidity ^0.5.0;
 
 import { DomainObjs } from './DomainObjs.sol';
-import { IncrementalQuadTree } from "./IncrementalQuadTree.sol";
+import { IncrementalQuinTree } from "./IncrementalQuinTree.sol";
+import { IncrementalMerkleTree } from "./IncrementalMerkleTree.sol";
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
 import { BatchUpdateStateTreeVerifier } from "./BatchUpdateStateTreeVerifier.sol";
 import { QuadVoteTallyVerifier } from "./QuadVoteTallyVerifier.sol";
@@ -32,10 +33,10 @@ contract MACI is Ownable, DomainObjs, ComputeRoot {
     uint256 public currentMessageBatchIndex;
 
     // The tree that tracks the sign-up messages.
-    IncrementalQuadTree public messageTree;
+    IncrementalMerkleTree public messageTree;
 
     // The tree that tracks each user's public key and votes
-    IncrementalQuadTree public stateTree;
+    IncrementalMerkleTree public stateTree;
 
     // The Merkle root of the state tree after the sign-up period.
     // publishMessage() will not update the state tree. Rather, it will
@@ -56,7 +57,7 @@ contract MACI is Ownable, DomainObjs, ComputeRoot {
     // The batch # for the quote tally function
     uint256 public currentQvtBatchNum;
 
-    // Cached results of 5 ** depth - 1 where depth is the state tree depth and
+    // Cached results of 2 ** depth - 1 where depth is the state tree depth and
     // message tree depth
     uint256 public messageTreeMaxLeafIndex;
 
@@ -159,12 +160,12 @@ contract MACI is Ownable, DomainObjs, ComputeRoot {
 
         // Calculate and cache the max number of leaves for each tree.
         // They are used as public inputs to the batch update state tree snark.
-        messageTreeMaxLeafIndex = uint256(5) ** _treeDepths.messageTreeDepth - 1;
+        messageTreeMaxLeafIndex = uint256(2) ** _treeDepths.messageTreeDepth - 1;
 
         // Check and store the maximum number of signups
         // It is the user's responsibility to ensure that the state tree depth
         // is just large enough and not more, or they will waste gas.
-        uint256 stateTreeMaxLeafIndex = uint256(5) ** _treeDepths.stateTreeDepth - 1;
+        uint256 stateTreeMaxLeafIndex = uint256(2) ** _treeDepths.stateTreeDepth - 1;
         require(_maxValues.maxUsers <= stateTreeMaxLeafIndex, "MACI: invalid maxUsers value");
         maxUsers = _maxValues.maxUsers;
 
@@ -178,7 +179,7 @@ contract MACI is Ownable, DomainObjs, ComputeRoot {
         voteOptionsMaxLeafIndex = _maxValues.maxVoteOptions;
 
         // Create the message tree
-        messageTree = new IncrementalQuadTree(_treeDepths.messageTreeDepth, ZERO_VALUE);
+        messageTree = new IncrementalMerkleTree(_treeDepths.messageTreeDepth, ZERO_VALUE);
 
         // Calculate and store the empty vote option tree root. This value must
         // be set before we call hashedBlankStateLeaf() later
@@ -192,7 +193,7 @@ contract MACI is Ownable, DomainObjs, ComputeRoot {
         uint256 h = hashedBlankStateLeaf();
 
         // Create the state tree
-        stateTree = new IncrementalQuadTree(_treeDepths.stateTreeDepth, h);
+        stateTree = new IncrementalMerkleTree(_treeDepths.stateTreeDepth, h);
 
         // Make subsequent insertions start from leaf #1, as leaf #0 is only
         // updated with random data if a command is invalid.
@@ -323,7 +324,7 @@ contract MACI is Ownable, DomainObjs, ComputeRoot {
         // postSignUpStateRoot to the last known state root.
         // We do so as the batchProcessMessage function can only update the
         // state root as a variable and has no way to use
-        // IncrementalQuadTree.insertLeaf() anyway.
+        // IncrementalQuinTree.insertLeaf() anyway.
         if (postSignUpStateRoot == 0) {
             // It is exceedingly improbable that the zero value is a tree root
             assert(postSignUpStateRoot != stateTree.root());
@@ -379,7 +380,7 @@ contract MACI is Ownable, DomainObjs, ComputeRoot {
         uint256 _newStateRoot,
         uint256[] memory _stateTreeRoots,
         PubKey[] memory _ecdhPubKeys
-    ) public view returns (uint256[23] memory) {
+    ) public view returns (uint256[20] memory) {
 
         uint256 messageBatchEndIndex;
         if (currentMessageBatchIndex + messageBatchSize <= numMessages) {
@@ -388,7 +389,7 @@ contract MACI is Ownable, DomainObjs, ComputeRoot {
             messageBatchEndIndex = numMessages - 1;
         }
 
-        uint256[23] memory publicSignals;
+        uint256[20] memory publicSignals;
         publicSignals[0] = _newStateRoot;
         publicSignals[1] = coordinatorPubKey.x;
         publicSignals[2] = coordinatorPubKey.y;
@@ -456,7 +457,7 @@ contract MACI is Ownable, DomainObjs, ComputeRoot {
         );
 
         // Assemble the public inputs to the snark
-        uint256[23] memory publicSignals = genBatchUstPublicSignals(
+        uint256[20] memory publicSignals = genBatchUstPublicSignals(
             _newStateRoot,
             _stateTreeRoots,
             _ecdhPubKeys
@@ -581,7 +582,7 @@ contract MACI is Ownable, DomainObjs, ComputeRoot {
     }
 
     function calcEmptyVoteOptionTreeRoot(uint8 _levels) public pure returns (uint256) {
-        return computeEmptyQuadRoot(_levels, 0);
+        return computeEmptyQuinRoot(_levels, 0);
     }
 
     function getMessageTreeRoot() public view returns (uint256) {

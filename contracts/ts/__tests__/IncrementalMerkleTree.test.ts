@@ -1,11 +1,11 @@
 require('module-alias/register')
-jest.setTimeout(60000)
+jest.setTimeout(120000)
 import { genTestAccounts } from '../accounts'
 import { config } from 'maci-config'
 import {
     genRandomSalt,
     NOTHING_UP_MY_SLEEVE,
-    IncrementalMerkleTree,
+    IncrementalQuinTree,
 } from 'maci-crypto'
 
 import * as etherlime from 'etherlime-lib'
@@ -49,31 +49,31 @@ describe('IncrementalMerkleTree', () => {
             NOTHING_UP_MY_SLEEVE.toString(),
         )
 
-        //console.log('Deploying ComputeRoot')
-        //crContract = await deployer.deploy(
-            //ComputeRootAbi,
-            //{
-                //PoseidonT3: PoseidonT3Contract.contractAddress,
-                //PoseidonT6: PoseidonT6Contract.contractAddress
-            //},
-        //)
+        console.log('Deploying ComputeRoot')
+        crContract = await deployer.deploy(
+            ComputeRootAbi,
+            {
+                PoseidonT3: PoseidonT3Contract.contractAddress,
+                PoseidonT6: PoseidonT6Contract.contractAddress
+            },
+        )
 
-        tree = new IncrementalMerkleTree(DEPTH, NOTHING_UP_MY_SLEEVE)
+        tree = new IncrementalQuinTree(DEPTH, NOTHING_UP_MY_SLEEVE, 2)
     })
 
-    //it('an empty tree should have the correct root', async () => {
-        //const root1 = await mtContract.root()
-        //expect(tree.root.toString()).toEqual(root1.toString())
-    //})
+    it('an empty tree should have the correct root', async () => {
+        const root1 = await mtContract.root()
+        expect(tree.root.toString()).toEqual(root1.toString())
+    })
 
-    //it('computeEmptyRoot() should generate the correct root', async () => {
-        //const emptyRoot = await crContract.computeEmptyRoot(DEPTH, NOTHING_UP_MY_SLEEVE.toString())
-        //expect(tree.root.toString()).toEqual(emptyRoot.toString())
-    //})
+    it('computeEmptyRoot() should generate the correct root', async () => {
+        const emptyRoot = await crContract.computeEmptyRoot(DEPTH, NOTHING_UP_MY_SLEEVE.toString())
+        expect(tree.root.toString()).toEqual(emptyRoot.toString())
+    })
 
     it('the on-chain root should match an off-chain root after various insertions', async () => {
-        expect.assertions(1)
-        for (let i = 0; i < 1; i++) {
+        expect.assertions(8)
+        for (let i = 0; i < 8; i++) {
             const leaf = genRandomSalt()
 
             const tx = await mtContract.insertLeaf(leaf.toString())

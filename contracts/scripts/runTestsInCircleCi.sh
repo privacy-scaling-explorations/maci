@@ -9,4 +9,4 @@ NODE_OPTIONS=--max-old-space-size=4096 npx jest --force-exit batchProcessMessage
 npx jest --force-exit SignUp.test.ts &&
 npx jest --force-exit Hasher.test.ts &&
 npx jest --force-exit IncrementalMerkleTree.test.ts &&
-npx jest --force-exit IncrementalQuadTree.test.ts
+npx jest --force-exit IncrementalQuinTree.test.ts

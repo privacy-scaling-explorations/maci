@@ -15,7 +15,8 @@ import {
 import {
     promptPwd,
     validateEthSk,
-    calcTreeDepthFromMaxLeaves,
+    calcBinaryTreeDepthFromMaxLeaves,
+    calcQuinTreeDepthFromMaxLeaves,
     checkDeployerProviderConnection,
 } from './utils'
 
@@ -229,10 +230,11 @@ const create = async (args: any) => {
 
     // Calculate the tree depths. e.g. if maxUsers is 1000, the tree depth
     // should be 10, as the closest next power of 2 is 1024 = 2 ** 1024
-    const stateTreeDepth = calcTreeDepthFromMaxLeaves(maxUsers)
-    const messageTreeDepth = calcTreeDepthFromMaxLeaves(maxMessages)
-    const voteOptionTreeDepth = calcTreeDepthFromMaxLeaves(maxVoteOptions)
+    const stateTreeDepth = calcBinaryTreeDepthFromMaxLeaves(maxUsers)
+    const messageTreeDepth = calcBinaryTreeDepthFromMaxLeaves(maxMessages)
+    const voteOptionTreeDepth = calcQuinTreeDepthFromMaxLeaves(maxVoteOptions)
 
+    debugger
     // Signup duration
     const signupDuration = args.signup_duration ? args.signup_duration : DEFAULT_SIGNUP_DURATION
 
@@ -245,7 +247,7 @@ const create = async (args: any) => {
     // Tally batch size
     const tallyBatchSize = args.tally_batch_size ? args.tally_batch_size : DEFAULT_TALLY_BATCH_SIZE
 
-    if (maxUsers !== 24 || maxMessages !== 24 || maxVoteOptions >= 25 || messageBatchSize !== 5 || tallyBatchSize !== 5) {
+    if (maxUsers !== 15 || maxMessages !== 15 || maxVoteOptions >= 25 || messageBatchSize !== 4 || tallyBatchSize !== 4) {
         console.error('Error: this codebase currently does not support custom values for max-users, max-messages, message-batch-size, and tally-batch-size. Additionally, the number of vote options must be less than 25')
         return
     }

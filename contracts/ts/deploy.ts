@@ -133,8 +133,8 @@ const deployMaci = async (
 
     log('Deploying MACI', quiet)
 
-    const maxUsers = (bigInt(5).pow(bigInt(stateTreeDepth)) - bigInt(1)).toString()
-    const maxMessages = (bigInt(5).pow(bigInt(messageTreeDepth)) - bigInt(1)).toString()
+    const maxUsers = (bigInt(2).pow(bigInt(stateTreeDepth)) - bigInt(1)).toString()
+    const maxMessages = (bigInt(2).pow(bigInt(messageTreeDepth)) - bigInt(1)).toString()
 
     const maciContract = await deployer.deploy(
         MACI,

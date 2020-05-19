@@ -6,10 +6,10 @@ import {
     stringifyBigInts,
 } from 'maci-crypto'
 
-describe('QuadSelector circuit', () => {
+describe('QuinSelector circuit', () => {
     let circuit 
     beforeAll(async () => {
-        circuit = await compileAndLoadCircuit('test/quadSelector_test.circom')
+        circuit = await compileAndLoadCircuit('test/quinSelector_test.circom')
     })
 
     it('Should return the nth value given an index', async () => {

@@ -2,7 +2,7 @@ import * as assert from 'assert'
 import {
     stringifyBigInts,
     genRandomSalt,
-    IncrementalQuadTree,
+    IncrementalQuinTree,
     bigInt,
     SnarkBigInt,
     hash5,
@@ -56,10 +56,10 @@ const computeRootFromLeaves = (
     return computeRootFromLeaves(hashes)
 }
 
-describe('Quad Merkle Tree', () => {
+describe('Quin Merkle Tree', () => {
 
     it('the constructor should calculate the correct empty root', () => {
-        const tree = new IncrementalQuadTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
+        const tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
         expect(computeEmptyRoot(DEPTH, ZERO_VALUE).toString())
             .toEqual(tree.root.toString())
 
@@ -72,7 +72,7 @@ describe('Quad Merkle Tree', () => {
     })
 
     it('insert() should calculate a correct root', () => {
-        const tree = new IncrementalQuadTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
+        const tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
         const numToInsert = LEAVES_PER_NODE + 2
         const leaves: SnarkBigInt[] = []
         for (let i = 0; i < numToInsert; i ++) {
@@ -90,7 +90,7 @@ describe('Quad Merkle Tree', () => {
     })
 
     it('update() should calculate a correct root', () => {
-        const tree = new IncrementalQuadTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
+        const tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
         const numToInsert = LEAVES_PER_NODE * 2
         const leaves: SnarkBigInt[] = []
         for (let i = 0; i < numToInsert; i ++) {
@@ -111,7 +111,7 @@ describe('Quad Merkle Tree', () => {
     })
 
     it('copy() should produce a deep copy', () => {
-        const tree = new IncrementalQuadTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
+        const tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
         const numToInsert = LEAVES_PER_NODE * 2
         for (let i = 0; i < numToInsert; i ++) {
             const leaf = bigInt(i + 1)
@@ -134,17 +134,23 @@ describe('Quad Merkle Tree', () => {
     })
 
     describe('Tree with 4 leaves per node', () => {
-        it ('should compute the correct root', () => {
-            const tree = new IncrementalQuadTree(DEPTH, ZERO_VALUE, 4)
-            for (let i = 0; i < 6; i ++) {
-                tree.insert(i)
-            }
-            const leaves = [0, 1, 2, 3, 0, 4, 5]
-            for (let i = leaves.length; i < 5 ** DEPTH; i ++) {
-                leaves.push(0)
-            }
-            expect(tree.root.toString()).toEqual(computeRootFromLeaves(leaves).toString())
+        it ('should throw', () => {
+            expect(() => {
+                new IncrementalQuinTree(DEPTH, ZERO_VALUE, 4)
+            }).toThrow()
         })
+        //// TODO: not supported yet
+        //it ('should compute the correct root', () => {
+            //const tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, 4)
+            //for (let i = 0; i < 6; i ++) {
+                //tree.insert(i)
+            //}
+            //const leaves = [0, 1, 2, 3, 0, 4, 5]
+            //for (let i = leaves.length; i < 5 ** DEPTH; i ++) {
+                //leaves.push(ZERO_VALUE)
+            //}
+            //expect(tree.root.toString()).toEqual(computeRootFromLeaves(leaves).toString())
+        //})
     })
 
     describe('Path generation and verification', () => {
@@ -152,7 +158,7 @@ describe('Quad Merkle Tree', () => {
         const numToInsert = 5 ** DEPTH
 
         beforeAll(() => {
-            tree = new IncrementalQuadTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
+            tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
             for (let i = 0; i < numToInsert; i ++) {
                 const leaf = bigInt(i + 1)
                 tree.insert(leaf)
@@ -168,7 +174,7 @@ describe('Quad Merkle Tree', () => {
         it('verifyMerklePath() should reject an invalid proof (with the right format)', () => {
             const path = tree.genMerklePath(numToInsert - 1)
             path.pathElements[0][0] = bigInt(123)
-            const isValid = IncrementalQuadTree.verifyMerklePath(
+            const isValid = IncrementalQuinTree.verifyMerklePath(
                 path,
                 tree.hashFunc,
             )
@@ -180,7 +186,7 @@ describe('Quad Merkle Tree', () => {
             const path = tree.genMerklePath(numToInsert - 1)
             path.pathElements[0] = null
             expect(() => {
-                IncrementalQuadTree.verifyMerklePath(
+                IncrementalQuinTree.verifyMerklePath(
                     path,
                     tree.hashFunc,
                 )
@@ -191,7 +197,7 @@ describe('Quad Merkle Tree', () => {
 
             const path = tree.genMerklePath(30)
 
-            const isValid = IncrementalQuadTree.verifyMerklePath(
+            const isValid = IncrementalQuinTree.verifyMerklePath(
                 path,
                 tree.hashFunc,
             )
@@ -200,7 +206,7 @@ describe('Quad Merkle Tree', () => {
         })
 
         it('genMerklePath() should calculate a correct Merkle path for each most recently inserted leaf', () => {
-            const tree = new IncrementalQuadTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
+            const tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
             const numToInsert = LEAVES_PER_NODE * 2
 
             expect.assertions(numToInsert)
@@ -209,11 +215,10 @@ describe('Quad Merkle Tree', () => {
                 tree.insert(leaf)
 
                 const path = tree.genMerklePath(i)
-                const isValid = IncrementalQuadTree.verifyMerklePath(
+                const isValid = IncrementalQuinTree.verifyMerklePath(
                     path,
                     tree.hashFunc,
                 )
-                if (!isValid) { debugger }
         
                 expect(isValid).toBeTruthy()
             }

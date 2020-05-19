@@ -13,7 +13,7 @@ import {
     SnarkBigInt,
     stringifyBigInts,
     NOTHING_UP_MY_SLEEVE,
-    IncrementalQuadTree,
+    IncrementalQuinTree,
 } from 'maci-crypto'
 
 import { User } from './User'
@@ -48,7 +48,7 @@ class MaciState {
         this.voteOptionTreeDepth = bigInt(_voteOptionTreeDepth)
         this.maxVoteOptionIndex = bigInt(_maxVoteOptionIndex)
 
-        const emptyVoteOptionTree = new IncrementalQuadTree(
+        const emptyVoteOptionTree = new IncrementalQuinTree(
             this.voteOptionTreeDepth,
             bigInt(0),
         )
@@ -70,14 +70,15 @@ class MaciState {
     }
 
     /*
-     * Returns an IncrementalQuadTree where the zeroth leaf is
+     * Returns an IncrementalMerkleTree where the zeroth leaf is
      * this.zerothStateLeaf and the other leaves are the Users as hashed
      * StateLeaf objects
      */
-    public genStateTree = (): IncrementalQuadTree => {
-        const stateTree = new IncrementalQuadTree(
+    public genStateTree = (): IncrementalQuinTree => {
+        const stateTree = new IncrementalQuinTree(
             this.stateTreeDepth,
-            this.genBlankLeaf().hash()
+            this.genBlankLeaf().hash(),
+            2,
         )
 
         stateTree.insert(this.zerothStateLeaf.hash())
@@ -97,12 +98,13 @@ class MaciState {
     }
 
     /*
-     * Returns an IncrementalQuadTree of all messages
+     * Returns an IncrementalMerkleTree of all messages
      */
-    public genMessageTree = (): IncrementalQuadTree => {
-        const messageTree = new IncrementalQuadTree(
+    public genMessageTree = (): IncrementalQuinTree => {
+        const messageTree = new IncrementalQuinTree(
             this.messageTreeDepth,
             NOTHING_UP_MY_SLEEVE,
+            2,
         )
 
         for (const message of this.messages) {
@@ -298,6 +300,7 @@ class MaciState {
 
         const messageTree = this.genMessageTree()
         const msgTreePath = messageTree.genMerklePath(_index)
+        assert(IncrementalQuinTree.verifyMerklePath(msgTreePath, messageTree.hashFunc))
 
         const stateTree = this.genStateTree()
         const stateTreeMaxIndex = bigInt(stateTree.nextIndex) - bigInt(1)
@@ -309,7 +312,7 @@ class MaciState {
 
         const currentVoteWeight = user.votes[command.voteOptionIndex]
 
-        const voteOptionTree = new IncrementalQuadTree(
+        const voteOptionTree = new IncrementalQuinTree(
             this.voteOptionTreeDepth,
             bigInt(0),
         )
@@ -319,8 +322,10 @@ class MaciState {
         }
 
         const voteOptionTreePath = voteOptionTree.genMerklePath(command.voteOptionIndex)
+        assert(IncrementalQuinTree.verifyMerklePath(voteOptionTreePath, voteOptionTree.hashFunc))
 
         const stateTreePath = stateTree.genMerklePath(command.stateIndex)
+        assert(IncrementalQuinTree.verifyMerklePath(stateTreePath, stateTree.hashFunc))
 
         const stateLeaf = user.genStateLeaf(this.voteOptionTreeDepth)
 
@@ -580,7 +585,7 @@ class MaciState {
         const blankStateLeafHash = blankStateLeaf.hash()
         let batchTreeDepth = bigInt(0)
 
-        while (bigInt(5).pow(batchTreeDepth) !== _batchSize) {
+        while (bigInt(2).pow(batchTreeDepth) !== _batchSize) {
             batchTreeDepth ++
         }
 
@@ -616,14 +621,16 @@ class MaciState {
         //    subtrees (the intermediate tree)
         // 2. Each batch tree whose leaves are state leaves
 
-        const emptyBatchTree = new IncrementalQuadTree(
+        const emptyBatchTree = new IncrementalQuinTree(
             batchTreeDepth,
             blankStateLeafHash,
+            2,
         )
 
-        const intermediateTree = new IncrementalQuadTree(
+        const intermediateTree = new IncrementalQuinTree(
             this.stateTreeDepth - batchTreeDepth,
             emptyBatchTree.root,
+            2,
         )
 
         // For each batch, create a tree of the leaves in the batch, and insert the
@@ -687,7 +694,7 @@ const genTallyResultCommitment = (
     voteOptionTreeDepth: number,
 ): SnarkBigInt => {
 
-    const tree = new IncrementalQuadTree(voteOptionTreeDepth, bigInt(0))
+    const tree = new IncrementalQuinTree(voteOptionTreeDepth, bigInt(0))
     for (const result of results) {
         tree.insert(bigInt(result))
     }

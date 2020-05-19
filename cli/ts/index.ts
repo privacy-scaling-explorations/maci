@@ -1,6 +1,7 @@
 import * as argparse from 'argparse' 
 import { 
-    calcTreeDepthFromMaxLeaves,
+    calcBinaryTreeDepthFromMaxLeaves,
+    calcQuinTreeDepthFromMaxLeaves,
 } from './utils'
 
 import {
@@ -104,5 +105,6 @@ if (require.main === module) {
 }
 
 export {
-    calcTreeDepthFromMaxLeaves,
+    calcBinaryTreeDepthFromMaxLeaves,
+    calcQuinTreeDepthFromMaxLeaves,
 }
