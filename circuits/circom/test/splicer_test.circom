@@ -1,3 +1,3 @@
 include "../trees/incrementalQuadTree.circom"
 
-component main = QuadTreeInclusionProof(3);
+component main = Splicer(4);

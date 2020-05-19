@@ -21,7 +21,7 @@ let mtContract
 let crContract
 let PoseidonT3Contract, PoseidonT6Contract
 
-const DEPTH = 4
+const DEPTH = 32
 
 let tree
 describe('IncrementalQuadTree', () => {
@@ -49,31 +49,31 @@ describe('IncrementalQuadTree', () => {
             NOTHING_UP_MY_SLEEVE.toString(),
         )
 
-        console.log('Deploying ComputeRoot')
-        crContract = await deployer.deploy(
-            ComputeRootAbi,
-            {
-                PoseidonT3: PoseidonT3Contract.contractAddress,
-                PoseidonT6: PoseidonT6Contract.contractAddress
-            },
-        )
+        //console.log('Deploying ComputeRoot')
+        //crContract = await deployer.deploy(
+            //ComputeRootAbi,
+            //{
+                //PoseidonT3: PoseidonT3Contract.contractAddress,
+                //PoseidonT6: PoseidonT6Contract.contractAddress
+            //},
+        //)
 
         tree = new IncrementalQuadTree(DEPTH, NOTHING_UP_MY_SLEEVE)
     })
 
-    it('an empty tree should have the correct root', async () => {
-        const root1 = await mtContract.root()
-        expect(tree.root.toString()).toEqual(root1.toString())
-    })
+    //it('an empty tree should have the correct root', async () => {
+        //const root1 = await mtContract.root()
+        //expect(tree.root.toString()).toEqual(root1.toString())
+    //})
 
-    it('computeEmptyQuadRoot() should generate the correct root', async () => {
-        const emptyRoot = await crContract.computeEmptyQuadRoot(DEPTH, NOTHING_UP_MY_SLEEVE.toString())
-        expect(tree.root.toString()).toEqual(emptyRoot.toString())
-    })
+    //it('computeEmptyQuadRoot() should generate the correct root', async () => {
+        //const emptyRoot = await crContract.computeEmptyQuadRoot(DEPTH, NOTHING_UP_MY_SLEEVE.toString())
+        //expect(tree.root.toString()).toEqual(emptyRoot.toString())
+    //})
 
     it('the on-chain root should match an off-chain root after various insertions', async () => {
-        expect.assertions(7)
-        for (let i = 0; i < 7; i++) {
+        expect.assertions(1)
+        for (let i = 0; i < 1; i++) {
             const leaf = i
 
             tree.insert(leaf)

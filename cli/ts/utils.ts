@@ -161,7 +161,11 @@ const genMaciStateFromContract = async (
 }
 
 const calcTreeDepthFromMaxLeaves = (maxLeaves: number) => {
-    return Math.ceil(Math.log(maxLeaves) / Math.log(2))
+    let result = 0
+    while (5 ** result < maxLeaves) {
+        result ++
+    }
+    return result
 }
 
 const validateEthAddress = (address: string) => {

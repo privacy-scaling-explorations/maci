@@ -27,28 +27,34 @@ describe('Quad Merkle Tree circuits', () => {
                 const randomVal = genRandomSalt()
                 tree.insert(randomVal)
             }
-            const path = tree.genMerklePath(7)
+            const index = 7
+            const path = tree.genMerklePath(index)
             const isValid = IncrementalQuadTree.verifyMerklePath(
                 path,
                 tree.hashFunc,
-                tree.depth,
-                tree.root,
             )
             expect(isValid).toBeTruthy()
 
-            const circuitInputs = path
+            const circuitInputs = {
+                path_elements: path.pathElements,
+                path_index: path.indices,
+                leaf: tree.leaves[index],
+            }
             const witness = circuit.calculateWitness(circuitInputs)
             expect(circuit.checkWitness(witness)).toBeTruthy()
+            const circuitRoot = witness[circuit.getSignalIdx('main.root')].toString()
+            expect(circuitRoot.toString()).toEqual(tree.root.toString())
         })
 
-        it('Invalid QuadTreeInsertionProof inputs should not work', async () => {
+        it('An modified Merkle proof should produce a different root', async () => {
             const tree = new IncrementalQuadTree(LEVELS, ZERO_VALUE)
 
             for (let i = 0; i < 30; i++) {
                 const randomVal = genRandomSalt()
                 tree.insert(randomVal)
             }
-            const path = tree.genMerklePath(7)
+            const index = 7
+            const path = tree.genMerklePath(index)
             const isValid = IncrementalQuadTree.verifyMerklePath(
                 path,
                 tree.hashFunc,
@@ -59,9 +65,16 @@ describe('Quad Merkle Tree circuits', () => {
 
             path.pathElements[0][0] += bigInt(1)
 
-            expect(() => {
-                circuit.calculateWitness(path)
-            }).toThrow()
+            const circuitInputs = {
+                path_elements: path.pathElements,
+                path_index: path.indices,
+                leaf: tree.leaves[index],
+            }
+
+            const witness = circuit.calculateWitness(circuitInputs)
+            expect(circuit.checkWitness(witness)).toBeTruthy()
+            const circuitRoot = witness[circuit.getSignalIdx('main.root')].toString()
+            expect(circuitRoot.toString()).not.toEqual(tree.root.toString())
         })
     })
 
@@ -142,7 +155,8 @@ describe('Quad Merkle Tree circuits', () => {
             expect(isValid).toBeTruthy()
 
             const circuitInputs = {
-                ...path,
+                path_elements: path.pathElements,
+                path_index: path.indices,
                 leaf: tree.leaves[index],
                 root: tree.root,
             }
@@ -170,7 +184,8 @@ describe('Quad Merkle Tree circuits', () => {
             path.pathElements[0][0] += bigInt(1)
 
             const circuitInputs = {
-                ...path,
+                path_elements: path.pathElements,
+                path_index: path.indices,
                 leaf: tree.leaves[index],
                 root: tree.root,
             }

@@ -1,3 +1,3 @@
-include "../quadMerkleTree.circom"
+include "../trees/incrementalQuadTree.circom"
 
 component main = QuadCheckRoot(3);

@@ -168,12 +168,9 @@ describe('Quad Merkle Tree', () => {
         it('verifyMerklePath() should reject an invalid proof (with the right format)', () => {
             const path = tree.genMerklePath(numToInsert - 1)
             path.pathElements[0][0] = bigInt(123)
-            debugger
             const isValid = IncrementalQuadTree.verifyMerklePath(
                 path,
                 tree.hashFunc,
-                tree.depth,
-                tree.root,
             )
 
             expect(isValid).toBeFalsy()
@@ -186,8 +183,6 @@ describe('Quad Merkle Tree', () => {
                 IncrementalQuadTree.verifyMerklePath(
                     path,
                     tree.hashFunc,
-                    tree.depth,
-                    tree.root,
                 )
             }).toThrow()
         })
@@ -199,8 +194,6 @@ describe('Quad Merkle Tree', () => {
             const isValid = IncrementalQuadTree.verifyMerklePath(
                 path,
                 tree.hashFunc,
-                tree.depth,
-                tree.root,
             )
 
             expect(isValid).toBeTruthy()
@@ -219,9 +212,8 @@ describe('Quad Merkle Tree', () => {
                 const isValid = IncrementalQuadTree.verifyMerklePath(
                     path,
                     tree.hashFunc,
-                    tree.depth,
-                    tree.root,
                 )
+                if (!isValid) { debugger }
         
                 expect(isValid).toBeTruthy()
             }

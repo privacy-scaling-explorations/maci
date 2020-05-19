@@ -245,8 +245,8 @@ const create = async (args: any) => {
     // Tally batch size
     const tallyBatchSize = args.tally_batch_size ? args.tally_batch_size : DEFAULT_TALLY_BATCH_SIZE
 
-    if (maxUsers !== 15 || maxMessages !== 15 || maxVoteOptions > 15 || messageBatchSize !== 4 || tallyBatchSize !== 4) {
-        console.error('Error: this codebase currently does not support custom values for max-users, max-messages, message-batch-size, and tally-batch-sizek. Additionally, the number of vote options must be less than 16')
+    if (maxUsers !== 24 || maxMessages !== 24 || maxVoteOptions >= 25 || messageBatchSize !== 5 || tallyBatchSize !== 5) {
+        console.error('Error: this codebase currently does not support custom values for max-users, max-messages, message-batch-size, and tally-batch-size. Additionally, the number of vote options must be less than 25')
         return
     }
 

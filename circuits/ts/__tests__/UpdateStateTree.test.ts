@@ -1,5 +1,3 @@
-
-
 import {
     compileAndLoadCircuit,
 } from '../'
@@ -99,10 +97,10 @@ describe('State tree root update verification circuit', () => {
         expect(circuitNewStateRoot.toString()).toEqual(stateRootAfter.toString())
     })
 
-    it('PerformChecksBeforeUpdate should confirm signature is valid on valid inputs', async () => {
-        // Calculate the witness
-        const witness = circuitChecks.calculateWitness(circuitInputs)
-        expect(circuitChecks.checkWitness(witness)).toBeTruthy()
-    })
+    //it('PerformChecksBeforeUpdate should confirm signature is valid on valid inputs', async () => {
+        //// Calculate the witness
+        //const witness = circuitChecks.calculateWitness(circuitInputs)
+        //expect(circuitChecks.checkWitness(witness)).toBeTruthy()
+    //})
 
 })

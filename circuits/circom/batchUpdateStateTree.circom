@@ -1,4 +1,4 @@
-include "./merkletree.circom";
+include "./trees/incrementalQuadTree.circom"
 include "./updateStateTree.circom";
 include "../node_modules/circomlib/circuits/mux1.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
@@ -14,6 +14,7 @@ template BatchUpdateStateTree(
     // vote_options_tree_depth: depth of the vote tree
     // batch_size: the number of messages to process
 
+    var LEAVES_PER_PATH_LEVEL = 4;
     // The new state tree root
     signal output root;
 
@@ -28,13 +29,13 @@ template BatchUpdateStateTree(
 
     // The vote option tree root
     signal private input vote_options_tree_root[batch_size];
-    signal private input vote_options_tree_path_elements[batch_size][vote_options_tree_depth];
+    signal private input vote_options_tree_path_elements[batch_size][vote_options_tree_depth][LEAVES_PER_PATH_LEVEL];
     signal private input vote_options_tree_path_index[batch_size][vote_options_tree_depth];
     signal input vote_options_max_leaf_index;
 
     // Message tree
     signal input msg_tree_root;
-    signal private input msg_tree_path_elements[batch_size][message_tree_depth];
+    signal private input msg_tree_path_elements[batch_size][message_tree_depth][LEAVES_PER_PATH_LEVEL];
     signal input msg_tree_batch_start_index;
     signal input msg_tree_batch_end_index;
     signal message_indices[batch_size];
@@ -65,14 +66,14 @@ template BatchUpdateStateTree(
         msg_tree_path_index_selectors[i].c[1] <== msg_tree_batch_end_index;
         msg_tree_path_index_selectors[i].s <== msg_tree_path_index_comparators[i].out;
 
-        msg_tree_path_index[i] = Num2Bits(message_tree_depth);
+        msg_tree_path_index[i] = QuadGeneratePathIndices(message_tree_depth);
         msg_tree_path_index[i].in <== msg_tree_path_index_selectors[i].out;
     }
 
     // The random leaf
     signal private input random_leaf;
-    signal private input random_leaf_path_elements[state_tree_depth];
-    component random_leaf_path_index = Num2Bits(state_tree_depth);
+    signal private input random_leaf_path_elements[state_tree_depth][LEAVES_PER_PATH_LEVEL];
+    component random_leaf_path_index = QuadGeneratePathIndices(state_tree_depth);
     random_leaf_path_index.in <== 0;
 
     // The root after we insert the random leaf. This is the final root after
@@ -83,7 +84,7 @@ template BatchUpdateStateTree(
     var state_tree_data_length = 5;
     signal input state_tree_max_leaf_index;
     signal input state_tree_root[batch_size];
-    signal private input state_tree_path_elements[batch_size][state_tree_depth];
+    signal private input state_tree_path_elements[batch_size][state_tree_depth][LEAVES_PER_PATH_LEVEL];
     signal private input state_tree_path_index[batch_size][state_tree_depth];
     signal private input state_tree_data_raw[batch_size][state_tree_data_length];
 
@@ -108,7 +109,9 @@ template BatchUpdateStateTree(
         new_state_tree[i].vote_options_leaf_raw <== vote_options_leaf_raw[i];
         new_state_tree[i].vote_options_tree_root <== vote_options_tree_root[i];
         for (var j = 0; j < vote_options_tree_depth; j++) {
-            new_state_tree[i].vote_options_tree_path_elements[j] <== vote_options_tree_path_elements[i][j];
+            for (var k = 0; k < LEAVES_PER_PATH_LEVEL; k ++) {
+                new_state_tree[i].vote_options_tree_path_elements[j][k] <== vote_options_tree_path_elements[i][j][k];
+            }
             new_state_tree[i].vote_options_tree_path_index[j] <== vote_options_tree_path_index[i][j];
         }
         new_state_tree[i].vote_options_max_leaf_index <== vote_options_max_leaf_index;
@@ -116,7 +119,9 @@ template BatchUpdateStateTree(
         // Message Tree
         new_state_tree[i].msg_tree_root <== msg_tree_root;
         for (var j = 0; j < message_tree_depth; j++) {
-            new_state_tree[i].msg_tree_path_elements[j] <== msg_tree_path_elements[i][j];
+            for (var k = 0; k < LEAVES_PER_PATH_LEVEL; k ++) {
+                new_state_tree[i].msg_tree_path_elements[j][k] <== msg_tree_path_elements[i][j][k];
+            }
             new_state_tree[i].msg_tree_path_index[j] <== msg_tree_path_index[i].out[j];
         }
 
@@ -126,7 +131,9 @@ template BatchUpdateStateTree(
             new_state_tree[i].state_tree_data_raw[j] <== state_tree_data_raw[i][j];
         }
         for (var j = 0; j < state_tree_depth; j++) {
-            new_state_tree[i].state_tree_path_elements[j] <== state_tree_path_elements[i][j];
+            for (var k = 0; k < LEAVES_PER_PATH_LEVEL; k ++) {
+                new_state_tree[i].state_tree_path_elements[j][k] <== state_tree_path_elements[i][j][k];
+            }
             new_state_tree[i].state_tree_path_index[j] <== state_tree_path_index[i][j];
         }
         new_state_tree[i].state_tree_max_leaf_index <== state_tree_max_leaf_index;
@@ -139,10 +146,12 @@ template BatchUpdateStateTree(
     }
 
     // Update random leaf at index 0
-    component final_state_tree = MerkleTreeInclusionProof(state_tree_depth);
+    component final_state_tree = QuadTreeInclusionProof(state_tree_depth);
     final_state_tree.leaf <== random_leaf;
     for (var i = 0; i < state_tree_depth; i++) {
-        final_state_tree.path_elements[i] <== random_leaf_path_elements[i];
+        for (var k = 0; k < LEAVES_PER_PATH_LEVEL; k ++) {
+            final_state_tree.path_elements[i][k] <== random_leaf_path_elements[i][k];
+        }
         final_state_tree.path_index[i] <== random_leaf_path_index.out[i];
     }
 

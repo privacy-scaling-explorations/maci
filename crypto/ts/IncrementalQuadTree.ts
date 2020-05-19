@@ -16,6 +16,9 @@ type Indices = SnarkBigInt[]
 interface MerkleProof {
     pathElements: PathElements;
     indices: Indices;
+    depth: number;
+    root: SnarkBigInt;
+    leaf: Leaf;
 }
 
 const deepCopyBigIntArray = (arr: SnarkBigInt[]) => {
@@ -71,7 +74,7 @@ class IncrementalQuadTree {
         assert(_leavesPerNode <= this.MAX_LEAVES_PER_NODE)
 
         this.leavesPerNode = bigInt(_leavesPerNode)
-        this.depth = _depth
+        this.depth = bigInt(_depth)
         this.nextIndex = bigInt(0)
         this.zeroValue = _zeroValue
 
@@ -86,30 +89,28 @@ class IncrementalQuadTree {
             this.hashFunc = hash5
         }
 
-        this.zeros = [this.zeroValue]
+        this.zeros = []
         this.filledSubtrees = []
+        let currentLevelHash = _zeroValue
 
         // Calculate intermediate values
-        for (let i = 1; i < _depth; i++) {
+        for (let i = bigInt(0); i < this.depth; i++) {
+            if (i < this.depth - bigInt(1)) {
+                this.filledPaths[i] = []
+            }
+            this.zeros.push(currentLevelHash)
+
             const z: SnarkBigInt[] = []
             for (let j = 0; j < this.MAX_LEAVES_PER_NODE; j ++) {
-                z.push(this.zeros[i - 1])
+                z.push(this.zeros[i])
             }
-            const h = this.hash(z)
-            this.zeros.push(h)
             this.filledSubtrees.push(z)
-            this.filledPaths[i - 1] = []
+
+            currentLevelHash = this.hash(z)
         }
 
         // Calculate the root
-        const r: SnarkBigInt[] = []
-        for (let i = 0; i < this.MAX_LEAVES_PER_NODE; i ++) {
-            r.push(this.zeros[this.zeros.length - 1])
-        }
-        this.filledSubtrees.push(r)
-
-        // Assign the root
-        this.root = this.hash(r)
+        this.root = this.hash(this.filledSubtrees[this.depth - bigInt(1)])
     }
 
     /* 
@@ -129,7 +130,7 @@ class IncrementalQuadTree {
 
         // Zero out the level in filledSubtrees
         if (m === bigInt(0)) {
-            for (let j = 1; j < this.leavesPerNode; j ++) {
+            for (let j = bigInt(1); j < this.leavesPerNode; j ++) {
                 this.filledSubtrees[0][j] = this.zeros[0]
             }
         }
@@ -146,7 +147,7 @@ class IncrementalQuadTree {
 
             // Zero out the level
             if (m === bigInt(0)) {
-                for (let j = 1; j < this.leavesPerNode; j ++) {
+                for (let j = bigInt(1); j < this.leavesPerNode; j ++) {
                     this.filledSubtrees[i][j] = this.zeros[i]
                 }
             }
@@ -222,7 +223,7 @@ class IncrementalQuadTree {
         }
 
         const pathElements: SnarkBigInt[][] = []
-        const indices: SnarkBigInt[] = []
+        const indices: SnarkBigInt[] = [bigInt(_index) % this.leavesPerNode]
 
         let r = bigInt(_index).div(this.leavesPerNode)
 
@@ -251,41 +252,71 @@ class IncrementalQuadTree {
                 }
             }
 
+            const p = r % this.leavesPerNode
             pathElements.push(s)
-            indices.push(r % this.leavesPerNode)
+
+            if (i < this.depth - bigInt(1)) {
+                indices.push(p)
+            }
 
             r = r.div(this.leavesPerNode)
         }
 
-        return { pathElements, indices }
+        // Remove the commitments to elements which are the leaves per level
+        const newPe: SnarkBigInt[] = [[]]
+        const firstIndex = bigInt(_index) % this.leavesPerNode
+
+        for (let i = 0; i < pathElements[0].length; i ++) {
+            if (bigInt(i) !== firstIndex) {
+                newPe[0].push(pathElements[0][i])
+            }
+        }
+
+        for (let i = 1; i < pathElements.length; i ++) {
+            const level: SnarkBigInt[] = []
+            for (let j = 0; j < pathElements[i].length; j ++) {
+                if (bigInt(j) !== indices[i]) {
+                    level.push(pathElements[i][j])
+                }
+            }
+            newPe.push(level)
+        }
+
+        return {
+            pathElements: newPe,
+            indices,
+            depth: this.depth,
+            root: this.root,
+            leaf: this.leaves[_index],
+        }
     }
 
     public static verifyMerklePath(
         _proof: MerkleProof,
         _hashFunc: (leaves: SnarkBigInt[]) => SnarkBigInt,
-        _depth: number,
-        _root: SnarkBigInt,
     ): boolean {
         // Validate the proof format
         assert (_proof.pathElements)
         assert (_proof.indices)
-        for (let i = 0; i < _depth; i ++) {
+        for (let i = 0; i < _proof.depth; i ++) {
             assert(_proof.pathElements[i])
             assert(_proof.indices[i] != undefined)
         }
 
-        // Verify the proof
-        for (let i = 1; i < _depth; i ++) {
-            const v = _hashFunc(_proof.pathElements[i-1])
-                .equals(_proof.pathElements[i][_proof.indices[i - 1]])
+        // Hash the first level
+        const firstLevel: SnarkBigInt[] = _proof.pathElements[0].map(bigInt)
+        firstLevel.splice(_proof.indices[0].toJSNumber(), 0, _proof.leaf)
+        let currentLevelHash: SnarkBigInt = _hashFunc(firstLevel)
+        debugger
 
-            if (!v) {
-                return false
-            }
+        // Verify the proof
+        for (let i = 1; i < _proof.pathElements.length; i ++) {
+            const level: SnarkBigInt[] = _proof.pathElements[i].map(bigInt)
+            level.splice(_proof.indices[i].toJSNumber(), 0, currentLevelHash)
+            currentLevelHash = _hashFunc(level)
         }
 
-        // Verify the root
-        return _hashFunc(_proof.pathElements[_depth - 1]).equals(_root)
+        return currentLevelHash.equals(_proof.root)
     }
 
     /*  Deep-copies this object

@@ -16,11 +16,11 @@ describe('QuadSelector circuit', () => {
         const items = [0, 1, 2, 3, 4]
 
         for (let i = 0; i < items.length; i ++) {
-            const circuitInputs = stringifyBigInts({ items, index: i })
+            const circuitInputs = stringifyBigInts({ in: items, index: i })
 
             const witness = circuit.calculateWitness(circuitInputs)
             expect(circuit.checkWitness(witness)).toBeTruthy()
-            const idx = circuit.getSignalIdx('main.selected')
+            const idx = circuit.getSignalIdx('main.out')
             const selected = witness[idx].toString()
             expect(selected).toEqual(items[i].toString())
         }

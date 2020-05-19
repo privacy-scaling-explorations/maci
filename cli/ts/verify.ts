@@ -15,6 +15,7 @@ import {
 import {
     validateEthAddress,
     contractExists,
+    calcTreeDepthFromMaxLeaves,
 } from './utils'
 
 import * as ethers from 'ethers'
@@ -66,7 +67,7 @@ const verify = async (args: any) => {
     }
 
     // Ensure that the length of data.tally is a square root of 2
-    const depth = Math.sqrt(data.tally.length)
+    const depth = calcTreeDepthFromMaxLeaves(data.tally.length)
     if (Math.floor(depth).toString() !== depth.toString()) {
         console.error('Error: invalid tally field length')
         return
