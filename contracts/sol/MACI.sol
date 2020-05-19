@@ -43,7 +43,7 @@ contract MACI is Ownable, DomainObjs, ComputeRoot {
     // signals.
     uint256 public postSignUpStateRoot;
 
-    // To store the Merkle root of a tree with 2 **
+    // To store the Merkle root of a tree with 5 **
     // _treeDepths.voteOptionTreeDepth leaves of value 0
     uint256 public emptyVoteOptionTreeRoot;
 

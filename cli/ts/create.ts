@@ -90,7 +90,7 @@ const configureSubparser = (subparsers: any) => {
         {
             action: 'store',
             type: 'int',
-            help: 'The maximum supported number of users. It must be one less than a power of 2. Default: 15',
+            help: 'The maximum supported number of users. It must be one less than a power of 5. Default: 24',
         }
     )
 
@@ -99,7 +99,7 @@ const configureSubparser = (subparsers: any) => {
         {
             action: 'store',
             type: 'int',
-            help: 'The maximum supported number of messages. It must be one less than a power of 2. Default: 15',
+            help: 'The maximum supported number of messages. It must be one less than a power of 5. Default: 24',
         }
     )
 
@@ -108,7 +108,7 @@ const configureSubparser = (subparsers: any) => {
         {
             action: 'store',
             type: 'int',
-            help: 'The maximum supported number of vote options. It must be one less than a power of 2. Default: 15',
+            help: 'The maximum supported number of vote options. It must be one less than a power of 5. Default: 15',
         }
     )
 
