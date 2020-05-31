@@ -10,11 +10,14 @@ include "./checkRoot.circom";
 
 /*
 Note: circom has some particularities which limit the code patterns we can use.
+
 - You can only assign a value to a signal once.
 - A component's input signal must only be wired to another component's output
   signal.
-- Variables are only used for loops, declaring sizes of things, and anything
-  that is not related to inputs of a circuit.
+- Variables can store linear combinations, and can also be used for loops,
+  declaring sizes of things, and anything that is not related to inputs of a
+  circuit.
+- The compiler fails whenever you try to mix invalid elements.
 - You can't use a signal as a list index.
 */
 
@@ -42,7 +45,7 @@ template QuinSelector(choices) {
     for (var i = 0; i < choices; i ++) {
         eqs[i] = IsEqual();
         eqs[i].in[0] <== i;
-        eqs[i].in[1] <== index
+        eqs[i].in[1] <== index;
 
         // eqs[i].out is 1 if the index matches. As such, at most one input to
         // calcTotal is not 0.

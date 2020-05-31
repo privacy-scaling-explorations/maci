@@ -59,6 +59,9 @@ template PerformChecksBeforeUpdate(
     CMD_SIG_R8Y_IDX,
     CMD_SIG_S_IDX
 ) {
+    var VOTE_OPTION_TREE_BASE = 5;
+    var VOTE_OPTION_TREE_PATH_ELEMENTS_LENGTH = VOTE_OPTION_TREE_BASE - 1;
+
     signal input vote_options_max_leaf_index;
     signal input state_tree_max_leaf_index;
 
@@ -78,7 +81,7 @@ template PerformChecksBeforeUpdate(
 
     signal input vote_options_tree_root;
     signal input vote_options_leaf_raw;
-    signal input vote_options_tree_path_elements[vote_options_tree_depth][4];
+    signal input vote_options_tree_path_elements[vote_options_tree_depth][VOTE_OPTION_TREE_PATH_ELEMENTS_LENGTH];
     signal input vote_options_tree_path_index[vote_options_tree_depth];
 
     signal output decrypted_command_out[MESSAGE_LENGTH-1];
@@ -152,7 +155,7 @@ template PerformChecksBeforeUpdate(
     vote_options_tree_valid.root <== vote_options_tree_root;
     vote_options_tree_valid.leaf <== vote_options_leaf_raw;
     for (var i = 0; i < vote_options_tree_depth; i++) {
-        for (var j = 0; j < 4; j++) {
+        for (var j = 0; j < VOTE_OPTION_TREE_PATH_ELEMENTS_LENGTH; j++) {
             vote_options_tree_valid.path_elements[i][j] <== vote_options_tree_path_elements[i][j];
         }
         vote_options_tree_valid.path_index[i] <== vote_options_tree_path_index[i];
@@ -162,7 +165,7 @@ template PerformChecksBeforeUpdate(
     component new_vote_options_tree = QuinTreeInclusionProof(vote_options_tree_depth);
     new_vote_options_tree.leaf <== decrypted_command.out[CMD_VOTE_WEIGHT_IDX];
     for (var i = 0; i < vote_options_tree_depth; i++) {
-        for (var j = 0; j < 4; j++) {
+        for (var j = 0; j < VOTE_OPTION_TREE_PATH_ELEMENTS_LENGTH; j++) {
             new_vote_options_tree.path_elements[i][j] <== vote_options_tree_path_elements[i][j];
         }
         new_vote_options_tree.path_index[i] <== vote_options_tree_path_index[i];
@@ -248,13 +251,18 @@ template UpdateStateTree(
 
     var STATE_TREE_DATA_LENGTH = 5;
 
+    var STATE_TREE_BASE = 2;
+
+    var VOTE_OPTION_TREE_BASE = 5;
+    var VOTE_OPTION_TREE_PATH_ELEMENTS_LENGTH = VOTE_OPTION_TREE_BASE - 1;
+
     // Select vote option index's weight
     // (a.k.a the raw value of the leaf pre-hash)
     signal private input vote_options_leaf_raw;
 
     // Vote options tree root (supplied by coordinator)
     signal private input vote_options_tree_root;
-    signal private input vote_options_tree_path_elements[vote_options_tree_depth][4];
+    signal private input vote_options_tree_path_elements[vote_options_tree_depth][VOTE_OPTION_TREE_PATH_ELEMENTS_LENGTH];
     signal private input vote_options_tree_path_index[vote_options_tree_depth];
     signal input vote_options_max_leaf_index;
 
@@ -280,8 +288,8 @@ template UpdateStateTree(
     signal new_vote_options_tree_root;
     signal signature_verifier_valid;
 
-    var vote_options_max_leaves = 5 ** vote_options_tree_depth;
-    var state_tree_max_leaves = 2 ** state_tree_depth;
+    var vote_options_max_leaves = VOTE_OPTION_TREE_BASE ** vote_options_tree_depth;
+    var state_tree_max_leaves = STATE_TREE_BASE ** state_tree_depth;
 
     // *************** END definitions ***************
 
@@ -332,7 +340,7 @@ template UpdateStateTree(
     perform_checks_before_update.vote_options_tree_root <== vote_options_tree_root;
     perform_checks_before_update.vote_options_leaf_raw <== vote_options_leaf_raw;
     for (var i = 0; i < vote_options_tree_depth; i++) {
-        for (var j = 0; j < 4; j++) {
+        for (var j = 0; j < VOTE_OPTION_TREE_PATH_ELEMENTS_LENGTH; j++) {
             perform_checks_before_update.vote_options_tree_path_elements[i][j] <== vote_options_tree_path_elements[i][j];
         }
         perform_checks_before_update.vote_options_tree_path_index[i] <== vote_options_tree_path_index[i];
