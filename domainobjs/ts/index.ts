@@ -205,8 +205,62 @@ interface IStateLeaf {
     nonce: SnarkBigInt;
 }
 
-interface VoteOptionTreeLeaf {
-    votes: SnarkBigInt;
+interface IVoteLeaf {
+    pos: SnarkBigInt;
+    neg: SnarkBigInt;
+}
+
+/*
+ * To represent both positive and negative votes for a particular vote option,
+ * we shift the positive votes left by 248 bits, and add the negative votes.
+ *
+ * The maximum value for a positive or negative vote is
+ * 0x20000000000000000000000000000000.
+ *
+ * For instance, we encode 128 positive votes and 256 negative votes as such:
+ * 0x8000000000000000000000000000000000000000000000000000000000000100
+ *
+ * The maximum value per vote is 2 ** 124 - 1. We chose this value so that the maximum
+ * encoded value is always less than the BabyJub field size:
+ *
+ * 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff < 
+ * 0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001
+ *
+ */
+
+const VOTE_LEAF_BITS_PER_VAL = 124
+const MAX_VOTE_LEAF_POS_OR_NEG_VAL = 
+    bigInt(2).pow(bigInt(VOTE_LEAF_BITS_PER_VAL)).sub(bigInt(1))
+
+class VoteLeaf implements IVoteLeaf {
+    public pos: SnarkBigInt
+    public neg: SnarkBigInt
+
+    constructor(_pos: SnarkBigInt, _neg: SnarkBigInt) {
+        assert(VoteLeaf.isWithinRange(_pos))
+        assert(VoteLeaf.isWithinRange(_neg))
+        this.pos = _pos
+        this.neg = _neg
+    }
+
+    public pack = (): SnarkBigInt => {
+        const packed = this.pos.shl(VOTE_LEAF_BITS_PER_VAL).add(this.neg)
+        assert(packed < SNARK_FIELD_SIZE)
+
+        return packed
+    }
+
+    public static unpack = (_voteLeaf: SnarkBigInt): VoteLeaf => {
+        const pos = _voteLeaf.shr(VOTE_LEAF_BITS_PER_VAL)
+        const neg = _voteLeaf - pos.shl(VOTE_LEAF_BITS_PER_VAL)
+        assert(VoteLeaf.isWithinRange(pos))
+        assert(VoteLeaf.isWithinRange(neg))
+        return new VoteLeaf(pos, neg)
+    }
+
+    public static isWithinRange = (_value: SnarkBigInt): boolean => {
+        return _value <= MAX_VOTE_LEAF_POS_OR_NEG_VAL
+    }
 }
 
 /*
@@ -513,7 +567,7 @@ class Command implements ICommand {
 
 export {
     StateLeaf,
-    VoteOptionTreeLeaf,
+    VoteLeaf,
     Command,
     Message,
     Keypair,
