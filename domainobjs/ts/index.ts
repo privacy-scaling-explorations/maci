@@ -215,10 +215,10 @@ interface IVoteLeaf {
  * we shift the positive votes left by 248 bits, and add the negative votes.
  *
  * The maximum value for a positive or negative vote is
- * 0x20000000000000000000000000000000.
+ * 0xfffffffffffffffffffffffffffffff.
  *
  * For instance, we encode 128 positive votes and 256 negative votes as such:
- * 0x8000000000000000000000000000000000000000000000000000000000000100
+ * 0x800000000000000000000000000000100
  *
  * The maximum value per vote is 2 ** 124 - 1. We chose this value so that the maximum
  * encoded value is always less than the BabyJub field size:
