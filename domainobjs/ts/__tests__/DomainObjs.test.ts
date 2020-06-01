@@ -28,7 +28,7 @@ describe('Domain objects', () => {
         bigInt(10),
         newPubKey,
         bigInt(0),
-        bigInt(9),
+        new VoteLeaf(bigInt(9), bigInt(0)),
         bigInt(123),
     )
 
@@ -218,7 +218,7 @@ describe('Domain objects', () => {
                 bigInt(10),
                 newPubKey,
                 bigInt(0),
-                bigInt(9),
+                new VoteLeaf(bigInt(9), bigInt(0)),
                 bigInt(123),
             )
 

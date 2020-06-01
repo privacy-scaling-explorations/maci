@@ -250,9 +250,9 @@ class VoteLeaf implements IVoteLeaf {
         return packed
     }
 
-    public static unpack = (_voteLeaf: SnarkBigInt): VoteLeaf => {
-        const pos = _voteLeaf.shr(VOTE_LEAF_BITS_PER_VAL)
-        const neg = _voteLeaf - pos.shl(VOTE_LEAF_BITS_PER_VAL)
+    public static unpack = (_voteData: SnarkBigInt): VoteLeaf => {
+        const pos = _voteData.shr(VOTE_LEAF_BITS_PER_VAL)
+        const neg = _voteData - pos.shl(VOTE_LEAF_BITS_PER_VAL)
         assert(VoteLeaf.isWithinRange(pos))
         assert(VoteLeaf.isWithinRange(neg))
         return new VoteLeaf(pos, neg)
@@ -260,6 +260,12 @@ class VoteLeaf implements IVoteLeaf {
 
     public static isWithinRange = (_value: SnarkBigInt): boolean => {
         return _value <= MAX_VOTE_LEAF_POS_OR_NEG_VAL
+    }
+
+    public static isValidVoteData = (_voteData: SnarkBigInt): boolean => {
+        const pos = _voteData.shr(VOTE_LEAF_BITS_PER_VAL)
+        const neg = _voteData - pos.shl(VOTE_LEAF_BITS_PER_VAL)
+        return VoteLeaf.isWithinRange(pos) && VoteLeaf.isWithinRange(neg)
     }
 }
 
@@ -413,7 +419,7 @@ interface ICommand {
     stateIndex: SnarkBigInt;
     newPubKey: PubKey;
     voteOptionIndex: SnarkBigInt;
-    newVoteWeight: SnarkBigInt;
+    voteLeaf: VoteLeaf;
     nonce: SnarkBigInt;
 
     sign: (PrivKey) => Signature;
@@ -427,7 +433,7 @@ class Command implements ICommand {
     public stateIndex: SnarkBigInt
     public newPubKey: PubKey
     public voteOptionIndex: SnarkBigInt
-    public newVoteWeight: SnarkBigInt
+    public voteLeaf: VoteLeaf
     public nonce: SnarkBigInt
     public salt: SnarkBigInt
 
@@ -435,14 +441,17 @@ class Command implements ICommand {
         stateIndex: SnarkBigInt,
         newPubKey: PubKey,
         voteOptionIndex: SnarkBigInt,
-        newVoteWeight: SnarkBigInt,
+        voteLeaf: VoteLeaf,
         nonce: SnarkBigInt,
         salt: SnarkBigInt = genRandomSalt(),
     ) {
+        // Validate the vote leaf
+        assert(VoteLeaf.isValidVoteData(voteLeaf.pack()))
+
         this.stateIndex = stateIndex
         this.newPubKey = newPubKey
         this.voteOptionIndex = voteOptionIndex
-        this.newVoteWeight = newVoteWeight
+        this.voteLeaf = voteLeaf
         this.nonce = nonce
         this.salt = salt
     }
@@ -453,7 +462,7 @@ class Command implements ICommand {
             bigInt(this.stateIndex.toString()),
             this.newPubKey.copy(),
             bigInt(this.voteOptionIndex.toString()),
-            bigInt(this.newVoteWeight.toString()),
+            VoteLeaf.unpack(this.voteLeaf.pack()),
             bigInt(this.nonce.toString()),
             bigInt(this.salt.toString()),
         )
@@ -465,7 +474,7 @@ class Command implements ICommand {
             this.stateIndex,
             ...this.newPubKey.asArray(),
             this.voteOptionIndex,
-            this.newVoteWeight,
+            this.voteLeaf.pack(),
             this.nonce,
             this.salt,
         ]
@@ -480,7 +489,7 @@ class Command implements ICommand {
             this.newPubKey[0] == command.newPubKey[0] &&
             this.newPubKey[1] == command.newPubKey[1] &&
             this.voteOptionIndex == command.voteOptionIndex &&
-            this.newVoteWeight == command.newVoteWeight &&
+            this.voteLeaf.pack().equals(command.voteLeaf.pack()) &&
             this.nonce == command.nonce &&
             this.salt == command.salt
     }
@@ -551,7 +560,7 @@ class Command implements ICommand {
             decrypted[0],
             new PubKey([decrypted[1], decrypted[2]]),
             decrypted[3],
-            decrypted[4],
+            VoteLeaf.unpack(decrypted[4]),
             decrypted[5],
             decrypted[6],
         )
