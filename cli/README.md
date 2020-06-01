@@ -148,7 +148,8 @@ Fields that the user has to set:
 | State index | `-i` or `--state-index` | The state index of the user |
 | The user's new or current MACI public key | `-p` or `--pubkey` | This should be a serialised BabyJub public key which should replace the user\'s public key in the state tree if the command is valid|
 | Vote option index | `-v` or `--vote-option-index` | The index of the option to vote for |
-| New vote weight | `-w` or `--new-vote-weight` | The vote weight to assign to said vote option |
+| Positive vote weight | `-w` or `--pos-vote-weight` | The positive vote weight to assign to said vote option |
+| Negative vote weight | `-v` or `--neg-vote-weight` | The negative vote weight to assign to said vote option |
 | Nonce | `-n` or `--nonce` | The nonce of the message |
 | Salt | `-s` or `--salt` | The salt of the message. If unspecified, this command will randomly generate a salt |
 

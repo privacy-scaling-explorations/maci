@@ -7,6 +7,7 @@ import {
     PrivKey,
     Keypair,
     Command,
+    VoteLeaf,
 } from 'maci-domainobjs'
 
 import {
@@ -124,12 +125,22 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-w', '--new-vote-weight'],
+        ['-w', '--pos-vote-weight'],
         {
             required: true,
             action: 'store',
             type: 'int',
-            help: 'The new vote weight',
+            help: 'The positive vote weight',
+        }
+    )
+
+    parser.addArgument(
+        ['-v', '--neg-vote-weight'],
+        {
+            required: true,
+            action: 'store',
+            type: 'int',
+            help: 'The negative vote weight',
         }
     )
 
@@ -282,7 +293,8 @@ const publish = async (args: any) => {
     }
 
     // The new vote weight
-    const newVoteWeight = bigInt(args.new_vote_weight)
+    const posVoteWeight = bigInt(args.pos_vote_weight)
+    const negVoteWeight = bigInt(args.neg_vote_weight)
 
     const coordinatorPubKeyOnChain = await maciContract.coordinatorPubKey()
     const coordinatorPubKey = new PubKey([
@@ -296,7 +308,7 @@ const publish = async (args: any) => {
         stateIndex,
         userMaciPubKey,
         voteOptionIndex,
-        newVoteWeight,
+        new VoteLeaf(posVoteWeight, negVoteWeight),
         nonce,
         salt,
     )
