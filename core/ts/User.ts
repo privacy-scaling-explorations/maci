@@ -50,19 +50,9 @@ class User {
      * Return a deep copy of this User
      */
     public copy = (): User => {
-        const voteLeaves: VoteLeaf[] = []
-        for (let i = 0; i < this.votes.length; i++) {
-            voteLeaves.push(
-                new VoteLeaf(
-                    bigInt(this.votes[i].pos),
-                    bigInt(this.votes[i].neg),
-                )
-            )
-        }
-
         return new User(
             this.pubKey.copy(),
-            voteLeaves,
+            this.votes.map((x) => x.copy()),
             bigInt(this.voiceCreditBalance.toString()),
             bigInt(this.nonce.toString()),
         )
@@ -75,14 +65,14 @@ class User {
     public static genBlankUser = (
         _voteOptionTreeDepth: number,
     ): User => {
-        const voteLeaves: VoteLeaf[] = []
+        const votes: VoteLeaf[] = []
         for (let i = 0; i < _voteOptionTreeDepth; i ++) {
-            voteLeaves.push(new VoteLeaf(bigInt(0), bigInt(0)))
+            votes.push(new VoteLeaf(bigInt(0), bigInt(0)))
         }
 
         return new User(
             new PubKey([0, 0]),
-            voteLeaves,
+            votes,
             bigInt(0),
             bigInt(0),
         )

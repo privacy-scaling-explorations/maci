@@ -5,6 +5,7 @@ import {
     Message,
     Keypair,
     StateLeaf,
+    VoteLeaf,
 } from 'maci-domainobjs'
 
 import {
@@ -58,12 +59,12 @@ class MaciState {
     }
 
     /*
-     * Return an array of zeroes (0) of length voteOptionTreeDepth
+     * Return an array of zero-votes of length voteOptionTreeDepth
      */
-    private genBlankVotes = () => {
-        const votes: SnarkBigInt[] = []
+    private genBlankVotes = (): VoteLeaf[] => {
+        const votes: VoteLeaf[] = []
         for (let i = 0; i < bigInt(2).pow(this.voteOptionTreeDepth); i++) {
-            votes.push(bigInt(0))
+            votes.push(new VoteLeaf(bigInt(0), bigInt(0)))
         }
 
         return votes
@@ -213,12 +214,16 @@ class MaciState {
         }
 
         // If there are insufficient vote credits, do nothing
-        const prevSpentCred = user.votes[command.voteOptionIndex]
+        const prevSpentCred = 
+            user.votes[command.voteOptionIndex].pos +
+            user.votes[command.voteOptionIndex].neg
+
+        const voiceCreditsToSpend = command.vote.pos + command.vote.neg
 
         const voiceCreditsLeft =
             user.voiceCreditBalance +
             (prevSpentCred * prevSpentCred) -
-            (command.newVoteWeight * command.newVoteWeight)
+            voiceCreditsToSpend * voiceCreditsToSpend
 
         if (voiceCreditsLeft < 0) {
             return
@@ -230,20 +235,10 @@ class MaciState {
         }
 
         // Update the user's vote option tree, pubkey, voice credit balance,
-        // and nonce
-        const newVotesArr: SnarkBigInt[] = []
-        for (let i = 0; i < this.users.length; i++) {
-            if (i === command.voteOptionIndex) {
-                newVotesArr.push(command.newVoteWeight)
-            } else {
-                newVotesArr.push(bigInt(user.votes[i].toString()))
-            }
-        }
-
-        // Deep-copy the user and update its attributes
+        // and nonce. To do so, deep-copy the user and update their attributes.
         const newUser = user.copy()
         newUser.nonce = newUser.nonce + bigInt(1)
-        newUser.votes[command.voteOptionIndex] = command.newVoteWeight
+        newUser.votes[command.voteOptionIndex] = command.vote.copy()
         newUser.voiceCreditBalance = voiceCreditsLeft
         newUser.pubKey = command.newPubKey.copy()
 
@@ -583,7 +578,7 @@ class MaciState {
         const batchTreeDepth = bigInt(Math.sqrt(_batchSize.toString()))
 
         const stateLeaves: StateLeaf[] = []
-        const voteLeaves: StateLeaf[][] = []
+        const voteLeaves: VoteLeaf[][] = []
 
         if (_startIndex === bigInt(0)) {
             stateLeaves.push(this.zerothStateLeaf)
@@ -655,7 +650,9 @@ class MaciState {
         const intermediatePathElements = intermediateTree.getPathUpdate(intermediatePathIndex)[0]
 
         const circuitInputs = stringifyBigInts({
-            voteLeaves,
+            voteLeaves: voteLeaves.map(
+                (x) => { x.map( (y) => { y.pack() }) }
+            ),
             stateLeaves: stateLeaves.map((x) => x.asCircuitInputs()),
             currentResults,
             fullStateRoot: this.genStateRoot(),

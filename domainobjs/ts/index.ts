@@ -250,6 +250,13 @@ class VoteLeaf implements IVoteLeaf {
         return packed
     }
 
+    public copy = (): VoteLeaf => {
+        return new VoteLeaf(
+            bigInt(this.pos.toString()),
+            bigInt(this.neg.toString()),
+        )
+    }
+
     public static unpack = (_voteData: SnarkBigInt): VoteLeaf => {
         const pos = _voteData.shr(VOTE_LEAF_BITS_PER_VAL)
         const neg = _voteData - pos.shl(VOTE_LEAF_BITS_PER_VAL)
@@ -419,7 +426,7 @@ interface ICommand {
     stateIndex: SnarkBigInt;
     newPubKey: PubKey;
     voteOptionIndex: SnarkBigInt;
-    voteLeaf: VoteLeaf;
+    vote: VoteLeaf;
     nonce: SnarkBigInt;
 
     sign: (PrivKey) => Signature;
@@ -433,7 +440,7 @@ class Command implements ICommand {
     public stateIndex: SnarkBigInt
     public newPubKey: PubKey
     public voteOptionIndex: SnarkBigInt
-    public voteLeaf: VoteLeaf
+    public vote: VoteLeaf
     public nonce: SnarkBigInt
     public salt: SnarkBigInt
 
@@ -441,17 +448,21 @@ class Command implements ICommand {
         stateIndex: SnarkBigInt,
         newPubKey: PubKey,
         voteOptionIndex: SnarkBigInt,
-        voteLeaf: VoteLeaf,
+        vote: VoteLeaf,
         nonce: SnarkBigInt,
         salt: SnarkBigInt = genRandomSalt(),
     ) {
         // Validate the vote leaf
-        assert(VoteLeaf.isValidVoteData(voteLeaf.pack()))
+        assert(VoteLeaf.isValidVoteData(vote.pack()))
+
+        // Note that we don't prevent the user from casting positive and
+        // negative votes at the same time. This may be something they intend
+        // to do in order to signal contention at a particular vote option.
 
         this.stateIndex = stateIndex
         this.newPubKey = newPubKey
         this.voteOptionIndex = voteOptionIndex
-        this.voteLeaf = voteLeaf
+        this.vote= vote
         this.nonce = nonce
         this.salt = salt
     }
@@ -462,7 +473,7 @@ class Command implements ICommand {
             bigInt(this.stateIndex.toString()),
             this.newPubKey.copy(),
             bigInt(this.voteOptionIndex.toString()),
-            VoteLeaf.unpack(this.voteLeaf.pack()),
+            VoteLeaf.unpack(this.vote.pack()),
             bigInt(this.nonce.toString()),
             bigInt(this.salt.toString()),
         )
@@ -474,7 +485,7 @@ class Command implements ICommand {
             this.stateIndex,
             ...this.newPubKey.asArray(),
             this.voteOptionIndex,
-            this.voteLeaf.pack(),
+            this.vote.pack(),
             this.nonce,
             this.salt,
         ]
@@ -489,7 +500,7 @@ class Command implements ICommand {
             this.newPubKey[0] == command.newPubKey[0] &&
             this.newPubKey[1] == command.newPubKey[1] &&
             this.voteOptionIndex == command.voteOptionIndex &&
-            this.voteLeaf.pack().equals(command.voteLeaf.pack()) &&
+            this.vote.pack().equals(command.vote.pack()) &&
             this.nonce == command.nonce &&
             this.salt == command.salt
     }
