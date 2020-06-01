@@ -38,6 +38,9 @@ const genMessage = (command: Command): Message => {
     return message
 }
 
+const posVote = bigInt(9)
+const negVote = bigInt(0)
+
 describe('Process one message', () => {
     beforeAll(async () => {
         // Sign up the user
@@ -45,8 +48,6 @@ describe('Process one message', () => {
     })
 
     it('processMessage() should process a valid message', async () => {
-        const posVote = bigInt(9)
-        const negVote = bigInt(0)
         const command = new Command(
             bigInt(1),
             user.pubKey,
@@ -72,16 +73,15 @@ describe('Process one message', () => {
         const totalVotes = command.vote.pos + command.vote.neg
         expect(copiedState.users[0].voiceCreditBalance.toString())
             .toEqual((bigInt(initialVoiceCreditBalance) - totalVotes.pow(bigInt(2))).toString())
+        expect(copiedState.users[0].votes[0].pos.toString()).toEqual(posVote.toString())
     })
 
     it('processMessage() should not process a message with an incorrect nonce', async () => {
-        const pos = bigInt(9)
-        const neg = bigInt(0)
         const command = new Command(
             bigInt(1),
             user.pubKey,
             bigInt(0),
-            new VoteLeaf(pos, neg),
+            new VoteLeaf(posVote, negVote),
             bigInt(0),
             genRandomSalt(),
         )
@@ -127,13 +127,11 @@ describe('Process one message', () => {
     })
 
     it('processMessage() should not process a message with an incorrect state tree index', async () => {
-        const pos = bigInt(9)
-        const neg = bigInt(0)
         const command = new Command(
             bigInt(2),
             user.pubKey,
             bigInt(0),
-            new VoteLeaf(pos, neg),
+            new VoteLeaf(posVote, negVote),
             bigInt(1),
             genRandomSalt(),
         )
@@ -153,13 +151,11 @@ describe('Process one message', () => {
     })
 
     it('processMessage() should not process a message with an incorrect signature', async () => {
-        const pos = bigInt(9)
-        const neg = bigInt(0)
         const command = new Command(
             bigInt(1),
             user.pubKey,
             bigInt(0),
-            new VoteLeaf(pos, neg),
+            new VoteLeaf(posVote, negVote),
             bigInt(1),
             genRandomSalt(),
         )
@@ -182,8 +178,6 @@ describe('Process one message', () => {
     })
 
     it('processMessage() should not process a message with an invalid maxVoteOptionIndex', async () => {
-        const posVote = bigInt(9)
-        const negVote = bigInt(0)
         const command = new Command(
             bigInt(1),
             user.pubKey,

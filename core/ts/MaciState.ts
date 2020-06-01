@@ -329,7 +329,7 @@ class MaciState {
             'msg_tree_root': messageTree.root,
             'msg_tree_path_elements': msgTreePathElements,
             'msg_tree_path_index': msgTreePathIndices,
-            'vote_options_leaf_raw': currentVoteWeight,
+            'vote_options_leaf_raw': currentVoteWeight.asCircuitInputs(),
             'vote_options_tree_root': voteOptionTree.root,
             'vote_options_tree_path_elements': voteOptionTreePathElements,
             'vote_options_tree_path_index': voteOptionTreeIndices,
@@ -456,16 +456,17 @@ class MaciState {
      * zeroth state leaf.
      * @param _startIndex The state tree index. Only leaves before this index
      *                    are included in the tally.
+     * @return A list of vote leaves whcih contain the 
      */
     public computeCumulativeVoteTally = (
         _startIndex: SnarkBigInt,
-    ): SnarkBigInt[] => {
+    ): VoteLeaf[] => {
         assert(bigInt(this.users.length) >= _startIndex)
 
         // results should start off with 0s
-        const results: SnarkBigInt[] = []
+        const results: VoteLeaf[] = []
         for (let i = 0; i < bigInt(2).pow(this.voteOptionTreeDepth); i++) {
-            results.push(bigInt(0))
+            results.push(new VoteLeaf(bigInt(0), bigInt(0)))
         }
 
         // Compute the cumulative total up till startIndex - 1 (since we should
@@ -473,10 +474,14 @@ class MaciState {
         for (let i = bigInt(0); i < bigInt(_startIndex) - bigInt(1); i++) {
             const user = this.users[i]
             for (let j = 0; j < user.votes.length; j++) {
-                results[j] += user.votes[j]
+                results[j].pos += user.votes[j].pos
+                results[j].neg += user.votes[j].neg
             }
         }
 
+        for (const r of results) {
+            assert(VoteLeaf.isValidVoteData(r.pack()))
+        }
         return results
     }
 
@@ -492,7 +497,7 @@ class MaciState {
     public computeBatchVoteTally = (
         _startIndex: SnarkBigInt,
         _batchSize: SnarkBigInt,
-    ): SnarkBigInt[] => {
+    ): VoteLeaf[] => {
         _startIndex = bigInt(_startIndex)
         _batchSize = bigInt(_batchSize)
 
@@ -503,9 +508,9 @@ class MaciState {
         assert(bigInt(_startIndex) % bigInt(_batchSize) === bigInt(0))
 
         // Fill results with 0s
-        const results: SnarkBigInt[] = []
+        const results: VoteLeaf[] = []
         for (let i = 0; i < bigInt(2).pow(this.voteOptionTreeDepth); i++) {
-            results.push(bigInt(0))
+            results.push(new VoteLeaf(bigInt(0), bigInt(0)))
         }
 
         // Compute the tally
@@ -520,7 +525,8 @@ class MaciState {
             if (userIndex < this.users.length) {
                 const votes = this.users[userIndex].votes
                 for (let j = 0; j < votes.length; j++) {
-                    results[j] += votes[j]
+                    results[j].pos += votes[j].pos
+                    results[j].neg += votes[j].neg
                 }
             } else {
                 break
@@ -560,11 +566,6 @@ class MaciState {
         const batchResults = this.computeBatchVoteTally(_startIndex, _batchSize)
 
         assert(currentResults.length === batchResults.length)
-
-        const newResults: SnarkBigInt[] = []
-        for (let i = 0; i < currentResults.length; i++) {
-            newResults[i] = currentResults[i] + batchResults[i]
-        }
 
         const currentResultsCommitment = genTallyResultCommitment(
             currentResults,
@@ -672,19 +673,19 @@ class MaciState {
  * A helper function which hashes a list of results with a salt and returns the
  * hash.
  *
- * @param results A list of vote weights
+ * @param votes A list of vote leaves
  * @parm salt A random salt
  * @return The hash of the results and the salt, with the salt last
  */
 const genTallyResultCommitment = (
-    results: SnarkBigInt[],
+    votes: VoteLeaf[],
     salt: SnarkBigInt,
     voteOptionTreeDepth: number,
 ): SnarkBigInt => {
 
     const tree = new IncrementalMerkleTree(voteOptionTreeDepth, bigInt(0))
-    for (const result of results) {
-        tree.insert(bigInt(result))
+    for (const vote of votes) {
+        tree.insert(vote.pack())
     }
     return hashLeftRight(tree.root, salt)
 }

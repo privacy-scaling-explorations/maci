@@ -243,6 +243,12 @@ class VoteLeaf implements IVoteLeaf {
         this.neg = _neg
     }
 
+    /*
+     * Convert this object into a number where the last 124 bits represent the
+     * negative votes and the remaining bits represent the positive votes.
+     * For instance, we encode 128 positive votes and 256 negative votes as such:
+     * 0x800000000000000000000000000000100
+     */
     public pack = (): SnarkBigInt => {
         const packed = this.pos.shl(VOTE_LEAF_BITS_PER_VAL).add(this.neg)
         assert(packed < SNARK_FIELD_SIZE)
@@ -250,6 +256,17 @@ class VoteLeaf implements IVoteLeaf {
         return packed
     }
 
+    /*
+     * Returns the same value as pack() but is named as such for consistency
+     * with other domain objects.
+     */
+    public asCircuitInputs = (): SnarkBigInt => {
+        return this.pack()
+    }
+
+    /*
+     * Deep-copies this object.
+     */
     public copy = (): VoteLeaf => {
         return new VoteLeaf(
             bigInt(this.pos.toString()),
@@ -257,18 +274,27 @@ class VoteLeaf implements IVoteLeaf {
         )
     }
 
+    /*
+     * Converts the output of pack() into a VoteLeaf
+     */
     public static unpack = (_voteData: SnarkBigInt): VoteLeaf => {
         const pos = _voteData.shr(VOTE_LEAF_BITS_PER_VAL)
         const neg = _voteData - pos.shl(VOTE_LEAF_BITS_PER_VAL)
-        assert(VoteLeaf.isWithinRange(pos))
-        assert(VoteLeaf.isWithinRange(neg))
+
+        // No need to do a range check here as the constructor does it
         return new VoteLeaf(pos, neg)
     }
 
+    /*
+     * Checks whether the given value is less than or equal to 2 ** 124 - 1
+     */
     public static isWithinRange = (_value: SnarkBigInt): boolean => {
         return _value <= MAX_VOTE_LEAF_POS_OR_NEG_VAL
     }
 
+    /*
+     * Range-checks a packed vote leaf value.
+     */
     public static isValidVoteData = (_voteData: SnarkBigInt): boolean => {
         const pos = _voteData.shr(VOTE_LEAF_BITS_PER_VAL)
         const neg = _voteData - pos.shl(VOTE_LEAF_BITS_PER_VAL)
