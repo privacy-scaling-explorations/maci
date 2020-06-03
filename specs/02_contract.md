@@ -145,7 +145,7 @@ A useful rule of thumb is that the coordinator -- not the user --  should provid
 
 ### About nonces
 
-The first message that a user submits should have a nonce of `0`. The nonce of subsequent messages now depends on whether the user is bribed and has to reveal their vote to the briber.
+The first valid message that a user submits should have a nonce of `1`. The nonce of subsequent messages now depends on whether the user is bribed and has to reveal their vote to the briber.
 
 In the case that a user is not bribed, nonces are simply incremental.
 
@@ -155,9 +155,9 @@ If a user is bribed against their will, however, they should set the nonce to wh
 
 could encrypt and submit this invalid message:
 
-`{key = Ka, vote = B, nonce = 0}`
+`{key = Ka, vote = B, nonce = 1}`
 
-where `Ka` is an invalid key. When the user decrypts this message and reveals it to the briber, the briber not only has no way to tell if this message is valid, they also have no reason to think that the user had not previously submitted valid messages, as the nonce is `0`.
+where `Ka` is an invalid key. When the user decrypts this message and reveals it to the briber, the briber not only has no way to tell if this message is valid, they also have no reason to think that the user had not previously submitted valid messages, as the nonce is `1`.
 
 ## Message verification
 
