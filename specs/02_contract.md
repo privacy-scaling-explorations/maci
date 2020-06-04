@@ -42,6 +42,10 @@ which is equal to:
 5503045433092194285660061905880311622788666850989422096966288514930349325741
 ```
 
+## Vote option trees
+
+We use a Quinary Merkle tree (5 leaves per node) to store votes.
+
 ## `signUp(PubKey _userPubKey, bytes memory _signUpGatekeeperData, bytes memory _initialVoiceCreditProxyData)`
 
 Signups can only occur during the signup period. The `signUp` function passes the sender's address, along with the `_signUpGatekeeperData` to a `SignUpGateway` contract, which determines whether or not to allow the user to sign up. For instance, this contract can be a simple whitelist.

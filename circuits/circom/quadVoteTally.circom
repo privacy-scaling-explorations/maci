@@ -1,24 +1,11 @@
 include "../node_modules/circomlib/circuits/mux1.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
 include "../node_modules/circomlib/circuits/comparators.circom";
-include "./merkletree.circom";
+include "./trees/incrementalQuinTree.circom";
+include "./trees/incrementalMerkleTree.circom";
 include "./hasherPoseidon.circom";
-
-// This circuit returns the sum of the inputs.
-// n must be greater than 0.
-template CalculateTotal(n) {
-    signal input nums[n];
-    signal output sum;
-
-    signal sums[n];
-    sums[0] <== nums[0];
-
-    for (var i=1; i < n; i++) {
-        sums[i] <== sums[i - 1] + nums[i];
-    }
-
-    sum <== sums[n - 1];
-}
+include "./trees/calculateTotal.circom";
+include "./trees/checkRoot.circom";
 
 // This circuit tallies the votes from a batch of state leaves, and produces an
 // intermediate state root. 
@@ -58,7 +45,7 @@ template QuadVoteTally(
     // square root of each user's voice credits per option.
     // [x, y] means x for option 0, and y for option 1.
 
-    var numVoteOptions = 2 ** voteOptionTreeDepth;
+    var numVoteOptions = 5 ** voteOptionTreeDepth;
 
     // `currentResults` is the vote tally of all prior batches of state leaves	
     signal private input currentResults[numVoteOptions];
@@ -88,18 +75,19 @@ template QuadVoteTally(
 
     var i;
     var j;
+    var m;
 
-    // Convert the intermediate path index to bits
-    component intermediatePathIndexBits = Num2Bits(k);
-    intermediatePathIndexBits.in <== intermediatePathIndex;
+    // Generate the intermediate path index for Merkle proof verifcation
+    component intermediatePathIndices = Num2Bits(k);
+    intermediatePathIndices.in <== intermediatePathIndex;
 
     // Check that the intermediate root is part of the full state tree
     component fullStateRootChecker = LeafExists(k);
     fullStateRootChecker.root <== fullStateRoot; 
     fullStateRootChecker.leaf <== intermediateStateRoot; 
-    for (i=0; i < k; i++) {
+    for (i = 0; i < k; i ++) {
         fullStateRootChecker.path_elements[i] <== intermediatePathElements[i];
-        fullStateRootChecker.path_index[i] <== intermediatePathIndexBits.out[i];
+        fullStateRootChecker.path_index[i] <== intermediatePathIndices.out[i];
     }
 
     // --- END
@@ -113,7 +101,7 @@ template QuadVoteTally(
     // Instantiate the state leaf checker and vote option root checker
     // components in the same loop
     for (i=0; i < numUsers; i++) {
-        voteOptionRootChecker[i] = CheckRoot(voteOptionTreeDepth);
+        voteOptionRootChecker[i] = QuinCheckRoot(voteOptionTreeDepth);
         stateLeafHashers[i] = Hasher5();
 
         // Hash each state leaf
@@ -214,7 +202,7 @@ template QuadVoteTally(
  * commitment to the new results.
  */
 template ResultCommitmentVerifier(voteOptionTreeDepth) {
-    var numVoteOptions = 2 ** voteOptionTreeDepth;
+    var numVoteOptions = 5 ** voteOptionTreeDepth;
 
     signal input currentResultsSalt;
     signal input currentResultsCommitment;
@@ -225,8 +213,8 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     signal output newResultsCommitment;
 
     // Salt and hash the results up to the current batch
-    component currentResultsTree = CheckRoot(voteOptionTreeDepth);
-    component newResultsTree = CheckRoot(voteOptionTreeDepth);
+    component currentResultsTree = QuinCheckRoot(voteOptionTreeDepth);
+    component newResultsTree = QuinCheckRoot(voteOptionTreeDepth);
     for (var i = 0; i < numVoteOptions; i++) {
         newResultsTree.leaves[i] <== newResults[i];
         currentResultsTree.leaves[i] <== currentResults[i];

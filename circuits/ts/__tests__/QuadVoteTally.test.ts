@@ -88,7 +88,7 @@ describe('Quadratic vote tallying circuit', () => {
         // Calculate the vote tally for a batch of state leaves
         const tally = maciState.computeBatchVoteTally(startIndex, quadVoteTallyBatchSize)
 
-        expect(tally.length.toString()).toEqual((2 ** voteOptionTreeDepth).toString())
+        expect(tally.length.toString()).toEqual((5 ** voteOptionTreeDepth).toString())
         expect(tally[voteOptionIndex].toString()).toEqual(voteWeight.toString())
 
         const currentResultsSalt = bigInt(0)
@@ -103,7 +103,7 @@ describe('Quadratic vote tallying circuit', () => {
                 newResultsSalt,
             )
 
-        expect(circuitInputs.stateLeaves.length).toEqual(4)
+        expect(circuitInputs.stateLeaves.length).toEqual(quadVoteTallyBatchSize)
 
         const witness = circuit.calculateWitness(stringifyBigInts(circuitInputs))
         expect(circuit.checkWitness(witness)).toBeTruthy()

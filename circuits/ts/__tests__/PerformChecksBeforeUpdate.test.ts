@@ -10,7 +10,7 @@ import {
     Message,
 } from 'maci-domainobjs'
 import {
-    IncrementalMerkleTree,
+    IncrementalQuadTree,
     genRandomSalt,
     bigInt,
     stringifyBigInts,
@@ -27,15 +27,15 @@ const getUpdateStateTreeParams = async (
 ) => {
 
     // Construct the trees
-    const stateTree = new IncrementalMerkleTree(
+    const stateTree = new IncrementalQuadTree(
         config.maci.merkleTrees.stateTreeDepth,
         NOTHING_UP_MY_SLEEVE,
     )
-    const msgTree = new IncrementalMerkleTree(
+    const msgTree = new IncrementalQuadTree(
         config.maci.merkleTrees.messageTreeDepth,
         NOTHING_UP_MY_SLEEVE,
     )
-    const user1VoteOptionTree = new IncrementalMerkleTree(
+    const user1VoteOptionTree = new IncrementalQuadTree(
         config.maci.merkleTrees.voteOptionTreeDepth, 
         NOTHING_UP_MY_SLEEVE,
     )
