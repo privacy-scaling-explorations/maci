@@ -2,6 +2,7 @@ pragma experimental ABIEncoderV2;
 pragma solidity ^0.5.0;
 
 import { DomainObjs } from './DomainObjs.sol';
+import { IncrementalQuinTree } from "./IncrementalQuinTree.sol";
 import { IncrementalMerkleTree } from "./IncrementalMerkleTree.sol";
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
 import { BatchUpdateStateTreeVerifier } from "./BatchUpdateStateTreeVerifier.sol";
@@ -44,11 +45,11 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters {
     // signals.
     uint256 public postSignUpStateRoot;
 
-    // To store the Merkle root of a tree with 2 **
+    // To store the Merkle root of a tree with 5 **
     // _treeDepths.voteOptionTreeDepth leaves of value 0
     uint256 public emptyVoteOptionTreeRoot;
 
-    // To store hashLeftRight(Merkle root of 2 ** voteOptionTreeDepth zeros, 0)
+    // To store hashLeftRight(Merkle root of 5 ** voteOptionTreeDepth zeros, 0)
     uint256 public currentResultsCommitment;
 
     // The maximum number of leaves, minus one, of meaningful vote options.
@@ -166,7 +167,7 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters {
         // be set before we call hashedBlankStateLeaf() later
         emptyVoteOptionTreeRoot = calcEmptyVoteOptionTreeRoot(_treeDepths.voteOptionTreeDepth);
 
-        // Calculate and store a commitment to 2 ** voteOptionTreeDepth zeros,
+        // Calculate and store a commitment to 5 ** voteOptionTreeDepth zeros,
         // and the salt of 0.
         currentResultsCommitment = hashLeftRight(emptyVoteOptionTreeRoot, 0);
 
@@ -305,7 +306,7 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters {
         // postSignUpStateRoot to the last known state root.
         // We do so as the batchProcessMessage function can only update the
         // state root as a variable and has no way to use
-        // IncrementalMerkleTree.insertLeaf() anyway.
+        // IncrementalQuinTree.insertLeaf() anyway.
         if (postSignUpStateRoot == 0) {
             // It is exceedingly improbable that the zero value is a tree root
             assert(postSignUpStateRoot != stateTree.root());
@@ -563,7 +564,7 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters {
     }
 
     function calcEmptyVoteOptionTreeRoot(uint8 _levels) public pure returns (uint256) {
-        return computeEmptyRoot(_levels, 0);
+        return computeEmptyQuinRoot(_levels, 0);
     }
 
     function getMessageTreeRoot() public view returns (uint256) {

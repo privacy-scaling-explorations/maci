@@ -66,7 +66,7 @@ MACI: 0xE28158eCFde143e2536761c3254C7C31efd97271
 | Prompt for the deployer's Ethereum private key | `-dp` or `--prompt-for-deployer-privkey` | If specified, ignores `-d / --deployer-privkey` and prompts the coordinator to input their Ethereum private key |
 | Maximum number of users | `-u` or `--max-users` | Default: 15 |
 | Maximum number of messages | `-m` or `--max-messages` | Default: 15 |
-| Maximum number of vote options | `-v` or `--max-vote-options` | Default: 3 |
+| Maximum number of vote options | `-v` or `--max-vote-options` | Default: 25 |
 | Sign-up duration | `-s` or `--signup-duration` | The sign-up duration, in seconds. Default: 3600. |
 | Voting duration | `-o` or `--voting-duration` | The voting duration, in seconds. Default: 3600. |
 | Initial voice credits | `-c` or `--initial-voice-credits` | Default: 100 |
@@ -398,7 +398,7 @@ The file `tally.json` will now contain something like the following:
 {
     "provider": "http://localhost:8545",
     "maci": "0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4",
-    "commitment": "0x27d994084f2288c880e4d8c28e67a557a9f2239bb50a595fc4bff3024dfe2c11",
+    "commitment": "0x1490fb02287fece1e90ee227f79a27fc7f51a6c8ca876e0c1f6546c004025d90",
     "tally": [
         "9",
         "0",
@@ -415,9 +415,18 @@ The file `tally.json` will now contain something like the following:
         "0",
         "0",
         "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
         "0"
     ],
-    "salt": "0x2ffd5bffbbfc263060411ad3bdb605bebaa641b7fac870cf1041c766b9c0f509"
+    "salt": "0xa4be496df2d9bee2cfd2345921c200497599757974dc16e1aca0a3ee7d3c148"
 }
 ```
 

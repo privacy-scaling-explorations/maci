@@ -1,4 +1,8 @@
 import * as argparse from 'argparse' 
+import { 
+    calcBinaryTreeDepthFromMaxLeaves,
+    calcQuinTreeDepthFromMaxLeaves,
+} from './utils'
 
 import {
     genMaciKeypair,
@@ -98,4 +102,9 @@ const main = async () => {
 
 if (require.main === module) {
     main()
+}
+
+export {
+    calcBinaryTreeDepthFromMaxLeaves,
+    calcQuinTreeDepthFromMaxLeaves,
 }

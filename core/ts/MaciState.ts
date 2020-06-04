@@ -13,7 +13,7 @@ import {
     SnarkBigInt,
     stringifyBigInts,
     NOTHING_UP_MY_SLEEVE,
-    IncrementalMerkleTree,
+    IncrementalQuinTree,
 } from 'maci-crypto'
 
 import { User } from './User'
@@ -48,7 +48,7 @@ class MaciState {
         this.voteOptionTreeDepth = bigInt(_voteOptionTreeDepth)
         this.maxVoteOptionIndex = bigInt(_maxVoteOptionIndex)
 
-        const emptyVoteOptionTree = new IncrementalMerkleTree(
+        const emptyVoteOptionTree = new IncrementalQuinTree(
             this.voteOptionTreeDepth,
             bigInt(0),
         )
@@ -62,7 +62,7 @@ class MaciState {
      */
     private genBlankVotes = () => {
         const votes: SnarkBigInt[] = []
-        for (let i = 0; i < bigInt(2).pow(this.voteOptionTreeDepth); i++) {
+        for (let i = 0; i < bigInt(5).pow(this.voteOptionTreeDepth); i++) {
             votes.push(bigInt(0))
         }
 
@@ -74,10 +74,11 @@ class MaciState {
      * this.zerothStateLeaf and the other leaves are the Users as hashed
      * StateLeaf objects
      */
-    public genStateTree = (): IncrementalMerkleTree => {
-        const stateTree = new IncrementalMerkleTree(
+    public genStateTree = (): IncrementalQuinTree => {
+        const stateTree = new IncrementalQuinTree(
             this.stateTreeDepth,
-            this.genBlankLeaf().hash()
+            this.genBlankLeaf().hash(),
+            2,
         )
 
         stateTree.insert(this.zerothStateLeaf.hash())
@@ -99,10 +100,11 @@ class MaciState {
     /*
      * Returns an IncrementalMerkleTree of all messages
      */
-    public genMessageTree = (): IncrementalMerkleTree => {
-        const messageTree = new IncrementalMerkleTree(
+    public genMessageTree = (): IncrementalQuinTree => {
+        const messageTree = new IncrementalQuinTree(
             this.messageTreeDepth,
             NOTHING_UP_MY_SLEEVE,
+            2,
         )
 
         for (const message of this.messages) {
@@ -297,8 +299,8 @@ class MaciState {
         const { command } = Command.decrypt(message, sharedKey)
 
         const messageTree = this.genMessageTree()
-        const [msgTreePathElements, msgTreePathIndices]
-            = messageTree.getPathUpdate(_index)
+        const msgTreePath = messageTree.genMerklePath(_index)
+        assert(IncrementalQuinTree.verifyMerklePath(msgTreePath, messageTree.hashFunc))
 
         const stateTree = this.genStateTree()
         const stateTreeMaxIndex = bigInt(stateTree.nextIndex) - bigInt(1)
@@ -310,7 +312,7 @@ class MaciState {
 
         const currentVoteWeight = user.votes[command.voteOptionIndex]
 
-        const voteOptionTree = new IncrementalMerkleTree(
+        const voteOptionTree = new IncrementalQuinTree(
             this.voteOptionTreeDepth,
             bigInt(0),
         )
@@ -319,12 +321,13 @@ class MaciState {
             voteOptionTree.insert(vote)
         }
 
-        const [voteOptionTreePathElements, voteOptionTreeIndices]
-            = voteOptionTree.getPathUpdate(command.voteOptionIndex)
+        const voteOptionTreePath = voteOptionTree.genMerklePath(command.voteOptionIndex)
+        assert(IncrementalQuinTree.verifyMerklePath(voteOptionTreePath, voteOptionTree.hashFunc))
+
+        const stateTreePath = stateTree.genMerklePath(command.stateIndex)
+        assert(IncrementalQuinTree.verifyMerklePath(stateTreePath, stateTree.hashFunc))
 
         const stateLeaf = user.genStateLeaf(this.voteOptionTreeDepth)
-        const [stateTreePathElements, stateTreePathIndices]
-            = stateTree.getPathUpdate(command.stateIndex)
 
         return stringifyBigInts({
             'coordinator_public_key': this.coordinatorKeypair.pubKey.asCircuitInputs(),
@@ -332,18 +335,18 @@ class MaciState {
             'ecdh_public_key': encPubKey.asCircuitInputs(),
             'message': message.asCircuitInputs(),
             'msg_tree_root': messageTree.root,
-            'msg_tree_path_elements': msgTreePathElements,
-            'msg_tree_path_index': msgTreePathIndices,
+            'msg_tree_path_elements': msgTreePath.pathElements,
+            'msg_tree_path_index': msgTreePath.indices,
             'vote_options_leaf_raw': currentVoteWeight,
             'vote_options_tree_root': voteOptionTree.root,
-            'vote_options_tree_path_elements': voteOptionTreePathElements,
-            'vote_options_tree_path_index': voteOptionTreeIndices,
+            'vote_options_tree_path_elements': voteOptionTreePath.pathElements,
+            'vote_options_tree_path_index': voteOptionTreePath.indices,
             'vote_options_max_leaf_index': this.maxVoteOptionIndex,
             'state_tree_data_raw': stateLeaf.asCircuitInputs(),
             'state_tree_max_leaf_index': stateTreeMaxIndex,
             'state_tree_root': stateTree.root,
-            'state_tree_path_elements': stateTreePathElements,
-            'state_tree_path_index': stateTreePathIndices,
+            'state_tree_path_elements': stateTreePath.pathElements,
+            'state_tree_path_index': stateTreePath.indices,
         })
     }
 
@@ -429,7 +432,7 @@ class MaciState {
         // Insert the random leaf
         stateTree.update(0, _randomStateLeaf.hash())
 
-        const randomStateLeafPathElements = stateTree.getPathUpdate(0)[0]
+        const randomStateLeafPathElements = stateTree.genMerklePath(0).pathElements
 
         return stringifyBigInts({
             'coordinator_public_key': clonedMaciState.coordinatorKeypair.pubKey.asCircuitInputs(),
@@ -448,7 +451,7 @@ class MaciState {
             'random_leaf_path_elements': randomStateLeafPathElements,
             'vote_options_leaf_raw': voteOptionLeaves,
             'state_tree_data_raw': stateLeaves,
-            'state_tree_max_leaf_index': bigInt(stateTree.nextIndex - 1),
+            'state_tree_max_leaf_index': stateTree.nextIndex - bigInt(1),
             'vote_options_max_leaf_index': clonedMaciState.maxVoteOptionIndex,
             'vote_options_tree_root': voteOptionTreeRoots,
             'vote_options_tree_path_elements': voteOptionTreePathElements,
@@ -469,7 +472,7 @@ class MaciState {
 
         // results should start off with 0s
         const results: SnarkBigInt[] = []
-        for (let i = 0; i < bigInt(2).pow(this.voteOptionTreeDepth); i++) {
+        for (let i = 0; i < bigInt(5).pow(this.voteOptionTreeDepth); i++) {
             results.push(bigInt(0))
         }
 
@@ -509,7 +512,7 @@ class MaciState {
 
         // Fill results with 0s
         const results: SnarkBigInt[] = []
-        for (let i = 0; i < bigInt(2).pow(this.voteOptionTreeDepth); i++) {
+        for (let i = 0; i < bigInt(5).pow(this.voteOptionTreeDepth); i++) {
             results.push(bigInt(0))
         }
 
@@ -580,7 +583,11 @@ class MaciState {
         const blankStateLeaf = this.genBlankLeaf()
 
         const blankStateLeafHash = blankStateLeaf.hash()
-        const batchTreeDepth = bigInt(Math.sqrt(_batchSize.toString()))
+        let batchTreeDepth = bigInt(0)
+
+        while (bigInt(2).pow(batchTreeDepth) !== _batchSize) {
+            batchTreeDepth ++
+        }
 
         const stateLeaves: StateLeaf[] = []
         const voteLeaves: StateLeaf[][] = []
@@ -614,14 +621,16 @@ class MaciState {
         //    subtrees (the intermediate tree)
         // 2. Each batch tree whose leaves are state leaves
 
-        const emptyBatchTree = new IncrementalMerkleTree(
+        const emptyBatchTree = new IncrementalQuinTree(
             batchTreeDepth,
             blankStateLeafHash,
+            2,
         )
 
-        const intermediateTree = new IncrementalMerkleTree(
+        const intermediateTree = new IncrementalQuinTree(
             this.stateTreeDepth - batchTreeDepth,
             emptyBatchTree.root,
+            2,
         )
 
         // For each batch, create a tree of the leaves in the batch, and insert the
@@ -652,7 +661,7 @@ class MaciState {
 
         const intermediatePathIndex = _startIndex / _batchSize
         const intermediateStateRoot = intermediateTree.leaves[_startIndex / _batchSize]
-        const intermediatePathElements = intermediateTree.getPathUpdate(intermediatePathIndex)[0]
+        const intermediatePathElements = intermediateTree.genMerklePath(intermediatePathIndex).pathElements
 
         const circuitInputs = stringifyBigInts({
             voteLeaves,
@@ -685,7 +694,7 @@ const genTallyResultCommitment = (
     voteOptionTreeDepth: number,
 ): SnarkBigInt => {
 
-    const tree = new IncrementalMerkleTree(voteOptionTreeDepth, bigInt(0))
+    const tree = new IncrementalQuinTree(voteOptionTreeDepth, bigInt(0))
     for (const result of results) {
         tree.insert(bigInt(result))
     }

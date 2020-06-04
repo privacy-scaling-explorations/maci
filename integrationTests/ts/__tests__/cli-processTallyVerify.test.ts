@@ -90,7 +90,9 @@ describe('process, tally, and prove CLI subcommands', () => {
             ` -bv ${tallyBatchSize}` +
             ` -c ${initialVoiceCredits}`
 
-        const createOutput = exec(createCommand).stdout.trim()
+        const o = exec(createCommand)
+
+        const createOutput = o.stdout.trim()
 
         // Log the output for further manual testing
         console.log(createOutput)

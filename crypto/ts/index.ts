@@ -3,7 +3,7 @@ import * as crypto from 'crypto'
 import * as ethers from 'ethers'
 import * as snarkjs from 'snarkjs'
 import { babyJub, eddsa, mimcsponge, mimc7, poseidon } from 'circomlib'
-import { IncrementalMerkleTree } from './IncrementalMerkleTree'
+import { IncrementalQuinTree } from './IncrementalQuinTree'
 const stringifyBigInts: (obj: object) => object = snarkjs.stringifyBigInts
 const unstringifyBigInts: (obj: object) => object = snarkjs.unstringifyBigInts
 
@@ -418,7 +418,7 @@ export {
     stringifyBigInts,
     unstringifyBigInts,
     formatPrivKeyForBabyJub,
-    IncrementalMerkleTree,
+    IncrementalQuinTree,
     NOTHING_UP_MY_SLEEVE,
     SNARK_FIELD_SIZE,
     bigInt2Buffer,
