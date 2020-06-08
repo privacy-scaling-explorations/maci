@@ -223,7 +223,7 @@ class MaciState {
         const voiceCreditsLeft =
             user.voiceCreditBalance +
             (prevSpentCred * prevSpentCred) -
-            voiceCreditsToSpend * voiceCreditsToSpend
+            (voiceCreditsToSpend * voiceCreditsToSpend)
 
         if (voiceCreditsLeft < 0) {
             return
@@ -311,7 +311,7 @@ class MaciState {
         )
 
         for (const vote of user.votes) {
-            voteOptionTree.insert(vote)
+            voteOptionTree.insert(vote.pack())
         }
 
         const [voteOptionTreePathElements, voteOptionTreeIndices]
@@ -650,12 +650,10 @@ class MaciState {
         const intermediateStateRoot = intermediateTree.leaves[_startIndex / _batchSize]
         const intermediatePathElements = intermediateTree.getPathUpdate(intermediatePathIndex)[0]
 
-        const circuitInputs = stringifyBigInts({
-            voteLeaves: voteLeaves.map(
-                (x) => { x.map( (y) => { y.pack() }) }
-            ),
+        const circuitInputs = {
+            voteLeaves: voteLeaves.map((x) => x.map((y)=> y.pack())),
             stateLeaves: stateLeaves.map((x) => x.asCircuitInputs()),
-            currentResults,
+            currentResults: currentResults.map((x) => x.pack()),
             fullStateRoot: this.genStateRoot(),
             currentResultsSalt: _currentResultsSalt,
             newResultsSalt: _newResultsSalt,
@@ -663,9 +661,9 @@ class MaciState {
             intermediatePathElements,
             intermediatePathIndex,
             intermediateStateRoot,
-        })
+        }
 
-        return circuitInputs
+        return stringifyBigInts(circuitInputs)
     }
 }
 

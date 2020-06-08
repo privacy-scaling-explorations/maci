@@ -1,3 +1,4 @@
+include "./voteLeaf.circom";
 include "./decrypt.circom";
 include "./ecdh.circom"
 include "./hasherPoseidon.circom";
@@ -343,14 +344,20 @@ template UpdateStateTree(
 
     // *************** BEGIN perform update ***************
     // Calculate new vote credits
+    component voteOptionsLeafCalc = CalculateSquaredVoteLeaf();
+    voteOptionsLeafCalc.packedLeaf <== vote_options_leaf_raw;
     signal vote_options_leaf_squared;
-    vote_options_leaf_squared <== vote_options_leaf_raw * vote_options_leaf_raw;
+    vote_options_leaf_squared <== voteOptionsLeafCalc.squared;
 
+    component commandVoteLeafCalc = CalculateSquaredVoteLeaf();
+    commandVoteLeafCalc.packedLeaf <== decrypted_command_out[CMD_VOTE_WEIGHT_IDX];
     signal user_vote_weight_squared;
-    user_vote_weight_squared <== decrypted_command_out[CMD_VOTE_WEIGHT_IDX] * decrypted_command_out[CMD_VOTE_WEIGHT_IDX];
+    user_vote_weight_squared <== commandVoteLeafCalc.squared;
 
     signal new_vote_credits;
-    new_vote_credits <== state_tree_data_raw[STATE_TREE_VOTE_BALANCE_IDX] + vote_options_leaf_squared - user_vote_weight_squared;
+    new_vote_credits <== state_tree_data_raw[STATE_TREE_VOTE_BALANCE_IDX] + 
+                         vote_options_leaf_squared - 
+                         user_vote_weight_squared;
 
     // Construct new state tree data (and its hash)
     signal new_state_tree_data[STATE_TREE_DATA_LENGTH];

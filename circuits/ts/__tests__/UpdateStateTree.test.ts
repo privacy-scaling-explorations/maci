@@ -9,6 +9,7 @@ import { MaciState } from 'maci-core'
 import {
     Keypair,
     Command,
+    VoteLeaf,
 } from 'maci-domainobjs'
 import {
     genRandomSalt,
@@ -29,7 +30,7 @@ const coordinator = new Keypair()
 
 const stateIndex = bigInt(1)
 const voteOptionIndex = bigInt(0)
-const newVoteWeight = bigInt(9)
+const newVoteWeight = new VoteLeaf(bigInt(9), bigInt(0))
 const nonce = bigInt(1)
 const salt = genRandomSalt()
 

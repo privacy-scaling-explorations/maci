@@ -217,7 +217,7 @@ interface IVoteLeaf {
  * The maximum value for a positive or negative vote is
  * 0xfffffffffffffffffffffffffffffff.
  *
- * For instance, we encode 128 positive votes and 256 negative votes as such:
+ * For instance, we encode 0x80 positive votes and 0x0100 negative votes as such:
  * 0x800000000000000000000000000000100
  *
  * The maximum value per vote is 2 ** 124 - 1. We chose this value so that the maximum
@@ -245,8 +245,9 @@ class VoteLeaf implements IVoteLeaf {
 
     /*
      * Convert this object into a number where the last 124 bits represent the
-     * negative votes and the remaining bits represent the positive votes.
-     * For instance, we encode 128 positive votes and 256 negative votes as such:
+     * negative votes and the remaining bits represent the positive votes.  For
+     * instance, we encode 0x80 positive votes and 0x0100 negative votes as
+     * such:
      * 0x800000000000000000000000000000100
      */
     public pack = (): SnarkBigInt => {
