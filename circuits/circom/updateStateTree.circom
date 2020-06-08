@@ -34,12 +34,18 @@ template CheckValidUpdate() {
     signal input correct_nonce;
     signal input valid_state_leaf_index;
     signal input valid_vote_options_leaf_index;
+    signal input valid_vote_options_packed_leaf;
 
     signal output out;
 
     component valid_update = IsEqual();
-    valid_update.in[0] <== 5;
-    valid_update.in[1] <== valid_signature + sufficient_vote_credits + correct_nonce + valid_state_leaf_index + valid_vote_options_leaf_index;
+    valid_update.in[0] <== 6;
+    valid_update.in[1] <== valid_signature +
+                           sufficient_vote_credits +
+                           correct_nonce +
+                           valid_state_leaf_index +
+                           valid_vote_options_leaf_index +
+                           valid_vote_options_packed_leaf;
 
     out <== valid_update.out;
 }
@@ -406,6 +412,13 @@ template UpdateStateTree(
     valid_vote_options_leaf_index.in[0] <== decrypted_command_out[CMD_VOTE_OPTION_INDEX_IDX];
     valid_vote_options_leaf_index.in[1] <== vote_options_max_leaf_index;
 
+    var VOTE_LEAF_BITS_PER_VAL = 124;
+    var MAX_PACKED_LEAF = 2 ** (VOTE_LEAF_BITS_PER_VAL * 2);
+
+    component valid_vote_options_packed_leaf = LessEqThan(255);
+    valid_vote_options_packed_leaf.in[0] <== decrypted_command_out[CMD_VOTE_WEIGHT_IDX];
+    valid_vote_options_packed_leaf.in[1] <== MAX_PACKED_LEAF;
+
     // No-op happens if there's an invalid update
     component check_valid_update = CheckValidUpdate();
     check_valid_update.valid_signature <== valid_signature.out;
@@ -413,6 +426,7 @@ template UpdateStateTree(
     check_valid_update.correct_nonce <== correct_nonce.out;
     check_valid_update.valid_state_leaf_index <== valid_state_leaf_index.out;
     check_valid_update.valid_vote_options_leaf_index <== valid_vote_options_leaf_index.out;
+    check_valid_update.valid_vote_options_packed_leaf <== valid_vote_options_packed_leaf.out;
 
     // Compute the Merkle root of the new state tree
     component new_state_tree = MerkleTreeInclusionProof(state_tree_depth);
