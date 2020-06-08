@@ -368,15 +368,24 @@ template UpdateStateTree(
     signal vote_options_leaf_squared;
     vote_options_leaf_squared <== voteOptionsLeafCalc.squared;
 
-    component commandVoteLeafCalc = CalculateSquaredVoteLeaf();
-    commandVoteLeafCalc.packedLeaf <== decrypted_command_out[CMD_VOTE_WEIGHT_IDX];
+    component valid_vote_options_packed_leaf = ValidPackedVoteLeaf();
+    valid_vote_options_packed_leaf.packedLeaf <== decrypted_command_out[CMD_VOTE_WEIGHT_IDX];
     signal user_vote_weight_squared;
-    user_vote_weight_squared <== commandVoteLeafCalc.squared;
+    user_vote_weight_squared <== 
+        (valid_vote_options_packed_leaf.pos + valid_vote_options_packed_leaf.neg) * 
+        (valid_vote_options_packed_leaf.pos + valid_vote_options_packed_leaf.neg);
 
+    component new_voice_credits_selector = Mux1();
+    new_voice_credits_selector.s <== valid_vote_options_packed_leaf.out;
+    new_voice_credits_selector.c[0] <== 0;
+    new_voice_credits_selector.c[1] <== state_tree_data_raw[STATE_TREE_VOTE_BALANCE_IDX] + 
+                                        vote_options_leaf_squared - 
+                                        user_vote_weight_squared;
+
+    // new_voice_credits should be 0 if valid_vote_options_packed_leaf.out is
+    // 0, and the computed value if valid_vote_options_packed_leaf.out is 1
     signal new_vote_credits;
-    new_vote_credits <== state_tree_data_raw[STATE_TREE_VOTE_BALANCE_IDX] + 
-                         vote_options_leaf_squared - 
-                         user_vote_weight_squared;
+    new_vote_credits <== new_voice_credits_selector.out;
 
     // Construct new state tree data (and its hash)
     signal new_state_tree_data[STATE_TREE_DATA_LENGTH];
@@ -411,13 +420,6 @@ template UpdateStateTree(
     component valid_vote_options_leaf_index = LessEqThan(32);
     valid_vote_options_leaf_index.in[0] <== decrypted_command_out[CMD_VOTE_OPTION_INDEX_IDX];
     valid_vote_options_leaf_index.in[1] <== vote_options_max_leaf_index;
-
-    var VOTE_LEAF_BITS_PER_VAL = 124;
-    var MAX_PACKED_LEAF = 2 ** (VOTE_LEAF_BITS_PER_VAL * 2);
-
-    component valid_vote_options_packed_leaf = LessEqThan(255);
-    valid_vote_options_packed_leaf.in[0] <== decrypted_command_out[CMD_VOTE_WEIGHT_IDX];
-    valid_vote_options_packed_leaf.in[1] <== MAX_PACKED_LEAF;
 
     // No-op happens if there's an invalid update
     component check_valid_update = CheckValidUpdate();
