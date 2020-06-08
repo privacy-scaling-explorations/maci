@@ -1,4 +1,4 @@
-include "./merkletree.circom";
+include "./trees/incrementalMerkleTree.circom"
 include "./updateStateTree.circom";
 include "../node_modules/circomlib/circuits/mux1.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
@@ -28,7 +28,7 @@ template BatchUpdateStateTree(
 
     // The vote option tree root
     signal private input vote_options_tree_root[batch_size];
-    signal private input vote_options_tree_path_elements[batch_size][vote_options_tree_depth];
+    signal private input vote_options_tree_path_elements[batch_size][vote_options_tree_depth][4];
     signal private input vote_options_tree_path_index[batch_size][vote_options_tree_depth];
     signal input vote_options_max_leaf_index;
 
@@ -108,7 +108,9 @@ template BatchUpdateStateTree(
         new_state_tree[i].vote_options_leaf_raw <== vote_options_leaf_raw[i];
         new_state_tree[i].vote_options_tree_root <== vote_options_tree_root[i];
         for (var j = 0; j < vote_options_tree_depth; j++) {
-            new_state_tree[i].vote_options_tree_path_elements[j] <== vote_options_tree_path_elements[i][j];
+            for (var k = 0; k < 4; k ++) {
+                new_state_tree[i].vote_options_tree_path_elements[j][k] <== vote_options_tree_path_elements[i][j][k];
+            }
             new_state_tree[i].vote_options_tree_path_index[j] <== vote_options_tree_path_index[i][j];
         }
         new_state_tree[i].vote_options_max_leaf_index <== vote_options_max_leaf_index;

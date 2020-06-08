@@ -2,7 +2,8 @@ include "./voteLeaf.circom";
 include "./decrypt.circom";
 include "./ecdh.circom"
 include "./hasherPoseidon.circom";
-include "./merkletree.circom";
+include "./trees/incrementalMerkleTree.circom"
+include "./trees/incrementalQuinTree.circom"
 include "./publickey_derivation.circom"
 include "./verify_signature.circom";
 
@@ -16,13 +17,11 @@ template ValidateIndices() {
     signal input state_tree_max_leaf_index;
     signal input state_tree_max_leaves;
 
-    // We assume that there are no more than 255 possible candidates to vote for
-    component valid_vote_options_max_leaf_index = LessEqThan(8);
+    component valid_vote_options_max_leaf_index = LessEqThan(32);
     valid_vote_options_max_leaf_index.in[0] <== vote_options_max_leaf_index;
     valid_vote_options_max_leaf_index.in[1] <== vote_options_max_leaves;
     valid_vote_options_max_leaf_index.out === 1;
 
-    // We assume that there are no more than 2.1 bil users registered
     component valid_state_tree_max_leaf_index = LessEqThan(32);
     valid_state_tree_max_leaf_index.in[0] <== state_tree_max_leaf_index;
     valid_state_tree_max_leaf_index.in[1] <== state_tree_max_leaves;
@@ -61,6 +60,9 @@ template PerformChecksBeforeUpdate(
     CMD_SIG_R8Y_IDX,
     CMD_SIG_S_IDX
 ) {
+    var VOTE_OPTION_TREE_BASE = 5;
+    var VOTE_OPTION_TREE_PATH_ELEMENTS_LENGTH = VOTE_OPTION_TREE_BASE - 1;
+
     signal input vote_options_max_leaf_index;
     signal input state_tree_max_leaf_index;
 
@@ -80,7 +82,7 @@ template PerformChecksBeforeUpdate(
 
     signal input vote_options_tree_root;
     signal input vote_options_leaf_raw;
-    signal input vote_options_tree_path_elements[vote_options_tree_depth];
+    signal input vote_options_tree_path_elements[vote_options_tree_depth][VOTE_OPTION_TREE_PATH_ELEMENTS_LENGTH];
     signal input vote_options_tree_path_index[vote_options_tree_depth];
 
     signal output decrypted_command_out[MESSAGE_LENGTH-1];
@@ -133,8 +135,8 @@ template PerformChecksBeforeUpdate(
         msg_tree_leaf_exists.path_index[i] <== msg_tree_path_index[i];
     }
 
-    // Check 4. Make sure the hash of the data corresponds to the 
-    //          existing leaf in the state tree
+    // Check 4. Make sure the hash of the data corresponds to the existing leaf
+    // in the state tree
     component existing_state_tree_leaf_hash = Hasher5();
     for (var i = 0; i < STATE_TREE_DATA_LENGTH; i++) {
         existing_state_tree_leaf_hash.in[i] <== state_tree_data_raw[i];
@@ -148,21 +150,25 @@ template PerformChecksBeforeUpdate(
         state_tree_valid.path_index[i] <== state_tree_path_index[i];
     }
 
-    // Check 5. Verify the current vote weight exists in the
-    //          user's vote_option_tree_root index
-    component vote_options_tree_valid = LeafExists(vote_options_tree_depth);
+    // Check 5. Verify the current vote weight exists in the user's
+    // vote_option_tree_root index
+    component vote_options_tree_valid = QuinLeafExists(vote_options_tree_depth);
     vote_options_tree_valid.root <== vote_options_tree_root;
     vote_options_tree_valid.leaf <== vote_options_leaf_raw;
     for (var i = 0; i < vote_options_tree_depth; i++) {
-        vote_options_tree_valid.path_elements[i] <== vote_options_tree_path_elements[i];
+        for (var j = 0; j < VOTE_OPTION_TREE_PATH_ELEMENTS_LENGTH; j++) {
+            vote_options_tree_valid.path_elements[i][j] <== vote_options_tree_path_elements[i][j];
+        }
         vote_options_tree_valid.path_index[i] <== vote_options_tree_path_index[i];
     }
 
     // Update vote_option_tree_root with the newly updated vote weight
-    component new_vote_options_tree = MerkleTreeInclusionProof(vote_options_tree_depth);
+    component new_vote_options_tree = QuinTreeInclusionProof(vote_options_tree_depth);
     new_vote_options_tree.leaf <== decrypted_command.out[CMD_VOTE_WEIGHT_IDX];
     for (var i = 0; i < vote_options_tree_depth; i++) {
-        new_vote_options_tree.path_elements[i] <== vote_options_tree_path_elements[i];
+        for (var j = 0; j < VOTE_OPTION_TREE_PATH_ELEMENTS_LENGTH; j++) {
+            new_vote_options_tree.path_elements[i][j] <== vote_options_tree_path_elements[i][j];
+        }
         new_vote_options_tree.path_index[i] <== vote_options_tree_path_index[i];
     }
     new_vote_options_tree_root <== new_vote_options_tree.root;
@@ -246,13 +252,18 @@ template UpdateStateTree(
 
     var STATE_TREE_DATA_LENGTH = 5;
 
+    var STATE_TREE_BASE = 2;
+
+    var VOTE_OPTION_TREE_BASE = 5;
+    var VOTE_OPTION_TREE_PATH_ELEMENTS_LENGTH = VOTE_OPTION_TREE_BASE - 1;
+
     // Select vote option index's weight
     // (a.k.a the raw value of the leaf pre-hash)
     signal private input vote_options_leaf_raw;
 
     // Vote options tree root (supplied by coordinator)
     signal private input vote_options_tree_root;
-    signal private input vote_options_tree_path_elements[vote_options_tree_depth];
+    signal private input vote_options_tree_path_elements[vote_options_tree_depth][VOTE_OPTION_TREE_PATH_ELEMENTS_LENGTH];
     signal private input vote_options_tree_path_index[vote_options_tree_depth];
     signal input vote_options_max_leaf_index;
 
@@ -278,8 +289,8 @@ template UpdateStateTree(
     signal new_vote_options_tree_root;
     signal signature_verifier_valid;
 
-    var vote_options_max_leaves = 2 ** vote_options_tree_depth;
-    var state_tree_max_leaves = 2 ** state_tree_depth;
+    var vote_options_max_leaves = VOTE_OPTION_TREE_BASE ** vote_options_tree_depth;
+    var state_tree_max_leaves = STATE_TREE_BASE ** state_tree_depth;
 
     // *************** END definitions ***************
 
@@ -330,7 +341,9 @@ template UpdateStateTree(
     perform_checks_before_update.vote_options_tree_root <== vote_options_tree_root;
     perform_checks_before_update.vote_options_leaf_raw <== vote_options_leaf_raw;
     for (var i = 0; i < vote_options_tree_depth; i++) {
-        perform_checks_before_update.vote_options_tree_path_elements[i] <== vote_options_tree_path_elements[i];
+        for (var j = 0; j < VOTE_OPTION_TREE_PATH_ELEMENTS_LENGTH; j++) {
+            perform_checks_before_update.vote_options_tree_path_elements[i][j] <== vote_options_tree_path_elements[i][j];
+        }
         perform_checks_before_update.vote_options_tree_path_index[i] <== vote_options_tree_path_index[i];
     }
 
@@ -389,7 +402,7 @@ template UpdateStateTree(
     valid_state_leaf_index.in[0] <== decrypted_command_out[CMD_STATE_TREE_INDEX_IDX];
     valid_state_leaf_index.in[1] <== state_tree_max_leaf_index;
 
-    component valid_vote_options_leaf_index = LessEqThan(8);
+    component valid_vote_options_leaf_index = LessEqThan(32);
     valid_vote_options_leaf_index.in[0] <== decrypted_command_out[CMD_VOTE_OPTION_INDEX_IDX];
     valid_vote_options_leaf_index.in[1] <== vote_options_max_leaf_index;
 

@@ -1,11 +1,11 @@
 require('module-alias/register')
-jest.setTimeout(60000)
+jest.setTimeout(120000)
 import { genTestAccounts } from '../accounts'
 import { config } from 'maci-config'
 import {
     genRandomSalt,
     NOTHING_UP_MY_SLEEVE,
-    IncrementalMerkleTree,
+    IncrementalQuinTree,
 } from 'maci-crypto'
 
 import * as etherlime from 'etherlime-lib'
@@ -21,7 +21,7 @@ let mtContract
 let crContract
 let PoseidonT3Contract, PoseidonT6Contract
 
-const DEPTH = 4
+const DEPTH = 32
 
 let tree
 describe('IncrementalMerkleTree', () => {
@@ -58,7 +58,7 @@ describe('IncrementalMerkleTree', () => {
             },
         )
 
-        tree = new IncrementalMerkleTree(DEPTH, NOTHING_UP_MY_SLEEVE)
+        tree = new IncrementalQuinTree(DEPTH, NOTHING_UP_MY_SLEEVE, 2)
     })
 
     it('an empty tree should have the correct root', async () => {
@@ -72,8 +72,8 @@ describe('IncrementalMerkleTree', () => {
     })
 
     it('the on-chain root should match an off-chain root after various insertions', async () => {
-        expect.assertions(6)
-        for (let i = 0; i < 6; i++) {
+        expect.assertions(8)
+        for (let i = 0; i < 8; i++) {
             const leaf = genRandomSalt()
 
             const tx = await mtContract.insertLeaf(leaf.toString())
