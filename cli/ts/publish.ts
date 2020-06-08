@@ -115,7 +115,7 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-v', '--vote-option-index'],
+        ['-vi', '--vote-option-index'],
         {
             required: true,
             action: 'store',

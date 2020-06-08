@@ -164,7 +164,7 @@ const executeSuite = async (data: any, expect: any) => {
             ` -d ${userPrivKey}` +
             ` -x ${maciAddress}` +
             ` -i ${stateIndex}` +
-            ` -v ${voteOptionIndex}` +
+            ` -vi ${voteOptionIndex}` +
             ` -w ${posVoteWeight}` +
             ` -v ${negVoteWeight}` +
             ` -n ${nonce}` +

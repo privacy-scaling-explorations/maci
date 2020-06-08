@@ -273,7 +273,7 @@ describe('signup and publish CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
                 ` -i ${stateIndex}` +
-                ` -v ${voteOptionIndex}` +
+                ` -vi ${voteOptionIndex}` +
                 ` -w ${posVoteWeight}` +
                 ` -v ${negVoteWeight}` +
                 ` -n ${nonce}` +
@@ -327,7 +327,7 @@ describe('signup and publish CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x 0xxx` +
                 ` -i ${stateIndex}` +
-                ` -v ${voteOptionIndex}` +
+                ` -vi ${voteOptionIndex}` +
                 ` -w ${posVoteWeight}` +
                 ` -v ${negVoteWeight}` +
                 ` -n ${nonce}` +
@@ -344,7 +344,7 @@ describe('signup and publish CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x 0x0000000000000000000000000000000000000000` +
                 ` -i ${stateIndex}` +
-                ` -v ${voteOptionIndex}` +
+                ` -vi ${voteOptionIndex}` +
                 ` -w ${posVoteWeight}` +
                 ` -v ${negVoteWeight}` +
                 ` -n ${nonce}` +
@@ -361,7 +361,7 @@ describe('signup and publish CLI subcommands', () => {
                 ` -d 0x` +
                 ` -x ${maciAddress}` +
                 ` -i ${stateIndex}` +
-                ` -v ${voteOptionIndex}` +
+                ` -vi ${voteOptionIndex}` +
                 ` -w ${posVoteWeight}` +
                 ` -v ${negVoteWeight}` +
                 ` -n ${nonce}` +
@@ -378,7 +378,7 @@ describe('signup and publish CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
                 ` -i -1` +
-                ` -v ${voteOptionIndex}` +
+                ` -vi ${voteOptionIndex}` +
                 ` -w ${posVoteWeight}` +
                 ` -v ${negVoteWeight}` +
                 ` -n ${nonce}` +
@@ -395,7 +395,7 @@ describe('signup and publish CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
                 ` -i 999` +
-                ` -v ${voteOptionIndex}` +
+                ` -vi ${voteOptionIndex}` +
                 ` -w ${posVoteWeight}` +
                 ` -v ${negVoteWeight}` +
                 ` -n ${nonce}` +
@@ -412,7 +412,7 @@ describe('signup and publish CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
                 ` -i ${stateIndex}` +
-                ` -v -1` +
+                ` -vi -1` +
                 ` -w ${posVoteWeight}` +
                 ` -v ${negVoteWeight}` +
                 ` -n ${nonce}` +
@@ -429,7 +429,7 @@ describe('signup and publish CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
                 ` -i ${stateIndex}` +
-                ` -v 99999` +
+                ` -vi 99999` +
                 ` -w ${posVoteWeight}` +
                 ` -v ${negVoteWeight}` +
                 ` -n ${nonce}` +
@@ -446,7 +446,7 @@ describe('signup and publish CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
                 ` -i ${stateIndex}` +
-                ` -v ${voteOptionIndex}` +
+                ` -vi ${voteOptionIndex}` +
                 ` -w ${posVoteWeight}` +
                 ` -v ${negVoteWeight}` +
                 ` -n -1` +
@@ -463,7 +463,7 @@ describe('signup and publish CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
                 ` -i ${stateIndex}` +
-                ` -v ${voteOptionIndex}` +
+                ` -vi ${voteOptionIndex}` +
                 ` -w ${posVoteWeight}` +
                 ` -v ${negVoteWeight}` +
                 ` -n ${nonce}` +
@@ -479,7 +479,7 @@ describe('signup and publish CLI subcommands', () => {
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
                 ` -i ${stateIndex}` +
-                ` -v ${voteOptionIndex}` +
+                ` -vi ${voteOptionIndex}` +
                 ` -w ${posVoteWeight}` +
                 ` -v ${negVoteWeight}` +
                 ` -n ${nonce}` +

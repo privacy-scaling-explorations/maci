@@ -153,8 +153,9 @@ describe('process, tally, and prove CLI subcommands', () => {
             ` -d ${userPrivKey}` +
             ` -x ${maciAddress}` +
             ` -i ${stateIndex}` +
-            ` -v ${voteOptionIndex}` +
+            ` -vi ${voteOptionIndex}` +
             ` -w ${newVoteWeight}` +
+            ` -v 0` +
             ` -n ${nonce}` +
             ` -s ${salt}`
 
