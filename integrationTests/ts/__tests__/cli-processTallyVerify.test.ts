@@ -10,6 +10,7 @@ import {
     Keypair,
     Command,
     StateLeaf,
+    VoteLeaf,
 } from 'maci-domainobjs'
 
 import {
@@ -182,7 +183,7 @@ describe('process, tally, and prove CLI subcommands', () => {
             bigInt(stateIndex),
             newPubKey,
             bigInt(voteOptionIndex),
-            bigInt(newVoteWeight),
+            new VoteLeaf(bigInt(newVoteWeight), bigInt(0)),
             bigInt(nonce),
             bigInt(salt),
         )
