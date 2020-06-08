@@ -285,8 +285,9 @@ const executeSuite = async (data: any, expect: any) => {
     const salt = bigInt(tallyRegMatch[2])
 
     const finalTallyCommitment = await maciContract.currentResultsCommitment()
+    debugger
     const expectedTallyCommitment = genTallyResultCommitment(
-        data.expectedTally,
+        data.expectedTally.map((x) => new VoteLeaf(bigInt(x[0]), bigInt(x[1]))),
         salt,
         voteOptionTreeDepth,
     )

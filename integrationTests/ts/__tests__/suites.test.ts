@@ -26,11 +26,4 @@ describe('Test suites', () => {
 
         expect(result).toBeTruthy()
     })
-
-    it('Suite 3 negative votes', async () => {
-        const data = loadData('suite3_negative.json')
-        const result = await executeSuite(data, expect)
-
-        expect(result).toBeTruthy()
-    })
 })
