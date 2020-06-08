@@ -10,9 +10,10 @@ import { QuadVoteTallyVerifier } from "./QuadVoteTallyVerifier.sol";
 import { InitialVoiceCreditProxy } from './initialVoiceCreditProxy/InitialVoiceCreditProxy.sol';
 import { SnarkConstants } from './SnarkConstants.sol';
 import { ComputeRoot } from './ComputeRoot.sol';
+import { MACIParameters } from './MACIParameters.sol';
 import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
 
-contract MACI is Ownable, DomainObjs, ComputeRoot {
+contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters {
 
     // A nothing-up-my-sleeve zero value
     // Should be equal to 5503045433092194285660061905880311622788666850989422096966288514930349325741
@@ -102,25 +103,6 @@ contract MACI is Ownable, DomainObjs, ComputeRoot {
         Message indexed _message,
         PubKey indexed _encPubKey
     );
-
-    // This struct helps to reduce the number of parameters to the constructor
-    // and avoid a stack overflow error during compilation
-    struct TreeDepths {
-        uint8 stateTreeDepth;
-        uint8 messageTreeDepth;
-        uint8 voteOptionTreeDepth;
-    }
-
-    struct BatchSizes {
-        uint8 tallyBatchSize;
-        uint8 messageBatchSize;
-    }
-
-    struct MaxValues {
-        uint256 maxUsers;
-        uint256 maxMessages;
-        uint256 maxVoteOptions;
-    }
 
     constructor(
         TreeDepths memory _treeDepths,
