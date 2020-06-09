@@ -84,7 +84,7 @@ own unit tests.
   abstraction.
 - `cli`: A command-line interface with which one can deploy and interact with
   an instance of MACI.
-- `integrationTests`: Integration tests which uses the command-line interface
+- `integrationTests`: Integration tests which use the command-line interface
   to perform end-to-end tests.
 
 ### Testing
