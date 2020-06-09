@@ -11,9 +11,10 @@ import { InitialVoiceCreditProxy } from './initialVoiceCreditProxy/InitialVoiceC
 import { SnarkConstants } from './SnarkConstants.sol';
 import { ComputeRoot } from './ComputeRoot.sol';
 import { MACIParameters } from './MACIParameters.sol';
+import { VerifyTally } from './VerifyTally.sol';
 import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
 
-contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters {
+contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
     // A nothing-up-my-sleeve zero value
     // Should be equal to 5503045433092194285660061905880311622788666850989422096966288514930349325741
@@ -561,6 +562,24 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters {
 
         // Increment the batch #
         currentQvtBatchNum ++;
+    }
+
+    function verifyTallyResult(
+        uint8 _depth,
+        uint256 _index,
+        uint256 _leaf,
+        uint256[][] memory _pathElements,
+        uint256 _salt
+    ) public view returns (bool) {
+        uint256 computedRoot = computeMerkleRootFromPath(
+            _depth,
+            _index,
+            _leaf,
+            _pathElements
+        );
+
+        uint256 computedCommitment = hashLeftRight(computedRoot, _salt);
+        return computedCommitment == currentResultsCommitment;
     }
 
     function calcEmptyVoteOptionTreeRoot(uint8 _levels) public pure returns (uint256) {
