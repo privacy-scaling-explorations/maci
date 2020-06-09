@@ -65,7 +65,7 @@ with their new versions, or the tests will fail.
 
 ### Demo
 
-You can use the MACI command-line interface to run a demo. See: https://github.com/barryWhiteHat/maci/tree/master/cli#demonstration
+You can use the MACI command-line interface to run a demo. See: https://github.com/appliedzkp/maci/tree/master/cli#demonstration
 
 ### Local development
 
