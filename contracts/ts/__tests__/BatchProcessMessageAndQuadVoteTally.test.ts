@@ -21,6 +21,8 @@ import {
     genRandomSalt,
     IncrementalQuinTree,
     stringifyBigInts,
+    hashLeftRight,
+    hash5,
 } from 'maci-crypto'
 
 import {
@@ -263,11 +265,14 @@ describe('BatchProcessMessage', () => {
     })
 
     describe('Tally votes', () => {
+        let tally
+        let newResultsSalt
+
         it('should tally a batch of votes', async () => {
             const startIndex = bigInt(0)
 
-            const tally = maciState.computeBatchVoteTally(startIndex, quadVoteTallyBatchSize)
-            const newResultsSalt = genRandomSalt()
+            tally = maciState.computeBatchVoteTally(startIndex, quadVoteTallyBatchSize)
+            newResultsSalt = genRandomSalt()
             const currentResultsSalt = bigInt(0)
 
             // Generate circuit inputs
@@ -320,6 +325,55 @@ describe('BatchProcessMessage', () => {
 
             const receipt = await tx.wait()
             expect(receipt.status).toEqual(1)
+        })
+
+        it('on-chain tally result verification of one leaf', async () => {
+            const tree = new IncrementalQuinTree(voteOptionTreeDepth, bigInt(0))
+            for (const t of tally) {
+                tree.insert(t)
+            }
+            const expectedCommitment = hashLeftRight(tree.root, newResultsSalt)
+            const currentResultsCommitment = await maciContract.currentResultsCommitment()
+            expect(expectedCommitment.toString()).toEqual(currentResultsCommitment.toString())
+
+            const index = 0
+            const leaf = tally[index]
+            const proof = tree.genMerklePath(index)
+
+            // Any contract can call the MACI contract's verifyTallyResult()
+            // function to prove that they know the value of the leaf.
+            const verified = await maciContract.verifyTallyResult(
+                voteOptionTreeDepth,
+                index,
+                leaf.toString(),
+                proof.pathElements.map((x) => x.map((y) => y.toString())),
+                newResultsSalt.toString(),
+            )
+            expect(verified).toBeTruthy()
+        })
+
+        it('on-chain tally result verification of a batch of leaves', async () => {
+            const depth = voteOptionTreeDepth - 1
+            const tree = new IncrementalQuinTree(depth, bigInt(0))
+            for (let i = 0; i < tally.length; i += 5) {
+                const batch = hash5(tally.slice(i, i + 5))
+                tree.insert(batch)
+            }
+
+            const index = 0
+            const leaf = tree.leaves[index]
+            const proof = tree.genMerklePath(index)
+
+            // Any contract can call the MACI contract's verifyTallyResult()
+            // function to prove that they know the value of a batch of leaves.
+            const verified = await maciContract.verifyTallyResult(
+                depth,
+                index,
+                leaf.toString(),
+                proof.pathElements.map((x) => x.map((y) => y.toString())),
+                newResultsSalt.toString(),
+            )
+            expect(verified).toBeTruthy()
         })
     })
 })
