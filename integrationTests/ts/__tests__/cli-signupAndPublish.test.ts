@@ -487,5 +487,37 @@ describe('signup and publish CLI subcommands', () => {
             const output = exec(publishCommand).stderr
             expect(output).toEqual('Error: the salt should less than the BabyJub field size\n')
         })
+
+        it('should reject an oversized positive vote weight', async () => {
+            const publishCommand = `node ../cli/build/index.js publish` +
+                ` -sk ${userKeypair.privKey.serialize()}` +
+                ` -p ${userKeypair.pubKey.serialize()}` +
+                ` -d ${userPrivKey}` +
+                ` -x ${maciAddress}` +
+                ` -i ${stateIndex}` +
+                ` -vi ${voteOptionIndex}` +
+                ` -w ${bigInt('0x100000000000000000000000000000000000000000000000000000000000000')}` +
+                ` -v ${negVoteWeight}` +
+                ` -n ${nonce}` +
+                ` -s ${salt}`
+            const output = exec(publishCommand).stderr
+            expect(output).toEqual('Error: the positive vote weight is too large\n')
+        })
+
+        it('should reject an oversized negative vote weight', async () => {
+            const publishCommand = `node ../cli/build/index.js publish` +
+                ` -sk ${userKeypair.privKey.serialize()}` +
+                ` -p ${userKeypair.pubKey.serialize()}` +
+                ` -d ${userPrivKey}` +
+                ` -x ${maciAddress}` +
+                ` -i ${stateIndex}` +
+                ` -vi ${voteOptionIndex}` +
+                ` -w ${posVoteWeight}` +
+                ` -v ${bigInt('0x100000000000000000000000000000000000000000000000000000000000000')}` +
+                ` -n ${nonce}` +
+                ` -s ${salt}`
+            const output = exec(publishCommand).stderr
+            expect(output).toEqual('Error: the negative vote weight is too large\n')
+        })
     })
 })

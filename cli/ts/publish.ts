@@ -294,7 +294,18 @@ const publish = async (args: any) => {
 
     // The new vote weight
     const posVoteWeight = bigInt(args.pos_vote_weight)
+
+    if (! VoteLeaf.isWithinRange(posVoteWeight)) {
+        console.error('Error: the positive vote weight is too large')
+        return
+    }
+
     const negVoteWeight = bigInt(args.neg_vote_weight)
+
+    if (! VoteLeaf.isWithinRange(negVoteWeight)) {
+        console.error('Error: the negative vote weight is too large')
+        return
+    }
 
     const coordinatorPubKeyOnChain = await maciContract.coordinatorPubKey()
     const coordinatorPubKey = new PubKey([
