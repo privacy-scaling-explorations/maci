@@ -15,5 +15,5 @@ Note that the circuit pseudocode in this specification does not describe zk-SNAR
 
 See:
 
-- [The state root transition proof circuit](./state_root_transition_circuit.md), and
-- [The quadratic vote tallying circuit](./quadratic_vote_tallying_circuit.md)
+- [The state root transition proof circuit](https://github.com/appliedzkp/maci/blob/master/specs/04_state_root_transition_circuit.md), and
+- [The quadratic vote tallying circuit](https://github.com/appliedzkp/maci/blob/master/specs/05_quadratic_vote_tallying_circuit.md)
