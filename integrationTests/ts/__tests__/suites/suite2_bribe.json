@@ -22,5 +22,6 @@
             "nonce": 1
         }
     ],
-    "expectedTally": [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    "expectedTally": [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "expectedTotalSpentVoiceCredits": 2
 }

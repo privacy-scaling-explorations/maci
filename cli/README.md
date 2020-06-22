@@ -184,7 +184,8 @@ Fields that the coordinator has to set:
 | Prompt for the coordinator's Ethereum private key | `-dp` or `--prompt-for-eth-privkey` | If specified, ignores `-d / --eth-privkey` and prompts the coordinator to input their Ethereum private key |
 | Repeat until all votes have been processed | `-r` or `--repeat` | Default: false |
 | The serialised state leaf preimage at index 0 | `-z` or `--leaf-zero` | |
-| The current result salt | `-c` or `--current-salt` | The secret salt which is hashed along with the current results to produce the current result commitment input to the snark. |
+| The current results salt | `-c` or `--current-results-salt` | The secret salt which is hashed along with the current results to produce the current result commitment input to the snark. |
+| The current total voice credits salt | `-tvc` or `--current-total-vc-salt` | The secret salt which is hashed along with the current total number of spent voice credits to produce the current total voice credits commitment input to the snark. |
 | The final tally file | `-t` or `--tally-file` | A filepath in which to save the final vote tally and salt. |
 
 ### Anyone: Verify a vote tally
@@ -380,6 +381,7 @@ NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js tally \
 	-sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
 	-r \
 	-c 0x0 \
+	-tvc 0x0 \
 	-t tally.json \
 	-z <PASTE RANDOM STATE LEAF HERE>
 ```
@@ -398,35 +400,42 @@ The file `tally.json` will now contain something like the following:
 {
     "provider": "http://localhost:8545",
     "maci": "0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4",
-    "commitment": "0x1490fb02287fece1e90ee227f79a27fc7f51a6c8ca876e0c1f6546c004025d90",
-    "tally": [
-        "9",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0"
-    ],
-    "salt": "0xa4be496df2d9bee2cfd2345921c200497599757974dc16e1aca0a3ee7d3c148"
+    "results": {
+        "commitment": "0x1cd0ec2789abceb908b06f6a74c26a848e209011ec41b3e5028bb7aeff2bdeb2",
+        "tally": [
+            "9",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0"
+        ],
+        "salt": "0x2d7f1744185507a529fdb32dec920bfdaf825b0fdba5b66661a40a71beac3b46"
+    },
+    "totalVoiceCredits": {
+        "spent": "81",
+        "commitment": "0x2d55a42ec1da99227125cf9562aa91aad12e2f1387ccf3411da79b0a953d69a6",
+        "salt": "0xfc95a102f3c66d92d7a5700f1e12a6f2325c54a10efa0e1178cc21b67f0d97c"
+    }
 }
 ```
 
@@ -439,6 +448,8 @@ node build/index.js verify -t tally.json
 Example output:
 
 ```
-The commitment in the specified file is correct given the tally and salt
-The commitment in the MACI contract on-chain is valid
+The results commitment in the specified file is correct given the tally and salt
+The total spent voice credit commitment in the specified file is correct given the tally and salt
+The results commitment in the MACI contract on-chain is valid
+The total spent voice credit commitment in the MACI contract on-chain is valid
 ```

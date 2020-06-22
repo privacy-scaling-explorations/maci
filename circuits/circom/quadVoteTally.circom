@@ -67,9 +67,17 @@ template QuadVoteTally(
     // voice credits per option.
     signal private input voteLeaves[numUsers][numVoteOptions];
 
+    signal input currentSpentVoiceCreditsCommitment;
+    signal private input currentSpentVoiceCredits;
+    signal private input currentSpentVoiceCreditsSalt;
+
+    signal private input newSpentVoiceCreditsSalt;
+    signal output newSpentVoiceCreditsCommitment;
+
     // --- END inputs
 
     var STATE_TREE_VOTE_OPTION_TREE_ROOT_IDX = 2;
+    var STATE_TREE_VOICE_CREDIT_BALANCE_IDX = 3;
 
     // --- BEGIN check the full state root
 
@@ -119,12 +127,41 @@ template QuadVoteTally(
 
     // --- END
 
+    // --- BEGIN voice credit tally
+
+    // Verify currentSpentVoiceCreditsCommitment
+    component currentSpentVoiceCreditCommitmentHasher = HashLeftRight();
+    currentSpentVoiceCreditCommitmentHasher.left <== currentSpentVoiceCredits;
+    currentSpentVoiceCreditCommitmentHasher.right <== currentSpentVoiceCreditsSalt;
+    currentSpentVoiceCreditsCommitment === currentSpentVoiceCreditCommitmentHasher.hash;
+
+    component newSpentVoiceCreditSubtotal = CalculateTotal(numUsers * numVoteOptions + 1);
+
+    // Add the cumulative spent voice credits from all prior batches
+    newSpentVoiceCreditSubtotal.nums[numUsers * numVoteOptions] <== currentSpentVoiceCredits;
+
+    // Add the spent voice credits for this batch
+    for (i=0; i < numUsers; i++) {
+        for (j=0; j < numVoteOptions; j++) {
+            // Add the voice credits spent per vote option
+            newSpentVoiceCreditSubtotal.nums[i * numVoteOptions + j] <== 
+                voteLeaves[i][j] * voteLeaves[i][j];
+        }
+    }
+
+    // Compute the commitment to the new voice credit tally
+    component newSpentVoiceCreditCommitmentHasher = HashLeftRight();
+    newSpentVoiceCreditCommitmentHasher.left <== newSpentVoiceCreditSubtotal.sum;
+    newSpentVoiceCreditCommitmentHasher.right <== newSpentVoiceCreditsSalt;
+    newSpentVoiceCreditsCommitment <== newSpentVoiceCreditCommitmentHasher.hash;
+    // --- END
+
     // --- BEGIN check vote tally and vote option root
 
     component voteOptionSubtotals[numVoteOptions];
 
     // Prepare the CalculateTotal components to add up (a) the current vote
-    // tally and the votes in `voteLeaves`
+    // tally and (b) the spent voice credits
     for (i=0; i < numVoteOptions; i++) {
         voteOptionSubtotals[i] = CalculateTotal(numUsers + 1);
 

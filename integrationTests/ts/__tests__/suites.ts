@@ -8,6 +8,7 @@ import {
 } from 'maci-domainobjs'
 
 import { 
+    genSpentVoiceCreditsCommitment,
     genTallyResultCommitment,
     MaciState,
 } from 'maci-core'
@@ -256,6 +257,7 @@ const executeSuite = async (data: any, expect: any) => {
         ` -z ${randomLeaf.serialize()}` +
         ` -t test_tally.json` +
         ` -c 0x0000000000000000000000000000000000000000000000000000000000000000` +
+        ` -tvc 0x0000000000000000000000000000000000000000000000000000000000000000` +
         ` -r`
 
     console.log(tallyCommand)
@@ -269,7 +271,7 @@ const executeSuite = async (data: any, expect: any) => {
     console.log(tallyOutput.stdout)
 
     const tallyRegMatch = tallyOutput.match(
-        /Transaction hash: (0x[a-fA-F0-9]{64})\nCurrent results salt: (0x[a-fA-F0-9]+)\nResult commitment: 0x[a-fA-F0-9]+\n$/
+        /Transaction hash: (0x[a-fA-F0-9]{64})\nCurrent results salt: (0x[a-fA-F0-9]+)\nResult commitment: 0x[a-fA-F0-9]+\nTotal spent voice credits salt: (0x[a-fA-F0-9]+)\nTotal spent voice credits commitment: (0x[a-fA-F0-9]+)\n$/
     )
 
     if (!tallyRegMatch) {
@@ -279,16 +281,28 @@ const executeSuite = async (data: any, expect: any) => {
 
     expect(tallyRegMatch).toBeTruthy()
 
-    const salt = bigInt(tallyRegMatch[2])
+    const resultsSalt = bigInt(tallyRegMatch[2])
 
     const finalTallyCommitment = await maciContract.currentResultsCommitment()
     const expectedTallyCommitment = genTallyResultCommitment(
         data.expectedTally,
-        salt,
+        resultsSalt,
         voteOptionTreeDepth,
     )
 
-    expect(finalTallyCommitment.toString()).toEqual(expectedTallyCommitment.toString())
+    expect(finalTallyCommitment.toString())
+        .toEqual(expectedTallyCommitment.toString())
+
+    const tvcSalt = bigInt(tallyRegMatch[3])
+    const finalTvcCommitment = 
+        await maciContract.currentSpentVoiceCreditsCommitment()
+
+    const expectedTvcCommitment = genSpentVoiceCreditsCommitment(
+        data.expectedTotalSpentVoiceCredits,
+        tvcSalt,
+    )
+    expect(expectedTvcCommitment.toString())
+        .toEqual(finalTvcCommitment.toString())
 
     return true
 }

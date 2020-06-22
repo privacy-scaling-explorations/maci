@@ -1,24 +1,40 @@
 {
     "provider": "http://localhost:8545",
-    "maci": "0x4EeE4559BD589b1cdFc419f0EEd2Ff9cBD47F439",
-    "commitment": "0xa2ef6cdcf1db504f4fb8545c0e2606c1fa3733a67f1a410f9b4db918fc7a9cc",
-    "tally": [
-        "1",
-        "0",
-        "1",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0",
-        "0"
-    ],
-    "salt": "0x16f5698e9b663a2ce4ee5186140ab068860e4aa59edd92e706b37fd8fab0039f"
+    "maci": "0xBea1D42A4C0138A484C432BBBa296Ff320D5700B",
+    "results": {
+        "commitment": "0x2675255a490faf82881614fae9bc13f05f512d043da1fe81796432d0c6c0455c",
+        "tally": [
+            "1",
+            "0",
+            "1",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0"
+        ],
+        "salt": "0x2871a08d1417c87fea94c9df9e21a63e442ed77ebb502be45bd08c90a69ad5f2"
+    },
+    "totalVoiceCredits": {
+        "spent": "2",
+        "commitment": "0xbdf90eb4fdde524275aa39ba30c71f48310f1ade2d902b019f96f753470ebb9",
+        "salt": "0x265c4df34fe995727c52a6c5a0f98e405fe0bf94c460bbcbad1a7843eb10b847"
+    }
 }

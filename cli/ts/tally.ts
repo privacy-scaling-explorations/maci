@@ -1,10 +1,15 @@
 import * as fs from 'fs'
 import * as ethers from 'ethers'
 
-import { bigInt, genRandomSalt, SnarkBigInt } from 'maci-crypto'
+import {
+    bigInt,
+    SnarkBigInt,
+    genRandomSalt,
+} from 'maci-crypto'
 
 import { 
     genTallyResultCommitment,
+    genSpentVoiceCreditsCommitment,
 } from 'maci-core'
 
 import {
@@ -123,7 +128,7 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-c', '--current-salt'],
+        ['-c', '--current-results-salt'],
         {
             required: true,
             type: 'string',
@@ -131,6 +136,14 @@ const configureSubparser = (subparsers: any) => {
         }
     )
 
+    parser.addArgument(
+        ['-tvc', '--current-total-vc-salt'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The secret salt which is hashed along with the current total number of spent voice credits to produce the current total voice credits commitment input to the snark.',
+        }
+    )
     parser.addArgument(
         ['-t', '--tally-file'],
         {
@@ -143,19 +156,30 @@ const configureSubparser = (subparsers: any) => {
 
 const tally = async (args: any) => {
 
-    // Current result salt
-
-    if (!validateSaltFormat(args.current_salt)) {
-        console.error('Error: the salt should be a 32-byte hexadecimal string')
+    // Current results salt
+    if (!validateSaltFormat(args.current_results_salt)) {
+        console.error('Error: the current results salt should be a 32-byte hexadecimal string')
         return
     }
 
-    if (!validateSaltSize(args.current_salt)) {
-        console.error('Error: the salt should less than the BabyJub field size')
+    if (!validateSaltSize(args.current_results_salt)) {
+        console.error('Error: the current results salt should less than the BabyJub field size')
         return
     }
 
-    let currentResultsSalt = bigInt(args.current_salt)
+    // Current total voice credits salt
+    if (!validateSaltFormat(args.current_total_vc_salt)) {
+        console.error('Error: the current total spent voice credits salt should be a 32-byte hexadecimal string')
+        return
+    }
+
+    if (!validateSaltSize(args.current_total_vc_salt)) {
+        console.error('Error: the current total spent voice credits salt should less than the BabyJub field size')
+        return
+    }
+
+    let currentResultsSalt = bigInt(args.current_results_salt)
+    let currentTvcSalt = bigInt(args.current_total_vc_salt)
 
     // Zeroth leaf
     const serialized = args.leaf_zero
@@ -171,7 +195,7 @@ const tally = async (args: any) => {
         return
     }
 
-    // MACI contract
+    // MACI contract address
     if (!validateEthAddress(args.contract)) {
         console.error('Error: invalid MACI contract address')
         return
@@ -238,17 +262,21 @@ const tally = async (args: any) => {
         maciContractAbi,
         wallet,
     )
+
+    // Check whether it's the right time to tally messages
     if (await maciContract.hasUnprocessedMessages()) {
         console.error('Error: not all messages have been processed')
         return
     }
 
+    // Ensure that there are untallied state leaves
     if (! (await maciContract.hasUntalliedStateLeaves())) {
         console.error('Error: all state leaves have been tallied')
         return
     }
 
-    // Build an off-chain representation of the MACI contract using data in the contract storage
+    // Build an off-chain representation of the MACI contract using data in the
+    // contract storage
     let maciState
     try {
         maciState = await genMaciStateFromContract(
@@ -291,11 +319,14 @@ const tally = async (args: any) => {
             return
         }
 
-        if (startIndex.equals(bigInt(0))) {
-            currentResultsSalt = bigInt(0)
+        if (startIndex.equals(bigInt(0)) && !currentTvcSalt.equals(bigInt(0))) {
+            console.error('Error: the first current total spent voice credits salt should be zero')
+            return
         }
 
         const newResultsSalt = genRandomSalt()
+        const newSpentVoiceCreditsSalt = genRandomSalt()
+
         // Generate circuit inputs
         const circuitInputs 
             = maciState.genQuadVoteTallyCircuitInputs(
@@ -303,10 +334,13 @@ const tally = async (args: any) => {
                 batchSize,
                 currentResultsSalt,
                 newResultsSalt,
+                currentTvcSalt,
+                newSpentVoiceCreditsSalt,
             )
 
-        // Update currentResultsSalt for the next iteration
+        // Update the salts for the next iteration
         currentResultsSalt = bigInt(circuitInputs.newResultsSalt)
+        currentTvcSalt = bigInt(circuitInputs.newSpentVoiceCreditsSalt)
 
         const witness = circuit.calculateWitness(circuitInputs)
 
@@ -317,17 +351,34 @@ const tally = async (args: any) => {
 
         const { proof, publicSignals } = genQvtProofAndPublicSignals(witness)
 
-        const result = witness[circuit.getSignalIdx('main.newResultsCommitment')]
+        const expectedNewResultsCommitmentOutput = witness[circuit.getSignalIdx('main.newResultsCommitment')]
 
-        const expectedCommitment = genTallyResultCommitment(cumulativeTally, newResultsSalt, maciState.voteOptionTreeDepth)
-        if (result.toString() !== expectedCommitment.toString()) {
+        const newResultsCommitment = genTallyResultCommitment(
+            cumulativeTally,
+            newResultsSalt,
+            maciState.voteOptionTreeDepth,
+        )
+
+        if (expectedNewResultsCommitmentOutput.toString() !== newResultsCommitment.toString()) {
             console.error('Error: result commitment mismatch')
             return
         }
 
+        const currentSpentVoiceCredits = maciState.computeCumulativeSpentVoiceCredits(startIndex)
+
+        const newSpentVoiceCredits = 
+            currentSpentVoiceCredits + 
+            maciState.computeBatchSpentVoiceCredits(startIndex, batchSize)
+
+        const newSpentVoiceCreditsCommitment = genSpentVoiceCreditsCommitment(
+            newSpentVoiceCredits,
+            currentTvcSalt,
+        )
+
         const contractPublicSignals = await maciContract.genQvtPublicSignals(
             circuitInputs.intermediateStateRoot.toString(),
-            expectedCommitment.toString(),
+            newResultsCommitment.toString(),
+            newSpentVoiceCreditsCommitment.toString(),
         )
 
         const publicSignalMatch = JSON.stringify(publicSignals.map((x) => x.toString())) ===
@@ -353,7 +404,8 @@ const tally = async (args: any) => {
         try {
             tx = await maciContract.proveVoteTallyBatch(
                 circuitInputs.intermediateStateRoot.toString(),
-                expectedCommitment.toString(),
+                newResultsCommitment.toString(),
+                newSpentVoiceCreditsCommitment.toString(),
                 formattedProof,
                 { gasLimit: 2000000 },
             )
@@ -373,21 +425,32 @@ const tally = async (args: any) => {
 
         console.log(`Transaction hash: ${tx.hash}`)
 
-
         if (!args.repeat || ! (await maciContract.hasUntalliedStateLeaves())) {
             console.log(`Current results salt: 0x${currentResultsSalt.toString(16)}`)
 			const currentResultsCommitment = await maciContract.currentResultsCommitment()
             const c = bigInt(currentResultsCommitment.toString())
             console.log(`Result commitment: 0x${c.toString(16)}`)
 
+            console.log(`Total spent voice credits salt: 0x${currentTvcSalt.toString(16)}`)
+			const currentSpentVoiceCreditsCommitment = await maciContract.currentSpentVoiceCreditsCommitment()
+            const d = bigInt(currentSpentVoiceCreditsCommitment.toString())
+            console.log(`Total spent voice credits commitment: 0x${d.toString(16)}`)
+
             if (args.tally_file) {
                 // Write tally to a file
                 const d = {
                     provider: ethProvider,
                     maci: maciContract.address,
-                    commitment: `0x${c.toString(16)}`,
-                    tally: tally.map((x) => x.toString()),
-                    salt: '0x' + currentResultsSalt.toString(16),
+                    results: {
+                        commitment: '0x' + c.toString(16),
+                        tally: tally.map((x) => x.toString()),
+                        salt: '0x' + currentResultsSalt.toString(16),
+                    },
+                    totalVoiceCredits: {
+                        spent: newSpentVoiceCredits.toString(),
+                        commitment: '0x' + newSpentVoiceCreditsCommitment.toString(16),
+                        salt: '0x' + newSpentVoiceCreditsSalt.toString(16),
+                    }
                 }
 
                 // Format the JSON file with spaces
