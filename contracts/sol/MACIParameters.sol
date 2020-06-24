@@ -1,9 +1,7 @@
 pragma experimental ABIEncoderV2;
 pragma solidity ^0.5.0;
 
-import { MACIPubKey } from "./MACIPubKey.sol";
-
-contract MACIParameters is MACIPubKey {
+contract MACIParameters {
     // This structs help to reduce the number of parameters to the constructor
     // and avoid a stack overflow error during compilation
     struct TreeDepths {
