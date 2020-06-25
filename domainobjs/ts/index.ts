@@ -24,12 +24,6 @@ import {
     SNARK_FIELD_SIZE
 } from 'maci-crypto'
 
-interface Keypair {
-    privKey: RawPrivKey;
-    pubKey: RawPubKey;
-}
-
-
 const SERIALIZED_PRIV_KEY_PREFIX = 'macisk.'
 
 class PrivKey {
@@ -119,7 +113,7 @@ class PubKey {
             return SERIALIZED_PUB_KEY_PREFIX + 'z'
         }
         const packed = packPubKey(this.rawPubKey).toString('hex')
-        return SERIALIZED_PUB_KEY_PREFIX + packed.toString(16)
+        return SERIALIZED_PUB_KEY_PREFIX + packed.toString()
     }
 
     public static unserialize = (s: string): PubKey => {
@@ -148,7 +142,7 @@ class PubKey {
     }
 }
 
-class Keypair implements Keypair {
+class Keypair {
     public privKey: PrivKey
     public pubKey: PubKey
 
