@@ -22,7 +22,7 @@ You also need [Solidity 0.5.16](https://github.com/ethereum/solidity/releases/ta
 Clone this repository, install NodeJS dependencies, and build the source code:
 
 ```bash
-git clone git@github.com:barryWhiteHat/maci.git && \
+git clone git@github.com:appliedzkp/maci.git && \
 npm i && \
 npm run bootstrap && \
 npm run build
@@ -35,7 +35,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
 Also install [`zkutil`](https://github.com/poma/zkutil) v0.2.1 and ensure that
-the `zkutil` binary is in the `~/.cargo/bin/` directory. You can configure the
+the `zkutil` binary is in the `~/.cargo/bin/` directory. You can [configure](https://lorenwest.github.io/node-config/) the
 path to this binary via `maci-config` (see `config/test.yaml` for an example).
 
 ```bash
