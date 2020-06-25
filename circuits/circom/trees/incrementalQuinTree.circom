@@ -226,13 +226,24 @@ template QuinGeneratePathIndices(levels) {
     signal output out[levels];
 
     var m = in;
+    signal n[levels + 1];
     for (var i = 0; i < levels; i ++) {
         // circom's best practices state that we should avoid using <-- unless
         // we know what we are doing. But this is the only way to perform the
-        // modulo operation. Later, we will do a range proof to ensure that the
-        // output is correct.
+        // modulo operation.
+
+        n[i] = m;
+        
         out[i] <-- m % BASE;
+
         m = m \ BASE;
+    }
+
+    n[levels] = m;
+
+    // Do a range check on each out[i]
+    for (var i = 1; i < levels + 1; i ++) {
+        n[i - 1] === n[i] * BASE + out[i-1];
     }
     
     component leq[levels];
@@ -244,6 +255,7 @@ template QuinGeneratePathIndices(levels) {
         leq[i].in[1] <== BASE;
         leq[i].out === 1;
 
+        // Re-compute the total sum
         sum += out[i] * BASE ** i;
     }
     
