@@ -9,8 +9,7 @@ const configureSubparser = (subparsers: any) => {
     )
 }
 
-// @ts-ignore
-const genMaciKeypair = async (args: any) => {
+const genMaciKeypair = async (args: any) => { // eslint-disable-line @typescript-eslint/no-unused-vars
     const keypair = new Keypair()
 
     const serializedPrivKey = keypair.privKey.serialize()
