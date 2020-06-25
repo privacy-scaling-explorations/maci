@@ -59,7 +59,12 @@ very quickly, we no longer maintain them.
 
 Note that if you change the circuits and recompile them, you should
 also update and recompile the verifier contracts in `contracts/sol`
-with their new versions, or the tests will fail.
+with their new versions, or the tests will fail:
+
+```bash
+cd contracts
+npm run compileSol
+```
 
 ### Demo
 
@@ -110,17 +115,17 @@ cd contracts
 npm run ganache
 ```
 
-or
-
-```bash
-cd integrationTests &&
-./scripts/runTestsInCircleCi.sh
-```
-
 In another terminal, run the tests individually:
 
 ```bash
 cd contracts
+./scripts/runTestsInCircleCi.sh
+```
+
+or
+
+```bash
+cd integrationTests
 ./scripts/runTestsInCircleCi.sh
 ```
 
