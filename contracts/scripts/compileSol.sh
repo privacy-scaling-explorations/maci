@@ -12,7 +12,7 @@ mkdir -p ./compiled/abis
 
 # Copy the Semaphore contracts from the submodule into solidity/
 
-npx etherlime compile --solcVersion=native --buildDirectory=compiled --workingDirectory=sol --exportAbi --runs 200
+npx etherlime compile --solcVersion=0.5.16 --buildDirectory=compiled --workingDirectory=sol --exportAbi --runs 200
 
 # Build the Poseidon contract from bytecode
 node build/buildPoseidon.js

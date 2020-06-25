@@ -15,8 +15,6 @@ We welcome contributions to this project. Please join our
 You should have Node 11.14.0 installed. Use
 [`nvm`](https://github.com/nvm-sh/nvm) to install it.
 
-You also need [Solidity 0.5.16](https://github.com/ethereum/solidity/releases/tag/v0.5.16) installed in your `PATH`.
-
 ### Get started
 
 Clone this repository, install NodeJS dependencies, and build the source code:
