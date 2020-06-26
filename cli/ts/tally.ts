@@ -370,9 +370,9 @@ const tally = async (args: any) => {
             )
 
         // Update the salts for the next iteration
-        currentResultsSalt = bigInt(circuitInputs.newResultsSalt)
-        currentTvcSalt = bigInt(circuitInputs.newSpentVoiceCreditsSalt)
-        currentPvcSalt = bigInt(circuitInputs.newPerVOSpentVoiceCreditsSalt)
+        currentResultsSalt = newResultsSalt
+        currentTvcSalt = newSpentVoiceCreditsSalt
+        currentPvcSalt = newPerVOSpentVoiceCreditsSalt
 
         const witness = circuit.calculateWitness(circuitInputs)
 
@@ -520,7 +520,7 @@ const tally = async (args: any) => {
                     maci: maciContract.address,
                     results: {
                         commitment: '0x' + c.toString(16),
-                        tally: tally.map((x) => x.toString()),
+                        tally: cumulativeTally.map((x) => x.toString()),
                         salt: '0x' + currentResultsSalt.toString(16),
                     },
                     totalVoiceCredits: {
@@ -530,7 +530,7 @@ const tally = async (args: any) => {
                     },
                     totalVoiceCreditsPerVoteOption: {
                         commitment: '0x' + newPerVOSpentVoiceCreditsCommitment.toString(16),
-                        tally: perVOSpentVoiceCredits.map((x) => x.toString()),
+                        tally: totalPerVOSpentVoiceCredits.map((x) => x.toString()),
                         salt: '0x' + newPerVOSpentVoiceCreditsSalt.toString(16),
                     },
                 }
