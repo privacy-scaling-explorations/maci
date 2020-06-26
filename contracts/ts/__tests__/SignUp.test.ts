@@ -137,6 +137,13 @@ describe('MACI', () => {
         expect(crc.toString()).toEqual(expected.toString())
     })
 
+    it('the currentSpentVoiceCreditsCommitment value should be correct', async () => {
+        const comm = await maciContract.currentSpentVoiceCreditsCommitment()
+        const expected = hashLeftRight(bigInt(0), bigInt(0))
+
+        expect(comm.toString()).toEqual(expected.toString())
+    })
+
     it('the stateTree root should be correct', async () => {
         const root = await maciContract.getStateTreeRoot()
         expect(maciState.genStateRoot().toString()).toEqual(root.toString())

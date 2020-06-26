@@ -460,6 +460,152 @@ class MaciState {
     }
 
     /*
+     * Computes the total number of voice credits per vote option spent up to
+     * _startIndex. Ignores the zeroth state leaf.
+     * @param _startIndex The state tree index. Only leaves before this index
+     * are included in the tally.
+     */
+    public computeCumulativePerVOSpentVoiceCredits = (
+        _startIndex: SnarkBigInt,
+    ): SnarkBigInt[] => {
+        _startIndex = bigInt(_startIndex)
+
+        assert(bigInt(this.users.length) >= _startIndex)
+
+        // results should start off with 0s
+        const results: SnarkBigInt[] = []
+        for (let i = 0; i < bigInt(5).pow(this.voteOptionTreeDepth); i++) {
+            results.push(bigInt(0))
+        }
+
+        // Compute the cumulative total up till startIndex - 1 (since we should
+        // ignore the 0th leaf)
+        for (let i = bigInt(0); i < bigInt(_startIndex) - bigInt(1); i++) {
+            const user = this.users[i]
+            for (let j = 0; j < user.votes.length; j++) {
+                results[j] += user.votes[j] * user.votes[j]
+            }
+        }
+
+        return results
+    }
+
+
+    /*
+     * Computes the cumulative total of voice credits spent up to _startIndex.
+     * Ignores the zeroth state leaf.
+     * @param _startIndex The state tree index. Only leaves before this index
+     * are included in the tally.
+     */
+    public computeCumulativeSpentVoiceCredits = (
+        _startIndex: SnarkBigInt,
+    ): SnarkBigInt => {
+        _startIndex = bigInt(_startIndex)
+
+        assert(bigInt(this.users.length) >= _startIndex)
+
+        if (_startIndex.equals(bigInt(0))) {
+            return bigInt(0)
+        }
+
+        let result = bigInt(0)
+        for (let i = bigInt(0); i < _startIndex - bigInt(1); i++) {
+            const user = this.users[i]
+            for (let j = 0; j < user.votes.length; j++) {
+                result += user.votes[j] * user.votes[j]
+            }
+        }
+
+        return result
+    }
+
+    /*
+     * Compute the number of voice credits spent in a batch of state leaves
+     * @param _startIndex The index of the first user in the batch
+     * @param _batchSize The number of users to tally.
+     */
+    public computeBatchSpentVoiceCredits = (
+        _startIndex: SnarkBigInt,
+        _batchSize: SnarkBigInt,
+    ): SnarkBigInt => {
+        _startIndex = bigInt(_startIndex)
+        _batchSize = bigInt(_batchSize)
+
+        // Check whether _startIndex is within range.
+        assert(_startIndex >= 0 && _startIndex <= this.users.length)
+
+        // Check whether _startIndex is a multiple of _batchSize
+        assert(bigInt(_startIndex) % bigInt(_batchSize) === bigInt(0))
+
+        // Compute the spent voice credits
+        if (_startIndex.equals(0)) {
+            _batchSize = _batchSize - bigInt(1)
+        } else {
+            _startIndex = _startIndex - bigInt(1)
+        }
+
+        let result = bigInt(0)
+        for (let i = 0; i < _batchSize; i++) {
+            const userIndex = bigInt(_startIndex) + bigInt(i)
+            if (userIndex < this.users.length) {
+                for (const vote of this.users[userIndex].votes) {
+                    result += vote * vote
+                }
+            } else {
+                break
+            }
+        }
+        return result
+    }
+
+    /*
+     * Compute the number of voice credits spent per vote option in a batch of
+     * state leaves
+     * @param _startIndex The index of the first user in the batch
+     * @param _batchSize The number of users to tally.
+     */
+    public computeBatchPerVOSpentVoiceCredits = (
+        _startIndex: SnarkBigInt,
+        _batchSize: SnarkBigInt,
+    ): SnarkBigInt[] => {
+        _startIndex = bigInt(_startIndex)
+        _batchSize = bigInt(_batchSize)
+
+        // Check whether _startIndex is within range.
+        assert(_startIndex >= 0 && _startIndex <= this.users.length)
+
+        // Check whether _startIndex is a multiple of _batchSize
+        assert(bigInt(_startIndex) % bigInt(_batchSize) === bigInt(0))
+
+        // Compute the spent voice credits
+        if (_startIndex.equals(0)) {
+            _batchSize = _batchSize - bigInt(1)
+        } else {
+            _startIndex = _startIndex - bigInt(1)
+        }
+
+        // Fill results with 0s
+        const results: SnarkBigInt[] = []
+        for (let i = 0; i < bigInt(5).pow(this.voteOptionTreeDepth); i++) {
+            results.push(bigInt(0))
+        }
+
+        for (let i = 0; i < _batchSize; i++) {
+            const userIndex = bigInt(_startIndex) + bigInt(i)
+            if (userIndex < this.users.length) {
+                const votes = this.users[userIndex].votes
+                for (let j = 0; j < votes.length; j++) {
+                    results[j] += votes[j] * votes[j]
+                }
+            } else {
+                break
+            }
+        }
+
+        return results
+    }
+
+    /*
      * Compute the vote tally up to the specified state tree index. Ignores the
      * zeroth state leaf.
      * @param _startIndex The state tree index. Only leaves before this index
@@ -554,6 +700,10 @@ class MaciState {
         _batchSize: SnarkBigInt,
         _currentResultsSalt: SnarkBigInt,
         _newResultsSalt: SnarkBigInt,
+        _currentSpentVoiceCreditsSalt: SnarkBigInt,
+        _newSpentVoiceCreditsSalt: SnarkBigInt,
+        _currentPerVOSpentVoiceCreditsSalt: SnarkBigInt,
+        _newPerVOSpentVoiceCreditsSalt: SnarkBigInt,
     ) => {
         _startIndex = bigInt(_startIndex)
         _batchSize = bigInt(_batchSize)
@@ -563,6 +713,27 @@ class MaciState {
         if (_startIndex.equals(bigInt(0))) {
             assert(_currentResultsSalt.equals(bigInt(0)))
         }
+
+        // Compute the spent voice credits per vote option up to the _startIndex
+        const currentPerVOSpentVoiceCredits
+            = this.computeCumulativePerVOSpentVoiceCredits(_startIndex)
+
+        const currentPerVOSpentVoiceCreditsCommitment = genPerVOSpentVoiceCreditsCommitment(
+            currentPerVOSpentVoiceCredits,
+            _currentPerVOSpentVoiceCreditsSalt,
+            this.voteOptionTreeDepth,
+        )
+
+        // Compute the total number of spent voice credits up to the _startIndex
+        const currentSpentVoiceCredits 
+            = this.computeCumulativeSpentVoiceCredits(_startIndex)
+
+        // Compute the commitment to the total spent voice credits
+        const currentSpentVoiceCreditsCommitment
+            = genSpentVoiceCreditsCommitment(
+                currentSpentVoiceCredits,
+                _currentSpentVoiceCreditsSalt,
+            )
 
         const currentResults = this.computeCumulativeVoteTally(_startIndex)
         const batchResults = this.computeBatchVoteTally(_startIndex, _batchSize)
@@ -666,11 +837,24 @@ class MaciState {
         const circuitInputs = stringifyBigInts({
             voteLeaves,
             stateLeaves: stateLeaves.map((x) => x.asCircuitInputs()),
-            currentResults,
             fullStateRoot: this.genStateRoot(),
-            currentResultsSalt: _currentResultsSalt,
-            newResultsSalt: _newResultsSalt,
+
+            currentResults,
             currentResultsCommitment,
+            currentResultsSalt: _currentResultsSalt,
+
+            newResultsSalt: _newResultsSalt,
+
+            currentSpentVoiceCredits,
+            currentSpentVoiceCreditsSalt: _currentSpentVoiceCreditsSalt,
+            currentSpentVoiceCreditsCommitment,
+            newSpentVoiceCreditsSalt: _newSpentVoiceCreditsSalt,
+
+            currentPerVOSpentVoiceCredits,
+            currentPerVOSpentVoiceCreditsCommitment,
+            currentPerVOSpentVoiceCreditsSalt: _currentPerVOSpentVoiceCreditsSalt,
+            newPerVOSpentVoiceCreditsSalt: _newPerVOSpentVoiceCreditsSalt,
+
             intermediatePathElements,
             intermediatePathIndex,
             intermediateStateRoot,
@@ -678,6 +862,21 @@ class MaciState {
 
         return circuitInputs
     }
+}
+
+/*
+ * A helper function which returns the hash of the total number of spent voice
+ * credits and a salt.
+ *
+ * @param voiceCredits The number of voice credits
+ * @parm salt A random salt
+ * @return The hash of the number of voice credits and the salt
+ */
+const genSpentVoiceCreditsCommitment = (
+    vc: SnarkBigInt[],
+    salt: SnarkBigInt,
+): SnarkBigInt => {
+    return hashLeftRight(vc, salt)
 }
 
 /*
@@ -701,7 +900,11 @@ const genTallyResultCommitment = (
     return hashLeftRight(tree.root, salt)
 }
 
+const genPerVOSpentVoiceCreditsCommitment = genTallyResultCommitment
+
 export {
+    genPerVOSpentVoiceCreditsCommitment,
+    genSpentVoiceCreditsCommitment,
     genTallyResultCommitment,
     MaciState,
 }

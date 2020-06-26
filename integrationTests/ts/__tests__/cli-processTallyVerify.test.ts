@@ -217,7 +217,9 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -x ${maciAddress}` +
                 ` -z ${StateLeaf.genRandomLeaf().serialize()}` +
                 ` -t test_tally.json` +
-                ` -c 0x0000000000000000000000000000000000000000`
+                ` -c 0x0000000000000000000000000000000000000000` +
+                ` -pvc 0x0000000000000000000000000000000000000000` +
+                ` -tvc 0x0000000000000000000000000000000000000000`
 
             const e = exec(tallyCommand)
             expect(e.stderr.trim()).toEqual('Error: not all messages have been processed')
@@ -315,7 +317,9 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -x ${maciAddress}` +
                 ` -z ${randomLeaf.serialize()}` +
                 ` -t test_tally.json` +
-                ` -c 0x0000000000000000000000000000000000000000`
+                ` -c 0x0000000000000000000000000000000000000000` +
+                ` -pvc 0x0000000000000000000000000000000000000000` +
+                ` -tvc 0x0000000000000000000000000000000000000000`
 
             console.log(tallyCommand)
 
@@ -331,8 +335,12 @@ describe('process, tally, and prove CLI subcommands', () => {
             }
 
             const regMatch = output.match(
-                /Transaction hash: (0x[a-fA-F0-9]{64})\nCurrent results salt: (0x[a-fA-F0-9]+)\nResult commitment: 0x[a-fA-F0-9]+\n$/
+                /Transaction hash: (0x[a-fA-F0-9]{64})\nCurrent results salt: (0x[a-fA-F0-9]+)\nResult commitment: 0x[a-fA-F0-9]+\nTotal spent voice credits salt: (0x[a-fA-F0-9]+)\nTotal spent voice credits commitment: (0x[a-fA-F0-9]+)\nTotal spent voice credits per vote option salt: (0x[a-fA-F0-9]+)\nTotal spent voice credits per vote option commitment: (0x[a-fA-F0-9]+)\n$/
             )
+
+            if (!regMatch) {
+                console.log(output)
+            }
 
             expect(regMatch).toBeTruthy()
 
@@ -342,8 +350,11 @@ describe('process, tally, and prove CLI subcommands', () => {
             const verifyExec = exec(verifyCommand)
             const verifyOutput = verifyExec.stdout
             const verifyRegMatch = verifyOutput.match(
-                /The commitment in the specified file is correct given the tally and salt\nThe commitment in the MACI contract on-chain is valid\n/
+                /The results commitment in the specified file is correct given the tally and salt\nThe total spent voice credit commitment in the specified file is correct given the tally and salt\nThe per vote option spent voice credit commitment in the specified file is correct given the tally and salt\nThe results commitment in the MACI contract on-chain is valid\nThe total spent voice credit commitment in the MACI contract on-chain is valid\nThe per vote option spent voice credit commitment in the MACI contract on-chain is valid\n/
             )
+            if (!verifyRegMatch) {
+                console.log(verifyOutput)
+            }
             expect(verifyRegMatch).toBeTruthy()
         })
 
@@ -354,7 +365,9 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -x ${maciAddress}` +
                 ` -z ${randomLeaf.serialize()}` +
                 ` -t test_tally.json` +
-                ` -c 0x0000000000000000000000000000000000000000`
+                ` -c 0x0000000000000000000000000000000000000000` +
+                ` -pvc 0x0000000000000000000000000000000000000000` +
+                ` -tvc 0x0000000000000000000000000000000000000000`
 
             console.log(tallyCommand)
 
@@ -369,7 +382,9 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -x ${maciAddress}` +
                 ` -z xxxxxxx` +
                 ` -t test_tally.json` +
-                ` -c 0x0000000000000000000000000000000000000000`
+                ` -c 0x0000000000000000000000000000000000000000` +
+                ` -pvc 0x0000000000000000000000000000000000000000` +
+                ` -tvc 0x0000000000000000000000000000000000000000`
 
             const output = exec(tallyCommand).stderr
             expect(output).toEqual('Error: invalid zeroth state leaf\n')
@@ -382,7 +397,9 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -x 0xxx` +
                 ` -z ${randomLeaf.serialize()}` +
                 ` -t test_tally.json` +
-                ` -c 0x0000000000000000000000000000000000000000`
+                ` -c 0x0000000000000000000000000000000000000000` +
+                ` -pvc 0x0000000000000000000000000000000000000000` +
+                ` -tvc 0x0000000000000000000000000000000000000000`
 
             const output = exec(tallyCommand).stderr
             expect(output).toEqual('Error: invalid MACI contract address\n')
@@ -395,7 +412,9 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -x 0xxx` +
                 ` -z ${randomLeaf.serialize()}` +
                 ` -t test_tally.json` +
-                ` -c 0x0000000000000000000000000000000000000000`
+                ` -c 0x0000000000000000000000000000000000000000` +
+                ` -pvc 0x0000000000000000000000000000000000000000` +
+                ` -tvc 0x0000000000000000000000000000000000000000`
 
             const output = exec(tallyCommand).stderr
             expect(output).toEqual('Error: invalid MACI contract address\n')
@@ -408,36 +427,102 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -x ${maciAddress}` +
                 ` -z ${randomLeaf.serialize()}` +
                 ` -t test_tally.json` +
-                ` -c 0x0000000000000000000000000000000000000000`
+                ` -c 0x0000000000000000000000000000000000000000` +
+                ` -pvc 0x0000000000000000000000000000000000000000` +
+                ` -tvc 0x0000000000000000000000000000000000000000`
 
             const output = exec(tallyCommand).stderr
             expect(output).toEqual('Error: invalid Ethereum private key\n')
         })
 
-        it('should reject an oversized salt', async () => {
+        it('should reject an oversized current results salt', async () => {
             const tallyCommand = `node ../cli/build/index.js tally` +
                 ` -sk ${userKeypair.privKey.serialize()}` +
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
                 ` -z ${randomLeaf.serialize()}` +
                 ` -t test_tally.json` +
-                ` -c 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`
+                ` -c 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff` +
+                ` -pvc 0x0000000000000000000000000000000000000000` +
+                ` -tvc 0x0000000000000000000000000000000000000000`
 
             const output = exec(tallyCommand).stderr
-            expect(output).toEqual('Error: the salt should less than the BabyJub field size\n')
+            expect(output).toEqual('Error: the current results salt should be less than the BabyJub field size\n')
         })
 
-        it('should reject an invalid salt', async () => {
+        it('should reject an invalid current results salt', async () => {
             const tallyCommand = `node ../cli/build/index.js tally` +
                 ` -sk ${userKeypair.privKey.serialize()}` +
                 ` -d ${userPrivKey}` +
                 ` -x ${maciAddress}` +
                 ` -z ${randomLeaf.serialize()}` +
                 ` -t test_tally.json` +
-                ` -c 0xx`
+                ` -c 0xx` +
+                ` -pvc 0x0000000000000000000000000000000000000000` +
+                ` -tvc 0x0000000000000000000000000000000000000000`
 
             const output = exec(tallyCommand).stderr
-            expect(output).toEqual('Error: the salt should be a 32-byte hexadecimal string\n')
+            expect(output).toEqual('Error: the current results salt should be a 32-byte hexadecimal string\n')
+        })
+
+        it('should reject an oversized total spent voice credits salt', async () => {
+            const tallyCommand = `node ../cli/build/index.js tally` +
+                ` -sk ${userKeypair.privKey.serialize()}` +
+                ` -d ${userPrivKey}` +
+                ` -x ${maciAddress}` +
+                ` -z ${randomLeaf.serialize()}` +
+                ` -t test_tally.json` +
+                ` -c 0x0000000000000000000000000000000000000000` +
+                ` -pvc 0x0000000000000000000000000000000000000000` +
+                ` -tvc 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`
+
+            const output = exec(tallyCommand).stderr
+            expect(output).toEqual('Error: the current total spent voice credits salt should be less than the BabyJub field size\n')
+        })
+
+        it('should reject an invalid current total spent voice credits salt', async () => {
+            const tallyCommand = `node ../cli/build/index.js tally` +
+                ` -sk ${userKeypair.privKey.serialize()}` +
+                ` -d ${userPrivKey}` +
+                ` -x ${maciAddress}` +
+                ` -z ${randomLeaf.serialize()}` +
+                ` -t test_tally.json` +
+                ` -c 0x0000000000000000000000000000000000000000` +
+                ` -pvc 0x0000000000000000000000000000000000000000` +
+                ` -tvc 0xx`
+
+            const output = exec(tallyCommand).stderr
+            expect(output).toEqual('Error: the current total spent voice credits salt should be a 32-byte hexadecimal string\n')
+        })
+
+        it('should reject an oversized per vote option spent voice credits salt', async () => {
+            const tallyCommand = `node ../cli/build/index.js tally` +
+                ` -sk ${userKeypair.privKey.serialize()}` +
+                ` -d ${userPrivKey}` +
+                ` -x ${maciAddress}` +
+                ` -z ${randomLeaf.serialize()}` +
+                ` -t test_tally.json` +
+                ` -c 0x0000000000000000000000000000000000000000` +
+                ` -tvc 0x0000000000000000000000000000000000000000` +
+                ` -pvc 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`
+
+            const output = exec(tallyCommand).stderr
+            expect(output).toEqual('Error: the current spent voice credits per vote option salt should be less than the BabyJub field size\n')
+        })
+
+        it('should reject an invalid current per vote option spent voice credits salt', async () => {
+            const tallyCommand = `node ../cli/build/index.js tally` +
+                ` -sk ${userKeypair.privKey.serialize()}` +
+                ` -d ${userPrivKey}` +
+                ` -x ${maciAddress}` +
+                ` -z ${randomLeaf.serialize()}` +
+                ` -t test_tally.json` +
+                ` -c 0x0000000000000000000000000000000000000000` +
+                ` -tvc 0x0000000000000000000000000000000000000000` +
+                ` -pvc 0xx`
+
+            const output = exec(tallyCommand).stderr
+            expect(output).toEqual('Error: the current spent voice credits per vote option salt should be a 32-byte hexadecimal string\n')
         })
     })
 })

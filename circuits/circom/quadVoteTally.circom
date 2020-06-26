@@ -67,9 +67,24 @@ template QuadVoteTally(
     // voice credits per option.
     signal private input voteLeaves[numUsers][numVoteOptions];
 
+    // The total spent voice credit commitments and salts
+    signal input currentSpentVoiceCreditsCommitment;
+    signal private input currentSpentVoiceCredits;
+    signal private input currentSpentVoiceCreditsSalt;
+    signal private input newSpentVoiceCreditsSalt;
+    signal output newSpentVoiceCreditsCommitment;
+
+    // The per-option spent voice credit commitments and salts
+    signal input currentPerVOSpentVoiceCreditsCommitment;
+    signal private input currentPerVOSpentVoiceCredits[numVoteOptions];
+    signal private input currentPerVOSpentVoiceCreditsSalt;
+    signal private input newPerVOSpentVoiceCreditsSalt;
+    signal output newPerVOSpentVoiceCreditsCommitment;
+
     // --- END inputs
 
     var STATE_TREE_VOTE_OPTION_TREE_ROOT_IDX = 2;
+    var STATE_TREE_VOICE_CREDIT_BALANCE_IDX = 3;
 
     // --- BEGIN check the full state root
 
@@ -119,17 +134,62 @@ template QuadVoteTally(
 
     // --- END
 
-    // --- BEGIN check vote tally and vote option root
+    // --- BEGIN total spent voice credit tally
+
+    // Verify currentSpentVoiceCreditsCommitment
+    component currentSpentVoiceCreditCommitmentHasher = HashLeftRight();
+    currentSpentVoiceCreditCommitmentHasher.left <== currentSpentVoiceCredits;
+    currentSpentVoiceCreditCommitmentHasher.right <== currentSpentVoiceCreditsSalt;
+    currentSpentVoiceCreditsCommitment === currentSpentVoiceCreditCommitmentHasher.hash;
+
+    component newSpentVoiceCreditSubtotal = CalculateTotal(numUsers * numVoteOptions + 1);
+
+    // Add the cumulative spent voice credits from all prior batches
+    newSpentVoiceCreditSubtotal.nums[numUsers * numVoteOptions] <== currentSpentVoiceCredits;
+
+    // Add the spent voice credits for this batch
+    for (i=0; i < numUsers; i++) {
+        for (j=0; j < numVoteOptions; j++) {
+            // Add the voice credits spent per vote option
+            newSpentVoiceCreditSubtotal.nums[i * numVoteOptions + j] <== 
+                voteLeaves[i][j] * voteLeaves[i][j];
+        }
+    }
+
+    // Compute the commitment to the new voice credit tally
+    component newSpentVoiceCreditCommitmentHasher = HashLeftRight();
+    newSpentVoiceCreditCommitmentHasher.left <== newSpentVoiceCreditSubtotal.sum;
+    newSpentVoiceCreditCommitmentHasher.right <== newSpentVoiceCreditsSalt;
+    newSpentVoiceCreditsCommitment <== newSpentVoiceCreditCommitmentHasher.hash;
+    // --- END
+
+    // --- BEGIN the vote tally and vote option root, as well as the per vote
+    // option spent voice credit tally
+
+    // Verify currentPerVOSpentVoiceCreditsCommitment
+    component currentPerVOSpentVoiceCreditsTree = QuinCheckRoot(voteOptionTreeDepth);
+    for (i = 0; i < numVoteOptions; i++) {
+        currentPerVOSpentVoiceCreditsTree.leaves[i] <== currentPerVOSpentVoiceCredits[i];
+    }
+    component currentPerVOSpentVoiceCreditCommitmentHasher = HashLeftRight();
+    currentPerVOSpentVoiceCreditCommitmentHasher.left <== currentPerVOSpentVoiceCreditsTree.root;
+    currentPerVOSpentVoiceCreditCommitmentHasher.right <== currentPerVOSpentVoiceCreditsSalt;
+    currentPerVOSpentVoiceCreditsCommitment === currentPerVOSpentVoiceCreditCommitmentHasher.hash;
 
     component voteOptionSubtotals[numVoteOptions];
+    component perVOSpentVoiceCreditSubtotals[numVoteOptions];
 
     // Prepare the CalculateTotal components to add up (a) the current vote
-    // tally and the votes in `voteLeaves`
+    // tally and (b) the spent voice credits
     for (i=0; i < numVoteOptions; i++) {
         voteOptionSubtotals[i] = CalculateTotal(numUsers + 1);
 
         // Add the existing vote tally to the subtotal
         voteOptionSubtotals[i].nums[numUsers] <== currentResults[i];
+
+        perVOSpentVoiceCreditSubtotals[i] = CalculateTotal(numUsers + 1);
+        // Add the existing per vote option spent voice credit tally to the subtotal
+        perVOSpentVoiceCreditSubtotals[i].nums[numUsers] <== currentPerVOSpentVoiceCredits[i];
     }
 
     // Determine if we should skip leaf 0. This should only be the case if
@@ -156,6 +216,8 @@ template QuadVoteTally(
         //`mux.out` returns mux.c[0] if s == 0 and mux.c[1] otherwise
         voteOptionRootChecker[0].leaves[i] <== mux[i].out;
         voteOptionSubtotals[i].nums[0] <== mux[i].out;
+
+        perVOSpentVoiceCreditSubtotals[i].nums[0] <== mux[i].out * mux[i].out;
     }
 
     for (i = 1; i < numUsers; i++) {
@@ -171,12 +233,25 @@ template QuadVoteTally(
 
             // Calculate the sum of votes for each option.
             voteOptionSubtotals[j].nums[i] <== voteLeaves[i][j];
+
+            // Calculate the sum of voice credits for each option.
+            perVOSpentVoiceCreditSubtotals[j].nums[i] <== voteLeaves[i][j] * voteLeaves[i][j];
         }
 
         // Check that the computed vote option tree root matches the
         // corresponding value in the state leaf
         voteOptionRootChecker[i].root === stateLeaves[i][STATE_TREE_VOTE_OPTION_TREE_ROOT_IDX];
     }
+
+    component perVOSpentVoiceCreditTree = QuinCheckRoot(voteOptionTreeDepth);
+    for (i = 0; i < numVoteOptions; i++) {
+        perVOSpentVoiceCreditTree.leaves[i] <== perVOSpentVoiceCreditSubtotals[i].sum;
+    }
+
+    component newPerVOSpentVoiceCreditCommitmentHasher = HashLeftRight();
+    newPerVOSpentVoiceCreditCommitmentHasher.left <== perVOSpentVoiceCreditTree.root;
+    newPerVOSpentVoiceCreditCommitmentHasher.right <== newPerVOSpentVoiceCreditsSalt;
+    newPerVOSpentVoiceCreditsCommitment <== newPerVOSpentVoiceCreditCommitmentHasher.hash;
 
     // --- END
 

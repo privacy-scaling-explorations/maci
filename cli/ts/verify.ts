@@ -1,7 +1,9 @@
 import * as fs from 'fs'
 
 import {
+    genPerVOSpentVoiceCreditsCommitment,
     genTallyResultCommitment,
+    genSpentVoiceCreditsCommitment,
 } from 'maci-core'
 
 import {
@@ -36,6 +38,7 @@ const configureSubparser = (subparsers: any) => {
 }
 
 const verify = async (args: any) => {
+    // Read the tally file
     let contents
     try {
         contents = fs.readFileSync(args.tally_file, { encoding: 'utf8' })
@@ -44,6 +47,7 @@ const verify = async (args: any) => {
         return
     }
 
+    // Parse the tally file
     let data
     try {
         data = JSON.parse(contents)
@@ -52,37 +56,82 @@ const verify = async (args: any) => {
         return
     }
 
-    const validSalt = data.salt && data.salt.match(/0x[a-fA-F0-9]+/)
+    // Check the results salt
+    const validResultsSalt = data.results.salt && data.results.salt.match(/0x[a-fA-F0-9]+/)
 
-    if (!validSalt) {
-        console.error('Error: invalid salt')
+    if (!validResultsSalt) {
+        console.error('Error: invalid results salt')
         return
     }
 
-    const validCommitment = data.commitment && data.commitment.match(/0x[a-fA-F0-9]+/)
+    // Check the results commitment
+    const validResultsCommitment = data.results.commitment && data.results.commitment.match(/0x[a-fA-F0-9]+/)
 
-    if (!validCommitment) {
-        console.error('Error: invalid commitment format')
+    if (!validResultsCommitment) {
+        console.error('Error: invalid results commitment format')
         return
     }
 
-    // Ensure that the length of data.tally is a square root of 2
-    const depth = calcQuinTreeDepthFromMaxLeaves(data.tally.length)
+    // Ensure that the length of data.results.tally is a square root of 2
+    const depth = calcQuinTreeDepthFromMaxLeaves(data.results.tally.length)
     if (Math.floor(depth).toString() !== depth.toString()) {
-        console.error('Error: invalid tally field length')
+        console.error('Error: invalid results tally field length')
         return
     }
 
-    // Verify that the commitment matches the output of genTallyResultCommitment()
-    const tally = data.tally.map(bigInt)
-    const salt = bigInt(data.salt)
-    const commitment = bigInt(data.commitment)
+    // Verify that the results commitment matches the output of
+    // genTallyResultCommitment()
+    const tally = data.results.tally.map(bigInt)
+    const salt = bigInt(data.results.salt)
+    const resultsCommitment = bigInt(data.results.commitment)
 
-    const expectedCommitment = genTallyResultCommitment(tally, salt, depth)
-    if (expectedCommitment.toString() === commitment.toString()) {
-        console.log('The commitment in the specified file is correct given the tally and salt')
+    const expectedResultsCommitment = genTallyResultCommitment(tally, salt, depth)
+    if (expectedResultsCommitment.toString() === resultsCommitment.toString()) {
+        console.log('The results commitment in the specified file is correct given the tally and salt')
     } else {
-        console.error('Error: the commitment in the specified file is incorrect')
+        console.error('Error: the results commitment in the specified file is incorrect')
+        return
+    }
+
+    // Check the total spent voice credits salt
+    const validTvcSalt = data.totalVoiceCredits.salt && data.totalVoiceCredits.salt.match(/0x[a-fA-F0-9]+/)
+
+    if (!validTvcSalt) {
+        console.error('Error: invalid total spent voice credits results salt')
+        return
+    }
+
+    // Check the total spent voice credits commitment
+    const validTvcCommitment = data.totalVoiceCredits.commitment && data.totalVoiceCredits.commitment.match(/0x[a-fA-F0-9]+/)
+
+    if (!validTvcCommitment) {
+        console.error('Error: invalid total spent voice credits commitment format')
+        return
+    }
+
+    // Verify that the total spent voice credits commitment matches the output of
+    // genSpentVoiceCreditsCommitment()
+    const tvcSpent = bigInt(data.totalVoiceCredits.spent)
+    const tvcSalt = bigInt(data.totalVoiceCredits.salt)
+    const tvcCommitment = bigInt(data.totalVoiceCredits.commitment)
+    const expectedTvcCommitment = genSpentVoiceCreditsCommitment(tvcSpent, tvcSalt)
+    if (expectedTvcCommitment.toString() === tvcCommitment.toString()) {
+        console.log('The total spent voice credit commitment in the specified file is correct given the tally and salt')
+    } else {
+        console.error('Error: the total spent voice credit commitment in the specified file is incorrect')
+        return
+    }
+
+    const pvcTally = data.totalVoiceCreditsPerVoteOption.tally.map((x) => bigInt(x))
+    const pvcSalt = bigInt(data.totalVoiceCreditsPerVoteOption.salt)
+    const pvcCommitment = bigInt(data.totalVoiceCreditsPerVoteOption.commitment)
+
+    const expectedPvcCommitment = genPerVOSpentVoiceCreditsCommitment(pvcTally, pvcSalt, depth)
+
+    if (expectedPvcCommitment.toString() === pvcCommitment.toString()) {
+        console.log('The per vote option spent voice credit commitment in the specified file is correct given the tally and salt')
+    } else {
+        console.error('Error: the per vote option spent voice credit commitment in the specified file is incorrect')
         return
     }
 
@@ -116,11 +165,29 @@ const verify = async (args: any) => {
         provider,
     )
 
-    const onChainCommitment = bigInt((await maciContract.currentResultsCommitment()).toString())
-    if (onChainCommitment.toString() === expectedCommitment.toString()) {
-        console.log('The commitment in the MACI contract on-chain is valid')
+    const onChainResultsCommitment = bigInt((await maciContract.currentResultsCommitment()).toString())
+    if (onChainResultsCommitment.toString() === expectedResultsCommitment.toString()) {
+        console.log('The results commitment in the MACI contract on-chain is valid')
     } else {
-        console.error('Error: the commitment in the MACI contract does not match the expected commitment')
+        console.error('Error: the results commitment in the MACI contract does not match the expected commitment')
+    }
+
+    const onChainTvcCommitment = bigInt(
+        (await maciContract.currentSpentVoiceCreditsCommitment()).toString()
+    )
+    if (onChainTvcCommitment.toString() === expectedTvcCommitment.toString()) {
+        console.log('The total spent voice credit commitment in the MACI contract on-chain is valid')
+    } else {
+        console.error('Error: the total spent voice credit commitment in the MACI contract does not match the expected commitment')
+    }
+
+    const onChainPvcCommitment = bigInt(
+        (await maciContract.currentPerVOSpentVoiceCreditsCommitment()).toString()
+    )
+    if (onChainPvcCommitment.toString() === expectedPvcCommitment.toString()) {
+        console.log('The per vote option spent voice credit commitment in the MACI contract on-chain is valid')
+    } else {
+        console.error('Error: the per vote option spent voice credit commitment in the MACI contract does not match the expected commitment')
     }
 }
 

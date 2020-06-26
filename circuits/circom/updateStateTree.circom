@@ -29,7 +29,7 @@ template ValidateIndices() {
 
 template CheckValidUpdate() {
     signal input valid_signature;
-    signal input sufficient_vote_credits;
+    signal input sufficient_voice_credits;
     signal input correct_nonce;
     signal input valid_state_leaf_index;
     signal input valid_vote_options_leaf_index;
@@ -38,7 +38,7 @@ template CheckValidUpdate() {
 
     component valid_update = IsEqual();
     valid_update.in[0] <== 5;
-    valid_update.in[1] <== valid_signature + sufficient_vote_credits + correct_nonce + valid_state_leaf_index + valid_vote_options_leaf_index;
+    valid_update.in[1] <== valid_signature + sufficient_voice_credits + correct_nonce + valid_state_leaf_index + valid_vote_options_leaf_index;
 
     out <== valid_update.out;
 }
@@ -246,7 +246,7 @@ template UpdateStateTree(
     var STATE_TREE_PUBLIC_KEY_X_IDX = 0;
     var STATE_TREE_PUBLIC_KEY_Y_IDX = 1;
     var STATE_TREE_VOTE_OPTION_TREE_ROOT_IDX = 2;
-    var STATE_TREE_VOTE_BALANCE_IDX = 3;
+    var STATE_TREE_VOICE_CREDIT_BALANCE_IDX = 3;
     var STATE_TREE_NONCE_IDX = 4;
 
     var STATE_TREE_DATA_LENGTH = 5;
@@ -256,11 +256,7 @@ template UpdateStateTree(
     var VOTE_OPTION_TREE_BASE = 5;
     var VOTE_OPTION_TREE_PATH_ELEMENTS_LENGTH = VOTE_OPTION_TREE_BASE - 1;
 
-    // Select vote option index's weight
-    // (a.k.a the raw value of the leaf pre-hash)
     signal private input vote_options_leaf_raw;
-
-    // Vote options tree root (supplied by coordinator)
     signal private input vote_options_tree_root;
     signal private input vote_options_tree_path_elements[vote_options_tree_depth][VOTE_OPTION_TREE_PATH_ELEMENTS_LENGTH];
     signal private input vote_options_tree_path_index[vote_options_tree_depth];
@@ -355,22 +351,27 @@ template UpdateStateTree(
     // *************** END perform checks before update ***************
 
     // *************** BEGIN perform update ***************
-    // Calculate new vote credits
+
+    // Calculate the new voice credit balance
     signal vote_options_leaf_squared;
-    vote_options_leaf_squared <== vote_options_leaf_raw * vote_options_leaf_raw;
+    vote_options_leaf_squared <== vote_options_leaf_raw *
+                                  vote_options_leaf_raw;
 
     signal user_vote_weight_squared;
-    user_vote_weight_squared <== decrypted_command_out[CMD_VOTE_WEIGHT_IDX] * decrypted_command_out[CMD_VOTE_WEIGHT_IDX];
+    user_vote_weight_squared <== decrypted_command_out[CMD_VOTE_WEIGHT_IDX] *
+                                 decrypted_command_out[CMD_VOTE_WEIGHT_IDX];
 
-    signal new_vote_credits;
-    new_vote_credits <== state_tree_data_raw[STATE_TREE_VOTE_BALANCE_IDX] + vote_options_leaf_squared - user_vote_weight_squared;
+    signal new_voice_credit_balance;
+    new_voice_credit_balance <== state_tree_data_raw[STATE_TREE_VOICE_CREDIT_BALANCE_IDX] +
+                                 vote_options_leaf_squared -
+                                 user_vote_weight_squared;
 
-    // Construct new state tree data (and its hash)
+    // Update the state leaf
     signal new_state_tree_data[STATE_TREE_DATA_LENGTH];
     new_state_tree_data[0] <== decrypted_command_out[CMD_PUBLIC_KEY_X_IDX];
     new_state_tree_data[1] <== decrypted_command_out[CMD_PUBLIC_KEY_Y_IDX];
     new_state_tree_data[2] <== new_vote_options_tree_root;
-    new_state_tree_data[3] <== new_vote_credits;
+    new_state_tree_data[3] <== new_voice_credit_balance;
     new_state_tree_data[4] <== decrypted_command_out[CMD_NONCE_IDX];
 
     component new_state_tree_leaf = Hasher5();
@@ -378,14 +379,14 @@ template UpdateStateTree(
         new_state_tree_leaf.in[i] <== new_state_tree_data[i];
     }
 
-    // Checks to see if its a valid update
+    // Checks to see if it's a valid update
     component valid_signature = IsEqual();
     valid_signature.in[0] <== signature_verifier_valid;
     valid_signature.in[1] <== 1;
 
-    component sufficient_vote_credits = GreaterEqThan(32);
-    sufficient_vote_credits.in[0] <== new_vote_credits;
-    sufficient_vote_credits.in[1] <== 0;
+    component sufficient_voice_credits = GreaterEqThan(32);
+    sufficient_voice_credits.in[0] <== new_voice_credit_balance;
+    sufficient_voice_credits.in[1] <== 0;
 
     component correct_nonce = IsEqual();
     correct_nonce.in[0] <== decrypted_command_out[CMD_NONCE_IDX];
@@ -399,10 +400,10 @@ template UpdateStateTree(
     valid_vote_options_leaf_index.in[0] <== decrypted_command_out[CMD_VOTE_OPTION_INDEX_IDX];
     valid_vote_options_leaf_index.in[1] <== vote_options_max_leaf_index;
 
-    // No-op happens if there's an invalid update
+    // No-op if there's an invalid update
     component check_valid_update = CheckValidUpdate();
     check_valid_update.valid_signature <== valid_signature.out;
-    check_valid_update.sufficient_vote_credits <== sufficient_vote_credits.out;
+    check_valid_update.sufficient_voice_credits <== sufficient_voice_credits.out;
     check_valid_update.correct_nonce <== correct_nonce.out;
     check_valid_update.valid_state_leaf_index <== valid_state_leaf_index.out;
     check_valid_update.valid_vote_options_leaf_index <== valid_vote_options_leaf_index.out;
