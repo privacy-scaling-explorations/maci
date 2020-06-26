@@ -36,6 +36,7 @@ import {
 
 import {
     MaciState,
+    genPerVOSpentVoiceCreditsCommitment,
     genTallyResultCommitment,
     genSpentVoiceCreditsCommitment,
 } from 'maci-core'
@@ -78,6 +79,11 @@ const users: any[] = []
 
 let totalVoteWeight = bigInt(0)
 let newSpentVoiceCreditsSalt: SnarkBigInt
+let newPerVOSpentVoiceCreditsSalt: SnarkBigInt
+const emptyTally: SnarkBigInt[] = []
+for (let i = 0; i < 5 ** voteOptionTreeDepth; i ++) {
+    emptyTally[i] = bigInt(0)
+}
 
 let maciContract
 let stateRootBefore
@@ -95,10 +101,11 @@ describe('BatchProcessMessage', () => {
         // Create users, a command per user, and its associated key and message
         for (let i = 0; i < accounts.length; i++) {
             const keypair = new Keypair()
+            const voteOptionIndex = 0
             const command = new Command(
                 bigInt(i + 1),
                 keypair.pubKey,
-                bigInt(0),
+                bigInt(voteOptionIndex),
                 bigInt(i),
                 bigInt(1),
                 genRandomSalt(),
@@ -288,6 +295,9 @@ describe('BatchProcessMessage', () => {
             const currentSpentVoiceCreditsSalt = bigInt(0)
             newSpentVoiceCreditsSalt = genRandomSalt()
 
+            const currentPerVOSpentVoiceCreditsSalt = bigInt(0)
+            newPerVOSpentVoiceCreditsSalt = genRandomSalt()
+
             // Generate circuit inputs
             const circuitInputs 
                 = maciState.genQuadVoteTallyCircuitInputs(
@@ -297,6 +307,8 @@ describe('BatchProcessMessage', () => {
                     newResultsSalt,
                     currentSpentVoiceCreditsSalt,
                     newSpentVoiceCreditsSalt,
+                    currentPerVOSpentVoiceCreditsSalt,
+                    newPerVOSpentVoiceCreditsSalt,
                 )
 
             const circuit = await compileAndLoadCircuit('test/quadVoteTally_test.circom')
@@ -324,6 +336,21 @@ describe('BatchProcessMessage', () => {
             expect(newSpentVoiceCreditsCommitmentOutput.toString())
                 .toEqual(newSpentVoiceCreditsCommitment.toString())
 
+            const perVOSpentVoiceCredits = maciState.computeBatchPerVOSpentVoiceCredits(
+                startIndex,
+                quadVoteTallyBatchSize,
+            )
+            // Check the commitment to the per vote option spent voice credits
+            const newPerVOSpentVoiceCreditsCommitment = genPerVOSpentVoiceCreditsCommitment(
+                perVOSpentVoiceCredits,
+                newPerVOSpentVoiceCreditsSalt,
+                voteOptionTreeDepth,
+            )
+            const newPerVOSpentVoiceCreditsCommitmentOutput = witness[circuit.getSignalIdx('main.newPerVOSpentVoiceCreditsCommitment')]
+
+            expect(newPerVOSpentVoiceCreditsCommitmentOutput.toString())
+                .toEqual(newPerVOSpentVoiceCreditsCommitment.toString())
+
             console.log('Generating proof...')
             const { proof, publicSignals } = genQvtProofAndPublicSignals(witness)
 
@@ -331,17 +358,24 @@ describe('BatchProcessMessage', () => {
                 circuitInputs.intermediateStateRoot.toString(),
                 newResultsCommitment.toString(),
                 newSpentVoiceCreditsCommitment.toString(),
+                newPerVOSpentVoiceCreditsCommitment.toString(),
             )
 
             const currentSpentVoiceCreditsCommitment = genSpentVoiceCreditsCommitment(0, currentSpentVoiceCreditsSalt)
-
+            const currentPerVOSpentVoiceCreditsCommitment = genPerVOSpentVoiceCreditsCommitment(
+                emptyTally,
+                currentPerVOSpentVoiceCreditsSalt,
+                voteOptionTreeDepth,
+            )
             expect(publicSignals[0].toString()).toEqual(newResultsCommitment.toString())
             expect(publicSignals[1].toString()).toEqual(newSpentVoiceCreditsCommitment.toString())
-            expect(publicSignals[2].toString()).toEqual(maciState.genStateRoot().toString())
-            expect(publicSignals[3].toString()).toEqual('0')
-            expect(publicSignals[4].toString()).toEqual(circuitInputs.intermediateStateRoot.toString())
-            expect(publicSignals[5].toString()).toEqual(circuitInputs.currentResultsCommitment.toString())
-            expect(publicSignals[6].toString()).toEqual(currentSpentVoiceCreditsCommitment.toString())
+            expect(publicSignals[2].toString()).toEqual(newPerVOSpentVoiceCreditsCommitment.toString())
+            expect(publicSignals[3].toString()).toEqual(maciState.genStateRoot().toString())
+            expect(publicSignals[4].toString()).toEqual('0')
+            expect(publicSignals[5].toString()).toEqual(circuitInputs.intermediateStateRoot.toString())
+            expect(publicSignals[6].toString()).toEqual(circuitInputs.currentResultsCommitment.toString())
+            expect(publicSignals[7].toString()).toEqual(currentSpentVoiceCreditsCommitment.toString())
+            expect(publicSignals[8].toString()).toEqual(currentPerVOSpentVoiceCreditsCommitment.toString())
 
             expect(JSON.stringify(publicSignals.map((x) => x.toString()))).toEqual(
                 JSON.stringify(contractPublicSignals.map((x) => x.toString()))
@@ -356,6 +390,7 @@ describe('BatchProcessMessage', () => {
                 circuitInputs.intermediateStateRoot.toString(),
                 newResultsCommitment.toString(),
                 newSpentVoiceCreditsCommitment.toString(),
+                newPerVOSpentVoiceCreditsCommitment.toString(),
                 formattedProof,
                 { gasLimit: 1000000 },
             )

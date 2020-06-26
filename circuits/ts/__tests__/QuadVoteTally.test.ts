@@ -1,5 +1,6 @@
 import { config } from 'maci-config'
 import { 
+    genPerVOSpentVoiceCreditsCommitment,
     genTallyResultCommitment,
     genSpentVoiceCreditsCommitment,
     MaciState,
@@ -92,8 +93,12 @@ describe('Quadratic vote tallying circuit', () => {
 
         const currentResultsSalt = bigInt(0)
         const newResultsSalt = genRandomSalt()
+
         const currentSpentVoiceCreditsSalt = bigInt(0)
         const newSpentVoiceCreditsSalt = genRandomSalt()
+
+        const currentPerVOSpentVoiceCreditsCommitment = bigInt(0)
+        const newPerVOSpentVoiceCreditsSalt = genRandomSalt()
 
         // Generate circuit inputs
         const circuitInputs 
@@ -104,17 +109,22 @@ describe('Quadratic vote tallying circuit', () => {
                 newResultsSalt,
                 currentSpentVoiceCreditsSalt,
                 newSpentVoiceCreditsSalt,
+                currentPerVOSpentVoiceCreditsCommitment,
+                newPerVOSpentVoiceCreditsSalt,
             )
 
         expect(circuitInputs.stateLeaves.length).toEqual(quadVoteTallyBatchSize)
 
         const witness = circuit.calculateWitness(stringifyBigInts(circuitInputs))
         expect(circuit.checkWitness(witness)).toBeTruthy()
+
+        // Check the result tally commitment
         const expectedResultsCommitmentOutput = witness[circuit.getSignalIdx('main.newResultsCommitment')]
         const expectedResultsCommitment = genTallyResultCommitment(tally, newResultsSalt, voteOptionTreeDepth)
 
         expect(expectedResultsCommitmentOutput.toString()).toEqual(expectedResultsCommitment.toString())
 
+        // Check the total spent voice credit commitment
         const expectedSpentVoiceCreditsCommitmentOutput =
             witness[circuit.getSignalIdx('main.newSpentVoiceCreditsCommitment')]
 
@@ -124,5 +134,21 @@ describe('Quadratic vote tallying circuit', () => {
         )
         expect(expectedSpentVoiceCreditsCommitmentOutput.toString())
             .toEqual(expectedSpentVoiceCreditsCommitment.toString())
+
+        // Check the total spent voice credit commitment per vote option
+        const perVOSpentVoiceCredits = maciState.computeBatchPerVOSpentVoiceCredits(
+            startIndex,
+            quadVoteTallyBatchSize,
+        )
+        const expectedPerVOSpentVoiceCreditsCommitment = genPerVOSpentVoiceCreditsCommitment(
+            perVOSpentVoiceCredits,
+            newPerVOSpentVoiceCreditsSalt,
+            voteOptionTreeDepth,
+        )
+        const expectedPerVOSpentVoiceCreditsCommitmentOutput =
+            witness[circuit.getSignalIdx('main.newPerVOSpentVoiceCreditsCommitment')]
+
+        expect(expectedPerVOSpentVoiceCreditsCommitmentOutput.toString())
+            .toEqual(expectedPerVOSpentVoiceCreditsCommitment.toString())
     })
 })

@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 
 import {
+    genPerVOSpentVoiceCreditsCommitment,
     genTallyResultCommitment,
     genSpentVoiceCreditsCommitment,
 } from 'maci-core'
@@ -121,6 +122,19 @@ const verify = async (args: any) => {
         return
     }
 
+    const pvcTally = data.totalVoiceCreditsPerVoteOption.tally.map((x) => bigInt(x))
+    const pvcSalt = bigInt(data.totalVoiceCreditsPerVoteOption.salt)
+    const pvcCommitment = bigInt(data.totalVoiceCreditsPerVoteOption.commitment)
+
+    const expectedPvcCommitment = genPerVOSpentVoiceCreditsCommitment(pvcTally, pvcSalt, depth)
+
+    if (expectedPvcCommitment.toString() === pvcCommitment.toString()) {
+        console.log('The per vote option spent voice credit commitment in the specified file is correct given the tally and salt')
+    } else {
+        console.error('Error: the per vote option spent voice credit commitment in the specified file is incorrect')
+        return
+    }
+
     const maciAddress = data.maci
 
     // MACI contract
@@ -165,6 +179,15 @@ const verify = async (args: any) => {
         console.log('The total spent voice credit commitment in the MACI contract on-chain is valid')
     } else {
         console.error('Error: the total spent voice credit commitment in the MACI contract does not match the expected commitment')
+    }
+
+    const onChainPvcCommitment = bigInt(
+        (await maciContract.currentPerVOSpentVoiceCreditsCommitment()).toString()
+    )
+    if (onChainPvcCommitment.toString() === expectedPvcCommitment.toString()) {
+        console.log('The per vote option spent voice credit commitment in the MACI contract on-chain is valid')
+    } else {
+        console.error('Error: the per vote option spent voice credit commitment in the MACI contract does not match the expected commitment')
     }
 }
 

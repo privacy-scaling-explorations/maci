@@ -1,4 +1,3 @@
-
 import { compileAndLoadCircuit } from '../'
 import { config } from 'maci-config'
 import { MaciState } from 'maci-core'

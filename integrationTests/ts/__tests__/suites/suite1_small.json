@@ -35,5 +35,6 @@
         }
     ],
     "expectedTally": [1, 1, 10, 1, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "expectedSpentVoiceCredits": [1, 1, 100, 1, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "expectedTotalSpentVoiceCredits": 203
 }

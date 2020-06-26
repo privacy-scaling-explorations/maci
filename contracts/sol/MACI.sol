@@ -56,6 +56,9 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
     // To store hashLeftRight(0, 0). We precompute it here to save gas.
     uint256 public currentSpentVoiceCreditsCommitment = hashLeftRight(0, 0);
 
+    // To store hashLeftRight(Merkle root of 5 ** voteOptionTreeDepth zeros, 0)
+    uint256 public currentPerVOSpentVoiceCreditsCommitment;
+
     // The maximum number of leaves, minus one, of meaningful vote options.
     uint256 public voteOptionsMaxLeafIndex;
 
@@ -174,6 +177,7 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         // Calculate and store a commitment to 5 ** voteOptionTreeDepth zeros,
         // and a salt of 0.
         currentResultsCommitment = hashLeftRight(emptyVoteOptionTreeRoot, 0);
+        currentPerVOSpentVoiceCreditsCommitment = currentResultsCommitment;
 
         // Compute the hash of a blank state leaf
         uint256 h = hashedBlankStateLeaf();
@@ -487,18 +491,21 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
     function genQvtPublicSignals(
         uint256 _intermediateStateRoot,
         uint256 _newResultsCommitment,
-        uint256 _newSpentVoiceCreditsCommitment
-    ) public view returns (uint256[7] memory) {
+        uint256 _newSpentVoiceCreditsCommitment,
+        uint256 _newPerVOSpentVoiceCreditsCommitment
+    ) public view returns (uint256[9] memory) {
 
-        uint256[7] memory publicSignals;
+        uint256[9] memory publicSignals;
 
         publicSignals[0] = _newResultsCommitment;
         publicSignals[1] = _newSpentVoiceCreditsCommitment;
-        publicSignals[2] = postSignUpStateRoot;
-        publicSignals[3] = currentQvtBatchNum;
-        publicSignals[4] = _intermediateStateRoot;
-        publicSignals[5] = currentResultsCommitment;
-        publicSignals[6] = currentSpentVoiceCreditsCommitment;
+        publicSignals[2] = _newPerVOSpentVoiceCreditsCommitment;
+        publicSignals[3] = postSignUpStateRoot;
+        publicSignals[4] = currentQvtBatchNum;
+        publicSignals[5] = _intermediateStateRoot;
+        publicSignals[6] = currentResultsCommitment;
+        publicSignals[7] = currentSpentVoiceCreditsCommitment;
+        publicSignals[8] = currentPerVOSpentVoiceCreditsCommitment;
 
         return publicSignals;
     }
@@ -533,6 +540,7 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         uint256 _intermediateStateRoot,
         uint256 _newResultsCommitment,
         uint256 _newSpentVoiceCreditsCommitment,
+        uint256 _newPerVOSpentVoiceCreditsCommitment,
         uint256[8] memory _proof
     ) 
     public {
@@ -547,10 +555,12 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         );
 
         // Generate the public signals
-        uint256[7] memory publicSignals = genQvtPublicSignals(
+        // public 'input' signals = [output signals, public inputs]
+        uint256[9] memory publicSignals = genQvtPublicSignals(
             _intermediateStateRoot,
             _newResultsCommitment,
-            _newSpentVoiceCreditsCommitment
+            _newSpentVoiceCreditsCommitment,
+            _newPerVOSpentVoiceCreditsCommitment
         );
 
         // Unpack the snark proof
@@ -571,10 +581,18 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         // Save the commitment to the total spent voice credits for the next batch
         currentSpentVoiceCreditsCommitment = _newSpentVoiceCreditsCommitment;
 
+        // Save the commitment to the per voice credit spent voice credits for the next batch
+        currentPerVOSpentVoiceCreditsCommitment = _newPerVOSpentVoiceCreditsCommitment;
+
         // Increment the batch #
         currentQvtBatchNum ++;
     }
 
+    /*
+     * Verify the result of the vote tally using a Merkle proof and the salt.
+     * This function can also verify the number of voice credits spent per vote
+     * option as the commitment is computed in the same way.
+     */
     function verifyTallyResult(
         uint8 _depth,
         uint256 _index,
@@ -593,6 +611,12 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         return computedCommitment == currentResultsCommitment;
     }
 
+    /*
+     * Verify the total number of spent voice credits.
+     * @param _spent The value to verify
+     * @param _salt The salt which is hashed with the value to generate the
+     *              commitment to the spent voice credits.
+     */
     function verifySpentVoiceCredits(
         uint256 _spent,
         uint256 _salt

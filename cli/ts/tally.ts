@@ -8,6 +8,7 @@ import {
 } from 'maci-crypto'
 
 import { 
+    genPerVOSpentVoiceCreditsCommitment,
     genTallyResultCommitment,
     genSpentVoiceCreditsCommitment,
 } from 'maci-core'
@@ -144,6 +145,16 @@ const configureSubparser = (subparsers: any) => {
             help: 'The secret salt which is hashed along with the current total number of spent voice credits to produce the current total voice credits commitment input to the snark.',
         }
     )
+
+    parser.addArgument(
+        ['-pvc', '--current-per-vo-vc-salt'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The secret salt which is hashed along with the current total number of spent voice credits per vote option to produce the current total voice credits commitment input to the snark.',
+        }
+    )
+
     parser.addArgument(
         ['-t', '--tally-file'],
         {
@@ -163,7 +174,7 @@ const tally = async (args: any) => {
     }
 
     if (!validateSaltSize(args.current_results_salt)) {
-        console.error('Error: the current results salt should less than the BabyJub field size')
+        console.error('Error: the current results salt should be less than the BabyJub field size')
         return
     }
 
@@ -174,12 +185,24 @@ const tally = async (args: any) => {
     }
 
     if (!validateSaltSize(args.current_total_vc_salt)) {
-        console.error('Error: the current total spent voice credits salt should less than the BabyJub field size')
+        console.error('Error: the current total spent voice credits salt should be less than the BabyJub field size')
+        return
+    }
+
+    // Current per vote option spent voice credits salt
+    if (!validateSaltFormat(args.current_per_vo_vc_salt)) {
+        console.error('Error: the current spent voice credits per vote option salt should be a 32-byte hexadecimal string')
+        return
+    }
+
+    if (!validateSaltSize(args.current_per_vo_vc_salt)) {
+        console.error('Error: the current spent voice credits per vote option salt should be less than the BabyJub field size')
         return
     }
 
     let currentResultsSalt = bigInt(args.current_results_salt)
     let currentTvcSalt = bigInt(args.current_total_vc_salt)
+    let currentPvcSalt = bigInt(args.current_per_vo_vc_salt)
 
     // Zeroth leaf
     const serialized = args.leaf_zero
@@ -324,8 +347,14 @@ const tally = async (args: any) => {
             return
         }
 
+        if (startIndex.equals(bigInt(0)) && !currentPvcSalt.equals(bigInt(0))) {
+            console.error('Error: the first current spent voice credits per vote option salt should be zero')
+            return
+        }
+
         const newResultsSalt = genRandomSalt()
         const newSpentVoiceCreditsSalt = genRandomSalt()
+        const newPerVOSpentVoiceCreditsSalt = genRandomSalt()
 
         // Generate circuit inputs
         const circuitInputs 
@@ -336,11 +365,14 @@ const tally = async (args: any) => {
                 newResultsSalt,
                 currentTvcSalt,
                 newSpentVoiceCreditsSalt,
+                currentPvcSalt,
+                newPerVOSpentVoiceCreditsSalt,
             )
 
         // Update the salts for the next iteration
         currentResultsSalt = bigInt(circuitInputs.newResultsSalt)
         currentTvcSalt = bigInt(circuitInputs.newSpentVoiceCreditsSalt)
+        currentPvcSalt = bigInt(circuitInputs.newPerVOSpentVoiceCreditsSalt)
 
         const witness = circuit.calculateWitness(circuitInputs)
 
@@ -351,6 +383,7 @@ const tally = async (args: any) => {
 
         const { proof, publicSignals } = genQvtProofAndPublicSignals(witness)
 
+        // The vote tally commmitment
         const expectedNewResultsCommitmentOutput = witness[circuit.getSignalIdx('main.newResultsCommitment')]
 
         const newResultsCommitment = genTallyResultCommitment(
@@ -364,6 +397,10 @@ const tally = async (args: any) => {
             return
         }
 
+        // The commitment to the total spent voice credits
+        const expectedSpentVoiceCreditsCommitmentOutput =
+            witness[circuit.getSignalIdx('main.newSpentVoiceCreditsCommitment')]
+
         const currentSpentVoiceCredits = maciState.computeCumulativeSpentVoiceCredits(startIndex)
 
         const newSpentVoiceCredits = 
@@ -375,10 +412,44 @@ const tally = async (args: any) => {
             currentTvcSalt,
         )
 
+        if (expectedSpentVoiceCreditsCommitmentOutput.toString() !== newSpentVoiceCreditsCommitment.toString()) {
+            console.error('Error: total spent voice credits commitment mismatch')
+            return
+        }
+
+        // The commitment to the spent voice credits per vote option
+        const expectedPerVOSpentVoiceCreditsCommitmentOutput =
+            witness[circuit.getSignalIdx('main.newPerVOSpentVoiceCreditsCommitment')]
+
+        const currentPerVOSpentVoiceCredits 
+            = maciState.computeCumulativePerVOSpentVoiceCredits(startIndex)
+
+        const perVOSpentVoiceCredits = maciState.computeBatchPerVOSpentVoiceCredits(
+            startIndex,
+            batchSize,
+        )
+
+        const totalPerVOSpentVoiceCredits: SnarkBigInt[] = []
+        for (let i = 0; i < currentPerVOSpentVoiceCredits.length; i ++) {
+            totalPerVOSpentVoiceCredits[i] = currentPerVOSpentVoiceCredits[i] + perVOSpentVoiceCredits[i]
+        }
+
+        const newPerVOSpentVoiceCreditsCommitment = genPerVOSpentVoiceCreditsCommitment(
+            totalPerVOSpentVoiceCredits,
+            newPerVOSpentVoiceCreditsSalt,
+            maciState.voteOptionTreeDepth,
+        )
+
+        if (expectedPerVOSpentVoiceCreditsCommitmentOutput.toString() !== newPerVOSpentVoiceCreditsCommitment.toString()) {
+            console.error('Error: total spent voice credits per vote option commitment mismatch')
+            return
+        }
+
         const contractPublicSignals = await maciContract.genQvtPublicSignals(
             circuitInputs.intermediateStateRoot.toString(),
             newResultsCommitment.toString(),
             newSpentVoiceCreditsCommitment.toString(),
+            newPerVOSpentVoiceCreditsCommitment.toString(),
         )
 
         const publicSignalMatch = JSON.stringify(publicSignals.map((x) => x.toString())) ===
@@ -406,6 +477,7 @@ const tally = async (args: any) => {
                 circuitInputs.intermediateStateRoot.toString(),
                 newResultsCommitment.toString(),
                 newSpentVoiceCreditsCommitment.toString(),
+                newPerVOSpentVoiceCreditsCommitment.toString(),
                 formattedProof,
                 { gasLimit: 2000000 },
             )
@@ -436,6 +508,11 @@ const tally = async (args: any) => {
             const d = bigInt(currentSpentVoiceCreditsCommitment.toString())
             console.log(`Total spent voice credits commitment: 0x${d.toString(16)}`)
 
+            console.log(`Total spent voice credits per vote option salt: 0x${currentPvcSalt.toString(16)}`)
+			const currentPerVOSpentVoiceCreditsCommitment = await maciContract.currentPerVOSpentVoiceCreditsCommitment()
+            const e = bigInt(currentPerVOSpentVoiceCreditsCommitment.toString())
+            console.log(`Total spent voice credits per vote option commitment: 0x${e.toString(16)}`)
+
             if (args.tally_file) {
                 // Write tally to a file
                 const d = {
@@ -450,7 +527,12 @@ const tally = async (args: any) => {
                         spent: newSpentVoiceCredits.toString(),
                         commitment: '0x' + newSpentVoiceCreditsCommitment.toString(16),
                         salt: '0x' + newSpentVoiceCreditsSalt.toString(16),
-                    }
+                    },
+                    totalVoiceCreditsPerVoteOption: {
+                        commitment: '0x' + newPerVOSpentVoiceCreditsCommitment.toString(16),
+                        tally: perVOSpentVoiceCredits.map((x) => x.toString()),
+                        salt: '0x' + newPerVOSpentVoiceCreditsSalt.toString(16),
+                    },
                 }
 
                 // Format the JSON file with spaces

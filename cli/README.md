@@ -186,6 +186,7 @@ Fields that the coordinator has to set:
 | The serialised state leaf preimage at index 0 | `-z` or `--leaf-zero` | |
 | The current results salt | `-c` or `--current-results-salt` | The secret salt which is hashed along with the current results to produce the current result commitment input to the snark. |
 | The current total voice credits salt | `-tvc` or `--current-total-vc-salt` | The secret salt which is hashed along with the current total number of spent voice credits to produce the current total voice credits commitment input to the snark. |
+| The current per vote option voice credits salt | `-pvc` or `--current-per-vo-vc-salt` | The secret salt which is hashed along with the current total number of spent voice credits per vote option to produce the current total voice credits commitment input to the snark. |
 | The final tally file | `-t` or `--tally-file` | A filepath in which to save the final vote tally and salt. |
 
 ### Anyone: Verify a vote tally
@@ -382,6 +383,7 @@ NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js tally \
 	-r \
 	-c 0x0 \
 	-tvc 0x0 \
+	-pvc 0x0 \
 	-t tally.json \
 	-z <PASTE RANDOM STATE LEAF HERE>
 ```
@@ -435,6 +437,37 @@ The file `tally.json` will now contain something like the following:
         "spent": "81",
         "commitment": "0x2d55a42ec1da99227125cf9562aa91aad12e2f1387ccf3411da79b0a953d69a6",
         "salt": "0xfc95a102f3c66d92d7a5700f1e12a6f2325c54a10efa0e1178cc21b67f0d97c"
+    },
+    "totalVoiceCreditsPerVoteOption": {
+        "commitment": "0x18526f481cf2476543c8dcc3762f3a54af8e217d3d048810856623367ef4ba14",
+        "tally": [
+            "81",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0"
+        ],
+        "salt": "0x1f17d2ff16b9791ef4b1849bfccf420b9fece161e419ad4f8b1ef726c62e3943"
     }
 }
 ```
@@ -450,6 +483,8 @@ Example output:
 ```
 The results commitment in the specified file is correct given the tally and salt
 The total spent voice credit commitment in the specified file is correct given the tally and salt
+The per vote option spent voice credit commitment in the specified file is correct given the tally and salt
 The results commitment in the MACI contract on-chain is valid
 The total spent voice credit commitment in the MACI contract on-chain is valid
+The per vote option spent voice credit commitment in the MACI contract on-chain is valid
 ```
