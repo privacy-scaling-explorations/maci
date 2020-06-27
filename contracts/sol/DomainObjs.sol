@@ -2,15 +2,9 @@ pragma experimental ABIEncoderV2;
 pragma solidity ^0.5.0;
 
 import { Hasher } from "./Hasher.sol";
-import { MACIPubKey } from "./MACIPubKey.sol";
+import { MACISharedObjs } from "./MACISharedObjs.sol";
 
-contract DomainObjs is Hasher, MACIPubKey {
-    uint8 constant MESSAGE_DATA_LENGTH = 10;
-    struct Message {
-        uint256 iv;
-        uint256[MESSAGE_DATA_LENGTH] data;
-    }
-
+contract DomainObjs is Hasher, MACISharedObjs {
     struct StateLeaf {
         PubKey pubKey;
         uint256 voteOptionTreeRoot;
