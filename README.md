@@ -15,14 +15,12 @@ We welcome contributions to this project. Please join our
 You should have Node 11.14.0 installed. Use
 [`nvm`](https://github.com/nvm-sh/nvm) to install it.
 
-You also need [Solidity 0.5.16](https://github.com/ethereum/solidity/releases/tag/v0.5.16) installed in your `PATH`.
-
 ### Get started
 
 Clone this repository, install NodeJS dependencies, and build the source code:
 
 ```bash
-git clone git@github.com:barryWhiteHat/maci.git && \
+git clone git@github.com:appliedzkp/maci.git && \
 npm i && \
 npm run bootstrap && \
 npm run build
@@ -35,7 +33,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
 Also install [`zkutil`](https://github.com/poma/zkutil) v0.2.1 and ensure that
-the `zkutil` binary is in the `~/.cargo/bin/` directory. You can configure the
+the `zkutil` binary is in the `~/.cargo/bin/` directory. You can [configure](https://lorenwest.github.io/node-config/) the
 path to this binary via `maci-config` (see `config/test.yaml` for an example).
 
 ```bash
@@ -61,7 +59,12 @@ very quickly, we no longer maintain them.
 
 Note that if you change the circuits and recompile them, you should
 also update and recompile the verifier contracts in `contracts/sol`
-with their new versions, or the tests will fail.
+with their new versions, or the tests will fail:
+
+```bash
+cd contracts
+npm run compileSol
+```
 
 ### Demo
 
@@ -112,17 +115,17 @@ cd contracts
 npm run ganache
 ```
 
-or
-
-```bash
-cd integrationTests &&
-./scripts/runTestsInCircleCi.sh
-```
-
 In another terminal, run the tests individually:
 
 ```bash
 cd contracts
+./scripts/runTestsInCircleCi.sh
+```
+
+or
+
+```bash
+cd integrationTests
 ./scripts/runTestsInCircleCi.sh
 ```
 

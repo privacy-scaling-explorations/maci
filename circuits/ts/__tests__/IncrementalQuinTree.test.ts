@@ -58,8 +58,6 @@ describe('Quin Merkle Tree circuits', () => {
             const isValid = IncrementalQuinTree.verifyMerklePath(
                 path,
                 tree.hashFunc,
-                tree.depth,
-                tree.root,
             )
             expect(isValid).toBeTruthy()
 
@@ -149,8 +147,6 @@ describe('Quin Merkle Tree circuits', () => {
             const isValid = IncrementalQuinTree.verifyMerklePath(
                 path,
                 tree.hashFunc,
-                tree.depth,
-                tree.root,
             )
             expect(isValid).toBeTruthy()
 
@@ -176,8 +172,6 @@ describe('Quin Merkle Tree circuits', () => {
             const isValid = IncrementalQuinTree.verifyMerklePath(
                 path,
                 tree.hashFunc,
-                tree.depth,
-                tree.root,
             )
             expect(isValid).toBeTruthy()
 

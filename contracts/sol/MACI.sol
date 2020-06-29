@@ -292,7 +292,6 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
     /*
      * Allows anyone to publish a message (an encrypted command and signature).
      * This function also inserts it into the message tree.
-     * @param _userPubKey The user's desired public key.
      * @param _message The message to publish
      * @param _encPubKey An epheremal public key which can be combined with the
      *     coordinator's private key to generate an ECDH shared key which which was

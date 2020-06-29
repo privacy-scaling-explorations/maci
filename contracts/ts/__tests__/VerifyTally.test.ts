@@ -3,7 +3,6 @@ import { genTestAccounts } from '../accounts'
 import { config } from 'maci-config'
 import {
     hashLeftRight,
-    genRandomSalt,
     bigInt,
     IncrementalQuinTree,
 } from 'maci-crypto'
