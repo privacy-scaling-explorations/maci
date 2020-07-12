@@ -3,7 +3,9 @@ import { genTestAccounts } from '../accounts'
 import { config } from 'maci-config'
 import {
     hashLeftRight,
+    SnarkBigInt,
     bigInt,
+    genRandomSalt,
     IncrementalQuinTree,
 } from 'maci-crypto'
 import { genTallyResultCommitment } from 'maci-core'
@@ -46,14 +48,11 @@ describe('VerifyTally', () => {
     })
 
     it('computeMerklePath() should generate the correct root', async () => {
-        const results = [
-            bigInt(10),
-            bigInt(20),
-            bigInt(30),
-            bigInt(40),
-            bigInt(50),
-        ]
-        const salt = bigInt(1)
+        const results: SnarkBigInt[] = []
+        for (let i = 0; i < 8; i ++) {
+            results.push(genRandomSalt())
+        }
+        const salt = genRandomSalt()
         const commitment = genTallyResultCommitment(results, salt, DEPTH)
 
         const tree = new IncrementalQuinTree(DEPTH, bigInt(0))
@@ -64,17 +63,19 @@ describe('VerifyTally', () => {
         const expectedTallyCommitment = hashLeftRight(root, salt)
         expect(expectedTallyCommitment.toString()).toEqual(commitment.toString())
 
-        const index = 2
-        const proof = tree.genMerklePath(index)
-        expect(IncrementalQuinTree.verifyMerklePath(proof, tree.hashFunc)).toBeTruthy()
+        for (let i = 0; i < 8; i ++) {
+            const index = i
+            const proof = tree.genMerklePath(index)
+            expect(IncrementalQuinTree.verifyMerklePath(proof, tree.hashFunc)).toBeTruthy()
 
-        const computedRoot = await verifyTallyContract.computeMerkleRootFromPath(
-            DEPTH,
-            index,
-            results[index].toString(),
-            proof.pathElements.map((x) => x.map((y) => y.toString())),
-        )
-        expect(computedRoot.toString()).toEqual(root.toString())
+            const computedRoot = await verifyTallyContract.computeMerkleRootFromPath(
+                DEPTH,
+                index,
+                results[index].toString(),
+                proof.pathElements.map((x) => x.map((y) => y.toString())),
+            )
+            expect(computedRoot.toString()).toEqual(root.toString())
+        }
     })
 
 })
