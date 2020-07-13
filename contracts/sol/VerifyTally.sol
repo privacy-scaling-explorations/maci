@@ -33,7 +33,8 @@ contract VerifyTally is Hasher {
                 }
             }
 
-            pos /= LEAVES_PER_NODE;
+            _index /= LEAVES_PER_NODE;
+            pos = _index % LEAVES_PER_NODE;
             current = hash5(level);
         }
 
