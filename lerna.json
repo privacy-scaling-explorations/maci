@@ -1,14 +1,14 @@
 {
   "packages": [
-    "contracts",
     "circuits",
     "cli",
-    "crypto",
     "config",
-    "domainobjs",
+    "contracts",
     "core",
+    "crypto",
+    "domainobjs",
     "integrationTests"
   ],
-  "version": "0.0.1",
+  "version": "0.1.0",
   "npmClient": "npm"
 }

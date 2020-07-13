@@ -1,6 +1,6 @@
 {
     "name": "maci-contracts",
-    "version": "1.0.0",
+    "version": "0.1.0",
     "description": "",
     "main": "build/index.js",
     "scripts": {
@@ -37,19 +37,19 @@
         "openzeppelin-solidity": "^2.4.0"
     },
     "devDependencies": {
-        "maci-crypto": "1.0.0",
-        "maci-circuits": "1.0.0",
-        "maci-config": "1.0.0",
-        "maci-core": "1.0.0",
-        "maci-domainobjs": "1.0.0",
-        "ethers": "^4.0.45",
+        "@types/jest": "^24.0.25",
         "@types/node": "^13.1.2",
         "etherlime": "^2.2.4",
-        "@types/jest": "^24.0.25",
-        "ts-jest": "^24.2.0",
-        "jest": "^24.9.0",
+        "ethers": "^4.0.45",
         "ganache-cli": "^6.7.0",
+        "jest": "^24.9.0",
         "libsemaphore": "^1.0.5",
-        "truffle-artifactor": "^4.0.30"
+        "maci-circuits": "^0.1.0",
+        "maci-config": "^0.1.0",
+        "maci-core": "^0.1.0",
+        "maci-crypto": "^0.1.0",
+        "maci-domainobjs": "^0.1.0",
+        "truffle-artifactor": "^4.0.30",
+        "ts-jest": "^24.2.0"
     }
 }
