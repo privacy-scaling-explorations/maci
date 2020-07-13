@@ -1,4 +1,5 @@
 require('module-alias/register')
+jest.setTimeout(50000)
 import { genTestAccounts } from '../accounts'
 import { config } from 'maci-config'
 import {
