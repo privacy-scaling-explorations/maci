@@ -207,13 +207,9 @@ const tally = async (args: any) => {
     // Zeroth leaf
     const serialized = args.leaf_zero
     let zerothLeaf: StateLeaf
-    let isValidZerothStateLeaf = false
     try {
         zerothLeaf = StateLeaf.unserialize(serialized)
-        isValidZerothStateLeaf = true
-    } catch {}
-
-    if (!isValidZerothStateLeaf) {
+    } catch {
         console.error('Error: invalid zeroth state leaf')
         return
     }

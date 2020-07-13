@@ -198,7 +198,7 @@ const processMessages = async (args: any) => {
             provider,
             maciAddress,
             coordinatorKeypair,
-            StateLeaf.genBlankLeaf(),
+            StateLeaf.genBlankLeaf(0),
         )
     } catch (e) {
         console.error(e)

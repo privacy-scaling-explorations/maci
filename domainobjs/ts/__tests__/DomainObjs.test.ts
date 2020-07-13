@@ -138,7 +138,7 @@ describe('Domain objects', () => {
             const pk2 = pk1
 
             expect(pk1.rawPubKey.toString()).toEqual(pk2.rawPubKey.toString())
-            pk1.rawPubKey = 0
+            pk1.rawPubKey = [0]
             expect(pk1.rawPubKey.toString()).toEqual(pk2.rawPubKey.toString())
 
             // deep copy
@@ -146,7 +146,7 @@ describe('Domain objects', () => {
             const pk3 = k1.pubKey
             const pk4 = pk3.copy()
             expect(pk3.rawPubKey.toString()).toEqual(pk4.rawPubKey.toString())
-            pk4.rawPubKey = 0
+            pk4.rawPubKey = [0]
             expect(pk3.rawPubKey.toString()).not.toEqual(pk4.rawPubKey.toString())
         })
 

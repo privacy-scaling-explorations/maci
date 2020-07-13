@@ -4,8 +4,8 @@ import * as ethers from 'ethers'
 import * as snarkjs from 'snarkjs'
 import { babyJub, eddsa, mimcsponge, mimc7, poseidon } from 'circomlib'
 import { IncrementalQuinTree } from './IncrementalQuinTree'
-const stringifyBigInts: (obj: object) => object = snarkjs.stringifyBigInts
-const unstringifyBigInts: (obj: object) => object = snarkjs.unstringifyBigInts
+const stringifyBigInts: (obj: object) => any = snarkjs.stringifyBigInts
+const unstringifyBigInts: (obj: object) => any = snarkjs.unstringifyBigInts
 
 type SnarkBigInt = snarkjs.bigInt
 type PrivKey = SnarkBigInt
@@ -408,6 +408,7 @@ export {
     hash11,
     hashLeftRight,
     verifySignature,
+    Signature,
     PrivKey,
     PubKey,
     Keypair,
