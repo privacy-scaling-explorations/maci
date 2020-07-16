@@ -273,7 +273,7 @@ const executeSuite = async (data: any, expect: any) => {
     console.log(tallyOutput.stdout)
 
     const tallyRegMatch = tallyOutput.match(
-        /Transaction hash: (0x[a-fA-F0-9]{64})\nCurrent results salt: (0x[a-fA-F0-9]+)\nResult commitment: 0x[a-fA-F0-9]+\nTotal spent voice credits salt: (0x[a-fA-F0-9]+)\nTotal spent voice credits commitment: 0x[a-fA-F0-9]+\nTotal spent voice credits per vote option salt: (0x[a-fA-F0-9]+)\nTotal spent voice credits per vote option commitment: (0x[a-fA-F0-9]+)\n$/
+        /Transaction hash: (0x[a-fA-F0-9]{64})\nCurrent results salt: (0x[a-fA-F0-9]+)\nResult commitment: 0x[a-fA-F0-9]+\nTotal spent voice credits salt: (0x[a-fA-F0-9]+)\nTotal spent voice credits commitment: 0x[a-fA-F0-9]+\nTotal spent voice credits per vote option salt: (0x[a-fA-F0-9]+)\nTotal spent voice credits per vote option commitment: (0x[a-fA-F0-9]+)\nTotal votes: (.+)\n$/
     )
 
     if (!tallyRegMatch) {
@@ -318,6 +318,10 @@ const executeSuite = async (data: any, expect: any) => {
     expect(expectedPvcCommitment.toString())
         .toEqual(finalPvcCommitment.toString())
 
+    const totalVotes = bigInt(tallyRegMatch[6])
+    const expectedTotalVotes = await maciContract.totalVotes()
+    expect(totalVotes.toString()).toEqual(expectedTotalVotes.toString())
+
     const verifyCommand = `NODE_OPTIONS=--max-old-space-size=4096 node ../cli/build/index.js verify ` +
         '-t test_tally.json'
 
@@ -330,7 +334,7 @@ const executeSuite = async (data: any, expect: any) => {
     }
 
     const verifyRegMatch = verifyOutput.match(
-        /The results commitment in the specified file is correct given the tally and salt\nThe total spent voice credit commitment in the specified file is correct given the tally and salt\nThe per vote option spent voice credit commitment in the specified file is correct given the tally and salt\nThe results commitment in the MACI contract on-chain is valid\nThe total spent voice credit commitment in the MACI contract on-chain is valid\nThe per vote option spent voice credit commitment in the MACI contract on-chain is valid\n/
+        /The results commitment in the specified file is correct given the tally and salt\nThe total spent voice credit commitment in the specified file is correct given the tally and salt\nThe per vote option spent voice credit commitment in the specified file is correct given the tally and salt\nThe results commitment in the MACI contract on-chain is valid\nThe total spent voice credit commitment in the MACI contract on-chain is valid\nThe per vote option spent voice credit commitment in the MACI contract on-chain is valid\nThe total sum of votes in the MACI contract on-chain is valid.\n/
     )
     if (!verifyRegMatch) {
         console.log(verifyOutput)

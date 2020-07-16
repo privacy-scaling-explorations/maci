@@ -189,6 +189,19 @@ const verify = async (args: any) => {
     } else {
         console.error('Error: the per vote option spent voice credit commitment in the MACI contract does not match the expected commitment')
     }
+
+    // Check the total votes
+    let expectedTotalVotes = bigInt(0)
+    for (const t of tally) {
+        expectedTotalVotes += t
+    }
+
+    const onChainTotalVotes = await maciContract.totalVotes()
+    if (onChainTotalVotes.toString() === expectedTotalVotes.toString()) {
+        console.log('The total sum of votes in the MACI contract on-chain is valid.')
+    } else {
+        console.error('Error: the total votes value in the MACI contract does not match the expected sum of the vote tally')
+    }
 }
 
 export {

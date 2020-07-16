@@ -329,8 +329,10 @@ const tally = async (args: any) => {
 
         const tally = maciState.computeBatchVoteTally(startIndex, batchSize)
 
+        let totalVotes = bigInt(0)
         for (let i = 0; i < tally.length; i++) {
             cumulativeTally[i] = bigInt(cumulativeTally[i]) + bigInt(tally[i])
+            totalVotes += cumulativeTally[i]
         }
 
         if (startIndex.equals(bigInt(0)) && !currentResultsSalt.equals(bigInt(0))) {
@@ -436,16 +438,22 @@ const tally = async (args: any) => {
             maciState.voteOptionTreeDepth,
         )
 
-        if (expectedPerVOSpentVoiceCreditsCommitmentOutput.toString() !== newPerVOSpentVoiceCreditsCommitment.toString()) {
+        if (
+                expectedPerVOSpentVoiceCreditsCommitmentOutput.toString() !== 
+                newPerVOSpentVoiceCreditsCommitment.toString()
+        ) {
             console.error('Error: total spent voice credits per vote option commitment mismatch')
             return
         }
+
+        const totalVotesPublicInput = bigInt(circuitInputs.isLastBatch) === bigInt(1) ? totalVotes.toString() : 0
 
         const contractPublicSignals = await maciContract.genQvtPublicSignals(
             circuitInputs.intermediateStateRoot.toString(),
             newResultsCommitment.toString(),
             newSpentVoiceCreditsCommitment.toString(),
             newPerVOSpentVoiceCreditsCommitment.toString(),
+            totalVotesPublicInput,
         )
 
         const publicSignalMatch = JSON.stringify(publicSignals.map((x) => x.toString())) ===
@@ -474,6 +482,7 @@ const tally = async (args: any) => {
                 newResultsCommitment.toString(),
                 newSpentVoiceCreditsCommitment.toString(),
                 newPerVOSpentVoiceCreditsCommitment.toString(),
+                totalVotesPublicInput.toString(),
                 formattedProof,
                 { gasLimit: 2000000 },
             )
@@ -492,6 +501,7 @@ const tally = async (args: any) => {
         }
 
         console.log(`Transaction hash: ${tx.hash}`)
+        const finalTotalVotes = await maciContract.totalVotes()
 
         if (!args.repeat || ! (await maciContract.hasUntalliedStateLeaves())) {
             console.log(`Current results salt: 0x${currentResultsSalt.toString(16)}`)
@@ -508,6 +518,7 @@ const tally = async (args: any) => {
 			const currentPerVOSpentVoiceCreditsCommitment = await maciContract.currentPerVOSpentVoiceCreditsCommitment()
             const e = bigInt(currentPerVOSpentVoiceCreditsCommitment.toString())
             console.log(`Total spent voice credits per vote option commitment: 0x${e.toString(16)}`)
+            console.log(`Total votes: ${finalTotalVotes.toString()}`)
 
             if (args.tally_file) {
                 // Write tally to a file

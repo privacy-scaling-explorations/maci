@@ -62,6 +62,9 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
     // The maximum number of leaves, minus one, of meaningful vote options.
     uint256 public voteOptionsMaxLeafIndex;
 
+    // The total sum of votes
+    uint256 public totalVotes;
+
     // The batch # for the quote tally function
     uint256 public currentQvtBatchNum;
 
@@ -491,20 +494,22 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         uint256 _intermediateStateRoot,
         uint256 _newResultsCommitment,
         uint256 _newSpentVoiceCreditsCommitment,
-        uint256 _newPerVOSpentVoiceCreditsCommitment
-    ) public view returns (uint256[9] memory) {
+        uint256 _newPerVOSpentVoiceCreditsCommitment,
+        uint256 _totalVotes
+    ) public view returns (uint256[10] memory) {
 
-        uint256[9] memory publicSignals;
+        uint256[10] memory publicSignals;
 
         publicSignals[0] = _newResultsCommitment;
         publicSignals[1] = _newSpentVoiceCreditsCommitment;
         publicSignals[2] = _newPerVOSpentVoiceCreditsCommitment;
-        publicSignals[3] = postSignUpStateRoot;
-        publicSignals[4] = currentQvtBatchNum;
-        publicSignals[5] = _intermediateStateRoot;
-        publicSignals[6] = currentResultsCommitment;
-        publicSignals[7] = currentSpentVoiceCreditsCommitment;
-        publicSignals[8] = currentPerVOSpentVoiceCreditsCommitment;
+        publicSignals[3] = _totalVotes;
+        publicSignals[4] = postSignUpStateRoot;
+        publicSignals[5] = currentQvtBatchNum;
+        publicSignals[6] = _intermediateStateRoot;
+        publicSignals[7] = currentResultsCommitment;
+        publicSignals[8] = currentSpentVoiceCreditsCommitment;
+        publicSignals[9] = currentPerVOSpentVoiceCreditsCommitment;
 
         return publicSignals;
     }
@@ -540,6 +545,7 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         uint256 _newResultsCommitment,
         uint256 _newSpentVoiceCreditsCommitment,
         uint256 _newPerVOSpentVoiceCreditsCommitment,
+        uint256 _totalVotes,
         uint256[8] memory _proof
     ) 
     public {
@@ -555,11 +561,12 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
         // Generate the public signals
         // public 'input' signals = [output signals, public inputs]
-        uint256[9] memory publicSignals = genQvtPublicSignals(
+        uint256[10] memory publicSignals = genQvtPublicSignals(
             _intermediateStateRoot,
             _newResultsCommitment,
             _newSpentVoiceCreditsCommitment,
-            _newPerVOSpentVoiceCreditsCommitment
+            _newPerVOSpentVoiceCreditsCommitment,
+            _totalVotes
         );
 
         // Unpack the snark proof
@@ -582,6 +589,9 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
         // Save the commitment to the per voice credit spent voice credits for the next batch
         currentPerVOSpentVoiceCreditsCommitment = _newPerVOSpentVoiceCreditsCommitment;
+
+        // Save the total votes
+        totalVotes = _totalVotes;
 
         // Increment the batch #
         currentQvtBatchNum ++;

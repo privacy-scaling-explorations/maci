@@ -270,6 +270,26 @@ template QuadVoteTally(
     newResultsCommitment <== resultCommitmentVerifier.newResultsCommitment;
 
     // --- END
+    
+    // --- BEGIN sum total votes
+    component totalVotesSum = CalculateTotal(numVoteOptions);
+    for (i = 0; i < numVoteOptions; i++) {
+        totalVotesSum.nums[i] <== voteOptionSubtotals[i].sum;
+    }
+
+    signal private input isLastBatch;
+    component isNotLastBatch = IsZero();
+    isNotLastBatch.in <== isLastBatch;
+
+    component revealTotalVotes = Mux1();
+    revealTotalVotes.s <== isNotLastBatch.out;
+    revealTotalVotes.c[0] <== totalVotesSum.sum;
+    revealTotalVotes.c[1] <== 0;
+
+    signal output totalVotes;
+    totalVotes <== revealTotalVotes.out;
+
+    // --- END
 }
 
 /*
