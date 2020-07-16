@@ -834,7 +834,14 @@ class MaciState {
         const intermediateStateRoot = intermediateTree.leaves[_startIndex / _batchSize]
         const intermediatePathElements = intermediateTree.genMerklePath(intermediatePathIndex).pathElements
 
+        const a = bigInt(Math.ceil(
+            (this.users.length + 1) / _batchSize.toJSNumber()
+        ) - 1)
+
+        const isLastBatch = intermediatePathIndex  === a
+
         const circuitInputs = stringifyBigInts({
+            isLastBatch: isLastBatch ? bigInt(1) : bigInt(0),
             voteLeaves,
             stateLeaves: stateLeaves.map((x) => x.asCircuitInputs()),
             fullStateRoot: this.genStateRoot(),

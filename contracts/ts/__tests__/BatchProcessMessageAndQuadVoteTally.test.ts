@@ -77,6 +77,7 @@ const maciState = new MaciState(
 
 const users: any[] = []
 
+let totalVotes = bigInt(0)
 let totalVoteWeight = bigInt(0)
 let newSpentVoiceCreditsSalt: SnarkBigInt
 let newPerVOSpentVoiceCreditsSalt: SnarkBigInt
@@ -131,6 +132,7 @@ describe('BatchProcessMessage', () => {
         for (const user of users) {
             const voteWeight = user.command.newVoteWeight
             totalVoteWeight += voteWeight * voteWeight
+            totalVotes += voteWeight
         }
     })
 
@@ -359,6 +361,7 @@ describe('BatchProcessMessage', () => {
                 newResultsCommitment.toString(),
                 newSpentVoiceCreditsCommitment.toString(),
                 newPerVOSpentVoiceCreditsCommitment.toString(),
+                totalVotes.toString(),
             )
 
             const currentSpentVoiceCreditsCommitment = genSpentVoiceCreditsCommitment(0, currentSpentVoiceCreditsSalt)
@@ -370,12 +373,13 @@ describe('BatchProcessMessage', () => {
             expect(publicSignals[0].toString()).toEqual(newResultsCommitment.toString())
             expect(publicSignals[1].toString()).toEqual(newSpentVoiceCreditsCommitment.toString())
             expect(publicSignals[2].toString()).toEqual(newPerVOSpentVoiceCreditsCommitment.toString())
-            expect(publicSignals[3].toString()).toEqual(maciState.genStateRoot().toString())
-            expect(publicSignals[4].toString()).toEqual('0')
-            expect(publicSignals[5].toString()).toEqual(circuitInputs.intermediateStateRoot.toString())
-            expect(publicSignals[6].toString()).toEqual(circuitInputs.currentResultsCommitment.toString())
-            expect(publicSignals[7].toString()).toEqual(currentSpentVoiceCreditsCommitment.toString())
-            expect(publicSignals[8].toString()).toEqual(currentPerVOSpentVoiceCreditsCommitment.toString())
+            expect(publicSignals[3].toString()).toEqual(totalVotes.toString())
+            expect(publicSignals[4].toString()).toEqual(maciState.genStateRoot().toString())
+            expect(publicSignals[5].toString()).toEqual('0')
+            expect(publicSignals[6].toString()).toEqual(circuitInputs.intermediateStateRoot.toString())
+            expect(publicSignals[7].toString()).toEqual(circuitInputs.currentResultsCommitment.toString())
+            expect(publicSignals[8].toString()).toEqual(currentSpentVoiceCreditsCommitment.toString())
+            expect(publicSignals[9].toString()).toEqual(currentPerVOSpentVoiceCreditsCommitment.toString())
 
             expect(JSON.stringify(publicSignals.map((x) => x.toString()))).toEqual(
                 JSON.stringify(contractPublicSignals.map((x) => x.toString()))
@@ -391,6 +395,7 @@ describe('BatchProcessMessage', () => {
                 newResultsCommitment.toString(),
                 newSpentVoiceCreditsCommitment.toString(),
                 newPerVOSpentVoiceCreditsCommitment.toString(),
+                totalVotes.toString(),
                 formattedProof,
                 { gasLimit: 1000000 },
             )

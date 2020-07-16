@@ -150,5 +150,9 @@ describe('Quadratic vote tallying circuit', () => {
 
         expect(expectedPerVOSpentVoiceCreditsCommitmentOutput.toString())
             .toEqual(expectedPerVOSpentVoiceCreditsCommitment.toString())
+
+        // Check the sum of votes
+        const totalVotes = witness[circuit.getSignalIdx('main.totalVotes')]
+        expect(totalVotes.toString()).toEqual(voteWeight.toString())
     })
 })
