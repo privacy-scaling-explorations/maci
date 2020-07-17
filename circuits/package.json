@@ -1,6 +1,6 @@
 {
     "name": "maci-circuits",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "",
     "main": "build/index.js",
     "scripts": {
@@ -49,7 +49,7 @@
         "jest": "^24.9.0",
         "libsemaphore": "^1.0.5",
         "maci-config": "^0.1.0",
-        "maci-core": "^0.1.0",
+        "maci-core": "^0.1.1",
         "maci-crypto": "^0.1.0",
         "maci-domainobjs": "^0.1.0",
         "shelljs": "^0.8.3",
