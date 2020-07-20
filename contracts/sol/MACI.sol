@@ -569,6 +569,16 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
             _totalVotes
         );
 
+        // Ensure that each public input is within range of the snark scalar
+        // field.
+        // TODO: consider having more granular revert reasons
+        for (uint8 i=0; i < publicSignals.length; i++) {
+            require(
+                publicSignals[i] < SNARK_SCALAR_FIELD,
+                "MACI: each public signal must be lt the snark scalar field"
+            );
+        }
+
         // Unpack the snark proof
         (
             uint256[2] memory a,
