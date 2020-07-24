@@ -104,14 +104,16 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
     // Events
     event SignUp(
-        PubKey indexed _userPubKey,
-        uint256 indexed _stateIndex,
-        uint256 indexed _voiceCreditBalance
+        PubKey _userPubKey,
+        PubKey indexed _indexedUserPubKey,
+        uint256 _stateIndex,
+        uint256 _voiceCreditBalance
     );
 
     event PublishMessage(
-        Message indexed _message,
-        PubKey indexed _encPubKey
+        Message _message,
+        PubKey _encPubKey,
+        PubKey indexed _indexedEncPubKey
     );
 
     constructor(
@@ -289,7 +291,7 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
         // numSignUps is equal to the state index of the leaf which was just
         // added to the state tree above
-        emit SignUp(_userPubKey, numSignUps, voiceCreditBalance);
+        emit SignUp(_userPubKey, _userPubKey, numSignUps, voiceCreditBalance);
     }
 
     /*
@@ -335,7 +337,7 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
         numMessages ++;
 
-        emit PublishMessage(_message, _encPubKey);
+        emit PublishMessage(_message, _encPubKey, _encPubKey);
     }
 
     /*

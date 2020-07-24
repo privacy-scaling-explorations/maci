@@ -208,7 +208,13 @@ describe('MACI', () => {
             expect(maciState.genStateRoot().toString()).toEqual(root.toString())
 
             const iface = new ethers.utils.Interface(maciContract.interface.abi)
-            const index = iface.parseLog(receipt.logs[1]).values._stateIndex
+            const event = iface.parseLog(receipt.logs[1])
+            const rawPubKey = [
+                bigInt(event.values._userPubKey[0]),
+                bigInt(event.values._userPubKey[1]),
+            ]
+            expect(rawPubKey).toEqual(user1.keypair.pubKey.rawPubKey)
+            const index = event.values._stateIndex
             expect(index.toString()).toEqual(maciState.users.length.toString())
         })
 

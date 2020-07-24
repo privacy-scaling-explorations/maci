@@ -122,6 +122,10 @@ describe('Publishing messages', () => {
             )
             const receipt = await tx.wait()
             expect(receipt.status).toEqual(1)
+            const maciInterface = new ethers.utils.Interface(maciContract.interface.abi)
+            const event = maciInterface.parseLog(receipt.logs[1])
+            expect(event.values._message.data).toEqual(message.asContractParam()[1])
+            expect(event.values._encPubKey.x).toEqual(keypair.pubKey.asContractParam()[0])
 
             maciState.publishMessage(
                 message,

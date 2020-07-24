@@ -73,28 +73,12 @@ const genMaciStateFromContract = async (
 
     const iface = new ethers.utils.Interface(maciContractAbi)
     for (const log of signUpLogs) {
-        const events = iface.parseLog(log)
-        const voiceCreditBalance = bigInt(events.values._voiceCreditBalance.toString())
-        let pubKey
-
-        if (log.transactionHash) {
-
-            // Retrieve and decode the transaction data as it is not possible
-            // to get the user's public key from the SignUp event (at least
-            // with Ganache - TBC)
-            const tx = await provider.getTransaction(log.transactionHash)
-            const data = ethers.utils.defaultAbiCoder.decode(
-                iface.functions.signUp.inputs,
-                ethers.utils.hexDataSlice(tx.data, 4),
-            )
-            pubKey = new PubKey([
-                bigInt(data._userPubKey.x.toString()),
-                bigInt(data._userPubKey.y.toString()),
-            ])
-
-        } else {
-            throw new Error('Error: could not retrieve a signUp transaction hash')
-        }
+        const event = iface.parseLog(log)
+        const voiceCreditBalance = bigInt(event.values._voiceCreditBalance.toString())
+        const pubKey = new PubKey([
+            bigInt(event.values._userPubKey[0]),
+            bigInt(event.values._userPubKey[1]),
+        ])
 
         maciState.signUp(
             pubKey,
@@ -103,29 +87,16 @@ const genMaciStateFromContract = async (
     }
 
     for (const log of publishMessageLogs) {
-        let message: Message
-        let encPubKey: PubKey
+        const event = iface.parseLog(log)
+        const msgIv = bigInt(event.values._message[0].toString())
+        const msgData = event.values._message[1].map((x) => bigInt(x.toString()))
+        const message = new Message(msgIv, msgData)
+        const encPubKey = new PubKey([
+            bigInt(event.values._encPubKey[0]),
+            bigInt(event.values._encPubKey[1]),
+        ])
 
-        if (log.transactionHash) {
-            const tx = await provider.getTransaction(log.transactionHash)
-            const data = ethers.utils.defaultAbiCoder.decode(
-                iface.functions.publishMessage.inputs,
-                ethers.utils.hexDataSlice(tx.data, 4),
-            )
-
-            const msgIv = bigInt(data._message.iv.toString())
-            const msgData = data._message.data.map((x) => bigInt(x.toString()))
-            message = new Message(msgIv, msgData)
-
-            encPubKey = new PubKey([
-                bigInt(data._encPubKey.x.toString()),
-                bigInt(data._encPubKey.y.toString()),
-            ])
-
-            maciState.publishMessage(message, encPubKey)
-        } else {
-            throw new Error('Error: could not retrieve a publishMessage transaction hash')
-        }
+        maciState.publishMessage(message, encPubKey)
     }
     
     // Check whether the above steps were done correctly
