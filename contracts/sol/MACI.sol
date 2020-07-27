@@ -104,14 +104,14 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
     // Events
     event SignUp(
-        PubKey indexed _userPubKey,
-        uint256 indexed _stateIndex,
-        uint256 indexed _voiceCreditBalance
+        PubKey _userPubKey,
+        uint256 _stateIndex,
+        uint256 _voiceCreditBalance
     );
 
     event PublishMessage(
-        Message indexed _message,
-        PubKey indexed _encPubKey
+        Message _message,
+        PubKey _encPubKey
     );
 
     constructor(
