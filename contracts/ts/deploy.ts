@@ -8,16 +8,16 @@ import { config } from 'maci-config'
 import { genPubKey, bigInt } from 'maci-crypto'
 import { PubKey } from 'maci-domainobjs'
 import { genAccounts, genTestAccounts } from './accounts'
-const PoseidonT3 = require('@maci-contracts/compiled/PoseidonT3.json')
-const PoseidonT6 = require('@maci-contracts/compiled/PoseidonT6.json')
-const SignUpToken = require('@maci-contracts/compiled/SignUpToken.json')
-const SignUpTokenGatekeeper = require('@maci-contracts/compiled/SignUpTokenGatekeeper.json')
-const FreeForAllSignUpGatekeeper = require('@maci-contracts/compiled/FreeForAllGatekeeper.json')
-const InitialVoiceCreditProxy = require('@maci-contracts/compiled/InitialVoiceCreditProxy.json')
-const ConstantInitialVoiceCreditProxy = require('@maci-contracts/compiled/ConstantInitialVoiceCreditProxy.json')
-const BatchUpdateStateTreeVerifier = require('@maci-contracts/compiled/BatchUpdateStateTreeVerifier.json')
-const QuadVoteTallyVerifier = require('@maci-contracts/compiled/QuadVoteTallyVerifier.json')
-const MACI = require('@maci-contracts/compiled/MACI.json')
+const PoseidonT3 = require('../compiled/PoseidonT3.json')
+const PoseidonT6 = require('../compiled/PoseidonT6.json')
+const SignUpToken = require('../compiled/SignUpToken.json')
+const SignUpTokenGatekeeper = require('../compiled/SignUpTokenGatekeeper.json')
+const FreeForAllSignUpGatekeeper = require('../compiled/FreeForAllGatekeeper.json')
+const InitialVoiceCreditProxy = require('../compiled/InitialVoiceCreditProxy.json')
+const ConstantInitialVoiceCreditProxy = require('../compiled/ConstantInitialVoiceCreditProxy.json')
+const BatchUpdateStateTreeVerifier = require('../compiled/BatchUpdateStateTreeVerifier.json')
+const QuadVoteTallyVerifier = require('../compiled/QuadVoteTallyVerifier.json')
+const MACI = require('../compiled/MACI.json')
 
 const maciContractAbi = MACI.abi
 const initialVoiceCreditProxyAbi = InitialVoiceCreditProxy.abi
