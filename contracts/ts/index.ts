@@ -14,10 +14,7 @@ import { formatProofForVerifierContract } from './utils'
 
 import { genAccounts, genTestAccounts } from './accounts'
 
-import { timeTravel } from '../node_modules/etherlime/cli-commands/etherlime-test/time-travel.js'
-
 export {
-    timeTravel,
     genDeployer,
     genJsonRpcDeployer,
     genAccounts,
