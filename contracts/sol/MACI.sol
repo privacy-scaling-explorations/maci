@@ -609,8 +609,6 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
     /*
      * Verify the result of the vote tally using a Merkle proof and the salt.
-     * This function can also verify the number of voice credits spent per vote
-     * option as the commitment is computed in the same way.
      */
     function verifyTallyResult(
         uint8 _depth,
@@ -628,6 +626,28 @@ contract MACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
         uint256 computedCommitment = hashLeftRight(computedRoot, _salt);
         return computedCommitment == currentResultsCommitment;
+    }
+
+    /*
+     * Verify the number of voice credits spent for a particular vote option
+     * using a Merkle proof and the salt.
+     */
+    function verifyPerVOSpentVoiceCredits(
+        uint8 _depth,
+        uint256 _index,
+        uint256 _leaf,
+        uint256[][] memory _pathElements,
+        uint256 _salt
+    ) public view returns (bool) {
+        uint256 computedRoot = computeMerkleRootFromPath(
+            _depth,
+            _index,
+            _leaf,
+            _pathElements
+        );
+
+        uint256 computedCommitment = hashLeftRight(computedRoot, _salt);
+        return computedCommitment == currentPerVOSpentVoiceCreditsCommitment;
     }
 
     /*

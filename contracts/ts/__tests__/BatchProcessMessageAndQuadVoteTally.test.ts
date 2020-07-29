@@ -81,6 +81,7 @@ let totalVotes = bigInt(0)
 let totalVoteWeight = bigInt(0)
 let newSpentVoiceCreditsSalt: SnarkBigInt
 let newPerVOSpentVoiceCreditsSalt: SnarkBigInt
+let perVOSpentVoiceCredits: SnarkBigInt[] = []
 const emptyTally: SnarkBigInt[] = []
 for (let i = 0; i < 5 ** voteOptionTreeDepth; i ++) {
     emptyTally[i] = bigInt(0)
@@ -103,11 +104,12 @@ describe('BatchProcessMessage', () => {
         for (let i = 0; i < accounts.length; i++) {
             const keypair = new Keypair()
             const voteOptionIndex = 0
+            const voiceCredits = bigInt(i)
             const command = new Command(
                 bigInt(i + 1),
                 keypair.pubKey,
                 bigInt(voteOptionIndex),
-                bigInt(i),
+                voiceCredits,
                 bigInt(1),
                 genRandomSalt(),
             )
@@ -338,7 +340,7 @@ describe('BatchProcessMessage', () => {
             expect(newSpentVoiceCreditsCommitmentOutput.toString())
                 .toEqual(newSpentVoiceCreditsCommitment.toString())
 
-            const perVOSpentVoiceCredits = maciState.computeBatchPerVOSpentVoiceCredits(
+            perVOSpentVoiceCredits = maciState.computeBatchPerVOSpentVoiceCredits(
                 startIndex,
                 quadVoteTallyBatchSize,
             )
@@ -457,6 +459,31 @@ describe('BatchProcessMessage', () => {
                 leaf.toString(),
                 proof.pathElements.map((x) => x.map((y) => y.toString())),
                 newResultsSalt.toString(),
+            )
+            expect(verified).toBeTruthy()
+        })
+
+        it('on-chain per VO spent voice credit verification of one leaf', async () => {
+            const tree = new IncrementalQuinTree(voteOptionTreeDepth, bigInt(0))
+            for (const t of perVOSpentVoiceCredits) {
+                tree.insert(t)
+            }
+            const expectedCommitment = hashLeftRight(tree.root, newPerVOSpentVoiceCreditsSalt)
+            const currentPerVOSpentVoiceCreditsCommitment = await maciContract.currentPerVOSpentVoiceCreditsCommitment()
+            expect(expectedCommitment.toString()).toEqual(currentPerVOSpentVoiceCreditsCommitment.toString())
+
+            const index = 0
+            const leaf = perVOSpentVoiceCredits[index]
+            const proof = tree.genMerklePath(index)
+
+            // Any contract can call the MACI contract's verifyTallyResult()
+            // function to prove that they know the value of the leaf.
+            const verified = await maciContract.verifyPerVOSpentVoiceCredits(
+                voteOptionTreeDepth,
+                index,
+                leaf.toString(),
+                proof.pathElements.map((x) => x.map((y) => y.toString())),
+                newPerVOSpentVoiceCreditsSalt.toString(),
             )
             expect(verified).toBeTruthy()
         })
