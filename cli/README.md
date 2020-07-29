@@ -487,4 +487,5 @@ The per vote option spent voice credit commitment in the specified file is corre
 The results commitment in the MACI contract on-chain is valid
 The total spent voice credit commitment in the MACI contract on-chain is valid
 The per vote option spent voice credit commitment in the MACI contract on-chain is valid
+The total sum of votes in the MACI contract on-chain is valid.
 ```
