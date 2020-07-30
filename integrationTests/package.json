@@ -40,5 +40,6 @@
         "module-alias": "^2.2.2",
         "shelljs": "^0.8.3",
         "ts-jest": "^24.2.0"
-    }
+    },
+    "gitHead": "d73c1bf279dd9171c80a79404b8b8d4efa76d094"
 }

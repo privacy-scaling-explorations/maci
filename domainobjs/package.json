@@ -15,5 +15,6 @@
         "jest": "^24.9.0",
         "maci-crypto": "^0.1.0",
         "ts-jest": "^24.2.0"
-    }
+    },
+    "gitHead": "d73c1bf279dd9171c80a79404b8b8d4efa76d094"
 }
