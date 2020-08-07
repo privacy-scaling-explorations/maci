@@ -4,6 +4,8 @@
 
 We use the [Poseidon hash function](https://eprint.iacr.org/2019/458.pdf) to reduce the number of constraints in the circuits.
 
+**Note (7 Aug 2020) This code has not been audited. We do not recommend copy-pasting the `circom` implementations in this folder before it is reviewed. Please get in touch if you have or wish to use it.**
+
 Poseidon hash functions need to be parameterized for the number of inputs.
 If the input has `n` field elements, the parameter `t` would be `n + 1`, for security reasons (see below).
 
