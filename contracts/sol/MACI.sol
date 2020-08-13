@@ -272,6 +272,11 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
             _initialVoiceCreditProxyData
         );
 
+        // The limit on voice credits is 2 ^ 32 which is hardcoded into the
+        // UpdateStateTree circuit, specifically at check that there are
+        // sufficient voice credits (using GreaterEqThan(32)).
+        require(voiceCreditBalance <= 4294967296, "MACI: too many voice credits");
+
         // Create, hash, and insert a fresh state leaf
         StateLeaf memory stateLeaf = StateLeaf({
             pubKey: _userPubKey,
