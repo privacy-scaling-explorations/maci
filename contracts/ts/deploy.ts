@@ -58,7 +58,7 @@ const deployConstantInitialVoiceCreditProxy = async (
     quiet = false
 ) => {
     log('Deploying InitialVoiceCreditProxy', quiet)
-    return await deployer.deploy(ConstantInitialVoiceCreditProxy, {}, amount)
+    return await deployer.deploy(ConstantInitialVoiceCreditProxy, {}, amount.toString())
 }
 
 const deploySignupToken = async (deployer) => {
