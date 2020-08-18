@@ -3,6 +3,9 @@
     "version": "0.1.11",
     "description": "",
     "main": "build/index.js",
+    "bin": {
+        "maci-cli": "./build/index.js"
+    },
     "scripts": {
         "watch": "tsc --watch",
         "build": "tsc",

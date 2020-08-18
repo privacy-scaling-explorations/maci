@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import * as argparse from 'argparse' 
 import { 
     calcBinaryTreeDepthFromMaxLeaves,
