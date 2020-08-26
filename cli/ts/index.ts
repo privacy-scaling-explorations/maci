@@ -95,8 +95,12 @@ const main = async () => {
         await publish(args)
     } else if (args.subcommand === 'process') {
         await processMessages(args)
+        // Force the process to exit as it might get stuck
+        process.exit()
     } else if (args.subcommand === 'tally') {
         await tally(args)
+        // Force the process to exit as it might get stuck
+        process.exit()
     } else if (args.subcommand === 'verify') {
         await verify(args)
     }
@@ -107,6 +111,8 @@ if (require.main === module) {
 }
 
 export {
+    processMessages,
+    tally,
     calcBinaryTreeDepthFromMaxLeaves,
     calcQuinTreeDepthFromMaxLeaves,
 }
