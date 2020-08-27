@@ -2,6 +2,7 @@ include "../node_modules/circomlib/circuits/compconstant.circom";
 include "../node_modules/circomlib/circuits/comparators.circom";
 include "../node_modules/circomlib/circuits/pointbits.circom";
 include "../node_modules/circomlib/circuits/mimcsponge.circom";
+include "./poseidon/poseidonHashT6.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
 include "../node_modules/circomlib/circuits/escalarmulany.circom";
 include "../node_modules/circomlib/circuits/escalarmulfix.circom";
@@ -9,7 +10,7 @@ include "../node_modules/circomlib/circuits/escalarmulfix.circom";
 include "./hasherPoseidon.circom";
 
 
-template EdDSAMiMCSpongeVerifier_patched() {
+template EdDSAPoseidonVerifier_patched() {
   signal input Ax;
   signal input Ay;
 
@@ -36,16 +37,15 @@ template EdDSAMiMCSpongeVerifier_patched() {
   compConstant.out === 0;
 
   // Calculate the h = H(R,A, msg)
-  component hash = MiMCSponge(5, 1);
-  hash.ins[0] <== R8x;
-  hash.ins[1] <== R8y;
-  hash.ins[2] <== Ax;
-  hash.ins[3] <== Ay;
-  hash.ins[4] <== M;
-  hash.k <== 0;
+  component hash = PoseidonHashT6();
+  hash.inputs[0] <== R8x;
+  hash.inputs[1] <== R8y;
+  hash.inputs[2] <== Ax;
+  hash.inputs[3] <== Ay;
+  hash.inputs[4] <== M;
 
   component h2bits = Num2Bits_strict();
-  h2bits.in <==  hash.outs[0];
+  h2bits.in <==  hash.out;
 
   // Calculate second part of the right side:  right2 = h*8*A
 
@@ -129,7 +129,7 @@ template VerifySignature7() {
     M.in[i] <== 0;
   }
   
-  component verifier = EdDSAMiMCSpongeVerifier_patched();
+  component verifier = EdDSAPoseidonVerifier_patched();
 
   verifier.Ax <== from_x;
   verifier.Ay <== from_y;

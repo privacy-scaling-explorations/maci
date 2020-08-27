@@ -15,8 +15,9 @@
         "test-mt-debug": "node --inspect-brk ./node_modules/.bin/jest IncrementalMerkleTree.test.ts"
     },
     "dependencies": {
+        "ethers": "^4.0.45",
         "circom": "0.0.34",
-        "circomlib": "0.0.19",
+        "circomlib": "git+https://github.com/iden3/circomlib.git#01e3f0d6807137fb01c085b88cfaf63661e4a946",
         "snarkjs": "https://github.com/weijiekoh/snarkjs.git#52e0ceba0256bc9bf94cbc9500139dfc37018f91"
     },
     "devDependencies": {

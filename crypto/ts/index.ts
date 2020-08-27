@@ -2,7 +2,7 @@ import * as assert from 'assert'
 import * as crypto from 'crypto'
 import * as ethers from 'ethers'
 import * as snarkjs from 'snarkjs'
-import { babyJub, eddsa, mimcsponge, mimc7, poseidon } from 'circomlib'
+import { babyJub, eddsa, mimc7, poseidon } from 'circomlib'
 import { IncrementalQuinTree } from './IncrementalQuinTree'
 const stringifyBigInts: (obj: object) => any = snarkjs.stringifyBigInts
 const unstringifyBigInts: (obj: object) => any = snarkjs.unstringifyBigInts
@@ -39,8 +39,6 @@ const SNARK_FIELD_SIZE = snarkjs.bigInt(
     '21888242871839275222246405745257275088548364400416034343698204186575808495617'
 )
 
-const POSEIDON_SEED = 'poseidon'
-
 // A nothing-up-my-sleeve zero value
 // Should be equal to 5503045433092194285660061905880311622788666850989422096966288514930349325741
 const NOTHING_UP_MY_SLEEVE =
@@ -60,49 +58,16 @@ const buffer2BigInt = (b: Buffer): BigInt => {
     return snarkjs.bigInt('0x' + b.toString('hex'))
 }
 
-/* Poseidon parameters are generated from a script to meet the security requirements described in the papar.
- * Check circuits/README.md for detail.
- */
-interface PoseidonParams {
-    t: number;
-    roundFull: number;
-    roundPartial: number;
-    seed: string;
-}
-
-
-const POSEIDON_T3_PARAMS: PoseidonParams = {
-    t: 3,
-    roundFull: 8,
-    roundPartial: 49,
-    seed: POSEIDON_SEED
-}
-
-const POSEIDON_T6_PARAMS: PoseidonParams = {
-    t: 6,
-    roundFull: 8,
-    roundPartial: 50,
-    seed: POSEIDON_SEED
-}
-
-const poseidonCreateHash = (param: PoseidonParams) => {
-    return poseidon.createHash(param.t, param.roundFull, param.roundPartial, param.seed)
-}
-
 // Hash up to 2 elements
-const poseidonT3 = poseidonCreateHash(POSEIDON_T3_PARAMS)
+const poseidonT3 = (inputs: SnarkBigInt[]) => {
+    assert(inputs.length === 2)
+    return poseidon(inputs)
+}
 
 // Hash up to 5 elements
-const poseidonT6 = poseidonCreateHash(POSEIDON_T6_PARAMS)
-
-
-/*
- * A convenience function for to use mimcsponge to hash a Plaintext with
- * key 0 and require only 1 output
- */
-const hash = (plaintext: Plaintext): SnarkBigInt => {
-
-    return mimcsponge.multiHash(plaintext, 0, 1)
+const poseidonT6 = (inputs: SnarkBigInt[]) => {
+    assert(inputs.length === 5)
+    return poseidon(inputs)
 }
 
 const hash5 = (elements: Plaintext): SnarkBigInt => {
@@ -368,7 +333,7 @@ const sign = (
     r = r.mod(babyJub.subOrder)
 
     const R8 = babyJub.mulPointEscalar(babyJub.Base8, r)
-    const hm = hash([R8[0], R8[1], A[0], A[1], hashedData])
+    const hm = hash5([R8[0], R8[1], A[0], A[1], hashedData])
     const S = r.add(hm.mul(s)).mod(babyJub.subOrder)
 
     const signature: Signature = { R8, S }
@@ -387,7 +352,7 @@ const verifySignature = (
     pubKey: PubKey,
 ): boolean => {
 
-    return eddsa.verifyMiMCSponge(hashedData, signature, pubKey)
+    return eddsa.verifyPoseidon(hashedData, signature, pubKey)
 }
 
 export {
@@ -401,9 +366,6 @@ export {
     decrypt,
     sign,
     hashOne,
-    PoseidonParams,
-    POSEIDON_T3_PARAMS,
-    POSEIDON_T6_PARAMS,
     hash5,
     hash11,
     hashLeftRight,

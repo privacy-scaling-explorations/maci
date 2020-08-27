@@ -43,7 +43,7 @@
     "dependencies": {
         "argparse": "^1.0.10",
         "circom": "0.0.34",
-        "circomlib": "git+https://github.com/kobigurk/circomlib.git#4284dc1ef984a204db08864f5da530c97f9376ef",
+        "circomlib": "git+https://github.com/iden3/circomlib.git#01e3f0d6807137fb01c085b88cfaf63661e4a946",
         "libsemaphore": "^1.0.5",
         "shelljs": "^0.8.3",
         "snarkjs": "https://github.com/weijiekoh/snarkjs.git#52e0ceba0256bc9bf94cbc9500139dfc37018f91",

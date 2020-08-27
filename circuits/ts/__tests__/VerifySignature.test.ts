@@ -41,7 +41,7 @@ describe('Signature verification circuit', () => {
         const privKey = bigInt2Buffer(signer.privKey.rawPrivKey)
         const pubKey = circomlib.eddsa.prv2pub(privKey)
         const plaintext = hash11(command.asArray())
-        const sig = circomlib.eddsa.signMiMCSponge(privKey, plaintext)
+        const sig = circomlib.eddsa.signPoseidon(privKey, plaintext)
 
         expect(verifySignature(plaintext, sig, pubKey)).toBeTruthy()
 
