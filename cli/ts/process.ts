@@ -108,7 +108,7 @@ const configureSubparser = (subparsers: any) => {
 
 // This function is named as such as there already is a global Node.js object
 // called 'process'
-const processMessages = async (args: any) => {
+const processMessages = async (args: any): Promise<string | undefined> => {
     // MACI contract
     if (!validateEthAddress(args.contract)) {
         console.error('Error: invalid MACI contract address')
@@ -299,9 +299,7 @@ const processMessages = async (args: any) => {
             break
         }
     }
-
-    // Force the process to exit as it might get stuck
-    process.exit()
+    return randomStateLeaf.serialize()
 }
 
 export {

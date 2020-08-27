@@ -165,7 +165,7 @@ const configureSubparser = (subparsers: any) => {
     )
 }
 
-const tally = async (args: any) => {
+const tally = async (args: any): Promise<object | undefined> => {
 
     // Current results salt
     if (!validateSaltFormat(args.current_results_salt)) {
@@ -315,6 +315,7 @@ const tally = async (args: any) => {
     const batchSize = bigInt((await maciContract.tallyBatchSize()).toString())
 
     let cumulativeTally
+    let tallyFileData
 
     while (true) {
         const hasUntalliedStateLeaves = await maciContract.hasUntalliedStateLeaves()
@@ -505,52 +506,51 @@ const tally = async (args: any) => {
 
         if (!args.repeat || ! (await maciContract.hasUntalliedStateLeaves())) {
             console.log(`Current results salt: 0x${currentResultsSalt.toString(16)}`)
-			const currentResultsCommitment = await maciContract.currentResultsCommitment()
+            const currentResultsCommitment = await maciContract.currentResultsCommitment()
             const c = bigInt(currentResultsCommitment.toString())
             console.log(`Result commitment: 0x${c.toString(16)}`)
 
             console.log(`Total spent voice credits salt: 0x${currentTvcSalt.toString(16)}`)
-			const currentSpentVoiceCreditsCommitment = await maciContract.currentSpentVoiceCreditsCommitment()
+            const currentSpentVoiceCreditsCommitment = await maciContract.currentSpentVoiceCreditsCommitment()
             const d = bigInt(currentSpentVoiceCreditsCommitment.toString())
             console.log(`Total spent voice credits commitment: 0x${d.toString(16)}`)
 
             console.log(`Total spent voice credits per vote option salt: 0x${currentPvcSalt.toString(16)}`)
-			const currentPerVOSpentVoiceCreditsCommitment = await maciContract.currentPerVOSpentVoiceCreditsCommitment()
+            const currentPerVOSpentVoiceCreditsCommitment = await maciContract.currentPerVOSpentVoiceCreditsCommitment()
             const e = bigInt(currentPerVOSpentVoiceCreditsCommitment.toString())
             console.log(`Total spent voice credits per vote option commitment: 0x${e.toString(16)}`)
             console.log(`Total votes: ${finalTotalVotes.toString()}`)
 
+            tallyFileData = {
+                provider: ethProvider,
+                maci: maciContract.address,
+                results: {
+                    commitment: '0x' + c.toString(16),
+                    tally: cumulativeTally.map((x) => x.toString()),
+                    salt: '0x' + currentResultsSalt.toString(16),
+                },
+                totalVoiceCredits: {
+                    spent: newSpentVoiceCredits.toString(),
+                    commitment: '0x' + newSpentVoiceCreditsCommitment.toString(16),
+                    salt: '0x' + newSpentVoiceCreditsSalt.toString(16),
+                },
+                totalVoiceCreditsPerVoteOption: {
+                    commitment: '0x' + newPerVOSpentVoiceCreditsCommitment.toString(16),
+                    tally: totalPerVOSpentVoiceCredits.map((x) => x.toString()),
+                    salt: '0x' + newPerVOSpentVoiceCreditsSalt.toString(16),
+                },
+            }
+
             if (args.tally_file) {
                 // Write tally to a file
-                const d = {
-                    provider: ethProvider,
-                    maci: maciContract.address,
-                    results: {
-                        commitment: '0x' + c.toString(16),
-                        tally: cumulativeTally.map((x) => x.toString()),
-                        salt: '0x' + currentResultsSalt.toString(16),
-                    },
-                    totalVoiceCredits: {
-                        spent: newSpentVoiceCredits.toString(),
-                        commitment: '0x' + newSpentVoiceCreditsCommitment.toString(16),
-                        salt: '0x' + newSpentVoiceCreditsSalt.toString(16),
-                    },
-                    totalVoiceCreditsPerVoteOption: {
-                        commitment: '0x' + newPerVOSpentVoiceCreditsCommitment.toString(16),
-                        tally: totalPerVOSpentVoiceCredits.map((x) => x.toString()),
-                        salt: '0x' + newPerVOSpentVoiceCreditsSalt.toString(16),
-                    },
-                }
-
                 // Format the JSON file with spaces
-                fs.writeFileSync(args.tally_file, JSON.stringify(d, null, 4))
+                fs.writeFileSync(args.tally_file, JSON.stringify(tallyFileData, null, 4))
             }
             break
         }
     }
 
-    // Force the process to exit as it might get stuck
-    process.exit()
+    return tallyFileData
 }
 
 export {
