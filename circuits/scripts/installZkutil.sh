@@ -15,4 +15,4 @@ chmod a+x rust.sh
 sh rust.sh -y
 rm rust.sh
 source $HOME/.cargo/env
-cargo install zkutil --version 0.2.1
+cargo install zkutil --version 0.3.1
