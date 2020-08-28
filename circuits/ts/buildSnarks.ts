@@ -93,7 +93,6 @@ const main = () => {
         }
     )
 
-
     const args = parser.parseArgs()
     const pkOut = args.pk_out
     const vkOut = args.vk_out
@@ -128,12 +127,14 @@ const main = () => {
     // Check if the circuitJsonOut file exists and if we should not override files
     const circuitJsonOutFileExists = fileExists(circuitJsonOut)
 
+    const circomPath = path.join(__dirname, '../node_modules/circom/cli.js')
+
     if (!override && circuitJsonOutFileExists) {
         console.log(circuitJsonOut, 'exists. Skipping compilation.')
     } else {
         console.log(`Compiling ${inputFile}...`)
         // Compile the .circom file
-        shell.exec(`circom ${inputFile} -o ${circuitJsonOut}`)
+        shell.exec(`node ${circomPath} -f ${inputFile} -o ${circuitJsonOut}`)
         console.log('Generated', circuitJsonOut)
     }
 

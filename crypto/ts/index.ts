@@ -71,8 +71,15 @@ const poseidonT6 = (inputs: SnarkBigInt[]) => {
 }
 
 const hash5 = (elements: Plaintext): SnarkBigInt => {
+    const elementLength = elements.length
     if (elements.length > 5) {
-        throw new Error(`elements length should not greater than 11, got ${elements.length}`)
+        throw new Error(`elements length should not greater than 5, got ${elements.length}`)
+    }
+    const elementsPadded = elements.slice()
+    if (elementLength < 5) {
+        for (let i = elementLength; i < 5; i++) {
+            elementsPadded.push(bigInt(0))
+        }
     }
     return poseidonT6(elements)
 }

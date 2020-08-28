@@ -42,7 +42,7 @@
     },
     "dependencies": {
         "argparse": "^1.0.10",
-        "circom": "0.0.34",
+        "circom": "0.0.35",
         "circomlib": "git+https://github.com/iden3/circomlib.git#01e3f0d6807137fb01c085b88cfaf63661e4a946",
         "libsemaphore": "^1.0.5",
         "shelljs": "^0.8.3",
