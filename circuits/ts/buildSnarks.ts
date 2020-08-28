@@ -122,7 +122,7 @@ const main = () => {
     }
 
     // Set memory options for node
-    shell.env['NODE_OPTIONS'] = '--max-old-space-size=4096'
+    shell.env['NODE_OPTIONS'] = '--max-old-space-size=8192'
 
     // Check if the circuitJsonOut file exists and if we should not override files
     const circuitJsonOutFileExists = fileExists(circuitJsonOut)
@@ -134,7 +134,7 @@ const main = () => {
     } else {
         console.log(`Compiling ${inputFile}...`)
         // Compile the .circom file
-        shell.exec(`node ${circomPath} ${inputFile} -o ${circuitJsonOut}`)
+        shell.exec(`node --max-old-space-size=8192 ${circomPath} ${inputFile} -o ${circuitJsonOut}`)
         console.log('Generated', circuitJsonOut)
     }
 

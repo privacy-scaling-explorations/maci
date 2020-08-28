@@ -1,14 +1,59 @@
 version: 2
 jobs:
   build:
-    docker:
-      - image: circleci/node:11.14.0
+    machine: true
 
     working_directory: ~/maci/
 
     steps:
+      - run:
+          name: Install Node 11.14.0
+          command: |
+            export NVM_DIR="/opt/circleci/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm install 11.14.0
+            nvm alias default v11
+            npm i -g npm
+            touch $BASH_ENV
+            echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
+            echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
+            echo 'nvm install v11.14.0' >> $BASH_ENV
+            echo 'nvm alias default v11.14.0' >> $BASH_ENV
+
+
       - checkout:
           path: ~/maci/
+
+      - restore_cache:
+          keys:
+            - v1.3-dependencies-{{ checksum "package-lock.json" }}
+
+      - run: 
+          name: Install NPM dependencies
+          command: npm install
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1.3-dependencies-{{ checksum "package-lock.json" }}
+
+      - restore_cache:
+          keys:
+            - v1.3-dependencies-{{ checksum "contracts/package-lock.json" }}-{{ checksum "circuits/package-lock.json" }}-{{ checksum "config/package-lock.json" }}-{{ checksum "domainobjs/package-lock.json" }}-{{ checksum "cli/package-lock.json" }}-{{ checksum "core/package-lock.json" }}-{{ checksum "integrationTests/package-lock.json" }}--{{ checksum "crypto/package-lock.json" }}
+
+      - run: npm run bootstrap && npm run build
+
+      - save_cache:
+          paths:
+            - circuits/node_modules
+            - cli/node_modules
+            - config/node_modules
+            - contracts/node_modules
+            - crypto/node_modules
+            - core/node_modules
+            - domainobjs/node_modules
+            - integrationTests/node_modules
+          key: v1.3-dependencies-{{ checksum "contracts/package-lock.json" }}-{{ checksum "circuits/package-lock.json" }}-{{ checksum "config/package-lock.json" }}-{{ checksum "domainobjs/package-lock.json" }}-{{ checksum "cli/package-lock.json" }}-{{ checksum "core/package-lock.json" }}-{{ checksum "integrationTests/package-lock.json" }}--{{ checksum "crypto/package-lock.json" }}
 
       - restore_cache:
           keys:
@@ -27,52 +72,14 @@ jobs:
           name: Install solc
           command: wget https://github.com/ethereum/solidity/releases/download/v0.5.16/solc-static-linux && chmod a+x solc-static-linux && sudo mv solc-static-linux /usr/bin/solc
 
-      - restore_cache:
-          keys:
-            - v1.2-dependencies-{{ checksum "package-lock.json" }}
-
-      - run: 
-          name: Install NPM dependencies
-          command: npm install
-
-      - save_cache:
-          paths:
-            - node_modules
-          key: v1.2-dependencies-{{ checksum "package-lock.json" }}
-
-      - restore_cache:
-          keys:
-            - v1.2-dependencies-{{ checksum "contracts/package-lock.json" }}-{{ checksum "circuits/package-lock.json" }}-{{ checksum "config/package-lock.json" }}-{{ checksum "domainobjs/package-lock.json" }}-{{ checksum "cli/package-lock.json" }}-{{ checksum "core/package-lock.json" }}-{{ checksum "integrationTests/package-lock.json" }}
-
-      - run: npm run bootstrap && npm run build
-
-      - save_cache:
-          paths:
-            - contracts/node_modules
-            - config/node_modules
-            - core/node_modules
-            - circuits/node_modules
-            - domainobjs/node_modules
-          key: v1.2-dependencies-{{ checksum "contracts/package-lock.json" }}-{{ checksum "circuits/package-lock.json" }}-{{ checksum "config/package-lock.json" }}-{{ checksum "domainobjs/package-lock.json" }}-{{ checksum "cli/package-lock.json" }}-{{ checksum "core/package-lock.json" }}-{{ checksum "integrationTests/package-lock.json" }}
-
-      # checksum the circuit code
-      - run:
-          name: Checksum snark files
-          command: cd circuits/ && ./scripts/checksumSnarks.sh
-
-      - restore_cache:
-          name: restore-snark-cache
-          keys:
-            - v1.2.3-dependencies-{{ checksum "circuits/build/.snark_checksum" }}
-
       # run trusted setups
       - run:
           name: Build the batch update state tree snark
-          command: cd circuits && npm run buildBatchUpdateStateTreeSnark
+          command: cd circuits && NODE_OPTIONS=--max-old-space-size=8192 node build/buildSnarks.js -i circom/prod/batchUpdateStateTreeVerifier.circom -j build/batchUstCircuit.json -p build/batchUstPk.json -v build/batchUstVk.json -s build/BatchUpdateStateTreeVerifier.sol -vs BatchUpdateStateTreeVerifier -m build/batchUst.params && ./scripts/buildBatchUpdateStateTreeSnark.sh
 
       - run:
           name: Build the quad vote tally snark
-          command: cd circuits && npm run buildQuadVoteTallySnark
+          command: cd circuits && NODE_OPTIONS=--max-old-space-size=8192 node build/buildSnarks.js -i circom/prod/quadVoteTally.circom -j build/qvtCircuit.json -p build/qvtPk.bin -v build/qvtVk.json -s build/QuadVoteTallyVerifier.sol -vs QuadVoteTallyVerifier -m build/qvt.params && ./scripts/buildQuadVoteTallySnark.sh
 
       # cache generated snark circuit and keys
       - save_cache:

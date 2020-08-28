@@ -7,6 +7,14 @@ install:
   - npm i
   - npm run bootstrap
   - npm run build
+
+script:
+  - cd crypto && npm run test
   - ./circuits/scripts/installZkutil.sh
-  - wget https://github.com/ethereum/solidity/releases/download/v0.5.17/solc-static-linux && chmod a+x solc-static-linux && sudo mv solc-static-linux /usr/bin/solc
-  - cd circuits && npm run buildBatchUpdateStateTreeSnark
+  - cd circuits && npm run buildBatchUpdateStateTreeSnark && npm run buildQuadVoteTallySnark
+  - cd circuits && ./scripts/runTestsInCircleCi.sh
+  - cd contracts && ./scripts/compileSol.sh
+  - cd domainobjs && npm run test
+  - cd core && npm run test
+  - cd contracts && ./scripts/runTestsInCircleCi.sh
+  - cd integrationTests && ./scripts/runTestsInCircleCi.sh

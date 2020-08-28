@@ -5,7 +5,6 @@ const compiler = require('circom')
 import {
     stringifyBigInts,
     verifySignature,
-    sign,
     bigInt,
     hash11,
 } from 'maci-crypto'
