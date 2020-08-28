@@ -1,0 +1,12 @@
+language: node_js
+node_js:
+  - 11
+
+install:
+  - npm i -g npm
+  - npm i
+  - npm run bootstrap
+  - npm run build
+  - ./circuits/scripts/installZkutil.sh
+  - wget https://github.com/ethereum/solidity/releases/download/v0.5.17/solc-static-linux && chmod a+x solc-static-linux && sudo mv solc-static-linux /usr/bin/solc
+  - cd circuits && npm run buildBatchUpdateStateTreeSnark

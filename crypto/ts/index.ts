@@ -2,7 +2,8 @@ import * as assert from 'assert'
 import * as crypto from 'crypto'
 import * as ethers from 'ethers'
 import * as snarkjs from 'snarkjs'
-import { babyJub, eddsa, mimc7, poseidon } from 'circomlib'
+import { babyJub, mimc7 } from 'circomlib'
+import { poseidon, eddsa } from 'circomlib-new'
 import { IncrementalQuinTree } from './IncrementalQuinTree'
 const stringifyBigInts: (obj: object) => any = snarkjs.stringifyBigInts
 const unstringifyBigInts: (obj: object) => any = snarkjs.unstringifyBigInts

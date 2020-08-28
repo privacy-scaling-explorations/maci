@@ -69,12 +69,10 @@ jobs:
       - run:
           name: Build the batch update state tree snark
           command: cd circuits && npm run buildBatchUpdateStateTreeSnark
-          no_output_timeout: 600m
 
       - run:
           name: Build the quad vote tally snark
           command: cd circuits && npm run buildQuadVoteTallySnark
-          no_output_timeout: 600m
 
       # cache generated snark circuit and keys
       - save_cache:

@@ -18,7 +18,7 @@ describe('Poseidon hash circuits', () => {
     let circuit
 
     describe('Hasher5', () => {
-        it('correctly hashes 5 random value', async () => {
+        it('correctly hashes 5 random values', async () => {
             circuit = await compileAndLoadCircuit('test/hasher5_test.circom')
             const preImages: any = []
             for (let i = 0; i < 5; i++) {
@@ -41,7 +41,7 @@ describe('Poseidon hash circuits', () => {
         })
     })
     describe('Hasher11', () => {
-        it('correctly hashes 11 random value', async () => {
+        it('correctly hashes 11 random values', async () => {
             circuit = await compileAndLoadCircuit('test/hasher11_test.circom')
             const preImages: any = []
             for (let i = 0; i < 11; i++) {

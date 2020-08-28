@@ -31,7 +31,7 @@
     "dependencies": {
         "@openzeppelin/contracts": "^2.4.0",
         "argparse": "^1.0.10",
-        "circomlib": "git+https://github.com/iden3/circomlib.git#01e3f0d6807137fb01c085b88cfaf63661e4a946",
+        "circomlib": "https://github.com/iden3/circomlib.git#01e3f0d6807137fb01c085b88cfaf63661e4a946",
         "etherlime-lib": "^1.1.5",
         "module-alias": "^2.2.2",
         "openzeppelin-solidity": "^2.4.0"

@@ -1,4 +1,4 @@
-include "../../node_modules/circomlib/circuits/poseidon.circom";
+include "./poseidon.circom";
 
 template PoseidonHashT6() {
     var nInputs = 5;

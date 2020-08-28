@@ -134,7 +134,7 @@ const main = () => {
     } else {
         console.log(`Compiling ${inputFile}...`)
         // Compile the .circom file
-        shell.exec(`node ${circomPath} -f ${inputFile} -o ${circuitJsonOut}`)
+        shell.exec(`node ${circomPath} ${inputFile} -o ${circuitJsonOut}`)
         console.log('Generated', circuitJsonOut)
     }
 

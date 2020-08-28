@@ -72,7 +72,7 @@ const genProofAndPublicSignals = (
     fs.writeFileSync(witnessPath, JSON.stringify(stringifyBigInts(witness)))
 
     const cmd = `${config.zkutil_bin} prove -c ${circuitPath} -p ${paramsPath} ` +
-        `-r ${proofPath} -i ${publicSignalsPath} -w ${witnessPath}`
+        `-r ${proofPath} -o ${publicSignalsPath} -w ${witnessPath}`
 
     const output = shell.exec(cmd, { silent: true })
     if (output.stderr) {
