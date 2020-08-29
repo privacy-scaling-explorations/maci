@@ -1,11 +1,11 @@
 import {
+    executeCircuit,
+    getSignalByName,
     compileAndLoadCircuit,
 } from '../'
 
 import { 
     stringifyBigInts,
-    bigInt,
-    SnarkBigInt,
 } from 'maci-crypto'
 
 describe('Splice circuit', () => {
@@ -15,25 +15,23 @@ describe('Splice circuit', () => {
     })
 
     it('Should output the correct reconstructed level', async () => {
-        expect.assertions(10)
+        expect.assertions(5)
         for (let index = 0; index < 5; index ++ ) {
             const items = [0, 20, 30, 40]
             const leaf  =  10
             const circuitInputs = stringifyBigInts({ in: items, leaf, index })
 
-            const witness = circuit.calculateWitness(circuitInputs)
-            expect(circuit.checkWitness(witness)).toBeTruthy()
+            const witness = await executeCircuit(circuit, circuitInputs)
 
-            const output: SnarkBigInt[] = []
+            const output: BigInt[] = []
             for (let i = 0; i < items.length + 1; i ++) {
-                const idx = circuit.getSignalIdx('main.out[' + i + ']')
-                const selected = witness[idx].toString()
-                output.push(bigInt(selected))
+                const selected = getSignalByName(circuit, witness, `main.out[${i}]`).toString()
+                output.push(BigInt(selected))
             }
             items.splice(index, 0, leaf)
 
-            expect(JSON.stringify(stringifyBigInts(items.map(bigInt)))).toEqual(
-                JSON.stringify(stringifyBigInts(output.map(bigInt)))
+            expect(JSON.stringify(stringifyBigInts(items.map(BigInt)))).toEqual(
+                JSON.stringify(stringifyBigInts(output.map(BigInt)))
             )
         }
     })

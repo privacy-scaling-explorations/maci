@@ -1,12 +1,13 @@
+jest.setTimeout(90000)
 import {
     compileAndLoadCircuit,
+    executeCircuit,
+    getSignalByName,
 } from '../'
 
 import {
     genRandomSalt,
     IncrementalQuinTree,
-    SnarkBigInt,
-    bigInt,
 } from 'maci-crypto'
 
 const LEVELS = 3
@@ -61,7 +62,7 @@ describe('Quin Merkle Tree circuits', () => {
             )
             expect(isValid).toBeTruthy()
 
-            path.pathElements[0][0] += bigInt(1)
+            path.pathElements[0][0] = genRandomSalt()
 
             const circuitInputs = {
                 path_elements: path.pathElements,
@@ -85,7 +86,7 @@ describe('Quin Merkle Tree circuits', () => {
 
         it('Valid CheckRoot inputs should work', async () => {
             const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE)
-            const leaves: SnarkBigInt[] = []
+            const leaves: BigInt[] = []
 
             for (let i = 0; i < 5 ** LEVELS; i++) {
                 const randomVal = genRandomSalt()
@@ -106,7 +107,7 @@ describe('Quin Merkle Tree circuits', () => {
 
         it('Different leaves should generate a different root', async () => {
             const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE)
-            const leaves: SnarkBigInt[] = []
+            const leaves: BigInt[] = []
 
             for (let i = 0; i < 5 ** LEVELS; i++) {
                 const randomVal = genRandomSalt()
@@ -114,7 +115,7 @@ describe('Quin Merkle Tree circuits', () => {
                 leaves.push(randomVal)
             }
 
-            leaves[0] = bigInt(0)
+            leaves[0] = BigInt(0)
 
             const root = tree.root
 
@@ -175,7 +176,7 @@ describe('Quin Merkle Tree circuits', () => {
             )
             expect(isValid).toBeTruthy()
 
-            path.pathElements[0][0] += bigInt(1)
+            path.pathElements[0][0] = BigInt(path.pathElements[0][0]) + BigInt(1)
 
             const circuitInputs = {
                 path_elements: path.pathElements,

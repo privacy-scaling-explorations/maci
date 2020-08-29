@@ -10,6 +10,7 @@ contracts/compiled
 node_modules
 blake2sdef.json
 build/.snark_checksum
+package.json.lerna_backup
 
 .DS_Store
 

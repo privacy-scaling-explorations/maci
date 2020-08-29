@@ -1,7 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { Circuit } from 'snarkjs'
-const compiler = require('circom')
+const circom = require('circom')
 import * as shell from 'shelljs'
 import { config } from 'maci-config'
 
@@ -24,12 +23,32 @@ import {
 const compileAndLoadCircuit = async (
     circuitPath: string
 ) => {
-    const circuitDef = await compiler(path.join(
+    return await circom.tester(path.join(
         __dirname,
         'circuits',
         `../../circom/${circuitPath}`,
     ))
-    return new Circuit(circuitDef)
+}
+
+const executeCircuit = async (
+    circuit: any,
+    inputs: any,
+) => {
+
+    const witness = await circuit.calculateWitness(inputs)
+    await circuit.checkConstraints(witness)
+    await circuit.loadSymbols()
+
+    return witness
+}
+
+const getSignalByName = (
+    circuit: any,
+    witness: any,
+    signal: string,
+) => {
+
+    return witness[circuit.symbols[signal].varIdx]
 }
 
 const loadPk = (binName: string): SnarkProvingKey => {
@@ -96,6 +115,8 @@ const genProofAndPublicSignals = (
 
 export {
     compileAndLoadCircuit,
+    executeCircuit,
+    getSignalByName,
     loadPk,
     loadVk,
     genBatchUstProofAndPublicSignals,

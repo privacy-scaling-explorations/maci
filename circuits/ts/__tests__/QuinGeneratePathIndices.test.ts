@@ -2,11 +2,6 @@ import {
     compileAndLoadCircuit,
 } from '../'
 
-import { 
-    bigInt,
-    SnarkBigInt,
-} from 'maci-crypto'
-
 const toBase5 = (x: number) => {
     const result: number[] = []
     while(true) {
@@ -35,12 +30,12 @@ describe('QuinGeneratePathIndices circuit', () => {
 
         const witness = circuit.calculateWitness(circuitInputs)
         expect(circuit.checkWitness(witness)).toBeTruthy()
-        const result: SnarkBigInt[] = []
+        const result: BigInt[] = []
         for (let i = 0; i < depth; i ++) {
             const idx = circuit.getSignalIdx('main.out[' + i + ']')
-            result.push(bigInt(witness[idx].toString()))
+            result.push(BigInt(witness[idx].toString()))
         }
-        expect(JSON.stringify(result.map((x) => x.toJSNumber()))).toEqual(
+        expect(JSON.stringify(result.map((x) => x.toString()))).toEqual(
             JSON.stringify(toBase5(index))
         )
     })

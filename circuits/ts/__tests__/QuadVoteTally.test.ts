@@ -7,7 +7,6 @@ import {
 } from 'maci-core'
 import {
     genRandomSalt,
-    bigInt,
     stringifyBigInts,
 } from 'maci-crypto'
 
@@ -28,11 +27,11 @@ const voteOptionsMaxIndex = config.maci.voteOptionsMaxLeafIndex
 const quadVoteTallyBatchSize = config.maci.quadVoteTallyBatchSize
 
 const randomRange = (min: number, max: number) => {
-  return bigInt(Math.floor(Math.random() * (max - min) + min))
+  return BigInt(Math.floor(Math.random() * (max - min) + min))
 }
 
 const coordinator = new Keypair()
-const voteWeight = bigInt(9)
+const voteWeight = BigInt(9)
 
 describe('Quadratic vote tallying circuit', () => {
     let circuit
@@ -50,7 +49,7 @@ describe('Quadratic vote tallying circuit', () => {
 
     it('should correctly tally results for 1 user with 1 message in 1 batch', async () => {
 
-        const startIndex = bigInt(0)
+        const startIndex = BigInt(0)
 
         const user = new Keypair()
         // Sign up the user
@@ -59,11 +58,11 @@ describe('Quadratic vote tallying circuit', () => {
         // Publish and process a message
         const voteOptionIndex = randomRange(0, voteOptionsMaxIndex)
         const command = new Command(
-            bigInt(1),
+            BigInt(1),
             user.pubKey,
             voteOptionIndex,
             voteWeight,
-            bigInt(1),
+            BigInt(1),
             genRandomSalt(),
         )
 
@@ -82,7 +81,7 @@ describe('Quadratic vote tallying circuit', () => {
         // Ensure that the current results are all 0 since this is the first
         // batch
         for (let i = 0; i < currentResults.length; i++) {
-            expect(currentResults[i].toString()).toEqual(bigInt(0).toString())
+            expect(currentResults[i].toString()).toEqual(BigInt(0).toString())
         }
 
         // Calculate the vote tally for a batch of state leaves
@@ -91,13 +90,13 @@ describe('Quadratic vote tallying circuit', () => {
         expect(tally.length.toString()).toEqual((5 ** voteOptionTreeDepth).toString())
         expect(tally[voteOptionIndex].toString()).toEqual(voteWeight.toString())
 
-        const currentResultsSalt = bigInt(0)
+        const currentResultsSalt = BigInt(0)
         const newResultsSalt = genRandomSalt()
 
-        const currentSpentVoiceCreditsSalt = bigInt(0)
+        const currentSpentVoiceCreditsSalt = BigInt(0)
         const newSpentVoiceCreditsSalt = genRandomSalt()
 
-        const currentPerVOSpentVoiceCreditsCommitment = bigInt(0)
+        const currentPerVOSpentVoiceCreditsCommitment = BigInt(0)
         const newPerVOSpentVoiceCreditsSalt = genRandomSalt()
 
         // Generate circuit inputs

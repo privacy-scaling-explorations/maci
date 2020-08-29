@@ -16,9 +16,8 @@
     },
     "dependencies": {
         "ethers": "^4.0.45",
-        "circomlib-new": "https://github.com/iden3/circomlib.git#01e3f0d6807137fb01c085b88cfaf63661e4a946",
-        "circomlib": "https://github.com/kobigurk/circomlib.git#4284dc1ef984a204db08864f5da530c97f9376ef",
-        "snarkjs": "https://github.com/weijiekoh/snarkjs.git#52e0ceba0256bc9bf94cbc9500139dfc37018f91"
+        "circomlib": "https://github.com/iden3/circomlib.git#01da5f90dbbefeed5d78cec3b87303244338b920",
+        "ffjavascript": "0.1.0"
     },
     "devDependencies": {
         "@types/jest": "^24.0.25",

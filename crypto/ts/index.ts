@@ -1,18 +1,17 @@
 import * as assert from 'assert'
 import * as crypto from 'crypto'
 import * as ethers from 'ethers'
-import * as snarkjs from 'snarkjs'
-import { babyJub, mimc7 } from 'circomlib'
-import { poseidon, eddsa } from 'circomlib-new'
+const ff = require('ffjavascript')
+import { babyJub, mimc7, poseidon, eddsa } from 'circomlib'
 import { IncrementalQuinTree } from './IncrementalQuinTree'
-const stringifyBigInts: (obj: object) => any = snarkjs.stringifyBigInts
-const unstringifyBigInts: (obj: object) => any = snarkjs.unstringifyBigInts
+const stringifyBigInts: (obj: object) => any = ff.utils.stringifyBigInts
+const unstringifyBigInts: (obj: object) => any = ff.utils.unstringifyBigInts
 
-type SnarkBigInt = snarkjs.bigInt
-type PrivKey = SnarkBigInt
-type PubKey = SnarkBigInt[]
-type EcdhSharedKey = SnarkBigInt
-type Plaintext = SnarkBigInt[]
+type SnarkBigInt = BigInt
+type PrivKey = BigInt
+type PubKey = BigInt[]
+type EcdhSharedKey = BigInt
+type Plaintext = BigInt[]
 
 interface Keypair {
     privKey: PrivKey;
@@ -21,57 +20,55 @@ interface Keypair {
 
 interface Ciphertext {
     // The initialisation vector
-    iv: SnarkBigInt;
+    iv: BigInt;
 
     // The encrypted data
-    data: SnarkBigInt[];
+    data: BigInt[];
 }
 
 // An EdDSA signature.
 // TODO: document what R8 and S mean
 interface Signature {
-    R8: SnarkBigInt[];
-    S: SnarkBigInt;
+    R8: BigInt[];
+    S: BigInt;
 }
 
-const bigInt = snarkjs.bigInt
-
-const SNARK_FIELD_SIZE = snarkjs.bigInt(
+const SNARK_FIELD_SIZE = BigInt(
     '21888242871839275222246405745257275088548364400416034343698204186575808495617'
 )
 
 // A nothing-up-my-sleeve zero value
 // Should be equal to 5503045433092194285660061905880311622788666850989422096966288514930349325741
 const NOTHING_UP_MY_SLEEVE =
-    bigInt(ethers.utils.solidityKeccak256(['bytes'], [ethers.utils.toUtf8Bytes('Maci')])) % SNARK_FIELD_SIZE
+    BigInt(ethers.utils.solidityKeccak256(['bytes'], [ethers.utils.toUtf8Bytes('Maci')])) % SNARK_FIELD_SIZE
 
 /*
- * Convert a SnarkBigInt to a Buffer
+ * Convert a BigInt to a Buffer
  */
-const bigInt2Buffer = (i: SnarkBigInt): Buffer => {
+const bigInt2Buffer = (i: BigInt): Buffer => {
     return Buffer.from(i.toString(16))
 }
 
 /*
- * Convert a Buffer to a SnarkBigInt
+ * Convert a Buffer to a BigInt
  */
 const buffer2BigInt = (b: Buffer): BigInt => {
-    return snarkjs.bigInt('0x' + b.toString('hex'))
+    return BigInt('0x' + b.toString('hex'))
 }
 
 // Hash up to 2 elements
-const poseidonT3 = (inputs: SnarkBigInt[]) => {
+const poseidonT3 = (inputs: BigInt[]) => {
     assert(inputs.length === 2)
     return poseidon(inputs)
 }
 
 // Hash up to 5 elements
-const poseidonT6 = (inputs: SnarkBigInt[]) => {
+const poseidonT6 = (inputs: BigInt[]) => {
     assert(inputs.length === 5)
     return poseidon(inputs)
 }
 
-const hash5 = (elements: Plaintext): SnarkBigInt => {
+const hash5 = (elements: Plaintext): BigInt => {
     const elementLength = elements.length
     if (elements.length > 5) {
         throw new Error(`elements length should not greater than 5, got ${elements.length}`)
@@ -79,7 +76,7 @@ const hash5 = (elements: Plaintext): SnarkBigInt => {
     const elementsPadded = elements.slice()
     if (elementLength < 5) {
         for (let i = elementLength; i < 5; i++) {
-            elementsPadded.push(bigInt(0))
+            elementsPadded.push(BigInt(0))
         }
     }
     return poseidonT6(elements)
@@ -89,7 +86,7 @@ const hash5 = (elements: Plaintext): SnarkBigInt => {
  * A convenience function for to use Poseidon to hash a Plaintext with
  * no more than 11 elements
  */
-const hash11 = (elements: Plaintext): SnarkBigInt => {
+const hash11 = (elements: Plaintext): BigInt => {
     const elementLength = elements.length
     if (elementLength > 11) {
         throw new TypeError(`elements length should not greater than 11, got ${elementLength}`)
@@ -97,7 +94,7 @@ const hash11 = (elements: Plaintext): SnarkBigInt => {
     const elementsPadded = elements.slice()
     if (elementLength < 11) {
         for (let i = elementLength; i < 11; i++) {
-            elementsPadded.push(bigInt(0))
+            elementsPadded.push(BigInt(0))
         }
     }
     return poseidonT3([
@@ -110,17 +107,17 @@ const hash11 = (elements: Plaintext): SnarkBigInt => {
 }
 
 /*
- * A convenience function for to use poseidon to hash a single SnarkBigInt
+ * A convenience function for to use poseidon to hash a single BigInt
  */
-const hashOne = (preImage: SnarkBigInt): SnarkBigInt => {
+const hashOne = (preImage: BigInt): BigInt => {
 
-    return poseidonT3([preImage, bigInt(0)])
+    return poseidonT3([preImage, BigInt(0)])
 }
 
 /*
- * A convenience function for to use poseidon to hash two SnarkBigInts
+ * A convenience function for to use poseidon to hash two BigInts
  */
-const hashLeftRight = (left: SnarkBigInt, right: SnarkBigInt): SnarkBigInt => {
+const hashLeftRight = (left: BigInt, right: BigInt): BigInt => {
     return poseidonT3([left, right])
 }
 
@@ -133,21 +130,16 @@ const hashLeftRight = (left: SnarkBigInt, right: SnarkBigInt): SnarkBigInt => {
  * http://cvsweb.openbsd.org/cgi-bin/cvsweb/~checkout~/src/lib/libc/crypt/arc4random_uniform.c
  * @return A BabyJub-compatible random value.
  */
-const genRandomBabyJubValue: SnarkBigInt = (
-) => {
-
-    // Check whether we are using the correct value for SNARK_FIELD_SIZE
-    assert(SNARK_FIELD_SIZE.eq(snarkjs.bn128.r))
+const genRandomBabyJubValue = (): BigInt => {
 
     // Prevent modulo bias
-    const min = (
-        (snarkjs.bigInt(2).pow(snarkjs.bigInt(256))) - SNARK_FIELD_SIZE
-    ) % SNARK_FIELD_SIZE
+    //const lim = BigInt('0x10000000000000000000000000000000000000000000000000000000000000000')
+    //const min = (lim - SNARK_FIELD_SIZE) % SNARK_FIELD_SIZE
+    const min = BigInt('6350874878119819312338956282401532410528162663560392320966563075034087161851')
 
-    let rand: SnarkBigInt
-
+    let rand
     while (true) {
-        rand = snarkjs.bigInt('0x' + crypto.randomBytes(32).toString('hex'))
+        rand = BigInt('0x' + crypto.randomBytes(32).toString('hex'))
 
         if (rand >= min) {
             break
@@ -163,7 +155,7 @@ const genRandomBabyJubValue: SnarkBigInt = (
 /*
  * @return A BabyJub-compatible private key.
  */
-const genPrivKey: PrivKey = () => {
+const genPrivKey = (): PrivKey => {
 
     return genRandomBabyJubValue()
 }
@@ -171,7 +163,7 @@ const genPrivKey: PrivKey = () => {
 /*
  * @return A BabyJub-compatible salt.
  */
-const genRandomSalt: PrivKey = () => {
+const genRandomSalt = (): PrivKey=> {
 
     return genRandomBabyJubValue()
 }
@@ -196,7 +188,8 @@ const formatPrivKeyForBabyJub = (privKey: PrivKey) => {
         ).slice(0, 32)
     )
 
-    return snarkjs.bigInt.leBuff2int(sBuff).shr(3)
+    const s = ff.utils.leBuff2int(sBuff)
+    return ff.Scalar.shr(s, 3)
 }
 
 /*
@@ -275,14 +268,14 @@ const encrypt = (
 ): Ciphertext => {
 
     // Generate the IV
-    const iv = mimc7.multiHash(plaintext, bigInt(0))
+    const iv = mimc7.multiHash(plaintext, BigInt(0))
 
     const ciphertext: Ciphertext = {
         iv,
-        data: plaintext.map((e: SnarkBigInt, i: number): SnarkBigInt => {
+        data: plaintext.map((e: BigInt, i: number): BigInt => {
             return e + mimc7.hash(
                 sharedKey,
-                iv + snarkjs.bigInt(i),
+                iv + BigInt(i),
             )
         }),
     }
@@ -301,11 +294,8 @@ const decrypt = (
 ): Plaintext => {
 
     const plaintext: Plaintext = ciphertext.data.map(
-        (e: SnarkBigInt, i: number): SnarkBigInt => {
-            return e - mimc7.hash(
-                sharedKey,
-                ciphertext.iv + snarkjs.bigInt(i),
-            )
+        (e: BigInt, i: number): BigInt => {
+            return BigInt(e) - BigInt(mimc7.hash(sharedKey, BigInt(ciphertext.iv) + BigInt(i)))
         }
     )
 
@@ -318,7 +308,7 @@ const decrypt = (
  */
 const sign = (
     privKey: PrivKey,
-    hashedData: SnarkBigInt,
+    hashedData: BigInt,
 ): Signature => {
 
     // TODO: make these intermediate variables have more meaningful names
@@ -326,9 +316,10 @@ const sign = (
 
     // TODO: document these steps
     const sBuff = eddsa.pruneBuffer(h1.slice(0, 32))
-    const s = snarkjs.bigInt.leBuff2int(sBuff)
-    const A = babyJub.mulPointEscalar(babyJub.Base8, s.shr(3))
-    const msgBuff = snarkjs.bigInt.leInt2Buff(hashedData, 32)
+    const s = ff.utils.leBuff2int(sBuff)
+    const A = babyJub.mulPointEscalar(babyJub.Base8, ff.Scalar.shr(s, 3))
+
+    const msgBuff = ff.utils.leInt2Buff(hashedData, 32)
     const rBuff = bigInt2Buffer(
         hashOne(
             buffer2BigInt(Buffer.concat(
@@ -337,12 +328,13 @@ const sign = (
         )
     )
 
-    let r = snarkjs.bigInt.leBuff2int(rBuff)
-    r = r.mod(babyJub.subOrder)
+    let r = ff.utils.leBuff2int(rBuff)
+    const Fr = new ff.F1Field(babyJub.subOrder)
+    r = Fr.e(r)
 
     const R8 = babyJub.mulPointEscalar(babyJub.Base8, r)
     const hm = hash5([R8[0], R8[1], A[0], A[1], hashedData])
-    const S = r.add(hm.mul(s)).mod(babyJub.subOrder)
+    const S =  Fr.add(r , Fr.mul(hm, s));
 
     const signature: Signature = { R8, S }
 
@@ -355,7 +347,7 @@ const sign = (
  * @return True if the signature is valid, and false otherwise.
  */
 const verifySignature = (
-    hashedData: SnarkBigInt,
+    hashedData: BigInt,
     signature: Signature,
     pubKey: PubKey,
 ): boolean => {
@@ -364,7 +356,6 @@ const verifySignature = (
 }
 
 export {
-    SnarkBigInt,
     genRandomSalt,
     genPrivKey,
     genPubKey,
@@ -385,7 +376,7 @@ export {
     EcdhSharedKey,
     Ciphertext,
     Plaintext,
-    bigInt,
+    SnarkBigInt,
     stringifyBigInts,
     unstringifyBigInts,
     formatPrivKeyForBabyJub,

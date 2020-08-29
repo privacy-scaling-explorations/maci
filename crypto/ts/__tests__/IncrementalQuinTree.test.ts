@@ -3,32 +3,30 @@ import {
     stringifyBigInts,
     genRandomSalt,
     IncrementalQuinTree,
-    bigInt,
-    SnarkBigInt,
     hash5,
 } from '../'
 
-const ZERO_VALUE = bigInt(0)
+const ZERO_VALUE = BigInt(0)
 const DEPTH = 4
 const LEAVES_PER_NODE = 5
 
 const computeEmptyRoot = (
     depth: number,
-    zeroValue: SnarkBigInt,
-): SnarkBigInt => {
+    zeroValue: BigInt,
+): BigInt => {
     assert(depth > 0)
-    const zeros: SnarkBigInt[] = []
+    const zeros: BigInt[] = []
     zeros.push(zeroValue)
 
     for (let i = 1; i < depth; i ++) {
-        const node: SnarkBigInt[] = []
+        const node: BigInt[] = []
         for (let j = 0; j < LEAVES_PER_NODE; j ++) {
             node.push(zeros[i-1])
         }
         zeros.push(hash5(node))
     }
 
-    const n: SnarkBigInt[] = []
+    const n: BigInt[] = []
     for (let i = 0; i < LEAVES_PER_NODE; i ++) {
         n.push(zeros[depth - 1])
     }
@@ -37,17 +35,17 @@ const computeEmptyRoot = (
 }
 
 const computeRootFromLeaves = (
-    leaves: SnarkBigInt[],
-): SnarkBigInt => {
+    leaves: BigInt[],
+): BigInt => {
     if (leaves.length === 1) {
         return leaves[0]
     }
 
     assert(leaves.length % LEAVES_PER_NODE === 0)
 
-    const hashes: SnarkBigInt[] = []
+    const hashes: BigInt[] = []
     for (let i = 0; i < leaves.length / LEAVES_PER_NODE; i ++) {
-        const r: SnarkBigInt[] = []
+        const r: BigInt[] = []
         for (let j = 0; j < LEAVES_PER_NODE; j ++) {
             r.push(leaves[i * LEAVES_PER_NODE + j])
         }
@@ -63,7 +61,7 @@ describe('Quin Merkle Tree', () => {
         expect(computeEmptyRoot(DEPTH, ZERO_VALUE).toString())
             .toEqual(tree.root.toString())
 
-        const leaves: SnarkBigInt[] = []
+        const leaves: BigInt[] = []
         for (let i = 0; i < LEAVES_PER_NODE ** DEPTH; i ++) {
             leaves.push(ZERO_VALUE)
         }
@@ -74,9 +72,9 @@ describe('Quin Merkle Tree', () => {
     it('insert() should calculate a correct root', () => {
         const tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
         const numToInsert = LEAVES_PER_NODE + 2
-        const leaves: SnarkBigInt[] = []
+        const leaves: BigInt[] = []
         for (let i = 0; i < numToInsert; i ++) {
-            const leaf = bigInt(i + 1)
+            const leaf = BigInt(i + 1)
             leaves.push(leaf)
             tree.insert(leaf)
         }
@@ -92,9 +90,9 @@ describe('Quin Merkle Tree', () => {
     it('update() should calculate a correct root', () => {
         const tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
         const numToInsert = LEAVES_PER_NODE * 2
-        const leaves: SnarkBigInt[] = []
+        const leaves: BigInt[] = []
         for (let i = 0; i < numToInsert; i ++) {
-            const leaf = bigInt(i + 1)
+            const leaf = BigInt(i + 1)
             leaves.push(leaf)
             tree.insert(leaf)
         }
@@ -103,7 +101,7 @@ describe('Quin Merkle Tree', () => {
             leaves.push(ZERO_VALUE)
         }
 
-        const newLeaf = bigInt(6)
+        const newLeaf = BigInt(6)
         leaves[0] = newLeaf
         tree.update(0, newLeaf)
         expect(computeRootFromLeaves(leaves).toString())
@@ -114,7 +112,7 @@ describe('Quin Merkle Tree', () => {
         const tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
         const numToInsert = LEAVES_PER_NODE * 2
         for (let i = 0; i < numToInsert; i ++) {
-            const leaf = bigInt(i + 1)
+            const leaf = BigInt(i + 1)
             tree.insert(leaf)
         }
 
@@ -160,7 +158,7 @@ describe('Quin Merkle Tree', () => {
         beforeAll(() => {
             tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
             for (let i = 0; i < numToInsert; i ++) {
-                const leaf = bigInt(i + 1)
+                const leaf = BigInt(i + 1)
                 tree.insert(leaf)
             }
         })
@@ -173,7 +171,7 @@ describe('Quin Merkle Tree', () => {
 
         it('verifyMerklePath() should reject an invalid proof (with the right format)', () => {
             const path = tree.genMerklePath(numToInsert - 1)
-            path.pathElements[0][0] = bigInt(123)
+            path.pathElements[0][0] = BigInt(123)
             const isValid = IncrementalQuinTree.verifyMerklePath(
                 path,
                 tree.hashFunc,
@@ -211,7 +209,7 @@ describe('Quin Merkle Tree', () => {
 
             expect.assertions(numToInsert)
             for (let i = 0; i < numToInsert; i ++) {
-                const leaf = bigInt(i + 1)
+                const leaf = BigInt(i + 1)
                 tree.insert(leaf)
 
                 const path = tree.genMerklePath(i)

@@ -1,11 +1,7 @@
-import * as path from 'path'
-import { Circuit } from 'snarkjs'
-const compiler = require('circom')
-
+jest.setTimeout(90000)
 import {
     stringifyBigInts,
     verifySignature,
-    bigInt,
     hash11,
 } from 'maci-crypto'
 
@@ -16,6 +12,8 @@ import {
 
 import {
     compileAndLoadCircuit,
+    executeCircuit,
+    getSignalByName,
 } from '../'
 
 describe('Signature verification circuit', () => {
@@ -28,11 +26,11 @@ describe('Signature verification circuit', () => {
 
         const keypair = new Keypair()
         const command = new Command(
-            bigInt(0),
+            BigInt(0),
             keypair.pubKey,
-            bigInt(123),
-            bigInt(123),
-            bigInt(1),
+            BigInt(123),
+            BigInt(123),
+            BigInt(1),
         )
 
         const signer = new Keypair()
@@ -50,35 +48,34 @@ describe('Signature verification circuit', () => {
             'preimage': stringifyBigInts(command.asArray())
         })
 
-        const witness = circuit.calculateWitness(circuitInputs)
-        expect(circuit.checkWitness(witness)).toBeTruthy()
-
-        const idx = circuit.getSignalIdx('main.valid')
-        const isValid = witness[idx].toString()
+        const witness = await executeCircuit(circuit, circuitInputs)
+        const isValid = getSignalByName(circuit, witness, 'main.valid').toString()
         expect(isValid).toEqual('1')
     })
 
     it('rejects an invalid signature', async () => {
-        const circuitDef = await compiler(path.join(__dirname, 'circuits', '../../../circom/test/verifySignature_test.circom'))
-        const circuit = new Circuit(circuitDef)
-
         const keypair = new Keypair()
         const command = new Command(
-            bigInt(0),
+            BigInt(0),
             keypair.pubKey,
-            bigInt(123),
-            bigInt(123),
-            bigInt(1),
+            BigInt(123),
+            BigInt(123),
+            BigInt(1),
         )
 
         const signer = new Keypair()
         const wrongSigner = new Keypair()
 
         expect(signer.privKey.rawPrivKey).not.toEqual(wrongSigner.privKey.rawPrivKey)
+
         const sig = command.sign(signer.privKey)
 
         const plaintext = hash11(command.asArray())
 
+        // The signature is signed by `signer`
+        expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).toBeTruthy()
+
+        // The signature is not signed by `wrongSigner`
         expect(verifySignature(plaintext, sig, wrongSigner.pubKey.rawPubKey)).toBeFalsy()
 
         const circuitInputs = stringifyBigInts({
@@ -90,11 +87,9 @@ describe('Signature verification circuit', () => {
             'preimage': command.asArray()
         })
 
-        const witness = circuit.calculateWitness(circuitInputs)
-        expect(circuit.checkWitness(witness)).toBeTruthy()
-
-        const idx = circuit.getSignalIdx('main.valid')
-        const isValid = witness[idx].toString()
+        const circuit = await compileAndLoadCircuit('test/verifySignature_test.circom')
+        const witness = await executeCircuit(circuit, circuitInputs)
+        const isValid = getSignalByName(circuit, witness, 'main.valid').toString()
         expect(isValid).toEqual('0')
     })
 })

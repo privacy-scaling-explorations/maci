@@ -1,7 +1,5 @@
 import {
     IncrementalQuinTree,
-    bigInt,
-    SnarkBigInt,
     hashOne,
     hashLeftRight,
     stringifyBigInts,
@@ -14,13 +12,13 @@ const DEPTH = 2
  * Calculate a Merkle root given a list of leaves
  */
 const calculateRoot = (
-    leaves: SnarkBigInt[],
-): SnarkBigInt => {
+    leaves: BigInt[],
+): BigInt => {
     const totalLeaves = 2 ** DEPTH
     const numLeafHashers = totalLeaves / 2
     const numIntermediateHashers = numLeafHashers - 1
 
-    const hashes: SnarkBigInt[] = []
+    const hashes: BigInt[] = []
 
     for (let i=0; i < numLeafHashers; i++) {
         hashes.push(
@@ -44,9 +42,9 @@ describe('Merkle Tree', () => {
     const tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, 2)
 
     it('Should calculate the correct root', () => {
-        const leaves: SnarkBigInt[] = []
+        const leaves: BigInt[] = []
         for (let i = 0; i < 2 ** DEPTH; i ++) {
-            const leaf = bigInt(i)
+            const leaf = BigInt(i)
             leaves.push(leaf)
             tree.insert(leaf)
         }
@@ -59,15 +57,15 @@ describe('Merkle Tree', () => {
         const tree2 = new IncrementalQuinTree(2, ZERO_VALUE, 2)
 
         for (let i = 0; i < 4; i++) {
-            tree1.insert(hashOne(i + 1))
-            tree2.insert(hashOne(i + 1))
+            tree1.insert(hashOne(BigInt(i + 1)))
+            tree2.insert(hashOne(BigInt(i + 1)))
         }
 
         expect(tree1.root).toEqual(tree2.root)
 
         // Update the first tree at index 1
         const indexToUpdate = 1
-        const newVal = hashOne(bigInt(9))
+        const newVal = hashOne(BigInt(9))
         tree1.update(indexToUpdate, newVal)
     
         // The roots must not match
@@ -103,10 +101,10 @@ describe('Merkle Tree', () => {
 
     it('intermediate tree generation', () => {
         const leaves = [
-            bigInt(1),
-            bigInt(8), 
-            bigInt(7), 
-            bigInt(7),
+            BigInt(1),
+            BigInt(8), 
+            BigInt(7), 
+            BigInt(7),
         ]
         const largeTree = new IncrementalQuinTree(4, 0, 2)
         const subTree = new IncrementalQuinTree(2, 0, 2)
@@ -136,7 +134,7 @@ describe('Merkle Tree', () => {
         beforeAll(() => {
             tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, 2)
             for (let i = 0; i < numToInsert; i ++) {
-                const leaf = bigInt(i + 1)
+                const leaf = BigInt(i + 1)
                 tree.insert(leaf)
             }
         })
@@ -149,7 +147,7 @@ describe('Merkle Tree', () => {
 
         it('verifyMerklePath() should reject an invalid proof (with the right format)', () => {
             const path = tree.genMerklePath(numToInsert - 1)
-            path.pathElements[0] = bigInt(123)
+            path.pathElements[0] = [BigInt(123)]
             const isValid = IncrementalQuinTree.verifyMerklePath(
                 path,
                 tree.hashFunc,
@@ -187,7 +185,7 @@ describe('Merkle Tree', () => {
 
             expect.assertions(numToInsert)
             for (let i = 0; i < numToInsert; i ++) {
-                const leaf = bigInt(i + 1)
+                const leaf = BigInt(i + 1)
                 tree.insert(leaf)
 
                 const path = tree.genMerklePath(i)

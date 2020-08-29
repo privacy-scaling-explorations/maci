@@ -1,9 +1,12 @@
+jest.setTimeout(90000)
 import {
     Keypair,
 } from 'maci-domainobjs'
 
 import {
     compileAndLoadCircuit,
+    executeCircuit,
+    getSignalByName,
 } from '../'
 
 describe('Public key derivation circuit', () => {
@@ -18,11 +21,10 @@ describe('Public key derivation circuit', () => {
             'private_key': keypair.privKey.asCircuitInputs(),
         }
 
-        const witness = circuit.calculateWitness(circuitInputs)
-        expect(circuit.checkWitness(witness)).toBeTruthy()
+        const witness = await executeCircuit(circuit, circuitInputs)
 
-        const derivedPubkey0 = witness[circuit.getSignalIdx('main.public_key[0]')].toString()
-        const derivedPubkey1 = witness[circuit.getSignalIdx('main.public_key[1]')].toString()
+        const derivedPubkey0 = getSignalByName(circuit, witness, 'main.public_key[0]').toString()
+        const derivedPubkey1 = getSignalByName(circuit, witness, 'main.public_key[1]').toString()
         expect(derivedPubkey0).toEqual(keypair.pubKey.rawPubKey[0].toString())
         expect(derivedPubkey1).toEqual(keypair.pubKey.rawPubKey[1].toString())
     })

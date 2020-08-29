@@ -1,126 +1,130 @@
+jest.setTimeout(90000)
 import {
     compileAndLoadCircuit,
+    executeCircuit,
+    getSignalByName,
 } from '../'
 
 import {
     genRandomSalt,
     IncrementalQuinTree,
     hashOne,
-    SnarkBigInt,
-    bigInt,
+    stringifyBigInts,
 } from 'maci-crypto'
 
 const LEVELS = 4
 const ZERO_VALUE = 0
 
 describe('Merkle Tree circuits', () => {
-    describe('LeafExists', () => {
-        let circuit
+    //describe('LeafExists', () => {
+        //let circuit
 
-        beforeAll(async () => {
-            circuit = await compileAndLoadCircuit('test/merkleTreeLeafExists_test.circom')
-        })
+        //beforeAll(async () => {
+            //circuit = await compileAndLoadCircuit('test/merkleTreeLeafExists_test.circom')
+        //})
 
-        it('Valid LeafExists inputs should work', async () => {
-            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2)
-            const leaves: SnarkBigInt[] = []
+        //it('Valid LeafExists inputs should work', async () => {
+            //const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2)
+            //const leaves: BigInt[] = []
 
-            for (let i = 0; i < 2 ** LEVELS; i++) {
-                const randomVal = Math.floor(Math.random() * 1000)
-                tree.insert(hashOne(randomVal))
-                leaves.push(hashOne(randomVal))
-            }
+            //for (let i = 0; i < 2 ** LEVELS; i++) {
+                //const randomVal = genRandomSalt()
+                //tree.insert(hashOne(randomVal))
+                //leaves.push(hashOne(randomVal))
+            //}
 
-            const root = tree.root
+            //const root = tree.root
 
-            for (let i = 0; i < 2 ** LEVELS; i++) {
-                const proof = tree.genMerklePath(i)
-                const circuitInputs = {
-                    leaf: leaves[i],
-                    path_elements: proof.pathElements,
-                    path_index: proof.indices,
-                    root,
-                }
-                const witness = circuit.calculateWitness(circuitInputs)
-                expect(circuit.checkWitness(witness)).toBeTruthy()
-            }
-        })
+            //for (let i = 0; i < 2 ** LEVELS; i++) {
+                //const proof = tree.genMerklePath(i)
+                //const circuitInputs = {
+                    //leaf: leaves[i],
+                    //path_elements: proof.pathElements,
+                    //path_index: proof.indices,
+                    //root,
+                //}
+                //debugger
 
-        it('Invalid LeafExists inputs should not work', async () => {
-            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2)
-            const leaves: SnarkBigInt[] = []
+                //const witness = await executeCircuit(circuit, circuitInputs)
+                //const circuitRoot = getSignalByName(circuit, witness, 'main.root').toString()
+                //expect(circuitRoot).toEqual(root.toString())
+            //}
+        //})
 
-            for (let i = 0; i < 2 ** LEVELS; i++) {
-                const randomVal = Math.floor(Math.random() * 1000)
-                tree.insert(randomVal)
-                leaves.push(hashOne(randomVal))
-            }
+        ////it('Invalid LeafExists inputs should not work', async () => {
+            ////const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2)
+            ////const leaves: BigInt[] = []
 
-            const root = tree.root
+            ////for (let i = 0; i < 2 ** LEVELS; i++) {
+                ////const randomVal = genRandomSalt()
+                ////tree.insert(randomVal)
+                ////leaves.push(hashOne(randomVal))
+            ////}
 
-            for (let i = 0; i < 2 ** LEVELS; i++) {
-                const proof = tree.genMerklePath(i)
-                const circuitInputs = {
-                    leaf: leaves[i],
-                    // The following are swapped to delibrately create an error
-                    path_elements: proof.pathElements,
-                    path_index: proof.indices,
-                    root,
-                }
-                expect(() => {
-                    circuit.calculateWitness(circuitInputs)
-                }).toThrow()
-            }
-        })
-    })
+            ////const root = tree.root
 
-    describe('CheckRoot', () => {
-        let circuit
+            ////for (let i = 0; i < 2 ** LEVELS; i++) {
+                ////const proof = tree.genMerklePath(i)
+                ////const circuitInputs = {
+                    ////leaf: leaves[i],
+                    ////// The following are swapped to delibrately create an error
+                    ////path_elements: proof.pathElements,
+                    ////path_index: proof.indices,
+                    ////root,
+                ////}
+                ////expect(async () => {
+                    ////await executeCircuit(circuit, circuitInputs)
+                ////}).toThrow()
+            ////}
+        ////})
+    ////})
 
-        beforeAll(async () => {
-            circuit = await compileAndLoadCircuit('test/merkleTreeCheckRoot_test.circom')
-        })
+    //describe('CheckRoot', () => {
+        //let circuit
 
-        it('Valid CheckRoot inputs should work', async () => {
-            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2)
-            const leaves: SnarkBigInt[] = []
+        //beforeAll(async () => {
+            //circuit = await compileAndLoadCircuit('test/merkleTreeCheckRoot_test.circom')
+        //})
 
-            for (let i = 0; i < 2 ** LEVELS; i++) {
-                const randomVal = Math.floor(Math.random() * 1000)
-                tree.insert(hashOne(randomVal))
-                leaves.push(hashOne(randomVal))
-            }
+        //it('Valid CheckRoot inputs should work', async () => {
+            //const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2)
+            //const leaves: BigInt[] = []
 
-            const root = tree.root
+            //for (let i = 0; i < 2 ** LEVELS; i++) {
+                //const randomVal = genRandomSalt()
+                //tree.insert(hashOne(randomVal))
+                //leaves.push(hashOne(randomVal))
+            //}
 
-            const circuitInputs = { leaves }
+            //const root = tree.root
 
-            const witness = circuit.calculateWitness(circuitInputs)
-            expect(witness[circuit.getSignalIdx('main.root')].toString())
-                .toEqual(root.toString())
-            expect(circuit.checkWitness(witness)).toBeTruthy()
-        })
+            //const circuitInputs = { leaves }
 
-        it('Different leaves should generate a different root', async () => {
-            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2)
-            const leaves: SnarkBigInt[] = []
-            for (let i = 0; i < 2 ** LEVELS; i++) {
-                const randomVal = Math.floor(Math.random() * 1000)
-                const leaf = hashOne(randomVal)
-                tree.insert(leaf)
+            //const witness = await executeCircuit(circuit, circuitInputs)
+            //const circuitRoot = getSignalByName(circuit, witness, 'main.root').toString()
+            //expect(circuitRoot.toString()).toEqual(root.toString())
+        //})
 
-                // Give the circuit a different leaf
-                leaves.push(bigInt(randomVal + 1))
-            }
+        //it('Different leaves should generate a different root', async () => {
+            //const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2)
+            //const leaves: BigInt[] = []
+            //for (let i = 0; i < 2 ** LEVELS; i++) {
+                //const randomVal = genRandomSalt()
+                //const leaf = hashOne(randomVal)
+                //tree.insert(leaf)
 
-            const root = tree.root
-            const circuitInputs = { leaves }
-            const witness = circuit.calculateWitness(circuitInputs)
-            expect(witness[circuit.getSignalIdx('main.root')].toString())
-                .not.toEqual(root.toString())
-            expect(circuit.checkWitness(witness)).toBeTruthy()
-        })
-    })
+                //// Give the circuit a different leaf
+                //leaves.push(BigInt(randomVal) + BigInt(1))
+            //}
+
+            //const root = tree.root
+            //const circuitInputs = { leaves }
+            //const witness = await executeCircuit(circuit, circuitInputs)
+            //const circuitRoot = getSignalByName(circuit, witness, 'main.root').toString()
+            //expect(circuitRoot.toString())
+                //.not.toEqual(root.toString())
+        //})
+    //})
 
     describe('MerkleTreeInclusionProof', () => {
         let circuit
@@ -139,7 +143,8 @@ describe('Merkle Tree circuits', () => {
                 tree.insert(leaf)
             }
 
-            for (let i = 0; i < 2 ** LEVELS; i++) {
+            for (let i = 0; i < 1; i++) {
+            //for (let i = 0; i < 2 ** LEVELS; i++) {
                 const randomVal = genRandomSalt()
                 const leaf = hashOne(randomVal)
 
@@ -149,49 +154,48 @@ describe('Merkle Tree circuits', () => {
 
                 const root = tree.root
 
-                const circuitInputs = {
+                const circuitInputs = stringifyBigInts({
                     leaf: leaf.toString(),
                     path_elements: proof.pathElements,
                     path_index: proof.indices
-                }
+                })
 
-                const witness = circuit.calculateWitness(circuitInputs)
-                expect(circuit.checkWitness(witness)).toBeTruthy()
-
-                expect(witness[circuit.getSignalIdx('main.root')].toString())
-                    .toEqual(root.toString())
+                debugger
+                const witness = await executeCircuit(circuit, circuitInputs)
+                const circuitRoot = getSignalByName(circuit, witness, 'main.root').toString()
+                expect(circuitRoot).toEqual(root.toString())
             }
         })
 
-        it('Invalid update proofs should not work', async () => {
-            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2)
+        //it('Invalid update proofs should not work', async () => {
+            //const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2)
 
-            // Populate the tree
-            for (let i = 0; i < 2 ** LEVELS; i++) {
-                const randomVal = Math.floor(Math.random() * 1000)
-                const leaf = hashOne(randomVal)
-                tree.insert(leaf)
-            }
+            //// Populate the tree
+            //for (let i = 0; i < 2 ** LEVELS; i++) {
+                //const randomVal = genRandomSalt()
+                //const leaf = hashOne(randomVal)
+                //tree.insert(leaf)
+            //}
 
-            for (let i = 0; i < 2 ** LEVELS; i++) {
-                const randomVal = Math.floor(Math.random() * 1000)
-                const leaf = hashOne(randomVal).toString()
+            //for (let i = 0; i < 2 ** LEVELS; i++) {
+                //const randomVal = genRandomSalt()
+                //const leaf = hashOne(randomVal)
 
-                tree.insert(leaf)
+                //tree.insert(leaf)
 
-                const proof = tree.genMerklePath(i)
+                //const proof = tree.genMerklePath(i)
 
-                const circuitInputs = {
-                    leaf: leaf.toString(),
-                    // The following are swapped to delibrately create an error
-                    path_elements: proof.indices,
-                    path_index: proof.pathElements,
-                }
+                //const circuitInputs = {
+                    //leaf: leaf.toString(),
+                    //// The following are swapped to delibrately create an error
+                    //path_elements: proof.indices,
+                    //path_index: proof.pathElements,
+                //}
 
-                expect(() => {
-                    circuit.calculateWitness(circuitInputs)
-                }).toThrow()
-            }
-        })
+                //expect(async () => {
+                    //await executeCircuit(circuit, circuitInputs)
+                //}).toThrow()
+            //}
+        //})
     })
 })

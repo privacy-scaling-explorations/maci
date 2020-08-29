@@ -1,28 +1,26 @@
 import * as assert from 'assert'
 import {
-    SnarkBigInt,
     hashLeftRight,
     hash5,
-    bigInt,
     stringifyBigInts,
     unstringifyBigInts,
 } from './'
 
-type Leaf = SnarkBigInt
-type Root = SnarkBigInt
-type PathElements = SnarkBigInt[]
-type Indices = SnarkBigInt[]
+type Leaf = BigInt
+type Root = BigInt
+type PathElements = BigInt[][]
+type Indices = number[]
 
 interface MerkleProof {
     pathElements: PathElements;
     indices: Indices;
     depth: number;
-    root: SnarkBigInt;
+    root: BigInt;
     leaf: Leaf;
 }
 
-const deepCopyBigIntArray = (arr: SnarkBigInt[]) => {
-    return arr.map((x) => bigInt(x.toString()))
+const deepCopyBigIntArray = (arr: BigInt[]) => {
+    return arr.map((x) => BigInt(x.toString()))
 }
 
 /* 
@@ -31,58 +29,58 @@ const deepCopyBigIntArray = (arr: SnarkBigInt[]) => {
  */
 class IncrementalQuinTree {
     // The number of leaves per node
-    public leavesPerNode: SnarkBigInt
+    public leavesPerNode: number
 
     // The tree depth
     public depth: number
 
     // The default value for empty leaves
-    public zeroValue: SnarkBigInt
+    public zeroValue: BigInt
 
     // The tree root
-    public root: SnarkBigInt
+    public root: BigInt
 
     // The the smallest empty leaf index
-    public nextIndex: SnarkBigInt
+    public nextIndex: number
 
     // All leaves in the tree
     public leaves: Leaf[] = []
 
     // Contains the zero value per level. i.e. zeros[0] is zeroValue,
     // zeros[1] is the hash of leavesPerNode zeros, and so on.
-    public zeros: SnarkBigInt[] = []
+    public zeros: BigInt[] = []
 
     // Caches values needed for efficient appends.
-    public filledSubtrees: SnarkBigInt[][] = []
+    public filledSubtrees: BigInt[][] = []
 
     // Caches values needed to compute Merkle paths.
     public filledPaths: any = {}
 
     // The hash function to use
-    public hashFunc: (leaves: SnarkBigInt[]) => SnarkBigInt
+    public hashFunc: (leaves: BigInt[]) => BigInt
 
 
     constructor (
         _depth: number,
-        _zeroValue: SnarkBigInt,
-        _leavesPerNode: number | SnarkBigInt = 5,
+        _zeroValue: BigInt | number,
+        _leavesPerNode: number | BigInt = 5,
     ) {
         // This class supports either 2 leaves per node, or 5 leaves per node.
         // 5 is largest number of inputs which circomlib's Poseidon EVM hash
         // function implementation provides for.
         // TODO: modify this to support 3 or 4 leaves per node
 
-        this.leavesPerNode = bigInt(_leavesPerNode)
-        assert(this.leavesPerNode.equals(bigInt(2)) || this.leavesPerNode.equals(bigInt(5)))
+        this.leavesPerNode = Number(_leavesPerNode)
+        assert(this.leavesPerNode === 2 || this.leavesPerNode === 5)
 
-        this.depth = bigInt(_depth)
-        this.nextIndex = bigInt(0)
-        this.zeroValue = bigInt(_zeroValue)
+        this.depth = Number(_depth)
+        this.nextIndex = 0
+        this.zeroValue = BigInt(_zeroValue)
 
         // Set this.hashFunc depending on the number of leaves per node
-        if (this.leavesPerNode === bigInt(2)) {
+        if (this.leavesPerNode === 2) {
             // Uses PoseidonT3 under the hood, which accepts 2 inputs
-            this.hashFunc = (inputs: SnarkBigInt[]) => {
+            this.hashFunc = (inputs: BigInt[]) => {
                 return hashLeftRight(inputs[0], inputs[1])
             }
         } else {
@@ -95,14 +93,14 @@ class IncrementalQuinTree {
         let currentLevelHash = this.zeroValue
 
         // Calculate intermediate values
-        for (let i = bigInt(0); i < this.depth; i++) {
-            if (i < this.depth - bigInt(1)) {
+        for (let i = 0; i < this.depth; i++) {
+            if (i < this.depth - 1) {
                 this.filledPaths[i] = []
             }
             this.zeros.push(currentLevelHash)
 
-            const z: SnarkBigInt[] = []
-            for (let j = bigInt(0); j < this.leavesPerNode; j ++) {
+            const z: BigInt[] = []
+            for (let j = 0; j < this.leavesPerNode; j ++) {
                 z.push(this.zeros[i])
             }
             this.filledSubtrees.push(z)
@@ -111,7 +109,7 @@ class IncrementalQuinTree {
         }
 
         // Calculate the root
-        this.root = this.hash(this.filledSubtrees[this.depth - bigInt(1)])
+        this.root = this.hash(this.filledSubtrees[this.depth - 1])
     }
 
     /* 
@@ -122,33 +120,33 @@ class IncrementalQuinTree {
     public insert(
         _value: Leaf,
     ) {
-        // Ensure that _value is a SnarkBigInt
-        _value = bigInt(_value)
+        // Ensure that _value is a BigInt
+        _value = BigInt(_value)
 
         // A node is one level above the leaf
         // m is the leaf's relative position within its node
         let m = this.nextIndex % this.leavesPerNode
 
         // Zero out the level in filledSubtrees
-        if (m === bigInt(0)) {
-            for (let j = bigInt(1); j < this.filledSubtrees[0].length; j ++) {
+        if (m === 0) {
+            for (let j = 1; j < this.filledSubtrees[0].length; j ++) {
                 this.filledSubtrees[0][j] = this.zeros[0]
             }
         }
 
         this.filledSubtrees[0][m] = _value
 
-        let currentIndex: SnarkBigInt = this.nextIndex
+        let currentIndex = this.nextIndex
         for (let i = 1; i < this.depth; i++) {
             // currentIndex is the leaf or node's absolute index
-            currentIndex /= this.leavesPerNode
+            currentIndex = Math.floor(currentIndex / this.leavesPerNode)
 
             // m is the leaf's relative position within its node
             m = currentIndex % this.leavesPerNode
 
             // Zero out the level
-            if (m === bigInt(0)) {
-                for (let j = bigInt(1); j < this.filledSubtrees[i].length; j ++) {
+            if (m === 0) {
+                for (let j = 1; j < this.filledSubtrees[i].length; j ++) {
                     this.filledSubtrees[i][j] = this.zeros[i]
                 }
             }
@@ -164,7 +162,7 @@ class IncrementalQuinTree {
         }
 
         this.leaves.push(_value)
-        this.nextIndex += bigInt(1)
+        this.nextIndex ++
         this.root = this.hash(
             this.filledSubtrees[this.filledSubtrees.length - 1],
         )
@@ -181,7 +179,7 @@ class IncrementalQuinTree {
             throw new Error('The leaf index specified is too large')
         }
 
-        _value = bigInt(_value)
+        _value = BigInt(_value)
 
         const temp = this.leaves
         temp[_index] = _value
@@ -223,16 +221,16 @@ class IncrementalQuinTree {
             throw new Error('The leaf index is too large')
         }
 
-        const pathElements: SnarkBigInt[][] = []
-        const indices: SnarkBigInt[] = [bigInt(_index) % this.leavesPerNode]
+        const pathElements: BigInt[][] = []
+        const indices: number[] = [_index % this.leavesPerNode]
 
-        let r = bigInt(_index).div(this.leavesPerNode)
+        let r = Math.floor(_index / this.leavesPerNode)
 
         for (let i = 0; i < this.depth; i ++) {
-            const s: SnarkBigInt[] = []
+            const s: BigInt[] = []
             if (i === 0) {
                 // Get a slice of leaves, padded with zeros
-                const leafStartIndex = bigInt(_index) - (bigInt(_index) % this.leavesPerNode)
+                const leafStartIndex = _index - (_index % this.leavesPerNode)
                 const leafEndIndex = leafStartIndex + this.leavesPerNode
                 for (let j = leafStartIndex; j < leafEndIndex; j ++) {
                     if (j < this.leaves.length) {
@@ -243,7 +241,7 @@ class IncrementalQuinTree {
                 }
             } else {
                 for (let j = 0; j < this.leavesPerNode; j ++) {
-                    const x = r.mul(this.leavesPerNode) + bigInt(j)
+                    const x = r * this.leavesPerNode + j
                     if (this.filledPaths[i - 1].length <= x) {
                         s.push(this.zeros[i])
                     } else {
@@ -256,42 +254,43 @@ class IncrementalQuinTree {
             const p = r % this.leavesPerNode
             pathElements.push(s)
 
-            if (i < this.depth - bigInt(1)) {
+            if (i < this.depth - 1) {
                 indices.push(p)
             }
 
-            r = r.div(this.leavesPerNode)
+            r = Math.floor(r /this.leavesPerNode)
         }
 
         // Remove the commitments to elements which are the leaves per level
-        let newPe: SnarkBigInt[] = [[]]
-        const firstIndex = bigInt(_index) % this.leavesPerNode
+        const newPe: BigInt[][] = [[]]
+        const firstIndex = _index % this.leavesPerNode
 
         for (let i = 0; i < pathElements[0].length; i ++) {
-            if (bigInt(i) !== firstIndex) {
+            if (i !== firstIndex) {
                 newPe[0].push(pathElements[0][i])
             }
         }
 
         for (let i = 1; i < pathElements.length; i ++) {
-            const level: SnarkBigInt[] = []
+            const level: BigInt[] = []
             for (let j = 0; j < pathElements[i].length; j ++) {
-                if (bigInt(j) !== indices[i]) {
+                if (j !== indices[i]) {
                     level.push(pathElements[i][j])
                 }
             }
             newPe.push(level)
         }
 
-        // If there are only 2 leaves per node, flatten pathElements
-        if (this.leavesPerNode === bigInt(2)) {
-            const flattened: SnarkBigInt[] = []
-            for (const level of newPe) {
-                assert(level.length === 1)
-                flattened.push(level[0])
-            }
-            newPe = flattened
-        }
+        //let flattenedPe: BigInt[] = []
+        //// If there are only 2 leaves per node, flatten pathElements
+        //if (this.leavesPerNode === 2) {
+            //const flattened: BigInt[] = []
+            //for (const level of newPe) {
+                //assert(level.length === 1)
+                //flattened.push(level[0])
+            //}
+            //newPe = flattened
+        //}
 
         return {
             pathElements: newPe,
@@ -304,21 +303,22 @@ class IncrementalQuinTree {
 
     public static verifyMerklePath(
         _proof: MerkleProof,
-        _hashFunc: (leaves: SnarkBigInt[]) => SnarkBigInt,
+        _hashFunc: (leaves: BigInt[]) => BigInt,
     ): boolean {
         assert (_proof.pathElements)
 
-        let pathElements: SnarkBigInt[]
-        // If there are only 2 leaves per node, un-flatten pathElements
-        if (! Array.isArray(_proof.pathElements[0])) {
-            pathElements = []
-            for (const element of _proof.pathElements) {
-                pathElements.push([element])
-            }
-        } else {
-            pathElements = _proof.pathElements
-        }
+        //let pathElements: BigInt[]
+        //// If there are only 2 leaves per node, un-flatten pathElements
+        //if (! Array.isArray(_proof.pathElements[0])) {
+            //pathElements = []
+            //for (const element of _proof.pathElements) {
+                //pathElements.push([element])
+            //}
+        //} else {
+            //pathElements = _proof.pathElements
+        //}
 
+        const pathElements = _proof.pathElements
         // Validate the proof format
         assert (_proof.indices)
         for (let i = 0; i < _proof.depth; i ++) {
@@ -327,18 +327,18 @@ class IncrementalQuinTree {
         }
 
         // Hash the first level
-        const firstLevel: SnarkBigInt[] = pathElements[0].map(bigInt)
-        firstLevel.splice(_proof.indices[0].toJSNumber(), 0, _proof.leaf)
-        let currentLevelHash: SnarkBigInt = _hashFunc(firstLevel)
+        const firstLevel: BigInt[] = pathElements[0].map(BigInt)
+        firstLevel.splice(Number(_proof.indices[0]), 0, _proof.leaf)
+        let currentLevelHash: BigInt = _hashFunc(firstLevel)
 
         // Verify the proof
         for (let i = 1; i < pathElements.length; i ++) {
-            const level: SnarkBigInt[] = pathElements[i].map(bigInt)
-            level.splice(_proof.indices[i].toJSNumber(), 0, currentLevelHash)
+            const level: BigInt[] = pathElements[i].map(BigInt)
+            level.splice(Number(_proof.indices[i]), 0, currentLevelHash)
             currentLevelHash = _hashFunc(level)
         }
 
-        return currentLevelHash.equals(_proof.root)
+        return currentLevelHash === _proof.root
     }
 
     /*  Deep-copies this object
@@ -361,8 +361,8 @@ class IncrementalQuinTree {
         return newTree
     }
 
-    public hash(_leaves: SnarkBigInt[]): SnarkBigInt  {
-        if (this.leavesPerNode > bigInt(2)) {
+    public hash(_leaves: BigInt[]): BigInt  {
+        if (this.leavesPerNode > 2) {
             while (_leaves.length < 5) {
                 _leaves.push(this.zeroValue)
             }

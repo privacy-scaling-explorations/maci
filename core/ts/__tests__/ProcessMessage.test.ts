@@ -1,7 +1,6 @@
 import { MaciState } from '../'
 import { config } from 'maci-config'
 import {
-    bigInt,
     genRandomSalt,
 } from 'maci-crypto'
 import {
@@ -11,7 +10,7 @@ import {
     Keypair,
 } from 'maci-domainobjs'
 
-const coordinator = new Keypair(new PrivKey(bigInt(config.maci.coordinatorPrivKey)))
+const coordinator = new Keypair(new PrivKey(BigInt(config.maci.coordinatorPrivKey)))
 const stateTreeDepth = config.maci.merkleTrees.stateTreeDepth
 const messageTreeDepth = config.maci.merkleTrees.messageTreeDepth
 const voteOptionTreeDepth = config.maci.merkleTrees.voteOptionTreeDepth
@@ -43,13 +42,13 @@ describe('Process one message', () => {
     })
 
     it('processMessage() should process a valid message', async () => {
-        const voteWeight = bigInt(9)
+        const voteWeight = BigInt(9)
         const command = new Command(
-            bigInt(1),
+            BigInt(1),
             user.pubKey,
-            bigInt(0),
+            BigInt(0),
             voteWeight,
-            bigInt(1),
+            BigInt(1),
             genRandomSalt(),
         )
 
@@ -66,16 +65,16 @@ describe('Process one message', () => {
 
         expect(newStateRoot.toString()).not.toEqual(oldState.genStateRoot().toString())
         expect(copiedState.users[0].voiceCreditBalance.toString())
-            .toEqual((bigInt(initialVoiceCreditBalance) - voteWeight.pow(bigInt(2))).toString())
+            .toEqual((BigInt(initialVoiceCreditBalance) - (voteWeight * voteWeight)).toString())
     })
 
     it('processMessage() should not process a message with an incorrect nonce', async () => {
         const command = new Command(
-            bigInt(1),
+            BigInt(1),
             user.pubKey,
-            bigInt(0),
-            bigInt(9),
-            bigInt(0),
+            BigInt(0),
+            BigInt(9),
+            BigInt(0),
             genRandomSalt(),
         )
 
@@ -95,11 +94,11 @@ describe('Process one message', () => {
 
     it('processMessage() should not process a message with an incorrect vote weight', async () => {
         const command = new Command(
-            bigInt(1),
+            BigInt(1),
             user.pubKey,
-            bigInt(0),
-            bigInt(initialVoiceCreditBalance + 1),
-            bigInt(1),
+            BigInt(0),
+            BigInt(initialVoiceCreditBalance + 1),
+            BigInt(1),
             genRandomSalt(),
         )
 
@@ -119,11 +118,11 @@ describe('Process one message', () => {
 
     it('processMessage() should not process a message with an incorrect state tree index', async () => {
         const command = new Command(
-            bigInt(2),
+            BigInt(2),
             user.pubKey,
-            bigInt(0),
-            bigInt(9),
-            bigInt(1),
+            BigInt(0),
+            BigInt(9),
+            BigInt(1),
             genRandomSalt(),
         )
 
@@ -143,16 +142,16 @@ describe('Process one message', () => {
 
     it('processMessage() should not process a message with an incorrect signature', async () => {
         const command = new Command(
-            bigInt(1),
+            BigInt(1),
             user.pubKey,
-            bigInt(0),
-            bigInt(9),
-            bigInt(1),
+            BigInt(0),
+            BigInt(9),
+            BigInt(1),
             genRandomSalt(),
         )
 
         const signature = command.sign(user.privKey)
-        signature.S = signature.S + bigInt(1)
+        signature.S = BigInt(signature.S) + BigInt(1)
         const sharedKey = Keypair.genEcdhSharedKey(user.privKey, coordinator.pubKey)
         const message = command.encrypt(signature, sharedKey)
 
@@ -170,11 +169,11 @@ describe('Process one message', () => {
 
     it('processMessage() should not process a message with an invalid maxVoteOptionIndex', async () => {
         const command = new Command(
-            bigInt(1),
+            BigInt(1),
             user.pubKey,
-            bigInt(maxVoteOptionIndex + 1),
-            bigInt(9),
-            bigInt(1),
+            BigInt(maxVoteOptionIndex + 1),
+            BigInt(9),
+            BigInt(1),
             genRandomSalt(),
         )
 

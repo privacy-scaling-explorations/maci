@@ -13,7 +13,7 @@ template Selector() {
   signal output left;
   signal output right;
 
-  path_index * (1-path_index) === 0
+  path_index * (1 - path_index) === 0;
 
   component mux = MultiMux1(2);
   mux.c[0][0] <== input_elem;
@@ -31,7 +31,7 @@ template Selector() {
 template MerkleTreeInclusionProof(n_levels) {
     signal input leaf;
     signal input path_index[n_levels];
-    signal input path_elements[n_levels];
+    signal input path_elements[n_levels][1];
     signal output root;
 
     component selectors[n_levels];
@@ -42,7 +42,7 @@ template MerkleTreeInclusionProof(n_levels) {
       hashers[i] = HashLeftRight();
 
       path_index[i] ==> selectors[i].path_index;
-      path_elements[i] ==> selectors[i].path_elem;
+      path_elements[i][0] ==> selectors[i].path_elem;
 
       selectors[i].left ==> hashers[i].left;
       selectors[i].right ==> hashers[i].right;
@@ -64,7 +64,7 @@ template LeafExists(levels){
   // levels is depth of tree
   signal input leaf;
 
-  signal private input path_elements[levels];
+  signal private input path_elements[levels][1];
   signal private input path_index[levels];
 
   signal input root;
@@ -73,7 +73,7 @@ template LeafExists(levels){
   merkletree.leaf <== leaf;
   for (var i = 0; i < levels; i++) {
     merkletree.path_index[i] <== path_index[i];
-    merkletree.path_elements[i] <== path_elements[i];
+    merkletree.path_elements[i][0] <== path_elements[i][0];
   }
 
   root === merkletree.root;
