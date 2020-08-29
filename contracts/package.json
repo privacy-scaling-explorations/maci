@@ -32,7 +32,7 @@
         "@openzeppelin/contracts": "^2.4.0",
         "argparse": "^1.0.10",
         "circomlib": "0.2.4",
-        "etherlime-lib": "^1.1.5",
+        "etherlime-lib": "1.1.5",
         "module-alias": "^2.2.2",
         "openzeppelin-solidity": "^2.4.0"
     },
