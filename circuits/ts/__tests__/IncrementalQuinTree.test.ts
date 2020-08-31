@@ -41,10 +41,9 @@ describe('Quin Merkle Tree circuits', () => {
                 path_index: path.indices,
                 leaf: tree.leaves[index],
             }
-            const witness = circuit.calculateWitness(circuitInputs)
-            expect(circuit.checkWitness(witness)).toBeTruthy()
-            const circuitRoot = witness[circuit.getSignalIdx('main.root')].toString()
-            expect(circuitRoot.toString()).toEqual(tree.root.toString())
+            const witness = await executeCircuit(circuit, circuitInputs)
+            const circuitRoot = getSignalByName(circuit, witness, 'main.root').toString()
+            expect(circuitRoot).toEqual(tree.root.toString())
         })
 
         it('An modified Merkle proof should produce a different root', async () => {
@@ -70,9 +69,8 @@ describe('Quin Merkle Tree circuits', () => {
                 leaf: tree.leaves[index],
             }
 
-            const witness = circuit.calculateWitness(circuitInputs)
-            expect(circuit.checkWitness(witness)).toBeTruthy()
-            const circuitRoot = witness[circuit.getSignalIdx('main.root')].toString()
+            const witness = await executeCircuit(circuit, circuitInputs)
+            const circuitRoot = getSignalByName(circuit, witness, 'main.root').toString()
             expect(circuitRoot.toString()).not.toEqual(tree.root.toString())
         })
     })
@@ -98,9 +96,8 @@ describe('Quin Merkle Tree circuits', () => {
 
             const circuitInputs = { leaves }
 
-            const witness = circuit.calculateWitness(circuitInputs)
-            expect(circuit.checkWitness(witness)).toBeTruthy()
-            const circuitRoot = witness[circuit.getSignalIdx('main.root')].toString()
+            const witness = await executeCircuit(circuit, circuitInputs)
+            const circuitRoot = getSignalByName(circuit, witness, 'main.root').toString()
 
             expect(circuitRoot).toEqual(root.toString())
         })
@@ -121,9 +118,8 @@ describe('Quin Merkle Tree circuits', () => {
 
             const circuitInputs = { leaves }
 
-            const witness = circuit.calculateWitness(circuitInputs)
-            expect(circuit.checkWitness(witness)).toBeTruthy()
-            const circuitRoot = witness[circuit.getSignalIdx('main.root')].toString()
+            const witness = await executeCircuit(circuit, circuitInputs)
+            const circuitRoot = getSignalByName(circuit, witness, 'main.root').toString()
 
             expect(circuitRoot).not.toEqual(root.toString())
         })
@@ -157,11 +153,11 @@ describe('Quin Merkle Tree circuits', () => {
                 leaf: tree.leaves[index],
                 root: tree.root,
             }
-            const witness = circuit.calculateWitness(circuitInputs)
-            expect(circuit.checkWitness(witness)).toBeTruthy()
+            await executeCircuit(circuit, circuitInputs)
         })
 
         it('Invalid QuinLeafExists inputs should not work', async () => {
+            expect.assertions(2)
             const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE)
 
             const index = 7
@@ -184,9 +180,11 @@ describe('Quin Merkle Tree circuits', () => {
                 leaf: tree.leaves[index],
                 root: tree.root,
             }
-            expect(() => {
-                circuit.calculateWitness(circuitInputs)
-            }).toThrow()
+            try {
+                await executeCircuit(circuit, circuitInputs)
+            } catch {
+                expect(true).toBeTruthy()
+            }
         })
     })
 })

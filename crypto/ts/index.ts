@@ -107,7 +107,7 @@ const hash11 = (elements: Plaintext): BigInt => {
 }
 
 /*
- * A convenience function for to use poseidon to hash a single BigInt
+ * Hash a single BigInt with the Poseidon hash function
  */
 const hashOne = (preImage: BigInt): BigInt => {
 
@@ -115,7 +115,7 @@ const hashOne = (preImage: BigInt): BigInt => {
 }
 
 /*
- * A convenience function for to use poseidon to hash two BigInts
+ * Hash two BigInts with the Poseidon hash function
  */
 const hashLeftRight = (left: BigInt, right: BigInt): BigInt => {
     return poseidonT3([left, right])

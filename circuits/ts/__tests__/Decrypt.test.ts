@@ -1,3 +1,4 @@
+jest.setTimeout(90000)
 import {
     executeCircuit,
     getSignalByName,

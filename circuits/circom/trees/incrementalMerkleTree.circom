@@ -5,30 +5,42 @@
 include "../../node_modules/circomlib/circuits/mux1.circom";
 include "../hasherPoseidon.circom";
 
-template Selector() {
-  signal input input_elem;
-  signal input path_elem;
-  signal input path_index;
+template MerkleTreeInclusionProof(n_levels) {
+    signal input leaf;
+    signal input path_index[n_levels];
+    signal input path_elements[n_levels][1];
+    signal output root;
 
-  signal output left;
-  signal output right;
+    component hashers[n_levels];
+    component mux[n_levels];
 
-  path_index * (1 - path_index) === 0;
+    signal levelHashes[n_levels + 1];
+    levelHashes[0] <== leaf;
 
-  component mux = MultiMux1(2);
-  mux.c[0][0] <== input_elem;
-  mux.c[0][1] <== path_elem;
+    for (var i = 0; i < n_levels; i++) {
+        // Should be 0 or 1
+        path_index[i] * (1 - path_index[i]) === 0;
 
-  mux.c[1][0] <== path_elem;
-  mux.c[1][1] <== input_elem;
+        hashers[i] = HashLeftRight();
+        mux[i] = MultiMux1(2);
 
-  mux.s <== path_index;
+        mux[i].c[0][0] <== levelHashes[i];
+        mux[i].c[0][1] <== path_elements[i][0];
 
-  left <== mux.out[0];
-  right <== mux.out[1];
+        mux[i].c[1][0] <== path_elements[i][0];
+        mux[i].c[1][1] <== levelHashes[i];
+
+        mux[i].s <== path_index[i];
+        hashers[i].left <== mux[i].out[0];
+        hashers[i].right <== mux[i].out[1];
+
+        levelHashes[i + 1] <== hashers[i].hash;
+    }
+
+    root <== levelHashes[n_levels];
 }
 
-template MerkleTreeInclusionProof(n_levels) {
+template MerkleTreeInclusionProof_bak(n_levels) {
     signal input leaf;
     signal input path_index[n_levels];
     signal input path_elements[n_levels][1];

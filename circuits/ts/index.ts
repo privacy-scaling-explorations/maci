@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 const circom = require('circom')
+const snarkjs = require('snarkjs')
 import * as shell from 'shelljs'
 import { config } from 'maci-config'
 
@@ -35,7 +36,7 @@ const executeCircuit = async (
     inputs: any,
 ) => {
 
-    const witness = await circuit.calculateWitness(inputs)
+    const witness = await circuit.calculateWitness(inputs, true)
     await circuit.checkConstraints(witness)
     await circuit.loadSymbols()
 
@@ -64,50 +65,34 @@ const loadVk = (jsonName: string): SnarkVerifyingKey => {
 const genBatchUstProofAndPublicSignals = (witness: any) => {
     return genProofAndPublicSignals(
         witness,
-        'batchUstCircuit.json',
-        'batchUst.params',
+        'batchUstCircuit.r1cs',
+        'batchUst.zkey',
     )
 }
 
 const genQvtProofAndPublicSignals = (witness: any) => {
     return genProofAndPublicSignals(
         witness,
-        'qvtCircuit.json',
-        'qvt.params',
+        'qvtCircuit.r1cs',
+        'qvt.zkey',
     )
 }
 
 const genProofAndPublicSignals = (
     witness: any,
     circuitFilename: string,
-    paramsFilename: string,
+    zkeyFilename: string,
 ) => {
-    const proofPath = path.join(__dirname, '../build/' + Date.now() + '.proof.json')
-    const paramsPath = path.join(__dirname, '../build/', paramsFilename)
-    const circuitPath = path.join(__dirname, '../build/', circuitFilename)
+    const zkeyPath = path.join(__dirname, '../build/', zkeyFilename)
     const witnessPath = path.join(__dirname, '../build/' + Date.now() + '.witness.json')
-    const publicSignalsPath = path.join(__dirname, '../build/' + Date.now() + '.public.json')
 
     fs.writeFileSync(witnessPath, JSON.stringify(stringifyBigInts(witness)))
 
-    const cmd = `${config.zkutil_bin} prove -c ${circuitPath} -p ${paramsPath} ` +
-        `-r ${proofPath} -o ${publicSignalsPath} -w ${witnessPath}`
-
-    const output = shell.exec(cmd, { silent: true })
-    if (output.stderr) {
-        throw new Error(output.stderr)
-    }
-
-    const proof = unstringifyBigInts(
-        JSON.parse(fs.readFileSync(proofPath).toString())
+    const { proof, publicSignals } = snarkjs.groth16.prove(
+        zkeyPath,
+        witnessPath,
     )
 
-    const publicSignals = unstringifyBigInts(
-        JSON.parse(fs.readFileSync(publicSignalsPath).toString())
-    )
-
-    shell.rm('-f', proofPath)
-    shell.rm('-f', publicSignalsPath)
     shell.rm('-f', witnessPath)
 
     return { proof, publicSignals }

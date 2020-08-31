@@ -11,6 +11,8 @@
         "test": "jest",
         "test-minor": "jest --force-exit Hasher.test.ts VerifySignature.test.ts Ecdh.test.ts PublicKey.test.ts Decrypt.test.ts CalculateTotal.test.ts ResultCommitmentVerifier.test.ts QuinSelector.test.ts QuinGeneratePathIndices.test.ts Splicer.test.ts",
         "test-major": "jest --force-exit QuadVoteTally.test.ts UpdateStateTree.test.ts",
+        "test-quinGenPath": "jest QuinGeneratePathIndices.test.ts",
+        "test-quinGenPath-debug": "node --inspect-brk ./node_modules/.bin/jest QuinGeneratePathIndices.test.ts",
         "test-hasher": "jest Hasher.test.ts",
         "test-hasher-debug": "node --inspect-brk ./node_modules/.bin/jest Hasher.test.ts",
         "test-mt": "jest IncrementalMerkleTree.test.ts",
@@ -42,11 +44,11 @@
     },
     "dependencies": {
         "argparse": "^1.0.10",
-        "circom": "0.5.21",
+        "circom": "0.5.22",
         "circomlib": "https://github.com/iden3/circomlib.git#01da5f90dbbefeed5d78cec3b87303244338b920",
         "libsemaphore": "^1.0.5",
         "shelljs": "^0.8.3",
-        "snarkjs": "0.3.23"
+        "snarkjs": "https://github.com/weijiekoh/snarkjs.git#3155eb504f9a604fcb6aaab379c0ae8a491f9a34"
     },
     "devDependencies": {
         "@types/jest": "^24.0.25",

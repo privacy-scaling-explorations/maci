@@ -8,7 +8,6 @@ import {
 
 import {
     genKeypair,
-    bigInt,
     unpackPubKey,
 } from 'maci-crypto'
 
@@ -23,20 +22,20 @@ describe('Domain objects', () => {
     const ecdhSharedKey = Keypair.genEcdhSharedKey(privKey, pubKey1)
 
     const command: Command = new Command(
-        bigInt(10),
+        BigInt(10),
         newPubKey,
-        bigInt(0),
-        bigInt(9),
-        bigInt(123),
+        BigInt(0),
+        BigInt(9),
+        BigInt(123),
     )
 
     describe('State leaves', () => {
         it('The serialize() and unserialize() functions should work correctly', () => {
             const stateLeaf = new StateLeaf(
                 pubKey,
-                bigInt(123),
-                bigInt(456),
-                bigInt(789),
+                BigInt(123),
+                BigInt(456),
+                BigInt(789),
             )
 
             const serialized = stateLeaf.serialize()
@@ -73,10 +72,10 @@ describe('Domain objects', () => {
             expect(s.startsWith('macisk.')).toBeTruthy()
 
             const d = '0x' + s.slice(7)
-            expect(sk1.rawPrivKey.toString()).toEqual(bigInt(d).toString())
+            expect(sk1.rawPrivKey.toString()).toEqual(BigInt(d).toString())
 
             const c = PrivKey.unserialize(s)
-            expect(sk1.rawPrivKey.toString()).toEqual(bigInt(c.rawPrivKey).toString())
+            expect(sk1.rawPrivKey.toString()).toEqual(BigInt(c.rawPrivKey).toString())
         })
 
         it('PrivKey.isValidSerializedPrivKey() should work correctly', () => {
@@ -192,21 +191,21 @@ describe('Domain objects', () => {
 
         it('Command.copy() should perform a deep copy', () => {
             const c1: Command = new Command(
-                bigInt(10),
+                BigInt(10),
                 newPubKey,
-                bigInt(0),
-                bigInt(9),
-                bigInt(123),
+                BigInt(0),
+                BigInt(9),
+                BigInt(123),
             )
 
             // shallow copy
             const c2 = c1
-            c1.nonce = bigInt(9999)
+            c1.nonce = BigInt(9999)
             expect(c1.nonce.toString()).toEqual(c2.nonce.toString())
 
             // deep copy
             const c3 = c1.copy()
-            c1.nonce = bigInt(8888)
+            c1.nonce = BigInt(8888)
 
             expect(c1.nonce.toString()).not.toEqual(c3.nonce.toString())
         })
@@ -216,11 +215,11 @@ describe('Domain objects', () => {
             const m1 = c.encrypt(signature, ecdhSharedKey)
 
             const m2 = m1
-            m1.iv = bigInt(9999)
+            m1.iv = BigInt(9999)
             expect(m1.iv.toString()).toEqual(m2.iv.toString())
 
             const m3 = m1.copy()
-            m1.iv = bigInt(8888)
+            m1.iv = BigInt(8888)
             expect(m1.iv.toString()).not.toEqual(m3.iv.toString())
         })
     })

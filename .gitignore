@@ -1,3 +1,4 @@
+*.ptau
 cli/tally.json
 **/test_tally.json
 **/tally.json

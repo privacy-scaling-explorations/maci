@@ -472,7 +472,7 @@ class MaciState {
 
         // results should start off with 0s
         const results: BigInt[] = []
-        for (let i = 0; i < BigInt(5) ** BigInt(this.voteOptionTreeDepth); i++) {
+        for (let i = 0; i < 5 ** this.voteOptionTreeDepth; i++) {
             results.push(BigInt(0))
         }
 
@@ -582,7 +582,7 @@ class MaciState {
 
         // Fill results with 0s
         const results: BigInt[] = []
-        for (let i = 0; i < BigInt(5) ** BigInt(this.voteOptionTreeDepth); i++) {
+        for (let i = 0; i < 5 ** this.voteOptionTreeDepth; i++) {
             results.push(BigInt(0))
         }
 
@@ -614,7 +614,7 @@ class MaciState {
 
         // results should start off with 0s
         const results: BigInt[] = []
-        for (let i = 0; i < BigInt(5) ** BigInt(this.voteOptionTreeDepth); i++) {
+        for (let i = 0; i < 5 ** this.voteOptionTreeDepth; i++) {
             results.push(BigInt(0))
         }
 
@@ -653,7 +653,7 @@ class MaciState {
 
         // Fill results with 0s
         const results: BigInt[] = []
-        for (let i = 0; i < BigInt(5) ** BigInt(this.voteOptionTreeDepth); i++) {
+        for (let i = 0; i < 5 ** this.voteOptionTreeDepth; i++) {
             results.push(BigInt(0))
         }
 
@@ -750,7 +750,7 @@ class MaciState {
         const blankStateLeafHash = blankStateLeaf.hash()
 
         let batchTreeDepth = 0
-        while (BigInt(2) ** BigInt(batchTreeDepth) !== BigInt(_batchSize)) {
+        while (2 ** batchTreeDepth !== _batchSize) {
             batchTreeDepth ++
         }
 

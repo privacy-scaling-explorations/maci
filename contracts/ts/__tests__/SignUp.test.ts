@@ -21,7 +21,6 @@ import { MaciState } from 'maci-core'
 
 import {
     hashLeftRight,
-    bigInt,
     IncrementalQuinTree,
     NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
@@ -38,7 +37,7 @@ const stateTreeDepth = config.maci.merkleTrees.stateTreeDepth
 const messageTreeDepth = config.maci.merkleTrees.messageTreeDepth
 const voteOptionTreeDepth = config.maci.merkleTrees.voteOptionTreeDepth
 
-const coordinator = new Keypair(new PrivKey(bigInt(config.maci.coordinatorPrivKey)))
+const coordinator = new Keypair(new PrivKey(BigInt(config.maci.coordinatorPrivKey)))
 const maciState = new MaciState(
     coordinator,
     stateTreeDepth,
@@ -67,9 +66,9 @@ describe('MACI', () => {
 
     // This array contains four commands from the same user
     for (let i = 0; i < config.maci.messageBatchSize; i++) {
-        const voteOptionTree = new IncrementalQuinTree(voteOptionTreeDepth, bigInt(0))
+        const voteOptionTree = new IncrementalQuinTree(voteOptionTreeDepth, BigInt(0))
 
-        const newVoteWeight = bigInt(9)
+        const newVoteWeight = BigInt(9)
 
         voteOptionTree.insert(newVoteWeight)
     }
@@ -122,7 +121,7 @@ describe('MACI', () => {
     })
 
     it('the emptyVoteOptionTreeRoot value should be correct', async () => {
-        const temp = new IncrementalQuinTree(voteOptionTreeDepth, bigInt(0))
+        const temp = new IncrementalQuinTree(voteOptionTreeDepth, BigInt(0))
         const emptyVoteOptionTreeRoot = temp.root
 
         const root = await maciContract.emptyVoteOptionTreeRoot()
@@ -132,14 +131,14 @@ describe('MACI', () => {
     it('the currentResultsCommitment value should be correct', async () => {
         const crc = await maciContract.currentResultsCommitment()
         const tree = new IncrementalQuinTree(voteOptionTreeDepth, 0)
-        const expected = hashLeftRight(tree.root, bigInt(0))
+        const expected = hashLeftRight(tree.root, BigInt(0))
 
         expect(crc.toString()).toEqual(expected.toString())
     })
 
     it('the currentSpentVoiceCreditsCommitment value should be correct', async () => {
         const comm = await maciContract.currentSpentVoiceCreditsCommitment()
-        const expected = hashLeftRight(bigInt(0), bigInt(0))
+        const expected = hashLeftRight(BigInt(0), BigInt(0))
 
         expect(comm.toString()).toEqual(expected.toString())
     })
@@ -182,9 +181,7 @@ describe('MACI', () => {
         it('a user who owns a SignUpToken should be able to sign up', async () => {
             maciState.signUp(
                 user1.keypair.pubKey, 
-                bigInt(
-                    config.maci.initialVoiceCreditBalance,
-                ),
+                BigInt(config.maci.initialVoiceCreditBalance),
             )
 
             const wallet = user1.wallet.connect(deployer.provider as any)
@@ -210,8 +207,8 @@ describe('MACI', () => {
             const iface = new ethers.utils.Interface(maciContract.interface.abi)
             const event = iface.parseLog(receipt.logs[1])
             const rawPubKey = [
-                bigInt(event.values._userPubKey[0]),
-                bigInt(event.values._userPubKey[1]),
+                BigInt(event.values._userPubKey[0]),
+                BigInt(event.values._userPubKey[1]),
             ]
             expect(rawPubKey).toEqual(user1.keypair.pubKey.rawPubKey)
             const index = event.values._stateIndex

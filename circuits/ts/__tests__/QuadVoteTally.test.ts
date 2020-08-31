@@ -1,3 +1,4 @@
+jest.setTimeout(90000)
 import { config } from 'maci-config'
 import { 
     genPerVOSpentVoiceCreditsCommitment,
@@ -17,6 +18,8 @@ import {
 
 import {
     compileAndLoadCircuit,
+    executeCircuit,
+    getSignalByName,
 } from '../'
 
 const stateTreeDepth = config.maci.merkleTrees.stateTreeDepth
@@ -114,18 +117,16 @@ describe('Quadratic vote tallying circuit', () => {
 
         expect(circuitInputs.stateLeaves.length).toEqual(quadVoteTallyBatchSize)
 
-        const witness = circuit.calculateWitness(stringifyBigInts(circuitInputs))
-        expect(circuit.checkWitness(witness)).toBeTruthy()
+        const witness = await executeCircuit(circuit, circuitInputs)
 
         // Check the result tally commitment
-        const expectedResultsCommitmentOutput = witness[circuit.getSignalIdx('main.newResultsCommitment')]
+        const expectedResultsCommitmentOutput = getSignalByName(circuit, witness, 'main.newResultsCommitment').toString()
         const expectedResultsCommitment = genTallyResultCommitment(tally, newResultsSalt, voteOptionTreeDepth)
 
         expect(expectedResultsCommitmentOutput.toString()).toEqual(expectedResultsCommitment.toString())
 
         // Check the total spent voice credit commitment
-        const expectedSpentVoiceCreditsCommitmentOutput =
-            witness[circuit.getSignalIdx('main.newSpentVoiceCreditsCommitment')]
+        const expectedSpentVoiceCreditsCommitmentOutput = getSignalByName(circuit, witness, 'main.newSpentVoiceCreditsCommitment').toString()
 
         const expectedSpentVoiceCreditsCommitment = genSpentVoiceCreditsCommitment(
             voteWeight * voteWeight,
@@ -139,19 +140,20 @@ describe('Quadratic vote tallying circuit', () => {
             startIndex,
             quadVoteTallyBatchSize,
         )
+
         const expectedPerVOSpentVoiceCreditsCommitment = genPerVOSpentVoiceCreditsCommitment(
             perVOSpentVoiceCredits,
             newPerVOSpentVoiceCreditsSalt,
             voteOptionTreeDepth,
         )
-        const expectedPerVOSpentVoiceCreditsCommitmentOutput =
-            witness[circuit.getSignalIdx('main.newPerVOSpentVoiceCreditsCommitment')]
+
+        const expectedPerVOSpentVoiceCreditsCommitmentOutput = getSignalByName(circuit, witness, 'main.newPerVOSpentVoiceCreditsCommitment').toString()
 
         expect(expectedPerVOSpentVoiceCreditsCommitmentOutput.toString())
             .toEqual(expectedPerVOSpentVoiceCreditsCommitment.toString())
 
         // Check the sum of votes
-        const totalVotes = witness[circuit.getSignalIdx('main.totalVotes')]
+        const totalVotes = getSignalByName(circuit, witness, 'main.totalVotes').toString()
         expect(totalVotes.toString()).toEqual(voteWeight.toString())
     })
 })

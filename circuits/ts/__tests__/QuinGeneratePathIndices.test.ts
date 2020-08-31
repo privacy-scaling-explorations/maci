@@ -1,5 +1,8 @@
+jest.setTimeout(90000)
 import {
     compileAndLoadCircuit,
+    executeCircuit,
+    getSignalByName,
 } from '../'
 
 const toBase5 = (x: number) => {
@@ -28,15 +31,12 @@ describe('QuinGeneratePathIndices circuit', () => {
             in: index
         }
 
-        const witness = circuit.calculateWitness(circuitInputs)
-        expect(circuit.checkWitness(witness)).toBeTruthy()
-        const result: BigInt[] = []
+        const witness = await executeCircuit(circuit, circuitInputs)
+        const result: number[] = []
         for (let i = 0; i < depth; i ++) {
-            const idx = circuit.getSignalIdx('main.out[' + i + ']')
-            result.push(BigInt(witness[idx].toString()))
+            const out = getSignalByName(circuit, witness, `main.out[${i}]`)
+            result.push(Number(out))
         }
-        expect(JSON.stringify(result.map((x) => x.toString()))).toEqual(
-            JSON.stringify(toBase5(index))
-        )
+        expect(JSON.stringify(result)).toEqual(JSON.stringify(toBase5(index)))
     })
 })

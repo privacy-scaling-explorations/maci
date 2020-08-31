@@ -26,23 +26,6 @@ npm run bootstrap && \
 npm run build
 ```
 
-Next, install Rust:
-
-```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-```
-
-Also install [`zkutil`](https://github.com/poma/zkutil) v0.3.1 and ensure that
-the `zkutil` binary is in the `~/.cargo/bin/` directory. You can [configure](https://lorenwest.github.io/node-config/) the
-path to this binary via `maci-config` (see `config/test.yaml` for an example).
-
-```bash
-cargo install zkutil --version 0.3.1 &&
-zkutil --help
-```
-
-Next, perform a trusted setup.
-
 For development purposes, you can generate the proving and verifying keys for
 the zk-SNARK circuits, along with their Solidity verifier contracts as such:
 
@@ -52,14 +35,16 @@ npm run buildBatchUpdateStateTreeSnark
 npm run buildQuadVoteTallySnark
 ```
 
-This should take no more than 3 minutes as we use `zkutil` under the hood.
-We used to provide download links to working versions of the keys and
-compiiled circuit files, but now that we can use `zkutil` to produce them
-very quickly, we no longer maintain them.
+This should take no more than 5 minutes. We used to provide download links to
+working versions of the keys and compiiled circuit files, but now that we can
+use `snarkjs` to produce them very quickly, we no longer maintain them.
 
-Note that if you change the circuits and recompile them, you should
-also update and recompile the verifier contracts in `contracts/sol`
-with their new versions, or the tests will fail:
+For production, please do not use the `zkey` files which the above commands
+produce. Instead, perform a multi-party trusted setup.
+
+Note that if you change the circuits and recompile them, you should also update
+and recompile the verifier contracts in `contracts/sol` with their new
+versions, or the tests will fail:
 
 ```bash
 cd contracts

@@ -3,7 +3,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as shell from 'shelljs'
 
-import { config } from 'maci-config'
+const PTAU_URL = 'https://www.dropbox.com/s/s1mxm2uyli9dox9/pot17_final.ptau?dl=1'
 
 const fileExists = (filepath: string): boolean => {
     const currentPath = path.join(__dirname, '..')
@@ -27,7 +27,7 @@ const main = () => {
     )
 
     parser.addArgument(
-        ['-j', '--json-out'],
+        ['-j', '--r1cs-out'],
         {
             help: 'The filepath to save the compiled circom file',
             required: true
@@ -59,9 +59,9 @@ const main = () => {
     )
 
     parser.addArgument(
-        ['-m', '--params-out'],
+        ['-z', '--zkey-out'],
         {
-            help: 'The filepath to save the Bellman params file',
+            help: 'The filepath to save the zkey file',
             required: true
         }
     )
@@ -84,33 +84,14 @@ const main = () => {
         }
     )
 
-    parser.addArgument(
-        ['-z', '--zkutil'],
-        {
-            help: 'The path to the zkutil binary',
-            required: false,
-            defaultValue: config.zkutil_bin
-        }
-    )
-
     const args = parser.parseArgs()
-    const pkOut = args.pk_out
     const vkOut = args.vk_out
-    const paramsOut = args.params_out
+    const zkeyOut = args.zkey_out
     const solOut = args.sol_out
     const inputFile = args.input
     const override = args.override
-    const circuitJsonOut = args.json_out
+    const circuitOut = args.r1cs_out
     const verifierName = args.verifier_name
-    const zkutilPath = args.zkutil
-
-    // Check if zkutil exists
-    const output = shell.exec(zkutilPath + ' -V')
-    if (output.stderr) {
-        console.error('zkutil not found. Please refer to the README for installation instructions.')
-        return 1
-    }
-
 
     // Check if the input circom file exists
     const inputFileExists = fileExists(inputFile)
@@ -124,48 +105,52 @@ const main = () => {
     // Set memory options for node
     shell.env['NODE_OPTIONS'] = '--max-old-space-size=8192'
 
-    // Check if the circuitJsonOut file exists and if we should not override files
-    const circuitJsonOutFileExists = fileExists(circuitJsonOut)
+    // Check if the circuitOut file exists and if we should not override files
+    const circuitOutFileExists = fileExists(circuitOut)
 
     const circomPath = path.join(__dirname, '../node_modules/circom/cli.js')
 
-    if (!override && circuitJsonOutFileExists) {
-        console.log(circuitJsonOut, 'exists. Skipping compilation.')
+    if (!override && circuitOutFileExists) {
+        console.log(circuitOut, 'exists. Skipping compilation.')
     } else {
         console.log(`Compiling ${inputFile}...`)
         // Compile the .circom file
-        shell.exec(`node --max-old-space-size=8192 ${circomPath} ${inputFile} -o ${circuitJsonOut}`)
-        console.log('Generated', circuitJsonOut)
+        shell.exec(`node --max-old-space-size=8192 ${circomPath} -f ${inputFile} -r ${circuitOut}`)
+        console.log('Generated', circuitOut)
     }
 
-    const paramsFileExists = fileExists(paramsOut)
-    const pkOutFileExists = fileExists(pkOut)
+    // Download the ptau file
+    console.log('Downloading the .ptau file')
+    const ptauPath = path.join(__dirname, '../build/pot17_final.ptau')
+    const dlCmd = `wget -nc -q -O ${ptauPath} ${PTAU_URL}`
+    shell.exec(dlCmd)
+
+    // Generate the zkey file
+
+    const zkeyFileExists = fileExists(zkeyOut)
     const vkOutFileExists = fileExists(vkOut)
 
-    if (!override && pkOutFileExists && vkOutFileExists && paramsFileExists) {
-        console.log('Params file exists. Skipping setup.')
-    } else {
-
-        console.log('Generating params file...')
-        shell.exec(`${zkutilPath} setup -c ${circuitJsonOut} -p ${paramsOut}`)
-
-        console.log('Exporting proving and verification keys...')
-        shell.exec(
-            `${zkutilPath} export-keys -c ${circuitJsonOut} -p ${paramsOut}` +
-            ` --pk ${pkOut} --vk ${vkOut}`
-        )
-
-        console.log(`Generated ${paramsOut}, ${pkOut} and ${vkOut}`)
-    }
-
-    console.log('Generating Solidity verifier...')
     const snarkjsPath = path.join(
         __dirname,
         '..',
-        './node_modules/snarkjs/cli.js',
+        './node_modules/snarkjs/build/cli.cjs',
     )
 
-    shell.exec(`${snarkjsPath} generateverifier --vk ${vkOut} -v ${solOut}`)
+    if (!override && zkeyFileExists && vkOutFileExists) {
+        console.log('zkey file exists. Skipping setup.')
+    } else {
+
+        console.log('Generating zkey file...')
+        shell.exec(`node ${snarkjsPath} zkey new ${circuitOut} ${ptauPath} ${zkeyOut}`)
+
+        console.log('Exporting verification key...')
+        shell.exec(`node ${snarkjsPath} zkev ${zkeyOut} ${vkOut}`)
+
+        console.log(`Generated ${zkeyOut} and ${vkOut}`)
+    }
+
+    console.log('Generating Solidity verifier...')
+    shell.exec(`node ${snarkjsPath} zkesv ${zkeyOut} ${solOut}`)
 
     // Replace the name of the verifier contract with the specified name as
     // we have two verifier contracts and we want to avoid conflicts
