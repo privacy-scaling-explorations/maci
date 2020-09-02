@@ -3,7 +3,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as shell from 'shelljs'
 
-const PTAU_URL = 'https://www.dropbox.com/s/s1mxm2uyli9dox9/pot17_final.ptau?dl=1'
+const PTAU_URL = 'https://www.dropbox.com/s/2ov5nxq99c8w3kv/pot17_final.ptau?dl=1'
 
 const fileExists = (filepath: string): boolean => {
     const currentPath = path.join(__dirname, '..')
@@ -141,7 +141,7 @@ const main = () => {
     } else {
 
         console.log('Generating zkey file...')
-        shell.exec(`node ${snarkjsPath} zkey new ${circuitOut} ${ptauPath} ${zkeyOut}`)
+        shell.exec(`node ${snarkjsPath} zkey new -v ${circuitOut} ${ptauPath} ${zkeyOut}`)
 
         console.log('Exporting verification key...')
         shell.exec(`node ${snarkjsPath} zkev ${zkeyOut} ${vkOut}`)

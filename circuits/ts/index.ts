@@ -3,7 +3,6 @@ import * as path from 'path'
 const circom = require('circom')
 const snarkjs = require('snarkjs')
 import * as shell from 'shelljs'
-import { config } from 'maci-config'
 
 import {
     SnarkProvingKey,
@@ -13,7 +12,6 @@ import {
 
 import {
     stringifyBigInts,
-    unstringifyBigInts,
 } from 'maci-crypto'
 
 
@@ -98,6 +96,34 @@ const genProofAndPublicSignals = (
     return { proof, publicSignals }
 }
 
+const verifyProof = (
+    vkFilename: string,
+    publicSignals: any,
+    proof: any,
+): boolean => {
+    const vkFilepath = path.join(__dirname, '../build/', vkFilename)
+    const vk = JSON.parse(fs.readFileSync(vkFilepath).toString())
+
+    return snarkjs.groth16.verify(vk, publicSignals, proof)
+}
+
+const verifyBatchUstProof = (
+    publicSignals: any,
+    proof: any,
+) => {
+
+    return verifyProof('batchUstVk.json', publicSignals, proof)
+}
+
+const verifyQvtProof = (
+    publicSignals: any,
+    proof: any,
+) => {
+
+    return verifyProof('qvtVk.json', publicSignals, proof)
+}
+
+
 export {
     compileAndLoadCircuit,
     executeCircuit,
@@ -106,4 +132,6 @@ export {
     loadVk,
     genBatchUstProofAndPublicSignals,
     genQvtProofAndPublicSignals,
+    verifyBatchUstProof,
+    verifyQvtProof,
 }

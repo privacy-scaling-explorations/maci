@@ -41,18 +41,15 @@ import {
 
 import {
     compileAndLoadCircuit,
-    loadVk,
     genBatchUstProofAndPublicSignals,
     genQvtProofAndPublicSignals,
+    verifyBatchUstProof,
+    verifyQvtProof,
 } from 'maci-circuits'
 
 import {
     SnarkVerifyingKey,
-    verifyProof,
 } from 'libsemaphore'
-
-const batchUstVk: SnarkVerifyingKey = loadVk('batchUstVk')
-const qvtVk: SnarkVerifyingKey = loadVk('qvtVk')
 
 const batchSize = config.maci.messageBatchSize
 const stateTreeDepth = config.maci.merkleTrees.stateTreeDepth
@@ -241,7 +238,7 @@ describe('BatchProcessMessage', () => {
 
             const { proof, publicSignals } = genBatchUstProofAndPublicSignals(witness)
 
-            const isValid = verifyProof(batchUstVk, proof, publicSignals)
+            const isValid = verifyBatchUstProof(proof, publicSignals)
             expect(isValid).toBeTruthy()
 
             expect(publicSignals).toHaveLength(20)
@@ -383,7 +380,7 @@ describe('BatchProcessMessage', () => {
                 JSON.stringify(contractPublicSignals.map((x) => x.toString()))
             )
 
-            const isValid = verifyProof(qvtVk, proof, publicSignals)
+            const isValid = verifyQvtProof(proof, publicSignals)
             expect(isValid).toBeTruthy()
 
             const formattedProof = formatProofForVerifierContract(proof)

@@ -45,10 +45,10 @@
     "dependencies": {
         "argparse": "^1.0.10",
         "circom": "0.5.22",
-        "circomlib": "https://github.com/iden3/circomlib.git#01da5f90dbbefeed5d78cec3b87303244338b920",
+        "circomlib": "0.2.4",
         "libsemaphore": "^1.0.5",
         "shelljs": "^0.8.3",
-        "snarkjs": "https://github.com/weijiekoh/snarkjs.git#3155eb504f9a604fcb6aaab379c0ae8a491f9a34"
+        "snarkjs": "https://github.com/weijiekoh/snarkjs.git#97ba10fc9031243590b57ac523be041b9ddbef2c"
     },
     "devDependencies": {
         "@types/jest": "^24.0.25",
