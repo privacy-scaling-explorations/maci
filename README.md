@@ -39,9 +39,6 @@ This should take no more than 5 minutes. We used to provide download links to
 working versions of the keys and compiiled circuit files, but now that we can
 use `snarkjs` to produce them very quickly, we no longer maintain them.
 
-For production, please do not use the `zkey` files which the above commands
-produce. Instead, perform a multi-party trusted setup.
-
 Note that if you change the circuits and recompile them, you should also update
 and recompile the verifier contracts in `contracts/sol` with their new
 versions, or the tests will fail:

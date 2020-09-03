@@ -48,7 +48,7 @@
         "circomlib": "0.2.4",
         "libsemaphore": "^1.0.5",
         "shelljs": "^0.8.3",
-        "snarkjs": "https://github.com/weijiekoh/snarkjs.git#97ba10fc9031243590b57ac523be041b9ddbef2c"
+        "snarkjs": "0.3.23"
     },
     "devDependencies": {
         "@types/jest": "^24.0.25",

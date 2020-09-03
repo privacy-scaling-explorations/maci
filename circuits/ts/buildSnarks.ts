@@ -3,7 +3,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as shell from 'shelljs'
 
-const PTAU_URL = 'https://www.dropbox.com/s/2ov5nxq99c8w3kv/pot17_final.ptau?dl=1'
+import { genSnarkVerifierSol } from './genVerifier'
 
 const fileExists = (filepath: string): boolean => {
     const currentPath = path.join(__dirname, '..')
@@ -12,6 +12,8 @@ const fileExists = (filepath: string): boolean => {
 
     return inputFileExists
 }
+
+const PTAU_URL = ''
 
 const main = () => {
     const parser = new argparse.ArgumentParser({ 
@@ -59,14 +61,6 @@ const main = () => {
     )
 
     parser.addArgument(
-        ['-z', '--zkey-out'],
-        {
-            help: 'The filepath to save the zkey file',
-            required: true
-        }
-    )
-
-    parser.addArgument(
         ['-r', '--override'],
         {
             help: 'Override an existing compiled circuit, proving key, and verifying key if set to true; otherwise (and by default), skip generation if a file already exists',
@@ -84,14 +78,22 @@ const main = () => {
         }
     )
 
+    parser.addArgument(
+        ['-z', '--zkey-out'],
+        {
+            help: 'The filepath to save the zkey file',
+            required: true
+        }
+    )
+
     const args = parser.parseArgs()
     const vkOut = args.vk_out
-    const zkeyOut = args.zkey_out
     const solOut = args.sol_out
     const inputFile = args.input
     const override = args.override
     const circuitOut = args.r1cs_out
     const verifierName = args.verifier_name
+    const zkeyOut = args.zkey_out
 
     // Check if the input circom file exists
     const inputFileExists = fileExists(inputFile)
@@ -103,32 +105,25 @@ const main = () => {
     }
 
     // Set memory options for node
-    shell.env['NODE_OPTIONS'] = '--max-old-space-size=8192'
+    shell.env['NODE_OPTIONS'] = '--max-old-space-size=4096'
 
     // Check if the circuitOut file exists and if we should not override files
     const circuitOutFileExists = fileExists(circuitOut)
-
-    const circomPath = path.join(__dirname, '../node_modules/circom/cli.js')
 
     if (!override && circuitOutFileExists) {
         console.log(circuitOut, 'exists. Skipping compilation.')
     } else {
         console.log(`Compiling ${inputFile}...`)
         // Compile the .circom file
-        shell.exec(`node --max-old-space-size=8192 ${circomPath} -f ${inputFile} -r ${circuitOut}`)
+        shell.exec(`node ./node_modules/circom/cli.js ${inputFile} -r ${circuitOut}`)
         console.log('Generated', circuitOut)
     }
 
-    // Download the ptau file
+    const ptauPath = path.join(__dirname, '../build/pot19_final.ptau')
+
     console.log('Downloading the .ptau file')
-    const ptauPath = path.join(__dirname, '../build/pot17_final.ptau')
     const dlCmd = `wget -nc -q -O ${ptauPath} ${PTAU_URL}`
     shell.exec(dlCmd)
-
-    // Generate the zkey file
-
-    const zkeyFileExists = fileExists(zkeyOut)
-    const vkOutFileExists = fileExists(vkOut)
 
     const snarkjsPath = path.join(
         __dirname,
@@ -136,30 +131,36 @@ const main = () => {
         './node_modules/snarkjs/build/cli.cjs',
     )
 
-    if (!override && zkeyFileExists && vkOutFileExists) {
+    const zkeyFileExists = fileExists(zkeyOut)
+
+    // Generate the zkey file
+    if (!override && zkeyFileExists) {
         console.log('zkey file exists. Skipping setup.')
     } else {
-
         console.log('Generating zkey file...')
-        shell.exec(`node ${snarkjsPath} zkey new -v ${circuitOut} ${ptauPath} ${zkeyOut}`)
-
-        console.log('Exporting verification key...')
-        shell.exec(`node ${snarkjsPath} zkev ${zkeyOut} ${vkOut}`)
-
-        console.log(`Generated ${zkeyOut} and ${vkOut}`)
+        shell.exec(`node ${snarkjsPath} zkey new ${circuitOut} ${ptauPath} ${zkeyOut}`)
     }
 
-    console.log('Generating Solidity verifier...')
-    shell.exec(`node ${snarkjsPath} zkesv ${zkeyOut} ${solOut}`)
+    console.log('Exporting verification key...')
 
-    // Replace the name of the verifier contract with the specified name as
-    // we have two verifier contracts and we want to avoid conflicts
-    const contractSource = fs.readFileSync(solOut).toString()
-    const newSource = contractSource.replace(
-        '\ncontract Verifier {', `\ncontract ${verifierName} {`,
+    shell.exec(`node ${snarkjsPath} zkev ${zkeyOut} ${vkOut}`)
+
+    // snarkjs has a bug where it writes to `verification_key.json` even if you
+    // specify a path for the verification key
+    const badVkPath = path.join(__dirname, '../verification_key.json')
+    if (fs.existsSync(badVkPath)) {
+        shell.exec(`mv ${badVkPath} ${vkOut}`)
+    }
+    console.log(`Generated ${zkeyOut} and ${vkOut}`)
+
+    console.log('Generating Solidity verifier...')
+
+    const verifier = genSnarkVerifierSol(
+        verifierName,
+        JSON.parse(fs.readFileSync(vkOut).toString()),
     )
 
-    fs.writeFileSync(solOut, newSource)
+    fs.writeFileSync(solOut, verifier)
     return 0
 }
 

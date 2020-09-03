@@ -55,18 +55,18 @@ jobs:
             - integrationTests/node_modules
           key: v1.3-dependencies-{{ checksum "contracts/package-lock.json" }}-{{ checksum "circuits/package-lock.json" }}-{{ checksum "config/package-lock.json" }}-{{ checksum "domainobjs/package-lock.json" }}-{{ checksum "cli/package-lock.json" }}-{{ checksum "core/package-lock.json" }}-{{ checksum "integrationTests/package-lock.json" }}--{{ checksum "crypto/package-lock.json" }}
 
-      - restore_cache:
-          keys:
-            - v1.2-dependencies-{{ checksum "circuits/scripts/installZkutil.sh" }}
+      #- restore_cache:
+          #keys:
+            #- v1.2-dependencies-{{ checksum "circuits/scripts/installZkutil.sh" }}
 
-      - run:
-          name: Install zkutil
-          command: ./circuits/scripts/installZkutil.sh
+      #- run:
+          #name: Install zkutil
+          #command: ./circuits/scripts/installZkutil.sh
 
-      - save_cache:
-          paths:
-            - ~/.cargo/bin/zkutil
-          key: v1.2-dependencies-{{ checksum "circuits/scripts/installZkutil.sh" }}
+      #- save_cache:
+          #paths:
+            #- ~/.cargo/bin/zkutil
+          #key: v1.2-dependencies-{{ checksum "circuits/scripts/installZkutil.sh" }}
 
       - run:
           name: Install solc

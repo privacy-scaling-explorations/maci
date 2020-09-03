@@ -47,10 +47,6 @@ import {
     verifyQvtProof,
 } from 'maci-circuits'
 
-import {
-    SnarkVerifyingKey,
-} from 'libsemaphore'
-
 const batchSize = config.maci.messageBatchSize
 const stateTreeDepth = config.maci.merkleTrees.stateTreeDepth
 const messageTreeDepth = config.maci.merkleTrees.messageTreeDepth
