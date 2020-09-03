@@ -5,13 +5,8 @@ const snarkjs = require('snarkjs')
 import * as shell from 'shelljs'
 
 import {
-    SnarkProvingKey,
-    SnarkVerifyingKey,
-    parseVerifyingKeyJson,
-} from 'libsemaphore'
-
-import {
     stringifyBigInts,
+    unstringifyBigInts,
 } from 'maci-crypto'
 
 
@@ -24,8 +19,7 @@ const compileAndLoadCircuit = async (
 ) => {
     return await circom.tester(path.join(
         __dirname,
-        'circuits',
-        `../../circom/${circuitPath}`,
+        `../circom/${circuitPath}`,
     ))
 }
 
@@ -50,77 +44,96 @@ const getSignalByName = (
     return witness[circuit.symbols[signal].varIdx]
 }
 
-const loadPk = (binName: string): SnarkProvingKey => {
-    const p = path.join(__dirname, '../build/' + binName + '.bin')
-    return fs.readFileSync(p)
-}
-
-const loadVk = (jsonName: string): SnarkVerifyingKey => {
-    const p = path.join(__dirname, '../build/' + jsonName + '.json')
-    return parseVerifyingKeyJson(fs.readFileSync(p).toString())
-}
-
-const genBatchUstProofAndPublicSignals = (witness: any) => {
+const genBatchUstProofAndPublicSignals = (inputs: any) => {
     return genProofAndPublicSignals(
-        witness,
-        'batchUstCircuit.r1cs',
+        inputs,
+        'prod/batchUpdateStateTreeVerifier.circom',
+        'batchUst.wasm',
         'batchUst.zkey',
     )
 }
 
-const genQvtProofAndPublicSignals = (witness: any) => {
+const genQvtProofAndPublicSignals = (inputs: any) => {
     return genProofAndPublicSignals(
-        witness,
-        'qvtCircuit.r1cs',
+        inputs,
+        'prod/quadVoteTally.circom',
+        'qvt.wasm',
         'qvt.zkey',
     )
 }
 
-const genProofAndPublicSignals = (
-    witness: any,
+const genProofAndPublicSignals = async (
+    inputs: any,
     circuitFilename: string,
+    circuitWasmFilename: string,
     zkeyFilename: string,
 ) => {
+    const date = Date.now()
     const zkeyPath = path.join(__dirname, '../build/', zkeyFilename)
-    const witnessPath = path.join(__dirname, '../build/' + Date.now() + '.witness.json')
+    const circuitWasmPath = path.join(__dirname, '../build/', circuitWasmFilename)
+    const inputJsonPath = path.join(__dirname, '../build/' + date + '.input.json')
+    const witnessPath = path.join(__dirname, '../build/' + date + '.witness.wtns')
+    const witnessJsonPath = path.join(__dirname, '../build/' + date + '.witness.json')
+    const proofPath = path.join(__dirname, '../build/' + date + '.proof.json')
+    const publicJsonPath = path.join(__dirname, '../build/' + date + '.publicSignals.json')
 
-    fs.writeFileSync(witnessPath, JSON.stringify(stringifyBigInts(witness)))
+    fs.writeFileSync(inputJsonPath, JSON.stringify(stringifyBigInts(inputs)))
 
-    const { proof, publicSignals } = snarkjs.groth16.prove(
-        zkeyPath,
-        witnessPath,
-    )
+    const circuit = await compileAndLoadCircuit(circuitFilename)
+
+    const snarkjsCmd = 'node ' + path.join(__dirname, '../node_modules/snarkjs/build/cli.cjs')
+    const witnessCmd = `${snarkjsCmd} wc ${circuitWasmPath} ${inputJsonPath} ${witnessPath}`
+
+    shell.exec(witnessCmd)
+
+    const witnessJsonCmd = `${snarkjsCmd} wej ${witnessPath} ${witnessJsonPath}`
+    shell.exec(witnessJsonCmd)
+
+    const proveCmd = `${snarkjsCmd} g16p ${zkeyPath} ${witnessPath} ${proofPath} ${publicJsonPath}`
+
+    shell.exec(proveCmd)
+
+    const witness = unstringifyBigInts(JSON.parse(fs.readFileSync(witnessJsonPath).toString()))
+    const publicSignals = unstringifyBigInts(JSON.parse(fs.readFileSync(publicJsonPath).toString()))
+    const proof = JSON.parse(fs.readFileSync(proofPath).toString())
+
+    await circuit.checkConstraints(witness)
+    await circuit.loadSymbols()
 
     shell.rm('-f', witnessPath)
+    shell.rm('-f', witnessJsonPath)
+    shell.rm('-f', proofPath)
+    shell.rm('-f', publicJsonPath)
+    shell.rm('-f', inputJsonPath)
 
-    return { proof, publicSignals }
+    return { proof, publicSignals, witness, circuit }
 }
 
-const verifyProof = (
+const verifyProof = async (
     vkFilename: string,
-    publicSignals: any,
     proof: any,
-): boolean => {
+    publicSignals: any,
+): Promise<boolean> => {
     const vkFilepath = path.join(__dirname, '../build/', vkFilename)
     const vk = JSON.parse(fs.readFileSync(vkFilepath).toString())
 
-    return snarkjs.groth16.verify(vk, publicSignals, proof)
+    return await snarkjs.groth16.verify(vk, publicSignals, proof)
 }
 
 const verifyBatchUstProof = (
-    publicSignals: any,
     proof: any,
+    publicSignals: any,
 ) => {
 
-    return verifyProof('batchUstVk.json', publicSignals, proof)
+    return verifyProof('batchUstVk.json', proof, publicSignals)
 }
 
 const verifyQvtProof = (
-    publicSignals: any,
     proof: any,
+    publicSignals: any,
 ) => {
 
-    return verifyProof('qvtVk.json', publicSignals, proof)
+    return verifyProof('qvtVk.json', proof, publicSignals)
 }
 
 
@@ -128,10 +141,10 @@ export {
     compileAndLoadCircuit,
     executeCircuit,
     getSignalByName,
-    loadPk,
-    loadVk,
     genBatchUstProofAndPublicSignals,
     genQvtProofAndPublicSignals,
     verifyBatchUstProof,
     verifyQvtProof,
+    genProofAndPublicSignals,
+    verifyProof,
 }

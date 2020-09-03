@@ -37,6 +37,14 @@ const main = () => {
     )
 
     parser.addArgument(
+        ['-w', '--wasm-out'],
+        {
+            help: 'The filepath to save the WASM file',
+            required: true
+        }
+    )
+
+    parser.addArgument(
         ['-v', '--vk-out'],
         {
             help: 'The filepath to save the verification key',
@@ -92,6 +100,7 @@ const main = () => {
     const inputFile = args.input
     const override = args.override
     const circuitOut = args.r1cs_out
+    const wasmOut = args.wasm_out
     const verifierName = args.verifier_name
     const zkeyOut = args.zkey_out
 
@@ -115,8 +124,8 @@ const main = () => {
     } else {
         console.log(`Compiling ${inputFile}...`)
         // Compile the .circom file
-        shell.exec(`node ./node_modules/circom/cli.js ${inputFile} -r ${circuitOut}`)
-        console.log('Generated', circuitOut)
+        shell.exec(`node ./node_modules/circom/cli.js ${inputFile} -r ${circuitOut} -w ${wasmOut}`)
+        console.log('Generated', circuitOut, 'and', wasmOut)
     }
 
     const ptauPath = path.join(__dirname, '../build/pot19_final.ptau')
