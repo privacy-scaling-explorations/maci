@@ -31,7 +31,7 @@
         "ethers": "^4.0.45",
         "jest": "^24.9.0",
         "maci-circuits": "^0.1.11",
-        "maci-cli": "^0.1.11",
+        "maci-cli": "^0.1.12",
         "maci-config": "^0.1.8",
         "maci-contracts": "^0.1.11",
         "maci-core": "^0.1.8",
