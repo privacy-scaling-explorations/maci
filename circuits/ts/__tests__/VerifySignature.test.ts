@@ -13,9 +13,9 @@ import {
 import {
     compileAndLoadCircuit,
     getSignalByName,
-    genProofAndPublicSignals,
-    verifyProof,
     executeCircuit,
+    //genProofAndPublicSignals,
+    //verifyProof,
 } from '../'
 
 const circuitName = 'test/verifySignature_test.circom'
@@ -48,6 +48,12 @@ describe('Signature verification circuit', () => {
             'preimage': stringifyBigInts(command.asArray())
         })
 
+        const circuit = await compileAndLoadCircuit(circuitName)
+        const witness = await executeCircuit(circuit, circuitInputs)
+        const isValid = getSignalByName(circuit, witness, 'main.valid').toString()
+        expect(isValid).toEqual('1')
+
+            /*
         const { circuit, witness, publicSignals, proof } = await genProofAndPublicSignals(
             circuitInputs,
             circuitName,
@@ -63,6 +69,7 @@ describe('Signature verification circuit', () => {
             proof,
         )
         expect(isValid).toBeTruthy()
+            */
     })
 
     it('rejects an invalid signature', async () => {
@@ -99,7 +106,7 @@ describe('Signature verification circuit', () => {
             'preimage': command.asArray()
         })
 
-        const circuit = await compileAndLoadCircuit('test/verifySignature_test.circom')
+        const circuit = await compileAndLoadCircuit(circuitName)
         const witness = await executeCircuit(circuit, circuitInputs)
         const isValid = getSignalByName(circuit, witness, 'main.valid').toString()
         expect(isValid).toEqual('0')
