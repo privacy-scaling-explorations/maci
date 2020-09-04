@@ -13,7 +13,7 @@ const fileExists = (filepath: string): boolean => {
     return inputFileExists
 }
 
-const PTAU_URL = ''
+const PTAU_URL = 'https://www.dropbox.com/s/kg4rnjdosnluuhq/pot19_final.ptau?dl=1'
 
 const main = () => {
     const parser = new argparse.ArgumentParser({ 

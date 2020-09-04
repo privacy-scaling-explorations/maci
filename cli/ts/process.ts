@@ -228,7 +228,7 @@ const processMessages = async (args: any): Promise<string | undefined> => {
         let result
 
         try {
-            result = genBatchUstProofAndPublicSignals(
+            result = await genBatchUstProofAndPublicSignals(
                 circuitInputs,
                 circuit,
             )

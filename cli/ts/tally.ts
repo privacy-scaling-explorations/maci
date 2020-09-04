@@ -367,7 +367,7 @@ const tally = async (args: any): Promise<object | undefined> => {
 
         let result
         try {
-            result = genQvtProofAndPublicSignals(
+            result = await genQvtProofAndPublicSignals(
                 circuitInputs,
                 circuit,
             )

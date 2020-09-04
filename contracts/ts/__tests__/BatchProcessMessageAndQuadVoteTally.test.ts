@@ -44,7 +44,6 @@ import {
     genQvtProofAndPublicSignals,
     verifyBatchUstProof,
     verifyQvtProof,
-    executeCircuit,
     getSignalByName,
 } from 'maci-circuits'
 
