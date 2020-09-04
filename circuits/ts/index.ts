@@ -17,10 +17,14 @@ import {
 const compileAndLoadCircuit = async (
     circuitPath: string
 ) => {
-    return await circom.tester(path.join(
+    const circuit = await circom.tester(path.join(
         __dirname,
         `../circom/${circuitPath}`,
     ))
+
+    await circuit.loadSymbols()
+
+    return circuit
 }
 
 const executeCircuit = async (
@@ -44,21 +48,29 @@ const getSignalByName = (
     return witness[circuit.symbols[signal].varIdx]
 }
 
-const genBatchUstProofAndPublicSignals = (inputs: any) => {
+const genBatchUstProofAndPublicSignals = (
+    inputs: any,
+    circuit?: any
+) => {
     return genProofAndPublicSignals(
         inputs,
         'prod/batchUpdateStateTreeVerifier.circom',
         'batchUst.wasm',
         'batchUst.zkey',
+        circuit,
     )
 }
 
-const genQvtProofAndPublicSignals = (inputs: any) => {
+const genQvtProofAndPublicSignals = (
+    inputs: any,
+    circuit?: any,
+) => {
     return genProofAndPublicSignals(
         inputs,
         'prod/quadVoteTally.circom',
         'qvt.wasm',
         'qvt.zkey',
+        circuit,
     )
 }
 
@@ -67,6 +79,7 @@ const genProofAndPublicSignals = async (
     circuitFilename: string,
     circuitWasmFilename: string,
     zkeyFilename: string,
+    circuit?: any,
 ) => {
     const date = Date.now()
     const zkeyPath = path.join(__dirname, '../build/', zkeyFilename)
@@ -79,7 +92,9 @@ const genProofAndPublicSignals = async (
 
     fs.writeFileSync(inputJsonPath, JSON.stringify(stringifyBigInts(inputs)))
 
-    const circuit = await compileAndLoadCircuit(circuitFilename)
+    if (!circuit) {
+        circuit = await compileAndLoadCircuit(circuitFilename)
+    }
 
     const snarkjsCmd = 'node ' + path.join(__dirname, '../node_modules/snarkjs/build/cli.cjs')
     const witnessCmd = `${snarkjsCmd} wc ${circuitWasmPath} ${inputJsonPath} ${witnessPath}`
@@ -98,7 +113,6 @@ const genProofAndPublicSignals = async (
     const proof = JSON.parse(fs.readFileSync(proofPath).toString())
 
     await circuit.checkConstraints(witness)
-    await circuit.loadSymbols()
 
     shell.rm('-f', witnessPath)
     shell.rm('-f', witnessJsonPath)

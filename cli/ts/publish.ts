@@ -10,7 +10,6 @@ import {
 } from 'maci-domainobjs'
 
 import {
-    bigInt,
     genRandomSalt,
 } from 'maci-crypto'
 
@@ -208,14 +207,14 @@ const publish = async (args: any) => {
     const userMaciPrivkey = PrivKey.unserialize(serializedPrivkey)
     
     // State index
-    const stateIndex = bigInt(args.state_index)
+    const stateIndex = BigInt(args.state_index)
     if (stateIndex < 0) {
         console.error('Error: the state index must be greater than 0')
         return
     }
 
     // Vote option index
-    const voteOptionIndex = bigInt(args.vote_option_index)
+    const voteOptionIndex = BigInt(args.vote_option_index)
 
     if (voteOptionIndex < 0) {
         console.error('Error: the vote option index should be 0 or greater')
@@ -223,7 +222,7 @@ const publish = async (args: any) => {
     }
 
     // The nonce
-    const nonce = bigInt(args.nonce)
+    const nonce = BigInt(args.nonce)
 
     if (nonce < 0) {
         console.error('Error: the nonce should be 0 or greater')
@@ -238,7 +237,7 @@ const publish = async (args: any) => {
             return
         }
 
-        salt = bigInt(args.salt)
+        salt = BigInt(args.salt)
 
         if (!validateSaltSize(args.salt)) {
             console.error('Error: the salt should less than the BabyJub field size')
@@ -282,12 +281,12 @@ const publish = async (args: any) => {
     }
 
     // The new vote weight
-    const newVoteWeight = bigInt(args.new_vote_weight)
+    const newVoteWeight = BigInt(args.new_vote_weight)
 
     const coordinatorPubKeyOnChain = await maciContract.coordinatorPubKey()
     const coordinatorPubKey = new PubKey([
-        bigInt(coordinatorPubKeyOnChain.x.toString()),
-        bigInt(coordinatorPubKeyOnChain.y.toString()),
+        BigInt(coordinatorPubKeyOnChain.x.toString()),
+        BigInt(coordinatorPubKeyOnChain.y.toString()),
     ])
 
     const encKeypair = new Keypair()

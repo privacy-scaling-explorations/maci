@@ -4,7 +4,6 @@ import * as ethers from 'ethers'
 import { MaciState } from 'maci-core'
 
 import {
-    bigInt,
     SNARK_FIELD_SIZE,
 } from 'maci-crypto'
 
@@ -46,7 +45,7 @@ let maciAddress: string
 let stateIndex: string
 const providerUrl = config.get('chain.url')
 const coordinatorKeypair = new Keypair(
-    new PrivKey(bigInt('0xa'))
+    new PrivKey(BigInt('0xa'))
 )
 const userKeypair = new Keypair()
 const maciPrivkey = coordinatorKeypair.privKey.serialize()
@@ -152,7 +151,7 @@ describe('signup and publish CLI subcommands', () => {
 
             maciState.signUp(
                 userKeypair.pubKey, 
-                bigInt(initialVoiceCredits),
+                BigInt(initialVoiceCredits),
             )
 
             const root = await maciContract.getStateTreeRoot()
@@ -257,8 +256,8 @@ describe('signup and publish CLI subcommands', () => {
             // Retrieve the coordinator's public key
             const coordinatorPubKeyOnChain = await maciContract.coordinatorPubKey()
             const coordinatorPubKey = new PubKey([
-                bigInt(coordinatorPubKeyOnChain.x.toString()),
-                bigInt(coordinatorPubKeyOnChain.y.toString()),
+                BigInt(coordinatorPubKeyOnChain.x.toString()),
+                BigInt(coordinatorPubKeyOnChain.y.toString()),
             ])
 
             // Wait for the signup period to pass
@@ -284,12 +283,12 @@ describe('signup and publish CLI subcommands', () => {
             expect(publishRegMatch).toBeTruthy()
 
             const command = new Command(
-                bigInt(stateIndex),
+                BigInt(stateIndex),
                 userKeypair.pubKey,
-                bigInt(voteOptionIndex),
-                bigInt(newVoteWeight),
-                bigInt(nonce),
-                bigInt(salt),
+                BigInt(voteOptionIndex),
+                BigInt(newVoteWeight),
+                BigInt(nonce),
+                BigInt(salt),
             )
 
             // The publish command generates and outputs a random ephemeral private
@@ -470,7 +469,7 @@ describe('signup and publish CLI subcommands', () => {
                 ` -v ${voteOptionIndex}` +
                 ` -w ${newVoteWeight}` +
                 ` -n ${nonce}` +
-                ` -s 0x${bigInt(SNARK_FIELD_SIZE).toString(16)}`
+                ` -s 0x${BigInt(SNARK_FIELD_SIZE).toString(16)}`
             const output = exec(publishCommand).stderr
             expect(output).toEqual('Error: the salt should less than the BabyJub field size\n')
         })

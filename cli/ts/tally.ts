@@ -18,6 +18,7 @@ import {
     compileAndLoadCircuit,
     genQvtProofAndPublicSignals,
     verifyQvtProof,
+    getSignalByName,
 } from 'maci-circuits'
 
 import {
@@ -302,7 +303,6 @@ const tally = async (args: any): Promise<object | undefined> => {
     }
 
     const circuit = await compileAndLoadCircuit('test/quadVoteTally_test.circom')
-    const qvtVk = loadVk('qvtVk')
 
     const batchSize = BigInt((await maciContract.tallyBatchSize()).toString())
 
@@ -361,21 +361,26 @@ const tally = async (args: any): Promise<object | undefined> => {
             )
 
         // Update the salts for the next iteration
-        currentResultsSalt = newResultsSalt
-        currentTvcSalt = newSpentVoiceCreditsSalt
-        currentPvcSalt = newPerVOSpentVoiceCreditsSalt
+        currentResultsSalt = BigInt(newResultsSalt)
+        currentTvcSalt = BigInt(newSpentVoiceCreditsSalt)
+        currentPvcSalt = BigInt(newPerVOSpentVoiceCreditsSalt)
 
-        const witness = circuit.calculateWitness(circuitInputs)
-
-        if (!circuit.checkWitness(witness)) {
+        let result
+        try {
+            result = genQvtProofAndPublicSignals(
+                circuitInputs,
+                circuit,
+            )
+        } catch (e) {
             console.error('Error: unable to compute quadratic vote tally witness data')
+            console.error(e)
             return
         }
 
-        const { proof, publicSignals } = genQvtProofAndPublicSignals(witness)
+        const { witness, proof, publicSignals } = result
 
         // The vote tally commmitment
-        const expectedNewResultsCommitmentOutput = witness[circuit.getSignalIdx('main.newResultsCommitment')]
+        const expectedNewResultsCommitmentOutput = getSignalByName(circuit, witness, 'main.newResultsCommitment')
 
         const newResultsCommitment = genTallyResultCommitment(
             cumulativeTally,
@@ -390,7 +395,7 @@ const tally = async (args: any): Promise<object | undefined> => {
 
         // The commitment to the total spent voice credits
         const expectedSpentVoiceCreditsCommitmentOutput =
-            witness[circuit.getSignalIdx('main.newSpentVoiceCreditsCommitment')]
+            getSignalByName(circuit, witness, 'main.newSpentVoiceCreditsCommitment')
 
         const currentSpentVoiceCredits = maciState.computeCumulativeSpentVoiceCredits(startIndex)
 
@@ -410,7 +415,7 @@ const tally = async (args: any): Promise<object | undefined> => {
 
         // The commitment to the spent voice credits per vote option
         const expectedPerVOSpentVoiceCreditsCommitmentOutput =
-            witness[circuit.getSignalIdx('main.newPerVOSpentVoiceCreditsCommitment')]
+            getSignalByName(circuit, witness, 'main.newPerVOSpentVoiceCreditsCommitment')
 
         const currentPerVOSpentVoiceCredits 
             = maciState.computeCumulativePerVOSpentVoiceCredits(startIndex)

@@ -2,7 +2,6 @@ jest.setTimeout(500000)
 import * as ethers from 'ethers'
 
 import { MaciState } from 'maci-core'
-import { bigInt } from 'maci-crypto'
 
 import {
     PubKey,
@@ -118,7 +117,7 @@ describe('process, tally, and prove CLI subcommands', () => {
 
         maciState.signUp(
             userKeypair.pubKey, 
-            bigInt(initialVoiceCredits),
+            BigInt(initialVoiceCredits),
         )
 
         maciContract = new ethers.Contract(
@@ -142,8 +141,8 @@ describe('process, tally, and prove CLI subcommands', () => {
         // Retrieve the coordinator's public key
         const coordinatorPubKeyOnChain = await maciContract.coordinatorPubKey()
         const coordinatorPubKey = new PubKey([
-            bigInt(coordinatorPubKeyOnChain.x.toString()),
-            bigInt(coordinatorPubKeyOnChain.y.toString()),
+            BigInt(coordinatorPubKeyOnChain.x.toString()),
+            BigInt(coordinatorPubKeyOnChain.y.toString()),
         ])
 
         // Run the publish command
@@ -178,12 +177,12 @@ describe('process, tally, and prove CLI subcommands', () => {
         const encPubKey = new PubKey(genPubKey(encPrivKey.rawPrivKey))
 
         const command = new Command(
-            bigInt(stateIndex),
+            BigInt(stateIndex),
             newPubKey,
-            bigInt(voteOptionIndex),
-            bigInt(newVoteWeight),
-            bigInt(nonce),
-            bigInt(salt),
+            BigInt(voteOptionIndex),
+            BigInt(newVoteWeight),
+            BigInt(nonce),
+            BigInt(salt),
         )
 
         const signature = command.sign(userKeypair.privKey)
