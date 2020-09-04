@@ -8,7 +8,7 @@ jobs:
     steps:
       - run:
           name: Set Python version
-          command: pyenv global 3.7.3
+          command: pyenv global 3.7.0
 
       - run:
           name: Install Node 11.14.0

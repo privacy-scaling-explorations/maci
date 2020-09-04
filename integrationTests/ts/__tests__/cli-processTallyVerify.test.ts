@@ -263,7 +263,7 @@ describe('process, tally, and prove CLI subcommands', () => {
             randomLeaf = StateLeaf.unserialize(regMatch[2])
         })
 
-        it('should report an error if all messages have been processed', async () =>{
+        it('should report an error if all messages have been processed', async () => {
 
             const hasUnprocessedMessages = await maciContract.hasUnprocessedMessages()
             expect(hasUnprocessedMessages).toBeFalsy()
@@ -319,6 +319,8 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -c 0x0000000000000000000000000000000000000000` +
                 ` -pvc 0x0000000000000000000000000000000000000000` +
                 ` -tvc 0x0000000000000000000000000000000000000000`
+
+            debugger
 
             console.log(tallyCommand)
 
