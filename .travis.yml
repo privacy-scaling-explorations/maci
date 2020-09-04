@@ -13,7 +13,6 @@ script:
   #- ./circuits/scripts/installZkutil.sh
   - cd ../circuits && npm run buildBatchUpdateStateTreeSnark && npm run buildQuadVoteTallySnark
   - ./scripts/runTestsInCircleCi.sh
-  - cd ../contracts && ./scripts/compileSol.sh
   - cd ../domainobjs && npm run test
   - cd ../core && npm run test
   - cd ../contracts && ./scripts/runTestsInCircleCi.sh

@@ -7,6 +7,10 @@ jobs:
 
     steps:
       - run:
+          name: Set Python version
+          command: pyenv global 3.7.3
+
+      - run:
           name: Install Node 11.14.0
           command: |
             export NVM_DIR="/opt/circleci/.nvm"
@@ -75,11 +79,11 @@ jobs:
       # run trusted setups
       - run:
           name: Build the batch update state tree snark
-          command: cd circuits && NODE_OPTIONS=--max-old-space-size=8192 node build/buildSnarks.js -i circom/prod/batchUpdateStateTreeVerifier.circom -j build/batchUstCircuit.json -p build/batchUstPk.json -v build/batchUstVk.json -s build/BatchUpdateStateTreeVerifier.sol -vs BatchUpdateStateTreeVerifier -m build/batchUst.params && ./scripts/buildBatchUpdateStateTreeSnark.sh
+          command: cd circuits && ./scripts/buildBatchUpdateStateTreeSnark.sh
 
       - run:
           name: Build the quad vote tally snark
-          command: cd circuits && NODE_OPTIONS=--max-old-space-size=8192 node build/buildSnarks.js -i circom/prod/quadVoteTally.circom -j build/qvtCircuit.json -p build/qvtPk.bin -v build/qvtVk.json -s build/QuadVoteTallyVerifier.sol -vs QuadVoteTallyVerifier -m build/qvt.params && ./scripts/buildQuadVoteTallySnark.sh
+          command: cd circuits && ./scripts/buildQuadVoteTallySnark.sh
 
       # cache generated snark circuit and keys
       - save_cache:
@@ -93,10 +97,6 @@ jobs:
             - circuits/build/qvtCircuit.json
             - circuits/build/qvtVk.json
             - circuits/build/qvt.params
-
-      - run:
-          name: Compile contracts
-          command: cd contracts && ./scripts/compileSol.sh --native
 
       - run:
           name: Lint
