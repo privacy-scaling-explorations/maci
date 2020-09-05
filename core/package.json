@@ -20,9 +20,9 @@
     },
     "dependencies": {
         "ethers": "^4.0.45",
-        "maci-config": "^0.1.8",
-        "maci-crypto": "^0.1.8",
-        "maci-domainobjs": "^0.1.8",
+        "maci-config": "^0.2.0",
+        "maci-crypto": "^0.2.0",
+        "maci-domainobjs": "^0.2.0",
         "module-alias": "^2.2.2"
     },
     "devDependencies": {

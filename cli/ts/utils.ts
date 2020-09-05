@@ -101,13 +101,16 @@ const genMaciStateFromContract = async (
     
     // Check whether the above steps were done correctly
     const onChainStateRoot = await maciContract.getStateTreeRoot()
+
+    debugger
+
     if (maciState.genStateRoot().toString(16) !== BigInt(onChainStateRoot).toString(16)) {
-        throw new Error('Error: could not correctly recreate the state tree from on-chain data')
+        throw new Error('Error: could not correctly recreate the state tree from on-chain data. The state root differs.')
     }
 
     const onChainMessageRoot = await maciContract.getMessageTreeRoot()
     if (maciState.genMessageRoot().toString(16) !== BigInt(onChainMessageRoot).toString(16)) {
-        throw new Error('Error: could not correctly recreate the message tree from on-chain data')
+        throw new Error('Error: could not correctly recreate the message tree from on-chain data. The message root differs.')
     }
 
     // Process the messages so that the users array is up to date with the
