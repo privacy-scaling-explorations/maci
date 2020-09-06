@@ -1,6 +1,6 @@
 {
     "name": "maci-crypto",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "description": "",
     "main": "build/index.js",
     "scripts": {
@@ -15,8 +15,8 @@
         "test-mt-debug": "node --inspect-brk ./node_modules/.bin/jest IncrementalMerkleTree.test.ts"
     },
     "dependencies": {
-        "ethers": "^4.0.45",
         "circomlib": "https://github.com/iden3/circomlib.git#01da5f90dbbefeed5d78cec3b87303244338b920",
+        "ethers": "^4.0.45",
         "ffjavascript": "0.1.0"
     },
     "devDependencies": {
