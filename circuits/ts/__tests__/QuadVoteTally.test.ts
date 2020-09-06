@@ -8,7 +8,6 @@ import {
 } from 'maci-core'
 import {
     genRandomSalt,
-    stringifyBigInts,
 } from 'maci-crypto'
 
 import {

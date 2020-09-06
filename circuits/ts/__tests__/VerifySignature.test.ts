@@ -14,8 +14,6 @@ import {
     compileAndLoadCircuit,
     getSignalByName,
     executeCircuit,
-    //genProofAndPublicSignals,
-    //verifyProof,
 } from '../'
 
 const circuitName = 'test/verifySignature_test.circom'
@@ -52,24 +50,6 @@ describe('Signature verification circuit', () => {
         const witness = await executeCircuit(circuit, circuitInputs)
         const isValid = getSignalByName(circuit, witness, 'main.valid').toString()
         expect(isValid).toEqual('1')
-
-            /*
-        const { circuit, witness, publicSignals, proof } = await genProofAndPublicSignals(
-            circuitInputs,
-            circuitName,
-            'vs.wasm',
-            'vs.zkey',
-        )
-
-        expect(getSignalByName(circuit, witness, 'main.valid').toString()).toEqual('1')
-
-        const isValid = await verifyProof(
-            'vsVk.json',
-            publicSignals,
-            proof,
-        )
-        expect(isValid).toBeTruthy()
-            */
     })
 
     it('rejects an invalid signature', async () => {

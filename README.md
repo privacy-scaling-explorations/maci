@@ -50,7 +50,8 @@ npm run compileSol
 
 ### Demo
 
-You can use the MACI command-line interface to run a demo. See: https://github.com/appliedzkp/maci/tree/master/cli#demonstration
+You can use the MACI command-line interface to run a demo. See:
+https://github.com/appliedzkp/maci/tree/master/cli#demonstration
 
 ### Local development
 

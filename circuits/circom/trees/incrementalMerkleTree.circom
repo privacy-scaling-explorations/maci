@@ -40,36 +40,6 @@ template MerkleTreeInclusionProof(n_levels) {
     root <== levelHashes[n_levels];
 }
 
-template MerkleTreeInclusionProof_bak(n_levels) {
-    signal input leaf;
-    signal input path_index[n_levels];
-    signal input path_elements[n_levels][1];
-    signal output root;
-
-    component selectors[n_levels];
-    component hashers[n_levels];
-
-    for (var i = 0; i < n_levels; i++) {
-      selectors[i] = Selector();
-      hashers[i] = HashLeftRight();
-
-      path_index[i] ==> selectors[i].path_index;
-      path_elements[i][0] ==> selectors[i].path_elem;
-
-      selectors[i].left ==> hashers[i].left;
-      selectors[i].right ==> hashers[i].right;
-    }
-
-    leaf ==> selectors[0].input_elem;
-
-    for (var i = 1; i < n_levels; i++) {
-      hashers[i-1].hash ==> selectors[i].input_elem;
-    }
-
-    root <== hashers[n_levels - 1].hash;
-}
-
-
 template LeafExists(levels){
   // Ensures that a leaf exists within a merkletree with given `root`
 

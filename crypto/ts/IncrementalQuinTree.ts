@@ -281,17 +281,6 @@ class IncrementalQuinTree {
             newPe.push(level)
         }
 
-        //let flattenedPe: BigInt[] = []
-        //// If there are only 2 leaves per node, flatten pathElements
-        //if (this.leavesPerNode === 2) {
-            //const flattened: BigInt[] = []
-            //for (const level of newPe) {
-                //assert(level.length === 1)
-                //flattened.push(level[0])
-            //}
-            //newPe = flattened
-        //}
-
         return {
             pathElements: newPe,
             indices,
@@ -306,17 +295,6 @@ class IncrementalQuinTree {
         _hashFunc: (leaves: BigInt[]) => BigInt,
     ): boolean {
         assert (_proof.pathElements)
-
-        //let pathElements: BigInt[]
-        //// If there are only 2 leaves per node, un-flatten pathElements
-        //if (! Array.isArray(_proof.pathElements[0])) {
-            //pathElements = []
-            //for (const element of _proof.pathElements) {
-                //pathElements.push([element])
-            //}
-        //} else {
-            //pathElements = _proof.pathElements
-        //}
 
         const pathElements = _proof.pathElements
         // Validate the proof format
