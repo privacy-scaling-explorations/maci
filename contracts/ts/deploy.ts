@@ -132,6 +132,7 @@ const deployMaci = async (
     const quadVoteTallyVerifierContract = await deployer.deploy(QuadVoteTallyVerifier, {})
 
     log('Deploying MACI', quiet)
+    console.log('State tree depth:', stateTreeDepth)
 
     const maxUsers = (BigInt(2 ** stateTreeDepth) - BigInt(1)).toString()
     const maxMessages = (BigInt(2 ** messageTreeDepth) - BigInt(1)).toString()

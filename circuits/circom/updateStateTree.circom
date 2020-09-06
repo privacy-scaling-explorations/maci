@@ -416,6 +416,15 @@ template UpdateStateTree(
         new_state_tree.path_index[i] <== state_tree_path_index[i];
     }
 
+    // Make sure selected_tree_hash exists in the tree	
+    component new_state_tree_valid = LeafExists(state_tree_depth);	
+    new_state_tree_valid.root <== new_state_tree.root;	
+    new_state_tree_valid.leaf <== new_state_tree_leaf.hash;	
+    for (var i = 0; i < state_tree_depth; i++) {	
+        new_state_tree_valid.path_elements[i][0] <== state_tree_path_elements[i][0];	
+        new_state_tree_valid.path_index[i] <== state_tree_path_index[i];	
+    }
+
     // The output root is the original state tree root if message is invalid,
     // and the new state tree root if it is valid
     component selected_state_tree_root = Mux1();
