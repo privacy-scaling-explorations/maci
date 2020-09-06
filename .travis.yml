@@ -1,0 +1,21 @@
+language: node_js
+node_js:
+  - 11
+
+install:
+  - npm i -g npm
+  - npm i
+  - npm run bootstrap
+
+script:
+  - npm run build
+
+after_script:
+  - cd crypto && npm run test
+  #- ./circuits/scripts/installZkutil.sh
+  - cd ../circuits && npm run buildBatchUpdateStateTreeSnark && npm run buildQuadVoteTallySnark
+  - ./scripts/runTestsInCircleCi.sh
+  - cd ../domainobjs && npm run test
+  - cd ../core && npm run test
+  - cd ../contracts && ./scripts/runTestsInCircleCi.sh
+  - cd ../integrationTests && ./scripts/runTestsInCircleCi.sh

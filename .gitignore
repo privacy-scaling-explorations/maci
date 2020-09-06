@@ -1,3 +1,4 @@
+*.ptau
 cli/tally.json
 **/test_tally.json
 **/tally.json
@@ -10,6 +11,7 @@ contracts/compiled
 node_modules
 blake2sdef.json
 build/.snark_checksum
+package.json.lerna_backup
 
 .DS_Store
 

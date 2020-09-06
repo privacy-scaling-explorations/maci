@@ -3,7 +3,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as shell from 'shelljs'
 
-import { config } from 'maci-config'
+import { genSnarkVerifierSol } from './genVerifier'
 
 const fileExists = (filepath: string): boolean => {
     const currentPath = path.join(__dirname, '..')
@@ -12,6 +12,8 @@ const fileExists = (filepath: string): boolean => {
 
     return inputFileExists
 }
+
+const PTAU_URL = 'https://www.dropbox.com/s/kg4rnjdosnluuhq/pot19_final.ptau?dl=1'
 
 const main = () => {
     const parser = new argparse.ArgumentParser({ 
@@ -27,9 +29,17 @@ const main = () => {
     )
 
     parser.addArgument(
-        ['-j', '--json-out'],
+        ['-j', '--r1cs-out'],
         {
             help: 'The filepath to save the compiled circom file',
+            required: true
+        }
+    )
+
+    parser.addArgument(
+        ['-w', '--wasm-out'],
+        {
+            help: 'The filepath to save the WASM file',
             required: true
         }
     )
@@ -59,14 +69,6 @@ const main = () => {
     )
 
     parser.addArgument(
-        ['-m', '--params-out'],
-        {
-            help: 'The filepath to save the Bellman params file',
-            required: true
-        }
-    )
-
-    parser.addArgument(
         ['-r', '--override'],
         {
             help: 'Override an existing compiled circuit, proving key, and verifying key if set to true; otherwise (and by default), skip generation if a file already exists',
@@ -85,33 +87,22 @@ const main = () => {
     )
 
     parser.addArgument(
-        ['-z', '--zkutil'],
+        ['-z', '--zkey-out'],
         {
-            help: 'The path to the zkutil binary',
-            required: false,
-            defaultValue: config.zkutil_bin
+            help: 'The filepath to save the zkey file',
+            required: true
         }
     )
 
-
     const args = parser.parseArgs()
-    const pkOut = args.pk_out
     const vkOut = args.vk_out
-    const paramsOut = args.params_out
     const solOut = args.sol_out
     const inputFile = args.input
     const override = args.override
-    const circuitJsonOut = args.json_out
+    const circuitOut = args.r1cs_out
+    const wasmOut = args.wasm_out
     const verifierName = args.verifier_name
-    const zkutilPath = args.zkutil
-
-    // Check if zkutil exists
-    const output = shell.exec(zkutilPath + ' -V')
-    if (output.stderr) {
-        console.error('zkutil not found. Please refer to the README for installation instructions.')
-        return 1
-    }
-
+    const zkeyOut = args.zkey_out
 
     // Check if the input circom file exists
     const inputFileExists = fileExists(inputFile)
@@ -125,55 +116,60 @@ const main = () => {
     // Set memory options for node
     shell.env['NODE_OPTIONS'] = '--max-old-space-size=4096'
 
-    // Check if the circuitJsonOut file exists and if we should not override files
-    const circuitJsonOutFileExists = fileExists(circuitJsonOut)
+    // Check if the circuitOut file exists and if we should not override files
+    const circuitOutFileExists = fileExists(circuitOut)
 
-    if (!override && circuitJsonOutFileExists) {
-        console.log(circuitJsonOut, 'exists. Skipping compilation.')
+    if (!override && circuitOutFileExists) {
+        console.log(circuitOut, 'exists. Skipping compilation.')
     } else {
         console.log(`Compiling ${inputFile}...`)
         // Compile the .circom file
-        shell.exec(`circom ${inputFile} -o ${circuitJsonOut}`)
-        console.log('Generated', circuitJsonOut)
+        shell.exec(`node ./node_modules/circom/cli.js ${inputFile} -r ${circuitOut} -w ${wasmOut}`)
+        console.log('Generated', circuitOut, 'and', wasmOut)
     }
 
-    const paramsFileExists = fileExists(paramsOut)
-    const pkOutFileExists = fileExists(pkOut)
-    const vkOutFileExists = fileExists(vkOut)
+    const ptauPath = path.join(__dirname, '../build/pot19_final.ptau')
 
-    if (!override && pkOutFileExists && vkOutFileExists && paramsFileExists) {
-        console.log('Params file exists. Skipping setup.')
-    } else {
+    console.log('Downloading the .ptau file')
+    const dlCmd = `wget -nc -q -O ${ptauPath} ${PTAU_URL}`
+    shell.exec(dlCmd)
 
-        console.log('Generating params file...')
-        shell.exec(`${zkutilPath} setup -c ${circuitJsonOut} -p ${paramsOut}`)
-
-        console.log('Exporting proving and verification keys...')
-        shell.exec(
-            `${zkutilPath} export-keys -c ${circuitJsonOut} -p ${paramsOut}` +
-            ` --pk ${pkOut} --vk ${vkOut}`
-        )
-
-        console.log(`Generated ${paramsOut}, ${pkOut} and ${vkOut}`)
-    }
-
-    console.log('Generating Solidity verifier...')
     const snarkjsPath = path.join(
         __dirname,
         '..',
-        './node_modules/snarkjs/cli.js',
+        './node_modules/snarkjs/build/cli.cjs',
     )
 
-    shell.exec(`${snarkjsPath} generateverifier --vk ${vkOut} -v ${solOut}`)
+    const zkeyFileExists = fileExists(zkeyOut)
 
-    // Replace the name of the verifier contract with the specified name as
-    // we have two verifier contracts and we want to avoid conflicts
-    const contractSource = fs.readFileSync(solOut).toString()
-    const newSource = contractSource.replace(
-        '\ncontract Verifier {', `\ncontract ${verifierName} {`,
+    // Generate the zkey file
+    if (!override && zkeyFileExists) {
+        console.log('zkey file exists. Skipping setup.')
+    } else {
+        console.log('Generating zkey file...')
+        shell.exec(`node ${snarkjsPath} zkey new ${circuitOut} ${ptauPath} ${zkeyOut}`)
+    }
+
+    console.log('Exporting verification key...')
+
+    shell.exec(`node ${snarkjsPath} zkev ${zkeyOut} ${vkOut}`)
+
+    // snarkjs has a bug where it writes to `verification_key.json` even if you
+    // specify a path for the verification key
+    const badVkPath = path.join(__dirname, '../verification_key.json')
+    if (fs.existsSync(badVkPath)) {
+        shell.exec(`mv ${badVkPath} ${vkOut}`)
+    }
+    console.log(`Generated ${zkeyOut} and ${vkOut}`)
+
+    console.log('Generating Solidity verifier...')
+
+    const verifier = genSnarkVerifierSol(
+        verifierName,
+        JSON.parse(fs.readFileSync(vkOut).toString()),
     )
 
-    fs.writeFileSync(solOut, newSource)
+    fs.writeFileSync(solOut, verifier)
     return 0
 }
 

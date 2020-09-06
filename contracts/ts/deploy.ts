@@ -5,7 +5,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as etherlime from 'etherlime-lib'
 import { config } from 'maci-config'
-import { genPubKey, bigInt } from 'maci-crypto'
+import { genPubKey } from 'maci-crypto'
 import { PubKey } from 'maci-domainobjs'
 import { genAccounts, genTestAccounts } from './accounts'
 const PoseidonT3 = require('../compiled/PoseidonT3.json')
@@ -116,7 +116,7 @@ const deployMaci = async (
     log('Deploying Poseidon', quiet)
 
     if (!coordinatorPubKey) {
-        const p = genPubKey(bigInt(config.maci.coordinatorPrivKey))
+        const p = genPubKey(BigInt(config.maci.coordinatorPrivKey))
         coordinatorPubKey = new PubKey(p)
     }
 
@@ -133,8 +133,8 @@ const deployMaci = async (
 
     log('Deploying MACI', quiet)
 
-    const maxUsers = (bigInt(2).pow(bigInt(stateTreeDepth)) - bigInt(1)).toString()
-    const maxMessages = (bigInt(2).pow(bigInt(messageTreeDepth)) - bigInt(1)).toString()
+    const maxUsers = (BigInt(2 ** stateTreeDepth) - BigInt(1)).toString()
+    const maxMessages = (BigInt(2 ** messageTreeDepth) - BigInt(1)).toString()
 
     const maciContract = await deployer.deploy(
         MACI,

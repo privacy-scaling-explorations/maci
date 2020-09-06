@@ -4,7 +4,7 @@ import * as prompt from 'prompt-async'
 prompt.colors = false
 prompt.message = ''
 
-import { bigInt, SNARK_FIELD_SIZE } from 'maci-crypto'
+import { SNARK_FIELD_SIZE } from 'maci-crypto'
 
 import {
     MaciState,
@@ -46,10 +46,10 @@ const genMaciStateFromContract = async (
     )
 
     const treeDepths = await maciContract.treeDepths()
-    const stateTreeDepth = bigInt(treeDepths[0].toString())
-    const messageTreeDepth = bigInt(treeDepths[1].toString())
-    const voteOptionTreeDepth = bigInt(treeDepths[2].toString())
-    const maxVoteOptionIndex = bigInt((
+    const stateTreeDepth = BigInt(treeDepths[0].toString())
+    const messageTreeDepth = BigInt(treeDepths[1].toString())
+    const voteOptionTreeDepth = BigInt(treeDepths[2].toString())
+    const maxVoteOptionIndex = BigInt((
             await maciContract.voteOptionsMaxLeafIndex()
         ).toString())
 
@@ -74,10 +74,10 @@ const genMaciStateFromContract = async (
     const iface = new ethers.utils.Interface(maciContractAbi)
     for (const log of signUpLogs) {
         const event = iface.parseLog(log)
-        const voiceCreditBalance = bigInt(event.values._voiceCreditBalance.toString())
+        const voiceCreditBalance = BigInt(event.values._voiceCreditBalance.toString())
         const pubKey = new PubKey([
-            bigInt(event.values._userPubKey[0]),
-            bigInt(event.values._userPubKey[1]),
+            BigInt(event.values._userPubKey[0]),
+            BigInt(event.values._userPubKey[1]),
         ])
 
         maciState.signUp(
@@ -88,12 +88,12 @@ const genMaciStateFromContract = async (
 
     for (const log of publishMessageLogs) {
         const event = iface.parseLog(log)
-        const msgIv = bigInt(event.values._message[0].toString())
-        const msgData = event.values._message[1].map((x) => bigInt(x.toString()))
+        const msgIv = BigInt(event.values._message[0].toString())
+        const msgData = event.values._message[1].map((x) => BigInt(x.toString()))
         const message = new Message(msgIv, msgData)
         const encPubKey = new PubKey([
-            bigInt(event.values._encPubKey[0]),
-            bigInt(event.values._encPubKey[1]),
+            BigInt(event.values._encPubKey[0]),
+            BigInt(event.values._encPubKey[1]),
         ])
 
         maciState.publishMessage(message, encPubKey)
@@ -101,13 +101,16 @@ const genMaciStateFromContract = async (
     
     // Check whether the above steps were done correctly
     const onChainStateRoot = await maciContract.getStateTreeRoot()
-    if (maciState.genStateRoot().toString(16) !== bigInt(onChainStateRoot).toString(16)) {
-        throw new Error('Error: could not correctly recreate the state tree from on-chain data')
+
+    debugger
+
+    if (maciState.genStateRoot().toString(16) !== BigInt(onChainStateRoot).toString(16)) {
+        throw new Error('Error: could not correctly recreate the state tree from on-chain data. The state root differs.')
     }
 
     const onChainMessageRoot = await maciContract.getMessageTreeRoot()
-    if (maciState.genMessageRoot().toString(16) !== bigInt(onChainMessageRoot).toString(16)) {
-        throw new Error('Error: could not correctly recreate the message tree from on-chain data')
+    if (maciState.genMessageRoot().toString(16) !== BigInt(onChainMessageRoot).toString(16)) {
+        throw new Error('Error: could not correctly recreate the message tree from on-chain data. The message root differs.')
     }
 
     // Process the messages so that the users array is up to date with the
@@ -124,7 +127,7 @@ const genMaciStateFromContract = async (
         )
     }
 
-    if (maciState.genStateRoot().toString(16) !== bigInt(postSignUpStateRoot).toString(16)) {
+    if (maciState.genStateRoot().toString(16) !== BigInt(postSignUpStateRoot).toString(16)) {
         throw new Error('Error: could not correctly process messages to recreate the state')
     }
 
@@ -183,7 +186,7 @@ const validateSaltFormat = (salt: string): boolean => {
 }
 
 const validateSaltSize = (salt: string): boolean => {
-    return bigInt(salt) < SNARK_FIELD_SIZE
+    return BigInt(salt) < SNARK_FIELD_SIZE
 }
 
 const validateEthSk = (sk: string): boolean => {

@@ -34,7 +34,7 @@ template BatchUpdateStateTree(
 
     // Message tree
     signal input msg_tree_root;
-    signal private input msg_tree_path_elements[batch_size][message_tree_depth];
+    signal private input msg_tree_path_elements[batch_size][message_tree_depth][1];
     signal input msg_tree_batch_start_index;
     signal input msg_tree_batch_end_index;
     signal message_indices[batch_size];
@@ -71,7 +71,7 @@ template BatchUpdateStateTree(
 
     // The random leaf
     signal private input random_leaf;
-    signal private input random_leaf_path_elements[state_tree_depth];
+    signal private input random_leaf_path_elements[state_tree_depth][1];
     component random_leaf_path_index = Num2Bits(state_tree_depth);
     random_leaf_path_index.in <== 0;
 
@@ -83,7 +83,7 @@ template BatchUpdateStateTree(
     var state_tree_data_length = 5;
     signal input state_tree_max_leaf_index;
     signal input state_tree_root[batch_size];
-    signal private input state_tree_path_elements[batch_size][state_tree_depth];
+    signal private input state_tree_path_elements[batch_size][state_tree_depth][1];
     signal private input state_tree_path_index[batch_size][state_tree_depth];
     signal private input state_tree_data_raw[batch_size][state_tree_data_length];
 
@@ -118,7 +118,7 @@ template BatchUpdateStateTree(
         // Message Tree
         new_state_tree[i].msg_tree_root <== msg_tree_root;
         for (var j = 0; j < message_tree_depth; j++) {
-            new_state_tree[i].msg_tree_path_elements[j] <== msg_tree_path_elements[i][j];
+            new_state_tree[i].msg_tree_path_elements[j][0] <== msg_tree_path_elements[i][j][0];
             new_state_tree[i].msg_tree_path_index[j] <== msg_tree_path_index[i].out[j];
         }
 
@@ -128,7 +128,7 @@ template BatchUpdateStateTree(
             new_state_tree[i].state_tree_data_raw[j] <== state_tree_data_raw[i][j];
         }
         for (var j = 0; j < state_tree_depth; j++) {
-            new_state_tree[i].state_tree_path_elements[j] <== state_tree_path_elements[i][j];
+            new_state_tree[i].state_tree_path_elements[j][0] <== state_tree_path_elements[i][j][0];
             new_state_tree[i].state_tree_path_index[j] <== state_tree_path_index[i][j];
         }
         new_state_tree[i].state_tree_max_leaf_index <== state_tree_max_leaf_index;
@@ -144,7 +144,7 @@ template BatchUpdateStateTree(
     component final_state_tree = MerkleTreeInclusionProof(state_tree_depth);
     final_state_tree.leaf <== random_leaf;
     for (var i = 0; i < state_tree_depth; i++) {
-        final_state_tree.path_elements[i] <== random_leaf_path_elements[i];
+        final_state_tree.path_elements[i][0] <== random_leaf_path_elements[i][0];
         final_state_tree.path_index[i] <== random_leaf_path_index.out[i];
     }
 

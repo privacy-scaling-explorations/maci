@@ -1,12 +1,13 @@
-
 import {
     compileAndLoadCircuit,
+    executeCircuit,
+    getSignalByName,
 } from '../'
 
 
 describe('CalculateTotal circuit', () => {
     it('should correctly sum a list of values', async () => {
-        const ctCircuit = await compileAndLoadCircuit('test/calculateTotal_test.circom')
+        const circuit = await compileAndLoadCircuit('test/calculateTotal_test.circom')
 
         const nums: number[] = []
         for (let i=0; i < 6; i++) {
@@ -18,10 +19,8 @@ describe('CalculateTotal circuit', () => {
             nums,
         }
 
-        const witness = ctCircuit.calculateWitness(circuitInputs)
-        expect(ctCircuit.checkWitness(witness)).toBeTruthy()
-        const resultIdx = ctCircuit.getSignalIdx('main.sum')
-        const result = witness[resultIdx]
+        const witness = await executeCircuit(circuit, circuitInputs)
+        const result = getSignalByName(circuit, witness, 'main.sum').toString()
         expect(result.toString()).toEqual(sum.toString())
     })
 })

@@ -101,7 +101,7 @@ template QuadVoteTally(
     fullStateRootChecker.root <== fullStateRoot; 
     fullStateRootChecker.leaf <== intermediateStateRoot; 
     for (i = 0; i < k; i ++) {
-        fullStateRootChecker.path_elements[i] <== intermediatePathElements[i];
+        fullStateRootChecker.path_elements[i][0] <== intermediatePathElements[i];
         fullStateRootChecker.path_index[i] <== intermediatePathIndices.out[i];
     }
 

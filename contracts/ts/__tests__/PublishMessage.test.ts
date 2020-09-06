@@ -5,7 +5,6 @@ import * as ethers from 'ethers'
 import { config } from 'maci-config'
 import { MaciState } from 'maci-core'
 import {
-    bigInt,
     genRandomSalt,
     NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
@@ -31,7 +30,7 @@ const deployer = genDeployer(accounts[0].privateKey)
 let freeForAllSignUpGatekeeperContract
 let constantIntialVoiceCreditProxyContract
 let maciContract
-const coordinator = new Keypair(new PrivKey(bigInt(config.maci.coordinatorPrivKey)))
+const coordinator = new Keypair(new PrivKey(BigInt(config.maci.coordinatorPrivKey)))
 const stateTreeDepth = config.maci.merkleTrees.stateTreeDepth
 const messageTreeDepth = config.maci.merkleTrees.messageTreeDepth
 const voteOptionTreeDepth = config.maci.merkleTrees.voteOptionTreeDepth
@@ -74,15 +73,15 @@ describe('Publishing messages', () => {
         expect.assertions(1)
         const keypair = new Keypair()
         const command = new Command(
-            bigInt(0),
+            BigInt(0),
             keypair.pubKey,
-            bigInt(0),
-            bigInt(0),
-            bigInt(0),
+            BigInt(0),
+            BigInt(0),
+            BigInt(0),
             genRandomSalt(),
         )
         const signature = command.sign(keypair.privKey)
-        const message = command.encrypt(signature, bigInt(0))
+        const message = command.encrypt(signature, BigInt(0))
         try {
             await maciContract.publishMessage(
                 message.asContractParam(),
@@ -107,15 +106,15 @@ describe('Publishing messages', () => {
         for (let i = 0; i < 4; i++) {
             const keypair = new Keypair()
             const command = new Command(
-                bigInt(0),
+                BigInt(0),
                 keypair.pubKey,
-                bigInt(0),
-                bigInt(0),
-                bigInt(0),
+                BigInt(0),
+                BigInt(0),
+                BigInt(0),
                 genRandomSalt(),
             )
             const signature = command.sign(keypair.privKey)
-            const message = command.encrypt(signature, bigInt(0))
+            const message = command.encrypt(signature, BigInt(0))
             const tx = await maciContract.publishMessage(
                 message.asContractParam(),
                 keypair.pubKey.asContractParam(),

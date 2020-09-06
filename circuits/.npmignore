@@ -1,3 +1,5 @@
 ts/__tests__
 build/__tests__
+build/pot19_final.ptau
+build/*.ptau
 .etherlime-store

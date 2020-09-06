@@ -4,8 +4,6 @@ import { genTestAccounts } from '../accounts'
 import { config } from 'maci-config'
 import {
     hashLeftRight,
-    SnarkBigInt,
-    bigInt,
     genRandomSalt,
     IncrementalQuinTree,
 } from 'maci-crypto'
@@ -49,14 +47,14 @@ describe('VerifyTally', () => {
     })
 
     it('computeMerklePath() should generate the correct root', async () => {
-        const results: SnarkBigInt[] = []
+        const results: BigInt[] = []
         for (let i = 0; i < 8; i ++) {
             results.push(genRandomSalt())
         }
         const salt = genRandomSalt()
         const commitment = genTallyResultCommitment(results, salt, DEPTH)
 
-        const tree = new IncrementalQuinTree(DEPTH, bigInt(0))
+        const tree = new IncrementalQuinTree(DEPTH, BigInt(0))
         for (const result of results) {
             tree.insert(result)
         }

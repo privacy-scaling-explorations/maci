@@ -1,13 +1,15 @@
+jest.setTimeout(90000)
 import {
     compileAndLoadCircuit,
+    executeCircuit,
+    getSignalByName,
 } from '../'
 
 import {
     genRandomSalt,
     IncrementalQuinTree,
     hashOne,
-    SnarkBigInt,
-    bigInt,
+    stringifyBigInts,
 } from 'maci-crypto'
 
 const LEVELS = 4
@@ -23,10 +25,10 @@ describe('Merkle Tree circuits', () => {
 
         it('Valid LeafExists inputs should work', async () => {
             const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2)
-            const leaves: SnarkBigInt[] = []
+            const leaves: BigInt[] = []
 
             for (let i = 0; i < 2 ** LEVELS; i++) {
-                const randomVal = Math.floor(Math.random() * 1000)
+                const randomVal = genRandomSalt()
                 tree.insert(hashOne(randomVal))
                 leaves.push(hashOne(randomVal))
             }
@@ -41,17 +43,20 @@ describe('Merkle Tree circuits', () => {
                     path_index: proof.indices,
                     root,
                 }
-                const witness = circuit.calculateWitness(circuitInputs)
-                expect(circuit.checkWitness(witness)).toBeTruthy()
+
+                const witness = await executeCircuit(circuit, circuitInputs)
+                const circuitRoot = getSignalByName(circuit, witness, 'main.root').toString()
+                expect(circuitRoot).toEqual(root.toString())
             }
         })
 
         it('Invalid LeafExists inputs should not work', async () => {
+            expect.assertions(2 ** LEVELS)
             const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2)
-            const leaves: SnarkBigInt[] = []
+            const leaves: BigInt[] = []
 
             for (let i = 0; i < 2 ** LEVELS; i++) {
-                const randomVal = Math.floor(Math.random() * 1000)
+                const randomVal = genRandomSalt()
                 tree.insert(randomVal)
                 leaves.push(hashOne(randomVal))
             }
@@ -67,9 +72,11 @@ describe('Merkle Tree circuits', () => {
                     path_index: proof.indices,
                     root,
                 }
-                expect(() => {
-                    circuit.calculateWitness(circuitInputs)
-                }).toThrow()
+                try {
+                    await executeCircuit(circuit, circuitInputs)
+                } catch {
+                    expect(true).toBeTruthy()
+                }
             }
         })
     })
@@ -83,10 +90,10 @@ describe('Merkle Tree circuits', () => {
 
         it('Valid CheckRoot inputs should work', async () => {
             const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2)
-            const leaves: SnarkBigInt[] = []
+            const leaves: BigInt[] = []
 
             for (let i = 0; i < 2 ** LEVELS; i++) {
-                const randomVal = Math.floor(Math.random() * 1000)
+                const randomVal = genRandomSalt()
                 tree.insert(hashOne(randomVal))
                 leaves.push(hashOne(randomVal))
             }
@@ -95,30 +102,29 @@ describe('Merkle Tree circuits', () => {
 
             const circuitInputs = { leaves }
 
-            const witness = circuit.calculateWitness(circuitInputs)
-            expect(witness[circuit.getSignalIdx('main.root')].toString())
-                .toEqual(root.toString())
-            expect(circuit.checkWitness(witness)).toBeTruthy()
+            const witness = await executeCircuit(circuit, circuitInputs)
+            const circuitRoot = getSignalByName(circuit, witness, 'main.root').toString()
+            expect(circuitRoot.toString()).toEqual(root.toString())
         })
 
         it('Different leaves should generate a different root', async () => {
             const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2)
-            const leaves: SnarkBigInt[] = []
+            const leaves: BigInt[] = []
             for (let i = 0; i < 2 ** LEVELS; i++) {
-                const randomVal = Math.floor(Math.random() * 1000)
+                const randomVal = genRandomSalt()
                 const leaf = hashOne(randomVal)
                 tree.insert(leaf)
 
                 // Give the circuit a different leaf
-                leaves.push(bigInt(randomVal + 1))
+                leaves.push(BigInt(randomVal) + BigInt(1))
             }
 
             const root = tree.root
             const circuitInputs = { leaves }
-            const witness = circuit.calculateWitness(circuitInputs)
-            expect(witness[circuit.getSignalIdx('main.root')].toString())
+            const witness = await executeCircuit(circuit, circuitInputs)
+            const circuitRoot = getSignalByName(circuit, witness, 'main.root').toString()
+            expect(circuitRoot.toString())
                 .not.toEqual(root.toString())
-            expect(circuit.checkWitness(witness)).toBeTruthy()
         })
     })
 
@@ -149,17 +155,15 @@ describe('Merkle Tree circuits', () => {
 
                 const root = tree.root
 
-                const circuitInputs = {
-                    leaf: leaf.toString(),
+                const circuitInputs = stringifyBigInts({
+                    leaf,
                     path_elements: proof.pathElements,
                     path_index: proof.indices
-                }
+                })
 
-                const witness = circuit.calculateWitness(circuitInputs)
-                expect(circuit.checkWitness(witness)).toBeTruthy()
-
-                expect(witness[circuit.getSignalIdx('main.root')].toString())
-                    .toEqual(root.toString())
+                const witness = await executeCircuit(circuit, circuitInputs)
+                const circuitRoot = getSignalByName(circuit, witness, 'main.root').toString()
+                expect(circuitRoot).toEqual(root.toString())
             }
         })
 
@@ -168,29 +172,37 @@ describe('Merkle Tree circuits', () => {
 
             // Populate the tree
             for (let i = 0; i < 2 ** LEVELS; i++) {
-                const randomVal = Math.floor(Math.random() * 1000)
+                const randomVal = genRandomSalt()
                 const leaf = hashOne(randomVal)
                 tree.insert(leaf)
             }
 
             for (let i = 0; i < 2 ** LEVELS; i++) {
-                const randomVal = Math.floor(Math.random() * 1000)
-                const leaf = hashOne(randomVal).toString()
+                const randomVal = genRandomSalt()
+                const leaf = hashOne(randomVal)
 
-                tree.insert(leaf)
+                tree.update(i, leaf)
 
                 const proof = tree.genMerklePath(i)
 
+                // Delibrately create an invalid proof
+                proof.pathElements[0][0] = BigInt(1)
+
+                const isValid = IncrementalQuinTree.verifyMerklePath(
+                    proof,
+                    tree.hashFunc,
+                )
+                expect(isValid).toBeFalsy()
+
                 const circuitInputs = {
                     leaf: leaf.toString(),
-                    // The following are swapped to delibrately create an error
-                    path_elements: proof.indices,
-                    path_index: proof.pathElements,
+                    path_elements: proof.pathElements,
+                    path_index: proof.indices,
                 }
 
-                expect(() => {
-                    circuit.calculateWitness(circuitInputs)
-                }).toThrow()
+                const witness = await executeCircuit(circuit, circuitInputs)
+                const circuitRoot = getSignalByName(circuit, witness, 'main.root').toString()
+                expect(circuitRoot).not.toEqual(tree.root.toString())
             }
         })
     })

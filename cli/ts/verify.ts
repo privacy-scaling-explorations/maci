@@ -11,10 +11,6 @@ import {
 } from 'maci-contracts'
 
 import {
-    bigInt,
-} from 'maci-crypto'
-
-import {
     validateEthAddress,
     contractExists,
     calcQuinTreeDepthFromMaxLeaves,
@@ -81,9 +77,9 @@ const verify = async (args: any) => {
 
     // Verify that the results commitment matches the output of
     // genTallyResultCommitment()
-    const tally = data.results.tally.map(bigInt)
-    const salt = bigInt(data.results.salt)
-    const resultsCommitment = bigInt(data.results.commitment)
+    const tally = data.results.tally.map(BigInt)
+    const salt = BigInt(data.results.salt)
+    const resultsCommitment = BigInt(data.results.commitment)
 
     const expectedResultsCommitment = genTallyResultCommitment(tally, salt, depth)
     if (expectedResultsCommitment.toString() === resultsCommitment.toString()) {
@@ -111,9 +107,9 @@ const verify = async (args: any) => {
 
     // Verify that the total spent voice credits commitment matches the output of
     // genSpentVoiceCreditsCommitment()
-    const tvcSpent = bigInt(data.totalVoiceCredits.spent)
-    const tvcSalt = bigInt(data.totalVoiceCredits.salt)
-    const tvcCommitment = bigInt(data.totalVoiceCredits.commitment)
+    const tvcSpent = BigInt(data.totalVoiceCredits.spent)
+    const tvcSalt = BigInt(data.totalVoiceCredits.salt)
+    const tvcCommitment = BigInt(data.totalVoiceCredits.commitment)
     const expectedTvcCommitment = genSpentVoiceCreditsCommitment(tvcSpent, tvcSalt)
     if (expectedTvcCommitment.toString() === tvcCommitment.toString()) {
         console.log('The total spent voice credit commitment in the specified file is correct given the tally and salt')
@@ -122,9 +118,9 @@ const verify = async (args: any) => {
         return
     }
 
-    const pvcTally = data.totalVoiceCreditsPerVoteOption.tally.map((x) => bigInt(x))
-    const pvcSalt = bigInt(data.totalVoiceCreditsPerVoteOption.salt)
-    const pvcCommitment = bigInt(data.totalVoiceCreditsPerVoteOption.commitment)
+    const pvcTally = data.totalVoiceCreditsPerVoteOption.tally.map((x) => BigInt(x))
+    const pvcSalt = BigInt(data.totalVoiceCreditsPerVoteOption.salt)
+    const pvcCommitment = BigInt(data.totalVoiceCreditsPerVoteOption.commitment)
 
     const expectedPvcCommitment = genPerVOSpentVoiceCreditsCommitment(pvcTally, pvcSalt, depth)
 
@@ -165,14 +161,14 @@ const verify = async (args: any) => {
         provider,
     )
 
-    const onChainResultsCommitment = bigInt((await maciContract.currentResultsCommitment()).toString())
+    const onChainResultsCommitment = BigInt((await maciContract.currentResultsCommitment()).toString())
     if (onChainResultsCommitment.toString() === expectedResultsCommitment.toString()) {
         console.log('The results commitment in the MACI contract on-chain is valid')
     } else {
         console.error('Error: the results commitment in the MACI contract does not match the expected commitment')
     }
 
-    const onChainTvcCommitment = bigInt(
+    const onChainTvcCommitment = BigInt(
         (await maciContract.currentSpentVoiceCreditsCommitment()).toString()
     )
     if (onChainTvcCommitment.toString() === expectedTvcCommitment.toString()) {
@@ -181,7 +177,7 @@ const verify = async (args: any) => {
         console.error('Error: the total spent voice credit commitment in the MACI contract does not match the expected commitment')
     }
 
-    const onChainPvcCommitment = bigInt(
+    const onChainPvcCommitment = BigInt(
         (await maciContract.currentPerVOSpentVoiceCreditsCommitment()).toString()
     )
     if (onChainPvcCommitment.toString() === expectedPvcCommitment.toString()) {
@@ -191,7 +187,7 @@ const verify = async (args: any) => {
     }
 
     // Check the total votes
-    let expectedTotalVotes = bigInt(0)
+    let expectedTotalVotes = BigInt(0)
     for (const t of tally) {
         expectedTotalVotes += t
     }

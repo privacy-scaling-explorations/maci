@@ -1,4 +1,9 @@
-import { compileAndLoadCircuit } from '../'
+jest.setTimeout(1200000)
+import { 
+    executeCircuit,
+    getSignalByName,
+    compileAndLoadCircuit
+} from '../'
 import { config } from 'maci-config'
 import { MaciState } from 'maci-core'
 
@@ -11,10 +16,8 @@ import {
 
 import {
     genRandomSalt,
-    bigInt,
 } from 'maci-crypto'
 
-jest.setTimeout(1200000)
 
 const batchSize = config.maci.messageBatchSize
 const stateTreeDepth = config.maci.merkleTrees.stateTreeDepth
@@ -30,7 +33,7 @@ const coordinator = new Keypair()
 
 describe('State tree root update verification circuit', () => {
     let circuit 
-    const voteWeight = bigInt(2)
+    const voteWeight = BigInt(2)
 
     const maciState = new MaciState(
         coordinator,
@@ -51,11 +54,11 @@ describe('State tree root update verification circuit', () => {
         const stateRootBefore = maciState.genStateRoot()
 
         const command = new Command(
-            bigInt(1),
+            BigInt(1),
             user.pubKey,
-            bigInt(0),
+            BigInt(0),
             voteWeight,
-            bigInt(1),
+            BigInt(1),
             genRandomSalt(),
         )
         const signature = command.sign(user.privKey)
@@ -75,12 +78,10 @@ describe('State tree root update verification circuit', () => {
             )
 
         // Calculate the witness
-        const witness = circuit.calculateWitness(circuitInputs)
-        expect(circuit.checkWitness(witness)).toBeTruthy()
+        const witness = await executeCircuit(circuit, circuitInputs)
 
         // Get the circuit-generated root
-        const idx = circuit.getSignalIdx('main.root')
-        const circuitNewStateRoot = witness[idx].toString()
+        const circuitNewStateRoot = getSignalByName(circuit, witness, 'main.root').toString()
 
         // Process the batch of messages
         maciState.batchProcessMessage(
@@ -105,11 +106,11 @@ describe('State tree root update verification circuit', () => {
 
         for (let i = 0; i < batchSize; i++) {
             const command = new Command(
-                bigInt(1),
+                BigInt(1),
                 user.pubKey,
-                bigInt(0),
+                BigInt(0),
                 voteWeight,
-                bigInt(i + 1),
+                BigInt(i + 1),
                 genRandomSalt(),
             )
             const signature = command.sign(user.privKey)
@@ -132,12 +133,10 @@ describe('State tree root update verification circuit', () => {
             )
 
         // Calculate the witness
-        const witness = circuit.calculateWitness(circuitInputs)
-        expect(circuit.checkWitness(witness)).toBeTruthy()
+        const witness = await executeCircuit(circuit, circuitInputs)
 
         // Get the circuit-generated root
-        const idx = circuit.getSignalIdx('main.root')
-        const circuitNewStateRoot = witness[idx].toString()
+        const circuitNewStateRoot = getSignalByName(circuit, witness, 'main.root').toString()
 
         // Process the batch of messages
         maciState.batchProcessMessage(

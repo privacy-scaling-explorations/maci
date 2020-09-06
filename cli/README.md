@@ -24,8 +24,8 @@ private keys to this CLI. We use `maci-domainobj`'s `PrivKey.serialize` and
 Examples of serialized public and private keys:
 
 ```
-Private key: macisk.e11e7e8870b6b3472e04a1ed703306ffbc9fd4ae78eff0c8b6cb552d467ef3f
-Public key:  macipk.483e37f5f4a11713d1a9c9df79fc7195f0e1e303e1d3bb823822e1930e1b2aa7
+Private key: macisk.2422e5e9b8eb7c3ca5865168bf52480bb90b44df50070881c99a4e4f0d79a815
+Public key:  macipk.9643c94d5a2c918cab49a476feeab82eeec61ead9625e901c340c71aecdeb282
 ```
 
 ### Coordinator: Create election
@@ -222,7 +222,7 @@ Example output:
 
 ```
 Private key: macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c
-Public key:  macipk.f2accdb00311dc1af2ec6e00505e6bf62dcc0614eac2276fa01846dc7bad840a
+Public key:  macipk.4ba3aa2718d5e3741aa643217722cf4a480854dfae544837d4af332f0c2b4586
 
 Please store your private key in a safe place and do not reveal it to anyone.
 ```
@@ -237,7 +237,7 @@ Example output:
 
 ```
 Private key: macisk.53c8bc722a9f9d4c7bd478c8c8b01177f82d9c68d1ce15078e93ea84f198644
-Public key:  macipk.a200c5991d633c0aefbe594de2d9cf8d1afbfbc935a1a39b0a7edc93b5a1abad
+Public key:  macipk.40270618e1797c4969587eb04d7f3e9b39a91ecbbdf7d3c998d8e34d08e11c86
 
 Please store your private key in a safe place and do not reveal it to anyone.
 ```
@@ -265,7 +265,7 @@ MACI: 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4
 ```
 node ./build/index.js signup -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-e http://localhost:8545 \
-	-p macipk.a200c5991d633c0aefbe594de2d9cf8d1afbfbc935a1a39b0a7edc93b5a1abad \
+	-p macipk.40270618e1797c4969587eb04d7f3e9b39a91ecbbdf7d3c998d8e34d08e11c86 \
 	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4
 ```
 
@@ -283,7 +283,7 @@ node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241
 	-e http://localhost:8545 \
 	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
 	-sk macisk.53c8bc722a9f9d4c7bd478c8c8b01177f82d9c68d1ce15078e93ea84f198644 \
-	-p macipk.a200c5991d633c0aefbe594de2d9cf8d1afbfbc935a1a39b0a7edc93b5a1abad \
+	-p macipk.40270618e1797c4969587eb04d7f3e9b39a91ecbbdf7d3c998d8e34d08e11c86 \
 	-i 1 \
 	-v 0 \
 	-w 9 \
@@ -307,7 +307,7 @@ Example output:
 
 ```
 Private key: macisk.ff3ae0e7855e4c62237e2b7c72de109865f087bd5f792cf4589d3cdc495d8f2
-Public key:  macipk.90833965a98a890dc0ddb32f95cd077a32d235fc6222fe9fea8aad9fd17feaa9
+Public key:  macipk.15fe02285ad8573d7dca877420a22ea1b55abf47dce6b6d59127b49f67131e0d
 
 Please store your private key in a safe place and do not reveal it to anyone.
 ```
@@ -319,7 +319,7 @@ node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241
 	-e http://localhost:8545 \
 	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
 	-sk macisk.53c8bc722a9f9d4c7bd478c8c8b01177f82d9c68d1ce15078e93ea84f198644 \
-	-p macipk.90833965a98a890dc0ddb32f95cd077a32d235fc6222fe9fea8aad9fd17feaa9 \
+	-p macipk.15fe02285ad8573d7dca877420a22ea1b55abf47dce6b6d59127b49f67131e0d	 \
 	-i 1 \
 	-v 0 \
 	-w 9 \
@@ -340,7 +340,7 @@ node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241
 	-e http://localhost:8545 \
 	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
 	-sk macisk.53c8bc722a9f9d4c7bd478c8c8b01177f82d9c68d1ce15078e93ea84f198644 \
-	-p macipk.a200c5991d633c0aefbe594de2d9cf8d1afbfbc935a1a39b0a7edc93b5a1abad \
+	-p macipk.40270618e1797c4969587eb04d7f3e9b39a91ecbbdf7d3c998d8e34d08e11c86 \
 	-i 1 \
 	-v 1 \
 	-w 9 \

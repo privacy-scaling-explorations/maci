@@ -1,12 +1,14 @@
-
+jest.setTimeout(90000)
 import {
+    executeCircuit,
+    getSignalByName,
     compileAndLoadCircuit,
 } from '../'
 
 import { 
-    bigInt,
     stringifyBigInts,
     encrypt,
+    genRandomSalt,
 } from 'maci-crypto'
 
 import {
@@ -27,7 +29,10 @@ describe('Decryption circuit', () => {
             keypair2.pubKey,
         )
 
-        const cmd = [1, 2, 3, 4, 5].map((x) => bigInt(x))
+        const cmd: BigInt[] = []
+        for (let i = 0; i < 5; i ++) {
+            cmd.push(genRandomSalt())
+        }
         const msg = encrypt(cmd, sharedKey)
 
         const circuitInputs = stringifyBigInts({
@@ -35,13 +40,11 @@ describe('Decryption circuit', () => {
             'message': [msg.iv, ...msg.data],
         })
 
-        const witness = circuit.calculateWitness(circuitInputs)
-        expect(circuit.checkWitness(witness)).toBeTruthy()
+        const witness = await executeCircuit(circuit, circuitInputs)
 
         for (let i = 0; i < 4; i++) {
-            const idx = circuit.getSignalIdx('main.out[' + i + ']')
-            const circuitOut = witness[idx].toString()
-            expect(circuitOut.toString()).toEqual(cmd[i].toString())
+            const out = getSignalByName(circuit, witness, 'main.out[' + i + ']').toString()
+            expect(out.toString()).toEqual(cmd[i].toString())
         }
     })
 })

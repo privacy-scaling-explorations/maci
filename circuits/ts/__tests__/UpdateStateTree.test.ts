@@ -1,4 +1,7 @@
+jest.setTimeout(1200000)
 import {
+    executeCircuit,
+    getSignalByName,
     compileAndLoadCircuit,
 } from '../'
 
@@ -10,7 +13,6 @@ import {
 } from 'maci-domainobjs'
 import {
     genRandomSalt,
-    bigInt,
 } from 'maci-crypto'
 
 import { config } from 'maci-config'
@@ -25,10 +27,10 @@ const voteOptionsMaxIndex = config.maci.voteOptionsMaxLeafIndex
 const user = new Keypair()
 const coordinator = new Keypair()
 
-const stateIndex = bigInt(1)
-const voteOptionIndex = bigInt(0)
-const newVoteWeight = bigInt(9)
-const nonce = bigInt(1)
+const stateIndex = BigInt(1)
+const voteOptionIndex = BigInt(0)
+const newVoteWeight = BigInt(9)
+const nonce = BigInt(1)
 const salt = genRandomSalt()
 
 const command = new Command(
@@ -71,12 +73,10 @@ describe('State tree root update verification circuit', () => {
 
     it('UpdateStateTree should produce the correct state root', async () => {
         // Calculate the witness
-        const witness = circuit.calculateWitness(circuitInputs)
-        expect(circuit.checkWitness(witness)).toBeTruthy()
+        const witness = await executeCircuit(circuit, circuitInputs)
 
         // Get the circuit-generated root
-        const idx = circuit.getSignalIdx('main.root')
-        const circuitNewStateRoot = witness[idx].toString()
+        const circuitNewStateRoot = getSignalByName(circuit, witness, 'main.root').toString()
 
         const stateRootBefore = maciState.genStateRoot().toString()
 

@@ -1,10 +1,5 @@
-import {
-    SnarkBigInt,
-    bigInt,
-} from 'maci-crypto'
-
-const str2BigInt = (s: string): SnarkBigInt => {
-    return bigInt(parseInt(
+const str2BigInt = (s: string): BigInt => {
+    return BigInt(parseInt(
         Buffer.from(s).toString('hex'), 16
     ))
 }

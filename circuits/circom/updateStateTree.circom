@@ -71,12 +71,12 @@ template PerformChecksBeforeUpdate(
 
     signal input message[MESSAGE_LENGTH];
     signal input msg_tree_root;
-    signal input msg_tree_path_elements[message_tree_depth];
+    signal input msg_tree_path_elements[message_tree_depth][1];
     signal input msg_tree_path_index[message_tree_depth];
 
     signal input state_tree_data_raw[STATE_TREE_DATA_LENGTH];
     signal input state_tree_root;
-    signal input state_tree_path_elements[state_tree_depth];
+    signal input state_tree_path_elements[state_tree_depth][1];
     signal input state_tree_path_index[state_tree_depth];
 
     signal input vote_options_tree_root;
@@ -130,7 +130,7 @@ template PerformChecksBeforeUpdate(
     msg_tree_leaf_exists.root <== msg_tree_root;
     msg_tree_leaf_exists.leaf <== msg_hash.hash;
     for (var i = 0; i < message_tree_depth; i++) {
-        msg_tree_leaf_exists.path_elements[i] <== msg_tree_path_elements[i];
+        msg_tree_leaf_exists.path_elements[i][0] <== msg_tree_path_elements[i][0];
         msg_tree_leaf_exists.path_index[i] <== msg_tree_path_index[i];
     }
 
@@ -145,7 +145,7 @@ template PerformChecksBeforeUpdate(
     state_tree_valid.root <== state_tree_root;
     state_tree_valid.leaf <== existing_state_tree_leaf_hash.hash;
     for (var i = 0; i < state_tree_depth; i++) {
-        state_tree_valid.path_elements[i] <== state_tree_path_elements[i];
+        state_tree_valid.path_elements[i][0] <== state_tree_path_elements[i][0];
         state_tree_valid.path_index[i] <== state_tree_path_index[i];
     }
 
@@ -264,7 +264,7 @@ template UpdateStateTree(
 
     // Message tree
     signal input msg_tree_root;
-    signal input msg_tree_path_elements[message_tree_depth];
+    signal input msg_tree_path_elements[message_tree_depth][1];
     signal input msg_tree_path_index[message_tree_depth];
 
     // State tree
@@ -272,7 +272,7 @@ template UpdateStateTree(
 
     signal input state_tree_max_leaf_index;
     signal input state_tree_root;
-    signal private input state_tree_path_elements[state_tree_depth];
+    signal private input state_tree_path_elements[state_tree_depth][1];
     signal private input state_tree_path_index[state_tree_depth];
 
     // Shared keys
@@ -329,7 +329,7 @@ template UpdateStateTree(
     }
     perform_checks_before_update.state_tree_root <== state_tree_root;
     for (var i = 0; i < state_tree_depth; i++) {
-        perform_checks_before_update.state_tree_path_elements[i] <== state_tree_path_elements[i];
+        perform_checks_before_update.state_tree_path_elements[i][0] <== state_tree_path_elements[i][0];
         perform_checks_before_update.state_tree_path_index[i] <== state_tree_path_index[i];
     }
 
@@ -412,7 +412,7 @@ template UpdateStateTree(
     component new_state_tree = MerkleTreeInclusionProof(state_tree_depth);
     new_state_tree.leaf <== new_state_tree_leaf.hash;
     for (var i = 0; i < state_tree_depth; i++) {
-        new_state_tree.path_elements[i] <== state_tree_path_elements[i];
+        new_state_tree.path_elements[i][0] <== state_tree_path_elements[i][0];
         new_state_tree.path_index[i] <== state_tree_path_index[i];
     }
 
@@ -421,7 +421,7 @@ template UpdateStateTree(
     new_state_tree_valid.root <== new_state_tree.root;
     new_state_tree_valid.leaf <== new_state_tree_leaf.hash;
     for (var i = 0; i < state_tree_depth; i++) {
-        new_state_tree_valid.path_elements[i] <== state_tree_path_elements[i];
+        new_state_tree_valid.path_elements[i][0] <== state_tree_path_elements[i][0];
         new_state_tree_valid.path_index[i] <== state_tree_path_index[i];
     }
 

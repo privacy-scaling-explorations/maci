@@ -1,4 +1,7 @@
+jest.setTimeout(90000)
 import {
+    executeCircuit,
+    getSignalByName,
     compileAndLoadCircuit,
 } from '../'
 
@@ -25,10 +28,9 @@ describe('Public key derivation circuit', () => {
             'public_key': keypair2.pubKey.asCircuitInputs(),
         }
 
-        const witness = circuit.calculateWitness(circuitInputs)
-        expect(circuit.checkWitness(witness)).toBeTruthy()
+        const witness = await executeCircuit(circuit, circuitInputs)
 
-        const circuitEcdhSharedKey = witness[circuit.getSignalIdx('main.shared_key')].toString()
+        const circuitEcdhSharedKey = getSignalByName(circuit, witness, 'main.shared_key').toString()
         expect(circuitEcdhSharedKey).toEqual(ecdhSharedKey.toString())
     })
 })

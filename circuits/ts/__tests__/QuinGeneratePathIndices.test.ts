@@ -1,11 +1,9 @@
+jest.setTimeout(90000)
 import {
     compileAndLoadCircuit,
+    executeCircuit,
+    getSignalByName,
 } from '../'
-
-import { 
-    bigInt,
-    SnarkBigInt,
-} from 'maci-crypto'
 
 const toBase5 = (x: number) => {
     const result: number[] = []
@@ -33,15 +31,12 @@ describe('QuinGeneratePathIndices circuit', () => {
             in: index
         }
 
-        const witness = circuit.calculateWitness(circuitInputs)
-        expect(circuit.checkWitness(witness)).toBeTruthy()
-        const result: SnarkBigInt[] = []
+        const witness = await executeCircuit(circuit, circuitInputs)
+        const result: number[] = []
         for (let i = 0; i < depth; i ++) {
-            const idx = circuit.getSignalIdx('main.out[' + i + ']')
-            result.push(bigInt(witness[idx].toString()))
+            const out = getSignalByName(circuit, witness, `main.out[${i}]`)
+            result.push(Number(out))
         }
-        expect(JSON.stringify(result.map((x) => x.toJSNumber()))).toEqual(
-            JSON.stringify(toBase5(index))
-        )
+        expect(JSON.stringify(result)).toEqual(JSON.stringify(toBase5(index)))
     })
 })

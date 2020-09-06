@@ -1,11 +1,9 @@
 import * as assert from 'assert'
 import {
-    bigInt,
     Ciphertext,
     Plaintext,
     EcdhSharedKey,
     Signature,
-    SnarkBigInt,
     PubKey as RawPubKey,
     PrivKey as RawPrivKey,
     encrypt,
@@ -34,7 +32,7 @@ class PrivKey {
     }
 
     public copy = (): PrivKey => {
-        return new PrivKey(bigInt(this.rawPrivKey.toString()))
+        return new PrivKey(BigInt(this.rawPrivKey.toString()))
     }
 
     public asCircuitInputs = () => {
@@ -47,7 +45,7 @@ class PrivKey {
 
     public static unserialize = (s: string): PrivKey => {
         const x = s.slice(SERIALIZED_PRIV_KEY_PREFIX.length)
-        return new PrivKey(bigInt('0x' + x))
+        return new PrivKey(BigInt('0x' + x))
     }
 
     public static isValidSerializedPrivKey = (s: string): boolean => {
@@ -56,7 +54,7 @@ class PrivKey {
 
         let validValue = false
         try {
-            const value = bigInt('0x' + x)
+            const value = BigInt('0x' + x)
             validValue = value < SNARK_FIELD_SIZE
         } catch {
             // comment to make linter happy 
@@ -81,8 +79,8 @@ class PubKey {
     public copy = (): PubKey => {
 
         return new PubKey([
-            bigInt(this.rawPubKey[0].toString()),
-            bigInt(this.rawPubKey[1].toString()),
+            BigInt(this.rawPubKey[0].toString()),
+            BigInt(this.rawPubKey[1].toString()),
         ])
     }
 
@@ -97,7 +95,7 @@ class PubKey {
         return this.rawPubKey.map((x) => x.toString())
     }
 
-    public asArray = (): SnarkBigInt[] => {
+    public asArray = (): BigInt[] => {
         return [
             this.rawPubKey[0],
             this.rawPubKey[1],
@@ -107,8 +105,8 @@ class PubKey {
     public serialize = (): string => {
         // Blank leaves have pubkey [0, 0], which packPubKey does not support
         if (
-            bigInt(this.rawPubKey[0]).equals(bigInt(0)) && 
-            bigInt(this.rawPubKey[1]).equals(bigInt(0))
+            BigInt(this.rawPubKey[0]) === BigInt(0) && 
+            BigInt(this.rawPubKey[1]) === BigInt(0)
         ) {
             return SERIALIZED_PUB_KEY_PREFIX + 'z'
         }
@@ -119,7 +117,7 @@ class PubKey {
     public static unserialize = (s: string): PubKey => {
         // Blank leaves have pubkey [0, 0], which packPubKey does not support
         if (s === SERIALIZED_PUB_KEY_PREFIX + 'z') {
-            return new PubKey([0, 0])
+            return new PubKey([BigInt(0), BigInt(0)])
         }
 
         const len = SERIALIZED_PUB_KEY_PREFIX.length
@@ -194,32 +192,32 @@ class Keypair {
 
 interface IStateLeaf {
     pubKey: PubKey;
-    voteOptionTreeRoot: SnarkBigInt;
-    voiceCreditBalance: SnarkBigInt;
-    nonce: SnarkBigInt;
+    voteOptionTreeRoot: BigInt;
+    voiceCreditBalance: BigInt;
+    nonce: BigInt;
 }
 
 interface VoteOptionTreeLeaf {
-    votes: SnarkBigInt;
+    votes: BigInt;
 }
 
 /*
  * An encrypted command and signature.
  */
 class Message {
-    public iv: SnarkBigInt
-    public data: SnarkBigInt[]
+    public iv: BigInt
+    public data: BigInt[]
 
     constructor (
-        iv: SnarkBigInt,
-        data: SnarkBigInt[],
+        iv: BigInt,
+        data: BigInt[],
     ) {
         assert(data.length === 10)
         this.iv = iv
         this.data = data
     }
 
-    private asArray = (): SnarkBigInt[] => {
+    private asArray = (): BigInt[] => {
 
         return [
             this.iv,
@@ -230,16 +228,16 @@ class Message {
     public asContractParam = () => {
         return {
             iv: this.iv.toString(),
-            data: this.data.map((x: SnarkBigInt) => x.toString()),
+            data: this.data.map((x: BigInt) => x.toString()),
         }
     }
 
-    public asCircuitInputs = (): SnarkBigInt[] => {
+    public asCircuitInputs = (): BigInt[] => {
 
         return this.asArray()
     }
 
-    public hash = (): SnarkBigInt => {
+    public hash = (): BigInt => {
 
         return hash11(this.asArray())
     }
@@ -247,8 +245,8 @@ class Message {
     public copy = (): Message => {
 
         return new Message(
-            bigInt(this.iv.toString()),
-            this.data.map((x: SnarkBigInt) => bigInt(x.toString())),
+            BigInt(this.iv.toString()),
+            this.data.map((x: BigInt) => BigInt(x.toString())),
         )
     }
 }
@@ -258,15 +256,15 @@ class Message {
  */
 class StateLeaf implements IStateLeaf {
     public pubKey: PubKey
-    public voteOptionTreeRoot: SnarkBigInt
-    public voiceCreditBalance: SnarkBigInt
-    public nonce: SnarkBigInt
+    public voteOptionTreeRoot: BigInt
+    public voiceCreditBalance: BigInt
+    public nonce: BigInt
 
     constructor (
         pubKey: PubKey,
-        voteOptionTreeRoot: SnarkBigInt,
-        voiceCreditBalance: SnarkBigInt,
-        nonce: SnarkBigInt,
+        voteOptionTreeRoot: BigInt,
+        voiceCreditBalance: BigInt,
+        nonce: BigInt,
     ) {
         this.pubKey = pubKey
         this.voteOptionTreeRoot = voteOptionTreeRoot
@@ -280,20 +278,20 @@ class StateLeaf implements IStateLeaf {
     public copy(): StateLeaf {
         return new StateLeaf(
             this.pubKey.copy(),
-            bigInt(this.voteOptionTreeRoot.toString()),
-            bigInt(this.voiceCreditBalance.toString()),
-            bigInt(this.nonce.toString()),
+            BigInt(this.voteOptionTreeRoot.toString()),
+            BigInt(this.voiceCreditBalance.toString()),
+            BigInt(this.nonce.toString()),
         )
     }
 
     public static genBlankLeaf(
-        emptyVoteOptionTreeRoot: SnarkBigInt,
+        emptyVoteOptionTreeRoot: BigInt,
     ): StateLeaf {
         return new StateLeaf(
-            new PubKey([0, 0]),
+            new PubKey([BigInt(0), BigInt(0)]),
             emptyVoteOptionTreeRoot,
-            bigInt(0),
-            bigInt(0),
+            BigInt(0),
+            BigInt(0),
         )
     }
 
@@ -307,7 +305,7 @@ class StateLeaf implements IStateLeaf {
         )
     }
 
-    private asArray = (): SnarkBigInt[] => {
+    private asArray = (): BigInt[] => {
 
         return [
             ...this.pubKey.asArray(),
@@ -317,12 +315,12 @@ class StateLeaf implements IStateLeaf {
         ]
     }
 
-    public asCircuitInputs = (): SnarkBigInt[] => {
+    public asCircuitInputs = (): BigInt[] => {
 
         return this.asArray()
     }
 
-    public hash = (): SnarkBigInt => {
+    public hash = (): BigInt => {
 
         return hash5(this.asArray())
     }
@@ -342,19 +340,19 @@ class StateLeaf implements IStateLeaf {
         const j = JSON.parse(Buffer.from(serialized, 'base64').toString('utf8'))
         return new StateLeaf(
             PubKey.unserialize(j.pubKey),
-            bigInt('0x' + j.voteOptionTreeRoot),
-            bigInt('0x' + j.voiceCreditBalance),
-            bigInt('0x' + j.nonce),
+            BigInt('0x' + j.voteOptionTreeRoot),
+            BigInt('0x' + j.voiceCreditBalance),
+            BigInt('0x' + j.nonce),
         )
     }
 }
 
 interface ICommand {
-    stateIndex: SnarkBigInt;
+    stateIndex: BigInt;
     newPubKey: PubKey;
-    voteOptionIndex: SnarkBigInt;
-    newVoteWeight: SnarkBigInt;
-    nonce: SnarkBigInt;
+    voteOptionIndex: BigInt;
+    newVoteWeight: BigInt;
+    nonce: BigInt;
 
     sign: (PrivKey) => Signature;
     encrypt: (EcdhSharedKey, Signature) => Message;
@@ -364,20 +362,20 @@ interface ICommand {
  * Unencrypted data whose fields include the user's public key, vote etc.
  */
 class Command implements ICommand {
-    public stateIndex: SnarkBigInt
+    public stateIndex: BigInt
     public newPubKey: PubKey
-    public voteOptionIndex: SnarkBigInt
-    public newVoteWeight: SnarkBigInt
-    public nonce: SnarkBigInt
-    public salt: SnarkBigInt
+    public voteOptionIndex: BigInt
+    public newVoteWeight: BigInt
+    public nonce: BigInt
+    public salt: BigInt
 
     constructor (
-        stateIndex: SnarkBigInt,
+        stateIndex: BigInt,
         newPubKey: PubKey,
-        voteOptionIndex: SnarkBigInt,
-        newVoteWeight: SnarkBigInt,
-        nonce: SnarkBigInt,
-        salt: SnarkBigInt = genRandomSalt(),
+        voteOptionIndex: BigInt,
+        newVoteWeight: BigInt,
+        nonce: BigInt,
+        salt: BigInt = genRandomSalt(),
     ) {
         this.stateIndex = stateIndex
         this.newPubKey = newPubKey
@@ -390,16 +388,16 @@ class Command implements ICommand {
     public copy = (): Command => {
 
         return new Command(
-            bigInt(this.stateIndex.toString()),
+            BigInt(this.stateIndex.toString()),
             this.newPubKey.copy(),
-            bigInt(this.voteOptionIndex.toString()),
-            bigInt(this.newVoteWeight.toString()),
-            bigInt(this.nonce.toString()),
-            bigInt(this.salt.toString()),
+            BigInt(this.voteOptionIndex.toString()),
+            BigInt(this.newVoteWeight.toString()),
+            BigInt(this.nonce.toString()),
+            BigInt(this.salt.toString()),
         )
     }
 
-    public asArray = (): SnarkBigInt[] => {
+    public asArray = (): BigInt[] => {
 
         return [
             this.stateIndex,
@@ -425,7 +423,7 @@ class Command implements ICommand {
             this.salt == command.salt
     }
 
-    public hash = (): SnarkBigInt => {
+    public hash = (): BigInt => {
         return hash11(this.asArray())
     }
 

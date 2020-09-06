@@ -1,11 +1,7 @@
 import * as fs from 'fs'
 import * as ethers from 'ethers'
 
-import {
-    bigInt,
-    SnarkBigInt,
-    genRandomSalt,
-} from 'maci-crypto'
+import { genRandomSalt } from 'maci-crypto'
 
 import { 
     genPerVOSpentVoiceCreditsCommitment,
@@ -19,9 +15,10 @@ import {
 } from 'maci-contracts'
 
 import {
-    loadVk,
     compileAndLoadCircuit,
     genQvtProofAndPublicSignals,
+    verifyQvtProof,
+    getSignalByName,
 } from 'maci-circuits'
 
 import {
@@ -29,10 +26,6 @@ import {
     Keypair,
     StateLeaf,
 } from 'maci-domainobjs'
-
-import {
-    verifyProof,
-} from 'libsemaphore'
 
 import {
     promptPwd,
@@ -200,9 +193,9 @@ const tally = async (args: any): Promise<object | undefined> => {
         return
     }
 
-    let currentResultsSalt = bigInt(args.current_results_salt)
-    let currentTvcSalt = bigInt(args.current_total_vc_salt)
-    let currentPvcSalt = bigInt(args.current_per_vo_vc_salt)
+    let currentResultsSalt = BigInt(args.current_results_salt)
+    let currentTvcSalt = BigInt(args.current_total_vc_salt)
+    let currentPvcSalt = BigInt(args.current_per_vo_vc_salt)
 
     // Zeroth leaf
     const serialized = args.leaf_zero
@@ -310,9 +303,8 @@ const tally = async (args: any): Promise<object | undefined> => {
     }
 
     const circuit = await compileAndLoadCircuit('test/quadVoteTally_test.circom')
-    const qvtVk = loadVk('qvtVk')
 
-    const batchSize = bigInt((await maciContract.tallyBatchSize()).toString())
+    const batchSize = BigInt((await maciContract.tallyBatchSize()).toString())
 
     let cumulativeTally
     let tallyFileData
@@ -323,30 +315,30 @@ const tally = async (args: any): Promise<object | undefined> => {
             break
         }
 
-        const currentQvtBatchNum = bigInt((await maciContract.currentQvtBatchNum()).toString())
-        const startIndex: SnarkBigInt = currentQvtBatchNum * batchSize
+        const currentQvtBatchNum = BigInt((await maciContract.currentQvtBatchNum()).toString())
+        const startIndex: BigInt = currentQvtBatchNum * batchSize
 
         cumulativeTally = maciState.computeCumulativeVoteTally(startIndex)
 
         const tally = maciState.computeBatchVoteTally(startIndex, batchSize)
 
-        let totalVotes = bigInt(0)
+        let totalVotes = BigInt(0)
         for (let i = 0; i < tally.length; i++) {
-            cumulativeTally[i] = bigInt(cumulativeTally[i]) + bigInt(tally[i])
+            cumulativeTally[i] = BigInt(cumulativeTally[i]) + BigInt(tally[i])
             totalVotes += cumulativeTally[i]
         }
 
-        if (startIndex.equals(bigInt(0)) && !currentResultsSalt.equals(bigInt(0))) {
+        if (startIndex === BigInt(0) && currentResultsSalt !== BigInt(0)) {
             console.error('Error: the first current result salt should be zero')
             return
         }
 
-        if (startIndex.equals(bigInt(0)) && !currentTvcSalt.equals(bigInt(0))) {
+        if (startIndex === BigInt(0) && currentTvcSalt !== BigInt(0)) {
             console.error('Error: the first current total spent voice credits salt should be zero')
             return
         }
 
-        if (startIndex.equals(bigInt(0)) && !currentPvcSalt.equals(bigInt(0))) {
+        if (startIndex === BigInt(0) && currentPvcSalt !== BigInt(0)) {
             console.error('Error: the first current spent voice credits per vote option salt should be zero')
             return
         }
@@ -369,21 +361,26 @@ const tally = async (args: any): Promise<object | undefined> => {
             )
 
         // Update the salts for the next iteration
-        currentResultsSalt = newResultsSalt
-        currentTvcSalt = newSpentVoiceCreditsSalt
-        currentPvcSalt = newPerVOSpentVoiceCreditsSalt
+        currentResultsSalt = BigInt(newResultsSalt)
+        currentTvcSalt = BigInt(newSpentVoiceCreditsSalt)
+        currentPvcSalt = BigInt(newPerVOSpentVoiceCreditsSalt)
 
-        const witness = circuit.calculateWitness(circuitInputs)
-
-        if (!circuit.checkWitness(witness)) {
+        let result
+        try {
+            result = await genQvtProofAndPublicSignals(
+                circuitInputs,
+                circuit,
+            )
+        } catch (e) {
             console.error('Error: unable to compute quadratic vote tally witness data')
+            console.error(e)
             return
         }
 
-        const { proof, publicSignals } = genQvtProofAndPublicSignals(witness)
+        const { witness, proof, publicSignals } = result
 
         // The vote tally commmitment
-        const expectedNewResultsCommitmentOutput = witness[circuit.getSignalIdx('main.newResultsCommitment')]
+        const expectedNewResultsCommitmentOutput = getSignalByName(circuit, witness, 'main.newResultsCommitment')
 
         const newResultsCommitment = genTallyResultCommitment(
             cumulativeTally,
@@ -398,7 +395,7 @@ const tally = async (args: any): Promise<object | undefined> => {
 
         // The commitment to the total spent voice credits
         const expectedSpentVoiceCreditsCommitmentOutput =
-            witness[circuit.getSignalIdx('main.newSpentVoiceCreditsCommitment')]
+            getSignalByName(circuit, witness, 'main.newSpentVoiceCreditsCommitment')
 
         const currentSpentVoiceCredits = maciState.computeCumulativeSpentVoiceCredits(startIndex)
 
@@ -418,7 +415,7 @@ const tally = async (args: any): Promise<object | undefined> => {
 
         // The commitment to the spent voice credits per vote option
         const expectedPerVOSpentVoiceCreditsCommitmentOutput =
-            witness[circuit.getSignalIdx('main.newPerVOSpentVoiceCreditsCommitment')]
+            getSignalByName(circuit, witness, 'main.newPerVOSpentVoiceCreditsCommitment')
 
         const currentPerVOSpentVoiceCredits 
             = maciState.computeCumulativePerVOSpentVoiceCredits(startIndex)
@@ -428,7 +425,7 @@ const tally = async (args: any): Promise<object | undefined> => {
             batchSize,
         )
 
-        const totalPerVOSpentVoiceCredits: SnarkBigInt[] = []
+        const totalPerVOSpentVoiceCredits: BigInt[] = []
         for (let i = 0; i < currentPerVOSpentVoiceCredits.length; i ++) {
             totalPerVOSpentVoiceCredits[i] = currentPerVOSpentVoiceCredits[i] + perVOSpentVoiceCredits[i]
         }
@@ -447,7 +444,7 @@ const tally = async (args: any): Promise<object | undefined> => {
             return
         }
 
-        const totalVotesPublicInput = bigInt(circuitInputs.isLastBatch) === bigInt(1) ? totalVotes.toString() : 0
+        const totalVotesPublicInput = BigInt(circuitInputs.isLastBatch) === BigInt(1) ? totalVotes.toString() : 0
 
         const contractPublicSignals = await maciContract.genQvtPublicSignals(
             circuitInputs.intermediateStateRoot.toString(),
@@ -465,7 +462,7 @@ const tally = async (args: any): Promise<object | undefined> => {
             return
         }
 
-        const isValid = verifyProof(qvtVk, proof, publicSignals)
+        const isValid = verifyQvtProof(proof, publicSignals)
         if (!isValid) {
             console.error('Error: could not generate a valid proof or the verifying key is incorrect')
             return
@@ -507,17 +504,17 @@ const tally = async (args: any): Promise<object | undefined> => {
         if (!args.repeat || ! (await maciContract.hasUntalliedStateLeaves())) {
             console.log(`Current results salt: 0x${currentResultsSalt.toString(16)}`)
             const currentResultsCommitment = await maciContract.currentResultsCommitment()
-            const c = bigInt(currentResultsCommitment.toString())
+            const c = BigInt(currentResultsCommitment.toString())
             console.log(`Result commitment: 0x${c.toString(16)}`)
 
             console.log(`Total spent voice credits salt: 0x${currentTvcSalt.toString(16)}`)
             const currentSpentVoiceCreditsCommitment = await maciContract.currentSpentVoiceCreditsCommitment()
-            const d = bigInt(currentSpentVoiceCreditsCommitment.toString())
+            const d = BigInt(currentSpentVoiceCreditsCommitment.toString())
             console.log(`Total spent voice credits commitment: 0x${d.toString(16)}`)
 
             console.log(`Total spent voice credits per vote option salt: 0x${currentPvcSalt.toString(16)}`)
             const currentPerVOSpentVoiceCreditsCommitment = await maciContract.currentPerVOSpentVoiceCreditsCommitment()
-            const e = bigInt(currentPerVOSpentVoiceCreditsCommitment.toString())
+            const e = BigInt(currentPerVOSpentVoiceCreditsCommitment.toString())
             console.log(`Total spent voice credits per vote option commitment: 0x${e.toString(16)}`)
             console.log(`Total votes: ${finalTotalVotes.toString()}`)
 

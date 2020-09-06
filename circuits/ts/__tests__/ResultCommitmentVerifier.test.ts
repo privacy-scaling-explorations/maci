@@ -1,11 +1,12 @@
+jest.setTimeout(90000)
 import {
     genRandomSalt,
-    bigInt,
-    SnarkBigInt,
 } from 'maci-crypto'
 
 import {
     compileAndLoadCircuit,
+    executeCircuit,
+    getSignalByName,
 } from '../'
 
 import {
@@ -16,7 +17,7 @@ const DEPTH = 2
 const NUM_OPTIONS = 5 ** DEPTH
 
 const randVal = () => {
-    return bigInt(Math.floor(Math.random() * 1000000000).toString())
+    return BigInt(Math.floor(Math.random() * 1000000000).toString())
 }
 
 /*
@@ -24,10 +25,10 @@ const randVal = () => {
  * circuit
  */
 const genResultCommitmentVerifierCircuitInputs = (
-    currentResults: SnarkBigInt[],
-    newResults: SnarkBigInt[],
-    currentResultsSalt: SnarkBigInt,
-    newResultsSalt: SnarkBigInt,
+    currentResults: BigInt[],
+    newResults: BigInt[],
+    currentResultsSalt: BigInt,
+    newResultsSalt: BigInt,
 ) => {
 
     const currentResultsCommitment = genTallyResultCommitment(
@@ -57,8 +58,8 @@ describe('ResultCommitmentVerifier circuit', () => {
         const currentResultsSalt = genRandomSalt()
         const newResultsSalt = genRandomSalt()
 
-        const currentResults: SnarkBigInt[] = []
-        const newResults: SnarkBigInt[] = []
+        const currentResults: BigInt[] = []
+        const newResults: BigInt[] = []
 
         for (let i = 0; i < NUM_OPTIONS; i ++) {
             currentResults.push(randVal())
@@ -74,10 +75,8 @@ describe('ResultCommitmentVerifier circuit', () => {
             newResultsSalt,
         )
 
-        const witness = circuit.calculateWitness(circuitInputs)
-        expect(circuit.checkWitness(witness)).toBeTruthy()
-        const resultIdx = circuit.getSignalIdx('main.newResultsCommitment')
-        const result = witness[resultIdx]
+        const witness = await executeCircuit(circuit, circuitInputs)
+        const result = getSignalByName(circuit, witness, 'main.newResultsCommitment').toString()
         expect(result.toString()).toEqual(newResultsCommitment.toString())
     })
 })

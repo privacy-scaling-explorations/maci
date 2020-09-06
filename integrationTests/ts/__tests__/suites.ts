@@ -15,7 +15,6 @@ import {
 } from 'maci-core'
 
 import {
-    bigInt,
     genRandomSalt,
 } from 'maci-crypto'
 
@@ -126,7 +125,7 @@ const executeSuite = async (data: any, expect: any) => {
 
         maciState.signUp(
             userKeypair.pubKey, 
-            bigInt(initialVoiceCredits),
+            BigInt(initialVoiceCredits),
         )
     }
 
@@ -189,12 +188,12 @@ const executeSuite = async (data: any, expect: any) => {
         const encPubKey = new PubKey(genPubKey(encPrivKey.rawPrivKey))
 
         const command = new Command(
-            bigInt(stateIndex),
+            BigInt(stateIndex),
             userKeypair.pubKey,
-            bigInt(voteOptionIndex),
-            bigInt(newVoteWeight),
-            bigInt(nonce),
-            bigInt(salt),
+            BigInt(voteOptionIndex),
+            BigInt(newVoteWeight),
+            BigInt(nonce),
+            BigInt(salt),
         )
 
         const signature = command.sign(userKeypair.privKey)
@@ -283,7 +282,7 @@ const executeSuite = async (data: any, expect: any) => {
 
     expect(tallyRegMatch).toBeTruthy()
 
-    const resultsSalt = bigInt(tallyRegMatch[2])
+    const resultsSalt = BigInt(tallyRegMatch[2])
 
     const finalTallyCommitment = await maciContract.currentResultsCommitment()
     const expectedTallyCommitment = genTallyResultCommitment(
@@ -295,7 +294,7 @@ const executeSuite = async (data: any, expect: any) => {
     expect(finalTallyCommitment.toString())
         .toEqual(expectedTallyCommitment.toString())
 
-    const tvcSalt = bigInt(tallyRegMatch[3])
+    const tvcSalt = BigInt(tallyRegMatch[3])
     const finalTvcCommitment = 
         await maciContract.currentSpentVoiceCreditsCommitment()
 
@@ -307,7 +306,7 @@ const executeSuite = async (data: any, expect: any) => {
         .toEqual(finalTvcCommitment.toString())
 
 
-    const pvcSalt = bigInt(tallyRegMatch[4])
+    const pvcSalt = BigInt(tallyRegMatch[4])
     const finalPvcCommitment =
         await maciContract.currentPerVOSpentVoiceCreditsCommitment()
     const expectedPvcCommitment = genPerVOSpentVoiceCreditsCommitment(
@@ -318,7 +317,7 @@ const executeSuite = async (data: any, expect: any) => {
     expect(expectedPvcCommitment.toString())
         .toEqual(finalPvcCommitment.toString())
 
-    const totalVotes = bigInt(tallyRegMatch[6])
+    const totalVotes = BigInt(tallyRegMatch[6])
     const expectedTotalVotes = await maciContract.totalVotes()
     expect(totalVotes.toString()).toEqual(expectedTotalVotes.toString())
 

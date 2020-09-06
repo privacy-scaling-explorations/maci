@@ -1,5 +1,8 @@
+jest.setTimeout(90000)
 import {
     compileAndLoadCircuit,
+    executeCircuit,
+    getSignalByName,
 } from '../'
 
 import { 
@@ -18,10 +21,8 @@ describe('QuinSelector circuit', () => {
         for (let i = 0; i < items.length; i ++) {
             const circuitInputs = stringifyBigInts({ in: items, index: i })
 
-            const witness = circuit.calculateWitness(circuitInputs)
-            expect(circuit.checkWitness(witness)).toBeTruthy()
-            const idx = circuit.getSignalIdx('main.out')
-            const selected = witness[idx].toString()
+            const witness = await executeCircuit(circuit, circuitInputs)
+            const selected = getSignalByName(circuit, witness, 'main.out').toString()
             expect(selected).toEqual(items[i].toString())
         }
     })

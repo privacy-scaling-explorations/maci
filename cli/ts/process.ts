@@ -6,9 +6,10 @@ import {
 } from 'maci-contracts'
 
 import {
-    loadVk,
     compileAndLoadCircuit,
     genBatchUstProofAndPublicSignals,
+    verifyBatchUstProof,
+    getSignalByName,
 } from 'maci-circuits'
 
 import {
@@ -17,10 +18,6 @@ import {
     Keypair,
     StateLeaf,
 } from 'maci-domainobjs'
-
-import {
-    verifyProof,
-} from 'libsemaphore'
 
 import {
     promptPwd,
@@ -198,7 +195,7 @@ const processMessages = async (args: any): Promise<string | undefined> => {
             provider,
             maciAddress,
             coordinatorKeypair,
-            StateLeaf.genBlankLeaf(0),
+            StateLeaf.genBlankLeaf(BigInt(0)),
         )
     } catch (e) {
         console.error(e)
@@ -206,7 +203,6 @@ const processMessages = async (args: any): Promise<string | undefined> => {
     }
 
     const circuit = await compileAndLoadCircuit('test/batchUpdateStateTree_test.circom')
-    const batchUstVk = loadVk('batchUstVk')
 
     const messageBatchSize  = await maciContract.messageBatchSize()
     let randomStateLeaf 
@@ -219,7 +215,6 @@ const processMessages = async (args: any): Promise<string | undefined> => {
             messageBatchSize,
             randomStateLeaf,
         )
-        debugger
 
         // Process the batch of messages
         maciState.batchProcessMessage(
@@ -230,16 +225,22 @@ const processMessages = async (args: any): Promise<string | undefined> => {
 
         const stateRootAfter = maciState.genStateRoot()
 
-        // Calculate the witness
-        const witness = circuit.calculateWitness(circuitInputs)
-        if (!circuit.checkWitness(witness)) {
+        let result
+
+        try {
+            result = await genBatchUstProofAndPublicSignals(
+                circuitInputs,
+                circuit,
+            )
+        } catch (e) {
             console.error('Error: unable to compute batch update state tree witness data')
+            console.error(e)
             return
         }
+        const { witness, proof, publicSignals } = result
 
         // Get the circuit-generated root
-        const idx = circuit.getSignalIdx('main.root')
-        const circuitNewStateRoot = witness[idx].toString()
+        const circuitNewStateRoot = getSignalByName(circuit, witness, 'main.root')
         if (!circuitNewStateRoot.toString() === stateRootAfter.toString()) {
             console.error('Error: circuit-computed root mismatch')
             return
@@ -251,9 +252,7 @@ const processMessages = async (args: any): Promise<string | undefined> => {
             ecdhPubKeys.push(pubKey)
         }
 
-        const { proof, publicSignals } = genBatchUstProofAndPublicSignals(witness)
-
-        const isValid = verifyProof(batchUstVk, proof, publicSignals)
+        const isValid = await verifyBatchUstProof(proof, publicSignals)
         if (!isValid) {
             console.error('Error: could not generate a valid proof or the verifying key is incorrect')
             return

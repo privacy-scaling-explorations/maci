@@ -1,0 +1,123 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/node:11.14.0
+
+    working_directory: ~/maci/
+
+    steps:
+      #- run:
+          #name: Set Python version
+          #command: pyenv global 3.7.0
+
+      #- run:
+          #name: Install Node 11.14.0
+          #command: |
+            #export NVM_DIR="/opt/circleci/.nvm"
+            #[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            #nvm install 11.14.0
+            #nvm alias default v11
+            #npm i -g npm
+            #touch $BASH_ENV
+            #echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
+            #echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
+            #echo 'nvm install v11.14.0' >> $BASH_ENV
+            #echo 'nvm alias default v11.14.0' >> $BASH_ENV
+
+      - checkout:
+          path: ~/maci/
+
+      - restore_cache:
+          keys:
+            - v1.4-dependencies-{{ checksum "package-lock.json" }}
+
+      - run: 
+          name: Install NPM dependencies
+          command: npm install
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1.4-dependencies-{{ checksum "package-lock.json" }}
+
+      - restore_cache:
+          keys:
+            - v1.4-dependencies-{{ checksum "contracts/package-lock.json" }}-{{ checksum "circuits/package-lock.json" }}-{{ checksum "config/package-lock.json" }}-{{ checksum "domainobjs/package-lock.json" }}-{{ checksum "cli/package-lock.json" }}-{{ checksum "core/package-lock.json" }}-{{ checksum "integrationTests/package-lock.json" }}--{{ checksum "crypto/package-lock.json" }}
+
+      - run: npm run bootstrap && npm run build
+
+      - save_cache:
+          paths:
+            - circuits/node_modules
+            - cli/node_modules
+            - config/node_modules
+            - contracts/node_modules
+            - crypto/node_modules
+            - core/node_modules
+            - domainobjs/node_modules
+            - integrationTests/node_modules
+          key: v1.4-dependencies-{{ checksum "contracts/package-lock.json" }}-{{ checksum "circuits/package-lock.json" }}-{{ checksum "config/package-lock.json" }}-{{ checksum "domainobjs/package-lock.json" }}-{{ checksum "cli/package-lock.json" }}-{{ checksum "core/package-lock.json" }}-{{ checksum "integrationTests/package-lock.json" }}--{{ checksum "crypto/package-lock.json" }}
+
+      - run:
+          name: Install solc
+          command: wget https://github.com/ethereum/solidity/releases/download/v0.5.16/solc-static-linux && chmod a+x solc-static-linux && sudo mv solc-static-linux /usr/bin/solc
+
+      # run trusted setups
+      - restore_cache:
+          keys:
+            - v1.3-built-snarks
+
+      - run:
+          name: Build the batch update state tree snark
+          command: cd circuits && ./scripts/buildBatchUpdateStateTreeSnark.sh
+
+      - run:
+          name: Build the quad vote tally snark
+          command: cd circuits && ./scripts/buildQuadVoteTallySnark.sh
+
+      # cache generated snark circuit and keys
+      - save_cache:
+          key: v1.3-built-snarks
+          paths:
+            - circuits/build/pot19_final.ptau
+            - circuits/build/BatchUpdateStateTreeVerifier.sol
+            - circuits/build/batchUstCircuit.r1cs
+            - circuits/build/batchUst.wasm
+            - circuits/build/batchUst.zkey
+            - circuits/build/batchUstVk.json
+            - circuits/build/QuadVoteTallyVerifier.sol
+            - circuits/build/qvtCircuit.r1cs
+            - circuits/build/qvt.wasm
+            - circuits/build/qvtVk.json
+
+      - run:
+          name: Lint
+          command: npm run lint
+
+      - run:
+          name: Run crypto tests
+          command: cd crypto && npm run test
+ 
+      - run:
+          name: Run domainobjs tests
+          command: cd domainobjs && npm run test
+
+      - run:
+          name: Run core (business logic) tests
+          command: cd core && npm run test
+          
+      - run:
+          name: Run circuit tests
+          command: cd circuits && ./scripts/runTestsInCircleCi.sh
+
+      - run:
+          name: Run contract tests
+          command: cd contracts && ./scripts/runTestsInCircleCi.sh
+
+      - run:
+          name: Run integration tests
+          command: cd integrationTests && ./scripts/runTestsInCircleCi.sh
+
+      - store_artifacts:
+          path: circuits/build

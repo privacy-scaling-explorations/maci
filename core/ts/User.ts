@@ -5,8 +5,6 @@ import {
 } from 'maci-domainobjs'
 
 import {
-    bigInt,
-    SnarkBigInt,
     IncrementalQuinTree,
 } from 'maci-crypto'
 
@@ -23,40 +21,40 @@ import {
  */
 class User {
     public pubKey: PubKey
-    public votes: SnarkBigInt[]
-    public voiceCreditBalance: SnarkBigInt
+    public votes: BigInt[]
+    public voiceCreditBalance: BigInt
 
     // The this is the current nonce. i.e. a user who has published 0 valid
     // command should have this value at 0, and the first command should
     // have a nonce of 1
-    public nonce: SnarkBigInt
+    public nonce: BigInt
 
     constructor(
         _pubKey: PubKey,
-        _votes: SnarkBigInt[],
-        _voiceCreditBalance: SnarkBigInt,
-        _nonce: SnarkBigInt,
+        _votes: BigInt[],
+        _voiceCreditBalance: BigInt,
+        _nonce: BigInt,
     ) {
         this.pubKey = _pubKey
-        this.votes = _votes.map(bigInt)
-        this.voiceCreditBalance = bigInt(_voiceCreditBalance)
-        this.nonce = bigInt(_nonce)
+        this.votes = _votes.map(BigInt)
+        this.voiceCreditBalance = BigInt(_voiceCreditBalance)
+        this.nonce = BigInt(_nonce)
     }
 
     /*
      * Return a deep copy of this User
      */
     public copy = (): User => {
-        const newVotesArr: SnarkBigInt[] = []
+        const newVotesArr: BigInt[] = []
         for (let i = 0; i < this.votes.length; i++) {
-            newVotesArr.push(bigInt(this.votes[i].toString()))
+            newVotesArr.push(BigInt(this.votes[i].toString()))
         }
 
         return new User(
             this.pubKey.copy(),
             newVotesArr,
-            bigInt(this.voiceCreditBalance.toString()),
-            bigInt(this.nonce.toString()),
+            BigInt(this.voiceCreditBalance.toString()),
+            BigInt(this.nonce.toString()),
         )
     }
 
@@ -67,16 +65,16 @@ class User {
     public static genBlankUser = (
         _voteOptionTreeDepth: number,
     ): User => {
-        const votes: SnarkBigInt[] = []
+        const votes: BigInt[] = []
         for (let i = 0; i < 5 ** _voteOptionTreeDepth; i ++) {
-            votes.push(bigInt(0))
+            votes.push(BigInt(0))
         }
 
         return new User(
-            new PubKey([0, 0]),
+            new PubKey([0, 0].map(BigInt)),
             votes,
-            bigInt(0),
-            bigInt(0),
+            BigInt(0),
+            BigInt(0),
         )
     }
 
@@ -89,7 +87,7 @@ class User {
     ): StateLeaf => {
         const voteOptionTree = new IncrementalQuinTree(
             _voteOptionTreeDepth,
-            bigInt(0),
+            BigInt(0),
         )
 
         for (const vote of this.votes) {

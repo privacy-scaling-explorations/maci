@@ -1,6 +1,6 @@
 {
     "name": "maci-circuits",
-    "version": "0.1.11",
+    "version": "0.2.0",
     "description": "",
     "main": "build/index.js",
     "scripts": {
@@ -11,6 +11,8 @@
         "test": "jest",
         "test-minor": "jest --force-exit Hasher.test.ts VerifySignature.test.ts Ecdh.test.ts PublicKey.test.ts Decrypt.test.ts CalculateTotal.test.ts ResultCommitmentVerifier.test.ts QuinSelector.test.ts QuinGeneratePathIndices.test.ts Splicer.test.ts",
         "test-major": "jest --force-exit QuadVoteTally.test.ts UpdateStateTree.test.ts",
+        "test-quinGenPath": "jest QuinGeneratePathIndices.test.ts",
+        "test-quinGenPath-debug": "node --inspect-brk ./node_modules/.bin/jest QuinGeneratePathIndices.test.ts",
         "test-hasher": "jest Hasher.test.ts",
         "test-hasher-debug": "node --inspect-brk ./node_modules/.bin/jest Hasher.test.ts",
         "test-mt": "jest IncrementalMerkleTree.test.ts",
@@ -42,21 +44,20 @@
     },
     "dependencies": {
         "argparse": "^1.0.10",
-        "circom": "0.0.34",
-        "circomlib": "git+https://github.com/kobigurk/circomlib.git#4284dc1ef984a204db08864f5da530c97f9376ef",
+        "circom": "0.5.22",
+        "circomlib": "0.2.4",
         "libsemaphore": "^1.0.5",
         "shelljs": "^0.8.3",
-        "snarkjs": "https://github.com/weijiekoh/snarkjs.git#52e0ceba0256bc9bf94cbc9500139dfc37018f91",
-        "websnark": "0.0.5"
+        "snarkjs": "0.3.23"
     },
     "devDependencies": {
         "@types/jest": "^24.0.25",
         "@types/node": "^13.1.2",
         "jest": "^24.9.0",
-        "maci-config": "^0.1.8",
-        "maci-core": "^0.1.8",
-        "maci-crypto": "^0.1.8",
-        "maci-domainobjs": "^0.1.8",
+        "maci-config": "^0.2.0",
+        "maci-core": "^0.2.0",
+        "maci-crypto": "^0.2.0",
+        "maci-domainobjs": "^0.2.0",
         "ts-jest": "^24.2.0",
         "typescript": "^3.8.3"
     },

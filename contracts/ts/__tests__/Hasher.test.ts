@@ -54,7 +54,7 @@ describe('Hasher', () => {
         for (let i = 0; i < 5; i++) {
             values.push(genRandomSalt().toString())
         }
-        const hashed = hash5(values)
+        const hashed = hash5(values.map(BigInt))
 
         const onChainHash = await hasherContract.hash5(values)
         expect(onChainHash.toString()).toEqual(hashed.toString())
@@ -65,7 +65,7 @@ describe('Hasher', () => {
         for (let i = 0; i < 10; i++) {
             values.push(genRandomSalt().toString())
         }
-        const hashed = hash11(values)
+        const hashed = hash11(values.map(BigInt))
         const onChainHash = await hasherContract.hash11(values)
 
         expect(onChainHash.toString()).toEqual(hashed.toString())
@@ -76,7 +76,7 @@ describe('Hasher', () => {
         for (let i = 0; i < 11; i++) {
             values.push(genRandomSalt().toString())
         }
-        const hashed = hash11(values)
+        const hashed = hash11(values.map(BigInt))
         const onChainHash = await hasherContract.hash11(values)
 
         expect(onChainHash.toString()).toEqual(hashed.toString())
