@@ -54,7 +54,7 @@ const genBatchUstProofAndPublicSignals = (
 ) => {
     return genProofAndPublicSignals(
         inputs,
-        'test/batchUpdateStateTreeVerifier.circom',
+        'test/batchUpdateStateTree_test.circom',
         'batchUst.wasm',
         'batchUst.zkey',
         circuit,

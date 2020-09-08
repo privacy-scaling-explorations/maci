@@ -178,7 +178,7 @@ contract <%contract_name%> {
         uint256[2] memory a,
         uint256[2][2] memory b,
         uint256[2] memory c,
-        uint256[<%vk_input_length%>] memory input
+        uint256[] memory input
     ) public view returns (bool) {
 
         Proof memory proof;
@@ -205,7 +205,8 @@ contract <%contract_name%> {
         require(proof.C.Y < PRIME_Q, "verifier-cY-gte-prime-q");
 
         // Make sure that every input is less than the snark scalar field
-        for (uint256 i = 0; i < input.length; i++) {
+        //for (uint256 i = 0; i < input.length; i++) {
+        for (uint256 i = 0; i < <%vk_input_length%>; i++) {
             require(input[i] < SNARK_SCALAR_FIELD,"verifier-gte-snark-scalar-field");
             vk_x = Pairing.plus(vk_x, Pairing.scalar_mul(vk.IC[i + 1], input[i]));
         }

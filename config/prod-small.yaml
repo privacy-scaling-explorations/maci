@@ -7,12 +7,12 @@ maci:
   votingDurationInSeconds: 3600 # 1 hour
   coordinatorPrivKey: "2222222222263902553431241761119057960280734584214105336279476766401963593688"
   messageBatchSize: 8
-  quadVoteTallyBatchSize: 8
+  quadVoteTallyBatchSize: 16
   voteOptionsMaxLeafIndex: 124
 
   merkleTrees:
-    stateTreeDepth: 7
-    messageTreeDepth: 10
+    stateTreeDepth: 8
+    messageTreeDepth: 11
     voteOptionTreeDepth: 3
 
 chain:
