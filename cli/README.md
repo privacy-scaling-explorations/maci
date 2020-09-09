@@ -498,12 +498,12 @@ Create a MACI instance:
 node ./build/index.js create -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
 	-e http://localhost:8545 \
-    -u 255
-    -m 2048
 	-s 15 \
 	-o 60 \
 	-bm 4 \
-	-bv 4
+	-bv 4 \
+	-u 255 \
+	-m 2048
 ```
 
 Sign up:
@@ -530,10 +530,8 @@ node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241
 
 Process all messages:
 
-Remember to set `NODE_ENV=prod-small`!
-
 ```
-NODE_ENV=prod-small NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js process \
+NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js process \
     -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-e http://localhost:8545 \
 	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
@@ -543,10 +541,8 @@ NODE_ENV=prod-small NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js
 
 Tally all votes:
 
-Remember to set `NODE_ENV=prod-small`!
-
 ```
-NODE_ENV=prod-small NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js tally \
+NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js tally \
     -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-e http://localhost:8545 \
 	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \

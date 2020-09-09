@@ -9,8 +9,6 @@ import {
     unstringifyBigInts,
 } from 'maci-crypto'
 
-import { config } from 'maci-config'
-
 /*
  * @param circuitPath The subpath to the circuit file (e.g.
  *     test/batchProcessMessage_test.circom)
@@ -51,17 +49,18 @@ const getSignalByName = (
 
 const genBatchUstProofAndPublicSignals = (
     inputs: any,
+    configType: string,
     circuit?: any
 ) => {
 
     let circuitPath
     let wasmPath
     let zkeyPath
-    if (config.env === 'test') {
+    if (configType === 'test') {
         circuitPath = 'test/batchUpdateStateTree_test.circom'
         wasmPath = 'batchUst.wasm'
         zkeyPath = 'batchUst.zkey'
-    } else if (config.env === 'prod-small') {
+    } else if (configType === 'prod-small') {
         circuitPath = 'prod/batchUpdateStateTree_small.circom'
         wasmPath = 'batchUstSmall.wasm'
         zkeyPath = 'batchUstSmall.zkey'
@@ -80,16 +79,17 @@ const genBatchUstProofAndPublicSignals = (
 
 const genQvtProofAndPublicSignals = (
     inputs: any,
+    configType: string,
     circuit?: any,
 ) => {
     let circuitPath
     let wasmPath
     let zkeyPath
-    if (config.env === 'test') {
+    if (configType === 'test') {
         circuitPath = 'test/quadVoteTally_test.circom'
         wasmPath = 'qvt.wasm'
         zkeyPath = 'qvt.zkey'
-    } else if (config.env === 'prod-small') {
+    } else if (configType === 'prod-small') {
         circuitPath = 'prod/quadVoteTally_small.circom'
         wasmPath = 'qvtSmall.wasm'
         zkeyPath = 'qvtSmall.zkey'
@@ -170,11 +170,12 @@ const verifyProof = async (
 const verifyBatchUstProof = (
     proof: any,
     publicSignals: any,
+    configType: string,
 ) => {
     let vkPath
-    if (config.env === 'test') {
+    if (configType === 'test') {
         vkPath = 'batchUstVk.json'
-    } else if (config.env === 'prod-small') {
+    } else if (configType === 'prod-small') {
         vkPath = 'batchUstVkSmall.json'
     }
 
@@ -184,11 +185,12 @@ const verifyBatchUstProof = (
 const verifyQvtProof = (
     proof: any,
     publicSignals: any,
+    configType: string,
 ) => {
     let vkPath
-    if (config.env === 'test') {
+    if (configType === 'test') {
         vkPath = 'qvtVk.json'
-    } else if (config.env === 'prod-small') {
+    } else if (configType === 'prod-small') {
         vkPath = 'qvtVkSmall.json'
     }
 

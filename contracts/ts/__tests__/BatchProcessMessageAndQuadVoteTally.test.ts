@@ -228,7 +228,7 @@ describe('BatchProcessMessage', () => {
             )
 
             const { circuit, witness, proof, publicSignals }
-                = await genBatchUstProofAndPublicSignals(circuitInputs)
+                = await genBatchUstProofAndPublicSignals(circuitInputs, config.env)
 
             // Get the circuit-generated root
             const circuitNewStateRoot = getSignalByName(circuit, witness, 'main.root')
@@ -239,7 +239,7 @@ describe('BatchProcessMessage', () => {
             expect(stateRootBefore.toString()).not.toEqual(stateRootAfter)
             expect(circuitNewStateRoot.toString()).toEqual(stateRootAfter.toString())
 
-            const isValid = await verifyBatchUstProof(proof, publicSignals)
+            const isValid = await verifyBatchUstProof(proof, publicSignals, config.env)
             expect(isValid).toBeTruthy()
 
             expect(publicSignals).toHaveLength(20)
@@ -299,7 +299,7 @@ describe('BatchProcessMessage', () => {
 
             console.log('Generating proof...')
             const { circuit, witness, proof, publicSignals }
-                = await genQvtProofAndPublicSignals(circuitInputs)
+                = await genQvtProofAndPublicSignals(circuitInputs, config.env)
 
             // Check the commitment to the result tally
             const newResultsCommitmentOutput = getSignalByName(circuit, witness, 'main.newResultsCommitment')
@@ -367,7 +367,7 @@ describe('BatchProcessMessage', () => {
                 expect(publicSignals[i].toString()).toEqual(contractPublicSignals[i].toString())
             }
 
-            const isValid = await verifyQvtProof(proof, publicSignals)
+            const isValid = await verifyQvtProof(proof, publicSignals, config.env)
             expect(isValid).toBeTruthy()
 
             const formattedProof = formatProofForVerifierContract(proof)

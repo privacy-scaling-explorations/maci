@@ -6,7 +6,6 @@ import {
 } from 'maci-contracts'
 
 import {
-    compileAndLoadCircuit,
     genBatchUstProofAndPublicSignals,
     verifyBatchUstProof,
     getSignalByName,
@@ -225,8 +224,10 @@ const processMessages = async (args: any): Promise<string | undefined> => {
 
         let result
 
+        const configType = maciState.stateTreeDepth === 8 ? 'prod-small' : 'test'
+
         try {
-            result = await genBatchUstProofAndPublicSignals(circuitInputs)
+            result = await genBatchUstProofAndPublicSignals(circuitInputs, configType)
         } catch (e) {
             console.error('Error: unable to compute batch update state tree witness data')
             console.error(e)
@@ -247,7 +248,7 @@ const processMessages = async (args: any): Promise<string | undefined> => {
             ecdhPubKeys.push(pubKey)
         }
 
-        const isValid = await verifyBatchUstProof(proof, publicSignals)
+        const isValid = await verifyBatchUstProof(proof, publicSignals, configType)
         if (!isValid) {
             console.error('Error: could not generate a valid proof or the verifying key is incorrect')
             return
