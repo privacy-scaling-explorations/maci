@@ -302,8 +302,6 @@ const tally = async (args: any): Promise<object | undefined> => {
         return
     }
 
-    const circuit = await compileAndLoadCircuit('test/quadVoteTally_test.circom')
-
     const batchSize = BigInt((await maciContract.tallyBatchSize()).toString())
 
     let cumulativeTally
@@ -367,17 +365,14 @@ const tally = async (args: any): Promise<object | undefined> => {
 
         let result
         try {
-            result = await genQvtProofAndPublicSignals(
-                circuitInputs,
-                circuit,
-            )
+            result = await genQvtProofAndPublicSignals(circuitInputs)
         } catch (e) {
             console.error('Error: unable to compute quadratic vote tally witness data')
             console.error(e)
             return
         }
 
-        const { witness, proof, publicSignals } = result
+        const { circuit, witness, proof, publicSignals } = result
 
         // The vote tally commmitment
         const expectedNewResultsCommitmentOutput = getSignalByName(circuit, witness, 'main.newResultsCommitment')

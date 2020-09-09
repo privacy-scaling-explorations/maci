@@ -9,6 +9,7 @@ import {
     unstringifyBigInts,
 } from 'maci-crypto'
 
+import { config } from 'maci-config'
 
 /*
  * @param circuitPath The subpath to the circuit file (e.g.
@@ -52,11 +53,27 @@ const genBatchUstProofAndPublicSignals = (
     inputs: any,
     circuit?: any
 ) => {
+
+    let circuitPath
+    let wasmPath
+    let zkeyPath
+    if (config.env === 'test') {
+        circuitPath = 'test/batchUpdateStateTree_test.circom'
+        wasmPath = 'batchUst.wasm'
+        zkeyPath = 'batchUst.zkey'
+    } else if (config.env === 'prod-small') {
+        circuitPath = 'prod/batchUpdateStateTree_small.circom'
+        wasmPath = 'batchUstSmall.wasm'
+        zkeyPath = 'batchUstSmall.zkey'
+    } else {
+        throw new Error('Only test and prod-small circuits are supported')
+    }
+
     return genProofAndPublicSignals(
         inputs,
-        'test/batchUpdateStateTree_test.circom',
-        'batchUst.wasm',
-        'batchUst.zkey',
+        circuitPath,
+        wasmPath,
+        zkeyPath,
         circuit,
     )
 }
@@ -65,11 +82,27 @@ const genQvtProofAndPublicSignals = (
     inputs: any,
     circuit?: any,
 ) => {
+    let circuitPath
+    let wasmPath
+    let zkeyPath
+    if (config.env === 'test') {
+        circuitPath = 'test/quadVoteTally_test.circom'
+        wasmPath = 'qvt.wasm'
+        zkeyPath = 'qvt.zkey'
+    } else if (config.env === 'prod-small') {
+        circuitPath = 'prod/quadVoteTally_small.circom'
+        wasmPath = 'qvtSmall.wasm'
+        zkeyPath = 'qvtSmall.zkey'
+    } else {
+        throw new Error('Only test and prod-small circuits are supported')
+    }
+
+
     return genProofAndPublicSignals(
         inputs,
-        'test/quadVoteTally.circom',
-        'qvt.wasm',
-        'qvt.zkey',
+        circuitPath,
+        wasmPath,
+        zkeyPath,
         circuit,
     )
 }
@@ -138,16 +171,28 @@ const verifyBatchUstProof = (
     proof: any,
     publicSignals: any,
 ) => {
+    let vkPath
+    if (config.env === 'test') {
+        vkPath = 'batchUstVk.json'
+    } else if (config.env === 'prod-small') {
+        vkPath = 'batchUstVkSmall.json'
+    }
 
-    return verifyProof('batchUstVk.json', proof, publicSignals)
+    return verifyProof(vkPath, proof, publicSignals)
 }
 
 const verifyQvtProof = (
     proof: any,
     publicSignals: any,
 ) => {
+    let vkPath
+    if (config.env === 'test') {
+        vkPath = 'qvtVk.json'
+    } else if (config.env === 'prod-small') {
+        vkPath = 'qvtVkSmall.json'
+    }
 
-    return verifyProof('qvtVk.json', proof, publicSignals)
+    return verifyProof(vkPath, proof, publicSignals)
 }
 
 

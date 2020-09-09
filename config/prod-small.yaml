@@ -1,13 +1,13 @@
 ---
-env: 'prod-large'
+env: 'prod-small'
 
 maci:
   initialVoiceCreditBalance: 100
   signUpDurationInSeconds: 3600 # 1 hour
   votingDurationInSeconds: 3600 # 1 hour
   coordinatorPrivKey: "2222222222263902553431241761119057960280734584214105336279476766401963593688"
-  messageBatchSize: 8
-  quadVoteTallyBatchSize: 16
+  messageBatchSize: 4
+  quadVoteTallyBatchSize: 4
   voteOptionsMaxLeafIndex: 124
 
   merkleTrees:

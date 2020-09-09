@@ -489,3 +489,72 @@ The total spent voice credit commitment in the MACI contract on-chain is valid
 The per vote option spent voice credit commitment in the MACI contract on-chain is valid
 The total sum of votes in the MACI contract on-chain is valid.
 ```
+
+## Demonstration with `prod-small` settings
+
+Create a MACI instance:
+
+```bash
+node ./build/index.js create -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+	-sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
+	-e http://localhost:8545 \
+    -u 255
+    -m 2048
+	-s 15 \
+	-o 60 \
+	-bm 4 \
+	-bv 4
+```
+
+Sign up:
+
+```
+node ./build/index.js signup -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+	-e http://localhost:8545 \
+	-p macipk.40270618e1797c4969587eb04d7f3e9b39a91ecbbdf7d3c998d8e34d08e11c86 \
+	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4
+```
+Vote:
+
+```
+node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+	-e http://localhost:8545 \
+	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
+	-sk macisk.53c8bc722a9f9d4c7bd478c8c8b01177f82d9c68d1ce15078e93ea84f198644 \
+	-p macipk.40270618e1797c4969587eb04d7f3e9b39a91ecbbdf7d3c998d8e34d08e11c86 \
+	-i 1 \
+	-v 0 \
+	-w 9 \
+	-n 1
+```
+
+Process all messages:
+
+Remember to set `NODE_ENV=prod-small`!
+
+```
+NODE_ENV=prod-small NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js process \
+    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+	-e http://localhost:8545 \
+	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
+	-sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
+	-r
+```
+
+Tally all votes:
+
+Remember to set `NODE_ENV=prod-small`!
+
+```
+NODE_ENV=prod-small NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js tally \
+    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+	-e http://localhost:8545 \
+	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
+	-sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
+	-r \
+	-c 0x0 \
+	-tvc 0x0 \
+	-pvc 0x0 \
+	-t tally.json \
+	-z <PASTE RANDOM STATE LEAF HERE>
+```

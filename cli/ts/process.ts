@@ -202,8 +202,6 @@ const processMessages = async (args: any): Promise<string | undefined> => {
         return
     }
 
-    const circuit = await compileAndLoadCircuit('test/batchUpdateStateTree_test.circom')
-
     const messageBatchSize  = await maciContract.messageBatchSize()
     let randomStateLeaf 
 
@@ -228,16 +226,13 @@ const processMessages = async (args: any): Promise<string | undefined> => {
         let result
 
         try {
-            result = await genBatchUstProofAndPublicSignals(
-                circuitInputs,
-                circuit,
-            )
+            result = await genBatchUstProofAndPublicSignals(circuitInputs)
         } catch (e) {
             console.error('Error: unable to compute batch update state tree witness data')
             console.error(e)
             return
         }
-        const { witness, proof, publicSignals } = result
+        const { circuit, witness, proof, publicSignals } = result
 
         // Get the circuit-generated root
         const circuitNewStateRoot = getSignalByName(circuit, witness, 'main.root')
