@@ -15,7 +15,6 @@ import {
 } from 'maci-contracts'
 
 import {
-    compileAndLoadCircuit,
     genQvtProofAndPublicSignals,
     verifyQvtProof,
     getSignalByName,
@@ -302,8 +301,6 @@ const tally = async (args: any): Promise<object | undefined> => {
         return
     }
 
-    const circuit = await compileAndLoadCircuit('test/quadVoteTally_test.circom')
-
     const batchSize = BigInt((await maciContract.tallyBatchSize()).toString())
 
     let cumulativeTally
@@ -365,19 +362,18 @@ const tally = async (args: any): Promise<object | undefined> => {
         currentTvcSalt = BigInt(newSpentVoiceCreditsSalt)
         currentPvcSalt = BigInt(newPerVOSpentVoiceCreditsSalt)
 
+        const configType = maciState.stateTreeDepth === 8 ? 'prod-small' : 'test'
+
         let result
         try {
-            result = await genQvtProofAndPublicSignals(
-                circuitInputs,
-                circuit,
-            )
+            result = await genQvtProofAndPublicSignals(circuitInputs, configType)
         } catch (e) {
             console.error('Error: unable to compute quadratic vote tally witness data')
             console.error(e)
             return
         }
 
-        const { witness, proof, publicSignals } = result
+        const { circuit, witness, proof, publicSignals } = result
 
         // The vote tally commmitment
         const expectedNewResultsCommitmentOutput = getSignalByName(circuit, witness, 'main.newResultsCommitment')
@@ -462,7 +458,7 @@ const tally = async (args: any): Promise<object | undefined> => {
             return
         }
 
-        const isValid = verifyQvtProof(proof, publicSignals)
+        const isValid = verifyQvtProof(proof, publicSignals, configType)
         if (!isValid) {
             console.error('Error: could not generate a valid proof or the verifying key is incorrect')
             return

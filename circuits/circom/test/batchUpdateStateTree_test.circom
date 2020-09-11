@@ -1,4 +1,4 @@
-include "../batchUpdateStateTree.circom"
+include "../batchUpdateStateTree.circom";
 
 // state_tree_depth,
 // message_tree_depth,

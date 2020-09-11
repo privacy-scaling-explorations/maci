@@ -6,7 +6,6 @@ import {
 } from 'maci-contracts'
 
 import {
-    compileAndLoadCircuit,
     genBatchUstProofAndPublicSignals,
     verifyBatchUstProof,
     getSignalByName,
@@ -202,8 +201,6 @@ const processMessages = async (args: any): Promise<string | undefined> => {
         return
     }
 
-    const circuit = await compileAndLoadCircuit('test/batchUpdateStateTree_test.circom')
-
     const messageBatchSize  = await maciContract.messageBatchSize()
     let randomStateLeaf 
 
@@ -227,17 +224,16 @@ const processMessages = async (args: any): Promise<string | undefined> => {
 
         let result
 
+        const configType = maciState.stateTreeDepth === 8 ? 'prod-small' : 'test'
+
         try {
-            result = await genBatchUstProofAndPublicSignals(
-                circuitInputs,
-                circuit,
-            )
+            result = await genBatchUstProofAndPublicSignals(circuitInputs, configType)
         } catch (e) {
             console.error('Error: unable to compute batch update state tree witness data')
             console.error(e)
             return
         }
-        const { witness, proof, publicSignals } = result
+        const { circuit, witness, proof, publicSignals } = result
 
         // Get the circuit-generated root
         const circuitNewStateRoot = getSignalByName(circuit, witness, 'main.root')
@@ -252,7 +248,7 @@ const processMessages = async (args: any): Promise<string | undefined> => {
             ecdhPubKeys.push(pubKey)
         }
 
-        const isValid = await verifyBatchUstProof(proof, publicSignals)
+        const isValid = await verifyBatchUstProof(proof, publicSignals, configType)
         if (!isValid) {
             console.error('Error: could not generate a valid proof or the verifying key is incorrect')
             return
