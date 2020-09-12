@@ -17,6 +17,8 @@ const InitialVoiceCreditProxy = require('../compiled/InitialVoiceCreditProxy.jso
 const ConstantInitialVoiceCreditProxy = require('../compiled/ConstantInitialVoiceCreditProxy.json')
 const BatchUpdateStateTreeVerifier = require('../compiled/BatchUpdateStateTreeVerifier.json')
 const QuadVoteTallyVerifier = require('../compiled/QuadVoteTallyVerifier.json')
+const BatchUpdateStateTreeVerifierSmall = require('../compiled/BatchUpdateStateTreeVerifierSmall.json')
+const QuadVoteTallyVerifierSmall = require('../compiled/QuadVoteTallyVerifierSmall.json')
 const MACI = require('../compiled/MACI.json')
 
 const maciContractAbi = MACI.abi
@@ -111,6 +113,7 @@ const deployMaci = async (
     signUpDurationInSeconds: number = config.maci.signUpDurationInSeconds,
     votingDurationInSeconds: number = config.maci.votingDurationInSeconds,
     coordinatorPubKey?: PubKey,
+    configType: string,
     quiet = false,
 ) => {
     log('Deploying Poseidon', quiet)
@@ -125,14 +128,23 @@ const deployMaci = async (
     log('Deploying Poseidon T6', quiet)
     const PoseidonT6Contract = await deployer.deploy(PoseidonT6, {})
 
-    log('Deploying BatchUpdateStateTreeVerifier', quiet)
-    const batchUstVerifierContract = await deployer.deploy(BatchUpdateStateTreeVerifier, {})
+    let batchUstVerifierContract
+    let quadVoteTallyVerifierContract
+    if (configType === 'test') {
+        log('Deploying BatchUpdateStateTreeVerifier', quiet)
+        batchUstVerifierContract = await deployer.deploy(BatchUpdateStateTreeVerifier, {})
 
-    log('Deploying QuadVoteTallyVerifier', quiet)
-    const quadVoteTallyVerifierContract = await deployer.deploy(QuadVoteTallyVerifier, {})
+        log('Deploying QuadVoteTallyVerifier', quiet)
+        quadVoteTallyVerifierContract = await deployer.deploy(QuadVoteTallyVerifier, {})
+    } else if (configType === 'prod-small') {
+        log('Deploying BatchUpdateStateTreeVerifier', quiet)
+        batchUstVerifierContract = await deployer.deploy(BatchUpdateStateTreeVerifierSmall, {})
+
+        log('Deploying QuadVoteTallyVerifier', quiet)
+        quadVoteTallyVerifierContract = await deployer.deploy(QuadVoteTallyVerifierSmall, {})
+    }
 
     log('Deploying MACI', quiet)
-    //console.log('State tree depth:', stateTreeDepth)
 
     const maxUsers = (BigInt(2 ** stateTreeDepth) - BigInt(1)).toString()
     const maxMessages = (BigInt(2 ** messageTreeDepth) - BigInt(1)).toString()
