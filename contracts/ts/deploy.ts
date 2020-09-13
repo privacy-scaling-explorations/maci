@@ -113,7 +113,7 @@ const deployMaci = async (
     signUpDurationInSeconds: number = config.maci.signUpDurationInSeconds,
     votingDurationInSeconds: number = config.maci.votingDurationInSeconds,
     coordinatorPubKey?: PubKey,
-    configType: string,
+    configType: string = 'test',
     quiet = false,
 ) => {
     log('Deploying Poseidon', quiet)
