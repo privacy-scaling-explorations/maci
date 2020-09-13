@@ -15,5 +15,6 @@ script:
   - ./scripts/runTestsInCircleCi.sh
   - cd ../domainobjs && npm run test
   - cd ../core && npm run test
+  - cd ../contracts && ./scripts/compileSol.sh
   - cd ../contracts && ./scripts/runTestsInCircleCi.sh
   - cd ../integrationTests && ./scripts/runTestsInCircleCi.sh
