@@ -5,13 +5,20 @@ import { DomainObjs } from './DomainObjs.sol';
 import { IncrementalQuinTree } from "./IncrementalQuinTree.sol";
 import { IncrementalMerkleTree } from "./IncrementalMerkleTree.sol";
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
-import { BatchUpdateStateTreeVerifier } from "./BatchUpdateStateTreeVerifier.sol";
-import { QuadVoteTallyVerifier } from "./QuadVoteTallyVerifier.sol";
 import { InitialVoiceCreditProxy } from './initialVoiceCreditProxy/InitialVoiceCreditProxy.sol';
 import { SnarkConstants } from './SnarkConstants.sol';
 import { ComputeRoot } from './ComputeRoot.sol';
 import { MACIParameters } from './MACIParameters.sol';
 import { VerifyTally } from './VerifyTally.sol';
+
+interface SnarkVerifier {
+    function verifyProof(
+        uint256[2] calldata a,
+        uint256[2][2] calldata b,
+        uint256[2] calldata c,
+        uint256[] calldata input
+    ) external view returns (bool);
+}
 
 contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
@@ -20,8 +27,8 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
     uint256 ZERO_VALUE = uint256(keccak256(abi.encodePacked('Maci'))) % SNARK_SCALAR_FIELD;
 
     // Verifier Contracts
-    BatchUpdateStateTreeVerifier internal batchUstVerifier;
-    QuadVoteTallyVerifier internal qvtVerifier;
+    SnarkVerifier internal batchUstVerifier;
+    SnarkVerifier internal qvtVerifier;
 
     // The number of messages which the batch update state tree snark can
     // process per batch
@@ -118,8 +125,8 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         BatchSizes memory _batchSizes,
         MaxValues memory _maxValues,
         SignUpGatekeeper _signUpGatekeeper,
-        BatchUpdateStateTreeVerifier _batchUstVerifier,
-        QuadVoteTallyVerifier _qvtVerifier,
+        SnarkVerifier _batchUstVerifier,
+        SnarkVerifier _qvtVerifier,
         uint256 _signUpDurationSeconds,
         uint256 _votingDurationSeconds,
         InitialVoiceCreditProxy _initialVoiceCreditProxy,

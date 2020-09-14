@@ -334,6 +334,7 @@ const create = async (args: any) => {
         signupDuration,
         votingDuration,
         coordinatorKeypair.pubKey,
+        isSmall ? 'prod-small' : 'test',
         true,
     )
 
