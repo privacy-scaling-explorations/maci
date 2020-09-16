@@ -44,7 +44,12 @@ describe('State tree root update verification circuit', () => {
     )
 
     beforeAll(async () => {
-        circuit = await compileAndLoadCircuit('test/batchUpdateStateTree_test.circom')
+        circuit = await compileAndLoadCircuit(
+            config.env === 'test' ?
+                'test/batchUpdateStateTree_test.circom'
+                :
+                'prod/batchUpdateStateTree_small.circom'
+        )
 
         // Sign up the user
         maciState.signUp(user.pubKey, initialVoiceCreditBalance)
