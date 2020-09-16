@@ -1,6 +1,6 @@
 {
     "name": "maci-config",
-    "version": "0.2.5",
+    "version": "0.2.6",
     "main": "build/index.js",
     "scripts": {
         "watch": "tsc --watch",
@@ -14,5 +14,5 @@
     "devDependencies": {
         "@types/node": "^13.1.2"
     },
-    "gitHead": "d73c1bf279dd9171c80a79404b8b8d4efa76d094"
+    "gitHead": "86d18d560156cbdc5adeb87a18ac91a3522df15a"
 }
