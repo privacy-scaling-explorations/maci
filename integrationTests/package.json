@@ -1,6 +1,6 @@
 {
     "name": "maci-integrationtests",
-    "version": "0.2.3",
+    "version": "0.2.4",
     "description": "",
     "main": "build/index.js",
     "scripts": {
@@ -30,10 +30,10 @@
         "@types/node": "^13.1.2",
         "ethers": "^4.0.45",
         "jest": "^24.9.0",
-        "maci-circuits": "^0.2.3",
-        "maci-cli": "^0.2.3",
+        "maci-circuits": "^0.2.4",
+        "maci-cli": "^0.2.4",
         "maci-config": "^0.2.2",
-        "maci-contracts": "^0.2.3",
+        "maci-contracts": "^0.2.4",
         "maci-core": "^0.2.2",
         "maci-crypto": "^0.2.1",
         "maci-domainobjs": "^0.2.1",
