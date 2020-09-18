@@ -16,10 +16,13 @@ import {
 const compileAndLoadCircuit = async (
     circuitPath: string
 ) => {
-    const circuit = await circom.tester(path.join(
-        __dirname,
-        `../circom/${circuitPath}`,
-    ))
+
+    const circuit = await circom.tester(
+        path.join(
+            __dirname,
+            `../circom/${circuitPath}`,
+        ),
+    )
 
     await circuit.loadSymbols()
 
