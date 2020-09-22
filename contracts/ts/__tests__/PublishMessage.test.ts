@@ -54,8 +54,8 @@ describe('Publishing messages', () => {
 
         const contracts = await deployMaci(
             deployer,
-            freeForAllSignUpGatekeeperContract.contractAddress,
-            constantIntialVoiceCreditProxyContract.contractAddress,
+            freeForAllSignUpGatekeeperContract.address,
+            constantIntialVoiceCreditProxyContract.address,
         )
 
         maciContract = contracts.maciContract

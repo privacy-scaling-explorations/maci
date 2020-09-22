@@ -3,7 +3,6 @@ import * as ethers from 'ethers'
 import * as argparse from 'argparse'
 import * as fs from 'fs'
 import * as path from 'path'
-import * as etherlime from 'etherlime-lib'
 import { config } from 'maci-config'
 import { genPubKey } from 'maci-crypto'
 import { PubKey } from 'maci-domainobjs'
@@ -29,12 +28,48 @@ const genProvider = (
     return new ethers.providers.JsonRpcProvider(rpcUrl)
 }
 
+function link(bytecode: string, libraryName: string, libraryAddress: string): string {
+    // https://github.com/ethers-io/ethers.js/issues/195#issuecomment-396350174
+    const symbol = '__' + libraryName + '_'.repeat(40 - libraryName.length - 2)
+    return bytecode.split(symbol).join(libraryAddress.toLowerCase().substr(2))
+}
+
+export class JSONRPCDeployer {
+
+    provider: ethers.providers.Provider
+    signer: ethers.Signer
+    options: any
+
+    constructor(privateKey: string, providerUrl: string, options?: any) {
+        this.provider = new ethers.providers.JsonRpcProvider(providerUrl)
+        this.signer = new ethers.Wallet(privateKey, this.provider)
+        this.options = options
+    }
+
+    async deploy(artifact: any, libraries: any, ...args): Promise<ethers.Contract> {
+        let bytecode = artifact.bytecode
+        for (const libraryName in libraries) {
+            bytecode = link(bytecode, libraryName, libraries[libraryName])
+        }
+        const factory = new ethers.ContractFactory(artifact.abi, bytecode, this.signer)
+        return await factory.deploy(...args)
+    }
+}
+
+class GanacheDeployer extends JSONRPCDeployer {
+
+    constructor(privateKey: string, port: number, options?: any) {
+        const url = `http://localhost:${port}/`
+        super(privateKey, url, options)
+    }
+}
+
 const genJsonRpcDeployer = (
     privateKey: string,
     url: string,
 ) => {
 
-    return new etherlime.JSONRPCPrivateKeyDeployer(
+    return new JSONRPCDeployer(
         privateKey,
         url,
     )
@@ -43,7 +78,7 @@ const genJsonRpcDeployer = (
 const genDeployer = (
     privateKey: string,
 ) => {
-    return new etherlime.EtherlimeGanacheDeployer(
+    return new GanacheDeployer(
         privateKey,
         config.get('chain.ganache.port'),
         {
@@ -139,8 +174,8 @@ const deployMaci = async (
     const maciContract = await deployer.deploy(
         MACI,
         {
-            PoseidonT3: PoseidonT3Contract.contractAddress,
-            PoseidonT6: PoseidonT6Contract.contractAddress
+            PoseidonT3: PoseidonT3Contract.address,
+            PoseidonT6: PoseidonT6Contract.address
         },
         { stateTreeDepth, messageTreeDepth, voteOptionTreeDepth },
         {
@@ -153,8 +188,8 @@ const deployMaci = async (
             maxVoteOptions: voteOptionsMaxLeafIndex,
         },
         signUpGatekeeperAddress,
-        batchUstVerifierContract.contractAddress,
-        quadVoteTallyVerifierContract.contractAddress,
+        batchUstVerifierContract.address,
+        quadVoteTallyVerifierContract.address,
         signUpDurationInSeconds,
         votingDurationInSeconds,
         initialVoiceCreditProxy,
@@ -224,7 +259,7 @@ const main = async () => {
         signUpTokenAddress = signUpToken
     } else {
         const signUpTokenContract = await deploySignupToken(deployer)
-        signUpTokenAddress = signUpTokenContract.contractAddress
+        signUpTokenAddress = signUpTokenContract.address
     }
 
     let initialVoiceCreditBalanceAddress
@@ -235,7 +270,7 @@ const main = async () => {
             deployer,
             config.maci.initialVoiceCreditBalance,
         )
-        initialVoiceCreditBalanceAddress = initialVoiceCreditProxyContract.contractAddress
+        initialVoiceCreditBalanceAddress = initialVoiceCreditProxyContract.address
     }
 
     const signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(
@@ -251,16 +286,16 @@ const main = async () => {
         quadVoteTallyVerifierContract,
     } = await deployMaci(
         deployer,
-        signUpTokenGatekeeperContract.contractAddress,
+        signUpTokenGatekeeperContract.address,
         initialVoiceCreditBalanceAddress,
     )
 
     const addresses = {
-        PoseidonT3: PoseidonT3Contract.contractAddress,
-        PoseidonT6: PoseidonT6Contract.contractAddress,
-        BatchUpdateStateTreeVerifier: batchUstVerifierContract.contractAddress,
-        QuadraticVoteTallyVerifier: quadVoteTallyVerifierContract.contractAddress,
-        MACI: maciContract.contractAddress,
+        PoseidonT3: PoseidonT3Contract.address,
+        PoseidonT6: PoseidonT6Contract.address,
+        BatchUpdateStateTreeVerifier: batchUstVerifierContract.address,
+        QuadraticVoteTallyVerifier: quadVoteTallyVerifierContract.address,
+        MACI: maciContract.address,
     }
 
     const addressJsonPath = path.join(__dirname, '..', outputAddressFile)

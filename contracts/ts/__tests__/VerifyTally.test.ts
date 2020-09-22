@@ -9,8 +9,7 @@ import {
 } from 'maci-crypto'
 import { genTallyResultCommitment } from 'maci-core'
 
-import * as etherlime from 'etherlime-lib'
-
+import { JSONRPCDeployer } from '../deploy'
 const PoseidonT3 = require('@maci-contracts/compiled/PoseidonT3.json')
 const PoseidonT6 = require('@maci-contracts/compiled/PoseidonT6.json')
 const VerifyTallyAbi = require('@maci-contracts/compiled/VerifyTally.json')
@@ -23,7 +22,7 @@ const DEPTH = 4
 
 describe('VerifyTally', () => {
     beforeAll(async () => {
-        deployer = new etherlime.JSONRPCPrivateKeyDeployer(
+        deployer = new JSONRPCDeployer(
             accounts[0].privateKey,
             config.get('chain.url'),
             {
@@ -39,8 +38,8 @@ describe('VerifyTally', () => {
         verifyTallyContract = await deployer.deploy(
             VerifyTallyAbi,
             {
-                PoseidonT3: PoseidonT3Contract.contractAddress,
-                PoseidonT6: PoseidonT6Contract.contractAddress
+                PoseidonT3: PoseidonT3Contract.address,
+                PoseidonT6: PoseidonT6Contract.address,
             },
         )
 

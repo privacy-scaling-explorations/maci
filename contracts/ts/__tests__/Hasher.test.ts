@@ -8,7 +8,7 @@ import {
     genRandomSalt,
 } from 'maci-crypto'
 
-import * as etherlime from 'etherlime-lib'
+import { JSONRPCDeployer } from '../deploy'
 const Hasher = require('@maci-contracts/compiled/Hasher.json')
 const PoseidonT3 = require('@maci-contracts/compiled/PoseidonT3.json')
 const PoseidonT6 = require('@maci-contracts/compiled/PoseidonT6.json')
@@ -20,7 +20,7 @@ let PoseidonT3Contract, PoseidonT6Contract
 
 describe('Hasher', () => {
     beforeAll(async () => {
-        deployer = new etherlime.JSONRPCPrivateKeyDeployer(
+        deployer = new JSONRPCDeployer(
             accounts[0].privateKey,
             config.get('chain.url'),
             {
@@ -35,8 +35,8 @@ describe('Hasher', () => {
 
         console.log('Deploying Hasher')
         hasherContract = await deployer.deploy(Hasher, {
-            PoseidonT3: PoseidonT3Contract.contractAddress,
-            PoseidonT6: PoseidonT6Contract.contractAddress
+            PoseidonT3: PoseidonT3Contract.address,
+            PoseidonT6: PoseidonT6Contract.address,
         })
     })
 

@@ -8,7 +8,7 @@ import {
     IncrementalQuinTree,
 } from 'maci-crypto'
 
-import * as etherlime from 'etherlime-lib'
+import { JSONRPCDeployer } from '../deploy'
 const PoseidonT3 = require('@maci-contracts/compiled/PoseidonT3.json')
 const PoseidonT6 = require('@maci-contracts/compiled/PoseidonT6.json')
 
@@ -26,7 +26,7 @@ const DEPTH = 32
 let tree
 describe('IncrementalQuinTree', () => {
     beforeAll(async () => {
-        deployer = new etherlime.JSONRPCPrivateKeyDeployer(
+        deployer = new JSONRPCDeployer(
             accounts[0].privateKey,
             config.get('chain.url'),
             {
@@ -42,8 +42,8 @@ describe('IncrementalQuinTree', () => {
         mtContract = await deployer.deploy(
             IncrementalQuinTreeAbi,
             {
-                PoseidonT3: PoseidonT3Contract.contractAddress,
-                PoseidonT6: PoseidonT6Contract.contractAddress
+                PoseidonT3: PoseidonT3Contract.address,
+                PoseidonT6: PoseidonT6Contract.address,
             },
             DEPTH,
             NOTHING_UP_MY_SLEEVE.toString(),
@@ -53,8 +53,8 @@ describe('IncrementalQuinTree', () => {
         crContract = await deployer.deploy(
             ComputeRootAbi,
             {
-                PoseidonT3: PoseidonT3Contract.contractAddress,
-                PoseidonT6: PoseidonT6Contract.contractAddress
+                PoseidonT3: PoseidonT3Contract.address,
+                PoseidonT6: PoseidonT6Contract.address,
             },
         )
 

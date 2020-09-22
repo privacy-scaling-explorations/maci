@@ -81,12 +81,12 @@ describe('MACI', () => {
         )
         signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(
             deployer,
-            signUpTokenContract.contractAddress,
+            signUpTokenContract.address,
         )
         const contracts = await deployMaci(
             deployer,
-            signUpTokenGatekeeperContract.contractAddress,
-            constantIntialVoiceCreditProxyContract.contractAddress,
+            signUpTokenGatekeeperContract.address,
+            constantIntialVoiceCreditProxyContract.address,
         )
 
         maciContract = contracts.maciContract
@@ -160,7 +160,7 @@ describe('MACI', () => {
 
             const wallet = user1.wallet.connect(deployer.provider as any)
             const contract = new ethers.Contract(
-                maciContract.contractAddress,
+                maciContract.address,
                 maciContract.interface.abi,
                 wallet,
             )
@@ -186,7 +186,7 @@ describe('MACI', () => {
 
             const wallet = user1.wallet.connect(deployer.provider as any)
             const contract = new ethers.Contract(
-                maciContract.contractAddress,
+                maciContract.address,
                 maciContract.interface.abi,
                 wallet,
             )
@@ -221,7 +221,7 @@ describe('MACI', () => {
             const wallet2 = user2.wallet.connect(deployer.provider as any)
 
             const tokenContract = new ethers.Contract(
-                signUpTokenContract.contractAddress,
+                signUpTokenContract.address,
                 signUpTokenContract.interface.abi,
                 wallet,
             )
@@ -243,7 +243,7 @@ describe('MACI', () => {
             // Attempt to sign up with token 1 as user2, which should fail
             try {
                 const maciContract2 = new ethers.Contract(
-                    maciContract.contractAddress,
+                    maciContract.address,
                     maciContract.interface.abi,
                     wallet2,
                 )
@@ -259,7 +259,7 @@ describe('MACI', () => {
 
             // Send the token back to user1 from user2
             const tokenContract2 = new ethers.Contract(
-                signUpTokenContract.contractAddress,
+                signUpTokenContract.address,
                 signUpTokenContract.interface.abi,
                 wallet2,
             )
