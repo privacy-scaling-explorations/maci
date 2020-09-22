@@ -15,7 +15,7 @@ import {
     Keypair,
 } from 'maci-domainobjs'
 
-import { timeTravel } from '../../node_modules/etherlime/cli-commands/etherlime-test/time-travel.js'
+import { timeTravel } from './utils'
 import {
     genDeployer,
     genTestAccounts,

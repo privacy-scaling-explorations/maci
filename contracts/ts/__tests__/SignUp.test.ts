@@ -5,7 +5,7 @@ jest.setTimeout(50000)
 import * as ethers from 'ethers'
 
 import { genTestAccounts } from '../accounts'
-import { timeTravel } from '../../node_modules/etherlime/cli-commands/etherlime-test/time-travel.js'
+import { timeTravel } from './utils'
 
 import { config } from 'maci-config'
 
