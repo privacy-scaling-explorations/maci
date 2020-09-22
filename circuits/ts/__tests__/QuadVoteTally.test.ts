@@ -1,4 +1,4 @@
-jest.setTimeout(90000)
+jest.setTimeout(200000)
 import { config } from 'maci-config'
 import { 
     genPerVOSpentVoiceCreditsCommitment,
