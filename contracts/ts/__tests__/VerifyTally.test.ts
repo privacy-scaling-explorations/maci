@@ -1,5 +1,7 @@
 require('module-alias/register')
 jest.setTimeout(50000)
+import * as path from 'path'
+import * as shell from 'shelljs'
 import { genTestAccounts } from '../accounts'
 import { config } from 'maci-config'
 import {
@@ -12,7 +14,8 @@ import { genTallyResultCommitment } from 'maci-core'
 import { JSONRPCDeployer } from '../deploy'
 const PoseidonT3 = require('@maci-contracts/compiled/PoseidonT3.json')
 const PoseidonT6 = require('@maci-contracts/compiled/PoseidonT6.json')
-const VerifyTallyAbi = require('@maci-contracts/compiled/VerifyTally.json')
+
+import { abiDir, solDir, loadAB } from '../'
 
 const accounts = genTestAccounts(1)
 let deployer
@@ -31,16 +34,25 @@ describe('VerifyTally', () => {
         )
 
         console.log('Deploying PoseidonT3Contract')
-        PoseidonT3Contract = await deployer.deploy(PoseidonT3, {})
-        PoseidonT6Contract = await deployer.deploy(PoseidonT6, {})
+        PoseidonT3Contract = await deployer.deploy(PoseidonT3.abi, PoseidonT3.bytecode, {})
+
+        console.log('Deploying PoseidonT6Contract')
+        PoseidonT6Contract = await deployer.deploy(PoseidonT6.abi, PoseidonT6.bytecode, {})
+
+        // Link Poseidon contracts
+        const poseidonPath = path.join(__dirname, '..', '..', 'sol', 'Poseidon.sol')
+        const linkCmd = `${config.solc_bin} -o ${abiDir} ${solDir}/VerifyTally.sol --overwrite --bin `
+            + ` --libraries ${poseidonPath}:PoseidonT3:${PoseidonT3Contract.address}`
+            + ` --libraries ${poseidonPath}:PoseidonT6:${PoseidonT6Contract.address}`
+
+        shell.exec(linkCmd)
+
+        const [ VerifyTallyAbi, VerifyTallyBin ] = loadAB('VerifyTally')
 
         console.log('Deploying VerifyTally')
         verifyTallyContract = await deployer.deploy(
             VerifyTallyAbi,
-            {
-                PoseidonT3: PoseidonT3Contract.address,
-                PoseidonT6: PoseidonT6Contract.address,
-            },
+            VerifyTallyBin,
         )
 
     })

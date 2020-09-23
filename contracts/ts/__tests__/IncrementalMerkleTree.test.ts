@@ -1,5 +1,7 @@
 require('module-alias/register')
 jest.setTimeout(120000)
+import * as path from 'path'
+import * as shell from 'shelljs'
 import { genTestAccounts } from '../accounts'
 import { config } from 'maci-config'
 import {
@@ -12,8 +14,7 @@ import { JSONRPCDeployer } from '../deploy'
 const PoseidonT3 = require('@maci-contracts/compiled/PoseidonT3.json')
 const PoseidonT6 = require('@maci-contracts/compiled/PoseidonT6.json')
 
-const IncrementalMerkleTreeAbi = require('@maci-contracts/compiled/IncrementalMerkleTree.json')
-const ComputeRootAbi = require('@maci-contracts/compiled/ComputeRoot.json')
+import { abiDir, solDir, loadAB } from '../'
 
 const accounts = genTestAccounts(1)
 let deployer
@@ -35,27 +36,33 @@ describe('IncrementalMerkleTree', () => {
         )
 
         console.log('Deploying PoseidonT3Contract')
-        PoseidonT3Contract = await deployer.deploy(PoseidonT3, {})
-        PoseidonT6Contract = await deployer.deploy(PoseidonT6, {})
+        PoseidonT3Contract = await deployer.deploy(PoseidonT3.abi, PoseidonT3.bytecode, {})
 
+        console.log('Deploying PoseidonT6Contract')
+        PoseidonT6Contract = await deployer.deploy(PoseidonT6.abi, PoseidonT6.bytecode, {})
+
+        // Link Poseidon contracts
+        const poseidonPath = path.join(__dirname, '..', '..', 'sol', 'Poseidon.sol')
+        const linkCmd = `${config.solc_bin} -o ${abiDir} ${solDir}/IncrementalMerkleTree.sol ${solDir}/ComputeRoot.sol --overwrite --bin `
+            + ` --libraries ${poseidonPath}:PoseidonT3:${PoseidonT3Contract.address}`
+            + ` --libraries ${poseidonPath}:PoseidonT6:${PoseidonT6Contract.address}`
+
+        shell.exec(linkCmd)
+
+        const [ IncrementalMerkleTreeAbi, IncrementalMerkleTreeBin ] = loadAB('IncrementalMerkleTree')
         console.log('Deploying IncrementalMerkleTree')
         mtContract = await deployer.deploy(
             IncrementalMerkleTreeAbi,
-            {
-                PoseidonT3: PoseidonT3Contract.address,
-                PoseidonT6: PoseidonT6Contract.address
-            },
+            IncrementalMerkleTreeBin,
             DEPTH,
             NOTHING_UP_MY_SLEEVE.toString(),
         )
 
+        const [ ComputeRootAbi, ComputeRootBin ] = loadAB('ComputeRoot')
         console.log('Deploying ComputeRoot')
         crContract = await deployer.deploy(
             ComputeRootAbi,
-            {
-                PoseidonT3: PoseidonT3Contract.address,
-                PoseidonT6: PoseidonT6Contract.address
-            },
+            ComputeRootBin,
         )
 
         tree = new IncrementalQuinTree(DEPTH, NOTHING_UP_MY_SLEEVE, 2)

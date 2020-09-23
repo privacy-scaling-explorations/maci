@@ -10,7 +10,6 @@ import { genAccounts, genTestAccounts } from './accounts'
 
 const abiDir = path.join(__dirname, '..', 'compiled')
 const solDir = path.join(__dirname, '..', 'sol')
-
 const loadBin = (filename: string) => {
     return fs.readFileSync(path.join(abiDir, filename)).toString()
 }
@@ -26,13 +25,14 @@ const loadAB = (contractName: string) => {
     return [ abi, bin ]
 }
 
+
 const [ SignupTokenAbi, SignupTokenBin ] = loadAB('SignUpToken')
 const [ SignUpTokenGatekeeperAbi, SignUpTokenGatekeeperBin ] = loadAB('SignUpTokenGatekeeper')
 const [ ConstantInitialVoiceCreditProxyAbi, ConstantInitialVoiceCreditProxyBin ]
     = loadAB('ConstantInitialVoiceCreditProxy')
 const [ FreeForAllSignUpGatekeeperAbi, FreeForAllSignUpGatekeeperBin ]
     = loadAB('FreeForAllGatekeeper')
-const [ InitialVoiceCreditProxyAbi, InitialVoiceCreditProxyBin ] = loadAB('InitialVoiceCreditProxy')
+const InitialVoiceCreditProxyAbi = loadAbi('InitialVoiceCreditProxy.abi')
 const [ BatchUpdateStateTreeVerifierAbi, BatchUpdateStateTreeVerifierBin ] = loadAB('BatchUpdateStateTreeVerifier')
 const [ QuadVoteTallyVerifierAbi, QuadVoteTallyVerifierBin ] = loadAB('QuadVoteTallyVerifier')
 const [ BatchUpdateStateTreeVerifierSmallAbi, BatchUpdateStateTreeVerifierSmallBin ] = loadAB('BatchUpdateStateTreeVerifierSmall')
@@ -383,4 +383,9 @@ export {
     genJsonRpcDeployer,
     maciContractAbi,
     initialVoiceCreditProxyAbi,
+    abiDir,
+    solDir,
+    loadAB,
+    loadAbi,
+    loadBin,
 }

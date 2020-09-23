@@ -1,3 +1,5 @@
+import * as path from 'path'
+import * as fs from 'fs'
 import {
     genDeployer,
     genJsonRpcDeployer,
@@ -8,6 +10,11 @@ import {
     deployFreeForAllSignUpGatekeeper,
     maciContractAbi,
     initialVoiceCreditProxyAbi,
+    abiDir,
+    solDir,
+    loadAB,
+    loadAbi,
+    loadBin,
 } from './deploy'
 
 import { formatProofForVerifierContract } from './utils'
@@ -15,6 +22,11 @@ import { formatProofForVerifierContract } from './utils'
 import { genAccounts, genTestAccounts } from './accounts'
 
 export {
+    abiDir,
+    solDir,
+    loadAB,
+    loadAbi,
+    loadBin,
     genDeployer,
     genJsonRpcDeployer,
     genAccounts,

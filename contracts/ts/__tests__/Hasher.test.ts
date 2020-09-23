@@ -1,4 +1,6 @@
 require('module-alias/register')
+import * as path from 'path'
+import * as shell from 'shelljs'
 import { genTestAccounts } from '../accounts'
 import { config } from 'maci-config'
 import {
@@ -9,9 +11,10 @@ import {
 } from 'maci-crypto'
 
 import { JSONRPCDeployer } from '../deploy'
-const Hasher = require('@maci-contracts/compiled/Hasher.json')
 const PoseidonT3 = require('@maci-contracts/compiled/PoseidonT3.json')
 const PoseidonT6 = require('@maci-contracts/compiled/PoseidonT6.json')
+
+import { abiDir, solDir, loadAB } from '../'
 
 const accounts = genTestAccounts(1)
 let deployer
@@ -30,14 +33,24 @@ describe('Hasher', () => {
 
         console.log('Deploying Poseidon')
 
-        PoseidonT3Contract = await deployer.deploy(PoseidonT3, {})
-        PoseidonT6Contract = await deployer.deploy(PoseidonT6, {})
+        PoseidonT3Contract = await deployer.deploy(PoseidonT3.abi, PoseidonT3.bytecode, {})
+        PoseidonT6Contract = await deployer.deploy(PoseidonT6.abi, PoseidonT6.bytecode, {})
+
+        // Link Poseidon contracts to Hasher
+        const poseidonPath = path.join(__dirname, '..', '..', 'sol', 'Poseidon.sol')
+        const linkCmd = `${config.solc_bin} -o ${abiDir} ${solDir}/Hasher.sol --overwrite --bin `
+            + ` --libraries ${poseidonPath}:PoseidonT3:${PoseidonT3Contract.address}`
+            + ` --libraries ${poseidonPath}:PoseidonT6:${PoseidonT6Contract.address}`
+
+        shell.exec(linkCmd)
+
+        const [ HasherAbi, HasherBin ] = loadAB('Hasher')
 
         console.log('Deploying Hasher')
-        hasherContract = await deployer.deploy(Hasher, {
-            PoseidonT3: PoseidonT3Contract.address,
-            PoseidonT6: PoseidonT6Contract.address,
-        })
+        hasherContract = await deployer.deploy(
+            HasherAbi,
+            HasherBin,
+        )
     })
 
     it('maci-crypto.hashLeftRight should match hasher.hashLeftRight', async () => {
