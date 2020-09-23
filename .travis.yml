@@ -6,6 +6,8 @@ install:
   - npm i -g npm
   - npm i
   - npm run bootstrap
+  - wget -q -O /usr/bin/solc https://github.com/ethereum/solidity/releases/download/v0.5.17/solc-static-linux 
+  - chmod a+x /usr/bin/solc
 
 script:
   - npm run build

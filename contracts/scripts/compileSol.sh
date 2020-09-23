@@ -10,14 +10,15 @@ rm -rf ./compiled/*
 
 mkdir -p ./compiled/abis
 
-if [[ $* == *--native* ]]; then
-    # You need Solidity 0.5.16 (https://github.com/ethereum/solidity/releases/tag/v0.5.16) installed in your PATH
-    SOLC_VERSION=native
+if [[ -z "${SOLC_PATH}" ]]; then
+    # Assumes that you have solc 0.5.17 (https://github.com/ethereum/solidity/releases/tag/v0.5.17) installed in your PATH
+    solcBin="solc"
 else
-    SOLC_VERSION=0.5.16
+    # Otherwise, you can specify the path to solc 0.5.17
+    solcBin="${SOLC_PATH}"
 fi
 
-npx etherlime compile --solcVersion=$SOLC_VERSION --buildDirectory=compiled --workingDirectory=sol --exportAbi --runs 200
+$solcBin -o ./compiled ./sol/*.sol --overwrite --optimize --bin --abi --bin-runtime
 
 # Build the Poseidon contract from bytecode
 node build/buildPoseidon.js
