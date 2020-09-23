@@ -15,8 +15,6 @@ import {
 import {
     promptPwd,
     validateEthSk,
-    calcBinaryTreeDepthFromMaxLeaves,
-    calcQuinTreeDepthFromMaxLeaves,
     checkDeployerProviderConnection,
 } from './utils'
 
@@ -304,7 +302,7 @@ const create = async (args: any) => {
             initialVoiceCredits,
             true,
         )
-        initialVoiceCreditProxyContractAddress = c.contractAddress
+        initialVoiceCreditProxyContractAddress = c.address
     } else {
         initialVoiceCreditProxyContractAddress = initialVoiceCreditProxy
     }
@@ -316,10 +314,11 @@ const create = async (args: any) => {
     if (signupGatekeeper == undefined) {
         // Deploy a FreeForAllGatekeeper contract
         const c = await deployFreeForAllSignUpGatekeeper(deployer, true)
-        signUpGatekeeperAddress = c.contractAddress
+        signUpGatekeeperAddress = c.address
     } else {
         signUpGatekeeperAddress = signupGatekeeper
     }
+    debugger
 
     const contracts = await deployMaci(
         deployer,
@@ -338,7 +337,7 @@ const create = async (args: any) => {
         true,
     )
 
-    console.log('MACI:', contracts.maciContract.contractAddress)
+    console.log('MACI:', contracts.maciContract.address)
 }
 
 export {

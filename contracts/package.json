@@ -39,6 +39,7 @@
         "ethers": "^4.0.45",
         "ganache-cli": "^6.7.0",
         "jest": "^24.9.0",
+        "shelljs": "^0.8.4",
         "libsemaphore": "^1.0.5",
         "maci-circuits": "^0.2.7",
         "maci-config": "^0.2.6",

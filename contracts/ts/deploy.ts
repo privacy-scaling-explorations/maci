@@ -1,39 +1,54 @@
-require('module-alias/register')
-import * as ethers from 'ethers'
-import * as argparse from 'argparse'
 import * as fs from 'fs'
 import * as path from 'path'
+import * as ethers from 'ethers'
+import * as shell from 'shelljs'
+import * as argparse from 'argparse'
 import { config } from 'maci-config'
 import { genPubKey } from 'maci-crypto'
 import { PubKey } from 'maci-domainobjs'
 import { genAccounts, genTestAccounts } from './accounts'
+
+const abiDir = path.join(__dirname, '..', 'compiled')
+const solDir = path.join(__dirname, '..', 'sol')
+
+const loadBin = (filename: string) => {
+    return fs.readFileSync(path.join(abiDir, filename)).toString()
+}
+
+const loadAbi = (filename: string) => {
+    return JSON.parse(fs.readFileSync(path.join(abiDir, filename)).toString())
+}
+
+const loadAB = (contractName: string) => {
+    const abi = loadAbi(contractName + '.abi')
+    const bin = loadBin(contractName + '.bin')
+
+    return [ abi, bin ]
+}
+
+const [ SignupTokenAbi, SignupTokenBin ] = loadAB('SignUpToken')
+const [ SignUpTokenGatekeeperAbi, SignUpTokenGatekeeperBin ] = loadAB('SignUpTokenGatekeeper')
+const [ ConstantInitialVoiceCreditProxyAbi, ConstantInitialVoiceCreditProxyBin ]
+    = loadAB('ConstantInitialVoiceCreditProxy')
+const [ FreeForAllSignUpGatekeeperAbi, FreeForAllSignUpGatekeeperBin ]
+    = loadAB('FreeForAllGatekeeper')
+const [ InitialVoiceCreditProxyAbi, InitialVoiceCreditProxyBin ] = loadAB('InitialVoiceCreditProxy')
+const [ BatchUpdateStateTreeVerifierAbi, BatchUpdateStateTreeVerifierBin ] = loadAB('BatchUpdateStateTreeVerifier')
+const [ QuadVoteTallyVerifierAbi, QuadVoteTallyVerifierBin ] = loadAB('QuadVoteTallyVerifier')
+const [ BatchUpdateStateTreeVerifierSmallAbi, BatchUpdateStateTreeVerifierSmallBin ] = loadAB('BatchUpdateStateTreeVerifierSmall')
+const [ QuadVoteTallyVerifierSmallAbi, QuadVoteTallyVerifierSmallBin ] = loadAB('QuadVoteTallyVerifierSmall')
+
 const PoseidonT3 = require('../compiled/PoseidonT3.json')
 const PoseidonT6 = require('../compiled/PoseidonT6.json')
-const SignUpToken = require('../compiled/SignUpToken.json')
-const SignUpTokenGatekeeper = require('../compiled/SignUpTokenGatekeeper.json')
-const FreeForAllSignUpGatekeeper = require('../compiled/FreeForAllGatekeeper.json')
-const InitialVoiceCreditProxy = require('../compiled/InitialVoiceCreditProxy.json')
-const ConstantInitialVoiceCreditProxy = require('../compiled/ConstantInitialVoiceCreditProxy.json')
-const BatchUpdateStateTreeVerifier = require('../compiled/BatchUpdateStateTreeVerifier.json')
-const QuadVoteTallyVerifier = require('../compiled/QuadVoteTallyVerifier.json')
-const BatchUpdateStateTreeVerifierSmall = require('../compiled/BatchUpdateStateTreeVerifierSmall.json')
-const QuadVoteTallyVerifierSmall = require('../compiled/QuadVoteTallyVerifierSmall.json')
-const MACI = require('../compiled/MACI.json')
 
-const maciContractAbi = MACI.abi
-const initialVoiceCreditProxyAbi = InitialVoiceCreditProxy.abi
+const maciContractAbi = loadAbi('MACI.abi')
+const initialVoiceCreditProxyAbi = InitialVoiceCreditProxyAbi
 
 const genProvider = (
     rpcUrl: string = config.get('chain.url'),
 ) => {
 
     return new ethers.providers.JsonRpcProvider(rpcUrl)
-}
-
-function link(bytecode: string, libraryName: string, libraryAddress: string): string {
-    // https://github.com/ethers-io/ethers.js/issues/195#issuecomment-396350174
-    const symbol = '__' + libraryName + '_'.repeat(40 - libraryName.length - 2)
-    return bytecode.split(symbol).join(libraryAddress.toLowerCase().substr(2))
 }
 
 export class JSONRPCDeployer {
@@ -48,12 +63,8 @@ export class JSONRPCDeployer {
         this.options = options
     }
 
-    async deploy(artifact: any, libraries: any, ...args): Promise<ethers.Contract> {
-        let bytecode = artifact.bytecode
-        for (const libraryName in libraries) {
-            bytecode = link(bytecode, libraryName, libraries[libraryName])
-        }
-        const factory = new ethers.ContractFactory(artifact.abi, bytecode, this.signer)
+    async deploy(abi: any, bytecode: any, ...args): Promise<ethers.Contract> {
+        const factory = new ethers.ContractFactory(abi, bytecode, this.signer)
         return await factory.deploy(...args)
     }
 }
@@ -95,12 +106,19 @@ const deployConstantInitialVoiceCreditProxy = async (
     quiet = false
 ) => {
     log('Deploying InitialVoiceCreditProxy', quiet)
-    return await deployer.deploy(ConstantInitialVoiceCreditProxy, {}, amount.toString())
+    return await deployer.deploy(
+        ConstantInitialVoiceCreditProxyAbi,
+        ConstantInitialVoiceCreditProxyBin,
+        amount.toString(),
+    )
 }
 
 const deploySignupToken = async (deployer) => {
     console.log('Deploying SignUpToken')
-    return await deployer.deploy(SignUpToken, {})
+    return await deployer.deploy(
+        SignupTokenAbi,
+        SignupTokenBin,
+    )
 }
 
 const deploySignupTokenGatekeeper = async (
@@ -110,8 +128,8 @@ const deploySignupTokenGatekeeper = async (
 ) => {
     log('Deploying SignUpTokenGatekeeper', quiet)
     const signUpTokenGatekeeperContract = await deployer.deploy(
-        SignUpTokenGatekeeper,
-        {},
+        SignUpTokenGatekeeperAbi,
+        SignUpTokenGatekeeperBin,
         signUpTokenAddress,
     )
 
@@ -124,8 +142,8 @@ const deployFreeForAllSignUpGatekeeper = async (
 ) => {
     log('Deploying FreeForAllSignUpGatekeeper', quiet)
     return await deployer.deploy(
-        FreeForAllSignUpGatekeeper,
-        {},
+        FreeForAllSignUpGatekeeperAbi,
+        FreeForAllSignUpGatekeeperBin,
     )
 }
 
@@ -148,7 +166,7 @@ const deployMaci = async (
     signUpDurationInSeconds: number = config.maci.signUpDurationInSeconds,
     votingDurationInSeconds: number = config.maci.votingDurationInSeconds,
     coordinatorPubKey?: PubKey,
-    configType: string = 'test',
+    configType = 'test',
     quiet = false,
 ) => {
     log('Deploying Poseidon', quiet)
@@ -159,24 +177,43 @@ const deployMaci = async (
     }
 
     log('Deploying Poseidon T3', quiet)
-    const PoseidonT3Contract = await deployer.deploy(PoseidonT3, {})
+    const PoseidonT3Contract = await deployer.deploy(
+        PoseidonT3.abi,
+        PoseidonT3.bytecode,
+    )
+
     log('Deploying Poseidon T6', quiet)
-    const PoseidonT6Contract = await deployer.deploy(PoseidonT6, {})
+    const PoseidonT6Contract = await deployer.deploy(
+        PoseidonT6.abi,
+        PoseidonT6.bytecode,
+    )
 
     let batchUstVerifierContract
     let quadVoteTallyVerifierContract
     if (configType === 'test') {
         log('Deploying BatchUpdateStateTreeVerifier', quiet)
-        batchUstVerifierContract = await deployer.deploy(BatchUpdateStateTreeVerifier, {})
+        batchUstVerifierContract = await deployer.deploy(
+            BatchUpdateStateTreeVerifierAbi,
+            BatchUpdateStateTreeVerifierBin,
+        )
 
         log('Deploying QuadVoteTallyVerifier', quiet)
-        quadVoteTallyVerifierContract = await deployer.deploy(QuadVoteTallyVerifier, {})
+        quadVoteTallyVerifierContract = await deployer.deploy(
+            QuadVoteTallyVerifierAbi,
+            QuadVoteTallyVerifierBin,
+        )
     } else if (configType === 'prod-small') {
         log('Deploying BatchUpdateStateTreeVerifier', quiet)
-        batchUstVerifierContract = await deployer.deploy(BatchUpdateStateTreeVerifierSmall, {})
+        batchUstVerifierContract = await deployer.deploy(
+            BatchUpdateStateTreeVerifierSmallAbi,
+            BatchUpdateStateTreeVerifierSmallBin,
+        )
 
         log('Deploying QuadVoteTallyVerifier', quiet)
-        quadVoteTallyVerifierContract = await deployer.deploy(QuadVoteTallyVerifierSmall, {})
+        quadVoteTallyVerifierContract = await deployer.deploy(
+            QuadVoteTallyVerifierSmallAbi,
+            QuadVoteTallyVerifierSmallBin,
+        )
     }
 
     log('Deploying MACI', quiet)
@@ -184,12 +221,19 @@ const deployMaci = async (
     const maxUsers = (BigInt(2 ** stateTreeDepth) - BigInt(1)).toString()
     const maxMessages = (BigInt(2 ** messageTreeDepth) - BigInt(1)).toString()
 
+    // Link Poseidon contracts to MACI
+    const poseidonPath = path.join(__dirname, '..', 'sol', 'Poseidon.sol')
+    const linkCmd = `${config.solc_bin} -o ${abiDir} ${solDir}/MACI.sol --overwrite --bin `
+        + ` --libraries ${poseidonPath}:PoseidonT3:${PoseidonT3Contract.address}`
+        + ` --libraries ${poseidonPath}:PoseidonT6:${PoseidonT6Contract.address}`
+
+    shell.exec(linkCmd)
+
+    const [ MACIAbi, MACIBin ] = loadAB('MACI')
+
     const maciContract = await deployer.deploy(
-        MACI,
-        {
-            PoseidonT3: PoseidonT3Contract.address,
-            PoseidonT6: PoseidonT6Contract.address
-        },
+        MACIAbi,
+        MACIBin,
         { stateTreeDepth, messageTreeDepth, voteOptionTreeDepth },
         {
             tallyBatchSize: quadVoteTallyBatchSize,
