@@ -124,7 +124,7 @@ const main = () => {
     } else {
         console.log(`Compiling ${inputFile}...`)
         // Compile the .circom file
-        shell.exec(`node ./node_modules/circom/cli.js ${inputFile} -r ${circuitOut} -w ${wasmOut}`)
+        shell.exec(`node ./node_modules/circom/cli.js ${inputFile} -r ${circuitOut} -w ${wasmOut} -v`)
         console.log('Generated', circuitOut, 'and', wasmOut)
     }
 
@@ -147,7 +147,7 @@ const main = () => {
         console.log('zkey file exists. Skipping setup.')
     } else {
         console.log('Generating zkey file...')
-        shell.exec(`node ${snarkjsPath} zkey new ${circuitOut} ${ptauPath} ${zkeyOut}`)
+        shell.exec(`node ${snarkjsPath} zkey new -v ${circuitOut} ${ptauPath} ${zkeyOut}`)
     }
 
     console.log('Exporting verification key...')

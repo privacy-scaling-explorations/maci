@@ -6,6 +6,7 @@ const mnemonic = config.chain.testMnemonic
 
 const genAccounts = () => {
     const keys = require(privateKeys)
+    debugger
     return keys.map((pk: string) => {
         return new ethers.Wallet(pk)
     })

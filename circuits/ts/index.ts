@@ -9,7 +9,6 @@ import {
     unstringifyBigInts,
 } from 'maci-crypto'
 
-
 /*
  * @param circuitPath The subpath to the circuit file (e.g.
  *     test/batchProcessMessage_test.circom)
@@ -17,10 +16,13 @@ import {
 const compileAndLoadCircuit = async (
     circuitPath: string
 ) => {
-    const circuit = await circom.tester(path.join(
-        __dirname,
-        `../circom/${circuitPath}`,
-    ))
+
+    const circuit = await circom.tester(
+        path.join(
+            __dirname,
+            `../circom/${circuitPath}`,
+        ),
+    )
 
     await circuit.loadSymbols()
 
@@ -50,26 +52,60 @@ const getSignalByName = (
 
 const genBatchUstProofAndPublicSignals = (
     inputs: any,
+    configType: string,
     circuit?: any
 ) => {
+
+    let circuitPath
+    let wasmPath
+    let zkeyPath
+    if (configType === 'test') {
+        circuitPath = 'test/batchUpdateStateTree_test.circom'
+        wasmPath = 'batchUst.wasm'
+        zkeyPath = 'batchUst.zkey'
+    } else if (configType === 'prod-small') {
+        circuitPath = 'prod/batchUpdateStateTree_small.circom'
+        wasmPath = 'batchUstSmall.wasm'
+        zkeyPath = 'batchUstSmall.zkey'
+    } else {
+        throw new Error('Only test and prod-small circuits are supported')
+    }
+
     return genProofAndPublicSignals(
         inputs,
-        'prod/batchUpdateStateTreeVerifier.circom',
-        'batchUst.wasm',
-        'batchUst.zkey',
+        circuitPath,
+        wasmPath,
+        zkeyPath,
         circuit,
     )
 }
 
 const genQvtProofAndPublicSignals = (
     inputs: any,
+    configType: string,
     circuit?: any,
 ) => {
+    let circuitPath
+    let wasmPath
+    let zkeyPath
+    if (configType === 'test') {
+        circuitPath = 'test/quadVoteTally_test.circom'
+        wasmPath = 'qvt.wasm'
+        zkeyPath = 'qvt.zkey'
+    } else if (configType === 'prod-small') {
+        circuitPath = 'prod/quadVoteTally_small.circom'
+        wasmPath = 'qvtSmall.wasm'
+        zkeyPath = 'qvtSmall.zkey'
+    } else {
+        throw new Error('Only test and prod-small circuits are supported')
+    }
+
+
     return genProofAndPublicSignals(
         inputs,
-        'prod/quadVoteTally.circom',
-        'qvt.wasm',
-        'qvt.zkey',
+        circuitPath,
+        wasmPath,
+        zkeyPath,
         circuit,
     )
 }
@@ -137,17 +173,31 @@ const verifyProof = async (
 const verifyBatchUstProof = (
     proof: any,
     publicSignals: any,
+    configType: string,
 ) => {
+    let vkPath
+    if (configType === 'test') {
+        vkPath = 'batchUstVk.json'
+    } else if (configType === 'prod-small') {
+        vkPath = 'batchUstVkSmall.json'
+    }
 
-    return verifyProof('batchUstVk.json', proof, publicSignals)
+    return verifyProof(vkPath, proof, publicSignals)
 }
 
 const verifyQvtProof = (
     proof: any,
     publicSignals: any,
+    configType: string,
 ) => {
+    let vkPath
+    if (configType === 'test') {
+        vkPath = 'qvtVk.json'
+    } else if (configType === 'prod-small') {
+        vkPath = 'qvtVkSmall.json'
+    }
 
-    return verifyProof('qvtVk.json', proof, publicSignals)
+    return verifyProof(vkPath, proof, publicSignals)
 }
 
 

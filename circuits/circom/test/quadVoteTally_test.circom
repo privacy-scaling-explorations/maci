@@ -1,4 +1,4 @@
-include "../quadVoteTally.circom"
+include "../quadVoteTally.circom";
 
 // fullStateTreeDepth,
 // intermediateStateTreeDepth,

@@ -66,7 +66,8 @@ describe('Publishing messages', () => {
             ethers.utils.defaultAbiCoder.encode(['uint256'], [0]),
             ethers.utils.defaultAbiCoder.encode(['uint256'], [0]),
         )
-        await tx.wait()
+        const receipt = await tx.wait()
+        console.log('Signup gas:', receipt.gasUsed.toString())
     })
 
     it('nobody can publish a message before the sign-up period passes', async () => {
@@ -121,6 +122,7 @@ describe('Publishing messages', () => {
             )
             const receipt = await tx.wait()
             expect(receipt.status).toEqual(1)
+            console.log('publishMessage gas:', receipt.gasUsed.toString())
             const maciInterface = new ethers.utils.Interface(maciContract.interface.abi)
             const event = maciInterface.parseLog(receipt.logs[1])
             expect(event.values._message.data).toEqual(message.asContractParam()[1])

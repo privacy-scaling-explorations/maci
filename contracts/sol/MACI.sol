@@ -5,13 +5,20 @@ import { DomainObjs } from './DomainObjs.sol';
 import { IncrementalQuinTree } from "./IncrementalQuinTree.sol";
 import { IncrementalMerkleTree } from "./IncrementalMerkleTree.sol";
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
-import { BatchUpdateStateTreeVerifier } from "./BatchUpdateStateTreeVerifier.sol";
-import { QuadVoteTallyVerifier } from "./QuadVoteTallyVerifier.sol";
 import { InitialVoiceCreditProxy } from './initialVoiceCreditProxy/InitialVoiceCreditProxy.sol';
 import { SnarkConstants } from './SnarkConstants.sol';
 import { ComputeRoot } from './ComputeRoot.sol';
 import { MACIParameters } from './MACIParameters.sol';
 import { VerifyTally } from './VerifyTally.sol';
+
+interface SnarkVerifier {
+    function verifyProof(
+        uint256[2] calldata a,
+        uint256[2][2] calldata b,
+        uint256[2] calldata c,
+        uint256[] calldata input
+    ) external view returns (bool);
+}
 
 contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
@@ -20,8 +27,8 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
     uint256 ZERO_VALUE = uint256(keccak256(abi.encodePacked('Maci'))) % SNARK_SCALAR_FIELD;
 
     // Verifier Contracts
-    BatchUpdateStateTreeVerifier internal batchUstVerifier;
-    QuadVoteTallyVerifier internal qvtVerifier;
+    SnarkVerifier internal batchUstVerifier;
+    SnarkVerifier internal qvtVerifier;
 
     // The number of messages which the batch update state tree snark can
     // process per batch
@@ -118,8 +125,8 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         BatchSizes memory _batchSizes,
         MaxValues memory _maxValues,
         SignUpGatekeeper _signUpGatekeeper,
-        BatchUpdateStateTreeVerifier _batchUstVerifier,
-        QuadVoteTallyVerifier _qvtVerifier,
+        SnarkVerifier _batchUstVerifier,
+        SnarkVerifier _qvtVerifier,
         uint256 _signUpDurationSeconds,
         uint256 _votingDurationSeconds,
         InitialVoiceCreditProxy _initialVoiceCreditProxy,
@@ -376,7 +383,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         uint256 _newStateRoot,
         uint256[] memory _stateTreeRoots,
         PubKey[] memory _ecdhPubKeys
-    ) public view returns (uint256[20] memory) {
+    ) public view returns (uint256[] memory) {
 
         uint256 messageBatchEndIndex;
         if (currentMessageBatchIndex + messageBatchSize <= numMessages) {
@@ -385,7 +392,8 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
             messageBatchEndIndex = numMessages - 1;
         }
 
-        uint256[20] memory publicSignals;
+        uint256[] memory publicSignals = new uint256[](12 + messageBatchSize * 3);
+
         publicSignals[0] = _newStateRoot;
         publicSignals[1] = coordinatorPubKey.x;
         publicSignals[2] = coordinatorPubKey.y;
@@ -394,6 +402,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         publicSignals[5] = currentMessageBatchIndex;
         publicSignals[6] = messageBatchEndIndex;
         publicSignals[7] = numSignUps;
+
 
         for (uint8 i = 0; i < messageBatchSize; i++) {
             uint8 x = 8 + i;
@@ -453,7 +462,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         );
 
         // Assemble the public inputs to the snark
-        uint256[20] memory publicSignals = genBatchUstPublicSignals(
+        uint256[] memory publicSignals = genBatchUstPublicSignals(
             _newStateRoot,
             _stateTreeRoots,
             _ecdhPubKeys
@@ -462,7 +471,8 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         // Ensure that each public input is within range of the snark scalar
         // field.
         // TODO: consider having more granular revert reasons
-        for (uint8 i=0; i < publicSignals.length; i++) {
+        // TODO: this check is already performed in the verifier contract
+        for (uint8 i = 0; i < publicSignals.length; i++) {
             require(
                 publicSignals[i] < SNARK_SCALAR_FIELD,
                 "MACI: each public signal must be lt the snark scalar field"
@@ -500,9 +510,9 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         uint256 _newSpentVoiceCreditsCommitment,
         uint256 _newPerVOSpentVoiceCreditsCommitment,
         uint256 _totalVotes
-    ) public view returns (uint256[10] memory) {
+    ) public view returns (uint256[] memory) {
 
-        uint256[10] memory publicSignals;
+        uint256[] memory publicSignals = new uint256[](10);
 
         publicSignals[0] = _newResultsCommitment;
         publicSignals[1] = _newSpentVoiceCreditsCommitment;
@@ -565,7 +575,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
         // Generate the public signals
         // public 'input' signals = [output signals, public inputs]
-        uint256[10] memory publicSignals = genQvtPublicSignals(
+        uint256[] memory publicSignals = genQvtPublicSignals(
             _intermediateStateRoot,
             _newResultsCommitment,
             _newSpentVoiceCreditsCommitment,
@@ -576,7 +586,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         // Ensure that each public input is within range of the snark scalar
         // field.
         // TODO: consider having more granular revert reasons
-        for (uint8 i=0; i < publicSignals.length; i++) {
+        for (uint8 i = 0; i < publicSignals.length; i++) {
             require(
                 publicSignals[i] < SNARK_SCALAR_FIELD,
                 "MACI: each public signal must be lt the snark scalar field"

@@ -1,6 +1,6 @@
 {
     "name": "maci-contracts",
-    "version": "0.2.1",
+    "version": "0.2.7",
     "description": "",
     "main": "build/index.js",
     "scripts": {
@@ -18,7 +18,7 @@
         "test-signUp-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest SignUp.test.ts",
         "test-publishMessage": "jest PublishMessage.test.ts",
         "test-publishMessage-debug": "node --inspect-brk ./node_modules/.bin/jest PublishMessage.test.ts",
-        "test-batchProcessMessageAndQuadVoteTally": "NODE_OPTIONS=--max-old-space-size=4096 jest batchProcessMessageAndQuadVoteTally.test.ts",
+        "test-batchProcessMessageAndQuadVoteTally": "NODE_OPTIONS=--max-old-space-size=4096 node --stack-size=16384 ./node_modules/.bin/jest batchProcessMessageAndQuadVoteTally.test.ts",
         "test-batchProcessMessageAndQuadVoteTally-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest batchProcessMessageAndQuadVoteTally.test.ts",
         "test-hasher": "jest Hasher.test.ts",
         "test-hasher-debug": "node --inspect-brk ./node_modules/.bin/jest Hasher.test.ts",
@@ -40,13 +40,13 @@
         "ganache-cli": "^6.7.0",
         "jest": "^24.9.0",
         "libsemaphore": "^1.0.5",
-        "maci-circuits": "^0.2.1",
-        "maci-config": "^0.2.1",
-        "maci-core": "^0.2.1",
-        "maci-crypto": "^0.2.1",
-        "maci-domainobjs": "^0.2.1",
+        "maci-circuits": "^0.2.7",
+        "maci-config": "^0.2.6",
+        "maci-core": "^0.2.6",
+        "maci-crypto": "^0.2.6",
+        "maci-domainobjs": "^0.2.6",
         "truffle-artifactor": "^4.0.30",
         "ts-jest": "^24.2.0"
     },
-    "gitHead": "f937e5e95eb70a97af76756b7015d04023bdb82c"
+    "gitHead": "86d18d560156cbdc5adeb87a18ac91a3522df15a"
 }

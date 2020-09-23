@@ -91,7 +91,7 @@ const configureSubparser = (subparsers: any) => {
         {
             action: 'store',
             type: 'int',
-            help: 'The maximum supported number of users. It must be one less than a power of 5. Default: 24',
+            help: 'The maximum supported number of users. It must be one less than a power of 2. Default: 24',
         }
     )
 
@@ -100,7 +100,7 @@ const configureSubparser = (subparsers: any) => {
         {
             action: 'store',
             type: 'int',
-            help: 'The maximum supported number of messages. It must be one less than a power of 5. Default: 24',
+            help: 'The maximum supported number of messages. It must be one less than a power of 2. Default: 24',
         }
     )
 
@@ -228,13 +228,6 @@ const create = async (args: any) => {
     // Max vote options
     const maxVoteOptions = args.max_vote_options ? args.max_vote_options : DEFAULT_MAX_VOTE_OPTIONS
 
-    // Calculate the tree depths. e.g. if maxUsers is 1000, the tree depth
-    // should be 10, as the closest next power of 2 is 1024 = 2 ** 1024
-    const stateTreeDepth = calcBinaryTreeDepthFromMaxLeaves(maxUsers)
-    const messageTreeDepth = calcBinaryTreeDepthFromMaxLeaves(maxMessages)
-    const voteOptionTreeDepth = calcQuinTreeDepthFromMaxLeaves(maxVoteOptions)
-
-    debugger
     // Signup duration
     const signupDuration = args.signup_duration ? args.signup_duration : DEFAULT_SIGNUP_DURATION
 
@@ -247,9 +240,40 @@ const create = async (args: any) => {
     // Tally batch size
     const tallyBatchSize = args.tally_batch_size ? args.tally_batch_size : DEFAULT_TALLY_BATCH_SIZE
 
-    if (maxUsers !== 15 || maxMessages !== 15 || maxVoteOptions >= 25 || messageBatchSize !== 4 || tallyBatchSize !== 4) {
-        console.error('Error: this codebase currently does not support custom values for max-users, max-messages, message-batch-size, and tally-batch-size. Additionally, the number of vote options must be less than 25')
+    const isTest = maxMessages <= 16 && maxUsers <= 15 && maxVoteOptions <= 25
+
+    const isSmall = 
+        maxMessages > 16 && maxMessages <= 2048 ||
+        maxUsers > 15 && maxUsers <= 255 ||
+        maxVoteOptions > 24 && maxVoteOptions <= 125
+
+    if (!isTest && !isSmall) {
+        console.error('Error: this codebase only supports test or prod-small configurations for max-users, max-messages, and max-vote-options.')
         return
+    }
+
+    if (messageBatchSize !== 4) {
+        console.error('Error: this codebase only supports a message-batch-size of value 4.')
+        return
+    }
+
+    if (tallyBatchSize !== 4) {
+        console.error('Error: this codebase only supports a tally-batch-size of value 4.')
+        return
+    }
+
+    let stateTreeDepth
+    let messageTreeDepth
+    let voteOptionTreeDepth
+
+    if (isSmall) {
+        stateTreeDepth = 8
+        messageTreeDepth = 11
+        voteOptionTreeDepth = 3
+    } else if (isTest) {
+        stateTreeDepth = 4
+        messageTreeDepth = 4
+        voteOptionTreeDepth = 2
     }
 
     // Initial voice credits
@@ -310,6 +334,7 @@ const create = async (args: any) => {
         signupDuration,
         votingDuration,
         coordinatorKeypair.pubKey,
+        isSmall ? 'prod-small' : 'test',
         true,
     )
 
