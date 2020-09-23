@@ -7,7 +7,7 @@
         "watch": "tsc --watch",
         "ganache": "./scripts/runGanache.sh",
         "compileSol": "./scripts/compileSol.sh",
-        "build": "tsc && ./scripts/compileSol.sh",
+        "build": "tsc",
         "deploy": "node build/deploy.js -o deployedAddresses.json",
         "deploy-debug": "node --inspect-brk build/deploy.js -o deployedAddresses.json",
         "test-mt": "jest IncrementalMerkleTree.test.ts",
