@@ -1,3 +1,4 @@
+solc
 *.ptau
 cli/tally.json
 **/test_tally.json

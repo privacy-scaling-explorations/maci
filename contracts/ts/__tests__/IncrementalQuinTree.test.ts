@@ -1,5 +1,7 @@
 require('module-alias/register')
 jest.setTimeout(180000)
+import * as path from 'path'
+import * as shell from 'shelljs'
 import { genTestAccounts } from '../accounts'
 import { config } from 'maci-config'
 import {
@@ -8,12 +10,10 @@ import {
     IncrementalQuinTree,
 } from 'maci-crypto'
 
-import * as etherlime from 'etherlime-lib'
+import { JSONRPCDeployer } from '../deploy'
 const PoseidonT3 = require('@maci-contracts/compiled/PoseidonT3.json')
 const PoseidonT6 = require('@maci-contracts/compiled/PoseidonT6.json')
-
-const IncrementalQuinTreeAbi = require('@maci-contracts/compiled/IncrementalQuinTree.json')
-const ComputeRootAbi = require('@maci-contracts/compiled/ComputeRoot.json')
+import { loadAB, linkPoseidonContracts } from '../'
 
 const accounts = genTestAccounts(1)
 let deployer
@@ -26,7 +26,7 @@ const DEPTH = 32
 let tree
 describe('IncrementalQuinTree', () => {
     beforeAll(async () => {
-        deployer = new etherlime.JSONRPCPrivateKeyDeployer(
+        deployer = new JSONRPCDeployer(
             accounts[0].privateKey,
             config.get('chain.url'),
             {
@@ -35,27 +35,33 @@ describe('IncrementalQuinTree', () => {
         )
 
         console.log('Deploying PoseidonT3Contract')
-        PoseidonT3Contract = await deployer.deploy(PoseidonT3, {})
-        PoseidonT6Contract = await deployer.deploy(PoseidonT6, {})
+        PoseidonT3Contract = await deployer.deploy(PoseidonT3.abi, PoseidonT3.bytecode, {})
+
+        console.log('Deploying PoseidonT6Contract')
+        PoseidonT6Contract = await deployer.deploy(PoseidonT6.abi, PoseidonT6.bytecode, {})
+
+        // Link Poseidon contracts
+        linkPoseidonContracts(
+            ['IncrementalQuinTree.sol', 'ComputeRoot.sol'],
+            PoseidonT3Contract.address,
+            PoseidonT6Contract.address,
+        )
+
+        const [ IncrementalQuinTreeAbi, IncrementalQuinTreeBin ] = loadAB('IncrementalQuinTree')
 
         console.log('Deploying IncrementalQuinTree')
         mtContract = await deployer.deploy(
             IncrementalQuinTreeAbi,
-            {
-                PoseidonT3: PoseidonT3Contract.contractAddress,
-                PoseidonT6: PoseidonT6Contract.contractAddress
-            },
+            IncrementalQuinTreeBin,
             DEPTH,
             NOTHING_UP_MY_SLEEVE.toString(),
         )
 
+        const [ ComputeRootAbi, ComputeRootBin ] = loadAB('ComputeRoot')
         console.log('Deploying ComputeRoot')
         crContract = await deployer.deploy(
             ComputeRootAbi,
-            {
-                PoseidonT3: PoseidonT3Contract.contractAddress,
-                PoseidonT6: PoseidonT6Contract.contractAddress
-            },
+            ComputeRootBin,
         )
 
         tree = new IncrementalQuinTree(DEPTH, NOTHING_UP_MY_SLEEVE)
@@ -72,8 +78,8 @@ describe('IncrementalQuinTree', () => {
     })
 
     it('the on-chain root should match an off-chain root after various insertions', async () => {
-        expect.assertions(8)
-        for (let i = 0; i < 8; i++) {
+        expect.assertions(4)
+        for (let i = 0; i < 4; i++) {
             const leaf = genRandomSalt()
 
             tree.insert(leaf)

@@ -36,8 +36,8 @@ const deployTestContracts = async (
 
     const contracts = await deployMaci(
         deployer,
-        freeForAllSignUpGatekeeperContract.contractAddress,
-        constantIntialVoiceCreditProxyContract.contractAddress,
+        freeForAllSignUpGatekeeperContract.address,
+        constantIntialVoiceCreditProxyContract.address,
     )
 
     const maciContract = contracts.maciContract

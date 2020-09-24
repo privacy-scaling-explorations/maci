@@ -1,4 +1,6 @@
 require('module-alias/register')
+import * as path from 'path'
+import * as shell from 'shelljs'
 import { genTestAccounts } from '../accounts'
 import { config } from 'maci-config'
 import {
@@ -8,10 +10,11 @@ import {
     genRandomSalt,
 } from 'maci-crypto'
 
-import * as etherlime from 'etherlime-lib'
-const Hasher = require('@maci-contracts/compiled/Hasher.json')
+import { JSONRPCDeployer } from '../deploy'
 const PoseidonT3 = require('@maci-contracts/compiled/PoseidonT3.json')
 const PoseidonT6 = require('@maci-contracts/compiled/PoseidonT6.json')
+
+import { abiDir, solDir, loadAB, linkPoseidonContracts } from '../'
 
 const accounts = genTestAccounts(1)
 let deployer
@@ -20,7 +23,7 @@ let PoseidonT3Contract, PoseidonT6Contract
 
 describe('Hasher', () => {
     beforeAll(async () => {
-        deployer = new etherlime.JSONRPCPrivateKeyDeployer(
+        deployer = new JSONRPCDeployer(
             accounts[0].privateKey,
             config.get('chain.url'),
             {
@@ -30,14 +33,23 @@ describe('Hasher', () => {
 
         console.log('Deploying Poseidon')
 
-        PoseidonT3Contract = await deployer.deploy(PoseidonT3, {})
-        PoseidonT6Contract = await deployer.deploy(PoseidonT6, {})
+        PoseidonT3Contract = await deployer.deploy(PoseidonT3.abi, PoseidonT3.bytecode, {})
+        PoseidonT6Contract = await deployer.deploy(PoseidonT6.abi, PoseidonT6.bytecode, {})
+
+        // Link Poseidon contracts
+        linkPoseidonContracts(
+            ['Hasher.sol'],
+            PoseidonT3Contract.address,
+            PoseidonT6Contract.address,
+        )
+
+        const [ HasherAbi, HasherBin ] = loadAB('Hasher')
 
         console.log('Deploying Hasher')
-        hasherContract = await deployer.deploy(Hasher, {
-            PoseidonT3: PoseidonT3Contract.contractAddress,
-            PoseidonT6: PoseidonT6Contract.contractAddress
-        })
+        hasherContract = await deployer.deploy(
+            HasherAbi,
+            HasherBin,
+        )
     })
 
     it('maci-crypto.hashLeftRight should match hasher.hashLeftRight', async () => {

@@ -7,7 +7,7 @@
         "watch": "tsc --watch",
         "ganache": "./scripts/runGanache.sh",
         "compileSol": "./scripts/compileSol.sh",
-        "build": "tsc && ./scripts/compileSol.sh",
+        "build": "tsc",
         "deploy": "node build/deploy.js -o deployedAddresses.json",
         "deploy-debug": "node --inspect-brk build/deploy.js -o deployedAddresses.json",
         "test-mt": "jest IncrementalMerkleTree.test.ts",
@@ -29,20 +29,18 @@
         "@maci-contracts": "."
     },
     "dependencies": {
-        "@openzeppelin/contracts": "^2.4.0",
         "argparse": "^1.0.10",
+        "openzeppelin-solidity": "^2.4.0",
         "circomlib": "0.2.4",
-        "etherlime-lib": "1.1.5",
-        "module-alias": "^2.2.2",
-        "openzeppelin-solidity": "^2.4.0"
+        "module-alias": "^2.2.2"
     },
     "devDependencies": {
         "@types/jest": "^24.0.25",
         "@types/node": "^13.1.2",
-        "etherlime": "2.2.4",
         "ethers": "^4.0.45",
         "ganache-cli": "^6.7.0",
         "jest": "^24.9.0",
+        "shelljs": "^0.8.4",
         "libsemaphore": "^1.0.5",
         "maci-circuits": "^0.2.7",
         "maci-config": "^0.2.6",

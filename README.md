@@ -12,7 +12,7 @@ We welcome contributions to this project. Please join our
 
 ### Requirements
 
-You should have Node 11.14.0 installed. Use
+You should have Node 12 installed. Use
 [`nvm`](https://github.com/nvm-sh/nvm) to install it.
 
 ### Get started
