@@ -23,4 +23,3 @@ chain:
     port: 8545
 
 zkutil_bin: "~/.cargo/bin/zkutil"
-solc_bin: "~/solc"

@@ -14,7 +14,7 @@ import { JSONRPCDeployer } from '../deploy'
 const PoseidonT3 = require('@maci-contracts/compiled/PoseidonT3.json')
 const PoseidonT6 = require('@maci-contracts/compiled/PoseidonT6.json')
 
-import { abiDir, solDir, loadAB } from '../'
+import { abiDir, solDir, loadAB, linkPoseidonContracts } from '../'
 
 const accounts = genTestAccounts(1)
 let deployer
@@ -36,13 +36,12 @@ describe('Hasher', () => {
         PoseidonT3Contract = await deployer.deploy(PoseidonT3.abi, PoseidonT3.bytecode, {})
         PoseidonT6Contract = await deployer.deploy(PoseidonT6.abi, PoseidonT6.bytecode, {})
 
-        // Link Poseidon contracts to Hasher
-        const poseidonPath = path.join(__dirname, '..', '..', 'sol', 'Poseidon.sol')
-        const linkCmd = `${config.solc_bin} -o ${abiDir} ${solDir}/Hasher.sol --overwrite --bin `
-            + ` --libraries ${poseidonPath}:PoseidonT3:${PoseidonT3Contract.address}`
-            + ` --libraries ${poseidonPath}:PoseidonT6:${PoseidonT6Contract.address}`
-
-        shell.exec(linkCmd)
+        // Link Poseidon contracts
+        linkPoseidonContracts(
+            ['Hasher.sol'],
+            PoseidonT3Contract.address,
+            PoseidonT6Contract.address,
+        )
 
         const [ HasherAbi, HasherBin ] = loadAB('Hasher')
 

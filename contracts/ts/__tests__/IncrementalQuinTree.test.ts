@@ -13,7 +13,7 @@ import {
 import { JSONRPCDeployer } from '../deploy'
 const PoseidonT3 = require('@maci-contracts/compiled/PoseidonT3.json')
 const PoseidonT6 = require('@maci-contracts/compiled/PoseidonT6.json')
-import { abiDir, solDir, loadAB } from '../'
+import { loadAB, linkPoseidonContracts } from '../'
 
 const accounts = genTestAccounts(1)
 let deployer
@@ -41,12 +41,11 @@ describe('IncrementalQuinTree', () => {
         PoseidonT6Contract = await deployer.deploy(PoseidonT6.abi, PoseidonT6.bytecode, {})
 
         // Link Poseidon contracts
-        const poseidonPath = path.join(__dirname, '..', '..', 'sol', 'Poseidon.sol')
-        const linkCmd = `${config.solc_bin} -o ${abiDir} ${solDir}/IncrementalQuinTree.sol ${solDir}/ComputeRoot.sol --overwrite --bin `
-            + ` --libraries ${poseidonPath}:PoseidonT3:${PoseidonT3Contract.address}`
-            + ` --libraries ${poseidonPath}:PoseidonT6:${PoseidonT6Contract.address}`
-
-        shell.exec(linkCmd)
+        linkPoseidonContracts(
+            ['IncrementalQuinTree.sol', 'ComputeRoot.sol'],
+            PoseidonT3Contract.address,
+            PoseidonT6Contract.address,
+        )
 
         const [ IncrementalQuinTreeAbi, IncrementalQuinTreeBin ] = loadAB('IncrementalQuinTree')
 

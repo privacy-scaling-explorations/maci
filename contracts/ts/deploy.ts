@@ -44,6 +44,29 @@ const PoseidonT6 = require('../compiled/PoseidonT6.json')
 const maciContractAbi = loadAbi('MACI.abi')
 const initialVoiceCreditProxyAbi = InitialVoiceCreditProxyAbi
 
+const linkPoseidonContracts = (
+    solFilesToLink: string[],
+    poseidonT3Address,
+    poseidonT6Address,
+) => {
+    let inputFiles = ''
+    for (const f of solFilesToLink) {
+        inputFiles += `${solDir}/${f} `
+    }
+
+    const d = path.join(__dirname, '..')
+    const allowedPaths = `${path.join(d, 'sol')}/,${path.join(d, 'node_modules', 'openzeppelin-solidity')}`
+
+    const poseidonPath = path.join(__dirname, '..', 'sol', 'Poseidon.sol')
+    const solcPath = path.join(__dirname, '..', 'solc')
+    const linkCmd = `${solcPath} -o ${abiDir} ${inputFiles} --overwrite --bin `
+        + ` --allow-paths ${allowedPaths}`
+        + ` --libraries ${poseidonPath}:PoseidonT3:${poseidonT3Address}`
+        + ` --libraries ${poseidonPath}:PoseidonT6:${poseidonT6Address}`
+
+    shell.exec(linkCmd)
+}
+
 const genProvider = (
     rpcUrl: string = config.get('chain.url'),
 ) => {
@@ -222,12 +245,7 @@ const deployMaci = async (
     const maxMessages = (BigInt(2 ** messageTreeDepth) - BigInt(1)).toString()
 
     // Link Poseidon contracts to MACI
-    const poseidonPath = path.join(__dirname, '..', 'sol', 'Poseidon.sol')
-    const linkCmd = `${config.solc_bin} -o ${abiDir} ${solDir}/MACI.sol --overwrite --bin `
-        + ` --libraries ${poseidonPath}:PoseidonT3:${PoseidonT3Contract.address}`
-        + ` --libraries ${poseidonPath}:PoseidonT6:${PoseidonT6Contract.address}`
-
-    shell.exec(linkCmd)
+    linkPoseidonContracts(['MACI.sol'], PoseidonT3Contract.address, PoseidonT6Contract.address)
 
     const [ MACIAbi, MACIBin ] = loadAB('MACI')
 
@@ -388,4 +406,5 @@ export {
     loadAB,
     loadAbi,
     loadBin,
+    linkPoseidonContracts,
 }

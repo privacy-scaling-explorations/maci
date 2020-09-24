@@ -15,7 +15,7 @@ import { JSONRPCDeployer } from '../deploy'
 const PoseidonT3 = require('@maci-contracts/compiled/PoseidonT3.json')
 const PoseidonT6 = require('@maci-contracts/compiled/PoseidonT6.json')
 
-import { abiDir, solDir, loadAB } from '../'
+import { loadAB, linkPoseidonContracts } from '../'
 
 const accounts = genTestAccounts(1)
 let deployer
@@ -40,12 +40,11 @@ describe('VerifyTally', () => {
         PoseidonT6Contract = await deployer.deploy(PoseidonT6.abi, PoseidonT6.bytecode, {})
 
         // Link Poseidon contracts
-        const poseidonPath = path.join(__dirname, '..', '..', 'sol', 'Poseidon.sol')
-        const linkCmd = `${config.solc_bin} -o ${abiDir} ${solDir}/VerifyTally.sol --overwrite --bin `
-            + ` --libraries ${poseidonPath}:PoseidonT3:${PoseidonT3Contract.address}`
-            + ` --libraries ${poseidonPath}:PoseidonT6:${PoseidonT6Contract.address}`
-
-        shell.exec(linkCmd)
+        linkPoseidonContracts(
+            ['VerifyTally.sol'],
+            PoseidonT3Contract.address,
+            PoseidonT6Contract.address,
+        )
 
         const [ VerifyTallyAbi, VerifyTallyBin ] = loadAB('VerifyTally')
 
