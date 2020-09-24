@@ -23,7 +23,7 @@ pragma solidity ^0.5.0;
 
 import { SnarkConstants } from "./SnarkConstants.sol";
 import { Hasher } from "./Hasher.sol";
-import { Ownable } from "./openzeppelin-solidity//contracts/ownership/Ownable.sol";
+import { Ownable } from "../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /*
  * An incremental Merkle tree which supports up to 5 leaves per node.

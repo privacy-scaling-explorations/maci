@@ -3,15 +3,13 @@ node_js:
   - 12
 
 install:
-  - wget -q -O ~/solc https://github.com/ethereum/solidity/releases/download/v0.5.17/solc-static-linux 
-  - chmod a+x ~/solc
   - npm i -g npm
   - npm i
   - npm run bootstrap
   - npm run build
 
 script:
-  - SOLC_PATH=~/solc ./contracts/scripts/compileSol.sh
+  - ./contracts/scripts/compileSol.sh
   - cd crypto && npm run test
   - cd ../domainobjs && npm run test
   - cd ../core && npm run test
