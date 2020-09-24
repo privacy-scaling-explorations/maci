@@ -29,10 +29,10 @@
         "@maci-contracts": "."
     },
     "dependencies": {
+        "@openzeppelin/contracts": "^2.4.0",
         "argparse": "^1.0.10",
         "circomlib": "0.2.4",
-        "module-alias": "^2.2.2",
-        "openzeppelin-solidity": "^2.4.0"
+        "module-alias": "^2.2.2"
     },
     "devDependencies": {
         "@types/jest": "^24.0.25",
