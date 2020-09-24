@@ -2,9 +2,6 @@ require('module-alias/register')
 import { genTestAccounts } from '../accounts'
 import { config } from 'maci-config'
 import {
-    hashLeftRight,
-    hash5,
-    hash11,
     genRandomSalt,
 } from 'maci-crypto'
 
@@ -36,12 +33,12 @@ describe('Hasher', () => {
 
         // Link Poseidon contracts
         linkPoseidonContracts(
-            ['Hasher.sol'],
+            ['HasherBenchmarks.sol'],
             PoseidonT3Contract.address,
             PoseidonT6Contract.address,
         )
 
-        const [ HasherAbi, HasherBin ] = loadAB('Hasher')
+        const [ HasherAbi, HasherBin ] = loadAB('HasherBenchmarks')
 
         console.log('Deploying Hasher')
         hasherContract = await deployer.deploy(
@@ -50,45 +47,35 @@ describe('Hasher', () => {
         )
     })
 
-    it('maci-crypto.hashLeftRight should match hasher.hashLeftRight', async () => {
+    it('hashLeftRight', async () => {
         const left = genRandomSalt()
         const right = genRandomSalt()
-        const hashed = hashLeftRight(left, right)
 
-        const onChainHash = await hasherContract.hashLeftRight(left.toString(), right.toString())
-        expect(onChainHash.toString()).toEqual(hashed.toString())
+        const tx = await hasherContract.hashLeftRightBenchmark(left.toString(), right.toString())
+        const receipt = await tx.wait()
+        console.log('hashLeftRight:', receipt.gasUsed.toString())
     })
 
-    it('maci-crypto.hash5 should match hasher.hash5', async () => {
+    it('hash5', async () => {
         const values: string[] = []
         for (let i = 0; i < 5; i++) {
             values.push(genRandomSalt().toString())
         }
-        const hashed = hash5(values.map(BigInt))
 
-        const onChainHash = await hasherContract.hash5(values)
-        expect(onChainHash.toString()).toEqual(hashed.toString())
+        const tx = await hasherContract.hash5Benchmark(values)
+        const receipt = await tx.wait()
+        console.log('hash5:', receipt.gasUsed.toString())
     })
 
-    it('maci-crypto.hash11 should match hasher.hash11 for 10 elements', async () => {
-        const values: string[] = []
-        for (let i = 0; i < 10; i++) {
-            values.push(genRandomSalt().toString())
-        }
-        const hashed = hash11(values.map(BigInt))
-        const onChainHash = await hasherContract.hash11(values)
-
-        expect(onChainHash.toString()).toEqual(hashed.toString())
-    })
-
-    it('maci-crypto.hash11 should match hasher.hash11 for 11 elements', async () => {
+    it('hash11', async () => {
         const values: string[] = []
         for (let i = 0; i < 11; i++) {
             values.push(genRandomSalt().toString())
         }
-        const hashed = hash11(values.map(BigInt))
-        const onChainHash = await hasherContract.hash11(values)
 
-        expect(onChainHash.toString()).toEqual(hashed.toString())
+        const tx = await hasherContract.hash11Benchmark(values)
+        const receipt = await tx.wait()
+        console.log('hash11:', receipt.gasUsed.toString())
     })
 })
+

@@ -1,17 +1,12 @@
-/*
- * Hasher object to abstract out hashing logic
- * to be shared between multiple files
- *
- * This file is part of maci
- */
-
 pragma solidity ^0.5.0;
 
 import {PoseidonT3, PoseidonT6} from "./Poseidon.sol";
 
 import {SnarkConstants} from "./SnarkConstants.sol";
 
-
+/*
+ * Poseidon hash functions for 2, 5, and 11 input elements.
+ */
 contract Hasher is SnarkConstants {
     function hash5(uint256[] memory array) public pure returns (uint256) {
         return PoseidonT6.poseidon(array);
