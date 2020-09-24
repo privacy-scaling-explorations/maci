@@ -21,10 +21,11 @@ wget -nc -q -O $solcBin https://github.com/ethereum/solidity/releases/download/v
 chmod a+x $solcBin
 
 paths="$(pwd)/sol/,$(pwd)/node_modules/openzeppelin-solidity/"
+oz_map="@openzeppelin-solidity/=$(pwd)/node_modules/openzeppelin-solidity/"
 
 echo 'Building contracts'
-$solcBin -o ./compiled ./sol/*.sol --overwrite --optimize --bin --abi --bin-runtime --allow-paths=$paths
-$solcBin -o ./compiled ./sol/**/*.sol --overwrite --optimize --bin --abi --bin-runtime --allow-paths=$paths
+$solcBin $oz_map -o ./compiled ./sol/*.sol --overwrite --optimize --bin --abi --bin-runtime --allow-paths=$paths
+$solcBin $oz_map -o ./compiled ./sol/**/*.sol --overwrite --optimize --bin --abi --bin-runtime --allow-paths=$paths
 
 # Build the Poseidon contract from bytecode
 node build/buildPoseidon.js

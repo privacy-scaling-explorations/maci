@@ -55,12 +55,15 @@ const linkPoseidonContracts = (
     }
 
     const d = path.join(__dirname, '..')
-    const allowedPaths = `${path.join(d, 'sol')}/,${path.join(d, 'node_modules', 'openzeppelin-solidity')}`
+    const maciSolPath = path.join(d, 'sol')
+    const ozSolPath = path.join(d, 'node_modules', 'openzeppelin-solidity')
 
     const poseidonPath = path.join(__dirname, '..', 'sol', 'Poseidon.sol')
     const solcPath = path.join(__dirname, '..', 'solc')
-    const linkCmd = `${solcPath} -o ${abiDir} ${inputFiles} --overwrite --bin `
-        + ` --allow-paths ${allowedPaths}`
+    const linkCmd = `${solcPath}`
+        + ` @openzeppelin-solidity/=${ozSolPath}/`
+        + ` -o ${abiDir} ${inputFiles} --overwrite --bin`
+        + ` --allow-paths ${maciSolPath}/,${ozSolPath}`
         + ` --libraries ${poseidonPath}:PoseidonT3:${poseidonT3Address}`
         + ` --libraries ${poseidonPath}:PoseidonT6:${poseidonT6Address}`
 
