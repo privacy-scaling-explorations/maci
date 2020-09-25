@@ -32,12 +32,12 @@
         "@openzeppelin/contracts": "^2.4.0",
         "argparse": "^1.0.10",
         "circomlib": "0.2.4",
+        "ethers": "^4.0.45",
         "module-alias": "^2.2.2"
     },
     "devDependencies": {
         "@types/jest": "^24.0.25",
         "@types/node": "^13.1.2",
-        "ethers": "^4.0.45",
         "ganache-cli": "^6.7.0",
         "jest": "^24.9.0",
         "libsemaphore": "^1.0.5",
