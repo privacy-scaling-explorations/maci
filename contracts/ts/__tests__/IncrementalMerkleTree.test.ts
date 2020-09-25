@@ -1,7 +1,5 @@
 require('module-alias/register')
 jest.setTimeout(120000)
-import * as path from 'path'
-import * as shell from 'shelljs'
 import { genTestAccounts } from '../accounts'
 import { config } from 'maci-config'
 import {
