@@ -35,14 +35,12 @@ const genMessage = (command: Command): Message => {
     return message
 }
 
+let message
+let voteWeight
+
 describe('Process one message', () => {
     beforeAll(async () => {
-        // Sign up the user
-        maciState.signUp(user.pubKey, initialVoiceCreditBalance)
-    })
-
-    it('processMessage() should process a valid message', async () => {
-        const voteWeight = BigInt(9)
+        voteWeight = BigInt(9)
         const command = new Command(
             BigInt(1),
             user.pubKey,
@@ -52,20 +50,26 @@ describe('Process one message', () => {
             genRandomSalt(),
         )
 
-        const message = genMessage(command)
+        message = genMessage(command)
+
+        // Sign up the user
+        maciState.signUp(user.pubKey, initialVoiceCreditBalance, message, user.pubKey)
+    })
+
+    it('processMessage() should process a valid message', async () => {
 
         const copiedState = maciState.copy()
 
         // Publish a message
         copiedState.publishMessage(message, user.pubKey)
-        expect(copiedState.messages.length).toEqual(1)
+        expect(copiedState.messages.length).toEqual(2)
         const oldState = copiedState.copy()
         copiedState.processMessage(0)
         const newStateRoot = copiedState.genStateRoot()
 
         expect(newStateRoot.toString()).not.toEqual(oldState.genStateRoot().toString())
         expect(copiedState.users[0].voiceCreditBalance.toString())
-            .toEqual((BigInt(initialVoiceCreditBalance) - (voteWeight * voteWeight)).toString())
+            .toEqual((BigInt(initialVoiceCreditBalance) - BigInt(voteWeight * voteWeight)).toString())
     })
 
     it('processMessage() should not process a message with an incorrect nonce', async () => {
@@ -84,9 +88,9 @@ describe('Process one message', () => {
 
         // Publish a message
         copiedState.publishMessage(message, user.pubKey)
-        expect(copiedState.messages.length).toEqual(1)
+        expect(copiedState.messages.length).toEqual(2)
         const oldState = copiedState.copy()
-        copiedState.processMessage(0)
+        copiedState.processMessage(1)
         const newStateRoot = copiedState.genStateRoot()
 
         expect(newStateRoot.toString()).toEqual(oldState.genStateRoot().toString())
@@ -108,9 +112,9 @@ describe('Process one message', () => {
 
         // Publish a message
         copiedState.publishMessage(message, user.pubKey)
-        expect(copiedState.messages.length).toEqual(1)
+        expect(copiedState.messages.length).toEqual(2)
         const oldState = copiedState.copy()
-        copiedState.processMessage(0)
+        copiedState.processMessage(1)
         const newStateRoot = copiedState.genStateRoot()
 
         expect(newStateRoot.toString()).toEqual(oldState.genStateRoot().toString())
@@ -132,9 +136,9 @@ describe('Process one message', () => {
 
         // Publish a message
         copiedState.publishMessage(message, user.pubKey)
-        expect(copiedState.messages.length).toEqual(1)
+        expect(copiedState.messages.length).toEqual(2)
         const oldState = copiedState.copy()
-        copiedState.processMessage(0)
+        copiedState.processMessage(1)
         const newStateRoot = copiedState.genStateRoot()
 
         expect(newStateRoot.toString()).toEqual(oldState.genStateRoot().toString())
@@ -159,9 +163,9 @@ describe('Process one message', () => {
 
         // Publish a message
         copiedState.publishMessage(message, user.pubKey)
-        expect(copiedState.messages.length).toEqual(1)
+        expect(copiedState.messages.length).toEqual(2)
         const oldState = copiedState.copy()
-        copiedState.processMessage(0)
+        copiedState.processMessage(1)
         const newStateRoot = copiedState.genStateRoot()
 
         expect(newStateRoot.toString()).toEqual(oldState.genStateRoot().toString())
@@ -185,9 +189,9 @@ describe('Process one message', () => {
 
         // Publish a message
         copiedState.publishMessage(message, user.pubKey)
-        expect(copiedState.messages.length).toEqual(1)
+        expect(copiedState.messages.length).toEqual(2)
         const oldState = copiedState.copy()
-        copiedState.processMessage(0)
+        copiedState.processMessage(1)
         const newStateRoot = copiedState.genStateRoot()
 
         expect(newStateRoot.toString()).toEqual(oldState.genStateRoot().toString())

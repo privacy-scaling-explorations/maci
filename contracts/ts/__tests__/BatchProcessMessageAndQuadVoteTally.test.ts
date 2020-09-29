@@ -1,5 +1,3 @@
-require('module-alias/register')
-
 jest.setTimeout(1200000)
 
 import * as ethers from 'ethers'
@@ -79,6 +77,7 @@ for (let i = 0; i < 5 ** voteOptionTreeDepth; i ++) {
 
 let maciContract
 let stateRootBefore
+let expectedVoiceCredits = BigInt(0)
 
 describe('BatchProcessMessage', () => {
     beforeAll(async () => {
@@ -95,6 +94,7 @@ describe('BatchProcessMessage', () => {
             const keypair = new Keypair()
             const voteOptionIndex = 0
             const voiceCredits = BigInt(i)
+            expectedVoiceCredits += voiceCredits
             const command = new Command(
                 BigInt(i + 1),
                 keypair.pubKey,
@@ -135,12 +135,16 @@ describe('BatchProcessMessage', () => {
                 maciState.signUp(
                     user.keypair.pubKey, 
                     BigInt(config.maci.initialVoiceCreditBalance),
+                    user.message,
+                    user.ephemeralKeypair.pubKey,
                 )
 
                 const tx = await maciContract.signUp(
                     user.keypair.pubKey.asContractParam(),
                     ethers.utils.defaultAbiCoder.encode(['uint256'], [1]),
                     ethers.utils.defaultAbiCoder.encode(['uint256'], [0]),
+                    user.message.asContractParam(),
+                    user.ephemeralKeypair.pubKey.asContractParam(),
                     { gasLimit: 2000000 },
                 )
                 await tx.wait()
@@ -154,23 +158,6 @@ describe('BatchProcessMessage', () => {
 
     describe('Publish messages', () => {
         it('The message root should be correct after publishing one message per user', async () => {
-            // Move forward in time
-            await timeTravel(deployer.provider, config.maci.signUpDurationInSeconds + 1)
-
-            stateRootBefore = maciState.genStateRoot()
-
-            for (const user of users) {
-
-                maciState.publishMessage(user.message, user.ephemeralKeypair.pubKey)
-
-                const tx = await maciContract.publishMessage(
-                    user.message.asContractParam(),
-                    user.ephemeralKeypair.pubKey.asContractParam(),
-                )
-                const receipt = await tx.wait()
-                expect(receipt.status).toEqual(1)
-            }
-
             const onChainMessageRoot = (await maciContract.getMessageTreeRoot()).toString()
             const offChainMessageRoot = maciState.genMessageRoot().toString()
             expect(onChainMessageRoot).toEqual(offChainMessageRoot)
@@ -192,10 +179,16 @@ describe('BatchProcessMessage', () => {
         })
 
         it('batchProcessMessage should verify a proof and update the postSignUpStateRoot', async () => {
+            stateRootBefore = maciState.genStateRoot()
+
             // Move forward in time
-            await timeTravel(deployer.provider, config.maci.votingDurationInSeconds + 1)
+            await timeTravel(
+                deployer.provider,
+                config.maci.signUpDurationInSeconds + config.maci.votingDurationInSeconds + 1,
+            )
 
             const randomStateLeaf = StateLeaf.genRandomLeaf()
+
             // Generate circuit inputs
             const circuitInputs = 
                 maciState.genBatchUpdateStateTreeCircuitInputs(
@@ -275,6 +268,8 @@ describe('BatchProcessMessage', () => {
             const startIndex = BigInt(0)
 
             tally = maciState.computeBatchVoteTally(startIndex, quadVoteTallyBatchSize)
+            expect(tally[0].toString()).toEqual(expectedVoiceCredits.toString())
+
             newResultsSalt = genRandomSalt()
             const currentResultsSalt = BigInt(0)
 

@@ -263,7 +263,9 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
     function signUp(
         PubKey memory _userPubKey,
         bytes memory _signUpGatekeeperData,
-        bytes memory _initialVoiceCreditProxyData
+        bytes memory _initialVoiceCreditProxyData,
+        Message memory _message,
+        PubKey memory _encPubKey
     ) 
     isBeforeSignUpDeadline
     public {
@@ -301,6 +303,8 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         // numSignUps is equal to the state index of the leaf which was just
         // added to the state tree above
         emit SignUp(_userPubKey, numSignUps, voiceCreditBalance);
+
+        publishMessage(_message, _encPubKey);
     }
 
     /*
@@ -315,13 +319,10 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         Message memory _message,
         PubKey memory _encPubKey
     ) 
-    isAfterSignUpDeadline
     isBeforeVotingDeadline
     public {
 
         require(numMessages < maxMessages, "MACI: message limit reached");
-
-        require(numSignUps > 0, "MACI: nobody signed up");
 
         // When this function is called for the first time, set
         // postSignUpStateRoot to the last known state root.

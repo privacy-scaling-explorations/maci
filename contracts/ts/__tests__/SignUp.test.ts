@@ -20,6 +20,7 @@ import {
 import { MaciState } from 'maci-core'
 
 import {
+    genRandomSalt,
     hashLeftRight,
     IncrementalQuinTree,
     NOTHING_UP_MY_SLEEVE,
@@ -28,6 +29,7 @@ import {
 import {
     Keypair,
     PrivKey,
+    Command,
 } from 'maci-domainobjs'
 
 const accounts = genTestAccounts(5)
@@ -45,6 +47,19 @@ const maciState = new MaciState(
     voteOptionTreeDepth,
     NOTHING_UP_MY_SLEEVE,
 )
+
+const keypair = new Keypair()
+const command = new Command(
+    BigInt(0),
+    keypair.pubKey,
+    BigInt(0),
+    BigInt(0),
+    BigInt(0),
+    genRandomSalt(),
+)
+const signature = command.sign(keypair.privKey)
+const message = command.encrypt(signature, BigInt(0))
+
 
 describe('MACI', () => {
     let maciContract
@@ -170,6 +185,8 @@ describe('MACI', () => {
                     user1.keypair.pubKey.asContractParam(),
                     ethers.utils.defaultAbiCoder.encode(['uint256'], [2]),
                     ethers.utils.defaultAbiCoder.encode(['uint256'], [0]), // Any value is fine as the ConstantInitialVoiceCreditProxy will ignore it
+                    message.asContractParam(),
+                    keypair.pubKey.asContractParam(),
                     { gasLimit: 2000000 },
                 )
 
@@ -182,6 +199,8 @@ describe('MACI', () => {
             maciState.signUp(
                 user1.keypair.pubKey, 
                 BigInt(config.maci.initialVoiceCreditBalance),
+                null,
+                null,
             )
 
             const wallet = user1.wallet.connect(deployer.provider as any)
@@ -194,6 +213,8 @@ describe('MACI', () => {
                 user1.keypair.pubKey.asContractParam(),
                 ethers.utils.defaultAbiCoder.encode(['uint256'], [1]),
                 ethers.utils.defaultAbiCoder.encode(['uint256'], [0]),
+                message.asContractParam(),
+                keypair.pubKey.asContractParam(),
                 { gasLimit: 2000000 },
             )
             const receipt = await tx.wait()
@@ -251,6 +272,8 @@ describe('MACI', () => {
                     user2.keypair.pubKey.asContractParam(),
                     ethers.utils.defaultAbiCoder.encode(['uint256'], [1]),
                     ethers.utils.defaultAbiCoder.encode(['uint256'], [0]),
+                    message.asContractParam(),
+                    keypair.pubKey.asContractParam(),
                     { gasLimit: 2000000 },
                 )
             } catch (e) {
@@ -289,6 +312,8 @@ describe('MACI', () => {
                     user1.keypair.pubKey.asContractParam(),
                     ethers.utils.defaultAbiCoder.encode(['uint256'], [1]),
                     ethers.utils.defaultAbiCoder.encode(['uint256'], [0]),
+                    message.asContractParam(),
+                    keypair.pubKey.asContractParam(),
                     { gasLimit: 2000000 },
                 )
             } catch (e) {
