@@ -23,7 +23,7 @@ interface SnarkVerifier {
 contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
     // A nothing-up-my-sleeve zero value
-    // Should be equal to 5503045433092194285660061905880311622788666850989422096966288514930349325741
+    // Should be equal to 8370432830353022751713833565135785980866757267633941821328460903436894336785
     uint256 ZERO_VALUE = uint256(keccak256(abi.encodePacked('Maci'))) % SNARK_SCALAR_FIELD;
 
     // Verifier Contracts

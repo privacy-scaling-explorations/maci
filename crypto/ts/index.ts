@@ -38,7 +38,7 @@ const SNARK_FIELD_SIZE = BigInt(
 )
 
 // A nothing-up-my-sleeve zero value
-// Should be equal to 5503045433092194285660061905880311622788666850989422096966288514930349325741
+// Should be equal to 8370432830353022751713833565135785980866757267633941821328460903436894336785
 const NOTHING_UP_MY_SLEEVE =
     BigInt(ethers.utils.solidityKeccak256(['bytes'], [ethers.utils.toUtf8Bytes('Maci')])) % SNARK_FIELD_SIZE
 
