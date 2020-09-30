@@ -29,6 +29,8 @@ import {
     DEFAULT_ETH_PROVIDER,
 } from './defaults'
 
+const DEFAULT_SALT = genRandomSalt()
+
 const configureSubparser = (subparsers: any) => {
     const parser = subparsers.addParser(
         'publish',
@@ -41,6 +43,15 @@ const configureSubparser = (subparsers: any) => {
             action: 'store',
             type: 'string',
             help: `A connection string to an Ethereum provider. Default: ${DEFAULT_ETH_PROVIDER}`,
+        }
+    )
+
+    parser.addArgument(
+        ['-p', '--pubkey'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The MACI public key which should replace the user\'s public key in the state tree',
         }
     )
 
@@ -88,15 +99,6 @@ const configureSubparser = (subparsers: any) => {
             action: 'store',
             type: 'string',
             help: 'The deployer\'s Ethereum private key',
-        }
-    )
-
-    parser.addArgument(
-        ['-p', '--pubkey'],
-        {
-            required: true,
-            type: 'string',
-            help: 'The MACI public key which should replace the user\'s public key in the state tree',
         }
     )
 
@@ -204,28 +206,46 @@ const publish = async (args: any) => {
 
     const userMaciPrivkey = PrivKey.unserialize(serializedPrivkey)
     
-    let stateIndex, voteOptionIndex, nonce, salt
-    try {
-        const results = validateArgs(
-            args.state_index,
-            args.vote_option_index,
-            args.nonce,
-            args.salt,
-        )
-
-        stateIndex = results.stateIndex
-        voteOptionIndex = results.voteOptionIndex
-        nonce = results.nonce
-        salt = results.salt
-
-    } catch (e) {
-        console.error(e.message)
+    // State index
+    const stateIndex = BigInt(args.state_index)
+    if (stateIndex < 0) {
+        console.error('Error: the state index must be greater than 0')
         return
     }
 
-    // The new vote weight
-    // TODO: validate this
-    const newVoteWeight = BigInt(args.new_vote_weight)
+    // Vote option index
+    const voteOptionIndex = BigInt(args.vote_option_index)
+
+    if (voteOptionIndex < 0) {
+        console.error('Error: the vote option index should be 0 or greater')
+        return
+    }
+
+    // The nonce
+    const nonce = BigInt(args.nonce)
+
+    if (nonce < 0) {
+        console.error('Error: the nonce should be 0 or greater')
+        return
+    }
+
+    // The salt
+    let salt
+    if (args.salt) {
+        if (!validateSaltFormat(args.salt)) {
+            console.error('Error: the salt should be a 32-byte hexadecimal string')
+            return
+        }
+
+        salt = BigInt(args.salt)
+
+        if (!validateSaltSize(args.salt)) {
+            console.error('Error: the salt should less than the BabyJub field size')
+            return
+        }
+    } else {
+        salt = DEFAULT_SALT
+    }
 
     if (! (await checkDeployerProviderConnection(ethSk, ethProvider))) {
         console.error('Error: unable to connect to the Ethereum provider at', ethProvider)
@@ -246,12 +266,22 @@ const publish = async (args: any) => {
         wallet,
     )
 
+    // Validate the state index against the number of signups on-chain
+    const numSignUps = (await maciContract.numSignUps()).toNumber()
+    if (numSignUps < stateIndex) {
+        console.error('Error: the state index is invalid')
+        return
+    }
+
     // Validate the vote option index against the max leaf index on-chain
     const maxVoteOptions = (await maciContract.voteOptionsMaxLeafIndex()).toNumber()
     if (maxVoteOptions < voteOptionIndex) {
         console.error('Error: the vote option index is invalid')
         return
     }
+
+    // The new vote weight
+    const newVoteWeight = BigInt(args.new_vote_weight)
 
     const coordinatorPubKeyOnChain = await maciContract.coordinatorPubKey()
     const coordinatorPubKey = new PubKey([
@@ -298,51 +328,7 @@ const publish = async (args: any) => {
     await tx.wait()
 }
 
-const validateArgs = (
-    stateIndex: BigInt,
-    voteOptionIndex: BigInt,
-    nonce: BigInt,
-    saltStr: string,
-) => {
-
-    // State index
-    if (stateIndex < BigInt(0)) {
-        throw new Error('Error: the state index must be greater than 0')
-    }
-
-    // Vote option index
-
-    if (voteOptionIndex < BigInt(0)) {
-        throw new Error('Error: the vote option index should be 0 or greater')
-    }
-
-    // The nonce
-    if (nonce < BigInt(0)) {
-        throw new Error('Error: the nonce should be 0 or greater')
-    }
-
-    // The salt
-    let salt
-    if (saltStr) {
-        if (!validateSaltFormat(saltStr)) {
-            throw new Error('Error: the salt should be a 32-byte hexadecimal string')
-        }
-
-        if (!validateSaltSize(saltStr)) {
-            throw new Error('Error: the salt should less than the BabyJub field size')
-        }
-
-        salt = BigInt(saltStr)
-    } else {
-        salt = genRandomSalt()
-    }
-
-    return { stateIndex, voteOptionIndex, nonce, salt }
-
-}
-
 export {
     publish,
-    validateArgs,
     configureSubparser,
 }

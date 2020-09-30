@@ -5,12 +5,8 @@ import {
 
 import {
     PubKey,
-    PrivKey,
-    Keypair,
-    Command,
 } from 'maci-domainobjs'
 
-import { validateArgs } from './publish'
 
 import {
     promptPwd,
@@ -61,25 +57,6 @@ const configureSubparser = (subparsers: any) => {
         }
     )
 
-    const maciPrivkeyGroup = parser.addMutuallyExclusiveGroup({ required: true })
-
-    maciPrivkeyGroup.addArgument(
-        ['-dsk', '--prompt-for-maci-privkey'],
-        {
-            action: 'storeTrue',
-            help: 'Whether to prompt for your serialized MACI private key',
-        }
-    )
-
-    maciPrivkeyGroup.addArgument(
-        ['-sk', '--privkey'],
-        {
-            action: 'store',
-            type: 'string',
-            help: 'Your serialized MACI private key',
-        }
-    )
-
     const privkeyGroup = parser.addMutuallyExclusiveGroup({ required: true })
 
     privkeyGroup.addArgument(
@@ -114,65 +91,6 @@ const configureSubparser = (subparsers: any) => {
             action: 'store',
             type: 'string',
             help: 'A hex string to pass to the initial voice credit proxy contract which may use it to determine how many voice credits to assign to the user. Default: an empty bytestring.',
-        }
-    )
-
-    // For the command
-    parser.addArgument(
-        ['-pp', '--pubkey-to-publish'],
-        {
-            required: true,
-            type: 'string',
-            help: 'The MACI public key which should replace the user\'s public key in the state tree',
-        }
-    )
-
-    parser.addArgument(
-        ['-pi', '--state-index'],
-        {
-            required: true,
-            action: 'store',
-            type: 'int',
-            help: 'The user\'s state index',
-        }
-    )
-
-    parser.addArgument(
-        ['-pv', '--vote-option-index'],
-        {
-            required: true,
-            action: 'store',
-            type: 'int',
-            help: 'The vote option index',
-        }
-    )
-
-    parser.addArgument(
-        ['-pw', '--new-vote-weight'],
-        {
-            required: true,
-            action: 'store',
-            type: 'int',
-            help: 'The new vote weight',
-        }
-    )
-
-    parser.addArgument(
-        ['-pn', '--nonce'],
-        {
-            required: true,
-            action: 'store',
-            type: 'int',
-            help: 'The message nonce',
-        }
-    )
-
-    parser.addArgument(
-        ['-ps', '--salt'],
-        {
-            action: 'store',
-            type: 'string',
-            help: 'The message salt',
         }
     )
 }
@@ -251,73 +169,12 @@ const signup = async (args: any) => {
         wallet,
     )
 
-    // The user's MACI private key
-    let serializedPrivkey
-    if (args.prompt_for_maci_privkey) {
-        serializedPrivkey = await promptPwd('Your MACI private key')
-    } else {
-        serializedPrivkey = args.privkey
-    }
-
-    if (!PrivKey.isValidSerializedPrivKey(serializedPrivkey)) {
-        console.error('Error: invalid MACI private key')
-        return
-    }
-
-    const userMaciPrivkey = PrivKey.unserialize(serializedPrivkey)
-    // Parse message options
-    const newVoteWeight = BigInt(args.new_vote_weight)
-    let stateIndex, voteOptionIndex, nonce, salt
-    try {
-        const results = validateArgs(
-            args.state_index,
-            args.vote_option_index,
-            args.nonce,
-            args.salt,
-        )
-
-        stateIndex = results.stateIndex
-        voteOptionIndex = results.voteOptionIndex
-        nonce = results.nonce
-        salt = results.salt
-
-    } catch (e) {
-        console.error(e.message)
-        return
-    }
-
-    const encKeypair = new Keypair()
-    const coordinatorPubKeyOnChain = await maciContract.coordinatorPubKey()
-    const coordinatorPubKey = new PubKey([
-        BigInt(coordinatorPubKeyOnChain.x.toString()),
-        BigInt(coordinatorPubKeyOnChain.y.toString()),
-    ])
-
-    const command = new Command(
-        stateIndex,
-        userMaciPubKey,
-        voteOptionIndex,
-        newVoteWeight,
-        nonce,
-        salt,
-    )
-    const signature = command.sign(userMaciPrivkey)
-    const message = command.encrypt(
-        signature,
-        Keypair.genEcdhSharedKey(
-            encKeypair.privKey,
-            coordinatorPubKey,
-        )
-    )
-
     let tx
     try {
         tx = await maciContract.signUp(
             userMaciPubKey.asContractParam(),
             sgData,
             ivcpData,
-            message.asContractParam(),
-            encKeypair.pubKey.asContractParam(),
             { gasLimit: 1000000 }
         )
 
