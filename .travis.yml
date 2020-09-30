@@ -7,6 +7,7 @@ install:
   - npm i
   - npm run bootstrap
   - npm run build
+  - ./circuits/scripts/installZkutil.sh
 
 script:
   - ./contracts/scripts/compileSol.sh
