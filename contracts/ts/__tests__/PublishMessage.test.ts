@@ -59,45 +59,18 @@ describe('Publishing messages', () => {
         )
 
         maciContract = contracts.maciContract
-    })
-
-    it('The empty message tree should have the correct root', async () => {
-        const root = maciState.genMessageRoot()
-        const root2 = await maciContract.getMessageTreeRoot()  
-
-        expect(root.toString()).toEqual(root2.toString())
-    })
-
-    it('signUp() should also publish a message', async () => {
         const keypair = new Keypair()
-        const command = new Command(
-            BigInt(0),
-            keypair.pubKey,
-            BigInt(0),
-            BigInt(0),
-            BigInt(0),
-            genRandomSalt(),
-        )
-        const signature = command.sign(keypair.privKey)
-        const message = command.encrypt(signature, BigInt(0))
-
-        maciState.signUp(keypair.pubKey, initialVoiceCreditBalance, message, keypair.pubKey)
-
+        maciState.signUp(keypair.pubKey, initialVoiceCreditBalance)
         const tx = await maciContract.signUp(
             keypair.pubKey.asContractParam(),
             ethers.utils.defaultAbiCoder.encode(['uint256'], [0]),
             ethers.utils.defaultAbiCoder.encode(['uint256'], [0]),
-            message.asContractParam(),
-            keypair.pubKey.asContractParam(),
         )
         const receipt = await tx.wait()
         console.log('Signup gas:', receipt.gasUsed.toString())
-
-        const numMessages = await maciContract.numMessages()
-        expect(numMessages.toString()).toEqual('1')
     })
 
-    it('anyone may publish a message before the sign-up period passes', async () => {
+    it('nobody can publish a message before the sign-up period passes', async () => {
         expect.assertions(1)
         const keypair = new Keypair()
         const command = new Command(
@@ -110,13 +83,21 @@ describe('Publishing messages', () => {
         )
         const signature = command.sign(keypair.privKey)
         const message = command.encrypt(signature, BigInt(0))
-        maciState.publishMessage(message, keypair.pubKey)
-        const tx = await maciContract.publishMessage(
-            message.asContractParam(),
-            keypair.pubKey.asContractParam(),
-        )
-        const receipt = await tx.wait()
-        expect(receipt.status).toEqual(1)
+        try {
+            await maciContract.publishMessage(
+                message.asContractParam(),
+                keypair.pubKey.asContractParam(),
+            )
+        } catch (e) {
+            expect(e.message.endsWith('MACI: the sign-up period is not over')).toBeTruthy()
+        }
+    })
+
+    it('The empty message tree should have the correct root', async () => {
+        const root = maciState.genMessageRoot()
+        const root2 = await maciContract.getMessageTreeRoot()  
+
+        expect(root.toString()).toEqual(root2.toString())
     })
 
     it('A message tree with several messages should have the correct root', async () => {

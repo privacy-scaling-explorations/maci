@@ -141,8 +141,6 @@ class MaciState {
     public signUp = (
         _pubKey: PubKey,
         _initialVoiceCreditBalance: BigInt,
-        _message: Message,
-        _encPubKey: PubKey,
     ) => {
 
         // Note that we do not insert a state leaf to any state tree here. This
@@ -157,8 +155,6 @@ class MaciState {
                 BigInt(0),
             )
         )
-
-        this.publishMessage(_message, _encPubKey)
     }
 
     /*
