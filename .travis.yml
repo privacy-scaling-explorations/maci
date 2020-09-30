@@ -10,12 +10,12 @@ install:
   - ./circuits/scripts/installZkutil.sh
 
 script:
-  - ./contracts/scripts/compileSol.sh
   - cd crypto && npm run test
   - cd ../domainobjs && npm run test
   - cd ../core && npm run test
   - cd ../circuits && npm run buildBatchUpdateStateTreeSnark && npm run buildQuadVoteTallySnark
   # - ./scripts/buildSnarksSmall.sh
   - ./scripts/runTestsInCircleCi.sh
-  - cd ../contracts && ./scripts/runTestsInCircleCi.sh
+  - cd ../contracts && ./scripts/compileSol.sh
+  - ./scripts/runTestsInCircleCi.sh
   - cd ../integrationTests && ./scripts/runTestsInCircleCi.sh
