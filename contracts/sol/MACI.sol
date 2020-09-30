@@ -315,13 +315,10 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         Message memory _message,
         PubKey memory _encPubKey
     ) 
-    isAfterSignUpDeadline
     isBeforeVotingDeadline
     public {
 
         require(numMessages < maxMessages, "MACI: message limit reached");
-
-        require(numSignUps > 0, "MACI: nobody signed up");
 
         // When this function is called for the first time, set
         // postSignUpStateRoot to the last known state root.
