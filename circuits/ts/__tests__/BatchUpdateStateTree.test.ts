@@ -51,8 +51,6 @@ describe('State tree root update verification circuit', () => {
                 'prod/batchUpdateStateTree_small.circom'
         )
 
-        // Sign up the user
-        maciState.signUp(user.pubKey, initialVoiceCreditBalance)
     })
 
     it('BatchUpdateStateTree should produce the correct state root from a partially filled batch', async () => {
@@ -70,7 +68,8 @@ describe('State tree root update verification circuit', () => {
         const sharedKey = Keypair.genEcdhSharedKey(user.privKey, coordinator.pubKey)
         const message = command.encrypt(signature, sharedKey)
 
-        maciState.publishMessage(message, user.pubKey)
+        // Sign up and publish
+        maciState.signUp(user.pubKey, initialVoiceCreditBalance, message, user.pubKey)
 
         const randomStateLeaf = StateLeaf.genRandomLeaf()
 

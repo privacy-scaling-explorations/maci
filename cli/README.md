@@ -130,6 +130,14 @@ Fields that the user has to set:
 | Prompt for the user's Ethereum private key | `-dp` or `--prompt-for-eth-privkey` | If specified, ignores `-d / --eth-privkey` and prompts the user to input their Ethereum private key |
 | Signup gatekeeper proxy data | `-s` or `--sg-data` | A hex string to pass to the sign-up gatekeeper proxy contract which may use it to determine whether to allow the user to sign up. Default: an empty bytestring. |
 | Initial voice credit proxy data | `-v` or `--ivcp-data` | A hex string to pass to the initial voice credit proxy contract which may use it to determine how many voice credits to assign to the user. Default: an empty bytestring. |
+| The user's MACI private key | `-sk` or `--pubkey` | This should not be an Ethereum private key |
+| Prompt for the user's MACI private key | `-dsk` or `--prompt-for-maci-privkey` | If specified, ignores `-sk / --privkey` and prompts the user to input thier MACI private key |
+| State index | `-pi` or `--state-index` | The state index of the user |
+| The user's new or current MACI public key | `-pp` or `--pubkey` | This should be a serialised BabyJub public key which should replace the user\'s public key in the state tree if the command is valid|
+| Vote option index | `-pv` or `--vote-option-index` | The index of the option to vote for |
+| New vote weight | `-pw` or `--new-vote-weight` | The vote weight to assign to said vote option |
+| Nonce | `-pn` or `--nonce` | The nonce of the message |
+| Salt | `-ps` or `--salt` | The salt of the message. If unspecified, this command will randomly generate a salt |
 
 ### User: Change key / vote
 
@@ -141,10 +149,10 @@ Fields that the user has to set:
 |-|-|-|
 | Ethereum provider | `-e` or `--eth-provider` | A connection string to the Ethereum provider. Default: `http://localhost:8545` |
 | MACI contract address | `-x` or `--contract` | The address of the deployed MACI contract |
-| The user's MACI private key | `-sk` or `--pubkey` | This should not be an Ethereum private key |
-| Prompt for the user's MACI private key | `-dsk` or `--prompt-for-maci-privkey` | If specified, ignores `-sk / --privkey` and prompts the user to input thier MACI private key |
 | User's Ethereum private key | `-d` or `--eth-privkey` | A private key of the Ethereum account to use to perform the transaction |
 | Prompt for the user's Ethereum private key | `-dp` or `--prompt-for-eth-privkey` | If specified, ignores `-d / --eth-privkey` and prompts the user to input their Ethereum private key |
+| The user's MACI private key | `-sk` or `--pubkey` | This should not be an Ethereum private key |
+| Prompt for the user's MACI private key | `-dsk` or `--prompt-for-maci-privkey` | If specified, ignores `-sk / --privkey` and prompts the user to input thier MACI private key |
 | State index | `-i` or `--state-index` | The state index of the user |
 | The user's new or current MACI public key | `-p` or `--pubkey` | This should be a serialised BabyJub public key which should replace the user\'s public key in the state tree if the command is valid|
 | Vote option index | `-v` or `--vote-option-index` | The index of the option to vote for |
