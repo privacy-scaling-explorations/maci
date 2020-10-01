@@ -27,7 +27,24 @@ npm run build
 ```
 
 For development purposes, you can generate the proving and verifying keys for
-the zk-SNARK circuits, along with their Solidity verifier contracts as such:
+the zk-SNARK circuits, along with their Solidity verifier contracts as such.
+
+Install Rust:
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+Also install [`zkutil`](https://github.com/poma/zkutil) v0.2.1 and ensure that
+the `zkutil` binary is in the `~/.cargo/bin/` directory. You can configure the
+path to this binary via `maci-config` (see `config/test.yaml` for an example).
+
+```bash
+cargo install zkutil --version 0.3.2 &&
+zkutil --help
+```
+
+Build the zk-SNARKs and generate their proving and verifying keys:
 
 ```bash
 cd circuits

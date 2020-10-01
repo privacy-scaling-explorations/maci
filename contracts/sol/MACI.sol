@@ -108,7 +108,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
     TreeDepths public treeDepths;
 
-    bool internal allMessagesProcessed = false;
+    bool public hasUnprocessedMessages = true;
 
     // Events
     event SignUp(
@@ -417,10 +417,6 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         return publicSignals;
     }
 
-    function hasUnprocessedMessages() public view returns (bool) {
-        return allMessagesProcessed == false;
-    }
-
     /*
      * Update the postSignupStateRoot if the batch update state root proof is
      * valid.
@@ -440,7 +436,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
     public {
         // Ensure that the current batch index is within range
         require(
-            hasUnprocessedMessages(),
+            hasUnprocessedMessages,
             "MACI: no more messages left to process"
         );
         
@@ -496,7 +492,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         // Increase the message batch start index to ensure that each message
         // batch is processed in order
         if (currentMessageBatchIndex == 0) {
-            allMessagesProcessed = true;
+            hasUnprocessedMessages = false;
         } else {
             currentMessageBatchIndex -= messageBatchSize;
         }
