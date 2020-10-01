@@ -380,22 +380,6 @@ describe('signup and publish CLI subcommands', () => {
             expect(output).toEqual('Error: the state index must be greater than 0\n')
         })
 
-        it('should reject an invalid state index', async () => {
-            const publishCommand = `node ../cli/build/index.js publish` +
-                ` -sk ${userKeypair.privKey.serialize()}` +
-                ` -p ${userKeypair.pubKey.serialize()}` +
-                ` -d ${userPrivKey}` +
-                ` -x ${maciAddress}` +
-                ` -i 999` +
-                ` -v ${voteOptionIndex}` +
-                ` -w ${newVoteWeight}` +
-                ` -n ${nonce}` +
-                ` -s ${salt}`
-
-            const output = exec(publishCommand).stderr
-            expect(output).toEqual('Error: the state index is invalid\n')
-        })
-
         it('should reject a negative vote option index', async () => {
             const publishCommand = `node ../cli/build/index.js publish` +
                 ` -sk ${userKeypair.privKey.serialize()}` +
