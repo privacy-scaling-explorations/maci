@@ -255,7 +255,9 @@ describe('process, tally, and prove CLI subcommands', () => {
             expect(regMatch).toBeTruthy()
 
             const messageIndexAfter = await maciContract.currentMessageBatchIndex()
-            expect((messageIndexAfter - messageIndexBefore).toString()).toEqual(messageBatchSize.toString())
+
+            expect(messageIndexBefore.toString()).toEqual('0')
+            expect(messageIndexAfter.toString()).toEqual('0')
 
             randomLeaf = StateLeaf.unserialize(regMatch[2])
         })
