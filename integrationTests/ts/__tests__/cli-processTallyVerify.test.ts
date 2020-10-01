@@ -319,8 +319,6 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -pvc 0x0000000000000000000000000000000000000000` +
                 ` -tvc 0x0000000000000000000000000000000000000000`
 
-            debugger
-
             console.log(tallyCommand)
 
             const e = exec(tallyCommand)
