@@ -146,6 +146,7 @@ const genProofAndPublicSignals = async (
     const snarkjsCmd = 'node ' + path.join(__dirname, '../node_modules/snarkjs/build/cli.cjs')
     const witnessCmd = `${snarkjsCmd} wc ${circuitWasmPath} ${inputJsonPath} ${witnessPath}`
 
+    shell.config.fatal = true
     shell.exec(witnessCmd)
 
     const witnessJsonCmd = `${snarkjsCmd} wej ${witnessPath} ${witnessJsonPath}`

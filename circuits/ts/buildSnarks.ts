@@ -117,6 +117,7 @@ const main = () => {
 
     // Set memory options for node
     shell.env['NODE_OPTIONS'] = '--max-old-space-size=4096'
+    shell.config.fatal = true
 
     // Check if the circuitOut file exists and if we should not override files
     const circuitOutFileExists = fileExists(circuitOut)
