@@ -116,14 +116,28 @@ const genMaciStateFromContract = async (
     const postSignUpStateRoot = await maciContract.postSignUpStateRoot()
     const currentMessageBatchIndex = Number((await maciContract.currentMessageBatchIndex()).toString())
     const messageBatchSize = Number((await maciContract.messageBatchSize()).toString())
-    const maxMessageBatchIndex = Math.floor(maciState.messages.length / messageBatchSize) * messageBatchSize
+    const maxMessageBatchIndex = (1 + Math.floor(maciState.messages.length / messageBatchSize)) * messageBatchSize
 
-    for (let i = currentMessageBatchIndex; i > currentMessageBatchIndex; i -= messageBatchSize) {
-        maciState.batchProcessMessage(
-            i,
-            messageBatchSize,
-            zerothLeaf,
-        )
+    const hasUnprocessedMessages = await maciContract.hasUnprocessedMessages()
+
+    // Process messages up to the latest batch (in reverse order)
+    if (hasUnprocessedMessages) {
+        for (let i = currentMessageBatchIndex; i > currentMessageBatchIndex; i -= messageBatchSize) {
+            maciState.batchProcessMessage(
+                i,
+                messageBatchSize,
+                zerothLeaf,
+            )
+        }
+    } else {
+        // Process all messages (in reverse order)
+        for (let i = maxMessageBatchIndex; i > 0; i -= messageBatchSize) {
+            maciState.batchProcessMessage(
+                i - messageBatchSize,
+                messageBatchSize,
+                zerothLeaf,
+            )
+        }
     }
 
     if (maciState.genStateRoot().toString(16) !== BigInt(postSignUpStateRoot).toString(16)) {
