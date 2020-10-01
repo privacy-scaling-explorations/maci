@@ -204,13 +204,15 @@ Fields to set:
 This section contains a sequence of commands which will be useful for a live
 demonstration. They simulate the following scenario:
 
-1. Alice votes for Party A
-2. Alice changes her key
-3. Eve tries to bribe Alice to change her vote to Party B
-4. Alice submits an invalid vote for Party B
+1. Eve tries to bribe Alice to vote for Party B
+1. Alice votes for Party B (`m0`)
+2. Alice changes her key (`m1`)
+4. Alice submits a vote for Party A (`m2`)
 5. The coordinator processes the votes and computes the final tally
 6. The expected result is: Party A has 1 vote and Party B has 0 votes. Alice’s
    invalid vote was not counted, and Eve had no way to tell.
+
+Note that since messages are processed in reverse order, message `m0` will be rendered invalid by `m1`.
 
 **Coordinator: create keypair**
 
@@ -276,7 +278,7 @@ Transaction hash: 0x3cd2e6e805b54a6dfaff840dcf496092447400a1b26ba9f3c31bd78c3fe1
 State index: 1
 ```
 
-**Alice: vote for party A**
+**Alice: vote for party B**
 
 ```
 node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
@@ -285,7 +287,7 @@ node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241
 	-sk macisk.53c8bc722a9f9d4c7bd478c8c8b01177f82d9c68d1ce15078e93ea84f198644 \
 	-p macipk.40270618e1797c4969587eb04d7f3e9b39a91ecbbdf7d3c998d8e34d08e11c86 \
 	-i 1 \
-	-v 0 \
+	-v 1 \
 	-w 9 \
 	-n 1
 ```
@@ -314,7 +316,7 @@ Please store your private key in a safe place and do not reveal it to anyone.
 
 **Alice: change key**
 
-```
+```sh
 node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-e http://localhost:8545 \
 	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
@@ -323,7 +325,7 @@ node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241
 	-i 1 \
 	-v 0 \
 	-w 9 \
-	-n 2
+	-n 1
 ```
 
 Example output:
@@ -333,18 +335,18 @@ Transaction hash: 0x812dc6345e2515bced4f15e7ca3842d3d343c22f6729fe3216b946fa97bf
 Ephemeral private key: macisk.24115d8d585b7dd8f7ea1975668b3d4f34dcf8b1bcc6617bdefbed7e41b89846
 ```
 
-**Alice: vote for party B with old key**
+**Alice: vote for party A**
 
 ```
 node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-e http://localhost:8545 \
 	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
-	-sk macisk.53c8bc722a9f9d4c7bd478c8c8b01177f82d9c68d1ce15078e93ea84f198644 \
+    -sk macisk.ff3ae0e7855e4c62237e2b7c72de109865f087bd5f792cf4589d3cdc495d8f2 \
 	-p macipk.40270618e1797c4969587eb04d7f3e9b39a91ecbbdf7d3c998d8e34d08e11c86 \
 	-i 1 \
 	-v 1 \
 	-w 9 \
-	-n 3
+	-n 2
 ```
 
 Example output:
@@ -355,6 +357,7 @@ Ephemeral private key: macisk.2b23e978301d029e46117ef0138f860e277ffed0f008712f3d
 ```
 
 **Coordinator: process all messages** 
+
 ```
 NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js process \
     -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
