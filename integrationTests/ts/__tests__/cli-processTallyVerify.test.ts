@@ -126,9 +126,6 @@ describe('process, tally, and prove CLI subcommands', () => {
             provider,
         )
 
-        // Wait for the signup period to pass
-        await delay(1000 * signupDuration)
-
         // This command is to vote for option 0 with 9*9 voice credits and to
         // change the user's public key
         const stateIndex = 1

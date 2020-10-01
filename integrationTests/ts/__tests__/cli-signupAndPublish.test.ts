@@ -260,9 +260,6 @@ describe('signup and publish CLI subcommands', () => {
                 BigInt(coordinatorPubKeyOnChain.y.toString()),
             ])
 
-            // Wait for the signup period to pass
-            await delay(1000 * signupDuration)
-
             // Run the publish command
             const publishCommand = `node ../cli/build/index.js publish` +
                 ` -sk ${userKeypair.privKey.serialize()}` +
