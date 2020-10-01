@@ -35,8 +35,8 @@ Install Rust:
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
-Also install [`zkutil`](https://github.com/poma/zkutil) v0.2.1 and ensure that
-the `zkutil` binary is in the `~/.cargo/bin/` directory. You can configure the
+Also install [`zkutil`](https://github.com/poma/zkutil) v0.3.2 and ensure that
+the `zkutil` binary is in the `~/.cargo/bin/` directory. You can [configure](https://lorenwest.github.io/node-config/) the
 path to this binary via `maci-config` (see `config/test.yaml` for an example).
 
 ```bash
