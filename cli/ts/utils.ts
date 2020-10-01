@@ -114,10 +114,11 @@ const genMaciStateFromContract = async (
     // Process the messages so that the users array is up to date with the
     // contract's state tree
     const postSignUpStateRoot = await maciContract.postSignUpStateRoot()
-    const currentMessageBatchIndex = (await maciContract.currentMessageBatchIndex())
-    const messageBatchSize = (await maciContract.messageBatchSize())
+    const currentMessageBatchIndex = Number((await maciContract.currentMessageBatchIndex()).toString())
+    const messageBatchSize = Number((await maciContract.messageBatchSize()).toString())
+    const maxMessageBatchIndex = Math.floor(maciState.messages.length / messageBatchSize) * messageBatchSize
 
-    for (let i = 0; i < currentMessageBatchIndex; i += messageBatchSize) {
+    for (let i = currentMessageBatchIndex; i > currentMessageBatchIndex; i -= messageBatchSize) {
         maciState.batchProcessMessage(
             i,
             messageBatchSize,

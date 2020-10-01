@@ -108,6 +108,8 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
     TreeDepths public treeDepths;
 
+    bool internal allMessagesProcessed = false;
+
     // Events
     event SignUp(
         PubKey _userPubKey,
@@ -341,6 +343,8 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         // Insert the new leaf into the message tree
         messageTree.insertLeaf(leaf);
 
+        currentMessageBatchIndex = (numMessages / messageBatchSize) * messageBatchSize;
+
         numMessages ++;
 
         emit PublishMessage(_message, _encPubKey);
@@ -414,7 +418,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
     }
 
     function hasUnprocessedMessages() public view returns (bool) {
-        return currentMessageBatchIndex < numMessages;
+        return allMessagesProcessed == false;
     }
 
     /*
@@ -491,7 +495,11 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
         // Increase the message batch start index to ensure that each message
         // batch is processed in order
-        currentMessageBatchIndex += messageBatchSize;
+        if (currentMessageBatchIndex == 0) {
+            allMessagesProcessed = true;
+        } else {
+            currentMessageBatchIndex -= messageBatchSize;
+        }
 
         // Update the state root
         postSignUpStateRoot = _newStateRoot;

@@ -266,13 +266,6 @@ const publish = async (args: any) => {
         wallet,
     )
 
-    // Validate the state index against the number of signups on-chain
-    const numSignUps = (await maciContract.numSignUps()).toNumber()
-    if (numSignUps < stateIndex) {
-        console.error('Error: the state index is invalid')
-        return
-    }
-
     // Validate the vote option index against the max leaf index on-chain
     const maxVoteOptions = (await maciContract.voteOptionsMaxLeafIndex()).toNumber()
     if (maxVoteOptions < voteOptionIndex) {

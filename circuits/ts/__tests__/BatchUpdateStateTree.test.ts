@@ -228,7 +228,8 @@ describe('State tree root update verification circuit', () => {
 
         let numAssertions = 0
 
-        for (let i = 0; i < maciState.messages.length; i += batchSize) {
+        const x = Math.floor(maciState.messages.length / batchSize) 
+        for (let i = x * batchSize; i >= 0; i -= batchSize) {
             const circuitInputs = 
                 maciState.genBatchUpdateStateTreeCircuitInputs(
                     i,

@@ -150,7 +150,7 @@ const executeSuite = async (data: any, expect: any) => {
         }
 
         const userKeypair = userKeypairs[data.commands[i].user]
-        const stateIndex = i + 1
+        const stateIndex = data.commands[i].user + 1
         const voteOptionIndex = data.commands[i].voteOptionIndex
         const newVoteWeight  = data.commands[i].voteWeight
         const nonce = data.commands[i].nonce
@@ -244,9 +244,10 @@ const executeSuite = async (data: any, expect: any) => {
 
     // Check whether it has processed all batches
     const processedIndexNum = parseInt(processRegMatch[1], 10)
-    const currentMessageBatchIndex = await maciContract.currentMessageBatchIndex()
+    expect(processedIndexNum.toString()).toEqual('0')
 
-    expect((processedIndexNum + messageBatchSize).toString()).toEqual(currentMessageBatchIndex.toString())
+    const currentMessageBatchIndex = await maciContract.currentMessageBatchIndex()
+    expect(currentMessageBatchIndex.toString()).toEqual('0')
 
     const randomLeaf = StateLeaf.unserialize(processRegMatch[3])
 
