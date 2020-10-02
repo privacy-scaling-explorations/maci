@@ -16,12 +16,12 @@
         "argparse": "^1.0.10",
         "ethers": "^4.0.45",
         "libsemaphore": "^1.0.5",
-        "maci-circuits": "^0.3.1",
-        "maci-config": "^0.3.1",
-        "maci-contracts": "^0.3.1",
-        "maci-core": "^0.3.1",
-        "maci-crypto": "^0.3.1",
-        "maci-domainobjs": "^0.3.1",
+        "maci-circuits": "^0.3.2",
+        "maci-config": "^0.3.2",
+        "maci-contracts": "^0.3.2",
+        "maci-core": "^0.3.2",
+        "maci-crypto": "^0.3.2",
+        "maci-domainobjs": "^0.3.2",
         "prompt-async": "^0.9.9"
     },
     "devDependencies": {
