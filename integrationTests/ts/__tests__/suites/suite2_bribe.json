@@ -1,6 +1,6 @@
 {
-    "name": "Happy path",
-    "description": "Quarter tree, 1 batch, 1 briber",
+    "name": "Reverse processing",
+    "description": "Quarter tree, 2 batches, 1 briber",
     "numUsers": 3,
     "commands": [
         {
@@ -20,9 +20,21 @@
             "voteOptionIndex": 2,
             "voteWeight": 1,
             "nonce": 1
+        },
+        {
+            "user": 1,
+            "voteOptionIndex": 4,
+            "voteWeight": 0,
+            "nonce": 2
+        },
+        {
+            "user": 1,
+            "voteOptionIndex": 4,
+            "voteWeight": 1,
+            "nonce": 1
         }
     ],
-    "expectedTally": [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    "expectedSpentVoiceCredits": [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "expectedTally": [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "expectedSpentVoiceCredits": [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "expectedTotalSpentVoiceCredits": 2
 }

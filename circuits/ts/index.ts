@@ -1,13 +1,15 @@
 import * as fs from 'fs'
 import * as path from 'path'
 const circom = require('circom')
-const snarkjs = require('snarkjs')
 import * as shell from 'shelljs'
 
 import {
     stringifyBigInts,
     unstringifyBigInts,
 } from 'maci-crypto'
+
+import { config } from 'maci-config'
+const zkutilPath = config.zkutil_bin
 
 /*
  * @param circuitPath The subpath to the circuit file (e.g.
@@ -57,16 +59,19 @@ const genBatchUstProofAndPublicSignals = (
 ) => {
 
     let circuitPath
+    let circuitR1csPath
     let wasmPath
-    let zkeyPath
+    let paramsPath
     if (configType === 'test') {
         circuitPath = 'test/batchUpdateStateTree_test.circom'
+        circuitR1csPath = 'batchUstCircuit.r1cs'
         wasmPath = 'batchUst.wasm'
-        zkeyPath = 'batchUst.zkey'
+        paramsPath = 'batchUst.params'
     } else if (configType === 'prod-small') {
         circuitPath = 'prod/batchUpdateStateTree_small.circom'
+        circuitR1csPath = 'batchUstSmall.r1cs'
         wasmPath = 'batchUstSmall.wasm'
-        zkeyPath = 'batchUstSmall.zkey'
+        paramsPath = 'batchUstSmall.params'
     } else {
         throw new Error('Only test and prod-small circuits are supported')
     }
@@ -74,8 +79,9 @@ const genBatchUstProofAndPublicSignals = (
     return genProofAndPublicSignals(
         inputs,
         circuitPath,
+        circuitR1csPath,
         wasmPath,
-        zkeyPath,
+        paramsPath,
         circuit,
     )
 }
@@ -86,26 +92,29 @@ const genQvtProofAndPublicSignals = (
     circuit?: any,
 ) => {
     let circuitPath
+    let circuitR1csPath
     let wasmPath
-    let zkeyPath
+    let paramsPath
     if (configType === 'test') {
         circuitPath = 'test/quadVoteTally_test.circom'
+        circuitR1csPath = 'qvtCircuit.r1cs'
         wasmPath = 'qvt.wasm'
-        zkeyPath = 'qvt.zkey'
+        paramsPath = 'qvt.params'
     } else if (configType === 'prod-small') {
         circuitPath = 'prod/quadVoteTally_small.circom'
+        circuitR1csPath = 'qvtSmallCircuit.r1cs'
         wasmPath = 'qvtSmall.wasm'
-        zkeyPath = 'qvtSmall.zkey'
+        paramsPath = 'qvtSmall.params'
     } else {
         throw new Error('Only test and prod-small circuits are supported')
     }
 
-
     return genProofAndPublicSignals(
         inputs,
         circuitPath,
+        circuitR1csPath,
         wasmPath,
-        zkeyPath,
+        paramsPath,
         circuit,
     )
 }
@@ -113,12 +122,14 @@ const genQvtProofAndPublicSignals = (
 const genProofAndPublicSignals = async (
     inputs: any,
     circuitFilename: string,
+    circuitR1csFilename: string,
     circuitWasmFilename: string,
-    zkeyFilename: string,
+    paramsFilename: string,
     circuit?: any,
 ) => {
     const date = Date.now()
-    const zkeyPath = path.join(__dirname, '../build/', zkeyFilename)
+    const paramsPath = path.join(__dirname, '../build/', paramsFilename)
+    const circuitR1csPath = path.join(__dirname, '../build/', circuitR1csFilename)
     const circuitWasmPath = path.join(__dirname, '../build/', circuitWasmFilename)
     const inputJsonPath = path.join(__dirname, '../build/' + date + '.input.json')
     const witnessPath = path.join(__dirname, '../build/' + date + '.witness.wtns')
@@ -135,12 +146,13 @@ const genProofAndPublicSignals = async (
     const snarkjsCmd = 'node ' + path.join(__dirname, '../node_modules/snarkjs/build/cli.cjs')
     const witnessCmd = `${snarkjsCmd} wc ${circuitWasmPath} ${inputJsonPath} ${witnessPath}`
 
+    shell.config.fatal = true
     shell.exec(witnessCmd)
 
     const witnessJsonCmd = `${snarkjsCmd} wej ${witnessPath} ${witnessJsonPath}`
     shell.exec(witnessJsonCmd)
 
-    const proveCmd = `${snarkjsCmd} g16p ${zkeyPath} ${witnessPath} ${proofPath} ${publicJsonPath}`
+    const proveCmd = `${zkutilPath} prove -c ${circuitR1csPath} -p ${paramsPath} -w ${witnessJsonPath} -r ${proofPath} -o ${publicJsonPath}`
 
     shell.exec(proveCmd)
 
@@ -160,14 +172,21 @@ const genProofAndPublicSignals = async (
 }
 
 const verifyProof = async (
-    vkFilename: string,
-    proof: any,
-    publicSignals: any,
+    paramsFilename: string,
+    proofFilename: string,
+    publicSignalsFilename: string,
 ): Promise<boolean> => {
-    const vkFilepath = path.join(__dirname, '../build/', vkFilename)
-    const vk = JSON.parse(fs.readFileSync(vkFilepath).toString())
+    const paramsPath = path.join(__dirname, '../build/', paramsFilename)
+    const proofPath = path.join(__dirname, '../build/', proofFilename)
+    const publicSignalsPath = path.join(__dirname, '../build/', publicSignalsFilename)
 
-    return await snarkjs.groth16.verify(vk, publicSignals, proof)
+    const verifyCmd = `${zkutilPath} verify -p ${paramsPath} -r ${proofPath} -i ${publicSignalsPath}`
+    const output = shell.exec(verifyCmd).stdout.trim()
+
+    shell.rm('-f', proofPath)
+    shell.rm('-f', publicSignalsPath)
+
+    return output === 'Proof is correct'
 }
 
 const verifyBatchUstProof = (
@@ -175,14 +194,36 @@ const verifyBatchUstProof = (
     publicSignals: any,
     configType: string,
 ) => {
-    let vkPath
+    const date = Date.now().toString()
+    let paramsFilename
+    let proofFilename
+    let publicSignalsFilename
+
     if (configType === 'test') {
-        vkPath = 'batchUstVk.json'
+        paramsFilename = 'batchUst.params'
+        proofFilename = `${date}.batchUst.proof.json`
+        publicSignalsFilename = `${date}.batchUst.publicSignals.json`
     } else if (configType === 'prod-small') {
-        vkPath = 'batchUstVkSmall.json'
+        paramsFilename = 'batchUstSmall.params'
+        proofFilename = `${date}.batchUstSmall.proof.json`
+        publicSignalsFilename = `${date}.batchUstSmall.publicSignals.json`
     }
 
-    return verifyProof(vkPath, proof, publicSignals)
+    fs.writeFileSync(
+        path.join(__dirname, '../build/', proofFilename),
+        JSON.stringify(
+            stringifyBigInts(proof)
+        )
+    )
+
+    fs.writeFileSync(
+        path.join(__dirname, '../build/', publicSignalsFilename),
+        JSON.stringify(
+            stringifyBigInts(publicSignals)
+        )
+    )
+
+    return verifyProof(paramsFilename, proofFilename, publicSignalsFilename)
 }
 
 const verifyQvtProof = (
@@ -190,16 +231,38 @@ const verifyQvtProof = (
     publicSignals: any,
     configType: string,
 ) => {
-    let vkPath
+    const date = Date.now().toString()
+    let paramsFilename
+    let proofFilename
+    let publicSignalsFilename
+
     if (configType === 'test') {
-        vkPath = 'qvtVk.json'
+        paramsFilename = 'qvt.params'
+        proofFilename = `${date}.qvt.proof.json`
+        publicSignalsFilename = `${date}.qvt.publicSignals.json`
     } else if (configType === 'prod-small') {
-        vkPath = 'qvtVkSmall.json'
+        paramsFilename = 'qvtSmall.params'
+        proofFilename = `${date}.qvtSmall.proof.json`
+        publicSignalsFilename = `${date}.qvtSmall.publicSignals.json`
     }
 
-    return verifyProof(vkPath, proof, publicSignals)
-}
+    // TODO: refactor
+    fs.writeFileSync(
+        path.join(__dirname, '../build/', proofFilename),
+        JSON.stringify(
+            stringifyBigInts(proof)
+        )
+    )
 
+    fs.writeFileSync(
+        path.join(__dirname, '../build/', publicSignalsFilename),
+        JSON.stringify(
+            stringifyBigInts(publicSignals)
+        )
+    )
+
+    return verifyProof(paramsFilename, proofFilename, publicSignalsFilename)
+}
 
 export {
     compileAndLoadCircuit,

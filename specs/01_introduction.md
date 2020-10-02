@@ -66,7 +66,7 @@ Refer to the [Glossary](#Glossary) for defintions of terms.
     
     - Generate a new state root which is the result of:
 
-        - For each valid command, update the state leaf accordingly
+        - For each valid command, in reverse order, update the state leaf accordingly
 
         - Ignore all invalid commands
 

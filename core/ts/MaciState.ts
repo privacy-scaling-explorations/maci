@@ -267,10 +267,10 @@ class MaciState {
         assert(this.messages.length > _index)
 
         for (let i = 0; i < _batchSize; i++) {
-            const messageIndex = _index + i;
+            const messageIndex = _index + _batchSize - i - 1;
 
-            if (this.messages.length === messageIndex) {
-                break
+            if (this.messages.length <= messageIndex) {
+                continue
             }
 
             this.processMessage(messageIndex)
@@ -396,6 +396,9 @@ class MaciState {
                 messageIndices.push(clonedMaciState.messages.length - 1)
             }
         }
+
+        // process the messages in reverse order
+        messageIndices.reverse()
 
         let messageIndex
         for (let i = 0; i < _batchSize; i++) {

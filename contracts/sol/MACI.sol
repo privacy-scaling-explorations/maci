@@ -23,7 +23,7 @@ interface SnarkVerifier {
 contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
     // A nothing-up-my-sleeve zero value
-    // Should be equal to 5503045433092194285660061905880311622788666850989422096966288514930349325741
+    // Should be equal to 8370432830353022751713833565135785980866757267633941821328460903436894336785
     uint256 ZERO_VALUE = uint256(keccak256(abi.encodePacked('Maci'))) % SNARK_SCALAR_FIELD;
 
     // Verifier Contracts
@@ -107,6 +107,8 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
     uint256 public numMessages = 0;
 
     TreeDepths public treeDepths;
+
+    bool public hasUnprocessedMessages = true;
 
     // Events
     event SignUp(
@@ -315,13 +317,10 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         Message memory _message,
         PubKey memory _encPubKey
     ) 
-    isAfterSignUpDeadline
     isBeforeVotingDeadline
     public {
 
         require(numMessages < maxMessages, "MACI: message limit reached");
-
-        require(numSignUps > 0, "MACI: nobody signed up");
 
         // When this function is called for the first time, set
         // postSignUpStateRoot to the last known state root.
@@ -343,6 +342,8 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
         // Insert the new leaf into the message tree
         messageTree.insertLeaf(leaf);
+
+        currentMessageBatchIndex = (numMessages / messageBatchSize) * messageBatchSize;
 
         numMessages ++;
 
@@ -416,10 +417,6 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         return publicSignals;
     }
 
-    function hasUnprocessedMessages() public view returns (bool) {
-        return currentMessageBatchIndex < numMessages;
-    }
-
     /*
      * Update the postSignupStateRoot if the batch update state root proof is
      * valid.
@@ -439,7 +436,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
     public {
         // Ensure that the current batch index is within range
         require(
-            hasUnprocessedMessages(),
+            hasUnprocessedMessages,
             "MACI: no more messages left to process"
         );
         
@@ -494,7 +491,11 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
         // Increase the message batch start index to ensure that each message
         // batch is processed in order
-        currentMessageBatchIndex += messageBatchSize;
+        if (currentMessageBatchIndex == 0) {
+            hasUnprocessedMessages = false;
+        } else {
+            currentMessageBatchIndex -= messageBatchSize;
+        }
 
         // Update the state root
         postSignUpStateRoot = _newStateRoot;

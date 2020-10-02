@@ -3,6 +3,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as shell from 'shelljs'
 
+import { config } from 'maci-config'
 import { genSnarkVerifierSol } from './genVerifier'
 
 const fileExists = (filepath: string): boolean => {
@@ -13,7 +14,7 @@ const fileExists = (filepath: string): boolean => {
     return inputFileExists
 }
 
-const PTAU_URL = 'https://www.dropbox.com/s/kg4rnjdosnluuhq/pot19_final.ptau?dl=1'
+const zkutilPath = config.zkutil_bin
 
 const main = () => {
     const parser = new argparse.ArgumentParser({ 
@@ -55,7 +56,7 @@ const main = () => {
     parser.addArgument(
         ['-p', '--pk-out'],
         {
-            help: 'The filepath to save the proving key (as a .bin file)',
+            help: 'The filepath to save the proving key (as a .json file)',
             required: true
         }
     )
@@ -87,9 +88,9 @@ const main = () => {
     )
 
     parser.addArgument(
-        ['-z', '--zkey-out'],
+        ['-pr', '--params-out'],
         {
-            help: 'The filepath to save the zkey file',
+            help: 'The filepath to save the params file',
             required: true
         }
     )
@@ -102,7 +103,8 @@ const main = () => {
     const circuitOut = args.r1cs_out
     const wasmOut = args.wasm_out
     const verifierName = args.verifier_name
-    const zkeyOut = args.zkey_out
+    const paramsOut = args.params_out
+    const pkOut = args.pk_out
 
     // Check if the input circom file exists
     const inputFileExists = fileExists(inputFile)
@@ -115,6 +117,7 @@ const main = () => {
 
     // Set memory options for node
     shell.env['NODE_OPTIONS'] = '--max-old-space-size=4096'
+    shell.config.fatal = true
 
     // Check if the circuitOut file exists and if we should not override files
     const circuitOutFileExists = fileExists(circuitOut)
@@ -124,43 +127,21 @@ const main = () => {
     } else {
         console.log(`Compiling ${inputFile}...`)
         // Compile the .circom file
-        shell.exec(`node ./node_modules/circom/cli.js ${inputFile} -r ${circuitOut} -w ${wasmOut} -v`)
+        shell.exec(`node ./node_modules/circom/cli.js ${inputFile} -r ${circuitOut} -w ${wasmOut}`)
         console.log('Generated', circuitOut, 'and', wasmOut)
     }
 
-    const ptauPath = path.join(__dirname, '../build/pot19_final.ptau')
-
-    console.log('Downloading the .ptau file')
-    const dlCmd = `wget -nc -q -O ${ptauPath} ${PTAU_URL}`
-    shell.exec(dlCmd)
-
-    const snarkjsPath = path.join(
-        __dirname,
-        '..',
-        './node_modules/snarkjs/build/cli.cjs',
-    )
-
-    const zkeyFileExists = fileExists(zkeyOut)
-
-    // Generate the zkey file
-    if (!override && zkeyFileExists) {
-        console.log('zkey file exists. Skipping setup.')
+    const paramsFileExists = fileExists(paramsOut)
+    if (!override && paramsFileExists) {
+        console.log('params file exists. Skipping setup.')
     } else {
-        console.log('Generating zkey file...')
-        shell.exec(`node ${snarkjsPath} zkey new -v ${circuitOut} ${ptauPath} ${zkeyOut}`)
+        console.log('Generating params file...')
+        shell.exec(`${zkutilPath} setup -c ${circuitOut} -p ${paramsOut}`)
     }
 
     console.log('Exporting verification key...')
-
-    shell.exec(`node ${snarkjsPath} zkev ${zkeyOut} ${vkOut}`)
-
-    // snarkjs has a bug where it writes to `verification_key.json` even if you
-    // specify a path for the verification key
-    const badVkPath = path.join(__dirname, '../verification_key.json')
-    if (fs.existsSync(badVkPath)) {
-        shell.exec(`mv ${badVkPath} ${vkOut}`)
-    }
-    console.log(`Generated ${zkeyOut} and ${vkOut}`)
+    shell.exec(`${zkutilPath} export-keys -c ${circuitOut} -p ${paramsOut} -r ${pkOut} -v ${vkOut}`)
+    console.log(`Generated ${pkOut} and ${vkOut}`)
 
     console.log('Generating Solidity verifier...')
 

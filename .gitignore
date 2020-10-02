@@ -24,9 +24,8 @@ public.json
 proof.json
 circuit.json
 input.json
-
-app/circuits/*
-app/contracts/*
+*.proof.json
+*.publicSignals.json
 
 .vscode/
 

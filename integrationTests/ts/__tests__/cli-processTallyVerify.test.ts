@@ -126,9 +126,6 @@ describe('process, tally, and prove CLI subcommands', () => {
             provider,
         )
 
-        // Wait for the signup period to pass
-        await delay(1000 * signupDuration)
-
         // This command is to vote for option 0 with 9*9 voice credits and to
         // change the user's public key
         const stateIndex = 1
@@ -258,7 +255,9 @@ describe('process, tally, and prove CLI subcommands', () => {
             expect(regMatch).toBeTruthy()
 
             const messageIndexAfter = await maciContract.currentMessageBatchIndex()
-            expect((messageIndexAfter - messageIndexBefore).toString()).toEqual(messageBatchSize.toString())
+
+            expect(messageIndexBefore.toString()).toEqual('0')
+            expect(messageIndexAfter.toString()).toEqual('0')
 
             randomLeaf = StateLeaf.unserialize(regMatch[2])
         })
@@ -319,8 +318,6 @@ describe('process, tally, and prove CLI subcommands', () => {
                 ` -c 0x0000000000000000000000000000000000000000` +
                 ` -pvc 0x0000000000000000000000000000000000000000` +
                 ` -tvc 0x0000000000000000000000000000000000000000`
-
-            debugger
 
             console.log(tallyCommand)
 

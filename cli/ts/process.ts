@@ -207,6 +207,7 @@ const processMessages = async (args: any): Promise<string | undefined> => {
     while (true) {
         randomStateLeaf = StateLeaf.genRandomLeaf()
         const messageBatchIndex = await maciContract.currentMessageBatchIndex()
+
         const circuitInputs = maciState.genBatchUpdateStateTreeCircuitInputs(
             messageBatchIndex.toNumber(),
             messageBatchSize,
