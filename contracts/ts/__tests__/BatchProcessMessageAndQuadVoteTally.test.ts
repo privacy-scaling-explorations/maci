@@ -53,7 +53,7 @@ const voteOptionTreeDepth = config.maci.merkleTrees.voteOptionTreeDepth
 const voteOptionsMaxIndex = config.maci.voteOptionsMaxLeafIndex
 const quadVoteTallyBatchSize = config.maci.quadVoteTallyBatchSize
 
-const accounts = genTestAccounts(batchSize - 1)
+const accounts = genTestAccounts(batchSize)
 const deployer = genDeployer(accounts[0].privateKey)
 
 const coordinator = new Keypair(new PrivKey(BigInt(config.maci.coordinatorPrivKey)))
@@ -203,6 +203,7 @@ describe('BatchProcessMessage', () => {
                     batchSize,
                     randomStateLeaf,
                 )
+            console.log('Number of messages:', maciState.messages.length)
 
             // Process the batch of messages
             maciState.batchProcessMessage(
