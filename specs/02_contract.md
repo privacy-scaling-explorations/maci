@@ -149,19 +149,39 @@ A useful rule of thumb is that the coordinator -- not the user --  should provid
 
 ### About nonces
 
-The first valid message that a user submits should have a nonce of `1`. The nonce of subsequent messages now depends on whether the user is bribed and has to reveal their vote to the briber.
+Messages are processed in reverse order of being published. This has important implications for the way that nonces should be set.
 
-In the case that a user is not bribed, nonces are simply incremental.
+The last valid message per user should have a nonce of `1`. Each valid message that comes before it should have an increasing nonce.
 
-If a user is bribed against their will, however, they should set the nonce to whatever is necessary to fool the briber. For instance, a user with EdDSA key `Kb` who had previously submitted this message:
+`0` and negative values are invalid nonces.
 
-`{key = Kb, vote = A, nonce = 1}`
+For example, Alice publishes 5 messages, all of which vote for the same option:
 
-could encrypt and submit this invalid message:
+a. Nonce: 2; vote weight: 10
+b. Nonce: 1; vote weight: 20
+c. Nonce: 3; vote weight: 10
+d. Nonce: 2; vote weight: 1
+e. Nonce: 1; vote weight: 0
 
-`{key = Ka, vote = B, nonce = 1}`
+Since messages are processed in reverse order, messages (e), (d), and (c) are valid, but (b) and (a) are not. As such, her option receives 10 votes.
 
-where `Ka` is an invalid key. When the user decrypts this message and reveals it to the briber, the briber not only has no way to tell if this message is valid, they also have no reason to think that the user had not previously submitted valid messages, as the nonce is `1`.
+(b) is invalid because at the point at which it is processed, the latest nonce is 3, but (b) gives a nonce of (2). The same applies for (a), whose nonce has been seen before.
+
+Take another example, where Eve bribes Bob to vote for option 1, but Bob wants to vote for option 2 instead.
+
+a. Nonce: 1; vote weight: 10; option: 1
+b. Nonce: 1; vote weight: 10; option: 2
+
+Bob casts vote (a) and shows it to Eve. Later, he secretly casts (c). Since (c) is processed first, it makes (a) invalid, but Eve has no way to tell.
+
+If a user changes their mind, they may have to cast new votes to invalidate their old ones: 
+
+a) Nonce: 2; vote weight: 10; option: 1
+b) Nonce: 1; vote weight: 10; option: 2
+c) Nonce: 2; vote weight: 5; option: 1
+d) Nonce: 1; vote weight: 5; option: 1
+
+In the above example, if a user changes their mind after casting vote (b), they have to start over.
 
 ## Message verification
 
