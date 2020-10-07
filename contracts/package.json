@@ -38,6 +38,7 @@
     "devDependencies": {
         "@types/jest": "^24.0.25",
         "@types/node": "^13.1.2",
+        "web3": "^1.2.11",
         "ganache-cli": "^6.7.0",
         "jest": "^24.9.0",
         "maci-circuits": "^1.0.0",
