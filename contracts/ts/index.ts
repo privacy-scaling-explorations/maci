@@ -7,7 +7,7 @@ import {
     deployConstantInitialVoiceCreditProxy,
     deployFreeForAllSignUpGatekeeper,
     maciContractAbi,
-    initialVoiceCreditProxyAbi,
+    getInitialVoiceCreditProxyAbi,
     abiDir,
     solDir,
     loadAB,
@@ -36,7 +36,7 @@ export {
     deployFreeForAllSignUpGatekeeper,
     deployConstantInitialVoiceCreditProxy,
     maciContractAbi,
-    initialVoiceCreditProxyAbi,
+    getInitialVoiceCreditProxyAbi,
     formatProofForVerifierContract,
     linkPoseidonContracts,
 }

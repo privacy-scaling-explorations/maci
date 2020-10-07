@@ -36,7 +36,7 @@ describe('Hasher', () => {
 
         // Link Poseidon contracts
         linkPoseidonContracts(
-            ['Hasher.sol'],
+            ['crypto/Hasher.sol'],
             PoseidonT3Contract.address,
             PoseidonT6Contract.address,
         )
