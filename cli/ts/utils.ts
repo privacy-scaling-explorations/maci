@@ -116,7 +116,11 @@ const genMaciStateFromContract = async (
     const postSignUpStateRoot = await maciContract.postSignUpStateRoot()
     const currentMessageBatchIndex = Number((await maciContract.currentMessageBatchIndex()).toString())
     const messageBatchSize = Number((await maciContract.messageBatchSize()).toString())
-    const maxMessageBatchIndex = (1 + Math.floor(maciState.messages.length / messageBatchSize)) * messageBatchSize
+    const numMessages = maciState.messages.length
+    const maxMessageBatchIndex = numMessages % messageBatchSize === 0 ?
+        numMessages
+        :
+        (1 + Math.floor(numMessages / messageBatchSize)) * messageBatchSize
 
     const hasUnprocessedMessages = await maciContract.hasUnprocessedMessages()
 
