@@ -40,7 +40,6 @@
         "@types/node": "^13.1.2",
         "ganache-cli": "^6.7.0",
         "jest": "^24.9.0",
-        "libsemaphore": "^1.0.5",
         "maci-circuits": "^0.3.2",
         "maci-config": "^0.3.2",
         "maci-core": "^0.3.2",
