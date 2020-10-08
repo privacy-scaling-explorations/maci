@@ -34,7 +34,7 @@ const getInitialVoiceCreditProxyAbi = () => {
     return loadAbi('InitialVoiceCreditProxy.abi')
 }
 
-const linkPoseidonContracts = (
+const linkPoseidonLibraries = (
     solFilesToLink: string[],
     poseidonT3Address,
     poseidonT6Address,
@@ -57,7 +57,6 @@ const linkPoseidonContracts = (
         + ` --libraries ${poseidonPath}:PoseidonT3:${poseidonT3Address}`
         + ` --libraries ${poseidonPath}:PoseidonT6:${poseidonT6Address}`
 
-    console.log(linkCmd)
     shell.exec(linkCmd)
 }
 
@@ -254,7 +253,7 @@ const deployMaci = async (
     const maxMessages = (BigInt(2 ** messageTreeDepth) - BigInt(1)).toString()
 
     // Link Poseidon contracts to MACI
-    linkPoseidonContracts(['MACI.sol'], PoseidonT3Contract.address, PoseidonT6Contract.address)
+    linkPoseidonLibraries(['MACI.sol'], PoseidonT3Contract.address, PoseidonT6Contract.address)
 
     const [ MACIAbi, MACIBin ] = loadAB('MACI')
 
@@ -415,5 +414,5 @@ export {
     loadAB,
     loadAbi,
     loadBin,
-    linkPoseidonContracts,
+    linkPoseidonLibraries,
 }

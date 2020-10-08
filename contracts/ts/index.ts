@@ -13,7 +13,7 @@ import {
     loadAB,
     loadAbi,
     loadBin,
-    linkPoseidonContracts,
+    linkPoseidonLibraries,
 } from './deploy'
 
 import { formatProofForVerifierContract } from './utils'
@@ -38,5 +38,5 @@ export {
     maciContractAbi,
     getInitialVoiceCreditProxyAbi,
     formatProofForVerifierContract,
-    linkPoseidonContracts,
+    linkPoseidonLibraries,
 }

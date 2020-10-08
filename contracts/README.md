@@ -19,7 +19,7 @@ class of functions:
 
 * **`DomainObjs.sol`**
 
-    - Defines `struct`s which represent domain objects.
+    - Defines `struct`s that represent domain objects.
 
 * **`External.sol`**
 
