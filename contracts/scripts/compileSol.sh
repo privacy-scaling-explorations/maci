@@ -16,9 +16,11 @@ paths="$(pwd)/sol/,$(pwd)/node_modules/@openzeppelin/"
 oz_map="@openzeppelin/=$(pwd)/node_modules/@openzeppelin/"
 
 echo 'Building contracts'
-$solcBin $oz_map -o ./compiled ./sol/*.sol --overwrite --optimize --bin --abi --bin-runtime --allow-paths=$paths
-$solcBin $oz_map -o ./compiled ./sol/**/*.sol --overwrite --optimize --bin --abi --bin-runtime --allow-paths=$paths
-#$solcBin $oz_map -o ./compiled ./sol/**/**/*.sol --overwrite --optimize --bin --abi --bin-runtime --allow-paths=$paths
+$solcBin $oz_map -o ./compiled \
+    ./sol/*.sol \
+    ./sol/**/*.sol \
+    ./sol/**/**/*.sol \
+    --overwrite --optimize --bin --abi --bin-runtime --allow-paths=$paths
 
 # Build the Poseidon contract from bytecode
 node build/buildPoseidon.js
