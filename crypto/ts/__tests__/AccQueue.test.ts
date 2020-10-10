@@ -80,7 +80,7 @@ describe('AccQueue', () => {
             it('Filling an empty subtree should create the correct subroot', () => {
                 const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
                 const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
-                aq.fillLastSubtree()
+                aq.fillLastSubTree()
                 expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
             })
 
@@ -92,7 +92,7 @@ describe('AccQueue', () => {
                 aq.enqueue(leaf)
                 tree.insert(leaf)
 
-                aq.fillLastSubtree()
+                aq.fillLastSubTree()
 
                 expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
             })
@@ -103,15 +103,15 @@ describe('AccQueue', () => {
 
                 // Create the first subtree with one leaf
                 aq.enqueue(leaf)
-                aq.fillLastSubtree()
+                aq.fillLastSubTree()
                 
                 // Fill the second subtree with zeros
-                aq.fillLastSubtree()
+                aq.fillLastSubTree()
                 const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
                 expect(aq.getSubRoot(1).toString()).toEqual(tree.root.toString())
             })
 
-            it('fillLastSubtree() should be correct for every number of leaves in an incomplete subtree', () => {
+            it('fillLastSubTree() should be correct for every number of leaves in an incomplete subtree', () => {
                 const capacity = HASH_LENGTH ** SUB_DEPTH
                 for (let i = 1; i < capacity - 1; i ++) {
                     const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
@@ -121,7 +121,7 @@ describe('AccQueue', () => {
                         aq.enqueue(leaf)
                         tree.insert(leaf)
                     }
-                    aq.fillLastSubtree()
+                    aq.fillLastSubTree()
 
                     expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
                 }
@@ -142,12 +142,12 @@ describe('AccQueue', () => {
                 aq.enqueue(leaf)
                 tree.insert(leaf)
 
-                aq.fillLastSubtree()
+                aq.fillLastSubTree()
 
                 expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
             })
 
-            it('fillLastSubtree() should be correct for every number of leaves in an incomplete subtree', () => {
+            it('fillLastSubTree() should be correct for every number of leaves in an incomplete subtree', () => {
                 const capacity = HASH_LENGTH ** SUB_DEPTH
                 for (let i = 1; i < capacity - 1; i ++) {
                     const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
@@ -157,7 +157,7 @@ describe('AccQueue', () => {
                         aq.enqueue(leaf)
                         tree.insert(leaf)
                     }
-                    aq.fillLastSubtree()
+                    aq.fillLastSubTree()
 
                     expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
                 }

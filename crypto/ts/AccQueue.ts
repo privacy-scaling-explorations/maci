@@ -160,10 +160,10 @@ class AccQueue {
     }
 
     /*
-     * Fills any empty leaves of the last subtree with zeros and store the
+     * Fill any empty leaves of the last subtree with zeros and store the
      * resulting subroot.
      */
-    public fillLastSubtree() {
+    public fillLastSubTree() {
         // The total capacity of the subtree
         const subTreeCapacity = this.hashLength ** this.subDepth
 
@@ -171,21 +171,14 @@ class AccQueue {
             // If the subtree is completely empty, then the subroot is a
             // precalculated zero value
             this.subRoots[this.currentSubtreeIndex] = this.zeros[this.subDepth]
-            this.currentSubtreeIndex ++
 
         } else {
 
             // Recurse
-            this._fillLastSubtree(0)
+            this._fillLastSubTree(0)
 
             // Store the subroot
             this.subRoots[this.currentSubtreeIndex] = this.levels[this.subDepth][0]
-
-            // Update the subtree index
-            this.currentSubtreeIndex ++
-
-            // Update the number of leaves
-            this.numLeaves = BigInt(this.currentSubtreeIndex) * BigInt(subTreeCapacity)
 
             // Blank out the subtree data
             for (let i = 0; i < this.subDepth + 1; i ++) {
@@ -196,9 +189,16 @@ class AccQueue {
                 }
             }
         }
+
+        // Update the subtree index
+        this.currentSubtreeIndex ++
+
+        // Update the number of leaves
+        this.numLeaves = BigInt(this.currentSubtreeIndex) * BigInt(subTreeCapacity)
+
     }
 
-    private _fillLastSubtree(_level: number) {
+    private _fillLastSubTree(_level: number) {
         if (_level > this.subDepth) {
             return
         }
@@ -227,7 +227,8 @@ class AccQueue {
             this.nextIndexPerLevel[_level] = 0
         }
 
-        this._fillLastSubtree(_level + 1)
+        // Recurse
+        this._fillLastSubTree(_level + 1)
     }
 
     /*  
