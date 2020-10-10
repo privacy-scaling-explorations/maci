@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.7.2;
 
-contract MerkleQuinaryMaci {
-    uint256[33] public zeroes;
+abstract contract MerkleZeroes {
+    uint256[33] internal zeroes;
 
+    // Quinary tree zeroes (Keccack hash of 'Maci')
     constructor() {
         zeroes[0] = uint256(8370432830353022751713833565135785980866757267633941821328460903436894336785);
         zeroes[1] = uint256(12870344859288254819458525815912596827440323243568958650932054310464019135959);

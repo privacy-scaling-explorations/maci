@@ -12,6 +12,7 @@ const genZeroesContract = (
     zeroVal: BigInt,
     hashLength: number,
     numZeroes: number,
+    comment: string,
 ): string => {
 
     assert(hashLength === 2 || hashLength === 5)
@@ -46,6 +47,7 @@ const genZeroesContract = (
         .replace('<% CONTRACT_NAME %>', contractName)
         .replace('<% NUM_ZEROES %>', numZeroes.toString())
         .replace('<% ZEROES %>', '        ' + z.trim())
+        .replace('<% COMMENT %>', comment)
     
     return generated
 }
@@ -56,8 +58,9 @@ if (require.main === module) {
     const zero = BigInt(process.argv[3])
     const hashLength = Number(process.argv[4])
     const numZeroes = Number(process.argv[5])
+    const comment = process.argv[6]
 
-    const generated = genZeroesContract(contractName, zero, hashLength, numZeroes)
+    const generated = genZeroesContract(contractName, zero, hashLength, numZeroes, comment)
     console.log(generated)
 }
 

@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.7.2;
 
-contract MerkleBinary0 {
-    uint256[33] public zeroes;
+abstract contract MerkleZeroes {
+    uint256[33] internal zeroes;
 
+    // Binary tree zeroes (0)
     constructor() {
         zeroes[0] = uint256(0);
         zeroes[1] = uint256(10600974484483636649191836183331859514454108476826376357941356292578099372400);

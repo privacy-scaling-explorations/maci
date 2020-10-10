@@ -16,6 +16,7 @@ paths="$(pwd)/sol/,$(pwd)/node_modules/@openzeppelin/"
 oz_map="@openzeppelin/=$(pwd)/node_modules/@openzeppelin/"
 
 echo 'Building contracts'
+# TODO: remove --bin-runtime ?
 $solcBin $oz_map -o ./compiled \
     ./sol/*.sol \
     ./sol/**/*.sol \

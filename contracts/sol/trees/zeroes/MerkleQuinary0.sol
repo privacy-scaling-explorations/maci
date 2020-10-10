@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.7.2;
 
-contract MerkleQuinary0 {
-    uint256[33] public zeroes;
+abstract contract MerkleZeroes {
+    uint256[33] internal zeroes;
 
+    // Quinary tree zeroes (0)
     constructor() {
         zeroes[0] = uint256(0);
         zeroes[1] = uint256(12036198275706807881768388503153916199324944408588777784968603341550536111199);
