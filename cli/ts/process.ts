@@ -281,8 +281,8 @@ const processMessages = async (args: any): Promise<string | undefined> => {
             break
         }
 
-        const postSignUpStateRoot = await maciContract.postSignUpStateRoot()
-        if (postSignUpStateRoot.toString() !== stateRootAfter.toString()) {
+        const stateRoot = await maciContract.stateRoot()
+        if (stateRoot.toString() !== stateRootAfter.toString()) {
             console.error('Error: state root mismatch after processing a batch of messges')
             return
         }

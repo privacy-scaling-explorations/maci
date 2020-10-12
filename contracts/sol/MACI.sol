@@ -46,11 +46,10 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
     // The tree that tracks each user's public key and votes
     IncrementalMerkleTree public stateTree;
 
-    // The Merkle root of the state tree after the sign-up period.
+    // The Merkle root of the state tree after each signup. Note that
     // publishMessage() will not update the state tree. Rather, it will
-    // directly update postSignUpStateRoot if given a valid proof and public
-    // signals.
-    uint256 public postSignUpStateRoot;
+    // directly update stateRoot if given a valid proof and public signals.
+    uint256 public stateRoot;
 
     // To store the Merkle root of a tree with 5 **
     // _treeDepths.voteOptionTreeDepth leaves of value 0
@@ -296,7 +295,11 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
         uint256 hashedLeaf = hashStateLeaf(stateLeaf);
 
+        // Insert the leaf
         stateTree.insertLeaf(hashedLeaf);
+
+        // Update a copy of the state tree root
+        stateRoot = getStateTreeRoot();
 
         numSignUps ++;
 
@@ -321,21 +324,6 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
     public {
 
         require(numMessages < maxMessages, "MACI: message limit reached");
-
-        // When this function is called for the first time, set
-        // postSignUpStateRoot to the last known state root.
-        // We do so as the batchProcessMessage function can only update the
-        // state root as a variable and has no way to use
-        // IncrementalQuinTree.insertLeaf() anyway.
-        if (postSignUpStateRoot == 0) {
-            // It is exceedingly improbable that the zero value is a tree root
-            assert(postSignUpStateRoot != stateTree.root());
-
-            postSignUpStateRoot = stateTree.root();
-
-            // This is exceedingly unlikely to occur
-            assert(postSignUpStateRoot != 0);
-        }
 
         // Calculate leaf value
         uint256 leaf = hashMessage(_message);
@@ -418,7 +406,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
     }
 
     /*
-     * Update the postSignupStateRoot if the batch update state root proof is
+     * Update the stateRoot if the batch update state root proof is
      * valid.
      * @param _newStateRoot The new state root after all messages are processed
      * @param _stateTreeRoots The intermediate state roots
@@ -498,7 +486,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         }
 
         // Update the state root
-        postSignUpStateRoot = _newStateRoot;
+        stateRoot = _newStateRoot;
     }
 
     /*
@@ -519,7 +507,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         publicSignals[1] = _newSpentVoiceCreditsCommitment;
         publicSignals[2] = _newPerVOSpentVoiceCreditsCommitment;
         publicSignals[3] = _totalVotes;
-        publicSignals[4] = postSignUpStateRoot;
+        publicSignals[4] = stateRoot;
         publicSignals[5] = currentQvtBatchNum;
         publicSignals[6] = _intermediateStateRoot;
         publicSignals[7] = currentResultsCommitment;
