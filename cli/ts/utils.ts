@@ -113,7 +113,6 @@ const genMaciStateFromContract = async (
 
     // Process the messages so that the users array is up to date with the
     // contract's state tree
-    const postSignUpStateRoot = await maciContract.postSignUpStateRoot()
     const currentMessageBatchIndex = Number((await maciContract.currentMessageBatchIndex()).toString())
     const messageBatchSize = Number((await maciContract.messageBatchSize()).toString())
     const numMessages = maciState.messages.length
@@ -142,10 +141,6 @@ const genMaciStateFromContract = async (
                 zerothLeaf,
             )
         }
-    }
-
-    if (maciState.genStateRoot().toString(16) !== BigInt(postSignUpStateRoot).toString(16)) {
-        throw new Error('Error: could not correctly process messages to recreate the state')
     }
 
     return maciState

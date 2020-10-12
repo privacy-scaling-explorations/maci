@@ -53,7 +53,7 @@ const voteOptionTreeDepth = config.maci.merkleTrees.voteOptionTreeDepth
 const voteOptionsMaxIndex = config.maci.voteOptionsMaxLeafIndex
 const quadVoteTallyBatchSize = config.maci.quadVoteTallyBatchSize
 
-const accounts = genTestAccounts(batchSize - 1)
+const accounts = genTestAccounts(batchSize - 2)
 const deployer = genDeployer(accounts[0].privateKey)
 
 const coordinator = new Keypair(new PrivKey(BigInt(config.maci.coordinatorPrivKey)))
@@ -154,9 +154,6 @@ describe('BatchProcessMessage', () => {
 
     describe('Publish messages', () => {
         it('The message root should be correct after publishing one message per user', async () => {
-            // Move forward in time
-            await timeTravel(deployer.provider, config.maci.signUpDurationInSeconds + 1)
-
             stateRootBefore = maciState.genStateRoot()
 
             for (const user of users) {
@@ -175,6 +172,22 @@ describe('BatchProcessMessage', () => {
             const offChainMessageRoot = maciState.genMessageRoot().toString()
             expect(onChainMessageRoot).toEqual(offChainMessageRoot)
         })
+
+        it('Sign up after publishing', async () => {
+            const keypair = new Keypair()
+            maciState.signUp(
+                keypair.pubKey, 
+                BigInt(config.maci.initialVoiceCreditBalance),
+            )
+
+            const tx = await maciContract.signUp(
+                keypair.pubKey.asContractParam(),
+                ethers.utils.defaultAbiCoder.encode(['uint256'], [1]),
+                ethers.utils.defaultAbiCoder.encode(['uint256'], [0]),
+                { gasLimit: 2000000 },
+            )
+            await tx.wait()
+        })
     })
 
     describe('Process messages', () => {
@@ -191,8 +204,9 @@ describe('BatchProcessMessage', () => {
             expect((await maciContract.emptyVoteOptionTreeRoot()).toString()).toEqual(emptyVoteOptionTreeRoot.toString())
         })
 
-        it('batchProcessMessage should verify a proof and update the postSignUpStateRoot', async () => {
+        it('batchProcessMessage should verify a proof and update the stateRoot', async () => {
             // Move forward in time
+            await timeTravel(deployer.provider, config.maci.signUpDurationInSeconds + 1)
             await timeTravel(deployer.provider, config.maci.votingDurationInSeconds + 1)
 
             const randomStateLeaf = StateLeaf.genRandomLeaf()
@@ -262,8 +276,8 @@ describe('BatchProcessMessage', () => {
             const receipt = await tx.wait()
             expect(receipt.status).toEqual(1)
 
-            const postSignUpStateRoot = await maciContract.postSignUpStateRoot()
-            expect(postSignUpStateRoot.toString()).toEqual(stateRootAfter.toString())
+            const stateRoot = await maciContract.stateRoot()
+            expect(stateRoot.toString()).toEqual(stateRootAfter.toString())
         })
     })
 
