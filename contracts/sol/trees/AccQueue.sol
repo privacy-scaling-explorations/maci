@@ -3,16 +3,10 @@ pragma solidity ^0.7.2;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { PoseidonT3, PoseidonT6, Hasher } from "../crypto/Hasher.sol";
-import { MerkleZeroes as MerkleBinary0 } from "./zeroes/MerkleBinary0.sol";
-import { MerkleZeroes as MerkleBinaryMaci } from "./zeroes/MerkleBinaryMaci.sol";
-import { MerkleZeroes as MerkleQuinary0 } from "./zeroes/MerkleQuinary0.sol";
-import { MerkleZeroes as MerkleQuinaryMaci } from "./zeroes/MerkleQuinaryMaci.sol";
-
-//contract AccQueueBinary0 is AccQueueBinary, MerkleBinary0 {}
-//contract AccQueueBinaryMaci is AccQueueBinary, MerkleBinaryMaci {}
-
-//contract AccQueueQuinary0 is AccQueueQuinary, MerkleQuinary0 {}
-//contract AccQueueQuinaryMaci is AccQueueQuinary, MerkleQuinaryMaci {}
+import { MerkleZeros as MerkleBinary0 } from "./zeros/MerkleBinary0.sol";
+import { MerkleZeros as MerkleBinaryMaci } from "./zeros/MerkleBinaryMaci.sol";
+import { MerkleZeros as MerkleQuinary0 } from "./zeros/MerkleQuinary0.sol";
+import { MerkleZeros as MerkleQuinaryMaci } from "./zeros/MerkleQuinaryMaci.sol";
 
 /*
  * This contract defines a Merkle tree where each leaf insertion only updates a
@@ -48,6 +42,18 @@ abstract contract AccQueue is Ownable, Hasher {
 
     // Subtree roots
     uint256[MAX_DEPTH + 1] internal subRoots;
+
+    // Merged roots
+    uint256[MAX_DEPTH] internal mainRoots;
+
+    // Whether the subtrees have been merged
+    bool public subTreesMerged;
+
+    // The root of the shortest possible tree which fits all subtree roots
+    uint256 internal smallSRTroot;
+
+    uint256[4][MAX_DEPTH + 1] internal queuedSRTlevels;
+    uint256 internal nextSRindexToQueue;
 
     // True hashLength == 2, false if hashLength == 5
     bool internal isBinary;
@@ -104,6 +110,8 @@ abstract contract AccQueue is Ownable, Hasher {
     function enqueue(uint256 _leaf) public {
         queue(_leaf, 0);
         numLeaves ++;
+        delete mainRoots;
+        delete smallSRTroot;
 
         uint256 subTreeCapacity = hashLength ** subDepth;
         if (numLeaves % subTreeCapacity == 0) {
@@ -164,6 +172,7 @@ abstract contract AccQueue is Ownable, Hasher {
 
             // Blank out the subtree data
             for (uint8 i = 0; i < subDepth + 1; i ++) {
+                // TODO: test if `delete levels[i]` is sufficient
                 if (isBinary) {
                     delete levels[i][0];
                 } else {
@@ -173,6 +182,9 @@ abstract contract AccQueue is Ownable, Hasher {
                     delete levels[i][3];
                 }
             }
+
+            // Blank out the merged roots
+            delete mainRoots;
         }
 
         // Update the subtree index
@@ -180,6 +192,8 @@ abstract contract AccQueue is Ownable, Hasher {
 
         // Update the number of leaves
         numLeaves = currentSubtreeIndex * subTreeCapacity;
+
+        delete smallSRTroot;
     }
 
     function fillRecurse(uint256 _level) internal {
@@ -217,15 +231,117 @@ abstract contract AccQueue is Ownable, Hasher {
     }
 
     /*
-     * Merge all subtrees to form the shortest possible main tree.
+     * Calculate the lowest possible height of a tree with all the subroots
+     * merged together
      */
-    function merge() public onlyOwner {
+    function calcMinHeight() public view returns (uint256) {
+        uint256 n = currentSubtreeIndex;
+        uint256 minHeight = subDepth;
+        while(true) {
+            if (n == 0) {
+                break;
+            }
+            n /= hashLength;
+            minHeight ++;
+        }
+        return minHeight;
     }
 
     /*
-     * Merge all subtrees to form a main tree with a desired depth
+     * Merge all subtrees to form the shortest possible tree.
      */
-    function merge(uint256 _mainTreeDepth) public onlyOwner {
+    function mergeSubRootsIntoShortestTree(
+        uint256 _numSrQueueOps
+    ) public onlyOwner {
+        // This function can only be called once unless a new subtree is created
+        require(subTreesMerged == false, "AccQueue: subtrees already merged");
+
+        // There must be subtrees to merge
+        require(numLeaves > 0, "AccQueue: nothing to merge");
+
+        // Fill any empty leaves in the last subtree with zeros
+        if (numLeaves % (hashLength ** subDepth) > 0) {
+            this.fillLastSubTree();
+        }
+
+        // If there is only 1 subtree, use its root
+        if (currentSubtreeIndex == 1) {
+            smallSRTroot = getSubRoot(0);
+            return;
+        }
+
+        uint256 depth = calcMinHeight();
+
+        uint256 numQueueOps = 0;
+        for (uint256 i = nextSRindexToQueue; i < currentSubtreeIndex; i ++) {
+            // Stop if the limit has been reached
+            if (_numSrQueueOps != 0 && numQueueOps == _numSrQueueOps) {
+                return;
+            }
+
+            // Queue the next subroot
+            queueSubRoot(
+                getSubRoot(nextSRindexToQueue),
+                0,
+                depth - subDepth
+            );
+
+            // Increment the next subroot counter
+            nextSRindexToQueue ++;
+            numQueueOps ++;
+        }
+
+        uint256 m = hashLength ** (depth - subDepth);
+
+        if (nextSRindexToQueue == currentSubtreeIndex) {
+            for (uint256 i = currentSubtreeIndex; i < m; i ++) {
+                queueSubRoot(
+                    getZero(depth - subDepth),
+                    0,
+                    depth - subDepth
+                );
+            }
+
+            // Store the smallest main root
+            smallSRTroot = queuedSRTlevels[depth - subDepth][0];
+            subTreesMerged = true;
+        }
+    }
+
+    function queueSubRoot(uint256 _leaf, uint256 _level, uint256 _maxDepth) internal {
+    }
+
+    ///*
+     //* Merge all subtrees to form a main tree with a desired depth
+     //*/
+    //function merge(uint256 _depth) public onlyOwner {
+        //require(
+            //_depth ** hashLength >= numLeaves,
+            //"AccQueue: merge: _depth must be high enough"
+        //);
+
+        //fillLastSubTree();
+
+        //mergeRecurse(_depth, 0);
+    //}
+
+
+    function getSmallSRTroot() public view returns (uint256) {
+        require(subTreesMerged, "AccQueue: subtrees must be merged first");
+        return smallSRTroot;
+    }
+
+    /*
+     * Return the merged Merkle root of all the leaves at a desired depth.
+     * merge() or merged(_depth) must be called first.
+     */
+    function getMergedRoot(uint256 _depth) public view returns (uint256) {
+        require(
+            _depth ** hashLength >= numLeaves,
+            "AccQueue: getMergedRoot: _depth must be high enough"
+        );
+
+        return mainRoots[_depth];
     }
 }
 
@@ -268,20 +384,20 @@ abstract contract AccQueueQuinary is AccQueue {
 
 contract AccQueueBinary0 is AccQueueBinary, MerkleBinary0 {
     constructor(uint256 _subDepth) AccQueueBinary(_subDepth) {}
-    function getZero(uint256 _level) internal view override returns (uint256) { return zeroes[_level]; }
+    function getZero(uint256 _level) internal view override returns (uint256) { return zeros[_level]; }
 }
 
 contract AccQueueBinaryMaci is AccQueueBinary, MerkleBinaryMaci {
     constructor(uint256 _subDepth) AccQueueBinary(_subDepth) {}
-    function getZero(uint256 _level) internal view override returns (uint256) { return zeroes[_level]; }
+    function getZero(uint256 _level) internal view override returns (uint256) { return zeros[_level]; }
 }
 
 contract AccQueueQuinary0 is AccQueueQuinary, MerkleQuinary0 {
     constructor(uint256 _subDepth) AccQueueQuinary(_subDepth) {}
-    function getZero(uint256 _level) internal view override returns (uint256) { return zeroes[_level]; }
+    function getZero(uint256 _level) internal view override returns (uint256) { return zeros[_level]; }
 }
 
 contract AccQueueQuinaryMaci is AccQueueQuinary, MerkleQuinaryMaci {
     constructor(uint256 _subDepth) AccQueueQuinary(_subDepth) {}
-    function getZero(uint256 _level) internal view override returns (uint256) { return zeroes[_level]; }
+    function getZero(uint256 _level) internal view override returns (uint256) { return zeros[_level]; }
 }

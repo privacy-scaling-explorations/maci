@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.7.2;
 
-abstract contract MerkleZeroes {
-    uint256[<% NUM_ZEROES %>] internal zeroes;
+abstract contract MerkleZeros {
+    uint256[<% NUM_ZEROS %>] internal zeros;
 
     // <% COMMENT %>
     constructor() {
-<% ZEROES %>
+<% ZEROS %>
     }
 }
