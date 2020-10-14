@@ -74,6 +74,9 @@ class IncrementalQuinTree {
         assert(this.leavesPerNode === 2 || this.leavesPerNode === 5)
 
         this.depth = Number(_depth)
+
+        assert(this.depth > 0)
+
         this.nextIndex = 0
         this.zeroValue = BigInt(_zeroValue)
 
