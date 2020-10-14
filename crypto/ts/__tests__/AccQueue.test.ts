@@ -82,6 +82,9 @@ const testMergeShortest = (
     expect(aq.smallSRTroot.toString()).toEqual(aq2.smallSRTroot.toString())
 }
 
+/*
+ * Insert one leaf, then run mergeSubRootsIntoShortestTree
+ */
 const testMergeShortestOne = (
     SUB_DEPTH: number,
     HASH_LENGTH: number,
@@ -100,6 +103,9 @@ const testMergeShortestOne = (
     expect(aq.getSubRoot(0).toString()).toEqual(smallTree.root.toString())
 }
 
+/*
+ * Create a number of subtrees, and merge them all
+ */
 const testMergeExhaustive = (
     SUB_DEPTH: number,
     HASH_LENGTH: number,

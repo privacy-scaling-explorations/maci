@@ -185,7 +185,7 @@ class AccQueue {
             } else {
                 hashed = this.hashFunc([...this.levels[_level], _leaf])
                 for (let i = 0; i < 4; i ++) {
-                    his.levels[_level][i] = BigInt(0)
+                    this.levels[_level][i] = BigInt(0)
                 }
             }
 

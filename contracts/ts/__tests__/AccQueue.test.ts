@@ -19,6 +19,23 @@ let deployer
 let aqContract
 let PoseidonT3Contract, PoseidonT6Contract
 
+const calcDepthFromNumLeaves = (
+    hashLength: number,
+    numLeaves: number,
+) => {
+    let depth = 1
+    while (true) {
+        const max = hashLength ** depth
+        if (BigInt(max) >= numLeaves) {
+            break
+        }
+        depth ++
+    }
+
+    return depth
+}
+
+
 const testEmptySubtree = async (aq: AccQueue, aqContract: any, index: number) => {
     aq.fillLastSubTree()
     const tx = await aqContract.fillLastSubTree()
@@ -27,6 +44,9 @@ const testEmptySubtree = async (aq: AccQueue, aqContract: any, index: number) =>
     expect(subRoot.toString()).toEqual(aq.getSubRoot(index).toString())
 }
 
+/*
+ * Insert one leaf and compute the subroot
+ */
 const testIncompleteSubtree = async (aq: AccQueue, aqContract: any) => {
     const leaf = BigInt(1)
 
@@ -40,8 +60,14 @@ const testIncompleteSubtree = async (aq: AccQueue, aqContract: any) => {
     expect(subRoot.toString()).toEqual(aq.getSubRoot(1).toString())
 }
 
-const testFillForAllIncompletes = async (aq: AccQueue, aqContract: any) => {
-    for (let i = 0; i < 2; i ++) {
+/*
+ */
+const testFillForAllIncompletes = async (
+    aq: AccQueue,
+    aqContract: any,
+    HASH_LENGTH: number,
+) => {
+    for (let i = 0; i < HASH_LENGTH; i ++) {
         for (let j = 0; j < i; j ++) {
             const leaf = BigInt(i + 1)
             aq.enqueue(leaf)
@@ -63,45 +89,9 @@ const testEmptyUponDeployment = async (aqContract: any) => {
     expect(isSubTreeFull).toBeFalsy()
 }
 
-const deploy = async (
-    contractName: string,
-    SUB_DEPTH: number,
-    HASH_LENGTH: number,
-    ZERO: BigInt,
-) => {
-    deployer = new JSONRPCDeployer(
-        accounts[0].privateKey,
-        config.get('chain.url'),
-        {
-            gasLimit: 8800000,
-        },
-    )
-
-    console.log('Deploying Poseidon') 
-    PoseidonT3Contract = await deployer.deploy(PoseidonT3.abi, PoseidonT3.bytecode, {})
-    PoseidonT6Contract = await deployer.deploy(PoseidonT6.abi, PoseidonT6.bytecode, {})
-
-    // Link Poseidon contracts
-    linkPoseidonLibraries(
-        ['trees/AccQueue.sol'],
-        PoseidonT3Contract.address,
-        PoseidonT6Contract.address,
-    )
-
-    const [ AccQueueAbi, AccQueueBin ] = loadAB(contractName)
-
-    console.log('Deploying AccQueue')
-    aqContract = await deployer.deploy(
-        AccQueueAbi,
-        AccQueueBin,
-        SUB_DEPTH,
-        HASH_LENGTH,
-    )
-
-    const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
-    return { aq, aqContract }
-}
-
+/*
+ * Enqueue leaves and check their subroots
+ */
 const testEnqueue = async (
     aqContract: any,
     HASH_LENGTH: number,
@@ -148,6 +138,9 @@ const testEnqueue = async (
     expect(subroot1.toString()).toEqual(tree1.root.toString())
 }
 
+/*
+ * Insert a number of subtrees and merge them all into a main tree
+ */
 const testMerge = async (
     aq: AccQueue,
     aqContract: any,
@@ -163,7 +156,8 @@ const testMerge = async (
         await (await aqContract.fillLastSubTree()).wait()
     }
     const minHeight = await aqContract.calcMinHeight()
-    expect(minHeight.toString()).toEqual('5')
+    const c = calcDepthFromNumLeaves(aq.hashLength, (aq.hashLength ** aq.subDepth) * NUM_SUBTREES)
+    expect(minHeight.toString()).toEqual(c.toString())
 
     aq.mergeSubRootsIntoShortestTree(0)
     await (await aqContract.mergeSubRootsIntoShortestTree(0)).wait()
@@ -180,6 +174,45 @@ const testMerge = async (
     const contractMainRoot = await aqContract.getMainRoot(MAIN_DEPTH)
 
     expect(expectedMainRoot.toString()).toEqual(contractMainRoot.toString())
+}
+
+const deploy = async (
+    contractName: string,
+    SUB_DEPTH: number,
+    HASH_LENGTH: number,
+    ZERO: BigInt,
+) => {
+    deployer = new JSONRPCDeployer(
+        accounts[0].privateKey,
+        config.get('chain.url'),
+        {
+            gasLimit: 8800000,
+        },
+    )
+
+    console.log('Deploying Poseidon') 
+    PoseidonT3Contract = await deployer.deploy(PoseidonT3.abi, PoseidonT3.bytecode, {})
+    PoseidonT6Contract = await deployer.deploy(PoseidonT6.abi, PoseidonT6.bytecode, {})
+
+    // Link Poseidon contracts
+    linkPoseidonLibraries(
+        ['trees/AccQueue.sol'],
+        PoseidonT3Contract.address,
+        PoseidonT6Contract.address,
+    )
+
+    const [ AccQueueAbi, AccQueueBin ] = loadAB(contractName)
+
+    console.log('Deploying AccQueue')
+    aqContract = await deployer.deploy(
+        AccQueueAbi,
+        AccQueueBin,
+        SUB_DEPTH,
+        HASH_LENGTH,
+    )
+
+    const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
+    return { aq, aqContract }
 }
 
 describe('AccQueues', () => {
@@ -203,10 +236,6 @@ describe('AccQueues', () => {
 
         it(`Should merge ${NUM_SUBTREES} subtrees`, async () => {
             await testMerge(aq, aqContract, NUM_SUBTREES, MAIN_DEPTH)
-        })
-
-        it(`Should merge ${NUM_SUBTREES + 1} subtrees`, async () => {
-            await testMerge(aq, aqContract, NUM_SUBTREES + 1, MAIN_DEPTH)
         })
     })
 
@@ -296,7 +325,7 @@ describe('AccQueues', () => {
         })
 
         it('fillLastSubTree() should be correct for every number of leaves in an incomplete subtree', async () => {
-            await testFillForAllIncompletes(aq, aqContract)
+            await testFillForAllIncompletes(aq, aqContract, HASH_LENGTH)
         })
     })
 
@@ -330,7 +359,7 @@ describe('AccQueues', () => {
         })
 
         it('fillLastSubTree() should be correct for every number of leaves in an incomplete subtree', async () => {
-            await testFillForAllIncompletes(aq, aqContract)
+            await testFillForAllIncompletes(aq, aqContract, HASH_LENGTH)
         })
     })
 
@@ -364,7 +393,7 @@ describe('AccQueues', () => {
         })
 
         it('fillLastSubTree() should be correct for every number of leaves in an incomplete subtree', async () => {
-            await testFillForAllIncompletes(aq, aqContract)
+            await testFillForAllIncompletes(aq, aqContract, HASH_LENGTH)
         })
     })
 
@@ -398,7 +427,7 @@ describe('AccQueues', () => {
         })
 
         it('fillLastSubTree() should be correct for every number of leaves in an incomplete subtree', async () => {
-            await testFillForAllIncompletes(aq, aqContract)
+            await testFillForAllIncompletes(aq, aqContract, HASH_LENGTH)
         })
     })
 
@@ -443,7 +472,7 @@ describe('AccQueues', () => {
     })
 
     describe('Quinary AccQueue enqueues', () => {
-        const SUB_DEPTH = 1
+        const SUB_DEPTH = 2
         const HASH_LENGTH = 5
         const ZERO = BigInt(0)
 

@@ -44,7 +44,7 @@ abstract contract AccQueue is Ownable, Hasher {
     mapping(uint256 => uint256) internal subRoots;
 
     // Merged roots
-    uint256[MAX_DEPTH] internal mainRoots;
+    uint256[MAX_DEPTH + 1] internal mainRoots;
 
     // Whether the subtrees have been merged
     bool public subTreesMerged;
@@ -385,7 +385,7 @@ abstract contract AccQueue is Ownable, Hasher {
      */
     function getMainRoot(uint256 _depth) public view returns (uint256) {
         require(
-            _depth ** hashLength >= numLeaves,
+            hashLength ** _depth >= numLeaves, 
             "AccQueue: getMainRoot: _depth must be high enough"
         );
 
