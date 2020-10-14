@@ -41,7 +41,7 @@ abstract contract AccQueue is Ownable, Hasher {
     uint256[MAX_DEPTH + 1] internal nextIndexPerLevel;
 
     // Subtree roots
-    uint256[MAX_DEPTH + 1] internal subRoots;
+    mapping(uint256 => uint256) internal subRoots;
 
     // Merged roots
     uint256[MAX_DEPTH] internal mainRoots;
@@ -53,6 +53,7 @@ abstract contract AccQueue is Ownable, Hasher {
     uint256 internal smallSRTroot;
 
     uint256[4][MAX_DEPTH + 1] internal queuedSRTlevels;
+    uint256[MAX_DEPTH + 1] internal queuedSRTindex;
     uint256 internal nextSRindexToQueue;
 
     // True hashLength == 2, false if hashLength == 5
@@ -66,7 +67,7 @@ abstract contract AccQueue is Ownable, Hasher {
         uint256 _hashLength
     ) {
         require(
-            _subDepth != 0,
+            _subDepth > 0,
             "AccQueue: the tree depths must be more than 0"
         );
         require(
@@ -235,16 +236,17 @@ abstract contract AccQueue is Ownable, Hasher {
      * merged together
      */
     function calcMinHeight() public view returns (uint256) {
-        uint256 n = currentSubtreeIndex;
-        uint256 minHeight = subDepth;
-        while(true) {
-            if (n == 0) {
+        uint256 depth = subDepth;
+        uint256 max;
+        while (true) {
+            max = hashLength ** depth;
+            if (max >= numLeaves) {
                 break;
             }
-            n /= hashLength;
-            minHeight ++;
+            depth ++;
         }
-        return minHeight;
+
+        return depth;
     }
 
     /*
@@ -260,13 +262,14 @@ abstract contract AccQueue is Ownable, Hasher {
         require(numLeaves > 0, "AccQueue: nothing to merge");
 
         // Fill any empty leaves in the last subtree with zeros
-        if (numLeaves % (hashLength ** subDepth) > 0) {
-            this.fillLastSubTree();
+        if (numLeaves % (hashLength ** subDepth) != 0) {
+            fillLastSubTree();
         }
 
         // If there is only 1 subtree, use its root
         if (currentSubtreeIndex == 1) {
             smallSRTroot = getSubRoot(0);
+            subTreesMerged = true;
             return;
         }
 
@@ -309,21 +312,66 @@ abstract contract AccQueue is Ownable, Hasher {
     }
 
     function queueSubRoot(uint256 _leaf, uint256 _level, uint256 _maxDepth) internal {
+        if (_level > _maxDepth) {
+            return;
+        }
+
+        uint256 n = queuedSRTindex[_level];
+
+        if (n != hashLength - 1) {
+            // Just store the leaf
+            queuedSRTlevels[_level][n] = _leaf;
+            queuedSRTindex[_level] ++;
+        } else {
+            // Hash the elements in this level and queue it in the next level
+            uint256 hashed;
+            if (isBinary) {
+                hashed = hashLeftRight(queuedSRTlevels[_level][0], _leaf);
+            } else {
+                uint256[] memory inputs = new uint256[](5);
+                for (uint8 i = 0; i < n; i ++) {
+                    inputs[i] = queuedSRTlevels[_level][i];
+                }
+                inputs[n] = _leaf;
+                hashed = hash5(inputs);
+            }
+
+            // Recurse
+            queuedSRTindex[_level] = 0;
+            queueSubRoot(hashed, _level + 1, _maxDepth);
+        }
     }
 
-    ///*
-     //* Merge all subtrees to form a main tree with a desired depth
-     //*/
-    //function merge(uint256 _depth) public onlyOwner {
-        //require(
-            //_depth ** hashLength >= numLeaves,
-            //"AccQueue: merge: _depth must be high enough"
-        //);
+    /*
+     * Merge all subtrees to form a main tree with a desired depth
+     */
+    function merge(uint256 _depth) public onlyOwner {
+        require(subTreesMerged == true, "AccQueue: subtrees must be merged before calling merge()");
+        require(_depth >= subDepth, "AccQueue: _depth must be gte subDepth");
+        require(_depth <= MAX_DEPTH, "AccQueue: _depth must be lte MAX_DEPTH");
 
-        //fillLastSubTree();
+        if (_depth == subDepth) {
+            mainRoots[_depth] = smallSRTroot;
+        }
 
-        //mergeRecurse(_depth, 0);
-    //}
+        uint256 root = smallSRTroot;
+        for (uint256 i = subDepth; i < _depth; i ++) {
+            uint256 z = getZero(_depth - i);
+            if (isBinary) {
+                root = hashLeftRight(root, getZero(_depth - i));
+            } else {
+                uint256[] memory inputs = new uint256[](5);
+                inputs[0] = root;
+                inputs[1] = z;
+                inputs[2] = z;
+                inputs[3] = z;
+                inputs[4] = z;
+                root = hash5(inputs);
+            }
+        }
+
+        mainRoots[_depth] = root;
+    }
 
 
     function getSmallSRTroot() public view returns (uint256) {
@@ -335,10 +383,10 @@ abstract contract AccQueue is Ownable, Hasher {
      * Return the merged Merkle root of all the leaves at a desired depth.
      * merge() or merged(_depth) must be called first.
      */
-    function getMergedRoot(uint256 _depth) public view returns (uint256) {
+    function getMainRoot(uint256 _depth) public view returns (uint256) {
         require(
             _depth ** hashLength >= numLeaves,
-            "AccQueue: getMergedRoot: _depth must be high enough"
+            "AccQueue: getMainRoot: _depth must be high enough"
         );
 
         return mainRoots[_depth];

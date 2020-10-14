@@ -40,7 +40,7 @@ const testMerge = (
         }
     }
 
-    aq2.mergeSubRootsIntoShortestTree()
+    aq2.mergeSubRootsIntoShortestTree(0)
     aq2.merge(MAIN_DEPTH)
 
     // For reference only

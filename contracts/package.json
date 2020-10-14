@@ -24,6 +24,8 @@
         "test-hasher-debug": "node --inspect-brk ./node_modules/.bin/jest Hasher.test.ts",
         "test-accQueue": "jest AccQueue.test.ts",
         "test-accQueue-debug": "node --inspect-brk ./node_modules/.bin/jest AccQueue.test.ts",
+        "test-accQueueBenchmark": "jest AccQueueBenchmark.test.ts",
+        "test-accQueueBenchmark-debug": "node --inspect-brk ./node_modules/.bin/jest AccQueueBenchmark.test.ts",
         "test-verifyTally": "jest VerifyTally.test.ts",
         "test-verifyTally-debug": "node --inspect-brk ./node_modules/.bin/jest VerifyTally.test.ts"
     },

@@ -93,8 +93,10 @@ class AccQueue {
         // 5 is largest number of inputs which circomlib's Poseidon EVM hash
         // function implementation supports.
 
+        assert(_hashLength === 2 || _hashLength === 5)
+        assert(_subDepth > 0)
+
         this.hashLength = _hashLength
-        assert(this.hashLength === 2 || this.hashLength === 5)
         this.subDepth = _subDepth
         this.zeroValue = _zeroValue
 
@@ -183,7 +185,7 @@ class AccQueue {
             } else {
                 hashed = this.hashFunc([...this.levels[_level], _leaf])
                 for (let i = 0; i < 4; i ++) {
-                    this.levels[_level][i] = BigInt(0)
+                    his.levels[_level][i] = BigInt(0)
                 }
             }
 
@@ -270,11 +272,12 @@ class AccQueue {
 
     /*
      * Merge all the subroots into a tree of a specified depth.
+     * It requires this.mergeSubRootsIntoShortestTree() to be run first.
      */
     public merge(_depth: number) {
         assert(this.subTreesMerged === true)
-        assert(_depth > 0 && _depth < this.MAX_DEPTH)
         assert(_depth >= this.subDepth)
+        assert(_depth <= this.MAX_DEPTH)
 
         if (_depth === this.subDepth) {
             this.mainRoots[_depth] = this.smallSRTroot
@@ -333,13 +336,14 @@ class AccQueue {
         assert(this.numLeaves > 0)
 
         // Fill any empty leaves in the last subtree with zeros
-        if (this.numLeaves % (this.hashLength ** this.subDepth) > 0) {
+        if (this.numLeaves % (this.hashLength ** this.subDepth) !== 0) {
             this.fillLastSubTree()
         }
 
         // If there is only 1 subtree, use its root
         if (this.currentSubtreeIndex === 1) {
             this.smallSRTroot = this.getSubRoot(0)
+            this.subTreesMerged = true
             return
         }
 
@@ -395,7 +399,7 @@ class AccQueue {
 
         const n = this.queuedSRTindex[_level]
 
-        if (n != this.hashLength - 1) {
+        if (n !== this.hashLength - 1) {
             // Just store the leaf
             this.queuedSRTlevels[_level][n] = _leaf
             this.queuedSRTindex[_level] ++
