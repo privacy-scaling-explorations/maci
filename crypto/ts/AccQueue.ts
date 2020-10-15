@@ -270,26 +270,44 @@ class AccQueue {
         this._fillLastSubTree(_level + 1)
     }
 
+    public calcSRTdepth() {
+        // Calculate the SRT depth
+        let srtDepth = this.subDepth
+        while (true) {
+            if (this.hashLength ** srtDepth >= this.numLeaves) {
+                break
+            }
+            srtDepth ++
+        }
+
+        return srtDepth
+    }
+
     /*
      * Merge all the subroots into a tree of a specified depth.
      * It requires this.mergeSubRootsIntoShortestTree() to be run first.
      */
     public merge(_depth: number) {
         assert(this.subTreesMerged === true)
-        assert(_depth >= this.subDepth)
         assert(_depth <= this.MAX_DEPTH)
 
-        if (_depth === this.subDepth) {
+        const srtDepth = this.calcSRTdepth()
+
+        assert(_depth >= srtDepth)
+
+        if (_depth === srtDepth) {
             this.mainRoots[_depth] = this.smallSRTroot
         }
 
         let root = this.smallSRTroot
-        for (let i = this.subDepth; i < _depth; i ++) {
+        let level = srtDepth
+        for (let i = srtDepth; i < _depth; i ++) {
             const inputs: BigInt[] = [root]
             for (let j = 1; j < this.hashLength; j ++) {
-                inputs.push(this.zeros[_depth - i])
+                inputs.push(this.zeros[level])
             }
             root = this.hashFunc(inputs)
+            level ++
         }
 
         this.mainRoots[_depth] = root
@@ -301,6 +319,18 @@ class AccQueue {
      * AccQueue.sol uses. 
      */
     public mergeDirect(_depth: number) {
+        // There must be subtrees to merge
+        assert(this.numLeaves > 0)
+
+        if (_depth === this.subDepth) {
+            // If there is only 1 subtree, and the desired depth is the subtree
+            // depth, the subroot is the result
+            assert(this.numLeaves === this.hashLength ** this.subDepth)
+            this.mainRoots[_depth] = this.subRoots[0]
+            this.subTreesMerged = true
+            return
+        }
+
         // The desired main tree must be deep enough to fit all leaves
         assert(BigInt(_depth ** this.hashLength) >= this.numLeaves)
 
@@ -308,6 +338,10 @@ class AccQueue {
         if (this.numLeaves % (this.hashLength ** this.subDepth) > 0) {
             this.fillLastSubTree()
         }
+
+        const srtDepth = this.calcSRTdepth()
+
+        assert(_depth > srtDepth)
 
         const tree = new IncrementalQuinTree(
             _depth - this.subDepth,
@@ -370,21 +404,22 @@ class AccQueue {
             numQueueOps ++
         }
 
+        // Queue zeros to get the SRT. `m` is the number of leaves in the
+        // main tree, which already has `this.currentSubtreeIndex` leaves
         const m = this.hashLength ** (depth - this.subDepth)
-
         if (this.nextSRindexToQueue === this.currentSubtreeIndex) {
             for (let i = this.currentSubtreeIndex; i < m; i ++) {
                 this.queueSubRoot(
-                    this.zeros[depth - this.subDepth],
+                    this.zeros[this.subDepth],
                     0,
                     depth - this.subDepth,
                 )
             }
 
-            // Store the smallest main root
+            // Store the root
             this.smallSRTroot = this.queuedSRTlevels[depth - this.subDepth][0]
-            this.subTreesMerged = true
         }
+        this.subTreesMerged = true
     }
 
     /*
@@ -431,15 +466,22 @@ class AccQueue {
             this.hashLength,
             this.zeroValue,
         )
-        newAccQueue.zeros = deepCopyBigIntArray(this.zeros)
-        newAccQueue.currentSubtreeIndex = this.currentSubtreeIndex
-        newAccQueue.numLeaves = this.numLeaves
-
+        newAccQueue.currentSubtreeIndex = JSON.parse(JSON.stringify(this.currentSubtreeIndex))
+        newAccQueue.numLeaves = JSON.parse(JSON.stringify(this.numLeaves))
         newAccQueue.levels = unstringifyBigInts(JSON.parse(
             JSON.stringify(stringifyBigInts(this.levels))
         ))
         newAccQueue.nextIndexPerLevel = JSON.parse(JSON.stringify(this.nextIndexPerLevel))
         newAccQueue.subRoots = deepCopyBigIntArray(this.subRoots)
+        newAccQueue.mainRoots = deepCopyBigIntArray(this.mainRoots)
+        newAccQueue.zeros = deepCopyBigIntArray(this.zeros)
+        newAccQueue.subTreesMerged = this.subTreesMerged ? true : false
+        newAccQueue.nextSRindexToQueue = Number(this.nextSRindexToQueue.toString())
+        newAccQueue.smallSRTroot = BigInt(this.nextSRindexToQueue.toString())
+        newAccQueue.queuedSRTindex = JSON.parse(JSON.stringify(this.queuedSRTindex))
+        newAccQueue.queuedSRTlevels = unstringifyBigInts(JSON.parse(
+            JSON.stringify(stringifyBigInts(this.queuedSRTlevels))
+        ))
 
         return newAccQueue
     }

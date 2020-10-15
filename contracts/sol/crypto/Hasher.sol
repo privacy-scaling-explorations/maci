@@ -13,6 +13,10 @@ library PoseidonT6 {
  * Poseidon hash functions for 2, 5, and 11 input elements.
  */
 contract Hasher {
+    function hash2(uint256[] memory array) public pure returns (uint256) {
+        return PoseidonT3.poseidon(array);
+    }
+
     function hash5(uint256[] memory array) public pure returns (uint256) {
         return PoseidonT6.poseidon(array);
     }
@@ -51,6 +55,6 @@ contract Hasher {
         uint256[] memory input = new uint256[](2);
         input[0] = _left;
         input[1] = _right;
-        return PoseidonT3.poseidon(input);
+        return hash2(input);
     }
 }

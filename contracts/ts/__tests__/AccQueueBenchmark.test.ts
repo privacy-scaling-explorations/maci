@@ -3,9 +3,7 @@ require('module-alias/register')
 import { genTestAccounts } from '../accounts'
 import { config } from 'maci-config'
 import {
-    IncrementalQuinTree,
     AccQueue,
-    NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
 
 import { JSONRPCDeployer } from '../deploy'
@@ -35,7 +33,6 @@ const deploy = async (
         },
     )
 
-    console.log('Deploying Poseidon') 
     PoseidonT3Contract = await deployer.deploy(PoseidonT3.abi, PoseidonT3.bytecode, {})
     PoseidonT6Contract = await deployer.deploy(PoseidonT6.abi, PoseidonT6.bytecode, {})
 
@@ -48,7 +45,6 @@ const deploy = async (
 
     const [ AccQueueAbi, AccQueueBin ] = loadAB(contractName)
 
-    console.log('Deploying AccQueue')
     aqContract = await deployer.deploy(
         AccQueueAbi,
         AccQueueBin,
@@ -128,6 +124,100 @@ const testMultiShot = async (
 }
 
 describe('AccQueue gas benchmarks', () => {
+    describe('Binary enqueues', () => {
+        const SUB_DEPTH = 3
+        const HASH_LENGTH = 2
+        const ZERO = BigInt(0)
+        beforeAll(async () => {
+            const r = await deploy(
+                'AccQueueBinary0',
+                SUB_DEPTH,
+                HASH_LENGTH,
+                ZERO,
+            )
+            aqContract = r.aqContract
+        })
+
+        it(`Should enqueue to a subtree of depth ${SUB_DEPTH}`, async () => {
+            for (let i = 0; i < HASH_LENGTH ** SUB_DEPTH; i ++) {
+                const tx = await aqContract.enqueue(i, { gasLimit: 400000 } )
+                const receipt = await tx.wait()
+                console.log(`Gas used by binary enqueue: ${receipt.gasUsed.toString()}`)
+            }
+        })
+    })
+
+    describe('Binary fills', () => {
+        const SUB_DEPTH = 3
+        const HASH_LENGTH = 2
+        const ZERO = BigInt(0)
+        beforeAll(async () => {
+            const r = await deploy(
+                'AccQueueBinary0',
+                SUB_DEPTH,
+                HASH_LENGTH,
+                ZERO,
+            )
+            aqContract = r.aqContract
+        })
+
+        it(`Should fill to a subtree of depth ${SUB_DEPTH}`, async () => {
+            for (let i = 0; i < 2; i ++) {
+                await(await aqContract.enqueue(i, { gasLimit: 800000 }))
+                const tx = await aqContract.fillLastSubTree({ gasLimit: 800000 } )
+                const receipt = await tx.wait()
+                console.log(`Gas used by binary fillLastSubTree: ${receipt.gasUsed.toString()}`)
+            }
+        })
+    })
+
+    describe('Quinary enqueues', () => {
+        const SUB_DEPTH = 2
+        const HASH_LENGTH = 5
+        const ZERO = BigInt(0)
+        beforeAll(async () => {
+            const r = await deploy(
+                'AccQueueQuinary0',
+                SUB_DEPTH,
+                HASH_LENGTH,
+                ZERO,
+            )
+            aqContract = r.aqContract
+        })
+
+        it(`Should enqueue to a subtree of depth ${SUB_DEPTH}`, async () => {
+            for (let i = 0; i < HASH_LENGTH ** SUB_DEPTH; i ++) {
+                const tx = await aqContract.enqueue(i, { gasLimit: 800000 } )
+                const receipt = await tx.wait()
+                console.log(`Gas used by quinary enqueue: ${receipt.gasUsed.toString()}`)
+            }
+        })
+    })
+
+    describe('Quinary fills', () => {
+        const SUB_DEPTH = 2
+        const HASH_LENGTH = 5
+        const ZERO = BigInt(0)
+        beforeAll(async () => {
+            const r = await deploy(
+                'AccQueueBinary0',
+                SUB_DEPTH,
+                HASH_LENGTH,
+                ZERO,
+            )
+            aqContract = r.aqContract
+        })
+
+        it(`Should fill a subtree of depth ${SUB_DEPTH}`, async () => {
+            for (let i = 0; i < 2; i ++) {
+                await(await aqContract.enqueue(i, { gasLimit: 800000 }))
+                const tx = await aqContract.fillLastSubTree({ gasLimit: 800000 } )
+                const receipt = await tx.wait()
+                console.log(`Gas used by quinary fillLastSubTree: ${receipt.gasUsed.toString()}`)
+            }
+        })
+    })
+
     describe('Binary AccQueue0 one-shot merge', () => {
         const SUB_DEPTH = 4
         const MAIN_DEPTH = 32
