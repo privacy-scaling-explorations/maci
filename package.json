@@ -1,7 +1,7 @@
 {
   "name": "maci",
   "version": "0.2.0",
-  "description": "Minimal Anti-Collustion Infrastructure",
+  "description": "Minimal Anti-Collusion Infrastructure",
   "repository": "https://github.com/appliedzkp/maci",
   "license": "MIT",
   "scripts": {

@@ -49,7 +49,7 @@ const maciState = new MaciState(
 describe('MACI', () => {
     let maciContract
     let signUpTokenContract
-    let constantIntialVoiceCreditProxyContract
+    let constantInitialVoiceCreditProxyContract
     let signUpTokenGatekeeperContract
 
     // Set up users
@@ -75,7 +75,7 @@ describe('MACI', () => {
 
     beforeAll(async () => {
         signUpTokenContract = await deploySignupToken(deployer)
-        constantIntialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
+        constantInitialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
             deployer,
             config.maci.initialVoiceCreditBalance,
         )
@@ -86,7 +86,7 @@ describe('MACI', () => {
         const contracts = await deployMaci(
             deployer,
             signUpTokenGatekeeperContract.address,
-            constantIntialVoiceCreditProxyContract.address,
+            constantInitialVoiceCreditProxyContract.address,
         )
 
         maciContract = contracts.maciContract
