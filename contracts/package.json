@@ -29,7 +29,7 @@
         "@maci-contracts": "."
     },
     "dependencies": {
-        "@openzeppelin/contracts": "^2.4.0",
+        "@openzeppelin/contracts": "^3.2.1-solc-0.7",
         "argparse": "^1.0.10",
         "circomlib": "0.2.4",
         "ethers": "^4.0.45",

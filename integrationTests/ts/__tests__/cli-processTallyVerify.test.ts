@@ -96,7 +96,7 @@ describe('process, tally, and prove CLI subcommands', () => {
         // Log the output for further manual testing
         console.log(createOutput)
 
-        const regMatch = createOutput.match(/^MACI: (0x[a-fA-F0-9]{40})$/)
+        const regMatch = createOutput.match(/MACI: (0x[a-fA-F0-9]{40})$/)
         maciAddress = regMatch[1]
 
         // Run the signup command

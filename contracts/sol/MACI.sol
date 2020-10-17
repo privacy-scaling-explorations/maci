@@ -1,5 +1,6 @@
+// SPDX-License-Identifier: MIT
 pragma experimental ABIEncoderV2;
-pragma solidity ^0.5.0;
+pragma solidity ^0.7.3;
 
 import { DomainObjs } from './DomainObjs.sol';
 import { IncrementalQuinTree } from "./IncrementalQuinTree.sol";
@@ -132,7 +133,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         uint256 _votingDurationSeconds,
         InitialVoiceCreditProxy _initialVoiceCreditProxy,
         PubKey memory _coordinatorPubKey
-    ) public {
+    ) {
 
         treeDepths = _treeDepths;
 
@@ -144,7 +145,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         qvtVerifier = _qvtVerifier;
 
         // Set the sign-up duration
-        signUpTimestamp = now;
+        signUpTimestamp = block.timestamp;
         signUpDurationSeconds = _signUpDurationSeconds;
         votingDurationSeconds = _votingDurationSeconds;
         
@@ -212,7 +213,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
      * current block time is before the sign-up deadline.
      */
     modifier isBeforeSignUpDeadline() {
-        require(now < calcSignUpDeadline(), "MACI: the sign-up period has passed");
+        require(block.timestamp < calcSignUpDeadline(), "MACI: the sign-up period has passed");
         _;
     }
 
@@ -221,7 +222,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
      * current block time is after or equal to the sign-up deadline.
      */
     modifier isAfterSignUpDeadline() {
-        require(now >= calcSignUpDeadline(), "MACI: the sign-up period is not over");
+        require(block.timestamp >= calcSignUpDeadline(), "MACI: the sign-up period is not over");
         _;
     }
 
@@ -237,7 +238,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
      * current block time is before the voting deadline.
      */
     modifier isBeforeVotingDeadline() {
-        require(now < calcVotingDeadline(), "MACI: the voting period has passed");
+        require(block.timestamp < calcVotingDeadline(), "MACI: the voting period has passed");
         _;
     }
 
@@ -246,7 +247,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
      * current block time is after or equal to the voting deadline.
      */
     modifier isAfterVotingDeadline() {
-        require(now >= calcVotingDeadline(), "MACI: the voting period is not over");
+        require(block.timestamp >= calcVotingDeadline(), "MACI: the voting period is not over");
         _;
     }
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /*
  * MACI - Minimum Anti-Collusion Infrastructure
  * Copyright (C) 2020 Barry WhiteHat <barrywhitehat@protonmail.com>, Kobi
@@ -19,11 +20,11 @@
  * along with MACI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-pragma solidity ^0.5.0;
+pragma solidity ^0.7.3;
 
 import { SnarkConstants } from "./SnarkConstants.sol";
 import { Hasher } from "./Hasher.sol";
-import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 /*
  * An incremental Merkle tree which supports up to 5 leaves per node.
@@ -65,7 +66,7 @@ contract IncrementalQuinTree is Ownable, Hasher {
      *                   say that the deployer knows the preimage of an empty
      *                   leaf.
      */
-    constructor(uint8 _treeLevels, uint256 _zeroValue) public {
+    constructor(uint8 _treeLevels, uint256 _zeroValue) {
         // Limit the Merkle tree to MAX_DEPTH levels
         require(
             _treeLevels > 0 && _treeLevels <= MAX_DEPTH,

@@ -1,14 +1,14 @@
-pragma solidity ^0.5.0;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.7.3;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721Full.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721Mintable.sol";
-import "@openzeppelin/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract SignUpToken is ERC721Full, ERC721Mintable, Ownable {
+contract SignUpToken is ERC721, Ownable {
   // Keeps track of total tokens
   uint256 curTokenId = 1;
 
-  constructor() ERC721Full("SignUpToken", "SignUpToken") Ownable() public { }
+  constructor() ERC721("SignUpToken", "SignUpToken") Ownable() { }
 
   // Gives an ERC721 token to an address
   function giveToken(address to) public onlyOwner {

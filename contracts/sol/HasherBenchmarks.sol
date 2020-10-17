@@ -1,4 +1,5 @@
-pragma solidity ^0.5.0;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.7.3;
 
 import { Hasher } from "./Hasher.sol";
 
