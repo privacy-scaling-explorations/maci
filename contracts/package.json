@@ -1,6 +1,6 @@
 {
     "name": "maci-contracts",
-    "version": "0.3.5",
+    "version": "0.3.6",
     "description": "",
     "main": "build/index.js",
     "scripts": {
@@ -50,5 +50,5 @@
         "truffle-artifactor": "^4.0.30",
         "ts-jest": "^24.2.0"
     },
-    "gitHead": "f567a17293114ba2d5e89c711d00a9f4c197f070"
+    "gitHead": "c24aa658cd621b00478c6634ea39b02f747fb68f"
 }
