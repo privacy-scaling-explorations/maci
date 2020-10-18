@@ -102,7 +102,7 @@ const genQvtProofAndPublicSignals = (
         paramsPath = 'qvt.params'
     } else if (configType === 'prod-small') {
         circuitPath = 'prod/quadVoteTally_small.circom'
-        circuitR1csPath = 'qvtSmallCircuit.r1cs'
+        circuitR1csPath = 'qvtCircuitSmall.r1cs'
         wasmPath = 'qvtSmall.wasm'
         paramsPath = 'qvtSmall.params'
     } else {
