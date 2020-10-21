@@ -264,4 +264,51 @@ describe('AccQueue gas benchmarks', () => {
             await testMultiShot(aq, aqContract, NUM_SUBTREES, MAIN_DEPTH, NUM_MERGES)
         })
     })
+
+    describe('Quinary AccQueue0 one-shot merge', () => {
+        const SUB_DEPTH = 2
+        const MAIN_DEPTH = 32
+        const HASH_LENGTH = 5
+        const ZERO = BigInt(0)
+        const NUM_SUBTREES = 64
+        let aq: AccQueue
+        beforeAll(async () => {
+            const r = await deploy(
+                'AccQueueQuinary0',
+                SUB_DEPTH,
+                HASH_LENGTH,
+                ZERO,
+            )
+            aq = r.aq
+            aqContract = r.aqContract
+        })
+
+        it(`Should merge ${NUM_SUBTREES} subtrees`, async () => {
+            await testOneShot(aq, aqContract, NUM_SUBTREES, MAIN_DEPTH)
+        })
+    })
+
+    describe('Quinary AccQueue0 multi-shot merge', () => {
+        const SUB_DEPTH = 2
+        const MAIN_DEPTH = 32
+        const HASH_LENGTH = 5
+        const ZERO = BigInt(0)
+        const NUM_SUBTREES = 64
+        const NUM_MERGES = 4
+        let aq: AccQueue
+        beforeAll(async () => {
+            const r = await deploy(
+                'AccQueueQuinary0',
+                SUB_DEPTH,
+                HASH_LENGTH,
+                ZERO,
+            )
+            aq = r.aq
+            aqContract = r.aqContract
+        })
+
+        it(`Should merge ${NUM_SUBTREES} subtrees in ${NUM_MERGES}`, async () => {
+            await testMultiShot(aq, aqContract, NUM_SUBTREES, MAIN_DEPTH, NUM_MERGES)
+        })
+    })
 })
