@@ -36,6 +36,11 @@ describe('Cryptographic operations', () => {
             const h = hash5(plaintext)
             expect(h < SNARK_FIELD_SIZE).toBeTruthy()
         })
+        it('Padding to 5 if length of elements is less than 5', () => {
+            const h = hash5([BigInt(1)])
+            const hElementsPadded = hash5([BigInt(1), BigInt(0), BigInt(0), BigInt(0), BigInt(0)])
+            expect(h).toEqual(hElementsPadded);
+        })
     })
 
     describe('Hash11', () => {

@@ -79,7 +79,7 @@ const hash5 = (elements: Plaintext): BigInt => {
             elementsPadded.push(BigInt(0))
         }
     }
-    return poseidonT6(elements)
+    return poseidonT6(elementsPadded)
 }
 
 /*
