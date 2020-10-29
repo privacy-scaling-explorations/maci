@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma experimental ABIEncoderV2;
-pragma solidity ^0.7.3;
+pragma solidity ^0.6.12;
 
 import { Hasher } from "./Hasher.sol";
 import { MACISharedObjs } from "./MACISharedObjs.sol";

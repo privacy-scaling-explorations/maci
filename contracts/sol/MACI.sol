@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma experimental ABIEncoderV2;
-pragma solidity ^0.7.3;
+pragma solidity ^0.6.12;
 
 import { DomainObjs } from './DomainObjs.sol';
 import { IncrementalQuinTree } from "./IncrementalQuinTree.sol";
@@ -133,7 +133,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         uint256 _votingDurationSeconds,
         InitialVoiceCreditProxy _initialVoiceCreditProxy,
         PubKey memory _coordinatorPubKey
-    ) {
+    ) public {
 
         treeDepths = _treeDepths;
 

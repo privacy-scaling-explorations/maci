@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.7.3;
+pragma solidity ^0.6.12;
 
 import { Hasher } from "./Hasher.sol";
 
 contract HasherBenchmarks is Hasher {
-    function hash5Benchmark(uint256[] memory array) public {
+    function hash5Benchmark(uint256[] memory array) public pure {
         hash5(array);
     }
 
-    function hash11Benchmark(uint256[] memory array) public {
+    function hash11Benchmark(uint256[] memory array) public pure {
         hash11(array);
     }
 
-    function hashLeftRightBenchmark(uint256 _left, uint256 _right) public {
+    function hashLeftRightBenchmark(uint256 _left, uint256 _right) public pure {
         hashLeftRight(_left, _right);
     }
 }

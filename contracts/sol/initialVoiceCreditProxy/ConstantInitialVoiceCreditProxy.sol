@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.7.3;
+pragma solidity ^0.6.12;
 
 import { InitialVoiceCreditProxy } from './InitialVoiceCreditProxy.sol';
 
@@ -7,7 +7,7 @@ contract ConstantInitialVoiceCreditProxy is InitialVoiceCreditProxy {
 
     uint256 internal balance;
 
-    constructor(uint256 _balance) { 
+    constructor(uint256 _balance) public {
         balance = _balance;
     }
 

@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma experimental ABIEncoderV2;
-pragma solidity ^0.7.3;
+pragma solidity ^0.6.12;
 
 contract MACIParameters {
     // This structs help to reduce the number of parameters to the constructor

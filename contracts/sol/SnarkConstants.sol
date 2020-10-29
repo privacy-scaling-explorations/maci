@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 /*
  * Semaphore - Zero-knowledge signaling on Ethereum
  * Copyright (C) 2020 Barry WhiteHat <barrywhitehat@protonmail.com>, Kobi
@@ -20,7 +21,7 @@
  * along with Semaphore.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-pragma solidity ^0.7.3;
+pragma solidity ^0.6.12;
 
 contract SnarkConstants {
     // The scalar field

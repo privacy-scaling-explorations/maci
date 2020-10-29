@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.7.3;
+pragma solidity ^0.6.12;
 
 import { SignUpGatekeeper } from './SignUpGatekeeper.sol';
 import { SignUpToken } from '../SignUpToken.sol';
@@ -10,7 +10,7 @@ contract SignUpTokenGatekeeper is SignUpGatekeeper {
 
     mapping (uint256 => bool) internal registeredTokenIds;
 
-    constructor(SignUpToken _token) {
+    constructor(SignUpToken _token) public {
         token = _token;
     }
 
