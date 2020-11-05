@@ -5,6 +5,7 @@ import { config } from 'maci-config'
 import {
     IncrementalQuinTree,
     AccQueue,
+    hashLeftRight,
     NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
 
@@ -317,6 +318,150 @@ const deploy = async (
 
 describe('AccQueues', () => {
 
+    describe('Conditions that cause merge() to revert', () => {
+        const SUB_DEPTH = 2
+        const HASH_LENGTH = 2
+        const ZERO = BigInt(0)
+        const NUM_SUBTREES = 1
+        let aqContract
+
+        beforeAll(async () => {
+            const r = await deploy(
+                'AccQueueBinary0',
+                SUB_DEPTH,
+                HASH_LENGTH,
+                ZERO,
+            )
+            aqContract = r.aqContract
+        })
+
+        it('mergeSubRootsIntoShortestTree() should fail on an empty AccQueue', async () => {
+            expect.assertions(1)
+            try {
+                await (await (aqContract.mergeSubRootsIntoShortestTree(0, { gasLimit: 1000000 }))).wait()
+            } catch (e) {
+                const error = 'AccQueue: nothing to merge'
+                expect(e.message.endsWith(error)).toBeTruthy()
+            }
+        })
+
+        it('merge() should fail on an empty AccQueue', async () => {
+            expect.assertions(1)
+            try {
+                await (await (aqContract.merge(1, { gasLimit: 1000000 }))).wait()
+            } catch (e) {
+                const error = 'AccQueue: subtrees must be merged before calling merge()'
+                expect(e.message.endsWith(error)).toBeTruthy()
+            }
+        })
+
+        it(`Should not merge if the subtrees have not been merged yet`, async () => {
+            expect.assertions(1)
+
+            for (let i = 0; i < NUM_SUBTREES; i ++) {
+                await (await (aqContract.fillLastSubTree(fillLastSubTreeGasLimit))).wait()
+            }
+
+            try {
+                await (await (aqContract.merge(1))).wait()
+            } catch (e) {
+                const error = 'AccQueue: subtrees must be merged before calling merge()'
+                expect(e.message.endsWith(error)).toBeTruthy()
+            }
+        })
+
+        it(`Should not merge if the desired depth is invalid`, async () => {
+            expect.assertions(1)
+
+            await (await (aqContract.mergeSubRootsIntoShortestTree(0, { gasLimit: 1000000 }))).wait()
+            try {
+                await (await (aqContract.merge(1))).wait()
+            } catch (e) {
+                const error = 'AccQueue: _depth must be gte the SRT depth'
+                expect(e.message.endsWith(error)).toBeTruthy()
+            }
+        })
+    })
+
+    describe('Edge cases', () => {
+        const SUB_DEPTH = 2
+        const HASH_LENGTH = 2
+        const ZERO = BigInt(0)
+
+        it('Should not be possible to merge if empty', async () => {
+            expect.assertions(1)
+            const r = await deploy(
+                'AccQueueBinary0',
+                SUB_DEPTH,
+                HASH_LENGTH,
+                ZERO,
+            )
+            const aqContract = r.aqContract
+            try {
+                await (await aqContract.mergeSubRootsIntoShortestTree(0, { gasLimit: 1000000 })).wait()
+            } catch (e) {
+                const error = 'AccQueue: nothing to merge'
+                expect(e.message.endsWith(error)).toBeTruthy()
+            }
+        })
+
+        it('Should not be possible to merge into a tree of depth 0', async () => {
+            const r = await deploy(
+                'AccQueueBinary0',
+                SUB_DEPTH,
+                HASH_LENGTH,
+                ZERO,
+            )
+
+            const aqContract = r.aqContract
+            await (await aqContract.enqueue(1)).wait()
+            await (await aqContract.mergeSubRootsIntoShortestTree(0, { gasLimit: 1000000 })).wait()
+            try {
+                await (await aqContract.merge(0, { gasLimit: 1000000 })).wait()
+            } catch (e) {
+                const error = 'AccQueue: _depth must be more than 0'
+                expect(e.message.endsWith(error)).toBeTruthy()
+            }
+        })
+
+        it('A small SRT of depth 1 should just have 2 leaves', async () => {
+            const r = await deploy(
+                'AccQueueBinary0',
+                1,
+                HASH_LENGTH,
+                ZERO,
+            )
+
+            const aqContract = r.aqContract
+            await (await aqContract.enqueue(0, enqueueGasLimit)).wait()
+            await (await aqContract.mergeSubRootsIntoShortestTree(0, { gasLimit: 1000000 })).wait()
+            const srtRoot = await aqContract.getSmallSRTroot()
+            const expectedRoot = hashLeftRight(BigInt(0), BigInt(0))
+            expect(srtRoot.toString()).toEqual(expectedRoot.toString())
+        })
+
+        it('Should not be possible to merge subroots into a tree shorter than the SRT depth', async () => {
+            const r = await deploy(
+                'AccQueueBinary0',
+                1,
+                HASH_LENGTH,
+                ZERO,
+            )
+            const aqContract = r.aqContract
+            await (await (aqContract.fillLastSubTree(fillLastSubTreeGasLimit))).wait()
+            await (await (aqContract.fillLastSubTree(fillLastSubTreeGasLimit))).wait()
+            await (await (aqContract.fillLastSubTree(fillLastSubTreeGasLimit))).wait()
+            await (await (aqContract.fillLastSubTree(fillLastSubTreeGasLimit))).wait()
+            await (await aqContract.mergeSubRootsIntoShortestTree(0, { gasLimit: 1000000 })).wait()
+            try {
+                await (await aqContract.merge(1, { gasLimit: 1000000 })).wait()
+            } catch (e) {
+                const error = 'AccQueue: _depth must be gte the SRT depth'
+                expect(e.message.endsWith(error)).toBeTruthy()
+            }
+        })
+    })
+
     describe('Binary AccQueue0 one-shot merges', () => {
         const SUB_DEPTH = 2
         const MAIN_DEPTH = 5
@@ -413,51 +558,6 @@ describe('AccQueues', () => {
             const aq = r.aq
             const aqContract = r.aqContract
             await testInsertSubTrees(aq, aqContract, n, MAIN_DEPTH)
-        })
-    })
-
-    describe('Conditions that cause merge() to revert', () => {
-        const SUB_DEPTH = 2
-        const HASH_LENGTH = 2
-        const ZERO = BigInt(0)
-        const NUM_SUBTREES = 1
-        let aqContract
-
-        beforeAll(async () => {
-            const r = await deploy(
-                'AccQueueBinary0',
-                SUB_DEPTH,
-                HASH_LENGTH,
-                ZERO,
-            )
-            aqContract = r.aqContract
-
-            for (let i = 0; i < NUM_SUBTREES; i ++) {
-                await (await (aqContract.fillLastSubTree(fillLastSubTreeGasLimit))).wait()
-            }
-        })
-
-        it(`Should not merge if the subtrees have not been merged yet`, async () => {
-            expect.assertions(1)
-
-            try {
-                await (await (aqContract.merge(1))).wait()
-            } catch (e) {
-                const error = 'AccQueue: subtrees must be merged before calling merge()'
-                expect(e.message.endsWith(error)).toBeTruthy()
-            }
-        })
-
-        it(`Should not merge if the desired depth is invalid`, async () => {
-            expect.assertions(1)
-
-            await (await (aqContract.mergeSubRootsIntoShortestTree(0, { gasLimit: 1000000 }))).wait()
-            try {
-                await (await (aqContract.merge(1))).wait()
-            } catch (e) {
-                const error = 'AccQueue: _depth must be gte the SRT depth'
-                expect(e.message.endsWith(error)).toBeTruthy()
-            }
         })
     })
 

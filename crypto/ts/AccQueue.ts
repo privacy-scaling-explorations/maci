@@ -322,7 +322,6 @@ class AccQueue {
         } else {
 
             let root = this.smallSRTroot
-            debugger
 
             // Calculate the main root
             for (let i = srtDepth; i < _depth; i ++) {
@@ -337,7 +336,6 @@ class AccQueue {
             }
 
             this.mainRoots[_depth] = root
-            debugger
         }
     }
 

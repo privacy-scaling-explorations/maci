@@ -428,6 +428,10 @@ abstract contract AccQueue is Ownable, Hasher {
      *               this function will revert.
      */
     function merge(uint256 _depth) public onlyOwner {
+
+        // The tree depth must be more than 0
+        require(_depth > 0, "AccQueue: _depth must be more than 0");
+
         // Ensure that the subtrees have been merged
         require(subTreesMerged == true, "AccQueue: subtrees must be merged before calling merge()");
 
