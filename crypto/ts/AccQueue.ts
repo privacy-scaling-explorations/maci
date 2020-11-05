@@ -273,14 +273,36 @@ class AccQueue {
     public calcSRTdepth() {
         // Calculate the SRT depth
         let srtDepth = this.subDepth
+        const subTreeCapacity = this.hashLength ** this.subDepth
         while (true) {
-            if (this.hashLength ** srtDepth >= this.numLeaves) {
+            if (this.hashLength ** srtDepth >= (this.subRoots.length * subTreeCapacity)) {
                 break
             }
             srtDepth ++
         }
 
         return srtDepth
+    }
+
+    public insertSubTree(_subRoot: BigInt) {
+        // If the current subtree is not full, fill it.
+        const subTreeCapacity = this.hashLength ** this.subDepth
+        if (this.numLeaves % subTreeCapacity > 0) {
+            this.fillLastSubTree()
+        }
+
+        this.subRoots[this.currentSubtreeIndex] = _subRoot
+
+        // Update the subtree index
+        this.currentSubtreeIndex ++
+
+        // Update the number of leaves
+        this.numLeaves = this.currentSubtreeIndex * subTreeCapacity
+
+        // Reset the subroot tree root now that it is obsolete
+        this.smallSRTroot = BigInt(0)
+
+        this.subTreesMerged = false
     }
 
     /*
@@ -297,20 +319,26 @@ class AccQueue {
 
         if (_depth === srtDepth) {
             this.mainRoots[_depth] = this.smallSRTroot
-        }
+        } else {
 
-        let root = this.smallSRTroot
-        let level = srtDepth
-        for (let i = srtDepth; i < _depth; i ++) {
-            const inputs: BigInt[] = [root]
-            for (let j = 1; j < this.hashLength; j ++) {
-                inputs.push(this.zeros[level])
+            let root = this.smallSRTroot
+            debugger
+
+            // Calculate the main root
+            for (let i = srtDepth; i < _depth; i ++) {
+                const inputs: BigInt[] = [root]
+                const z = this.zeros[i]
+
+                for (let j = 1; j < this.hashLength; j ++) {
+                    inputs.push(z)
+                }
+
+                root = this.hashFunc(inputs)
             }
-            root = this.hashFunc(inputs)
-            level ++
-        }
 
-        this.mainRoots[_depth] = root
+            this.mainRoots[_depth] = root
+            debugger
+        }
     }
 
     /*
@@ -321,6 +349,11 @@ class AccQueue {
     public mergeDirect(_depth: number) {
         // There must be subtrees to merge
         assert(this.numLeaves > 0)
+
+        const srtDepth = this.calcSRTdepth()
+
+        // The desired tree must be deep enough
+        assert(_depth >= srtDepth)
 
         if (_depth === this.subDepth) {
             // If there is only 1 subtree, and the desired depth is the subtree
@@ -339,15 +372,12 @@ class AccQueue {
             this.fillLastSubTree()
         }
 
-        const srtDepth = this.calcSRTdepth()
-
-        assert(_depth > srtDepth)
-
         const tree = new IncrementalQuinTree(
             _depth - this.subDepth,
             this.zeros[this.subDepth],
             this.hashLength,
         )
+
         for (let i = 0; i < this.subRoots.length; i++) {
             tree.insert(this.subRoots[i])
         }
@@ -382,7 +412,7 @@ class AccQueue {
         }
 
         // Compute the depth and maximum capacity of the smallMainTreeRoot
-        const depth = calcDepthFromNumLeaves(this.hashLength, this.numLeaves)
+        const depth = calcDepthFromNumLeaves(this.hashLength, this.currentSubtreeIndex)
 
         let numQueueOps = 0
 
@@ -393,10 +423,11 @@ class AccQueue {
             }
 
             // Queue the next subroot
+            const subRoot = this.getSubRoot(this.nextSRindexToQueue)
             this.queueSubRoot(
-                this.getSubRoot(this.nextSRindexToQueue),
+                subRoot,
                 0,
-                depth - this.subDepth,
+                depth,
             )
 
             // Increment the next subroot counter
@@ -406,19 +437,20 @@ class AccQueue {
 
         // Queue zeros to get the SRT. `m` is the number of leaves in the
         // main tree, which already has `this.currentSubtreeIndex` leaves
-        const m = this.hashLength ** (depth - this.subDepth)
+        const m = this.hashLength ** depth
         if (this.nextSRindexToQueue === this.currentSubtreeIndex) {
             for (let i = this.currentSubtreeIndex; i < m; i ++) {
+                const z = this.zeros[this.subDepth]
                 this.queueSubRoot(
-                    this.zeros[this.subDepth],
+                    z,
                     0,
-                    depth - this.subDepth,
+                    depth,
                 )
             }
-
-            // Store the root
-            this.smallSRTroot = this.queuedSRTlevels[depth - this.subDepth][0]
         }
+
+        // Store the root
+        this.smallSRTroot = this.queuedSRTlevels[depth][0]
         this.subTreesMerged = true
     }
 
@@ -477,7 +509,7 @@ class AccQueue {
         newAccQueue.zeros = deepCopyBigIntArray(this.zeros)
         newAccQueue.subTreesMerged = this.subTreesMerged ? true : false
         newAccQueue.nextSRindexToQueue = Number(this.nextSRindexToQueue.toString())
-        newAccQueue.smallSRTroot = BigInt(this.nextSRindexToQueue.toString())
+        newAccQueue.smallSRTroot = BigInt(this.smallSRTroot.toString())
         newAccQueue.queuedSRTindex = JSON.parse(JSON.stringify(this.queuedSRTindex))
         newAccQueue.queuedSRTlevels = unstringifyBigInts(JSON.parse(
             JSON.stringify(stringifyBigInts(this.queuedSRTlevels))

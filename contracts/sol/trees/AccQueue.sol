@@ -203,11 +203,12 @@ abstract contract AccQueue is Ownable, Hasher {
             delete mainRoots;
         }
 
-        // Update the subtree index
-        currentSubtreeIndex ++;
+        // Increment the subtree index
+        uint256 curr = currentSubtreeIndex + 1;
+        currentSubtreeIndex = curr;
 
         // Update the number of leaves
-        numLeaves = currentSubtreeIndex * subTreeCapacity;
+        numLeaves = curr * subTreeCapacity;
 
         // Reset the subroot tree root now that it is obsolete
         delete smallSRTroot;
@@ -261,15 +262,38 @@ abstract contract AccQueue is Ownable, Hasher {
     }
 
     /*
+     * Insert a subtree. Fills the last subtree if the last subtree is not
+     * full. Used for batch insertions.
+     */
+    function insertSubTree(uint256 _subRoot) public onlyOwner {
+        // If the current subtree is not full, fill it.
+        if (numLeaves % subTreeCapacity > 0) {
+            fillLastSubTree();
+        }
+
+        subRoots[currentSubtreeIndex] = _subRoot;
+
+        // Increment the subtree index
+        uint256 curr = currentSubtreeIndex + 1;
+        currentSubtreeIndex = curr;
+
+        // Update the number of leaves
+        numLeaves = curr * subTreeCapacity;
+
+        // Reset the subroot tree root now that it is obsolete
+        delete smallSRTroot;
+
+        subTreesMerged = false;
+    }
+
+    /*
      * Calculate the lowest possible height of a tree with all the subroots
      * merged together.
      */
     function calcMinHeight() public view returns (uint256) {
-        uint256 depth = subDepth;
-        uint256 max;
+        uint256 depth = 1;
         while (true) {
-            max = hashLength ** depth;
-            if (max >= numLeaves) {
+            if (hashLength ** depth >= currentSubtreeIndex) {
                 break;
             }
             depth ++;
@@ -329,7 +353,7 @@ abstract contract AccQueue is Ownable, Hasher {
             queueSubRoot(
                 getSubRoot(nextSRindexToQueue),
                 0,
-                depth - subDepth
+                depth
             );
 
             // Increment the next subroot counter
@@ -340,22 +364,23 @@ abstract contract AccQueue is Ownable, Hasher {
         }
 
         // The height of the tree of subroots
-        uint256 m = hashLength ** (depth - subDepth);
+        uint256 m = hashLength ** depth;
 
         // Queue zeroes to fill out the SRT
         if (nextSRindexToQueue == currentSubtreeIndex) {
+            uint256 z = getZero(subDepth);
             for (uint256 i = currentSubtreeIndex; i < m; i ++) {
                 queueSubRoot(
-                    getZero(subDepth),
+                    z,
                     0,
-                    depth - subDepth
+                    depth
                 );
             }
-
-            // Store the smallest main root
-            smallSRTroot = queuedSRTlevels[depth - subDepth][0];
-            subTreesMerged = true;
         }
+
+        // Store the smallest main root
+        smallSRTroot = queuedSRTlevels[depth][0];
+        subTreesMerged = true;
     }
 
     /*
@@ -427,15 +452,15 @@ abstract contract AccQueue is Ownable, Hasher {
         if (_depth == srtDepth) {
             mainRoots[_depth] = smallSRTroot;
         } else {
+
             uint256 root = smallSRTroot;
 
             // Calculate the main root
             uint256[] memory inputs = new uint256[](hashLength);
 
-            uint256 level = srtDepth;
             for (uint256 i = srtDepth; i < _depth; i ++) {
 
-                uint256 z = getZero(level);
+                uint256 z = getZero(i);
 
                 if (isBinary) {
                     inputs[0] = root;
@@ -449,8 +474,6 @@ abstract contract AccQueue is Ownable, Hasher {
                     inputs[4] = z;
                     root = hash5(inputs);
                 }
-
-                level ++;
             }
 
             mainRoots[_depth] = root;

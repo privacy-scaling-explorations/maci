@@ -16,11 +16,11 @@ import { loadAB, linkPoseidonLibraries } from '../'
 
 const accounts = genTestAccounts(1)
 let deployer
-let aqContract
 let PoseidonT3Contract, PoseidonT6Contract
 
 const enqueueGasLimit = { gasLimit: 500000 }
 const fillLastSubTreeGasLimit = { gasLimit: 4000000 }
+const insertSubTreeGasLimit = { gasLimit: 300000 }
 
 const calcDepthFromNumLeaves = (
     hashLength: number,
@@ -146,6 +146,61 @@ const testEnqueue = async (
 }
 
 /*
+ * Insert subtrees directly
+ */
+const testInsertSubTrees = async (
+    aq: AccQueue,
+    aqContract: any,
+    NUM_SUBTREES: number,
+    MAIN_DEPTH: number,
+) => {
+
+    const leaves: BigInt[] = []
+    for (let i = 0; i < NUM_SUBTREES; i ++) {
+        const subTree = new IncrementalQuinTree(aq.subDepth, aq.zeros[0], aq.hashLength)
+        const leaf = BigInt(i)
+        subTree.insert(leaf)
+        leaves.push(leaf)
+
+        // insert the subtree root
+        aq.insertSubTree(subTree.root)
+        await (await aqContract.insertSubTree(subTree.root.toString(), insertSubTreeGasLimit)).wait()
+    }
+
+    let correctRoot: string
+    if (NUM_SUBTREES === 1) {
+        correctRoot = aq.subRoots[0].toString()
+    } else {
+        const depth = calcDepthFromNumLeaves(aq.hashLength, aq.subRoots.length)
+        const tree = new IncrementalQuinTree(depth, aq.zeros[aq.subDepth], aq.hashLength)
+        for (const sr of aq.subRoots) {
+            tree.insert(sr)
+        }
+        correctRoot = tree.root.toString()
+    }
+
+    // Check whether mergeSubRootsIntoShortestTree() works
+    aq.mergeSubRootsIntoShortestTree(0)
+    await (await aqContract.mergeSubRootsIntoShortestTree(0, { gasLimit: 8000000 })).wait()
+
+    const expectedSmallSRTroot = aq.smallSRTroot.toString()
+
+    expect(correctRoot).toEqual(expectedSmallSRTroot)
+
+    const contractSmallSRTroot = await aqContract.getSmallSRTroot()
+    expect(expectedSmallSRTroot.toString()).toEqual(contractSmallSRTroot.toString())
+
+    // Check whether merge() works
+    aq.merge(MAIN_DEPTH)
+    await (await aqContract.merge(MAIN_DEPTH, { gasLimit: 8000000 })).wait()
+
+    const expectedMainRoot = aq.mainRoots[MAIN_DEPTH]
+    const contractMainRoot = await aqContract.getMainRoot(MAIN_DEPTH)
+
+    expect(expectedMainRoot.toString()).toEqual(contractMainRoot.toString())
+}
+
+/*
  * Insert a number of subtrees and merge them all into a main tree
  */
 const testMerge = async (
@@ -154,57 +209,73 @@ const testMerge = async (
     NUM_SUBTREES: number,
     MAIN_DEPTH: number,
 ) => {
+    // The raw leaves of the main tree
     const leaves: BigInt[] = []
     for (let i = 0; i < NUM_SUBTREES; i ++) {
-        const leaf = BigInt(123)
+        const leaf = BigInt(i)
 
         aq.enqueue(leaf)
         aq.fillLastSubTree()
+        await (await aqContract.enqueue(leaf.toString(), enqueueGasLimit)).wait()
+        await (await aqContract.fillLastSubTree(fillLastSubTreeGasLimit)).wait()
 
         leaves.push(leaf)
 
         for (let i = 1; i < aq.hashLength ** aq.subDepth; i ++) {
             leaves.push(aq.zeros[0])
         }
-
-        await (await aqContract.enqueue(leaf.toString(), enqueueGasLimit)).wait()
-        await (await aqContract.fillLastSubTree(fillLastSubTreeGasLimit)).wait()
     }
 
+    // Insert leaves into a main tree
     const tree = new IncrementalQuinTree(MAIN_DEPTH, aq.zeros[0], aq.hashLength)
     for (const leaf of leaves) {
         tree.insert(leaf)
     }
 
-    // Check whether mergeDirect() works
-    const aq2 = aq.copy()
-    aq2.mergeDirect(MAIN_DEPTH)
-    expect(aq2.mainRoots[MAIN_DEPTH].toString()).toEqual(tree.root.toString())
-
     // minHeight should be the small SRT height
     const minHeight = await aqContract.calcMinHeight()
-    const c = calcDepthFromNumLeaves(aq.hashLength, (aq.hashLength ** aq.subDepth) * NUM_SUBTREES)
+    const c = calcDepthFromNumLeaves(aq.hashLength, NUM_SUBTREES)
     expect(minHeight.toString()).toEqual(c.toString())
 
     // Check whether mergeSubRootsIntoShortestTree() works
     aq.mergeSubRootsIntoShortestTree(0)
-    await (await aqContract.mergeSubRootsIntoShortestTree(0, { gasLimit: 4000000 })).wait()
+    await (await aqContract.mergeSubRootsIntoShortestTree(0, { gasLimit: 8000000 })).wait()
 
-    const expectedSmallSRTroot = aq.smallSRTroot
-    const contractSmallSRTroot = await aqContract.getSmallSRTroot()
+    const expectedSmallSRTroot = aq.smallSRTroot.toString()
+    const contractSmallSRTroot = (await aqContract.getSmallSRTroot()).toString()
 
-    expect(expectedSmallSRTroot.toString()).toEqual(contractSmallSRTroot.toString())
+    expect(expectedSmallSRTroot).toEqual(contractSmallSRTroot)
 
-    // Check whether merge() works
+    if (NUM_SUBTREES === 1) {
+        expect(expectedSmallSRTroot).toEqual(aq.subRoots[0].toString())
+    } else {
+        // Check whether the small SRT root is correct
+        const srtHeight = calcDepthFromNumLeaves(aq.hashLength, NUM_SUBTREES)
+        const smallTree = new IncrementalQuinTree(srtHeight, aq.zeros[aq.subDepth], aq.hashLength)
+        for (const s of aq.subRoots) {
+            smallTree.insert(s)
+        }
+        expect(expectedSmallSRTroot).toEqual(smallTree.root.toString())
+    }
+
+    // Check whether mergeDirect() works
+    const aq2 = aq.copy()
+
+    aq2.mergeDirect(MAIN_DEPTH)
+    const directlyMergedRoot = aq2.mainRoots[MAIN_DEPTH].toString()
+    expect(directlyMergedRoot.toString()).toEqual(tree.root.toString())
+
+    // Check whether off-chain merge() works
     aq.merge(MAIN_DEPTH)
-    await (await aqContract.merge(MAIN_DEPTH, { gasLimit: 4000000 })).wait()
 
-    const expectedMainRoot = aq.mainRoots[MAIN_DEPTH]
-    const expectedMainRoot2 = aq2.mainRoots[MAIN_DEPTH]
-    const contractMainRoot = await aqContract.getMainRoot(MAIN_DEPTH)
+    const expectedMainRoot = aq.mainRoots[MAIN_DEPTH].toString()
 
-    expect(expectedMainRoot.toString()).toEqual(expectedMainRoot2.toString())
-    expect(expectedMainRoot.toString()).toEqual(contractMainRoot.toString())
+    expect(expectedMainRoot).toEqual(directlyMergedRoot)
+
+    // Check whether on-chain merge() works
+    await (await aqContract.merge(MAIN_DEPTH, { gasLimit: 8000000 })).wait()
+    const contractMainRoot = (await aqContract.getMainRoot(MAIN_DEPTH)).toString()
+    expect(expectedMainRoot).toEqual(contractMainRoot)
 }
 
 const deploy = async (
@@ -233,7 +304,7 @@ const deploy = async (
 
     const [ AccQueueAbi, AccQueueBin ] = loadAB(contractName)
 
-    aqContract = await deployer.deploy(
+    const aqContract = await deployer.deploy(
         AccQueueAbi,
         AccQueueBin,
         SUB_DEPTH,
@@ -245,26 +316,29 @@ const deploy = async (
 }
 
 describe('AccQueues', () => {
+
     describe('Binary AccQueue0 one-shot merges', () => {
         const SUB_DEPTH = 2
-        const MAIN_DEPTH = 6
+        const MAIN_DEPTH = 5
         const HASH_LENGTH = 2
         const ZERO = BigInt(0)
-        const NUM_SUBTREES = 5
-        let aq: AccQueue
-        beforeAll(async () => {
+
+        test.each`
+            n
+            ${1}
+            ${2}
+            ${3}
+            ${4}
+        `('Should merge $n subtrees', async ({ n }) => {
             const r = await deploy(
                 'AccQueueBinary0',
                 SUB_DEPTH,
                 HASH_LENGTH,
                 ZERO,
             )
-            aq = r.aq
-            aqContract = r.aqContract
-        })
-
-        it(`Should merge ${NUM_SUBTREES} subtrees`, async () => {
-            await testMerge(aq, aqContract, NUM_SUBTREES, MAIN_DEPTH)
+            const aq = r.aq
+            const aqContract = r.aqContract
+            await testMerge(aq, aqContract, n, MAIN_DEPTH)
         })
     })
 
@@ -273,21 +347,72 @@ describe('AccQueues', () => {
         const MAIN_DEPTH = 6
         const HASH_LENGTH = 5
         const ZERO = BigInt(0)
-        const NUM_SUBTREES = 5
-        let aq: AccQueue
-        beforeAll(async () => {
+
+        test.each`
+            n
+            ${1}
+            ${5}
+            ${26}
+        `('Should merge $n subtrees', async ({ n }) => {
             const r = await deploy(
                 'AccQueueQuinary0',
                 SUB_DEPTH,
                 HASH_LENGTH,
                 ZERO,
             )
-            aq = r.aq
-            aqContract = r.aqContract
+            const aq = r.aq
+            const aqContract = r.aqContract
+            await testMerge(aq, aqContract, n, MAIN_DEPTH)
         })
+    })
 
-        it(`Should merge ${NUM_SUBTREES} subtrees`, async () => {
-            await testMerge(aq, aqContract, NUM_SUBTREES, MAIN_DEPTH)
+    describe('Binary AccQueue0 subtree insertions', () => {
+        const SUB_DEPTH = 2
+        const MAIN_DEPTH = 6
+        const HASH_LENGTH = 2
+        const ZERO = BigInt(0)
+
+        test.each`
+            n
+            ${1}
+            ${2}
+            ${3}
+            ${9}
+        `('Should insert $n subtrees', async ({ n }) => {
+            const r = await deploy(
+                'AccQueueBinary0',
+                SUB_DEPTH,
+                HASH_LENGTH,
+                ZERO,
+            )
+            const aq = r.aq
+            const aqContract = r.aqContract
+            await testInsertSubTrees(aq, aqContract, n, MAIN_DEPTH)
+        })
+    })
+
+    describe('Quinary AccQueue0 subtree insertions', () => {
+        const SUB_DEPTH = 2
+        const MAIN_DEPTH = 6
+        const HASH_LENGTH = 5
+        const ZERO = BigInt(0)
+
+        test.each`
+            n
+            ${1}
+            ${4}
+            ${9}
+            ${26}
+        `('Should insert $n subtrees', async ({ n }) => {
+            const r = await deploy(
+                'AccQueueQuinary0',
+                SUB_DEPTH,
+                HASH_LENGTH,
+                ZERO,
+            )
+            const aq = r.aq
+            const aqContract = r.aqContract
+            await testInsertSubTrees(aq, aqContract, n, MAIN_DEPTH)
         })
     })
 
@@ -296,6 +421,8 @@ describe('AccQueues', () => {
         const HASH_LENGTH = 2
         const ZERO = BigInt(0)
         const NUM_SUBTREES = 1
+        let aqContract
+
         beforeAll(async () => {
             const r = await deploy(
                 'AccQueueBinary0',
@@ -341,6 +468,8 @@ describe('AccQueues', () => {
         const ZERO = BigInt(0)
         const NUM_SUBTREES = 5
         let aq: AccQueue
+        let aqContract
+
         beforeAll(async () => {
             const r = await deploy(
                 'AccQueueBinary0',
@@ -395,8 +524,9 @@ describe('AccQueues', () => {
         const MAIN_DEPTH = 5
         const HASH_LENGTH = 5
         const ZERO = BigInt(0)
-        const NUM_SUBTREES = 5
+        const NUM_SUBTREES = 6
         let aq: AccQueue
+        let aqContract
         beforeAll(async () => {
             const r = await deploy(
                 'AccQueueQuinary0',
@@ -431,7 +561,7 @@ describe('AccQueues', () => {
 
             await (await aqContract.mergeSubRootsIntoShortestTree(2)).wait()
             await (await aqContract.mergeSubRootsIntoShortestTree(2)).wait()
-            await (await aqContract.mergeSubRootsIntoShortestTree(1)).wait()
+            await (await aqContract.mergeSubRootsIntoShortestTree(2)).wait()
 
             const contractSmallSRTroot = await aqContract.getSmallSRTroot()
             expect(expectedSmallSRTroot.toString()).toEqual(contractSmallSRTroot.toString())
@@ -451,6 +581,7 @@ describe('AccQueues', () => {
         const HASH_LENGTH = 2
         const ZERO = BigInt(0)
         let aq: AccQueue
+        let aqContract
 
         beforeAll(async () => {
             const r = await deploy(
@@ -485,6 +616,7 @@ describe('AccQueues', () => {
         const HASH_LENGTH = 5
         const ZERO = BigInt(0)
         let aq: AccQueue
+        let aqContract
 
         beforeAll(async () => {
             const r = await deploy(
@@ -519,6 +651,7 @@ describe('AccQueues', () => {
         const HASH_LENGTH = 2
         const ZERO = NOTHING_UP_MY_SLEEVE
         let aq: AccQueue
+        let aqContract
 
         beforeAll(async () => {
             const r = await deploy(
@@ -553,6 +686,7 @@ describe('AccQueues', () => {
         const HASH_LENGTH = 5
         const ZERO = NOTHING_UP_MY_SLEEVE
         let aq: AccQueue
+        let aqContract
 
         beforeAll(async () => {
             const r = await deploy(
@@ -586,6 +720,7 @@ describe('AccQueues', () => {
         const SUB_DEPTH = 2
         const HASH_LENGTH = 2
         const ZERO = BigInt(0)
+        let aqContract
 
         beforeAll(async () => {
             const r = await deploy(
@@ -625,6 +760,7 @@ describe('AccQueues', () => {
         const SUB_DEPTH = 2
         const HASH_LENGTH = 5
         const ZERO = BigInt(0)
+        let aqContract
 
         beforeAll(async () => {
             const r = await deploy(
