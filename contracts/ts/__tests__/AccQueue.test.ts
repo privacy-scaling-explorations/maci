@@ -20,7 +20,7 @@ let deployer
 let PoseidonT3Contract, PoseidonT6Contract
 
 const enqueueGasLimit = { gasLimit: 500000 }
-const fillLastSubTreeGasLimit = { gasLimit: 4000000 }
+const fillGasLimit = { gasLimit: 4000000 }
 const insertSubTreeGasLimit = { gasLimit: 300000 }
 
 const calcDepthFromNumLeaves = (
@@ -41,8 +41,8 @@ const calcDepthFromNumLeaves = (
 
 
 const testEmptySubtree = async (aq: AccQueue, aqContract: any, index: number) => {
-    aq.fillLastSubTree()
-    const tx = await aqContract.fillLastSubTree(fillLastSubTreeGasLimit)
+    aq.fill()
+    const tx = await aqContract.fill(fillGasLimit)
     await tx.wait()
     const subRoot = await aqContract.getSubRoot(index)
     expect(subRoot.toString()).toEqual(aq.getSubRoot(index).toString())
@@ -57,8 +57,8 @@ const testIncompleteSubtree = async (aq: AccQueue, aqContract: any) => {
     aq.enqueue(leaf)
     await (await aqContract.enqueue(leaf.toString(), enqueueGasLimit)).wait()
 
-    aq.fillLastSubTree()
-    await (await aqContract.fillLastSubTree(fillLastSubTreeGasLimit)).wait()
+    aq.fill()
+    await (await aqContract.fill(fillGasLimit)).wait()
 
     const subRoot = await aqContract.getSubRoot(1)
     expect(subRoot.toString()).toEqual(aq.getSubRoot(1).toString())
@@ -75,8 +75,8 @@ const testFillForAllIncompletes = async (
             aq.enqueue(leaf)
             await (await aqContract.enqueue(leaf.toString(), enqueueGasLimit)).wait()
         }
-        aq.fillLastSubTree()
-        await (await aqContract.fillLastSubTree(fillLastSubTreeGasLimit)).wait()
+        aq.fill()
+        await (await aqContract.fill(fillGasLimit)).wait()
 
         const subRoot = await aqContract.getSubRoot(3 + i)
         expect(subRoot.toString()).toEqual(aq.getSubRoot(3 + i).toString())
@@ -180,9 +180,9 @@ const testInsertSubTrees = async (
         correctRoot = tree.root.toString()
     }
 
-    // Check whether mergeSubRootsIntoShortestTree() works
-    aq.mergeSubRootsIntoShortestTree(0)
-    await (await aqContract.mergeSubRootsIntoShortestTree(0, { gasLimit: 8000000 })).wait()
+    // Check whether mergeSubRoots() works
+    aq.mergeSubRoots(0)
+    await (await aqContract.mergeSubRoots(0, { gasLimit: 8000000 })).wait()
 
     const expectedSmallSRTroot = aq.smallSRTroot.toString()
 
@@ -216,9 +216,9 @@ const testMerge = async (
         const leaf = BigInt(i)
 
         aq.enqueue(leaf)
-        aq.fillLastSubTree()
+        aq.fill()
         await (await aqContract.enqueue(leaf.toString(), enqueueGasLimit)).wait()
-        await (await aqContract.fillLastSubTree(fillLastSubTreeGasLimit)).wait()
+        await (await aqContract.fill(fillGasLimit)).wait()
 
         leaves.push(leaf)
 
@@ -238,9 +238,9 @@ const testMerge = async (
     const c = calcDepthFromNumLeaves(aq.hashLength, NUM_SUBTREES)
     expect(minHeight.toString()).toEqual(c.toString())
 
-    // Check whether mergeSubRootsIntoShortestTree() works
-    aq.mergeSubRootsIntoShortestTree(0)
-    await (await aqContract.mergeSubRootsIntoShortestTree(0, { gasLimit: 8000000 })).wait()
+    // Check whether mergeSubRoots() works
+    aq.mergeSubRoots(0)
+    await (await aqContract.mergeSubRoots(0, { gasLimit: 8000000 })).wait()
 
     const expectedSmallSRTroot = aq.smallSRTroot.toString()
     const contractSmallSRTroot = (await aqContract.getSmallSRTroot()).toString()
@@ -335,17 +335,17 @@ describe('AccQueues', () => {
             aqContract = r.aqContract
         })
 
-        it('mergeSubRootsIntoShortestTree() should fail on an empty AccQueue', async () => {
+        it('mergeSubRoots() should fail on an empty AccQueue', async () => {
             expect.assertions(1)
             try {
-                await (await (aqContract.mergeSubRootsIntoShortestTree(0, { gasLimit: 1000000 }))).wait()
+                await (await (aqContract.mergeSubRoots(0, { gasLimit: 1000000 }))).wait()
             } catch (e) {
                 const error = 'AccQueue: nothing to merge'
                 expect(e.message.endsWith(error)).toBeTruthy()
             }
         })
 
-        it('merge() should fail on an empty AccQueue', async () => {
+        it('merge() should revert on an empty AccQueue', async () => {
             expect.assertions(1)
             try {
                 await (await (aqContract.merge(1, { gasLimit: 1000000 }))).wait()
@@ -355,11 +355,11 @@ describe('AccQueues', () => {
             }
         })
 
-        it(`Should not merge if the subtrees have not been merged yet`, async () => {
+        it(`merge() should revert if there are unmerged subtrees`, async () => {
             expect.assertions(1)
 
             for (let i = 0; i < NUM_SUBTREES; i ++) {
-                await (await (aqContract.fillLastSubTree(fillLastSubTreeGasLimit))).wait()
+                await (await (aqContract.fill(fillGasLimit))).wait()
             }
 
             try {
@@ -370,10 +370,11 @@ describe('AccQueues', () => {
             }
         })
 
-        it(`Should not merge if the desired depth is invalid`, async () => {
+        it(`merge() should revert if the desired depth is invalid`, async () => {
             expect.assertions(1)
 
-            await (await (aqContract.mergeSubRootsIntoShortestTree(0, { gasLimit: 1000000 }))).wait()
+            await (await (aqContract.mergeSubRoots(0, { gasLimit: 1000000 }))).wait()
+
             try {
                 await (await (aqContract.merge(1))).wait()
             } catch (e) {
@@ -398,7 +399,7 @@ describe('AccQueues', () => {
             )
             const aqContract = r.aqContract
             try {
-                await (await aqContract.mergeSubRootsIntoShortestTree(0, { gasLimit: 1000000 })).wait()
+                await (await aqContract.mergeSubRoots(0, { gasLimit: 1000000 })).wait()
             } catch (e) {
                 const error = 'AccQueue: nothing to merge'
                 expect(e.message.endsWith(error)).toBeTruthy()
@@ -415,7 +416,7 @@ describe('AccQueues', () => {
 
             const aqContract = r.aqContract
             await (await aqContract.enqueue(1)).wait()
-            await (await aqContract.mergeSubRootsIntoShortestTree(0, { gasLimit: 1000000 })).wait()
+            await (await aqContract.mergeSubRoots(0, { gasLimit: 1000000 })).wait()
             try {
                 await (await aqContract.merge(0, { gasLimit: 1000000 })).wait()
             } catch (e) {
@@ -434,7 +435,7 @@ describe('AccQueues', () => {
 
             const aqContract = r.aqContract
             await (await aqContract.enqueue(0, enqueueGasLimit)).wait()
-            await (await aqContract.mergeSubRootsIntoShortestTree(0, { gasLimit: 1000000 })).wait()
+            await (await aqContract.mergeSubRoots(0, { gasLimit: 1000000 })).wait()
             const srtRoot = await aqContract.getSmallSRTroot()
             const expectedRoot = hashLeftRight(BigInt(0), BigInt(0))
             expect(srtRoot.toString()).toEqual(expectedRoot.toString())
@@ -449,10 +450,10 @@ describe('AccQueues', () => {
             )
             const aqContract = r.aqContract
             for (let i = 0; i < 4; i ++) {
-                await (await (aqContract.fillLastSubTree(fillLastSubTreeGasLimit))).wait()
+                await (await (aqContract.fill(fillGasLimit))).wait()
             }
 
-            await (await aqContract.mergeSubRootsIntoShortestTree(0, { gasLimit: 1000000 })).wait()
+            await (await aqContract.mergeSubRoots(0, { gasLimit: 1000000 })).wait()
 
             try {
                 await (await aqContract.merge(1, { gasLimit: 1000000 })).wait()
@@ -589,11 +590,11 @@ describe('AccQueues', () => {
                 await (await aqContract.enqueue(leaf.toString(), enqueueGasLimit)).wait()
                 aq.enqueue(leaf)
 
-                aq.fillLastSubTree()
-                await (await aqContract.fillLastSubTree(fillLastSubTreeGasLimit)).wait()
+                aq.fill()
+                await (await aqContract.fill(fillGasLimit)).wait()
             }
 
-            aq.mergeSubRootsIntoShortestTree(0)
+            aq.mergeSubRoots(0)
             const expectedSmallSRTroot = aq.smallSRTroot
             
             try {
@@ -603,9 +604,9 @@ describe('AccQueues', () => {
                 expect(e.message.endsWith(error)).toBeTruthy()
             }
 
-            await (await aqContract.mergeSubRootsIntoShortestTree(2)).wait()
-            await (await aqContract.mergeSubRootsIntoShortestTree(2)).wait()
-            await (await aqContract.mergeSubRootsIntoShortestTree(1)).wait()
+            await (await aqContract.mergeSubRoots(2)).wait()
+            await (await aqContract.mergeSubRoots(2)).wait()
+            await (await aqContract.mergeSubRoots(1)).wait()
 
             const contractSmallSRTroot = await aqContract.getSmallSRTroot()
             expect(expectedSmallSRTroot.toString()).toEqual(contractSmallSRTroot.toString())
@@ -646,11 +647,11 @@ describe('AccQueues', () => {
                 await (await aqContract.enqueue(leaf.toString(), enqueueGasLimit)).wait()
                 aq.enqueue(leaf)
 
-                aq.fillLastSubTree()
-                await (await aqContract.fillLastSubTree(fillLastSubTreeGasLimit)).wait()
+                aq.fill()
+                await (await aqContract.fill(fillGasLimit)).wait()
             }
 
-            aq.mergeSubRootsIntoShortestTree(0)
+            aq.mergeSubRoots(0)
             const expectedSmallSRTroot = aq.smallSRTroot
             
             try {
@@ -660,9 +661,9 @@ describe('AccQueues', () => {
                 expect(e.message.endsWith(error)).toBeTruthy()
             }
 
-            await (await aqContract.mergeSubRootsIntoShortestTree(2)).wait()
-            await (await aqContract.mergeSubRootsIntoShortestTree(2)).wait()
-            await (await aqContract.mergeSubRootsIntoShortestTree(2)).wait()
+            await (await aqContract.mergeSubRoots(2)).wait()
+            await (await aqContract.mergeSubRoots(2)).wait()
+            await (await aqContract.mergeSubRoots(2)).wait()
 
             const contractSmallSRTroot = await aqContract.getSmallSRTroot()
             expect(expectedSmallSRTroot.toString()).toEqual(contractSmallSRTroot.toString())
@@ -707,7 +708,7 @@ describe('AccQueues', () => {
             await testEmptySubtree(aq, aqContract, 2)
         })
 
-        it('fillLastSubTree() should be correct for every number of leaves in an incomplete subtree', async () => {
+        it('fill() should be correct for every number of leaves in an incomplete subtree', async () => {
             await testFillForAllIncompletes(aq, aqContract, HASH_LENGTH)
         })
     })
@@ -742,7 +743,7 @@ describe('AccQueues', () => {
             await testEmptySubtree(aq, aqContract, 2)
         })
 
-        it('fillLastSubTree() should be correct for every number of leaves in an incomplete subtree', async () => {
+        it('fill() should be correct for every number of leaves in an incomplete subtree', async () => {
             await testFillForAllIncompletes(aq, aqContract, HASH_LENGTH)
         })
     })
@@ -777,7 +778,7 @@ describe('AccQueues', () => {
             await testEmptySubtree(aq, aqContract, 2)
         })
 
-        it('fillLastSubTree() should be correct for every number of leaves in an incomplete subtree', async () => {
+        it('fill() should be correct for every number of leaves in an incomplete subtree', async () => {
             await testFillForAllIncompletes(aq, aqContract, HASH_LENGTH)
         })
     })
@@ -812,7 +813,7 @@ describe('AccQueues', () => {
             await testEmptySubtree(aq, aqContract, 2)
         })
 
-        it('fillLastSubTree() should be correct for every number of leaves in an incomplete subtree', async () => {
+        it('fill() should be correct for every number of leaves in an incomplete subtree', async () => {
             await testFillForAllIncompletes(aq, aqContract, HASH_LENGTH)
         })
     })

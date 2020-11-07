@@ -12,10 +12,23 @@ import { MerkleZeros as MerkleQuinaryMaci } from "./zeros/MerkleQuinaryMaci.sol"
  * This contract defines a Merkle tree where each leaf insertion only updates a
  * subtree. To obtain the main tree root, the contract owner must merge the
  * subtrees together. Merging subtrees requires at least 2 operations:
- * mergeSubRootsIntoShortestTree(), and merge(). To get around the gas limit,
- * the mergeSubRootsIntoShortestTree() can be performed in multiple transactions.
+ * mergeSubRoots(), and merge(). To get around the gas limit,
+ * the mergeSubRoots() can be performed in multiple transactions.
  */
 abstract contract AccQueue is Ownable, Hasher {
+
+    // A Queue is a 2D array of Merkle roots and indices which represents nodes
+    // in a Merkle tree while it is progressively updated.
+    struct Queue {
+        // IMPORTANT: the following declares an array of b elements of type T: T[b]
+        // And the following declares an array of b elements of type T[a]: T[a][b]
+        // As such, the following declares an array of MAX_DEPTH+1 arrays of
+        // uint256[4] arrays, **not the other way round**:
+        uint256[4][MAX_DEPTH + 1] levels;
+
+        uint256[MAX_DEPTH + 1] indices;
+    }
+
     // The maximum tree depth
     uint256 constant MAX_DEPTH = 32;
 
@@ -38,15 +51,11 @@ abstract contract AccQueue is Ownable, Hasher {
     // second has 1, and so on
     uint256 internal currentSubtreeIndex;
 
-    // Tracks the levels of the current subtree.
-    // IMPORTANT: the following declares an array of b elements of type T: T[b]
-    // And the following declares an array of b elements of type T[a]: T[a][b]
-    // As such, the following declares an array of MAX_DEPTH+1 arrays of
-    // uint256[4] arrays, **not the other way round**:
-    uint256[4][MAX_DEPTH + 1] internal levels;
+    // Tracks the current subtree.
+    Queue internal leafQueue;
 
-    // Tracks the next leaf index per level for the current subtree
-    uint256[MAX_DEPTH + 1] internal nextIndexPerLevel;
+    // Tracks the smallest tree of subroots
+    Queue internal subRootQueue;
 
     // Subtree roots
     mapping(uint256 => uint256) internal subRoots;
@@ -61,16 +70,8 @@ abstract contract AccQueue is Ownable, Hasher {
     // roots
     uint256 internal smallSRTroot;
 
-    // The following are used to merge the subroots into the smallSRTroot.
-    
-    // Tracks the levels of the small subroot tree (SRT)
-    uint256[4][MAX_DEPTH + 1] internal queuedSRTlevels;
-
-    // Tracks the next leaf index per level
-    uint256[MAX_DEPTH + 1] internal queuedSRTindex;
-
     // Tracks the next subroot to queue
-    uint256 internal nextSRindexToQueue;
+    uint256 internal nextSubRootIndex;
 
     // The number of leaves inserted across all subtrees so far
     uint256 public numLeaves;
@@ -125,7 +126,7 @@ abstract contract AccQueue is Ownable, Hasher {
      */
     function enqueue(uint256 _leaf) public {
         // Recursively queue the leaf
-        queue(_leaf, 0);
+        _enqueue(_leaf, 0);
         
         // Update the leaf counter
         numLeaves ++;
@@ -139,14 +140,14 @@ abstract contract AccQueue is Ownable, Hasher {
         // If a subtree is full
         if (numLeaves % subTreeCapacity == 0) {
             // Store the subroot
-            subRoots[currentSubtreeIndex] = levels[subDepth][0];
+            subRoots[currentSubtreeIndex] = leafQueue.levels[subDepth][0];
 
             // Increment the index
             currentSubtreeIndex ++;
 
             // Delete ancillary data
-            delete levels[subDepth][0];
-            delete nextIndexPerLevel;
+            delete leafQueue.levels[subDepth][0];
+            delete leafQueue.indices;
         }
     }
 
@@ -156,49 +157,49 @@ abstract contract AccQueue is Ownable, Hasher {
      * @param _leaf The leaf to add.
      * @param _level The level at which to queue the leaf.
      */
-    function queue(uint256 _leaf, uint256 _level) internal {
+    function _enqueue(uint256 _leaf, uint256 _level) internal {
         if (_level > subDepth) {
             return;
         }
 
-        uint256 n = nextIndexPerLevel[_level];
+        uint256 n = leafQueue.indices[_level];
 
         if (n != hashLength - 1) {
             // Just store the leaf
-            levels[_level][n] = _leaf;
+            leafQueue.levels[_level][n] = _leaf;
 
             // Update the index
-            nextIndexPerLevel[_level] ++;
+            leafQueue.indices[_level] ++;
         } else {
             // Hash the leaves
             uint256 hashed = hashLevel(_level, _leaf);
 
             // Reset the index for this level
-            delete nextIndexPerLevel[_level];
+            delete leafQueue.indices[_level];
 
             // Queue the hash of the leaves into to the next level
-            queue(hashed, _level + 1);
+            _enqueue(hashed, _level + 1);
         }
     }
 
     /*
-     * Fill any empty leaves of the last subtree with zeros and store the
+     * Fill any empty leaves of the current subtree with zeros and store the
      * resulting subroot.
      */
-    function fillLastSubTree() public onlyOwner {
+    function fill() public onlyOwner {
         if (numLeaves % subTreeCapacity == 0) {
             // If the subtree is completely empty, then the subroot is a
             // precalculated zero value
             subRoots[currentSubtreeIndex] = getZero(subDepth);
         } else {
             // Otherwise, fill the rest of the subtree with zeros
-            fillRecurse(0);
+            _fill(0);
 
             // Store the subroot
-            subRoots[currentSubtreeIndex] = levels[subDepth][0];
+            subRoots[currentSubtreeIndex] = leafQueue.levels[subDepth][0];
 
             // Reset the subtree data
-            delete levels;
+            delete leafQueue.levels;
 
             // Reset the merged roots
             delete mainRoots;
@@ -222,12 +223,12 @@ abstract contract AccQueue is Ownable, Hasher {
      * the level, and enqueues the hash to the next level.
      * @param _level The level at which to queue zeros.
      */
-    function fillRecurse(uint256 _level) internal {
+    function _fill(uint256 _level) internal {
         if (_level > subDepth) {
             return;
         }
 
-        uint256 n = nextIndexPerLevel[_level];
+        uint256 n = leafQueue.indices[_level];
 
         if (n != 0) {
             // Fill the subtree level with zeros and hash the level
@@ -236,13 +237,13 @@ abstract contract AccQueue is Ownable, Hasher {
             uint256[] memory inputs = new uint256[](hashLength);
             uint256 z = getZero(_level);
             if (isBinary) {
-                inputs[0] = levels[_level][0];
+                inputs[0] = leafQueue.levels[_level][0];
                 inputs[1] = z;
                 hashed = hash2(inputs);
             } else {
                 uint8 i = 0;
                 for (; i < n; i ++) {
-                    inputs[i] = levels[_level][i];
+                    inputs[i] = leafQueue.levels[_level][i];
                 }
 
                 for (; i < hashLength; i ++) {
@@ -252,14 +253,14 @@ abstract contract AccQueue is Ownable, Hasher {
             }
 
             // Update the subtree from the next level onwards with the new leaf
-            queue(hashed, _level + 1);
+            _enqueue(hashed, _level + 1);
 
             // Reset the current level
-            delete nextIndexPerLevel[_level];
+            delete leafQueue.indices[_level];
         }
 
         // Recurse
-        fillRecurse(_level + 1);
+        _fill(_level + 1);
     }
 
     /*
@@ -269,7 +270,7 @@ abstract contract AccQueue is Ownable, Hasher {
     function insertSubTree(uint256 _subRoot) public onlyOwner {
         // If the current subtree is not full, fill it.
         if (numLeaves % subTreeCapacity > 0) {
-            fillLastSubTree();
+            fill();
         }
 
         subRoots[currentSubtreeIndex] = _subRoot;
@@ -319,7 +320,7 @@ abstract contract AccQueue is Ownable, Hasher {
      *                       merge, or a single transaction would run out of
      *                       gas.
      */
-    function mergeSubRootsIntoShortestTree(
+    function mergeSubRoots(
         uint256 _numSrQueueOps
     ) public onlyOwner {
         // This function can only be called once unless a new subtree is created
@@ -331,7 +332,7 @@ abstract contract AccQueue is Ownable, Hasher {
         // Fill any empty leaves in the current subtree with zeros ony if the
         // current subtree is not full
         if (numLeaves % subTreeCapacity != 0) {
-            fillLastSubTree();
+            fill();
         }
 
         // If there is only 1 subtree, use its root
@@ -344,7 +345,7 @@ abstract contract AccQueue is Ownable, Hasher {
         uint256 depth = calcMinHeight();
 
         uint256 numQueueOps = 0;
-        for (uint256 i = nextSRindexToQueue; i < currentSubtreeIndex; i ++) {
+        for (uint256 i = nextSubRootIndex; i < currentSubtreeIndex; i ++) {
             // Stop if the limit has been reached
             if (_numSrQueueOps != 0 && numQueueOps == _numSrQueueOps) {
                 return;
@@ -352,13 +353,13 @@ abstract contract AccQueue is Ownable, Hasher {
 
             // Queue the next subroot
             queueSubRoot(
-                getSubRoot(nextSRindexToQueue),
+                getSubRoot(nextSubRootIndex),
                 0,
                 depth
             );
 
             // Increment the next subroot counter
-            nextSRindexToQueue ++;
+            nextSubRootIndex ++;
 
             // Increment the ops counter
             numQueueOps ++;
@@ -368,7 +369,7 @@ abstract contract AccQueue is Ownable, Hasher {
         uint256 m = hashLength ** depth;
 
         // Queue zeroes to fill out the SRT
-        if (nextSRindexToQueue == currentSubtreeIndex) {
+        if (nextSubRootIndex == currentSubtreeIndex) {
             uint256 z = getZero(subDepth);
             for (uint256 i = currentSubtreeIndex; i < m; i ++) {
                 queueSubRoot(
@@ -380,7 +381,7 @@ abstract contract AccQueue is Ownable, Hasher {
         }
 
         // Store the smallest main root
-        smallSRTroot = queuedSRTlevels[depth][0];
+        smallSRTroot = subRootQueue.levels[depth][0];
         subTreesMerged = true;
     }
 
@@ -395,30 +396,30 @@ abstract contract AccQueue is Ownable, Hasher {
             return;
         }
 
-        uint256 n = queuedSRTindex[_level];
+        uint256 n = subRootQueue.indices[_level];
 
         if (n != hashLength - 1) {
             // Just store the leaf
-            queuedSRTlevels[_level][n] = _leaf;
-            queuedSRTindex[_level] ++;
+            subRootQueue.levels[_level][n] = _leaf;
+            subRootQueue.indices[_level] ++;
         } else {
             // Hash the elements in this level and queue it in the next level
             uint256 hashed;
             uint256[] memory inputs = new uint256[](hashLength);
             if (isBinary) {
-                inputs[0] = queuedSRTlevels[_level][0];
+                inputs[0] = subRootQueue.levels[_level][0];
                 inputs[1] = _leaf;
                 hashed = hash2(inputs);
             } else {
                 for (uint8 i = 0; i < n; i ++) {
-                    inputs[i] = queuedSRTlevels[_level][i];
+                    inputs[i] = subRootQueue.levels[_level][i];
                 }
                 inputs[n] = _leaf;
                 hashed = hash5(inputs);
             }
 
             // Recurse
-            delete queuedSRTindex[_level];
+            delete subRootQueue.indices[_level];
             queueSubRoot(hashed, _level + 1, _maxDepth);
         }
     }
@@ -500,7 +501,7 @@ abstract contract AccQueue is Ownable, Hasher {
 
     /*
      * Returns the subroot tree (SRT) root. Its value must first be computed
-     * using mergeSubRootsIntoShortestTree.
+     * using mergeSubRoots.
      */
     function getSmallSRTroot() public view returns (uint256) {
         require(subTreesMerged, "AccQueue: subtrees must be merged first");
@@ -511,7 +512,7 @@ abstract contract AccQueue is Ownable, Hasher {
      * Return the merged Merkle root of all the leaves at a desired depth.
      * merge() or merged(_depth) must be called first.
      * @param _depth The depth of the main tree. It must first be computed
-     *               using mergeSubRootsIntoShortestTree() and merge(). 
+     *               using mergeSubRoots() and merge(). 
      */
     function getMainRoot(uint256 _depth) public view returns (uint256) {
         require(
@@ -527,10 +528,10 @@ abstract contract AccQueueBinary is AccQueue {
     constructor(uint256 _subDepth) AccQueue(_subDepth, 2) {}
 
     function hashLevel(uint256 _level, uint256 _leaf) override internal returns (uint256) {
-        uint256 hashed = hashLeftRight(levels[_level][0], _leaf);
+        uint256 hashed = hashLeftRight(leafQueue.levels[_level][0], _leaf);
 
         // Free up storage slots to refund gas.
-        delete levels[_level][0];
+        delete leafQueue.levels[_level][0];
 
         return hashed;
     }
@@ -542,16 +543,16 @@ abstract contract AccQueueQuinary is AccQueue {
 
     function hashLevel(uint256 _level, uint256 _leaf) override internal returns (uint256) {
         uint256[] memory inputs = new uint256[](5);
-        inputs[0] = levels[_level][0];
-        inputs[1] = levels[_level][1];
-        inputs[2] = levels[_level][2];
-        inputs[3] = levels[_level][3];
+        inputs[0] = leafQueue.levels[_level][0];
+        inputs[1] = leafQueue.levels[_level][1];
+        inputs[2] = leafQueue.levels[_level][2];
+        inputs[3] = leafQueue.levels[_level][3];
         inputs[4] = _leaf;
         uint256 hashed = hash5(inputs);
 
         // Free up storage slots to refund gas. Note that using a loop here
         // would result in lower gas savings.
-        delete levels[_level];
+        delete leafQueue.levels[_level];
 
         return hashed;
     }

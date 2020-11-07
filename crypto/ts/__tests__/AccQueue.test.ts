@@ -40,7 +40,7 @@ const testMerge = (
         }
     }
 
-    aq2.mergeSubRootsIntoShortestTree(0)
+    aq2.mergeSubRoots(0)
     aq2.merge(MAIN_DEPTH)
 
     // For reference only
@@ -68,22 +68,22 @@ const testMergeShortest = (
     }
 
     // Merge all subroots in aq
-    aq.mergeSubRootsIntoShortestTree(0)
+    aq.mergeSubRoots(0)
 
     // Merge all but one subroot in aq2
-    aq2.mergeSubRootsIntoShortestTree(2)
+    aq2.mergeSubRoots(2)
     expect(aq.smallSRTroot.toString()).not.toEqual(aq2.smallSRTroot.toString())
-    aq2.mergeSubRootsIntoShortestTree(2)
+    aq2.mergeSubRoots(2)
     expect(aq.smallSRTroot.toString()).not.toEqual(aq2.smallSRTroot.toString())
 
     // Merge the last subroot in aq2
-    aq2.mergeSubRootsIntoShortestTree(1)
+    aq2.mergeSubRoots(1)
 
     expect(aq.smallSRTroot.toString()).toEqual(aq2.smallSRTroot.toString())
 }
 
 /*
- * Insert one leaf, then run mergeSubRootsIntoShortestTree
+ * Insert one leaf, then run mergeSubRoots
  */
 const testMergeShortestOne = (
     SUB_DEPTH: number,
@@ -97,7 +97,7 @@ const testMergeShortestOne = (
     aq.enqueue(leaf)
     smallTree.insert(leaf)
 
-    aq.mergeSubRootsIntoShortestTree(0)
+    aq.mergeSubRoots(0)
 
     expect(aq.smallSRTroot.toString()).toEqual(smallTree.root.toString())
     expect(aq.getSubRoot(0).toString()).toEqual(smallTree.root.toString())
@@ -124,7 +124,7 @@ const testMergeExhaustive = (
         }
 
         // Merge subroots
-        aq.mergeSubRootsIntoShortestTree(0)
+        aq.mergeSubRoots(0)
 
         const depth = calcDepthFromNumLeaves(HASH_LENGTH, numSubtrees)
         const smallTree = new IncrementalQuinTree(depth, aq.zeros[aq.subDepth], HASH_LENGTH)
@@ -211,7 +211,7 @@ describe('AccQueue', () => {
             it('Filling an empty subtree should create the correct subroot', () => {
                 const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
                 const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
-                aq.fillLastSubTree()
+                aq.fill()
                 expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
             })
 
@@ -223,7 +223,7 @@ describe('AccQueue', () => {
                 aq.enqueue(leaf)
                 tree.insert(leaf)
 
-                aq.fillLastSubTree()
+                aq.fill()
 
                 expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
             })
@@ -234,15 +234,15 @@ describe('AccQueue', () => {
 
                 // Create the first subtree with one leaf
                 aq.enqueue(leaf)
-                aq.fillLastSubTree()
+                aq.fill()
                 
                 // Fill the second subtree with zeros
-                aq.fillLastSubTree()
+                aq.fill()
                 const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
                 expect(aq.getSubRoot(1).toString()).toEqual(tree.root.toString())
             })
 
-            it('fillLastSubTree() should be correct for every number of leaves in an incomplete subtree', () => {
+            it('fill() should be correct for every number of leaves in an incomplete subtree', () => {
                 for (let i = 0; i < 2; i ++) {
                     const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
                     const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
@@ -251,7 +251,7 @@ describe('AccQueue', () => {
                         aq.enqueue(leaf)
                         tree.insert(leaf)
                     }
-                    aq.fillLastSubTree()
+                    aq.fill()
 
                     expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
                 }
@@ -267,7 +267,7 @@ describe('AccQueue', () => {
             it('Filling an empty subtree should create the correct subroot', () => {
                 const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
                 const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
-                aq.fillLastSubTree()
+                aq.fill()
                 expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
             })
 
@@ -279,7 +279,7 @@ describe('AccQueue', () => {
                 aq.enqueue(leaf)
                 tree.insert(leaf)
 
-                aq.fillLastSubTree()
+                aq.fill()
 
                 expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
             })
@@ -290,15 +290,15 @@ describe('AccQueue', () => {
 
                 // Create the first subtree with one leaf
                 aq.enqueue(leaf)
-                aq.fillLastSubTree()
+                aq.fill()
                 
                 // Fill the second subtree with zeros
-                aq.fillLastSubTree()
+                aq.fill()
                 const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
                 expect(aq.getSubRoot(1).toString()).toEqual(tree.root.toString())
             })
 
-            it('fillLastSubTree() should be correct for every number of leaves in an incomplete subtree', () => {
+            it('fill() should be correct for every number of leaves in an incomplete subtree', () => {
                 const capacity = HASH_LENGTH ** SUB_DEPTH
                 for (let i = 1; i < capacity - 1; i ++) {
                     const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
@@ -308,7 +308,7 @@ describe('AccQueue', () => {
                         aq.enqueue(leaf)
                         tree.insert(leaf)
                     }
-                    aq.fillLastSubTree()
+                    aq.fill()
 
                     expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
                 }
@@ -331,7 +331,7 @@ describe('AccQueue', () => {
                 })
             })
 
-            describe('mergeSubRootsIntoShortestTree()', () => {
+            describe('mergeSubRoots()', () => {
                 it('Should work progressively', () => {
                     testMergeShortest(SUB_DEPTH, HASH_LENGTH, ZERO, NUM_SUBTREES)
                 })
@@ -342,7 +342,7 @@ describe('AccQueue', () => {
                     const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
 
                     expect(() => {
-                        aq.mergeSubRootsIntoShortestTree(0)
+                        aq.mergeSubRoots(0)
                     }).toThrow()
                 })
 
@@ -366,7 +366,7 @@ describe('AccQueue', () => {
                 })
             })
 
-            describe('mergeSubRootsIntoShortestTree()', () => {
+            describe('mergeSubRoots()', () => {
                 it('Should work progressively', () => {
                     testMergeShortest(SUB_DEPTH, HASH_LENGTH, ZERO, NUM_SUBTREES)
                 })
@@ -377,7 +377,7 @@ describe('AccQueue', () => {
                     const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
 
                     expect(() => {
-                        aq.mergeSubRootsIntoShortestTree(0)
+                        aq.mergeSubRoots(0)
                     }).toThrow()
                 })
 

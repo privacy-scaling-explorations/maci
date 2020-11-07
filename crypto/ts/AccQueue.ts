@@ -30,6 +30,11 @@ const calcDepthFromNumLeaves = (
     return depth
 }
 
+interface Queue {
+    levels: BigInt[][];
+    indices: number[];
+}
+
 /*
  * An Accumulator Queue which conforms to the implementation in AccQueue.sol.
  * Each enqueue() operation updates a subtree, and a merge() operation combines
@@ -59,11 +64,11 @@ class AccQueue {
     // The number of leaves across all subtrees
     public numLeaves = 0
 
-    // The current subtree represented as leaves per level
-    public levels: BigInt[][] = []
-
-    // The next index at which to enqueue a leaf or subroot per level
-    public nextIndexPerLevel: number[] = []
+    // The current subtree
+    public leafQueue: Queue = {
+        levels: [],
+        indices: []
+    }
 
     // The root of each complete subtree
     public subRoots: BigInt[] = []
@@ -124,8 +129,8 @@ class AccQueue {
                     [hashed, hashed, hashed, hashed, hashed ],
                 )
             }
-            this.levels.push(e)
-            this.nextIndexPerLevel[i] = 0
+            this.leafQueue.levels.push(e)
+            this.leafQueue.indices[i] = 0
             this.queuedSRTlevels.push(e)
             this.queuedSRTindex[i] = 0
         }
@@ -146,7 +151,7 @@ class AccQueue {
 
         // Ensure that _value is a BigInt
         _leaf = BigInt(_leaf)
-        this.queue(_leaf, 0)
+        this._enqueue(_leaf, 0)
 
         this.numLeaves ++
         this.subTreesMerged = false
@@ -154,45 +159,45 @@ class AccQueue {
 
         const subTreeCapacity = this.hashLength ** this.subDepth
         if (this.numLeaves % subTreeCapacity === 0) {
-            this.subRoots[this.currentSubtreeIndex] = this.levels[this.subDepth][0]
+            this.subRoots[this.currentSubtreeIndex] = this.leafQueue.levels[this.subDepth][0]
             this.currentSubtreeIndex ++
-            this.levels[this.subDepth][0] = BigInt(0)
+            this.leafQueue.levels[this.subDepth][0] = BigInt(0)
             for (let i = 0; i < this.MAX_DEPTH; i ++) {
-                this.nextIndexPerLevel[i] = 0
+                this.leafQueue.indices[i] = 0
             }
         }
     }
 
-    private queue(
+    private _enqueue(
         _leaf: Leaf,
         _level: number,
     ) {
         if (_level > this.subDepth) {
             return;
         }
-        const n = this.nextIndexPerLevel[_level]
+        const n = this.leafQueue.indices[_level]
 
         if (n != this.hashLength - 1) {
             // Just store the leaf
-            this.levels[_level][n] = _leaf
-            this.nextIndexPerLevel[_level] ++
+            this.leafQueue.levels[_level][n] = _leaf
+            this.leafQueue.indices[_level] ++
             return
         } else {
             let hashed: BigInt
             if (this.hashLength === 2) {
-                hashed = this.hashFunc([this.levels[_level][0], _leaf])
-                this.levels[_level][0] = BigInt(0)
+                hashed = this.hashFunc([this.leafQueue.levels[_level][0], _leaf])
+                this.leafQueue.levels[_level][0] = BigInt(0)
             } else {
-                hashed = this.hashFunc([...this.levels[_level], _leaf])
+                hashed = this.hashFunc([...this.leafQueue.levels[_level], _leaf])
                 for (let i = 0; i < 4; i ++) {
-                    this.levels[_level][i] = BigInt(0)
+                    this.leafQueue.levels[_level][i] = BigInt(0)
                 }
             }
 
-            this.nextIndexPerLevel[_level] = 0
+            this.leafQueue.indices[_level] = 0
 
             // Recurse
-            this.queue(hashed, _level + 1);
+            this._enqueue(hashed, _level + 1);
         }
     }
 
@@ -201,7 +206,7 @@ class AccQueue {
      * Fill any empty leaves of the last subtree with zeros and store the
      * resulting subroot.
      */
-    public fillLastSubTree() {
+    public fill() {
         // The total capacity of the subtree
         const subTreeCapacity = this.hashLength ** this.subDepth
 
@@ -212,17 +217,17 @@ class AccQueue {
 
         } else {
 
-            this._fillLastSubTree(0)
+            this._fill(0)
 
             // Store the subroot
-            this.subRoots[this.currentSubtreeIndex] = this.levels[this.subDepth][0]
+            this.subRoots[this.currentSubtreeIndex] = this.leafQueue.levels[this.subDepth][0]
 
             // Blank out the subtree data
             for (let i = 0; i < this.subDepth + 1; i ++) {
                 if (this.hashLength === 2) {
-                    this.levels[i][0] = BigInt(0)
+                    this.leafQueue.levels[i][0] = BigInt(0)
                 } else {
-                    this.levels[i] = [0, 0, 0, 0].map(BigInt)
+                    this.leafQueue.levels[i] = [0, 0, 0, 0].map(BigInt)
                 }
             }
         }
@@ -237,37 +242,37 @@ class AccQueue {
         this.smallSRTroot = BigInt(0)
     }
 
-    private _fillLastSubTree(_level: number) {
+    private _fill(_level: number) {
         if (_level > this.subDepth) {
             return
         }
 
-        const n = this.nextIndexPerLevel[_level]
+        const n = this.leafQueue.indices[_level]
 
         if (n !== 0) {
             // Fill the subtree level and hash it
             let hashed: BigInt
             if (this.hashLength === 2) {
                 hashed = this.hashFunc([
-                    this.levels[_level][0],
+                    this.leafQueue.levels[_level][0],
                     this.zeros[_level],
                 ])
             } else {
                 for (let i = n; i < this.hashLength; i ++) {
-                    this.levels[_level][i] = this.zeros[_level]
+                    this.leafQueue.levels[_level][i] = this.zeros[_level]
                 }
-                hashed = this.hashFunc(this.levels[_level])
+                hashed = this.hashFunc(this.leafQueue.levels[_level])
             }
 
             // Update the subtree from the next level onwards with the new leaf
-            this.queue(hashed, _level + 1)
+            this._enqueue(hashed, _level + 1)
 
             // Reset the current level
-            this.nextIndexPerLevel[_level] = 0
+            this.leafQueue.indices[_level] = 0
         }
 
         // Recurse
-        this._fillLastSubTree(_level + 1)
+        this._fill(_level + 1)
     }
 
     public calcSRTdepth() {
@@ -288,7 +293,7 @@ class AccQueue {
         // If the current subtree is not full, fill it.
         const subTreeCapacity = this.hashLength ** this.subDepth
         if (this.numLeaves % subTreeCapacity > 0) {
-            this.fillLastSubTree()
+            this.fill()
         }
 
         this.subRoots[this.currentSubtreeIndex] = _subRoot
@@ -307,7 +312,7 @@ class AccQueue {
 
     /*
      * Merge all the subroots into a tree of a specified depth.
-     * It requires this.mergeSubRootsIntoShortestTree() to be run first.
+     * It requires this.mergeSubRoots() to be run first.
      */
     public merge(_depth: number) {
         assert(this.subTreesMerged === true)
@@ -367,7 +372,7 @@ class AccQueue {
 
         // Fill any empty leaves in the last subtree with zeros
         if (this.numLeaves % (this.hashLength ** this.subDepth) > 0) {
-            this.fillLastSubTree()
+            this.fill()
         }
 
         const tree = new IncrementalQuinTree(
@@ -388,7 +393,7 @@ class AccQueue {
      * them. e.g. if there are 5 subroots and hashLength == 2, the tree depth
      * is 3 since 2 ** 3 = 8 which is the next power of 2.
      */
-    public mergeSubRootsIntoShortestTree(
+    public mergeSubRoots(
         _numSrQueueOps = 0,
     ) {
         // This function can only be called once unless a new subtree is created
@@ -399,7 +404,7 @@ class AccQueue {
 
         // Fill any empty leaves in the last subtree with zeros
         if (this.numLeaves % (this.hashLength ** this.subDepth) !== 0) {
-            this.fillLastSubTree()
+            this.fill()
         }
 
         // If there is only 1 subtree, use its root
@@ -498,10 +503,10 @@ class AccQueue {
         )
         newAccQueue.currentSubtreeIndex = JSON.parse(JSON.stringify(this.currentSubtreeIndex))
         newAccQueue.numLeaves = JSON.parse(JSON.stringify(this.numLeaves))
-        newAccQueue.levels = unstringifyBigInts(JSON.parse(
-            JSON.stringify(stringifyBigInts(this.levels))
+        newAccQueue.leafQueue.levels = unstringifyBigInts(JSON.parse(
+            JSON.stringify(stringifyBigInts(this.leafQueue.levels))
         ))
-        newAccQueue.nextIndexPerLevel = JSON.parse(JSON.stringify(this.nextIndexPerLevel))
+        newAccQueue.leafQueue.indices = JSON.parse(JSON.stringify(this.leafQueue.indices))
         newAccQueue.subRoots = deepCopyBigIntArray(this.subRoots)
         newAccQueue.mainRoots = deepCopyBigIntArray(this.mainRoots)
         newAccQueue.zeros = deepCopyBigIntArray(this.zeros)

@@ -68,22 +68,22 @@ const testMerge = async (
         await (await aqContract.enqueue(leaf.toString(), { gasLimit: 200000 })).wait()
         aq.enqueue(leaf)
 
-        aq.fillLastSubTree()
-        await (await aqContract.fillLastSubTree({ gasLimit: 2000000 })).wait()
+        aq.fill()
+        await (await aqContract.fill({ gasLimit: 2000000 })).wait()
     }
 
     if (NUM_MERGES === 0) {
-        aq.mergeSubRootsIntoShortestTree(NUM_MERGES)
-        tx = await aqContract.mergeSubRootsIntoShortestTree(NUM_MERGES, { gasLimit: 8000000 })
+        aq.mergeSubRoots(NUM_MERGES)
+        tx = await aqContract.mergeSubRoots(NUM_MERGES, { gasLimit: 8000000 })
         receipt = await tx.wait()
-        console.log(`mergeSubRootsIntoShortestTree() for ${NUM_SUBTREES} subtrees: ${receipt.gasUsed.toString()} gas`)
+        console.log(`mergeSubRoots() for ${NUM_SUBTREES} subtrees: ${receipt.gasUsed.toString()} gas`)
     } else {
         for (let i = 0; i < NUM_MERGES; i ++) {
             const n = NUM_SUBTREES / NUM_MERGES
-            aq.mergeSubRootsIntoShortestTree(n)
-            tx = await aqContract.mergeSubRootsIntoShortestTree(n, { gasLimit: 8000000 })
+            aq.mergeSubRoots(n)
+            tx = await aqContract.mergeSubRoots(n, { gasLimit: 8000000 })
             receipt = await tx.wait()
-            console.log(`mergeSubRootsIntoShortestTree() for ${NUM_SUBTREES} subtrees: ${receipt.gasUsed.toString()} gas`)
+            console.log(`mergeSubRoots() for ${NUM_SUBTREES} subtrees: ${receipt.gasUsed.toString()} gas`)
         }
     }
 
@@ -164,9 +164,9 @@ describe('AccQueue gas benchmarks', () => {
         it(`Should fill to a subtree of depth ${SUB_DEPTH}`, async () => {
             for (let i = 0; i < 2; i ++) {
                 await(await aqContract.enqueue(i, { gasLimit: 800000 }))
-                const tx = await aqContract.fillLastSubTree({ gasLimit: 800000 } )
+                const tx = await aqContract.fill({ gasLimit: 800000 } )
                 const receipt = await tx.wait()
-                console.log(`Gas used by binary fillLastSubTree: ${receipt.gasUsed.toString()}`)
+                console.log(`Gas used by binary fill: ${receipt.gasUsed.toString()}`)
             }
         })
     })
@@ -211,9 +211,9 @@ describe('AccQueue gas benchmarks', () => {
         it(`Should fill a subtree of depth ${SUB_DEPTH}`, async () => {
             for (let i = 0; i < 2; i ++) {
                 await(await aqContract.enqueue(i, { gasLimit: 800000 }))
-                const tx = await aqContract.fillLastSubTree({ gasLimit: 800000 } )
+                const tx = await aqContract.fill({ gasLimit: 800000 } )
                 const receipt = await tx.wait()
-                console.log(`Gas used by quinary fillLastSubTree: ${receipt.gasUsed.toString()}`)
+                console.log(`Gas used by quinary fill: ${receipt.gasUsed.toString()}`)
             }
         })
     })
@@ -270,7 +270,7 @@ describe('AccQueue gas benchmarks', () => {
         const MAIN_DEPTH = 32
         const HASH_LENGTH = 5
         const ZERO = BigInt(0)
-        const NUM_SUBTREES = 64
+        const NUM_SUBTREES = 25
         let aq: AccQueue
         beforeAll(async () => {
             const r = await deploy(
@@ -293,7 +293,7 @@ describe('AccQueue gas benchmarks', () => {
         const MAIN_DEPTH = 32
         const HASH_LENGTH = 5
         const ZERO = BigInt(0)
-        const NUM_SUBTREES = 64
+        const NUM_SUBTREES = 25
         const NUM_MERGES = 4
         let aq: AccQueue
         beforeAll(async () => {
