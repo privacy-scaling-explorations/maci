@@ -127,7 +127,7 @@ const testMergeExhaustive = (
         aq.mergeSubRootsIntoShortestTree(0)
 
         const depth = calcDepthFromNumLeaves(HASH_LENGTH, numSubtrees)
-        const smallTree = new IncrementalQuinTree(depth, aq.zeros[depth], HASH_LENGTH)
+        const smallTree = new IncrementalQuinTree(depth, aq.zeros[aq.subDepth], HASH_LENGTH)
         for (let i = 0; i < aq.subRoots.length; i++) {
             smallTree.insert(aq.subRoots[i])
         }

@@ -28,6 +28,7 @@ abstract contract AccQueue is Ownable, Hasher {
     // Poseidon hash function
     uint256 internal immutable hashLength;
 
+    // hashLength ** subDepth
     uint256 internal immutable subTreeCapacity;
 
     // True hashLength == 2, false if hashLength == 5

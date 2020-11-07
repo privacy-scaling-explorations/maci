@@ -448,11 +448,12 @@ describe('AccQueues', () => {
                 ZERO,
             )
             const aqContract = r.aqContract
-            await (await (aqContract.fillLastSubTree(fillLastSubTreeGasLimit))).wait()
-            await (await (aqContract.fillLastSubTree(fillLastSubTreeGasLimit))).wait()
-            await (await (aqContract.fillLastSubTree(fillLastSubTreeGasLimit))).wait()
-            await (await (aqContract.fillLastSubTree(fillLastSubTreeGasLimit))).wait()
+            for (let i = 0; i < 4; i ++) {
+                await (await (aqContract.fillLastSubTree(fillLastSubTreeGasLimit))).wait()
+            }
+
             await (await aqContract.mergeSubRootsIntoShortestTree(0, { gasLimit: 1000000 })).wait()
+
             try {
                 await (await aqContract.merge(1, { gasLimit: 1000000 })).wait()
             } catch (e) {
