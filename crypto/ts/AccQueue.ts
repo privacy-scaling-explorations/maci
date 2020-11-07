@@ -70,6 +70,14 @@ class AccQueue {
         indices: []
     }
 
+    // For merging subtrees into the smallest tree
+    public nextSRindexToQueue = 0
+    public smallSRTroot: BigInt = BigInt(0)
+    public subRootQueue: Queue = {
+        levels: [],
+        indices: []
+    }
+
     // The root of each complete subtree
     public subRoots: BigInt[] = []
 
@@ -82,12 +90,6 @@ class AccQueue {
 
     // Whether the subtrees have been merged
     public subTreesMerged = false
-
-    // For merging subtrees into the smallest tree
-    public nextSRindexToQueue = 0
-    public smallSRTroot: BigInt = BigInt(0)
-    public queuedSRTlevels: BigInt[][] = []
-    public queuedSRTindex: number[] = []
 
     constructor (
         _subDepth: number,
@@ -131,8 +133,8 @@ class AccQueue {
             }
             this.leafQueue.levels.push(e)
             this.leafQueue.indices[i] = 0
-            this.queuedSRTlevels.push(e)
-            this.queuedSRTindex[i] = 0
+            this.subRootQueue.levels.push(e)
+            this.subRootQueue.indices[i] = 0
         }
     }
 
@@ -292,9 +294,6 @@ class AccQueue {
     public insertSubTree(_subRoot: BigInt) {
         // If the current subtree is not full, fill it.
         const subTreeCapacity = this.hashLength ** this.subDepth
-        if (this.numLeaves % subTreeCapacity > 0) {
-            this.fill()
-        }
 
         this.subRoots[this.currentSubtreeIndex] = _subRoot
 
@@ -453,7 +452,7 @@ class AccQueue {
         }
 
         // Store the root
-        this.smallSRTroot = this.queuedSRTlevels[depth][0]
+        this.smallSRTroot = this.subRootQueue.levels[depth][0]
         this.subTreesMerged = true
     }
 
@@ -467,23 +466,23 @@ class AccQueue {
     ) {
         if (_level > _maxDepth) { return }
 
-        const n = this.queuedSRTindex[_level]
+        const n = this.subRootQueue.indices[_level]
 
         if (n !== this.hashLength - 1) {
             // Just store the leaf
-            this.queuedSRTlevels[_level][n] = _leaf
-            this.queuedSRTindex[_level] ++
+            this.subRootQueue.levels[_level][n] = _leaf
+            this.subRootQueue.indices[_level] ++
         } else {
             // Hash the elements in this level and queue it in the next level
             const inputs: BigInt[] = []
             for (let i = 0; i < this.hashLength - 1; i ++) {
-                inputs.push(this.queuedSRTlevels[_level][i])
+                inputs.push(this.subRootQueue.levels[_level][i])
             }
             inputs.push(_leaf)
             const hashed = this.hashFunc(inputs)
 
             // Recurse
-            this.queuedSRTindex[_level] = 0
+            this.subRootQueue.indices[_level] = 0
             this.queueSubRoot(hashed, _level + 1, _maxDepth)
         }
     }
@@ -513,9 +512,9 @@ class AccQueue {
         newAccQueue.subTreesMerged = this.subTreesMerged ? true : false
         newAccQueue.nextSRindexToQueue = Number(this.nextSRindexToQueue.toString())
         newAccQueue.smallSRTroot = BigInt(this.smallSRTroot.toString())
-        newAccQueue.queuedSRTindex = JSON.parse(JSON.stringify(this.queuedSRTindex))
-        newAccQueue.queuedSRTlevels = unstringifyBigInts(JSON.parse(
-            JSON.stringify(stringifyBigInts(this.queuedSRTlevels))
+        newAccQueue.subRootQueue.indices = JSON.parse(JSON.stringify(this.subRootQueue.indices))
+        newAccQueue.subRootQueue.levels = unstringifyBigInts(JSON.parse(
+            JSON.stringify(stringifyBigInts(this.subRootQueue.levels))
         ))
 
         return newAccQueue

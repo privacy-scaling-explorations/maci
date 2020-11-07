@@ -268,11 +268,6 @@ abstract contract AccQueue is Ownable, Hasher {
      * full. Used for batch insertions.
      */
     function insertSubTree(uint256 _subRoot) public onlyOwner {
-        // If the current subtree is not full, fill it.
-        if (numLeaves % subTreeCapacity > 0) {
-            fill();
-        }
-
         subRoots[currentSubtreeIndex] = _subRoot;
 
         // Increment the subtree index

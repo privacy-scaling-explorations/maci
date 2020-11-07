@@ -246,7 +246,7 @@ describe('AccQueue gas benchmarks', () => {
         const MAIN_DEPTH = 32
         const HASH_LENGTH = 2
         const ZERO = BigInt(0)
-        const NUM_SUBTREES = 128
+        const NUM_SUBTREES = 32
         const NUM_MERGES = 4
         let aq: AccQueue
         beforeAll(async () => {
@@ -293,7 +293,7 @@ describe('AccQueue gas benchmarks', () => {
         const MAIN_DEPTH = 32
         const HASH_LENGTH = 5
         const ZERO = BigInt(0)
-        const NUM_SUBTREES = 25
+        const NUM_SUBTREES = 20
         const NUM_MERGES = 4
         let aq: AccQueue
         beforeAll(async () => {
