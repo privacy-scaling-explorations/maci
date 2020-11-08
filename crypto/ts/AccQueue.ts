@@ -301,7 +301,7 @@ class AccQueue {
         this.currentSubtreeIndex ++
 
         // Update the number of leaves
-        this.numLeaves = this.currentSubtreeIndex * subTreeCapacity
+        this.numLeaves += subTreeCapacity
 
         // Reset the subroot tree root now that it is obsolete
         this.smallSRTroot = BigInt(0)

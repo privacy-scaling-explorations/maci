@@ -202,6 +202,51 @@ const testInsertSubTrees = async (
 }
 
 /*
+ * The order of leaves when using enqueue() and insertSubTree() should be correct.
+ */
+const testEnqueueAndInsertSubTree = async (
+    aq: AccQueue,
+    aqContract: any,
+) => {
+    const z = aq.zeros[0]
+    const n = BigInt(1)
+
+    const leaves: BigInt[] = []
+    const subTree = new IncrementalQuinTree(aq.subDepth, z, aq.hashLength)
+
+    for (let i = 0; i < aq.hashLength ** aq.subDepth; i ++) {
+        leaves.push(z)
+    }
+
+    leaves.push(n)
+
+    const depth = calcDepthFromNumLeaves(aq.hashLength, leaves.length)
+    const tree = new IncrementalQuinTree(depth, z, aq.hashLength)
+    for (const leaf of leaves) {
+        tree.insert(leaf)
+    }
+
+    const expectedRoot = tree.root.toString()
+
+    aq.enqueue(n)
+    await (await aqContract.enqueue(n.toString(), enqueueGasLimit)).wait()
+
+    aq.insertSubTree(subTree.root)
+    await (await aqContract.insertSubTree(subTree.root.toString(), insertSubTreeGasLimit)).wait()
+
+    aq.fill()
+    await (await aqContract.fill(fillGasLimit)).wait()
+
+    aq.mergeSubRoots(0)
+    await (await aqContract.mergeSubRoots(0, { gasLimit: 8000000 })).wait()
+
+    expect(expectedRoot).toEqual(aq.smallSRTroot.toString())
+
+    const contractSmallSRTroot = await aqContract.getSmallSRTroot()
+    expect(expectedRoot).toEqual(contractSmallSRTroot.toString())
+}
+
+/*
  * Insert a number of subtrees and merge them all into a main tree
  */
 const testMerge = async (
@@ -519,6 +564,18 @@ describe('AccQueues', () => {
         const HASH_LENGTH = 2
         const ZERO = BigInt(0)
 
+        it('Enqueued leaves and inserted subtrees should be in the right order', async () => {
+            const r = await deploy(
+                'AccQueueBinary0',
+                SUB_DEPTH,
+                HASH_LENGTH,
+                ZERO,
+            )
+            const aq = r.aq
+            const aqContract = r.aqContract
+            await testEnqueueAndInsertSubTree(aq, aqContract)
+        })
+
         test.each`
             n
             ${1}
@@ -543,6 +600,18 @@ describe('AccQueues', () => {
         const MAIN_DEPTH = 6
         const HASH_LENGTH = 5
         const ZERO = BigInt(0)
+
+        it('Enqueued leaves and inserted subtrees should be in the right order', async () => {
+            const r = await deploy(
+                'AccQueueQuinary0',
+                SUB_DEPTH,
+                HASH_LENGTH,
+                ZERO,
+            )
+            const aq = r.aq
+            const aqContract = r.aqContract
+            await testEnqueueAndInsertSubTree(aq, aqContract)
+        })
 
         test.each`
             n

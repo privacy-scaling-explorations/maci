@@ -271,11 +271,10 @@ abstract contract AccQueue is Ownable, Hasher {
         subRoots[currentSubtreeIndex] = _subRoot;
 
         // Increment the subtree index
-        uint256 curr = currentSubtreeIndex + 1;
-        currentSubtreeIndex = curr;
+        currentSubtreeIndex ++;
 
         // Update the number of leaves
-        numLeaves = curr * subTreeCapacity;
+        numLeaves += subTreeCapacity;
 
         // Reset the subroot tree root now that it is obsolete
         delete smallSRTroot;
