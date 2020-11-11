@@ -1,16 +1,22 @@
-import { User } from './User'
+//import { User } from './User'
 
 import {
-    genPerVOSpentVoiceCreditsCommitment,
-    genSpentVoiceCreditsCommitment,
-    genTallyResultCommitment,
+    //genPerVOSpentVoiceCreditsCommitment,
+    //genSpentVoiceCreditsCommitment,
+    //genTallyResultCommitment,
     MaciState,
+    Poll,
+    genProcessVkSig,
+    genTallyVkSig,
 } from './MaciState'
 
 export {
-    genPerVOSpentVoiceCreditsCommitment,
-    genSpentVoiceCreditsCommitment,
-    genTallyResultCommitment,
+    //genPerVOSpentVoiceCreditsCommitment,
+    //genSpentVoiceCreditsCommitment,
+    //genTallyResultCommitment,
     MaciState,
-    User,
+    Poll,
+    genProcessVkSig,
+    genTallyVkSig,
+    //User,
 }

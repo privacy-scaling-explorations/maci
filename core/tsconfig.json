@@ -5,5 +5,8 @@
     },
     "include": [
         "./ts"
+    ],
+    "exclude": [
+        "./ts/__tests__.old"
     ]
 }

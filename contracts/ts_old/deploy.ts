@@ -178,26 +178,6 @@ const log = (msg: string, quiet: boolean) => {
 
 const deployMaci = async (
     deployer,
-    stateTreeDepth: number = config.maci.merkleTrees.stateTreeDepth,
-    quiet = false,
-) => {
-    log('Deploying MACI', quiet)
-
-    const [ MACIAbi, MACIBin ] = loadAB('MACI')
-
-    const maciContract = await deployer.deploy(
-        MACIAbi,
-        MACIBin,
-        stateTreeDepth,
-    )
-
-    return {
-        maciContract,
-    }
-}
-
-const deployMaci2 = async (
-    deployer,
     signUpGatekeeperAddress: string,
     initialVoiceCreditProxy: string,
     stateTreeDepth: number = config.maci.merkleTrees.stateTreeDepth,
@@ -334,52 +314,6 @@ const main = async () => {
         }
     )
 
-    const args = parser.parseArgs()
-    const outputAddressFile = args.output
-
-    const deployer = genDeployer(admin.privateKey)
-
-    const {
-        maciContract,
-    } = await deployMaci(
-        deployer,
-    )
-    const addresses = {
-        MACI: maciContract.address,
-    }
-
-    const addressJsonPath = path.join(__dirname, '..', outputAddressFile)
-    fs.writeFileSync(
-        addressJsonPath,
-        JSON.stringify(addresses),
-    )
-
-    console.log(addresses)
-}
-
-const main2 = async () => {
-    let accounts
-    if (config.env === 'local-dev' || config.env === 'test') {
-        accounts = genTestAccounts(1)
-    } else {
-        accounts = genAccounts()
-    }
-    const admin = accounts[0]
-
-    console.log('Using account', admin.address)
-
-    const parser = new argparse.ArgumentParser({
-        description: 'Deploy all contracts to an Ethereum network of your choice'
-    })
-
-    parser.addArgument(
-        ['-o', '--output'],
-        {
-            help: 'The filepath to save the addresses of the deployed contracts',
-            required: true
-        }
-    )
-
     parser.addArgument(
         ['-s', '--signUpToken'],
         {
@@ -433,7 +367,7 @@ const main2 = async () => {
         maciContract,
         batchUstVerifierContract,
         quadVoteTallyVerifierContract,
-    } = await deployMaci2(
+    } = await deployMaci(
         deployer,
         signUpTokenGatekeeperContract.address,
         initialVoiceCreditBalanceAddress,

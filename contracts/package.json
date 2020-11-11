@@ -10,6 +10,8 @@
         "build": "tsc",
         "deploy": "node build/deploy.js -o deployedAddresses.json",
         "deploy-debug": "node --inspect-brk build/deploy.js -o deployedAddresses.json",
+        "test-maci": "jest MACI.test.ts",
+        "test-maci-debug": "node --inspect-brk ./node_modules/.bin/jest MACI.test.ts",
         "test-mt": "jest IncrementalMerkleTree.test.ts",
         "test-mt-debug": "node --inspect-brk ./node_modules/.bin/jest IncrementalMerkleTree.test.ts",
         "test-quin-mt": "jest IncrementalQuinTree.test.ts",
