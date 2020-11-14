@@ -1,4 +1,5 @@
-pragma solidity ^0.5.0;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.6.12;
 
 import { SignUpGatekeeper } from './SignUpGatekeeper.sol';
 import { SignUpToken } from '../SignUpToken.sol';
@@ -20,7 +21,7 @@ contract SignUpTokenGatekeeper is SignUpGatekeeper {
      * @param _user The user's Ethereum address.
      * @param _data The ABI-encoded tokenId as a uint256.
      */
-    function register(address _user, bytes memory _data) public {
+    function register(address _user, bytes memory _data) override public {
         // Decode the given _data bytes into a uint256 which is the token ID
         uint256 tokenId = abi.decode(_data, (uint256));
         

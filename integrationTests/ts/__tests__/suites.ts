@@ -99,7 +99,7 @@ const executeSuite = async (data: any, expect: any) => {
     // Log the output for further manual testing
     console.log(createOutput)
 
-    const regMatch = createOutput.match(/^MACI: (0x[a-fA-F0-9]{40})$/)
+    const regMatch = createOutput.match(/MACI: (0x[a-fA-F0-9]{40})$/)
     const maciAddress = regMatch[1]
     
     const userKeypairs: Keypair[] = []

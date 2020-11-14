@@ -1,11 +1,12 @@
-pragma solidity ^0.5.0;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.6.12;
 
 import { SnarkConstants } from "./SnarkConstants.sol";
 import { Hasher } from "./Hasher.sol";
 
 contract ComputeRoot is Hasher {
 
-    uint8 internal constant LEAVES_PER_NODE = 5;
+    uint8 private constant LEAVES_PER_NODE = 5;
 
     function computeEmptyRoot(uint8 _treeLevels, uint256 _zeroValue) public pure returns (uint256) {
         // Limit the Merkle tree to MAX_DEPTH levels

@@ -1,5 +1,5 @@
-pragma experimental ABIEncoderV2;
-pragma solidity ^0.5.0;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.6.12;
 
 contract MACISharedObjs {
     uint8 constant MESSAGE_DATA_LENGTH = 10;

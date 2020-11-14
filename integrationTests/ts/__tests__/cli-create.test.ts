@@ -57,7 +57,7 @@ describe('create CLI subcommand', () => {
         console.log(command)
         console.log(output)
 
-        const regMatch = output.match(/^MACI: (0x[a-fA-F0-9]{40})$/)
+        const regMatch = output.match(/MACI: (0x[a-fA-F0-9]{40})$/)
         const maciAddress = regMatch[1]
 
         const provider = new ethers.providers.JsonRpcProvider(providerUrl)
