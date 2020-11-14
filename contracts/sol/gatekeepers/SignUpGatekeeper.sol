@@ -1,5 +1,6 @@
-pragma solidity ^0.5.0;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.6.12;
 
-contract SignUpGatekeeper {
-    function register(address _user, bytes memory _data) public;
+abstract contract SignUpGatekeeper {
+    function register(address _user, bytes memory _data) virtual public {}
 }

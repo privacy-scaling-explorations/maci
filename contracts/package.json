@@ -1,6 +1,6 @@
 {
     "name": "maci-contracts",
-    "version": "0.3.8",
+    "version": "0.4.0",
     "description": "",
     "main": "build/index.js",
     "scripts": {
@@ -29,7 +29,7 @@
         "@maci-contracts": "."
     },
     "dependencies": {
-        "@openzeppelin/contracts": "^2.4.0",
+        "@openzeppelin/contracts": "~3.2.0",
         "argparse": "^1.0.10",
         "circomlib": "0.2.4",
         "ethers": "^4.0.45",

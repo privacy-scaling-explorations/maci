@@ -1,11 +1,12 @@
+// SPDX-License-Identifier: MIT
 pragma experimental ABIEncoderV2;
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.12;
 
 import { Hasher } from "./Hasher.sol";
 
 contract VerifyTally is Hasher {
 
-    uint8 internal constant LEAVES_PER_NODE = 5;
+    uint8 private constant LEAVES_PER_NODE = 5;
 
     function computeMerkleRootFromPath(
         uint8 _depth,

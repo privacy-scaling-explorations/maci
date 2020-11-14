@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 /*
  * Semaphore - Zero-knowledge signaling on Ethereum
  * Copyright (C) 2020 Barry WhiteHat <barrywhitehat@protonmail.com>, Kobi
@@ -19,11 +21,11 @@
  * along with Semaphore.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.12;
 
 import { SnarkConstants } from "./SnarkConstants.sol";
 import { Hasher } from "./Hasher.sol";
-import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract IncrementalMerkleTree is Ownable, Hasher {
     // The maximum tree depth
