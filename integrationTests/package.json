@@ -30,7 +30,7 @@
         "@types/node": "^13.1.2",
         "ethers": "^4.0.45",
         "jest": "^24.9.0",
-        "maci-circuits": "^0.3.8",
+        "maci-circuits": "^0.4.7",
         "maci-cli": "^0.4.7",
         "maci-config": "^0.4.7",
         "maci-contracts": "^0.4.7",
