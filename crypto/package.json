@@ -1,6 +1,6 @@
 {
     "name": "maci-crypto",
-    "version": "0.4.6",
+    "version": "0.4.7",
     "description": "",
     "main": "build/index.js",
     "scripts": {
@@ -25,5 +25,5 @@
         "jest": "^24.9.0",
         "ts-jest": "^24.2.0"
     },
-    "gitHead": "3f7d854b1b0304bac943c371631aa289fb394460"
+    "gitHead": "bfdc3b0e3b29374e34ed44136566f545b68189e1"
 }
