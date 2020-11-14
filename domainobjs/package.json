@@ -13,7 +13,7 @@
         "@types/jest": "^24.0.25",
         "@types/node": "^13.1.2",
         "jest": "^24.9.0",
-        "maci-crypto": "^0.4.0",
+        "maci-crypto": "^0.4.3",
         "ts-jest": "^24.2.0"
     },
     "gitHead": "17f37c30e4b5ec41246d3db0921799fbecafd90b"
