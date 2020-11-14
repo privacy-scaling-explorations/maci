@@ -1,6 +1,6 @@
 {
     "name": "maci-circuits",
-    "version": "0.4.5",
+    "version": "0.4.6",
     "description": "",
     "main": "build/index.js",
     "scripts": {
@@ -61,5 +61,5 @@
         "ts-jest": "^24.2.0",
         "typescript": "^3.8.3"
     },
-    "gitHead": "e6d42f2db352874ccb80b73a466a9a14c24a97d1"
+    "gitHead": "3f7d854b1b0304bac943c371631aa289fb394460"
 }
