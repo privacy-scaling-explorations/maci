@@ -1,6 +1,6 @@
 {
     "name": "maci-integrationtests",
-    "version": "0.4.4",
+    "version": "0.4.5",
     "description": "",
     "main": "build/index.js",
     "scripts": {
@@ -31,15 +31,15 @@
         "ethers": "^4.0.45",
         "jest": "^24.9.0",
         "maci-circuits": "^0.3.8",
-        "maci-cli": "^0.4.4",
-        "maci-config": "^0.4.4",
-        "maci-contracts": "^0.4.4",
-        "maci-core": "^0.4.4",
-        "maci-crypto": "^0.4.4",
-        "maci-domainobjs": "^0.4.4",
+        "maci-cli": "^0.4.5",
+        "maci-config": "^0.4.5",
+        "maci-contracts": "^0.4.5",
+        "maci-core": "^0.4.5",
+        "maci-crypto": "^0.4.5",
+        "maci-domainobjs": "^0.4.5",
         "module-alias": "^2.2.2",
         "shelljs": "^0.8.3",
         "ts-jest": "^24.2.0"
     },
-    "gitHead": "5ab75c50946449e415e9ea9d352d6c15fca071a4"
+    "gitHead": "e6d42f2db352874ccb80b73a466a9a14c24a97d1"
 }
