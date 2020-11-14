@@ -1,6 +1,6 @@
 {
     "name": "maci-contracts",
-    "version": "0.4.3",
+    "version": "0.4.4",
     "description": "",
     "main": "build/index.js",
     "scripts": {
@@ -41,14 +41,14 @@
         "ganache-cli": "^6.7.0",
         "jest": "^24.9.0",
         "libsemaphore": "^1.0.5",
-        "maci-circuits": "^0.4.3",
-        "maci-config": "^0.4.3",
-        "maci-core": "^0.4.3",
-        "maci-crypto": "^0.4.3",
-        "maci-domainobjs": "^0.4.3",
+        "maci-circuits": "^0.4.4",
+        "maci-config": "^0.4.4",
+        "maci-core": "^0.4.4",
+        "maci-crypto": "^0.4.4",
+        "maci-domainobjs": "^0.4.4",
         "shelljs": "^0.8.4",
         "truffle-artifactor": "^4.0.30",
         "ts-jest": "^24.2.0"
     },
-    "gitHead": "b062b1c653579584854ca1703affdd88a64e9e83"
+    "gitHead": "5ab75c50946449e415e9ea9d352d6c15fca071a4"
 }
