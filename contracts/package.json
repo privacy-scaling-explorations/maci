@@ -1,6 +1,6 @@
 {
     "name": "maci-contracts",
-    "version": "0.4.7",
+    "version": "0.4.9",
     "description": "",
     "main": "build/index.js",
     "scripts": {
