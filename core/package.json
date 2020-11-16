@@ -1,6 +1,6 @@
 {
     "name": "maci-core",
-    "version": "0.4.7",
+    "version": "0.4.11",
     "description": "",
     "main": "build/index.js",
     "scripts": {
@@ -20,9 +20,9 @@
     },
     "dependencies": {
         "ethers": "^4.0.45",
-        "maci-config": "^0.4.7",
-        "maci-crypto": "^0.4.7",
-        "maci-domainobjs": "^0.4.7",
+        "maci-config": "^0.4.11",
+        "maci-crypto": "^0.4.11",
+        "maci-domainobjs": "^0.4.11",
         "module-alias": "^2.2.2"
     },
     "devDependencies": {
