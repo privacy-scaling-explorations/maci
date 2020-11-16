@@ -41,7 +41,7 @@
         "ganache-cli": "^6.7.0",
         "jest": "^24.9.0",
         "libsemaphore": "^1.0.5",
-        "maci-circuits": "0.4.11",
+        "maci-circuits": "^0.4.11",
         "maci-config": "^0.4.11",
         "maci-core": "^0.4.11",
         "maci-crypto": "^0.4.11",
