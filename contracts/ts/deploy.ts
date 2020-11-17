@@ -183,6 +183,21 @@ const deployMaci = async (
 ) => {
     log('Deploying MACI', quiet)
 
+    log('Deploying Poseidon T3', quiet)
+    const PoseidonT3Contract = await deployer.deploy(
+        PoseidonT3.abi,
+        PoseidonT3.bytecode,
+    )
+
+    log('Deploying Poseidon T6', quiet)
+    const PoseidonT6Contract = await deployer.deploy(
+        PoseidonT6.abi,
+        PoseidonT6.bytecode,
+    )
+
+    // Link Poseidon contracts to MACI
+    linkPoseidonLibraries(['MACI.sol'], PoseidonT3Contract.address, PoseidonT6Contract.address)
+
     const [ MACIAbi, MACIBin ] = loadAB('MACI')
 
     const maciContract = await deployer.deploy(

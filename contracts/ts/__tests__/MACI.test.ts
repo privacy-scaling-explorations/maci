@@ -47,6 +47,12 @@ const testTallyVk = new VerifyingKey(
     ],
 )
 
+const users = [
+    new Keypair(),
+    new Keypair(),
+    new Keypair(),
+]
+
 describe('MACI', () => {
     let maciContract
 
@@ -64,7 +70,55 @@ describe('MACI', () => {
             expect(std.toString()).toEqual(STATE_TREE_DEPTH.toString())
         })
 
-        describe('MACI.createPoll', () => {
+        describe('Signups', () => {
+
+            it('should sign up users', async () => {
+                expect.assertions(users.length)
+
+                for (const user of users) {
+                    const tx = await maciContract.signUp(
+                        user.pubKey.asContractParam(),
+                    )
+                    const receipt = await tx.wait()
+                    expect(receipt.status).toEqual(1)
+                    console.log('signUp() gas used:', receipt.gasUsed.toString())
+                }
+            })
+
+            it('signUp() shold fail when given an invalid pubkey', async () => {
+                try {
+                    await maciContract.signUp(
+                        {
+                            x: '21888242871839275222246405745257275088548364400416034343698204186575808495617',
+                            y: '0',
+                        },
+                    )
+                } catch (e) {
+                    const error = 'MACI: pubkey values should be less than the snark scalar field'
+                    expect(e.message.endsWith(error)).toBeTruthy()
+                }
+
+            })
+        })
+
+        describe('Merge sign-ups', () => {
+            it('coordinator should be able to merge the signUp AccQueue', async () => {
+                let tx = await maciContract.mergeSignUpsSubRoots(0)
+                let receipt = await tx.wait()
+                expect(receipt.status).toEqual(1)
+
+                console.log('mergeSignUpsSubRoots() gas used:', receipt.gasUsed.toString())
+
+                tx = await maciContract.mergeSignUps()
+                receipt = await tx.wait()
+                expect(receipt.status).toEqual(1)
+
+                console.log('mergeSignUps() gas used:', receipt.gasUsed.toString())
+            })
+        })
+
+        describe('Create polls', () => {
+            // Poll parameters
             const duration = 10
             const maxValues = {
                 maxUsers: 25,
@@ -80,6 +134,7 @@ describe('MACI', () => {
             let pollId: number
 
             beforeAll(async () => {
+                // Create the poll and get the poll ID from the tx event logs
                 const tx = await maciContract.createPoll(
                     duration,
                     maxValues,
@@ -91,6 +146,7 @@ describe('MACI', () => {
                     { gasLimit: 4000000 },
                 )
                 const receipt = await tx.wait()
+                console.log('createPoll() gas used:', receipt.gasUsed.toString())
                 expect(receipt.status).toEqual(1)
                 const iface = new ethers.utils.Interface(maciContract.interface.abi)
                 const event = iface.parseLog(receipt.logs[0])
@@ -98,6 +154,7 @@ describe('MACI', () => {
             })
 
             it('should set correct storage values', async () => {
+                // Retrieve the Poll via the poll ID and check that each value is correct
                 const std = await maciContract.stateTreeDepth()
                 const poll = await maciContract.getPoll(pollId)
 
