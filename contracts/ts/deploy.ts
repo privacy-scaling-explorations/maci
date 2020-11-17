@@ -33,10 +33,6 @@ const [ ConstantInitialVoiceCreditProxyAbi, ConstantInitialVoiceCreditProxyBin ]
 const [ FreeForAllSignUpGatekeeperAbi, FreeForAllSignUpGatekeeperBin ]
     = loadAB('FreeForAllGatekeeper')
 const InitialVoiceCreditProxyAbi = loadAbi('InitialVoiceCreditProxy.abi')
-const [ BatchUpdateStateTreeVerifierAbi, BatchUpdateStateTreeVerifierBin ] = loadAB('BatchUpdateStateTreeVerifier')
-const [ QuadVoteTallyVerifierAbi, QuadVoteTallyVerifierBin ] = loadAB('QuadVoteTallyVerifier')
-const [ BatchUpdateStateTreeVerifierSmallAbi, BatchUpdateStateTreeVerifierSmallBin ] = loadAB('BatchUpdateStateTreeVerifierSmall')
-const [ QuadVoteTallyVerifierSmallAbi, QuadVoteTallyVerifierSmallBin ] = loadAB('QuadVoteTallyVerifierSmall')
 
 const PoseidonT3 = require('../compiled/PoseidonT3.json')
 const PoseidonT6 = require('../compiled/PoseidonT6.json')
@@ -219,26 +215,22 @@ const deployMaci = async (
     if (configType === 'test') {
         log('Deploying BatchUpdateStateTreeVerifier', quiet)
         batchUstVerifierContract = await deployer.deploy(
-            BatchUpdateStateTreeVerifierAbi,
-            BatchUpdateStateTreeVerifierBin,
+            ...loadAB('BatchUpdateStateTreeVerifier'),
         )
 
         log('Deploying QuadVoteTallyVerifier', quiet)
         quadVoteTallyVerifierContract = await deployer.deploy(
-            QuadVoteTallyVerifierAbi,
-            QuadVoteTallyVerifierBin,
+            ...loadAB('QuadVoteTallyVerifier')
         )
     } else if (configType === 'prod-small') {
         log('Deploying BatchUpdateStateTreeVerifier', quiet)
         batchUstVerifierContract = await deployer.deploy(
-            BatchUpdateStateTreeVerifierSmallAbi,
-            BatchUpdateStateTreeVerifierSmallBin,
+            ...loadAB('BatchUpdateStateTreeVerifierSmall'),
         )
 
         log('Deploying QuadVoteTallyVerifier', quiet)
         quadVoteTallyVerifierContract = await deployer.deploy(
-            QuadVoteTallyVerifierSmallAbi,
-            QuadVoteTallyVerifierSmallBin,
+            ...loadAB('QuadVoteTallyVerifierSmall'),
         )
     }
 

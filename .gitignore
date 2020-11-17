@@ -9,6 +9,8 @@ deployedAddresses.json
 **/build/
 circuits/build
 contracts/compiled
+contracts/sol/BatchUpdateStateTreeVerifierSmall.sol
+contracts/sol/QuadVoteTallyVerifierSmall.sol
 node_modules
 blake2sdef.json
 build/.snark_checksum
