@@ -43,11 +43,15 @@ const deployTestContracts = async (
     )
 
     const maciContract = contracts.maciContract
+    const stateAqContract = contracts.stateAqContract
+    const vkRegistryContract = contracts.vkRegistryContract
 
     return {
         freeForAllSignUpGatekeeperContract,
         constantIntialVoiceCreditProxyContract,
         maciContract,
+        stateAqContract,
+        vkRegistryContract,
     }
 }
 

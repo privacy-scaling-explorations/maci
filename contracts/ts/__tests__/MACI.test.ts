@@ -1,6 +1,7 @@
 jest.setTimeout(90000)
 import * as ethers from 'ethers'
 import { deployMaci, genDeployer, loadAbi } from '../deploy'
+import { deployTestContracts } from '../utils'
 import {
     //StateLeaf,
     //Command,
@@ -64,8 +65,9 @@ describe('MACI', () => {
 
     describe('Deployment', () => {
         beforeAll(async () => {
-            const r = await deployMaci(
+            const r = await deployTestContracts(
                 deployer,
+                config.maci.initialVoiceCreditBalance,
             )
             maciContract = r.maciContract
             stateAqContract = r.stateAqContract
@@ -85,6 +87,8 @@ describe('MACI', () => {
                 for (const user of users) {
                     const tx = await maciContract.signUp(
                         user.pubKey.asContractParam(),
+                        ethers.utils.defaultAbiCoder.encode(['uint256'], [1]),
+                        ethers.utils.defaultAbiCoder.encode(['uint256'], [0]),
                         signUpTxOpts,
                     )
                     const receipt = await tx.wait()
@@ -100,6 +104,9 @@ describe('MACI', () => {
                             x: '21888242871839275222246405745257275088548364400416034343698204186575808495617',
                             y: '0',
                         },
+                        ethers.utils.defaultAbiCoder.encode(['uint256'], [1]),
+                        ethers.utils.defaultAbiCoder.encode(['uint256'], [0]),
+                        signUpTxOpts,
                     )
                 } catch (e) {
                     const error = 'MACI: pubkey values should be less than the snark scalar field'

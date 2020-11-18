@@ -10,6 +10,8 @@ import { SnarkConstants } from "./crypto/SnarkConstants.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { AccQueueQuinaryMaci } from "./trees/AccQueue.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
+import { InitialVoiceCreditProxy } from './initialVoiceCreditProxy/InitialVoiceCreditProxy.sol';
 
 /*
  * Minimum Anti-Collusion Infrastructure
@@ -34,14 +36,26 @@ contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
 
     bool isInitialised = false;
 
+    // Address of the SignUpGatekeeper, a contract which determines whether a
+    // user may sign up to vote
+    SignUpGatekeeper public signUpGatekeeper;
+
+    // The contract which provides the values of the initial voice credit
+    // balance per user
+    InitialVoiceCreditProxy public initialVoiceCreditProxy;
+
     event DeployPoll(uint256 _pollId, address _pollAddr);
 
     constructor(
-        PollFactory _pollFactory
+        PollFactory _pollFactory,
+        SignUpGatekeeper _signUpGatekeeper,
+        InitialVoiceCreditProxy _initialVoiceCreditProxy
     ) {
         stateAq = new AccQueueQuinaryMaci(STATE_TREE_SUBDEPTH);
 
         pollFactory = _pollFactory;
+        signUpGatekeeper = _signUpGatekeeper;
+        initialVoiceCreditProxy = _initialVoiceCreditProxy;
     }
 
     function init(
@@ -81,12 +95,29 @@ contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
     }
 
     function signUp(
-        PubKey memory pubKey
+        PubKey memory pubKey,
+        bytes memory _signUpGatekeeperData,
+        bytes memory _initialVoiceCreditProxyData
     ) public afterInit {
+
+        // Register the user via the sign-up gatekeeper. This function should
+        // throw if the user has already registered or if ineligible to do so.
+        signUpGatekeeper.register(msg.sender, _signUpGatekeeperData);
+
         require(
             pubKey.x < SNARK_SCALAR_FIELD && pubKey.y < SNARK_SCALAR_FIELD,
             "MACI: pubkey values should be less than the snark scalar field"
         );
+
+        uint256 voiceCreditBalance = initialVoiceCreditProxy.getVoiceCredits(
+            msg.sender,
+            _initialVoiceCreditProxyData
+        );
+
+        // The limit on voice credits is 2 ^ 32 which is hardcoded into the
+        // UpdateStateTree circuit, specifically at check that there are
+        // sufficient voice credits (using GreaterEqThan(32)).
+        require(voiceCreditBalance <= 4294967296, "MACI: too many voice credits");
 
         uint256 stateLeaf = hashLeftRight(pubKey.x, pubKey.y);
         stateAq.enqueue(stateLeaf);

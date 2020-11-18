@@ -178,7 +178,9 @@ const log = (msg: string, quiet: boolean) => {
 }
 
 const deployMaci = async (
-    deployer,
+    deployer: any,
+    signUpTokenGatekeeperContractAddress: string,
+    initialVoiceCreditBalanceAddress: string,
     quiet = false,
 ) => {
     log('Deploying Poseidon T3', quiet)
@@ -211,6 +213,8 @@ const deployMaci = async (
         MACIAbi,
         MACIBin,
         pollFactoryContract.address,
+        signUpTokenGatekeeperContractAddress,
+        initialVoiceCreditBalanceAddress,
     )
 
     log('Transferring PollFactory ownership to MACI', quiet)
@@ -396,10 +400,52 @@ const main = async () => {
         }
     )
 
+    parser.addArgument(
+        ['-s', '--signUpToken'],
+        {
+            help: 'The address of the signup token (e.g. POAP)',
+            required: false
+        }
+    )
+
+    parser.addArgument(
+        ['-p', '--initialVoiceCreditProxy'],
+        {
+            help: 'The address of the contract which provides the initial voice credit balance',
+            required: false
+        }
+    )
+
     const args = parser.parseArgs()
     const outputAddressFile = args.output
+    const signUpToken = args.signUpToken
+    const initialVoiceCreditProxy = args.initialVoiceCreditProxy
 
     const deployer = genDeployer(admin.privateKey)
+
+    let signUpTokenAddress
+    if (signUpToken) {
+        signUpTokenAddress = signUpToken
+    } else {
+        const signUpTokenContract = await deploySignupToken(deployer)
+        signUpTokenAddress = signUpTokenContract.address
+    }
+
+    const signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(
+        deployer,
+        signUpTokenAddress,
+    )
+
+    let initialVoiceCreditBalanceAddress
+    if (initialVoiceCreditProxy) {
+        initialVoiceCreditBalanceAddress = initialVoiceCreditProxy
+    } else {
+        const initialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
+            deployer,
+            config.maci.initialVoiceCreditBalance,
+        )
+        initialVoiceCreditBalanceAddress = initialVoiceCreditProxyContract.address
+    }
 
     const {
         maciContract,
@@ -407,11 +453,15 @@ const main = async () => {
         stateAqContract,
     } = await deployMaci(
         deployer,
+        signUpTokenGatekeeperContract.address,
+        initialVoiceCreditBalanceAddress,
     )
+
     const addresses = {
         MACI: maciContract.address,
         VkRegistry: vkRegistryContract.address,
-        StateAq: stateAqContract.address
+        StateAq: stateAqContract.address,
+        SignUpToken: signUpTokenAddress,
     }
 
     const addressJsonPath = path.join(__dirname, '..', outputAddressFile)
