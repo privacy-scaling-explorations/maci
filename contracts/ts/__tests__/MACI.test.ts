@@ -1,6 +1,6 @@
 jest.setTimeout(90000)
 import * as ethers from 'ethers'
-import { deployMaci, genDeployer } from '../deploy'
+import { deployMaci, genDeployer, loadAbi } from '../deploy'
 import {
     //StateLeaf,
     //Command,
@@ -20,10 +20,12 @@ import { config } from 'maci-config'
 import { G1Point, G2Point, stringifyBigInts } from 'maci-crypto'
 
 const STATE_TREE_DEPTH = 10
+const STATE_TREE_ARITY = 5
 import { genTestAccounts } from '../accounts'
 const accounts = genTestAccounts(1)
 const deployer = genDeployer(accounts[0].privateKey)
 const coordinator = new Keypair(new PrivKey(BigInt(config.maci.coordinatorPrivKey)))
+const pollAbi = loadAbi('Poll.abi')
 
 const testProcessVk = new VerifyingKey(
     new G1Point(BigInt(0), BigInt(1)),
@@ -53,16 +55,21 @@ const users = [
     new Keypair(),
 ]
 
+const signUpTxOpts = { gasLimit: 200000 }
+
 describe('MACI', () => {
     let maciContract
+    let stateAqContract
+    let vkRegistryContract
 
     describe('Deployment', () => {
         beforeAll(async () => {
             const r = await deployMaci(
                 deployer,
-                STATE_TREE_DEPTH,
             )
             maciContract = r.maciContract
+            stateAqContract = r.stateAqContract
+            vkRegistryContract = r.vkRegistryContract
         })
 
         it('MACI.stateTreeDepth should be correct', async () => {
@@ -78,6 +85,7 @@ describe('MACI', () => {
                 for (const user of users) {
                     const tx = await maciContract.signUp(
                         user.pubKey.asContractParam(),
+                        signUpTxOpts,
                     )
                     const receipt = await tx.wait()
                     expect(receipt.status).toEqual(1)
@@ -103,63 +111,106 @@ describe('MACI', () => {
 
         describe('Merge sign-ups', () => {
             it('coordinator should be able to merge the signUp AccQueue', async () => {
-                let tx = await maciContract.mergeSignUpsSubRoots(0)
+                let tx = await maciContract.mergeStateAqSubRoots(0)
                 let receipt = await tx.wait()
                 expect(receipt.status).toEqual(1)
 
-                console.log('mergeSignUpsSubRoots() gas used:', receipt.gasUsed.toString())
+                console.log('mergeStateAqSubRoots() gas used:', receipt.gasUsed.toString())
 
-                tx = await maciContract.mergeSignUps()
+                tx = await maciContract.mergeStateAq()
                 receipt = await tx.wait()
                 expect(receipt.status).toEqual(1)
 
-                console.log('mergeSignUps() gas used:', receipt.gasUsed.toString())
+                console.log('mergeStateAq() gas used:', receipt.gasUsed.toString())
             })
         })
 
-        describe('Create polls', () => {
+        describe('Deploy Polls', () => {
             // Poll parameters
             const duration = 10
+
             const maxValues = {
                 maxUsers: 25,
                 maxMessages: 25,
                 maxVoteOptions: 25,
             }
+
             const treeDepths = {
                 intStateTreeDepth: 1,
                 messageTreeDepth: 2,
                 voteOptionTreeDepth: 2,
             }
+
             const messageBatchSize = 5
+            const tallyBatchSize = STATE_TREE_ARITY ** treeDepths.intStateTreeDepth
+
             let pollId: number
 
-            beforeAll(async () => {
+            it('should set VKs and deploy a poll', async () => {
+                const std = await maciContract.stateTreeDepth()
+
+                // Set VKs
+                console.log('Setting VKs')
+                let tx = await vkRegistryContract.setVerifyingKeys(
+                    std.toString(),
+                    treeDepths.intStateTreeDepth,
+                    treeDepths.messageTreeDepth,
+                    treeDepths.voteOptionTreeDepth,
+                    messageBatchSize,
+                    testProcessVk.asContractParam(),
+                    testTallyVk.asContractParam(),
+                )
+                let receipt = await tx.wait()
+                expect(receipt.status).toEqual(1)
+
+                const pSig = await vkRegistryContract.genProcessVkSig(
+                    std.toString(),
+                    treeDepths.messageTreeDepth,
+                    treeDepths.voteOptionTreeDepth,
+                    messageBatchSize,
+                )
+                const isPSigSet = await vkRegistryContract.isProcessVkSet(pSig)
+                expect(isPSigSet).toBeTruthy()
+
+                const tSig = await vkRegistryContract.genTallyVkSig(
+                    std.toString(),
+                    treeDepths.intStateTreeDepth,
+                    treeDepths.voteOptionTreeDepth,
+                )
+                const isTSigSet = await vkRegistryContract.isTallyVkSet(tSig)
+                expect(isTSigSet).toBeTruthy()
+                
                 // Create the poll and get the poll ID from the tx event logs
-                const tx = await maciContract.createPoll(
+                tx = await maciContract.deployPoll(
                     duration,
                     maxValues,
                     treeDepths,
                     messageBatchSize,
                     coordinator.pubKey.asContractParam(),
-                    testProcessVk.asContractParam(),
-                    testTallyVk.asContractParam(),
-                    { gasLimit: 4000000 },
+                    { gasLimit: 8000000 },
                 )
-                const receipt = await tx.wait()
-                console.log('createPoll() gas used:', receipt.gasUsed.toString())
+                receipt = await tx.wait()
+
+                console.log('deployPoll() gas used:', receipt.gasUsed.toString())
+
                 expect(receipt.status).toEqual(1)
                 const iface = new ethers.utils.Interface(maciContract.interface.abi)
-                const event = iface.parseLog(receipt.logs[0])
+                const event = iface.parseLog(receipt.logs[receipt.logs.length - 1])
                 pollId = event.values._pollId
             })
 
             it('should set correct storage values', async () => {
-                // Retrieve the Poll via the poll ID and check that each value is correct
+                // Retrieve the Poll state and check that each value is correct
                 const std = await maciContract.stateTreeDepth()
-                const poll = await maciContract.getPoll(pollId)
+                const pollContractAddress = await maciContract.getPoll(pollId)
+                const pollContract = new ethers.Contract(
+                    pollContractAddress,
+                    pollAbi,
+                    deployer.signer,
+                )
 
-                const pollProcessVkSig = poll.processVkSig
-                const pollTallyVkSig = poll.tallyVkSig
+                const pollProcessVkSig = await pollContract.processVkSig()
+                const pollTallyVkSig = await pollContract.tallyVkSig()
 
                 const expectedProcessVkSig = genProcessVkSig(
                     std,
@@ -178,32 +229,48 @@ describe('MACI', () => {
                 expect(pollTallyVkSig.toString()).toEqual(expectedTallyVkSig.toString())
 
                 const onChainProcessVk = VerifyingKey.fromContract(
-                    await maciContract.getProcessVk(
-                        std.toString(),
-                        treeDepths.messageTreeDepth.toString(),
-                        treeDepths.voteOptionTreeDepth.toString(),
-                        messageBatchSize.toString(),
-                    )
+                    await vkRegistryContract.getProcessVkBySig(pollProcessVkSig)
                 )
                 const onChainTallyVk = VerifyingKey.fromContract(
-                    await maciContract.getTallyVk(
-                        std.toString(),
-                        treeDepths.intStateTreeDepth.toString(),
-                        treeDepths.voteOptionTreeDepth.toString(),
-                    )
+                    await vkRegistryContract.getTallyVkBySig(pollTallyVkSig)
                 )
                 expect(onChainProcessVk.equals(testProcessVk)).toBeTruthy()
                 expect(onChainTallyVk.equals(testTallyVk)).toBeTruthy()
 
-                expect(poll.coordinatorPubKey.x.toString()).toEqual(coordinator.pubKey.rawPubKey[0].toString())
-                expect(poll.coordinatorPubKey.y.toString()).toEqual(coordinator.pubKey.rawPubKey[1].toString())
-                expect(poll.duration.toString()).toEqual(duration.toString())
-                expect(poll.maxValues.maxUsers.toString()).toEqual(maxValues.maxUsers.toString())
-                expect(poll.maxValues.maxMessages.toString()).toEqual(maxValues.maxMessages.toString())
-                expect(poll.maxValues.maxVoteOptions.toString()).toEqual(maxValues.maxVoteOptions.toString())
-                expect(poll.treeDepths.intStateTreeDepth.toString()).toEqual(treeDepths.intStateTreeDepth.toString())
-                expect(poll.treeDepths.messageTreeDepth.toString()).toEqual(treeDepths.messageTreeDepth.toString())
-                expect(poll.treeDepths.voteOptionTreeDepth.toString()).toEqual(treeDepths.voteOptionTreeDepth.toString())
+                /*
+                    0. coordinatorPubKey,
+                    1. duration,
+                    2. processVkSig,
+                    3. tallyVkSig,
+                    4. messageAq,
+                    5. maxValues,
+                    6. treeDepths,
+                    7. batchSizes
+                 */
+
+                const pollState = await pollContract.getState()
+
+                expect(pollState[0].x.toString()).toEqual(coordinator.pubKey.rawPubKey[0].toString())
+                expect(pollState[0].y.toString()).toEqual(coordinator.pubKey.rawPubKey[1].toString())
+
+                expect(pollState[1].toString()).toEqual(duration.toString())
+
+                expect(pollState[2].toString()).toEqual(pollProcessVkSig.toString())
+
+                expect(pollState[3].toString()).toEqual(pollTallyVkSig.toString())
+
+                expect(pollState[4].match(/^(0x)?[0-9a-fA-F]{40}$/) != null).toBeTruthy()
+
+                expect(pollState[5].maxUsers.toString()).toEqual(maxValues.maxUsers.toString())
+                expect(pollState[5].maxMessages.toString()).toEqual(maxValues.maxMessages.toString())
+                expect(pollState[5].maxVoteOptions.toString()).toEqual(maxValues.maxVoteOptions.toString())
+
+                expect(pollState[6].intStateTreeDepth.toString()).toEqual(treeDepths.intStateTreeDepth.toString())
+                expect(pollState[6].messageTreeDepth.toString()).toEqual(treeDepths.messageTreeDepth.toString())
+                expect(pollState[6].voteOptionTreeDepth.toString()).toEqual(treeDepths.voteOptionTreeDepth.toString())
+
+                expect(pollState[7].messageBatchSize.toString()).toEqual(messageBatchSize.toString())
+                expect(pollState[7].tallyBatchSize.toString()).toEqual(tallyBatchSize.toString())
             })
         })
     })

@@ -7,7 +7,7 @@ contract DomainObjs is Hasher {
 
     uint8 constant MESSAGE_DATA_LENGTH = 11;
 
-    struct MaciPubKey {
+    struct PubKey {
         uint256 x;
         uint256 y;
     }

@@ -2,50 +2,87 @@
 pragma experimental ABIEncoderV2;
 pragma solidity ^0.7.2;
 
-import { Polls } from "./Polls.sol";
+import { Poll, PollFactory, MessageAqFactory } from "./Poll.sol";
+import { Params } from "./Params.sol";
 import { DomainObjs } from "./DomainObjs.sol";
 import { VkRegistry } from "./VkRegistry.sol";
-import { Hasher } from "./crypto/Hasher.sol";
 import { SnarkConstants } from "./crypto/SnarkConstants.sol";
+import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { AccQueueQuinaryMaci } from "./trees/AccQueue.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 /*
  * Minimum Anti-Collusion Infrastructure
  * Version 1
  */
-contract MACI is Polls, VkRegistry, SnarkConstants {
-    // The state tree depth is fixed per MACI instance. As such it should be as
-    // large as feasible so that there can be as many users as possible.
-    // i.e. 5 ** 10 = 9765625
-    uint8 constant internal MAX_STATE_TREE_DEPTH = 10;
+contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
+    // The state tree depth is fixed. As such it should be as large as feasible
+    // so that there can be as many users as possible.  i.e. 5 ** 10 = 9765625
+    uint8 public stateTreeDepth = 10;
     uint8 constant internal STATE_TREE_SUBDEPTH = 2;
-
-    // The number of leaves per node
     uint8 constant internal STATE_TREE_ARITY = 5;
-    uint8 constant internal MESSAGE_TREE_ARITY = 5;
-    uint8 constant internal VOTE_OPTION_TREE_ARITY = 5;
-    uint8 public stateTreeDepth;
 
     // Each poll has an incrementing ID
     uint256 internal nextPollId = 0;
     mapping (uint256 => Poll) public polls;
 
+    VkRegistry public vkRegistry;
+
+    PollFactory public pollFactory;
     AccQueueQuinaryMaci public stateAq;
+    MessageAqFactory public messageAqFactory;
+
+    bool isInitialised = false;
+
+    event DeployPoll(uint256 _pollId, address _pollAddr);
 
     constructor(
-        uint8 _stateTreeDepth
+        PollFactory _pollFactory
     ) {
-        // TODO: create State AccQueue
-        require(_stateTreeDepth <= MAX_STATE_TREE_DEPTH, "MACI: invalid _stateTreeDepth");
-        stateTreeDepth = _stateTreeDepth;
         stateAq = new AccQueueQuinaryMaci(STATE_TREE_SUBDEPTH);
+
+        pollFactory = _pollFactory;
     }
 
-    event CreatePoll(uint256 _pollId);
+    function init(
+        VkRegistry _vkRegistry,
+        MessageAqFactory _messageAqFactory
+    ) public onlyOwner {
+        require(isInitialised == false, "MACI: already initialised");
+
+        vkRegistry = _vkRegistry;
+        messageAqFactory = _messageAqFactory;
+
+        // Check that the factory contracts have correct access controls before
+        // allowing any functions in MACI to run (via the afterInit modifier)
+        require(
+            pollFactory.owner() == address(this),
+            "MACI: PollFactory owner incorrectly set"
+        );
+
+        pollFactory.setMessageAqFactory(messageAqFactory);
+
+        require(
+            messageAqFactory.owner() == address(pollFactory),
+            "MACI: MessageAqFactory owner incorrectly set"
+        );
+
+        require(
+            vkRegistry.owner() == owner(),
+            "MACI: VkRegistry owner incorrectly set"
+        );
+
+        isInitialised = true;
+    }
+
+    modifier afterInit() {
+        require(isInitialised == true, "MACI: not initialised");
+        _;
+    }
 
     function signUp(
-        MaciPubKey memory pubKey
-    ) public {
+        PubKey memory pubKey
+    ) public afterInit {
         require(
             pubKey.x < SNARK_SCALAR_FIELD && pubKey.y < SNARK_SCALAR_FIELD,
             "MACI: pubkey values should be less than the snark scalar field"
@@ -63,139 +100,48 @@ contract MACI is Polls, VkRegistry, SnarkConstants {
         //// TODO: validate signature and sign up
     //)
 
-    function mergeSignUpsSubRoots(uint256 _numSrQueueOps) public onlyOwner {
+    function mergeStateAqSubRoots(uint256 _numSrQueueOps) public onlyOwner afterInit {
         stateAq.mergeSubRoots(_numSrQueueOps);
     }
 
-    function mergeSignUps() public onlyOwner {
-        stateAq.merge(MAX_STATE_TREE_DEPTH);
+    function mergeStateAq() public onlyOwner afterInit {
+        stateAq.merge(stateTreeDepth);
     }
 
-    function publishMessage(
-        uint256 _pollId,
-        Message memory _message
-    ) public {
-        uint256 messageLeaf = hashMessage(_message);
-        polls[_pollId].messageAq.enqueue(messageLeaf);
-    }
-
-    function mergeMessagesSubRoots(
-        uint256 _numSrQueueOps,
-        uint256 _pollId
-    ) public onlyOwner {
-        polls[_pollId].messageAq.mergeSubRoots(_numSrQueueOps);
-    }
-
-    function mergeMessages(
-        uint256 _pollId
-    ) public onlyOwner {
-        polls[_pollId].messageAq.merge(
-            polls[_pollId].treeDepths.messageTreeDepth
-        );
-    }
-
-    function createPoll(
+    function deployPoll(
         uint256 _duration,
         MaxValues memory _maxValues,
         TreeDepths memory _treeDepths,
         uint8 _messageBatchSize,
-        MaciPubKey memory _coordinatorPubKey,
-        VerifyingKey memory _processVk,
-        VerifyingKey memory _tallyVk
-    ) public {
+        PubKey memory _coordinatorPubKey
+    ) public afterInit {
         uint256 pollId = nextPollId;
-        uint8 stateTreeArity = STATE_TREE_ARITY;
-        uint8 messageTreeArity = MESSAGE_TREE_ARITY;
-        uint8 voteOptionTreeArity = VOTE_OPTION_TREE_ARITY;
 
-        // Validate each item in _maxValues
-        require(
-            _maxValues.maxUsers <=
-                stateTreeArity ** stateTreeDepth,
-            "MACI: maxUsers is too large"
+        // The message batch size and the tally batch size
+        BatchSizes memory batchSizes = BatchSizes(
+            _messageBatchSize,
+            STATE_TREE_ARITY ** uint8(_treeDepths.intStateTreeDepth)
         );
 
-        require(
-            _maxValues.maxMessages <=
-                messageTreeArity ** _treeDepths.messageTreeDepth,
-            "MACI: maxMessages is too large"
-        );
-
-        require(
-            _maxValues.maxVoteOptions <=
-                voteOptionTreeArity ** _treeDepths.voteOptionTreeDepth,
-            "MACI: maxVoteOptions is too large"
-        );
-
-        // _messageBatchSize must be lte maxMessages and also be a factor
-        require(
-            _maxValues.maxMessages >= _messageBatchSize &&
-            _maxValues.maxMessages % _messageBatchSize == 0,
-            "MACI: invalid _messageBatchSize given"
-        );
-
-        uint8 tallyBatchSize = stateTreeArity ** uint8(_treeDepths.intStateTreeDepth);
-
-        require(
-            _maxValues.maxUsers >= _treeDepths.intStateTreeDepth &&
-            _maxValues.maxUsers % tallyBatchSize == 0,
-            "MACI: invalid maxUsers given"
-        );
-
-        // Set the coordinator's public key
-        polls[pollId].coordinatorPubKey = _coordinatorPubKey;
-
-        polls[pollId].batchSizes.tallyBatchSize = tallyBatchSize;
-        polls[pollId].batchSizes.messageBatchSize = _messageBatchSize;
-
-        polls[pollId].maxValues = _maxValues;
-        polls[pollId].treeDepths = _treeDepths;
-
-        polls[pollId].duration = _duration;
-
-        polls[pollId].messageAq = new AccQueueQuinaryMaci(_treeDepths.messageTreeDepth);
-
-        // Get the verifying keys from the VK registry
-        uint256 processVkSig = genProcessVkSig(
+        Poll p = pollFactory.deploy(
+            _duration,
             stateTreeDepth,
-            _treeDepths.messageTreeDepth,
-            _treeDepths.voteOptionTreeDepth,
-            _messageBatchSize
+            _maxValues,
+            _treeDepths,
+            batchSizes,
+            _coordinatorPubKey,
+            vkRegistry
         );
 
-        uint256 tallyVkSig = genTallyVkSig(
-            stateTreeDepth,
-            _treeDepths.intStateTreeDepth,
-            _treeDepths.voteOptionTreeDepth
-        );
-
-        // Store the VKs if they aren't already
-        if (!isProcessVkSet[processVkSig]) {
-            // The tally vk should not be set if the process vk is not
-            assert(!isTallyVkSet[tallyVkSig]);
-
-            // TODO: validate the verifying keys
-            setVerifyingKeys(
-                stateTreeDepth,
-                _treeDepths.intStateTreeDepth,
-                _treeDepths.messageTreeDepth,
-                _treeDepths.voteOptionTreeDepth,
-                _messageBatchSize,
-                _processVk,
-                _tallyVk
-            );
-        }
-
-        polls[pollId].processVkSig = processVkSig;
-        polls[pollId].tallyVkSig = tallyVkSig;
+        polls[pollId] = p;
 
         // Increment the poll ID for the next poll
         nextPollId ++;
 
-        emit CreatePoll(pollId);
+        emit DeployPoll(pollId, address(p));
     }
 
-    function getPoll(uint256 _pollId) public view returns (Poll memory) {
+    function getPoll(uint256 _pollId) public view returns (Poll) {
         require(_pollId < nextPollId, "MACI: poll with _pollId does not exist");
         return polls[_pollId];
     }

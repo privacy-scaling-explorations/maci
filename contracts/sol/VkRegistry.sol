@@ -13,19 +13,27 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 contract VkRegistry is Ownable, SnarkCommon {
 
     mapping (uint256 => VerifyingKey) internal processVks; 
-    mapping (uint256 => bool) internal isProcessVkSet; 
+    mapping (uint256 => bool) internal processVkSet; 
 
     mapping (uint256 => VerifyingKey) internal tallyVks; 
-    mapping (uint256 => bool) internal isTallyVkSet; 
+    mapping (uint256 => bool) internal tallyVkSet; 
+
+    function isProcessVkSet(uint256 _sig) public view returns (bool) {
+        return processVkSet[_sig];
+    }
+
+    function isTallyVkSet(uint256 _sig) public view returns (bool) {
+        return tallyVkSet[_sig];
+    }
 
     function genProcessVkSig(
         uint256 _stateTreeDepth,
         uint256 _messageTreeDepth,
         uint256 _voteOptionTreeDepth,
-        uint256 _batchSize
-    ) internal pure returns (uint256) {
+        uint256 _messageBatchSize
+    ) public pure returns (uint256) {
         return 
-            (_batchSize << 192) +
+            (_messageBatchSize << 192) +
             (_stateTreeDepth << 128) +
             (_messageTreeDepth << 64) +
             _voteOptionTreeDepth;
@@ -35,7 +43,7 @@ contract VkRegistry is Ownable, SnarkCommon {
         uint256 _stateTreeDepth,
         uint256 _intStateTreeDepth,
         uint256 _voteOptionTreeDepth
-    ) internal pure returns (uint256) {
+    ) public pure returns (uint256) {
         return 
             (_stateTreeDepth << 128) +
             (_intStateTreeDepth << 64) +
@@ -47,7 +55,7 @@ contract VkRegistry is Ownable, SnarkCommon {
         uint256 _intStateTreeDepth,
         uint256 _messageTreeDepth,
         uint256 _voteOptionTreeDepth,
-        uint256 _batchSize,
+        uint256 _messageBatchSize,
         VerifyingKey memory _processVk,
         VerifyingKey memory _tallyVk
     ) public onlyOwner {
@@ -56,10 +64,10 @@ contract VkRegistry is Ownable, SnarkCommon {
             _stateTreeDepth,
             _messageTreeDepth,
             _voteOptionTreeDepth,
-            _batchSize
+            _messageBatchSize
         );
 
-        require(isProcessVkSet[processVkSig] == false, "VkRegistry: process vk already set");
+        require(processVkSet[processVkSig] == false, "VkRegistry: process vk already set");
 
         uint256 tallyVkSig = genTallyVkSig(
             _stateTreeDepth,
@@ -67,7 +75,7 @@ contract VkRegistry is Ownable, SnarkCommon {
             _voteOptionTreeDepth
         );
 
-        require(isTallyVkSet[tallyVkSig] == false, "VkRegistry: tally vk already set");
+        require(tallyVkSet[tallyVkSig] == false, "VkRegistry: tally vk already set");
 
         VerifyingKey storage processVk = processVks[processVkSig];
         processVk.alpha1 = _processVk.alpha1;
@@ -78,7 +86,7 @@ contract VkRegistry is Ownable, SnarkCommon {
             processVk.ic.push(_processVk.ic[i]);
         }
 
-        isProcessVkSet[processVkSig] = true;
+        processVkSet[processVkSig] = true;
 
         VerifyingKey storage tallyVk = tallyVks[tallyVkSig];
         tallyVk.alpha1 = _tallyVk.alpha1;
@@ -88,40 +96,46 @@ contract VkRegistry is Ownable, SnarkCommon {
         for (uint8 i = 0; i < _tallyVk.ic.length; i ++) {
             tallyVk.ic.push(_tallyVk.ic[i]);
         }
-        isTallyVkSet[tallyVkSig] = true;
+        tallyVkSet[tallyVkSig] = true;
     }
 
     function hasProcessVk(
         uint256 _stateTreeDepth,
         uint256 _messageTreeDepth,
         uint256 _voteOptionTreeDepth,
-        uint256 _batchSize
+        uint256 _messageBatchSize
     ) public view returns (bool) {
         uint256 sig = genProcessVkSig(
             _stateTreeDepth,
             _messageTreeDepth,
             _voteOptionTreeDepth,
-            _batchSize
+            _messageBatchSize
         );
-        return isProcessVkSet[sig];
+        return processVkSet[sig];
+    }
+
+    function getProcessVkBySig(
+        uint256 _sig
+    ) public view returns (VerifyingKey memory) {
+        require(processVkSet[_sig] == true, "VkRegistry: process verifying key not set");
+
+        return processVks[_sig];
     }
 
     function getProcessVk(
         uint256 _stateTreeDepth,
         uint256 _messageTreeDepth,
         uint256 _voteOptionTreeDepth,
-        uint256 _batchSize
+        uint256 _messageBatchSize
     ) public view returns (VerifyingKey memory) {
         uint256 sig = genProcessVkSig(
             _stateTreeDepth,
             _messageTreeDepth,
             _voteOptionTreeDepth,
-            _batchSize
+            _messageBatchSize
         );
 
-        require(isProcessVkSet[sig] == true, "VkRegistry: process verifying key not set");
-
-        return processVks[sig];
+        return getProcessVkBySig(sig);
     }
 
     function hasTallyVk(
@@ -135,7 +149,15 @@ contract VkRegistry is Ownable, SnarkCommon {
             _voteOptionTreeDepth
         );
 
-        return isTallyVkSet[sig];
+        return tallyVkSet[sig];
+    }
+
+    function getTallyVkBySig(
+        uint256 _sig
+    ) public view returns (VerifyingKey memory) {
+        require(tallyVkSet[_sig] == true, "VkRegistry: tally verifying key not set");
+
+        return tallyVks[_sig];
     }
 
     function getTallyVk(
@@ -149,8 +171,6 @@ contract VkRegistry is Ownable, SnarkCommon {
             _voteOptionTreeDepth
         );
 
-        require(isTallyVkSet[sig] == true, "VkRegistry: tally verifying key not set");
-
-        return tallyVks[sig];
+        return getTallyVkBySig(sig);
     }
 }

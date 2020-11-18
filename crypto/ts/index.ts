@@ -159,6 +159,33 @@ const hash11 = (elements: Plaintext): BigInt => {
 }
 
 /*
+ * A convenience function for to use Poseidon to hash a Plaintext with
+ * no more than 12 elements
+ */
+const hash12 = (elements: Plaintext): BigInt => {
+    const elementLength = elements.length
+    if (elementLength > 12) {
+        throw new TypeError(`elements length should not greater than 11, got ${elementLength}`)
+    }
+    const elementsPadded = elements.slice()
+    if (elementLength < 12) {
+        for (let i = elementLength; i < 12; i++) {
+            elementsPadded.push(BigInt(0))
+        }
+    }
+    return poseidonT3([
+        poseidonT3([
+            poseidonT6(elementsPadded.slice(0, 5)),
+            poseidonT6(elementsPadded.slice(5, 10))
+        ]),
+        poseidonT3([
+            elementsPadded[10],
+            elementsPadded[11],
+        ]),
+    ])
+}
+
+/*
  * Hash a single BigInt with the Poseidon hash function
  */
 const hashOne = (preImage: BigInt): BigInt => {
@@ -419,6 +446,7 @@ export {
     hashOne,
     hash5,
     hash11,
+    hash12,
     hashLeftRight,
     verifySignature,
     Signature,

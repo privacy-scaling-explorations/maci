@@ -1,4 +1,5 @@
 import * as fs from 'fs'
+import * as assert from 'assert'
 import * as path from 'path'
 import * as ethers from 'ethers'
 import * as shell from 'shelljs'
@@ -178,11 +179,8 @@ const log = (msg: string, quiet: boolean) => {
 
 const deployMaci = async (
     deployer,
-    stateTreeDepth: number = config.maci.merkleTrees.stateTreeDepth,
     quiet = false,
 ) => {
-    log('Deploying MACI', quiet)
-
     log('Deploying Poseidon T3', quiet)
     const PoseidonT3Contract = await deployer.deploy(
         PoseidonT3.abi,
@@ -200,14 +198,63 @@ const deployMaci = async (
 
     const [ MACIAbi, MACIBin ] = loadAB('MACI')
 
+    // PollFactory
+    log('Deploying PollFactory', quiet)
+    const [ PollFactoryAbi, PollFactoryBin ] = loadAB('PollFactory')
+    const pollFactoryContract = await deployer.deploy(
+        PollFactoryAbi,
+        PollFactoryBin,
+    )
+
+    log('Deploying MACI', quiet)
     const maciContract = await deployer.deploy(
         MACIAbi,
         MACIBin,
-        stateTreeDepth,
+        pollFactoryContract.address,
+    )
+
+    log('Transferring PollFactory ownership to MACI', quiet)
+    await (await (pollFactoryContract.transferOwnership(maciContract.address))).wait()
+
+    // MessageAqFactory
+    log('Deploying MessageAqFactory', quiet)
+    const [ MessageAqFactoryAbi, MessageAqFactoryBin ] = loadAB('MessageAqFactory')
+    const messageAqFactoryContract = await deployer.deploy(
+        MessageAqFactoryAbi,
+        MessageAqFactoryBin,
+    )
+
+    log('Transferring MessageAqFactory ownership to PollFactory', quiet)
+    await (await (messageAqFactoryContract.transferOwnership(pollFactoryContract.address))).wait()
+
+    // VkRegistry
+    log('Deploying VkRegistry', quiet)
+    const [ VkRegistryAbi, VkRegistryBin ] = loadAB('VkRegistry')
+    const vkRegistryContract = await deployer.deploy(
+        VkRegistryAbi,
+        VkRegistryBin,
+    )
+
+    //log('Transferring VkRegistry ownership to MACI', quiet)
+    //await (await (vkRegistryContract.transferOwnership(maciContract.address))).wait()
+
+    log('Initialising MACI', quiet)
+    await (await (maciContract.init(
+        vkRegistryContract.address,
+        messageAqFactoryContract.address,
+    ))).wait()
+
+    const AccQueueQuinaryMaciAbi = loadAbi('AccQueueQuinaryMaci.abi')
+    const stateAqContract = new ethers.Contract(
+        await maciContract.stateAq(),
+        AccQueueQuinaryMaciAbi,
+        deployer.signer,
     )
 
     return {
         maciContract,
+        vkRegistryContract,
+        stateAqContract,
     }
 }
 
@@ -356,11 +403,15 @@ const main = async () => {
 
     const {
         maciContract,
+        vkRegistryContract,
+        stateAqContract,
     } = await deployMaci(
         deployer,
     )
     const addresses = {
         MACI: maciContract.address,
+        VkRegistry: vkRegistryContract.address,
+        StateAq: stateAqContract.address
     }
 
     const addressJsonPath = path.join(__dirname, '..', outputAddressFile)
