@@ -12,6 +12,20 @@ contract DomainObjs is Hasher {
         uint256 y;
     }
 
+    struct StateLeaf {
+        PubKey pubKey;
+        uint256 voiceCreditBalance;
+    }
+
+    function hashStateLeaf(StateLeaf memory _stateLeaf) public pure returns (uint256) {
+        uint256[] memory plaintext = new uint256[](3);
+        plaintext[0] = _stateLeaf.pubKey.x;
+        plaintext[1] = _stateLeaf.pubKey.y;
+        plaintext[2] = _stateLeaf.voiceCreditBalance;
+
+        return hash3(plaintext);
+    }
+
     /*
        Data fields:
 

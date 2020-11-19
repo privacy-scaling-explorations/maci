@@ -3,6 +3,8 @@ import { genTestAccounts } from '../accounts'
 import { config } from 'maci-config'
 import {
     hashLeftRight,
+    hash3,
+    hash4,
     hash5,
     hash12,
     genRandomSalt,
@@ -10,6 +12,8 @@ import {
 
 import { JSONRPCDeployer } from '../deploy'
 const PoseidonT3 = require('@maci-contracts/compiled/PoseidonT3.json')
+const PoseidonT4 = require('@maci-contracts/compiled/PoseidonT4.json')
+const PoseidonT5 = require('@maci-contracts/compiled/PoseidonT5.json')
 const PoseidonT6 = require('@maci-contracts/compiled/PoseidonT6.json')
 
 import { loadAB, linkPoseidonLibraries } from '../'
@@ -17,7 +21,10 @@ import { loadAB, linkPoseidonLibraries } from '../'
 const accounts = genTestAccounts(1)
 let deployer
 let hasherContract
-let PoseidonT3Contract, PoseidonT6Contract
+let PoseidonT3Contract
+let PoseidonT4Contract
+let PoseidonT5Contract
+let PoseidonT6Contract
 
 describe('Hasher', () => {
     beforeAll(async () => {
@@ -32,12 +39,16 @@ describe('Hasher', () => {
         console.log('Deploying Poseidon')
 
         PoseidonT3Contract = await deployer.deploy(PoseidonT3.abi, PoseidonT3.bytecode, {})
+        PoseidonT4Contract = await deployer.deploy(PoseidonT4.abi, PoseidonT4.bytecode, {})
+        PoseidonT5Contract = await deployer.deploy(PoseidonT5.abi, PoseidonT5.bytecode, {})
         PoseidonT6Contract = await deployer.deploy(PoseidonT6.abi, PoseidonT6.bytecode, {})
 
         // Link Poseidon contracts
         linkPoseidonLibraries(
             ['crypto/Hasher.sol'],
             PoseidonT3Contract.address,
+            PoseidonT4Contract.address,
+            PoseidonT5Contract.address,
             PoseidonT6Contract.address,
         )
 
@@ -56,6 +67,28 @@ describe('Hasher', () => {
         const hashed = hashLeftRight(left, right)
 
         const onChainHash = await hasherContract.hashLeftRight(left.toString(), right.toString())
+        expect(onChainHash.toString()).toEqual(hashed.toString())
+    })
+
+    it('maci-crypto.hash3 should match hasher.hash3', async () => {
+        const values: string[] = []
+        for (let i = 0; i < 3; i++) {
+            values.push(genRandomSalt().toString())
+        }
+        const hashed = hash3(values.map(BigInt))
+
+        const onChainHash = await hasherContract.hash3(values)
+        expect(onChainHash.toString()).toEqual(hashed.toString())
+    })
+
+    it('maci-crypto.hash4 should match hasher.hash4', async () => {
+        const values: string[] = []
+        for (let i = 0; i < 4; i++) {
+            values.push(genRandomSalt().toString())
+        }
+        const hashed = hash4(values.map(BigInt))
+
+        const onChainHash = await hasherContract.hash4(values)
         expect(onChainHash.toString()).toEqual(hashed.toString())
     })
 

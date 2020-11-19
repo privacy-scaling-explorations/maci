@@ -27,6 +27,8 @@ const loadAB = (contractName: string) => {
 }
 
 const PoseidonT3 = require('../compiled/PoseidonT3.json')
+const PoseidonT4 = require('../compiled/PoseidonT4.json')
+const PoseidonT5 = require('../compiled/PoseidonT5.json')
 const PoseidonT6 = require('../compiled/PoseidonT6.json')
 
 const maciContractAbi = loadAbi('MACI.abi')
@@ -38,6 +40,8 @@ const getInitialVoiceCreditProxyAbi = () => {
 const linkPoseidonLibraries = (
     solFilesToLink: string[],
     poseidonT3Address,
+    poseidonT4Address,
+    poseidonT5Address,
     poseidonT6Address,
 ) => {
     let inputFiles = ''
@@ -56,6 +60,8 @@ const linkPoseidonLibraries = (
         + ` -o ${abiDir} ${inputFiles} --overwrite --bin`
         + ` --allow-paths ${maciSolPath}/,${ozSolPath}`
         + ` --libraries ${poseidonPath}:PoseidonT3:${poseidonT3Address}`
+        + ` --libraries ${poseidonPath}:PoseidonT4:${poseidonT4Address}`
+        + ` --libraries ${poseidonPath}:PoseidonT5:${poseidonT5Address}`
         + ` --libraries ${poseidonPath}:PoseidonT6:${poseidonT6Address}`
 
     shell.exec(linkCmd)
@@ -183,20 +189,35 @@ const deployMaci = async (
     initialVoiceCreditBalanceAddress: string,
     quiet = false,
 ) => {
-    log('Deploying Poseidon T3', quiet)
+    log('Deploying Poseidon contracts', quiet)
     const PoseidonT3Contract = await deployer.deploy(
         PoseidonT3.abi,
         PoseidonT3.bytecode,
     )
 
-    log('Deploying Poseidon T6', quiet)
+    const PoseidonT4Contract = await deployer.deploy(
+        PoseidonT4.abi,
+        PoseidonT4.bytecode,
+    )
+
+    const PoseidonT5Contract = await deployer.deploy(
+        PoseidonT5.abi,
+        PoseidonT5.bytecode,
+    )
+
     const PoseidonT6Contract = await deployer.deploy(
         PoseidonT6.abi,
         PoseidonT6.bytecode,
     )
 
     // Link Poseidon contracts to MACI
-    linkPoseidonLibraries(['MACI.sol'], PoseidonT3Contract.address, PoseidonT6Contract.address)
+    linkPoseidonLibraries(
+        ['MACI.sol'],
+        PoseidonT3Contract.address,
+        PoseidonT4Contract.address,
+        PoseidonT5Contract.address,
+        PoseidonT6Contract.address,
+    )
 
     const [ MACIAbi, MACIBin ] = loadAB('MACI')
 
@@ -262,120 +283,120 @@ const deployMaci = async (
     }
 }
 
-const deployMaci2 = async (
-    deployer,
-    signUpGatekeeperAddress: string,
-    initialVoiceCreditProxy: string,
-    stateTreeDepth: number = config.maci.merkleTrees.stateTreeDepth,
-    messageTreeDepth: number = config.maci.merkleTrees.messageTreeDepth,
-    voteOptionTreeDepth: number = config.maci.merkleTrees.voteOptionTreeDepth,
-    quadVoteTallyBatchSize: number = config.maci.quadVoteTallyBatchSize,
-    messageBatchSize: number = config.maci.messageBatchSize,
-    voteOptionsMaxLeafIndex: number = config.maci.voteOptionsMaxLeafIndex,
-    signUpDurationInSeconds: number = config.maci.signUpDurationInSeconds,
-    votingDurationInSeconds: number = config.maci.votingDurationInSeconds,
-    coordinatorPubKey?: PubKey,
-    configType = 'test',
-    quiet = false,
-) => {
-    log('Deploying Poseidon', quiet)
+//const deployMaci2 = async (
+    //deployer,
+    //signUpGatekeeperAddress: string,
+    //initialVoiceCreditProxy: string,
+    //stateTreeDepth: number = config.maci.merkleTrees.stateTreeDepth,
+    //messageTreeDepth: number = config.maci.merkleTrees.messageTreeDepth,
+    //voteOptionTreeDepth: number = config.maci.merkleTrees.voteOptionTreeDepth,
+    //quadVoteTallyBatchSize: number = config.maci.quadVoteTallyBatchSize,
+    //messageBatchSize: number = config.maci.messageBatchSize,
+    //voteOptionsMaxLeafIndex: number = config.maci.voteOptionsMaxLeafIndex,
+    //signUpDurationInSeconds: number = config.maci.signUpDurationInSeconds,
+    //votingDurationInSeconds: number = config.maci.votingDurationInSeconds,
+    //coordinatorPubKey?: PubKey,
+    //configType = 'test',
+    //quiet = false,
+//) => {
+    //log('Deploying Poseidon', quiet)
 
-    if (!coordinatorPubKey) {
-        const p = genPubKey(BigInt(config.maci.coordinatorPrivKey))
-        coordinatorPubKey = new PubKey(p)
-    }
+    //if (!coordinatorPubKey) {
+        //const p = genPubKey(BigInt(config.maci.coordinatorPrivKey))
+        //coordinatorPubKey = new PubKey(p)
+    //}
 
-    log('Deploying Poseidon T3', quiet)
-    const PoseidonT3Contract = await deployer.deploy(
-        PoseidonT3.abi,
-        PoseidonT3.bytecode,
-    )
+    //log('Deploying Poseidon T3', quiet)
+    //const PoseidonT3Contract = await deployer.deploy(
+        //PoseidonT3.abi,
+        //PoseidonT3.bytecode,
+    //)
 
-    log('Deploying Poseidon T6', quiet)
-    const PoseidonT6Contract = await deployer.deploy(
-        PoseidonT6.abi,
-        PoseidonT6.bytecode,
-    )
+    //log('Deploying Poseidon T6', quiet)
+    //const PoseidonT6Contract = await deployer.deploy(
+        //PoseidonT6.abi,
+        //PoseidonT6.bytecode,
+    //)
 
-    let batchUstVerifierContract
-    let quadVoteTallyVerifierContract
-    if (configType === 'test') {
-        const [ BatchUpdateStateTreeVerifierAbi, BatchUpdateStateTreeVerifierBin ]
-            = loadAB('BatchUpdateStateTreeVerifier')
-        log('Deploying BatchUpdateStateTreeVerifier', quiet)
-        batchUstVerifierContract = await deployer.deploy(
-            BatchUpdateStateTreeVerifierAbi,
-            BatchUpdateStateTreeVerifierBin,
-        )
+    //let batchUstVerifierContract
+    //let quadVoteTallyVerifierContract
+    //if (configType === 'test') {
+        //const [ BatchUpdateStateTreeVerifierAbi, BatchUpdateStateTreeVerifierBin ]
+            //= loadAB('BatchUpdateStateTreeVerifier')
+        //log('Deploying BatchUpdateStateTreeVerifier', quiet)
+        //batchUstVerifierContract = await deployer.deploy(
+            //BatchUpdateStateTreeVerifierAbi,
+            //BatchUpdateStateTreeVerifierBin,
+        //)
 
-        log('Deploying QuadVoteTallyVerifier', quiet)
-        const [ QuadVoteTallyVerifierAbi, QuadVoteTallyVerifierBin ]
-            = loadAB('QuadVoteTallyVerifier')
-        quadVoteTallyVerifierContract = await deployer.deploy(
-            QuadVoteTallyVerifierAbi,
-            QuadVoteTallyVerifierBin,
-        )
-    } else if (configType === 'prod-small') {
-        log('Deploying BatchUpdateStateTreeVerifier', quiet)
-        const [ BatchUpdateStateTreeVerifierSmallAbi, BatchUpdateStateTreeVerifierSmallBin ]
-            = loadAB('BatchUpdateStateTreeVerifierSmall')
-        batchUstVerifierContract = await deployer.deploy(
-            BatchUpdateStateTreeVerifierSmallAbi,
-            BatchUpdateStateTreeVerifierSmallBin,
-        )
+        //log('Deploying QuadVoteTallyVerifier', quiet)
+        //const [ QuadVoteTallyVerifierAbi, QuadVoteTallyVerifierBin ]
+            //= loadAB('QuadVoteTallyVerifier')
+        //quadVoteTallyVerifierContract = await deployer.deploy(
+            //QuadVoteTallyVerifierAbi,
+            //QuadVoteTallyVerifierBin,
+        //)
+    //} else if (configType === 'prod-small') {
+        //log('Deploying BatchUpdateStateTreeVerifier', quiet)
+        //const [ BatchUpdateStateTreeVerifierSmallAbi, BatchUpdateStateTreeVerifierSmallBin ]
+            //= loadAB('BatchUpdateStateTreeVerifierSmall')
+        //batchUstVerifierContract = await deployer.deploy(
+            //BatchUpdateStateTreeVerifierSmallAbi,
+            //BatchUpdateStateTreeVerifierSmallBin,
+        //)
 
-        log('Deploying QuadVoteTallyVerifier', quiet)
-        const [ QuadVoteTallyVerifierSmallAbi, QuadVoteTallyVerifierSmallBin ]
-            = loadAB('QuadVoteTallyVerifierSmall')
-        quadVoteTallyVerifierContract = await deployer.deploy(
-            QuadVoteTallyVerifierSmallAbi,
-            QuadVoteTallyVerifierSmallBin,
-        )
-    }
+        //log('Deploying QuadVoteTallyVerifier', quiet)
+        //const [ QuadVoteTallyVerifierSmallAbi, QuadVoteTallyVerifierSmallBin ]
+            //= loadAB('QuadVoteTallyVerifierSmall')
+        //quadVoteTallyVerifierContract = await deployer.deploy(
+            //QuadVoteTallyVerifierSmallAbi,
+            //QuadVoteTallyVerifierSmallBin,
+        //)
+    //}
 
-    log('Deploying MACI', quiet)
+    //log('Deploying MACI', quiet)
 
-    const maxUsers = (BigInt(2 ** stateTreeDepth) - BigInt(1)).toString()
-    const maxMessages = (BigInt(2 ** messageTreeDepth) - BigInt(1)).toString()
+    //const maxUsers = (BigInt(2 ** stateTreeDepth) - BigInt(1)).toString()
+    //const maxMessages = (BigInt(2 ** messageTreeDepth) - BigInt(1)).toString()
 
-    // Link Poseidon contracts to MACI
-    linkPoseidonLibraries(['MACI.sol'], PoseidonT3Contract.address, PoseidonT6Contract.address)
+    //// Link Poseidon contracts to MACI
+    //linkPoseidonLibraries(['MACI.sol'], PoseidonT3Contract.address, PoseidonT6Contract.address)
 
-    const [ MACIAbi, MACIBin ] = loadAB('MACI')
+    //const [ MACIAbi, MACIBin ] = loadAB('MACI')
 
-    const maciContract = await deployer.deploy(
-        MACIAbi,
-        MACIBin,
-        { stateTreeDepth, messageTreeDepth, voteOptionTreeDepth },
-        {
-            tallyBatchSize: quadVoteTallyBatchSize,
-            messageBatchSize: messageBatchSize,
-        },
-        {
-            maxUsers,
-            maxMessages,
-            maxVoteOptions: voteOptionsMaxLeafIndex,
-        },
-        signUpGatekeeperAddress,
-        batchUstVerifierContract.address,
-        quadVoteTallyVerifierContract.address,
-        signUpDurationInSeconds,
-        votingDurationInSeconds,
-        initialVoiceCreditProxy,
-        {
-            x: coordinatorPubKey.rawPubKey[0].toString(),
-            y: coordinatorPubKey.rawPubKey[1].toString(),
-        },
-    )
+    //const maciContract = await deployer.deploy(
+        //MACIAbi,
+        //MACIBin,
+        //{ stateTreeDepth, messageTreeDepth, voteOptionTreeDepth },
+        //{
+            //tallyBatchSize: quadVoteTallyBatchSize,
+            //messageBatchSize: messageBatchSize,
+        //},
+        //{
+            //maxUsers,
+            //maxMessages,
+            //maxVoteOptions: voteOptionsMaxLeafIndex,
+        //},
+        //signUpGatekeeperAddress,
+        //batchUstVerifierContract.address,
+        //quadVoteTallyVerifierContract.address,
+        //signUpDurationInSeconds,
+        //votingDurationInSeconds,
+        //initialVoiceCreditProxy,
+        //{
+            //x: coordinatorPubKey.rawPubKey[0].toString(),
+            //y: coordinatorPubKey.rawPubKey[1].toString(),
+        //},
+    //)
 
-    return {
-        batchUstVerifierContract,
-        quadVoteTallyVerifierContract,
-        PoseidonT3Contract,
-        PoseidonT6Contract,
-        maciContract,
-    }
-}
+    //return {
+        //batchUstVerifierContract,
+        //quadVoteTallyVerifierContract,
+        //PoseidonT3Contract,
+        //PoseidonT6Contract,
+        //maciContract,
+    //}
+//}
 
 const main = async () => {
     let accounts
@@ -473,104 +494,104 @@ const main = async () => {
     console.log(addresses)
 }
 
-const main2 = async () => {
-    let accounts
-    if (config.env === 'local-dev' || config.env === 'test') {
-        accounts = genTestAccounts(1)
-    } else {
-        accounts = genAccounts()
-    }
-    const admin = accounts[0]
+//const main2 = async () => {
+    //let accounts
+    //if (config.env === 'local-dev' || config.env === 'test') {
+        //accounts = genTestAccounts(1)
+    //} else {
+        //accounts = genAccounts()
+    //}
+    //const admin = accounts[0]
 
-    console.log('Using account', admin.address)
+    //console.log('Using account', admin.address)
 
-    const parser = new argparse.ArgumentParser({
-        description: 'Deploy all contracts to an Ethereum network of your choice'
-    })
+    //const parser = new argparse.ArgumentParser({
+        //description: 'Deploy all contracts to an Ethereum network of your choice'
+    //})
 
-    parser.addArgument(
-        ['-o', '--output'],
-        {
-            help: 'The filepath to save the addresses of the deployed contracts',
-            required: true
-        }
-    )
+    //parser.addArgument(
+        //['-o', '--output'],
+        //{
+            //help: 'The filepath to save the addresses of the deployed contracts',
+            //required: true
+        //}
+    //)
 
-    parser.addArgument(
-        ['-s', '--signUpToken'],
-        {
-            help: 'The address of the signup token (e.g. POAP)',
-            required: false
-        }
-    )
+    //parser.addArgument(
+        //['-s', '--signUpToken'],
+        //{
+            //help: 'The address of the signup token (e.g. POAP)',
+            //required: false
+        //}
+    //)
 
-    parser.addArgument(
-        ['-p', '--initialVoiceCreditProxy'],
-        {
-            help: 'The address of the contract which provides the initial voice credit balance',
-            required: false
-        }
-    )
+    //parser.addArgument(
+        //['-p', '--initialVoiceCreditProxy'],
+        //{
+            //help: 'The address of the contract which provides the initial voice credit balance',
+            //required: false
+        //}
+    //)
 
-    const args = parser.parseArgs()
-    const outputAddressFile = args.output
-    const signUpToken = args.signUpToken
-    const initialVoiceCreditProxy = args.initialVoiceCreditProxy
+    //const args = parser.parseArgs()
+    //const outputAddressFile = args.output
+    //const signUpToken = args.signUpToken
+    //const initialVoiceCreditProxy = args.initialVoiceCreditProxy
 
-    const deployer = genDeployer(admin.privateKey)
+    //const deployer = genDeployer(admin.privateKey)
 
-    let signUpTokenAddress
-    if (signUpToken) {
-        signUpTokenAddress = signUpToken
-    } else {
-        const signUpTokenContract = await deploySignupToken(deployer)
-        signUpTokenAddress = signUpTokenContract.address
-    }
+    //let signUpTokenAddress
+    //if (signUpToken) {
+        //signUpTokenAddress = signUpToken
+    //} else {
+        //const signUpTokenContract = await deploySignupToken(deployer)
+        //signUpTokenAddress = signUpTokenContract.address
+    //}
 
-    let initialVoiceCreditBalanceAddress
-    if (initialVoiceCreditProxy) {
-        initialVoiceCreditBalanceAddress = initialVoiceCreditProxy
-    } else {
-        const initialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
-            deployer,
-            config.maci.initialVoiceCreditBalance,
-        )
-        initialVoiceCreditBalanceAddress = initialVoiceCreditProxyContract.address
-    }
+    //let initialVoiceCreditBalanceAddress
+    //if (initialVoiceCreditProxy) {
+        //initialVoiceCreditBalanceAddress = initialVoiceCreditProxy
+    //} else {
+        //const initialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
+            //deployer,
+            //config.maci.initialVoiceCreditBalance,
+        //)
+        //initialVoiceCreditBalanceAddress = initialVoiceCreditProxyContract.address
+    //}
 
-    const signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(
-        deployer,
-        signUpTokenAddress,
-    )
+    //const signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(
+        //deployer,
+        //signUpTokenAddress,
+    //)
 
-    const {
-        PoseidonT3Contract,
-        PoseidonT6Contract,
-        maciContract,
-        batchUstVerifierContract,
-        quadVoteTallyVerifierContract,
-    } = await deployMaci2(
-        deployer,
-        signUpTokenGatekeeperContract.address,
-        initialVoiceCreditBalanceAddress,
-    )
+    //const {
+        //PoseidonT3Contract,
+        //PoseidonT6Contract,
+        //maciContract,
+        //batchUstVerifierContract,
+        //quadVoteTallyVerifierContract,
+    //} = await deployMaci2(
+        //deployer,
+        //signUpTokenGatekeeperContract.address,
+        //initialVoiceCreditBalanceAddress,
+    //)
 
-    const addresses = {
-        PoseidonT3: PoseidonT3Contract.address,
-        PoseidonT6: PoseidonT6Contract.address,
-        BatchUpdateStateTreeVerifier: batchUstVerifierContract.address,
-        QuadraticVoteTallyVerifier: quadVoteTallyVerifierContract.address,
-        MACI: maciContract.address,
-    }
+    //const addresses = {
+        //PoseidonT3: PoseidonT3Contract.address,
+        //PoseidonT6: PoseidonT6Contract.address,
+        //BatchUpdateStateTreeVerifier: batchUstVerifierContract.address,
+        //QuadraticVoteTallyVerifier: quadVoteTallyVerifierContract.address,
+        //MACI: maciContract.address,
+    //}
 
-    const addressJsonPath = path.join(__dirname, '..', outputAddressFile)
-    fs.writeFileSync(
-        addressJsonPath,
-        JSON.stringify(addresses),
-    )
+    //const addressJsonPath = path.join(__dirname, '..', outputAddressFile)
+    //fs.writeFileSync(
+        //addressJsonPath,
+        //JSON.stringify(addresses),
+    //)
 
-    console.log(addresses)
-}
+    //console.log(addresses)
+//}
 
 if (require.main === module) {
     try {

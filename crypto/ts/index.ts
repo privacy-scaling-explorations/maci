@@ -114,25 +114,49 @@ const poseidonT3 = (inputs: BigInt[]) => {
     return poseidon(inputs)
 }
 
+// Hash up to 3 elements
+const poseidonT4 = (inputs: BigInt[]) => {
+    assert(inputs.length === 3)
+    return poseidon(inputs)
+}
+
+// Hash up to 4 elements
+const poseidonT5 = (inputs: BigInt[]) => {
+    assert(inputs.length === 4)
+    return poseidon(inputs)
+}
+
 // Hash up to 5 elements
 const poseidonT6 = (inputs: BigInt[]) => {
     assert(inputs.length === 5)
     return poseidon(inputs)
 }
 
-const hash5 = (elements: Plaintext): BigInt => {
+const hashN = (numElements: number, elements: Plaintext): BigInt => {
     const elementLength = elements.length
-    if (elements.length > 5) {
-        throw new Error(`elements length should not greater than 5, got ${elements.length}`)
+    if (elements.length > numElements) {
+        throw new TypeError(`the length of the elements array should be at most ${numElements}; got ${elements.length}`)
     }
     const elementsPadded = elements.slice()
-    if (elementLength < 5) {
-        for (let i = elementLength; i < 5; i++) {
+    if (elementLength < numElements) {
+        for (let i = elementLength; i < numElements; i++) {
             elementsPadded.push(BigInt(0))
         }
     }
-    return poseidonT6(elements)
+
+    const funcs = {
+        2: poseidonT3,
+        3: poseidonT4,
+        4: poseidonT5,
+        5: poseidonT6,
+    }
+
+    return funcs[numElements](elements)
 }
+
+const hash3 = (elements: Plaintext): BigInt => hashN(3, elements)
+const hash4 = (elements: Plaintext): BigInt => hashN(4, elements)
+const hash5 = (elements: Plaintext): BigInt => hashN(5, elements)
 
 /*
  * A convenience function for to use Poseidon to hash a Plaintext with
@@ -141,7 +165,7 @@ const hash5 = (elements: Plaintext): BigInt => {
 const hash11 = (elements: Plaintext): BigInt => {
     const elementLength = elements.length
     if (elementLength > 11) {
-        throw new TypeError(`elements length should not greater than 11, got ${elementLength}`)
+        throw new TypeError(`the length of the elements array should be at most 11; got ${elements.length}`)
     }
     const elementsPadded = elements.slice()
     if (elementLength < 11) {
@@ -165,7 +189,7 @@ const hash11 = (elements: Plaintext): BigInt => {
 const hash12 = (elements: Plaintext): BigInt => {
     const elementLength = elements.length
     if (elementLength > 12) {
-        throw new TypeError(`elements length should not greater than 11, got ${elementLength}`)
+        throw new TypeError(`the length of the elements array should be at most 12; got ${elements.length}`)
     }
     const elementsPadded = elements.slice()
     if (elementLength < 12) {
@@ -173,15 +197,12 @@ const hash12 = (elements: Plaintext): BigInt => {
             elementsPadded.push(BigInt(0))
         }
     }
-    return poseidonT3([
-        poseidonT3([
-            poseidonT6(elementsPadded.slice(0, 5)),
-            poseidonT6(elementsPadded.slice(5, 10))
-        ]),
-        poseidonT3([
-            elementsPadded[10],
-            elementsPadded[11],
-        ]),
+
+    return poseidonT5([
+        poseidonT6(elementsPadded.slice(0, 5)),
+        poseidonT6(elementsPadded.slice(5, 10)),
+        elementsPadded[10],
+        elementsPadded[11],
     ])
 }
 
@@ -444,6 +465,8 @@ export {
     decrypt,
     sign,
     hashOne,
+    hash3,
+    hash4,
     hash5,
     hash11,
     hash12,

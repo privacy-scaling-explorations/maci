@@ -119,7 +119,9 @@ contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
         // sufficient voice credits (using GreaterEqThan(32)).
         require(voiceCreditBalance <= 4294967296, "MACI: too many voice credits");
 
-        uint256 stateLeaf = hashLeftRight(pubKey.x, pubKey.y);
+        uint256 stateLeaf = hashStateLeaf(
+            StateLeaf(pubKey, voiceCreditBalance)
+        );
         stateAq.enqueue(stateLeaf);
     }
 

@@ -112,7 +112,6 @@ describe('MACI', () => {
                     const error = 'MACI: pubkey values should be less than the snark scalar field'
                     expect(e.message.endsWith(error)).toBeTruthy()
                 }
-
             })
         })
 
