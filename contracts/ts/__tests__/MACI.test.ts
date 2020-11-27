@@ -1,10 +1,11 @@
 jest.setTimeout(90000)
 import * as ethers from 'ethers'
+import { timeTravel } from './utils'
 import { deployMaci, genDeployer, loadAbi } from '../deploy'
 import { deployTestContracts } from '../utils'
 import {
-    //StateLeaf,
-    //Command,
+    StateLeaf,
+    Command,
     VerifyingKey,
     Keypair,
     PubKey,
@@ -18,15 +19,26 @@ import {
 } from 'maci-core'
 
 import { config } from 'maci-config'
-import { G1Point, G2Point, stringifyBigInts } from 'maci-crypto'
+import {
+    G1Point,
+    G2Point,
+    genRandomSalt,
+    AccQueue,
+    NOTHING_UP_MY_SLEEVE,
+} from 'maci-crypto'
 
 const STATE_TREE_DEPTH = 10
+const STATE_TREE_SUBDEPTH = 2
 const STATE_TREE_ARITY = 5
+const MESSAGE_TREE_DEPTH = 4
+const MESSAGE_TREE_SUBDEPTH = 2
+const MESSAGE_TREE_ARITY = 5
 import { genTestAccounts } from '../accounts'
 const accounts = genTestAccounts(1)
 const deployer = genDeployer(accounts[0].privateKey)
 const coordinator = new Keypair(new PrivKey(BigInt(config.maci.coordinatorPrivKey)))
 const pollAbi = loadAbi('Poll.abi')
+const accQueueQuinaryMaciAbi = loadAbi('AccQueueQuinaryMaci.abi')
 
 const testProcessVk = new VerifyingKey(
     new G1Point(BigInt(0), BigInt(1)),
@@ -58,10 +70,14 @@ const users = [
 
 const signUpTxOpts = { gasLimit: 200000 }
 
+let stateAq: AccQueue
+let messageAq: AccQueue
+
 describe('MACI', () => {
     let maciContract
     let stateAqContract
     let vkRegistryContract
+    let pollId: number
 
     describe('Deployment', () => {
         beforeAll(async () => {
@@ -72,6 +88,18 @@ describe('MACI', () => {
             maciContract = r.maciContract
             stateAqContract = r.stateAqContract
             vkRegistryContract = r.vkRegistryContract
+
+            stateAq = new AccQueue(
+                STATE_TREE_SUBDEPTH,
+                STATE_TREE_ARITY,
+                NOTHING_UP_MY_SLEEVE,
+            )
+
+            messageAq = new AccQueue(
+                MESSAGE_TREE_SUBDEPTH,
+                MESSAGE_TREE_ARITY,
+                NOTHING_UP_MY_SLEEVE,
+            )
         })
 
         it('MACI.stateTreeDepth should be correct', async () => {
@@ -82,8 +110,11 @@ describe('MACI', () => {
         describe('Signups', () => {
 
             it('should sign up users', async () => {
-                expect.assertions(users.length)
+                expect.assertions(users.length * 2)
 
+                const iface = new ethers.utils.Interface(maciContract.interface.abi)
+
+                let i = 0
                 for (const user of users) {
                     const tx = await maciContract.signUp(
                         user.pubKey.asContractParam(),
@@ -94,6 +125,18 @@ describe('MACI', () => {
                     const receipt = await tx.wait()
                     expect(receipt.status).toEqual(1)
                     console.log('signUp() gas used:', receipt.gasUsed.toString())
+
+                    // Store the state index
+                    const event = iface.parseLog(receipt.logs[receipt.logs.length - 1])
+                    expect(event.values._stateIndex.toString()).toEqual(i.toString())
+
+                    const stateLeaf = new StateLeaf(
+                        user.pubKey,
+                        BigInt(event.values._voiceCreditBalance.toString()),
+                    )
+                    stateAq.enqueue(stateLeaf.hash())
+
+                    i ++
                 }
             })
 
@@ -117,23 +160,31 @@ describe('MACI', () => {
 
         describe('Merge sign-ups', () => {
             it('coordinator should be able to merge the signUp AccQueue', async () => {
-                let tx = await maciContract.mergeStateAqSubRoots(0)
+                let tx = await maciContract.mergeStateAqSubRoots(0, { gasLimit: 3000000 })
                 let receipt = await tx.wait()
                 expect(receipt.status).toEqual(1)
 
                 console.log('mergeStateAqSubRoots() gas used:', receipt.gasUsed.toString())
 
-                tx = await maciContract.mergeStateAq()
+                tx = await maciContract.mergeStateAq({ gasLimit: 3000000 })
                 receipt = await tx.wait()
                 expect(receipt.status).toEqual(1)
 
                 console.log('mergeStateAq() gas used:', receipt.gasUsed.toString())
+
+                stateAq.mergeSubRoots(0)
+                stateAq.merge(STATE_TREE_DEPTH)
+            })
+
+            it('the state root must be correct', async () => {
+                const onChainStateRoot = await stateAqContract.getMainRoot(STATE_TREE_DEPTH)
+                expect(onChainStateRoot.toString()).toEqual(stateAq.mainRoots[STATE_TREE_DEPTH].toString())
             })
         })
 
-        describe('Deploy Polls', () => {
+        describe('Deploy a Poll', () => {
             // Poll parameters
-            const duration = 10
+            const duration = 15
 
             const maxValues = {
                 maxUsers: 25,
@@ -143,14 +194,13 @@ describe('MACI', () => {
 
             const treeDepths = {
                 intStateTreeDepth: 1,
-                messageTreeDepth: 2,
+                messageTreeDepth: MESSAGE_TREE_DEPTH,
+                messageTreeSubDepth: MESSAGE_TREE_SUBDEPTH,
                 voteOptionTreeDepth: 2,
             }
 
             const messageBatchSize = 5
             const tallyBatchSize = STATE_TREE_ARITY ** treeDepths.intStateTreeDepth
-
-            let pollId: number
 
             it('should set VKs and deploy a poll', async () => {
                 const std = await maciContract.stateTreeDepth()
@@ -277,6 +327,120 @@ describe('MACI', () => {
 
                 expect(pollState[7].messageBatchSize.toString()).toEqual(messageBatchSize.toString())
                 expect(pollState[7].tallyBatchSize.toString()).toEqual(tallyBatchSize.toString())
+            })
+        })
+
+        describe('Publish messages (vote + key-change)', () => {
+            let pollContract
+
+            beforeAll(async () => {
+                const pollContractAddress = await maciContract.getPoll(pollId)
+                pollContract = new ethers.Contract(
+                    pollContractAddress,
+                    pollAbi,
+                    deployer.signer,
+                )
+
+            })
+
+            it('should publish a message to the Poll contract', async () => {
+                const keypair = new Keypair()
+
+                const command = new Command(
+                    BigInt(0),
+                    keypair.pubKey,
+                    BigInt(0),
+                    BigInt(0),
+                    BigInt(0),
+                    BigInt(pollId),
+                    BigInt(0),
+                )
+
+                const signature = command.sign(keypair.privKey)
+                const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey)
+                const message = command.encrypt(signature, sharedKey)
+                const tx = await pollContract.publishMessage(
+                    message.asContractParam(),
+                    keypair.pubKey.asContractParam(),
+                )
+                const receipt = await tx.wait()
+                console.log('publishMessage() gas used:', receipt.gasUsed.toString())
+                expect(receipt.status).toEqual(1)
+
+                messageAq.enqueue(message.hash())
+            })
+
+            it('shold not publish a message after the voting period', async () => {
+                const duration = await pollContract.duration()
+                await timeTravel(deployer.provider, Number(duration.toString()) + 1)
+
+                const keypair = new Keypair()
+                const command = new Command(
+                    BigInt(0),
+                    keypair.pubKey,
+                    BigInt(0),
+                    BigInt(0),
+                    BigInt(0),
+                    BigInt(pollId),
+                    BigInt(0),
+                )
+
+                const signature = command.sign(keypair.privKey)
+                const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey)
+                const message = command.encrypt(signature, sharedKey)
+                try {
+                    await pollContract.publishMessage(
+                        message.asContractParam(),
+                        keypair.pubKey.asContractParam(),
+                        { gasLimit: 300000 },
+                    )
+                } catch (e) {
+                    const error = 'Poll: the voting period has passsed'
+                    expect(e.message.endsWith(error)).toBeTruthy()
+                }
+            })
+
+        })
+
+        describe('Merge messages', () => {
+            let pollContract
+            let messageAqContract
+
+            beforeAll(async () => {
+                const pollContractAddress = await maciContract.getPoll(pollId)
+                pollContract = new ethers.Contract(
+                    pollContractAddress,
+                    pollAbi,
+                    deployer.signer,
+                )
+
+                const messageAqAddress = await pollContract.messageAq()
+                messageAqContract = new ethers.Contract(
+                    messageAqAddress,
+                    accQueueQuinaryMaciAbi,
+                    deployer.signer,
+                )
+            })
+
+            it('coordinator should be able to merge the message AccQueue', async () => {
+                let tx = await pollContract.mergeMessageAqSubRoots(0, { gasLimit: 3000000 })
+                let receipt = await tx.wait()
+                expect(receipt.status).toEqual(1)
+
+                messageAq.mergeSubRoots(0)
+                console.log('mergeMessageAqSubRoots() gas used:', receipt.gasUsed.toString())
+
+                tx = await pollContract.mergeMessageAq({ gasLimit: 4000000 })
+                receipt = await tx.wait()
+                expect(receipt.status).toEqual(1)
+                messageAq.merge(MESSAGE_TREE_DEPTH)
+
+                console.log('mergeMessageAq() gas used:', receipt.gasUsed.toString())
+            })
+
+            it('the message root must be correct', async () => {
+                const onChainMessageRoot = await messageAqContract.getMainRoot(MESSAGE_TREE_DEPTH)
+                expect(onChainMessageRoot.toString()).toEqual(messageAq.mainRoots[MESSAGE_TREE_DEPTH].toString())
             })
         })
     })

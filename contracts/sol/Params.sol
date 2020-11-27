@@ -7,6 +7,7 @@ contract Params {
     // and avoid a stack overflow error during compilation
     struct TreeDepths {
         uint8 intStateTreeDepth;
+        uint8 messageTreeSubDepth;
         uint8 messageTreeDepth;
         uint8 voteOptionTreeDepth;
     }

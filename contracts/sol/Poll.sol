@@ -33,10 +33,11 @@ contract PollFactory is Params, DomainObjs, Ownable {
         TreeDepths memory _treeDepths,
         BatchSizes memory _batchSizes,
         PubKey memory _coordinatorPubKey,
-        VkRegistry _vkRegistry
+        VkRegistry _vkRegistry,
+        address _pollOwner
     ) public onlyOwner returns (Poll) {
 
-        AccQueueQuinaryMaci messageAq = messageAqFactory.deploy(_treeDepths.messageTreeDepth);
+        AccQueueQuinaryMaci messageAq = messageAqFactory.deploy(_treeDepths.messageTreeSubDepth);
 
         Poll poll = new Poll(
             _duration,
@@ -51,7 +52,7 @@ contract PollFactory is Params, DomainObjs, Ownable {
 
         messageAq.transferOwnership(address(poll));
 
-        poll.transferOwnership(owner());
+        poll.transferOwnership(_pollOwner);
 
         return poll;
     }
@@ -60,6 +61,8 @@ contract PollFactory is Params, DomainObjs, Ownable {
 contract Poll is Params, DomainObjs, SnarkCommon, Ownable {
     // The coordinator's public key
     PubKey public coordinatorPubKey;
+
+    uint256 public deployTime;
 
     // The duration of the polling period, in seconds
     uint256 public duration;
@@ -81,6 +84,15 @@ contract Poll is Params, DomainObjs, SnarkCommon, Ownable {
     uint8 constant internal MESSAGE_TREE_ARITY = 5;
     uint8 constant internal VOTE_OPTION_TREE_ARITY = 5;
 
+    event PublishMessage(
+        Message _message,
+        PubKey _encPubKey
+    );
+
+    /*
+     * Each MACI instance can have multiple Polls.
+     * When a Poll is deployed, its voting period starts immediately.
+     */
     constructor(
         uint256 _duration,
         uint8 _stateTreeDepth,
@@ -156,27 +168,79 @@ contract Poll is Params, DomainObjs, SnarkCommon, Ownable {
         // Store the VK sigs
         processVkSig = pSig;
         tallyVkSig = tSig;
+
+        // Record the current timestamp
+        deployTime = block.timestamp;
     }
 
+    modifier isBeforeVotingDeadline() {
+        // Throw if the voting period is over
+        uint256 secondsPassed = block.timestamp - deployTime;
+        require(secondsPassed <= duration, "Poll: the voting period has passsed");
+        _;
+    }
+
+    modifier isAfterVotingDeadline() {
+        // Throw if the voting period is not
+        uint256 secondsPassed = block.timestamp - deployTime;
+        require(secondsPassed > duration, "Poll: the voting period has not passsed");
+        _;
+    }
+
+    /*
+     * Allows anyone to publish a message (an encrypted command and signature).
+     * This function also enqueues the message.
+     * @param _message The message to publish
+     * @param _encPubKey An epheremal public key which can be combined with the
+     *     coordinator's private key to generate an ECDH shared key which which was
+     *     used to encrypt the message.
+     */
     function publishMessage(
-        Message memory _message
-    ) public {
+        Message memory _message,
+        PubKey memory _encPubKey
+    )
+    public
+    isBeforeVotingDeadline {
         uint256 messageLeaf = hashMessage(_message);
         messageAq.enqueue(messageLeaf);
+
+        emit PublishMessage(_message, _encPubKey);
     }
 
-    function mergeMessagesSubRoots(
-        uint256 _numSrQueueOps
-    ) public onlyOwner {
+    function mergeMessageAqSubRoots(uint256 _numSrQueueOps)
+    public
+    onlyOwner
+    isAfterVotingDeadline {
         messageAq.mergeSubRoots(_numSrQueueOps);
     }
 
-    function mergeMessages() public onlyOwner {
+    function mergeMessageAq()
+    public
+    onlyOwner
+    isAfterVotingDeadline {
         messageAq.merge(treeDepths.messageTreeDepth);
     }
 
+    function batchEnqueuemessage(uint256 _messageSubRoot)
+    public
+    onlyOwner
+    isAfterVotingDeadline {
+        messageAq.insertSubTree(_messageSubRoot);
+    }
+
+    /*
+     * A convenience function to return several storage variables of a Poll in
+     * a single call.
+     */
     function getState() public view returns (
-        PubKey memory, uint256, uint256, uint256, AccQueue, MaxValues memory, TreeDepths memory, BatchSizes memory
+        PubKey memory,        // coordinatorPubKey
+        uint256,              // duration
+        uint256,              // processVkSig
+        uint256,              // tallyVkSig
+        AccQueue,             // messageAq
+        MaxValues memory,     // maxValues
+        TreeDepths memory,    // treeDepths
+        BatchSizes memory     // batchSizes
     ){
         return (
             coordinatorPubKey,

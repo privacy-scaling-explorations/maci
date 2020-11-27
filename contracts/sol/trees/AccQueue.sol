@@ -124,12 +124,13 @@ abstract contract AccQueue is Ownable, Hasher {
      * Add a leaf to the queue for the current subtree.
      * @param _leaf The leaf to add.
      */
-    function enqueue(uint256 _leaf) public {
+    function enqueue(uint256 _leaf) public returns (uint256) {
+        uint256 leafIndex = numLeaves;
         // Recursively queue the leaf
         _enqueue(_leaf, 0);
         
         // Update the leaf counter
-        numLeaves ++;
+        numLeaves = leafIndex + 1;
 
         // Now that a new leaf has been added, mainRoots and smallSRTroot are
         // obsolete
@@ -149,6 +150,8 @@ abstract contract AccQueue is Ownable, Hasher {
             delete leafQueue.levels[subDepth][0];
             delete leafQueue.indices;
         }
+
+        return leafIndex;
     }
 
     /*
@@ -264,8 +267,7 @@ abstract contract AccQueue is Ownable, Hasher {
     }
 
     /*
-     * Insert a subtree. Fills the last subtree if the last subtree is not
-     * full. Used for batch insertions.
+     * Insert a subtree. Used for batch enqueues.
      */
     function insertSubTree(uint256 _subRoot) public onlyOwner {
         subRoots[currentSubtreeIndex] = _subRoot;

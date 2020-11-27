@@ -1,7 +1,7 @@
 import * as assert from 'assert'
+import base64url from "base64url"
 import {
     Ciphertext,
-    Plaintext,
     EcdhSharedKey,
     Signature,
     PubKey as RawPubKey,
@@ -11,8 +11,9 @@ import {
     encrypt,
     decrypt,
     sign,
+    hash3,
+    hash4,
     hash5,
-    hash11,
     verifySignature,
     genRandomSalt,
     genKeypair,
@@ -280,9 +281,7 @@ class Keypair {
 
 interface IStateLeaf {
     pubKey: PubKey;
-    voteOptionTreeRoot: BigInt;
     voiceCreditBalance: BigInt;
-    nonce: BigInt;
 }
 
 interface VoteOptionTreeLeaf {
@@ -295,12 +294,13 @@ interface VoteOptionTreeLeaf {
 class Message {
     public iv: BigInt
     public data: BigInt[]
+    public static DATA_LENGTH = 7
 
     constructor (
         iv: BigInt,
         data: BigInt[],
     ) {
-        assert(data.length === 10)
+        assert(data.length === Message.DATA_LENGTH)
         this.iv = iv
         this.data = data
     }
@@ -326,8 +326,13 @@ class Message {
     }
 
     public hash = (): BigInt => {
-
-        return hash11(this.asArray())
+        const p = this.data
+        return hash4([
+            hash5([this.iv, p[0], p[1], p[2], p[3]]),
+            p[4],
+            p[5],
+            p[6],
+        ])
     }
 
     public copy = (): Message => {
@@ -340,45 +345,33 @@ class Message {
 }
 
 /*
- * A leaf in the state tree, which maps public keys to votes
+ * A leaf in the state tree, which maps public keys to voice credit balances
  */
 class StateLeaf implements IStateLeaf {
     public pubKey: PubKey
-    public voteOptionTreeRoot: BigInt
     public voiceCreditBalance: BigInt
-    public nonce: BigInt
 
     constructor (
         pubKey: PubKey,
-        voteOptionTreeRoot: BigInt,
         voiceCreditBalance: BigInt,
-        nonce: BigInt,
     ) {
         this.pubKey = pubKey
-        this.voteOptionTreeRoot = voteOptionTreeRoot
         this.voiceCreditBalance = voiceCreditBalance
-        // The this is the current nonce. i.e. a user who has published 0 valid
-        // command should have this value at 0, and the first command should
-        // have a nonce of 1
-        this.nonce = nonce
     }
 
+    /*
+     * Deep-copies the object
+     */
     public copy(): StateLeaf {
         return new StateLeaf(
             this.pubKey.copy(),
-            BigInt(this.voteOptionTreeRoot.toString()),
             BigInt(this.voiceCreditBalance.toString()),
-            BigInt(this.nonce.toString()),
         )
     }
 
-    public static genBlankLeaf(
-        emptyVoteOptionTreeRoot: BigInt,
-    ): StateLeaf {
+    public static genBlankLeaf(): StateLeaf {
         return new StateLeaf(
             new PubKey([BigInt(0), BigInt(0)]),
-            emptyVoteOptionTreeRoot,
-            BigInt(0),
             BigInt(0),
         )
     }
@@ -388,8 +381,6 @@ class StateLeaf implements IStateLeaf {
         return new StateLeaf(
             keypair.pubKey,
             genRandomSalt(),
-            genRandomSalt(),
-            genRandomSalt(),
         )
     }
 
@@ -397,9 +388,7 @@ class StateLeaf implements IStateLeaf {
 
         return [
             ...this.pubKey.asArray(),
-            this.voteOptionTreeRoot,
             this.voiceCreditBalance,
-            this.nonce,
         ]
     }
 
@@ -410,27 +399,34 @@ class StateLeaf implements IStateLeaf {
 
     public hash = (): BigInt => {
 
-        return hash5(this.asArray())
+        return hash3(this.asArray())
+    }
+
+    public asContractParam() {
+        return {
+            pubKey: this.pubKey.asContractParam(),
+            voiceCreditBalance: this.voiceCreditBalance.toString(),
+        }
     }
 
     public serialize = (): string => {
         const j = {
             pubKey: this.pubKey.serialize(),
-            voteOptionTreeRoot: this.voteOptionTreeRoot.toString(16),
             voiceCreditBalance: this.voiceCreditBalance.toString(16),
-            nonce: this.nonce.toString(16),
         }
 
-        return Buffer.from(JSON.stringify(j, null, 0), 'utf8').toString('base64')
+
+        return base64url(
+            Buffer.from(JSON.stringify(j, null, 0), 'utf8')
+        )
     }
 
     static unserialize = (serialized: string): StateLeaf => {
-        const j = JSON.parse(Buffer.from(serialized, 'base64').toString('utf8'))
+        const j = JSON.parse(base64url.decode(serialized))
+
         return new StateLeaf(
             PubKey.unserialize(j.pubKey),
-            BigInt('0x' + j.voteOptionTreeRoot),
             BigInt('0x' + j.voiceCreditBalance),
-            BigInt('0x' + j.nonce),
         )
     }
 }
@@ -455,6 +451,7 @@ class Command implements ICommand {
     public voteOptionIndex: BigInt
     public newVoteWeight: BigInt
     public nonce: BigInt
+    public pollId: BigInt
     public salt: BigInt
 
     constructor (
@@ -463,13 +460,22 @@ class Command implements ICommand {
         voteOptionIndex: BigInt,
         newVoteWeight: BigInt,
         nonce: BigInt,
+        pollId: BigInt,
         salt: BigInt = genRandomSalt(),
     ) {
+        const limit50Bits = BigInt(2 ** 50)
+        assert(limit50Bits >= stateIndex)
+        assert(limit50Bits >= voteOptionIndex)
+        assert(limit50Bits >= newVoteWeight)
+        assert(limit50Bits >= nonce)
+        assert(limit50Bits >= pollId)
+
         this.stateIndex = stateIndex
         this.newPubKey = newPubKey
         this.voteOptionIndex = voteOptionIndex
         this.newVoteWeight = newVoteWeight
         this.nonce = nonce
+        this.pollId = pollId
         this.salt = salt
     }
 
@@ -481,20 +487,26 @@ class Command implements ICommand {
             BigInt(this.voteOptionIndex.toString()),
             BigInt(this.newVoteWeight.toString()),
             BigInt(this.nonce.toString()),
+            BigInt(this.pollId.toString()),
             BigInt(this.salt.toString()),
         )
     }
 
     public asArray = (): BigInt[] => {
+        const p =
+            BigInt(this.stateIndex) +
+            (BigInt(this.voteOptionIndex) << BigInt(50)) +
+            (BigInt(this.newVoteWeight) << BigInt(100)) +
+            (BigInt(this.nonce) << BigInt(150)) +
+            (BigInt(this.pollId) << BigInt(200))
 
-        return [
-            this.stateIndex,
+        const a = [
+            p,
             ...this.newPubKey.asArray(),
-            this.voteOptionIndex,
-            this.newVoteWeight,
-            this.nonce,
             this.salt,
         ]
+        assert(a.length === 4)
+        return a
     }
 
     /*
@@ -508,11 +520,12 @@ class Command implements ICommand {
             this.voteOptionIndex == command.voteOptionIndex &&
             this.newVoteWeight == command.newVoteWeight &&
             this.nonce == command.nonce &&
+            this.pollId == command.pollId &&
             this.salt == command.salt
     }
 
     public hash = (): BigInt => {
-        return hash11(this.asArray())
+        return hash4(this.asArray())
     }
 
     /*
@@ -544,20 +557,30 @@ class Command implements ICommand {
 
     /*
      * Encrypts this command along with a signature to produce a Message.
+     * To save gas, we can constrain the following values to 50 bits and pack
+     * them into a 250-bit value:
+     * 0. state index
+     * 3. vote option index
+     * 4. new vote weight
+     * 5. nonce
+     * 6. poll ID
      */
     public encrypt = (
         signature: Signature,
         sharedKey: EcdhSharedKey,
     ): Message => {
-
-        const plaintext: Plaintext = [
+        const plaintext = [
             ...this.asArray(),
             signature.R8[0],
             signature.R8[1],
             signature.S,
         ]
 
+        assert(plaintext.length === 7)
+
         const ciphertext: Ciphertext = encrypt(plaintext, sharedKey)
+        assert(ciphertext.data.length === plaintext.length)
+
         const message = new Message(ciphertext.iv, ciphertext.data)
         
         return message
@@ -573,18 +596,51 @@ class Command implements ICommand {
 
         const decrypted = decrypt(message, sharedKey)
 
+        const p = BigInt(decrypted[0])
+
+        // Returns the value of the 50 bits at position `pos` in `val`
+        // create 50 '1' bits
+        // shift left by pos
+        // AND with val
+        // shift right by pos
+        const extract = (val: BigInt, pos: number): BigInt => {
+            return BigInt(
+                (
+                    (
+                        (BigInt(1) << BigInt(50)) - BigInt(1)
+                    ) << BigInt(pos)
+                ) & BigInt(val)
+            ) >> BigInt(pos)
+        }
+
+        // p is a packed value
+        // bits 0 - 50:    stateIndex
+        // bits 51 - 100:  voteOptionIndex
+        // bits 101 - 150: newVoteWeight
+        // bits 151 - 200: nonce
+        // bits 201 - 250: pollId
+        const stateIndex = extract(p, 0)
+        const voteOptionIndex = extract(p, 50)
+        const newVoteWeight = extract(p, 100)
+        const nonce = extract(p, 150)
+        const pollId = extract(p, 200)
+
+        const newPubKey = new PubKey([decrypted[1], decrypted[2]])
+        const salt = decrypted[3]
+
         const command = new Command(
-            decrypted[0],
-            new PubKey([decrypted[1], decrypted[2]]),
-            decrypted[3],
-            decrypted[4],
-            decrypted[5],
-            decrypted[6],
+            stateIndex,
+            newPubKey,
+            voteOptionIndex,
+            newVoteWeight,
+            nonce,
+            pollId,
+            salt,
         )
 
         const signature = {
-            R8: [decrypted[7], decrypted[8]],
-            S: decrypted[9],
+            R8: [decrypted[4], decrypted[5]],
+            S: decrypted[6],
         }
 
         return { command, signature }

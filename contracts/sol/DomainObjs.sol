@@ -5,7 +5,7 @@ import { Hasher } from "./crypto/Hasher.sol";
 
 contract DomainObjs is Hasher {
 
-    uint8 constant MESSAGE_DATA_LENGTH = 11;
+    uint8 constant MESSAGE_DATA_LENGTH = 7;
 
     struct PubKey {
         uint256 x;
@@ -26,36 +26,25 @@ contract DomainObjs is Hasher {
         return hash3(plaintext);
     }
 
-    /*
-       Data fields:
-
-       0. state index
-       1. new pubkey X
-       2. new pubkey Y
-       3. vote option index
-       4. new vote weight
-       5. nonce
-       6. salt
-       7. pollId
-       9. sig.R8[0]
-       9. sig.R8[1]
-       10. sig.S
-    */
-
     struct Message {
         uint256 iv;
         uint256[MESSAGE_DATA_LENGTH] data;
     }
 
     function hashMessage(Message memory _message) public pure returns (uint256) {
-        uint256[] memory plaintext = new uint256[](MESSAGE_DATA_LENGTH + 1);
+        uint256[] memory n = new uint256[](5);
+        n[0] = _message.iv;
+        n[1] = _message.data[0];
+        n[2] = _message.data[1];
+        n[3] = _message.data[2];
+        n[4] = _message.data[3];
 
-        plaintext[0] = _message.iv;
+        uint256[] memory m = new uint256[](4);
+        m[0] = hash5(n);
+        m[1] = _message.data[4];
+        m[2] = _message.data[5];
+        m[3] = _message.data[6];
 
-        for (uint8 i=0; i < MESSAGE_DATA_LENGTH; i++) {
-            plaintext[i+1] = _message.data[i];
-        }
-
-        return hash12(plaintext);
+        return hash4(m);
     }
 }

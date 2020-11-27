@@ -37,65 +37,56 @@ contract Hasher {
         return PoseidonT6.poseidon(array);
     }
 
+    // TODO: remove if unused
     ///*
-     //* Hash 11 values using a combination of hash5 and hashLeftRight.
-     //*/
+    //* Hash 11 values using a combination of hash5 and hashLeftRight.
+    //*/
     //function hash11(uint256[] memory array) public pure returns (uint256) {
-        ///*
-           //To hash 11 elements [a ... k]:
-           //hashLeftRight(
-                //hashLeftRight(
-                   //hash5([a, b, c, d e]),
-                   //hash5([f, g, h, i j])
-                //),
-                //k
-           //)
-         //*/
-        //uint256[] memory input11 = new uint256[](11);
-        //uint256[] memory first5 = new uint256[](5);
-        //uint256[] memory second5 = new uint256[](5);
-        //for (uint256 i = 0; i < array.length; i++) {
-            //input11[i] = array[i];
-        //}
+    ///*
+    //To hash 11 elements [a ... k]:
+    //hashLeftRight(
+    //hashLeftRight(
+    //hash5([a, b, c, d e]),
+    //hash5([f, g, h, i j])
+    //),
+    //k
+    //)
+    //*/
+    //uint256[] memory input11 = new uint256[](11);
+    //uint256[] memory first5 = new uint256[](5);
+    //uint256[] memory second5 = new uint256[](5);
+    //for (uint256 i = 0; i < array.length; i++) {
+    //input11[i] = array[i];
+    //}
 
-        //for (uint256 i = array.length; i < 11; i++) {
-            //input11[i] = 0;
-        //}
+    //for (uint256 i = array.length; i < 11; i++) {
+    //input11[i] = 0;
+    //}
 
-        //for (uint256 i = 0; i < 5; i++) {
-            //first5[i] = input11[i];
-            //second5[i] = input11[i + 5];
-        //}
+    //for (uint256 i = 0; i < 5; i++) {
+    //first5[i] = input11[i];
+    //second5[i] = input11[i + 5];
+    //}
 
-        //uint256[] memory first2 = new uint256[](2);
-        //first2[0] = PoseidonT6.poseidon(first5);
-        //first2[1] = PoseidonT6.poseidon(second5);
-        //uint256[] memory second2 = new uint256[](2);
-        //second2[0] = PoseidonT3.poseidon(first2);
-        //second2[1] = input11[10];
-        //return PoseidonT3.poseidon(second2);
+    //uint256[] memory first2 = new uint256[](2);
+    //first2[0] = PoseidonT6.poseidon(first5);
+    //first2[1] = PoseidonT6.poseidon(second5);
+    //uint256[] memory second2 = new uint256[](2);
+    //second2[0] = PoseidonT3.poseidon(first2);
+    //second2[1] = input11[10];
+    //return PoseidonT3.poseidon(second2);
     //}
 
     function hash12(uint256[] memory array) public pure returns (uint256) {
         /*
-           To hash 12 elements [a ... l]:
-           m: hashLeftRight(
-                n: hashLeftRight(
-                   o: hash5([a, b, c, d e]),
-                   p: hash5([f, g, h, i j])
-                ),
-                q: hashLeftRight(k, l)
-           )
-
-           TODO: change to:
-           m: hash4(
-               n: hash5([a, b, c, d e]),
-               o: hash5([f, g, h, i j]),
-               k,
-               l
-           )
-
-         */
+        To hash 12 elements [a ... l]:
+            m: hash4(
+                n: hash5([a, b, c, d e]),
+                o: hash5([f, g, h, i j]),
+                k,
+                l
+            )
+        */
 
         uint256[] memory input12 = new uint256[](12);
         for (uint256 i = 0; i < array.length; i++) {
@@ -130,10 +121,11 @@ contract Hasher {
         return PoseidonT5.poseidon(m);
     }
 
+
     function hashLeftRight(uint256 _left, uint256 _right)
-        public
-        pure
-        returns (uint256)
+    public
+    pure
+    returns (uint256)
     {
         uint256[] memory input = new uint256[](2);
         input[0] = _left;

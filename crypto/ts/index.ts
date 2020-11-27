@@ -162,6 +162,7 @@ const hash5 = (elements: Plaintext): BigInt => hashN(5, elements)
  * A convenience function for to use Poseidon to hash a Plaintext with
  * no more than 11 elements
  */
+// TODO: remove if unused
 const hash11 = (elements: Plaintext): BigInt => {
     const elementLength = elements.length
     if (elementLength > 11) {
@@ -186,6 +187,7 @@ const hash11 = (elements: Plaintext): BigInt => {
  * A convenience function for to use Poseidon to hash a Plaintext with
  * no more than 12 elements
  */
+// TODO: remove if unused
 const hash12 = (elements: Plaintext): BigInt => {
     const elementLength = elements.length
     if (elementLength > 12) {

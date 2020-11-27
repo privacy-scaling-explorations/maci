@@ -44,6 +44,11 @@ contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
     // balance per user
     InitialVoiceCreditProxy public initialVoiceCreditProxy;
 
+    event SignUp(
+        uint256 _stateIndex,
+        PubKey _userPubKey,
+        uint256 _voiceCreditBalance
+    );
     event DeployPoll(uint256 _pollId, address _pollAddr);
 
     constructor(
@@ -122,7 +127,9 @@ contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
         uint256 stateLeaf = hashStateLeaf(
             StateLeaf(pubKey, voiceCreditBalance)
         );
-        stateAq.enqueue(stateLeaf);
+        uint256 stateIndex = stateAq.enqueue(stateLeaf);
+
+        emit SignUp(stateIndex, pubKey, voiceCreditBalance);
     }
 
     //function signUpViaRelayer(
@@ -163,7 +170,8 @@ contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
             _treeDepths,
             batchSizes,
             _coordinatorPubKey,
-            vkRegistry
+            vkRegistry,
+            owner()
         );
 
         polls[pollId] = p;

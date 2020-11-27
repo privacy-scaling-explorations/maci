@@ -224,6 +224,7 @@ const testEnqueueAndInsertSubTree = async (
     }
 
     leaves.push(n)
+    // leaves is now [z, z, z, z..., n]
 
     const depth = calcDepthFromNumLeaves(aq.hashLength, leaves.length)
     const tree = new IncrementalQuinTree(depth, z, aq.hashLength)
@@ -241,6 +242,7 @@ const testEnqueueAndInsertSubTree = async (
 
     aq.fill()
     await (await aqContract.fill(fillGasLimit)).wait()
+
 
     aq.mergeSubRoots(0)
     await (await aqContract.mergeSubRoots(0, { gasLimit: 8000000 })).wait()

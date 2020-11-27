@@ -9,6 +9,7 @@ import {
 import {
     genKeypair,
     unpackPubKey,
+    genRandomSalt,
 } from 'maci-crypto'
 
 describe('Domain objects', () => {
@@ -21,12 +22,20 @@ describe('Domain objects', () => {
 
     const ecdhSharedKey = Keypair.genEcdhSharedKey(privKey, pubKey1)
 
+    const random50bitBigInt = (): BigInt => {
+        return (
+            (BigInt(1) << BigInt(50)) - BigInt(1)
+        ) & BigInt(genRandomSalt())
+    }
+
     const command: Command = new Command(
-        BigInt(10),
+        random50bitBigInt(),
         newPubKey,
-        BigInt(0),
-        BigInt(9),
-        BigInt(123),
+        random50bitBigInt(),
+        random50bitBigInt(),
+        random50bitBigInt(),
+        random50bitBigInt(),
+        genRandomSalt(),
     )
 
     describe('State leaves', () => {
@@ -34,16 +43,12 @@ describe('Domain objects', () => {
             const stateLeaf = new StateLeaf(
                 pubKey,
                 BigInt(123),
-                BigInt(456),
-                BigInt(789),
             )
 
             const serialized = stateLeaf.serialize()
             const unserialized = StateLeaf.unserialize(serialized)
 
-            expect(unserialized.voteOptionTreeRoot.toString()).toEqual(stateLeaf.voteOptionTreeRoot.toString())
             expect(unserialized.voiceCreditBalance.toString()).toEqual(stateLeaf.voiceCreditBalance.toString())
-            expect(unserialized.nonce.toString()).toEqual(stateLeaf.nonce.toString())
         })
     })
 
@@ -195,6 +200,7 @@ describe('Domain objects', () => {
                 newPubKey,
                 BigInt(0),
                 BigInt(9),
+                BigInt(1),
                 BigInt(123),
             )
 

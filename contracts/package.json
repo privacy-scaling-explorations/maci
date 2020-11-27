@@ -24,6 +24,8 @@
         "test-batchProcessMessageAndQuadVoteTally-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest batchProcessMessageAndQuadVoteTally.test.ts",
         "test-hasher": "jest Hasher.test.ts",
         "test-hasher-debug": "node --inspect-brk ./node_modules/.bin/jest Hasher.test.ts",
+        "test-domainObjs": "jest DomainObjs.test.ts",
+        "test-domainObjs-debug": "node --inspect-brk ./node_modules/.bin/jest DomainObjs.test.ts",
         "test-accQueue": "jest AccQueue.test.ts",
         "test-accQueue-debug": "node --inspect-brk ./node_modules/.bin/jest AccQueue.test.ts",
         "test-accQueueBenchmark": "jest AccQueueBenchmark.test.ts",
