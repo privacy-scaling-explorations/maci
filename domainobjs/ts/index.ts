@@ -105,6 +105,34 @@ class VerifyingKey {
             this.delta2.equals(vk.delta2) && 
             icEqual
     }
+
+    public copy(): VerifyingKey {
+        const copyG2 = (point: any): G2Point => {
+            return new G2Point(
+                [
+                    BigInt(point.x[0].toString()),
+                    BigInt(point.x[1].toString()),
+                ],
+                [
+                    BigInt(point.y[0].toString()),
+                    BigInt(point.y[1].toString()),
+                ],
+            )
+        }
+
+        return new VerifyingKey(
+            new G1Point( 
+                BigInt(this.alpha1.x.toString()),
+                BigInt(this.alpha1.y.toString()),
+            ),
+            copyG2(this.beta2),
+            copyG2(this.gamma2),
+            copyG2(this.delta2),
+            this.ic.map(
+                (c: any) => new G1Point(BigInt(c.x.toString()), BigInt(c.y.toString()))
+            ),
+        )
+    }
 }
 
 interface Proof {
@@ -201,6 +229,11 @@ class PubKey {
         }
         const packed = packPubKey(this.rawPubKey).toString('hex')
         return SERIALIZED_PUB_KEY_PREFIX + packed.toString()
+    }
+
+    public equals = (p: PubKey): boolean => {
+        return this.rawPubKey[0] === p.rawPubKey[0] &&
+            this.rawPubKey[1] === p.rawPubKey[1]
     }
 
     public static unserialize = (s: string): PubKey => {
@@ -341,6 +374,20 @@ class Message {
             BigInt(this.iv.toString()),
             this.data.map((x: BigInt) => BigInt(x.toString())),
         )
+    }
+
+    public equals = (m: Message): boolean => {
+        if (this.iv !== m.iv || this.data.length !== m.data.length) {
+            return false
+        }
+
+        for (let i = 0; i < this.data.length; i ++) {
+            if (this.data[i] !== m.data[i]) {
+                return false
+            }
+        }
+
+        return true
     }
 }
 
@@ -492,6 +539,11 @@ class Command implements ICommand {
         )
     }
 
+    /*
+     * Returns this Command as an array. Note that 5 of the Command's fields
+     * are packed into a single 250-bit value. This allows Messages to be
+     * smaller and thereby save gas when the user publishes a message.
+     */
     public asArray = (): BigInt[] => {
         const p =
             BigInt(this.stateIndex) +
@@ -514,14 +566,14 @@ class Command implements ICommand {
      */
     public equals = (command: Command): boolean => {
 
-        return this.stateIndex == command.stateIndex &&
-            this.newPubKey[0] == command.newPubKey[0] &&
-            this.newPubKey[1] == command.newPubKey[1] &&
-            this.voteOptionIndex == command.voteOptionIndex &&
-            this.newVoteWeight == command.newVoteWeight &&
-            this.nonce == command.nonce &&
-            this.pollId == command.pollId &&
-            this.salt == command.salt
+        return this.stateIndex === command.stateIndex &&
+            this.newPubKey[0] === command.newPubKey[0] &&
+            this.newPubKey[1] === command.newPubKey[1] &&
+            this.voteOptionIndex === command.voteOptionIndex &&
+            this.newVoteWeight === command.newVoteWeight &&
+            this.nonce === command.nonce &&
+            this.pollId === command.pollId &&
+            this.salt === command.salt
     }
 
     public hash = (): BigInt => {

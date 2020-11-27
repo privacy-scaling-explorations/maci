@@ -1,14 +1,12 @@
 jest.setTimeout(90000)
 import * as ethers from 'ethers'
 import { timeTravel } from './utils'
-import { deployMaci, genDeployer, loadAbi } from '../deploy'
+import { genDeployer, loadAbi } from '../deploy'
 import { deployTestContracts } from '../utils'
 import {
-    StateLeaf,
     Command,
     VerifyingKey,
     Keypair,
-    PubKey,
     PrivKey,
 } from 'maci-domainobjs'
 
@@ -16,23 +14,20 @@ import {
     MaciState,
     genProcessVkSig,
     genTallyVkSig,
+    MaxValues,
+    TreeDepths,
 } from 'maci-core'
 
 import { config } from 'maci-config'
 import {
     G1Point,
     G2Point,
-    genRandomSalt,
-    AccQueue,
-    NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
 
 const STATE_TREE_DEPTH = 10
-const STATE_TREE_SUBDEPTH = 2
 const STATE_TREE_ARITY = 5
 const MESSAGE_TREE_DEPTH = 4
 const MESSAGE_TREE_SUBDEPTH = 2
-const MESSAGE_TREE_ARITY = 5
 import { genTestAccounts } from '../accounts'
 const accounts = genTestAccounts(1)
 const deployer = genDeployer(accounts[0].privateKey)
@@ -70,8 +65,8 @@ const users = [
 
 const signUpTxOpts = { gasLimit: 200000 }
 
-let stateAq: AccQueue
-let messageAq: AccQueue
+const maciState = new MaciState()
+
 
 describe('MACI', () => {
     let maciContract
@@ -88,18 +83,6 @@ describe('MACI', () => {
             maciContract = r.maciContract
             stateAqContract = r.stateAqContract
             vkRegistryContract = r.vkRegistryContract
-
-            stateAq = new AccQueue(
-                STATE_TREE_SUBDEPTH,
-                STATE_TREE_ARITY,
-                NOTHING_UP_MY_SLEEVE,
-            )
-
-            messageAq = new AccQueue(
-                MESSAGE_TREE_SUBDEPTH,
-                MESSAGE_TREE_ARITY,
-                NOTHING_UP_MY_SLEEVE,
-            )
         })
 
         it('MACI.stateTreeDepth should be correct', async () => {
@@ -130,11 +113,10 @@ describe('MACI', () => {
                     const event = iface.parseLog(receipt.logs[receipt.logs.length - 1])
                     expect(event.values._stateIndex.toString()).toEqual(i.toString())
 
-                    const stateLeaf = new StateLeaf(
+                    maciState.signUp(
                         user.pubKey,
                         BigInt(event.values._voiceCreditBalance.toString()),
                     )
-                    stateAq.enqueue(stateLeaf.hash())
 
                     i ++
                 }
@@ -152,7 +134,7 @@ describe('MACI', () => {
                         signUpTxOpts,
                     )
                 } catch (e) {
-                    const error = 'MACI: pubkey values should be less than the snark scalar field'
+                    const error = 'MACI: _pubKey values should be less than the snark scalar field'
                     expect(e.message.endsWith(error)).toBeTruthy()
                 }
             })
@@ -172,13 +154,13 @@ describe('MACI', () => {
 
                 console.log('mergeStateAq() gas used:', receipt.gasUsed.toString())
 
-                stateAq.mergeSubRoots(0)
-                stateAq.merge(STATE_TREE_DEPTH)
+                maciState.stateAq.mergeSubRoots(0)
+                maciState.stateAq.merge(STATE_TREE_DEPTH)
             })
 
             it('the state root must be correct', async () => {
                 const onChainStateRoot = await stateAqContract.getMainRoot(STATE_TREE_DEPTH)
-                expect(onChainStateRoot.toString()).toEqual(stateAq.mainRoots[STATE_TREE_DEPTH].toString())
+                expect(onChainStateRoot.toString()).toEqual(maciState.stateAq.mainRoots[STATE_TREE_DEPTH].toString())
             })
         })
 
@@ -186,13 +168,13 @@ describe('MACI', () => {
             // Poll parameters
             const duration = 15
 
-            const maxValues = {
+            const maxValues: MaxValues = {
                 maxUsers: 25,
                 maxMessages: 25,
                 maxVoteOptions: 25,
             }
 
-            const treeDepths = {
+            const treeDepths: TreeDepths = {
                 intStateTreeDepth: 1,
                 messageTreeDepth: MESSAGE_TREE_DEPTH,
                 messageTreeSubDepth: MESSAGE_TREE_SUBDEPTH,
@@ -205,6 +187,7 @@ describe('MACI', () => {
             it('should set VKs and deploy a poll', async () => {
                 const std = await maciContract.stateTreeDepth()
 
+                // TODO: update maciState
                 // Set VKs
                 console.log('Setting VKs')
                 let tx = await vkRegistryContract.setVerifyingKeys(
@@ -253,6 +236,15 @@ describe('MACI', () => {
                 const iface = new ethers.utils.Interface(maciContract.interface.abi)
                 const event = iface.parseLog(receipt.logs[receipt.logs.length - 1])
                 pollId = event.values._pollId
+
+                const p = maciState.deployPoll(
+                    duration,
+                    maxValues,
+                    treeDepths,
+                    messageBatchSize,
+                    coordinator,
+                )
+                expect(p.toString()).toEqual(pollId.toString())
             })
 
             it('should set correct storage values', async () => {
@@ -367,7 +359,7 @@ describe('MACI', () => {
                 console.log('publishMessage() gas used:', receipt.gasUsed.toString())
                 expect(receipt.status).toEqual(1)
 
-                messageAq.enqueue(message.hash())
+                maciState.polls[pollId].publishMessage(message, keypair.pubKey)
             })
 
             it('shold not publish a message after the voting period', async () => {
@@ -427,20 +419,21 @@ describe('MACI', () => {
                 let receipt = await tx.wait()
                 expect(receipt.status).toEqual(1)
 
-                messageAq.mergeSubRoots(0)
+                maciState.polls[pollId].messageAq.mergeSubRoots(0)
                 console.log('mergeMessageAqSubRoots() gas used:', receipt.gasUsed.toString())
 
                 tx = await pollContract.mergeMessageAq({ gasLimit: 4000000 })
                 receipt = await tx.wait()
                 expect(receipt.status).toEqual(1)
-                messageAq.merge(MESSAGE_TREE_DEPTH)
+                maciState.polls[pollId].messageAq.merge(MESSAGE_TREE_DEPTH)
 
                 console.log('mergeMessageAq() gas used:', receipt.gasUsed.toString())
             })
 
             it('the message root must be correct', async () => {
                 const onChainMessageRoot = await messageAqContract.getMainRoot(MESSAGE_TREE_DEPTH)
-                expect(onChainMessageRoot.toString()).toEqual(messageAq.mainRoots[MESSAGE_TREE_DEPTH].toString())
+                expect(onChainMessageRoot.toString())
+                    .toEqual(maciState.polls[pollId].messageAq.mainRoots[MESSAGE_TREE_DEPTH].toString())
             })
         })
     })

@@ -4,6 +4,7 @@ pragma solidity ^0.7.2;
 
 import { Params } from "./Params.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
+import { SnarkConstants } from "./crypto/SnarkConstants.sol";
 import { DomainObjs } from "./DomainObjs.sol";
 import { AccQueue, AccQueueQuinaryMaci } from "./trees/AccQueue.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
@@ -58,7 +59,7 @@ contract PollFactory is Params, DomainObjs, Ownable {
     }
 }
 
-contract Poll is Params, DomainObjs, SnarkCommon, Ownable {
+contract Poll is Params, DomainObjs, SnarkConstants, SnarkCommon, Ownable {
     // The coordinator's public key
     PubKey public coordinatorPubKey;
 
@@ -201,6 +202,10 @@ contract Poll is Params, DomainObjs, SnarkCommon, Ownable {
     )
     public
     isBeforeVotingDeadline {
+        require(
+            _encPubKey.x < SNARK_SCALAR_FIELD && _encPubKey.y < SNARK_SCALAR_FIELD,
+            "MACI: _encPubKey values should be less than the snark scalar field"
+        );
         uint256 messageLeaf = hashMessage(_message);
         messageAq.enqueue(messageLeaf);
 

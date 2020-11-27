@@ -1,9 +1,15 @@
 import * as assert from 'assert'
+import { User } from './User'
+import {
+    AccQueue,
+    SNARK_FIELD_SIZE,
+    NOTHING_UP_MY_SLEEVE,
+} from 'maci-crypto'
 import {
     PubKey,
     VerifyingKey,
     //Command,
-    //Message,
+    Message,
     Keypair,
     //StateLeaf,
 } from 'maci-domainobjs'
@@ -11,6 +17,7 @@ import {
 interface TreeDepths {
     intStateTreeDepth: number;
     messageTreeDepth: number;
+    messageTreeSubDepth: number;
     voteOptionTreeDepth: number;
 }
 
@@ -26,39 +33,178 @@ interface MaxValues {
 }
 
 // Also see: Polls.sol
-interface Poll {
-    duration: number;
-
+class Poll {
+    public duration: number
     // Note that we only store the PubKey on-chain while this class stores the
     // Keypair for the sake of convenience
-    coordinatorKeypair: Keypair;
+    public coordinatorKeypair: Keypair
+    public processParamsFilename: string
+    public tallyParamsFilename: string
+    public treeDepths: TreeDepths
+    public batchSizes: BatchSizes
+    public maxValues: MaxValues
+    public processVk: VerifyingKey
+    public tallyVk: VerifyingKey
+    public messages: Message[] = []
+    public encPubKeys: PubKey[] = []
+    public messageAq: AccQueue
+    public MESSAGE_TREE_ARITY = 5
 
-    processParamsFilename: string;
-    tallyParamsFilename: string;
-    treeDepths: TreeDepths;
-    batchSizes: BatchSizes;
-    maxValues: MaxValues;
-    processVk: VerifyingKey;
-    tallyVk: VerifyingKey;
+    constructor(
+        _duration: number,
+        _coordinatorKeypair: Keypair,
+        _processParamsFilename: string,
+        _tallyParamsFilename: string,
+        _treeDepths: TreeDepths,
+        _batchSizes: BatchSizes,
+        _maxValues: MaxValues,
+        _processVk: VerifyingKey,
+        _tallyVk: VerifyingKey,
+    ) {
+        this.duration = _duration
+        this.coordinatorKeypair = _coordinatorKeypair
+        this.processParamsFilename = _processParamsFilename
+        this.tallyParamsFilename = _tallyParamsFilename
+        this.treeDepths = _treeDepths
+        this.batchSizes = _batchSizes
+        this.maxValues = _maxValues
+        this.processVk = _processVk
+        this.tallyVk = _tallyVk
+        debugger
+        this.messageAq = new AccQueue(
+            this.treeDepths.messageTreeSubDepth,
+            this.MESSAGE_TREE_ARITY,
+            NOTHING_UP_MY_SLEEVE,
+        )
+    }
+
+    /*
+     * Inserts a Message and the corresponding public key used to generate the
+     * ECDH shared key which was used to encrypt said message.
+     */
+    public publishMessage = (
+        _message: Message,
+        _encPubKey: PubKey,
+    ) => {
+        assert(
+            _encPubKey.rawPubKey[0] < SNARK_FIELD_SIZE &&
+            _encPubKey.rawPubKey[1] < SNARK_FIELD_SIZE
+        )
+        assert(_message.iv < SNARK_FIELD_SIZE)
+        for (const d of _message.data) {
+            assert(d < SNARK_FIELD_SIZE)
+        }
+
+        this.encPubKeys.push(_encPubKey)
+        this.messages.push(_message)
+
+        const messageLeaf = _message.hash()
+        this.messageAq.enqueue(messageLeaf)
+    }
+
+    public copy = (): Poll => {
+        const copied = new Poll(
+            Number(this.duration.toString()),
+            this.coordinatorKeypair.copy(),
+            this.processParamsFilename.toString(),
+            this.tallyParamsFilename.toString(),
+            {
+                intStateTreeDepth: Number(this.treeDepths.intStateTreeDepth),
+                messageTreeDepth: Number(this.treeDepths.messageTreeDepth),
+                messageTreeSubDepth: Number(this.treeDepths.messageTreeSubDepth),
+                voteOptionTreeDepth: Number(this.treeDepths.voteOptionTreeDepth),
+            },
+            {
+                tallyBatchSize: Number(this.batchSizes.tallyBatchSize.toString()),
+                messageBatchSize: Number(this.batchSizes.messageBatchSize.toString()),
+            },
+            {
+                maxUsers: Number(this.maxValues.maxUsers.toString()),
+                maxMessages: Number(this.maxValues.maxMessages.toString()),
+                maxVoteOptions: Number(this.maxValues.maxVoteOptions.toString()),
+            },
+            this.processVk.copy(),
+            this.tallyVk.copy(),
+        )
+
+        copied.messages = this.messages.map((x: Message) => x.copy())
+        copied.encPubKeys = this.encPubKeys.map((x: PubKey) => x.copy())
+
+        return copied
+    }
+
+    public equals = (p: Poll): boolean => {
+        const result = 
+            this.duration === p.duration &&
+            this.coordinatorKeypair.equals(p.coordinatorKeypair) &&
+            this.processParamsFilename === p.processParamsFilename &&
+            this.tallyParamsFilename === p.tallyParamsFilename &&
+            this.treeDepths.intStateTreeDepth === p.treeDepths.intStateTreeDepth &&
+            this.treeDepths.messageTreeDepth === p.treeDepths.messageTreeDepth &&
+            this.treeDepths.messageTreeSubDepth === p.treeDepths.messageTreeSubDepth &&
+            this.treeDepths.voteOptionTreeDepth === p.treeDepths.voteOptionTreeDepth &&
+            this.batchSizes.tallyBatchSize === p.batchSizes.tallyBatchSize &&
+            this.batchSizes.messageBatchSize === p.batchSizes.messageBatchSize &&
+            this.maxValues.maxUsers === p.maxValues.maxUsers &&
+            this.maxValues.maxMessages === p.maxValues.maxMessages &&
+            this.maxValues.maxVoteOptions === p.maxValues.maxVoteOptions &&
+            this.processVk.equals(p.processVk) &&
+            this.tallyVk.equals(p.tallyVk) &&
+            this.messages.length === p.messages.length &&
+            this.encPubKeys.length === p.encPubKeys.length
+
+        if (! result) {
+            return false
+        }
+
+        for (let i = 0; i < this.messages.length; i ++) {
+            if (!this.messages[i].equals(p.messages[i])) {
+                return false
+            }
+        }
+        for (let i = 0; i < this.encPubKeys.length; i ++) {
+            if (!this.encPubKeys[i].equals(p.encPubKeys[i])) {
+                return false
+            }
+        }
+        return true
+    }
 }
 
 // A representation of the MACI contract
 // Also see MACI.sol
 class MaciState {
-    public MAX_STATE_TREE_DEPTH = 10
     public STATE_TREE_ARITY = 5
+    public STATE_TREE_SUBDEPTH = 2
     public MESSAGE_TREE_ARITY = 5
     public VOTE_OPTION_TREE_ARITY = 5
 
-    public stateTreeDepth: number
-    public polls: {[index: number]: Poll} = {}
+    public stateTreeDepth = 10
+    public polls: Poll[] = []
+    public users: User[] = []
+    public stateAq: AccQueue = new AccQueue(
+        this.STATE_TREE_SUBDEPTH,
+        this.STATE_TREE_ARITY,
+        NOTHING_UP_MY_SLEEVE,
+    )
 
-    constructor(_stateTreeDepth: number) {
-        assert(_stateTreeDepth < this.MAX_STATE_TREE_DEPTH)
-        this.stateTreeDepth = _stateTreeDepth
+    //constructor() { }
+
+    public signUp(
+        _pubKey: PubKey,
+        _initialVoiceCreditBalance: BigInt,
+    ) {
+        const user = new User(
+            _pubKey,
+            _initialVoiceCreditBalance,
+        )
+        this.users.push(user)
+
+        const stateLeaf = user.genStateLeaf().hash()
+        this.stateAq.enqueue(stateLeaf)
     }
 
-    public createPoll(
+    public deployPoll(
         _duration: number,
         _maxValues: MaxValues,
         _treeDepths: TreeDepths,
@@ -66,24 +212,63 @@ class MaciState {
         _coordinatorKeypair: Keypair,
         _processVk: VerifyingKey,
         _tallyVk: VerifyingKey,
-        _pollId: number,
-    ) {
-        const poll: Poll = {
-            duration: _duration,
-            coordinatorKeypair: _coordinatorKeypair,
-            treeDepths: _treeDepths,
-            batchSizes: {
+    ): number {
+        const poll: Poll = new Poll(
+            _duration,
+            _coordinatorKeypair,
+            '',
+            '',
+             _treeDepths,
+            {
                 messageBatchSize: _messageBatchSize,
                 tallyBatchSize: this.STATE_TREE_ARITY ** _treeDepths.intStateTreeDepth,
             },
-            maxValues: _maxValues, 
-            processParamsFilename: '',
-            tallyParamsFilename: '',
-            processVk: _processVk,
-            tallyVk: _tallyVk,
+            _maxValues, 
+            _processVk,
+            _tallyVk,
+        )
+
+        this.polls.push(poll)
+        return this.polls.length - 1
+    }
+
+    /*
+     * Deep-copy this object
+     */
+    public copy = (): MaciState => {
+        const copied = new MaciState()
+
+        copied.users = this.users.map((x: User) => x.copy())
+        copied.polls = this.polls.map((x: Poll) => x.copy())
+
+        return copied
+    }
+
+    public equals = (m: MaciState): boolean => {
+        const result =
+            this.STATE_TREE_ARITY === m.STATE_TREE_ARITY &&
+            this.MESSAGE_TREE_ARITY === m.MESSAGE_TREE_ARITY &&
+            this.VOTE_OPTION_TREE_ARITY === m.VOTE_OPTION_TREE_ARITY &&
+            this.stateTreeDepth === m.stateTreeDepth &&
+            this.polls.length === m.polls.length &&
+            this.users.length === m.users.length
+
+        if (!result) {
+            return false
         }
 
-        this.polls[_pollId] = poll
+        for (let i = 0; i < this.polls.length; i ++) {
+            if (!this.polls[i].equals(m.polls[i])) {
+                return false
+            }
+        }
+        for (let i = 0; i < this.users.length; i ++) {
+            if (!this.users[i].equals(m.users[i])) {
+                return false
+            }
+        }
+        
+        return true
     }
 }
 
@@ -110,6 +295,8 @@ const genTallyVkSig = (
 }
 
 export {
+    MaxValues,
+    TreeDepths,
     MaciState,
     Poll,
     genProcessVkSig,

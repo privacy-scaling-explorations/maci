@@ -100,7 +100,7 @@ contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
     }
 
     function signUp(
-        PubKey memory pubKey,
+        PubKey memory _pubKey,
         bytes memory _signUpGatekeeperData,
         bytes memory _initialVoiceCreditProxyData
     ) public afterInit {
@@ -110,8 +110,8 @@ contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
         signUpGatekeeper.register(msg.sender, _signUpGatekeeperData);
 
         require(
-            pubKey.x < SNARK_SCALAR_FIELD && pubKey.y < SNARK_SCALAR_FIELD,
-            "MACI: pubkey values should be less than the snark scalar field"
+            _pubKey.x < SNARK_SCALAR_FIELD && _pubKey.y < SNARK_SCALAR_FIELD,
+            "MACI: _pubKey values should be less than the snark scalar field"
         );
 
         uint256 voiceCreditBalance = initialVoiceCreditProxy.getVoiceCredits(
@@ -122,14 +122,15 @@ contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
         // The limit on voice credits is 2 ^ 32 which is hardcoded into the
         // UpdateStateTree circuit, specifically at check that there are
         // sufficient voice credits (using GreaterEqThan(32)).
+        // TODO: perhaps increase this to 2 ^ 50 = 1125899906842624?
         require(voiceCreditBalance <= 4294967296, "MACI: too many voice credits");
 
         uint256 stateLeaf = hashStateLeaf(
-            StateLeaf(pubKey, voiceCreditBalance)
+            StateLeaf(_pubKey, voiceCreditBalance)
         );
         uint256 stateIndex = stateAq.enqueue(stateLeaf);
 
-        emit SignUp(stateIndex, pubKey, voiceCreditBalance);
+        emit SignUp(stateIndex, _pubKey, voiceCreditBalance);
     }
 
     //function signUpViaRelayer(

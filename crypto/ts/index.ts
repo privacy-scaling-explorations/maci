@@ -375,14 +375,12 @@ const encrypt = (
     const ciphertext: Ciphertext = {
         iv,
         data: plaintext.map((e: BigInt, i: number): BigInt => {
-            return e + mimc7.hash(
-                sharedKey,
-                iv + BigInt(i),
-            )
+            return BigInt(
+                e + mimc7.hash(sharedKey, iv + BigInt(i))
+            ) % SNARK_FIELD_SIZE
         }),
     }
 
-    // TODO: add asserts here
     return ciphertext
 }
 
