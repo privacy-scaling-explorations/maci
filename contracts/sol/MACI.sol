@@ -21,6 +21,10 @@ contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
     // The state tree depth is fixed. As such it should be as large as feasible
     // so that there can be as many users as possible.  i.e. 5 ** 10 = 9765625
     uint8 public stateTreeDepth = 10;
+
+    // IMPORTANT: remember to change the spent voice credits tree in Poll.sol
+    // if we change the state tree depth!
+
     uint8 constant internal STATE_TREE_SUBDEPTH = 2;
     uint8 constant internal STATE_TREE_ARITY = 5;
 
@@ -172,6 +176,7 @@ contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
             batchSizes,
             _coordinatorPubKey,
             vkRegistry,
+            stateAq,
             owner()
         );
 

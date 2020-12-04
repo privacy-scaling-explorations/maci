@@ -1,6 +1,4 @@
 import { 
-    User,
-    Poll,
     MaciState,
 } from '../'
 
@@ -8,12 +6,10 @@ import {
     Command,
     Message,
     Keypair,
-    StateLeaf,
     VerifyingKey,
 } from 'maci-domainobjs'
 import { G1Point, G2Point } from 'maci-crypto'
 
-const stateTreeDepth = 10
 const voiceCreditBalance = BigInt(20)
 const duration = 30
 const maxValues = {
@@ -98,12 +94,12 @@ describe('MaciState', () => {
 
         // modify user.pubKey
         const m3 = m1.copy()
-        m3.users[0].pubKey = (new Keypair()).pubKey
+        m3.stateLeaves[0].pubKey = (new Keypair()).pubKey
         expect(m1.equals(m3)).not.toBeTruthy()
 
         // modify user.voiceCreditBalance
         const m4 = m1.copy()
-        m4.users[0].voiceCreditBalance = BigInt(m4.users[0].voiceCreditBalance) + BigInt(1)
+        m4.stateLeaves[0].voiceCreditBalance = BigInt(m4.stateLeaves[0].voiceCreditBalance) + BigInt(1)
         expect(m1.equals(m4)).not.toBeTruthy()
 
         // modify poll.duration

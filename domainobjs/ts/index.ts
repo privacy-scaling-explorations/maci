@@ -392,6 +392,27 @@ class Message {
 }
 
 /*
+ * A Ballot represents a User's votes in a Poll, as well as their next valid
+ * nonce.
+ * @param _voiceCreditBalance The user's voice credit balance
+ * @param _nonce The number of valid commands which the user has already
+ *               published
+ */
+class Ballot {
+    public votes: BigInt[] = []
+    public nonce: BigInt = BigInt(0)
+
+    public copy = (): Ballot => {
+        const b = new Ballot()
+
+        b.votes = this.votes.map((x) => BigInt(x.toString()))
+        b.nonce = BigInt(this.nonce.toString())
+
+        return b
+    }
+}
+
+/*
  * A leaf in the state tree, which maps public keys to voice credit balances
  */
 class StateLeaf implements IStateLeaf {
@@ -456,12 +477,16 @@ class StateLeaf implements IStateLeaf {
         }
     }
 
+    public equals(s: StateLeaf): boolean {
+        return this.pubKey.equals(s.pubKey) &&
+            this.voiceCreditBalance === s.voiceCreditBalance
+    }
+
     public serialize = (): string => {
         const j = {
             pubKey: this.pubKey.serialize(),
             voiceCreditBalance: this.voiceCreditBalance.toString(16),
         }
-
 
         return base64url(
             Buffer.from(JSON.stringify(j, null, 0), 'utf8')
@@ -701,6 +726,7 @@ class Command implements ICommand {
 
 export {
     StateLeaf,
+    Ballot,
     VoteOptionTreeLeaf,
     Command,
     Message,

@@ -40,11 +40,18 @@ const testMerge = (
         }
     }
 
+    // The main root should not exist yet
+    expect(aq.hasRoot(MAIN_DEPTH)).toBeFalsy()
+    expect(aq2.hasRoot(MAIN_DEPTH)).toBeFalsy()
+
     aq2.mergeSubRoots(0)
     aq2.merge(MAIN_DEPTH)
 
     // For reference only
     aq.mergeDirect(MAIN_DEPTH)
+
+    expect(aq.hasRoot(MAIN_DEPTH)).toBeTruthy()
+    expect(aq2.hasRoot(MAIN_DEPTH)).toBeTruthy()
 
     expect(aq.getRoot(MAIN_DEPTH).toString()).toEqual(tree.root.toString())
     expect(aq2.getRoot(MAIN_DEPTH).toString()).toEqual(aq2.getRoot(MAIN_DEPTH).toString())

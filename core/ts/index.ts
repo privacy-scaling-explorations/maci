@@ -1,5 +1,3 @@
-import { User } from './User'
-
 import {
     //genPerVOSpentVoiceCreditsCommitment,
     //genSpentVoiceCreditsCommitment,
@@ -18,5 +16,4 @@ export {
     Poll,
     genProcessVkSig,
     genTallyVkSig,
-    User,
 }

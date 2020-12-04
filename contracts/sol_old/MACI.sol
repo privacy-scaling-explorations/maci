@@ -489,7 +489,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
             "MACI: invalid batch UST proof"
         );
 
-        // Increase the message batch start index to ensure that each message
+        // Decrease the message batch start index to ensure that each message
         // batch is processed in order
         if (currentMessageBatchIndex == 0) {
             hasUnprocessedMessages = false;

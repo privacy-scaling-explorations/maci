@@ -35,6 +35,7 @@ contract PollFactory is Params, DomainObjs, Ownable {
         BatchSizes memory _batchSizes,
         PubKey memory _coordinatorPubKey,
         VkRegistry _vkRegistry,
+        AccQueue _stateAq,
         address _pollOwner
     ) public onlyOwner returns (Poll) {
 
@@ -48,6 +49,7 @@ contract PollFactory is Params, DomainObjs, Ownable {
             _batchSizes,
             _coordinatorPubKey,
             _vkRegistry,
+            _stateAq,
             messageAq
         );
 
@@ -74,8 +76,44 @@ contract Poll is Params, DomainObjs, SnarkConstants, SnarkCommon, Ownable {
     // The verifying key signature for the tally circuit
     uint256 public tallyVkSig;
 
+    // The state queue
+    AccQueue public stateAq;
+
     // The message queue
     AccQueue public messageAq;
+
+    // The ballot tree root. This is hardcoded to the root of a
+    // quinary tree of nothing-up-my-sleeve values (from
+    // MerkleQuinaryMaci.sol). The tree depth is 10.
+    // TODO: change to a tree of empty ballots? This will require a
+    // pre-computed tree root where each leaf is:
+    /*
+       hash(
+           nonce=0,
+           voteOptionTreeRoot=<root of 0s with depth treeDepths.voteOptionTreeDepth>
+       )
+    */
+    uint256 public ballotRoot =
+        uint256(4075498848158653395299842642021605849312969882431853400933940071052448960990);
+
+    uint256 voteOptionTreeRoot
+
+    // The state root. This value should be 0 until the first invocation of
+    // processMessages(), at which point it should be set to the MACI state
+    // root, and then updated based on the result of processing each batch of
+    // messages.
+    uint256 public currentStateRoot;
+
+    // Whether there are unprocessed messages left
+    bool public hasUnprocessedMessages = true;
+
+    // The current message batch index. When the coordinator runs
+    // processMessages(), this action relates to messages
+    // currentMessageBatchIndex to currentMessageBatchIndex + messageBatchSize.
+    uint256 public currentMessageBatchIndex;
+
+    // The number of batches processed
+    uint256 public numBatchesProcessed;
 
     MaxValues public maxValues;
     TreeDepths public treeDepths;
@@ -102,6 +140,7 @@ contract Poll is Params, DomainObjs, SnarkConstants, SnarkCommon, Ownable {
         BatchSizes memory _batchSizes,
         PubKey memory _coordinatorPubKey,
         VkRegistry _vkRegistry,
+        AccQueue _stateAq,
         AccQueue _messageAq
     ) {
         uint8 stateTreeArity = STATE_TREE_ARITY;
@@ -145,6 +184,7 @@ contract Poll is Params, DomainObjs, SnarkConstants, SnarkCommon, Ownable {
         batchSizes = _batchSizes;
         treeDepths = _treeDepths;
 
+        stateAq = _stateAq;
         messageAq = _messageAq;
 
         uint256 pSig = _vkRegistry.genProcessVkSig(
@@ -226,11 +266,70 @@ contract Poll is Params, DomainObjs, SnarkConstants, SnarkCommon, Ownable {
         messageAq.merge(treeDepths.messageTreeDepth);
     }
 
-    function batchEnqueuemessage(uint256 _messageSubRoot)
+    function batchEnqueueMessage(uint256 _messageSubRoot)
     public
     onlyOwner
     isAfterVotingDeadline {
         messageAq.insertSubTree(_messageSubRoot);
+    }
+
+    /*
+     * Update currentStateRoot if the proof is valid.
+     * @param _newStateRoot The new state root after all messages are processed
+     * @param _stateTreeRoots The intermediate state roots
+     * @param _ecdhPubKeys The public key used to generated the ECDH shared key
+     *                     to decrypt the message
+     * @param _proof The zk-SNARK proof
+     */
+    function processMessages(
+        uint256 _newStateRoot,
+        uint256[] memory _stateTreeRoots,
+        PubKey[] memory _ecdhPubKeys,
+        uint256[8] memory _proof
+    )
+    public
+    onlyOwner
+    isAfterVotingDeadline {
+        // Require the existence of unprocessed messages
+        require(
+            hasUnprocessedMessages,
+            "MACI: no more messages left to process"
+        );
+
+        // Require that the message queue has been merged
+        uint256 messageRoot = messageAq.getMainRoot(treeDepths.messageTreeDepth);
+        require(messageRoot != 0, "Poll: the message AQ has not been merged");
+
+        uint256 messageBatchSize = batchSizes.messageBatchSize;
+
+        // The state tree depth is hardcoded to 10.
+        uint256 STATE_TREE_DEPTH = 10;
+
+        // Copy the state root and set the batch index if this is the
+        // first batch to process
+        if (numBatchesProcessed == 0) {
+            currentStateRoot = stateAq.getMainRoot(STATE_TREE_DEPTH);
+
+            uint256 numMessages = messageAq.numMessages();
+            currentMessageBatchIndex = (numMessages / messageBatchSize) * messageBatchSize;
+        }
+
+        // Generate public signals
+
+        // Verify the proof
+
+        // Update the state root
+        currentStateRoot = _newStateRoot;
+
+        // Decrease the message batch start index to ensure that each message
+        // batch is processed in order
+        if (currentMessageBatchIndex == 0) {
+            hasUnprocessedMessages = false;
+        } else {
+            currentMessageBatchIndex -= messageBatchSize;
+        }
+
+        numBatchesProcessed ++;
     }
 
     /*

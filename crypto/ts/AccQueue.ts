@@ -491,6 +491,11 @@ class AccQueue {
         return this.mainRoots[_depth]
     }
 
+    public hasRoot(_depth: number) {
+        const root = this.getRoot(_depth) 
+        return !(root == null || root == undefined)
+    }
+
     /*
      * Deep-copies this object
      */
