@@ -15,13 +15,18 @@ chmod a+x $solcBin
 paths="$(pwd)/sol/,$(pwd)/node_modules/@openzeppelin/"
 oz_map="@openzeppelin/=$(pwd)/node_modules/@openzeppelin/"
 
+echo 'Writing Merkle zeros contracts'
+./scripts/writeMerkleZeroesContracts.sh
+
+echo 'Writing empty ballot tree root contract'
+./scripts/writeEmptyBallotRoots.sh
+
 echo 'Building contracts'
-# TODO: remove --bin-runtime ?
 $solcBin $oz_map -o ./compiled \
     ./sol/*.sol \
     ./sol/**/*.sol \
     ./sol/**/**/*.sol \
-    --overwrite --optimize --bin --abi --bin-runtime --allow-paths=$paths
+    --overwrite --optimize --bin --abi --allow-paths=$paths
 
 # Build the Poseidon contract from bytecode
 node build/buildPoseidon.js

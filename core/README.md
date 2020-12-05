@@ -12,41 +12,49 @@ contracts in discrete components which are easy to test.
 
 To this end, we this submodule exposes a `MaciState` class and a `User` class.
 
-## **`User`**
+## **`Poll`**
 
-Each `User object has the following attributes:
+Each `Poll object has the following attributes:
 
-`pubKey: PubKey`: The user's public key.
+`coordinatorKeypair: Keypair`: The coordinator's keypair.
+`messages: Message[]`: An array of all published messages.
+`ballots: Ballot[]`: An array of all ballots.
 
-`votes: SnarkBigInt[]`: The voice credits assigned to each vote option. 
-
-`voiceCreditBalance: SnarkBigInt`: The user's remaining voice credit balance.
+TODO
 
 ### Functions
 
-#### **`genStateLeaf`**
+#### **`publishMessage`**
 
 Function signature:
 
 ```ts
-(_voteOptionTreeDepth: number): StateLeaf
+(_message: Message, _encPubKey: PubKey): void
 ```
 
-Generates and returns an equivalent `StateLeaf` [domain
-object](../domainobjs/). This function helps `MaciState` to generate a state
-tree.
+Appends a `Message` to the `messages` array. It also appends the public key
+used to generate the ECDH shared key which encrypts `_message` to the
+`encPubKeys` array.
+
+#### **`processMessages`**
+
+TODO
 
 #### **`copy`**
 
 Function signature:
 
 ```ts
-(): User
+(): Poll
 ```
 
 Deep-copies and returns this object.
 
 ## `MaciState`
+
+TODO
+
+<!--
 
 We denote all state data as attributes of a `MaciState` object.
 
@@ -55,7 +63,6 @@ access their own keypair, commands, and on-chain state and message tree roots.
 
 `MaciState` contains the following attributes:
 
-`coordinatorKeypair: Keypair`: The coordinator's keypair.
 
 `users: User[]`: An array of `User` objects, each of which represents the current state of a user.
 
@@ -65,7 +72,6 @@ access their own keypair, commands, and on-chain state and message tree roots.
 
 `voteOptionTreeDepth: SnarkBigInt`: The depth of each user's vote option tree.
 
-`messages: Message[]`: An array of all published messages.
 
 `zerothStateLeaf: StateLeaf`: The leaf of the state tree at index 0. This means
 that the zeroth user in `users` has index 1 in the state tree.
@@ -303,3 +309,4 @@ Function signature:
 ```
 
 This function returns a deep-copied `MaciState` object.
+-->

@@ -9,6 +9,7 @@ import { DomainObjs } from "./DomainObjs.sol";
 import { AccQueue, AccQueueQuinaryMaci } from "./trees/AccQueue.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { VkRegistry } from "./VkRegistry.sol";
+import { EmptyBallotRoots } from "./trees/EmptyBallotRoots.sol";
 
 contract MessageAqFactory is Ownable {
     function deploy(uint256 _subDepth)
@@ -25,7 +26,7 @@ contract MessageAqFactory is Ownable {
  * A factory contract which deploys Poll contracts. It allows the MACI contract
  * size to stay within the limit set by EIP-170.
  */
-contract PollFactory is Params, DomainObjs, Ownable {
+contract PollFactory is EmptyBallotRoots, Params, DomainObjs, Ownable {
 
     MessageAqFactory public messageAqFactory;
 
@@ -66,6 +67,9 @@ contract PollFactory is Params, DomainObjs, Ownable {
 
         messageAq.transferOwnership(address(poll));
 
+        poll.setEmptyBallotRoot(
+            emptyBallotRoots[_treeDepths.voteOptionTreeDepth]
+        );
         poll.transferOwnership(_pollOwner);
 
         return poll;
@@ -93,21 +97,8 @@ contract Poll is Params, DomainObjs, SnarkConstants, SnarkCommon, Ownable {
     // The message queue
     AccQueue public messageAq;
 
-    // The ballot tree root. This is hardcoded to the root of a
-    // quinary tree of nothing-up-my-sleeve values (from
-    // MerkleQuinaryMaci.sol). The tree depth is 10.
-    // TODO: change to a tree of empty ballots? This will require a
-    // pre-computed tree root where each leaf is:
-    /*
-       hash(
-           nonce=0,
-           voteOptionTreeRoot=<root of 0s with depth treeDepths.voteOptionTreeDepth>
-       )
-    */
-    uint256 public ballotRoot =
-        uint256(4075498848158653395299842642021605849312969882431853400933940071052448960990);
-
-    uint256 voteOptionTreeRoot
+    // The ballot tree root.
+    uint256 public ballotRoot;
 
     // The state root. This value should be 0 until the first invocation of
     // processMessages(), at which point it should be set to the MACI state
@@ -225,6 +216,11 @@ contract Poll is Params, DomainObjs, SnarkConstants, SnarkCommon, Ownable {
         deployTime = block.timestamp;
     }
 
+    function setEmptyBallotRoot(uint256 _emptyBallotRoot) public onlyOwner {
+        require(ballotRoot == 0, "Poll: ballotRoot already set");
+        ballotRoot = _emptyBallotRoot;
+    }
+
     modifier isBeforeVotingDeadline() {
         // Throw if the voting period is over
         uint256 secondsPassed = block.timestamp - deployTime;
@@ -329,7 +325,7 @@ contract Poll is Params, DomainObjs, SnarkConstants, SnarkCommon, Ownable {
         if (numBatchesProcessed == 0) {
             currentStateRoot = stateAq.getMainRoot(STATE_TREE_DEPTH);
 
-            uint256 numMessages = messageAq.numMessages();
+            uint256 numMessages = messageAq.numLeaves();
             currentMessageBatchIndex =
                 (numMessages / messageBatchSize) * messageBatchSize;
         }

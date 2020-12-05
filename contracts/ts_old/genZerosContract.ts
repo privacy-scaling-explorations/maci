@@ -44,10 +44,7 @@ const genZerosContract = (
     }
 
     const generated = template
-        .replace('<% CONTRACT_NAME %>', contractName)
-        .replace('<% NUM_ZEROS %>', numZeros.toString())
         .replace('<% ZEROS %>', '        ' + z.trim())
-        .replace('<% COMMENT %>', comment)
     
     return generated
 }

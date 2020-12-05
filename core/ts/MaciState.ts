@@ -199,9 +199,13 @@ class Poll {
         }
 
         for (let i = 0; i < batchSize; i++) {
+            // Note that messages are processed in reverse order.
             const messageIndex =
                 this.currentMessageBatchIndex + batchSize - i - 1;
 
+            // Ignore indices which do not exist. This happens during the first
+            // batch if the number of messages is not a product of the batch
+            // size.
             if (this.messages.length <= messageIndex) {
                 continue
             }

@@ -27,6 +27,8 @@ which is the encrypted `Command` and its `Signature` (also defined in
 Message = Encrypt([Command, Signature], Key)
 ```
 
+## `Ballot`
+
 ## `VoteOptionTreeLeaf`
 
 ## `StateLeaf`
