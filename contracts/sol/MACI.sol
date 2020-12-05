@@ -11,7 +11,8 @@ import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { AccQueueQuinaryMaci } from "./trees/AccQueue.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
-import { InitialVoiceCreditProxy } from './initialVoiceCreditProxy/InitialVoiceCreditProxy.sol';
+import { InitialVoiceCreditProxy }
+    from "./initialVoiceCreditProxy/InitialVoiceCreditProxy.sol";
 
 /*
  * Minimum Anti-Collusion Infrastructure
@@ -30,14 +31,23 @@ contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
 
     // Each poll has an incrementing ID
     uint256 internal nextPollId = 0;
+
+    // A mapping of poll IDs to Poll contracts.
     mapping (uint256 => Poll) public polls;
 
+    // The verifying key registry. There may be multiple verifying keys stored
+    // on chain, and Poll contracts must select the correct VK based on the
+    // circuit's compile-time parameters, such as tree depths and batch sizes.
     VkRegistry public vkRegistry;
 
     PollFactory public pollFactory;
-    AccQueueQuinaryMaci public stateAq;
     MessageAqFactory public messageAqFactory;
 
+    // The state AccQueue. Represents a mapping between each user's public key
+    // and their voice credit balance.
+    AccQueueQuinaryMaci public stateAq;
+
+    // Whether the init() function has been successfully executed yet.
     bool isInitialised = false;
 
     // Address of the SignUpGatekeeper, a contract which determines whether a
@@ -60,6 +70,7 @@ contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
         SignUpGatekeeper _signUpGatekeeper,
         InitialVoiceCreditProxy _initialVoiceCreditProxy
     ) {
+        // Deploy the state AccQueu
         stateAq = new AccQueueQuinaryMaci(STATE_TREE_SUBDEPTH);
 
         pollFactory = _pollFactory;
@@ -67,6 +78,10 @@ contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
         initialVoiceCreditProxy = _initialVoiceCreditProxy;
     }
 
+    /*
+     * Initialise the various helper contracts. This should only be run once
+     * and it must be run before deploying the first Poll.
+     */
     function init(
         VkRegistry _vkRegistry,
         MessageAqFactory _messageAqFactory
@@ -83,13 +98,16 @@ contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
             "MACI: PollFactory owner incorrectly set"
         );
 
+        // The PollFactory needs to store the MessageAqFactory address
         pollFactory.setMessageAqFactory(messageAqFactory);
 
+        // The MessageAQFactory owner must be the PollFactory contract
         require(
             messageAqFactory.owner() == address(pollFactory),
             "MACI: MessageAqFactory owner incorrectly set"
         );
 
+        // The VkRegistry owner must be the owner of this contract
         require(
             vkRegistry.owner() == owner(),
             "MACI: VkRegistry owner incorrectly set"
@@ -103,6 +121,20 @@ contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
         _;
     }
 
+    /*
+     * Allows any eligible user sign up. The sign-up gatekeeper should prevent
+     * double sign-ups or ineligible users from doing so.  This function will
+     * only succeed if the sign-up deadline has not passed. It also enqueues a
+     * fresh state leaf into the state AccQueue.
+     * @param _userPubKey The user's desired public key.
+     * @param _signUpGatekeeperData Data to pass to the sign-up gatekeeper's
+     *     register() function. For instance, the POAPGatekeeper or
+     *     SignUpTokenGatekeeper requires this value to be the ABI-encoded
+     *     token ID.
+     * @param _initialVoiceCreditProxyData Data to pass to the
+     *     InitialVoiceCreditProxy, which allows it to determine how many voice
+     *     credits this user should have.
+     */
     function signUp(
         PubKey memory _pubKey,
         bytes memory _signUpGatekeeperData,
@@ -118,6 +150,7 @@ contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
             "MACI: _pubKey values should be less than the snark scalar field"
         );
 
+        // Get the user's voice credit balance.
         uint256 voiceCreditBalance = initialVoiceCreditProxy.getVoiceCredits(
             msg.sender,
             _initialVoiceCreditProxyData
@@ -127,8 +160,12 @@ contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
         // UpdateStateTree circuit, specifically at check that there are
         // sufficient voice credits (using GreaterEqThan(32)).
         // TODO: perhaps increase this to 2 ^ 50 = 1125899906842624?
-        require(voiceCreditBalance <= 4294967296, "MACI: too many voice credits");
+        require(
+            voiceCreditBalance <= 4294967296,
+            "MACI: too many voice credits"
+        );
 
+        // Create a state leaf and enqueue it.
         uint256 stateLeaf = hashStateLeaf(
             StateLeaf(_pubKey, voiceCreditBalance)
         );
@@ -145,14 +182,23 @@ contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
         //// TODO: validate signature and sign up
     //)
 
-    function mergeStateAqSubRoots(uint256 _numSrQueueOps) public onlyOwner afterInit {
+    function mergeStateAqSubRoots(uint256 _numSrQueueOps)
+    public
+    onlyOwner
+    afterInit {
         stateAq.mergeSubRoots(_numSrQueueOps);
     }
 
-    function mergeStateAq() public onlyOwner afterInit {
+    function mergeStateAq()
+    public
+    onlyOwner
+    afterInit {
         stateAq.merge(stateTreeDepth);
     }
 
+    /*
+     * Deploy a new Poll contract.
+     */
     function deployPoll(
         uint256 _duration,
         MaxValues memory _maxValues,
@@ -189,7 +235,10 @@ contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
     }
 
     function getPoll(uint256 _pollId) public view returns (Poll) {
-        require(_pollId < nextPollId, "MACI: poll with _pollId does not exist");
+        require(
+            _pollId < nextPollId,
+            "MACI: poll with _pollId does not exist"
+        );
         return polls[_pollId];
     }
 }

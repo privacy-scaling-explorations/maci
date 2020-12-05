@@ -11,19 +11,29 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { VkRegistry } from "./VkRegistry.sol";
 
 contract MessageAqFactory is Ownable {
-    function deploy(uint256 _subDepth) public onlyOwner returns (AccQueueQuinaryMaci) {
+    function deploy(uint256 _subDepth)
+    public
+    onlyOwner
+    returns (AccQueueQuinaryMaci) {
         AccQueueQuinaryMaci aq = new AccQueueQuinaryMaci(_subDepth);
         aq.transferOwnership(owner());
         return aq;
     }
 }
 
+/*
+ * A factory contract which deploys Poll contracts. It allows the MACI contract
+ * size to stay within the limit set by EIP-170.
+ */
 contract PollFactory is Params, DomainObjs, Ownable {
+
     MessageAqFactory public messageAqFactory;
 
     event DeployPoll(uint256 _pollId, address _pollAddr);
 
-    function setMessageAqFactory(MessageAqFactory _messageAqFactory) public onlyOwner {
+    function setMessageAqFactory(MessageAqFactory _messageAqFactory)
+    public
+    onlyOwner {
         messageAqFactory = _messageAqFactory;
     }
 
@@ -39,7 +49,8 @@ contract PollFactory is Params, DomainObjs, Ownable {
         address _pollOwner
     ) public onlyOwner returns (Poll) {
 
-        AccQueueQuinaryMaci messageAq = messageAqFactory.deploy(_treeDepths.messageTreeSubDepth);
+        AccQueueQuinaryMaci messageAq =
+            messageAqFactory.deploy(_treeDepths.messageTreeSubDepth);
 
         Poll poll = new Poll(
             _duration,
@@ -217,14 +228,20 @@ contract Poll is Params, DomainObjs, SnarkConstants, SnarkCommon, Ownable {
     modifier isBeforeVotingDeadline() {
         // Throw if the voting period is over
         uint256 secondsPassed = block.timestamp - deployTime;
-        require(secondsPassed <= duration, "Poll: the voting period has passsed");
+        require(
+            secondsPassed <= duration,
+            "Poll: the voting period has passsed"
+        );
         _;
     }
 
     modifier isAfterVotingDeadline() {
         // Throw if the voting period is not
         uint256 secondsPassed = block.timestamp - deployTime;
-        require(secondsPassed > duration, "Poll: the voting period has not passsed");
+        require(
+            secondsPassed > duration,
+            "Poll: the voting period has not passsed"
+        );
         _;
     }
 
@@ -243,7 +260,8 @@ contract Poll is Params, DomainObjs, SnarkConstants, SnarkCommon, Ownable {
     public
     isBeforeVotingDeadline {
         require(
-            _encPubKey.x < SNARK_SCALAR_FIELD && _encPubKey.y < SNARK_SCALAR_FIELD,
+            _encPubKey.x < SNARK_SCALAR_FIELD &&
+            _encPubKey.y < SNARK_SCALAR_FIELD,
             "MACI: _encPubKey values should be less than the snark scalar field"
         );
         uint256 messageLeaf = hashMessage(_message);
@@ -297,7 +315,8 @@ contract Poll is Params, DomainObjs, SnarkConstants, SnarkCommon, Ownable {
         );
 
         // Require that the message queue has been merged
-        uint256 messageRoot = messageAq.getMainRoot(treeDepths.messageTreeDepth);
+        uint256 messageRoot =
+            messageAq.getMainRoot(treeDepths.messageTreeDepth);
         require(messageRoot != 0, "Poll: the message AQ has not been merged");
 
         uint256 messageBatchSize = batchSizes.messageBatchSize;
@@ -311,7 +330,8 @@ contract Poll is Params, DomainObjs, SnarkConstants, SnarkCommon, Ownable {
             currentStateRoot = stateAq.getMainRoot(STATE_TREE_DEPTH);
 
             uint256 numMessages = messageAq.numMessages();
-            currentMessageBatchIndex = (numMessages / messageBatchSize) * messageBatchSize;
+            currentMessageBatchIndex =
+                (numMessages / messageBatchSize) * messageBatchSize;
         }
 
         // Generate public signals

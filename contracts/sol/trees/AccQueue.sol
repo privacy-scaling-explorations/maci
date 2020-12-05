@@ -368,11 +368,7 @@ abstract contract AccQueue is Ownable, Hasher {
         if (nextSubRootIndex == currentSubtreeIndex) {
             uint256 z = getZero(subDepth);
             for (uint256 i = currentSubtreeIndex; i < m; i ++) {
-                queueSubRoot(
-                    z,
-                    0,
-                    depth
-                );
+                queueSubRoot(z, 0, depth);
             }
         }
 

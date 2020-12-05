@@ -1,6 +1,7 @@
 import * as assert from 'assert'
 import {
     AccQueue,
+    IncrementalQuinTree,
     SNARK_FIELD_SIZE,
     NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
@@ -60,6 +61,7 @@ class Poll {
     public numBatchesProcessed = 0
     public currentMessageBatchIndex
     public zerothStateLeaf
+    public maciStateRef
 
     constructor(
         _duration: number,
@@ -71,7 +73,6 @@ class Poll {
         _maxValues: MaxValues,
         _processVk: VerifyingKey,
         _tallyVk: VerifyingKey,
-        _numUsers: number,
     ) {
         this.duration = _duration
         this.coordinatorKeypair = _coordinatorKeypair
@@ -87,12 +88,6 @@ class Poll {
             this.MESSAGE_TREE_ARITY,
             NOTHING_UP_MY_SLEEVE,
         )
-
-        // Populate this.ballots with empty ballots
-        for (let i = 0; i < _numUsers; i ++) {
-            const emptyBallot = new Ballot()
-            this.ballots.push(emptyBallot)
-        }
     }
 
     /*
@@ -131,6 +126,203 @@ class Poll {
         // main root
     }
 
+    /*
+     * Process _batchSize messages starting from the saved index, and then
+     * update the zeroth state leaf. This function will process messages even
+     * if the number of messages is not an exact multiple of _batchSize. e.g.
+     * if there are 10 messages, _index is 8, and _batchSize is 4, this
+     * function will only process the last two messages in this.messages, and
+     * finally update the zeroth state leaf. Note that this function will only
+     * process as many state leaves as there are ballots to prevent accidental
+     * inclusion of a new user after this poll has concluded.
+     * @param _pollId The ID of the poll associated with the messages to
+     *        process
+     * @param _randomStateLeaf A random state leaf which will take the place
+     *     of the zeroth state leaf after all the messages in this batch
+     *     are processed. This randomises the state root, even if all the
+     *     commands are invalid.
+     * @param _maciStateRef A reference to the MaciState object. It is needed
+     *     as this function needs to make a deep copy of the state leaves at
+     *     the point at which it is invoked.
+     */
+    public processMessages = (
+        _pollId: number,
+        _randomStateLeaf: StateLeaf,
+        _maciStateRef?: MaciState,
+    ) => {
+        const batchSize = this.batchSizes.messageBatchSize
+
+        // The starting index must be valid
+        assert(this.currentMessageBatchIndex >= 0)
+        assert(this.currentMessageBatchIndex % batchSize === 0)
+
+        // Require that the message queue has been merged
+        assert(this.messageAq.hasRoot(this.treeDepths.messageTreeDepth))
+
+        // Only allow one poll to be processed at a time
+        if (this.maciStateRef.pollBeingProcessed) {
+            assert(this.maciStateRef.currentPollBeingProcessed === _pollId)
+        }
+
+        // The first time this function is called, deep-copy the state queue,
+        // state root, and state leaves into this object, and set the current
+        // message batch index
+        if (this.numBatchesProcessed === 0) {
+            assert(_maciStateRef != null && _maciStateRef != undefined)
+            this.maciStateRef = _maciStateRef
+
+            // Deep-copy the state leaves from the MaciState
+            this.stateLeaves =
+                this.maciStateRef.stateLeaves.map((x: StateLeaf) => x.copy())
+            
+
+            // Populate this.ballots with empty ballots
+            for (let i = 0; i < this.stateLeaves.length; i ++) {
+                this.ballots.push(new Ballot())
+            }
+
+            // Prevent other polls from being processed until this poll has
+            // been fully processed
+            this.maciStateRef.pollBeingProcessed = true
+            this.maciStateRef.currentPollBeingProcessed = _pollId
+
+            // Deep-copy the state AccQueue
+            this.pmStateAq = this.maciStateRef.stateAq.copy()
+
+            // Compute the state root
+            this.currentStateRoot =
+                BigInt(this.pmStateAq.getRoot(STATE_TREE_DEPTH))
+
+            // The starting index of the batch of messages to process
+            this.currentMessageBatchIndex =
+                Math.floor(this.messageAq.numLeaves / batchSize) * batchSize
+        }
+
+        for (let i = 0; i < batchSize; i++) {
+            const messageIndex =
+                this.currentMessageBatchIndex + batchSize - i - 1;
+
+            if (this.messages.length <= messageIndex) {
+                continue
+            }
+
+            this.processMessage(messageIndex)
+        }
+
+        // Replace the zeroth state leaf
+        this.zerothStateLeaf = _randomStateLeaf
+
+        // Recompute the state root
+        const stateTree = new IncrementalQuinTree(
+            STATE_TREE_DEPTH, 
+            NOTHING_UP_MY_SLEEVE,
+            this.maciStateRef.STATE_TREE_ARITY,
+        )
+        stateTree.insert(this.zerothStateLeaf)
+        for (let i = 0; i < this.stateLeaves.length; i ++) {
+            stateTree.insert(this.stateLeaves[i].hash())
+        }
+        this.currentStateRoot = BigInt(stateTree.root)
+
+        this.numBatchesProcessed ++
+
+        if (this.currentMessageBatchIndex > 0) {
+            this.currentMessageBatchIndex -= batchSize
+        }
+
+        // If this is the last batch, release the lock
+        if (this.numBatchesProcessed * batchSize >= this.messages.length) {
+            this.maciStateRef.pollBeingProcessed = false
+        }
+    }
+
+    /*
+     * Process one message
+     */
+    private processMessage = (
+        _index: number,
+    ) => {
+        // Ensure that the index is valid
+        assert(_index <= 0)
+        assert(this.messages.length > _index)
+
+        // Ensure that there is the correct number of ECDH shared keys
+        assert(this.encPubKeys.length === this.messages.length)
+
+        const message = this.messages[_index]
+        const encPubKey = this.encPubKeys[_index]
+
+        // Decrypt the message
+        const sharedKey = Keypair.genEcdhSharedKey(
+            this.coordinatorKeypair.privKey,
+            encPubKey,
+        )
+        const { command, signature } = Command.decrypt(message, sharedKey)
+
+        // If the state tree index in the command is invalid, do nothing
+        if (command.stateIndex > BigInt(this.ballots.length)) {
+            return
+        }
+
+        // The index of the state leaf in this.stateLeaves is one less than
+        // the state tree index of the correspondng state leaf. This is because
+        // the zeroth state leaf is a random value.
+        const stateLeafIndex = BigInt(command.stateIndex) - BigInt(1)
+
+        assert(BigInt(this.stateLeaves.length) > stateLeafIndex)
+
+        // The user to update (or not)
+        const stateLeaf = this.stateLeaves[Number(stateLeafIndex)]
+
+        // The ballot to update (or not)
+        const ballot = this.ballots[Number(stateLeafIndex)]
+
+        // If the signature is invalid, do nothing
+        if (!command.verifySignature(signature, stateLeaf.pubKey)) {
+            return
+        }
+
+        // If the nonce is invalid, do nothing
+        if (command.nonce !== BigInt(ballot.nonce) + BigInt(1)) {
+            return
+        }
+
+        // If there are insufficient vote credits, do nothing
+        const prevSpentCred = ballot.votes[Number(command.voteOptionIndex)]
+
+        const voiceCreditsLeft =
+            BigInt(stateLeaf.voiceCreditBalance) +
+            (BigInt(prevSpentCred) * BigInt(prevSpentCred)) -
+            (BigInt(command.newVoteWeight) * BigInt(command.newVoteWeight))
+
+        // If the remaining voice credits is insufficient, do nothing
+        if (voiceCreditsLeft < BigInt(0)) {
+            return
+        }
+
+        // If the vote option index is invalid, do nothing
+        if (command.voteOptionIndex > BigInt(this.maxValues.maxVoteOptions)) {
+            return
+        }
+
+        // Deep-copy the ballot and update its attributes
+        const newBallot = ballot.copy()
+        newBallot.nonce = BigInt(newBallot.nonce) + BigInt(1)
+        newBallot.votes[Number(command.voteOptionIndex)] =
+            command.newVoteWeight
+
+        // Replace the ballot
+        this.ballots[Number(stateLeafIndex)] = newBallot
+
+        // Deep-copy the stateLeaf and update its attributes
+        const newStateLeaf = stateLeaf.copy()
+        newStateLeaf.voiceCreditBalance = voiceCreditsLeft
+        newStateLeaf.pubKey = command.newPubKey.copy()
+
+        // Replace the state leaf
+        this.stateLeaves[Number(stateLeafIndex)] = newStateLeaf
+    }
+
     public copy = (): Poll => {
         const copied = new Poll(
             Number(this.duration.toString()),
@@ -138,23 +330,31 @@ class Poll {
             this.processParamsFilename.toString(),
             this.tallyParamsFilename.toString(),
             {
-                intStateTreeDepth: Number(this.treeDepths.intStateTreeDepth),
-                messageTreeDepth: Number(this.treeDepths.messageTreeDepth),
-                messageTreeSubDepth: Number(this.treeDepths.messageTreeSubDepth),
-                voteOptionTreeDepth: Number(this.treeDepths.voteOptionTreeDepth),
+                intStateTreeDepth:
+                    Number(this.treeDepths.intStateTreeDepth),
+                messageTreeDepth:
+                    Number(this.treeDepths.messageTreeDepth),
+                messageTreeSubDepth:
+                    Number(this.treeDepths.messageTreeSubDepth),
+                voteOptionTreeDepth:
+                    Number(this.treeDepths.voteOptionTreeDepth),
             },
             {
-                tallyBatchSize: Number(this.batchSizes.tallyBatchSize.toString()),
-                messageBatchSize: Number(this.batchSizes.messageBatchSize.toString()),
+                tallyBatchSize:
+                    Number(this.batchSizes.tallyBatchSize.toString()),
+                messageBatchSize:
+                    Number(this.batchSizes.messageBatchSize.toString()),
             },
             {
-                maxUsers: Number(this.maxValues.maxUsers.toString()),
-                maxMessages: Number(this.maxValues.maxMessages.toString()),
-                maxVoteOptions: Number(this.maxValues.maxVoteOptions.toString()),
+                maxUsers:
+                    Number(this.maxValues.maxUsers.toString()),
+                maxMessages:
+                    Number(this.maxValues.maxMessages.toString()),
+                maxVoteOptions:
+                    Number(this.maxValues.maxVoteOptions.toString()),
             },
             this.processVk.copy(),
             this.tallyVk.copy(),
-            this.ballots.length,
         )
 
         copied.messages = this.messages.map((x: Message) => x.copy())
@@ -170,12 +370,17 @@ class Poll {
             this.coordinatorKeypair.equals(p.coordinatorKeypair) &&
             this.processParamsFilename === p.processParamsFilename &&
             this.tallyParamsFilename === p.tallyParamsFilename &&
-            this.treeDepths.intStateTreeDepth === p.treeDepths.intStateTreeDepth &&
-            this.treeDepths.messageTreeDepth === p.treeDepths.messageTreeDepth &&
-            this.treeDepths.messageTreeSubDepth === p.treeDepths.messageTreeSubDepth &&
-            this.treeDepths.voteOptionTreeDepth === p.treeDepths.voteOptionTreeDepth &&
+            this.treeDepths.intStateTreeDepth ===
+                p.treeDepths.intStateTreeDepth &&
+            this.treeDepths.messageTreeDepth ===
+                p.treeDepths.messageTreeDepth &&
+            this.treeDepths.messageTreeSubDepth ===
+                p.treeDepths.messageTreeSubDepth &&
+            this.treeDepths.voteOptionTreeDepth ===
+                p.treeDepths.voteOptionTreeDepth &&
             this.batchSizes.tallyBatchSize === p.batchSizes.tallyBatchSize &&
-            this.batchSizes.messageBatchSize === p.batchSizes.messageBatchSize &&
+            this.batchSizes.messageBatchSize ===
+                p.batchSizes.messageBatchSize &&
             this.maxValues.maxUsers === p.maxValues.maxUsers &&
             this.maxValues.maxMessages === p.maxValues.maxMessages &&
             this.maxValues.maxVoteOptions === p.maxValues.maxVoteOptions &&
@@ -253,152 +458,17 @@ class MaciState {
              _treeDepths,
             {
                 messageBatchSize: _messageBatchSize,
-                tallyBatchSize: this.STATE_TREE_ARITY ** _treeDepths.intStateTreeDepth,
+                tallyBatchSize:
+                    this.STATE_TREE_ARITY ** _treeDepths.intStateTreeDepth,
             },
             _maxValues, 
             _processVk,
             _tallyVk,
-            this.stateLeaves.length,
         )
 
         this.polls.push(poll)
         return this.polls.length - 1
     }
-
-    /*
-     * Process _batchSize messages starting from the saved index, and then
-     * update the zeroth state leaf. This function will process messages even
-     * if the number of messages is not an exact multiple of _batchSize. e.g.
-     * if there are 10 messages, _index is 8, and _batchSize is 4, this
-     * function will only process the last two messages in this.messages, and
-     * finally update the zeroth state leaf. Note that this function will only
-     * process as many state leaves as there are ballots to prevent accidental
-     * inclusion of a new user after this poll has concluded.
-     */
-    public processMessages = (
-        _pollId: number,
-        _randomStateLeaf: StateLeaf,
-    ) => {
-        const poll = this.polls[_pollId]
-        const numUsers = poll.ballots.length
-        assert(this.stateLeaves.length >= numUsers)
-
-        // Require that the message queue has been merged
-        assert(poll.messageAq.hasRoot(poll.treeDepths.messageTreeDepth))
-
-        const batchSize = poll.batchSizes.messageBatchSize
-
-        // Only allow one poll to be processed at a time
-        if (this.pollBeingProcessed) {
-            assert(this.currentPollBeingProcessed === _pollId)
-        }
-
-        // The first time this function is called, copy the state queue, state
-        // root, and state leaves into this object, and set the current message batch
-        // index
-        if (poll.numBatchesProcessed === 0) {
-            this.pollBeingProcessed = true
-            this.currentPollBeingProcessed = _pollId
-            poll.pmStateAq = this.stateAq.copy()
-            poll.currentStateRoot = BigInt(poll.pmStateAq.getRoot(STATE_TREE_DEPTH))
-            poll.currentMessageBatchIndex =
-                Math.floor(poll.messageAq.numLeaves / batchSize) * batchSize
-        }
-
-        for (let i = 0; i < batchSize; i++) {
-            const messageIndex = poll.currentMessageBatchIndex + batchSize - i - 1;
-
-            if (poll.messages.length <= messageIndex) {
-                continue
-            }
-
-            this.processMessage(_pollId, messageIndex)
-        }
-
-        poll.zerothStateLeaf = _randomStateLeaf
-
-        poll.numBatchesProcessed ++
-
-        if (poll.numBatchesProcessed * batchSize >= poll.messages.length) {
-            this.pollBeingProcessed = false
-        }
-    }
-
-    private processMessage = (
-        _pollId: number,
-        _index: number,
-    ) => {
-        const poll = this.polls[_pollId]
-
-        assert(poll.messages.length > _index)
-        assert(poll.encPubKeys.length === poll.messages.length)
-
-        const message = poll.messages[_index]
-        const encPubKey = poll.encPubKeys[_index]
-
-        // Decrypt the message
-        const sharedKey = Keypair.genEcdhSharedKey(poll.coordinatorKeypair.privKey, encPubKey)
-        const { command, signature } = Command.decrypt(message, sharedKey)
-
-        // If the state tree index in the command is invalid, do nothing
-        if (command.stateIndex > BigInt(poll.ballots.length)) {
-            return
-        }
-
-        const userIndex = BigInt(command.stateIndex) - BigInt(1)
-
-        assert(BigInt(this.stateLeaves.length) > userIndex)
-
-        // The user to update (or not)
-        const stateLeaf = this.stateLeaves[Number(userIndex)]
-
-        // The ballot to update (or not)
-        const ballot = poll.ballots[Number(userIndex)]
-
-        // If the signature is invalid, do nothing
-        if (!command.verifySignature(signature, stateLeaf.pubKey)) {
-            return
-        }
-
-        // If the nonce is invalid, do nothing
-        if (command.nonce !== BigInt(ballot.nonce) + BigInt(1)) {
-            return
-        }
-
-        // If there are insufficient vote credits, do nothing
-        const prevSpentCred = ballot.votes[Number(command.voteOptionIndex)]
-
-        const voiceCreditsLeft =
-            BigInt(stateLeaf.voiceCreditBalance) +
-            (BigInt(prevSpentCred) * BigInt(prevSpentCred)) -
-            (BigInt(command.newVoteWeight) * BigInt(command.newVoteWeight))
-
-        if (voiceCreditsLeft < BigInt(0)) {
-            return
-        }
-
-        // If the vote option index is invalid, do nothing
-        if (command.voteOptionIndex > BigInt(poll.maxValues.maxVoteOptions)) {
-            return
-        }
-
-        // Deep-copy the stateLeaf and update its attributes
-        const newBallot = ballot.copy()
-        newBallot.nonce = BigInt(newBallot.nonce) + BigInt(1)
-        newBallot.votes[Number(command.voteOptionIndex)] = command.newVoteWeight
-
-        // Replace the ballot
-        this.polls[_pollId].ballots[Number(userIndex)] = newBallot
-
-        // Deep-copy the ballot and update its attributes
-        const newStateLeaf = stateLeaf.copy()
-        newStateLeaf.voiceCreditBalance = voiceCreditsLeft
-        newStateLeaf.pubKey = command.newPubKey.copy()
-
-        // Replace the state leaf
-        this.stateLeaves[Number(userIndex)] = newStateLeaf
-    }
-
 
     /*
      * Deep-copy this object
@@ -471,285 +541,8 @@ export {
     genTallyVkSig,
 }
 
-//import {
-    //PubKey,
-    //Command,
-    //Message,
-    //Keypair,
-    //StateLeaf,
-//} from 'maci-domainobjs'
-
-//import {
-    //hashLeftRight,
-    //stringifyBigInts,
-    //NOTHING_UP_MY_SLEEVE,
-    //IncrementalQuinTree,
-//} from 'maci-crypto'
-
-//import { User } from './User'
-
+// OLD CODE: FOR REFERENCE ONLY
 //class MaciState {
-    //public coordinatorKeypair: Keypair
-    //public users: User[] = []
-    //public stateTreeDepth: number
-    //public messageTreeDepth: number
-    //public voteOptionTreeDepth: number
-    //public messages: Message[] = []
-    //public zerothStateLeaf: StateLeaf
-    //public maxVoteOptionIndex: BigInt
-    //public encPubKeys: PubKey[] = []
-    //private emptyVoteOptionTreeRoot
-    //private currentResultsSalt: BigInt = BigInt(0)
-
-    //// encPubKeys contains the public keys used to generate ephemeral shared
-    //// keys which encrypt each message
-
-    //constructor(
-        //_coordinatorKeypair: Keypair,
-        //_stateTreeDepth: BigInt,
-        //_messageTreeDepth: BigInt,
-        //_voteOptionTreeDepth: BigInt,
-        //_maxVoteOptionIndex: BigInt,
-    //) {
-
-        //this.coordinatorKeypair = _coordinatorKeypair
-        //this.stateTreeDepth = Number(_stateTreeDepth)
-        //this.messageTreeDepth = Number(_messageTreeDepth)
-        //this.voteOptionTreeDepth = Number(_voteOptionTreeDepth)
-        //this.maxVoteOptionIndex = BigInt(_maxVoteOptionIndex)
-
-        //const emptyVoteOptionTree = new IncrementalQuinTree(
-            //this.voteOptionTreeDepth,
-            //BigInt(0),
-        //)
-        //this.emptyVoteOptionTreeRoot = emptyVoteOptionTree.root
-
-        //this.zerothStateLeaf = this.genBlankLeaf()
-    //}
-
-    /*
-     * Return an array of zeroes (0) of length 5 ** voteOptionTreeDepth
-     */
-    //private genBlankVotes = () => {
-        //const votes: BigInt[] = []
-        //for (let i = 0; i < 5 ** this.voteOptionTreeDepth; i ++) {
-            //votes.push(BigInt(0))
-        //}
-
-        //return votes
-    //}
-
-    /*
-     * Returns an IncrementalMerkleTree where the zeroth leaf is
-     * this.zerothStateLeaf and the other leaves are the Users as hashed
-     * StateLeaf objects
-     */
-    //public genStateTree = (): IncrementalQuinTree => {
-        //const stateTree = new IncrementalQuinTree(
-            //this.stateTreeDepth,
-            //this.genBlankLeaf().hash(),
-            //2,
-        //)
-
-        //stateTree.insert(this.zerothStateLeaf.hash())
-
-        //for (const user of this.users) {
-            //const stateLeaf = user.genStateLeaf(this.voteOptionTreeDepth)
-            //stateTree.insert(stateLeaf.hash())
-        //}
-        //return stateTree
-    //}
-
-    /*
-     * Computes the state root
-     */
-    //public genStateRoot = (): BigInt => {
-        //return this.genStateTree().root
-    //}
-
-    /*
-     * Returns an IncrementalMerkleTree of all messages
-     */
-    //public genMessageTree = (): IncrementalQuinTree => {
-        //const messageTree = new IncrementalQuinTree(
-            //this.messageTreeDepth,
-            //NOTHING_UP_MY_SLEEVE,
-            //2,
-        //)
-
-        //for (const message of this.messages) {
-            //messageTree.insert(message.hash())
-        //}
-
-        //return messageTree
-    //}
-
-    //public genMessageRoot = (): BigInt => {
-        //return this.genMessageTree().root
-    //}
-
-    /*
-     * Deep-copy this object
-     */
-    //public copy = (): MaciState => {
-        //const copied = new MaciState(
-            //this.coordinatorKeypair.copy(),
-            //BigInt(this.stateTreeDepth.toString()),
-            //BigInt(this.messageTreeDepth.toString()),
-            //BigInt(this.voteOptionTreeDepth.toString()),
-            //BigInt(this.maxVoteOptionIndex.toString()),
-        //)
-
-        //copied.users = this.users.map((x: User) => x.copy())
-        //copied.messages = this.messages.map((x: Message) => x.copy())
-        //copied.encPubKeys = this.encPubKeys.map((x: PubKey) => x.copy())
-
-        //return copied
-    //}
-
-    /*
-     * Add a new user to the list of users.
-     */
-    //public signUp = (
-        //_pubKey: PubKey,
-        //_initialVoiceCreditBalance: BigInt,
-    //) => {
-
-        //// Note that we do not insert a state leaf to any state tree here. This
-        //// is because we want to keep the state minimal, and only compute what
-        //// is necessary when it is needed. This may change if we run into
-        //// severe performance issues, but it is currently worth the tradeoff.
-        //this.users.push(
-            //new User(
-                //_pubKey,
-                //this.genBlankVotes(),
-                //_initialVoiceCreditBalance,
-                //BigInt(0),
-            //)
-        //)
-    //}
-
-    /*
-     * Inserts a Message into the list of messages, as well as the
-     * corresponding public key used to generate the ECDH shared key which was
-     * used to encrypt said message.
-     */
-    //public publishMessage = (
-        //_message: Message,
-        //_encPubKey: PubKey,
-    //) => {
-        //// TODO: validate _encPubKey and _message
-
-        //this.encPubKeys.push(_encPubKey)
-        //this.messages.push(_message)
-    //}
-
-    /*
-     * Process the message at index _index of the message array. Note that
-     * _index is not the state leaf index, as leaf 0 of the state tree is a
-     * random value.
-     */
-    //public processMessage = (
-        //_index: number,
-    //) => {
-        //assert(this.messages.length > _index)
-        //assert(this.encPubKeys.length === this.messages.length)
-
-        //const message = this.messages[_index]
-        //const encPubKey = this.encPubKeys[_index]
-
-        //// Decrypt the message
-        //const sharedKey = Keypair.genEcdhSharedKey(this.coordinatorKeypair.privKey, encPubKey)
-        //const { command, signature } = Command.decrypt(message, sharedKey)
-
-        //// If the state tree index in the command is invalid, do nothing
-        //if (command.stateIndex > BigInt(this.users.length)) {
-            //return
-        //}
-
-        //const userIndex = BigInt(command.stateIndex) - BigInt(1)
-
-        //assert(BigInt(this.users.length) > userIndex)
-
-        //// The user to update (or not)
-        //const user = this.users[Number(userIndex)]
-
-        //// If the signature is invalid, do nothing
-        //if (!command.verifySignature(signature, user.pubKey)) {
-            //return
-        //}
-
-        //// If the nonce is invalid, do nothing
-        //if (command.nonce !== BigInt(user.nonce) + BigInt(1)) {
-            //return
-        //}
-
-        //// If there are insufficient vote credits, do nothing
-        //const prevSpentCred = user.votes[Number(command.voteOptionIndex)]
-
-        //const voiceCreditsLeft =
-            //BigInt(user.voiceCreditBalance) +
-            //(BigInt(prevSpentCred) * BigInt(prevSpentCred)) -
-            //(BigInt(command.newVoteWeight) * BigInt(command.newVoteWeight))
-
-        //if (voiceCreditsLeft < 0) {
-            //return
-        //}
-
-        //// If the vote option index is invalid, do nothing
-        //if (command.voteOptionIndex > this.maxVoteOptionIndex) {
-            //return
-        //}
-
-        //// Update the user's vote option tree, pubkey, voice credit balance,
-        //// and nonce
-        //const newVotesArr: BigInt[] = []
-        //for (let i = 0; i < this.users.length; i++) {
-            //if (i === Number(command.voteOptionIndex)) {
-                //newVotesArr.push(command.newVoteWeight)
-            //} else {
-                //newVotesArr.push(BigInt(user.votes[i].toString()))
-            //}
-        //}
-
-        //// Deep-copy the user and update its attributes
-        //const newUser = user.copy()
-        //newUser.nonce = BigInt(newUser.nonce) + BigInt(1)
-        //newUser.votes[Number(command.voteOptionIndex)] = command.newVoteWeight
-        //newUser.voiceCreditBalance = voiceCreditsLeft
-        //newUser.pubKey = command.newPubKey.copy()
-
-        //// Replace the entry in this.users
-        //this.users[Number(userIndex)] = newUser
-    //}
-
-    /*
-     * Process _batchSize messages starting from _index, and then update
-     * zerothStateLeaf. This function will process messages even if the number
-     * of messages is not an exact multiple of _batchSize. e.g. if there are 10
-     * messages, _index is 8, and _batchSize is 4, this function will only
-     * process the last two messages in this.messages, and finally update
-     * this.zerothStateLeaf
-     */
-    //public batchProcessMessage = (
-        //_index: number,
-        //_batchSize: number,
-        //_randomStateLeaf: StateLeaf,
-    //) => {
-        //assert(this.messages.length > _index)
-
-        //for (let i = 0; i < _batchSize; i++) {
-            //const messageIndex = _index + _batchSize - i - 1;
-
-            //if (this.messages.length <= messageIndex) {
-                //continue
-            //}
-
-            //this.processMessage(messageIndex)
-        //}
-        //this.zerothStateLeaf = _randomStateLeaf
-    //}
-
     /*
      * Generates inputs to the UpdateStateTree circuit. Do not call
      * processMessage() or batchProcessMessage() before this function.
