@@ -2,12 +2,18 @@
 pragma experimental ABIEncoderV2;
 pragma solidity ^0.7.2;
 
-import { Poll, PollFactory, MessageAqFactory } from "./Poll.sol";
+import {
+    Poll,
+    PollFactory,
+    PollProcessor,
+    MessageAqFactory
+} from "./Poll.sol";
+import { IMACI } from "./IMACI.sol";
 import { Params } from "./Params.sol";
 import { DomainObjs } from "./DomainObjs.sol";
 import { VkRegistry } from "./VkRegistry.sol";
-import { SnarkConstants } from "./crypto/SnarkConstants.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
+import { SnarkConstants } from "./crypto/SnarkConstants.sol";
 import { AccQueueQuinaryMaci } from "./trees/AccQueue.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
@@ -18,7 +24,7 @@ import { InitialVoiceCreditProxy }
  * Minimum Anti-Collusion Infrastructure
  * Version 1
  */
-contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
+contract MACI is IMACI, DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
     // The state tree depth is fixed. As such it should be as large as feasible
     // so that there can be as many users as possible.  i.e. 5 ** 10 = 9765625
     uint8 public stateTreeDepth = 10;
@@ -34,6 +40,12 @@ contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
 
     // A mapping of poll IDs to Poll contracts.
     mapping (uint256 => Poll) public polls;
+
+    // A mapping of block timestamps to state roots
+    mapping (uint256 => uint256) public stateRootSnapshots;
+
+    // The block timestamp at which the state queue subroots were last merged
+    uint256 public mergeSubRootsTimestamp;
 
     // The verifying key registry. There may be multiple verifying keys stored
     // on chain, and Poll contracts must select the correct VK based on the
@@ -187,13 +199,31 @@ contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
     onlyOwner
     afterInit {
         stateAq.mergeSubRoots(_numSrQueueOps);
+        mergeSubRootsTimestamp = block.timestamp;
     }
 
     function mergeStateAq()
     public
     onlyOwner
     afterInit {
-        stateAq.merge(stateTreeDepth);
+        uint256 root = stateAq.merge(stateTreeDepth);
+        stateRootSnapshots[mergeSubRootsTimestamp] = root;
+        mergeSubRootsTimestamp = 0;
+    }
+
+    function getStateRootSnapshot(uint256 _timestamp)
+    external
+    view
+    override
+    returns (uint256) {
+        uint256 root = stateRootSnapshots[_timestamp];
+
+        require(
+            root != 0,
+            "MACI: no such state root snapshot at this timestamp"
+        );
+
+        return root;
     }
 
     /*
@@ -204,7 +234,8 @@ contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
         MaxValues memory _maxValues,
         TreeDepths memory _treeDepths,
         uint8 _messageBatchSize,
-        PubKey memory _coordinatorPubKey
+        PubKey memory _coordinatorPubKey,
+        PollProcessor _pollProcessor
     ) public afterInit {
         uint256 pollId = nextPollId;
 
@@ -222,8 +253,9 @@ contract MACI is DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
             batchSizes,
             _coordinatorPubKey,
             vkRegistry,
-            stateAq,
-            owner()
+            this,
+            owner(),
+            _pollProcessor
         );
 
         polls[pollId] = p;

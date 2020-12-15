@@ -1,4 +1,3 @@
-import * as assert from 'assert'
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -21,13 +20,13 @@ const genEmptyBallotRootsContract = (
 
     let r = ''
     for (let i = 1; i < 6; i ++) {
-        // The vote option tree
+        // The empty vote option tree
         const voTree = new IncrementalQuinTree(i, BigInt(0), 5)
 
-        // The Ballot leaf
+        // The empty Ballot tree leaf
         const z = hashLeftRight(BigInt(0), voTree.root)
 
-        // The Ballot root
+        // The empty Ballot tree root
         const ballotTree = new IncrementalQuinTree(10, BigInt(z), 5)
         const root = ballotTree.root
 

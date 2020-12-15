@@ -45,6 +45,7 @@ const deployTestContracts = async (
     const maciContract = contracts.maciContract
     const stateAqContract = contracts.stateAqContract
     const vkRegistryContract = contracts.vkRegistryContract
+    const pollStateViewerContract = contracts.pollStateViewerContract
 
     return {
         freeForAllSignUpGatekeeperContract,
@@ -52,6 +53,7 @@ const deployTestContracts = async (
         maciContract,
         stateAqContract,
         vkRegistryContract,
+        pollStateViewerContract,
     }
 }
 

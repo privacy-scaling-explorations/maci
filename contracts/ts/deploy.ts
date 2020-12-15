@@ -5,8 +5,6 @@ import * as ethers from 'ethers'
 import * as shell from 'shelljs'
 import * as argparse from 'argparse'
 import { config } from 'maci-config'
-import { genPubKey } from 'maci-crypto'
-import { PubKey } from 'maci-domainobjs'
 import { genAccounts, genTestAccounts } from './accounts'
 
 const abiDir = path.join(__dirname, '..', 'compiled')
@@ -260,6 +258,14 @@ const deployMaci = async (
         VkRegistryBin,
     )
 
+    // PollStateViewer
+    log('Deploying PollStateViewer', quiet)
+    const [ PollStateViewerAbi, PollStateViewerBin ] = loadAB('PollStateViewer')
+    const pollStateViewerContract = await deployer.deploy(
+        PollStateViewerAbi,
+        PollStateViewerBin,
+    )
+
     //log('Transferring VkRegistry ownership to MACI', quiet)
     //await (await (vkRegistryContract.transferOwnership(maciContract.address))).wait()
 
@@ -280,6 +286,7 @@ const deployMaci = async (
         maciContract,
         vkRegistryContract,
         stateAqContract,
+        pollStateViewerContract,
     }
 }
 

@@ -72,6 +72,7 @@ describe('MACI', () => {
     let maciContract
     let stateAqContract
     let vkRegistryContract
+    let pollStateViewerContract
     let pollId: number
 
     describe('Deployment', () => {
@@ -83,6 +84,7 @@ describe('MACI', () => {
             maciContract = r.maciContract
             stateAqContract = r.stateAqContract
             vkRegistryContract = r.vkRegistryContract
+            pollStateViewerContract = r.pollStateViewerContract
         })
 
         it('MACI.stateTreeDepth should be correct', async () => {
@@ -226,6 +228,7 @@ describe('MACI', () => {
                     treeDepths,
                     messageBatchSize,
                     coordinator.pubKey.asContractParam(),
+                    '0x0000000000000000000000000000000000000000',
                     { gasLimit: 8000000 },
                 )
                 receipt = await tx.wait()
@@ -296,29 +299,29 @@ describe('MACI', () => {
                     7. batchSizes
                  */
 
-                const pollState = await pollContract.getState()
+                const pollState = await pollStateViewerContract.getState(pollContract.address)
 
                 expect(pollState[0].x.toString()).toEqual(coordinator.pubKey.rawPubKey[0].toString())
                 expect(pollState[0].y.toString()).toEqual(coordinator.pubKey.rawPubKey[1].toString())
 
                 expect(pollState[1].toString()).toEqual(duration.toString())
 
-                expect(pollState[2].toString()).toEqual(pollProcessVkSig.toString())
+                expect(pollState[2].processVkSig.toString()).toEqual(pollProcessVkSig.toString())
 
-                expect(pollState[3].toString()).toEqual(pollTallyVkSig.toString())
+                expect(pollState[2].tallyVkSig.toString()).toEqual(pollTallyVkSig.toString())
 
-                expect(pollState[4].match(/^(0x)?[0-9a-fA-F]{40}$/) != null).toBeTruthy()
+                expect(pollState[3].match(/^(0x)?[0-9a-fA-F]{40}$/) != null).toBeTruthy()
 
-                expect(pollState[5].maxUsers.toString()).toEqual(maxValues.maxUsers.toString())
-                expect(pollState[5].maxMessages.toString()).toEqual(maxValues.maxMessages.toString())
-                expect(pollState[5].maxVoteOptions.toString()).toEqual(maxValues.maxVoteOptions.toString())
+                expect(pollState[4].maxUsers.toString()).toEqual(maxValues.maxUsers.toString())
+                expect(pollState[4].maxMessages.toString()).toEqual(maxValues.maxMessages.toString())
+                expect(pollState[4].maxVoteOptions.toString()).toEqual(maxValues.maxVoteOptions.toString())
 
-                expect(pollState[6].intStateTreeDepth.toString()).toEqual(treeDepths.intStateTreeDepth.toString())
-                expect(pollState[6].messageTreeDepth.toString()).toEqual(treeDepths.messageTreeDepth.toString())
-                expect(pollState[6].voteOptionTreeDepth.toString()).toEqual(treeDepths.voteOptionTreeDepth.toString())
+                expect(pollState[5].intStateTreeDepth.toString()).toEqual(treeDepths.intStateTreeDepth.toString())
+                expect(pollState[5].messageTreeDepth.toString()).toEqual(treeDepths.messageTreeDepth.toString())
+                expect(pollState[5].voteOptionTreeDepth.toString()).toEqual(treeDepths.voteOptionTreeDepth.toString())
 
-                expect(pollState[7].messageBatchSize.toString()).toEqual(messageBatchSize.toString())
-                expect(pollState[7].tallyBatchSize.toString()).toEqual(tallyBatchSize.toString())
+                expect(pollState[6].messageBatchSize.toString()).toEqual(messageBatchSize.toString())
+                expect(pollState[6].tallyBatchSize.toString()).toEqual(tallyBatchSize.toString())
             })
         })
 
@@ -387,7 +390,7 @@ describe('MACI', () => {
                         { gasLimit: 300000 },
                     )
                 } catch (e) {
-                    const error = 'Poll: the voting period has passsed'
+                    const error = 'PollE04'
                     expect(e.message.endsWith(error)).toBeTruthy()
                 }
             })

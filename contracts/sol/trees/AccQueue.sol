@@ -421,7 +421,7 @@ abstract contract AccQueue is Ownable, Hasher {
      * @param _depth The depth of the main tree. It must fit all the leaves or
      *               this function will revert.
      */
-    function merge(uint256 _depth) public onlyOwner {
+    function merge(uint256 _depth) public onlyOwner returns (uint256) {
 
         // The tree depth must be more than 0
         require(_depth > 0, "AccQueue: _depth must be more than 0");
@@ -449,6 +449,7 @@ abstract contract AccQueue is Ownable, Hasher {
         // If the depth is the same as the SRT depth, just use the SRT root
         if (_depth == srtDepth) {
             mainRoots[_depth] = smallSRTroot;
+            return smallSRTroot;
         } else {
 
             uint256 root = smallSRTroot;
@@ -475,6 +476,7 @@ abstract contract AccQueue is Ownable, Hasher {
             }
 
             mainRoots[_depth] = root;
+            return root;
         }
     }
 

@@ -22,6 +22,7 @@ class G1Point {
         _x: BigInt,
         _y: BigInt,
     ) {
+        // TODO: add range checks
         this.x = _x
         this.y = _y
     }
@@ -46,6 +47,7 @@ class G2Point {
         _x: BigInt[],
         _y: BigInt[],
     ) {
+        // TODO: add range checks
         this.x = _x
         this.y = _y
     }
@@ -65,6 +67,9 @@ class G2Point {
     }
 }
 
+/*
+ * A private key and a public key
+ */
 interface Keypair {
     privKey: PrivKey;
     pubKey: PubKey;
@@ -85,6 +90,7 @@ interface Signature {
     S: BigInt;
 }
 
+// The BN254 group order p
 const SNARK_FIELD_SIZE = BigInt(
     '21888242871839275222246405745257275088548364400416034343698204186575808495617'
 )
@@ -92,7 +98,12 @@ const SNARK_FIELD_SIZE = BigInt(
 // A nothing-up-my-sleeve zero value
 // Should be equal to 8370432830353022751713833565135785980866757267633941821328460903436894336785
 const NOTHING_UP_MY_SLEEVE =
-    BigInt(ethers.utils.solidityKeccak256(['bytes'], [ethers.utils.toUtf8Bytes('Maci')])) % SNARK_FIELD_SIZE
+    BigInt(
+        ethers.utils.solidityKeccak256(
+            ['bytes'],
+            [ethers.utils.toUtf8Bytes('Maci')],
+        ),
+    ) % SNARK_FIELD_SIZE
 
 /*
  * Convert a BigInt to a Buffer
@@ -348,8 +359,8 @@ const genKeypair = (): Keypair => {
 }
 
 /*
- * Generates an Elliptic-curve Diffie–Hellman shared key given a private key
- * and a public key.
+ * Generates an Elliptic-Curve Diffie–Hellman (ECDH) shared key given a private
+ * key and a public key.
  * @return The ECDH shared key.
  */
 const genEcdhSharedKey = (
@@ -369,7 +380,7 @@ const encrypt = (
     sharedKey: EcdhSharedKey,
 ): Ciphertext => {
 
-    // Generate the IV
+    // Generate the initialisation vector
     const iv = mimc7.multiHash(plaintext, BigInt(0))
 
     const ciphertext: Ciphertext = {
@@ -410,6 +421,8 @@ const sign = (
     privKey: PrivKey,
     hashedData: BigInt,
 ): Signature => {
+    // This implementation differs from iden3's in that it uses Poseidon
+    // instead of Blake512
 
     // TODO: make these intermediate variables have more meaningful names
     const h1 = bigInt2Buffer(hashOne(privKey))
