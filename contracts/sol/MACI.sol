@@ -5,7 +5,7 @@ pragma solidity ^0.7.2;
 import {
     Poll,
     PollFactory,
-    PollProcessor,
+    MessageProcessor,
     MessageAqFactory
 } from "./Poll.sol";
 import { IMACI } from "./IMACI.sol";
@@ -24,7 +24,9 @@ import { InitialVoiceCreditProxy }
  * Minimum Anti-Collusion Infrastructure
  * Version 1
  */
-contract MACI is IMACI, DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
+contract MACI is 
+    IMACI, DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
+
     // The state tree depth is fixed. As such it should be as large as feasible
     // so that there can be as many users as possible.  i.e. 5 ** 10 = 9765625
     uint8 public override stateTreeDepth = 10;
@@ -235,7 +237,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable
         TreeDepths memory _treeDepths,
         uint8 _messageBatchSize,
         PubKey memory _coordinatorPubKey,
-        PollProcessor _pollProcessor
+        MessageProcessor _msgProcessor
     ) public afterInit {
         uint256 pollId = nextPollId;
 
@@ -255,7 +257,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable
             vkRegistry,
             this,
             owner(),
-            _pollProcessor
+            _msgProcessor
         );
 
         polls[pollId] = p;

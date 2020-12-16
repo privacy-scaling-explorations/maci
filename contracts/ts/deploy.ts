@@ -227,6 +227,14 @@ const deployMaci = async (
         PollFactoryBin,
     )
 
+    // MessageProcessor
+    log('Deploying MessageProcessor', quiet)
+    const [ MessageProcessorAbi, MessageProcessorBin ] = loadAB('PollFactory')
+    const messageProcessorContract = await deployer.deploy(
+        MessageProcessorAbi,
+        MessageProcessorBin,
+    )
+
     log('Deploying MACI', quiet)
     const maciContract = await deployer.deploy(
         MACIAbi,
@@ -287,6 +295,7 @@ const deployMaci = async (
         vkRegistryContract,
         stateAqContract,
         pollStateViewerContract,
+        messageProcessorContract,
     }
 }
 
@@ -479,6 +488,7 @@ const main = async () => {
         maciContract,
         vkRegistryContract,
         stateAqContract,
+        messageProcessorContract,
     } = await deployMaci(
         deployer,
         signUpTokenGatekeeperContract.address,
@@ -490,6 +500,7 @@ const main = async () => {
         VkRegistry: vkRegistryContract.address,
         StateAq: stateAqContract.address,
         SignUpToken: signUpTokenAddress,
+        MessageProcessor: messageProcessorContract,
     }
 
     const addressJsonPath = path.join(__dirname, '..', outputAddressFile)
@@ -500,105 +511,6 @@ const main = async () => {
 
     console.log(addresses)
 }
-
-//const main2 = async () => {
-    //let accounts
-    //if (config.env === 'local-dev' || config.env === 'test') {
-        //accounts = genTestAccounts(1)
-    //} else {
-        //accounts = genAccounts()
-    //}
-    //const admin = accounts[0]
-
-    //console.log('Using account', admin.address)
-
-    //const parser = new argparse.ArgumentParser({
-        //description: 'Deploy all contracts to an Ethereum network of your choice'
-    //})
-
-    //parser.addArgument(
-        //['-o', '--output'],
-        //{
-            //help: 'The filepath to save the addresses of the deployed contracts',
-            //required: true
-        //}
-    //)
-
-    //parser.addArgument(
-        //['-s', '--signUpToken'],
-        //{
-            //help: 'The address of the signup token (e.g. POAP)',
-            //required: false
-        //}
-    //)
-
-    //parser.addArgument(
-        //['-p', '--initialVoiceCreditProxy'],
-        //{
-            //help: 'The address of the contract which provides the initial voice credit balance',
-            //required: false
-        //}
-    //)
-
-    //const args = parser.parseArgs()
-    //const outputAddressFile = args.output
-    //const signUpToken = args.signUpToken
-    //const initialVoiceCreditProxy = args.initialVoiceCreditProxy
-
-    //const deployer = genDeployer(admin.privateKey)
-
-    //let signUpTokenAddress
-    //if (signUpToken) {
-        //signUpTokenAddress = signUpToken
-    //} else {
-        //const signUpTokenContract = await deploySignupToken(deployer)
-        //signUpTokenAddress = signUpTokenContract.address
-    //}
-
-    //let initialVoiceCreditBalanceAddress
-    //if (initialVoiceCreditProxy) {
-        //initialVoiceCreditBalanceAddress = initialVoiceCreditProxy
-    //} else {
-        //const initialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
-            //deployer,
-            //config.maci.initialVoiceCreditBalance,
-        //)
-        //initialVoiceCreditBalanceAddress = initialVoiceCreditProxyContract.address
-    //}
-
-    //const signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(
-        //deployer,
-        //signUpTokenAddress,
-    //)
-
-    //const {
-        //PoseidonT3Contract,
-        //PoseidonT6Contract,
-        //maciContract,
-        //batchUstVerifierContract,
-        //quadVoteTallyVerifierContract,
-    //} = await deployMaci2(
-        //deployer,
-        //signUpTokenGatekeeperContract.address,
-        //initialVoiceCreditBalanceAddress,
-    //)
-
-    //const addresses = {
-        //PoseidonT3: PoseidonT3Contract.address,
-        //PoseidonT6: PoseidonT6Contract.address,
-        //BatchUpdateStateTreeVerifier: batchUstVerifierContract.address,
-        //QuadraticVoteTallyVerifier: quadVoteTallyVerifierContract.address,
-        //MACI: maciContract.address,
-    //}
-
-    //const addressJsonPath = path.join(__dirname, '..', outputAddressFile)
-    //fs.writeFileSync(
-        //addressJsonPath,
-        //JSON.stringify(addresses),
-    //)
-
-    //console.log(addresses)
-//}
 
 if (require.main === module) {
     try {

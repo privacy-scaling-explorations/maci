@@ -73,6 +73,7 @@ describe('MACI', () => {
     let stateAqContract
     let vkRegistryContract
     let pollStateViewerContract
+    let messageProcessorContract
     let pollId: number
 
     describe('Deployment', () => {
@@ -85,6 +86,7 @@ describe('MACI', () => {
             stateAqContract = r.stateAqContract
             vkRegistryContract = r.vkRegistryContract
             pollStateViewerContract = r.pollStateViewerContract
+            messageProcessorContract = r.messageProcessorContract
         })
 
         it('MACI.stateTreeDepth should be correct', async () => {
@@ -228,7 +230,7 @@ describe('MACI', () => {
                     treeDepths,
                     messageBatchSize,
                     coordinator.pubKey.asContractParam(),
-                    '0x0000000000000000000000000000000000000000',
+                    messageProcessorContract.address,
                     { gasLimit: 8000000 },
                 )
                 receipt = await tx.wait()

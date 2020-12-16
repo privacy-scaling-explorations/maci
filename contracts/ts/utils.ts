@@ -46,6 +46,7 @@ const deployTestContracts = async (
     const stateAqContract = contracts.stateAqContract
     const vkRegistryContract = contracts.vkRegistryContract
     const pollStateViewerContract = contracts.pollStateViewerContract
+    const messageProcessorContract = contracts.messageProcessorContract
 
     return {
         freeForAllSignUpGatekeeperContract,
@@ -54,6 +55,7 @@ const deployTestContracts = async (
         stateAqContract,
         vkRegistryContract,
         pollStateViewerContract,
+        messageProcessorContract,
     }
 }
 

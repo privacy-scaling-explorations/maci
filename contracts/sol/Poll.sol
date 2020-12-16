@@ -49,7 +49,7 @@ contract PollFactory is EmptyBallotRoots, Params, DomainObjs, Ownable {
         VkRegistry _vkRegistry,
         IMACI _maci,
         address _pollOwner,
-        PollProcessor _pollProcessor
+        MessageProcessor _msgProcessor
     ) public onlyOwner returns (Poll) {
 
         AccQueueQuinaryMaci messageAq =
@@ -65,7 +65,7 @@ contract PollFactory is EmptyBallotRoots, Params, DomainObjs, Ownable {
             _vkRegistry,
             _maci,
             messageAq,
-            _pollProcessor
+            _msgProcessor
         );
 
         messageAq.transferOwnership(address(poll));
@@ -103,7 +103,7 @@ contract Poll is Params, DomainObjs, SnarkConstants, SnarkCommon, Ownable {
     // The ballot tree root.
     uint256 public ballotRoot;
 
-    PollProcessor public pollProcessor;
+    MessageProcessor public msgProcessor;
 
     // The state root. This value should be 0 until the first invocation of
     // processMessages(), at which point it should be set to the MACI state
@@ -157,25 +157,20 @@ contract Poll is Params, DomainObjs, SnarkConstants, SnarkCommon, Ownable {
         VkRegistry _vkRegistry,
         IMACI _maci,
         AccQueue _messageAq,
-        PollProcessor _pollProcessor
+        MessageProcessor _msgProcessor
     ) {
         uint8 treeArity = TREE_ARITY;
-        // Validate each item in _maxValues
+        // Validate _maxValues
         require(
-            (
-                _maxValues.maxUsers <= treeArity ** _stateTreeDepth &&
-                _maxValues.maxMessages <= treeArity ** _treeDepths.messageTreeDepth
-            ) &&
-            (
-                _maxValues.maxMessages >= _batchSizes.messageBatchSize &&
-                _maxValues.maxMessages % _batchSizes.messageBatchSize == 0
-            ) &&
-            (
-                _maxValues.maxUsers >= _treeDepths.intStateTreeDepth &&
-                _maxValues.maxUsers % _batchSizes.tallyBatchSize == 0
-            ) && (
-                _maxValues.maxVoteOptions <= treeArity ** _treeDepths.voteOptionTreeDepth
-            ),
+            _maxValues.maxUsers <= treeArity ** _stateTreeDepth &&
+            _maxValues.maxMessages <= 
+                treeArity ** _treeDepths.messageTreeDepth &&
+            _maxValues.maxMessages >= _batchSizes.messageBatchSize &&
+            _maxValues.maxMessages % _batchSizes.messageBatchSize == 0 &&
+            _maxValues.maxUsers >= _treeDepths.intStateTreeDepth &&
+            _maxValues.maxUsers % _batchSizes.tallyBatchSize == 0 &&
+            _maxValues.maxVoteOptions <= 
+                treeArity ** _treeDepths.voteOptionTreeDepth,
             ERROR_MAXVALUES
         );
 
@@ -215,7 +210,7 @@ contract Poll is Params, DomainObjs, SnarkConstants, SnarkCommon, Ownable {
         deployTime = block.timestamp;
 
         // Set the poll processor contract
-        pollProcessor = _pollProcessor;
+        msgProcessor = _msgProcessor;
     }
 
     /*
@@ -308,7 +303,7 @@ contract Poll is Params, DomainObjs, SnarkConstants, SnarkCommon, Ownable {
     }
 
     /*
-     * The PollProcessor will call this function to update the Poll's state
+     * The MessageProcessor will call this function to update the Poll's state
      * after processing each batch.
      */
     function setMessageProcessingData(
@@ -317,7 +312,7 @@ contract Poll is Params, DomainObjs, SnarkConstants, SnarkCommon, Ownable {
         uint256 _currentMessageBatchIndex
     ) public {
         require(
-            msg.sender == address(pollProcessor),
+            msg.sender == address(msgProcessor),
             ERROR_ONLY_POLL_PROCESSOR
         );
 
@@ -328,7 +323,7 @@ contract Poll is Params, DomainObjs, SnarkConstants, SnarkCommon, Ownable {
     }
 }
 
-contract PollProcessor is Ownable, SnarkCommon {
+contract MessageProcessor is Ownable, SnarkCommon {
 
     /*
      * Update the Poll's currentStateRoot if the proof is valid.
@@ -349,13 +344,13 @@ contract PollProcessor is Ownable, SnarkCommon {
         uint256 secondsPassed = block.timestamp - _poll.deployTime();
         require(
             secondsPassed > _poll.duration(),
-            "PollProcessor: the voting period is not over"
+            "MessageProcessor: the voting period is not over"
         );
 
         // Require that unprocessed messages exist
         require(
             _poll.hasUnprocessedMessages(),
-            "PollProcessor: no more messages left to process"
+            "MessageProcessor: no more messages left to process"
         );
 
         uint8 intStateTreeDepth;
@@ -374,7 +369,7 @@ contract PollProcessor is Ownable, SnarkCommon {
             _poll.messageAq().getMainRoot(messageTreeDepth);
         require(
             messageRoot != 0,
-            "PollProcessor: the message AQ has not been merged"
+            "MessageProcessor: the message AQ has not been merged"
         );
 
         uint256 messageBatchSize;
@@ -390,7 +385,7 @@ contract PollProcessor is Ownable, SnarkCommon {
             // ended
             require(
                 _stateRootSnapshotTimestamp > _poll.deployTime() + _poll.duration(),
-                "PollProcessor: invalid state root snapshot timestamp"
+                "MessageProcessor: invalid state root snapshot timestamp"
             );
 
             currentStateRoot =
@@ -401,11 +396,9 @@ contract PollProcessor is Ownable, SnarkCommon {
                 (numMessages / messageBatchSize) * messageBatchSize;
         }
 
-        // Generate public signals
-        // TODO
+        // TODO: Generate public signals
 
-        // Verify the proof
-        // TODO
+        // TODO: Verify the proof
         VerifyingKey memory vk = _poll.maci().vkRegistry().getProcessVk(
             _poll.maci().stateTreeDepth(),
             messageTreeDepth,
