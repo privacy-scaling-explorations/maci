@@ -328,26 +328,16 @@ contract Poll is Params, DomainObjs, SnarkConstants, SnarkCommon, Ownable {
     }
 }
 
-
-contract PollProcessor is Ownable {
-
-    Poll public parentPoll;
-
-    constructor(
-        Poll _parentPoll
-    ) {
-        parentPoll = _parentPoll;
-    }
+contract PollProcessor is Ownable, SnarkCommon {
 
     /*
      * Update the Poll's currentStateRoot if the proof is valid.
+     * @param _stateRootSnapshotTimestamp TODO
      * @param _newStateRoot The new state root after all messages are processed
-     * @param _stateTreeRoots The intermediate state roots
-     * @param _ecdhPubKeys The public key used to generated the ECDH shared key
-     *                     to decrypt the message
      * @param _proof The zk-SNARK proof
      */
     function processMessages(
+        Poll _poll,
         uint256 _stateRootSnapshotTimestamp,
         uint256 _newStateRoot,
         uint256[8] memory _proof
@@ -355,58 +345,75 @@ contract PollProcessor is Ownable {
     public
     onlyOwner
     {
-        Poll pp = parentPoll;
-
         // Require that the voting period is over
-        uint256 secondsPassed = block.timestamp - pp.deployTime();
+        uint256 secondsPassed = block.timestamp - _poll.deployTime();
         require(
-            secondsPassed > pp.duration(),
+            secondsPassed > _poll.duration(),
             "PollProcessor: the voting period is not over"
         );
 
         // Require that unprocessed messages exist
         require(
-            pp.hasUnprocessedMessages(),
+            _poll.hasUnprocessedMessages(),
             "PollProcessor: no more messages left to process"
         );
 
-        uint256 messageTreeDepth;
-        (, messageTreeDepth, , ) = pp.treeDepths();
+        uint8 intStateTreeDepth;
+        uint8 messageTreeSubDepth;
+        uint8 messageTreeDepth;
+        uint8 voteOptionTreeDepth;
+        (
+            intStateTreeDepth,
+            messageTreeSubDepth,
+            messageTreeDepth,
+            voteOptionTreeDepth
+        ) = _poll.treeDepths();
 
         // Require that the message queue has been merged
         uint256 messageRoot =
-            pp.messageAq().getMainRoot(messageTreeDepth);
-        require(messageRoot != 0, "Poll: the message AQ has not been merged");
+            _poll.messageAq().getMainRoot(messageTreeDepth);
+        require(
+            messageRoot != 0,
+            "PollProcessor: the message AQ has not been merged"
+        );
 
         uint256 messageBatchSize;
-        (messageBatchSize, ) = pp.batchSizes();
+        (messageBatchSize, ) = _poll.batchSizes();
 
-        uint256 currentStateRoot = pp.currentStateRoot();
-        uint256 currentMessageBatchIndex = pp.currentMessageBatchIndex();
+        uint256 currentStateRoot = _poll.currentStateRoot();
+        uint256 currentMessageBatchIndex = _poll.currentMessageBatchIndex();
 
         // Copy the state root and set the batch index if this is the
         // first batch to process
-        if (pp.numBatchesProcessed() == 0) {
+        if (_poll.numBatchesProcessed() == 0) {
             // Ensure that the state queue was merged after the voting period
             // ended
             require(
-                _stateRootSnapshotTimestamp > pp.deployTime() + pp.duration(),
-                "Poll: invalid state root snapshot timestamp"
+                _stateRootSnapshotTimestamp > _poll.deployTime() + _poll.duration(),
+                "PollProcessor: invalid state root snapshot timestamp"
             );
 
             currentStateRoot =
-                pp.maci().getStateRootSnapshot(_stateRootSnapshotTimestamp);
+                _poll.maci().getStateRootSnapshot(_stateRootSnapshotTimestamp);
 
-            uint256 numMessages = pp.messageAq().numLeaves();
+            uint256 numMessages = _poll.messageAq().numLeaves();
             currentMessageBatchIndex =
                 (numMessages / messageBatchSize) * messageBatchSize;
         }
 
         // Generate public signals
+        // TODO
 
         // Verify the proof
+        // TODO
+        VerifyingKey memory vk = _poll.maci().vkRegistry().getProcessVk(
+            _poll.maci().stateTreeDepth(),
+            messageTreeDepth,
+            voteOptionTreeDepth,
+            messageBatchSize
+        );
 
-        bool hasUnprocessedMessages = pp.hasUnprocessedMessages();
+        bool hasUnprocessedMessages = _poll.hasUnprocessedMessages();
 
         // Decrease the message batch start index to ensure that each message
         // batch is processed in order
@@ -416,8 +423,8 @@ contract PollProcessor is Ownable {
             currentMessageBatchIndex -= messageBatchSize;
         }
 
-        // Update the state root
-        pp.setMessageProcessingData(
+        // Update the state root and message processing metadata
+        _poll.setMessageProcessingData(
             _newStateRoot,
             hasUnprocessedMessages,
             currentMessageBatchIndex

@@ -27,7 +27,7 @@ import { InitialVoiceCreditProxy }
 contract MACI is IMACI, DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
     // The state tree depth is fixed. As such it should be as large as feasible
     // so that there can be as many users as possible.  i.e. 5 ** 10 = 9765625
-    uint8 public stateTreeDepth = 10;
+    uint8 public override stateTreeDepth = 10;
 
     // IMPORTANT: remember to change the spent voice credits tree in Poll.sol
     // if we change the state tree depth!
@@ -50,7 +50,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable
     // The verifying key registry. There may be multiple verifying keys stored
     // on chain, and Poll contracts must select the correct VK based on the
     // circuit's compile-time parameters, such as tree depths and batch sizes.
-    VkRegistry public vkRegistry;
+    VkRegistry public override vkRegistry;
 
     PollFactory public pollFactory;
     MessageAqFactory public messageAqFactory;
