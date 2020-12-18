@@ -108,26 +108,27 @@ template EdDSAPoseidonVerifier_patched() {
 }
 
 
-template VerifySignature7() {
-  // Verify the signature of a Command, which has exactly 7 elements in the preimage
+template VerifySignature() {
+  // Verify the signature of a Command, which has exactly 4 elements in the
+  // hash preimage
   signal input from_x;
   signal input from_y;
   signal input R8x;
   signal input R8y;
   signal input S;
 
-  var k = 7;
+  var k = 4;
   signal private input preimage[k];
 
   signal output valid;
   
-  component M = Hasher11();
+  component M = Hasher4();
   for (var i = 0; i < k; i++){
     M.in[i] <== preimage[i];
   }
-  for (var i = k; i < 11; i++){
-    M.in[i] <== 0;
-  }
+  /*for (var i = k; i < 11; i++){*/
+    /*M.in[i] <== 0;*/
+  /*}*/
   
   component verifier = EdDSAPoseidonVerifier_patched();
 
