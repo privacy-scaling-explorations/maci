@@ -2,7 +2,7 @@ jest.setTimeout(90000)
 import {
     stringifyBigInts,
     verifySignature,
-    hash11,
+    hash4,
 } from 'maci-crypto'
 
 import {
@@ -10,13 +10,12 @@ import {
     Command,
 } from 'maci-domainobjs'
 
-import {
-    compileAndLoadCircuit,
+import { 
+    genWitness,
     getSignalByName,
-    executeCircuit,
-} from '../'
+} from './utils'
 
-const circuitName = 'test/verifySignature_test.circom'
+const circuit = 'verifySignature_test'
 
 describe('Signature verification circuit', () => {
 
@@ -29,11 +28,13 @@ describe('Signature verification circuit', () => {
             BigInt(123),
             BigInt(123),
             BigInt(1),
+            BigInt(2),
+            BigInt(3),
         )
 
         const signer = new Keypair()
         const sig = command.sign(signer.privKey)
-        const plaintext = hash11(command.asArray())
+        const plaintext = hash4(command.asArray())
 
         expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).toBeTruthy()
 
@@ -46,9 +47,8 @@ describe('Signature verification circuit', () => {
             'preimage': stringifyBigInts(command.asArray())
         })
 
-        const circuit = await compileAndLoadCircuit(circuitName)
-        const witness = await executeCircuit(circuit, circuitInputs)
-        const isValid = getSignalByName(circuit, witness, 'main.valid').toString()
+        const witness = await genWitness(circuit, circuitInputs)
+        const isValid = await getSignalByName(circuit, witness, 'main.valid')
         expect(isValid).toEqual('1')
     })
 
@@ -60,6 +60,8 @@ describe('Signature verification circuit', () => {
             BigInt(123),
             BigInt(123),
             BigInt(1),
+            BigInt(2),
+            BigInt(3),
         )
 
         const signer = new Keypair()
@@ -69,7 +71,7 @@ describe('Signature verification circuit', () => {
 
         const sig = command.sign(signer.privKey)
 
-        const plaintext = hash11(command.asArray())
+        const plaintext = hash4(command.asArray())
 
         // The signature is signed by `signer`
         expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).toBeTruthy()
@@ -86,9 +88,8 @@ describe('Signature verification circuit', () => {
             'preimage': command.asArray()
         })
 
-        const circuit = await compileAndLoadCircuit(circuitName)
-        const witness = await executeCircuit(circuit, circuitInputs)
-        const isValid = getSignalByName(circuit, witness, 'main.valid').toString()
+        const witness = await genWitness(circuit, circuitInputs)
+        const isValid = await getSignalByName(circuit, witness, 'main.valid')
         expect(isValid).toEqual('0')
     })
 })

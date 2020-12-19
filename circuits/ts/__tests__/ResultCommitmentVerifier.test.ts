@@ -1,13 +1,13 @@
 jest.setTimeout(90000)
 import {
     genRandomSalt,
+    stringifyBigInts,
 } from 'maci-crypto'
 
-import {
-    compileAndLoadCircuit,
-    executeCircuit,
+import { 
+    genWitness,
     getSignalByName,
-} from '../'
+} from './utils'
 
 import {
     genTallyResultCommitment,
@@ -47,11 +47,7 @@ const genResultCommitmentVerifierCircuitInputs = (
 }
 
 describe('ResultCommitmentVerifier circuit', () => {
-    let circuit 
-
-    beforeAll(async () => {
-        circuit = await compileAndLoadCircuit('test/resultCommitmentVerifier_test.circom')
-    })
+    const circuit = 'resultCommitmentVerifier_test'
 
     it('should correctly verify the hashes of a set of inputs and results', async () => {
 
@@ -68,15 +64,15 @@ describe('ResultCommitmentVerifier circuit', () => {
 
         const newResultsCommitment = genTallyResultCommitment(newResults, newResultsSalt, DEPTH)
 
-        const circuitInputs = genResultCommitmentVerifierCircuitInputs(
+        const circuitInputs = stringifyBigInts(genResultCommitmentVerifierCircuitInputs(
             currentResults,
             newResults,
             currentResultsSalt,
             newResultsSalt,
-        )
+        ))
 
-        const witness = await executeCircuit(circuit, circuitInputs)
-        const result = getSignalByName(circuit, witness, 'main.newResultsCommitment').toString()
+        const witness = await genWitness(circuit, circuitInputs)
+        const result = await getSignalByName(circuit, witness, 'main.newResultsCommitment')
         expect(result.toString()).toEqual(newResultsCommitment.toString())
     })
 })

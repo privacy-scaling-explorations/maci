@@ -1,19 +1,14 @@
-jest.setTimeout(90000)
-import {
-    executeCircuit,
+import { 
+    genWitness,
     getSignalByName,
-    compileAndLoadCircuit,
-} from '../'
+} from './utils'
 
 import { 
     stringifyBigInts,
 } from 'maci-crypto'
 
 describe('Splice circuit', () => {
-    let circuit 
-    beforeAll(async () => {
-        circuit = await compileAndLoadCircuit('test/splicer_test.circom')
-    })
+    const circuit  = 'splicer_test'
 
     it('Should output the correct reconstructed level', async () => {
         expect.assertions(5)
@@ -22,11 +17,11 @@ describe('Splice circuit', () => {
             const leaf  =  10
             const circuitInputs = stringifyBigInts({ in: items, leaf, index })
 
-            const witness = await executeCircuit(circuit, circuitInputs)
+            const witness = await genWitness(circuit, circuitInputs)
 
             const output: BigInt[] = []
             for (let i = 0; i < items.length + 1; i ++) {
-                const selected = getSignalByName(circuit, witness, `main.out[${i}]`).toString()
+                const selected = await getSignalByName(circuit, witness, `main.out[${i}]`)
                 output.push(BigInt(selected))
             }
             items.splice(index, 0, leaf)

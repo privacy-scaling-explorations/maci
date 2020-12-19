@@ -1,7 +1,7 @@
 import {
     //genPerVOSpentVoiceCreditsCommitment,
     //genSpentVoiceCreditsCommitment,
-    //genTallyResultCommitment,
+    genTallyResultCommitment,
     MaciState,
     Poll,
     genProcessVkSig,
@@ -11,7 +11,7 @@ import {
 export {
     //genPerVOSpentVoiceCreditsCommitment,
     //genSpentVoiceCreditsCommitment,
-    //genTallyResultCommitment,
+    genTallyResultCommitment,
     MaciState,
     Poll,
     genProcessVkSig,

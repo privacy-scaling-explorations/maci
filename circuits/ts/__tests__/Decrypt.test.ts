@@ -1,9 +1,8 @@
 jest.setTimeout(90000)
-import {
-    executeCircuit,
+import { 
+    genWitness,
     getSignalByName,
-    compileAndLoadCircuit,
-} from '../'
+} from './utils'
 
 import { 
     stringifyBigInts,
@@ -16,10 +15,7 @@ import {
 } from 'maci-domainobjs'
 
 describe('Decryption circuit', () => {
-    let circuit 
-    beforeAll(async () => {
-        circuit = await compileAndLoadCircuit('test/decrypt_test.circom')
-    })
+    const circuit = 'decrypt_test'
 
     it('Should decrypt a message inside the snark', async () => {
         const keypair = new Keypair()
@@ -40,10 +36,10 @@ describe('Decryption circuit', () => {
             'message': [msg.iv, ...msg.data],
         })
 
-        const witness = await executeCircuit(circuit, circuitInputs)
+        const witness = await genWitness(circuit, circuitInputs)
 
         for (let i = 0; i < 4; i++) {
-            const out = getSignalByName(circuit, witness, 'main.out[' + i + ']').toString()
+            const out = await getSignalByName(circuit, witness, 'main.out[' + i + ']')
             expect(out.toString()).toEqual(cmd[i].toString())
         }
     })

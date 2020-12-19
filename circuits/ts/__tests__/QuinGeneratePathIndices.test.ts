@@ -1,9 +1,7 @@
-jest.setTimeout(90000)
-import {
-    compileAndLoadCircuit,
-    executeCircuit,
+import { 
+    genWitness,
     getSignalByName,
-} from '../'
+} from './utils'
 
 const toBase5 = (x: number) => {
     const result: number[] = []
@@ -18,10 +16,7 @@ const toBase5 = (x: number) => {
 }
 
 describe('QuinGeneratePathIndices circuit', () => {
-    let circuit 
-    beforeAll(async () => {
-        circuit = await compileAndLoadCircuit('test/quinGeneratePathIndices_test.circom')
-    })
+    const circuit = 'quinGeneratePathIndices_test'
 
     it('Should return the correct result', async () => {
         const index = 600
@@ -31,10 +26,10 @@ describe('QuinGeneratePathIndices circuit', () => {
             in: index
         }
 
-        const witness = await executeCircuit(circuit, circuitInputs)
+        const witness = await genWitness(circuit, circuitInputs)
         const result: number[] = []
         for (let i = 0; i < depth; i ++) {
-            const out = getSignalByName(circuit, witness, `main.out[${i}]`)
+            const out = await getSignalByName(circuit, witness, `main.out[${i}]`)
             result.push(Number(out))
         }
         expect(JSON.stringify(result)).toEqual(JSON.stringify(toBase5(index)))

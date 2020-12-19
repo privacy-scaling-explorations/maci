@@ -1,11 +1,11 @@
 jest.setTimeout(90000)
-import {
-    compileAndLoadCircuit,
-    executeCircuit,
+import { 
+    genWitness,
     getSignalByName,
-} from '../'
+} from './utils'
 
 import {
+    stringifyBigInts,
     genRandomSalt,
     IncrementalQuinTree,
 } from 'maci-crypto'
@@ -15,11 +15,7 @@ const ZERO_VALUE = 0
 
 describe('Quin Merkle Tree circuits', () => {
     describe('QuinTreeInsertionProof', () => {
-        let circuit
-
-        beforeAll(async () => {
-            circuit = await compileAndLoadCircuit('test/quinTreeInclusionProof_test.circom')
-        })
+        const circuit = 'quinTreeInclusionProof_test' 
 
         it('Valid QuinTreeInsertionProof inputs should work', async () => {
             const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE)
@@ -36,13 +32,13 @@ describe('Quin Merkle Tree circuits', () => {
             )
             expect(isValid).toBeTruthy()
 
-            const circuitInputs = {
+            const circuitInputs = stringifyBigInts({
                 path_elements: path.pathElements,
                 path_index: path.indices,
                 leaf: tree.leaves[index],
-            }
-            const witness = await executeCircuit(circuit, circuitInputs)
-            const circuitRoot = getSignalByName(circuit, witness, 'main.root').toString()
+            })
+            const witness = await genWitness(circuit, circuitInputs)
+            const circuitRoot = await getSignalByName(circuit, witness, 'main.root')
             expect(circuitRoot).toEqual(tree.root.toString())
         })
 
@@ -63,24 +59,20 @@ describe('Quin Merkle Tree circuits', () => {
 
             path.pathElements[0][0] = genRandomSalt()
 
-            const circuitInputs = {
+            const circuitInputs = stringifyBigInts({
                 path_elements: path.pathElements,
                 path_index: path.indices,
                 leaf: tree.leaves[index],
-            }
+            })
 
-            const witness = await executeCircuit(circuit, circuitInputs)
-            const circuitRoot = getSignalByName(circuit, witness, 'main.root').toString()
+            const witness = await genWitness(circuit, circuitInputs)
+            const circuitRoot = await getSignalByName(circuit, witness, 'main.root')
             expect(circuitRoot.toString()).not.toEqual(tree.root.toString())
         })
     })
 
     describe('QuinCheckRoot', () => {
-        let circuit
-
-        beforeAll(async () => {
-            circuit = await compileAndLoadCircuit('test/quinTreeCheckRoot_test.circom')
-        })
+        const circuit = 'quinTreeCheckRoot_test'
 
         it('Valid CheckRoot inputs should work', async () => {
             const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE)
@@ -94,10 +86,10 @@ describe('Quin Merkle Tree circuits', () => {
 
             const root = tree.root
 
-            const circuitInputs = { leaves }
+            const circuitInputs = stringifyBigInts({ leaves })
 
-            const witness = await executeCircuit(circuit, circuitInputs)
-            const circuitRoot = getSignalByName(circuit, witness, 'main.root').toString()
+            const witness = await genWitness(circuit, circuitInputs)
+            const circuitRoot = await getSignalByName(circuit, witness, 'main.root')
 
             expect(circuitRoot).toEqual(root.toString())
         })
@@ -116,21 +108,17 @@ describe('Quin Merkle Tree circuits', () => {
 
             const root = tree.root
 
-            const circuitInputs = { leaves }
+            const circuitInputs = stringifyBigInts({ leaves })
 
-            const witness = await executeCircuit(circuit, circuitInputs)
-            const circuitRoot = getSignalByName(circuit, witness, 'main.root').toString()
+            const witness = await genWitness(circuit, circuitInputs)
+            const circuitRoot = await getSignalByName(circuit, witness, 'main.root')
 
             expect(circuitRoot).not.toEqual(root.toString())
         })
     })
 
     describe('QuinLeafExists', () => {
-        let circuit
-
-        beforeAll(async () => {
-            circuit = await compileAndLoadCircuit('test/quinTreeLeafExists_test.circom')
-        })
+        const circuit = 'quinTreeLeafExists_test'
 
         it('Valid QuinLeafExists inputs should work', async () => {
             const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE)
@@ -147,13 +135,14 @@ describe('Quin Merkle Tree circuits', () => {
             )
             expect(isValid).toBeTruthy()
 
-            const circuitInputs = {
+            const circuitInputs = stringifyBigInts({
                 path_elements: path.pathElements,
                 path_index: path.indices,
                 leaf: tree.leaves[index],
                 root: tree.root,
-            }
-            await executeCircuit(circuit, circuitInputs)
+            })
+            const witness = await genWitness(circuit, circuitInputs)
+            expect(witness[0]).toEqual('1')
         })
 
         it('Invalid QuinLeafExists inputs should not work', async () => {
@@ -172,16 +161,18 @@ describe('Quin Merkle Tree circuits', () => {
             )
             expect(isValid).toBeTruthy()
 
+            // Tamper with the Merkle proof
             path.pathElements[0][0] = BigInt(path.pathElements[0][0]) + BigInt(1)
 
-            const circuitInputs = {
+            const circuitInputs = stringifyBigInts({
                 path_elements: path.pathElements,
                 path_index: path.indices,
                 leaf: tree.leaves[index],
                 root: tree.root,
-            }
+            })
+
             try {
-                await executeCircuit(circuit, circuitInputs)
+                await genWitness(circuit, circuitInputs)
             } catch {
                 expect(true).toBeTruthy()
             }

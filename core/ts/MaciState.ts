@@ -4,6 +4,7 @@ import {
     IncrementalQuinTree,
     SNARK_FIELD_SIZE,
     NOTHING_UP_MY_SLEEVE,
+    hashLeftRight,
 } from 'maci-crypto'
 import {
     PubKey,
@@ -543,6 +544,7 @@ export {
     Poll,
     genProcessVkSig,
     genTallyVkSig,
+    genTallyResultCommitment,
 }
 
 // OLD CODE: FOR REFERENCE ONLY
@@ -1157,18 +1159,18 @@ export {
  * @parm salt A random salt
  * @return The hash of the results and the salt, with the salt last
  */
-//const genTallyResultCommitment = (
-    //results: BigInt[],
-    //salt: BigInt,
-    //voteOptionTreeDepth: number,
-//): BigInt => {
+const genTallyResultCommitment = (
+    results: BigInt[],
+    salt: BigInt,
+    voteOptionTreeDepth: number,
+): BigInt => {
 
-    //const tree = new IncrementalQuinTree(voteOptionTreeDepth, BigInt(0))
-    //for (const result of results) {
-        //tree.insert(BigInt(result))
-    //}
-    //return hashLeftRight(tree.root, salt)
-//}
+    const tree = new IncrementalQuinTree(voteOptionTreeDepth, BigInt(0))
+    for (const result of results) {
+        tree.insert(BigInt(result))
+    }
+    return hashLeftRight(tree.root, salt)
+}
 
 //const genPerVOSpentVoiceCreditsCommitment = genTallyResultCommitment
 

@@ -4,6 +4,7 @@
     "description": "",
     "main": "build/index.js",
     "scripts": {
+        "circom-helper": "circom-helper -c ./circomHelperConfig.json -nc -b ./build/test/ -t ./temp -p 9001",
         "watch": "tsc --watch",
         "build": "tsc",
         "buildBatchUpdateStateTreeSnark": "./scripts/buildBatchUpdateStateTreeSnark.sh",
@@ -44,15 +45,17 @@
     },
     "dependencies": {
         "argparse": "^1.0.10",
-        "circom": "0.5.28",
-        "circomlib": "0.2.4",
+        "circom": "0.5.35",
+        "circomlib": "0.3.0",
         "libsemaphore": "^1.0.5",
         "shelljs": "^0.8.3",
-        "snarkjs": "0.3.23"
+        "snarkjs": "0.3.45"
     },
     "devDependencies": {
         "@types/jest": "^24.0.25",
         "@types/node": "^13.1.2",
+        "circom-helper": "0.0.6",
+        "axios": "^0.21.0",
         "jest": "^24.9.0",
         "maci-config": "^1.0.0",
         "maci-core": "^1.0.0",

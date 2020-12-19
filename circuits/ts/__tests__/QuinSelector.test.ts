@@ -1,19 +1,14 @@
-jest.setTimeout(90000)
-import {
-    compileAndLoadCircuit,
-    executeCircuit,
+import { 
+    genWitness,
     getSignalByName,
-} from '../'
+} from './utils'
 
 import { 
     stringifyBigInts,
 } from 'maci-crypto'
 
 describe('QuinSelector circuit', () => {
-    let circuit 
-    beforeAll(async () => {
-        circuit = await compileAndLoadCircuit('test/quinSelector_test.circom')
-    })
+    const circuit = 'quinSelector_test'
 
     it('Should return the nth value given an index', async () => {
         const items = [0, 1, 2, 3, 4]
@@ -21,8 +16,8 @@ describe('QuinSelector circuit', () => {
         for (let i = 0; i < items.length; i ++) {
             const circuitInputs = stringifyBigInts({ in: items, index: i })
 
-            const witness = await executeCircuit(circuit, circuitInputs)
-            const selected = getSignalByName(circuit, witness, 'main.out').toString()
+            const witness = await genWitness(circuit, circuitInputs)
+            const selected = await getSignalByName(circuit, witness, 'main.out')
             expect(selected).toEqual(items[i].toString())
         }
     })

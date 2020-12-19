@@ -1,9 +1,8 @@
 jest.setTimeout(90000)
-import {
-    compileAndLoadCircuit,
-    executeCircuit,
+import { 
+    genWitness,
     getSignalByName,
-} from '../'
+} from './utils'
 
 import {
     stringifyBigInts,
@@ -14,11 +13,10 @@ import {
 } from 'maci-crypto'
 
 describe('Poseidon hash circuits', () => {
-    let circuit
+    const circuit = 'hasher5_test'
 
     describe('Hasher5', () => {
         it('correctly hashes 5 random values', async () => {
-            circuit = await compileAndLoadCircuit('test/hasher5_test.circom')
             const preImages: any = []
             for (let i = 0; i < 5; i++) {
                 preImages.push(genRandomSalt())
@@ -28,8 +26,8 @@ describe('Poseidon hash circuits', () => {
                 in: preImages,
             })
 
-            const witness = await executeCircuit(circuit, circuitInputs)
-            const output = getSignalByName(circuit, witness, 'main.hash')
+            const witness = await genWitness(circuit, circuitInputs)
+            const output = await getSignalByName(circuit, witness, 'main.hash')
 
             const outputJS = hash5(preImages)
 
@@ -39,7 +37,7 @@ describe('Poseidon hash circuits', () => {
 
     describe('Hasher11', () => {
         it('correctly hashes 11 random values', async () => {
-            circuit = await compileAndLoadCircuit('test/hasher11_test.circom')
+            const circuit =  'hasher11_test'
             const preImages: any = []
             for (let i = 0; i < 11; i++) {
                 preImages.push(genRandomSalt())
@@ -48,8 +46,8 @@ describe('Poseidon hash circuits', () => {
                 in: preImages,
             })
 
-            const witness = await executeCircuit(circuit, circuitInputs)
-            const output = getSignalByName(circuit, witness, 'main.hash')
+            const witness = await genWitness(circuit, circuitInputs)
+            const output = await getSignalByName(circuit, witness, 'main.hash')
 
             const outputJS = hash11(preImages)
 
@@ -60,15 +58,15 @@ describe('Poseidon hash circuits', () => {
     describe('HashLeftRight', () => {
 
         it('correctly hashes two random values', async () => {
-            const circuit = await compileAndLoadCircuit('test/hashleftright_test.circom')
+            const circuit = 'hashleftright_test'
 
             const left = genRandomSalt()
             const right = genRandomSalt()
 
             const circuitInputs = stringifyBigInts({ left, right })
 
-            const witness = await executeCircuit(circuit, circuitInputs)
-            const output = getSignalByName(circuit, witness, 'main.hash')
+            const witness = await genWitness(circuit, circuitInputs)
+            const output = await getSignalByName(circuit, witness, 'main.hash')
 
             const outputJS = hashLeftRight(left, right)
 
