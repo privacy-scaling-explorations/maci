@@ -52,7 +52,7 @@ template QuinSelector(choices) {
         calcTotal.nums[i] <== eqs[i].out * in[i];
     }
 
-    // Returns 0 + 0 + 0 + item
+    // Returns 0 + 0 + ... + item
     out <== calcTotal.sum;
 }
 

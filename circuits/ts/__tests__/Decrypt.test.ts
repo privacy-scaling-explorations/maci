@@ -32,7 +32,7 @@ describe('Decryption circuit', () => {
         const msg = encrypt(cmd, sharedKey)
 
         const circuitInputs = stringifyBigInts({
-            'private_key': sharedKey,
+            'privKey': sharedKey,
             'message': [msg.iv, ...msg.data],
         })
 

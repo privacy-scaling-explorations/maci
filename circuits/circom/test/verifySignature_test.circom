@@ -1,3 +1,3 @@
-include "../verify_signature.circom"
+include "../verifySignature.circom"
 
 component main = VerifySignature();

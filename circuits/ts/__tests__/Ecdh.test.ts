@@ -23,13 +23,13 @@ describe('Public key derivation circuit', () => {
         )
 
         const circuitInputs = stringifyBigInts({
-            'private_key': keypair.privKey.asCircuitInputs(),
-            'public_key': keypair2.pubKey.asCircuitInputs(),
+            'privKey': keypair.privKey.asCircuitInputs(),
+            'pubKey': keypair2.pubKey.asCircuitInputs(),
         })
 
         const witness = await genWitness(circuit, circuitInputs)
 
-        const circuitEcdhSharedKey = await getSignalByName(circuit, witness, 'main.shared_key')
+        const circuitEcdhSharedKey = await getSignalByName(circuit, witness, 'main.sharedKey')
         expect(circuitEcdhSharedKey).toEqual(ecdhSharedKey.toString())
     })
 })

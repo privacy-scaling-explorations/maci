@@ -1,4 +1,5 @@
 {
+    "circom": "./node_modules/circom/cli.js",
     "circuitDirs": [
         "./circom/test/"
     ]

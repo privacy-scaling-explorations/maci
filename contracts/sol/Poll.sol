@@ -300,6 +300,7 @@ contract Poll is Params, DomainObjs, SnarkConstants, SnarkCommon, Ownable {
     onlyOwner
     isAfterVotingDeadline {
         messageAq.insertSubTree(_messageSubRoot);
+        // TODO: emit event
     }
 
     /*
