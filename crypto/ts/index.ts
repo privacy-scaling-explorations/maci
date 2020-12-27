@@ -406,7 +406,20 @@ const decrypt = (
 
     const plaintext: Plaintext = ciphertext.data.map(
         (e: BigInt, i: number): BigInt => {
-            return BigInt(e) - BigInt(mimc7.hash(sharedKey, BigInt(ciphertext.iv) + BigInt(i)))
+            const val = 
+                BigInt(e) - 
+                BigInt(
+                    mimc7.hash(
+                        sharedKey,
+                        BigInt(ciphertext.iv) + BigInt(i)
+                    )
+                )
+
+            if (val < BigInt(0)) {
+                return SNARK_FIELD_SIZE + val
+            } else {
+                return val
+            }
         }
     )
 
