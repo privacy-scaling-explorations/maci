@@ -148,12 +148,14 @@ class AccQueue {
      */
     public enqueue(
         _leaf: Leaf,
-    ) {
+    ): number {
         assert(this.numLeaves < this.hashLength ** this.MAX_DEPTH)
 
         // Ensure that _value is a BigInt
         _leaf = BigInt(_leaf)
         this._enqueue(_leaf, 0)
+
+        const leafIndex = this.numLeaves
 
         this.numLeaves ++
         this.subTreesMerged = false
@@ -168,6 +170,8 @@ class AccQueue {
                 this.leafQueue.indices[i] = 0
             }
         }
+
+        return leafIndex
     }
 
     private _enqueue(
