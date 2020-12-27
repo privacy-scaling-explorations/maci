@@ -402,8 +402,15 @@ class Ballot {
     public votes: BigInt[] = []
     public nonce: BigInt = BigInt(0)
 
+    constructor(numVoteOptions: number) {
+        assert(numVoteOptions >= 0)
+        for (let i = 0; i < numVoteOptions; i ++) {
+            this.votes.push(BigInt(0))
+        }
+    }
+
     public copy = (): Ballot => {
-        const b = new Ballot()
+        const b = new Ballot(this.votes.length)
 
         b.votes = this.votes.map((x) => BigInt(x.toString()))
         b.nonce = BigInt(this.nonce.toString())

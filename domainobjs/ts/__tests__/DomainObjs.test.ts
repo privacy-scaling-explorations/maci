@@ -185,13 +185,14 @@ describe('Domain objects', () => {
         
         it ('A decrypted message should match the original command', () => {
             expect(decrypted.command.equals(command)).toBeTruthy()
-            expect(decrypted.signature.R8[0]).toEqual(signature.R8[0])
-            expect(decrypted.signature.R8[1]).toEqual(signature.R8[1])
-            expect(decrypted.signature.S).toEqual(signature.S)
+            expect(decrypted.signature.R8[0].toString()).toEqual(signature.R8[0].toString())
+            expect(decrypted.signature.R8[1].toString()).toEqual(signature.R8[1].toString())
+            expect(decrypted.signature.S.toString()).toEqual(signature.S.toString())
         })
 
         it ('A decrypted message should have a valid signature', () => {
-            expect(decrypted.command.verifySignature(decrypted.signature, pubKey)).toBeTruthy()
+            const isValid = decrypted.command.verifySignature(decrypted.signature, pubKey) 
+            expect(isValid).toBeTruthy()
         })
 
         it('Command.copy() should perform a deep copy', () => {
