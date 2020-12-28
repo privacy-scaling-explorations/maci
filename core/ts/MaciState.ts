@@ -60,7 +60,7 @@ class Poll {
     public pmStateAq
     public currentStateRoot = BigInt(0)
     public numBatchesProcessed = 0
-    public currentMessageBatchIndex
+    public currentMessageBatchIndex = 0
     public zerothStateLeaf
     public maciStateRef
 
@@ -127,6 +127,18 @@ class Poll {
         // main root
     }
 
+    public hasUnprocessedMessages = (): boolean => {
+        const batchSize = this.batchSizes.messageBatchSize
+
+        const totalBatches =
+            this.messages.length <= batchSize ?
+            1
+            : 
+            Math.floor(this.messages.length / batchSize)
+
+        return this.numBatchesProcessed < totalBatches
+    }
+
     /*
      * Process _batchSize messages starting from the saved index, and then
      * update the zeroth state leaf. This function will process messages even
@@ -153,12 +165,26 @@ class Poll {
     ) => {
         const batchSize = this.batchSizes.messageBatchSize
 
+        assert(
+            this.hasUnprocessedMessages(),
+            'No more messages to process',
+        )
+
         // The starting index must be valid
         assert(this.currentMessageBatchIndex >= 0)
         assert(this.currentMessageBatchIndex % batchSize === 0)
 
         // Require that the message queue has been merged
         assert(this.messageAq.hasRoot(this.treeDepths.messageTreeDepth))
+
+        if (this.numBatchesProcessed === 0) {
+            assert(_maciStateRef != null && _maciStateRef != undefined)
+            this.maciStateRef = _maciStateRef
+            // Prevent other polls from being processed until this poll has
+            // been fully processed
+            this.maciStateRef.pollBeingProcessed = true
+            this.maciStateRef.currentPollBeingProcessed = _pollId
+        }
 
         // Only allow one poll to be processed at a time
         if (this.maciStateRef.pollBeingProcessed) {
@@ -169,9 +195,6 @@ class Poll {
         // state root, and state leaves into this object, and set the current
         // message batch index
         if (this.numBatchesProcessed === 0) {
-            assert(_maciStateRef != null && _maciStateRef != undefined)
-            this.maciStateRef = _maciStateRef
-
             // Deep-copy the state leaves from the MaciState
             this.stateLeaves =
                 this.maciStateRef.stateLeaves.map((x: StateLeaf) => x.copy())
@@ -179,13 +202,8 @@ class Poll {
 
             // Populate this.ballots with empty ballots
             for (let i = 0; i < this.stateLeaves.length; i ++) {
-                this.ballots.push(new Ballot())
+                this.ballots.push(new Ballot(this.maxValues.maxVoteOptions))
             }
-
-            // Prevent other polls from being processed until this poll has
-            // been fully processed
-            this.maciStateRef.pollBeingProcessed = true
-            this.maciStateRef.currentPollBeingProcessed = _pollId
 
             // Deep-copy the state AccQueue
             this.pmStateAq = this.maciStateRef.stateAq.copy()
@@ -195,14 +213,16 @@ class Poll {
                 BigInt(this.pmStateAq.getRoot(STATE_TREE_DEPTH))
 
             // The starting index of the batch of messages to process
-            this.currentMessageBatchIndex =
-                Math.floor(this.messageAq.numLeaves / batchSize) * batchSize
+            this.currentMessageBatchIndex = 
+                (
+                    Math.floor(this.messageAq.numLeaves / batchSize)  - 1
+                ) * batchSize
         }
 
         for (let i = 0; i < batchSize; i++) {
             // Note that messages are processed in reverse order.
             const messageIndex =
-                this.currentMessageBatchIndex + batchSize - i - 1;
+                this.currentMessageBatchIndex + batchSize - i - 1
 
             // Ignore indices which do not exist. This happens during the first
             // batch if the number of messages is not a product of the batch
@@ -211,7 +231,14 @@ class Poll {
                 continue
             }
 
-            this.processMessage(messageIndex)
+            const r = this.processMessage(messageIndex)
+            if (r) {
+                // TODO: replace with try/catch after implementing error
+                // handling
+                const index = r.stateLeafIndex
+                this.stateLeaves[index] = r.newStateLeaf
+                this.ballots[index] = r.newBallot
+            }
         }
 
         // Replace the zeroth state leaf
@@ -223,7 +250,7 @@ class Poll {
             NOTHING_UP_MY_SLEEVE,
             this.maciStateRef.STATE_TREE_ARITY,
         )
-        stateTree.insert(this.zerothStateLeaf)
+        stateTree.insert(this.zerothStateLeaf.hash())
         for (let i = 0; i < this.stateLeaves.length; i ++) {
             stateTree.insert(this.stateLeaves[i].hash())
         }
@@ -242,13 +269,41 @@ class Poll {
     }
 
     /*
+     * Process all messages. This function does not update the ballots or state
+     * leaves; rather, it copies and then updates them. This makes it possible
+     * to test the result of multiple processMessage() invocations.
+     */
+    public processAllMessages = () => {
+        const stateLeaves = this.stateLeaves.map((x) => x.copy())
+        const ballots = this.ballots.map((x) => x.copy())
+        
+        for (let i = 0; i < this.messages.length; i ++) {
+            const messageIndex = this.messages.length - i - 1
+            // TODO
+            const r = this.processMessage(messageIndex)
+            if (r) {
+                // TODO: replace with try/catch after implementing error
+                // handling
+                const index = r.stateLeafIndex
+                stateLeaves[index] = r.newStateLeaf
+                ballots[index] = r.newBallot
+            }
+        }
+
+        return { stateLeaves, ballots }
+    }
+
+    /*
      * Process one message
+     * TODO: replace with a version that does not change state
      */
     private processMessage = (
         _index: number,
     ) => {
+        //TODO: return codes for no-ops
+
         // Ensure that the index is valid
-        assert(_index <= 0)
+        assert(_index >= 0)
         assert(this.messages.length > _index)
 
         // Ensure that there is the correct number of ECDH shared keys
@@ -265,7 +320,10 @@ class Poll {
         const { command, signature } = Command.decrypt(message, sharedKey)
 
         // If the state tree index in the command is invalid, do nothing
-        if (command.stateIndex > BigInt(this.ballots.length)) {
+        if (
+            command.stateIndex > BigInt(this.ballots.length) ||
+            command.stateIndex <= BigInt(0)
+        ) {
             return
         }
 
@@ -292,7 +350,6 @@ class Poll {
             return
         }
 
-        // If there are insufficient vote credits, do nothing
         const prevSpentCred = ballot.votes[Number(command.voteOptionIndex)]
 
         const voiceCreditsLeft =
@@ -306,7 +363,10 @@ class Poll {
         }
 
         // If the vote option index is invalid, do nothing
-        if (command.voteOptionIndex > BigInt(this.maxValues.maxVoteOptions)) {
+        if (
+            command.voteOptionIndex < BigInt(-1) ||
+            command.voteOptionIndex > BigInt(this.maxValues.maxVoteOptions)
+        ) {
             return
         }
 
@@ -326,7 +386,16 @@ class Poll {
 
         // Replace the state leaf
         this.stateLeaves[Number(stateLeafIndex)] = newStateLeaf
+
+        return {
+            newStateLeaf,
+            newBallot,
+            stateLeafIndex: Number(stateLeafIndex),
+        }
     }
+
+    //public tallyBallots = () => {
+    //}
 
     public copy = (): Poll => {
         const copied = new Poll(
@@ -431,19 +500,22 @@ class MaciState {
     public pollBeingProcessed = true
     public currentPollBeingProcessed
 
-    //constructor() { }
+    constructor() {
+        this.stateAq.enqueue(NOTHING_UP_MY_SLEEVE)
+    }
 
     public signUp(
         _pubKey: PubKey,
         _initialVoiceCreditBalance: BigInt,
-    ) {
+    ): number {
         const stateLeaf = new StateLeaf(
             _pubKey,
             _initialVoiceCreditBalance,
         )
         this.stateLeaves.push(stateLeaf)
 
-        this.stateAq.enqueue(stateLeaf.hash())
+        const leafIndex = this.stateAq.enqueue(stateLeaf.hash())
+        return leafIndex
     }
 
     public deployPoll(
@@ -545,6 +617,7 @@ export {
     genProcessVkSig,
     genTallyVkSig,
     genTallyResultCommitment,
+    STATE_TREE_DEPTH,
 }
 
 // OLD CODE: FOR REFERENCE ONLY
