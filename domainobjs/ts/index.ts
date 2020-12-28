@@ -417,6 +417,16 @@ class Ballot {
 
         return b
     }
+
+    public equals(b: Ballot): boolean {
+        for (let i = 0; i < this.votes.length; i ++) {
+            if (b.votes[i] !== this.votes[i]) {
+                return false
+            }
+        }
+        return b.nonce === this.nonce &&
+            this.votes.length === b.votes.length
+    }
 }
 
 /*
