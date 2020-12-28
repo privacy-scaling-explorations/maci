@@ -1,12 +1,11 @@
 include "./ecdh.circom"
-include "./publickey_derivation.circom"
+include "./privToPubKey.circom"
 
 template ProcessMessages(
     stateTreeDepth,
     msgTreeDepth,
     voteOptionTreeDepth,
     batchSize
-) {
 ) {
     var TREE_ARITY = 5;
 
