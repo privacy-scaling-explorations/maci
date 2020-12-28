@@ -309,6 +309,7 @@ contract Poll is Params, DomainObjs, SnarkConstants, SnarkCommon, Ownable {
      */
     function setMessageProcessingData(
         uint256 _newStateRoot,
+        uint256 _newBallotRoot,
         bool _hasUnprocessedMessages,
         uint256 _currentMessageBatchIndex
     ) public {
@@ -318,6 +319,7 @@ contract Poll is Params, DomainObjs, SnarkConstants, SnarkCommon, Ownable {
         );
 
         currentStateRoot = _newStateRoot;
+        ballotRoot = _newBallotRoot;
         hasUnprocessedMessages = _hasUnprocessedMessages;
         currentMessageBatchIndex = _currentMessageBatchIndex;
         numBatchesProcessed ++;
@@ -325,6 +327,17 @@ contract Poll is Params, DomainObjs, SnarkConstants, SnarkCommon, Ownable {
 }
 
 contract MessageProcessor is Ownable, SnarkCommon {
+
+    struct Roots {
+        uint256 newStateRoot;
+        uint256 newBallotRoot;
+    }
+
+    string constant ERROR_VOTING_PERIOD_NOT_PASSED = "MessageProcessorE01";
+    string constant ERROR_NO_MORE_MESSAGES = "MessageProcessorE02";
+    string constant ERROR_MESSAGE_AQ_NOT_MERGED = "MessageProcessorE03";
+    string constant ERROR_INVALID_STATE_ROOT_SNAPSHOT_TIMESTAMP =
+        "MessageProcessorE04";
 
     /*
      * Update the Poll's currentStateRoot if the proof is valid.
@@ -335,7 +348,7 @@ contract MessageProcessor is Ownable, SnarkCommon {
     function processMessages(
         Poll _poll,
         uint256 _stateRootSnapshotTimestamp,
-        uint256 _newStateRoot,
+        Roots memory _roots,
         uint256[8] memory _proof
     )
     public
@@ -345,13 +358,13 @@ contract MessageProcessor is Ownable, SnarkCommon {
         uint256 secondsPassed = block.timestamp - _poll.deployTime();
         require(
             secondsPassed > _poll.duration(),
-            "MessageProcessor: the voting period is not over"
+            ERROR_VOTING_PERIOD_NOT_PASSED
         );
 
         // Require that unprocessed messages exist
         require(
             _poll.hasUnprocessedMessages(),
-            "MessageProcessor: no more messages left to process"
+            ERROR_NO_MORE_MESSAGES
         );
 
         uint8 intStateTreeDepth;
@@ -370,7 +383,7 @@ contract MessageProcessor is Ownable, SnarkCommon {
             _poll.messageAq().getMainRoot(messageTreeDepth);
         require(
             messageRoot != 0,
-            "MessageProcessor: the message AQ has not been merged"
+            ERROR_MESSAGE_AQ_NOT_MERGED
         );
 
         uint256 messageBatchSize;
@@ -386,7 +399,7 @@ contract MessageProcessor is Ownable, SnarkCommon {
             // ended
             require(
                 _stateRootSnapshotTimestamp > _poll.deployTime() + _poll.duration(),
-                "MessageProcessor: invalid state root snapshot timestamp"
+                ERROR_INVALID_STATE_ROOT_SNAPSHOT_TIMESTAMP
             );
 
             currentStateRoot =
@@ -419,7 +432,8 @@ contract MessageProcessor is Ownable, SnarkCommon {
 
         // Update the state root and message processing metadata
         _poll.setMessageProcessingData(
-            _newStateRoot,
+            _roots.newStateRoot,
+            _roots.newBallotRoot,
             hasUnprocessedMessages,
             currentMessageBatchIndex
         );

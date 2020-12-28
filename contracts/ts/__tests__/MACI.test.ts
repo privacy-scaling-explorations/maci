@@ -115,7 +115,7 @@ describe('MACI', () => {
 
                     // Store the state index
                     const event = iface.parseLog(receipt.logs[receipt.logs.length - 1])
-                    expect(event.values._stateIndex.toString()).toEqual(i.toString())
+                    expect(event.values._stateIndex.toString()).toEqual((i + 1).toString())
 
                     maciState.signUp(
                         user.pubKey,

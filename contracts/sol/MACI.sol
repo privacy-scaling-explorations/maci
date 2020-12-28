@@ -37,6 +37,9 @@ contract MACI is
     uint8 constant internal STATE_TREE_SUBDEPTH = 2;
     uint8 constant internal STATE_TREE_ARITY = 5;
 
+    uint256 constant internal NOTHING_UP_MY_SLEEVE
+        = uint256(8370432830353022751713833565135785980866757267633941821328460903436894336785);
+
     // Each poll has an incrementing ID
     uint256 internal nextPollId = 0;
 
@@ -84,8 +87,11 @@ contract MACI is
         SignUpGatekeeper _signUpGatekeeper,
         InitialVoiceCreditProxy _initialVoiceCreditProxy
     ) {
-        // Deploy the state AccQueu
+        // Deploy the state AccQueue
         stateAq = new AccQueueQuinaryMaci(STATE_TREE_SUBDEPTH);
+
+        // Enqueue the 0th leaf
+        stateAq.enqueue(NOTHING_UP_MY_SLEEVE);
 
         pollFactory = _pollFactory;
         signUpGatekeeper = _signUpGatekeeper;
