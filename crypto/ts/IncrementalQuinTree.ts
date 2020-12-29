@@ -214,6 +214,51 @@ class IncrementalQuinTree {
         return this.leaves[_index]
     }
 
+    /*
+     * Generates a Merkle proof from a subroot to the root.
+     */
+    public genMerkleSubrootPath(
+        _startIndex: number, // inclusive
+        _endIndex: number, // exclusive
+    ) : MerkleProof {
+        // The end index must be greater than the start index
+        assert(_endIndex > _startIndex)
+        const numLeaves = _endIndex - _startIndex
+
+        // The number of leaves must be a multiple of the tree arity
+        assert(numLeaves % this.leavesPerNode === 0)
+
+        // The number of leaves must be lower than the maximum tree capacity
+        assert(numLeaves < this.leavesPerNode ** this.depth)
+
+        // The number of leaves must the tree arity raised to some positive integer
+        let f = false
+        let subDepth
+        for (let i = 0; i < this.depth; i ++) {
+            if (numLeaves === this.leavesPerNode ** i) {
+                subDepth = i
+                f = true
+                break
+            }
+
+        }
+        assert(f)
+        assert(subDepth < this.depth)
+
+        const subTree = new IncrementalQuinTree(subDepth, 0)
+        for (let i = _startIndex; i < _endIndex; i++) {
+            subTree.insert(this.leaves[i])
+        }
+
+        const fullPath = this.genMerklePath(_startIndex)
+        fullPath.depth = this.depth - subDepth
+        fullPath.indices = fullPath.indices.slice(subDepth, this.depth)
+        fullPath.pathElements = fullPath.pathElements.slice(subDepth, this.depth)
+        fullPath.leaf = subTree.root
+
+        return fullPath
+    }
+
     /*  Generates a Merkle proof from a leaf to the root.
      */
     public genMerklePath(_index: number): MerkleProof {

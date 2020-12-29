@@ -222,4 +222,50 @@ describe('Quin Merkle Tree', () => {
             }
         })
     })
+
+    describe('Subroot path generation and verification', () => {
+        let tree
+        const numToInsert = 5 ** DEPTH
+
+        beforeAll(() => {
+            tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
+            for (let i = 0; i < numToInsert; i ++) {
+                const leaf = BigInt(i + 1)
+                tree.insert(leaf)
+            }
+        })
+
+        it('genMerkleSubrootPath() should calculate a correct Merkle path to a subroot', () => {
+            const tree = new IncrementalQuinTree(4, 0)
+            const subTree = new IncrementalQuinTree(2, 0)
+            for (let i = 0; i < 5 ** 2; i++) {
+                tree.insert(BigInt(i))
+                subTree.insert(BigInt(i))
+            }
+
+            const subrootPath = tree.genMerkleSubrootPath(0, 5)
+            const isValid = IncrementalQuinTree.verifyMerklePath(
+                subrootPath,
+                tree.hashFunc,
+            )
+            expect(isValid).toBeTruthy()
+        })
+
+        it('genMerkleSubrootPath() should calculate a correct Merkle path to a subroot (2)', () => {
+            const tree = new IncrementalQuinTree(5, 0)
+            const subTree = new IncrementalQuinTree(3, 0)
+            for (let i = 0; i < 5 ** 3; i++) {
+                tree.insert(BigInt(i))
+                subTree.insert(BigInt(i))
+            }
+
+            const subrootPath = tree.genMerkleSubrootPath(25, 50)
+            const isValid = IncrementalQuinTree.verifyMerklePath(
+                subrootPath,
+                tree.hashFunc,
+            )
+            expect(subrootPath.depth).toEqual(3)
+            expect(isValid).toBeTruthy()
+        })
+    })
 })
