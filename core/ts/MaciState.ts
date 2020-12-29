@@ -63,6 +63,10 @@ class Poll {
     public currentMessageBatchIndex = 0
     public zerothStateLeaf
     public maciStateRef
+    
+    // For vote tallying
+    public results: BigInt[] = []
+    public numBatchesTallied = 0
 
     constructor(
         _duration: number,
@@ -89,6 +93,11 @@ class Poll {
             this.MESSAGE_TREE_ARITY,
             NOTHING_UP_MY_SLEEVE,
         )
+
+        for (let i = 0; i < this.maxValues.maxVoteOptions; i ++) {
+            this.results.push(BigInt(0))
+        }
+
     }
 
     /*
@@ -279,7 +288,6 @@ class Poll {
         
         for (let i = 0; i < this.messages.length; i ++) {
             const messageIndex = this.messages.length - i - 1
-            // TODO
             const r = this.processMessage(messageIndex)
             if (r) {
                 // TODO: replace with try/catch after implementing error
@@ -394,8 +402,38 @@ class Poll {
         }
     }
 
-    //public tallyBallots = () => {
-    //}
+    public hasUntalliedBallots = () => {
+        const batchSize = this.batchSizes.tallyBatchSize
+        return this.numBatchesTallied * batchSize < this.ballots.length
+    }
+
+    public tallyBallots = () => {
+
+        const batchSize = this.batchSizes.tallyBatchSize
+
+        assert(
+            this.hasUntalliedBallots(),
+            'No more ballots to tally',
+        )
+
+        for (
+            let i = this.numBatchesTallied * batchSize;
+            i < this.numBatchesTallied * batchSize + batchSize;
+            i ++
+        ) {
+            if (i >= this.ballots.length) {
+                break
+            }
+
+            for (let j = 0; j < this.maxValues.maxVoteOptions; j++) {
+                this.results[j] = 
+                    BigInt(this.results[j]) + BigInt(this.ballots[i].votes[j])
+            }
+        }
+        debugger
+
+        this.numBatchesTallied ++
+    }
 
     public copy = (): Poll => {
         const copied = new Poll(
