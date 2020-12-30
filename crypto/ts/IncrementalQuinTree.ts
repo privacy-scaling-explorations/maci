@@ -220,7 +220,7 @@ class IncrementalQuinTree {
     public genMerkleSubrootPath(
         _startIndex: number, // inclusive
         _endIndex: number, // exclusive
-    ) : MerkleProof {
+    ): MerkleProof {
         // The end index must be greater than the start index
         assert(_endIndex > _startIndex)
         const numLeaves = _endIndex - _startIndex
@@ -245,8 +245,11 @@ class IncrementalQuinTree {
         assert(f)
         assert(subDepth < this.depth)
 
-        const subTree = new IncrementalQuinTree(subDepth, 0)
+        const subTree = new IncrementalQuinTree(subDepth, this.zeroValue)
         for (let i = _startIndex; i < _endIndex; i++) {
+            if (i >= this.leaves.length) {
+                break
+            }
             subTree.insert(this.leaves[i])
         }
 
