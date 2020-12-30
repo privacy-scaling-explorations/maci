@@ -2,9 +2,9 @@ include "../processMessages.circom";
 /*
 stateTreeDepth,
 msgTreeDepth,
+msgSubTreeDepth
 voteOptionTreeDepth,
-batchSize
 */
 
-component main = ProcessMessages(10, 2, 2, 5);
+component main = ProcessMessages(10, 2, 1, 2);
 

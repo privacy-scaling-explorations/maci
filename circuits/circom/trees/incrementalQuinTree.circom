@@ -215,6 +215,44 @@ template QuinLeafExists(levels){
     root === verifier.root;
 }
 
+template QuinBatchLeavesExists(levels, subtreeLevels) {
+    // Compute the root of a subtree of leaves, and then check whether the
+    // subroot exists in the main tree
+
+    var LEAVES_PER_NODE = 5;
+    var LEAVES_PER_PATH_LEVEL = LEAVES_PER_NODE - 1;
+    var LEAVES_PER_BATCH = LEAVES_PER_NODE ** subtreeLevels;
+
+    // The main root
+    signal input root;
+
+    // The batch of leaves
+    signal input leaves[LEAVES_PER_BATCH];
+
+    // The Merkle path from the subroot to the main root
+    signal input path_index[levels - subtreeLevels];
+    signal input path_elements[levels - subtreeLevels][LEAVES_PER_PATH_LEVEL];
+
+    // Compute the subroot
+    component qcr = QuinCheckRoot(subtreeLevels);
+    for (var i = 0; i < LEAVES_PER_BATCH; i ++) {
+        qcr.leaves[i] <== leaves[i];
+    }
+
+    // Check if the Merkle path is valid
+    component qle = QuinLeafExists(levels - subtreeLevels);
+
+    // The subroot is the leaf
+    qle.leaf <== qcr.root;
+    qle.root <== root;
+    for (var i = 0; i < levels - subtreeLevels; i ++) {
+        qle.path_index[i] <== path_index[i];
+        for (var j = 0; j < LEAVES_PER_PATH_LEVEL; j ++) {
+            qle.path_elements[i][j] <== path_elements[i][j];
+        }
+    }
+}
+
 /*
  * Given a tree index, generate the indices which QuinTreeInclusionProof and
  * QuinLeafExists require. e.g. if the index is 30 and the number of levels is

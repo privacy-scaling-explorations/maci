@@ -7,11 +7,10 @@
         "circom-helper": "circom-helper -c ./circomHelperConfig.json -nc -b ./build/test/ -p 9001",
         "watch": "tsc --watch",
         "build": "tsc",
-        "buildBatchUpdateStateTreeSnark": "./scripts/buildBatchUpdateStateTreeSnark.sh",
         "buildQuadVoteTallySnark": "./scripts/buildQuadVoteTallySnark.sh",
         "test": "jest",
         "test-minor": "jest --force-exit Hasher.test.ts VerifySignature.test.ts Ecdh.test.ts PrivToPubKey.test.ts Decrypt.test.ts CalculateTotal.test.ts ResultCommitmentVerifier.test.ts QuinSelector.test.ts QuinGeneratePathIndices.test.ts Splicer.test.ts",
-        "test-major": "jest --force-exit QuadVoteTally.test.ts UpdateStateTree.test.ts",
+        "test-major": "jest --force-exit QuadVoteTally.test.ts ProcessMessages.test.ts",
         "test-quinGenPath": "jest QuinGeneratePathIndices.test.ts",
         "test-quinGenPath-debug": "node --inspect-brk ./node_modules/.bin/jest QuinGeneratePathIndices.test.ts",
         "test-hasher": "jest Hasher.test.ts",
@@ -28,6 +27,8 @@
         "test-splicer-debug": "node --inspect-brk ./node_modules/.bin/jest Splicer.test.ts",
         "test-quinSelector": "jest QuinSelector.test.ts",
         "test-quinSelector-debug": "node --inspect-brk ./node_modules/.bin/jest QuinSelector.test.ts",
+        "test-quinBatchLeavesExists": "jest QuinBatchLeavesExists.test.ts",
+        "test-quinBatchLeavesExists-debug": "node --inspect-brk ./node_modules/.bin/jest QuinBatchLeavesExists.test.ts",
         "test-ecdh": "jest Ecdh.test.ts",
         "test-ecdh-debug": "node --inspect-brk ./node_modules/.bin/jest Ecdh.test.ts",
         "test-privToPubKey": "jest PrivToPubKey.test.ts",
@@ -38,10 +39,8 @@
         "test-calculateTotal-debug": "node --inspect-brk ./node_modules/.bin/jest CalculateTotal.test.ts",
         "test-resultCommitmentVerifier": "jest ResultCommitmentVerifier.test.ts",
         "test-resultCommitmentVerifier-debug": "node --inspect-brk ./node_modules/.bin/jest ResultCommitmentVerifier.test.ts",
-        "test-updateStateTree": "NODE_OPTIONS=--max-old-space-size=4096 jest ts/__tests__/UpdateStateTree.test.ts",
-        "test-updateStateTree-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest ts/__tests__/UpdateStateTree.test.ts",
-        "test-batchUpdateStateTree": "NODE_OPTIONS=--max-old-space-size=4096 jest BatchUpdateStateTree.test.ts",
-        "test-batchUpdateStateTree-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest BatchUpdateStateTree.test.ts"
+        "test-processMessages": "NODE_OPTIONS=--max-old-space-size=4096 jest ts/__tests__/ProcessMessages.test.ts",
+        "test-processMessages-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest ts/__tests__/ProcessMessages.test.ts"
     },
     "dependencies": {
         "argparse": "^1.0.10",
@@ -54,7 +53,7 @@
     "devDependencies": {
         "@types/jest": "^24.0.25",
         "@types/node": "^13.1.2",
-        "circom-helper": "0.0.11",
+        "circom-helper": "0.0.12",
         "axios": "^0.21.0",
         "jest": "^24.9.0",
         "maci-config": "^1.0.0",

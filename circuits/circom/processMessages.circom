@@ -1,18 +1,25 @@
 include "./ecdh.circom"
+include "./decrypt.circom"
+include "./messageHasher.circom"
 include "./privToPubKey.circom"
+include "./trees/incrementalQuinTree.circom";
 
 template ProcessMessages(
     stateTreeDepth,
     msgTreeDepth,
-    voteOptionTreeDepth,
-    batchSize
+    msgSubTreeDepth,
+    voteOptionTreeDepth
 ) {
-    var TREE_ARITY = 5;
 
     // stateTreeDepth: the depth of the state tree
     // msgTreeDepth: the depth of the message tree
+    // msgSubTreeDepth: the depth of the shortest tree that can fit all the
+    //                  messages
     // voteOptionTreeDepth: depth of the vote option tree
-    // batchSize: the number of messages to process
+
+    var MSG_LENGTH = 8; // iv and data
+    var TREE_ARITY = 5;
+    var batchSize = TREE_ARITY ** msgSubTreeDepth;
     
     // CONSIDER: sha256 hash any values from the contract, pass in the hash
     // as a public input, and pass in said values as private inputs. This saves
@@ -22,10 +29,10 @@ template ProcessMessages(
     signal input currentStateRoot;
 
     // The existing message root
-    signal public input msgRoot;
+    signal input msgRoot;
 
     // The new state tree root
-    signal output newStateRoot;
+    /*signal output newStateRoot;*/
 
     /**************************************************************************
         1. Check whether each message exists in the message tree. Throw if
@@ -36,20 +43,47 @@ template ProcessMessages(
         batchSize must be the message tree arity raised to some power (e.g. 5 ^
         2)
     */
-    var MSG_LENGTH = 8; // iv and data
 
     signal private input msgs[batchSize][MSG_LENGTH];
-    signal input msgSubrootPath[msgTreeDepth][TREE_ARITY];
+    signal input msgSubrootPathElements[msgTreeDepth - msgSubTreeDepth][TREE_ARITY - 1];
 
-    // The index of the first message leaf in the batch. Note that messages are
-    // processed in reverse order.
+    // The index of the first message leaf in the batch, inclusive. Note that
+    // messages are processed in reverse order, so this is not be the index of
+    // the first message to process (unless there is only 1 message)
     signal input batchStartIndex;
 
-    // The index of the last message leaf in the batch to process. This value
-    // may be less than batchStartIndex + batchSize if this batch is the last
-    // batch and the total number of mesages is not a multiple of the batch
-    // size.
+    // The index of the last message leaf in the batch to process, inclusive.
+    // This value may be less than batchStartIndex + batchSize if this batch is
+    // the last batch and the total number of mesages is not a multiple of the
+    // batch size.
     signal input batchEndIndex;
+    component msgBatchLeavesExists = QuinBatchLeavesExists(msgTreeDepth, msgSubTreeDepth);
+    msgBatchLeavesExists.root <== msgRoot;
+
+    component messageHashers[batchSize];
+    for (var i = 0; i < batchSize; i ++) {
+        messageHashers[i] = MessageHasher();
+        for (var j = 0; j < MSG_LENGTH; j ++) {
+            messageHashers[i].in[j] <== msgs[i][j];
+        }
+        msgBatchLeavesExists.leaves[i] <== messageHashers[i].hash;
+    }
+
+    for (var i = 0; i < msgTreeDepth - msgSubTreeDepth; i ++) {
+        for (var j = 0; j < TREE_ARITY - 1; j ++) {
+            msgBatchLeavesExists.path_elements[i][j] <== msgSubrootPathElements[i][j];
+        }
+    }
+
+    // Assign values to msgBatchLeavesExists.path_index
+    // e.g. if batchStartIndex = 25, msgTreeDepth = 4, msgSubtreeDepth = 2
+    // msgBatchLeavesExists.path_index should be:
+    // [1, 0]
+    component msgBatchPathIndices = QuinGeneratePathIndices(msgTreeDepth);
+    msgBatchPathIndices.in <== batchStartIndex;
+    for (var i = msgSubTreeDepth; i < msgTreeDepth; i ++) {
+        msgBatchLeavesExists.path_index[i] <== msgBatchPathIndices.out[i];
+    }
 
     /**************************************************************************
         2. Derive ECDH shared keys and decrypt each message.
@@ -60,16 +94,16 @@ template ProcessMessages(
     // public key from the contract is correct based on the given private key -
     // that is, the prover knows the coordinator's private key.
 
-    // The coordinator's public key
+    /*// The coordinator's public key*/
     signal private input coordPrivKey;
 
     // The cooordinator's public key from the contract.
-    signal private input coordPubKey[2];
+    signal input coordPubKey[2];
 
     // The ECDH public key per message
-    signal public input encPubKeys[batchSize];
+    signal input encPubKeys[batchSize][2];
 
-    component derivedPubKey = PublicKey();
+    component derivedPubKey = PrivToPubKey();
     derivedPubKey.privKey <== coordPrivKey;
 
     // These checks ensure that the prover knows the correct coordinator's
@@ -80,6 +114,7 @@ template ProcessMessages(
     // Derive each shared key and decrypt each message
     component ecdh[batchSize];
     component decryptors[batchSize];
+
     for (var i = 0; i < batchSize; i++) {
         ecdh[i] = Ecdh();
         ecdh[i].privKey <== coordPrivKey;
@@ -87,8 +122,8 @@ template ProcessMessages(
         ecdh[i].pubKey[1] <== encPubKeys[i][1];
 
         decryptors[i] = Decrypt(MSG_LENGTH - 1);
-        decryptors[i].privKey <== ecdh.sharedKey[i];
-        for (var j = 0; j < MESSAGE_LENGTH; j++) {
+        decryptors[i].privKey <== ecdh[i].sharedKey;
+        for (var j = 0; j < MSG_LENGTH; j++) {
             decryptors[i].message[j] <== msgs[i][j];
         }
     }
