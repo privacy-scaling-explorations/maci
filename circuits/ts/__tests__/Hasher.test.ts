@@ -6,7 +6,6 @@ import {
 
 import {
     Command,
-    Message,
     Keypair,
 } from 'maci-domainobjs'
 
@@ -14,8 +13,10 @@ import {
     stringifyBigInts,
     genRandomSalt,
     hashLeftRight,
-    hash5,
     hash11,
+    hash5,
+    hash4,
+    hash3,
 } from 'maci-crypto'
 
 describe('Poseidon hash circuits', () => {
@@ -69,6 +70,48 @@ describe('Poseidon hash circuits', () => {
             const output = await getSignalByName(circuit, witness, 'main.hash')
 
             const outputJS = hash5(preImages)
+
+            expect(output.toString()).toEqual(outputJS.toString())
+        })
+    })
+
+    describe('Hasher4', () => {
+        const circuit = 'hasher4_test'
+        it('correctly hashes 4 random values', async () => {
+            const preImages: any = []
+            for (let i = 0; i < 4; i++) {
+                preImages.push(genRandomSalt())
+            }
+
+            const circuitInputs = stringifyBigInts({
+                in: preImages,
+            })
+
+            const witness = await genWitness(circuit, circuitInputs)
+            const output = await getSignalByName(circuit, witness, 'main.hash')
+
+            const outputJS = hash4(preImages)
+
+            expect(output.toString()).toEqual(outputJS.toString())
+        })
+    })
+
+    describe('Hasher3', () => {
+        const circuit = 'hasher3_test'
+        it('correctly hashes 3 random values', async () => {
+            const preImages: any = []
+            for (let i = 0; i < 3; i++) {
+                preImages.push(genRandomSalt())
+            }
+
+            const circuitInputs = stringifyBigInts({
+                in: preImages,
+            })
+
+            const witness = await genWitness(circuit, circuitInputs)
+            const output = await getSignalByName(circuit, witness, 'main.hash')
+
+            const outputJS = hash3(preImages)
 
             expect(output.toString()).toEqual(outputJS.toString())
         })

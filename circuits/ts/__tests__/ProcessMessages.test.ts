@@ -139,6 +139,11 @@ describe('ProcessMessage circuit', () => {
         })
 
         it('should produce the correct state root', async () => {
+            // Since `messages` has fewer elements than the batch size, pad it
+            // with its last element until it does
+            while (messages.length < messageBatchSize) {
+                messages.push(messages[messages.length - 1])
+            }
 
             const messageSubrootPath = messageTree.genMerkleSubrootPath(
                 0,
@@ -150,11 +155,13 @@ describe('ProcessMessage circuit', () => {
                 encPubKeys.push(encPubKeys[0])
             }
 
+            debugger
             const circuitInputs = stringifyBigInts({
                 currentStateRoot: maciState.stateAq.getRoot(STATE_TREE_DEPTH),
                 msgRoot: poll.messageAq.getRoot(treeDepths.messageTreeDepth),
                 msgs: messages.map((x) => x.asCircuitInputs()),
                 msgSubrootPathElements: messageSubrootPath.pathElements,
+                msgTreeZeroValue: poll.messageAq.zeroValue,
                 batchStartIndex: 0,
                 batchEndIndex: 0,
                 coordPrivKey: coordinatorKeypair.privKey.asCircuitInputs(),

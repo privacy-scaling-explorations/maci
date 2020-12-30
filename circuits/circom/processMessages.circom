@@ -3,6 +3,8 @@ include "./decrypt.circom"
 include "./messageHasher.circom"
 include "./privToPubKey.circom"
 include "./trees/incrementalQuinTree.circom";
+include "../node_modules/circomlib/circuits/mux1.circom";
+include "../node_modules/circomlib/circuits/comparators.circom";
 
 template ProcessMessages(
     stateTreeDepth,
@@ -24,9 +26,6 @@ template ProcessMessages(
     // CONSIDER: sha256 hash any values from the contract, pass in the hash
     // as a public input, and pass in said values as private inputs. This saves
     // a lot of gas for the verifier at the cost of constraints for the prover.
-
-    // The existing state root
-    signal input currentStateRoot;
 
     // The existing message root
     signal input msgRoot;
@@ -52,11 +51,12 @@ template ProcessMessages(
     // the first message to process (unless there is only 1 message)
     signal input batchStartIndex;
 
-    // The index of the last message leaf in the batch to process, inclusive.
+    // The index of the last message leaf in the batch to process, exclusive.
     // This value may be less than batchStartIndex + batchSize if this batch is
     // the last batch and the total number of mesages is not a multiple of the
     // batch size.
     signal input batchEndIndex;
+    signal input msgTreeZeroValue;
     component msgBatchLeavesExists = QuinBatchLeavesExists(msgTreeDepth, msgSubTreeDepth);
     msgBatchLeavesExists.root <== msgRoot;
 
@@ -66,7 +66,24 @@ template ProcessMessages(
         for (var j = 0; j < MSG_LENGTH; j ++) {
             messageHashers[i].in[j] <== msgs[i][j];
         }
-        msgBatchLeavesExists.leaves[i] <== messageHashers[i].hash;
+    }
+
+    // TODO: if batchEndIndex - batchStartIndex < batchSize, the remaining
+    // message hashes should be the zero value.
+    // e.g. [m, z, z, z, z] if there is only 1 real message in the batch
+    component lt[batchSize];
+    component muxes[batchSize];
+
+    for (var i = 0; i < batchSize; i ++) {
+        lt[i] = LessThan(32);
+        lt[i].in[0] <== batchEndIndex;
+        lt[i].in[1] <== batchStartIndex + i;
+
+        muxes[i] = Mux1();
+        muxes[i].s <== lt[i].out;
+        muxes[i].c[0] <== msgTreeZeroValue;
+        muxes[i].c[1] <== messageHashers[i].hash;
+        msgBatchLeavesExists.leaves[i] <== muxes[i].out;
     }
 
     for (var i = 0; i < msgTreeDepth - msgSubTreeDepth; i ++) {
@@ -127,4 +144,36 @@ template ProcessMessages(
             decryptors[i].message[j] <== msgs[i][j];
         }
     }
+
+    /**************************************************************************
+        3. Check that each state leaf is in the current state tree
+    */
+
+    var STATE_LEAF_LENGTH = 3;
+
+    // The existing state root
+    signal input currentStateRoot;
+    signal private input originalStateLeaves[batchSize][STATE_LEAF_LENGTH];
+    signal private input originalStateLeavesPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
+
+    // Hash each original state leaf
+    component originalStateLeafHashers[batchSize];
+    for (var i = 0; i < batchSize; i++) {
+        originalStateLeafHashers[i] = Hasher3();
+        for (var j = 0; j < STATE_LEAF_LENGTH; j++) {
+            originalStateLeafHashers[i].in[j] <== originalStateLeaves[i][j];
+        }
+    }
+
+    // For each Command (a decrypted Message), prove knowledge of the state
+    // leaf and its membership in the current state root.
+    component originalStateLeavesQle[batchSize];
+    for (var i = 0; i < batchSize; i++) {
+        originalStateLeavesQle[i] = QuinLeafExists(stateTreeDepth);
+        originalStateLeavesQle[i].root <== currentStateRoot;
+        originalStateLeavesQle[i].leaf <== originalStateLeafHashers[i].hash;
+    }
+    /**************************************************************************
+        4. Check that each state leaf is in the current state tree
+    */
 }
