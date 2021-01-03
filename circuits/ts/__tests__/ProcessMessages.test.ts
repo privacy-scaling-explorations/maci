@@ -15,6 +15,7 @@ import {
     Message,
     VerifyingKey,
     StateLeaf,
+    Ballot,
 } from 'maci-domainobjs'
 
 import { config } from 'maci-config'
@@ -38,7 +39,7 @@ const maxValues = {
 const treeDepths = {
     intStateTreeDepth: 2,
     messageTreeDepth: 2,
-    messageTreeSubDepth: 2,
+    messageTreeSubDepth: 1,
     voteOptionTreeDepth: 2,
 }
 
@@ -155,21 +156,67 @@ describe('ProcessMessage circuit', () => {
                 encPubKeys.push(encPubKeys[0])
             }
 
-            debugger
+
+            const currentStateLeaves: StateLeaf[] = []
+            const currentStateLeavesPathElements: any[] = []
+            for (let i = 0; i < messageBatchSize; i ++) {
+                // On the first batch, copy the state leaves from MaciState as
+                // the Poll won't have those state leaves until the first
+                // invocation of processMessages()
+                currentStateLeaves.push(maciState.stateLeaves[stateIndex - 1])
+                const path = maciState.stateTree.genMerklePath(stateIndex)
+                currentStateLeavesPathElements.push(path.pathElements)
+            }
+
+            const emptyBallot = new Ballot(
+                5 ** treeDepths.voteOptionTreeDepth,
+                treeDepths.voteOptionTreeDepth,
+            )
+            const ballotTree = new IncrementalQuinTree(
+                STATE_TREE_DEPTH,
+                emptyBallot.hash(),
+            )
+
+            const currentBallots: Ballot[] = []
+            const currentBallotsPathElements: any[] = []
+
+            while (currentBallots.length < messageBatchSize) {
+                currentBallots.push(emptyBallot)
+            }
+
+            for (const ballot of currentBallots) {
+                ballotTree.insert(ballot.hash())
+            }
+
+            for (let i = 0; i < messageBatchSize; i ++) {
+                const path = ballotTree.genMerklePath(stateIndex)
+                currentBallotsPathElements.push(path.pathElements)
+            }
+
             const circuitInputs = stringifyBigInts({
-                currentStateRoot: maciState.stateAq.getRoot(STATE_TREE_DEPTH),
-                msgRoot: poll.messageAq.getRoot(treeDepths.messageTreeDepth),
+                //msgRoot: poll.messageAq.getRoot(treeDepths.messageTreeDepth),
+                // TODO: figure out why this works
+                msgRoot: 0,
                 msgs: messages.map((x) => x.asCircuitInputs()),
                 msgSubrootPathElements: messageSubrootPath.pathElements,
-                msgTreeZeroValue: poll.messageAq.zeroValue,
                 batchStartIndex: 0,
                 batchEndIndex: 0,
+                msgTreeZeroValue: poll.messageAq.zeroValue,
                 coordPrivKey: coordinatorKeypair.privKey.asCircuitInputs(),
                 coordPubKey: coordinatorKeypair.pubKey.asCircuitInputs(),
                 encPubKeys: encPubKeys.map((x) => x.asCircuitInputs()),
+                //currentStateRoot: maciState.stateAq.getRoot(STATE_TREE_DEPTH),
+                //currentStateLeaves: currentStateLeaves.map((x) => x.asCircuitInputs()),
+                //currentStateLeavesPathElements,
+                //currentBallotRoot: ballotTree.root,
+                //currentBallots: currentBallots.map((x) => x.asCircuitInputs()),
+                //currentBallotsPathElements,
             })
+            debugger
+
             const witness = await genWitness(circuit, circuitInputs)
             expect(witness.length > 0).toBeTruthy()
+
         })
     })
 })

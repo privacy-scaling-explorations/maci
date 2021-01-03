@@ -55,8 +55,13 @@ class Poll {
     public messageAq: AccQueue
     public MESSAGE_TREE_ARITY = 5
 
-    // For message processing
+    public stateTree = new IncrementalQuinTree(
+        STATE_TREE_DEPTH,
+        NOTHING_UP_MY_SLEEVE,
+    )
     public stateLeaves: StateLeaf[] = []
+
+    // For message processing
     public pmStateAq
     public currentStateRoot = BigInt(0)
     public numBatchesProcessed = 0
@@ -97,7 +102,10 @@ class Poll {
         for (let i = 0; i < this.maxValues.maxVoteOptions; i ++) {
             this.results.push(BigInt(0))
         }
-
+        this.stateTree = new IncrementalQuinTree(
+            STATE_TREE_DEPTH,
+            NOTHING_UP_MY_SLEEVE,
+        )
     }
 
     /*
@@ -204,14 +212,19 @@ class Poll {
         // state root, and state leaves into this object, and set the current
         // message batch index
         if (this.numBatchesProcessed === 0) {
-            // Deep-copy the state leaves from the MaciState
-            this.stateLeaves =
-                this.maciStateRef.stateLeaves.map((x: StateLeaf) => x.copy())
-            
+            // Deep-copy the state tree from the MaciState
+            this.stateTree = this.maciStateRef.stateTree.copy()
+            this.stateLeaves = this.maciStateRef.stateLeaves.map((x) => x.copy())
 
-            // Populate this.ballots with empty ballots
-            for (let i = 0; i < this.stateLeaves.length; i ++) {
-                this.ballots.push(new Ballot(this.maxValues.maxVoteOptions))
+            // Populate this.ballots with empty ballots for each real state
+            // leaf (i.e. excluding the 0th state leaf)
+            for (let i = 0; i < this.stateTree.leaves.length - 1; i ++) {
+                this.ballots.push(
+                    new Ballot(
+                        this.maxValues.maxVoteOptions,
+                        this.treeDepths.voteOptionTreeDepth,
+                    ),
+                )
             }
 
             // Deep-copy the state AccQueue
@@ -245,7 +258,8 @@ class Poll {
                 // TODO: replace with try/catch after implementing error
                 // handling
                 const index = r.stateLeafIndex
-                this.stateLeaves[index] = r.newStateLeaf
+                this.stateTree.update(index, r.newStateLeaf.hash())
+                this.stateLeaves[index] = r.newStateLeaf.copy()
                 this.ballots[index] = r.newBallot
             }
         }
@@ -254,16 +268,8 @@ class Poll {
         this.zerothStateLeaf = _randomStateLeaf
 
         // Recompute the state root
-        const stateTree = new IncrementalQuinTree(
-            STATE_TREE_DEPTH, 
-            NOTHING_UP_MY_SLEEVE,
-            this.maciStateRef.STATE_TREE_ARITY,
-        )
-        stateTree.insert(this.zerothStateLeaf.hash())
-        for (let i = 0; i < this.stateLeaves.length; i ++) {
-            stateTree.insert(this.stateLeaves[i].hash())
-        }
-        this.currentStateRoot = BigInt(stateTree.root)
+        this.stateTree.update(0, this.zerothStateLeaf.hash())
+        this.currentStateRoot = BigInt(this.stateTree.root)
 
         this.numBatchesProcessed ++
 
@@ -340,7 +346,7 @@ class Poll {
         // the zeroth state leaf is a random value.
         const stateLeafIndex = BigInt(command.stateIndex) - BigInt(1)
 
-        assert(BigInt(this.stateLeaves.length) > stateLeafIndex)
+        assert(BigInt(this.stateTree.leaves.length) > stateLeafIndex)
 
         // The user to update (or not)
         const stateLeaf = this.stateLeaves[Number(stateLeafIndex)]
@@ -430,7 +436,6 @@ class Poll {
                     BigInt(this.results[j]) + BigInt(this.ballots[i].votes[j])
             }
         }
-        debugger
 
         this.numBatchesTallied ++
     }
@@ -530,6 +535,11 @@ class MaciState {
     public stateTreeDepth = STATE_TREE_DEPTH
     public polls: Poll[] = []
     public stateLeaves: StateLeaf[] = []
+    public stateTree = new IncrementalQuinTree(
+        this.STATE_TREE_SUBDEPTH,
+        NOTHING_UP_MY_SLEEVE,
+        this.STATE_TREE_ARITY,
+    )
     public stateAq: AccQueue = new AccQueue(
         this.STATE_TREE_SUBDEPTH,
         this.STATE_TREE_ARITY,
@@ -540,6 +550,7 @@ class MaciState {
 
     constructor() {
         this.stateAq.enqueue(NOTHING_UP_MY_SLEEVE)
+        this.stateTree.insert(NOTHING_UP_MY_SLEEVE)
     }
 
     public signUp(
@@ -550,9 +561,10 @@ class MaciState {
             _pubKey,
             _initialVoiceCreditBalance,
         )
-        this.stateLeaves.push(stateLeaf)
-
-        const leafIndex = this.stateAq.enqueue(stateLeaf.hash())
+        const h = stateLeaf.hash()
+        const leafIndex = this.stateAq.enqueue(h)
+        this.stateTree.insert(h)
+        this.stateLeaves.push(stateLeaf.copy())
         return leafIndex
     }
 

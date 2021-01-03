@@ -11,6 +11,7 @@ import {
     encrypt,
     decrypt,
     sign,
+    hashLeftRight,
     hash3,
     hash4,
     hash5,
@@ -22,6 +23,7 @@ import {
     genEcdhSharedKey,
     packPubKey,
     unpackPubKey,
+    IncrementalQuinTree,
     SNARK_FIELD_SIZE
 } from 'maci-crypto'
 
@@ -401,16 +403,48 @@ class Message {
 class Ballot {
     public votes: BigInt[] = []
     public nonce: BigInt = BigInt(0)
+    public voteOptionTreeDepth: number
 
-    constructor(numVoteOptions: number) {
-        assert(numVoteOptions >= 0)
-        for (let i = 0; i < numVoteOptions; i ++) {
+    constructor(
+        _numVoteOptions: number,
+        _voteOptionTreeDepth: number,
+    ) {
+        this.voteOptionTreeDepth = _voteOptionTreeDepth
+        assert(5 ** _voteOptionTreeDepth <= _numVoteOptions)
+        assert(_numVoteOptions >= 0)
+        for (let i = 0; i < _numVoteOptions; i ++) {
             this.votes.push(BigInt(0))
         }
     }
 
+    public hash = (): BigInt => {
+        // The empty vote option tree
+        const voTree = new IncrementalQuinTree(
+            this.voteOptionTreeDepth,
+            BigInt(0),
+        )
+
+        return hashLeftRight(BigInt(0), voTree.root)
+    }
+
+    public asCircuitInputs = (): BigInt[] => {
+        return this.asArray()
+    }
+
+    public asArray = (): BigInt[] => {
+        const voTree = new IncrementalQuinTree(
+            this.voteOptionTreeDepth,
+            BigInt(0),
+        )
+        for (const vote of this.votes) {
+            voTree.insert(vote)
+        }
+
+        return [ this.nonce, voTree.root ]
+    }
+
     public copy = (): Ballot => {
-        const b = new Ballot(this.votes.length)
+        const b = new Ballot(this.votes.length, this.voteOptionTreeDepth)
 
         b.votes = this.votes.map((x) => BigInt(x.toString()))
         b.nonce = BigInt(this.nonce.toString())

@@ -1,6 +1,5 @@
-include "./ecdh.circom"
-include "./decrypt.circom"
 include "./messageHasher.circom"
+include "./messageToCommand.circom"
 include "./privToPubKey.circom"
 include "./trees/incrementalQuinTree.circom";
 include "../node_modules/circomlib/circuits/mux1.circom";
@@ -20,6 +19,7 @@ template ProcessMessages(
     // voteOptionTreeDepth: depth of the vote option tree
 
     var MSG_LENGTH = 8; // iv and data
+    var BALLOT_LENGTH = 2;
     var TREE_ARITY = 5;
     var batchSize = TREE_ARITY ** msgSubTreeDepth;
     
@@ -33,15 +33,13 @@ template ProcessMessages(
     // The new state tree root
     /*signal output newStateRoot;*/
 
-    /**************************************************************************
-        1. Check whether each message exists in the message tree. Throw if
-        otherwise.
+    //  ----------------------------------------------------------------------- 
+    //      1. Check whether each message exists in the message tree. Throw if
+    //         otherwise.
 
-        To save constraints, compute the subroot of the messages and check
-        whether the subroot is a member of the message tree. This means that
-        batchSize must be the message tree arity raised to some power (e.g. 5 ^
-        2)
-    */
+    //  To save constraints, compute the subroot of the messages and check
+    //  whether the subroot is a member of the message tree. This means that
+    //  batchSize must be the message tree arity raised to some power (e.g. 5 ^
 
     signal private input msgs[batchSize][MSG_LENGTH];
     signal input msgSubrootPathElements[msgTreeDepth - msgSubTreeDepth][TREE_ARITY - 1];
@@ -56,6 +54,7 @@ template ProcessMessages(
     // the last batch and the total number of mesages is not a multiple of the
     // batch size.
     signal input batchEndIndex;
+
     signal input msgTreeZeroValue;
     component msgBatchLeavesExists = QuinBatchLeavesExists(msgTreeDepth, msgSubTreeDepth);
     msgBatchLeavesExists.root <== msgRoot;
@@ -68,16 +67,16 @@ template ProcessMessages(
         }
     }
 
-    // TODO: if batchEndIndex - batchStartIndex < batchSize, the remaining
+    // If batchEndIndex - batchStartIndex < batchSize, the remaining
     // message hashes should be the zero value.
     // e.g. [m, z, z, z, z] if there is only 1 real message in the batch
     component lt[batchSize];
     component muxes[batchSize];
 
     for (var i = 0; i < batchSize; i ++) {
-        lt[i] = LessThan(32);
-        lt[i].in[0] <== batchEndIndex;
-        lt[i].in[1] <== batchStartIndex + i;
+        lt[i] = LessEqThan(32);
+        lt[i].in[0] <== batchStartIndex + i;
+        lt[i].in[1] <== batchEndIndex;
 
         muxes[i] = Mux1();
         muxes[i].s <== lt[i].out;
@@ -99,19 +98,18 @@ template ProcessMessages(
     component msgBatchPathIndices = QuinGeneratePathIndices(msgTreeDepth);
     msgBatchPathIndices.in <== batchStartIndex;
     for (var i = msgSubTreeDepth; i < msgTreeDepth; i ++) {
-        msgBatchLeavesExists.path_index[i] <== msgBatchPathIndices.out[i];
+        msgBatchLeavesExists.path_index[i - msgSubTreeDepth] <== msgBatchPathIndices.out[i];
     }
 
-    /**************************************************************************
-        2. Derive ECDH shared keys and decrypt each message.
-    */
+    //  ----------------------------------------------------------------------- 
+    //     2. Decrypt each Message to a Command
 
     // Derive the ECDH shared key from the coordinator's private key and the
     // message's ephemeral public key. Also ensure that the coordinator's
     // public key from the contract is correct based on the given private key -
     // that is, the prover knows the coordinator's private key.
 
-    /*// The coordinator's public key*/
+    // The coordinator's public key
     signal private input coordPrivKey;
 
     // The cooordinator's public key from the contract.
@@ -120,60 +118,100 @@ template ProcessMessages(
     // The ECDH public key per message
     signal input encPubKeys[batchSize][2];
 
+    // These checks ensure that the prover knows the coordinator's private key
     component derivedPubKey = PrivToPubKey();
     derivedPubKey.privKey <== coordPrivKey;
-
-    // These checks ensure that the prover knows the correct coordinator's
-    // private key
     derivedPubKey.pubKey[0] === coordPubKey[0];
     derivedPubKey.pubKey[1] === coordPubKey[1];
 
-    // Derive each shared key and decrypt each message
-    component ecdh[batchSize];
-    component decryptors[batchSize];
-
-    for (var i = 0; i < batchSize; i++) {
-        ecdh[i] = Ecdh();
-        ecdh[i].privKey <== coordPrivKey;
-        ecdh[i].pubKey[0] <== encPubKeys[i][0];
-        ecdh[i].pubKey[1] <== encPubKeys[i][1];
-
-        decryptors[i] = Decrypt(MSG_LENGTH - 1);
-        decryptors[i].privKey <== ecdh[i].sharedKey;
-        for (var j = 0; j < MSG_LENGTH; j++) {
-            decryptors[i].message[j] <== msgs[i][j];
+    // Decrypt each Command into a Message
+    component commands[batchSize];
+    for (var i = 0; i < batchSize; i ++) {
+        commands[i] = MessageToCommand();
+        commands[i].encPrivKey <== coordPrivKey;
+        commands[i].encPubKey[0] <== encPubKeys[i][0];
+        commands[i].encPubKey[1] <== encPubKeys[i][1];
+        for (var j = 0; j < MSG_LENGTH; j ++) {
+            commands[i].message[j] <== msgs[i][j];
         }
     }
 
-    /**************************************************************************
-        3. Check that each state leaf is in the current state tree
-    */
+    //  ----------------------------------------------------------------------- 
+    //    3. Check that each state leaf is in the current state tree
 
-    var STATE_LEAF_LENGTH = 3;
+    /*var STATE_LEAF_LENGTH = 3;*/
+    /*signal input currentStateRoot;*/
 
     // The existing state root
-    signal input currentStateRoot;
-    signal private input originalStateLeaves[batchSize][STATE_LEAF_LENGTH];
-    signal private input originalStateLeavesPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
+    /*signal private input currentStateLeaves[batchSize][STATE_LEAF_LENGTH];*/
+    /*signal private input currentStateLeavesPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];*/
 
-    // Hash each original state leaf
-    component originalStateLeafHashers[batchSize];
-    for (var i = 0; i < batchSize; i++) {
-        originalStateLeafHashers[i] = Hasher3();
-        for (var j = 0; j < STATE_LEAF_LENGTH; j++) {
-            originalStateLeafHashers[i].in[j] <== originalStateLeaves[i][j];
-        }
-    }
+    /*// Hash each original state leaf*/
+    /*component currentStateLeafHashers[batchSize];*/
+    /*for (var i = 0; i < batchSize; i++) {*/
+        /*currentStateLeafHashers[i] = Hasher3();*/
+        /*for (var j = 0; j < STATE_LEAF_LENGTH; j++) {*/
+            /*currentStateLeafHashers[i].in[j] <== currentStateLeaves[i][j];*/
+        /*}*/
+    /*}*/
 
-    // For each Command (a decrypted Message), prove knowledge of the state
-    // leaf and its membership in the current state root.
-    component originalStateLeavesQle[batchSize];
-    for (var i = 0; i < batchSize; i++) {
-        originalStateLeavesQle[i] = QuinLeafExists(stateTreeDepth);
-        originalStateLeavesQle[i].root <== currentStateRoot;
-        originalStateLeavesQle[i].leaf <== originalStateLeafHashers[i].hash;
-    }
-    /**************************************************************************
-        4. Check that each state leaf is in the current state tree
-    */
+    /*component currentStateLeavesPathIndices[batchSize];*/
+    /*for (var i = 0; i < batchSize; i ++) {*/
+        /*currentStateLeavesPathIndices[i] = QuinGeneratePathIndices(stateTreeDepth);*/
+        /*currentStateLeavesPathIndices[i].in <== commands[i].stateIndex;*/
+    /*}*/
+
+    /*// For each Command (a decrypted Message), prove knowledge of the state*/
+    /*// leaf and its membership in the current state root.*/
+    /*component currentStateLeavesQle[batchSize];*/
+    /*for (var i = 0; i < batchSize; i ++) {*/
+        /*currentStateLeavesQle[i] = QuinLeafExists(stateTreeDepth);*/
+        /*currentStateLeavesQle[i].root <== currentStateRoot;*/
+        /*currentStateLeavesQle[i].leaf <== currentStateLeafHashers[i].hash;*/
+        /*for (var j = 0; j < stateTreeDepth; j ++) {*/
+            /*currentStateLeavesQle[i].path_index[j] <== currentStateLeavesPathIndices[i].out[j];*/
+            /*for (var k = 0; k < TREE_ARITY - 1; k++) {*/
+                /*currentStateLeavesQle[i].path_elements[j][k] <== currentStateLeavesPathElements[i][j][k];*/
+            /*}*/
+        /*}*/
+    /*}*/
+
+    /*//  ----------------------------------------------------------------------- */
+    /*//    4. Check whether each ballot exists in the original ballot tree*/
+    
+    /*// The existing ballot root*/
+    /*signal input currentBallotRoot*/
+    /*signal private input currentBallots[batchSize][BALLOT_LENGTH];*/
+    /*signal private input currentBallotsPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];*/
+
+    /*component currentBallotsHashers[batchSize];*/
+
+    /*component currentBallotsQle[batchSize];*/
+    /*for (var i = 0; i < batchSize; i ++) {*/
+        /*currentBallotsHashers[i] = HashLeftRight();*/
+        /*currentBallotsHashers[i].left <== currentBallots[i][0];*/
+        /*currentBallotsHashers[i].right <== currentBallots[i][1];*/
+
+        /*currentBallotsQle[i] = QuinLeafExists(stateTreeDepth);*/
+        /*currentBallotsQle[i].root <== currentBallotRoot;*/
+        /*currentBallotsQle[i].leaf <== currentBallotsHashers[i].hash;*/
+        /*for (var j = 0; j < stateTreeDepth; j ++) {*/
+            /*currentBallotsQle[i].path_index[j] <== currentStateLeavesPathIndices[i].out[j];*/
+            /*for (var k = 0; k < TREE_ARITY - 1; k++) {*/
+                /*currentBallotsQle[i].path_elements[j][k] <== currentBallotsPathElements[i][j][k];*/
+            /*}*/
+        /*}*/
+    /*}*/
+
+
+    // The new ballot root
+    /*signal output newBallotRoot;*/
+
+    /*//  ----------------------------------------------------------------------- */
+    /*// 5. Check whether each message is valid or not*/
+    /*// This entails the following checks:*/
+    /*//     a) Whether the max state tree index is correct*/
+    /*//     b) Whether the max vote option tree index is correct*/
+    /*//     c) Whether the nonce is correct*/
+    /*//     d) Whether the signature is correct*/
 }
