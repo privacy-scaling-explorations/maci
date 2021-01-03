@@ -102,10 +102,6 @@ class Poll {
         for (let i = 0; i < this.maxValues.maxVoteOptions; i ++) {
             this.results.push(BigInt(0))
         }
-        this.stateTree = new IncrementalQuinTree(
-            STATE_TREE_DEPTH,
-            NOTHING_UP_MY_SLEEVE,
-        )
     }
 
     /*
@@ -536,7 +532,7 @@ class MaciState {
     public polls: Poll[] = []
     public stateLeaves: StateLeaf[] = []
     public stateTree = new IncrementalQuinTree(
-        this.STATE_TREE_SUBDEPTH,
+        STATE_TREE_DEPTH,
         NOTHING_UP_MY_SLEEVE,
         this.STATE_TREE_ARITY,
     )
