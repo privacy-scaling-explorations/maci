@@ -11,6 +11,16 @@ template MessageToCommand() {
     signal input encPrivKey;
     signal input encPubKey[2];
 
+    signal output stateIndex;
+    signal output newPubKey[2];
+    signal output voteOptionIndex;
+    signal output newVoteWeight;
+    signal output nonce;
+    signal output pollId;
+    signal output salt;
+    signal output sigR8[2];
+    signal output sigS;
+
     component ecdh = Ecdh();
     ecdh.privKey <== encPrivKey;
     ecdh.pubKey[0] <== encPubKey[0];
@@ -49,16 +59,6 @@ template MessageToCommand() {
         nonceB2N.in[i] <== n2b.out[i + 150];
         pollIdB2N.in[i] <== n2b.out[i + 200];
     }
-
-    signal output stateIndex;
-    signal output newPubKey[2];
-    signal output voteOptionIndex;
-    signal output newVoteWeight;
-    signal output nonce;
-    signal output pollId;
-    signal output salt;
-    signal output sigR8[2];
-    signal output sigS;
 
     stateIndex <== stateIndexB2N.out;
     voteOptionIndex <== voteOptionIndexB2N.out;

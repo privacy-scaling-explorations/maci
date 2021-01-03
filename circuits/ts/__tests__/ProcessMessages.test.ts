@@ -194,9 +194,7 @@ describe('ProcessMessage circuit', () => {
             }
 
             const circuitInputs = stringifyBigInts({
-                //msgRoot: poll.messageAq.getRoot(treeDepths.messageTreeDepth),
-                // TODO: figure out why this works
-                msgRoot: 0,
+                msgRoot: poll.messageAq.getRoot(treeDepths.messageTreeDepth),
                 msgs: messages.map((x) => x.asCircuitInputs()),
                 msgSubrootPathElements: messageSubrootPath.pathElements,
                 batchStartIndex: 0,
@@ -205,18 +203,19 @@ describe('ProcessMessage circuit', () => {
                 coordPrivKey: coordinatorKeypair.privKey.asCircuitInputs(),
                 coordPubKey: coordinatorKeypair.pubKey.asCircuitInputs(),
                 encPubKeys: encPubKeys.map((x) => x.asCircuitInputs()),
-                //currentStateRoot: maciState.stateAq.getRoot(STATE_TREE_DEPTH),
-                //currentStateLeaves: currentStateLeaves.map((x) => x.asCircuitInputs()),
-                //currentStateLeavesPathElements,
-                //currentBallotRoot: ballotTree.root,
-                //currentBallots: currentBallots.map((x) => x.asCircuitInputs()),
-                //currentBallotsPathElements,
+                currentStateRoot: maciState.stateAq.getRoot(STATE_TREE_DEPTH),
+                currentStateLeaves: currentStateLeaves.map((x) => x.asCircuitInputs()),
+                currentStateLeavesPathElements,
+                currentBallotRoot: ballotTree.root,
+                currentBallots: currentBallots.map((x) => x.asCircuitInputs()),
+                currentBallotsPathElements,
             })
-            debugger
 
             const witness = await genWitness(circuit, circuitInputs)
             expect(witness.length > 0).toBeTruthy()
 
+            //const out = await getSignalByName(circuit, witness, 'main.testOut')
+            //console.log(out)
         })
     })
 })

@@ -124,7 +124,7 @@ template ProcessMessages(
     derivedPubKey.pubKey[0] === coordPubKey[0];
     derivedPubKey.pubKey[1] === coordPubKey[1];
 
-    // Decrypt each Command into a Message
+    // Decrypt each Message into a Command
     component commands[batchSize];
     for (var i = 0; i < batchSize; i ++) {
         commands[i] = MessageToCommand();
@@ -139,69 +139,69 @@ template ProcessMessages(
     //  ----------------------------------------------------------------------- 
     //    3. Check that each state leaf is in the current state tree
 
-    /*var STATE_LEAF_LENGTH = 3;*/
-    /*signal input currentStateRoot;*/
+    var STATE_LEAF_LENGTH = 3;
+    signal input currentStateRoot;
 
     // The existing state root
-    /*signal private input currentStateLeaves[batchSize][STATE_LEAF_LENGTH];*/
-    /*signal private input currentStateLeavesPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];*/
+    signal private input currentStateLeaves[batchSize][STATE_LEAF_LENGTH];
+    signal private input currentStateLeavesPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
 
-    /*// Hash each original state leaf*/
-    /*component currentStateLeafHashers[batchSize];*/
-    /*for (var i = 0; i < batchSize; i++) {*/
-        /*currentStateLeafHashers[i] = Hasher3();*/
-        /*for (var j = 0; j < STATE_LEAF_LENGTH; j++) {*/
-            /*currentStateLeafHashers[i].in[j] <== currentStateLeaves[i][j];*/
-        /*}*/
-    /*}*/
+    // Hash each original state leaf
+    component currentStateLeafHashers[batchSize];
+    for (var i = 0; i < batchSize; i++) {
+        currentStateLeafHashers[i] = Hasher3();
+        for (var j = 0; j < STATE_LEAF_LENGTH; j++) {
+            currentStateLeafHashers[i].in[j] <== currentStateLeaves[i][j];
+        }
+    }
 
-    /*component currentStateLeavesPathIndices[batchSize];*/
-    /*for (var i = 0; i < batchSize; i ++) {*/
-        /*currentStateLeavesPathIndices[i] = QuinGeneratePathIndices(stateTreeDepth);*/
-        /*currentStateLeavesPathIndices[i].in <== commands[i].stateIndex;*/
-    /*}*/
+    component currentStateLeavesPathIndices[batchSize];
+    for (var i = 0; i < batchSize; i ++) {
+        currentStateLeavesPathIndices[i] = QuinGeneratePathIndices(stateTreeDepth);
+        currentStateLeavesPathIndices[i].in <== commands[i].stateIndex;
+    }
 
-    /*// For each Command (a decrypted Message), prove knowledge of the state*/
-    /*// leaf and its membership in the current state root.*/
-    /*component currentStateLeavesQle[batchSize];*/
-    /*for (var i = 0; i < batchSize; i ++) {*/
-        /*currentStateLeavesQle[i] = QuinLeafExists(stateTreeDepth);*/
-        /*currentStateLeavesQle[i].root <== currentStateRoot;*/
-        /*currentStateLeavesQle[i].leaf <== currentStateLeafHashers[i].hash;*/
-        /*for (var j = 0; j < stateTreeDepth; j ++) {*/
-            /*currentStateLeavesQle[i].path_index[j] <== currentStateLeavesPathIndices[i].out[j];*/
-            /*for (var k = 0; k < TREE_ARITY - 1; k++) {*/
-                /*currentStateLeavesQle[i].path_elements[j][k] <== currentStateLeavesPathElements[i][j][k];*/
-            /*}*/
-        /*}*/
-    /*}*/
+    // For each Command (a decrypted Message), prove knowledge of the state
+    // leaf and its membership in the current state root.
+    component currentStateLeavesQle[batchSize];
+    for (var i = 0; i < batchSize; i ++) {
+        currentStateLeavesQle[i] = QuinLeafExists(stateTreeDepth);
+        currentStateLeavesQle[i].root <== currentStateRoot;
+        currentStateLeavesQle[i].leaf <== currentStateLeafHashers[i].hash;
+        for (var j = 0; j < stateTreeDepth; j ++) {
+            currentStateLeavesQle[i].path_index[j] <== currentStateLeavesPathIndices[i].out[j];
+            for (var k = 0; k < TREE_ARITY - 1; k++) {
+                currentStateLeavesQle[i].path_elements[j][k] <== currentStateLeavesPathElements[i][j][k];
+            }
+        }
+    }
 
-    /*//  ----------------------------------------------------------------------- */
-    /*//    4. Check whether each ballot exists in the original ballot tree*/
+    //  ----------------------------------------------------------------------- 
+    //    4. Check whether each ballot exists in the original ballot tree
     
-    /*// The existing ballot root*/
-    /*signal input currentBallotRoot*/
-    /*signal private input currentBallots[batchSize][BALLOT_LENGTH];*/
-    /*signal private input currentBallotsPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];*/
+    // The existing ballot root
+    signal input currentBallotRoot
+    signal private input currentBallots[batchSize][BALLOT_LENGTH];
+    signal private input currentBallotsPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
 
-    /*component currentBallotsHashers[batchSize];*/
+    component currentBallotsHashers[batchSize];
 
-    /*component currentBallotsQle[batchSize];*/
-    /*for (var i = 0; i < batchSize; i ++) {*/
-        /*currentBallotsHashers[i] = HashLeftRight();*/
-        /*currentBallotsHashers[i].left <== currentBallots[i][0];*/
-        /*currentBallotsHashers[i].right <== currentBallots[i][1];*/
+    component currentBallotsQle[batchSize];
+    for (var i = 0; i < batchSize; i ++) {
+        currentBallotsHashers[i] = HashLeftRight();
+        currentBallotsHashers[i].left <== currentBallots[i][0];
+        currentBallotsHashers[i].right <== currentBallots[i][1];
 
-        /*currentBallotsQle[i] = QuinLeafExists(stateTreeDepth);*/
-        /*currentBallotsQle[i].root <== currentBallotRoot;*/
-        /*currentBallotsQle[i].leaf <== currentBallotsHashers[i].hash;*/
-        /*for (var j = 0; j < stateTreeDepth; j ++) {*/
-            /*currentBallotsQle[i].path_index[j] <== currentStateLeavesPathIndices[i].out[j];*/
-            /*for (var k = 0; k < TREE_ARITY - 1; k++) {*/
-                /*currentBallotsQle[i].path_elements[j][k] <== currentBallotsPathElements[i][j][k];*/
-            /*}*/
-        /*}*/
-    /*}*/
+        currentBallotsQle[i] = QuinLeafExists(stateTreeDepth);
+        currentBallotsQle[i].root <== currentBallotRoot;
+        currentBallotsQle[i].leaf <== currentBallotsHashers[i].hash;
+        for (var j = 0; j < stateTreeDepth; j ++) {
+            currentBallotsQle[i].path_index[j] <== currentStateLeavesPathIndices[i].out[j];
+            for (var k = 0; k < TREE_ARITY - 1; k++) {
+                currentBallotsQle[i].path_elements[j][k] <== currentBallotsPathElements[i][j][k];
+            }
+        }
+    }
 
 
     // The new ballot root
