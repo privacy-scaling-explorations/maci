@@ -23,6 +23,7 @@ import {
     checkDeployerProviderConnection,
 } from './utils'
 
+import * as Web3 from 'web3'
 import * as ethers from 'ethers'
 
 import {
@@ -259,7 +260,53 @@ const publish = async (args: any) => {
         return
     }
 
+    const web3 = new Web3(ethProvider)
+	const maciContract = new web3.eth.Contract(maciAddress, maciContractAbi)
+    const wallet = web3.eth.accounts.wallet.add(ethSk)
+
+	let viewMethodBatch = new web3.BatchRequest()
+
+	viewMethodBatch.add(
+		maciContract.voteOptionsMaxLeafIndex().call.request(
+			{from: wallet.address },
+			(error: any, result: any) => {
+				if (e.message) {
+					throw e
+				}
+				const maxVoteOptions = (result).toNumber()
+				if (maxVoteOptions < voteOptionIndex) {
+					console.error('Error: the vote option index is invalid')
+					throw new Error()
+				}
+			}
+		)
+	)
+
+	let coordinatorPubKey;
+	viewMethodBatch.add(
+		maciContract.coordinatorPubKey().call.request(
+			{from: wallet.address },
+			(error: any, result: any) => {
+				if (e.message) {
+					throw e
+				}
+				coordinatorPubKey = new PubKey([
+					BigInt(coordinatorPubKeyOnChain.x.toString()),
+					BigInt(coordinatorPubKeyOnChain.y.toString()),
+				])
+			}
+		)
+	)
+
+	try {
+		viewMethodBatch.execute()
+	} catch (e) {
+		console.error(e.message)
+		return
+	}
+
     const wallet = new ethers.Wallet(ethSk, provider)
+
     const maciContract = new ethers.Contract(
         maciAddress,
         maciContractAbi,
@@ -267,20 +314,24 @@ const publish = async (args: any) => {
     )
 
     // Validate the vote option index against the max leaf index on-chain
-    const maxVoteOptions = (await maciContract.voteOptionsMaxLeafIndex()).toNumber()
+    // const maxVoteOptions = (await maciContract.voteOptionsMaxLeafIndex()).toNumber()
+	/*
     if (maxVoteOptions < voteOptionIndex) {
         console.error('Error: the vote option index is invalid')
         return
     }
+	*/
 
     // The new vote weight
     const newVoteWeight = BigInt(args.new_vote_weight)
 
+	/*
     const coordinatorPubKeyOnChain = await maciContract.coordinatorPubKey()
     const coordinatorPubKey = new PubKey([
         BigInt(coordinatorPubKeyOnChain.x.toString()),
         BigInt(coordinatorPubKeyOnChain.y.toString()),
     ])
+	*/
 
     const encKeypair = new Keypair()
 
