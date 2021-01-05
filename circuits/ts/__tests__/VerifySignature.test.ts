@@ -40,10 +40,9 @@ describe('Signature verification circuit', () => {
 
         const circuitInputs = stringifyBigInts({
             pubKey: signer.pubKey.asCircuitInputs(),
-            'R8x': stringifyBigInts(sig.R8[0]),
-            'R8y': stringifyBigInts(sig.R8[1]),
-            'S': stringifyBigInts(sig.S),
-            'preimage': stringifyBigInts(command.asArray())
+            R8: sig.R8,
+            S: sig.S,
+            preimage: command.asCircuitInputs(),
         })
 
         const witness = await genWitness(circuit, circuitInputs)
@@ -80,10 +79,9 @@ describe('Signature verification circuit', () => {
 
         const circuitInputs = stringifyBigInts({
             pubKey: wrongSigner.pubKey.asCircuitInputs(),
-            'R8x': sig.R8[0],
-            'R8y': sig.R8[1],
-            'S': sig.S,
-            'preimage': command.asArray()
+            R8: sig.R8,
+            S: sig.S,
+            preimage: command.asCircuitInputs(),
         })
 
         const witness = await genWitness(circuit, circuitInputs)

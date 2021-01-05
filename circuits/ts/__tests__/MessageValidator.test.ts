@@ -38,14 +38,13 @@ describe('MessageValidator circuit', () => {
         circuitInputs = stringifyBigInts({
             stateTreeIndex: 0,
             maxUsers: 1,
-            voteOptionsIndex: 0,
+            voteOptionIndex: 0,
             maxVoteOptions: 1,
             originalNonce: 1,
             nonce: 2,
             cmd: command.asCircuitInputs(),
             pubKey: pubKey.asCircuitInputs(),
-            sigR8x: signature.R8[0],
-            sigR8y: signature.R8[1],
+            sigR8: signature.R8,
             sigS: signature.S,
             currentVoiceCreditBalance: 100,
             currentVotesForOption: 0,
@@ -99,7 +98,7 @@ describe('MessageValidator circuit', () => {
 
     it('Should fail if the vote option index is invalid', async () => {
         const circuitInputs2 = circuitInputs
-        circuitInputs2.voteOptionsIndex = 1
+        circuitInputs2.voteOptionIndex = 1
         const witness = await genWitness(circuit, circuitInputs2)
         const isValid = await getSignalByName(circuit, witness, 'main.isValid')
         expect(isValid.toString()).toEqual('0')

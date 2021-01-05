@@ -10,11 +10,11 @@ template MessageValidator() {
     validStateLeafIndex.in[1] <== maxUsers;
 
     // b) Whether the max vote option tree index is correct
-    signal input voteOptionsIndex;
+    signal input voteOptionIndex;
     signal input maxVoteOptions;
-    component validVoteOptionsIndex = LessEqThan(32);
-    validVoteOptionsIndex.in[0] <== voteOptionsIndex;
-    validVoteOptionsIndex.in[1] <== maxVoteOptions;
+    component validVoteOptionIndex = LessEqThan(32);
+    validVoteOptionIndex.in[0] <== voteOptionIndex;
+    validVoteOptionIndex.in[1] <== maxVoteOptions;
 
     // c) Whether the nonce is correct
     signal input originalNonce;
@@ -27,15 +27,14 @@ template MessageValidator() {
     // d) Whether the signature is correct
     signal input cmd[CMD_LENGTH];
     signal input pubKey[2];
-    signal input sigR8x;
-    signal input sigR8y;
+    signal input sigR8[2];
     signal input sigS;
 
     component validSignature = VerifySignature();
     validSignature.pubKey[0] <== pubKey[0];
     validSignature.pubKey[1] <== pubKey[1];
-    validSignature.R8x <== sigR8x;
-    validSignature.R8y <== sigR8y;
+    validSignature.R8[0] <== sigR8[0];
+    validSignature.R8[1] <== sigR8[1];
     validSignature.S <== sigS;
     for (var i = 0; i < CMD_LENGTH; i ++) {
         validSignature.preimage[i] <== cmd[i];
@@ -57,7 +56,7 @@ template MessageValidator() {
                           sufficientVoiceCredits.out +
                           validNonce.out +
                           validStateLeafIndex.out +
-                          validVoteOptionsIndex.out;
+                          validVoteOptionIndex.out;
     signal output isValid;
     isValid <== validUpdate.out;
 
@@ -72,5 +71,5 @@ template MessageValidator() {
     /*isValidVc <== sufficientVoiceCredits.out;*/
     /*isValidNonce <== validNonce.out;*/
     /*isValidSli <== validStateLeafIndex.out;*/
-    /*isValidVoi <== validVoteOptionsIndex.out;*/
+    /*isValidVoi <== validVoteOptionIndex.out;*/
 }

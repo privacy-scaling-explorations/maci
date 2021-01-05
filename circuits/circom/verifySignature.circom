@@ -112,8 +112,7 @@ template VerifySignature() {
     // Verify the signature of a Command, which has exactly 4 elements in the
     // hash preimage
     signal input pubKey[2];
-    signal input R8x;
-    signal input R8y;
+    signal input R8[2];
     signal input S;
 
     var k = 4;
@@ -131,8 +130,8 @@ template VerifySignature() {
     verifier.Ax <== pubKey[0];
     verifier.Ay <== pubKey[1];
     verifier.S <== S;
-    verifier.R8x <== R8x;
-    verifier.R8y <== R8y;
+    verifier.R8x <== R8[0];
+    verifier.R8y <== R8[1];
     verifier.M <== M.hash;
 
     valid <== verifier.valid;

@@ -20,6 +20,7 @@ template MessageToCommand() {
     signal output salt;
     signal output sigR8[2];
     signal output sigS;
+    signal output packedCommandOut[PACKED_CMD_LENGTH];
 
     component ecdh = Ecdh();
     ecdh.privKey <== encPrivKey;
@@ -72,4 +73,8 @@ template MessageToCommand() {
     sigR8[0] <== decryptor.out[4];
     sigR8[1] <== decryptor.out[5];
     sigS <== decryptor.out[6];
+
+    for (var i = 0; i < PACKED_CMD_LENGTH; i ++) {
+        packedCommandOut[i] <== packedCommand[i];
+    }
 }
