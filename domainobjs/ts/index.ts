@@ -637,6 +637,11 @@ class Command implements ICommand {
         return a
     }
 
+    public asCircuitInputs = (): BigInt[] => {
+
+        return this.asArray()
+    }
+
     /*
      * Check whether this command has deep equivalence to another command
      */
