@@ -401,6 +401,7 @@ class Message {
  *               published
  */
 class Ballot {
+    // TODO; change to a tree
     public votes: BigInt[] = []
     public nonce: BigInt = BigInt(0)
     public voteOptionTreeDepth: number

@@ -1,4 +1,5 @@
 include "./messageHasher.circom"
+include "./messageValidator.circom"
 include "./messageToCommand.circom"
 include "./privToPubKey.circom"
 include "./trees/incrementalQuinTree.circom";
@@ -22,26 +23,47 @@ template ProcessMessages(
     var BALLOT_LENGTH = 2;
     var TREE_ARITY = 5;
     var batchSize = TREE_ARITY ** msgSubTreeDepth;
+    var PACKED_CMD_LENGTH = 4;
+
+    var BALLOT_NONCE_IDX = 0;
+    var BALLOT_VO_ROOT_IDX = 0;
     
     // CONSIDER: sha256 hash any values from the contract, pass in the hash
     // as a public input, and pass in said values as private inputs. This saves
     // a lot of gas for the verifier at the cost of constraints for the prover.
 
-    // The existing message root
-    signal input msgRoot;
-
     // The new state tree root
     /*signal output newStateRoot;*/
 
     //  ----------------------------------------------------------------------- 
+    //      0. Ensure that the maximum vote options signal is valid and whether
+    //      the maximum users signal is valid
+    signal input maxVoteOptions;
+    component maxVoValid = LessEqThan(32);
+    maxVoValid.in[0] <== maxVoteOptions;
+    maxVoValid.in[1] <== TREE_ARITY ** voteOptionTreeDepth;
+    maxVoValid.out === 1;
+
+    signal input maxUsers;
+    component maxUsersValid = LessEqThan(32);
+    maxUsersValid.in[0] <== maxUsers;
+    maxUsersValid.in[1] <== TREE_ARITY ** stateTreeDepth;
+    maxUsersValid.out === 1;
+
+    //  ----------------------------------------------------------------------- 
     //      1. Check whether each message exists in the message tree. Throw if
-    //         otherwise.
+    //         otherwise (aka create a constraint that prevents such a proof).
 
     //  To save constraints, compute the subroot of the messages and check
     //  whether the subroot is a member of the message tree. This means that
-    //  batchSize must be the message tree arity raised to some power (e.g. 5 ^
+    //  batchSize must be the message tree arity raised to some power
+    // (e.g. 5 ^ n)
 
+    // The existing message root
+    signal input msgRoot;
+    // The messages
     signal private input msgs[batchSize][MSG_LENGTH];
+    // The message Merkle proofs
     signal input msgSubrootPathElements[msgTreeDepth - msgSubTreeDepth][TREE_ARITY - 1];
 
     // The index of the first message leaf in the batch, inclusive. Note that
@@ -59,6 +81,8 @@ template ProcessMessages(
     component msgBatchLeavesExists = QuinBatchLeavesExists(msgTreeDepth, msgSubTreeDepth);
     msgBatchLeavesExists.root <== msgRoot;
 
+    // Hash each Message so we can check its existence in the Message tree
+    // later
     component messageHashers[batchSize];
     for (var i = 0; i < batchSize; i ++) {
         messageHashers[i] = MessageHasher();
@@ -70,6 +94,8 @@ template ProcessMessages(
     // If batchEndIndex - batchStartIndex < batchSize, the remaining
     // message hashes should be the zero value.
     // e.g. [m, z, z, z, z] if there is only 1 real message in the batch
+    // This allows us to have a batch of messages which is only partially
+    // full.
     component lt[batchSize];
     component muxes[batchSize];
 
@@ -91,7 +117,10 @@ template ProcessMessages(
         }
     }
 
-    // Assign values to msgBatchLeavesExists.path_index
+    // Assign values to msgBatchLeavesExists.path_index. Since
+    // msgBatchLeavesExists tests for the existence of a subroot, the length of
+    // the proof is the last n elements of a proof from the root to a leaf
+    // where n = msgTreeDepth - msgSubTreeDepth
     // e.g. if batchStartIndex = 25, msgTreeDepth = 4, msgSubtreeDepth = 2
     // msgBatchLeavesExists.path_index should be:
     // [1, 0]
@@ -104,10 +133,9 @@ template ProcessMessages(
     //  ----------------------------------------------------------------------- 
     //     2. Decrypt each Message to a Command
 
-    // Derive the ECDH shared key from the coordinator's private key and the
-    // message's ephemeral public key. Also ensure that the coordinator's
-    // public key from the contract is correct based on the given private key -
-    // that is, the prover knows the coordinator's private key.
+    // MessageToCommand derives the ECDH shared key from the coordinator's
+    // private key and the message's ephemeral public key. Next, it uses this
+    // shared key to decrypt a Message to a Command.
 
     // The coordinator's public key
     signal private input coordPrivKey;
@@ -118,7 +146,9 @@ template ProcessMessages(
     // The ECDH public key per message
     signal input encPubKeys[batchSize][2];
 
-    // These checks ensure that the prover knows the coordinator's private key
+    // Ensure that the coordinator's public key from the contract is correct
+    // based on the given private key - that is, the prover knows the
+    // coordinator's private key.
     component derivedPubKey = PrivToPubKey();
     derivedPubKey.privKey <== coordPrivKey;
     derivedPubKey.pubKey[0] === coordPubKey[0];
@@ -189,8 +219,8 @@ template ProcessMessages(
     component currentBallotsQle[batchSize];
     for (var i = 0; i < batchSize; i ++) {
         currentBallotsHashers[i] = HashLeftRight();
-        currentBallotsHashers[i].left <== currentBallots[i][0];
-        currentBallotsHashers[i].right <== currentBallots[i][1];
+        currentBallotsHashers[i].left <== currentBallots[i][BALLOT_NONCE_IDX];
+        currentBallotsHashers[i].right <== currentBallots[i][BALLOT_VO_ROOT_IDX];
 
         currentBallotsQle[i] = QuinLeafExists(stateTreeDepth);
         currentBallotsQle[i].root <== currentBallotRoot;
@@ -203,15 +233,80 @@ template ProcessMessages(
         }
     }
 
+    //  ----------------------------------------------------------------------- 
+    //    5. Check whether the existing vote weight exists in the vote option
+    //    tree of the ballot
+    signal private input currentVoteWeights[batchSize];
+    signal private input currentVoteWeightsPathElements[batchSize][voteOptionTreeDepth][TREE_ARITY - 1];
+    component currentVoteWeightsPathIndices[batchSize];
+    for (var i = 0; i < batchSize; i ++) {
+        currentVoteWeightsPathIndices[i] = QuinGeneratePathIndices(voteOptionTreeDepth);
+        currentVoteWeightsPathIndices[i].in <== commands[i].voteOptionIndex;
+    }
+
+    component currentVoteWeightsQle[batchSize];
+    for (var i = 0; i < batchSize; i ++) {
+        currentVoteWeightsQle[i] = QuinLeafExists(voteOptionTreeDepth);
+        currentVoteWeightsQle[i].root <== currentBallots[i][BALLOT_VO_ROOT_IDX];
+        for (var j = 0; j < voteOptionTreeDepth; j ++) {
+            currentVoteWeightsQle[i].path_index[j] <== currentVoteWeightsPathIndices[i].out[j];
+            for (var k = 0; k < TREE_ARITY - 1; k++) {
+                currentVoteWeightsQle[i].path_elements[j][k] <== currentVoteWeightsPathElements[i][j][k];
+            }
+        }
+    }
+
+    //  ----------------------------------------------------------------------- 
+    // 5. Check whether each message is valid or not
+    // This entails the following checks:
+    //     a) Whether the max state tree index is correct
+    //     b) Whether the max vote option tree index is correct
+    //     c) Whether the nonce is correct
+    //     d) Whether the signature is correct
+    //     e) Whether there are sufficient voice credits
+    /*component messageValid[batchSize];*/
+    /*for (var i = 0; i < batchSize; i ++) {*/
+        /*messageValid[i].stateTreeIndex <== commands[i].stateIndex;*/
+        /*messageValid[i].maxUsers <== maxUsers;*/
+        /*messageValid[i].voteOptionIndex <== commands[i].voteOptionIndex;*/
+        /*messageValid[i].maxVoteOptions <== maxVoteOptions;*/
+        /*messageValid[i].originalNonce <== currentBallots[i][1];*/
+        /*messageValid[i].nonce: commands[i].nonce;*/
+        /*messageValid[i].pubKey[0]: currentStateLeaves[i][0];*/
+        /*messageValid[i].pubKey[1]: currentStateLeaves[i][1];*/
+        /*messageValid[i].sigR8x: commands[i].sigR8[0];*/
+        /*messageValid[i].sigR8y: commands[i].sigR8[1];*/
+        /*messageValid[i].sigS: signature.S,*/
+        /*messageValid[i].currentVoiceCreditBalance: currentStateLeaves[i][2];*/
+        /*// TODO*/
+        /*[>messageValid[i].currentVotesForOption: currentBallots[<]*/
+        /*messageValid[i].voteWeight: commands[i].voteWeight;*/
+
+        /*for (var j = 0; j < PACKED_CMD_LENGTH; j++) {*/
+            /*messageValid[i].cmd[j] <== command.packedCommandOut[j];*/
+        /*}*/
+    /*}*/
+
+
+    //  ----------------------------------------------------------------------- 
+    // 6. For each message, corresponding state leaf, and new state root,
+    // create an updated state leaf and prove that it belongs to the new state
+    // root. The updated state leaf and root should be the same if the message
+    // is invalid.
+
+    //  ----------------------------------------------------------------------- 
+    // 7. For each message and corresponding ballot leaf, create an updated
+    // ballot leaf and ballot root. The updated ballot leaf and root should be
+    // the same if the message is invalid.
+
+    //  ----------------------------------------------------------------------- 
+    // 8. Prove that the random state leaf belongs in the final state root
+    // signal private input randomStateLeafHash;
+
+    //  ----------------------------------------------------------------------- 
+    // 9. Prove that the random ballot leaf belongs in the final ballot root
+    // signal private input randomBallotLeafHash;
 
     // The new ballot root
     /*signal output newBallotRoot;*/
-
-    /*//  ----------------------------------------------------------------------- */
-    /*// 5. Check whether each message is valid or not*/
-    /*// This entails the following checks:*/
-    /*//     a) Whether the max state tree index is correct*/
-    /*//     b) Whether the max vote option tree index is correct*/
-    /*//     c) Whether the nonce is correct*/
-    /*//     d) Whether the signature is correct*/
 }

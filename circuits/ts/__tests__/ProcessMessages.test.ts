@@ -156,7 +156,6 @@ describe('ProcessMessage circuit', () => {
                 encPubKeys.push(encPubKeys[0])
             }
 
-
             const currentStateLeaves: StateLeaf[] = []
             const currentStateLeavesPathElements: any[] = []
             for (let i = 0; i < messageBatchSize; i ++) {
@@ -209,6 +208,8 @@ describe('ProcessMessage circuit', () => {
                 currentBallotRoot: ballotTree.root,
                 currentBallots: currentBallots.map((x) => x.asCircuitInputs()),
                 currentBallotsPathElements,
+                maxVoteOptions: poll.maxValues.maxVoteOptions,
+                maxUsers: poll.maxValues.maxUsers,
             })
 
             const witness = await genWitness(circuit, circuitInputs)
