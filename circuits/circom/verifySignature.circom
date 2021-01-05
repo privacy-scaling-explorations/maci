@@ -111,8 +111,7 @@ template EdDSAPoseidonVerifier_patched() {
 template VerifySignature() {
   // Verify the signature of a Command, which has exactly 4 elements in the
   // hash preimage
-  signal input from_x;
-  signal input from_y;
+  signal input pubKey[2];
   signal input R8x;
   signal input R8y;
   signal input S;
@@ -132,8 +131,8 @@ template VerifySignature() {
   
   component verifier = EdDSAPoseidonVerifier_patched();
 
-  verifier.Ax <== from_x;
-  verifier.Ay <== from_y;
+  verifier.Ax <== pubKey[0];
+  verifier.Ay <== pubKey[1];
   verifier.S <== S;
   verifier.R8x <== R8x;
   verifier.R8y <== R8y;

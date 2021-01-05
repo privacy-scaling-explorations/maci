@@ -39,8 +39,7 @@ describe('Signature verification circuit', () => {
         expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).toBeTruthy()
 
         const circuitInputs = stringifyBigInts({
-            'from_x': stringifyBigInts(signer.pubKey.rawPubKey[0]),
-            'from_y': stringifyBigInts(signer.pubKey.rawPubKey[1]),
+            pubKey: signer.pubKey.asCircuitInputs(),
             'R8x': stringifyBigInts(sig.R8[0]),
             'R8y': stringifyBigInts(sig.R8[1]),
             'S': stringifyBigInts(sig.S),
@@ -80,8 +79,7 @@ describe('Signature verification circuit', () => {
         expect(verifySignature(plaintext, sig, wrongSigner.pubKey.rawPubKey)).toBeFalsy()
 
         const circuitInputs = stringifyBigInts({
-            'from_x': wrongSigner.pubKey.rawPubKey[0],
-            'from_y': wrongSigner.pubKey.rawPubKey[1],
+            pubKey: wrongSigner.pubKey.asCircuitInputs(),
             'R8x': sig.R8[0],
             'R8y': sig.R8[1],
             'S': sig.S,
