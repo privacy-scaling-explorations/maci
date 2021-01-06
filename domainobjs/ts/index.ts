@@ -411,7 +411,7 @@ class Ballot {
         _voteOptionTreeDepth: number,
     ) {
         this.voteOptionTreeDepth = _voteOptionTreeDepth
-        assert(5 ** _voteOptionTreeDepth <= _numVoteOptions)
+        assert(5 ** _voteOptionTreeDepth >= _numVoteOptions)
         assert(_numVoteOptions >= 0)
         for (let i = 0; i < _numVoteOptions; i ++) {
             this.votes.push(BigInt(0))
