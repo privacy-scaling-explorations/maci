@@ -4,7 +4,7 @@
     "description": "",
     "main": "build/index.js",
     "scripts": {
-        "circom-helper": "circom-helper -c ./circomHelperConfig.json -nc -b ./build/test/ -p 9001",
+        "circom-helper": "NODE_OPTIONS=--max-old-space-size=4096 circom-helper -c ./circomHelperConfig.json -nc -b ./build/test/ -p 9001",
         "watch": "tsc --watch",
         "build": "tsc",
         "buildQuadVoteTallySnark": "./scripts/buildQuadVoteTallySnark.sh",

@@ -305,7 +305,7 @@ class Poll {
 
     /*
      * Process one message
-     * TODO: replace with a version that does not change state
+     * TODO: replace with a version that does not change state?
      */
     private processMessage = (
         _index: number,

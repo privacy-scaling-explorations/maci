@@ -18,8 +18,6 @@ import {
     Ballot,
 } from 'maci-domainobjs'
 
-import { config } from 'maci-config'
-
 import {
     G1Point,
     G2Point,
@@ -79,6 +77,7 @@ describe('ProcessMessage circuit', () => {
         let pollId
         let poll
         const messages: Message[] = []
+        const commands: Command[] = []
         let messageTree
 
         beforeAll(async () => {
@@ -124,6 +123,7 @@ describe('ProcessMessage circuit', () => {
             )
             const message = command.encrypt(signature, sharedKey)
             messages.push(message)
+            commands.push(command)
             messageTree.insert(message.hash())
 
             poll.publishMessage(message, ecdhKeypair.pubKey)
@@ -145,13 +145,16 @@ describe('ProcessMessage circuit', () => {
             while (messages.length < messageBatchSize) {
                 messages.push(messages[messages.length - 1])
             }
+            while (commands.length < messageBatchSize) {
+                commands.push(commands[commands.length - 1])
+            }
 
             const messageSubrootPath = messageTree.genMerkleSubrootPath(
                 0,
                 messageBatchSize,
             )
 
-            const encPubKeys = poll.encPubKeys
+            const encPubKeys = poll.encPubKeys.map((x) => x.copy())
             while(encPubKeys.length < messageBatchSize) {
                 encPubKeys.push(encPubKeys[0])
             }
@@ -192,6 +195,41 @@ describe('ProcessMessage circuit', () => {
                 currentBallotsPathElements.push(path.pathElements)
             }
 
+            const currentVoteWeights: BigInt[] = []
+            const currentVoteWeightsPathElements: any[] = []
+
+            for (let i = 0; i < commands.length; i ++) {
+                // For each command, create a vote option tree from the Ballot
+                // it refers to
+                const ballot = currentBallots[Number(commands[i].stateIndex) - 1]
+                const voteOptionTree = new IncrementalQuinTree(
+                    ballot.voteOptionTreeDepth,
+                    BigInt(0),
+                )
+                for (const vote of ballot.votes) {
+                    voteOptionTree.insert(vote)
+                }
+
+                // Compute the Merkle path from the root to the vote.
+                const path = voteOptionTree.genMerklePath(
+                    Number(commands[i].voteOptionIndex)
+                )
+                currentVoteWeights.push(ballot.votes[Number(commands[i].voteOptionIndex)])
+                currentVoteWeightsPathElements.push(path.pathElements)
+            }
+
+            const randomStateLeaf = StateLeaf.genRandomLeaf()
+            const currentStateRoot = maciState.stateAq.getRoot(STATE_TREE_DEPTH)
+            const x = poll.encPubKeys.length
+
+            poll.processMessages(
+                pollId,
+                randomStateLeaf,
+                maciState,
+            )
+            const newStateRoot = poll.stateTree.root
+            expect(newStateRoot.toString()).not.toEqual(currentStateRoot.toString())
+
             const circuitInputs = stringifyBigInts({
                 msgRoot: poll.messageAq.getRoot(treeDepths.messageTreeDepth),
                 msgs: messages.map((x) => x.asCircuitInputs()),
@@ -210,6 +248,9 @@ describe('ProcessMessage circuit', () => {
                 currentBallotsPathElements,
                 maxVoteOptions: poll.maxValues.maxVoteOptions,
                 maxUsers: poll.maxValues.maxUsers,
+                currentVoteWeights,
+                currentVoteWeightsPathElements,
+                //newStateRoot,
             })
 
             const witness = await genWitness(circuit, circuitInputs)
