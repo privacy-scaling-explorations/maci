@@ -23,9 +23,9 @@ template MessageValidator() {
     validNonce.in[0] <== originalNonce + 1;
     validNonce.in[1] <== nonce;
 
-    var CMD_LENGTH = 4;
+    var PACKED_CMD_LENGTH = 4;
     // d) Whether the signature is correct
-    signal input cmd[CMD_LENGTH];
+    signal input cmd[PACKED_CMD_LENGTH];
     signal input pubKey[2];
     signal input sigR8[2];
     signal input sigS;
@@ -36,7 +36,7 @@ template MessageValidator() {
     validSignature.R8[0] <== sigR8[0];
     validSignature.R8[1] <== sigR8[1];
     validSignature.S <== sigS;
-    for (var i = 0; i < CMD_LENGTH; i ++) {
+    for (var i = 0; i < PACKED_CMD_LENGTH; i ++) {
         validSignature.preimage[i] <== cmd[i];
     }
 

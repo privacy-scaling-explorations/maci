@@ -198,9 +198,12 @@ describe('ProcessMessage circuit', () => {
             const currentVoteWeights: BigInt[] = []
             const currentVoteWeightsPathElements: any[] = []
 
+            const newVoteOptionTreeRoots: BigInt[] = []
+            const newVoteWeightsPathElements: any[] = []
+
             for (let i = 0; i < commands.length; i ++) {
                 // For each command, create a vote option tree from the Ballot
-                // it refers to
+                // it refers to, and update the vote option tree
                 const ballot = currentBallots[Number(commands[i].stateIndex) - 1]
                 const voteOptionTree = new IncrementalQuinTree(
                     ballot.voteOptionTreeDepth,
@@ -211,16 +214,26 @@ describe('ProcessMessage circuit', () => {
                 }
 
                 // Compute the Merkle path from the root to the vote.
-                const path = voteOptionTree.genMerklePath(
+                const currentPath = voteOptionTree.genMerklePath(
                     Number(commands[i].voteOptionIndex)
                 )
                 currentVoteWeights.push(ballot.votes[Number(commands[i].voteOptionIndex)])
-                currentVoteWeightsPathElements.push(path.pathElements)
+                currentVoteWeightsPathElements.push(currentPath.pathElements)
+
+                voteOptionTree.update(
+                    Number(commands[i].voteOptionIndex),
+                    commands[i].newVoteWeight,
+                )
+
+                const newPath = voteOptionTree.genMerklePath(
+                    Number(commands[i].voteOptionIndex)
+                )
+                newVoteOptionTreeRoots.push(voteOptionTree.root)
+                newVoteWeightsPathElements.push(newPath.pathElements)
             }
 
             const randomStateLeaf = StateLeaf.genRandomLeaf()
             const currentStateRoot = maciState.stateAq.getRoot(STATE_TREE_DEPTH)
-            const x = poll.encPubKeys.length
 
             poll.processMessages(
                 pollId,
@@ -250,9 +263,12 @@ describe('ProcessMessage circuit', () => {
                 maxUsers: poll.maxValues.maxUsers,
                 currentVoteWeights,
                 currentVoteWeightsPathElements,
+                newVoteOptionTreeRoots,
+                newVoteWeightsPathElements,
                 //newStateRoot,
-            })
+            })    
 
+            debugger
             const witness = await genWitness(circuit, circuitInputs)
             expect(witness.length > 0).toBeTruthy()
 

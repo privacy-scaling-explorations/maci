@@ -235,8 +235,8 @@ template ProcessMessages(
     }
 
     //  ----------------------------------------------------------------------- 
-    //    5. Check whether the existing vote weight exists in the vote option
-    //    tree of the ballot
+    //    5. Check whether the existing vote weight value is a member of each
+    //    corresponding Ballot's vote option tree.
     signal private input currentVoteWeights[batchSize];
     signal private input currentVoteWeightsPathElements[batchSize][voteOptionTreeDepth][TREE_ARITY - 1];
     component currentVoteWeightsQle[batchSize];
@@ -258,39 +258,57 @@ template ProcessMessages(
     }
 
     //  ----------------------------------------------------------------------- 
-    // 5. Check whether each message is valid or not
+    //    6. Check whether the new vote weight value is a member of the new
+    //    vote option tree.
+    signal private input newVoteOptionTreeRoots[batchSize];
+    signal private input newVoteWeightsPathElements[batchSize][voteOptionTreeDepth][TREE_ARITY - 1];
+    component newVoteWeightsQle[batchSize];
+    for (var i = 0; i < batchSize; i ++) {
+        newVoteWeightsQle[i] = QuinLeafExists(voteOptionTreeDepth);
+        newVoteWeightsQle[i].root <== newVoteOptionTreeRoots[i];
+        newVoteWeightsQle[i].leaf <== commands[i].newVoteWeight;
+        for (var j = 0; j < voteOptionTreeDepth; j ++) {
+            newVoteWeightsQle[i].path_index[j] <== currentVoteWeightsPathIndices[i].out[j];
+            for (var k = 0; k < TREE_ARITY - 1; k++) {
+                newVoteWeightsQle[i].path_elements[j][k] <== newVoteWeightsPathElements[i][j][k];
+            }
+        }
+    }
+
+    //  ----------------------------------------------------------------------- 
+    // 7. Check whether each message is valid or not
     // This entails the following checks:
     //     a) Whether the max state tree index is correct
     //     b) Whether the max vote option tree index is correct
     //     c) Whether the nonce is correct
     //     d) Whether the signature is correct
     //     e) Whether there are sufficient voice credits
-    component messageValid[batchSize];
-    for (var i = 0; i < batchSize; i ++) {
-        messageValid[i] = MessageValidator();
-        messageValid[i].stateTreeIndex <== commands[i].stateIndex;
-        messageValid[i].maxUsers <== maxUsers;
-        messageValid[i].voteOptionIndex <== commands[i].voteOptionIndex;
-        messageValid[i].maxVoteOptions <== maxVoteOptions;
-        messageValid[i].originalNonce <== currentBallots[i][BALLOT_NONCE_IDX];
-        messageValid[i].nonce <== commands[i].nonce;
-        messageValid[i].pubKey[0] <== currentStateLeaves[i][STATE_LEAF_PUB_X_IDX];
-        messageValid[i].pubKey[1] <== currentStateLeaves[i][STATE_LEAF_PUB_Y_IDX];
-        messageValid[i].sigR8[0] <== commands[i].sigR8[0];
-        messageValid[i].sigR8[1] <== commands[i].sigR8[1];
-        messageValid[i].sigS <== commands[i].sigS;
-        messageValid[i].currentVoiceCreditBalance <== currentStateLeaves[i][STATE_LEAF_VOICE_CREDIT_BALANCE_IDX];
-        messageValid[i].currentVotesForOption <== currentVoteWeights[i];
-        messageValid[i].voteWeight <== commands[i].newVoteWeight;
+    /*component messageValid[batchSize];*/
+    /*for (var i = 0; i < batchSize; i ++) {*/
+        /*messageValid[i] = MessageValidator();*/
+        /*messageValid[i].stateTreeIndex <== commands[i].stateIndex;*/
+        /*messageValid[i].maxUsers <== maxUsers;*/
+        /*messageValid[i].voteOptionIndex <== commands[i].voteOptionIndex;*/
+        /*messageValid[i].maxVoteOptions <== maxVoteOptions;*/
+        /*messageValid[i].originalNonce <== currentBallots[i][BALLOT_NONCE_IDX];*/
+        /*messageValid[i].nonce <== commands[i].nonce;*/
+        /*messageValid[i].pubKey[0] <== currentStateLeaves[i][STATE_LEAF_PUB_X_IDX];*/
+        /*messageValid[i].pubKey[1] <== currentStateLeaves[i][STATE_LEAF_PUB_Y_IDX];*/
+        /*messageValid[i].sigR8[0] <== commands[i].sigR8[0];*/
+        /*messageValid[i].sigR8[1] <== commands[i].sigR8[1];*/
+        /*messageValid[i].sigS <== commands[i].sigS;*/
+        /*messageValid[i].currentVoiceCreditBalance <== currentStateLeaves[i][STATE_LEAF_VOICE_CREDIT_BALANCE_IDX];*/
+        /*messageValid[i].currentVotesForOption <== currentVoteWeights[i];*/
+        /*messageValid[i].voteWeight <== commands[i].newVoteWeight;*/
 
-        for (var j = 0; j < PACKED_CMD_LENGTH; j++) {
-            messageValid[i].cmd[j] <== commands[i].packedCommandOut[j];
-        }
-    }
+        /*for (var j = 0; j < PACKED_CMD_LENGTH; j++) {*/
+            /*messageValid[i].cmd[j] <== commands[i].packedCommandOut[j];*/
+        /*}*/
+    /*}*/
 
     //  ----------------------------------------------------------------------- 
-    // 6. For each message, corresponding state leaf, and new state root,
-    // create an updated state leaf and prove that it belongs to the new state
+    // 6. For each message and corresponding state leaf,
+    // create an updated state leaf. Prove that the final state leaf belongs to the new state
     // root. The updated state leaf and root should be the same if the message
     // is invalid.
 
