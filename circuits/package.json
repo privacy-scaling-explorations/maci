@@ -21,6 +21,8 @@
         "test-quin-mt-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest IncrementalQuinTree.test.ts",
         "test-quadVoteTally": "NODE_OPTIONS=--max-old-space-size=4096 jest QuadVoteTally.test.ts",
         "test-quadVoteTally-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest QuadVoteTally.test.ts",
+        "test-slAndBallotTransformer": "jest StateLeafAndBallotTransformer.test.ts",
+        "test-slAndBallotTransformer-debug": "node --inspect-brk ./node_modules/.bin/jest StateLeafAndBallotTransformer.test.ts",
         "test-messageToCommand": "jest MessageToCommand.test.ts",
         "test-messageToCommand-debug": "node --inspect-brk ./node_modules/.bin/jest MessageToCommand.test.ts",
         "test-messageValidator": "jest MessageValidator.test.ts",
