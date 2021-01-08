@@ -74,15 +74,12 @@ describe('StateLeafAndBallotTransformer circuit', () => {
         const newSlVoiceCreditBalance = await getSignalByName(circuit, witness, 'main.newSlVoiceCreditBalance')
         const newBallotNonce = await getSignalByName(circuit, witness, 'main.newBallotNonce')
         const newBallotVoteOptionRoot = await getSignalByName(circuit, witness, 'main.newBallotVoteOptionRoot')
-        const newBallotCurrentVotesForOption =
-            await getSignalByName(circuit, witness, 'main.newBallotCurrentVotesForOption')
 
         expect(newSlPubKey0.toString()).toEqual(command.newPubKey.rawPubKey[0].toString())
         expect(newSlPubKey1.toString()).toEqual(command.newPubKey.rawPubKey[1].toString())
         expect(newSlVoiceCreditBalance.toString()).toEqual('19')
         expect(newBallotNonce.toString()).toEqual(command.nonce.toString())
         expect(newBallotVoteOptionRoot.toString()).toEqual(updatedBallotVoteOptionRoot.toString())
-        expect(newBallotCurrentVotesForOption.toString()).toEqual('9')
 
         const isValid = await getSignalByName(circuit, witness, 'main.isValid')
         expect(isValid.toString()).toEqual('1')

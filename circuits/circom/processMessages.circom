@@ -1,7 +1,8 @@
-include "./messageHasher.circom"
-include "./messageValidator.circom"
-include "./messageToCommand.circom"
-include "./privToPubKey.circom"
+include "./messageHasher.circom";
+include "./messageValidator.circom";
+include "./messageToCommand.circom";
+include "./privToPubKey.circom";
+include "./stateLeafAndBallotTransformer.circom";
 include "./trees/incrementalQuinTree.circom";
 include "../node_modules/circomlib/circuits/mux1.circom";
 include "../node_modules/circomlib/circuits/comparators.circom";
@@ -20,14 +21,15 @@ template ProcessMessages(
     // voteOptionTreeDepth: depth of the vote option tree
 
     var MSG_LENGTH = 8; // iv and data
-    var BALLOT_LENGTH = 2;
     var TREE_ARITY = 5;
     var batchSize = TREE_ARITY ** msgSubTreeDepth;
     var PACKED_CMD_LENGTH = 4;
 
+    var BALLOT_LENGTH = 2;
     var BALLOT_NONCE_IDX = 0;
     var BALLOT_VO_ROOT_IDX = 1;
 
+    var STATE_LEAF_LENGTH = 3;
     var STATE_LEAF_PUB_X_IDX = 0;
     var STATE_LEAF_PUB_Y_IDX = 1;
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
@@ -170,7 +172,6 @@ template ProcessMessages(
     //  ----------------------------------------------------------------------- 
     //    3. Check that each state leaf is in the current state tree
 
-    var STATE_LEAF_LENGTH = 3;
     signal input currentStateRoot;
 
     // The existing state root
@@ -276,36 +277,63 @@ template ProcessMessages(
     }
 
     //  ----------------------------------------------------------------------- 
-    // 7. Check whether each message is valid or not
-    // This entails the following checks:
-    //     a) Whether the max state tree index is correct
-    //     b) Whether the max vote option tree index is correct
-    //     c) Whether the nonce is correct
-    //     d) Whether the signature is correct
-    //     e) Whether there are sufficient voice credits
-    /*component messageValid[batchSize];*/
-    /*for (var i = 0; i < batchSize; i ++) {*/
-        /*messageValid[i] = MessageValidator();*/
-        /*messageValid[i].stateTreeIndex <== commands[i].stateIndex;*/
-        /*messageValid[i].maxUsers <== maxUsers;*/
-        /*messageValid[i].voteOptionIndex <== commands[i].voteOptionIndex;*/
-        /*messageValid[i].maxVoteOptions <== maxVoteOptions;*/
-        /*messageValid[i].originalNonce <== currentBallots[i][BALLOT_NONCE_IDX];*/
-        /*messageValid[i].nonce <== commands[i].nonce;*/
-        /*messageValid[i].pubKey[0] <== currentStateLeaves[i][STATE_LEAF_PUB_X_IDX];*/
-        /*messageValid[i].pubKey[1] <== currentStateLeaves[i][STATE_LEAF_PUB_Y_IDX];*/
-        /*messageValid[i].sigR8[0] <== commands[i].sigR8[0];*/
-        /*messageValid[i].sigR8[1] <== commands[i].sigR8[1];*/
-        /*messageValid[i].sigS <== commands[i].sigS;*/
-        /*messageValid[i].currentVoiceCreditBalance <== currentStateLeaves[i][STATE_LEAF_VOICE_CREDIT_BALANCE_IDX];*/
-        /*messageValid[i].currentVotesForOption <== currentVoteWeights[i];*/
-        /*messageValid[i].voteWeight <== commands[i].newVoteWeight;*/
+    //     7. Apply each message to each state leaf and each ballot.
+    //     
+    //  apply m0 to each of [ s0, s1, s2, s3, s4]
+    //                         |   |   |   |   |
+    //                         v   v   v   v   v
+    //  apply m1 to each of [ s0, s1, s2, s3, s4]
+    //                         |   |   |   |   |
+    //                         v   v   v   v   v
+    //  apply m2 to each of [ s0, s1, s2, s3, s4]
+    //                           ...
+    //  The last row of will be the final state leaves and ballots.
+    signal intermediateStateLeaves[batchSize + 1][batchSize][STATE_LEAF_LENGTH];
+    signal intermediateBallots[batchSize + 1][batchSize][BALLOT_LENGTH];
 
-        /*for (var j = 0; j < PACKED_CMD_LENGTH; j++) {*/
-            /*messageValid[i].cmd[j] <== commands[i].packedCommandOut[j];*/
+    for (var i = 0; i < batchSize; i ++) {
+        for (var j = 0; j < STATE_LEAF_LENGTH; j ++) {
+            intermediateStateLeaves[0][i][j] <== currentStateLeaves[i][j];
+        }
+        for (var j = 0; j < BALLOT_LENGTH; j ++) {
+            intermediateBallots[0][i][j] <== currentBallots[i][j];
+        }
+    }
+
+    /*component transformers[batchSize][batchSize];*/
+    /*for (var i = 0; i < batchSize; i ++) {*/
+        /*for (var j = 0; j < batchSize; j ++) {*/
+            /*transformers[i][j] = StateLeafAndBallotTransformer();*/
+            /*transformers[i][j].maxUsers <== maxUsers;*/
+            /*transformers[i][j].maxVoteOptions <== maxVoteOptions;*/
+            /*transformers[i][j].slPubKey[0] <== intermediateStateLeaves[i][j][STATE_LEAF_PUB_X_IDX];*/
+            /*transformers[i][j].slPubKey[1] <== intermediateStateLeaves[i][j][STATE_LEAF_PUB_Y_IDX];*/
+            /*transformers[i][j].slVoiceCreditBalance <== intermediateStateLeaves[i][j][STATE_LEAF_VOICE_CREDIT_BALANCE_IDX];*/
+            /*transformers[i][j].ballotNonce <== intermediateBallots[i][j][BALLOT_NONCE_IDX];*/
+            /*transformers[i][j].ballotVoteOptionRoot <== intermediateBallots[i][j][BALLOT_VO_ROOT_IDX];*/
+            /*transformers[i][j].ballotCurrentVotesForOption <== currentVoteWeights[i];*/
+            /*transformers[i][j].cmdStateIndex;*/
+            /*transformers[i][j].cmdNewPubKey[2];*/
+            /*transformers[i][j].cmdVoteOptionIndex <== commands[i].voteOptionIndex;*/
+            /*transformers[i][j].cmdNewVoteWeight <== commands[i].newVoteWeight;*/
+            /*transformers[i][j].cmdNonce <== commands[i].nonce;*/
+            /*transformers[i][j].cmdPollId <== commands[i].pollId;*/
+            /*transformers[i][j].cmdSalt <== commands[i].salt;*/
+            /*transformers[i][j].cmdSigR8[0] <== commands[i].sigR8[0];*/
+            /*transformers[i][j].cmdSigR8[1] <== commands[i].sigR8[1];*/
+            /*transformers[i][j].cmdSigS <== commands[i].sigS;*/
+            /*for (var k = 0; k < PACKED_CMD_LENGTH; k ++) {*/
+                /*transformers[i][j].packedCommand[k] <== commands[i].packedCommandOut[j];*/
+            /*}*/
+            /*transformers[i][j].updatedBallotVoteOptionRoot <== newVoteOptionTreeRoots[i];*/
+
+            /*intermediateStateLeaves[i + 1][j][STATE_LEAF_PUB_X_IDX] <== transformers[i][j].newSlPubKey[STATE_LEAF_PUB_X_IDX];*/
+            /*intermediateStateLeaves[i + 1][j][STATE_LEAF_PUB_Y_IDX] <== transformers[i][j].newSlPubKey[STATE_LEAF_PUB_Y_IDX];*/
+            /*intermediateStateLeaves[i + 1][j][STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] <== transformers[i][j].newSlVoiceCreditBalance;*/
+            /*intermediateBallots[i + 1][j][BALLOT_NONCE_IDX] <== transformers[i][j].newBallotNonce;*/
+            /*intermediateBallots[i + 1][j][BALLOT_VO_ROOT_IDX] <== transformers[i][j].newBallotVoteOptionRoot;*/
         /*}*/
     /*}*/
-
     //  ----------------------------------------------------------------------- 
     // 6. For each message and corresponding state leaf,
     // create an updated state leaf. Prove that the final state leaf belongs to the new state
