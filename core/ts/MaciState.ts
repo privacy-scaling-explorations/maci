@@ -5,6 +5,7 @@ import {
     SNARK_FIELD_SIZE,
     NOTHING_UP_MY_SLEEVE,
     hashLeftRight,
+    genRandomSalt,
 } from 'maci-crypto'
 import {
     PubKey,
@@ -59,6 +60,7 @@ class Poll {
         STATE_TREE_DEPTH,
         NOTHING_UP_MY_SLEEVE,
     )
+    public ballotTree: IncrementalQuinTree
     public stateLeaves: StateLeaf[] = []
 
     // For message processing
@@ -102,6 +104,15 @@ class Poll {
         for (let i = 0; i < this.maxValues.maxVoteOptions; i ++) {
             this.results.push(BigInt(0))
         }
+
+        const emptyBallot = new Ballot(
+            this.maxValues.maxVoteOptions,
+            this.treeDepths.voteOptionTreeDepth,
+        )
+        this.ballotTree = new IncrementalQuinTree(
+            STATE_TREE_DEPTH,
+            emptyBallot.hash(),
+        )
     }
 
     /*
@@ -154,13 +165,14 @@ class Poll {
 
     /*
      * Process _batchSize messages starting from the saved index, and then
-     * update the zeroth state leaf. This function will process messages even
-     * if the number of messages is not an exact multiple of _batchSize. e.g.
-     * if there are 10 messages, _index is 8, and _batchSize is 4, this
-     * function will only process the last two messages in this.messages, and
-     * finally update the zeroth state leaf. Note that this function will only
-     * process as many state leaves as there are ballots to prevent accidental
-     * inclusion of a new user after this poll has concluded.
+     * update the zeroth state leaf and the zeroth ballot. This function will
+     * process messages even if the number of messages is not an exact multiple
+     * of _batchSize. e.g.  if there are 10 messages, _index is 8, and
+     * _batchSize is 4, this function will only process the last two messages
+     * in this.messages, and finally update the zeroth state leaf. Note that
+     * this function will only process as many state leaves as there are
+     * ballots to prevent accidental inclusion of a new user after this poll
+     * has concluded.
      * @param _pollId The ID of the poll associated with the messages to
      *        process
      * @param _randomStateLeaf A random state leaf which will take the place
@@ -174,6 +186,7 @@ class Poll {
     public processMessages = (
         _pollId: number,
         _randomStateLeaf: StateLeaf,
+        _randomBallot: Ballot,
         _maciStateRef?: MaciState,
     ) => {
         const batchSize = this.batchSizes.messageBatchSize
@@ -205,22 +218,26 @@ class Poll {
         }
 
         // The first time this function is called, deep-copy the state queue,
-        // state root, and state leaves into this object, and set the current
-        // message batch index
+        // state root, and state leaves into this object, set the current
+        // message batch index, and insert a random ballot at index 0
         if (this.numBatchesProcessed === 0) {
             // Deep-copy the state tree from the MaciState
             this.stateTree = this.maciStateRef.stateTree.copy()
             this.stateLeaves = this.maciStateRef.stateLeaves.map((x) => x.copy())
 
+            // Insert a random ballot
+            this.ballots.push(_randomBallot)
+            this.ballotTree.insert(_randomBallot.hash())
+
             // Populate this.ballots with empty ballots for each real state
             // leaf (i.e. excluding the 0th state leaf)
             for (let i = 0; i < this.stateTree.leaves.length - 1; i ++) {
-                this.ballots.push(
-                    new Ballot(
-                        this.maxValues.maxVoteOptions,
-                        this.treeDepths.voteOptionTreeDepth,
-                    ),
+                const ballot = new Ballot(
+                    this.maxValues.maxVoteOptions,
+                    this.treeDepths.voteOptionTreeDepth,
                 )
+                this.ballots.push(ballot)
+                this.ballotTree.insert(ballot.hash())
             }
 
             // Deep-copy the state AccQueue
@@ -257,6 +274,7 @@ class Poll {
                 this.stateTree.update(index, r.newStateLeaf.hash())
                 this.stateLeaves[index] = r.newStateLeaf.copy()
                 this.ballots[index] = r.newBallot
+                this.ballotTree.update(index, r.newBallot.hash())
             }
         }
 

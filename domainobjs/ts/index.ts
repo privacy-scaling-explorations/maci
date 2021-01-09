@@ -401,7 +401,6 @@ class Message {
  *               published
  */
 class Ballot {
-    // TODO; change to a tree
     public votes: BigInt[] = []
     public nonce: BigInt = BigInt(0)
     public voteOptionTreeDepth: number
@@ -419,13 +418,8 @@ class Ballot {
     }
 
     public hash = (): BigInt => {
-        // The empty vote option tree
-        const voTree = new IncrementalQuinTree(
-            this.voteOptionTreeDepth,
-            BigInt(0),
-        )
-
-        return hashLeftRight(BigInt(0), voTree.root)
+        const vals = this.asArray()
+        return hashLeftRight(vals[0], vals[1])
     }
 
     public asCircuitInputs = (): BigInt[] => {
@@ -441,7 +435,7 @@ class Ballot {
             voTree.insert(vote)
         }
 
-        return [ this.nonce, voTree.root ]
+        return [this.nonce, voTree.root]
     }
 
     public copy = (): Ballot => {
@@ -461,6 +455,19 @@ class Ballot {
         }
         return b.nonce === this.nonce &&
             this.votes.length === b.votes.length
+    }
+
+
+    public static genRandomBallot(
+        _numVoteOptions: number,
+        _voteOptionTreeDepth: number,
+    ) {
+        const ballot = new Ballot(
+            _numVoteOptions,
+            _voteOptionTreeDepth,
+        )
+        ballot.nonce = genRandomSalt()
+        return ballot
     }
 }
 
