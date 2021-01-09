@@ -146,7 +146,7 @@ template ProcessMessages(
     signal input coordPubKey[2];
 
     // The ECDH public key per message
-    signal input encPubKeys[batchSize][2];
+    signal private input encPubKeys[batchSize][2];
 
     // Ensure that the coordinator's public key from the contract is correct
     // based on the given private key - that is, the prover knows the
