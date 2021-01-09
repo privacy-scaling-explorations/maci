@@ -1,11 +1,10 @@
 include "./messageHasher.circom";
-include "./messageValidator.circom";
 include "./messageToCommand.circom";
 include "./privToPubKey.circom";
 include "./stateLeafAndBallotTransformer.circom";
 include "./trees/incrementalQuinTree.circom";
 include "../node_modules/circomlib/circuits/mux1.circom";
-include "../node_modules/circomlib/circuits/comparators.circom";
+//include "../node_modules/circomlib/circuits/comparators.circom";
 
 template ProcessMessages(
     stateTreeDepth,
@@ -217,7 +216,6 @@ template ProcessMessages(
     signal private input currentBallotsPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
 
     component currentBallotsHashers[batchSize];
-
     component currentBallotsQle[batchSize];
     for (var i = 0; i < batchSize; i ++) {
         currentBallotsHashers[i] = HashLeftRight();
@@ -277,87 +275,105 @@ template ProcessMessages(
     }
 
     //  ----------------------------------------------------------------------- 
-    //     7. Apply each message to each state leaf and each ballot.
-    //     
-    //  apply m0 to each of [ s0, s1, s2, s3, s4]
-    //                         |   |   |   |   |
-    //                         v   v   v   v   v
-    //  apply m1 to each of [ s0, s1, s2, s3, s4]
-    //                         |   |   |   |   |
-    //                         v   v   v   v   v
-    //  apply m2 to each of [ s0, s1, s2, s3, s4]
-    //                           ...
-    //  The last row of will be the final state leaves and ballots.
-    signal intermediateStateLeaves[batchSize + 1][batchSize][STATE_LEAF_LENGTH];
-    signal intermediateBallots[batchSize + 1][batchSize][BALLOT_LENGTH];
-
+    //     7. Transform state leaves. For each command[i], stateLeaf[i], and
+    //     ballot[i]:
+    //       - Prove knowledge of a state leaf at command[i].stateIndex
+    //       - Generate a new leaf and hash it
+    //       - Generate the next intermediate state root
+    component transformers[batchSize];
     for (var i = 0; i < batchSize; i ++) {
-        for (var j = 0; j < STATE_LEAF_LENGTH; j ++) {
-            intermediateStateLeaves[0][i][j] <== currentStateLeaves[i][j];
-        }
-        for (var j = 0; j < BALLOT_LENGTH; j ++) {
-            intermediateBallots[0][i][j] <== currentBallots[i][j];
+        transformers[i] = StateLeafAndBallotTransformer();
+        transformers[i].maxUsers <== maxUsers;
+        transformers[i].maxVoteOptions <== maxVoteOptions;
+        transformers[i].slPubKey[STATE_LEAF_PUB_X_IDX] <== currentStateLeaves[i][STATE_LEAF_PUB_X_IDX];
+        transformers[i].slPubKey[STATE_LEAF_PUB_Y_IDX] <== currentStateLeaves[i][STATE_LEAF_PUB_Y_IDX];
+        transformers[i].slVoiceCreditBalance <== currentStateLeaves[i][STATE_LEAF_VOICE_CREDIT_BALANCE_IDX];
+        transformers[i].ballotNonce <== currentBallots[i][BALLOT_NONCE_IDX];
+        transformers[i].ballotVoteOptionRoot <== currentBallots[i][BALLOT_VO_ROOT_IDX];
+        transformers[i].ballotCurrentVotesForOption <== currentVoteWeights[i];
+        transformers[i].cmdStateIndex <== commands[i].stateIndex;
+        transformers[i].cmdNewPubKey[0] <== commands[i].newPubKey[0];
+        transformers[i].cmdNewPubKey[1] <== commands[i].newPubKey[1];
+        transformers[i].cmdVoteOptionIndex <== commands[i].voteOptionIndex;
+        transformers[i].cmdNewVoteWeight <== commands[i].newVoteWeight;
+        transformers[i].cmdNonce <== commands[i].nonce;
+        transformers[i].cmdPollId <== commands[i].pollId;
+        transformers[i].cmdSalt <== commands[i].salt;
+        transformers[i].cmdSigR8[0] <== commands[i].sigR8[0];
+        transformers[i].cmdSigR8[1] <== commands[i].sigR8[1];
+        transformers[i].cmdSigS <== commands[i].sigS;
+        transformers[i].updatedBallotVoteOptionRoot <== newVoteOptionTreeRoots[i];
+        for (var j = 0; j < PACKED_CMD_LENGTH; j ++) {
+            transformers[i].packedCommand[j] <== commands[i].packedCommandOut[j];
         }
     }
 
-    /*component transformers[batchSize][batchSize];*/
-    /*for (var i = 0; i < batchSize; i ++) {*/
-        /*for (var j = 0; j < batchSize; j ++) {*/
-            /*transformers[i][j] = StateLeafAndBallotTransformer();*/
-            /*transformers[i][j].maxUsers <== maxUsers;*/
-            /*transformers[i][j].maxVoteOptions <== maxVoteOptions;*/
-            /*transformers[i][j].slPubKey[0] <== intermediateStateLeaves[i][j][STATE_LEAF_PUB_X_IDX];*/
-            /*transformers[i][j].slPubKey[1] <== intermediateStateLeaves[i][j][STATE_LEAF_PUB_Y_IDX];*/
-            /*transformers[i][j].slVoiceCreditBalance <== intermediateStateLeaves[i][j][STATE_LEAF_VOICE_CREDIT_BALANCE_IDX];*/
-            /*transformers[i][j].ballotNonce <== intermediateBallots[i][j][BALLOT_NONCE_IDX];*/
-            /*transformers[i][j].ballotVoteOptionRoot <== intermediateBallots[i][j][BALLOT_VO_ROOT_IDX];*/
-            /*transformers[i][j].ballotCurrentVotesForOption <== currentVoteWeights[i];*/
-            /*transformers[i][j].cmdStateIndex;*/
-            /*transformers[i][j].cmdNewPubKey[2];*/
-            /*transformers[i][j].cmdVoteOptionIndex <== commands[i].voteOptionIndex;*/
-            /*transformers[i][j].cmdNewVoteWeight <== commands[i].newVoteWeight;*/
-            /*transformers[i][j].cmdNonce <== commands[i].nonce;*/
-            /*transformers[i][j].cmdPollId <== commands[i].pollId;*/
-            /*transformers[i][j].cmdSalt <== commands[i].salt;*/
-            /*transformers[i][j].cmdSigR8[0] <== commands[i].sigR8[0];*/
-            /*transformers[i][j].cmdSigR8[1] <== commands[i].sigR8[1];*/
-            /*transformers[i][j].cmdSigS <== commands[i].sigS;*/
-            /*for (var k = 0; k < PACKED_CMD_LENGTH; k ++) {*/
-                /*transformers[i][j].packedCommand[k] <== commands[i].packedCommandOut[j];*/
-            /*}*/
-            /*transformers[i][j].updatedBallotVoteOptionRoot <== newVoteOptionTreeRoots[i];*/
+    component newStateLeavesHashers[batchSize];
+    component newStateLeavesQip[batchSize];
 
-            /*intermediateStateLeaves[i + 1][j][STATE_LEAF_PUB_X_IDX] <== transformers[i][j].newSlPubKey[STATE_LEAF_PUB_X_IDX];*/
-            /*intermediateStateLeaves[i + 1][j][STATE_LEAF_PUB_Y_IDX] <== transformers[i][j].newSlPubKey[STATE_LEAF_PUB_Y_IDX];*/
-            /*intermediateStateLeaves[i + 1][j][STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] <== transformers[i][j].newSlVoiceCreditBalance;*/
-            /*intermediateBallots[i + 1][j][BALLOT_NONCE_IDX] <== transformers[i][j].newBallotNonce;*/
-            /*intermediateBallots[i + 1][j][BALLOT_VO_ROOT_IDX] <== transformers[i][j].newBallotVoteOptionRoot;*/
-        /*}*/
-    /*}*/
-    //  ----------------------------------------------------------------------- 
-    // 6. For each message and corresponding state leaf,
-    // create an updated state leaf. Prove that the final state leaf belongs to the new state
-    // root. The updated state leaf and root should be the same if the message
-    // is invalid.
+    component newBallotsHashers[batchSize];
+    component newBallotsQip[batchSize];
 
-    // The new state tree root
-    /*signal input newStateRoot;*/
-    /*signal input newStateLeavesPathElements[];*/
-    /*signal private input currentVoteWeightsPathElements[batchSize][voteOptionTreeDepth][TREE_ARITY - 1];*/
+    signal newStateRoots[batchSize];
+    signal newBallotsRoots[batchSize];
+
+    for (var i = 0; i < batchSize; i ++) {
+        // Hash each new state leaf and ballot
+        newStateLeavesHashers[i] = Hasher3();
+        newStateLeavesHashers[i].in[STATE_LEAF_PUB_X_IDX] <== transformers[i].newSlPubKey[STATE_LEAF_PUB_X_IDX];
+        newStateLeavesHashers[i].in[STATE_LEAF_PUB_Y_IDX] <== transformers[i].newSlPubKey[STATE_LEAF_PUB_Y_IDX];
+        newStateLeavesHashers[i].in[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] <== transformers[i].newSlVoiceCreditBalance;
+
+        newBallotsHashers[i] = HashLeftRight();
+        newBallotsHashers[i].left <== transformers[i].newBallotNonce;
+        newBallotsHashers[i].right <== transformers[i].newBallotVoteOptionRoot;
+
+        newStateLeavesQip[i] = QuinTreeInclusionProof(stateTreeDepth);
+        newBallotsQip[i] = QuinTreeInclusionProof(stateTreeDepth);
+
+        newStateLeavesQip[i].leaf <== newStateLeavesHashers[i].hash;
+        newBallotsQip[i].leaf <== newBallotsHashers[i].hash;
+
+        for (var j = 0; j < stateTreeDepth; j ++) {
+            newStateLeavesQip[i].path_index[j] <== currentStateLeavesPathIndices[i].out[j];
+            newBallotsQip[i].path_index[j] <== currentStateLeavesPathIndices[i].out[j];
+            for (var k = 0; k < TREE_ARITY - 1; k ++) {
+                newStateLeavesQip[i].path_elements[j][k] <== currentStateLeavesPathElements[i][j][k];
+                newBallotsQip[i].path_elements[j][k] <== currentBallotsPathElements[i][j][k];
+            }
+        }
+        newStateRoots[i] <== newStateLeavesQip[i].root;
+        newBallotsRoots[i] <== newBallotsQip[i].root;
+    }
 
     //  ----------------------------------------------------------------------- 
-    // 7. For each message and corresponding ballot leaf, create an updated
-    // ballot leaf and ballot root. The updated ballot leaf and root should be
-    // the same if the message is invalid.
-
-    //  ----------------------------------------------------------------------- 
-    // 8. Prove that the random state leaf belongs in the final state root
-    // signal private input randomStateLeafHash;
+    // 8. Generate the final state tree root with the zeroth leaf set to a random value
+    signal private input zerothStateLeafHash;
+    signal private input zerothStateLeafPathElements[stateTreeDepth][TREE_ARITY - 1];
+    component zerothSlQip = QuinTreeInclusionProof(stateTreeDepth);
+    zerothSlQip.leaf <== zerothStateLeafHash;
+    for (var i = 0; i < stateTreeDepth; i ++) {
+        zerothSlQip.path_index[i] <== 0;
+        for (var j = 0; j < TREE_ARITY - 1; j++) {
+            zerothSlQip.path_elements[i][j] <== zerothStateLeafPathElements[i][j];
+        }
+    }
+    signal output newStateRoot;
+    newStateRoot <== zerothSlQip.root;
 
     //  ----------------------------------------------------------------------- 
     // 9. Prove that the random ballot leaf belongs in the final ballot root
-    // signal private input randomBallotLeafHash;
 
-    // The new ballot root
-    /*signal output newBallotRoot;*/
+    signal private input zerothBallotHash;
+    signal private input zerothBallotPathElements[stateTreeDepth][TREE_ARITY - 1];
+    component zerothBallotQip = QuinTreeInclusionProof(stateTreeDepth);
+    zerothBallotQip.leaf <== zerothBallotHash;
+    for (var i = 0; i < stateTreeDepth; i ++) {
+        zerothBallotQip.path_index[i] <== 0;
+        for (var j = 0; j < TREE_ARITY - 1; j++) {
+            zerothBallotQip.path_elements[i][j] <== zerothBallotPathElements[i][j];
+        }
+    }
+    signal output newBallotRoot;
+    newBallotRoot <== zerothBallotQip.root;
 }

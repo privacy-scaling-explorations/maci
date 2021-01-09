@@ -1,4 +1,5 @@
 jest.setTimeout(1200000)
+import * as fs from 'fs'
 import { 
     genWitness,
     getSignalByName,
@@ -23,6 +24,7 @@ import {
     G2Point,
     stringifyBigInts,
     IncrementalQuinTree,
+    genRandomSalt,
 } from 'maci-crypto'
 
 const voiceCreditBalance = BigInt(100)
@@ -232,16 +234,31 @@ describe('ProcessMessage circuit', () => {
                 newVoteWeightsPathElements.push(newPath.pathElements)
             }
 
-            const randomStateLeaf = StateLeaf.genRandomLeaf()
+            const zerothStateLeaf = StateLeaf.genRandomLeaf()
+            const zerothStateLeafHash = zerothStateLeaf.hash()
+
             const currentStateRoot = maciState.stateAq.getRoot(STATE_TREE_DEPTH)
+
+            const zerothBallot = Ballot.genRandomBallot(
+                maxValues.maxVoteOptions,
+                treeDepths.voteOptionTreeDepth,
+            )
+            zerothBallot.nonce = genRandomSalt()
+            const zerothBallotHash = zerothBallot.hash()
 
             poll.processMessages(
                 pollId,
-                randomStateLeaf,
+                zerothStateLeaf,
+                zerothBallot,
                 maciState,
             )
+            
+            const zerothStateLeafPathElements = poll.stateTree.genMerklePath(0).pathElements
             const newStateRoot = poll.stateTree.root
             expect(newStateRoot.toString()).not.toEqual(currentStateRoot.toString())
+
+            const zerothBallotPathElements = poll.ballotTree.genMerklePath(0).pathElements
+            const newBallotRoot = poll.ballotTree.root
 
             const circuitInputs = stringifyBigInts({
                 msgRoot: poll.messageAq.getRoot(treeDepths.messageTreeDepth),
@@ -265,15 +282,24 @@ describe('ProcessMessage circuit', () => {
                 currentVoteWeightsPathElements,
                 newVoteOptionTreeRoots,
                 newVoteWeightsPathElements,
-                //newStateRoot,
+                zerothStateLeafHash,
+                zerothStateLeafPathElements,
+                zerothBallotHash,
+                zerothBallotPathElements,
             })    
 
-            debugger
+            fs.writeFileSync(
+                'input.json',
+                JSON.stringify(circuitInputs),
+            )
+
             const witness = await genWitness(circuit, circuitInputs)
             expect(witness.length > 0).toBeTruthy()
 
-            //const out = await getSignalByName(circuit, witness, 'main.testOut')
-            //console.log(out)
+            const circuitNewStateRoot = await getSignalByName(circuit, witness, 'main.newStateRoot')
+            expect(circuitNewStateRoot.toString()).toEqual(newStateRoot.toString())
+            const circuitNewBallotRoot = await getSignalByName(circuit, witness, 'main.newBallotRoot')
+            expect(circuitNewBallotRoot.toString()).toEqual(newBallotRoot.toString())
         })
     })
 })
