@@ -257,7 +257,7 @@ const batchTransactionRequests = async (
         batch.execute()
         return await Promise.all(callbacks)
     } catch {
-        return
+        return []
     }
 }
 

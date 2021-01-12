@@ -21,6 +21,7 @@ import {
     validateSaltFormat,
     contractExists,
     checkDeployerProviderConnection,
+    batchTransactionRequests,
 } from './utils'
 
 import * as ethers from 'ethers'
@@ -261,56 +262,27 @@ const publish = async (args: any) => {
         return
     }
 
-    let coordinatorPubKey;
-
     const wallet = new ethers.Wallet(ethSk, provider)
     const web3 = new Web3(ethProvider)
 	let maciContract = new web3.eth.Contract(maciAddress, maciContractAbi)
 
-    let viewMethodsBatch = new web3.BatchRequest()
-    let [maxLeafIndexResult, coordinatorPubKeyResult] = Array(2).fill(
-        async (error: any, result: any) => {
-            if (error.message) {
-                console.error(error.message)
-                throw error
-            }
-
-            return result
-        }
+    let [maxLeafIndexResult, coordinatorPubKeyResult] = await batchTransactionRequests(
+        ethProvider,
+        [maciContract.voteOptionsMaxLeafIndex(), maciContract.coordinatorPubKey()],
+        wallet.address
     )
-
-	viewMethodsBatch.add(
-		maciContract.voteOptionsMaxLeafIndex().call.request(
-			{ from: wallet.address },
-			maxLeafIndexResult
-		)
-	)
     
-	viewMethodsBatch.add(
-		maciContract.coordinatorPubKey().call.request(
-            { from: wallet.address },
-            coordinatorPubKeyResult
-		)
-	)
-
-	try {
-        viewMethodsBatch.execute()
-        let values = await Promise.all([maxLeafIndexResult, coordinatorPubKeyResult])
-
-        const maxVoteOptions = (values[0]).toNumber()
-        // Validate the vote option index against the max leaf index on-chain
-        if (maxVoteOptions < voteOptionIndex) {
-            console.error('Error: the vote option index is invalid')
-            throw new Error()
-        }
-
-        coordinatorPubKey = new PubKey([
-            BigInt(values[1].x.toString()),
-            BigInt(values[1].y.toString()),
-        ])
-	} catch (e) {
-		return
+    const maxVoteOptions = (maxLeafIndexResult).toNumber()
+    // Validate the vote option index against the max leaf index on-chain
+    if (maxVoteOptions < voteOptionIndex) {
+        console.error('Error: the vote option index is invalid')
+        throw new Error()
     }
+
+    const coordinatorPubKey = new PubKey([
+        BigInt(coordinatorPubKeyResult.x.toString()),
+        BigInt(coordinatorPubKeyResult.y.toString()),
+    ])
     
     maciContract = new ethers.Contract(
         maciAddress,
