@@ -71,7 +71,7 @@ const coordinatorKeypair = new Keypair()
 const circuit = 'processMessages_test'
 
 describe('ProcessMessage circuit', () => {
-    describe('1 user, 1 message', () => {
+    describe('1 user, 2 messages', () => {
         const maciState = new MaciState()
         const voteWeight = BigInt(9)
         const voteOptionIndex = BigInt(0)
@@ -111,8 +111,8 @@ describe('ProcessMessage circuit', () => {
                 stateIndex,
                 userKeypair.pubKey,
                 voteOptionIndex,
-                voteWeight,
-                BigInt(1),
+                BigInt(0),
+                BigInt(2),
                 BigInt(pollId),
             )
 
@@ -130,6 +130,29 @@ describe('ProcessMessage circuit', () => {
 
             poll.publishMessage(message, ecdhKeypair.pubKey)
 
+            // Second command
+            const command2 = new Command(
+                stateIndex,
+                userKeypair.pubKey,
+                voteOptionIndex,
+                voteWeight,
+                BigInt(1),
+                BigInt(pollId),
+            )
+            const signature2 = command2.sign(userKeypair.privKey)
+
+            const ecdhKeypair2 = new Keypair()
+            const sharedKey2 = Keypair.genEcdhSharedKey(
+                ecdhKeypair2.privKey,
+                coordinatorKeypair.pubKey,
+            )
+            const message2 = command2.encrypt(signature2, sharedKey2)
+            messages.push(message2)
+            commands.push(command2)
+            messageTree.insert(message2.hash())
+
+            poll.publishMessage(message2, ecdhKeypair2.pubKey)
+
             poll.messageAq.mergeSubRoots(0)
             poll.messageAq.merge(treeDepths.messageTreeDepth)
 
@@ -141,7 +164,7 @@ describe('ProcessMessage circuit', () => {
                 )
         })
 
-        it('should produce the correct state root', async () => {
+        it('should produce the correct state root and ballot root', async () => {
             // Since `messages` has fewer elements than the batch size, pad it
             // with its last element until it does
             while (messages.length < messageBatchSize) {
@@ -158,7 +181,7 @@ describe('ProcessMessage circuit', () => {
 
             const encPubKeys = poll.encPubKeys.map((x) => x.copy())
             while(encPubKeys.length < messageBatchSize) {
-                encPubKeys.push(encPubKeys[0])
+                encPubKeys.push(encPubKeys[encPubKeys.length - 1])
             }
 
             const currentStateLeaves: StateLeaf[] = []
@@ -265,7 +288,7 @@ describe('ProcessMessage circuit', () => {
                 msgs: messages.map((x) => x.asCircuitInputs()),
                 msgSubrootPathElements: messageSubrootPath.pathElements,
                 batchStartIndex: 0,
-                batchEndIndex: 0,
+                batchEndIndex: 1,
                 msgTreeZeroValue: poll.messageAq.zeroValue,
                 coordPrivKey: coordinatorKeypair.privKey.asCircuitInputs(),
                 coordPubKey: coordinatorKeypair.pubKey.asCircuitInputs(),

@@ -38,15 +38,66 @@ template ProcessMessages(
     // a lot of gas for the verifier at the cost of constraints for the prover.
 
     //  ----------------------------------------------------------------------- 
+    //  Inputs
+    signal input maxVoteOptions;
+    signal input maxUsers;
+
+    // The existing message root
+    signal input msgRoot;
+
+    // The messages
+    signal private input msgs[batchSize][MSG_LENGTH];
+
+    // The message Merkle proofs
+    signal input msgSubrootPathElements[msgTreeDepth - msgSubTreeDepth][TREE_ARITY - 1];
+    // The index of the first message leaf in the batch, inclusive. Note that
+    // messages are processed in reverse order, so this is not be the index of
+    // the first message to process (unless there is only 1 message)
+    signal input batchStartIndex;
+
+    // The index of the last message leaf in the batch to process, exclusive.
+    // This value may be less than batchStartIndex + batchSize if this batch is
+    // the last batch and the total number of mesages is not a multiple of the
+    // batch size.
+    signal input batchEndIndex;
+
+    signal input msgTreeZeroValue;
+
+    // The coordinator's public key
+    signal private input coordPrivKey;
+
+    // The cooordinator's public key from the contract.
+    signal input coordPubKey[2];
+
+    // The ECDH public key per message
+    signal private input encPubKeys[batchSize][2];
+
+    signal input currentStateRoot;
+    signal private input currentStateLeaves[batchSize][STATE_LEAF_LENGTH];
+    signal private input currentStateLeavesPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
+
+    signal input currentBallotRoot
+    signal private input currentBallots[batchSize][BALLOT_LENGTH];
+    signal private input currentBallotsPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
+
+    signal private input currentVoteWeights[batchSize];
+    signal private input currentVoteWeightsPathElements[batchSize][voteOptionTreeDepth][TREE_ARITY - 1];
+
+    signal private input newVoteOptionTreeRoots[batchSize];
+    signal private input newVoteWeightsPathElements[batchSize][voteOptionTreeDepth][TREE_ARITY - 1];
+
+    signal private input zerothStateLeafHash;
+    signal private input zerothStateLeafPathElements[stateTreeDepth][TREE_ARITY - 1];
+    signal private input zerothBallotHash;
+    signal private input zerothBallotPathElements[stateTreeDepth][TREE_ARITY - 1];
+    //  ----------------------------------------------------------------------- 
     //      0. Ensure that the maximum vote options signal is valid and whether
     //      the maximum users signal is valid
-    signal input maxVoteOptions;
     component maxVoValid = LessEqThan(32);
     maxVoValid.in[0] <== maxVoteOptions;
     maxVoValid.in[1] <== TREE_ARITY ** voteOptionTreeDepth;
     maxVoValid.out === 1;
 
-    signal input maxUsers;
     component maxUsersValid = LessEqThan(32);
     maxUsersValid.in[0] <== maxUsers;
     maxUsersValid.in[1] <== TREE_ARITY ** stateTreeDepth;
@@ -61,25 +112,6 @@ template ProcessMessages(
     //  batchSize must be the message tree arity raised to some power
     // (e.g. 5 ^ n)
 
-    // The existing message root
-    signal input msgRoot;
-    // The messages
-    signal private input msgs[batchSize][MSG_LENGTH];
-    // The message Merkle proofs
-    signal input msgSubrootPathElements[msgTreeDepth - msgSubTreeDepth][TREE_ARITY - 1];
-
-    // The index of the first message leaf in the batch, inclusive. Note that
-    // messages are processed in reverse order, so this is not be the index of
-    // the first message to process (unless there is only 1 message)
-    signal input batchStartIndex;
-
-    // The index of the last message leaf in the batch to process, exclusive.
-    // This value may be less than batchStartIndex + batchSize if this batch is
-    // the last batch and the total number of mesages is not a multiple of the
-    // batch size.
-    signal input batchEndIndex;
-
-    signal input msgTreeZeroValue;
     component msgBatchLeavesExists = QuinBatchLeavesExists(msgTreeDepth, msgSubTreeDepth);
     msgBatchLeavesExists.root <== msgRoot;
 
@@ -139,15 +171,6 @@ template ProcessMessages(
     // private key and the message's ephemeral public key. Next, it uses this
     // shared key to decrypt a Message to a Command.
 
-    // The coordinator's public key
-    signal private input coordPrivKey;
-
-    // The cooordinator's public key from the contract.
-    signal input coordPubKey[2];
-
-    // The ECDH public key per message
-    signal private input encPubKeys[batchSize][2];
-
     // Ensure that the coordinator's public key from the contract is correct
     // based on the given private key - that is, the prover knows the
     // coordinator's private key.
@@ -170,13 +193,6 @@ template ProcessMessages(
 
     //  ----------------------------------------------------------------------- 
     //    3. Check that each state leaf is in the current state tree
-
-    signal input currentStateRoot;
-
-    // The existing state root
-    signal private input currentStateLeaves[batchSize][STATE_LEAF_LENGTH];
-    signal private input currentStateLeavesPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
-
     // Hash each original state leaf
     component currentStateLeafHashers[batchSize];
     for (var i = 0; i < batchSize; i++) {
@@ -209,12 +225,6 @@ template ProcessMessages(
 
     //  ----------------------------------------------------------------------- 
     //    4. Check whether each ballot exists in the original ballot tree
-    
-    // The existing ballot root
-    signal input currentBallotRoot
-    signal private input currentBallots[batchSize][BALLOT_LENGTH];
-    signal private input currentBallotsPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
-
     component currentBallotsHashers[batchSize];
     component currentBallotsQle[batchSize];
     for (var i = 0; i < batchSize; i ++) {
@@ -236,8 +246,6 @@ template ProcessMessages(
     //  ----------------------------------------------------------------------- 
     //    5. Check whether the existing vote weight value is a member of each
     //    corresponding Ballot's vote option tree.
-    signal private input currentVoteWeights[batchSize];
-    signal private input currentVoteWeightsPathElements[batchSize][voteOptionTreeDepth][TREE_ARITY - 1];
     component currentVoteWeightsQle[batchSize];
     component currentVoteWeightsPathIndices[batchSize];
     for (var i = 0; i < batchSize; i ++) {
@@ -259,8 +267,6 @@ template ProcessMessages(
     //  ----------------------------------------------------------------------- 
     //    6. Check whether the new vote weight value is a member of the new
     //    vote option tree.
-    signal private input newVoteOptionTreeRoots[batchSize];
-    signal private input newVoteWeightsPathElements[batchSize][voteOptionTreeDepth][TREE_ARITY - 1];
     component newVoteWeightsQle[batchSize];
     for (var i = 0; i < batchSize; i ++) {
         newVoteWeightsQle[i] = QuinLeafExists(voteOptionTreeDepth);
@@ -281,7 +287,7 @@ template ProcessMessages(
     //       - Generate a new leaf and hash it
     //       - Generate the next intermediate state root
     component transformers[batchSize];
-    for (var i = 0; i < batchSize; i ++) {
+    for (var i = batchSize - 1; i >= 0; i --) {
         transformers[i] = StateLeafAndBallotTransformer();
         transformers[i].maxUsers <== maxUsers;
         transformers[i].maxVoteOptions <== maxVoteOptions;
@@ -348,8 +354,6 @@ template ProcessMessages(
 
     //  ----------------------------------------------------------------------- 
     // 8. Generate the final state tree root with the zeroth leaf set to a random value
-    signal private input zerothStateLeafHash;
-    signal private input zerothStateLeafPathElements[stateTreeDepth][TREE_ARITY - 1];
     component zerothSlQip = QuinTreeInclusionProof(stateTreeDepth);
     zerothSlQip.leaf <== zerothStateLeafHash;
     for (var i = 0; i < stateTreeDepth; i ++) {
@@ -364,8 +368,6 @@ template ProcessMessages(
     //  ----------------------------------------------------------------------- 
     // 9. Prove that the random ballot leaf belongs in the final ballot root
 
-    signal private input zerothBallotHash;
-    signal private input zerothBallotPathElements[stateTreeDepth][TREE_ARITY - 1];
     component zerothBallotQip = QuinTreeInclusionProof(stateTreeDepth);
     zerothBallotQip.leaf <== zerothBallotHash;
     for (var i = 0; i < stateTreeDepth; i ++) {
