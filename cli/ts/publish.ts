@@ -21,6 +21,7 @@ import {
     validateSaltFormat,
     contractExists,
     checkDeployerProviderConnection,
+    batchTransactionRequests,
 } from './utils'
 
 import * as ethers from 'ethers'
@@ -28,6 +29,8 @@ import * as ethers from 'ethers'
 import {
     DEFAULT_ETH_PROVIDER,
 } from './defaults'
+
+const Web3 = require('web3')
 
 const DEFAULT_SALT = genRandomSalt()
 
@@ -260,27 +263,35 @@ const publish = async (args: any) => {
     }
 
     const wallet = new ethers.Wallet(ethSk, provider)
-    const maciContract = new ethers.Contract(
+    const web3 = new Web3(ethProvider)
+	let maciContract = new web3.eth.Contract(maciAddress, maciContractAbi)
+
+    let [maxLeafIndexResult, coordinatorPubKeyResult] = await batchTransactionRequests(
+        ethProvider,
+        [maciContract.voteOptionsMaxLeafIndex(), maciContract.coordinatorPubKey()],
+        wallet.address
+    )
+    
+    const maxVoteOptions = (maxLeafIndexResult).toNumber()
+    // Validate the vote option index against the max leaf index on-chain
+    if (maxVoteOptions < voteOptionIndex) {
+        console.error('Error: the vote option index is invalid')
+        throw new Error()
+    }
+
+    const coordinatorPubKey = new PubKey([
+        BigInt(coordinatorPubKeyResult.x.toString()),
+        BigInt(coordinatorPubKeyResult.y.toString()),
+    ])
+    
+    maciContract = new ethers.Contract(
         maciAddress,
         maciContractAbi,
         wallet,
     )
 
-    // Validate the vote option index against the max leaf index on-chain
-    const maxVoteOptions = (await maciContract.voteOptionsMaxLeafIndex()).toNumber()
-    if (maxVoteOptions < voteOptionIndex) {
-        console.error('Error: the vote option index is invalid')
-        return
-    }
-
     // The new vote weight
     const newVoteWeight = BigInt(args.new_vote_weight)
-
-    const coordinatorPubKeyOnChain = await maciContract.coordinatorPubKey()
-    const coordinatorPubKey = new PubKey([
-        BigInt(coordinatorPubKeyOnChain.x.toString()),
-        BigInt(coordinatorPubKeyOnChain.y.toString()),
-    ])
 
     const encKeypair = new Keypair()
 

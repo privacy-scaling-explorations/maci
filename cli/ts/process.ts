@@ -194,7 +194,7 @@ const processMessages = async (args: any): Promise<string | undefined> => {
             provider,
             maciAddress,
             coordinatorKeypair,
-            StateLeaf.genBlankLeaf(BigInt(0)),
+            StateLeaf.genBlankLeaf(),
         )
     } catch (e) {
         console.error(e)

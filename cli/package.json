@@ -21,7 +21,8 @@
         "maci-core": "^1.0.0",
         "maci-crypto": "^1.0.0",
         "maci-domainobjs": "^1.0.0",
-        "prompt-async": "^0.9.9"
+        "prompt-async": "^0.9.9",
+        "web3": "^1.3.1"
     },
     "devDependencies": {
         "@types/jest": "^24.0.25",

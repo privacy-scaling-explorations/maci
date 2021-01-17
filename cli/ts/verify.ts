@@ -14,9 +14,12 @@ import {
     validateEthAddress,
     contractExists,
     calcQuinTreeDepthFromMaxLeaves,
+    batchTransactionRequests,
 } from './utils'
 
 import * as ethers from 'ethers'
+
+const Web3 = require('web3')
 
 const configureSubparser = (subparsers: any) => {
     const parser = subparsers.addParser(
@@ -155,44 +158,45 @@ const verify = async (args: any) => {
         return
     }
 
-    const maciContract = new ethers.Contract(
-        maciAddress,
-        maciContractAbi,
-        provider,
-    )
+    const web3 = new Web3(ethProvider)
+    let maciContract = new web3.eth.Contract(maciAddress, maciContractAbi)
 
-    const onChainResultsCommitment = BigInt((await maciContract.currentResultsCommitment()).toString())
+    let [currentResultsCommitment, currentSpentVoiceCreditsCommitment, currentPerVOSpentVoiceCreditsCommitment, onChainTotalVotes] = await batchTransactionRequests(
+        ethProvider,
+        [
+            maciContract.currentResultsCommitment(),
+            maciContract.currentSpentVoiceCreditsCommitment(),
+            maciContract.currentPerVOSpentVoiceCreditsCommitment(),
+            maciContract.totalVotes()
+        ]
+    )
+        
+    const onChainResultsCommitment = BigInt(currentResultsCommitment.toString())
     if (onChainResultsCommitment.toString() === expectedResultsCommitment.toString()) {
         console.log('The results commitment in the MACI contract on-chain is valid')
     } else {
         console.error('Error: the results commitment in the MACI contract does not match the expected commitment')
     }
 
-    const onChainTvcCommitment = BigInt(
-        (await maciContract.currentSpentVoiceCreditsCommitment()).toString()
-    )
+    const onChainTvcCommitment = BigInt(currentSpentVoiceCreditsCommitment.toString())
     if (onChainTvcCommitment.toString() === expectedTvcCommitment.toString()) {
         console.log('The total spent voice credit commitment in the MACI contract on-chain is valid')
     } else {
         console.error('Error: the total spent voice credit commitment in the MACI contract does not match the expected commitment')
     }
 
-    const onChainPvcCommitment = BigInt(
-        (await maciContract.currentPerVOSpentVoiceCreditsCommitment()).toString()
-    )
+    const onChainPvcCommitment = BigInt(currentPerVOSpentVoiceCreditsCommitment.toString())
     if (onChainPvcCommitment.toString() === expectedPvcCommitment.toString()) {
         console.log('The per vote option spent voice credit commitment in the MACI contract on-chain is valid')
     } else {
         console.error('Error: the per vote option spent voice credit commitment in the MACI contract does not match the expected commitment')
     }
-
     // Check the total votes
     let expectedTotalVotes = BigInt(0)
     for (const t of tally) {
         expectedTotalVotes += t
     }
 
-    const onChainTotalVotes = await maciContract.totalVotes()
     if (onChainTotalVotes.toString() === expectedTotalVotes.toString()) {
         console.log('The total sum of votes in the MACI contract on-chain is valid.')
     } else {

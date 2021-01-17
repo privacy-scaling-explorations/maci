@@ -25,6 +25,8 @@ import {
     maciContractAbi,
 } from 'maci-contracts'
 
+const Web3 = require('web3')
+
 /*
  * Retrieves and parses on-chain MACI contract data to create an off-chain
  * representation as a MaciState object.
@@ -223,6 +225,42 @@ const contractExists = async (
     return code.length > 2
 }
 
+const batchTransactionRequests = async (
+    provider: ethers.providers.Provider,
+    requests: Array<any>,
+    fromAddress?: string
+) => {
+    const web3 = new Web3(provider)
+    let batch = new web3.BatchRequest()
+
+    let callbacks = Array(requests.length).fill(
+        async (error: any, result: any) => {
+            if (error.message) {
+                console.error(error.message)
+                throw error
+            }
+
+            return result
+        }
+    )
+
+    callbacks.forEach((cb, index) => {
+        batch.add(
+            requests[index].call.request(
+                { from: fromAddress ? fromAddress : web3.eth.Contract.defaultAccount },
+                cb
+            )
+        )
+    })
+
+    try {
+        batch.execute()
+        return await Promise.all(callbacks)
+    } catch {
+        return []
+    }
+}
+
 export {
     promptPwd,
     calcBinaryTreeDepthFromMaxLeaves,
@@ -234,4 +272,5 @@ export {
     validateEthAddress,
     contractExists,
     genMaciStateFromContract,
+    batchTransactionRequests,
 }
