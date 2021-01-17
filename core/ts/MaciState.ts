@@ -5,7 +5,8 @@ import {
     SNARK_FIELD_SIZE,
     NOTHING_UP_MY_SLEEVE,
     hashLeftRight,
-    genRandomSalt,
+    stringifyBigInts,
+    Signature,
 } from 'maci-crypto'
 import {
     PubKey,
@@ -52,6 +53,8 @@ class Poll {
     public tallyVk: VerifyingKey
     public ballots: Ballot[] = []
     public messages: Message[] = []
+    public commands: Command[] = []
+    public signatures: Signature[] = []
     public encPubKeys: PubKey[] = []
     public messageAq: AccQueue
     public MESSAGE_TREE_ARITY = 5
@@ -61,6 +64,7 @@ class Poll {
         NOTHING_UP_MY_SLEEVE,
     )
     public ballotTree: IncrementalQuinTree
+    public messageTree: IncrementalQuinTree
     public stateLeaves: StateLeaf[] = []
 
     // For message processing
@@ -95,6 +99,10 @@ class Poll {
         this.maxValues = _maxValues
         this.processVk = _processVk
         this.tallyVk = _tallyVk
+        this.messageTree = new IncrementalQuinTree(
+            this.treeDepths.messageTreeDepth,
+            NOTHING_UP_MY_SLEEVE,
+        )
         this.messageAq = new AccQueue(
             this.treeDepths.messageTreeSubDepth,
             this.MESSAGE_TREE_ARITY,
@@ -137,6 +145,16 @@ class Poll {
 
         const messageLeaf = _message.hash()
         this.messageAq.enqueue(messageLeaf)
+        this.messageTree.insert(messageLeaf)
+
+        // Decrypt the message and store the Command
+        const sharedKey = Keypair.genEcdhSharedKey(
+            this.coordinatorKeypair.privKey,
+            _encPubKey,
+        )
+        const { command, signature } = Command.decrypt(_message, sharedKey)
+        this.commands.push(command)
+        this.signatures.push(signature)
     }
 
     /*
@@ -146,6 +164,7 @@ class Poll {
     ) => {
         this.messageAq.mergeSubRoots(0)
         this.messageAq.merge(this.treeDepths.messageTreeDepth)
+        assert(this.isMessageAqMerged())
 
         // TODO: Validate that a tree from this.messages matches the messageAq
         // main root
@@ -420,6 +439,174 @@ class Poll {
             newBallot,
             stateLeafIndex: Number(stateLeafIndex),
         }
+    }
+
+    private isMessageAqMerged = (): boolean => {
+        return this.messageAq.getRoot(this.treeDepths.messageTreeDepth) ===
+            this.messageTree.root
+    }
+    /*
+     * Generates inputs to the ProcessMessages circuit. Do not call
+     * processMessages() before this function.
+     */
+    public genProcessMessagesCircuitInputs = (
+        _index: number,
+        _randomStateLeaf: StateLeaf,
+        _randomBallot: Ballot,
+        _maciStateRef: MaciState,
+    ) => {
+        const messageBatchSize = this.batchSizes.messageBatchSize
+
+        assert(_index % messageBatchSize === 0)
+        assert(_index < this.messages.length)
+        assert(this.isMessageAqMerged())
+
+        const msgs = this.messages.map((x) => x.asCircuitInputs())
+        while (msgs.length < messageBatchSize) {
+            msgs.push(msgs[msgs.length - 1])
+        }
+
+        const messageSubrootPath = this.messageTree.genMerkleSubrootPath(
+            _index,
+            messageBatchSize,
+        )
+
+        const batchEndIndex = this.messages.length - _index > messageBatchSize ?
+            messageBatchSize
+            :
+            this.messages.length - _index - 1
+
+        const encPubKeys = this.encPubKeys.map((x) => x.copy())
+        while(encPubKeys.length < messageBatchSize) {
+            encPubKeys.push(encPubKeys[encPubKeys.length - 1])
+        }
+
+        const currentStateLeaves: StateLeaf[] = []
+        const currentStateLeavesPathElements: any[] = []
+
+        const commands = this.commands.map((x) => x.copy())
+        while (commands.length < messageBatchSize) {
+            commands.push(commands[commands.length - 1])
+        }
+
+        const emptyBallot = new Ballot(
+            5 ** this.treeDepths.voteOptionTreeDepth,
+            this.treeDepths.voteOptionTreeDepth,
+        )
+        const currentBallots: Ballot[] = this.ballots.map((x) => x.copy())
+        const currentBallotsPathElements: any[] = []
+
+        while (currentBallots.length < messageBatchSize) {
+            currentBallots.push(emptyBallot)
+        }
+
+        const emptyBallotHash = emptyBallot.hash()
+        let ballotTree
+
+        if (_index === 0) {
+            ballotTree = new IncrementalQuinTree(
+                STATE_TREE_DEPTH,
+                emptyBallotHash,
+            )
+            for (let i = 0; i < messageBatchSize; i ++) {
+                ballotTree.insert(emptyBallotHash)
+            }
+        } else {
+            ballotTree = this.ballotTree
+        }
+
+        const currentVoteWeights: BigInt[] = []
+        const currentVoteWeightsPathElements: any[] = []
+        const newVoteOptionTreeRoots: BigInt[] = []
+        const newVoteWeightsPathElements: any[] = []
+
+        for (let i = 0; i < commands.length; i ++) {
+            // For each command, create a vote option tree from the Ballot
+            // it refers to, and update the vote option tree
+            const ballot = currentBallots[Number(commands[i].stateIndex) - 1]
+            const voteOptionTree = new IncrementalQuinTree(
+                ballot.voteOptionTreeDepth,
+                BigInt(0),
+            )
+            for (const vote of ballot.votes) {
+                voteOptionTree.insert(vote)
+            }
+
+            // Compute the Merkle path from the root to the vote.
+            const currentPath = voteOptionTree.genMerklePath(
+                Number(commands[i].voteOptionIndex)
+            )
+            currentVoteWeights.push(ballot.votes[Number(commands[i].voteOptionIndex)])
+            currentVoteWeightsPathElements.push(currentPath.pathElements)
+
+            voteOptionTree.update(
+                Number(commands[i].voteOptionIndex),
+                commands[i].newVoteWeight,
+            )
+
+            const newPath = voteOptionTree.genMerklePath(
+                Number(commands[i].voteOptionIndex)
+            )
+            newVoteOptionTreeRoots.push(voteOptionTree.root)
+            newVoteWeightsPathElements.push(newPath.pathElements)
+        }
+        for (let i = 0; i < messageBatchSize; i ++) {
+            const stateIndex = Number(commands[i].stateIndex)
+
+            if (_index === 0) {
+                // On the first batch, copy the state leaves from MaciState as
+                // the Poll won't have those state leaves until the first
+                // invocation of processMessages()
+                currentStateLeaves.push(_maciStateRef.stateLeaves[stateIndex - 1])
+                const path = _maciStateRef.stateTree.genMerklePath(stateIndex)
+                currentStateLeavesPathElements.push(path.pathElements)
+
+                const ballotPath = ballotTree.genMerklePath(stateIndex)
+                currentBallotsPathElements.push(ballotPath.pathElements)
+            } else {
+                currentStateLeaves.push(this.stateLeaves[stateIndex - 1])
+                const path = this.stateTree.genMerklePath(stateIndex)
+                currentStateLeavesPathElements.push(path.pathElements)
+
+                const ballotPath = this.ballotTree.genMerklePath(stateIndex)
+                currentBallotsPathElements.push(ballotPath.pathElements)
+            }
+
+        }
+
+        const zerothBallotPathElements = ballotTree.genMerklePath(0).pathElements
+        const zerothStateLeafPathElements = _index === 0 ?
+            _maciStateRef.stateTree.genMerklePath(0).pathElements
+            :
+            this.stateTree.genMerklePath(0).pathElements
+
+        return stringifyBigInts({
+            msgRoot: this.messageAq.getRoot(this.treeDepths.messageTreeDepth),
+            msgs,
+            msgSubrootPathElements: messageSubrootPath.pathElements,
+            batchStartIndex: _index,
+            batchEndIndex,
+            msgTreeZeroValue: this.messageAq.zeroValue,
+            coordPrivKey: this.coordinatorKeypair.privKey.asCircuitInputs(),
+            coordPubKey: this.coordinatorKeypair.pubKey.asCircuitInputs(),
+            encPubKeys: encPubKeys.map((x) => x.asCircuitInputs()),
+            currentStateRoot: _maciStateRef.stateAq.getRoot(STATE_TREE_DEPTH),
+            currentStateLeaves: currentStateLeaves.map((x) => x.asCircuitInputs()),
+            currentStateLeavesPathElements,
+            currentBallotRoot: this.ballotTree.root,
+            currentBallots: currentBallots.map((x) => x.asCircuitInputs()),
+            currentBallotsPathElements,
+            maxVoteOptions: this.maxValues.maxVoteOptions,
+            maxUsers: this.maxValues.maxUsers,
+            currentVoteWeights,
+            currentVoteWeightsPathElements,
+            newVoteOptionTreeRoots,
+            newVoteWeightsPathElements,
+            zerothStateLeafHash: _randomStateLeaf.hash(),
+            zerothStateLeafPathElements,
+            zerothBallotHash: _randomBallot.hash(),
+            zerothBallotPathElements,
+        })
     }
 
     public hasUntalliedBallots = () => {

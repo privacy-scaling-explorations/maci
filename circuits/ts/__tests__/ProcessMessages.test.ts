@@ -260,8 +260,6 @@ describe('ProcessMessage circuit', () => {
             const zerothStateLeaf = StateLeaf.genRandomLeaf()
             const zerothStateLeafHash = zerothStateLeaf.hash()
 
-            const currentStateRoot = maciState.stateAq.getRoot(STATE_TREE_DEPTH)
-
             const zerothBallot = Ballot.genRandomBallot(
                 maxValues.maxVoteOptions,
                 treeDepths.voteOptionTreeDepth,
@@ -269,19 +267,32 @@ describe('ProcessMessage circuit', () => {
             zerothBallot.nonce = genRandomSalt()
             const zerothBallotHash = zerothBallot.hash()
 
+            // The current roots
+            const currentStateRoot = poll.stateTree.root
+            const currentBallotRoot = poll.ballotTree.root
+
+            const generatedInputs = poll.genProcessMessagesCircuitInputs(
+                0,
+                zerothStateLeaf,
+                zerothBallot,
+                maciState,
+            )
+
             poll.processMessages(
                 pollId,
                 zerothStateLeaf,
                 zerothBallot,
                 maciState,
             )
-            
-            const zerothStateLeafPathElements = poll.stateTree.genMerklePath(0).pathElements
-            const newStateRoot = poll.stateTree.root
-            expect(newStateRoot.toString()).not.toEqual(currentStateRoot.toString())
 
+            const zerothStateLeafPathElements = poll.stateTree.genMerklePath(0).pathElements
             const zerothBallotPathElements = poll.ballotTree.genMerklePath(0).pathElements
+
+            // The new roots, which should differ
+            const newStateRoot = poll.stateTree.root
             const newBallotRoot = poll.ballotTree.root
+            expect(newStateRoot.toString()).not.toEqual(currentStateRoot.toString())
+            expect(newBallotRoot.toString()).not.toEqual(currentBallotRoot.toString())
 
             const circuitInputs = stringifyBigInts({
                 msgRoot: poll.messageAq.getRoot(treeDepths.messageTreeDepth),
@@ -309,20 +320,89 @@ describe('ProcessMessage circuit', () => {
                 zerothStateLeafPathElements,
                 zerothBallotHash,
                 zerothBallotPathElements,
-            })    
+            })
 
-            fs.writeFileSync(
-                'input.json',
-                JSON.stringify(circuitInputs),
-            )
+            expect(circuitInputs.msgRoot).toEqual(generatedInputs.msgRoot)
+            expect(circuitInputs.msgs.length).toEqual(generatedInputs.msgs.length)
+            for (let i = 0; i < circuitInputs.msgs.length; i ++) {
+                for (let j = 0; j < Message.DATA_LENGTH + 1; j ++) {
+                    expect(circuitInputs.msgs[i][j].toString()).toEqual(generatedInputs.msgs[i][j].toString())
+                }
+            }
 
-            const witness = await genWitness(circuit, circuitInputs)
+            const witness = await genWitness(circuit, generatedInputs)
             expect(witness.length > 0).toBeTruthy()
 
             const circuitNewStateRoot = await getSignalByName(circuit, witness, 'main.newStateRoot')
             expect(circuitNewStateRoot.toString()).toEqual(newStateRoot.toString())
             const circuitNewBallotRoot = await getSignalByName(circuit, witness, 'main.newBallotRoot')
             expect(circuitNewBallotRoot.toString()).toEqual(newBallotRoot.toString())
+            expect(
+                JSON.stringify(stringifyBigInts(circuitInputs.msgSubrootPathElements))
+            ).toEqual(
+                JSON.stringify(stringifyBigInts(generatedInputs.msgSubrootPathElements))
+            )
+            expect(circuitInputs.batchStartIndex).toEqual(generatedInputs.batchStartIndex)
+            expect(circuitInputs.batchEndIndex).toEqual(generatedInputs.batchEndIndex)
+            expect(circuitInputs.msgTreeZeroValue.toString()).toEqual(generatedInputs.msgTreeZeroValue.toString())
+            expect(circuitInputs.coordPrivKey.toString()).toEqual(generatedInputs.coordPrivKey.toString())
+            expect(circuitInputs.coordPubKey.toString()).toEqual(generatedInputs.coordPubKey.toString())
+            expect(
+                JSON.stringify(stringifyBigInts(circuitInputs.encPubKeys))
+            ).toEqual(
+                JSON.stringify(stringifyBigInts(generatedInputs.encPubKeys))
+            )
+            expect(circuitInputs.currentStateRoot.toString()).toEqual(generatedInputs.currentStateRoot.toString())
+            expect(
+                JSON.stringify(stringifyBigInts(circuitInputs.currentStateLeaves))
+            ).toEqual(
+                JSON.stringify(stringifyBigInts(generatedInputs.currentStateLeaves))
+            )
+            expect(
+                JSON.stringify(stringifyBigInts(circuitInputs.currentStateLeavesPathElements))
+            ).toEqual(
+                JSON.stringify(stringifyBigInts(generatedInputs.currentStateLeavesPathElements))
+            )
+            expect(circuitInputs.currentBallotRoot.toString()).toEqual(generatedInputs.currentBallotRoot.toString())
+            expect(
+                JSON.stringify(stringifyBigInts(circuitInputs.currentBallotsPathElements))
+            ).toEqual(
+                JSON.stringify(stringifyBigInts(generatedInputs.currentBallotsPathElements))
+            )
+            expect(circuitInputs.maxVoteOptions.toString()).toEqual(generatedInputs.maxVoteOptions.toString())
+            expect(circuitInputs.maxUsers.toString()).toEqual(generatedInputs.maxUsers.toString())
+            expect(
+                JSON.stringify(stringifyBigInts(circuitInputs.currentVoteWeights))
+            ).toEqual(
+                JSON.stringify(stringifyBigInts(generatedInputs.currentVoteWeights))
+            )
+            expect(
+                JSON.stringify(stringifyBigInts(circuitInputs.currentVoteWeightsPathElements))
+            ).toEqual(
+                JSON.stringify(stringifyBigInts(generatedInputs.currentVoteWeightsPathElements))
+            )
+            expect(
+                JSON.stringify(stringifyBigInts(circuitInputs.newVoteOptionTreeRoots))
+            ).toEqual(
+                JSON.stringify(stringifyBigInts(generatedInputs.newVoteOptionTreeRoots))
+            )
+            expect(
+                JSON.stringify(stringifyBigInts(circuitInputs.newVoteWeightsPathElements))
+            ).toEqual(
+                JSON.stringify(stringifyBigInts(generatedInputs.newVoteWeightsPathElements))
+            )
+            expect(circuitInputs.zerothStateLeafHash.toString()).toEqual(generatedInputs.zerothStateLeafHash.toString())
+            expect(circuitInputs.zerothBallotHash.toString()).toEqual(generatedInputs.zerothBallotHash.toString())
+            expect(
+                JSON.stringify(stringifyBigInts(circuitInputs.zerothStateLeafPathElements))
+            ).toEqual(
+                JSON.stringify(stringifyBigInts(generatedInputs.zerothStateLeafPathElements))
+            )
+            expect(
+                JSON.stringify(stringifyBigInts(circuitInputs.zerothBallotPathElements))
+            ).toEqual(
+                JSON.stringify(stringifyBigInts(generatedInputs.zerothBallotPathElements))
+            )
         })
     })
 })
