@@ -1,4 +1,6 @@
 import * as fs from 'fs'
+import * as assert from 'assert'
+import * as lineByLine from 'n-readlines'
 import * as path from 'path'
 const circom = require('circom')
 import * as shell from 'shelljs'
@@ -52,10 +54,37 @@ const getSignalByName = (
     return witness[circuit.symbols[signal].varIdx]
 }
 
+const getSignalByNameViaSym = (
+    circuitName: any,
+    witness: any,
+    signal: string,
+) => {
+    const symPath = path.join(__dirname, '../build/', `${circuitName}.sym`)
+    const liner = new lineByLine(symPath)
+    let line
+    let index
+    let found = false
+
+    while (true) {
+        line = liner.next()
+        debugger
+        if (!line) { break }
+        const s = line.toString().split(',')
+        if (signal === s[3]) {
+            index = s[1]
+            found = true
+            break
+        }
+    }
+
+    assert(found)
+
+    return witness[index]
+}
+
 const genBatchUstProofAndPublicSignals = (
     inputs: any,
     configType: string,
-    circuit?: any
 ) => {
 
     let circuitPath
@@ -82,14 +111,13 @@ const genBatchUstProofAndPublicSignals = (
         circuitR1csPath,
         wasmPath,
         paramsPath,
-        circuit,
+        false,
     )
 }
 
 const genQvtProofAndPublicSignals = (
     inputs: any,
     configType: string,
-    circuit?: any,
 ) => {
     let circuitPath
     let circuitR1csPath
@@ -115,7 +143,7 @@ const genQvtProofAndPublicSignals = (
         circuitR1csPath,
         wasmPath,
         paramsPath,
-        circuit,
+        false,
     )
 }
 
@@ -125,7 +153,7 @@ const genProofAndPublicSignals = async (
     circuitR1csFilename: string,
     circuitWasmFilename: string,
     paramsFilename: string,
-    circuit?: any,
+    compileCircuit = true,
 ) => {
     const date = Date.now()
     const paramsPath = path.join(__dirname, '../build/', paramsFilename)
@@ -139,8 +167,9 @@ const genProofAndPublicSignals = async (
 
     fs.writeFileSync(inputJsonPath, JSON.stringify(stringifyBigInts(inputs)))
 
-    if (!circuit) {
-        circuit = await compileAndLoadCircuit(circuitFilename)
+    let circuit
+    if (compileCircuit) {	
+        circuit = await compileAndLoadCircuit(circuitFilename)	
     }
 
     const snarkjsCmd = 'node ' + path.join(__dirname, '../node_modules/snarkjs/build/cli.cjs')
@@ -150,17 +179,22 @@ const genProofAndPublicSignals = async (
     shell.exec(witnessCmd)
 
     const witnessJsonCmd = `${snarkjsCmd} wej ${witnessPath} ${witnessJsonPath}`
+
+    //const witnessGenStart = Date.now()
     shell.exec(witnessJsonCmd)
+    //const witnessGenEnd = Date.now()
+    //console.log('Witness generation took', (witnessGenEnd - witnessGenStart) / 1000, 'seconds')
 
     const proveCmd = `${zkutilPath} prove -c ${circuitR1csPath} -p ${paramsPath} -w ${witnessJsonPath} -r ${proofPath} -o ${publicJsonPath}`
 
+    //const proveStart = Date.now()
     shell.exec(proveCmd)
+    //const proveEnd = Date.now()
+    //console.log('Proof generation took', (proveEnd - proveStart) / 1000, 'seconds')
 
     const witness = unstringifyBigInts(JSON.parse(fs.readFileSync(witnessJsonPath).toString()))
     const publicSignals = unstringifyBigInts(JSON.parse(fs.readFileSync(publicJsonPath).toString()))
     const proof = JSON.parse(fs.readFileSync(proofPath).toString())
-
-    await circuit.checkConstraints(witness)
 
     shell.rm('-f', witnessPath)
     shell.rm('-f', witnessJsonPath)
@@ -168,7 +202,7 @@ const genProofAndPublicSignals = async (
     shell.rm('-f', publicJsonPath)
     shell.rm('-f', inputJsonPath)
 
-    return { proof, publicSignals, witness, circuit }
+    return { circuit, proof, publicSignals, witness }
 }
 
 const verifyProof = async (
@@ -268,6 +302,7 @@ export {
     compileAndLoadCircuit,
     executeCircuit,
     getSignalByName,
+    getSignalByNameViaSym,
     genBatchUstProofAndPublicSignals,
     genQvtProofAndPublicSignals,
     verifyBatchUstProof,

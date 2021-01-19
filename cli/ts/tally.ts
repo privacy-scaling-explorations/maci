@@ -17,7 +17,7 @@ import {
 import {
     genQvtProofAndPublicSignals,
     verifyQvtProof,
-    getSignalByName,
+    getSignalByNameViaSym,
 } from 'maci-circuits'
 
 import {
@@ -363,6 +363,7 @@ const tally = async (args: any): Promise<object | undefined> => {
         currentPvcSalt = BigInt(newPerVOSpentVoiceCreditsSalt)
 
         const configType = maciState.stateTreeDepth === 8 ? 'prod-small' : 'test'
+        const circuitName = maciState.stateTreeDepth === 8 ? 'qvtSmall' : 'qvt'
 
         let result
         try {
@@ -373,10 +374,10 @@ const tally = async (args: any): Promise<object | undefined> => {
             return
         }
 
-        const { circuit, witness, proof, publicSignals } = result
+        const { witness, proof, publicSignals } = result
 
         // The vote tally commmitment
-        const expectedNewResultsCommitmentOutput = getSignalByName(circuit, witness, 'main.newResultsCommitment')
+        const expectedNewResultsCommitmentOutput = getSignalByNameViaSym(circuitName, witness, 'main.newResultsCommitment')
 
         const newResultsCommitment = genTallyResultCommitment(
             cumulativeTally,
@@ -391,7 +392,7 @@ const tally = async (args: any): Promise<object | undefined> => {
 
         // The commitment to the total spent voice credits
         const expectedSpentVoiceCreditsCommitmentOutput =
-            getSignalByName(circuit, witness, 'main.newSpentVoiceCreditsCommitment')
+            getSignalByNameViaSym(circuitName, witness, 'main.newSpentVoiceCreditsCommitment')
 
         const currentSpentVoiceCredits = maciState.computeCumulativeSpentVoiceCredits(startIndex)
 
@@ -411,7 +412,7 @@ const tally = async (args: any): Promise<object | undefined> => {
 
         // The commitment to the spent voice credits per vote option
         const expectedPerVOSpentVoiceCreditsCommitmentOutput =
-            getSignalByName(circuit, witness, 'main.newPerVOSpentVoiceCreditsCommitment')
+            getSignalByNameViaSym(circuitName, witness, 'main.newPerVOSpentVoiceCreditsCommitment')
 
         const currentPerVOSpentVoiceCredits 
             = maciState.computeCumulativePerVOSpentVoiceCredits(startIndex)

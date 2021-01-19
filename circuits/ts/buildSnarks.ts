@@ -46,6 +46,14 @@ const main = () => {
     )
 
     parser.addArgument(
+        ['-y', '--sym-out'],
+        {
+            help: 'The filepath to save the SYM file',
+            required: true
+        }
+    )
+
+    parser.addArgument(
         ['-v', '--vk-out'],
         {
             help: 'The filepath to save the verification key',
@@ -102,6 +110,7 @@ const main = () => {
     const override = args.override
     const circuitOut = args.r1cs_out
     const wasmOut = args.wasm_out
+    const symOut = args.sym_out
     const verifierName = args.verifier_name
     const paramsOut = args.params_out
     const pkOut = args.pk_out
@@ -127,7 +136,7 @@ const main = () => {
     } else {
         console.log(`Compiling ${inputFile}...`)
         // Compile the .circom file
-        shell.exec(`node ./node_modules/circom/cli.js ${inputFile} -r ${circuitOut} -w ${wasmOut}`)
+        shell.exec(`node ./node_modules/circom/cli.js ${inputFile} -r ${circuitOut} -w ${wasmOut} -s ${symOut}`)
         console.log('Generated', circuitOut, 'and', wasmOut)
     }
 
