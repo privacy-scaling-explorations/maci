@@ -8,7 +8,7 @@ import {
 import {
     genBatchUstProofAndPublicSignals,
     verifyBatchUstProof,
-    getSignalByName,
+    getSignalByNameViaSym,
 } from 'maci-circuits'
 
 import {
@@ -226,6 +226,7 @@ const processMessages = async (args: any): Promise<string | undefined> => {
         let result
 
         const configType = maciState.stateTreeDepth === 8 ? 'prod-small' : 'test'
+        const circuitName = maciState.stateTreeDepth === 8 ? 'batchUstSmall' : 'batchUstSmall'
 
         try {
             result = await genBatchUstProofAndPublicSignals(circuitInputs, configType)
@@ -234,10 +235,11 @@ const processMessages = async (args: any): Promise<string | undefined> => {
             console.error(e)
             return
         }
-        const { circuit, witness, proof, publicSignals } = result
+        const { witness, proof, publicSignals } = result
 
         // Get the circuit-generated root
-        const circuitNewStateRoot = getSignalByName(circuit, witness, 'main.root')
+        //const circuitNewStateRoot = getSignalByName(circuit, witness, 'main.root')
+        const circuitNewStateRoot = getSignalByNameViaSym(circuitName, witness, 'main.root')
         if (!circuitNewStateRoot.toString() === stateRootAfter.toString()) {
             console.error('Error: circuit-computed root mismatch')
             return
