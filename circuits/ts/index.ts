@@ -111,6 +111,7 @@ const genBatchUstProofAndPublicSignals = (
         circuitR1csPath,
         wasmPath,
         paramsPath,
+        false,
     )
 }
 
@@ -142,6 +143,7 @@ const genQvtProofAndPublicSignals = (
         circuitR1csPath,
         wasmPath,
         paramsPath,
+        false,
     )
 }
 
@@ -151,6 +153,7 @@ const genProofAndPublicSignals = async (
     circuitR1csFilename: string,
     circuitWasmFilename: string,
     paramsFilename: string,
+    compileCircuit = true,
 ) => {
     const date = Date.now()
     const paramsPath = path.join(__dirname, '../build/', paramsFilename)
@@ -163,6 +166,11 @@ const genProofAndPublicSignals = async (
     const publicJsonPath = path.join(__dirname, '../build/' + date + '.publicSignals.json')
 
     fs.writeFileSync(inputJsonPath, JSON.stringify(stringifyBigInts(inputs)))
+
+    let circuit
+    if (compileCircuit) {	
+        circuit = await compileAndLoadCircuit(circuitFilename)	
+    }
 
     const snarkjsCmd = 'node ' + path.join(__dirname, '../node_modules/snarkjs/build/cli.cjs')
     const witnessCmd = `${snarkjsCmd} wc ${circuitWasmPath} ${inputJsonPath} ${witnessPath}`
@@ -194,7 +202,7 @@ const genProofAndPublicSignals = async (
     shell.rm('-f', publicJsonPath)
     shell.rm('-f', inputJsonPath)
 
-    return { proof, publicSignals, witness }
+    return { circuit, proof, publicSignals, witness }
 }
 
 const verifyProof = async (
