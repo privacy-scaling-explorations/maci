@@ -180,17 +180,17 @@ const genProofAndPublicSignals = async (
 
     const witnessJsonCmd = `${snarkjsCmd} wej ${witnessPath} ${witnessJsonPath}`
 
-    const witnessGenStart = Date.now()
+    //const witnessGenStart = Date.now()
     shell.exec(witnessJsonCmd)
-    const witnessGenEnd = Date.now()
-    console.log('Witness generation took', (witnessGenEnd - witnessGenStart) / 1000, 'seconds')
+    //const witnessGenEnd = Date.now()
+    //console.log('Witness generation took', (witnessGenEnd - witnessGenStart) / 1000, 'seconds')
 
     const proveCmd = `${zkutilPath} prove -c ${circuitR1csPath} -p ${paramsPath} -w ${witnessJsonPath} -r ${proofPath} -o ${publicJsonPath}`
 
-    const proveStart = Date.now()
+    //const proveStart = Date.now()
     shell.exec(proveCmd)
-    const proveEnd = Date.now()
-    console.log('Proof generation took', (proveEnd - proveStart) / 1000, 'seconds')
+    //const proveEnd = Date.now()
+    //console.log('Proof generation took', (proveEnd - proveStart) / 1000, 'seconds')
 
     const witness = unstringifyBigInts(JSON.parse(fs.readFileSync(witnessJsonPath).toString()))
     const publicSignals = unstringifyBigInts(JSON.parse(fs.readFileSync(publicJsonPath).toString()))

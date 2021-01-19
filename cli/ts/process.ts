@@ -226,7 +226,7 @@ const processMessages = async (args: any): Promise<string | undefined> => {
         let result
 
         const configType = maciState.stateTreeDepth === 8 ? 'prod-small' : 'test'
-        const circuitName = maciState.stateTreeDepth === 8 ? 'batchUstSmall' : 'batchUstSmall'
+        const circuitName = maciState.stateTreeDepth === 8 ? 'batchUstSmall' : 'batchUst'
 
         try {
             result = await genBatchUstProofAndPublicSignals(circuitInputs, configType)
