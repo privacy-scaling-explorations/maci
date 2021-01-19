@@ -1,6 +1,6 @@
 {
     "name": "maci-domainobjs",
-    "version": "0.5.1",
+    "version": "0.5.2",
     "description": "",
     "main": "build/index.js",
     "scripts": {
@@ -13,7 +13,7 @@
         "@types/jest": "^24.0.25",
         "@types/node": "^13.1.2",
         "jest": "^24.9.0",
-        "maci-crypto": "^0.5.1",
+        "maci-crypto": "^0.5.2",
         "ts-jest": "^24.2.0"
     },
     "gitHead": "94331dc49a660f4e15ca7192786da3277ba158b5"
