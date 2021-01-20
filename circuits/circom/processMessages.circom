@@ -353,7 +353,9 @@ template ProcessMessages(
     }
 
     //  ----------------------------------------------------------------------- 
-    // 8. Generate the final state tree root with the zeroth leaf set to a random value
+    // 8. Generate the final state tree root with the zeroth leaf set to a
+    // random value
+
     component zerothSlQip = QuinTreeInclusionProof(stateTreeDepth);
     zerothSlQip.leaf <== zerothStateLeafHash;
     for (var i = 0; i < stateTreeDepth; i ++) {
@@ -366,7 +368,8 @@ template ProcessMessages(
     newStateRoot <== zerothSlQip.root;
 
     //  ----------------------------------------------------------------------- 
-    // 9. Prove that the random ballot leaf belongs in the final ballot root
+    // 9. Generate the final ballot tree root with the zeroth leaf set to a
+    // random value
 
     component zerothBallotQip = QuinTreeInclusionProof(stateTreeDepth);
     zerothBallotQip.leaf <== zerothBallotHash;

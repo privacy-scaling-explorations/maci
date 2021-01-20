@@ -68,11 +68,12 @@ class Poll {
     public stateLeaves: StateLeaf[] = []
 
     // For message processing
-    public pmStateAq
+    public pmStateAq // TODO: remove?
     public currentStateRoot = BigInt(0)
     public numBatchesProcessed = 0
     public currentMessageBatchIndex = 0
     public zerothStateLeaf
+    public zerothBallot
     public maciStateRef
     
     // For vote tallying
@@ -208,7 +209,26 @@ class Poll {
         _randomBallot: Ballot,
         _maciStateRef?: MaciState,
     ) => {
+
         const batchSize = this.batchSizes.messageBatchSize
+ 
+        if (this.numBatchesProcessed === 0) {
+            // The starting index of the batch of messages to process
+            this.currentMessageBatchIndex = 
+                (
+                    Math.floor(this.messageAq.numLeaves / batchSize)  - 1
+                ) * batchSize
+
+            assert(_maciStateRef != null && _maciStateRef != undefined)
+            this.maciStateRef = _maciStateRef
+        }
+
+        const generatedInputs = this.genProcessMessagesCircuitInputs(
+            this.currentMessageBatchIndex,
+            _randomStateLeaf,
+            _randomBallot,
+            this.maciStateRef,
+        )
 
         assert(
             this.hasUnprocessedMessages(),
@@ -223,8 +243,6 @@ class Poll {
         assert(this.messageAq.hasRoot(this.treeDepths.messageTreeDepth))
 
         if (this.numBatchesProcessed === 0) {
-            assert(_maciStateRef != null && _maciStateRef != undefined)
-            this.maciStateRef = _maciStateRef
             // Prevent other polls from being processed until this poll has
             // been fully processed
             this.maciStateRef.pollBeingProcessed = true
@@ -236,6 +254,7 @@ class Poll {
             assert(this.maciStateRef.currentPollBeingProcessed === _pollId)
         }
 
+
         // The first time this function is called, deep-copy the state queue,
         // state root, and state leaves into this object, set the current
         // message batch index, and insert a random ballot at index 0
@@ -244,13 +263,13 @@ class Poll {
             this.stateTree = this.maciStateRef.stateTree.copy()
             this.stateLeaves = this.maciStateRef.stateLeaves.map((x) => x.copy())
 
+            assert(this.ballotTree.leaves.length === 0)
             // Insert a random ballot
-            this.ballots.push(_randomBallot)
-            this.ballotTree.insert(_randomBallot.hash())
+            //this.ballotTree.insert(_randomBallot.hash())
 
             // Populate this.ballots with empty ballots for each real state
             // leaf (i.e. excluding the 0th state leaf)
-            for (let i = 0; i < this.stateTree.leaves.length - 1; i ++) {
+            for (let i = 0; i < this.stateTree.leaves.length; i ++) {
                 const ballot = new Ballot(
                     this.maxValues.maxVoteOptions,
                     this.treeDepths.voteOptionTreeDepth,
@@ -265,12 +284,6 @@ class Poll {
             // Compute the state root
             this.currentStateRoot =
                 BigInt(this.pmStateAq.getRoot(STATE_TREE_DEPTH))
-
-            // The starting index of the batch of messages to process
-            this.currentMessageBatchIndex = 
-                (
-                    Math.floor(this.messageAq.numLeaves / batchSize)  - 1
-                ) * batchSize
         }
 
         for (let i = 0; i < batchSize; i++) {
@@ -290,10 +303,11 @@ class Poll {
                 // TODO: replace with try/catch after implementing error
                 // handling
                 const index = r.stateLeafIndex
-                this.stateTree.update(index, r.newStateLeaf.hash())
                 this.stateLeaves[index] = r.newStateLeaf.copy()
+                this.stateTree.update(index + 1, r.newStateLeaf.hash())
+
                 this.ballots[index] = r.newBallot
-                this.ballotTree.update(index, r.newBallot.hash())
+                this.ballotTree.update(index + 1, r.newBallot.hash())
             }
         }
 
@@ -301,8 +315,12 @@ class Poll {
         this.zerothStateLeaf = _randomStateLeaf
 
         // Recompute the state root
-        this.stateTree.update(0, this.zerothStateLeaf.hash())
+        this.stateTree.update(0, _randomStateLeaf.hash())
         this.currentStateRoot = BigInt(this.stateTree.root)
+
+        // Replace the zeroth ballot
+        this.zerothBallot = _randomBallot
+        this.ballotTree.update(0, _randomBallot.hash())
 
         this.numBatchesProcessed ++
 
@@ -314,6 +332,14 @@ class Poll {
         if (this.numBatchesProcessed * batchSize >= this.messages.length) {
             this.maciStateRef.pollBeingProcessed = false
         }
+
+        const zerothBallotPathElements = this.ballotTree.genMerklePath(0).pathElements
+        generatedInputs.zerothBallotPathElements = stringifyBigInts(zerothBallotPathElements)
+
+        const zerothStateLeafPathElements = this.stateTree.genMerklePath(0).pathElements
+        generatedInputs.zerothStateLeafPathElements = stringifyBigInts(zerothStateLeafPathElements)
+
+        return generatedInputs
     }
 
     /*
@@ -461,69 +487,91 @@ class Poll {
         assert(_index < this.messages.length)
         assert(this.isMessageAqMerged())
 
-        const msgs = this.messages.map((x) => x.asCircuitInputs())
-        while (msgs.length < messageBatchSize) {
+        let msgs = this.messages.map((x) => x.asCircuitInputs())
+        while (msgs.length % messageBatchSize > 0) {
             msgs.push(msgs[msgs.length - 1])
         }
 
+        msgs = msgs.slice(_index, _index + messageBatchSize)
+
+        let commands = this.commands.map((x) => x.copy())
+        while (commands.length % messageBatchSize > 0) {
+            commands.push(commands[commands.length - 1])
+        }
+        commands = commands.slice(_index, _index + messageBatchSize)
+
+
         const messageSubrootPath = this.messageTree.genMerkleSubrootPath(
             _index,
-            messageBatchSize,
+            _index + messageBatchSize,
         )
 
-        const batchEndIndex = this.messages.length - _index > messageBatchSize ?
-            messageBatchSize
+        const batchEndIndex = this.messages.length - _index >= messageBatchSize ?
+            _index + messageBatchSize
             :
             this.messages.length - _index - 1
 
-        const encPubKeys = this.encPubKeys.map((x) => x.copy())
-        while(encPubKeys.length < messageBatchSize) {
+        let encPubKeys = this.encPubKeys.map((x) => x.copy())
+        while (encPubKeys.length % messageBatchSize > 0) {
             encPubKeys.push(encPubKeys[encPubKeys.length - 1])
         }
+        encPubKeys = encPubKeys.slice(_index, _index + messageBatchSize)
 
+        const stateIndices: number[] = []
+        for (let i = 0; i < messageBatchSize; i ++) {
+            const stateIndex = Number(commands[i].stateIndex)
+            stateIndices.push(stateIndex)
+        }
+        const maxStateIndex = stateIndices.reduce((a, b) => Math.max(a, b))
+        
         const currentStateLeaves: StateLeaf[] = []
         const currentStateLeavesPathElements: any[] = []
-
-        const commands = this.commands.map((x) => x.copy())
-        while (commands.length < messageBatchSize) {
-            commands.push(commands[commands.length - 1])
-        }
 
         const emptyBallot = new Ballot(
             5 ** this.treeDepths.voteOptionTreeDepth,
             this.treeDepths.voteOptionTreeDepth,
         )
-        const currentBallots: Ballot[] = this.ballots.map((x) => x.copy())
-        const currentBallotsPathElements: any[] = []
 
-        while (currentBallots.length < messageBatchSize) {
-            currentBallots.push(emptyBallot)
-        }
+        const emptyBallotHash = this.ballotTree.zeroValue
 
-        const emptyBallotHash = emptyBallot.hash()
+        // Whether this batch is the first one (from the end)
+        const isFirstBatch =
+            this.messageAq.numLeaves - _index >= messageBatchSize
+
         let ballotTree
-
-        if (_index === 0) {
+        if (isFirstBatch) {
             ballotTree = new IncrementalQuinTree(
                 STATE_TREE_DEPTH,
                 emptyBallotHash,
             )
-            for (let i = 0; i < messageBatchSize; i ++) {
+            for (let i = 0; i < maxStateIndex; i ++) {
                 ballotTree.insert(emptyBallotHash)
             }
         } else {
-            ballotTree = this.ballotTree
+            ballotTree = this.ballotTree.copy()
         }
+
+        while (ballotTree.leaves.length % messageBatchSize > 0) {
+            ballotTree.insert(emptyBallotHash)
+        }
+
+        const currentBallots: Ballot[] = []
+        const currentBallotsPathElements: any[] = []
 
         const currentVoteWeights: BigInt[] = []
         const currentVoteWeightsPathElements: any[] = []
         const newVoteOptionTreeRoots: BigInt[] = []
         const newVoteWeightsPathElements: any[] = []
 
+        const ballots = this.ballots.map((x) => x.copy())
+
         for (let i = 0; i < commands.length; i ++) {
             // For each command, create a vote option tree from the Ballot
             // it refers to, and update the vote option tree
-            const ballot = currentBallots[Number(commands[i].stateIndex) - 1]
+            const ballot = isFirstBatch ?
+                emptyBallot
+                :
+                ballots[Number(commands[i].stateIndex) - 1]
             const voteOptionTree = new IncrementalQuinTree(
                 ballot.voteOptionTreeDepth,
                 BigInt(0),
@@ -550,35 +598,41 @@ class Poll {
             newVoteOptionTreeRoots.push(voteOptionTree.root)
             newVoteWeightsPathElements.push(newPath.pathElements)
         }
+
+        let currentStateRoot
+        let currentBallotRoot
+
+        if (isFirstBatch) {
+            currentBallotRoot = ballotTree.root
+            currentStateRoot = _maciStateRef.stateAq.getRoot(STATE_TREE_DEPTH)
+        } else {
+            currentBallotRoot = this.ballotTree.root
+            currentStateRoot = this.stateTree.root
+        }
+
         for (let i = 0; i < messageBatchSize; i ++) {
             const stateIndex = Number(commands[i].stateIndex)
 
-            if (_index === 0) {
-                // On the first batch, copy the state leaves from MaciState as
+            if (isFirstBatch) {
+                // On the first batch, copy the state leaf from MaciState as
                 // the Poll won't have those state leaves until the first
                 // invocation of processMessages()
                 currentStateLeaves.push(_maciStateRef.stateLeaves[stateIndex - 1])
                 const path = _maciStateRef.stateTree.genMerklePath(stateIndex)
                 currentStateLeavesPathElements.push(path.pathElements)
 
-                const ballotPath = ballotTree.genMerklePath(stateIndex)
-                currentBallotsPathElements.push(ballotPath.pathElements)
+                currentBallots.push(emptyBallot)
             } else {
                 currentStateLeaves.push(this.stateLeaves[stateIndex - 1])
                 const path = this.stateTree.genMerklePath(stateIndex)
                 currentStateLeavesPathElements.push(path.pathElements)
 
-                const ballotPath = this.ballotTree.genMerklePath(stateIndex)
-                currentBallotsPathElements.push(ballotPath.pathElements)
+                currentBallots.push(this.ballots[stateIndex - 1])
             }
-
+            
+            const ballotPath = ballotTree.genMerklePath(stateIndex)
+            currentBallotsPathElements.push(ballotPath.pathElements)
         }
-
-        const zerothBallotPathElements = ballotTree.genMerklePath(0).pathElements
-        const zerothStateLeafPathElements = _index === 0 ?
-            _maciStateRef.stateTree.genMerklePath(0).pathElements
-            :
-            this.stateTree.genMerklePath(0).pathElements
 
         return stringifyBigInts({
             msgRoot: this.messageAq.getRoot(this.treeDepths.messageTreeDepth),
@@ -590,10 +644,10 @@ class Poll {
             coordPrivKey: this.coordinatorKeypair.privKey.asCircuitInputs(),
             coordPubKey: this.coordinatorKeypair.pubKey.asCircuitInputs(),
             encPubKeys: encPubKeys.map((x) => x.asCircuitInputs()),
-            currentStateRoot: _maciStateRef.stateAq.getRoot(STATE_TREE_DEPTH),
+            currentStateRoot,
             currentStateLeaves: currentStateLeaves.map((x) => x.asCircuitInputs()),
             currentStateLeavesPathElements,
-            currentBallotRoot: this.ballotTree.root,
+            currentBallotRoot,
             currentBallots: currentBallots.map((x) => x.asCircuitInputs()),
             currentBallotsPathElements,
             maxVoteOptions: this.maxValues.maxVoteOptions,
@@ -603,9 +657,7 @@ class Poll {
             newVoteOptionTreeRoots,
             newVoteWeightsPathElements,
             zerothStateLeafHash: _randomStateLeaf.hash(),
-            zerothStateLeafPathElements,
             zerothBallotHash: _randomBallot.hash(),
-            zerothBallotPathElements,
         })
     }
 
@@ -675,9 +727,28 @@ class Poll {
             this.tallyVk.copy(),
         )
 
+        copied.zerothBallot = this.zerothBallot.copy()
+        copied.zerothStateLeaf = this.zerothStateLeaf.copy()
+        copied.stateLeaves = this.stateLeaves.map((x: StateLeaf) => x.copy())
         copied.messages = this.messages.map((x: Message) => x.copy())
+        copied.commands = this.commands.map((x: Command) => x.copy())
+        copied.signatures = this.signatures.map((x: Signature) => {
+            return {
+                R8: x.R8,
+                S: x.S,
+            }
+        })
         copied.ballots = this.ballots.map((x: Ballot) => x.copy())
         copied.encPubKeys = this.encPubKeys.map((x: PubKey) => x.copy())
+        copied.ballotTree = this.ballotTree.copy()
+        copied.currentMessageBatchIndex = this.currentMessageBatchIndex
+        copied.currentStateRoot = this.currentStateRoot
+        copied.maciStateRef = this.maciStateRef
+        copied.messageAq = this.messageAq.copy()
+        copied.messageTree = this.messageTree.copy()
+        copied.pmStateAq = this.pmStateAq.copy()
+        copied.processParamsFilename = this.processParamsFilename
+        copied.results = this.results.map((x: BigInt) => BigInt(x.toString()))
 
         return copied
     }
