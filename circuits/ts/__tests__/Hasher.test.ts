@@ -12,6 +12,7 @@ import {
 import {
     stringifyBigInts,
     genRandomSalt,
+    sha256Hash,
     hashLeftRight,
     hash11,
     hash5,
@@ -20,6 +21,151 @@ import {
 } from 'maci-crypto'
 
 describe('Poseidon hash circuits', () => {
+    describe('SHA256', () => {
+        describe('Sha256HashLeftRight', () => {
+            it('correctly hashes two random values', async () => {
+                const circuit = 'sha256HashLeftRight_test'
+
+                const left = genRandomSalt()
+                const right = genRandomSalt()
+
+                const circuitInputs = stringifyBigInts({ left, right })
+
+                const witness = await genWitness(circuit, circuitInputs)
+                const output = await getSignalByName(circuit, witness, 'main.hash')
+
+                const outputJS = sha256Hash([left, right])
+
+                expect(output.toString()).toEqual(outputJS.toString())
+            })
+        })
+
+        describe('Sha256Hasher5', () => {
+            const circuit = 'sha256Hasher5_test'
+            it('correctly hashes two random values', async () => {
+                const preImages: any = []
+                for (let i = 0; i < 5; i++) {
+                    preImages.push(genRandomSalt())
+                }
+
+                const circuitInputs = stringifyBigInts({
+                    in: preImages,
+                })
+
+                const witness = await genWitness(circuit, circuitInputs)
+                const output = await getSignalByName(circuit, witness, 'main.hash')
+
+                const outputJS = sha256Hash(preImages)
+
+                expect(output.toString()).toEqual(outputJS.toString())
+            })
+        })
+    })
+
+    describe('Poseidon', () => {
+        describe('Hasher5', () => {
+            const circuit = 'hasher5_test'
+            it('correctly hashes 5 random values', async () => {
+                const preImages: any = []
+                for (let i = 0; i < 5; i++) {
+                    preImages.push(genRandomSalt())
+                }
+
+                const circuitInputs = stringifyBigInts({
+                    in: preImages,
+                })
+
+                const witness = await genWitness(circuit, circuitInputs)
+                const output = await getSignalByName(circuit, witness, 'main.hash')
+
+                const outputJS = hash5(preImages)
+
+                expect(output.toString()).toEqual(outputJS.toString())
+            })
+        })
+
+        describe('Hasher4', () => {
+            const circuit = 'hasher4_test'
+            it('correctly hashes 4 random values', async () => {
+                const preImages: any = []
+                for (let i = 0; i < 4; i++) {
+                    preImages.push(genRandomSalt())
+                }
+
+                const circuitInputs = stringifyBigInts({
+                    in: preImages,
+                })
+
+                const witness = await genWitness(circuit, circuitInputs)
+                const output = await getSignalByName(circuit, witness, 'main.hash')
+
+                const outputJS = hash4(preImages)
+
+                expect(output.toString()).toEqual(outputJS.toString())
+            })
+        })
+
+        describe('Hasher3', () => {
+            const circuit = 'hasher3_test'
+            it('correctly hashes 3 random values', async () => {
+                const preImages: any = []
+                for (let i = 0; i < 3; i++) {
+                    preImages.push(genRandomSalt())
+                }
+
+                const circuitInputs = stringifyBigInts({
+                    in: preImages,
+                })
+
+                const witness = await genWitness(circuit, circuitInputs)
+                const output = await getSignalByName(circuit, witness, 'main.hash')
+
+                const outputJS = hash3(preImages)
+
+                expect(output.toString()).toEqual(outputJS.toString())
+            })
+        })
+
+        describe('Hasher11', () => {
+            it('correctly hashes 11 random values', async () => {
+                const circuit =  'hasher11_test'
+                const preImages: any = []
+                for (let i = 0; i < 11; i++) {
+                    preImages.push(genRandomSalt())
+                }
+                const circuitInputs = stringifyBigInts({
+                    in: preImages,
+                })
+
+                const witness = await genWitness(circuit, circuitInputs)
+                const output = await getSignalByName(circuit, witness, 'main.hash')
+
+                const outputJS = hash11(preImages)
+
+                expect(output.toString()).toEqual(outputJS.toString())
+            })
+        })
+
+        describe('HashLeftRight', () => {
+
+            it('correctly hashes two random values', async () => {
+                const circuit = 'hashleftright_test'
+
+                const left = genRandomSalt()
+                const right = genRandomSalt()
+
+                const circuitInputs = stringifyBigInts({ left, right })
+
+                const witness = await genWitness(circuit, circuitInputs)
+                const output = await getSignalByName(circuit, witness, 'main.hash')
+
+                const outputJS = hashLeftRight(left, right)
+
+                expect(output.toString()).toEqual(outputJS.toString())
+            })
+        })
+    })
+    
     describe('MessageHasher', () => {
         const circuit = 'messageHasher_test'
         it('correctly hashes a message', async () => {
@@ -51,108 +197,6 @@ describe('Poseidon hash circuits', () => {
             const witness = await genWitness(circuit, circuitInputs)
             const output = await getSignalByName(circuit, witness, 'main.hash')
             expect(output.toString()).toEqual(messageHash.toString())
-        })
-    })
-
-    describe('Hasher5', () => {
-        const circuit = 'hasher5_test'
-        it('correctly hashes 5 random values', async () => {
-            const preImages: any = []
-            for (let i = 0; i < 5; i++) {
-                preImages.push(genRandomSalt())
-            }
-
-            const circuitInputs = stringifyBigInts({
-                in: preImages,
-            })
-
-            const witness = await genWitness(circuit, circuitInputs)
-            const output = await getSignalByName(circuit, witness, 'main.hash')
-
-            const outputJS = hash5(preImages)
-
-            expect(output.toString()).toEqual(outputJS.toString())
-        })
-    })
-
-    describe('Hasher4', () => {
-        const circuit = 'hasher4_test'
-        it('correctly hashes 4 random values', async () => {
-            const preImages: any = []
-            for (let i = 0; i < 4; i++) {
-                preImages.push(genRandomSalt())
-            }
-
-            const circuitInputs = stringifyBigInts({
-                in: preImages,
-            })
-
-            const witness = await genWitness(circuit, circuitInputs)
-            const output = await getSignalByName(circuit, witness, 'main.hash')
-
-            const outputJS = hash4(preImages)
-
-            expect(output.toString()).toEqual(outputJS.toString())
-        })
-    })
-
-    describe('Hasher3', () => {
-        const circuit = 'hasher3_test'
-        it('correctly hashes 3 random values', async () => {
-            const preImages: any = []
-            for (let i = 0; i < 3; i++) {
-                preImages.push(genRandomSalt())
-            }
-
-            const circuitInputs = stringifyBigInts({
-                in: preImages,
-            })
-
-            const witness = await genWitness(circuit, circuitInputs)
-            const output = await getSignalByName(circuit, witness, 'main.hash')
-
-            const outputJS = hash3(preImages)
-
-            expect(output.toString()).toEqual(outputJS.toString())
-        })
-    })
-
-    describe('Hasher11', () => {
-        it('correctly hashes 11 random values', async () => {
-            const circuit =  'hasher11_test'
-            const preImages: any = []
-            for (let i = 0; i < 11; i++) {
-                preImages.push(genRandomSalt())
-            }
-            const circuitInputs = stringifyBigInts({
-                in: preImages,
-            })
-
-            const witness = await genWitness(circuit, circuitInputs)
-            const output = await getSignalByName(circuit, witness, 'main.hash')
-
-            const outputJS = hash11(preImages)
-
-            expect(output.toString()).toEqual(outputJS.toString())
-        })
-    })
-
-    describe('HashLeftRight', () => {
-
-        it('correctly hashes two random values', async () => {
-            const circuit = 'hashleftright_test'
-
-            const left = genRandomSalt()
-            const right = genRandomSalt()
-
-            const circuitInputs = stringifyBigInts({ left, right })
-
-            const witness = await genWitness(circuit, circuitInputs)
-            const output = await getSignalByName(circuit, witness, 'main.hash')
-
-            const outputJS = hashLeftRight(left, right)
-
-            expect(output.toString()).toEqual(outputJS.toString())
         })
     })
 })

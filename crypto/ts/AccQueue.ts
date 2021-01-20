@@ -1,5 +1,6 @@
 import * as assert from 'assert'
 import {
+    sha256Hash,
     hashLeftRight,
     hash5,
     stringifyBigInts,
@@ -58,7 +59,10 @@ class AccQueue {
     // second has 1, and so on
     public currentSubtreeIndex = 0
 
-    // The hash function to use
+    // The hash function to use for the subtrees
+    public subHashFunc: (leaves: Leaf[]) => BigInt
+    
+    // The hash function to use for rest of the tree (above the subroots)
     public hashFunc: (leaves: Leaf[]) => BigInt
 
     // The number of leaves across all subtrees
@@ -117,6 +121,7 @@ class AccQueue {
             // Uses PoseidonT6 under the hood, which accepts up to 5 inputs
             this.hashFunc = hash5
         }
+        this.subHashFunc = sha256Hash
 
         let hashed = this.zeroValue
         for (let i = 0; i < this.MAX_DEPTH; i ++) {

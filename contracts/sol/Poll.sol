@@ -79,7 +79,7 @@ contract PollFactory is EmptyBallotRoots, Params, DomainObjs, Ownable {
     }
 }
 
-contract Poll is Params, DomainObjs, SnarkConstants, SnarkCommon, Ownable {
+contract Poll is Params, DomainObjs, SnarkCommon, Ownable {
     // The coordinator's public key
     PubKey public coordinatorPubKey;
 

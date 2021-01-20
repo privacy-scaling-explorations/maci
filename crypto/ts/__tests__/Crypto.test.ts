@@ -5,6 +5,7 @@ import {
     encrypt,
     decrypt,
     sign,
+    sha256Hash,
     hash5,
     hash11,
     hash12,
@@ -36,7 +37,17 @@ describe('Cryptographic operations', () => {
         it('The hash of a plaintext should be smaller than the snark field size', () => {
             const h = hash5(plaintext)
             expect(h < SNARK_FIELD_SIZE).toBeTruthy()
+
+            const s = sha256Hash(plaintext)
+            expect(s < SNARK_FIELD_SIZE).toBeTruthy()
         })
+    })
+
+    describe('sha256Hash([0, 1])', () => {
+        const s = sha256Hash([BigInt(0), BigInt(1)])
+        expect(s.toString()).toEqual(
+            '21788914573420223731318033363701224062123674814818143146813863227479480390499'
+        )
     })
 
     describe('Hash12', () => {

@@ -115,7 +115,7 @@ class Poll {
         }
 
         const emptyBallot = new Ballot(
-            this.maxValues.maxVoteOptions,
+            0,
             this.treeDepths.voteOptionTreeDepth,
         )
         this.ballotTree = new IncrementalQuinTree(
@@ -528,7 +528,8 @@ class Poll {
         const currentStateLeavesPathElements: any[] = []
 
         const emptyBallot = new Ballot(
-            5 ** this.treeDepths.voteOptionTreeDepth,
+            this.maxValues.maxVoteOptions,
+            //5 ** this.treeDepths.voteOptionTreeDepth,
             this.treeDepths.voteOptionTreeDepth,
         )
 

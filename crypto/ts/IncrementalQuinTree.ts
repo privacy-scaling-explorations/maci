@@ -390,6 +390,28 @@ class IncrementalQuinTree {
         return newTree
     }
 
+    public equals(t: IncrementalQuinTree): boolean {
+        const eq =
+            this.depth === t.depth &&
+            this.zeroValue === t.zeroValue &&
+            this.leavesPerNode === t.leavesPerNode &&
+            this.root === t.root &&
+            this.nextIndex === t.nextIndex &&
+            this.leaves.length === t.leaves.length &&
+            this.filledSubtrees.length === t.filledSubtrees.length
+            this.filledPaths.length === t.filledPaths.length
+
+        if (!eq) { return false }
+        
+        for (let i = 0; i < this.leaves.length; i ++) {
+            if (this.leaves[i] !== t.leaves[i]) {
+                return false
+            }
+        }
+
+        return true
+    }
+
     public hash(_leaves: BigInt[]): BigInt  {
         if (this.leavesPerNode > 2) {
             while (_leaves.length < 5) {

@@ -2,6 +2,7 @@ require('module-alias/register')
 import { genTestAccounts } from '../accounts'
 import { config } from 'maci-config'
 import {
+    sha256Hash,
     hashLeftRight,
     hash3,
     hash4,
@@ -59,6 +60,18 @@ describe('Hasher', () => {
             HasherAbi,
             HasherBin,
         )
+    })
+
+    it('maci-crypto.sha256Hash should match hasher.sha256Hash', async () => {
+        expect.assertions(5)
+        const values: string[] = []
+        for (let i = 0; i < 5; i++) {
+            values.push(genRandomSalt().toString())
+            const hashed = sha256Hash(values.map(BigInt))
+
+            const onChainHash = await hasherContract.sha256Hash(values)
+            expect(onChainHash.toString()).toEqual(hashed.toString())
+        }
     })
 
     it('maci-crypto.hashLeftRight should match hasher.hashLeftRight', async () => {

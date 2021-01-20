@@ -153,7 +153,7 @@ describe('MaciState', () => {
             )
 
             // Check the ballot
-            expect(maciState.polls[pollId].ballots[0].votes[Number(voteOptionIndex)].toString())
+            expect(maciState.polls[pollId].ballots[0].voteTree.leaves[Number(voteOptionIndex)].toString())
                 .toEqual(voteWeight.toString())
             // Check the state leaf in the poll
             expect(maciState.polls[pollId].stateLeaves[0].voiceCreditBalance.toString())
@@ -335,8 +335,11 @@ describe('MaciState', () => {
             expect(maciState.polls[pollId].ballots.length)
                 .toEqual(messageBatchSize)
             for (let i = 0; i < messageBatchSize; i ++) {
-                expect(maciState.polls[pollId].ballots[i].votes[i].toString())
-                    .toEqual(voteWeight.toString())
+                const leaf = i < maciState.polls[pollId].ballots[i].voteTree.leaves.length ?
+                    maciState.polls[pollId].ballots[i].voteTree.leaves[i]
+                    :
+                    0
+                expect(leaf.toString()).toEqual(voteWeight.toString())
             }
 
             // Test processAllMessages
@@ -382,6 +385,7 @@ describe('MaciState', () => {
             expect(maciState.polls[pollId].hasUntalliedBallots()).toBeTruthy()
 
             // First batch tally
+            debugger
             maciState.polls[pollId].tallyBallots()
 
             // Recall that each user `i` cast the same number of votes for

@@ -25,7 +25,7 @@ import { InitialVoiceCreditProxy }
  * Version 1
  */
 contract MACI is 
-    IMACI, DomainObjs, Params, SnarkConstants, SnarkCommon, Ownable {
+    IMACI, DomainObjs, Params, SnarkCommon, Ownable {
 
     // The state tree depth is fixed. As such it should be as large as feasible
     // so that there can be as many users as possible.  i.e. 5 ** 10 = 9765625
