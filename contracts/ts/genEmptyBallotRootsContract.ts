@@ -20,7 +20,7 @@ const genEmptyBallotRootsContract = (
 
     let r = ''
     for (let i = 1; i < 6; i ++) {
-        const ballot = new Ballot(5 ** i, i)
+        const ballot = new Ballot(0, i)
         const z = ballot.hash()
         // The empty Ballot tree root
         const ballotTree = new IncrementalQuinTree(10, BigInt(z), 5)
