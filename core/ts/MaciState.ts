@@ -37,6 +37,7 @@ interface MaxValues {
 }
 
 const STATE_TREE_DEPTH = 10
+const STATE_TREE_SUBDEPTH = 10
 
 // Also see: Polls.sol
 class Poll {
@@ -57,11 +58,14 @@ class Poll {
     public signatures: Signature[] = []
     public encPubKeys: PubKey[] = []
     public messageAq: AccQueue
+    public STATE_TREE_ARITY = 5
     public MESSAGE_TREE_ARITY = 5
 
     public stateTree = new IncrementalQuinTree(
         STATE_TREE_DEPTH,
         NOTHING_UP_MY_SLEEVE,
+        this.STATE_TREE_ARITY,
+        STATE_TREE_SUBDEPTH,
     )
     public ballotTree: IncrementalQuinTree
     public messageTree: IncrementalQuinTree
@@ -103,11 +107,14 @@ class Poll {
         this.messageTree = new IncrementalQuinTree(
             this.treeDepths.messageTreeDepth,
             NOTHING_UP_MY_SLEEVE,
+            this.MESSAGE_TREE_ARITY,
+            this.treeDepths.messageTreeSubDepth,
         )
         this.messageAq = new AccQueue(
             this.treeDepths.messageTreeSubDepth,
             this.MESSAGE_TREE_ARITY,
             NOTHING_UP_MY_SLEEVE,
+            true,
         )
 
         for (let i = 0; i < this.maxValues.maxVoteOptions; i ++) {
@@ -812,11 +819,13 @@ class MaciState {
         STATE_TREE_DEPTH,
         NOTHING_UP_MY_SLEEVE,
         this.STATE_TREE_ARITY,
+        this.STATE_TREE_SUBDEPTH,
     )
     public stateAq: AccQueue = new AccQueue(
         this.STATE_TREE_SUBDEPTH,
         this.STATE_TREE_ARITY,
         NOTHING_UP_MY_SLEEVE,
+        true,
     )
     public pollBeingProcessed = true
     public currentPollBeingProcessed

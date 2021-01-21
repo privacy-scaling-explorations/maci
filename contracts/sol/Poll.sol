@@ -4,10 +4,11 @@ pragma solidity ^0.7.2;
 
 import { IMACI } from "./IMACI.sol";
 import { Params } from "./Params.sol";
+import { Hasher } from "./crypto/Hasher.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { SnarkConstants } from "./crypto/SnarkConstants.sol";
-import { DomainObjs } from "./DomainObjs.sol";
-import { AccQueue, AccQueueQuinaryMaci } from "./trees/AccQueue.sol";
+import { DomainObjs, IPubKey, IMessage } from "./DomainObjs.sol";
+import { AccQueue, AccQueueQuinaryMaciWithSha256 } from "./trees/AccQueue.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { VkRegistry } from "./VkRegistry.sol";
 import { EmptyBallotRoots } from "./trees/EmptyBallotRoots.sol";
@@ -16,8 +17,8 @@ contract MessageAqFactory is Ownable {
     function deploy(uint256 _subDepth)
     public
     onlyOwner
-    returns (AccQueueQuinaryMaci) {
-        AccQueueQuinaryMaci aq = new AccQueueQuinaryMaci(_subDepth);
+    returns (AccQueue) {
+        AccQueue aq = new AccQueueQuinaryMaciWithSha256(_subDepth);
         aq.transferOwnership(owner());
         return aq;
     }
@@ -27,7 +28,7 @@ contract MessageAqFactory is Ownable {
  * A factory contract which deploys Poll contracts. It allows the MACI contract
  * size to stay within the limit set by EIP-170.
  */
-contract PollFactory is EmptyBallotRoots, Params, DomainObjs, Ownable {
+contract PollFactory is EmptyBallotRoots, Params, IPubKey, IMessage, Ownable {
 
     MessageAqFactory public messageAqFactory;
 
@@ -51,8 +52,23 @@ contract PollFactory is EmptyBallotRoots, Params, DomainObjs, Ownable {
         address _pollOwner,
         MessageProcessor _msgProcessor
     ) public onlyOwner returns (Poll) {
+        uint8 treeArity = 5;
 
-        AccQueueQuinaryMaci messageAq =
+        // Validate _maxValues
+        require(
+            _maxValues.maxUsers <= treeArity ** _stateTreeDepth &&
+            _maxValues.maxMessages <= 
+                treeArity ** _treeDepths.messageTreeDepth &&
+            _maxValues.maxMessages >= _batchSizes.messageBatchSize &&
+            _maxValues.maxMessages % _batchSizes.messageBatchSize == 0 &&
+            _maxValues.maxUsers >= _treeDepths.intStateTreeDepth &&
+            _maxValues.maxUsers % _batchSizes.tallyBatchSize == 0 &&
+            _maxValues.maxVoteOptions <= 
+                treeArity ** _treeDepths.voteOptionTreeDepth,
+            "PollFactory: invalid _maxValues"
+        );
+
+        AccQueue messageAq =
             messageAqFactory.deploy(_treeDepths.messageTreeSubDepth);
 
         Poll poll = new Poll(
@@ -79,7 +95,7 @@ contract PollFactory is EmptyBallotRoots, Params, DomainObjs, Ownable {
     }
 }
 
-contract Poll is Params, DomainObjs, SnarkCommon, Ownable {
+contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable {
     // The coordinator's public key
     PubKey public coordinatorPubKey;
 
@@ -126,17 +142,14 @@ contract Poll is Params, DomainObjs, SnarkCommon, Ownable {
     TreeDepths public treeDepths;
     BatchSizes public batchSizes;
 
-    uint8 constant internal TREE_ARITY = 5;
-
     // Error codes. We store them as constants and keep them short to reduce
     // this contract's bytecode size.
-    string constant ERROR_MAXVALUES = "PollE01";
-    string constant ERROR_VK_NOT_SET = "PollE02";
-    string constant ERROR_BALLOT_ROOT_NOT_SET = "PollE03";
-    string constant ERROR_VOTING_PERIOD_PASSED = "PollE04";
-    string constant ERROR_VOTING_PERIOD_NOT_PASSED = "PollE05";
-    string constant ERROR_INVALID_PUBKEY = "PollE06";
-    string constant ERROR_ONLY_POLL_PROCESSOR = "PollE07";
+    string constant ERROR_VK_NOT_SET = "PollE01";
+    string constant ERROR_BALLOT_ROOT_NOT_SET = "PollE02";
+    string constant ERROR_VOTING_PERIOD_PASSED = "PollE03";
+    string constant ERROR_VOTING_PERIOD_NOT_PASSED = "PollE04";
+    string constant ERROR_INVALID_PUBKEY = "PollE05";
+    string constant ERROR_ONLY_POLL_PROCESSOR = "PollE06";
 
     event PublishMessage(
         Message _message,
@@ -159,21 +172,6 @@ contract Poll is Params, DomainObjs, SnarkCommon, Ownable {
         AccQueue _messageAq,
         MessageProcessor _msgProcessor
     ) {
-        uint8 treeArity = TREE_ARITY;
-        // Validate _maxValues
-        require(
-            _maxValues.maxUsers <= treeArity ** _stateTreeDepth &&
-            _maxValues.maxMessages <= 
-                treeArity ** _treeDepths.messageTreeDepth &&
-            _maxValues.maxMessages >= _batchSizes.messageBatchSize &&
-            _maxValues.maxMessages % _batchSizes.messageBatchSize == 0 &&
-            _maxValues.maxUsers >= _treeDepths.intStateTreeDepth &&
-            _maxValues.maxUsers % _batchSizes.tallyBatchSize == 0 &&
-            _maxValues.maxVoteOptions <= 
-                treeArity ** _treeDepths.voteOptionTreeDepth,
-            ERROR_MAXVALUES
-        );
-
         coordinatorPubKey = _coordinatorPubKey;
         duration = _duration;
         maxValues = _maxValues;
@@ -270,6 +268,20 @@ contract Poll is Params, DomainObjs, SnarkCommon, Ownable {
         messageAq.enqueue(messageLeaf);
 
         emit PublishMessage(_message, _encPubKey);
+    }
+
+    function hashMessage(Message memory _message) public pure returns (uint256) {
+        uint256[] memory n = new uint256[](8);
+        n[0] = _message.iv;
+        n[1] = _message.data[0];
+        n[2] = _message.data[1];
+        n[3] = _message.data[2];
+        n[4] = _message.data[3];
+        n[5] = _message.data[4];
+        n[6] = _message.data[5];
+        n[7] = _message.data[6];
+
+        return sha256Hash(n);
     }
 
     /*

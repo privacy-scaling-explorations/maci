@@ -197,6 +197,10 @@ describe('ProcessMessage circuit', () => {
             const circuitNewBallotRoot = await getSignalByName(circuit, witness, 'main.newBallotRoot')
             expect(circuitNewBallotRoot.toString()).toEqual(newBallotRoot.toString())
 
+            //fs.writeFileSync(
+                //'witness.json',
+                //JSON.stringify(witness) 
+            //)
         })
     })
 

@@ -290,16 +290,14 @@ describe('MACI', () => {
                 expect(onChainProcessVk.equals(testProcessVk)).toBeTruthy()
                 expect(onChainTallyVk.equals(testTallyVk)).toBeTruthy()
 
-                /*
-                    0. coordinatorPubKey,
-                    1. duration,
-                    2. processVkSig,
-                    3. tallyVkSig,
-                    4. messageAq,
-                    5. maxValues,
-                    6. treeDepths,
-                    7. batchSizes
-                 */
+                //0. coordinatorPubKey,
+                //1. duration,
+                //2. processVkSig,
+                //3. tallyVkSig,
+                //4. messageAq,
+                //5. maxValues,
+                //6. treeDepths,
+                //7. batchSizes
 
                 const pollState = await pollStateViewerContract.getState(pollContract.address)
 
@@ -392,7 +390,7 @@ describe('MACI', () => {
                         { gasLimit: 300000 },
                     )
                 } catch (e) {
-                    const error = 'PollE04'
+                    const error = 'PollE03'
                     expect(e.message.endsWith(error)).toBeTruthy()
                 }
             })

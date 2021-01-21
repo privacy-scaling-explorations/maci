@@ -14,7 +14,7 @@ import { DomainObjs } from "./DomainObjs.sol";
 import { VkRegistry } from "./VkRegistry.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { SnarkConstants } from "./crypto/SnarkConstants.sol";
-import { AccQueueQuinaryMaci } from "./trees/AccQueue.sol";
+import { AccQueue, AccQueueQuinaryMaciWithSha256 } from "./trees/AccQueue.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
 import { InitialVoiceCreditProxy }
@@ -24,8 +24,7 @@ import { InitialVoiceCreditProxy }
  * Minimum Anti-Collusion Infrastructure
  * Version 1
  */
-contract MACI is 
-    IMACI, DomainObjs, Params, SnarkCommon, Ownable {
+contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
 
     // The state tree depth is fixed. As such it should be as large as feasible
     // so that there can be as many users as possible.  i.e. 5 ** 10 = 9765625
@@ -62,7 +61,7 @@ contract MACI is
 
     // The state AccQueue. Represents a mapping between each user's public key
     // and their voice credit balance.
-    AccQueueQuinaryMaci public stateAq;
+    AccQueue public stateAq;
 
     // Whether the init() function has been successfully executed yet.
     bool isInitialised = false;
@@ -88,7 +87,7 @@ contract MACI is
         InitialVoiceCreditProxy _initialVoiceCreditProxy
     ) {
         // Deploy the state AccQueue
-        stateAq = new AccQueueQuinaryMaci(STATE_TREE_SUBDEPTH);
+        stateAq = new AccQueueQuinaryMaciWithSha256(STATE_TREE_SUBDEPTH);
 
         // Enqueue the 0th leaf
         stateAq.enqueue(NOTHING_UP_MY_SLEEVE);
