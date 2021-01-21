@@ -12,9 +12,9 @@ import {
     decrypt,
     sign,
     hashLeftRight,
+    sha256Hash,
     hash3,
     hash4,
-    hash5,
     verifySignature,
     genRandomSalt,
     genKeypair,
@@ -361,13 +361,7 @@ class Message {
     }
 
     public hash = (): BigInt => {
-        const p = this.data
-        return hash4([
-            hash5([this.iv, p[0], p[1], p[2], p[3]]),
-            p[4],
-            p[5],
-            p[6],
-        ])
+        return sha256Hash([this.iv, ...this.data])
     }
 
     public copy = (): Message => {
