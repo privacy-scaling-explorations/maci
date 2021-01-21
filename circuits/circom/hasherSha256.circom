@@ -6,29 +6,41 @@ template Sha256HashLeftRight() {
     signal input right;
     signal output hash;
 
-    component leftBits = Num2Bits(256);
-    leftBits.in <== left;
-
-    component rightBits = Num2Bits(256);
-    rightBits.in <== right;
-
-    var inBits = 256 * 2;
-
-    component sha = Sha256(inBits);
-    for (var i = 0; i < 256; i ++) {
-        sha.in[255 - i] <== leftBits.out[i];
-        sha.in[256 + 255 - i] <== rightBits.out[i];
-    }
-
-    component shaOut = Bits2Num(256);
-    for (var i = 0; i < 256; i++) {
-        shaOut.in[i] <== sha.out[255-i];
-    }
-    hash <== shaOut.out;
+    component hasher = Sha256Hasher(2);
+    hasher.in[0] <== left;
+    hasher.in[1] <== right;
+    hash <== hasher.hash;
 }
 
 template Sha256Hasher5() {
     var length = 5;
+    var inBits = 256 * length;
+
+    signal input in[length];
+    signal output hash;
+
+    component hasher = Sha256Hasher(length);
+    for (var i = 0; i < length; i ++) {
+        hasher.in[i] <== in[i];
+    }
+    hash <== hasher.hash;
+}
+
+template Sha256Hasher8() {
+    var length = 5;
+    var inBits = 256 * length;
+
+    signal input in[length];
+    signal output hash;
+
+    component hasher = Sha256Hasher(length);
+    for (var i = 0; i < length; i ++) {
+        hasher.in[i] <== in[i];
+    }
+    hash <== hasher.hash;
+}
+
+template Sha256Hasher(length) {
     var inBits = 256 * length;
 
     signal input in[length];
