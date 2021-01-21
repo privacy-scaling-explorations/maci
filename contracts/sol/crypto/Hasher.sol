@@ -43,49 +43,49 @@ contract Hasher is SnarkConstants {
         return PoseidonT6.poseidon(array);
     }
 
-    function hash12(uint256[] memory array) public pure returns (uint256) {
-        /*
-        To hash 12 elements [a ... l]:
-            m: hash4(
-                n: hash5([a, b, c, d e]),
-                o: hash5([f, g, h, i j]),
-                k,
-                l
-            )
-        */
+    //function hash12(uint256[] memory array) public pure returns (uint256) {
+        ///*
+        //To hash 12 elements [a ... l]:
+            //m: hash4(
+                //n: hash5([a, b, c, d e]),
+                //o: hash5([f, g, h, i j]),
+                //k,
+                //l
+            //)
+        //*/
 
-        uint256[] memory input12 = new uint256[](12);
-        for (uint256 i = 0; i < array.length; i++) {
-            input12[i] = array[i];
-        }
+        //uint256[] memory input12 = new uint256[](12);
+        //for (uint256 i = 0; i < array.length; i++) {
+            //input12[i] = array[i];
+        //}
 
-        // If fewer than 12 elements are given, use the value 0
-        for (uint256 i = array.length; i < 12; i++) {
-            input12[i] = 0;
-        }
+        //// If fewer than 12 elements are given, use the value 0
+        //for (uint256 i = array.length; i < 12; i++) {
+            //input12[i] = 0;
+        //}
 
-        uint256[] memory n = new uint256[](5);
-        n[0] = input12[0];
-        n[1] = input12[1];
-        n[2] = input12[2];
-        n[3] = input12[3];
-        n[4] = input12[4];
+        //uint256[] memory n = new uint256[](5);
+        //n[0] = input12[0];
+        //n[1] = input12[1];
+        //n[2] = input12[2];
+        //n[3] = input12[3];
+        //n[4] = input12[4];
 
-        uint256[] memory o = new uint256[](5);
-        o[0] = input12[5];
-        o[1] = input12[6];
-        o[2] = input12[7];
-        o[3] = input12[8];
-        o[4] = input12[9];
+        //uint256[] memory o = new uint256[](5);
+        //o[0] = input12[5];
+        //o[1] = input12[6];
+        //o[2] = input12[7];
+        //o[3] = input12[8];
+        //o[4] = input12[9];
 
-        uint256[] memory m = new uint256[](4);
-        m[0] = PoseidonT6.poseidon(n);
-        m[1] = PoseidonT6.poseidon(o);
-        m[2] = input12[10];
-        m[3] = input12[11];
+        //uint256[] memory m = new uint256[](4);
+        //m[0] = PoseidonT6.poseidon(n);
+        //m[1] = PoseidonT6.poseidon(o);
+        //m[2] = input12[10];
+        //m[3] = input12[11];
 
-        return PoseidonT5.poseidon(m);
-    }
+        //return PoseidonT5.poseidon(m);
+    //}
 
     function hashLeftRight(uint256 _left, uint256 _right)
     public

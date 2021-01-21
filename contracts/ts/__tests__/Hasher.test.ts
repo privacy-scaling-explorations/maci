@@ -7,7 +7,6 @@ import {
     hash3,
     hash4,
     hash5,
-    hash12,
     genRandomSalt,
 } from 'maci-crypto'
 
@@ -113,28 +112,6 @@ describe('Hasher', () => {
         const hashed = hash5(values.map(BigInt))
 
         const onChainHash = await hasherContract.hash5(values)
-        expect(onChainHash.toString()).toEqual(hashed.toString())
-    })
-
-    it('maci-crypto.hash12 should match hasher.hash12', async () => {
-        const values: string[] = []
-        for (let i = 0; i < 12; i++) {
-            values.push(genRandomSalt().toString())
-        }
-        const hashed = hash12(values.map(BigInt))
-        const onChainHash = await hasherContract.hash12(values)
-
-        expect(onChainHash.toString()).toEqual(hashed.toString())
-    })
-
-    it('maci-crypto.hash12 should match hasher.hash12 for 11 elements', async () => {
-        const values: string[] = []
-        for (let i = 0; i < 11; i++) {
-            values.push(genRandomSalt().toString())
-        }
-        const hashed = hash12(values.map(BigInt))
-        const onChainHash = await hasherContract.hash12(values)
-
         expect(onChainHash.toString()).toEqual(hashed.toString())
     })
 })
