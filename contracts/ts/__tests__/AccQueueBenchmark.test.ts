@@ -4,6 +4,7 @@ import { genTestAccounts } from '../accounts'
 import { config } from 'maci-config'
 import {
     AccQueue,
+    NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
 
 import { JSONRPCDeployer } from '../deploy'
@@ -29,6 +30,7 @@ const deploy = async (
     SUB_DEPTH: number,
     HASH_LENGTH: number,
     ZERO: BigInt,
+    sha = false,
 ) => {
     deployer = new JSONRPCDeployer(
         accounts[0].privateKey,
@@ -62,7 +64,7 @@ const deploy = async (
         HASH_LENGTH,
     )
 
-    const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
+    const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO, sha)
     return { aq, aqContract }
 }
 
@@ -204,13 +206,37 @@ describe('AccQueue gas benchmarks', () => {
         })
     })
 
-    describe('Quinary fills', () => {
+    describe('Quinary enqueues (SHA256)', () => {
         const SUB_DEPTH = 2
         const HASH_LENGTH = 5
         const ZERO = BigInt(0)
         beforeAll(async () => {
             const r = await deploy(
-                'AccQueueBinary0',
+                'AccQueueQuinaryMaciWithSha256',
+                SUB_DEPTH,
+                HASH_LENGTH,
+                ZERO,
+                true,
+            )
+            aqContract = r.aqContract
+        })
+
+        it(`Should enqueue to a subtree of depth ${SUB_DEPTH}`, async () => {
+            for (let i = 0; i < HASH_LENGTH ** SUB_DEPTH; i ++) {
+                const tx = await aqContract.enqueue(i, { gasLimit: 800000 } )
+                const receipt = await tx.wait()
+                console.log(`Gas used by quinary enqueue (SHA256): ${receipt.gasUsed.toString()}`)
+            }
+        })
+    })
+
+    describe('Quinary fills', () => {
+        const SUB_DEPTH = 2
+        const HASH_LENGTH = 5
+        const ZERO = NOTHING_UP_MY_SLEEVE
+        beforeAll(async () => {
+            const r = await deploy(
+                'AccQueueQuinaryMaci',
                 SUB_DEPTH,
                 HASH_LENGTH,
                 ZERO,
@@ -224,6 +250,31 @@ describe('AccQueue gas benchmarks', () => {
                 const tx = await aqContract.fill({ gasLimit: 800000 } )
                 const receipt = await tx.wait()
                 console.log(`Gas used by quinary fill: ${receipt.gasUsed.toString()}`)
+            }
+        })
+    })
+
+    describe('Quinary fills (SHA256)', () => {
+        const SUB_DEPTH = 2
+        const HASH_LENGTH = 5
+        const ZERO = NOTHING_UP_MY_SLEEVE
+        beforeAll(async () => {
+            const r = await deploy(
+                'AccQueueQuinaryMaciWithSha256',
+                SUB_DEPTH,
+                HASH_LENGTH,
+                ZERO,
+                true,
+            )
+            aqContract = r.aqContract
+        })
+
+        it(`Should fill a subtree of depth ${SUB_DEPTH}`, async () => {
+            for (let i = 0; i < 2; i ++) {
+                await(await aqContract.enqueue(i, { gasLimit: 800000 }))
+                const tx = await aqContract.fill({ gasLimit: 800000 } )
+                const receipt = await tx.wait()
+                console.log(`Gas used by quinary fill (SHA256): ${receipt.gasUsed.toString()}`)
             }
         })
     })
