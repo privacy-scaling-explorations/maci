@@ -1,6 +1,7 @@
 include "../../node_modules/circomlib/circuits/mux1.circom";
 include "../../node_modules/circomlib/circuits/comparators.circom";
 include "../hasherPoseidon.circom";
+include "../hasherSha256.circom";
 include "./calculateTotal.circom";
 include "./checkRoot.circom";
 
@@ -140,6 +141,72 @@ template Splicer(numItems) {
     }
 }
 
+// Uses SHA256 to hash levels up to the subDepth
+// Assumes that subDepth is greater than 0
+template QuinTreeInclusionProofWithSha256(levels, subDepth) {
+    assert(subDepth > 0);
+    assert(levels >= subDepth);
+
+    // Each node has 5 leaves
+    var LEAVES_PER_NODE = 5;
+    var LEAVES_PER_PATH_LEVEL = LEAVES_PER_NODE - 1;
+
+    signal input leaf;
+    signal input path_index[levels];
+    signal input path_elements[levels][LEAVES_PER_PATH_LEVEL];
+    signal output root;
+
+    var i;
+    var j;
+
+    component hashers[levels];
+    component splicers[levels];
+
+    // Hash the first level of path_elements
+    splicers[0] = Splicer(LEAVES_PER_PATH_LEVEL);
+    hashers[0] = Sha256Hasher5();
+    splicers[0].index <== path_index[0];
+    splicers[0].leaf <== leaf;
+    for (i = 0; i < LEAVES_PER_PATH_LEVEL; i++) {
+        splicers[0].in[i] <== path_elements[0][i];
+    }
+
+    for (i = 0; i < LEAVES_PER_NODE; i++) {
+        hashers[0].in[i] <== splicers[0].out[i];
+    }
+
+    // Hash each level of path_elements
+    for (i = 1; i < subDepth; i++) {
+        splicers[i] = Splicer(LEAVES_PER_PATH_LEVEL);
+        splicers[i].index <== path_index[i];
+        splicers[i].leaf <== hashers[i - 1].hash;
+        for (j = 0; j < LEAVES_PER_PATH_LEVEL; j ++) {
+            splicers[i].in[j] <== path_elements[i][j];
+        }
+
+        hashers[i] = Sha256Hasher5();
+        for (j = 0; j < LEAVES_PER_NODE; j ++) {
+            hashers[i].in[j] <== splicers[i].out[j];
+        }
+    }
+
+    for (i = subDepth; i < levels; i++) {
+        splicers[i] = Splicer(LEAVES_PER_PATH_LEVEL);
+        splicers[i].index <== path_index[i];
+        splicers[i].leaf <== hashers[i - 1].hash;
+        for (j = 0; j < LEAVES_PER_PATH_LEVEL; j ++) {
+            splicers[i].in[j] <== path_elements[i][j];
+        }
+
+        hashers[i] = Hasher5();
+        for (j = 0; j < LEAVES_PER_NODE; j ++) {
+            hashers[i].in[j] <== splicers[i].out[j];
+        }
+    }
+    
+    root <== hashers[levels - 1].hash;
+}
+
 template QuinTreeInclusionProof(levels) {
     // Each node has 5 leaves
     var LEAVES_PER_NODE = 5;
@@ -204,6 +271,33 @@ template QuinLeafExists(levels){
 
     // Verify the Merkle path
     component verifier = QuinTreeInclusionProof(levels);
+    verifier.leaf <== leaf;
+    for (i = 0; i < levels; i ++) {
+        verifier.path_index[i] <== path_index[i];
+        for (j = 0; j < LEAVES_PER_PATH_LEVEL; j ++) {
+            verifier.path_elements[i][j] <== path_elements[i][j];
+        }
+    }
+
+    root === verifier.root;
+}
+
+template QuinLeafExistsWithSha256(levels, subDepth){
+    // Ensures that a leaf exists within a quintree with given `root`
+
+    var LEAVES_PER_NODE = 5;
+    var LEAVES_PER_PATH_LEVEL = LEAVES_PER_NODE - 1;
+
+    var i;
+    var j;
+
+    signal input leaf;
+    signal input path_elements[levels][LEAVES_PER_PATH_LEVEL];
+    signal input path_index[levels];
+    signal input root;
+
+    // Verify the Merkle path
+    component verifier = QuinTreeInclusionProofWithSha256(levels, subDepth);
     verifier.leaf <== leaf;
     for (i = 0; i < levels; i ++) {
         verifier.path_index[i] <== path_index[i];

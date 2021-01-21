@@ -7,6 +7,7 @@ import { MerkleZeros as MerkleBinary0 } from "./zeros/MerkleBinary0.sol";
 import { MerkleZeros as MerkleBinaryMaci } from "./zeros/MerkleBinaryMaci.sol";
 import { MerkleZeros as MerkleQuinary0 } from "./zeros/MerkleQuinary0.sol";
 import { MerkleZeros as MerkleQuinaryMaci } from "./zeros/MerkleQuinaryMaci.sol";
+import { MerkleZeros as MerkleQuinaryMaciWithSha256 } from "./zeros/MerkleQuinaryMaciWithSha256.sol";
 
 /*
  * This contract defines a Merkle tree where each leaf insertion only updates a
@@ -568,6 +569,32 @@ contract AccQueueQuinary0 is AccQueueQuinary, MerkleQuinary0 {
 }
 
 contract AccQueueQuinaryMaci is AccQueueQuinary, MerkleQuinaryMaci {
+    constructor(uint256 _subDepth) AccQueueQuinary(_subDepth) {}
+    function getZero(uint256 _level) internal view override returns (uint256) { return zeros[_level]; }
+}
+
+abstract contract AccQueueQuinaryWithSha256 is AccQueue {
+
+    constructor(uint256 _subDepth) AccQueue(_subDepth, 5) {}
+
+    function hashLevel(uint256 _level, uint256 _leaf) override internal returns (uint256) {
+        uint256[] memory inputs = new uint256[](5);
+        inputs[0] = leafQueue.levels[_level][0];
+        inputs[1] = leafQueue.levels[_level][1];
+        inputs[2] = leafQueue.levels[_level][2];
+        inputs[3] = leafQueue.levels[_level][3];
+        inputs[4] = _leaf;
+        uint256 hashed = sha256Hash(inputs);
+
+        // Free up storage slots to refund gas. Note that using a loop here
+        // would result in lower gas savings.
+        delete leafQueue.levels[_level];
+
+        return hashed;
+    }
+}
+
+contract AccQueueQuinaryMaciWithSha256 is AccQueueQuinaryWithSha256, MerkleQuinaryMaciWithSha256 {
     constructor(uint256 _subDepth) AccQueueQuinary(_subDepth) {}
     function getZero(uint256 _level) internal view override returns (uint256) { return zeros[_level]; }
 }

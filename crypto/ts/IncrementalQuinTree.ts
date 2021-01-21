@@ -373,7 +373,13 @@ class IncrementalQuinTree {
     public static verifyMerklePath(
         _proof: MerkleProof,
         _hashFunc: (leaves: BigInt[]) => BigInt,
+        _subHashFunc?: (leaves: BigInt[]) => BigInt,
+        _numSubLevels?: number,
     ): boolean {
+        if (_subHashFunc != undefined) {
+            assert(_numSubLevels != undefined)
+        }
+
         assert (_proof.pathElements)
 
         const pathElements = _proof.pathElements
@@ -387,13 +393,23 @@ class IncrementalQuinTree {
         // Hash the first level
         const firstLevel: BigInt[] = pathElements[0].map(BigInt)
         firstLevel.splice(Number(_proof.indices[0]), 0, _proof.leaf)
-        let currentLevelHash: BigInt = _hashFunc(firstLevel)
+        let currentLevelHash: BigInt =
+            _subHashFunc && _numSubLevels && _numSubLevels > 0 ?
+            _subHashFunc(firstLevel)
+            :
+            _hashFunc(firstLevel)
 
         // Verify the proof
         for (let i = 1; i < pathElements.length; i ++) {
             const level: BigInt[] = pathElements[i].map(BigInt)
             level.splice(Number(_proof.indices[i]), 0, currentLevelHash)
-            currentLevelHash = _hashFunc(level)
+
+            const hf = _subHashFunc && _numSubLevels && i < _numSubLevels ?
+                _subHashFunc
+                :
+                _hashFunc
+
+            currentLevelHash = hf(level)
         }
 
         return currentLevelHash === _proof.root
