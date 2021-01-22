@@ -175,19 +175,7 @@ const processAndTallyWithoutProofs = async (args: any): Promise<object | undefin
         wallet,
     )
 
-    // Check whether there are any remaining batches to process
-    let currentMessageBatchIndex = (await maciContract.currentMessageBatchIndex()).toNumber()
     const messageTreeMaxLeafIndex = (await maciContract.messageTreeMaxLeafIndex()).toNumber()
-
-    if (! (await maciContract.hasUnprocessedMessages())) {
-        console.error('Error: all messages have already been processed')
-        return
-    }
-
-    if (currentMessageBatchIndex > messageTreeMaxLeafIndex) {
-        console.error('Error: the message batch index is invalid. This should never happen.')
-        return
-    }
 
     // Build an off-chain representation of the MACI contract using data in the contract storage
     let maciState
@@ -203,7 +191,10 @@ const processAndTallyWithoutProofs = async (args: any): Promise<object | undefin
         return
     }
 
-    const messageBatchSize  = await maciContract.messageBatchSize()
+    const messageBatchSize  = Number((await maciContract.messageBatchSize()).toString())
+    let currentMessageBatchIndex = 
+        (Math.floor(maciState.messages.length / messageBatchSize) - 1) * messageBatchSize
+    console.log(currentMessageBatchIndex, maciState.messages.length, messageBatchSize)
 
     const randomStateLeaf = StateLeaf.genRandomLeaf()
     while (true) {
@@ -212,7 +203,7 @@ const processAndTallyWithoutProofs = async (args: any): Promise<object | undefin
             messageBatchSize,
             randomStateLeaf,
         )
-        if (currentMessageBatchIndex === 0) {
+        if (currentMessageBatchIndex <= 0) {
             break
         }
         currentMessageBatchIndex -= messageBatchSize

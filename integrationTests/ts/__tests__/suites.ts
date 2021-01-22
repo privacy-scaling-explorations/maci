@@ -1,4 +1,5 @@
 import * as ethers from 'ethers'
+import * as fs from 'fs'
 import {
     PubKey,
     PrivKey,
@@ -265,6 +266,7 @@ const executeSuite = async (data: any, expect: any) => {
     console.log(tallyCommand)
 
     const tallyOutput = exec(tallyCommand)
+    const tally = JSON.parse(fs.readFileSync('test_tally.json').toString())
 
     if (tallyOutput.stderr) {
         console.log(tallyOutput.stderr)
@@ -340,6 +342,25 @@ const executeSuite = async (data: any, expect: any) => {
         console.log(verifyOutput)
     }
     expect(verifyRegMatch).toBeTruthy()
+
+    const tallyWithoutProofsFile = 'tally_without_proofs.json'
+    const ptwpCommand = `node ../cli/build/index.js processAndTallyWithoutProofs ` +
+        ` -sk ${coordinatorKeypair.privKey.serialize()}` +
+        ` -d ${userPrivKey}` +
+        ` -x ${maciAddress}` +
+        ` -t ${tallyWithoutProofsFile}`
+
+    exec(ptwpCommand)
+
+    const tallyWithoutProofs = JSON.parse(fs.readFileSync(tallyWithoutProofsFile).toString())
+
+    expect(tally.totalVoiceCredits.spent).toEqual(tally.totalVoiceCredits.spent)
+
+    expect(JSON.stringify(tally.results.tally))
+        .toEqual(JSON.stringify(tallyWithoutProofs.results.tally))
+
+    expect(JSON.stringify(tally.totalVoiceCreditsPerVoteOption.tally))
+        .toEqual(JSON.stringify(tallyWithoutProofs.totalVoiceCreditsPerVoteOption.tally))
 
     return true
 }
