@@ -3,6 +3,7 @@ solc
 cli/tally.json
 **/test_tally.json
 **/tally.json
+**/tally_without_proofs.json
 integrationTests/test_tally.json
 deployedAddresses.json
 .etherlime-store
