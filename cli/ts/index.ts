@@ -46,6 +46,11 @@ import {
     configureSubparser as configureSubparserForVerify,
 } from './verify'
 
+import {
+    processAndTallyWithoutProofs,
+    configureSubparser as configureSubparserForPtwp,
+} from './ptwp'
+
 const main = async () => {
     const parser = new argparse.ArgumentParser({ 
         description: 'Minimal Anti-Collusion Infrastructure',
@@ -80,6 +85,9 @@ const main = async () => {
     // Subcommand: verify
     configureSubparserForVerify(subparsers)
 
+    // Subcommand: processAndTallyWithoutProofs
+    configureSubparserForPtwp(subparsers)
+
     const args = parser.parseArgs()
 
     // Execute the subcommand method
@@ -103,6 +111,8 @@ const main = async () => {
         process.exit()
     } else if (args.subcommand === 'verify') {
         await verify(args)
+    } else if (args.subcommand === 'processAndTallyWithoutProofs') {
+        await processAndTallyWithoutProofs(args)
     }
 }
 

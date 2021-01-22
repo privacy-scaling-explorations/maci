@@ -11,6 +11,7 @@
 | User | Change key / vote | `publish` |
 | Coordinator | Process one batch or all remaining batches of messages | `process` |
 | Coordinator | Tally one batch or all remaining batches of state leaves | `tally` |
+| Coordinator | Process and tally all votes without producing proofs | `processAndTallyWithoutProofs` |
 
 ## Public and private key format
 
@@ -354,6 +355,21 @@ Example output:
 ```
 Transaction hash: 0x45ae379b056a6fc647a3718bd356268a1bcda35e6645bb7a1aba44cb76418c98
 Ephemeral private key: macisk.2b23e978301d029e46117ef0138f860e277ffed0f008712f3d7ca2c40f1a6768
+```
+
+**Coordinator: process and tally all messages and votes without producing proofs** 
+
+In situations where the coordinator requires results quickly, they can run
+`processAndTallyWithoutProofs` to process all messages and tally all votes
+without producing any proofs.
+
+```
+node ./build/index.js processAndTallyWithoutProofs \
+    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+	-e http://localhost:8545 \
+	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
+	-sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
+	-t preProofTally.json
 ```
 
 **Coordinator: process all messages** 
