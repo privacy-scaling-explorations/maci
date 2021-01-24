@@ -9,19 +9,19 @@ include "../node_modules/circomlib/circuits/mux1.circom";
 template ProcessMessages(
     stateTreeDepth,
     msgTreeDepth,
-    msgSubTreeDepth,
+    msgBatchDepth,
     voteOptionTreeDepth
 ) {
 
     // stateTreeDepth: the depth of the state tree
     // msgTreeDepth: the depth of the message tree
-    // msgSubTreeDepth: the depth of the shortest tree that can fit all the
+    // msgBatchDepth: the depth of the shortest tree that can fit all the
     //                  messages
     // voteOptionTreeDepth: depth of the vote option tree
 
     var MSG_LENGTH = 8; // iv and data
     var TREE_ARITY = 5;
-    var batchSize = TREE_ARITY ** msgSubTreeDepth;
+    var batchSize = TREE_ARITY ** msgBatchDepth;
     var PACKED_CMD_LENGTH = 4;
 
     var BALLOT_LENGTH = 2;
@@ -49,7 +49,7 @@ template ProcessMessages(
     signal private input msgs[batchSize][MSG_LENGTH];
 
     // The message Merkle proofs
-    signal input msgSubrootPathElements[msgTreeDepth - msgSubTreeDepth][TREE_ARITY - 1];
+    signal input msgSubrootPathElements[msgTreeDepth - msgBatchDepth][TREE_ARITY - 1];
     // The index of the first message leaf in the batch, inclusive. Note that
     // messages are processed in reverse order, so this is not be the index of
     // the first message to process (unless there is only 1 message)
@@ -112,7 +112,7 @@ template ProcessMessages(
     //  batchSize must be the message tree arity raised to some power
     // (e.g. 5 ^ n)
 
-    component msgBatchLeavesExists = QuinBatchLeavesExists(msgTreeDepth, msgSubTreeDepth);
+    component msgBatchLeavesExists = QuinBatchLeavesExists(msgTreeDepth, msgBatchDepth);
     msgBatchLeavesExists.root <== msgRoot;
 
     // Hash each Message so we can check its existence in the Message tree
@@ -145,7 +145,7 @@ template ProcessMessages(
         msgBatchLeavesExists.leaves[i] <== muxes[i].out;
     }
 
-    for (var i = 0; i < msgTreeDepth - msgSubTreeDepth; i ++) {
+    for (var i = 0; i < msgTreeDepth - msgBatchDepth; i ++) {
         for (var j = 0; j < TREE_ARITY - 1; j ++) {
             msgBatchLeavesExists.path_elements[i][j] <== msgSubrootPathElements[i][j];
         }
@@ -154,14 +154,14 @@ template ProcessMessages(
     // Assign values to msgBatchLeavesExists.path_index. Since
     // msgBatchLeavesExists tests for the existence of a subroot, the length of
     // the proof is the last n elements of a proof from the root to a leaf
-    // where n = msgTreeDepth - msgSubTreeDepth
-    // e.g. if batchStartIndex = 25, msgTreeDepth = 4, msgSubtreeDepth = 2
+    // where n = msgTreeDepth - msgBatchDepth
+    // e.g. if batchStartIndex = 25, msgTreeDepth = 4, msgBatchDepth = 2
     // msgBatchLeavesExists.path_index should be:
     // [1, 0]
     component msgBatchPathIndices = QuinGeneratePathIndices(msgTreeDepth);
     msgBatchPathIndices.in <== batchStartIndex;
-    for (var i = msgSubTreeDepth; i < msgTreeDepth; i ++) {
-        msgBatchLeavesExists.path_index[i - msgSubTreeDepth] <== msgBatchPathIndices.out[i];
+    for (var i = msgBatchDepth; i < msgTreeDepth; i ++) {
+        msgBatchLeavesExists.path_index[i - msgBatchDepth] <== msgBatchPathIndices.out[i];
     }
 
     //  ----------------------------------------------------------------------- 
@@ -212,6 +212,7 @@ template ProcessMessages(
     // leaf and its membership in the current state root.
     component currentStateLeavesQle[batchSize];
     for (var i = 0; i < batchSize; i ++) {
+        /*currentStateLeavesQle[i] = QuinLeafExistsWithSha256(stateTreeDepth);*/
         currentStateLeavesQle[i] = QuinLeafExists(stateTreeDepth);
         currentStateLeavesQle[i].root <== currentStateRoot;
         currentStateLeavesQle[i].leaf <== currentStateLeafHashers[i].hash;
@@ -334,6 +335,7 @@ template ProcessMessages(
         newBallotsHashers[i].left <== transformers[i].newBallotNonce;
         newBallotsHashers[i].right <== transformers[i].newBallotVoteOptionRoot;
 
+        /*newStateLeavesQip[i] = QuinTreeInclusionProofWithSha256(stateTreeDepth);*/
         newStateLeavesQip[i] = QuinTreeInclusionProof(stateTreeDepth);
         newBallotsQip[i] = QuinTreeInclusionProof(stateTreeDepth);
 
@@ -356,6 +358,7 @@ template ProcessMessages(
     // 8. Generate the final state tree root with the zeroth leaf set to a
     // random value
 
+    /*component zerothSlQip = QuinTreeInclusionProofWithSha256(stateTreeDepth);*/
     component zerothSlQip = QuinTreeInclusionProof(stateTreeDepth);
     zerothSlQip.leaf <== zerothStateLeafHash;
     for (var i = 0; i < stateTreeDepth; i ++) {

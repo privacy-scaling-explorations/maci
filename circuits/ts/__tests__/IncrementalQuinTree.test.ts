@@ -132,52 +132,6 @@ describe('Quin Merkle Tree circuits', () => {
         })
     })
 
-    describe('QuinCheckRoot', () => {
-        const circuit = 'quinTreeCheckRoot_test'
-
-        it('Valid CheckRoot inputs should work', async () => {
-            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE)
-            const leaves: BigInt[] = []
-
-            for (let i = 0; i < 5 ** LEVELS; i++) {
-                const randomVal = genRandomSalt()
-                tree.insert(randomVal)
-                leaves.push(randomVal)
-            }
-
-            const root = tree.root
-
-            const circuitInputs = stringifyBigInts({ leaves })
-
-            const witness = await genWitness(circuit, circuitInputs)
-            const circuitRoot = await getSignalByName(circuit, witness, 'main.root')
-
-            expect(circuitRoot).toEqual(root.toString())
-        })
-
-        it('Different leaves should generate a different root', async () => {
-            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE)
-            const leaves: BigInt[] = []
-
-            for (let i = 0; i < 5 ** LEVELS; i++) {
-                const randomVal = genRandomSalt()
-                tree.insert(randomVal)
-                leaves.push(randomVal)
-            }
-
-            leaves[0] = BigInt(0)
-
-            const root = tree.root
-
-            const circuitInputs = stringifyBigInts({ leaves })
-
-            const witness = await genWitness(circuit, circuitInputs)
-            const circuitRoot = await getSignalByName(circuit, witness, 'main.root')
-
-            expect(circuitRoot).not.toEqual(root.toString())
-        })
-    })
-
     describe('QuinLeafExists', () => {
         const circuit = 'quinTreeLeafExists_test'
 
@@ -306,4 +260,95 @@ describe('Quin Merkle Tree circuits', () => {
             }
         })
     })
+
+    describe('QuinCheckRoot', () => {
+        const circuit = 'quinTreeCheckRoot_test'
+
+        it('Valid CheckRoot inputs should work', async () => {
+            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE)
+            const leaves: BigInt[] = []
+
+            for (let i = 0; i < 5 ** LEVELS; i++) {
+                const randomVal = genRandomSalt()
+                tree.insert(randomVal)
+                leaves.push(randomVal)
+            }
+
+            const root = tree.root
+
+            const circuitInputs = stringifyBigInts({ leaves })
+
+            const witness = await genWitness(circuit, circuitInputs)
+            const circuitRoot = await getSignalByName(circuit, witness, 'main.root')
+
+            expect(circuitRoot).toEqual(root.toString())
+        })
+
+        it('Different leaves should generate a different root', async () => {
+            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE)
+            const leaves: BigInt[] = []
+
+            for (let i = 0; i < 5 ** LEVELS; i++) {
+                const randomVal = genRandomSalt()
+                tree.insert(randomVal)
+                leaves.push(randomVal)
+            }
+
+            leaves[0] = BigInt(0)
+
+            const root = tree.root
+
+            const circuitInputs = stringifyBigInts({ leaves })
+
+            const witness = await genWitness(circuit, circuitInputs)
+            const circuitRoot = await getSignalByName(circuit, witness, 'main.root')
+
+            expect(circuitRoot).not.toEqual(root.toString())
+        })
+    })
+ 
+    //describe('QuinCheckRoot (SHA256)', () => {
+        //const circuit = 'quinTreeCheckRootWithSha256_test'
+        //const SUB_DEPTH = 2
+
+        //it('Valid CheckRoot inputs should work', async () => {
+            //const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 5, SUB_DEPTH)
+
+            //for (let i = 0; i < 5 ** LEVELS; i++) {
+                //const leaf = BigInt(i)
+                //tree.insert(leaf)
+            //}
+
+            //const root = tree.root
+
+            //const circuitInputs = stringifyBigInts({ leaves: tree.leaves })
+
+            //const witness = await genWitness(circuit, circuitInputs)
+            //const circuitRoot = await getSignalByName(circuit, witness, 'main.root')
+
+            //expect(circuitRoot).toEqual(root.toString())
+        //})
+
+        //it('Different leaves should generate a different root', async () => {
+            //const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, SUB_DEPTH)
+            //const leaves: BigInt[] = []
+
+            //for (let i = 0; i < 5 ** LEVELS; i++) {
+                //const leaf = BigInt(i)
+                //leaves.push(leaf)
+                //tree.insert(leaf)
+            //}
+
+            //leaves[0] = BigInt(123)
+
+            //const root = tree.root
+
+            //const circuitInputs = stringifyBigInts({ leaves })
+
+            //const witness = await genWitness(circuit, circuitInputs)
+            //const circuitRoot = await getSignalByName(circuit, witness, 'main.root')
+
+            //expect(circuitRoot).not.toEqual(root.toString())
+        //})
+    //})
 })

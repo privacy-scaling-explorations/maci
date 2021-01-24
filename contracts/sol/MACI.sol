@@ -14,7 +14,12 @@ import { DomainObjs } from "./DomainObjs.sol";
 import { VkRegistry } from "./VkRegistry.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { SnarkConstants } from "./crypto/SnarkConstants.sol";
-import { AccQueue, AccQueueQuinaryMaciWithSha256 } from "./trees/AccQueue.sol";
+//import { AccQueue, AccQueueQuinaryMaciWithSha256 } from "./trees/AccQueue.sol";
+import {
+    AccQueue,
+    AccQueueQuinaryMaci,
+    AccQueueQuinaryMaciWithSha256
+} from "./trees/AccQueue.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
 import { InitialVoiceCreditProxy }
@@ -87,7 +92,8 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         InitialVoiceCreditProxy _initialVoiceCreditProxy
     ) {
         // Deploy the state AccQueue
-        stateAq = new AccQueueQuinaryMaciWithSha256(STATE_TREE_SUBDEPTH);
+        //stateAq = new AccQueueQuinaryMaciWithSha256(STATE_TREE_SUBDEPTH);
+        stateAq = new AccQueueQuinaryMaci(STATE_TREE_SUBDEPTH);
 
         // Enqueue the 0th leaf
         stateAq.enqueue(NOTHING_UP_MY_SLEEVE);

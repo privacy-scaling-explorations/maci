@@ -8,7 +8,11 @@ import { Hasher } from "./crypto/Hasher.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { SnarkConstants } from "./crypto/SnarkConstants.sol";
 import { DomainObjs, IPubKey, IMessage } from "./DomainObjs.sol";
-import { AccQueue, AccQueueQuinaryMaciWithSha256 } from "./trees/AccQueue.sol";
+import {
+    AccQueue,
+    //AccQueueQuinaryMaciWithSha256,
+    AccQueueQuinaryMaci
+} from "./trees/AccQueue.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { VkRegistry } from "./VkRegistry.sol";
 import { EmptyBallotRoots } from "./trees/EmptyBallotRoots.sol";
@@ -18,7 +22,8 @@ contract MessageAqFactory is Ownable {
     public
     onlyOwner
     returns (AccQueue) {
-        AccQueue aq = new AccQueueQuinaryMaciWithSha256(_subDepth);
+        //AccQueue aq = new AccQueueQuinaryMaciWithSha256(_subDepth);
+        AccQueue aq = new AccQueueQuinaryMaci(_subDepth);
         aq.transferOwnership(owner());
         return aq;
     }

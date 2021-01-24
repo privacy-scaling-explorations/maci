@@ -309,13 +309,13 @@ template QuinLeafExistsWithSha256(levels, subDepth){
     root === verifier.root;
 }
 
-template QuinBatchLeavesExists(levels, subtreeLevels) {
+template QuinBatchLeavesExists(levels, batchLevels) {
     // Compute the root of a subtree of leaves, and then check whether the
     // subroot exists in the main tree
 
     var LEAVES_PER_NODE = 5;
     var LEAVES_PER_PATH_LEVEL = LEAVES_PER_NODE - 1;
-    var LEAVES_PER_BATCH = LEAVES_PER_NODE ** subtreeLevels;
+    var LEAVES_PER_BATCH = LEAVES_PER_NODE ** batchLevels;
 
     // The main root
     signal input root;
@@ -324,22 +324,22 @@ template QuinBatchLeavesExists(levels, subtreeLevels) {
     signal input leaves[LEAVES_PER_BATCH];
 
     // The Merkle path from the subroot to the main root
-    signal input path_index[levels - subtreeLevels];
-    signal input path_elements[levels - subtreeLevels][LEAVES_PER_PATH_LEVEL];
+    signal input path_index[levels - batchLevels];
+    signal input path_elements[levels - batchLevels][LEAVES_PER_PATH_LEVEL];
 
     // Compute the subroot
-    component qcr = QuinCheckRoot(subtreeLevels);
+    component qcr = QuinCheckRoot(batchLevels);
     for (var i = 0; i < LEAVES_PER_BATCH; i ++) {
         qcr.leaves[i] <== leaves[i];
     }
 
     // Check if the Merkle path is valid
-    component qle = QuinLeafExists(levels - subtreeLevels);
+    component qle = QuinLeafExists(levels - batchLevels);
 
     // The subroot is the leaf
     qle.leaf <== qcr.root;
     qle.root <== root;
-    for (var i = 0; i < levels - subtreeLevels; i ++) {
+    for (var i = 0; i < levels - batchLevels; i ++) {
         qle.path_index[i] <== path_index[i];
         for (var j = 0; j < LEAVES_PER_PATH_LEVEL; j ++) {
             qle.path_elements[i][j] <== path_elements[i][j];
