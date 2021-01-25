@@ -1,5 +1,37 @@
 include "../hasherPoseidon.circom";
 
+template QuinCheckRootWithSha256(levels, subLevels) {
+    // Given a quin Merkle root and a list of leaves, check if the root is the
+    // correct result of inserting all the leaves into the tree in the given
+    // order. Uses SHA256 instead of Poseidon to hash levels up to subLevels
+
+    assert(levels > 0);
+    assert(subLevels <= levels);
+    var LEAVES_PER_NODE = 5;
+
+    // The total number of leaves
+    var totalLeaves = LEAVES_PER_NODE ** levels;
+
+    signal input leaves[totalLeaves];
+    signal output root;
+
+    // The total number of hashers
+    var numHashers = 0;
+    for (var i = 0; i < levels; i ++) {
+        numHashers += LEAVES_PER_NODE ** i;
+    }
+
+    // The number of SHA256 hashers
+    var numShaHashers = 0;
+    for (var i = 0; i < subLevels; i ++) {
+        numShaHashers += LEAVES_PER_NODE ** i;
+    }
+
+    var numPoseidonHashers = numHashers - numShaHashers;
+
+
+}
+
 template QuinCheckRoot(levels) {
     // Given a quin Merkle root and a list of leaves, check if the root is the
     // correct result of inserting all the leaves into the tree in the given

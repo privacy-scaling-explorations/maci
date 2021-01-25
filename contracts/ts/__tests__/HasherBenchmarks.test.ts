@@ -76,15 +76,15 @@ describe('Hasher', () => {
         console.log('hash5:', receipt.gasUsed.toString())
     })
 
-    it('hash11', async () => {
-        const values: string[] = []
-        for (let i = 0; i < 11; i++) {
-            values.push(genRandomSalt().toString())
-        }
+    //it('hash11', async () => {
+        //const values: string[] = []
+        //for (let i = 0; i < 11; i++) {
+            //values.push(genRandomSalt().toString())
+        //}
 
-        const tx = await hasherContract.hash11Benchmark(values)
-        const receipt = await tx.wait()
-        console.log('hash11:', receipt.gasUsed.toString())
-    })
+        //const tx = await hasherContract.hash11Benchmark(values)
+        //const receipt = await tx.wait()
+        //console.log('hash11:', receipt.gasUsed.toString())
+    //})
 })
 

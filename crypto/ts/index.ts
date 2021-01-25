@@ -119,6 +119,19 @@ const buffer2BigInt = (b: Buffer): BigInt => {
     return BigInt('0x' + b.toString('hex'))
 }
 
+const sha256Hash = (input: BigInt[]) => {
+    const types: string[] = []
+    for (let i = 0; i < input.length; i ++) {
+        types.push('uint256')
+    }
+    return BigInt(
+        ethers.utils.soliditySha256(
+            types,
+            input.map((x) => x.toString()),
+        ),
+    ) % SNARK_FIELD_SIZE
+}
+
 // Hash up to 2 elements
 const poseidonT3 = (inputs: BigInt[]) => {
     assert(inputs.length === 2)
@@ -490,6 +503,7 @@ export {
     encrypt,
     decrypt,
     sign,
+    sha256Hash,
     hashOne,
     hash3,
     hash4,

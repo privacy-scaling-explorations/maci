@@ -7,6 +7,7 @@ import { MerkleZeros as MerkleBinary0 } from "./zeros/MerkleBinary0.sol";
 import { MerkleZeros as MerkleBinaryMaci } from "./zeros/MerkleBinaryMaci.sol";
 import { MerkleZeros as MerkleQuinary0 } from "./zeros/MerkleQuinary0.sol";
 import { MerkleZeros as MerkleQuinaryMaci } from "./zeros/MerkleQuinaryMaci.sol";
+import { MerkleZeros as MerkleQuinaryMaciWithSha256 } from "./zeros/MerkleQuinaryMaciWithSha256.sol";
 
 /*
  * This contract defines a Merkle tree where each leaf insertion only updates a
@@ -226,45 +227,7 @@ abstract contract AccQueue is Ownable, Hasher {
      * the level, and enqueues the hash to the next level.
      * @param _level The level at which to queue zeros.
      */
-    function _fill(uint256 _level) internal {
-        if (_level > subDepth) {
-            return;
-        }
-
-        uint256 n = leafQueue.indices[_level];
-
-        if (n != 0) {
-            // Fill the subtree level with zeros and hash the level
-            uint256 hashed;
-
-            uint256[] memory inputs = new uint256[](hashLength);
-            uint256 z = getZero(_level);
-            if (isBinary) {
-                inputs[0] = leafQueue.levels[_level][0];
-                inputs[1] = z;
-                hashed = hash2(inputs);
-            } else {
-                uint8 i = 0;
-                for (; i < n; i ++) {
-                    inputs[i] = leafQueue.levels[_level][i];
-                }
-
-                for (; i < hashLength; i ++) {
-                    inputs[i] = z;
-                }
-                hashed = hash5(inputs);
-            }
-
-            // Update the subtree from the next level onwards with the new leaf
-            _enqueue(hashed, _level + 1);
-
-            // Reset the current level
-            delete leafQueue.indices[_level];
-        }
-
-        // Recurse
-        _fill(_level + 1);
-    }
+    function _fill(uint256 _level) virtual internal {}
 
     /*
      * Insert a subtree. Used for batch enqueues.
@@ -529,6 +492,34 @@ abstract contract AccQueueBinary is AccQueue {
 
         return hashed;
     }
+
+    function _fill(uint256 _level) override internal {
+        if (_level > subDepth) {
+            return;
+        }
+
+        uint256 n = leafQueue.indices[_level];
+
+        if (n != 0) {
+            // Fill the subtree level with zeros and hash the level
+            uint256 hashed;
+
+            uint256[] memory inputs = new uint256[](2);
+            uint256 z = getZero(_level);
+            inputs[0] = leafQueue.levels[_level][0];
+            inputs[1] = z;
+            hashed = hash2(inputs);
+
+            // Update the subtree from the next level onwards with the new leaf
+            _enqueue(hashed, _level + 1);
+
+            // Reset the current level
+            delete leafQueue.indices[_level];
+        }
+
+        // Recurse
+        _fill(_level + 1);
+    }
 }
 
 abstract contract AccQueueQuinary is AccQueue {
@@ -550,6 +541,40 @@ abstract contract AccQueueQuinary is AccQueue {
 
         return hashed;
     }
+
+    function _fill(uint256 _level) override internal {
+        if (_level > subDepth) {
+            return;
+        }
+
+        uint256 n = leafQueue.indices[_level];
+
+        if (n != 0) {
+            // Fill the subtree level with zeros and hash the level
+            uint256 hashed;
+
+            uint256[] memory inputs = new uint256[](5);
+            uint256 z = getZero(_level);
+            uint8 i = 0;
+            for (; i < n; i ++) {
+                inputs[i] = leafQueue.levels[_level][i];
+            }
+
+            for (; i < hashLength; i ++) {
+                inputs[i] = z;
+            }
+            hashed = hash5(inputs);
+
+            // Update the subtree from the next level onwards with the new leaf
+            _enqueue(hashed, _level + 1);
+
+            // Reset the current level
+            delete leafQueue.indices[_level];
+        }
+
+        // Recurse
+        _fill(_level + 1);
+    }
 }
 
 contract AccQueueBinary0 is AccQueueBinary, MerkleBinary0 {
@@ -569,5 +594,65 @@ contract AccQueueQuinary0 is AccQueueQuinary, MerkleQuinary0 {
 
 contract AccQueueQuinaryMaci is AccQueueQuinary, MerkleQuinaryMaci {
     constructor(uint256 _subDepth) AccQueueQuinary(_subDepth) {}
+    function getZero(uint256 _level) internal view override returns (uint256) { return zeros[_level]; }
+}
+
+abstract contract AccQueueQuinaryWithSha256 is AccQueue {
+
+    constructor(uint256 _subDepth) AccQueue(_subDepth, 5) {}
+
+    function hashLevel(uint256 _level, uint256 _leaf) override internal returns (uint256) {
+        uint256[] memory inputs = new uint256[](5);
+        inputs[0] = leafQueue.levels[_level][0];
+        inputs[1] = leafQueue.levels[_level][1];
+        inputs[2] = leafQueue.levels[_level][2];
+        inputs[3] = leafQueue.levels[_level][3];
+        inputs[4] = _leaf;
+        uint256 hashed = sha256Hash(inputs);
+
+        // Free up storage slots to refund gas. Note that using a loop here
+        // would result in lower gas savings.
+        delete leafQueue.levels[_level];
+
+        return hashed;
+    }
+
+    function _fill(uint256 _level) override internal {
+        if (_level > subDepth) {
+            return;
+        }
+
+        uint256 n = leafQueue.indices[_level];
+
+        if (n != 0) {
+            // Fill the subtree level with zeros and hash the level
+            uint256 hashed;
+
+            uint256[] memory inputs = new uint256[](5);
+            uint256 z = getZero(_level);
+            uint8 i = 0;
+            for (; i < n; i ++) {
+                inputs[i] = leafQueue.levels[_level][i];
+            }
+
+            for (; i < hashLength; i ++) {
+                inputs[i] = z;
+            }
+            hashed = sha256Hash(inputs);
+
+            // Update the subtree from the next level onwards with the new leaf
+            _enqueue(hashed, _level + 1);
+
+            // Reset the current level
+            delete leafQueue.indices[_level];
+        }
+
+        // Recurse
+        _fill(_level + 1);
+    }
+}
+
+contract AccQueueQuinaryMaciWithSha256 is AccQueueQuinaryWithSha256, MerkleQuinaryMaciWithSha256 {
+    constructor(uint256 _subDepth) AccQueueQuinaryWithSha256(_subDepth) {}
     function getZero(uint256 _level) internal view override returns (uint256) { return zeros[_level]; }
 }

@@ -1,5 +1,5 @@
 jest.setTimeout(1200000)
-import * as fs from 'fs'
+//import * as fs from 'fs'
 import { 
     genWitness,
     getSignalByName,
@@ -23,6 +23,7 @@ import {
     G1Point,
     G2Point,
     IncrementalQuinTree,
+    stringifyBigInts,
 } from 'maci-crypto'
 
 const voiceCreditBalance = BigInt(100)
@@ -197,6 +198,33 @@ describe('ProcessMessage circuit', () => {
             const circuitNewBallotRoot = await getSignalByName(circuit, witness, 'main.newBallotRoot')
             expect(circuitNewBallotRoot.toString()).toEqual(newBallotRoot.toString())
 
+            //fs.writeFileSync(
+                //'witness.json',
+                //JSON.stringify(witness) 
+            //)
+            const packedVals = MaciState.packProcessMessageSmallVals(
+                maxValues.maxVoteOptions,
+                maxValues.maxUsers,
+                0,
+                poll.messageTree.leaves.length - 1,
+            )
+            const hasherCircuit = 'processMessagesInputHasher_test'
+            const hasherCircuitInputs = stringifyBigInts({
+                packedVals,
+                //maxVoteOptions: generatedInputs.maxVoteOptions,
+                //maxUsers: generatedInputs.maxUsers,
+                //batchStartIndex: generatedInputs.batchStartIndex,
+                //batchEndIndex: generatedInputs.batchEndIndex,
+                coordPubKey: generatedInputs.coordPubKey,
+
+                msgRoot: generatedInputs.msgRoot,
+                currentStateRoot: generatedInputs.currentStateRoot,
+                currentBallotRoot: generatedInputs.currentBallotRoot,
+            })
+
+            const hasherWitness = await genWitness(hasherCircuit, hasherCircuitInputs)
+            const hash = await getSignalByName(hasherCircuit, hasherWitness, 'main.hash')
+            expect(hash.toString()).toEqual(generatedInputs.inputHash.toString())
         })
     })
 

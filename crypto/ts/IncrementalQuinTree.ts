@@ -1,5 +1,6 @@
 import * as assert from 'assert'
 import {
+    sha256Hash,
     hashLeftRight,
     hash5,
     stringifyBigInts,
@@ -59,11 +60,15 @@ class IncrementalQuinTree {
     // The hash function to use
     public hashFunc: (leaves: BigInt[]) => BigInt
 
+    public subHashFunc: (leaves: BigInt[]) => BigInt
+
+    public numSubLevels: number
 
     constructor (
         _depth: number,
         _zeroValue: BigInt | number,
         _leavesPerNode: number | BigInt = 5,
+        _numSubLevels = 0,
     ) {
         // This class supports either 2 leaves per node, or 5 leaves per node.
         // 5 is largest number of inputs which circomlib's Poseidon EVM hash
@@ -76,6 +81,10 @@ class IncrementalQuinTree {
         this.depth = Number(_depth)
 
         assert(this.depth > 0)
+
+        assert(_numSubLevels >= 0 && _numSubLevels <= this.depth)
+        this.numSubLevels = _numSubLevels
+        this.subHashFunc = sha256Hash
 
         this.nextIndex = 0
         this.zeroValue = BigInt(_zeroValue)
@@ -108,11 +117,19 @@ class IncrementalQuinTree {
             }
             this.filledSubtrees.push(z)
 
-            currentLevelHash = this.hash(z)
+            if (i < this.numSubLevels) {
+                currentLevelHash = this.subHashFunc(z)
+            } else {
+                currentLevelHash = this.hash(z)
+            }
         }
 
         // Calculate the root
-        this.root = this.hash(this.filledSubtrees[this.depth - 1])
+        if (this.depth === this.numSubLevels) {
+            this.root = this.subHashFunc(this.filledSubtrees[this.depth - 1])
+        } else {
+            this.root = this.hash(this.filledSubtrees[this.depth - 1])
+        }
     }
 
     /* 
@@ -130,8 +147,8 @@ class IncrementalQuinTree {
         // m is the leaf's relative position within its node
         let m = this.nextIndex % this.leavesPerNode
 
-        // Zero out the level in filledSubtrees
         if (m === 0) {
+            // Zero out the level in filledSubtrees
             for (let j = 1; j < this.filledSubtrees[0].length; j ++) {
                 this.filledSubtrees[0][j] = this.zeros[0]
             }
@@ -147,14 +164,20 @@ class IncrementalQuinTree {
             // m is the leaf's relative position within its node
             m = currentIndex % this.leavesPerNode
 
-            // Zero out the level
             if (m === 0) {
+                // Zero out the level
                 for (let j = 1; j < this.filledSubtrees[i].length; j ++) {
                     this.filledSubtrees[i][j] = this.zeros[i]
                 }
             }
 
-            const hashed = this.hash(this.filledSubtrees[i - 1])
+            let hashed
+            const z = this.filledSubtrees[i - 1]
+            if (i <= this.numSubLevels) {
+                hashed = this.subHashFunc(z)
+            } else {
+                hashed = this.hash(z)
+            }
             this.filledSubtrees[i][m] = hashed
 
             if (this.filledPaths[i - 1].length <= currentIndex) {
@@ -166,9 +189,15 @@ class IncrementalQuinTree {
 
         this.leaves.push(_value)
         this.nextIndex ++
-        this.root = this.hash(
-            this.filledSubtrees[this.filledSubtrees.length - 1],
-        )
+        if (this.depth === this.numSubLevels) {
+            this.root = this.subHashFunc(
+                this.filledSubtrees[this.filledSubtrees.length - 1],
+            )
+        } else {
+            this.root = this.hash(
+                this.filledSubtrees[this.filledSubtrees.length - 1],
+            )
+        }
     }
 
     /* 
@@ -344,7 +373,13 @@ class IncrementalQuinTree {
     public static verifyMerklePath(
         _proof: MerkleProof,
         _hashFunc: (leaves: BigInt[]) => BigInt,
+        _subHashFunc?: (leaves: BigInt[]) => BigInt,
+        _numSubLevels?: number,
     ): boolean {
+        if (_subHashFunc != undefined) {
+            assert(_numSubLevels != undefined)
+        }
+
         assert (_proof.pathElements)
 
         const pathElements = _proof.pathElements
@@ -358,13 +393,23 @@ class IncrementalQuinTree {
         // Hash the first level
         const firstLevel: BigInt[] = pathElements[0].map(BigInt)
         firstLevel.splice(Number(_proof.indices[0]), 0, _proof.leaf)
-        let currentLevelHash: BigInt = _hashFunc(firstLevel)
+        let currentLevelHash: BigInt =
+            _subHashFunc && _numSubLevels && _numSubLevels > 0 ?
+            _subHashFunc(firstLevel)
+            :
+            _hashFunc(firstLevel)
 
         // Verify the proof
         for (let i = 1; i < pathElements.length; i ++) {
             const level: BigInt[] = pathElements[i].map(BigInt)
             level.splice(Number(_proof.indices[i]), 0, currentLevelHash)
-            currentLevelHash = _hashFunc(level)
+
+            const hf = _subHashFunc && _numSubLevels && i < _numSubLevels ?
+                _subHashFunc
+                :
+                _hashFunc
+
+            currentLevelHash = hf(level)
         }
 
         return currentLevelHash === _proof.root
@@ -388,6 +433,28 @@ class IncrementalQuinTree {
         ))
 
         return newTree
+    }
+
+    public equals(t: IncrementalQuinTree): boolean {
+        const eq =
+            this.depth === t.depth &&
+            this.zeroValue === t.zeroValue &&
+            this.leavesPerNode === t.leavesPerNode &&
+            this.root === t.root &&
+            this.nextIndex === t.nextIndex &&
+            this.leaves.length === t.leaves.length &&
+            this.filledSubtrees.length === t.filledSubtrees.length
+            this.filledPaths.length === t.filledPaths.length
+
+        if (!eq) { return false }
+        
+        for (let i = 0; i < this.leaves.length; i ++) {
+            if (this.leaves[i] !== t.leaves[i]) {
+                return false
+            }
+        }
+
+        return true
     }
 
     public hash(_leaves: BigInt[]): BigInt  {

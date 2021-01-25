@@ -222,6 +222,87 @@ describe('Quin Merkle Tree', () => {
             }
         })
     })
+    
+    describe('Path generation and verification (SHA256)', () => {
+        let tree
+        const numToInsert = 5 ** DEPTH
+        const SUB_DEPTH = 2
+
+        beforeAll(() => {
+            tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE, SUB_DEPTH)
+            for (let i = 0; i < numToInsert; i ++) {
+                const leaf = BigInt(i + 1)
+                tree.insert(leaf)
+            }
+        })
+
+        it('genMerklePath() should fail if the index is invalid', () => {
+            expect(() => {
+                tree.genMerklePath(numToInsert)
+            }).toThrow()
+        })
+
+        it('verifyMerklePath() should reject an invalid proof (with the right format)', () => {
+            const path = tree.genMerklePath(numToInsert - 1)
+            path.pathElements[0][0] = BigInt(123)
+            const isValid = IncrementalQuinTree.verifyMerklePath(
+                path,
+                tree.hashFunc,
+                tree.subHashFunc,
+                tree.numSubLevels,
+            )
+
+            expect(isValid).toBeFalsy()
+        })
+
+        it('verifyMerklePath() should reject an invalid proof (with the wrong format)', () => {
+            const path = tree.genMerklePath(numToInsert - 1)
+            path.pathElements[0] = null
+            expect(() => {
+                IncrementalQuinTree.verifyMerklePath(
+                    path,
+                    tree.hashFunc,
+                    tree.subHashFunc,
+                    tree.numSubLevels,
+                )
+            }).toThrow()
+        })
+
+        it('genMerklePath() should calculate a correct Merkle path', () => {
+
+            const path = tree.genMerklePath(30)
+
+            const isValid = IncrementalQuinTree.verifyMerklePath(
+                path,
+                tree.hashFunc,
+                tree.subHashFunc,
+                tree.numSubLevels,
+            )
+
+            expect(isValid).toBeTruthy()
+        })
+
+        it('genMerklePath() should calculate a correct Merkle path for each most recently inserted leaf', () => {
+            const tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE, SUB_DEPTH)
+            const numToInsert = LEAVES_PER_NODE * 2
+
+            expect.assertions(numToInsert)
+            for (let i = 0; i < numToInsert; i ++) {
+                const leaf = BigInt(i + 1)
+                tree.insert(leaf)
+
+                const path = tree.genMerklePath(i)
+                const isValid = IncrementalQuinTree.verifyMerklePath(
+                    path,
+                    tree.hashFunc,
+                    tree.subHashFunc,
+                    tree.numSubLevels,
+                )
+        
+                expect(isValid).toBeTruthy()
+            }
+        })
+    })
 
     describe('Subroot path generation and verification', () => {
         let tree

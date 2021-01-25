@@ -1,5 +1,6 @@
 include "./ecdh.circom";
 include "./decrypt.circom";
+include "./unpackElement.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
 
 template MessageToCommand() {
@@ -38,34 +39,15 @@ template MessageToCommand() {
         packedCommand[i] <== decryptor.out[i];
     }
 
-    component n2b = Num2Bits(250);
-    n2b.in <== packedCommand[0];
+    component unpack = UnpackElement(5);
+    unpack.in <== packedCommand[0];
 
-    // packedCommand[0] is a packed value
-    // bits 0 - 50:    stateIndex
-    // bits 51 - 100:  voteOptionIndex
-    // bits 101 - 150: newVoteWeight
-    // bits 151 - 200: nonce
-    // bits 201 - 250: pollId
-    component stateIndexB2N = Bits2Num(50);
-    component voteOptionIndexB2N = Bits2Num(50);
-    component newVoteWeightB2N = Bits2Num(50);
-    component nonceB2N = Bits2Num(50);
-    component pollIdB2N = Bits2Num(50);
+    stateIndex <== unpack.out[4];
+    voteOptionIndex <== unpack.out[3];
+    newVoteWeight <== unpack.out[2];
+    nonce <== unpack.out[1];
+    pollId <== unpack.out[0];
 
-    for (var i = 0; i < 50; i ++) {
-        stateIndexB2N.in[i] <== n2b.out[i];
-        voteOptionIndexB2N.in[i] <== n2b.out[i + 50];
-        newVoteWeightB2N.in[i] <== n2b.out[i + 100];
-        nonceB2N.in[i] <== n2b.out[i + 150];
-        pollIdB2N.in[i] <== n2b.out[i + 200];
-    }
-
-    stateIndex <== stateIndexB2N.out;
-    voteOptionIndex <== voteOptionIndexB2N.out;
-    newVoteWeight <== newVoteWeightB2N.out;
-    nonce <== nonceB2N.out;
-    pollId <== pollIdB2N.out;
     newPubKey[0] <== packedCommand[1];
     newPubKey[1] <== packedCommand[2];
     salt <== packedCommand[3];

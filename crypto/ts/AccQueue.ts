@@ -1,5 +1,6 @@
 import * as assert from 'assert'
 import {
+    sha256Hash,
     hashLeftRight,
     hash5,
     stringifyBigInts,
@@ -58,7 +59,10 @@ class AccQueue {
     // second has 1, and so on
     public currentSubtreeIndex = 0
 
-    // The hash function to use
+    // The hash function to use for the subtrees
+    public subHashFunc: (leaves: Leaf[]) => BigInt
+    
+    // The hash function to use for rest of the tree (above the subroots)
     public hashFunc: (leaves: Leaf[]) => BigInt
 
     // The number of leaves across all subtrees
@@ -91,10 +95,14 @@ class AccQueue {
     // Whether the subtrees have been merged
     public subTreesMerged = false
 
+    // Whether the subtrees are constructed using SHA256
+    public useSha256ForSubtrees
+
     constructor (
         _subDepth: number,
         _hashLength: number,
         _zeroValue: BigInt,
+        _useSha256ForSubtrees = false
     ) {
         // This class supports either 2 leaves per node, or 5 leaves per node.
         // 5 is largest number of inputs which circomlib's Poseidon EVM hash
@@ -106,6 +114,7 @@ class AccQueue {
         this.hashLength = _hashLength
         this.subDepth = _subDepth
         this.zeroValue = _zeroValue
+        this.useSha256ForSubtrees = _useSha256ForSubtrees
 
         // Set this.hashFunc depending on the number of leaves per node
         if (this.hashLength === 2) {
@@ -118,16 +127,24 @@ class AccQueue {
             this.hashFunc = hash5
         }
 
+        this.subHashFunc = sha256Hash
+
         let hashed = this.zeroValue
         for (let i = 0; i < this.MAX_DEPTH; i ++) {
+            const hf = (this.useSha256ForSubtrees && i < this.subDepth) ?
+                this.subHashFunc
+                :
+                this.hashFunc
+
             this.zeros.push(hashed)
+
             let e: BigInt[] = []
             if (this.hashLength === 2) {
                 e = [0].map(BigInt)
-                hashed = this.hashFunc([hashed, hashed])
+                hashed = hf([hashed, hashed])
             } else {
                 e = [0, 0, 0, 0].map(BigInt)
-                hashed = this.hashFunc(
+                hashed = hf(
                     [hashed, hashed, hashed, hashed, hashed ],
                 )
             }
@@ -183,18 +200,19 @@ class AccQueue {
         }
         const n = this.leafQueue.indices[_level]
 
-        if (n != this.hashLength - 1) {
+        if (n !== this.hashLength - 1) {
             // Just store the leaf
             this.leafQueue.levels[_level][n] = _leaf
             this.leafQueue.indices[_level] ++
             return
         } else {
             let hashed: BigInt
+            const hf = this.useSha256ForSubtrees ? this.subHashFunc : this.hashFunc
             if (this.hashLength === 2) {
-                hashed = this.hashFunc([this.leafQueue.levels[_level][0], _leaf])
+                hashed = hf([this.leafQueue.levels[_level][0], _leaf])
                 this.leafQueue.levels[_level][0] = BigInt(0)
             } else {
-                hashed = this.hashFunc([...this.leafQueue.levels[_level], _leaf])
+                hashed = hf([...this.leafQueue.levels[_level], _leaf])
                 for (let i = 0; i < 4; i ++) {
                     this.leafQueue.levels[_level][i] = BigInt(0)
                 }
@@ -258,8 +276,9 @@ class AccQueue {
         if (n !== 0) {
             // Fill the subtree level and hash it
             let hashed: BigInt
+            const hf = this.useSha256ForSubtrees ? this.subHashFunc : this.hashFunc
             if (this.hashLength === 2) {
-                hashed = this.hashFunc([
+                hashed = hf([
                     this.leafQueue.levels[_level][0],
                     this.zeros[_level],
                 ])
@@ -267,7 +286,7 @@ class AccQueue {
                 for (let i = n; i < this.hashLength; i ++) {
                     this.leafQueue.levels[_level][i] = this.zeros[_level]
                 }
-                hashed = this.hashFunc(this.leafQueue.levels[_level])
+                hashed = hf(this.leafQueue.levels[_level])
             }
 
             // Update the subtree from the next level onwards with the new leaf

@@ -5,6 +5,7 @@ import {
     SNARK_FIELD_SIZE,
     NOTHING_UP_MY_SLEEVE,
     hashLeftRight,
+    sha256Hash,
     stringifyBigInts,
     Signature,
 } from 'maci-crypto'
@@ -37,6 +38,7 @@ interface MaxValues {
 }
 
 const STATE_TREE_DEPTH = 10
+const STATE_TREE_SUBDEPTH = 10
 
 // Also see: Polls.sol
 class Poll {
@@ -57,11 +59,14 @@ class Poll {
     public signatures: Signature[] = []
     public encPubKeys: PubKey[] = []
     public messageAq: AccQueue
+    public STATE_TREE_ARITY = 5
     public MESSAGE_TREE_ARITY = 5
 
     public stateTree = new IncrementalQuinTree(
         STATE_TREE_DEPTH,
         NOTHING_UP_MY_SLEEVE,
+        this.STATE_TREE_ARITY,
+        //STATE_TREE_SUBDEPTH,
     )
     public ballotTree: IncrementalQuinTree
     public messageTree: IncrementalQuinTree
@@ -103,11 +108,14 @@ class Poll {
         this.messageTree = new IncrementalQuinTree(
             this.treeDepths.messageTreeDepth,
             NOTHING_UP_MY_SLEEVE,
+            this.MESSAGE_TREE_ARITY,
+            //this.treeDepths.messageTreeSubDepth,
         )
         this.messageAq = new AccQueue(
             this.treeDepths.messageTreeSubDepth,
             this.MESSAGE_TREE_ARITY,
             NOTHING_UP_MY_SLEEVE,
+            //true,
         )
 
         for (let i = 0; i < this.maxValues.maxVoteOptions; i ++) {
@@ -635,15 +643,40 @@ class Poll {
             currentBallotsPathElements.push(ballotPath.pathElements)
         }
 
+        // generate SHA256 hash of public inputs
+        // pack values
+        const packedVals = 
+            BigInt(this.maxValues.maxVoteOptions) +
+            (BigInt(this.maxValues.maxUsers) << BigInt(50)) +
+            (BigInt(_index) << BigInt(100)) +
+            (BigInt(batchEndIndex) << BigInt(150))
+
+        const coordPubKey = this.coordinatorKeypair.pubKey
+        const msgRoot = this.messageAq.getRoot(this.treeDepths.messageTreeDepth)
+
+        const coordPubKeyHash = hashLeftRight(
+            coordPubKey.rawPubKey[0],
+            coordPubKey.rawPubKey[1],
+        )
+        // The hash of inputs from the contract is the only public input to the circuit
+        const inputHash = sha256Hash([
+            packedVals,
+            coordPubKeyHash,
+            msgRoot,
+            currentStateRoot,
+            currentBallotRoot,
+        ])
+
         return stringifyBigInts({
-            msgRoot: this.messageAq.getRoot(this.treeDepths.messageTreeDepth),
+            inputHash,
+            packedVals,
+            msgRoot,
             msgs,
             msgSubrootPathElements: messageSubrootPath.pathElements,
-            batchStartIndex: _index,
-            batchEndIndex,
-            msgTreeZeroValue: this.messageAq.zeroValue,
+            //batchStartIndex: _index,
+            //batchEndIndex,
             coordPrivKey: this.coordinatorKeypair.privKey.asCircuitInputs(),
-            coordPubKey: this.coordinatorKeypair.pubKey.asCircuitInputs(),
+            coordPubKey: coordPubKey.asCircuitInputs(),
             encPubKeys: encPubKeys.map((x) => x.asCircuitInputs()),
             currentStateRoot,
             currentStateLeaves: currentStateLeaves.map((x) => x.asCircuitInputs()),
@@ -651,8 +684,8 @@ class Poll {
             currentBallotRoot,
             currentBallots: currentBallots.map((x) => x.asCircuitInputs()),
             currentBallotsPathElements,
-            maxVoteOptions: this.maxValues.maxVoteOptions,
-            maxUsers: this.maxValues.maxUsers,
+            //maxVoteOptions: this.maxValues.maxVoteOptions,
+            //maxUsers: this.maxValues.maxUsers,
             currentVoteWeights,
             currentVoteWeightsPathElements,
             newVoteOptionTreeRoots,
@@ -812,11 +845,13 @@ class MaciState {
         STATE_TREE_DEPTH,
         NOTHING_UP_MY_SLEEVE,
         this.STATE_TREE_ARITY,
+        //this.STATE_TREE_SUBDEPTH,
     )
     public stateAq: AccQueue = new AccQueue(
         this.STATE_TREE_SUBDEPTH,
         this.STATE_TREE_ARITY,
         NOTHING_UP_MY_SLEEVE,
+        //true,
     )
     public pollBeingProcessed = true
     public currentPollBeingProcessed
@@ -907,6 +942,18 @@ class MaciState {
         }
         
         return true
+    }
+
+    public static packProcessMessageSmallVals = (
+        maxVoteOptions: BigInt,
+        maxUsers: BigInt,
+        batchStartIndex: number,
+        batchEndIndex: number,
+    ) => {
+        return BigInt(maxVoteOptions) +
+            (BigInt(maxUsers) << BigInt(50)) +
+            (BigInt(batchStartIndex) << BigInt(100)) +
+            (BigInt(batchEndIndex) << BigInt(150))
     }
 }
 
