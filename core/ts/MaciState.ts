@@ -5,6 +5,7 @@ import {
     SNARK_FIELD_SIZE,
     NOTHING_UP_MY_SLEEVE,
     hashLeftRight,
+    sha256Hash,
     stringifyBigInts,
     Signature,
 } from 'maci-crypto'
@@ -642,15 +643,40 @@ class Poll {
             currentBallotsPathElements.push(ballotPath.pathElements)
         }
 
+        // generate SHA256 hash of public inputs
+        // pack values
+        const packedVals = 
+            BigInt(this.maxValues.maxVoteOptions) +
+            (BigInt(this.maxValues.maxUsers) << BigInt(50)) +
+            (BigInt(_index) << BigInt(100)) +
+            (BigInt(batchEndIndex) << BigInt(150))
+
+        const coordPubKey = this.coordinatorKeypair.pubKey
+        const msgRoot = this.messageAq.getRoot(this.treeDepths.messageTreeDepth)
+
+        const coordPubKeyHash = hashLeftRight(
+            coordPubKey.rawPubKey[0],
+            coordPubKey.rawPubKey[1],
+        )
+        // The hash of inputs from the contract is the only public input to the circuit
+        const inputHash = sha256Hash([
+            packedVals,
+            coordPubKeyHash,
+            msgRoot,
+            currentStateRoot,
+            currentBallotRoot,
+        ])
+
         return stringifyBigInts({
-            msgRoot: this.messageAq.getRoot(this.treeDepths.messageTreeDepth),
+            inputHash,
+            packedVals,
+            msgRoot,
             msgs,
             msgSubrootPathElements: messageSubrootPath.pathElements,
-            batchStartIndex: _index,
-            batchEndIndex,
-            msgTreeZeroValue: this.messageAq.zeroValue,
+            //batchStartIndex: _index,
+            //batchEndIndex,
             coordPrivKey: this.coordinatorKeypair.privKey.asCircuitInputs(),
-            coordPubKey: this.coordinatorKeypair.pubKey.asCircuitInputs(),
+            coordPubKey: coordPubKey.asCircuitInputs(),
             encPubKeys: encPubKeys.map((x) => x.asCircuitInputs()),
             currentStateRoot,
             currentStateLeaves: currentStateLeaves.map((x) => x.asCircuitInputs()),
@@ -658,8 +684,8 @@ class Poll {
             currentBallotRoot,
             currentBallots: currentBallots.map((x) => x.asCircuitInputs()),
             currentBallotsPathElements,
-            maxVoteOptions: this.maxValues.maxVoteOptions,
-            maxUsers: this.maxValues.maxUsers,
+            //maxVoteOptions: this.maxValues.maxVoteOptions,
+            //maxUsers: this.maxValues.maxUsers,
             currentVoteWeights,
             currentVoteWeightsPathElements,
             newVoteOptionTreeRoots,
@@ -916,6 +942,18 @@ class MaciState {
         }
         
         return true
+    }
+
+    public static packProcessMessageSmallVals = (
+        maxVoteOptions: BigInt,
+        maxUsers: BigInt,
+        batchStartIndex: number,
+        batchEndIndex: number,
+    ) => {
+        return BigInt(maxVoteOptions) +
+            (BigInt(maxUsers) << BigInt(50)) +
+            (BigInt(batchStartIndex) << BigInt(100)) +
+            (BigInt(batchEndIndex) << BigInt(150))
     }
 }
 

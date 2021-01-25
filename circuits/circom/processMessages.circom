@@ -38,9 +38,13 @@ template ProcessMessages(
     // a lot of gas for the verifier at the cost of constraints for the prover.
 
     //  ----------------------------------------------------------------------- 
-    //  Inputs
-    signal input maxVoteOptions;
-    signal input maxUsers;
+    // The only public input, which is the SHA256 hash of a values provided
+    // by the contract
+    signal input inputHash;
+    signal private input packedVals;
+
+    signal maxVoteOptions;
+    signal maxUsers;
 
     // The existing message root
     signal input msgRoot;
@@ -49,19 +53,17 @@ template ProcessMessages(
     signal private input msgs[batchSize][MSG_LENGTH];
 
     // The message Merkle proofs
-    signal input msgSubrootPathElements[msgTreeDepth - msgBatchDepth][TREE_ARITY - 1];
+    signal private input msgSubrootPathElements[msgTreeDepth - msgBatchDepth][TREE_ARITY - 1];
     // The index of the first message leaf in the batch, inclusive. Note that
     // messages are processed in reverse order, so this is not be the index of
     // the first message to process (unless there is only 1 message)
-    signal input batchStartIndex;
+    signal batchStartIndex;
 
     // The index of the last message leaf in the batch to process, exclusive.
     // This value may be less than batchStartIndex + batchSize if this batch is
     // the last batch and the total number of mesages is not a multiple of the
     // batch size.
-    signal input batchEndIndex;
-
-    signal input msgTreeZeroValue;
+    signal batchEndIndex;
 
     // The coordinator's public key
     signal private input coordPrivKey;
@@ -76,7 +78,7 @@ template ProcessMessages(
     signal private input currentStateLeaves[batchSize][STATE_LEAF_LENGTH];
     signal private input currentStateLeavesPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
 
-    signal input currentBallotRoot
+    signal input currentBallotRoot;
     signal private input currentBallots[batchSize][BALLOT_LENGTH];
     signal private input currentBallotsPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
 
@@ -90,6 +92,24 @@ template ProcessMessages(
     signal private input zerothStateLeafPathElements[stateTreeDepth][TREE_ARITY - 1];
     signal private input zerothBallotHash;
     signal private input zerothBallotPathElements[stateTreeDepth][TREE_ARITY - 1];
+
+    var msgTreeZeroValue = 8370432830353022751713833565135785980866757267633941821328460903436894336785;
+
+    // Verify "public" inputs and assign unpacked values
+    component inputHasher = ProcessMessagesInputHasher();
+    inputHasher.packedVals <== packedVals;
+    inputHasher.coordPubKey[0] <== coordPubKey[0];
+    inputHasher.coordPubKey[1] <== coordPubKey[1];
+    inputHasher.msgRoot <== msgRoot;
+    inputHasher.currentStateRoot <== currentStateRoot;
+    inputHasher.currentBallotRoot <== currentBallotRoot;
+
+    inputHasher.maxVoteOptions ==> maxVoteOptions;
+    inputHasher.maxUsers ==> maxUsers;
+    inputHasher.batchStartIndex ==> batchStartIndex;
+    inputHasher.batchEndIndex ==> batchEndIndex;
+    inputHasher.hash === inputHash;
+
     //  ----------------------------------------------------------------------- 
     //      0. Ensure that the maximum vote options signal is valid and whether
     //      the maximum users signal is valid
@@ -212,7 +232,6 @@ template ProcessMessages(
     // leaf and its membership in the current state root.
     component currentStateLeavesQle[batchSize];
     for (var i = 0; i < batchSize; i ++) {
-        /*currentStateLeavesQle[i] = QuinLeafExistsWithSha256(stateTreeDepth);*/
         currentStateLeavesQle[i] = QuinLeafExists(stateTreeDepth);
         currentStateLeavesQle[i].root <== currentStateRoot;
         currentStateLeavesQle[i].leaf <== currentStateLeafHashers[i].hash;
@@ -335,7 +354,6 @@ template ProcessMessages(
         newBallotsHashers[i].left <== transformers[i].newBallotNonce;
         newBallotsHashers[i].right <== transformers[i].newBallotVoteOptionRoot;
 
-        /*newStateLeavesQip[i] = QuinTreeInclusionProofWithSha256(stateTreeDepth);*/
         newStateLeavesQip[i] = QuinTreeInclusionProof(stateTreeDepth);
         newBallotsQip[i] = QuinTreeInclusionProof(stateTreeDepth);
 
@@ -358,7 +376,6 @@ template ProcessMessages(
     // 8. Generate the final state tree root with the zeroth leaf set to a
     // random value
 
-    /*component zerothSlQip = QuinTreeInclusionProofWithSha256(stateTreeDepth);*/
     component zerothSlQip = QuinTreeInclusionProof(stateTreeDepth);
     zerothSlQip.leaf <== zerothStateLeafHash;
     for (var i = 0; i < stateTreeDepth; i ++) {
@@ -384,4 +401,58 @@ template ProcessMessages(
     }
     signal output newBallotRoot;
     newBallotRoot <== zerothBallotQip.root;
+}
+
+template ProcessMessagesInputHasher() {
+    // Combine the following into 1 input element:
+    // - maxVoteOptions (50 bits)
+    // - maxUsers (50 bits)
+    // - batchStartIndex (50 bits)
+    // - batchEndIndex (50 bits)
+
+    // Hash coordPubKey:
+    // - coordPubKeyHash 
+
+    // Other inputs that can't be compressed or packed:
+    // - msgRoot, currentStateRoot, currentBallotRoot
+
+    // Total number of inputs = 1 + 1 + 4 = 5
+
+    // Also ensure that packedVals is valid
+
+    signal input packedVals;
+    signal input coordPubKey[2];
+    signal input msgRoot;
+    signal input currentStateRoot;
+    signal input currentBallotRoot;
+
+    signal output maxVoteOptions;
+    signal output maxUsers;
+    signal output batchStartIndex;
+    signal output batchEndIndex;
+    signal output hash;
+    
+    // 1. Unpack packedVals and ensure that it is valid
+    component unpack = UnpackElement(4);
+    unpack.in <== packedVals;
+
+    maxVoteOptions <== unpack.out[3];
+    maxUsers <== unpack.out[2];
+    batchStartIndex <== unpack.out[1];
+    batchEndIndex <== unpack.out[0];
+
+    // 2. Hash coordPubKey
+    component pubKeyHasher = HashLeftRight();
+    pubKeyHasher.left <== coordPubKey[0];
+    pubKeyHasher.right <== coordPubKey[1];
+
+    // 3. Hash the 5 inputs with SHA256
+    component hasher = Sha256Hasher5();
+    hasher.in[0] <== packedVals;
+    hasher.in[1] <== pubKeyHasher.hash;
+    hasher.in[2] <== msgRoot;
+    hasher.in[3] <== currentStateRoot;
+    hasher.in[4] <== currentBallotRoot;
+
+    hash <== hasher.hash;
 }
