@@ -233,6 +233,10 @@ class PubKey {
         return SERIALIZED_PUB_KEY_PREFIX + packed.toString()
     }
 
+    public hash = (): BigInt => {
+        return hashLeftRight(this.rawPubKey[0], this.rawPubKey[1])
+    }
+
     public equals = (p: PubKey): boolean => {
         return this.rawPubKey[0] === p.rawPubKey[0] &&
             this.rawPubKey[1] === p.rawPubKey[1]
