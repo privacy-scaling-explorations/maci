@@ -33,7 +33,7 @@ contract MessageAqFactory is Ownable {
  * A factory contract which deploys Poll contracts. It allows the MACI contract
  * size to stay within the limit set by EIP-170.
  */
-contract PollFactory is EmptyBallotRoots, Params, IPubKey, IMessage, Ownable {
+contract PollFactory is EmptyBallotRoots, Params, IPubKey, IMessage, Ownable, Hasher {
 
     MessageAqFactory public messageAqFactory;
 
@@ -51,7 +51,7 @@ contract PollFactory is EmptyBallotRoots, Params, IPubKey, IMessage, Ownable {
         MaxValues memory _maxValues,
         TreeDepths memory _treeDepths,
         BatchSizes memory _batchSizes,
-        PubKey memory _coordinatorPubKey,
+        uint256 _coordinatorPubKeyHash,
         VkRegistry _vkRegistry,
         IMACI _maci,
         address _pollOwner,
@@ -82,7 +82,7 @@ contract PollFactory is EmptyBallotRoots, Params, IPubKey, IMessage, Ownable {
             _maxValues,
             _treeDepths,
             _batchSizes,
-            _coordinatorPubKey,
+            _coordinatorPubKeyHash,
             _vkRegistry,
             _maci,
             messageAq,
@@ -100,9 +100,13 @@ contract PollFactory is EmptyBallotRoots, Params, IPubKey, IMessage, Ownable {
     }
 }
 
+/*
+ * Do not deploy this directly. Use PollFactory.deploy() which performs some
+ * checks on the Poll constructor arguments.
+ */
 contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable {
     // The coordinator's public key
-    PubKey public coordinatorPubKey;
+    uint256 public coordinatorPubKeyHash;
 
     uint256 public deployTime;
 
@@ -121,7 +125,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable {
     // The message queue
     AccQueue public messageAq;
 
-    // The ballot tree root.
+    // The ballot tree root
     uint256 public ballotRoot;
 
     MessageProcessor public msgProcessor;
@@ -142,6 +146,9 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable {
 
     // The number of batches processed
     uint256 public numBatchesProcessed;
+
+    // The number of published messages
+    uint256 public numMessages;
 
     MaxValues public maxValues;
     TreeDepths public treeDepths;
@@ -171,13 +178,13 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable {
         MaxValues memory _maxValues,
         TreeDepths memory _treeDepths,
         BatchSizes memory _batchSizes,
-        PubKey memory _coordinatorPubKey,
+        uint256 _coordinatorPubKeyHash,
         VkRegistry _vkRegistry,
         IMACI _maci,
         AccQueue _messageAq,
         MessageProcessor _msgProcessor
     ) {
-        coordinatorPubKey = _coordinatorPubKey;
+        coordinatorPubKeyHash = _coordinatorPubKeyHash;
         duration = _duration;
         maxValues = _maxValues;
         batchSizes = _batchSizes;
@@ -271,6 +278,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable {
         );
         uint256 messageLeaf = hashMessage(_message);
         messageAq.enqueue(messageLeaf);
+        numMessages ++;
 
         emit PublishMessage(_message, _encPubKey);
     }
@@ -356,6 +364,34 @@ contract MessageProcessor is Ownable, SnarkCommon {
     string constant ERROR_INVALID_STATE_ROOT_SNAPSHOT_TIMESTAMP =
         "MessageProcessorE04";
 
+    function genPackedVals(
+        Poll _poll
+    ) public view returns (uint256) {
+        (
+            uint256 maxUsers,
+            uint256 maxVoteOptions,
+            // ignore the 3rd value
+        ) = _poll.maxValues();
+
+        (uint8 mbs, ) = _poll.batchSizes();
+        uint256 messageBatchSize = uint256(mbs);
+
+        uint256 index = _poll.currentMessageBatchIndex();
+        uint256 numMessages = _poll.numMessages();
+        uint256 batchEndIndex = numMessages - index >= messageBatchSize ?
+            index + messageBatchSize
+            :
+            numMessages - index - 1;
+
+        uint256 result =
+            maxVoteOptions +
+            (maxUsers << uint256(50)) +
+            (index << uint256(100)) +
+            (numMessages << uint256(150));
+
+        return result;
+    }
+
     /*
      * Update the Poll's currentStateRoot if the proof is valid.
      * @param _stateRootSnapshotTimestamp TODO
@@ -427,15 +463,23 @@ contract MessageProcessor is Ownable, SnarkCommon {
                 (numMessages / messageBatchSize) * messageBatchSize;
         }
 
-        // TODO: Generate public signals
-
-        // TODO: Verify the proof
         VerifyingKey memory vk = _poll.maci().vkRegistry().getProcessVk(
             _poll.maci().stateTreeDepth(),
             messageTreeDepth,
             voteOptionTreeDepth,
             messageBatchSize
         );
+
+        //uint256 packedVals = genPackedVals();
+        //uint256[] memory input = new uint256[](5);
+        //input[0] = packedVals;
+        //input[1] = _poll.coordinatorPubKeyHash();
+        //input[2] = messageRoot;
+        //input[3] = currentStateRoot;
+        //input[4] = _poll.ballotRoot();
+        //uint256 inputHash = sha256hash(input);
+
+        // TODO: Verify the proof
 
         bool hasUnprocessedMessages = _poll.hasUnprocessedMessages();
 
@@ -471,7 +515,7 @@ contract PollStateViewer is Params, DomainObjs {
      * a single call.
      */
     function getState(Poll _poll) public view returns (
-        PubKey memory,        // coordinatorPubKey
+        uint256,              // coordinatorPubKeyHash
         uint256,              // duration
         VkSigs memory,        // VkSigs
         AccQueue,             // messageAq
@@ -479,9 +523,6 @@ contract PollStateViewer is Params, DomainObjs {
         TreeDepths memory,    // treeDepths
         BatchSizes memory     // batchSizes
     ){
-        PubKey memory pubkey;
-        (pubkey.x, pubkey.y) = _poll.coordinatorPubKey();
-
         VkSigs memory vkSigs;
         vkSigs.processVkSig = _poll.processVkSig();
         vkSigs.tallyVkSig = _poll.tallyVkSig();
@@ -510,7 +551,7 @@ contract PollStateViewer is Params, DomainObjs {
         ) = _poll.batchSizes();
 
         return (
-            pubkey,
+            _poll.coordinatorPubKeyHash(),
             _poll.duration(),
             vkSigs,
             messageAq,

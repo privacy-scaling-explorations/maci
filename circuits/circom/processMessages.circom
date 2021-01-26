@@ -47,7 +47,7 @@ template ProcessMessages(
     signal maxUsers;
 
     // The existing message root
-    signal input msgRoot;
+    signal private input msgRoot;
 
     // The messages
     signal private input msgs[batchSize][MSG_LENGTH];
@@ -69,16 +69,16 @@ template ProcessMessages(
     signal private input coordPrivKey;
 
     // The cooordinator's public key from the contract.
-    signal input coordPubKey[2];
+    signal private input coordPubKey[2];
 
     // The ECDH public key per message
     signal private input encPubKeys[batchSize][2];
 
-    signal input currentStateRoot;
+    signal private input currentStateRoot;
     signal private input currentStateLeaves[batchSize][STATE_LEAF_LENGTH];
     signal private input currentStateLeavesPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
 
-    signal input currentBallotRoot;
+    signal private input currentBallotRoot;
     signal private input currentBallots[batchSize][BALLOT_LENGTH];
     signal private input currentBallotsPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
 

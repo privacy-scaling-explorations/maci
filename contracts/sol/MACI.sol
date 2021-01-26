@@ -84,7 +84,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         PubKey _userPubKey,
         uint256 _voiceCreditBalance
     );
-    event DeployPoll(uint256 _pollId, address _pollAddr);
+    event DeployPoll(uint256 _pollId, address _pollAddr, PubKey _pubKey);
 
     constructor(
         PollFactory _pollFactory,
@@ -264,7 +264,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
             _maxValues,
             _treeDepths,
             batchSizes,
-            _coordinatorPubKey,
+            hashLeftRight(_coordinatorPubKey.x, _coordinatorPubKey.y),
             vkRegistry,
             this,
             owner(),
@@ -276,7 +276,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         // Increment the poll ID for the next poll
         nextPollId ++;
 
-        emit DeployPoll(pollId, address(p));
+        emit DeployPoll(pollId, address(p), _coordinatorPubKey);
     }
 
     function getPoll(uint256 _pollId) public view returns (Poll) {

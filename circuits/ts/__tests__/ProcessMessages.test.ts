@@ -1,5 +1,5 @@
 jest.setTimeout(1200000)
-//import * as fs from 'fs'
+import * as fs from 'fs'
 import { 
     genWitness,
     getSignalByName,
@@ -198,23 +198,21 @@ describe('ProcessMessage circuit', () => {
             const circuitNewBallotRoot = await getSignalByName(circuit, witness, 'main.newBallotRoot')
             expect(circuitNewBallotRoot.toString()).toEqual(newBallotRoot.toString())
 
-            //fs.writeFileSync(
-                //'witness.json',
-                //JSON.stringify(witness) 
-            //)
+            fs.writeFileSync(
+                'witness.json',
+                JSON.stringify(witness) 
+            )
             const packedVals = MaciState.packProcessMessageSmallVals(
                 maxValues.maxVoteOptions,
                 maxValues.maxUsers,
                 0,
                 poll.messageTree.leaves.length - 1,
             )
+
+            // Test the ProcessMessagesInputHasher circuit
             const hasherCircuit = 'processMessagesInputHasher_test'
             const hasherCircuitInputs = stringifyBigInts({
                 packedVals,
-                //maxVoteOptions: generatedInputs.maxVoteOptions,
-                //maxUsers: generatedInputs.maxUsers,
-                //batchStartIndex: generatedInputs.batchStartIndex,
-                //batchEndIndex: generatedInputs.batchEndIndex,
                 coordPubKey: generatedInputs.coordPubKey,
 
                 msgRoot: generatedInputs.msgRoot,

@@ -7,7 +7,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 /*
  * Stores verifying keys for the circuits.
- * Each circuit has a signature which is its compile-time constants represnted
+ * Each circuit has a signature which is its compile-time constants represented
  * as a uint256.
  */
 contract VkRegistry is Ownable, SnarkCommon {

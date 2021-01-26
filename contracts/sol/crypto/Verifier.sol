@@ -13,21 +13,18 @@ contract Verifier is SnarkConstants, SnarkCommon {
     uint256 constant PRIME_Q = 21888242871839275222246405745257275088696311157297823662689037894645226208583;
 
     /*
-     * @returns Whether the proof is valid given the hardcoded verifying key
-     *          above and the public inputs
+     * @returns Whether the proof is valid given the verifying key and public
+     *          inputs
      */
     function verify(
-        uint256[2] memory a,
-        uint256[2][2] memory b,
-        uint256[2] memory c,
+        Proof memory proof,
         VerifyingKey memory vk,
         uint256[] memory input
     ) public view returns (bool) {
-
-        Proof memory proof;
-        proof.a = Pairing.G1Point(a[0], a[1]);
-        proof.b = Pairing.G2Point([b[0][0], b[0][1]], [b[1][0], b[1][1]]);
-        proof.c = Pairing.G1Point(c[0], c[1]);
+        //Proof memory proof;
+        //proof.a = Pairing.G1Point(a[0], a[1]);
+        //proof.b = Pairing.G2Point([b[0][0], b[0][1]], [b[1][0], b[1][1]]);
+        //proof.c = Pairing.G1Point(c[0], c[1]);
 
         // Compute the linear combination vk_x
         Pairing.G1Point memory vk_x = Pairing.G1Point(0, 0);

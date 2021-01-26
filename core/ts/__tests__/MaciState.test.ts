@@ -9,6 +9,7 @@ import {
     Keypair,
     VerifyingKey,
     StateLeaf,
+    Ballot,
 } from 'maci-domainobjs'
 
 import {
@@ -144,16 +145,40 @@ describe('MaciState', () => {
                 .toEqual(msgTree.root.toString())
         })
 
+        it('packProcessMessageSmallVals and unpackProcessMessageSmallVals', () => {
+            const maxVoteOptions = BigInt(1)
+            const maxUsers = BigInt(2)
+            const batchStartIndex = 5
+            const batchEndIndex = 10
+            const packedVals = MaciState.packProcessMessageSmallVals(
+                maxVoteOptions,
+                maxUsers,
+                batchStartIndex,
+                batchEndIndex,
+            )
+
+            const unpacked = MaciState.unpackProcessMessageSmallVals(packedVals)
+            expect(unpacked.maxVoteOptions.toString()).toEqual(maxVoteOptions.toString())
+            expect(unpacked.maxUsers.toString()).toEqual(maxUsers.toString())
+            expect(unpacked.batchStartIndex.toString()).toEqual(batchStartIndex.toString())
+            expect(unpacked.batchEndIndex.toString()).toEqual(batchEndIndex.toString())
+        })
+
         it('Process a batch of messages (though only 1 message is in the batch)', () => {
             const randomStateLeaf = StateLeaf.genRandomLeaf()
+            const randomBallot = Ballot.genRandomBallot(
+                0,
+                treeDepths.voteOptionTreeDepth,
+            )
             maciState.polls[pollId].processMessages(
                 pollId,
                 randomStateLeaf,
+                randomBallot,
                 maciState,
             )
 
             // Check the ballot
-            expect(maciState.polls[pollId].ballots[0].voteTree.leaves[Number(voteOptionIndex)].toString())
+            expect(maciState.polls[pollId].ballots[0].votes[Number(voteOptionIndex)].toString())
                 .toEqual(voteWeight.toString())
             // Check the state leaf in the poll
             expect(maciState.polls[pollId].stateLeaves[0].voiceCreditBalance.toString())
@@ -263,14 +288,13 @@ describe('MaciState', () => {
                 maciState.polls[pollId].publishMessage(message, ecdhKeypair.pubKey)
             }
 
-            let randomStateLeaf = StateLeaf.genRandomLeaf()
-
             // processMessages() should fail if the state and message AQs are
             // not merged yet
             expect(() => {
                 maciState.polls[pollId].processMessages(
                     pollId,
-                    randomStateLeaf,
+                    StateLeaf.genRandomLeaf(),
+                    Ballot.genRandomBallot(0, treeDepths.voteOptionTreeDepth),
                     maciState,
                 )
             }).toThrow()
@@ -282,7 +306,8 @@ describe('MaciState', () => {
             expect(() => {
                 maciState.polls[pollId].processMessages(
                     pollId,
-                    randomStateLeaf,
+                    StateLeaf.genRandomLeaf(),
+                    Ballot.genRandomBallot(0, treeDepths.voteOptionTreeDepth),
                     maciState,
                 )
             }).toThrow()
@@ -293,16 +318,14 @@ describe('MaciState', () => {
 
             expect(maciState.polls[pollId].messageAq.numLeaves).toEqual(messageBatchSize * 2)
 
-            // currentMessageBatchIndex is 0 because it is only updated by
-            // processMessages(). The current batch, however, will start at 25.
-            expect(maciState.polls[pollId].currentMessageBatchIndex).toEqual(0)
+            expect(maciState.polls[pollId].currentMessageBatchIndex).toEqual(25)
             expect(maciState.polls[pollId].numBatchesProcessed).toEqual(0)
 
             // Process messages
-            randomStateLeaf = StateLeaf.genRandomLeaf()
             maciState.polls[pollId].processMessages(
                 pollId,
-                randomStateLeaf,
+                StateLeaf.genRandomLeaf(),
+                Ballot.genRandomBallot(0, treeDepths.voteOptionTreeDepth),
                 maciState,
             )
 
@@ -312,11 +335,10 @@ describe('MaciState', () => {
             expect(maciState.polls[pollId].numBatchesProcessed).toEqual(1)
 
             // Process messages
-            randomStateLeaf = StateLeaf.genRandomLeaf()
             maciState.polls[pollId].processMessages(
                 pollId,
-                randomStateLeaf,
-                maciState,
+                StateLeaf.genRandomLeaf(),
+                Ballot.genRandomBallot(0, treeDepths.voteOptionTreeDepth),
             )
 
             expect(maciState.polls[pollId].currentMessageBatchIndex).toEqual(0)
@@ -327,16 +349,18 @@ describe('MaciState', () => {
             expect(() => {
                 maciState.polls[pollId].processMessages(
                     pollId,
-                    randomStateLeaf,
+                    StateLeaf.genRandomLeaf(),
+                    Ballot.genRandomBallot(0, treeDepths.voteOptionTreeDepth),
                     maciState,
                 )
             }).toThrow()
 
             expect(maciState.polls[pollId].ballots.length)
                 .toEqual(messageBatchSize)
+
             for (let i = 0; i < messageBatchSize; i ++) {
-                const leaf = i < maciState.polls[pollId].ballots[i].voteTree.leaves.length ?
-                    maciState.polls[pollId].ballots[i].voteTree.leaves[i]
+                const leaf = i < maciState.polls[pollId].ballots[i].votes.length ?
+                    maciState.polls[pollId].ballots[i].votes[i]
                     :
                     0
                 expect(leaf.toString()).toEqual(voteWeight.toString())
@@ -385,7 +409,6 @@ describe('MaciState', () => {
             expect(maciState.polls[pollId].hasUntalliedBallots()).toBeTruthy()
 
             // First batch tally
-            debugger
             maciState.polls[pollId].tallyBallots()
 
             // Recall that each user `i` cast the same number of votes for

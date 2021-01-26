@@ -228,7 +228,7 @@ const deployMaci = async (
 
     // MessageProcessor
     log('Deploying MessageProcessor', quiet)
-    const [ MessageProcessorAbi, MessageProcessorBin ] = loadAB('PollFactory')
+    const [ MessageProcessorAbi, MessageProcessorBin ] = loadAB('MessageProcessor')
     const messageProcessorContract = await deployer.deploy(
         MessageProcessorAbi,
         MessageProcessorBin,

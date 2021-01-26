@@ -20,6 +20,7 @@ import {
 
 import { config } from 'maci-config'
 import {
+    hashLeftRight,
     G1Point,
     G2Point,
 } from 'maci-crypto'
@@ -66,6 +67,24 @@ const users = [
 const signUpTxOpts = { gasLimit: 200000 }
 
 const maciState = new MaciState()
+
+// Poll parameters
+const duration = 15
+const maxValues: MaxValues = {
+    maxUsers: 25,
+    maxMessages: 25,
+    maxVoteOptions: 25,
+}
+
+const treeDepths: TreeDepths = {
+    intStateTreeDepth: 1,
+    messageTreeDepth: MESSAGE_TREE_DEPTH,
+    messageTreeSubDepth: MESSAGE_TREE_SUBDEPTH,
+    voteOptionTreeDepth: 2,
+}
+
+const messageBatchSize = 5
+const tallyBatchSize = STATE_TREE_ARITY ** treeDepths.intStateTreeDepth
 
 
 describe('MACI', () => {
@@ -169,25 +188,6 @@ describe('MACI', () => {
         })
 
         describe('Deploy a Poll', () => {
-            // Poll parameters
-            const duration = 15
-
-            const maxValues: MaxValues = {
-                maxUsers: 25,
-                maxMessages: 25,
-                maxVoteOptions: 25,
-            }
-
-            const treeDepths: TreeDepths = {
-                intStateTreeDepth: 1,
-                messageTreeDepth: MESSAGE_TREE_DEPTH,
-                messageTreeSubDepth: MESSAGE_TREE_SUBDEPTH,
-                voteOptionTreeDepth: 2,
-            }
-
-            const messageBatchSize = 5
-            const tallyBatchSize = STATE_TREE_ARITY ** treeDepths.intStateTreeDepth
-
             it('should set VKs and deploy a poll', async () => {
                 const std = await maciContract.stateTreeDepth()
 
@@ -301,8 +301,7 @@ describe('MACI', () => {
 
                 const pollState = await pollStateViewerContract.getState(pollContract.address)
 
-                expect(pollState[0].x.toString()).toEqual(coordinator.pubKey.rawPubKey[0].toString())
-                expect(pollState[0].y.toString()).toEqual(coordinator.pubKey.rawPubKey[1].toString())
+                expect(pollState[0].toString()).toEqual(coordinator.pubKey.hash().toString())
 
                 expect(pollState[1].toString()).toEqual(duration.toString())
 
@@ -437,6 +436,34 @@ describe('MACI', () => {
                 const onChainMessageRoot = await messageAqContract.getMainRoot(MESSAGE_TREE_DEPTH)
                 expect(onChainMessageRoot.toString())
                     .toEqual(maciState.polls[pollId].messageAq.mainRoots[MESSAGE_TREE_DEPTH].toString())
+            })
+        })
+
+        describe('Public input generation for ProcessMessages', () => {
+            let pollContract
+
+            beforeAll(async () => {
+                const pollContractAddress = await maciContract.getPoll(pollId)
+                pollContract = new ethers.Contract(
+                    pollContractAddress,
+                    pollAbi,
+                    deployer.signer,
+                )
+            })
+
+            it('genPackedVals() should generate the correct value', async () => {
+                const packedVals = MaciState.packProcessMessageSmallVals(
+                    maxValues.maxVoteOptions,
+                    maxValues.maxUsers,
+                    0,
+                    1,
+                )
+                const onChainPackedVals = BigInt(
+                    await messageProcessorContract.genPackedVals(
+                        pollContract.address
+                    )
+                )
+                expect(packedVals.toString(16)).toEqual(onChainPackedVals.toString(16))
             })
         })
     })
