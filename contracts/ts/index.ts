@@ -1,6 +1,7 @@
 import {
     genDeployer,
     genJsonRpcDeployer,
+    deployMockVerifier,
     deployMaci,
     deploySignupToken,
     deploySignupTokenGatekeeper,
@@ -31,6 +32,7 @@ export {
     genAccounts,
     genTestAccounts,
     deployMaci,
+    deployMockVerifier,
     deploySignupToken,
     deploySignupTokenGatekeeper,
     deployFreeForAllSignUpGatekeeper,

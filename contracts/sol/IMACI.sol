@@ -11,4 +11,9 @@ interface IMACI {
         external
         view
         returns (uint256);
+
+    function getNumStateLeaves(uint256 _timestamp)
+        external
+        view
+        returns (uint256);
 }

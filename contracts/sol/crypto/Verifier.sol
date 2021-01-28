@@ -6,7 +6,26 @@ import { Pairing } from "./Pairing.sol";
 import { SnarkConstants } from "./SnarkConstants.sol";
 import { SnarkCommon } from "./SnarkCommon.sol";
 
-contract Verifier is SnarkConstants, SnarkCommon {
+abstract contract IVerifier is SnarkCommon {
+    function verify(
+        uint256[8] memory,
+        VerifyingKey memory,
+        uint256[] memory
+    ) virtual public view returns (bool);
+}
+
+contract MockVerifier is IVerifier, SnarkConstants {
+    bool result = true;
+    function verify(
+        uint256[8] memory,
+        VerifyingKey memory,
+        uint256[] memory
+    ) override public view returns (bool) {
+        return result;
+    }
+}
+
+contract Verifier is IVerifier, SnarkConstants {
 
     using Pairing for *;
 
@@ -17,14 +36,17 @@ contract Verifier is SnarkConstants, SnarkCommon {
      *          inputs
      */
     function verify(
-        Proof memory proof,
+        uint256[8] memory _proof,
         VerifyingKey memory vk,
         uint256[] memory input
-    ) public view returns (bool) {
-        //Proof memory proof;
-        //proof.a = Pairing.G1Point(a[0], a[1]);
-        //proof.b = Pairing.G2Point([b[0][0], b[0][1]], [b[1][0], b[1][1]]);
-        //proof.c = Pairing.G1Point(c[0], c[1]);
+    ) override public view returns (bool) {
+        Proof memory proof;
+        proof.a = Pairing.G1Point(_proof[0], _proof[1]);
+        proof.b = Pairing.G2Point(
+            [_proof[2], _proof[3]],
+            [_proof[4], _proof[5]]
+        );
+        proof.c = Pairing.G1Point(_proof[6], _proof[7]);
 
         // Compute the linear combination vk_x
         Pairing.G1Point memory vk_x = Pairing.G1Point(0, 0);

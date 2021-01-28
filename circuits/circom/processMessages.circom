@@ -12,6 +12,7 @@ template ProcessMessages(
     msgBatchDepth,
     voteOptionTreeDepth
 ) {
+    assert(msgTreeDepth >= msgBatchDepth);
 
     // stateTreeDepth: the depth of the state tree
     // msgTreeDepth: the depth of the message tree
@@ -221,6 +222,8 @@ template ProcessMessages(
             currentStateLeafHashers[i].in[j] <== currentStateLeaves[i][j];
         }
     }
+
+    // TODO: what if the command's stateIndex field is invalid??
 
     component currentStateLeavesPathIndices[batchSize];
     for (var i = 0; i < batchSize; i ++) {

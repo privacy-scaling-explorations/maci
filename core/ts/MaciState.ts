@@ -619,6 +619,7 @@ class Poll {
             currentStateRoot = this.stateTree.root
         }
 
+        debugger
         for (let i = 0; i < messageBatchSize; i ++) {
             const stateIndex = Number(commands[i].stateIndex)
 

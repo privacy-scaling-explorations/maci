@@ -8,6 +8,8 @@ import {
     VerifyingKey,
     Keypair,
     PrivKey,
+    StateLeaf,
+    Ballot,
 } from 'maci-domainobjs'
 
 import {
@@ -83,7 +85,7 @@ const treeDepths: TreeDepths = {
     voteOptionTreeDepth: 2,
 }
 
-const messageBatchSize = 5
+const messageBatchSize = 25
 const tallyBatchSize = STATE_TREE_ARITY ** treeDepths.intStateTreeDepth
 
 
@@ -93,6 +95,7 @@ describe('MACI', () => {
     let vkRegistryContract
     let pollStateViewerContract
     let messageProcessorContract
+    let mockVerifierContract
     let pollId: number
 
     describe('Deployment', () => {
@@ -106,6 +109,7 @@ describe('MACI', () => {
             vkRegistryContract = r.vkRegistryContract
             pollStateViewerContract = r.pollStateViewerContract
             messageProcessorContract = r.messageProcessorContract
+            mockVerifierContract = r.mockVerifierContract
         })
 
         it('MACI.stateTreeDepth should be correct', async () => {
@@ -202,6 +206,7 @@ describe('MACI', () => {
                     messageBatchSize,
                     testProcessVk.asContractParam(),
                     testTallyVk.asContractParam(),
+                    { gasLimit: 1000000 },
                 )
                 let receipt = await tx.wait()
                 expect(receipt.status).toEqual(1)
@@ -228,7 +233,6 @@ describe('MACI', () => {
                     duration,
                     maxValues,
                     treeDepths,
-                    messageBatchSize,
                     coordinator.pubKey.asContractParam(),
                     messageProcessorContract.address,
                     { gasLimit: 8000000 },
@@ -341,11 +345,11 @@ describe('MACI', () => {
                 const keypair = new Keypair()
 
                 const command = new Command(
-                    BigInt(0),
+                    BigInt(1),
                     keypair.pubKey,
                     BigInt(0),
-                    BigInt(0),
-                    BigInt(0),
+                    BigInt(9),
+                    BigInt(1),
                     BigInt(pollId),
                     BigInt(0),
                 )
@@ -420,14 +424,15 @@ describe('MACI', () => {
                 let tx = await pollContract.mergeMessageAqSubRoots(0, { gasLimit: 3000000 })
                 let receipt = await tx.wait()
                 expect(receipt.status).toEqual(1)
+                const poll = maciState.polls[pollId]
 
-                maciState.polls[pollId].messageAq.mergeSubRoots(0)
+                poll.messageAq.mergeSubRoots(0)
                 console.log('mergeMessageAqSubRoots() gas used:', receipt.gasUsed.toString())
 
                 tx = await pollContract.mergeMessageAq({ gasLimit: 4000000 })
                 receipt = await tx.wait()
                 expect(receipt.status).toEqual(1)
-                maciState.polls[pollId].messageAq.merge(MESSAGE_TREE_DEPTH)
+                poll.messageAq.merge(MESSAGE_TREE_DEPTH)
 
                 console.log('mergeMessageAq() gas used:', receipt.gasUsed.toString())
             })
@@ -439,7 +444,7 @@ describe('MACI', () => {
             })
         })
 
-        describe('Public input generation for ProcessMessages', () => {
+        describe('Process messages', () => {
             let pollContract
 
             beforeAll(async () => {
@@ -456,7 +461,7 @@ describe('MACI', () => {
                     maxValues.maxVoteOptions,
                     maxValues.maxUsers,
                     0,
-                    1,
+                    maciState.polls[pollId].messageTree.leaves.length - 1,
                 )
                 const onChainPackedVals = BigInt(
                     await messageProcessorContract.genPackedVals(
@@ -464,6 +469,46 @@ describe('MACI', () => {
                     )
                 )
                 expect(packedVals.toString(16)).toEqual(onChainPackedVals.toString(16))
+            })
+
+            it('processMessages() should update the state and ballot roots', async () => {
+                const poll = maciState.polls[pollId]
+                const zerothStateLeaf = StateLeaf.genRandomLeaf()
+
+                const zerothBallot = Ballot.genRandomBallot(
+                    maxValues.maxVoteOptions,
+                    treeDepths.voteOptionTreeDepth,
+                )
+                const generatedInputs = poll.processMessages(
+                    pollId,
+                    zerothStateLeaf,
+                    zerothBallot,
+                    maciState,
+                )
+
+                // The current roots
+                const newStateRoot = poll.stateTree.root.toString()
+                const newBallotRoot = poll.ballotTree.root.toString()
+
+                const pollContractAddress = await maciContract.getPoll(pollId)
+
+                const tx = await messageProcessorContract.processMessages(
+                    pollContractAddress,
+                    {
+                        newStateRoot,
+                        newBallotRoot,
+                    },
+                    [0, 0, 0, 0, 0, 0, 0, 0],
+                )
+
+                const receipt = await tx.wait()
+
+                expect(receipt.status).toEqual(1)
+                const onChainNewStateRoot = (await pollContract.currentStateRoot()).toString()
+                const onChainNewBallotRoot = (await pollContract.ballotRoot()).toString()
+
+                expect(newStateRoot).toEqual(onChainNewStateRoot)
+                expect(newBallotRoot).toEqual(onChainNewBallotRoot)
             })
         })
     })

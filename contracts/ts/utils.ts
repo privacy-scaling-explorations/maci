@@ -6,6 +6,7 @@ interface SnarkProof {
 
 import {
     deployMaci,
+    deployMockVerifier,
     deployFreeForAllSignUpGatekeeper,
     deployConstantInitialVoiceCreditProxy,
 } from './'
@@ -30,6 +31,7 @@ const deployTestContracts = async (
     deployer,
     initialVoiceCreditBalance,
 ) => {
+    const mockVerifierContract = await deployMockVerifier(deployer)
     const freeForAllSignUpGatekeeperContract = await deployFreeForAllSignUpGatekeeper(deployer)
     const constantIntialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
         deployer,
@@ -40,6 +42,7 @@ const deployTestContracts = async (
         deployer,
         freeForAllSignUpGatekeeperContract.address,
         constantIntialVoiceCreditProxyContract.address,
+        mockVerifierContract.address,
     )
 
     const maciContract = contracts.maciContract
@@ -49,6 +52,7 @@ const deployTestContracts = async (
     const messageProcessorContract = contracts.messageProcessorContract
 
     return {
+        mockVerifierContract,
         freeForAllSignUpGatekeeperContract,
         constantIntialVoiceCreditProxyContract,
         maciContract,

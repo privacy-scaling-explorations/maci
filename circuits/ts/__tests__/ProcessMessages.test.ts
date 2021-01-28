@@ -175,6 +175,7 @@ describe('ProcessMessage circuit', () => {
             const currentStateRoot = poll.stateTree.root
             const currentBallotRoot = poll.ballotTree.root
 
+            debugger
             const generatedInputs = poll.processMessages(
                 pollId,
                 zerothStateLeaf,
@@ -197,6 +198,11 @@ describe('ProcessMessage circuit', () => {
 
             const circuitNewBallotRoot = await getSignalByName(circuit, witness, 'main.newBallotRoot')
             expect(circuitNewBallotRoot.toString()).toEqual(newBallotRoot.toString())
+
+            fs.writeFileSync(
+                'input.json',
+                JSON.stringify(generatedInputs) 
+            )
 
             fs.writeFileSync(
                 'witness.json',
@@ -226,78 +232,78 @@ describe('ProcessMessage circuit', () => {
         })
     })
 
-    const NUM_BATCHES = 2
-    describe(`1 user, ${messageBatchSize * NUM_BATCHES} messages`, () => {
-        it('should produce the correct state root and ballot root', async () => {
-            const maciState = new MaciState()
-            const userKeypair = new Keypair()
-            const stateIndex = maciState.signUp(userKeypair.pubKey, voiceCreditBalance)
+    //const NUM_BATCHES = 2
+    //describe(`1 user, ${messageBatchSize * NUM_BATCHES} messages`, () => {
+        //it('should produce the correct state root and ballot root', async () => {
+            //const maciState = new MaciState()
+            //const userKeypair = new Keypair()
+            //const stateIndex = maciState.signUp(userKeypair.pubKey, voiceCreditBalance)
 
-            maciState.stateAq.mergeSubRoots(0)
-            maciState.stateAq.merge(STATE_TREE_DEPTH)
-            // Sign up and publish
-            const pollId = maciState.deployPoll(
-                duration,
-                maxValues,
-                treeDepths,
-                messageBatchSize,
-                coordinatorKeypair,
-                testProcessVk,
-                testTallyVk,
-            )
+            //maciState.stateAq.mergeSubRoots(0)
+            //maciState.stateAq.merge(STATE_TREE_DEPTH)
+            //// Sign up and publish
+            //const pollId = maciState.deployPoll(
+                //duration,
+                //maxValues,
+                //treeDepths,
+                //messageBatchSize,
+                //coordinatorKeypair,
+                //testProcessVk,
+                //testTallyVk,
+            //)
 
-            const poll = maciState.polls[pollId]
+            //const poll = maciState.polls[pollId]
 
-            const numMessages = messageBatchSize * NUM_BATCHES
-            for (let i = 0; i < numMessages; i ++) {
-                const command = new Command(
-                    stateIndex,
-                    userKeypair.pubKey,
-                    BigInt(i),
-                    BigInt(1),
-                    BigInt(numMessages - i),
-                    BigInt(pollId),
-                )
+            //const numMessages = messageBatchSize * NUM_BATCHES
+            //for (let i = 0; i < numMessages; i ++) {
+                //const command = new Command(
+                    //stateIndex,
+                    //userKeypair.pubKey,
+                    //BigInt(i),
+                    //BigInt(1),
+                    //BigInt(numMessages - i),
+                    //BigInt(pollId),
+                //)
 
-                const signature = command.sign(userKeypair.privKey)
+                //const signature = command.sign(userKeypair.privKey)
 
-                const ecdhKeypair = new Keypair()
-                const sharedKey = Keypair.genEcdhSharedKey(
-                    ecdhKeypair.privKey,
-                    coordinatorKeypair.pubKey,
-                )
-                const message = command.encrypt(signature, sharedKey)
-                poll.publishMessage(message, ecdhKeypair.pubKey)
-            }
+                //const ecdhKeypair = new Keypair()
+                //const sharedKey = Keypair.genEcdhSharedKey(
+                    //ecdhKeypair.privKey,
+                    //coordinatorKeypair.pubKey,
+                //)
+                //const message = command.encrypt(signature, sharedKey)
+                //poll.publishMessage(message, ecdhKeypair.pubKey)
+            //}
 
-            poll.messageAq.mergeSubRoots(0)
-            poll.messageAq.merge(treeDepths.messageTreeDepth)
+            //poll.messageAq.mergeSubRoots(0)
+            //poll.messageAq.merge(treeDepths.messageTreeDepth)
 
-            for (let i = 0; i < NUM_BATCHES; i ++) {
-                const zerothStateLeaf = StateLeaf.genRandomLeaf()
-                const zerothBallot = Ballot.genRandomBallot(
-                    maxValues.maxVoteOptions,
-                    treeDepths.voteOptionTreeDepth,
-                )
+            //for (let i = 0; i < NUM_BATCHES; i ++) {
+                //const zerothStateLeaf = StateLeaf.genRandomLeaf()
+                //const zerothBallot = Ballot.genRandomBallot(
+                    //maxValues.maxVoteOptions,
+                    //treeDepths.voteOptionTreeDepth,
+                //)
 
-                const generatedInputs = poll.processMessages(
-                    pollId,
-                    zerothStateLeaf,
-                    zerothBallot,
-                    maciState,
-                )
+                //const generatedInputs = poll.processMessages(
+                    //pollId,
+                    //zerothStateLeaf,
+                    //zerothBallot,
+                    //maciState,
+                //)
 
-                const newStateRoot = poll.stateTree.root
-                const newBallotRoot = poll.ballotTree.root
+                //const newStateRoot = poll.stateTree.root
+                //const newBallotRoot = poll.ballotTree.root
 
-                const witness = await genWitness(circuit, generatedInputs)
-                expect(witness.length > 0).toBeTruthy()
+                //const witness = await genWitness(circuit, generatedInputs)
+                //expect(witness.length > 0).toBeTruthy()
 
-                const circuitNewStateRoot = await getSignalByName(circuit, witness, 'main.newStateRoot')
-                expect(circuitNewStateRoot.toString()).toEqual(newStateRoot.toString())
-                const circuitNewBallotRoot = await getSignalByName(circuit, witness, 'main.newBallotRoot')
-                expect(circuitNewBallotRoot.toString()).toEqual(newBallotRoot.toString())
-            }
-        })
-    })
+                //const circuitNewStateRoot = await getSignalByName(circuit, witness, 'main.newStateRoot')
+                //expect(circuitNewStateRoot.toString()).toEqual(newStateRoot.toString())
+                //const circuitNewBallotRoot = await getSignalByName(circuit, witness, 'main.newBallotRoot')
+                //expect(circuitNewBallotRoot.toString()).toEqual(newBallotRoot.toString())
+            //}
+        //})
+    //})
 })

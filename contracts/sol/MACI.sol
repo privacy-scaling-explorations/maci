@@ -40,6 +40,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
 
     uint8 constant internal STATE_TREE_SUBDEPTH = 2;
     uint8 constant internal STATE_TREE_ARITY = 5;
+    uint8 constant internal MESSAGE_TREE_ARITY = 5;
 
     uint256 constant internal NOTHING_UP_MY_SLEEVE
         = uint256(8370432830353022751713833565135785980866757267633941821328460903436894336785);
@@ -52,6 +53,12 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
 
     // A mapping of block timestamps to state roots
     mapping (uint256 => uint256) public stateRootSnapshots;
+
+    // The number of signups
+    uint256 public numSignUps;
+
+    // A mapping of block timestamps to the number of state leaves
+    mapping (uint256 => uint256) public numStateLeaves;
 
     // The block timestamp at which the state queue subroots were last merged
     uint256 public mergeSubRootsTimestamp;
@@ -196,6 +203,9 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         );
         uint256 stateIndex = stateAq.enqueue(stateLeaf);
 
+        // Increment the number of signups
+        numSignUps ++;
+
         emit SignUp(stateIndex, _pubKey, voiceCreditBalance);
     }
 
@@ -221,7 +231,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     afterInit {
         uint256 root = stateAq.merge(stateTreeDepth);
         stateRootSnapshots[mergeSubRootsTimestamp] = root;
-        mergeSubRootsTimestamp = 0;
+        numStateLeaves[mergeSubRootsTimestamp] = numSignUps;
     }
 
     function getStateRootSnapshot(uint256 _timestamp)
@@ -239,6 +249,21 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         return root;
     }
 
+    function getNumStateLeaves(uint256 _timestamp)
+    external
+    view
+    override
+    returns (uint256) {
+        uint256 num = numStateLeaves[_timestamp];
+
+        require(
+            num != 0,
+            "MACI: no such snapshot at this timestamp"
+        );
+
+        return num;
+    }
+
     /*
      * Deploy a new Poll contract.
      */
@@ -246,15 +271,15 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         uint256 _duration,
         MaxValues memory _maxValues,
         TreeDepths memory _treeDepths,
-        uint8 _messageBatchSize,
         PubKey memory _coordinatorPubKey,
         MessageProcessor _msgProcessor
     ) public afterInit {
+        require(mergeSubRootsTimestamp != 0, "MACI: state root not merged");
         uint256 pollId = nextPollId;
 
         // The message batch size and the tally batch size
         BatchSizes memory batchSizes = BatchSizes(
-            _messageBatchSize,
+            MESSAGE_TREE_ARITY ** uint8(_treeDepths.messageTreeSubDepth),
             STATE_TREE_ARITY ** uint8(_treeDepths.intStateTreeDepth)
         );
 
@@ -268,7 +293,8 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
             vkRegistry,
             this,
             owner(),
-            _msgProcessor
+            _msgProcessor,
+            mergeSubRootsTimestamp
         );
 
         polls[pollId] = p;

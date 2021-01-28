@@ -3,7 +3,6 @@ include "../processMessages.circom";
 stateTreeDepth,
 msgTreeDepth,
 msgSubTreeDepth
-msgBatchDepth
 voteOptionTreeDepth,
 */
 

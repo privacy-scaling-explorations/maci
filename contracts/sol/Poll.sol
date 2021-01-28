@@ -5,6 +5,7 @@ pragma solidity ^0.7.2;
 import { IMACI } from "./IMACI.sol";
 import { Params } from "./Params.sol";
 import { Hasher } from "./crypto/Hasher.sol";
+import { IVerifier } from "./crypto/Verifier.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { SnarkConstants } from "./crypto/SnarkConstants.sol";
 import { DomainObjs, IPubKey, IMessage } from "./DomainObjs.sol";
@@ -55,7 +56,8 @@ contract PollFactory is EmptyBallotRoots, Params, IPubKey, IMessage, Ownable, Ha
         VkRegistry _vkRegistry,
         IMACI _maci,
         address _pollOwner,
-        MessageProcessor _msgProcessor
+        MessageProcessor _msgProcessor,
+        uint256 _mergeSubRootsTimestamp
     ) public onlyOwner returns (Poll) {
         uint8 treeArity = 5;
 
@@ -86,7 +88,8 @@ contract PollFactory is EmptyBallotRoots, Params, IPubKey, IMessage, Ownable, Ha
             _vkRegistry,
             _maci,
             messageAq,
-            _msgProcessor
+            _msgProcessor,
+            _mergeSubRootsTimestamp
         );
 
         messageAq.transferOwnership(address(poll));
@@ -125,9 +128,6 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable {
     // The message queue
     AccQueue public messageAq;
 
-    // The ballot tree root
-    uint256 public ballotRoot;
-
     MessageProcessor public msgProcessor;
 
     // The state root. This value should be 0 until the first invocation of
@@ -135,6 +135,11 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable {
     // root, and then updated based on the result of processing each batch of
     // messages.
     uint256 public currentStateRoot;
+
+    uint256 public numSignUps;
+
+    // The ballot tree root
+    uint256 public ballotRoot;
 
     // Whether there are unprocessed messages left
     bool public hasUnprocessedMessages = true;
@@ -161,7 +166,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable {
     string constant ERROR_VOTING_PERIOD_PASSED = "PollE03";
     string constant ERROR_VOTING_PERIOD_NOT_PASSED = "PollE04";
     string constant ERROR_INVALID_PUBKEY = "PollE05";
-    string constant ERROR_ONLY_POLL_PROCESSOR = "PollE06";
+    string constant ERROR_ONLY_MESSAGE_PROCESSOR = "PollE06";
 
     event PublishMessage(
         Message _message,
@@ -182,7 +187,8 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable {
         VkRegistry _vkRegistry,
         IMACI _maci,
         AccQueue _messageAq,
-        MessageProcessor _msgProcessor
+        MessageProcessor _msgProcessor,
+        uint256 _mergeSubRootsTimestamp
     ) {
         coordinatorPubKeyHash = _coordinatorPubKeyHash;
         duration = _duration;
@@ -221,6 +227,10 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable {
 
         // Set the poll processor contract
         msgProcessor = _msgProcessor;
+
+        // Set the current state root
+        currentStateRoot = _maci.getStateRootSnapshot(_mergeSubRootsTimestamp);
+        numSignUps = _maci.getNumStateLeaves(_mergeSubRootsTimestamp);
     }
 
     /*
@@ -340,8 +350,10 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable {
     ) public {
         require(
             msg.sender == address(msgProcessor),
-            ERROR_ONLY_POLL_PROCESSOR
+            ERROR_ONLY_MESSAGE_PROCESSOR
         );
+
+        // TODO: check batch #
 
         currentStateRoot = _newStateRoot;
         ballotRoot = _newBallotRoot;
@@ -351,8 +363,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable {
     }
 }
 
-contract MessageProcessor is Ownable, SnarkCommon {
-
+contract MessageProcessor is Ownable, SnarkCommon, Hasher {
     struct Roots {
         uint256 newStateRoot;
         uint256 newBallotRoot;
@@ -363,6 +374,14 @@ contract MessageProcessor is Ownable, SnarkCommon {
     string constant ERROR_MESSAGE_AQ_NOT_MERGED = "MessageProcessorE03";
     string constant ERROR_INVALID_STATE_ROOT_SNAPSHOT_TIMESTAMP =
         "MessageProcessorE04";
+
+    IVerifier public verifier;
+
+    constructor(
+        IVerifier _verifier
+    ) {
+        verifier = _verifier;
+    }
 
     function genPackedVals(
         Poll _poll
@@ -387,9 +406,48 @@ contract MessageProcessor is Ownable, SnarkCommon {
             maxVoteOptions +
             (maxUsers << uint256(50)) +
             (index << uint256(100)) +
-            (numMessages << uint256(150));
+            (batchEndIndex << uint256(150));
 
         return result;
+    }
+
+    modifier votingPeriodOver(Poll _poll) {
+        // Require that the voting period is over
+        uint256 secondsPassed = block.timestamp - _poll.deployTime();
+        require(
+            secondsPassed > _poll.duration(),
+            ERROR_VOTING_PERIOD_NOT_PASSED
+        );
+
+        _;
+    }
+
+    modifier unprocessedMessagesExist(Poll _poll) {
+        // Require that unprocessed messages exist
+        require(
+            _poll.hasUnprocessedMessages(),
+            ERROR_NO_MORE_MESSAGES
+        );
+        _;
+    }
+
+    function genProcessMessagesPublicInputs(
+        Poll _poll,
+        uint256 _messageRoot
+    ) public view returns (uint256[] memory) {
+        uint256 packedVals = genPackedVals(_poll);
+        uint256[] memory input = new uint256[](5);
+        input[0] = packedVals;
+        input[1] = _poll.coordinatorPubKeyHash();
+        input[2] = _messageRoot;
+        input[3] = _poll.currentStateRoot();
+        input[4] = _poll.ballotRoot();
+        uint256 inputHash = sha256Hash(input);
+
+        uint256[] memory publicInputs = new uint256[](1);
+        publicInputs[0] = inputHash;
+
+        return publicInputs;
     }
 
     /*
@@ -400,33 +458,19 @@ contract MessageProcessor is Ownable, SnarkCommon {
      */
     function processMessages(
         Poll _poll,
-        uint256 _stateRootSnapshotTimestamp,
         Roots memory _roots,
         uint256[8] memory _proof
     )
     public
     onlyOwner
+    votingPeriodOver(_poll)
+    unprocessedMessagesExist(_poll)
     {
-        // Require that the voting period is over
-        uint256 secondsPassed = block.timestamp - _poll.deployTime();
-        require(
-            secondsPassed > _poll.duration(),
-            ERROR_VOTING_PERIOD_NOT_PASSED
-        );
-
-        // Require that unprocessed messages exist
-        require(
-            _poll.hasUnprocessedMessages(),
-            ERROR_NO_MORE_MESSAGES
-        );
-
-        uint8 intStateTreeDepth;
-        uint8 messageTreeSubDepth;
         uint8 messageTreeDepth;
         uint8 voteOptionTreeDepth;
         (
-            intStateTreeDepth,
-            messageTreeSubDepth,
+            ,
+            ,
             messageTreeDepth,
             voteOptionTreeDepth
         ) = _poll.treeDepths();
@@ -442,22 +486,11 @@ contract MessageProcessor is Ownable, SnarkCommon {
         uint256 messageBatchSize;
         (messageBatchSize, ) = _poll.batchSizes();
 
-        uint256 currentStateRoot = _poll.currentStateRoot();
         uint256 currentMessageBatchIndex = _poll.currentMessageBatchIndex();
 
         // Copy the state root and set the batch index if this is the
         // first batch to process
         if (_poll.numBatchesProcessed() == 0) {
-            // Ensure that the state queue was merged after the voting period
-            // ended
-            require(
-                _stateRootSnapshotTimestamp > _poll.deployTime() + _poll.duration(),
-                ERROR_INVALID_STATE_ROOT_SNAPSHOT_TIMESTAMP
-            );
-
-            currentStateRoot =
-                _poll.maci().getStateRootSnapshot(_stateRootSnapshotTimestamp);
-
             uint256 numMessages = _poll.messageAq().numLeaves();
             currentMessageBatchIndex =
                 (numMessages / messageBatchSize) * messageBatchSize;
@@ -470,32 +503,47 @@ contract MessageProcessor is Ownable, SnarkCommon {
             messageBatchSize
         );
 
-        //uint256 packedVals = genPackedVals();
-        //uint256[] memory input = new uint256[](5);
-        //input[0] = packedVals;
-        //input[1] = _poll.coordinatorPubKeyHash();
-        //input[2] = messageRoot;
-        //input[3] = currentStateRoot;
-        //input[4] = _poll.ballotRoot();
-        //uint256 inputHash = sha256hash(input);
+        { 
+            // Curly brackets to avoid "Compiler error: Stack too deep, try
+            // removing local variables."
+            uint256[] memory publicInputs = genProcessMessagesPublicInputs(
+                _poll,
+                messageRoot
+            );
+            bool isValid = verifier.verify(
+                _proof,
+                vk,
+                publicInputs
+            );
 
-        // TODO: Verify the proof
-
-        bool hasUnprocessedMessages = _poll.hasUnprocessedMessages();
-
-        // Decrease the message batch start index to ensure that each message
-        // batch is processed in order
-        if (currentMessageBatchIndex == 0) {
-            hasUnprocessedMessages = false;
-        } else {
-            currentMessageBatchIndex -= messageBatchSize;
+            require(isValid, "MessageProcessor: invalid proof");
         }
 
+        {
+            // Decrease the message batch start index to ensure that each
+            // message batch is processed in order
+            if (currentMessageBatchIndex > 0) {
+                currentMessageBatchIndex -= messageBatchSize;
+            }
+
+            updatePollMessageProcessingData(
+                _poll,
+                _roots,
+                currentMessageBatchIndex
+            );
+        }
+    }
+
+    function updatePollMessageProcessingData(
+        Poll _poll,
+        Roots memory _roots,
+        uint256 currentMessageBatchIndex
+    ) internal {
         // Update the state root and message processing metadata
         _poll.setMessageProcessingData(
             _roots.newStateRoot,
             _roots.newBallotRoot,
-            hasUnprocessedMessages,
+            currentMessageBatchIndex == 0 ? _poll.hasUnprocessedMessages() : false,
             currentMessageBatchIndex
         );
     }

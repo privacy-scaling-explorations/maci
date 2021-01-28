@@ -120,6 +120,24 @@ const genDeployer = (
     )
 }
 
+const deployMockVerifier = async (deployer) => {
+    console.log('Deploying MockVerifier')
+    const [ MockVerifierAbi, MockVerifierBin ] = loadAB('MockVerifier')
+    return await deployer.deploy(
+        MockVerifierAbi,
+        MockVerifierBin,
+    )
+}
+
+const deployVerifier = async (deployer) => {
+    console.log('Deploying Verifier')
+    const [ VerifierAbi, VerifierBin ] = loadAB('Verifier')
+    return await deployer.deploy(
+        VerifierAbi,
+        VerifierBin,
+    )
+}
+
 const deployConstantInitialVoiceCreditProxy = async (
     deployer,
     amount: number,
@@ -184,6 +202,7 @@ const deployMaci = async (
     deployer: any,
     signUpTokenGatekeeperContractAddress: string,
     initialVoiceCreditBalanceAddress: string,
+    mockVerifierContractAddress: string,
     quiet = false,
 ) => {
     log('Deploying Poseidon contracts', quiet)
@@ -232,6 +251,7 @@ const deployMaci = async (
     const messageProcessorContract = await deployer.deploy(
         MessageProcessorAbi,
         MessageProcessorBin,
+        mockVerifierContractAddress,
     )
 
     log('Deploying MACI', quiet)
@@ -337,10 +357,19 @@ const main = async () => {
         }
     )
 
+    parser.addArgument(
+        ['-v', '--verifier'],
+        {
+            help: 'The address of the contract which verifies zk-SNARK proofs',
+            required: true
+        }
+    )
+
     const args = parser.parseArgs()
     const outputAddressFile = args.output
     const signUpToken = args.signUpToken
     const initialVoiceCreditProxy = args.initialVoiceCreditProxy
+    const verifier = args.verifier
 
     const deployer = genDeployer(admin.privateKey)
 
@@ -377,6 +406,7 @@ const main = async () => {
         deployer,
         signUpTokenGatekeeperContract.address,
         initialVoiceCreditBalanceAddress,
+        verifier,
     )
 
     const addresses = {
@@ -410,6 +440,8 @@ export {
     deploySignupTokenGatekeeper,
     deployConstantInitialVoiceCreditProxy,
     deployFreeForAllSignUpGatekeeper,
+    deployMockVerifier,
+    deployVerifier,
     genDeployer,
     genProvider,
     genJsonRpcDeployer,
