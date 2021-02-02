@@ -20,6 +20,7 @@ import {
 } from 'maci-domainobjs'
 
 import {
+    hashLeftRight,
     G1Point,
     G2Point,
     IncrementalQuinTree,
@@ -106,12 +107,13 @@ describe('ProcessMessage circuit', () => {
                 poll.messageAq.zeroValue,
             )
 
+            // First command (invalid)
             const command = new Command(
                 stateIndex,
                 userKeypair.pubKey,
-                voteOptionIndex,
-                BigInt(0),
-                BigInt(2),
+                voteOptionIndex, // voteOptionIndex,
+                voteWeight, // vote weight
+                BigInt(2), // nonce
                 BigInt(pollId),
             )
 
@@ -129,13 +131,13 @@ describe('ProcessMessage circuit', () => {
 
             poll.publishMessage(message, ecdhKeypair.pubKey)
 
-            // Second command
+            // Second command (invalid)
             const command2 = new Command(
                 stateIndex,
                 userKeypair.pubKey,
-                voteOptionIndex,
-                voteWeight,
-                BigInt(1),
+                voteOptionIndex, // voteOptionIndex,
+                BigInt(1), // vote weight
+                BigInt(1), // nonce
                 BigInt(pollId),
             )
             const signature2 = command2.sign(userKeypair.privKey)
@@ -149,7 +151,6 @@ describe('ProcessMessage circuit', () => {
             messages.push(message2)
             commands.push(command2)
             messageTree.insert(message2.hash())
-
             poll.publishMessage(message2, ecdhKeypair2.pubKey)
 
             poll.messageAq.mergeSubRoots(0)
@@ -164,40 +165,36 @@ describe('ProcessMessage circuit', () => {
         })
 
         it('should produce the correct state root and ballot root', async () => {
-            const zerothStateLeaf = StateLeaf.genRandomLeaf()
-
-            const zerothBallot = Ballot.genRandomBallot(
-                maxValues.maxVoteOptions,
-                treeDepths.voteOptionTreeDepth,
-            )
-
             // The current roots
             const currentStateRoot = poll.stateTree.root
             const currentBallotRoot = poll.ballotTree.root
 
-            debugger
-            const generatedInputs = poll.processMessages(
-                pollId,
-                zerothStateLeaf,
-                zerothBallot,
-                maciState,
-            )
+            const generatedInputs = poll.processMessages()
 
             // Calculate the witness
             const witness = await genWitness(circuit, generatedInputs)
             expect(witness.length > 0).toBeTruthy()
 
+            //for (let i = 0; i < messageBatchSize; i ++) {
+                //const debug = await getSignalByName(circuit, witness, `main.debug[${i}]`)
+                //console.log(debug)
+            //}
+
             // The new roots, which should differ
             const newStateRoot = poll.stateTree.root
             const newBallotRoot = poll.ballotTree.root
+
             expect(newStateRoot.toString()).not.toEqual(currentStateRoot.toString())
             expect(newBallotRoot.toString()).not.toEqual(currentBallotRoot.toString())
 
-            const circuitNewStateRoot = await getSignalByName(circuit, witness, 'main.newStateRoot')
-            expect(circuitNewStateRoot.toString()).toEqual(newStateRoot.toString())
+            const newStateCommitment = hashLeftRight(newStateRoot, BigInt(generatedInputs.stateSalt))
+            const newBallotCommitment = hashLeftRight(newBallotRoot, BigInt(generatedInputs.ballotSalt))
 
-            const circuitNewBallotRoot = await getSignalByName(circuit, witness, 'main.newBallotRoot')
-            expect(circuitNewBallotRoot.toString()).toEqual(newBallotRoot.toString())
+            const circuitNewStateCommitment = await getSignalByName(circuit, witness, 'main.newStateCommitment')
+            expect(circuitNewStateCommitment.toString()).toEqual(newStateCommitment.toString())
+
+            const circuitNewBallotCommitment = await getSignalByName(circuit, witness, 'main.newBallotCommitment')
+            expect(circuitNewBallotCommitment.toString()).toEqual(newBallotCommitment.toString())
 
             fs.writeFileSync(
                 'input.json',
@@ -210,7 +207,7 @@ describe('ProcessMessage circuit', () => {
             )
             const packedVals = MaciState.packProcessMessageSmallVals(
                 maxValues.maxVoteOptions,
-                maxValues.maxUsers,
+                poll.numSignUps,
                 0,
                 poll.messageTree.leaves.length - 1,
             )
@@ -220,7 +217,6 @@ describe('ProcessMessage circuit', () => {
             const hasherCircuitInputs = stringifyBigInts({
                 packedVals,
                 coordPubKey: generatedInputs.coordPubKey,
-
                 msgRoot: generatedInputs.msgRoot,
                 currentStateRoot: generatedInputs.currentStateRoot,
                 currentBallotRoot: generatedInputs.currentBallotRoot,
@@ -232,78 +228,62 @@ describe('ProcessMessage circuit', () => {
         })
     })
 
-    //const NUM_BATCHES = 2
-    //describe(`1 user, ${messageBatchSize * NUM_BATCHES} messages`, () => {
-        //it('should produce the correct state root and ballot root', async () => {
-            //const maciState = new MaciState()
-            //const userKeypair = new Keypair()
-            //const stateIndex = maciState.signUp(userKeypair.pubKey, voiceCreditBalance)
+    const NUM_BATCHES = 2
+    describe(`1 user, ${messageBatchSize * NUM_BATCHES} messages`, () => {
+        it('should produce the correct state root and ballot root', async () => {
+            const maciState = new MaciState()
+            const userKeypair = new Keypair()
+            const stateIndex = maciState.signUp(userKeypair.pubKey, voiceCreditBalance)
 
-            //maciState.stateAq.mergeSubRoots(0)
-            //maciState.stateAq.merge(STATE_TREE_DEPTH)
-            //// Sign up and publish
-            //const pollId = maciState.deployPoll(
-                //duration,
-                //maxValues,
-                //treeDepths,
-                //messageBatchSize,
-                //coordinatorKeypair,
-                //testProcessVk,
-                //testTallyVk,
-            //)
+            maciState.stateAq.mergeSubRoots(0)
+            maciState.stateAq.merge(STATE_TREE_DEPTH)
+            // Sign up and publish
+            const pollId = maciState.deployPoll(
+                duration,
+                maxValues,
+                treeDepths,
+                messageBatchSize,
+                coordinatorKeypair,
+                testProcessVk,
+                testTallyVk,
+            )
 
-            //const poll = maciState.polls[pollId]
+            const poll = maciState.polls[pollId]
 
-            //const numMessages = messageBatchSize * NUM_BATCHES
-            //for (let i = 0; i < numMessages; i ++) {
-                //const command = new Command(
-                    //stateIndex,
-                    //userKeypair.pubKey,
-                    //BigInt(i),
-                    //BigInt(1),
-                    //BigInt(numMessages - i),
-                    //BigInt(pollId),
-                //)
+            const numMessages = messageBatchSize * NUM_BATCHES
+            for (let i = 0; i < numMessages; i ++) {
+                const command = new Command(
+                    stateIndex,
+                    userKeypair.pubKey,
+                    BigInt(i), //vote option index
+                    BigInt(1), // vote weight
+                    BigInt(numMessages - i), // nonce
+                    BigInt(pollId),
+                )
 
-                //const signature = command.sign(userKeypair.privKey)
+                const signature = command.sign(userKeypair.privKey)
 
-                //const ecdhKeypair = new Keypair()
-                //const sharedKey = Keypair.genEcdhSharedKey(
-                    //ecdhKeypair.privKey,
-                    //coordinatorKeypair.pubKey,
-                //)
-                //const message = command.encrypt(signature, sharedKey)
-                //poll.publishMessage(message, ecdhKeypair.pubKey)
-            //}
+                const ecdhKeypair = new Keypair()
+                const sharedKey = Keypair.genEcdhSharedKey(
+                    ecdhKeypair.privKey,
+                    coordinatorKeypair.pubKey,
+                )
+                const message = command.encrypt(signature, sharedKey)
+                poll.publishMessage(message, ecdhKeypair.pubKey)
+            }
 
-            //poll.messageAq.mergeSubRoots(0)
-            //poll.messageAq.merge(treeDepths.messageTreeDepth)
+            poll.messageAq.mergeSubRoots(0)
+            poll.messageAq.merge(treeDepths.messageTreeDepth)
 
             //for (let i = 0; i < NUM_BATCHES; i ++) {
-                //const zerothStateLeaf = StateLeaf.genRandomLeaf()
-                //const zerothBallot = Ballot.genRandomBallot(
-                    //maxValues.maxVoteOptions,
-                    //treeDepths.voteOptionTreeDepth,
-                //)
+            for (let i = 0; i < 1; i ++) {
+                const generatedInputs = poll.processMessages()
 
-                //const generatedInputs = poll.processMessages(
-                    //pollId,
-                    //zerothStateLeaf,
-                    //zerothBallot,
-                    //maciState,
-                //)
+                debugger
+                const witness = await genWitness(circuit, generatedInputs)
+                expect(witness.length > 0).toBeTruthy()
 
-                //const newStateRoot = poll.stateTree.root
-                //const newBallotRoot = poll.ballotTree.root
-
-                //const witness = await genWitness(circuit, generatedInputs)
-                //expect(witness.length > 0).toBeTruthy()
-
-                //const circuitNewStateRoot = await getSignalByName(circuit, witness, 'main.newStateRoot')
-                //expect(circuitNewStateRoot.toString()).toEqual(newStateRoot.toString())
-                //const circuitNewBallotRoot = await getSignalByName(circuit, witness, 'main.newBallotRoot')
-                //expect(circuitNewBallotRoot.toString()).toEqual(newBallotRoot.toString())
-            //}
-        //})
-    //})
+            }
+        })
+    })
 })

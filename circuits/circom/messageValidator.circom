@@ -4,10 +4,10 @@ include "../node_modules/circomlib/circuits/comparators.circom";
 template MessageValidator() {
     // a) Whether the state leaf index is valid
     signal input stateTreeIndex;
-    signal input maxUsers;
+    signal input numSignUps;
     component validStateLeafIndex = LessEqThan(32);
     validStateLeafIndex.in[0] <== stateTreeIndex;
-    validStateLeafIndex.in[1] <== maxUsers;
+    validStateLeafIndex.in[1] <== numSignUps;
 
     // b) Whether the max vote option tree index is correct
     signal input voteOptionIndex;

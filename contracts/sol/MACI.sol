@@ -8,22 +8,21 @@ import {
     MessageProcessor,
     MessageAqFactory
 } from "./Poll.sol";
+import {
+    AccQueue,
+    AccQueueQuinaryMaci,
+    AccQueueQuinaryMaciWithSha256
+} from "./trees/AccQueue.sol";
+import { InitialVoiceCreditProxy }
+    from "./initialVoiceCreditProxy/InitialVoiceCreditProxy.sol";
+import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
 import { IMACI } from "./IMACI.sol";
 import { Params } from "./Params.sol";
 import { DomainObjs } from "./DomainObjs.sol";
 import { VkRegistry } from "./VkRegistry.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { SnarkConstants } from "./crypto/SnarkConstants.sol";
-//import { AccQueue, AccQueueQuinaryMaciWithSha256 } from "./trees/AccQueue.sol";
-import {
-    AccQueue,
-    AccQueueQuinaryMaci,
-    AccQueueQuinaryMaciWithSha256
-} from "./trees/AccQueue.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
-import { InitialVoiceCreditProxy }
-    from "./initialVoiceCreditProxy/InitialVoiceCreditProxy.sol";
 
 /*
  * Minimum Anti-Collusion Infrastructure
@@ -42,8 +41,13 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     uint8 constant internal STATE_TREE_ARITY = 5;
     uint8 constant internal MESSAGE_TREE_ARITY = 5;
 
+    // The Keccack256 hash of 'Maci'
     uint256 constant internal NOTHING_UP_MY_SLEEVE
         = uint256(8370432830353022751713833565135785980866757267633941821328460903436894336785);
+
+    // The PoseidonT4 (3 inputs) hash of [0, 0, 0]
+    uint256 constant internal BLANK_STATE_LEAF_HASH
+        = uint256(1159571914158644307968118254216693844883623506937532987569787390362123170397);
 
     // Each poll has an incrementing ID
     uint256 internal nextPollId = 0;
@@ -99,11 +103,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         InitialVoiceCreditProxy _initialVoiceCreditProxy
     ) {
         // Deploy the state AccQueue
-        //stateAq = new AccQueueQuinaryMaciWithSha256(STATE_TREE_SUBDEPTH);
         stateAq = new AccQueueQuinaryMaci(STATE_TREE_SUBDEPTH);
-
-        // Enqueue the 0th leaf
-        stateAq.enqueue(NOTHING_UP_MY_SLEEVE);
 
         pollFactory = _pollFactory;
         signUpGatekeeper = _signUpGatekeeper;

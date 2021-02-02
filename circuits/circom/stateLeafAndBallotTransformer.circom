@@ -1,11 +1,14 @@
 include "./messageValidator.circom";
 include "../node_modules/circomlib/circuits/mux1.circom";
 
+/*
+ * Apply a command to a state leaf and ballot.
+ */
 template StateLeafAndBallotTransformer() {
     var PACKED_CMD_LENGTH = 4;
 
     // For the MessageValidator
-    signal input maxUsers;
+    signal input numSignUps;
     signal input maxVoteOptions;
 
     // State leaf
@@ -14,7 +17,6 @@ template StateLeafAndBallotTransformer() {
 
     // Ballot
     signal input ballotNonce;
-    signal input ballotVoteOptionRoot;
     signal input ballotCurrentVotesForOption;
 
     // Command
@@ -30,15 +32,12 @@ template StateLeafAndBallotTransformer() {
     // Note: we assume that packedCommand is valid!
     signal input packedCommand[PACKED_CMD_LENGTH];
 
-    signal input updatedBallotVoteOptionRoot;
-
     // New state leaf (if the command is valid)
     signal output newSlPubKey[2];
     signal output newSlVoiceCreditBalance;
 
     // New ballot (if the command is valid)
     signal output newBallotNonce;
-    signal output newBallotVoteOptionRoot;
     signal output isValid;
 
     signal newVoiceCreditBalance;
@@ -51,7 +50,7 @@ template StateLeafAndBallotTransformer() {
     // Check if the command / message is valid
     component messageValidator = MessageValidator();
     messageValidator.stateTreeIndex <== cmdStateIndex;
-    messageValidator.maxUsers <== maxUsers;
+    messageValidator.numSignUps <== numSignUps;
     messageValidator.voteOptionIndex <== cmdVoteOptionIndex;
     messageValidator.maxVoteOptions <== maxVoteOptions;
     messageValidator.originalNonce <== ballotNonce;
@@ -93,12 +92,5 @@ template StateLeafAndBallotTransformer() {
     newBallotNonceMux.c[1] <== cmdNonce;
     newBallotNonce <== newBallotNonceMux.out;
 
-    component newBallotVoteOptionRootMux = Mux1();
-    newBallotVoteOptionRootMux.s <== messageValidator.isValid;
-    newBallotVoteOptionRootMux.c[0] <== ballotVoteOptionRoot;
-    newBallotVoteOptionRootMux.c[1] <== updatedBallotVoteOptionRoot;
-    newBallotVoteOptionRoot <== newBallotVoteOptionRootMux.out;
-
     isValid <== messageValidator.isValid;
-
 }

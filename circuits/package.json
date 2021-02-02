@@ -61,7 +61,7 @@
     "devDependencies": {
         "@types/jest": "^24.0.25",
         "@types/node": "^13.1.2",
-        "circom-helper": "0.0.18",
+        "circom-helper": "0.0.21",
         "axios": "^0.21.0",
         "jest": "^24.9.0",
         "maci-config": "^1.0.0",

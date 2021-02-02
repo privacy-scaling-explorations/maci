@@ -294,17 +294,31 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable {
     }
 
     function hashMessage(Message memory _message) public pure returns (uint256) {
-        uint256[] memory n = new uint256[](8);
+        //uint256[] memory n = new uint256[](8);
+        //n[0] = _message.iv;
+        //n[1] = _message.data[0];
+        //n[2] = _message.data[1];
+        //n[3] = _message.data[2];
+        //n[4] = _message.data[3];
+        //n[5] = _message.data[4];
+        //n[6] = _message.data[5];
+        //n[7] = _message.data[6];
+
+        //return sha256Hash(n);
+        uint256[] memory n = new uint256[](5);
         n[0] = _message.iv;
         n[1] = _message.data[0];
         n[2] = _message.data[1];
         n[3] = _message.data[2];
         n[4] = _message.data[3];
-        n[5] = _message.data[4];
-        n[6] = _message.data[5];
-        n[7] = _message.data[6];
 
-        return sha256Hash(n);
+        uint256[] memory m = new uint256[](4);
+        m[0] = hash5(n);
+        m[1] = _message.data[4];
+        m[2] = _message.data[5];
+        m[3] = _message.data[6];
+
+        return hash4(m);
     }
 
     /*
@@ -387,13 +401,14 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher {
         Poll _poll
     ) public view returns (uint256) {
         (
-            uint256 maxUsers,
+            ,
             uint256 maxVoteOptions,
             // ignore the 3rd value
         ) = _poll.maxValues();
 
         (uint8 mbs, ) = _poll.batchSizes();
         uint256 messageBatchSize = uint256(mbs);
+        uint256 numSignUps = _poll.numSignUps();
 
         uint256 index = _poll.currentMessageBatchIndex();
         uint256 numMessages = _poll.numMessages();
@@ -404,7 +419,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher {
 
         uint256 result =
             maxVoteOptions +
-            (maxUsers << uint256(50)) +
+            (numSignUps << uint256(50)) +
             (index << uint256(100)) +
             (batchEndIndex << uint256(150));
 

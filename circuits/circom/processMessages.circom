@@ -4,32 +4,36 @@ include "./privToPubKey.circom";
 include "./stateLeafAndBallotTransformer.circom";
 include "./trees/incrementalQuinTree.circom";
 include "../node_modules/circomlib/circuits/mux1.circom";
-//include "../node_modules/circomlib/circuits/comparators.circom";
 
+/*
+ * Proves the correctness of processing a batch of messages.
+ */
 template ProcessMessages(
     stateTreeDepth,
     msgTreeDepth,
     msgBatchDepth,
     voteOptionTreeDepth
 ) {
-    assert(msgTreeDepth >= msgBatchDepth);
-
     // stateTreeDepth: the depth of the state tree
     // msgTreeDepth: the depth of the message tree
     // msgBatchDepth: the depth of the shortest tree that can fit all the
     //                  messages
     // voteOptionTreeDepth: depth of the vote option tree
 
-    var MSG_LENGTH = 8; // iv and data
+    assert(msgTreeDepth >= msgBatchDepth);
+
     var TREE_ARITY = 5;
     var batchSize = TREE_ARITY ** msgBatchDepth;
+
+    var MSG_LENGTH = 8; // iv and data
     var PACKED_CMD_LENGTH = 4;
 
+    var STATE_LEAF_LENGTH = 3;
     var BALLOT_LENGTH = 2;
+
     var BALLOT_NONCE_IDX = 0;
     var BALLOT_VO_ROOT_IDX = 1;
 
-    var STATE_LEAF_LENGTH = 3;
     var STATE_LEAF_PUB_X_IDX = 0;
     var STATE_LEAF_PUB_Y_IDX = 1;
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
@@ -44,8 +48,8 @@ template ProcessMessages(
     signal input inputHash;
     signal private input packedVals;
 
+    signal numSignUps;
     signal maxVoteOptions;
-    signal maxUsers;
 
     // The existing message root
     signal private input msgRoot;
@@ -53,8 +57,9 @@ template ProcessMessages(
     // The messages
     signal private input msgs[batchSize][MSG_LENGTH];
 
-    // The message Merkle proofs
+    // The message leaf Merkle proofs
     signal private input msgSubrootPathElements[msgTreeDepth - msgBatchDepth][TREE_ARITY - 1];
+
     // The index of the first message leaf in the batch, inclusive. Note that
     // messages are processed in reverse order, so this is not be the index of
     // the first message to process (unless there is only 1 message)
@@ -75,24 +80,36 @@ template ProcessMessages(
     // The ECDH public key per message
     signal private input encPubKeys[batchSize][2];
 
+    // The state root before it is processed
     signal private input currentStateRoot;
+
+    // The state leaves upon which messages are applied.
+    //     transform(currentStateLeaf[4], message5) => newStateLeaf4
+    //     transform(currentStateLeaf[3], message4) => newStateLeaf3
+    //     transform(currentStateLeaf[2], message3) => newStateLeaf2
+    //     transform(currentStateLeaf[1], message1) => newStateLeaf1
+    //     transform(currentStateLeaf[0], message0) => newStateLeaf0
+    //     ...
+    // Likewise, currentStateLeavesPathElements contains the Merkle path to
+    // each incremental new state root.
     signal private input currentStateLeaves[batchSize][STATE_LEAF_LENGTH];
     signal private input currentStateLeavesPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
 
+    // The ballots before any messages are processed
     signal private input currentBallotRoot;
+
+    // Intermediate ballots, like currentStateLeaves
     signal private input currentBallots[batchSize][BALLOT_LENGTH];
     signal private input currentBallotsPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
 
     signal private input currentVoteWeights[batchSize];
     signal private input currentVoteWeightsPathElements[batchSize][voteOptionTreeDepth][TREE_ARITY - 1];
 
-    signal private input newVoteOptionTreeRoots[batchSize];
-    signal private input newVoteWeightsPathElements[batchSize][voteOptionTreeDepth][TREE_ARITY - 1];
+    signal private input stateSalt;
+    signal private input ballotSalt;
 
-    signal private input zerothStateLeafHash;
-    signal private input zerothStateLeafPathElements[stateTreeDepth][TREE_ARITY - 1];
-    signal private input zerothBallotHash;
-    signal private input zerothBallotPathElements[stateTreeDepth][TREE_ARITY - 1];
+    signal output newStateCommitment;
+    signal output newBallotCommitment;
 
     var msgTreeZeroValue = 8370432830353022751713833565135785980866757267633941821328460903436894336785;
 
@@ -106,9 +123,10 @@ template ProcessMessages(
     inputHasher.currentBallotRoot <== currentBallotRoot;
 
     inputHasher.maxVoteOptions ==> maxVoteOptions;
-    inputHasher.maxUsers ==> maxUsers;
+    inputHasher.numSignUps ==> numSignUps;
     inputHasher.batchStartIndex ==> batchStartIndex;
     inputHasher.batchEndIndex ==> batchEndIndex;
+
     inputHasher.hash === inputHash;
 
     //  ----------------------------------------------------------------------- 
@@ -119,14 +137,23 @@ template ProcessMessages(
     maxVoValid.in[1] <== TREE_ARITY ** voteOptionTreeDepth;
     maxVoValid.out === 1;
 
-    component maxUsersValid = LessEqThan(32);
-    maxUsersValid.in[0] <== maxUsers;
-    maxUsersValid.in[1] <== TREE_ARITY ** stateTreeDepth;
-    maxUsersValid.out === 1;
+    component numSignUpsValid = LessEqThan(32);
+    numSignUpsValid.in[0] <== numSignUps;
+    numSignUpsValid.in[1] <== TREE_ARITY ** stateTreeDepth;
+    numSignUpsValid.out === 1;
+
+    // Hash each Message so we can check its existence in the Message tree
+    component messageHashers[batchSize];
+    for (var i = 0; i < batchSize; i ++) {
+        messageHashers[i] = MessageHasher();
+        for (var j = 0; j < MSG_LENGTH; j ++) {
+            messageHashers[i].in[j] <== msgs[i][j];
+        }
+    }
 
     //  ----------------------------------------------------------------------- 
-    //      1. Check whether each message exists in the message tree. Throw if
-    //         otherwise (aka create a constraint that prevents such a proof).
+    //  Check whether each message exists in the message tree. Throw if
+    //  otherwise (aka create a constraint that prevents such a proof).
 
     //  To save constraints, compute the subroot of the messages and check
     //  whether the subroot is a member of the message tree. This means that
@@ -135,16 +162,6 @@ template ProcessMessages(
 
     component msgBatchLeavesExists = QuinBatchLeavesExists(msgTreeDepth, msgBatchDepth);
     msgBatchLeavesExists.root <== msgRoot;
-
-    // Hash each Message so we can check its existence in the Message tree
-    // later
-    component messageHashers[batchSize];
-    for (var i = 0; i < batchSize; i ++) {
-        messageHashers[i] = MessageHasher();
-        for (var j = 0; j < MSG_LENGTH; j ++) {
-            messageHashers[i].in[j] <== msgs[i][j];
-        }
-    }
 
     // If batchEndIndex - batchStartIndex < batchSize, the remaining
     // message hashes should be the zero value.
@@ -186,7 +203,7 @@ template ProcessMessages(
     }
 
     //  ----------------------------------------------------------------------- 
-    //     2. Decrypt each Message to a Command
+    //  Decrypt each Message to a Command
 
     // MessageToCommand derives the ECDH shared key from the coordinator's
     // private key and the message's ephemeral public key. Next, it uses this
@@ -212,204 +229,273 @@ template ProcessMessages(
         }
     }
 
-    //  ----------------------------------------------------------------------- 
-    //    3. Check that each state leaf is in the current state tree
-    // Hash each original state leaf
-    component currentStateLeafHashers[batchSize];
-    for (var i = 0; i < batchSize; i++) {
-        currentStateLeafHashers[i] = Hasher3();
-        for (var j = 0; j < STATE_LEAF_LENGTH; j++) {
-            currentStateLeafHashers[i].in[j] <== currentStateLeaves[i][j];
-        }
-    }
+    signal stateRoots[batchSize + 1];
+    signal ballotRoots[batchSize + 1];
 
-    // TODO: what if the command's stateIndex field is invalid??
-
-    component currentStateLeavesPathIndices[batchSize];
-    for (var i = 0; i < batchSize; i ++) {
-        currentStateLeavesPathIndices[i] = QuinGeneratePathIndices(stateTreeDepth);
-        currentStateLeavesPathIndices[i].in <== commands[i].stateIndex;
-    }
-
-    // For each Command (a decrypted Message), prove knowledge of the state
-    // leaf and its membership in the current state root.
-    component currentStateLeavesQle[batchSize];
-    for (var i = 0; i < batchSize; i ++) {
-        currentStateLeavesQle[i] = QuinLeafExists(stateTreeDepth);
-        currentStateLeavesQle[i].root <== currentStateRoot;
-        currentStateLeavesQle[i].leaf <== currentStateLeafHashers[i].hash;
-        for (var j = 0; j < stateTreeDepth; j ++) {
-            currentStateLeavesQle[i].path_index[j] <== currentStateLeavesPathIndices[i].out[j];
-            for (var k = 0; k < TREE_ARITY - 1; k++) {
-                currentStateLeavesQle[i].path_elements[j][k] <== currentStateLeavesPathElements[i][j][k];
-            }
-        }
-    }
+    stateRoots[batchSize] <== currentStateRoot;
+    ballotRoots[batchSize] <== currentBallotRoot;
 
     //  ----------------------------------------------------------------------- 
-    //    4. Check whether each ballot exists in the original ballot tree
-    component currentBallotsHashers[batchSize];
-    component currentBallotsQle[batchSize];
-    for (var i = 0; i < batchSize; i ++) {
-        currentBallotsHashers[i] = HashLeftRight();
-        currentBallotsHashers[i].left <== currentBallots[i][BALLOT_NONCE_IDX];
-        currentBallotsHashers[i].right <== currentBallots[i][BALLOT_VO_ROOT_IDX];
-
-        currentBallotsQle[i] = QuinLeafExists(stateTreeDepth);
-        currentBallotsQle[i].root <== currentBallotRoot;
-        currentBallotsQle[i].leaf <== currentBallotsHashers[i].hash;
-        for (var j = 0; j < stateTreeDepth; j ++) {
-            currentBallotsQle[i].path_index[j] <== currentStateLeavesPathIndices[i].out[j];
-            for (var k = 0; k < TREE_ARITY - 1; k++) {
-                currentBallotsQle[i].path_elements[j][k] <== currentBallotsPathElements[i][j][k];
-            }
-        }
-    }
-
-    //  ----------------------------------------------------------------------- 
-    //    5. Check whether the existing vote weight value is a member of each
-    //    corresponding Ballot's vote option tree.
-    component currentVoteWeightsQle[batchSize];
-    component currentVoteWeightsPathIndices[batchSize];
-    for (var i = 0; i < batchSize; i ++) {
-
-        currentVoteWeightsPathIndices[i] = QuinGeneratePathIndices(voteOptionTreeDepth);
-        currentVoteWeightsPathIndices[i].in <== commands[i].voteOptionIndex;
-
-        currentVoteWeightsQle[i] = QuinLeafExists(voteOptionTreeDepth);
-        currentVoteWeightsQle[i].root <== currentBallots[i][BALLOT_VO_ROOT_IDX];
-        currentVoteWeightsQle[i].leaf <== currentVoteWeights[i];
-        for (var j = 0; j < voteOptionTreeDepth; j ++) {
-            currentVoteWeightsQle[i].path_index[j] <== currentVoteWeightsPathIndices[i].out[j];
-            for (var k = 0; k < TREE_ARITY - 1; k++) {
-                currentVoteWeightsQle[i].path_elements[j][k] <== currentVoteWeightsPathElements[i][j][k];
-            }
-        }
-    }
-
-    //  ----------------------------------------------------------------------- 
-    //    6. Check whether the new vote weight value is a member of the new
-    //    vote option tree.
-    component newVoteWeightsQle[batchSize];
-    for (var i = 0; i < batchSize; i ++) {
-        newVoteWeightsQle[i] = QuinLeafExists(voteOptionTreeDepth);
-        newVoteWeightsQle[i].root <== newVoteOptionTreeRoots[i];
-        newVoteWeightsQle[i].leaf <== commands[i].newVoteWeight;
-        for (var j = 0; j < voteOptionTreeDepth; j ++) {
-            newVoteWeightsQle[i].path_index[j] <== currentVoteWeightsPathIndices[i].out[j];
-            for (var k = 0; k < TREE_ARITY - 1; k++) {
-                newVoteWeightsQle[i].path_elements[j][k] <== newVoteWeightsPathElements[i][j][k];
-            }
-        }
-    }
-
-    //  ----------------------------------------------------------------------- 
-    //     7. Transform state leaves. For each command[i], stateLeaf[i], and
-    //     ballot[i]:
-    //       - Prove knowledge of a state leaf at command[i].stateIndex
-    //       - Generate a new leaf and hash it
-    //       - Generate the next intermediate state root
-    component transformers[batchSize];
+    //  Process messages in reverse order
+    component processors[batchSize];
     for (var i = batchSize - 1; i >= 0; i --) {
-        transformers[i] = StateLeafAndBallotTransformer();
-        transformers[i].maxUsers <== maxUsers;
-        transformers[i].maxVoteOptions <== maxVoteOptions;
-        transformers[i].slPubKey[STATE_LEAF_PUB_X_IDX] <== currentStateLeaves[i][STATE_LEAF_PUB_X_IDX];
-        transformers[i].slPubKey[STATE_LEAF_PUB_Y_IDX] <== currentStateLeaves[i][STATE_LEAF_PUB_Y_IDX];
-        transformers[i].slVoiceCreditBalance <== currentStateLeaves[i][STATE_LEAF_VOICE_CREDIT_BALANCE_IDX];
-        transformers[i].ballotNonce <== currentBallots[i][BALLOT_NONCE_IDX];
-        transformers[i].ballotVoteOptionRoot <== currentBallots[i][BALLOT_VO_ROOT_IDX];
-        transformers[i].ballotCurrentVotesForOption <== currentVoteWeights[i];
-        transformers[i].cmdStateIndex <== commands[i].stateIndex;
-        transformers[i].cmdNewPubKey[0] <== commands[i].newPubKey[0];
-        transformers[i].cmdNewPubKey[1] <== commands[i].newPubKey[1];
-        transformers[i].cmdVoteOptionIndex <== commands[i].voteOptionIndex;
-        transformers[i].cmdNewVoteWeight <== commands[i].newVoteWeight;
-        transformers[i].cmdNonce <== commands[i].nonce;
-        transformers[i].cmdPollId <== commands[i].pollId;
-        transformers[i].cmdSalt <== commands[i].salt;
-        transformers[i].cmdSigR8[0] <== commands[i].sigR8[0];
-        transformers[i].cmdSigR8[1] <== commands[i].sigR8[1];
-        transformers[i].cmdSigS <== commands[i].sigS;
-        transformers[i].updatedBallotVoteOptionRoot <== newVoteOptionTreeRoots[i];
-        for (var j = 0; j < PACKED_CMD_LENGTH; j ++) {
-            transformers[i].packedCommand[j] <== commands[i].packedCommandOut[j];
+        processors[i] = ProcessOne(stateTreeDepth, voteOptionTreeDepth);
+
+        processors[i].numSignUps <== numSignUps;
+        processors[i].maxVoteOptions <== maxVoteOptions;
+
+        processors[i].currentStateRoot <== stateRoots[i + 1];
+        processors[i].currentBallotRoot <== ballotRoots[i + 1];
+
+        for (var j = 0; j < STATE_LEAF_LENGTH; j ++) {
+            processors[i].stateLeaf[j] <== currentStateLeaves[i][j];
         }
-    }
 
-    component newStateLeavesHashers[batchSize];
-    component newStateLeavesQip[batchSize];
-
-    component newBallotsHashers[batchSize];
-    component newBallotsQip[batchSize];
-
-    signal newStateRoots[batchSize];
-    signal newBallotsRoots[batchSize];
-
-    for (var i = 0; i < batchSize; i ++) {
-        // Hash each new state leaf and ballot
-        newStateLeavesHashers[i] = Hasher3();
-        newStateLeavesHashers[i].in[STATE_LEAF_PUB_X_IDX] <== transformers[i].newSlPubKey[STATE_LEAF_PUB_X_IDX];
-        newStateLeavesHashers[i].in[STATE_LEAF_PUB_Y_IDX] <== transformers[i].newSlPubKey[STATE_LEAF_PUB_Y_IDX];
-        newStateLeavesHashers[i].in[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] <== transformers[i].newSlVoiceCreditBalance;
-
-        newBallotsHashers[i] = HashLeftRight();
-        newBallotsHashers[i].left <== transformers[i].newBallotNonce;
-        newBallotsHashers[i].right <== transformers[i].newBallotVoteOptionRoot;
-
-        newStateLeavesQip[i] = QuinTreeInclusionProof(stateTreeDepth);
-        newBallotsQip[i] = QuinTreeInclusionProof(stateTreeDepth);
-
-        newStateLeavesQip[i].leaf <== newStateLeavesHashers[i].hash;
-        newBallotsQip[i].leaf <== newBallotsHashers[i].hash;
+        for (var j = 0; j < BALLOT_LENGTH; j ++) {
+            processors[i].ballot[j] <== currentBallots[i][j];
+        }
 
         for (var j = 0; j < stateTreeDepth; j ++) {
-            newStateLeavesQip[i].path_index[j] <== currentStateLeavesPathIndices[i].out[j];
-            newBallotsQip[i].path_index[j] <== currentStateLeavesPathIndices[i].out[j];
             for (var k = 0; k < TREE_ARITY - 1; k ++) {
-                newStateLeavesQip[i].path_elements[j][k] <== currentStateLeavesPathElements[i][j][k];
-                newBallotsQip[i].path_elements[j][k] <== currentBallotsPathElements[i][j][k];
+
+                processors[i].stateLeafPathElements[j][k] 
+                    <== currentStateLeavesPathElements[i][j][k];
+
+                processors[i].ballotPathElements[j][k]
+                    <== currentBallotsPathElements[i][j][k];
             }
         }
-        newStateRoots[i] <== newStateLeavesQip[i].root;
-        newBallotsRoots[i] <== newBallotsQip[i].root;
-    }
 
-    //  ----------------------------------------------------------------------- 
-    // 8. Generate the final state tree root with the zeroth leaf set to a
-    // random value
+        processors[i].currentVoteWeight <== currentVoteWeights[i];
 
-    component zerothSlQip = QuinTreeInclusionProof(stateTreeDepth);
-    zerothSlQip.leaf <== zerothStateLeafHash;
-    for (var i = 0; i < stateTreeDepth; i ++) {
-        zerothSlQip.path_index[i] <== 0;
-        for (var j = 0; j < TREE_ARITY - 1; j++) {
-            zerothSlQip.path_elements[i][j] <== zerothStateLeafPathElements[i][j];
+        for (var j = 0; j < voteOptionTreeDepth; j ++) {
+            for (var k = 0; k < TREE_ARITY - 1; k ++) {
+                processors[i].currentVoteWeightsPathElements[j][k]
+                    <== currentVoteWeightsPathElements[i][j][k];
+            }
         }
+
+        processors[i].cmdStateIndex <== commands[i].stateIndex;
+        processors[i].cmdNewPubKey[0] <== commands[i].newPubKey[0];
+        processors[i].cmdNewPubKey[1] <== commands[i].newPubKey[1];
+        processors[i].cmdVoteOptionIndex <== commands[i].voteOptionIndex;
+        processors[i].cmdNewVoteWeight <== commands[i].newVoteWeight;
+        processors[i].cmdNonce <== commands[i].nonce;
+        processors[i].cmdPollId <== commands[i].pollId;
+        processors[i].cmdSalt <== commands[i].salt;
+        processors[i].cmdSigR8[0] <== commands[i].sigR8[0];
+        processors[i].cmdSigR8[1] <== commands[i].sigR8[1];
+        processors[i].cmdSigS <== commands[i].sigS;
+        for (var j = 0; j < PACKED_CMD_LENGTH; j ++) {
+            processors[i].packedCmd[j] <== commands[i].packedCommandOut[j];
+        }
+
+        stateRoots[i] <== processors[i].newStateRoot;
+        ballotRoots[i] <== processors[i].newBallotRoot;
     }
+    /*signal output debug[batchSize];*/
+    /*for (var i = 0; i < batchSize; i ++) {*/
+        /*debug[i] <== processors[i].debug;*/
+    /*}*/
+
+    component scHasher = HashLeftRight();
+    scHasher.left <== stateRoots[0];
+    scHasher.right <== stateSalt;
+    newStateCommitment <== scHasher.hash;
+
+    component bcHasher = HashLeftRight();
+    bcHasher.left <== ballotRoots[0];
+    bcHasher.right <== ballotSalt;
+    newBallotCommitment <== bcHasher.hash;
+}
+
+template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
+    /*
+        transform(currentStateLeaves0, cmd0) -> newStateLeaves0, isValid0
+        genIndices(isValid0, cmd0) -> pathIndices0
+        verify(currentStateRoot, pathElements0, pathIndices0, currentStateLeaves0)
+        qip(newStateLeaves0, pathElements0) -> newStateRoot0
+    */
+    var STATE_LEAF_LENGTH = 3;
+    var BALLOT_LENGTH = 2;
+    var MSG_LENGTH = 8; // iv and data
+    var PACKED_CMD_LENGTH = 4;
+    var TREE_ARITY = 5;
+
+    var BALLOT_NONCE_IDX = 0;
+    var BALLOT_VO_ROOT_IDX = 1;
+
+    var STATE_LEAF_PUB_X_IDX = 0;
+    var STATE_LEAF_PUB_Y_IDX = 1;
+    var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
+
+    signal input numSignUps;
+    signal input maxVoteOptions;
+
+    signal input currentStateRoot;
+    signal input currentBallotRoot;
+
+    signal input stateLeaf[STATE_LEAF_LENGTH];
+    signal input stateLeafPathElements[stateTreeDepth][TREE_ARITY - 1];
+
+    signal input ballot[BALLOT_LENGTH];
+    signal input ballotPathElements[stateTreeDepth][TREE_ARITY - 1];
+
+    signal input currentVoteWeight;
+    signal input currentVoteWeightsPathElements[voteOptionTreeDepth][TREE_ARITY - 1];
+
+    signal input cmdStateIndex;
+    signal input cmdNewPubKey[2];
+    signal input cmdVoteOptionIndex;
+    signal input cmdNewVoteWeight;
+    signal input cmdNonce;
+    signal input cmdPollId;
+    signal input cmdSalt;
+    signal input cmdSigR8[2];
+    signal input cmdSigS;
+    signal input packedCmd[PACKED_CMD_LENGTH];
+
     signal output newStateRoot;
-    newStateRoot <== zerothSlQip.root;
+    signal output newBallotRoot;
 
     //  ----------------------------------------------------------------------- 
-    // 9. Generate the final ballot tree root with the zeroth leaf set to a
-    // random value
+    // 1. Transform a state leaf and a ballot with a command.
+    // The result is a new state leaf, a new ballot, and an isValid signal (0
+    // or 1)
+    component transformer = StateLeafAndBallotTransformer();
+    transformer.numSignUps                     <== numSignUps;
+    transformer.maxVoteOptions                 <== maxVoteOptions;
+    transformer.slPubKey[STATE_LEAF_PUB_X_IDX] <== stateLeaf[STATE_LEAF_PUB_X_IDX];
+    transformer.slPubKey[STATE_LEAF_PUB_Y_IDX] <== stateLeaf[STATE_LEAF_PUB_Y_IDX];
+    transformer.slVoiceCreditBalance           <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX];
+    transformer.ballotNonce                    <== ballot[BALLOT_NONCE_IDX];
+    transformer.ballotCurrentVotesForOption    <== currentVoteWeight;
+    transformer.cmdStateIndex                  <== cmdStateIndex;
+    transformer.cmdNewPubKey[0]                <== cmdNewPubKey[0];
+    transformer.cmdNewPubKey[1]                <== cmdNewPubKey[1];
+    transformer.cmdVoteOptionIndex             <== cmdVoteOptionIndex;
+    transformer.cmdNewVoteWeight               <== cmdNewVoteWeight;
+    transformer.cmdNonce                       <== cmdNonce;
+    transformer.cmdPollId                      <== cmdPollId;
+    transformer.cmdSalt                        <== cmdSalt;
+    transformer.cmdSigR8[0]                    <== cmdSigR8[0];
+    transformer.cmdSigR8[1]                    <== cmdSigR8[1];
+    transformer.cmdSigS                        <== cmdSigS;
+    for (var i = 0; i < PACKED_CMD_LENGTH; i ++) {
+        transformer.packedCommand[i]           <== packedCmd[i];
+    }
 
-    component zerothBallotQip = QuinTreeInclusionProof(stateTreeDepth);
-    zerothBallotQip.leaf <== zerothBallotHash;
+    //  ----------------------------------------------------------------------- 
+    // 2. If isValid is 0, generate indices for leaf 0
+    //    Otherwise, generate indices for commmand.stateIndex
+    component isValidMux = Mux1();
+    isValidMux.s <== transformer.isValid;
+    isValidMux.c[0] <== 0;
+    isValidMux.c[1] <== cmdStateIndex;
+
+    component stateLeafPathIndices = QuinGeneratePathIndices(stateTreeDepth);
+    stateLeafPathIndices.in <== isValidMux.out;
+
+    //  ----------------------------------------------------------------------- 
+    // 3. Verify that the original state leaf exists in the given state root
+    component stateLeafQle = QuinLeafExists(stateTreeDepth);
+    component stateLeafHasher = Hasher3();
+    for (var i = 0; i < STATE_LEAF_LENGTH; i++) {
+        stateLeafHasher.in[i] <== stateLeaf[i];
+    }
+    stateLeafQle.leaf <== stateLeafHasher.hash;
+    stateLeafQle.root <== currentStateRoot;
     for (var i = 0; i < stateTreeDepth; i ++) {
-        zerothBallotQip.path_index[i] <== 0;
+        stateLeafQle.path_index[i] <== stateLeafPathIndices.out[i];
         for (var j = 0; j < TREE_ARITY - 1; j++) {
-            zerothBallotQip.path_elements[i][j] <== zerothBallotPathElements[i][j];
+            stateLeafQle.path_elements[i][j] <== stateLeafPathElements[i][j];
         }
     }
-    signal output newBallotRoot;
-    newBallotRoot <== zerothBallotQip.root;
+
+    //  ----------------------------------------------------------------------- 
+    // 4. Verify that the original ballot exists in the given ballot root
+    component ballotHasher = HashLeftRight();
+    ballotHasher.left <== ballot[BALLOT_NONCE_IDX];
+    ballotHasher.right <== ballot[BALLOT_VO_ROOT_IDX];
+
+    component ballotQle = QuinLeafExists(stateTreeDepth);
+    ballotQle.leaf <== ballotHasher.hash;
+    ballotQle.root <== currentBallotRoot;
+    for (var i = 0; i < stateTreeDepth; i ++) {
+        ballotQle.path_index[i] <== stateLeafPathIndices.out[i];
+        for (var j = 0; j < TREE_ARITY - 1; j++) {
+            ballotQle.path_elements[i][j] <== ballotPathElements[i][j];
+        }
+    }
+
+    //  ----------------------------------------------------------------------- 
+    // 5. Verify that currentVoteWeight exists in the ballot's vote option root
+    // at cmdVoteOptionIndex
+    component currentVoteWeightPathIndices = QuinGeneratePathIndices(voteOptionTreeDepth);
+    currentVoteWeightPathIndices.in <== cmdVoteOptionIndex;
+
+    component currentVoteWeightQle = QuinLeafExists(voteOptionTreeDepth);
+    currentVoteWeightQle.leaf <== currentVoteWeight;
+    currentVoteWeightQle.root <== ballot[BALLOT_VO_ROOT_IDX];
+    for (var i = 0; i < voteOptionTreeDepth; i ++) {
+        currentVoteWeightQle.path_index[i] <== currentVoteWeightPathIndices.out[i];
+        for (var j = 0; j < TREE_ARITY - 1; j++) {
+            currentVoteWeightQle.path_elements[i][j] <== currentVoteWeightsPathElements[i][j];
+        }
+    }
+
+    /*signal output debug;*/
+    /*debug <== transformer.isValid;*/
+
+    //  ----------------------------------------------------------------------- 
+    // 5.1. Update the ballot's vote option root with the new vote weight
+    component newVoteOptionTreeQip = QuinTreeInclusionProof(voteOptionTreeDepth);
+    newVoteOptionTreeQip.leaf <== cmdNewVoteWeight;
+    for (var i = 0; i < voteOptionTreeDepth; i ++) {
+        newVoteOptionTreeQip.path_index[i] <== currentVoteWeightPathIndices.out[i];
+        for (var j = 0; j < TREE_ARITY - 1; j++) {
+            newVoteOptionTreeQip.path_elements[i][j] <== currentVoteWeightsPathElements[i][j];
+        }
+    }
+
+    //  ----------------------------------------------------------------------- 
+    // 6. Generate a new state root
+    component newStateLeafHasher = Hasher3();
+    newStateLeafHasher.in[STATE_LEAF_PUB_X_IDX] <== transformer.newSlPubKey[STATE_LEAF_PUB_X_IDX];
+    newStateLeafHasher.in[STATE_LEAF_PUB_Y_IDX] <== transformer.newSlPubKey[STATE_LEAF_PUB_Y_IDX];
+    newStateLeafHasher.in[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] <== transformer.newSlVoiceCreditBalance;
+
+    component newStateLeafQip = QuinTreeInclusionProof(stateTreeDepth);
+    newStateLeafQip.leaf <== newStateLeafHasher.hash;
+    for (var i = 0; i < stateTreeDepth; i ++) {
+        newStateLeafQip.path_index[i] <== stateLeafPathIndices.out[i];
+        for (var j = 0; j < TREE_ARITY - 1; j++) {
+            newStateLeafQip.path_elements[i][j] <== stateLeafPathElements[i][j];
+        }
+    }
+    newStateRoot <== newStateLeafQip.root;
+
+    //  ----------------------------------------------------------------------- 
+    // 7. Generate a new ballot root
+    component newBallotHasher = HashLeftRight();
+    newBallotHasher.left <== transformer.newBallotNonce;
+    newBallotHasher.right <== newVoteOptionTreeQip.root;
+
+    component newBallotQip = QuinTreeInclusionProof(stateTreeDepth);
+    newBallotQip.leaf <== newBallotHasher.hash;
+    for (var i = 0; i < stateTreeDepth; i ++) {
+        newBallotQip.path_index[i] <== stateLeafPathIndices.out[i];
+        for (var j = 0; j < TREE_ARITY - 1; j++) {
+            newBallotQip.path_elements[i][j] <== ballotPathElements[i][j];
+        }
+    }
+    newBallotRoot <== newBallotQip.root;
 }
 
 template ProcessMessagesInputHasher() {
     // Combine the following into 1 input element:
     // - maxVoteOptions (50 bits)
-    // - maxUsers (50 bits)
+    // - numSignUps (50 bits)
     // - batchStartIndex (50 bits)
     // - batchEndIndex (50 bits)
 
@@ -430,7 +516,7 @@ template ProcessMessagesInputHasher() {
     signal input currentBallotRoot;
 
     signal output maxVoteOptions;
-    signal output maxUsers;
+    signal output numSignUps;
     signal output batchStartIndex;
     signal output batchEndIndex;
     signal output hash;
@@ -440,7 +526,7 @@ template ProcessMessagesInputHasher() {
     unpack.in <== packedVals;
 
     maxVoteOptions <== unpack.out[3];
-    maxUsers <== unpack.out[2];
+    numSignUps <== unpack.out[2];
     batchStartIndex <== unpack.out[1];
     batchEndIndex <== unpack.out[0];
 
