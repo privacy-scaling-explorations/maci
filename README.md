@@ -21,6 +21,7 @@ Clone this repository, install NodeJS dependencies, and build the source code:
 
 ```bash
 git clone git@github.com:appliedzkp/maci.git && \
+cd maci && \
 npm i && \
 npm run bootstrap && \
 npm run build
