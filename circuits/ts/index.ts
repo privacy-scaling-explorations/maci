@@ -12,6 +12,9 @@ import {
 
 import { config } from 'maci-config'
 const zkutilPath = config.zkutil_bin
+const snarkParamsPath = path.isAbsolute(config.snarkParamsPath)
+    ? config.snarkParamsPath
+    : path.resolve(config.snarkParamsPath)
 
 /*
  * @param circuitPath The subpath to the circuit file (e.g.
@@ -59,7 +62,7 @@ const getSignalByNameViaSym = (
     witness: any,
     signal: string,
 ) => {
-    const symPath = path.join(__dirname, '../build/', `${circuitName}.sym`)
+    const symPath = path.join(snarkParamsPath, `${circuitName}.sym`)
     const liner = new lineByLine(symPath)
     let line
     let index
@@ -156,14 +159,14 @@ const genProofAndPublicSignals = async (
     compileCircuit = true,
 ) => {
     const date = Date.now()
-    const paramsPath = path.join(__dirname, '../build/', paramsFilename)
-    const circuitR1csPath = path.join(__dirname, '../build/', circuitR1csFilename)
-    const circuitWasmPath = path.join(__dirname, '../build/', circuitWasmFilename)
-    const inputJsonPath = path.join(__dirname, '../build/' + date + '.input.json')
-    const witnessPath = path.join(__dirname, '../build/' + date + '.witness.wtns')
-    const witnessJsonPath = path.join(__dirname, '../build/' + date + '.witness.json')
-    const proofPath = path.join(__dirname, '../build/' + date + '.proof.json')
-    const publicJsonPath = path.join(__dirname, '../build/' + date + '.publicSignals.json')
+    const paramsPath = path.join(snarkParamsPath, paramsFilename)
+    const circuitR1csPath = path.join(snarkParamsPath, circuitR1csFilename)
+    const circuitWasmPath = path.join(snarkParamsPath, circuitWasmFilename)
+    const inputJsonPath = path.join(snarkParamsPath, date + '.input.json')
+    const witnessPath = path.join(snarkParamsPath, date + '.witness.wtns')
+    const witnessJsonPath = path.join(snarkParamsPath, date + '.witness.json')
+    const proofPath = path.join(snarkParamsPath, date + '.proof.json')
+    const publicJsonPath = path.join(snarkParamsPath, date + '.publicSignals.json')
 
     fs.writeFileSync(inputJsonPath, JSON.stringify(stringifyBigInts(inputs)))
 
@@ -210,9 +213,9 @@ const verifyProof = async (
     proofFilename: string,
     publicSignalsFilename: string,
 ): Promise<boolean> => {
-    const paramsPath = path.join(__dirname, '../build/', paramsFilename)
-    const proofPath = path.join(__dirname, '../build/', proofFilename)
-    const publicSignalsPath = path.join(__dirname, '../build/', publicSignalsFilename)
+    const paramsPath = path.join(snarkParamsPath, paramsFilename)
+    const proofPath = path.join(snarkParamsPath, proofFilename)
+    const publicSignalsPath = path.join(snarkParamsPath, publicSignalsFilename)
 
     const verifyCmd = `${zkutilPath} verify -p ${paramsPath} -r ${proofPath} -i ${publicSignalsPath}`
     const output = shell.exec(verifyCmd).stdout.trim()
@@ -244,14 +247,14 @@ const verifyBatchUstProof = (
     }
 
     fs.writeFileSync(
-        path.join(__dirname, '../build/', proofFilename),
+        path.join(snarkParamsPath, proofFilename),
         JSON.stringify(
             stringifyBigInts(proof)
         )
     )
 
     fs.writeFileSync(
-        path.join(__dirname, '../build/', publicSignalsFilename),
+        path.join(snarkParamsPath, publicSignalsFilename),
         JSON.stringify(
             stringifyBigInts(publicSignals)
         )
@@ -282,14 +285,14 @@ const verifyQvtProof = (
 
     // TODO: refactor
     fs.writeFileSync(
-        path.join(__dirname, '../build/', proofFilename),
+        path.join(snarkParamsPath, proofFilename),
         JSON.stringify(
             stringifyBigInts(proof)
         )
     )
 
     fs.writeFileSync(
-        path.join(__dirname, '../build/', publicSignalsFilename),
+        path.join(snarkParamsPath, publicSignalsFilename),
         JSON.stringify(
             stringifyBigInts(publicSignals)
         )

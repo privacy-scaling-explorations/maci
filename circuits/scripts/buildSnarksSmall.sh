@@ -4,16 +4,16 @@ set -e
 
 cd "$(dirname "$0")"
 cd ..
-mkdir -p build
+mkdir -p params
 
 echo "Building batchUpdateStateTree_small"
-NODE_OPTIONS=--max-old-space-size=16384 node --stack-size=16384 build/buildSnarks.js -i circom/prod/batchUpdateStateTree_small.circom -j build/batchUstSmall.r1cs -w build/batchUstSmall.wasm -y build/batchUstSmall.sym -p build/batchUstPkSmall.json -v build/batchUstVkSmall.json -s build/BatchUpdateStateTreeVerifierSmall.sol -vs BatchUpdateStateTreeVerifierSmall -pr build/batchUstSmall.params
+NODE_OPTIONS=--max-old-space-size=16384 node --stack-size=16384 build/buildSnarks.js -i circom/prod/batchUpdateStateTree_small.circom -j params/batchUstSmall.r1cs -w params/batchUstSmall.wasm -y params/batchUstSmall.sym -p params/batchUstPkSmall.json -v params/batchUstVkSmall.json -s params/BatchUpdateStateTreeVerifierSmall.sol -vs BatchUpdateStateTreeVerifierSmall -pr params/batchUstSmall.params
 
 echo "Building quadVoteTally_small"
-NODE_OPTIONS=--max-old-space-size=16384 node --stack-size=16384 build/buildSnarks.js -i circom/prod/quadVoteTally_small.circom -j build/qvtCircuitSmall.r1cs -w build/qvtSmall.wasm -y build/qvtSmall.sym -p build/qvtPkSmall.bin -v build/qvtVkSmall.json -s build/QuadVoteTallyVerifierSmall.sol -vs QuadVoteTallyVerifierSmall -pr build/qvtSmall.params
+NODE_OPTIONS=--max-old-space-size=16384 node --stack-size=16384 build/buildSnarks.js -i circom/prod/quadVoteTally_small.circom -j params/qvtCircuitSmall.r1cs -w params/qvtSmall.wasm -y params/qvtSmall.sym -p params/qvtPkSmall.bin -v params/qvtVkSmall.json -s params/QuadVoteTallyVerifierSmall.sol -vs QuadVoteTallyVerifierSmall -pr params/qvtSmall.params
 
 echo 'Copying BatchUpdateStateTreeVerifier.sol to contracts/sol.'
-cp ./build/BatchUpdateStateTreeVerifierSmall.sol ../contracts/sol/
+cp ./params/BatchUpdateStateTreeVerifierSmall.sol ../contracts/sol/
 
 echo 'Copying QuadVoteTallyVerifier.sol to contracts/sol.'
-cp ./build/QuadVoteTallyVerifierSmall.sol ../contracts/sol/
+cp ./params/QuadVoteTallyVerifierSmall.sol ../contracts/sol/
