@@ -80,16 +80,16 @@ jobs:
       - save_cache:
           key: v1.3-built-snarks
           paths:
-            - circuits/build/pot19_final.ptau
-            - circuits/build/BatchUpdateStateTreeVerifier.sol
-            - circuits/build/batchUstCircuit.r1cs
-            - circuits/build/batchUst.wasm
-            - circuits/build/batchUst.zkey
-            - circuits/build/batchUstVk.json
-            - circuits/build/QuadVoteTallyVerifier.sol
-            - circuits/build/qvtCircuit.r1cs
-            - circuits/build/qvt.wasm
-            - circuits/build/qvtVk.json
+            - circuits/params/pot19_final.ptau
+            - circuits/params/BatchUpdateStateTreeVerifier.sol
+            - circuits/params/batchUstCircuit.r1cs
+            - circuits/params/batchUst.wasm
+            - circuits/params/batchUst.zkey
+            - circuits/params/batchUstVk.json
+            - circuits/params/QuadVoteTallyVerifier.sol
+            - circuits/params/qvtCircuit.r1cs
+            - circuits/params/qvt.wasm
+            - circuits/params/qvtVk.json
 
       - run:
           name: Lint
@@ -120,4 +120,4 @@ jobs:
           command: cd integrationTests && ./scripts/runTestsInCircleCi.sh
 
       - store_artifacts:
-          path: circuits/build
+          path: circuits/params

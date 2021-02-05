@@ -4,9 +4,9 @@ set -e
 
 cd "$(dirname "$0")"
 cd ..
-mkdir -p build
+mkdir -p params
 
-NODE_OPTIONS=--max-old-space-size=8192 node build/buildSnarks.js -i circom/test/batchUpdateStateTree_test.circom -j build/batchUstCircuit.r1cs -w build/batchUst.wasm -y build/batchUst.sym -p build/batchUstPk.json -v build/batchUstVk.json -s build/BatchUpdateStateTreeVerifier.sol -vs BatchUpdateStateTreeVerifier -pr build/batchUst.params
+NODE_OPTIONS=--max-old-space-size=8192 node build/buildSnarks.js -i circom/test/batchUpdateStateTree_test.circom -j params/batchUstCircuit.r1cs -w params/batchUst.wasm -y params/batchUst.sym -p params/batchUstPk.json -v params/batchUstVk.json -s params/BatchUpdateStateTreeVerifier.sol -vs BatchUpdateStateTreeVerifier -pr params/batchUst.params
 
 echo 'Copying BatchUpdateStateTreeVerifier.sol to contracts/sol.'
-cp ./build/BatchUpdateStateTreeVerifier.sol ../contracts/sol/
+cp ./params/BatchUpdateStateTreeVerifier.sol ../contracts/sol/

@@ -9,6 +9,7 @@ deployedAddresses.json
 .etherlime-store
 **/build/
 circuits/build
+circuits/params
 contracts/compiled
 contracts/sol/BatchUpdateStateTreeVerifierSmall.sol
 contracts/sol/QuadVoteTallyVerifierSmall.sol
