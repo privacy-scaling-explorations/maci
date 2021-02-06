@@ -14,7 +14,7 @@ import { config } from 'maci-config'
 const zkutilPath = config.zkutil_bin
 const snarkParamsPath = path.isAbsolute(config.snarkParamsPath)
     ? config.snarkParamsPath
-    : path.resolve(config.snarkParamsPath)
+    : path.resolve(__dirname, config.snarkParamsPath)
 
 /*
  * @param circuitPath The subpath to the circuit file (e.g.

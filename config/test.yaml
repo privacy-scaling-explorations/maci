@@ -22,5 +22,5 @@ chain:
   ganache:
     port: 8545
 
-snarkParamsPath: '../circuits/params/'
+snarkParamsPath: '../params/'
 zkutil_bin: "~/.cargo/bin/zkutil"
