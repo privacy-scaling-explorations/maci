@@ -1,6 +1,6 @@
 {
     "name": "maci-config",
-    "version": "0.5.6",
+    "version": "0.5.7",
     "main": "build/index.js",
     "scripts": {
         "watch": "tsc --watch",
