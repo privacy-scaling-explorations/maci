@@ -123,6 +123,8 @@ if (require.main === module) {
 export {
     processMessages,
     tally,
+    verify,
+    processAndTallyWithoutProofs,
     calcBinaryTreeDepthFromMaxLeaves,
     calcQuinTreeDepthFromMaxLeaves,
 }
