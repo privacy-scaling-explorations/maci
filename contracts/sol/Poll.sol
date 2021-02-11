@@ -314,31 +314,31 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     }
 
     function hashMessage(Message memory _message) public pure returns (uint256) {
-        //uint256[] memory n = new uint256[](8);
-        //n[0] = _message.iv;
-        //n[1] = _message.data[0];
-        //n[2] = _message.data[1];
-        //n[3] = _message.data[2];
-        //n[4] = _message.data[3];
-        //n[5] = _message.data[4];
-        //n[6] = _message.data[5];
-        //n[7] = _message.data[6];
-
-        //return sha256Hash(n);
-        uint256[] memory n = new uint256[](5);
+        uint256[] memory n = new uint256[](8);
         n[0] = _message.iv;
         n[1] = _message.data[0];
         n[2] = _message.data[1];
         n[3] = _message.data[2];
         n[4] = _message.data[3];
+        n[5] = _message.data[4];
+        n[6] = _message.data[5];
+        n[7] = _message.data[6];
 
-        uint256[] memory m = new uint256[](4);
-        m[0] = hash5(n);
-        m[1] = _message.data[4];
-        m[2] = _message.data[5];
-        m[3] = _message.data[6];
+        return sha256Hash(n);
+        //uint256[] memory n = new uint256[](5);
+        //n[0] = _message.iv;
+        //n[1] = _message.data[0];
+        //n[2] = _message.data[1];
+        //n[3] = _message.data[2];
+        //n[4] = _message.data[3];
 
-        return hash4(m);
+        //uint256[] memory m = new uint256[](4);
+        //m[0] = hash5(n);
+        //m[1] = _message.data[4];
+        //m[2] = _message.data[5];
+        //m[3] = _message.data[6];
+
+        //return hash4(m);
     }
 
     /*
@@ -408,11 +408,6 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
 // TODO: to reduce the Poll contract size, make MessageProcessor and
 // VoteTallyer store data instead
 contract MessageProcessor is Ownable, SnarkCommon, Hasher {
-    struct Roots {
-        uint256 newStateRoot;
-        uint256 newBallotRoot;
-    }
-
     string constant ERROR_VOTING_PERIOD_NOT_PASSED = "MessageProcessorE01";
     string constant ERROR_NO_MORE_MESSAGES = "MessageProcessorE02";
     string constant ERROR_MESSAGE_AQ_NOT_MERGED = "MessageProcessorE03";
@@ -495,9 +490,10 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher {
     }
 
     /*
-     * Update the Poll's currentStateRoot if the proof is valid.
-     * @param _stateRootSnapshotTimestamp TODO
-     * @param _newStateRoot The new state root after all messages are processed
+     * Update the Poll's currentSbCommitment if the proof is valid.
+     * @param _poll The poll to update
+     * @param _newSbCommitment The new state root and ballot root commitment
+     *                         after all messages are processed
      * @param _proof The zk-SNARK proof
      */
     function processMessages(
