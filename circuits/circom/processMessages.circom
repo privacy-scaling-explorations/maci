@@ -38,7 +38,7 @@ template ProcessMessages(
     var STATE_LEAF_PUB_Y_IDX = 1;
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
     
-    // CONSIDER: sha256 hash any values from the contract, pass in the hash
+    // Note that we sha256 hash some values from the contract, pass in the hash
     // as a public input, and pass in said values as private inputs. This saves
     // a lot of gas for the verifier at the cost of constraints for the prover.
 
@@ -95,6 +95,10 @@ template ProcessMessages(
     signal private input currentStateLeaves[batchSize][STATE_LEAF_LENGTH];
     signal private input currentStateLeavesPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
 
+    // The commitment to the state root, ballot root, and a salt
+    signal private input currentSbCommitment;
+    signal private input currentSbSalt;
+
     // The ballots before any messages are processed
     signal private input currentBallotRoot;
 
@@ -105,13 +109,17 @@ template ProcessMessages(
     signal private input currentVoteWeights[batchSize];
     signal private input currentVoteWeightsPathElements[batchSize][voteOptionTreeDepth][TREE_ARITY - 1];
 
-    signal private input stateSalt;
-    signal private input ballotSalt;
-
-    signal output newStateCommitment;
-    signal output newBallotCommitment;
+    signal private input newSbCommitment;
+    signal private input newSbSalt;
 
     var msgTreeZeroValue = 8370432830353022751713833565135785980866757267633941821328460903436894336785;
+
+    // Verify currentSbCommitment
+    component currentSbCommitmentHasher = Hasher3(); 
+    currentSbCommitmentHasher.in[0] <== currentStateRoot;
+    currentSbCommitmentHasher.in[1] <== currentBallotRoot;
+    currentSbCommitmentHasher.in[2] <== currentSbSalt;
+    currentSbCommitmentHasher.hash === currentSbCommitment;
 
     // Verify "public" inputs and assign unpacked values
     component inputHasher = ProcessMessagesInputHasher();
@@ -119,8 +127,7 @@ template ProcessMessages(
     inputHasher.coordPubKey[0] <== coordPubKey[0];
     inputHasher.coordPubKey[1] <== coordPubKey[1];
     inputHasher.msgRoot <== msgRoot;
-    inputHasher.currentStateRoot <== currentStateRoot;
-    inputHasher.currentBallotRoot <== currentBallotRoot;
+    inputHasher.currentSbCommitment <== currentSbCommitment;
 
     inputHasher.maxVoteOptions ==> maxVoteOptions;
     inputHasher.numSignUps ==> numSignUps;
@@ -298,15 +305,12 @@ template ProcessMessages(
         /*debug[i] <== processors[i].debug;*/
     /*}*/
 
-    component scHasher = HashLeftRight();
-    scHasher.left <== stateRoots[0];
-    scHasher.right <== stateSalt;
-    newStateCommitment <== scHasher.hash;
+    component sbCommitmentHasher = Hasher3();
+    sbCommitmentHasher.in[0] <== stateRoots[0];
+    sbCommitmentHasher.in[1] <== ballotRoots[0];
+    sbCommitmentHasher.in[2] <== newSbSalt;
 
-    component bcHasher = HashLeftRight();
-    bcHasher.left <== ballotRoots[0];
-    bcHasher.right <== ballotSalt;
-    newBallotCommitment <== bcHasher.hash;
+    sbCommitmentHasher.hash === newSbCommitment;
 }
 
 template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
@@ -512,8 +516,7 @@ template ProcessMessagesInputHasher() {
     signal input packedVals;
     signal input coordPubKey[2];
     signal input msgRoot;
-    signal input currentStateRoot;
-    signal input currentBallotRoot;
+    signal input currentSbCommitment;
 
     signal output maxVoteOptions;
     signal output numSignUps;
@@ -535,13 +538,12 @@ template ProcessMessagesInputHasher() {
     pubKeyHasher.left <== coordPubKey[0];
     pubKeyHasher.right <== coordPubKey[1];
 
-    // 3. Hash the 5 inputs with SHA256
-    component hasher = Sha256Hasher5();
+    // 3. Hash the 4 inputs with SHA256
+    component hasher = Sha256Hasher4();
     hasher.in[0] <== packedVals;
     hasher.in[1] <== pubKeyHasher.hash;
     hasher.in[2] <== msgRoot;
-    hasher.in[3] <== currentStateRoot;
-    hasher.in[4] <== currentBallotRoot;
+    hasher.in[3] <== currentSbCommitment;
 
     hash <== hasher.hash;
 }

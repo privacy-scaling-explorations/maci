@@ -320,7 +320,6 @@ describe('MaciState', () => {
             expect(maciState.polls[pollId].ballots.length)
                 .toEqual(messageBatchSize)
 
-            debugger
             for (let i = 0; i < messageBatchSize; i ++) {
                 const leaf = i < maciState.polls[pollId].ballots[i].votes.length ?
                     maciState.polls[pollId].ballots[i].votes[i]

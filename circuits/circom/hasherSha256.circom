@@ -12,6 +12,20 @@ template Sha256HashLeftRight() {
     hash <== hasher.hash;
 }
 
+template Sha256Hasher4() {
+    var length = 4;
+    var inBits = 256 * length;
+
+    signal input in[length];
+    signal output hash;
+
+    component hasher = Sha256Hasher(length);
+    for (var i = 0; i < length; i ++) {
+        hasher.in[i] <== in[i];
+    }
+    hash <== hasher.hash;
+}
+
 template Sha256Hasher5() {
     var length = 5;
     var inBits = 256 * length;

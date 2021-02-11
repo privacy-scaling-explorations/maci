@@ -66,7 +66,7 @@ const users = [
     new Keypair(),
 ]
 
-const signUpTxOpts = { gasLimit: 200000 }
+const signUpTxOpts = { gasLimit: 300000 }
 
 const maciState = new MaciState()
 
@@ -138,7 +138,7 @@ describe('MACI', () => {
 
                     // Store the state index
                     const event = iface.parseLog(receipt.logs[receipt.logs.length - 1])
-                    expect(event.values._stateIndex.toString()).toEqual((i + 1).toString())
+                    expect(event.values._stateIndex.toString()).toEqual((i).toString())
 
                     maciState.signUp(
                         user.pubKey,
@@ -195,7 +195,6 @@ describe('MACI', () => {
             it('should set VKs and deploy a poll', async () => {
                 const std = await maciContract.stateTreeDepth()
 
-                // TODO: update maciState
                 // Set VKs
                 console.log('Setting VKs')
                 let tx = await vkRegistryContract.setVerifyingKeys(
@@ -424,14 +423,14 @@ describe('MACI', () => {
                 let tx = await pollContract.mergeMessageAqSubRoots(0, { gasLimit: 3000000 })
                 let receipt = await tx.wait()
                 expect(receipt.status).toEqual(1)
-                const poll = maciState.polls[pollId]
-
-                poll.messageAq.mergeSubRoots(0)
                 console.log('mergeMessageAqSubRoots() gas used:', receipt.gasUsed.toString())
 
                 tx = await pollContract.mergeMessageAq({ gasLimit: 4000000 })
                 receipt = await tx.wait()
                 expect(receipt.status).toEqual(1)
+
+                const poll = maciState.polls[pollId]
+                poll.messageAq.mergeSubRoots(0)
                 poll.messageAq.merge(MESSAGE_TREE_DEPTH)
 
                 console.log('mergeMessageAq() gas used:', receipt.gasUsed.toString())
@@ -457,12 +456,14 @@ describe('MACI', () => {
             })
 
             it('genPackedVals() should generate the correct value', async () => {
+                const poll = maciState.polls[pollId]
                 const packedVals = MaciState.packProcessMessageSmallVals(
                     maxValues.maxVoteOptions,
-                    maxValues.maxUsers,
+                    poll.stateTree.leaves.length,
                     0,
                     maciState.polls[pollId].messageTree.leaves.length - 1,
                 )
+                debugger
                 const onChainPackedVals = BigInt(
                     await messageProcessorContract.genPackedVals(
                         pollContract.address
@@ -471,44 +472,27 @@ describe('MACI', () => {
                 expect(packedVals.toString(16)).toEqual(onChainPackedVals.toString(16))
             })
 
-            it('processMessages() should update the state and ballot roots', async () => {
+            it('processMessages() should update the state and ballot root commitment', async () => {
                 const poll = maciState.polls[pollId]
-                const zerothStateLeaf = StateLeaf.genRandomLeaf()
-
-                const zerothBallot = Ballot.genRandomBallot(
-                    maxValues.maxVoteOptions,
-                    treeDepths.voteOptionTreeDepth,
-                )
                 const generatedInputs = poll.processMessages(
                     pollId,
-                    zerothStateLeaf,
-                    zerothBallot,
-                    maciState,
                 )
-
-                // The current roots
-                const newStateRoot = poll.stateTree.root.toString()
-                const newBallotRoot = poll.ballotTree.root.toString()
 
                 const pollContractAddress = await maciContract.getPoll(pollId)
 
+                // Submit the proof
                 const tx = await messageProcessorContract.processMessages(
                     pollContractAddress,
-                    {
-                        newStateRoot,
-                        newBallotRoot,
-                    },
+                    generatedInputs.newSbCommitment,
                     [0, 0, 0, 0, 0, 0, 0, 0],
                 )
 
                 const receipt = await tx.wait()
-
                 expect(receipt.status).toEqual(1)
-                const onChainNewStateRoot = (await pollContract.currentStateRoot()).toString()
-                const onChainNewBallotRoot = (await pollContract.ballotRoot()).toString()
 
-                expect(newStateRoot).toEqual(onChainNewStateRoot)
-                expect(newBallotRoot).toEqual(onChainNewBallotRoot)
+                const onChainNewSbCommitment = (await pollContract.currentSbCommitment()).toString()
+
+                expect(generatedInputs.newSbCommitment).toEqual(onChainNewSbCommitment)
             })
         })
     })

@@ -68,9 +68,9 @@ const testTallyVk = new VerifyingKey(
 )
 
 const coordinatorKeypair = new Keypair()
-const circuit = 'processMessages_test'
+const circuit = 'tallyVotes_test'
 
-describe('ProcessMessage circuit', () => {
+describe('TallyVotes circuit', () => {
     describe('1 user, 2 messages', () => {
         const maciState = new MaciState()
         const voteWeight = BigInt(9)
@@ -81,6 +81,8 @@ describe('ProcessMessage circuit', () => {
         const messages: Message[] = []
         const commands: Command[] = []
         let messageTree
+        let newStateCommitment 
+        let newBallotCommitment
 
         beforeAll(async () => {
             const userKeypair = new Keypair()
@@ -162,118 +164,92 @@ describe('ProcessMessage circuit', () => {
                         treeDepths.messageTreeDepth,
                     ).toString()
                 )
+            // Process messages
+            const gi = poll.processMessages()
+
+            // The new roots, which should differ
+            const newStateRoot = poll.stateTree.root
+            const newBallotRoot = poll.ballotTree.root
+            newStateCommitment = hashLeftRight(newStateRoot, BigInt(gi.stateSalt))
+            newBallotCommitment = hashLeftRight(newBallotRoot, BigInt(gi.ballotSalt))
         })
 
-        it('should produce the correct state root and ballot root', async () => {
-            // The current roots
-            const currentStateRoot = poll.stateTree.root
-            const currentBallotRoot = poll.ballotTree.root
+        it('should produce the correct result commitments', async () => {
+            const currentResultsCommitment = poll.genResultsCommitment()
+            const generatedInputs = poll.tallyBallots()
 
-            const generatedInputs = poll.processMessages()
+            const newResultsCommitment = poll.genResultsCommitment()
+            expect(currentResultsCommitment.toString()).not.toEqual(newResultsCommitment.toString())
 
-            // Calculate the witness
+            debugger
+
             const witness = await genWitness(circuit, generatedInputs)
             expect(witness.length > 0).toBeTruthy()
 
-            //for (let i = 0; i < messageBatchSize; i ++) {
-                //const debug = await getSignalByName(circuit, witness, `main.debug[${i}]`)
-                //console.log(debug)
+            //const circuitNewResultsCommitment =
+                //await getSignalByName(circuit, witness, 'main.newResultsCommitment')
+
+            //expect(circuitNewResultsCommitment).toEqual(newResultsCommitment.toString())
+        })
+    })
+
+    //const NUM_BATCHES = 2
+    //describe(`1 user, ${messageBatchSize * NUM_BATCHES} messages`, () => {
+        //it('should produce the correct state root and ballot root', async () => {
+            //const maciState = new MaciState()
+            //const userKeypair = new Keypair()
+            //const stateIndex = maciState.signUp(userKeypair.pubKey, voiceCreditBalance)
+
+            //maciState.stateAq.mergeSubRoots(0)
+            //maciState.stateAq.merge(STATE_TREE_DEPTH)
+            //// Sign up and publish
+            //const pollId = maciState.deployPoll(
+                //duration,
+                //maxValues,
+                //treeDepths,
+                //messageBatchSize,
+                //coordinatorKeypair,
+                //testProcessVk,
+                //testTallyVk,
+            //)
+
+            //const poll = maciState.polls[pollId]
+
+            //const numMessages = messageBatchSize * NUM_BATCHES
+            //for (let i = 0; i < numMessages; i ++) {
+                //const command = new Command(
+                    //stateIndex,
+                    //userKeypair.pubKey,
+                    //BigInt(i), //vote option index
+                    //BigInt(1), // vote weight
+                    //BigInt(numMessages - i), // nonce
+                    //BigInt(pollId),
+                //)
+
+                //const signature = command.sign(userKeypair.privKey)
+
+                //const ecdhKeypair = new Keypair()
+                //const sharedKey = Keypair.genEcdhSharedKey(
+                    //ecdhKeypair.privKey,
+                    //coordinatorKeypair.pubKey,
+                //)
+                //const message = command.encrypt(signature, sharedKey)
+                //poll.publishMessage(message, ecdhKeypair.pubKey)
             //}
 
-            // The new roots, which should differ, since at least one of the
-            // messages modified a Ballot or State Leaf
-            const newStateRoot = poll.stateTree.root
-            const newBallotRoot = poll.ballotTree.root
+            //poll.messageAq.mergeSubRoots(0)
+            //poll.messageAq.merge(treeDepths.messageTreeDepth)
 
-            expect(newStateRoot.toString()).not.toEqual(currentStateRoot.toString())
-            expect(newBallotRoot.toString()).not.toEqual(currentBallotRoot.toString())
-
-            fs.writeFileSync(
-                'input.json',
-                JSON.stringify(generatedInputs) 
-            )
-
-            fs.writeFileSync(
-                'witness.json',
-                JSON.stringify(witness) 
-            )
-            const packedVals = MaciState.packProcessMessageSmallVals(
-                maxValues.maxVoteOptions,
-                poll.numSignUps,
-                0,
-                poll.messageTree.leaves.length - 1,
-            )
-
-            // Test the ProcessMessagesInputHasher circuit
-            const hasherCircuit = 'processMessagesInputHasher_test'
-            const hasherCircuitInputs = stringifyBigInts({
-                packedVals,
-                coordPubKey: generatedInputs.coordPubKey,
-                msgRoot: generatedInputs.msgRoot,
-                currentSbCommitment: generatedInputs.currentSbCommitment,
-            })
-
-            const hasherWitness = await genWitness(hasherCircuit, hasherCircuitInputs)
-            const hash = await getSignalByName(hasherCircuit, hasherWitness, 'main.hash')
-            expect(hash.toString()).toEqual(generatedInputs.inputHash.toString())
-        })
-    })
-
-    const NUM_BATCHES = 2
-    describe(`1 user, ${messageBatchSize * NUM_BATCHES} messages`, () => {
-        it('should produce the correct state root and ballot root', async () => {
-            const maciState = new MaciState()
-            const userKeypair = new Keypair()
-            const stateIndex = maciState.signUp(userKeypair.pubKey, voiceCreditBalance)
-
-            maciState.stateAq.mergeSubRoots(0)
-            maciState.stateAq.merge(STATE_TREE_DEPTH)
-            // Sign up and publish
-            const pollId = maciState.deployPoll(
-                duration,
-                maxValues,
-                treeDepths,
-                messageBatchSize,
-                coordinatorKeypair,
-                testProcessVk,
-                testTallyVk,
-            )
-
-            const poll = maciState.polls[pollId]
-
-            const numMessages = messageBatchSize * NUM_BATCHES
-            for (let i = 0; i < numMessages; i ++) {
-                const command = new Command(
-                    stateIndex,
-                    userKeypair.pubKey,
-                    BigInt(i), //vote option index
-                    BigInt(1), // vote weight
-                    BigInt(numMessages - i), // nonce
-                    BigInt(pollId),
-                )
-
-                const signature = command.sign(userKeypair.privKey)
-
-                const ecdhKeypair = new Keypair()
-                const sharedKey = Keypair.genEcdhSharedKey(
-                    ecdhKeypair.privKey,
-                    coordinatorKeypair.pubKey,
-                )
-                const message = command.encrypt(signature, sharedKey)
-                poll.publishMessage(message, ecdhKeypair.pubKey)
-            }
-
-            poll.messageAq.mergeSubRoots(0)
-            poll.messageAq.merge(treeDepths.messageTreeDepth)
-
-            for (let i = 0; i < NUM_BATCHES; i ++) {
+            //const generatedInputs: any[] = []
+            ////for (let i = 0; i < NUM_BATCHES; i ++) {
             //for (let i = 0; i < 1; i ++) {
-                const generatedInputs = poll.processMessages()
+                //const circuitInputs = poll.processMessages()
+                //generatedInputs.push(circuitInputs)
 
-                const witness = await genWitness(circuit, generatedInputs)
-                expect(witness.length > 0).toBeTruthy()
-
-            }
-        })
-    })
+                ////const witness = await genWitness(circuit, circuitInputs)
+                ////expect(witness.length > 0).toBeTruthy()
+            //}
+            ////TODO
+        //})
+    //})
 })

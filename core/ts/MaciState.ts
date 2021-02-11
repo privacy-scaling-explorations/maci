@@ -6,6 +6,7 @@ import {
     SNARK_FIELD_SIZE,
     NOTHING_UP_MY_SLEEVE,
     hashLeftRight,
+    hash3,
     sha256Hash,
     stringifyBigInts,
     Signature,
@@ -51,6 +52,9 @@ class Poll {
     public treeDepths: TreeDepths
     public batchSizes: BatchSizes
     public maxValues: MaxValues
+
+    public numSignUps: number
+
     public processVk: VerifyingKey
     public tallyVk: VerifyingKey
 
@@ -66,13 +70,13 @@ class Poll {
     public encPubKeys: PubKey[] = []
     public STATE_TREE_ARITY = 5
     public MESSAGE_TREE_ARITY = 5
+    public VOTE_OPTION_TREE_ARITY = 5
 
     public stateLeaves: StateLeaf[] = []
     public stateTree = new IncrementalQuinTree(
         STATE_TREE_DEPTH,
         NOTHING_UP_MY_SLEEVE,
         this.STATE_TREE_ARITY,
-        //STATE_TREE_SUBDEPTH,
     )
 
     // For message processing
@@ -80,15 +84,14 @@ class Poll {
     public currentMessageBatchIndex
     public maciStateRef: MaciState
     public pollId: number
-    
+
+    public sbSalts: {[key: number]: BigInt} = {}
+
     // For vote tallying
     public results: BigInt[] = []
     public numBatchesTallied = 0
 
-    public numSignUps: number
-
-    public stateSalts: any = {}
-    public ballotSalts: any = {}
+    public currentResultsSalt: BigInt = BigInt(0)
 
     constructor(
         _duration: number,
@@ -264,6 +267,7 @@ class Poll {
             this.currentMessageBatchIndex = (
                 Math.floor(this.messageAq.numLeaves / batchSize)  - 1
             ) * batchSize
+            this.sbSalts[this.currentMessageBatchIndex] = BigInt(0)
         }
 
         // The starting index must be valid
@@ -350,20 +354,23 @@ class Poll {
         circuitInputs.currentVoteWeights = currentVoteWeights
         circuitInputs.currentVoteWeightsPathElements = currentVoteWeightsPathElements
 
-        const stateSalt = genRandomSalt()
-        const ballotSalt = genRandomSalt()
-
-        circuitInputs.stateSalt = stateSalt
-        circuitInputs.ballotSalt = ballotSalt
-
-        this.stateSalts[this.currentMessageBatchIndex] = stateSalt
-        this.ballotSalts[this.currentMessageBatchIndex] = ballotSalt
-
         this.numBatchesProcessed ++
 
         if (this.currentMessageBatchIndex > 0) {
             this.currentMessageBatchIndex -= batchSize
         }
+
+        const newSbSalt = genRandomSalt()
+        this.sbSalts[this.currentMessageBatchIndex] = newSbSalt
+
+        circuitInputs.newSbSalt = newSbSalt
+        const newStateRoot = this.stateTree.root
+        const newBallotRoot = this.ballotTree.root
+        circuitInputs.newSbCommitment = hash3([
+            newStateRoot,
+            newBallotRoot,
+            newSbSalt,
+        ])
 
         // If this is the last batch, release the lock
         if (this.numBatchesProcessed * batchSize >= this.messages.length) {
@@ -442,8 +449,15 @@ class Poll {
         }
 
         const msgRoot = this.messageAq.getRoot(this.treeDepths.messageTreeDepth)
+
         const currentStateRoot = this.stateTree.root
         const currentBallotRoot = this.ballotTree.root
+        debugger
+        const currentSbCommitment = hash3([
+            currentStateRoot,
+            currentBallotRoot,
+            this.sbSalts[this.currentMessageBatchIndex],
+        ])
 
         // Generate a SHA256 hash of inputs which the contract provides
         const packedVals = 
@@ -456,12 +470,14 @@ class Poll {
 
         const coordPubKeyHash = coordPubKey.hash()
 
+        // TODO: pass in currentStateRoot as a private input
+        // and currentStateCommitment 
+
         const inputHash = sha256Hash([
             packedVals,
             coordPubKeyHash,
             msgRoot,
-            currentStateRoot,
-            currentBallotRoot,
+            currentSbCommitment,
         ])
 
         return stringifyBigInts({
@@ -475,6 +491,8 @@ class Poll {
             encPubKeys: encPubKeys.map((x) => x.asCircuitInputs()),
             currentStateRoot,
             currentBallotRoot,
+            currentSbCommitment,
+            currentSbSalt: this.sbSalts[this.currentMessageBatchIndex],
         })
     }
 
@@ -504,12 +522,11 @@ class Poll {
 
     /*
      * Process one message
-     * TODO: replace with a version that does not change state?
      */
     private processMessage = (
         _index: number,
     ) => {
-        //TODO: return codes for no-ops
+        //TODO: throw custom errors for no-ops
 
         // Ensure that the index is valid
         assert(_index >= 0)
@@ -634,7 +651,12 @@ class Poll {
         return this.numBatchesTallied * batchSize < this.ballots.length
     }
 
-    public tallyBallots = () => {
+    /*
+     * Tally a batch of Ballots and update this.results
+     */
+    public tallyBallots = (
+        _resultsSalt: BigInt = genRandomSalt(),
+    ) => {
 
         const batchSize = this.batchSizes.tallyBatchSize
 
@@ -642,6 +664,9 @@ class Poll {
             this.hasUntalliedBallots(),
             'No more ballots to tally',
         )
+
+        const batchStartIndex = this.numBatchesTallied * batchSize
+        const currentResultsCommitment = this.genResultsCommitment()
 
         for (
             let i = this.numBatchesTallied * batchSize;
@@ -657,8 +682,38 @@ class Poll {
                     BigInt(this.results[j]) + BigInt(this.ballots[i].votes[j])
             }
         }
+        const newResultsCommitment = this.genResultsCommitment()
+
+        const circuitInputs = stringifyBigInts({
+            batchStartIndex,
+            numSignUps: this.numSignUps,
+            //sbSalt: this.sbSalts[this.currentMessageBatchIndex],
+            //currentResultsCommitment,
+        })
+        debugger
 
         this.numBatchesTallied ++
+        this.currentResultsSalt = _resultsSalt
+
+        return circuitInputs
+    }
+
+    public genResultsCommitment = () => {
+        const resultsTree = new IncrementalQuinTree(
+            this.treeDepths.voteOptionTreeDepth,
+            BigInt(0),
+            this.VOTE_OPTION_TREE_ARITY,
+        )
+
+        for (const r of this.results) {
+            resultsTree.insert(r)
+        }
+
+        debugger
+        return hashLeftRight(
+            resultsTree.root,
+            this.currentResultsSalt,
+        )
     }
 
     public copy = (): Poll => {
@@ -883,12 +938,12 @@ class MaciState {
 
     public static packProcessMessageSmallVals = (
         maxVoteOptions: BigInt,
-        maxUsers: BigInt,
+        numUsers: BigInt,
         batchStartIndex: number,
         batchEndIndex: number,
     ) => {
         return BigInt(maxVoteOptions) +
-            (BigInt(maxUsers) << BigInt(50)) +
+            (BigInt(numUsers) << BigInt(50)) +
             (BigInt(batchStartIndex) << BigInt(100)) +
             (BigInt(batchEndIndex) << BigInt(150))
     }

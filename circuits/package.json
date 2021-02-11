@@ -48,7 +48,9 @@
         "test-resultCommitmentVerifier": "jest ResultCommitmentVerifier.test.ts",
         "test-resultCommitmentVerifier-debug": "node --inspect-brk ./node_modules/.bin/jest ResultCommitmentVerifier.test.ts",
         "test-processMessages": "NODE_OPTIONS=--max-old-space-size=4096 jest ts/__tests__/ProcessMessages.test.ts",
-        "test-processMessages-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest ts/__tests__/ProcessMessages.test.ts"
+        "test-processMessages-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest ts/__tests__/ProcessMessages.test.ts",
+        "test-tallyVotes": "NODE_OPTIONS=--max-old-space-size=4096 jest ts/__tests__/TallyVotes.test.ts",
+        "test-tallyVotes-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest ts/__tests__/TallyVotes.test.ts"
     },
     "dependencies": {
         "argparse": "^1.0.10",

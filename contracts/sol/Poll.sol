@@ -30,11 +30,19 @@ contract MessageAqFactory is Ownable {
     }
 }
 
+contract PollDeploymentParams {
+    struct ExtContracts {
+        VkRegistry vkRegistry;
+        IMACI maci;
+        AccQueue messageAq;
+    }
+}
+
 /*
  * A factory contract which deploys Poll contracts. It allows the MACI contract
  * size to stay within the limit set by EIP-170.
  */
-contract PollFactory is EmptyBallotRoots, Params, IPubKey, IMessage, Ownable, Hasher {
+contract PollFactory is EmptyBallotRoots, Params, IPubKey, IMessage, Ownable, Hasher, PollDeploymentParams {
 
     MessageAqFactory public messageAqFactory;
 
@@ -59,6 +67,7 @@ contract PollFactory is EmptyBallotRoots, Params, IPubKey, IMessage, Ownable, Ha
         MessageProcessor _msgProcessor,
         uint256 _mergeSubRootsTimestamp
     ) public onlyOwner returns (Poll) {
+        {
         uint8 treeArity = 5;
 
         // Validate _maxValues
@@ -74,9 +83,15 @@ contract PollFactory is EmptyBallotRoots, Params, IPubKey, IMessage, Ownable, Ha
                 treeArity ** _treeDepths.voteOptionTreeDepth,
             "PollFactory: invalid _maxValues"
         );
+        }
 
         AccQueue messageAq =
             messageAqFactory.deploy(_treeDepths.messageTreeSubDepth);
+
+        ExtContracts memory extContracts;
+        extContracts.vkRegistry = _vkRegistry;
+        extContracts.maci = _maci;
+        extContracts.messageAq = messageAq;
 
         Poll poll = new Poll(
             _duration,
@@ -85,18 +100,20 @@ contract PollFactory is EmptyBallotRoots, Params, IPubKey, IMessage, Ownable, Ha
             _treeDepths,
             _batchSizes,
             _coordinatorPubKeyHash,
-            _vkRegistry,
-            _maci,
-            messageAq,
+            extContracts,
             _msgProcessor,
-            _mergeSubRootsTimestamp
+            _maci.getNumStateLeaves(_mergeSubRootsTimestamp)
         );
 
         messageAq.transferOwnership(address(poll));
 
-        poll.setEmptyBallotRoot(
-            emptyBallotRoots[_treeDepths.voteOptionTreeDepth]
-        );
+        uint256[] memory sb = new uint256[](3);
+        sb[0] = _maci.getStateRootSnapshot(_mergeSubRootsTimestamp);
+        sb[1] = emptyBallotRoots[_treeDepths.voteOptionTreeDepth];
+        sb[2] = uint256(0);
+
+        poll.setEmptySbCommitment(hash3(sb));
+
         poll.transferOwnership(_pollOwner);
 
         return poll;
@@ -107,7 +124,7 @@ contract PollFactory is EmptyBallotRoots, Params, IPubKey, IMessage, Ownable, Ha
  * Do not deploy this directly. Use PollFactory.deploy() which performs some
  * checks on the Poll constructor arguments.
  */
-contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable {
+contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDeploymentParams {
     // The coordinator's public key
     uint256 public coordinatorPubKeyHash;
 
@@ -130,16 +147,18 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable {
 
     MessageProcessor public msgProcessor;
 
-    // The state root. This value should be 0 until the first invocation of
-    // processMessages(), at which point it should be set to the MACI state
-    // root, and then updated based on the result of processing each batch of
-    // messages.
-    uint256 public currentStateRoot;
+    // The commitment to the state leaves and the ballots. This is
+    // hash3(stateRoot, ballotRoot, salt).
+    // Its initial value should be
+    // hash(maciStateRootSnapshot, emptyBallotRoot, 0)
+    // Each successful invocation of processMessages() should use a different
+    // salt to update this value, so that an external observer cannot tell in
+    // the case that none of the messages are valid.
+    uint256 public currentSbCommitment;
+
+    uint256 public currentResultsCommitment;
 
     uint256 public numSignUps;
-
-    // The ballot tree root
-    uint256 public ballotRoot;
 
     // Whether there are unprocessed messages left
     bool public hasUnprocessedMessages = true;
@@ -162,7 +181,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable {
     // Error codes. We store them as constants and keep them short to reduce
     // this contract's bytecode size.
     string constant ERROR_VK_NOT_SET = "PollE01";
-    string constant ERROR_BALLOT_ROOT_NOT_SET = "PollE02";
+    string constant ERROR_SB_COMMITMENT_NOT_SET = "PollE02";
     string constant ERROR_VOTING_PERIOD_PASSED = "PollE03";
     string constant ERROR_VOTING_PERIOD_NOT_PASSED = "PollE04";
     string constant ERROR_INVALID_PUBKEY = "PollE05";
@@ -184,12 +203,14 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable {
         TreeDepths memory _treeDepths,
         BatchSizes memory _batchSizes,
         uint256 _coordinatorPubKeyHash,
-        VkRegistry _vkRegistry,
-        IMACI _maci,
-        AccQueue _messageAq,
+        ExtContracts memory _extContracts,
         MessageProcessor _msgProcessor,
-        uint256 _mergeSubRootsTimestamp
+        uint256 _numSignUps
     ) {
+        VkRegistry _vkRegistry = _extContracts.vkRegistry;
+        IMACI _maci = _extContracts.maci;
+        AccQueue _messageAq = _extContracts.messageAq;
+
         coordinatorPubKeyHash = _coordinatorPubKeyHash;
         duration = _duration;
         maxValues = _maxValues;
@@ -228,17 +249,16 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable {
         // Set the poll processor contract
         msgProcessor = _msgProcessor;
 
-        // Set the current state root
-        currentStateRoot = _maci.getStateRootSnapshot(_mergeSubRootsTimestamp);
-        numSignUps = _maci.getNumStateLeaves(_mergeSubRootsTimestamp);
+        // Set the current number of signups
+        numSignUps = _numSignUps;
     }
 
     /*
      * TODO: write comment
      */
-    function setEmptyBallotRoot(uint256 _emptyBallotRoot) public onlyOwner {
-        require(ballotRoot == 0, ERROR_BALLOT_ROOT_NOT_SET);
-        ballotRoot = _emptyBallotRoot;
+    function setEmptySbCommitment(uint256 _emptyEmptySbCommitment) public onlyOwner {
+        require(currentSbCommitment == 0, ERROR_SB_COMMITMENT_NOT_SET);
+        currentSbCommitment = _emptyEmptySbCommitment;
     }
 
     /*
@@ -357,8 +377,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable {
      * after processing each batch.
      */
     function setMessageProcessingData(
-        uint256 _newStateRoot,
-        uint256 _newBallotRoot,
+        uint256 _newSbCommitment,
         bool _hasUnprocessedMessages,
         uint256 _currentMessageBatchIndex
     ) public {
@@ -367,16 +386,27 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable {
             ERROR_ONLY_MESSAGE_PROCESSOR
         );
 
-        // TODO: check batch #
+        // TODO: check batch num?
 
-        currentStateRoot = _newStateRoot;
-        ballotRoot = _newBallotRoot;
+        currentSbCommitment = _newSbCommitment;
         hasUnprocessedMessages = _hasUnprocessedMessages;
         currentMessageBatchIndex = _currentMessageBatchIndex;
         numBatchesProcessed ++;
     }
+
+    //function setVoteTallyingData(
+        //uint256 _newResultsCommitment
+    //) public {
+        //require(
+            //msg.sender == address(voteTallyer),
+            //ERROR_ONLY_VOTE_TALLYER
+        //);
+        //currentResultsCommitment = _newResultsCommitment;
+    //}
 }
 
+// TODO: to reduce the Poll contract size, make MessageProcessor and
+// VoteTallyer store data instead
 contract MessageProcessor is Ownable, SnarkCommon, Hasher {
     struct Roots {
         uint256 newStateRoot;
@@ -451,12 +481,11 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher {
         uint256 _messageRoot
     ) public view returns (uint256[] memory) {
         uint256 packedVals = genPackedVals(_poll);
-        uint256[] memory input = new uint256[](5);
+        uint256[] memory input = new uint256[](4);
         input[0] = packedVals;
         input[1] = _poll.coordinatorPubKeyHash();
         input[2] = _messageRoot;
-        input[3] = _poll.currentStateRoot();
-        input[4] = _poll.ballotRoot();
+        input[3] = _poll.currentSbCommitment();
         uint256 inputHash = sha256Hash(input);
 
         uint256[] memory publicInputs = new uint256[](1);
@@ -473,7 +502,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher {
      */
     function processMessages(
         Poll _poll,
-        Roots memory _roots,
+        uint256 _newSbCommitment,
         uint256[8] memory _proof
     )
     public
@@ -543,7 +572,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher {
 
             updatePollMessageProcessingData(
                 _poll,
-                _roots,
+                _newSbCommitment,
                 currentMessageBatchIndex
             );
         }
@@ -551,15 +580,15 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher {
 
     function updatePollMessageProcessingData(
         Poll _poll,
-        Roots memory _roots,
-        uint256 currentMessageBatchIndex
+        uint256 _newSbCommitment,
+        uint256 _currentMessageBatchIndex
     ) internal {
-        // Update the state root and message processing metadata
+        // Update the state and ballot root commitment, as well as the message
+        // processing metadata
         _poll.setMessageProcessingData(
-            _roots.newStateRoot,
-            _roots.newBallotRoot,
-            currentMessageBatchIndex == 0 ? _poll.hasUnprocessedMessages() : false,
-            currentMessageBatchIndex
+            _newSbCommitment,
+            _currentMessageBatchIndex == 0 ? _poll.hasUnprocessedMessages() : false,
+            _currentMessageBatchIndex
         );
     }
 }
