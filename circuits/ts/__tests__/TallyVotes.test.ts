@@ -37,7 +37,7 @@ const maxValues = {
 }
 
 const treeDepths = {
-    intStateTreeDepth: 2,
+    intStateTreeDepth: 1,
     messageTreeDepth: 2,
     messageTreeSubDepth: 1,
     voteOptionTreeDepth: 2,
@@ -81,8 +81,6 @@ describe('TallyVotes circuit', () => {
         const messages: Message[] = []
         const commands: Command[] = []
         let messageTree
-        let newStateCommitment 
-        let newBallotCommitment
 
         beforeAll(async () => {
             const userKeypair = new Keypair()
@@ -170,13 +168,11 @@ describe('TallyVotes circuit', () => {
             // The new roots, which should differ
             const newStateRoot = poll.stateTree.root
             const newBallotRoot = poll.ballotTree.root
-            newStateCommitment = hashLeftRight(newStateRoot, BigInt(gi.stateSalt))
-            newBallotCommitment = hashLeftRight(newBallotRoot, BigInt(gi.ballotSalt))
         })
 
         it('should produce the correct result commitments', async () => {
             const currentResultsCommitment = poll.genResultsCommitment()
-            const generatedInputs = poll.tallyBallots()
+            const generatedInputs = poll.tallyVotes()
 
             const newResultsCommitment = poll.genResultsCommitment()
             expect(currentResultsCommitment.toString()).not.toEqual(newResultsCommitment.toString())

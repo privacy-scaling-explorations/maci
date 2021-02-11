@@ -452,7 +452,6 @@ class Poll {
 
         const currentStateRoot = this.stateTree.root
         const currentBallotRoot = this.ballotTree.root
-        debugger
         const currentSbCommitment = hash3([
             currentStateRoot,
             currentBallotRoot,
@@ -654,7 +653,7 @@ class Poll {
     /*
      * Tally a batch of Ballots and update this.results
      */
-    public tallyBallots = (
+    public tallyVotes = (
         _resultsSalt: BigInt = genRandomSalt(),
     ) => {
 
@@ -668,6 +667,8 @@ class Poll {
         const batchStartIndex = this.numBatchesTallied * batchSize
         const currentResultsCommitment = this.genResultsCommitment()
 
+        const ballots: Ballot[] = []
+
         for (
             let i = this.numBatchesTallied * batchSize;
             i < this.numBatchesTallied * batchSize + batchSize;
@@ -677,18 +678,55 @@ class Poll {
                 break
             }
 
+            ballots.push(this.ballots[i])
+
             for (let j = 0; j < this.maxValues.maxVoteOptions; j++) {
                 this.results[j] = 
                     BigInt(this.results[j]) + BigInt(this.ballots[i].votes[j])
             }
         }
+
+        const emptyBallot = new Ballot(
+            this.maxValues.maxVoteOptions,
+            this.treeDepths.voteOptionTreeDepth,
+        )
+
+        while (ballots.length < batchSize) {
+            ballots.push(emptyBallot)
+        }
+        debugger
+
         const newResultsCommitment = this.genResultsCommitment()
+        const stateRoot = this.stateTree.root
+        const ballotRoot = this.ballotTree.root
+        const sbSalt = this.sbSalts[this.currentMessageBatchIndex]
+        const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt ])
+
+        // packed values
+        const packedVals = BigInt(this.numSignUps) +
+            BigInt(batchStartIndex) << BigInt(50)
+
+        const inputHash = sha256Hash([
+            packedVals,
+            sbCommitment,
+            newResultsCommitment,
+        ])
+
+        const ballotSubrootProof = this.ballotTree.genMerkleSubrootPath(
+                batchStartIndex,
+                batchStartIndex + batchSize,
+            )
 
         const circuitInputs = stringifyBigInts({
-            batchStartIndex,
-            numSignUps: this.numSignUps,
-            //sbSalt: this.sbSalts[this.currentMessageBatchIndex],
-            //currentResultsCommitment,
+            stateRoot,
+            ballotRoot,
+            sbSalt,
+            sbCommitment,
+            newResultsCommitment,
+            inputHash,
+            packedVals, // contains numSignUps and batchStartIndex
+            ballots: ballots.map((x) => x.asCircuitInputs()),
+            ballotPathElements: ballotSubrootProof.pathElements,
         })
         debugger
 
@@ -709,7 +747,6 @@ class Poll {
             resultsTree.insert(r)
         }
 
-        debugger
         return hashLeftRight(
             resultsTree.root,
             this.currentResultsSalt,

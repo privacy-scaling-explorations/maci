@@ -40,6 +40,27 @@ describe('Poseidon hash circuits', () => {
             })
         })
 
+        describe('Sha256Hasher3', () => {
+            const circuit = 'sha256Hasher4_test'
+            it('correctly hashes two random values', async () => {
+                const preImages: any = []
+                for (let i = 0; i < 3; i++) {
+                    preImages.push(genRandomSalt())
+                }
+
+                const circuitInputs = stringifyBigInts({
+                    in: preImages,
+                })
+
+                const witness = await genWitness(circuit, circuitInputs)
+                const output = await getSignalByName(circuit, witness, 'main.hash')
+
+                const outputJS = sha256Hash(preImages)
+
+                expect(output.toString()).toEqual(outputJS.toString())
+            })
+        })
+
         describe('Sha256Hasher4', () => {
             const circuit = 'sha256Hasher4_test'
             it('correctly hashes two random values', async () => {
