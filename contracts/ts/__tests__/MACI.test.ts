@@ -8,8 +8,6 @@ import {
     VerifyingKey,
     Keypair,
     PrivKey,
-    StateLeaf,
-    Ballot,
 } from 'maci-domainobjs'
 
 import {
@@ -21,17 +19,14 @@ import {
 } from 'maci-core'
 
 import { config } from 'maci-config'
-import {
-    hashLeftRight,
-    G1Point,
-    G2Point,
-} from 'maci-crypto'
+import { G1Point, G2Point } from 'maci-crypto'
+import { genTestAccounts } from '../accounts'
 
 const STATE_TREE_DEPTH = 10
 const STATE_TREE_ARITY = 5
 const MESSAGE_TREE_DEPTH = 4
 const MESSAGE_TREE_SUBDEPTH = 2
-import { genTestAccounts } from '../accounts'
+
 const accounts = genTestAccounts(1)
 const deployer = genDeployer(accounts[0].privateKey)
 const coordinator = new Keypair(new PrivKey(BigInt(config.maci.coordinatorPrivKey)))
@@ -94,8 +89,7 @@ describe('MACI', () => {
     let stateAqContract
     let vkRegistryContract
     let pollStateViewerContract
-    let messageProcessorContract
-    let mockVerifierContract
+    let pptContract
     let pollId: number
 
     describe('Deployment', () => {
@@ -108,8 +102,7 @@ describe('MACI', () => {
             stateAqContract = r.stateAqContract
             vkRegistryContract = r.vkRegistryContract
             pollStateViewerContract = r.pollStateViewerContract
-            messageProcessorContract = r.messageProcessorContract
-            mockVerifierContract = r.mockVerifierContract
+            pptContract = r.pptContract
         })
 
         it('MACI.stateTreeDepth should be correct', async () => {
@@ -150,6 +143,7 @@ describe('MACI', () => {
             })
 
             it('signUp() shold fail when given an invalid pubkey', async () => {
+                expect.assertions(1)
                 try {
                     await maciContract.signUp(
                         {
@@ -233,7 +227,7 @@ describe('MACI', () => {
                     maxValues,
                     treeDepths,
                     coordinator.pubKey.asContractParam(),
-                    messageProcessorContract.address,
+                    pptContract.address,
                     { gasLimit: 8000000 },
                 )
                 receipt = await tx.wait()
@@ -368,6 +362,7 @@ describe('MACI', () => {
             })
 
             it('shold not publish a message after the voting period', async () => {
+                expect.assertions(1)
                 const duration = await pollContract.duration()
                 await timeTravel(deployer.provider, Number(duration.toString()) + 1)
 
@@ -443,6 +438,24 @@ describe('MACI', () => {
             })
         })
 
+        describe('Tally votes (negative test)', () => {
+            expect.assertions(1)
+            it('tallyVotes() should fail as the messages have not been processed yet', async () => {
+                const pollContractAddress = await maciContract.getPoll(pollId)
+                try {
+                    await pptContract.tallyVotes(
+                        pollContractAddress,
+                        0,
+                        [0, 0, 0, 0, 0, 0, 0, 0],
+                    )
+                } catch (e) {
+                    const error = 'PptE07'
+                    expect(e.message.endsWith(error)).toBeTruthy()
+                }
+
+            })
+        })
+
         describe('Process messages', () => {
             let pollContract
 
@@ -455,7 +468,7 @@ describe('MACI', () => {
                 )
             })
 
-            it('genPackedVals() should generate the correct value', async () => {
+            it('genProcessMessagesPackedVals() should generate the correct value', async () => {
                 const poll = maciState.polls[pollId]
                 const packedVals = MaciState.packProcessMessageSmallVals(
                     maxValues.maxVoteOptions,
@@ -463,9 +476,8 @@ describe('MACI', () => {
                     0,
                     maciState.polls[pollId].messageTree.leaves.length - 1,
                 )
-                debugger
                 const onChainPackedVals = BigInt(
-                    await messageProcessorContract.genPackedVals(
+                    await pptContract.genProcessMessagesPackedVals(
                         pollContract.address
                     )
                 )
@@ -474,14 +486,12 @@ describe('MACI', () => {
 
             it('processMessages() should update the state and ballot root commitment', async () => {
                 const poll = maciState.polls[pollId]
-                const generatedInputs = poll.processMessages(
-                    pollId,
-                )
+                const generatedInputs = poll.processMessages(pollId)
 
                 const pollContractAddress = await maciContract.getPoll(pollId)
 
                 // Submit the proof
-                const tx = await messageProcessorContract.processMessages(
+                const tx = await pptContract.processMessages(
                     pollContractAddress,
                     generatedInputs.newSbCommitment,
                     [0, 0, 0, 0, 0, 0, 0, 0],
@@ -490,9 +500,70 @@ describe('MACI', () => {
                 const receipt = await tx.wait()
                 expect(receipt.status).toEqual(1)
 
-                const onChainNewSbCommitment = (await pollContract.currentSbCommitment()).toString()
+                const pptData = await pptContract.pollPptData(pollContractAddress)
+                expect(pptData.processingComplete).toBeTruthy()
+                const onChainNewSbCommitment = pptData.sbCommitment.toString()
 
                 expect(generatedInputs.newSbCommitment).toEqual(onChainNewSbCommitment)
+            })
+        })
+
+        describe('Tally votes', () => {
+            let pollContract
+
+            beforeAll(async () => {
+                const pollContractAddress = await maciContract.getPoll(pollId)
+                pollContract = new ethers.Contract(
+                    pollContractAddress,
+                    pollAbi,
+                    deployer.signer,
+                )
+            })
+
+            it('genTallyVotesPackedVals() should generate the correct value', async () => {
+                const onChainPackedVals = BigInt(
+                    await pptContract.genTallyVotesPackedVals(
+                        pollContract.address
+                    )
+                )
+                const packedVals = MaciState.packTallyVotesSmallVals(
+                    0,
+                    tallyBatchSize,
+                    users.length
+                )
+                expect(onChainPackedVals.toString()).toEqual(packedVals.toString())
+            })
+
+            it('tallyVotes() should update the tally commitment', async () => {
+                expect.assertions(3)
+                const poll = maciState.polls[pollId]
+                const generatedInputs = poll.tallyVotes(pollId)
+
+                const pollContractAddress = await maciContract.getPoll(pollId)
+                const tx = await pptContract.tallyVotes(
+                    pollContractAddress,
+                    generatedInputs.newTallyCommitment,
+                    [0, 0, 0, 0, 0, 0, 0, 0],
+                )
+
+                const receipt = await tx.wait()
+                expect(receipt.status).toEqual(1)
+
+                const pptData = await pptContract.pollPptData(pollContractAddress)
+                const onChainNewTallyCommitment = pptData.tallyCommitment.toString()
+
+                expect(generatedInputs.newTallyCommitment).toEqual(onChainNewTallyCommitment)
+
+                try {
+                    await pptContract.tallyVotes(
+                        pollContractAddress,
+                        generatedInputs.newTallyCommitment,
+                        [0, 0, 0, 0, 0, 0, 0, 0],
+                    )
+                } catch (e) {
+                    const error = 'PptE08'
+                    expect(e.message.endsWith(error)).toBeTruthy()
+                }
             })
         })
     })

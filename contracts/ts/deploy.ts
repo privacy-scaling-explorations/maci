@@ -245,12 +245,12 @@ const deployMaci = async (
         PollFactoryBin,
     )
 
-    // MessageProcessor
-    log('Deploying MessageProcessor', quiet)
-    const [ MessageProcessorAbi, MessageProcessorBin ] = loadAB('MessageProcessor')
-    const messageProcessorContract = await deployer.deploy(
-        MessageProcessorAbi,
-        MessageProcessorBin,
+    // PollProcessorAndTallyer
+    log('Deploying PollProcessorAndTallyer', quiet)
+    const [ PptAbi, PptBin ] = loadAB('PollProcessorAndTallyer')
+    const pptContract = await deployer.deploy(
+        PptAbi,
+        PptBin,
         mockVerifierContractAddress,
     )
 
@@ -314,7 +314,7 @@ const deployMaci = async (
         vkRegistryContract,
         stateAqContract,
         pollStateViewerContract,
-        messageProcessorContract,
+        pptContract,
     }
 }
 
@@ -401,7 +401,7 @@ const main = async () => {
         maciContract,
         vkRegistryContract,
         stateAqContract,
-        messageProcessorContract,
+        pptContract,
     } = await deployMaci(
         deployer,
         signUpTokenGatekeeperContract.address,
@@ -414,7 +414,7 @@ const main = async () => {
         VkRegistry: vkRegistryContract.address,
         StateAq: stateAqContract.address,
         SignUpToken: signUpTokenAddress,
-        MessageProcessor: messageProcessorContract,
+        PollProcessorAndTallyer: pptContract,
     }
 
     const addressJsonPath = path.join(__dirname, '..', outputAddressFile)

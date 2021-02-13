@@ -287,12 +287,12 @@ template TallyVotesInputHasher() {
     signal input sbCommitment;
     signal input currentTallyCommitment;
     signal input newTallyCommitment;
+    signal input packedVals;
 
     signal output numSignUps;
     signal output batchNum;
     signal output hash;
 
-    signal input packedVals;
     component unpack = UnpackElement(2);
     unpack.in <== packedVals;
     batchNum <== unpack.out[1];

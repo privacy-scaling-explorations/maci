@@ -64,7 +64,7 @@ contract PollFactory is EmptyBallotRoots, Params, IPubKey, IMessage, Ownable, Ha
         VkRegistry _vkRegistry,
         IMACI _maci,
         address _pollOwner,
-        MessageProcessor _msgProcessor,
+        PollProcessorAndTallyer _ppt,
         uint256 _mergeSubRootsTimestamp
     ) public onlyOwner returns (Poll) {
         {
@@ -101,7 +101,7 @@ contract PollFactory is EmptyBallotRoots, Params, IPubKey, IMessage, Ownable, Ha
             _batchSizes,
             _coordinatorPubKeyHash,
             extContracts,
-            _msgProcessor,
+            _ppt,
             _maci.getNumStateLeaves(_mergeSubRootsTimestamp)
         );
 
@@ -145,7 +145,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     // The message queue
     AccQueue public messageAq;
 
-    MessageProcessor public msgProcessor;
+    PollProcessorAndTallyer public ppt;
 
     // The commitment to the state leaves and the ballots. This is
     // hash3(stateRoot, ballotRoot, salt).
@@ -156,20 +156,17 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     // the case that none of the messages are valid.
     uint256 public currentSbCommitment;
 
-    uint256 public currentResultsCommitment;
+    // The commitment to the tally results. Its initial value should be:
+    // hash3(
+    //   hashLeftRight(merkleRoot([0...0], 0),
+    //   hashLeftRight(0, 0),
+    //   hashLeftRight(merkleRoot([0...0]), 0)
+    // )
+    // Where [0...0] is an array of 0s, TREE_ARITY ** voteOptionTreeDepth long
+    uint256 public currentTallyCommitment = 
+        0x17e1b6993b1af9f8dfe8d4202c2f2a610994ff19b92462f9a54da39d11026d6b;
 
     uint256 public numSignUps;
-
-    // Whether there are unprocessed messages left
-    bool public hasUnprocessedMessages = true;
-
-    // The current message batch index. When the coordinator runs
-    // processMessages(), this action relates to messages
-    // currentMessageBatchIndex to currentMessageBatchIndex + messageBatchSize.
-    uint256 public currentMessageBatchIndex;
-
-    // The number of batches processed
-    uint256 public numBatchesProcessed;
 
     // The number of published messages
     uint256 public numMessages;
@@ -185,7 +182,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     string constant ERROR_VOTING_PERIOD_PASSED = "PollE03";
     string constant ERROR_VOTING_PERIOD_NOT_PASSED = "PollE04";
     string constant ERROR_INVALID_PUBKEY = "PollE05";
-    string constant ERROR_ONLY_MESSAGE_PROCESSOR = "PollE06";
+    string constant ERROR_ONLY_PPT = "PollE06";
 
     event PublishMessage(
         Message _message,
@@ -204,7 +201,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
         BatchSizes memory _batchSizes,
         uint256 _coordinatorPubKeyHash,
         ExtContracts memory _extContracts,
-        MessageProcessor _msgProcessor,
+        PollProcessorAndTallyer _ppt,
         uint256 _numSignUps
     ) {
         VkRegistry _vkRegistry = _extContracts.vkRegistry;
@@ -247,7 +244,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
         deployTime = block.timestamp;
 
         // Set the poll processor contract
-        msgProcessor = _msgProcessor;
+        ppt = _ppt;
 
         // Set the current number of signups
         numSignUps = _numSignUps;
@@ -371,48 +368,39 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
         messageAq.insertSubTree(_messageSubRoot);
         // TODO: emit event
     }
-
-    /*
-     * The MessageProcessor will call this function to update the Poll's state
-     * after processing each batch.
-     */
-    function setMessageProcessingData(
-        uint256 _newSbCommitment,
-        bool _hasUnprocessedMessages,
-        uint256 _currentMessageBatchIndex
-    ) public {
-        require(
-            msg.sender == address(msgProcessor),
-            ERROR_ONLY_MESSAGE_PROCESSOR
-        );
-
-        // TODO: check batch num?
-
-        currentSbCommitment = _newSbCommitment;
-        hasUnprocessedMessages = _hasUnprocessedMessages;
-        currentMessageBatchIndex = _currentMessageBatchIndex;
-        numBatchesProcessed ++;
-    }
-
-    //function setVoteTallyingData(
-        //uint256 _newResultsCommitment
-    //) public {
-        //require(
-            //msg.sender == address(voteTallyer),
-            //ERROR_ONLY_VOTE_TALLYER
-        //);
-        //currentResultsCommitment = _newResultsCommitment;
-    //}
 }
 
-// TODO: to reduce the Poll contract size, make MessageProcessor and
-// VoteTallyer store data instead
-contract MessageProcessor is Ownable, SnarkCommon, Hasher {
-    string constant ERROR_VOTING_PERIOD_NOT_PASSED = "MessageProcessorE01";
-    string constant ERROR_NO_MORE_MESSAGES = "MessageProcessorE02";
-    string constant ERROR_MESSAGE_AQ_NOT_MERGED = "MessageProcessorE03";
-    string constant ERROR_INVALID_STATE_ROOT_SNAPSHOT_TIMESTAMP =
-        "MessageProcessorE04";
+// TODO: to reduce the Poll contract size, make this contract
+// store data instead
+contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher {
+    string constant ERROR_VOTING_PERIOD_NOT_PASSED = "PptE01";
+    string constant ERROR_NO_MORE_MESSAGES = "PptE02";
+    string constant ERROR_MESSAGE_AQ_NOT_MERGED = "PptE03";
+    string constant ERROR_INVALID_STATE_ROOT_SNAPSHOT_TIMESTAMP = "PptE04";
+    string constant ERROR_INVALID_PROCESS_MESSAGE_PROOF = "PptE05";
+    string constant ERROR_INVALID_TALLY_VOTES_PROOF = "PptE06";
+    string constant ERROR_PROCESSING_NOT_COMPLETE = "PptE07";
+    string constant ERROR_ALL_BALLOTS_TALLIED = "PptE08";
+
+    struct PptData {
+        uint256 sbCommitment;
+
+        // The current message batch index. When the coordinator runs
+        // processMessages(), this action relates to messages
+        // currentMessageBatchIndex to currentMessageBatchIndex + messageBatchSize.
+        uint256 currentMessageBatchIndex;
+
+        // Whether there are unprocessed messages left
+        bool processingComplete;
+
+        // The number of batches processed
+        uint256 numBatchesProcessed;
+
+        uint256 tallyCommitment;
+        uint256 tallyBatchNum;
+    }
+
+    mapping (Poll => PptData) public pollPptData;
 
     IVerifier public verifier;
 
@@ -422,20 +410,21 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher {
         verifier = _verifier;
     }
 
-    function genPackedVals(
+    function genProcessMessagesPackedVals(
         Poll _poll
     ) public view returns (uint256) {
         (
+            // ignore the 1st and 3rd value
             ,
             uint256 maxVoteOptions,
-            // ignore the 3rd value
+
         ) = _poll.maxValues();
 
         (uint8 mbs, ) = _poll.batchSizes();
         uint256 messageBatchSize = uint256(mbs);
         uint256 numSignUps = _poll.numSignUps();
 
-        uint256 index = _poll.currentMessageBatchIndex();
+        uint256 index = pollPptData[_poll].currentMessageBatchIndex;
         uint256 numMessages = _poll.numMessages();
         uint256 batchEndIndex = numMessages - index >= messageBatchSize ?
             index + messageBatchSize
@@ -458,16 +447,6 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher {
             secondsPassed > _poll.duration(),
             ERROR_VOTING_PERIOD_NOT_PASSED
         );
-
-        _;
-    }
-
-    modifier unprocessedMessagesExist(Poll _poll) {
-        // Require that unprocessed messages exist
-        require(
-            _poll.hasUnprocessedMessages(),
-            ERROR_NO_MORE_MESSAGES
-        );
         _;
     }
 
@@ -475,7 +454,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher {
         Poll _poll,
         uint256 _messageRoot
     ) public view returns (uint256[] memory) {
-        uint256 packedVals = genPackedVals(_poll);
+        uint256 packedVals = genProcessMessagesPackedVals(_poll);
         uint256[] memory input = new uint256[](4);
         input[0] = packedVals;
         input[1] = _poll.coordinatorPubKeyHash();
@@ -504,7 +483,6 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher {
     public
     onlyOwner
     votingPeriodOver(_poll)
-    unprocessedMessagesExist(_poll)
     {
         uint8 messageTreeDepth;
         uint8 voteOptionTreeDepth;
@@ -526,11 +504,19 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher {
         uint256 messageBatchSize;
         (messageBatchSize, ) = _poll.batchSizes();
 
-        uint256 currentMessageBatchIndex = _poll.currentMessageBatchIndex();
+        PptData memory data = pollPptData[_poll];
+
+        // Require that unprocessed messages exist
+        require(
+            !data.processingComplete,
+            ERROR_NO_MORE_MESSAGES
+        );
+
+        uint256 currentMessageBatchIndex = data.currentMessageBatchIndex;
 
         // Copy the state root and set the batch index if this is the
         // first batch to process
-        if (_poll.numBatchesProcessed() == 0) {
+        if (data.numBatchesProcessed == 0) {
             uint256 numMessages = _poll.messageAq().numLeaves();
             currentMessageBatchIndex =
                 (numMessages / messageBatchSize) * messageBatchSize;
@@ -550,13 +536,9 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher {
                 _poll,
                 messageRoot
             );
-            bool isValid = verifier.verify(
-                _proof,
-                vk,
-                publicInputs
-            );
+            bool isValid = verifier.verify(_proof, vk, publicInputs);
 
-            require(isValid, "MessageProcessor: invalid proof");
+            require(isValid, ERROR_INVALID_PROCESS_MESSAGE_PROOF);
         }
 
         {
@@ -565,11 +547,15 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher {
             if (currentMessageBatchIndex > 0) {
                 currentMessageBatchIndex -= messageBatchSize;
             }
+            uint256 numMessages = _poll.numMessages();
+            bool processingComplete =
+                numMessages <= messageBatchSize * (data.numBatchesProcessed + 1);
 
             updatePollMessageProcessingData(
                 _poll,
                 _newSbCommitment,
-                currentMessageBatchIndex
+                currentMessageBatchIndex,
+                processingComplete
             );
         }
     }
@@ -577,15 +563,118 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher {
     function updatePollMessageProcessingData(
         Poll _poll,
         uint256 _newSbCommitment,
-        uint256 _currentMessageBatchIndex
+        uint256 _currentMessageBatchIndex,
+        bool _processingComplete
     ) internal {
-        // Update the state and ballot root commitment, as well as the message
-        // processing metadata
-        _poll.setMessageProcessingData(
-            _newSbCommitment,
-            _currentMessageBatchIndex == 0 ? _poll.hasUnprocessedMessages() : false,
-            _currentMessageBatchIndex
+        PptData memory data = pollPptData[_poll];
+
+        data.sbCommitment = _newSbCommitment;
+
+        data.processingComplete = _processingComplete;
+
+        data.currentMessageBatchIndex = _currentMessageBatchIndex;
+
+        data.numBatchesProcessed = data.numBatchesProcessed + 1;
+
+        pollPptData[_poll] = data;
+    }
+
+    function genTallyVotesPackedVals(Poll _poll)
+        public view returns (uint256) {
+        
+        ( , uint256 tallyBatchSize) = _poll.batchSizes(); 
+
+        PptData memory data = pollPptData[_poll];
+        uint256 batchStartIndex = data.tallyBatchNum * tallyBatchSize;
+
+        uint256 result =
+            batchStartIndex +
+            (_poll.numSignUps() << uint256(50));
+
+        return result;
+    }
+
+    function genTallyVotesPublicInputs(
+        Poll _poll,
+        uint256 _newTallyCommitment
+    ) public view returns (uint256[] memory) {
+        uint256 packedVals = genTallyVotesPackedVals(_poll);
+        uint256[] memory input = new uint256[](4);
+        input[0] = packedVals;
+        input[1] = _poll.currentSbCommitment();
+        input[2] = _poll.currentTallyCommitment();
+        input[3] = _newTallyCommitment;
+        uint256 inputHash = sha256Hash(input);
+
+        uint256[] memory publicInputs = new uint256[](1);
+        publicInputs[0] = inputHash;
+
+        return publicInputs;
+    }
+
+    function tallyVotes(
+        Poll _poll,
+        uint256 _newTallyCommitment,
+        uint256[8] memory _proof
+    )
+    public
+    onlyOwner
+    votingPeriodOver(_poll)
+    {
+        PptData memory data = pollPptData[_poll];
+
+        ( , uint256 tallyBatchSize) = _poll.batchSizes(); 
+
+        uint256 batchStartIndex = data.tallyBatchNum * tallyBatchSize;
+        uint256 numSignUps = _poll.numSignUps();
+
+        require(
+            batchStartIndex < numSignUps,
+            ERROR_ALL_BALLOTS_TALLIED
         );
+
+        // Require that all messages have been processed
+        require(
+            data.processingComplete,
+            ERROR_PROCESSING_NOT_COMPLETE
+        );
+
+        uint8 intStateTreeDepth;
+        uint8 voteOptionTreeDepth;
+        (
+            intStateTreeDepth,
+            ,
+            ,
+            voteOptionTreeDepth
+        ) = _poll.treeDepths();
+
+        // Get the verifying key
+        VerifyingKey memory vk = _poll.maci().vkRegistry().getTallyVk(
+            _poll.maci().stateTreeDepth(),
+            intStateTreeDepth,
+            voteOptionTreeDepth
+        );
+
+        { 
+            // Curly brackets to avoid "Compiler error: Stack too deep, try
+            // removing local variables."
+
+            // Get the public inputs
+            uint256[] memory publicInputs = genTallyVotesPublicInputs(
+                _poll,
+                _newTallyCommitment
+            );
+
+            // Verify the proof
+            bool isValid = verifier.verify(_proof, vk, publicInputs);
+
+            require(isValid, ERROR_INVALID_TALLY_VOTES_PROOF);
+        }
+
+        // Update the tally commitment and the tally batch num
+        data.tallyCommitment = _newTallyCommitment;
+        data.tallyBatchNum = data.tallyBatchNum + 1;
+        pollPptData[_poll] = data;
     }
 }
 

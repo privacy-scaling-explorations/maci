@@ -478,9 +478,6 @@ class Poll {
 
         const coordPubKeyHash = coordPubKey.hash()
 
-        // TODO: pass in currentStateRoot as a private input
-        // and currentStateCommitment 
-
         const inputHash = sha256Hash([
             packedVals,
             coordPubKeyHash,
@@ -762,13 +759,11 @@ class Poll {
         const ballotRoot = this.ballotTree.root
         const sbSalt = this.sbSalts[this.currentMessageBatchIndex]
         const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt ])
-
-        // packed values
-        // important: the << operator has lower precedence than +
-        const packedVals = 
-            (BigInt(batchStartIndex) / BigInt(batchSize)) +
-            (BigInt(this.numSignUps) << BigInt(50))
-
+        const packedVals = MaciState.packTallyVotesSmallVals(
+            batchStartIndex,
+            batchSize,
+            this.numSignUps,
+        )
         const inputHash = sha256Hash([
             packedVals,
             sbCommitment,
@@ -910,6 +905,31 @@ class Poll {
         copied.messageTree = this.messageTree.copy()
         copied.processParamsFilename = this.processParamsFilename
         copied.results = this.results.map((x: BigInt) => BigInt(x.toString()))
+        copied.perVOSpentVoiceCredits = this.perVOSpentVoiceCredits.map((x: BigInt) => BigInt(x.toString()))
+
+        copied.numBatchesProcessed = Number(this.numBatchesProcessed.toString())
+        copied.numBatchesTallied = Number(this.numBatchesTallied.toString())
+        copied.currentMessageBatchIndex = Number(this.currentMessageBatchIndex.toString())
+        copied.pollId = Number(this.pollId.toString())
+        copied.totalSpentVoiceCredits = BigInt(this.totalSpentVoiceCredits.toString())
+
+        copied.sbSalts = {}
+        copied.resultRootSalts = {}
+        copied.preVOSpentVoiceCreditsRootSalts = {}
+        copied.spentVoiceCreditSubtotalSalts = {}
+
+        for (const k of Object.keys(this.sbSalts)) {
+            copied.sbSalts[k] = BigInt(this.sbSalts[k].toString())
+        }
+        for (const k of Object.keys(this.resultRootSalts)) {
+            copied.resultRootSalts[k] = BigInt(this.resultRootSalts[k].toString())
+        }
+        for (const k of Object.keys(this.preVOSpentVoiceCreditsRootSalts)) {
+            copied.preVOSpentVoiceCreditsRootSalts[k] = BigInt(this.preVOSpentVoiceCreditsRootSalts[k].toString())
+        }
+        for (const k of Object.keys(this.spentVoiceCreditSubtotalSalts)) {
+            copied.spentVoiceCreditSubtotalSalts[k] = BigInt(this.spentVoiceCreditSubtotalSalts[k].toString())
+        }
 
         return copied
     }
@@ -1072,6 +1092,19 @@ class MaciState {
         }
         
         return true
+    }
+
+    public static packTallyVotesSmallVals = (
+        batchStartIndex: number,
+        batchSize: number,
+        numSignUps: number,
+    ) => {
+        // Note: the << operator has lower precedence than +
+        const packedVals = 
+            (BigInt(batchStartIndex) / BigInt(batchSize)) +
+            (BigInt(numSignUps) << BigInt(50))
+
+        return packedVals
     }
 
     public static packProcessMessageSmallVals = (

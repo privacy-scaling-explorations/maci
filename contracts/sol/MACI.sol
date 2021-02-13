@@ -5,7 +5,7 @@ pragma solidity ^0.7.2;
 import {
     Poll,
     PollFactory,
-    MessageProcessor,
+    PollProcessorAndTallyer,
     MessageAqFactory
 } from "./Poll.sol";
 import {
@@ -272,7 +272,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         MaxValues memory _maxValues,
         TreeDepths memory _treeDepths,
         PubKey memory _coordinatorPubKey,
-        MessageProcessor _msgProcessor
+        PollProcessorAndTallyer _ppt
     ) public afterInit {
         require(mergeSubRootsTimestamp != 0, "MACI: state root not merged");
         uint256 pollId = nextPollId;
@@ -293,7 +293,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
             vkRegistry,
             this,
             owner(),
-            _msgProcessor,
+            _ppt,
             mergeSubRootsTimestamp
         );
 
