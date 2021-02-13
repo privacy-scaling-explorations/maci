@@ -34,7 +34,13 @@ template TallyVotes(
 
     // The only public input (inputHash) is the hash of the following:
     signal private input sbCommitment;
-    signal private input newResultsCommitment;
+    signal private input currentTallyCommitment;
+    signal private input newTallyCommitment;
+    
+    // A tally commitment is the hash of the following salted values:
+    //   - the vote results
+    //   - the number of voice credits spent per vote option
+    //   - the total number of spent voice credits
 
     signal private input packedVals;
     signal input inputHash;
@@ -43,21 +49,51 @@ template TallyVotes(
     // The ballots
     signal private input ballots[batchSize][BALLOT_LENGTH];
     signal private input ballotPathElements[k][TREE_ARITY - 1];
-    /*signal private input voteLeaves[batchSize][numVoteOptions];*/
+    signal private input votes[batchSize][numVoteOptions];
+
+    signal private input currentResults[numVoteOptions];
+    signal private input currentResultsRootSalt;
+
+    signal private input currentSpentVoiceCreditSubtotal;
+    signal private input currentSpentVoiceCreditSubtotalSalt;
+
+    signal private input currentPerVOSpentVoiceCredits[numVoteOptions];
+    signal private input currentPerVOSpentVoiceCreditsRootSalt;
+
+    signal private input newResultsRootSalt;
+    signal private input newPerVOSpentVoiceCreditsRootSalt;
+    signal private input newSpentVoiceCreditSubtotalSalt;
+
+    //  ----------------------------------------------------------------------- 
+    // Verify sbCommitment
+    component sbCommitmentHasher = Hasher3();
+    sbCommitmentHasher.in[0] <== stateRoot;
+    sbCommitmentHasher.in[1] <== ballotRoot;
+    sbCommitmentHasher.in[2] <== sbSalt;
+    sbCommitmentHasher.hash === sbCommitment;
 
     //  ----------------------------------------------------------------------- 
     // Verify inputHash
     component inputHasher = TallyVotesInputHasher();
     inputHasher.sbCommitment <== sbCommitment;
-    inputHasher.newResultsCommitment <== newResultsCommitment;
+    inputHasher.currentTallyCommitment <== currentTallyCommitment;
+    inputHasher.newTallyCommitment <== newTallyCommitment;
     inputHasher.packedVals <== packedVals;
-    /*inputHasher.hash === inputHash;*/
+    inputHasher.hash === inputHash;
 
     signal numSignUps;
     signal batchStartIndex;
 
     numSignUps <== inputHasher.numSignUps;
-    batchStartIndex <== inputHasher.batchStartIndex;
+    batchStartIndex <== inputHasher.batchNum * batchSize;
+
+    //  ----------------------------------------------------------------------- 
+    // Validate batchStartIndex and numSignUps
+    // batchStartIndex should be less than numSignUps
+    component validNumSignups = LessThan(50);
+    validNumSignups.in[0] <== batchStartIndex;
+    validNumSignups.in[1] <== numSignUps;
+    validNumSignups.out === 1;
 
     //  ----------------------------------------------------------------------- 
     // Verify the ballots
@@ -75,7 +111,7 @@ template TallyVotes(
 
     component ballotQle = QuinLeafExists(k);
     component ballotPathIndices = QuinGeneratePathIndices(k);
-    ballotPathIndices.in <== batchStartIndex;
+    ballotPathIndices.in <== inputHasher.batchNum;
     ballotQle.leaf <== ballotSubroot.root;
     ballotQle.root <== ballotRoot;
     for (var i = 0; i < k; i ++) {
@@ -85,57 +121,188 @@ template TallyVotes(
         }
     }
 
+    //  ----------------------------------------------------------------------- 
     // Verify the vote option roots
+    component voteTree[batchSize];
+    for (var i = 0; i < batchSize; i ++) {
+        voteTree[i] = QuinCheckRoot(voteOptionTreeDepth);
+        for (var j = 0; j < TREE_ARITY ** voteOptionTreeDepth; j ++) {
+            voteTree[i].leaves[j] <== votes[i][j];
+        }
+        voteTree[i].root === ballots[i][BALLOT_VO_ROOT_IDX];
+    }
 
+    //  ----------------------------------------------------------------------- 
     // Tally the new results
-    
-    // Tally the new total spent voice credit tally
+    component resultCalc[numVoteOptions];
+    for (var i = 0; i < numVoteOptions; i ++) {
+        resultCalc[i] = CalculateTotal(batchSize + 1);
+        resultCalc[i].nums[batchSize] <== currentResults[i];
+        for (var j = 0; j < batchSize; j ++) {
+            resultCalc[i].nums[j] <== votes[j][i];
+        }
+    }
 
-    // Tally the total votes per vote option
+    // Tally the new total of spent voice credits
+    component newSpentVoiceCreditSubtotal = CalculateTotal(batchSize * numVoteOptions + 1);
+    newSpentVoiceCreditSubtotal.nums[batchSize * numVoteOptions] <== currentSpentVoiceCreditSubtotal;
+    for (var i = 0; i < batchSize; i ++) {
+        for (var j = 0; j < numVoteOptions; j ++) {
+            newSpentVoiceCreditSubtotal.nums[i * numVoteOptions + j] <==
+                votes[i][j] * votes[i][j];
+        }
+    }
 
-    // Tally the total votes
+    // Tally the spent voice credits per vote option
+    component newPerVOSpentVoiceCredits[numVoteOptions];
+    for (var i = 0; i < numVoteOptions; i ++) {
+        newPerVOSpentVoiceCredits[i] = CalculateTotal(batchSize + 1);
+        newPerVOSpentVoiceCredits[i].nums[batchSize] <== currentPerVOSpentVoiceCredits[i];
+        for (var j = 0; j < batchSize; j ++) {
+            newPerVOSpentVoiceCredits[i].nums[j] <== votes[j][i] * votes[j][i];
+        }
+    }
 
-    // Commit to the results
+    // Verify the current and new tally
+    component rcv = ResultCommitmentVerifier(voteOptionTreeDepth);
+    rcv.currentTallyCommitment <== currentTallyCommitment;
+    rcv.newTallyCommitment <== newTallyCommitment;
+    rcv.currentResultsRootSalt <== currentResultsRootSalt;
+    rcv.newResultsRootSalt <== newResultsRootSalt;
+    rcv.currentSpentVoiceCreditSubtotal <== currentSpentVoiceCreditSubtotal;
+    rcv.currentSpentVoiceCreditSubtotalSalt <== currentSpentVoiceCreditSubtotalSalt;
+    rcv.newSpentVoiceCreditSubtotal <== newSpentVoiceCreditSubtotal.sum;
+    rcv.newSpentVoiceCreditSubtotalSalt <== newSpentVoiceCreditSubtotalSalt;
+    rcv.currentPerVOSpentVoiceCreditsRootSalt <== currentPerVOSpentVoiceCreditsRootSalt;
+    rcv.newPerVOSpentVoiceCreditsRootSalt <== newPerVOSpentVoiceCreditsRootSalt;
 
+    for (var i = 0; i < numVoteOptions; i ++) {
+        rcv.currentResults[i] <== currentResults[i];
+        rcv.newResults[i] <== resultCalc[i].sum;
+        rcv.currentPerVOSpentVoiceCredits[i] <== currentPerVOSpentVoiceCredits[i];
+        rcv.newPerVOSpentVoiceCredits[i] <== newPerVOSpentVoiceCredits[i].sum;
+    }
+}
 
-    /*//  ----------------------------------------------------------------------- */
-    /*// Verify sbCommitment*/
-    /*component sbCommitmentHasher = Hasher3();*/
-    /*sbCommitmentHasher.in[0] <== stateRoot;*/
-    /*sbCommitmentHasher.in[1] <== ballotRoot;*/
-    /*sbCommitmentHasher.in[2] <== sbSalt;*/
-    /*sbCommitmentHasher.hash === sbCommitment;*/
+/*
+ * Verifies the commitment to the current results. Also computes and outputs a
+ * commitment to the new results.
+ */
+template ResultCommitmentVerifier(voteOptionTreeDepth) {
+    var TREE_ARITY = 5;
+    var numVoteOptions = TREE_ARITY ** voteOptionTreeDepth;
 
-    /*//  ----------------------------------------------------------------------- */
-    /*// Validate batchStartIndex and numSignUps*/
-    /*// batchStartIndex should be less than numSignUps*/
-    /*component validNumSignups = LessThan(50);*/
-    /*validNumSignups.in[0] <== batchStartIndex;*/
-    /*validNumSignups.in[1] <== numSignUps;*/
-    /*validNumSignups.out === 1;*/
+    signal private input currentTallyCommitment;
+    signal private input newTallyCommitment;
 
-    /*//  ----------------------------------------------------------------------- */
-    /*// Validate ballots*/
-    /*// TODO*/
+    // Results
+    signal private input currentResults[numVoteOptions];
+    signal private input currentResultsRootSalt;
+
+    signal private input newResults[numVoteOptions];
+    signal private input newResultsRootSalt;
+
+    // Spent voice credits
+    signal private input currentSpentVoiceCreditSubtotal;
+    signal private input currentSpentVoiceCreditSubtotalSalt;
+
+    signal private input newSpentVoiceCreditSubtotal;
+    signal private input newSpentVoiceCreditSubtotalSalt;
+
+    // Spent voice credits per vote option
+    signal private input currentPerVOSpentVoiceCredits[numVoteOptions];
+    signal private input currentPerVOSpentVoiceCreditsRootSalt;
+
+    signal private input newPerVOSpentVoiceCredits[numVoteOptions];
+    signal private input newPerVOSpentVoiceCreditsRootSalt;
+
+    // Compute the commitment to the current results
+    component currentResultsRoot = QuinCheckRoot(voteOptionTreeDepth);
+    for (var i = 0; i < numVoteOptions; i ++) {
+        currentResultsRoot.leaves[i] <== currentResults[i];
+    }
+
+    component currentResultsCommitment = HashLeftRight();
+    currentResultsCommitment.left <== currentResultsRoot.root;
+    currentResultsCommitment.right <== currentResultsRootSalt;
+
+    // Compute the commitment to the current spent voice credits
+    component currentSpentVoiceCreditsCommitment = HashLeftRight();
+    currentSpentVoiceCreditsCommitment.left <== currentSpentVoiceCreditSubtotal;
+    currentSpentVoiceCreditsCommitment.right <== currentSpentVoiceCreditSubtotalSalt;
+
+    // Compute the root of the spent voice credits per vote option
+    component currentPerVOSpentVoiceCreditsRoot = QuinCheckRoot(voteOptionTreeDepth);
+    for (var i = 0; i < numVoteOptions; i ++) {
+        currentPerVOSpentVoiceCreditsRoot.leaves[i] <== currentPerVOSpentVoiceCredits[i];
+    }
+
+    component currentPerVOSpentVoiceCreditsCommitment = HashLeftRight();
+    currentPerVOSpentVoiceCreditsCommitment.left <== currentPerVOSpentVoiceCreditsRoot.root;
+    currentPerVOSpentVoiceCreditsCommitment.right <== currentPerVOSpentVoiceCreditsRootSalt;
+
+    // Commit to the current tally
+    component currentTallyCommitmentHasher = Hasher3();
+    currentTallyCommitmentHasher.in[0] <== currentResultsCommitment.hash;
+    currentTallyCommitmentHasher.in[1] <== currentSpentVoiceCreditsCommitment.hash;
+    currentTallyCommitmentHasher.in[2] <== currentPerVOSpentVoiceCreditsCommitment.hash;
+
+    currentTallyCommitmentHasher.hash === currentTallyCommitment;
+
+    // Compute the root of the new results
+    component newResultsRoot = QuinCheckRoot(voteOptionTreeDepth);
+    for (var i = 0; i < numVoteOptions; i ++) {
+        newResultsRoot.leaves[i] <== newResults[i];
+    }
+
+    component newResultsCommitment = HashLeftRight();
+    newResultsCommitment.left <== newResultsRoot.root;
+    newResultsCommitment.right <== newResultsRootSalt;
+
+    // Compute the commitment to the new spent voice credits value
+    component newSpentVoiceCreditsCommitment = HashLeftRight();
+    newSpentVoiceCreditsCommitment.left <== newSpentVoiceCreditSubtotal;
+    newSpentVoiceCreditsCommitment.right <== newSpentVoiceCreditSubtotalSalt;
+
+    // Compute the root of the spent voice credits per vote option
+    component newPerVOSpentVoiceCreditsRoot = QuinCheckRoot(voteOptionTreeDepth);
+    for (var i = 0; i < numVoteOptions; i ++) {
+        newPerVOSpentVoiceCreditsRoot.leaves[i] <== newPerVOSpentVoiceCredits[i];
+    }
+
+    component newPerVOSpentVoiceCreditsCommitment = HashLeftRight();
+    newPerVOSpentVoiceCreditsCommitment.left <== newPerVOSpentVoiceCreditsRoot.root;
+    newPerVOSpentVoiceCreditsCommitment.right <== newPerVOSpentVoiceCreditsRootSalt;
+
+    // Commit to the new tally
+    component newTallyCommitmentHasher = Hasher3();
+    newTallyCommitmentHasher.in[0] <== newResultsCommitment.hash;
+    newTallyCommitmentHasher.in[1] <== newSpentVoiceCreditsCommitment.hash;
+    newTallyCommitmentHasher.in[2] <== newPerVOSpentVoiceCreditsCommitment.hash;
+
+    newTallyCommitmentHasher.hash === newTallyCommitment;
 }
 
 template TallyVotesInputHasher() {
     signal input sbCommitment;
-    signal input newResultsCommitment;
+    signal input currentTallyCommitment;
+    signal input newTallyCommitment;
+
     signal output numSignUps;
-    signal output batchStartIndex;
+    signal output batchNum;
     signal output hash;
 
     signal input packedVals;
     component unpack = UnpackElement(2);
     unpack.in <== packedVals;
+    batchNum <== unpack.out[1];
     numSignUps <== unpack.out[0];
-    batchStartIndex <== unpack.out[1];
 
-    /*component hasher = Sha256Hasher3();*/
-    /*hasher.in[0] <== packedVals;*/
-    /*hasher.in[1] <== sbCommitment;*/
-    /*hasher.in[2] <== newResultsCommitment;*/
+    component hasher = Sha256Hasher4();
+    hasher.in[0] <== packedVals;
+    hasher.in[1] <== sbCommitment;
+    hasher.in[2] <== currentTallyCommitment;
+    hasher.in[3] <== newTallyCommitment;
 
-    /*hash <== hasher.hash;*/
+    hash <== hasher.hash;
 }

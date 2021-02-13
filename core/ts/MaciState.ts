@@ -86,12 +86,16 @@ class Poll {
     public pollId: number
 
     public sbSalts: {[key: number]: BigInt} = {}
+    public resultRootSalts: {[key: number]: BigInt} = {}
+    public preVOSpentVoiceCreditsRootSalts: {[key: number]: BigInt} = {}
+    public spentVoiceCreditSubtotalSalts: {[key: number]: BigInt} = {}
 
     // For vote tallying
     public results: BigInt[] = []
+    public perVOSpentVoiceCredits: BigInt[] = []
     public numBatchesTallied = 0
 
-    public currentResultsSalt: BigInt = BigInt(0)
+    public totalSpentVoiceCredits: BigInt = BigInt(0)
 
     constructor(
         _duration: number,
@@ -133,6 +137,7 @@ class Poll {
 
         for (let i = 0; i < this.maxValues.maxVoteOptions; i ++) {
             this.results.push(BigInt(0))
+            this.perVOSpentVoiceCredits.push(BigInt(0))
         }
 
         // Copy state leaves
@@ -211,11 +216,15 @@ class Poll {
     public hasUnprocessedMessages = (): boolean => {
         const batchSize = this.batchSizes.messageBatchSize
 
-        const totalBatches =
+        let totalBatches =
             this.messages.length <= batchSize ?
             1
             : 
             Math.floor(this.messages.length / batchSize)
+
+        if (this.messages.length % batchSize > 0) {
+            totalBatches ++
+        }
 
         return this.numBatchesProcessed < totalBatches
     }
@@ -653,9 +662,7 @@ class Poll {
     /*
      * Tally a batch of Ballots and update this.results
      */
-    public tallyVotes = (
-        _resultsSalt: BigInt = genRandomSalt(),
-    ) => {
+    public tallyVotes = () => {
 
         const batchSize = this.batchSizes.tallyBatchSize
 
@@ -665,9 +672,38 @@ class Poll {
         )
 
         const batchStartIndex = this.numBatchesTallied * batchSize
-        const currentResultsCommitment = this.genResultsCommitment()
+
+        const currentResultsRootSalt = batchStartIndex === 0 ?
+            BigInt(0)
+            :
+            this.resultRootSalts[batchStartIndex - batchSize]
+
+        const currentPerVOSpentVoiceCreditsRootSalt = batchStartIndex === 0 ?
+            BigInt(0)
+            :
+            this.preVOSpentVoiceCreditsRootSalts[batchStartIndex - batchSize]
+
+        const currentSpentVoiceCreditSubtotalSalt = batchStartIndex === 0 ?
+            BigInt(0)
+            :
+            this.spentVoiceCreditSubtotalSalts[batchStartIndex - batchSize]
+
+        const currentResultsCommitment = this.genResultsCommitment(currentResultsRootSalt)
+        const currentPerVOSpentVoiceCreditsCommitment =
+            this.genPerVOSpentVoiceCreditsCommitment(currentPerVOSpentVoiceCreditsRootSalt)
+        const currentSpentVoiceCreditsCommitment =
+            this.genSpentVoiceCreditSubtotalCommitment(currentSpentVoiceCreditSubtotalSalt)
+
+        const currentTallyCommitment = hash3([
+            currentResultsCommitment,
+            currentSpentVoiceCreditsCommitment,
+            currentPerVOSpentVoiceCreditsCommitment,
+        ])
 
         const ballots: Ballot[] = []
+        const currentResults = this.results.map((x) => BigInt(x.toString()))
+        const currentPerVOSpentVoiceCredits = this.perVOSpentVoiceCredits.map((x) => BigInt(x.toString()))
+        const currentSpentVoiceCreditSubtotal = BigInt(this.totalSpentVoiceCredits.toString())
 
         for (
             let i = this.numBatchesTallied * batchSize;
@@ -681,8 +717,15 @@ class Poll {
             ballots.push(this.ballots[i])
 
             for (let j = 0; j < this.maxValues.maxVoteOptions; j++) {
-                this.results[j] = 
-                    BigInt(this.results[j]) + BigInt(this.ballots[i].votes[j])
+                const v = BigInt(this.ballots[i].votes[j])
+
+                this.results[j] = BigInt(this.results[j]) + v
+
+                this.perVOSpentVoiceCredits[j] =
+                    BigInt(this.perVOSpentVoiceCredits[j]) + (BigInt(v) * BigInt(v))
+
+                this.totalSpentVoiceCredits =
+                    BigInt(this.totalSpentVoiceCredits) + BigInt(v) * BigInt(v)
             }
         }
 
@@ -694,22 +737,43 @@ class Poll {
         while (ballots.length < batchSize) {
             ballots.push(emptyBallot)
         }
-        debugger
 
-        const newResultsCommitment = this.genResultsCommitment()
+        const newResultsRootSalt = genRandomSalt()
+        const newPerVOSpentVoiceCreditsRootSalt = genRandomSalt()
+        const newSpentVoiceCreditSubtotalSalt = genRandomSalt()
+
+        this.resultRootSalts[batchStartIndex] = newResultsRootSalt
+        this.preVOSpentVoiceCreditsRootSalts[batchStartIndex] = newPerVOSpentVoiceCreditsRootSalt
+        this.spentVoiceCreditSubtotalSalts[batchStartIndex] = newSpentVoiceCreditSubtotalSalt
+
+        const newResultsCommitment = this.genResultsCommitment(newResultsRootSalt)
+        const newPerVOSpentVoiceCreditsCommitment =
+            this.genPerVOSpentVoiceCreditsCommitment(newPerVOSpentVoiceCreditsRootSalt)
+        const newSpentVoiceCreditsCommitment =
+            this.genSpentVoiceCreditSubtotalCommitment(newSpentVoiceCreditSubtotalSalt)
+
+        const newTallyCommitment = hash3([
+            newResultsCommitment,
+            newSpentVoiceCreditsCommitment,
+            newPerVOSpentVoiceCreditsCommitment,
+        ])
+
         const stateRoot = this.stateTree.root
         const ballotRoot = this.ballotTree.root
         const sbSalt = this.sbSalts[this.currentMessageBatchIndex]
         const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt ])
 
         // packed values
-        const packedVals = BigInt(this.numSignUps) +
-            BigInt(batchStartIndex) << BigInt(50)
+        // important: the << operator has lower precedence than +
+        const packedVals = 
+            (BigInt(batchStartIndex) / BigInt(batchSize)) +
+            (BigInt(this.numSignUps) << BigInt(50))
 
         const inputHash = sha256Hash([
             packedVals,
             sbCommitment,
-            newResultsCommitment,
+            currentTallyCommitment,
+            newTallyCommitment,
         ])
 
         const ballotSubrootProof = this.ballotTree.genMerkleSubrootPath(
@@ -717,26 +781,44 @@ class Poll {
                 batchStartIndex + batchSize,
             )
 
+        const votes = ballots.map((x) => x.votes)
+
         const circuitInputs = stringifyBigInts({
             stateRoot,
             ballotRoot,
             sbSalt,
+
             sbCommitment,
-            newResultsCommitment,
-            inputHash,
+            currentTallyCommitment,
+            newTallyCommitment,
+
             packedVals, // contains numSignUps and batchStartIndex
+            inputHash,
+
             ballots: ballots.map((x) => x.asCircuitInputs()),
             ballotPathElements: ballotSubrootProof.pathElements,
+            votes,
+
+            currentResults,
+            currentResultsRootSalt,
+
+            currentSpentVoiceCreditSubtotal,
+            currentSpentVoiceCreditSubtotalSalt,
+
+            currentPerVOSpentVoiceCredits,
+            currentPerVOSpentVoiceCreditsRootSalt,
+
+            newResultsRootSalt,
+            newPerVOSpentVoiceCreditsRootSalt,
+            newSpentVoiceCreditSubtotalSalt,
         })
-        debugger
 
         this.numBatchesTallied ++
-        this.currentResultsSalt = _resultsSalt
 
         return circuitInputs
     }
 
-    public genResultsCommitment = () => {
+    public genResultsCommitment = (_salt: BigInt) => {
         const resultsTree = new IncrementalQuinTree(
             this.treeDepths.voteOptionTreeDepth,
             BigInt(0),
@@ -747,10 +829,29 @@ class Poll {
             resultsTree.insert(r)
         }
 
-        return hashLeftRight(
-            resultsTree.root,
-            this.currentResultsSalt,
+        return hashLeftRight(resultsTree.root, _salt)
+    }
+
+    public genSpentVoiceCreditSubtotalCommitment = (_salt) => {
+        let subtotal = BigInt(0)
+        for (const r of this.results) {
+            subtotal += BigInt(r) * BigInt(r)
+        }
+        return hashLeftRight(subtotal, _salt)
+    }
+
+    public genPerVOSpentVoiceCreditsCommitment = (_salt: BigInt) => {
+        const resultsTree = new IncrementalQuinTree(
+            this.treeDepths.voteOptionTreeDepth,
+            BigInt(0),
+            this.VOTE_OPTION_TREE_ARITY,
         )
+
+        for (const r of this.results) {
+            resultsTree.insert(BigInt(r) * BigInt(r))
+        }
+
+        return hashLeftRight(resultsTree.root, _salt)
     }
 
     public copy = (): Poll => {

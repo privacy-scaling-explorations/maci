@@ -8,6 +8,7 @@ deployedAddresses.json
 .etherlime-store
 **/build/
 circuits/build
+circuits/circom/test.bak
 contracts/compiled
 node_modules
 blake2sdef.json
