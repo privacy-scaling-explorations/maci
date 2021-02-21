@@ -139,6 +139,7 @@ class MaciState {
         copied.users = this.users.map((x: User) => x.copy())
         copied.messages = this.messages.map((x: Message) => x.copy())
         copied.encPubKeys = this.encPubKeys.map((x: PubKey) => x.copy())
+        copied.messageTree = this.messageTree.copy()
 
         return copied
     }
@@ -380,8 +381,10 @@ class MaciState {
         const messages: any[] = []
         const encPubKeys: any[] = []
 
+        debugger
         const clonedMaciState = this.copy()
         const messageTree = clonedMaciState.messageTree
+        debugger
 
         // prevInputs is the most recent set of UST circuit inputs generated from the
         // most recently processed message. In effect, even if there are not as
