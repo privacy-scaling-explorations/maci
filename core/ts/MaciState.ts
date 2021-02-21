@@ -29,6 +29,7 @@ class MaciState {
     private emptyVoteOptionTreeRoot
     private currentResultsSalt: BigInt = BigInt(0)
 
+    public stateTree: IncrementalQuinTree
     public messageTree: IncrementalQuinTree
 
     // encPubKeys contains the public keys used to generate ephemeral shared
@@ -61,6 +62,14 @@ class MaciState {
             NOTHING_UP_MY_SLEEVE,
             2,
         )
+
+        this.stateTree = new IncrementalQuinTree(
+            this.stateTreeDepth,
+            this.genBlankLeaf().hash(),
+            2,
+        )
+
+        this.stateTree.insert(this.zerothStateLeaf.hash())
     }
 
     /*
@@ -155,14 +164,15 @@ class MaciState {
         // is because we want to keep the state minimal, and only compute what
         // is necessary when it is needed. This may change if we run into
         // severe performance issues, but it is currently worth the tradeoff.
-        this.users.push(
-            new User(
-                _pubKey,
-                this.genBlankVotes(),
-                _initialVoiceCreditBalance,
-                BigInt(0),
-            )
+        const user = new User(
+            _pubKey,
+            this.genBlankVotes(),
+            _initialVoiceCreditBalance,
+            BigInt(0),
         )
+        this.users.push(user)
+        const stateLeaf = user.genStateLeaf(this.voteOptionTreeDepth)
+        this.stateTree.insert(stateLeaf.hash())
     }
 
     /*
@@ -308,8 +318,7 @@ class MaciState {
         const msgTreePath = this.messageTree.genMerklePath(_index)
         assert(IncrementalQuinTree.verifyMerklePath(msgTreePath, this.messageTree.hashFunc))
 
-        const stateTree = this.genStateTree()
-        const stateTreeMaxIndex = BigInt(stateTree.nextIndex) - BigInt(1)
+        const stateTreeMaxIndex = BigInt(this.stateTree.nextIndex) - BigInt(1)
 
         const userIndex = BigInt(command.stateIndex) - BigInt(1)
         assert(BigInt(this.users.length) > userIndex)
@@ -330,8 +339,8 @@ class MaciState {
         const voteOptionTreePath = voteOptionTree.genMerklePath(Number(command.voteOptionIndex))
         assert(IncrementalQuinTree.verifyMerklePath(voteOptionTreePath, voteOptionTree.hashFunc))
 
-        const stateTreePath = stateTree.genMerklePath(Number(command.stateIndex))
-        assert(IncrementalQuinTree.verifyMerklePath(stateTreePath, stateTree.hashFunc))
+        const stateTreePath = this.stateTree.genMerklePath(Number(command.stateIndex))
+        assert(IncrementalQuinTree.verifyMerklePath(stateTreePath, this.stateTree.hashFunc))
 
         const stateLeaf = user.genStateLeaf(this.voteOptionTreeDepth)
 
@@ -350,7 +359,7 @@ class MaciState {
             'vote_options_max_leaf_index': this.maxVoteOptionIndex,
             'state_tree_data_raw': stateLeaf.asCircuitInputs(),
             'state_tree_max_leaf_index': stateTreeMaxIndex,
-            'state_tree_root': stateTree.root,
+            'state_tree_root': this.stateTree.root,
             'state_tree_path_elements': stateTreePath.pathElements,
             'state_tree_path_index': stateTreePath.indices,
         })
@@ -382,7 +391,7 @@ class MaciState {
         const encPubKeys: any[] = []
 
         const clonedMaciState = this.copy()
-        const messageTree = clonedMaciState.genMessageTree()
+        const messageTree = clonedMaciState.messageTree
 
         // prevInputs is the most recent set of UST circuit inputs generated from the
         // most recently processed message. In effect, even if there are not as
