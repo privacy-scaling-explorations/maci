@@ -90,8 +90,16 @@ class User {
             BigInt(0),
         )
 
-        for (const vote of this.votes) {
-            voteOptionTree.insert(vote)
+        let lastIndex = this.votes.length - 1
+        while (lastIndex >= 0) {
+            if (this.votes[lastIndex] !== BigInt(0)) {
+                break
+            }
+            lastIndex --
+        }
+
+        for (let i = 0; i <= lastIndex; i ++) {
+            voteOptionTree.insert(this.votes[i])
         }
 
         return new StateLeaf(
