@@ -98,7 +98,7 @@ class User {
             lastIndex --
         }
 
-        for (let i = 0; i < lastIndex; i ++) {
+        for (let i = 0; i <= lastIndex; i ++) {
             voteOptionTree.insert(this.votes[i])
         }
 
