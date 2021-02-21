@@ -29,6 +29,8 @@ class MaciState {
     private emptyVoteOptionTreeRoot
     private currentResultsSalt: BigInt = BigInt(0)
 
+    public messageTree: IncrementalQuinTree
+
     // encPubKeys contains the public keys used to generate ephemeral shared
     // keys which encrypt each message
 
@@ -53,6 +55,12 @@ class MaciState {
         this.emptyVoteOptionTreeRoot = emptyVoteOptionTree.root
 
         this.zerothStateLeaf = this.genBlankLeaf()
+
+        this.messageTree = new IncrementalQuinTree(
+            this.messageTreeDepth,
+            NOTHING_UP_MY_SLEEVE,
+            2,
+        )
     }
 
     /*
@@ -170,6 +178,7 @@ class MaciState {
 
         this.encPubKeys.push(_encPubKey)
         this.messages.push(_message)
+        this.messageTree.insert(_message.hash())
     }
 
     /*
@@ -296,9 +305,8 @@ class MaciState {
         )
         const { command } = Command.decrypt(message, sharedKey)
 
-        const messageTree = this.genMessageTree()
-        const msgTreePath = messageTree.genMerklePath(_index)
-        assert(IncrementalQuinTree.verifyMerklePath(msgTreePath, messageTree.hashFunc))
+        const msgTreePath = this.messageTree.genMerklePath(_index)
+        assert(IncrementalQuinTree.verifyMerklePath(msgTreePath, this.messageTree.hashFunc))
 
         const stateTree = this.genStateTree()
         const stateTreeMaxIndex = BigInt(stateTree.nextIndex) - BigInt(1)
@@ -332,7 +340,7 @@ class MaciState {
             'ecdh_private_key': this.coordinatorKeypair.privKey.asCircuitInputs(),
             'ecdh_public_key': encPubKey.asCircuitInputs(),
             'message': message.asCircuitInputs(),
-            'msg_tree_root': messageTree.root,
+            'msg_tree_root': this.messageTree.root,
             'msg_tree_path_elements': msgTreePath.pathElements,
             'msg_tree_path_index': msgTreePath.indices,
             'vote_options_leaf_raw': currentVoteWeight,
