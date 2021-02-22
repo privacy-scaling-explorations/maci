@@ -381,10 +381,8 @@ class MaciState {
         const messages: any[] = []
         const encPubKeys: any[] = []
 
-        debugger
         const clonedMaciState = this.copy()
         const messageTree = clonedMaciState.messageTree
-        debugger
 
         // prevInputs is the most recent set of UST circuit inputs generated from the
         // most recently processed message. In effect, even if there are not as

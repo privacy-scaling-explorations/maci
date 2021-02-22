@@ -12,6 +12,7 @@
 | Coordinator | Process one batch or all remaining batches of messages | `process` |
 | Coordinator | Tally one batch or all remaining batches of state leaves | `tally` |
 | Coordinator | Process and tally all votes without producing proofs | `processAndTallyWithoutProofs` |
+| Coordinator | Roll back message processing and vote tallying in the MACI contract | `coordinatorReset` |
 
 ## Public and private key format
 

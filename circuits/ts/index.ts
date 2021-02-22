@@ -70,7 +70,6 @@ const getSignalByNameViaSym = (
 
     while (true) {
         line = liner.next()
-        debugger
         if (!line) { break }
         const s = line.toString().split(',')
         if (signal === s[3]) {
