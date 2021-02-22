@@ -275,6 +275,7 @@ const deployMaci = async (
             x: coordinatorPubKey.rawPubKey[0].toString(),
             y: coordinatorPubKey.rawPubKey[1].toString(),
         },
+        deployer.signer.address,
     )
     await maciContract.deployTransaction.wait()
 
