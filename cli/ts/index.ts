@@ -51,6 +51,11 @@ import {
     configureSubparser as configureSubparserForPtwp,
 } from './ptwp'
 
+import {
+    coordinatorReset,
+    configureSubparser as configureSubparserForCoordinatorReset,
+} from './coordinatorReset'
+
 const main = async () => {
     const parser = new argparse.ArgumentParser({ 
         description: 'Minimal Anti-Collusion Infrastructure',
@@ -88,6 +93,9 @@ const main = async () => {
     // Subcommand: processAndTallyWithoutProofs
     configureSubparserForPtwp(subparsers)
 
+    // Subcommand: coordinatorReset
+    configureSubparserForCoordinatorReset(subparsers)
+
     const args = parser.parseArgs()
 
     // Execute the subcommand method
@@ -113,6 +121,8 @@ const main = async () => {
         await verify(args)
     } else if (args.subcommand === 'processAndTallyWithoutProofs') {
         await processAndTallyWithoutProofs(args)
+    } else if (args.subcommand === 'coordinatorReset') {
+        await coordinatorReset(args)
     }
 }
 

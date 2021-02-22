@@ -2,6 +2,7 @@
 pragma experimental ABIEncoderV2;
 pragma solidity ^0.6.12;
 
+import { Ownable } from '@openzeppelin/contracts/access/Ownable.sol';
 import { DomainObjs } from './DomainObjs.sol';
 import { IncrementalQuinTree } from "./IncrementalQuinTree.sol";
 import { IncrementalMerkleTree } from "./IncrementalMerkleTree.sol";
@@ -21,7 +22,7 @@ interface SnarkVerifier {
     ) external view returns (bool);
 }
 
-contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
+contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally, Ownable {
 
     // A nothing-up-my-sleeve zero value
     // Should be equal to 8370432830353022751713833565135785980866757267633941821328460903436894336785
@@ -38,41 +39,24 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
     // The number of state leaves to tally per batch via the vote tally snark
     uint8 public tallyBatchSize;
 
-    // The current message batch index
-    uint256 public currentMessageBatchIndex;
-
     // The tree that tracks the sign-up messages.
     IncrementalMerkleTree public messageTree;
 
     // The tree that tracks each user's public key and votes
     IncrementalMerkleTree public stateTree;
 
-    // The Merkle root of the state tree after each signup. Note that
-    // publishMessage() will not update the state tree. Rather, it will
-    // directly update stateRoot if given a valid proof and public signals.
-    uint256 public stateRoot;
+    uint256 public originalSpentVoiceCreditsCommitment = hashLeftRight(0, 0);
+    uint256 public originalCurrentResultsCommitment;
 
     // To store the Merkle root of a tree with 5 **
     // _treeDepths.voteOptionTreeDepth leaves of value 0
     uint256 public emptyVoteOptionTreeRoot;
-
-    // To store hashLeftRight(Merkle root of 5 ** voteOptionTreeDepth zeros, 0)
-    uint256 public currentResultsCommitment;
-
-    // To store hashLeftRight(0, 0). We precompute it here to save gas.
-    uint256 public currentSpentVoiceCreditsCommitment = hashLeftRight(0, 0);
-
-    // To store hashLeftRight(Merkle root of 5 ** voteOptionTreeDepth zeros, 0)
-    uint256 public currentPerVOSpentVoiceCreditsCommitment;
 
     // The maximum number of leaves, minus one, of meaningful vote options.
     uint256 public voteOptionsMaxLeafIndex;
 
     // The total sum of votes
     uint256 public totalVotes;
-
-    // The batch # for the quote tally function
-    uint256 public currentQvtBatchNum;
 
     // Cached results of 2 ** depth - 1 where depth is the state tree depth and
     // message tree depth
@@ -109,6 +93,31 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
     TreeDepths public treeDepths;
 
     bool public hasUnprocessedMessages = true;
+
+    //----------------------
+    // Storage variables that can be reset by coordinatorReset()
+
+    // The Merkle root of the state tree after each signup. Note that
+    // batchProcessMessage() will not update the state tree. Rather, it will
+    // directly update stateRoot if given a valid proof and public signals.
+    uint256 public stateRoot;
+    uint256 public stateRootBeforeProcessing;
+
+    // The current message batch index
+    uint256 public currentMessageBatchIndex;
+
+    // The batch # for proveVoteTallyBatch
+    uint256 public currentQvtBatchNum;
+
+    // To store hashLeftRight(Merkle root of 5 ** voteOptionTreeDepth zeros, 0)
+    uint256 public currentResultsCommitment;
+
+    // To store hashLeftRight(0, 0). We precompute it here to save gas.
+    uint256 public currentSpentVoiceCreditsCommitment;
+
+    // To store hashLeftRight(Merkle root of 5 ** voteOptionTreeDepth zeros, 0)
+    uint256 public currentPerVOSpentVoiceCreditsCommitment;
+    //----------------------
 
     // Events
     event SignUp(
@@ -187,8 +196,12 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
         // Calculate and store a commitment to 5 ** voteOptionTreeDepth zeros,
         // and a salt of 0.
-        currentResultsCommitment = hashLeftRight(emptyVoteOptionTreeRoot, 0);
-        currentPerVOSpentVoiceCreditsCommitment = currentResultsCommitment;
+        originalCurrentResultsCommitment = hashLeftRight(emptyVoteOptionTreeRoot, 0);
+
+        currentResultsCommitment = originalCurrentResultsCommitment;
+
+        currentSpentVoiceCreditsCommitment = originalSpentVoiceCreditsCommitment;
+        currentPerVOSpentVoiceCreditsCommitment = originalCurrentResultsCommitment;
 
         // Compute the hash of a blank state leaf
         uint256 h = hashedBlankStateLeaf();
@@ -488,6 +501,9 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
         // Update the state root
         stateRoot = _newStateRoot;
+        if (stateRootBeforeProcessing == 0) {
+            stateRootBeforeProcessing = stateRoot;
+        }
     }
 
     /*
@@ -609,6 +625,19 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
         // Increment the batch #
         currentQvtBatchNum ++;
+    }
+
+    function coordinatorReset() public onlyOwner {
+        hasUnprocessedMessages = true;
+        stateRoot = stateRootBeforeProcessing;
+        currentMessageBatchIndex = (numMessages / messageBatchSize) * messageBatchSize;
+        currentQvtBatchNum = 0;
+
+        currentResultsCommitment = originalCurrentResultsCommitment;
+        currentSpentVoiceCreditsCommitment = originalSpentVoiceCreditsCommitment;
+        currentPerVOSpentVoiceCreditsCommitment = originalCurrentResultsCommitment;
+
+        totalVotes = 0;
     }
 
     /*
