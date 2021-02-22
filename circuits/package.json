@@ -1,6 +1,6 @@
 {
     "name": "maci-circuits",
-    "version": "0.5.7",
+    "version": "0.5.8",
     "description": "",
     "main": "build/index.js",
     "scripts": {
@@ -56,11 +56,11 @@
         "@types/node": "^13.1.2",
         "jest": "^24.9.0",
         "maci-config": "^0.5.7",
-        "maci-core": "^0.5.7",
-        "maci-crypto": "^0.5.7",
-        "maci-domainobjs": "^0.5.7",
+        "maci-core": "^0.5.8",
+        "maci-crypto": "^0.5.8",
+        "maci-domainobjs": "^0.5.8",
         "ts-jest": "^24.2.0",
         "typescript": "^3.8.3"
     },
-    "gitHead": "0e8e20219bd146c0b6b7793f81cefc9fc6ced179"
+    "gitHead": "50c3c913d3a00f7e61eb142422a400a923fe7acd"
 }

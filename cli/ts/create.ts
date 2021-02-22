@@ -302,6 +302,7 @@ const create = async (args: any) => {
             initialVoiceCredits,
             true,
         )
+        await c.deployTransaction.wait()
         initialVoiceCreditProxyContractAddress = c.address
     } else {
         initialVoiceCreditProxyContractAddress = initialVoiceCreditProxy
@@ -314,11 +315,11 @@ const create = async (args: any) => {
     if (signupGatekeeper == undefined) {
         // Deploy a FreeForAllGatekeeper contract
         const c = await deployFreeForAllSignUpGatekeeper(deployer, true)
+        await c.deployTransaction.wait()
         signUpGatekeeperAddress = c.address
     } else {
         signUpGatekeeperAddress = signupGatekeeper
     }
-    debugger
 
     const contracts = await deployMaci(
         deployer,

@@ -203,12 +203,14 @@ const deployMaci = async (
         PoseidonT3.abi,
         PoseidonT3.bytecode,
     )
+    await PoseidonT3Contract.deployTransaction.wait()
 
     log('Deploying Poseidon T6', quiet)
     const PoseidonT6Contract = await deployer.deploy(
         PoseidonT6.abi,
         PoseidonT6.bytecode,
     )
+    await PoseidonT6Contract.deployTransaction.wait()
 
     let batchUstVerifierContract
     let quadVoteTallyVerifierContract
@@ -217,22 +219,28 @@ const deployMaci = async (
         batchUstVerifierContract = await deployer.deploy(
             ...loadAB('BatchUpdateStateTreeVerifier'),
         )
+        await batchUstVerifierContract.deployTransaction.wait()
 
         log('Deploying QuadVoteTallyVerifier', quiet)
         quadVoteTallyVerifierContract = await deployer.deploy(
-            ...loadAB('QuadVoteTallyVerifier')
+            ...loadAB('QuadVoteTallyVerifier'),
         )
+        await quadVoteTallyVerifierContract.deployTransaction.wait()
+
     } else if (configType === 'prod-small') {
         log('Deploying BatchUpdateStateTreeVerifier', quiet)
         batchUstVerifierContract = await deployer.deploy(
             ...loadAB('BatchUpdateStateTreeVerifierSmall'),
         )
+        await batchUstVerifierContract.deployTransaction.wait()
 
         log('Deploying QuadVoteTallyVerifier', quiet)
         quadVoteTallyVerifierContract = await deployer.deploy(
             ...loadAB('QuadVoteTallyVerifierSmall'),
         )
+        await quadVoteTallyVerifierContract.deployTransaction.wait()
     }
+
 
     log('Deploying MACI', quiet)
 
@@ -268,6 +276,7 @@ const deployMaci = async (
             y: coordinatorPubKey.rawPubKey[1].toString(),
         },
     )
+    await maciContract.deployTransaction.wait()
 
     return {
         batchUstVerifierContract,

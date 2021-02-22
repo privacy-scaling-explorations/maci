@@ -107,7 +107,7 @@ const genMaciStateFromContract = async (
     }
 
     const onChainMessageRoot = await maciContract.getMessageTreeRoot()
-    if (maciState.genMessageRoot().toString(16) !== BigInt(onChainMessageRoot).toString(16)) {
+    if (maciState.messageTree.root.toString(16) !== BigInt(onChainMessageRoot).toString(16)) {
         throw new Error('Error: could not correctly recreate the message tree from on-chain data. The message root differs.')
     }
 
