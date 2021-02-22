@@ -2,7 +2,6 @@
 pragma experimental ABIEncoderV2;
 pragma solidity ^0.6.12;
 
-import { Ownable } from '@openzeppelin/contracts/access/Ownable.sol';
 import { DomainObjs } from './DomainObjs.sol';
 import { IncrementalQuinTree } from "./IncrementalQuinTree.sol";
 import { IncrementalMerkleTree } from "./IncrementalMerkleTree.sol";
@@ -22,7 +21,7 @@ interface SnarkVerifier {
     ) external view returns (bool);
 }
 
-contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally, Ownable {
+contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
     // A nothing-up-my-sleeve zero value
     // Should be equal to 8370432830353022751713833565135785980866757267633941821328460903436894336785
@@ -94,6 +93,8 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally, Ownable {
 
     bool public hasUnprocessedMessages = true;
 
+    address public coordinatorAddress;
+
     //----------------------
     // Storage variables that can be reset by coordinatorReset()
 
@@ -141,8 +142,10 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally, Ownable {
         uint256 _signUpDurationSeconds,
         uint256 _votingDurationSeconds,
         InitialVoiceCreditProxy _initialVoiceCreditProxy,
-        PubKey memory _coordinatorPubKey
+        PubKey memory _coordinatorPubKey,
+        address _coordinatorAddress
     ) public {
+        coordinatorAddress = _coordinatorAddress;
 
         treeDepths = _treeDepths;
 
@@ -627,7 +630,9 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally, Ownable {
         currentQvtBatchNum ++;
     }
 
-    function coordinatorReset() public onlyOwner {
+    function coordinatorReset() public {
+        require(msg.sender == coordinatorAddress, "MACI: only the coordinator can do this");
+
         hasUnprocessedMessages = true;
         stateRoot = stateRootBeforeProcessing;
         currentMessageBatchIndex = (numMessages / messageBatchSize) * messageBatchSize;
