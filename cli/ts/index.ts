@@ -32,6 +32,11 @@ import {
 } from './create'
 
 import {
+    deployPoll,
+    configureSubparser as configureSubparserForDeployPoll,
+} from './deployPoll'
+
+import {
     signup,
     configureSubparser as configureSubparserForSignup,
 } from './signUp'
@@ -81,6 +86,9 @@ const main = async () => {
     // Subcommand: create
     configureSubparserForCreate(subparsers)
 
+    // Subcommand: deployPoll
+    configureSubparserForDeployPoll(subparsers)
+
     // Subcommand: signup
     configureSubparserForSignup(subparsers)
 
@@ -109,6 +117,8 @@ const main = async () => {
         await setVerifyingKeys(args)
     } else if (args.subcommand === 'create') {
         await create(args)
+    } else if (args.subcommand === 'deployPoll') {
+        await deployPoll(args)
     } else if (args.subcommand === 'signup') {
         await signup(args)
     } else if (args.subcommand === 'publish') {

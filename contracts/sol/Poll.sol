@@ -70,13 +70,10 @@ contract PollFactory is EmptyBallotRoots, Params, IPubKey, IMessage, Ownable, Ha
 
         // Validate _maxValues
         require(
-            _maxValues.maxUsers <= treeArity ** _stateTreeDepth &&
             _maxValues.maxMessages <= 
                 treeArity ** _treeDepths.messageTreeDepth &&
             _maxValues.maxMessages >= _batchSizes.messageBatchSize &&
             _maxValues.maxMessages % _batchSizes.messageBatchSize == 0 &&
-            _maxValues.maxUsers >= _treeDepths.intStateTreeDepth &&
-            _maxValues.maxUsers % _batchSizes.tallyBatchSize == 0 &&
             _maxValues.maxVoteOptions <= 
                 treeArity ** _treeDepths.voteOptionTreeDepth,
             "PollFactory: invalid _maxValues"
@@ -181,6 +178,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     string constant ERROR_VOTING_PERIOD_NOT_PASSED = "PollE04";
     string constant ERROR_INVALID_PUBKEY = "PollE05";
     string constant ERROR_ONLY_PPT = "PollE06";
+    string constant ERROR_MAX_MESSAGES_REACHED = "PollE07";
 
     event PublishMessage(
         Message _message,
@@ -297,6 +295,10 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     public
     isBeforeVotingDeadline {
         require(
+            numMessages <= maxValues.maxMessages,
+            ERROR_MAX_MESSAGES_REACHED
+        );
+        require(
             _encPubKey.x < SNARK_SCALAR_FIELD &&
             _encPubKey.y < SNARK_SCALAR_FIELD,
             ERROR_INVALID_PUBKEY
@@ -368,8 +370,6 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     }
 }
 
-// TODO: to reduce the Poll contract size, make this contract
-// store data instead
 contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher {
     string constant ERROR_VOTING_PERIOD_NOT_PASSED = "PptE01";
     string constant ERROR_NO_MORE_MESSAGES = "PptE02";
@@ -412,10 +412,9 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher {
         Poll _poll
     ) public view returns (uint256) {
         (
-            // ignore the 1st and 3rd value
+            // ignore the 1st value
             ,
-            uint256 maxVoteOptions,
-
+            uint256 maxVoteOptions
         ) = _poll.maxValues();
 
         (uint8 mbs, ) = _poll.batchSizes();
@@ -706,7 +705,6 @@ contract PollStateViewer is Params, DomainObjs {
 
         MaxValues memory maxValues;
         (
-            maxValues.maxUsers,
             maxValues.maxMessages,
             maxValues.maxVoteOptions
         ) = _poll.maxValues();

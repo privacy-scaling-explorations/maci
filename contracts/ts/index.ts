@@ -17,6 +17,7 @@ import {
     loadBin,
     linkPoseidonLibraries,
     deployPoseidonContracts,
+    deployVerifier,
 } from './deploy'
 
 import { formatProofForVerifierContract } from './utils'
@@ -45,4 +46,5 @@ export {
     formatProofForVerifierContract,
     linkPoseidonLibraries,
     deployPoseidonContracts,
+    deployVerifier,
 }

@@ -48,7 +48,63 @@ This command deploys an instance of a VkRegistry contract. Multiple MACI
 contracts can refer to the same VkRegistry as long as they are all owned (via
 `Ownable.sol`) by the same account.
 
-### Coordinator: Create election
+Example usage:
+
+```bash
+node build/index.js deployVkRegistry -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3
+```
+
+Example output:
+
+```
+VkRegistry: 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
+```
+
+### Coordinator: Set verifying keys
+
+Note that the filename of the `.zkey` files must follow this format:
+
+```
+ProcessMessages_<STATE_TREE_DEPTH>-<MSG_TREE_DEPTH>-<MSG_SUBTREE_DEPTH>-<VOTE_OPTION_TREE_DEPTH>.test.<CONTRIBUTION_NUM>.zkey
+TallyVotes_<STATE_TREE_DEPTH>-<INT_STATE_TREE_DEPTH>-<VOTE_OPTION_TREE_DEPTH>>.test.<CONTRIBUTION_NUM>>.zkey
+```
+
+Example usage:
+
+```bash
+node build/index.js setVerifyingKeys \
+    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+    -s 10 -i 1 -m 2 -v 2 -b 1 \
+    -p ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey \
+    -t ./zkeys/TallyVotes_10-1-2.test.0.zkey \
+    -k 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0                                                       
+```
+
+Example output:
+
+```
+Transaction hash: 0x582631c36a4e21e0b65c3f9100c6343408c8683a36ded36fc02a9be07fa079e8
+```
+
+### Coordinator: Create MACI instance
+
+Example usage:
+
+```
+node build/index.js create \
+    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+    -k 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
+```
+
+Example output:
+
+```
+MACI: 0x75c35C980C0d37ef46DF04d31A140b65503c0eEd
+```
+
+### Coordinator: Deploy poll
+
+### Coordinator: Create election (OLD)
 
 This command deploys an instance of a MACI contract.
 

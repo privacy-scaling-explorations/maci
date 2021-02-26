@@ -11,7 +11,7 @@ include "../node_modules/circomlib/circuits/mux1.circom";
 template ProcessMessages(
     stateTreeDepth,
     msgTreeDepth,
-    msgBatchDepth,
+    msgBatchDepth, // aka msgSubtreeDepth
     voteOptionTreeDepth
 ) {
     // stateTreeDepth: the depth of the state tree

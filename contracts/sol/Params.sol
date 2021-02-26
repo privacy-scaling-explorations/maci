@@ -18,7 +18,6 @@ contract Params {
     }
 
     struct MaxValues {
-        uint256 maxUsers;
         uint256 maxMessages;
         uint256 maxVoteOptions;
     }
