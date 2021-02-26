@@ -1,4 +1,3 @@
-
 import {
     genJsonRpcDeployer,
     deployMaci,
@@ -318,7 +317,6 @@ const create = async (args: any) => {
     } else {
         signUpGatekeeperAddress = signupGatekeeper
     }
-    debugger
 
     const contracts = await deployMaci(
         deployer,

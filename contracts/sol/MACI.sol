@@ -111,8 +111,8 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     }
 
     /*
-     * Initialise the various helper contracts. This should only be run once
-     * and it must be run before deploying the first Poll.
+     * Initialise the various factory/helper contracts. This should only be run
+     * once and it must be run before deploying the first Poll.
      */
     function init(
         VkRegistry _vkRegistry,

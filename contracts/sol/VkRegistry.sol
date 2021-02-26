@@ -18,6 +18,8 @@ contract VkRegistry is Ownable, SnarkCommon {
     mapping (uint256 => VerifyingKey) internal tallyVks; 
     mapping (uint256 => bool) internal tallyVkSet; 
 
+    //TODO: event for setVerifyingKeys
+
     function isProcessVkSet(uint256 _sig) public view returns (bool) {
         return processVkSet[_sig];
     }

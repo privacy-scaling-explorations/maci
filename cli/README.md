@@ -1,11 +1,25 @@
 # maci-cli
 
+MACI provides a command-line interface that allows for effective deployment and
+testing. Applications that build on top of MACI, such as
+[clr.fund](https://clr.fund/), implement their own web UIs.
+
+Note that all the example commands default to a local Ethereum testnet at
+`http://localhost:8545`. For testing purposes, you can run one using:
+
+```bash
+# in maci/contracts
+npm run ganache
+```
+
 ## Subcommands
 
 | Role | Action | Subcommand |
 |-|-|-|
 | User | Generate MACI keypair | `genMaciKeypair` |
 | User | Generate MACI public key | `genMaciPubkey` |
+| Coordinator | Deploy VkRegistry | `deployVkRegistry` |
+| Coordinator | Set verifying keys | `setVerifyingKeys` |
 | Coordinator | Create election | `create `|
 | User | Sign up | `signup` |
 | User | Change key / vote | `publish` |
@@ -28,18 +42,15 @@ Private key: macisk.2422e5e9b8eb7c3ca5865168bf52480bb90b44df50070881c99a4e4f0d79
 Public key:  macipk.9643c94d5a2c918cab49a476feeab82eeec61ead9625e901c340c71aecdeb282
 ```
 
+### Coordinator: Deploy VkRegistry
+
+This command deploys an instance of a VkRegistry contract. Multiple MACI
+contracts can refer to the same VkRegistry as long as they are all owned (via
+`Ownable.sol`) by the same account.
+
 ### Coordinator: Create election
 
 This command deploys an instance of a MACI contract.
-
-Note that all the example commands default to a local Ethereum testnet at
-`http://localhost:8545`. For testing purposes, you can run one using:
-
-```bash
-
-# in maci/contracts
-npm run ganache
-```
 
 Fields that the coordinator has to set:
 

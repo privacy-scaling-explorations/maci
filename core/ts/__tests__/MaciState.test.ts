@@ -182,7 +182,7 @@ describe('MaciState', () => {
 
             expect(maciState.polls[pollId].hasUntalliedBallots()).toBeTruthy()
 
-            maciState.polls[pollId].tallyBallots()
+            maciState.polls[pollId].tallyVotes()
 
             total = BigInt(0)
             for (const v of maciState.polls[pollId].results) {
@@ -371,7 +371,7 @@ describe('MaciState', () => {
             expect(maciState.polls[pollId].hasUntalliedBallots()).toBeTruthy()
 
             // First batch tally
-            maciState.polls[pollId].tallyBallots()
+            maciState.polls[pollId].tallyVotes()
 
             // Recall that each user `i` cast the same number of votes for
             // their option `i`
@@ -383,7 +383,7 @@ describe('MaciState', () => {
             expect(maciState.polls[pollId].hasUntalliedBallots()).toBeFalsy()
 
             expect(() => {
-                maciState.polls[pollId].tallyBallots()
+                maciState.polls[pollId].tallyVotes()
             }).toThrow()
         })
     })

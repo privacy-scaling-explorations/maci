@@ -11,7 +11,6 @@ import { SnarkConstants } from "./crypto/SnarkConstants.sol";
 import { DomainObjs, IPubKey, IMessage } from "./DomainObjs.sol";
 import {
     AccQueue,
-    //AccQueueQuinaryMaciWithSha256,
     AccQueueQuinaryMaci
 } from "./trees/AccQueue.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
@@ -23,7 +22,6 @@ contract MessageAqFactory is Ownable {
     public
     onlyOwner
     returns (AccQueue) {
-        //AccQueue aq = new AccQueueQuinaryMaciWithSha256(_subDepth);
         AccQueue aq = new AccQueueQuinaryMaci(_subDepth);
         aq.transferOwnership(owner());
         return aq;

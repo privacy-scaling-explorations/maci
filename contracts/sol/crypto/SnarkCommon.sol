@@ -10,10 +10,4 @@ contract SnarkCommon {
         Pairing.G2Point delta2;
         Pairing.G1Point[] ic;
     }
-
-    struct Proof {
-        Pairing.G1Point a;
-        Pairing.G2Point b;
-        Pairing.G1Point c;
-    }
 }

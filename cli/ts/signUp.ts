@@ -117,7 +117,7 @@ const signup = async (args: any) => {
     const ethProvider = args.eth_provider ? args.eth_provider : DEFAULT_ETH_PROVIDER
 
     let ethSk
-    // The deployer's Ethereum private key
+    // The user's Ethereum private key
     // The user may either enter it as a command-line option or via the
     // standard input
     if (args.prompt_for_eth_privkey) {

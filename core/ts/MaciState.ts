@@ -909,7 +909,6 @@ class Poll {
 
         copied.numBatchesProcessed = Number(this.numBatchesProcessed.toString())
         copied.numBatchesTallied = Number(this.numBatchesTallied.toString())
-        copied.currentMessageBatchIndex = Number(this.currentMessageBatchIndex.toString())
         copied.pollId = Number(this.pollId.toString())
         copied.totalSpentVoiceCredits = BigInt(this.totalSpentVoiceCredits.toString())
 

@@ -17,7 +17,7 @@ template ProcessMessages(
     // stateTreeDepth: the depth of the state tree
     // msgTreeDepth: the depth of the message tree
     // msgBatchDepth: the depth of the shortest tree that can fit all the
-    //                  messages
+    //                  messages in a batch
     // voteOptionTreeDepth: depth of the vote option tree
 
     assert(msgTreeDepth >= msgBatchDepth);

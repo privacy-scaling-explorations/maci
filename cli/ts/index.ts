@@ -17,6 +17,16 @@ import {
 } from './genMaciPubkey'
 
 import {
+    deployVkRegistry,
+    configureSubparser as configureSubparserForDeployVkRegistry,
+} from './deployVkRegistry'
+
+import {
+    setVerifyingKeys,
+    configureSubparser as configureSubparserForSetVerifyingKeys,
+} from './setVerifyingKeys'
+
+import {
     create,
     configureSubparser as configureSubparserForCreate,
 } from './create'
@@ -62,6 +72,12 @@ const main = async () => {
     // Subcommand: genMaciKeypair
     configureSubparserForGenMaciKeypair(subparsers)
 
+    // Subcommand: deployVkRegistry
+    configureSubparserForDeployVkRegistry(subparsers)
+
+    // Subcommand: setVerifyingKeys
+    configureSubparserForSetVerifyingKeys(subparsers)
+
     // Subcommand: create
     configureSubparserForCreate(subparsers)
 
@@ -87,6 +103,10 @@ const main = async () => {
         await genMaciKeypair(args)
     } else if (args.subcommand === 'genMaciPubkey') {
         await genMaciPubkey(args)
+    } else if (args.subcommand === 'deployVkRegistry') {
+        await deployVkRegistry(args)
+    } else if (args.subcommand === 'setVerifyingKeys') {
+        await setVerifyingKeys(args)
     } else if (args.subcommand === 'create') {
         await create(args)
     } else if (args.subcommand === 'signup') {

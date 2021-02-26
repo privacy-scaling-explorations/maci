@@ -5,6 +5,7 @@ import * as shell from 'shelljs'
 import * as argparse from 'argparse'
 import { config } from 'maci-config'
 import { genAccounts, genTestAccounts } from './accounts'
+import { VerifyingKey } from 'maci-domainobjs'
 
 const abiDir = path.join(__dirname, '..', 'compiled')
 const solDir = path.join(__dirname, '..', 'sol')
@@ -120,6 +121,16 @@ const genDeployer = (
     )
 }
 
+const deployVkRegistry = async (
+    deployer: any,
+) => {
+    const [ VkRegistryAbi, VkRegistryBin ] = loadAB('VkRegistry')
+    return await deployer.deploy(
+        VkRegistryAbi,
+        VkRegistryBin,
+    )
+}
+
 const deployMockVerifier = async (deployer) => {
     console.log('Deploying MockVerifier')
     const [ MockVerifierAbi, MockVerifierBin ] = loadAB('MockVerifier')
@@ -210,21 +221,25 @@ const deployMaci = async (
         PoseidonT3.abi,
         PoseidonT3.bytecode,
     )
+    await PoseidonT3Contract.deployTransaction.wait()
 
     const PoseidonT4Contract = await deployer.deploy(
         PoseidonT4.abi,
         PoseidonT4.bytecode,
     )
+    await PoseidonT4Contract.deployTransaction.wait()
 
     const PoseidonT5Contract = await deployer.deploy(
         PoseidonT5.abi,
         PoseidonT5.bytecode,
     )
+    await PoseidonT5Contract.deployTransaction.wait()
 
     const PoseidonT6Contract = await deployer.deploy(
         PoseidonT6.abi,
         PoseidonT6.bytecode,
     )
+    await PoseidonT6Contract.deployTransaction.wait()
 
     // Link Poseidon contracts to MACI
     linkPoseidonLibraries(
@@ -244,6 +259,7 @@ const deployMaci = async (
         PollFactoryAbi,
         PollFactoryBin,
     )
+    await pollFactoryContract.deployTransaction.wait()
 
     // PollProcessorAndTallyer
     log('Deploying PollProcessorAndTallyer', quiet)
@@ -253,6 +269,7 @@ const deployMaci = async (
         PptBin,
         mockVerifierContractAddress,
     )
+    await pptContract.deployTransaction.wait()
 
     log('Deploying MACI', quiet)
     const maciContract = await deployer.deploy(
@@ -262,6 +279,7 @@ const deployMaci = async (
         signUpTokenGatekeeperContractAddress,
         initialVoiceCreditBalanceAddress,
     )
+    await maciContract.deployTransaction.wait()
 
     log('Transferring PollFactory ownership to MACI', quiet)
     await (await (pollFactoryContract.transferOwnership(maciContract.address))).wait()
@@ -273,17 +291,14 @@ const deployMaci = async (
         MessageAqFactoryAbi,
         MessageAqFactoryBin,
     )
+    await messageAqFactoryContract.deployTransaction.wait()
 
     log('Transferring MessageAqFactory ownership to PollFactory', quiet)
     await (await (messageAqFactoryContract.transferOwnership(pollFactoryContract.address))).wait()
 
     // VkRegistry
     log('Deploying VkRegistry', quiet)
-    const [ VkRegistryAbi, VkRegistryBin ] = loadAB('VkRegistry')
-    const vkRegistryContract = await deployer.deploy(
-        VkRegistryAbi,
-        VkRegistryBin,
-    )
+    const vkRegistryContract = await deployVkRegistry(deployer)
 
     // PollStateViewer
     log('Deploying PollStateViewer', quiet)
@@ -292,6 +307,7 @@ const deployMaci = async (
         PollStateViewerAbi,
         PollStateViewerBin,
     )
+    await pollStateViewerContract.deployTransaction.wait()
 
     //log('Transferring VkRegistry ownership to MACI', quiet)
     //await (await (vkRegistryContract.transferOwnership(maciContract.address))).wait()
@@ -435,6 +451,7 @@ if (require.main === module) {
 }
 
 export {
+    deployVkRegistry,
     deployMaci,
     deploySignupToken,
     deploySignupTokenGatekeeper,
