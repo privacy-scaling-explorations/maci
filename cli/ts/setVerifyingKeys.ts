@@ -75,6 +75,7 @@ const configureSubparser = (subparsers: any) => {
         ['-k', '--vk_registry'],
         {
             action: 'store',
+            required: true,
             type: 'string',
             help: 'The VkRegistry contract address',
         }

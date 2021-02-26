@@ -3,6 +3,9 @@ import {
     deployMaci,
     deployConstantInitialVoiceCreditProxy,
     deployFreeForAllSignUpGatekeeper,
+    loadAB,
+    deployPoseidonContracts,
+    linkPoseidonLibraries,
 } from 'maci-contracts'
 
 import {
@@ -84,65 +87,12 @@ const configureSubparser = (subparsers: any) => {
     )
 
     createParser.addArgument(
-        ['-u', '--max-users'],
+        ['-k', '--vk_registry'],
         {
             action: 'store',
-            type: 'int',
-            help: 'The maximum supported number of users. It must be one less than a power of 2. Default: 24',
-        }
-    )
-
-    createParser.addArgument(
-        ['-m', '--max-messages'],
-        {
-            action: 'store',
-            type: 'int',
-            help: 'The maximum supported number of messages. It must be one less than a power of 2. Default: 24',
-        }
-    )
-
-    createParser.addArgument(
-        ['-v', '--max-vote-options'],
-        {
-            action: 'store',
-            type: 'int',
-            help: 'The maximum supported number of vote options. It must be one less than a power of 5. Default: 15',
-        }
-    )
-
-    createParser.addArgument(
-        ['-s', '--signup-duration'],
-        {
-            action: 'store',
-            type: 'int',
-            help: 'The sign-up duration in seconds. Default: 3600',
-        }
-    )
-
-    createParser.addArgument(
-        ['-o', '--voting-duration'],
-        {
-            action: 'store',
-            type: 'int',
-            help: 'The voting duration in seconds. Default: 3600',
-        }
-    )
-
-    createParser.addArgument(
-        ['-bm', '--message-batch-size'],
-        {
-            action: 'store',
-            type: 'int',
-            help: 'The batch size for processing messages',
-        }
-    )
-
-    createParser.addArgument(
-        ['-bv', '--tally-batch-size'],
-        {
-            action: 'store',
-            type: 'int',
-            help: 'The batch size for tallying votes',
+            required: true,
+            type: 'string',
+            help: 'The VkRegistry contract address',
         }
     )
 
@@ -216,63 +166,6 @@ const create = async (args: any) => {
     const unserialisedPrivkey = PrivKey.unserialize(coordinatorPrivkey)
     const coordinatorKeypair = new Keypair(unserialisedPrivkey)
 
-    // Max users
-    const maxUsers = args.max_users ? args.max_users : DEFAULT_MAX_USERS
-
-    // Max messages
-    const maxMessages = args.max_messages ? args.max_messages : DEFAULT_MAX_MESSAGES
-
-    // Max vote options
-    const maxVoteOptions = args.max_vote_options ? args.max_vote_options : DEFAULT_MAX_VOTE_OPTIONS
-
-    // Signup duration
-    const signupDuration = args.signup_duration ? args.signup_duration : DEFAULT_SIGNUP_DURATION
-
-    // Voting duration
-    const votingDuration = args.voting_duration ? args.voting_duration : DEFAULT_VOTING_DURATION
-
-    // Message batch size
-    const messageBatchSize = args.message_batch_size ? args.message_batch_size : DEFAULT_MESSAGE_BATCH_SIZE
-
-    // Tally batch size
-    const tallyBatchSize = args.tally_batch_size ? args.tally_batch_size : DEFAULT_TALLY_BATCH_SIZE
-
-    const isTest = maxMessages <= 16 && maxUsers <= 15 && maxVoteOptions <= 25
-
-    const isSmall = 
-        maxMessages > 16 && maxMessages <= 2048 ||
-        maxUsers > 15 && maxUsers <= 255 ||
-        maxVoteOptions > 24 && maxVoteOptions <= 125
-
-    if (!isTest && !isSmall) {
-        console.error('Error: this codebase only supports test or prod-small configurations for max-users, max-messages, and max-vote-options.')
-        return
-    }
-
-    if (messageBatchSize !== 4) {
-        console.error('Error: this codebase only supports a message-batch-size of value 4.')
-        return
-    }
-
-    if (tallyBatchSize !== 4) {
-        console.error('Error: this codebase only supports a tally-batch-size of value 4.')
-        return
-    }
-
-    let stateTreeDepth
-    let messageTreeDepth
-    let voteOptionTreeDepth
-
-    if (isSmall) {
-        stateTreeDepth = 8
-        messageTreeDepth = 11
-        voteOptionTreeDepth = 3
-    } else if (isTest) {
-        stateTreeDepth = 4
-        messageTreeDepth = 4
-        voteOptionTreeDepth = 2
-    }
-
     // Initial voice credits
     const initialVoiceCredits = args.initial_voice_credits ? args.initial_voice_credits : DEFAULT_INITIAL_VOICE_CREDITS
 
@@ -293,7 +186,7 @@ const create = async (args: any) => {
     }
     const deployer = genJsonRpcDeployer(deployerPrivkey, ethProvider)
 
-    let initialVoiceCreditProxyContractAddress = ''
+    let initialVoiceCreditProxyContractAddress
     if (initialVoiceCreditProxy == undefined) {
         // Deploy a ConstantInitialVoiceCreditProxy contract
         const c = await deployConstantInitialVoiceCreditProxy(
@@ -309,7 +202,7 @@ const create = async (args: any) => {
     // Signup gatekeeper contract
     const signupGatekeeper = args.signup_gatekeeper
 
-    let signUpGatekeeperAddress = ''
+    let signUpGatekeeperAddress
     if (signupGatekeeper == undefined) {
         // Deploy a FreeForAllGatekeeper contract
         const c = await deployFreeForAllSignUpGatekeeper(deployer, true)
@@ -318,24 +211,71 @@ const create = async (args: any) => {
         signUpGatekeeperAddress = signupGatekeeper
     }
 
-    const contracts = await deployMaci(
-        deployer,
-        signUpGatekeeperAddress,
-        initialVoiceCreditProxyContractAddress,
-        stateTreeDepth,
-        messageTreeDepth,
-        voteOptionTreeDepth,
-        tallyBatchSize,
-        messageBatchSize,
-        maxVoteOptions,
-        signupDuration,
-        votingDuration,
-        coordinatorKeypair.pubKey,
-        isSmall ? 'prod-small' : 'test',
-        true,
+    const vkRegistryAddress = args.vk_registry
+    // Check whether there is a contract deployed at the VkRegistry address
+
+    const {
+        PoseidonT3Contract,
+        PoseidonT4Contract,
+        PoseidonT5Contract,
+        PoseidonT6Contract,
+    } = await deployPoseidonContracts(deployer)
+
+    // Link Poseidon contracts to MACI
+    linkPoseidonLibraries(
+        ['MACI.sol'],
+        PoseidonT3Contract.address,
+        PoseidonT4Contract.address,
+        PoseidonT5Contract.address,
+        PoseidonT6Contract.address,
     )
 
-    console.log('MACI:', contracts.maciContract.address)
+    // Link Poseidon contracts to MACI
+    linkPoseidonLibraries(
+        ['MACI.sol'],
+        PoseidonT3Contract.address,
+        PoseidonT4Contract.address,
+        PoseidonT5Contract.address,
+        PoseidonT6Contract.address,
+    )
+
+    const [ MACIAbi, MACIBin ] = loadAB('MACI')
+
+    // Deploy PollFactory
+    const [ PollFactoryAbi, PollFactoryBin ] = loadAB('PollFactory')
+    const pollFactoryContract = await deployer.deploy(
+        PollFactoryAbi,
+        PollFactoryBin,
+    )
+    await pollFactoryContract.deployTransaction.wait()
+
+    // Deploy MessageAqFactory
+    const [ MessageAqFactoryAbi, MessageAqFactoryBin ] = loadAB('MessageAqFactory')
+    const messageAqFactoryContract = await deployer.deploy(
+        MessageAqFactoryAbi,
+        MessageAqFactoryBin,
+    )
+    await messageAqFactoryContract.deployTransaction.wait()
+    await (await (messageAqFactoryContract.transferOwnership(pollFactoryContract.address))).wait()
+    
+    const maciContract = await deployer.deploy(
+        MACIAbi,
+        MACIBin,
+        pollFactoryContract.address,
+        signUpGatekeeperAddress,
+        initialVoiceCreditProxyContractAddress,
+    )
+    await maciContract.deployTransaction.wait()
+
+    await (await (pollFactoryContract.transferOwnership(maciContract.address))).wait()
+
+    const initTx = await maciContract.init(
+        vkRegistryAddress,
+        messageAqFactoryContract.address,
+    )
+    await initTx.wait()
+
+    console.log('MACI:', maciContract.address)
 }
 
 export {

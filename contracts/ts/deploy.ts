@@ -209,14 +209,7 @@ const log = (msg: string, quiet: boolean) => {
     }
 }
 
-const deployMaci = async (
-    deployer: any,
-    signUpTokenGatekeeperContractAddress: string,
-    initialVoiceCreditBalanceAddress: string,
-    mockVerifierContractAddress: string,
-    quiet = false,
-) => {
-    log('Deploying Poseidon contracts', quiet)
+const deployPoseidonContracts = async (deployer: any) => {
     const PoseidonT3Contract = await deployer.deploy(
         PoseidonT3.abi,
         PoseidonT3.bytecode,
@@ -240,6 +233,29 @@ const deployMaci = async (
         PoseidonT6.bytecode,
     )
     await PoseidonT6Contract.deployTransaction.wait()
+
+    return {
+        PoseidonT3Contract,
+        PoseidonT4Contract,
+        PoseidonT5Contract,
+        PoseidonT6Contract,
+    }
+}
+
+const deployMaci = async (
+    deployer: any,
+    signUpTokenGatekeeperContractAddress: string,
+    initialVoiceCreditBalanceAddress: string,
+    mockVerifierContractAddress: string,
+    quiet = false,
+) => {
+    log('Deploying Poseidon contracts', quiet)
+    const {
+        PoseidonT3Contract,
+        PoseidonT4Contract,
+        PoseidonT5Contract,
+        PoseidonT6Contract,
+    } = await deployPoseidonContracts(deployer)
 
     // Link Poseidon contracts to MACI
     linkPoseidonLibraries(
@@ -470,4 +486,5 @@ export {
     loadAbi,
     loadBin,
     linkPoseidonLibraries,
+    deployPoseidonContracts,
 }

@@ -16,6 +16,7 @@ import {
     loadAbi,
     loadBin,
     linkPoseidonLibraries,
+    deployPoseidonContracts,
 } from './deploy'
 
 import { formatProofForVerifierContract } from './utils'
@@ -43,4 +44,5 @@ export {
     getInitialVoiceCreditProxyAbi,
     formatProofForVerifierContract,
     linkPoseidonLibraries,
+    deployPoseidonContracts,
 }
