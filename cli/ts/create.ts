@@ -1,17 +1,11 @@
 import {
     genJsonRpcDeployer,
-    deployMaci,
     deployConstantInitialVoiceCreditProxy,
     deployFreeForAllSignUpGatekeeper,
     loadAB,
     deployPoseidonContracts,
     linkPoseidonLibraries,
 } from 'maci-contracts'
-
-import {
-    PrivKey,
-    Keypair,
-} from 'maci-domainobjs'
 
 
 import {
@@ -22,14 +16,7 @@ import {
 
 import {
     DEFAULT_ETH_PROVIDER,
-    DEFAULT_MAX_USERS,
-    DEFAULT_MAX_MESSAGES,
-    DEFAULT_MAX_VOTE_OPTIONS,
-    DEFAULT_SIGNUP_DURATION,
-    DEFAULT_VOTING_DURATION,
     DEFAULT_INITIAL_VOICE_CREDITS,
-    DEFAULT_MESSAGE_BATCH_SIZE,
-    DEFAULT_TALLY_BATCH_SIZE,
 } from './defaults'
 
 const configureSubparser = (subparsers: any) => {
@@ -54,26 +41,6 @@ const configureSubparser = (subparsers: any) => {
             action: 'store',
             type: 'string',
             help: 'The deployer\'s Ethereum private key',
-        }
-    )
-
-
-    const coordinatorPrivkeyGroup = createParser.addMutuallyExclusiveGroup({ required: true })
-
-    coordinatorPrivkeyGroup.addArgument(
-        ['-dsk', '--prompt-for-maci-privkey'],
-        {
-            action: 'storeTrue',
-            help: 'Whether to prompt for the coordinator\'s serialized MACI private key',
-        }
-    )
-
-    coordinatorPrivkeyGroup.addArgument(
-        ['-sk', '--privkey'],
-        {
-            action: 'store',
-            type: 'string',
-            help: 'The coordinator\'s serialized MACI private key',
         }
     )
 
@@ -147,24 +114,6 @@ const create = async (args: any) => {
         console.error('Error: invalid Ethereum private key')
         return
     }
-
-    // The coordinator's MACI private key
-    // They may either enter it as a command-line option or via the
-    // standard input
-    let coordinatorPrivkey
-    if (args.prompt_for_maci_privkey) {
-        coordinatorPrivkey = await promptPwd('Coordinator\'s MACI private key')
-    } else {
-        coordinatorPrivkey = args.privkey
-    }
-
-    if (!PrivKey.isValidSerializedPrivKey(coordinatorPrivkey)) {
-        console.error('Error: invalid MACI private key')
-        return
-    }
-
-    const unserialisedPrivkey = PrivKey.unserialize(coordinatorPrivkey)
-    const coordinatorKeypair = new Keypair(unserialisedPrivkey)
 
     // Initial voice credits
     const initialVoiceCredits = args.initial_voice_credits ? args.initial_voice_credits : DEFAULT_INITIAL_VOICE_CREDITS
