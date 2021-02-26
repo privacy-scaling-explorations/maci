@@ -40,7 +40,7 @@ contract PollDeploymentParams {
  * A factory contract which deploys Poll contracts. It allows the MACI contract
  * size to stay within the limit set by EIP-170.
  */
-contract PollFactory is EmptyBallotRoots, Params, IPubKey, IMessage, Ownable, Hasher, PollDeploymentParams {
+contract PollFactory is Params, IPubKey, IMessage, Ownable, Hasher, PollDeploymentParams {
 
     MessageAqFactory public messageAqFactory;
 
@@ -62,8 +62,7 @@ contract PollFactory is EmptyBallotRoots, Params, IPubKey, IMessage, Ownable, Ha
         VkRegistry _vkRegistry,
         IMACI _maci,
         address _pollOwner,
-        PollProcessorAndTallyer _ppt,
-        uint256 _mergeSubRootsTimestamp
+        PollProcessorAndTallyer _ppt
     ) public onlyOwner returns (Poll) {
         {
         uint8 treeArity = 5;
@@ -96,18 +95,10 @@ contract PollFactory is EmptyBallotRoots, Params, IPubKey, IMessage, Ownable, Ha
             _batchSizes,
             _coordinatorPubKeyHash,
             extContracts,
-            _ppt,
-            _maci.getNumStateLeaves(_mergeSubRootsTimestamp)
+            _ppt
         );
 
         messageAq.transferOwnership(address(poll));
-
-        uint256[] memory sb = new uint256[](3);
-        sb[0] = _maci.getStateRootSnapshot(_mergeSubRootsTimestamp);
-        sb[1] = emptyBallotRoots[_treeDepths.voteOptionTreeDepth];
-        sb[2] = uint256(0);
-
-        poll.setEmptySbCommitment(hash3(sb));
 
         poll.transferOwnership(_pollOwner);
 
@@ -119,7 +110,7 @@ contract PollFactory is EmptyBallotRoots, Params, IPubKey, IMessage, Ownable, Ha
  * Do not deploy this directly. Use PollFactory.deploy() which performs some
  * checks on the Poll constructor arguments.
  */
-contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDeploymentParams {
+contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDeploymentParams, EmptyBallotRoots {
     // The coordinator's public key
     uint256 public coordinatorPubKeyHash;
 
@@ -136,6 +127,9 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
 
     // The MACI instance
     IMACI public maci;
+
+    // Whether the MACI contract's stateAq has been merged by this contract
+    bool public stateAqMerged;
 
     // The message queue
     AccQueue public messageAq;
@@ -179,6 +173,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     string constant ERROR_INVALID_PUBKEY = "PollE05";
     string constant ERROR_ONLY_PPT = "PollE06";
     string constant ERROR_MAX_MESSAGES_REACHED = "PollE07";
+    string constant ERROR_STATE_AQ_ALREADY_MERGED = "PollE08";
 
     event PublishMessage(
         Message _message,
@@ -197,8 +192,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
         BatchSizes memory _batchSizes,
         uint256 _coordinatorPubKeyHash,
         ExtContracts memory _extContracts,
-        PollProcessorAndTallyer _ppt,
-        uint256 _numSignUps
+        PollProcessorAndTallyer _ppt
     ) {
         VkRegistry _vkRegistry = _extContracts.vkRegistry;
         IMACI _maci = _extContracts.maci;
@@ -241,9 +235,6 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
 
         // Set the poll processor contract
         ppt = _ppt;
-
-        // Set the current number of signups
-        numSignUps = _numSignUps;
     }
 
     /*
@@ -338,6 +329,43 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
         //return hash4(m);
     }
 
+    function mergeMaciStateAqSubRoots(uint256 _numSrQueueOps)
+    public
+    onlyOwner
+    isAfterVotingDeadline {
+        // This function can only be called once per Poll
+        require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
+
+        if (!maci.stateAq().subTreesMerged()) {
+            maci.mergeStateAqSubRoots(_numSrQueueOps);
+        }
+        if (numSignUps == 0) {
+            numSignUps = maci.numSignUps();
+        }
+
+    }
+
+    function mergeMaciStateAq()
+    public
+    onlyOwner
+    isAfterVotingDeadline {
+        // This function can only be called once per Poll
+        require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
+
+        if (!maci.stateAq().subTreesMerged()) {
+            maci.mergeStateAq();
+        }
+        stateAqMerged = true;
+
+        // Set currentSbCommitment
+        uint256[] memory sb = new uint256[](3);
+        sb[0] = maci.getStateAqRoot();
+        sb[1] = emptyBallotRoots[treeDepths.voteOptionTreeDepth];
+        sb[2] = uint256(0);
+
+        setEmptySbCommitment(hash3(sb));
+    }
+
     /*
      * TODO: write comment
      */
@@ -379,6 +407,7 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher {
     string constant ERROR_INVALID_TALLY_VOTES_PROOF = "PptE06";
     string constant ERROR_PROCESSING_NOT_COMPLETE = "PptE07";
     string constant ERROR_ALL_BALLOTS_TALLIED = "PptE08";
+    string constant ERROR_STATE_AQ_NOT_MERGED = "PptE09";
 
     struct PptData {
         uint256 sbCommitment;
@@ -408,35 +437,6 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher {
         verifier = _verifier;
     }
 
-    function genProcessMessagesPackedVals(
-        Poll _poll
-    ) public view returns (uint256) {
-        (
-            // ignore the 1st value
-            ,
-            uint256 maxVoteOptions
-        ) = _poll.maxValues();
-
-        (uint8 mbs, ) = _poll.batchSizes();
-        uint256 messageBatchSize = uint256(mbs);
-        uint256 numSignUps = _poll.numSignUps();
-
-        uint256 index = pollPptData[_poll].currentMessageBatchIndex;
-        uint256 numMessages = _poll.numMessages();
-        uint256 batchEndIndex = numMessages - index >= messageBatchSize ?
-            index + messageBatchSize
-            :
-            numMessages - index - 1;
-
-        uint256 result =
-            maxVoteOptions +
-            (numSignUps << uint256(50)) +
-            (index << uint256(100)) +
-            (batchEndIndex << uint256(150));
-
-        return result;
-    }
-
     modifier votingPeriodOver(Poll _poll) {
         // Require that the voting period is over
         uint256 secondsPassed = block.timestamp - _poll.deployTime();
@@ -447,11 +447,41 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher {
         _;
     }
 
+    function genProcessMessagesPackedVals(
+        Poll _poll,
+        uint256 _numSignUps
+    ) public view returns (uint256) {
+        (
+            // ignore the 1st value
+            ,
+            uint256 maxVoteOptions
+        ) = _poll.maxValues();
+
+        (uint8 mbs, ) = _poll.batchSizes();
+        uint256 messageBatchSize = uint256(mbs);
+
+        uint256 index = pollPptData[_poll].currentMessageBatchIndex;
+        uint256 numMessages = _poll.numMessages();
+        uint256 batchEndIndex = numMessages - index >= messageBatchSize ?
+            index + messageBatchSize
+            :
+            numMessages - index - 1;
+
+        uint256 result =
+            maxVoteOptions +
+            (_numSignUps << uint256(50)) +
+            (index << uint256(100)) +
+            (batchEndIndex << uint256(150));
+
+        return result;
+    }
+
     function genProcessMessagesPublicInputs(
         Poll _poll,
-        uint256 _messageRoot
+        uint256 _messageRoot,
+        uint256 _numSignUps
     ) public view returns (uint256[] memory) {
-        uint256 packedVals = genProcessMessagesPackedVals(_poll);
+        uint256 packedVals = genProcessMessagesPackedVals(_poll, _numSignUps);
         uint256[] memory input = new uint256[](4);
         input[0] = packedVals;
         input[1] = _poll.coordinatorPubKeyHash();
@@ -481,6 +511,7 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher {
     onlyOwner
     votingPeriodOver(_poll)
     {
+        require(_poll.stateAqMerged(), ERROR_STATE_AQ_NOT_MERGED);
         uint8 messageTreeDepth;
         uint8 voteOptionTreeDepth;
         (
@@ -527,11 +558,13 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher {
         );
 
         { 
+            uint256 numSignUps = _poll.numSignUps();
             // Curly brackets to avoid "Compiler error: Stack too deep, try
             // removing local variables."
             uint256[] memory publicInputs = genProcessMessagesPublicInputs(
                 _poll,
-                messageRoot
+                messageRoot,
+                numSignUps
             );
             bool isValid = verifier.verify(_proof, vk, publicInputs);
 
@@ -625,15 +658,16 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher {
         uint256 batchStartIndex = data.tallyBatchNum * tallyBatchSize;
         uint256 numSignUps = _poll.numSignUps();
 
-        require(
-            batchStartIndex < numSignUps,
-            ERROR_ALL_BALLOTS_TALLIED
-        );
-
         // Require that all messages have been processed
         require(
             data.processingComplete,
             ERROR_PROCESSING_NOT_COMPLETE
+        );
+
+        // Require that there are untalied ballots left
+        require(
+            batchStartIndex < numSignUps,
+            ERROR_ALL_BALLOTS_TALLIED
         );
 
         uint8 intStateTreeDepth;

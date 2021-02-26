@@ -308,7 +308,6 @@ describe('MACI', () => {
 
                 expect(pollState[3].match(/^(0x)?[0-9a-fA-F]{40}$/) != null).toBeTruthy()
 
-                expect(pollState[4].maxUsers.toString()).toEqual(maxValues.maxUsers.toString())
                 expect(pollState[4].maxMessages.toString()).toEqual(maxValues.maxMessages.toString())
                 expect(pollState[4].maxVoteOptions.toString()).toEqual(maxValues.maxVoteOptions.toString())
 
@@ -458,6 +457,8 @@ describe('MACI', () => {
 
         describe('Process messages', () => {
             let pollContract
+            let poll
+            let generatedInputs
 
             beforeAll(async () => {
                 const pollContractAddress = await maciContract.getPoll(pollId)
@@ -466,10 +467,33 @@ describe('MACI', () => {
                     pollAbi,
                     deployer.signer,
                 )
+
+                poll = maciState.polls[pollId]
+                generatedInputs = poll.processMessages(pollId)
+            })
+
+            it('processMessages() should fail if the state AQ has not been merged', async () => {
+                try {
+                    const pollContractAddress = await maciContract.getPoll(pollId)
+
+                    // Submit the proof
+                    await pptContract.processMessages(
+                        pollContractAddress,
+                        generatedInputs.newSbCommitment,
+                        [0, 0, 0, 0, 0, 0, 0, 0],
+                    )
+
+                } catch (e) {
+                    expect(e.message.endsWith('PptE09')).toBeTruthy()
+                }
+
+                let tx = await pollContract.mergeMaciStateAqSubRoots(0)
+                await tx.wait()
+                tx = await pollContract.mergeMaciStateAq()
+                await tx.wait()
             })
 
             it('genProcessMessagesPackedVals() should generate the correct value', async () => {
-                const poll = maciState.polls[pollId]
                 const packedVals = MaciState.packProcessMessageSmallVals(
                     maxValues.maxVoteOptions,
                     poll.stateTree.leaves.length,
@@ -478,16 +502,14 @@ describe('MACI', () => {
                 )
                 const onChainPackedVals = BigInt(
                     await pptContract.genProcessMessagesPackedVals(
-                        pollContract.address
+                        pollContract.address,
+                        users.length,
                     )
                 )
                 expect(packedVals.toString(16)).toEqual(onChainPackedVals.toString(16))
             })
 
             it('processMessages() should update the state and ballot root commitment', async () => {
-                const poll = maciState.polls[pollId]
-                const generatedInputs = poll.processMessages(pollId)
-
                 const pollContractAddress = await maciContract.getPoll(pollId)
 
                 // Submit the proof

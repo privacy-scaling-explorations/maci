@@ -55,17 +55,17 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     // A mapping of poll IDs to Poll contracts.
     mapping (uint256 => Poll) public polls;
 
-    // A mapping of block timestamps to state roots
-    mapping (uint256 => uint256) public stateRootSnapshots;
+    //// A mapping of block timestamps to state roots
+    //mapping (uint256 => uint256) public stateRootSnapshots;
 
     // The number of signups
-    uint256 public numSignUps;
+    uint256 public override numSignUps;
 
     // A mapping of block timestamps to the number of state leaves
     mapping (uint256 => uint256) public numStateLeaves;
 
     // The block timestamp at which the state queue subroots were last merged
-    uint256 public mergeSubRootsTimestamp;
+    //uint256 public mergeSubRootsTimestamp;
 
     // The verifying key registry. There may be multiple verifying keys stored
     // on chain, and Poll contracts must select the correct VK based on the
@@ -77,7 +77,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
 
     // The state AccQueue. Represents a mapping between each user's public key
     // and their voice credit balance.
-    AccQueue public stateAq;
+    AccQueue public override stateAq;
 
     // Whether the init() function has been successfully executed yet.
     bool isInitialised = false;
@@ -219,49 +219,24 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
 
     function mergeStateAqSubRoots(uint256 _numSrQueueOps)
     public
-    onlyOwner
+    //onlyOwner
+    override
     afterInit {
         stateAq.mergeSubRoots(_numSrQueueOps);
-        mergeSubRootsTimestamp = block.timestamp;
     }
 
     function mergeStateAq()
     public
-    onlyOwner
-    afterInit {
-        uint256 root = stateAq.merge(stateTreeDepth);
-        stateRootSnapshots[mergeSubRootsTimestamp] = root;
-        numStateLeaves[mergeSubRootsTimestamp] = numSignUps;
-    }
-
-    function getStateRootSnapshot(uint256 _timestamp)
-    external
-    view
+    //onlyOwner
     override
+    afterInit
     returns (uint256) {
-        uint256 root = stateRootSnapshots[_timestamp];
-
-        require(
-            root != 0,
-            "MACI: no such state root snapshot at this timestamp"
-        );
-
+        uint256 root = stateAq.merge(stateTreeDepth);
         return root;
     }
 
-    function getNumStateLeaves(uint256 _timestamp)
-    external
-    view
-    override
-    returns (uint256) {
-        uint256 num = numStateLeaves[_timestamp];
-
-        require(
-            num != 0,
-            "MACI: no such snapshot at this timestamp"
-        );
-
-        return num;
+    function getStateAqRoot() public view override returns (uint256) {
+        return stateAq.getMainRoot(stateTreeDepth);
     }
 
     /*
@@ -274,7 +249,6 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         PubKey memory _coordinatorPubKey,
         PollProcessorAndTallyer _ppt
     ) public afterInit {
-        require(mergeSubRootsTimestamp != 0, "MACI: state root not merged");
         uint256 pollId = nextPollId;
 
         // The message batch size and the tally batch size
@@ -293,8 +267,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
             vkRegistry,
             this,
             owner(),
-            _ppt,
-            mergeSubRootsTimestamp
+            _ppt
         );
 
         polls[pollId] = p;
