@@ -59,7 +59,7 @@ contract PollFactory is Params, IPubKey, IMessage, Ownable, Hasher, PollDeployme
         MaxValues memory _maxValues,
         TreeDepths memory _treeDepths,
         BatchSizes memory _batchSizes,
-        uint256 _coordinatorPubKeyHash,
+        PubKey memory _coordinatorPubKey,
         VkRegistry _vkRegistry,
         IMACI _maci,
         address _pollOwner,
@@ -92,7 +92,7 @@ contract PollFactory is Params, IPubKey, IMessage, Ownable, Hasher, PollDeployme
             _maxValues,
             _treeDepths,
             _batchSizes,
-            _coordinatorPubKeyHash,
+            _coordinatorPubKey,
             extContracts,
             _ppt
         );
@@ -111,7 +111,7 @@ contract PollFactory is Params, IPubKey, IMessage, Ownable, Hasher, PollDeployme
  */
 contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDeploymentParams, EmptyBallotRoots {
     // The coordinator's public key
-    uint256 public coordinatorPubKeyHash;
+    PubKey public coordinatorPubKey;
 
     uint256 public deployTime;
 
@@ -189,7 +189,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
         MaxValues memory _maxValues,
         TreeDepths memory _treeDepths,
         BatchSizes memory _batchSizes,
-        uint256 _coordinatorPubKeyHash,
+        PubKey memory _coordinatorPubKey,
         ExtContracts memory _extContracts,
         PollProcessorAndTallyer _ppt
     ) {
@@ -197,7 +197,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
         IMACI _maci = _extContracts.maci;
         AccQueue _messageAq = _extContracts.messageAq;
 
-        coordinatorPubKeyHash = _coordinatorPubKeyHash;
+        coordinatorPubKey = _coordinatorPubKey;
         duration = _duration;
         maxValues = _maxValues;
         batchSizes = _batchSizes;
@@ -409,7 +409,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     }
 }
 
-contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher {
+contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher, IPubKey {
     string constant ERROR_VOTING_PERIOD_NOT_PASSED = "PptE01";
     string constant ERROR_NO_MORE_MESSAGES = "PptE02";
     string constant ERROR_MESSAGE_AQ_NOT_MERGED = "PptE03";
@@ -509,10 +509,14 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher {
         uint256 _messageRoot,
         uint256 _numSignUps
     ) public view returns (uint256[] memory) {
+        (uint256 coordinatorPubKeyX, uint256 coordinatorPubKeyY) = _poll.coordinatorPubKey();
+        uint256 coordinatorPubKeyHash = hashLeftRight(coordinatorPubKeyX, coordinatorPubKeyY);
+
         uint256 packedVals = genProcessMessagesPackedVals(_poll, _numSignUps);
+
         uint256[] memory input = new uint256[](4);
         input[0] = packedVals;
-        input[1] = _poll.coordinatorPubKeyHash();
+        input[1] = coordinatorPubKeyHash;
         input[2] = _messageRoot;
         input[3] = _poll.currentSbCommitment();
         uint256 inputHash = sha256Hash(input);
@@ -734,65 +738,5 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher {
         data.tallyCommitment = _newTallyCommitment;
         data.tallyBatchNum = data.tallyBatchNum + 1;
         pollPptData[_poll] = data;
-    }
-}
-
-/*
- * TODO: consider replacing this with Maker's multicall
- */
-contract PollStateViewer is Params, DomainObjs {
-    struct VkSigs {
-        uint256 processVkSig;
-        uint256 tallyVkSig;
-    }
-
-    /*
-     * A convenience function to return several storage variables of a Poll in
-     * a single call.
-     */
-    function getState(Poll _poll) public view returns (
-        uint256,              // coordinatorPubKeyHash
-        uint256,              // duration
-        VkSigs memory,        // VkSigs
-        AccQueue,             // messageAq
-        MaxValues memory,     // maxValues
-        TreeDepths memory,    // treeDepths
-        BatchSizes memory     // batchSizes
-    ){
-        VkSigs memory vkSigs;
-        vkSigs.processVkSig = _poll.processVkSig();
-        vkSigs.tallyVkSig = _poll.tallyVkSig();
-
-        AccQueue messageAq = _poll.messageAq();
-
-        MaxValues memory maxValues;
-        (
-            maxValues.maxMessages,
-            maxValues.maxVoteOptions
-        ) = _poll.maxValues();
-
-        TreeDepths memory treeDepths;
-        (
-            treeDepths.intStateTreeDepth,
-            treeDepths.messageTreeSubDepth,
-            treeDepths.messageTreeDepth,
-            treeDepths.voteOptionTreeDepth
-        ) = _poll.treeDepths();
-
-        BatchSizes memory batchSizes;
-        (
-            batchSizes.messageBatchSize,
-            batchSizes.tallyBatchSize
-        ) = _poll.batchSizes();
-
-        return (
-            _poll.coordinatorPubKeyHash(),
-            _poll.duration(),
-            vkSigs,
-            messageAq,
-            maxValues,
-            treeDepths,
-            batchSizes
-        );
     }
 }

@@ -88,7 +88,6 @@ describe('MACI', () => {
     let maciContract
     let stateAqContract
     let vkRegistryContract
-    let pollStateViewerContract
     let pptContract
     let pollId: number
 
@@ -101,7 +100,6 @@ describe('MACI', () => {
             maciContract = r.maciContract
             stateAqContract = r.stateAqContract
             vkRegistryContract = r.vkRegistryContract
-            pollStateViewerContract = r.pollStateViewerContract
             pptContract = r.pptContract
         })
 
@@ -295,28 +293,6 @@ describe('MACI', () => {
                 //5. maxValues,
                 //6. treeDepths,
                 //7. batchSizes
-
-                const pollState = await pollStateViewerContract.getState(pollContract.address)
-
-                expect(pollState[0].toString()).toEqual(coordinator.pubKey.hash().toString())
-
-                expect(pollState[1].toString()).toEqual(duration.toString())
-
-                expect(pollState[2].processVkSig.toString()).toEqual(pollProcessVkSig.toString())
-
-                expect(pollState[2].tallyVkSig.toString()).toEqual(pollTallyVkSig.toString())
-
-                expect(pollState[3].match(/^(0x)?[0-9a-fA-F]{40}$/) != null).toBeTruthy()
-
-                expect(pollState[4].maxMessages.toString()).toEqual(maxValues.maxMessages.toString())
-                expect(pollState[4].maxVoteOptions.toString()).toEqual(maxValues.maxVoteOptions.toString())
-
-                expect(pollState[5].intStateTreeDepth.toString()).toEqual(treeDepths.intStateTreeDepth.toString())
-                expect(pollState[5].messageTreeDepth.toString()).toEqual(treeDepths.messageTreeDepth.toString())
-                expect(pollState[5].voteOptionTreeDepth.toString()).toEqual(treeDepths.voteOptionTreeDepth.toString())
-
-                expect(pollState[6].messageBatchSize.toString()).toEqual(messageBatchSize.toString())
-                expect(pollState[6].tallyBatchSize.toString()).toEqual(tallyBatchSize.toString())
             })
         })
 

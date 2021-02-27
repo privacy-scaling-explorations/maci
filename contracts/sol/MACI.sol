@@ -263,7 +263,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
             _maxValues,
             _treeDepths,
             batchSizes,
-            hashLeftRight(_coordinatorPubKey.x, _coordinatorPubKey.y),
+            _coordinatorPubKey,
             vkRegistry,
             this,
             owner(),

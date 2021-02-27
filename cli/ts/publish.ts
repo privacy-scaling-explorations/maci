@@ -1,5 +1,6 @@
 import {
     maciContractAbi,
+    loadAbi,
 } from 'maci-contracts'
 
 import {
@@ -153,13 +154,23 @@ const configureSubparser = (subparsers: any) => {
             help: 'The message salt',
         }
     )
+
+    parser.addArgument(
+        ['-o', '--poll-id'],
+        {
+            action: 'store',
+            required: true,
+            type: 'string',
+            help: 'The Poll ID',
+        }
+    )
 }
 
 const publish = async (args: any) => {
     // User's MACI public key
     if (!PubKey.isValidSerializedPubKey(args.pubkey)) {
         console.error('Error: invalid MACI public key')
-        return
+        return 1
     }
 
     const userMaciPubKey = PubKey.unserialize(args.pubkey)
@@ -167,7 +178,7 @@ const publish = async (args: any) => {
     // MACI contract
     if (!validateEthAddress(args.contract)) {
         console.error('Error: invalid MACI contract address')
-        return
+        return 1
     }
 
     const maciAddress = args.contract
@@ -191,7 +202,7 @@ const publish = async (args: any) => {
 
     if (!validateEthSk(ethSk)) {
         console.error('Error: invalid Ethereum private key')
-        return
+        return 1
     }
 
     // The user's MACI private key
@@ -204,7 +215,7 @@ const publish = async (args: any) => {
 
     if (!PrivKey.isValidSerializedPrivKey(serializedPrivkey)) {
         console.error('Error: invalid MACI private key')
-        return
+        return 1
     }
 
     const userMaciPrivkey = PrivKey.unserialize(serializedPrivkey)
@@ -252,27 +263,54 @@ const publish = async (args: any) => {
 
     if (! (await checkDeployerProviderConnection(ethSk, ethProvider))) {
         console.error('Error: unable to connect to the Ethereum provider at', ethProvider)
-        return
+        return 1
     }
 
     const provider = new ethers.providers.JsonRpcProvider(ethProvider)
 
     if (! (await contractExists(provider, maciAddress))) {
-        console.error('Error: there is no contract deployed at the specified address')
-        return
+        console.error('Error: there is no MACI contract deployed at the specified address')
+        return 1
+    }
+
+    const pollId = args.poll_id
+
+    if (pollId < 0) {
+        console.error('Error: the Poll ID should be a positive integer.')
+        return 1
     }
 
     const wallet = new ethers.Wallet(ethSk, provider)
     const web3 = new Web3(ethProvider)
-	let maciContract = new web3.eth.Contract(maciAddress, maciContractAbi)
+	const maciContract = new web3.eth.Contract(maciContractAbi, maciAddress)
+	const maciContractEthers = new ethers.Contract(maciAddress, maciContractAbi, wallet)
 
-    let [maxLeafIndexResult, coordinatorPubKeyResult] = await batchTransactionRequests(
-        ethProvider,
-        [maciContract.voteOptionsMaxLeafIndex(), maciContract.coordinatorPubKey()],
-        wallet.address
-    )
-    
-    const maxVoteOptions = (maxLeafIndexResult).toNumber()
+    const pollAddr = await maciContractEthers.polls(pollId)
+    if (! (await contractExists(provider, pollAddr))) {
+        console.error('Error: there is no Poll contract with this poll ID linked to the specified MACI contract.')
+        return 1
+    }
+
+    const pollContractAbi = loadAbi('Poll.abi')
+    const pollContract = new web3.eth.Contract(pollContractAbi, pollAddr)
+
+    /*
+    const [maxValues, coordinatorPubKeyResult] = 
+        await batchTransactionRequests(
+            ethProvider,
+            [
+                pollContract.methods.maxValues(),
+                pollContract.methods.coordinatorPubKey(),
+            ],
+            wallet.address
+        )
+
+    const a = await maxValues()
+    */
+    const maxValues = await pollContract.methods.maxValues().call()
+    const coordinatorPubKeyResult = await pollContract.methods.coordinatorPubKey().call()
+    const maxVoteOptions = Number(maxValues.maxVoteOptions)
+
     // Validate the vote option index against the max leaf index on-chain
     if (maxVoteOptions < voteOptionIndex) {
         console.error('Error: the vote option index is invalid')
@@ -284,9 +322,9 @@ const publish = async (args: any) => {
         BigInt(coordinatorPubKeyResult.y.toString()),
     ])
     
-    maciContract = new ethers.Contract(
-        maciAddress,
-        maciContractAbi,
+    const pollContractEthers = new ethers.Contract(
+        pollAddr,
+        pollContractAbi,
         wallet,
     )
 
@@ -301,6 +339,7 @@ const publish = async (args: any) => {
         voteOptionIndex,
         newVoteWeight,
         nonce,
+        pollId,
         salt,
     )
     const signature = command.sign(userMaciPrivkey)
@@ -314,22 +353,28 @@ const publish = async (args: any) => {
 
     let tx
     try {
-        tx = await maciContract.publishMessage(
+        tx = await pollContractEthers.publishMessage(
             message.asContractParam(),
             encKeypair.pubKey.asContractParam(),
-            { gasLimit: 1000000 }
+            { gasLimit: 1000000 },
         )
+        await tx.wait()
 
         console.log('Transaction hash:', tx.hash)
         console.log('Ephemeral private key:', encKeypair.privKey.serialize())
     } catch(e) {
-        console.error('Error: the transaction failed')
         if (e.message) {
-            console.error(e.message)
+            if (e.message.endsWith('PollE03')) {
+                console.error('Error: the voting period is over.')
+            } else {
+                console.error('Error: the transaction failed.')
+                console.error(e.message)
+            }
         }
-        return
+        return 1
     }
-    await tx.wait()
+
+    return 0
 }
 
 export {

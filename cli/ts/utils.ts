@@ -231,9 +231,9 @@ const batchTransactionRequests = async (
     fromAddress?: string
 ) => {
     const web3 = new Web3(provider)
-    let batch = new web3.BatchRequest()
+    const batch = new web3.BatchRequest()
 
-    let callbacks = Array(requests.length).fill(
+    const callbacks = Array(requests.length).fill(
         async (error: any, result: any) => {
             if (error.message) {
                 console.error(error.message)

@@ -5,7 +5,6 @@ import * as shell from 'shelljs'
 import * as argparse from 'argparse'
 import { config } from 'maci-config'
 import { genAccounts, genTestAccounts } from './accounts'
-import { VerifyingKey } from 'maci-domainobjs'
 
 const abiDir = path.join(__dirname, '..', 'compiled')
 const solDir = path.join(__dirname, '..', 'sol')
@@ -316,15 +315,6 @@ const deployMaci = async (
     log('Deploying VkRegistry', quiet)
     const vkRegistryContract = await deployVkRegistry(deployer)
 
-    // PollStateViewer
-    log('Deploying PollStateViewer', quiet)
-    const [ PollStateViewerAbi, PollStateViewerBin ] = loadAB('PollStateViewer')
-    const pollStateViewerContract = await deployer.deploy(
-        PollStateViewerAbi,
-        PollStateViewerBin,
-    )
-    await pollStateViewerContract.deployTransaction.wait()
-
     //log('Transferring VkRegistry ownership to MACI', quiet)
     //await (await (vkRegistryContract.transferOwnership(maciContract.address))).wait()
 
@@ -345,7 +335,6 @@ const deployMaci = async (
         maciContract,
         vkRegistryContract,
         stateAqContract,
-        pollStateViewerContract,
         pptContract,
     }
 }
