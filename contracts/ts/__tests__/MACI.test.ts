@@ -498,11 +498,11 @@ describe('MACI', () => {
                 const receipt = await tx.wait()
                 expect(receipt.status).toEqual(1)
 
-                const pptData = await pptContract.pollPptData(pollContractAddress)
-                expect(pptData.processingComplete).toBeTruthy()
-                const onChainNewSbCommitment = pptData.sbCommitment.toString()
+                const processingComplete = await pptContract.processingComplete()
+                expect(processingComplete).toBeTruthy()
 
-                expect(generatedInputs.newSbCommitment).toEqual(onChainNewSbCommitment)
+                const onChainNewSbCommitment = await pptContract.sbCommitment()
+                expect(generatedInputs.newSbCommitment).toEqual(onChainNewSbCommitment.toString())
             })
         })
 
@@ -547,10 +547,9 @@ describe('MACI', () => {
                 const receipt = await tx.wait()
                 expect(receipt.status).toEqual(1)
 
-                const pptData = await pptContract.pollPptData(pollContractAddress)
-                const onChainNewTallyCommitment = pptData.tallyCommitment.toString()
+                const onChainNewTallyCommitment = await pptContract.tallyCommitment()
 
-                expect(generatedInputs.newTallyCommitment).toEqual(onChainNewTallyCommitment)
+                expect(generatedInputs.newTallyCommitment).toEqual(onChainNewTallyCommitment.toString())
 
                 try {
                     await pptContract.tallyVotes(
