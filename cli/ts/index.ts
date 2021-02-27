@@ -7,6 +7,11 @@ import {
 } from './utils'
 
 import {
+    timeTravel,
+    configureSubparser as configureSubparserForTimeTravel,
+} from './timeTravel'
+
+import {
     genMaciKeypair,
     configureSubparser as configureSubparserForGenMaciKeypair,
 } from './genMaciKeypair'
@@ -71,6 +76,9 @@ const main = async () => {
         dest: 'subcommand',
     })
 
+    // Subcommand: timeTravel
+    configureSubparserForTimeTravel(subparsers)
+
     // Subcommand: genMaciPubkey
     configureSubparserForGenMaciPubkey(subparsers)
 
@@ -107,7 +115,9 @@ const main = async () => {
     const args = parser.parseArgs()
 
     // Execute the subcommand method
-    if (args.subcommand === 'genMaciKeypair') {
+    if (args.subcommand === 'timeTravel') {
+        await timeTravel(args)
+    } else if (args.subcommand === 'genMaciKeypair') {
         await genMaciKeypair(args)
     } else if (args.subcommand === 'genMaciPubkey') {
         await genMaciPubkey(args)

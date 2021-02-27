@@ -8,7 +8,8 @@
 # first 10 are predefined.
 #npx etherlime ganache --mnemonic "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat" --gasLimit=10000000 count=10
 
-npx ganache-cli -a 10 -m='candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' --gasLimit=8800000 --port 8545
+npx hardhat node --port 8545
+#npx ganache-cli -a 10 -m='candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' --gasLimit=8800000 --port 8545
 
 # ETH accounts from the 'candy maple...' mnemonic
 #0: 0x627306090abab3a6e1400e9345bc60c78a8bef57
