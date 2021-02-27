@@ -54,7 +54,7 @@ const configureSubparser = (subparsers: any) => {
     )
 
     createParser.addArgument(
-        ['-a', '--maci-address'],
+        ['-x', '--maci-address'],
         {
             action: 'store',
             type: 'string',
@@ -62,7 +62,6 @@ const configureSubparser = (subparsers: any) => {
             help: 'The MACI contract address',
         }
     )
-
 
     createParser.addArgument(
         ['-pk', '--pubkey'],
@@ -94,7 +93,7 @@ const configureSubparser = (subparsers: any) => {
     )
 
     createParser.addArgument(
-        ['-m', '--max-messages'],
+        ['-g', '--max-messages'],
         {
             action: 'store',
             type: 'int',
@@ -104,7 +103,7 @@ const configureSubparser = (subparsers: any) => {
     )
 
     createParser.addArgument(
-        ['-v', '--max-vote-options'],
+        ['-mv', '--max-vote-options'],
         {
             action: 'store',
             type: 'int',
@@ -124,7 +123,7 @@ const configureSubparser = (subparsers: any) => {
     )
 
     createParser.addArgument(
-        ['-mt', '--msg-tree-depth'],
+        ['-m', '--msg-tree-depth'],
         {
             action: 'store',
             type: 'int',
@@ -134,17 +133,17 @@ const configureSubparser = (subparsers: any) => {
     )
 
     createParser.addArgument(
-        ['-ms', '--msg-tree-sub-depth'],
+        ['-b', '--msg_batch_depth'],
         {
             action: 'store',
             type: 'int',
             required: true,
-            help: 'The message state tree subdepth (for batch processing)',
+            help: 'The batch depth for message processing. '
         }
     )
 
     createParser.addArgument(
-        ['-o', '--vote-option-tree-depth'],
+        ['-v', '--vote-option-tree-depth'],
         {
             action: 'store',
             type: 'int',
@@ -176,7 +175,7 @@ const deployPoll = async (args: any) => {
         return 1
     }
     const intStateTreeDepth = args.int_state_tree_depth
-    const messageTreeSubDepth = args.msg_tree_sub_depth
+    const messageTreeSubDepth = args.msg_batch_depth
     const messageTreeDepth = args.msg_tree_depth
     const voteOptionTreeDepth = args.vote_option_tree_depth
 
@@ -222,7 +221,7 @@ const deployPoll = async (args: any) => {
     const wallet = new ethers.Wallet(deployerPrivkey, provider)
 
     // Deployer a Verifier contract
-    const verifierContract = await deployVerifier(deployer)
+    const verifierContract = await deployVerifier(deployer, true)
 
     // Deploy a PollProcessorAndTallyer contract
     const [ PptAbi, PptBin ] = loadAB('PollProcessorAndTallyer')
@@ -234,7 +233,6 @@ const deployPoll = async (args: any) => {
     await pptContract.deployTransaction.wait()
 
     const maciAbi = loadAbi('MACI.abi')
-    debugger
     const maciContract = new ethers.Contract(
         args.maci_address,
         maciAbi,
@@ -242,7 +240,7 @@ const deployPoll = async (args: any) => {
     )
 
     try {
-        const tx = maciContract.deployPoll(
+        const tx = await maciContract.deployPoll(
             duration,
             { maxMessages, maxVoteOptions },
             {
@@ -254,7 +252,19 @@ const deployPoll = async (args: any) => {
             unserialisedPubkey.asContractParam(),
             pptContract.address,
         )
-        await tx.wait()
+        const receipt = await tx.wait()
+        const iface = new ethers.utils.Interface(maciContract.interface.abi)
+        const log = iface.parseLog(receipt.logs[receipt.logs.length - 1])
+        const name = log.name
+        if (name !== 'DeployPoll') {
+            console.error('Error: invalid event log.')
+            return 1
+        }
+        const pollId = log.values._pollId
+        const pollAddr = log.values._pollAddr
+        console.log('Verifier:', verifierContract.address)
+        console.log('Poll ID:', pollId.toString())
+        console.log('Poll contract:', pollAddr)
     } catch (e) {
         console.error('Error: could not deploy poll')
         console.error(e.message)

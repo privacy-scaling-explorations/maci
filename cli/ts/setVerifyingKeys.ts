@@ -166,7 +166,6 @@ const setVerifyingKeys = async (args: any) => {
     const processVk: VerifyingKey = VerifyingKey.fromJSON(getVkJson(pmZkeyFile))
     const tallyVk: VerifyingKey = VerifyingKey.fromJSON(getVkJson(tvZkeyFile))
 
-    debugger
     if (!fs.existsSync(pmZkeyFile)) {
         console.error(`Error: ${pmZkeyFile} does not exist.`)
         return 1
@@ -261,10 +260,11 @@ const setVerifyingKeys = async (args: any) => {
             intStateTreeDepth,
             msgTreeDepth,
             voteOptionTreeDepth,
-            msgBatchDepth,
+            5 ** msgBatchDepth,
             processVk.asContractParam(),
             tallyVk.asContractParam(),
         )
+        //console.log({stateTreeDepth, intStateTreeDepth, msgTreeDepth, voteOptionTreeDepth, msgBatchDepth})
 
         const receipt = await tx.wait()
         if (receipt.status !== 1) {

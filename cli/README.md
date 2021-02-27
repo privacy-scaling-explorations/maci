@@ -104,6 +104,35 @@ MACI: 0x75c35C980C0d37ef46DF04d31A140b65503c0eEd
 
 ### Coordinator: Deploy poll
 
+Example usage:
+
+```
+node ./build/index.js deployPoll -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 -e http://localhost:8545 -x 0x75c35C980C0d37ef46DF04d31A140b65503c0eEd -t 60 -pk macipk.9643c94d5a2c918cab49a476feeab82eeec61ead9625e901c340c71aecdeb282 -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2
+```
+
+Example output:
+
+```
+Verifier: 0x8273e4B8ED6c78e252a9fCa5563Adfcc75C91b2A
+Poll ID: 1
+Poll contract: 0xb6022CBa95B812fFC2cCdb4e4FB5A3B507BC5F64
+```
+
+### User: sign up
+
+Example usage:
+
+```
+node ./build/index.js signup -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 -e http://localhost:8545 -p macipk.40270618e1797c4969587eb04d7f3e9b39a91ecbbdf7d3c998d8e34d08e11c86 -x 0x75c35C980C0d37ef46DF04d31A140b65503c0eEd
+```
+
+Example output:
+
+```
+Transaction hash: 0xcae04f618a0b45896732632121248c312cbc68584519c1e43932b110da9078bc
+State index: 1
+```
+
 ### Coordinator: Create election (OLD)
 
 This command deploys an instance of a MACI contract.

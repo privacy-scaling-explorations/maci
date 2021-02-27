@@ -131,8 +131,8 @@ const deployVkRegistry = async (
     )
 }
 
-const deployMockVerifier = async (deployer) => {
-    console.log('Deploying MockVerifier')
+const deployMockVerifier = async (deployer, quiet = false) => {
+    log('Deploying MockVerifier', quiet)
     const [ MockVerifierAbi, MockVerifierBin ] = loadAB('MockVerifier')
     return await deployer.deploy(
         MockVerifierAbi,
@@ -140,8 +140,8 @@ const deployMockVerifier = async (deployer) => {
     )
 }
 
-const deployVerifier = async (deployer) => {
-    console.log('Deploying Verifier')
+const deployVerifier = async (deployer, quiet = false) => {
+    log('Deploying Verifier', quiet)
     const [ VerifierAbi, VerifierBin ] = loadAB('Verifier')
     return await deployer.deploy(
         VerifierAbi,

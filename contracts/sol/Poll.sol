@@ -44,8 +44,6 @@ contract PollFactory is Params, IPubKey, IMessage, Ownable, Hasher, PollDeployme
 
     MessageAqFactory public messageAqFactory;
 
-    event DeployPoll(uint256 _pollId, address _pollAddr);
-
     function setMessageAqFactory(MessageAqFactory _messageAqFactory)
     public
     onlyOwner {
@@ -237,7 +235,6 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
         // Set the poll processor contract
         ppt = _ppt;
     }
-
 
     /*
      * A modifier that causes the function to revert if the voting period is
