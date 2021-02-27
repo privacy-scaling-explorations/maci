@@ -52,6 +52,9 @@ contract PollFactory is Params, IPubKey, IMessage, Ownable, Hasher, PollDeployme
         messageAqFactory = _messageAqFactory;
     }
 
+    /*
+     * Deploy a new Poll contract and AccQueue contract for messages.
+     */
     function deploy(
         uint256 _duration,
         uint8 _stateTreeDepth,
@@ -69,12 +72,10 @@ contract PollFactory is Params, IPubKey, IMessage, Ownable, Hasher, PollDeployme
 
         // Validate _maxValues
         require(
-            _maxValues.maxMessages <= 
-                treeArity ** _treeDepths.messageTreeDepth &&
+            _maxValues.maxMessages <= treeArity ** _treeDepths.messageTreeDepth &&
             _maxValues.maxMessages >= _batchSizes.messageBatchSize &&
             _maxValues.maxMessages % _batchSizes.messageBatchSize == 0 &&
-            _maxValues.maxVoteOptions <= 
-                treeArity ** _treeDepths.voteOptionTreeDepth,
+            _maxValues.maxVoteOptions <= treeArity ** _treeDepths.voteOptionTreeDepth,
             "PollFactory: invalid _maxValues"
         );
         }
@@ -237,19 +238,12 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
         ppt = _ppt;
     }
 
-    /*
-     * TODO: write comment
-     */
-    function setEmptySbCommitment(uint256 _emptyEmptySbCommitment) public onlyOwner {
-        require(currentSbCommitment == 0, ERROR_SB_COMMITMENT_NOT_SET);
-        currentSbCommitment = _emptyEmptySbCommitment;
-    }
 
     /*
-     * TODO: write comment
+     * A modifier that causes the function to revert if the voting period is
+     * over.
      */
     modifier isBeforeVotingDeadline() {
-        // Throw if the voting period is over
         uint256 secondsPassed = block.timestamp - deployTime;
         require(
             secondsPassed <= duration,
@@ -259,10 +253,10 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     }
 
     /*
-     * TODO: write comment
+     * A modifier that causes the function to revert if the voting period is
+     * not over.
      */
     modifier isAfterVotingDeadline() {
-        // Throw if the voting period is not over
         uint256 secondsPassed = block.timestamp - deployTime;
         require(
             secondsPassed > duration,
@@ -329,6 +323,14 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
         //return hash4(m);
     }
 
+    /*
+     * The first step of merging the MACI state AccQueue. This allows the
+     * ProcessMessages circuit to access the latest state tree and ballots via
+     * currentSbCommitment.
+     * TODO: consider an attack where someone signs up repeatedly while the
+     * subroots are being merged. With a good signup gatekeeper, however, this
+    * is unlikely to succeed in DDOSing the process.
+     */
     function mergeMaciStateAqSubRoots(uint256 _numSrQueueOps)
     public
     onlyOwner
@@ -339,18 +341,28 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
         if (!maci.stateAq().subTreesMerged()) {
             maci.mergeStateAqSubRoots(_numSrQueueOps);
         }
+        
         if (numSignUps == 0) {
             numSignUps = maci.numSignUps();
         }
 
     }
 
+    /*
+     * The second step of merging the MACI state AccQueue. This allows the
+     * ProcessMessages circuit to access the latest state tree and ballots via
+     * currentSbCommitment.
+     */
     function mergeMaciStateAq()
     public
     onlyOwner
     isAfterVotingDeadline {
-        // This function can only be called once per Poll
+        // This function can only be called once per Poll after the voting
+        // deadline
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
+
+        // TODO: remove this redundant check?
+        require(currentSbCommitment == 0, ERROR_SB_COMMITMENT_NOT_SET);
 
         if (!maci.stateAq().subTreesMerged()) {
             maci.mergeStateAq();
@@ -363,11 +375,12 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
         sb[1] = emptyBallotRoots[treeDepths.voteOptionTreeDepth];
         sb[2] = uint256(0);
 
-        setEmptySbCommitment(hash3(sb));
+        currentSbCommitment = hash3(sb);
     }
 
     /*
-     * TODO: write comment
+     * The first step in merging the message AccQueue so that the
+     * ProcessMessages circuit can access the message root.
      */
     function mergeMessageAqSubRoots(uint256 _numSrQueueOps)
     public
@@ -377,7 +390,8 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     }
 
     /*
-     * TODO: write comment
+     * The second step in merging the message AccQueue so that the
+     * ProcessMessages circuit can access the message root.
      */
     function mergeMessageAq()
     public
@@ -387,7 +401,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     }
 
     /*
-     * TODO: write comment
+     * Enqueue a batch of messages.
      */
     function batchEnqueueMessage(uint256 _messageSubRoot)
     public
@@ -447,13 +461,19 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher {
         _;
     }
 
+    /*
+     * One of the inputs to the ProcessMessages circuit is a 250-bit
+     * representation of four 50-bit values. This function generates this
+     * 250-bit value, which consists of the maximum number of vote options, the
+     * number of signups, the current message batch index, and the end index of
+    * the current batch.
+     */
     function genProcessMessagesPackedVals(
         Poll _poll,
         uint256 _numSignUps
     ) public view returns (uint256) {
         (
-            // ignore the 1st value
-            ,
+            , // ignore the 1st value
             uint256 maxVoteOptions
         ) = _poll.maxValues();
 
@@ -467,6 +487,8 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher {
             :
             numMessages - index - 1;
 
+        // TODO: ensure that each value is less than or equal to 2 ** 50
+
         uint256 result =
             maxVoteOptions +
             (_numSignUps << uint256(50)) +
@@ -476,6 +498,15 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher {
         return result;
     }
 
+    /*
+     * Returns the SHA256 hash of the packed values (see
+     * genProcessMessagesPackedVals), the hash of the coordinator's public key,
+     * the message root, and the commitment to the current state root and
+     * ballot root. By passing the SHA256 hash of these values to the circuit
+     * as a single public input and the preimage as private inputs, we reduce
+     * its verification gas cost though the number of constraints will be
+     * higher and proving time will be higher.
+     */
     function genProcessMessagesPublicInputs(
         Poll _poll,
         uint256 _messageRoot,
@@ -599,16 +630,16 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher {
         PptData memory data = pollPptData[_poll];
 
         data.sbCommitment = _newSbCommitment;
-
         data.processingComplete = _processingComplete;
-
         data.currentMessageBatchIndex = _currentMessageBatchIndex;
-
         data.numBatchesProcessed = data.numBatchesProcessed + 1;
 
         pollPptData[_poll] = data;
     }
 
+    /*
+     * Pack the batch start index and number of signups into a 100-bit value.
+     */
     function genTallyVotesPackedVals(Poll _poll)
         public view returns (uint256) {
         
@@ -617,6 +648,7 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher {
         PptData memory data = pollPptData[_poll];
         uint256 batchStartIndex = data.tallyBatchNum * tallyBatchSize;
 
+        // TODO: ensure that each value is less than or equal to 2 ** 50
         uint256 result =
             batchStartIndex +
             (_poll.numSignUps() << uint256(50));
@@ -698,7 +730,6 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher {
 
             // Verify the proof
             bool isValid = verifier.verify(_proof, vk, publicInputs);
-
             require(isValid, ERROR_INVALID_TALLY_VOTES_PROOF);
         }
 
