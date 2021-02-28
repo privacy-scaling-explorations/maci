@@ -90,11 +90,15 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     // balance per user
     InitialVoiceCreditProxy public initialVoiceCreditProxy;
 
+    // Events
+    event Init(VkRegistry _vkRegistry, MessageAqFactory _messageAqFactory);
     event SignUp(
         uint256 _stateIndex,
         PubKey _userPubKey,
         uint256 _voiceCreditBalance
     );
+    event MergeStateAqSubRoots(uint255 _numSrQueueOps);
+    event MergeStateAq();
     event DeployPoll(uint256 _pollId, address _pollAddr, PubKey _pubKey);
 
     constructor(
@@ -146,6 +150,8 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         );
 
         isInitialised = true;
+
+        emit Init(_vkRegistry, _messageAqFactory);
     }
 
     modifier afterInit() {
@@ -223,6 +229,8 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     override
     afterInit {
         stateAq.mergeSubRoots(_numSrQueueOps);
+
+        emit MergeStateAqSubRoots(_numSrQueueOps);
     }
 
     function mergeStateAq()
@@ -232,6 +240,9 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     afterInit
     returns (uint256) {
         uint256 root = stateAq.merge(stateTreeDepth);
+
+        emit MergeStateAq();
+
         return root;
     }
 

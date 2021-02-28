@@ -1,6 +1,8 @@
 import * as ethers from 'ethers'
+import { genRandomSalt } from 'maci-crypto'
 
 import {
+    loadAbi,
     maciContractAbi,
     formatProofForVerifierContract,
 } from 'maci-contracts'
@@ -94,6 +96,16 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
+        ['-o', '--poll-id'],
+        {
+            action: 'store',
+            required: true,
+            type: 'string',
+            help: 'The Poll ID',
+        }
+    )
+
+    parser.addArgument(
         ['-r', '--repeat'],
         {
             action: 'storeTrue',
@@ -164,8 +176,12 @@ const processMessages = async (args: any): Promise<string | undefined> => {
         return
     }
 
-    const unserialisedPrivkey = PrivKey.unserialize(coordinatorPrivkey)
-    const coordinatorKeypair = new Keypair(unserialisedPrivkey)
+    const pollId = args.poll_id
+
+    if (pollId < 0) {
+        console.error('Error: the Poll ID should be a positive integer.')
+        return
+    }
 
     const maciContract = new ethers.Contract(
         maciAddress,
@@ -173,129 +189,162 @@ const processMessages = async (args: any): Promise<string | undefined> => {
         wallet,
     )
 
-    // Check whether there are any remaining batches to process
-    const currentMessageBatchIndex = (await maciContract.currentMessageBatchIndex()).toNumber()
-    const messageTreeMaxLeafIndex = (await maciContract.messageTreeMaxLeafIndex()).toNumber()
-
-    if (! (await maciContract.hasUnprocessedMessages())) {
-        console.error('Error: all messages have already been processed')
+    const pollAddr = await maciContract.polls(pollId)
+    if (! (await contractExists(provider, pollAddr))) {
+        console.error('Error: there is no Poll contract with this poll ID linked to the specified MACI contract.')
         return
     }
 
-    if (currentMessageBatchIndex > messageTreeMaxLeafIndex) {
-        console.error('Error: the message batch index is invalid. This should never happen.')
+    const pollContractAbi = loadAbi('Poll.abi')
+
+    const unserialisedPrivkey = PrivKey.unserialize(coordinatorPrivkey)
+    const coordinatorKeypair = new Keypair(unserialisedPrivkey)
+
+    const newSbSalt = genRandomSalt()
+    
+    const pollContract = new ethers.Contract(
+        pollAddr,
+        pollContractAbi,
+        wallet,
+    )
+
+    const pptContract = new ethers.Contract(
+        await pollContract.ppt,
+        loadAbi('PollProcessorAndTallyer.abi'),
+        wallet,
+    )
+
+    const processingComplete = await pptContract.processingComplete()
+    if (processingComplete) {
+        console.error('Error: no more batches to process.')
         return
     }
 
-    // Build an off-chain representation of the MACI contract using data in the contract storage
-    let maciState
-    try {
-        maciState = await genMaciStateFromContract(
-            provider,
-            maciAddress,
-            coordinatorKeypair,
-            StateLeaf.genBlankLeaf(),
-        )
-    } catch (e) {
-        console.error(e)
-        return
-    }
+    return newSbSalt.toString()
 
-    const messageBatchSize  = await maciContract.messageBatchSize()
-    let randomStateLeaf 
+    //// Check whether there are any remaining batches to process
+    //const currentMessageBatchIndex = (await maciContract.currentMessageBatchIndex()).toNumber()
+    //const messageTreeMaxLeafIndex = (await maciContract.messageTreeMaxLeafIndex()).toNumber()
 
-    while (true) {
-        randomStateLeaf = StateLeaf.genRandomLeaf()
-        const messageBatchIndex = await maciContract.currentMessageBatchIndex()
+    //if (! (await maciContract.hasUnprocessedMessages())) {
+        //console.error('Error: all messages have already been processed')
+        //return
+    //}
 
-        const circuitInputs = maciState.genBatchUpdateStateTreeCircuitInputs(
-            messageBatchIndex.toNumber(),
-            messageBatchSize,
-            randomStateLeaf,
-        )
+    //if (currentMessageBatchIndex > messageTreeMaxLeafIndex) {
+        //console.error('Error: the message batch index is invalid. This should never happen.')
+        //return
+    //}
 
-        // Process the batch of messages
-        maciState.batchProcessMessage(
-            messageBatchIndex.toNumber(),
-            messageBatchSize,
-            randomStateLeaf,
-        )
+    //// Build an off-chain representation of the MACI contract using data in the contract storage
+    //let maciState
+    //try {
+        //maciState = await genMaciStateFromContract(
+            //provider,
+            //maciAddress,
+            //coordinatorKeypair,
+            //StateLeaf.genBlankLeaf(),
+        //)
+    //} catch (e) {
+        //console.error(e)
+        //return
+    //}
 
-        const stateRootAfter = maciState.genStateRoot()
+    //const messageBatchSize  = await maciContract.messageBatchSize()
+    //let randomStateLeaf 
 
-        let result
+    //while (true) {
+        //randomStateLeaf = StateLeaf.genRandomLeaf()
+        //const messageBatchIndex = await maciContract.currentMessageBatchIndex()
 
-        const configType = maciState.stateTreeDepth === 8 ? 'prod-small' : 'test'
+        //const circuitInputs = maciState.genBatchUpdateStateTreeCircuitInputs(
+            //messageBatchIndex.toNumber(),
+            //messageBatchSize,
+            //randomStateLeaf,
+        //)
 
-        try {
-            result = await genBatchUstProofAndPublicSignals(circuitInputs, configType)
-        } catch (e) {
-            console.error('Error: unable to compute batch update state tree witness data')
-            console.error(e)
-            return
-        }
-        const { circuit, witness, proof, publicSignals } = result
+        //// Process the batch of messages
+        //maciState.batchProcessMessage(
+            //messageBatchIndex.toNumber(),
+            //messageBatchSize,
+            //randomStateLeaf,
+        //)
 
-        // Get the circuit-generated root
-        const circuitNewStateRoot = getSignalByName(circuit, witness, 'main.root')
-        if (!circuitNewStateRoot.toString() === stateRootAfter.toString()) {
-            console.error('Error: circuit-computed root mismatch')
-            return
-        }
+        //const stateRootAfter = maciState.genStateRoot()
 
-        const ecdhPubKeys: PubKey[] = []
-        for (const p of circuitInputs['ecdh_public_key']) {
-            const pubKey = new PubKey(p)
-            ecdhPubKeys.push(pubKey)
-        }
+        //let result
 
-        const isValid = await verifyBatchUstProof(proof, publicSignals, configType)
-        if (!isValid) {
-            console.error('Error: could not generate a valid proof or the verifying key is incorrect')
-            return
-        }
+        //const configType = maciState.stateTreeDepth === 8 ? 'prod-small' : 'test'
 
-        const formattedProof = formatProofForVerifierContract(proof)
-        //const formattedProof = [0, 0, 0, 0, 0, 0, 0, 0]
-        const txErr = 'Error: batchProcessMessage() failed'
-        let tx
+        //try {
+            //result = await genBatchUstProofAndPublicSignals(circuitInputs, configType)
+        //} catch (e) {
+            //console.error('Error: unable to compute batch update state tree witness data')
+            //console.error(e)
+            //return
+        //}
+        //const { circuit, witness, proof, publicSignals } = result
 
-        try {
-            tx = await maciContract.batchProcessMessage(
-                '0x' + stateRootAfter.toString(16),
-                circuitInputs['state_tree_root'].map((x) => x.toString()),
-                ecdhPubKeys.map((x) => x.asContractParam()),
-                formattedProof,
-                { gasLimit: 2000000 },
-            )
-        } catch (e) {
-            console.error(txErr)
-            console.error(e)
-            break
-        }
+        //// Get the circuit-generated root
+        //const circuitNewStateRoot = getSignalByName(circuit, witness, 'main.root')
+        //if (!circuitNewStateRoot.toString() === stateRootAfter.toString()) {
+            //console.error('Error: circuit-computed root mismatch')
+            //return
+        //}
 
-        const receipt = await tx.wait()
+        //const ecdhPubKeys: PubKey[] = []
+        //for (const p of circuitInputs['ecdh_public_key']) {
+            //const pubKey = new PubKey(p)
+            //ecdhPubKeys.push(pubKey)
+        //}
 
-        if (receipt.status !== 1) {
-            console.error(txErr)
-            break
-        }
+        //const isValid = await verifyBatchUstProof(proof, publicSignals, configType)
+        //if (!isValid) {
+            //console.error('Error: could not generate a valid proof or the verifying key is incorrect')
+            //return
+        //}
 
-        const postSignUpStateRoot = await maciContract.postSignUpStateRoot()
-        if (postSignUpStateRoot.toString() !== stateRootAfter.toString()) {
-            console.error('Error: state root mismatch after processing a batch of messges')
-            return
-        }
+        //const formattedProof = formatProofForVerifierContract(proof)
+        ////const formattedProof = [0, 0, 0, 0, 0, 0, 0, 0]
+        //const txErr = 'Error: batchProcessMessage() failed'
+        //let tx
 
-        console.log(`Processed batch starting at index ${messageBatchIndex}`)
-        console.log(`Transaction hash: ${tx.hash}`)
-        console.log(`Random state leaf: ${randomStateLeaf.serialize()}`)
+        //try {
+            //tx = await maciContract.batchProcessMessage(
+                //'0x' + stateRootAfter.toString(16),
+                //circuitInputs['state_tree_root'].map((x) => x.toString()),
+                //ecdhPubKeys.map((x) => x.asContractParam()),
+                //formattedProof,
+                //{ gasLimit: 2000000 },
+            //)
+        //} catch (e) {
+            //console.error(txErr)
+            //console.error(e)
+            //break
+        //}
 
-        if (!args.repeat || ! (await maciContract.hasUnprocessedMessages())) {
-            break
-        }
-    }
-    return randomStateLeaf.serialize()
+        //const receipt = await tx.wait()
+
+        //if (receipt.status !== 1) {
+            //console.error(txErr)
+            //break
+        //}
+
+        //const postSignUpStateRoot = await maciContract.postSignUpStateRoot()
+        //if (postSignUpStateRoot.toString() !== stateRootAfter.toString()) {
+            //console.error('Error: state root mismatch after processing a batch of messges')
+            //return
+        //}
+
+        //console.log(`Processed batch starting at index ${messageBatchIndex}`)
+        //console.log(`Transaction hash: ${tx.hash}`)
+        //console.log(`Random state leaf: ${randomStateLeaf.serialize()}`)
+
+        //if (!args.repeat || ! (await maciContract.hasUnprocessedMessages())) {
+            //break
+        //}
+    //}
+    //return randomStateLeaf.serialize()
 }
 
 export {

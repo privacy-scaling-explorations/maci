@@ -27,6 +27,7 @@ import {
 
 const Web3 = require('web3')
 
+// TODO: remove this as it has been moved to maci-contracts
 /*
  * Retrieves and parses on-chain MACI contract data to create an off-chain
  * representation as a MaciState object.

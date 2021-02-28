@@ -295,6 +295,7 @@ const publish = async (args: any) => {
     const pollContract = new web3.eth.Contract(pollContractAbi, pollAddr)
 
     /*
+     * TODO: fix this
     const [maxValues, coordinatorPubKeyResult] = 
         await batchTransactionRequests(
             ethProvider,

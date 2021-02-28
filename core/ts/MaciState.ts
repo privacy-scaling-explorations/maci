@@ -343,11 +343,25 @@ class Poll {
                     this.ballots[0].votes[voteOptionIndex]
                 )
 
+                // No need to iterate through the entire votes array if the
+                // remaining elements are 0
+                let lastIndexToInsert = this.ballots[0].votes.length - 1
+                while (lastIndexToInsert >= 0) {
+                    if (this.ballots[0].votes[lastIndexToInsert] !== BigInt(0)) {
+                        break
+                    }
+                    lastIndexToInsert --
+                }
+
+                if (voteOptionIndex > lastIndexToInsert) {
+                    lastIndexToInsert = voteOptionIndex
+                }
+
                 const vt = new IncrementalQuinTree(
                     this.treeDepths.voteOptionTreeDepth,
                     BigInt(0),
                 )
-                for (let i = 0; i < this.ballots[0].votes.length; i ++) {
+                for (let i = 0; i <= lastIndexToInsert; i ++) {
                     vt.insert(this.ballots[0].votes[i])
                 }
                 currentVoteWeightsPathElements.unshift(
@@ -1003,10 +1017,8 @@ class MaciState {
     public currentPollBeingProcessed
     public numSignUps = 0
 
-    constructor() {
-        const blankStateLeaf = StateLeaf.genBlankLeaf()
-        const blankStateLeafHash = blankStateLeaf.hash()
-    }
+    //constructor() {
+    //}
 
     public signUp(
         _pubKey: PubKey,
@@ -1052,6 +1064,11 @@ class MaciState {
 
         this.polls.push(poll)
         return this.polls.length - 1
+    }
+
+    public deployNullPoll() {
+        // @ts-ignore
+        this.polls.push(null)
     }
 
     /*
