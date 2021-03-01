@@ -1,6 +1,6 @@
 {
     "name": "maci-contracts",
-    "version": "0.5.10",
+    "version": "0.5.11",
     "description": "",
     "main": "build/index.js",
     "scripts": {
@@ -41,9 +41,9 @@
         "ganache-cli": "^6.7.0",
         "jest": "^24.9.0",
         "libsemaphore": "^1.0.5",
-        "maci-circuits": "^0.5.9",
+        "maci-circuits": "^0.5.11",
         "maci-config": "^0.5.7",
-        "maci-core": "^0.5.9",
+        "maci-core": "^0.5.11",
         "maci-crypto": "^0.5.9",
         "maci-domainobjs": "^0.5.9",
         "shelljs": "^0.8.4",
