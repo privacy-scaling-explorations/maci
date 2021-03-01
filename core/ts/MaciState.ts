@@ -238,18 +238,8 @@ class MaciState {
             return
         }
 
-        // Update the user's vote option tree, pubkey, voice credit balance,
-        // and nonce
-        const newVotesArr: BigInt[] = []
-        for (let i = 0; i < this.users.length; i++) {
-            if (i === Number(command.voteOptionIndex)) {
-                newVotesArr.push(command.newVoteWeight)
-            } else {
-                newVotesArr.push(BigInt(user.votes[i].toString()))
-            }
-        }
-
-        // Deep-copy the user and update its attributes
+        // Deep-copy the user and update their votes, pubkey, voice credit
+        // balance, and nonce
         const newUser = user.copy()
         newUser.nonce = BigInt(newUser.nonce) + BigInt(1)
         newUser.votes[Number(command.voteOptionIndex)] = command.newVoteWeight
