@@ -31,17 +31,12 @@ const genMaciStateFromContract = async (
     provider: ethers.providers.Provider,
     address: string,
     coordinatorKeypair: Keypair,
-    pollIds: number[] = [], // an empty array means we should reconstruct all polls
+    pollId: number,
 ) => {
     // Verify and sort pollIds
-    const pollIdSet = new Set()
-    for (const p of pollIds) {
-        assert(p >= 0)
-        assert(Math.floor(p) === p)
-        pollIdSet.add(p)
-    }
-    assert(pollIdSet.size === pollIds.length)
-    pollIds.sort()
+    assert(pollId >= 0)
+
+    const pollContractAbi = loadAbi('Poll.abi')
 
     const maciContract = new ethers.Contract(
         address,
@@ -118,6 +113,7 @@ const genMaciStateFromContract = async (
         })
     }
 
+    // TODO: check for duplicates!!
     for (const log of mergeStateAqSubRootsLogs) {
         assert(log != undefined)
         const event = maciIface.parseLog(log)
@@ -133,6 +129,7 @@ const genMaciStateFromContract = async (
         })
     }
  
+    // TODO: check for duplicates!!
     for (const log of mergeStateAqLogs) {
         assert(log != undefined)
         actions.push({
@@ -145,43 +142,72 @@ const genMaciStateFromContract = async (
         })
     }
 
+    let i = 0
     const foundPollIds: number[] = []
+    const pollContractAddresses: string[] = []
     for (const log of deployPollLogs) {
         assert(log != undefined)
         const event = maciIface.parseLog(log)
         const pubKey = new PubKey(
             event.values._pubKey.map((x) => BigInt(x.toString()))
         )
+
         const pollId = Number(event.values._pollId)
+        assert(pollId === i)
+
+        const pollAddr = event.values._pollAddr
         actions.push({
             type: 'DeployPoll',
             // @ts-ignore
             blockNumber: log.blockNumber,
             // @ts-ignore
             transactionIndex: log.transactionIndex,
-            data: {
-                pollId,
-                pollAddr: event.values._pollAddr,
-                pubKey,
-            }
+            data: { pollId, pollAddr, pubKey }
         })
 
         foundPollIds.push(pollId)
+        pollContractAddresses.push(pollAddr)
+        i ++
     }
 
     // Check whether each pollIds is extant
-    for (const p of pollIds) {
-        if (foundPollIds.indexOf(p) === -1) {
-            assert(false, 'Error: a specified pollId does not exist on-chain')
-        }
-    }
+    assert(
+        foundPollIds.indexOf(pollId) > -1,
+        'Error: the specified pollId does not exist on-chain',
+    )
 
-    for (const pollId of foundPollIds) {
-        // Skip polls that we wish to ignore
-        if (pollIds.length > 0 && pollIds.indexOf(pollId) === -1) {
-            maciState.deployNullPoll()
-            continue
-        }
+    const pollContractAddress = pollContractAddresses[pollId]
+    const pollContract = new ethers.Contract(
+        pollContractAddress,
+        pollContractAbi,
+        provider,
+    )
+
+    const coordinatorPubKeyOnChain = await pollContract.coordinatorPubKey()
+    assert(coordinatorPubKeyOnChain[0].toString() === coordinatorKeypair.pubKey.rawPubKey[0].toString())
+    assert(coordinatorPubKeyOnChain[1].toString() === coordinatorKeypair.pubKey.rawPubKey[1].toString())
+
+    const duration = Number(await pollContract.duration())
+    const processVkSig = BigInt(await pollContract.processVkSig())
+    const tallyVkSig = BigInt(await pollContract.tallyVkSig())
+    const pptAddr = await pollContract.ppt()
+    const onChainMaxValues = await pollContract.maxValues()
+    const onChainTreeDepths = await pollContract.treeDepths()
+    const onChainBatchSizes = await pollContract.batchSizes()
+
+    const maxValues = {
+        maxMessages: Number(onChainMaxValues.maxMessages.toNumber()),
+        maxVoteOptions: Number(onChainMaxValues.maxVoteOptions.toNumber()),
+    }
+    const treeDepths = {
+        intStateTreeDepth: Number(onChainTreeDepths.intStateTreeDepth),
+        messageTreeDepth: Number(onChainTreeDepths.messageTreeDepth),
+        messageTreeSubDepth: Number(onChainTreeDepths.messageTreeSubDepth),
+        voteOptionTreeDepth: Number(onChainTreeDepths.voteOptionTreeDepth),
+    }
+    const batchSizes = {
+        tallyBatchSize: Number(onChainBatchSizes.tallyBatchSize),
+        messageBatchSize: Number(onChainBatchSizes.messageBatchSize),
     }
 
     // Recontstruct MaciState in order

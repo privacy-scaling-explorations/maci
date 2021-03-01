@@ -174,10 +174,11 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     string constant ERROR_MAX_MESSAGES_REACHED = "PollE07";
     string constant ERROR_STATE_AQ_ALREADY_MERGED = "PollE08";
 
-    event PublishMessage(
-        Message _message,
-        PubKey _encPubKey
-    );
+    event PublishMessage(Message _message, PubKey _encPubKey);
+    event MergeMaciStateAqSubRoots(uint256 _numSrQueueOps);
+    event MergeMaciStateAq(uint256 _stateRoot);
+    event MergeMessageAqSubRoots(uint256 _numSrQueueOps);
+    event MergeMessageAq(uint256 root);
 
     /*
      * Each MACI instance can have multiple Polls.
@@ -328,7 +329,10 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
      * subroots are being merged. With a good signup gatekeeper, however, this
     * is unlikely to succeed in DDOSing the process.
      */
-    function mergeMaciStateAqSubRoots(uint256 _numSrQueueOps)
+    function mergeMaciStateAqSubRoots(
+        uint256 _numSrQueueOps,
+        uint256 _pollId
+    )
     public
     onlyOwner
     isAfterVotingDeadline {
@@ -336,13 +340,14 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
 
         if (!maci.stateAq().subTreesMerged()) {
-            maci.mergeStateAqSubRoots(_numSrQueueOps);
+            maci.mergeStateAqSubRoots(_numSrQueueOps, _pollId);
         }
         
         if (numSignUps == 0) {
             numSignUps = maci.numSignUps();
         }
 
+        emit MergeMaciStateAqSubRoots(_numSrQueueOps);
     }
 
     /*
@@ -350,7 +355,9 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
      * ProcessMessages circuit to access the latest state tree and ballots via
      * currentSbCommitment.
      */
-    function mergeMaciStateAq()
+    function mergeMaciStateAq(
+        uint256 _pollId
+    )
     public
     onlyOwner
     isAfterVotingDeadline {
@@ -361,18 +368,20 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
         // TODO: remove this redundant check?
         require(currentSbCommitment == 0, ERROR_SB_COMMITMENT_NOT_SET);
 
-        if (!maci.stateAq().subTreesMerged()) {
-            maci.mergeStateAq();
+        if (maci.stateAq().subTreesMerged()) {
+            maci.mergeStateAq(_pollId);
         }
         stateAqMerged = true;
 
+        uint256 stateRoot = maci.getStateAqRoot();
         // Set currentSbCommitment
         uint256[] memory sb = new uint256[](3);
-        sb[0] = maci.getStateAqRoot();
+        sb[0] = stateRoot;
         sb[1] = emptyBallotRoots[treeDepths.voteOptionTreeDepth];
         sb[2] = uint256(0);
 
         currentSbCommitment = hash3(sb);
+        emit MergeMaciStateAq(stateRoot);
     }
 
     /*
@@ -384,6 +393,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     onlyOwner
     isAfterVotingDeadline {
         messageAq.mergeSubRoots(_numSrQueueOps);
+        emit MergeMessageAqSubRoots(_numSrQueueOps);
     }
 
     /*
@@ -394,7 +404,8 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     public
     onlyOwner
     isAfterVotingDeadline {
-        messageAq.merge(treeDepths.messageTreeDepth);
+        uint256 root = messageAq.merge(treeDepths.messageTreeDepth);
+        emit MergeMessageAq(root);
     }
 
     /*

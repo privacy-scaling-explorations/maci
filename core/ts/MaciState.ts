@@ -1144,13 +1144,13 @@ class MaciState {
             asBin = '0' + asBin
         }
         const maxVoteOptions = BigInt('0b' + asBin.slice(150, 200))
-        const maxUsers = BigInt('0b' + asBin.slice(100, 150))
+        const numUsers = BigInt('0b' + asBin.slice(100, 150))
         const batchStartIndex = BigInt('0b' + asBin.slice(50, 100))
         const batchEndIndex = BigInt('0b' + asBin.slice(0, 50))
 
         return {
             maxVoteOptions,
-            maxUsers,
+            numUsers,
             batchStartIndex,
             batchEndIndex,
         }

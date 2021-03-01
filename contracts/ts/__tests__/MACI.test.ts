@@ -161,27 +161,21 @@ describe('MACI', () => {
         })
     })
 
-    describe('Merge sign-ups', () => {
-        it('coordinator should be able to merge the signUp AccQueue', async () => {
-            let tx = await maciContract.mergeStateAqSubRoots(0, { gasLimit: 3000000 })
-            let receipt = await tx.wait()
-            expect(receipt.status).toEqual(1)
+    describe('Merging sign-ups should fail because of onlyPoll', () => {
+        it('coordinator should not be able to merge the signUp AccQueue', async () => {
+            try {
+                await maciContract.mergeStateAqSubRoots(0, 0, { gasLimit: 3000000 })
+            } catch (e) {
+                const error = 'MACI: only a Poll contract can call this function'
+                expect(e.message.endsWith(error)).toBeTruthy()
+            }
 
-            console.log('mergeStateAqSubRoots() gas used:', receipt.gasUsed.toString())
-
-            tx = await maciContract.mergeStateAq({ gasLimit: 3000000 })
-            receipt = await tx.wait()
-            expect(receipt.status).toEqual(1)
-
-            console.log('mergeStateAq() gas used:', receipt.gasUsed.toString())
-
-            maciState.stateAq.mergeSubRoots(0)
-            maciState.stateAq.merge(STATE_TREE_DEPTH)
-        })
-
-        it('the state root must be correct', async () => {
-            const onChainStateRoot = await stateAqContract.getMainRoot(STATE_TREE_DEPTH)
-            expect(onChainStateRoot.toString()).toEqual(maciState.stateAq.mainRoots[STATE_TREE_DEPTH].toString())
+            try {
+                await maciContract.mergeStateAq(0, { gasLimit: 3000000 })
+            } catch (e) {
+                const error = 'MACI: only a Poll contract can call this function'
+                expect(e.message.endsWith(error)).toBeTruthy()
+            }
         })
     })
 
@@ -433,6 +427,63 @@ describe('MACI', () => {
         })
     })
 
+    describe('Process messages (negative test)', () => {
+        it('processMessages() should fail if the state AQ has not been merged', async () => {
+            try {
+                const pollContractAddress = await maciContract.getPoll(pollId)
+
+                // Submit the proof
+                await pptContract.processMessages(
+                    pollContractAddress,
+                    0,
+                    [0, 0, 0, 0, 0, 0, 0, 0],
+                )
+
+            } catch (e) {
+                expect(e.message.endsWith('PptE09')).toBeTruthy()
+            }
+        })
+    })
+
+    describe('Merge sign-ups as the Poll', () => {
+        let pollContract
+
+        beforeAll(async () => {
+            const pollContractAddress = await maciContract.getPoll(pollId)
+            pollContract = new ethers.Contract(
+                pollContractAddress,
+                pollAbi,
+                deployer.signer,
+            )
+
+        })
+
+        it('The Poll should be able to merge the signUp AccQueue', async () => {
+            let tx = await pollContract.mergeMaciStateAqSubRoots(
+                0,
+                pollId,
+                { gasLimit: 3000000 },
+            )
+            let receipt = await tx.wait()
+            expect(receipt.status).toEqual(1)
+
+            tx = await pollContract.mergeMaciStateAq(
+                pollId,
+                { gasLimit: 3000000 },
+            )
+            receipt = await tx.wait()
+            expect(receipt.status).toEqual(1)
+
+            maciState.stateAq.mergeSubRoots(0)
+            maciState.stateAq.merge(STATE_TREE_DEPTH)
+        })
+
+        it('the state root must be correct', async () => {
+            const onChainStateRoot = await stateAqContract.getMainRoot(STATE_TREE_DEPTH)
+            expect(onChainStateRoot.toString()).toEqual(maciState.stateAq.mainRoots[STATE_TREE_DEPTH].toString())
+        })
+    })
+
     describe('Process messages', () => {
         let pollContract
         let poll
@@ -448,27 +499,6 @@ describe('MACI', () => {
 
             poll = maciState.polls[pollId]
             generatedInputs = poll.processMessages(pollId)
-        })
-
-        it('processMessages() should fail if the state AQ has not been merged', async () => {
-            try {
-                const pollContractAddress = await maciContract.getPoll(pollId)
-
-                // Submit the proof
-                await pptContract.processMessages(
-                    pollContractAddress,
-                    generatedInputs.newSbCommitment,
-                    [0, 0, 0, 0, 0, 0, 0, 0],
-                )
-
-            } catch (e) {
-                expect(e.message.endsWith('PptE09')).toBeTruthy()
-            }
-
-            let tx = await pollContract.mergeMaciStateAqSubRoots(0)
-            await tx.wait()
-            tx = await pollContract.mergeMaciStateAq()
-            await tx.wait()
         })
 
         it('genProcessMessagesPackedVals() should generate the correct value', async () => {
@@ -572,6 +602,7 @@ describe('MACI', () => {
                 deployer.provider,
                 maciContract.address,
                 coordinator,
+                0,
             )
         })
     })

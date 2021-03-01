@@ -97,7 +97,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         PubKey _userPubKey,
         uint256 _voiceCreditBalance
     );
-    event MergeStateAqSubRoots(uint255 _numSrQueueOps);
+    event MergeStateAqSubRoots(uint256 _numSrQueueOps);
     event MergeStateAq();
     event DeployPoll(uint256 _pollId, address _pollAddr, PubKey _pubKey);
 
@@ -223,9 +223,20 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         //// TODO: validate signature and sign up
     //)
 
-    function mergeStateAqSubRoots(uint256 _numSrQueueOps)
+    /*
+     * Only allow a Poll contract to call the modified function.
+     */
+    modifier onlyPoll(uint256 _pollId) {
+        require(
+            msg.sender == address(polls[_pollId]),
+            "MACI: only a Poll contract can call this function"
+        );
+        _;
+    }
+
+    function mergeStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId)
     public
-    //onlyOwner
+    onlyPoll(_pollId)
     override
     afterInit {
         stateAq.mergeSubRoots(_numSrQueueOps);
@@ -233,9 +244,11 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         emit MergeStateAqSubRoots(_numSrQueueOps);
     }
 
-    function mergeStateAq()
+    function mergeStateAq(
+        uint256 _pollId
+    )
     public
-    //onlyOwner
+    onlyPoll(_pollId)
     override
     afterInit
     returns (uint256) {
