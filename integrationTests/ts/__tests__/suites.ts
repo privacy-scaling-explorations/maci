@@ -238,13 +238,17 @@ const executeSuite = async (data: any, expect: any) => {
 
     // Check whether the transaction succeeded
     const processRegMatch = output.match(
-        /Random state leaf: (.+)\nProcessed batch starting at index ([0-9]+)\nTransaction hash: (0x[a-fA-F0-9]{64})$/
+        /Random state leaf: (.+)\n/
+    )
+
+    const indexRegMatch = output.match(
+        /Processed batch starting at index ([0-9]+)\nTransaction hash: (0x[a-fA-F0-9]{64})$/
     )
 
     expect(processRegMatch).toBeTruthy()
 
     // Check whether it has processed all batches
-    const processedIndexNum = parseInt(processRegMatch[2], 10)
+    const processedIndexNum = parseInt(indexRegMatch[1], 10)
     expect(processedIndexNum.toString()).toEqual('0')
 
     const currentMessageBatchIndex = await maciContract.currentMessageBatchIndex()
