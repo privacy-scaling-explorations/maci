@@ -284,6 +284,7 @@ const processMessages = async (args: any): Promise<string | undefined> => {
             break
         }
 
+        let i = 1.5
         while (true) {
             await delay(1000)
             const stateRoot = await maciContract.stateRoot()
@@ -292,6 +293,7 @@ const processMessages = async (args: any): Promise<string | undefined> => {
             } else {
                 console.log('Waiting for the RPC node to update to the latest state...')
             }
+            i *= i
         }
 
         console.log(`Processed batch starting at index ${messageBatchIndex}`)
