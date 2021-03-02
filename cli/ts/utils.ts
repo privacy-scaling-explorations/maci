@@ -19,9 +19,6 @@ import {
 
 import {
     genJsonRpcDeployer,
-} from 'maci-contracts'
-
-import {
     maciContractAbi,
 } from 'maci-contracts'
 
@@ -218,6 +215,10 @@ const contractExists = async (
     return code.length > 2
 }
 
+const delay = (ms: number): Promise<void> => {
+    return new Promise((resolve: Function) => setTimeout(resolve, ms))
+}
+
 export {
     promptPwd,
     calcBinaryTreeDepthFromMaxLeaves,
@@ -229,4 +230,5 @@ export {
     validateEthAddress,
     contractExists,
     genMaciStateFromContract,
+    delay,
 }

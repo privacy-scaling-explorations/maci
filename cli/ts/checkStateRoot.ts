@@ -34,7 +34,7 @@ import {
 
 const configureSubparser = (subparsers: any) => {
     const parser = subparsers.addParser(
-        'process',
+        'checkStateRoot',
         { addHelp: true },
     )
 
@@ -105,7 +105,7 @@ const configureSubparser = (subparsers: any) => {
 
 // This function is named as such as there already is a global Node.js object
 // called 'process'
-const processMessages = async (args: any): Promise<string | undefined> => {
+const checkStateRoot = async (args: any) => {
     // MACI contract
     if (!validateEthAddress(args.contract)) {
         console.error('Error: invalid MACI contract address')
@@ -202,108 +202,14 @@ const processMessages = async (args: any): Promise<string | undefined> => {
         return
     }
 
-    const messageBatchSize  = await maciContract.messageBatchSize()
-    let randomStateLeaf 
+    const stateRoot = maciState.genStateRoot()
+    const onChainStateRoot = await maciContract.stateRoot()
 
-    while (true) {
-        randomStateLeaf = StateLeaf.genRandomLeaf()
-        const messageBatchIndex = await maciContract.currentMessageBatchIndex()
-
-        const circuitInputs = maciState.genBatchUpdateStateTreeCircuitInputs(
-            messageBatchIndex.toNumber(),
-            messageBatchSize,
-            randomStateLeaf,
-        )
-
-        // Process the batch of messages
-        maciState.batchProcessMessage(
-            messageBatchIndex.toNumber(),
-            messageBatchSize,
-            randomStateLeaf,
-        )
-
-        const stateRootAfter = maciState.genStateRoot()
-
-        let result
-
-        const configType = maciState.stateTreeDepth === 8 ? 'prod-small' : 'test'
-        const circuitName = maciState.stateTreeDepth === 8 ? 'batchUstSmall' : 'batchUst'
-
-        try {
-            result = await genBatchUstProofAndPublicSignals(circuitInputs, configType)
-        } catch (e) {
-            console.error('Error: unable to compute batch update state tree witness data')
-            console.error(e)
-            return
-        }
-        const { witness, proof, publicSignals } = result
-
-        // Get the circuit-generated root
-        //const circuitNewStateRoot = getSignalByName(circuit, witness, 'main.root')
-        const circuitNewStateRoot = getSignalByNameViaSym(circuitName, witness, 'main.root')
-        if (!circuitNewStateRoot.toString() === stateRootAfter.toString()) {
-            console.error('Error: circuit-computed root mismatch')
-            return
-        }
-
-        const ecdhPubKeys: PubKey[] = []
-        for (const p of circuitInputs['ecdh_public_key']) {
-            const pubKey = new PubKey(p)
-            ecdhPubKeys.push(pubKey)
-        }
-
-        const isValid = await verifyBatchUstProof(proof, publicSignals, configType)
-        if (!isValid) {
-            console.error('Error: could not generate a valid proof or the verifying key is incorrect')
-            return
-        }
-
-        const formattedProof = formatProofForVerifierContract(proof)
-        //const formattedProof = [0, 0, 0, 0, 0, 0, 0, 0]
-        const txErr = 'Error: batchProcessMessage() failed'
-        let tx
-
-        try {
-            tx = await maciContract.batchProcessMessage(
-                '0x' + stateRootAfter.toString(16),
-                circuitInputs['state_tree_root'].map((x) => x.toString()),
-                ecdhPubKeys.map((x) => x.asContractParam()),
-                formattedProof,
-                { gasLimit: 2000000 },
-            )
-        } catch (e) {
-            console.error(txErr)
-            console.error(e)
-            break
-        }
-
-        const receipt = await tx.wait()
-
-        if (receipt.status !== 1) {
-            console.error(txErr)
-            break
-        }
-
-        await delay(3000)
-
-        const stateRoot = await maciContract.stateRoot()
-        if (stateRoot.toString() !== stateRootAfter.toString()) {
-            console.error('Error: state root mismatch after processing a batch of messges')
-            return
-        }
-
-        console.log(`Processed batch starting at index ${messageBatchIndex}`)
-        console.log(`Transaction hash: ${tx.hash}`)
-        console.log(`Random state leaf: ${randomStateLeaf.serialize()}`)
-
-        if (!args.repeat || ! (await maciContract.hasUnprocessedMessages())) {
-            break
-        }
-    }
-    return randomStateLeaf.serialize()
+    console.log('Off-chain state root:', stateRoot.toString())
+    console.log('On-chain state root:', onChainStateRoot.toString())
 }
 
 export {
-    processMessages,
+    checkStateRoot,
     configureSubparser,
 }
