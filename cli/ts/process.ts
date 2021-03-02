@@ -284,12 +284,14 @@ const processMessages = async (args: any): Promise<string | undefined> => {
             break
         }
 
-        await delay(3000)
-
-        const stateRoot = await maciContract.stateRoot()
-        if (stateRoot.toString() !== stateRootAfter.toString()) {
-            console.error('Error: state root mismatch after processing a batch of messges')
-            return
+        while (true) {
+            await delay(1000)
+            const stateRoot = await maciContract.stateRoot()
+            if (stateRoot.toString() === stateRootAfter.toString()) {
+                break
+            } else {
+                console.log('Waiting for the RPC node to update to the latest state...')
+            }
         }
 
         console.log(`Processed batch starting at index ${messageBatchIndex}`)
