@@ -95,6 +95,15 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
+        ['-z', '--leaf-zero'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The serialised state leaf preimage at index 0',
+        }
+    )
+
+    parser.addArgument(
         ['-r', '--repeat'],
         {
             action: 'storeTrue',
@@ -188,6 +197,16 @@ const checkStateRoot = async (args: any) => {
         return
     }
 
+    // Zeroth leaf
+    const serialized = args.leaf_zero
+    let zerothLeaf: StateLeaf
+    try {
+        zerothLeaf = StateLeaf.unserialize(serialized)
+    } catch {
+        console.error('Error: invalid zeroth state leaf')
+        return
+    }
+
     // Build an off-chain representation of the MACI contract using data in the contract storage
     let maciState
     try {
@@ -195,7 +214,7 @@ const checkStateRoot = async (args: any) => {
             provider,
             maciAddress,
             coordinatorKeypair,
-            StateLeaf.genBlankLeaf(BigInt(0)),
+            zerothLeaf,
         )
     } catch (e) {
         console.error(e)
