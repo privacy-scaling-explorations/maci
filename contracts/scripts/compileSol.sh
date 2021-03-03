@@ -8,9 +8,6 @@ cd ..
 rm -rf ./artifacts/*
 rm -rf ./cache/*
 
-paths="$(pwd)/sol/,$(pwd)/node_modules/@openzeppelin/"
-oz_map="@openzeppelin/=$(pwd)/node_modules/@openzeppelin/"
-
 echo 'Writing Merkle zeros contracts'
 ./scripts/writeMerkleZeroesContracts.sh
 
