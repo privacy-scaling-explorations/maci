@@ -363,9 +363,20 @@ const tally = async (args: any): Promise<object | undefined> => {
         currentTvcSalt = BigInt(newSpentVoiceCreditsSalt)
         currentPvcSalt = BigInt(newPerVOSpentVoiceCreditsSalt)
 
-        const configType = maciState.stateTreeDepth === 8 ? 'prod-small' : 'test'
-        const circuitName = maciState.stateTreeDepth === 8 ? 'qvtSmall' : 'qvt'
+        let configType
+        let circuitName
+        if (maciState.stateTreeDepth === 9) {
+            configType = 'prod-medium'
+            circuitName = 'qvtMedium'
+        } else if (maciState.stateTreeDepth === 8) {
+            configType = 'prod-small'
+            circuitName = 'qvtSmall'
+        } else {
+            configType = 'test'
+            circuitName = 'qvt'
+        }
 
+        debugger
         let result
         try {
             result = await genQvtProofAndPublicSignals(circuitInputs, configType)

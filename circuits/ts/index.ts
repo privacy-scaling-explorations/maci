@@ -91,27 +91,32 @@ const genBatchUstProofAndPublicSignals = (
 
     let circuitPath
     let circuitR1csPath
-    let wasmPath
+    let circuitWitnessGenFilename
     let paramsPath
     if (configType === 'test') {
         circuitPath = 'test/batchUpdateStateTree_test.circom'
         circuitR1csPath = 'batchUstCircuit.r1cs'
-        wasmPath = 'batchUst.wasm'
+        circuitWitnessGenFilename = 'batchUst'
         paramsPath = 'batchUst.params'
     } else if (configType === 'prod-small') {
         circuitPath = 'prod/batchUpdateStateTree_small.circom'
         circuitR1csPath = 'batchUstSmall.r1cs'
-        wasmPath = 'batchUstSmall.wasm'
+        circuitWitnessGenFilename = 'batchUstSmall'
         paramsPath = 'batchUstSmall.params'
+    } else if (configType === 'prod-medium') {
+        circuitPath = 'prod/batchUpdateStateTree_medium.circom'
+        circuitR1csPath = 'batchUstMedium.r1cs'
+        circuitWitnessGenFilename = 'batchUstMedium'
+        paramsPath = 'batchUstMedium.params'
     } else {
-        throw new Error('Only test and prod-small circuits are supported')
+        throw new Error('Only test, prod-small, and prod-medium circuits are supported')
     }
 
     return genProofAndPublicSignals(
         inputs,
         circuitPath,
         circuitR1csPath,
-        wasmPath,
+        circuitWitnessGenFilename,
         paramsPath,
         false,
     )
@@ -123,27 +128,32 @@ const genQvtProofAndPublicSignals = (
 ) => {
     let circuitPath
     let circuitR1csPath
-    let wasmPath
+    let circuitWitnessGenFilename
     let paramsPath
     if (configType === 'test') {
         circuitPath = 'test/quadVoteTally_test.circom'
         circuitR1csPath = 'qvtCircuit.r1cs'
-        wasmPath = 'qvt.wasm'
+        circuitWitnessGenFilename = 'qvt'
         paramsPath = 'qvt.params'
     } else if (configType === 'prod-small') {
         circuitPath = 'prod/quadVoteTally_small.circom'
         circuitR1csPath = 'qvtCircuitSmall.r1cs'
-        wasmPath = 'qvtSmall.wasm'
+        circuitWitnessGenFilename = 'qvtSmall'
         paramsPath = 'qvtSmall.params'
+    } else if (configType === 'prod-medium') {
+        circuitPath = 'prod/quadVoteTally_medium.circom'
+        circuitR1csPath = 'qvtCircuitMedium.r1cs'
+        circuitWitnessGenFilename = 'qvtMedium'
+        paramsPath = 'qvtMedium.params'
     } else {
-        throw new Error('Only test and prod-small circuits are supported')
+        throw new Error('Only test, prod-small, and prod-medium circuits are supported')
     }
 
     return genProofAndPublicSignals(
         inputs,
         circuitPath,
         circuitR1csPath,
-        wasmPath,
+        circuitWitnessGenFilename,
         paramsPath,
         false,
     )
@@ -153,14 +163,14 @@ const genProofAndPublicSignals = async (
     inputs: any,
     circuitFilename: string,
     circuitR1csFilename: string,
-    circuitWasmFilename: string,
+    circuitWitnessGenFilename: string,
     paramsFilename: string,
     compileCircuit = true,
 ) => {
     const date = Date.now()
     const paramsPath = path.join(snarkParamsPath, paramsFilename)
     const circuitR1csPath = path.join(snarkParamsPath, circuitR1csFilename)
-    const circuitWasmPath = path.join(snarkParamsPath, circuitWasmFilename)
+    const witnessGenExe = path.join(snarkParamsPath, circuitWitnessGenFilename)
     const inputJsonPath = path.join(snarkParamsPath, date + '.input.json')
     const witnessPath = path.join(snarkParamsPath, date + '.witness.wtns')
     const witnessJsonPath = path.join(snarkParamsPath, date + '.witness.json')
@@ -169,21 +179,21 @@ const genProofAndPublicSignals = async (
 
     fs.writeFileSync(inputJsonPath, JSON.stringify(stringifyBigInts(inputs)))
 
-    let circuit
-    if (compileCircuit) {	
-        circuit = await compileAndLoadCircuit(circuitFilename)	
-    }
+    //let circuit
+    //if (compileCircuit) {	
+        //circuit = await compileAndLoadCircuit(circuitFilename)	
+    //}
 
-    const snarkjsCmd = 'node ' + path.join(__dirname, '../node_modules/snarkjs/build/cli.cjs')
-    const witnessCmd = `${snarkjsCmd} wc ${circuitWasmPath} ${inputJsonPath} ${witnessPath}`
+    const witnessCmd = `${witnessGenExe} ${inputJsonPath} ${witnessJsonPath}`
 
     shell.config.fatal = true
     shell.exec(witnessCmd)
 
-    const witnessJsonCmd = `${snarkjsCmd} wej ${witnessPath} ${witnessJsonPath}`
+    //const snarkjsCmd = 'node ' + path.join(__dirname, '../node_modules/snarkjs/build/cli.cjs')
+    //const witnessJsonCmd = `${snarkjsCmd} wej ${witnessPath} ${witnessJsonPath}`
 
     //const witnessGenStart = Date.now()
-    shell.exec(witnessJsonCmd)
+    //shell.exec(witnessJsonCmd)
     //const witnessGenEnd = Date.now()
     //console.log('Witness generation took', (witnessGenEnd - witnessGenStart) / 1000, 'seconds')
 
@@ -204,7 +214,12 @@ const genProofAndPublicSignals = async (
     shell.rm('-f', publicJsonPath)
     shell.rm('-f', inputJsonPath)
 
-    return { circuit, proof, publicSignals, witness }
+    return { 
+        //circuit,
+        proof,
+        publicSignals,
+        witness,
+    }
 }
 
 const verifyProof = async (
@@ -243,6 +258,10 @@ const verifyBatchUstProof = (
         paramsFilename = 'batchUstSmall.params'
         proofFilename = `${date}.batchUstSmall.proof.json`
         publicSignalsFilename = `${date}.batchUstSmall.publicSignals.json`
+    } else if (configType === 'prod-medium') {
+        paramsFilename = 'batchUstMedium.params'
+        proofFilename = `${date}.batchUstMedium.proof.json`
+        publicSignalsFilename = `${date}.batchUstMedium.publicSignals.json`
     }
 
     fs.writeFileSync(
@@ -280,6 +299,10 @@ const verifyQvtProof = (
         paramsFilename = 'qvtSmall.params'
         proofFilename = `${date}.qvtSmall.proof.json`
         publicSignalsFilename = `${date}.qvtSmall.publicSignals.json`
+    } else if (configType === 'prod-medium') {
+        paramsFilename = 'qvtMedium.params'
+        proofFilename = `${date}.qvtMedium.proof.json`
+        publicSignalsFilename = `${date}.qvtMedium.publicSignals.json`
     }
 
     // TODO: refactor

@@ -574,3 +574,40 @@ NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js tally \
 	-t tally.json \
 	-z <PASTE RANDOM STATE LEAF HERE>
 ```
+
+## Demonstration with `prod-medium` settings
+
+```
+node ./build/index.js create \
+    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+    -sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
+    -e http://localhost:8545 -s 10 -o 30 -bm 8 -bv 8 -u 511 -m 8192 && \
+node ./build/index.js signup \
+    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+    -e http://localhost:8545 \
+    -p macipk.40270618e1797c4969587eb04d7f3e9b39a91ecbbdf7d3c998d8e34d08e11c86 \
+    -x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 && \
+node ./build/index.js publish \
+    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+    -e http://localhost:8545 \
+    -x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
+    -sk macisk.53c8bc722a9f9d4c7bd478c8c8b01177f82d9c68d1ce15078e93ea84f198644 \
+    -p macipk.40270618e1797c4969587eb04d7f3e9b39a91ecbbdf7d3c998d8e34d08e11c86 \
+    -i 1 -v 0 -w 9 -n 1 && \
+sleep 5 && \
+NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js process\
+    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+    -e http://localhost:8545 \
+    -x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
+    -sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c\
+    -r
+```
+
+```
+NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js tally \
+    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+    -e http://localhost:8545 \
+    -x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
+    -sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
+    -r -c 0x0 -tvc 0x0 -pvc 0x0 -t tally.json -z <PASTE RANDOM STATE LEAF HERE>
+```

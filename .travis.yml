@@ -1,6 +1,11 @@
 language: node_js
+dist: focal
 node_js:
   - 12
+
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install -y libgmp-dev nlohmann-json3-dev nasm g++ build-essential
 
 install:
   - npm i -g npm
