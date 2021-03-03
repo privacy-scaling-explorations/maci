@@ -46,6 +46,14 @@ const main = () => {
     )
 
     parser.addArgument(
+        ['-a', '--wasm-out'],
+        {
+            help: 'The filepath to save the WASM file',
+            required: true
+        }
+    )
+
+    parser.addArgument(
         ['-w', '--witness-gen-exe'],
         {
             help: 'The filepath to save the witness generation executable',
@@ -119,6 +127,7 @@ const main = () => {
     const circuitOut = args.r1cs_out
     const witnessGenOut = args.witness_gen_exe
     const cOut = args.c_out
+    const wasmOut = args.wasm_out
     const symOut = args.sym_out
     const verifierName = args.verifier_name
     const paramsOut = args.params_out
@@ -153,21 +162,21 @@ const main = () => {
     } else {
         console.log(`Compiling ${inputFile}...`)
         // Compile the .circom file
-        shell.exec(`node ./node_modules/circom/cli.js ${inputFile} -r ${circuitOut} -c ${cOut} -s ${symOut}`)
+        shell.exec(`node ./node_modules/circom/cli.js ${inputFile} -r ${circuitOut} -s ${symOut} -w ${wasmOut}`)
         console.log('Generated', circuitOut)
 
-        // Compile the .c file
-        const srcs = 
-            path.join(path.resolve(dirpath), 'main.cpp') + ' ' +
-            path.join(path.resolve(dirpath), 'calcwit.cpp') + ' ' +
-            path.join(path.resolve(dirpath), 'utils.cpp') + ' ' +
-            path.join(path.resolve(dirpath), 'fr.cpp') + ' ' +
-            path.join(path.resolve(dirpath), 'fr.o')
-        const compileCmd = `g++ -pthread ${srcs} ` +
-            `${cOut} -o ${witnessGenOut} ` + 
-            `-lgmp -std=c++11 -O3 -fopenmp -DSANITY_CHECK`
-        shell.exec(compileCmd, { silent: true })
-        console.log('Generated', witnessGenOut)
+        //// Compile the .c file
+        //const srcs = 
+            //path.join(path.resolve(dirpath), 'main.cpp') + ' ' +
+            //path.join(path.resolve(dirpath), 'calcwit.cpp') + ' ' +
+            //path.join(path.resolve(dirpath), 'utils.cpp') + ' ' +
+            //path.join(path.resolve(dirpath), 'fr.cpp') + ' ' +
+            //path.join(path.resolve(dirpath), 'fr.o')
+        //const compileCmd = `g++ -pthread ${srcs} ` +
+            //`${cOut} -o ${witnessGenOut} ` + 
+            //`-lgmp -std=c++11 -O3 -fopenmp -DSANITY_CHECK`
+        //shell.exec(compileCmd, { silent: true })
+        //console.log('Generated', witnessGenOut)
     }
 
     const paramsFileExists = fileExists(paramsOut)
