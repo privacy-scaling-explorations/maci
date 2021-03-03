@@ -207,6 +207,8 @@ const processMessages = async (args: any): Promise<string | undefined> => {
 
     while (true) {
         randomStateLeaf = StateLeaf.genRandomLeaf()
+        console.log(`Random state leaf: ${randomStateLeaf.serialize()}`)
+
         const messageBatchIndex = await maciContract.currentMessageBatchIndex()
 
         const circuitInputs = maciState.genBatchUpdateStateTreeCircuitInputs(
@@ -298,7 +300,6 @@ const processMessages = async (args: any): Promise<string | undefined> => {
 
         console.log(`Processed batch starting at index ${messageBatchIndex}`)
         console.log(`Transaction hash: ${tx.hash}`)
-        console.log(`Random state leaf: ${randomStateLeaf.serialize()}`)
 
         if (!args.repeat || ! (await maciContract.hasUnprocessedMessages())) {
             break
