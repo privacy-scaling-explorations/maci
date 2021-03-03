@@ -32,7 +32,7 @@ template QuadVoteTally(
     var k = fullStateTreeDepth - intermediateStateTreeDepth;
 
     //	The Merkle path elements from `intermediateStateRoot` to `stateRoot`.
-    signal private input intermediatePathElements[k];
+    signal private input intermediatePathElements[k][1];
 
     // The Merkle path index from `intermediateStateRoot` to `stateRoot`.
     signal input intermediatePathIndex;
@@ -101,7 +101,7 @@ template QuadVoteTally(
     fullStateRootChecker.root <== fullStateRoot; 
     fullStateRootChecker.leaf <== intermediateStateRoot; 
     for (i = 0; i < k; i ++) {
-        fullStateRootChecker.path_elements[i][0] <== intermediatePathElements[i];
+        fullStateRootChecker.path_elements[i][0] <== intermediatePathElements[i][0];
         fullStateRootChecker.path_index[i] <== intermediatePathIndices.out[i];
     }
 
