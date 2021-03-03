@@ -77,8 +77,8 @@ const executeSuite = async (data: any, expect: any) => {
         maxVoteOptions,
     )
 
-    const signupDuration = data.numUsers * 15
-    const votingDuration = data.numUsers * 15
+    const signupDuration = data.numUsers * 5
+    const votingDuration = data.numUsers * 5
 
     // Run the create subcommand
     const createCommand = `node ../cli/build/index.js create` +
@@ -238,14 +238,18 @@ const executeSuite = async (data: any, expect: any) => {
 
     // Check whether the transaction succeeded
     const processRegMatch = output.match(
-        /Random state leaf: (.+)\n/
+        /Random state leaf: (.+)/g
+    )
+
+    expect(processRegMatch).toBeTruthy()
+    const randomLeaf = StateLeaf.unserialize(
+        processRegMatch[processRegMatch.length - 1].split(': ')[1].trim()
     )
 
     const indexRegMatch = output.match(
         /Processed batch starting at index ([0-9]+)\nTransaction hash: (0x[a-fA-F0-9]{64})$/
     )
-
-    expect(processRegMatch).toBeTruthy()
+    expect(indexRegMatch).toBeTruthy()
 
     // Check whether it has processed all batches
     const processedIndexNum = parseInt(indexRegMatch[1], 10)
@@ -253,8 +257,6 @@ const executeSuite = async (data: any, expect: any) => {
 
     const currentMessageBatchIndex = await maciContract.currentMessageBatchIndex()
     expect(currentMessageBatchIndex.toString()).toEqual('0')
-
-    const randomLeaf = StateLeaf.unserialize(processRegMatch[1])
 
     const tallyCommand = `NODE_OPTIONS=--max-old-space-size=4096 node ../cli/build/index.js tally` +
         ` -sk ${coordinatorKeypair.privKey.serialize()}` +
