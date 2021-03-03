@@ -246,7 +246,7 @@ const create = async (args: any) => {
         maxVoteOptions > 24 && maxVoteOptions <= 125
 
     const isMedium = 
-        maxMessages > 2048 && maxMessages <= 4096 ||
+        maxMessages > 2048 && maxMessages <= 8192 ||
         maxUsers > 256 && maxUsers <= 511 ||
         maxVoteOptions > 24 && maxVoteOptions <= 125
 
@@ -277,7 +277,7 @@ const create = async (args: any) => {
         configType = 'prod-small'
     } else if (isMedium) {
         stateTreeDepth = 9
-        messageTreeDepth = 12
+        messageTreeDepth = 13
         voteOptionTreeDepth = 3
         configType = 'prod-medium'
     } else if (isTest) {
