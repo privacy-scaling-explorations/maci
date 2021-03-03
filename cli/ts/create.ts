@@ -245,33 +245,46 @@ const create = async (args: any) => {
         maxUsers > 15 && maxUsers <= 255 ||
         maxVoteOptions > 24 && maxVoteOptions <= 125
 
-    if (!isTest && !isSmall) {
+    const isMedium = 
+        maxMessages > 2048 && maxMessages <= 4096 ||
+        maxUsers > 256 && maxUsers <= 511 ||
+        maxVoteOptions > 24 && maxVoteOptions <= 125
+
+    if (!isTest && !isSmall && !isMedium) {
         console.error('Error: this codebase only supports test or prod-small configurations for max-users, max-messages, and max-vote-options.')
         return
     }
 
-    if (messageBatchSize !== 4) {
-        console.error('Error: this codebase only supports a message-batch-size of value 4.')
+    if (messageBatchSize !== 4 && messageBatchSize !== 8) {
+        console.error('Error: this codebase only supports a message-batch-size of 4 or 8.')
         return
     }
 
-    if (tallyBatchSize !== 4) {
-        console.error('Error: this codebase only supports a tally-batch-size of value 4.')
+    if (tallyBatchSize !== 4 && tallyBatchSize !== 8) {
+        console.error('Error: this codebase only supports a tally-batch-size of value 4 or 8.')
         return
     }
 
     let stateTreeDepth
     let messageTreeDepth
     let voteOptionTreeDepth
+    let configType
 
     if (isSmall) {
         stateTreeDepth = 8
         messageTreeDepth = 11
         voteOptionTreeDepth = 3
+        configType = 'prod-small'
+    } else if (isMedium) {
+        stateTreeDepth = 9
+        messageTreeDepth = 12
+        voteOptionTreeDepth = 3
+        configType = 'prod-medium'
     } else if (isTest) {
         stateTreeDepth = 4
         messageTreeDepth = 4
         voteOptionTreeDepth = 2
+        configType = 'test'
     }
 
     // Initial voice credits
@@ -334,7 +347,7 @@ const create = async (args: any) => {
         signupDuration,
         votingDuration,
         coordinatorKeypair.pubKey,
-        isSmall ? 'prod-small' : 'test',
+        configType,
         true,
     )
 
