@@ -26,8 +26,6 @@ import {
     maxUsers,
     maxMessages,
     maxVoteOptions,
-    signupDuration,
-    votingDuration,
     messageBatchSize,
     tallyBatchSize,
     initialVoiceCredits,
@@ -36,6 +34,8 @@ import {
     voteOptionTreeDepth,
 } from './params'
 
+const signupDuration = 15
+const votingDuration = 15
 const accounts = genTestAccounts(2)
 
 let maciAddress: string
