@@ -1,5 +1,5 @@
 language: node_js
-dist: bionic
+dist: focal
 node_js:
   - 12
 
