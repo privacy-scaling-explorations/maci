@@ -604,6 +604,8 @@ describe('MACI', () => {
                 coordinator,
                 0,
             )
+
+            // TODO: check roots
         })
     })
 })

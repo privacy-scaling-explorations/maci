@@ -97,8 +97,8 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         PubKey _userPubKey,
         uint256 _voiceCreditBalance
     );
-    event MergeStateAqSubRoots(uint256 _numSrQueueOps);
-    event MergeStateAq();
+    event MergeStateAqSubRoots(uint256 _pollId, uint256 _numSrQueueOps);
+    event MergeStateAq(uint256 _pollId);
     event DeployPoll(uint256 _pollId, address _pollAddr, PubKey _pubKey);
 
     constructor(
@@ -241,7 +241,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     afterInit {
         stateAq.mergeSubRoots(_numSrQueueOps);
 
-        emit MergeStateAqSubRoots(_numSrQueueOps);
+        emit MergeStateAqSubRoots(_pollId, _numSrQueueOps);
     }
 
     function mergeStateAq(
@@ -254,7 +254,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     returns (uint256) {
         uint256 root = stateAq.merge(stateTreeDepth);
 
-        emit MergeStateAq();
+        emit MergeStateAq(_pollId);
 
         return root;
     }

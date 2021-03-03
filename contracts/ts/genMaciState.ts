@@ -1,6 +1,8 @@
 import {
     Keypair,
     PubKey,
+    Message,
+    VerifyingKey,
 } from 'maci-domainobjs'
 
 import {
@@ -45,6 +47,7 @@ const genMaciStateFromContract = async (
     )
 
     const maciIface = new ethers.utils.Interface(maciContractAbi)
+    const pollIface = new ethers.utils.Interface(pollContractAbi)
 
     const maciState = new MaciState()
 
@@ -84,8 +87,8 @@ const genMaciStateFromContract = async (
         fromBlock: 0,
     })
 
-    let vkRegistryAddress
     let messageAqFactoryAddress
+    let vkRegistryAddress
 
     for (const log of initLogs) {
         const event = maciIface.parseLog(log)
@@ -107,16 +110,24 @@ const genMaciStateFromContract = async (
             transactionIndex: log.transactionIndex,
             data: {
                 stateIndex: Number(event.values._stateIndex),
-                userPubKey: Number(event.values._userPubKey),
+                pubKey: new PubKey(
+                    event.values._userPubKey.map((x) => BigInt(x)),
+                ),
                 voiceCreditBalance: Number(event.values._voiceCreditBalance),
             }
         })
     }
 
-    // TODO: check for duplicates!!
     for (const log of mergeStateAqSubRootsLogs) {
         assert(log != undefined)
         const event = maciIface.parseLog(log)
+        const p =  Number(event.values._pollId)
+
+        //// Skip in favour of Poll.MergeMaciStateAqSubRoots
+        //if (p === pollId) {
+            //continue
+        //}
+
         actions.push({
             type: 'MergeStateAqSubRoots',
             // @ts-ignore
@@ -125,20 +136,30 @@ const genMaciStateFromContract = async (
             transactionIndex: log.transactionIndex,
             data: {
                 numSrQueueOps: Number(event.values._numSrQueueOps),
+                pollId: p,
             }
         })
     }
  
-    // TODO: check for duplicates!!
     for (const log of mergeStateAqLogs) {
         assert(log != undefined)
+        const event = maciIface.parseLog(log)
+        const p =  Number(event.values._pollId)
+
+        //// Skip in favour of Poll.MergeMaciStateAq
+        //if (p === pollId) {
+            //continue
+        //}
+
         actions.push({
             type: 'MergeStateAq',
             // @ts-ignore
             blockNumber: log.blockNumber,
             // @ts-ignore
             transactionIndex: log.transactionIndex,
-            data: { }
+            data: { 
+                pollId: p,
+            }
         })
     }
 
@@ -195,6 +216,18 @@ const genMaciStateFromContract = async (
     const onChainTreeDepths = await pollContract.treeDepths()
     const onChainBatchSizes = await pollContract.batchSizes()
 
+    assert(vkRegistryAddress === await maciContract.vkRegistry())
+    const vkRegistryContract = new ethers.Contract(
+        vkRegistryAddress,
+        loadAbi('VkRegistry.abi'),
+        provider,
+    )
+
+    const onChainProcessVk = await vkRegistryContract.getProcessVkBySig(processVkSig.toString())
+    const onChainTallyVk = await vkRegistryContract.getTallyVkBySig(tallyVkSig.toString())
+    const processVk = VerifyingKey.fromContract(onChainProcessVk)
+    const tallyVk = VerifyingKey.fromContract(onChainTallyVk)
+
     const maxValues = {
         maxMessages: Number(onChainMaxValues.maxMessages.toNumber()),
         maxVoteOptions: Number(onChainMaxValues.maxVoteOptions.toNumber()),
@@ -210,7 +243,191 @@ const genMaciStateFromContract = async (
         messageBatchSize: Number(onChainBatchSizes.messageBatchSize),
     }
 
-    // Recontstruct MaciState in order
+    const publishMessageLogs = await provider.getLogs({
+        ...pollContract.filters.PublishMessage(),
+        fromBlock: 0,
+    })
+
+    const mergeMaciStateAqSubRootsLogs = await provider.getLogs({
+        ...pollContract.filters.MergeMaciStateAqSubRoots(),
+        fromBlock: 0,
+    })
+
+    const mergeMaciStateAqLogs = await provider.getLogs({
+        ...pollContract.filters.MergeMaciStateAq(),
+        fromBlock: 0,
+    })
+
+    const mergeMessageAqSubRootsLogs = await provider.getLogs({
+        ...pollContract.filters.MergeMessageAqSubRoots(),
+        fromBlock: 0,
+    })
+
+    const mergeMessageAqLogs = await provider.getLogs({
+        ...pollContract.filters.MergeMessageAq(),
+        fromBlock: 0,
+    })
+
+    for (const log of publishMessageLogs) {
+        assert(log != undefined)
+        const event = pollIface.parseLog(log)
+
+        const message = new Message(
+            BigInt(event.values._message[0]),
+            event.values._message[1].map((x) => BigInt(x)),
+        )
+
+        const encPubKey = new PubKey(
+            event.values._encPubKey.map((x) => BigInt(x.toString()))
+        )
+
+        actions.push({
+            type: 'PublishMessage',
+            // @ts-ignore
+            blockNumber: log.blockNumber,
+            // @ts-ignore
+            transactionIndex: log.transactionIndex,
+            data: {
+                message,
+                encPubKey,
+            }
+        })
+    }
+
+    for (const log of mergeMaciStateAqSubRootsLogs) {
+        assert(log != undefined)
+        const event = pollIface.parseLog(log)
+
+        const numSrQueueOps = Number(event.values._numSrQueueOps)
+        actions.push({
+            type: 'MergeMaciStateAqSubRoots',
+            // @ts-ignore
+            blockNumber: log.blockNumber,
+            // @ts-ignore
+            transactionIndex: log.transactionIndex,
+            data: {
+                numSrQueueOps,
+            }
+        })
+    }
+
+    for (const log of mergeMaciStateAqLogs) {
+        assert(log != undefined)
+        const event = pollIface.parseLog(log)
+
+        const stateRoot = BigInt(event.values._stateRoot)
+        actions.push({
+            type: 'MergeMaciStateAq',
+            // @ts-ignore
+            blockNumber: log.blockNumber,
+            // @ts-ignore
+            transactionIndex: log.transactionIndex,
+            data: { stateRoot }
+        })
+    }
+
+    for (const log of mergeMessageAqSubRootsLogs) {
+        assert(log != undefined)
+        const event = pollIface.parseLog(log)
+
+        const numSrQueueOps = Number(event.values._numSrQueueOps)
+        actions.push({
+            type: 'MergeMessageAqSubRoots',
+            // @ts-ignore
+            blockNumber: log.blockNumber,
+            // @ts-ignore
+            transactionIndex: log.transactionIndex,
+            data: {
+                numSrQueueOps,
+            }
+        })
+    }
+
+    for (const log of mergeMessageAqLogs) {
+        assert(log != undefined)
+        const event = pollIface.parseLog(log)
+
+        const messageRoot = BigInt(event.values._messageRoot)
+        actions.push({
+            type: 'MergeMessageAq',
+            // @ts-ignore
+            blockNumber: log.blockNumber,
+            // @ts-ignore
+            transactionIndex: log.transactionIndex,
+            data: { messageRoot }
+        })
+    }
+
+    // Sort actions
+    sortActions(actions)
+
+    // Reconstruct MaciState in order
+
+    for (const action of actions) {
+        console.log(action.type)
+        if (action['type'] === 'SignUp') {
+            maciState.signUp(
+                action.data.pubKey,
+                action.data.voiceCreditBalance,
+            )
+        //} else if (action['type'] === 'MergeStateAqSubRoots') {
+            //maciState.stateAq.mergeSubRoots(
+                //action.data.numSrQueueOps,
+            //)
+        //} else if (action['type'] === 'MergeStateAq') {
+            //maciState.stateAq.merge()
+        } else if (action['type'] === 'DeployPoll') {
+            if (action.data.pollId === pollId) {
+                maciState.deployPoll(
+                    duration,
+                    maxValues,
+                    treeDepths,
+                    batchSizes.messageBatchSize,
+                    coordinatorKeypair,
+                    processVk,
+                    tallyVk,
+                )
+            } else {
+                maciState.deployNullPoll()
+            }
+        } else if (action['type'] === 'PublishMessage') {
+            maciState.polls[pollId].publishMessage(
+                action.data.message,
+                action.data.encPubKey,
+            )
+        } else if (action['type'] === 'MergeMaciStateAqSubRoots') {
+            maciState.stateAq.mergeSubRoots(
+                action.data.numSrQueueOps,
+            )
+        } else if (action['type'] === 'MergeMaciStateAq') {
+            maciState.stateAq.merge(stateTreeDepth)
+        } else if (action['type'] === 'MergeMessageAqSubRoots') {
+            maciState.polls[pollId].messageAq.mergeSubRoots(
+                action.data.numSrQueueOps,
+            )
+        } else if (action['type'] === 'MergeMessageAq') {
+            maciState.polls[pollId].messageAq.merge(
+                treeDepths.messageTreeDepth,
+            )
+            const poll = maciState.polls[pollId]
+            assert(
+                poll.messageAq.mainRoots[treeDepths.messageTreeDepth] ===
+                action.data.messageRoot
+            )
+        }
+    }
+}
+
+const sortActions = (actions: Action[]) => {
+    actions.sort((a, b) => {
+        if (a.blockNumber > b.blockNumber) { return 1 }
+        if (a.blockNumber < b.blockNumber) { return -1 }
+
+        if (a.transactionIndex > b.transactionIndex) { return 1 }
+        if (a.transactionIndex < b.transactionIndex) { return -1 }
+        return 0
+    })
+    return actions
 }
 
 export { genMaciStateFromContract }

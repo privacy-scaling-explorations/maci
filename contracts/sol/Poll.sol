@@ -178,7 +178,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     event MergeMaciStateAqSubRoots(uint256 _numSrQueueOps);
     event MergeMaciStateAq(uint256 _stateRoot);
     event MergeMessageAqSubRoots(uint256 _numSrQueueOps);
-    event MergeMessageAq(uint256 root);
+    event MergeMessageAq(uint256 _messageRoot);
 
     /*
      * Each MACI instance can have multiple Polls.
