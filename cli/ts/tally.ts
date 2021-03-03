@@ -27,6 +27,7 @@ import {
 } from 'maci-domainobjs'
 
 import {
+    delay,
     promptPwd,
     validateEthSk,
     validateEthAddress,
@@ -388,7 +389,8 @@ const tally = async (args: any): Promise<object | undefined> => {
         const { witness, proof, publicSignals } = result
 
         // The vote tally commmitment
-        const expectedNewResultsCommitmentOutput = getSignalByNameViaSym(circuitName, witness, 'main.newResultsCommitment')
+        const expectedNewResultsCommitmentOutput =
+            getSignalByNameViaSym(circuitName, witness, 'main.newResultsCommitment')
 
         const newResultsCommitment = genTallyResultCommitment(
             cumulativeTally,
@@ -445,8 +447,8 @@ const tally = async (args: any): Promise<object | undefined> => {
         )
 
         if (
-                expectedPerVOSpentVoiceCreditsCommitmentOutput.toString() !== 
-                newPerVOSpentVoiceCreditsCommitment.toString()
+            expectedPerVOSpentVoiceCreditsCommitmentOutput.toString() !== 
+            newPerVOSpentVoiceCreditsCommitment.toString()
         ) {
             console.error('Error: total spent voice credits per vote option commitment mismatch')
             return
@@ -501,6 +503,18 @@ const tally = async (args: any): Promise<object | undefined> => {
 
         const receipt = await tx.wait()
 
+        let i = 1.5
+        while (true) {
+            await delay(1000 * i)
+            const onChainResultsCommitment = await maciContract.currentResultsCommitment()
+            if (onChainResultsCommitment.toString() === newResultsCommitment.toString()) {
+                break
+            } else {
+                console.log('Waiting for the RPC node to update to the latest state...')
+            }
+            i *= i
+        }
+
         if (receipt.status !== 1) {
             console.error(txErr)
             break
@@ -509,23 +523,23 @@ const tally = async (args: any): Promise<object | undefined> => {
         console.log(`Transaction hash: ${tx.hash}`)
         const finalTotalVotes = await maciContract.totalVotes()
 
+        console.log(`Current results salt: 0x${currentResultsSalt.toString(16)}`)
+        const currentResultsCommitment = await maciContract.currentResultsCommitment()
+        const c = BigInt(currentResultsCommitment.toString())
+        console.log(`Result commitment: 0x${c.toString(16)}`)
+
+        console.log(`Total spent voice credits salt: 0x${currentTvcSalt.toString(16)}`)
+        const currentSpentVoiceCreditsCommitment = await maciContract.currentSpentVoiceCreditsCommitment()
+        const d = BigInt(currentSpentVoiceCreditsCommitment.toString())
+        console.log(`Total spent voice credits commitment: 0x${d.toString(16)}`)
+
+        console.log(`Total spent voice credits per vote option salt: 0x${currentPvcSalt.toString(16)}`)
+        const currentPerVOSpentVoiceCreditsCommitment = await maciContract.currentPerVOSpentVoiceCreditsCommitment()
+        const e = BigInt(currentPerVOSpentVoiceCreditsCommitment.toString())
+        console.log(`Total spent voice credits per vote option commitment: 0x${e.toString(16)}`)
+        console.log(`Total votes: ${finalTotalVotes.toString()}`)
+
         if (!args.repeat || ! (await maciContract.hasUntalliedStateLeaves())) {
-            console.log(`Current results salt: 0x${currentResultsSalt.toString(16)}`)
-            const currentResultsCommitment = await maciContract.currentResultsCommitment()
-            const c = BigInt(currentResultsCommitment.toString())
-            console.log(`Result commitment: 0x${c.toString(16)}`)
-
-            console.log(`Total spent voice credits salt: 0x${currentTvcSalt.toString(16)}`)
-            const currentSpentVoiceCreditsCommitment = await maciContract.currentSpentVoiceCreditsCommitment()
-            const d = BigInt(currentSpentVoiceCreditsCommitment.toString())
-            console.log(`Total spent voice credits commitment: 0x${d.toString(16)}`)
-
-            console.log(`Total spent voice credits per vote option salt: 0x${currentPvcSalt.toString(16)}`)
-            const currentPerVOSpentVoiceCreditsCommitment = await maciContract.currentPerVOSpentVoiceCreditsCommitment()
-            const e = BigInt(currentPerVOSpentVoiceCreditsCommitment.toString())
-            console.log(`Total spent voice credits per vote option commitment: 0x${e.toString(16)}`)
-            console.log(`Total votes: ${finalTotalVotes.toString()}`)
-
             tallyFileData = {
                 provider: ethProvider,
                 maci: maciContract.address,

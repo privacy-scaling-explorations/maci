@@ -37,6 +37,11 @@ import {
 } from './process'
 
 import {
+    checkStateRoot,
+    configureSubparser as configureSubparserForCheckStateRoot,
+} from './checkStateRoot'
+
+import {
     tally,
     configureSubparser as configureSubparserForTally,
 } from './tally'
@@ -80,6 +85,9 @@ const main = async () => {
 
     // Subcommand: publish
     configureSubparserForPublish(subparsers)
+    
+    // Subcommand: checkStateRoot
+    configureSubparserForCheckStateRoot(subparsers)
 
     // Subcommand: process
     configureSubparserForProcessMessages(subparsers)
@@ -109,6 +117,8 @@ const main = async () => {
         await signup(args)
     } else if (args.subcommand === 'publish') {
         await publish(args)
+    } else if (args.subcommand === 'checkStateRoot') {
+        await checkStateRoot(args)
     } else if (args.subcommand === 'process') {
         await processMessages(args)
         // Force the process to exit as it might get stuck

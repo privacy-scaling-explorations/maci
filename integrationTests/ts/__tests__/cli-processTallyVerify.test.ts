@@ -26,8 +26,6 @@ import {
     maxUsers,
     maxMessages,
     maxVoteOptions,
-    signupDuration,
-    votingDuration,
     messageBatchSize,
     tallyBatchSize,
     initialVoiceCredits,
@@ -36,6 +34,8 @@ import {
     voteOptionTreeDepth,
 } from './params'
 
+const signupDuration = 15
+const votingDuration = 15
 const accounts = genTestAccounts(2)
 
 let maciAddress: string
@@ -247,8 +247,13 @@ describe('process, tally, and prove CLI subcommands', () => {
 
             // Check whether the transaction succeeded
             const regMatch = output.match(
-                /Transaction hash: (0x[a-fA-F0-9]{64})\nRandom state leaf: ([\w\d]+)/
+                /Processed batch starting at index ([0-9]+)\nTransaction hash: (0x[a-fA-F0-9]{64})/
             )
+
+            const randomStateLeafMatch = output.match(
+                /Random state leaf: (.+)\n/
+            )
+
             if (!regMatch) {
                 console.log(e.stderr)
             }
@@ -259,7 +264,7 @@ describe('process, tally, and prove CLI subcommands', () => {
             expect(messageIndexBefore.toString()).toEqual('0')
             expect(messageIndexAfter.toString()).toEqual('0')
 
-            randomLeaf = StateLeaf.unserialize(regMatch[2])
+            randomLeaf = StateLeaf.unserialize(randomStateLeafMatch[1])
         })
 
         it('should report an error if all messages have been processed', async () => {
