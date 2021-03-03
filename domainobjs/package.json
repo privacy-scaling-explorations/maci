@@ -1,6 +1,6 @@
 {
     "name": "maci-domainobjs",
-    "version": "0.5.15",
+    "version": "0.5.16",
     "description": "",
     "main": "build/index.js",
     "scripts": {
