@@ -1,7 +1,7 @@
 const maxUsers = 4 ** 2 - 1
 const maxMessages = 4 ** 2 - 1
 const maxVoteOptions = 15
-const signupDuration = 15 
+const signupDuration = 60 
 const votingDuration = 60
 const messageBatchSize = 4
 const tallyBatchSize = 4
