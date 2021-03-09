@@ -14,7 +14,9 @@ deployedAddresses.json
 **/build/
 circuits/build
 circuits/circom/test.bak
+contracts/artifacts
 contracts/compiled
+contracts/cache
 node_modules
 blake2sdef.json
 build/.snark_checksum
