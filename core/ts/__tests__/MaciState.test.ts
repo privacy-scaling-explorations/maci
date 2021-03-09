@@ -145,19 +145,19 @@ describe('MaciState', () => {
 
         it('packProcessMessageSmallVals and unpackProcessMessageSmallVals', () => {
             const maxVoteOptions = BigInt(1)
-            const maxUsers = BigInt(2)
+            const numUsers = BigInt(2)
             const batchStartIndex = 5
             const batchEndIndex = 10
             const packedVals = MaciState.packProcessMessageSmallVals(
                 maxVoteOptions,
-                maxUsers,
+                numUsers,
                 batchStartIndex,
                 batchEndIndex,
             )
 
             const unpacked = MaciState.unpackProcessMessageSmallVals(packedVals)
             expect(unpacked.maxVoteOptions.toString()).toEqual(maxVoteOptions.toString())
-            expect(unpacked.maxUsers.toString()).toEqual(maxUsers.toString())
+            expect(unpacked.numUsers.toString()).toEqual(numUsers.toString())
             expect(unpacked.batchStartIndex.toString()).toEqual(batchStartIndex.toString())
             expect(unpacked.batchEndIndex.toString()).toEqual(batchEndIndex.toString())
         })
