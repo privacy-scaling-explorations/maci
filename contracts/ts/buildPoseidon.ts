@@ -1,7 +1,7 @@
 import * as Artifactor from 'truffle-artifactor'
 
 const poseidonGenContract = require('circomlib/src/poseidon_gencontract.js')
-const artifactor = new Artifactor('compiled/')
+const artifactor = new Artifactor('artifacts/')
 
 const buildPoseidon = async (numInputs: number) => {
     await artifactor.save({
