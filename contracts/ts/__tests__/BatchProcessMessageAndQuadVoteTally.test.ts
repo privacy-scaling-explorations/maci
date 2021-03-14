@@ -94,7 +94,7 @@ describe('BatchProcessMessage', () => {
         )
         maciContract = contracts.maciContract
 
-        // Create users, a command per user, and its associated key and message
+        // Create a command per user, and its associated key and message
         for (let i = 0; i < accounts.length; i++) {
             const keypair = new Keypair()
             const voteOptionIndex = 0
@@ -210,9 +210,14 @@ describe('BatchProcessMessage', () => {
 
         it('batchProcessMessage should verify a proof and update the stateRoot', async () => {
             // Move forward in time
-            await timeTravel(deployer.provider, config.maci.signUpDurationInSeconds + 1)
-            await timeTravel(deployer.provider, config.maci.votingDurationInSeconds + 1)
+            await timeTravel(
+                deployer.provider,
+                config.maci.signUpDurationInSeconds +
+                config.maci.votingDurationInSeconds +
+                1,
+            )
 
+            const start = Date.now()
             // Generate circuit inputs
             batchUstCircuitInputs = 
                 maciState.genBatchUpdateStateTreeCircuitInputs(
@@ -220,6 +225,8 @@ describe('BatchProcessMessage', () => {
                     batchSize,
                     randomStateLeaf,
                 )
+            const end = Date.now()
+            console.log('Time taken for genBatchUpdateStateTreeCircuitInputs:', (end - start) / 1000)
 
             // Process the batch of messages
             maciState.batchProcessMessage(
@@ -531,6 +538,7 @@ const testTally = async (
     const startIndex = BigInt(0)
 
     const tally = maciState.computeBatchVoteTally(startIndex, quadVoteTallyBatchSize)
+    debugger
     const newResultsSalt = genRandomSalt()
     const currentResultsSalt = BigInt(0)
 

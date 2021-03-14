@@ -22,7 +22,7 @@
         "maci-core": "^0.5.16",
         "maci-crypto": "^0.5.16",
         "maci-domainobjs": "^0.5.16",
-        "prompt-async": "^0.9.9"
+        "prompt-sync": "4.2.0"
     },
     "devDependencies": {
         "@types/jest": "^24.0.25",

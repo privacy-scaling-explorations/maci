@@ -1,5 +1,5 @@
 import * as ethers from 'ethers'
-import * as prompt from 'prompt-async'
+import * as prompt from 'prompt-sync'
 
 prompt.colors = false
 prompt.message = ''
@@ -34,6 +34,7 @@ const genMaciStateFromContract = async (
     address: string,
     coordinatorKeypair: Keypair,
     zerothLeaf: StateLeaf,
+    processMessages = true,
 ) => {
 
     const maciContract = new ethers.Contract(
@@ -108,6 +109,10 @@ const genMaciStateFromContract = async (
         throw new Error('Error: could not correctly recreate the message tree from on-chain data. The message root differs.')
     }
 
+    if (!processMessages) {
+        return maciState
+    }
+
     // Process the messages so that the users array is up to date with the
     // contract's state tree
     const currentMessageBatchIndex = Number((await maciContract.currentMessageBatchIndex()).toString())
@@ -164,15 +169,7 @@ const validateEthAddress = (address: string) => {
 }
 
 const promptPwd = async (name: string) => {
-    prompt.start()
-    const input = await prompt.get([
-        {
-            name,
-            hidden: true,
-        }
-    ])
-
-    return input[name]
+    return prompt()(name + ': ', null, { echo: ''})
 }
 
 const checkDeployerProviderConnection = async (

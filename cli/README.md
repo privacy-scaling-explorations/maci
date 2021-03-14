@@ -9,8 +9,8 @@
 | Coordinator | Create election | `create `|
 | User | Sign up | `signup` |
 | User | Change key / vote | `publish` |
-| Coordinator | Process one batch or all remaining batches of messages | `process` |
-| Coordinator | Tally one batch or all remaining batches of state leaves | `tally` |
+| Coordinator | Generate message processing and vote tallying proofs | `genProofs` |
+| Coordinator | Submit proofs | `proveOnChain` |
 | Coordinator | Process and tally all votes without producing proofs | `processAndTallyWithoutProofs` |
 | Coordinator | Roll back message processing and vote tallying in the MACI contract | `coordinatorReset` |
 
@@ -79,13 +79,7 @@ MACI: 0xE28158eCFde143e2536761c3254C7C31efd97271
 
 ### Coordinator: Process, tally and verify outcome
 
-These three commands share the same option flags.
-
-`node build/index.js process <options>`
-
-`node build/index.js tally <options>`
-
-`node build/index.js verify <options>`
+`node build/index.js genProofs <options>`
 
 Fields that the coordinator has to set:
 
@@ -96,9 +90,20 @@ Fields that the coordinator has to set:
 | Coordinator's MACI private key | `-sk` or `--privkey` | See above |
 | Coordinator's Ethereum private key | `-d` or `--eth-privkey` | A private key of the Ethereum account to use to perform the transaction |
 | Prompt for the coordinator's Ethereum private key | `-dp` or `--prompt-for-eth-privkey` | If specified, ignores `-d / --eth-privkey` and prompts the coordinator to input their Ethereum private key |
+| The final tally file | `-t` or `--tally-file` | A filepath in which to save the final vote tally and salt. |
 
-As message processing and vote tallying occurs in batches, this command should
-automatically resume a job halfway done.
+This command does not yet support pausing and restarting the generation of the
+proofs for each batch.
+
+`node build/index.js proveOnChain <options>`
+
+| Option | Flags | About |
+|-|-|-|
+| Ethereum provider | `-e` or `--eth-provider` | A connection string to the Ethereum provider. Default: `http://localhost:8545` |
+| MACI contract address | `-x` or `--contract` | The address of the deployed MACI contract |
+| Coordinator's MACI private key | `-sk` or `--privkey` | See above |
+| Coordinator's Ethereum private key | `-d` or `--eth-privkey` | A private key of the Ethereum account to use to perform the transaction |
+| Prompt for the coordinator's Ethereum private key | `-dp` or `--prompt-for-eth-privkey` | If specified, ignores `-d / --eth-privkey` and prompts the coordinator to input their Ethereum private key |
 
 ### User: Generate MACI keypair
 
@@ -153,43 +158,6 @@ Fields that the user has to set:
 | New vote weight | `-w` or `--new-vote-weight` | The vote weight to assign to said vote option |
 | Nonce | `-n` or `--nonce` | The nonce of the message |
 | Salt | `-s` or `--salt` | The salt of the message. If unspecified, this command will randomly generate a salt |
-
-### Coordinator: Process messages
-
-`NODE_OPTIONS=--max-old-space-size=4096 node build/index.js process <options>`
-
-Fields that the coordinator has to set:
-
-| Option | Flags | About |
-|-|-|-|
-| Ethereum provider | `-e` or `--eth-provider` | A connection string to the Ethereum provider. Default: `http://localhost:8545` |
-| MACI contract address | `-x` or `--contract` | The address of the deployed MACI contract |
-| Coordinator's MACI private key | `-sk` or `--privkey` | A serialized MACI private key. This is *not* an Ethereum private key. Its big-endian value must be below the snark field size. |
-| Prompt for the coordinator's MACI private key | `-dsk` or `--prompt-for-maci-privkey` | If specified, ignores `-sk / --privkey` and prompts the user to input the coordinator's MACI private key |
-| Coordinator's Ethereum private key | `-d` or `--eth-privkey` | A private key of the Ethereum account to use to perform transactions |
-| Prompt for the coordinator's Ethereum private key | `-dp` or `--prompt-for-eth-privkey` | If specified, ignores `-d / --eth-privkey` and prompts the coordinator to input their Ethereum private key |
-| Repeat until all messages have been processed | `-r` or `--repeat` | Default: false |
-
-### Coordinator: Tally votes
-
-`NODE_OPTIONS=--max-old-space-size=4096 node build/index.js tally <options>`
-
-Fields that the coordinator has to set:
-
-| Option | Flags | About |
-|-|-|-|
-| Ethereum provider | `-e` or `--eth-provider` | A connection string to the Ethereum provider. Default: `http://localhost:8545` |
-| MACI contract address | `-x` or `--contract` | The address of the deployed MACI contract |
-| Coordinator's MACI private key | `-sk` or `--privkey` | A serialized MACI private key. This is *not* an Ethereum private key. Its big-endian value must be below the snark field size. |
-| Prompt for the coordinator's MACI private key | `-dsk` or `--prompt-for-maci-privkey` | If specified, ignores `-sk / --privkey` and prompts the user to input the coordinator's MACI private key |
-| Coordinator's Ethereum private key | `-d` or `--eth-privkey` | A private key of the Ethereum account to use to perform transactions |
-| Prompt for the coordinator's Ethereum private key | `-dp` or `--prompt-for-eth-privkey` | If specified, ignores `-d / --eth-privkey` and prompts the coordinator to input their Ethereum private key |
-| Repeat until all votes have been processed | `-r` or `--repeat` | Default: false |
-| The serialised state leaf preimage at index 0 | `-z` or `--leaf-zero` | |
-| The current results salt | `-c` or `--current-results-salt` | The secret salt which is hashed along with the current results to produce the current result commitment input to the snark. |
-| The current total voice credits salt | `-tvc` or `--current-total-vc-salt` | The secret salt which is hashed along with the current total number of spent voice credits to produce the current total voice credits commitment input to the snark. |
-| The current per vote option voice credits salt | `-pvc` or `--current-per-vo-vc-salt` | The secret salt which is hashed along with the current total number of spent voice credits per vote option to produce the current total voice credits commitment input to the snark. |
-| The final tally file | `-t` or `--tally-file` | A filepath in which to save the final vote tally and salt. |
 
 ### Anyone: Verify a vote tally
 
@@ -373,47 +341,74 @@ node ./build/index.js processAndTallyWithoutProofs \
 	-t preProofTally.json
 ```
 
-**Coordinator: process all messages** 
+**Coordinator: generate proofs** 
 
 ```
-NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js process \
-    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
-	-e http://localhost:8545 \
-	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
-	-sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
-	-r
+node build/index.js genProofs \
+    -x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
+    -sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
+    -o proofs.json \
+    -t tally.json
 ```
 
 Example output:
 
 ```
-Processed batch starting at index 0
-Transaction hash: 0xbd1bbe86cd4fc72f34911220db428751e8a483b3afcc9d30c1a15989a7b6a031
-Random state leaf: <RANDOM STATE LEAF>
+Generating proofs of message processing...
+
+Progress: 1 / 2; batch index: 4
+Loading circuit from /home/di/t/maci/circuits/params/batchUstCircuit.r1cs...
+Proving...
+Saved /home/di/t/maci/circuits/params/1615726027749.proof.json and /home/di/t/maci/circuits/params/1615726027749.publicSignals.json
+Proof is correct
+
+Progress: 2 / 2; batch index: 0
+Loading circuit from /home/di/t/maci/circuits/params/batchUstCircuit.r1cs...
+Proving...
+Saved /home/di/t/maci/circuits/params/1615726036074.proof.json and /home/di/t/maci/circuits/params/1615726036074.publicSignals.json                                                                                                         
+Proof is correct
+Generating proofs of vote tallying...
+
+Progress: 1 / 2; batch index: 0
+Loading circuit from /home/di/t/maci/circuits/params/qvtCircuit.r1cs...
+Proving...
+Saved /home/di/t/maci/circuits/params/1615726042953.proof.json and /home/di/t/maci/circuits/params/1615726042953.publicSignals.json
+Proof is correct
+
+Progress: 2 / 2; batch index: 4
+Loading circuit from /home/di/t/maci/circuits/params/qvtCircuit.r1cs...
+Proving...
+Saved /home/di/t/maci/circuits/params/1615726045769.proof.json and /home/di/t/maci/circuits/params/1615726045769.publicSignals.json
+Proof is correct
 ```
 
 **Coordinator: tally all votes**
 
 ```
-NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js tally \
-    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
-	-e http://localhost:8545 \
-	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
-	-sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
-	-r \
-	-c 0x0 \
-	-tvc 0x0 \
-	-pvc 0x0 \
-	-t tally.json \
-	-z <PASTE RANDOM STATE LEAF HERE>
+node build/index.js proveOnChain \
+    -x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
+    -sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
+    -o proofs.json \
+    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3
 ```
 
 Example output:
 
 ```
-Transaction hash: 0x9ef0ab94d534650445c4ff748a43eacdedff1602929bd6a1bd568573374ddca2
-Current results salt: 0xa54b75db545fcda278ce882cae90d069c6fcf81368778264550d9b66af05a42
-Result commitment: 0x25deb6f675ed4f08742e1776eee130c627d168106fd813627963b241c1ba0754
+Submitting proofs of message processing...
+
+Progress: 1/true
+Transaction hash: 0x7b0aa10dae7fc244d649a83dfeb1f126faa9b7ff5497c34b2aa2b539f39e1b99
+
+Progress: 2/true
+Transaction hash: 0x1741cc6294d502d987bffdf6ea5339e2bfbdee2caa53b9d4165b706301845b68
+Submitting proofs of vote tallying...
+
+Progress: 1/2
+Transaction hash: 0xd059e72330db7f0402928b6e1a00ba7786d96ff66544b50d336aabc8dac4c719
+
+Progress: 2/2
+Transaction hash: 0x0e8405e8c80390508dbd9ed20eef0249574147ab708b06f8d22a9995c70d6869
 ```
 
 The file `tally.json` will now contain something like the following:
@@ -518,25 +513,16 @@ Create a MACI instance:
 node ./build/index.js create -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
 	-e http://localhost:8545 \
-	-s 15 \
-	-o 60 \
+	-s 10 \
+	-o 10 \
 	-bm 4 \
 	-bv 4 \
 	-u 255 \
-	-m 2048
-```
-
-Sign up:
-
-```
+	-m 2048 && \
 node ./build/index.js signup -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-e http://localhost:8545 \
 	-p macipk.40270618e1797c4969587eb04d7f3e9b39a91ecbbdf7d3c998d8e34d08e11c86 \
-	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4
-```
-Vote:
-
-```
+	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 && \
 node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-e http://localhost:8545 \
 	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
@@ -545,43 +531,28 @@ node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241
 	-i 1 \
 	-v 0 \
 	-w 9 \
-	-n 1
-```
-
-Process all messages:
-
-```
-NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js process \
-    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
-	-e http://localhost:8545 \
-	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
-	-sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
-	-r
-```
-
-Tally all votes:
-
-```
-NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js tally \
-    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
-	-e http://localhost:8545 \
-	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
-	-sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
-	-r \
-	-c 0x0 \
-	-tvc 0x0 \
-	-pvc 0x0 \
-	-t tally.json \
-	-z <PASTE RANDOM STATE LEAF HERE>
+	-n 1 && \
+node build/index.js genProofs \
+    -x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
+    -sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
+    -o proofs.json \
+    -t tally.json && \
+sleep 5 && \
+node build/index.js proveOnChain \
+    -x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
+    -sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
+    -o proofs.json \
+    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 && \
+node ./build/index.js verify -t tally.json
 ```
 
 ## Demonstration with `prod-medium` settings
 
-```
+```bash
 node ./build/index.js create \
     -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
     -sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
-    -e http://localhost:8545 -s 10 -o 30 -bm 4 -bv 4 -u 511 -m 8192 && \
+    -e http://localhost:8545 -s 10 -o 10 -bm 4 -bv 4 -u 511 -m 8192 && \
 node ./build/index.js signup \
     -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
     -e http://localhost:8545 \
@@ -595,19 +566,15 @@ node ./build/index.js publish \
     -p macipk.40270618e1797c4969587eb04d7f3e9b39a91ecbbdf7d3c998d8e34d08e11c86 \
     -i 1 -v 0 -w 9 -n 1 && \
 sleep 5 && \
-NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js process\
-    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
-    -e http://localhost:8545 \
-    -x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
-    -sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c\
-    -r
-```
-
-```
-NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js tally \
-    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
-    -e http://localhost:8545 \
+node build/index.js genProofs \
     -x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
     -sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
-    -r -c 0x0 -tvc 0x0 -pvc 0x0 -t tally.json -z <PASTE RANDOM STATE LEAF HERE>
+    -o proofs.json \
+    -t tally.json &&
+node build/index.js proveOnChain \
+    -x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
+    -sk macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c \
+    -o proofs.json \
+    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 && \
+node ./build/index.js verify -t tally.json
 ```

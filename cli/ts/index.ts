@@ -32,19 +32,19 @@ import {
 } from './publish'
 
 import {
-    processMessages,
-    configureSubparser as configureSubparserForProcessMessages,
-} from './process'
+    genProofs,
+    configureSubparser as configureSubparserForGenProofs,
+} from './genProofs'
+
+import {
+    proveOnChain,
+    configureSubparser as configureSubparserForProveOnChain,
+} from './proveOnChain'
 
 import {
     checkStateRoot,
     configureSubparser as configureSubparserForCheckStateRoot,
 } from './checkStateRoot'
-
-import {
-    tally,
-    configureSubparser as configureSubparserForTally,
-} from './tally'
 
 import {
     verify,
@@ -89,11 +89,11 @@ const main = async () => {
     // Subcommand: checkStateRoot
     configureSubparserForCheckStateRoot(subparsers)
 
-    // Subcommand: process
-    configureSubparserForProcessMessages(subparsers)
+    // Subcommand: genProofs
+    configureSubparserForGenProofs(subparsers)
 
-    // Subcommand: tally
-    configureSubparserForTally(subparsers)
+    // Subcommand: proveOnChain
+    configureSubparserForProveOnChain(subparsers)
 
     // Subcommand: verify
     configureSubparserForVerify(subparsers)
@@ -119,14 +119,10 @@ const main = async () => {
         await publish(args)
     } else if (args.subcommand === 'checkStateRoot') {
         await checkStateRoot(args)
-    } else if (args.subcommand === 'process') {
-        await processMessages(args)
-        // Force the process to exit as it might get stuck
-        process.exit()
-    } else if (args.subcommand === 'tally') {
-        await tally(args)
-        // Force the process to exit as it might get stuck
-        process.exit()
+    } else if (args.subcommand === 'genProofs') {
+        await genProofs(args)
+    } else if (args.subcommand === 'proveOnChain') {
+        await proveOnChain(args)
     } else if (args.subcommand === 'verify') {
         await verify(args)
     } else if (args.subcommand === 'processAndTallyWithoutProofs') {
@@ -141,8 +137,6 @@ if (require.main === module) {
 }
 
 export {
-    processMessages,
-    tally,
     verify,
     processAndTallyWithoutProofs,
     calcBinaryTreeDepthFromMaxLeaves,

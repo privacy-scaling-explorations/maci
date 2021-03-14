@@ -1,5 +1,6 @@
 import * as ethers from 'ethers'
 import * as fs from 'fs'
+import * as path from 'path'
 import {
     PubKey,
     PrivKey,
@@ -77,8 +78,8 @@ const executeSuite = async (data: any, expect: any) => {
         maxVoteOptions,
     )
 
-    const signupDuration = data.numUsers * 5
-    const votingDuration = data.numUsers * 5
+    const signupDuration = data.numUsers * 7
+    const votingDuration = data.numUsers * 7
 
     // Run the create subcommand
     const createCommand = `node ../cli/build/index.js create` +
@@ -218,120 +219,51 @@ const executeSuite = async (data: any, expect: any) => {
 
     await delay(1000 * votingDuration)
 
-    // Process messages
-    const processCommand = `NODE_OPTIONS=--max-old-space-size=4096 node ../cli/build/index.js process` +
+    const tallyFile = path.join(process.cwd(), 'tally.json')
+    const proofsFile = path.join(process.cwd(), 'proofs.json')
+
+    // Generate proofs
+    const genProofsCmd = `node ../cli/build/index.js genProofs` +
         ` -sk ${coordinatorKeypair.privKey.serialize()}` +
-        ` -d ${userPrivKey}` +
-        ` -x ${maciAddress}` +
-        ` --repeat`
+        ` -t ${tallyFile}` +
+        ` -o ${proofsFile}` +
+        ` -x ${maciAddress}`
 
-    console.log(processCommand)
+    console.log(genProofsCmd)
 
-    const e = exec(processCommand)
+    const e = exec(genProofsCmd)
 
     if (e.stderr) {
         console.log(e.stderr)
     }
-    console.log(e.stdout)
 
     const output = e.stdout.trim()
 
-    // Check whether the transaction succeeded
-    const processRegMatch = output.match(
-        /Random state leaf: (.+)/g
-    )
+    if (!output.endsWith('OK')) {
+        console.log(output)
+    }
 
-    expect(processRegMatch).toBeTruthy()
-    const randomLeaf = StateLeaf.unserialize(
-        processRegMatch[processRegMatch.length - 1].split(': ')[1].trim()
-    )
+    // Check whether the command succeeded
+    expect(output.endsWith('OK')).toBeTruthy()
 
-    const indexRegMatch = output.match(
-        /Processed batch starting at index ([0-9]+)\nTransaction hash: (0x[a-fA-F0-9]{64})$/
-    )
-    expect(indexRegMatch).toBeTruthy()
-
-    // Check whether it has processed all batches
-    const processedIndexNum = parseInt(indexRegMatch[1], 10)
-    expect(processedIndexNum.toString()).toEqual('0')
-
-    const currentMessageBatchIndex = await maciContract.currentMessageBatchIndex()
-    expect(currentMessageBatchIndex.toString()).toEqual('0')
-
-    const tallyCommand = `NODE_OPTIONS=--max-old-space-size=4096 node ../cli/build/index.js tally` +
+    const proveOnChainCmd = `node ../cli/build/index.js proveOnChain` +
         ` -sk ${coordinatorKeypair.privKey.serialize()}` +
-        ` -d ${userPrivKey}` +
-        ` -x ${maciAddress}` +
-        ` -z ${randomLeaf.serialize()}` +
-        ` -t test_tally.json` +
-        ` -c 0x0000000000000000000000000000000000000000000000000000000000000000` +
-        ` -tvc 0x0000000000000000000000000000000000000000000000000000000000000000` +
-        ` -pvc 0x0000000000000000000000000000000000000000000000000000000000000000` +
-        ` -r`
+        ` -d ${deployerPrivKey}` +
+        ` -o ${proofsFile}` +
+        ` -x ${maciAddress}`
+    console.log(proveOnChainCmd)
 
-    console.log(tallyCommand)
+    const proveOnChainOutput = exec(proveOnChainCmd)
+    const tally = JSON.parse(fs.readFileSync(tallyFile).toString())
 
-    const tallyOutput = exec(tallyCommand)
-    const tally = JSON.parse(fs.readFileSync('test_tally.json').toString())
-
-    if (tallyOutput.stderr) {
-        console.log(tallyOutput.stderr)
+    if (proveOnChainOutput.stderr) {
+        console.log(proveOnChainOutput.stderr)
     }
 
-    console.log(tallyOutput.stdout)
-
-    const tallyRegMatch = tallyOutput.match(
-        /Transaction hash: (0x[a-fA-F0-9]{64})\nCurrent results salt: (0x[a-fA-F0-9]+)\nResult commitment: 0x[a-fA-F0-9]+\nTotal spent voice credits salt: (0x[a-fA-F0-9]+)\nTotal spent voice credits commitment: 0x[a-fA-F0-9]+\nTotal spent voice credits per vote option salt: (0x[a-fA-F0-9]+)\nTotal spent voice credits per vote option commitment: (0x[a-fA-F0-9]+)\nTotal votes: (.+)\n$/
-    )
-
-    if (!tallyRegMatch) {
-        console.log('Mismatch:')
-        console.log(tallyOutput)
-    }
-
-    expect(tallyRegMatch).toBeTruthy()
-
-    const resultsSalt = BigInt(tallyRegMatch[2])
-
-    const finalTallyCommitment = await maciContract.currentResultsCommitment()
-    const expectedTallyCommitment = genTallyResultCommitment(
-        data.expectedTally,
-        resultsSalt,
-        voteOptionTreeDepth,
-    )
-
-    expect(finalTallyCommitment.toString())
-        .toEqual(expectedTallyCommitment.toString())
-
-    const tvcSalt = BigInt(tallyRegMatch[3])
-    const finalTvcCommitment = 
-        await maciContract.currentSpentVoiceCreditsCommitment()
-
-    const expectedTvcCommitment = genSpentVoiceCreditsCommitment(
-        data.expectedTotalSpentVoiceCredits,
-        tvcSalt,
-    )
-    expect(expectedTvcCommitment.toString())
-        .toEqual(finalTvcCommitment.toString())
-
-
-    const pvcSalt = BigInt(tallyRegMatch[4])
-    const finalPvcCommitment =
-        await maciContract.currentPerVOSpentVoiceCreditsCommitment()
-    const expectedPvcCommitment = genPerVOSpentVoiceCreditsCommitment(
-        data.expectedSpentVoiceCredits,
-        pvcSalt,
-        voteOptionTreeDepth,
-    )
-    expect(expectedPvcCommitment.toString())
-        .toEqual(finalPvcCommitment.toString())
-
-    const totalVotes = BigInt(tallyRegMatch[6])
-    const expectedTotalVotes = await maciContract.totalVotes()
-    expect(totalVotes.toString()).toEqual(expectedTotalVotes.toString())
+    expect(proveOnChainOutput.stdout.trim().endsWith('OK')).toBeTruthy()
 
     const verifyCommand = `NODE_OPTIONS=--max-old-space-size=4096 node ../cli/build/index.js verify ` +
-        '-t test_tally.json'
+        '-t ' + tallyFile
 
     console.log(verifyCommand)
 

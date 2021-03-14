@@ -630,12 +630,22 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         currentQvtBatchNum ++;
     }
 
+    /*
+     * Reset the storage variables which change during message processing and
+     * vote tallying. Does not affect any signups or messages. This is useful
+     * if the client-side process/tally code has a bug that causes an invalid
+     * state transition.
+     */
     function coordinatorReset() public {
         require(msg.sender == coordinatorAddress, "MACI: only the coordinator can do this");
 
         hasUnprocessedMessages = true;
         stateRoot = stateRootBeforeProcessing;
-        currentMessageBatchIndex = (numMessages / messageBatchSize) * messageBatchSize;
+        if (numMessages % messageBatchSize == 0) {
+            currentMessageBatchIndex = numMessages - messageBatchSize;
+        } else {
+            currentMessageBatchIndex = (numMessages / messageBatchSize) * messageBatchSize;
+        }
         currentQvtBatchNum = 0;
 
         currentResultsCommitment = originalCurrentResultsCommitment;
