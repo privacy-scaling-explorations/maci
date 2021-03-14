@@ -137,6 +137,8 @@ if (require.main === module) {
 }
 
 export {
+    genProofs,
+    proveOnChain,
     verify,
     processAndTallyWithoutProofs,
     calcBinaryTreeDepthFromMaxLeaves,
