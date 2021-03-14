@@ -289,7 +289,7 @@ const genProofs = async (args: any) => {
     let newPerVOSpentVoiceCreditsCommitment
     let totalPerVOSpentVoiceCredits
 
-    console.log('Generating proofs of vote tallying...')
+    console.log('\nGenerating proofs of vote tallying...')
     for (let i = 0; i < numStateLeaves; i += tallyBatchSize) {
         const startIndex = i
 
@@ -337,6 +337,7 @@ const genProofs = async (args: any) => {
             configType = 'test'
             circuitName = 'qvt'
         }
+        console.log(configType)
 
         let result
         try {

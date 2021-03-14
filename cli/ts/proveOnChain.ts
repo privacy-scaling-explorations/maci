@@ -166,7 +166,6 @@ const proveOnChain = async (args: any) => {
     }
 
     const unserialisedPrivkey = PrivKey.unserialize(coordinatorPrivkey)
-    const coordinatorKeypair = new Keypair(unserialisedPrivkey)
 
     const maciContract = new ethers.Contract(
         maciAddress,
@@ -224,7 +223,7 @@ const proveOnChain = async (args: any) => {
 
     // ------------------------------------------------------------------------
     // Message processing proofs
-    console.log('Submitting proofs of message processing...')
+    console.log('\nSubmitting proofs of message processing...')
     
     // Get the maximum message batch index
     const maxMessageBatchIndex = numMessages % messageBatchSize === 0 ?
@@ -243,7 +242,7 @@ const proveOnChain = async (args: any) => {
     }
 
     for (let i = numProcessedMessageBatches; i < data.processProofs.length; i ++) {
-        console.log(`\nProgress: ${i+1}/${i < data.processProofs.length}`)
+        console.log(`\nProgress: ${i+1}/${data.processProofs.length}`)
         const p = data.processProofs[i]
 
         const circuitInputs = p.circuitInputs

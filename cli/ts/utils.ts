@@ -1,5 +1,5 @@
 import * as ethers from 'ethers'
-import * as prompt from 'prompt-async'
+import * as prompt from 'prompt-sync'
 
 prompt.colors = false
 prompt.message = ''
@@ -169,15 +169,7 @@ const validateEthAddress = (address: string) => {
 }
 
 const promptPwd = async (name: string) => {
-    prompt.start()
-    const input = await prompt.get([
-        {
-            name,
-            hidden: true,
-        }
-    ])
-
-    return input[name]
+    return prompt()(name + ': ', null, { echo: ''})
 }
 
 const checkDeployerProviderConnection = async (
