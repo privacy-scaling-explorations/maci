@@ -284,6 +284,7 @@ class MaciState {
     public genUpdateStateTreeCircuitInputs = (
         _index: number,
     ) => {
+        // _index is the message index
         assert(this.messages.length > _index)
         assert(this.encPubKeys.length === this.messages.length)
 
@@ -313,9 +314,15 @@ class MaciState {
             BigInt(0),
         )
 
-        // TODO: optimise this
-        for (const vote of user.votes) {
-            voteOptionTree.insert(vote)
+        // Tree insertions are expensive, so only insert the necessary votes.
+        // Since the default value is 0, find the last index and insert up to
+        // it
+        let lastZeroIndex = user.votes.length - 1
+        while (BigInt(user.votes[lastZeroIndex]) === BigInt(0) && lastZeroIndex > 0) {
+            lastZeroIndex --
+        }
+        for (let i = 0; i <= lastZeroIndex; i ++) {
+            voteOptionTree.insert(user.votes[i])
         }
 
         const voteOptionTreePath = voteOptionTree.genMerklePath(Number(command.voteOptionIndex))
