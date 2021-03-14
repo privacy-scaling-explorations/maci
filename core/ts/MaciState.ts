@@ -313,6 +313,7 @@ class MaciState {
             BigInt(0),
         )
 
+        // TODO: optimise this
         for (const vote of user.votes) {
             voteOptionTree.insert(vote)
         }

@@ -32,6 +32,16 @@ import {
 } from './publish'
 
 import {
+    genProofs,
+    configureSubparser as configureSubparserForGenProofs,
+} from './genProofs'
+
+import {
+    proveOnChain,
+    configureSubparser as configureSubparserForProveOnChain,
+} from './proveOnChain'
+
+import {
     processMessages,
     configureSubparser as configureSubparserForProcessMessages,
 } from './process'
@@ -89,6 +99,12 @@ const main = async () => {
     // Subcommand: checkStateRoot
     configureSubparserForCheckStateRoot(subparsers)
 
+    // Subcommand: genProofs
+    configureSubparserForGenProofs(subparsers)
+
+    // Subcommand: proveOnChain
+    configureSubparserForProveOnChain(subparsers)
+
     // Subcommand: process
     configureSubparserForProcessMessages(subparsers)
 
@@ -119,6 +135,10 @@ const main = async () => {
         await publish(args)
     } else if (args.subcommand === 'checkStateRoot') {
         await checkStateRoot(args)
+    } else if (args.subcommand === 'genProofs') {
+        await genProofs(args)
+    } else if (args.subcommand === 'proveOnChain') {
+        await proveOnChain(args)
     } else if (args.subcommand === 'process') {
         await processMessages(args)
         // Force the process to exit as it might get stuck

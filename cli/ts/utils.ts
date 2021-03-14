@@ -34,6 +34,7 @@ const genMaciStateFromContract = async (
     address: string,
     coordinatorKeypair: Keypair,
     zerothLeaf: StateLeaf,
+    processMessages = true,
 ) => {
 
     const maciContract = new ethers.Contract(
@@ -106,6 +107,10 @@ const genMaciStateFromContract = async (
     const onChainMessageRoot = await maciContract.getMessageTreeRoot()
     if (maciState.messageTree.root.toString(16) !== BigInt(onChainMessageRoot).toString(16)) {
         throw new Error('Error: could not correctly recreate the message tree from on-chain data. The message root differs.')
+    }
+
+    if (!processMessages) {
+        return maciState
     }
 
     // Process the messages so that the users array is up to date with the
