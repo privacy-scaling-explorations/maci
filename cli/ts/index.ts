@@ -42,19 +42,9 @@ import {
 } from './proveOnChain'
 
 import {
-    processMessages,
-    configureSubparser as configureSubparserForProcessMessages,
-} from './process'
-
-import {
     checkStateRoot,
     configureSubparser as configureSubparserForCheckStateRoot,
 } from './checkStateRoot'
-
-import {
-    tally,
-    configureSubparser as configureSubparserForTally,
-} from './tally'
 
 import {
     verify,
@@ -105,12 +95,6 @@ const main = async () => {
     // Subcommand: proveOnChain
     configureSubparserForProveOnChain(subparsers)
 
-    // Subcommand: process
-    configureSubparserForProcessMessages(subparsers)
-
-    // Subcommand: tally
-    configureSubparserForTally(subparsers)
-
     // Subcommand: verify
     configureSubparserForVerify(subparsers)
 
@@ -139,14 +123,6 @@ const main = async () => {
         await genProofs(args)
     } else if (args.subcommand === 'proveOnChain') {
         await proveOnChain(args)
-    } else if (args.subcommand === 'process') {
-        await processMessages(args)
-        // Force the process to exit as it might get stuck
-        process.exit()
-    } else if (args.subcommand === 'tally') {
-        await tally(args)
-        // Force the process to exit as it might get stuck
-        process.exit()
     } else if (args.subcommand === 'verify') {
         await verify(args)
     } else if (args.subcommand === 'processAndTallyWithoutProofs') {
@@ -161,8 +137,6 @@ if (require.main === module) {
 }
 
 export {
-    processMessages,
-    tally,
     verify,
     processAndTallyWithoutProofs,
     calcBinaryTreeDepthFromMaxLeaves,

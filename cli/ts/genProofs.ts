@@ -456,7 +456,7 @@ const genProofs = async (args: any) => {
     }
 
     fs.writeFileSync(args.tally_file, JSON.stringify(tallyFileData, null, 4))
-
+    console.log('OK')
 }
 
 const saveOutput = (outputFile: string, processProofs: any, tallyProofs: any) => {
