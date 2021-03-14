@@ -25,10 +25,16 @@
             "user": 3,
             "voteOptionIndex": 3,
             "voteWeight": 1,
+            "nonce": 2
+        },
+        {
+            "user": 3,
+            "voteOptionIndex": 4,
+            "voteWeight": 1,
             "nonce": 1
         }
     ],
-    "expectedTally": [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    "expectedSpentVoiceCredits": [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    "expectedTotalSpentVoiceCredits": 4
+    "expectedTally": [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "expectedSpentVoiceCredits": [1, 1, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "expectedTotalSpentVoiceCredits": 5
 }

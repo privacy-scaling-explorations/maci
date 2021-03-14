@@ -188,7 +188,9 @@ const genProofs = async (args: any) => {
         //proofs = JSON.parse(fs.readFileSync(outputFile).toString())
     //}
 
-    const currentMessageBatchIndex =
+    const currentMessageBatchIndex = numMessages % messageBatchSize === 0 ?
+        (numMessages / messageBatchSize - 1) * messageBatchSize
+        :
         Math.floor(numMessages / messageBatchSize) * messageBatchSize
 
     const numBatches = 1 + (currentMessageBatchIndex / messageBatchSize)
@@ -197,7 +199,7 @@ const genProofs = async (args: any) => {
     let proofNum = 1
 
     for (let i = currentMessageBatchIndex; i >= 0; i -= messageBatchSize) {
-        console.log(`\nProgress: ${proofNum} / ${numBatches}; batch index: ${i}`)
+        console.log(`\nProgress: ${proofNum} / ${1 + currentMessageBatchIndex / messageBatchSize}; batch index: ${i}`)
         proofNum ++
 
         const randomStateLeaf = StateLeaf.genRandomLeaf()

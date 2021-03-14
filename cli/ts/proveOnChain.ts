@@ -206,10 +206,10 @@ const proveOnChain = async (args: any) => {
         :
         1 + Math.floor(numMessages / messageBatchSize)
 
-    const expectedNumTallyProofs = numSignUps % tallyBatchSize === 0 ?
-        numSignUps / tallyBatchSize
+    const expectedNumTallyProofs = (1 + numSignUps) % tallyBatchSize === 0 ?
+        (1 + numSignUps) / tallyBatchSize
         :
-        1 + Math.floor(numSignUps / tallyBatchSize)
+        1 + Math.floor((1 + numSignUps) / tallyBatchSize)
 
     if (expectedNumProcessProofs !== data.processProofs.length) {
         console.error('Error: the message processing proofs in', args.proof_file, 'are incomplete')
@@ -282,10 +282,10 @@ const proveOnChain = async (args: any) => {
     console.log('Submitting proofs of vote tallying...')
 
     // Get the maximum tally batch index
-    const maxTallyBatchIndex = numSignUps % tallyBatchSize === 0 ?
-        numSignUps / tallyBatchSize
+    const maxTallyBatchIndex = (1 + numSignUps) % tallyBatchSize === 0 ?
+        (1 + numSignUps) / tallyBatchSize
         :
-        1 + Math.floor(numSignUps / tallyBatchSize)
+        1 + Math.floor((1 + numSignUps) / tallyBatchSize)
 
     // Get the number of processed message batches
     const currentQvtBatchNum = Number(await maciContract.currentQvtBatchNum())

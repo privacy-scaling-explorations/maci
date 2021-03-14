@@ -219,8 +219,8 @@ const executeSuite = async (data: any, expect: any) => {
 
     await delay(1000 * votingDuration)
 
-    const tallyFile = path.join(__dirname, 'tally.json')
-    const proofsFile = path.join(__dirname, 'proofs.json')
+    const tallyFile = path.join(process.cwd(), 'tally.json')
+    const proofsFile = path.join(process.cwd(), 'proofs.json')
 
     // Generate proofs
     const genProofsCmd = `node ../cli/build/index.js genProofs` +
@@ -236,9 +236,12 @@ const executeSuite = async (data: any, expect: any) => {
     if (e.stderr) {
         console.log(e.stderr)
     }
-    console.log(e.stdout)
 
     const output = e.stdout.trim()
+
+    if (!output.endsWith('OK')) {
+        console.log(output)
+    }
 
     // Check whether the command succeeded
     expect(output.endsWith('OK')).toBeTruthy()
