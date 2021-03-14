@@ -321,6 +321,11 @@ class MaciState {
         while (BigInt(user.votes[lastZeroIndex]) === BigInt(0) && lastZeroIndex > 0) {
             lastZeroIndex --
         }
+
+        if (lastZeroIndex < Number(command.voteOptionIndex)) {
+            lastZeroIndex = Number(command.voteOptionIndex)
+        }
+
         for (let i = 0; i <= lastZeroIndex; i ++) {
             voteOptionTree.insert(user.votes[i])
         }

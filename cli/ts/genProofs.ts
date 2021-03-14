@@ -96,6 +96,15 @@ const configureSubparser = (subparsers: any) => {
         }
     )
 
+    parser.addArgument(
+        ['-t', '--tally-file'],
+        {
+            required: true,
+            type: 'string',
+            help: 'A filepath in which to save the final vote tally and salt.',
+        }
+    )
+
     // TODO: support resumable proof generation
     //parser.addArgument(
         //['-r', '--resume'],
@@ -271,6 +280,14 @@ const genProofs = async (args: any) => {
     let currentTvcSalt = BigInt(0)
     let currentPvcSalt = BigInt(0)
     let cumulativeTally
+    let newResultsCommitment
+    let newSpentVoiceCredits
+    let newSpentVoiceCreditsCommitment
+    let newResultsSalt
+    let newSpentVoiceCreditsSalt
+    let newPerVOSpentVoiceCreditsSalt
+    let newPerVOSpentVoiceCreditsCommitment
+    let totalPerVOSpentVoiceCredits
 
     console.log('Generating proofs of vote tallying...')
     for (let i = 0; i < numStateLeaves; i += tallyBatchSize) {
@@ -287,9 +304,9 @@ const genProofs = async (args: any) => {
             totalVotes += cumulativeTally[i]
         }
 
-        const newResultsSalt = genRandomSalt()
-        const newSpentVoiceCreditsSalt = genRandomSalt()
-        const newPerVOSpentVoiceCreditsSalt = genRandomSalt()
+        newResultsSalt = genRandomSalt()
+        newSpentVoiceCreditsSalt = genRandomSalt()
+        newPerVOSpentVoiceCreditsSalt = genRandomSalt()
 
         // Generate circuit inputs
         const circuitInputs 
@@ -336,7 +353,7 @@ const genProofs = async (args: any) => {
         const expectedNewResultsCommitmentOutput =
             getSignalByNameViaSym(circuitName, witness, 'main.newResultsCommitment')
 
-        const newResultsCommitment = genTallyResultCommitment(
+        newResultsCommitment = genTallyResultCommitment(
             cumulativeTally,
             newResultsSalt,
             maciState.voteOptionTreeDepth,
@@ -353,11 +370,11 @@ const genProofs = async (args: any) => {
 
         const currentSpentVoiceCredits = maciState.computeCumulativeSpentVoiceCredits(startIndex)
 
-        const newSpentVoiceCredits = 
+        newSpentVoiceCredits = 
             currentSpentVoiceCredits + 
             maciState.computeBatchSpentVoiceCredits(startIndex, tallyBatchSize)
 
-        const newSpentVoiceCreditsCommitment = genSpentVoiceCreditsCommitment(
+        newSpentVoiceCreditsCommitment = genSpentVoiceCreditsCommitment(
             newSpentVoiceCredits,
             currentTvcSalt,
         )
@@ -379,12 +396,12 @@ const genProofs = async (args: any) => {
             tallyBatchSize,
         )
 
-        const totalPerVOSpentVoiceCredits: BigInt[] = []
+        totalPerVOSpentVoiceCredits = []
         for (let i = 0; i < currentPerVOSpentVoiceCredits.length; i ++) {
             totalPerVOSpentVoiceCredits[i] = currentPerVOSpentVoiceCredits[i] + perVOSpentVoiceCredits[i]
         }
 
-        const newPerVOSpentVoiceCreditsCommitment = genPerVOSpentVoiceCreditsCommitment(
+        newPerVOSpentVoiceCreditsCommitment = genPerVOSpentVoiceCreditsCommitment(
             totalPerVOSpentVoiceCredits,
             newPerVOSpentVoiceCreditsSalt,
             maciState.voteOptionTreeDepth,
@@ -416,6 +433,28 @@ const genProofs = async (args: any) => {
 
         saveOutput(outputFile, processProofs, tallyProofs)
     }
+
+    const tallyFileData = {
+        provider: ethProvider,
+        maci: maciContract.address,
+        results: {
+            commitment: '0x' + BigInt(newResultsCommitment.toString()).toString(16),
+            tally: cumulativeTally.map((x) => x.toString()),
+            salt: '0x' + currentResultsSalt.toString(16),
+        },
+        totalVoiceCredits: {
+            spent: newSpentVoiceCredits.toString(),
+            commitment: '0x' + newSpentVoiceCreditsCommitment.toString(16),
+            salt: '0x' + newSpentVoiceCreditsSalt.toString(16),
+        },
+        totalVoiceCreditsPerVoteOption: {
+            commitment: '0x' + newPerVOSpentVoiceCreditsCommitment.toString(16),
+            tally: totalPerVOSpentVoiceCredits.map((x) => x.toString()),
+            salt: '0x' + newPerVOSpentVoiceCreditsSalt.toString(16),
+        },
+    }
+
+    fs.writeFileSync(args.tally_file, JSON.stringify(tallyFileData, null, 4))
 
 }
 
