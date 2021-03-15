@@ -45,7 +45,7 @@
     "dependencies": {
         "argparse": "^1.0.10",
         "circom": "0.5.38",
-        "circomlib": "0.2.4",
+        "circomlib": "0.5.1",
         "libsemaphore": "^1.0.5",
         "n-readlines": "^1.0.1",
         "shelljs": "^0.8.3",

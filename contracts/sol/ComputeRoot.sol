@@ -35,7 +35,7 @@ contract ComputeRoot is Hasher {
 
         for (uint8 i = 0; i < _treeLevels; i++) {
 
-            uint256[] memory z = new uint256[](LEAVES_PER_NODE);
+            uint256[LEAVES_PER_NODE] memory z;
 
             for (uint8 j = 0; j < LEAVES_PER_NODE; j ++) {
                 z[j] = currentZero;
