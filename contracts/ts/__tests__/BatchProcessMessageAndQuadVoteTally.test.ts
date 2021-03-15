@@ -247,7 +247,6 @@ describe('BatchProcessMessage', () => {
 
             const contractPublicSignals = await maciContract.genBatchUstPublicSignals(
                 '0x' + stateRootAfter.toString(16),
-                batchUstCircuitInputs['state_tree_root'].map((x) => x.toString()),
                 ecdhPubKeys.map((x) => x.asContractParam()),
             )
 
@@ -266,7 +265,7 @@ describe('BatchProcessMessage', () => {
             const isValid = await verifyBatchUstProof(batchUstR.proof, batchUstR.publicSignals, config.env)
             expect(isValid).toBeTruthy()
 
-            expect(batchUstR.publicSignals).toHaveLength(20)
+            expect(batchUstR.publicSignals).toHaveLength(16)
 
             for (let i = 0; i < batchUstR.publicSignals.length; i ++) {
                 expect(batchUstR.publicSignals[i].toString()).toEqual(contractPublicSignals[i].toString())
@@ -277,7 +276,6 @@ describe('BatchProcessMessage', () => {
 
             const tx = await maciContract.batchProcessMessage(
                 '0x' + stateRootAfter.toString(16),
-                batchUstCircuitInputs['state_tree_root'].map((x) => x.toString()),
                 ecdhPubKeys.map((x) => x.asContractParam()),
                 formattedProof,
                 { gasLimit: 2000000 },
@@ -478,7 +476,6 @@ describe('BatchProcessMessage', () => {
 
             const contractPublicSignals = await maciContract.genBatchUstPublicSignals(
                 '0x' + stateRootAfter.toString(16),
-                batchUstCircuitInputs['state_tree_root'].map((x) => x.toString()),
                 ecdhPubKeys.map((x) => x.asContractParam()),
             )
 
@@ -497,7 +494,7 @@ describe('BatchProcessMessage', () => {
             const isValid = await verifyBatchUstProof(batchUstR.proof, batchUstR.publicSignals, config.env)
             expect(isValid).toBeTruthy()
 
-            expect(batchUstR.publicSignals).toHaveLength(20)
+            expect(batchUstR.publicSignals).toHaveLength(16)
 
             for (let i = 0; i < batchUstR.publicSignals.length; i ++) {
                 //if (batchUstR.publicSignals[i].toString() !== contractPublicSignals[i].toString()) {
@@ -511,7 +508,6 @@ describe('BatchProcessMessage', () => {
 
             const tx = await maciContract.batchProcessMessage(
                 '0x' + stateRootAfter.toString(16),
-                batchUstCircuitInputs['state_tree_root'].map((x) => x.toString()),
                 ecdhPubKeys.map((x) => x.asContractParam()),
                 formattedProof,
                 { gasLimit: 2000000 },

@@ -381,13 +381,11 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
      * A helper function to create the publicSignals array from meaningful
      * parameters.
      * @param _newStateRoot The new state root after all messages are processed
-     * @param _stateTreeRoots The intermediate state roots
      * @param _ecdhPubKeys The public key used to generated the ECDH shared key
      *                     to decrypt the message
      */
     function genBatchUstPublicSignals(
         uint256 _newStateRoot,
-        uint256[] memory _stateTreeRoots,
         PubKey[] memory _ecdhPubKeys
     ) public view returns (uint256[] memory) {
 
@@ -411,12 +409,10 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
 
         for (uint8 i = 0; i < messageBatchSize; i++) {
-            uint8 x = 8 + i;
-            uint8 y = 8 + messageBatchSize + i * 2;
-            uint8 z = y + 1;
-            publicSignals[x] = _stateTreeRoots[i];
-            publicSignals[y] = _ecdhPubKeys[i].x;
-            publicSignals[z] = _ecdhPubKeys[i].y;
+            uint8 x = 8 + i * 2;
+            uint8 y = x + 1;
+            publicSignals[x] = _ecdhPubKeys[i].x;
+            publicSignals[y] = _ecdhPubKeys[i].y;
         }
 
         return publicSignals;
@@ -426,14 +422,12 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
      * Update the stateRoot if the batch update state root proof is
      * valid.
      * @param _newStateRoot The new state root after all messages are processed
-     * @param _stateTreeRoots The intermediate state roots
      * @param _ecdhPubKeys The public key used to generated the ECDH shared key
      *                     to decrypt the message
      * @param _proof The zk-SNARK proof
      */
     function batchProcessMessage(
         uint256 _newStateRoot,
-        uint256[] memory _stateTreeRoots,
         PubKey[] memory _ecdhPubKeys,
         uint256[8] memory _proof
     ) 
@@ -445,13 +439,6 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
             "MACI: no more messages left to process"
         );
         
-        // Ensure that the array of state tree roots and the array of ECDH
-        // public keys are of the correct length
-        require(
-            _stateTreeRoots.length == messageBatchSize,
-            "MACI: incorrect _stateTreeRoots length"
-        );
-
         require(
             _ecdhPubKeys.length == messageBatchSize,
             "MACI: incorrect _ecdhPubKeys length"
@@ -466,7 +453,6 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         // Assemble the public inputs to the snark
         uint256[] memory publicSignals = genBatchUstPublicSignals(
             _newStateRoot,
-            _stateTreeRoots,
             _ecdhPubKeys
         );
 
