@@ -42,6 +42,13 @@ const SNARK_FIELD_SIZE = BigInt(
 const NOTHING_UP_MY_SLEEVE =
     BigInt(ethers.utils.solidityKeccak256(['bytes'], [ethers.utils.toUtf8Bytes('Maci')])) % SNARK_FIELD_SIZE
 
+// The pubkey is the first Pedersen base point from iden3's circomlib
+// See https://github.com/iden3/circomlib/blob/d5ed1c3ce4ca137a6b3ca48bec4ac12c1b38957a/src/pedersen_printbases.js
+const NOTHING_UP_MY_SLEEVE_PUBKEY: PubKey = [
+    BigInt('10457101036533406547632367118273992217979173478358440826365724437999023779287'),
+    BigInt('19824078218392094440610104313265183977899662750282163392862422243483260492317')
+]
+
 /*
  * Convert a BigInt to a Buffer
  */
@@ -382,6 +389,7 @@ export {
     formatPrivKeyForBabyJub,
     IncrementalQuinTree,
     NOTHING_UP_MY_SLEEVE,
+    NOTHING_UP_MY_SLEEVE_PUBKEY,
     SNARK_FIELD_SIZE,
     bigInt2Buffer,
     packPubKey,

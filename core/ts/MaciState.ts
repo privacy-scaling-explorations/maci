@@ -302,41 +302,50 @@ class MaciState {
         const stateTree = this.genStateTree()
         const stateTreeMaxIndex = BigInt(stateTree.nextIndex) - BigInt(1)
 
-        const userIndex = BigInt(command.stateIndex) - BigInt(1)
-        assert(BigInt(this.users.length) > userIndex)
-
-        const user = this.users[Number(userIndex)]
-
-        const currentVoteWeight = user.votes[Number(command.voteOptionIndex)]
-
         const voteOptionTree = new IncrementalQuinTree(
             this.voteOptionTreeDepth,
             BigInt(0),
         )
 
-        // Tree insertions are expensive, so only insert the necessary votes.
-        // Since the default value is 0, find the last index and insert up to
-        // it
-        let lastZeroIndex = user.votes.length - 1
-        while (BigInt(user.votes[lastZeroIndex]) === BigInt(0) && lastZeroIndex > 0) {
-            lastZeroIndex --
+        let userIndex
+        let currentVoteWeight
+        let stateTreePath
+        let voteOptionTreePath
+        let stateLeaf
+
+        if (Number(command.stateIndex) - 1 < this.users.length) {
+            userIndex = Number(command.stateIndex) - 1
+            const user = this.users[userIndex]
+            currentVoteWeight = user.votes[Number(command.voteOptionIndex)]
+            // Tree insertions are expensive, so only insert the necessary votes.
+            // Since the default value is 0, find the last index and insert up to
+            // it
+            let lastZeroIndex = user.votes.length - 1
+            while (BigInt(user.votes[lastZeroIndex]) === BigInt(0) && lastZeroIndex > 0) {
+                lastZeroIndex --
+            }
+
+            if (lastZeroIndex < Number(command.voteOptionIndex)) {
+                lastZeroIndex = Number(command.voteOptionIndex)
+            }
+
+            for (let i = 0; i <= lastZeroIndex; i ++) {
+                voteOptionTree.insert(user.votes[i])
+            }
+
+            stateTreePath = stateTree.genMerklePath(Number(command.stateIndex))
+            voteOptionTreePath = voteOptionTree.genMerklePath(Number(command.voteOptionIndex))
+            stateLeaf = user.genStateLeaf(this.voteOptionTreeDepth)
+        } else {
+            currentVoteWeight = BigInt(0)
+            stateLeaf = this.zerothStateLeaf
+            stateTreePath = stateTree.genMerklePath(0)
+            voteOptionTree.insert(BigInt(0))
+            voteOptionTreePath = voteOptionTree.genMerklePath(0)
         }
 
-        if (lastZeroIndex < Number(command.voteOptionIndex)) {
-            lastZeroIndex = Number(command.voteOptionIndex)
-        }
-
-        for (let i = 0; i <= lastZeroIndex; i ++) {
-            voteOptionTree.insert(user.votes[i])
-        }
-
-        const voteOptionTreePath = voteOptionTree.genMerklePath(Number(command.voteOptionIndex))
-        assert(IncrementalQuinTree.verifyMerklePath(voteOptionTreePath, voteOptionTree.hashFunc))
-
-        const stateTreePath = stateTree.genMerklePath(Number(command.stateIndex))
-        assert(IncrementalQuinTree.verifyMerklePath(stateTreePath, stateTree.hashFunc))
-
-        const stateLeaf = user.genStateLeaf(this.voteOptionTreeDepth)
+        //assert(IncrementalQuinTree.verifyMerklePath(voteOptionTreePath, voteOptionTree.hashFunc))
+        //assert(IncrementalQuinTree.verifyMerklePath(stateTreePath, stateTree.hashFunc))
 
         return stringifyBigInts({
             'coordinator_public_key': this.coordinatorKeypair.pubKey.asCircuitInputs(),

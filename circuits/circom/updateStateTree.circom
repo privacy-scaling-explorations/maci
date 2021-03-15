@@ -32,13 +32,19 @@ template CheckValidUpdate() {
     signal input sufficient_voice_credits;
     signal input correct_nonce;
     signal input valid_state_leaf_index;
+    signal input valid_state_leaf_index_2;
     signal input valid_vote_options_leaf_index;
 
     signal output out;
 
     component valid_update = IsEqual();
-    valid_update.in[0] <== 5;
-    valid_update.in[1] <== valid_signature + sufficient_voice_credits + correct_nonce + valid_state_leaf_index + valid_vote_options_leaf_index;
+    valid_update.in[0] <== 6;
+    valid_update.in[1] <== valid_signature +
+        sufficient_voice_credits +
+        correct_nonce +
+        valid_state_leaf_index +
+        valid_state_leaf_index_2 +
+        valid_vote_options_leaf_index;
 
     out <== valid_update.out;
 }
@@ -396,6 +402,10 @@ template UpdateStateTree(
     valid_state_leaf_index.in[0] <== decrypted_command_out[CMD_STATE_TREE_INDEX_IDX];
     valid_state_leaf_index.in[1] <== state_tree_max_leaf_index;
 
+    component valid_state_leaf_index_2 = GreaterThan(32);
+    valid_state_leaf_index_2.in[0] <== decrypted_command_out[CMD_STATE_TREE_INDEX_IDX];
+    valid_state_leaf_index_2.in[1] <== 0;
+
     component valid_vote_options_leaf_index = LessEqThan(32);
     valid_vote_options_leaf_index.in[0] <== decrypted_command_out[CMD_VOTE_OPTION_INDEX_IDX];
     valid_vote_options_leaf_index.in[1] <== vote_options_max_leaf_index;
@@ -406,6 +416,7 @@ template UpdateStateTree(
     check_valid_update.sufficient_voice_credits <== sufficient_voice_credits.out;
     check_valid_update.correct_nonce <== correct_nonce.out;
     check_valid_update.valid_state_leaf_index <== valid_state_leaf_index.out;
+    check_valid_update.valid_state_leaf_index_2 <== valid_state_leaf_index_2.out;
     check_valid_update.valid_vote_options_leaf_index <== valid_vote_options_leaf_index.out;
 
     // Compute the Merkle root of the new state tree
