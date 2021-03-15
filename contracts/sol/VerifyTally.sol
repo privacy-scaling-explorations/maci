@@ -18,7 +18,7 @@ contract VerifyTally is Hasher {
         uint256 current = _leaf;
         uint8 k;
 
-        uint256[] memory level = new uint256[](LEAVES_PER_NODE);
+        uint256[LEAVES_PER_NODE] memory level;
 
         for (uint8 i = 0; i < _depth; i ++) {
             for (uint8 j = 0; j < LEAVES_PER_NODE; j ++) {

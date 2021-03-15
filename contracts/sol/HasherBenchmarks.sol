@@ -6,7 +6,7 @@ import { Hasher } from "./Hasher.sol";
 contract HasherBenchmarks is Hasher {
     // These functions are used to measure gas consumption so they shouldn't be
     // marked as pure
-    function hash5Benchmark(uint256[] memory array) public {
+    function hash5Benchmark(uint256[5] memory array) public {
         hash5(array);
     }
 

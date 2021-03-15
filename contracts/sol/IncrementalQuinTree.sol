@@ -88,7 +88,7 @@ contract IncrementalQuinTree is Ownable, Hasher {
         uint256 currentZero = _zeroValue;
 
         // hash5 requires a uint256[] memory input, so we have to use temp
-        uint256[] memory temp = new uint256[](LEAVES_PER_NODE);
+        uint256[LEAVES_PER_NODE] memory temp;
 
         for (uint8 i = 0; i < _treeLevels; i++) {
             for (uint8 j = 0; j < LEAVES_PER_NODE; j ++) {
@@ -128,7 +128,7 @@ contract IncrementalQuinTree is Ownable, Hasher {
         uint256 currentLevelHash = _leaf;
 
         // hash5 requires a uint256[] memory input, so we have to use temp
-        uint256[] memory temp = new uint256[](LEAVES_PER_NODE);
+        uint256[LEAVES_PER_NODE] memory temp;
 
         // The leaf's relative position within its node
         uint256 m = currentIndex % LEAVES_PER_NODE;

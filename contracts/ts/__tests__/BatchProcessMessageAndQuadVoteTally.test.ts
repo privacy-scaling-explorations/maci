@@ -534,7 +534,6 @@ const testTally = async (
     const startIndex = BigInt(0)
 
     const tally = maciState.computeBatchVoteTally(startIndex, quadVoteTallyBatchSize)
-    debugger
     const newResultsSalt = genRandomSalt()
     const currentResultsSalt = BigInt(0)
 

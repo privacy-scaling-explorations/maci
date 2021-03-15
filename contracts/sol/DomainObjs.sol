@@ -14,7 +14,7 @@ contract DomainObjs is Hasher, MACISharedObjs {
     }
 
     function hashStateLeaf(StateLeaf memory _stateLeaf) public pure returns (uint256) {
-        uint256[] memory plaintext = new uint256[](5);
+        uint256[5] memory plaintext;
         plaintext[0] = _stateLeaf.pubKey.x;
         plaintext[1] = _stateLeaf.pubKey.y;
         plaintext[2] = _stateLeaf.voteOptionTreeRoot;
