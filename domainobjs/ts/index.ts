@@ -19,7 +19,8 @@ import {
     genEcdhSharedKey,
     packPubKey,
     unpackPubKey,
-    SNARK_FIELD_SIZE
+    SNARK_FIELD_SIZE,
+    NOTHING_UP_MY_SLEEVE_PUBKEY,
 } from 'maci-crypto'
 
 const SERIALIZED_PRIV_KEY_PREFIX = 'macisk.'
@@ -288,7 +289,7 @@ class StateLeaf implements IStateLeaf {
         emptyVoteOptionTreeRoot: BigInt,
     ): StateLeaf {
         return new StateLeaf(
-            new PubKey([BigInt(0), BigInt(0)]),
+            new PubKey(NOTHING_UP_MY_SLEEVE_PUBKEY),
             emptyVoteOptionTreeRoot,
             BigInt(0),
             BigInt(0),
@@ -296,9 +297,8 @@ class StateLeaf implements IStateLeaf {
     }
 
     public static genRandomLeaf() {
-        const keypair = new Keypair()
         return new StateLeaf(
-            keypair.pubKey,
+            new PubKey(NOTHING_UP_MY_SLEEVE_PUBKEY),
             genRandomSalt(),
             genRandomSalt(),
             genRandomSalt(),

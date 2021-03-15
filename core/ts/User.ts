@@ -6,6 +6,7 @@ import {
 
 import {
     IncrementalQuinTree,
+    NOTHING_UP_MY_SLEEVE_PUBKEY,
 } from 'maci-crypto'
 
 /*
@@ -71,7 +72,7 @@ class User {
         }
 
         return new User(
-            new PubKey([0, 0].map(BigInt)),
+            new PubKey(NOTHING_UP_MY_SLEEVE_PUBKEY),
             votes,
             BigInt(0),
             BigInt(0),

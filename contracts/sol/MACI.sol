@@ -538,10 +538,11 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
     }
     
     function hashedBlankStateLeaf() public view returns (uint256) {
+        // The pubkey is the first Pedersen base point from iden3's circomlib
         StateLeaf memory stateLeaf = StateLeaf({
             pubKey: PubKey({
-                x: 0,
-                y: 0
+                x: 10457101036533406547632367118273992217979173478358440826365724437999023779287,
+                y: 19824078218392094440610104313265183977899662750282163392862422243483260492317
             }),
             voteOptionTreeRoot: emptyVoteOptionTreeRoot,
             voiceCreditBalance: 0,
