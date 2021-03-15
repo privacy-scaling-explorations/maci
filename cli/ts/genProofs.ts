@@ -193,7 +193,6 @@ const genProofs = async (args: any) => {
         :
         Math.floor(numMessages / messageBatchSize) * messageBatchSize
 
-    const numBatches = 1 + (currentMessageBatchIndex / messageBatchSize)
 
     console.log('Generating proofs of message processing...')
     let proofNum = 1

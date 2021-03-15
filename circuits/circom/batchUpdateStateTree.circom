@@ -82,7 +82,7 @@ template BatchUpdateStateTree(
     // State tree
     var state_tree_data_length = 5;
     signal input state_tree_max_leaf_index;
-    signal input state_tree_root[batch_size];
+    signal private input state_tree_root[batch_size];
     signal private input state_tree_path_elements[batch_size][state_tree_depth][1];
     signal private input state_tree_path_index[batch_size][state_tree_depth];
     signal private input state_tree_data_raw[batch_size][state_tree_data_length];

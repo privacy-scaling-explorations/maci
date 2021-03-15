@@ -165,8 +165,6 @@ const proveOnChain = async (args: any) => {
         return
     }
 
-    const unserialisedPrivkey = PrivKey.unserialize(coordinatorPrivkey)
-
     const maciContract = new ethers.Contract(
         maciAddress,
         maciContractAbi,
@@ -245,7 +243,7 @@ const proveOnChain = async (args: any) => {
         console.log(`\nProgress: ${i+1}/${data.processProofs.length}`)
         const p = data.processProofs[i]
 
-        const circuitInputs = p.circuitInputs
+        //const circuitInputs = p.circuitInputs
         const stateRootAfter = BigInt(p.stateRootAfter)
         const proof = p.proof
         const ecdhPubKeys = p.ecdhPubKeys.map((x) => PubKey.unserialize(x))
@@ -257,7 +255,6 @@ const proveOnChain = async (args: any) => {
         try {
             tx = await maciContract.batchProcessMessage(
                 '0x' + stateRootAfter.toString(16),
-                circuitInputs['state_tree_root'].map((x) => x.toString()),
                 ecdhPubKeys.map((x) => x.asContractParam()),
                 formattedProof,
                 { gasLimit: 2000000 },
