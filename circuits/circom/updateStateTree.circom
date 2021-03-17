@@ -34,13 +34,15 @@ template CheckValidUpdate() {
     signal input valid_state_leaf_index;
     signal input valid_state_leaf_index_2;
     signal input valid_vote_options_leaf_index;
+    signal input user_vote_weight_lt;
 
     signal output out;
 
     component valid_update = IsEqual();
-    valid_update.in[0] <== 6;
+    valid_update.in[0] <== 7;
     valid_update.in[1] <== valid_signature +
         sufficient_voice_credits +
+        user_vote_weight_lt +
         correct_nonce +
         valid_state_leaf_index +
         valid_state_leaf_index_2 +
@@ -390,23 +392,27 @@ template UpdateStateTree(
     valid_signature.in[0] <== signature_verifier_valid;
     valid_signature.in[1] <== 1;
 
-    component sufficient_voice_credits = GreaterEqThan(32);
+    component sufficient_voice_credits = GreaterEqThan(252);
     sufficient_voice_credits.in[0] <== new_voice_credit_balance;
     sufficient_voice_credits.in[1] <== 0;
+
+    component user_vote_weight_lt = LessEqThan(252);
+    user_vote_weight_lt.in[0] <== decrypted_command_out[CMD_VOTE_WEIGHT_IDX];
+    user_vote_weight_lt.in[1] <== 4294967296;
 
     component correct_nonce = IsEqual();
     correct_nonce.in[0] <== decrypted_command_out[CMD_NONCE_IDX];
     correct_nonce.in[1] <== state_tree_data_raw[STATE_TREE_NONCE_IDX] + 1;
 
-    component valid_state_leaf_index = LessEqThan(32);
+    component valid_state_leaf_index = LessEqThan(252);
     valid_state_leaf_index.in[0] <== decrypted_command_out[CMD_STATE_TREE_INDEX_IDX];
     valid_state_leaf_index.in[1] <== state_tree_max_leaf_index;
 
-    component valid_state_leaf_index_2 = GreaterThan(32);
+    component valid_state_leaf_index_2 = GreaterThan(252);
     valid_state_leaf_index_2.in[0] <== decrypted_command_out[CMD_STATE_TREE_INDEX_IDX];
     valid_state_leaf_index_2.in[1] <== 0;
 
-    component valid_vote_options_leaf_index = LessEqThan(32);
+    component valid_vote_options_leaf_index = LessEqThan(252);
     valid_vote_options_leaf_index.in[0] <== decrypted_command_out[CMD_VOTE_OPTION_INDEX_IDX];
     valid_vote_options_leaf_index.in[1] <== vote_options_max_leaf_index;
 
@@ -414,6 +420,7 @@ template UpdateStateTree(
     component check_valid_update = CheckValidUpdate();
     check_valid_update.valid_signature <== valid_signature.out;
     check_valid_update.sufficient_voice_credits <== sufficient_voice_credits.out;
+    check_valid_update.user_vote_weight_lt <== user_vote_weight_lt.out;
     check_valid_update.correct_nonce <== correct_nonce.out;
     check_valid_update.valid_state_leaf_index <== valid_state_leaf_index.out;
     check_valid_update.valid_state_leaf_index_2 <== valid_state_leaf_index_2.out;

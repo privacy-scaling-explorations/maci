@@ -71,6 +71,11 @@ import {
     configureSubparser as configureSubparserForReplay,
 } from './replay'
 
+import {
+    replayCsv,
+    configureSubparser as configureSubparserForReplayCsv,
+} from './replayCsv'
+
 const main = async () => {
     const parser = new argparse.ArgumentParser({ 
         description: 'Minimal Anti-Collusion Infrastructure',
@@ -120,6 +125,9 @@ const main = async () => {
     // Subcommand: replay
     configureSubparserForReplay(subparsers)
 
+    // Subcommand: replayCsv
+    configureSubparserForReplayCsv(subparsers)
+
     const args = parser.parseArgs()
 
     // Execute the subcommand method
@@ -149,6 +157,8 @@ const main = async () => {
         await download(args)
     } else if (args.subcommand === 'replay') {
         await replay(args)
+    } else if (args.subcommand === 'replayCsv') {
+        await replayCsv(args)
     }
 }
 
