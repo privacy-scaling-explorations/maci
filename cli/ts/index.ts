@@ -167,6 +167,12 @@ if (require.main === module) {
 }
 
 export {
+    genProofs,
+    proveOnChain,
+    coordinatorReset,
+    download,
+    replay,
+    replayCsv,
     verify,
     processAndTallyWithoutProofs,
     calcBinaryTreeDepthFromMaxLeaves,

@@ -8,7 +8,6 @@ import {
 
 import {
     maciContractAbi,
-    formatProofForVerifierContract,
 } from 'maci-contracts'
 
 import {
@@ -33,7 +32,6 @@ import {
 } from 'maci-core'
 
 import {
-    delay,
     promptPwd,
     validateEthAddress,
     contractExists,
@@ -105,6 +103,15 @@ const configureSubparser = (subparsers: any) => {
         }
     )
 
+    parser.addArgument(
+        ['-z', '--final-zeroth-leaf'],
+        {
+            required: false,
+            type: 'string',
+            help: 'The serialized zeroth state leaf to update the state tree after processing the final message batch.',
+        }
+    )
+
     // TODO: support resumable proof generation
     //parser.addArgument(
         //['-r', '--resume'],
@@ -116,6 +123,20 @@ const configureSubparser = (subparsers: any) => {
 }
 
 const genProofs = async (args: any) => {
+    // Zeroth leaf
+    const serialized = args.final_zeroth_leaf
+    let zerothLeaf: StateLeaf
+    if (serialized) {
+        try {
+            zerothLeaf = StateLeaf.unserialize(serialized)
+        } catch {
+            console.error('Error: invalid zeroth state leaf')
+            return
+        }
+    } else {
+        zerothLeaf = StateLeaf.genRandomLeaf()
+    }
+
     // MACI contract
     if (!validateEthAddress(args.contract)) {
         console.error('Error: invalid MACI contract address')
@@ -201,7 +222,10 @@ const genProofs = async (args: any) => {
         console.log(`\nProgress: ${proofNum} / ${1 + currentMessageBatchIndex / messageBatchSize}; batch index: ${i}`)
         proofNum ++
 
-        const randomStateLeaf = StateLeaf.genRandomLeaf()
+        const randomStateLeaf = i > 0 ?
+            StateLeaf.genRandomLeaf()
+            :
+            zerothLeaf
         const circuitInputs = maciState.genBatchUpdateStateTreeCircuitInputs(
             i,
             messageBatchSize,
@@ -338,7 +362,6 @@ const genProofs = async (args: any) => {
             configType = 'test'
             circuitName = 'qvt'
         }
-        console.log(configType)
 
         let result
         try {
