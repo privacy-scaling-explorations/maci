@@ -3,6 +3,7 @@ import {
     genJsonRpcDeployer,
     deployMaci,
     deployConstantInitialVoiceCreditProxy,
+    deployUserDefinedInitialVoiceCreditProxy,
     deployFreeForAllSignUpGatekeeper,
 } from 'maci-contracts'
 
@@ -178,6 +179,14 @@ const configureSubparser = (subparsers: any) => {
         }
     )
 
+    createParser.addArgument(
+        ['-n', '--debug-mode'],
+        {
+            action: 'storeTrue',
+            help: 'If specified, deploys the MACI contract in debug mode',
+        }
+    )
+
 }
 
 const create = async (args: any) => {
@@ -239,6 +248,14 @@ const create = async (args: any) => {
 
     // Tally batch size
     const tallyBatchSize = args.tally_batch_size ? args.tally_batch_size : DEFAULT_TALLY_BATCH_SIZE
+
+    const debugMode = args.debug_mode
+    if (debugMode) {
+        if (signupDuration !== 0 && votingDuration !== 0) {
+            console.error('Error: in debug mode, the signup and voting durations should be set to 0')
+            return
+        }
+    }
 
     const isTest = maxMessages <= 16 && maxUsers <= 15 && maxVoteOptions <= 25
 
@@ -311,14 +328,24 @@ const create = async (args: any) => {
 
     let initialVoiceCreditProxyContractAddress = ''
     if (initialVoiceCreditProxy == undefined) {
-        // Deploy a ConstantInitialVoiceCreditProxy contract
-        const c = await deployConstantInitialVoiceCreditProxy(
-            deployer,
-            initialVoiceCredits,
-            true,
-        )
-        await c.deployTransaction.wait()
-        initialVoiceCreditProxyContractAddress = c.address
+        if (debugMode) {
+            // Deploy a UserDefinedInitialVoiceCreditProxy contract
+            const c = await deployUserDefinedInitialVoiceCreditProxy(
+                deployer,
+                true,
+            )
+            await c.deployTransaction.wait()
+            initialVoiceCreditProxyContractAddress = c.address
+        } else {
+            // Deploy a ConstantInitialVoiceCreditProxy contract
+            const c = await deployConstantInitialVoiceCreditProxy(
+                deployer,
+                initialVoiceCredits,
+                true,
+            )
+            await c.deployTransaction.wait()
+            initialVoiceCreditProxyContractAddress = c.address
+        }
     } else {
         initialVoiceCreditProxyContractAddress = initialVoiceCreditProxy
     }
