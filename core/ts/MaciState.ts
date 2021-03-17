@@ -199,6 +199,16 @@ class MaciState {
         const sharedKey = Keypair.genEcdhSharedKey(this.coordinatorKeypair.privKey, encPubKey)
         const { command, signature } = Command.decrypt(message, sharedKey)
 
+        if (
+            command.stateIndex < BigInt(0) ||
+            command.newVoteWeight < BigInt(0) ||
+            command.nonce < BigInt(0) ||
+            command.salt < BigInt(0) ||
+            command.voteOptionIndex < BigInt(0)
+        ) {
+            return
+        }
+
         // If the state tree index in the command is invalid, do nothing
         if (command.stateIndex > BigInt(this.users.length)) {
             return
@@ -313,7 +323,13 @@ class MaciState {
         let voteOptionTreePath
         let stateLeaf
 
-        if (Number(command.stateIndex) - 1 < this.users.length) {
+        const stateIndex = Number(command.stateIndex)
+        debugger
+        if (
+                Math.floor(stateIndex) === stateIndex &&
+                stateIndex >= 0 &&
+                Number(command.stateIndex) - 1 < this.users.length
+        ) {
             userIndex = Number(command.stateIndex) - 1
             const user = this.users[userIndex]
             currentVoteWeight = user.votes[Number(command.voteOptionIndex)]

@@ -61,6 +61,16 @@ import {
     configureSubparser as configureSubparserForCoordinatorReset,
 } from './coordinatorReset'
 
+import {
+    download,
+    configureSubparser as configureSubparserForDownload,
+} from './download'
+
+import {
+    replay,
+    configureSubparser as configureSubparserForReplay,
+} from './replay'
+
 const main = async () => {
     const parser = new argparse.ArgumentParser({ 
         description: 'Minimal Anti-Collusion Infrastructure',
@@ -104,6 +114,12 @@ const main = async () => {
     // Subcommand: coordinatorReset
     configureSubparserForCoordinatorReset(subparsers)
 
+    // Subcommand: download
+    configureSubparserForDownload(subparsers)
+
+    // Subcommand: replay
+    configureSubparserForReplay(subparsers)
+
     const args = parser.parseArgs()
 
     // Execute the subcommand method
@@ -129,6 +145,10 @@ const main = async () => {
         await processAndTallyWithoutProofs(args)
     } else if (args.subcommand === 'coordinatorReset') {
         await coordinatorReset(args)
+    } else if (args.subcommand === 'download') {
+        await download(args)
+    } else if (args.subcommand === 'replay') {
+        await replay(args)
     }
 }
 
