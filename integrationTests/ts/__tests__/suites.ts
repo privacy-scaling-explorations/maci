@@ -78,8 +78,8 @@ const executeSuite = async (data: any, expect: any) => {
         maxVoteOptions,
     )
 
-    const signupDuration = data.numUsers * 7
-    const votingDuration = data.numUsers * 7
+    const signupDuration = 0
+    const votingDuration = 0
 
     // Run the create subcommand
     const createCommand = `node ../cli/build/index.js create` +
@@ -114,7 +114,7 @@ const executeSuite = async (data: any, expect: any) => {
         // Run the signup command
         const signupCommand = `node ../cli/build/index.js signup` +
             ` -p ${userKeypair.pubKey.serialize()}` +
-            ` -d ${userPrivKey}` +
+            ` -d ${deployerPrivKey}` +
             ` -x ${maciAddress}`
 
         //console.log(signupCommand)
@@ -137,11 +137,13 @@ const executeSuite = async (data: any, expect: any) => {
         provider,
     )
 
+    console.log(await maciContract.votingDurationSeconds())
+
     expect(maciState.genStateRoot().toString()).toEqual((await maciContract.getStateTreeRoot()).toString())
 
     await maciContract.signUpTimestamp()
 
-    await delay(1000 * signupDuration)
+    //await delay(1000 * signupDuration)
 
     // Publish messages
     console.log(`Publishing messages`)
@@ -162,7 +164,7 @@ const executeSuite = async (data: any, expect: any) => {
         const publishCommand = `node ../cli/build/index.js publish` +
             ` -sk ${userKeypair.privKey.serialize()}` +
             ` -p ${userKeypair.pubKey.serialize()}` +
-            ` -d ${userPrivKey}` +
+            ` -d ${deployerPrivKey}` +
             ` -x ${maciAddress}` +
             ` -i ${stateIndex}` +
             ` -v ${voteOptionIndex}` +
@@ -217,7 +219,7 @@ const executeSuite = async (data: any, expect: any) => {
     // Check whether the message tree root is correct
     expect(maciState.genMessageRoot().toString()).toEqual((await maciContract.getMessageTreeRoot()).toString())
 
-    await delay(1000 * votingDuration)
+    //await delay(1000 * votingDuration)
 
     const tallyFile = path.join(process.cwd(), 'tally.json')
     const proofsFile = path.join(process.cwd(), 'proofs.json')

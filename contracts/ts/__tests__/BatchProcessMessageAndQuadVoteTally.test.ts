@@ -209,13 +209,13 @@ describe('BatchProcessMessage', () => {
         })
 
         it('batchProcessMessage should verify a proof and update the stateRoot', async () => {
-            // Move forward in time
-            await timeTravel(
-                deployer.provider,
-                config.maci.signUpDurationInSeconds +
-                config.maci.votingDurationInSeconds +
-                1,
-            )
+            //// Move forward in time
+            //await timeTravel(
+                //deployer.provider,
+                //config.maci.signUpDurationInSeconds +
+                //config.maci.votingDurationInSeconds +
+                //1,
+            //)
 
             const start = Date.now()
             // Generate circuit inputs

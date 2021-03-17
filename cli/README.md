@@ -69,8 +69,8 @@ MACI: 0xE28158eCFde143e2536761c3254C7C31efd97271
 | Maximum number of users | `-u` or `--max-users` | Default: 15 |
 | Maximum number of messages | `-m` or `--max-messages` | Default: 15 |
 | Maximum number of vote options | `-v` or `--max-vote-options` | Default: 25 |
-| Sign-up duration | `-s` or `--signup-duration` | The sign-up duration, in seconds. Default: 3600. |
-| Voting duration | `-o` or `--voting-duration` | The voting duration, in seconds. Default: 3600. |
+| Sign-up duration | `-s` or `--signup-duration` | The sign-up duration, in seconds. |
+| Voting duration | `-o` or `--voting-duration` | The voting duration, in seconds. |
 | Initial voice credits | `-c` or `--initial-voice-credits` | Default: 100 |
 | Initial voice credit proxy contract | `-i` or `--initial-vc-proxy` | If specified, deploys the MACI contract with this address as the initial voice credit proxy constructor argument. Otherwise, deploys a ConstantInitialVoiceCreditProxy contract with the above-specified value. |
 | Signup gatekeeper contract | `-g` or `--signup-gatekeeper` | If specified, deploys the MACI contract with this address as the signup gatekeeper constructor argument. Otherwise, deploys a gatekeeper contract which allows any address to sign up. | 

@@ -115,6 +115,7 @@ const configureSubparser = (subparsers: any) => {
         ['-s', '--signup-duration'],
         {
             action: 'store',
+            'default': DEFAULT_SIGNUP_DURATION,
             type: 'int',
             help: 'The sign-up duration in seconds. Default: 3600',
         }
@@ -124,6 +125,7 @@ const configureSubparser = (subparsers: any) => {
         ['-o', '--voting-duration'],
         {
             action: 'store',
+            'default': DEFAULT_VOTING_DURATION,
             type: 'int',
             help: 'The voting duration in seconds. Default: 3600',
         }
@@ -227,10 +229,10 @@ const create = async (args: any) => {
     const maxVoteOptions = args.max_vote_options ? args.max_vote_options : DEFAULT_MAX_VOTE_OPTIONS
 
     // Signup duration
-    const signupDuration = args.signup_duration ? args.signup_duration : DEFAULT_SIGNUP_DURATION
+    const signupDuration = args.signup_duration
 
     // Voting duration
-    const votingDuration = args.voting_duration ? args.voting_duration : DEFAULT_VOTING_DURATION
+    const votingDuration = args.voting_duration
 
     // Message batch size
     const messageBatchSize = args.message_batch_size ? args.message_batch_size : DEFAULT_MESSAGE_BATCH_SIZE
