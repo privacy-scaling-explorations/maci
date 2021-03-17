@@ -8,8 +8,6 @@
         "hardhat": "./scripts/runHardhat.sh",
         "compileSol": "./scripts/compileSol.sh",
         "build": "tsc",
-        "deploy": "node build/deploy.js -o deployedAddresses.json",
-        "deploy-debug": "node --inspect-brk build/deploy.js -o deployedAddresses.json",
         "test-maci": "jest MACI.test.ts",
         "test-maci-debug": "node --inspect-brk ./node_modules/.bin/jest MACI.test.ts",
         "test-hasher": "jest Hasher.test.ts",
@@ -31,6 +29,7 @@
         "argparse": "^1.0.10",
         "circomlib": "0.2.4",
         "ethers": "^4.0.45",
+        "hardhat-contract-sizer": "^2.0.3",
         "module-alias": "^2.2.2"
     },
     "devDependencies": {

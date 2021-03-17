@@ -7,7 +7,7 @@ import {
 
 import {
     maciContractAbi,
-    loadAbi,
+    parseArtifact,
 } from './'
 
 import {
@@ -38,7 +38,7 @@ const genMaciStateFromContract = async (
     // Verify and sort pollIds
     assert(pollId >= 0)
 
-    const pollContractAbi = loadAbi('Poll.abi')
+    const [ pollContractAbi ] = parseArtifact('Poll')
 
     const maciContract = new ethers.Contract(
         address,
@@ -217,9 +217,10 @@ const genMaciStateFromContract = async (
     const onChainBatchSizes = await pollContract.batchSizes()
 
     assert(vkRegistryAddress === await maciContract.vkRegistry())
+    const [ VkRegistryAbi ] = parseArtifact('VkRegistry')
     const vkRegistryContract = new ethers.Contract(
         vkRegistryAddress,
-        loadAbi('VkRegistry.abi'),
+        VkRegistryAbi,
         provider,
     )
 
