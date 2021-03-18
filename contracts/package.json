@@ -29,7 +29,7 @@
     "dependencies": {
         "@openzeppelin/contracts": "^3.3.0-solc-0.7",
         "argparse": "^1.0.10",
-        "circomlib": "0.2.4",
+        "circomlib": "0.5.1",
         "ethers": "^4.0.45",
         "module-alias": "^2.2.2"
     },

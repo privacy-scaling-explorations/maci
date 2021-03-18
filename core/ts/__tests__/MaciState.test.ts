@@ -117,8 +117,7 @@ describe('MaciState', () => {
             )
 
             const command = new Command(
-                //stateIndex,
-                BigInt(0),
+                stateIndex,
                 userKeypair.pubKey,
                 voteOptionIndex,
                 voteWeight,
@@ -157,7 +156,7 @@ describe('MaciState', () => {
 
             const unpacked = MaciState.unpackProcessMessageSmallVals(packedVals)
             expect(unpacked.maxVoteOptions.toString()).toEqual(maxVoteOptions.toString())
-            //expect(unpacked.maxUsers.toString()).toEqual(maxUsers.toString())
+            expect(unpacked.numUsers.toString()).toEqual(numUsers.toString())
             expect(unpacked.batchStartIndex.toString()).toEqual(batchStartIndex.toString())
             expect(unpacked.batchEndIndex.toString()).toEqual(batchEndIndex.toString())
         })

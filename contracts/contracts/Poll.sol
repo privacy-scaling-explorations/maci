@@ -268,8 +268,8 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
      * This function also enqueues the message.
      * @param _message The message to publish
      * @param _encPubKey An epheremal public key which can be combined with the
-     *     coordinator's private key to generate an ECDH shared key which which
-     *     was used to encrypt the message.
+     *     coordinator's private key to generate an ECDH shared key with which
+     *     to encrypt the message.
      */
     function publishMessage(
         Message memory _message,
@@ -375,7 +375,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
 
         uint256 stateRoot = maci.getStateAqRoot();
         // Set currentSbCommitment
-        uint256[] memory sb = new uint256[](3);
+        uint256[3] memory sb;
         sb[0] = stateRoot;
         sb[1] = emptyBallotRoots[treeDepths.voteOptionTreeDepth];
         sb[2] = uint256(0);

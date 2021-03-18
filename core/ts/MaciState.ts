@@ -284,9 +284,11 @@ class Poll {
         assert(this.currentMessageBatchIndex % batchSize === 0)
 
         // Generate circuit inputs
-        const circuitInputs = stringifyBigInts(this.genProcessMessagesCircuitInputsPartial(
-            this.currentMessageBatchIndex
-        ))
+        const circuitInputs = stringifyBigInts(
+            this.genProcessMessagesCircuitInputsPartial(
+                this.currentMessageBatchIndex
+            )
+        )
 
         const currentStateLeaves: StateLeaf[] = []
         const currentStateLeavesPathElements: any[] = []
@@ -445,30 +447,6 @@ class Poll {
         for (let i = 0; i < messageBatchSize; i ++) {
             const stateIndex = Number(commands[i].stateIndex)
             stateIndices.push(stateIndex)
-        }
-        const maxStateIndex = stateIndices.reduce((a, b) => Math.max(a, b))
-        
-        const emptyBallotHash = this.ballotTree.zeroValue
-
-        // Whether this batch is the first one (from the end)
-        const isFirstBatch =
-            (this.messageAq.numLeaves - _index) >= messageBatchSize
-
-        let ballotTree
-        if (isFirstBatch) {
-            ballotTree = new IncrementalQuinTree(
-                STATE_TREE_DEPTH,
-                emptyBallotHash,
-            )
-            for (let i = 0; i < maxStateIndex; i ++) {
-                ballotTree.insert(emptyBallotHash)
-            }
-        } else {
-            ballotTree = this.ballotTree.copy()
-        }
-
-        while ((ballotTree.leaves.length - 1) % messageBatchSize > 0) {
-            ballotTree.insert(emptyBallotHash)
         }
 
         const msgRoot = this.messageAq.getRoot(this.treeDepths.messageTreeDepth)
