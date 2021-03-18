@@ -187,14 +187,20 @@ const proveOnChain = async (args: any) => {
 
     // Read the proof file
     let data
-    try {
-        data = JSON.parse(fs.readFileSync(args.proof_file).toString())
-        if (data.processProofs == undefined || data.tallyProofs == undefined) {
-            throw new Error()
+    if (typeof args.proof_file === 'object' && args.proof_file !== null) {
+        // Argument is a javascript object
+        data = args.proof_file
+    } else {
+        // Argument is a filename
+        try {
+            data = JSON.parse(fs.readFileSync(args.proof_file).toString())
+            if (data.processProofs == undefined || data.tallyProofs == undefined) {
+                throw new Error()
+            }
+        } catch {
+            console.error('Error: could not parse the proof file')
+            return
         }
-    } catch {
-        console.error('Error: could not parse the proof file')
-        return
     }
 
     // Check that the proof file is complete

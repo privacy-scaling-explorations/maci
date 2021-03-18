@@ -293,7 +293,9 @@ const genProofs = async (args: any) => {
             randomStateLeaf: randomStateLeaf.serialize(),
         }))
 
-        saveOutput(outputFile, processProofs, tallyProofs)
+        if (outputFile) {
+            saveOutput(outputFile, processProofs, tallyProofs)
+        }
     }
 
     // Tally votes
@@ -456,7 +458,9 @@ const genProofs = async (args: any) => {
             totalVotes,
         }))
 
-        saveOutput(outputFile, processProofs, tallyProofs)
+        if (outputFile) {
+            saveOutput(outputFile, processProofs, tallyProofs)
+        }
     }
 
     const tallyFileData = {
@@ -479,8 +483,14 @@ const genProofs = async (args: any) => {
         },
     }
 
-    fs.writeFileSync(args.tally_file, JSON.stringify(tallyFileData, null, 4))
+    if (args.tally_file) {
+        fs.writeFileSync(args.tally_file, JSON.stringify(tallyFileData, null, 4))
+    }
     console.log('OK')
+    return {
+        proofs: { processProofs, tallyProofs },
+        tally: tallyFileData,
+    }
 }
 
 const saveOutput = (outputFile: string, processProofs: any, tallyProofs: any) => {
