@@ -1,17 +1,10 @@
 import {
-    SnarkProof,
-} from 'libsemaphore'
-
-import {
     deployMaci,
     deployFreeForAllSignUpGatekeeper,
     deployConstantInitialVoiceCreditProxy,
 } from './'
 
-const formatProofForVerifierContract = (
-    _proof: SnarkProof,
-) => {
-
+const formatProofForVerifierContract = (_proof: any) => {
     return ([
         _proof.pi_a[0],
         _proof.pi_a[1],

@@ -71,7 +71,11 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
     // immediately upon deployment.
     uint256 public signUpTimestamp;
 
-    // Duration of the sign-up and voting periods, in seconds
+    // Duration of the sign-up and voting periods, in seconds. If these values
+    // are set to 0, the contract will be in debug mode - that is, only the
+    // coordinator may sign up and publish messages. This makes it possible to
+    // submit a large number of signups and messages without having to do so
+    // before the signup and voting deadlines.
     uint256 public signUpDurationSeconds;
     uint256 public votingDurationSeconds;
 
@@ -229,7 +233,9 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
      * current block time is before the sign-up deadline.
      */
     modifier isBeforeSignUpDeadline() {
-        require(block.timestamp < calcSignUpDeadline(), "MACI: the sign-up period has passed");
+        if (signUpDurationSeconds != 0) {
+            require(block.timestamp < calcSignUpDeadline(), "MACI: the sign-up period has passed");
+        }
         _;
     }
 
@@ -238,7 +244,9 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
      * current block time is after or equal to the sign-up deadline.
      */
     modifier isAfterSignUpDeadline() {
-        require(block.timestamp >= calcSignUpDeadline(), "MACI: the sign-up period is not over");
+        if (signUpDurationSeconds != 0) {
+            require(block.timestamp >= calcSignUpDeadline(), "MACI: the sign-up period is not over");
+        }
         _;
     }
 
@@ -254,7 +262,9 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
      * current block time is before the voting deadline.
      */
     modifier isBeforeVotingDeadline() {
-        require(block.timestamp < calcVotingDeadline(), "MACI: the voting period has passed");
+        if (votingDurationSeconds != 0) {
+            require(block.timestamp < calcVotingDeadline(), "MACI: the voting period has passed");
+        }
         _;
     }
 
@@ -263,7 +273,9 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
      * current block time is after or equal to the voting deadline.
      */
     modifier isAfterVotingDeadline() {
-        require(block.timestamp >= calcVotingDeadline(), "MACI: the voting period is not over");
+        if (votingDurationSeconds != 0) {
+            require(block.timestamp >= calcVotingDeadline(), "MACI: the voting period is not over");
+        }
         _;
     }
 
@@ -285,6 +297,13 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
     ) 
     isBeforeSignUpDeadline
     public {
+
+        if (signUpDurationSeconds == 0) {
+            require(
+                msg.sender == coordinatorAddress,
+                "MACI: only the coordinator can submit signups in debug mode"
+            );
+        }
 
         require(numSignUps < maxUsers, "MACI: maximum number of signups reached");
 
@@ -339,6 +358,12 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
     ) 
     isBeforeVotingDeadline
     public {
+        if (signUpDurationSeconds == 0) {
+            require(
+                msg.sender == coordinatorAddress,
+                "MACI: only the coordinator can publish messages in debug mode"
+            );
+        }
 
         require(numMessages < maxMessages, "MACI: message limit reached");
 

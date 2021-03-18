@@ -61,6 +61,21 @@ import {
     configureSubparser as configureSubparserForCoordinatorReset,
 } from './coordinatorReset'
 
+import {
+    download,
+    configureSubparser as configureSubparserForDownload,
+} from './download'
+
+import {
+    replay,
+    configureSubparser as configureSubparserForReplay,
+} from './replay'
+
+import {
+    replayCsv,
+    configureSubparser as configureSubparserForReplayCsv,
+} from './replayCsv'
+
 const main = async () => {
     const parser = new argparse.ArgumentParser({ 
         description: 'Minimal Anti-Collusion Infrastructure',
@@ -104,6 +119,15 @@ const main = async () => {
     // Subcommand: coordinatorReset
     configureSubparserForCoordinatorReset(subparsers)
 
+    // Subcommand: download
+    configureSubparserForDownload(subparsers)
+
+    // Subcommand: replay
+    configureSubparserForReplay(subparsers)
+
+    // Subcommand: replayCsv
+    configureSubparserForReplayCsv(subparsers)
+
     const args = parser.parseArgs()
 
     // Execute the subcommand method
@@ -129,6 +153,12 @@ const main = async () => {
         await processAndTallyWithoutProofs(args)
     } else if (args.subcommand === 'coordinatorReset') {
         await coordinatorReset(args)
+    } else if (args.subcommand === 'download') {
+        await download(args)
+    } else if (args.subcommand === 'replay') {
+        await replay(args)
+    } else if (args.subcommand === 'replayCsv') {
+        await replayCsv(args)
     }
 }
 
@@ -139,6 +169,10 @@ if (require.main === module) {
 export {
     genProofs,
     proveOnChain,
+    coordinatorReset,
+    download,
+    replay,
+    replayCsv,
     verify,
     processAndTallyWithoutProofs,
     calcBinaryTreeDepthFromMaxLeaves,

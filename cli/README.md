@@ -69,8 +69,8 @@ MACI: 0xE28158eCFde143e2536761c3254C7C31efd97271
 | Maximum number of users | `-u` or `--max-users` | Default: 15 |
 | Maximum number of messages | `-m` or `--max-messages` | Default: 15 |
 | Maximum number of vote options | `-v` or `--max-vote-options` | Default: 25 |
-| Sign-up duration | `-s` or `--signup-duration` | The sign-up duration, in seconds. Default: 3600. |
-| Voting duration | `-o` or `--voting-duration` | The voting duration, in seconds. Default: 3600. |
+| Sign-up duration | `-s` or `--signup-duration` | The sign-up duration, in seconds. |
+| Voting duration | `-o` or `--voting-duration` | The voting duration, in seconds. |
 | Initial voice credits | `-c` or `--initial-voice-credits` | Default: 100 |
 | Initial voice credit proxy contract | `-i` or `--initial-vc-proxy` | If specified, deploys the MACI contract with this address as the initial voice credit proxy constructor argument. Otherwise, deploys a ConstantInitialVoiceCreditProxy contract with the above-specified value. |
 | Signup gatekeeper contract | `-g` or `--signup-gatekeeper` | If specified, deploys the MACI contract with this address as the signup gatekeeper constructor argument. Otherwise, deploys a gatekeeper contract which allows any address to sign up. | 
@@ -522,13 +522,13 @@ node ./build/index.js create -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e
 	-m 2048 && \
 node ./build/index.js signup -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-e http://localhost:8545 \
-	-p macipk.40270618e1797c4969587eb04d7f3e9b39a91ecbbdf7d3c998d8e34d08e11c86 \
+	-p macipk.a8edcf537cd83ab10157e567ff9313c10dd4561734cb56befe941b4ec546280a \
 	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 && \
 node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-e http://localhost:8545 \
 	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
-	-sk macisk.53c8bc722a9f9d4c7bd478c8c8b01177f82d9c68d1ce15078e93ea84f198644 \
-	-p macipk.40270618e1797c4969587eb04d7f3e9b39a91ecbbdf7d3c998d8e34d08e11c86 \
+	-sk macisk.adc328e5009b0267537dccc35998a04348eed1b93dd6d866c0f0401490b2f33 \
+	-p macipk.a8edcf537cd83ab10157e567ff9313c10dd4561734cb56befe941b4ec546280a \
 	-i 1 \
 	-v 0 \
 	-w 9 \
@@ -557,14 +557,14 @@ node ./build/index.js create \
 node ./build/index.js signup \
     -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
     -e http://localhost:8545 \
-    -p macipk.40270618e1797c4969587eb04d7f3e9b39a91ecbbdf7d3c998d8e34d08e11c86 \
+    -p macipk.a8edcf537cd83ab10157e567ff9313c10dd4561734cb56befe941b4ec546280a \
     -x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 && \
 node ./build/index.js publish \
     -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
     -e http://localhost:8545 \
     -x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
-    -sk macisk.53c8bc722a9f9d4c7bd478c8c8b01177f82d9c68d1ce15078e93ea84f198644 \
-    -p macipk.40270618e1797c4969587eb04d7f3e9b39a91ecbbdf7d3c998d8e34d08e11c86 \
+    -sk macisk.adc328e5009b0267537dccc35998a04348eed1b93dd6d866c0f0401490b2f33 \
+    -p macipk.a8edcf537cd83ab10157e567ff9313c10dd4561734cb56befe941b4ec546280a \
     -i 1 -v 0 -w 9 -n 1 && \
 sleep 5 && \
 node build/index.js genProofs \

@@ -3,6 +3,7 @@ import {
     genJsonRpcDeployer,
     deployMaci,
     deployConstantInitialVoiceCreditProxy,
+    deployUserDefinedInitialVoiceCreditProxy,
     deployFreeForAllSignUpGatekeeper,
 } from 'maci-contracts'
 
@@ -115,6 +116,7 @@ const configureSubparser = (subparsers: any) => {
         ['-s', '--signup-duration'],
         {
             action: 'store',
+            'default': DEFAULT_SIGNUP_DURATION,
             type: 'int',
             help: 'The sign-up duration in seconds. Default: 3600',
         }
@@ -124,6 +126,7 @@ const configureSubparser = (subparsers: any) => {
         ['-o', '--voting-duration'],
         {
             action: 'store',
+            'default': DEFAULT_VOTING_DURATION,
             type: 'int',
             help: 'The voting duration in seconds. Default: 3600',
         }
@@ -173,6 +176,14 @@ const configureSubparser = (subparsers: any) => {
             action: 'store',
             type: 'string',
             help: 'If specified, deploys the MACI contract with this address as the signup gatekeeper constructor argument. Otherwise, deploys a gatekeeper contract which allows any address to sign up.',
+        }
+    )
+
+    createParser.addArgument(
+        ['-n', '--debug-mode'],
+        {
+            action: 'storeTrue',
+            help: 'If specified, deploys the MACI contract in debug mode',
         }
     )
 
@@ -227,16 +238,24 @@ const create = async (args: any) => {
     const maxVoteOptions = args.max_vote_options ? args.max_vote_options : DEFAULT_MAX_VOTE_OPTIONS
 
     // Signup duration
-    const signupDuration = args.signup_duration ? args.signup_duration : DEFAULT_SIGNUP_DURATION
+    const signupDuration = args.signup_duration
 
     // Voting duration
-    const votingDuration = args.voting_duration ? args.voting_duration : DEFAULT_VOTING_DURATION
+    const votingDuration = args.voting_duration
 
     // Message batch size
     const messageBatchSize = args.message_batch_size ? args.message_batch_size : DEFAULT_MESSAGE_BATCH_SIZE
 
     // Tally batch size
     const tallyBatchSize = args.tally_batch_size ? args.tally_batch_size : DEFAULT_TALLY_BATCH_SIZE
+
+    const debugMode = args.debug_mode
+    if (debugMode) {
+        if (signupDuration !== 0 && votingDuration !== 0) {
+            console.error('Error: in debug mode, the signup and voting durations should be set to 0')
+            return
+        }
+    }
 
     const isTest = maxMessages <= 16 && maxUsers <= 15 && maxVoteOptions <= 25
 
@@ -309,14 +328,24 @@ const create = async (args: any) => {
 
     let initialVoiceCreditProxyContractAddress = ''
     if (initialVoiceCreditProxy == undefined) {
-        // Deploy a ConstantInitialVoiceCreditProxy contract
-        const c = await deployConstantInitialVoiceCreditProxy(
-            deployer,
-            initialVoiceCredits,
-            true,
-        )
-        await c.deployTransaction.wait()
-        initialVoiceCreditProxyContractAddress = c.address
+        if (debugMode) {
+            // Deploy a UserDefinedInitialVoiceCreditProxy contract
+            const c = await deployUserDefinedInitialVoiceCreditProxy(
+                deployer,
+                true,
+            )
+            await c.deployTransaction.wait()
+            initialVoiceCreditProxyContractAddress = c.address
+        } else {
+            // Deploy a ConstantInitialVoiceCreditProxy contract
+            const c = await deployConstantInitialVoiceCreditProxy(
+                deployer,
+                initialVoiceCredits,
+                true,
+            )
+            await c.deployTransaction.wait()
+            initialVoiceCreditProxyContractAddress = c.address
+        }
     } else {
         initialVoiceCreditProxyContractAddress = initialVoiceCreditProxy
     }

@@ -30,6 +30,8 @@ const [ SignupTokenAbi, SignupTokenBin ] = loadAB('SignUpToken')
 const [ SignUpTokenGatekeeperAbi, SignUpTokenGatekeeperBin ] = loadAB('SignUpTokenGatekeeper')
 const [ ConstantInitialVoiceCreditProxyAbi, ConstantInitialVoiceCreditProxyBin ]
     = loadAB('ConstantInitialVoiceCreditProxy')
+const [ UserDefinedInitialVoiceCreditProxyAbi, UserDefinedInitialVoiceCreditProxyBin ]
+    = loadAB('UserDefinedInitialVoiceCreditProxy')
 const [ FreeForAllSignUpGatekeeperAbi, FreeForAllSignUpGatekeeperBin ]
     = loadAB('FreeForAllGatekeeper')
 const InitialVoiceCreditProxyAbi = loadAbi('InitialVoiceCreditProxy.abi')
@@ -119,6 +121,17 @@ const genDeployer = (
         {
             gasLimit: 10000000,
         },
+    )
+}
+
+const deployUserDefinedInitialVoiceCreditProxy = async (
+    deployer,
+    quiet = false
+) => {
+    log('Deploying UserDefinedInitialVoiceCreditProxy', quiet)
+    return await deployer.deploy(
+        UserDefinedInitialVoiceCreditProxyAbi,
+        UserDefinedInitialVoiceCreditProxyBin,
     )
 }
 
@@ -413,6 +426,7 @@ export {
     deploySignupToken,
     deploySignupTokenGatekeeper,
     deployConstantInitialVoiceCreditProxy,
+    deployUserDefinedInitialVoiceCreditProxy,
     deployFreeForAllSignUpGatekeeper,
     genDeployer,
     genProvider,
