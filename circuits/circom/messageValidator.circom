@@ -5,14 +5,14 @@ template MessageValidator() {
     // a) Whether the state leaf index is valid
     signal input stateTreeIndex;
     signal input numSignUps;
-    component validStateLeafIndex = LessEqThan(32);
+    component validStateLeafIndex = LessEqThan(252);
     validStateLeafIndex.in[0] <== stateTreeIndex;
     validStateLeafIndex.in[1] <== numSignUps;
 
     // b) Whether the max vote option tree index is correct
     signal input voteOptionIndex;
     signal input maxVoteOptions;
-    component validVoteOptionIndex = LessEqThan(32);
+    component validVoteOptionIndex = LessEqThan(252);
     validVoteOptionIndex.in[0] <== voteOptionIndex;
     validVoteOptionIndex.in[1] <== maxVoteOptions;
 
@@ -45,15 +45,21 @@ template MessageValidator() {
     signal input currentVotesForOption;
     signal input voteWeight;
 
+    // Check that voteWeight is < sqrt(field size)
+    component validVoteWeight = LessEqThan(252);
+    validVoteWeight.in[0] <== voteWeight;
+    validVoteWeight.in[1] <== 147946756881789319005730692170996259609;
+
     // Check that currentVoiceCreditBalance + (currentVotesForOption ** 2) >= (voteWeight ** 2)
-    component sufficientVoiceCredits = GreaterEqThan(32);
+    component sufficientVoiceCredits = GreaterEqThan(252);
     sufficientVoiceCredits.in[0] <== (currentVotesForOption * currentVotesForOption) + currentVoiceCreditBalance;
     sufficientVoiceCredits.in[1] <== voteWeight * voteWeight;
 
     component validUpdate = IsEqual();
-    validUpdate.in[0] <== 5;
+    validUpdate.in[0] <== 6;
     validUpdate.in[1] <== validSignature.valid + 
                           sufficientVoiceCredits.out +
+                          validVoteWeight.out +
                           validNonce.out +
                           validStateLeafIndex.out +
                           validVoteOptionIndex.out;
