@@ -196,7 +196,8 @@ const genProofAndPublicSignals = async (
         //circuit = await compileAndLoadCircuit(circuitFilename)	
     //}
 
-    const snarkjsCmd = 'node ' + path.join(__dirname, '../node_modules/snarkjs/build/cli.cjs')
+    const snarkjsDir = path.dirname(require.resolve('snarkjs'))
+    const snarkjsCmd = 'node ' + path.join(snarkjsDir, 'cli.cjs')
 
     const witnessCmd = `${snarkjsCmd} wc ${circuitWasmPath} ${inputJsonPath} ${witnessPath}`
     //const witnessCmd = `${witnessGenExe} ${inputJsonPath} ${witnessJsonPath}`
