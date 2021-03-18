@@ -112,8 +112,6 @@ const configureSubparser = (subparsers: any) => {
     )
 }
 
-// This function is named as such as there already is a global Node.js object
-// called 'process'
 const checkStateRoot = async (args: any) => {
     // MACI contract
     if (!validateEthAddress(args.contract)) {
@@ -183,6 +181,11 @@ const checkStateRoot = async (args: any) => {
         wallet,
     )
 
+    const onChainStateRoot = await maciContract.stateRoot()
+    console.log('On-chain state root:', onChainStateRoot.toString())
+    const onChainMessageRoot = await maciContract.getMessageTreeRoot()
+    console.log('On-chain message root:', onChainMessageRoot.toString())
+
     // Check whether there are any remaining batches to process
     const currentMessageBatchIndex = (await maciContract.currentMessageBatchIndex()).toNumber()
     const messageTreeMaxLeafIndex = (await maciContract.messageTreeMaxLeafIndex()).toNumber()
@@ -222,10 +225,8 @@ const checkStateRoot = async (args: any) => {
     }
 
     const stateRoot = maciState.genStateRoot()
-    const onChainStateRoot = await maciContract.stateRoot()
 
     console.log('Off-chain state root:', stateRoot.toString())
-    console.log('On-chain state root:', onChainStateRoot.toString())
 }
 
 export {
