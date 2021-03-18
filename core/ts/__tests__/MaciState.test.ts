@@ -310,7 +310,8 @@ describe('MaciState', () => {
             expect(maciState.polls[pollId].currentMessageBatchIndex).toEqual(0)
             expect(maciState.polls[pollId].numBatchesProcessed).toEqual(2)
 
-            // Attempt to process messages, but this should fail as there are no more messages to process
+            // Attempt to process messages, but this should fail as there are
+            // no more messages to process
             // TODO: use VError to test for specific errors
             expect(() => {
                 maciState.polls[pollId].processMessages()
