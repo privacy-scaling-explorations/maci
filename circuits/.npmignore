@@ -8,4 +8,5 @@ build/*.proof.json
 build/*.publicSignals.json
 build/*.witness.json
 build/*.wtns
+params/*
 .etherlime-store
