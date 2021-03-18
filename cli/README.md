@@ -175,8 +175,8 @@ This section contains a sequence of commands which will be useful for a live
 demonstration. They simulate the following scenario:
 
 1. Eve tries to bribe Alice to vote for Party B
-1. Alice votes for Party B (`m0`)
-2. Alice changes her key (`m1`)
+2. Alice votes for Party B (`m0`)
+3. Alice changes her key (`m1`)
 4. Alice submits a vote for Party A (`m2`)
 5. The coordinator processes the votes and computes the final tally
 6. The expected result is: Party A has 1 vote and Party B has 0 votes. Alice’s
@@ -210,7 +210,6 @@ Example output:
 ```
 Private key: macisk.8d9bce75e0053db023ffd26597a4f389b33edd9236998e357cef36d5c978cc8
 Public key:  macipk.8e7951e00c0050964ab52975eb682ea771b6d212bd0e0a14da10f0c685b5fc09
-```
 
 Please store your private key in a safe place and do not reveal it to anyone.
 ```
