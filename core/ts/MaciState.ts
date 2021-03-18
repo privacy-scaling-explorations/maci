@@ -186,7 +186,7 @@ class Poll {
         this.encPubKeys.push(_encPubKey)
         this.messages.push(_message)
 
-        const messageLeaf = _message.hash()
+        const messageLeaf = _message.hash(_encPubKey)
         this.messageAq.enqueue(messageLeaf)
         this.messageTree.insert(messageLeaf)
 

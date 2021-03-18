@@ -127,7 +127,7 @@ describe('ProcessMessage circuit', () => {
             const message = command.encrypt(signature, sharedKey)
             messages.push(message)
             commands.push(command)
-            messageTree.insert(message.hash())
+            messageTree.insert(message.hash(ecdhKeypair.pubKey))
 
             poll.publishMessage(message, ecdhKeypair.pubKey)
 
@@ -150,7 +150,7 @@ describe('ProcessMessage circuit', () => {
             const message2 = command2.encrypt(signature2, sharedKey2)
             messages.push(message2)
             commands.push(command2)
-            messageTree.insert(message2.hash())
+            messageTree.insert(message2.hash(ecdhKeypair2.pubKey))
             poll.publishMessage(message2, ecdhKeypair2.pubKey)
 
             poll.messageAq.mergeSubRoots(0)

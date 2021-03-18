@@ -286,15 +286,18 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
             _encPubKey.y < SNARK_SCALAR_FIELD,
             ERROR_INVALID_PUBKEY
         );
-        uint256 messageLeaf = hashMessage(_message);
+        uint256 messageLeaf = hashMessageAndEncPubKey(_message, _encPubKey);
         messageAq.enqueue(messageLeaf);
         numMessages ++;
 
         emit PublishMessage(_message, _encPubKey);
     }
 
-    function hashMessage(Message memory _message) public pure returns (uint256) {
-        uint256[] memory n = new uint256[](8);
+    function hashMessageAndEncPubKey(
+        Message memory _message,
+        PubKey memory _encPubKey
+    ) public pure returns (uint256) {
+        uint256[] memory n = new uint256[](10);
         n[0] = _message.iv;
         n[1] = _message.data[0];
         n[2] = _message.data[1];
@@ -303,22 +306,10 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
         n[5] = _message.data[4];
         n[6] = _message.data[5];
         n[7] = _message.data[6];
+        n[8] = _encPubKey.x;
+        n[9] = _encPubKey.y;
 
         return sha256Hash(n);
-        //uint256[] memory n = new uint256[](5);
-        //n[0] = _message.iv;
-        //n[1] = _message.data[0];
-        //n[2] = _message.data[1];
-        //n[3] = _message.data[2];
-        //n[4] = _message.data[3];
-
-        //uint256[] memory m = new uint256[](4);
-        //m[0] = hash5(n);
-        //m[1] = _message.data[4];
-        //m[2] = _message.data[5];
-        //m[3] = _message.data[6];
-
-        //return hash4(m);
     }
 
     /*

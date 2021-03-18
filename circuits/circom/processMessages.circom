@@ -149,13 +149,16 @@ template ProcessMessages(
     numSignUpsValid.in[1] <== TREE_ARITY ** stateTreeDepth;
     numSignUpsValid.out === 1;
 
-    // Hash each Message so we can check its existence in the Message tree
+    // Hash each Message (along with the encPubKey) so we can check their
+    // existence in the Message tree
     component messageHashers[batchSize];
     for (var i = 0; i < batchSize; i ++) {
         messageHashers[i] = MessageHasher();
         for (var j = 0; j < MSG_LENGTH; j ++) {
             messageHashers[i].in[j] <== msgs[i][j];
         }
+        messageHashers[i].encPubKey[0] <== encPubKeys[i][0];
+        messageHashers[i].encPubKey[1] <== encPubKeys[i][1];
     }
 
     //  ----------------------------------------------------------------------- 

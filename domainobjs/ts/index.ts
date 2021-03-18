@@ -15,7 +15,6 @@ import {
     sha256Hash,
     hash3,
     hash4,
-    hash5,
     verifySignature,
     genRandomSalt,
     genKeypair,
@@ -410,15 +409,14 @@ class Message {
         return this.asArray()
     }
 
-    public hash = (): BigInt => {
-        return sha256Hash([this.iv, ...this.data])
-        //const p = this.data
-        //return hash4([
-            //hash5([this.iv, p[0], p[1], p[2], p[3]]),
-            //p[4],
-            //p[5],
-            //p[6],
-        //])
+    public hash = (
+        _encPubKey: PubKey,
+    ): BigInt => {
+        return sha256Hash([
+            this.iv,
+            ...this.data,
+            ..._encPubKey.rawPubKey,
+        ])
     }
 
     public copy = (): Message => {
