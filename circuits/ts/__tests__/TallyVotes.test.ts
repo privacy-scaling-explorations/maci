@@ -83,15 +83,20 @@ describe('TallyVotes circuit', () => {
         let messageTree
 
         beforeAll(async () => {
+            // Sign up and publish
             const userKeypair = new Keypair()
-            stateIndex = maciState.signUp(userKeypair.pubKey, voiceCreditBalance)
+            stateIndex = maciState.signUp(
+                userKeypair.pubKey,
+                voiceCreditBalance,
+                BigInt(Math.floor(Date.now() / 1000)),
+            )
 
             maciState.stateAq.mergeSubRoots(0)
             maciState.stateAq.merge(STATE_TREE_DEPTH)
 
-            // Sign up and publish
             pollId = maciState.deployPoll(
                 duration,
+                BigInt(Math.floor(Date.now() / 1000) + duration),
                 maxValues,
                 treeDepths,
                 messageBatchSize,
@@ -166,7 +171,11 @@ describe('TallyVotes circuit', () => {
             for (let i = 0; i < x; i ++) {
                 const k = new Keypair()
                 userKeypairs.push(k)
-                maciState.signUp(k.pubKey, voiceCreditBalance)
+                maciState.signUp(
+                    k.pubKey,
+                    voiceCreditBalance,
+                    BigInt(Math.floor(Date.now() / 1000) + duration),
+                )
             }
 
             maciState.stateAq.mergeSubRoots(0)
@@ -174,6 +183,7 @@ describe('TallyVotes circuit', () => {
 
             const pollId = maciState.deployPoll(
                 duration,
+                BigInt(Math.floor(Date.now() / 1000) + duration),
                 maxValues,
                 treeDepths,
                 messageBatchSize,
