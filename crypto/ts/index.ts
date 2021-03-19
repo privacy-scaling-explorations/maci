@@ -327,15 +327,14 @@ const sign = (
     const A = babyJub.mulPointEscalar(babyJub.Base8, ff.Scalar.shr(s, 3))
 
     const msgBuff = ff.utils.leInt2Buff(hashedData, 32)
-    const rBuff = bigInt2Buffer(
-        hashOne(
-            buffer2BigInt(Buffer.concat(
-                [h1.slice(32, 64), msgBuff]
-            ))
-        )
-    )
+	const slice = Uint8Array.from(h1.slice(32, 64))
 
-    let r = ff.utils.leBuff2int(rBuff)
+    const concat = new Uint8Array(slice.length + msgBuff.length)
+    concat.set(slice)
+    concat.set(msgBuff, slice.length)
+
+    let r = hashOne(ff.utils.beBuff2int(concat))
+
     const Fr = new ff.F1Field(babyJub.subOrder)
     r = Fr.e(r)
 
