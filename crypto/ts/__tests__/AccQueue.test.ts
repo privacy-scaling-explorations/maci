@@ -26,12 +26,10 @@ const testMerge = (
     ZERO: BigInt,
     NUM_SUBTREES: number,
     MAIN_DEPTH: number,
-    sha = false,
 ) => {
-    const sd = sha ? SUB_DEPTH : 0
-    const tree = new IncrementalQuinTree(MAIN_DEPTH, ZERO, HASH_LENGTH, sd)
-    const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO, sha)
-    const aq2 = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO, sha)
+    const tree = new IncrementalQuinTree(MAIN_DEPTH, ZERO, HASH_LENGTH)
+    const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
+    const aq2 = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
 
     for (let i = 0; i < NUM_SUBTREES; i ++) {
         for (let j = 0; j < HASH_LENGTH ** SUB_DEPTH; j ++) {
@@ -67,10 +65,9 @@ const testMergeShortest = (
     HASH_LENGTH: number,
     ZERO: BigInt,
     NUM_SUBTREES: number,
-    sha = false,
 ) => {
-    const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO, sha)
-    const aq2 = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO, sha)
+    const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
+    const aq2 = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
 
     for (let i = 0; i < NUM_SUBTREES; i ++) {
         for (let j = 0; j < HASH_LENGTH ** SUB_DEPTH; j ++) {
@@ -102,12 +99,10 @@ const testMergeShortestOne = (
     SUB_DEPTH: number,
     HASH_LENGTH: number,
     ZERO: BigInt,
-    sha = false,
 ) => {
-    const sd = sha ? SUB_DEPTH : 0
     const leaf = BigInt(123)
-    const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO, sha)
-    const smallTree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, sd)
+    const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
+    const smallTree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
 
     aq.enqueue(leaf)
     smallTree.insert(leaf)
@@ -126,10 +121,9 @@ const testMergeExhaustive = (
     HASH_LENGTH: number,
     ZERO: BigInt,
     MAX: number,
-    sha = false,
 ) => {
     for (let numSubtrees = 2; numSubtrees <= MAX; numSubtrees ++) {
-        const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO, sha)
+        const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
 
         // Create numSubtrees subtrees
         for (let i = 0; i < numSubtrees; i ++) {
@@ -159,7 +153,6 @@ describe('AccQueue', () => {
             const ZERO = BigInt(0)
 
             const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
-            const aqSha256 = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO, true)
 
             it('Should enqueue leaves into a subtree', async () => {
                 const tree0 = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
@@ -184,38 +177,6 @@ describe('AccQueue', () => {
                 }
                 expect(aq.getSubRoot(1).toString()).toEqual(tree1.root.toString())
             })
-
-            it('Should enqueue leaves into a subtree using SHA256', async () => {
-                const tree0 = new IncrementalQuinTree(
-                    SUB_DEPTH,
-                    ZERO,
-                    HASH_LENGTH,
-                    SUB_DEPTH,
-                )
-
-                const subtreeCapacity = HASH_LENGTH ** SUB_DEPTH
-                for (let i = 0; i < subtreeCapacity; i ++) {
-                    const leaf = BigInt(i + 1)
-                    tree0.insert(leaf)
-                    aqSha256.enqueue(leaf)
-                }
-                expect(aqSha256.getSubRoot(0).toString()).toEqual(tree0.root.toString())
-
-                const tree1 = new IncrementalQuinTree(
-                    SUB_DEPTH,
-                    ZERO,
-                    HASH_LENGTH,
-                    SUB_DEPTH,
-                )
-
-                for (let i = 0; i < subtreeCapacity; i ++) {
-                    const leaf = BigInt(i + 1)
-                    tree1.insert(leaf)
-                    aqSha256.enqueue(leaf)
-                }
-                expect(aqSha256.getSubRoot(1).toString()).toEqual(tree0.root.toString())
-            })
-
         })
 
         describe('Quinary AccQueue', () => {
@@ -224,7 +185,6 @@ describe('AccQueue', () => {
             const ZERO = BigInt(0)
 
             const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
-            const aqSha256 = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO, true)
 
             it('Should enqueue leaves into a subtree', async () => {
                 const tree0 = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
@@ -247,31 +207,6 @@ describe('AccQueue', () => {
                 expect(aq.getSubRoot(1).toString()).toEqual(tree1.root.toString())
             })
 
-            it('Should enqueue leaves into a subtree using SHA256', async () => {
-                const tree0 = new IncrementalQuinTree(
-                    SUB_DEPTH,
-                    ZERO,
-                    HASH_LENGTH,
-                    SUB_DEPTH,
-                )
-
-                const subtreeCapacity = HASH_LENGTH ** SUB_DEPTH
-                for (let i = 0; i < subtreeCapacity; i ++) {
-                    const leaf = BigInt(i + 1)
-                    tree0.insert(leaf)
-                    aqSha256.enqueue(leaf)
-                }
-                expect(aqSha256.getSubRoot(0).toString()).toEqual(tree0.root.toString())
-
-                const tree1 = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, SUB_DEPTH)
-
-                for (let i = 0; i < subtreeCapacity; i ++) {
-                    const leaf = BigInt(i + 1)
-                    tree1.insert(leaf)
-                    aqSha256.enqueue(leaf)
-                }
-                expect(aqSha256.getSubRoot(1).toString()).toEqual(tree1.root.toString())
-            })
         })
     })
 
@@ -288,29 +223,9 @@ describe('AccQueue', () => {
                 expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
             })
 
-            it('Filling an empty subtree should create the correct subroot (SHA256)', () => {
-                const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO, true)
-                const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, SUB_DEPTH)
-                aq.fill()
-                expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
-            })
-
             it('Should fill an incomplete subtree', () => {
                 const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
                 const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
-
-                const leaf = BigInt(1)
-                aq.enqueue(leaf)
-                tree.insert(leaf)
-
-                aq.fill()
-
-                expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
-            })
-
-            it('Should fill an incomplete subtree (SHA256)', () => {
-                const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO, true)
-                const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, SUB_DEPTH)
 
                 const leaf = BigInt(1)
                 aq.enqueue(leaf)
@@ -335,40 +250,10 @@ describe('AccQueue', () => {
                 expect(aq.getSubRoot(1).toString()).toEqual(tree.root.toString())
             })
 
-            it('Filling an empty subtree again should create the correct subroot (SHA256)', () => {
-                const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO, true)
-                const leaf = BigInt(1)
-
-                // Create the first subtree with one leaf
-                aq.enqueue(leaf)
-                aq.fill()
-                
-                // Fill the second subtree with zeros
-                aq.fill()
-                const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, SUB_DEPTH)
-                expect(aq.getSubRoot(1).toString()).toEqual(tree.root.toString())
-            })
-
             it('fill() should be correct for every number of leaves in an incomplete subtree', () => {
                 for (let i = 0; i < 2; i ++) {
                     const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
                     const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
-                    for (let j = 0; j < i; j ++) {
-                        const leaf = BigInt(i + 1)
-                        aq.enqueue(leaf)
-                        tree.insert(leaf)
-                    }
-                    aq.fill()
-
-                    expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
-                }
-
-            })
-
-            it('fill() should be correct for every number of leaves in an incomplete subtree (SHA256)', () => {
-                for (let i = 0; i < 2; i ++) {
-                    const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, SUB_DEPTH)
-                    const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO, true)
                     for (let j = 0; j < i; j ++) {
                         const leaf = BigInt(i + 1)
                         aq.enqueue(leaf)
@@ -394,29 +279,9 @@ describe('AccQueue', () => {
                 expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
             })
 
-            it('Filling an empty subtree should create the correct subroot (SHA256)', () => {
-                const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO, true)
-                const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, SUB_DEPTH)
-                aq.fill()
-                expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
-            })
-
             it('Should fill one incomplete subtree', () => {
                 const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
                 const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
-
-                const leaf = BigInt(1)
-                aq.enqueue(leaf)
-                tree.insert(leaf)
-
-                aq.fill()
-
-                expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
-            })
-
-            it('Should fill one incomplete subtree (SHA256)', () => {
-                const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO, true)
-                const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, SUB_DEPTH)
 
                 const leaf = BigInt(1)
                 aq.enqueue(leaf)
@@ -441,41 +306,11 @@ describe('AccQueue', () => {
                 expect(aq.getSubRoot(1).toString()).toEqual(tree.root.toString())
             })
 
-            it('Filling an empty subtree again should create the correct subroot (SHA256)', () => {
-                const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO, true)
-                const leaf = BigInt(1)
-
-                // Create the first subtree with one leaf
-                aq.enqueue(leaf)
-                aq.fill()
-                
-                // Fill the second subtree with zeros
-                aq.fill()
-                const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, SUB_DEPTH)
-                expect(aq.getSubRoot(1).toString()).toEqual(tree.root.toString())
-            })
-
             it('fill() should be correct for every number of leaves in an incomplete subtree', () => {
                 const capacity = HASH_LENGTH ** SUB_DEPTH
                 for (let i = 1; i < capacity - 1; i ++) {
                     const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
                     const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
-                    for (let j = 0; j < i; j ++) {
-                        const leaf = BigInt(i + 1)
-                        aq.enqueue(leaf)
-                        tree.insert(leaf)
-                    }
-                    aq.fill()
-
-                    expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
-                }
-            })
-
-            it('fill() should be correct for every number of leaves in an incomplete subtree (SHA256)', () => {
-                const capacity = HASH_LENGTH ** SUB_DEPTH
-                for (let i = 1; i < capacity - 1; i ++) {
-                    const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, SUB_DEPTH)
-                    const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO, true)
                     for (let j = 0; j < i; j ++) {
                         const leaf = BigInt(i + 1)
                         aq.enqueue(leaf)
@@ -502,19 +337,11 @@ describe('AccQueue', () => {
                 it('Should produce the correct main root', () => {
                     testMerge(SUB_DEPTH, HASH_LENGTH, ZERO, NUM_SUBTREES, MAIN_DEPTH)
                 })
-
-                it('Should produce the correct main root (SHA256)', () => {
-                    testMerge(SUB_DEPTH, HASH_LENGTH, ZERO, NUM_SUBTREES, MAIN_DEPTH, true)
-                })
             })
 
             describe('mergeSubRoots()', () => {
                 it('Should work progressively', () => {
                     testMergeShortest(SUB_DEPTH, HASH_LENGTH, ZERO, NUM_SUBTREES)
-                })
-
-                it('Should work progressively (SHA256)', () => {
-                    testMergeShortest(SUB_DEPTH, HASH_LENGTH, ZERO, NUM_SUBTREES, true)
                 })
 
                 it('Should fail if there are 0 leaves', () => {
@@ -523,28 +350,13 @@ describe('AccQueue', () => {
                     expect(() => { aq.mergeSubRoots(0) }).toThrow()
                 })
 
-                it('Should fail if there are 0 leaves (SHA256)', () => {
-                    expect.assertions(1)
-                    const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO, true)
-                    expect(() => { aq.mergeSubRoots(0) }).toThrow()
-                })
-
                 it('Should a generate the same smallMainTreeRoot root from 1 subroot', () => {
                     testMergeShortestOne(SUB_DEPTH, HASH_LENGTH, ZERO)
-                })
-
-                it('Should a generate the same smallMainTreeRoot root from 1 subroot (SHA256)', () => {
-                    testMergeShortestOne(SUB_DEPTH, HASH_LENGTH, ZERO, true)
                 })
 
                 it('Exhaustive test from 2 to 16 subtrees', () => {
                     const MAX = 16
                     testMergeExhaustive(SUB_DEPTH, HASH_LENGTH, ZERO, MAX)
-                })
-                
-                it('Exhaustive test from 2 to 16 subtrees (SHA256)', () => {
-                    const MAX = 16
-                    testMergeExhaustive(SUB_DEPTH, HASH_LENGTH, ZERO, MAX, true)
                 })
             })
         })
@@ -556,19 +368,11 @@ describe('AccQueue', () => {
                 it('Should produce the correct main root', () => {
                     testMerge(SUB_DEPTH, HASH_LENGTH, ZERO, NUM_SUBTREES, MAIN_DEPTH)
                 })
-
-                it('Should produce the correct main root (SHA256)', () => {
-                    testMerge(SUB_DEPTH, HASH_LENGTH, ZERO, NUM_SUBTREES, MAIN_DEPTH, true)
-                })
             })
 
             describe('mergeSubRoots()', () => {
                 it('Should work progressively', () => {
                     testMergeShortest(SUB_DEPTH, HASH_LENGTH, ZERO, NUM_SUBTREES)
-                })
-
-                it('Should work progressively (SHA256)', () => {
-                    testMergeShortest(SUB_DEPTH, HASH_LENGTH, ZERO, NUM_SUBTREES, true)
                 })
 
                 it('Should fail if there are 0 leaves', () => {
@@ -577,28 +381,13 @@ describe('AccQueue', () => {
                     expect(() => { aq.mergeSubRoots(0) }).toThrow()
                 })
 
-                it('Should fail if there are 0 leaves (SHA256)', () => {
-                    expect.assertions(1)
-                    const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO, true)
-                    expect(() => { aq.mergeSubRoots(0) }).toThrow()
-                })
-
                 it('Should a generate the same smallMainTreeRoot root from 1 subroot', () => {
                     testMergeShortestOne(SUB_DEPTH, HASH_LENGTH, ZERO)
-                })
-
-                it('Should a generate the same smallMainTreeRoot root from 1 subroot (SHA256)', () => {
-                    testMergeShortestOne(SUB_DEPTH, HASH_LENGTH, ZERO, true)
                 })
 
                 it('Exhaustive test from 2 to 16 subtrees', () => {
                     const MAX = 16
                     testMergeExhaustive(SUB_DEPTH, HASH_LENGTH, ZERO, MAX)
-                })
-                
-                it('Exhaustive test from 2 to 16 subtrees (SHA256)', () => {
-                    const MAX = 16
-                    testMergeExhaustive(SUB_DEPTH, HASH_LENGTH, ZERO, MAX, true)
                 })
             })
         })

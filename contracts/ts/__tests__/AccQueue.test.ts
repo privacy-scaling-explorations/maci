@@ -110,12 +110,10 @@ const testEnqueue = async (
     HASH_LENGTH: number,
     SUB_DEPTH: number,
     ZERO: BigInt,
-    sha = false,
 ) => {
-    const sd = sha ? SUB_DEPTH : 0
 
     const subtreeCapacity = HASH_LENGTH ** SUB_DEPTH
-    const tree0 = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, sd)
+    const tree0 = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
 
     // Insert up to a subtree
     for (let i = 0; i < subtreeCapacity; i ++) {
@@ -134,7 +132,7 @@ const testEnqueue = async (
     const r = await aqContract.getSubRoot(0)
     expect(r.toString()).toEqual(tree0.root.toString())
 
-    const tree1 = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, sd)
+    const tree1 = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
 
     // Insert the other subtree
     for (let i = 0; i < subtreeCapacity; i ++) {
@@ -221,8 +219,7 @@ const testEnqueueAndInsertSubTree = async (
 
     const leaves: BigInt[] = []
 
-    const sd = aq.useSha256ForSubtrees ? aq.subDepth : 0
-    const subTree = new IncrementalQuinTree(aq.subDepth, z, aq.hashLength, sd)
+    const subTree = new IncrementalQuinTree(aq.subDepth, z, aq.hashLength)
 
     for (let i = 0; i < aq.hashLength ** aq.subDepth; i ++) {
         leaves.push(z)
@@ -232,7 +229,7 @@ const testEnqueueAndInsertSubTree = async (
     // leaves is now [z, z, z, z..., n]
 
     const depth = calcDepthFromNumLeaves(aq.hashLength, leaves.length)
-    const tree = new IncrementalQuinTree(depth, z, aq.hashLength, sd)
+    const tree = new IncrementalQuinTree(depth, z, aq.hashLength)
     for (const leaf of leaves) {
         tree.insert(leaf)
     }
@@ -394,7 +391,6 @@ const deploy = async (
     SUB_DEPTH: number,
     HASH_LENGTH: number,
     ZERO: BigInt,
-    sha = false,
 ) => {
     deployer = new JSONRPCDeployer(
         accounts[0].privateKey,
@@ -427,7 +423,7 @@ const deploy = async (
         HASH_LENGTH,
     )
 
-    const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO, sha)
+    const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
     return { aq, aqContract }
 }
 
@@ -508,47 +504,6 @@ describe('AccQueues', () => {
                 HASH_LENGTH,
                 SUB_DEPTH,
                 ZERO,
-            )
-        })
-    })
-
-    describe('Quinary AccQueue enqueues (SHA256)', () => {
-        const SUB_DEPTH = 2
-        const HASH_LENGTH = 5
-        const ZERO = BigInt(0)
-        let aqContract
-
-        beforeAll(async () => {
-            const r = await deploy(
-                'AccQueueQuinaryMaciWithSha256',
-                SUB_DEPTH,
-                HASH_LENGTH,
-                ZERO,
-            )
-            aqContract = r.aqContract
-        })
-
-        it('Should be empty upon deployment', async () => {
-            await testEmptyUponDeployment(aqContract)
-        })
-
-        it('Should not be able to get a subroot that does not exist', async () => {
-            expect.assertions(1)
-            try {
-                await aqContract.getSubRoot(0)
-            } catch (e) {
-                const error = "AccQueue: _index must refer to a complete subtree"
-                expect(e.message.endsWith(error)).toBeTruthy()
-            }
-        })
-
-        it('Should enqueue leaves', async () => {
-            await testEnqueue(
-                aqContract,
-                HASH_LENGTH,
-                SUB_DEPTH,
-                ZERO,
-                true,
             )
         })
     })
@@ -693,43 +648,6 @@ describe('AccQueues', () => {
         })
     })
   
-    describe('Quinary AccQueueMaci fills (SHA256)', () => {
-        const SUB_DEPTH = 2
-        const HASH_LENGTH = 5
-        const ZERO = NOTHING_UP_MY_SLEEVE
-        let aq: AccQueue
-        let aqContract
-
-        beforeAll(async () => {
-            const r = await deploy(
-                'AccQueueQuinaryMaciWithSha256',
-                SUB_DEPTH,
-                HASH_LENGTH,
-                ZERO,
-                true
-            )
-            aq = r.aq
-            aqContract = r.aqContract
-        })
-
-        it('Should fill an empty subtree', async () => {
-            await testEmptySubtree(aq, aqContract, 0)
-        })
-
-        it('Should fill an incomplete subtree', async () => {
-            await testIncompleteSubtree(aq, aqContract)
-        })
-
-        it('Filling an empty subtree again should create the correct subroot', async () => {
-            await testEmptySubtree(aq, aqContract, 2)
-        })
-
-        it('fill() should be correct for every number of leaves in an incomplete subtree', async () => {
-            await testFillForAllIncompletes(aq, aqContract, HASH_LENGTH)
-        })
-    })
-
-
     describe('Merge after enqueuing more leaves', () => {
         const SUB_DEPTH = 2
         const HASH_LENGTH = 2
@@ -951,45 +869,6 @@ describe('AccQueues', () => {
             await testInsertSubTrees(aq, aqContract, n, MAIN_DEPTH)
         })
     })
- 
-    describe('Quinary AccQueueMaci subtree insertions (SHA256)', () => {
-        const SUB_DEPTH = 2
-        const MAIN_DEPTH = 6
-        const HASH_LENGTH = 5
-        const ZERO = NOTHING_UP_MY_SLEEVE
-
-        it('Enqueued leaves and inserted subtrees should be in the right order', async () => {
-            const r = await deploy(
-                'AccQueueQuinaryMaciWithSha256',
-                SUB_DEPTH,
-                HASH_LENGTH,
-                ZERO,
-                true,
-            )
-            const aq = r.aq
-            const aqContract = r.aqContract
-            await testEnqueueAndInsertSubTree(aq, aqContract)
-        })
-
-        test.each`
-            n
-            ${1}
-            ${4}
-            ${9}
-            ${26}
-        `('Should insert $n subtrees', async ({ n }) => {
-            const r = await deploy(
-                'AccQueueQuinaryMaciWithSha256',
-                SUB_DEPTH,
-                HASH_LENGTH,
-                ZERO,
-                true,
-            )
-            const aq = r.aq
-            const aqContract = r.aqContract
-            await testInsertSubTrees(aq, aqContract, n, MAIN_DEPTH)
-        })
-    })
 
     describe('Binary AccQueue0 progressive merges', () => {
         const SUB_DEPTH = 2
@@ -1106,64 +985,6 @@ describe('AccQueues', () => {
         })
     })
  
-    describe('Quinary AccQueueMaci progressive merges (SHA256)', () => {
-        const SUB_DEPTH = 2
-        const MAIN_DEPTH = 5
-        const HASH_LENGTH = 5
-        const ZERO = NOTHING_UP_MY_SLEEVE
-        const NUM_SUBTREES = 6
-        let aq: AccQueue
-        let aqContract
-        beforeAll(async () => {
-            const r = await deploy(
-                'AccQueueQuinaryMaciWithSha256',
-                SUB_DEPTH,
-                HASH_LENGTH,
-                ZERO,
-                true,
-            )
-            aq = r.aq
-            aqContract = r.aqContract
-        })
-
-        it(`Should progressively merge ${NUM_SUBTREES} subtrees`, async () => {
-            expect.assertions(3)
-            for (let i = 0; i < NUM_SUBTREES; i ++) {
-                const leaf = BigInt(123)
-                await (await aqContract.enqueue(leaf.toString(), enqueueGasLimit)).wait()
-                aq.enqueue(leaf)
-
-                aq.fill()
-                await (await aqContract.fill(fillGasLimit)).wait()
-            }
-
-            aq.mergeSubRoots(0)
-            const expectedSmallSRTroot = aq.smallSRTroot
-            
-            try {
-                await aqContract.getSmallSRTroot()
-            } catch (e) {
-                const error = 'AccQueue: subtrees must be merged first'
-                expect(e.message.endsWith(error)).toBeTruthy()
-            }
-
-            await (await aqContract.mergeSubRoots(2)).wait()
-            await (await aqContract.mergeSubRoots(2)).wait()
-            await (await aqContract.mergeSubRoots(2)).wait()
-
-            const contractSmallSRTroot = await aqContract.getSmallSRTroot()
-            expect(expectedSmallSRTroot.toString()).toEqual(contractSmallSRTroot.toString())
-
-            aq.merge(MAIN_DEPTH)
-            await (await aqContract.merge(MAIN_DEPTH)).wait()
-
-            const expectedMainRoot = aq.mainRoots[MAIN_DEPTH]
-            const contractMainRoot = await aqContract.getMainRoot(MAIN_DEPTH)
-
-            expect(expectedMainRoot.toString()).toEqual(contractMainRoot.toString())
-        })
-    })
-
     describe('Conditions that cause merge() to revert', () => {
         const SUB_DEPTH = 2
         const HASH_LENGTH = 2

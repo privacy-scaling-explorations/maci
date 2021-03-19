@@ -229,7 +229,7 @@ describe('Quin Merkle Tree', () => {
         const SUB_DEPTH = 2
 
         beforeAll(() => {
-            tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE, SUB_DEPTH)
+            tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
             for (let i = 0; i < numToInsert; i ++) {
                 const leaf = BigInt(i + 1)
                 tree.insert(leaf)
@@ -249,7 +249,6 @@ describe('Quin Merkle Tree', () => {
                 path,
                 tree.hashFunc,
                 tree.subHashFunc,
-                tree.numSubLevels,
             )
 
             expect(isValid).toBeFalsy()
@@ -263,7 +262,6 @@ describe('Quin Merkle Tree', () => {
                     path,
                     tree.hashFunc,
                     tree.subHashFunc,
-                    tree.numSubLevels,
                 )
             }).toThrow()
         })
@@ -276,14 +274,13 @@ describe('Quin Merkle Tree', () => {
                 path,
                 tree.hashFunc,
                 tree.subHashFunc,
-                tree.numSubLevels,
             )
 
             expect(isValid).toBeTruthy()
         })
 
         it('genMerklePath() should calculate a correct Merkle path for each most recently inserted leaf', () => {
-            const tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE, SUB_DEPTH)
+            const tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
             const numToInsert = LEAVES_PER_NODE * 2
 
             expect.assertions(numToInsert)
@@ -295,8 +292,6 @@ describe('Quin Merkle Tree', () => {
                 const isValid = IncrementalQuinTree.verifyMerklePath(
                     path,
                     tree.hashFunc,
-                    tree.subHashFunc,
-                    tree.numSubLevels,
                 )
         
                 expect(isValid).toBeTruthy()

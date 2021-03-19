@@ -10,7 +10,7 @@
         "buildQuadVoteTallySnark": "./scripts/buildQuadVoteTallySnark.sh",
         "test": "jest",
         "test-minor": "jest --force-exit Hasher.test.ts VerifySignature.test.ts Ecdh.test.ts PrivToPubKey.test.ts Decrypt.test.ts CalculateTotal.test.ts ResultCommitmentVerifier.test.ts QuinSelector.test.ts QuinGeneratePathIndices.test.ts Splicer.test.ts",
-        "test-major": "jest --force-exit QuadVoteTally.test.ts ProcessMessages.test.ts",
+        "test-major": "jest --force-exit TallyVotes.test.ts ProcessMessages.test.ts",
         "test-quinGenPath": "jest QuinGeneratePathIndices.test.ts",
         "test-quinGenPath-debug": "node --inspect-brk ./node_modules/.bin/jest QuinGeneratePathIndices.test.ts",
         "test-hasher": "jest Hasher.test.ts",
