@@ -55,8 +55,8 @@ template Sha256Hasher5() {
     hash <== hasher.hash;
 }
 
-template Sha256Hasher8() {
-    var length = 8;
+template Sha256Hasher10() {
+    var length = 10;
     var inBits = 256 * length;
 
     signal input in[length];

@@ -117,8 +117,7 @@ describe('MaciState', () => {
             )
 
             const command = new Command(
-                //stateIndex,
-                BigInt(0),
+                stateIndex,
                 userKeypair.pubKey,
                 voteOptionIndex,
                 voteWeight,
@@ -136,7 +135,7 @@ describe('MaciState', () => {
             const message = command.encrypt(signature, sharedKey)
             maciState.polls[pollId].publishMessage(message, ecdhKeypair.pubKey)
 
-            msgTree.insert(message.hash())
+            msgTree.insert(message.hash(ecdhKeypair.pubKey))
             maciState.polls[pollId].messageAq.mergeSubRoots(0)
             maciState.polls[pollId].messageAq.merge(treeDepths.messageTreeDepth)
             expect(maciState.polls[pollId].messageAq.getRoot(treeDepths.messageTreeDepth).toString())
@@ -157,7 +156,7 @@ describe('MaciState', () => {
 
             const unpacked = MaciState.unpackProcessMessageSmallVals(packedVals)
             expect(unpacked.maxVoteOptions.toString()).toEqual(maxVoteOptions.toString())
-            //expect(unpacked.maxUsers.toString()).toEqual(maxUsers.toString())
+            expect(unpacked.numUsers.toString()).toEqual(numUsers.toString())
             expect(unpacked.batchStartIndex.toString()).toEqual(batchStartIndex.toString())
             expect(unpacked.batchEndIndex.toString()).toEqual(batchEndIndex.toString())
         })
@@ -311,7 +310,8 @@ describe('MaciState', () => {
             expect(maciState.polls[pollId].currentMessageBatchIndex).toEqual(0)
             expect(maciState.polls[pollId].numBatchesProcessed).toEqual(2)
 
-            // Attempt to process messages, but this should fail as there are no more messages to process
+            // Attempt to process messages, but this should fail as there are
+            // no more messages to process
             // TODO: use VError to test for specific errors
             expect(() => {
                 maciState.polls[pollId].processMessages()

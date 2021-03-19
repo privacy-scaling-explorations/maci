@@ -26,7 +26,7 @@ contract DomainObjs is IMessage, Hasher, IPubKey {
     }
 
     function hashStateLeaf(StateLeaf memory _stateLeaf) public pure returns (uint256) {
-        uint256[] memory plaintext = new uint256[](3);
+        uint256[3] memory plaintext;
         plaintext[0] = _stateLeaf.pubKey.x;
         plaintext[1] = _stateLeaf.pubKey.y;
         plaintext[2] = _stateLeaf.voiceCreditBalance;

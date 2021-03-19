@@ -37,7 +37,7 @@ describe('MessageValidator circuit', () => {
 
         circuitInputs = stringifyBigInts({
             stateTreeIndex: 0,
-            maxUsers: 1,
+            numSignUps: 1,
             voteOptionIndex: 0,
             maxVoteOptions: 1,
             originalNonce: 1,
@@ -72,6 +72,14 @@ describe('MessageValidator circuit', () => {
         expect(isValid.toString()).toEqual('0')
     })
 
+    it('Should fail if the pubkey is invalid', async () => {
+        const circuitInputs2 = circuitInputs
+        circuitInputs2.pubKey = [0, 1]
+        const witness = await genWitness(circuit, circuitInputs2)
+        const isValid = await getSignalByName(circuit, witness, 'main.isValid')
+        expect(isValid.toString()).toEqual('0')
+    })
+
     it('Should fail if there are insufficient voice credits', async () => {
         const circuitInputs2 = circuitInputs
         circuitInputs2.voteWeight = 11
@@ -99,6 +107,14 @@ describe('MessageValidator circuit', () => {
     it('Should fail if the vote option index is invalid', async () => {
         const circuitInputs2 = circuitInputs
         circuitInputs2.voteOptionIndex = 1
+        const witness = await genWitness(circuit, circuitInputs2)
+        const isValid = await getSignalByName(circuit, witness, 'main.isValid')
+        expect(isValid.toString()).toEqual('0')
+    })
+
+    it('Should fail if the vote option index is invalid', async () => {
+        const circuitInputs2 = circuitInputs
+        circuitInputs2.voteOptionIndex = '6049261729'
         const witness = await genWitness(circuit, circuitInputs2)
         const isValid = await getSignalByName(circuit, witness, 'main.isValid')
         expect(isValid.toString()).toEqual('0')

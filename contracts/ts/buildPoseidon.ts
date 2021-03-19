@@ -6,7 +6,7 @@ const artifactor = new Artifactor('artifacts/')
 const buildPoseidon = async (numInputs: number) => {
     await artifactor.save({
         contractName: `PoseidonT${numInputs + 1}`,
-        abi: poseidonGenContract.abi,
+        abi: poseidonGenContract.generateABI(numInputs),
         unlinked_binary: poseidonGenContract.createCode(numInputs)
     })
 }

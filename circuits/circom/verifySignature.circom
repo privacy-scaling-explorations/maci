@@ -6,18 +6,14 @@ include "./poseidon/poseidonHashT6.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
 include "../node_modules/circomlib/circuits/escalarmulany.circom";
 include "../node_modules/circomlib/circuits/escalarmulfix.circom";
-
 include "./hasherPoseidon.circom";
-
 
 template EdDSAPoseidonVerifier_patched() {
     signal input Ax;
     signal input Ay;
-
     signal input S;
     signal input R8x;
     signal input R8y;
-
     signal input M;
 
     signal output valid;
@@ -49,8 +45,8 @@ template EdDSAPoseidonVerifier_patched() {
 
     // Calculate second part of the right side:  right2 = h*8*A
 
-    // Multiply by 8 by adding it 3 times.  This also ensure that the result is in
-    // the subgroup.
+    // Multiply by 8 by adding it 3 times. This also ensures that the result is
+    // in the subgroup.
     component dbl1 = BabyDbl();
     dbl1.x <== Ax;
     dbl1.y <== Ay;
@@ -60,11 +56,6 @@ template EdDSAPoseidonVerifier_patched() {
     component dbl3 = BabyDbl();
     dbl3.x <== dbl2.xout;
     dbl3.y <== dbl2.yout;
-
-    // We check that A is not zero.
-    component isZero = IsZero();
-    isZero.in <== dbl3.x;
-    isZero.out === 0;
 
     component mulAny = EscalarMulAny(254);
     for (i=0; i<254; i++) {
@@ -100,13 +91,27 @@ template EdDSAPoseidonVerifier_patched() {
     leftValid.in[0] <== mulFix.out[1];
     leftValid.in[1] <== addRight.yout;
 
+    component leftRightValid = IsEqual();
+    leftRightValid.in[0] <== rightValid.out + leftValid.out;
+    leftRightValid.in[1] <== 2
+
+    // If A is not zero, isZero.out will be 0.
+    // To prevent a scenario where the user can DoS the proof generation by
+    // passing in an invalid pubkey, we don't establish a constraint that A is
+    // not 0. Rather, if A is 0, valid should be 0. 
+    component isZero = IsZero();
+    isZero.in <== dbl3.x;
+
+    component iz = IsEqual();
+    iz.in[0] <== isZero.out;
+    iz.in[1] <== 0;
+
     component isValid = IsEqual();
-    isValid.in[0] <== rightValid.out + leftValid.out;
-    isValid.in[1] <== 2
+    isValid.in[0] <== leftRightValid.out + iz.out;
+    isValid.in[1] <== 2;
 
-        valid <== isValid.out;
+    valid <== isValid.out;
 }
-
 
 template VerifySignature() {
     // Verify the signature of a Command, which has exactly 4 elements in the

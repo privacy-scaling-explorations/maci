@@ -127,7 +127,7 @@ describe('TallyVotes circuit', () => {
             const message = command.encrypt(signature, sharedKey)
             messages.push(message)
             commands.push(command)
-            messageTree.insert(message.hash())
+            messageTree.insert(message.hash(ecdhKeypair.pubKey))
 
             poll.publishMessage(message, ecdhKeypair.pubKey)
 

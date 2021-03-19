@@ -41,7 +41,7 @@ describe('Poseidon hash circuits', () => {
         })
 
         describe('Sha256Hasher3', () => {
-            const circuit = 'sha256Hasher4_test'
+            const circuit = 'sha256Hasher3_test'
             it('correctly hashes two random values', async () => {
                 const preImages: any = []
                 for (let i = 0; i < 3; i++) {
@@ -211,9 +211,10 @@ describe('Poseidon hash circuits', () => {
             const ecdhSharedKey = Keypair.genEcdhSharedKey(privKey, k.pubKey)
             const signature = command.sign(privKey)
             const message = command.encrypt(signature, ecdhSharedKey)
-            const messageHash = message.hash()
+            const messageHash = message.hash(k.pubKey)
             const circuitInputs = stringifyBigInts({
-                in: message.asCircuitInputs()
+                in: message.asCircuitInputs(),
+                encPubKey: k.pubKey.asCircuitInputs(),
             })
             const witness = await genWitness(circuit, circuitInputs)
             const output = await getSignalByName(circuit, witness, 'main.hash')

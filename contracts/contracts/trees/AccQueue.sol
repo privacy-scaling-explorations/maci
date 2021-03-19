@@ -18,6 +18,9 @@ import { MerkleZeros as MerkleQuinaryMaciWithSha256 } from "./zeros/MerkleQuinar
  */
 abstract contract AccQueue is Ownable, Hasher {
 
+    // The maximum tree depth
+    uint256 constant MAX_DEPTH = 32;
+
     // A Queue is a 2D array of Merkle roots and indices which represents nodes
     // in a Merkle tree while it is progressively updated.
     struct Queue {
@@ -29,9 +32,6 @@ abstract contract AccQueue is Ownable, Hasher {
 
         uint256[MAX_DEPTH + 1] indices;
     }
-
-    // The maximum tree depth
-    uint256 constant MAX_DEPTH = 32;
 
     // The depth of each subtree
     uint256 internal immutable subDepth;
@@ -156,33 +156,37 @@ abstract contract AccQueue is Ownable, Hasher {
     }
 
     /*
-     * A recursive function which updates the queue at a given level and hashes
-     * any subroots that need to be hashed.
+     * Updates the queue at a given level and hashes any subroots that need to
+     * be hashed.
      * @param _leaf The leaf to add.
      * @param _level The level at which to queue the leaf.
      */
     function _enqueue(uint256 _leaf, uint256 _level) internal {
-        if (_level > subDepth) {
-            return;
-        }
+        require(_level <= subDepth, "AccQueue: invalid level");
 
-        uint256 n = leafQueue.indices[_level];
+        while (true) {
+            uint256 n = leafQueue.indices[_level];
 
-        if (n != hashLength - 1) {
-            // Just store the leaf
-            leafQueue.levels[_level][n] = _leaf;
+            if (n != hashLength - 1) {
+                // Just store the leaf
+                leafQueue.levels[_level][n] = _leaf;
 
-            // Update the index
-            leafQueue.indices[_level] ++;
-        } else {
-            // Hash the leaves
-            uint256 hashed = hashLevel(_level, _leaf);
+                if (_level != subDepth) {
+                    // Update the index
+                    leafQueue.indices[_level]++;
+                }
+
+                return;
+            }
+
+            // Hash the leaves to next level
+            _leaf = hashLevel(_level, _leaf);
 
             // Reset the index for this level
             delete leafQueue.indices[_level];
 
             // Queue the hash of the leaves into to the next level
-            _enqueue(hashed, _level + 1);
+            _level++;
         }
     }
 
@@ -223,7 +227,7 @@ abstract contract AccQueue is Ownable, Hasher {
     }
 
     /*
-     * A recursive function that queues zeros to the specified level, hashes,
+     * A function that queues zeros to the specified level, hashes,
      * the level, and enqueues the hash to the next level.
      * @param _level The level at which to queue zeros.
      */
@@ -341,7 +345,7 @@ abstract contract AccQueue is Ownable, Hasher {
     }
 
     /*
-     * A recursive function that queues a subroot into the subroot tree.
+     * Queues a subroot into the subroot tree.
      * @param _leaf The value to queue.
      * @param _level The level at which to queue _leaf.
      * @param _maxDepth The depth of the tree.
@@ -360,12 +364,13 @@ abstract contract AccQueue is Ownable, Hasher {
         } else {
             // Hash the elements in this level and queue it in the next level
             uint256 hashed;
-            uint256[] memory inputs = new uint256[](hashLength);
             if (isBinary) {
+                uint256[2] memory inputs;
                 inputs[0] = subRootQueue.levels[_level][0];
                 inputs[1] = _leaf;
                 hashed = hash2(inputs);
             } else {
+                uint256[5] memory inputs;
                 for (uint8 i = 0; i < n; i ++) {
                     inputs[i] = subRootQueue.levels[_level][i];
                 }
@@ -373,6 +378,7 @@ abstract contract AccQueue is Ownable, Hasher {
                 hashed = hash5(inputs);
             }
 
+            // TODO: change recursion to a while loop
             // Recurse
             delete subRootQueue.indices[_level];
             queueSubRoot(hashed, _level + 1, _maxDepth);
@@ -418,17 +424,18 @@ abstract contract AccQueue is Ownable, Hasher {
             uint256 root = smallSRTroot;
 
             // Calculate the main root
-            uint256[] memory inputs = new uint256[](hashLength);
 
             for (uint256 i = srtDepth; i < _depth; i ++) {
 
                 uint256 z = getZero(i);
 
                 if (isBinary) {
+                    uint256[2] memory inputs;
                     inputs[0] = root;
                     inputs[1] = z;
                     root = hash2(inputs);
                 } else {
+                    uint256[5] memory inputs;
                     inputs[0] = root;
                     inputs[1] = z;
                     inputs[2] = z;
@@ -494,31 +501,28 @@ abstract contract AccQueueBinary is AccQueue {
     }
 
     function _fill(uint256 _level) override internal {
-        if (_level > subDepth) {
-            return;
-        }
+        while (_level < subDepth) {
+            uint256 n = leafQueue.indices[_level];
 
-        uint256 n = leafQueue.indices[_level];
+            if (n != 0) {
+                // Fill the subtree level with zeros and hash the level
+                uint256 hashed;
 
-        if (n != 0) {
-            // Fill the subtree level with zeros and hash the level
-            uint256 hashed;
+                uint256[2] memory inputs;
+                uint256 z = getZero(_level);
+                inputs[0] = leafQueue.levels[_level][0];
+                inputs[1] = z;
+                hashed = hash2(inputs);
 
-            uint256[] memory inputs = new uint256[](2);
-            uint256 z = getZero(_level);
-            inputs[0] = leafQueue.levels[_level][0];
-            inputs[1] = z;
-            hashed = hash2(inputs);
-
-            // Update the subtree from the next level onwards with the new leaf
-            _enqueue(hashed, _level + 1);
+                // Update the subtree from the next level onwards with the new leaf
+                _enqueue(hashed, _level + 1);
+            }
 
             // Reset the current level
             delete leafQueue.indices[_level];
-        }
 
-        // Recurse
-        _fill(_level + 1);
+            _level++;
+        }
     }
 }
 
@@ -527,7 +531,7 @@ abstract contract AccQueueQuinary is AccQueue {
     constructor(uint256 _subDepth) AccQueue(_subDepth, 5) {}
 
     function hashLevel(uint256 _level, uint256 _leaf) override internal returns (uint256) {
-        uint256[] memory inputs = new uint256[](5);
+        uint256[5] memory inputs;
         inputs[0] = leafQueue.levels[_level][0];
         inputs[1] = leafQueue.levels[_level][1];
         inputs[2] = leafQueue.levels[_level][2];
@@ -543,37 +547,34 @@ abstract contract AccQueueQuinary is AccQueue {
     }
 
     function _fill(uint256 _level) override internal {
-        if (_level > subDepth) {
-            return;
-        }
+        while (_level < subDepth) {
+            uint256 n = leafQueue.indices[_level];
 
-        uint256 n = leafQueue.indices[_level];
+            if (n != 0) {
+                // Fill the subtree level with zeros and hash the level
+                uint256 hashed;
 
-        if (n != 0) {
-            // Fill the subtree level with zeros and hash the level
-            uint256 hashed;
+                uint256[5] memory inputs;
+                uint256 z = getZero(_level);
+                uint8 i = 0;
+                for (; i < n; i ++) {
+                    inputs[i] = leafQueue.levels[_level][i];
+                }
 
-            uint256[] memory inputs = new uint256[](5);
-            uint256 z = getZero(_level);
-            uint8 i = 0;
-            for (; i < n; i ++) {
-                inputs[i] = leafQueue.levels[_level][i];
+                for (; i < hashLength; i ++) {
+                    inputs[i] = z;
+                }
+                hashed = hash5(inputs);
+
+                // Update the subtree from the next level onwards with the new leaf
+                _enqueue(hashed, _level + 1);
             }
-
-            for (; i < hashLength; i ++) {
-                inputs[i] = z;
-            }
-            hashed = hash5(inputs);
-
-            // Update the subtree from the next level onwards with the new leaf
-            _enqueue(hashed, _level + 1);
 
             // Reset the current level
             delete leafQueue.indices[_level];
-        }
 
-        // Recurse
-        _fill(_level + 1);
+            _level++;
+        }
     }
 }
 
@@ -647,6 +648,7 @@ abstract contract AccQueueQuinaryWithSha256 is AccQueue {
             delete leafQueue.indices[_level];
         }
 
+        // TODO: change recursion to a while loop
         // Recurse
         _fill(_level + 1);
     }

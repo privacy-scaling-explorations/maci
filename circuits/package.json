@@ -54,16 +54,15 @@
     },
     "dependencies": {
         "argparse": "^1.0.10",
-        "circom": "0.5.35",
-        "circomlib": "0.3.0",
-        "libsemaphore": "^1.0.5",
+        "circom": "0.5.38",
+        "circomlib": "0.5.1",
         "shelljs": "^0.8.3",
-        "snarkjs": "0.3.45"
+        "snarkjs": "0.3.59"
     },
     "devDependencies": {
         "@types/jest": "^24.0.25",
         "@types/node": "^13.1.2",
-        "circom-helper": "0.0.21",
+        "circom-helper": "0.1.1",
         "axios": "^0.21.0",
         "jest": "^24.9.0",
         "maci-config": "^1.0.0",
