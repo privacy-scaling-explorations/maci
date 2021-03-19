@@ -11,7 +11,7 @@ install:
   - npm i
   - npm run bootstrap
   - npm run build
-  - cd circuits && npm run build-test-circuits
+  - cd circuits && ./scripts/downloadTestCircuits && npm run build-test-circuits
 
 script:
   #- cd crypto && npm run test

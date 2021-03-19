@@ -3,8 +3,7 @@
 cd "$(dirname "$0")"
 cd ..
 
-npm run circom-helper &
-sleep 20 &&
+npm run circom-helper-skipAll &
 npx jest CalculateTotal.test.ts &&
 npx jest IncrementalMerkleTree.test.ts &&
 npx jest PrivToPubKey.test.ts &&
