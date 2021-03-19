@@ -1,6 +1,6 @@
 {
     "name": "maci-crypto",
-    "version": "0.6.6",
+    "version": "0.6.7",
     "description": "",
     "main": "build/index.js",
     "scripts": {
