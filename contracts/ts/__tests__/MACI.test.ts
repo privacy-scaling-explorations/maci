@@ -136,6 +136,7 @@ describe('MACI', () => {
                 maciState.signUp(
                     user.pubKey,
                     BigInt(event.values._voiceCreditBalance.toString()),
+                    BigInt(event.values._timestamp.toString()),
                 )
 
                 i ++
@@ -233,8 +234,18 @@ describe('MACI', () => {
             const event = iface.parseLog(receipt.logs[receipt.logs.length - 1])
             pollId = event.values._pollId
 
+            const pollContractAddress = await maciContract.getPoll(pollId)
+            const pollContract = new ethers.Contract(
+                pollContractAddress,
+                pollAbi,
+                deployer.signer,
+            )
+            const deployTime = await pollContract.deployTime()
+            const pollEndTimestamp = BigInt(duration + deployTime)
+
             const p = maciState.deployPoll(
                 duration,
+                pollEndTimestamp,
                 maxValues,
                 treeDepths,
                 messageBatchSize,

@@ -512,11 +512,12 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher, IPubKey {
 
         uint256 packedVals = genProcessMessagesPackedVals(_poll, _numSignUps);
 
-        uint256[] memory input = new uint256[](4);
+        uint256[] memory input = new uint256[](5);
         input[0] = packedVals;
         input[1] = coordinatorPubKeyHash;
         input[2] = _messageRoot;
         input[3] = _poll.currentSbCommitment();
+        input[4] = _poll.deployTime() + _poll.duration();
         uint256 inputHash = sha256Hash(input);
 
         uint256[] memory publicInputs = new uint256[](1);

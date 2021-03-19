@@ -81,6 +81,7 @@ describe('Domain objects', () => {
             const stateLeaf = new StateLeaf(
                 pubKey,
                 BigInt(123),
+                BigInt(1231267),
             )
 
             const serialized = stateLeaf.serialize()

@@ -40,12 +40,20 @@ template MessageValidator() {
         validSignature.preimage[i] <== cmd[i];
     }
 
-    // e) Whether there are sufficient voice credits
+    // e) Whether the state leaf was inserted before the Poll period ended
+    signal input slTimestamp;
+    signal input pollEndTimestamp;
+    component validTimestamp = LessEqThan(252);
+    validTimestamp.in[0] <== slTimestamp;
+    validTimestamp.in[1] <== pollEndTimestamp;
+
+    // f) Whether there are sufficient voice credits
     signal input currentVoiceCreditBalance;
     signal input currentVotesForOption;
     signal input voteWeight;
 
-    // Check that voteWeight is < sqrt(field size)
+    // Check that voteWeight is < sqrt(field size), so voteWeight ^ 2 will not
+    // overflow
     component validVoteWeight = LessEqThan(252);
     validVoteWeight.in[0] <== voteWeight;
     validVoteWeight.in[1] <== 147946756881789319005730692170996259609;
@@ -56,12 +64,13 @@ template MessageValidator() {
     sufficientVoiceCredits.in[1] <== voteWeight * voteWeight;
 
     component validUpdate = IsEqual();
-    validUpdate.in[0] <== 6;
+    validUpdate.in[0] <== 7;
     validUpdate.in[1] <== validSignature.valid + 
                           sufficientVoiceCredits.out +
                           validVoteWeight.out +
                           validNonce.out +
                           validStateLeafIndex.out +
+                          validTimestamp.out +
                           validVoteOptionIndex.out;
     signal output isValid;
     isValid <== validUpdate.out;

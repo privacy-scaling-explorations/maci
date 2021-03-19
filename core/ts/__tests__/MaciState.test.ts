@@ -91,6 +91,7 @@ describe('MaciState', () => {
             const stateLeaf = new StateLeaf(
                 userKeypair.pubKey,
                 voiceCreditBalance,
+                BigInt(Math.floor(Date.now() / 1000)),
             )
 
             stateTree.insert(stateLeaf.hash())

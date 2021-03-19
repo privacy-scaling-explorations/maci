@@ -95,7 +95,8 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     event SignUp(
         uint256 _stateIndex,
         PubKey _userPubKey,
-        uint256 _voiceCreditBalance
+        uint256 _voiceCreditBalance,
+        uint256 _timestamp
     );
     event MergeStateAqSubRoots(uint256 _pollId, uint256 _numSrQueueOps);
     event MergeStateAq(uint256 _pollId);
@@ -195,7 +196,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         );
 
         // The limit on voice credits is 2 ^ 32 which is hardcoded into the
-        // UpdateStateTree circuit, specifically at check that there are
+        // MessageValidator circuit, specifically at check that there are
         // sufficient voice credits (using GreaterEqThan(32)).
         // TODO: perhaps increase this to 2 ^ 50 = 1125899906842624?
         require(
@@ -203,16 +204,17 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
             "MACI: too many voice credits"
         );
 
+        uint256 timestamp = block.timestamp;
         // Create a state leaf and enqueue it.
         uint256 stateLeaf = hashStateLeaf(
-            StateLeaf(_pubKey, voiceCreditBalance)
+            StateLeaf(_pubKey, voiceCreditBalance, timestamp)
         );
         uint256 stateIndex = stateAq.enqueue(stateLeaf);
 
         // Increment the number of signups
         numSignUps ++;
 
-        emit SignUp(stateIndex, _pubKey, voiceCreditBalance);
+        emit SignUp(stateIndex, _pubKey, voiceCreditBalance, timestamp);
     }
 
     //function signUpViaRelayer(

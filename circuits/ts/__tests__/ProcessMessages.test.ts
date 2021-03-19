@@ -83,15 +83,20 @@ describe('ProcessMessage circuit', () => {
         let messageTree
 
         beforeAll(async () => {
+            // Sign up and publish
             const userKeypair = new Keypair()
-            stateIndex = maciState.signUp(userKeypair.pubKey, voiceCreditBalance)
+            stateIndex = maciState.signUp(
+                userKeypair.pubKey,
+                voiceCreditBalance,
+                BigInt(Math.floor(Date.now() / 1000)),
+            )
 
             maciState.stateAq.mergeSubRoots(0)
             maciState.stateAq.merge(STATE_TREE_DEPTH)
 
-            // Sign up and publish
             pollId = maciState.deployPoll(
                 duration,
+                BigInt(Math.floor(Date.now() / 1000) + duration),
                 maxValues,
                 treeDepths,
                 messageBatchSize,
@@ -170,6 +175,7 @@ describe('ProcessMessage circuit', () => {
             const currentBallotRoot = poll.ballotTree.root
 
             const generatedInputs = poll.processMessages()
+            debugger
 
             // Calculate the witness
             const witness = await genWitness(circuit, generatedInputs)
@@ -211,6 +217,7 @@ describe('ProcessMessage circuit', () => {
                 coordPubKey: generatedInputs.coordPubKey,
                 msgRoot: generatedInputs.msgRoot,
                 currentSbCommitment: generatedInputs.currentSbCommitment,
+                pollEndTimestamp: generatedInputs.pollEndTimestamp,
             })
 
             const hasherWitness = await genWitness(hasherCircuit, hasherCircuitInputs)
@@ -224,13 +231,18 @@ describe('ProcessMessage circuit', () => {
         it('should produce the correct state root and ballot root', async () => {
             const maciState = new MaciState()
             const userKeypair = new Keypair()
-            const stateIndex = maciState.signUp(userKeypair.pubKey, voiceCreditBalance)
+            const stateIndex = maciState.signUp(
+                userKeypair.pubKey, 
+                voiceCreditBalance,
+                BigInt(Math.floor(Date.now() / 1000)),
+            )
 
             maciState.stateAq.mergeSubRoots(0)
             maciState.stateAq.merge(STATE_TREE_DEPTH)
             // Sign up and publish
             const pollId = maciState.deployPoll(
                 duration,
+                BigInt(Math.floor(Date.now() / 1000) + duration),
                 maxValues,
                 treeDepths,
                 messageBatchSize,

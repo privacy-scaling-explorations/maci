@@ -14,6 +14,8 @@ template StateLeafAndBallotTransformer() {
     // State leaf
     signal input slPubKey[2];
     signal input slVoiceCreditBalance;
+    signal input slTimestamp;
+    signal input pollEndTimestamp;
 
     // Ballot
     signal input ballotNonce;
@@ -65,6 +67,8 @@ template StateLeafAndBallotTransformer() {
     messageValidator.sigS <== cmdSigS;
 
     messageValidator.currentVoiceCreditBalance <== slVoiceCreditBalance;
+    messageValidator.slTimestamp <== slTimestamp;
+    messageValidator.pollEndTimestamp <== pollEndTimestamp;
     messageValidator.currentVotesForOption <== ballotCurrentVotesForOption;
     messageValidator.voteWeight <== cmdNewVoteWeight;
 

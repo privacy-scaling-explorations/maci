@@ -28,7 +28,7 @@ template ProcessMessages(
     var MSG_LENGTH = 8; // iv and data
     var PACKED_CMD_LENGTH = 4;
 
-    var STATE_LEAF_LENGTH = 3;
+    var STATE_LEAF_LENGTH = 4;
     var BALLOT_LENGTH = 2;
 
     var BALLOT_NONCE_IDX = 0;
@@ -37,6 +37,7 @@ template ProcessMessages(
     var STATE_LEAF_PUB_X_IDX = 0;
     var STATE_LEAF_PUB_Y_IDX = 1;
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
+    var STATE_LEAF_TIMESTAMP_IDX = 3;
     
     // Note that we sha256 hash some values from the contract, pass in the hash
     // as a public input, and pass in said values as private inputs. This saves
@@ -51,6 +52,7 @@ template ProcessMessages(
     signal numSignUps;
     signal maxVoteOptions;
 
+    signal private input pollEndTimestamp;
     // The existing message root
     signal private input msgRoot;
 
@@ -128,7 +130,9 @@ template ProcessMessages(
     inputHasher.coordPubKey[1] <== coordPubKey[1];
     inputHasher.msgRoot <== msgRoot;
     inputHasher.currentSbCommitment <== currentSbCommitment;
+    inputHasher.pollEndTimestamp <== pollEndTimestamp;
 
+    // The unpacked values from packedVals
     inputHasher.maxVoteOptions ==> maxVoteOptions;
     inputHasher.numSignUps ==> numSignUps;
     inputHasher.batchStartIndex ==> batchStartIndex;
@@ -253,6 +257,7 @@ template ProcessMessages(
 
         processors[i].numSignUps <== numSignUps;
         processors[i].maxVoteOptions <== maxVoteOptions;
+        processors[i].pollEndTimestamp <== pollEndTimestamp;
 
         processors[i].currentStateRoot <== stateRoots[i + 1];
         processors[i].currentBallotRoot <== ballotRoots[i + 1];
@@ -323,7 +328,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
         verify(currentStateRoot, pathElements0, pathIndices0, currentStateLeaves0)
         qip(newStateLeaves0, pathElements0) -> newStateRoot0
     */
-    var STATE_LEAF_LENGTH = 3;
+    var STATE_LEAF_LENGTH = 4;
     var BALLOT_LENGTH = 2;
     var MSG_LENGTH = 8; // iv and data
     var PACKED_CMD_LENGTH = 4;
@@ -335,9 +340,12 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     var STATE_LEAF_PUB_X_IDX = 0;
     var STATE_LEAF_PUB_Y_IDX = 1;
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
+    var STATE_LEAF_TIMESTAMP_IDX = 3;
 
     signal input numSignUps;
     signal input maxVoteOptions;
+
+    signal input pollEndTimestamp;
 
     signal input currentStateRoot;
     signal input currentBallotRoot;
@@ -375,6 +383,8 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     transformer.slPubKey[STATE_LEAF_PUB_X_IDX] <== stateLeaf[STATE_LEAF_PUB_X_IDX];
     transformer.slPubKey[STATE_LEAF_PUB_Y_IDX] <== stateLeaf[STATE_LEAF_PUB_Y_IDX];
     transformer.slVoiceCreditBalance           <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX];
+    transformer.slTimestamp                    <== stateLeaf[STATE_LEAF_TIMESTAMP_IDX];
+    transformer.pollEndTimestamp               <== pollEndTimestamp;
     transformer.ballotNonce                    <== ballot[BALLOT_NONCE_IDX];
     transformer.ballotCurrentVotesForOption    <== currentVoteWeight;
     transformer.cmdStateIndex                  <== cmdStateIndex;
@@ -406,7 +416,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     //  ----------------------------------------------------------------------- 
     // 3. Verify that the original state leaf exists in the given state root
     component stateLeafQle = QuinLeafExists(stateTreeDepth);
-    component stateLeafHasher = Hasher3();
+    component stateLeafHasher = Hasher4();
     for (var i = 0; i < STATE_LEAF_LENGTH; i++) {
         stateLeafHasher.in[i] <== stateLeaf[i];
     }
@@ -467,10 +477,11 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
 
     //  ----------------------------------------------------------------------- 
     // 6. Generate a new state root
-    component newStateLeafHasher = Hasher3();
+    component newStateLeafHasher = Hasher4();
     newStateLeafHasher.in[STATE_LEAF_PUB_X_IDX] <== transformer.newSlPubKey[STATE_LEAF_PUB_X_IDX];
     newStateLeafHasher.in[STATE_LEAF_PUB_Y_IDX] <== transformer.newSlPubKey[STATE_LEAF_PUB_Y_IDX];
     newStateLeafHasher.in[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] <== transformer.newSlVoiceCreditBalance;
+    newStateLeafHasher.in[STATE_LEAF_TIMESTAMP_IDX] <== stateLeaf[STATE_LEAF_TIMESTAMP_IDX];
 
     component newStateLeafQip = QuinTreeInclusionProof(stateTreeDepth);
     newStateLeafQip.leaf <== newStateLeafHasher.hash;
@@ -520,6 +531,7 @@ template ProcessMessagesInputHasher() {
     signal input coordPubKey[2];
     signal input msgRoot;
     signal input currentSbCommitment;
+    signal input pollEndTimestamp;
 
     signal output maxVoteOptions;
     signal output numSignUps;
@@ -541,12 +553,13 @@ template ProcessMessagesInputHasher() {
     pubKeyHasher.left <== coordPubKey[0];
     pubKeyHasher.right <== coordPubKey[1];
 
-    // 3. Hash the 4 inputs with SHA256
-    component hasher = Sha256Hasher4();
+    // 3. Hash the 5 inputs with SHA256
+    component hasher = Sha256Hasher5();
     hasher.in[0] <== packedVals;
     hasher.in[1] <== pubKeyHasher.hash;
     hasher.in[2] <== msgRoot;
     hasher.in[3] <== currentSbCommitment;
+    hasher.in[4] <== pollEndTimestamp;
 
     hash <== hasher.hash;
 }

@@ -57,6 +57,7 @@ describe('DomainObjs', () => {
             const stateLeaf = new StateLeaf(
                 keypair.pubKey,
                 voiceCreditBalance,
+                BigInt(456546345),
             )
             const onChainHash = await doContract.hashStateLeaf(
                 stateLeaf.asContractParam(),

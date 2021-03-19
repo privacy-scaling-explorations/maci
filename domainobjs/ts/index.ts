@@ -526,13 +526,16 @@ class Ballot {
 class StateLeaf implements IStateLeaf {
     public pubKey: PubKey
     public voiceCreditBalance: BigInt
+    public timestamp: BigInt
 
     constructor (
         pubKey: PubKey,
         voiceCreditBalance: BigInt,
+        timestamp: BigInt,
     ) {
         this.pubKey = pubKey
         this.voiceCreditBalance = voiceCreditBalance
+        this.timestamp = timestamp
     }
 
     /*
@@ -542,12 +545,14 @@ class StateLeaf implements IStateLeaf {
         return new StateLeaf(
             this.pubKey.copy(),
             BigInt(this.voiceCreditBalance.toString()),
+            BigInt(this.timestamp.toString()),
         )
     }
 
     public static genBlankLeaf(): StateLeaf {
         return new StateLeaf(
             new PubKey([BigInt(0), BigInt(0)]),
+            BigInt(0),
             BigInt(0),
         )
     }
@@ -557,6 +562,7 @@ class StateLeaf implements IStateLeaf {
         return new StateLeaf(
             keypair.pubKey,
             genRandomSalt(),
+            BigInt(0),
         )
     }
 
@@ -565,6 +571,7 @@ class StateLeaf implements IStateLeaf {
         return [
             ...this.pubKey.asArray(),
             this.voiceCreditBalance,
+            this.timestamp,
         ]
     }
 
@@ -575,26 +582,29 @@ class StateLeaf implements IStateLeaf {
 
     public hash = (): BigInt => {
 
-        return hash3(this.asArray())
+        return hash4(this.asArray())
     }
 
     public asContractParam() {
         return {
             pubKey: this.pubKey.asContractParam(),
             voiceCreditBalance: this.voiceCreditBalance.toString(),
+            timestamp: this.timestamp.toString(),
         }
     }
 
     public equals(s: StateLeaf): boolean {
         return this.pubKey.equals(s.pubKey) &&
-            this.voiceCreditBalance === s.voiceCreditBalance
+            this.voiceCreditBalance === s.voiceCreditBalance &&
+            this.timestamp === s.timestamp
     }
 
     public serialize = (): string => {
-        const j = {
-            pubKey: this.pubKey.serialize(),
-            voiceCreditBalance: this.voiceCreditBalance.toString(16),
-        }
+        const j = [
+            this.pubKey.serialize(),
+            this.voiceCreditBalance.toString(16),
+            this.timestamp.toString(16),
+        ]
 
         return base64url(
             Buffer.from(JSON.stringify(j, null, 0), 'utf8')
@@ -605,8 +615,9 @@ class StateLeaf implements IStateLeaf {
         const j = JSON.parse(base64url.decode(serialized))
 
         return new StateLeaf(
-            PubKey.unserialize(j.pubKey),
-            BigInt('0x' + j.voiceCreditBalance),
+            PubKey.unserialize(j[0]),
+            BigInt('0x' + j[1]),
+            BigInt('0x' + j[2]),
         )
     }
 }

@@ -55,6 +55,8 @@ class Poll {
 
     public numSignUps: number
 
+    public pollEndTimestamp: BigInt
+
     public processVk: VerifyingKey
     public tallyVk: VerifyingKey
 
@@ -99,6 +101,7 @@ class Poll {
 
     constructor(
         _duration: number,
+        _pollEndTimestamp: BigInt,
         _coordinatorKeypair: Keypair,
         _processParamsFilename: string,
         _tallyParamsFilename: string,
@@ -110,6 +113,7 @@ class Poll {
         _maciStateRef: MaciState,
     ) {
         this.duration = _duration
+        this.pollEndTimestamp = _pollEndTimestamp
         this.coordinatorKeypair = _coordinatorKeypair
         this.processParamsFilename = _processParamsFilename
         this.tallyParamsFilename = _tallyParamsFilename
@@ -329,7 +333,7 @@ class Poll {
                 this.ballotTree.update(index, r.newBallot.hash())
 
             } else {
-                // If the command is invalid
+                // If the command is invalid, use state leaf 0 and ballot 0
                 currentStateLeaves.unshift(this.stateLeaves[0].copy())
                 currentStateLeavesPathElements.unshift(
                     this.stateTree.genMerklePath(0).pathElements
@@ -378,6 +382,8 @@ class Poll {
         circuitInputs.currentBallotsPathElements = currentBallotsPathElements
         circuitInputs.currentVoteWeights = currentVoteWeights
         circuitInputs.currentVoteWeightsPathElements = currentVoteWeightsPathElements
+
+        debugger
 
         this.numBatchesProcessed ++
 
@@ -475,10 +481,12 @@ class Poll {
             coordPubKeyHash,
             msgRoot,
             currentSbCommitment,
+            this.pollEndTimestamp,
         ])
 
         return stringifyBigInts({
             inputHash,
+            pollEndTimestamp: this.pollEndTimestamp,
             packedVals,
             msgRoot,
             msgs,
@@ -844,6 +852,7 @@ class Poll {
     public copy = (): Poll => {
         const copied = new Poll(
             Number(this.duration.toString()),
+            BigInt(this.pollEndTimestamp.toString()),
             this.coordinatorKeypair.copy(),
             this.processParamsFilename.toString(),
             this.tallyParamsFilename.toString(),
@@ -1001,10 +1010,12 @@ class MaciState {
     public signUp(
         _pubKey: PubKey,
         _initialVoiceCreditBalance: BigInt,
+        _timestamp: BigInt,
     ): number {
         const stateLeaf = new StateLeaf(
             _pubKey,
             _initialVoiceCreditBalance,
+            _timestamp,
         )
         const h = stateLeaf.hash()
         const leafIndex = this.stateAq.enqueue(h)
@@ -1016,6 +1027,7 @@ class MaciState {
 
     public deployPoll(
         _duration: number,
+        _pollEndTimestamp: BigInt,
         _maxValues: MaxValues,
         _treeDepths: TreeDepths,
         _messageBatchSize: number,
@@ -1025,6 +1037,7 @@ class MaciState {
     ): number {
         const poll: Poll = new Poll(
             _duration,
+            _pollEndTimestamp,
             _coordinatorKeypair,
             '',
             '',

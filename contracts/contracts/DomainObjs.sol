@@ -23,14 +23,16 @@ contract DomainObjs is IMessage, Hasher, IPubKey {
     struct StateLeaf {
         PubKey pubKey;
         uint256 voiceCreditBalance;
+        uint256 timestamp;
     }
 
     function hashStateLeaf(StateLeaf memory _stateLeaf) public pure returns (uint256) {
-        uint256[3] memory plaintext;
+        uint256[4] memory plaintext;
         plaintext[0] = _stateLeaf.pubKey.x;
         plaintext[1] = _stateLeaf.pubKey.y;
         plaintext[2] = _stateLeaf.voiceCreditBalance;
+        plaintext[3] = _stateLeaf.timestamp;
 
-        return hash3(plaintext);
+        return hash4(plaintext);
     }
 }
