@@ -30,6 +30,8 @@ const ballotNonce = BigInt(0)
 const ballotVoteOptionRoot = BigInt(12345678)
 const ballotCurrentVotesForOption = BigInt(0)
 const updatedBallotVoteOptionRoot = BigInt(87654321)
+const slTimestamp = 1
+const pollEndTimestamp = 2
 
 const command: Command = new Command(
     stateIndex,
@@ -65,6 +67,8 @@ describe('StateLeafAndBallotTransformer circuit', () => {
             cmdSigS: signature.S,
             packedCommand: command.asCircuitInputs(),
             updatedBallotVoteOptionRoot,
+            slTimestamp,
+            pollEndTimestamp,
         })
 
         const witness = await genWitness(circuit, circuitInputs)

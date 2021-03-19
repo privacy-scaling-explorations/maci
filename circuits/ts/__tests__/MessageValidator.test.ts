@@ -49,6 +49,8 @@ describe('MessageValidator circuit', () => {
             currentVoiceCreditBalance: 100,
             currentVotesForOption: 0,
             voteWeight: 9,
+            slTimestamp: 1,
+            pollEndTimestamp: 2,
         })
     })
 
@@ -64,7 +66,7 @@ describe('MessageValidator circuit', () => {
         //console.log(await getSignalByName(circuit, witness, 'main.isValidVoi'))
     })
 
-    it('Should fail if the signature is invalid', async () => {
+    it('Should be invalid if the signature is invalid', async () => {
         const circuitInputs2 = circuitInputs
         circuitInputs2.sigS = '0'
         const witness = await genWitness(circuit, circuitInputs2)
@@ -72,7 +74,7 @@ describe('MessageValidator circuit', () => {
         expect(isValid.toString()).toEqual('0')
     })
 
-    it('Should fail if the pubkey is invalid', async () => {
+    it('Should be invalid if the pubkey is invalid', async () => {
         const circuitInputs2 = circuitInputs
         circuitInputs2.pubKey = [0, 1]
         const witness = await genWitness(circuit, circuitInputs2)
@@ -80,7 +82,7 @@ describe('MessageValidator circuit', () => {
         expect(isValid.toString()).toEqual('0')
     })
 
-    it('Should fail if there are insufficient voice credits', async () => {
+    it('Should be invalid if there are insufficient voice credits', async () => {
         const circuitInputs2 = circuitInputs
         circuitInputs2.voteWeight = 11
         const witness = await genWitness(circuit, circuitInputs2)
@@ -88,7 +90,7 @@ describe('MessageValidator circuit', () => {
         expect(isValid.toString()).toEqual('0')
     })
 
-    it('Should fail if the nonce is invalid', async () => {
+    it('Should be invalid if the nonce is invalid', async () => {
         const circuitInputs2 = circuitInputs
         circuitInputs2.nonce = 3
         const witness = await genWitness(circuit, circuitInputs2)
@@ -96,7 +98,7 @@ describe('MessageValidator circuit', () => {
         expect(isValid.toString()).toEqual('0')
     })
 
-    it('Should fail if the state leaf index is invalid', async () => {
+    it('Should be invalid if the state leaf index is invalid', async () => {
         const circuitInputs2 = circuitInputs
         circuitInputs2.stateTreeIndex = 2
         const witness = await genWitness(circuit, circuitInputs2)
@@ -104,7 +106,7 @@ describe('MessageValidator circuit', () => {
         expect(isValid.toString()).toEqual('0')
     })
 
-    it('Should fail if the vote option index is invalid', async () => {
+    it('Should be invalid if the vote option index is invalid', async () => {
         const circuitInputs2 = circuitInputs
         circuitInputs2.voteOptionIndex = 1
         const witness = await genWitness(circuit, circuitInputs2)
@@ -112,9 +114,17 @@ describe('MessageValidator circuit', () => {
         expect(isValid.toString()).toEqual('0')
     })
 
-    it('Should fail if the vote option index is invalid', async () => {
+    it('Should be invalid if the vote option index is invalid', async () => {
         const circuitInputs2 = circuitInputs
         circuitInputs2.voteOptionIndex = '6049261729'
+        const witness = await genWitness(circuit, circuitInputs2)
+        const isValid = await getSignalByName(circuit, witness, 'main.isValid')
+        expect(isValid.toString()).toEqual('0')
+    })
+
+    it('Should be invalid if the state leaf timestamp is too high', async () => {
+        const circuitInputs2 = circuitInputs
+        circuitInputs2.slTimestamp = '3'
         const witness = await genWitness(circuit, circuitInputs2)
         const isValid = await getSignalByName(circuit, witness, 'main.isValid')
         expect(isValid.toString()).toEqual('0')
