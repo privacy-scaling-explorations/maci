@@ -1,21 +1,23 @@
 language: node_js
+dist: focal
 node_js:
   - 12
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install -y libgmp-dev nlohmann-json3-dev nasm g++ build-essential
 
 install:
   - npm i -g npm
   - npm i
   - npm run bootstrap
   - npm run build
-  - ./circuits/scripts/installZkutil.sh
+  - cd circuits && npm run build-test-circuits
 
 script:
-  - cd crypto && npm run test
-  - cd ../domainobjs && npm run test
-  - cd ../core && npm run test
-  - cd ../circuits && npm run buildBatchUpdateStateTreeSnark && npm run buildQuadVoteTallySnark
-  # - ./scripts/buildSnarksSmall.sh
-  - ./scripts/runTestsInCircleCi.sh
-  - cd ../contracts && ./scripts/compileSol.sh
-  - ./scripts/runTestsInCircleCi.sh
-  - cd ../integrationTests && ./scripts/runTestsInCircleCi.sh
+  #- cd crypto && npm run test
+  #- cd ../domainobjs && npm run test
+  #- cd ../core && npm run test
+  - cd ../circuits && ./scripts/runTestsInCircleCi.sh
+  #- cd ../contracts && ./scripts/compileSol.sh
+  #- ./scripts/runTestsInCircleCi.sh
+  #- cd ../integrationTests && ./scripts/runTestsInCircleCi.sh

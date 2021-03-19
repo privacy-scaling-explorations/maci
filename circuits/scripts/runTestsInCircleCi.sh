@@ -4,7 +4,7 @@ cd "$(dirname "$0")"
 cd ..
 
 npm run circom-helper &
-sleep 800 &&
+sleep 20 &&
 npx jest CalculateTotal.test.ts &&
 npx jest IncrementalMerkleTree.test.ts &&
 npx jest PrivToPubKey.test.ts &&
