@@ -18,7 +18,7 @@
     },
     "dependencies": {
         "circomlib": "0.5.1",
-        "ethers": "^4.0.45",
+        "ethers": "^5.0.32",
         "ffjavascript": "0.2.35"
     },
     "devDependencies": {
