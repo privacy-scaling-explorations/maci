@@ -35,9 +35,8 @@
         "module-alias": "^2.2.2"
     },
     "devDependencies": {
-        "@types/jest": "^24.0.25",
+        "@types/jest": "^26.0.21",
         "@types/node": "^13.1.2",
-        "jest": "^26.6.3",
         "maci-circuits": "^1.0.0",
         "maci-config": "^1.0.0",
         "maci-core": "^1.0.0",
@@ -45,6 +44,7 @@
         "maci-domainobjs": "^1.0.0",
         "shelljs": "^0.8.4",
         "truffle-artifactor": "^4.0.30",
+        "jest": "^26.6.3",
         "ts-jest": "^26.5.4"
     },
     "gitHead": "f567a17293114ba2d5e89c711d00a9f4c197f070"

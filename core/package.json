@@ -25,10 +25,10 @@
         "module-alias": "^2.2.2"
     },
     "devDependencies": {
-        "@types/jest": "^24.0.25",
         "@types/node": "^13.1.2",
-        "jest": "^24.9.0",
-        "ts-jest": "^24.2.0"
+        "@types/jest": "^26.0.21",
+        "jest": "^26.6.3",
+        "ts-jest": "^26.5.4"
     },
     "gitHead": "f567a17293114ba2d5e89c711d00a9f4c197f070"
 }
