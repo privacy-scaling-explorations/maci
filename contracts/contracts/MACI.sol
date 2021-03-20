@@ -8,14 +8,12 @@ import {
     PollProcessorAndTallyer,
     MessageAqFactory
 } from "./Poll.sol";
-import {
-    AccQueue,
-    AccQueueQuinaryMaci,
-    AccQueueQuinaryMaciWithSha256
-} from "./trees/AccQueue.sol";
+
 import { InitialVoiceCreditProxy }
     from "./initialVoiceCreditProxy/InitialVoiceCreditProxy.sol";
+
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
+import { AccQueue, AccQueueQuinaryMaci } from "./trees/AccQueue.sol";
 import { IMACI } from "./IMACI.sol";
 import { Params } from "./Params.sol";
 import { DomainObjs } from "./DomainObjs.sol";
@@ -285,7 +283,6 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
 
         Poll p = pollFactory.deploy(
             _duration,
-            stateTreeDepth,
             _maxValues,
             _treeDepths,
             batchSizes,

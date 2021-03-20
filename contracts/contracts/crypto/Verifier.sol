@@ -10,7 +10,7 @@ abstract contract IVerifier is SnarkCommon {
     function verify(
         uint256[8] memory,
         VerifyingKey memory,
-        uint256[] memory
+        uint256
     ) virtual public view returns (bool);
 }
 
@@ -19,7 +19,7 @@ contract MockVerifier is IVerifier, SnarkConstants {
     function verify(
         uint256[8] memory,
         VerifyingKey memory,
-        uint256[] memory
+        uint256
     ) override public view returns (bool) {
         return result;
     }
@@ -40,12 +40,12 @@ contract Verifier is IVerifier, SnarkConstants {
 
     /*
      * @returns Whether the proof is valid given the verifying key and public
-     *          inputs
+     *          input. Note that this only supports public input.
      */
     function verify(
         uint256[8] memory _proof,
         VerifyingKey memory vk,
-        uint256[] memory input
+        uint256 input
     ) override public view returns (bool) {
         Proof memory proof;
         proof.a = Pairing.G1Point(_proof[0], _proof[1]);
@@ -71,15 +71,13 @@ contract Verifier is IVerifier, SnarkConstants {
         require(proof.c.x < PRIME_Q, "ERROR_PROOF_Q");
         require(proof.c.y < PRIME_Q, "ERROR_PROOF_Q");
 
-        for (uint256 i = 0; i < input.length; i++) {
-            // Make sure that each input is less than the snark scalar field
-            require(input[i] < SNARK_SCALAR_FIELD, "ERROR_INPUT_VAL");
+        // Make sure that each input is less than the snark scalar field
+        require(input < SNARK_SCALAR_FIELD, "ERROR_INPUT_VAL");
 
-            vk_x = Pairing.plus(
-                vk_x,
-                Pairing.scalar_mul(vk.ic[i + 1], input[i])
-            );
-        }
+        vk_x = Pairing.plus(
+            vk_x,
+            Pairing.scalar_mul(vk.ic[1], input)
+        );
 
         vk_x = Pairing.plus(vk_x, vk.ic[0]);
 

@@ -31,6 +31,7 @@
         "argparse": "^1.0.10",
         "circomlib": "0.5.1",
         "ethers": "^4.0.45",
+        "hardhat-contract-sizer": "^2.0.3",
         "module-alias": "^2.2.2"
     },
     "devDependencies": {

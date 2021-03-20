@@ -55,7 +55,6 @@ contract PollFactory is Params, IPubKey, IMessage, Ownable, Hasher, PollDeployme
      */
     function deploy(
         uint256 _duration,
-        uint8 _stateTreeDepth,
         MaxValues memory _maxValues,
         TreeDepths memory _treeDepths,
         BatchSizes memory _batchSizes,
@@ -88,7 +87,6 @@ contract PollFactory is Params, IPubKey, IMessage, Ownable, Hasher, PollDeployme
 
         Poll poll = new Poll(
             _duration,
-            _stateTreeDepth,
             _maxValues,
             _treeDepths,
             _batchSizes,
@@ -97,7 +95,7 @@ contract PollFactory is Params, IPubKey, IMessage, Ownable, Hasher, PollDeployme
             _ppt
         );
 
-        messageAq.transferOwnership(address(poll));
+        extContracts.messageAq.transferOwnership(address(poll));
 
         poll.transferOwnership(_pollOwner);
 
@@ -113,25 +111,30 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     // The coordinator's public key
     PubKey public coordinatorPubKey;
 
-    uint256 public deployTime;
+    // The timestamp of the block at which the Poll was deployed
+    uint256 internal deployTime;
 
     // The duration of the polling period, in seconds
-    uint256 public duration;
+    uint256 internal duration;
 
-    // The verifying key signature for the message processing circuit
-    uint256 public processVkSig;
+    function getDeployTimeAndDuration() public view returns (uint256, uint256) {
+        return (deployTime, duration);
+    }
 
-    // The verifying key signature for the tally circuit
-    uint256 public tallyVkSig;
+    //// The verifying key signature for the message processing circuit
+    //uint256 public processVkSig;
 
-    // The MACI instance
-    IMACI public maci;
+    //// The verifying key signature for the tally circuit
+    //uint256 public tallyVkSig;
+
+    //// The MACI instance
+    //IMACI public maci;
 
     // Whether the MACI contract's stateAq has been merged by this contract
     bool public stateAqMerged;
 
-    // The message queue
-    AccQueue public messageAq;
+    //// The message queue
+    //AccQueue public messageAq;
 
     PollProcessorAndTallyer public ppt;
 
@@ -142,7 +145,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     // Each successful invocation of processMessages() should use a different
     // salt to update this value, so that an external observer cannot tell in
     // the case that none of the messages are valid.
-    uint256 public currentSbCommitment;
+    uint256 internal currentSbCommitment;
 
     // The commitment to the tally results. Its initial value should be:
     // hash3(
@@ -151,13 +154,19 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     //   hashLeftRight(merkleRoot([0...0]), 0)
     // )
     // Where [0...0] is an array of 0s, TREE_ARITY ** voteOptionTreeDepth long
-    uint256 public currentTallyCommitment = 
+    uint256 internal currentTallyCommitment = 
         0x17e1b6993b1af9f8dfe8d4202c2f2a610994ff19b92462f9a54da39d11026d6b;
 
-    uint256 public numSignUps;
+    function currentSbAndTallyCommitments() public view returns (uint256, uint256) {
+        return (currentSbCommitment, currentTallyCommitment);
+    }
 
-    // The number of published messages
-    uint256 public numMessages;
+    uint256 private numSignUps;
+    uint256 private numMessages;
+
+    function numSignUpsAndMessages() public view returns (uint256, uint256) {
+        return (numSignUps, numMessages);
+    }
 
     MaxValues public maxValues;
     TreeDepths public treeDepths;
@@ -180,13 +189,14 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     event MergeMessageAqSubRoots(uint256 _numSrQueueOps);
     event MergeMessageAq(uint256 _messageRoot);
 
+    ExtContracts public extContracts;
+
     /*
      * Each MACI instance can have multiple Polls.
      * When a Poll is deployed, its voting period starts immediately.
      */
     constructor(
         uint256 _duration,
-        uint8 _stateTreeDepth,
         MaxValues memory _maxValues,
         TreeDepths memory _treeDepths,
         BatchSizes memory _batchSizes,
@@ -194,9 +204,8 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
         ExtContracts memory _extContracts,
         PollProcessorAndTallyer _ppt
     ) {
-        VkRegistry _vkRegistry = _extContracts.vkRegistry;
-        IMACI _maci = _extContracts.maci;
-        AccQueue _messageAq = _extContracts.messageAq;
+
+        extContracts = _extContracts;
 
         coordinatorPubKey = _coordinatorPubKey;
         duration = _duration;
@@ -204,50 +213,11 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
         batchSizes = _batchSizes;
         treeDepths = _treeDepths;
 
-        maci = _maci;
-        messageAq = _messageAq;
-
-        uint256 pSig = _vkRegistry.genProcessVkSig(
-            _stateTreeDepth,
-            _treeDepths.messageTreeDepth,
-            _treeDepths.voteOptionTreeDepth,
-            _batchSizes.messageBatchSize
-        );
-
-        uint256 tSig = _vkRegistry.genTallyVkSig(
-            _stateTreeDepth,
-            _treeDepths.intStateTreeDepth,
-            _treeDepths.voteOptionTreeDepth
-        );
-
-        require(
-            _vkRegistry.isProcessVkSet(pSig) &&
-            _vkRegistry.isTallyVkSet(tSig),
-            ERROR_VK_NOT_SET
-        );
-
-        // Store the VK sigs
-        processVkSig = pSig;
-        tallyVkSig = tSig;
-
         // Record the current timestamp
         deployTime = block.timestamp;
 
         // Set the poll processor contract
         ppt = _ppt;
-    }
-
-    /*
-     * A modifier that causes the function to revert if the voting period is
-     * over.
-     */
-    modifier isBeforeVotingDeadline() {
-        uint256 secondsPassed = block.timestamp - deployTime;
-        require(
-            secondsPassed <= duration,
-            ERROR_VOTING_PERIOD_PASSED
-        );
-        _;
     }
 
     /*
@@ -274,9 +244,12 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     function publishMessage(
         Message memory _message,
         PubKey memory _encPubKey
-    )
-    public
-    isBeforeVotingDeadline {
+    ) public {
+        uint256 secondsPassed = block.timestamp - deployTime;
+        require(
+            secondsPassed <= duration,
+            ERROR_VOTING_PERIOD_PASSED
+        );
         require(
             numMessages <= maxValues.maxMessages,
             ERROR_MAX_MESSAGES_REACHED
@@ -287,7 +260,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
             ERROR_INVALID_PUBKEY
         );
         uint256 messageLeaf = hashMessageAndEncPubKey(_message, _encPubKey);
-        messageAq.enqueue(messageLeaf);
+        extContracts.messageAq.enqueue(messageLeaf);
         numMessages ++;
 
         emit PublishMessage(_message, _encPubKey);
@@ -316,9 +289,6 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
      * The first step of merging the MACI state AccQueue. This allows the
      * ProcessMessages circuit to access the latest state tree and ballots via
      * currentSbCommitment.
-     * TODO: consider an attack where someone signs up repeatedly while the
-     * subroots are being merged. With a good signup gatekeeper, however, this
-    * is unlikely to succeed in DDOSing the process.
      */
     function mergeMaciStateAqSubRoots(
         uint256 _numSrQueueOps,
@@ -330,12 +300,12 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
         // This function can only be called once per Poll
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
 
-        if (!maci.stateAq().subTreesMerged()) {
-            maci.mergeStateAqSubRoots(_numSrQueueOps, _pollId);
+        if (!extContracts.maci.stateAq().subTreesMerged()) {
+            extContracts.maci.mergeStateAqSubRoots(_numSrQueueOps, _pollId);
         }
         
         if (numSignUps == 0) {
-            numSignUps = maci.numSignUps();
+            numSignUps = extContracts.maci.numSignUps();
         }
 
         emit MergeMaciStateAqSubRoots(_numSrQueueOps);
@@ -356,15 +326,12 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
         // deadline
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
 
-        // TODO: remove this redundant check?
-        require(currentSbCommitment == 0, ERROR_SB_COMMITMENT_NOT_SET);
-
-        if (maci.stateAq().subTreesMerged()) {
-            maci.mergeStateAq(_pollId);
+        if (extContracts.maci.stateAq().subTreesMerged()) {
+            extContracts.maci.mergeStateAq(_pollId);
         }
         stateAqMerged = true;
 
-        uint256 stateRoot = maci.getStateAqRoot();
+        uint256 stateRoot = extContracts.maci.getStateAqRoot();
         // Set currentSbCommitment
         uint256[3] memory sb;
         sb[0] = stateRoot;
@@ -383,7 +350,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     public
     onlyOwner
     isAfterVotingDeadline {
-        messageAq.mergeSubRoots(_numSrQueueOps);
+        extContracts.messageAq.mergeSubRoots(_numSrQueueOps);
         emit MergeMessageAqSubRoots(_numSrQueueOps);
     }
 
@@ -395,7 +362,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     public
     onlyOwner
     isAfterVotingDeadline {
-        uint256 root = messageAq.merge(treeDepths.messageTreeDepth);
+        uint256 root = extContracts.messageAq.merge(treeDepths.messageTreeDepth);
         emit MergeMessageAq(root);
     }
 
@@ -406,12 +373,12 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     public
     onlyOwner
     isAfterVotingDeadline {
-        messageAq.insertSubTree(_messageSubRoot);
+        extContracts.messageAq.insertSubTree(_messageSubRoot);
         // TODO: emit event
     }
 }
 
-contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher, IPubKey {
+contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher, IPubKey, PollDeploymentParams{
     string constant ERROR_VOTING_PERIOD_NOT_PASSED = "PptE01";
     string constant ERROR_NO_MORE_MESSAGES = "PptE02";
     string constant ERROR_MESSAGE_AQ_NOT_MERGED = "PptE03";
@@ -447,10 +414,11 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher, IPubKey {
     }
 
     modifier votingPeriodOver(Poll _poll) {
+        (uint256 deployTime, uint256 duration) = _poll.getDeployTimeAndDuration();
         // Require that the voting period is over
-        uint256 secondsPassed = block.timestamp - _poll.deployTime();
+        uint256 secondsPassed = block.timestamp - deployTime;
         require(
-            secondsPassed > _poll.duration(),
+            secondsPassed > duration,
             ERROR_VOTING_PERIOD_NOT_PASSED
         );
         _;
@@ -476,7 +444,8 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher, IPubKey {
         uint256 messageBatchSize = uint256(mbs);
 
         uint256 index = currentMessageBatchIndex;
-        uint256 numMessages = _poll.numMessages();
+        uint256 numMessages;
+        (, numMessages) = _poll.numSignUpsAndMessages();
         uint256 batchEndIndex = numMessages - index >= messageBatchSize ?
             index + messageBatchSize
             :
@@ -502,28 +471,29 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher, IPubKey {
      * its verification gas cost though the number of constraints will be
      * higher and proving time will be higher.
      */
-    function genProcessMessagesPublicInputs(
+    function genProcessMessagesPublicInputHash(
         Poll _poll,
         uint256 _messageRoot,
         uint256 _numSignUps
-    ) public view returns (uint256[] memory) {
+    ) public view returns (uint256) {
         (uint256 coordinatorPubKeyX, uint256 coordinatorPubKeyY) = _poll.coordinatorPubKey();
         uint256 coordinatorPubKeyHash = hashLeftRight(coordinatorPubKeyX, coordinatorPubKeyY);
 
         uint256 packedVals = genProcessMessagesPackedVals(_poll, _numSignUps);
+        uint256 currentSbCommitment;
+        (currentSbCommitment,) = _poll.currentSbAndTallyCommitments();
+
+        (uint256 deployTime, uint256 duration) = _poll.getDeployTimeAndDuration();
 
         uint256[] memory input = new uint256[](5);
         input[0] = packedVals;
         input[1] = coordinatorPubKeyHash;
         input[2] = _messageRoot;
-        input[3] = _poll.currentSbCommitment();
-        input[4] = _poll.deployTime() + _poll.duration();
+        input[3] = currentSbCommitment;
+        input[4] = deployTime + duration;
         uint256 inputHash = sha256Hash(input);
 
-        uint256[] memory publicInputs = new uint256[](1);
-        publicInputs[0] = inputHash;
-
-        return publicInputs;
+        return inputHash;
     }
 
     /*
@@ -552,16 +522,19 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher, IPubKey {
             voteOptionTreeDepth
         ) = _poll.treeDepths();
 
+        IMACI maci;
+        AccQueue messageAq;
+        (, maci, messageAq) = _poll.extContracts();
+
         // Require that the message queue has been merged
         uint256 messageRoot =
-            _poll.messageAq().getMainRoot(messageTreeDepth);
+            messageAq.getMainRoot(messageTreeDepth);
         require(
             messageRoot != 0,
             ERROR_MESSAGE_AQ_NOT_MERGED
         );
 
-        uint256 messageBatchSize;
-        (messageBatchSize, ) = _poll.batchSizes();
+        (uint256 messageBatchSize, ) = _poll.batchSizes();
 
         // Require that unprocessed messages exist
         require(
@@ -572,48 +545,61 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher, IPubKey {
         // Copy the state root and set the batch index if this is the
         // first batch to process
         if (numBatchesProcessed == 0) {
-            uint256 numMessages = _poll.messageAq().numLeaves();
+            uint256 numMessages = messageAq.numLeaves();
             currentMessageBatchIndex =
                 (numMessages / messageBatchSize) * messageBatchSize;
         }
 
-        VerifyingKey memory vk = _poll.maci().vkRegistry().getProcessVk(
-            _poll.maci().stateTreeDepth(),
-            messageTreeDepth,
-            voteOptionTreeDepth,
-            messageBatchSize
-        );
 
-        { 
-            uint256 numSignUps = _poll.numSignUps();
-            // Curly brackets to avoid "Compiler error: Stack too deep, try
-            // removing local variables."
-            uint256[] memory publicInputs = genProcessMessagesPublicInputs(
+        {
+            verifyProcessProof(
                 _poll,
                 messageRoot,
-                numSignUps
+                messageTreeDepth,
+                voteOptionTreeDepth,
+                _proof
             );
-            bool isValid = verifier.verify(_proof, vk, publicInputs);
-
-            require(isValid, ERROR_INVALID_PROCESS_MESSAGE_PROOF);
         }
 
         {
+            (, uint256 numMessages) = _poll.numSignUpsAndMessages();
             // Decrease the message batch start index to ensure that each
             // message batch is processed in order
             if (currentMessageBatchIndex > 0) {
                 currentMessageBatchIndex -= messageBatchSize;
             }
-            uint256 numMessages = _poll.numMessages();
-            bool pc =
-                numMessages <= messageBatchSize * (numBatchesProcessed + 1);
 
             updateMessageProcessingData(
                 _newSbCommitment,
                 currentMessageBatchIndex,
-                pc
+                numMessages <= messageBatchSize * (numBatchesProcessed + 1)
             );
         }
+    }
+
+    function verifyProcessProof(
+        Poll _poll,
+        uint256 messageRoot,
+        uint256 messageTreeDepth,
+        uint256 voteOptionTreeDepth,
+        uint256[8] memory _proof
+    ) internal view {
+        (uint256 messageBatchSize, ) = _poll.batchSizes();
+        (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
+        uint256 publicInputHash = genProcessMessagesPublicInputHash(
+            _poll,
+            messageRoot,
+            numSignUps
+        );
+        (VkRegistry vkRegistry, IMACI maci, ) = _poll.extContracts();
+        VerifyingKey memory vk = vkRegistry.getProcessVk(
+            maci.stateTreeDepth(),
+            messageTreeDepth,
+            voteOptionTreeDepth,
+            messageBatchSize
+        );
+        bool isValid = verifier.verify(_proof, vk, publicInputHash);
+        require(isValid, ERROR_INVALID_PROCESS_MESSAGE_PROOF);
     }
 
     function updateMessageProcessingData(
@@ -636,31 +622,32 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher, IPubKey {
         ( , uint256 tallyBatchSize) = _poll.batchSizes(); 
 
         uint256 batchStartIndex = tallyBatchNum * tallyBatchSize;
+        (uint256 numSignUps,) = _poll.numSignUpsAndMessages();
 
         // TODO: ensure that each value is less than or equal to 2 ** 50
         uint256 result =
             batchStartIndex +
-            (_poll.numSignUps() << uint256(50));
+            numSignUps << uint256(50);
 
         return result;
     }
 
-    function genTallyVotesPublicInputs(
+    function genTallyVotesPublicInputHash(
         Poll _poll,
         uint256 _newTallyCommitment
-    ) public view returns (uint256[] memory) {
+    ) public view returns (uint256) {
+        uint256 currentSbCommitment;
+        uint256 currentTallyCommitment;
+        (currentSbCommitment, currentTallyCommitment) = _poll.currentSbAndTallyCommitments();
+
         uint256 packedVals = genTallyVotesPackedVals(_poll);
         uint256[] memory input = new uint256[](4);
         input[0] = packedVals;
-        input[1] = _poll.currentSbCommitment();
-        input[2] = _poll.currentTallyCommitment();
+        input[1] = currentSbCommitment;
+        input[2] = currentTallyCommitment;
         input[3] = _newTallyCommitment;
         uint256 inputHash = sha256Hash(input);
-
-        uint256[] memory publicInputs = new uint256[](1);
-        publicInputs[0] = inputHash;
-
-        return publicInputs;
+        return inputHash;
     }
 
     function tallyVotes(
@@ -676,7 +663,8 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher, IPubKey {
         ( , uint256 tallyBatchSize) = _poll.batchSizes(); 
 
         uint256 batchStartIndex = tallyBatchNum * tallyBatchSize;
-        uint256 numSignUps = _poll.numSignUps();
+        uint256 numSignUps;
+        (numSignUps,) = _poll.numSignUpsAndMessages();
 
         // Require that all messages have been processed
         require(
@@ -690,39 +678,45 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher, IPubKey {
             ERROR_ALL_BALLOTS_TALLIED
         );
 
-        uint8 intStateTreeDepth;
-        uint8 voteOptionTreeDepth;
-        (
-            intStateTreeDepth,
-            ,
-            ,
-            voteOptionTreeDepth
-        ) = _poll.treeDepths();
-
-        // Get the verifying key
-        VerifyingKey memory vk = _poll.maci().vkRegistry().getTallyVk(
-            _poll.maci().stateTreeDepth(),
-            intStateTreeDepth,
-            voteOptionTreeDepth
-        );
-
         { 
-            // Curly brackets to avoid "Compiler error: Stack too deep, try
-            // removing local variables."
-
-            // Get the public inputs
-            uint256[] memory publicInputs = genTallyVotesPublicInputs(
-                _poll,
-                _newTallyCommitment
-            );
-
-            // Verify the proof
-            bool isValid = verifier.verify(_proof, vk, publicInputs);
-            require(isValid, ERROR_INVALID_TALLY_VOTES_PROOF);
+            verifyTallyProof(_poll, _proof, _newTallyCommitment);
         }
 
         // Update the tally commitment and the tally batch num
         tallyCommitment = _newTallyCommitment;
         tallyBatchNum ++;
+    }
+
+    function verifyTallyProof(
+        Poll _poll,
+        uint256[8] memory _proof,
+        uint256 _newTallyCommitment
+    ) internal view {
+        (
+            uint8 intStateTreeDepth,
+            ,
+            ,
+            uint8 voteOptionTreeDepth
+        ) = _poll.treeDepths();
+
+        (VkRegistry vkRegistry, IMACI maci, ) = _poll.extContracts();
+
+        // Get the verifying key
+        VerifyingKey memory vk = vkRegistry.getTallyVk(
+            maci.stateTreeDepth(),
+            intStateTreeDepth,
+            voteOptionTreeDepth
+        );
+
+        // Get the public inputs
+        uint256 publicInputHash = genTallyVotesPublicInputHash(
+            _poll,
+            _newTallyCommitment
+        );
+
+
+        // Verify the proof
+        bool isValid = verifier.verify(_proof, vk, publicInputHash);
+        require(isValid, ERROR_INVALID_TALLY_VOTES_PROOF);
     }
 }

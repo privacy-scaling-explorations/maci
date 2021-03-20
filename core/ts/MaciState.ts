@@ -383,8 +383,6 @@ class Poll {
         circuitInputs.currentVoteWeights = currentVoteWeights
         circuitInputs.currentVoteWeightsPathElements = currentVoteWeightsPathElements
 
-        debugger
-
         this.numBatchesProcessed ++
 
         if (this.currentMessageBatchIndex > 0) {
