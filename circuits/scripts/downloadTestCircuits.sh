@@ -8,6 +8,7 @@ cd ..
 mkdir -p build/test/
 cd build/test
 
-wget --quiet -O processMessages_test.tar.gz https://www.dropbox.com/s/ejq4tp8ndmvl4k5/processMessages_test.tar.gz?dl=1
-tar xf processMessages_test.tar.gz
-rm processMessages_test.tar.gz
+wget --quiet -O circuits.tar.gz \
+    https://www.dropbox.com/s/usbxugimo1x4f20/big_test_circuits.tar.gz?dl=1
+tar xf circuits.tar.gz
+rm circuits.tar.gz
