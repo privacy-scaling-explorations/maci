@@ -92,8 +92,8 @@ const genMaciStateFromContract = async (
 
     for (const log of initLogs) {
         const event = maciIface.parseLog(log)
-        vkRegistryAddress = event.values._vkRegistry
-        messageAqFactoryAddress = event.values._messageAqFactory
+        vkRegistryAddress = event.args._vkRegistry
+        messageAqFactoryAddress = event.args._messageAqFactory
     }
 
     const actions: Action[] = []
@@ -109,11 +109,11 @@ const genMaciStateFromContract = async (
             // @ts-ignore
             transactionIndex: log.transactionIndex,
             data: {
-                stateIndex: Number(event.values._stateIndex),
+                stateIndex: Number(event.args._stateIndex),
                 pubKey: new PubKey(
-                    event.values._userPubKey.map((x) => BigInt(x)),
+                    event.args._userPubKey.map((x) => BigInt(x)),
                 ),
-                voiceCreditBalance: Number(event.values._voiceCreditBalance),
+                voiceCreditBalance: Number(event.args._voiceCreditBalance),
             }
         })
     }
@@ -121,7 +121,7 @@ const genMaciStateFromContract = async (
     for (const log of mergeStateAqSubRootsLogs) {
         assert(log != undefined)
         const event = maciIface.parseLog(log)
-        const p =  Number(event.values._pollId)
+        const p =  Number(event.args._pollId)
 
         //// Skip in favour of Poll.MergeMaciStateAqSubRoots
         //if (p === pollId) {
@@ -135,7 +135,7 @@ const genMaciStateFromContract = async (
             // @ts-ignore
             transactionIndex: log.transactionIndex,
             data: {
-                numSrQueueOps: Number(event.values._numSrQueueOps),
+                numSrQueueOps: Number(event.args._numSrQueueOps),
                 pollId: p,
             }
         })
@@ -144,7 +144,7 @@ const genMaciStateFromContract = async (
     for (const log of mergeStateAqLogs) {
         assert(log != undefined)
         const event = maciIface.parseLog(log)
-        const p =  Number(event.values._pollId)
+        const p =  Number(event.args._pollId)
 
         //// Skip in favour of Poll.MergeMaciStateAq
         //if (p === pollId) {
@@ -170,13 +170,13 @@ const genMaciStateFromContract = async (
         assert(log != undefined)
         const event = maciIface.parseLog(log)
         const pubKey = new PubKey(
-            event.values._pubKey.map((x) => BigInt(x.toString()))
+            event.args._pubKey.map((x) => BigInt(x.toString()))
         )
 
-        const pollId = Number(event.values._pollId)
+        const pollId = Number(event.args._pollId)
         assert(pollId === i)
 
-        const pollAddr = event.values._pollAddr
+        const pollAddr = event.args._pollAddr
         actions.push({
             type: 'DeployPoll',
             // @ts-ignore
@@ -274,12 +274,12 @@ const genMaciStateFromContract = async (
         const event = pollIface.parseLog(log)
 
         const message = new Message(
-            BigInt(event.values._message[0]),
-            event.values._message[1].map((x) => BigInt(x)),
+            BigInt(event.args._message[0]),
+            event.args._message[1].map((x) => BigInt(x)),
         )
 
         const encPubKey = new PubKey(
-            event.values._encPubKey.map((x) => BigInt(x.toString()))
+            event.args._encPubKey.map((x) => BigInt(x.toString()))
         )
 
         actions.push({
@@ -299,7 +299,7 @@ const genMaciStateFromContract = async (
         assert(log != undefined)
         const event = pollIface.parseLog(log)
 
-        const numSrQueueOps = Number(event.values._numSrQueueOps)
+        const numSrQueueOps = Number(event.args._numSrQueueOps)
         actions.push({
             type: 'MergeMaciStateAqSubRoots',
             // @ts-ignore
@@ -316,7 +316,7 @@ const genMaciStateFromContract = async (
         assert(log != undefined)
         const event = pollIface.parseLog(log)
 
-        const stateRoot = BigInt(event.values._stateRoot)
+        const stateRoot = BigInt(event.args._stateRoot)
         actions.push({
             type: 'MergeMaciStateAq',
             // @ts-ignore
@@ -331,7 +331,7 @@ const genMaciStateFromContract = async (
         assert(log != undefined)
         const event = pollIface.parseLog(log)
 
-        const numSrQueueOps = Number(event.values._numSrQueueOps)
+        const numSrQueueOps = Number(event.args._numSrQueueOps)
         actions.push({
             type: 'MergeMessageAqSubRoots',
             // @ts-ignore
@@ -348,7 +348,7 @@ const genMaciStateFromContract = async (
         assert(log != undefined)
         const event = pollIface.parseLog(log)
 
-        const messageRoot = BigInt(event.values._messageRoot)
+        const messageRoot = BigInt(event.args._messageRoot)
         actions.push({
             type: 'MergeMessageAq',
             // @ts-ignore

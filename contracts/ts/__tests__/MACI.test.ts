@@ -131,12 +131,12 @@ describe('MACI', () => {
 
                 // Store the state index
                 const event = iface.parseLog(receipt.logs[receipt.logs.length - 1])
-                expect(event.values._stateIndex.toString()).toEqual((i).toString())
+                expect(event.args._stateIndex.toString()).toEqual((i).toString())
 
                 maciState.signUp(
                     user.pubKey,
-                    BigInt(event.values._voiceCreditBalance.toString()),
-                    BigInt(event.values._timestamp.toString()),
+                    BigInt(event.args._voiceCreditBalance.toString()),
+                    BigInt(event.args._timestamp.toString()),
                 )
 
                 i ++
@@ -232,7 +232,7 @@ describe('MACI', () => {
             expect(receipt.status).toEqual(1)
             const iface = new ethers.utils.Interface(maciContract.interface.abi)
             const event = iface.parseLog(receipt.logs[receipt.logs.length - 1])
-            pollId = event.values._pollId
+            pollId = event.args._pollId
 
             const pollContractAddress = await maciContract.getPoll(pollId)
             const pollContract = new ethers.Contract(
