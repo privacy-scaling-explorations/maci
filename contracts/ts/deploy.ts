@@ -6,32 +6,54 @@ import * as argparse from 'argparse'
 import { config } from 'maci-config'
 import { genAccounts, genTestAccounts } from './accounts'
 
-const abiDir = path.join(__dirname, '..', 'compiled')
-const solDir = path.join(__dirname, '..', 'sol')
-const loadBin = (filename: string) => {
-    return fs.readFileSync(path.join(abiDir, filename)).toString()
+const abiDir = path.join(__dirname, '..', 'artifacts')
+const solDir = path.join(__dirname, '..', 'contracts')
+
+const parseArtifact = (filename: string) => {
+	let filePath = 'contracts/'
+	if (filename.includes('Gatekeeper')) {
+		filePath += 'gatekeepers/'
+		filePath += `${filename}.sol`
+	}
+
+	if (filename.includes('VoiceCredit')) {
+		filePath += 'initialVoiceCreditProxy/'
+		filePath += `${filename}.sol`
+	}
+
+	if (filename.includes('Verifier')) {
+		filePath += 'crypto/Verifier.sol/'
+	}
+
+	if (filename.includes('AccQueue')) {
+		filePath += 'trees/AccQueue.sol/'
+	}
+
+	if (filename.includes('Poll') || filename.includes('MessageAq')) {
+		filePath += 'Poll.sol'
+	}
+
+	if (!filePath.includes('.sol')) {
+		filePath += `${filename}.sol`
+	}
+
+	const contractArtifact = JSON.parse(
+		fs.readFileSync(path.join(abiDir, filePath, `${filename}.json`)).toString()
+	)
+
+	return [ contractArtifact.abi, contractArtifact.bytecode ]
 }
 
-const loadAbi = (filename: string) => {
-    return JSON.parse(fs.readFileSync(path.join(abiDir, filename)).toString())
-}
+const PoseidonT3 = require('../artifacts/PoseidonT3.json')
+const PoseidonT4 = require('../artifacts/PoseidonT4.json')
+const PoseidonT5 = require('../artifacts/PoseidonT5.json')
+const PoseidonT6 = require('../artifacts/PoseidonT6.json')
 
-const loadAB = (contractName: string) => {
-    const abi = loadAbi(contractName + '.abi')
-    const bin = loadBin(contractName + '.bin')
-
-    return [ abi, bin ]
-}
-
-const PoseidonT3 = require('../compiled/PoseidonT3.json')
-const PoseidonT4 = require('../compiled/PoseidonT4.json')
-const PoseidonT5 = require('../compiled/PoseidonT5.json')
-const PoseidonT6 = require('../compiled/PoseidonT6.json')
-
-const maciContractAbi = loadAbi('MACI.abi')
+const [ maciContractAbi, maciContractBytes ] = parseArtifact('MACI')
 
 const getInitialVoiceCreditProxyAbi = () => {
-    return loadAbi('InitialVoiceCreditProxy.abi')
+    const [ abi ] = parseArtifact('InitialVoiceCreditProxy.abi')
+    return abi
 }
 
 const linkPoseidonLibraries = (
@@ -89,7 +111,7 @@ export class JSONRPCDeployer {
     }
 }
 
-class GanacheDeployer extends JSONRPCDeployer {
+class HardhatDeployer extends JSONRPCDeployer {
 
     constructor(privateKey: string, port: number, options?: any) {
         const url = `http://localhost:${port}/`
@@ -111,7 +133,7 @@ const genJsonRpcDeployer = (
 const genDeployer = (
     privateKey: string,
 ) => {
-    return new GanacheDeployer(
+    return new HardhatDeployer(
         privateKey,
         config.get('chain.ganache.port'),
         {
@@ -123,7 +145,7 @@ const genDeployer = (
 const deployVkRegistry = async (
     deployer: any,
 ) => {
-    const [ VkRegistryAbi, VkRegistryBin ] = loadAB('VkRegistry')
+    const [ VkRegistryAbi, VkRegistryBin ] = parseArtifact('VkRegistry')
     return await deployer.deploy(
         VkRegistryAbi,
         VkRegistryBin,
@@ -132,7 +154,7 @@ const deployVkRegistry = async (
 
 const deployMockVerifier = async (deployer, quiet = false) => {
     log('Deploying MockVerifier', quiet)
-    const [ MockVerifierAbi, MockVerifierBin ] = loadAB('MockVerifier')
+    const [ MockVerifierAbi, MockVerifierBin ] = parseArtifact('MockVerifier')
     return await deployer.deploy(
         MockVerifierAbi,
         MockVerifierBin,
@@ -141,7 +163,7 @@ const deployMockVerifier = async (deployer, quiet = false) => {
 
 const deployVerifier = async (deployer, quiet = false) => {
     log('Deploying Verifier', quiet)
-    const [ VerifierAbi, VerifierBin ] = loadAB('Verifier')
+    const [ VerifierAbi, VerifierBin ] = parseArtifact('Verifier')
     return await deployer.deploy(
         VerifierAbi,
         VerifierBin,
@@ -155,7 +177,7 @@ const deployConstantInitialVoiceCreditProxy = async (
 ) => {
     log('Deploying InitialVoiceCreditProxy', quiet)
     const [ ConstantInitialVoiceCreditProxyAbi, ConstantInitialVoiceCreditProxyBin ]
-        = loadAB('ConstantInitialVoiceCreditProxy')
+        = parseArtifact('ConstantInitialVoiceCreditProxy')
     return await deployer.deploy(
         ConstantInitialVoiceCreditProxyAbi,
         ConstantInitialVoiceCreditProxyBin,
@@ -165,7 +187,7 @@ const deployConstantInitialVoiceCreditProxy = async (
 
 const deploySignupToken = async (deployer) => {
     console.log('Deploying SignUpToken')
-    const [ SignupTokenAbi, SignupTokenBin ] = loadAB('SignUpToken')
+    const [ SignupTokenAbi, SignupTokenBin ] = parseArtifact('SignUpToken')
     return await deployer.deploy(
         SignupTokenAbi,
         SignupTokenBin,
@@ -179,7 +201,7 @@ const deploySignupTokenGatekeeper = async (
 ) => {
     log('Deploying SignUpTokenGatekeeper', quiet)
 
-    const [ SignUpTokenGatekeeperAbi, SignUpTokenGatekeeperBin ] = loadAB('SignUpTokenGatekeeper')
+    const [ SignUpTokenGatekeeperAbi, SignUpTokenGatekeeperBin ] = parseArtifact('SignUpTokenGatekeeper')
     const signUpTokenGatekeeperContract = await deployer.deploy(
         SignUpTokenGatekeeperAbi,
         SignUpTokenGatekeeperBin,
@@ -195,7 +217,7 @@ const deployFreeForAllSignUpGatekeeper = async (
 ) => {
     log('Deploying FreeForAllSignUpGatekeeper', quiet)
     const [ FreeForAllSignUpGatekeeperAbi, FreeForAllSignUpGatekeeperBin ]
-        = loadAB('FreeForAllGatekeeper')
+        = parseArtifact('FreeForAllGatekeeper')
     return await deployer.deploy(
         FreeForAllSignUpGatekeeperAbi,
         FreeForAllSignUpGatekeeperBin,
@@ -208,7 +230,8 @@ const log = (msg: string, quiet: boolean) => {
     }
 }
 
-const deployPoseidonContracts = async (deployer: any) => {
+const deployPoseidonContracts = async (deployer: any, quiet = false) => {
+    log('Deploying Poseidon Contracts', quiet)
     const PoseidonT3Contract = await deployer.deploy(
         PoseidonT3.abi,
         PoseidonT3.bytecode,
@@ -241,6 +264,39 @@ const deployPoseidonContracts = async (deployer: any) => {
     }
 }
 
+const deployPollFactory = async (deployer, quiet = false) => {
+    log('Deploying PollFactory', quiet)
+    const [ PollFactoryAbi, PollFactoryBin ] = parseArtifact('PollFactory')
+	
+	// TODO: reduce PollFactory contract size
+    return await deployer.deploy(
+        PollFactoryAbi,
+        PollFactoryBin,
+    )
+}
+
+const deployPpt = async (deployer, mockVerifierContractAddress: string, quiet = false) => {
+    log('Deploying PollProcessorAndTallyer', quiet)
+    const [ PptAbi, PptBin ] = parseArtifact('PollProcessorAndTallyer')
+	// TODO: reduce PollProcessorAndTallyer contract size
+    return await deployer.deploy(
+        PptAbi,
+        PptBin,
+        mockVerifierContractAddress,
+    )
+}
+
+const deployMessageAqFactory = async (deployer, quiet = false) => {
+    // MessageAqFactory
+    log('Deploying MessageAqFactory', quiet)
+    const [ MessageAqFactoryAbi, MessageAqFactoryBin ] = parseArtifact('MessageAqFactory')
+	// TODO: reduce MessageAqFactory contract size
+    return await deployer.deploy(
+        MessageAqFactoryAbi,
+        MessageAqFactoryBin,
+    )
+}
+
 const deployMaci = async (
     deployer: any,
     signUpTokenGatekeeperContractAddress: string,
@@ -248,13 +304,12 @@ const deployMaci = async (
     mockVerifierContractAddress: string,
     quiet = false,
 ) => {
-    log('Deploying Poseidon contracts', quiet)
     const {
         PoseidonT3Contract,
         PoseidonT4Contract,
         PoseidonT5Contract,
         PoseidonT6Contract,
-    } = await deployPoseidonContracts(deployer)
+    } = await deployPoseidonContracts(deployer, quiet)
 
     // Link Poseidon contracts to MACI
     linkPoseidonLibraries(
@@ -265,25 +320,13 @@ const deployMaci = async (
         PoseidonT6Contract.address,
     )
 
-    const [ MACIAbi, MACIBin ] = loadAB('MACI')
+    const [ MACIAbi, MACIBin ] = parseArtifact('MACI')
 
-    // PollFactory
-    log('Deploying PollFactory', quiet)
-    const [ PollFactoryAbi, PollFactoryBin ] = loadAB('PollFactory')
-    const pollFactoryContract = await deployer.deploy(
-        PollFactoryAbi,
-        PollFactoryBin,
-    )
+    const pollFactoryContract = await deployPollFactory(deployer)
     await pollFactoryContract.deployTransaction.wait()
 
     // PollProcessorAndTallyer
-    log('Deploying PollProcessorAndTallyer', quiet)
-    const [ PptAbi, PptBin ] = loadAB('PollProcessorAndTallyer')
-    const pptContract = await deployer.deploy(
-        PptAbi,
-        PptBin,
-        mockVerifierContractAddress,
-    )
+    const pptContract = await deployPpt(deployer, mockVerifierContractAddress)
     await pptContract.deployTransaction.wait()
 
     log('Deploying MACI', quiet)
@@ -294,29 +337,23 @@ const deployMaci = async (
         signUpTokenGatekeeperContractAddress,
         initialVoiceCreditBalanceAddress,
     )
+
     await maciContract.deployTransaction.wait()
 
     log('Transferring PollFactory ownership to MACI', quiet)
     await (await (pollFactoryContract.transferOwnership(maciContract.address))).wait()
-
-    // MessageAqFactory
-    log('Deploying MessageAqFactory', quiet)
-    const [ MessageAqFactoryAbi, MessageAqFactoryBin ] = loadAB('MessageAqFactory')
-    const messageAqFactoryContract = await deployer.deploy(
-        MessageAqFactoryAbi,
-        MessageAqFactoryBin,
-    )
+    const messageAqFactoryContract = await deployMessageAqFactory(deployer, quiet)
     await messageAqFactoryContract.deployTransaction.wait()
 
     log('Transferring MessageAqFactory ownership to PollFactory', quiet)
     await (await (messageAqFactoryContract.transferOwnership(pollFactoryContract.address))).wait()
 
     // VkRegistry
-    log('Deploying VkRegistry', quiet)
     const vkRegistryContract = await deployVkRegistry(deployer)
+    await vkRegistryContract.deployTransaction.wait()
 
-    //log('Transferring VkRegistry ownership to MACI', quiet)
-    //await (await (vkRegistryContract.transferOwnership(maciContract.address))).wait()
+    log('Transferring VkRegistry ownership to MACI', quiet)
+    await (await (vkRegistryContract.transferOwnership(maciContract.address))).wait()
 
     log('Initialising MACI', quiet)
     await (await (maciContract.init(
@@ -324,7 +361,7 @@ const deployMaci = async (
         messageAqFactoryContract.address,
     ))).wait()
 
-    const AccQueueQuinaryMaciAbi = loadAbi('AccQueueQuinaryMaci.abi')
+    const [ AccQueueQuinaryMaciAbi, AccQueueBin ] = parseArtifact('AccQueue')
     const stateAqContract = new ethers.Contract(
         await maciContract.stateAq(),
         AccQueueQuinaryMaciAbi,
@@ -339,103 +376,20 @@ const deployMaci = async (
     }
 }
 
-const main = async () => {
-    let accounts
-    if (config.env === 'local-dev' || config.env === 'test') {
-        accounts = genTestAccounts(1)
-    } else {
-        accounts = genAccounts()
-    }
-    const admin = accounts[0]
-
-    console.log('Using account', admin.address)
-
-    const parser = new argparse.ArgumentParser({
-        description: 'Deploy all contracts to an Ethereum network of your choice'
-    })
-
-    parser.addArgument(
-        ['-o', '--output'],
-        {
-            help: 'The filepath to save the addresses of the deployed contracts',
-            required: true
-        }
-    )
-
-    parser.addArgument(
-        ['-s', '--signUpToken'],
-        {
-            help: 'The address of the signup token (e.g. POAP)',
-            required: false
-        }
-    )
-
-    parser.addArgument(
-        ['-p', '--initialVoiceCreditProxy'],
-        {
-            help: 'The address of the contract which provides the initial voice credit balance',
-            required: false
-        }
-    )
-
-    parser.addArgument(
-        ['-v', '--verifier'],
-        {
-            help: 'The address of the contract which verifies zk-SNARK proofs',
-            required: true
-        }
-    )
-
-    const args = parser.parseArgs()
-    const outputAddressFile = args.output
-    const signUpToken = args.signUpToken
-    const initialVoiceCreditProxy = args.initialVoiceCreditProxy
-    const verifier = args.verifier
-
-    const deployer = genDeployer(admin.privateKey)
-
-    let signUpTokenAddress
-    if (signUpToken) {
-        signUpTokenAddress = signUpToken
-    } else {
-        const signUpTokenContract = await deploySignupToken(deployer)
-        signUpTokenAddress = signUpTokenContract.address
-    }
-
-    const signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(
-        deployer,
-        signUpTokenAddress,
-    )
-
-    let initialVoiceCreditBalanceAddress
-    if (initialVoiceCreditProxy) {
-        initialVoiceCreditBalanceAddress = initialVoiceCreditProxy
-    } else {
-        const initialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
-            deployer,
-            config.maci.initialVoiceCreditBalance,
-        )
-        initialVoiceCreditBalanceAddress = initialVoiceCreditProxyContract.address
-    }
-
-    const {
-        maciContract,
-        vkRegistryContract,
-        stateAqContract,
-        pptContract,
-    } = await deployMaci(
-        deployer,
-        signUpTokenGatekeeperContract.address,
-        initialVoiceCreditBalanceAddress,
-        verifier,
-    )
-
+const writeContractAddress = (
+	maciContractAddress: string,
+	vkRegistryContractAddress: string,
+	stateAqContractAddress: string,
+	signUpTokenAddress: string,
+	pptContractAddress: string,
+	outputAddressFile: string
+) => {
     const addresses = {
-        MACI: maciContract.address,
-        VkRegistry: vkRegistryContract.address,
-        StateAq: stateAqContract.address,
+        MaciContract: maciContractAddress,
+        VkRegistry: vkRegistryContractAddress,
+        StateAqContract: stateAqContractAddress,
         SignUpToken: signUpTokenAddress,
-        PollProcessorAndTallyer: pptContract,
+        ProcessAndTallyContract: pptContractAddress,
     }
 
     const addressJsonPath = path.join(__dirname, '..', outputAddressFile)
@@ -447,14 +401,6 @@ const main = async () => {
     console.log(addresses)
 }
 
-if (require.main === module) {
-    try {
-        main()
-    } catch (err) {
-        console.error(err)
-    }
-}
-
 export {
     deployVkRegistry,
     deployMaci,
@@ -464,6 +410,9 @@ export {
     deployFreeForAllSignUpGatekeeper,
     deployMockVerifier,
     deployVerifier,
+    deployPollFactory,
+    deployPpt,
+    deployMessageAqFactory,
     genDeployer,
     genProvider,
     genJsonRpcDeployer,
@@ -471,9 +420,7 @@ export {
     getInitialVoiceCreditProxyAbi,
     abiDir,
     solDir,
-    loadAB,
-    loadAbi,
-    loadBin,
+    parseArtifact,
     linkPoseidonLibraries,
     deployPoseidonContracts,
 }

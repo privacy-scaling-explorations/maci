@@ -3,7 +3,7 @@ import * as ethers from 'ethers'
 import * as shelljs from 'shelljs'
 import * as path from 'path'
 import {
-    loadAbi,
+    parseArtifact,
 } from 'maci-contracts'
 
 import {
@@ -247,7 +247,7 @@ const setVerifyingKeys = async (args: any) => {
 
     const provider = new ethers.providers.JsonRpcProvider(ethProvider)
     const wallet = new ethers.Wallet(ethSk, provider)
-    const vkRegistryAbi = loadAbi('VkRegistry.abi')
+    const [ vkRegistryAbi ] = parseArtifact('VkRegistry')
     const vkRegistryContract = new ethers.Contract(
         vkRegistryAddress,
         vkRegistryAbi,

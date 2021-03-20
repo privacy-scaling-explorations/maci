@@ -2,7 +2,10 @@ import {
     genJsonRpcDeployer,
     deployConstantInitialVoiceCreditProxy,
     deployFreeForAllSignUpGatekeeper,
-    loadAB,
+    deployPollFactory,
+    deployPpt,
+    deployMessageAqFactory,
+    parseArtifact,
     deployPoseidonContracts,
     linkPoseidonLibraries,
 } from 'maci-contracts'
@@ -188,22 +191,14 @@ const create = async (args: any) => {
         PoseidonT6Contract.address,
     )
 
-    const [ MACIAbi, MACIBin ] = loadAB('MACI')
+    const [ MACIAbi, MACIBin ] = parseArtifact('MACI')
 
     // Deploy PollFactory
-    const [ PollFactoryAbi, PollFactoryBin ] = loadAB('PollFactory')
-    const pollFactoryContract = await deployer.deploy(
-        PollFactoryAbi,
-        PollFactoryBin,
-    )
+    const pollFactoryContract = await deployPollFactory(deployer)
     await pollFactoryContract.deployTransaction.wait()
 
     // Deploy MessageAqFactory
-    const [ MessageAqFactoryAbi, MessageAqFactoryBin ] = loadAB('MessageAqFactory')
-    const messageAqFactoryContract = await deployer.deploy(
-        MessageAqFactoryAbi,
-        MessageAqFactoryBin,
-    )
+    const messageAqFactoryContract = await deployMessageAqFactory(deployer)
     await messageAqFactoryContract.deployTransaction.wait()
     await (await (messageAqFactoryContract.transferOwnership(pollFactoryContract.address))).wait()
     

@@ -1,7 +1,7 @@
 jest.setTimeout(90000)
 import * as ethers from 'ethers'
 import { timeTravel } from './utils'
-import { genDeployer, loadAbi } from '../deploy'
+import { genDeployer, parseArtifact } from '../deploy'
 import { deployTestContracts } from '../utils'
 import { genMaciStateFromContract } from '../genMaciState'
 import {
@@ -31,8 +31,8 @@ const MESSAGE_TREE_SUBDEPTH = 2
 const accounts = genTestAccounts(1)
 const deployer = genDeployer(accounts[0].privateKey)
 const coordinator = new Keypair(new PrivKey(BigInt(config.maci.coordinatorPrivKey)))
-const pollAbi = loadAbi('Poll.abi')
-const accQueueQuinaryMaciAbi = loadAbi('AccQueueQuinaryMaci.abi')
+const [ pollAbi ] = parseArtifact('Poll')
+const [ accQueueQuinaryMaciAbi ] = parseArtifact('AccQueueQuinaryMaci')
 
 const testProcessVk = new VerifyingKey(
     new G1Point(BigInt(0), BigInt(1)),

@@ -1,8 +1,7 @@
 import * as ethers from 'ethers'
 import {
     genJsonRpcDeployer,
-    loadAbi,
-    loadAB,
+    parseArtifact,
     deployVerifier,
 } from 'maci-contracts'
 
@@ -224,7 +223,7 @@ const deployPoll = async (args: any) => {
     const verifierContract = await deployVerifier(deployer, true)
 
     // Deploy a PollProcessorAndTallyer contract
-    const [ PptAbi, PptBin ] = loadAB('PollProcessorAndTallyer')
+    const [ PptAbi, PptBin ] = parseArtifact('PollProcessorAndTallyer')
     const pptContract = await deployer.deploy(
         PptAbi,
         PptBin,
@@ -232,7 +231,7 @@ const deployPoll = async (args: any) => {
     )
     await pptContract.deployTransaction.wait()
 
-    const maciAbi = loadAbi('MACI.abi')
+    const [ maciAbi ] = parseArtifact('MACI')
     const maciContract = new ethers.Contract(
         args.maci_address,
         maciAbi,

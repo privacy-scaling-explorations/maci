@@ -8,12 +8,12 @@ import {
 } from 'maci-crypto'
 
 import { JSONRPCDeployer } from '../deploy'
-const PoseidonT3 = require('@maci-contracts/compiled/PoseidonT3.json')
-const PoseidonT4 = require('@maci-contracts/compiled/PoseidonT4.json')
-const PoseidonT5 = require('@maci-contracts/compiled/PoseidonT5.json')
-const PoseidonT6 = require('@maci-contracts/compiled/PoseidonT6.json')
+const PoseidonT3 = require('@maci-contracts/artifacts/PoseidonT3.json')
+const PoseidonT4 = require('@maci-contracts/artifacts/PoseidonT4.json')
+const PoseidonT5 = require('@maci-contracts/artifacts/PoseidonT5.json')
+const PoseidonT6 = require('@maci-contracts/artifacts/PoseidonT6.json')
 
-import { loadAB, linkPoseidonLibraries } from '../'
+import { parseArtifact, linkPoseidonLibraries } from '../'
 
 const accounts = genTestAccounts(1)
 let deployer
@@ -54,7 +54,7 @@ const deploy = async (
         PoseidonT6Contract.address,
     )
 
-    const [ AccQueueAbi, AccQueueBin ] = loadAB(contractName)
+    const [ AccQueueAbi, AccQueueBin ] = parseArtifact(contractName)
 
     aqContract = await deployer.deploy(
         AccQueueAbi,

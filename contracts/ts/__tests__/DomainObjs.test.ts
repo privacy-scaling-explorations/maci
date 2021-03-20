@@ -9,12 +9,12 @@ import { genTestAccounts } from '../accounts'
 const accounts = genTestAccounts(1)
 const deployer = genDeployer(accounts[0].privateKey)
 
-const PoseidonT3 = require('@maci-contracts/compiled/PoseidonT3.json')
-const PoseidonT4 = require('@maci-contracts/compiled/PoseidonT4.json')
-const PoseidonT5 = require('@maci-contracts/compiled/PoseidonT5.json')
-const PoseidonT6 = require('@maci-contracts/compiled/PoseidonT6.json')
+const PoseidonT3 = require('@maci-contracts/artifacts/PoseidonT3.json')
+const PoseidonT4 = require('@maci-contracts/artifacts/PoseidonT4.json')
+const PoseidonT5 = require('@maci-contracts/artifacts/PoseidonT5.json')
+const PoseidonT6 = require('@maci-contracts/artifacts/PoseidonT6.json')
 
-import { loadAB, linkPoseidonLibraries } from '../'
+import { parseArtifact, linkPoseidonLibraries } from '../'
 
 let doContract
 let PoseidonT3Contract
@@ -42,7 +42,7 @@ describe('DomainObjs', () => {
                 PoseidonT6Contract.address,
             )
 
-            const [ DoAbi, DoBin ] = loadAB('DomainObjs')
+            const [ DoAbi, DoBin ] = parseArtifact('DomainObjs')
 
             console.log('Deploying DomainObjs')
             doContract = await deployer.deploy(

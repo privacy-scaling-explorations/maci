@@ -2,7 +2,7 @@ import * as ethers from 'ethers'
 import { genRandomSalt } from 'maci-crypto'
 
 import {
-    loadAbi,
+    parseArtifact,
     maciContractAbi,
     formatProofForVerifierContract,
 } from 'maci-contracts'
@@ -195,7 +195,7 @@ const processMessages = async (args: any): Promise<string | undefined> => {
         return
     }
 
-    const pollContractAbi = loadAbi('Poll.abi')
+    const [ pollContractAbi ] = parseArtifact('Poll')
 
     const unserialisedPrivkey = PrivKey.unserialize(coordinatorPrivkey)
     const coordinatorKeypair = new Keypair(unserialisedPrivkey)
@@ -207,10 +207,11 @@ const processMessages = async (args: any): Promise<string | undefined> => {
         pollContractAbi,
         wallet,
     )
-
+    
+	const [ pptAbi ] = parseArtifact('PollProcessorAndTallyer')
     const pptContract = new ethers.Contract(
         await pollContract.ppt,
-        loadAbi('PollProcessorAndTallyer.abi'),
+        pptAbi,
         wallet,
     )
 

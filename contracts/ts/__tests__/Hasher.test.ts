@@ -1,5 +1,5 @@
 require('module-alias/register')
-import { genTestAccounts } from '../accounts'
+const { ethers } = require('hardhat')
 import { config } from 'maci-config'
 import {
     sha256Hash,
@@ -10,55 +10,42 @@ import {
     genRandomSalt,
 } from 'maci-crypto'
 
-import { JSONRPCDeployer } from '../deploy'
-const PoseidonT3 = require('@maci-contracts/compiled/PoseidonT3.json')
-const PoseidonT4 = require('@maci-contracts/compiled/PoseidonT4.json')
-const PoseidonT5 = require('@maci-contracts/compiled/PoseidonT5.json')
-const PoseidonT6 = require('@maci-contracts/compiled/PoseidonT6.json')
 
-import { loadAB, linkPoseidonLibraries } from '../'
+import { parseArtifact, linkPoseidonLibraries } from '../'
 
-const accounts = genTestAccounts(1)
 let deployer
 let hasherContract
-let PoseidonT3Contract
-let PoseidonT4Contract
-let PoseidonT5Contract
-let PoseidonT6Contract
 
 describe('Hasher', () => {
     beforeAll(async () => {
-        deployer = new JSONRPCDeployer(
-            accounts[0].privateKey,
-            config.get('chain.url'),
+        const signers = await ethers.getSigners()
+        const signer = signers[0]
+        console.log('Deploying Poseidon')
+
+        const PoseidonT3ContractFactory = await ethers.getContractFactory('PoseidonT3', signer)
+        const PoseidonT4ContractFactory = await ethers.getContractFactory('PoseidonT4', signer)
+        const PoseidonT5ContractFactory = await ethers.getContractFactory('PoseidonT5', signer)
+        const PoseidonT6ContractFactory = await ethers.getContractFactory('PoseidonT6', signer)
+
+        const PoseidonT3Contract = await PoseidonT3ContractFactory.deploy()
+        const PoseidonT4Contract = await PoseidonT4ContractFactory.deploy()
+        const PoseidonT5Contract = await PoseidonT5ContractFactory.deploy()
+        const PoseidonT6Contract = await PoseidonT6ContractFactory.deploy()
+
+        const hasherContractFactory = await ethers.getContractFactory(
+            'Hasher',
             {
-                gasLimit: 8800000,
+                signer,
+                libraries: {
+                    PoseidonT3: PoseidonT3Contract.address,
+                    PoseidonT4: PoseidonT4Contract.address,
+                    PoseidonT5: PoseidonT5Contract.address,
+                    PoseidonT6: PoseidonT6Contract.address,
+                },
             },
         )
 
-        console.log('Deploying Poseidon')
-
-        PoseidonT3Contract = await deployer.deploy(PoseidonT3.abi, PoseidonT3.bytecode, {})
-        PoseidonT4Contract = await deployer.deploy(PoseidonT4.abi, PoseidonT4.bytecode, {})
-        PoseidonT5Contract = await deployer.deploy(PoseidonT5.abi, PoseidonT5.bytecode, {})
-        PoseidonT6Contract = await deployer.deploy(PoseidonT6.abi, PoseidonT6.bytecode, {})
-
-        // Link Poseidon contracts
-        linkPoseidonLibraries(
-            ['crypto/Hasher.sol'],
-            PoseidonT3Contract.address,
-            PoseidonT4Contract.address,
-            PoseidonT5Contract.address,
-            PoseidonT6Contract.address,
-        )
-
-        const [ HasherAbi, HasherBin ] = loadAB('Hasher')
-
-        console.log('Deploying Hasher')
-        hasherContract = await deployer.deploy(
-            HasherAbi,
-            HasherBin,
-        )
+        hasherContract = await hasherContractFactory.deploy()
     })
 
     it('maci-crypto.sha256Hash should match hasher.sha256Hash', async () => {

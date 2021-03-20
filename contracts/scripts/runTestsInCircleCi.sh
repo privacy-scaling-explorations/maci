@@ -3,7 +3,7 @@
 cd "$(dirname "$0")"
 cd ..
 
-npm run ganache &
+npm run hardhat &
 sleep 3 &&
 NODE_OPTIONS=--max-old-space-size=4096 npx jest --force-exit batchProcessMessageAndQuadVoteTally.test.ts &&
 npx jest --force-exit SignUp.test.ts &&

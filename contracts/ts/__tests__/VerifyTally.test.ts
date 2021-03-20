@@ -10,12 +10,12 @@ import {
 import { genTallyResultCommitment } from 'maci-core'
 
 import { JSONRPCDeployer } from '../deploy'
-const PoseidonT3 = require('@maci-contracts/compiled/PoseidonT3.json')
-const PoseidonT4 = require('@maci-contracts/compiled/PoseidonT4.json')
-const PoseidonT5 = require('@maci-contracts/compiled/PoseidonT5.json')
-const PoseidonT6 = require('@maci-contracts/compiled/PoseidonT6.json')
+const PoseidonT3 = require('@maci-contracts/artifacts/PoseidonT3.json')
+const PoseidonT4 = require('@maci-contracts/artifacts/PoseidonT4.json')
+const PoseidonT5 = require('@maci-contracts/artifacts/PoseidonT5.json')
+const PoseidonT6 = require('@maci-contracts/artifacts/PoseidonT6.json')
 
-import { loadAB, linkPoseidonLibraries } from '../'
+import { parseArtifact, linkPoseidonLibraries } from '../'
 
 const accounts = genTestAccounts(1)
 let deployer
@@ -51,7 +51,7 @@ describe('VerifyTally', () => {
             PoseidonT6Contract.address,
         )
 
-        const [ VerifyTallyAbi, VerifyTallyBin ] = loadAB('VerifyTally')
+        const [ VerifyTallyAbi, VerifyTallyBin ] = parseArtifact('VerifyTally')
 
         console.log('Deploying VerifyTally')
         verifyTallyContract = await deployer.deploy(

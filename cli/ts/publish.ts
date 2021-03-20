@@ -1,6 +1,6 @@
 import {
     maciContractAbi,
-    loadAbi,
+    parseArtifact,
 } from 'maci-contracts'
 
 import {
@@ -291,7 +291,7 @@ const publish = async (args: any) => {
         return 1
     }
 
-    const pollContractAbi = loadAbi('Poll.abi')
+    const [ pollContractAbi ] = parseArtifact('Poll')
     const pollContract = new web3.eth.Contract(pollContractAbi, pollAddr)
 
     /*
