@@ -9,7 +9,6 @@ import {
     Keypair,
     VerifyingKey,
     StateLeaf,
-    Ballot,
 } from 'maci-domainobjs'
 
 import {
@@ -96,7 +95,11 @@ describe('MaciState', () => {
 
             stateTree.insert(stateLeaf.hash())
 
-            stateIndex = maciState.signUp(userKeypair.pubKey, voiceCreditBalance)
+            stateIndex = maciState.signUp(
+                userKeypair.pubKey,
+                voiceCreditBalance,
+                BigInt(Math.floor(Date.now() / 1000)),
+            )
 
             expect(stateIndex.toString()).toEqual('0')
 
@@ -109,6 +112,7 @@ describe('MaciState', () => {
         it ('the message root should be correct', () => {
             pollId = maciState.deployPoll(
                 duration,
+                BigInt(Math.floor(Date.now() / 1000) + duration),
                 maxValues,
                 treeDepths,
                 messageBatchSize,
@@ -206,11 +210,16 @@ describe('MaciState', () => {
                 const userKeypair = new Keypair()
                 users.push(userKeypair)
 
-                maciState.signUp(userKeypair.pubKey, voiceCreditBalance)
+                maciState.signUp(
+                    userKeypair.pubKey,
+                    voiceCreditBalance,
+                    BigInt(Math.floor(Date.now() / 1000)),
+                )
             }
 
             pollId = maciState.deployPoll(
                 duration,
+                BigInt(Math.floor(Date.now() / 1000) + duration),
                 maxValues,
                 treeDepths,
                 messageBatchSize,
@@ -396,9 +405,14 @@ describe('MaciState', () => {
 
         beforeAll(() => {
             m1 = new MaciState()
-            m1.signUp(userKeypair.pubKey, voiceCreditBalance)
+            m1.signUp(
+                userKeypair.pubKey,
+                voiceCreditBalance,
+                BigInt(Math.floor(Date.now() / 1000)),
+            )
             pollId = m1.deployPoll(
                 duration,
+                BigInt(Math.floor(Date.now() / 1000) + duration),
                 maxValues,
                 treeDepths,
                 messageBatchSize,
