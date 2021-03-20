@@ -270,8 +270,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         uint256 _duration,
         MaxValues memory _maxValues,
         TreeDepths memory _treeDepths,
-        PubKey memory _coordinatorPubKey,
-        PollProcessorAndTallyer _ppt
+        PubKey memory _coordinatorPubKey
     ) public afterInit {
         uint256 pollId = nextPollId;
 
@@ -289,8 +288,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
             _coordinatorPubKey,
             vkRegistry,
             this,
-            owner(),
-            _ppt
+            owner()
         );
 
         polls[pollId] = p;

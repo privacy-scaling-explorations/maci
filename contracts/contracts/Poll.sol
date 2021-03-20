@@ -9,10 +9,7 @@ import { IVerifier } from "./crypto/Verifier.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { SnarkConstants } from "./crypto/SnarkConstants.sol";
 import { DomainObjs, IPubKey, IMessage } from "./DomainObjs.sol";
-import {
-    AccQueue,
-    AccQueueQuinaryMaci
-} from "./trees/AccQueue.sol";
+import { AccQueue, AccQueueQuinaryMaci } from "./trees/AccQueue.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { VkRegistry } from "./VkRegistry.sol";
 import { EmptyBallotRoots } from "./trees/EmptyBallotRoots.sol";
@@ -61,13 +58,13 @@ contract PollFactory is Params, IPubKey, IMessage, Ownable, Hasher, PollDeployme
         PubKey memory _coordinatorPubKey,
         VkRegistry _vkRegistry,
         IMACI _maci,
-        address _pollOwner,
-        PollProcessorAndTallyer _ppt
+        address _pollOwner
     ) public onlyOwner returns (Poll) {
-        {
         uint8 treeArity = 5;
 
         // Validate _maxValues
+        // NOTE: these checks may not be necessary. Removing them will save
+        // 0.28 Kb of bytecode.
         require(
             _maxValues.maxMessages <= treeArity ** _treeDepths.messageTreeDepth &&
             _maxValues.maxMessages >= _batchSizes.messageBatchSize &&
@@ -75,7 +72,6 @@ contract PollFactory is Params, IPubKey, IMessage, Ownable, Hasher, PollDeployme
             _maxValues.maxVoteOptions <= treeArity ** _treeDepths.voteOptionTreeDepth,
             "PollFactory: invalid _maxValues"
         );
-        }
 
         AccQueue messageAq =
             messageAqFactory.deploy(_treeDepths.messageTreeSubDepth);
@@ -91,12 +87,14 @@ contract PollFactory is Params, IPubKey, IMessage, Ownable, Hasher, PollDeployme
             _treeDepths,
             _batchSizes,
             _coordinatorPubKey,
-            extContracts,
-            _ppt
+            extContracts
         );
 
-        extContracts.messageAq.transferOwnership(address(poll));
+        // Make the Poll contract own the messageAq contract, so only it can
+        // run enqueue/merge
+        messageAq.transferOwnership(address(poll));
 
+        // TODO: should this be _maci.owner() instead?
         poll.transferOwnership(_pollOwner);
 
         return poll;
@@ -107,9 +105,15 @@ contract PollFactory is Params, IPubKey, IMessage, Ownable, Hasher, PollDeployme
  * Do not deploy this directly. Use PollFactory.deploy() which performs some
  * checks on the Poll constructor arguments.
  */
-contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDeploymentParams, EmptyBallotRoots {
+contract Poll is 
+    Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable,
+    PollDeploymentParams, EmptyBallotRoots {
+
     // The coordinator's public key
     PubKey public coordinatorPubKey;
+
+    // TODO: to reduce the Poll bytecode size, consider storing deployTime and
+    // duration in a mapping in the MACI contract
 
     // The timestamp of the block at which the Poll was deployed
     uint256 internal deployTime;
@@ -123,11 +127,6 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
 
     // Whether the MACI contract's stateAq has been merged by this contract
     bool public stateAqMerged;
-
-    //// The message queue
-    //AccQueue public messageAq;
-
-    PollProcessorAndTallyer public ppt;
 
     // The commitment to the state leaves and the ballots. This is
     // hash3(stateRoot, ballotRoot, salt).
@@ -148,12 +147,8 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     uint256 internal currentTallyCommitment = 
         0x17e1b6993b1af9f8dfe8d4202c2f2a610994ff19b92462f9a54da39d11026d6b;
 
-    function currentSbAndTallyCommitments() public view returns (uint256, uint256) {
-        return (currentSbCommitment, currentTallyCommitment);
-    }
-
-    uint256 private numSignUps;
-    uint256 private numMessages;
+    uint256 internal numSignUps;
+    uint256 internal numMessages;
 
     function numSignUpsAndMessages() public view returns (uint256, uint256) {
         return (numSignUps, numMessages);
@@ -170,9 +165,8 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
     string constant ERROR_VOTING_PERIOD_PASSED = "PollE03";
     string constant ERROR_VOTING_PERIOD_NOT_PASSED = "PollE04";
     string constant ERROR_INVALID_PUBKEY = "PollE05";
-    string constant ERROR_ONLY_PPT = "PollE06";
-    string constant ERROR_MAX_MESSAGES_REACHED = "PollE07";
-    string constant ERROR_STATE_AQ_ALREADY_MERGED = "PollE08";
+    string constant ERROR_MAX_MESSAGES_REACHED = "PollE06";
+    string constant ERROR_STATE_AQ_ALREADY_MERGED = "PollE07";
 
     event PublishMessage(Message _message, PubKey _encPubKey);
     event MergeMaciStateAqSubRoots(uint256 _numSrQueueOps);
@@ -192,8 +186,7 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
         TreeDepths memory _treeDepths,
         BatchSizes memory _batchSizes,
         PubKey memory _coordinatorPubKey,
-        ExtContracts memory _extContracts,
-        PollProcessorAndTallyer _ppt
+        ExtContracts memory _extContracts
     ) {
 
         extContracts = _extContracts;
@@ -206,9 +199,6 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
 
         // Record the current timestamp
         deployTime = block.timestamp;
-
-        // Set the poll processor contract
-        ppt = _ppt;
     }
 
     /*
@@ -222,6 +212,17 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
             ERROR_VOTING_PERIOD_NOT_PASSED
         );
         _;
+    }
+
+    /*
+     * Gets the currentSbCommitment and currentTallyCommitment storage
+     * variables, which are internal so as to minimise the Poll bytecode size.
+     */
+    function currentSbAndTallyCommitments()
+    public
+    view
+    returns (uint256, uint256) {
+        return (currentSbCommitment, currentTallyCommitment);
     }
 
     /*
