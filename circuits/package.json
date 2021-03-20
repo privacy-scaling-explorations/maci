@@ -5,7 +5,6 @@
     "main": "build/index.js",
     "scripts": {
         "circom-helper": "NODE_OPTIONS=--max-old-space-size=16384 circom-helper -c ./circomHelperConfig.json -nc -b ./build/test/ -p 9001 -m 16384 -s 1048576",
-        "circom-helper-skipAll": "NODE_OPTIONS=--max-old-space-size=16384 circom-helper -c ./circomHelperConfig.json -nc -b ./build/test/ -p 9001 -m 16384 -s 1048576 -k",
         "build-test-circuits": "NODE_OPTIONS=--max-old-space-size=16384 circom-helper -c ./circomHelperConfig.json -y -nc -b ./build/test/ -p 9001 -m 16384 -s 1048576",
         "watch": "tsc --watch",
         "build": "tsc",
@@ -45,8 +44,6 @@
         "test-decrypt-debug": "node --inspect-brk ./node_modules/.bin/jest Decrypt.test.ts",
         "test-calculateTotal": "jest CalculateTotal.test.ts",
         "test-calculateTotal-debug": "node --inspect-brk ./node_modules/.bin/jest CalculateTotal.test.ts",
-        "test-resultCommitmentVerifier": "jest ResultCommitmentVerifier.test.ts",
-        "test-resultCommitmentVerifier-debug": "node --inspect-brk ./node_modules/.bin/jest ResultCommitmentVerifier.test.ts",
         "test-processMessages": "NODE_OPTIONS=--max-old-space-size=4096 jest ts/__tests__/ProcessMessages.test.ts",
         "test-processMessages-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest ts/__tests__/ProcessMessages.test.ts",
         "test-tallyVotes": "NODE_OPTIONS=--max-old-space-size=4096 jest ts/__tests__/TallyVotes.test.ts",
@@ -62,7 +59,7 @@
     "devDependencies": {
         "@types/jest": "^24.0.25",
         "@types/node": "^13.1.2",
-        "circom-helper": "0.1.4",
+        "circom-helper": "0.1.6",
         "axios": "^0.21.0",
         "jest": "^24.9.0",
         "maci-config": "^1.0.0",

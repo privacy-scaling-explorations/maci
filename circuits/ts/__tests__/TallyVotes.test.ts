@@ -158,6 +158,8 @@ describe('TallyVotes circuit', () => {
 
             const witness = await genWitness(circuit, generatedInputs)
             expect(witness.length > 0).toBeTruthy()
+
+            // TODO: test for the correct newTallyCommitment
         })
     })
 
