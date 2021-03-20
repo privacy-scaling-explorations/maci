@@ -125,7 +125,7 @@ abstract contract AccQueue is Ownable, Hasher {
      * Add a leaf to the queue for the current subtree.
      * @param _leaf The leaf to add.
      */
-    function enqueue(uint256 _leaf) public returns (uint256) {
+    function enqueue(uint256 _leaf) public onlyOwner returns (uint256) {
         uint256 leafIndex = numLeaves;
         // Recursively queue the leaf
         _enqueue(_leaf, 0);

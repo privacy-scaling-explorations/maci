@@ -121,15 +121,6 @@ contract Poll is Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable, PollDe
         return (deployTime, duration);
     }
 
-    //// The verifying key signature for the message processing circuit
-    //uint256 public processVkSig;
-
-    //// The verifying key signature for the tally circuit
-    //uint256 public tallyVkSig;
-
-    //// The MACI instance
-    //IMACI public maci;
-
     // Whether the MACI contract's stateAq has been merged by this contract
     bool public stateAqMerged;
 

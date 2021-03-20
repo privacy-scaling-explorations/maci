@@ -240,6 +240,7 @@ describe('MACI', () => {
                 pollAbi,
                 deployer.signer,
             )
+            // TODO: fix this
             const deployTime = await pollContract.deployTime()
             const pollEndTimestamp = BigInt(duration + deployTime)
 
