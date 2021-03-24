@@ -114,8 +114,7 @@ describe('MACI', () => {
 
         it('should sign up users', async () => {
             expect.assertions(users.length * 2)
-
-            const iface = new ethers.utils.Interface(maciContract.interface.abi)
+            const iface = maciContract.interface
 
             let i = 0
             for (const user of users) {
@@ -222,7 +221,6 @@ describe('MACI', () => {
                 maxValues,
                 treeDepths,
                 coordinator.pubKey.asContractParam(),
-                pptContract.address,
                 { gasLimit: 8000000 },
             )
             receipt = await tx.wait()
@@ -230,7 +228,7 @@ describe('MACI', () => {
             console.log('deployPoll() gas used:', receipt.gasUsed.toString())
 
             expect(receipt.status).toEqual(1)
-            const iface = new ethers.utils.Interface(maciContract.interface.abi)
+            const iface = maciContract.interface
             const event = iface.parseLog(receipt.logs[receipt.logs.length - 1])
             pollId = event.args._pollId
 
@@ -246,10 +244,8 @@ describe('MACI', () => {
 
             const p = maciState.deployPoll(
                 duration,
-                pollEndTimestamp,
                 maxValues,
                 treeDepths,
-                messageBatchSize,
                 coordinator,
             )
             expect(p.toString()).toEqual(pollId.toString())

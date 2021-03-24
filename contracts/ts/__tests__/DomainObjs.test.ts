@@ -6,49 +6,30 @@ import {
 } from 'maci-domainobjs'
 
 import { genTestAccounts } from '../accounts'
-const accounts = genTestAccounts(1)
-const deployer = genDeployer(accounts[0].privateKey)
-
-const PoseidonT3 = require('@maci-contracts/artifacts/PoseidonT3.json')
-const PoseidonT4 = require('@maci-contracts/artifacts/PoseidonT4.json')
-const PoseidonT5 = require('@maci-contracts/artifacts/PoseidonT5.json')
-const PoseidonT6 = require('@maci-contracts/artifacts/PoseidonT6.json')
-
-import { parseArtifact, linkPoseidonLibraries } from '../'
+import { parseArtifact, deployPoseidonContracts, linkPoseidonLibraries } from '../'
 
 let doContract
-let PoseidonT3Contract
-let PoseidonT4Contract
-let PoseidonT5Contract
-let PoseidonT6Contract
 
 describe('DomainObjs', () => {
 
     describe('Deployment', () => {
         beforeAll(async () => {
             console.log('Deploying Poseidon')
-
-            PoseidonT3Contract = await deployer.deploy(PoseidonT3.abi, PoseidonT3.bytecode, {})
-            PoseidonT4Contract = await deployer.deploy(PoseidonT4.abi, PoseidonT4.bytecode, {})
-            PoseidonT5Contract = await deployer.deploy(PoseidonT5.abi, PoseidonT5.bytecode, {})
-            PoseidonT6Contract = await deployer.deploy(PoseidonT6.abi, PoseidonT6.bytecode, {})
+			const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } = await deployPoseidonContracts()
 
             // Link Poseidon contracts
-            linkPoseidonLibraries(
-                'DomainObjs.sol',
+            const doContractFactory = await linkPoseidonLibraries(
+                'DomainObjs',
                 PoseidonT3Contract.address,
                 PoseidonT4Contract.address,
                 PoseidonT5Contract.address,
                 PoseidonT6Contract.address,
             )
 
-            const [ DoAbi, DoBin ] = parseArtifact('DomainObjs')
-
             console.log('Deploying DomainObjs')
-            doContract = await deployer.deploy(
-                DoAbi,
-                DoBin,
-            )
+
+            doContract = await doContractFactory.deploy()
+			await doContract.deployTransaction.wait()
         })
 
         it('should correctly hash a StateLeaf', async () => {

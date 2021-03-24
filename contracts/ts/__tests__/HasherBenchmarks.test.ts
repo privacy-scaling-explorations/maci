@@ -6,23 +6,13 @@ import {
 } from 'maci-crypto'
 
 import { deployPoseidonContracts, JSONRPCDeployer } from '../deploy'
+import { linkPoseidonLibraries } from '../'
 
-import { genDeployer, linkPoseidonLibraries } from '../'
-
-const accounts = genTestAccounts(1)
-const deployer = genDeployer(accounts[0].privateKey)
 let hasherContract
 
 describe('Hasher', () => {
     beforeAll(async () => {
-        const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } = await deployPoseidonContracts(deployer)
-        console.log(
-			PoseidonT3Contract.address,
-			PoseidonT4Contract.address,
-			PoseidonT5Contract.address,
-			PoseidonT6Contract.address,
-		)
-
+        const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } = await deployPoseidonContracts()
         // Link Poseidon contracts
         const hasherContractFactory = await linkPoseidonLibraries(
             'HasherBenchmarks',

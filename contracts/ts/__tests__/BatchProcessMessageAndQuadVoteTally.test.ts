@@ -473,6 +473,5 @@
 //
 describe('BatchProcessMessage', () => {
 	it('test', async () => {
-		
 	})
 })

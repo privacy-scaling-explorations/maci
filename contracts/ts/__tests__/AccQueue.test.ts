@@ -1,6 +1,5 @@
 jest.setTimeout(90000)
 require('module-alias/register')
-import { genTestAccounts } from '../accounts'
 import { config } from 'maci-config'
 import {
     IncrementalQuinTree,
@@ -8,21 +7,8 @@ import {
     hashLeftRight,
     NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
-
 import { JSONRPCDeployer } from '../deploy'
-const PoseidonT3 = require('@maci-contracts/artifacts/PoseidonT3.json')
-const PoseidonT4 = require('@maci-contracts/artifacts/PoseidonT4.json')
-const PoseidonT5 = require('@maci-contracts/artifacts/PoseidonT5.json')
-const PoseidonT6 = require('@maci-contracts/artifacts/PoseidonT6.json')
-
-import { parseArtifact, linkPoseidonLibraries } from '../'
-
-const accounts = genTestAccounts(1)
-let deployer
-let PoseidonT3Contract
-let PoseidonT4Contract
-let PoseidonT5Contract
-let PoseidonT6Contract
+import { parseArtifact, deployPoseidonContracts, linkPoseidonLibraries } from '../'
 
 const enqueueGasLimit = { gasLimit: 500000 }
 const fillGasLimit = { gasLimit: 4000000 }
@@ -392,36 +378,21 @@ const deploy = async (
     HASH_LENGTH: number,
     ZERO: BigInt,
 ) => {
-    deployer = new JSONRPCDeployer(
-        accounts[0].privateKey,
-        config.get('chain.url'),
-        {
-            gasLimit: 8800000,
-        },
-    )
-
-    PoseidonT3Contract = await deployer.deploy(PoseidonT3.abi, PoseidonT3.bytecode, {})
-    PoseidonT4Contract = await deployer.deploy(PoseidonT4.abi, PoseidonT4.bytecode, {})
-    PoseidonT5Contract = await deployer.deploy(PoseidonT5.abi, PoseidonT5.bytecode, {})
-    PoseidonT6Contract = await deployer.deploy(PoseidonT6.abi, PoseidonT6.bytecode, {})
-
+    const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } = await deployPoseidonContracts()
     // Link Poseidon contracts
-    linkPoseidonLibraries(
-        'trees/AccQueue.sol',
-        PoseidonT3Contract.address,
-        PoseidonT4Contract.address,
-        PoseidonT5Contract.address,
-        PoseidonT6Contract.address,
-    )
+	const AccQueueFactory = await linkPoseidonLibraries(
+		contractName,
+		PoseidonT3Contract.address,
+		PoseidonT4Contract.address,
+		PoseidonT5Contract.address,
+		PoseidonT6Contract.address,
+	)
 
-    const [ AccQueueAbi, AccQueueBin ] = parseArtifact(contractName)
+	const aqContract = await AccQueueFactory.deploy(
+		SUB_DEPTH
+	)
 
-    const aqContract = await deployer.deploy(
-        AccQueueAbi,
-        AccQueueBin,
-        SUB_DEPTH,
-        HASH_LENGTH,
-    )
+	await aqContract.deployTransaction.wait()
 
     const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
     return { aq, aqContract }

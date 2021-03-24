@@ -11,15 +11,13 @@ import {
 } from 'maci-crypto'
 
 
-import { parseArtifact, genTestAccounts, genDeployer, deployPoseidonContracts, linkPoseidonLibraries } from '../'
+import { parseArtifact, genTestAccounts, deployPoseidonContracts, linkPoseidonLibraries } from '../'
 
 let hasherContract
-const accounts = genTestAccounts(1)
-const deployer = genDeployer(accounts[0].privateKey)
 
 describe('Hasher', () => {
     beforeAll(async () => {
-        const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } = await deployPoseidonContracts(deployer)
+        const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } = await deployPoseidonContracts()
         const hasherContractFactory = await linkPoseidonLibraries(
 			'Hasher',
 			PoseidonT3Contract.address,
@@ -27,14 +25,6 @@ describe('Hasher', () => {
 			PoseidonT5Contract.address,
 			PoseidonT6Contract.address,
         )
-
-		console.log(
-			PoseidonT3Contract,
-			PoseidonT4Contract,
-			PoseidonT5Contract,
-			PoseidonT6Contract,
-		)
-
 
         hasherContract = await hasherContractFactory.deploy()
 		await hasherContract.deployTransaction.wait()

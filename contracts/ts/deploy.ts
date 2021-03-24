@@ -6,8 +6,16 @@ import { config } from 'maci-config'
 import { genAccounts, genTestAccounts } from './accounts'
 const { ethers } = require('hardhat')
 
+
 const abiDir = path.join(__dirname, '..', 'artifacts')
 const solDir = path.join(__dirname, '..', 'contracts')
+
+const getDefaultSigner = async () => {
+	const signers = await ethers.getSigners()
+	const signer = signers[0]
+
+	return signer
+}
 
 const parseArtifact = (filename: string) => {
 	let filePath = 'contracts/'
@@ -63,17 +71,9 @@ const linkPoseidonLibraries = async (
     poseidonT5Address,
     poseidonT6Address,
 ) => {
-	const signers = await ethers.getSigners()
-	const signer = signers[0]
+	const signer = await getDefaultSigner()
 
 	console.log('Linking Poseidon libraries')
-	console.log(
-		poseidonT3Address,
-		poseidonT4Address,
-		poseidonT5Address,
-		poseidonT6Address,
-	)
-
 	const contractFactory = await ethers.getContractFactory(
 		solFileToLink,
 		{
@@ -147,14 +147,10 @@ const genDeployer = (
     )
 }
 
-const deployVkRegistry = async (
-    deployer: any,
-) => {
-    const [ VkRegistryAbi, VkRegistryBin ] = parseArtifact('VkRegistry')
-    return await deployer.deploy(
-        VkRegistryAbi,
-        VkRegistryBin,
-    )
+const deployVkRegistry = async () => {
+	const signer = await getDefaultSigner()
+    const vkRegistryFactory = await ethers.getContractFactory('VkRegistry', signer)
+    return await vkRegistryFactory.deploy()
 }
 
 const deployMockVerifier = async (deployer, quiet = false) => {
@@ -176,16 +172,13 @@ const deployVerifier = async (deployer, quiet = false) => {
 }
 
 const deployConstantInitialVoiceCreditProxy = async (
-    deployer,
     amount: number,
     quiet = false
 ) => {
     log('Deploying InitialVoiceCreditProxy', quiet)
-    const [ ConstantInitialVoiceCreditProxyAbi, ConstantInitialVoiceCreditProxyBin ]
-        = parseArtifact('ConstantInitialVoiceCreditProxy')
-    return await deployer.deploy(
-        ConstantInitialVoiceCreditProxyAbi,
-        ConstantInitialVoiceCreditProxyBin,
+	const signer = await getDefaultSigner()
+    const voiceCreditFactory = await ethers.getContractFactory('ConstantInitialVoiceCreditProxy', signer)
+    return await voiceCreditFactory.deploy(
         amount.toString(),
     )
 }
@@ -217,16 +210,15 @@ const deploySignupTokenGatekeeper = async (
 }
 
 const deployFreeForAllSignUpGatekeeper = async (
-    deployer,
     quiet = false
 ) => {
     log('Deploying FreeForAllSignUpGatekeeper', quiet)
-    const [ FreeForAllSignUpGatekeeperAbi, FreeForAllSignUpGatekeeperBin ]
-        = parseArtifact('FreeForAllGatekeeper')
-    return await deployer.deploy(
-        FreeForAllSignUpGatekeeperAbi,
-        FreeForAllSignUpGatekeeperBin,
-    )
+	const signer = await getDefaultSigner()
+    const freeForAllSignUpGatekeeperFactory = await ethers.getContractFactory('FreeForAllGatekeeper', signer)
+
+    const freeForAllSignupGatekeeperContract = await freeForAllSignUpGatekeeperFactory.deploy();
+	await freeForAllSignupGatekeeperContract.deployTransaction.wait()
+	return freeForAllSignupGatekeeperContract
 }
 
 const log = (msg: string, quiet: boolean) => {
@@ -235,30 +227,23 @@ const log = (msg: string, quiet: boolean) => {
     }
 }
 
-const deployPoseidonContracts = async (deployer: any, quiet = false) => {
+const deployPoseidonContracts = async (quiet = false) => {
     log('Deploying Poseidon Contracts', quiet)
-    const PoseidonT3Contract = await deployer.deploy(
-        PoseidonT3.abi,
-        PoseidonT3.bytecode,
-    )
+	const signer = await getDefaultSigner()
+    console.log('Deploying Poseidon')
+    const PoseidonT3ContractFactory = await ethers.getContractFactory('PoseidonT3', signer)
+    const PoseidonT4ContractFactory = await ethers.getContractFactory('PoseidonT4', signer)
+    const PoseidonT5ContractFactory = await ethers.getContractFactory('PoseidonT5', signer)
+    const PoseidonT6ContractFactory = await ethers.getContractFactory('PoseidonT6', signer)
+
+	const PoseidonT3Contract = await PoseidonT3ContractFactory.deploy()
+    const PoseidonT4Contract = await PoseidonT4ContractFactory.deploy()
+    const PoseidonT5Contract = await PoseidonT5ContractFactory.deploy()
+    const PoseidonT6Contract = await PoseidonT6ContractFactory.deploy()
+
     await PoseidonT3Contract.deployTransaction.wait()
-
-    const PoseidonT4Contract = await deployer.deploy(
-        PoseidonT4.abi,
-        PoseidonT4.bytecode,
-    )
     await PoseidonT4Contract.deployTransaction.wait()
-
-    const PoseidonT5Contract = await deployer.deploy(
-        PoseidonT5.abi,
-        PoseidonT5.bytecode,
-    )
     await PoseidonT5Contract.deployTransaction.wait()
-
-    const PoseidonT6Contract = await deployer.deploy(
-        PoseidonT6.abi,
-        PoseidonT6.bytecode,
-    )
     await PoseidonT6Contract.deployTransaction.wait()
 
     return {
@@ -269,37 +254,30 @@ const deployPoseidonContracts = async (deployer: any, quiet = false) => {
     }
 }
 
-const deployPollFactory = async (deployer, quiet = false) => {
+const deployPollFactory = async (quiet = false) => {
+	const signer = await getDefaultSigner()
     log('Deploying PollFactory', quiet)
-    const [ PollFactoryAbi, PollFactoryBin ] = parseArtifact('PollFactory')
-	
-	// TODO: reduce PollFactory contract size
-    return await deployer.deploy(
-        PollFactoryAbi,
-        PollFactoryBin,
-    )
+    const pollFactory = await ethers.getContractFactory('PollFactory', signer)
+
+    return await pollFactory.deploy()
 }
 
 const deployPpt = async (deployer, mockVerifierContractAddress: string, quiet = false) => {
+	const signer = await getDefaultSigner()
     log('Deploying PollProcessorAndTallyer', quiet)
-    const [ PptAbi, PptBin ] = parseArtifact('PollProcessorAndTallyer')
-	// TODO: reduce PollProcessorAndTallyer contract size
-    return await deployer.deploy(
-        PptAbi,
-        PptBin,
+    const pptFactory = await ethers.getContractFactory('PollProcessorAndTallyer', signer)
+
+    return await pptFactory.deploy(
         mockVerifierContractAddress,
     )
 }
 
 const deployMessageAqFactory = async (deployer, quiet = false) => {
-    // MessageAqFactory
+	const signer = await getDefaultSigner()
     log('Deploying MessageAqFactory', quiet)
-    const [ MessageAqFactoryAbi, MessageAqFactoryBin ] = parseArtifact('MessageAqFactory')
-	// TODO: reduce MessageAqFactory contract size
-    return await deployer.deploy(
-        MessageAqFactoryAbi,
-        MessageAqFactoryBin,
-    )
+    const messageAqFactory = await ethers.getContractFactory('MessageAqFactory', signer)
+    // MessageAqFactory
+    return await messageAqFactory.deploy()
 }
 
 const deployMaci = async (
@@ -317,27 +295,39 @@ const deployMaci = async (
     } = await deployPoseidonContracts(deployer, quiet)
 
     // Link Poseidon contracts to MACI
-    linkPoseidonLibraries(
-        'MACI.sol',
+    const maciContractFactory = await linkPoseidonLibraries(
+        'MACI',
         PoseidonT3Contract.address,
         PoseidonT4Contract.address,
         PoseidonT5Contract.address,
         PoseidonT6Contract.address,
     )
 
-    const [ MACIAbi, MACIBin ] = parseArtifact('MACI')
+    const pollFactoryContractFactory = await linkPoseidonLibraries(
+        'PollFactory',
+        PoseidonT3Contract.address,
+        PoseidonT4Contract.address,
+        PoseidonT5Contract.address,
+        PoseidonT6Contract.address,
+    )
 
-    const pollFactoryContract = await deployPollFactory(deployer)
+    const pollFactoryContract = await pollFactoryContractFactory.deploy()
     await pollFactoryContract.deployTransaction.wait()
 
     // PollProcessorAndTallyer
-    const pptContract = await deployPpt(deployer, mockVerifierContractAddress)
+    const pptContractFactory = await linkPoseidonLibraries(
+        'PollProcessorAndTallyer',
+        PoseidonT3Contract.address,
+        PoseidonT4Contract.address,
+        PoseidonT5Contract.address,
+        PoseidonT6Contract.address,
+    )
+
+    const pptContract = await pptContractFactory.deploy(mockVerifierContractAddress)
     await pptContract.deployTransaction.wait()
 
     log('Deploying MACI', quiet)
-    const maciContract = await deployer.deploy(
-        MACIAbi,
-        MACIBin,
+    const maciContract = await maciContractFactory.deploy(
         pollFactoryContract.address,
         signUpTokenGatekeeperContractAddress,
         initialVoiceCreditBalanceAddress,
@@ -347,18 +337,28 @@ const deployMaci = async (
 
     log('Transferring PollFactory ownership to MACI', quiet)
     await (await (pollFactoryContract.transferOwnership(maciContract.address))).wait()
-    const messageAqFactoryContract = await deployMessageAqFactory(deployer, quiet)
+
+    const messageAqFactory = await linkPoseidonLibraries(
+        'MessageAqFactory',
+        PoseidonT3Contract.address,
+        PoseidonT4Contract.address,
+        PoseidonT5Contract.address,
+        PoseidonT6Contract.address,
+    )
+
+	const messageAqFactoryContract = await messageAqFactory.deploy()
     await messageAqFactoryContract.deployTransaction.wait()
 
     log('Transferring MessageAqFactory ownership to PollFactory', quiet)
     await (await (messageAqFactoryContract.transferOwnership(pollFactoryContract.address))).wait()
 
     // VkRegistry
-    const vkRegistryContract = await deployVkRegistry(deployer)
+    const vkRegistryContract = await deployVkRegistry()
     await vkRegistryContract.deployTransaction.wait()
 
+    const signer = await getDefaultSigner()
     log('Transferring VkRegistry ownership to MACI', quiet)
-    await (await (vkRegistryContract.transferOwnership(maciContract.address))).wait()
+    await (await (vkRegistryContract.transferOwnership(signer.address))).wait()
 
     log('Initialising MACI', quiet)
     await (await (maciContract.init(
@@ -428,4 +428,5 @@ export {
     parseArtifact,
     linkPoseidonLibraries,
     deployPoseidonContracts,
+	getDefaultSigner
 }
