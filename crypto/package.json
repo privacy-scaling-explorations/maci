@@ -10,16 +10,13 @@
         "test-crypto": "jest Crypto.test.ts",
         "test-crypto-debug": "node --inspect-brk ./node_modules/.bin/jest Crypto.test.ts",
         "test-accQueue": "jest AccQueue.test.ts",
-        "test-accQueue-debug": "node --inspect-brk ./node_modules/.bin/jest AccQueue.test.ts",
-        "test-quin-mt": "jest IncrementalQuinTree.test.ts",
-        "test-quin-mt-debug": "node --inspect-brk ./node_modules/.bin/jest IncrementalQuinTree.test.ts",
-        "test-mt": "jest IncrementalMerkleTree.test.ts",
-        "test-mt-debug": "node --inspect-brk ./node_modules/.bin/jest IncrementalMerkleTree.test.ts"
+        "test-accQueue-debug": "node --inspect-brk ./node_modules/.bin/jest AccQueue.test.ts"
     },
     "dependencies": {
         "circomlib": "0.5.1",
         "ethers": "^5.0.32",
-        "ffjavascript": "0.2.35"
+        "ffjavascript": "0.2.35",
+        "incrementalquintree": "^1.0.3"
     },
     "devDependencies": {
         "@types/jest": "^24.0.25",
