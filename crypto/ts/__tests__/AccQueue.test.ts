@@ -1,4 +1,3 @@
-import { hash5, hash2 } from 'maci-crypto'
 import {
     IncrementalQuinTree,
     AccQueue,
