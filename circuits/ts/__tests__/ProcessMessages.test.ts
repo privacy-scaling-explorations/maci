@@ -15,12 +15,10 @@ import {
     Command,
     Message,
     VerifyingKey,
-    StateLeaf,
-    Ballot,
 } from 'maci-domainobjs'
 
 import {
-    hashLeftRight,
+    hash5,
     G1Point,
     G2Point,
     IncrementalQuinTree,
@@ -110,6 +108,8 @@ describe('ProcessMessage circuit', () => {
             messageTree = new IncrementalQuinTree(
                 treeDepths.messageTreeDepth,
                 poll.messageAq.zeroValue,
+                5,
+                hash5,
             )
 
             // First command (valid)

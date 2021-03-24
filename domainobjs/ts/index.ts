@@ -13,8 +13,8 @@ import {
     sign,
     hashLeftRight,
     sha256Hash,
-    hash3,
     hash4,
+    hash5,
     verifySignature,
     genRandomSalt,
     genKeypair,
@@ -479,6 +479,8 @@ class Ballot {
         const voTree = new IncrementalQuinTree(
             this.voteOptionTreeDepth,
             BigInt(0),
+            5,
+            hash5,
         )
         for (const vote of this.votes) {
             voTree.insert(vote)

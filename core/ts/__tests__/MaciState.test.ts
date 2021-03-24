@@ -12,6 +12,7 @@ import {
 } from 'maci-domainobjs'
 
 import {
+    hash5,
     G1Point,
     G2Point,
     NOTHING_UP_MY_SLEEVE,
@@ -76,11 +77,15 @@ describe('MaciState', () => {
             stateTree = new IncrementalQuinTree(
                 STATE_TREE_DEPTH,
                 NOTHING_UP_MY_SLEEVE,
+                5,
+                hash5,
             )
 
             msgTree = new IncrementalQuinTree(
                 treeDepths.messageTreeDepth,
                 NOTHING_UP_MY_SLEEVE,
+                5,
+                hash5,
             )
         })
 

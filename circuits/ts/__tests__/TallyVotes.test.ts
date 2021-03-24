@@ -1,8 +1,6 @@
 jest.setTimeout(1200000)
-import * as fs from 'fs'
 import { 
     genWitness,
-    getSignalByName,
 } from './utils'
 
 import {
@@ -15,16 +13,13 @@ import {
     Command,
     Message,
     VerifyingKey,
-    StateLeaf,
-    Ballot,
 } from 'maci-domainobjs'
 
 import {
-    hashLeftRight,
+    hash5,
     G1Point,
     G2Point,
     IncrementalQuinTree,
-    stringifyBigInts,
 } from 'maci-crypto'
 
 const voiceCreditBalance = BigInt(100)
@@ -110,6 +105,8 @@ describe('TallyVotes circuit', () => {
             messageTree = new IncrementalQuinTree(
                 treeDepths.messageTreeDepth,
                 poll.messageAq.zeroValue,
+                5,
+                hash5,
             )
 
             // First command (valid)

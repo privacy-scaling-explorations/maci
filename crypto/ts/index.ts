@@ -183,6 +183,7 @@ const hashN = (numElements: number, elements: Plaintext): BigInt => {
     return funcs[numElements](elements)
 }
 
+const hash2 = (elements: Plaintext): BigInt => hashN(2, elements)
 const hash3 = (elements: Plaintext): BigInt => hashN(3, elements)
 const hash4 = (elements: Plaintext): BigInt => hashN(4, elements)
 const hash5 = (elements: Plaintext): BigInt => hashN(5, elements)
@@ -508,6 +509,7 @@ export {
     sign,
     sha256Hash,
     hashOne,
+    hash2,
     hash3,
     hash4,
     hash5,
