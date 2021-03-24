@@ -44,7 +44,7 @@ describe('VerifyTally', () => {
 
         // Link Poseidon contracts
         linkPoseidonLibraries(
-            ['VerifyTally.sol'],
+            'VerifyTally.sol',
             PoseidonT3Contract.address,
             PoseidonT4Contract.address,
             PoseidonT5Contract.address,

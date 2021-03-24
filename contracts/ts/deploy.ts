@@ -110,7 +110,8 @@ export class JSONRPCDeployer {
     }
 
     async deploy(abi: any, bytecode: any, ...args): Promise<any> {
-        const factory = new ethers.ContractFactory(abi, bytecode, this.signer)
+		const contractInterface = new ethers.utils.Interface( abi )
+        const factory = new ethers.ContractFactory(contractInterface, bytecode, this.signer)
         return await factory.deploy(...args)
     }
 }

@@ -35,7 +35,7 @@ describe('DomainObjs', () => {
 
             // Link Poseidon contracts
             linkPoseidonLibraries(
-                ['DomainObjs.sol'],
+                'DomainObjs.sol',
                 PoseidonT3Contract.address,
                 PoseidonT4Contract.address,
                 PoseidonT5Contract.address,

@@ -6,28 +6,15 @@ import {
 } from 'maci-crypto'
 
 import { deployPoseidonContracts, JSONRPCDeployer } from '../deploy'
-const PoseidonT3 = require('@maci-contracts/artifacts/PoseidonT3.json')
-const PoseidonT4 = require('@maci-contracts/artifacts/PoseidonT4.json')
-const PoseidonT5 = require('@maci-contracts/artifacts/PoseidonT5.json')
-const PoseidonT6 = require('@maci-contracts/artifacts/PoseidonT6.json')
 
-import { parseArtifact, linkPoseidonLibraries } from '../'
+import { genDeployer, linkPoseidonLibraries } from '../'
 
 const accounts = genTestAccounts(1)
-let deployer
+const deployer = genDeployer(accounts[0].privateKey)
 let hasherContract
 
 describe('Hasher', () => {
     beforeAll(async () => {
-        deployer = new JSONRPCDeployer(
-            accounts[0].privateKey,
-            config.get('chain.url'),
-            {
-                gasLimit: 8800000,
-            },
-        )
-
-        console.log('Deploying Poseidon contracts')
         const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } = await deployPoseidonContracts(deployer)
         console.log(
 			PoseidonT3Contract.address,
@@ -36,27 +23,18 @@ describe('Hasher', () => {
 			PoseidonT6Contract.address,
 		)
 
-		/*
         // Link Poseidon contracts
-        linkPoseidonLibraries(
-            ['testing/HasherBenchmarks.sol'],
+        const hasherContractFactory = await linkPoseidonLibraries(
+            'HasherBenchmarks',
             PoseidonT3Contract.address,
             PoseidonT4Contract.address,
             PoseidonT5Contract.address,
             PoseidonT6Contract.address,
         )
 
-        const [ HasherAbi, HasherBin ] = parseArtifact('HasherBenchmarks')
-
         console.log('Deploying Hasher')
-        hasherContract = await deployer.deploy(
-            HasherAbi,
-            HasherBin,
-        )
-
-		*/
-
-    	// await hasherContract.deployTransaction.wait()
+        hasherContract = await hasherContractFactory.deploy()
+    	await hasherContract.deployTransaction.wait()
     })
 
     it('hashLeftRight', async () => {

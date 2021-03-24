@@ -47,7 +47,7 @@ const deploy = async (
 
     // Link Poseidon contracts
     linkPoseidonLibraries(
-        ['trees/AccQueue.sol'],
+        'trees/AccQueue.sol',
         PoseidonT3Contract.address,
         PoseidonT4Contract.address,
         PoseidonT5Contract.address,

@@ -28,6 +28,14 @@ describe('Hasher', () => {
 			PoseidonT6Contract.address,
         )
 
+		console.log(
+			PoseidonT3Contract,
+			PoseidonT4Contract,
+			PoseidonT5Contract,
+			PoseidonT6Contract,
+		)
+
+
         hasherContract = await hasherContractFactory.deploy()
 		await hasherContract.deployTransaction.wait()
     })
