@@ -11,41 +11,25 @@ import {
 } from 'maci-crypto'
 
 
-import { parseArtifact, linkPoseidonLibraries } from '../'
+import { parseArtifact, genTestAccounts, genDeployer, deployPoseidonContracts, linkPoseidonLibraries } from '../'
 
-let deployer
 let hasherContract
+const accounts = genTestAccounts(1)
+const deployer = genDeployer(accounts[0].privateKey)
 
 describe('Hasher', () => {
     beforeAll(async () => {
-        const signers = await ethers.getSigners()
-        const signer = signers[0]
-        console.log('Deploying Poseidon')
-
-        const PoseidonT3ContractFactory = await ethers.getContractFactory('PoseidonT3', signer)
-        const PoseidonT4ContractFactory = await ethers.getContractFactory('PoseidonT4', signer)
-        const PoseidonT5ContractFactory = await ethers.getContractFactory('PoseidonT5', signer)
-        const PoseidonT6ContractFactory = await ethers.getContractFactory('PoseidonT6', signer)
-
-        const PoseidonT3Contract = await PoseidonT3ContractFactory.deploy()
-        const PoseidonT4Contract = await PoseidonT4ContractFactory.deploy()
-        const PoseidonT5Contract = await PoseidonT5ContractFactory.deploy()
-        const PoseidonT6Contract = await PoseidonT6ContractFactory.deploy()
-
-        const hasherContractFactory = await ethers.getContractFactory(
-            'Hasher',
-            {
-                signer,
-                libraries: {
-                    PoseidonT3: PoseidonT3Contract.address,
-                    PoseidonT4: PoseidonT4Contract.address,
-                    PoseidonT5: PoseidonT5Contract.address,
-                    PoseidonT6: PoseidonT6Contract.address,
-                },
-            },
+        const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } = await deployPoseidonContracts(deployer)
+        const hasherContractFactory = await linkPoseidonLibraries(
+			'Hasher',
+			PoseidonT3Contract.address,
+			PoseidonT4Contract.address,
+			PoseidonT5Contract.address,
+			PoseidonT6Contract.address,
         )
 
         hasherContract = await hasherContractFactory.deploy()
+		await hasherContract.deployTransaction.wait()
     })
 
     it('maci-crypto.sha256Hash should match hasher.sha256Hash', async () => {

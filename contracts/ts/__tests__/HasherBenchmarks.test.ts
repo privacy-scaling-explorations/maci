@@ -5,7 +5,7 @@ import {
     genRandomSalt,
 } from 'maci-crypto'
 
-import { JSONRPCDeployer } from '../deploy'
+import { deployPoseidonContracts, JSONRPCDeployer } from '../deploy'
 const PoseidonT3 = require('@maci-contracts/artifacts/PoseidonT3.json')
 const PoseidonT4 = require('@maci-contracts/artifacts/PoseidonT4.json')
 const PoseidonT5 = require('@maci-contracts/artifacts/PoseidonT5.json')
@@ -16,10 +16,6 @@ import { parseArtifact, linkPoseidonLibraries } from '../'
 const accounts = genTestAccounts(1)
 let deployer
 let hasherContract
-let PoseidonT3Contract
-let PoseidonT4Contract
-let PoseidonT5Contract
-let PoseidonT6Contract
 
 describe('Hasher', () => {
     beforeAll(async () => {
@@ -32,12 +28,15 @@ describe('Hasher', () => {
         )
 
         console.log('Deploying Poseidon contracts')
+        const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } = await deployPoseidonContracts(deployer)
+        console.log(
+			PoseidonT3Contract.address,
+			PoseidonT4Contract.address,
+			PoseidonT5Contract.address,
+			PoseidonT6Contract.address,
+		)
 
-        PoseidonT3Contract = await deployer.deploy(PoseidonT3.abi, PoseidonT3.bytecode, {})
-        PoseidonT4Contract = await deployer.deploy(PoseidonT4.abi, PoseidonT4.bytecode, {})
-        PoseidonT5Contract = await deployer.deploy(PoseidonT5.abi, PoseidonT5.bytecode, {})
-        PoseidonT6Contract = await deployer.deploy(PoseidonT6.abi, PoseidonT6.bytecode, {})
-
+		/*
         // Link Poseidon contracts
         linkPoseidonLibraries(
             ['testing/HasherBenchmarks.sol'],
@@ -54,6 +53,10 @@ describe('Hasher', () => {
             HasherAbi,
             HasherBin,
         )
+
+		*/
+
+    	// await hasherContract.deployTransaction.wait()
     })
 
     it('hashLeftRight', async () => {

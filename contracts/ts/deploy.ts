@@ -1,10 +1,10 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import * as ethers from 'ethers'
 import * as shell from 'shelljs'
 import * as argparse from 'argparse'
 import { config } from 'maci-config'
 import { genAccounts, genTestAccounts } from './accounts'
+const { ethers } = require('hardhat')
 
 const abiDir = path.join(__dirname, '..', 'artifacts')
 const solDir = path.join(__dirname, '..', 'contracts')
@@ -44,10 +44,10 @@ const parseArtifact = (filename: string) => {
 	return [ contractArtifact.abi, contractArtifact.bytecode ]
 }
 
-const PoseidonT3 = require('../artifacts/PoseidonT3.json')
-const PoseidonT4 = require('../artifacts/PoseidonT4.json')
-const PoseidonT5 = require('../artifacts/PoseidonT5.json')
-const PoseidonT6 = require('../artifacts/PoseidonT6.json')
+const PoseidonT3 = require('../artifacts/contracts/crypto/Hasher.sol/PoseidonT3.json')
+const PoseidonT4 = require('../artifacts/contracts/crypto/Hasher.sol/PoseidonT4.json')
+const PoseidonT5 = require('../artifacts/contracts/crypto/Hasher.sol/PoseidonT5.json')
+const PoseidonT6 = require('../artifacts/contracts/crypto/Hasher.sol/PoseidonT6.json')
 
 const [ maciContractAbi, maciContractBytes ] = parseArtifact('MACI')
 
@@ -56,34 +56,38 @@ const getInitialVoiceCreditProxyAbi = () => {
     return abi
 }
 
-const linkPoseidonLibraries = (
-    solFilesToLink: string[],
+const linkPoseidonLibraries = async (
+    solFileToLink: string,
     poseidonT3Address,
     poseidonT4Address,
     poseidonT5Address,
     poseidonT6Address,
 ) => {
-    let inputFiles = ''
-    for (const f of solFilesToLink) {
-        inputFiles += `${solDir}/${f} `
-    }
+	const signers = await ethers.getSigners()
+	const signer = signers[0]
 
-    const d = path.join(__dirname, '..')
-    const maciSolPath = path.join(d, 'sol')
-    const ozSolPath = path.join(d, 'node_modules', '@openzeppelin')
+	console.log('Linking Poseidon libraries')
+	console.log(
+		poseidonT3Address,
+		poseidonT4Address,
+		poseidonT5Address,
+		poseidonT6Address,
+	)
 
-    const poseidonPath = path.join(__dirname, '..', 'sol', 'crypto', 'Hasher.sol')
-    const solcPath = path.join(__dirname, '..', 'solc')
-    const linkCmd = `${solcPath}`
-        + ` @openzeppelin/=${ozSolPath}/`
-        + ` -o ${abiDir} ${inputFiles} --overwrite --bin`
-        + ` --allow-paths ${maciSolPath}/,${ozSolPath}`
-        + ` --libraries ${poseidonPath}:PoseidonT3:${poseidonT3Address}`
-        + ` --libraries ${poseidonPath}:PoseidonT4:${poseidonT4Address}`
-        + ` --libraries ${poseidonPath}:PoseidonT5:${poseidonT5Address}`
-        + ` --libraries ${poseidonPath}:PoseidonT6:${poseidonT6Address}`
+	const contractFactory = await ethers.getContractFactory(
+		solFileToLink,
+		{
+			signer,
+			libraries: {
+				PoseidonT3: poseidonT3Address,
+				PoseidonT4: poseidonT4Address,
+				PoseidonT5: poseidonT5Address,
+				PoseidonT6: poseidonT6Address,
+			},
+		},
+	)
 
-    shell.exec(linkCmd)
+	return contractFactory
 }
 
 const genProvider = (
@@ -95,8 +99,8 @@ const genProvider = (
 
 export class JSONRPCDeployer {
 
-    provider: ethers.providers.Provider
-    signer: ethers.Signer
+    provider: any
+    signer: any
     options: any
 
     constructor(privateKey: string, providerUrl: string, options?: any) {
@@ -105,7 +109,7 @@ export class JSONRPCDeployer {
         this.options = options
     }
 
-    async deploy(abi: any, bytecode: any, ...args): Promise<ethers.Contract> {
+    async deploy(abi: any, bytecode: any, ...args): Promise<any> {
         const factory = new ethers.ContractFactory(abi, bytecode, this.signer)
         return await factory.deploy(...args)
     }
@@ -313,7 +317,7 @@ const deployMaci = async (
 
     // Link Poseidon contracts to MACI
     linkPoseidonLibraries(
-        ['MACI.sol'],
+        'MACI.sol',
         PoseidonT3Contract.address,
         PoseidonT4Contract.address,
         PoseidonT5Contract.address,
