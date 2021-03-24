@@ -390,6 +390,7 @@ class AccQueue {
             _depth - this.subDepth,
             this.zeros[this.subDepth],
             this.hashLength,
+            this.hashFunc,
         )
 
         for (let i = 0; i < this.subRoots.length; i++) {

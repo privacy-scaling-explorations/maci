@@ -1,3 +1,4 @@
+import { hash5, hash2 } from 'maci-crypto'
 import {
     IncrementalQuinTree,
     AccQueue,
@@ -27,9 +28,10 @@ const testMerge = (
     NUM_SUBTREES: number,
     MAIN_DEPTH: number,
 ) => {
-    const tree = new IncrementalQuinTree(MAIN_DEPTH, ZERO, HASH_LENGTH)
+    //const hashFunc = HASH_LENGTH === 5 ? hash5 : hash2
     const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
     const aq2 = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
+    const tree = new IncrementalQuinTree(MAIN_DEPTH, ZERO, HASH_LENGTH, aq.hashFunc)
 
     for (let i = 0; i < NUM_SUBTREES; i ++) {
         for (let j = 0; j < HASH_LENGTH ** SUB_DEPTH; j ++) {
@@ -102,7 +104,7 @@ const testMergeShortestOne = (
 ) => {
     const leaf = BigInt(123)
     const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
-    const smallTree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
+    const smallTree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, aq.hashFunc)
 
     aq.enqueue(leaf)
     smallTree.insert(leaf)
@@ -137,7 +139,7 @@ const testMergeExhaustive = (
         aq.mergeSubRoots(0)
 
         const depth = calcDepthFromNumLeaves(HASH_LENGTH, numSubtrees)
-        const smallTree = new IncrementalQuinTree(depth, aq.zeros[aq.subDepth], HASH_LENGTH)
+        const smallTree = new IncrementalQuinTree(depth, aq.zeros[aq.subDepth], HASH_LENGTH, aq.hashFunc)
         for (let i = 0; i < aq.subRoots.length; i++) {
             smallTree.insert(aq.subRoots[i])
         }
@@ -155,7 +157,7 @@ describe('AccQueue', () => {
             const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
 
             it('Should enqueue leaves into a subtree', async () => {
-                const tree0 = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
+                const tree0 = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, aq.hashFunc)
 
                 const subtreeCapacity = HASH_LENGTH ** SUB_DEPTH
                 for (let i = 0; i < subtreeCapacity; i ++) {
@@ -167,7 +169,7 @@ describe('AccQueue', () => {
             })
 
             it('Should enqueue another subtree', async () => {
-                const tree1 = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
+                const tree1 = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, aq.hashFunc)
 
                 const subtreeCapacity = HASH_LENGTH ** SUB_DEPTH
                 for (let i = 0; i < subtreeCapacity; i ++) {
@@ -187,7 +189,7 @@ describe('AccQueue', () => {
             const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
 
             it('Should enqueue leaves into a subtree', async () => {
-                const tree0 = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
+                const tree0 = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, aq.hashFunc)
 
                 const subtreeCapacity = HASH_LENGTH ** SUB_DEPTH
                 for (let i = 0; i < subtreeCapacity; i ++) {
@@ -197,7 +199,7 @@ describe('AccQueue', () => {
                 }
                 expect(aq.getSubRoot(0).toString()).toEqual(tree0.root.toString())
 
-                const tree1 = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
+                const tree1 = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, aq.hashFunc)
 
                 for (let i = 0; i < subtreeCapacity; i ++) {
                     const leaf = BigInt(i + 1)
@@ -218,14 +220,14 @@ describe('AccQueue', () => {
 
             it('Filling an empty subtree should create the correct subroot', () => {
                 const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
-                const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
+                const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, aq.hashFunc)
                 aq.fill()
                 expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
             })
 
             it('Should fill an incomplete subtree', () => {
                 const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
-                const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
+                const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, aq.hashFunc)
 
                 const leaf = BigInt(1)
                 aq.enqueue(leaf)
@@ -246,14 +248,14 @@ describe('AccQueue', () => {
                 
                 // Fill the second subtree with zeros
                 aq.fill()
-                const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
+                const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, aq.hashFunc)
                 expect(aq.getSubRoot(1).toString()).toEqual(tree.root.toString())
             })
 
             it('fill() should be correct for every number of leaves in an incomplete subtree', () => {
                 for (let i = 0; i < 2; i ++) {
-                    const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
                     const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
+                    const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, aq.hashFunc)
                     for (let j = 0; j < i; j ++) {
                         const leaf = BigInt(i + 1)
                         aq.enqueue(leaf)
@@ -274,14 +276,14 @@ describe('AccQueue', () => {
 
             it('Filling an empty subtree should create the correct subroot', () => {
                 const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
-                const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
+                const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, aq.hashFunc)
                 aq.fill()
                 expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
             })
 
             it('Should fill one incomplete subtree', () => {
                 const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
-                const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
+                const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, aq.hashFunc)
 
                 const leaf = BigInt(1)
                 aq.enqueue(leaf)
@@ -302,15 +304,15 @@ describe('AccQueue', () => {
                 
                 // Fill the second subtree with zeros
                 aq.fill()
-                const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
+                const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, aq.hashFunc)
                 expect(aq.getSubRoot(1).toString()).toEqual(tree.root.toString())
             })
 
             it('fill() should be correct for every number of leaves in an incomplete subtree', () => {
                 const capacity = HASH_LENGTH ** SUB_DEPTH
                 for (let i = 1; i < capacity - 1; i ++) {
-                    const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
                     const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
+                    const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, aq.hashFunc)
                     for (let j = 0; j < i; j ++) {
                         const leaf = BigInt(i + 1)
                         aq.enqueue(leaf)
