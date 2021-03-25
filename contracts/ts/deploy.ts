@@ -292,7 +292,7 @@ const deployMaci = async (
         PoseidonT4Contract,
         PoseidonT5Contract,
         PoseidonT6Contract,
-    } = await deployPoseidonContracts(deployer, quiet)
+    } = await deployPoseidonContracts(quiet)
 
     // Link Poseidon contracts to MACI
     const maciContractFactory = await linkPoseidonLibraries(
