@@ -1,7 +1,9 @@
 contracts/sol/QuadVoteTallyVerifier.sol
+contracts/sol/QuadVoteTallyVerifierLarge.sol
 contracts/sol/QuadVoteTallyVerifierMedium.sol
 contracts/sol/QuadVoteTallyVerifierSmall.sol
 contracts/sol/BatchUpdateStateTreeVerifier.sol
+contracts/sol/BatchUpdateStateTreeVerifierLarge.sol
 contracts/sol/BatchUpdateStateTreeVerifierMedium.sol
 contracts/sol/BatchUpdateStateTreeVerifierSmall.sol
 solc

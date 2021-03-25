@@ -264,7 +264,18 @@ const deployMaci = async (
             ...loadAB('QuadVoteTallyVerifierMedium'),
         )
         await quadVoteTallyVerifierContract.deployTransaction.wait()
+    } else if (configType === 'prod-large') {
+        log('Deploying BatchUpdateStateTreeVerifier', quiet)
+        batchUstVerifierContract = await deployer.deploy(
+            ...loadAB('BatchUpdateStateTreeVerifierLarge'),
+        )
+        await batchUstVerifierContract.deployTransaction.wait()
 
+        log('Deploying QuadVoteTallyVerifier', quiet)
+        quadVoteTallyVerifierContract = await deployer.deploy(
+            ...loadAB('QuadVoteTallyVerifierLarge'),
+        )
+        await quadVoteTallyVerifierContract.deployTransaction.wait()
     }
 
 

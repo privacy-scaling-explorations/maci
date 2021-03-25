@@ -244,7 +244,10 @@ const genProofs = async (args: any) => {
 
         let configType
         let circuitName
-        if (maciState.stateTreeDepth === 9) {
+        if (maciState.stateTreeDepth === 12) {
+            configType = 'prod-large'
+            circuitName = 'batchUstLarge'
+        } else if (maciState.stateTreeDepth === 9) {
             configType = 'prod-medium'
             circuitName = 'batchUstMedium'
         } else if (maciState.stateTreeDepth === 8) {
@@ -354,7 +357,10 @@ const genProofs = async (args: any) => {
 
         let configType
         let circuitName
-        if (maciState.stateTreeDepth === 9) {
+        if (maciState.stateTreeDepth === 12) {
+            configType = 'prod-large'
+            circuitName = 'qvtLarge'
+        } else if (maciState.stateTreeDepth === 9) {
             configType = 'prod-medium'
             circuitName = 'qvtMedium'
         } else if (maciState.stateTreeDepth === 8) {

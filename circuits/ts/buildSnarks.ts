@@ -162,20 +162,21 @@ const main = () => {
     } else {
         console.log(`Compiling ${inputFile}...`)
         // Compile the .circom file
-        shell.exec(`node ./node_modules/circom/cli.js ${inputFile} -r ${circuitOut} -s ${symOut} -w ${wasmOut}`)
+        //shell.exec(`node ./node_modules/circom/cli.js ${inputFile} -r ${circuitOut} -s ${symOut} -w ${wasmOut}`)
+        shell.exec(`node ./node_modules/circom/cli.js ${inputFile} -r ${circuitOut} -s ${symOut} -c ${cOut}`)
         console.log('Generated', circuitOut)
 
-        //// Compile the .c file
-        //const srcs = 
-            //path.join(path.resolve(dirpath), 'main.cpp') + ' ' +
-            //path.join(path.resolve(dirpath), 'calcwit.cpp') + ' ' +
-            //path.join(path.resolve(dirpath), 'utils.cpp') + ' ' +
-            //path.join(path.resolve(dirpath), 'fr.cpp') + ' ' +
-            //path.join(path.resolve(dirpath), 'fr.o')
-        //const compileCmd = `g++ -pthread ${srcs} ` +
-            //`${cOut} -o ${witnessGenOut} ` + 
-            //`-lgmp -std=c++11 -O3 -fopenmp -DSANITY_CHECK`
-        //shell.exec(compileCmd, { silent: true })
+        // Compile the .c file
+        const srcs = 
+            path.join(path.resolve(dirpath), 'main.cpp') + ' ' +
+            path.join(path.resolve(dirpath), 'calcwit.cpp') + ' ' +
+            path.join(path.resolve(dirpath), 'utils.cpp') + ' ' +
+            path.join(path.resolve(dirpath), 'fr.cpp') + ' ' +
+            path.join(path.resolve(dirpath), 'fr.o')
+        const compileCmd = `g++ -pthread ${srcs} ` +
+            `${cOut} -o ${witnessGenOut} ` + 
+            `-lgmp -std=c++11 -O3 -fopenmp -DSANITY_CHECK`
+        shell.exec(compileCmd, { silent: true })
         //console.log('Generated', witnessGenOut)
     }
 

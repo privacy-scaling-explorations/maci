@@ -112,8 +112,14 @@ const genBatchUstProofAndPublicSignals = (
         circuitWitnessGenFilename = 'batchUstMedium'
         paramsPath = 'batchUstMedium.params'
         wasmPath = 'batchUstMedium.wasm'
+    } else if (configType === 'prod-large') {
+        circuitPath = 'prod/batchUpdateStateTree_large.circom'
+        circuitR1csPath = 'batchUstLarge.r1cs'
+        circuitWitnessGenFilename = 'batchUstLarge'
+        paramsPath = 'batchUstLarge.params'
+        wasmPath = 'batchUstLarge.wasm'
     } else {
-        throw new Error('Only test, prod-small, and prod-medium circuits are supported')
+        throw new Error('Only test, prod-small, prod-medium, and prod-large circuits are supported')
     }
 
     return genProofAndPublicSignals(
@@ -154,8 +160,14 @@ const genQvtProofAndPublicSignals = (
         circuitWitnessGenFilename = 'qvtMedium'
         wasmPath = 'qvtMedium.wasm'
         paramsPath = 'qvtMedium.params'
+    } else if (configType === 'prod-large') {
+        circuitPath = 'prod/quadVoteTally_large.circom'
+        circuitR1csPath = 'qvtCircuitLarge.r1cs'
+        circuitWitnessGenFilename = 'qvtLarge'
+        wasmPath = 'qvtLarge.wasm'
+        paramsPath = 'qvtLarge.params'
     } else {
-        throw new Error('Only test, prod-small, and prod-medium circuits are supported')
+        throw new Error('Only test, prod-small, prod-medium, and prod-large circuits are supported')
     }
 
     return genProofAndPublicSignals(
@@ -196,19 +208,19 @@ const genProofAndPublicSignals = async (
         //circuit = await compileAndLoadCircuit(circuitFilename)	
     //}
 
-    const snarkjsDir = path.dirname(require.resolve('snarkjs'))
-    const snarkjsCmd = 'node ' + path.join(snarkjsDir, 'cli.cjs')
+    //const snarkjsDir = path.dirname(require.resolve('snarkjs'))
+    //const snarkjsCmd = 'node ' + path.join(snarkjsDir, 'cli.cjs')
 
-    const witnessCmd = `${snarkjsCmd} wc ${circuitWasmPath} ${inputJsonPath} ${witnessPath}`
-    //const witnessCmd = `${witnessGenExe} ${inputJsonPath} ${witnessJsonPath}`
+    //const witnessCmd = `${snarkjsCmd} wc ${circuitWasmPath} ${inputJsonPath} ${witnessPath}`
+    const witnessCmd = `${witnessGenExe} ${inputJsonPath} ${witnessJsonPath}`
 
     shell.config.fatal = true
     shell.exec(witnessCmd)
 
-    const witnessJsonCmd = `${snarkjsCmd} wej ${witnessPath} ${witnessJsonPath}`
+    //const witnessJsonCmd = `${snarkjsCmd} wej ${witnessPath} ${witnessJsonPath}`
 
     //const witnessGenStart = Date.now()
-    shell.exec(witnessJsonCmd)
+    //shell.exec(witnessJsonCmd)
     //const witnessGenEnd = Date.now()
     //console.log('Witness generation took', (witnessGenEnd - witnessGenStart) / 1000, 'seconds')
 
@@ -277,6 +289,10 @@ const verifyBatchUstProof = (
         paramsFilename = 'batchUstMedium.params'
         proofFilename = `${date}.batchUstMedium.proof.json`
         publicSignalsFilename = `${date}.batchUstMedium.publicSignals.json`
+    } else if (configType === 'prod-large') {
+        paramsFilename = 'batchUstLarge.params'
+        proofFilename = `${date}.batchUstLarge.proof.json`
+        publicSignalsFilename = `${date}.batchUstLarge.publicSignals.json`
     }
 
     fs.writeFileSync(
@@ -318,6 +334,10 @@ const verifyQvtProof = (
         paramsFilename = 'qvtMedium.params'
         proofFilename = `${date}.qvtMedium.proof.json`
         publicSignalsFilename = `${date}.qvtMedium.publicSignals.json`
+    } else if (configType === 'prod-large') {
+        paramsFilename = 'qvtLarge.params'
+        proofFilename = `${date}.qvtLarge.proof.json`
+        publicSignalsFilename = `${date}.qvtLarge.publicSignals.json`
     }
 
     // TODO: refactor

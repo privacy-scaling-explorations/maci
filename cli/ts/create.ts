@@ -1,4 +1,3 @@
-
 import {
     genJsonRpcDeployer,
     deployMaci,
@@ -266,11 +265,16 @@ const create = async (args: any) => {
 
     const isMedium = 
         maxMessages > 2048 && maxMessages <= 8192 ||
-        maxUsers > 256 && maxUsers <= 511 ||
+        maxUsers > 255 && maxUsers <= 511 ||
         maxVoteOptions > 24 && maxVoteOptions <= 125
 
-    if (!isTest && !isSmall && !isMedium) {
-        console.error('Error: this codebase only supports test or prod-small configurations for max-users, max-messages, and max-vote-options.')
+    const isLarge =
+        maxMessages > 8192 && maxMessages <= 32768 ||
+        maxUsers > 512 && maxUsers <= 4095 ||
+        maxVoteOptions > 24 && maxVoteOptions <= 125
+
+    if (!isTest && !isSmall && !isMedium && !isLarge) {
+        console.error('Error: this codebase only supports test, prod-small, prod-medium, or prod-large configurations for max-users, max-messages, and max-vote-options.')
         return
     }
 
@@ -299,6 +303,11 @@ const create = async (args: any) => {
         messageTreeDepth = 13
         voteOptionTreeDepth = 3
         configType = 'prod-medium'
+    } else if (isLarge) {
+        stateTreeDepth = 12
+        messageTreeDepth = 15
+        voteOptionTreeDepth = 3
+        configType = 'prod-large'
     } else if (isTest) {
         stateTreeDepth = 4
         messageTreeDepth = 4
