@@ -339,8 +339,8 @@ const deployMaci = async (
     await vkRegistryContract.deployTransaction.wait()
 
     const signer = await getDefaultSigner()
-    log('Transferring VkRegistry ownership to MACI', quiet)
-    await (await (vkRegistryContract.transferOwnership(signer.address))).wait()
+    //log('Transferring VkRegistry ownership to MACI', quiet)
+    //await (await (vkRegistryContract.transferOwnership(signer.address))).wait()
 
     log('Initialising MACI', quiet)
     await (await (maciContract.init(
