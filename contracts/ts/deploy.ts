@@ -52,12 +52,12 @@ const parseArtifact = (filename: string) => {
 	return [ contractArtifact.abi, contractArtifact.bytecode ]
 }
 
-const PoseidonT3 = require('../artifacts/contracts/crypto/Hasher.sol/PoseidonT3.json')
-const PoseidonT4 = require('../artifacts/contracts/crypto/Hasher.sol/PoseidonT4.json')
-const PoseidonT5 = require('../artifacts/contracts/crypto/Hasher.sol/PoseidonT5.json')
-const PoseidonT6 = require('../artifacts/contracts/crypto/Hasher.sol/PoseidonT6.json')
+//const PoseidonT3 = require('../artifacts/contracts/crypto/Hasher.sol/PoseidonT3.json')
+//const PoseidonT4 = require('../artifacts/contracts/crypto/Hasher.sol/PoseidonT4.json')
+//const PoseidonT5 = require('../artifacts/contracts/crypto/Hasher.sol/PoseidonT5.json')
+//const PoseidonT6 = require('../artifacts/contracts/crypto/Hasher.sol/PoseidonT6.json')
 
-const [ maciContractAbi, maciContractBytes ] = parseArtifact('MACI')
+//const [ maciContractAbi, maciContractBytes ] = parseArtifact('MACI')
 
 const getInitialVoiceCreditProxyAbi = () => {
     const [ abi ] = parseArtifact('InitialVoiceCreditProxy.abi')
@@ -153,22 +153,18 @@ const deployVkRegistry = async () => {
     return await vkRegistryFactory.deploy()
 }
 
-const deployMockVerifier = async (deployer, quiet = false) => {
+const deployMockVerifier = async (quiet = false) => {
     log('Deploying MockVerifier', quiet)
-    const [ MockVerifierAbi, MockVerifierBin ] = parseArtifact('MockVerifier')
-    return await deployer.deploy(
-        MockVerifierAbi,
-        MockVerifierBin,
-    )
+	const signer = await getDefaultSigner()
+    const factory = await ethers.getContractFactory('MockVerifier', signer)
+    return await factory.deploy()
 }
 
-const deployVerifier = async (deployer, quiet = false) => {
+const deployVerifier = async (quiet = false) => {
     log('Deploying Verifier', quiet)
-    const [ VerifierAbi, VerifierBin ] = parseArtifact('Verifier')
-    return await deployer.deploy(
-        VerifierAbi,
-        VerifierBin,
-    )
+	const signer = await getDefaultSigner()
+    const factory = await ethers.getContractFactory('Verifier', signer)
+    return await factory.deploy()
 }
 
 const deployConstantInitialVoiceCreditProxy = async (
@@ -178,47 +174,34 @@ const deployConstantInitialVoiceCreditProxy = async (
     log('Deploying InitialVoiceCreditProxy', quiet)
 	const signer = await getDefaultSigner()
     const voiceCreditFactory = await ethers.getContractFactory('ConstantInitialVoiceCreditProxy', signer)
-    return await voiceCreditFactory.deploy(
-        amount.toString(),
-    )
+    return await voiceCreditFactory.deploy(amount.toString())
 }
 
-const deploySignupToken = async (deployer) => {
+const deploySignupToken = async () => {
     console.log('Deploying SignUpToken')
-    const [ SignupTokenAbi, SignupTokenBin ] = parseArtifact('SignUpToken')
-    return await deployer.deploy(
-        SignupTokenAbi,
-        SignupTokenBin,
-    )
+	const signer = await getDefaultSigner()
+    const factory = await ethers.getContractFactory('SignUpToken', signer)
+    return await factory.deploy()
 }
 
 const deploySignupTokenGatekeeper = async (
-    deployer,
     signUpTokenAddress: string,
     quiet = false
 ) => {
     log('Deploying SignUpTokenGatekeeper', quiet)
 
-    const [ SignUpTokenGatekeeperAbi, SignUpTokenGatekeeperBin ] = parseArtifact('SignUpTokenGatekeeper')
-    const signUpTokenGatekeeperContract = await deployer.deploy(
-        SignUpTokenGatekeeperAbi,
-        SignUpTokenGatekeeperBin,
-        signUpTokenAddress,
-    )
-
-    return signUpTokenGatekeeperContract
+	const signer = await getDefaultSigner()
+    const factory = await ethers.getContractFactory('SignUpTokenGatekeeper', signer)
+    return await factory.deploy(signUpTokenAddress)
 }
 
 const deployFreeForAllSignUpGatekeeper = async (
     quiet = false
 ) => {
-    log('Deploying FreeForAllSignUpGatekeeper', quiet)
+    log('Deploying FreeForAllGatekeeper', quiet)
 	const signer = await getDefaultSigner()
-    const freeForAllSignUpGatekeeperFactory = await ethers.getContractFactory('FreeForAllGatekeeper', signer)
-
-    const freeForAllSignupGatekeeperContract = await freeForAllSignUpGatekeeperFactory.deploy();
-	await freeForAllSignupGatekeeperContract.deployTransaction.wait()
-	return freeForAllSignupGatekeeperContract
+    const factory = await ethers.getContractFactory('FreeForAllGatekeeper', signer)
+    return await factory.deploy()
 }
 
 const log = (msg: string, quiet: boolean) => {
@@ -262,7 +245,7 @@ const deployPollFactory = async (quiet = false) => {
     return await pollFactory.deploy()
 }
 
-const deployPpt = async (deployer, mockVerifierContractAddress: string, quiet = false) => {
+const deployPpt = async (mockVerifierContractAddress: string, quiet = false) => {
 	const signer = await getDefaultSigner()
     log('Deploying PollProcessorAndTallyer', quiet)
     const pptFactory = await ethers.getContractFactory('PollProcessorAndTallyer', signer)
@@ -272,7 +255,7 @@ const deployPpt = async (deployer, mockVerifierContractAddress: string, quiet = 
     )
 }
 
-const deployMessageAqFactory = async (deployer, quiet = false) => {
+const deployMessageAqFactory = async (quiet = false) => {
 	const signer = await getDefaultSigner()
     log('Deploying MessageAqFactory', quiet)
     const messageAqFactory = await ethers.getContractFactory('MessageAqFactory', signer)
@@ -281,7 +264,6 @@ const deployMessageAqFactory = async (deployer, quiet = false) => {
 }
 
 const deployMaci = async (
-    deployer: any,
     signUpTokenGatekeeperContractAddress: string,
     initialVoiceCreditBalanceAddress: string,
     mockVerifierContractAddress: string,
@@ -366,11 +348,11 @@ const deployMaci = async (
         messageAqFactoryContract.address,
     ))).wait()
 
-    const [ AccQueueQuinaryMaciAbi, AccQueueBin ] = parseArtifact('AccQueue')
+    const [ AccQueueQuinaryMaciAbi, ] = parseArtifact('AccQueue')
     const stateAqContract = new ethers.Contract(
         await maciContract.stateAq(),
         AccQueueQuinaryMaciAbi,
-        deployer.signer,
+        signer,
     )
 
     return {
@@ -421,7 +403,7 @@ export {
     genDeployer,
     genProvider,
     genJsonRpcDeployer,
-    maciContractAbi,
+    //maciContractAbi,
     getInitialVoiceCreditProxyAbi,
     abiDir,
     solDir,

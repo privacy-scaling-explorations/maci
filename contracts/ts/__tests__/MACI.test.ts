@@ -1,7 +1,7 @@
 jest.setTimeout(90000)
 import * as ethers from 'ethers'
 import { timeTravel } from './utils'
-import { genDeployer, parseArtifact } from '../deploy'
+import { parseArtifact, getDefaultSigner } from '../deploy'
 import { deployTestContracts } from '../utils'
 import { genMaciStateFromContract } from '../genMaciState'
 import {
@@ -29,7 +29,6 @@ const MESSAGE_TREE_DEPTH = 4
 const MESSAGE_TREE_SUBDEPTH = 2
 
 const accounts = genTestAccounts(1)
-const deployer = genDeployer(accounts[0].privateKey)
 const coordinator = new Keypair(new PrivKey(BigInt(config.maci.coordinatorPrivKey)))
 const [ pollAbi ] = parseArtifact('Poll')
 const [ accQueueQuinaryMaciAbi ] = parseArtifact('AccQueueQuinaryMaci')
@@ -84,6 +83,7 @@ const treeDepths: TreeDepths = {
 const messageBatchSize = 25
 const tallyBatchSize = STATE_TREE_ARITY ** treeDepths.intStateTreeDepth
 
+let signer
 
 describe('MACI', () => {
     let maciContract
@@ -94,8 +94,8 @@ describe('MACI', () => {
 
     describe('Deployment', () => {
         beforeAll(async () => {
+            signer = await getDefaultSigner()
             const r = await deployTestContracts(
-                deployer,
                 config.maci.initialVoiceCreditBalance,
             )
             maciContract = r.maciContract
@@ -180,6 +180,7 @@ describe('MACI', () => {
     })
 
     describe('Deploy a Poll', () => {
+        let deployTime
         it('should set VKs and deploy a poll', async () => {
             const std = await maciContract.stateTreeDepth()
 
@@ -225,6 +226,9 @@ describe('MACI', () => {
             )
             receipt = await tx.wait()
 
+            const block = await signer.provider.getBlock(receipt.blockHash)
+            deployTime = block.timestamp
+
             console.log('deployPoll() gas used:', receipt.gasUsed.toString())
 
             expect(receipt.status).toEqual(1)
@@ -232,20 +236,12 @@ describe('MACI', () => {
             const event = iface.parseLog(receipt.logs[receipt.logs.length - 1])
             pollId = event.args._pollId
 
-            const pollContractAddress = await maciContract.getPoll(pollId)
-            const pollContract = new ethers.Contract(
-                pollContractAddress,
-                pollAbi,
-                deployer.signer,
-            )
-            // TODO: fix this
-            const deployTime = await pollContract.deployTime()
-            const pollEndTimestamp = BigInt(duration + deployTime)
-
             const p = maciState.deployPoll(
                 duration,
+                BigInt(deployTime + duration),
                 maxValues,
                 treeDepths,
+                messageBatchSize,
                 coordinator,
             )
             expect(p.toString()).toEqual(pollId.toString())
@@ -253,50 +249,48 @@ describe('MACI', () => {
 
         it('should set correct storage values', async () => {
             // Retrieve the Poll state and check that each value is correct
-            const std = await maciContract.stateTreeDepth()
             const pollContractAddress = await maciContract.getPoll(pollId)
             const pollContract = new ethers.Contract(
                 pollContractAddress,
                 pollAbi,
-                deployer.signer,
+                signer,
             )
 
-            const pollProcessVkSig = await pollContract.processVkSig()
-            const pollTallyVkSig = await pollContract.tallyVkSig()
+            const dd = await pollContract.getDeployTimeAndDuration()
 
-            const expectedProcessVkSig = genProcessVkSig(
-                std,
-                treeDepths.messageTreeDepth,
-                treeDepths.voteOptionTreeDepth,
-                messageBatchSize,
-            )
+            expect(Number(dd[0])).toEqual(deployTime)
+            expect(Number(dd[1])).toEqual(duration)
 
-            const expectedTallyVkSig = genTallyVkSig(
-                std,
-                treeDepths.intStateTreeDepth,
-                treeDepths.voteOptionTreeDepth,
-            )
+            expect(await pollContract.stateAqMerged()).toBeFalsy()
 
-            expect(pollProcessVkSig.toString()).toEqual(expectedProcessVkSig.toString())
-            expect(pollTallyVkSig.toString()).toEqual(expectedTallyVkSig.toString())
+            const bt = await pollContract.currentSbAndTallyCommitments()
+            expect(Number(bt[0])).toEqual(0)
 
-            const onChainProcessVk = VerifyingKey.fromContract(
-                await vkRegistryContract.getProcessVkBySig(pollProcessVkSig)
-            )
-            const onChainTallyVk = VerifyingKey.fromContract(
-                await vkRegistryContract.getTallyVkBySig(pollTallyVkSig)
-            )
-            expect(onChainProcessVk.equals(testProcessVk)).toBeTruthy()
-            expect(onChainTallyVk.equals(testTallyVk)).toBeTruthy()
+            // TODO
+            //expect(Number(bt[1])).toEqual(...................)
 
-            //0. coordinatorPubKey,
-            //1. duration,
-            //2. processVkSig,
-            //3. tallyVkSig,
-            //4. messageAq,
-            //5. maxValues,
-            //6. treeDepths,
-            //7. batchSizes
+            const sm = await pollContract.numSignUpsAndMessages()
+            // There are 0 signups until the coordinator merges the state tree
+            // via Poll.mergeStateAq()
+            expect(Number(sm[0])).toEqual(0)
+
+            // There are 0 messages until a user publishes a message
+            expect(Number(sm[1])).toEqual(0)
+
+            const onChainMaxValues = await pollContract.maxValues()
+
+            expect(Number(onChainMaxValues.maxMessages)).toEqual(maxValues.maxMessages)
+            expect(Number(onChainMaxValues.maxVoteOptions)).toEqual(maxValues.maxVoteOptions)
+
+            const onChainTreeDepths = await pollContract.treeDepths()
+            expect(Number(onChainTreeDepths.intStateTreeDepth)).toEqual(treeDepths.intStateTreeDepth)
+            expect(Number(onChainTreeDepths.messageTreeDepth)).toEqual(treeDepths.messageTreeDepth)
+            expect(Number(onChainTreeDepths.messageTreeSubDepth)).toEqual(treeDepths.messageTreeSubDepth)
+            expect(Number(onChainTreeDepths.voteOptionTreeDepth)).toEqual(treeDepths.voteOptionTreeDepth)
+
+            const onChainBatchSizes = await pollContract.batchSizes()
+            expect(Number(onChainBatchSizes.messageBatchSize)).toEqual(messageBatchSize)
+            expect(Number(onChainBatchSizes.tallyBatchSize)).toEqual(tallyBatchSize)
         })
     })
 
@@ -308,7 +302,7 @@ describe('MACI', () => {
             pollContract = new ethers.Contract(
                 pollContractAddress,
                 pollAbi,
-                deployer.signer,
+                signer,
             )
 
         })
@@ -342,8 +336,8 @@ describe('MACI', () => {
 
         it('shold not publish a message after the voting period', async () => {
             expect.assertions(1)
-            const duration = await pollContract.duration()
-            await timeTravel(deployer.provider, Number(duration.toString()) + 1)
+            const dd = await pollContract.getDeployTimeAndDuration()
+            await timeTravel(signer.provider, Number(dd[0]) + 1)
 
             const keypair = new Keypair()
             const command = new Command(
@@ -382,14 +376,16 @@ describe('MACI', () => {
             pollContract = new ethers.Contract(
                 pollContractAddress,
                 pollAbi,
-                deployer.signer,
+                signer,
             )
 
-            const messageAqAddress = await pollContract.messageAq()
+            const extContracts = await pollContract.extContracts()
+
+            const messageAqAddress = extContracts.messageAq
             messageAqContract = new ethers.Contract(
                 messageAqAddress,
                 accQueueQuinaryMaciAbi,
-                deployer.signer,
+                signer,
             )
         })
 
@@ -461,7 +457,7 @@ describe('MACI', () => {
             pollContract = new ethers.Contract(
                 pollContractAddress,
                 pollAbi,
-                deployer.signer,
+                signer,
             )
 
         })
@@ -502,7 +498,7 @@ describe('MACI', () => {
             pollContract = new ethers.Contract(
                 pollContractAddress,
                 pollAbi,
-                deployer.signer,
+                signer,
             )
 
             poll = maciState.polls[pollId]
@@ -554,7 +550,7 @@ describe('MACI', () => {
             pollContract = new ethers.Contract(
                 pollContractAddress,
                 pollAbi,
-                deployer.signer,
+                signer,
             )
         })
 
@@ -607,7 +603,7 @@ describe('MACI', () => {
     describe('Generate MaciState from contract', () => {
         it('Should regenerate MaciState from on-chain information', async () => {
             const ms = await genMaciStateFromContract(
-                deployer.provider,
+                signer.provider,
                 maciContract.address,
                 coordinator,
                 0,

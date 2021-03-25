@@ -6,18 +6,12 @@ import {
 } from 'maci-domainobjs'
 
 import {
-    maciContractAbi,
     parseArtifact,
 } from './'
 
 import {
     MaciState,
-    NOTHING_UP_MY_SLEEVE,
 } from 'maci-core'
-
-import {
-    hash3,
-} from 'maci-crypto'
 
 import * as ethers from 'ethers'
 import * as assert from 'assert'
@@ -38,7 +32,8 @@ const genMaciStateFromContract = async (
     // Verify and sort pollIds
     assert(pollId >= 0)
 
-    const [ pollContractAbi ] = parseArtifact('Poll')
+    const [ pollContractAbi, ] = parseArtifact('Poll')
+    const [ maciContractAbi, ] = parseArtifact('MACI')
 
     const maciContract = new ethers.Contract(
         address,
@@ -114,6 +109,7 @@ const genMaciStateFromContract = async (
                     event.args._userPubKey.map((x) => BigInt(x)),
                 ),
                 voiceCreditBalance: Number(event.args._voiceCreditBalance),
+                timestamp: Number(event.args._timestamp),
             }
         })
     }
@@ -208,26 +204,14 @@ const genMaciStateFromContract = async (
     assert(coordinatorPubKeyOnChain[0].toString() === coordinatorKeypair.pubKey.rawPubKey[0].toString())
     assert(coordinatorPubKeyOnChain[1].toString() === coordinatorKeypair.pubKey.rawPubKey[1].toString())
 
-    const duration = Number(await pollContract.duration())
-    const processVkSig = BigInt(await pollContract.processVkSig())
-    const tallyVkSig = BigInt(await pollContract.tallyVkSig())
-    const pptAddr = await pollContract.ppt()
+    const dd = await pollContract.getDeployTimeAndDuration()
+    const deployTime = Number(dd[0])
+    const duration = Number(dd[1])
     const onChainMaxValues = await pollContract.maxValues()
     const onChainTreeDepths = await pollContract.treeDepths()
     const onChainBatchSizes = await pollContract.batchSizes()
 
     assert(vkRegistryAddress === await maciContract.vkRegistry())
-    const [ VkRegistryAbi ] = parseArtifact('VkRegistry')
-    const vkRegistryContract = new ethers.Contract(
-        vkRegistryAddress,
-        VkRegistryAbi,
-        provider,
-    )
-
-    const onChainProcessVk = await vkRegistryContract.getProcessVkBySig(processVkSig.toString())
-    const onChainTallyVk = await vkRegistryContract.getTallyVkBySig(tallyVkSig.toString())
-    const processVk = VerifyingKey.fromContract(onChainProcessVk)
-    const tallyVk = VerifyingKey.fromContract(onChainTallyVk)
 
     const maxValues = {
         maxMessages: Number(onChainMaxValues.maxMessages.toNumber()),
@@ -365,11 +349,11 @@ const genMaciStateFromContract = async (
     // Reconstruct MaciState in order
 
     for (const action of actions) {
-        console.log(action.type)
         if (action['type'] === 'SignUp') {
             maciState.signUp(
                 action.data.pubKey,
                 action.data.voiceCreditBalance,
+                action.data.timestamp,
             )
         //} else if (action['type'] === 'MergeStateAqSubRoots') {
             //maciState.stateAq.mergeSubRoots(
@@ -381,12 +365,11 @@ const genMaciStateFromContract = async (
             if (action.data.pollId === pollId) {
                 maciState.deployPoll(
                     duration,
+                    BigInt(deployTime + duration),
                     maxValues,
                     treeDepths,
                     batchSizes.messageBatchSize,
                     coordinatorKeypair,
-                    processVk,
-                    tallyVk,
                 )
             } else {
                 maciState.deployNullPoll()

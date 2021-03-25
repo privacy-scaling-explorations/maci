@@ -1,14 +1,14 @@
 jest.setTimeout(90000)
 require('module-alias/register')
-import { config } from 'maci-config'
 import {
     IncrementalQuinTree,
     AccQueue,
     hashLeftRight,
     NOTHING_UP_MY_SLEEVE,
+    hash2,
+    hash5,
 } from 'maci-crypto'
-import { JSONRPCDeployer } from '../deploy'
-import { parseArtifact, deployPoseidonContracts, linkPoseidonLibraries } from '../'
+import { deployPoseidonContracts, linkPoseidonLibraries } from '../'
 
 const enqueueGasLimit = { gasLimit: 500000 }
 const fillGasLimit = { gasLimit: 4000000 }
@@ -98,8 +98,9 @@ const testEnqueue = async (
     ZERO: BigInt,
 ) => {
 
+    const hashFunc = HASH_LENGTH === 5 ? hash5 : hash2
+    const tree0 = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, hashFunc)
     const subtreeCapacity = HASH_LENGTH ** SUB_DEPTH
-    const tree0 = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
 
     // Insert up to a subtree
     for (let i = 0; i < subtreeCapacity; i ++) {
@@ -118,7 +119,7 @@ const testEnqueue = async (
     const r = await aqContract.getSubRoot(0)
     expect(r.toString()).toEqual(tree0.root.toString())
 
-    const tree1 = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH)
+    const tree1 = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, hashFunc)
 
     // Insert the other subtree
     for (let i = 0; i < subtreeCapacity; i ++) {
@@ -150,7 +151,7 @@ const testInsertSubTrees = async (
 
     const leaves: BigInt[] = []
     for (let i = 0; i < NUM_SUBTREES; i ++) {
-        const subTree = new IncrementalQuinTree(aq.subDepth, aq.zeros[0], aq.hashLength)
+        const subTree = new IncrementalQuinTree(aq.subDepth, aq.zeros[0], aq.hashLength, aq.hashFunc)
         const leaf = BigInt(i)
         subTree.insert(leaf)
         leaves.push(leaf)
@@ -165,7 +166,7 @@ const testInsertSubTrees = async (
         correctRoot = aq.subRoots[0].toString()
     } else {
         const depth = calcDepthFromNumLeaves(aq.hashLength, aq.subRoots.length)
-        const tree = new IncrementalQuinTree(depth, aq.zeros[aq.subDepth], aq.hashLength)
+        const tree = new IncrementalQuinTree(depth, aq.zeros[aq.subDepth], aq.hashLength, aq.hashFunc)
         for (const sr of aq.subRoots) {
             tree.insert(sr)
         }
@@ -205,7 +206,7 @@ const testEnqueueAndInsertSubTree = async (
 
     const leaves: BigInt[] = []
 
-    const subTree = new IncrementalQuinTree(aq.subDepth, z, aq.hashLength)
+    const subTree = new IncrementalQuinTree(aq.subDepth, z, aq.hashLength, aq.hashFunc)
 
     for (let i = 0; i < aq.hashLength ** aq.subDepth; i ++) {
         leaves.push(z)
@@ -215,7 +216,7 @@ const testEnqueueAndInsertSubTree = async (
     // leaves is now [z, z, z, z..., n]
 
     const depth = calcDepthFromNumLeaves(aq.hashLength, leaves.length)
-    const tree = new IncrementalQuinTree(depth, z, aq.hashLength)
+    const tree = new IncrementalQuinTree(depth, z, aq.hashLength, aq.hashFunc)
     for (const leaf of leaves) {
         tree.insert(leaf)
     }
@@ -267,7 +268,7 @@ const testMerge = async (
     }
 
     // Insert leaves into a main tree
-    const tree = new IncrementalQuinTree(MAIN_DEPTH, aq.zeros[0], aq.hashLength)
+    const tree = new IncrementalQuinTree(MAIN_DEPTH, aq.zeros[0], aq.hashLength, aq.hashFunc)
     for (const leaf of leaves) {
         tree.insert(leaf)
     }
@@ -291,7 +292,7 @@ const testMerge = async (
     } else {
         // Check whether the small SRT root is correct
         const srtHeight = calcDepthFromNumLeaves(aq.hashLength, NUM_SUBTREES)
-        const smallTree = new IncrementalQuinTree(srtHeight, aq.zeros[aq.subDepth], aq.hashLength)
+        const smallTree = new IncrementalQuinTree(srtHeight, aq.zeros[aq.subDepth], aq.hashLength, aq.hashFunc)
         for (const s of aq.subRoots) {
             smallTree.insert(s)
         }
@@ -326,7 +327,7 @@ const testMergeAgain = async (
     aqContract: any,
     MAIN_DEPTH: number,
 ) => {
-    const tree = new IncrementalQuinTree(MAIN_DEPTH, aq.zeros[0], aq.hashLength)
+    const tree = new IncrementalQuinTree(MAIN_DEPTH, aq.zeros[0], aq.hashLength, aq.hashFunc)
     const leaf = BigInt(123)
 
     // Enqueue

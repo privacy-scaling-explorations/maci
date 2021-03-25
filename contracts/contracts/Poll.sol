@@ -144,6 +144,8 @@ contract Poll is
     //   hashLeftRight(merkleRoot([0...0]), 0)
     // )
     // Where [0...0] is an array of 0s, TREE_ARITY ** voteOptionTreeDepth long
+
+    // TODO: set this to 0?
     uint256 internal currentTallyCommitment = 
         0x17e1b6993b1af9f8dfe8d4202c2f2a610994ff19b92462f9a54da39d11026d6b;
 

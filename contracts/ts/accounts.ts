@@ -16,8 +16,6 @@ const genTestAccounts = (
     numAccounts: number,
 ) => {
     const accounts: any[] = []
-    debugger
-    const signer = new ethers.Wallet('0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3')
 
     for (let i=0; i < numAccounts; i++) {
         const path = `m/44'/60'/${i}'/0/0`
