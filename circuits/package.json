@@ -58,7 +58,7 @@
     },
     "devDependencies": {
         "@types/node": "^13.1.2",
-        "circom-helper": "0.1.6",
+        "circom-helper": "0.1.9",
         "axios": "^0.21.0",
         "maci-config": "^1.0.0",
         "maci-core": "^1.0.0",

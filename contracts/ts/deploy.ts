@@ -1,11 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import * as shell from 'shelljs'
-import * as argparse from 'argparse'
 import { config } from 'maci-config'
-import { genAccounts, genTestAccounts } from './accounts'
 const { ethers } = require('hardhat')
-
 
 const abiDir = path.join(__dirname, '..', 'artifacts')
 const solDir = path.join(__dirname, '..', 'contracts')
@@ -70,10 +66,11 @@ const linkPoseidonLibraries = async (
     poseidonT4Address,
     poseidonT5Address,
     poseidonT6Address,
+    quiet = false,
 ) => {
 	const signer = await getDefaultSigner()
 
-	console.log('Linking Poseidon libraries')
+	log('Linking Poseidon libraries', quiet)
 	const contractFactory = await ethers.getContractFactory(
 		solFileToLink,
 		{
@@ -177,8 +174,8 @@ const deployConstantInitialVoiceCreditProxy = async (
     return await voiceCreditFactory.deploy(amount.toString())
 }
 
-const deploySignupToken = async () => {
-    console.log('Deploying SignUpToken')
+const deploySignupToken = async (quiet = false) => {
+    log('Deploying SignUpToken', quiet)
 	const signer = await getDefaultSigner()
     const factory = await ethers.getContractFactory('SignUpToken', signer)
     return await factory.deploy()
@@ -213,7 +210,7 @@ const log = (msg: string, quiet: boolean) => {
 const deployPoseidonContracts = async (quiet = false) => {
     log('Deploying Poseidon Contracts', quiet)
 	const signer = await getDefaultSigner()
-    console.log('Deploying Poseidon')
+    log('Deploying Poseidon', quiet)
     const PoseidonT3ContractFactory = await ethers.getContractFactory('PoseidonT3', signer)
     const PoseidonT4ContractFactory = await ethers.getContractFactory('PoseidonT4', signer)
     const PoseidonT5ContractFactory = await ethers.getContractFactory('PoseidonT5', signer)

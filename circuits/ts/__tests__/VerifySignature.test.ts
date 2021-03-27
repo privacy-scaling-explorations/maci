@@ -45,6 +45,7 @@ describe('Signature verification circuit', () => {
             preimage: command.asCircuitInputs(),
         })
 
+        debugger
         const witness = await genWitness(circuit, circuitInputs)
         const isValid = await getSignalByName(circuit, witness, 'main.valid')
         expect(isValid).toEqual('1')
