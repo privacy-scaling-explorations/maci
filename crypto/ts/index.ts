@@ -3,9 +3,8 @@ import * as crypto from 'crypto'
 import * as ethers from 'ethers'
 const ff = require('ffjavascript')
 import { babyJub, mimc7, poseidon, eddsa } from 'circomlib'
-//import { IncrementalQuinTree } from './IncrementalQuinTree'
-import { IncrementalQuinTree } from 'incrementalquintree'
 import { AccQueue } from './AccQueue'
+import { IncrementalQuinTree } from 'incrementalquintree'
 const stringifyBigInts: (obj: object) => any = ff.utils.stringifyBigInts
 const unstringifyBigInts: (obj: object) => any = ff.utils.unstringifyBigInts
 
@@ -76,6 +75,9 @@ interface Keypair {
     pubKey: PubKey;
 }
 
+/*
+ * Encrypted plaintext.
+ */
 interface Ciphertext {
     // The initialisation vector
     iv: BigInt;
@@ -85,7 +87,10 @@ interface Ciphertext {
 }
 
 // An EdDSA signature.
-// TODO: document what R8 and S mean
+// R8 is a Baby Jubjub elliptic curve point and S is an element of the finite
+// field of order `l` where `l` is the large prime number dividing the order of
+// Baby Jubjub: see
+// https://iden3-docs.readthedocs.io/en/latest/_downloads/a04267077fb3fdbf2b608e014706e004/Ed-DSA.pdf
 interface Signature {
     R8: BigInt[];
     S: BigInt;
@@ -118,12 +123,8 @@ const bigInt2Buffer = (i: BigInt): Buffer => {
 }
 
 /*
- * Convert a Buffer to a BigInt
+ * Hash an array of uint256 values the same way that the EVM does.
  */
-const buffer2BigInt = (b: Buffer): BigInt => {
-    return BigInt('0x' + b.toString('hex'))
-}
-
 const sha256Hash = (input: BigInt[]) => {
     const types: string[] = []
     for (let i = 0; i < input.length; i ++) {
@@ -303,7 +304,7 @@ const genRandomSalt = (): PrivKey=> {
 /*
  * An internal function which formats a random private key to be compatible
  * with the BabyJub curve. This is the format which should be passed into the
- * PublicKey and other circuits.
+ * PubKey and other circuits.
  */
 const formatPrivKeyForBabyJub = (privKey: PrivKey) => {
 
@@ -350,16 +351,10 @@ const genPubKey = (privKey: PrivKey): PubKey => {
     // Check whether privKey is a field element
     assert(privKey < SNARK_FIELD_SIZE)
 
-    // TODO: check whether privKey is valid (i.e. that the prune buffer step
-    // worked)
-
     const pubKey = babyJub.mulPointEscalar(
         babyJub.Base8,
         formatPrivKeyForBabyJub(privKey),
     )
-
-    // TODO: assert that pubKey is valid
-    // TODO: figure out how to check if pubKey is valid
 
     assert(pubKey.length === 2)
     assert(pubKey[0] < SNARK_FIELD_SIZE)
