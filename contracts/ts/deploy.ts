@@ -48,13 +48,6 @@ const parseArtifact = (filename: string) => {
 	return [ contractArtifact.abi, contractArtifact.bytecode ]
 }
 
-//const PoseidonT3 = require('../artifacts/contracts/crypto/Hasher.sol/PoseidonT3.json')
-//const PoseidonT4 = require('../artifacts/contracts/crypto/Hasher.sol/PoseidonT4.json')
-//const PoseidonT5 = require('../artifacts/contracts/crypto/Hasher.sol/PoseidonT5.json')
-//const PoseidonT6 = require('../artifacts/contracts/crypto/Hasher.sol/PoseidonT6.json')
-
-//const [ maciContractAbi, maciContractBytes ] = parseArtifact('MACI')
-
 const getInitialVoiceCreditProxyAbi = () => {
     const [ abi ] = parseArtifact('InitialVoiceCreditProxy.abi')
     return abi
@@ -273,35 +266,28 @@ const deployMaci = async (
         PoseidonT6Contract,
     } = await deployPoseidonContracts(quiet)
 
+	const contractsToLink = ['MACI', 'PollFactory',
+		'PollProcessorAndTallyer', 'MessageAqFactory',
+	]
+
+	const linkedContractFactories = contractsToLink.map( async (contractName: string) => {
+		return await linkPoseidonLibraries(
+			contractName,
+			PoseidonT3Contract.address,
+			PoseidonT4Contract.address,
+			PoseidonT5Contract.address,
+			PoseidonT6Contract.address,
+			quiet
+		)
+	})
+
+	const [ maciContractFactory, pollFactoryContractFactory, pptContractFactory, messageAqFactory ] = await Promise.all(linkedContractFactories)
+
     // Link Poseidon contracts to MACI
-    const maciContractFactory = await linkPoseidonLibraries(
-        'MACI',
-        PoseidonT3Contract.address,
-        PoseidonT4Contract.address,
-        PoseidonT5Contract.address,
-        PoseidonT6Contract.address,
-    )
-
-    const pollFactoryContractFactory = await linkPoseidonLibraries(
-        'PollFactory',
-        PoseidonT3Contract.address,
-        PoseidonT4Contract.address,
-        PoseidonT5Contract.address,
-        PoseidonT6Contract.address,
-    )
-
     const pollFactoryContract = await pollFactoryContractFactory.deploy()
     await pollFactoryContract.deployTransaction.wait()
 
     // PollProcessorAndTallyer
-    const pptContractFactory = await linkPoseidonLibraries(
-        'PollProcessorAndTallyer',
-        PoseidonT3Contract.address,
-        PoseidonT4Contract.address,
-        PoseidonT5Contract.address,
-        PoseidonT6Contract.address,
-    )
-
     const pptContract = await pptContractFactory.deploy(mockVerifierContractAddress)
     await pptContract.deployTransaction.wait()
 
@@ -317,19 +303,11 @@ const deployMaci = async (
     log('Transferring PollFactory ownership to MACI', quiet)
     await (await (pollFactoryContract.transferOwnership(maciContract.address))).wait()
 
-    const messageAqFactory = await linkPoseidonLibraries(
-        'MessageAqFactory',
-        PoseidonT3Contract.address,
-        PoseidonT4Contract.address,
-        PoseidonT5Contract.address,
-        PoseidonT6Contract.address,
-    )
-
-	const messageAqFactoryContract = await messageAqFactory.deploy()
-    await messageAqFactoryContract.deployTransaction.wait()
+	const messageAqContract = await messageAqFactory.deploy()
+    await messageAqContract.deployTransaction.wait()
 
     log('Transferring MessageAqFactory ownership to PollFactory', quiet)
-    await (await (messageAqFactoryContract.transferOwnership(pollFactoryContract.address))).wait()
+    await (await (messageAqContract.transferOwnership(pollFactoryContract.address))).wait()
 
     // VkRegistry
     const vkRegistryContract = await deployVkRegistry()
@@ -342,7 +320,7 @@ const deployMaci = async (
     log('Initialising MACI', quiet)
     await (await (maciContract.init(
         vkRegistryContract.address,
-        messageAqFactoryContract.address,
+        messageAqContract.address,
     ))).wait()
 
     const [ AccQueueQuinaryMaciAbi, ] = parseArtifact('AccQueue')
