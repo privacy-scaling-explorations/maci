@@ -12,7 +12,7 @@
         "path": "^0.12.7"
     },
     "devDependencies": {
-        "@types/node": "^13.1.2"
+        "@types/node": "^14.14.35"
     },
     "gitHead": "f567a17293114ba2d5e89c711d00a9f4c197f070"
 }

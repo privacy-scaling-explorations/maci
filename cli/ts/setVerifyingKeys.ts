@@ -4,6 +4,7 @@ import * as shelljs from 'shelljs'
 import * as path from 'path'
 import {
     parseArtifact,
+    getDefaultSigner,
 } from 'maci-contracts'
 
 import {
@@ -11,14 +12,8 @@ import {
 } from 'maci-domainobjs'
 
 import {
-    promptPwd,
-    validateEthSk,
-    checkDeployerProviderConnection,
+    contractExists,
 } from './utils'
-
-import {
-    DEFAULT_ETH_PROVIDER,
-} from './defaults'
 
 const getVkJson = (zkeyFile: string) => {
     const vkFile = zkeyFile + '.vk.json'
@@ -30,8 +25,9 @@ const getVkJson = (zkeyFile: string) => {
         'build',
         'cli.cjs',
     )
+    console.log(`Generating ${zkeyFile}, please wait...`)
     const cmd = `node ${snarkjsPath} zkev ${zkeyFile} ${vkFile}`
-    shelljs.exec(cmd, { silent: true })
+    shelljs.exec(cmd, { silent: false })
     const vkJson = fs.readFileSync(vkFile).toString()
     fs.unlinkSync(vkFile)
     return vkJson
@@ -41,34 +37,6 @@ const configureSubparser = (subparsers: any) => {
     const createParser = subparsers.addParser(
         'setVerifyingKeys',
         { addHelp: true },
-    )
-
-    const ethSkGroup = createParser.addMutuallyExclusiveGroup({ required: true })
-
-    ethSkGroup.addArgument(
-        ['-dp', '--prompt-for-deployer-privkey'],
-        {
-            action: 'storeTrue',
-            help: 'Whether to prompt for the deployer\'s Ethereum private key and ignore -d / --deployer-privkey',
-        }
-    )
-
-    ethSkGroup.addArgument(
-        ['-d', '--deployer-privkey'],
-        {
-            action: 'store',
-            type: 'string',
-            help: 'The deployer\'s Ethereum private key',
-        }
-    )
-
-    createParser.addArgument(
-        ['-e', '--eth-provider'],
-        {
-            action: 'store',
-            type: 'string',
-            help: 'A connection string to an Ethereum provider. Default: http://localhost:8545',
-        }
     )
 
     createParser.addArgument(
@@ -122,7 +90,7 @@ const configureSubparser = (subparsers: any) => {
     )
 
     createParser.addArgument(
-        ['-b', '--msg_batch_depth'],
+        ['-b', '--msg-batch-depth'],
         {
             action: 'store',
             type: 'int',
@@ -218,40 +186,18 @@ const setVerifyingKeys = async (args: any) => {
         return 1
     }
 
-    // The coordinator's Ethereum private key
-    // They may either enter it as a command-line option or via the
-    // standard input
-    let ethSk
-    if (args.prompt_for_deployer_privkey) {
-        ethSk = await promptPwd('Deployer\'s Ethereum private key')
-    } else {
-        ethSk = args.deployer_privkey
+    // Check whether there is a contract deployed at the VkRegistry address
+    const signer = await getDefaultSigner()
+    if (!(await contractExists(signer.provider,vkRegistryAddress))) {
+        console.error('Error: a VkRegistry contract is not deployed at', vkRegistryAddress)
+        return 1
     }
 
-    if (ethSk.startsWith('0x')) {
-        ethSk = ethSk.slice(2)
-    }
-
-    if (!validateEthSk(ethSk)) {
-        console.error('Error: invalid Ethereum private key')
-        return
-    }
-
-    // Ethereum provider
-    const ethProvider = args.eth_provider ? args.eth_provider : DEFAULT_ETH_PROVIDER
-
-    if (! (await checkDeployerProviderConnection(ethSk, ethProvider))) {
-        console.error('Error: unable to connect to the Ethereum provider at', ethProvider)
-        return
-    }
-
-    const provider = new ethers.providers.JsonRpcProvider(ethProvider)
-    const wallet = new ethers.Wallet(ethSk, provider)
     const [ vkRegistryAbi ] = parseArtifact('VkRegistry')
     const vkRegistryContract = new ethers.Contract(
         vkRegistryAddress,
         vkRegistryAbi,
-        wallet,
+        signer,
     )
 
     try {

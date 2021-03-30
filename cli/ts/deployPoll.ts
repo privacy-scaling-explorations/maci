@@ -252,15 +252,15 @@ const deployPoll = async (args: any) => {
             pptContract.address,
         )
         const receipt = await tx.wait()
-        const iface = new ethers.utils.Interface(maciContract.interface.abi)
+        const iface = maciContract.interface
         const log = iface.parseLog(receipt.logs[receipt.logs.length - 1])
         const name = log.name
         if (name !== 'DeployPoll') {
             console.error('Error: invalid event log.')
             return 1
         }
-        const pollId = log.values._pollId
-        const pollAddr = log.values._pollAddr
+        const pollId = log.args._pollId
+        const pollAddr = log.args._pollAddr
         console.log('Verifier:', verifierContract.address)
         console.log('Poll ID:', pollId.toString())
         console.log('Poll contract:', pollAddr)

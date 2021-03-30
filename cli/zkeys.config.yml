@@ -8,13 +8,9 @@ circomRuntimePath: "./node_modules/circom_runtime"
 ffiasmPath: "./node_modules/ffiasm"
 
 circuits:
-# stateTreeDepth,
-# msgTreeDepth,
-# msgBatchDepth,
-# voteOptionTreeDepth
 - template: "../circuits/circom/processMessages.circom"
   component: "ProcessMessages"
-  params: [10, 2, 1, 2]
+  params: [10, 2, 1, 2] # stateTreeDepth, msgTreeDepth, msgBatchDepth, voteOptionTreeDepth
   type: "test"
 
 #- template: "../circuits/circom/processMessages.circom"
@@ -23,12 +19,9 @@ circuits:
   #type: "prod"
   #url: ""
 
-# stateTreeDepth,
-# intStateTreeDepth,
-# voteOptionTreeDepth
 - template: "../circuits/circom/tallyVotes.circom"
   component: "TallyVotes"
-  params: [10, 1, 2]
+  params: [10, 1, 2] # stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth
   type: "test"
 
 #- template: "../circuits/circom/tallyVotes.circom"
@@ -117,13 +110,13 @@ ptauFiles:
       url: "https://hermezptau.blob.core.windows.net/ptau/powersOfTau28_hez_final_20.ptau"
       name: "powersOfTau28_hez_final_20.ptau"
 
-  #21:
-      #url: "https://www.dropbox.com/sh/mn47gnepqu88mzl/AABiMm_4UMnvU0VIkCDVX9XZa/powersOfTau28_hez_final_21.ptau?dl=1"
-      #name: "powersOfTau28_hez_final_21.ptau"
+  21:
+      url: "https://www.dropbox.com/sh/mn47gnepqu88mzl/AABiMm_4UMnvU0VIkCDVX9XZa/powersOfTau28_hez_final_21.ptau?dl=1"
+      name: "powersOfTau28_hez_final_21.ptau"
 
-  #22:
-      #url: "https://www.dropbox.com/sh/mn47gnepqu88mzl/AAAzGtg94saShf044uZdwnuGa/powersOfTau28_hez_final_22.ptau?dl=1"
-      #name: "powersOfTau28_hez_final_22.ptau"
+  22:
+      url: "https://www.dropbox.com/sh/mn47gnepqu88mzl/AAAzGtg94saShf044uZdwnuGa/powersOfTau28_hez_final_22.ptau?dl=1"
+      name: "powersOfTau28_hez_final_22.ptau"
 
   #23:
       #url: "https://www.dropbox.com/sh/mn47gnepqu88mzl/AACXdEyzF6V5G5SLwlcV24pYa/powersOfTau28_hez_final_23.ptau?dl=1"

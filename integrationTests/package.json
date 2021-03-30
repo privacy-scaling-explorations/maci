@@ -26,7 +26,7 @@
         "@maci-integrationTests": "./"
     },
     "devDependencies": {
-        "@types/node": "^13.1.2",
+        "@types/node": "^14.14.35",
         "ethers": "^4.0.45",
         "maci-circuits": "^1.0.0",
         "maci-cli": "^1.0.0",

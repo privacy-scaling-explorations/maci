@@ -57,7 +57,9 @@
         "snarkjs": "0.3.59"
     },
     "devDependencies": {
-        "@types/node": "^13.1.2",
+        "@types/node": "^14.14.35",
+        "circom": "0.5.42",
+        "circomlib": "0.5.1",
         "circom-helper": "0.1.9",
         "axios": "^0.21.0",
         "maci-config": "^1.0.0",

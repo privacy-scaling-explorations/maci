@@ -35,7 +35,7 @@
     },
     "devDependencies": {
         "@types/jest": "^26.0.21",
-        "@types/node": "^13.1.2",
+        "@types/node": "^14.14.35",
         "ethers": "^5.0.32",
         "jest": "^26.6.3",
         "maci-circuits": "^1.0.0",
