@@ -52,16 +52,6 @@ import {
 } from './publish'
 
 import {
-    processMessages,
-    configureSubparser as configureSubparserForProcessMessages,
-} from './process'
-
-import {
-    tally,
-    configureSubparser as configureSubparserForTally,
-} from './tally'
-
-import {
     verify,
     configureSubparser as configureSubparserForVerify,
 } from './verify'
@@ -103,12 +93,6 @@ const main = async () => {
     // Subcommand: publish
     configureSubparserForPublish(subparsers)
 
-    // Subcommand: process
-    configureSubparserForProcessMessages(subparsers)
-
-    // Subcommand: tally
-    configureSubparserForTally(subparsers)
-
     // Subcommand: verify
     configureSubparserForVerify(subparsers)
 
@@ -133,14 +117,6 @@ const main = async () => {
         await signup(args)
     } else if (args.subcommand === 'publish') {
         await publish(args)
-    } else if (args.subcommand === 'process') {
-        await processMessages(args)
-        // Force the process to exit as it might get stuck
-        process.exit()
-    } else if (args.subcommand === 'tally') {
-        await tally(args)
-        // Force the process to exit as it might get stuck
-        process.exit()
     } else if (args.subcommand === 'verify') {
         await verify(args)
     }
@@ -151,8 +127,6 @@ if (require.main === module) {
 }
 
 export {
-    processMessages,
-    tally,
     calcBinaryTreeDepthFromMaxLeaves,
     calcQuinTreeDepthFromMaxLeaves,
 }
