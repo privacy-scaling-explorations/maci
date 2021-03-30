@@ -266,24 +266,22 @@ const deployMaci = async (
         PoseidonT6Contract,
     } = await deployPoseidonContracts(quiet)
 
-	const contractsToLink = ['MACI', 'PollFactory',
-		'PollProcessorAndTallyer', 'MessageAqFactory',
-	]
-
-	const linkedContractFactories = contractsToLink.map( async (contractName: string) => {
-		return await linkPoseidonLibraries(
-			contractName,
-			PoseidonT3Contract.address,
-			PoseidonT4Contract.address,
-			PoseidonT5Contract.address,
-			PoseidonT6Contract.address,
-			quiet
-		)
-	})
-
-	const [ maciContractFactory, pollFactoryContractFactory, pptContractFactory, messageAqFactory ] = await Promise.all(linkedContractFactories)
+    const contractsToLink = ['MACI', 'PollFactory', 'PollProcessorAndTallyer', 'MessageAqFactory']
 
     // Link Poseidon contracts to MACI
+    const linkedContractFactories = contractsToLink.map( async (contractName: string) => {
+        return await linkPoseidonLibraries(
+            contractName,
+            PoseidonT3Contract.address,
+            PoseidonT4Contract.address,
+            PoseidonT5Contract.address,
+            PoseidonT6Contract.address,
+            quiet
+        )
+    })
+
+    const [ maciContractFactory, pollFactoryContractFactory, pptContractFactory, messageAqFactory ] = await Promise.all(linkedContractFactories)
+
     const pollFactoryContract = await pollFactoryContractFactory.deploy()
     await pollFactoryContract.deployTransaction.wait()
 
@@ -303,7 +301,7 @@ const deployMaci = async (
     log('Transferring PollFactory ownership to MACI', quiet)
     await (await (pollFactoryContract.transferOwnership(maciContract.address))).wait()
 
-	const messageAqContract = await messageAqFactory.deploy()
+    const messageAqContract = await messageAqFactory.deploy()
     await messageAqContract.deployTransaction.wait()
 
     log('Transferring MessageAqFactory ownership to PollFactory', quiet)
