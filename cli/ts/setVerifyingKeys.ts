@@ -2,14 +2,12 @@ import * as fs from 'fs'
 import * as ethers from 'ethers'
 import * as shelljs from 'shelljs'
 import * as path from 'path'
-import {
-    parseArtifact,
-    getDefaultSigner,
-} from 'maci-contracts'
 
-import {
-    VerifyingKey,
-} from 'maci-domainobjs'
+import { parseArtifact, getDefaultSigner } from 'maci-contracts'
+
+import { VerifyingKey } from 'maci-domainobjs'
+
+import { genProcessVkSig, genTallyVkSig } from 'maci-core'
 
 import {
     contractExists,
@@ -25,8 +23,9 @@ const getVkJson = (zkeyFile: string) => {
         'build',
         'cli.cjs',
     )
-    console.log(`Generating ${zkeyFile}, please wait...`)
-    const cmd = `node ${snarkjsPath} zkev ${zkeyFile} ${vkFile}`
+    console.log(`Generating ${vkFile}, please wait...`)
+    const cmd = `NODE_OPTIONS=--max-old-space-size=8192 ` +
+        `node --stack-size=1073741 ${snarkjsPath} zkev ${zkeyFile} ${vkFile}`
     shelljs.exec(cmd, { silent: false })
     const vkJson = fs.readFileSync(vkFile).toString()
     fs.unlinkSync(vkFile)
@@ -200,6 +199,37 @@ const setVerifyingKeys = async (args: any) => {
         signer,
     )
 
+    // Query the contract to see if the processVk has been set
+    const processVkSig = genProcessVkSig(
+        stateTreeDepth,
+        msgTreeDepth,
+        voteOptionTreeDepth,
+        5 ** msgBatchDepth,
+    )
+
+    const isProcessVkSet = await vkRegistryContract.isProcessVkSet(
+        processVkSig,
+    )
+
+    if (isProcessVkSet) {
+        console.error('Error: this process verifying key is already set in the contract')
+        return 1
+    }
+
+    // Query the contract to see if the tallyVk has been set
+    const tallyVkSig = genTallyVkSig(
+        stateTreeDepth,
+        intStateTreeDepth,
+        voteOptionTreeDepth,
+    )
+
+    const isTallyVkSet = await vkRegistryContract.isTallyVkSet(tallyVkSig)
+
+    if (isTallyVkSet) {
+        console.error('Error: this tally verifying key is already set in the contract')
+        return 1
+    }
+
     try {
         const tx = await vkRegistryContract.setVerifyingKeys(
             stateTreeDepth,
@@ -210,15 +240,15 @@ const setVerifyingKeys = async (args: any) => {
             processVk.asContractParam(),
             tallyVk.asContractParam(),
         )
-        //console.log({stateTreeDepth, intStateTreeDepth, msgTreeDepth, voteOptionTreeDepth, msgBatchDepth})
 
         const receipt = await tx.wait()
         if (receipt.status !== 1) {
             console.error('Error: transaction failed')
         }
-        console.log('Transaction hash:', tx.hash)
 
+        console.log('Transaction hash:', tx.hash)
         return 0
+
     } catch (e) {
         console.error('Error: transaction failed')
         console.error(e.message)

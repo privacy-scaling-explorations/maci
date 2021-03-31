@@ -1,20 +1,18 @@
 import * as ethers from 'ethers'
 import {
-    genJsonRpcDeployer,
     parseArtifact,
     deployVerifier,
+    deployPpt,
+    getDefaultSigner,
 } from 'maci-contracts'
 
 import {
     PubKey,
-    Keypair,
 } from 'maci-domainobjs'
 
 
 import {
-    validateEthSk,
-    promptPwd,
-    checkDeployerProviderConnection,
+    contractExists,
 } from './utils'
 
 import {
@@ -31,25 +29,6 @@ const configureSubparser = (subparsers: any) => {
     const createParser = subparsers.addParser(
         'deployPoll',
         { addHelp: true },
-    )
-
-    const deployerPrivkeyGroup = createParser.addMutuallyExclusiveGroup({ required: true })
-
-    deployerPrivkeyGroup.addArgument(
-        ['-dp', '--prompt-for-deployer-privkey'],
-        {
-            action: 'storeTrue',
-            help: 'Whether to prompt for the deployer\'s Ethereum private key and ignore -d / --deployer-privkey',
-        }
-    )
-
-    deployerPrivkeyGroup.addArgument(
-        ['-d', '--deployer-privkey'],
-        {
-            action: 'store',
-            type: 'string',
-            help: 'The deployer\'s Ethereum private key',
-        }
     )
 
     createParser.addArgument(
@@ -69,15 +48,6 @@ const configureSubparser = (subparsers: any) => {
             type: 'string',
             required: true,
             help: 'The coordinator\'s serialized MACI public key',
-        }
-    )
-
-    createParser.addArgument(
-        ['-e', '--eth-provider'],
-        {
-            action: 'store',
-            type: 'string',
-            help: 'A connection string to an Ethereum provider. Default: http://localhost:8545',
         }
     )
 
@@ -178,23 +148,11 @@ const deployPoll = async (args: any) => {
     const messageTreeDepth = args.msg_tree_depth
     const voteOptionTreeDepth = args.vote_option_tree_depth
 
-    // The deployer's Ethereum private key
-    // They may either enter it as a command-line option or via the
-    // standard input
-    let deployerPrivkey
-    if (args.prompt_for_deployer_privkey) {
-        deployerPrivkey = await promptPwd('Deployer\'s Ethereum private key')
-    } else {
-        deployerPrivkey = args.deployer_privkey
-    }
+    const signer = await getDefaultSigner()
 
-    if (deployerPrivkey.startsWith('0x')) {
-        deployerPrivkey = deployerPrivkey.slice(2)
-    }
-
-    if (!validateEthSk(deployerPrivkey)) {
-        console.error('Error: invalid Ethereum private key')
-        return
+    if (!(await contractExists(signer.provider, args.maci_address))) {
+        console.error('Error: a MACI contract is not deployed at', args.maci_address)
+        return 1
     }
 
     // The coordinator's MACI public key
@@ -205,37 +163,22 @@ const deployPoll = async (args: any) => {
         return
     }
 
-    // Ethereum provider
-    const ethProvider = args.eth_provider ? args.eth_provider : DEFAULT_ETH_PROVIDER
-
-    if (! (await checkDeployerProviderConnection(deployerPrivkey, ethProvider))) {
-        console.error('Error: unable to connect to the Ethereum provider at', ethProvider)
-        return
-    }
-
     const unserialisedPubkey = PubKey.unserialize(coordinatorPubkey)
 
-    const deployer = genJsonRpcDeployer(deployerPrivkey, ethProvider)
-    const provider = new ethers.providers.JsonRpcProvider(ethProvider)
-    const wallet = new ethers.Wallet(deployerPrivkey, provider)
-
     // Deployer a Verifier contract
-    const verifierContract = await deployVerifier(deployer, true)
+    const verifierContract = await deployVerifier()
 
     // Deploy a PollProcessorAndTallyer contract
-    const [ PptAbi, PptBin ] = parseArtifact('PollProcessorAndTallyer')
-    const pptContract = await deployer.deploy(
-        PptAbi,
-        PptBin,
-        verifierContract.address,
-    )
+    const pptContract = await deployPpt(verifierContract.address)
     await pptContract.deployTransaction.wait()
 
     const [ maciAbi ] = parseArtifact('MACI')
+
+
     const maciContract = new ethers.Contract(
         args.maci_address,
         maciAbi,
-        wallet,
+        signer,
     )
 
     try {
@@ -249,7 +192,6 @@ const deployPoll = async (args: any) => {
                 voteOptionTreeDepth,
             },
             unserialisedPubkey.asContractParam(),
-            pptContract.address,
         )
         const receipt = await tx.wait()
         const iface = maciContract.interface

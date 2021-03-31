@@ -13,7 +13,7 @@ For testing purposes, you can run:
 
 ```bash
 # in maci/contracts
-npm run ganache
+npm run hardhat
 ```
 
 ## Subcommands
@@ -24,7 +24,9 @@ npm run ganache
 | User | Generate MACI public key | `genMaciPubkey` |
 | Coordinator | Deploy VkRegistry | `deployVkRegistry` |
 | Coordinator | Set verifying keys | `setVerifyingKeys` |
-| Coordinator | Create election | `create `|
+| Coordinator | Create MACI instance | `create `|
+| Coordinator | Deploy a new poll | `deployPoll`|
+| Coordinator | Deploy a new poll processor and tallyer | `deployPpt`|
 | User | Sign up | `signup` |
 | User | Change key / vote | `publish` |
 | Coordinator | Process one batch or all remaining batches of messages | `process` |
@@ -42,8 +44,8 @@ private keys to this CLI. We use `maci-domainobj`'s `PrivKey.serialize` and
 Examples of serialized public and private keys:
 
 ```
-Private key: macisk.2422e5e9b8eb7c3ca5865168bf52480bb90b44df50070881c99a4e4f0d79a815
-Public key:  macipk.9643c94d5a2c918cab49a476feeab82eeec61ead9625e901c340c71aecdeb282
+Private key: macisk.2ae4f199bf3925a2407f7c775c9261f351ab861d8e9ecbb84622bdd3f6d41b08
+Public key:  macipk.a049783a24edb1b9b26ffed33af26b1a8db75aed639cc498433723271021f802
 ```
 
 ### Coordinator: Deploy VkRegistry
@@ -55,8 +57,9 @@ contracts can refer to the same VkRegistry as long as they are all owned (via
 Example usage:
 
 ```bash
-node build/index.js deployVkRegistry \
-    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3
+ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+ETH_PROVIDER=http://localhost:8545 \
+node build/index.js deployVkRegistry
 ```
 
 Example output:
@@ -77,8 +80,9 @@ TallyVotes_<STATE_TREE_DEPTH>-<INT_STATE_TREE_DEPTH>-<VOTE_OPTION_TREE_DEPTH>>.t
 Example usage:
 
 ```bash
+ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+ETH_PROVIDER=http://localhost:8545 \
 node build/index.js setVerifyingKeys \
-    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
     -s 10 -i 1 -m 2 -v 2 -b 1 \
     -p ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey \
     -t ./zkeys/TallyVotes_10-1-2.test.0.zkey \
@@ -88,6 +92,8 @@ node build/index.js setVerifyingKeys \
 Example output:
 
 ```
+Generating ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey.vk.json, please wait...
+Generating ./zkeys/TallyVotes_10-1-2.test.0.zkey.vk.json, please wait...
 Transaction hash: 0x582631c36a4e21e0b65c3f9100c6343408c8683a36ded36fc02a9be07fa079e8
 ```
 
@@ -95,49 +101,61 @@ Transaction hash: 0x582631c36a4e21e0b65c3f9100c6343408c8683a36ded36fc02a9be07fa0
 
 Example usage:
 
-```
-node build/index.js create \
-    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
-    -k 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
+```bash
+ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+ETH_PROVIDER=http://localhost:8545 \
+node build/index.js create -k 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
 ```
 
 Example output:
 
 ```
-MACI: 0x75c35C980C0d37ef46DF04d31A140b65503c0eEd
+Deploying Poseidon Contracts
+Deploying Poseidon
+Linking Poseidon libraries
+Linking Poseidon libraries
+Linking Poseidon libraries
+Deploying MACI
+Transferring PollFactory ownership to MACI
+Transferring MessageAqFactory ownership to PollFactory
+Initialising MACI
+PollProcessorAndTallyer: 0xAa588d3737B611baFD7bD713445b314BD453a5C8
+MACI: 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
 ```
 
 ### Coordinator: Deploy poll
 
 Example usage:
 
-```
+```bash
+ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+ETH_PROVIDER=http://localhost:8545 \
 node ./build/index.js deployPoll \
-    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
-    -e http://localhost:8545 \
-    -x 0x75c35C980C0d37ef46DF04d31A140b65503c0eEd \
+    -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -pk macipk.9643c94d5a2c918cab49a476feeab82eeec61ead9625e901c340c71aecdeb282 \
-    -t 60 -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2
+    -t 120 -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2
 ```
 
 Example output:
 
 ```
-Verifier: 0x8273e4B8ED6c78e252a9fCa5563Adfcc75C91b2A
-Poll ID: 1
-Poll contract: 0xb6022CBa95B812fFC2cCdb4e4FB5A3B507BC5F64
+Deploying Verifier
+Deploying PollProcessorAndTallyer
+Verifier: 0xEcFcaB0A285d3380E488A39B4BB21e777f8A4EaC
+Poll ID: 0
+Poll contract: 0x440B7f9b667420af04e88d4dA0B9122E05cCa5A0
 ```
 
 ### User: sign up
 
 Example usage:
 
-```
+```bash
+ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+ETH_PROVIDER=http://localhost:8545 \
 node ./build/index.js signup \
-    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
-    -e http://localhost:8545 \
-    -p macipk.40270618e1797c4969587eb04d7f3e9b39a91ecbbdf7d3c998d8e34d08e11c86 \
-    -x 0x75c35C980C0d37ef46DF04d31A140b65503c0eEd
+    -p macipk.a049783a24edb1b9b26ffed33af26b1a8db75aed639cc498433723271021f802 \
+    -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
 ```
 
 Example output:
@@ -151,12 +169,13 @@ State index: 1
 
 Example usage: 
 
-```
+```bash
+ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+ETH_PROVIDER=http://localhost:8545 \
 node build/index.js publish \
-    -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
-    -p macipk.40270618e1797c4969587eb04d7f3e9b39a91ecbbdf7d3c998d8e34d08e11c86 \
-    -sk macisk.53c8bc722a9f9d4c7bd478c8c8b01177f82d9c68d1ce15078e93ea84f198644 \
-    -x 0x75c35C980C0d37ef46DF04d31A140b65503c0eEd \
+    -p macipk.a049783a24edb1b9b26ffed33af26b1a8db75aed639cc498433723271021f802 \
+    -sk macisk.2ae4f199bf3925a2407f7c775c9261f351ab861d8e9ecbb84622bdd3f6d41b08 \
+    -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -i 1 -v 0 -w 9 -n 1 -o 0
 ```
 

@@ -112,6 +112,8 @@ contract Poll is
     // The coordinator's public key
     PubKey public coordinatorPubKey;
 
+    uint256 public coordinatorPubKeyHash;
+
     // TODO: to reduce the Poll bytecode size, consider storing deployTime and
     // duration in a mapping in the MACI contract
 
@@ -194,6 +196,7 @@ contract Poll is
         extContracts = _extContracts;
 
         coordinatorPubKey = _coordinatorPubKey;
+        coordinatorPubKeyHash = hashLeftRight(_coordinatorPubKey.x, _coordinatorPubKey.y);
         duration = _duration;
         maxValues = _maxValues;
         batchSizes = _batchSizes;
@@ -372,7 +375,8 @@ contract Poll is
     }
 }
 
-contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher, IPubKey, PollDeploymentParams{
+contract PollProcessorAndTallyer is
+    Ownable, SnarkCommon, SnarkConstants, IPubKey, PollDeploymentParams{
     string constant ERROR_VOTING_PERIOD_NOT_PASSED = "PptE01";
     string constant ERROR_NO_MORE_MESSAGES = "PptE02";
     string constant ERROR_MESSAGE_AQ_NOT_MERGED = "PptE03";
@@ -416,6 +420,10 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher, IPubKey, PollD
             ERROR_VOTING_PERIOD_NOT_PASSED
         );
         _;
+    }
+
+    function sha256Hash(uint256[] memory array) public pure returns (uint256) {
+        return uint256(sha256(abi.encodePacked(array))) % SNARK_SCALAR_FIELD;
     }
 
     /*
@@ -470,8 +478,7 @@ contract PollProcessorAndTallyer is Ownable, SnarkCommon, Hasher, IPubKey, PollD
         uint256 _messageRoot,
         uint256 _numSignUps
     ) public view returns (uint256) {
-        (uint256 coordinatorPubKeyX, uint256 coordinatorPubKeyY) = _poll.coordinatorPubKey();
-        uint256 coordinatorPubKeyHash = hashLeftRight(coordinatorPubKeyX, coordinatorPubKeyY);
+        uint256 coordinatorPubKeyHash = _poll.coordinatorPubKeyHash();
 
         uint256 packedVals = genProcessMessagesPackedVals(_poll, _numSignUps);
         uint256 currentSbCommitment;

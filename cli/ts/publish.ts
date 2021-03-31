@@ -1,6 +1,6 @@
 import {
-    maciContractAbi,
     parseArtifact,
+    getDefaultSigner,
 } from 'maci-contracts'
 
 import {
@@ -16,7 +16,6 @@ import {
 
 import {
     promptPwd,
-    validateEthSk,
     validateEthAddress,
     validateSaltSize,
     validateSaltFormat,
@@ -31,23 +30,12 @@ import {
     DEFAULT_ETH_PROVIDER,
 } from './defaults'
 
-const Web3 = require('web3')
-
 const DEFAULT_SALT = genRandomSalt()
 
 const configureSubparser = (subparsers: any) => {
     const parser = subparsers.addParser(
         'publish',
         { addHelp: true },
-    )
-
-    parser.addArgument(
-        ['-e', '--eth-provider'],
-        {
-            action: 'store',
-            type: 'string',
-            help: `A connection string to an Ethereum provider. Default: ${DEFAULT_ETH_PROVIDER}`,
-        }
     )
 
     parser.addArgument(
@@ -84,25 +72,6 @@ const configureSubparser = (subparsers: any) => {
             action: 'store',
             type: 'string',
             help: 'Your serialized MACI private key',
-        }
-    )
-
-    const ethPrivkeyGroup = parser.addMutuallyExclusiveGroup({ required: true })
-
-    ethPrivkeyGroup.addArgument(
-        ['-dp', '--prompt-for-eth-privkey'],
-        {
-            action: 'storeTrue',
-            help: 'Whether to prompt for the user\'s Ethereum private key and ignore -d / --eth-privkey',
-        }
-    )
-
-    ethPrivkeyGroup.addArgument(
-        ['-d', '--eth-privkey'],
-        {
-            action: 'store',
-            type: 'string',
-            help: 'The deployer\'s Ethereum private key',
         }
     )
 
@@ -186,25 +155,6 @@ const publish = async (args: any) => {
     // Ethereum provider
     const ethProvider = args.eth_provider ? args.eth_provider : DEFAULT_ETH_PROVIDER
 
-    let ethSk
-    // The deployer's Ethereum private key
-    // The user may either enter it as a command-line option or via the
-    // standard input
-    if (args.prompt_for_eth_privkey) {
-        ethSk = await promptPwd('Your Ethereum private key')
-    } else {
-        ethSk = args.eth_privkey
-    }
-
-    if (ethSk.startsWith('0x')) {
-        ethSk = ethSk.slice(2)
-    }
-
-    if (!validateEthSk(ethSk)) {
-        console.error('Error: invalid Ethereum private key')
-        return 1
-    }
-
     // The user's MACI private key
     let serializedPrivkey
     if (args.prompt_for_maci_privkey) {
@@ -261,14 +211,9 @@ const publish = async (args: any) => {
         salt = DEFAULT_SALT
     }
 
-    if (! (await checkDeployerProviderConnection(ethSk, ethProvider))) {
-        console.error('Error: unable to connect to the Ethereum provider at', ethProvider)
-        return 1
-    }
+    const signer = await getDefaultSigner()
 
-    const provider = new ethers.providers.JsonRpcProvider(ethProvider)
-
-    if (! (await contractExists(provider, maciAddress))) {
+    if (! (await contractExists(signer.provider, maciAddress))) {
         console.error('Error: there is no MACI contract deployed at the specified address')
         return 1
     }
@@ -280,22 +225,31 @@ const publish = async (args: any) => {
         return 1
     }
 
-    const wallet = new ethers.Wallet(ethSk, provider)
-    const web3 = new Web3(ethProvider)
-	const maciContract = new web3.eth.Contract(maciContractAbi, maciAddress)
-	const maciContractEthers = new ethers.Contract(maciAddress, maciContractAbi, wallet)
+    const [ maciContractAbi ] = parseArtifact('MACI')
+    const [ pollContractAbi ] = parseArtifact('Poll')
+
+	const maciContractEthers = new ethers.Contract(
+        maciAddress,
+        maciContractAbi,
+        signer,
+    )
 
     const pollAddr = await maciContractEthers.polls(pollId)
-    if (! (await contractExists(provider, pollAddr))) {
+    if (! (await contractExists(signer.provider, pollAddr))) {
         console.error('Error: there is no Poll contract with this poll ID linked to the specified MACI contract.')
         return 1
     }
 
-    const [ pollContractAbi ] = parseArtifact('Poll')
-    const pollContract = new web3.eth.Contract(pollContractAbi, pollAddr)
+    //const pollContract = new web3.eth.Contract(pollContractAbi, pollAddr)
+    const pollContract = new ethers.Contract(
+        pollAddr,
+        pollContractAbi,
+        signer,
+    )
 
     /*
-     * TODO: fix this
+     * TODO: Find a way to batch transaction requests via Hardhat; otherwise,
+     * use Multicall
     const [maxValues, coordinatorPubKeyResult] = 
         await batchTransactionRequests(
             ethProvider,
@@ -308,8 +262,8 @@ const publish = async (args: any) => {
 
     const a = await maxValues()
     */
-    const maxValues = await pollContract.methods.maxValues().call()
-    const coordinatorPubKeyResult = await pollContract.methods.coordinatorPubKey().call()
+    const maxValues = await pollContract.maxValues()
+    const coordinatorPubKeyResult = await pollContract.coordinatorPubKey()
     const maxVoteOptions = Number(maxValues.maxVoteOptions)
 
     // Validate the vote option index against the max leaf index on-chain
@@ -326,7 +280,7 @@ const publish = async (args: any) => {
     const pollContractEthers = new ethers.Contract(
         pollAddr,
         pollContractAbi,
-        wallet,
+        signer,
     )
 
     // The new vote weight

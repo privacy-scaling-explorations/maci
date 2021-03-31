@@ -7,13 +7,8 @@ prompt.message = ''
 import { SNARK_FIELD_SIZE } from 'maci-crypto'
 
 import {
-    MaciState,
-} from 'maci-core'
-
-import {
     genJsonRpcDeployer,
 } from 'maci-contracts'
-
 
 const Web3 = require('web3')
 

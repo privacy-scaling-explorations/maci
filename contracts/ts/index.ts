@@ -11,7 +11,6 @@ import {
     deployPollFactory,
     deployPpt,
     deployMessageAqFactory,
-    //maciContractAbi,
     getInitialVoiceCreditProxyAbi,
     abiDir,
     parseArtifact,
@@ -19,6 +18,7 @@ import {
     linkPoseidonLibraries,
     deployPoseidonContracts,
     deployVerifier,
+    getDefaultSigner,
 } from './deploy'
 
 import { formatProofForVerifierContract } from './utils'
@@ -43,10 +43,10 @@ export {
     deployPollFactory,
     deployPpt,
     deployMessageAqFactory,
-    //maciContractAbi,
     getInitialVoiceCreditProxyAbi,
     formatProofForVerifierContract,
     linkPoseidonLibraries,
     deployPoseidonContracts,
     deployVerifier,
+    getDefaultSigner,
 }

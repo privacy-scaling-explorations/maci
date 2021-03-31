@@ -1,6 +1,6 @@
 import {
-    maciContractAbi,
     getDefaultSigner,
+    parseArtifact,
 } from 'maci-contracts'
 
 import {
@@ -105,6 +105,7 @@ const signup = async (args: any) => {
         return
     }
 
+    const maciContractAbi = parseArtifact('MACI')[0]
     const maciContract = new ethers.Contract(
         maciAddress,
         maciContractAbi,

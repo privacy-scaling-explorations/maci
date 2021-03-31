@@ -235,13 +235,13 @@ const deployPollFactory = async (quiet = false) => {
     return await pollFactory.deploy()
 }
 
-const deployPpt = async (mockVerifierContractAddress: string, quiet = false) => {
+const deployPpt = async (verifierContractAddress: string, quiet = false) => {
 	const signer = await getDefaultSigner()
     log('Deploying PollProcessorAndTallyer', quiet)
     const pptFactory = await ethers.getContractFactory('PollProcessorAndTallyer', signer)
 
     return await pptFactory.deploy(
-        mockVerifierContractAddress,
+        verifierContractAddress,
     )
 }
 
@@ -256,9 +256,12 @@ const deployMessageAqFactory = async (quiet = false) => {
 const deployMaci = async (
     signUpTokenGatekeeperContractAddress: string,
     initialVoiceCreditBalanceAddress: string,
-    mockVerifierContractAddress: string,
+    verifierContractAddress: string,
     quiet = false,
 ) => {
+
+    const signer = await getDefaultSigner()
+
     const {
         PoseidonT3Contract,
         PoseidonT4Contract,
@@ -266,7 +269,7 @@ const deployMaci = async (
         PoseidonT6Contract,
     } = await deployPoseidonContracts(quiet)
 
-    const contractsToLink = ['MACI', 'PollFactory', 'PollProcessorAndTallyer', 'MessageAqFactory']
+    const contractsToLink = ['MACI', 'PollFactory', 'MessageAqFactory']
 
     // Link Poseidon contracts to MACI
     const linkedContractFactories = contractsToLink.map( async (contractName: string) => {
@@ -280,13 +283,19 @@ const deployMaci = async (
         )
     })
 
-    const [ maciContractFactory, pollFactoryContractFactory, pptContractFactory, messageAqFactory ] = await Promise.all(linkedContractFactories)
+    const [
+        maciContractFactory,
+        pollFactoryContractFactory,
+        messageAqFactory,
+    ] = await Promise.all(linkedContractFactories)
+
+    const pptContractFactory = await ethers.getContractFactory('PollProcessorAndTallyer', signer)
 
     const pollFactoryContract = await pollFactoryContractFactory.deploy()
     await pollFactoryContract.deployTransaction.wait()
 
     // PollProcessorAndTallyer
-    const pptContract = await pptContractFactory.deploy(mockVerifierContractAddress)
+    const pptContract = await pptContractFactory.deploy(verifierContractAddress)
     await pptContract.deployTransaction.wait()
 
     log('Deploying MACI', quiet)
@@ -310,10 +319,6 @@ const deployMaci = async (
     // VkRegistry
     const vkRegistryContract = await deployVkRegistry()
     await vkRegistryContract.deployTransaction.wait()
-
-    const signer = await getDefaultSigner()
-    //log('Transferring VkRegistry ownership to MACI', quiet)
-    //await (await (vkRegistryContract.transferOwnership(signer.address))).wait()
 
     log('Initialising MACI', quiet)
     await (await (maciContract.init(
@@ -376,7 +381,6 @@ export {
     genDeployer,
     genProvider,
     genJsonRpcDeployer,
-    //maciContractAbi,
     getInitialVoiceCreditProxyAbi,
     abiDir,
     solDir,

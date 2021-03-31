@@ -104,30 +104,19 @@ const create = async (args: any) => {
         console.error('Error: a VkRegistry contract is not deployed at', vkRegistryAddress)
         return 1
     }
-
-    // Deploy PollFactory
-    const pollFactoryContract = await deployPollFactory()
-    await pollFactoryContract.deployTransaction.wait()
-
-    // Deploy MessageAqFactory
-    const messageAqFactoryContract = await deployMessageAqFactory()
-    await messageAqFactoryContract.deployTransaction.wait()
-    await (await (messageAqFactoryContract.transferOwnership(pollFactoryContract.address))).wait()
     
-    const maciContract = await deployMaci(
+    const {
+        maciContract,
+        //vkRegistryContract,
+        //stateAqContract,
+        pptContract,
+    } = await deployMaci(
         signUpGatekeeperAddress,
         initialVoiceCreditProxyContractAddress,
         vkRegistryAddress,
     )
 
-    await (await (pollFactoryContract.transferOwnership(maciContract.address))).wait()
-
-    const initTx = await maciContract.init(
-        vkRegistryAddress,
-        messageAqFactoryContract.address,
-    )
-    await initTx.wait()
-
+    console.log('PollProcessorAndTallyer:', pptContract.address)
     console.log('MACI:', maciContract.address)
     return 0
 }
