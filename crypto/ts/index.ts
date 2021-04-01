@@ -119,7 +119,7 @@ assert(
  * Convert a BigInt to a Buffer
  */
 const bigInt2Buffer = (i: BigInt): Buffer => {
-    return Buffer.from(i.toString(16))
+    return Buffer.from(i.toString(16), 'hex')
 }
 
 /*
