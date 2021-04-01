@@ -53,14 +53,7 @@ const NOTHING_UP_MY_SLEEVE_PUBKEY: PubKey = [
  * Convert a BigInt to a Buffer
  */
 const bigInt2Buffer = (i: BigInt): Buffer => {
-    return Buffer.from(i.toString(16))
-}
-
-/*
- * Convert a Buffer to a BigInt
- */
-const buffer2BigInt = (b: Buffer): BigInt => {
-    return BigInt('0x' + b.toString('hex'))
+    return Buffer.from(i.toString(16), 'hex')
 }
 
 // Hash up to 2 elements
