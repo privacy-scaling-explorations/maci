@@ -191,51 +191,23 @@ const hash5 = (elements: Plaintext): BigInt => hashN(5, elements)
 
 /*
  * A convenience function for to use Poseidon to hash a Plaintext with
- * no more than 11 elements
+ * no more than 10 elements
  */
-// TODO: remove if unused
-const hash11 = (elements: Plaintext): BigInt => {
+const hash10 = (elements: Plaintext): BigInt => {
+    const max = 10
     const elementLength = elements.length
-    if (elementLength > 11) {
-        throw new TypeError(`the length of the elements array should be at most 11; got ${elements.length}`)
+    if (elementLength > max) {
+        throw new TypeError(`the length of the elements array should be at most 10; got ${elements.length}`)
     }
     const elementsPadded = elements.slice()
-    if (elementLength < 11) {
-        for (let i = elementLength; i < 11; i++) {
+    if (elementLength < max) {
+        for (let i = elementLength; i < max; i++) {
             elementsPadded.push(BigInt(0))
         }
     }
     return poseidonT3([
-        poseidonT3([
-            poseidonT6(elementsPadded.slice(0, 5)),
-            poseidonT6(elementsPadded.slice(5, 10))
-        ])
-        , elementsPadded[10]
-    ])
-}
-
-/*
- * A convenience function for to use Poseidon to hash a Plaintext with
- * no more than 12 elements
- */
-// TODO: remove if unused
-const hash12 = (elements: Plaintext): BigInt => {
-    const elementLength = elements.length
-    if (elementLength > 12) {
-        throw new TypeError(`the length of the elements array should be at most 12; got ${elements.length}`)
-    }
-    const elementsPadded = elements.slice()
-    if (elementLength < 12) {
-        for (let i = elementLength; i < 12; i++) {
-            elementsPadded.push(BigInt(0))
-        }
-    }
-
-    return poseidonT5([
         poseidonT6(elementsPadded.slice(0, 5)),
-        poseidonT6(elementsPadded.slice(5, 10)),
-        elementsPadded[10],
-        elementsPadded[11],
+        poseidonT6(elementsPadded.slice(5, 10))
     ])
 }
 
@@ -508,8 +480,7 @@ export {
     hash3,
     hash4,
     hash5,
-    hash11,
-    hash12,
+    hash10,
     hashLeftRight,
     verifySignature,
     Signature,

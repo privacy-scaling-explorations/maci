@@ -7,8 +7,7 @@ import {
     sign,
     sha256Hash,
     hash5,
-    hash11,
-    hash12,
+    hash10,
     verifySignature,
 } from '../'
 
@@ -50,35 +49,19 @@ describe('Cryptographic operations', () => {
         )
     })
 
-    describe('Hash12', () => {
+    describe('Hash10', () => {
         it('Hashing a smaller array should work', () => {
-            const h = hash12([BigInt(1), BigInt(2), BigInt(3)])
+            const h = hash10([BigInt(1), BigInt(2), BigInt(3)])
             expect(h < SNARK_FIELD_SIZE).toBeTruthy()
         })
 
-        it('Hashing more than 12 elements should throw', () => {
-            const arrayOf12: any[] = []
-            for (let i = 0; i < 13; i++) {
-                arrayOf12.push(BigInt(i))
+        it('Hashing more than 10 elements should throw', () => {
+            const arrayOf11: any[] = []
+            for (let i = 0; i < 11; i++) {
+                arrayOf11.push(BigInt(i))
             }
 
-            expect(() => hash12(arrayOf12)).toThrow(TypeError)
-        })
-    })
-
-    describe('Hash11', () => {
-        it('Hashing a smaller array should work', () => {
-            const h = hash11([BigInt(1), BigInt(2), BigInt(3)])
-            expect(h < SNARK_FIELD_SIZE).toBeTruthy()
-        })
-
-        it('Hashing more than 11 elements should throw', () => {
-            const arrayOf12: any[] = []
-            for (let i = 0; i < 12; i++) {
-                arrayOf12.push(BigInt(i))
-            }
-
-            expect(() => hash11(arrayOf12)).toThrow(TypeError)
+            expect(() => hash10(arrayOf11)).toThrow(TypeError)
         })
     })
 

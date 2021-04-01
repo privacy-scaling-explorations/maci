@@ -1,4 +1,3 @@
-include "./hasherSha256.circom";
 include "./hasherPoseidon.circom";
 
 template MessageHasher() {
@@ -6,7 +5,7 @@ template MessageHasher() {
     signal input encPubKey[2];
     signal output hash;
 
-    component hasher = Sha256Hasher10();
+    component hasher = Hasher10();
 
     for (var i = 0; i < 8; i ++) {
         hasher.in[i] <== in[i];
