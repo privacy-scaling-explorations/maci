@@ -193,8 +193,7 @@ const processAndTallyWithoutProofs = async (args: any): Promise<object | undefin
 
     const messageBatchSize  = Number((await maciContract.messageBatchSize()).toString())
     let currentMessageBatchIndex = 
-        (Math.floor(maciState.messages.length / messageBatchSize) - 1) * messageBatchSize
-    console.log(currentMessageBatchIndex, maciState.messages.length, messageBatchSize)
+        (Math.floor(maciState.messages.length / messageBatchSize)) * messageBatchSize
 
     const randomStateLeaf = StateLeaf.genRandomLeaf()
     while (true) {

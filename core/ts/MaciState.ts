@@ -189,6 +189,7 @@ class MaciState {
     public processMessage = (
         _index: number,
     ) => {
+        assert(_index >= 0)
         assert(this.messages.length > _index)
         assert(this.encPubKeys.length === this.messages.length)
 

@@ -27,7 +27,7 @@ Examples of serialized public and private keys:
 
 ```
 Private key: macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c
-Public key:  macipk.08ffdc42fa930099ce0d6ee20336275e01a338c5926545c17dc9a8d3f1247f01
+Public key:  macipk.ac33346f0a4f8b3927ad4a19baab4524b1deb215fbdc0b45c1c364fd3d728b9a
 ```
 
 ### Coordinator: Create election
@@ -194,7 +194,7 @@ Example output:
 
 ```
 Private key: macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c
-Public key:  macipk.08ffdc42fa930099ce0d6ee20336275e01a338c5926545c17dc9a8d3f1247f01
+Public key:  macipk.ac33346f0a4f8b3927ad4a19baab4524b1deb215fbdc0b45c1c364fd3d728b9a
 
 Please store your private key in a safe place and do not reveal it to anyone.
 ```
@@ -209,7 +209,7 @@ Example output:
 
 ```
 Private key: macisk.8d9bce75e0053db023ffd26597a4f389b33edd9236998e357cef36d5c978cc8
-Public key:  macipk.8e7951e00c0050964ab52975eb682ea771b6d212bd0e0a14da10f0c685b5fc09
+Public key:  macipk.e83789cbfdfcebb3da5ba0f741f1070c9d972cfd4029c8ebb32c366d2592cf90
 
 Please store your private key in a safe place and do not reveal it to anyone.
 ```
@@ -237,7 +237,7 @@ MACI: 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4
 ```
 node ./build/index.js signup -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-e http://localhost:8545 \
-	-p macipk.8e7951e00c0050964ab52975eb682ea771b6d212bd0e0a14da10f0c685b5fc09 \
+	-p macipk.e83789cbfdfcebb3da5ba0f741f1070c9d972cfd4029c8ebb32c366d2592cf90 \
 	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4
 ```
 
@@ -254,8 +254,8 @@ State index: 1
 node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-e http://localhost:8545 \
 	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
-	-sk macisk.53c8bc722a9f9d4c7bd478c8c8b01177f82d9c68d1ce15078e93ea84f198644 \
-	-p macipk.8e7951e00c0050964ab52975eb682ea771b6d212bd0e0a14da10f0c685b5fc09 \
+	-sk macisk.8d9bce75e0053db023ffd26597a4f389b33edd9236998e357cef36d5c978cc8 \
+	-p macipk.e83789cbfdfcebb3da5ba0f741f1070c9d972cfd4029c8ebb32c366d2592cf90 \
 	-i 1 \
 	-v 1 \
 	-w 9 \
@@ -279,7 +279,7 @@ Example output:
 
 ```
 Private key: macisk.1c454dfd8d8afabc0955112ef32a665a0c8b85985ad65481bb9612c1ed188d0d
-Public key:  macipk.2bdb0cea0a1b3acae6190b84c361c3d30eb89a89674fba67a472ec1597acc21c
+Public key:  macipk.c1bdbfca7b5a42d1119d0a771fed993a96f881596ad34302aab00eec6b1cbd25
 
 Please store your private key in a safe place and do not reveal it to anyone.
 ```
@@ -291,7 +291,7 @@ node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241
 	-e http://localhost:8545 \
 	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
 	-sk macisk.8d9bce75e0053db023ffd26597a4f389b33edd9236998e357cef36d5c978cc8 \
-	-p macipk.2bdb0cea0a1b3acae6190b84c361c3d30eb89a89674fba67a472ec1597acc21c \
+	-p macipk.c1bdbfca7b5a42d1119d0a771fed993a96f881596ad34302aab00eec6b1cbd25 \
 	-i 1 \
 	-v 0 \
 	-w 9 \
@@ -311,8 +311,8 @@ Ephemeral private key: macisk.24115d8d585b7dd8f7ea1975668b3d4f34dcf8b1bcc6617bde
 node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-e http://localhost:8545 \
 	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
-    -sk macisk.ff3ae0e7855e4c62237e2b7c72de109865f087bd5f792cf4589d3cdc495d8f2 \
-	-p macipk.8e7951e00c0050964ab52975eb682ea771b6d212bd0e0a14da10f0c685b5fc09 \
+    -sk macisk.1c454dfd8d8afabc0955112ef32a665a0c8b85985ad65481bb9612c1ed188d0d \
+	-p macipk.c1bdbfca7b5a42d1119d0a771fed993a96f881596ad34302aab00eec6b1cbd25 \
 	-i 1 \
 	-v 1 \
 	-w 9 \
@@ -382,7 +382,7 @@ Saved /home/di/t/maci/circuits/params/1615726045769.proof.json and /home/di/t/ma
 Proof is correct
 ```
 
-**Coordinator: tally all votes**
+**Coordinator: submit all proofs**
 
 ```
 node build/index.js proveOnChain \
@@ -521,13 +521,13 @@ node ./build/index.js create -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e
 	-m 2048 && \
 node ./build/index.js signup -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-e http://localhost:8545 \
-	-p macipk.a8edcf537cd83ab10157e567ff9313c10dd4561734cb56befe941b4ec546280a \
+	-p macipk.ec084c00a3de1f1f7d74e8af70852a778f477f3db0459b2b3709cbe6a8b20a93 \
 	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 && \
 node ./build/index.js publish -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 	-e http://localhost:8545 \
 	-x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
 	-sk macisk.adc328e5009b0267537dccc35998a04348eed1b93dd6d866c0f0401490b2f33 \
-	-p macipk.a8edcf537cd83ab10157e567ff9313c10dd4561734cb56befe941b4ec546280a \
+	-p macipk.ec084c00a3de1f1f7d74e8af70852a778f477f3db0459b2b3709cbe6a8b20a93 \
 	-i 1 \
 	-v 0 \
 	-w 9 \
@@ -556,14 +556,14 @@ node ./build/index.js create \
 node ./build/index.js signup \
     -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
     -e http://localhost:8545 \
-    -p macipk.a8edcf537cd83ab10157e567ff9313c10dd4561734cb56befe941b4ec546280a \
+    -p macipk.ec084c00a3de1f1f7d74e8af70852a778f477f3db0459b2b3709cbe6a8b20a93 \
     -x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 && \
 node ./build/index.js publish \
     -d 0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
     -e http://localhost:8545 \
     -x 0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4 \
     -sk macisk.adc328e5009b0267537dccc35998a04348eed1b93dd6d866c0f0401490b2f33 \
-    -p macipk.a8edcf537cd83ab10157e567ff9313c10dd4561734cb56befe941b4ec546280a \
+    -p macipk.ec084c00a3de1f1f7d74e8af70852a778f477f3db0459b2b3709cbe6a8b20a93 \
     -i 1 -v 0 -w 9 -n 1 && \
 sleep 5 && \
 node build/index.js genProofs \
