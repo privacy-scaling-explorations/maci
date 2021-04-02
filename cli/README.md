@@ -45,7 +45,7 @@ Examples of serialized public and private keys:
 
 ```
 Private key: macisk.2ae4f199bf3925a2407f7c775c9261f351ab861d8e9ecbb84622bdd3f6d41b08
-Public key:  macipk.a049783a24edb1b9b26ffed33af26b1a8db75aed639cc498433723271021f802
+Public key:  macipk.b8590fdba5e9cde5606dad5db384be4d253d0a2064d1e03f9600ee021a7ebe16
 ```
 
 ### Coordinator: Deploy VkRegistry
@@ -154,7 +154,7 @@ Example usage:
 ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 ETH_PROVIDER=http://localhost:8545 \
 node ./build/index.js signup \
-    -p macipk.a049783a24edb1b9b26ffed33af26b1a8db75aed639cc498433723271021f802 \
+    -p macipk.b8590fdba5e9cde5606dad5db384be4d253d0a2064d1e03f9600ee021a7ebe16 \
     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
 ```
 
@@ -173,7 +173,7 @@ Example usage:
 ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 ETH_PROVIDER=http://localhost:8545 \
 node build/index.js publish \
-    -p macipk.a049783a24edb1b9b26ffed33af26b1a8db75aed639cc498433723271021f802 \
+    -p macipk.b8590fdba5e9cde5606dad5db384be4d253d0a2064d1e03f9600ee021a7ebe16 \
     -sk macisk.2ae4f199bf3925a2407f7c775c9261f351ab861d8e9ecbb84622bdd3f6d41b08 \
     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -i 1 -v 0 -w 9 -n 1 -o 0
