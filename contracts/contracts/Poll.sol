@@ -267,19 +267,24 @@ contract Poll is
         Message memory _message,
         PubKey memory _encPubKey
     ) public pure returns (uint256) {
-        uint256[] memory n = new uint256[](10);
+        uint256[5] memory n;
         n[0] = _message.iv;
         n[1] = _message.data[0];
         n[2] = _message.data[1];
         n[3] = _message.data[2];
         n[4] = _message.data[3];
-        n[5] = _message.data[4];
-        n[6] = _message.data[5];
-        n[7] = _message.data[6];
-        n[8] = _encPubKey.x;
-        n[9] = _encPubKey.y;
 
-        return sha256Hash(n);
+        uint256[5] memory m;
+        m[0] = _message.data[4];
+        m[1] = _message.data[5];
+        m[2] = _message.data[6];
+        m[3] = _encPubKey.x;
+        m[4] = _encPubKey.y;
+
+        return hashLeftRight(
+            hash5(n),
+            hash5(m)
+        );
     }
 
     /*

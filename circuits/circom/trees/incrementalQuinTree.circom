@@ -351,7 +351,7 @@ template QuinBatchLeavesExists(levels, batchLevels) {
 /*
  * Given a tree index, generate the indices which QuinTreeInclusionProof and
  * QuinLeafExists require. e.g. if the index is 30 and the number of levels is
- * 4, the output should be [1, 1, 0, 0]
+ * 4, the output should be [0, 1, 1, 0]
  */
 template QuinGeneratePathIndices(levels) {
     var BASE = 5;

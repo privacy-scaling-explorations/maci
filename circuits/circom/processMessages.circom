@@ -1,3 +1,4 @@
+include "./hasherSha256.circom";
 include "./messageHasher.circom";
 include "./messageToCommand.circom";
 include "./privToPubKey.circom";
@@ -73,7 +74,7 @@ template ProcessMessages(
     // batch size.
     signal batchEndIndex;
 
-    // The coordinator's public key
+    // The coordinator's private key
     signal private input coordPrivKey;
 
     // The cooordinator's public key from the contract.
@@ -522,8 +523,6 @@ template ProcessMessagesInputHasher() {
 
     // Other inputs that can't be compressed or packed:
     // - msgRoot, currentStateRoot, currentBallotRoot
-
-    // Total number of inputs = 1 + 1 + 4 = 5
 
     // Also ensure that packedVals is valid
 

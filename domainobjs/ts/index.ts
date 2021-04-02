@@ -12,7 +12,7 @@ import {
     decrypt,
     sign,
     hashLeftRight,
-    sha256Hash,
+    hash10,
     hash4,
     hash5,
     verifySignature,
@@ -412,7 +412,7 @@ class Message {
     public hash = (
         _encPubKey: PubKey,
     ): BigInt => {
-        return sha256Hash([
+        return hash10([
             this.iv,
             ...this.data,
             ..._encPubKey.rawPubKey,
