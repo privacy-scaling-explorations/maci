@@ -701,4 +701,12 @@ NODE_OPTIONS=--max-old-space-size=4096 node ./build/index.js tally \
 	-t tally.json \
 	-z <PASTE RANDOM STATE LEAF HERE>
 ```
+
+
+
+
+
+node build/index.js deployVkRegistry && node build/index.js setVerifyingKeys     -s 10 -i 1 -m 2 -v 2 -b 1     -p ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey     -t ./zkeys/TallyVotes_10-1-2.test.0.zkey     -k 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0 && node build/index.js create -k 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0 -c 99 && node ./build/index.js deployPoll     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a     -pk macipk.9643c94d5a2c918cab49a476feeab82eeec61ead9625e901c340c71aecdeb282     -t 120 -g 25 -mv 25 -i 1 -m 3 -b 2 -v 2 && node ./build/index.js signup     -p macipk.b8590fdba5e9cde5606dad5db384be4d253d0a2064d1e03f9600ee021a7ebe16     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a && node build/index.js publish     -p macipk.b8590fdba5e9cde5606dad5db384be4d253d0a2064d1e03f9600ee021a7ebe16     -sk macisk.2ae4f199bf3925a2407f7c775c9261f351ab861d8e9ecbb84622bdd3f6d41b08     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a     -i 1 -v 0 -w 9 -n 1 -o 0                                         
+&& node build/index.js mergeMessages -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a -o 0
+
 -->

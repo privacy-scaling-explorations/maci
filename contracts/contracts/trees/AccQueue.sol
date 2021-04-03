@@ -307,10 +307,11 @@ abstract contract AccQueue is Ownable, Hasher {
 
         uint256 depth = calcMinHeight();
 
-        uint256 numQueueOps = 0;
+        uint256 queueOpsPerformed = 0;
         for (uint256 i = nextSubRootIndex; i < currentSubtreeIndex; i ++) {
-            // Stop if the limit has been reached
-            if (_numSrQueueOps != 0 && numQueueOps == _numSrQueueOps) {
+
+            if (_numSrQueueOps != 0 && queueOpsPerformed == _numSrQueueOps) {
+                // If the limit is not 0, stop if the limit has been reached
                 return;
             }
 
@@ -325,7 +326,7 @@ abstract contract AccQueue is Ownable, Hasher {
             nextSubRootIndex ++;
 
             // Increment the ops counter
-            numQueueOps ++;
+            queueOpsPerformed ++;
         }
 
         // The height of the tree of subroots
@@ -485,6 +486,10 @@ abstract contract AccQueue is Ownable, Hasher {
         );
 
         return mainRoots[_depth];
+    }
+
+    function getSrIndices() public view returns (uint256, uint256) {
+        return (nextSubRootIndex, currentSubtreeIndex);
     }
 }
 

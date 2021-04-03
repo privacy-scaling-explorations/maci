@@ -178,6 +178,12 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         bytes memory _initialVoiceCreditProxyData
     ) public afterInit {
 
+        // The circuits only support up to (2 ** 50 - 1) signups
+        require(
+            numSignUps < 2 * 50,
+            "MACI: maximum number of signups reached"
+        );
+
         // Register the user via the sign-up gatekeeper. This function should
         // throw if the user has already registered or if ineligible to do so.
         signUpGatekeeper.register(msg.sender, _signUpGatekeeperData);

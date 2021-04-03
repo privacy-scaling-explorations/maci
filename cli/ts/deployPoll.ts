@@ -15,16 +15,6 @@ import {
     contractExists,
 } from './utils'
 
-import {
-    DEFAULT_ETH_PROVIDER,
-    DEFAULT_MAX_USERS,
-    DEFAULT_MAX_MESSAGES,
-    DEFAULT_MAX_VOTE_OPTIONS,
-    DEFAULT_INITIAL_VOICE_CREDITS,
-    DEFAULT_MESSAGE_BATCH_SIZE,
-    DEFAULT_TALLY_BATCH_SIZE,
-} from './defaults'
-
 const configureSubparser = (subparsers: any) => {
     const createParser = subparsers.addParser(
         'deployPoll',
@@ -173,7 +163,6 @@ const deployPoll = async (args: any) => {
     await pptContract.deployTransaction.wait()
 
     const [ maciAbi ] = parseArtifact('MACI')
-
 
     const maciContract = new ethers.Contract(
         args.maci_address,

@@ -52,6 +52,11 @@ import {
 } from './publish'
 
 import {
+    mergeMessages,
+    configureSubparser as configureSubparserForMergeMessages,
+} from './mergeMessages'
+
+import {
     verify,
     configureSubparser as configureSubparserForVerify,
 } from './verify'
@@ -93,6 +98,9 @@ const main = async () => {
     // Subcommand: publish
     configureSubparserForPublish(subparsers)
 
+    // Subcommand: mergeMessages
+    configureSubparserForMergeMessages(subparsers)
+
     // Subcommand: verify
     configureSubparserForVerify(subparsers)
 
@@ -117,6 +125,8 @@ const main = async () => {
         await signup(args)
     } else if (args.subcommand === 'publish') {
         await publish(args)
+    } else if (args.subcommand === 'mergeMessages') {
+        await mergeMessages(args)
     } else if (args.subcommand === 'verify') {
         await verify(args)
     }

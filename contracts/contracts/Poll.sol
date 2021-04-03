@@ -65,11 +65,17 @@ contract PollFactory is Params, IPubKey, IMessage, Ownable, Hasher, PollDeployme
         // Validate _maxValues
         // NOTE: these checks may not be necessary. Removing them will save
         // 0.28 Kb of bytecode.
+
+        // maxVoteOptions must be less than 2 ** 50 due to circuit limitations;
+        // it will be packed as a 50-bit value along with other values as one
+        // of the inputs (aka packedVal)
+
         require(
             _maxValues.maxMessages <= treeArity ** _treeDepths.messageTreeDepth &&
             _maxValues.maxMessages >= _batchSizes.messageBatchSize &&
             _maxValues.maxMessages % _batchSizes.messageBatchSize == 0 &&
-            _maxValues.maxVoteOptions <= treeArity ** _treeDepths.voteOptionTreeDepth,
+            _maxValues.maxVoteOptions <= treeArity ** _treeDepths.voteOptionTreeDepth &&
+            _maxValues.maxVoteOptions < (2 ** 50),
             "PollFactory: invalid _maxValues"
         );
 
@@ -382,6 +388,8 @@ contract Poll is
 
 contract PollProcessorAndTallyer is
     Ownable, SnarkCommon, SnarkConstants, IPubKey, PollDeploymentParams{
+
+    // Error codes
     string constant ERROR_VOTING_PERIOD_NOT_PASSED = "PptE01";
     string constant ERROR_NO_MORE_MESSAGES = "PptE02";
     string constant ERROR_MESSAGE_AQ_NOT_MERGED = "PptE03";
@@ -392,6 +400,7 @@ contract PollProcessorAndTallyer is
     string constant ERROR_ALL_BALLOTS_TALLIED = "PptE08";
     string constant ERROR_STATE_AQ_NOT_MERGED = "PptE09";
 
+    // The commitment to the state and ballot roots
     uint256 public sbCommitment;
 
     // The current message batch index. When the coordinator runs
@@ -427,6 +436,15 @@ contract PollProcessorAndTallyer is
         _;
     }
 
+    /*
+     * Hashes an array of values using SHA256 and returns its modulo with the
+     * snark scalar field. This function is used to hash inputs to circuits,
+     * where said inputs would otherwise be public inputs. As such, the only
+     * public input to the circuit is the SHA256 hash, and all others are
+     * private inputs. The circuit will verify that the hash is valid. Doing so
+     * saves a lot of gas during verification, though it makes the circuit take
+     * up more constraints.
+     */
     function sha256Hash(uint256[] memory array) public pure returns (uint256) {
         return uint256(sha256(abi.encodePacked(array))) % SNARK_SCALAR_FIELD;
     }
@@ -457,8 +475,6 @@ contract PollProcessorAndTallyer is
             index + messageBatchSize
             :
             numMessages - index - 1;
-
-        // TODO: ensure that each value is less than or equal to 2 ** 50
 
         uint256 result =
             maxVoteOptions +

@@ -19,17 +19,14 @@ import {
     TreeDepths,
 } from 'maci-core'
 
-import { config } from 'maci-config'
 import { G1Point, G2Point } from 'maci-crypto'
-import { genTestAccounts } from '../accounts'
 
 const STATE_TREE_DEPTH = 10
 const STATE_TREE_ARITY = 5
 const MESSAGE_TREE_DEPTH = 4
 const MESSAGE_TREE_SUBDEPTH = 2
 
-const accounts = genTestAccounts(1)
-const coordinator = new Keypair(new PrivKey(BigInt(config.maci.coordinatorPrivKey)))
+const coordinator = new Keypair()
 const [ pollAbi ] = parseArtifact('Poll')
 const [ accQueueQuinaryMaciAbi ] = parseArtifact('AccQueueQuinaryMaci')
 
@@ -83,6 +80,7 @@ const treeDepths: TreeDepths = {
 const messageBatchSize = 25
 const tallyBatchSize = STATE_TREE_ARITY ** treeDepths.intStateTreeDepth
 
+const initialVoiceCreditBalance = 100
 let signer
 
 describe('MACI', () => {
@@ -96,7 +94,7 @@ describe('MACI', () => {
         beforeAll(async () => {
             signer = await getDefaultSigner()
             const r = await deployTestContracts(
-                config.maci.initialVoiceCreditBalance,
+                initialVoiceCreditBalance,
             )
             maciContract = r.maciContract
             stateAqContract = r.stateAqContract
@@ -205,6 +203,16 @@ describe('MACI', () => {
                 treeDepths.voteOptionTreeDepth,
                 messageBatchSize,
             )
+
+            expect(pSig.toString()).toEqual(
+                genProcessVkSig(
+                    std, 
+                    treeDepths.messageTreeDepth,
+                    treeDepths.voteOptionTreeDepth,
+                    messageBatchSize,
+                ).toString()
+            )
+
             const isPSigSet = await vkRegistryContract.isProcessVkSet(pSig)
             expect(isPSigSet).toBeTruthy()
 
