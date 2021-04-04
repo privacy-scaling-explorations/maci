@@ -75,6 +75,7 @@ class Poll {
     public MESSAGE_TREE_ARITY = 5
     public VOTE_OPTION_TREE_ARITY = 5
 
+    public stateCopied = false
     public stateLeaves: StateLeaf[] = []
     public stateTree = new IncrementalQuinTree(
         STATE_TREE_DEPTH,
@@ -128,8 +129,6 @@ class Poll {
         this.pollId = _maciStateRef.polls.length
         this.numSignUps = Number(_maciStateRef.numSignUps.toString())
 
-        assert(this.numSignUps > 0)
-
         this.messageTree = new IncrementalQuinTree(
             this.treeDepths.messageTreeDepth,
             NOTHING_UP_MY_SLEEVE,
@@ -146,15 +145,16 @@ class Poll {
             this.results.push(BigInt(0))
             this.perVOSpentVoiceCredits.push(BigInt(0))
         }
+    }
 
-        // Copy state leaves
-        assert(_maciStateRef.stateLeaves.length === _maciStateRef.stateTree.leaves.length)
+    private copyStateFromMaci = () => {
+        // Copy the state tree, ballot tree, state leaves, and ballot leaves
+        assert(this.maciStateRef.stateLeaves.length === this.maciStateRef.stateTree.leaves.length)
 
-        this.stateLeaves = _maciStateRef.stateLeaves.map(
+        this.stateLeaves = this.maciStateRef.stateLeaves.map(
             (x) => x.copy()
         )
-        this.stateTree = _maciStateRef.stateTree.copy()
-
+        this.stateTree = this.maciStateRef.stateTree.copy()
 
         // Create as many ballots as state leaves
         const emptyBallot = new Ballot(
@@ -173,6 +173,7 @@ class Poll {
             this.ballotTree.insert(emptyBallotHash)
             this.ballots.push(emptyBallot)
         }
+        this.stateCopied = true
     }
 
     /*
@@ -253,6 +254,9 @@ class Poll {
     public processMessages = (
         _pollId: number,
     ) => {
+        if (!this.stateCopied) {
+            this.copyStateFromMaci()
+        }
         const batchSize = this.batchSizes.messageBatchSize
 
         assert(this.hasUnprocessedMessages(), 'No more messages to process')
@@ -512,6 +516,9 @@ class Poll {
      * to test the result of multiple processMessage() invocations.
      */
     public processAllMessages = () => {
+        if (!this.stateCopied) {
+            this.copyStateFromMaci()
+        }
         const stateLeaves = this.stateLeaves.map((x) => x.copy())
         const ballots = this.ballots.map((x) => x.copy())
         

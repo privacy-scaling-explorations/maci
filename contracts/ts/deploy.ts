@@ -63,7 +63,7 @@ const linkPoseidonLibraries = async (
 ) => {
 	const signer = await getDefaultSigner()
 
-	log('Linking Poseidon libraries', quiet)
+	log('Linking Poseidon libraries to ' + solFileToLink, quiet)
 	const contractFactory = await ethers.getContractFactory(
 		solFileToLink,
 		{
@@ -201,9 +201,8 @@ const log = (msg: string, quiet: boolean) => {
 }
 
 const deployPoseidonContracts = async (quiet = false) => {
-    log('Deploying Poseidon Contracts', quiet)
+    log('Deploying Poseidon contracts', quiet)
 	const signer = await getDefaultSigner()
-    log('Deploying Poseidon', quiet)
     const PoseidonT3ContractFactory = await ethers.getContractFactory('PoseidonT3', signer)
     const PoseidonT4ContractFactory = await ethers.getContractFactory('PoseidonT4', signer)
     const PoseidonT5ContractFactory = await ethers.getContractFactory('PoseidonT5', signer)

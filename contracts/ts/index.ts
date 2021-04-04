@@ -25,6 +25,8 @@ import { formatProofForVerifierContract } from './utils'
 
 import { genAccounts, genTestAccounts } from './accounts'
 
+import { genMaciStateFromContract } from './genMaciState'
+
 export {
     abiDir,
     solDir,
@@ -49,4 +51,5 @@ export {
     deployPoseidonContracts,
     deployVerifier,
     getDefaultSigner,
+    genMaciStateFromContract,
 }

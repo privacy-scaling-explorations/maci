@@ -96,9 +96,13 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         uint256 _voiceCreditBalance,
         uint256 _timestamp
     );
+
+    event DeployPoll(uint256 _pollId, address _pollAddr, PubKey _pubKey);
+
+    // TODO: consider removing MergeStateAqSubRoots and MergeStateAq as the
+    // functions in Poll which call them already have their own events
     event MergeStateAqSubRoots(uint256 _pollId, uint256 _numSrQueueOps);
     event MergeStateAq(uint256 _pollId);
-    event DeployPoll(uint256 _pollId, address _pollAddr, PubKey _pubKey);
 
     constructor(
         PollFactory _pollFactory,

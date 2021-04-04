@@ -17,7 +17,7 @@ import {
 
 const configureSubparser = (subparsers: any) => {
     const parser = subparsers.addParser(
-        'mergeMessages',
+        'mergeSignups',
         { addHelp: true },
     )
 
@@ -51,7 +51,7 @@ const configureSubparser = (subparsers: any) => {
     )
 }
 
-const mergeMessages = async (args: any) => {
+const mergeSignups = async (args: any) => {
     // MACI contract
     if (!validateEthAddress(args.contract)) {
         console.error('Error: invalid MACI contract address')
@@ -63,10 +63,7 @@ const mergeMessages = async (args: any) => {
     const signer = await getDefaultSigner()
 
     if (! (await contractExists(signer.provider, maciAddress))) {
-        console.error(
-            'Error: there is no MACI contract deployed at the ' +
-            'specified address',
-        )
+        console.error('Error: there is no MACI contract deployed at the specified address')
         return 1
     }
 
@@ -89,10 +86,7 @@ const mergeMessages = async (args: any) => {
 
     const pollAddr = await maciContractEthers.polls(pollId)
     if (! (await contractExists(signer.provider, pollAddr))) {
-        console.error(
-            'Error: there is no Poll contract with this poll ID linked to ' +
-            'the specified MACI contract.',
-        )
+        console.error('Error: there is no Poll contract with this poll ID linked to the specified MACI contract.')
         return 1
     }
 
@@ -102,24 +96,11 @@ const mergeMessages = async (args: any) => {
         signer,
     )
 
-    const extContracts = await pollContract.extContracts()
-    const messageAqContractAddr = extContracts.messageAq
-
     const accQueueContract = new ethers.Contract(
-        messageAqContractAddr,
+        await maciContractEthers.stateAq(),
         accQueueContractAbi,
         signer,
     )
-
-    // Check if the signer is the Poll owner
-    const pollOwner = await pollContract.owner()
-    if (pollOwner.toLowerCase() !== signer.address.toLowerCase()) {
-        console.error(
-            'Error: the signer is not the owner of this Poll contract ' +
-            pollAddr,
-        )
-        return 1
-    }
 
     // Check if the voting period is over
 
@@ -139,19 +120,21 @@ const mergeMessages = async (args: any) => {
     while (true) {
         const subTreesMerged = await accQueueContract.subTreesMerged()
         if (subTreesMerged) {
-            console.log('All message subtrees have been merged.')
+            console.log('All state subtrees have been merged.')
             break
         }
+
         const indices = (
             await accQueueContract.getSrIndices()
         ).map((x) => Number(x))
 
         console.log(
-            `Merging message subroots ${indices[0] + 1} / ${indices[1] + 1}`,
+            `Merging state subroots ${indices[0] + 1} / ${indices[1] + 1}`,
         )
 
-        const tx = await pollContract.mergeMessageAqSubRoots(
+        const tx = await pollContract.mergeMaciStateAqSubRoots(
             args.num_queue_ops.toString(),
+            pollId.toString(),
         )
         const receipt = await tx.wait()
 
@@ -160,54 +143,31 @@ const mergeMessages = async (args: any) => {
             `gas used: ${receipt.gasUsed.toString()}`)
         console.log(`Transaction hash: ${receipt.transactionHash}\n`)
     }
-    
-    // Check if the message AQ has been fully merged
-    const messageTreeDepth = Number(
-        (await pollContract.treeDepths()).messageTreeDepth
-    )
 
-    const mainRoot = (await accQueueContract.getMainRoot(messageTreeDepth.toString())).toString()
+    // Check if the state AQ has been fully merged
+    const stateTreeDepth = Number(await maciContractEthers.stateTreeDepth())
+    const mainRoot = (await accQueueContract.getMainRoot(stateTreeDepth.toString())).toString()
+
     if (mainRoot === '0') {
-        console.log('Merging subroots to a main message root...')
-        const tx = await pollContract.mergeMessageAq()
+        console.log('Merging subroots to a main state root...')
+        const tx = await pollContract.mergeMaciStateAq(pollId.toString())
         const receipt = await tx.wait()
         console.log(
-            `Executed mergeMessageAq(); ` +
+            `Executed mergeStateAq(); ` +
             `gas used: ${receipt.gasUsed.toString()}`,
         )
         console.log(`Transaction hash: ${receipt.transactionHash}`)
-        console.log('The message tree has been merged.')
+        console.log('The state tree has been merged.')
     } else {
-        console.log('The message tree has already been merged.')
+        console.log('The state tree has already been merged.')
     }
-
+    
     // TODO: intelligently set num_queue_ops
-    //const numLeaves = Number(await accQueueContract.numLeaves())
-
-    //const treeDepths = await pollContract.treeDepths()
-    //const messageTreeDepth = Number(treeDepths.messageTreeDepth)
-    //const messageAqSubDepth = Number(treeDepths.messageTreeSubDepth)
-
-    //const d = messageTreeDepth - messageAqSubDepth
-
-    //const numSubTrees = Math.floor(numLeaves / (5 ** messageAqSubDepth)) + 1
-
-    //const totalEstGas = numSubTrees * (d * 123105)
-
-    //const numOps = Math.floor(totalEstGas / 5000000)
-
-    //if (numOps === 0) {
-        //// Attempt once
-    //} else {
-        //while (true) {
-        //}
-    //}
-    //console.log(numLeaves, messageAqSubDepth, numOps)
 
     return 0
 }
 
 export {
-    mergeMessages,
+    mergeSignups,
     configureSubparser,
 }

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import 'source-map-support/register'
 
 import * as argparse from 'argparse' 
 import { 
@@ -57,6 +58,16 @@ import {
 } from './mergeMessages'
 
 import {
+    mergeSignups,
+    configureSubparser as configureSubparserForMergeSignups,
+} from './mergeSignups'
+
+import {
+    genProofs,
+    configureSubparser as configureSubparserForGenProofs,
+} from './genProofs'
+
+import {
     verify,
     configureSubparser as configureSubparserForVerify,
 } from './verify'
@@ -101,6 +112,12 @@ const main = async () => {
     // Subcommand: mergeMessages
     configureSubparserForMergeMessages(subparsers)
 
+    // Subcommand: mergeSignups
+    configureSubparserForMergeSignups(subparsers)
+
+    // Subcommand: genProofs
+    configureSubparserForGenProofs(subparsers)
+
     // Subcommand: verify
     configureSubparserForVerify(subparsers)
 
@@ -127,6 +144,10 @@ const main = async () => {
         await publish(args)
     } else if (args.subcommand === 'mergeMessages') {
         await mergeMessages(args)
+    } else if (args.subcommand === 'mergeSignups') {
+        await mergeSignups(args)
+    } else if (args.subcommand === 'genProofs') {
+        await genProofs(args)
     } else if (args.subcommand === 'verify') {
         await verify(args)
     }

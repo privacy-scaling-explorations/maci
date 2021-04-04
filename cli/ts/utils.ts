@@ -120,6 +120,14 @@ const batchTransactionRequests = async (
     }
 }
 
+const currentBlockTimestamp = async (
+    provider: ethers.providers.Provider,
+): Promise<number> => {
+    const blockNum = await provider.getBlockNumber()
+    const block = await provider.getBlock(blockNum)
+    return Number(block.timestamp)
+}
+
 export {
     promptPwd,
     calcBinaryTreeDepthFromMaxLeaves,
@@ -130,5 +138,6 @@ export {
     validateSaltFormat,
     validateEthAddress,
     contractExists,
+    currentBlockTimestamp,
     batchTransactionRequests,
 }

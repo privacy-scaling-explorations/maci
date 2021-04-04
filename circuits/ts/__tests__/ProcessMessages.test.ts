@@ -15,6 +15,7 @@ import {
     Command,
     Message,
     VerifyingKey,
+    Ballot,
 } from 'maci-domainobjs'
 
 import {
@@ -171,11 +172,25 @@ describe('ProcessMessage circuit', () => {
 
         it('should produce the correct state root and ballot root', async () => {
             // The current roots
-            const currentStateRoot = poll.stateTree.root
-            const currentBallotRoot = poll.ballotTree.root
+            const emptyBallot = new Ballot(
+                poll.maxValues.maxVoteOptions,
+                poll.treeDepths.voteOptionTreeDepth,
+            )
+            const emptyBallotHash = emptyBallot.hash()
+            const ballotTree = new IncrementalQuinTree(
+                STATE_TREE_DEPTH,
+                emptyBallot.hash(),
+                poll.STATE_TREE_ARITY,
+                hash5,
+            )
+
+            for (let i = 0; i < poll.stateLeaves.length; i ++) {
+                ballotTree.insert(emptyBallotHash)
+            }
+            const currentStateRoot = maciState.stateTree.root
+            const currentBallotRoot = ballotTree.root
 
             const generatedInputs = poll.processMessages()
-            debugger
 
             // Calculate the witness
             const witness = await genWitness(circuit, generatedInputs)

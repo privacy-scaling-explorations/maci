@@ -28,7 +28,8 @@ const genMaciStateFromContract = async (
     address: string,
     coordinatorKeypair: Keypair,
     pollId: number,
-) => {
+): Promise<MaciState> => {
+    pollId = Number(pollId)
     // Verify and sort pollIds
     assert(pollId >= 0)
 
@@ -93,7 +94,6 @@ const genMaciStateFromContract = async (
 
     const actions: Action[] = []
 
-    // Order logs by block height and transaction nonce
     for (const log of signUpLogs) {
         assert(log != undefined)
         const event = maciIface.parseLog(log)
@@ -114,6 +114,8 @@ const genMaciStateFromContract = async (
         })
     }
 
+    // TODO: consider removing MergeStateAqSubRoots and MergeStateAq as the
+    // functions in Poll which call them already have their own events
     for (const log of mergeStateAqSubRootsLogs) {
         assert(log != undefined)
         const event = maciIface.parseLog(log)
@@ -182,14 +184,14 @@ const genMaciStateFromContract = async (
             data: { pollId, pollAddr, pubKey }
         })
 
-        foundPollIds.push(pollId)
+        foundPollIds.push(Number(pollId))
         pollContractAddresses.push(pollAddr)
         i ++
     }
 
-    // Check whether each pollIds is extant
+    // Check whether each pollId exists
     assert(
-        foundPollIds.indexOf(pollId) > -1,
+        foundPollIds.indexOf(Number(pollId)) > -1,
         'Error: the specified pollId does not exist on-chain',
     )
 
@@ -355,6 +357,9 @@ const genMaciStateFromContract = async (
                 action.data.voiceCreditBalance,
                 action.data.timestamp,
             )
+
+        // TODO: consider removing MergeStateAqSubRoots and MergeStateAq as the
+        // functions in Poll which call them already have their own events
         //} else if (action['type'] === 'MergeStateAqSubRoots') {
             //maciState.stateAq.mergeSubRoots(
                 //action.data.numSrQueueOps,
@@ -400,8 +405,14 @@ const genMaciStateFromContract = async (
             )
         }
     }
+
+    return maciState
 }
 
+/*
+ * The comparision function for Actions based on block number and transaction
+ 0.72443254*0.72443254 index.
+ */
 const sortActions = (actions: Action[]) => {
     actions.sort((a, b) => {
         if (a.blockNumber > b.blockNumber) { return 1 }
