@@ -40,11 +40,11 @@ describe('Poseidon hash circuits', () => {
             })
         })
 
-        describe('Sha256Hasher3', () => {
-            const circuit = 'sha256Hasher3_test'
-            it('correctly hashes two random values', async () => {
+        describe('Sha256Hasher4', () => {
+            const circuit = 'sha256Hasher4_test'
+            it('correctly hashes 4 random values', async () => {
                 const preImages: any = []
-                for (let i = 0; i < 3; i++) {
+                for (let i = 0; i < 4; i++) {
                     preImages.push(genRandomSalt())
                 }
 
@@ -61,11 +61,11 @@ describe('Poseidon hash circuits', () => {
             })
         })
 
-        describe('Sha256Hasher4', () => {
-            const circuit = 'sha256Hasher4_test'
-            it('correctly hashes two random values', async () => {
+        describe('Sha256Hasher6', () => {
+            const circuit = 'sha256Hasher6_test'
+            it('correctly hashes 6 random values', async () => {
                 const preImages: any = []
-                for (let i = 0; i < 4; i++) {
+                for (let i = 0; i < 6; i++) {
                     preImages.push(genRandomSalt())
                 }
 

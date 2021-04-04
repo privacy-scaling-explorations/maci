@@ -98,9 +98,13 @@ template ProcessMessages(
     signal private input currentStateLeaves[batchSize][STATE_LEAF_LENGTH];
     signal private input currentStateLeavesPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
 
-    // The commitment to the state root, ballot root, and a salt
+    // The salted commitment to the state root and ballot root
     signal private input currentSbCommitment;
     signal private input currentSbSalt;
+
+    // The salted commitment to the new state root and ballot root
+    signal private input newSbCommitment;
+    signal private input newSbSalt;
 
     // The ballots before any messages are processed
     signal private input currentBallotRoot;
@@ -111,9 +115,6 @@ template ProcessMessages(
 
     signal private input currentVoteWeights[batchSize];
     signal private input currentVoteWeightsPathElements[batchSize][voteOptionTreeDepth][TREE_ARITY - 1];
-
-    signal private input newSbCommitment;
-    signal private input newSbSalt;
 
     var msgTreeZeroValue = 8370432830353022751713833565135785980866757267633941821328460903436894336785;
 
@@ -131,6 +132,7 @@ template ProcessMessages(
     inputHasher.coordPubKey[1] <== coordPubKey[1];
     inputHasher.msgRoot <== msgRoot;
     inputHasher.currentSbCommitment <== currentSbCommitment;
+    inputHasher.newSbCommitment <== newSbCommitment;
     inputHasher.pollEndTimestamp <== pollEndTimestamp;
 
     // The unpacked values from packedVals
@@ -522,7 +524,7 @@ template ProcessMessagesInputHasher() {
     // - coordPubKeyHash 
 
     // Other inputs that can't be compressed or packed:
-    // - msgRoot, currentStateRoot, currentBallotRoot
+    // - msgRoot, currentSbCommitment, newSbCommitment
 
     // Also ensure that packedVals is valid
 
@@ -530,6 +532,7 @@ template ProcessMessagesInputHasher() {
     signal input coordPubKey[2];
     signal input msgRoot;
     signal input currentSbCommitment;
+    signal input newSbCommitment;
     signal input pollEndTimestamp;
 
     signal output maxVoteOptions;
@@ -552,13 +555,14 @@ template ProcessMessagesInputHasher() {
     pubKeyHasher.left <== coordPubKey[0];
     pubKeyHasher.right <== coordPubKey[1];
 
-    // 3. Hash the 5 inputs with SHA256
-    component hasher = Sha256Hasher5();
+    // 3. Hash the 6 inputs with SHA256
+    component hasher = Sha256Hasher6();
     hasher.in[0] <== packedVals;
     hasher.in[1] <== pubKeyHasher.hash;
     hasher.in[2] <== msgRoot;
     hasher.in[3] <== currentSbCommitment;
-    hasher.in[4] <== pollEndTimestamp;
+    hasher.in[4] <== newSbCommitment;
+    hasher.in[5] <== pollEndTimestamp;
 
     hash <== hasher.hash;
 }

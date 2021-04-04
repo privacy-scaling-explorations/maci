@@ -1,3 +1,3 @@
 include "../hasherSha256.circom"
 
-component main = Sha256Hasher3();
+component main = Sha256Hasher6();

@@ -5,14 +5,14 @@ template MessageValidator() {
     // a) Whether the state leaf index is valid
     signal input stateTreeIndex;
     signal input numSignUps;
-    component validStateLeafIndex = LessEqThan(252);
+    component validStateLeafIndex = LessThan(252);
     validStateLeafIndex.in[0] <== stateTreeIndex;
     validStateLeafIndex.in[1] <== numSignUps;
 
     // b) Whether the max vote option tree index is correct
     signal input voteOptionIndex;
     signal input maxVoteOptions;
-    component validVoteOptionIndex = LessEqThan(252);
+    component validVoteOptionIndex = LessThan(252);
     validVoteOptionIndex.in[0] <== voteOptionIndex;
     validVoteOptionIndex.in[1] <== maxVoteOptions;
 
