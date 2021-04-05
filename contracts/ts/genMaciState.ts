@@ -360,6 +360,7 @@ const genMaciStateFromContract = async (
 
         // TODO: consider removing MergeStateAqSubRoots and MergeStateAq as the
         // functions in Poll which call them already have their own events
+
         //} else if (action['type'] === 'MergeStateAqSubRoots') {
             //maciState.stateAq.mergeSubRoots(
                 //action.data.numSrQueueOps,
@@ -405,6 +406,14 @@ const genMaciStateFromContract = async (
             )
         }
     }
+
+    // Set numSignUps
+    const numSignUpsAndMessages = await pollContract.numSignUpsAndMessages()
+
+    const poll = maciState.polls[pollId]
+    assert(Number(numSignUpsAndMessages[1]) === poll.messages.length)
+
+    maciState.polls[pollId].numSignUps = Number(numSignUpsAndMessages[0])
 
     return maciState
 }

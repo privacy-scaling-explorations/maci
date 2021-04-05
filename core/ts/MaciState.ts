@@ -173,6 +173,9 @@ class Poll {
             this.ballotTree.insert(emptyBallotHash)
             this.ballots.push(emptyBallot)
         }
+
+        this.numSignUps = Number(this.maciStateRef.numSignUps.toString())
+
         this.stateCopied = true
     }
 
@@ -352,8 +355,9 @@ class Poll {
                 currentBallotsPathElements.unshift(
                     this.ballotTree.genMerklePath(0).pathElements
                 )
-                const voteOptionIndex = Number(this.commands[messageIndex].voteOptionIndex)
 
+                const voteOptionIndex =
+                    Number(this.commands[messageIndex].voteOptionIndex)
                 currentVoteWeights.unshift(
                     this.ballots[0].votes[voteOptionIndex]
                 )
@@ -410,6 +414,16 @@ class Poll {
             newStateRoot,
             newBallotRoot,
             newSbSalt,
+        ])
+
+        const coordPubKeyHash = this.coordinatorKeypair.pubKey.hash()
+        circuitInputs.inputHash = sha256Hash([
+            circuitInputs.packedVals,
+            coordPubKeyHash,
+            circuitInputs.msgRoot,
+            circuitInputs.currentSbCommitment,
+            circuitInputs.newSbCommitment,
+            this.pollEndTimestamp,
         ])
 
         // If this is the last batch, release the lock
@@ -483,18 +497,7 @@ class Poll {
 
         const coordPubKey = this.coordinatorKeypair.pubKey
 
-        const coordPubKeyHash = coordPubKey.hash()
-
-        const inputHash = sha256Hash([
-            packedVals,
-            coordPubKeyHash,
-            msgRoot,
-            currentSbCommitment,
-            this.pollEndTimestamp,
-        ])
-
         return stringifyBigInts({
-            inputHash,
             pollEndTimestamp: this.pollEndTimestamp,
             packedVals,
             msgRoot,
@@ -566,7 +569,7 @@ class Poll {
 
         // If the state tree index in the command is invalid, do nothing
         if (
-            stateLeafIndex > BigInt(this.ballots.length) ||
+            stateLeafIndex >= BigInt(this.ballots.length) ||
             stateLeafIndex < BigInt(0)
         ) {
             return
@@ -607,7 +610,7 @@ class Poll {
         // If the vote option index is invalid, do nothing
         if (
             command.voteOptionIndex < BigInt(-1) ||
-            command.voteOptionIndex > BigInt(this.maxValues.maxVoteOptions)
+            command.voteOptionIndex >= BigInt(this.maxValues.maxVoteOptions)
         ) {
             return
         }

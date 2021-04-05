@@ -19,6 +19,8 @@ template StateLeafAndBallotTransformer() {
 
     // Ballot
     signal input ballotNonce;
+    signal input ballotVoRoot;
+    signal input updatedBallotVoRoot;
     signal input ballotCurrentVotesForOption;
 
     // Command
@@ -40,6 +42,7 @@ template StateLeafAndBallotTransformer() {
 
     // New ballot (if the command is valid)
     signal output newBallotNonce;
+    signal output newBallotVoRoot;
     signal output isValid;
 
     signal newVoiceCreditBalance;
@@ -95,6 +98,12 @@ template StateLeafAndBallotTransformer() {
     newBallotNonceMux.c[0] <== ballotNonce;
     newBallotNonceMux.c[1] <== cmdNonce;
     newBallotNonce <== newBallotNonceMux.out;
+
+    component newBallotVoRootMux = Mux1();
+    newBallotVoRootMux.s <== messageValidator.isValid;
+    newBallotVoRootMux.c[0] <== ballotVoRoot;
+    newBallotVoRootMux.c[1] <== updatedBallotVoRoot;
+    newBallotVoRoot <== newBallotVoRootMux.out;
 
     isValid <== messageValidator.isValid;
 }

@@ -45,7 +45,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
 
     // The PoseidonT4 (3 inputs) hash of [0, 0, 0]
     uint256 constant internal BLANK_STATE_LEAF_HASH
-        = uint256(1159571914158644307968118254216693844883623506937532987569787390362123170397);
+        = uint256(5317387130258456662214331362918410991734007599705406860481038345552731150762);
 
     // Each poll has an incrementing ID
     uint256 internal nextPollId = 0;

@@ -497,7 +497,8 @@ contract PollProcessorAndTallyer is
     function genProcessMessagesPublicInputHash(
         Poll _poll,
         uint256 _messageRoot,
-        uint256 _numSignUps
+        uint256 _numSignUps,
+        uint256 _newSbCommitment
     ) public view returns (uint256) {
         uint256 coordinatorPubKeyHash = _poll.coordinatorPubKeyHash();
 
@@ -507,12 +508,13 @@ contract PollProcessorAndTallyer is
 
         (uint256 deployTime, uint256 duration) = _poll.getDeployTimeAndDuration();
 
-        uint256[] memory input = new uint256[](5);
+        uint256[] memory input = new uint256[](6);
         input[0] = packedVals;
         input[1] = coordinatorPubKeyHash;
         input[2] = _messageRoot;
         input[3] = currentSbCommitment;
-        input[4] = deployTime + duration;
+        input[4] = _newSbCommitment;
+        input[5] = deployTime + duration;
         uint256 inputHash = sha256Hash(input);
 
         return inputHash;
@@ -544,9 +546,8 @@ contract PollProcessorAndTallyer is
             voteOptionTreeDepth
         ) = _poll.treeDepths();
 
-        IMACI maci;
         AccQueue messageAq;
-        (, maci, messageAq) = _poll.extContracts();
+        (, , messageAq) = _poll.extContracts();
 
         // Require that the message queue has been merged
         uint256 messageRoot =
@@ -579,6 +580,7 @@ contract PollProcessorAndTallyer is
                 messageRoot,
                 messageTreeDepth,
                 voteOptionTreeDepth,
+                _newSbCommitment,
                 _proof
             );
         }
@@ -601,23 +603,25 @@ contract PollProcessorAndTallyer is
 
     function verifyProcessProof(
         Poll _poll,
-        uint256 messageRoot,
-        uint256 messageTreeDepth,
-        uint256 voteOptionTreeDepth,
+        uint256 _messageRoot,
+        uint256 _messageTreeDepth,
+        uint256 _voteOptionTreeDepth,
+        uint256 _newSbCommitment,
         uint256[8] memory _proof
     ) internal view {
         (uint256 messageBatchSize, ) = _poll.batchSizes();
         (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
         uint256 publicInputHash = genProcessMessagesPublicInputHash(
             _poll,
-            messageRoot,
-            numSignUps
+            _messageRoot,
+            numSignUps,
+            _newSbCommitment
         );
         (VkRegistry vkRegistry, IMACI maci, ) = _poll.extContracts();
         VerifyingKey memory vk = vkRegistry.getProcessVk(
             maci.stateTreeDepth(),
-            messageTreeDepth,
-            voteOptionTreeDepth,
+            _messageTreeDepth,
+            _voteOptionTreeDepth,
             messageBatchSize
         );
         bool isValid = verifier.verify(_proof, vk, publicInputHash);

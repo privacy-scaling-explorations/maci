@@ -1,10 +1,8 @@
 import * as ethers from 'ethers'
 import * as fs from 'fs'
 
-import {
-    PrivKey,
-    Keypair,
-} from 'maci-domainobjs'
+import { genProof } from 'maci-circuits'
+import { PrivKey, Keypair } from 'maci-domainobjs'
 
 import {
     parseArtifact,
@@ -16,7 +14,6 @@ import {
     promptPwd,
     validateEthAddress,
     contractExists,
-    currentBlockTimestamp,
 } from './utils'
 
 const configureSubparser = (subparsers: any) => {
@@ -81,6 +78,33 @@ const configureSubparser = (subparsers: any) => {
         }
     )
 
+    parser.addArgument(
+        ['-r', '--rapidsnark'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The path to the rapidsnark binary',
+        }
+    )
+
+    parser.addArgument(
+        ['-w', '--witness-gen-exe'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The path to the ProcessMessages witness generation binary',
+        }
+    )
+
+    parser.addArgument(
+        ['-z', '--zkey'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The path to the ProcessMessages .zkey file',
+        }
+    )
+
     // TODO: support resumable proof generation
     //parser.addArgument(
         //['-r', '--resume'],
@@ -92,6 +116,25 @@ const configureSubparser = (subparsers: any) => {
 }
 
 const genProofs = async (args: any) => {
+    // Check that args.witness_gen_exe exists
+    const witnessGenExe = args.witness_gen_exe
+    const rapidsnarkExe = args.rapidsnark
+    const zkeyPath = args.zkey
+    if (!fs.existsSync(witnessGenExe)) {
+        console.error(`Error: ${witnessGenExe} does not exist.`)
+        return 1
+    }
+
+    if (!fs.existsSync(rapidsnarkExe)) {
+        console.error(`Error: ${rapidsnarkExe} does not exist.`)
+        return 1
+    }
+
+    if (!fs.existsSync(zkeyPath)) {
+        console.error(`Error: ${zkeyPath} does not exist.`)
+        return 1
+    }
+
     // The coordinator's MACI private key
     let serializedPrivkey
     if (args.prompt_for_maci_privkey) {
@@ -199,11 +242,19 @@ const genProofs = async (args: any) => {
         coordinatorKeypair,
         pollId,
     )
+
     const poll = maciState.polls[pollId]
 
     // TODO: support resumable proof generation
     while (poll.hasUnprocessedMessages()) {
-        const generatedInputs = poll.processMessages()
+        const circuitInputs = poll.processMessages()
+
+        const r = genProof(
+            circuitInputs,
+            rapidsnarkExe,
+            witnessGenExe,
+            zkeyPath,
+        )
         debugger
     }
 

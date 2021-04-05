@@ -27,11 +27,11 @@ const maxVoteOptions = 25
 const slPubKey = (new Keypair()).pubKey
 const slVoiceCreditBalance = BigInt(100)
 const ballotNonce = BigInt(0)
-//const ballotVoteOptionRoot = BigInt(12345678)
 const ballotCurrentVotesForOption = BigInt(0)
-//const updatedBallotVoteOptionRoot = BigInt(87654321)
 const slTimestamp = 1
 const pollEndTimestamp = 2
+const ballotVoRoot = BigInt(123)
+const updatedBallotVoRoot = BigInt(456)
 
 const command: Command = new Command(
     stateIndex,
@@ -56,6 +56,8 @@ describe('StateLeafAndBallotTransformer circuit', () => {
             slTimestamp,
             pollEndTimestamp,
             ballotNonce,
+            ballotVoRoot,
+            updatedBallotVoRoot,
             ballotCurrentVotesForOption,
             cmdStateIndex: command.stateIndex,
             cmdNewPubKey: command.newPubKey.asCircuitInputs(),
@@ -75,11 +77,13 @@ describe('StateLeafAndBallotTransformer circuit', () => {
         const newSlPubKey1 = await getSignalByName(circuit, witness, 'main.newSlPubKey[1]')
         const newSlVoiceCreditBalance = await getSignalByName(circuit, witness, 'main.newSlVoiceCreditBalance')
         const newBallotNonce = await getSignalByName(circuit, witness, 'main.newBallotNonce')
+        const newBallotVoRoot = await getSignalByName(circuit, witness, 'main.newBallotVoRoot')
 
         expect(newSlPubKey0.toString()).toEqual(command.newPubKey.rawPubKey[0].toString())
         expect(newSlPubKey1.toString()).toEqual(command.newPubKey.rawPubKey[1].toString())
         expect(newSlVoiceCreditBalance.toString()).toEqual('19')
         expect(newBallotNonce.toString()).toEqual(command.nonce.toString())
+        expect(newBallotVoRoot.toString()).toEqual(updatedBallotVoRoot.toString())
 
         const isValid = await getSignalByName(circuit, witness, 'main.isValid')
         expect(isValid.toString()).toEqual('1')
@@ -92,6 +96,8 @@ describe('StateLeafAndBallotTransformer circuit', () => {
             slPubKey: slPubKey.asCircuitInputs(),
             slVoiceCreditBalance,
             ballotNonce,
+            ballotVoRoot,
+            updatedBallotVoRoot,
             ballotCurrentVotesForOption,
             cmdStateIndex: command.stateIndex,
             cmdNewPubKey: command.newPubKey.asCircuitInputs(),
@@ -113,11 +119,13 @@ describe('StateLeafAndBallotTransformer circuit', () => {
         const newSlPubKey1 = await getSignalByName(circuit, witness, 'main.newSlPubKey[1]')
         const newSlVoiceCreditBalance = await getSignalByName(circuit, witness, 'main.newSlVoiceCreditBalance')
         const newBallotNonce = await getSignalByName(circuit, witness, 'main.newBallotNonce')
+        const newBallotVoRoot = await getSignalByName(circuit, witness, 'main.newBallotVoRoot')
 
         expect(newSlPubKey0.toString()).toEqual(slPubKey.rawPubKey[0].toString())
         expect(newSlPubKey1.toString()).toEqual(slPubKey.rawPubKey[1].toString())
         expect(newSlVoiceCreditBalance.toString()).toEqual(slVoiceCreditBalance.toString())
         expect(newBallotNonce.toString()).toEqual('0')
+        expect(newBallotVoRoot.toString()).toEqual(ballotVoRoot.toString())
 
         const isValid = await getSignalByName(circuit, witness, 'main.isValid')
         expect(isValid.toString()).toEqual('0')
