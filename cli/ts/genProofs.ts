@@ -1,7 +1,7 @@
 import * as ethers from 'ethers'
 import * as fs from 'fs'
 
-import { genProof } from 'maci-circuits'
+import { genProof, verifyProof, extractVk } from 'maci-circuits'
 import { hashLeftRight, hash3 } from 'maci-crypto'
 import { PrivKey, Keypair } from 'maci-domainobjs'
 import { genTallyResultCommitment } from 'maci-core'
@@ -176,6 +176,10 @@ const genProofs = async (args: any) => {
         return 1
     }
 
+    // Extract the verifying keys
+    const processVk = extractVk(args.process_zkey)
+    const tallyVk = extractVk(args.tally_zkey)
+
     // The coordinator's MACI private key
     let serializedPrivkey
     if (args.prompt_for_maci_privkey) {
@@ -304,13 +308,26 @@ const genProofs = async (args: any) => {
             args.process_witnessgen,
             args.process_zkey,
         )
+
+        // Verify the proof
+        const isValid = verifyProof(
+            r.publicInputs,
+            r.proof,
+            processVk,
+        )
+
+        if (!isValid) {
+            console.error('Error: generated an invalid proof')
+            return 1
+        }
+        
         processProofs.push({
             circuitInputs,
             proof: r.proof,
             publicInputs: r.publicInputs,
         })
         saveOutput(outputFile, processProofs, tallyProofs)
-        console.log(`\nProgress: ${poll.numBatchesProcessed + 1} / ${totalMessageBatches}`)
+        console.log(`\nProgress: ${poll.numBatchesProcessed} / ${totalMessageBatches}`)
     }
 
     console.log('\nGenerating proofs of vote tallying...')
@@ -336,13 +353,26 @@ const genProofs = async (args: any) => {
             args.tally_witnessgen,
             args.tally_zkey,
         )
+
+        // Verify the proof
+        const isValid = verifyProof(
+            r.publicInputs,
+            r.proof,
+            tallyVk,
+        )
+
+        if (!isValid) {
+            console.error('Error: generated an invalid proof')
+            return 1
+        }
+        
         processProofs.push({
             circuitInputs: tallyCircuitInputs,
             proof: r.proof,
             publicInputs: r.publicInputs,
         })
         saveOutput(outputFile, processProofs, tallyProofs)
-        console.log(`\nProgress: ${poll.numBatchesTallied + 1} / ${totalTallyBatches}`)
+        console.log(`\nProgress: ${poll.numBatchesTallied} / ${totalTallyBatches}`)
     }
 
     const asHex = (val): string => {
@@ -368,7 +398,6 @@ const genProofs = async (args: any) => {
     }
 
     // Verify the results
-    // TODO
     // Compute newResultsCommitment
     const newResultsCommitment = genTallyResultCommitment(
         tallyFileData.results.tally.map((x) => BigInt(x)),

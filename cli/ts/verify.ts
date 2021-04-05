@@ -1,8 +1,6 @@
 import * as fs from 'fs'
 
-import {
-    genTallyResultCommitment,
-} from 'maci-core'
+import { genTallyResultCommitment } from 'maci-core'
 
 import {
     parseArtifact,
