@@ -366,7 +366,7 @@ const genProofs = async (args: any) => {
             return 1
         }
         
-        processProofs.push({
+        tallyProofs.push({
             circuitInputs: tallyCircuitInputs,
             proof: r.proof,
             publicInputs: r.publicInputs,
@@ -382,6 +382,7 @@ const genProofs = async (args: any) => {
     const tallyFileData = {
         provider: signer.provider.connection.url,
         maci: args.contract,
+        pollId,
         newTallyCommitment: asHex(tallyCircuitInputs.newTallyCommitment),
         results: {
             tally: poll.results.map((x) => x.toString()),
