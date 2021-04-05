@@ -235,7 +235,10 @@ class Poll {
             : 
             Math.floor(this.messages.length / batchSize)
 
-        if (this.messages.length % batchSize > 0) {
+        if (
+            this.messages.length > batchSize &&
+            this.messages.length % batchSize > 0
+        ) {
             totalBatches ++
         }
 
@@ -1200,10 +1203,10 @@ const genTallyVkSig = (
 const genTallyResultCommitment = (
     results: BigInt[],
     salt: BigInt,
-    voteOptionTreeDepth: number,
+    depth: number,
 ): BigInt => {
 
-    const tree = new IncrementalQuinTree(voteOptionTreeDepth, BigInt(0), 5, hash5)
+    const tree = new IncrementalQuinTree(depth, BigInt(0), 5, hash5)
     for (const result of results) {
         tree.insert(BigInt(result))
     }

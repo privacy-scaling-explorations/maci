@@ -2,7 +2,9 @@ import * as ethers from 'ethers'
 import * as fs from 'fs'
 
 import { genProof } from 'maci-circuits'
+import { hashLeftRight, hash3 } from 'maci-crypto'
 import { PrivKey, Keypair } from 'maci-domainobjs'
+import { genTallyResultCommitment } from 'maci-core'
 
 import {
     parseArtifact,
@@ -51,15 +53,6 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-q', '--ppt'],
-        {
-            required: true,
-            type: 'string',
-            help: 'The PollProcessorAndTallyer contract address',
-        }
-    )
-
-    parser.addArgument(
         ['-o', '--poll-id'],
         {
             action: 'store',
@@ -88,7 +81,7 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-w', '--witness-gen-exe'],
+        ['-wp', '--process-witnessgen'],
         {
             required: true,
             type: 'string',
@@ -97,11 +90,38 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-z', '--zkey'],
+        ['-wt', '--tally-witnessgen'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The path to the TallyVotes witness generation binary',
+        }
+    )
+
+    parser.addArgument(
+        ['-zp', '--process-zkey'],
         {
             required: true,
             type: 'string',
             help: 'The path to the ProcessMessages .zkey file',
+        }
+    )
+
+    parser.addArgument(
+        ['-zt', '--tally-zkey'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The path to the TallyVotes .zkey file',
+        }
+    )
+
+    parser.addArgument(
+        ['-f', '--output'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The output file',
         }
     )
 
@@ -116,22 +136,43 @@ const configureSubparser = (subparsers: any) => {
 }
 
 const genProofs = async (args: any) => {
-    // Check that args.witness_gen_exe exists
-    const witnessGenExe = args.witness_gen_exe
-    const rapidsnarkExe = args.rapidsnark
-    const zkeyPath = args.zkey
-    if (!fs.existsSync(witnessGenExe)) {
-        console.error(`Error: ${witnessGenExe} does not exist.`)
+    const outputFile = args.output
+
+    if (fs.existsSync(outputFile)) {
+        console.error(`Error: ${outputFile} exists. Please specify a different filepath.`)
         return 1
     }
+
+    if (fs.existsSync(args.tally_file)) {
+        console.error(`Error: ${args.tally_file} exists. Please specify a different filepath.`)
+        return 1
+    }
+
+    // Check that args.witness_gen_exe exists
+    const rapidsnarkExe = args.rapidsnark
 
     if (!fs.existsSync(rapidsnarkExe)) {
         console.error(`Error: ${rapidsnarkExe} does not exist.`)
         return 1
     }
 
-    if (!fs.existsSync(zkeyPath)) {
-        console.error(`Error: ${zkeyPath} does not exist.`)
+    if (!fs.existsSync(args.process_witnessgen)) {
+        console.error(`Error: ${args.process_witnessgen} does not exist.`)
+        return 1
+    }
+
+    if (!fs.existsSync(args.tally_witnessgen)) {
+        console.error(`Error: ${args.process_witnessgen} does not exist.`)
+        return 1
+    }
+
+    if (!fs.existsSync(args.process_zkey)) {
+        console.error(`Error: ${args.process_zkey} does not exist.`)
+        return 1
+    }
+
+    if (!fs.existsSync(args.tally_zkey)) {
+        console.error(`Error: ${args.tally_zkey} does not exist.`)
         return 1
     }
 
@@ -176,7 +217,6 @@ const genProofs = async (args: any) => {
     const [ maciContractAbi ] = parseArtifact('MACI')
     const [ pollContractAbi ] = parseArtifact('Poll')
     const [ accQueueContractAbi ] = parseArtifact('AccQueue')
-    const [ pptContractAbi ] = parseArtifact('PollProcessorAndTallyer')
 
 	const maciContractEthers = new ethers.Contract(
         maciAddress,
@@ -228,12 +268,6 @@ const genProofs = async (args: any) => {
         return 1
     }
 
-    const pptContract = new ethers.Contract(
-        args.ppt,
-        pptContractAbi,
-        signer,
-    )
-
     // Build an off-chain representation of the MACI contract using data in the contract storage
     
     const maciState = await genMaciStateFromContract(
@@ -246,330 +280,131 @@ const genProofs = async (args: any) => {
     const poll = maciState.polls[pollId]
 
     // TODO: support resumable proof generation
+    const processProofs: any[] = []
+    const tallyProofs: any[] = []
+
+    console.log('Generating proofs of message processing...')
+    const messageBatchSize = poll.batchSizes.messageBatchSize
+    const numMessages = poll.messages.length
+    let totalMessageBatches = numMessages <= messageBatchSize ?
+    1
+    : 
+    Math.floor(numMessages / messageBatchSize)
+
+    if (numMessages > messageBatchSize && numMessages % messageBatchSize > 0) {
+        totalMessageBatches ++
+    }
+
     while (poll.hasUnprocessedMessages()) {
         const circuitInputs = poll.processMessages()
 
         const r = genProof(
             circuitInputs,
             rapidsnarkExe,
-            witnessGenExe,
-            zkeyPath,
+            args.process_witnessgen,
+            args.process_zkey,
         )
-        debugger
+        processProofs.push({
+            circuitInputs,
+            proof: r.proof,
+            publicInputs: r.publicInputs,
+        })
+        saveOutput(outputFile, processProofs, tallyProofs)
+        console.log(`\nProgress: ${poll.numBatchesProcessed + 1} / ${totalMessageBatches}`)
+    }
+
+    console.log('\nGenerating proofs of vote tallying...')
+    const tallyBatchSize = poll.batchSizes.tallyBatchSize
+    const numStateLeaves = poll.stateLeaves.length
+    let totalTallyBatches = numStateLeaves <= tallyBatchSize ?
+    1
+    : 
+    Math.floor(numStateLeaves / tallyBatchSize)
+    if (
+        numStateLeaves > tallyBatchSize &&
+        numStateLeaves % tallyBatchSize > 0
+    ) {
+        totalTallyBatches ++
+    }
+
+    let tallyCircuitInputs
+    while (poll.hasUntalliedBallots()) {
+        tallyCircuitInputs = poll.tallyVotes()
+        const r = genProof(
+            tallyCircuitInputs,
+            rapidsnarkExe,
+            args.tally_witnessgen,
+            args.tally_zkey,
+        )
+        processProofs.push({
+            circuitInputs: tallyCircuitInputs,
+            proof: r.proof,
+            publicInputs: r.publicInputs,
+        })
+        saveOutput(outputFile, processProofs, tallyProofs)
+        console.log(`\nProgress: ${poll.numBatchesTallied + 1} / ${totalTallyBatches}`)
+    }
+
+    const asHex = (val): string => {
+        return '0x' + BigInt(val).toString(16)
+    }
+
+    const tallyFileData = {
+        provider: signer.provider.connection.url,
+        maci: args.contract,
+        newTallyCommitment: asHex(tallyCircuitInputs.newTallyCommitment),
+        results: {
+            tally: poll.results.map((x) => x.toString()),
+            salt: asHex(tallyCircuitInputs.newResultsRootSalt),
+        },
+        totalSpentVoiceCredits: {
+            spent: poll.totalSpentVoiceCredits.toString(),
+            salt: asHex(tallyCircuitInputs.newSpentVoiceCreditSubtotalSalt),
+        },
+        perVOSpentVoiceCredits: {
+            tally: poll.perVOSpentVoiceCredits.map((x) => x.toString()),
+            salt: asHex(tallyCircuitInputs.newPerVOSpentVoiceCreditsRootSalt),
+        },
+    }
+
+    // Verify the results
+    // TODO
+    // Compute newResultsCommitment
+    const newResultsCommitment = genTallyResultCommitment(
+        tallyFileData.results.tally.map((x) => BigInt(x)),
+        BigInt(tallyFileData.results.salt),
+        poll.treeDepths.voteOptionTreeDepth,
+    )
+    // Compute newSpentVoiceCreditsCommitment
+    const newSpentVoiceCreditsCommitment = hashLeftRight(
+        BigInt(tallyFileData.totalSpentVoiceCredits.spent),
+        BigInt(tallyFileData.totalSpentVoiceCredits.salt),
+    )
+
+    // Compute newPerVOSpentVoiceCreditsCommitment
+    const newPerVOSpentVoiceCreditsCommitment = genTallyResultCommitment(
+        tallyFileData.perVOSpentVoiceCredits.tally.map((x) => BigInt(x)),
+        BigInt(tallyFileData.perVOSpentVoiceCredits.salt),
+        poll.treeDepths.voteOptionTreeDepth,
+    )
+
+    // Compute newTallyCommitment
+    const newTallyCommitment = hash3([
+        newResultsCommitment,
+        newSpentVoiceCreditsCommitment,
+        newPerVOSpentVoiceCreditsCommitment
+    ])
+
+    fs.writeFileSync(args.tally_file, JSON.stringify(tallyFileData, null, 4))
+
+    console.log()
+    if ('0x' + newTallyCommitment.toString(16) === tallyFileData.newTallyCommitment) {
+        console.log('OK')
+    } else {
+        console.error('Error: the newTallyCommitment is invalid.')
     }
 
     return 0
-    //let maciState
-    //try {
-        //maciState = await genMaciStateFromContract(
-            //provider,
-            //maciAddress,
-            //coordinatorKeypair,
-            //StateLeaf.genBlankLeaf(BigInt(0)),
-            //false,
-        //)
-    //} catch (e) {
-        //console.error(e)
-        //return
-    //}
-
-    //const numMessages = maciState.messages.length
-    //if (numMessages === 0) {
-        //console.error('No messages to process.')
-        //return
-    //}
-    //const messageBatchSize  = Number(await maciContract.messageBatchSize())
-
-    //const outputFile = args.output
-
-    //const processProofs: any[] = []
-    //const tallyProofs: any[] = []
-    ////if (fs.existsSync(outputFile)) {
-        ////proofs = JSON.parse(fs.readFileSync(outputFile).toString())
-    ////}
-
-    //const currentMessageBatchIndex = numMessages % messageBatchSize === 0 ?
-        //(numMessages / messageBatchSize - 1) * messageBatchSize
-        //:
-        //Math.floor(numMessages / messageBatchSize) * messageBatchSize
-
-
-    //console.log('Generating proofs of message processing...')
-    //let proofNum = 1
-
-    //for (let i = currentMessageBatchIndex; i >= 0; i -= messageBatchSize) {
-        //console.log(`\nProgress: ${proofNum} / ${1 + currentMessageBatchIndex / messageBatchSize}; batch index: ${i}`)
-        //proofNum ++
-
-        //const randomStateLeaf = i > 0 ?
-            //StateLeaf.genRandomLeaf()
-            //:
-            //zerothLeaf
-        //const circuitInputs = maciState.genBatchUpdateStateTreeCircuitInputs(
-            //i,
-            //messageBatchSize,
-            //randomStateLeaf,
-        //)
-        //// Process the batch of messages
-        //maciState.batchProcessMessage(
-            //i,
-            //messageBatchSize,
-            //randomStateLeaf,
-        //)
-
-        //const stateRootAfter = maciState.genStateRoot()
-
-        //let result
-
-        //let configType
-        //let circuitName
-        //if (maciState.stateTreeDepth === 9) {
-            //configType = 'prod-medium'
-            //circuitName = 'batchUstMedium'
-        //} else if (maciState.stateTreeDepth === 8) {
-            //configType = 'prod-small'
-            //circuitName = 'batchUstSmall'
-        //} else {
-            //configType = 'test'
-            //circuitName = 'batchUst'
-        //}
-
-        //try {
-            //result = await genBatchUstProofAndPublicSignals(circuitInputs, configType)
-        //} catch (e) {
-            //console.error('Error: unable to compute batch update state tree witness data')
-            //console.error(e)
-            //return
-        //}
-        //const { witness, proof, publicSignals } = result
-
-        //// Get the circuit-generated root
-        ////const circuitNewStateRoot = getSignalByName(circuit, witness, 'main.root')
-        //const circuitNewStateRoot = getSignalByNameViaSym(circuitName, witness, 'main.root')
-        //if (!circuitNewStateRoot.toString() === stateRootAfter.toString()) {
-            //console.error('Error: circuit-computed root mismatch')
-            //return
-        //}
-
-        //const ecdhPubKeys: string[] = []
-        //for (const p of circuitInputs['ecdh_public_key']) {
-            //const pubKey = new PubKey(p.map((x) => BigInt(x)))
-            //ecdhPubKeys.push(pubKey.serialize())
-        //}
-
-        //const isValid = await verifyBatchUstProof(proof, publicSignals, configType)
-        //if (!isValid) {
-            //console.error('Error: could not generate a valid proof or the verifying key is incorrect')
-            //return
-        //}
-
-        //processProofs.push(stringifyBigInts({
-            //stateRootAfter,
-            //circuitInputs,
-            //publicSignals,
-            //proof,
-            //ecdhPubKeys,
-            //randomStateLeaf: randomStateLeaf.serialize(),
-        //}))
-
-        //if (outputFile) {
-            //saveOutput(outputFile, processProofs, tallyProofs)
-        //}
-    //}
-
-    //// Tally votes
-
-    //const tallyBatchSize = Number(await maciContract.tallyBatchSize())
-    //const numStateLeaves = 1 + maciState.users.length
-
-    //let currentResultsSalt = BigInt(0)
-    //let currentTvcSalt = BigInt(0)
-    //let currentPvcSalt = BigInt(0)
-    //let cumulativeTally
-    //let newResultsCommitment
-    //let newSpentVoiceCredits
-    //let newSpentVoiceCreditsCommitment
-    //let newResultsSalt
-    //let newSpentVoiceCreditsSalt
-    //let newPerVOSpentVoiceCreditsSalt
-    //let newPerVOSpentVoiceCreditsCommitment
-    //let totalPerVOSpentVoiceCredits
-
-    //console.log('\nGenerating proofs of vote tallying...')
-    //for (let i = 0; i < numStateLeaves; i += tallyBatchSize) {
-        //const startIndex = i
-
-        //console.log(`\nProgress: ${1 + i / tallyBatchSize} / ${1 + Math.floor(numStateLeaves / tallyBatchSize)}; batch index: ${i}`)
-
-        //cumulativeTally = maciState.computeCumulativeVoteTally(startIndex)
-
-        //const tally = maciState.computeBatchVoteTally(startIndex, tallyBatchSize)
-        //let totalVotes = BigInt(0)
-        //for (let i = 0; i < tally.length; i++) {
-            //cumulativeTally[i] = BigInt(cumulativeTally[i]) + BigInt(tally[i])
-            //totalVotes += cumulativeTally[i]
-        //}
-
-        //newResultsSalt = genRandomSalt()
-        //newSpentVoiceCreditsSalt = genRandomSalt()
-        //newPerVOSpentVoiceCreditsSalt = genRandomSalt()
-
-        //// Generate circuit inputs
-        //const circuitInputs 
-            //= maciState.genQuadVoteTallyCircuitInputs(
-                //startIndex,
-                //tallyBatchSize,
-                //currentResultsSalt,
-                //newResultsSalt,
-                //currentTvcSalt,
-                //newSpentVoiceCreditsSalt,
-                //currentPvcSalt,
-                //newPerVOSpentVoiceCreditsSalt,
-            //)
-
-        //currentResultsSalt = BigInt(newResultsSalt)
-        //currentTvcSalt = BigInt(newSpentVoiceCreditsSalt)
-        //currentPvcSalt = BigInt(newPerVOSpentVoiceCreditsSalt)
-
-        //let configType
-        //let circuitName
-        //if (maciState.stateTreeDepth === 9) {
-            //configType = 'prod-medium'
-            //circuitName = 'qvtMedium'
-        //} else if (maciState.stateTreeDepth === 8) {
-            //configType = 'prod-small'
-            //circuitName = 'qvtSmall'
-        //} else {
-            //configType = 'test'
-            //circuitName = 'qvt'
-        //}
-
-        //let result
-        //try {
-            //result = await genQvtProofAndPublicSignals(circuitInputs, configType)
-        //} catch (e) {
-            //console.error('Error: unable to compute quadratic vote tally witness data')
-            //console.error(e)
-            //return
-        //}
-
-        //const { witness, proof, publicSignals } = result
-
-        //// The vote tally commmitment
-        //const expectedNewResultsCommitmentOutput =
-            //getSignalByNameViaSym(circuitName, witness, 'main.newResultsCommitment')
-
-        //newResultsCommitment = genTallyResultCommitment(
-            //cumulativeTally,
-            //newResultsSalt,
-            //maciState.voteOptionTreeDepth,
-        //)
-
-        //if (expectedNewResultsCommitmentOutput.toString() !== newResultsCommitment.toString()) {
-            //console.error('Error: result commitment mismatch')
-            //return
-        //}
-
-        //// The commitment to the total spent voice credits
-        //const expectedSpentVoiceCreditsCommitmentOutput =
-            //getSignalByNameViaSym(circuitName, witness, 'main.newSpentVoiceCreditsCommitment')
-
-        //const currentSpentVoiceCredits = maciState.computeCumulativeSpentVoiceCredits(startIndex)
-
-        //newSpentVoiceCredits = 
-            //currentSpentVoiceCredits + 
-            //maciState.computeBatchSpentVoiceCredits(startIndex, tallyBatchSize)
-
-        //newSpentVoiceCreditsCommitment = genSpentVoiceCreditsCommitment(
-            //newSpentVoiceCredits,
-            //currentTvcSalt,
-        //)
-
-        //if (expectedSpentVoiceCreditsCommitmentOutput.toString() !== newSpentVoiceCreditsCommitment.toString()) {
-            //console.error('Error: total spent voice credits commitment mismatch')
-            //return
-        //}
-
-        //// The commitment to the spent voice credits per vote option
-        //const expectedPerVOSpentVoiceCreditsCommitmentOutput =
-            //getSignalByNameViaSym(circuitName, witness, 'main.newPerVOSpentVoiceCreditsCommitment')
-
-        //const currentPerVOSpentVoiceCredits 
-            //= maciState.computeCumulativePerVOSpentVoiceCredits(startIndex)
-
-        //const perVOSpentVoiceCredits = maciState.computeBatchPerVOSpentVoiceCredits(
-            //startIndex,
-            //tallyBatchSize,
-        //)
-
-        //totalPerVOSpentVoiceCredits = []
-        //for (let i = 0; i < currentPerVOSpentVoiceCredits.length; i ++) {
-            //totalPerVOSpentVoiceCredits[i] = currentPerVOSpentVoiceCredits[i] + perVOSpentVoiceCredits[i]
-        //}
-
-        //newPerVOSpentVoiceCreditsCommitment = genPerVOSpentVoiceCreditsCommitment(
-            //totalPerVOSpentVoiceCredits,
-            //newPerVOSpentVoiceCreditsSalt,
-            //maciState.voteOptionTreeDepth,
-        //)
-
-        //if (
-            //expectedPerVOSpentVoiceCreditsCommitmentOutput.toString() !== 
-            //newPerVOSpentVoiceCreditsCommitment.toString()
-        //) {
-            //console.error('Error: total spent voice credits per vote option commitment mismatch')
-            //return
-        //}
-
-        //const isValid = verifyQvtProof(proof, publicSignals, configType)
-        //if (!isValid) {
-            //console.error('Error: could not generate a valid proof or the verifying key is incorrect')
-            //return
-        //}
-
-        //tallyProofs.push(stringifyBigInts({
-            //circuitInputs,
-            //publicSignals,
-            //proof,
-            //newResultsCommitment,
-            //newSpentVoiceCreditsCommitment,
-            //newPerVOSpentVoiceCreditsCommitment,
-            //totalVotes,
-        //}))
-
-        //if (outputFile) {
-            //saveOutput(outputFile, processProofs, tallyProofs)
-        //}
-    //}
-
-    //const tallyFileData = {
-        //provider: ethProvider,
-        //maci: maciContract.address,
-        //results: {
-            //commitment: '0x' + BigInt(newResultsCommitment.toString()).toString(16),
-            //tally: cumulativeTally.map((x) => x.toString()),
-            //salt: '0x' + currentResultsSalt.toString(16),
-        //},
-        //totalVoiceCredits: {
-            //spent: newSpentVoiceCredits.toString(),
-            //commitment: '0x' + newSpentVoiceCreditsCommitment.toString(16),
-            //salt: '0x' + newSpentVoiceCreditsSalt.toString(16),
-        //},
-        //totalVoiceCreditsPerVoteOption: {
-            //commitment: '0x' + newPerVOSpentVoiceCreditsCommitment.toString(16),
-            //tally: totalPerVOSpentVoiceCredits.map((x) => x.toString()),
-            //salt: '0x' + newPerVOSpentVoiceCreditsSalt.toString(16),
-        //},
-    //}
-
-    //if (args.tally_file) {
-        //fs.writeFileSync(args.tally_file, JSON.stringify(tallyFileData, null, 4))
-    //}
-    //console.log('OK')
-    //return {
-        //proofs: { processProofs, tallyProofs },
-        //tally: tallyFileData,
-    //}
 }
 
 const saveOutput = (outputFile: string, processProofs: any, tallyProofs: any) => {

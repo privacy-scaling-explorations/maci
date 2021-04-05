@@ -560,10 +560,7 @@ contract PollProcessorAndTallyer is
         (uint256 messageBatchSize, ) = _poll.batchSizes();
 
         // Require that unprocessed messages exist
-        require(
-            !processingComplete,
-            ERROR_NO_MORE_MESSAGES
-        );
+        require(!processingComplete, ERROR_NO_MORE_MESSAGES);
 
         // Copy the state root and set the batch index if this is the
         // first batch to process

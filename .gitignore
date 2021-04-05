@@ -1,3 +1,4 @@
+cli/proofs.json
 cli/zkeys
 *.zkey
 *.r1cs

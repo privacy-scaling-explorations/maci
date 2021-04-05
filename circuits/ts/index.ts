@@ -13,6 +13,7 @@ const genProof = (
     rapidsnarkExePath: string,
     witnessExePath: string,
     zkeyPath: string,
+    silent = true,
 ): any => {
     // Create tmp directory
     const tmpObj = tmp.dirSync()
@@ -27,14 +28,14 @@ const genProof = (
     fs.writeFileSync(inputJsonPath, jsonData)
 
     const witnessGenCmd = `${witnessExePath} ${inputJsonPath} ${outputWtnsPath}`
-    shelljs.exec(witnessGenCmd)
+    shelljs.exec(witnessGenCmd, { silent })
 
     if (!fs.existsSync(outputWtnsPath)) {
         throw new Error('Error executing ' + witnessGenCmd)
     }
 
     const proofGenCmd = `${rapidsnarkExePath} ${zkeyPath} ${outputWtnsPath} ${proofJsonPath} ${publicJsonPath}`
-    shelljs.exec(proofGenCmd)
+    shelljs.exec(proofGenCmd, { silent })
 
     if (!fs.existsSync(proofJsonPath)) {
         throw new Error('Error executing ' + proofGenCmd)
