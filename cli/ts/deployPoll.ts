@@ -155,15 +155,13 @@ const deployPoll = async (args: any) => {
 
     const unserialisedPubkey = PubKey.unserialize(coordinatorPubkey)
 
-    // Deployer a Verifier contract
-    const verifierContract = await deployVerifier()
-
     // Deploy a PollProcessorAndTallyer contract
-    const pptContract = await deployPpt(verifierContract.address)
+    const verifierContract = await deployVerifier(true)
+    console.log('Verifier:', verifierContract.address)
+    const pptContract = await deployPpt(verifierContract.address, true)
     await pptContract.deployTransaction.wait()
 
     const [ maciAbi ] = parseArtifact('MACI')
-
     const maciContract = new ethers.Contract(
         args.maci_address,
         maciAbi,
@@ -192,9 +190,9 @@ const deployPoll = async (args: any) => {
         }
         const pollId = log.args._pollId
         const pollAddr = log.args._pollAddr
-        console.log('Verifier:', verifierContract.address)
         console.log('Poll ID:', pollId.toString())
         console.log('Poll contract:', pollAddr)
+        console.log('PollProcessorAndTallyer contract:', pptContract.address)
     } catch (e) {
         console.error('Error: could not deploy poll')
         console.error(e.message)

@@ -1,206 +1,289 @@
 import * as ethers from 'ethers'
 import * as fs from 'fs'
 
-//import {
-    //formatProofForVerifierContract,
-//} from 'maci-contracts'
+import { hashLeftRight, hash3 } from 'maci-crypto'
+import {
+    formatProofForVerifierContract,
+    getDefaultSigner,
+    parseArtifact,
+} from 'maci-contracts'
 
-//import {
-    //genBatchUstProofAndPublicSignals,
-    //verifyBatchUstProof,
-    //getSignalByNameViaSym,
-//} from 'maci-circuits'
+import {
+    genBatchUstProofAndPublicSignals,
+    verifyBatchUstProof,
+    getSignalByNameViaSym,
+} from 'maci-circuits'
 
-//import {
-    //PubKey,
-    //PrivKey,
-    //Keypair,
-    //StateLeaf,
-//} from 'maci-domainobjs'
+import {
+    PubKey,
+    PrivKey,
+    Keypair,
+    StateLeaf,
+} from 'maci-domainobjs'
 
-//import {
-    //promptPwd,
-    //validateEthSk,
-    //validateEthAddress,
-    //contractExists,
-    //checkDeployerProviderConnection,
-//} from './utils'
+import {
+    validateEthAddress,
+    contractExists,
+    delay,
+} from './utils'
 
-//import {
-    //DEFAULT_ETH_PROVIDER,
-//} from './defaults'
+const configureSubparser = (subparsers: any) => {
+    const parser = subparsers.addParser(
+        'proveOnChain',
+        { addHelp: true },
+    )
 
-//const configureSubparser = (subparsers: any) => {
-    //const parser = subparsers.addParser(
-        //'proveOnChain',
-        //{ addHelp: true },
-    //)
+    parser.addArgument(
+        ['-x', '--contract'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The MACI contract address',
+        }
+    )
 
-    //parser.addArgument(
-        //['-e', '--eth-provider'],
-        //{
-            //action: 'store',
-            //type: 'string',
-            //help: `A connection string to an Ethereum provider. Default: ${DEFAULT_ETH_PROVIDER}`,
-        //}
-    //)
+    parser.addArgument(
+        ['-o', '--poll-id'],
+        {
+            action: 'store',
+            required: true,
+            type: 'string',
+            help: 'The Poll ID',
+        }
+    )
 
-    //const maciPrivkeyGroup = parser.addMutuallyExclusiveGroup({ required: true })
+    parser.addArgument(
+        ['-q', '--ppt'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The PollProcessorAndTallyer contract address',
+        }
+    )
 
-    //maciPrivkeyGroup.addArgument(
-        //['-dsk', '--prompt-for-maci-privkey'],
-        //{
-            //action: 'storeTrue',
-            //help: 'Whether to prompt for your serialized MACI private key',
-        //}
-    //)
+    parser.addArgument(
+        ['-f', '--proof-file'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The proof output file from the genProofs subcommand',
+        }
+    )
+}
 
-    //maciPrivkeyGroup.addArgument(
-        //['-sk', '--privkey'],
-        //{
-            //action: 'store',
-            //type: 'string',
-            //help: 'Your serialized MACI private key',
-        //}
-    //)
+const proveOnChain = async (args: any) => {
+    const signer = await getDefaultSigner()
 
-    //const ethPrivkeyGroup = parser.addMutuallyExclusiveGroup({ required: true })
+    // PollProcessorAndTallyer contract
+    if (!validateEthAddress(args.ppt)) {
+        console.error('Error: invalid PollProcessorAndTallyer contract address')
+        return
+    }
 
-    //ethPrivkeyGroup.addArgument(
-        //['-dp', '--prompt-for-eth-privkey'],
-        //{
-            //action: 'storeTrue',
-            //help: 'Whether to prompt for the user\'s Ethereum private key and ignore -d / --eth-privkey',
-        //}
-    //)
+    const pptAddress = args.ppt
 
-    //ethPrivkeyGroup.addArgument(
-        //['-d', '--eth-privkey'],
-        //{
-            //action: 'store',
-            //type: 'string',
-            //help: 'The deployer\'s Ethereum private key',
-        //}
-    //)
+    if (! (await contractExists(signer.provider, pptAddress))) {
+        console.error('Error: there is no contract deployed at the specified address')
+        return
+    }
 
-    //parser.addArgument(
-        //['-x', '--contract'],
-        //{
-            //required: true,
-            //type: 'string',
-            //help: 'The MACI contract address',
-        //}
-    //)
+    const [ maciContractAbi ] = parseArtifact('MACI')
+    const [ pollContractAbi ] = parseArtifact('Poll')
+    const [ pptContractAbi ] = parseArtifact('PollProcessorAndTallyer')
+    const [ messageAqContractAbi ] = parseArtifact('AccQueue')
+    const [ vkRegistryContractAbi ] = parseArtifact('VkRegistry')
 
-    //parser.addArgument(
-        //['-o', '--proof-file'],
-        //{
-            //required: true,
-            //type: 'string',
-            //help: 'The proof output file from the genProofs subcommand',
-        //}
-    //)
-//}
+    const maciAddress = args.contract
+    const pollId = Number(args.poll_id)
 
-//const proveOnChain = async (args: any) => {
-    //// MACI contract
-    //if (!validateEthAddress(args.contract)) {
-        //console.error('Error: invalid MACI contract address')
-        //return
-    //}
+	const maciContract = new ethers.Contract(
+        maciAddress,
+        maciContractAbi,
+        signer,
+    )
 
-    //let ethSk
-    //// The coordinator's Ethereum private key
-    //// The user may either enter it as a command-line option or via the
-    //// standard input
-    //if (args.prompt_for_eth_privkey) {
-        //ethSk = await promptPwd('Your Ethereum private key')
-    //} else {
-        //ethSk = args.eth_privkey
-    //}
+    const pollAddr = await maciContract.polls(pollId)
+    if (! (await contractExists(signer.provider, pollAddr))) {
+        console.error('Error: there is no Poll contract with this poll ID linked to the specified MACI contract.')
+        return 1
+    }
 
-    //if (ethSk.startsWith('0x')) {
-        //ethSk = ethSk.slice(2)
-    //}
+    const pollContract = new ethers.Contract(
+        pollAddr,
+        pollContractAbi,
+        signer,
+    )
 
-    //if (!validateEthSk(ethSk)) {
-        //console.error('Error: invalid Ethereum private key')
-        //return
-    //}
+    const pptContract = new ethers.Contract(
+        pptAddress,
+        pptContractAbi,
+        signer,
+    )
 
-    //// Ethereum provider
-    //const ethProvider = args.eth_provider ? args.eth_provider : DEFAULT_ETH_PROVIDER
+    const messageAqContract = new ethers.Contract(
+        (await pollContract.extContracts()).messageAq,
+        messageAqContractAbi,
+        signer,
+    )
 
-    //if (! (await checkDeployerProviderConnection(ethSk, ethProvider))) {
-        //console.error('Error: unable to connect to the Ethereum provider at', ethProvider)
-        //return
-    //}
+    const vkRegistryContract = new ethers.Contract(
+        (await pollContract.extContracts()).vkRegistry,
+        vkRegistryContractAbi,
+        signer,
+    )
 
-    //const provider = new ethers.providers.JsonRpcProvider(ethProvider)
+    // Read the proof file
+    let data
+    if (typeof args.proof_file === 'object' && args.proof_file !== null) {
+        // Argument is a javascript object
+        data = args.proof_file
+    } else {
+        // Argument is a filename
+        try {
+            data = JSON.parse(fs.readFileSync(args.proof_file).toString())
+            if (data.processProofs == undefined || data.tallyProofs == undefined) {
+                throw new Error()
+            }
+        } catch {
+            console.error('Error: could not parse the proof file')
+            return
+        }
+    }
 
-    //const wallet = new ethers.Wallet(ethSk, provider)
+    const { processProofs, tallyProofs } = data
 
-    //const maciAddress = args.contract
+    const numSignUpsAndMessages = await pollContract.numSignUpsAndMessages()
+    const numSignUps = Number(numSignUpsAndMessages[0])
+    const numMessages = Number(numSignUpsAndMessages[1])
+    const batchSizes = await pollContract.batchSizes()
+    const messageBatchSize = Number(batchSizes.messageBatchSize)
+    let totalMessageBatches = numMessages <= messageBatchSize ?
+    1
+    : 
+    Math.floor(numMessages / messageBatchSize)
 
-    //if (! (await contractExists(provider, maciAddress))) {
-        //console.error('Error: there is no contract deployed at the specified address')
-        //return
-    //}
+    if (numMessages > messageBatchSize && numMessages % messageBatchSize > 0) {
+        totalMessageBatches ++
+    }
 
-    //// The coordinator's MACI private key
-    //// They may either enter it as a command-line option or via the
-    //// standard input
-    //let coordinatorPrivkey
-    //if (args.prompt_for_maci_privkey) {
-        //coordinatorPrivkey = await promptPwd('Coordinator\'s MACI private key')
-    //} else {
-        //coordinatorPrivkey = args.privkey
-    //}
+    if (processProofs.length !== totalMessageBatches) {
+        console.error(
+            `Error: ${args.proof_file} does not have the correct ` +
+            `number of message processing proofs ` +
+            `(expected ${totalMessageBatches}, got ${processProofs.length}.`,
+        )
+    }
 
-    //if (!PrivKey.isValidSerializedPrivKey(coordinatorPrivkey)) {
-        //console.error('Error: invalid MACI private key')
-        //return
-    //}
+    const treeDepths = await pollContract.treeDepths()
 
-    //const maciContract = new ethers.Contract(
-        //maciAddress,
-        //maciContractAbi,
-        //wallet,
-    //)
+    let numBatchesProcessed = Number(await pptContract.numBatchesProcessed())
+    const messageRootOnChain = await messageAqContract.getMainRoot(
+        Number(treeDepths.messageTreeDepth),
+    )
 
-    //// Check that the contract is ready to accept proofs
-    //const currentMessageBatchIndex = Number(await maciContract.currentMessageBatchIndex())
-    //const numMessages = Number(await maciContract.numMessages())
-    //const messageBatchSize  = Number(await maciContract.messageBatchSize())
+    const mergedStateRootOnChain = BigInt(await pollContract.mergedStateRoot())
+    const onChainProcessVk = await vkRegistryContract.getProcessVk(
+        10,
+        treeDepths.messageTreeDepth,
+        treeDepths.voteOptionTreeDepth,
+        messageBatchSize,
+    )
 
-    //const numSignUps = Number(await maciContract.numSignUps())
-    //const tallyBatchSize = Number(await maciContract.tallyBatchSize())
 
-    //const expectedIndex = Math.floor(numMessages / messageBatchSize) * messageBatchSize
-    //if (currentMessageBatchIndex > expectedIndex) {
-        //console.error('Error: unexpected current message batch index. Is the contract address correct?')
-        //return
-    //}
+    const dd = await pollContract.getDeployTimeAndDuration()
+    const pollEndTimestampOnChain = BigInt(dd[0]) + BigInt(dd[1])
 
-    //// Read the proof file
-    //let data
-    //if (typeof args.proof_file === 'object' && args.proof_file !== null) {
-        //// Argument is a javascript object
-        //data = args.proof_file
-    //} else {
-        //// Argument is a filename
-        //try {
-            //data = JSON.parse(fs.readFileSync(args.proof_file).toString())
-            //if (data.processProofs == undefined || data.tallyProofs == undefined) {
-                //throw new Error()
-            //}
-        //} catch {
-            //console.error('Error: could not parse the proof file')
-            //return
-        //}
-    //}
+    const txErr = 'Error: processMessages() failed'
+    for (let i = numBatchesProcessed; i < totalMessageBatches; i ++) {
+        const { proof, circuitInputs, publicInputs } = data.processProofs[i]
 
-    //// Check that the proof file is complete
+        if (circuitInputs.pollEndTimestamp !== pollEndTimestampOnChain.toString()) {
+            console.error('Error: pollEndTimestamp mismatch.')
+            return 1
+        }
+
+        if (BigInt(circuitInputs.msgRoot).toString() !== messageRootOnChain.toString()) {
+            console.error('Error: message root mismatch.')
+            return 1
+        }
+
+        const ct = await pollContract.currentSbAndTallyCommitments()
+        const currentSbCommitmentOnChain = BigInt(ct[0])
+
+        if (currentSbCommitmentOnChain.toString() !== circuitInputs.currentSbCommitment) {
+            console.error('Error: currentSbCommitment mismatch.')
+            return 1
+        }
+
+        const coordPubKeyHashOnChain = BigInt(await pollContract.coordinatorPubKeyHash())
+        if (
+            hashLeftRight(
+                BigInt(circuitInputs.coordPubKey[0]),
+                BigInt(circuitInputs.coordPubKey[1]),
+            ).toString() !== coordPubKeyHashOnChain.toString()
+        ) {
+            console.error('Error: coordPubKey mismatch.')
+            return 1
+        }
+
+        const packedValsOnChain = BigInt(await pptContract.genProcessMessagesPackedVals(
+            pollContract.address,
+            numSignUps,
+        ))
+
+        if (circuitInputs.packedVals !== packedValsOnChain.toString()) {
+            console.error('Error: packedVals mismatch.')
+            return 1
+        }
+
+        const publicInputHashOnChain = BigInt(await pptContract.genProcessMessagesPublicInputHash(
+            pollContract.address,
+            messageRootOnChain.toString(),
+            numSignUps,
+            circuitInputs.newSbCommitment,
+        ))
+
+        if (publicInputHashOnChain.toString() !== publicInputs[0].toString()) {
+            console.error('Public input mismatch')
+            return 1
+        }
+
+        const formattedProof = formatProofForVerifierContract(proof)
+
+        let tx
+        try {
+            tx = await pptContract.processMessages(
+                pollContract.address,
+                '0x' + BigInt(circuitInputs.newSbCommitment).toString(16),
+                formattedProof,
+                { gasLimit: 9500000 },
+            )
+        } catch (e) {
+            console.error(txErr)
+            console.error(e)
+        }
+
+        const receipt = await tx.wait()
+
+        if (receipt.status !== 1) {
+            console.error(txErr)
+            return 1
+        }
+
+        console.log(`Transaction hash: ${tx.hash}`)
+
+        numBatchesProcessed = Number(await pptContract.numBatchesProcessed())
+        let backOff = 1000
+        while (numBatchesProcessed !== i + 1) {
+            await delay(backOff)
+            backOff *= 1.2
+        }
+        console.log(`Progress: ${numBatchesProcessed} / ${totalMessageBatches}`)
+    }
+
+    return 0
+
+    // Check that the proof file is complete
     //const expectedNumProcessProofs =
         //numMessages % messageBatchSize === 0 ?
         //numMessages / messageBatchSize
@@ -331,9 +414,9 @@ import * as fs from 'fs'
         //console.log(`Transaction hash: ${tx.hash}`)
     //}
     //console.log('OK')
-//}
+}
 
-//export {
-    //proveOnChain,
-    //configureSubparser,
-//}
+export {
+    proveOnChain,
+    configureSubparser,
+}

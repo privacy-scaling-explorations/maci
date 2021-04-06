@@ -68,6 +68,11 @@ import {
 } from './genProofs'
 
 import {
+    proveOnChain,
+    configureSubparser as configureSubparserForProveOnChain,
+} from './proveOnChain'
+
+import {
     verify,
     configureSubparser as configureSubparserForVerify,
 } from './verify'
@@ -118,6 +123,9 @@ const main = async () => {
     // Subcommand: genProofs
     configureSubparserForGenProofs(subparsers)
 
+    // Subcommand: proveOnChain
+    configureSubparserForProveOnChain(subparsers)
+
     // Subcommand: verify
     configureSubparserForVerify(subparsers)
 
@@ -148,6 +156,8 @@ const main = async () => {
         await mergeSignups(args)
     } else if (args.subcommand === 'genProofs') {
         await genProofs(args)
+    } else if (args.subcommand === 'proveOnChain') {
+        await proveOnChain(args)
     } else if (args.subcommand === 'verify') {
         await verify(args)
     }

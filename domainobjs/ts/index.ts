@@ -138,7 +138,10 @@ class VerifyingKey {
 
     public static fromJSON = (j: string): VerifyingKey => {
         const data = JSON.parse(j)
-        debugger
+        return VerifyingKey.fromObj(data)
+    }
+
+    public static fromObj = (data: any): VerifyingKey => {
         const alpha1 = new G1Point(
             BigInt(data.vk_alpha_1[0]),
             BigInt(data.vk_alpha_1[1]),

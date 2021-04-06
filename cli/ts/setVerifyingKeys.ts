@@ -3,34 +3,11 @@ import * as ethers from 'ethers'
 import * as shelljs from 'shelljs'
 import * as path from 'path'
 
-import { parseArtifact, getDefaultSigner } from 'maci-contracts'
-
+import { extractVk } from 'maci-circuits'
 import { VerifyingKey } from 'maci-domainobjs'
-
 import { genProcessVkSig, genTallyVkSig } from 'maci-core'
-
-import {
-    contractExists,
-} from './utils'
-
-const getVkJson = (zkeyFile: string) => {
-    const vkFile = zkeyFile + '.vk.json'
-    const snarkjsPath = path.join(
-        __dirname,
-        '..',
-        'node_modules',
-        'snarkjs',
-        'build',
-        'cli.cjs',
-    )
-    console.log(`Generating ${vkFile}, please wait...`)
-    const cmd = `NODE_OPTIONS=--max-old-space-size=8192 ` +
-        `node --stack-size=1073741 ${snarkjsPath} zkev ${zkeyFile} ${vkFile}`
-    shelljs.exec(cmd, { silent: false })
-    const vkJson = fs.readFileSync(vkFile).toString()
-    fs.unlinkSync(vkFile)
-    return vkJson
-}
+import { parseArtifact, getDefaultSigner } from 'maci-contracts'
+import { contractExists } from './utils'
 
 const configureSubparser = (subparsers: any) => {
     const createParser = subparsers.addParser(
@@ -128,10 +105,11 @@ const setVerifyingKeys = async (args: any) => {
     const voteOptionTreeDepth = args.vote_option_tree_depth
     const msgBatchDepth = args.msg_batch_depth
 
-    const pmZkeyFile = args.process_messages_zkey
-    const tvZkeyFile = args.tally_votes_zkey
-    const processVk: VerifyingKey = VerifyingKey.fromJSON(getVkJson(pmZkeyFile))
-    const tallyVk: VerifyingKey = VerifyingKey.fromJSON(getVkJson(tvZkeyFile))
+    const pmZkeyFile = path.resolve(args.process_messages_zkey)
+    const tvZkeyFile = path.resolve(args.tally_votes_zkey)
+
+    const processVk: VerifyingKey = VerifyingKey.fromObj(extractVk(pmZkeyFile))
+    const tallyVk: VerifyingKey = VerifyingKey.fromObj(extractVk(tvZkeyFile))
 
     if (!fs.existsSync(pmZkeyFile)) {
         console.error(`Error: ${pmZkeyFile} does not exist.`)
@@ -161,12 +139,20 @@ const setVerifyingKeys = async (args: any) => {
 
     // Check the pm zkey filename against specified params
     const pmMatch = pmZkeyFile.match(/.+_(\d+)-(\d+)-(\d+)-(\d+)\./)
+    if (pmMatch == null) {
+        console.error(`Error: ${pmZkeyFile} has an invalid filename`)
+        return 1
+    }
     const pmStateTreeDepth = Number(pmMatch[1])
     const pmMsgTreeDepth = Number(pmMatch[2])
     const pmMsgBatchDepth = Number(pmMatch[3])
     const pmVoteOptionTreeDepth = Number(pmMatch[4])
 
     const tvMatch = tvZkeyFile.match(/.+_(\d+)-(\d+)-(\d+)\./)
+    if (tvMatch == null) {
+        console.error(`Error: ${tvZkeyFile} has an invalid filename`)
+        return 1
+    }
     const tvStateTreeDepth = Number(tvMatch[1])
     const tvIntStateTreeDepth = Number(tvMatch[2])
     const tvVoteOptionTreeDepth = Number(tvMatch[3])
@@ -199,12 +185,14 @@ const setVerifyingKeys = async (args: any) => {
         signer,
     )
 
+    const messageBatchSize = 5 ** msgBatchDepth
+
     // Query the contract to see if the processVk has been set
     const processVkSig = genProcessVkSig(
         stateTreeDepth,
         msgTreeDepth,
         voteOptionTreeDepth,
-        5 ** msgBatchDepth,
+        messageBatchSize,
     )
 
     const isProcessVkSet = await vkRegistryContract.isProcessVkSet(
@@ -231,6 +219,7 @@ const setVerifyingKeys = async (args: any) => {
     }
 
     try {
+        console.log('Setting verifying keys...')
         const tx = await vkRegistryContract.setVerifyingKeys(
             stateTreeDepth,
             intStateTreeDepth,
@@ -247,6 +236,28 @@ const setVerifyingKeys = async (args: any) => {
         }
 
         console.log('Transaction hash:', tx.hash)
+
+        const processVkOnChain = await vkRegistryContract.getProcessVk(
+            stateTreeDepth,
+            msgTreeDepth,
+            voteOptionTreeDepth,
+            messageBatchSize,
+        )
+
+        const tallyVkOnChain = await vkRegistryContract.getTallyVk(
+            stateTreeDepth,
+            intStateTreeDepth,
+            voteOptionTreeDepth,
+        )
+        if (!compareVks(processVk, processVkOnChain)) {
+            console.error('Error: processVk mismatch')
+            return 1
+        }
+        if (!compareVks(tallyVk, tallyVkOnChain)) {
+            console.error('Error: tallyVk mismatch')
+            return 1
+        }
+
         return 0
 
     } catch (e) {
@@ -254,6 +265,30 @@ const setVerifyingKeys = async (args: any) => {
         console.error(e.message)
         return 1
     }
+}
+
+const compareVks = (vk: VerifyingKey, vkOnChain: any): boolean => {
+    let isEqual = vk.ic.length === vkOnChain.ic.length
+    for (let i = 0; i < vk.ic.length; i ++) {
+        isEqual = isEqual && vk.ic[i].x.toString() === vkOnChain.ic[i].x.toString()
+        isEqual = isEqual && vk.ic[i].y.toString() === vkOnChain.ic[i].y.toString()
+    }
+    isEqual = isEqual && vk.alpha1.x.toString() === vkOnChain.alpha1.x.toString()
+    isEqual = isEqual && vk.alpha1.y.toString() === vkOnChain.alpha1.y.toString()
+    isEqual = isEqual && vk.beta2.x[0].toString() === vkOnChain.beta2.x[0].toString()
+    isEqual = isEqual && vk.beta2.x[1].toString() === vkOnChain.beta2.x[1].toString()
+    isEqual = isEqual && vk.beta2.y[0].toString() === vkOnChain.beta2.y[0].toString()
+    isEqual = isEqual && vk.beta2.y[1].toString() === vkOnChain.beta2.y[1].toString()
+    isEqual = isEqual && vk.delta2.x[0].toString() === vkOnChain.delta2.x[0].toString()
+    isEqual = isEqual && vk.delta2.x[1].toString() === vkOnChain.delta2.x[1].toString()
+    isEqual = isEqual && vk.delta2.y[0].toString() === vkOnChain.delta2.y[0].toString()
+    isEqual = isEqual && vk.delta2.y[1].toString() === vkOnChain.delta2.y[1].toString()
+    isEqual = isEqual && vk.gamma2.x[0].toString() === vkOnChain.gamma2.x[0].toString()
+    isEqual = isEqual && vk.gamma2.x[1].toString() === vkOnChain.gamma2.x[1].toString()
+    isEqual = isEqual && vk.gamma2.y[0].toString() === vkOnChain.gamma2.y[0].toString()
+    isEqual = isEqual && vk.gamma2.y[1].toString() === vkOnChain.gamma2.y[1].toString()
+
+    return isEqual
 }
 
 export {

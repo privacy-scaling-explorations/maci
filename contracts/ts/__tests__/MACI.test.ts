@@ -8,7 +8,6 @@ import {
     Command,
     VerifyingKey,
     Keypair,
-    PrivKey,
 } from 'maci-domainobjs'
 
 import {
@@ -32,25 +31,47 @@ const [ accQueueQuinaryMaciAbi ] = parseArtifact('AccQueueQuinaryMaci')
 
 const testProcessVk = new VerifyingKey(
     new G1Point(BigInt(0), BigInt(1)),
-    new G2Point([BigInt(0), BigInt(0)], [BigInt(1), BigInt(1)]),
-    new G2Point([BigInt(0), BigInt(0)], [BigInt(1), BigInt(1)]),
-    new G2Point([BigInt(0), BigInt(0)], [BigInt(1), BigInt(1)]),
+    new G2Point([BigInt(2), BigInt(3)], [BigInt(4), BigInt(5)]),
+    new G2Point([BigInt(6), BigInt(7)], [BigInt(8), BigInt(9)]),
+    new G2Point([BigInt(10), BigInt(11)], [BigInt(12), BigInt(13)]),
     [
-        new G1Point(BigInt(0), BigInt(1)),
-        new G1Point(BigInt(0), BigInt(1)),
+        new G1Point(BigInt(14), BigInt(15)),
+        new G1Point(BigInt(16), BigInt(17)),
     ],
 )
 
 const testTallyVk = new VerifyingKey(
-    new G1Point(BigInt(2), BigInt(3)),
-    new G2Point([BigInt(0), BigInt(0)], [BigInt(1), BigInt(1)]),
-    new G2Point([BigInt(0), BigInt(0)], [BigInt(1), BigInt(1)]),
-    new G2Point([BigInt(0), BigInt(0)], [BigInt(1), BigInt(1)]),
+    new G1Point(BigInt(0), BigInt(1)),
+    new G2Point([BigInt(2), BigInt(3)], [BigInt(4), BigInt(5)]),
+    new G2Point([BigInt(6), BigInt(7)], [BigInt(8), BigInt(9)]),
+    new G2Point([BigInt(10), BigInt(11)], [BigInt(12), BigInt(13)]),
     [
-        new G1Point(BigInt(0), BigInt(1)),
-        new G1Point(BigInt(0), BigInt(1)),
+        new G1Point(BigInt(14), BigInt(15)),
+        new G1Point(BigInt(16), BigInt(17)),
     ],
 )
+
+const compareVks = (vk: VerifyingKey, vkOnChain: any) => {
+    expect(vk.ic.length).toEqual(vkOnChain.ic.length)
+    for (let i = 0; i < vk.ic.length; i ++) {
+        expect(vk.ic[i].x.toString()).toEqual(vkOnChain.ic[i].x.toString())
+        expect(vk.ic[i].y.toString()).toEqual(vkOnChain.ic[i].y.toString())
+    }
+    expect(vk.alpha1.x.toString()).toEqual(vkOnChain.alpha1.x.toString())
+    expect(vk.alpha1.y.toString()).toEqual(vkOnChain.alpha1.y.toString())
+    expect(vk.beta2.x[0].toString()).toEqual(vkOnChain.beta2.x[0].toString())
+    expect(vk.beta2.x[1].toString()).toEqual(vkOnChain.beta2.x[1].toString())
+    expect(vk.beta2.y[0].toString()).toEqual(vkOnChain.beta2.y[0].toString())
+    expect(vk.beta2.y[1].toString()).toEqual(vkOnChain.beta2.y[1].toString())
+    expect(vk.delta2.x[0].toString()).toEqual(vkOnChain.delta2.x[0].toString())
+    expect(vk.delta2.x[1].toString()).toEqual(vkOnChain.delta2.x[1].toString())
+    expect(vk.delta2.y[0].toString()).toEqual(vkOnChain.delta2.y[0].toString())
+    expect(vk.delta2.y[1].toString()).toEqual(vkOnChain.delta2.y[1].toString())
+    expect(vk.gamma2.x[0].toString()).toEqual(vkOnChain.gamma2.x[0].toString())
+    expect(vk.gamma2.x[1].toString()).toEqual(vkOnChain.gamma2.x[1].toString())
+    expect(vk.gamma2.y[0].toString()).toEqual(vkOnChain.gamma2.y[0].toString())
+    expect(vk.gamma2.y[1].toString()).toEqual(vkOnChain.gamma2.y[1].toString())
+}
 
 const users = [
     new Keypair(),
@@ -223,6 +244,23 @@ describe('MACI', () => {
             )
             const isTSigSet = await vkRegistryContract.isTallyVkSet(tSig)
             expect(isTSigSet).toBeTruthy()
+
+            // Check that the VKs are set
+            const processVkOnChain = await vkRegistryContract.getProcessVk(
+                std, 
+                treeDepths.messageTreeDepth,
+                treeDepths.voteOptionTreeDepth,
+                messageBatchSize,
+            )
+
+            const tallyVkOnChain = await vkRegistryContract.getTallyVk(
+                std.toString(),
+                treeDepths.intStateTreeDepth,
+                treeDepths.voteOptionTreeDepth,
+            )
+
+            compareVks(testProcessVk, processVkOnChain)
+            compareVks(testTallyVk, tallyVkOnChain)
             
             // Create the poll and get the poll ID from the tx event logs
             tx = await maciContract.deployPoll(
@@ -312,7 +350,6 @@ describe('MACI', () => {
                 pollAbi,
                 signer,
             )
-
         })
 
         it('should publish a message to the Poll contract', async () => {
@@ -467,7 +504,6 @@ describe('MACI', () => {
                 pollAbi,
                 signer,
             )
-
         })
 
         it('The Poll should be able to merge the signUp AccQueue', async () => {

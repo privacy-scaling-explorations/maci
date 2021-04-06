@@ -158,6 +158,10 @@ const mergeSignups = async (args: any) => {
         )
         console.log(`Transaction hash: ${receipt.transactionHash}`)
         console.log('The state tree has been merged.')
+
+        console.log('mergedStateRoot', BigInt(await pollContract.mergedStateRoot()))
+        const cb = await pollContract.currentSbAndTallyCommitments()
+        console.log('currentSbCommitment', BigInt(cb[0]))
     } else {
         console.log('The state tree has already been merged.')
     }

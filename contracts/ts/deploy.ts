@@ -239,9 +239,7 @@ const deployPpt = async (verifierContractAddress: string, quiet = false) => {
     log('Deploying PollProcessorAndTallyer', quiet)
     const pptFactory = await ethers.getContractFactory('PollProcessorAndTallyer', signer)
 
-    return await pptFactory.deploy(
-        verifierContractAddress,
-    )
+    return await pptFactory.deploy(verifierContractAddress)
 }
 
 const deployMessageAqFactory = async (quiet = false) => {
@@ -256,6 +254,7 @@ const deployMaci = async (
     signUpTokenGatekeeperContractAddress: string,
     initialVoiceCreditBalanceAddress: string,
     verifierContractAddress: string,
+    vkRegistryContractAddress: string,
     quiet = false,
 ) => {
 
@@ -288,14 +287,8 @@ const deployMaci = async (
         messageAqFactory,
     ] = await Promise.all(linkedContractFactories)
 
-    const pptContractFactory = await ethers.getContractFactory('PollProcessorAndTallyer', signer)
-
     const pollFactoryContract = await pollFactoryContractFactory.deploy()
     await pollFactoryContract.deployTransaction.wait()
-
-    // PollProcessorAndTallyer
-    const pptContract = await pptContractFactory.deploy(verifierContractAddress)
-    await pptContract.deployTransaction.wait()
 
     log('Deploying MACI', quiet)
     const maciContract = await maciContractFactory.deploy(
@@ -315,28 +308,23 @@ const deployMaci = async (
     log('Transferring MessageAqFactory ownership to PollFactory', quiet)
     await (await (messageAqContract.transferOwnership(pollFactoryContract.address))).wait()
 
-    // VkRegistry
-    const vkRegistryContract = await deployVkRegistry()
-    await vkRegistryContract.deployTransaction.wait()
-
     log('Initialising MACI', quiet)
     await (await (maciContract.init(
-        vkRegistryContract.address,
+        vkRegistryContractAddress,
         messageAqContract.address,
     ))).wait()
 
     const [ AccQueueQuinaryMaciAbi, ] = parseArtifact('AccQueue')
+    const stateAqContractAddress = await maciContract.stateAq()
     const stateAqContract = new ethers.Contract(
-        await maciContract.stateAq(),
+        stateAqContractAddress,
         AccQueueQuinaryMaciAbi,
         signer,
     )
 
     return {
         maciContract,
-        vkRegistryContract,
         stateAqContract,
-        pptContract,
     }
 }
 

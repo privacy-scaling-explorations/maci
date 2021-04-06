@@ -490,6 +490,7 @@ class Poll {
             currentBallotRoot,
             this.sbSalts[this.currentMessageBatchIndex],
         ])
+        debugger
 
         // Generate a SHA256 hash of inputs which the contract provides
         const packedVals = 

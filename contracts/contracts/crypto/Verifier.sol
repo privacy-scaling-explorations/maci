@@ -35,12 +35,14 @@ contract Verifier is IVerifier, SnarkConstants {
     using Pairing for *;
 
     uint256 constant PRIME_Q = 21888242871839275222246405745257275088696311157297823662689037894645226208583;
-    string constant ERROR_PROOF_Q = "VerifierE01";
-    string constant ERROR_INPUT_VAL = "VerifierE02";
+    string constant ERROR_PROOF_Q = "VE1";
+    string constant ERROR_INPUT_VAL = "VE2";
 
     /*
      * @returns Whether the proof is valid given the verifying key and public
-     *          input. Note that this only supports public input.
+     *          input. Note that this function only supports one public input.
+     *          Refer to the Semaphore source code for a verifier that supports
+     *          multiple public inputs.
      */
     function verify(
         uint256[8] memory _proof,
@@ -55,24 +57,24 @@ contract Verifier is IVerifier, SnarkConstants {
         );
         proof.c = Pairing.G1Point(_proof[6], _proof[7]);
 
+        // Make sure that proof.A, B, and C are each less than the prime q
+        require(proof.a.x < PRIME_Q, ERROR_PROOF_Q);
+        require(proof.a.y < PRIME_Q, ERROR_PROOF_Q);
+
+        require(proof.b.x[0] < PRIME_Q, ERROR_PROOF_Q);
+        require(proof.b.y[0] < PRIME_Q, ERROR_PROOF_Q);
+
+        require(proof.b.x[1] < PRIME_Q, ERROR_PROOF_Q);
+        require(proof.b.y[1] < PRIME_Q, ERROR_PROOF_Q);
+
+        require(proof.c.x < PRIME_Q, ERROR_PROOF_Q);
+        require(proof.c.y < PRIME_Q, ERROR_PROOF_Q);
+
+        // Make sure that the input is less than the snark scalar field
+        require(input < SNARK_SCALAR_FIELD, ERROR_INPUT_VAL);
+
         // Compute the linear combination vk_x
         Pairing.G1Point memory vk_x = Pairing.G1Point(0, 0);
-
-        // Make sure that proof.A, B, and C are each less than the prime q
-        require(proof.a.x < PRIME_Q, "ERROR_PROOF_Q");
-        require(proof.a.y < PRIME_Q, "ERROR_PROOF_Q");
-
-        require(proof.b.x[0] < PRIME_Q, "ERROR_PROOF_Q");
-        require(proof.b.y[0] < PRIME_Q, "ERROR_PROOF_Q");
-
-        require(proof.b.x[1] < PRIME_Q, "ERROR_PROOF_Q");
-        require(proof.b.y[1] < PRIME_Q, "ERROR_PROOF_Q");
-
-        require(proof.c.x < PRIME_Q, "ERROR_PROOF_Q");
-        require(proof.c.y < PRIME_Q, "ERROR_PROOF_Q");
-
-        // Make sure that each input is less than the snark scalar field
-        require(input < SNARK_SCALAR_FIELD, "ERROR_INPUT_VAL");
 
         vk_x = Pairing.plus(
             vk_x,

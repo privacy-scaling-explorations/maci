@@ -83,6 +83,8 @@ contract PollFactory is Params, IPubKey, IMessage, Ownable, Hasher, PollDeployme
             messageAqFactory.deploy(_treeDepths.messageTreeSubDepth);
 
         ExtContracts memory extContracts;
+
+        // TODO: remove _vkRegistry; only PollProcessorAndTallyer needs it
         extContracts.vkRegistry = _vkRegistry;
         extContracts.maci = _maci;
         extContracts.messageAq = messageAq;
@@ -118,6 +120,7 @@ contract Poll is
     // The coordinator's public key
     PubKey public coordinatorPubKey;
 
+    uint256 public mergedStateRoot;
     uint256 public coordinatorPubKeyHash;
 
     // TODO: to reduce the Poll bytecode size, consider storing deployTime and
@@ -339,15 +342,15 @@ contract Poll is
         }
         stateAqMerged = true;
 
-        uint256 stateRoot = extContracts.maci.getStateAqRoot();
+        mergedStateRoot = extContracts.maci.getStateAqRoot();
         // Set currentSbCommitment
         uint256[3] memory sb;
-        sb[0] = stateRoot;
-        sb[1] = emptyBallotRoots[treeDepths.voteOptionTreeDepth];
+        sb[0] = mergedStateRoot;
+        sb[1] = emptyBallotRoots[treeDepths.voteOptionTreeDepth - 1];
         sb[2] = uint256(0);
 
         currentSbCommitment = hash3(sb);
-        emit MergeMaciStateAq(stateRoot);
+        emit MergeMaciStateAq(mergedStateRoot);
     }
 
     /*
@@ -536,31 +539,23 @@ contract PollProcessorAndTallyer is
     onlyOwner
     votingPeriodOver(_poll)
     {
+        // Require that unprocessed messages exist
+        require(!processingComplete, ERROR_NO_MORE_MESSAGES);
+
+        // Require that the state AccQueue has been merged
         require(_poll.stateAqMerged(), ERROR_STATE_AQ_NOT_MERGED);
-        uint8 messageTreeDepth;
-        uint8 voteOptionTreeDepth;
-        (
-            ,
-            ,
-            messageTreeDepth,
-            voteOptionTreeDepth
-        ) = _poll.treeDepths();
+
+        // Retrieve stored vals
+        ( , , uint8 messageTreeDepth, ) = _poll.treeDepths();
 
         AccQueue messageAq;
         (, , messageAq) = _poll.extContracts();
 
         // Require that the message queue has been merged
-        uint256 messageRoot =
-            messageAq.getMainRoot(messageTreeDepth);
-        require(
-            messageRoot != 0,
-            ERROR_MESSAGE_AQ_NOT_MERGED
-        );
+        uint256 messageRoot = messageAq.getMainRoot(messageTreeDepth);
+        require(messageRoot != 0, ERROR_MESSAGE_AQ_NOT_MERGED);
 
         (uint256 messageBatchSize, ) = _poll.batchSizes();
-
-        // Require that unprocessed messages exist
-        require(!processingComplete, ERROR_NO_MORE_MESSAGES);
 
         // Copy the state root and set the batch index if this is the
         // first batch to process
@@ -570,13 +565,10 @@ contract PollProcessorAndTallyer is
                 (numMessages / messageBatchSize) * messageBatchSize;
         }
 
-
         {
             verifyProcessProof(
                 _poll,
                 messageRoot,
-                messageTreeDepth,
-                voteOptionTreeDepth,
                 _newSbCommitment,
                 _proof
             );
@@ -601,27 +593,34 @@ contract PollProcessorAndTallyer is
     function verifyProcessProof(
         Poll _poll,
         uint256 _messageRoot,
-        uint256 _messageTreeDepth,
-        uint256 _voteOptionTreeDepth,
         uint256 _newSbCommitment,
         uint256[8] memory _proof
     ) internal view {
+
+        ( , , uint8 messageTreeDepth, uint8 voteOptionTreeDepth) = _poll.treeDepths();
         (uint256 messageBatchSize, ) = _poll.batchSizes();
         (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
+        (VkRegistry vkRegistry, IMACI maci, ) = _poll.extContracts();
+
+        // Calculate the public input hash (a SHA256 hash of several values)
         uint256 publicInputHash = genProcessMessagesPublicInputHash(
             _poll,
             _messageRoot,
             numSignUps,
             _newSbCommitment
         );
-        (VkRegistry vkRegistry, IMACI maci, ) = _poll.extContracts();
+
+        // Get the verifying key from the VkRegistry
         VerifyingKey memory vk = vkRegistry.getProcessVk(
             maci.stateTreeDepth(),
-            _messageTreeDepth,
-            _voteOptionTreeDepth,
+            messageTreeDepth,
+            voteOptionTreeDepth,
             messageBatchSize
         );
+
+        // Verify the proof and throw if it is invalid
         bool isValid = verifier.verify(_proof, vk, publicInputHash);
+
         require(isValid, ERROR_INVALID_PROCESS_MESSAGE_PROOF);
     }
 

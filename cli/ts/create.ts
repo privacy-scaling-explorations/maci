@@ -1,13 +1,9 @@
 import {
     deployConstantInitialVoiceCreditProxy,
     deployFreeForAllSignUpGatekeeper,
-    deployPollFactory,
     deployMaci,
-    deployMessageAqFactory,
-    getDefaultSigner,
+    deployVerifier,
 } from 'maci-contracts'
-
-import { contractExists } from './utils'
 
 import {
     DEFAULT_INITIAL_VOICE_CREDITS,
@@ -20,9 +16,8 @@ const configureSubparser = (subparsers: any) => {
     )
 
     createParser.addArgument(
-        ['-k', '--vk_registry'],
+        ['-r', '--vk-registry'],
         {
-            action: 'store',
             required: true,
             type: 'string',
             help: 'The VkRegistry contract address',
@@ -97,26 +92,18 @@ const create = async (args: any) => {
         signUpGatekeeperAddress = signupGatekeeper
     }
 
-    const vkRegistryAddress = args.vk_registry
-    // Check whether there is a contract deployed at the VkRegistry address
-    const signer = await getDefaultSigner()
-    if (!(await contractExists(signer.provider,vkRegistryAddress))) {
-        console.error('Error: a VkRegistry contract is not deployed at', vkRegistryAddress)
-        return 1
-    }
-    
+
+    const verifierContract = await deployVerifier(true)
+    const vkRegistryContractAddress = args.vk_registry
     const {
         maciContract,
-        //vkRegistryContract,
-        //stateAqContract,
-        pptContract,
     } = await deployMaci(
         signUpGatekeeperAddress,
         initialVoiceCreditProxyContractAddress,
-        vkRegistryAddress,
+        verifierContract.address,
+        vkRegistryContractAddress,
     )
 
-    console.log('PollProcessorAndTallyer:', pptContract.address)
     console.log('MACI:', maciContract.address)
     return 0
 }

@@ -1,12 +1,9 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as shelljs from 'shelljs'
-
-import {
-    stringifyBigInts,
-} from 'maci-crypto'
-
 import * as tmp from 'tmp'
+
+import { stringifyBigInts } from 'maci-crypto'
 
 const snarkjsPath = path.join(
     __dirname,
@@ -30,9 +27,11 @@ const genProof = (
     const proofJsonPath = path.join(tmpDirPath, 'proof.json')
     const publicJsonPath = path.join(tmpDirPath, 'public.json')
 
+    // Write input.json
     const jsonData = JSON.stringify(stringifyBigInts(inputs))
     fs.writeFileSync(inputJsonPath, jsonData)
 
+    // Generate the witness
     const witnessGenCmd = `${witnessExePath} ${inputJsonPath} ${outputWtnsPath}`
     shelljs.exec(witnessGenCmd, { silent })
 
@@ -40,6 +39,7 @@ const genProof = (
         throw new Error('Error executing ' + witnessGenCmd)
     }
 
+    // Generate the proof
     const proofGenCmd = `${rapidsnarkExePath} ${zkeyPath} ${outputWtnsPath} ${proofJsonPath} ${publicJsonPath}`
     shelljs.exec(proofGenCmd, { silent })
 
@@ -47,9 +47,11 @@ const genProof = (
         throw new Error('Error executing ' + proofGenCmd)
     }
 
+    // Read the proof and public inputs
     const proof = JSON.parse(fs.readFileSync(proofJsonPath).toString())
     const publicInputs = JSON.parse(fs.readFileSync(publicJsonPath).toString())
 
+    // Delete the temp files and directory
     fs.unlinkSync(proofJsonPath)
     fs.unlinkSync(publicJsonPath)
     fs.unlinkSync(inputJsonPath)
@@ -91,6 +93,10 @@ const verifyProof = (
     const output = shelljs.exec(verifyCmd, { silent: true })
     const isValid = output.stdout && output.stdout.indexOf('OK!') > -1
 
+    // Generate calldata
+    const calldataCmd = `node ${snarkjsPath} zkesc ${publicJsonPath} ${proofJsonPath}`
+    console.log(shelljs.exec(calldataCmd).stdout)
+
     fs.unlinkSync(proofJsonPath)
     fs.unlinkSync(publicJsonPath)
     fs.unlinkSync(vkJsonPath)
@@ -110,6 +116,7 @@ const extractVk = (zkeyPath: string) => {
 
     const vk = JSON.parse(fs.readFileSync(vkJsonPath).toString())
 
+    debugger
     fs.unlinkSync(vkJsonPath)
     tmpObj.removeCallback()
 
