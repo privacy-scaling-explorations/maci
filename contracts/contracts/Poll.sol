@@ -5,7 +5,7 @@ pragma solidity ^0.7.2;
 import { IMACI } from "./IMACI.sol";
 import { Params } from "./Params.sol";
 import { Hasher } from "./crypto/Hasher.sol";
-import { IVerifier } from "./crypto/Verifier.sol";
+import { Verifier } from "./crypto/Verifier.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { SnarkConstants } from "./crypto/SnarkConstants.sol";
 import { DomainObjs, IPubKey, IMessage } from "./DomainObjs.sol";
@@ -420,10 +420,10 @@ contract PollProcessorAndTallyer is
     uint256 public tallyCommitment;
     uint256 public tallyBatchNum;
 
-    IVerifier public verifier;
+    Verifier public verifier;
 
     constructor(
-        IVerifier _verifier
+        Verifier _verifier
     ) {
         verifier = _verifier;
     }
@@ -539,14 +539,15 @@ contract PollProcessorAndTallyer is
     onlyOwner
     votingPeriodOver(_poll)
     {
-        // Require that unprocessed messages exist
+        // There must be unprocessed messages
         require(!processingComplete, ERROR_NO_MORE_MESSAGES);
 
-        // Require that the state AccQueue has been merged
+        // The state AccQueue must be merged
         require(_poll.stateAqMerged(), ERROR_STATE_AQ_NOT_MERGED);
 
         // Retrieve stored vals
         ( , , uint8 messageTreeDepth, ) = _poll.treeDepths();
+        (uint256 messageBatchSize, ) = _poll.batchSizes();
 
         AccQueue messageAq;
         (, , messageAq) = _poll.extContracts();
@@ -555,24 +556,21 @@ contract PollProcessorAndTallyer is
         uint256 messageRoot = messageAq.getMainRoot(messageTreeDepth);
         require(messageRoot != 0, ERROR_MESSAGE_AQ_NOT_MERGED);
 
-        (uint256 messageBatchSize, ) = _poll.batchSizes();
-
         // Copy the state root and set the batch index if this is the
         // first batch to process
         if (numBatchesProcessed == 0) {
             uint256 numMessages = messageAq.numLeaves();
             currentMessageBatchIndex =
-                (numMessages / messageBatchSize) * messageBatchSize;
+                ((numMessages / messageBatchSize) - 1) * messageBatchSize;
         }
 
-        {
-            verifyProcessProof(
-                _poll,
-                messageRoot,
-                _newSbCommitment,
-                _proof
-            );
-        }
+        bool isValid = verifyProcessProof(
+            _poll,
+            messageRoot,
+            _newSbCommitment,
+            _proof
+        );
+        require(isValid, ERROR_INVALID_PROCESS_MESSAGE_PROOF);
 
         {
             (, uint256 numMessages) = _poll.numSignUpsAndMessages();
@@ -595,7 +593,7 @@ contract PollProcessorAndTallyer is
         uint256 _messageRoot,
         uint256 _newSbCommitment,
         uint256[8] memory _proof
-    ) internal view {
+    ) internal returns (bool) {
 
         ( , , uint8 messageTreeDepth, uint8 voteOptionTreeDepth) = _poll.treeDepths();
         (uint256 messageBatchSize, ) = _poll.batchSizes();
@@ -618,10 +616,7 @@ contract PollProcessorAndTallyer is
             messageBatchSize
         );
 
-        // Verify the proof and throw if it is invalid
-        bool isValid = verifier.verify(_proof, vk, publicInputHash);
-
-        require(isValid, ERROR_INVALID_PROCESS_MESSAGE_PROOF);
+        return verifier.verify(_proof, vk, publicInputHash);
     }
 
     function updateMessageProcessingData(
