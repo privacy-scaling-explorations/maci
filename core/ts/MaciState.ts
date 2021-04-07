@@ -407,6 +407,7 @@ class Poll {
             this.currentMessageBatchIndex -= batchSize
         }
 
+        // TODO: ensure newSbSalt differs from currentSbSalt
         const newSbSalt = genRandomSalt()
         this.sbSalts[this.currentMessageBatchIndex] = newSbSalt
 
@@ -490,7 +491,6 @@ class Poll {
             currentBallotRoot,
             this.sbSalts[this.currentMessageBatchIndex],
         ])
-        debugger
 
         // Generate a SHA256 hash of inputs which the contract provides
         const packedVals = 

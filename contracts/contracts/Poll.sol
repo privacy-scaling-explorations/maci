@@ -501,13 +501,12 @@ contract PollProcessorAndTallyer is
         Poll _poll,
         uint256 _messageRoot,
         uint256 _numSignUps,
+        uint256 _currentSbCommitment,
         uint256 _newSbCommitment
     ) public view returns (uint256) {
         uint256 coordinatorPubKeyHash = _poll.coordinatorPubKeyHash();
 
         uint256 packedVals = genProcessMessagesPackedVals(_poll, _numSignUps);
-        uint256 currentSbCommitment;
-        (currentSbCommitment,) = _poll.currentSbAndTallyCommitments();
 
         (uint256 deployTime, uint256 duration) = _poll.getDeployTimeAndDuration();
 
@@ -515,7 +514,7 @@ contract PollProcessorAndTallyer is
         input[0] = packedVals;
         input[1] = coordinatorPubKeyHash;
         input[2] = _messageRoot;
-        input[3] = currentSbCommitment;
+        input[3] = _currentSbCommitment;
         input[4] = _newSbCommitment;
         input[5] = deployTime + duration;
         uint256 inputHash = sha256Hash(input);
@@ -559,6 +558,8 @@ contract PollProcessorAndTallyer is
         // Copy the state root and set the batch index if this is the
         // first batch to process
         if (numBatchesProcessed == 0) {
+            (uint256 currentSbCommitment,) = _poll.currentSbAndTallyCommitments();
+            sbCommitment = currentSbCommitment;
             uint256 numMessages = messageAq.numLeaves();
             currentMessageBatchIndex =
                 ((numMessages / messageBatchSize) - 1) * messageBatchSize;
@@ -567,6 +568,7 @@ contract PollProcessorAndTallyer is
         bool isValid = verifyProcessProof(
             _poll,
             messageRoot,
+            sbCommitment,
             _newSbCommitment,
             _proof
         );
@@ -591,9 +593,10 @@ contract PollProcessorAndTallyer is
     function verifyProcessProof(
         Poll _poll,
         uint256 _messageRoot,
+        uint256 _currentSbCommitment,
         uint256 _newSbCommitment,
         uint256[8] memory _proof
-    ) internal returns (bool) {
+    ) internal view returns (bool) {
 
         ( , , uint8 messageTreeDepth, uint8 voteOptionTreeDepth) = _poll.treeDepths();
         (uint256 messageBatchSize, ) = _poll.batchSizes();
@@ -605,6 +608,7 @@ contract PollProcessorAndTallyer is
             _poll,
             _messageRoot,
             numSignUps,
+            _currentSbCommitment,
             _newSbCommitment
         );
 

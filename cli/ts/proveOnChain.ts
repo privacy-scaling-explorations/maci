@@ -201,6 +201,9 @@ const proveOnChain = async (args: any) => {
     const pollEndTimestampOnChain = BigInt(dd[0]) + BigInt(dd[1])
 
     const txErr = 'Error: processMessages() failed'
+    if (numBatchesProcessed < totalMessageBatches) {
+        console.log('Submitting proofs of message processing...')
+    }
     for (let i = numBatchesProcessed; i < totalMessageBatches; i ++) {
         const { proof, circuitInputs, publicInputs } = data.processProofs[i]
 
@@ -249,6 +252,7 @@ const proveOnChain = async (args: any) => {
             pollContract.address,
             messageRootOnChain.toString(),
             numSignUps,
+            circuitInputs.currentSbCommitment,
             circuitInputs.newSbCommitment,
         ))
 
