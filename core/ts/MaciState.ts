@@ -293,7 +293,7 @@ class Poll {
 
         if (this.numBatchesProcessed === 0) {
             this.currentMessageBatchIndex = (
-                Math.floor(this.messageAq.numLeaves / batchSize)  - 1
+                Math.floor(this.messages.length / batchSize)
             ) * batchSize
             this.sbSalts[this.currentMessageBatchIndex] = BigInt(0)
         }
@@ -465,10 +465,17 @@ class Poll {
             _index + messageBatchSize,
         )
 
-        const batchEndIndex = this.messages.length - _index >= messageBatchSize ?
-            _index + messageBatchSize
-            :
-            this.messages.length - _index - 1
+        assert(
+            IncrementalQuinTree.verifyMerklePath(
+                messageSubrootPath,
+                this.messageTree.hashFunc,
+            ) === true
+        )
+
+        let batchEndIndex = _index + messageBatchSize
+        if (batchEndIndex > this.messages.length) {
+            batchEndIndex = this.messages.length
+        }
 
         let encPubKeys = this.encPubKeys.map((x) => x.copy())
         while (encPubKeys.length % messageBatchSize > 0) {
@@ -783,6 +790,7 @@ class Poll {
         const ballotRoot = this.ballotTree.root
         const sbSalt = this.sbSalts[this.currentMessageBatchIndex]
         const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt ])
+
         const packedVals = MaciState.packTallyVotesSmallVals(
             batchStartIndex,
             batchSize,
@@ -1138,6 +1146,20 @@ class MaciState {
             (BigInt(numSignUps) << BigInt(50))
 
         return packedVals
+    }
+
+    public static unpackTallyVotesSmallVals = (
+        packedVals: BigInt,
+    ) => {
+        let asBin = BigInt(packedVals).toString(2)
+        assert(asBin.length <= 100)
+        while (asBin.length < 100) {
+            asBin = '0' + asBin
+        }
+        const numSignUps = BigInt('0b' + asBin.slice(0, 50))
+        const batchStartIndex = BigInt('0b' + asBin.slice(50, 100))
+
+        return { numSignUps, batchStartIndex }
     }
 
     public static packProcessMessageSmallVals = (

@@ -189,7 +189,7 @@ template ProcessMessages(
     component muxes[batchSize];
 
     for (var i = 0; i < batchSize; i ++) {
-        lt[i] = LessEqThan(32);
+        lt[i] = LessThan(32);
         lt[i].in[0] <== batchStartIndex + i;
         lt[i].in[1] <== batchEndIndex;
 
@@ -382,15 +382,16 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     component currentVoteWeightPathIndices = QuinGeneratePathIndices(voteOptionTreeDepth);
     currentVoteWeightPathIndices.in <== cmdVoteOptionIndex;
 
-    component currentVoteWeightQle = QuinLeafExists(voteOptionTreeDepth);
-    currentVoteWeightQle.leaf <== currentVoteWeight;
-    currentVoteWeightQle.root <== ballot[BALLOT_VO_ROOT_IDX];
+    component currentVoteWeightQip = QuinTreeInclusionProof(voteOptionTreeDepth);
+    currentVoteWeightQip.leaf <== currentVoteWeight;
     for (var i = 0; i < voteOptionTreeDepth; i ++) {
-        currentVoteWeightQle.path_index[i] <== currentVoteWeightPathIndices.out[i];
+        currentVoteWeightQip.path_index[i] <== currentVoteWeightPathIndices.out[i];
         for (var j = 0; j < TREE_ARITY - 1; j++) {
-            currentVoteWeightQle.path_elements[i][j] <== currentVoteWeightsPathElements[i][j];
+            currentVoteWeightQip.path_elements[i][j] <== currentVoteWeightsPathElements[i][j];
         }
     }
+
+    currentVoteWeightQip.root === ballot[BALLOT_VO_ROOT_IDX];
 
     //  ----------------------------------------------------------------------- 
     // 5.1. Update the ballot's vote option root with the new vote weight

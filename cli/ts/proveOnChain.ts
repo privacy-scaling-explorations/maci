@@ -15,11 +15,8 @@ import {
 } from 'maci-circuits'
 
 import {
-    PubKey,
-    PrivKey,
-    Keypair,
-    StateLeaf,
-} from 'maci-domainobjs'
+    MaciState,
+} from 'maci-core'
 
 import {
     validateEthAddress,
@@ -209,6 +206,10 @@ const proveOnChain = async (args: any) => {
         const txErr = 'Error: processMessages() failed'
         const { proof, circuitInputs, publicInputs } = data.processProofs[i]
 
+        const currentMessageBatchIndex = 
+            (Math.floor(numMessages / messageBatchSize) * messageBatchSize) -
+            (numBatchesProcessed * messageBatchSize)
+
         // Perform checks
         if (circuitInputs.pollEndTimestamp !== pollEndTimestampOnChain.toString()) {
             console.error('Error: pollEndTimestamp mismatch.')
@@ -220,8 +221,14 @@ const proveOnChain = async (args: any) => {
             return 1
         }
 
-        const ct = await pollContract.currentSbAndTallyCommitments()
-        const currentSbCommitmentOnChain = BigInt(ct[0])
+        let currentSbCommitmentOnChain
+
+        if (numBatchesProcessed === 0) {
+            const ct = await pollContract.currentSbAndTallyCommitments()
+            currentSbCommitmentOnChain = BigInt(ct[0])
+        } else {
+            currentSbCommitmentOnChain = await pptContract.sbCommitment()
+        }
 
         if (currentSbCommitmentOnChain.toString() !== circuitInputs.currentSbCommitment) {
             console.error('Error: currentSbCommitment mismatch.')
@@ -241,10 +248,11 @@ const proveOnChain = async (args: any) => {
 
         const packedValsOnChain = BigInt(await pptContract.genProcessMessagesPackedVals(
             pollContract.address,
+            currentMessageBatchIndex,
             numSignUps,
-        ))
+        )).toString()
 
-        if (circuitInputs.packedVals !== packedValsOnChain.toString()) {
+        if (circuitInputs.packedVals !== packedValsOnChain) {
             console.error('Error: packedVals mismatch.')
             return 1
         }
@@ -253,6 +261,7 @@ const proveOnChain = async (args: any) => {
 
         const publicInputHashOnChain = BigInt(await pptContract.genProcessMessagesPublicInputHash(
             pollContract.address,
+            currentMessageBatchIndex,
             messageRootOnChain.toString(),
             numSignUps,
             circuitInputs.currentSbCommitment,
@@ -314,14 +323,24 @@ const proveOnChain = async (args: any) => {
     if (numBatchesProcessed === totalMessageBatches) {
         console.log('All message processing proofs have been submitted.')
     }
+
     // ------------------------------------------------------------------------
     // Vote tallying proofs
     const totalTallyBatches = numSignUps < tallyBatchSize ?
         1
         :
         Math.floor(numSignUps / tallyBatchSize) + 1
+
     let tallyBatchNum = Number(await pptContract.tallyBatchNum())
+
+    console.log()
+    if (tallyBatchNum < totalTallyBatches) {
+        console.log('Submitting proofs of vote tallying...')
+    }
     for (let i = tallyBatchNum; i < totalTallyBatches; i ++) {
+
+        const batchStartIndex = i * tallyBatchSize
+
         const txErr = 'Error: tallyVotes() failed'
         const { proof, circuitInputs, publicInputs } = data.tallyProofs[i]
 
@@ -331,19 +350,29 @@ const proveOnChain = async (args: any) => {
             return 1
         }
 
-        const packedValsOnChain =
-            BigInt(await pptContract.genTallyVotesPackedVals(pollContract.address))
+        const packedValsOnChain = BigInt(
+            await pptContract.genTallyVotesPackedVals(
+                numSignUps,
+                batchStartIndex,
+                tallyBatchSize,
+            )
+        )
         if (circuitInputs.packedVals !== packedValsOnChain.toString()) {
             console.error('Error: packedVals mismatch.')
             return 1
         }
+
         const currentSbCommitmentOnChain = await pptContract.sbCommitment()
         if (currentSbCommitmentOnChain.toString() !== circuitInputs.sbCommitment) {
             console.error('Error: currentSbCommitment mismatch.')
             return 1
         }
+
         const publicInputHashOnChain = await pptContract.genTallyVotesPublicInputHash(
             pollContract.address,
+            numSignUps,
+            batchStartIndex,
+            tallyBatchSize,
             circuitInputs.newTallyCommitment,
         )
         if (publicInputHashOnChain.toString() !== publicInputs[0]) {

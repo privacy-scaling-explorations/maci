@@ -451,76 +451,6 @@ contract PollProcessorAndTallyer is
     }
 
     /*
-     * One of the inputs to the ProcessMessages circuit is a 250-bit
-     * representation of four 50-bit values. This function generates this
-     * 250-bit value, which consists of the maximum number of vote options, the
-     * number of signups, the current message batch index, and the end index of
-    * the current batch.
-     */
-    function genProcessMessagesPackedVals(
-        Poll _poll,
-        uint256 _numSignUps
-    ) public view returns (uint256) {
-        (
-            , // ignore the 1st value
-            uint256 maxVoteOptions
-        ) = _poll.maxValues();
-
-        (uint8 mbs, ) = _poll.batchSizes();
-        uint256 messageBatchSize = uint256(mbs);
-
-        uint256 index = currentMessageBatchIndex;
-        uint256 numMessages;
-        (, numMessages) = _poll.numSignUpsAndMessages();
-        uint256 batchEndIndex = numMessages - index >= messageBatchSize ?
-            index + messageBatchSize
-            :
-            numMessages - index - 1;
-
-        uint256 result =
-            maxVoteOptions +
-            (_numSignUps << uint256(50)) +
-            (index << uint256(100)) +
-            (batchEndIndex << uint256(150));
-
-        return result;
-    }
-
-    /*
-     * Returns the SHA256 hash of the packed values (see
-     * genProcessMessagesPackedVals), the hash of the coordinator's public key,
-     * the message root, and the commitment to the current state root and
-     * ballot root. By passing the SHA256 hash of these values to the circuit
-     * as a single public input and the preimage as private inputs, we reduce
-     * its verification gas cost though the number of constraints will be
-     * higher and proving time will be higher.
-     */
-    function genProcessMessagesPublicInputHash(
-        Poll _poll,
-        uint256 _messageRoot,
-        uint256 _numSignUps,
-        uint256 _currentSbCommitment,
-        uint256 _newSbCommitment
-    ) public view returns (uint256) {
-        uint256 coordinatorPubKeyHash = _poll.coordinatorPubKeyHash();
-
-        uint256 packedVals = genProcessMessagesPackedVals(_poll, _numSignUps);
-
-        (uint256 deployTime, uint256 duration) = _poll.getDeployTimeAndDuration();
-
-        uint256[] memory input = new uint256[](6);
-        input[0] = packedVals;
-        input[1] = coordinatorPubKeyHash;
-        input[2] = _messageRoot;
-        input[3] = _currentSbCommitment;
-        input[4] = _newSbCommitment;
-        input[5] = deployTime + duration;
-        uint256 inputHash = sha256Hash(input);
-
-        return inputHash;
-    }
-
-    /*
      * Update the Poll's currentSbCommitment if the proof is valid.
      * @param _poll The poll to update
      * @param _newSbCommitment The new state root and ballot root commitment
@@ -558,13 +488,14 @@ contract PollProcessorAndTallyer is
         if (numBatchesProcessed == 0) {
             (uint256 currentSbCommitment,) = _poll.currentSbAndTallyCommitments();
             sbCommitment = currentSbCommitment;
-            uint256 numMessages = messageAq.numLeaves();
+            (, uint256 numMessages) = _poll.numSignUpsAndMessages();
             currentMessageBatchIndex =
-                ((numMessages / messageBatchSize) - 1) * messageBatchSize;
+                (numMessages / messageBatchSize) * messageBatchSize;
         }
 
         bool isValid = verifyProcessProof(
             _poll,
+            currentMessageBatchIndex,
             messageRoot,
             sbCommitment,
             _newSbCommitment,
@@ -590,6 +521,7 @@ contract PollProcessorAndTallyer is
 
     function verifyProcessProof(
         Poll _poll,
+        uint256 _currentMessageBatchIndex,
         uint256 _messageRoot,
         uint256 _currentSbCommitment,
         uint256 _newSbCommitment,
@@ -604,6 +536,7 @@ contract PollProcessorAndTallyer is
         // Calculate the public input hash (a SHA256 hash of several values)
         uint256 publicInputHash = genProcessMessagesPublicInputHash(
             _poll,
+            _currentMessageBatchIndex,
             _messageRoot,
             numSignUps,
             _currentSbCommitment,
@@ -621,6 +554,76 @@ contract PollProcessorAndTallyer is
         return verifier.verify(_proof, vk, publicInputHash);
     }
 
+    /*
+     * Returns the SHA256 hash of the packed values (see
+     * genProcessMessagesPackedVals), the hash of the coordinator's public key,
+     * the message root, and the commitment to the current state root and
+     * ballot root. By passing the SHA256 hash of these values to the circuit
+     * as a single public input and the preimage as private inputs, we reduce
+     * its verification gas cost though the number of constraints will be
+     * higher and proving time will be higher.
+     */
+    function genProcessMessagesPublicInputHash(
+        Poll _poll,
+        uint256 _currentMessageBatchIndex,
+        uint256 _messageRoot,
+        uint256 _numSignUps,
+        uint256 _currentSbCommitment,
+        uint256 _newSbCommitment
+    ) public view returns (uint256) {
+        uint256 coordinatorPubKeyHash = _poll.coordinatorPubKeyHash();
+
+        uint256 packedVals = genProcessMessagesPackedVals(
+            _poll,
+            _currentMessageBatchIndex,
+            _numSignUps
+        );
+
+        (uint256 deployTime, uint256 duration) = _poll.getDeployTimeAndDuration();
+
+        uint256[] memory input = new uint256[](6);
+        input[0] = packedVals;
+        input[1] = coordinatorPubKeyHash;
+        input[2] = _messageRoot;
+        input[3] = _currentSbCommitment;
+        input[4] = _newSbCommitment;
+        input[5] = deployTime + duration;
+        uint256 inputHash = sha256Hash(input);
+
+        return inputHash;
+    }
+
+    /*
+     * One of the inputs to the ProcessMessages circuit is a 250-bit
+     * representation of four 50-bit values. This function generates this
+     * 250-bit value, which consists of the maximum number of vote options, the
+     * number of signups, the current message batch index, and the end index of
+    * the current batch.
+     */
+    function genProcessMessagesPackedVals(
+        Poll _poll,
+        uint256 _currentMessageBatchIndex,
+        uint256 _numSignUps
+    ) public view returns (uint256) {
+        (, uint256 maxVoteOptions) = _poll.maxValues();
+        (, uint256 numMessages) = _poll.numSignUpsAndMessages();
+        (uint8 mbs, ) = _poll.batchSizes();
+        uint256 messageBatchSize = uint256(mbs);
+
+        uint256 batchEndIndex = _currentMessageBatchIndex + messageBatchSize;
+        if (batchEndIndex > numMessages) {
+            batchEndIndex = numMessages;
+        }
+
+        uint256 result =
+            maxVoteOptions +
+            (_numSignUps << uint256(50)) +
+            (_currentMessageBatchIndex << uint256(100)) +
+            (batchEndIndex << uint256(150));
+
+        return result;
+    }
+
     function updateMessageProcessingData(
         uint256 _newSbCommitment,
         uint256 _currentMessageBatchIndex,
@@ -635,27 +638,32 @@ contract PollProcessorAndTallyer is
     /*
      * Pack the batch start index and number of signups into a 100-bit value.
      */
-    function genTallyVotesPackedVals(Poll _poll)
-        public view returns (uint256) {
-        
-        ( , uint256 tallyBatchSize) = _poll.batchSizes(); 
-
-        uint256 batchStartIndex = tallyBatchNum * tallyBatchSize;
-        (uint256 numSignUps,) = _poll.numSignUpsAndMessages();
+    function genTallyVotesPackedVals(
+        uint256 _numSignUps,
+        uint256 _batchStartIndex,
+        uint256 _tallyBatchSize
+    ) public pure returns (uint256) {
 
         // TODO: ensure that each value is less than or equal to 2 ** 50
         uint256 result =
-            batchStartIndex +
-            numSignUps << uint256(50);
+            (_batchStartIndex / _tallyBatchSize) +
+            (_numSignUps << uint256(50));
 
         return result;
     }
 
     function genTallyVotesPublicInputHash(
         Poll _poll,
+        uint256 _numSignUps,
+        uint256 _batchStartIndex,
+        uint256 _tallyBatchSize,
         uint256 _newTallyCommitment
     ) public view returns (uint256) {
-        uint256 packedVals = genTallyVotesPackedVals(_poll);
+        uint256 packedVals = genTallyVotesPackedVals(
+            _numSignUps,
+            _batchStartIndex,
+            _tallyBatchSize
+        );
         uint256[] memory input = new uint256[](4);
         input[0] = packedVals;
         input[1] = sbCommitment;
@@ -674,18 +682,15 @@ contract PollProcessorAndTallyer is
     onlyOwner
     votingPeriodOver(_poll)
     {
-
-        ( , uint256 tallyBatchSize) = _poll.batchSizes(); 
-
-        uint256 batchStartIndex = tallyBatchNum * tallyBatchSize;
-        uint256 numSignUps;
-        (numSignUps,) = _poll.numSignUpsAndMessages();
-
         // Require that all messages have been processed
         require(
             processingComplete,
             ERROR_PROCESSING_NOT_COMPLETE
         );
+
+        ( , uint256 tallyBatchSize) = _poll.batchSizes(); 
+        uint256 batchStartIndex = tallyBatchNum * tallyBatchSize;
+        (uint256 numSignUps,) = _poll.numSignUpsAndMessages();
 
         // Require that there are untalied ballots left
         require(
@@ -693,9 +698,15 @@ contract PollProcessorAndTallyer is
             ERROR_ALL_BALLOTS_TALLIED
         );
 
-        { 
-            verifyTallyProof(_poll, _proof, _newTallyCommitment);
-        }
+        bool isValid = verifyTallyProof(
+            _poll,
+            _proof,
+            numSignUps,
+            batchStartIndex,
+            tallyBatchSize,
+            _newTallyCommitment
+        );
+        require(isValid, ERROR_INVALID_TALLY_VOTES_PROOF);
 
         // Update the tally commitment and the tally batch num
         tallyCommitment = _newTallyCommitment;
@@ -705,8 +716,11 @@ contract PollProcessorAndTallyer is
     function verifyTallyProof(
         Poll _poll,
         uint256[8] memory _proof,
+        uint256 _numSignUps,
+        uint256 _batchStartIndex,
+        uint256 _tallyBatchSize,
         uint256 _newTallyCommitment
-    ) internal view {
+    ) internal view returns (bool) {
         (
             uint8 intStateTreeDepth,
             ,
@@ -726,11 +740,13 @@ contract PollProcessorAndTallyer is
         // Get the public inputs
         uint256 publicInputHash = genTallyVotesPublicInputHash(
             _poll,
+            _numSignUps,
+            _batchStartIndex,
+            _tallyBatchSize,
             _newTallyCommitment
         );
 
         // Verify the proof
-        bool isValid = verifier.verify(_proof, vk, publicInputHash);
-        require(isValid, ERROR_INVALID_TALLY_VOTES_PROOF);
+        return verifier.verify(_proof, vk, publicInputHash);
     }
 }

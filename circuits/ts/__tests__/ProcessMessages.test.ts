@@ -271,7 +271,8 @@ describe('ProcessMessage circuit', () => {
 
             const poll = maciState.polls[pollId]
 
-            const numMessages = messageBatchSize * NUM_BATCHES
+            // Second batch is not a full batch
+            const numMessages = (messageBatchSize * NUM_BATCHES) - 1
             for (let i = 0; i < numMessages; i ++) {
                 const command = new Command(
                     stateIndex,
