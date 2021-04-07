@@ -148,32 +148,32 @@ class VerifyingKey {
         )
         const beta2 = new G2Point(
             [
-                BigInt(data.vk_beta_2[0][0]),
                 BigInt(data.vk_beta_2[0][1]),
+                BigInt(data.vk_beta_2[0][0]),
             ],
             [
-                BigInt(data.vk_beta_2[1][0]),
                 BigInt(data.vk_beta_2[1][1]),
+                BigInt(data.vk_beta_2[1][0]),
             ],
         )
         const gamma2 = new G2Point(
             [
-                BigInt(data.vk_gamma_2[0][0]),
                 BigInt(data.vk_gamma_2[0][1]),
+                BigInt(data.vk_gamma_2[0][0]),
             ],
             [
-                BigInt(data.vk_gamma_2[1][0]),
                 BigInt(data.vk_gamma_2[1][1]),
+                BigInt(data.vk_gamma_2[1][0]),
             ],
         )
         const delta2 = new G2Point(
             [
-                BigInt(data.vk_delta_2[0][0]),
                 BigInt(data.vk_delta_2[0][1]),
+                BigInt(data.vk_delta_2[0][0]),
             ],
             [
-                BigInt(data.vk_delta_2[1][0]),
                 BigInt(data.vk_delta_2[1][1]),
+                BigInt(data.vk_delta_2[1][0]),
             ],
         )
         const ic = data.IC.map((ic) => new G1Point(

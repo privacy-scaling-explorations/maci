@@ -93,9 +93,9 @@ const verifyProof = (
     const output = shelljs.exec(verifyCmd, { silent: true })
     const isValid = output.stdout && output.stdout.indexOf('OK!') > -1
 
-    // Generate calldata
-    const calldataCmd = `node ${snarkjsPath} zkesc ${publicJsonPath} ${proofJsonPath}`
-    console.log(shelljs.exec(calldataCmd).stdout)
+    //// Generate calldata
+    //const calldataCmd = `node ${snarkjsPath} zkesc ${publicJsonPath} ${proofJsonPath}`
+    //console.log(shelljs.exec(calldataCmd).stdout)
 
     fs.unlinkSync(proofJsonPath)
     fs.unlinkSync(publicJsonPath)
@@ -116,7 +116,6 @@ const extractVk = (zkeyPath: string) => {
 
     const vk = JSON.parse(fs.readFileSync(vkJsonPath).toString())
 
-    debugger
     fs.unlinkSync(vkJsonPath)
     tmpObj.removeCallback()
 

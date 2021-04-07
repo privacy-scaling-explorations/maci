@@ -92,6 +92,7 @@ const proveOnChain = async (args: any) => {
     const [ pptContractAbi ] = parseArtifact('PollProcessorAndTallyer')
     const [ messageAqContractAbi ] = parseArtifact('AccQueue')
     const [ vkRegistryContractAbi ] = parseArtifact('VkRegistry')
+    const [ verifierContractAbi ] = parseArtifact('Verifier')
 
     const maciAddress = args.contract
     const pollId = Number(args.poll_id)
@@ -129,6 +130,13 @@ const proveOnChain = async (args: any) => {
     const vkRegistryContract = new ethers.Contract(
         (await pollContract.extContracts()).vkRegistry,
         vkRegistryContractAbi,
+        signer,
+    )
+
+    const verifierContractAddress = await pptContract.verifier()
+    const verifierContract = new ethers.Contract(
+        verifierContractAddress,
+        verifierContractAbi,
         signer,
     )
 
@@ -181,7 +189,6 @@ const proveOnChain = async (args: any) => {
         Number(treeDepths.messageTreeDepth),
     )
 
-    const mergedStateRootOnChain = BigInt(await pollContract.mergedStateRoot())
     const onChainProcessVk = await vkRegistryContract.getProcessVk(
         10,
         treeDepths.messageTreeDepth,
@@ -236,6 +243,8 @@ const proveOnChain = async (args: any) => {
             return 1
         }
 
+        const formattedProof = formatProofForVerifierContract(proof)
+
         const publicInputHashOnChain = BigInt(await pptContract.genProcessMessagesPublicInputHash(
             pollContract.address,
             messageRootOnChain.toString(),
@@ -248,7 +257,16 @@ const proveOnChain = async (args: any) => {
             return 1
         }
 
-        const formattedProof = formatProofForVerifierContract(proof)
+        const isValidOnChain = await verifierContract.verify(
+            formattedProof,
+            onChainProcessVk,
+            publicInputHashOnChain.toString(),
+        )
+
+        if (!isValidOnChain) {
+            console.error('Error: the verifier contract found the proof invalid.')
+            return 1
+        }
 
         let tx
         try {
@@ -256,7 +274,6 @@ const proveOnChain = async (args: any) => {
                 pollContract.address,
                 '0x' + BigInt(circuitInputs.newSbCommitment).toString(16),
                 formattedProof,
-                { gasLimit: 9500000 },
             )
         } catch (e) {
             console.error(txErr)
@@ -272,93 +289,23 @@ const proveOnChain = async (args: any) => {
 
         console.log(`Transaction hash: ${tx.hash}`)
 
+        // Wait for the node to catch up
         numBatchesProcessed = Number(await pptContract.numBatchesProcessed())
         let backOff = 1000
+        let numAttempts = 0
         while (numBatchesProcessed !== i + 1) {
             await delay(backOff)
             backOff *= 1.2
+            numAttempts ++
+            if (numAttempts >= 100) {
+                break
+            }
         }
         console.log(`Progress: ${numBatchesProcessed} / ${totalMessageBatches}`)
     }
 
     return 0
 
-    // Check that the proof file is complete
-    //const expectedNumProcessProofs =
-        //numMessages % messageBatchSize === 0 ?
-        //numMessages / messageBatchSize
-        //:
-        //1 + Math.floor(numMessages / messageBatchSize)
-
-    //const expectedNumTallyProofs = (1 + numSignUps) % tallyBatchSize === 0 ?
-        //(1 + numSignUps) / tallyBatchSize
-        //:
-        //1 + Math.floor((1 + numSignUps) / tallyBatchSize)
-
-    //if (expectedNumProcessProofs !== data.processProofs.length) {
-        //console.error('Error: the message processing proofs in', args.proof_file, 'are incomplete')
-        //return
-    //}
-
-    //if (expectedNumTallyProofs !== data.tallyProofs.length) {
-        //console.error('Error: the vote tallying proofs in', args.proof_file, 'are incomplete')
-        //return
-    //}
-
-    //// ------------------------------------------------------------------------
-    //// Message processing proofs
-    //console.log('\nSubmitting proofs of message processing...')
-    
-    //// Get the maximum message batch index
-    //const maxMessageBatchIndex = numMessages % messageBatchSize === 0 ?
-        //(numMessages / messageBatchSize - 1) * messageBatchSize
-        //:
-        //Math.floor(numMessages / messageBatchSize) * messageBatchSize
-
-    //// Get the number of processed message batches
-    //let numProcessedMessageBatches
-    //if (! (await maciContract.hasUnprocessedMessages())) {
-        //numProcessedMessageBatches = data.processProofs.length
-    //} else {
-        //numProcessedMessageBatches = (
-            //maxMessageBatchIndex - currentMessageBatchIndex
-        //) / messageBatchSize
-    //}
-
-    //for (let i = numProcessedMessageBatches; i < data.processProofs.length; i ++) {
-        //console.log(`\nProgress: ${i+1}/${data.processProofs.length}`)
-        //const p = data.processProofs[i]
-
-        ////const circuitInputs = p.circuitInputs
-        //const stateRootAfter = BigInt(p.stateRootAfter)
-        //const proof = p.proof
-        //const ecdhPubKeys = p.ecdhPubKeys.map((x) => PubKey.unserialize(x))
-        
-        //const formattedProof = formatProofForVerifierContract(proof)
-        //const txErr = 'Error: batchProcessMessage() failed'
-
-        //let tx
-        //try {
-            //tx = await maciContract.batchProcessMessage(
-                //'0x' + stateRootAfter.toString(16),
-                //ecdhPubKeys.map((x) => x.asContractParam()),
-                //formattedProof,
-                //{ gasLimit: 2000000 },
-            //)
-        //} catch (e) {
-            //console.error(txErr)
-            //console.error(e)
-            //break
-        //}
-
-        //const receipt = await tx.wait()
-
-        //if (receipt.status !== 1) {
-            //console.error(txErr)
-            //break
-        //}
-        //console.log(`Transaction hash: ${tx.hash}`)
-    //}
 
     //// ------------------------------------------------------------------------
     //// Vote tallying proofs
