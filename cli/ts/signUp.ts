@@ -131,7 +131,7 @@ const signup = async (args: any) => {
 
     const receipt = await tx.wait()
     const iface = maciContract.interface
-    const index = iface.parseLog(receipt.logs[0]).args._stateIndex
+    const index = args._stateIndex
     console.log('Transaction hash:', tx.hash)
     console.log('State index:', index.toString())
 }
