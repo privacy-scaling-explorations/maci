@@ -371,7 +371,7 @@ const proveOnChain = async (args: any) => {
             return 1
         }
 
-        console.log(`Progress: ${tallyBatchNum} / ${totalTallyBatches}`)
+        console.log(`Progress: ${tallyBatchNum + 1} / ${totalTallyBatches}`)
         console.log(`Transaction hash: ${tx.hash}`)
 
         // Wait for the node to catch up
