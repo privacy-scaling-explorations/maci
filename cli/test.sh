@@ -31,7 +31,7 @@ node build/index.js genProofs -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -t tally.json \
     -f proofs.json
 
-node build/index.js proveOnChain \
+node --inspect-brk build/index.js proveOnChain \
     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -o 0 \
     -q 0xEcFcaB0A285d3380E488A39B4BB21e777f8A4EaC \

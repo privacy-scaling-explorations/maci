@@ -712,11 +712,14 @@ class Poll {
         const currentSpentVoiceCreditsCommitment =
             this.genSpentVoiceCreditSubtotalCommitment(currentSpentVoiceCreditSubtotalSalt)
 
-        const currentTallyCommitment = hash3([
-            currentResultsCommitment,
-            currentSpentVoiceCreditsCommitment,
-            currentPerVOSpentVoiceCreditsCommitment,
-        ])
+        const currentTallyCommitment = batchStartIndex === 0 ?
+            BigInt(0)
+            :
+            hash3([
+                currentResultsCommitment,
+                currentSpentVoiceCreditsCommitment,
+                currentPerVOSpentVoiceCreditsCommitment,
+            ])
 
         const ballots: Ballot[] = []
         const currentResults = this.results.map((x) => BigInt(x.toString()))

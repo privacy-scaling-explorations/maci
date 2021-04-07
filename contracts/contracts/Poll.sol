@@ -156,9 +156,7 @@ contract Poll is
     // )
     // Where [0...0] is an array of 0s, TREE_ARITY ** voteOptionTreeDepth long
 
-    // TODO: set this to 0?
-    uint256 internal currentTallyCommitment = 
-        0x17e1b6993b1af9f8dfe8d4202c2f2a610994ff19b92462f9a54da39d11026d6b;
+    uint256 internal currentTallyCommitment;
 
     uint256 internal numSignUps;
     uint256 internal numMessages;
@@ -657,15 +655,11 @@ contract PollProcessorAndTallyer is
         Poll _poll,
         uint256 _newTallyCommitment
     ) public view returns (uint256) {
-        uint256 currentSbCommitment;
-        uint256 currentTallyCommitment;
-        (currentSbCommitment, currentTallyCommitment) = _poll.currentSbAndTallyCommitments();
-
         uint256 packedVals = genTallyVotesPackedVals(_poll);
         uint256[] memory input = new uint256[](4);
         input[0] = packedVals;
-        input[1] = currentSbCommitment;
-        input[2] = currentTallyCommitment;
+        input[1] = sbCommitment;
+        input[2] = tallyCommitment;
         input[3] = _newTallyCommitment;
         uint256 inputHash = sha256Hash(input);
         return inputHash;
@@ -734,7 +728,6 @@ contract PollProcessorAndTallyer is
             _poll,
             _newTallyCommitment
         );
-
 
         // Verify the proof
         bool isValid = verifier.verify(_proof, vk, publicInputHash);

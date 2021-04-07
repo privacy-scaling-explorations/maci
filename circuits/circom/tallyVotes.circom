@@ -33,6 +33,7 @@ template TallyVotes(
     signal private input sbSalt;
 
     // The only public input (inputHash) is the hash of the following:
+    signal private input packedVals;
     signal private input sbCommitment;
     signal private input currentTallyCommitment;
     signal private input newTallyCommitment;
@@ -42,7 +43,6 @@ template TallyVotes(
     //   - the number of voice credits spent per vote option
     //   - the total number of spent voice credits
 
-    signal private input packedVals;
     signal input inputHash;
 
     var k = stateTreeDepth - intStateTreeDepth;
@@ -163,8 +163,12 @@ template TallyVotes(
         }
     }
 
+    component isFirstBatch = IsZero();
+    isFirstBatch.in <== batchStartIndex;
+
     // Verify the current and new tally
     component rcv = ResultCommitmentVerifier(voteOptionTreeDepth);
+    rcv.isFirstBatch <== isFirstBatch.out;
     rcv.currentTallyCommitment <== currentTallyCommitment;
     rcv.newTallyCommitment <== newTallyCommitment;
     rcv.currentResultsRootSalt <== currentResultsRootSalt;
@@ -192,6 +196,8 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     var TREE_ARITY = 5;
     var numVoteOptions = TREE_ARITY ** voteOptionTreeDepth;
 
+    // 1 if this is the first batch, and 0 otherwise
+    signal private input isFirstBatch;
     signal private input currentTallyCommitment;
     signal private input newTallyCommitment;
 
@@ -247,7 +253,22 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     currentTallyCommitmentHasher.in[1] <== currentSpentVoiceCreditsCommitment.hash;
     currentTallyCommitmentHasher.in[2] <== currentPerVOSpentVoiceCreditsCommitment.hash;
 
-    currentTallyCommitmentHasher.hash === currentTallyCommitment;
+    /*currentTallyCommitmentHasher.hash === currentTallyCommitment;*/
+     // Check if the current tally commitment is correct only if this is not the first batch
+     component iz = IsZero();
+     iz.in <== isFirstBatch;
+     // iz.out is 1 if this is not the first batch
+     // iz.out is 0 if this is the first batch
+ 
+     // hz is 0 if this is the first batch
+     // currentTallyCommitment should be 0 if this is the first batch
+ 
+     // hz is 1 if this is not the first batch
+     // currentTallyCommitment should not be 0 if this is the first batch
+     signal hz;
+     hz <== iz.out * currentTallyCommitmentHasher.hash;
+ 
+     hz === currentTallyCommitment;
 
     // Compute the root of the new results
     component newResultsRoot = QuinCheckRoot(voteOptionTreeDepth);

@@ -165,6 +165,7 @@ const proveOnChain = async (args: any) => {
     const numMessages = Number(numSignUpsAndMessages[1])
     const batchSizes = await pollContract.batchSizes()
     const messageBatchSize = Number(batchSizes.messageBatchSize)
+    const tallyBatchSize = Number(batchSizes.tallyBatchSize)
     let totalMessageBatches = numMessages <= messageBatchSize ?
     1
     : 
@@ -189,8 +190,9 @@ const proveOnChain = async (args: any) => {
         Number(treeDepths.messageTreeDepth),
     )
 
+    const stateTreeDepth = Number(await maciContract.stateTreeDepth())
     const onChainProcessVk = await vkRegistryContract.getProcessVk(
-        10,
+        stateTreeDepth,
         treeDepths.messageTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
@@ -200,13 +202,14 @@ const proveOnChain = async (args: any) => {
     const dd = await pollContract.getDeployTimeAndDuration()
     const pollEndTimestampOnChain = BigInt(dd[0]) + BigInt(dd[1])
 
-    const txErr = 'Error: processMessages() failed'
     if (numBatchesProcessed < totalMessageBatches) {
         console.log('Submitting proofs of message processing...')
     }
     for (let i = numBatchesProcessed; i < totalMessageBatches; i ++) {
+        const txErr = 'Error: processMessages() failed'
         const { proof, circuitInputs, publicInputs } = data.processProofs[i]
 
+        // Perform checks
         if (circuitInputs.pollEndTimestamp !== pollEndTimestampOnChain.toString()) {
             console.error('Error: pollEndTimestamp mismatch.')
             return 1
@@ -257,7 +260,7 @@ const proveOnChain = async (args: any) => {
         ))
 
         if (publicInputHashOnChain.toString() !== publicInputs[0].toString()) {
-            console.error('Public input mismatch')
+            console.error('Public input mismatch.')
             return 1
         }
 
@@ -308,63 +311,89 @@ const proveOnChain = async (args: any) => {
         console.log(`Progress: ${numBatchesProcessed} / ${totalMessageBatches}`)
     }
 
+    if (numBatchesProcessed === totalMessageBatches) {
+        console.log('All message processing proofs have been submitted.')
+    }
+    // ------------------------------------------------------------------------
+    // Vote tallying proofs
+    const totalTallyBatches = numSignUps < tallyBatchSize ?
+        1
+        :
+        Math.floor(numSignUps / tallyBatchSize) + 1
+    let tallyBatchNum = Number(await pptContract.tallyBatchNum())
+    for (let i = tallyBatchNum; i < totalTallyBatches; i ++) {
+        const txErr = 'Error: tallyVotes() failed'
+        const { proof, circuitInputs, publicInputs } = data.tallyProofs[i]
+
+        const currentTallyCommitmentOnChain = await pptContract.tallyCommitment()
+        if (currentTallyCommitmentOnChain.toString() !== circuitInputs.currentTallyCommitment) {
+            console.error('Error: currentTallyCommitment mismatch.')
+            return 1
+        }
+
+        const packedValsOnChain =
+            BigInt(await pptContract.genTallyVotesPackedVals(pollContract.address))
+        if (circuitInputs.packedVals !== packedValsOnChain.toString()) {
+            console.error('Error: packedVals mismatch.')
+            return 1
+        }
+        const currentSbCommitmentOnChain = await pptContract.sbCommitment()
+        if (currentSbCommitmentOnChain.toString() !== circuitInputs.sbCommitment) {
+            console.error('Error: currentSbCommitment mismatch.')
+            return 1
+        }
+        const publicInputHashOnChain = await pptContract.genTallyVotesPublicInputHash(
+            pollContract.address,
+            circuitInputs.newTallyCommitment,
+        )
+        if (publicInputHashOnChain.toString() !== publicInputs[0]) {
+            console.error('Error: public input mismatch.')
+            return 1
+        }
+
+        const formattedProof = formatProofForVerifierContract(proof)
+        let tx
+        try {
+            tx = await pptContract.tallyVotes(
+                pollContract.address,
+                '0x' + BigInt(circuitInputs.newTallyCommitment).toString(16),
+                formattedProof,
+            )
+        } catch (e) {
+            console.error(txErr)
+            console.error(e)
+        }
+
+        const receipt = await tx.wait()
+
+        if (receipt.status !== 1) {
+            console.error(txErr)
+            return 1
+        }
+
+        console.log(`Progress: ${tallyBatchNum} / ${totalTallyBatches}`)
+        console.log(`Transaction hash: ${tx.hash}`)
+
+        // Wait for the node to catch up
+        tallyBatchNum = Number(await pptContract.tallyBatchNum())
+        let backOff = 1000
+        let numAttempts = 0
+        while (tallyBatchNum !== i + 1) {
+            await delay(backOff)
+            backOff *= 1.2
+            numAttempts ++
+            if (numAttempts >= 100) {
+                break
+            }
+        }
+    }
+
+    if (tallyBatchNum === totalTallyBatches) {
+        console.log('All vote tallying proofs have been submitted.')
+        console.log()
+        console.log('OK')
+    }
     return 0
-
-
-    //// ------------------------------------------------------------------------
-    //// Vote tallying proofs
-    //console.log('Submitting proofs of vote tallying...')
-
-    //// Get the maximum tally batch index
-    //const maxTallyBatchIndex = (1 + numSignUps) % tallyBatchSize === 0 ?
-        //(1 + numSignUps) / tallyBatchSize
-        //:
-        //1 + Math.floor((1 + numSignUps) / tallyBatchSize)
-
-    //// Get the number of processed message batches
-    //const currentQvtBatchNum = Number(await maciContract.currentQvtBatchNum())
-
-    //for (let i = currentQvtBatchNum; i < maxTallyBatchIndex; i ++) {
-        //console.log(`\nProgress: ${i+1}/${maxTallyBatchIndex}`)
-        //const p = data.tallyProofs[i]
-        //const proof = p.proof
-        //const circuitInputs = p.circuitInputs
-        //const newResultsCommitment = p.newResultsCommitment
-        //const newSpentVoiceCreditsCommitment = p.newSpentVoiceCreditsCommitment
-        //const newPerVOSpentVoiceCreditsCommitment = p.newPerVOSpentVoiceCreditsCommitment
-        //const totalVotes = p.totalVotes
-        //const totalVotesPublicInput = BigInt(circuitInputs.isLastBatch) === BigInt(1) ? totalVotes.toString() : 0
-
-        //let tx
-        //const txErr = 'Error: proveVoteTallyBatch() failed'
-
-        //const formattedProof = formatProofForVerifierContract(proof)
-        //try {
-            //tx = await maciContract.proveVoteTallyBatch(
-                //circuitInputs.intermediateStateRoot.toString(),
-                //newResultsCommitment.toString(),
-                //newSpentVoiceCreditsCommitment.toString(),
-                //newPerVOSpentVoiceCreditsCommitment.toString(),
-                //totalVotesPublicInput.toString(),
-                //formattedProof,
-                //{ gasLimit: 2000000 },
-            //)
-        //} catch (e) {
-            //console.error('Error: proveVoteTallyBatch() failed')
-            //console.error(txErr)
-            //console.error(e)
-            //break
-        //}
-
-        //const receipt = await tx.wait()
-
-        //if (receipt.status !== 1) {
-            //console.error(txErr)
-            //break
-        //}
-        //console.log(`Transaction hash: ${tx.hash}`)
-    //}
-    //console.log('OK')
 }
 
 export {
