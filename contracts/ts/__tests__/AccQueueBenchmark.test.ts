@@ -1,12 +1,10 @@
 jest.setTimeout(9000000)
 require('module-alias/register')
-import { config } from 'maci-config'
 import {
     AccQueue,
     NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
-import { JSONRPCDeployer } from '../deploy'
-import { parseArtifact, deployPoseidonContracts, linkPoseidonLibraries } from '../'
+import { deployPoseidonContracts, linkPoseidonLibraries } from '../'
 
 let aqContract
 let tx

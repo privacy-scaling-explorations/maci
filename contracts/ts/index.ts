@@ -1,5 +1,4 @@
 import {
-    genDeployer,
     genJsonRpcDeployer,
     deployMockVerifier,
     deployVkRegistry,
@@ -23,18 +22,13 @@ import {
 
 import { formatProofForVerifierContract } from './utils'
 
-import { genAccounts, genTestAccounts } from './accounts'
-
 import { genMaciStateFromContract } from './genMaciState'
 
 export {
     abiDir,
     solDir,
     parseArtifact,
-    genDeployer,
     genJsonRpcDeployer,
-    genAccounts,
-    genTestAccounts,
     deployVkRegistry,
     deployMaci,
     deployMockVerifier,

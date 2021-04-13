@@ -1,12 +1,10 @@
 jest.setTimeout(90000)
-import { genDeployer } from '../deploy'
 import {
     StateLeaf,
     Keypair,
 } from 'maci-domainobjs'
 
-import { genTestAccounts } from '../accounts'
-import { parseArtifact, deployPoseidonContracts, linkPoseidonLibraries } from '../'
+import { deployPoseidonContracts, linkPoseidonLibraries } from '../'
 
 let doContract
 

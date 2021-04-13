@@ -552,13 +552,14 @@ describe('MACI', () => {
         it('genProcessMessagesPackedVals() should generate the correct value', async () => {
             const packedVals = MaciState.packProcessMessageSmallVals(
                 maxValues.maxVoteOptions,
-                poll.stateTree.leaves.length,
+                users.length,
                 0,
-                maciState.polls[pollId].messageTree.leaves.length - 1,
+                poll.messages.length,
             )
             const onChainPackedVals = BigInt(
                 await pptContract.genProcessMessagesPackedVals(
                     pollContract.address,
+                    0,
                     users.length,
                 )
             )
@@ -601,7 +602,9 @@ describe('MACI', () => {
         it('genTallyVotesPackedVals() should generate the correct value', async () => {
             const onChainPackedVals = BigInt(
                 await pptContract.genTallyVotesPackedVals(
-                    pollContract.address
+                    users.length,
+                    0,
+                    tallyBatchSize,
                 )
             )
             const packedVals = MaciState.packTallyVotesSmallVals(

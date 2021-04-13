@@ -1,11 +1,9 @@
 require('module-alias/register')
-import { genTestAccounts } from '../accounts'
-import { config } from 'maci-config'
 import {
     genRandomSalt,
 } from 'maci-crypto'
 
-import { deployPoseidonContracts, JSONRPCDeployer } from '../deploy'
+import { deployPoseidonContracts } from '../deploy'
 import { linkPoseidonLibraries } from '../'
 
 let hasherContract

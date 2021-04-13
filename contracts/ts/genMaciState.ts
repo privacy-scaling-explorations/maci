@@ -420,7 +420,7 @@ const genMaciStateFromContract = async (
 
 /*
  * The comparision function for Actions based on block number and transaction
- 0.72443254*0.72443254 index.
+ * index.
  */
 const sortActions = (actions: Action[]) => {
     actions.sort((a, b) => {

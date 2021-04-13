@@ -1,6 +1,5 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { config } from 'maci-config'
 const { ethers } = require('hardhat')
 
 const abiDir = path.join(__dirname, '..', 'artifacts')
@@ -80,13 +79,6 @@ const linkPoseidonLibraries = async (
 	return contractFactory
 }
 
-const genProvider = (
-    rpcUrl: string = config.get('chain.url'),
-) => {
-
-    return new ethers.providers.JsonRpcProvider(rpcUrl)
-}
-
 export class JSONRPCDeployer {
 
     provider: any
@@ -122,18 +114,6 @@ const genJsonRpcDeployer = (
     return new JSONRPCDeployer(
         privateKey,
         url,
-    )
-}
-
-const genDeployer = (
-    privateKey: string,
-) => {
-    return new HardhatDeployer(
-        privateKey,
-        config.get('chain.ganache.port'),
-        {
-            gasLimit: 10000000,
-        },
     )
 }
 
@@ -365,8 +345,6 @@ export {
     deployPollFactory,
     deployPpt,
     deployMessageAqFactory,
-    genDeployer,
-    genProvider,
     genJsonRpcDeployer,
     getInitialVoiceCreditProxyAbi,
     abiDir,

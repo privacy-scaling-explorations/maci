@@ -1,6 +1,4 @@
 require('module-alias/register')
-const { ethers } = require('hardhat')
-import { config } from 'maci-config'
 import {
     sha256Hash,
     hashLeftRight,
@@ -11,7 +9,7 @@ import {
 } from 'maci-crypto'
 
 
-import { parseArtifact, genTestAccounts, deployPoseidonContracts, linkPoseidonLibraries } from '../'
+import { deployPoseidonContracts, linkPoseidonLibraries } from '../'
 
 let hasherContract
 
