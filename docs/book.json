@@ -1,7 +1,0 @@
-{
-    "plugins": [ 
-        "styles-sass-fix",
-        "mathjax"
-    ],
-    "styles": {}
-}

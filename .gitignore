@@ -1,3 +1,4 @@
+docs/book/*
 cli/proofs.json
 cli/zkeys
 *.zkey
