@@ -63,7 +63,6 @@
         "circomlib": "0.5.1",
         "circom-helper": "0.1.9",
         "axios": "^0.21.0",
-        "maci-config": "^1.0.0",
         "maci-core": "^1.0.0",
         "maci-crypto": "^1.0.0",
         "maci-domainobjs": "^1.0.0",
