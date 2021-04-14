@@ -21,13 +21,13 @@ You need the following to use MACI:
 First, install dependencies:
 
 ```
-sudo apt-get install build-essential libgmp-dev libsodium-dev nasm
+sudo apt-get install build-essential libgmp-dev libsodium-dev nasm git
 ```
 
 Next, clone `rapidsnark` and build it:
 
 ```
-git checkout https://github.com/iden3/rapidsnark.git && \
+git clone https://github.com/iden3/rapidsnark.git && \
 cd rapidsnark && \
 git checkout 1c13721de4a316b0b254c310ccec9341f5e2208e
 
