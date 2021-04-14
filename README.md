@@ -5,13 +5,8 @@ the original [ethresear.ch
 post](https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413) for a
 high-level view.
 
+Documentation for developers and integrators can be found here:
+https://appliedzkp.github.io/maci/
+
 We welcome contributions to this project. Please join our
 [Telegram group](https://t.me/joinchat/LUgOpE7J2gstRcZqdERyvw) to discuss.
-
-## Local development and testing
-
-### Requirements
-
-You should have Node installed. The latest version which we have tested MACI
-with is Node v15. We suggest that you use
-[`nvm`](https://github.com/nvm-sh/nvm) to install Node.
