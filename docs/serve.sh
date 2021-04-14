@@ -1,6 +1,6 @@
 #!/bin/bash
 
 cd "$(dirname "$0")"
-mkdir -p ../docs
+mkdir -p ../book
 
-mdbook serve
+mdbook serve -d ../book

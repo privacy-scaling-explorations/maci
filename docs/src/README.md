@@ -38,7 +38,9 @@ post](https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413).
 ## Credits
 
 - [Barry WhiteHat](https://github.com/barryWhiteHat)
+- [Cory Dickson](https://github.com/corydickson)
 - [Chih-Cheng Liang](https://twitter.com/ChihChengLiang)
+- [Han Jian](https://han0110.github.io/)
 - [Kendrick Tan](https://kndrck.co/)
 - [Kobi Gurkan](http://kobi.one/)
 - [Koh Wei Jie](https://kohweijie.com)
