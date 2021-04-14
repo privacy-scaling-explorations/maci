@@ -3,8 +3,10 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Introduction - Minimum Anti-Collusion Infrastructure</title>
+        <title></title>
         
+        
+        <base href="/">
         
 
 
@@ -98,7 +100,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html" class="active"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="testing.html"><strong aria-hidden="true">3.</strong> Testing</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="testing.html"><strong aria-hidden="true">3.</strong> Testing</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -166,47 +168,8 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
-<p>Minimum Anti-Collusion Infrastructure (MACI) is a base layer for
-bribery-resistant, secure, and private digital voting.</p>
-<p>MACI offers the following guarantees:</p>
-<ul>
-<li><strong>Collusion resistance</strong>: no-one except a trusted coordinator should be
-certain of the validity of a vote, reducing the effectiveness of bribery.</li>
-<li><strong>Receipt-freeness</strong>: no-one voter prove (besides to the coordinator) which
-way they voted.</li>
-<li><strong>Privacy</strong>: no-one except a trusted coordinator should be able to decrypt a
-vote.</li>
-<li><strong>Uncensorability</strong>: no-one — not even the trusted coordinator — should be
-able to censor a vote.</li>
-<li><strong>Unforgeability</strong>: only the owner of a user's private key may cast a vote
-tied to its corresponding public key.</li>
-<li><strong>Non-repudiation</strong>: no-one may modify or delete a vote after it is cast,
-although a user may cast another vote to nullify it.</li>
-<li><strong>Correct execution</strong>: no-one — not even the trusted coordinator — should be
-able to produce a false tally of votes.</li>
-</ul>
-<p>Under the hood, MACI uses Ethereum smart contracts and zero-knowledge proofs.
-It inherits security and uncensorability from the underlying Ethereum
-blockchain, ensures unforgeability via asymmetric encryption, and achieves
-collusion resistance, privacy, and correct execution via zk-SNARK proofs.</p>
-<p>Although MACI can provide collusion resistance only if the coordinator is
-honest, a dishonest coordinator can neither censor nor tamper with its
-execution.</p>
-<p>Note that MACI presumes an identity system where each legitimate member
-controls a unique Ethereum private key.</p>
-<p>MACI was originally proposed by Vitalik Buterin in <a href="https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413">this ethresear.ch
-post</a>.</p>
-<h2 id="credits"><a class="header" href="#credits">Credits</a></h2>
-<ul>
-<li><a href="https://github.com/barryWhiteHat">Barry WhiteHat</a></li>
-<li><a href="https://github.com/corydickson">Cory Dickson</a></li>
-<li><a href="https://twitter.com/ChihChengLiang">Chih-Cheng Liang</a></li>
-<li><a href="https://han0110.github.io/">Han Jian</a></li>
-<li><a href="https://kndrck.co/">Kendrick Tan</a></li>
-<li><a href="http://kobi.one/">Kobi Gurkan</a></li>
-<li><a href="https://kohweijie.com">Koh Wei Jie</a></li>
-</ul>
+                        <h1 id="document-not-found-404"><a class="header" href="#document-not-found-404">Document not found (404)</a></h1>
+<p>This URL is invalid, sorry. Please use the navigation bar or search to continue.</p>
 
                     </main>
 
@@ -214,10 +177,6 @@ post</a>.</p>
                         <!-- Mobile navigation buttons -->
                         
 
-                        
-                            <a rel="next" href="installation.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <i class="fa fa-angle-right"></i>
-                            </a>
                         
 
                         <div style="clear: both"></div>
@@ -229,14 +188,25 @@ post</a>.</p>
                 
 
                 
-                    <a rel="next" href="installation.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <i class="fa fa-angle-right"></i>
-                    </a>
-                
             </nav>
 
         </div>
 
+        
+        <!-- Livereload script (if served using the cli tool) -->
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3000/__livereload");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
         
 
         

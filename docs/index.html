@@ -3,9 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Minimum Anti-Collusion Infrastructure</title>
-        
-        <meta name="robots" content="noindex" />
+        <title>Introduction - Minimum Anti-Collusion Infrastructure</title>
         
         
 
@@ -100,7 +98,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="testing.html"><strong aria-hidden="true">3.</strong> Testing</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html" class="active"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="testing.html"><strong aria-hidden="true">3.</strong> Testing</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -209,106 +207,6 @@ post</a>.</p>
 <li><a href="http://kobi.one/">Kobi Gurkan</a></li>
 <li><a href="https://kohweijie.com">Koh Wei Jie</a></li>
 </ul>
-<h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
-<h2 id="requirements"><a class="header" href="#requirements">Requirements</a></h2>
-<p>You need the following to use MACI:</p>
-<ul>
-<li>An x86-64 system</li>
-<li>A Linux system, preferably a Debian-based distribution like Ubuntu</li>
-<li>NodeJS. Use <a href="https://github.com/nvm-sh/nvm"><code>nvm</code></a> to install it. MACI has
-been tested with Node 15.</li>
-<li>The <code>libgmp-dev</code> <code>nlohmann-json3-dev</code> <code>nasm</code> and <code>g++</code> Debian/Ubuntu
-packages. They are needed to run <code>circom-helper</code>, which in turn is used to
-develop and test zk-SNARK circuits.</li>
-<li>The <a href="https://github.com/iden3/rapidsnark"><code>rapidsnark</code></a> tool.</li>
-</ul>
-<h2 id="installation-1"><a class="header" href="#installation-1">Installation</a></h2>
-<h3 id="install-rapidsnark"><a class="header" href="#install-rapidsnark">Install <code>rapidsnark</code></a></h3>
-<p>First, install dependencies:</p>
-<pre><code class="language-bash">sudo apt-get install build-essential libgmp-dev libsodium-dev nasm git
-</code></pre>
-<p>Next, clone <code>rapidsnark</code> and build it:</p>
-<pre><code class="language-bash">git clone https://github.com/iden3/rapidsnark.git &amp;&amp; \
-cd rapidsnark &amp;&amp; \
-git checkout 1c13721de4a316b0b254c310ccec9341f5e2208e
-
-npm install &amp;&amp; \
-git submodule init &amp;&amp; \
-git submodule update &amp;&amp; \
-npx task createFieldSources &amp;&amp; \
-npx task buildProver
-</code></pre>
-<p>Note the location of the <code>rapidsnark</code> binary (e.g.
-<code>/home/user/rapidsnark/build/prover</code>).</p>
-<h3 id="install-maci"><a class="header" href="#install-maci">Install MACI</a></h3>
-<pre><code class="language-bash">git clone https://github.com/appliedzkp/maci.git &amp;&amp; \
-cd maci &amp;&amp; \
-npm i &amp;&amp; \
-npm run bootstrap &amp;&amp; \
-npm run build
-</code></pre>
-<p>Install dependencies for <code>circom-helper</code> and <code>zkey-manager</code>:</p>
-<pre><code class="language-bash">sudo apt-get install libgmp-dev nlohmann-json3-dev nasm g++
-</code></pre>
-<h3 id="download-zkey-files"><a class="header" href="#download-zkey-files">Download <code>.zkey</code> files</a></h3>
-<p>MACI has two zk-SNARK circuits. Each circuit is parameterised. There should one
-<code>.zkey</code> file for each circuit and set of parameters.</p>
-<p>Unless you wish to generate a fresh set of <code>.zkey</code> files, you should obtain
-them from someone who has performed a multi-party trusted setup for said
-circuits..</p>
-<p>Note the locations of the <code>.zkey</code> files as the CLI requires them as
-command-line flags.</p>
-<h1 id="testing"><a class="header" href="#testing">Testing</a></h1>
-<h2 id="contracts"><a class="header" href="#contracts">Contracts</a></h2>
-<p>First, compile the contracts.</p>
-<p>From the main <code>maci/</code> directory, run:</p>
-<pre><code class="language-bash">cd contracts &amp;&amp; \
-npm run compileSol
-</code></pre>
-<p>Run Hardhat Network (a local Ethereum testnet) in a separate terminal:</p>
-<pre><code class="language-bash">cd contracts &amp;&amp; \
-npm run hardhat
-</code></pre>
-<h2 id="cli"><a class="header" href="#cli">CLI</a></h2>
-<p>You can test the CLI locally. First, you need to either generate <code>.zkey</code> files,
-or download them. Do not use these testing <code>.zkey</code> files in production.</p>
-<h3 id="download-zkey-files-1"><a class="header" href="#download-zkey-files-1">Download <code>.zkey</code> files</a></h3>
-<p>MACI has two zk-SNARK circuits. Each circuit is parameterised. There should one
-<code>.zkey</code> file for each circuit and set of parameters.</p>
-<p>Unless you wish to generate a fresh set of <code>.zkey</code> files, you should obtain
-them from someone who has performed a multi-party trusted setup for said
-circuits..</p>
-<p>Note the locations of the <code>.zkey</code> files as the CLI requires them as
-command-line flags.</p>
-<p>From the main <code>maci/</code> directory, run:</p>
-<pre><code class="language-bash">cd cli &amp;&amp;
-mkdir -p zkeys &amp;&amp; \
-wget -O zkeys/ProcessMessages_10-2-1-2.test.0.zkey https://macitestcircuits.blob.core.windows.net/test/ProcessMessages_10-2-1-2.test.0.zkey &amp;&amp; \
-wget -O zkeys/TallyVotes_10-1-2.test.0.zkey https://macitestcircuits.blob.core.windows.net/test/TallyVotes_10-1-2.test.0.zkey
-</code></pre>
-<h3 id="compile-or-download-the-witness-generation-binaries"><a class="header" href="#compile-or-download-the-witness-generation-binaries">Compile or download the witness generation binaries</a></h3>
-<p>You may download precompiled witness generation binaries but there is no guarantee that they will work on your machine.</p>
-<pre><code class="language-bash">mkdir -p zkeys &amp;&amp; \
-wget -O ProcessMessages_10-2-1-2.test https://macitestcircuits.blob.core.windows.net/test/ProcessMessages_10-2-1-2.test &amp;&amp; \
-wget -O TallyVotes_10-1-2.test https://macitestcircuits.blob.core.windows.net/test/TallyVotes_10-1-2.test
-</code></pre>
-<p>Otherwise, you may compile them yourself.</p>
-<p>From the main <code>maci/cli</code> directory, run:</p>
-<pre><code>npx zkey-manager compile -c ./zkeys.config.yml
-</code></pre>
-<p>You should see the following files in <code>cli/zkeys/</code>:</p>
-<pre><code>ProcessMessages_10-2-1-2.test
-ProcessMessages_10-2-1-2.test.0.zkey
-TallyVotes_10-1-2.test
-TallyVotes_10-1-2.test.0.zkey
-</code></pre>
-<h3 id="check-the-rapidsnark-binary"><a class="header" href="#check-the-rapidsnark-binary">Check the Rapidsnark binary</a></h3>
-<p>Next, ensure that the <code>rapidsnark</code> <code>prover</code> binary is in
-<code>~/rapidsnark/build/prover</code>.</p>
-<h3 id="run-cli-tests"><a class="header" href="#run-cli-tests">Run CLI tests</a></h3>
-<p>In <code>maci/cli/</code>, run:</p>
-<pre><code class="language-bash">./test.sh
-</code></pre>
 
                     </main>
 
@@ -316,6 +214,10 @@ TallyVotes_10-1-2.test.0.zkey
                         <!-- Mobile navigation buttons -->
                         
 
+                        
+                            <a rel="next" href="installation.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
                         
 
                         <div style="clear: both"></div>
@@ -327,10 +229,29 @@ TallyVotes_10-1-2.test.0.zkey
                 
 
                 
+                    <a rel="next" href="installation.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
             </nav>
 
         </div>
 
+        
+        <!-- Livereload script (if served using the cli tool) -->
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3000/__livereload");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
         
 
         
@@ -358,16 +279,6 @@ TallyVotes_10-1-2.test.0.zkey
         <!-- Custom JS scripts -->
         
 
-        
-        
-        <script type="text/javascript">
-        window.addEventListener('load', function() {
-            MathJax.Hub.Register.StartupHook('End', function() {
-                window.setTimeout(window.print, 100);
-            });
-        });
-        </script>
-        
         
 
     </body>
