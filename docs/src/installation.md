@@ -20,13 +20,13 @@ You need the following to use MACI:
 
 First, install dependencies:
 
-```
+```bash
 sudo apt-get install build-essential libgmp-dev libsodium-dev nasm git
 ```
 
 Next, clone `rapidsnark` and build it:
 
-```
+```bash
 git clone https://github.com/iden3/rapidsnark.git && \
 cd rapidsnark && \
 git checkout 1c13721de4a316b0b254c310ccec9341f5e2208e
@@ -43,7 +43,7 @@ Note the location of the `rapidsnark` binary (e.g.
 
 ### Install MACI
 
-```
+```bash
 git clone https://github.com/appliedzkp/maci.git && \
 cd maci && \
 npm i && \
@@ -53,7 +53,7 @@ npm run build
 
 Install dependencies for `circom-helper`:
 
-```
+```bash
 sudo apt-get install libgmp-dev nlohmann-json3-dev nasm g++
 ```
 

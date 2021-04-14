@@ -100,7 +100,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="testing.html"><strong aria-hidden="true">3.</strong> Testing</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -225,10 +225,10 @@ develop and test zk-SNARK circuits.</li>
 <h2 id="installation-1"><a class="header" href="#installation-1">Installation</a></h2>
 <h3 id="install-rapidsnark"><a class="header" href="#install-rapidsnark">Install <code>rapidsnark</code></a></h3>
 <p>First, install dependencies:</p>
-<pre><code>sudo apt-get install build-essential libgmp-dev libsodium-dev nasm git
+<pre><code class="language-bash">sudo apt-get install build-essential libgmp-dev libsodium-dev nasm git
 </code></pre>
 <p>Next, clone <code>rapidsnark</code> and build it:</p>
-<pre><code>git clone https://github.com/iden3/rapidsnark.git &amp;&amp; \
+<pre><code class="language-bash">git clone https://github.com/iden3/rapidsnark.git &amp;&amp; \
 cd rapidsnark &amp;&amp; \
 git checkout 1c13721de4a316b0b254c310ccec9341f5e2208e
 
@@ -241,14 +241,14 @@ npx task buildProver
 <p>Note the location of the <code>rapidsnark</code> binary (e.g.
 <code>/home/user/rapidsnark/build/prover</code>).</p>
 <h3 id="install-maci"><a class="header" href="#install-maci">Install MACI</a></h3>
-<pre><code>git clone https://github.com/appliedzkp/maci.git &amp;&amp; \
+<pre><code class="language-bash">git clone https://github.com/appliedzkp/maci.git &amp;&amp; \
 cd maci &amp;&amp; \
 npm i &amp;&amp; \
 npm run bootstrap &amp;&amp; \
 npm run build
 </code></pre>
 <p>Install dependencies for <code>circom-helper</code>:</p>
-<pre><code>sudo apt-get install libgmp-dev nlohmann-json3-dev nasm g++
+<pre><code class="language-bash">sudo apt-get install libgmp-dev nlohmann-json3-dev nasm g++
 </code></pre>
 <h3 id="download-zkey-files"><a class="header" href="#download-zkey-files">Download <code>.zkey</code> files</a></h3>
 <p>MACI has two zk-SNARK circuits. Each circuit is parameterised. There should one
@@ -258,6 +258,23 @@ them from someone who has performed a multi-party trusted setup for said
 circuits..</p>
 <p>Note the locations of the <code>.zkey</code> files as the CLI requires them as
 command-line flags.</p>
+<h1 id="testing"><a class="header" href="#testing">Testing</a></h1>
+<h2 id="cli"><a class="header" href="#cli">CLI</a></h2>
+<p>You can test the CLI locally. First, you need to either generate <code>.zkey</code> files,
+or download them. Do not use these testing <code>.zkey</code> files in production.</p>
+<h3 id="download-zkey-files-1"><a class="header" href="#download-zkey-files-1">Download <code>.zkey</code> files</a></h3>
+<p>MACI has two zk-SNARK circuits. Each circuit is parameterised. There should one
+<code>.zkey</code> file for each circuit and set of parameters.</p>
+<p>Unless you wish to generate a fresh set of <code>.zkey</code> files, you should obtain
+them from someone who has performed a multi-party trusted setup for said
+circuits..</p>
+<p>Note the locations of the <code>.zkey</code> files as the CLI requires them as
+command-line flags.</p>
+<pre><code class="language-bash">cd cli &amp;&amp;
+mkdir -p zkeys &amp;&amp; \
+wget -O zkeys/ProcessMessages_10-2-1-2.test.0.zkey https://macitestcircuits.blob.core.windows.net/test/ProcessMessages_10-2-1-2.test.0.zkey &amp;&amp; \
+wget -O zkeys/TallyVotes_10-1-2.test.0.zkey https://macitestcircuits.blob.core.windows.net/test/TallyVotes_10-1-2.test.0.zkey
+</code></pre>
 
                     </main>
 
@@ -280,6 +297,21 @@ command-line flags.</p>
 
         </div>
 
+        
+        <!-- Livereload script (if served using the cli tool) -->
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3000/__livereload");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
         
 
         
