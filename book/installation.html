@@ -204,7 +204,7 @@ npm i &amp;&amp; \
 npm run bootstrap &amp;&amp; \
 npm run build
 </code></pre>
-<p>Install dependencies for <code>circom-helper</code>:</p>
+<p>Install dependencies for <code>circom-helper</code> and <code>zkey-manager</code>:</p>
 <pre><code class="language-bash">sudo apt-get install libgmp-dev nlohmann-json3-dev nasm g++
 </code></pre>
 <h3 id="download-zkey-files"><a class="header" href="#download-zkey-files">Download <code>.zkey</code> files</a></h3>
@@ -253,21 +253,6 @@ command-line flags.</p>
 
         </div>
 
-        
-        <!-- Livereload script (if served using the cli tool) -->
-        <script type="text/javascript">
-            var socket = new WebSocket("ws://localhost:3000/__livereload");
-            socket.onmessage = function (event) {
-                if (event.data === "reload") {
-                    socket.close();
-                    location.reload();
-                }
-            };
-
-            window.onbeforeunload = function() {
-                socket.close();
-            }
-        </script>
         
 
         

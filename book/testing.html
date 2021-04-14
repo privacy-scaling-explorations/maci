@@ -167,6 +167,16 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="testing"><a class="header" href="#testing">Testing</a></h1>
+<h2 id="contracts"><a class="header" href="#contracts">Contracts</a></h2>
+<p>First, compile the contracts.</p>
+<p>From the main <code>maci/</code> directory, run:</p>
+<pre><code class="language-bash">cd contracts &amp;&amp; \
+npm run compileSol
+</code></pre>
+<p>Run Hardhat Network (a local Ethereum testnet) in a separate terminal:</p>
+<pre><code class="language-bash">cd contracts &amp;&amp; \
+npm run hardhat
+</code></pre>
 <h2 id="cli"><a class="header" href="#cli">CLI</a></h2>
 <p>You can test the CLI locally. First, you need to either generate <code>.zkey</code> files,
 or download them. Do not use these testing <code>.zkey</code> files in production.</p>
@@ -178,10 +188,34 @@ them from someone who has performed a multi-party trusted setup for said
 circuits..</p>
 <p>Note the locations of the <code>.zkey</code> files as the CLI requires them as
 command-line flags.</p>
+<p>From the main <code>maci/</code> directory, run:</p>
 <pre><code class="language-bash">cd cli &amp;&amp;
 mkdir -p zkeys &amp;&amp; \
 wget -O zkeys/ProcessMessages_10-2-1-2.test.0.zkey https://macitestcircuits.blob.core.windows.net/test/ProcessMessages_10-2-1-2.test.0.zkey &amp;&amp; \
 wget -O zkeys/TallyVotes_10-1-2.test.0.zkey https://macitestcircuits.blob.core.windows.net/test/TallyVotes_10-1-2.test.0.zkey
+</code></pre>
+<h3 id="compile-or-download-the-witness-generation-binaries"><a class="header" href="#compile-or-download-the-witness-generation-binaries">Compile or download the witness generation binaries</a></h3>
+<p>You may download precompiled witness generation binaries but there is no guarantee that they will work on your machine.</p>
+<pre><code class="language-bash">mkdir -p zkeys &amp;&amp; \
+wget -O ProcessMessages_10-2-1-2.test https://macitestcircuits.blob.core.windows.net/test/ProcessMessages_10-2-1-2.test &amp;&amp; \
+wget -O TallyVotes_10-1-2.test https://macitestcircuits.blob.core.windows.net/test/TallyVotes_10-1-2.test
+</code></pre>
+<p>Otherwise, you may compile them yourself.</p>
+<p>From the main <code>maci/cli</code> directory, run:</p>
+<pre><code>npx zkey-manager compile -c ./zkeys.config.yml
+</code></pre>
+<p>You should see the following files in <code>cli/zkeys/</code>:</p>
+<pre><code>ProcessMessages_10-2-1-2.test
+ProcessMessages_10-2-1-2.test.0.zkey
+TallyVotes_10-1-2.test
+TallyVotes_10-1-2.test.0.zkey
+</code></pre>
+<h3 id="check-the-rapidsnark-binary"><a class="header" href="#check-the-rapidsnark-binary">Check the Rapidsnark binary</a></h3>
+<p>Next, ensure that the <code>rapidsnark</code> <code>prover</code> binary is in
+<code>~/rapidsnark/build/prover</code>.</p>
+<h3 id="run-cli-tests"><a class="header" href="#run-cli-tests">Run CLI tests</a></h3>
+<p>In <code>maci/cli/</code>, run:</p>
+<pre><code class="language-bash">./test.sh
 </code></pre>
 
                     </main>
@@ -213,21 +247,6 @@ wget -O zkeys/TallyVotes_10-1-2.test.0.zkey https://macitestcircuits.blob.core.w
 
         </div>
 
-        
-        <!-- Livereload script (if served using the cli tool) -->
-        <script type="text/javascript">
-            var socket = new WebSocket("ws://localhost:3000/__livereload");
-            socket.onmessage = function (event) {
-                if (event.data === "reload") {
-                    socket.close();
-                    location.reload();
-                }
-            };
-
-            window.onbeforeunload = function() {
-                socket.close();
-            }
-        </script>
         
 
         

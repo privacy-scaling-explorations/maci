@@ -51,7 +51,7 @@ npm run bootstrap && \
 npm run build
 ```
 
-Install dependencies for `circom-helper`:
+Install dependencies for `circom-helper` and `zkey-manager`:
 
 ```bash
 sudo apt-get install libgmp-dev nlohmann-json3-dev nasm g++
