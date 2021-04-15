@@ -472,6 +472,8 @@ hashLeftRight(
 
 #### Message queue
 
-    Each poll has a message queue. Like the state queue, each message queue is an AccQueue. Each leaf is the hash of a message.
+Each poll has a message queue. Like the state queue, each message queue is an
+AccQueue. Each leaf is the hash of a message.
 
-    The default (zero) leaf value is the nothing-up-my-sleeve value described above.
+The default (zero) leaf value is the nothing-up-my-sleeve value described
+above.

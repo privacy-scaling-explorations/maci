@@ -551,10 +551,10 @@ and return this new message containing the ciphertext. </p>
 )
 </code></pre>
 <h4 id="message-queue"><a class="header" href="#message-queue">Message queue</a></h4>
-<pre><code>Each poll has a message queue. Like the state queue, each message queue is an AccQueue. Each leaf is the hash of a message.
-
-The default (zero) leaf value is the nothing-up-my-sleeve value described above.
-</code></pre>
+<p>Each poll has a message queue. Like the state queue, each message queue is an
+AccQueue. Each leaf is the hash of a message.</p>
+<p>The default (zero) leaf value is the nothing-up-my-sleeve value described
+above.</p>
 <h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
 <h2 id="requirements"><a class="header" href="#requirements">Requirements</a></h2>
 <p>You need the following to use MACI:</p>
@@ -757,21 +757,6 @@ TallyVotes_10-1-2.test.0.zkey
 
         </div>
 
-        
-        <!-- Livereload script (if served using the cli tool) -->
-        <script type="text/javascript">
-            var socket = new WebSocket("ws://localhost:3000/__livereload");
-            socket.onmessage = function (event) {
-                if (event.data === "reload") {
-                    socket.close();
-                    location.reload();
-                }
-            };
-
-            window.onbeforeunload = function() {
-                socket.close();
-            }
-        </script>
         
 
         
