@@ -3,6 +3,9 @@
 Minimum Anti-Collusion Infrastructure (MACI) is a base layer for
 bribery-resistant, secure, and private digital voting.
 
+Applications like [clr.fund](https://clr.fund/) build atop MACI to increase
+privacy and discourage bribery for public goods funding.
+
 MACI offers the following guarantees:
 
 * **Collusion resistance**: no-one except a trusted coordinator should be
@@ -42,5 +45,6 @@ post](https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413).
 - [Chih-Cheng Liang](https://twitter.com/ChihChengLiang)
 - [Han Jian](https://han0110.github.io/)
 - [Kendrick Tan](https://kndrck.co/)
+- [Kirill Goncharov](https://github.com/xuhcc)
 - [Kobi Gurkan](http://kobi.one/)
 - [Koh Wei Jie](https://kohweijie.com)
