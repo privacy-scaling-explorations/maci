@@ -169,6 +169,8 @@
                         <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
 <p>Minimum Anti-Collusion Infrastructure (MACI) is a base layer for
 bribery-resistant, secure, and private digital voting.</p>
+<p>The documentation here pertains to version 1.0, temporarily located in the <code>v1</code>
+branch.</p>
 <p>Applications like <a href="https://clr.fund/">clr.fund</a> build atop MACI to increase
 privacy and discourage bribery for public goods funding.</p>
 <p>MACI offers the following guarantees:</p>
@@ -240,6 +242,21 @@ post</a>.</p>
 
         </div>
 
+        
+        <!-- Livereload script (if served using the cli tool) -->
+        <script type="text/javascript">
+            var socket = new WebSocket("ws://localhost:3000/__livereload");
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
         
 
         
