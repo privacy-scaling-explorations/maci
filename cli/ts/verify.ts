@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 
 import { genTallyResultCommitment } from 'maci-core'
+import { hash2, hash3 } from 'maci-crypto'
 
 import {
     parseArtifact,
@@ -32,6 +33,25 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
+        ['-x', '--contract'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The MACI contract address',
+        }
+    )
+
+    parser.addArgument(
+        ['-o', '--poll-id'],
+        {
+            action: 'store',
+            required: true,
+            type: 'string',
+            help: 'The Poll ID',
+        }
+    )
+
+    parser.addArgument(
         ['-q', '--ppt'],
         {
             required: true,
@@ -39,7 +59,6 @@ const configureSubparser = (subparsers: any) => {
             help: 'The PollProcessorAndTallyer contract address',
         }
     )
-
 }
 
 const verify = async (args: any) => {
@@ -50,6 +69,8 @@ const verify = async (args: any) => {
         return 1
     }
 
+    const [ maciContractAbi ] = parseArtifact('MACI')
+    const [ pollContractAbi ] = parseArtifact('Poll')
     const [ pptContractAbi ] = parseArtifact('PollProcessorAndTallyer')
 
     const pptAddress = args.ppt
@@ -57,6 +78,27 @@ const verify = async (args: any) => {
         console.error(`Error: there is no contract deployed at ${pptAddress}.`)
         return 1
     }
+
+    const maciAddress = args.contract
+    const pollId = Number(args.poll_id)
+
+	const maciContract = new ethers.Contract(
+        maciAddress,
+        maciContractAbi,
+        signer,
+    )
+
+    const pollAddr = await maciContract.polls(pollId)
+    if (! (await contractExists(signer.provider, pollAddr))) {
+        console.error('Error: there is no Poll contract with this poll ID linked to the specified MACI contract.')
+        return 1
+    }
+
+    const pollContract = new ethers.Contract(
+        pollAddr,
+        pollContractAbi,
+        signer,
+    )
 
     const pptContract = new ethers.Contract(
         pptAddress,
@@ -98,6 +140,20 @@ const verify = async (args: any) => {
 
     // Ensure that the lengths of data.results.tally and
     // data.perVOSpentVoiceCredits.tally are correct
+    // Get vote option tree depth
+    const treeDepths = await pollContract.treeDepths()
+    const voteOptionTreeDepth = Number(treeDepths.voteOptionTreeDepth)
+    const numVoteOptions = 5 ** voteOptionTreeDepth
+    const wrongNumVoteOptions = 'Error: wrong number of vote options.'
+    if (data.results.tally.length !== numVoteOptions) {
+        console.error(wrongNumVoteOptions)
+        return 1
+    }
+
+    if (data.perVOSpentVoiceCredits.tally.length !== numVoteOptions) {
+        console.error(wrongNumVoteOptions)
+        return 1
+    }
 
     // Verify that the results commitment matches the output of
     // genTallyResultCommitment()
@@ -105,10 +161,39 @@ const verify = async (args: any) => {
     // Verify the results
 
     // Compute newResultsCommitment
+    const newResultsCommitment = genTallyResultCommitment(
+        data.results.tally.map((x) => BigInt(x)),
+        data.results.salt,
+        voteOptionTreeDepth
+    )
+
     // Compute newSpentVoiceCreditsCommitment
+    const newSpentVoiceCreditsCommitment = hash2([
+        BigInt(data.totalSpentVoiceCredits.spent),
+        BigInt(data.totalSpentVoiceCredits.salt),
+    ])
+
     // Compute newPerVOSpentVoiceCreditsCommitment
+    const newPerVOSpentVoiceCreditsCommitment = genTallyResultCommitment(
+        data.perVOSpentVoiceCredits.tally.map((x) => BigInt(x)),
+        data.perVOSpentVoiceCredits.salt,
+        voteOptionTreeDepth
+    )
+
     // Compute newTallyCommitment
-    //
+    const newTallyCommitment = hash3([
+        newResultsCommitment,
+        newSpentVoiceCreditsCommitment,
+        newPerVOSpentVoiceCreditsCommitment,
+    ])
+
+    if (onChainTallyCommitment !== newTallyCommitment) {
+        console.log('Error: the on-chain tally commitment does not match.')
+        return 1
+    }
+
+    console.log('OK')
+
     return 0
 }
 

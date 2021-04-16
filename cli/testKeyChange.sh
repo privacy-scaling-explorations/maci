@@ -1,21 +1,51 @@
-node build/index.js deployVkRegistry && \
+# Test key-change
+
+node build/index.js deployVkRegistry
+
 node build/index.js setVerifyingKeys -s 10 -i 1 -m 2 -v 2 -b 1 \
     -p ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey \
     -t ./zkeys/TallyVotes_10-1-2.test.0.zkey \
-    -k 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0 && \
+    -k 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
+    
 node build/index.js create \
-    -r 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0 && \
+    -r 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
+    
 node ./build/index.js deployPoll -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -pk macipk.495140c99cbc090c74363d5e3f32705a92a9e1df8e5ebe2fd6831de9c813f01f \
-    -t 20 -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2 && \
-node ./build/index.js signup -p macipk.b8590fdba5e9cde5606dad5db384be4d253d0a2064d1e03f9600ee021a7ebe16 \
+    -t 20 -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2
+
+node ./build/index.js signup \
+    -p macipk.b8590fdba5e9cde5606dad5db384be4d253d0a2064d1e03f9600ee021a7ebe16 \
     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a && \
+
+
+# Vote for option 0
 node build/index.js publish \
     -p macipk.b8590fdba5e9cde5606dad5db384be4d253d0a2064d1e03f9600ee021a7ebe16 \
     -sk macisk.2ae4f199bf3925a2407f7c775c9261f351ab861d8e9ecbb84622bdd3f6d41b08 \
     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -i 0 -v 0 -w 9 -n 1 -o 0
-    
+
+
+# Change key:
+
+# Private key: macisk.220b09bca39ddc56deaaecddcdf616529cd2ed3eeda2354795515f17894e1c65
+# Public key:  macipk.b42b0da48010682d8c781d403f6b83db00c5e0970094ef3618393e7a3262c320
+
+node build/index.js publish \
+    -p macipk.b42b0da48010682d8c781d403f6b83db00c5e0970094ef3618393e7a3262c320 \
+    -sk macisk.2ae4f199bf3925a2407f7c775c9261f351ab861d8e9ecbb84622bdd3f6d41b08 \
+    -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
+    -i 0 -v 0 -w 0 -n 1 -o 0
+
+# Vote for option 1 with new key
+
+node build/index.js publish \
+    -p macipk.b42b0da48010682d8c781d403f6b83db00c5e0970094ef3618393e7a3262c320 \
+    -sk macisk.220b09bca39ddc56deaaecddcdf616529cd2ed3eeda2354795515f17894e1c65 \
+    -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
+    -i 0 -v 1 -w 9 -n 2 -o 0
+
 node build/index.js timeTravel -s 30 && \
 node build/index.js mergeMessages -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a -o 0 && \
 node build/index.js mergeSignups -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a -o 0 && \
