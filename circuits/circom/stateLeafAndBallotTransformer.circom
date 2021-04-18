@@ -19,8 +19,6 @@ template StateLeafAndBallotTransformer() {
 
     // Ballot
     signal input ballotNonce;
-    signal input ballotVoRoot;
-    signal input updatedBallotVoRoot;
     signal input ballotCurrentVotesForOption;
 
     // Command
@@ -38,19 +36,10 @@ template StateLeafAndBallotTransformer() {
 
     // New state leaf (if the command is valid)
     signal output newSlPubKey[2];
-    signal output newSlVoiceCreditBalance;
 
     // New ballot (if the command is valid)
     signal output newBallotNonce;
-    signal output newBallotVoRoot;
     signal output isValid;
-
-    signal newVoiceCreditBalance;
-    signal b;
-    signal c;
-    b <== ballotCurrentVotesForOption * ballotCurrentVotesForOption;
-    c <== cmdNewVoteWeight * cmdNewVoteWeight;
-    newVoiceCreditBalance <== slVoiceCreditBalance + b - c;
 
     // Check if the command / message is valid
     component messageValidator = MessageValidator();
@@ -63,8 +52,8 @@ template StateLeafAndBallotTransformer() {
     for (var i = 0; i < PACKED_CMD_LENGTH; i ++) {
         messageValidator.cmd[i] <== packedCommand[i];
     }
-    messageValidator.pubKey[0] <== cmdNewPubKey[0];
-    messageValidator.pubKey[1] <== cmdNewPubKey[1];
+    messageValidator.pubKey[0] <== slPubKey[0];
+    messageValidator.pubKey[1] <== slPubKey[1];
     messageValidator.sigR8[0] <== cmdSigR8[0];
     messageValidator.sigR8[1] <== cmdSigR8[1];
     messageValidator.sigS <== cmdSigS;
@@ -87,23 +76,11 @@ template StateLeafAndBallotTransformer() {
     newSlPubKey1Mux.c[1] <== cmdNewPubKey[1];
     newSlPubKey[1] <== newSlPubKey1Mux.out;
 
-    component newSlVoiceCreditBalanceMux = Mux1();
-    newSlVoiceCreditBalanceMux.s <== messageValidator.isValid;
-    newSlVoiceCreditBalanceMux.c[0] <== slVoiceCreditBalance;
-    newSlVoiceCreditBalanceMux.c[1] <== newVoiceCreditBalance;
-    newSlVoiceCreditBalance <== newSlVoiceCreditBalanceMux.out;
-
     component newBallotNonceMux = Mux1();
     newBallotNonceMux.s <== messageValidator.isValid;
     newBallotNonceMux.c[0] <== ballotNonce;
     newBallotNonceMux.c[1] <== cmdNonce;
     newBallotNonce <== newBallotNonceMux.out;
-
-    component newBallotVoRootMux = Mux1();
-    newBallotVoRootMux.s <== messageValidator.isValid;
-    newBallotVoRootMux.c[0] <== ballotVoRoot;
-    newBallotVoRootMux.c[1] <== updatedBallotVoRoot;
-    newBallotVoRoot <== newBallotVoRootMux.out;
 
     isValid <== messageValidator.isValid;
 }

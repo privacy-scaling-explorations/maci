@@ -479,14 +479,21 @@ class Ballot {
     }
 
     public asArray = (): BigInt[] => {
+        let lastIndexToInsert = this.votes.length - 1
+        while (lastIndexToInsert > 0) {
+            if (this.votes[lastIndexToInsert] !== BigInt(0)) {
+                break
+            }
+            lastIndexToInsert --
+        }
         const voTree = new IncrementalQuinTree(
             this.voteOptionTreeDepth,
             BigInt(0),
             5,
             hash5,
         )
-        for (const vote of this.votes) {
-            voTree.insert(vote)
+        for (let i = 0; i <= lastIndexToInsert; i ++) {
+            voTree.insert(this.votes[i])
         }
 
         return [this.nonce, voTree.root]

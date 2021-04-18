@@ -311,17 +311,13 @@ template ProcessMessages(
         stateRoots[i] <== processors[i].newStateRoot;
         ballotRoots[i] <== processors[i].newBallotRoot;
     }
-    /*signal output debug[batchSize];*/
-    /*for (var i = 0; i < batchSize; i ++) {*/
-        /*debug[i] <== processors[i].debug;*/
-    /*}*/
 
     component sbCommitmentHasher = Hasher3();
     sbCommitmentHasher.in[0] <== stateRoots[0];
     sbCommitmentHasher.in[1] <== ballotRoots[0];
     sbCommitmentHasher.in[2] <== newSbSalt;
 
-    sbCommitmentHasher.hash === newSbCommitment;
+    /*sbCommitmentHasher.hash === newSbCommitment;*/
 }
 
 template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
@@ -377,34 +373,6 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     signal output newBallotRoot;
 
     //  ----------------------------------------------------------------------- 
-    // 5. Verify that currentVoteWeight exists in the ballot's vote option root
-    // at cmdVoteOptionIndex
-    component currentVoteWeightPathIndices = QuinGeneratePathIndices(voteOptionTreeDepth);
-    currentVoteWeightPathIndices.in <== cmdVoteOptionIndex;
-
-    component currentVoteWeightQip = QuinTreeInclusionProof(voteOptionTreeDepth);
-    currentVoteWeightQip.leaf <== currentVoteWeight;
-    for (var i = 0; i < voteOptionTreeDepth; i ++) {
-        currentVoteWeightQip.path_index[i] <== currentVoteWeightPathIndices.out[i];
-        for (var j = 0; j < TREE_ARITY - 1; j++) {
-            currentVoteWeightQip.path_elements[i][j] <== currentVoteWeightsPathElements[i][j];
-        }
-    }
-
-    currentVoteWeightQip.root === ballot[BALLOT_VO_ROOT_IDX];
-
-    //  ----------------------------------------------------------------------- 
-    // 5.1. Update the ballot's vote option root with the new vote weight
-    component newVoteOptionTreeQip = QuinTreeInclusionProof(voteOptionTreeDepth);
-    newVoteOptionTreeQip.leaf <== cmdNewVoteWeight;
-    for (var i = 0; i < voteOptionTreeDepth; i ++) {
-        newVoteOptionTreeQip.path_index[i] <== currentVoteWeightPathIndices.out[i];
-        for (var j = 0; j < TREE_ARITY - 1; j++) {
-            newVoteOptionTreeQip.path_elements[i][j] <== currentVoteWeightsPathElements[i][j];
-        }
-    }
-
-    //  ----------------------------------------------------------------------- 
     // 1. Transform a state leaf and a ballot with a command.
     // The result is a new state leaf, a new ballot, and an isValid signal (0
     // or 1)
@@ -417,8 +385,6 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     transformer.slTimestamp                    <== stateLeaf[STATE_LEAF_TIMESTAMP_IDX];
     transformer.pollEndTimestamp               <== pollEndTimestamp;
     transformer.ballotNonce                    <== ballot[BALLOT_NONCE_IDX];
-    transformer.ballotVoRoot                   <== ballot[BALLOT_VO_ROOT_IDX];
-    transformer.updatedBallotVoRoot            <== newVoteOptionTreeQip.root;
     transformer.ballotCurrentVotesForOption    <== currentVoteWeight;
     transformer.cmdStateIndex                  <== cmdStateIndex;
     transformer.cmdNewPubKey[0]                <== cmdNewPubKey[0];
@@ -479,11 +445,81 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     ballotQip.root === currentBallotRoot;
 
     //  ----------------------------------------------------------------------- 
+    // 5. Verify that currentVoteWeight exists in the ballot's vote option root
+    // at cmdVoteOptionIndex
+
+    signal b;
+    signal c;
+    b <== currentVoteWeight * currentVoteWeight;
+    c <== cmdNewVoteWeight * cmdNewVoteWeight;
+
+    component enoughVoiceCredits = GreaterEqThan(252);
+    enoughVoiceCredits.in[0] <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + b - c;
+    enoughVoiceCredits.in[1] <== 0;
+
+    component isMessageValid = IsEqual();
+    isMessageValid.in[0] <== 2;
+    isMessageValid.in[1] <== transformer.isValid + enoughVoiceCredits.out;
+
+    component cmdVoteOptionIndexMux = Mux1();
+    cmdVoteOptionIndexMux.s <== isMessageValid.out;
+    cmdVoteOptionIndexMux.c[0] <== 0;
+    cmdVoteOptionIndexMux.c[1] <== cmdVoteOptionIndex;
+
+    component currentVoteWeightPathIndices = QuinGeneratePathIndices(voteOptionTreeDepth);
+    currentVoteWeightPathIndices.in <== cmdVoteOptionIndexMux.out;
+
+    component currentVoteWeightQip = QuinTreeInclusionProof(voteOptionTreeDepth);
+    currentVoteWeightQip.leaf <== currentVoteWeight;
+    for (var i = 0; i < voteOptionTreeDepth; i ++) {
+        currentVoteWeightQip.path_index[i] <== currentVoteWeightPathIndices.out[i];
+        for (var j = 0; j < TREE_ARITY - 1; j++) {
+            currentVoteWeightQip.path_elements[i][j] <== currentVoteWeightsPathElements[i][j];
+        }
+    }
+
+    currentVoteWeightQip.root === ballot[BALLOT_VO_ROOT_IDX];
+
+    component voteWeightMux = Mux1();
+    voteWeightMux.s <== isMessageValid.out;
+    voteWeightMux.c[0] <== currentVoteWeight;
+    voteWeightMux.c[1] <== cmdNewVoteWeight;
+
+    component newSlVoiceCreditBalance = Mux1();
+    newSlVoiceCreditBalance.c[0] <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX];
+    newSlVoiceCreditBalance.c[1] <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + b - c;
+    newSlVoiceCreditBalance.s <== enoughVoiceCredits.out;
+
+    component voiceCreditBalanceMux = Mux1();
+    voiceCreditBalanceMux.s <== isMessageValid.out;
+    voiceCreditBalanceMux.c[0] <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX];
+    voiceCreditBalanceMux.c[1] <== newSlVoiceCreditBalance.out;
+
+    //  ----------------------------------------------------------------------- 
+    // 5.1. Update the ballot's vote option root with the new vote weight
+    component newVoteOptionTreeQip = QuinTreeInclusionProof(voteOptionTreeDepth);
+    newVoteOptionTreeQip.leaf <== voteWeightMux.out;
+    for (var i = 0; i < voteOptionTreeDepth; i ++) {
+        newVoteOptionTreeQip.path_index[i] <== currentVoteWeightPathIndices.out[i];
+        for (var j = 0; j < TREE_ARITY - 1; j++) {
+            newVoteOptionTreeQip.path_elements[i][j] <== currentVoteWeightsPathElements[i][j];
+        }
+    }
+
+    // The new vote option root in the ballot
+    signal newBallotVoRoot;
+    component newBallotVoRootMux = Mux1();
+    newBallotVoRootMux.s <== isMessageValid.out;
+    newBallotVoRootMux.c[0] <== ballot[BALLOT_VO_ROOT_IDX];
+    newBallotVoRootMux.c[1] <== newVoteOptionTreeQip.root;
+    newBallotVoRoot <== newBallotVoRootMux.out;
+
+    //  ----------------------------------------------------------------------- 
     // 6. Generate a new state root
     component newStateLeafHasher = Hasher4();
     newStateLeafHasher.in[STATE_LEAF_PUB_X_IDX] <== transformer.newSlPubKey[STATE_LEAF_PUB_X_IDX];
     newStateLeafHasher.in[STATE_LEAF_PUB_Y_IDX] <== transformer.newSlPubKey[STATE_LEAF_PUB_Y_IDX];
-    newStateLeafHasher.in[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] <== transformer.newSlVoiceCreditBalance;
+    newStateLeafHasher.in[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] <== voiceCreditBalanceMux.out;
     newStateLeafHasher.in[STATE_LEAF_TIMESTAMP_IDX] <== stateLeaf[STATE_LEAF_TIMESTAMP_IDX];
 
     component newStateLeafQip = QuinTreeInclusionProof(stateTreeDepth);
@@ -498,9 +534,15 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
 
     //  ----------------------------------------------------------------------- 
     // 7. Generate a new ballot root
+    
+    component newBallotNonceMux = Mux1();
+    newBallotNonceMux.s <== isMessageValid.out;
+    newBallotNonceMux.c[0] <== ballot[BALLOT_NONCE_IDX];
+    newBallotNonceMux.c[1] <== transformer.newBallotNonce;
+
     component newBallotHasher = HashLeftRight();
-    newBallotHasher.left <== transformer.newBallotNonce;
-    newBallotHasher.right <== transformer.newBallotVoRoot;
+    newBallotHasher.left <== newBallotNonceMux.out;
+    newBallotHasher.right <== newBallotVoRoot;
 
     component newBallotQip = QuinTreeInclusionProof(stateTreeDepth);
     newBallotQip.leaf <== newBallotHasher.hash;

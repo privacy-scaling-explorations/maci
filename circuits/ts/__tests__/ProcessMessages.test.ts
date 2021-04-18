@@ -197,11 +197,6 @@ describe('ProcessMessage circuit', () => {
             const witness = await genWitness(circuit, generatedInputs)
             expect(witness.length > 0).toBeTruthy()
 
-            //for (let i = 0; i < messageBatchSize; i ++) {
-                //const debug = await getSignalByName(circuit, witness, `main.debug[${i}]`)
-                //console.log(debug)
-            //}
-
             // The new roots, which should differ, since at least one of the
             // messages modified a Ballot or State Leaf
             const newStateRoot = poll.stateTree.root
@@ -224,7 +219,7 @@ describe('ProcessMessage circuit', () => {
                 maxValues.maxVoteOptions,
                 poll.numSignUps,
                 0,
-                poll.messageTree.leaves.length - 1,
+                poll.messageTree.leaves.length,
             )
 
             // Test the ProcessMessagesInputHasher circuit
@@ -241,6 +236,171 @@ describe('ProcessMessage circuit', () => {
             const hasherWitness = await genWitness(hasherCircuit, hasherCircuitInputs)
             const hash = await getSignalByName(hasherCircuit, hasherWitness, 'main.hash')
             expect(hash.toString()).toEqual(generatedInputs.inputHash.toString())
+        })
+    })
+ 
+    describe('1 user, key-change', () => {
+        const maciState = new MaciState()
+        const voteWeight = BigInt(9)
+        const voteOptionIndex = BigInt(0)
+        let stateIndex
+        let pollId
+        let poll
+        const messages: Message[] = []
+        const commands: Command[] = []
+        let messageTree
+
+        beforeAll(async () => {
+            // Sign up and publish
+            const userKeypair = new Keypair(new PrivKey(BigInt(123)))
+            const userKeypair2 = new Keypair(new PrivKey(BigInt(456)))
+
+            stateIndex = maciState.signUp(
+                userKeypair.pubKey,
+                voiceCreditBalance,
+                BigInt(1), //BigInt(Math.floor(Date.now() / 1000)),
+            )
+            console.log('Signing up with', userKeypair.pubKey.rawPubKey[0])
+
+            maciState.stateAq.mergeSubRoots(0)
+            maciState.stateAq.merge(STATE_TREE_DEPTH)
+
+            pollId = maciState.deployPoll(
+                duration,
+                BigInt(2 + duration), //BigInt(Math.floor(Date.now() / 1000) + duration),
+                maxValues,
+                treeDepths,
+                messageBatchSize,
+                coordinatorKeypair,
+                testProcessVk,
+                testTallyVk,
+            )
+
+            poll = maciState.polls[pollId]
+
+            messageTree = new IncrementalQuinTree(
+                treeDepths.messageTreeDepth,
+                poll.messageAq.zeroValue,
+                5,
+                hash5,
+            )
+
+            // Vote for option 0
+            const command = new Command(
+                stateIndex, //BigInt(1),
+                userKeypair.pubKey,
+                BigInt(0), // voteOptionIndex,
+                voteWeight, // vote weight
+                BigInt(1), // nonce
+                BigInt(pollId),
+            )
+
+            const signature = command.sign(userKeypair.privKey)
+            //0onsole.log('sig1 generated with', userKeypair.pubKey.rawPubKey[0], 'sig', signature)
+
+            const ecdhKeypair = new Keypair()
+            const sharedKey = Keypair.genEcdhSharedKey(
+                ecdhKeypair.privKey,
+                coordinatorKeypair.pubKey,
+            )
+            const message = command.encrypt(signature, sharedKey)
+            messages.push(message)
+            commands.push(command)
+            messageTree.insert(message.hash(ecdhKeypair.pubKey))
+            poll.publishMessage(message, ecdhKeypair.pubKey)
+
+            // Vote for option 1
+            const command2 = new Command(
+                stateIndex,
+                userKeypair2.pubKey,
+                BigInt(1), // voteOptionIndex,
+                voteWeight, // vote weight
+                BigInt(2), // nonce
+                BigInt(pollId),
+            )
+            const signature2 = command2.sign(userKeypair2.privKey)
+            //console.log('sig2 generated with', userKeypair2.pubKey.rawPubKey[0], 'sig', signature2)
+
+            const ecdhKeypair2 = new Keypair()
+            const sharedKey2 = Keypair.genEcdhSharedKey(
+                ecdhKeypair2.privKey,
+                coordinatorKeypair.pubKey,
+            )
+            const message2 = command2.encrypt(signature2, sharedKey2)
+            messages.push(message2)
+            commands.push(command2)
+            messageTree.insert(message2.hash(ecdhKeypair2.pubKey))
+            poll.publishMessage(message2, ecdhKeypair2.pubKey)
+
+            // Change key
+            const command3 = new Command(
+                stateIndex, //BigInt(1),
+                userKeypair2.pubKey,
+                BigInt(1), // voteOptionIndex,
+                BigInt(0), // vote weight
+                BigInt(1), // nonce
+                BigInt(pollId),
+            )
+
+            const signature3 = command3.sign(userKeypair.privKey)
+            //console.log('sig3 generated with', userKeypair.pubKey.rawPubKey[0], 'sig', signature3)
+
+            const ecdhKeypair3 = new Keypair()
+            const sharedKey3 = Keypair.genEcdhSharedKey(
+                ecdhKeypair3.privKey,
+                coordinatorKeypair.pubKey,
+            )
+            const message3 = command3.encrypt(signature3, sharedKey3)
+            messages.push(message3)
+            commands.push(command3)
+            messageTree.insert(message3.hash(ecdhKeypair3.pubKey))
+            poll.publishMessage(message3, ecdhKeypair3.pubKey)
+
+            // Merge
+            poll.messageAq.mergeSubRoots(0)
+            poll.messageAq.merge(treeDepths.messageTreeDepth)
+
+            expect(messageTree.root.toString())
+                .toEqual(
+                    poll.messageAq.getRoot(
+                        treeDepths.messageTreeDepth,
+                    ).toString()
+                )
+        })
+
+        it('should produce the correct state root and ballot root', async () => {
+            // The current roots
+            const emptyBallot = new Ballot(
+                poll.maxValues.maxVoteOptions,
+                poll.treeDepths.voteOptionTreeDepth,
+            )
+            const emptyBallotHash = emptyBallot.hash()
+            const ballotTree = new IncrementalQuinTree(
+                STATE_TREE_DEPTH,
+                emptyBallot.hash(),
+                poll.STATE_TREE_ARITY,
+                hash5,
+            )
+
+            for (let i = 0; i < poll.stateLeaves.length; i ++) {
+                ballotTree.insert(emptyBallotHash)
+            }
+            const currentStateRoot = maciState.stateTree.root
+            const currentBallotRoot = ballotTree.root
+
+            const generatedInputs = poll.processMessages()
+
+            // Calculate the witness
+            const witness = await genWitness(circuit, generatedInputs)
+            expect(witness.length > 0).toBeTruthy()
+
+            // The new roots, which should differ, since at least one of the
+            // messages modified a Ballot or State Leaf
+            const newStateRoot = poll.stateTree.root
+            const newBallotRoot = poll.ballotTree.root
+
+            expect(newStateRoot.toString()).not.toEqual(currentStateRoot.toString())
+            expect(newBallotRoot.toString()).not.toEqual(currentBallotRoot.toString())
         })
     })
 

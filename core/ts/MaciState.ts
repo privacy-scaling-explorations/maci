@@ -295,8 +295,17 @@ class Poll {
             this.currentMessageBatchIndex = (
                 Math.floor(this.messages.length / batchSize)
             ) * batchSize
+
+            if (
+                Math.floor(this.messages.length / batchSize) > 0 &&
+                this.messages.length % batchSize === 0
+            ) {
+                this.currentMessageBatchIndex -= batchSize
+            }
+
             this.sbSalts[this.currentMessageBatchIndex] = BigInt(0)
         }
+        debugger
 
         // The starting index must be valid
         assert(this.currentMessageBatchIndex >= 0)
@@ -326,6 +335,7 @@ class Poll {
                 m
 
             const r = this.processMessage(messageIndex)
+            //console.log(messageIndex, r ? 'valid' : 'invalid')
 
             // If the command is valid
             if (r) {
@@ -348,7 +358,7 @@ class Poll {
                 this.ballotTree.update(index, r.newBallot.hash())
 
             } else {
-                // If the command is invalid, use state leaf 0 and ballot 0
+                // Since the command is invalid, use state leaf 0 and ballot 0
                 currentStateLeaves.unshift(this.stateLeaves[0].copy())
                 currentStateLeavesPathElements.unshift(
                     this.stateTree.genMerklePath(0).pathElements
@@ -359,24 +369,18 @@ class Poll {
                     this.ballotTree.genMerklePath(0).pathElements
                 )
 
-                const voteOptionIndex =
-                    Number(this.commands[messageIndex].voteOptionIndex)
-                currentVoteWeights.unshift(
-                    this.ballots[0].votes[voteOptionIndex]
-                )
+                // Since the command is invalid, use vote option index 0
+                currentVoteWeights.unshift(this.ballots[0].votes[0])
 
                 // No need to iterate through the entire votes array if the
                 // remaining elements are 0
                 let lastIndexToInsert = this.ballots[0].votes.length - 1
-                while (lastIndexToInsert >= 0) {
-                    if (this.ballots[0].votes[lastIndexToInsert] !== BigInt(0)) {
+                while (lastIndexToInsert > 0) {
+                    if (this.ballots[0].votes[lastIndexToInsert] === BigInt(0)) {
+                        lastIndexToInsert --
+                    } else {
                         break
                     }
-                    lastIndexToInsert --
-                }
-
-                if (voteOptionIndex > lastIndexToInsert) {
-                    lastIndexToInsert = voteOptionIndex
                 }
 
                 const vt = new IncrementalQuinTree(
@@ -389,7 +393,7 @@ class Poll {
                     vt.insert(this.ballots[0].votes[i])
                 }
                 currentVoteWeightsPathElements.unshift(
-                    vt.genMerklePath(voteOptionIndex).pathElements
+                    vt.genMerklePath(0).pathElements
                 )
 
             }
@@ -598,8 +602,11 @@ class Poll {
 
         // If the signature is invalid, do nothing
         if (!command.verifySignature(signature, stateLeaf.pubKey)) {
+            //console.log('Invalid signature. pubkeyx =', stateLeaf.pubKey.rawPubKey[0], 'sig', signature)
             return
         }
+
+        //console.log('Valid signature. pubkeyx =', stateLeaf.pubKey.rawPubKey[0], 'sig', signature)
 
         // If the nonce is invalid, do nothing
         if (command.nonce !== BigInt(ballot.nonce) + BigInt(1)) {
@@ -612,6 +619,7 @@ class Poll {
             BigInt(stateLeaf.voiceCreditBalance) +
             (BigInt(prevSpentCred) * BigInt(prevSpentCred)) -
             (BigInt(command.newVoteWeight) * BigInt(command.newVoteWeight))
+
 
         // If the remaining voice credits is insufficient, do nothing
         if (voiceCreditsLeft < BigInt(0)) {
@@ -671,6 +679,7 @@ class Poll {
             newBallot,
             originalBallot: ballot.copy(),
             originalBallotPathElements,
+            command,
         }
     }
 
