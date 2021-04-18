@@ -305,7 +305,6 @@ class Poll {
 
             this.sbSalts[this.currentMessageBatchIndex] = BigInt(0)
         }
-        debugger
 
         // The starting index must be valid
         assert(this.currentMessageBatchIndex >= 0)
@@ -942,7 +941,9 @@ class Poll {
         })
         copied.ballots = this.ballots.map((x: Ballot) => x.copy())
         copied.encPubKeys = this.encPubKeys.map((x: PubKey) => x.copy())
-        copied.ballotTree = this.ballotTree.copy()
+        if (this.ballotTree) {
+            copied.ballotTree = this.ballotTree.copy()
+        }
         copied.currentMessageBatchIndex = this.currentMessageBatchIndex
         copied.maciStateRef = this.maciStateRef
         copied.messageAq = this.messageAq.copy()
