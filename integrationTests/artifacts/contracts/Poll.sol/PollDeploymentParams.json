@@ -1,0 +1,10 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "PollDeploymentParams",
+  "sourceName": "contracts/Poll.sol",
+  "abi": [],
+  "bytecode": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea264697066735822122075f9bfd2d1a9288470fb04ed6c98345591743fe551d5963e20528a1b998a610c64736f6c63430007020033",
+  "deployedBytecode": "0x6080604052600080fdfea264697066735822122075f9bfd2d1a9288470fb04ed6c98345591743fe551d5963e20528a1b998a610c64736f6c63430007020033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

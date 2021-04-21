@@ -19,8 +19,12 @@ import {
 } from 'maci-crypto'
 
 import {
-    maciContractAbi,
-    genTestAccounts,
+    parseArtifact,
+    getDefaultSigner,
+    deployTestContracts,
+    deployVkRegistry,
+    deployFreeForAllSignUpGatekeeper,
+    deployConstantInitialVoiceCreditProxy,
 } from 'maci-contracts'
 
 import { genPubKey } from 'maci-crypto'
@@ -34,28 +38,17 @@ const loadData = (name: string) => {
 const executeSuite = async (data: any, expect: any) => {
     console.log(data)
     const config = loadYaml()
-    const accounts = genTestAccounts(2)
-    const userPrivKey = accounts[1].privateKey
+    const signer = await getDefaultSigner()
     const coordinatorKeypair = new Keypair()
     const maciPrivkey = coordinatorKeypair.privKey.serialize()
-    const deployerPrivKey = accounts[0].privateKey
     const providerUrl = config.constants.chain.url
     const provider = new ethers.providers.JsonRpcProvider(providerUrl)
+    const deployerWallet = new ethers.Wallet.fromMnemonic(config.constants.chain.testMnemonic)
+    const userPrivKey = deployerWallet.privateKey
+    const deployerPrivKey = deployerWallet.privateKey
 
-    const deployerWallet = new ethers.Wallet(accounts[0].privateKey, provider)
-    /*
-    const tx = await deployerWallet.provider.sendTransaction(
-        accounts[0].sign({
-            nonce: await deployerWallet.provider.getTransactionCount(accounts[0].address),
-            gasPrice: ethers.utils.parseUnits('10', 'gwei'),
-            gasLimit: 21000,
-            to: accounts[1].address,
-            value: ethers.utils.parseUnits('1', 'ether'),
-            data: '0x'
-        })
-    )
-    await tx.wait()
-    */
+    const vkRegistry = await deployVkRegistry()
+    const gatekeeper = await deployFreeForAllSignUpGatekeeper()
 
     const maciState = new MaciState(
         coordinatorKeypair,
@@ -67,16 +60,9 @@ const executeSuite = async (data: any, expect: any) => {
 
     // Run the create subcommand
     const createCommand = `node ../cli/build/index.js create` +
-        ` -d ${deployerPrivKey} -sk ${maciPrivkey}` +
-        ` -u ${config.constants.maci.maxUsers}` +
-        ` -m ${config.constants.maci.maxMessages}` +
-        ` -v ${config.constants.maci.maxVoteOptions}` +
-        ` -e ${providerUrl}` +
-        ` -s ${config.constants.maci.signupDuration}` +
-        ` -o ${config.constants.maci.votingDuration}` +
-        ` -bm ${config.constants.maci.messageBatchSize}` +
-        ` -bv ${config.constants.maci.tallyBatchSize}` +
-        ` -c ${config.constants.maci.initialVoiceCredits}`
+        ` -c ${config.constants.maci.initialVoiceCredits}` +
+        ` -g ${gatekeeper.address}` +
+        ` -r ${vkRegistry.address}`
 
     console.log(createCommand)
 
@@ -85,10 +71,17 @@ const executeSuite = async (data: any, expect: any) => {
     // Log the output for further manual testing
     console.log(createOutput)
 
-    const regMatch = createOutput.match(/^MACI: (0x[a-fA-F0-9]{40})$/)
+    const regMatch = createOutput.match(/(0x[a-fA-F0-9]{40})/)
     const maciAddress = regMatch[1]
     
     const userKeypairs: Keypair[] = []
+
+    const maciContractAbi = parseArtifact('MACI')[0]
+    const maciContract = new ethers.Contract(
+        maciAddress,
+        maciContractAbi,
+        provider,
+    )
 
     console.log(`Signing up ${data.numUsers} users`)
     // Sign up
@@ -98,10 +91,9 @@ const executeSuite = async (data: any, expect: any) => {
         // Run the signup command
         const signupCommand = `node ../cli/build/index.js signup` +
             ` -p ${userKeypair.pubKey.serialize()}` +
-            ` -d ${userPrivKey}` +
             ` -x ${maciAddress}`
 
-        //console.log(signupCommand)
+        console.log(signupCommand)
 
         const signupExec = exec(signupCommand)
         if (signupExec.stderr) {
@@ -110,20 +102,14 @@ const executeSuite = async (data: any, expect: any) => {
         }
 
         maciState.signUp(
-            userKeypair.pubKey, 
+            userKeypair.pubKey,
             BigInt(config.constants.maci.initialVoiceCredits),
+            Date.now()
         )
     }
 
-    const maciContract = new ethers.Contract(
-        maciAddress,
-        maciContractAbi,
-        provider,
-    )
-
-    expect(maciState.genStateRoot().toString()).toEqual((await maciContract.getStateTreeRoot()).toString())
-
-    await maciContract.signUpTimestamp()
+    // TODO: verify roots
+    // expect(maciState.stateRoot.toString()).toEqual((await maciContract.getStateTreeRoot()).toString())
 
     await delay(1000 * config.constants.maci.signupDuration)
 
@@ -152,18 +138,19 @@ const executeSuite = async (data: any, expect: any) => {
             ` -v ${voteOptionIndex}` +
             ` -w ${newVoteWeight}` +
             ` -n ${nonce}` +
-            ` -s ${salt}`
+            ` -s ${salt}` +
+            ` -o ${1}`
 
-        //console.log(publishCommand)
+        console.log(publishCommand)
 
         const publishExec = exec(publishCommand)
         if (publishExec.stderr) {
             console.log(publishExec.stderr)
-            return false
+            //return false
         }
 
         const publishOutput = publishExec.stdout.trim()
-        //console.log(publishOutput)
+        console.log(publishOutput)
 
         const publishRegMatch = publishOutput.match(
             /Transaction hash: (0x[a-fA-F0-9]{64})\nEphemeral private key: (macisk.[a-f0-9]+)$/)

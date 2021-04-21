@@ -17,12 +17,15 @@ describe('Test suites', () => {
         const data = loadData('suite1_small.json')
         const result = await executeSuite(data, expect)
 
+        console.log(result) 
+
         expect(result).toBeTruthy()
     })
 
     it('Suite 2 - 1 briber, two batches', async () => {
         const data = loadData('suite2_bribe.json')
         const result = await executeSuite(data, expect)
+        console.log(result) 
 
         expect(result).toBeTruthy()
     })

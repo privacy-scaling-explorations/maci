@@ -1,0 +1,10 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IMessage",
+  "sourceName": "contracts/DomainObjs.sol",
+  "abi": [],
+  "bytecode": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea26469706673582212208dcb3139aee6cd39cb241079834f97cd390659d7922efbf6e5612894852d27b364736f6c63430007020033",
+  "deployedBytecode": "0x6080604052600080fdfea26469706673582212208dcb3139aee6cd39cb241079834f97cd390659d7922efbf6e5612894852d27b364736f6c63430007020033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
