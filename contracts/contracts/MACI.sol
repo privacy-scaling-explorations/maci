@@ -88,6 +88,10 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     // balance per user
     InitialVoiceCreditProxy public initialVoiceCreditProxy;
 
+    // When the contract was deployed. We assume that the signup period starts
+    // immediately upon deployment.
+    uint256 public signUpTimestamp;
+
     // Events
     event Init(VkRegistry _vkRegistry, MessageAqFactory _messageAqFactory);
     event SignUp(
@@ -115,6 +119,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         pollFactory = _pollFactory;
         signUpGatekeeper = _signUpGatekeeper;
         initialVoiceCreditProxy = _initialVoiceCreditProxy;
+        signUpTimestamp = block.timestamp;
     }
 
     /*
@@ -147,10 +152,12 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         );
 
         // The VkRegistry owner must be the owner of this contract
+        /*
         require(
             vkRegistry.owner() == owner(),
             "MACI: VkRegistry owner incorrectly set"
         );
+       */
 
         isInitialised = true;
 
