@@ -132,7 +132,6 @@ const executeSuite = async (data: any, expect: any) => {
         const publishCommand = `node ../cli/build/index.js publish` +
             ` -sk ${userKeypair.privKey.serialize()}` +
             ` -p ${userKeypair.pubKey.serialize()}` +
-            ` -d ${userPrivKey}` +
             ` -x ${maciAddress}` +
             ` -i ${stateIndex}` +
             ` -v ${voteOptionIndex}` +
