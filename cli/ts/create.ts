@@ -73,7 +73,7 @@ const create = async (args: any) => {
         // Deploy a ConstantInitialVoiceCreditProxy contract
         const c = await deployConstantInitialVoiceCreditProxy(
             initialVoiceCredits,
-            true,
+            false,
         )
         initialVoiceCreditProxyContractAddress = c.address
     } else {

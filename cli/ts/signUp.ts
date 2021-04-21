@@ -13,7 +13,7 @@ import {
     contractExists,
 } from './utils'
 
-import * as ethers from 'ethers'
+const { ethers } = require('hardhat')
 
 import {
     DEFAULT_ETH_PROVIDER,
@@ -100,10 +100,12 @@ const signup = async (args: any) => {
 
     const signer = await getDefaultSigner()
 
+    /*
     if (! await contractExists(signer.provider, maciAddress)) {
         console.error('Error: there is no contract deployed at the specified address')
         return
     }
+    */
 
     const maciContractAbi = parseArtifact('MACI')[0]
     const maciContract = new ethers.Contract(
@@ -131,9 +133,9 @@ const signup = async (args: any) => {
 
     const receipt = await tx.wait()
     const iface = maciContract.interface
-    const index = args._stateIndex
     console.log('Transaction hash:', tx.hash)
-    console.log('State index:', index.toString())
+    //const index = args._stateIndex
+    //console.log('State index:', index.toString())
 }
 
 export {

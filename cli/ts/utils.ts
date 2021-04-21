@@ -1,4 +1,3 @@
-import * as ethers from 'ethers'
 import * as prompt from 'prompt-async'
 
 prompt.colors = false
@@ -11,6 +10,7 @@ import {
 } from 'maci-contracts'
 
 const Web3 = require('web3')
+const { ethers } = require('hardhat')
 
 const calcBinaryTreeDepthFromMaxLeaves = (maxLeaves: number) => {
     let result = 0
@@ -77,7 +77,7 @@ const validateEthSk = (sk: string): boolean => {
 }
 
 const contractExists = async (
-    provider: ethers.providers.Provider,
+    provider: any,
     address: string,
 ) => {
     const code = await provider.getCode(address)
@@ -85,7 +85,7 @@ const contractExists = async (
 }
 
 const batchTransactionRequests = async (
-    provider: ethers.providers.Provider,
+    provider: any, 
     requests: Array<any>,
     fromAddress?: string
 ) => {
@@ -121,7 +121,7 @@ const batchTransactionRequests = async (
 }
 
 const currentBlockTimestamp = async (
-    provider: ethers.providers.Provider,
+    provider: any, 
 ): Promise<number> => {
     const blockNum = await provider.getBlockNumber()
     const block = await provider.getBlock(blockNum)
