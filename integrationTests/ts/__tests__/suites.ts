@@ -58,10 +58,28 @@ const executeSuite = async (data: any, expect: any) => {
         config.constants.maci.maxVoteOptions,
     )
 
+    const deployVkRegistryCommand = `node build/index.js deployVkRegistry`
+    const vkDeployOutput = exec(deployVkRegistryCommand).stdout.trim()
+    const vkAddressMatch = vkDeployOutput.match(/(0x[a-fA-F0-9]{40})/)
+    const vkAddress = vkAddressMatch[1]
+
+    const setVerifyingKeysCommand = `
+        node build/index.js setVerifyingKeys
+            -s 10
+            -i 1
+            -m 2
+            -v 2
+            -b 1 \
+            -p ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey \
+            -t ./zkeys/TallyVotes_10-1-2.test.0.zkey \
+            -k ${vkAddress}
+    `
+
+    console.log(setVerifyingKeysCommand)
+    const setVerifyingKeysOutput = exec(setVerifyingKeysCommand).stdout.trim()
+
     // Run the create subcommand
-    const createCommand = `node ../cli/build/index.js create` +
-        ` -c ${config.constants.maci.initialVoiceCredits}` +
-        ` -g ${gatekeeper.address}` +
+    const createCommand = `node build/index.js create` +
         ` -r ${vkRegistry.address}`
 
     console.log(createCommand)
@@ -71,9 +89,18 @@ const executeSuite = async (data: any, expect: any) => {
     // Log the output for further manual testing
     console.log(createOutput)
 
+
     const regMatch = createOutput.match(/(0x[a-fA-F0-9]{40})/)
     const maciAddress = regMatch[1]
-    
+
+    const deployPoll = `
+        node ./build/index.js deployPoll
+        -x ${maciAddress} \
+        -pk ${maciPrivkey} \
+        -t 20 -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2
+    `
+    const deployPollOutput = exec(deployPoll).stdout.trim()
+
     const userKeypairs: Keypair[] = []
 
     const maciContractAbi = parseArtifact('MACI')[0]
@@ -129,18 +156,22 @@ const executeSuite = async (data: any, expect: any) => {
         const salt = '0x' + genRandomSalt().toString(16)
  
         // Run the publish command
-        const publishCommand = `node ../cli/build/index.js publish` +
+        const publishCommand = `node build/index.js publish` +
             ` -sk ${userKeypair.privKey.serialize()}` +
             ` -p ${userKeypair.pubKey.serialize()}` +
             ` -x ${maciAddress}` +
-            ` -i ${stateIndex}` +
-            ` -v ${voteOptionIndex}` +
-            ` -w ${newVoteWeight}` +
-            ` -n ${nonce}` +
+            ` -i ${0}` +
+            ` -v ${0}` +
+            ` -w ${9}` +
+            ` -n ${1}` +
+            ` -o ${0}`
+        /*
+        const publishCommand = `node ../cli/build/index.js publish` +
             ` -s ${salt}` +
-            ` -o ${1}`
+        */
 
         console.log(publishCommand)
+
 
         const publishExec = exec(publishCommand)
         if (publishExec.stderr) {

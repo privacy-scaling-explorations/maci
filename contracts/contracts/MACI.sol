@@ -152,12 +152,10 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         );
 
         // The VkRegistry owner must be the owner of this contract
-        /*
         require(
             vkRegistry.owner() == owner(),
             "MACI: VkRegistry owner incorrectly set"
         );
-       */
 
         isInitialised = true;
 

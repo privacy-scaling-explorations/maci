@@ -4,7 +4,7 @@ import * as yaml from 'js-yaml'
 import * as  path from 'path';
 
 const exec = (command: string) => {
-    return shell.exec(command, { silent: true })
+    return shell.exec('cd ../cli/ && ' + command, { silent: true })
 }
 
 const delay = (ms: number): Promise<void> => {
