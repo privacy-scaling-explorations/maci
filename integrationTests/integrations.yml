@@ -10,10 +10,15 @@ tallyVotes:
 processStateTree:
 
 constants:
+  poll:
+    duration: 20
+    intStateTreeDepth: 1
+    messageTreeDepth: 2
+    messageBatchDepth: 1
   maci:
     maxUsers: 15
-    maxMessages: 15
-    maxVoteOptions: 15
+    maxMessages: 25
+    maxVoteOptions: 25
     initialVoiceCredits: 1000
     signupDuration: 15
     votingDuration: 60
@@ -24,8 +29,8 @@ constants:
     tallyBatchSize: 4
     quadVoteTallyBatchSize: 4
     voteOptionsMaxLeafIndex: 3
-    stateTreeDepth: 4
-    messageTreeDepth:  4
+    stateTreeDepth: 10
+    messageTreeDepth:  2
     voteOptionTreeDepth: 2
     ivcpData: '0x0000000000000000000000000000000000000000000000000000000000000000'
   chain:

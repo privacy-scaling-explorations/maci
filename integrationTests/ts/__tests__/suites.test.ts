@@ -13,7 +13,7 @@ describe('Test suites', () => {
         //expect(result).toBeTruthy()
     //})
 
-    it('Suite 1 - happy path, partial tree', async () => {
+    it.only('Suite 1 - happy path, partial tree', async () => {
         const data = loadData('suite1_small.json')
         const result = await executeSuite(data, expect)
 

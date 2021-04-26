@@ -188,10 +188,8 @@ const deployPoll = async (args: any) => {
             console.error('Error: invalid event log.')
             return 1
         }
-
-        console.log(log)
-        const pollId = args._pollId
-        const pollAddr = args._pollAddr
+        const pollId = log.args._pollId
+        const pollAddr = log.args._pollAddr
         console.log('Poll ID:', pollId.toString())
         console.log('Poll contract:', pollAddr)
         console.log('PollProcessorAndTallyer contract:', pptContract.address)
