@@ -68,3 +68,26 @@ circuits..
 
 Note the locations of the `.zkey` files as the CLI requires them as
 command-line flags.
+
+### Generate `.zkey` files
+
+If you wish to generate `.zkey` files from scratch, first navigate to `cli/`
+and edit `zkeys.config.yml`. Set the parameters you need.
+
+Next, run the following to compile the circuits with parameters you specified:
+
+```bash
+npx zkey-manager compile -c zkeys.config.yml
+```
+
+Next, download the `.ptau` file:
+
+```bash
+npx zkey-manager downloadPtau -c zkeys.config.yml
+```
+
+Finally, generate the `.zkey` files. This may require a lot of memory and time.
+
+```bash
+npx zkey-manager genZkeys -c zkeys.config.yml
+```

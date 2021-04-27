@@ -215,6 +215,18 @@ them from someone who has performed a multi-party trusted setup for said
 circuits..</p>
 <p>Note the locations of the <code>.zkey</code> files as the CLI requires them as
 command-line flags.</p>
+<h3 id="generate-zkey-files"><a class="header" href="#generate-zkey-files">Generate <code>.zkey</code> files</a></h3>
+<p>If you wish to generate <code>.zkey</code> files from scratch, first navigate to <code>cli/</code>
+and edit <code>zkeys.config.yml</code>. Set the parameters you need.</p>
+<p>Next, run the following to compile the circuits with parameters you specified:</p>
+<pre><code class="language-bash">npx zkey-manager compile -c zkeys.config.yml
+</code></pre>
+<p>Next, download the <code>.ptau</code> file:</p>
+<pre><code class="language-bash">npx zkey-manager downloadPtau -c zkeys.config.yml
+</code></pre>
+<p>Finally, generate the <code>.zkey</code> files. This may require a lot of memory and time.</p>
+<pre><code class="language-bash">npx zkey-manager genZkeys -c zkeys.config.yml
+</code></pre>
 
                     </main>
 
