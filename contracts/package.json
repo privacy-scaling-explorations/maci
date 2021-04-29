@@ -6,7 +6,7 @@
     "scripts": {
         "watch": "tsc --watch",
         "hardhat": "./scripts/runHardhat.sh",
-        "compileSol": "./scripts/compileSol.sh",
+        "compileSol": "./scripts/compileSol.sh && cp -r artifacts/ ../integrationTests/artifacts" ,
         "build": "tsc",
         "test": "npm run test-hasher && npm run test-accQueue && npm run test-accQueueBenchmark",
         "test-maci": "jest MACI.test.ts",

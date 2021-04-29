@@ -244,15 +244,11 @@ const setVerifyingKeys = async (args: any) => {
             messageBatchSize,
         )
 
-        console.log('processVk: ' + processVkOnChain);
-
         const tallyVkOnChain = await vkRegistryContract.getTallyVk(
             stateTreeDepth,
             intStateTreeDepth,
             voteOptionTreeDepth,
         )
-
-        console.log('tallyVk: ' + tallyVkOnChain);
 
         if (!compareVks(processVk, processVkOnChain)) {
             console.error('Error: processVk mismatch')

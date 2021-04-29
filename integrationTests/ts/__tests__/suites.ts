@@ -80,12 +80,6 @@ const executeSuite = async (data: any, expect: any) => {
 
     console.log(setVerifyingKeysCommand)
     const setVerifyingKeysOutput = exec(setVerifyingKeysCommand).stdout.trim()
-    const processVkMatch = setVerifyingKeysOutput.match(/processVk: ([0-9].*)/)
-    const processVkOnChain = processVkMatch[1]
-    console.log(processVkOnChain)
-    const tallyVkMatch = setVerifyingKeysOutput.match(/tallyVk: ([0-9].*)/)
-    const tallyVkOnChain = tallyVkMatch[1]
-    console.log(tallyVkOnChain)
 
     // Run the create subcommand
     const createCommand = `node build/index.js create` +
@@ -115,60 +109,36 @@ const executeSuite = async (data: any, expect: any) => {
 
     console.log(deployPoll)
     const deployPollOutput = exec(deployPoll).stdout.trim()
+    console.log(deployPollOutput)
+    const deployPollRegMatch = deployPollOutput.match(/PollProcessorAndTallyer contract: (0x[a-fA-F0-9]{40})/)
+    const pptAddress = deployPollRegMatch[1]
+    const deployPollIdRegMatch = deployPollOutput.match(/Poll ID: ([0-9])/)
+    const pollId = deployPollIdRegMatch[1]
 
     let treeDepths = {} as TreeDepths
     treeDepths.intStateTreeDepth = config.constants.poll.intStateTreeDepth
     treeDepths.messageTreeDepth = config.constants.poll.messageTreeDepth
-    treeDepths.messageBatchDepth = config.constants.poll.messageBatchDepth
+    treeDepths.messageTreeSubDepth = config.constants.poll.messageBatchDepth
     treeDepths.voteOptionTreeDepth = config.constants.maci.voteOptionTreeDepth
 
     const maxValues = {} as MaxValues
     maxValues.maxUsers = config.constants.maci.maxUsers
     maxValues.maxMessages = config.constants.maci.maxMessages
     maxValues.maxVoteOptions  = config.constants.maci.maxVoteOptions
-    /*
     const [ vkRegisteryAbi ] = parseArtifact('VkRegistry')
     const vkRegistryContract = new ethers.Contract(
         vkAddress,
         vkRegisteryAbi,
         signer,
     )
-    */
-    /*
     const messageBatchSize = 5 ** config.constants.poll.messageBatchDepth
-    const processVkSig = genProcessVkSig(
-        config.constants.maci.stateTreeDepth,
-        config.constants.maci.messageTreeDepth,
-        config.constants.maci.voteOptionTreeDepth,
-        messageBatchSize
-    )
-    /*
-    const tallyVkSig = genTallyVkSig(
-        config.constants.maci.stateTreeDepth,
-        treeDepths.intStateTreeDepth,
-        treeDepths.voteOptionTreeDepth
-    )
-
-    const tallyVkOnChain = await vkRegistryContract.getTallyVkBySig(
-        tallyVkSig
-    )
-    const processVkOnChain = await vkRegistryContract.getProcessVkBySig(
-        processVkSig
-    )
-    */
-    const processVk: VerifyingKey = VerifyingKey.fromContract(processVkOnChain)
-    const tallyVk: VerifyingKey = VerifyingKey.fromContract(tallyVkOnChain)
-    const PollState = new Poll(
+    maciState.deployPoll(
         config.constants.poll.duration,
         (Date.now() + (config.constants.poll.duration * 60000)),
-        coordinatorKeypair,
-        '../../../cli/zkeys/process.json',
-        '../../../cli/zkeys/tally.json',
-        treeDepths,
         maxValues,
-        processVk,
-        tallyVk,
-        maciState
+        treeDepths,
+        messageBatchSize,
+        coordinatorKeypair
     )
 
     const userKeypairs: Keypair[] = []
@@ -205,8 +175,6 @@ const executeSuite = async (data: any, expect: any) => {
         )
     }
 
-    // await delay(1000 * config.constants.maci.signupDuration)
-
     // Publish messages
     console.log(`Publishing messages`)
 
@@ -227,18 +195,13 @@ const executeSuite = async (data: any, expect: any) => {
             ` -sk ${userKeypair.privKey.serialize()}` +
             ` -p ${userKeypair.pubKey.serialize()}` +
             ` -x ${maciAddress}` +
-            ` -i ${0}` +
-            ` -v ${0}` +
-            ` -w ${9}` +
-            ` -n ${1}` +
-            ` -o ${0}`
-        /*
-        const publishCommand = `node ../cli/build/index.js publish` +
-            ` -s ${salt}` +
-        */
+            ` -i ${stateIndex}` +
+            ` -v ${voteOptionIndex}` +
+            ` -w ${newVoteWeight}` +
+            ` -n ${nonce}` +
+            ` -o ${pollId}`
 
         console.log(publishCommand)
-
 
         const publishExec = exec(publishCommand)
         if (publishExec.stderr) {
@@ -263,7 +226,7 @@ const executeSuite = async (data: any, expect: any) => {
             BigInt(voteOptionIndex),
             BigInt(newVoteWeight),
             BigInt(nonce),
-            BigInt(0),
+            BigInt(pollId),
             BigInt(salt),
         )
 
@@ -276,19 +239,98 @@ const executeSuite = async (data: any, expect: any) => {
                 coordinatorKeypair.pubKey,
             )
         )
-
-        PollState.publishMessage(
+        maciState.polls[pollId].publishMessage(
             message,
             encPubKey,
         )
     }
 
-    // Check whether the message tree root is correct
-    //expect(maciState.genMessageRoot().toString()).toEqual((await maciContract.getMessageTreeRoot()).toString())
+    const timeTravelCommand = `node build/index.js timeTravel -s ${config.constants.maci.votingDuration}`
+    let e = exec(timeTravelCommand)
 
-    await delay(1000 * config.constants.maci.votingDuration)
+    if (e.stderr) {
+        console.log(e.stderr)
+        return false
+    }
+    console.log(e.stdout)
+
+    const mergeMessagesCommand = `node build/index.js mergeMessages -x ${maciAddress} -o ${pollId}`
+    e = exec(mergeMessagesCommand)
+
+    if (e.stderr) {
+        console.log(e.stderr)
+        return false
+    }
+    console.log(e.stdout)
+
+    const mergeSignupsCommand = `node build/index.js mergeSignups -x ${maciAddress} -o ${pollId}`
+    e = exec(mergeSignupsCommand)
+
+    if (e.stderr) {
+        console.log(e.stderr)
+        return false
+    }
+    console.log(e.stdout)
+
+    const removeOldProofs = `rm -f tally.json proofs.json`
+    e = exec(removeOldProofs)
+
+    if (e.stderr) {
+        console.log(e.stderr)
+        return false
+    }
+    console.log(e.stdout)
+
+    const genProofsCommand = `node build/index.js genProofs` +
+        ` -x ${maciAddress}` +
+        ` -sk ${coordinatorKeypair.privKey.serialize()}` +
+        ` -o ${pollId}` +
+        ` -r ~/rapidsnark/build/prover` +
+        ` -wp ./zkeys/ProcessMessages_10-2-1-2.test` +
+        ` -wt ./zkeys/TallyVotes_10-1-2.test` +
+        ` -zp ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey` +
+        ` -zt ./zkeys/TallyVotes_10-1-2.test.0.zkey` +
+        ` -t tally.json` +
+        ` -f proofs.json`
+
+    e = exec(genProofsCommand)
+
+    if (e.stderr) {
+        console.log(e.stderr)
+        return false
+    }
+    console.log(e.stdout)
+
+    const proveOnChainCommand = `node build/index.js proveOnChain` +
+        ` -x ${maciAddress}` +
+        ` -o ${pollId}` +
+        ` -q ${pptAddress}` +
+        ` -f proofs.json`
+
+    e = exec(proveOnChainCommand)
+
+    if (e.stderr) {
+        console.log(e.stderr)
+        return false
+    }
+    console.log(e.stdout)
+
+    const verifyCommand = `node build/index.js verify` +
+        ` -x ${maciAddress}` +
+        ` -o ${pollId}` +
+        ` -q ${pptAddress}` +
+        ` -t tally.json`
+
+    e = exec(verifyCommand)
+
+    if (e.stderr) {
+        console.log(e.stderr)
+        return false
+    }
+    console.log(e.stdout)
 
     // Process messages
+    /*
     const processCommand = `NODE_OPTIONS=--max-old-space-size=4096 node ../cli/build/index.js process` +
         ` -sk ${coordinatorKeypair.privKey.serialize()}` +
         ` -d ${userPrivKey}` +
@@ -321,7 +363,8 @@ const executeSuite = async (data: any, expect: any) => {
     expect(currentMessageBatchIndex.toString()).toEqual('0')
 
     const randomLeaf = StateLeaf.unserialize(processRegMatch[3])
-
+    */
+    /*
     const tallyCommand = `NODE_OPTIONS=--max-old-space-size=4096 node ../cli/build/index.js tally` +
         ` -sk ${coordinatorKeypair.privKey.serialize()}` +
         ` -d ${userPrivKey}` +
@@ -411,6 +454,7 @@ const executeSuite = async (data: any, expect: any) => {
         console.log(verifyOutput)
     }
     expect(verifyRegMatch).toBeTruthy()
+    */
 
     return true
 }
