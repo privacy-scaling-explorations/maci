@@ -10,7 +10,7 @@ cli/tally.json
 **/test_tally.json
 **/tally.json
 integrationTests/test_tally.json
-integrationTests/artifacts
+integrationTests/artifacts/**
 deployedAddresses.json
 .etherlime-store
 **/build/
