@@ -166,7 +166,7 @@ Example output:
 
 ```
 Transaction hash: 0xcae04f618a0b45896732632121248c312cbc68584519c1e43932b110da9078bc
-State index: 0
+State index: 1
 ```
 
 ### User: publish message
