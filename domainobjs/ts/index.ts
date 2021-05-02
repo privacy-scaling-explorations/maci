@@ -24,7 +24,8 @@ import {
     packPubKey,
     unpackPubKey,
     IncrementalQuinTree,
-    SNARK_FIELD_SIZE
+    SNARK_FIELD_SIZE,
+    NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
 
 const SERIALIZED_PRIV_KEY_PREFIX = 'macisk.'
@@ -530,6 +531,17 @@ class Ballot {
         ballot.nonce = genRandomSalt()
         return ballot
     }
+
+    public static genBlankBallot(
+        _numVoteOptions: number,
+        _voteOptionTreeDepth: number,
+    ) {
+        const ballot = new Ballot(
+            _numVoteOptions,
+            _voteOptionTreeDepth,
+        )
+        return ballot
+    }
 }
 
 /*
@@ -562,8 +574,19 @@ class StateLeaf implements IStateLeaf {
     }
 
     public static genBlankLeaf(): StateLeaf {
+        // The public key for a blank state leaf is the first Pedersen base
+        // point from iden3's circomlib implementation of the Pedersen hash.
+        // Since it is generated using a hash-to-curve function, we are
+        // confident that no-one knows the private key associated with this
+        // public key. See:
+        // https://github.com/iden3/circomlib/blob/d5ed1c3ce4ca137a6b3ca48bec4ac12c1b38957a/src/pedersen_printbases.js
+        // Its hash should equal
+        // 6769006970205099520508948723718471724660867171122235270773600567925038008762.
         return new StateLeaf(
-            new PubKey([BigInt(0), BigInt(0)]),
+            new PubKey([
+                BigInt('10457101036533406547632367118273992217979173478358440826365724437999023779287'),
+                BigInt('19824078218392094440610104313265183977899662750282163392862422243483260492317'),
+            ]),
             BigInt(0),
             BigInt(0),
         )

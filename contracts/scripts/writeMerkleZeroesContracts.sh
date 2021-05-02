@@ -7,6 +7,9 @@ cd ..
 # The nothing-up-my-sleeve value
 maciNums="8370432830353022751713833565135785980866757267633941821328460903436894336785"
 
+# The hash of a blank state leaf
+blankSl="13965931445250082763293287727421080476610743352584808847474103106135142574234"
+
 # Binary tree with zero = 0
 node build/genZerosContract.js \
     MerkleBinary0 0 2 33 "Binary tree zeros (0)" 0 0 \
@@ -27,7 +30,12 @@ node build/genZerosContract.js \
     MerkleQuinaryMaci $maciNums 5 33 "Quinary tree zeros (Keccack hash of 'Maci')" 0 0 \
     > contracts/trees/zeros/MerkleQuinaryMaci.sol
 
-# Quinary tree with SHA256 for subtrees and zero = maciNums
+# Quinary tree with zero = blank state leaf
 node build/genZerosContract.js \
-    MerkleQuinaryMaciWithSha256 $maciNums 5 33 "Quinary tree (with SHA256) zeros (Keccack hash of 'Maci')" 1 2 \
-    > contracts/trees/zeros/MerkleQuinaryMaciWithSha256.sol
+    MerkleQuinaryBlankSl $blankSl 5 33 "Quinary tree zeros (hash of a blank state leaf)" 0 0 \
+    > contracts/trees/zeros/MerkleQuinaryBlankSl.sol
+
+## Quinary tree with SHA256 for subtrees and zero = maciNums
+#node build/genZerosContract.js \
+    #MerkleQuinaryMaciWithSha256 $maciNums 5 33 "Quinary tree (with SHA256) zeros (Keccack hash of 'Maci')" 1 2 \
+    #> contracts/trees/zeros/MerkleQuinaryMaciWithSha256.sol

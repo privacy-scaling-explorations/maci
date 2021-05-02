@@ -13,7 +13,7 @@ import { InitialVoiceCreditProxy }
     from "./initialVoiceCreditProxy/InitialVoiceCreditProxy.sol";
 
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
-import { AccQueue, AccQueueQuinaryMaci } from "./trees/AccQueue.sol";
+import { AccQueue, AccQueueQuinaryBlankSl } from "./trees/AccQueue.sol";
 import { IMACI } from "./IMACI.sol";
 import { Params } from "./Params.sol";
 import { DomainObjs } from "./DomainObjs.sol";
@@ -43,9 +43,9 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     uint256 constant internal NOTHING_UP_MY_SLEEVE
         = uint256(8370432830353022751713833565135785980866757267633941821328460903436894336785);
 
-    // The PoseidonT4 (3 inputs) hash of [0, 0, 0]
+    //// The hash of a blank state leaf
     uint256 constant internal BLANK_STATE_LEAF_HASH
-        = uint256(5317387130258456662214331362918410991734007599705406860481038345552731150762);
+        = uint256(6769006970205099520508948723718471724660867171122235270773600567925038008762);
 
     // Each poll has an incrementing ID
     uint256 internal nextPollId = 0;
@@ -114,7 +114,8 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         InitialVoiceCreditProxy _initialVoiceCreditProxy
     ) {
         // Deploy the state AccQueue
-        stateAq = new AccQueueQuinaryMaci(STATE_TREE_SUBDEPTH);
+        stateAq = new AccQueueQuinaryBlankSl(STATE_TREE_SUBDEPTH);
+        stateAq.enqueue(BLANK_STATE_LEAF_HASH);
 
         pollFactory = _pollFactory;
         signUpGatekeeper = _signUpGatekeeper;

@@ -56,7 +56,6 @@ class Poll {
 
     public pollEndTimestamp: BigInt
 
-
     public ballots: Ballot[] = []
     public ballotTree: IncrementalQuinTree
 
@@ -72,10 +71,10 @@ class Poll {
     public VOTE_OPTION_TREE_ARITY = 5
 
     public stateCopied = false
-    public stateLeaves: StateLeaf[] = []
+    public stateLeaves: StateLeaf[] = [blankStateLeaf]
     public stateTree = new IncrementalQuinTree(
         STATE_TREE_DEPTH,
-        NOTHING_UP_MY_SLEEVE,
+        blankStateLeafHash,
         this.STATE_TREE_ARITY,
         hash5,
     )
@@ -133,6 +132,12 @@ class Poll {
             this.results.push(BigInt(0))
             this.perVOSpentVoiceCredits.push(BigInt(0))
         }
+
+        const blankBallot = Ballot.genBlankBallot(
+            this.maxValues.maxVoteOptions,
+            _treeDepths.voteOptionTreeDepth,
+        )
+        this.ballots.push(blankBallot)
     }
 
     private copyStateFromMaci = () => {
@@ -156,8 +161,9 @@ class Poll {
             this.STATE_TREE_ARITY,
             hash5,
         )
+        this.ballotTree.insert(emptyBallotHash)
 
-        for (let i = 0; i < this.stateLeaves.length; i ++) {
+        while (this.ballots.length < this.stateLeaves.length) {
             this.ballotTree.insert(emptyBallotHash)
             this.ballots.push(emptyBallot)
         }
@@ -248,16 +254,13 @@ class Poll {
     public processMessages = (
         _pollId: number,
     ) => {
-        if (!this.stateCopied) {
-            this.copyStateFromMaci()
-        }
-        const batchSize = this.batchSizes.messageBatchSize
-
         assert(this.hasUnprocessedMessages(), 'No more messages to process')
 
         // Require that the message queue has been merged
         assert(this.isMessageAqMerged())
         assert(this.messageAq.hasRoot(this.treeDepths.messageTreeDepth))
+
+        const batchSize = this.batchSizes.messageBatchSize
 
         if (this.numBatchesProcessed === 0) {
             // The starting index of the batch of messages to process.
@@ -297,6 +300,10 @@ class Poll {
         // The starting index must be valid
         assert(this.currentMessageBatchIndex >= 0)
         assert(this.currentMessageBatchIndex % batchSize === 0)
+
+        if (!this.stateCopied) {
+            this.copyStateFromMaci()
+        }
 
         // Generate circuit inputs
         const circuitInputs = stringifyBigInts(
@@ -345,7 +352,7 @@ class Poll {
                 this.ballotTree.update(index, r.newBallot.hash())
 
             } else {
-                // Since the command is invalid, use state leaf 0 and ballot 0
+                // Since the command is invalid, use a blank state leaf
                 currentStateLeaves.unshift(this.stateLeaves[0].copy())
                 currentStateLeavesPathElements.unshift(
                     this.stateTree.genMerklePath(0).pathElements
@@ -572,7 +579,7 @@ class Poll {
         // If the state tree index in the command is invalid, do nothing
         if (
             stateLeafIndex >= BigInt(this.ballots.length) ||
-            stateLeafIndex < BigInt(0)
+            stateLeafIndex < BigInt(1)
         ) {
             return
         }
@@ -615,7 +622,7 @@ class Poll {
 
         // If the vote option index is invalid, do nothing
         if (
-            command.voteOptionIndex < BigInt(-1) ||
+            command.voteOptionIndex < BigInt(0) ||
             command.voteOptionIndex >= BigInt(this.maxValues.maxVoteOptions)
         ) {
             return
@@ -1000,6 +1007,9 @@ class Poll {
     }
 }
 
+const blankStateLeaf = StateLeaf.genBlankLeaf()
+const blankStateLeafHash = blankStateLeaf.hash()
+
 // A representation of the MACI contract
 // Also see MACI.sol
 class MaciState {
@@ -1013,22 +1023,24 @@ class MaciState {
     public stateLeaves: StateLeaf[] = []
     public stateTree = new IncrementalQuinTree(
         STATE_TREE_DEPTH,
-        NOTHING_UP_MY_SLEEVE,
+        blankStateLeafHash,
         this.STATE_TREE_ARITY,
         hash5,
     )
     public stateAq: AccQueue = new AccQueue(
         this.STATE_TREE_SUBDEPTH,
         this.STATE_TREE_ARITY,
-        NOTHING_UP_MY_SLEEVE,
-        //true,
+        blankStateLeafHash,
     )
     public pollBeingProcessed = true
     public currentPollBeingProcessed
     public numSignUps = 0
 
-    //constructor() {
-    //}
+    constructor () {
+        this.stateLeaves.push(blankStateLeaf)
+        this.stateTree.insert(blankStateLeafHash)
+        this.stateAq.enqueue(blankStateLeafHash)
+    }
 
     public signUp(
         _pubKey: PubKey,

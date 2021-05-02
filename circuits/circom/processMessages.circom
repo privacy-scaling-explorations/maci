@@ -317,7 +317,7 @@ template ProcessMessages(
     sbCommitmentHasher.in[1] <== ballotRoots[0];
     sbCommitmentHasher.in[2] <== newSbSalt;
 
-    /*sbCommitmentHasher.hash === newSbCommitment;*/
+    sbCommitmentHasher.hash === newSbCommitment;
 }
 
 template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
@@ -404,13 +404,13 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     //  ----------------------------------------------------------------------- 
     // 2. If isValid is 0, generate indices for leaf 0
     //    Otherwise, generate indices for commmand.stateIndex
-    component isValidMux = Mux1();
-    isValidMux.s <== transformer.isValid;
-    isValidMux.c[0] <== 0;
-    isValidMux.c[1] <== cmdStateIndex;
+    component stateIndexMux = Mux1();
+    stateIndexMux.s <== transformer.isValid;
+    stateIndexMux.c[0] <== 0;
+    stateIndexMux.c[1] <== cmdStateIndex;
 
     component stateLeafPathIndices = QuinGeneratePathIndices(stateTreeDepth);
-    stateLeafPathIndices.in <== isValidMux.out;
+    stateLeafPathIndices.in <== stateIndexMux.out;
 
     //  ----------------------------------------------------------------------- 
     // 3. Verify that the original state leaf exists in the given state root

@@ -300,14 +300,22 @@ const genProofs = async (args: any) => {
     }
 
     while (poll.hasUnprocessedMessages()) {
+
         const circuitInputs = poll.processMessages()
 
-        const r = genProof(
-            circuitInputs,
-            rapidsnarkExe,
-            args.process_witnessgen,
-            args.process_zkey,
-        )
+        let r
+        try {
+            r = genProof(
+                circuitInputs,
+                rapidsnarkExe,
+                args.process_witnessgen,
+                args.process_zkey,
+            )
+        } catch (e) {
+            console.error('Error: could not generate proof.')
+            console.log(e)
+            return 1
+        }
 
         // Verify the proof
         const isValid = verifyProof(
