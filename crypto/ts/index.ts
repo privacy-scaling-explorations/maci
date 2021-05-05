@@ -53,7 +53,11 @@ const NOTHING_UP_MY_SLEEVE_PUBKEY: PubKey = [
  * Convert a BigInt to a Buffer
  */
 const bigInt2Buffer = (i: BigInt): Buffer => {
-    return Buffer.from(i.toString(16), 'hex')
+    let hexStr = i.toString(16)
+    while (hexStr.length < 64) {
+        hexStr = '0' + hexStr
+    }
+    return Buffer.from(hexStr, 'hex')
 }
 
 // Hash up to 2 elements
