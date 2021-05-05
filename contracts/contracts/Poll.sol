@@ -483,14 +483,18 @@ contract PollProcessorAndTallyer is
         uint256 messageRoot = messageAq.getMainRoot(messageTreeDepth);
         require(messageRoot != 0, ERROR_MESSAGE_AQ_NOT_MERGED);
 
-        // Copy the state root and set the batch index if this is the
-        // first batch to process
+        // Copy the state and ballot commitment and set the batch index if this
+        // is the first batch to process
         if (numBatchesProcessed == 0) {
             (uint256 currentSbCommitment,) = _poll.currentSbAndTallyCommitments();
             sbCommitment = currentSbCommitment;
             (, uint256 numMessages) = _poll.numSignUpsAndMessages();
             currentMessageBatchIndex =
                 (numMessages / messageBatchSize) * messageBatchSize;
+
+            if (currentMessageBatchIndex > 0) {
+                currentMessageBatchIndex -= messageBatchSize;
+            }
         }
 
         bool isValid = verifyProcessProof(

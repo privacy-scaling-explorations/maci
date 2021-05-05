@@ -283,19 +283,16 @@ class Poll {
         }
 
         if (this.numBatchesProcessed === 0) {
-            this.currentMessageBatchIndex = (
-                Math.floor(this.messages.length / batchSize)
-            ) * batchSize
+            this.currentMessageBatchIndex =
+                Math.floor(this.messages.length / batchSize) * batchSize
 
-            if (
-                Math.floor(this.messages.length / batchSize) > 0 &&
-                this.messages.length % batchSize === 0
-            ) {
+            if (this.currentMessageBatchIndex > 0) {
                 this.currentMessageBatchIndex -= batchSize
             }
 
             this.sbSalts[this.currentMessageBatchIndex] = BigInt(0)
         }
+        debugger
 
         // The starting index must be valid
         assert(this.currentMessageBatchIndex >= 0)
@@ -306,6 +303,7 @@ class Poll {
         }
 
         // Generate circuit inputs
+        debugger
         const circuitInputs = stringifyBigInts(
             this.genProcessMessagesCircuitInputsPartial(
                 this.currentMessageBatchIndex
@@ -443,7 +441,8 @@ class Poll {
     ) => {
         const messageBatchSize = this.batchSizes.messageBatchSize
 
-        assert(_index < this.messages.length)
+        assert(_index <= this.messages.length)
+        assert(_index % messageBatchSize === 0)
 
         let msgs = this.messages.map((x) => x.asCircuitInputs())
         while (msgs.length % messageBatchSize > 0) {
@@ -457,6 +456,12 @@ class Poll {
             commands.push(commands[commands.length - 1])
         }
         commands = commands.slice(_index, _index + messageBatchSize)
+
+        while(this.messageTree.leaves.length < _index + messageBatchSize) {
+            this.messageTree.insert(
+                this.messageTree.zeroValue
+            )
+        }
 
         const messageSubrootPath = this.messageTree.genMerkleSubrootPath(
             _index,
@@ -498,6 +503,7 @@ class Poll {
         ])
 
         // Generate a SHA256 hash of inputs which the contract provides
+        debugger
         const packedVals = 
             BigInt(this.maxValues.maxVoteOptions) +
             (BigInt(this.numSignUps) << BigInt(50)) +

@@ -1,3 +1,4 @@
+import * as ethers from 'ethers'
 import * as shell from 'shelljs'
 import * as fs from 'fs'
 import * as yaml from 'js-yaml'
@@ -20,4 +21,19 @@ const loadYaml = () => {
     }
 }
 
-export { exec, delay, loadYaml }
+const genTestAccounts = (
+    numAccounts: number,
+    mnemonic,
+) => {
+    const accounts: ethers.Wallet[] = []
+
+    for (let i=0; i<numAccounts; i++) {
+        const path = `m/44'/60'/${i}'/0/0`
+        const wallet = ethers.Wallet.fromMnemonic(mnemonic, path)
+        accounts.push(wallet)
+    }
+
+    return accounts
+}
+
+export { exec, delay, loadYaml, genTestAccounts }

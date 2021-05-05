@@ -2,22 +2,14 @@ const { ethers } = require('hardhat')
 import {
     PubKey,
     PrivKey,
-    VerifyingKey,
     Keypair,
     Command,
-    StateLeaf,
 } from 'maci-domainobjs'
 
 import {
-    genPerVOSpentVoiceCreditsCommitment,
-    genSpentVoiceCreditsCommitment,
-    genTallyResultCommitment,
-    genProcessVkSig,
-    genTallyVkSig,
     MaciState,
     TreeDepths,
     MaxValues,
-    Poll
 } from 'maci-core'
 
 import {
@@ -25,16 +17,12 @@ import {
 } from 'maci-crypto'
 
 import {
-    parseArtifact,
     getDefaultSigner,
-    deployTestContracts,
-    deployFreeForAllSignUpGatekeeper,
-    deployConstantInitialVoiceCreditProxy,
 } from 'maci-contracts'
 
 import { genPubKey } from 'maci-crypto'
 
-import { exec, delay, loadYaml } from './utils'
+import { exec, loadYaml } from './utils'
 
 const loadData = (name: string) => {
     return require('@maci-integrationTests/ts/__tests__/suites/' + name)
@@ -43,16 +31,7 @@ const loadData = (name: string) => {
 const executeSuite = async (data: any, expect: any) => {
     console.log(data)
     const config = loadYaml()
-    const signer = await getDefaultSigner()
     const coordinatorKeypair = new Keypair()
-    const maciPrivkey = coordinatorKeypair.privKey.serialize()
-    const providerUrl = config.constants.chain.url
-    const provider = new ethers.providers.JsonRpcProvider(providerUrl)
-    const deployerWallet = new ethers.Wallet.fromMnemonic(config.constants.chain.testMnemonic)
-    const userPrivKey = deployerWallet.privateKey
-    const deployerPrivKey = deployerWallet.privateKey
-
-    const gatekeeper = await deployFreeForAllSignUpGatekeeper()
 
     const maciState = new MaciState(
         coordinatorKeypair,
@@ -79,7 +58,9 @@ const executeSuite = async (data: any, expect: any) => {
         ` -k ${vkAddress}`
 
     console.log(setVerifyingKeysCommand)
+
     const setVerifyingKeysOutput = exec(setVerifyingKeysCommand).stdout.trim()
+    console.log(setVerifyingKeysOutput)
 
     // Run the create subcommand
     const createCommand = `node build/index.js create` +
@@ -88,10 +69,7 @@ const executeSuite = async (data: any, expect: any) => {
     console.log(createCommand)
 
     const createOutput = exec(createCommand).stdout.trim()
-
-    // Log the output for further manual testing
     console.log(createOutput)
-
 
     const regMatch = createOutput.match(/(0x[a-fA-F0-9]{40})/)
     const maciAddress = regMatch[1]
@@ -110,12 +88,13 @@ const executeSuite = async (data: any, expect: any) => {
     console.log(deployPoll)
     const deployPollOutput = exec(deployPoll).stdout.trim()
     console.log(deployPollOutput)
+
     const deployPollRegMatch = deployPollOutput.match(/PollProcessorAndTallyer contract: (0x[a-fA-F0-9]{40})/)
     const pptAddress = deployPollRegMatch[1]
     const deployPollIdRegMatch = deployPollOutput.match(/Poll ID: ([0-9])/)
     const pollId = deployPollIdRegMatch[1]
 
-    let treeDepths = {} as TreeDepths
+    const treeDepths = {} as TreeDepths
     treeDepths.intStateTreeDepth = config.constants.poll.intStateTreeDepth
     treeDepths.messageTreeDepth = config.constants.poll.messageTreeDepth
     treeDepths.messageTreeSubDepth = config.constants.poll.messageBatchDepth
@@ -125,12 +104,6 @@ const executeSuite = async (data: any, expect: any) => {
     maxValues.maxUsers = config.constants.maci.maxUsers
     maxValues.maxMessages = config.constants.maci.maxMessages
     maxValues.maxVoteOptions  = config.constants.maci.maxVoteOptions
-    const [ vkRegisteryAbi ] = parseArtifact('VkRegistry')
-    const vkRegistryContract = new ethers.Contract(
-        vkAddress,
-        vkRegisteryAbi,
-        signer,
-    )
     const messageBatchSize = 5 ** config.constants.poll.messageBatchDepth
     maciState.deployPoll(
         config.constants.poll.duration,
@@ -142,13 +115,6 @@ const executeSuite = async (data: any, expect: any) => {
     )
 
     const userKeypairs: Keypair[] = []
-
-    const maciContractAbi = parseArtifact('MACI')[0]
-    const maciContract = new ethers.Contract(
-        maciAddress,
-        maciContractAbi,
-        provider,
-    )
 
     console.log(`Signing up ${data.numUsers} users`)
     // Sign up
@@ -307,6 +273,7 @@ const executeSuite = async (data: any, expect: any) => {
         ` -q ${pptAddress}` +
         ` -f proofs.json`
 
+    console.log(proveOnChainCommand)
     e = exec(proveOnChainCommand)
 
     if (e.stderr) {
@@ -321,6 +288,7 @@ const executeSuite = async (data: any, expect: any) => {
         ` -q ${pptAddress}` +
         ` -t tally.json`
 
+    console.log(verifyCommand)
     e = exec(verifyCommand)
 
     if (e.stderr) {
