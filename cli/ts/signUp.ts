@@ -100,12 +100,10 @@ const signup = async (args: any) => {
 
     const signer = await getDefaultSigner()
 
-    /*
     if (! await contractExists(signer.provider, maciAddress)) {
         console.error('Error: there is no contract deployed at the specified address')
         return
     }
-    */
 
     const maciContractAbi = parseArtifact('MACI')[0]
     const maciContract = new ethers.Contract(
@@ -134,8 +132,13 @@ const signup = async (args: any) => {
     const receipt = await tx.wait()
     const iface = maciContract.interface
     console.log('Transaction hash:', tx.hash)
-    //const index = args._stateIndex
-    //console.log('State index:', index.toString())
+    // get state index from the event
+    if (receipt && receipt.logs) {
+        const stateIndex = iface.parseLog(receipt.logs[0]).args[0]
+        console.log('State index:', stateIndex.toString())
+    } else {
+        console.error('Error: unable to retrieve the transaction receipt')
+    }
 }
 
 export {

@@ -213,12 +213,10 @@ const publish = async (args: any) => {
     }
 
     const signer = await getDefaultSigner()
-    /*
     if (! (await contractExists(signer.provider, maciAddress))) {
         console.error('Error: there is no MACI contract deployed at the specified address')
         return 1
     }
-    */
 
     const pollId = args.poll_id
 
