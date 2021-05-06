@@ -61,6 +61,9 @@ const testTallyVk = new VerifyingKey(
 
 const coordinatorKeypair = new Keypair()
 
+const blankStateLeaf = StateLeaf.genBlankLeaf()
+const blankStateLeafHash = blankStateLeaf.hash()
+
 describe('MaciState', () => {
     describe('Process and tally 1 message from 1 user', () => {
         let maciState
@@ -76,10 +79,12 @@ describe('MaciState', () => {
             maciState = new MaciState()
             stateTree = new IncrementalQuinTree(
                 STATE_TREE_DEPTH,
-                NOTHING_UP_MY_SLEEVE,
+                blankStateLeafHash,
                 5,
                 hash5,
             )
+
+            stateTree.insert(blankStateLeafHash)
 
             msgTree = new IncrementalQuinTree(
                 treeDepths.messageTreeDepth,
@@ -106,10 +111,11 @@ describe('MaciState', () => {
                 BigInt(Math.floor(Date.now() / 1000)),
             )
 
-            expect(stateIndex.toString()).toEqual('0')
+            expect(stateIndex.toString()).toEqual('1')
 
             maciState.stateAq.mergeSubRoots(0)
             maciState.stateAq.merge(STATE_TREE_DEPTH)
+
             expect(maciState.stateAq.getRoot(STATE_TREE_DEPTH).toString())
                 .toEqual(stateTree.root.toString())
         })
@@ -175,10 +181,10 @@ describe('MaciState', () => {
             maciState.polls[pollId].processMessages()
 
             // Check the ballot
-            expect(maciState.polls[pollId].ballots[0].votes[Number(voteOptionIndex)].toString())
+            expect(maciState.polls[pollId].ballots[1].votes[Number(voteOptionIndex)].toString())
                 .toEqual(voteWeight.toString())
             // Check the state leaf in the poll
-            expect(maciState.polls[pollId].stateLeaves[0].voiceCreditBalance.toString())
+            expect(maciState.polls[pollId].stateLeaves[1].voiceCreditBalance.toString())
                 .toEqual((voiceCreditBalance - (voteWeight * voteWeight)).toString())
         })
 
@@ -211,7 +217,7 @@ describe('MaciState', () => {
         beforeAll(() => {
             maciState = new MaciState()
             // Sign up and vote
-            for (let i = 0; i < messageBatchSize; i ++) {
+            for (let i = 0; i < messageBatchSize - 1; i ++) {
                 const userKeypair = new Keypair()
                 users.push(userKeypair)
 
@@ -235,16 +241,12 @@ describe('MaciState', () => {
         })
 
         it('should process votes correctly', () => {
-            expect.assertions(16 + (3 * messageBatchSize))
-
-            expect(maciState.stateAq.numLeaves).toEqual(messageBatchSize)
-
-            // 25 valid votes
-            for (let i = 0; i < messageBatchSize; i ++) {
+            // 24 valid votes
+            for (let i = 0; i < messageBatchSize - 1; i ++) {
                 const userKeypair = users[i]
 
                 const command = new Command(
-                    BigInt(i),
+                    BigInt(i + 1),
                     userKeypair.pubKey,
                     BigInt(i), // vote option index
                     voteWeight,
@@ -263,10 +265,10 @@ describe('MaciState', () => {
                 maciState.polls[pollId].publishMessage(message, ecdhKeypair.pubKey)
             }
 
-            expect(maciState.polls[pollId].messageAq.numLeaves).toEqual(messageBatchSize)
+            expect(maciState.polls[pollId].messageAq.numLeaves).toEqual(messageBatchSize - 1)
 
-            // 25 invalid votes
-            for (let i = 0; i < messageBatchSize; i ++) {
+            // 24 invalid votes
+            for (let i = 0; i < messageBatchSize - 1; i ++) {
                 const userKeypair = users[i]
                 const command = new Command(
                     BigInt(i + 1),
@@ -332,14 +334,8 @@ describe('MaciState', () => {
                 maciState.polls[pollId].processMessages()
             }).toThrow()
 
-            expect(maciState.polls[pollId].ballots.length)
-                .toEqual(messageBatchSize)
-
-            for (let i = 0; i < messageBatchSize; i ++) {
-                const leaf = i < maciState.polls[pollId].ballots[i].votes.length ?
-                    maciState.polls[pollId].ballots[i].votes[i]
-                    :
-                    0
+            for (let i = 1; i < messageBatchSize; i ++) {
+                const leaf = maciState.polls[pollId].ballots[i].votes[i - 1]
                 expect(leaf.toString()).toEqual(voteWeight.toString())
             }
 
@@ -371,10 +367,6 @@ describe('MaciState', () => {
         })
 
         it('should tally ballots correctly', () => {
-            expect.assertions(
-                4 + maciState.polls[pollId].maxValues.maxVoteOptions
-            )
-
             // Start with results = [0...0]
             let total = BigInt(0)
             for (const v of maciState.polls[pollId].results) {
@@ -390,7 +382,7 @@ describe('MaciState', () => {
 
             // Recall that each user `i` cast the same number of votes for
             // their option `i`
-            for (let i = 0; i < maciState.polls[pollId].results.length; i ++) {
+            for (let i = 0; i < maciState.polls[pollId].results.length - 1; i ++) {
                 expect(maciState.polls[pollId].results[i].toString())
                     .toEqual(voteWeight.toString())
             }
@@ -470,18 +462,6 @@ describe('MaciState', () => {
             m6.polls[pollId].coordinatorKeypair = new Keypair()
             expect(m1.equals(m6)).not.toBeTruthy()
 
-            // modify poll.processParamsFilename
-            const m7 = m1.copy()
-            m7.polls[pollId].processParamsFilename = 
-                m7.polls[pollId].processParamsFilename + 'x'
-            expect(m1.equals(m7)).not.toBeTruthy()
-
-            // modify poll.tallyParamsFilename
-            const m8 = m1.copy()
-            m8.polls[pollId].tallyParamsFilename = 
-                m8.polls[pollId].tallyParamsFilename + 'y'
-            expect(m1.equals(m8)).not.toBeTruthy()
-
             // modify poll.treeDepths.intStateTreeDepth
             const m9 = m1.copy()
             m9.polls[pollId].treeDepths.intStateTreeDepth = m9.polls[pollId].treeDepths.intStateTreeDepth + 1
@@ -526,18 +506,6 @@ describe('MaciState', () => {
             const m17 = m1.copy()
             m17.polls[pollId].maxValues.maxVoteOptions = m17.polls[pollId].maxValues.maxVoteOptions + 1
             expect(m1.equals(m17)).not.toBeTruthy()
-
-            // modify poll.processVk
-            const m18 = m1.copy()
-            m18.polls[pollId].processVk.ic[0].x =
-                BigInt(m18.polls[pollId].processVk.ic[0].x) + BigInt(1)
-            expect(m1.equals(m18)).not.toBeTruthy()
-
-            // modify poll.tallyVk
-            const m19 = m1.copy()
-            m19.polls[pollId].tallyVk.ic[0].x =
-                BigInt(m19.polls[pollId].tallyVk.ic[0].x) + BigInt(1)
-            expect(m1.equals(m19)).not.toBeTruthy()
 
             // modify poll.messages
             const m20 = m1.copy()

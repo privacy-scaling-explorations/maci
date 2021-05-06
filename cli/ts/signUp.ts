@@ -13,7 +13,7 @@ import {
     contractExists,
 } from './utils'
 
-import * as ethers from 'ethers'
+const { ethers } = require('hardhat')
 
 import {
     DEFAULT_ETH_PROVIDER,
@@ -131,9 +131,14 @@ const signup = async (args: any) => {
 
     const receipt = await tx.wait()
     const iface = maciContract.interface
-    const index = iface.parseLog(receipt.logs[0]).args._stateIndex
     console.log('Transaction hash:', tx.hash)
-    console.log('State index:', index.toString())
+    // get state index from the event
+    if (receipt && receipt.logs) {
+        const stateIndex = iface.parseLog(receipt.logs[0]).args[0]
+        console.log('State index:', stateIndex.toString())
+    } else {
+        console.error('Error: unable to retrieve the transaction receipt')
+    }
 }
 
 export {

@@ -8,7 +8,6 @@
         "build-test-circuits": "NODE_OPTIONS=--max-old-space-size=16384 circom-helper -c ./circomHelperConfig.json -y -nc -b ./build/test/ -p 9001 -m 16384 -s 1048576",
         "watch": "tsc --watch",
         "build": "tsc",
-        "buildQuadVoteTallySnark": "./scripts/buildQuadVoteTallySnark.sh",
         "test": "jest",
         "test-quinGenPath": "jest QuinGeneratePathIndices.test.ts",
         "test-quinGenPath-debug": "node --inspect-brk ./node_modules/.bin/jest QuinGeneratePathIndices.test.ts",

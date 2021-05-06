@@ -20,7 +20,7 @@ import {
     getDefaultSigner,
 } from './deploy'
 
-import { formatProofForVerifierContract } from './utils'
+import { formatProofForVerifierContract, deployTestContracts } from './utils'
 
 import { genMaciStateFromContract } from './genMaciState'
 
@@ -39,6 +39,7 @@ export {
     deployPollFactory,
     deployPpt,
     deployMessageAqFactory,
+    deployTestContracts,
     getInitialVoiceCreditProxyAbi,
     formatProofForVerifierContract,
     linkPoseidonLibraries,

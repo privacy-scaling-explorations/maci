@@ -7,6 +7,7 @@ import { MerkleZeros as MerkleBinary0 } from "./zeros/MerkleBinary0.sol";
 import { MerkleZeros as MerkleBinaryMaci } from "./zeros/MerkleBinaryMaci.sol";
 import { MerkleZeros as MerkleQuinary0 } from "./zeros/MerkleQuinary0.sol";
 import { MerkleZeros as MerkleQuinaryMaci } from "./zeros/MerkleQuinaryMaci.sol";
+import { MerkleZeros as MerkleQuinaryBlankSl } from "./zeros/MerkleQuinaryBlankSl.sol";
 import { MerkleZeros as MerkleQuinaryMaciWithSha256 } from "./zeros/MerkleQuinaryMaciWithSha256.sol";
 
 /*
@@ -599,6 +600,11 @@ contract AccQueueQuinary0 is AccQueueQuinary, MerkleQuinary0 {
 }
 
 contract AccQueueQuinaryMaci is AccQueueQuinary, MerkleQuinaryMaci {
+    constructor(uint256 _subDepth) AccQueueQuinary(_subDepth) {}
+    function getZero(uint256 _level) internal view override returns (uint256) { return zeros[_level]; }
+}
+
+contract AccQueueQuinaryBlankSl is AccQueueQuinary, MerkleQuinaryBlankSl {
     constructor(uint256 _subDepth) AccQueueQuinary(_subDepth) {}
     function getZero(uint256 _level) internal view override returns (uint256) { return zeros[_level]; }
 }

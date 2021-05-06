@@ -238,6 +238,123 @@ describe('ProcessMessage circuit', () => {
             expect(hash.toString()).toEqual(generatedInputs.inputHash.toString())
         })
     })
+
+    describe('2 users, 1 message', () => {
+        const maciState = new MaciState()
+        let pollId
+        let poll
+        const messages: Message[] = []
+        const commands: Command[] = []
+        let messageTree
+
+        beforeAll(async () => {
+            // Sign up and publish
+            const userKeypair = new Keypair(new PrivKey(BigInt(123)))
+            const userKeypair2 = new Keypair(new PrivKey(BigInt(456)))
+
+            maciState.signUp(
+                userKeypair.pubKey,
+                voiceCreditBalance,
+                BigInt(1), //BigInt(Math.floor(Date.now() / 1000)),
+            )
+            maciState.signUp(
+                userKeypair2.pubKey,
+                voiceCreditBalance,
+                BigInt(1), //BigInt(Math.floor(Date.now() / 1000)),
+            )
+
+            maciState.stateAq.mergeSubRoots(0)
+            maciState.stateAq.merge(STATE_TREE_DEPTH)
+
+            pollId = maciState.deployPoll(
+                duration,
+                BigInt(2 + duration), //BigInt(Math.floor(Date.now() / 1000) + duration),
+                maxValues,
+                treeDepths,
+                messageBatchSize,
+                coordinatorKeypair,
+                testProcessVk,
+                testTallyVk,
+            )
+
+            poll = maciState.polls[pollId]
+
+            messageTree = new IncrementalQuinTree(
+                treeDepths.messageTreeDepth,
+                poll.messageAq.zeroValue,
+                5,
+                hash5,
+            )
+
+            const command = new Command(
+                BigInt(1),
+                userKeypair.pubKey,
+                BigInt(0), // voteOptionIndex,
+                BigInt(1), // vote weight
+                BigInt(1), // nonce
+                BigInt(pollId),
+            )
+
+            const signature = command.sign(userKeypair.privKey)
+
+            const ecdhKeypair = new Keypair()
+            const sharedKey = Keypair.genEcdhSharedKey(
+                ecdhKeypair.privKey,
+                coordinatorKeypair.pubKey,
+            )
+            const message = command.encrypt(signature, sharedKey)
+            messages.push(message)
+            commands.push(command)
+            messageTree.insert(message.hash(ecdhKeypair.pubKey))
+            poll.publishMessage(message, ecdhKeypair.pubKey)
+
+            // Merge
+            poll.messageAq.mergeSubRoots(0)
+            poll.messageAq.merge(treeDepths.messageTreeDepth)
+
+            expect(messageTree.root.toString())
+                .toEqual(
+                    poll.messageAq.getRoot(
+                        treeDepths.messageTreeDepth,
+                    ).toString()
+                )
+        })
+
+        it('should produce the correct state root and ballot root', async () => {
+            // The current roots
+            const emptyBallot = new Ballot(
+                poll.maxValues.maxVoteOptions,
+                poll.treeDepths.voteOptionTreeDepth,
+            )
+            const emptyBallotHash = emptyBallot.hash()
+            const ballotTree = new IncrementalQuinTree(
+                STATE_TREE_DEPTH,
+                emptyBallot.hash(),
+                poll.STATE_TREE_ARITY,
+                hash5,
+            )
+
+            for (let i = 0; i < poll.stateLeaves.length; i ++) {
+                ballotTree.insert(emptyBallotHash)
+            }
+            const currentStateRoot = maciState.stateTree.root
+            const currentBallotRoot = ballotTree.root
+
+            const generatedInputs = poll.processMessages()
+
+            // Calculate the witness
+            const witness = await genWitness(circuit, generatedInputs)
+            expect(witness.length > 0).toBeTruthy()
+
+            // The new roots, which should differ, since at least one of the
+            // messages modified a Ballot or State Leaf
+            const newStateRoot = poll.stateTree.root
+            const newBallotRoot = poll.ballotTree.root
+
+            expect(newStateRoot.toString()).not.toEqual(currentStateRoot.toString())
+            expect(newBallotRoot.toString()).not.toEqual(currentBallotRoot.toString())
+        })
+    })
  
     describe('1 user, key-change', () => {
         const maciState = new MaciState()

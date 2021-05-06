@@ -6,9 +6,9 @@
     "scripts": {
         "watch": "tsc --watch",
         "hardhat": "./scripts/runHardhat.sh",
-        "compileSol": "./scripts/compileSol.sh",
+        "compileSol": "./scripts/compileSol.sh && cp -r artifacts/ ../integrationTests/artifacts" ,
         "build": "tsc",
-        "test": "npm run test-hasher && npm run test-accQueue && npm run test-accQueueBenchmark",
+        "test": "npx jest --runInBand",
         "test-maci": "jest MACI.test.ts",
         "test-maci-debug": "node --inspect-brk ./node_modules/.bin/jest MACI.test.ts",
         "test-hasher": "jest Hasher.test.ts",

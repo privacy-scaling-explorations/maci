@@ -24,11 +24,12 @@ import {
     batchTransactionRequests,
 } from './utils'
 
-import * as ethers from 'ethers'
 
 import {
     DEFAULT_ETH_PROVIDER,
 } from './defaults'
+
+const { ethers } = require('hardhat')
 
 const DEFAULT_SALT = genRandomSalt()
 
@@ -212,7 +213,6 @@ const publish = async (args: any) => {
     }
 
     const signer = await getDefaultSigner()
-
     if (! (await contractExists(signer.provider, maciAddress))) {
         console.error('Error: there is no MACI contract deployed at the specified address')
         return 1
@@ -234,7 +234,7 @@ const publish = async (args: any) => {
         signer,
     )
 
-    const pollAddr = await maciContractEthers.polls(pollId)
+    const pollAddr = await maciContractEthers.getPoll(pollId)
     if (! (await contractExists(signer.provider, pollAddr))) {
         console.error('Error: there is no Poll contract with this poll ID linked to the specified MACI contract.')
         return 1

@@ -48,8 +48,6 @@ class Poll {
     // Note that we only store the PubKey on-chain while this class stores the
     // Keypair for the sake of convenience
     public coordinatorKeypair: Keypair
-    public processParamsFilename: string
-    public tallyParamsFilename: string
     public treeDepths: TreeDepths
     public batchSizes: BatchSizes
     public maxValues: MaxValues
@@ -57,9 +55,6 @@ class Poll {
     public numSignUps: number
 
     public pollEndTimestamp: BigInt
-
-    public processVk: VerifyingKey
-    public tallyVk: VerifyingKey
 
     public ballots: Ballot[] = []
     public ballotTree: IncrementalQuinTree
@@ -76,10 +71,10 @@ class Poll {
     public VOTE_OPTION_TREE_ARITY = 5
 
     public stateCopied = false
-    public stateLeaves: StateLeaf[] = []
+    public stateLeaves: StateLeaf[] = [blankStateLeaf]
     public stateTree = new IncrementalQuinTree(
         STATE_TREE_DEPTH,
-        NOTHING_UP_MY_SLEEVE,
+        blankStateLeafHash,
         this.STATE_TREE_ARITY,
         hash5,
     )
@@ -106,25 +101,17 @@ class Poll {
         _duration: number,
         _pollEndTimestamp: BigInt,
         _coordinatorKeypair: Keypair,
-        _processParamsFilename: string,
-        _tallyParamsFilename: string,
         _treeDepths: TreeDepths,
         _batchSizes: BatchSizes,
         _maxValues: MaxValues,
-        _processVk: VerifyingKey,
-        _tallyVk: VerifyingKey,
         _maciStateRef: MaciState,
     ) {
         this.duration = _duration
         this.pollEndTimestamp = _pollEndTimestamp
         this.coordinatorKeypair = _coordinatorKeypair
-        this.processParamsFilename = _processParamsFilename
-        this.tallyParamsFilename = _tallyParamsFilename
         this.treeDepths = _treeDepths
         this.batchSizes = _batchSizes
         this.maxValues = _maxValues
-        this.processVk = _processVk
-        this.tallyVk = _tallyVk
         this.maciStateRef = _maciStateRef
         this.pollId = _maciStateRef.polls.length
         this.numSignUps = Number(_maciStateRef.numSignUps.toString())
@@ -145,6 +132,12 @@ class Poll {
             this.results.push(BigInt(0))
             this.perVOSpentVoiceCredits.push(BigInt(0))
         }
+
+        const blankBallot = Ballot.genBlankBallot(
+            this.maxValues.maxVoteOptions,
+            _treeDepths.voteOptionTreeDepth,
+        )
+        this.ballots.push(blankBallot)
     }
 
     private copyStateFromMaci = () => {
@@ -168,8 +161,9 @@ class Poll {
             this.STATE_TREE_ARITY,
             hash5,
         )
+        this.ballotTree.insert(emptyBallotHash)
 
-        for (let i = 0; i < this.stateLeaves.length; i ++) {
+        while (this.ballots.length < this.stateLeaves.length) {
             this.ballotTree.insert(emptyBallotHash)
             this.ballots.push(emptyBallot)
         }
@@ -260,16 +254,13 @@ class Poll {
     public processMessages = (
         _pollId: number,
     ) => {
-        if (!this.stateCopied) {
-            this.copyStateFromMaci()
-        }
-        const batchSize = this.batchSizes.messageBatchSize
-
         assert(this.hasUnprocessedMessages(), 'No more messages to process')
 
         // Require that the message queue has been merged
         assert(this.isMessageAqMerged())
         assert(this.messageAq.hasRoot(this.treeDepths.messageTreeDepth))
+
+        const batchSize = this.batchSizes.messageBatchSize
 
         if (this.numBatchesProcessed === 0) {
             // The starting index of the batch of messages to process.
@@ -292,14 +283,10 @@ class Poll {
         }
 
         if (this.numBatchesProcessed === 0) {
-            this.currentMessageBatchIndex = (
-                Math.floor(this.messages.length / batchSize)
-            ) * batchSize
+            this.currentMessageBatchIndex =
+                Math.floor(this.messages.length / batchSize) * batchSize
 
-            if (
-                Math.floor(this.messages.length / batchSize) > 0 &&
-                this.messages.length % batchSize === 0
-            ) {
+            if (this.currentMessageBatchIndex > 0) {
                 this.currentMessageBatchIndex -= batchSize
             }
 
@@ -309,6 +296,10 @@ class Poll {
         // The starting index must be valid
         assert(this.currentMessageBatchIndex >= 0)
         assert(this.currentMessageBatchIndex % batchSize === 0)
+
+        if (!this.stateCopied) {
+            this.copyStateFromMaci()
+        }
 
         // Generate circuit inputs
         const circuitInputs = stringifyBigInts(
@@ -357,7 +348,7 @@ class Poll {
                 this.ballotTree.update(index, r.newBallot.hash())
 
             } else {
-                // Since the command is invalid, use state leaf 0 and ballot 0
+                // Since the command is invalid, use a blank state leaf
                 currentStateLeaves.unshift(this.stateLeaves[0].copy())
                 currentStateLeavesPathElements.unshift(
                     this.stateTree.genMerklePath(0).pathElements
@@ -448,7 +439,8 @@ class Poll {
     ) => {
         const messageBatchSize = this.batchSizes.messageBatchSize
 
-        assert(_index < this.messages.length)
+        assert(_index <= this.messages.length)
+        assert(_index % messageBatchSize === 0)
 
         let msgs = this.messages.map((x) => x.asCircuitInputs())
         while (msgs.length % messageBatchSize > 0) {
@@ -462,6 +454,12 @@ class Poll {
             commands.push(commands[commands.length - 1])
         }
         commands = commands.slice(_index, _index + messageBatchSize)
+
+        while(this.messageTree.leaves.length < _index + messageBatchSize) {
+            this.messageTree.insert(
+                this.messageTree.zeroValue
+            )
+        }
 
         const messageSubrootPath = this.messageTree.genMerkleSubrootPath(
             _index,
@@ -584,7 +582,7 @@ class Poll {
         // If the state tree index in the command is invalid, do nothing
         if (
             stateLeafIndex >= BigInt(this.ballots.length) ||
-            stateLeafIndex < BigInt(0)
+            stateLeafIndex < BigInt(1)
         ) {
             return
         }
@@ -627,7 +625,7 @@ class Poll {
 
         // If the vote option index is invalid, do nothing
         if (
-            command.voteOptionIndex < BigInt(-1) ||
+            command.voteOptionIndex < BigInt(0) ||
             command.voteOptionIndex >= BigInt(this.maxValues.maxVoteOptions)
         ) {
             return
@@ -896,8 +894,6 @@ class Poll {
             Number(this.duration.toString()),
             BigInt(this.pollEndTimestamp.toString()),
             this.coordinatorKeypair.copy(),
-            this.processParamsFilename.toString(),
-            this.tallyParamsFilename.toString(),
             {
                 intStateTreeDepth:
                     Number(this.treeDepths.intStateTreeDepth),
@@ -922,8 +918,6 @@ class Poll {
                 maxVoteOptions:
                     Number(this.maxValues.maxVoteOptions.toString()),
             },
-            this.processVk.copy(),
-            this.tallyVk.copy(),
             this.maciStateRef,
         )
 
@@ -948,7 +942,6 @@ class Poll {
         copied.maciStateRef = this.maciStateRef
         copied.messageAq = this.messageAq.copy()
         copied.messageTree = this.messageTree.copy()
-        copied.processParamsFilename = this.processParamsFilename
         copied.results = this.results.map((x: BigInt) => BigInt(x.toString()))
         copied.perVOSpentVoiceCredits = this.perVOSpentVoiceCredits.map((x: BigInt) => BigInt(x.toString()))
 
@@ -982,8 +975,6 @@ class Poll {
         const result = 
             this.duration === p.duration &&
             this.coordinatorKeypair.equals(p.coordinatorKeypair) &&
-            this.processParamsFilename === p.processParamsFilename &&
-            this.tallyParamsFilename === p.tallyParamsFilename &&
             this.treeDepths.intStateTreeDepth ===
                 p.treeDepths.intStateTreeDepth &&
             this.treeDepths.messageTreeDepth ===
@@ -998,8 +989,6 @@ class Poll {
             this.maxValues.maxUsers === p.maxValues.maxUsers &&
             this.maxValues.maxMessages === p.maxValues.maxMessages &&
             this.maxValues.maxVoteOptions === p.maxValues.maxVoteOptions &&
-            this.processVk.equals(p.processVk) &&
-            this.tallyVk.equals(p.tallyVk) &&
             this.messages.length === p.messages.length &&
             this.encPubKeys.length === p.encPubKeys.length
 
@@ -1021,6 +1010,9 @@ class Poll {
     }
 }
 
+const blankStateLeaf = StateLeaf.genBlankLeaf()
+const blankStateLeafHash = blankStateLeaf.hash()
+
 // A representation of the MACI contract
 // Also see MACI.sol
 class MaciState {
@@ -1034,22 +1026,24 @@ class MaciState {
     public stateLeaves: StateLeaf[] = []
     public stateTree = new IncrementalQuinTree(
         STATE_TREE_DEPTH,
-        NOTHING_UP_MY_SLEEVE,
+        blankStateLeafHash,
         this.STATE_TREE_ARITY,
         hash5,
     )
     public stateAq: AccQueue = new AccQueue(
         this.STATE_TREE_SUBDEPTH,
         this.STATE_TREE_ARITY,
-        NOTHING_UP_MY_SLEEVE,
-        //true,
+        blankStateLeafHash,
     )
     public pollBeingProcessed = true
     public currentPollBeingProcessed
     public numSignUps = 0
 
-    //constructor() {
-    //}
+    constructor () {
+        this.stateLeaves.push(blankStateLeaf)
+        this.stateTree.insert(blankStateLeafHash)
+        this.stateAq.enqueue(blankStateLeafHash)
+    }
 
     public signUp(
         _pubKey: PubKey,
@@ -1076,24 +1070,18 @@ class MaciState {
         _treeDepths: TreeDepths,
         _messageBatchSize: number,
         _coordinatorKeypair: Keypair,
-        _processVk: VerifyingKey,
-        _tallyVk: VerifyingKey,
     ): number {
         const poll: Poll = new Poll(
             _duration,
             _pollEndTimestamp,
             _coordinatorKeypair,
-            '',
-            '',
              _treeDepths,
             {
                 messageBatchSize: _messageBatchSize,
                 tallyBatchSize:
                     this.STATE_TREE_ARITY ** _treeDepths.intStateTreeDepth,
             },
-            _maxValues, 
-            _processVk,
-            _tallyVk,
+            _maxValues,
             this,
         )
 

@@ -1,22 +1,12 @@
 import * as ethers from 'ethers'
 import * as fs from 'fs'
 
-import { hashLeftRight, hash3 } from 'maci-crypto'
+import { hashLeftRight } from 'maci-crypto'
 import {
     formatProofForVerifierContract,
     getDefaultSigner,
     parseArtifact,
 } from 'maci-contracts'
-
-import {
-    genBatchUstProofAndPublicSignals,
-    verifyBatchUstProof,
-    getSignalByNameViaSym,
-} from 'maci-circuits'
-
-import {
-    MaciState,
-} from 'maci-core'
 
 import {
     validateEthAddress,
@@ -155,8 +145,6 @@ const proveOnChain = async (args: any) => {
         }
     }
 
-    const { processProofs, tallyProofs } = data
-
     const numSignUpsAndMessages = await pollContract.numSignUpsAndMessages()
     const numSignUps = Number(numSignUpsAndMessages[0])
     const numMessages = Number(numSignUpsAndMessages[1])
@@ -172,11 +160,11 @@ const proveOnChain = async (args: any) => {
         totalMessageBatches ++
     }
 
-    if (processProofs.length !== totalMessageBatches) {
+    if (data.processProofs.length !== totalMessageBatches) {
         console.error(
             `Error: ${args.proof_file} does not have the correct ` +
             `number of message processing proofs ` +
-            `(expected ${totalMessageBatches}, got ${processProofs.length}.`,
+            `(expected ${totalMessageBatches}, got ${data.processProofs.length}.`,
         )
     }
 
@@ -202,13 +190,21 @@ const proveOnChain = async (args: any) => {
     if (numBatchesProcessed < totalMessageBatches) {
         console.log('Submitting proofs of message processing...')
     }
+
     for (let i = numBatchesProcessed; i < totalMessageBatches; i ++) {
+        //const currentMessageBatchIndex = Number(await pptContract.currentMessageBatchIndex())
+        let currentMessageBatchIndex
+        if (numBatchesProcessed === 0) {
+            currentMessageBatchIndex = Math.floor(numMessages / messageBatchSize) * messageBatchSize
+        } else {
+            currentMessageBatchIndex = (totalMessageBatches - numBatchesProcessed) * messageBatchSize
+        }
+        if (currentMessageBatchIndex > 0) {
+            currentMessageBatchIndex -= messageBatchSize
+        }
+
         const txErr = 'Error: processMessages() failed'
         const { proof, circuitInputs, publicInputs } = data.processProofs[i]
-
-        const currentMessageBatchIndex = 
-            (Math.floor(numMessages / messageBatchSize) * messageBatchSize) -
-            (numBatchesProcessed * messageBatchSize)
 
         // Perform checks
         if (circuitInputs.pollEndTimestamp !== pollEndTimestampOnChain.toString()) {

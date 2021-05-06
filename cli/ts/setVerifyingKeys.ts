@@ -249,6 +249,7 @@ const setVerifyingKeys = async (args: any) => {
             intStateTreeDepth,
             voteOptionTreeDepth,
         )
+
         if (!compareVks(processVk, processVkOnChain)) {
             console.error('Error: processVk mismatch')
             return 1

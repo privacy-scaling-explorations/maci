@@ -1,6 +1,6 @@
 {
     "name": "Reverse processing",
-    "description": "Quarter tree, 2 batches, 1 briber",
+    "description": "2 batches, 1 briber",
     "numUsers": 3,
     "commands": [
         {

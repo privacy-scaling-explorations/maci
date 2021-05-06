@@ -1,17 +1,15 @@
-import * as ethers from 'ethers'
+const { ethers } = require('hardhat')
 import {
     PubKey,
     PrivKey,
     Keypair,
     Command,
-    StateLeaf,
 } from 'maci-domainobjs'
 
-import { 
-    genPerVOSpentVoiceCreditsCommitment,
-    genSpentVoiceCreditsCommitment,
-    genTallyResultCommitment,
+import {
     MaciState,
+    TreeDepths,
+    MaxValues,
 } from 'maci-core'
 
 import {
@@ -19,27 +17,12 @@ import {
 } from 'maci-crypto'
 
 import {
-    maciContractAbi,
-    genTestAccounts,
+    getDefaultSigner,
 } from 'maci-contracts'
 
 import { genPubKey } from 'maci-crypto'
 
-import { config } from 'maci-config'
-
-import { exec, delay } from './utils'
-
-import {
-    maxUsers,
-    maxMessages,
-    maxVoteOptions,
-    messageBatchSize,
-    tallyBatchSize,
-    initialVoiceCredits,
-    stateTreeDepth,
-    messageTreeDepth,
-    voteOptionTreeDepth,
-} from './params'
+import { exec, loadYaml } from './utils'
 
 const loadData = (name: string) => {
     return require('@maci-integrationTests/ts/__tests__/suites/' + name)
@@ -47,61 +30,90 @@ const loadData = (name: string) => {
 
 const executeSuite = async (data: any, expect: any) => {
     console.log(data)
-    const accounts = genTestAccounts(2)
-    const userPrivKey = accounts[1].privateKey
+    const config = loadYaml()
     const coordinatorKeypair = new Keypair()
-    const maciPrivkey = coordinatorKeypair.privKey.serialize()
-    const deployerPrivKey = accounts[0].privateKey
-    const providerUrl = config.get('chain.url')
-    const provider = new ethers.providers.JsonRpcProvider(providerUrl)
-
-    const deployerWallet = new ethers.Wallet(accounts[0].privateKey, provider)
-    const tx = await deployerWallet.provider.sendTransaction(
-        accounts[0].sign({
-            nonce: await deployerWallet.provider.getTransactionCount(accounts[0].address),
-            gasPrice: ethers.utils.parseUnits('10', 'gwei'),
-            gasLimit: 21000,
-            to: accounts[1].address,
-            value: ethers.utils.parseUnits('1', 'ether'),
-            data: '0x'
-        })
-    )
-    await tx.wait()
 
     const maciState = new MaciState(
         coordinatorKeypair,
-        stateTreeDepth,
-        messageTreeDepth,
-        voteOptionTreeDepth,
-        maxVoteOptions,
+        config.constants.maci.stateTreeDepth,
+        config.constants.maci.messageTreeDepth,
+        config.constants.maci.voteOptionTreeDepth,
+        config.constants.maci.maxVoteOptions,
     )
 
-    const signupDuration = data.numUsers * 15
-    const votingDuration = data.numUsers * 15
+    const deployVkRegistryCommand = `node build/index.js deployVkRegistry`
+    const vkDeployOutput = exec(deployVkRegistryCommand).stdout.trim()
+    const vkAddressMatch = vkDeployOutput.match(/(0x[a-fA-F0-9]{40})/)
+    const vkAddress = vkAddressMatch[1]
+    console.log(vkAddress)
+
+    const setVerifyingKeysCommand = `node build/index.js setVerifyingKeys` +
+        ` -s ${config.constants.maci.stateTreeDepth}` +
+        ` -i ${config.constants.poll.intStateTreeDepth}` +
+        ` -m ${config.constants.maci.messageTreeDepth}` +
+        ` -v ${config.constants.maci.voteOptionTreeDepth}` +
+        ` -b ${config.constants.poll.messageBatchDepth}` +
+        ` -p ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey` +
+        ` -t ./zkeys/TallyVotes_10-1-2.test.0.zkey` +
+        ` -k ${vkAddress}`
+
+    console.log(setVerifyingKeysCommand)
+
+    const setVerifyingKeysOutput = exec(setVerifyingKeysCommand).stdout.trim()
+    console.log(setVerifyingKeysOutput)
 
     // Run the create subcommand
-    const createCommand = `node ../cli/build/index.js create` +
-        ` -d ${deployerPrivKey} -sk ${maciPrivkey}` +
-        ` -u ${maxUsers}` +
-        ` -m ${maxMessages}` +
-        ` -v ${maxVoteOptions}` +
-        ` -e ${providerUrl}` +
-        ` -s ${signupDuration}` +
-        ` -o ${votingDuration}` +
-        ` -bm ${messageBatchSize}` +
-        ` -bv ${tallyBatchSize}` +
-        ` -c ${initialVoiceCredits}`
+    const createCommand = `node build/index.js create` +
+        ` -r ${vkAddress}`
 
     console.log(createCommand)
 
     const createOutput = exec(createCommand).stdout.trim()
-
-    // Log the output for further manual testing
     console.log(createOutput)
 
-    const regMatch = createOutput.match(/^MACI: (0x[a-fA-F0-9]{40})$/)
+    const regMatch = createOutput.match(/(0x[a-fA-F0-9]{40})/)
     const maciAddress = regMatch[1]
-    
+
+    const deployPoll = `node build/index.js deployPoll` +
+        ` -x ${maciAddress}` +
+        ` -pk ${coordinatorKeypair.pubKey.serialize()}` +
+        ` -t ${config.constants.poll.duration}` +
+        ` -g ${config.constants.maci.maxMessages}` +
+        ` -mv ${config.constants.maci.maxVoteOptions}` +
+        ` -i ${config.constants.poll.intStateTreeDepth}` +
+        ` -m ${config.constants.poll.messageTreeDepth}` +
+        ` -b ${config.constants.poll.messageBatchDepth}` +
+        ` -v ${config.constants.maci.voteOptionTreeDepth}`
+
+    console.log(deployPoll)
+    const deployPollOutput = exec(deployPoll).stdout.trim()
+    console.log(deployPollOutput)
+
+    const deployPollRegMatch = deployPollOutput.match(/PollProcessorAndTallyer contract: (0x[a-fA-F0-9]{40})/)
+    const pptAddress = deployPollRegMatch[1]
+    const deployPollIdRegMatch = deployPollOutput.match(/Poll ID: ([0-9])/)
+    const pollId = deployPollIdRegMatch[1]
+
+    const treeDepths = {} as TreeDepths
+    treeDepths.intStateTreeDepth = config.constants.poll.intStateTreeDepth
+    treeDepths.messageTreeDepth = config.constants.poll.messageTreeDepth
+    treeDepths.messageTreeSubDepth = config.constants.poll.messageBatchDepth
+    treeDepths.voteOptionTreeDepth = config.constants.maci.voteOptionTreeDepth
+
+    const maxValues = {} as MaxValues
+    maxValues.maxUsers = config.constants.maci.maxUsers
+    maxValues.maxMessages = config.constants.maci.maxMessages
+    maxValues.maxVoteOptions  = config.constants.maci.maxVoteOptions
+    const messageBatchSize = 5 ** config.constants.poll.messageBatchDepth
+    maciState.deployPoll(
+        config.constants.poll.duration,
+        (Date.now() + (config.constants.poll.duration * 60000)),
+        maxValues,
+        treeDepths,
+        messageBatchSize,
+        coordinatorKeypair
+    )
+
     const userKeypairs: Keypair[] = []
 
     console.log(`Signing up ${data.numUsers} users`)
@@ -112,10 +124,9 @@ const executeSuite = async (data: any, expect: any) => {
         // Run the signup command
         const signupCommand = `node ../cli/build/index.js signup` +
             ` -p ${userKeypair.pubKey.serialize()}` +
-            ` -d ${userPrivKey}` +
             ` -x ${maciAddress}`
 
-        //console.log(signupCommand)
+        console.log(signupCommand)
 
         const signupExec = exec(signupCommand)
         if (signupExec.stderr) {
@@ -124,22 +135,11 @@ const executeSuite = async (data: any, expect: any) => {
         }
 
         maciState.signUp(
-            userKeypair.pubKey, 
-            BigInt(initialVoiceCredits),
+            userKeypair.pubKey,
+            BigInt(config.constants.maci.initialVoiceCredits),
+            Date.now()
         )
     }
-
-    const maciContract = new ethers.Contract(
-        maciAddress,
-        maciContractAbi,
-        provider,
-    )
-
-    expect(maciState.genStateRoot().toString()).toEqual((await maciContract.getStateTreeRoot()).toString())
-
-    await maciContract.signUpTimestamp()
-
-    await delay(1000 * signupDuration)
 
     // Publish messages
     console.log(`Publishing messages`)
@@ -157,18 +157,17 @@ const executeSuite = async (data: any, expect: any) => {
         const salt = '0x' + genRandomSalt().toString(16)
  
         // Run the publish command
-        const publishCommand = `node ../cli/build/index.js publish` +
+        const publishCommand = `node build/index.js publish` +
             ` -sk ${userKeypair.privKey.serialize()}` +
             ` -p ${userKeypair.pubKey.serialize()}` +
-            ` -d ${userPrivKey}` +
             ` -x ${maciAddress}` +
             ` -i ${stateIndex}` +
             ` -v ${voteOptionIndex}` +
             ` -w ${newVoteWeight}` +
             ` -n ${nonce}` +
-            ` -s ${salt}`
+            ` -o ${pollId}`
 
-        //console.log(publishCommand)
+        console.log(publishCommand)
 
         const publishExec = exec(publishCommand)
         if (publishExec.stderr) {
@@ -177,7 +176,7 @@ const executeSuite = async (data: any, expect: any) => {
         }
 
         const publishOutput = publishExec.stdout.trim()
-        //console.log(publishOutput)
+        console.log(publishOutput)
 
         const publishRegMatch = publishOutput.match(
             /Transaction hash: (0x[a-fA-F0-9]{64})\nEphemeral private key: (macisk.[a-f0-9]+)$/)
@@ -193,6 +192,7 @@ const executeSuite = async (data: any, expect: any) => {
             BigInt(voteOptionIndex),
             BigInt(newVoteWeight),
             BigInt(nonce),
+            BigInt(pollId),
             BigInt(salt),
         )
 
@@ -205,19 +205,100 @@ const executeSuite = async (data: any, expect: any) => {
                 coordinatorKeypair.pubKey,
             )
         )
-
-        maciState.publishMessage(
+        maciState.polls[pollId].publishMessage(
             message,
             encPubKey,
         )
     }
 
-    // Check whether the message tree root is correct
-    expect(maciState.genMessageRoot().toString()).toEqual((await maciContract.getMessageTreeRoot()).toString())
+    const timeTravelCommand = `node build/index.js timeTravel -s ${config.constants.maci.votingDuration}`
+    let e = exec(timeTravelCommand)
 
-    await delay(1000 * votingDuration)
+    if (e.stderr) {
+        console.log(e.stderr)
+        return false
+    }
+    console.log(e.stdout)
+
+    const mergeMessagesCommand = `node build/index.js mergeMessages -x ${maciAddress} -o ${pollId}`
+    e = exec(mergeMessagesCommand)
+
+    if (e.stderr) {
+        console.log(e.stderr)
+        return false
+    }
+    console.log(e.stdout)
+
+    const mergeSignupsCommand = `node build/index.js mergeSignups -x ${maciAddress} -o ${pollId}`
+    e = exec(mergeSignupsCommand)
+
+    if (e.stderr) {
+        console.log(e.stderr)
+        return false
+    }
+    console.log(e.stdout)
+
+    const removeOldProofs = `rm -f tally.json proofs.json`
+    e = exec(removeOldProofs)
+
+    if (e.stderr) {
+        console.log(e.stderr)
+        return false
+    }
+    console.log(e.stdout)
+
+    const genProofsCommand = `node build/index.js genProofs` +
+        ` -x ${maciAddress}` +
+        ` -sk ${coordinatorKeypair.privKey.serialize()}` +
+        ` -o ${pollId}` +
+        ` -r ~/rapidsnark/build/prover` +
+        ` -wp ./zkeys/ProcessMessages_10-2-1-2.test` +
+        ` -wt ./zkeys/TallyVotes_10-1-2.test` +
+        ` -zp ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey` +
+        ` -zt ./zkeys/TallyVotes_10-1-2.test.0.zkey` +
+        ` -t tally.json` +
+        ` -f proofs.json`
+
+    e = exec(genProofsCommand)
+
+    if (e.stderr) {
+        console.log(e.stderr)
+        return false
+    }
+    console.log(e.stdout)
+
+    const proveOnChainCommand = `node build/index.js proveOnChain` +
+        ` -x ${maciAddress}` +
+        ` -o ${pollId}` +
+        ` -q ${pptAddress}` +
+        ` -f proofs.json`
+
+    console.log(proveOnChainCommand)
+    e = exec(proveOnChainCommand)
+
+    if (e.stderr) {
+        console.log(e.stderr)
+        return false
+    }
+    console.log(e.stdout)
+
+    const verifyCommand = `node build/index.js verify` +
+        ` -x ${maciAddress}` +
+        ` -o ${pollId}` +
+        ` -q ${pptAddress}` +
+        ` -t tally.json`
+
+    console.log(verifyCommand)
+    e = exec(verifyCommand)
+
+    if (e.stderr) {
+        console.log(e.stderr)
+        return false
+    }
+    console.log(e.stdout)
 
     // Process messages
+    /*
     const processCommand = `NODE_OPTIONS=--max-old-space-size=4096 node ../cli/build/index.js process` +
         ` -sk ${coordinatorKeypair.privKey.serialize()}` +
         ` -d ${userPrivKey}` +
@@ -250,7 +331,8 @@ const executeSuite = async (data: any, expect: any) => {
     expect(currentMessageBatchIndex.toString()).toEqual('0')
 
     const randomLeaf = StateLeaf.unserialize(processRegMatch[3])
-
+    */
+    /*
     const tallyCommand = `NODE_OPTIONS=--max-old-space-size=4096 node ../cli/build/index.js tally` +
         ` -sk ${coordinatorKeypair.privKey.serialize()}` +
         ` -d ${userPrivKey}` +
@@ -258,7 +340,7 @@ const executeSuite = async (data: any, expect: any) => {
         ` -z ${randomLeaf.serialize()}` +
         ` -t test_tally.json` +
         ` -c 0x0000000000000000000000000000000000000000000000000000000000000000` +
-        ` -tvc 0x0000000000000000000000000000000000000000000000000000000000000000` +
+        ` -tvc ${config.constants.maci.ivcpData}` +
         ` -pvc 0x0000000000000000000000000000000000000000000000000000000000000000` +
         ` -r`
 
@@ -289,7 +371,7 @@ const executeSuite = async (data: any, expect: any) => {
     const expectedTallyCommitment = genTallyResultCommitment(
         data.expectedTally,
         resultsSalt,
-        voteOptionTreeDepth,
+        config.constants.maci.voteOptionTreeDepth,
     )
 
     expect(finalTallyCommitment.toString())
@@ -313,7 +395,7 @@ const executeSuite = async (data: any, expect: any) => {
     const expectedPvcCommitment = genPerVOSpentVoiceCreditsCommitment(
         data.expectedSpentVoiceCredits,
         pvcSalt,
-        voteOptionTreeDepth,
+        config.constants.maci.voteOptionTreeDepth,
     )
     expect(expectedPvcCommitment.toString())
         .toEqual(finalPvcCommitment.toString())
@@ -340,6 +422,7 @@ const executeSuite = async (data: any, expect: any) => {
         console.log(verifyOutput)
     }
     expect(verifyRegMatch).toBeTruthy()
+    */
 
     return true
 }
