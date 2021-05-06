@@ -604,6 +604,18 @@ them from someone who has performed a multi-party trusted setup for said
 circuits..</p>
 <p>Note the locations of the <code>.zkey</code> files as the CLI requires them as
 command-line flags.</p>
+<h3 id="generate-zkey-files"><a class="header" href="#generate-zkey-files">Generate <code>.zkey</code> files</a></h3>
+<p>If you wish to generate <code>.zkey</code> files from scratch, first navigate to <code>cli/</code>
+and edit <code>zkeys.config.yml</code>. Set the parameters you need.</p>
+<p>Next, run the following to compile the circuits with parameters you specified:</p>
+<pre><code class="language-bash">npx zkey-manager compile -c zkeys.config.yml
+</code></pre>
+<p>Next, download the <code>.ptau</code> file:</p>
+<pre><code class="language-bash">npx zkey-manager downloadPtau -c zkeys.config.yml
+</code></pre>
+<p>Finally, generate the <code>.zkey</code> files. This may require a lot of memory and time.</p>
+<pre><code class="language-bash">npx zkey-manager genZkeys -c zkeys.config.yml
+</code></pre>
 <h1 id="command-line-interface"><a class="header" href="#command-line-interface">Command-line interface</a></h1>
 <p>MACI provides a command-line interface that allows for effective deployment and
 testing. Applications that build on top of MACI, such as
@@ -815,7 +827,7 @@ selected</a>.</p>
 </code></pre>
 <p><code>zkey-manager</code> will select the smallest <code>.ptau</code> file that fits the largest
 circuit specified in <code>zkeys.config.yml</code>. </p>
-<h2 id="generate-zkey-files"><a class="header" href="#generate-zkey-files">Generate <code>.zkey</code> files</a></h2>
+<h2 id="generate-zkey-files-1"><a class="header" href="#generate-zkey-files-1">Generate <code>.zkey</code> files</a></h2>
 <p>Run:</p>
 <pre><code class="language-bash">npx zkey-manager genZkeys -c ./zkeys.config.yml
 </code></pre>
