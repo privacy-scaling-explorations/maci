@@ -698,7 +698,7 @@ contract PollProcessorAndTallyer is
 
         // Require that there are untalied ballots left
         require(
-            batchStartIndex < numSignUps,
+            batchStartIndex <= numSignUps,
             ERROR_ALL_BALLOTS_TALLIED
         );
 

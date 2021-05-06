@@ -190,8 +190,18 @@ const proveOnChain = async (args: any) => {
     if (numBatchesProcessed < totalMessageBatches) {
         console.log('Submitting proofs of message processing...')
     }
+
     for (let i = numBatchesProcessed; i < totalMessageBatches; i ++) {
-        const currentMessageBatchIndex = Number(await pptContract.currentMessageBatchIndex())
+        //const currentMessageBatchIndex = Number(await pptContract.currentMessageBatchIndex())
+        let currentMessageBatchIndex
+        if (numBatchesProcessed === 0) {
+            currentMessageBatchIndex = Math.floor(numMessages / messageBatchSize) * messageBatchSize
+        } else {
+            currentMessageBatchIndex = (totalMessageBatches - numBatchesProcessed) * messageBatchSize
+        }
+        if (currentMessageBatchIndex > 0) {
+            currentMessageBatchIndex -= messageBatchSize
+        }
 
         const txErr = 'Error: processMessages() failed'
         const { proof, circuitInputs, publicInputs } = data.processProofs[i]
@@ -239,7 +249,6 @@ const proveOnChain = async (args: any) => {
         )).toString()
 
         if (circuitInputs.packedVals !== packedValsOnChain) {
-            debugger
             console.error('Error: packedVals mismatch.')
             return 1
         }

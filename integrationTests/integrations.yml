@@ -11,7 +11,7 @@ processStateTree:
 
 constants:
   poll:
-    duration: 20
+    duration: 120
     intStateTreeDepth: 1
     messageTreeDepth: 2
     messageBatchDepth: 1
@@ -20,8 +20,8 @@ constants:
     maxMessages: 25
     maxVoteOptions: 25
     initialVoiceCredits: 1000
-    signupDuration: 15
-    votingDuration: 60
+    signupDuration: 120
+    votingDuration: 120
     signUpDurationInSeconds: 3600 # 1 hour
     votingDurationInSeconds: 3600 # 1 hour
     coordinatorPrivKey: "2222222222263902553431241761119057960280734584214105336279476766401963593688"

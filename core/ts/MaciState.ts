@@ -292,7 +292,6 @@ class Poll {
 
             this.sbSalts[this.currentMessageBatchIndex] = BigInt(0)
         }
-        debugger
 
         // The starting index must be valid
         assert(this.currentMessageBatchIndex >= 0)
@@ -303,7 +302,6 @@ class Poll {
         }
 
         // Generate circuit inputs
-        debugger
         const circuitInputs = stringifyBigInts(
             this.genProcessMessagesCircuitInputsPartial(
                 this.currentMessageBatchIndex
@@ -503,7 +501,6 @@ class Poll {
         ])
 
         // Generate a SHA256 hash of inputs which the contract provides
-        debugger
         const packedVals = 
             BigInt(this.maxValues.maxVoteOptions) +
             (BigInt(this.numSignUps) << BigInt(50)) +

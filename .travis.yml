@@ -19,5 +19,4 @@ script:
   - cd ../core && npm run test
   - cd ../circuits && ./scripts/runTestsInCircleCi.sh
   - cd ../contracts && ./scripts/compileSol.sh && ./scripts/runTestsInCircleCi.sh
-  #- ./scripts/runTestsInCircleCi.sh
-  #- cd ../integrationTests && ./scripts/runTestsInCircleCi.sh
+  - cd ../integrationTests && ./scripts/runTestsInCircleCi.sh

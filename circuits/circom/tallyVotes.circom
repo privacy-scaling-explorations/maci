@@ -90,7 +90,7 @@ template TallyVotes(
     //  ----------------------------------------------------------------------- 
     // Validate batchStartIndex and numSignUps
     // batchStartIndex should be less than numSignUps
-    component validNumSignups = LessThan(50);
+    component validNumSignups = LessEqThan(50);
     validNumSignups.in[0] <== batchStartIndex;
     validNumSignups.in[1] <== numSignUps;
     validNumSignups.out === 1;
