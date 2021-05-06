@@ -219,7 +219,7 @@ describe('ProcessMessage circuit', () => {
                 maxValues.maxVoteOptions,
                 poll.numSignUps,
                 0,
-                poll.messageTree.leaves.length,
+                2,
             )
 
             // Test the ProcessMessagesInputHasher circuit
