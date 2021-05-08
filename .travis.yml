@@ -12,14 +12,14 @@ install:
   - npm run bootstrap
   - npm run build
   - cd circuits
-  #- ./scripts/downloadTestCircuits.sh && npm run build-test-circuits
+  - ./scripts/downloadTestCircuits.sh && npm run build-test-circuits
   - ./scripts/installRapidsnark.sh
 
 script:
-  #- cd ../crypto && npm run test
-  #- cd ../domainobjs && npm run test
-  #- cd ../core && npm run test
-  #- cd ../circuits && ./scripts/runTestsInCi.sh
+  - cd ../crypto && npm run test
+  - cd ../domainobjs && npm run test
+  - cd ../core && npm run test
+  - cd ../circuits && ./scripts/runTestsInCi.sh
   - cd ../contracts && ./scripts/compileSol.sh 
-  #- ./scripts/runTestsInCi.sh
+  - ./scripts/runTestsInCi.sh
   - cd ../integrationTests && ./scripts/runTestsInCi.sh
