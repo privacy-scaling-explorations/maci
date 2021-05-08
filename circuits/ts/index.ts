@@ -35,9 +35,7 @@ const genProof = (
     const witnessGenCmd = `${witnessExePath} ${inputJsonPath} ${outputWtnsPath}`
     const witnessGenOutput = shelljs.exec(witnessGenCmd, { silent })
 
-    if (witnessGenOutput.stderr) {
-        console.log(witnessGenOutput.stderr)
-    }
+    console.log(witnessGenOutput)
 
     if (!fs.existsSync(outputWtnsPath)) {
         throw new Error('Error executing ' + witnessGenCmd)

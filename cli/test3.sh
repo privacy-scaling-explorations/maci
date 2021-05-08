@@ -1,3 +1,4 @@
+# 5 signups, 1 message
 node build/index.js deployVkRegistry
 
 node build/index.js setVerifyingKeys -s 10 -i 1 -m 2 -v 2 -b 1 -p ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey -t ./zkeys/TallyVotes_10-1-2.test.0.zkey -k 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0

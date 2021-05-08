@@ -1,3 +1,5 @@
+# one signup and one valid message
+
 node build/index.js deployVkRegistry && \
 node build/index.js setVerifyingKeys -s 10 -i 1 -m 2 -v 2 -b 1 \
     -p ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey \
@@ -14,7 +16,7 @@ node build/index.js publish \
     -p macipk.b8590fdba5e9cde5606dad5db384be4d253d0a2064d1e03f9600ee021a7ebe16 \
     -sk macisk.2ae4f199bf3925a2407f7c775c9261f351ab861d8e9ecbb84622bdd3f6d41b08 \
     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
-    -i 0 -v 0 -w 9 -n 1 -o 0
+    -i 1 -v 0 -w 9 -n 1 -o 0
     
 node build/index.js timeTravel -s 30 && \
 node build/index.js mergeMessages -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a -o 0 && \

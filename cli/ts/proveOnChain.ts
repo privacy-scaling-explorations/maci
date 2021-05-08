@@ -333,6 +333,7 @@ const proveOnChain = async (args: any) => {
     if (tallyBatchNum < totalTallyBatches) {
         console.log('Submitting proofs of vote tallying...')
     }
+
     for (let i = tallyBatchNum; i < totalTallyBatches; i ++) {
 
         const batchStartIndex = i * tallyBatchSize
@@ -365,7 +366,6 @@ const proveOnChain = async (args: any) => {
         }
 
         const publicInputHashOnChain = await pptContract.genTallyVotesPublicInputHash(
-            pollContract.address,
             numSignUps,
             batchStartIndex,
             tallyBatchSize,

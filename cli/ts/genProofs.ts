@@ -313,7 +313,7 @@ const genProofs = async (args: any) => {
             )
         } catch (e) {
             console.error('Error: could not generate proof.')
-            console.log(e)
+            console.error(e)
             return 1
         }
 

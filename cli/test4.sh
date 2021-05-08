@@ -1,3 +1,4 @@
+# 8 signups, 10 messages
 node build/index.js deployVkRegistry
 
 node build/index.js setVerifyingKeys -s 10 -i 1 -m 2 -v 2 -b 1 -p ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey -t ./zkeys/TallyVotes_10-1-2.test.0.zkey -k 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
@@ -6,6 +7,13 @@ node build/index.js create -r 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
 
 node build/index.js deployPoll -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a -pk macipk.9f1b3cd9460639a1039c0a18e65280eb60642a232414fab8f620c69c081f819b -t 20 -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2
 
+node ../cli/build/index.js signup -p macipk.1f968d8a40d8f7ffde4fa70b7c24170be1bb258948c50f85c6bdfe380ca25f83 -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
+node ../cli/build/index.js signup -p macipk.1f968d8a40d8f7ffde4fa70b7c24170be1bb258948c50f85c6bdfe380ca25f83 -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
+node ../cli/build/index.js signup -p macipk.1f968d8a40d8f7ffde4fa70b7c24170be1bb258948c50f85c6bdfe380ca25f83 -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
+node ../cli/build/index.js signup -p macipk.1f968d8a40d8f7ffde4fa70b7c24170be1bb258948c50f85c6bdfe380ca25f83 -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
+node ../cli/build/index.js signup -p macipk.1f968d8a40d8f7ffde4fa70b7c24170be1bb258948c50f85c6bdfe380ca25f83 -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
+node ../cli/build/index.js signup -p macipk.1f968d8a40d8f7ffde4fa70b7c24170be1bb258948c50f85c6bdfe380ca25f83 -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
+node ../cli/build/index.js signup -p macipk.1f968d8a40d8f7ffde4fa70b7c24170be1bb258948c50f85c6bdfe380ca25f83 -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
 node ../cli/build/index.js signup -p macipk.1f968d8a40d8f7ffde4fa70b7c24170be1bb258948c50f85c6bdfe380ca25f83 -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
 
 

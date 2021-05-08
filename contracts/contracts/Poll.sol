@@ -657,7 +657,6 @@ contract PollProcessorAndTallyer is
     }
 
     function genTallyVotesPublicInputHash(
-        Poll _poll,
         uint256 _numSignUps,
         uint256 _batchStartIndex,
         uint256 _tallyBatchSize,
@@ -743,7 +742,6 @@ contract PollProcessorAndTallyer is
 
         // Get the public inputs
         uint256 publicInputHash = genTallyVotesPublicInputHash(
-            _poll,
             _numSignUps,
             _batchStartIndex,
             _tallyBatchSize,

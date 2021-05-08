@@ -42,8 +42,12 @@ const executeSuite = async (data: any, expect: any) => {
     )
 
     const deployVkRegistryCommand = `node build/index.js deployVkRegistry`
-    const vkDeployOutput = exec(deployVkRegistryCommand).stdout.trim()
-    const vkAddressMatch = vkDeployOutput.match(/(0x[a-fA-F0-9]{40})/)
+    const vkDeployOutput = exec(deployVkRegistryCommand)
+    const vkAddressMatch = vkDeployOutput.stdout.trim().match(/(0x[a-fA-F0-9]{40})/)
+    if (!vkAddressMatch) {
+        console.log(vkDeployOutput)
+        return false
+    }
     const vkAddress = vkAddressMatch[1]
     console.log(vkAddress)
 
@@ -241,12 +245,6 @@ const executeSuite = async (data: any, expect: any) => {
     const removeOldProofs = `rm -f tally.json proofs.json`
     e = exec(removeOldProofs)
 
-    if (e.stderr) {
-        console.log(e.stderr)
-        return false
-    }
-    console.log(e.stdout)
-
     const genProofsCommand = `node build/index.js genProofs` +
         ` -x ${maciAddress}` +
         ` -sk ${coordinatorKeypair.privKey.serialize()}` +
@@ -296,133 +294,6 @@ const executeSuite = async (data: any, expect: any) => {
         return false
     }
     console.log(e.stdout)
-
-    // Process messages
-    /*
-    const processCommand = `NODE_OPTIONS=--max-old-space-size=4096 node ../cli/build/index.js process` +
-        ` -sk ${coordinatorKeypair.privKey.serialize()}` +
-        ` -d ${userPrivKey}` +
-        ` -x ${maciAddress}` +
-        ` --repeat`
-
-    console.log(processCommand)
-
-    const e = exec(processCommand)
-
-    if (e.stderr) {
-        console.log(e.stderr)
-    }
-    console.log(e.stdout)
-
-    const output = e.stdout.trim()
-
-    // Check whether the transaction succeeded
-    const processRegMatch = output.match(
-        /Processed batch starting at index ([0-9]+)\nTransaction hash: (0x[a-fA-F0-9]{64})\nRandom state leaf: (.+)$/
-    )
-
-    expect(processRegMatch).toBeTruthy()
-
-    // Check whether it has processed all batches
-    const processedIndexNum = parseInt(processRegMatch[1], 10)
-    expect(processedIndexNum.toString()).toEqual('0')
-
-    const currentMessageBatchIndex = await maciContract.currentMessageBatchIndex()
-    expect(currentMessageBatchIndex.toString()).toEqual('0')
-
-    const randomLeaf = StateLeaf.unserialize(processRegMatch[3])
-    */
-    /*
-    const tallyCommand = `NODE_OPTIONS=--max-old-space-size=4096 node ../cli/build/index.js tally` +
-        ` -sk ${coordinatorKeypair.privKey.serialize()}` +
-        ` -d ${userPrivKey}` +
-        ` -x ${maciAddress}` +
-        ` -z ${randomLeaf.serialize()}` +
-        ` -t test_tally.json` +
-        ` -c 0x0000000000000000000000000000000000000000000000000000000000000000` +
-        ` -tvc ${config.constants.maci.ivcpData}` +
-        ` -pvc 0x0000000000000000000000000000000000000000000000000000000000000000` +
-        ` -r`
-
-    console.log(tallyCommand)
-
-    const tallyOutput = exec(tallyCommand)
-
-    if (tallyOutput.stderr) {
-        console.log(tallyOutput.stderr)
-    }
-
-    console.log(tallyOutput.stdout)
-
-    const tallyRegMatch = tallyOutput.match(
-        /Transaction hash: (0x[a-fA-F0-9]{64})\nCurrent results salt: (0x[a-fA-F0-9]+)\nResult commitment: 0x[a-fA-F0-9]+\nTotal spent voice credits salt: (0x[a-fA-F0-9]+)\nTotal spent voice credits commitment: 0x[a-fA-F0-9]+\nTotal spent voice credits per vote option salt: (0x[a-fA-F0-9]+)\nTotal spent voice credits per vote option commitment: (0x[a-fA-F0-9]+)\nTotal votes: (.+)\n$/
-    )
-
-    if (!tallyRegMatch) {
-        console.log('Mismatch:')
-        console.log(tallyOutput)
-    }
-
-    expect(tallyRegMatch).toBeTruthy()
-
-    const resultsSalt = BigInt(tallyRegMatch[2])
-
-    const finalTallyCommitment = await maciContract.currentResultsCommitment()
-    const expectedTallyCommitment = genTallyResultCommitment(
-        data.expectedTally,
-        resultsSalt,
-        config.constants.maci.voteOptionTreeDepth,
-    )
-
-    expect(finalTallyCommitment.toString())
-        .toEqual(expectedTallyCommitment.toString())
-
-    const tvcSalt = BigInt(tallyRegMatch[3])
-    const finalTvcCommitment = 
-        await maciContract.currentSpentVoiceCreditsCommitment()
-
-    const expectedTvcCommitment = genSpentVoiceCreditsCommitment(
-        data.expectedTotalSpentVoiceCredits,
-        tvcSalt,
-    )
-    expect(expectedTvcCommitment.toString())
-        .toEqual(finalTvcCommitment.toString())
-
-
-    const pvcSalt = BigInt(tallyRegMatch[4])
-    const finalPvcCommitment =
-        await maciContract.currentPerVOSpentVoiceCreditsCommitment()
-    const expectedPvcCommitment = genPerVOSpentVoiceCreditsCommitment(
-        data.expectedSpentVoiceCredits,
-        pvcSalt,
-        config.constants.maci.voteOptionTreeDepth,
-    )
-    expect(expectedPvcCommitment.toString())
-        .toEqual(finalPvcCommitment.toString())
-
-    const totalVotes = BigInt(tallyRegMatch[6])
-    const expectedTotalVotes = await maciContract.totalVotes()
-    expect(totalVotes.toString()).toEqual(expectedTotalVotes.toString())
-
-    const verifyCommand = `NODE_OPTIONS=--max-old-space-size=4096 node ../cli/build/index.js verify ` +
-        '-t test_tally.json'
-
-    console.log(verifyCommand)
-
-    const verifyOutput = exec(verifyCommand)
-
-    if (verifyOutput.stderr) {
-        console.log(verifyOutput.stderr)
-    }
-
-    const verifyRegMatch = verifyOutput.match(
-        /The results commitment in the specified file is correct given the tally and salt\nThe total spent voice credit commitment in the specified file is correct given the tally and salt\nThe per vote option spent voice credit commitment in the specified file is correct given the tally and salt\nThe results commitment in the MACI contract on-chain is valid\nThe total spent voice credit commitment in the MACI contract on-chain is valid\nThe per vote option spent voice credit commitment in the MACI contract on-chain is valid\nThe total sum of votes in the MACI contract on-chain is valid.\n/
-    )
-    if (!verifyRegMatch) {
-        console.log(verifyOutput)
-    }
-    expect(verifyRegMatch).toBeTruthy()
-    */
 
     return true
 }

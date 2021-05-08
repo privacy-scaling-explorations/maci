@@ -13,7 +13,7 @@ contract ConstantInitialVoiceCreditProxy is InitialVoiceCreditProxy {
         balance = _balance;
     }
 
-    function getVoiceCredits(address _user, bytes memory _data) public override view returns (uint256) {
+    function getVoiceCredits(address, bytes memory) public override view returns (uint256) {
         return balance;
     }
 }

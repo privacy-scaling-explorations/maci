@@ -18,7 +18,7 @@ wget --quiet -O ../cli/zkeys/TallyVotes_10-1-2.test \
     https://macitestcircuits.blob.core.windows.net/test/TallyVotes_10-1-2.test
 
 cd ../contracts && npm run hardhat &
-sleep 3 &&
-npm run test-cli-genMaciKeypair &&
-npm run test-cli-genMaciPubkey &&
+sleep 5
+npm run test-cli-genMaciKeypair
+npm run test-cli-genMaciPubkey
 npm run test-suites
