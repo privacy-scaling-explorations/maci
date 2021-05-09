@@ -93,7 +93,6 @@ contract IncrementalMerkleTree is Ownable, Hasher {
         for (uint8 i = 1; i < _treeLevels; i++) {
             uint256 hashed = hashLeftRight(currentZero, currentZero);
             zeros[i] = hashed;
-            filledSubtrees[i] = hashed;
             currentZero = hashed;
         }
 
