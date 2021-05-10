@@ -233,6 +233,8 @@ const executeSuite = async (data: any, expect: any) => {
     }
     console.log(e.stdout)
 
+    maciState.polls[pollId].processAllMessages()
+
     const mergeSignupsCommand = `node build/index.js mergeSignups -x ${maciAddress} -o ${pollId}`
     e = exec(mergeSignupsCommand)
 
