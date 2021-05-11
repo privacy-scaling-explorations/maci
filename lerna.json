@@ -2,7 +2,6 @@
   "packages": [
     "circuits",
     "cli",
-    "config",
     "contracts",
     "core",
     "crypto",
