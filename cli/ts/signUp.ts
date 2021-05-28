@@ -187,10 +187,10 @@ const signup = async (args: any) => {
     }
 
     console.log('Transaction hash:', tx.hash)
-    //const receipt = await tx.wait()
-    //const iface = new ethers.utils.Interface(maciContract.interface.abi)
-    //const index = iface.parseLog(receipt.logs[1]).values._stateIndex
-    //console.log('State index:', index.toString())
+    const receipt = await tx.wait()
+    const iface = new ethers.utils.Interface(maciContract.interface.abi)
+    const index = iface.parseLog(receipt.logs[1]).values._stateIndex
+    console.log('State index:', index.toString())
 }
 
 export {
