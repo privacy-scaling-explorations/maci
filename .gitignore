@@ -1,7 +1,14 @@
 **/zkeys/*
 **/artifacts/*
-**/artifacts/*
+
+cli/zkeys/*
+cli/artifacts/*
+
+integrationTests/artifacts/*
+integrationTests/cache/*
+
 contracts/cache/*
+contracts/artifacts/*
 contracts/sol/QuadVoteTallyVerifier.sol
 contracts/sol/QuadVoteTallyVerifierLarge.sol
 contracts/sol/QuadVoteTallyVerifierMedium.sol
