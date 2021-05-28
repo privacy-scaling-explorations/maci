@@ -325,7 +325,6 @@ class MaciState {
         let stateLeaf
 
         const stateIndex = Number(command.stateIndex)
-        debugger
         if (
                 Math.floor(stateIndex) === stateIndex &&
                 stateIndex >= 0 &&
@@ -835,9 +834,14 @@ class MaciState {
             2,
         )
 
+        const numBatches = (this.users.length + 1) % Number(_batchSize) === 0 ?
+            (this.users.length + 1) / Number(_batchSize)
+            :
+            Math.floor((this.users.length + 1) / Number(_batchSize)) + 1
+
         // For each batch, create a tree of the leaves in the batch, and insert the
         // tree root into the intermediate tree
-        for (let i = 0; i < 2 ** Number(this.stateTreeDepth); i += Number(_batchSize)) {
+        for (let i = 0; i < numBatches * Number(_batchSize); i += Number(_batchSize)) {
 
             // Use this batchTree to accumulate the leaves in the batch
             const batchTree = emptyBatchTree.copy()

@@ -1,3 +1,7 @@
+**/zkeys/*
+**/artifacts/*
+**/artifacts/*
+contracts/cache/*
 contracts/sol/QuadVoteTallyVerifier.sol
 contracts/sol/QuadVoteTallyVerifierLarge.sol
 contracts/sol/QuadVoteTallyVerifierMedium.sol

@@ -218,6 +218,10 @@ const genProofs = async (args: any) => {
     console.log('Generating proofs of message processing...')
     let proofNum = 1
 
+    let start
+    let end
+
+    start = Date.now()
     for (let i = currentMessageBatchIndex; i >= 0; i -= messageBatchSize) {
         console.log(`\nProgress: ${proofNum} / ${1 + currentMessageBatchIndex / messageBatchSize}; batch index: ${i}`)
         proofNum ++
@@ -253,6 +257,9 @@ const genProofs = async (args: any) => {
         } else if (maciState.stateTreeDepth === 8) {
             configType = 'prod-small'
             circuitName = 'batchUstSmall'
+        } else if (maciState.stateTreeDepth === 32) {
+            configType = 'prod-32'
+            circuitName = 'batchUst32'
         } else {
             configType = 'test'
             circuitName = 'batchUst'
@@ -301,8 +308,12 @@ const genProofs = async (args: any) => {
         }
     }
 
+    end = Date.now()
+    console.log(((end - start ) / 1000))
+
     // Tally votes
 
+    start = Date.now()
     const tallyBatchSize = Number(await maciContract.tallyBatchSize())
     const numStateLeaves = 1 + maciState.users.length
 
@@ -366,6 +377,9 @@ const genProofs = async (args: any) => {
         } else if (maciState.stateTreeDepth === 8) {
             configType = 'prod-small'
             circuitName = 'qvtSmall'
+        } else if (maciState.stateTreeDepth === 32) {
+            configType = 'prod-32'
+            circuitName = 'qvt32'
         } else {
             configType = 'test'
             circuitName = 'qvt'
@@ -468,6 +482,8 @@ const genProofs = async (args: any) => {
             saveOutput(outputFile, processProofs, tallyProofs)
         }
     }
+    end = Date.now()
+    console.log(((end - start ) / 1000))
 
     const tallyFileData = {
         provider: ethProvider,

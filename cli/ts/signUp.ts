@@ -175,7 +175,7 @@ const signup = async (args: any) => {
             userMaciPubKey.asContractParam(),
             sgData,
             ivcpData,
-            { gasLimit: 1000000 }
+            { gasLimit: 2000000 }
         )
 
     } catch(e) {
@@ -186,11 +186,11 @@ const signup = async (args: any) => {
         return
     }
 
-    const receipt = await tx.wait()
-    const iface = new ethers.utils.Interface(maciContract.interface.abi)
-    const index = iface.parseLog(receipt.logs[1]).values._stateIndex
     console.log('Transaction hash:', tx.hash)
-    console.log('State index:', index.toString())
+    //const receipt = await tx.wait()
+    //const iface = new ethers.utils.Interface(maciContract.interface.abi)
+    //const index = iface.parseLog(receipt.logs[1]).values._stateIndex
+    //console.log('State index:', index.toString())
 }
 
 export {

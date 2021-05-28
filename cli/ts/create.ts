@@ -270,11 +270,16 @@ const create = async (args: any) => {
 
     const isLarge =
         maxMessages > 8192 && maxMessages <= 32768 ||
-        maxUsers > 512 && maxUsers <= 4095 ||
+        maxUsers > 511 && maxUsers <= 4095 ||
         maxVoteOptions > 24 && maxVoteOptions <= 125
 
-    if (!isTest && !isSmall && !isMedium && !isLarge) {
-        console.error('Error: this codebase only supports test, prod-small, prod-medium, or prod-large configurations for max-users, max-messages, and max-vote-options.')
+    const is32 =
+        maxMessages > 32768 && maxMessages <= 4294967296 ||
+        maxUsers > 4095 && maxUsers <= 4294967296 ||
+        maxVoteOptions > 24 && maxVoteOptions <= 125
+
+    if (!isTest && !isSmall && !isMedium && !isLarge && !is32) {
+        console.error('Error: this codebase only supports test, prod-small, prod-medium, prod-large, or prod-32 configurations for max-users, max-messages, and max-vote-options.')
         return
     }
 
@@ -308,6 +313,11 @@ const create = async (args: any) => {
         messageTreeDepth = 15
         voteOptionTreeDepth = 3
         configType = 'prod-large'
+    } else if (is32) {
+        stateTreeDepth = 32
+        messageTreeDepth = 32
+        voteOptionTreeDepth = 3
+        configType = 'prod-32'
     } else if (isTest) {
         stateTreeDepth = 4
         messageTreeDepth = 4

@@ -306,7 +306,7 @@ const publish = async (args: any) => {
         tx = await maciContract.publishMessage(
             message.asContractParam(),
             encKeypair.pubKey.asContractParam(),
-            { gasLimit: 1000000 }
+            { gasLimit: 2000000 }
         )
 
         console.log('Transaction hash:', tx.hash)

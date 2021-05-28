@@ -118,8 +118,14 @@ const genBatchUstProofAndPublicSignals = (
         circuitWitnessGenFilename = 'batchUstLarge'
         paramsPath = 'batchUstLarge.params'
         wasmPath = 'batchUstLarge.wasm'
+    } else if (configType === 'prod-32') {
+        circuitPath = 'prod/batchUpdateStateTree_32.circom'
+        circuitR1csPath = 'batchUst32.r1cs'
+        circuitWitnessGenFilename = 'batchUst32'
+        paramsPath = 'batchUst32.params'
+        wasmPath = 'batchUst32.wasm'
     } else {
-        throw new Error('Only test, prod-small, prod-medium, and prod-large circuits are supported')
+        throw new Error('Only test, prod-small, prod-medium, prod-large, and prod-32 circuits are supported')
     }
 
     return genProofAndPublicSignals(
@@ -166,8 +172,14 @@ const genQvtProofAndPublicSignals = (
         circuitWitnessGenFilename = 'qvtLarge'
         wasmPath = 'qvtLarge.wasm'
         paramsPath = 'qvtLarge.params'
+    } else if (configType === 'prod-32') {
+        circuitPath = 'prod/quadVoteTally_32.circom'
+        circuitR1csPath = 'qvtCircuit32.r1cs'
+        circuitWitnessGenFilename = 'qvt32'
+        wasmPath = 'qvt32.wasm'
+        paramsPath = 'qvt32.params'
     } else {
-        throw new Error('Only test, prod-small, prod-medium, and prod-large circuits are supported')
+        throw new Error('Only test, prod-small, prod-medium, prod-large, and prod-32 circuits are supported')
     }
 
     return genProofAndPublicSignals(
@@ -293,6 +305,10 @@ const verifyBatchUstProof = (
         paramsFilename = 'batchUstLarge.params'
         proofFilename = `${date}.batchUstLarge.proof.json`
         publicSignalsFilename = `${date}.batchUstLarge.publicSignals.json`
+    } else if (configType === 'prod-32') {
+        paramsFilename = 'batchUst32.params'
+        proofFilename = `${date}.batchUst32.proof.json`
+        publicSignalsFilename = `${date}.batchUst32.publicSignals.json`
     }
 
     fs.writeFileSync(
@@ -338,6 +354,10 @@ const verifyQvtProof = (
         paramsFilename = 'qvtLarge.params'
         proofFilename = `${date}.qvtLarge.proof.json`
         publicSignalsFilename = `${date}.qvtLarge.publicSignals.json`
+    } else if (configType === 'prod-32') {
+        paramsFilename = 'qvt32.params'
+        proofFilename = `${date}.qvt32.proof.json`
+        publicSignalsFilename = `${date}.qvt32.publicSignals.json`
     }
 
     // TODO: refactor
