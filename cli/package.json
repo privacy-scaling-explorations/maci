@@ -1,6 +1,6 @@
 {
     "name": "maci-cli",
-    "version": "0.8.3",
+    "version": "0.8.4",
     "description": "",
     "main": "build/index.js",
     "bin": {
@@ -15,12 +15,12 @@
     "dependencies": {
         "argparse": "^1.0.10",
         "ethers": "^4.0.45",
-        "maci-circuits": "^0.8.3",
-        "maci-config": "^0.8.3",
-        "maci-contracts": "^0.8.3",
-        "maci-core": "^0.8.3",
-        "maci-crypto": "^0.8.3",
-        "maci-domainobjs": "^0.8.3",
+        "maci-circuits": "^0.8.4",
+        "maci-config": "^0.8.4",
+        "maci-contracts": "^0.8.4",
+        "maci-core": "^0.8.4",
+        "maci-crypto": "^0.8.4",
+        "maci-domainobjs": "^0.8.4",
         "prompt-sync": "4.2.0"
     },
     "devDependencies": {
