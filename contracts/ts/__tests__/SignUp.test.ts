@@ -197,6 +197,7 @@ describe('MACI', () => {
                 { gasLimit: 2000000 },
             )
             const receipt = await tx.wait()
+            console.log('Signup gas:', receipt.gasUsed.toString())
 
             expect(receipt.status).toEqual(1)
 
