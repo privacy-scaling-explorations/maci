@@ -3,6 +3,13 @@ import * as shell from 'shelljs'
 import * as fs from 'fs'
 import * as yaml from 'js-yaml'
 import * as  path from 'path';
+import { Vote, UserCommand } from './user'
+import {
+    PubKey,
+    PrivKey,
+    Keypair,
+    Command,
+} from 'maci-domainobjs'
 
 const exec = (command: string) => {
     return shell.exec('cd ../cli/ && ' + command, { silent: true })
@@ -34,6 +41,33 @@ const genTestAccounts = (
     }
 
     return accounts
+}
+
+const genTestUserCommands = (
+    numUsers: number,
+    voteCreditBalance: number,
+    invalidVotes: any,
+    numVotesPerUser: number
+) => {
+
+    const config = loadYaml()
+    let usersCommands: UserCommand[] = []
+    for (let i=0; i<numUsers; i++) {
+        const userKeypair = new Keypair()
+        const vote: Vote = {
+            voteOptionIndex: i,
+            voteWeight: config.defaultVote.voteWeight,
+            valid: true
+        }
+
+        const userCommand = new UserCommand(
+            userKeypair,
+            [vote],
+            config.defaultVote.maxVoteWeight,
+            config.defaultVote.nonce
+        )
+        usersCommands.push(userCommand)
+    }
 }
 
 export { exec, delay, loadYaml, genTestAccounts }

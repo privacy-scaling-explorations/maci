@@ -2,13 +2,21 @@ libraries:
   - name: cli
   - name: contracts
   - name: crypto
-
-
 startPoll:
 submitVote:
 tallyVotes:
 processStateTree:
 
+user: [index, voteOptionIndex, voteWeight, nonce, commandType]
+
+defaultVote:
+  voteWeight: 1
+  nonce: 1
+  maxVoteWeight: 25
+invalidVote:
+  voteWeight: 2
+  nonce: 0
+  maxVoteWeight: 1
 constants:
   poll:
     duration: 120
