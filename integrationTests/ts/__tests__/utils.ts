@@ -46,28 +46,37 @@ const genTestAccounts = (
 const genTestUserCommands = (
     numUsers: number,
     voteCreditBalance: number,
-    invalidVotes: any,
-    numVotesPerUser: number
+    numVotesPerUser: number,
+    invalidVotes?: any,
 ) => {
 
     const config = loadYaml()
     let usersCommands: UserCommand[] = []
-    for (let i=0; i<numUsers; i++) {
+    for (let i=0; i< numUsers; i++) {
         const userKeypair = new Keypair()
-        const vote: Vote = {
-            voteOptionIndex: i,
-            voteWeight: config.defaultVote.voteWeight,
-            valid: true
+        let votes: Vote[] = [];
+
+        for (let j=0; j < numVotesPerUser; j++) {
+            const vote: Vote = {
+                voteOptionIndex: i,
+                voteWeight: config.defaultVote.voteWeight,
+                nonce: j + 1,
+                valid: true
+            }
+
+            votes.push(vote)
         }
 
         const userCommand = new UserCommand(
             userKeypair,
-            [vote],
+            votes,
             config.defaultVote.maxVoteWeight,
             config.defaultVote.nonce
         )
         usersCommands.push(userCommand)
     }
+
+    return usersCommands;
 }
 
-export { exec, delay, loadYaml, genTestAccounts }
+export { exec, delay, loadYaml, genTestAccounts, genTestUserCommands }

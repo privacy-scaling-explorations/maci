@@ -5,6 +5,7 @@ import {
 export interface Vote {
     voteOptionIndex: number;
     voteWeight: number;
+    nonce: number;
     valid: boolean;
 }
 
@@ -12,9 +13,8 @@ export class UserCommand {
     public keypair: Keypair
     public votes: Vote[]
     public voiceCreditBalance: BigInt
-    public nonce: BigInt
 
-     constructor(
+    constructor(
         _keypair: Keypair,
         _votes: Vote[],
         _voiceCreditBalance: BigInt,
@@ -23,7 +23,6 @@ export class UserCommand {
         this.keypair = _keypair
         this.votes = _votes
         this.voiceCreditBalance = BigInt(_voiceCreditBalance)
-        this.nonce = BigInt(_nonce)
     }
 
     // public static genBlankUser

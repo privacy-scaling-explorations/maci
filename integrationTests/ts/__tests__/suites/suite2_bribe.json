@@ -2,6 +2,7 @@
     "name": "Reverse processing",
     "description": "2 batches, 1 briber",
     "numUsers": 3,
+    "numVotesPerUser": 2,
     "commands": [
         {
             "user": 0,

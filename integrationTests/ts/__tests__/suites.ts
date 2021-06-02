@@ -22,7 +22,7 @@ import {
 
 import { genPubKey } from 'maci-crypto'
 
-import { exec, loadYaml } from './utils'
+import { exec, loadYaml, genTestUserCommands } from './utils'
 
 const loadData = (name: string) => {
     return require('@maci-integrationTests/ts/__tests__/suites/' + name)
@@ -121,9 +121,17 @@ const executeSuite = async (data: any, expect: any) => {
     const userKeypairs: Keypair[] = []
 
     console.log(`Signing up ${data.numUsers} users`)
+
+    const users = genTestUserCommands(
+        data.numUsers,
+        config.defaultVote.voiceCreditBalance,
+        data.numVotesPerUser
+    )
+    console.log(users.length)
+
     // Sign up
-    for (let i = 0; i < data.numUsers; i++) {
-        const userKeypair = new Keypair()
+    for (let i = 0; i < users.length; i++) {
+        const userKeypair = users[i].keypair
         userKeypairs.push(userKeypair)
         // Run the signup command
         const signupCommand = `node ../cli/build/index.js signup` +
@@ -148,71 +156,72 @@ const executeSuite = async (data: any, expect: any) => {
     // Publish messages
     console.log(`Publishing messages`)
 
-    for (let i = 0; i < data.commands.length; i++) {
-        if (data.commands[i].user >= userKeypairs.length) {
+    for (let i = 0; i < users.length; i++) {
+        if (i >= userKeypairs.length) {
             continue
         }
 
-        const userKeypair = userKeypairs[data.commands[i].user]
-        const stateIndex = data.commands[i].user + 1
-        const voteOptionIndex = data.commands[i].voteOptionIndex
-        const newVoteWeight  = data.commands[i].voteWeight
-        const nonce = data.commands[i].nonce
-        const salt = '0x' + genRandomSalt().toString(16)
- 
-        // Run the publish command
-        const publishCommand = `node build/index.js publish` +
-            ` -sk ${userKeypair.privKey.serialize()}` +
-            ` -p ${userKeypair.pubKey.serialize()}` +
-            ` -x ${maciAddress}` +
-            ` -i ${stateIndex}` +
-            ` -v ${voteOptionIndex}` +
-            ` -w ${newVoteWeight}` +
-            ` -n ${nonce}` +
-            ` -o ${pollId}`
+        for (let j = 0; j < users[i].votes.length; j++ ) {
+            const userKeypair = userKeypairs[i]
+            const stateIndex = i + 1
+            const voteOptionIndex = users[i].votes[j].voteOptionIndex
+            const newVoteWeight  = users[i].votes[j].voteWeight
+            const nonce = users[i].votes[j].nonce
+            const salt = '0x' + genRandomSalt().toString(16)
+            // Run the publish command
+            const publishCommand = `node build/index.js publish` +
+                ` -sk ${userKeypair.privKey.serialize()}` +
+                ` -p ${userKeypair.pubKey.serialize()}` +
+                ` -x ${maciAddress}` +
+                ` -i ${stateIndex}` +
+                ` -v ${voteOptionIndex}` +
+                ` -w ${newVoteWeight}` +
+                ` -n ${nonce}` +
+                ` -o ${pollId}`
 
-        console.log(publishCommand)
+            console.log(publishCommand)
 
-        const publishExec = exec(publishCommand)
-        if (publishExec.stderr) {
-            console.log(publishExec.stderr)
-            return false
-        }
+            const publishExec = exec(publishCommand)
+            if (publishExec.stderr) {
+                console.log(publishExec.stderr)
+                return false
+            }
 
-        const publishOutput = publishExec.stdout.trim()
-        console.log(publishOutput)
+            const publishOutput = publishExec.stdout.trim()
+            console.log(publishOutput)
 
-        const publishRegMatch = publishOutput.match(
-            /Transaction hash: (0x[a-fA-F0-9]{64})\nEphemeral private key: (macisk.[a-f0-9]+)$/)
+            const publishRegMatch = publishOutput.match(
+                /Transaction hash: (0x[a-fA-F0-9]{64})\nEphemeral private key: (macisk.[a-f0-9]+)$/)
 
-        // The publish command generates and outputs a random ephemeral private
-        // key, so we have to retrieve it from the standard output
-        const encPrivKey = PrivKey.unserialize(publishRegMatch[2])
-        const encPubKey = new PubKey(genPubKey(encPrivKey.rawPrivKey))
+            // The publish command generates and outputs a random ephemeral private
+            // key, so we have to retrieve it from the standard output
+            const encPrivKey = PrivKey.unserialize(publishRegMatch[2])
+            const encPubKey = new PubKey(genPubKey(encPrivKey.rawPrivKey))
 
-        const command = new Command(
-            BigInt(stateIndex),
-            userKeypair.pubKey,
-            BigInt(voteOptionIndex),
-            BigInt(newVoteWeight),
-            BigInt(nonce),
-            BigInt(pollId),
-            BigInt(salt),
-        )
-
-        const signature = command.sign(userKeypair.privKey)
-
-        const message = command.encrypt(
-            signature,
-            Keypair.genEcdhSharedKey(
-                encPrivKey,
-                coordinatorKeypair.pubKey,
+            const command = new Command(
+                BigInt(stateIndex),
+                userKeypair.pubKey,
+                BigInt(voteOptionIndex),
+                BigInt(newVoteWeight),
+                BigInt(nonce),
+                BigInt(pollId),
+                BigInt(salt),
             )
-        )
-        maciState.polls[pollId].publishMessage(
-            message,
-            encPubKey,
-        )
+
+            const signature = command.sign(userKeypair.privKey)
+
+            const message = command.encrypt(
+                signature,
+                Keypair.genEcdhSharedKey(
+                    encPrivKey,
+                    coordinatorKeypair.pubKey,
+                )
+            )
+            maciState.polls[pollId].publishMessage(
+                message,
+                encPubKey,
+            )
+        }
     }
 
     const timeTravelCommand = `node build/index.js timeTravel -s ${config.constants.maci.votingDuration}`
