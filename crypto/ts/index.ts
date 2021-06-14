@@ -2,6 +2,7 @@ import * as assert from 'assert'
 import * as crypto from 'crypto'
 import * as ethers from 'ethers'
 const ff = require('ffjavascript')
+const createBlakeHash = require('blake-hash')
 import { babyJub, mimc7, poseidon, eddsa } from 'circomlib'
 import { AccQueue } from './AccQueue'
 import { IncrementalQuinTree } from 'incrementalquintree'
@@ -287,11 +288,12 @@ const formatPrivKeyForBabyJub = (privKey: PrivKey) => {
     // Every point in babyjubjub is of the form: aP + bH, where H has order 8
     // and P has a big large prime order
     // Guaranteeing that any low order points in babyjubjub get deleted
-    const sBuff = eddsa.pruneBuffer(
-        bigInt2Buffer(
-            hashOne(privKey)
-        ).slice(0, 32)
-    )
+    //const sBuff = eddsa.pruneBuffer(
+        //bigInt2Buffer(
+            //hashOne(privKey)
+        //).slice(0, 32)
+    //)
+    const sBuff = eddsa.pruneBuffer(createBlakeHash("blake512").update(bigInt2Buffer(privKey)).digest().slice(0,32))
 
     const s = ff.utils.leBuff2int(sBuff)
     return ff.Scalar.shr(s, 3)
@@ -321,18 +323,9 @@ const unpackPubKey = (packed: Buffer): PubKey => {
  */
 const genPubKey = (privKey: PrivKey): PubKey => {
     // Check whether privKey is a field element
+    privKey = BigInt(privKey.toString())
     assert(privKey < SNARK_FIELD_SIZE)
-
-    const pubKey = babyJub.mulPointEscalar(
-        babyJub.Base8,
-        formatPrivKeyForBabyJub(privKey),
-    )
-
-    assert(pubKey.length === 2)
-    assert(pubKey[0] < SNARK_FIELD_SIZE)
-    assert(pubKey[1] < SNARK_FIELD_SIZE)
-
-    return pubKey
+    return eddsa.prv2pub(bigInt2Buffer(privKey))
 }
 
 const genKeypair = (): Keypair => {
@@ -418,37 +411,12 @@ const decrypt = (
  */
 const sign = (
     privKey: PrivKey,
-    hashedData: BigInt,
+    msg: BigInt,
 ): Signature => {
-    // This implementation differs from iden3's in that it uses Poseidon
-    // instead of Blake512
-
-    // TODO: make these intermediate variables have more meaningful names
-    const h1 = bigInt2Buffer(hashOne(privKey))
-
-    // TODO: document these steps
-    const sBuff = eddsa.pruneBuffer(h1.slice(0, 32))
-    const s = ff.utils.leBuff2int(sBuff)
-    const A = babyJub.mulPointEscalar(babyJub.Base8, ff.Scalar.shr(s, 3))
-
-    const msgBuff = ff.utils.leInt2Buff(hashedData, 32)
-	const slice = Uint8Array.from(h1.slice(32, 64))
-
-    const concat = new Uint8Array(slice.length + msgBuff.length)
-    concat.set(slice)
-    concat.set(msgBuff, slice.length)
-
-    let r = hashOne(ff.utils.beBuff2int(concat))
-    const Fr = new ff.F1Field(babyJub.subOrder)
-    r = Fr.e(r)
-
-    const R8 = babyJub.mulPointEscalar(babyJub.Base8, r)
-    const hm = hash5([R8[0], R8[1], A[0], A[1], hashedData])
-    const S =  Fr.add(r , Fr.mul(hm, s));
-
-    const signature: Signature = { R8, S }
-
-    return signature
+    return eddsa.signPoseidon(
+        bigInt2Buffer(privKey),
+        msg,
+    )
 }
 
 /*
@@ -457,12 +425,12 @@ const sign = (
  * @return True if the signature is valid, and false otherwise.
  */
 const verifySignature = (
-    hashedData: BigInt,
+    msg: BigInt,
     signature: Signature,
     pubKey: PubKey,
 ): boolean => {
 
-    return eddsa.verifyPoseidon(hashedData, signature, pubKey)
+    return eddsa.verifyPoseidon(msg, signature, pubKey)
 }
 
 export {
