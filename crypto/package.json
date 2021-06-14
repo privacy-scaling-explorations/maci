@@ -14,6 +14,7 @@
     },
     "dependencies": {
         "circomlib": "0.5.1",
+        "blake-hash": "^1.1.0",
         "ethers": "^5.0.32",
         "ffjavascript": "0.2.35",
         "incrementalquintree": "^1.0.3"
