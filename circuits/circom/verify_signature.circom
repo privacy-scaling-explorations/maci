@@ -32,7 +32,6 @@ template EdDSAPoseidonVerifier_patched() {
         snum2bits.out[i] ==> compConstant.in[i];
     }
     compConstant.in[253] <== 0;
-    compConstant.out === 0;
 
     // Calculate the h = H(R,A, msg)
     component hash = PoseidonHashT6();
@@ -108,9 +107,13 @@ template EdDSAPoseidonVerifier_patched() {
     iz.in[0] <== isZero.out;
     iz.in[1] <== 0;
 
+    // If compConstant.out is not zero, then valid should be 0.
+    component isCcZero = IsZero();
+    isCcZero.in <== compConstant.out;
+
     component isValid = IsEqual();
-    isValid.in[0] <== leftRightValid.out + iz.out;
-    isValid.in[1] <== 2;
+    isValid.in[0] <== leftRightValid.out + iz.out + isCcZero.out;
+    isValid.in[1] <== 3;
 
     valid <== isValid.out;
 }
