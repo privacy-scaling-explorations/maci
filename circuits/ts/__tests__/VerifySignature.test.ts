@@ -45,13 +45,12 @@ describe('Signature verification circuit', () => {
             preimage: command.asCircuitInputs(),
         })
 
-        debugger
         const witness = await genWitness(circuit, circuitInputs)
         const isValid = await getSignalByName(circuit, witness, 'main.valid')
         expect(isValid).toEqual('1')
     })
 
-    it('rejects an invalid signature', async () => {
+    it('rejects an invalid signature (wrong signer)', async () => {
         const keypair = new Keypair()
         const command = new Command(
             BigInt(0),
@@ -88,5 +87,44 @@ describe('Signature verification circuit', () => {
         const witness = await genWitness(circuit, circuitInputs)
         const isValid = await getSignalByName(circuit, witness, 'main.valid')
         expect(isValid).toEqual('0')
+        expect(
+            await getSignalByName(circuit, witness, 'main.verifier.isCcZero.out'),
+        ).toEqual('1')
+    })
+
+    it('rejects an invalid signature', async () => {
+
+        const keypair = new Keypair()
+        const command = new Command(
+            BigInt(0),
+            keypair.pubKey,
+            BigInt(123),
+            BigInt(123),
+            BigInt(1),
+            BigInt(2),
+            BigInt(3),
+        )
+
+        const signer = new Keypair()
+        const sig = command.sign(signer.privKey)
+        const plaintext = hash4(command.asArray())
+
+        expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).toBeTruthy()
+
+        const circuitInputs = stringifyBigInts({
+            pubKey: signer.pubKey.asCircuitInputs(),
+            R8: sig.R8,
+            S: BigInt('2736030358979909402780800718157159386076813972158567259200215660948447373040') + BigInt(1),
+            preimage: command.asCircuitInputs(),
+        })
+
+        expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).toBeTruthy()
+
+        const witness = await genWitness(circuit, circuitInputs)
+        const isValid = await getSignalByName(circuit, witness, 'main.valid')
+        expect(isValid).toEqual('0')
+        expect(
+            await getSignalByName(circuit, witness, 'main.verifier.isCcZero.out'),
+        ).toEqual('0')
     })
 })
