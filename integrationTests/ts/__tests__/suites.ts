@@ -125,7 +125,8 @@ const executeSuite = async (data: any, expect: any) => {
     const users = genTestUserCommands(
         data.numUsers,
         config.defaultVote.voiceCreditBalance,
-        data.numVotesPerUser
+        data.numVotesPerUser,
+        data.bribers
     )
     console.log(users.length)
 
