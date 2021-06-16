@@ -8,13 +8,14 @@ node build/index.js setVerifyingKeys -s 10 -i 1 -m 2 -v 2 -b 1 \
 node build/index.js create \
     -r 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0 && \
 node ./build/index.js deployPoll -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
-    -pk macipk.495140c99cbc090c74363d5e3f32705a92a9e1df8e5ebe2fd6831de9c813f01f \
+    -pk macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
     -t 20 -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2 && \
-node ./build/index.js signup -p macipk.b8590fdba5e9cde5606dad5db384be4d253d0a2064d1e03f9600ee021a7ebe16 \
+node ./build/index.js signup \
+    -p macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391 \
     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a && \
 node build/index.js publish \
-    -p macipk.b8590fdba5e9cde5606dad5db384be4d253d0a2064d1e03f9600ee021a7ebe16 \
-    -sk macisk.2ae4f199bf3925a2407f7c775c9261f351ab861d8e9ecbb84622bdd3f6d41b08 \
+    -p macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391 \
+    -sk macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c \
     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -i 1 -v 0 -w 9 -n 1 -o 0
     
