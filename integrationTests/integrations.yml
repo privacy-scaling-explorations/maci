@@ -14,6 +14,7 @@ defaultVote:
   nonce: 1
   maxVoteWeight: 25
   voteCreditBalance: 1
+  voteOptionIndex: 0
 invalidVote:
   voteWeight: 2
   nonce: 0
