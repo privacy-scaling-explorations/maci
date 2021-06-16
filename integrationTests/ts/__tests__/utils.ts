@@ -47,6 +47,7 @@ const genTestUserCommands = (
     numUsers: number,
     voteCreditBalance: number,
     numVotesPerUser: number,
+    bribers?: any,
     invalidVotes?: any,
 ) => {
 
@@ -57,8 +58,16 @@ const genTestUserCommands = (
         let votes: Vote[] = [];
 
         for (let j=0; j < numVotesPerUser; j++) {
+
+            let voteOptionIndex = config.defaultVote.voteOptionIndex
+            if (bribers && i in bribers) {
+                if (!(bribers[i].length == numVotesPerUser)) {
+                    throw new Error("failed: more bribes than votes set per user")
+                }
+                voteOptionIndex = bribers[i][j]
+            }
             const vote: Vote = {
-                voteOptionIndex: i,
+                voteOptionIndex: voteOptionIndex,
                 voteWeight: config.defaultVote.voteWeight,
                 nonce: j + 1,
                 valid: true
