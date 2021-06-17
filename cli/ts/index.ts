@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import 'source-map-support/register'
 
 import * as argparse from 'argparse' 
 import { 

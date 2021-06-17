@@ -3,6 +3,7 @@
 
 cli/zkeys/*
 cli/artifacts/*
+cli/preProofTally.json
 
 integrationTests/artifacts/*
 integrationTests/cache/*
