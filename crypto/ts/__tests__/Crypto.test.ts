@@ -9,6 +9,7 @@ import {
     hash5,
     hash10,
     verifySignature,
+    genRandomSalt,
 } from '../'
 
 
@@ -26,15 +27,22 @@ describe('Cryptographic operations', () => {
 
     const plaintext: any[] = []
     for (let i = 0; i < 5; i++) {
-        plaintext.push(BigInt(Math.floor(Math.random() * 50)))
+        plaintext.push(genRandomSalt())
     }
 
-    const ciphertext = encrypt(plaintext, ecdhSharedKey)
-    const decryptedCiphertext = decrypt(ciphertext, ecdhSharedKey)
+    const nonce = BigInt(123)
+
+    const ciphertext = encrypt(plaintext, ecdhSharedKey, nonce)
+    const decryptedCiphertext = decrypt(
+        ciphertext,
+        ecdhSharedKey,
+        nonce,
+        plaintext.length,
+    )
 
     describe('Hashing', () => {
         it('The hash of a plaintext should be smaller than the snark field size', () => {
-            const h = hash5(plaintext)
+            const h = hash5([0, 1, 2, 3, 4].map((x) => BigInt(x)))
             expect(h < SNARK_FIELD_SIZE).toBeTruthy()
 
             const s = sha256Hash(plaintext)
@@ -81,20 +89,25 @@ describe('Cryptographic operations', () => {
     describe('ECDH shared key generation', () => {
 
         it('The shared keys should match', () => {
-            expect(ecdhSharedKey.toString()).toEqual(ecdhSharedKey1.toString())
+            expect(ecdhSharedKey[0].toString()).toEqual(ecdhSharedKey1[0].toString())
+            expect(ecdhSharedKey[1].toString()).toEqual(ecdhSharedKey1[1].toString())
         })
 
         it('A shared key should be smaller than the snark field size', () => {
             // TODO: Figure out if this check is correct and enough
-            expect(ecdhSharedKey < SNARK_FIELD_SIZE).toBeTruthy()
+            expect(ecdhSharedKey[0] < SNARK_FIELD_SIZE).toBeTruthy()
+            expect(ecdhSharedKey[1] < SNARK_FIELD_SIZE).toBeTruthy()
         })
     })
 
     describe('Encryption and decryption', () => {
         it('The ciphertext should be of the correct format', () => {
-            expect(ciphertext).toHaveProperty('iv')
-            expect(ciphertext).toHaveProperty('data')
-            expect(ciphertext.data).toHaveLength(plaintext.length)
+            const expectedLength = plaintext.length <= 3 ?
+                4
+                :
+                1 + (plaintext.length % 3) * 3
+
+            expect(ciphertext).toHaveLength(expectedLength)
         })
 
         it('The ciphertext should differ from the plaintext', () => {
@@ -105,10 +118,9 @@ describe('Cryptographic operations', () => {
         })
 
         it('The ciphertext should be smaller than the snark field size', () => {
-            expect(ciphertext.iv < SNARK_FIELD_SIZE).toBeTruthy()
-            for (let i = 0; i < ciphertext.data.length; i++) {
+            for (let i = 0; i < ciphertext.length; i++) {
                 // TODO: Figure out if this check is correct and enough
-                expect(ciphertext.data[i] < SNARK_FIELD_SIZE).toBeTruthy()
+                expect(ciphertext[i] < SNARK_FIELD_SIZE).toBeTruthy()
             }
         })
 
@@ -125,13 +137,9 @@ describe('Cryptographic operations', () => {
             const pk = genPubKey(sk)
             const differentKey = genEcdhSharedKey(sk, pk)
 
-            const invalidPlaintext = decrypt(ciphertext, differentKey)
-
-            expect.assertions(invalidPlaintext.length)
-
-            for (let i = 0; i < decryptedCiphertext.length; i++) {
-                expect(invalidPlaintext[i] === plaintext[i]).toBeFalsy()
-            }
+            expect(() => {
+                decrypt(ciphertext, differentKey, nonce, plaintext.length)
+            }).toThrow()
         })
     })
 
