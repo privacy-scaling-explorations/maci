@@ -782,6 +782,7 @@ class Poll {
         const newResultsCommitment = this.genResultsCommitment(newResultsRootSalt)
         const newPerVOSpentVoiceCreditsCommitment =
             this.genPerVOSpentVoiceCreditsCommitment(newPerVOSpentVoiceCreditsRootSalt)
+
         const newSpentVoiceCreditsCommitment =
             this.genSpentVoiceCreditSubtotalCommitment(newSpentVoiceCreditSubtotalSalt)
 
@@ -866,11 +867,7 @@ class Poll {
     }
 
     public genSpentVoiceCreditSubtotalCommitment = (_salt) => {
-        let subtotal = BigInt(0)
-        for (const r of this.results) {
-            subtotal += BigInt(r) * BigInt(r)
-        }
-        return hashLeftRight(subtotal, _salt)
+        return hashLeftRight(this.totalSpentVoiceCredits, _salt)
     }
 
     public genPerVOSpentVoiceCreditsCommitment = (_salt: BigInt) => {
@@ -881,8 +878,8 @@ class Poll {
             hash5,
         )
 
-        for (const r of this.results) {
-            resultsTree.insert(BigInt(r) * BigInt(r))
+        for (const r of this.perVOSpentVoiceCredits) {
+            resultsTree.insert(BigInt(r))
         }
 
         return hashLeftRight(resultsTree.root, _salt)

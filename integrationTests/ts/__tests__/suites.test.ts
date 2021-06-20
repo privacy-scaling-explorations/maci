@@ -13,20 +13,20 @@ describe('Test suites', () => {
         expect(result).toBeTruthy()
     })
 
-    //it('Suite 1 - happy path, partial tree', async () => {
-        //const data = loadData('suite1_small.json')
-        //const result = await executeSuite(data, expect)
+    it('Suite 1 - happy path, partial tree', async () => {
+        const data = loadData('suite1_small.json')
+        const result = await executeSuite(data, expect)
 
-        //console.log(result) 
+        console.log(result) 
 
-        //expect(result).toBeTruthy()
-    //})
+        expect(result).toBeTruthy()
+    })
 
-    //it('Suite 2 - 1 briber, two batches', async () => {
-        //const data = loadData('suite2_bribe.json')
-        //const result = await executeSuite(data, expect)
-        //console.log(result) 
+    it('Suite 2 - 1 briber, two batches', async () => {
+        const data = loadData('suite2_bribe.json')
+        const result = await executeSuite(data, expect)
+        console.log(result) 
 
-        //expect(result).toBeTruthy()
-    //})
+        expect(result).toBeTruthy()
+    })
 })
