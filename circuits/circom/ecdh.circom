@@ -1,16 +1,11 @@
 include "../node_modules/circomlib/circuits/bitify.circom";
 include "../node_modules/circomlib/circuits/escalarmulany.circom";
 
-
-// TODO: Check if public key is on the curve?
 template Ecdh() {
-    // Note: private key
-    // Needs to be hashed, and then pruned before
-    // supplying it to the circuit
+    // Note: the private key needs to be hashed and pruned first
     signal private input privKey;
     signal input pubKey[2];
-
-    signal output sharedKey;
+    signal output sharedKey[2];
 
     component privBits = Num2Bits(253);
     privBits.in <== privKey;
@@ -23,5 +18,6 @@ template Ecdh() {
         mulFix.e[i] <== privBits.out[i];
     }
 
-    sharedKey <== mulFix.out[0];
+    sharedKey[0] <== mulFix.out[0];
+    sharedKey[1] <== mulFix.out[1];
 }

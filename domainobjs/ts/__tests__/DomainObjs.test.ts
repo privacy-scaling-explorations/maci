@@ -255,18 +255,5 @@ describe('Domain objects', () => {
 
             expect(c1.nonce.toString()).not.toEqual(c3.nonce.toString())
         })
-
-        it('Message.copy() should perform a deep copy', () => {
-            const c = command.copy()
-            const m1 = c.encrypt(signature, ecdhSharedKey)
-
-            const m2 = m1
-            m1.iv = BigInt(9999)
-            expect(m1.iv.toString()).toEqual(m2.iv.toString())
-
-            const m3 = m1.copy()
-            m1.iv = BigInt(8888)
-            expect(m1.iv.toString()).not.toEqual(m3.iv.toString())
-        })
     })
 })

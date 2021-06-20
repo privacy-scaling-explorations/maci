@@ -185,7 +185,6 @@ class Poll {
             _encPubKey.rawPubKey[0] < SNARK_FIELD_SIZE &&
             _encPubKey.rawPubKey[1] < SNARK_FIELD_SIZE
         )
-        assert(_message.iv < SNARK_FIELD_SIZE)
         for (const d of _message.data) {
             assert(d < SNARK_FIELD_SIZE)
         }

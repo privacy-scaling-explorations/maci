@@ -29,7 +29,9 @@ describe('Public key derivation circuit', () => {
 
         const witness = await genWitness(circuit, circuitInputs)
 
-        const circuitEcdhSharedKey = await getSignalByName(circuit, witness, 'main.sharedKey')
-        expect(circuitEcdhSharedKey).toEqual(ecdhSharedKey.toString())
+        const circuitEcdhSharedKey0 = await getSignalByName(circuit, witness, 'main.sharedKey[0]')
+        const circuitEcdhSharedKey1 = await getSignalByName(circuit, witness, 'main.sharedKey[1]')
+        expect(circuitEcdhSharedKey0).toEqual(ecdhSharedKey[0].toString())
+        expect(circuitEcdhSharedKey1).toEqual(ecdhSharedKey[1].toString())
     })
 })

@@ -26,7 +26,7 @@ template ProcessMessages(
     var TREE_ARITY = 5;
     var batchSize = TREE_ARITY ** msgBatchDepth;
 
-    var MSG_LENGTH = 8; // iv and data
+    var MSG_LENGTH = 10;
     var PACKED_CMD_LENGTH = 4;
 
     var STATE_LEAF_LENGTH = 4;
@@ -329,7 +329,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     */
     var STATE_LEAF_LENGTH = 4;
     var BALLOT_LENGTH = 2;
-    var MSG_LENGTH = 8; // iv and data
+    var MSG_LENGTH = 10;
     var PACKED_CMD_LENGTH = 4;
     var TREE_ARITY = 5;
 

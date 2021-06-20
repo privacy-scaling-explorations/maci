@@ -12,7 +12,7 @@ import {
     decrypt,
     sign,
     hashLeftRight,
-    hash10,
+    hash12,
     hash4,
     hash5,
     verifySignature,
@@ -25,7 +25,6 @@ import {
     unpackPubKey,
     IncrementalQuinTree,
     SNARK_FIELD_SIZE,
-    NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
 
 const SERIALIZED_PRIV_KEY_PREFIX = 'macisk.'
@@ -380,30 +379,22 @@ interface VoteOptionTreeLeaf {
  * An encrypted command and signature.
  */
 class Message {
-    public iv: BigInt
     public data: BigInt[]
-    public static DATA_LENGTH = 7
+    public static DATA_LENGTH = 10 
 
     constructor (
-        iv: BigInt,
         data: BigInt[],
     ) {
         assert(data.length === Message.DATA_LENGTH)
-        this.iv = iv
         this.data = data
     }
 
     private asArray = (): BigInt[] => {
-
-        return [
-            this.iv,
-            ...this.data,
-        ]
+        return this.data
     }
 
     public asContractParam = () => {
         return {
-            iv: this.iv.toString(),
             data: this.data.map((x: BigInt) => x.toString()),
         }
     }
@@ -416,8 +407,7 @@ class Message {
     public hash = (
         _encPubKey: PubKey,
     ): BigInt => {
-        return hash10([
-            this.iv,
+        return hash12([
             ...this.data,
             ..._encPubKey.rawPubKey,
         ])
@@ -426,13 +416,12 @@ class Message {
     public copy = (): Message => {
 
         return new Message(
-            BigInt(this.iv.toString()),
             this.data.map((x: BigInt) => BigInt(x.toString())),
         )
     }
 
     public equals = (m: Message): boolean => {
-        if (this.iv !== m.iv || this.data.length !== m.data.length) {
+        if (this.data.length !== m.data.length) {
             return false
         }
 
@@ -814,10 +803,9 @@ class Command implements ICommand {
 
         assert(plaintext.length === 7)
 
-        const ciphertext: Ciphertext = encrypt(plaintext, sharedKey)
-        assert(ciphertext.data.length === plaintext.length)
+        const ciphertext: Ciphertext = encrypt(plaintext, sharedKey, BigInt(0))
 
-        const message = new Message(ciphertext.iv, ciphertext.data)
+        const message = new Message(ciphertext)
         
         return message
     }
@@ -830,7 +818,7 @@ class Command implements ICommand {
         sharedKey: EcdhSharedKey,
     ) => {
 
-        const decrypted = decrypt(message, sharedKey)
+        const decrypted = decrypt(message.data, sharedKey, BigInt(0), 7)
 
         const p = BigInt(decrypted[0])
 
