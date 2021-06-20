@@ -509,8 +509,8 @@ describe('MaciState', () => {
 
             // modify poll.messages
             const m20 = m1.copy()
-            m20.polls[pollId].messages[0].iv = 
-                BigInt(m20.polls[pollId].messages[0].iv) + BigInt(1)
+            m20.polls[pollId].messages[0].data[0] = 
+                BigInt(m20.polls[pollId].messages[0].data[0]) + BigInt(1)
             expect(m1.equals(m20)).not.toBeTruthy()
 
             // modify poll.encPubKeys

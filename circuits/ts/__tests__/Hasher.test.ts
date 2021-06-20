@@ -216,7 +216,6 @@ describe('Poseidon hash circuits', () => {
                 in: message.asCircuitInputs(),
                 encPubKey: k.pubKey.asCircuitInputs(),
             })
-            debugger
             const witness = await genWitness(circuit, circuitInputs)
             const output = await getSignalByName(circuit, witness, 'main.hash')
             expect(output.toString()).toEqual(messageHash.toString())
