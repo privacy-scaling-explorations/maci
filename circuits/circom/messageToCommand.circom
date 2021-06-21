@@ -28,7 +28,7 @@ template MessageToCommand() {
     ecdh.pubKey[0] <== encPubKey[0];
     ecdh.pubKey[1] <== encPubKey[1];
 
-    component decryptor = PoseidonDecrypt(MSG_LENGTH);
+    component decryptor = PoseidonDecryptWithoutCheck(MSG_LENGTH);
     decryptor.key[0] <== ecdh.sharedKey[0];
     decryptor.key[1] <== ecdh.sharedKey[1];
     decryptor.nonce <== 0;
