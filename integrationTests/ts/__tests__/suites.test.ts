@@ -29,4 +29,12 @@ describe('Test suites', () => {
 
         expect(result).toBeTruthy()
     })
+
+    it.only('Suite 3 - happy path, user key change', async () => {
+        const data = loadData('suite3_keychange.json')
+        const result = await executeSuite(data, expect)
+        console.log(result) 
+
+        expect(result).toBeTruthy()
+    })
 })

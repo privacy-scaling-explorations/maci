@@ -182,24 +182,24 @@ const executeSuite = async (data: any, expect: any) => {
 
             console.log(publishCommand)
 
-            const publishExec = exec(publishCommand)
+            let publishExec = exec(publishCommand)
             if (publishExec.stderr) {
                 console.log(publishExec.stderr)
                 return false
             }
 
-            const publishOutput = publishExec.stdout.trim()
+            let publishOutput = publishExec.stdout.trim()
             console.log(publishOutput)
 
-            const publishRegMatch = publishOutput.match(
+            let publishRegMatch = publishOutput.match(
                 /Transaction hash: (0x[a-fA-F0-9]{64})\nEphemeral private key: (macisk.[a-f0-9]+)$/)
 
             // The publish command generates and outputs a random ephemeral private
             // key, so we have to retrieve it from the standard output
-            const encPrivKey = PrivKey.unserialize(publishRegMatch[2])
-            const encPubKey = new PubKey(genPubKey(encPrivKey.rawPrivKey))
+            let encPrivKey = PrivKey.unserialize(publishRegMatch[2])
+            let encPubKey = new PubKey(genPubKey(encPrivKey.rawPrivKey))
 
-            const command = new Command(
+            let command = new Command(
                 BigInt(stateIndex),
                 userKeypair.pubKey,
                 BigInt(voteOptionIndex),
@@ -209,9 +209,9 @@ const executeSuite = async (data: any, expect: any) => {
                 BigInt(salt),
             )
 
-            const signature = command.sign(userKeypair.privKey)
+            let signature = command.sign(userKeypair.privKey)
 
-            const message = command.encrypt(
+            let message = command.encrypt(
                 signature,
                 Keypair.genEcdhSharedKey(
                     encPrivKey,
@@ -222,6 +222,61 @@ const executeSuite = async (data: any, expect: any) => {
                 message,
                 encPubKey,
             )
+
+            if (data.changeUsersKeys[i]) {
+                const oldPrivateKey = users[i].changeKeypair()
+                const publishChangeKeyCommand = `node build/index.js publish` +
+                    ` -sk ${oldPrivateKey.serialize()}` +
+                    ` -p ${users[i].keypair.pubKey.serialize()}` +
+                    ` -x ${maciAddress}` +
+                    ` -i ${stateIndex}` +
+                    ` -v ${data.changeUsersKeys[i].voteOptionIndex}` +
+                    ` -w ${data.changeUsersKeys[i].voteWeight}` +
+                    ` -n ${nonce}` +
+                    ` -o ${pollId}`
+                console.log(publishChangeKeyCommand)
+
+                publishExec = exec(publishChangeKeyCommand)
+                if (publishExec.stderr) {
+                    console.log(publishExec.stderr)
+                    return false
+                }
+
+                publishOutput = publishExec.stdout.trim()
+                console.log(publishOutput)
+
+                publishRegMatch = publishOutput.match(
+                    /Transaction hash: (0x[a-fA-F0-9]{64})\nEphemeral private key: (macisk.[a-f0-9]+)$/)
+
+                // The publish command generates and outputs a random ephemeral private
+                // key, so we have to retrieve it from the standard output
+                encPrivKey = PrivKey.unserialize(publishRegMatch[2])
+                encPubKey = new PubKey(genPubKey(encPrivKey.rawPrivKey))
+
+                command = new Command(
+                    BigInt(stateIndex),
+                    users[i].keypair.pubKey,
+                    BigInt(voteOptionIndex),
+                    BigInt(newVoteWeight),
+                    BigInt(nonce),
+                    BigInt(pollId),
+                    BigInt(salt),
+                )
+
+                signature = command.sign(oldPrivateKey)
+
+                message = command.encrypt(
+                    signature,
+                    Keypair.genEcdhSharedKey(
+                        encPrivKey,
+                        coordinatorKeypair.pubKey,
+                    )
+                )
+                maciState.polls[pollId].publishMessage(
+                    message,
+                    encPubKey,
+                )
+            }
         }
     }
 
