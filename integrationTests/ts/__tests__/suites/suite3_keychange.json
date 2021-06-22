@@ -2,8 +2,8 @@
     "name": "Happy path for user key change",
     "description": "Single user vote with new keys",
     "numUsers": 1,
-    "numVotesPerUser": 1,
-    "changeUsersKeys": { "0":{ "voteOptionIndex": 1, "voteWeight": 9}},
+    "numVotesPerUser": 2,
+    "changeUsersKeys": { "0": {"1":{ "voteOptionIndex": 1, "voteWeight": 9}}},
     "expectedTally": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "expectedSpentVoiceCredits": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "expectedTotalSpentVoiceCredits": 1
