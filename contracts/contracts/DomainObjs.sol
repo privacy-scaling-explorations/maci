@@ -11,10 +11,9 @@ contract IPubKey {
 }
 
 contract IMessage {
-    uint8 constant MESSAGE_DATA_LENGTH = 7;
+    uint8 constant MESSAGE_DATA_LENGTH = 10;
 
     struct Message {
-        uint256 iv;
         uint256[MESSAGE_DATA_LENGTH] data;
     }
 }

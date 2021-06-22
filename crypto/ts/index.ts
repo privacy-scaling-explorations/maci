@@ -3,7 +3,7 @@ import * as crypto from 'crypto'
 import * as ethers from 'ethers'
 const ff = require('ffjavascript')
 const createBlakeHash = require('blake-hash')
-import { babyJub, mimc7, poseidon, eddsa } from 'circomlib'
+import { babyJub, poseidon, poseidonEncrypt, poseidonDecrypt, eddsa } from 'circomlib'
 import { AccQueue } from './AccQueue'
 import { IncrementalQuinTree } from 'incrementalquintree'
 const stringifyBigInts: (obj: object) => any = ff.utils.stringifyBigInts
@@ -12,8 +12,9 @@ const unstringifyBigInts: (obj: object) => any = ff.utils.unstringifyBigInts
 type SnarkBigInt = BigInt
 type PrivKey = BigInt
 type PubKey = BigInt[]
-type EcdhSharedKey = BigInt
+type EcdhSharedKey = BigInt[]
 type Plaintext = BigInt[]
+type Ciphertext = BigInt[]
 
 class G1Point {
     public x: BigInt
@@ -74,17 +75,6 @@ class G2Point {
 interface Keypair {
     privKey: PrivKey;
     pubKey: PubKey;
-}
-
-/*
- * Encrypted plaintext.
- */
-interface Ciphertext {
-    // The initialisation vector
-    iv: BigInt;
-
-    // The encrypted data
-    data: BigInt[];
 }
 
 // An EdDSA signature.
@@ -192,10 +182,10 @@ const hash5 = (elements: Plaintext): BigInt => hashN(5, elements)
 
 /*
  * A convenience function for to use Poseidon to hash a Plaintext with
- * no more than 10 elements
+ * no more than 12 elements
  */
-const hash10 = (elements: Plaintext): BigInt => {
-    const max = 10
+const hash12 = (elements: Plaintext): BigInt => {
+    const max = 12
     const elementLength = elements.length
     if (elementLength > max) {
         throw new TypeError(`the length of the elements array should be at most 10; got ${elements.length}`)
@@ -206,9 +196,11 @@ const hash10 = (elements: Plaintext): BigInt => {
             elementsPadded.push(BigInt(0))
         }
     }
-    return poseidonT3([
+    return poseidonT5([
         poseidonT6(elementsPadded.slice(0, 5)),
-        poseidonT6(elementsPadded.slice(5, 10))
+        poseidonT6(elementsPadded.slice(5, 10)),
+        elementsPadded[10],
+        elementsPadded[11],
     ])
 }
 
@@ -337,7 +329,7 @@ const genEcdhSharedKey = (
     pubKey: PubKey,
 ): EcdhSharedKey => {
 
-    return babyJub.mulPointEscalar(pubKey, formatPrivKeyForBabyJub(privKey))[0]
+    return babyJub.mulPointEscalar(pubKey, formatPrivKeyForBabyJub(privKey))
 }
 
 /*
@@ -347,20 +339,14 @@ const genEcdhSharedKey = (
 const encrypt = (
     plaintext: Plaintext,
     sharedKey: EcdhSharedKey,
+    nonce = BigInt(0),
 ): Ciphertext => {
 
-    // Generate the initialisation vector
-    const iv = mimc7.multiHash(plaintext, BigInt(0))
-
-    const ciphertext: Ciphertext = {
-        iv,
-        data: plaintext.map((e: BigInt, i: number): BigInt => {
-            return BigInt(
-                e + mimc7.hash(sharedKey, iv + BigInt(i))
-            ) % SNARK_FIELD_SIZE
-        }),
-    }
-
+    const ciphertext = poseidonEncrypt(
+        plaintext,
+        sharedKey,
+        nonce,
+    )
     return ciphertext
 }
 
@@ -371,27 +357,16 @@ const encrypt = (
 const decrypt = (
     ciphertext: Ciphertext,
     sharedKey: EcdhSharedKey,
+    nonce: BigInt,
+    length: number,
 ): Plaintext => {
 
-    const plaintext: Plaintext = ciphertext.data.map(
-        (e: BigInt, i: number): BigInt => {
-            const val = 
-                BigInt(e) - 
-                BigInt(
-                    mimc7.hash(
-                        sharedKey,
-                        BigInt(ciphertext.iv) + BigInt(i)
-                    )
-                )
-
-            if (val < BigInt(0)) {
-                return SNARK_FIELD_SIZE + val
-            } else {
-                return val
-            }
-        }
+    const plaintext = poseidonDecrypt(
+        ciphertext,
+        sharedKey,
+        nonce,
+        length,
     )
-
     return plaintext
 }
 
@@ -438,7 +413,7 @@ export {
     hash3,
     hash4,
     hash5,
-    hash10,
+    hash12,
     hashLeftRight,
     verifySignature,
     Signature,

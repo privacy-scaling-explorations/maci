@@ -39,7 +39,8 @@ describe('MessageToCommand circuit', () => {
             random50bitBigInt(),
             random50bitBigInt(),
             random50bitBigInt(),
-            genRandomSalt(),
+            //genRandomSalt(),
+            BigInt(123),
         )
         const signature = command.sign(privKey)
         const message = command.encrypt(signature, ecdhSharedKey)
