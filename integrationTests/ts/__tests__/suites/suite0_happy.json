@@ -1,9 +1,0 @@
-{
-    "name": "Happy path",
-    "description": "Full tree, 4 batches, no bribers",
-    "numVotesPerUser": 1,
-    "numUsers": 15,
-    "expectedTally": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
-    "expectedSpentVoiceCredits": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
-    "expectedTotalSpentVoiceCredits": 15
-}

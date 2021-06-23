@@ -1,12 +1,7 @@
 libraries:
-  - name: cli
-  - name: contracts
-  - name: crypto
-startPoll:
-submitVote:
-tallyVotes:
-processStateTree:
-
+  - "cli"
+  - "contracts"
+  - "crypto"
 user: [index, voteOptionIndex, voteWeight, nonce, commandType]
 
 defaultVote:

@@ -25,7 +25,7 @@ import { genPubKey } from 'maci-crypto'
 import { exec, loadYaml, genTestUserCommands } from './utils'
 
 const loadData = (name: string) => {
-    return require('@maci-integrationTests/ts/__tests__/suites/' + name)
+    return require('@maci-integrationTests/ts/__tests__/' + name)
 }
 
 const executeSuite = async (data: any, expect: any) => {
@@ -163,7 +163,8 @@ const executeSuite = async (data: any, expect: any) => {
         }
 
         for (let j = 0; j < users[i].votes.length; j++ ) {
-            const isKeyChange = (j in data.changeUsersKeys[i])
+            // find which vote index the user should change keys
+            const isKeyChange = (data.changeUsersKeys && j in data.changeUsersKeys[i])
             const stateIndex = i + 1
             const voteOptionIndex = isKeyChange ?
                 data.changeUsersKeys[i][j].voteOptionIndex : users[i].votes[j].voteOptionIndex
