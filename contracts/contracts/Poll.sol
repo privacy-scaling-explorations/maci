@@ -146,17 +146,7 @@ contract Poll is
     // Each successful invocation of processMessages() should use a different
     // salt to update this value, so that an external observer cannot tell in
     // the case that none of the messages are valid.
-    uint256 internal currentSbCommitment;
-
-    // The commitment to the tally results. Its initial value should be:
-    // hash3(
-    //   hashLeftRight(merkleRoot([0...0], 0),
-    //   hashLeftRight(0, 0),
-    //   hashLeftRight(merkleRoot([0...0]), 0)
-    // )
-    // Where [0...0] is an array of 0s, TREE_ARITY ** voteOptionTreeDepth long
-
-    uint256 internal currentTallyCommitment;
+    uint256 public currentSbCommitment;
 
     uint256 internal numSignUps;
     uint256 internal numMessages;
@@ -224,17 +214,6 @@ contract Poll is
             ERROR_VOTING_PERIOD_NOT_PASSED
         );
         _;
-    }
-
-    /*
-     * Gets the currentSbCommitment and currentTallyCommitment storage
-     * variables, which are internal so as to minimise the Poll bytecode size.
-     */
-    function currentSbAndTallyCommitments()
-    public
-    view
-    returns (uint256, uint256) {
-        return (currentSbCommitment, currentTallyCommitment);
     }
 
     /*
@@ -417,7 +396,15 @@ contract PollProcessorAndTallyer is
     // The number of batches processed
     uint256 public numBatchesProcessed;
 
+    // The commitment to the tally results. Its initial value should be:
+    // hash3(
+    //   hashLeftRight(merkleRoot([0...0], 0),
+    //   hashLeftRight(0, 0),
+    //   hashLeftRight(merkleRoot([0...0]), 0)
+    // )
+    // Where [0...0] is an array of 0s, TREE_ARITY ** voteOptionTreeDepth long
     uint256 public tallyCommitment;
+
     uint256 public tallyBatchNum;
 
     Verifier public verifier;
@@ -488,7 +475,7 @@ contract PollProcessorAndTallyer is
         // Copy the state and ballot commitment and set the batch index if this
         // is the first batch to process
         if (numBatchesProcessed == 0) {
-            (uint256 currentSbCommitment,) = _poll.currentSbAndTallyCommitments();
+            uint256 currentSbCommitment = _poll.currentSbCommitment();
             sbCommitment = currentSbCommitment;
             (, uint256 numMessages) = _poll.numSignUpsAndMessages();
             currentMessageBatchIndex =
