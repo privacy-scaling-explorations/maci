@@ -37,6 +37,25 @@
             "expectedTally": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             "expectedSpentVoiceCredits": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             "expectedTotalSpentVoiceCredits": 1
+        },
+        {
+            "name": "Happy path set all votes",
+            "description": "specify votes for every user in the poll",
+            "numUsers": 2,
+            "numVotesPerUser": 2,
+            "votes": {
+                "0": {
+                    "0": { "voteOptionIndex": 1, "voteWeight": 2, "valid": true },
+                    "1": { "voteOptionIndex": 0, "voteWeight": 2, "valid": true }
+                },
+                "1": {
+                    "0": { "voteOptionIndex": 1, "voteWeight": 2, "valid": true },
+                    "1": { "voteOptionIndex": 1, "voteWeight": 5, "valid": true }
+                }
+            },
+            "expectedTally": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "expectedSpentVoiceCredits": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "expectedTotalSpentVoiceCredits": 1
         }
     ]
 }

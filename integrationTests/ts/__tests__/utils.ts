@@ -48,8 +48,43 @@ const genTestUserCommands = (
     voteCreditBalance: number,
     numVotesPerUser: number,
     bribers?: any,
+    votes?: any,
     invalidVotes?: any,
 ) => {
+    const getTestVoteValues = (userIndex, voteIndex) => {
+        const useVotes = votes && userIndex in votes
+        let voteOptionIndex = config.defaultVote.voteOptionIndex
+        let voteWeight = config.defaultVote.voteWeight
+        let valid = true
+
+        if (bribers && userIndex in bribers) {
+            if (!(bribers[userIndex].voteOptionIndices.length == numVotesPerUser)) {
+                throw new Error(
+                    "failed generating user commands: more bribes than votes set per user"
+                )
+            }
+
+            if (useVotes) {
+                if (
+                    bribers[userIndex].voteOptionIndices[voteIndex] !=
+                    votes[userIndex][voteIndex].voteOptionIndex
+                ) {
+                    throw new Error(
+                        "failed generating user commands: conflict between bribers voteOptionIndex and the one set by voters"
+                    )
+                }
+            }
+            voteOptionIndex = bribers[userIndex].voteOptionIndices[voteIndex]
+        }
+
+        if (useVotes) {
+            voteOptionIndex = votes[userIndex][voteIndex].voteOptionIndex
+            voteWeight = votes[userIndex][voteIndex].voteWeight
+            valid = votes[userIndex][voteIndex].valid
+        }
+
+        return { voteOptionIndex, voteWeight, valid }
+    }
 
     const config = loadYaml()
     let usersCommands: UserCommand[] = []
@@ -58,19 +93,12 @@ const genTestUserCommands = (
         let votes: Vote[] = [];
 
         for (let j=0; j < numVotesPerUser; j++) {
-
-            let voteOptionIndex = config.defaultVote.voteOptionIndex
-            if (bribers && i in bribers) {
-                if (!(bribers[i].voteOptionIndices.length == numVotesPerUser)) {
-                    throw new Error("failed: more bribes than votes set per user")
-                }
-                voteOptionIndex = bribers[i].voteOptionIndices[j]
-            }
+            const { voteOptionIndex, voteWeight, valid } = getTestVoteValues(i,j)
             const vote: Vote = {
-                voteOptionIndex: voteOptionIndex,
-                voteWeight: config.defaultVote.voteWeight,
+                voteOptionIndex,
+                voteWeight,
                 nonce: j + 1,
-                valid: true
+                valid
             }
 
             votes.push(vote)
