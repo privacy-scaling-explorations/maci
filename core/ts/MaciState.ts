@@ -868,8 +868,11 @@ class Poll {
 
     public genSpentVoiceCreditSubtotalCommitment = (_salt) => {
         let subtotal = BigInt(0)
-        for (const r of this.results) {
-            subtotal += BigInt(r) * BigInt(r)
+        for (let i = 0; i < this.ballots.length; i ++) {
+            for (let j = 0; j < this.results.length; j ++) {
+                const v = BigInt(this.ballots[i].votes[j])
+                subtotal = BigInt(subtotal) + v * v
+            }
         }
         return hashLeftRight(subtotal, _salt)
     }
@@ -882,8 +885,21 @@ class Poll {
             hash5,
         )
 
-        for (const r of this.results) {
-            resultsTree.insert(BigInt(r) * BigInt(r))
+        const leaves: BigInt[] = []
+
+        for (let i = 0; i < this.results.length; i ++) {
+            leaves.push(BigInt(0))
+        }
+
+        for (let i = 0; i < this.ballots.length; i ++) {
+            for (let j = 0; j < this.results.length; j ++) {
+                const v = BigInt(this.ballots[i].votes[j])
+                leaves[j] = BigInt(leaves[j]) + v * v
+            }
+        }
+
+        for (let i = 0; i < leaves.length; i ++) {
+            resultsTree.insert(leaves[i])
         }
 
         return hashLeftRight(resultsTree.root, _salt)
