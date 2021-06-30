@@ -275,23 +275,25 @@ contract Poll is
         PubKey memory _encPubKey
     ) public pure returns (uint256) {
         uint256[5] memory n;
-        n[0] = _message.iv;
-        n[1] = _message.data[0];
-        n[2] = _message.data[1];
-        n[3] = _message.data[2];
-        n[4] = _message.data[3];
+        n[0] = _message.data[0];
+        n[1] = _message.data[1];
+        n[2] = _message.data[2];
+        n[3] = _message.data[3];
+        n[4] = _message.data[4];
 
         uint256[5] memory m;
-        m[0] = _message.data[4];
-        m[1] = _message.data[5];
-        m[2] = _message.data[6];
-        m[3] = _encPubKey.x;
-        m[4] = _encPubKey.y;
+        m[0] = _message.data[5];
+        m[1] = _message.data[6];
+        m[2] = _message.data[7];
+        m[3] = _message.data[8];
+        m[4] = _message.data[9];
 
-        return hashLeftRight(
+        return hash4([
             hash5(n),
-            hash5(m)
-        );
+            hash5(m),
+            _encPubKey.x,
+            _encPubKey.y
+        ]);
     }
 
     /*

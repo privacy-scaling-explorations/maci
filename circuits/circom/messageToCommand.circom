@@ -1,14 +1,14 @@
 include "./ecdh.circom";
-include "./decrypt.circom";
 include "./unpackElement.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
+include "../node_modules/circomlib/circuits/poseidon.circom";
 
 template MessageToCommand() {
-    var MSG_LENGTH = 8;
+    var MSG_LENGTH = 7;
     var PACKED_CMD_LENGTH = 4;
     var UNPACKED_CMD_LENGTH = 8;
 
-    signal input message[8];
+    signal input message[10];
     signal input encPrivKey;
     signal input encPubKey[2];
 
@@ -28,15 +28,17 @@ template MessageToCommand() {
     ecdh.pubKey[0] <== encPubKey[0];
     ecdh.pubKey[1] <== encPubKey[1];
 
-    component decryptor = Decrypt(MSG_LENGTH - 1);
-    decryptor.privKey <== ecdh.sharedKey;
-    for (var i = 0; i < MSG_LENGTH; i++) {
-        decryptor.message[i] <== message[i];
+    component decryptor = PoseidonDecryptWithoutCheck(MSG_LENGTH);
+    decryptor.key[0] <== ecdh.sharedKey[0];
+    decryptor.key[1] <== ecdh.sharedKey[1];
+    decryptor.nonce <== 0;
+    for (var i = 0; i < 10; i++) {
+        decryptor.ciphertext[i] <== message[i];
     }
 
     signal packedCommand[PACKED_CMD_LENGTH];
     for (var i = 0; i < PACKED_CMD_LENGTH; i ++) {
-        packedCommand[i] <== decryptor.out[i];
+        packedCommand[i] <== decryptor.decrypted[i];
     }
 
     component unpack = UnpackElement(5);
@@ -52,9 +54,9 @@ template MessageToCommand() {
     newPubKey[1] <== packedCommand[2];
     salt <== packedCommand[3];
 
-    sigR8[0] <== decryptor.out[4];
-    sigR8[1] <== decryptor.out[5];
-    sigS <== decryptor.out[6];
+    sigR8[0] <== decryptor.decrypted[4];
+    sigR8[1] <== decryptor.decrypted[5];
+    sigS <== decryptor.decrypted[6];
 
     for (var i = 0; i < PACKED_CMD_LENGTH; i ++) {
         packedCommandOut[i] <== packedCommand[i];

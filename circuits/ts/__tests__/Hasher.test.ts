@@ -14,7 +14,7 @@ import {
     genRandomSalt,
     sha256Hash,
     hashLeftRight,
-    hash10,
+    hash12,
     hash5,
     hash4,
     hash3,
@@ -147,11 +147,11 @@ describe('Poseidon hash circuits', () => {
             })
         })
 
-        describe('Hasher10', () => {
-            it('correctly hashes 10 random values', async () => {
-                const circuit =  'hasher10_test'
+        describe('Hasher12', () => {
+            it('correctly hashes 12 random values', async () => {
+                const circuit =  'hasher12_test'
                 const preImages: any = []
-                for (let i = 0; i < 10; i++) {
+                for (let i = 0; i < 12; i++) {
                     preImages.push(genRandomSalt())
                 }
                 const circuitInputs = stringifyBigInts({
@@ -161,7 +161,7 @@ describe('Poseidon hash circuits', () => {
                 const witness = await genWitness(circuit, circuitInputs)
                 const output = await getSignalByName(circuit, witness, 'main.hash')
 
-                const outputJS = hash10(preImages)
+                const outputJS = hash12(preImages)
 
                 expect(output.toString()).toEqual(outputJS.toString())
             })

@@ -1,3 +1,3 @@
 include "../hasherPoseidon.circom"
 
-component main = Hasher10();
+component main = Hasher12();

@@ -275,6 +275,7 @@ const executeSuite = async (data: any, expect: any) => {
         ` -t tally.json` +
         ` -f proofs.json`
 
+    console.log(genProofsCommand)
     e = exec(genProofsCommand)
 
     if (e.stderr) {

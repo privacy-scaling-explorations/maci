@@ -8,7 +8,6 @@ sleep 25 &&
 npx jest CalculateTotal.test.ts &&
 npx jest PrivToPubKey.test.ts &&
 npx jest TallyVotes.test.ts &&
-npx jest Decrypt.test.ts &&
 npx jest ProcessMessages.test.ts &&
 npx jest UnpackElement.test.ts &&
 npx jest Ecdh.test.ts &&

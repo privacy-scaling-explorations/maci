@@ -45,17 +45,18 @@ template Hasher5() {
     hash <== hasher.out;
 }
 
-template Hasher10() {
-    // Hasher2(
+template Hasher12() {
+    // Hasher4(
     //     Hasher5_1(in[0], in[1], in[2], in[3], in[4]),
     //     Hasher5_2(in[5], in[6], in[7], in[8], in[9])
+    //     in[10],
+    //     in[11]
     // )
 
-    signal input in[10];
+    signal input in[12];
     signal output hash;
 
-    component hasher2 = PoseidonHashT3();
-
+    component hasher4 = PoseidonHashT5();
     component hasher5_1 = PoseidonHashT6();
     component hasher5_2 = PoseidonHashT6();
 
@@ -63,10 +64,12 @@ template Hasher10() {
         hasher5_1.inputs[i] <== in[i];
         hasher5_2.inputs[i] <== in[i+5];
     }
-    hasher2.inputs[0] <== hasher5_1.out;
-    hasher2.inputs[1] <== hasher5_2.out;
+    hasher4.inputs[0] <== hasher5_1.out;
+    hasher4.inputs[1] <== hasher5_2.out;
+    hasher4.inputs[2] <== in[10];
+    hasher4.inputs[3] <== in[11];
 
-    hash <== hasher2.out;
+    hash <== hasher4.out;
 }
 
 template HashLeftRight() {

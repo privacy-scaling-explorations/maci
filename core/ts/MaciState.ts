@@ -185,7 +185,6 @@ class Poll {
             _encPubKey.rawPubKey[0] < SNARK_FIELD_SIZE &&
             _encPubKey.rawPubKey[1] < SNARK_FIELD_SIZE
         )
-        assert(_message.iv < SNARK_FIELD_SIZE)
         for (const d of _message.data) {
             assert(d < SNARK_FIELD_SIZE)
         }
@@ -888,7 +887,6 @@ class Poll {
         _salt: BigInt,
         _numBallotsToCount: number,
     ) => {
-        debugger
         let subtotal = BigInt(0)
         for (let i = 0; i < _numBallotsToCount; i ++) {
             if (i >= this.ballots.length) {
@@ -901,6 +899,10 @@ class Poll {
         }
         return hashLeftRight(subtotal, _salt)
     }
+
+    //public genSpentVoiceCreditSubtotalCommitment = (_salt) => {
+        //return hashLeftRight(this.totalSpentVoiceCredits, _salt)
+    //}
 
     public genPerVOSpentVoiceCreditsCommitment = (
         _salt: BigInt,
