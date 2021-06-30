@@ -25,7 +25,7 @@ import { genPubKey } from 'maci-crypto'
 import { exec, loadYaml, genTestUserCommands } from './utils'
 
 const loadData = (name: string) => {
-    return require('@maci-integrationTests/ts/__tests__/suites/' + name)
+    return require('@maci-integrationTests/ts/__tests__/' + name)
 }
 
 const executeSuite = async (data: any, expect: any) => {
@@ -163,15 +163,21 @@ const executeSuite = async (data: any, expect: any) => {
         }
 
         for (let j = 0; j < users[i].votes.length; j++ ) {
-            const userKeypair = userKeypairs[i]
+            // find which vote index the user should change keys
+            const isKeyChange = (data.changeUsersKeys && j in data.changeUsersKeys[i])
             const stateIndex = i + 1
-            const voteOptionIndex = users[i].votes[j].voteOptionIndex
-            const newVoteWeight  = users[i].votes[j].voteWeight
+            const voteOptionIndex = isKeyChange ?
+                data.changeUsersKeys[i][j].voteOptionIndex : users[i].votes[j].voteOptionIndex
+            const newVoteWeight  = isKeyChange ?
+                data.changeUsersKeys[i][j].voteWeight : users[i].votes[j].voteWeight
             const nonce = users[i].votes[j].nonce
             const salt = '0x' + genRandomSalt().toString(16)
+            const userPrivKey = isKeyChange ?
+                users[i].changeKeypair() : userKeypairs[i].privKey
+            const userKeypair = userKeypairs[i]
             // Run the publish command
             const publishCommand = `node build/index.js publish` +
-                ` -sk ${userKeypair.privKey.serialize()}` +
+                ` -sk ${userPrivKey.serialize()}` +
                 ` -p ${userKeypair.pubKey.serialize()}` +
                 ` -x ${maciAddress}` +
                 ` -i ${stateIndex}` +
