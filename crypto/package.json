@@ -13,7 +13,7 @@
         "test-accQueue-debug": "node --inspect-brk ./node_modules/.bin/jest AccQueue.test.ts"
     },
     "dependencies": {
-        "circomlib": "0.5.1",
+        "circomlib": "0.5.2",
         "blake-hash": "^1.1.0",
         "ethers": "^5.0.32",
         "ffjavascript": "0.2.35",
