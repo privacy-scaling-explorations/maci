@@ -12,7 +12,8 @@ install:
   - npm run bootstrap
   - npm run build
   - cd circuits
-  - ./scripts/downloadTestCircuits.sh && npm run build-test-circuits
+  #- ./scripts/downloadTestCircuits.sh
+  - npm run build-test-circuits
   - ./scripts/installRapidsnark.sh
 
 script:
