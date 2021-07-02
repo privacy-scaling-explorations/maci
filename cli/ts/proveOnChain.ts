@@ -220,10 +220,9 @@ const proveOnChain = async (args: any) => {
         let currentSbCommitmentOnChain
 
         if (numBatchesProcessed === 0) {
-            const ct = await pollContract.currentSbAndTallyCommitments()
-            currentSbCommitmentOnChain = BigInt(ct[0])
+            currentSbCommitmentOnChain = BigInt(await pollContract.currentSbCommitment())
         } else {
-            currentSbCommitmentOnChain = await pptContract.sbCommitment()
+            currentSbCommitmentOnChain = BigInt(await pptContract.sbCommitment())
         }
 
         if (currentSbCommitmentOnChain.toString() !== circuitInputs.currentSbCommitment) {

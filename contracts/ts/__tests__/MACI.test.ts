@@ -309,11 +309,8 @@ describe('MACI', () => {
 
             expect(await pollContract.stateAqMerged()).toBeFalsy()
 
-            const bt = await pollContract.currentSbAndTallyCommitments()
-            expect(Number(bt[0])).toEqual(0)
-
-            // TODO
-            //expect(Number(bt[1])).toEqual(...................)
+            const sb = await pollContract.currentSbCommitment()
+            expect(sb.toString()).toEqual('0')
 
             const sm = await pollContract.numSignUpsAndMessages()
             // There are 0 signups until the coordinator merges the state tree

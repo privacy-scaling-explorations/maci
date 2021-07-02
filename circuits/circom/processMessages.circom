@@ -21,6 +21,9 @@ template ProcessMessages(
     //                  messages in a batch
     // voteOptionTreeDepth: depth of the vote option tree
 
+    assert(stateTreeDepth > 0);
+    assert(msgBatchDepth > 0);
+    assert(voteOptionTreeDepth > 0);
     assert(msgTreeDepth >= msgBatchDepth);
 
     var TREE_ARITY = 5;
