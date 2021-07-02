@@ -1,5 +1,6 @@
 import {
     Keypair,
+    PrivKey
 } from 'maci-domainobjs'
 
 export interface Vote {
@@ -23,6 +24,13 @@ export class UserCommand {
         this.keypair = _keypair
         this.votes = _votes
         this.voiceCreditBalance = BigInt(_voiceCreditBalance)
+    }
+
+    public changeKeypair(): PrivKey {
+        const newUserKeypair = new Keypair()
+        const oldPrivateKey = this.keypair.privKey
+        this.keypair  = !newUserKeypair.equals(this.keypair) ? newUserKeypair : this.keypair
+        return oldPrivateKey
     }
 
     // public static genBlankUser

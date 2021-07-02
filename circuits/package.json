@@ -50,16 +50,14 @@
     },
     "dependencies": {
         "argparse": "^1.0.10",
-        "circom": "0.5.38",
+        "circom": "0.5.45",
         "circomlib": "git://github.com/weijiekoh/circomlib.git#0e78dde8c813b95f4585b0613927e9c4269de500",
         "tmp": "^0.2.1",
         "shelljs": "^0.8.3",
-        "snarkjs": "0.3.59"
+        "snarkjs": "0.4.6"
     },
     "devDependencies": {
         "@types/node": "^14.14.35",
-        "circom": "0.5.42",
-        "circomlib": "0.5.1",
         "circom-helper": "0.1.10",
         "axios": "^0.21.0",
         "maci-core": "^1.0.0",

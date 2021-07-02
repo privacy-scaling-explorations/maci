@@ -14,9 +14,9 @@
     },
     "dependencies": {
         "argparse": "^1.0.10",
-        "circom": "0.5.38",
         "circom_runtime": "0.1.13",
-        "circomlib": "0.5.1",
+        "circom": "0.5.45",
+        "circomlib": "0.5.2",
         "ethers": "^5.0.0",
         "ffiasm": "0.1.3",
         "js-yaml": "4.0.0",
@@ -30,7 +30,7 @@
         "maci-domainobjs": "^1.0.0",
         "prompt-async": "^0.9.9",
         "shelljs": "^0.8.4",
-        "snarkjs": "0.3.59",
+        "snarkjs": "0.4.6",
         "web3": "^1.3.4",
         "zkey-manager": "^0.0.6",
         "xmlhttprequest": "1.8.0"

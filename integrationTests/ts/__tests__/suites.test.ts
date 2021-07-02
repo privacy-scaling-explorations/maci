@@ -6,27 +6,14 @@ import {
 } from './suites'
 
 describe('Test suites', () => {
-    it('Suite 0 - happy path, full tree', async () => {
-        const data = loadData('suite0_happy.json')
-        const result = await executeSuite(data, expect)
+    const data = loadData('suites.json')
 
-        expect(result).toBeTruthy()
-    })
+    for (const test of data.suites) {
+        it(test.description, async () => {
+            const result = await executeSuite(test, expect)
+            console.log(result)
 
-    it('Suite 1 - happy path, partial tree', async () => {
-        const data = loadData('suite1_small.json')
-        const result = await executeSuite(data, expect)
-
-        console.log(result) 
-
-        expect(result).toBeTruthy()
-    })
-
-    it('Suite 2 - 1 briber, two batches', async () => {
-        const data = loadData('suite2_bribe.json')
-        const result = await executeSuite(data, expect)
-        console.log(result) 
-
-        expect(result).toBeTruthy()
-    })
+            expect(result).toBeTruthy()
+        })
+    }
 })

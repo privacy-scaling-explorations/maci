@@ -719,10 +719,18 @@ class Poll {
             this.spentVoiceCreditSubtotalSalts[batchStartIndex - batchSize]
 
         const currentResultsCommitment = this.genResultsCommitment(currentResultsRootSalt)
+
         const currentPerVOSpentVoiceCreditsCommitment =
-            this.genPerVOSpentVoiceCreditsCommitment(currentPerVOSpentVoiceCreditsRootSalt)
+            this.genPerVOSpentVoiceCreditsCommitment(
+                currentPerVOSpentVoiceCreditsRootSalt,
+                batchStartIndex,
+            )
+
         const currentSpentVoiceCreditsCommitment =
-            this.genSpentVoiceCreditSubtotalCommitment(currentSpentVoiceCreditSubtotalSalt)
+            this.genSpentVoiceCreditSubtotalCommitment(
+                currentSpentVoiceCreditSubtotalSalt,
+                batchStartIndex,
+            )
 
         const currentTallyCommitment = batchStartIndex === 0 ?
             BigInt(0)
@@ -780,17 +788,26 @@ class Poll {
         this.spentVoiceCreditSubtotalSalts[batchStartIndex] = newSpentVoiceCreditSubtotalSalt
 
         const newResultsCommitment = this.genResultsCommitment(newResultsRootSalt)
-        const newPerVOSpentVoiceCreditsCommitment =
-            this.genPerVOSpentVoiceCreditsCommitment(newPerVOSpentVoiceCreditsRootSalt)
 
         const newSpentVoiceCreditsCommitment =
-            this.genSpentVoiceCreditSubtotalCommitment(newSpentVoiceCreditSubtotalSalt)
+            this.genSpentVoiceCreditSubtotalCommitment(
+                newSpentVoiceCreditSubtotalSalt,
+                batchStartIndex + batchSize,
+            )
+
+        const newPerVOSpentVoiceCreditsCommitment =
+            this.genPerVOSpentVoiceCreditsCommitment(
+                newPerVOSpentVoiceCreditsRootSalt,
+                batchStartIndex + batchSize,
+            )
 
         const newTallyCommitment = hash3([
             newResultsCommitment,
             newSpentVoiceCreditsCommitment,
             newPerVOSpentVoiceCreditsCommitment,
         ])
+
+        //debugger
 
         const stateRoot = this.stateTree.root
         const ballotRoot = this.ballotTree.root
@@ -866,11 +883,31 @@ class Poll {
         return hashLeftRight(resultsTree.root, _salt)
     }
 
-    public genSpentVoiceCreditSubtotalCommitment = (_salt) => {
-        return hashLeftRight(this.totalSpentVoiceCredits, _salt)
+    public genSpentVoiceCreditSubtotalCommitment = (
+        _salt: BigInt,
+        _numBallotsToCount: number,
+    ) => {
+        let subtotal = BigInt(0)
+        for (let i = 0; i < _numBallotsToCount; i ++) {
+            if (i >= this.ballots.length) {
+                break
+            }
+            for (let j = 0; j < this.results.length; j ++) {
+                const v = BigInt(this.ballots[i].votes[j])
+                subtotal = BigInt(subtotal) + v * v
+            }
+        }
+        return hashLeftRight(subtotal, _salt)
     }
 
-    public genPerVOSpentVoiceCreditsCommitment = (_salt: BigInt) => {
+    //public genSpentVoiceCreditSubtotalCommitment = (_salt) => {
+        //return hashLeftRight(this.totalSpentVoiceCredits, _salt)
+    //}
+
+    public genPerVOSpentVoiceCreditsCommitment = (
+        _salt: BigInt,
+        _numBallotsToCount: number,
+    ) => {
         const resultsTree = new IncrementalQuinTree(
             this.treeDepths.voteOptionTreeDepth,
             BigInt(0),
@@ -878,8 +915,24 @@ class Poll {
             hash5,
         )
 
-        for (const r of this.perVOSpentVoiceCredits) {
-            resultsTree.insert(BigInt(r))
+        const leaves: BigInt[] = []
+
+        for (let i = 0; i < this.results.length; i ++) {
+            leaves.push(BigInt(0))
+        }
+
+        for (let i = 0; i < _numBallotsToCount; i ++) {
+            if (i >= this.ballots.length) {
+                break
+            }
+            for (let j = 0; j < this.results.length; j ++) {
+                const v = BigInt(this.ballots[i].votes[j])
+                leaves[j] = BigInt(leaves[j]) + v * v
+            }
+        }
+
+        for (let i = 0; i < leaves.length; i ++) {
+            resultsTree.insert(leaves[i])
         }
 
         return hashLeftRight(resultsTree.root, _salt)
