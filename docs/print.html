@@ -4,40 +4,28 @@
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
         <title>Minimum Anti-Collusion Infrastructure</title>
-        
-        <meta name="robots" content="noindex" />
-        
-        
-
+                <meta name="robots" content="noindex" />
+                
 
         <!-- Custom HTML head -->
         
-
 
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff" />
 
-        
-        <link rel="icon" href="favicon.svg">
-        
-        
-        <link rel="shortcut icon" href="favicon.png">
-        
-        <link rel="stylesheet" href="css/variables.css">
+                <link rel="icon" href="favicon.svg">
+                        <link rel="shortcut icon" href="favicon.png">
+                <link rel="stylesheet" href="css/variables.css">
         <link rel="stylesheet" href="css/general.css">
         <link rel="stylesheet" href="css/chrome.css">
+                <link rel="stylesheet" href="css/print.css" media="print">
         
-        <link rel="stylesheet" href="css/print.css" media="print">
-        
-
         <!-- Fonts -->
         <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+                <link rel="stylesheet" href="fonts/fonts.css">
         
-        <link rel="stylesheet" href="fonts/fonts.css">
-        
-
         <!-- Highlight.js Stylesheets -->
         <link rel="stylesheet" href="highlight.css">
         <link rel="stylesheet" href="tomorrow-night.css">
@@ -45,12 +33,9 @@
 
         <!-- Custom theme stylesheets -->
         
-
-        
-        <!-- MathJax -->
+                <!-- MathJax -->
         <script async type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        
-    </head>
+            </head>
     <body>
         <!-- Provide site root to javascript -->
         <script type="text/javascript">
@@ -100,8 +85,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="spec.html"><strong aria-hidden="true">2.</strong> Specification</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="cli.html"><strong aria-hidden="true">4.</strong> Command-line interface</a></li><li class="chapter-item expanded "><a href="circuits.html"><strong aria-hidden="true">5.</strong> Circuits</a></li><li class="chapter-item expanded "><a href="trustedsetup.html"><strong aria-hidden="true">6.</strong> Trusted setup</a></li><li class="chapter-item expanded "><a href="testing.html"><strong aria-hidden="true">7.</strong> Testing</a></li></ol>
-            </div>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="cli.html"><strong aria-hidden="true">3.</strong> Command-line interface</a></li><li class="chapter-item expanded "><a href="circuits.html"><strong aria-hidden="true">4.</strong> Circuits</a></li><li class="chapter-item expanded "><a href="trustedsetup.html"><strong aria-hidden="true">5.</strong> Trusted setup</a></li><li class="chapter-item expanded "><a href="testing.html"><strong aria-hidden="true">6.</strong> Testing</a></li></ol>            </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
 
@@ -125,29 +109,24 @@
                             <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
                         </ul>
-                        
-                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                                                <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
                             <i class="fa fa-search"></i>
                         </button>
-                        
-                    </div>
+                                            </div>
 
                     <h1 class="menu-title">Minimum Anti-Collusion Infrastructure</h1>
 
                     <div class="right-buttons">
-                        
-                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                                                <a href="print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
-                        
-                        
+                                                                        
                     </div>
                 </div>
 
-                
-                <div id="search-wrapper" class="hidden">
+                                <div id="search-wrapper" class="hidden">
                     <form id="searchbar-outer" class="searchbar-outer">
-                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
                     </form>
                     <div id="searchresults-outer" class="searchresults-outer hidden">
                         <div id="searchresults-header" class="searchresults-header"></div>
@@ -156,7 +135,6 @@
                     </div>
                 </div>
                 
-
                 <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
                 <script type="text/javascript">
                     document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
@@ -214,348 +192,7 @@ post</a>.</p>
 <li><a href="http://kobi.one/">Kobi Gurkan</a></li>
 <li><a href="https://kohweijie.com">Koh Wei Jie</a></li>
 </ul>
-<h1 id="specification"><a class="header" href="#specification">Specification</a></h1>
-<h2 id="user-flow"><a class="header" href="#user-flow">User flow</a></h2>
-<p>Whitelisted voters named Alice and Bob register to vote by sending their public
-key to the MACI smart contract. Additionally, there is a central coordinator
-Charlie, whose public key is known to all.</p>
-<p>When Alice casts her vote, she signs her vote with her private key, encrypts
-her signature with Charlie's public key, and submits the result to the smart
-contract.</p>
-<p>Each voter may change her keypair at any time. To do this, she creates and
-signs a key-change command, encrypts it, and sends it to the smart contract.
-This makes it impossible for a briber to ever be sure that their bribe has any
-effect on the bribee's vote.</p>
-<p>If Bob, for instance, bribes Alice to vote a certain way, she can simply use
-the first public key she had registered ⁠— which is now void ⁠— to cast a vote.
-Since said vote is encrypted, as was the key-changing message which Alice had
-previously sent to Charlie, Bob has no way to tell if Alice had indeed voted
-the way he wanted her to.</p>
-<p>Even if Alice reveals the plaintext of her vote to Bob, she just needs to not
-show him the updated key command that she previously used to invalidate that
-key. In short, as long as she had submitted a single encrypted command before
-her vote, there is no way to tell if said vote is valid or not.</p>
-<h2 id="polls-and-ballots"><a class="header" href="#polls-and-ballots">Polls and Ballots</a></h2>
-<p>A <strong>Poll</strong> is the process by which users cast their votes on a single set of
-vote options. It is akin to a referendum or election.</p>
-<p>A <strong>Ballot</strong> represents a particular user's votes in a Poll, as well as their
-next valid nonce. It is akin to a voting slip, which belongs to only one voter
-and contains a list of their choices.</p>
-<p>A MACI instance can have multiple Polls and multiple users. Each Poll may have
-multiple Ballots, but each user may only have one Ballot per poll.</p>
-<p>For example, a user Alice may participate in two Polls. In Poll A, she can cast
-a vote for Party A, and in Poll B, she can cast a vote for Party B. Alice's
-Ballot for Poll A should only reflect her vote for Party A (as well as her
-nonce), and her Ballot for Poll B should only reflect her vote for Party B (and
-her nonce).</p>
-<p>Sign-ups are perpetual — that is, there is no deadline. The only limit is the
-capacity of the state tree, which is hardcoded to <code>5 ^ 10</code> (9.7 million).</p>
-<p>When a user signs up to MACI, they can only vote in Polls whose voting period
-has not expired, as well as all future Polls. For instance, if Bob signs up on
-1 December 2020, and only Poll C is currently accepting votes, he can vote for
-Poll C. Bob, however, cannot vote for Poll A or Poll B. Nevertheless, when Poll
-D and future polls are created, he can vote for them.</p>
-<h2 id="technical-process"><a class="header" href="#technical-process">Technical process</a></h2>
-<h3 id="maci-deployment"><a class="header" href="#maci-deployment">MACI deployment</a></h3>
-<h4 id="signup-gatekeeper-deployment"><a class="header" href="#signup-gatekeeper-deployment">Signup gatekeeper deployment</a></h4>
-<p>The signup gatekeeper is a way for the coordinator to define their own logic to
-allowing or disallow a particular Ethereum address be used to sign up. The
-signup gatekeeper contract inherits from the abstract contract
-<code>SignUpGatekeeper</code> which defines a virtual function <code>register(address, bytes memory)</code> that must be implemented. The bytes <code>data</code> can be anything, such as an
-ABI-encoded ERC-721 token ID or address of an ERC20 governence token.</p>
-<p>There are two sample signup gatekeepers that MACI provides by default. Clients
-should implement their own.</p>
-<h5 id="freeforallgatekeeper"><a class="header" href="#freeforallgatekeeper"><code>FreeForAllGatekeeper</code></a></h5>
-<p>This signup gatekeeper allows anyone to sign up without restriction.</p>
-<h5 id="signuptokengatekeeper"><a class="header" href="#signuptokengatekeeper"><code>SignUpTokenGatekeeper</code></a></h5>
-<p>This signup gatekeeper restricts signups to addresses which own a certain
-ERC-721 token.</p>
-<p>To deploy this contract on a testnet, a user needs to create an instance of
-<code>SignUpToken</code> and pass that into the gatekeeper contract constructor. </p>
-<p>Be sure to mint a token and send it to the user that will sign up by calling
-<code>giveToken</code> prior to registration. They will need Keccak256 hash of their token
-ID which they will use in the MACI contract's <code>signUp()</code> method that will
-forward these bytes to the gatekeeper contract.</p>
-<h4 id="voice-credit-proxy-deployment"><a class="header" href="#voice-credit-proxy-deployment">Voice credit proxy deployment</a></h4>
-<p>The voice credit proxy that defines the total number of voice credits available
-to each user. Clients should implement and deploy their own voice credit proxy
-for their use case. An example of a voice credit proxy is a contract that reads
-an address's ERC20 token balance.</p>
-<p>Currently, the MACI contract only supports <code>2 ^ 32</code> voice credits as this is
-hardcoded in the state tree update circuit.</p>
-<p>The voice credit proxy should inherit from the abstract
-<code>InitialVoiceCreditProxy</code> contract and override the function
-<code>getVoiceCredits(address, bytes memory)</code>, which returns a <code>uint256</code> which must
-be less than <code>2 ^ 32</code>.</p>
-<p>An example of a voice credit proxy is <code>ConstantInitialVoiceCreditProxy</code>. It
-allows the deployer to set the voice credit balance to a constant value.</p>
-<p>However, if a coordinator chooses to allow varying max voice credits for
-particular users they can implement <code>InitialVoiceCreditProxy</code> using an override
-of <code>getVoiceCredits</code>. Once again, the bytes field gives the option to get
-creative with other contracts that may track or help in the calculation of this
-information.</p>
-<h3 id="poll-creation"><a class="header" href="#poll-creation">Poll creation</a></h3>
-<p>Each MACI contract can theoretically support up to <code>2 ^ 50</code> polls.</p>
-<p><img src="https://hackmd.io/_uploads/B1s-NlShw.png" alt="" /></p>
-<p>The MACI contract itself wraps this process in the <code>deployPoll</code> method where
-one would specify the max batch size. </p>
-<p>Coordinator creates a new poll by deploying the contract using a <code>PollFactory</code>
-which will allow said address to be the owner which will give them access to
-the <code>deploy()</code> method.</p>
-<p><strong>Note:</strong> the coordinator will need to instantiate the verification key
-registry <code>VkRegistry</code>, and <code>AccQueue</code> which handles the logic for processing
-the merkle tree of states.</p>
-<p>This function will deploy an instance of the <code>AccQueueQuinaryMaci</code> for the
-messages merkle tree using the specified the <code>messageTreeSubDepth</code> in the
-<code>TreeDepths</code> domain object. The poll contract will be the owner of the message
-queue. </p>
-<p>Aside from setting the empty ballot tree root and transfering ownership,
-certain criteria for the parameters must be satisfied to successfully deploy
-the <code>Poll</code> contract.</p>
-<p>Namely, the max number of users must not exceed <code>5 ^ maxTreeDepth</code> (all Merkle
-trees in MACI have an arity of five) to ensure there is a valid Merkle root for
-each public key provided by a potential voter. This includes both the state,
-message, and vote option tree. Furthermore the maximum number of messages must
-be greater than the max batch size as will as be a factor, so that there is a
-guarentee that all of the leaves can be queued for processing. </p>
-<p>Given all this information the process verifying key and the tallying verfiying
-key will be generated and set inside the <code>VkRegistry</code>. </p>
-<h4 id="sign-ups"><a class="header" href="#sign-ups">Sign-ups</a></h4>
-<p><strong>Note:</strong> The following sections assume the coordinator has deployed an
-instance of MACI with the contracts outlined above, including the <code>VkRegistry</code>,
-and has called <code>init</code> successfully. </p>
-<p>Given a user's public key as well as necessary bytes data for the respective
-gateway whitelist procedure and voice credit balance, the contract attempts to
-queue a state leaf for a voter.</p>
-<p>To perform a successful signature for proofs the contract must enforce that
-both points in the public key be less than the <code>SNARK_SCALAR_FIELD</code> used to
-generate the circuit. </p>
-<p>In the current implementation, no voter is allowed to exceed <code>2 ^ 32</code> voice
-credits, this may be increased in later versions. The section describing
-command hashing will go into this in more detail.</p>
-<p>When these operations complete sucessfully an event <code>SignUp</code> is emitted
-containing the current state index, the submitted public key, and the
-intialized voice credit balance.</p>
-<h4 id="voting"><a class="header" href="#voting">Voting</a></h4>
-<p>User publishes a message to a specific <code>Poll</code> contract. The method
-<code>publishMessage</code> receives both the message to publish as well as the voters
-ephemeral public key which peforms the scalar checks described in the previous
-section. Once the message is hashed it is then added to the message queue and
-an event is emitted containing the original message as well as the public key.
-This method will not succeed if called after the voting deadline, so the time
-passed from deployment is less than the maximum duration set. </p>
-<h3 id="merge-queues"><a class="header" href="#merge-queues">Merge queues</a></h3>
-<p>Coordinator merges the state and message queus by interacting with the <code>Poll</code>
-contract which interfaces with <code>MessageProcessor</code>. The following methods can
-only be called on the successful resolution of the <code>isAfterVotingDeadline</code>
-modifier which checks to see if enough time has passed from the specified
-voting <code>duration</code>.</p>
-<p>As specified previously, when a message is published the message leaf is queued
-for processing. The method <code>mergeSubRoots</code> is responsible for forming the
-shortest possible state tree. If <code>numSrQueueOps</code> is zero then it will try to
-merge all the subtrees in a single transaction. It does this by queuing as many
-subtree roots for processing. However, the coordinator can specify a value
-greater than zero, then this function can be called however many times as
-necessary to reduce the tree state. This is useful when there are too many
-subtrees that need to merged where a single transaction may run out of gas.</p>
-<p>Once this step is completed, the <code>Poll</code> contract can finally reconcile the main
-tree with the max tree depth specified by calling <code>merge(uint256 _depth)</code></p>
-<h3 id="message-processing"><a class="header" href="#message-processing">Message processing</a></h3>
-<p>TODO</p>
-<h3 id="vote-tallying"><a class="header" href="#vote-tallying">Vote tallying</a></h3>
-<p>TODO</p>
-<h3 id="result-verification"><a class="header" href="#result-verification">Result verification</a></h3>
-<p>TODO</p>
-<h2 id="cryptographic-operations"><a class="header" href="#cryptographic-operations">Cryptographic operations</a></h2>
-<h3 id="key-generation"><a class="header" href="#key-generation">Key generation</a></h3>
-<p>Each user owns an EdDSA keypair, as does the coordinator. Every user should
-have a copy of the coordinator's public key, which is stored and available from
-the smart contract. Likewise, the coordinator should have a copy of each user's
-public key, which they publish on-chain to sign up.</p>
-<p>We define an EdDSA private key as a random value (initially 256 bits large)
-modulo the snark field size as described in
-<a href="https://github.com/ethereum/EIPs/blob/master/EIPS/eip-197.md">EIP197</a>. This
-results in a key size of roughly 253 bits and no more than 254 bits.
-Additionally, we use <a href="http://cvsweb.openbsd.org/cgi-bin/cvsweb/%7Echeckout%7E/src/lib/libc/crypt/arc4random_uniform.c">this efficient
-algorithm</a>
-to prevent modulo bias.</p>
-<h3 id="hashing"><a class="header" href="#hashing">Hashing</a></h3>
-<p>MACI uses <a href="https://github.com/iden3/circomlib">iden3's implementation</a> of the
-<a href="https://github.com/iden3/circomlib">Poseidon hash function</a> to build the state
-and message AccQueues and Merkle trees. Poseidon is a snark-friendly hash
-function as it requires a small number of circuit constraints, as opposed to
-CPU-friendly hash functions such as SHA256. The tradeoff is that Poseidon
-consumes a lot of gas in the EVM (which is why MACI uses AccQueues instead of
-incremental Merkle trees, as described in a different section of this
-document).</p>
-<p>MACI has more than one Poseidon hash function — one for a different number of
-inputs (from 2 to 5). It uses <code>circomlib</code>'s <code>poseidon_gencontract.js</code> script to
-generate EVM bytecode for each function. Additionally, the <code>maci-crypto</code> module
-provides corresponding wrapper functions, and the <code>maci-domainobjs</code> module
-abstracts the actual use of Poseidon from developers (for instance, the
-<code>Command</code> class contains a <code>hash()</code> function which invokes a Poseidon hash
-function that accepts 4 inputs, but the developer does not need to be concerned
-about the number of inputs).</p>
-<h3 id="command-signing"><a class="header" href="#command-signing">Command signing</a></h3>
-<p>We use the EdDSA scheme to allow users to sign their commands. We <a href="https://github.com/iden3/circomlib/blob/master/src/eddsa.js">modified
-iden3's EdDSA
-implementation</a> to
-use Poseidon (t=2) instead of Blake512 to hash the user's private key and
-convert the message to an elliptic curve point.</p>
-<p>More information about iden3's EdDSA scheme can be found in <a href="https://iden3-docs.readthedocs.io/en/latest/_downloads/a04267077fb3fdbf2b608e014706e004/Ed-DSA.pdf">this
-paper</a>.</p>
-<h3 id="command-encryption"><a class="header" href="#command-encryption">Command encryption</a></h3>
-<p>To encrypt a command, we first use
-<a href="https://en.wikipedia.org/wiki/Elliptic-curve_Diffie%E2%80%93Hellman">ECDH</a> in
-the BabyJub elliptic curve to generate a shared key.</p>
-<p>Each command should be encrypted with a unique shared key. When the user
-publishes a message (i.e. casts a vote), they generate an ephemeral keypair
-with private key \(eSk\) and public key \(ePk\).</p>
-<p>The shared key \(k\) is generated using the coordinator's public key \(cPk\) and
-the user's ephemeral private key \(eSk\).</p>
-<p>Next we use MiMC7 to encrypt the command and signature with \(k\).</p>
-<p>The user sends their ephemeral public key \(ePk\) along with the ciphertext.
-The coordinator can recover the same shared key using their private key
-\(cSk\) and the given ephemeral public key \(ePk\).</p>
-<p>In summary:</p>
-<ul>
-<li>Coordinator has \(cPk\), \(cSk\).</li>
-<li>User generates a unique \(ePk\), \(eSk\).</li>
-<li>Using ECDH, the user generates \(k\) using \(eSk\) and \(cPk\).</li>
-<li>The user encrypts their command with \(k\), and publishes the ciphertext and
-\(ePk\) to the MACI contract.</li>
-<li>The coordinator generates \(k\) using \(ePk\) and \(cSk\), and can therefore
-decrypt the ciphertext.</li>
-</ul>
-<h3 id="zk-snarks"><a class="header" href="#zk-snarks">zk-SNARKs</a></h3>
-<p>MACI uses the Groth16 zk-SNARK construction on the BN245 pairing-friendly
-curve. Its circuits are written in the
-<a href="https://github.com/iden3/circom"><code>circom</code></a> language.</p>
-<p>If time permits, we will perform a trusted setup for the circuits. Phase 1 of
-the trusted setup will use the latest verified output of the <a href="https://github.com/weijiekoh/perpetualpowersoftau">Perpetual Powers
-of Tau ceremony</a>. Phase 2
-will ideally be run with the help of a user interface that allows for multiple
-circuit setups in one go. This UI is a separate project, which is a work in
-progress.</p>
-<h3 id="nothing-up-my-sleeve-value"><a class="header" href="#nothing-up-my-sleeve-value">Nothing-up-my sleeve value</a></h3>
-<p>The state queue and message queue both use a <a href="https://en.wikipedia.org/wiki/Nothing-up-my-sleeve_number">nothing-up-my-sleeve
-value</a> as the
-default leaf. This value is:</p>
-<pre><code>8370432830353022751713833565135785980866757267633941821328460903436894336785
-</code></pre>
-<p>which is the Keccak256 hash of the UTF-8 string <code>Maci</code>. The Typescript code
-used to generate it is:</p>
-<pre><code class="language-ts">BigInt(ethers.utils.solidityKeccak256(
-    ['bytes'],
-    [ethers.utils.toUtf8Bytes('Maci')])
-) % SNARK_FIELD_SIZE
-</code></pre>
-<p>where <code>SNARK_FIELD_SIZE</code> is the <a href="https://github.com/ethereum/EIPs/blob/master/EIPS/eip-197.md">BN254 group order
-<code>p</code></a>, equal to:</p>
-<pre><code>21888242871839275222246405745257275088548364400416034343698204186575808495617
-</code></pre>
-<h2 id="data-structures-and-domain-objects"><a class="header" href="#data-structures-and-domain-objects">Data structures and domain objects</a></h2>
-<h3 id="accqueue"><a class="header" href="#accqueue">AccQueue</a></h3>
-<p>An <em>AccQueue</em> enables MACI to build incremental Merkle trees cheaply. The
-AccQueue was originally proposed by Barry Whitehat in <a href="https://ethresear.ch/t/batch-deposits-for-op-zk-rollup-mixers-maci/6883">this
-post</a>.
-Previously, MACI used incremental Merkle trees. When a user signed up or
-published a message, the MACI contract would insert a leaf value at the next
-unmodified index. This involved the same number of hashes in the EVM as the
-depth of the tree, and as the gas cost of the snark-friendly Poseidon hash
-function is high, the cost of these functions went up to hundreds of thousands
-of gas. The AccQueue approach solves this by reducing the number of on-chain
-hashes that each user must perform, and making the coordinator responsible for
-paying for the gas needed to compute the final Merkle root.</p>
-<p>To <em>enqueue</em> a leaf into an AccQueue is to insert it into its rightmost
-subtree. When a subtree is full, the next enqueue operation creates a new
-subtree. To obtain the Merkle root of all leaves, the coordinator merges all
-the subtree roots. When performed on-chain, the <em>merge</em> operation can be
-completed in multiple transactions, which is necessary if a single operation
-would exceed the block gas limit.</p>
-<p>There are two steps to the merge operation:</p>
-<p><strong><code>mergeSubRoots(uint256 _numSrQueueOps)</code></strong> This function merges the subroots
-to the shortest possible tree, also known as the <em>small subroot tree</em>. For
-instance, if the arity of the tree is 2 and the number of subroots is 5, the
-shortest possible tree has a depth of 3 (since $2^2=4$ and $2^3=8$).</p>
-<p>The <code>_numSrQueueOps</code> parameter restricts the number of number of subroots to
-merge per transaction. This allows the entire operation to be performed in
-multiple transactions. If it is set to 0, the function will attempt to perform
-the operation in one go.</p>
-<p><strong><code>merge(uint256 _depth)</code></strong> This function must and can only be run after
-<code>mergeSubRoots()</code>. It computes the Merkle root of a tree where the small
-subroot tree is the leftmost leaf. The given <code>_depth</code> must be greater than or
-equal to the small subroot tree depth.</p>
-<h3 id="public-key"><a class="header" href="#public-key">Public key</a></h3>
-<p>Each user has an EdDSA public key, and only they know the private key
-associated with it.</p>
-<h3 id="voice-credit"><a class="header" href="#voice-credit">Voice credit</a></h3>
-<p>A unit which denotes the strength of a user's vote for a particular option. In
-a quadratic voting use case, users start out with a limited number of voice
-credits and spend them on votes.</p>
-<h3 id="vote-weight"><a class="header" href="#vote-weight">Vote weight</a></h3>
-<p>The number of voice credits which a user wishes to spend on a particular vote
-option.</p>
-<h3 id="vote-option"><a class="header" href="#vote-option">Vote option</a></h3>
-<p>One out of many possible choices which a user may vote for. A vote option is
-represented by an index starting from 0. </p>
-<h3 id="vote-option-tree"><a class="header" href="#vote-option-tree">Vote option tree</a></h3>
-<p>A Merkle tree where each leaf at index \(i\) contains the vote weight for the
-corresponding vote option \(i\). </p>
-<h3 id="command"><a class="header" href="#command">Command</a></h3>
-<p>A command is an instruction from a user to cast a vote for a particular vote
-option, a key-change request, or both. Its fields are:</p>
-<table><thead><tr><th>Field</th><th>Bits</th><th>Description</th></tr></thead><tbody>
-<tr><td><code>stateIndex</code></td><td>50</td><td>The index of the leaf in the state tree which contains the public key used to sign the message. This is used to point to the state leaf to update.</td></tr>
-<tr><td><code>newPubKey</code></td><td>253 * 2</td><td>This row refers to two fields: the x- and y-coordinates of the new public key. If no change is desired, it should be that of the current key.</td></tr>
-<tr><td><code>voteOptionIndex</code></td><td>50</td><td>The index of the leaf in the vote option tree to vote for.</td></tr>
-<tr><td><code>newVoteWeight</code></td><td>50</td><td>In the quadratic voting use case, this is the square root of the number of voice credits a user wishes to spend on this vote.</td></tr>
-<tr><td><code>nonce</code></td><td>50</td><td>The nonce.</td></tr>
-<tr><td><code>pollId</code></td><td>50</td><td>The ID of the poll for which this vote is meant.</td></tr>
-<tr><td><code>salt</code></td><td>253</td><td>A random value to prevent brute-force attacks.</td></tr>
-</tbody></table>
-<p>With the values provided above an array is generated with length four that is
-hashed and signed using the users private key. </p>
-<p>This is acheived by packing the <code>stateIndex</code>, <code>voteOptionIndex</code>,
-<code>newVoteWeight</code>, <code>nonce</code>, and <code>pollId</code> into a single value. The <code>stateIndex</code> is
-added to a leftwise shift of increasing increments of fifty bits to each of
-subsequent parameters which are also concatenated, i.e. voteOption is shifted
-by 50, voteWeight is shifted by 100 and so on, that then gives a 250-bit value.
-This upper-bound limit of 50-bits provides more than enough space to run a poll
-with a large number of users while allowing MACI to save on gas by packing
-values using the method outlined here. </p>
-<p>The hashed array contains this calculated value labeled <code>p</code>, the users public
-key (x and y coordinate), and the random salt. When encrypting, the signature
-generated from the hashed command array is used in the plaintext of the
-message. The plaintext contains both the hashed command array and user's
-signture flattened into a single array, where the shared EcDH key will encrypt
-and return this new message containing the ciphertext. </p>
-<h3 id="message"><a class="header" href="#message">Message</a></h3>
-<p>A message is the encrypted version of a command and its signature. </p>
-<h3 id="state-queue"><a class="header" href="#state-queue">State queue</a></h3>
-<p>The state queue is an AccQueue of state leaves. The Merkle root of all the state leaves represents a mapping of all users to their registered public key and voice credit balance.</p>
-<p>The default (zero) leaf value is the nothing-up-my-sleeve value described above.</p>
-<h4 id="state-leaf"><a class="header" href="#state-leaf">State Leaf</a></h4>
-<p>A state leaf is a user's public key, their voice credit balance, and the timestamp at which they signed up.</p>
-<h3 id="poll"><a class="header" href="#poll">Poll</a></h3>
-<h4 id="ballot"><a class="header" href="#ballot">Ballot</a></h4>
-<p>A ballot represents the outcome of a user's actions during a poll. Specifically, it consists of the user's vote option tree and their next valid nonce.</p>
-<p>It is analogous to the slip of paper that a voter uses to indicate their preferred candidates in an election.</p>
-<p>The next valid nonce, as described below, allows MACI to prevent replay attacks, and allows users to easily invalidate a vote they wish to use to fool a briber.</p>
-<h4 id="ballot-tree"><a class="header" href="#ballot-tree">Ballot tree</a></h4>
-<p>Each poll has a tree of ballots. Since each user has one ballot per poll, the ballot tree has the same arity and depth as the state tree. The vote option tree depth, however, is variable, so we precompute the Merkle roots of five empty ballot trees, for vote option tree depths 1-5.</p>
-<p>An empty ballot tree has an empty ballot as its default leaf. An empty ballot with a vote option tree of depth 2 would therefore be computed as such:</p>
-<pre><code>hashLeftRight(
-    0, // the nonce
-    root(2, 0, 5) // a quinary Merkle root of a tree with depth 5 and default leaf 0
-)
-</code></pre>
-<h4 id="message-queue"><a class="header" href="#message-queue">Message queue</a></h4>
-<p>Each poll has a message queue. Like the state queue, each message queue is an
-AccQueue. Each leaf is the hash of a message.</p>
-<p>The default (zero) leaf value is the nothing-up-my-sleeve value described
-above.</p>
-<h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
 <h2 id="requirements"><a class="header" href="#requirements">Requirements</a></h2>
 <p>You need the following to use MACI:</p>
 <ul>
@@ -616,7 +253,7 @@ and edit <code>zkeys.config.yml</code>. Set the parameters you need.</p>
 <p>Finally, generate the <code>.zkey</code> files. This may require a lot of memory and time.</p>
 <pre><code class="language-bash">npx zkey-manager genZkeys -c zkeys.config.yml
 </code></pre>
-<h1 id="command-line-interface"><a class="header" href="#command-line-interface">Command-line interface</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="command-line-interface"><a class="header" href="#command-line-interface">Command-line interface</a></h1>
 <p>MACI provides a command-line interface that allows for effective deployment and
 testing. Applications that build on top of MACI, such as
 <a href="https://clr.fund/">clr.fund</a>, implement their own web UIs.</p>
@@ -781,7 +418,7 @@ node build/index.js mergeMessages -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a 
 </code></pre>
 <h2 id="demonstration"><a class="header" href="#demonstration">Demonstration</a></h2>
 <p>TODO</p>
-<h1 id="circuits"><a class="header" href="#circuits">Circuits</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="circuits"><a class="header" href="#circuits">Circuits</a></h1>
 <p>MACI has two zk-SNARK circuits:</p>
 <ol>
 <li><code>ProcessMessages.circom</code>, which takes a batch of messages, and updates the
@@ -792,14 +429,14 @@ state and ballot trees according to the contents of said messages.</li>
 to your use case. For example, if you want to support up to 3125 messages, the message tree depth parameter should be set to <code>5</code> (as \(5^5 = 3125\)).</p>
 <p>Next, navigate to the <code>cli/</code> directory and edit <code>zkeys.config.yml</code>.</p>
 <p>This config file defines the parameters required for MACI's circuits.</p>
-<h3 id="message-processing-1"><a class="header" href="#message-processing-1">Message processing</a></h3>
+<h3 id="message-processing"><a class="header" href="#message-processing">Message processing</a></h3>
 <table><thead><tr><th>#</th><th>Parameter</th><th>Description</th></tr></thead><tbody>
 <tr><td>0</td><td>State tree depth</td><td>Should be set to 10. Allows 9,765,625 signups.</td></tr>
 <tr><td>1</td><td>Message tree depth</td><td>Allows \(5^{n}\) votes or key-change messages.</td></tr>
 <tr><td>2</td><td>Message batch tree depth</td><td>Allows \(5^{n}\) messages to be processed per batch.</td></tr>
 <tr><td>3</td><td>Vote option tree depth</td><td>Allows \(5^{n}\) vote options.</td></tr>
 </tbody></table>
-<h3 id="vote-tallying-1"><a class="header" href="#vote-tallying-1">Vote tallying</a></h3>
+<h3 id="vote-tallying"><a class="header" href="#vote-tallying">Vote tallying</a></h3>
 <table><thead><tr><th>#</th><th>Parameter</th><th>Description</th></tr></thead><tbody>
 <tr><td>0</td><td>State tree depth</td><td>Should be set to 10. Allows 9,765,625 signups.</td></tr>
 <tr><td>1</td><td>State leaf batch depth</td><td>Allows \(5^{n}\) users' votes to be processed per batch.</td></tr>
@@ -834,7 +471,7 @@ circuit specified in <code>zkeys.config.yml</code>. </p>
 <p>This generates the initial <code>.zkey</code> files for each circuit.</p>
 <p>You should perform at least one contribution to each circuit, even if you
 choose not to perform a multi-party trusted setup.</p>
-<h1 id="trusted-setup"><a class="header" href="#trusted-setup">Trusted setup</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="trusted-setup"><a class="header" href="#trusted-setup">Trusted setup</a></h1>
 <p>MACI currently uses Groth16 zk-SNARKs written in <code>circom</code>. Teams who wish to
 build on MACI may choose to perform a multi-party trusted setup. This allows
 observers to have a higher degree of confidence that the coordinator cannot
@@ -861,7 +498,7 @@ choose not to perform a multi-party trusted setup.</p>
 Cash</a> and <a href="https://mpc.zkopru.network/">Zkopru</a>
 used) for the MACI circuits as they are too large to be feasibly processed in
 the browser.</p>
-<h1 id="testing"><a class="header" href="#testing">Testing</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="testing"><a class="header" href="#testing">Testing</a></h1>
 <h2 id="contracts"><a class="header" href="#contracts">Contracts</a></h2>
 <p>First, compile the contracts.</p>
 <p>From the main <code>maci/</code> directory, run:</p>
@@ -918,9 +555,7 @@ TallyVotes_10-1-2.test.0.zkey
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
-
                         
-
                         <div style="clear: both"></div>
                     </nav>
                 </div>
@@ -928,50 +563,35 @@ TallyVotes_10-1-2.test.0.zkey
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
-
-                
-            </nav>
+                            </nav>
 
         </div>
 
         
-
         
-
         
-
-        
-        <script type="text/javascript">
+                <script type="text/javascript">
             window.playground_copyable = true;
         </script>
         
-
         
-
-        
-        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+                <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
         <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
         <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
         
-
         <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
         <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
         <script src="book.js" type="text/javascript" charset="utf-8"></script>
 
         <!-- Custom JS scripts -->
         
-
-        
-        
-        <script type="text/javascript">
+                        <script type="text/javascript">
         window.addEventListener('load', function() {
             MathJax.Hub.Register.StartupHook('End', function() {
                 window.setTimeout(window.print, 100);
             });
         });
         </script>
-        
-        
-
+                
     </body>
 </html>
