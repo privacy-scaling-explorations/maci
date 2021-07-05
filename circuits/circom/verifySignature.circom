@@ -1,7 +1,6 @@
 include "../node_modules/circomlib/circuits/compconstant.circom";
 include "../node_modules/circomlib/circuits/comparators.circom";
 include "../node_modules/circomlib/circuits/pointbits.circom";
-include "../node_modules/circomlib/circuits/mimcsponge.circom";
 include "./poseidon/poseidonHashT6.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
 include "../node_modules/circomlib/circuits/escalarmulany.circom";
