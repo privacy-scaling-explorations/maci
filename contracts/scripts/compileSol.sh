@@ -28,6 +28,8 @@ chmod a+x $solcBin
 paths="$(pwd)/sol/,$(pwd)/node_modules/@openzeppelin/"
 oz_map="@openzeppelin/=$(pwd)/node_modules/@openzeppelin/"
 
+./scripts/writeMerkleZeroesContracts.sh
+
 echo 'Building contracts'
 $solcBin $oz_map -o ./compiled ./sol/*.sol --overwrite --optimize --bin --abi --bin-runtime --allow-paths=$paths
 $solcBin $oz_map -o ./compiled ./sol/**/*.sol --overwrite --optimize --bin --abi --bin-runtime --allow-paths=$paths
