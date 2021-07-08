@@ -36,8 +36,8 @@ import {
     voteOptionTreeDepth,
 } from './params'
 
-const signupDuration = 15
-const votingDuration = 15
+const signupDuration = 0
+const votingDuration = 0
 const accounts = genTestAccounts(2)
 
 let maciAddress: string
@@ -104,7 +104,7 @@ describe('process, tally, and prove CLI subcommands', () => {
         // Run the signup command
         const signupCommand = `node ../cli/build/index.js signup` +
             ` -p ${userKeypair.pubKey.serialize()}` +
-            ` -d ${userPrivKey}` +
+            ` -d ${deployerPrivKey}` +
             ` -x ${maciAddress}`
 
         console.log(signupCommand)
@@ -148,7 +148,7 @@ describe('process, tally, and prove CLI subcommands', () => {
         const publishCommand = `node ../cli/build/index.js publish` +
             ` -sk ${userKeypair.privKey.serialize()}` +
             ` -p ${newPubKey.serialize()}` +
-            ` -d ${userPrivKey}` +
+            ` -d ${deployerPrivKey}` +
             ` -x ${maciAddress}` +
             ` -i ${stateIndex}` +
             ` -v ${voteOptionIndex}` +
@@ -200,15 +200,17 @@ describe('process, tally, and prove CLI subcommands', () => {
             encPubKey,
         )
 
-        // Wait for the voting period to pass
-        await delay(1000 * votingDuration)
     })
 
     describe('The genProofs, proveOnChain, and verify subcommands', () => {
+
         const tallyFile = path.join(__dirname, 'tally.json')
         const proofsFile = path.join(__dirname, 'proofs.json')
 
         it('should generate proofs', async () =>{
+            // Wait for the voting period to pass
+            await delay(1000 * votingDuration)
+
             exec(`rm -f ${tallyFile} ${proofsFile}`)
 
             const cmd = `node ../cli/build/index.js genProofs` +
