@@ -124,6 +124,22 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
     uint256 public currentPerVOSpentVoiceCreditsCommitment;
     //----------------------
 
+
+    string constant ERROR_PUBLIC_SIGNAL_TOO_LARGE = "E01";
+    string constant ERROR_INVALID_BATCH_UST_PROOF = "E02";
+    string constant ERROR_INVALID_TALLY_PROOF = "E03";
+    string constant ERROR_ONLY_COORDINATOR = "E04";
+    string constant ERROR_ALL_BATCHES_TALLIED = "E05";
+    string constant ERROR_CURRENT_MESSAGE_BATCH_OUT_OF_RANGE = "E06";
+    string constant ERROR_NO_SIGNUPS = "E07";
+    string constant ERROR_INVALID_ECDH_PUBKEYS_LENGTH = "E08";
+    string constant ERROR_NO_MORE_MESSAGES = "E09";
+    string constant ERROR_INVALID_MAX_USERS_OR_MESSAGES = "E10";
+    string constant ERROR_SIGNUP_PERIOD_PASSED = "E11";
+    string constant ERROR_SIGNUP_PERIOD_NOT_OVER = "E12";
+    string constant ERROR_VOTING_PERIOD_PASSED = "E13";
+    string constant ERROR_VOTING_PERIOD_NOT_OVER = "E13";
+
     // Events
     event SignUp(
         PubKey _userPubKey,
@@ -182,11 +198,14 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         // It is the user's responsibility to ensure that the state tree depth
         // is just large enough and not more, or they will waste gas.
         uint256 stateTreeMaxLeafIndex = uint256(2) ** _treeDepths.stateTreeDepth - 1;
-        require(_maxValues.maxUsers <= stateTreeMaxLeafIndex, "MACI: invalid maxUsers value");
         maxUsers = _maxValues.maxUsers;
 
         // The maximum number of messages
-        require(_maxValues.maxMessages <= messageTreeMaxLeafIndex, "MACI: invalid maxMessages value");
+        require(
+            _maxValues.maxUsers <= stateTreeMaxLeafIndex ||
+            _maxValues.maxMessages <= messageTreeMaxLeafIndex,
+            ERROR_INVALID_MAX_USERS_OR_MESSAGES
+        );
         maxMessages = _maxValues.maxMessages;
 
         // The maximum number of leaves, minus one, of meaningful vote options.
@@ -234,7 +253,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
      */
     modifier isBeforeSignUpDeadline() {
         if (signUpDurationSeconds != 0) {
-            require(block.timestamp < calcSignUpDeadline(), "MACI: the sign-up period has passed");
+            require(block.timestamp < calcSignUpDeadline(), ERROR_SIGNUP_PERIOD_PASSED);
         }
         _;
     }
@@ -245,7 +264,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
      */
     modifier isAfterSignUpDeadline() {
         if (signUpDurationSeconds != 0) {
-            require(block.timestamp >= calcSignUpDeadline(), "MACI: the sign-up period is not over");
+            require(block.timestamp >= calcSignUpDeadline(), ERROR_SIGNUP_PERIOD_NOT_OVER);
         }
         _;
     }
@@ -263,7 +282,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
      */
     modifier isBeforeVotingDeadline() {
         if (votingDurationSeconds != 0) {
-            require(block.timestamp < calcVotingDeadline(), "MACI: the voting period has passed");
+            require(block.timestamp < calcVotingDeadline(), ERROR_VOTING_PERIOD_PASSED);
         }
         _;
     }
@@ -274,7 +293,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
      */
     modifier isAfterVotingDeadline() {
         if (votingDurationSeconds != 0) {
-            require(block.timestamp >= calcVotingDeadline(), "MACI: the voting period is not over");
+            require(block.timestamp >= calcVotingDeadline(), ERROR_VOTING_PERIOD_NOT_OVER);
         }
         _;
     }
@@ -461,18 +480,18 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         // Ensure that the current batch index is within range
         require(
             hasUnprocessedMessages,
-            "MACI: no more messages left to process"
+            ERROR_NO_MORE_MESSAGES
         );
         
         require(
             _ecdhPubKeys.length == messageBatchSize,
-            "MACI: incorrect _ecdhPubKeys length"
+            ERROR_INVALID_ECDH_PUBKEYS_LENGTH
         );
 
         // Ensure that currentMessageBatchIndex is within range
         require(
             currentMessageBatchIndex <= messageTreeMaxLeafIndex,
-            "MACI: currentMessageBatchIndex not within range"
+            ERROR_CURRENT_MESSAGE_BATCH_OUT_OF_RANGE
         );
 
         // Assemble the public inputs to the snark
@@ -488,7 +507,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         for (uint8 i = 0; i < publicSignals.length; i++) {
             require(
                 publicSignals[i] < SNARK_SCALAR_FIELD,
-                "MACI: each public signal must be lt the snark scalar field"
+                ERROR_PUBLIC_SIGNAL_TOO_LARGE
             );
         }
 
@@ -502,7 +521,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         // Verify the proof
         require(
             batchUstVerifier.verifyProof(a, b, c, publicSignals),
-            "MACI: invalid batch UST proof"
+            ERROR_INVALID_BATCH_UST_PROOF
         );
 
         // Increase the message batch start index to ensure that each message
@@ -585,13 +604,13 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
     ) 
     public {
 
-        require(numSignUps > 0, "MACI: nobody signed up");
+        require(numSignUps > 0, ERROR_NO_SIGNUPS);
         uint256 totalBatches = 1 + (numSignUps / tallyBatchSize);
 
         // Ensure that the batch # is within range
         require(
             currentQvtBatchNum < totalBatches,
-            "MACI: all batches have already been tallied"
+            ERROR_ALL_BATCHES_TALLIED
         );
 
         // Generate the public signals
@@ -610,7 +629,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         for (uint8 i = 0; i < publicSignals.length; i++) {
             require(
                 publicSignals[i] < SNARK_SCALAR_FIELD,
-                "MACI: each public signal must be lt the snark scalar field"
+                ERROR_PUBLIC_SIGNAL_TOO_LARGE
             );
         }
 
@@ -624,7 +643,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         // Verify the proof
         bool isValid = qvtVerifier.verifyProof(a, b, c, publicSignals);
 
-        require(isValid == true, "MACI: invalid quadratic vote tally proof");
+        require(isValid == true, ERROR_INVALID_TALLY_PROOF);
 
         // Save the commitment to the new results for the next batch
         currentResultsCommitment = _newResultsCommitment;
@@ -649,7 +668,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
      * state transition.
      */
     function coordinatorReset() public {
-        require(msg.sender == coordinatorAddress, "MACI: only the coordinator can do this");
+        require(msg.sender == coordinatorAddress, ERROR_ONLY_COORDINATOR);
 
         hasUnprocessedMessages = true;
         stateRoot = stateRootBeforeProcessing;
