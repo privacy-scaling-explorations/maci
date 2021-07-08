@@ -4,7 +4,7 @@ pragma solidity ^0.6.12;
 
 import { DomainObjs } from './DomainObjs.sol';
 import { IncrementalQuinTree } from "./IncrementalQuinTree.sol";
-import { IncrementalMerkleTree, PreCalcIncrementalMerkleTree } from "./IncrementalMerkleTree.sol";
+import { IncrementalMerkleTree } from "./IncrementalMerkleTree.sol";
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
 import { InitialVoiceCreditProxy } from './initialVoiceCreditProxy/InitialVoiceCreditProxy.sol';
 import { SnarkConstants } from './SnarkConstants.sol';
@@ -39,7 +39,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
     uint8 public tallyBatchSize;
 
     // The tree that tracks the sign-up messages.
-    PreCalcIncrementalMerkleTree public messageTree;
+    IncrementalMerkleTree public messageTree;
 
     // The tree that tracks each user's public key and votes
     IncrementalMerkleTree public stateTree;
@@ -214,7 +214,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         voteOptionsMaxLeafIndex = _maxValues.maxVoteOptions;
 
         // Create the message tree
-        messageTree = new PreCalcIncrementalMerkleTree(_treeDepths.messageTreeDepth, ZERO_VALUE);
+        messageTree = new IncrementalMerkleTree(_treeDepths.messageTreeDepth, ZERO_VALUE, true);
 
         // Calculate and store the empty vote option tree root. This value must
         // be set before we call hashedBlankStateLeaf() later
@@ -233,7 +233,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
         uint256 h = hashedBlankStateLeaf();
 
         // Create the state tree
-        stateTree = new IncrementalMerkleTree(_treeDepths.stateTreeDepth, h);
+        stateTree = new IncrementalMerkleTree(_treeDepths.stateTreeDepth, h, false);
 
         // Make subsequent insertions start from leaf #1, as leaf #0 is only
         // updated with random data if a command is invalid.

@@ -5,7 +5,7 @@ abstract contract MerkleZeros {
     uint256[<% NUM_ZEROS %>] internal zeros;
 
     // <% COMMENT %>
-    constructor() public {
+    function populateZeros() internal {
 <% ZEROS %>
     }
 }
