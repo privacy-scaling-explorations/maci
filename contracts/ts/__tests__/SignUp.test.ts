@@ -293,7 +293,7 @@ describe('MACI', () => {
                     { gasLimit: 2000000 },
                 )
             } catch (e) {
-                expect(e.message.endsWith('MACI: the sign-up period has passed')).toBeTruthy()
+                expect(e.message.endsWith('E11')).toBeTruthy()
             }
         })
     })

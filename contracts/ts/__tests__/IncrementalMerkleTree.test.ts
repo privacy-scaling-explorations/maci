@@ -53,6 +53,7 @@ describe('IncrementalMerkleTree', () => {
             IncrementalMerkleTreeBin,
             DEPTH,
             NOTHING_UP_MY_SLEEVE.toString(),
+            false,
         )
 
         const [ ComputeRootAbi, ComputeRootBin ] = loadAB('ComputeRoot')
