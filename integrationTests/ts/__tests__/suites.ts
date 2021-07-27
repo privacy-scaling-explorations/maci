@@ -1,4 +1,6 @@
 const { ethers } = require('hardhat')
+import * as path from 'path'
+import * as fs from 'fs'
 import {
     PubKey,
     PrivKey,
@@ -22,14 +24,13 @@ import {
 
 import { genPubKey } from 'maci-crypto'
 
-import { exec, loadYaml, genTestUserCommands } from './utils'
+import { exec, loadYaml, genTestUserCommands, expectTally } from './utils'
 
 const loadData = (name: string) => {
     return require('@maci-integrationTests/ts/__tests__/' + name)
 }
 
 const executeSuite = async (data: any, expect: any) => {
-    console.log(data)
     const config = loadYaml()
     const coordinatorKeypair = new Keypair()
 
@@ -128,7 +129,6 @@ const executeSuite = async (data: any, expect: any) => {
         data.numVotesPerUser,
         data.bribers
     )
-    console.log(users.length)
 
     // Sign up
     for (let i = 0; i < users.length; i++) {
@@ -249,8 +249,6 @@ const executeSuite = async (data: any, expect: any) => {
     }
     console.log(e.stdout)
 
-    maciState.polls[pollId].processAllMessages()
-
     const mergeSignupsCommand = `node build/index.js mergeSignups -x ${maciAddress} -o ${pollId}`
     e = exec(mergeSignupsCommand)
 
@@ -283,6 +281,17 @@ const executeSuite = async (data: any, expect: any) => {
         return false
     }
     console.log(e.stdout)
+
+    const tally = JSON.parse(fs.readFileSync(path.join(__dirname, '../../../cli/tally.json')).toString())
+    // Validate generated proof file
+    expect(JSON.stringify(tally.pollId)).toEqual(pollId)
+    expectTally(
+        config.constants.maci.maxMessages,
+        data.expectedTally,
+        data.expectedSpentVoiceCredits,
+        data.expectedTotalSpentVoiceCredits,
+        tally
+    )
 
     const proveOnChainCommand = `node build/index.js proveOnChain` +
         ` -x ${maciAddress}` +

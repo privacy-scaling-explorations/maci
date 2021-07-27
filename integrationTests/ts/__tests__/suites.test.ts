@@ -7,7 +7,6 @@ import {
 
 describe('Test suites', () => {
     const data = loadData('suites.json')
-
     for (const test of data.suites) {
         it(test.description, async () => {
             const result = await executeSuite(test, expect)
