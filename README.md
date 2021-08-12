@@ -116,14 +116,29 @@ cd contracts
 npm run ganache
 ```
 
-In another terminal, run the tests individually:
+In another terminal, run any of the tests found in `contracts/ts/__tests__/`
+via pattern matching, e.g.:
+
+```bash
+cd contracts
+npx jest IncrementalMerkleTree
+```
+
+would run `IncrementalMerkleTree.test.ts`.
+
+N.B. `npx jest Tree` would run that and `IncrementalQuinTree.test.ts`
+in parallel, causing incorrect nonce errors.
+
+Alternatively you can run all unit tests as follows, but you should
+stop your Ganache instance first as this will start its own instance
+before running the tests:
 
 ```bash
 cd contracts
 ./scripts/runTestsInCircleCi.sh
 ```
 
-or
+Or run all integration tests (this also starts its own Ganache instance):
 
 ```bash
 cd integrationTests
