@@ -478,11 +478,21 @@ contract PollProcessorAndTallyer is
             uint256 currentSbCommitment = _poll.currentSbCommitment();
             sbCommitment = currentSbCommitment;
             (, uint256 numMessages) = _poll.numSignUpsAndMessages();
-            currentMessageBatchIndex =
-                (numMessages / messageBatchSize) * messageBatchSize;
+            uint256 r = numMessages % messageBatchSize;
+
+            if (r == 0) {
+                currentMessageBatchIndex =
+                    (numMessages / messageBatchSize) * messageBatchSize;
+            } else {
+                currentMessageBatchIndex = numMessages;
+            }
 
             if (currentMessageBatchIndex > 0) {
-                currentMessageBatchIndex -= messageBatchSize;
+                if (r == 0) {
+                    currentMessageBatchIndex -= messageBatchSize;
+                } else {
+                    currentMessageBatchIndex -= r;
+                }
             }
         }
 
