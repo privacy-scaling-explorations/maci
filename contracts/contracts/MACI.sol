@@ -188,9 +188,9 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         bytes memory _initialVoiceCreditProxyData
     ) public afterInit {
 
-        // The circuits only support up to (2 ** 50 - 1) signups
+        // The circuits only support up to (5 ** 10 - 1) signups
         require(
-            numSignUps < 2 * 50,
+            numSignUps < STATE_TREE_ARITY ** stateTreeDepth,
             "MACI: maximum number of signups reached"
         );
 
