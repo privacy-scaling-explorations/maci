@@ -11,6 +11,22 @@ In effect, domain objects are representations of objects shared between other
 modules in this codebase. They also encapsulate helper functions which make it
 easy to use them with said modules.
 
+## `PrivKey`
+
+A private key. Provides helper functions to do with passing it into a circuit
+in the right format, serialisation and deserialisation, and deep copying.
+
+## `PubKey`
+
+A public key. Provides helper functions to do with passing it into a contract
+function or circuit in the right format, hashing, serialisation and
+deserialisation, and deep copying.
+
+## `Keypair`
+
+Encapsulates a `PrivKey` and `PubKey`. Also provides `genEcdhSharedKey` which
+generates an ECDH shared key from a public key and a private key.
+
 ## `Command`
 
 The `Command` domain object represents a request by a user to cast a vote
@@ -28,7 +44,17 @@ Message = Encrypt([Command, Signature], Key)
 ```
 
 ## `Ballot`
-
-## `VoteOptionTreeLeaf`
+Represents a User's votes in a Poll, as well as their next valid nonce.
 
 ## `StateLeaf`
+
+Represents a leaf in the state tree, which maps public keys to voice credit
+balances, as well as the timestamp at which it was inserted.
+
+## `VerifyingKey`
+
+Encapsulates a Groth16 zk-SNARK verifying key.
+
+## `Proof`
+
+Encapsulates a Groth16 zk-SNARK proof.
