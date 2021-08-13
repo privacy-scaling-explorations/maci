@@ -111,4 +111,14 @@ inputs.
 
 **`hash12 = (elements: Plaintext): BigInt`**: the Poseidon hash function for 12
 inputs. Combines other Poseidon hash functions (accepting 5 and 6 inputs) to do
-so.
+so. Given the following inputs `[i_0, i_1, ... i_11]`, this function hashes
+them in the following manner:
+
+```
+hash4(
+    hash5([i_0, i_1, i_2, i_3, i_4]),
+    hash5([i_5, i_6, i_7, i_8, i_9]),
+    i_10,
+    i_11,
+)
+```

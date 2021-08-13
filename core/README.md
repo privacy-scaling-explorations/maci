@@ -10,7 +10,7 @@ transform said data. This makes it easier to reason about the system, write
 tests, and implement functionality. It also allows us to implement the smart
 contracts in discrete components which are easy to test.
 
-To this end, we this submodule exposes a `MaciState` class and a `Poll` class.
+To this end, this submodule exposes a `MaciState` class and a `Poll` class.
 Developers should instantiate objects from these classes to test MACI. For
 instance, [`MACI.test.ts`](`../contracts/ts/__tests__/MACI.test.ts`) creates a
 `MaciState` object and every time it interacts with the MACI smart contract, it
