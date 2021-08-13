@@ -10,303 +10,89 @@ transform said data. This makes it easier to reason about the system, write
 tests, and implement functionality. It also allows us to implement the smart
 contracts in discrete components which are easy to test.
 
-To this end, we this submodule exposes a `MaciState` class and a `User` class.
-
-## **`Poll`**
-
-Each `Poll object has the following attributes:
-
-`coordinatorKeypair: Keypair`: The coordinator's keypair.
-`messages: Message[]`: An array of all published messages.
-`ballots: Ballot[]`: An array of all ballots.
-
-TODO
-
-### Functions
-
-#### **`publishMessage`**
-
-Function signature:
-
-```ts
-(_message: Message, _encPubKey: PubKey): void
-```
-
-Appends a `Message` to the `messages` array. It also appends the public key
-used to generate the ECDH shared key which encrypts `_message` to the
-`encPubKeys` array.
-
-#### **`processMessages`**
-
-TODO
-
-#### **`copy`**
-
-Function signature:
-
-```ts
-(): Poll
-```
-
-Deep-copies and returns this object.
+To this end, we this submodule exposes a `MaciState` class and a `Poll` class.
+Developers should instantiate objects from these classes to test MACI. For
+instance, [`MACI.test.ts`](`../contracts/ts/__tests__/MACI.test.ts`) creates a
+`MaciState` object and every time it interacts with the MACI smart contract, it
+mirrors said interaction on the `MaciState` and `Poll`. As such, the developer
+can then use their helper functions like `maciState.signUp()`,
+`poll.publishMessage`, `poll.processMessages()`, and `poll.tallyVotes()` to
+step through the various stages of the MACI flow.
 
 ## `MaciState`
 
-TODO
-
-<!--
-
-We denote all state data as attributes of a `MaciState` object.
-
-Only the coordinator should have access to state data. Each user can only
-access their own keypair, commands, and on-chain state and message tree roots.
-
-`MaciState` contains the following attributes:
-
-
-`users: User[]`: An array of `User` objects, each of which represents the current state of a user.
-
-`stateTreeDepth: SnarkBigInt`: The depth of the state tree.
-
-`messageTreeDepth: SnarkBigInt`: The depth of the message tree.
-
-`voteOptionTreeDepth: SnarkBigInt`: The depth of each user's vote option tree.
-
-
-`zerothStateLeaf: StateLeaf`: The leaf of the state tree at index 0. This means
-that the zeroth user in `users` has index 1 in the state tree.
-
-`maxVoteOptionIndex: SnarkBigInt`: The maximum allowed vote options. For
-instance, even if the vote option tree supports up to 16 vote options, this
-value can be set to 12 so as to enforce the fact that there are only 12 options
-to choose from.
-
-`encPubKeys: PubKey[]`: An array of public keys used to generate ephermeral
-ECDH shared keys with which to encrypt commands to messages. For each `PubKey`
-in `encPubKey`, its corresponding `Message` in `messages` shares the same array
-index.
-
-### Functions
-
-The following functions modify the state:
-
-- `signUp()`
-- `publishMessage()`
-- `processMessage()`
-- `batchProcessMessage()`
-
-The following functions do not modify the state:
-
-- `copy()`
-- `genStateTree()`
-- `genStateRoot()`
-- `genMessageTree()`
-- `genMessageRoot()`
-- `computeCumulativeVoteTally()`
-- `genUpdateStateTreeCircuitInputs()`
-- `genBatchUpdateStateTreeCircuitInputs()`
+### Key functions
 
 #### **`signUp`**
 
-Function signature:
+Accepts a user's public key and creates a new state leaf and ballot leaf.
 
-```ts
-(
-    _pubKey: PubKey,
-    _initialVoiceCreditBalance: SnarkBigInt,
-): void
-```
+In testing, whenever a test suite submits a `signUp()` transaction, it should
+call `maciState.signUp()` as well, so that the off-chain representation of MACI
+is kept up to date.
 
-Appends a `User` with the specified public key and initial voice credit balance
-to the `users` array.
+In production, `genMaciStateFromContract()` in
+[`genMaciState.ts`](`contracts/ts/genMaciState.ts`) uses this function when it
+scans a MACI contract's event log for signups, so as to bring its `MaciState`
+instance up to date.
+
+#### **`deployPoll`**
+
+Creates a new `Poll`. This should be done whenever the MACI contract's
+`deployPoll()` function is called.
+
+### Helper functions
+
+#### **`copy`**
+
+A function that deep-copies an object.
+
+### Key data structures
+
+#### **`stateAq`**, **`stateTree`**
+
+The Merkle tree of state leaves. `stateAq` must be merged (subroots and/or main
+root) whenever the MACI contract's `mergeStateAqSubRoots()` and
+`mergeStateAq()` are invoked.
+
+They should contain the same leaves, even if the `stateAq` is not yet merged.
+`stateTree` exists for developer convenience.
+
+## **`Poll`**
+
+A `Poll` is an off-chain representation of a Poll. In testing, `Poll` instances
+should mirror their on-chain counterparts.
+
+### Key functions
 
 #### **`publishMessage`**
 
-Function signature:
+Publishes a message by updating the message tree and message accumulation
+queue.
 
-```ts
-(
-    _message: Message,
-    _encPubKey: PubKey,
-): void
-```
+#### **`processMessages`**
 
-Appends a `Message` to the `messages` array. It also appends the public key
-used to generate the ECDH shared key which encrypts `_message` to the
-`encPubKeys` array.
+Processes a batch of messages and returns the inputs to the `processMessages`
+circuit which can be used to prove correct execution.
 
-#### **`processMessage`**
+#### **`tallyVotes`**
 
-Function signature:
+Tallies a batch of votes and returns the inputs to the `tallyVotes`
+circuit which can be used to prove correct execution.
 
-```ts
-(_index: number): void
-```
+### Helper functions
 
-This function:
+#### **`copy`**
 
-1. Generates a shared key using `encPubKeys[index]` and `coordinatorKeyPair.pubKey`
-2. Decrypts `messages[_index]` to derive a `Command`
-3. If the message is invalid, do nothing and return
-4. If the message is valid, update the user's public key and vote at `_index`.
+Deep-copies and returns this object.
 
-#### **`batchProcessMessage`**
+### Key data structures
 
-Function signature:
+#### **`messageAq`**, **`messageTree`**
 
-```ts
-(
-    _index: number,
-    _batchSize: number,
-    _randomStateLeaf: StateLeaf,
-): void
-```
+The Merkle tree of message leaves. `messageAq` must be merged (subroots and/or
+main root) whenever the MACI contract's `mergeMessageAqSubRoots()` and
+`mergeMessageAq()` are invoked.
 
-This function runs `processMessage()` on a batch of `_batchSize` leaves
-starting from index `_index`, and then replaces the zeroth leaf with
-`_randomStateLeaf`.
-
-
-**`genStateTree()`**
-
-Function signature:
-
-```ts
-(): IncrementalMerkleTree
-```
-
-Generates and returns the state tree as an incremental Merkle tree.
-
-**`genStateRoot()`**
-
-Function signature:
-
-```ts
-(): SnarkBigInt
-```
-
-This function computes the state root given the data stored in `users` and
-`zerothStateLeaf`.
-
-**`genMessageTree()`**
-
-Function signature:
-
-```ts
-(): IncrementalMerkleTree
-```
-
-Generates and returns the message tree as an incremental Merkle tree.
-
-**`genMessageRoot()`**
-
-Function signature:
-
-```ts
-(): SnarkBigInt
-```
-
-This function computes the state root given the data stored in `messsages`.
-
-**`genUpdateStateTreeCircuitInputs`**
-
-Function signature:
-
-```ts
-genUpdateStateTreeCircuitInputs = (_index: number): object
-```
-
-Generates the circuit inputs (both public and private) for the
-`UpdateStateTree` circuit, as an object with the following attributes:
-
-- `coordinator_public_key`
-- `ecdh_private_key`
-- `ecdh_public_key`
-- `message`
-- `msg_tree_root`
-- `msg_tree_path_elements`
-- `msg_tree_path_index`
-- `vote_options_leaf_raw`
-- `vote_options_tree_root`
-- `vote_options_tree_path_elements`
-- `vote_options_tree_path_index`
-- `vote_options_max_leaf_index`
-- `state_tree_data_raw`
-- `state_tree_max_leaf_index`
-- `state_tree_root`
-- `state_tree_path_elements`
-- `state_tree_path_index`
-
-**`genBatchUpdateStateTreeCircuitInputs`**
-
-Function signature:
-
-```ts
-genBatchUpdateStateTreeCircuitInputs = (
-        _index: number,
-        _batchSize: number,
-        _randomStateLeaf: StateLeaf,
-) => object
-```
-
-Generates the circuit inputs (both public and private) for the
-`BatchUpdateStateTree` circuit, as an object with the following attributes:
-
-- `coordinator_public_key`
-- `message`
-- `ecdh_private_key`
-- `ecdh_public_key`
-- `msg_tree_root`
-- `msg_tree_path_elements`
-- `msg_tree_batch_start_index`
-- `random_leaf`
-- `state_tree_root`
-- `state_tree_path_elements`
-- `state_tree_path_index`
-- `random_leaf_root`
-- `random_leaf_path_elements`
-- `vote_options_leaf_raw`
-- `state_tree_data_raw`
-- `state_tree_max_leaf_index`
-- `vote_options_max_leaf_index`
-- `vote_options_tree_root`
-- `vote_options_tree_path_elements`
-- `vote_options_tree_path_index`
-
-**`genQuadVoteTallyCircuitInputs`**
-
-Function signature:
-
-```ts
-genQuadVoteTallyCircuitInputs = (
-    _startIndex: SnarkBigInt,
-    _batchSize: SnarkBigInt,
-    _currentResultsSalt: SnarkBigInt,
-    _newResultsSalt: SnarkBigInt,
-): object
-```
-
-Generates the circuit inputs (both public and private) for the
-`QuadVoteTally` circuit, as an object with the following attributes:
-
-- `voteLeaves`
-- `stateLeaves`
-- `currentResults`
-- `fullStateRoot`
-- `currentResultsSalt`
-- `newResultsSalt`
-- `currentResultsCommitment`
-- `intermediatePathElements`
-- `intermediatePathIndex`
-- `intermediateStateRoot`
-
-**`copy()`**
-
-Function signature:
-
-```ts
-(): MaciState
-```
-
-This function returns a deep-copied `MaciState` object.
--->
+They should contain the same leaves, even if the `messageAq` is not yet merged.
+`messageTree` exists for developer convenience.
