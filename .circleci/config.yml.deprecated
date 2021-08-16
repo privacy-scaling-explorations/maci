@@ -61,7 +61,7 @@ jobs:
 
       - run:
           name: Install solc
-          command: wget https://github.com/ethereum/solidity/releases/download/v0.5.16/solc-static-linux && chmod a+x solc-static-linux && sudo mv solc-static-linux /usr/bin/solc
+          command: wget https://github.com/ethereum/solidity/releases/download/v0.7.2/solc-static-linux && chmod a+x solc-static-linux && sudo mv solc-static-linux /usr/bin/solc
 
       # run trusted setups
       - restore_cache:
