@@ -396,13 +396,18 @@ contract PollProcessorAndTallyer is
     // The number of batches processed
     uint256 public numBatchesProcessed;
 
-    // The commitment to the tally results. Its initial value should be:
+    // The commitment to the tally results. Its initial value is 0, but after
+    // the tally of each batch is proven on-chain via a zk-SNARK, it should be
+    // updated to:
+    //
     // hash3(
-    //   hashLeftRight(merkleRoot([0...0], 0),
-    //   hashLeftRight(0, 0),
-    //   hashLeftRight(merkleRoot([0...0]), 0)
+    //   hashLeftRight(merkle root of current results, salt0)
+    //   hashLeftRight(number of spent voice credits, salt1),
+    //   hashLeftRight(merkle root of the no. of spent voice credits per vote option, salt2)
     // )
-    // Where [0...0] is an array of 0s, TREE_ARITY ** voteOptionTreeDepth long
+    //
+    // Where each salt is unique and the merkle roots are of arrays of leaves
+    // TREE_ARITY ** voteOptionTreeDepth long.
     uint256 public tallyCommitment;
 
     uint256 public tallyBatchNum;
