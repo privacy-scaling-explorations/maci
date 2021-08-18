@@ -195,11 +195,25 @@ const proveOnChain = async (args: any) => {
         //const currentMessageBatchIndex = Number(await pptContract.currentMessageBatchIndex())
         let currentMessageBatchIndex
         if (numBatchesProcessed === 0) {
-            currentMessageBatchIndex = Math.floor(numMessages / messageBatchSize) * messageBatchSize
+            const r = numMessages % messageBatchSize
+            if (r === 0) {
+                currentMessageBatchIndex = Math.floor(numMessages / messageBatchSize) * messageBatchSize
+            } else {
+                currentMessageBatchIndex = numMessages
+            }
+
+            if (currentMessageBatchIndex > 0) {
+                if (r === 0) {
+                    currentMessageBatchIndex -= messageBatchSize
+                } else {
+                    currentMessageBatchIndex -= r
+                }
+            }
         } else {
             currentMessageBatchIndex = (totalMessageBatches - numBatchesProcessed) * messageBatchSize
         }
-        if (currentMessageBatchIndex > 0) {
+
+        if (numBatchesProcessed > 0 && currentMessageBatchIndex > 0) {
             currentMessageBatchIndex -= messageBatchSize
         }
 
