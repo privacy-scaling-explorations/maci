@@ -10,6 +10,15 @@
             "expectedTotalSpentVoiceCredits": 15
         },
         {
+            "name": "Happy path",
+            "description": "Full tree, 4 full batches,  no bribers",
+            "numVotesPerUser": 1,
+            "numUsers": 16,
+            "expectedTally": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+            "expectedSpentVoiceCredits": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+            "expectedTotalSpentVoiceCredits": 17
+        },
+        {
             "name": "Happy path 2",
             "description": "Quarter tree, 1 batch, no bribers",
             "numUsers": 4,
