@@ -282,11 +282,22 @@ class Poll {
         }
 
         if (this.numBatchesProcessed === 0) {
-            this.currentMessageBatchIndex =
-                Math.floor(this.messages.length / batchSize) * batchSize
+            const r = this.messages.length % batchSize
+
+            if (r === 0) {
+                this.currentMessageBatchIndex =
+                    Math.floor(this.messages.length / batchSize) * batchSize
+            } else {
+                this.currentMessageBatchIndex = this.messages.length
+            }
+
 
             if (this.currentMessageBatchIndex > 0) {
-                this.currentMessageBatchIndex -= batchSize
+                if (r === 0) {
+                    this.currentMessageBatchIndex -= batchSize
+                } else {
+                    this.currentMessageBatchIndex -= r
+                }
             }
 
             this.sbSalts[this.currentMessageBatchIndex] = BigInt(0)
