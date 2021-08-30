@@ -132,12 +132,15 @@ template TallyVotes(
         voteTree[i].root === ballots[i][BALLOT_VO_ROOT_IDX];
     }
 
+    component isFirstBatch = IsZero();
+    isFirstBatch.in <== batchStartIndex;
+
     //  ----------------------------------------------------------------------- 
     // Tally the new results
     component resultCalc[numVoteOptions];
     for (var i = 0; i < numVoteOptions; i ++) {
         resultCalc[i] = CalculateTotal(batchSize + 1);
-        resultCalc[i].nums[batchSize] <== currentResults[i];
+        resultCalc[i].nums[batchSize] <== currentResults[i] * isFirstBatch.out;
         for (var j = 0; j < batchSize; j ++) {
             resultCalc[i].nums[j] <== votes[j][i];
         }
@@ -162,9 +165,6 @@ template TallyVotes(
             newPerVOSpentVoiceCredits[i].nums[j] <== votes[j][i] * votes[j][i];
         }
     }
-
-    component isFirstBatch = IsZero();
-    isFirstBatch.in <== batchStartIndex;
 
     // Verify the current and new tally
     component rcv = ResultCommitmentVerifier(voteOptionTreeDepth);
@@ -273,7 +273,7 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     // Compute the root of the new results
     component newResultsRoot = QuinCheckRoot(voteOptionTreeDepth);
     for (var i = 0; i < numVoteOptions; i ++) {
-        newResultsRoot.leaves[i] <== newResults[i];
+        newResultsRoot.leaves[i] <== newResults[i] * iz.out;
     }
 
     component newResultsCommitment = HashLeftRight();
