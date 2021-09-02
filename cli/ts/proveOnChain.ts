@@ -383,7 +383,10 @@ const proveOnChain = async (args: any) => {
             batchStartIndex,
             tallyBatchSize,
             circuitInputs.newTallyCommitment,
+            tallyBatchNum
         )
+
+
         if (publicInputHashOnChain.toString() !== publicInputs[0]) {
             console.error('Error: public input mismatch.')
             return 1

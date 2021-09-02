@@ -23,6 +23,15 @@ library PoseidonT6 {
  * functions for 2, 3, 4, 5, and 12 input elements.
  */
 contract Hasher is SnarkConstants {
+    /*
+     * Hashes an array of values using SHA256 and returns its modulo with the
+     * snark scalar field. This function is used to hash inputs to circuits,
+     * where said inputs would otherwise be public inputs. As such, the only
+     * public input to the circuit is the SHA256 hash, and all others are
+     * private inputs. The circuit will verify that the hash is valid. Doing so
+     * saves a lot of gas during verification, though it makes the circuit take
+     * up more constraints.
+     */
     function sha256Hash(uint256[] memory array) public pure returns (uint256) {
         return uint256(sha256(abi.encodePacked(array))) % SNARK_SCALAR_FIELD;
     }

@@ -158,8 +158,16 @@ const deployPoll = async (args: any) => {
     // Deploy a PollProcessorAndTallyer contract
     const verifierContract = await deployVerifier(true)
     console.log('Verifier:', verifierContract.address)
-    const pptContract = await deployPpt(verifierContract.address, true)
-    await pptContract.deployTransaction.wait()
+
+    let pptContract;
+    try {
+        pptContract = await deployPpt(verifierContract.address, false)
+        await pptContract.deployTransaction.wait()
+    }
+    catch (e) {
+        console.error('Error: could not deploy PollProcessorAndTallyer')
+        console.error(e.message)
+    }
 
     const [ maciAbi ] = parseArtifact('MACI')
     const maciContract = new ethers.Contract(

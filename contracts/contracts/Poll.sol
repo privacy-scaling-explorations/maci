@@ -369,7 +369,7 @@ contract Poll is
 }
 
 contract PollProcessorAndTallyer is
-    Ownable, SnarkCommon, SnarkConstants, IPubKey, PollDeploymentParams{
+    Ownable, SnarkCommon, SnarkConstants, IPubKey, PollDeploymentParams, Hasher{
 
     // Error codes
     string constant ERROR_VOTING_PERIOD_NOT_PASSED = "PptE01";
@@ -429,19 +429,6 @@ contract PollProcessorAndTallyer is
             ERROR_VOTING_PERIOD_NOT_PASSED
         );
         _;
-    }
-
-    /*
-     * Hashes an array of values using SHA256 and returns its modulo with the
-     * snark scalar field. This function is used to hash inputs to circuits,
-     * where said inputs would otherwise be public inputs. As such, the only
-     * public input to the circuit is the SHA256 hash, and all others are
-     * private inputs. The circuit will verify that the hash is valid. Doing so
-     * saves a lot of gas during verification, though it makes the circuit take
-     * up more constraints.
-     */
-    function sha256Hash(uint256[] memory array) public pure returns (uint256) {
-        return uint256(sha256(abi.encodePacked(array))) % SNARK_SCALAR_FIELD;
     }
 
     /*
@@ -664,13 +651,28 @@ contract PollProcessorAndTallyer is
         uint256 _numSignUps,
         uint256 _batchStartIndex,
         uint256 _tallyBatchSize,
-        uint256 _newTallyCommitment
-    ) public view returns (uint256) {
+        uint256 _newTallyCommitment,
+        uint256 _tallyBatchNum
+    ) public returns (uint256) {
         uint256 packedVals = genTallyVotesPackedVals(
             _numSignUps,
             _batchStartIndex,
             _tallyBatchSize
         );
+
+        if (_tallyBatchNum == 0) {
+            // hash3(
+            //   hashLeftRight(merkle root of current results, salt0)
+            //   hashLeftRight(number of spent voice credits, salt1),
+            //   hashLeftRight(merkle root of the no. of spent voice credits per vote option, salt2)
+            // )
+            uint256[3] memory initTally;
+            initTally[0] = hashLeftRight(0,0);
+            initTally[0] = hashLeftRight(0,0);
+            initTally[0] = hashLeftRight(0,0);
+            tallyCommitment = hash3(initTally);
+        }
+
         uint256[] memory input = new uint256[](4);
         input[0] = packedVals;
         input[1] = sbCommitment;
@@ -711,7 +713,8 @@ contract PollProcessorAndTallyer is
             numSignUps,
             batchStartIndex,
             tallyBatchSize,
-            _newTallyCommitment
+            _newTallyCommitment,
+            tallyBatchNum
         );
         require(isValid, ERROR_INVALID_TALLY_VOTES_PROOF);
 
@@ -726,8 +729,9 @@ contract PollProcessorAndTallyer is
         uint256 _numSignUps,
         uint256 _batchStartIndex,
         uint256 _tallyBatchSize,
-        uint256 _newTallyCommitment
-    ) internal view returns (bool) {
+        uint256 _newTallyCommitment,
+        uint256 _tallyBatchNum
+    ) internal returns (bool) {
         (
             uint8 intStateTreeDepth,
             ,
@@ -749,7 +753,8 @@ contract PollProcessorAndTallyer is
             _numSignUps,
             _batchStartIndex,
             _tallyBatchSize,
-            _newTallyCommitment
+            _newTallyCommitment,
+            _tallyBatchNum
         );
 
         // Verify the proof
