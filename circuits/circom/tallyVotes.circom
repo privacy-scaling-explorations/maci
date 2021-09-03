@@ -276,7 +276,7 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     // Compute the root of the new results
     component newResultsRoot = QuinCheckRoot(voteOptionTreeDepth);
     for (var i = 0; i < numVoteOptions; i ++) {
-        newResultsRoot.leaves[i] <== newResults[i] * iz.out;
+        newResultsRoot.leaves[i] <== newResults[i];
     }
 
     component newResultsCommitment = HashLeftRight();
