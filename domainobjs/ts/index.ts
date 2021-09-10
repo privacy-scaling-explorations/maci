@@ -75,7 +75,7 @@ class VerifyingKey {
         }
 
         return new VerifyingKey(
-            new G1Point( 
+            new G1Point(
                 BigInt(data.alpha1.x),
                 BigInt(data.alpha1.y),
             ),
@@ -101,10 +101,10 @@ class VerifyingKey {
             icEqual = icEqual && this.ic[i].equals(vk.ic[i])
         }
 
-        return this.alpha1.equals(vk.alpha1) && 
-            this.beta2.equals(vk.beta2) && 
-            this.gamma2.equals(vk.gamma2) && 
-            this.delta2.equals(vk.delta2) && 
+        return this.alpha1.equals(vk.alpha1) &&
+            this.beta2.equals(vk.beta2) &&
+            this.gamma2.equals(vk.gamma2) &&
+            this.delta2.equals(vk.delta2) &&
             icEqual
     }
 
@@ -123,7 +123,7 @@ class VerifyingKey {
         }
 
         return new VerifyingKey(
-            new G1Point( 
+            new G1Point(
                 BigInt(this.alpha1.x.toString()),
                 BigInt(this.alpha1.y.toString()),
             ),
@@ -224,7 +224,7 @@ class PrivKey {
             const value = BigInt('0x' + x)
             validValue = value < SNARK_FIELD_SIZE
         } catch {
-            // comment to make linter happy 
+            // comment to make linter happy
         }
 
         return correctPrefix && validValue
@@ -252,7 +252,7 @@ class PubKey {
     }
 
     public asContractParam = () => {
-        return { 
+        return {
             x: this.rawPubKey[0].toString(),
             y: this.rawPubKey[1].toString(),
         }
@@ -272,7 +272,7 @@ class PubKey {
     public serialize = (): string => {
         // Blank leaves have pubkey [0, 0], which packPubKey does not support
         if (
-            BigInt(this.rawPubKey[0]) === BigInt(0) && 
+            BigInt(this.rawPubKey[0]) === BigInt(0) &&
             BigInt(this.rawPubKey[1]) === BigInt(0)
         ) {
             return SERIALIZED_PUB_KEY_PREFIX + 'z'
@@ -336,7 +336,7 @@ class Keypair {
     public copy = (): Keypair => {
         return new Keypair(this.privKey.copy())
     }
-    
+
     public static genEcdhSharedKey(
         privKey: PrivKey,
         pubKey: PubKey,
@@ -354,17 +354,16 @@ class Keypair {
             this.pubKey.rawPubKey[1] === keypair.pubKey.rawPubKey[1]
 
         // If this assertion fails, something is very wrong and this function
-        // should not return anything 
-        // XOR is equivalent to: (x && !y) || (!x && y ) 
-        const x = (equalPrivKey && equalPubKey) 
-        const y = (!equalPrivKey && !equalPubKey) 
+        // should not return anything
+        // XOR is equivalent to: (x && !y) || (!x && y )
+        const x = (equalPrivKey && equalPubKey)
+        const y = (!equalPrivKey && !equalPubKey)
 
         assert((x && !y) || (!x && y))
 
         return equalPrivKey
     }
 }
-
 
 interface IStateLeaf {
     pubKey: PubKey;
@@ -375,12 +374,110 @@ interface VoteOptionTreeLeaf {
     votes: BigInt;
 }
 
+interface IVoteLeaf {
+    pos: BigInt;
+    neg: BigInt;
+}
+
+/*
+ * To represent both positive and negative votes for a particular vote option,
+ * we shift the positive votes left by 248 bits, and add the negative votes.
+ *
+ * The maximum value for a positive or negative vote is
+ * 0xfffffffffffffffffffffffffffffff.
+ *
+ * For instance, we encode 0x80 positive votes and 0x0100 negative votes as such:
+ * 0x800000000000000000000000000000100
+ *
+ * The maximum value per vote is 2 ** 124 - 1. We chose this value so that the maximum
+ * encoded value is always less than the BabyJub field size:
+ *
+ * 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff <
+ * 0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001
+ *
+ */
+
+const VOTE_LEAF_BITS_PER_VAL = 25
+const MAX_VOTE_LEAF_POS_OR_NEG_VAL =
+    BigInt(2).pow(bigInt(VOTE_LEAF_BITS_PER_VAL)).sub(BigInt(1))
+
+class VoteLeaf implements IVoteLeaf {
+    public pos: BigInt
+    public neg: BigInt
+
+    constructor(_pos: BigInt, _neg: BigInt) {
+        assert(VoteLeaf.isWithinRange(_pos))
+        assert(VoteLeaf.isWithinRange(_neg))
+        this.pos = _pos
+        this.neg = _neg
+    }
+
+    /*
+     * Convert this object into a number where the last 124 bits represent the
+     * negative votes and the remaining bits represent the positive votes.  For
+     * instance, we encode 0x80 positive votes and 0x0100 negative votes as
+     * such:
+     * 0x800000000000000000000000000000100
+     */
+    public pack = (): BigInt => {
+        const packed = this.pos.shl(VOTE_LEAF_BITS_PER_VAL).add(this.neg)
+        assert(packed < SNARK_FIELD_SIZE)
+
+        return packed
+    }
+
+    /*
+     * Returns the same value as pack() but is named as such for consistency
+     * with other domain objects.
+     */
+    public asCircuitInputs = (): BigInt => {
+        return this.pack()
+    }
+
+    /*
+     * Deep-copies this object.
+     */
+    public copy = (): VoteLeaf => {
+        return new VoteLeaf(
+            bigInt(this.pos.toString()),
+            bigInt(this.neg.toString()),
+        )
+    }
+
+    /*
+     * Converts the output of pack() into a VoteLeaf
+     */
+    public static unpack = (_voteData: BigInt): VoteLeaf => {
+        const pos = _voteData.shr(VOTE_LEAF_BITS_PER_VAL)
+        const neg = _voteData - pos.shl(VOTE_LEAF_BITS_PER_VAL)
+
+        // No need to do a range check here as the constructor does it
+        return new VoteLeaf(pos, neg)
+    }
+
+    /*
+     * Checks whether the given value is less than or equal to 2 ** 124 - 1
+     */
+    public static isWithinRange = (_value: BigInt): boolean => {
+        return _value <= MAX_VOTE_LEAF_POS_OR_NEG_VAL
+    }
+
+    /*
+     * Range-checks a packed vote leaf value.
+     */
+    public static isValidVoteData = (_voteData: BigInt): boolean => {
+        const pos = _voteData.shr(VOTE_LEAF_BITS_PER_VAL)
+        const neg = _voteData - pos.shl(VOTE_LEAF_BITS_PER_VAL)
+        return VoteLeaf.isWithinRange(pos) && VoteLeaf.isWithinRange(neg)
+    }
+}
+
 /*
  * An encrypted command and signature.
  */
 class Message {
     public data: BigInt[]
-    public static DATA_LENGTH = 10 
+    public static DATA_LENGTH = 10
 
     constructor (
         data: BigInt[],
@@ -806,7 +903,7 @@ class Command implements ICommand {
         const ciphertext: Ciphertext = encrypt(plaintext, sharedKey, BigInt(0))
 
         const message = new Message(ciphertext)
-        
+
         return message
     }
 
@@ -881,5 +978,6 @@ export {
     PubKey,
     PrivKey,
     VerifyingKey,
+    VoteLeaf,
     Proof,
 }
