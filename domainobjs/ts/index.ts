@@ -398,8 +398,7 @@ interface IVoteLeaf {
  */
 
 const VOTE_LEAF_BITS_PER_VAL = 25
-const MAX_VOTE_LEAF_POS_OR_NEG_VAL =
-    BigInt(2).pow(bigInt(VOTE_LEAF_BITS_PER_VAL)).sub(BigInt(1))
+const MAX_VOTE_LEAF_POS_OR_NEG_VAL = BigInt(Math.pow(2, VOTE_LEAF_BITS_PER_VAL) - 1)
 
 class VoteLeaf implements IVoteLeaf {
     public pos: BigInt
@@ -420,7 +419,8 @@ class VoteLeaf implements IVoteLeaf {
      * 0x800000000000000000000000000000100
      */
     public pack = (): BigInt => {
-        const packed = this.pos.shl(VOTE_LEAF_BITS_PER_VAL).add(this.neg)
+        const [ pos, neg ] = [ BigInt(this.pos), BigInt(this.neg)]
+        const packed = (pos << BigInt(VOTE_LEAF_BITS_PER_VAL)) + neg
         assert(packed < SNARK_FIELD_SIZE)
 
         return packed
@@ -439,8 +439,8 @@ class VoteLeaf implements IVoteLeaf {
      */
     public copy = (): VoteLeaf => {
         return new VoteLeaf(
-            bigInt(this.pos.toString()),
-            bigInt(this.neg.toString()),
+            BigInt(this.pos.toString()),
+            BigInt(this.neg.toString()),
         )
     }
 
@@ -448,8 +448,11 @@ class VoteLeaf implements IVoteLeaf {
      * Converts the output of pack() into a VoteLeaf
      */
     public static unpack = (_voteData: BigInt): VoteLeaf => {
-        const pos = _voteData.shr(VOTE_LEAF_BITS_PER_VAL)
-        const neg = _voteData - pos.shl(VOTE_LEAF_BITS_PER_VAL)
+        const bitsPerVal = BigInt(VOTE_LEAF_BITS_PER_VAL)
+        const packedLeaf = BigInt(_voteData)
+        
+        const pos = packedLeaf >> bitsPerVal
+        const neg = packedLeaf - (pos << bitsPerVal)
 
         // No need to do a range check here as the constructor does it
         return new VoteLeaf(pos, neg)
@@ -466,8 +469,12 @@ class VoteLeaf implements IVoteLeaf {
      * Range-checks a packed vote leaf value.
      */
     public static isValidVoteData = (_voteData: BigInt): boolean => {
-        const pos = _voteData.shr(VOTE_LEAF_BITS_PER_VAL)
-        const neg = _voteData - pos.shl(VOTE_LEAF_BITS_PER_VAL)
+        const bitsPerVal = BigInt(VOTE_LEAF_BITS_PER_VAL)
+        const packedLeaf = BigInt(_voteData)
+
+        const pos = packedLeaf >> bitsPerVal
+        const neg = packedLeaf - (pos << bitsPerVal)
+
         return VoteLeaf.isWithinRange(pos) && VoteLeaf.isWithinRange(neg)
     }
 }
