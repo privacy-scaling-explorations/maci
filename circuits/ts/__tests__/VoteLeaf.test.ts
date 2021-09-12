@@ -14,7 +14,7 @@ describe('VoteLeaf circuit', () => {
   const calc_circuit = 'voteLeafSquared_test'
 
     it('Valid vote leaf', async () => {
-      const [ pos, neg ] = [ 128, 256 ]
+      const [ pos, neg ] = [ 4, 3 ]
       const voteLeaf = new VoteLeaf(BigInt(pos), BigInt(neg))
       const packedLeaf = voteLeaf.pack().toString()
 
@@ -39,13 +39,13 @@ describe('VoteLeaf circuit', () => {
     })
 
     it('Valid squared calc', async() => {
-      const [ pos, neg ] = [ 128, 256 ]
+      const [ pos, neg ] = [ 4, 3 ]
       const voteLeaf = new VoteLeaf(BigInt(pos), BigInt(neg))
       const packedLeaf = voteLeaf.pack().toString()
       const squared = Math.pow((pos + neg), 2)
 
       const witness = await genWitness(calc_circuit, { packedLeaf })
-      const actual_squared = await getSignalByName(calc_circuit, witness, `main.squared`)
+      const actual_squared = await getSignalByName(calc_circuit, witness, `main.out`)
       const actual_pos = Math.sqrt(actual_squared) - neg
       const actual_neg = Math.sqrt(actual_squared) - pos
 

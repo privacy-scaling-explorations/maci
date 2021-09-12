@@ -66,7 +66,7 @@ template UnpackVoteLeaf() {
 	var MAX_PACKED_LEAF = 2 ** (VOTE_LEAF_BITS_PER_VAL * 2);
 
 	// Range-check packedLeaf
-	component rangeChecker = LessEqThan(50);
+	component rangeChecker = LessThan(50);
 	rangeChecker.in[0] <== packedLeaf;
 	rangeChecker.in[1] <== MAX_PACKED_LEAF;
 	rangeChecker.out === 1;
@@ -91,7 +91,7 @@ template UnpackVoteLeaf() {
 
 template CalculateSquaredVoteLeaf() {
   signal input packedLeaf;
-  signal output squared;
+  signal output out;
 
   component unpacker = UnpackVoteLeaf();
   unpacker.packedLeaf <== packedLeaf;
@@ -102,5 +102,5 @@ template CalculateSquaredVoteLeaf() {
   pos <== unpacker.pos;
   neg <== unpacker.neg;
 
-  squared <== (pos + neg) * (pos + neg);
+  out <== (pos + neg) * (pos + neg);
 }

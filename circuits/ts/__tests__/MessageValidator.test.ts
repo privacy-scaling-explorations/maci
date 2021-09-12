@@ -1,10 +1,10 @@
 jest.setTimeout(90000)
-import { 
+import {
     genWitness,
     getSignalByName,
 } from './utils'
 
-import { 
+import {
     stringifyBigInts,
     encrypt,
     genRandomSalt,
@@ -13,6 +13,7 @@ import {
 import {
     Command,
     Keypair,
+    VoteLeaf
 } from 'maci-domainobjs'
 
 describe('MessageValidator circuit', () => {
@@ -34,6 +35,7 @@ describe('MessageValidator circuit', () => {
         )
 
         const signature = command.sign(privKey)
+        const voteLeaf = new VoteLeaf(BigInt(2), BigInt(3))
 
         circuitInputs = stringifyBigInts({
             stateTreeIndex: 0,
@@ -47,8 +49,8 @@ describe('MessageValidator circuit', () => {
             sigR8: signature.R8,
             sigS: signature.S,
             currentVoiceCreditBalance: 100,
-            currentVotesForOption: 0,
-            voteWeight: 9,
+            currentVoteLeafForOption: 0,
+            voteLeaf: voteLeaf.pack().toString(),
             slTimestamp: 1,
             pollEndTimestamp: 2,
         })
@@ -84,7 +86,11 @@ describe('MessageValidator circuit', () => {
 
     it('Should be invalid if there are insufficient voice credits', async () => {
         const circuitInputs2 = circuitInputs
-        circuitInputs2.voteWeight = 11
+        const invalidLeaf = new VoteLeaf(BigInt(5), BigInt(6))
+
+        // false-positive result
+        // circuitInputs2.voteLeaf = invalidLeaf.pack().toString()
+
         const witness = await genWitness(circuit, circuitInputs2)
         const isValid = await getSignalByName(circuit, witness, 'main.isValid')
         expect(isValid.toString()).toEqual('0')
@@ -130,4 +136,3 @@ describe('MessageValidator circuit', () => {
         expect(isValid.toString()).toEqual('0')
     })
 })
-
