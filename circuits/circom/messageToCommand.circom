@@ -15,7 +15,7 @@ template MessageToCommand() {
     signal output stateIndex;
     signal output newPubKey[2];
     signal output voteOptionIndex;
-    signal output newVoteWeight;
+    signal output newVoteLeaf;
     signal output nonce;
     signal output pollId;
     signal output salt;
@@ -46,7 +46,7 @@ template MessageToCommand() {
 
     stateIndex <== unpack.out[4];
     voteOptionIndex <== unpack.out[3];
-    newVoteWeight <== unpack.out[2];
+    newVoteLeaf <== unpack.out[2];
     nonce <== unpack.out[1];
     pollId <== unpack.out[0];
 

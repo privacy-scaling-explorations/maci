@@ -19,13 +19,13 @@ template StateLeafAndBallotTransformer() {
 
     // Ballot
     signal input ballotNonce;
-    signal input ballotCurrentVotesForOption;
+    signal input ballotCurrentVoteLeafForOption;
 
     // Command
     signal input cmdStateIndex;
     signal input cmdNewPubKey[2];
     signal input cmdVoteOptionIndex;
-    signal input cmdNewVoteWeight;
+    signal input cmdNewVoteLeaf;
     signal input cmdNonce;
     signal input cmdPollId;
     signal input cmdSalt;
@@ -61,8 +61,8 @@ template StateLeafAndBallotTransformer() {
     messageValidator.currentVoiceCreditBalance <== slVoiceCreditBalance;
     messageValidator.slTimestamp <== slTimestamp;
     messageValidator.pollEndTimestamp <== pollEndTimestamp;
-    messageValidator.currentVotesForOption <== ballotCurrentVotesForOption;
-    messageValidator.voteWeight <== cmdNewVoteWeight;
+    messageValidator.currentVoteLeafForOption <== ballotCurrentVoteLeafForOption;
+    messageValidator.voteLeaf <== cmdNewVoteLeaf;
 
     component newSlPubKey0Mux = Mux1();
     newSlPubKey0Mux.s <== messageValidator.isValid;

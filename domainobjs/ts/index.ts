@@ -450,7 +450,7 @@ class VoteLeaf implements IVoteLeaf {
     public static unpack = (_voteData: BigInt): VoteLeaf => {
         const bitsPerVal = BigInt(VOTE_LEAF_BITS_PER_VAL)
         const packedLeaf = BigInt(_voteData)
-        
+
         const pos = packedLeaf >> bitsPerVal
         const neg = packedLeaf - (pos << bitsPerVal)
 
@@ -754,7 +754,7 @@ interface ICommand {
     stateIndex: BigInt;
     newPubKey: PubKey;
     voteOptionIndex: BigInt;
-    newVoteWeight: BigInt;
+    newVoteLeaf: BigInt;
     nonce: BigInt;
 
     sign: (PrivKey) => Signature;
@@ -768,7 +768,7 @@ class Command implements ICommand {
     public stateIndex: BigInt
     public newPubKey: PubKey
     public voteOptionIndex: BigInt
-    public newVoteWeight: BigInt
+    public newVoteLeaf: BigInt
     public nonce: BigInt
     public pollId: BigInt
     public salt: BigInt
@@ -777,7 +777,7 @@ class Command implements ICommand {
         stateIndex: BigInt,
         newPubKey: PubKey,
         voteOptionIndex: BigInt,
-        newVoteWeight: BigInt,
+        newVoteLeaf: BigInt,
         nonce: BigInt,
         pollId: BigInt,
         salt: BigInt = genRandomSalt(),
@@ -785,14 +785,14 @@ class Command implements ICommand {
         const limit50Bits = BigInt(2 ** 50)
         assert(limit50Bits >= stateIndex)
         assert(limit50Bits >= voteOptionIndex)
-        assert(limit50Bits >= newVoteWeight)
+        assert(limit50Bits >= newVoteLeaf)
         assert(limit50Bits >= nonce)
         assert(limit50Bits >= pollId)
 
         this.stateIndex = stateIndex
         this.newPubKey = newPubKey
         this.voteOptionIndex = voteOptionIndex
-        this.newVoteWeight = newVoteWeight
+        this.newVoteLeaf = newVoteLeaf
         this.nonce = nonce
         this.pollId = pollId
         this.salt = salt
@@ -804,7 +804,7 @@ class Command implements ICommand {
             BigInt(this.stateIndex.toString()),
             this.newPubKey.copy(),
             BigInt(this.voteOptionIndex.toString()),
-            BigInt(this.newVoteWeight.toString()),
+            BigInt(this.newVoteLeaf.toString()),
             BigInt(this.nonce.toString()),
             BigInt(this.pollId.toString()),
             BigInt(this.salt.toString()),
@@ -820,7 +820,7 @@ class Command implements ICommand {
         const p =
             BigInt(this.stateIndex) +
             (BigInt(this.voteOptionIndex) << BigInt(50)) +
-            (BigInt(this.newVoteWeight) << BigInt(100)) +
+            (BigInt(this.newVoteLeaf) << BigInt(100)) +
             (BigInt(this.nonce) << BigInt(150)) +
             (BigInt(this.pollId) << BigInt(200))
 
@@ -847,7 +847,7 @@ class Command implements ICommand {
             this.newPubKey[0] === command.newPubKey[0] &&
             this.newPubKey[1] === command.newPubKey[1] &&
             this.voteOptionIndex === command.voteOptionIndex &&
-            this.newVoteWeight === command.newVoteWeight &&
+            this.newVoteLeaf === command.newVoteLeaf &&
             this.nonce === command.nonce &&
             this.pollId === command.pollId &&
             this.salt === command.salt
@@ -949,7 +949,7 @@ class Command implements ICommand {
         // bits 201 - 250: pollId
         const stateIndex = extract(p, 0)
         const voteOptionIndex = extract(p, 50)
-        const newVoteWeight = extract(p, 100)
+        const newVoteLeaf = extract(p, 100)
         const nonce = extract(p, 150)
         const pollId = extract(p, 200)
 
@@ -960,7 +960,7 @@ class Command implements ICommand {
             stateIndex,
             newPubKey,
             voteOptionIndex,
-            newVoteWeight,
+            newVoteLeaf,
             nonce,
             pollId,
             salt,

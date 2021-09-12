@@ -1,10 +1,10 @@
 jest.setTimeout(90000)
-import { 
+import {
     genWitness,
     getSignalByName,
 } from './utils'
 
-import { 
+import {
     stringifyBigInts,
     genRandomSalt,
 } from 'maci-crypto'
@@ -65,8 +65,8 @@ describe('MessageToCommand circuit', () => {
         const voteOptionIndex = await getSignalByName(circuit, witness, 'main.voteOptionIndex')
         expect(command.voteOptionIndex.toString()).toEqual(voteOptionIndex)
 
-        const newVoteWeight = await getSignalByName(circuit, witness, 'main.newVoteWeight')
-        expect(command.newVoteWeight.toString()).toEqual(newVoteWeight)
+        const newVoteLeaf = await getSignalByName(circuit, witness, 'main.newVoteLeaf')
+        expect(command.newVoteLeaf.toString()).toEqual(newVoteLeaf)
 
         const nonce = await getSignalByName(circuit, witness, 'main.nonce')
         expect(command.nonce.toString()).toEqual(nonce)
