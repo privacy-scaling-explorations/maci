@@ -20,6 +20,7 @@ import {
     Keypair,
     StateLeaf,
     Ballot,
+    VoteLeaf
 } from 'maci-domainobjs'
 
 interface TreeDepths {
@@ -225,7 +226,7 @@ class Poll {
         let totalBatches =
             this.messages.length <= batchSize ?
             1
-            : 
+            :
             Math.floor(this.messages.length / batchSize)
 
         if (
@@ -402,8 +403,8 @@ class Poll {
         circuitInputs.currentStateLeavesPathElements = currentStateLeavesPathElements
         circuitInputs.currentBallots = currentBallots.map((x) => x.asCircuitInputs())
         circuitInputs.currentBallotsPathElements = currentBallotsPathElements
-        circuitInputs.currentVoteWeights = currentVoteWeights
-        circuitInputs.currentVoteWeightsPathElements = currentVoteWeightsPathElements
+        circuitInputs.currentVoteLeaves = currentVoteWeights
+        circuitInputs.currentVoteLeavesPathElements = currentVoteWeightsPathElements
 
         this.numBatchesProcessed ++
 
@@ -442,7 +443,7 @@ class Poll {
     }
 
     /*
-     * Generates inputs for the ProcessMessages circuit. 
+     * Generates inputs for the ProcessMessages circuit.
      */
     public genProcessMessagesCircuitInputsPartial = (
         _index: number,
@@ -511,7 +512,7 @@ class Poll {
         ])
 
         // Generate a SHA256 hash of inputs which the contract provides
-        const packedVals = 
+        const packedVals =
             BigInt(this.maxValues.maxVoteOptions) +
             (BigInt(this.numSignUps) << BigInt(50)) +
             (BigInt(_index) << BigInt(100)) +
@@ -546,7 +547,7 @@ class Poll {
         }
         const stateLeaves = this.stateLeaves.map((x) => x.copy())
         const ballots = this.ballots.map((x) => x.copy())
-        
+
         for (let i = 0; i < this.messages.length; i ++) {
             const messageIndex = this.messages.length - i - 1
             const r = this.processMessage(messageIndex)
@@ -621,11 +622,13 @@ class Poll {
         }
 
         const prevSpentCred = ballot.votes[Number(command.voteOptionIndex)]
+        const newVoteLeaf = VoteLeaf.unpack(command.newVoteLeaf)
+        const creditsToSpend = BigInt(newVoteLeaf.pos) + BigInt(newVoteLeaf.neg)
 
         const voiceCreditsLeft =
             BigInt(stateLeaf.voiceCreditBalance) +
             (BigInt(prevSpentCred) * BigInt(prevSpentCred)) -
-            (BigInt(command.newVoteWeight) * BigInt(command.newVoteWeight))
+            (creditsToSpend * creditsToSpend)
 
 
         // If the remaining voice credits is insufficient, do nothing
@@ -650,7 +653,7 @@ class Poll {
         const newBallot = ballot.copy()
         newBallot.nonce = BigInt(newBallot.nonce) + BigInt(1)
         newBallot.votes[Number(command.voteOptionIndex)] =
-            command.newVoteWeight
+            command.newVoteLeaf
 
         const originalStateLeafPathElements
             = this.stateTree.genMerklePath(Number(stateLeafIndex)).pathElements
@@ -1032,7 +1035,7 @@ class Poll {
     }
 
     public equals = (p: Poll): boolean => {
-        const result = 
+        const result =
             this.duration === p.duration &&
             this.coordinatorKeypair.equals(p.coordinatorKeypair) &&
             this.treeDepths.intStateTreeDepth ===
@@ -1189,7 +1192,7 @@ class MaciState {
                 return false
             }
         }
-        
+
         return true
     }
 
@@ -1199,7 +1202,7 @@ class MaciState {
         numSignUps: number,
     ) => {
         // Note: the << operator has lower precedence than +
-        const packedVals = 
+        const packedVals =
             (BigInt(batchStartIndex) / BigInt(batchSize)) +
             (BigInt(numSignUps) << BigInt(50))
 

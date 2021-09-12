@@ -1,6 +1,6 @@
 jest.setTimeout(1200000)
 import * as fs from 'fs'
-import { 
+import {
     genWitness,
     getSignalByName,
 } from './utils'
@@ -17,6 +17,7 @@ import {
     Message,
     VerifyingKey,
     Ballot,
+    VoteLeaf
 } from 'maci-domainobjs'
 
 import {
@@ -73,7 +74,7 @@ const circuit = 'processMessages_test'
 describe('ProcessMessage circuit', () => {
     describe('1 user, 2 messages', () => {
         const maciState = new MaciState()
-        const voteWeight = BigInt(9)
+        const voteLeaf = new VoteLeaf(BigInt(4), BigInt(5))
         const voteOptionIndex = BigInt(0)
         let stateIndex
         let pollId
@@ -119,7 +120,7 @@ describe('ProcessMessage circuit', () => {
                 stateIndex, //BigInt(1),
                 userKeypair.pubKey,
                 voteOptionIndex, // voteOptionIndex,
-                voteWeight, // vote weight
+                voteLeaf.pack(), // vote leaf
                 BigInt(2), // nonce
                 BigInt(pollId),
             )
@@ -138,12 +139,14 @@ describe('ProcessMessage circuit', () => {
 
             poll.publishMessage(message, ecdhKeypair.pubKey)
 
+            const newVoteLeaf = new VoteLeaf(BigInt(0), BigInt(1))
+
             // Second command (valid)
             const command2 = new Command(
                 stateIndex,
                 userKeypair.pubKey,
                 voteOptionIndex, // voteOptionIndex,
-                BigInt(1), // vote weight
+                newVoteLeaf.pack(), // vote leaf
                 BigInt(1), // nonce
                 BigInt(pollId),
             )
@@ -207,12 +210,12 @@ describe('ProcessMessage circuit', () => {
 
             fs.writeFileSync(
                 'input.json',
-                JSON.stringify(generatedInputs) 
+                JSON.stringify(generatedInputs)
             )
 
             fs.writeFileSync(
                 'witness.json',
-                JSON.stringify(witness) 
+                JSON.stringify(witness)
             )
 
             const packedVals = MaciState.packProcessMessageSmallVals(
@@ -286,11 +289,13 @@ describe('ProcessMessage circuit', () => {
                 hash5,
             )
 
+            const voteLeaf = new VoteLeaf(BigInt(1), BigInt(0))
+
             const command = new Command(
                 BigInt(1),
                 userKeypair.pubKey,
                 BigInt(0), // voteOptionIndex,
-                BigInt(1), // vote weight
+                voteLeaf.pack(), // vote leaf
                 BigInt(1), // nonce
                 BigInt(pollId),
             )
@@ -355,10 +360,10 @@ describe('ProcessMessage circuit', () => {
             expect(newBallotRoot.toString()).not.toEqual(currentBallotRoot.toString())
         })
     })
- 
+
     describe('1 user, key-change', () => {
         const maciState = new MaciState()
-        const voteWeight = BigInt(9)
+        const voteLeaf = new VoteLeaf(BigInt(3), BigInt(0))
         const voteOptionIndex = BigInt(0)
         let stateIndex
         let pollId
@@ -407,7 +412,7 @@ describe('ProcessMessage circuit', () => {
                 stateIndex, //BigInt(1),
                 userKeypair.pubKey,
                 BigInt(0), // voteOptionIndex,
-                voteWeight, // vote weight
+                voteLeaf.pack(), // vote weight
                 BigInt(1), // nonce
                 BigInt(pollId),
             )
@@ -431,7 +436,7 @@ describe('ProcessMessage circuit', () => {
                 stateIndex,
                 userKeypair2.pubKey,
                 BigInt(1), // voteOptionIndex,
-                voteWeight, // vote weight
+                voteLeaf.pack(), // vote leaf
                 BigInt(2), // nonce
                 BigInt(pollId),
             )
@@ -527,7 +532,7 @@ describe('ProcessMessage circuit', () => {
             const maciState = new MaciState()
             const userKeypair = new Keypair()
             const stateIndex = maciState.signUp(
-                userKeypair.pubKey, 
+                userKeypair.pubKey,
                 voiceCreditBalance,
                 BigInt(Math.floor(Date.now() / 1000)),
             )
@@ -547,6 +552,7 @@ describe('ProcessMessage circuit', () => {
             )
 
             const poll = maciState.polls[pollId]
+            const voteLeaf = new VoteLeaf(BigInt(1), BigInt(0))
 
             // Second batch is not a full batch
             const numMessages = (messageBatchSize * NUM_BATCHES) - 1
@@ -555,7 +561,7 @@ describe('ProcessMessage circuit', () => {
                     stateIndex,
                     userKeypair.pubKey,
                     BigInt(i), //vote option index
-                    BigInt(1), // vote weight
+                    voteLeaf.pack(), // vote weight
                     BigInt(numMessages - i), // nonce
                     BigInt(pollId),
                 )
