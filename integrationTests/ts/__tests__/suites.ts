@@ -271,14 +271,15 @@ const executeSuite = async (data: any, expect: any) => {
         ` -zp ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey` +
         ` -zt ./zkeys/TallyVotes_10-1-2.test.0.zkey` +
         ` -t tally.json` +
-        ` -f proofs.json`
+        ` -f proofs.json` +
+        `${data.changeInitialResult == true ? ' -c 1': '' }`
 
     console.log(genProofsCommand)
     e = exec(genProofsCommand)
 
     if (e.stderr) {
         console.log(e.stderr)
-        return false
+        return data.changeInitialResult || false
     }
     console.log(e.stdout)
 

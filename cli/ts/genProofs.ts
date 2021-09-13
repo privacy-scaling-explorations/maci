@@ -125,6 +125,15 @@ const configureSubparser = (subparsers: any) => {
         }
     )
 
+    parser.addArgument(
+        ['-c', '--change'],
+        {
+            required: false,
+            type: 'string',
+            help: 'Modify the initial results tally',
+        }
+    )
+
     // TODO: support resumable proof generation
     //parser.addArgument(
         //['-r', '--resume'],
@@ -354,7 +363,8 @@ const genProofs = async (args: any) => {
 
     let tallyCircuitInputs
     while (poll.hasUntalliedBallots()) {
-        tallyCircuitInputs = poll.tallyVotes()
+        const changeInitialResult = args.change === "1"
+        tallyCircuitInputs = poll.tallyVotes(changeInitialResult)
         const r = genProof(
             tallyCircuitInputs,
             rapidsnarkExe,

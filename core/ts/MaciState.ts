@@ -703,7 +703,7 @@ class Poll {
     /*
      * Tally a batch of Ballots and update this.results
      */
-    public tallyVotes = () => {
+    public tallyVotes = (changeInitialResult?: boolean) => {
 
         const batchSize = this.batchSizes.tallyBatchSize
 
@@ -771,7 +771,7 @@ class Poll {
             for (let j = 0; j < this.maxValues.maxVoteOptions; j++) {
                 const v = BigInt(this.ballots[i].votes[j])
 
-                this.results[j] = BigInt(this.results[j]) + v
+                this.results[j] = changeInitialResult == false ? BigInt(this.results[j]) + v : BigInt(1)
 
                 this.perVOSpentVoiceCredits[j] =
                     BigInt(this.perVOSpentVoiceCredits[j]) + (BigInt(v) * BigInt(v))
