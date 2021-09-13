@@ -5,6 +5,7 @@ include "./trees/checkRoot.circom";
 include "./hasherSha256.circom";
 include "./hasherPoseidon.circom";
 include "./unpackElement.circom";
+include "./voteLeaf.circom";
 
 /*
  * Tally votes in the ballots, batch by batch.
@@ -37,7 +38,7 @@ template TallyVotes(
     signal private input sbCommitment;
     signal private input currentTallyCommitment;
     signal private input newTallyCommitment;
-    
+
     // A tally commitment is the hash of the following salted values:
     //   - the vote results
     //   - the number of voice credits spent per vote option
@@ -51,7 +52,7 @@ template TallyVotes(
     signal private input ballotPathElements[k][TREE_ARITY - 1];
     signal private input votes[batchSize][numVoteOptions];
 
-    signal private input currentResults[numVoteOptions];
+    signal private input currentResults[numVoteOptions][2];
     signal private input currentResultsRootSalt;
 
     signal private input currentSpentVoiceCreditSubtotal;
@@ -64,7 +65,7 @@ template TallyVotes(
     signal private input newPerVOSpentVoiceCreditsRootSalt;
     signal private input newSpentVoiceCreditSubtotalSalt;
 
-    //  ----------------------------------------------------------------------- 
+    //  -----------------------------------------------------------------------
     // Verify sbCommitment
     component sbCommitmentHasher = Hasher3();
     sbCommitmentHasher.in[0] <== stateRoot;
@@ -72,7 +73,7 @@ template TallyVotes(
     sbCommitmentHasher.in[2] <== sbSalt;
     sbCommitmentHasher.hash === sbCommitment;
 
-    //  ----------------------------------------------------------------------- 
+    //  -----------------------------------------------------------------------
     // Verify inputHash
     component inputHasher = TallyVotesInputHasher();
     inputHasher.sbCommitment <== sbCommitment;
@@ -87,7 +88,7 @@ template TallyVotes(
     numSignUps <== inputHasher.numSignUps;
     batchStartIndex <== inputHasher.batchNum * batchSize;
 
-    //  ----------------------------------------------------------------------- 
+    //  -----------------------------------------------------------------------
     // Validate batchStartIndex and numSignUps
     // batchStartIndex should be less than numSignUps
     component validNumSignups = LessEqThan(50);
@@ -95,7 +96,7 @@ template TallyVotes(
     validNumSignups.in[1] <== numSignUps;
     validNumSignups.out === 1;
 
-    //  ----------------------------------------------------------------------- 
+    //  -----------------------------------------------------------------------
     // Verify the ballots
 
     // Hash each ballot and generate the subroot of the ballots
@@ -121,7 +122,7 @@ template TallyVotes(
         }
     }
 
-    //  ----------------------------------------------------------------------- 
+    //  -----------------------------------------------------------------------
     // Verify the vote option roots
     component voteTree[batchSize];
     for (var i = 0; i < batchSize; i ++) {
@@ -134,38 +135,53 @@ template TallyVotes(
 
     component isFirstBatch = IsZero();
     isFirstBatch.in <== batchStartIndex;
-    
+
     component iz = IsZero();
     iz.in <== isFirstBatch.out;
 
-    //  ----------------------------------------------------------------------- 
+    //  -----------------------------------------------------------------------
     // Tally the new results
-    component resultCalc[numVoteOptions];
+    component resultCalc[numVoteOptions][2]
+    component unpackedVoteLeaves[numVoteOptions][batchSize];
     for (var i = 0; i < numVoteOptions; i ++) {
-        resultCalc[i] = CalculateTotal(batchSize + 1);
-        resultCalc[i].nums[batchSize] <== currentResults[i] * iz.out;
+        resultCalc[i][0] = CalculateTotal(batchSize + 1);
+        resultCalc[i][1] = CalculateTotal(batchSize + 1);
+        resultCalc[i][0].nums[batchSize] <== currentResults[i][0] * iz.out;
+        resultCalc[i][1].nums[batchSize] <== currentResults[i][1] * iz.out;
         for (var j = 0; j < batchSize; j ++) {
-            resultCalc[i].nums[j] <== votes[j][i];
+            unpackedVoteLeaves[i][j] = UnpackVoteLeaf();
+            unpackedVoteLeaves[i][j].packedLeaf <== votes[j][i];
+
+            resultCalc[i][0].nums[j] <== unpackedVoteLeaves[i][j].pos;
+            resultCalc[i][1].nums[j] <== unpackedVoteLeaves[i][j].neg;
         }
     }
 
     // Tally the new total of spent voice credits
+    component spentVoiceCreditsSubtotalVoteLeafSq[numVoteOptions][batchSize];
     component newSpentVoiceCreditSubtotal = CalculateTotal(batchSize * numVoteOptions + 1);
     newSpentVoiceCreditSubtotal.nums[batchSize * numVoteOptions] <== currentSpentVoiceCreditSubtotal;
     for (var i = 0; i < batchSize; i ++) {
         for (var j = 0; j < numVoteOptions; j ++) {
+            spentVoiceCreditsSubtotalVoteLeafSq[j][i] = CalculateSquaredVoteLeaf();
+            spentVoiceCreditsSubtotalVoteLeafSq[j][i].packedLeaf <== votes[i][j];
+
             newSpentVoiceCreditSubtotal.nums[i * numVoteOptions + j] <==
-                votes[i][j] * votes[i][j];
+            spentVoiceCreditsSubtotalVoteLeafSq[j][i].out;
         }
     }
 
     // Tally the spent voice credits per vote option
     component newPerVOSpentVoiceCredits[numVoteOptions];
+    component voiceCreditsPerVOVoteLeafSq[numVoteOptions][batchSize];
     for (var i = 0; i < numVoteOptions; i ++) {
         newPerVOSpentVoiceCredits[i] = CalculateTotal(batchSize + 1);
         newPerVOSpentVoiceCredits[i].nums[batchSize] <== currentPerVOSpentVoiceCredits[i];
         for (var j = 0; j < batchSize; j ++) {
-            newPerVOSpentVoiceCredits[i].nums[j] <== votes[j][i] * votes[j][i];
+            voiceCreditsPerVOVoteLeafSq[i][j] = CalculateSquaredVoteLeaf();
+            voiceCreditsPerVOVoteLeafSq[i][j].packedLeaf <== votes[j][i];
+
+            newPerVOSpentVoiceCredits[i].nums[j] <== voiceCreditsPerVOVoteLeafSq[i][j].out;
         }
     }
 
@@ -184,8 +200,10 @@ template TallyVotes(
     rcv.newPerVOSpentVoiceCreditsRootSalt <== newPerVOSpentVoiceCreditsRootSalt;
 
     for (var i = 0; i < numVoteOptions; i ++) {
-        rcv.currentResults[i] <== currentResults[i];
-        rcv.newResults[i] <== resultCalc[i].sum;
+        rcv.currentResults[i][0] <== currentResults[i][0];
+        rcv.currentResults[i][1] <== currentResults[i][1];
+        rcv.newResults[i][0] <== resultCalc[i][0].sum;
+        rcv.newResults[i][1] <== resultCalc[i][1].sum;
         rcv.currentPerVOSpentVoiceCredits[i] <== currentPerVOSpentVoiceCredits[i];
         rcv.newPerVOSpentVoiceCredits[i] <== newPerVOSpentVoiceCredits[i].sum;
     }
@@ -205,10 +223,10 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     signal private input newTallyCommitment;
 
     // Results
-    signal private input currentResults[numVoteOptions];
+    signal private input currentResults[numVoteOptions][2];
     signal private input currentResultsRootSalt;
 
-    signal private input newResults[numVoteOptions];
+    signal private input newResults[numVoteOptions][2];
     signal private input newResultsRootSalt;
 
     // Spent voice credits
@@ -228,7 +246,7 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     // Compute the commitment to the current results
     component currentResultsRoot = QuinCheckRoot(voteOptionTreeDepth);
     for (var i = 0; i < numVoteOptions; i ++) {
-        currentResultsRoot.leaves[i] <== currentResults[i];
+        currentResultsRoot.leaves[i] <== currentResults[i][0] + currentResults[i][1];
     }
 
     component currentResultsCommitment = HashLeftRight();
@@ -262,21 +280,21 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
      iz.in <== isFirstBatch;
      // iz.out is 1 if this is not the first batch
      // iz.out is 0 if this is the first batch
- 
+
      // hz is 0 if this is the first batch
      // currentTallyCommitment should be 0 if this is the first batch
- 
+
      // hz is 1 if this is not the first batch
      // currentTallyCommitment should not be 0 if this is the first batch
      signal hz;
      hz <== iz.out * currentTallyCommitmentHasher.hash;
- 
+
      hz === currentTallyCommitment;
 
     // Compute the root of the new results
     component newResultsRoot = QuinCheckRoot(voteOptionTreeDepth);
     for (var i = 0; i < numVoteOptions; i ++) {
-        newResultsRoot.leaves[i] <== newResults[i];
+        newResultsRoot.leaves[i] <== newResults[i][0] + newResults[i][1];
     }
 
     component newResultsCommitment = HashLeftRight();

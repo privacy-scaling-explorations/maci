@@ -92,7 +92,7 @@ class Poll {
     public spentVoiceCreditSubtotalSalts: {[key: number]: BigInt} = {}
 
     // For vote tallying
-    public results: BigInt[] = []
+    public results: BigInt[][] = []
     public perVOSpentVoiceCredits: BigInt[] = []
     public numBatchesTallied = 0
 
@@ -130,7 +130,9 @@ class Poll {
         )
 
         for (let i = 0; i < this.maxValues.maxVoteOptions; i ++) {
-            this.results.push(BigInt(0))
+            this.results[i] = []
+            this.results[i].push(BigInt(0))
+            this.results[i].push(BigInt(0))
             this.perVOSpentVoiceCredits.push(BigInt(0))
         }
 
@@ -756,7 +758,7 @@ class Poll {
             ])
 
         const ballots: Ballot[] = []
-        const currentResults = this.results.map((x) => BigInt(x.toString()))
+        const currentResults = this.results.map((x) => [ BigInt(x[0]).toString(), BigInt(x[1]).toString() ])
         const currentPerVOSpentVoiceCredits = this.perVOSpentVoiceCredits.map((x) => BigInt(x.toString()))
         const currentSpentVoiceCreditSubtotal = BigInt(this.totalSpentVoiceCredits.toString())
 
@@ -773,14 +775,17 @@ class Poll {
 
             for (let j = 0; j < this.maxValues.maxVoteOptions; j++) {
                 const v = BigInt(this.ballots[i].votes[j])
+                const voteLeaf = VoteLeaf.unpack(v)
+                const spentCredits = BigInt(voteLeaf.pos) + BigInt(voteLeaf.neg)
 
-                this.results[j] = BigInt(this.results[j]) + v
+                this.results[j][0] = BigInt(this.results[j][0]) + BigInt(voteLeaf.pos)
+                this.results[j][1] = BigInt(this.results[j][1]) + BigInt(voteLeaf.neg)
 
                 this.perVOSpentVoiceCredits[j] =
-                    BigInt(this.perVOSpentVoiceCredits[j]) + (BigInt(v) * BigInt(v))
+                    BigInt(this.perVOSpentVoiceCredits[j]) + (spentCredits * spentCredits)
 
                 this.totalSpentVoiceCredits =
-                    BigInt(this.totalSpentVoiceCredits) + BigInt(v) * BigInt(v)
+                    BigInt(this.totalSpentVoiceCredits) + (spentCredits * spentCredits)
             }
         }
 
@@ -891,7 +896,7 @@ class Poll {
         )
 
         for (const r of this.results) {
-            resultsTree.insert(r)
+            resultsTree.insert(BigInt(r[0]) + BigInt(r[1]))
         }
 
         return hashLeftRight(resultsTree.root, _salt)
@@ -908,7 +913,10 @@ class Poll {
             }
             for (let j = 0; j < this.results.length; j ++) {
                 const v = BigInt(this.ballots[i].votes[j])
-                subtotal = BigInt(subtotal) + v * v
+                const voteLeaf = VoteLeaf.unpack(v)
+                const spentCredits = BigInt(voteLeaf.pos) + BigInt(voteLeaf.neg)
+
+                subtotal = BigInt(subtotal) + (spentCredits * spentCredits)
             }
         }
         return hashLeftRight(subtotal, _salt)
@@ -941,7 +949,10 @@ class Poll {
             }
             for (let j = 0; j < this.results.length; j ++) {
                 const v = BigInt(this.ballots[i].votes[j])
-                leaves[j] = BigInt(leaves[j]) + v * v
+                const voteLeaf = VoteLeaf.unpack(v)
+                const spentCredits = BigInt(voteLeaf.pos) + BigInt(voteLeaf.neg)
+
+                leaves[j] = BigInt(leaves[j]) + (spentCredits * spentCredits)
             }
         }
 
@@ -1005,7 +1016,7 @@ class Poll {
         copied.maciStateRef = this.maciStateRef
         copied.messageAq = this.messageAq.copy()
         copied.messageTree = this.messageTree.copy()
-        copied.results = this.results.map((x: BigInt) => BigInt(x.toString()))
+        copied.results = this.results
         copied.perVOSpentVoiceCredits = this.perVOSpentVoiceCredits.map((x: BigInt) => BigInt(x.toString()))
 
         copied.numBatchesProcessed = Number(this.numBatchesProcessed.toString())

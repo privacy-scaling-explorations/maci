@@ -1,5 +1,5 @@
 jest.setTimeout(1200000)
-import { 
+import {
     genWitness,
 } from './utils'
 
@@ -13,6 +13,7 @@ import {
     Command,
     Message,
     VerifyingKey,
+    VoteLeaf
 } from 'maci-domainobjs'
 
 import {
@@ -68,7 +69,7 @@ const circuit = 'tallyVotes_test'
 describe('TallyVotes circuit', () => {
     describe('1 user, 2 messages', () => {
         const maciState = new MaciState()
-        const voteWeight = BigInt(9)
+        const voteLeaf = new VoteLeaf(BigInt(9), BigInt(0))
         const voteOptionIndex = BigInt(0)
         let stateIndex
         let pollId
@@ -114,7 +115,7 @@ describe('TallyVotes circuit', () => {
                 stateIndex,
                 userKeypair.pubKey,
                 voteOptionIndex, // voteOptionIndex,
-                voteWeight, // vote weight
+                voteLeaf.pack(), // vote weight
                 BigInt(1), // nonce
                 BigInt(pollId),
             )
@@ -151,7 +152,8 @@ describe('TallyVotes circuit', () => {
             const generatedInputs = poll.tallyVotes()
             const newResults = poll.results
 
-            expect(newResults[Number(voteOptionIndex)]).toEqual(voteWeight)
+            expect(newResults[Number(voteOptionIndex)][0]).toEqual(BigInt(voteLeaf.pos))
+            expect(newResults[Number(voteOptionIndex)][1]).toEqual(BigInt(voteLeaf.neg))
 
             const witness = await genWitness(circuit, generatedInputs)
             expect(witness.length > 0).toBeTruthy()
@@ -160,21 +162,24 @@ describe('TallyVotes circuit', () => {
         })
     })
 
-    const NUM_BATCHES = 2
+    const NUM_BATCHES = 4
     const x = messageBatchSize * NUM_BATCHES
 
     describe(`${x} users, ${x} messages`, () => {
         it('should produce the correct state root and ballot root', async () => {
             const maciState = new MaciState()
             const userKeypairs: Keypair[] = []
+            const stateIndices: BigInt[] = []
             for (let i = 0; i < x; i ++) {
                 const k = new Keypair()
-                userKeypairs.push(k)
-                maciState.signUp(
+                const stateIndex = maciState.signUp(
                     k.pubKey,
                     voiceCreditBalance,
                     BigInt(Math.floor(Date.now() / 1000) + duration),
                 )
+
+                stateIndices.push(stateIndex)
+                userKeypairs.push(k)
             }
 
             maciState.stateAq.mergeSubRoots(0)
@@ -195,11 +200,17 @@ describe('TallyVotes circuit', () => {
 
             const numMessages = messageBatchSize * NUM_BATCHES
             for (let i = 0; i < numMessages; i ++) {
+                const randomVoteWeight = Math.floor(Math.random() * 9) + 1
+                const randomVoteType = randomVoteWeight % 2
+                const pos = randomVoteType == 1 ? 0 : randomVoteWeight
+                const neg = randomVoteType == 1 ? randomVoteWeight : 0
+                const msgVoteLeaf = new VoteLeaf(BigInt(pos), BigInt(neg))
+
                 const command = new Command(
-                    BigInt(i),
+                    stateIndices[i],
                     userKeypairs[i].pubKey,
-                    BigInt(i), //vote option index
-                    BigInt(1), // vote weight
+                    BigInt(0), //vote option index
+                    msgVoteLeaf.pack(), // vote weight
                     BigInt(1), // nonce
                     BigInt(pollId),
                 )
@@ -224,6 +235,7 @@ describe('TallyVotes circuit', () => {
 
             for (let i = 0; i < NUM_BATCHES; i ++) {
                 const generatedInputs = poll.tallyVotes()
+
                 const witness = await genWitness(circuit, generatedInputs)
                 expect(witness.length > 0).toBeTruthy()
             }
