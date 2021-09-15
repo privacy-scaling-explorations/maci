@@ -1306,7 +1306,7 @@ const genTallyResultCommitment = (
 
     const tree = new IncrementalQuinTree(depth, BigInt(0), 5, hash5)
     for (const result of results) {
-        tree.insert(BigInt(result))
+        tree.insert(BigInt(result[0]) + BigInt(result[1]))
     }
     return hashLeftRight(tree.root, salt)
 }

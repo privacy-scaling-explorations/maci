@@ -162,7 +162,7 @@ const verify = async (args: any) => {
 
     // Compute newResultsCommitment
     const newResultsCommitment = genTallyResultCommitment(
-        data.results.tally.map((x) => BigInt(x)),
+        data.results.tally.map((x) => [ BigInt(x[0]), BigInt(x[1]) ]),
         data.results.salt,
         voteOptionTreeDepth
     )
@@ -175,7 +175,7 @@ const verify = async (args: any) => {
 
     // Compute newPerVOSpentVoiceCreditsCommitment
     const newPerVOSpentVoiceCreditsCommitment = genTallyResultCommitment(
-        data.perVOSpentVoiceCredits.tally.map((x) => BigInt(x)),
+        data.perVOSpentVoiceCredits.tally.map((x) => [ BigInt(x), BigInt(0) ]),
         data.perVOSpentVoiceCredits.salt,
         voteOptionTreeDepth
     )
