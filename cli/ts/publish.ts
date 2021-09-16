@@ -298,9 +298,6 @@ const publish = async (args: any) => {
     const positive = args.vote_weight
     const optional = args.negative_vote_weight
 
-    console.log('POSITIVE', positive)
-    console.log('NEGATIVE', optional)
-
     const negative = optional == null ? 0 : optional
 
     const newVoteLeaf = new VoteLeaf(BigInt(positive), BigInt(negative))

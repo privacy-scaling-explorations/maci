@@ -1,9 +1,14 @@
 const { ethers } = require('hardhat')
+
+import * as path from 'path'
+import * as fs from 'fs'
+
 import {
     PubKey,
     PrivKey,
     Keypair,
     Command,
+    VoteLeaf
 } from 'maci-domainobjs'
 
 import {
@@ -22,7 +27,7 @@ import {
 
 import { genPubKey } from 'maci-crypto'
 
-import { exec, loadYaml, genTestUserCommands } from './utils'
+import { exec, loadYaml, genTestUserCommands, expectTally } from './utils'
 
 const loadData = (name: string) => {
     return require('@maci-integrationTests/ts/__tests__/' + name)
@@ -168,23 +173,29 @@ const executeSuite = async (data: any, expect: any) => {
             const stateIndex = i + 1
             const voteOptionIndex = isKeyChange ?
                 data.changeUsersKeys[i][j].voteOptionIndex : users[i].votes[j].voteOptionIndex
-            const newVoteWeight  = isKeyChange ?
-                data.changeUsersKeys[i][j].voteWeight : users[i].votes[j].voteWeight
+            const messageObj  = isKeyChange ? data.changeUsersKeys[i][j] : users[i].votes[j]
+            const voteWeight = messageObj.voteWeight
+            const voteType = stateIndex % 2 == 1
+            const positiveVotes = voteType ? voteWeight : 0
+            const negativeVotes = voteType ? 0 : voteWeight
+
             const nonce = users[i].votes[j].nonce
             const salt = '0x' + genRandomSalt().toString(16)
             const userPrivKey = isKeyChange ?
                 users[i].changeKeypair() : userKeypairs[i].privKey
             const userKeypair = userKeypairs[i]
             // Run the publish command
-            const publishCommand = `node build/index.js publish` +
+            let publishCommand = `node build/index.js publish` +
                 ` -sk ${userPrivKey.serialize()}` +
                 ` -p ${userKeypair.pubKey.serialize()}` +
                 ` -x ${maciAddress}` +
                 ` -i ${stateIndex}` +
                 ` -v ${voteOptionIndex}` +
-                ` -w ${newVoteWeight}` +
+                ` -w ${positiveVotes}` +
                 ` -n ${nonce}` +
                 ` -o ${pollId}`
+
+            if(!voteType) publishCommand += ` -wv ${negativeVotes}`
 
             console.log(publishCommand)
 
@@ -204,12 +215,13 @@ const executeSuite = async (data: any, expect: any) => {
             // key, so we have to retrieve it from the standard output
             const encPrivKey = PrivKey.unserialize(publishRegMatch[2])
             const encPubKey = new PubKey(genPubKey(encPrivKey.rawPrivKey))
+            const voteLeaf = new VoteLeaf(BigInt(positiveVotes), BigInt(negativeVotes))
 
             const command = new Command(
                 BigInt(stateIndex),
                 userKeypair.pubKey,
                 BigInt(voteOptionIndex),
-                BigInt(newVoteWeight),
+                voteLeaf.pack(),
                 BigInt(nonce),
                 BigInt(pollId),
                 BigInt(salt),
@@ -283,6 +295,17 @@ const executeSuite = async (data: any, expect: any) => {
         return false
     }
     console.log(e.stdout)
+
+    const tally = JSON.parse(fs.readFileSync(path.join(__dirname, '../../../cli/tally.json')).toString())
+   // Validate generated proof file
+    expect(JSON.stringify(tally.pollId)).toEqual(pollId)
+    expectTally(
+        config.constants.maci.maxMessages,
+        data.expectedTally,
+        data.expectedSpentVoiceCredits,
+        data.expectedTotalSpentVoiceCredits,
+        tally
+    )
 
     const proveOnChainCommand = `node build/index.js proveOnChain` +
         ` -x ${maciAddress}` +

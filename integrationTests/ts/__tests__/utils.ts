@@ -116,4 +116,45 @@ const genTestUserCommands = (
     return usersCommands;
 }
 
-export { exec, delay, loadYaml, genTestAccounts, genTestUserCommands }
+interface Tally {
+    provider: string,
+    maci: string,
+    pollId: number,
+    newTallyCommitment: string,
+    results: {
+        tally: string[],
+        salt: string
+    }
+    totalSpentVoiceCredits: {
+        spent: string,
+        salt: string
+    }
+    perVOSpentVoiceCredits: {
+        tally: string[],
+        salt: string
+    }
+}
+
+const expectTally = (
+    maxMessages: number,
+    expectedTally: number[],
+    expectedSpentVoiceCredits: number[],
+    expectedTotalSpentVoiceCredits: number,
+    tallyFile: Tally
+) => {
+    let genTally: any[] = Array(maxMessages).fill([ '0', '0' ])
+    let [ positiveTally, negativeTally ] = [ 0, 0 ]
+
+    expectedTally.map((voteOption, i) => {
+      positiveTally += voteOption[0]
+      negativeTally += voteOption[1]
+    })
+
+    genTally[0] = [`${positiveTally}` , `${negativeTally}` ]
+
+    expect(tallyFile.results.tally).toEqual(genTally)
+    expect(tallyFile.totalSpentVoiceCredits.spent).toEqual(expectedTotalSpentVoiceCredits.toString())
+}
+
+
+export { exec, delay, loadYaml, genTestAccounts, genTestUserCommands, expectTally }

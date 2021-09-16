@@ -5,7 +5,12 @@
             "description": "Full tree, 4 batches, no bribers",
             "numVotesPerUser": 1,
             "numUsers": 15,
-            "expectedTally": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+            "expectedTally": [
+                [ 1, 0 ], [ 0, 1 ], [ 1, 0 ], [ 0, 1 ], [ 1, 0 ],
+                [ 0, 1 ], [ 1, 0 ], [ 0, 1 ], [ 1, 0 ], [ 0, 1 ],
+                [ 1, 0 ], [ 0, 1 ], [ 1, 0 ], [ 0, 1 ], [ 1, 0 ],
+                [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ]
+            ],
             "expectedSpentVoiceCredits": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
             "expectedTotalSpentVoiceCredits": 15
         },
@@ -14,16 +19,26 @@
             "description": "Full tree, 4 full batches,  no bribers",
             "numVotesPerUser": 1,
             "numUsers": 16,
-            "expectedTally": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
-            "expectedSpentVoiceCredits": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
-            "expectedTotalSpentVoiceCredits": 17
+            "expectedTally": [
+                [ 1, 0 ], [ 0, 1 ], [ 1, 0 ], [ 0, 1 ], [ 1, 0 ],
+                [ 0, 1 ], [ 1, 0 ], [ 0, 1 ], [ 1, 0 ], [ 0, 1 ],
+                [ 1, 0 ], [ 0, 1 ], [ 1, 0 ], [ 0, 1 ], [ 1, 0 ],
+                [ 0, 1 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ]
+            ],
+            "expectedSpentVoiceCredits": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
+            "expectedTotalSpentVoiceCredits": 16
         },
         {
             "name": "Happy path 2",
             "description": "Quarter tree, 1 batch, no bribers",
             "numUsers": 4,
             "numVotesPerUser": 1,
-            "expectedTally": [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "expectedTally": [
+                [ 1, 0 ], [ 0, 1 ], [ 1, 0 ], [ 0, 1 ], [ 0, 0 ],
+                [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ],
+                [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ],
+                [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ]
+            ],
             "expectedSpentVoiceCredits": [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             "expectedTotalSpentVoiceCredits": 4
         },
@@ -32,10 +47,15 @@
             "description": "2 batches, 1 briber",
             "numUsers": 3,
             "numVotesPerUser": 2,
-            "bribers": { "0": { "voteOptionIndices": [0,1] }, "1": { "voteOptionIndices": [0,1]}},
-            "expectedTally": [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "expectedSpentVoiceCredits": [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "expectedTotalSpentVoiceCredits": 2
+            "bribers": { "0": { "voteOptionIndices": [ 0, 1 ] }, "1": { "voteOptionIndices": [ 0, 1 ] }},
+            "expectedTally": [
+                [ 0, 0 ], [ 1, 0 ], [ 0, 1 ], [ 1, 0 ], [ 0, 0 ],
+                [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ],
+                [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ],
+                [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ]
+            ],
+            "expectedSpentVoiceCredits": [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "expectedTotalSpentVoiceCredits": 3
         },
         {
             "name": "Happy path for user key change",
@@ -43,7 +63,12 @@
             "numUsers": 1,
             "numVotesPerUser": 2,
             "changeUsersKeys": { "0": {"1":{ "voteOptionIndex": 1, "voteWeight": 9}}},
-            "expectedTally": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "expectedTally": [
+                [ 1, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ],
+                [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ],
+                [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ],
+                [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ]
+            ],
             "expectedSpentVoiceCredits": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             "expectedTotalSpentVoiceCredits": 1
         },
@@ -62,9 +87,14 @@
                     "1": { "voteOptionIndex": 1, "voteWeight": 5, "valid": true }
                 }
             },
-            "expectedTally": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "expectedSpentVoiceCredits": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "expectedTotalSpentVoiceCredits": 1
+            "expectedTally": [
+                [ 1, 0 ], [ 0, 1 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ],
+                [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ],
+                [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ],
+                [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ], [ 0, 0 ]
+            ],
+            "expectedSpentVoiceCredits": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "expectedTotalSpentVoiceCredits": 2
         }
     ]
 }
