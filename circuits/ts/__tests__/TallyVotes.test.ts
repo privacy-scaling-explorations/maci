@@ -224,6 +224,16 @@ describe('TallyVotes circuit', () => {
 
             for (let i = 0; i < NUM_BATCHES; i ++) {
                 const generatedInputs = poll.tallyVotes()
+
+                // For the 0th batch, the circuit should ignore currentResults,
+                // currentSpentVoiceCreditSubtotal, and
+                // currentPerVOSpentVoiceCredits
+                if (i === 0) {
+                    generatedInputs.currentResults[0] = '123'
+                    generatedInputs.currentSpentVoiceCreditSubtotal = '456'
+                    generatedInputs.currentPerVOSpentVoiceCredits[0] = '789'
+                }
+
                 const witness = await genWitness(circuit, generatedInputs)
                 expect(witness.length > 0).toBeTruthy()
             }
