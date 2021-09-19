@@ -53,7 +53,7 @@ template ValidPackedVoteLeaf() {
 
 /*
  * Convert a packed VoteLeaf into its positive and negative components.
- * We encode 0x80 positive votes and 0x0100 negative votes as
+ * We encode 0x80 positive votes and 0x100 negative votes as
  * such:
  * 0x100000100
  */

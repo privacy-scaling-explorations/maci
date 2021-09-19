@@ -7,6 +7,7 @@ import {
     PrivKey,
     PubKey,
     VerifyingKey,
+    VoteLeaf
 } from '../'
 
 import {
@@ -221,7 +222,7 @@ describe('Domain objects', () => {
         it ('command.sign() should produce a valid signature', () => {
             expect(command.verifySignature(signature, pubKey)).toBeTruthy()
         })
-        
+
         it ('A decrypted message should match the original command', () => {
             expect(decrypted.command.equals(command)).toBeTruthy()
             expect(decrypted.signature.R8[0].toString()).toEqual(signature.R8[0].toString())
@@ -230,7 +231,7 @@ describe('Domain objects', () => {
         })
 
         it ('A decrypted message should have a valid signature', () => {
-            const isValid = decrypted.command.verifySignature(decrypted.signature, pubKey) 
+            const isValid = decrypted.command.verifySignature(decrypted.signature, pubKey)
             expect(isValid).toBeTruthy()
         })
 
@@ -256,4 +257,42 @@ describe('Domain objects', () => {
             expect(c1.nonce.toString()).not.toEqual(c3.nonce.toString())
         })
     })
+
+  describe('VoteLeaf', () => {
+
+    it('Produces valid packed values', () => {
+       const [ positive, negative ] = [ BigInt(3), BigInt(5) ]
+       const voteLeaf = new VoteLeaf(BigInt(positive), BigInt(negative))
+
+       expect(positive).toEqual(voteLeaf.pos)
+       expect(negative).toEqual(voteLeaf.neg)
+    })
+
+    it('VoteLeaf.copy() should produce a deep copy', () => {
+      const voteLeaf = new VoteLeaf(BigInt(1), BigInt(0))
+
+      const shallowLeaf = voteLeaf
+      voteLeaf.pos = BigInt(0)
+
+      expect(voteLeaf).toEqual(shallowLeaf)
+
+      const deepLeaf = voteLeaf.copy()
+      voteLeaf.pos = BigInt(1)
+
+      expect(voteLeaf).not.toEqual(deepLeaf)
+    })
+
+   it('Valid packed leaf range check', () => {
+     const packedLeaf = new VoteLeaf(BigInt(500), BigInt(3))
+
+     expect(VoteLeaf.isValidVoteData(packedLeaf.pack())).toBeTruthy()
+   })
+
+   it('Invalid packed leaf range check', () => {
+     const packedLeaf = BigInt(Math.pow(2, 50))
+
+     expect(VoteLeaf.isValidVoteData(packedLeaf)).toBeFalsy()
+   })
+
+  })
 })

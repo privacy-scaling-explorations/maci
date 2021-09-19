@@ -7,7 +7,7 @@ node build/index.js create \
     -r 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0 && \
 node ./build/index.js deployPoll -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -pk macipk.495140c99cbc090c74363d5e3f32705a92a9e1df8e5ebe2fd6831de9c813f01f \
-    -t 120 -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2 
+    -t 120 -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2
 
 # Sign up 6 times
 node ./build/index.js signup \
@@ -44,7 +44,7 @@ node build/index.js publish \
     -p macipk.b8590fdba5e9cde5606dad5db384be4d253d0a2064d1e03f9600ee021a7ebe16 \
     -sk macisk.2ae4f199bf3925a2407f7c775c9261f351ab861d8e9ecbb84622bdd3f6d41b08 \
     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
-    -i 0 -v 0 -w 9 -n 1 -o 0
+    -i 0 -v 0 -w 0 -wv 9 -n 1 -o 0
 node build/index.js publish \
     -p macipk.b8590fdba5e9cde5606dad5db384be4d253d0a2064d1e03f9600ee021a7ebe16 \
     -sk macisk.2ae4f199bf3925a2407f7c775c9261f351ab861d8e9ecbb84622bdd3f6d41b08 \
@@ -65,7 +65,7 @@ node build/index.js publish \
     -sk macisk.2ae4f199bf3925a2407f7c775c9261f351ab861d8e9ecbb84622bdd3f6d41b08 \
     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -i 0 -v 0 -w 9 -n 1 -o 0
-    
+
 node build/index.js timeTravel -s 120 && \
 node build/index.js mergeMessages -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a -o 0 && \
 node build/index.js mergeSignups -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a -o 0 && \

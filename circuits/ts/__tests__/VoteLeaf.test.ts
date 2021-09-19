@@ -29,6 +29,7 @@ describe('VoteLeaf circuit', () => {
       expect(out).toEqual('1')
     })
 
+
     it('Invalid vote leaf', async () => {
       const packedLeaf = BigInt(Math.pow(2, 50)).toString()
 
@@ -52,6 +53,16 @@ describe('VoteLeaf circuit', () => {
       expect(actual_squared).toEqual(squared.toString())
       expect(actual_pos).toEqual(pos)
       expect(actual_neg).toEqual(neg)
+    })
+
+    it('Zero valued vote leaf', async() => {
+      const voteLeaf = new VoteLeaf(BigInt(0), BigInt(0))
+      const packedLeaf = voteLeaf.pack().toString()
+
+      const witness = await genWitness(calc_circuit, { packedLeaf })
+      const out = await getSignalByName(calc_circuit, witness, `main.out`)
+
+      expect(out).toEqual('0')
     })
 
 })

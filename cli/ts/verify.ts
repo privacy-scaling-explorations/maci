@@ -127,7 +127,6 @@ const verify = async (args: any) => {
         return
     }
 
-    console.log(data)
     // Check the results commitment
     const validResultsCommitment =
         data.newTallyCommitment &&

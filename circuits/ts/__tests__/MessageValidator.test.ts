@@ -35,7 +35,7 @@ describe('MessageValidator circuit', () => {
         )
 
         const signature = command.sign(privKey)
-        const voteLeaf = new VoteLeaf(BigInt(2), BigInt(3))
+        const voteLeaf = new VoteLeaf(BigInt(5), BigInt(0))
 
         circuitInputs = stringifyBigInts({
             stateTreeIndex: 0,
@@ -88,8 +88,7 @@ describe('MessageValidator circuit', () => {
         const circuitInputs2 = circuitInputs
         const invalidLeaf = new VoteLeaf(BigInt(5), BigInt(6))
 
-        // false-positive result
-        // circuitInputs2.voteLeaf = invalidLeaf.pack().toString()
+        circuitInputs2.voteLeaf = invalidLeaf.pack().toString()
 
         const witness = await genWitness(circuit, circuitInputs2)
         const isValid = await getSignalByName(circuit, witness, 'main.isValid')
@@ -135,4 +134,5 @@ describe('MessageValidator circuit', () => {
         const isValid = await getSignalByName(circuit, witness, 'main.isValid')
         expect(isValid.toString()).toEqual('0')
     })
+
 })
