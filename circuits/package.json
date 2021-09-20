@@ -51,7 +51,7 @@
     "dependencies": {
         "argparse": "^1.0.10",
         "circom": "0.5.45",
-        "circomlib": "git://github.com/weijiekoh/circomlib.git#0e78dde8c813b95f4585b0613927e9c4269de500",
+        "circomlib": "git://github.com/weijiekoh/circomlib.git#bb134d1d16eab41c7f69bd6a7f8faa62880684b9",
         "tmp": "^0.2.1",
         "shelljs": "^0.8.3",
         "snarkjs": "0.4.6"
