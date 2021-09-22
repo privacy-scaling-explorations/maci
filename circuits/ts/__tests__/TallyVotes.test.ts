@@ -1,6 +1,7 @@
 jest.setTimeout(1200000)
-import { 
+import {
     genWitness,
+    getSignalByName,
 } from './utils'
 
 import {
@@ -16,6 +17,7 @@ import {
 } from 'maci-domainobjs'
 
 import {
+    hash3,
     hash5,
     G1Point,
     G2Point,
@@ -67,17 +69,18 @@ const circuit = 'tallyVotes_test'
 
 describe('TallyVotes circuit', () => {
     describe('1 user, 2 messages', () => {
-        const maciState = new MaciState()
-        const voteWeight = BigInt(9)
-        const voteOptionIndex = BigInt(0)
         let stateIndex
         let pollId
         let poll
-        const messages: Message[] = []
-        const commands: Command[] = []
-        let messageTree
+        let maciState
+        const voteWeight = BigInt(9)
+        const voteOptionIndex = BigInt(0)
 
-        beforeAll(async () => {
+        beforeEach(async () => {
+            maciState = new MaciState()
+            const messages: Message[] = []
+            const commands: Command[] = []
+            let messageTree
             // Sign up and publish
             const userKeypair = new Keypair()
             stateIndex = maciState.signUp(
@@ -156,7 +159,65 @@ describe('TallyVotes circuit', () => {
             const witness = await genWitness(circuit, generatedInputs)
             expect(witness.length > 0).toBeTruthy()
 
-            // TODO: test for the correct newTallyCommitment
+            const newTallyCommitment = await getSignalByName(circuit, witness, 'main.newTallyCommitment')
+            const currentTallyCommitment = await getSignalByName(circuit, witness, 'main.currentTallyCommitment')
+            expect(generatedInputs.newTallyCommitment).toEqual(newTallyCommitment.toString())
+            expect(generatedInputs.currentTallyCommitment).toEqual(currentTallyCommitment.toString())
+        })
+
+        it('should produce the correct result if the inital tally is not zero', async () => {
+            let generatedInputs = poll.tallyVotes()
+            const newResults = poll.results
+
+            // TODO: show that check constraint fails
+            /*
+            generatedInputs.currentTallyCommitment = hash3(
+                [
+                    poll.genResultsCommitment(BigInt(1)),
+                    poll.genSpentVoiceCreditSubtotalCommitment(
+                        BigInt(2),
+                        1
+                    ),
+                    poll.genPerVOSpentVoiceCreditsCommitment(
+                        BigInt(3),
+                        1,
+                    )
+                ]
+            ).toString()
+            */
+
+            // Start the tally from non-zero value
+            generatedInputs.currentResults = generatedInputs.currentResults.map(x => { return '1' })
+            const witness = await genWitness(circuit, generatedInputs)
+            expect(witness.length > 0).toBeTruthy()
+
+            for (let i = 0; i < newResults.length; i++) {
+                for (let j = 0; j < messageBatchSize; j++){
+                    const curr = await getSignalByName(circuit, witness, `main.resultCalc[${i}].nums[${j}]`)
+                    if (i ==0 && j == 1) {
+                        expect(Number(curr)).toEqual(Number(voteWeight))
+                    } else {
+                        expect(Number(curr)).toEqual(0)
+                    }
+
+                    const voiceCredits = await getSignalByName(circuit, witness, `main.newPerVOSpentVoiceCredits[${i}].nums[${j}]`)
+                    if (i == 0 && j == 1) {
+                        expect(Number(voiceCredits)).toEqual(Number(voteWeight) ** 2)
+                    } else if(j == 1){
+                        expect(Number(voiceCredits)).toEqual(0)
+                    }
+                }
+            }
+
+            for (let i = 1; i < (5 ** treeDepths.voteOptionTreeDepth) * messageBatchSize; i++) {
+                const voiceCreditSubtotal = await getSignalByName(circuit, witness, `main.newSpentVoiceCreditSubtotal.sums[${i}]`)
+
+                if (i > (5 ** treeDepths.voteOptionTreeDepth) - 1) {
+                    expect(Number(voiceCreditSubtotal)).toEqual(Number(voteWeight) ** 2)
+                } else {
+                    expect(Number(voiceCreditSubtotal)).toEqual(0)
+                }
+            }
         })
     })
 
@@ -236,6 +297,7 @@ describe('TallyVotes circuit', () => {
 
                 const witness = await genWitness(circuit, generatedInputs)
                 expect(witness.length > 0).toBeTruthy()
+
             }
         })
     })
