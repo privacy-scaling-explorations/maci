@@ -896,7 +896,9 @@ class Poll {
         )
 
         for (const r of this.results) {
-            resultsTree.insert(BigInt(r[0]) + BigInt(r[1]))
+            const voteLeaf = new VoteLeaf(BigInt(r[0]), BigInt(r[1]))
+            
+            resultsTree.insert(voteLeaf.pack())
         }
 
         return hashLeftRight(resultsTree.root, _salt)
@@ -1306,7 +1308,9 @@ const genTallyResultCommitment = (
 
     const tree = new IncrementalQuinTree(depth, BigInt(0), 5, hash5)
     for (const result of results) {
-        tree.insert(BigInt(result[0]) + BigInt(result[1]))
+        const voteLeaf = new VoteLeaf(BigInt(result[0]), BigInt(result[1]))
+
+        tree.insert(voteLeaf.pack())
     }
     return hashLeftRight(tree.root, salt)
 }

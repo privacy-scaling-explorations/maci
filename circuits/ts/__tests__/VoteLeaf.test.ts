@@ -12,6 +12,7 @@ import {
 describe('VoteLeaf circuit', () => {
   const valid_circuit = 'voteLeaf_test'
   const calc_circuit = 'voteLeafSquared_test'
+  const pack_circuit = 'voteLeafPack_test'
 
     it('Valid vote leaf', async () => {
       const [ pos, neg ] = [ 4, 3 ]
@@ -29,7 +30,6 @@ describe('VoteLeaf circuit', () => {
       expect(out).toEqual('1')
     })
 
-
     it('Invalid vote leaf', async () => {
       const packedLeaf = BigInt(Math.pow(2, 50)).toString()
 
@@ -37,6 +37,30 @@ describe('VoteLeaf circuit', () => {
       const out = await getSignalByName(valid_circuit, witness, `main.out`)
 
       expect(out).toEqual('0')
+    })
+
+    it('Valid packed leaf', async () => {
+      const [ pos, neg ] = [ 4, 3 ]
+      const voteLeaf = new VoteLeaf(BigInt(pos), BigInt(neg))
+      const packedLeaf = voteLeaf.pack().toString()
+      const inputs =  [ `${pos}`, `${neg}` ]
+
+      const witness = await genWitness(pack_circuit, { in: inputs })
+      const out = await getSignalByName(pack_circuit, witness, `main.packedLeaf`)
+
+      expect(out).toEqual(packedLeaf)
+    })
+
+    it('Maximum packed leaf', async () => {
+      const max = (2 ** 25) - 1
+      const voteLeaf = new VoteLeaf(BigInt(max), BigInt(max))
+      const packedLeaf = voteLeaf.pack().toString()
+      const inputs = [ `${max}`, `${max}` ]
+
+      const witness = await genWitness(pack_circuit, { in: inputs })
+      const out = await getSignalByName(pack_circuit, witness, `main.packedLeaf`)
+
+      expect(out).toEqual(packedLeaf)
     })
 
     it('Valid squared calc', async() => {

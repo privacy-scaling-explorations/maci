@@ -1,4 +1,5 @@
 include "../node_modules/circomlib/circuits/comparators.circom";
+include "../node_modules/circomlib/circuits/bitify.circom";
 
 /*
  * This circuit does a few things:
@@ -87,6 +88,23 @@ template UnpackVoteLeaf() {
 	// Wire p and n to the outputs
 	pos <== p;
 	neg <== n;
+}
+
+template PackVoteLeaf() {
+  signal input in[2];
+  signal output packedLeaf;
+
+  var VOTE_LEAF_BITS_PER_VAL = 25;
+  var POW = 2 ** VOTE_LEAF_BITS_PER_VAL;
+  var MAX_PACKED_LEAF = 2 ** (VOTE_LEAF_BITS_PER_VAL * 2);
+
+  packedLeaf <== in[0] * POW + in[1];
+
+  component rangeChecker = LessThan(50);
+  rangeChecker.in[0] <== packedLeaf;
+  rangeChecker.in[1] <== MAX_PACKED_LEAF;
+
+  rangeChecker.out === 1;
 }
 
 template CalculateSquaredVoteLeaf() {

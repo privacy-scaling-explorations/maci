@@ -244,9 +244,14 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     signal private input newPerVOSpentVoiceCreditsRootSalt;
 
     // Compute the commitment to the current results
+    component currentResultsPackedLeaves[numVoteOptions];
     component currentResultsRoot = QuinCheckRoot(voteOptionTreeDepth);
     for (var i = 0; i < numVoteOptions; i ++) {
-        currentResultsRoot.leaves[i] <== currentResults[i][0] + currentResults[i][1];
+        currentResultsPackedLeaves[i] = PackVoteLeaf();
+        currentResultsPackedLeaves[i].in[0] <== currentResults[i][0];
+        currentResultsPackedLeaves[i].in[1] <== currentResults[i][1];
+
+        currentResultsRoot.leaves[i] <== currentResultsPackedLeaves[i].packedLeaf;
     }
 
     component currentResultsCommitment = HashLeftRight();
@@ -292,9 +297,14 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
      hz === currentTallyCommitment;
 
     // Compute the root of the new results
+    component newResultsPackedLeaves[numVoteOptions];
     component newResultsRoot = QuinCheckRoot(voteOptionTreeDepth);
     for (var i = 0; i < numVoteOptions; i ++) {
-        newResultsRoot.leaves[i] <== newResults[i][0] + newResults[i][1];
+        newResultsPackedLeaves[i] = PackVoteLeaf();
+        newResultsPackedLeaves[i].in[0] <== newResults[i][0];
+        newResultsPackedLeaves[i].in[1] <== newResults[i][1];
+
+        newResultsRoot.leaves[i] <== newResultsPackedLeaves[i].packedLeaf;
     }
 
     component newResultsCommitment = HashLeftRight();

@@ -419,7 +419,7 @@ class VoteLeaf implements IVoteLeaf {
      * 0x800000000000000000000000000000100
      */
     public pack = (): BigInt => {
-        const [ pos, neg ] = [ BigInt(this.pos), BigInt(this.neg)]
+        const [ pos, neg ] = [ BigInt(this.pos), BigInt(this.neg) ]
         const packed = (pos << BigInt(VOTE_LEAF_BITS_PER_VAL)) + neg
         assert(packed < SNARK_FIELD_SIZE)
 
