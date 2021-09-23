@@ -15,7 +15,15 @@ We welcome contributions to this project. Please join our
 You should have Node 12 installed. Use
 [`nvm`](https://github.com/nvm-sh/nvm) to install it.
 
+You also need a Ubuntu/Debian Linux machine on an Intel CPU.
+
 ### Get started
+
+Install dependencies:
+
+```bash
+sudo apt-get install build-essential libgmp-dev libsodium-dev git nlohmann-json3-dev nasm g++
+```
 
 Clone this repository, install NodeJS dependencies, and build the source code:
 
