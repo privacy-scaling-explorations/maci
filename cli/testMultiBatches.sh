@@ -44,7 +44,7 @@ node build/index.js publish \
     -p macipk.b8590fdba5e9cde5606dad5db384be4d253d0a2064d1e03f9600ee021a7ebe16 \
     -sk macisk.2ae4f199bf3925a2407f7c775c9261f351ab861d8e9ecbb84622bdd3f6d41b08 \
     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
-    -i 0 -v 0 -w 0 -wv 9 -n 1 -o 0
+    -i 0 -v 0 -w 9 -n 1 -o 0
 node build/index.js publish \
     -p macipk.b8590fdba5e9cde5606dad5db384be4d253d0a2064d1e03f9600ee021a7ebe16 \
     -sk macisk.2ae4f199bf3925a2407f7c775c9261f351ab861d8e9ecbb84622bdd3f6d41b08 \

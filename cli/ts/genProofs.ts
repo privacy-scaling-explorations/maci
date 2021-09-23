@@ -4,7 +4,7 @@ import * as fs from 'fs'
 import { genProof, verifyProof, extractVk } from 'maci-circuits'
 import { hashLeftRight, hash3 } from 'maci-crypto'
 import { PrivKey, Keypair } from 'maci-domainobjs'
-import { genTallyResultCommitment } from 'maci-core'
+import { genTallyResultCommitment, genTallyResultSubtotalCommitment } from 'maci-core'
 
 import {
     parseArtifact,
@@ -355,6 +355,7 @@ const genProofs = async (args: any) => {
     let tallyCircuitInputs
     while (poll.hasUntalliedBallots()) {
         tallyCircuitInputs = poll.tallyVotes()
+
         const r = genProof(
             tallyCircuitInputs,
             rapidsnarkExe,
@@ -420,8 +421,8 @@ const genProofs = async (args: any) => {
     )
 
     // Compute newPerVOSpentVoiceCreditsCommitment
-    const newPerVOSpentVoiceCreditsCommitment = genTallyResultCommitment(
-        tallyFileData.perVOSpentVoiceCredits.tally.map((x) => [ BigInt(x), BigInt(0) ]),
+    const newPerVOSpentVoiceCreditsCommitment = genTallyResultSubtotalCommitment(
+        tallyFileData.perVOSpentVoiceCredits.tally.map((x) => BigInt(x)),
         BigInt(tallyFileData.perVOSpentVoiceCredits.salt),
         poll.treeDepths.voteOptionTreeDepth,
     )

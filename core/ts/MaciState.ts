@@ -897,7 +897,7 @@ class Poll {
 
         for (const r of this.results) {
             const voteLeaf = new VoteLeaf(BigInt(r[0]), BigInt(r[1]))
-            
+
             resultsTree.insert(voteLeaf.pack())
         }
 
@@ -1018,7 +1018,7 @@ class Poll {
         copied.maciStateRef = this.maciStateRef
         copied.messageAq = this.messageAq.copy()
         copied.messageTree = this.messageTree.copy()
-        copied.results = this.results
+        copied.results = this.results.map((x) => [ BigInt(x[0]), BigInt(x[1]) ])
         copied.perVOSpentVoiceCredits = this.perVOSpentVoiceCredits.map((x: BigInt) => BigInt(x.toString()))
 
         copied.numBatchesProcessed = Number(this.numBatchesProcessed.toString())
@@ -1305,12 +1305,23 @@ const genTallyResultCommitment = (
     salt: BigInt,
     depth: number,
 ): BigInt => {
-
     const tree = new IncrementalQuinTree(depth, BigInt(0), 5, hash5)
     for (const result of results) {
         const voteLeaf = new VoteLeaf(BigInt(result[0]), BigInt(result[1]))
 
         tree.insert(voteLeaf.pack())
+    }
+    return hashLeftRight(tree.root, salt)
+}
+
+const genTallyResultSubtotalCommitment = (
+    results: BigInt[],
+    salt: BigInt,
+    depth: number,
+): BigInt => {
+    const tree = new IncrementalQuinTree(depth, BigInt(0), 5, hash5)
+    for (const result of results) {
+        tree.insert(result)
     }
     return hashLeftRight(tree.root, salt)
 }
@@ -1323,5 +1334,6 @@ export {
     genProcessVkSig,
     genTallyVkSig,
     genTallyResultCommitment,
+    genTallyResultSubtotalCommitment,
     STATE_TREE_DEPTH,
 }

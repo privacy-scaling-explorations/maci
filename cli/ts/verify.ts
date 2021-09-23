@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 
-import { genTallyResultCommitment } from 'maci-core'
+import { genTallyResultCommitment, genTallyResultSubtotalCommitment } from 'maci-core'
 import { hash2, hash3 } from 'maci-crypto'
 
 import {
@@ -173,8 +173,8 @@ const verify = async (args: any) => {
     ])
 
     // Compute newPerVOSpentVoiceCreditsCommitment
-    const newPerVOSpentVoiceCreditsCommitment = genTallyResultCommitment(
-        data.perVOSpentVoiceCredits.tally.map((x) => [ BigInt(x), BigInt(0) ]),
+    const newPerVOSpentVoiceCreditsCommitment = genTallyResultSubtotalCommitment(
+        data.perVOSpentVoiceCredits.tally.map((x) => BigInt(x)),
         data.perVOSpentVoiceCredits.salt,
         voteOptionTreeDepth
     )
