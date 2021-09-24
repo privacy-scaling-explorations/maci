@@ -8,7 +8,7 @@ defaultVote:
   voteWeight: 1
   nonce: 1
   maxVoteWeight: 25
-  voteCreditBalance: 1
+  voteCreditBalance: 100
   voteOptionIndex: 0
 invalidVote:
   voteWeight: 2

@@ -148,7 +148,6 @@ describe('TallyVotes circuit', () => {
         })
 
         it('should produce the correct result commitments', async () => {
-
             const generatedInputs = poll.tallyVotes()
             const newResults = poll.results
 
@@ -158,7 +157,7 @@ describe('TallyVotes circuit', () => {
             const witness = await genWitness(circuit, generatedInputs)
             expect(witness.length > 0).toBeTruthy()
 
-            // TODO: test for the correct newTallyCommitment
+            // TODO: test for the correct newTallyCommitment 
         })
     })
 
@@ -235,8 +234,6 @@ describe('TallyVotes circuit', () => {
 
             for (let i = 0; i < NUM_BATCHES; i ++) {
                 const generatedInputs = poll.tallyVotes()
-
-                console.log(generatedInputs)
 
                 const witness = await genWitness(circuit, generatedInputs)
                 expect(witness.length > 0).toBeTruthy()

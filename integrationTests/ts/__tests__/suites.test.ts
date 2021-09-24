@@ -10,8 +10,7 @@ describe('Test suites', () => {
     for (const test of data.suites) {
         it(test.description, async () => {
             const result = await executeSuite(test, expect)
-            console.log(result)
-
+            
             expect(result).toBeTruthy()
         })
     }
