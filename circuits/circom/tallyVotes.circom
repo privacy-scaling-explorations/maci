@@ -160,7 +160,7 @@ template TallyVotes(
     // Tally the new total of spent voice credits
     component spentVoiceCreditsSubtotalVoteLeafSq[numVoteOptions][batchSize];
     component newSpentVoiceCreditSubtotal = CalculateTotal(batchSize * numVoteOptions + 1);
-    newSpentVoiceCreditSubtotal.nums[batchSize * numVoteOptions] <== currentSpentVoiceCreditSubtotal;
+    newSpentVoiceCreditSubtotal.nums[batchSize * numVoteOptions] <== currentSpentVoiceCreditSubtotal * iz.out;
     for (var i = 0; i < batchSize; i ++) {
         for (var j = 0; j < numVoteOptions; j ++) {
             spentVoiceCreditsSubtotalVoteLeafSq[j][i] = CalculateSquaredVoteLeaf();
@@ -176,7 +176,7 @@ template TallyVotes(
     component voiceCreditsPerVOVoteLeafSq[numVoteOptions][batchSize];
     for (var i = 0; i < numVoteOptions; i ++) {
         newPerVOSpentVoiceCredits[i] = CalculateTotal(batchSize + 1);
-        newPerVOSpentVoiceCredits[i].nums[batchSize] <== currentPerVOSpentVoiceCredits[i];
+        newPerVOSpentVoiceCredits[i].nums[batchSize] <== currentPerVOSpentVoiceCredits[i] * iz.out;
         for (var j = 0; j < batchSize; j ++) {
             voiceCreditsPerVOVoteLeafSq[i][j] = CalculateSquaredVoteLeaf();
             voiceCreditsPerVOVoteLeafSq[i][j].packedLeaf <== votes[j][i];
