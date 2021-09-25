@@ -147,18 +147,12 @@ const expectTally = (
     let [ positiveTally, negativeTally ] = [ 0, 0 ]
     let x = 0
 
-    console.log('MAX MESSAGES', maxMessages)
-    console.log('EXPECTED MESSAGES', expectTally.length)
-
     expectedTally.map((vO, i) => {
       genTally[0] = [
          `${parseInt(genTally[0][0]) + vO[0]}`,
          `${parseInt(genTally[0][1]) + vO[1]}`
        ]
     })
-
-    console.log('EXPECTED', genTally)
-    console.log('RECIEVED', tallyFile.results.tally)
 
     expect(tallyFile.results.tally).toEqual(genTally)
     expect(tallyFile.totalSpentVoiceCredits.spent).toEqual(expectedTotalSpentVoiceCredits.toString())

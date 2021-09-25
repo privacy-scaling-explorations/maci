@@ -48,9 +48,6 @@ describe('VoteLeaf circuit', () => {
       const witness = await genWitness(pack_circuit, { in: inputs })
       const out = await getSignalByName(pack_circuit, witness, `main.packedLeaf`)
 
-      console.log(packedLeaf)
-      console.log(out)
-
       expect(out).toEqual(packedLeaf)
     })
 

@@ -332,9 +332,10 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     newTallyCommitmentHasher.in[1] <== newSpentVoiceCreditsCommitment.hash;
     newTallyCommitmentHasher.in[2] <== newPerVOSpentVoiceCreditsCommitment.hash;
 
-    // log(newResultsCommitment.hash);
-    // log(newSpentVoiceCreditsCommitment.hash);
-    // log(newPerVOSpentVoiceCreditsCommitment.hash);
+    /*log(newResultsCommitment.hash);*/
+    /*log(newSpentVoiceCreditsCommitment.hash);*/
+    /*log(newPerVOSpentVoiceCreditsCommitment.hash);*/
+
     newTallyCommitmentHasher.hash === newTallyCommitment;
 }
 
