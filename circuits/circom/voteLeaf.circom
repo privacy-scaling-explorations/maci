@@ -58,36 +58,37 @@ template ValidPackedVoteLeaf() {
  * such:
  * 0x100000100
  */
+ 
 template UnpackVoteLeaf() {
   signal input packedLeaf;
-	signal output pos;
-	signal output neg;
-
-	var VOTE_LEAF_BITS_PER_VAL = 25;
-	var MAX_PACKED_LEAF = 2 ** (VOTE_LEAF_BITS_PER_VAL * 2);
-
-	// Range-check packedLeaf
-	component rangeChecker = LessThan(252);
-	rangeChecker.in[0] <== packedLeaf;
-	rangeChecker.in[1] <== MAX_PACKED_LEAF;
-	rangeChecker.out === 1;
-
-	signal p;
-	signal n;
-
-	// Set p to the packedLeaf value shifted right by 25 bits
-	p <-- packedLeaf >> VOTE_LEAF_BITS_PER_VAL;
-
-	var POW = 2 ** VOTE_LEAF_BITS_PER_VAL;
-	// Set n to the packedLeaf value mod 2 ** 25
-	n <-- packedLeaf % POW;
-
-	// Pack p and n and check that they match packedLeaf
-	packedLeaf === p * POW + n;
-
-	// Wire p and n to the outputs
-	pos <== p;
-	neg <== n;
+  signal output pos;
+  signal output neg;
+  
+  var VOTE_LEAF_BITS_PER_VAL = 25;
+  var MAX_PACKED_LEAF = 2 ** (VOTE_LEAF_BITS_PER_VAL * 2);
+  
+  // Range-check packedLeaf
+  component rangeChecker = LessThan(252);
+  rangeChecker.in[0] <== packedLeaf;
+  rangeChecker.in[1] <== MAX_PACKED_LEAF;
+  rangeChecker.out === 1;
+  
+  signal p;
+  signal n;
+  
+  // Set p to the packedLeaf value shifted right by 25 bits
+  p <-- packedLeaf >> VOTE_LEAF_BITS_PER_VAL;
+  
+  var POW = 2 ** VOTE_LEAF_BITS_PER_VAL;
+  // Set n to the packedLeaf value mod 2 ** 25
+  n <-- packedLeaf % POW;
+  
+  // Pack p and n and check that they match packedLeaf
+  packedLeaf === p * POW + n;
+  
+  // Wire p and n to the outputs
+  pos <== p;
+  neg <== n;
 }
 
 template PackVoteLeaf() {
