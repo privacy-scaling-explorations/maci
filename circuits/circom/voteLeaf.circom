@@ -8,7 +8,7 @@ include "../node_modules/circomlib/circuits/bitify.circom";
  * 3. Outputs `out` as 1 if `pos` and `neg` are valid *and* `packedLeaf` is in
  * range, and 0 otherwise.
  * The reason that this circuit does not establish constraints on the above
- * checks is because updateStateTree.circom needs to do a no-op if the
+ * checks is because processMessages.circom needs to do a no-op if the
  * `packedLeaf` value is invalid, or else an attacker could DOS the system.
  */
 
@@ -22,7 +22,7 @@ template ValidPackedVoteLeaf() {
   signal output out;
 
   // Range-check packedLeaf
-  component rangeChecker = LessThan(50);
+  component rangeChecker = LessThan(252);
   rangeChecker.in[0] <== packedLeaf;
   rangeChecker.in[1] <== MAX_PACKED_LEAF;
 
@@ -67,7 +67,7 @@ template UnpackVoteLeaf() {
 	var MAX_PACKED_LEAF = 2 ** (VOTE_LEAF_BITS_PER_VAL * 2);
 
 	// Range-check packedLeaf
-	component rangeChecker = LessThan(50);
+	component rangeChecker = LessThan(252);
 	rangeChecker.in[0] <== packedLeaf;
 	rangeChecker.in[1] <== MAX_PACKED_LEAF;
 	rangeChecker.out === 1;
@@ -100,7 +100,7 @@ template PackVoteLeaf() {
 
   packedLeaf <== in[0] * POW + in[1];
 
-  component rangeChecker = LessThan(50);
+  component rangeChecker = LessThan(252);
   rangeChecker.in[0] <== packedLeaf;
   rangeChecker.in[1] <== MAX_PACKED_LEAF;
 
