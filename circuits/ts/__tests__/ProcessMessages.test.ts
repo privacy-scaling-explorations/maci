@@ -139,7 +139,7 @@ describe('ProcessMessage circuit', () => {
 
             poll.publishMessage(message, ecdhKeypair.pubKey)
 
-            const newVoteLeaf = new VoteLeaf(BigInt(0), BigInt(1))
+            const newVoteLeaf = new VoteLeaf(BigInt('22517998136852482251799813685248'), BigInt(1))
 
             // Second command (valid)
             const command2 = new Command(
@@ -242,351 +242,351 @@ describe('ProcessMessage circuit', () => {
         })
     })
 
-    describe('2 users, 1 message', () => {
-        const maciState = new MaciState()
-        let pollId
-        let poll
-        const messages: Message[] = []
-        const commands: Command[] = []
-        let messageTree
+    //describe('2 users, 1 message', () => {
+        //const maciState = new MaciState()
+        //let pollId
+        //let poll
+        //const messages: Message[] = []
+        //const commands: Command[] = []
+        //let messageTree
 
-        beforeAll(async () => {
-            // Sign up and publish
-            const userKeypair = new Keypair(new PrivKey(BigInt(123)))
-            const userKeypair2 = new Keypair(new PrivKey(BigInt(456)))
+        //beforeAll(async () => {
+            //// Sign up and publish
+            //const userKeypair = new Keypair(new PrivKey(BigInt(123)))
+            //const userKeypair2 = new Keypair(new PrivKey(BigInt(456)))
 
-            maciState.signUp(
-                userKeypair.pubKey,
-                voiceCreditBalance,
-                BigInt(1), //BigInt(Math.floor(Date.now() / 1000)),
-            )
-            maciState.signUp(
-                userKeypair2.pubKey,
-                voiceCreditBalance,
-                BigInt(1), //BigInt(Math.floor(Date.now() / 1000)),
-            )
+            //maciState.signUp(
+                //userKeypair.pubKey,
+                //voiceCreditBalance,
+                //BigInt(1), //BigInt(Math.floor(Date.now() / 1000)),
+            //)
+            //maciState.signUp(
+                //userKeypair2.pubKey,
+                //voiceCreditBalance,
+                //BigInt(1), //BigInt(Math.floor(Date.now() / 1000)),
+            //)
 
-            maciState.stateAq.mergeSubRoots(0)
-            maciState.stateAq.merge(STATE_TREE_DEPTH)
+            //maciState.stateAq.mergeSubRoots(0)
+            //maciState.stateAq.merge(STATE_TREE_DEPTH)
 
-            pollId = maciState.deployPoll(
-                duration,
-                BigInt(2 + duration), //BigInt(Math.floor(Date.now() / 1000) + duration),
-                maxValues,
-                treeDepths,
-                messageBatchSize,
-                coordinatorKeypair,
-                testProcessVk,
-                testTallyVk,
-            )
+            //pollId = maciState.deployPoll(
+                //duration,
+                //BigInt(2 + duration), //BigInt(Math.floor(Date.now() / 1000) + duration),
+                //maxValues,
+                //treeDepths,
+                //messageBatchSize,
+                //coordinatorKeypair,
+                //testProcessVk,
+                //testTallyVk,
+            //)
 
-            poll = maciState.polls[pollId]
+            //poll = maciState.polls[pollId]
 
-            messageTree = new IncrementalQuinTree(
-                treeDepths.messageTreeDepth,
-                poll.messageAq.zeroValue,
-                5,
-                hash5,
-            )
+            //messageTree = new IncrementalQuinTree(
+                //treeDepths.messageTreeDepth,
+                //poll.messageAq.zeroValue,
+                //5,
+                //hash5,
+            //)
 
-            const voteLeaf = new VoteLeaf(BigInt(1), BigInt(0))
+            //const voteLeaf = new VoteLeaf(BigInt(1), BigInt(0))
 
-            const command = new Command(
-                BigInt(1),
-                userKeypair.pubKey,
-                BigInt(0), // voteOptionIndex,
-                voteLeaf.pack(), // vote leaf
-                BigInt(1), // nonce
-                BigInt(pollId),
-            )
+            //const command = new Command(
+                //BigInt(1),
+                //userKeypair.pubKey,
+                //BigInt(0), // voteOptionIndex,
+                //voteLeaf.pack(), // vote leaf
+                //BigInt(1), // nonce
+                //BigInt(pollId),
+            //)
 
-            const signature = command.sign(userKeypair.privKey)
+            //const signature = command.sign(userKeypair.privKey)
 
-            const ecdhKeypair = new Keypair()
-            const sharedKey = Keypair.genEcdhSharedKey(
-                ecdhKeypair.privKey,
-                coordinatorKeypair.pubKey,
-            )
-            const message = command.encrypt(signature, sharedKey)
-            messages.push(message)
-            commands.push(command)
-            messageTree.insert(message.hash(ecdhKeypair.pubKey))
-            poll.publishMessage(message, ecdhKeypair.pubKey)
+            //const ecdhKeypair = new Keypair()
+            //const sharedKey = Keypair.genEcdhSharedKey(
+                //ecdhKeypair.privKey,
+                //coordinatorKeypair.pubKey,
+            //)
+            //const message = command.encrypt(signature, sharedKey)
+            //messages.push(message)
+            //commands.push(command)
+            //messageTree.insert(message.hash(ecdhKeypair.pubKey))
+            //poll.publishMessage(message, ecdhKeypair.pubKey)
 
-            // Merge
-            poll.messageAq.mergeSubRoots(0)
-            poll.messageAq.merge(treeDepths.messageTreeDepth)
+            //// Merge
+            //poll.messageAq.mergeSubRoots(0)
+            //poll.messageAq.merge(treeDepths.messageTreeDepth)
 
-            expect(messageTree.root.toString())
-                .toEqual(
-                    poll.messageAq.getRoot(
-                        treeDepths.messageTreeDepth,
-                    ).toString()
-                )
-        })
+            //expect(messageTree.root.toString())
+                //.toEqual(
+                    //poll.messageAq.getRoot(
+                        //treeDepths.messageTreeDepth,
+                    //).toString()
+                //)
+        //})
 
-        it('should produce the correct state root and ballot root', async () => {
-            // The current roots
-            const emptyBallot = new Ballot(
-                poll.maxValues.maxVoteOptions,
-                poll.treeDepths.voteOptionTreeDepth,
-            )
-            const emptyBallotHash = emptyBallot.hash()
-            const ballotTree = new IncrementalQuinTree(
-                STATE_TREE_DEPTH,
-                emptyBallot.hash(),
-                poll.STATE_TREE_ARITY,
-                hash5,
-            )
+        //it('should produce the correct state root and ballot root', async () => {
+            //// The current roots
+            //const emptyBallot = new Ballot(
+                //poll.maxValues.maxVoteOptions,
+                //poll.treeDepths.voteOptionTreeDepth,
+            //)
+            //const emptyBallotHash = emptyBallot.hash()
+            //const ballotTree = new IncrementalQuinTree(
+                //STATE_TREE_DEPTH,
+                //emptyBallot.hash(),
+                //poll.STATE_TREE_ARITY,
+                //hash5,
+            //)
 
-            for (let i = 0; i < poll.stateLeaves.length; i ++) {
-                ballotTree.insert(emptyBallotHash)
-            }
-            const currentStateRoot = maciState.stateTree.root
-            const currentBallotRoot = ballotTree.root
+            //for (let i = 0; i < poll.stateLeaves.length; i ++) {
+                //ballotTree.insert(emptyBallotHash)
+            //}
+            //const currentStateRoot = maciState.stateTree.root
+            //const currentBallotRoot = ballotTree.root
 
-            const generatedInputs = poll.processMessages()
+            //const generatedInputs = poll.processMessages()
 
-            // Calculate the witness
-            const witness = await genWitness(circuit, generatedInputs)
-            expect(witness.length > 0).toBeTruthy()
+            //// Calculate the witness
+            //const witness = await genWitness(circuit, generatedInputs)
+            //expect(witness.length > 0).toBeTruthy()
 
-            // The new roots, which should differ, since at least one of the
-            // messages modified a Ballot or State Leaf
-            const newStateRoot = poll.stateTree.root
-            const newBallotRoot = poll.ballotTree.root
+            //// The new roots, which should differ, since at least one of the
+            //// messages modified a Ballot or State Leaf
+            //const newStateRoot = poll.stateTree.root
+            //const newBallotRoot = poll.ballotTree.root
 
-            expect(newStateRoot.toString()).not.toEqual(currentStateRoot.toString())
-            expect(newBallotRoot.toString()).not.toEqual(currentBallotRoot.toString())
-        })
-    })
+            //expect(newStateRoot.toString()).not.toEqual(currentStateRoot.toString())
+            //expect(newBallotRoot.toString()).not.toEqual(currentBallotRoot.toString())
+        //})
+    //})
 
-    describe('1 user, key-change', () => {
-        const maciState = new MaciState()
-        const voteLeaf = new VoteLeaf(BigInt(3), BigInt(0))
-        const voteOptionIndex = BigInt(0)
-        let stateIndex
-        let pollId
-        let poll
-        const messages: Message[] = []
-        const commands: Command[] = []
-        let messageTree
+    //describe('1 user, key-change', () => {
+        //const maciState = new MaciState()
+        //const voteLeaf = new VoteLeaf(BigInt(3), BigInt(0))
+        //const voteOptionIndex = BigInt(0)
+        //let stateIndex
+        //let pollId
+        //let poll
+        //const messages: Message[] = []
+        //const commands: Command[] = []
+        //let messageTree
 
-        beforeAll(async () => {
-            // Sign up and publish
-            const userKeypair = new Keypair(new PrivKey(BigInt(123)))
-            const userKeypair2 = new Keypair(new PrivKey(BigInt(456)))
+        //beforeAll(async () => {
+            //// Sign up and publish
+            //const userKeypair = new Keypair(new PrivKey(BigInt(123)))
+            //const userKeypair2 = new Keypair(new PrivKey(BigInt(456)))
 
-            stateIndex = maciState.signUp(
-                userKeypair.pubKey,
-                voiceCreditBalance,
-                BigInt(1), //BigInt(Math.floor(Date.now() / 1000)),
-            )
-            console.log('Signing up with', userKeypair.pubKey.rawPubKey[0])
+            //stateIndex = maciState.signUp(
+                //userKeypair.pubKey,
+                //voiceCreditBalance,
+                //BigInt(1), //BigInt(Math.floor(Date.now() / 1000)),
+            //)
+            //console.log('Signing up with', userKeypair.pubKey.rawPubKey[0])
 
-            maciState.stateAq.mergeSubRoots(0)
-            maciState.stateAq.merge(STATE_TREE_DEPTH)
+            //maciState.stateAq.mergeSubRoots(0)
+            //maciState.stateAq.merge(STATE_TREE_DEPTH)
 
-            pollId = maciState.deployPoll(
-                duration,
-                BigInt(2 + duration), //BigInt(Math.floor(Date.now() / 1000) + duration),
-                maxValues,
-                treeDepths,
-                messageBatchSize,
-                coordinatorKeypair,
-                testProcessVk,
-                testTallyVk,
-            )
+            //pollId = maciState.deployPoll(
+                //duration,
+                //BigInt(2 + duration), //BigInt(Math.floor(Date.now() / 1000) + duration),
+                //maxValues,
+                //treeDepths,
+                //messageBatchSize,
+                //coordinatorKeypair,
+                //testProcessVk,
+                //testTallyVk,
+            //)
 
-            poll = maciState.polls[pollId]
+            //poll = maciState.polls[pollId]
 
-            messageTree = new IncrementalQuinTree(
-                treeDepths.messageTreeDepth,
-                poll.messageAq.zeroValue,
-                5,
-                hash5,
-            )
+            //messageTree = new IncrementalQuinTree(
+                //treeDepths.messageTreeDepth,
+                //poll.messageAq.zeroValue,
+                //5,
+                //hash5,
+            //)
 
-            // Vote for option 0
-            const command = new Command(
-                stateIndex, //BigInt(1),
-                userKeypair.pubKey,
-                BigInt(0), // voteOptionIndex,
-                voteLeaf.pack(), // vote weight
-                BigInt(1), // nonce
-                BigInt(pollId),
-            )
+            //// Vote for option 0
+            //const command = new Command(
+                //stateIndex, //BigInt(1),
+                //userKeypair.pubKey,
+                //BigInt(0), // voteOptionIndex,
+                //voteLeaf.pack(), // vote weight
+                //BigInt(1), // nonce
+                //BigInt(pollId),
+            //)
 
-            const signature = command.sign(userKeypair.privKey)
-            //0onsole.log('sig1 generated with', userKeypair.pubKey.rawPubKey[0], 'sig', signature)
+            //const signature = command.sign(userKeypair.privKey)
+            ////0onsole.log('sig1 generated with', userKeypair.pubKey.rawPubKey[0], 'sig', signature)
 
-            const ecdhKeypair = new Keypair()
-            const sharedKey = Keypair.genEcdhSharedKey(
-                ecdhKeypair.privKey,
-                coordinatorKeypair.pubKey,
-            )
-            const message = command.encrypt(signature, sharedKey)
-            messages.push(message)
-            commands.push(command)
-            messageTree.insert(message.hash(ecdhKeypair.pubKey))
-            poll.publishMessage(message, ecdhKeypair.pubKey)
+            //const ecdhKeypair = new Keypair()
+            //const sharedKey = Keypair.genEcdhSharedKey(
+                //ecdhKeypair.privKey,
+                //coordinatorKeypair.pubKey,
+            //)
+            //const message = command.encrypt(signature, sharedKey)
+            //messages.push(message)
+            //commands.push(command)
+            //messageTree.insert(message.hash(ecdhKeypair.pubKey))
+            //poll.publishMessage(message, ecdhKeypair.pubKey)
 
-            // Vote for option 1
-            const command2 = new Command(
-                stateIndex,
-                userKeypair2.pubKey,
-                BigInt(1), // voteOptionIndex,
-                voteLeaf.pack(), // vote leaf
-                BigInt(2), // nonce
-                BigInt(pollId),
-            )
-            const signature2 = command2.sign(userKeypair2.privKey)
-            //console.log('sig2 generated with', userKeypair2.pubKey.rawPubKey[0], 'sig', signature2)
+            //// Vote for option 1
+            //const command2 = new Command(
+                //stateIndex,
+                //userKeypair2.pubKey,
+                //BigInt(1), // voteOptionIndex,
+                //voteLeaf.pack(), // vote leaf
+                //BigInt(2), // nonce
+                //BigInt(pollId),
+            //)
+            //const signature2 = command2.sign(userKeypair2.privKey)
+            ////console.log('sig2 generated with', userKeypair2.pubKey.rawPubKey[0], 'sig', signature2)
 
-            const ecdhKeypair2 = new Keypair()
-            const sharedKey2 = Keypair.genEcdhSharedKey(
-                ecdhKeypair2.privKey,
-                coordinatorKeypair.pubKey,
-            )
-            const message2 = command2.encrypt(signature2, sharedKey2)
-            messages.push(message2)
-            commands.push(command2)
-            messageTree.insert(message2.hash(ecdhKeypair2.pubKey))
-            poll.publishMessage(message2, ecdhKeypair2.pubKey)
+            //const ecdhKeypair2 = new Keypair()
+            //const sharedKey2 = Keypair.genEcdhSharedKey(
+                //ecdhKeypair2.privKey,
+                //coordinatorKeypair.pubKey,
+            //)
+            //const message2 = command2.encrypt(signature2, sharedKey2)
+            //messages.push(message2)
+            //commands.push(command2)
+            //messageTree.insert(message2.hash(ecdhKeypair2.pubKey))
+            //poll.publishMessage(message2, ecdhKeypair2.pubKey)
 
-            // Change key
-            const command3 = new Command(
-                stateIndex, //BigInt(1),
-                userKeypair2.pubKey,
-                BigInt(1), // voteOptionIndex,
-                BigInt(0), // vote weight
-                BigInt(1), // nonce
-                BigInt(pollId),
-            )
+            //// Change key
+            //const command3 = new Command(
+                //stateIndex, //BigInt(1),
+                //userKeypair2.pubKey,
+                //BigInt(1), // voteOptionIndex,
+                //BigInt(0), // vote weight
+                //BigInt(1), // nonce
+                //BigInt(pollId),
+            //)
 
-            const signature3 = command3.sign(userKeypair.privKey)
-            //console.log('sig3 generated with', userKeypair.pubKey.rawPubKey[0], 'sig', signature3)
+            //const signature3 = command3.sign(userKeypair.privKey)
+            ////console.log('sig3 generated with', userKeypair.pubKey.rawPubKey[0], 'sig', signature3)
 
-            const ecdhKeypair3 = new Keypair()
-            const sharedKey3 = Keypair.genEcdhSharedKey(
-                ecdhKeypair3.privKey,
-                coordinatorKeypair.pubKey,
-            )
-            const message3 = command3.encrypt(signature3, sharedKey3)
-            messages.push(message3)
-            commands.push(command3)
-            messageTree.insert(message3.hash(ecdhKeypair3.pubKey))
-            poll.publishMessage(message3, ecdhKeypair3.pubKey)
+            //const ecdhKeypair3 = new Keypair()
+            //const sharedKey3 = Keypair.genEcdhSharedKey(
+                //ecdhKeypair3.privKey,
+                //coordinatorKeypair.pubKey,
+            //)
+            //const message3 = command3.encrypt(signature3, sharedKey3)
+            //messages.push(message3)
+            //commands.push(command3)
+            //messageTree.insert(message3.hash(ecdhKeypair3.pubKey))
+            //poll.publishMessage(message3, ecdhKeypair3.pubKey)
 
-            // Merge
-            poll.messageAq.mergeSubRoots(0)
-            poll.messageAq.merge(treeDepths.messageTreeDepth)
+            //// Merge
+            //poll.messageAq.mergeSubRoots(0)
+            //poll.messageAq.merge(treeDepths.messageTreeDepth)
 
-            expect(messageTree.root.toString())
-                .toEqual(
-                    poll.messageAq.getRoot(
-                        treeDepths.messageTreeDepth,
-                    ).toString()
-                )
-        })
+            //expect(messageTree.root.toString())
+                //.toEqual(
+                    //poll.messageAq.getRoot(
+                        //treeDepths.messageTreeDepth,
+                    //).toString()
+                //)
+        //})
 
-        it('should produce the correct state root and ballot root', async () => {
-            // The current roots
-            const emptyBallot = new Ballot(
-                poll.maxValues.maxVoteOptions,
-                poll.treeDepths.voteOptionTreeDepth,
-            )
-            const emptyBallotHash = emptyBallot.hash()
-            const ballotTree = new IncrementalQuinTree(
-                STATE_TREE_DEPTH,
-                emptyBallot.hash(),
-                poll.STATE_TREE_ARITY,
-                hash5,
-            )
+        //it('should produce the correct state root and ballot root', async () => {
+            //// The current roots
+            //const emptyBallot = new Ballot(
+                //poll.maxValues.maxVoteOptions,
+                //poll.treeDepths.voteOptionTreeDepth,
+            //)
+            //const emptyBallotHash = emptyBallot.hash()
+            //const ballotTree = new IncrementalQuinTree(
+                //STATE_TREE_DEPTH,
+                //emptyBallot.hash(),
+                //poll.STATE_TREE_ARITY,
+                //hash5,
+            //)
 
-            for (let i = 0; i < poll.stateLeaves.length; i ++) {
-                ballotTree.insert(emptyBallotHash)
-            }
-            const currentStateRoot = maciState.stateTree.root
-            const currentBallotRoot = ballotTree.root
+            //for (let i = 0; i < poll.stateLeaves.length; i ++) {
+                //ballotTree.insert(emptyBallotHash)
+            //}
+            //const currentStateRoot = maciState.stateTree.root
+            //const currentBallotRoot = ballotTree.root
 
-            const generatedInputs = poll.processMessages()
+            //const generatedInputs = poll.processMessages()
 
-            // Calculate the witness
-            const witness = await genWitness(circuit, generatedInputs)
-            expect(witness.length > 0).toBeTruthy()
+            //// Calculate the witness
+            //const witness = await genWitness(circuit, generatedInputs)
+            //expect(witness.length > 0).toBeTruthy()
 
-            // The new roots, which should differ, since at least one of the
-            // messages modified a Ballot or State Leaf
-            const newStateRoot = poll.stateTree.root
-            const newBallotRoot = poll.ballotTree.root
+            //// The new roots, which should differ, since at least one of the
+            //// messages modified a Ballot or State Leaf
+            //const newStateRoot = poll.stateTree.root
+            //const newBallotRoot = poll.ballotTree.root
 
-            expect(newStateRoot.toString()).not.toEqual(currentStateRoot.toString())
-            expect(newBallotRoot.toString()).not.toEqual(currentBallotRoot.toString())
-        })
-    })
+            //expect(newStateRoot.toString()).not.toEqual(currentStateRoot.toString())
+            //expect(newBallotRoot.toString()).not.toEqual(currentBallotRoot.toString())
+        //})
+    //})
 
-    const NUM_BATCHES = 2
-    describe(`1 user, ${messageBatchSize * NUM_BATCHES} messages`, () => {
-        it('should produce the correct state root and ballot root', async () => {
-            const maciState = new MaciState()
-            const userKeypair = new Keypair()
-            const stateIndex = maciState.signUp(
-                userKeypair.pubKey,
-                voiceCreditBalance,
-                BigInt(Math.floor(Date.now() / 1000)),
-            )
+    //const NUM_BATCHES = 2
+    //describe(`1 user, ${messageBatchSize * NUM_BATCHES} messages`, () => {
+        //it('should produce the correct state root and ballot root', async () => {
+            //const maciState = new MaciState()
+            //const userKeypair = new Keypair()
+            //const stateIndex = maciState.signUp(
+                //userKeypair.pubKey,
+                //voiceCreditBalance,
+                //BigInt(Math.floor(Date.now() / 1000)),
+            //)
 
-            maciState.stateAq.mergeSubRoots(0)
-            maciState.stateAq.merge(STATE_TREE_DEPTH)
-            // Sign up and publish
-            const pollId = maciState.deployPoll(
-                duration,
-                BigInt(Math.floor(Date.now() / 1000) + duration),
-                maxValues,
-                treeDepths,
-                messageBatchSize,
-                coordinatorKeypair,
-                testProcessVk,
-                testTallyVk,
-            )
+            //maciState.stateAq.mergeSubRoots(0)
+            //maciState.stateAq.merge(STATE_TREE_DEPTH)
+            //// Sign up and publish
+            //const pollId = maciState.deployPoll(
+                //duration,
+                //BigInt(Math.floor(Date.now() / 1000) + duration),
+                //maxValues,
+                //treeDepths,
+                //messageBatchSize,
+                //coordinatorKeypair,
+                //testProcessVk,
+                //testTallyVk,
+            //)
 
-            const poll = maciState.polls[pollId]
-            const voteLeaf = new VoteLeaf(BigInt(1), BigInt(0))
+            //const poll = maciState.polls[pollId]
+            //const voteLeaf = new VoteLeaf(BigInt(1), BigInt(0))
 
-            // Second batch is not a full batch
-            const numMessages = (messageBatchSize * NUM_BATCHES) - 1
-            for (let i = 0; i < numMessages; i ++) {
-                const command = new Command(
-                    stateIndex,
-                    userKeypair.pubKey,
-                    BigInt(i), //vote option index
-                    voteLeaf.pack(), // vote weight
-                    BigInt(numMessages - i), // nonce
-                    BigInt(pollId),
-                )
+            //// Second batch is not a full batch
+            //const numMessages = (messageBatchSize * NUM_BATCHES) - 1
+            //for (let i = 0; i < numMessages; i ++) {
+                //const command = new Command(
+                    //stateIndex,
+                    //userKeypair.pubKey,
+                    //BigInt(i), //vote option index
+                    //voteLeaf.pack(), // vote weight
+                    //BigInt(numMessages - i), // nonce
+                    //BigInt(pollId),
+                //)
 
-                const signature = command.sign(userKeypair.privKey)
+                //const signature = command.sign(userKeypair.privKey)
 
-                const ecdhKeypair = new Keypair()
-                const sharedKey = Keypair.genEcdhSharedKey(
-                    ecdhKeypair.privKey,
-                    coordinatorKeypair.pubKey,
-                )
-                const message = command.encrypt(signature, sharedKey)
-                poll.publishMessage(message, ecdhKeypair.pubKey)
-            }
+                //const ecdhKeypair = new Keypair()
+                //const sharedKey = Keypair.genEcdhSharedKey(
+                    //ecdhKeypair.privKey,
+                    //coordinatorKeypair.pubKey,
+                //)
+                //const message = command.encrypt(signature, sharedKey)
+                //poll.publishMessage(message, ecdhKeypair.pubKey)
+            //}
 
-            poll.messageAq.mergeSubRoots(0)
-            poll.messageAq.merge(treeDepths.messageTreeDepth)
+            //poll.messageAq.mergeSubRoots(0)
+            //poll.messageAq.merge(treeDepths.messageTreeDepth)
 
-            for (let i = 0; i < NUM_BATCHES; i ++) {
-                const generatedInputs = poll.processMessages()
+            //for (let i = 0; i < NUM_BATCHES; i ++) {
+                //const generatedInputs = poll.processMessages()
 
-                const witness = await genWitness(circuit, generatedInputs)
-                expect(witness.length > 0).toBeTruthy()
+                //const witness = await genWitness(circuit, generatedInputs)
+                //expect(witness.length > 0).toBeTruthy()
 
-            }
-        })
-    })
+            //}
+        //})
+    //})
 })
