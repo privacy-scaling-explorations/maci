@@ -157,7 +157,7 @@ describe('TallyVotes circuit', () => {
             const witness = await genWitness(circuit, generatedInputs)
             expect(witness.length > 0).toBeTruthy()
 
-            // TODO: test for the correct newTallyCommitment 
+            // TODO: test for the correct newTallyCommitment
         })
     })
 
@@ -239,9 +239,9 @@ describe('TallyVotes circuit', () => {
                 // currentSpentVoiceCreditSubtotal, and
                 // currentPerVOSpentVoiceCredits
                 if (i === 0) {
-                    generatedInputs.currentResults[0] = '123'
-                    generatedInputs.currentSpentVoiceCreditSubtotal = '456'
+                    generatedInputs.currentResults[0] = [ '3434', '9999' ]
                     generatedInputs.currentPerVOSpentVoiceCredits[0] = '789'
+                    generatedInputs.currentSpentVoiceCreditSubtotal = '456'
                 }
                 const witness = await genWitness(circuit, generatedInputs)
                 expect(witness.length > 0).toBeTruthy()

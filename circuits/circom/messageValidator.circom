@@ -59,6 +59,10 @@ template MessageValidator() {
     validVoteWeight.in[0] <== voteLeaf;
     validVoteWeight.in[1] <== 147946756881789319005730692170996259609;
 
+    // Check that the vote leaf is valid
+    component validVoteLeaf = ValidPackedVoteLeaf();
+    validVoteLeaf.packedLeaf <== voteLeaf;
+
     // Calc sq of current vote leaf values
     component currentVoteLeafForOptionSq = CalculateSquaredVoteLeaf();
     currentVoteLeafForOptionSq.packedLeaf <== currentVoteLeafForOption;
@@ -75,9 +79,10 @@ template MessageValidator() {
     sufficientVoiceCredits.in[1] <== voteLeafSq.out;
 
     component validUpdate = IsEqual();
-    validUpdate.in[0] <== 7;
+    validUpdate.in[0] <== 8;
     validUpdate.in[1] <== validSignature.valid +
                           sufficientVoiceCredits.out +
+                          validVoteLeaf.out +
                           validVoteWeight.out +
                           validNonce.out +
                           validStateLeafIndex.out +

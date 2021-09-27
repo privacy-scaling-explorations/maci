@@ -59,7 +59,7 @@ const genMaciStateFromContract = async (
 
     // init() should only be called up to 1 time
     assert(
-        initLogs.length <= 1, 
+        initLogs.length <= 1,
         'More than 1 init() event detected which should not be possible',
     )
 
@@ -138,7 +138,7 @@ const genMaciStateFromContract = async (
             }
         })
     }
- 
+
     for (const log of mergeStateAqLogs) {
         assert(log != undefined)
         const event = maciIface.parseLog(log)
@@ -155,7 +155,7 @@ const genMaciStateFromContract = async (
             blockNumber: log.blockNumber,
             // @ts-ignore
             transactionIndex: log.transactionIndex,
-            data: { 
+            data: {
                 pollId: p,
             }
         })

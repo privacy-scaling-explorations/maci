@@ -455,8 +455,13 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     component currentVoteLeafSq = CalculateSquaredVoteLeaf();
     currentVoteLeafSq.packedLeaf <== currentVoteLeaf;
 
+    component newVoteLeafMux = Mux1();
+    newVoteLeafMux.s <== transformer.isValid;
+    newVoteLeafMux.c[0] <== currentVoteLeaf;
+    newVoteLeafMux.c[1] <== cmdNewVoteLeaf;
+
     component newVoteLeafSq = CalculateSquaredVoteLeaf();
-    newVoteLeafSq.packedLeaf <== cmdNewVoteLeaf;
+    newVoteLeafSq.packedLeaf <== newVoteLeafMux.out;
 
     signal b;
     signal c;
