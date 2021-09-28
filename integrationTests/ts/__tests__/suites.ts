@@ -170,7 +170,7 @@ const executeSuite = async (data: any, expect: any) => {
             // find which vote index the user should change keys
             const isKeyChange = !!data.changeUsersKeys
             const messageObj  = isKeyChange ? data.changeUsersKeys[i] : users[i].votes[j]
-            const { voteOptionIndex, voteWeight } = messageObj
+            const { voteOptionIndex, voteWeight, isValid } = messageObj
             const stateIndex = i + 1
             const voteType = stateIndex % 2 == 1
             const positiveVotes = voteType ? voteWeight : 0
