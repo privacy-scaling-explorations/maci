@@ -888,6 +888,7 @@ class Poll {
     }
 
     public genResultsCommitment = (_salt: BigInt) => {
+      const bitsPerVal = BigInt(50)
         const resultsTree = new IncrementalQuinTree(
             this.treeDepths.voteOptionTreeDepth,
             BigInt(0),
@@ -896,9 +897,10 @@ class Poll {
         )
 
         for (const r of this.results) {
-            const voteLeaf = new VoteLeaf(BigInt(r[0]), BigInt(r[1]))
+            const [ pos, neg ] = [ BigInt(r[0]), BigInt(r[1]) ]
+            const voteLeaf = ((pos << bitsPerVal) + neg).toString()
 
-            resultsTree.insert(voteLeaf.pack())
+            resultsTree.insert(voteLeaf)
         }
 
         return hashLeftRight(resultsTree.root, _salt)
@@ -1306,10 +1308,13 @@ const genTallyResultCommitment = (
     depth: number,
 ): BigInt => {
     const tree = new IncrementalQuinTree(depth, BigInt(0), 5, hash5)
-    for (const result of results) {
-        const voteLeaf = new VoteLeaf(BigInt(result[0]), BigInt(result[1]))
+    const bitsPerVal = BigInt(50)
 
-        tree.insert(voteLeaf.pack())
+    for (const result of results) {
+        const [ pos, neg ] = [ BigInt(result[0]), BigInt(result[1]) ]
+        const voteLeaf = ((pos << bitsPerVal) + neg).toString()
+
+        tree.insert(voteLeaf)
     }
     return hashLeftRight(tree.root, salt)
 }

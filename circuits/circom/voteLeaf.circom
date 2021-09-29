@@ -89,17 +89,12 @@ template PackVoteLeaf() {
   signal input in[2];
   signal output packedLeaf;
 
-  var VOTE_LEAF_BITS_PER_VAL = 25;
+  // 50 bits to ensure value field size >
+  // sqrt(2 ** 32) * (treeArity ** stateTreeDepth)
+  var VOTE_LEAF_BITS_PER_VAL = 50;
   var POW = 2 ** VOTE_LEAF_BITS_PER_VAL;
-  var MAX_PACKED_LEAF = 2 ** (VOTE_LEAF_BITS_PER_VAL * 2);
 
   packedLeaf <== in[0] * POW + in[1];
-
-  component rangeChecker = LessThan(252);
-  rangeChecker.in[0] <== packedLeaf;
-  rangeChecker.in[1] <== MAX_PACKED_LEAF;
-
-  rangeChecker.out === 1;
 }
 
 template CalculateSquaredVoteLeaf() {

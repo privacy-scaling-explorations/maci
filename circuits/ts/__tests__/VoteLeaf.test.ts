@@ -39,16 +39,15 @@ describe('VoteLeaf circuit', () => {
       expect(out).toEqual('0')
     })
 
-    it('Valid packed leaf', async() => {
-      const [ pos, neg ] = [ 9, 0 ]
-      const voteLeaf = new VoteLeaf(BigInt(pos), BigInt(neg))
-      const packedLeaf = voteLeaf.pack().toString()
-      const inputs =  [ `${pos}`, `${neg}` ]
+    it('Valid packed 100 bit leaf', async() => {
+      const bitsPerVal = BigInt(50)
+      const [ pos, neg ] = [ BigInt(9), BigInt(0) ]
+      const packed50BitLeaf = ((pos << bitsPerVal) + neg).toString()
 
-      const witness = await genWitness(pack_circuit, { in: inputs })
+      const witness = await genWitness(pack_circuit, { in: [ `${pos}`, `${neg}` ] })
       const out = await getSignalByName(pack_circuit, witness, `main.packedLeaf`)
 
-      expect(out).toEqual(packedLeaf)
+      expect(out).toEqual(packed50BitLeaf)
     })
 
     it('Valid squared calc', async() => {
