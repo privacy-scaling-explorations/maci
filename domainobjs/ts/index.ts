@@ -404,9 +404,15 @@ class VoteLeaf implements IVoteLeaf {
     public pos: BigInt
     public neg: BigInt
 
-    constructor(_pos: BigInt, _neg: BigInt) {
-        assert(VoteLeaf.isWithinRange(_pos))
-        assert(VoteLeaf.isWithinRange(_neg))
+    constructor(
+        _pos: BigInt,
+        _neg: BigInt,
+        debug = false,
+    ) {
+        if (!debug) {
+            assert(VoteLeaf.isWithinRange(_pos))
+            assert(VoteLeaf.isWithinRange(_neg))
+        }
         this.pos = _pos
         this.neg = _neg
     }
@@ -781,11 +787,14 @@ class Command implements ICommand {
         nonce: BigInt,
         pollId: BigInt,
         salt: BigInt = genRandomSalt(),
+        debug = false,
     ) {
         const limit50Bits = BigInt(2 ** 50)
         assert(limit50Bits >= stateIndex)
         assert(limit50Bits >= voteOptionIndex)
-        assert(limit50Bits >= newVoteLeaf)
+        if (!debug) {
+            assert(limit50Bits >= newVoteLeaf)
+        }
         assert(limit50Bits >= nonce)
         assert(limit50Bits >= pollId)
 

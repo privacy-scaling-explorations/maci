@@ -97,6 +97,10 @@ template PackVoteLeaf() {
   packedLeaf <== in[0] * POW + in[1];
 }
 
+/*
+ * Unpack a leaf and return the square of the sum of its positive and negative
+ * values. 
+ */
 template CalculateSquaredVoteLeaf() {
   signal input packedLeaf;
   signal output out;

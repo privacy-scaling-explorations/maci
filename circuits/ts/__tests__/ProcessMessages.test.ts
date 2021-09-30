@@ -26,6 +26,7 @@ import {
     G2Point,
     IncrementalQuinTree,
     stringifyBigInts,
+    genRandomSalt,
 } from 'maci-crypto'
 
 const voiceCreditBalance = BigInt(100)
@@ -74,7 +75,7 @@ const circuit = 'processMessages_test'
 describe('ProcessMessage circuit', () => {
     describe('1 user, 2 messages', () => {
         const maciState = new MaciState()
-        const voteLeaf = new VoteLeaf(BigInt(4), BigInt(5))
+        const voteLeaf = new VoteLeaf(BigInt('4'), BigInt(5))
         const voteOptionIndex = BigInt(0)
         let stateIndex
         let pollId
@@ -239,6 +240,128 @@ describe('ProcessMessage circuit', () => {
             const hasherWitness = await genWitness(hasherCircuit, hasherCircuitInputs)
             const hash = await getSignalByName(hasherCircuit, hasherWitness, 'main.hash')
             expect(hash.toString()).toEqual(generatedInputs.inputHash.toString())
+        })
+    })
+
+    describe('1 user, 1 message with an invalid vote leaf', () => {
+        const maciState = new MaciState()
+        const voteLeaf = new VoteLeaf(
+            BigInt('22517998136852482251799813685248'),
+            BigInt(5),
+            true, // debug mode
+        )
+        const voteOptionIndex = BigInt(0)
+        let stateIndex
+        let pollId
+        let poll
+        const messages: Message[] = []
+        const commands: Command[] = []
+        let messageTree
+
+        beforeAll(async () => {
+            // Sign up and publish
+            const userKeypair = new Keypair(new PrivKey(BigInt(1)))
+            stateIndex = maciState.signUp(
+                userKeypair.pubKey,
+                voiceCreditBalance,
+                BigInt(1), //BigInt(Math.floor(Date.now() / 1000)),
+            )
+
+            maciState.stateAq.mergeSubRoots(0)
+            maciState.stateAq.merge(STATE_TREE_DEPTH)
+
+            pollId = maciState.deployPoll(
+                duration,
+                BigInt(2 + duration), //BigInt(Math.floor(Date.now() / 1000) + duration),
+                maxValues,
+                treeDepths,
+                messageBatchSize,
+                coordinatorKeypair,
+                testProcessVk,
+                testTallyVk,
+            )
+
+            poll = maciState.polls[pollId]
+
+            messageTree = new IncrementalQuinTree(
+                treeDepths.messageTreeDepth,
+                poll.messageAq.zeroValue,
+                5,
+                hash5,
+            )
+
+            // First command (invalid)
+            const command = new Command(
+                stateIndex, //BigInt(1),
+                userKeypair.pubKey,
+                voteOptionIndex, // voteOptionIndex,
+                voteLeaf.pack(), // vote leaf
+                BigInt(1), // nonce
+                BigInt(pollId),
+                genRandomSalt(),
+                true,
+            )
+
+            const signature = command.sign(userKeypair.privKey)
+
+            const ecdhKeypair = new Keypair()
+            const sharedKey = Keypair.genEcdhSharedKey(
+                ecdhKeypair.privKey,
+                coordinatorKeypair.pubKey,
+            )
+            const message = command.encrypt(signature, sharedKey)
+            messages.push(message)
+            commands.push(command)
+            messageTree.insert(message.hash(ecdhKeypair.pubKey))
+
+            poll.publishMessage(message, ecdhKeypair.pubKey)
+
+            poll.messageAq.mergeSubRoots(0)
+            poll.messageAq.merge(treeDepths.messageTreeDepth)
+
+            expect(messageTree.root.toString())
+                .toEqual(
+                    poll.messageAq.getRoot(
+                        treeDepths.messageTreeDepth,
+                    ).toString()
+                )
+        })
+
+        it('should produce the correct state root and ballot root', async () => {
+            // The current roots
+            const emptyBallot = new Ballot(
+                poll.maxValues.maxVoteOptions,
+                poll.treeDepths.voteOptionTreeDepth,
+            )
+            const emptyBallotHash = emptyBallot.hash()
+            const ballotTree = new IncrementalQuinTree(
+                STATE_TREE_DEPTH,
+                emptyBallot.hash(),
+                poll.STATE_TREE_ARITY,
+                hash5,
+            )
+
+            for (let i = 0; i < poll.stateLeaves.length; i ++) {
+                ballotTree.insert(emptyBallotHash)
+            }
+            const currentStateRoot = maciState.stateTree.root
+            const currentBallotRoot = ballotTree.root
+
+            const generatedInputs = poll.processMessages()
+
+            // Should not update the vote
+            expect(poll.ballots[Number(stateIndex)].votes[Number(voteOptionIndex)].toString()).toEqual('0')
+
+            // Calculate the witness
+            const witness = await genWitness(circuit, generatedInputs)
+            expect(witness.length > 0).toBeTruthy()
+
+            // The new roots should be the same because the message is invalid
+            const newStateRoot = poll.stateTree.root
+            const newBallotRoot = poll.ballotTree.root
+
+            expect(newStateRoot.toString()).toEqual(currentStateRoot.toString())
+            expect(newBallotRoot.toString()).toEqual(currentBallotRoot.toString())
         })
     })
 
@@ -677,5 +800,4 @@ describe('ProcessMessage circuit', () => {
             }
         })
     })
-
 })

@@ -21,6 +21,7 @@ import {
     G1Point,
     G2Point,
     IncrementalQuinTree,
+    genRandomSalt,
 } from 'maci-crypto'
 
 const voiceCreditBalance = BigInt(100)
@@ -158,6 +159,104 @@ describe('TallyVotes circuit', () => {
             expect(witness.length > 0).toBeTruthy()
 
             // TODO: test for the correct newTallyCommitment
+        })
+    })
+
+    describe('1 user, 1 invalid message with an oversized vote leaf', () => {
+        const maciState = new MaciState()
+        const voteLeaf = new VoteLeaf(
+            BigInt('1125899906842625'),
+            BigInt(0),
+            true, // debug mode
+        )
+        const voteOptionIndex = BigInt(0)
+        let stateIndex
+        let pollId
+        let poll
+        const messages: Message[] = []
+        const commands: Command[] = []
+        let messageTree
+
+        beforeAll(async () => {
+            // Sign up and publish
+            const userKeypair = new Keypair()
+            stateIndex = maciState.signUp(
+                userKeypair.pubKey,
+                voiceCreditBalance,
+                BigInt(Math.floor(Date.now() / 1000)),
+            )
+
+            maciState.stateAq.mergeSubRoots(0)
+            maciState.stateAq.merge(STATE_TREE_DEPTH)
+
+            pollId = maciState.deployPoll(
+                duration,
+                BigInt(Math.floor(Date.now() / 1000) + duration),
+                maxValues,
+                treeDepths,
+                messageBatchSize,
+                coordinatorKeypair,
+                testProcessVk,
+                testTallyVk,
+            )
+
+            poll = maciState.polls[pollId]
+
+            messageTree = new IncrementalQuinTree(
+                treeDepths.messageTreeDepth,
+                poll.messageAq.zeroValue,
+                5,
+                hash5,
+            )
+
+            // First command (invalid)
+            const command = new Command(
+                stateIndex,
+                userKeypair.pubKey,
+                voteOptionIndex, // voteOptionIndex,
+                voteLeaf.pack(), // vote weight
+                BigInt(1), // nonce
+                BigInt(pollId),
+                genRandomSalt(),
+                true, // debug mode
+            )
+
+            const signature = command.sign(userKeypair.privKey)
+
+            const ecdhKeypair = new Keypair()
+            const sharedKey = Keypair.genEcdhSharedKey(
+                ecdhKeypair.privKey,
+                coordinatorKeypair.pubKey,
+            )
+            const message = command.encrypt(signature, sharedKey)
+            messages.push(message)
+            commands.push(command)
+            messageTree.insert(message.hash(ecdhKeypair.pubKey))
+
+            poll.publishMessage(message, ecdhKeypair.pubKey)
+
+            poll.messageAq.mergeSubRoots(0)
+            poll.messageAq.merge(treeDepths.messageTreeDepth)
+
+            expect(messageTree.root.toString())
+                .toEqual(
+                    poll.messageAq.getRoot(
+                        treeDepths.messageTreeDepth,
+                    ).toString()
+                )
+            // Process messages
+            poll.processMessages()
+        })
+
+        it('should produce the correct result commitments', async () => {
+            const generatedInputs = poll.tallyVotes()
+            const newResults = poll.results
+
+            expect(newResults[Number(voteOptionIndex)][0]).toEqual(BigInt(0))
+            expect(newResults[Number(voteOptionIndex)][1]).toEqual(BigInt(0))
+
+            const witness = await genWitness(circuit, generatedInputs)
+            expect(witness.length > 0).toBeTruthy()
         })
     })
 
