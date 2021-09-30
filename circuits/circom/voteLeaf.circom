@@ -39,6 +39,8 @@ template ValidPackedVoteLeaf() {
   var POW = 2 ** VOTE_LEAF_BITS_PER_VAL;
   n <-- packedLeaf % POW;
 
+// Pack p and n and check that they match packedLeaf
+packedLeaf === p * POW + n;
   component eqChecker = IsEqual();
   eqChecker.in[0] <== packedLeaf;
   eqChecker.in[1] <== p * POW + n;
