@@ -13,8 +13,7 @@ node ../cli/build/index.js signup -p macipk.c380cb7b743da3ee6f72f847f3f8e0ab2a49
 node ../cli/build/index.js signup -p macipk.4e1bdd5cbe0cfc9aa5b28cf0e7440932b689abd5e19072162495d312f3cc6525 -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
 node ../cli/build/index.js signup -p macipk.e312ccfd650ae6319350b2fbd40f0900c0896fbd4bd03cebfb98f8c6df187096 -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
 
-
-node build/index.js publish -sk macisk.292ee6e47ff0225c12a2875408be223ad6653f73e4719496bad98838d3d4d4aa -p macipk.b1672ac299bb443f89bca9aeface6edfa5319a4b2135588ca1bfb352d7d09d1e -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a -i 1 -v 0 -w 1 -n 1 -o 0                 
+node build/index.js publish -sk macisk.292ee6e47ff0225c12a2875408be223ad6653f73e4719496bad98838d3d4d4aa -p macipk.b1672ac299bb443f89bca9aeface6edfa5319a4b2135588ca1bfb352d7d09d1e -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a -i 1 -v 0 -w 1 -n 1 -o 0
 
 node build/index.js timeTravel -s 30
 

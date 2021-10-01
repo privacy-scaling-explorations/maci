@@ -153,7 +153,7 @@ const proveOnChain = async (args: any) => {
     const tallyBatchSize = Number(batchSizes.tallyBatchSize)
     let totalMessageBatches = numMessages <= messageBatchSize ?
     1
-    : 
+    :
     Math.floor(numMessages / messageBatchSize)
 
     if (numMessages > messageBatchSize && numMessages % messageBatchSize > 0) {
@@ -342,7 +342,6 @@ const proveOnChain = async (args: any) => {
 
     let tallyBatchNum = Number(await pptContract.tallyBatchNum())
 
-    console.log()
     if (tallyBatchNum < totalTallyBatches) {
         console.log('Submitting proofs of vote tallying...')
     }

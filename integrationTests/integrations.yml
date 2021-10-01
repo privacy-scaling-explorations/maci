@@ -8,7 +8,7 @@ defaultVote:
   voteWeight: 1
   nonce: 1
   maxVoteWeight: 25
-  voteCreditBalance: 1
+  voteCreditBalance: 100
   voteOptionIndex: 0
 invalidVote:
   voteWeight: 2
@@ -52,4 +52,3 @@ constants:
   PROCESS_DEPTH: 4
   LEAVES_PER_NODE: 5
   NOTHING_UP_MY_SLEEVE: 8370432830353022751713833565135785980866757267633941821328460903436894336785
-

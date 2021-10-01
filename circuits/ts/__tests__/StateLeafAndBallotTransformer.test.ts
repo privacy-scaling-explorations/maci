@@ -1,10 +1,10 @@
 jest.setTimeout(90000)
-import { 
+import {
     genWitness,
     getSignalByName,
 } from './utils'
 
-import { 
+import {
     stringifyBigInts,
     genRandomSalt,
 } from 'maci-crypto'
@@ -12,13 +12,14 @@ import {
 import {
     Command,
     Keypair,
+    VoteLeaf
 } from 'maci-domainobjs'
 
 const keypair = new Keypair()
 const stateIndex = BigInt(1)
 const newPubKey = keypair.pubKey
 const voteOptionIndex = BigInt(0)
-const newVoteWeight = BigInt(9)
+const newVoteLeaf = new VoteLeaf(BigInt(4), BigInt(0))
 const nonce = BigInt(1)
 const pollId = BigInt(0)
 const salt = genRandomSalt()
@@ -30,7 +31,7 @@ const slPubKey = slKeypair.pubKey
 
 const slVoiceCreditBalance = BigInt(100)
 const ballotNonce = BigInt(0)
-const ballotCurrentVotesForOption = BigInt(0)
+const ballotCurrentVoteLeafForOption = BigInt(0)
 const slTimestamp = 1
 const pollEndTimestamp = 2
 
@@ -38,7 +39,7 @@ const command: Command = new Command(
     stateIndex,
     newPubKey,
     voteOptionIndex,
-    newVoteWeight,
+    newVoteLeaf.pack(),
     nonce,
     pollId,
     salt,
@@ -57,11 +58,11 @@ describe('StateLeafAndBallotTransformer circuit', () => {
             slTimestamp,
             pollEndTimestamp,
             ballotNonce,
-            ballotCurrentVotesForOption,
+            ballotCurrentVoteLeafForOption,
             cmdStateIndex: command.stateIndex,
             cmdNewPubKey: command.newPubKey.asCircuitInputs(),
             cmdVoteOptionIndex: command.voteOptionIndex,
-            cmdNewVoteWeight: command.newVoteWeight,
+            cmdNewVoteLeaf: command.newVoteLeaf,
             cmdNonce: command.nonce,
             cmdPollId: command.pollId,
             cmdSalt: command.salt,
@@ -93,11 +94,11 @@ describe('StateLeafAndBallotTransformer circuit', () => {
             slTimestamp,
             pollEndTimestamp,
             ballotNonce,
-            ballotCurrentVotesForOption,
+            ballotCurrentVoteLeafForOption,
             cmdStateIndex: command.stateIndex,
             cmdNewPubKey: command.newPubKey.asCircuitInputs(),
             cmdVoteOptionIndex: command.voteOptionIndex,
-            cmdNewVoteWeight: command.newVoteWeight,
+            cmdNewVoteLeaf: command.newVoteLeaf,
             cmdNonce: 2, // invalid
             cmdPollId: command.pollId,
             cmdSalt: command.salt,

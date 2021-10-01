@@ -94,6 +94,7 @@ const genTestUserCommands = (
 
         for (let j=0; j < numVotesPerUser; j++) {
             const { voteOptionIndex, voteWeight, valid } = getTestVoteValues(i,j)
+
             const vote: Vote = {
                 voteOptionIndex,
                 voteWeight,
@@ -142,10 +143,15 @@ const expectTally = (
     expectedTotalSpentVoiceCredits: number,
     tallyFile: Tally
 ) => {
-    let genTally: string[] = Array(maxMessages).fill('0')
-    const calculateTally =
-    expectedTally.map((voteOption) => {
-        if (voteOption != 0) genTally[voteOption - 1] = (parseInt(genTally[voteOption - 1]) + voteOption).toString()
+    let genTally: any[] = Array(maxMessages).fill([ '0', '0' ])
+    let [ positiveTally, negativeTally ] = [ 0, 0 ]
+    let x = 0
+
+    expectedTally.map((vO, i) => {
+      genTally[0] = [
+         `${parseInt(genTally[0][0]) + vO[0]}`,
+         `${parseInt(genTally[0][1]) + vO[1]}`
+       ]
     })
 
     expect(tallyFile.results.tally).toEqual(genTally)

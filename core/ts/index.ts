@@ -2,6 +2,7 @@ import {
     //genPerVOSpentVoiceCreditsCommitment,
     //genSpentVoiceCreditsCommitment,
     genTallyResultCommitment,
+    genTallyResultSubtotalCommitment,
     MaciState,
     STATE_TREE_DEPTH,
     Poll,
@@ -12,6 +13,7 @@ import {
 export {
     //genPerVOSpentVoiceCreditsCommitment,
     //genSpentVoiceCreditsCommitment,
+    genTallyResultSubtotalCommitment,
     genTallyResultCommitment,
     MaciState,
     STATE_TREE_DEPTH,

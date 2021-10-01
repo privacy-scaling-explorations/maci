@@ -1,4 +1,5 @@
 include "./verifySignature.circom";
+include "./voteLeaf.circom";
 include "../node_modules/circomlib/circuits/comparators.circom";
 
 template MessageValidator() {
@@ -49,24 +50,39 @@ template MessageValidator() {
 
     // f) Whether there are sufficient voice credits
     signal input currentVoiceCreditBalance;
-    signal input currentVotesForOption;
-    signal input voteWeight;
+    signal input currentVoteLeafForOption;
+    signal input voteLeaf;
 
     // Check that voteWeight is < sqrt(field size), so voteWeight ^ 2 will not
     // overflow
     component validVoteWeight = LessEqThan(252);
-    validVoteWeight.in[0] <== voteWeight;
+    validVoteWeight.in[0] <== voteLeaf;
     validVoteWeight.in[1] <== 147946756881789319005730692170996259609;
 
-    // Check that currentVoiceCreditBalance + (currentVotesForOption ** 2) >= (voteWeight ** 2)
+    // Check that the vote leaf is valid
+    component validVoteLeaf = ValidPackedVoteLeaf();
+    validVoteLeaf.packedLeaf <== voteLeaf;
+
+    // Calc sq of current vote leaf values
+    component currentVoteLeafForOptionSq = CalculateSquaredVoteLeaf();
+    currentVoteLeafForOptionSq.packedLeaf <== currentVoteLeafForOption;
+
+    // Calc sq of message vote leaf values
+    component voteLeafSq = CalculateSquaredVoteLeaf();
+    voteLeafSq.packedLeaf <== voteLeaf;
+
+    // Check that currentVoiceCreditBalance +
+    // ((currentVoteLeafForOption.pos + currentVoteLeafForOption.neg) ** 2)
+    //  >= ((voteLeaf.pos + voteLeaf.neg) ** 2)
     component sufficientVoiceCredits = GreaterEqThan(252);
-    sufficientVoiceCredits.in[0] <== (currentVotesForOption * currentVotesForOption) + currentVoiceCreditBalance;
-    sufficientVoiceCredits.in[1] <== voteWeight * voteWeight;
+    sufficientVoiceCredits.in[0] <== currentVoteLeafForOptionSq.out + currentVoiceCreditBalance;
+    sufficientVoiceCredits.in[1] <== voteLeafSq.out;
 
     component validUpdate = IsEqual();
-    validUpdate.in[0] <== 7;
-    validUpdate.in[1] <== validSignature.valid + 
+    validUpdate.in[0] <== 8;
+    validUpdate.in[1] <== validSignature.valid +
                           sufficientVoiceCredits.out +
+                          validVoteLeaf.out +
                           validVoteWeight.out +
                           validNonce.out +
                           validStateLeafIndex.out +

@@ -1,11 +1,14 @@
 const { ethers } = require('hardhat')
+
 import * as path from 'path'
 import * as fs from 'fs'
+
 import {
     PubKey,
     PrivKey,
     Keypair,
     Command,
+    VoteLeaf
 } from 'maci-domainobjs'
 
 import {
@@ -127,7 +130,8 @@ const executeSuite = async (data: any, expect: any) => {
         data.numUsers,
         config.defaultVote.voiceCreditBalance,
         data.numVotesPerUser,
-        data.bribers
+        data.bribers,
+        data.votes
     )
 
     // Sign up
@@ -164,27 +168,31 @@ const executeSuite = async (data: any, expect: any) => {
 
         for (let j = 0; j < users[i].votes.length; j++ ) {
             // find which vote index the user should change keys
-            const isKeyChange = (data.changeUsersKeys && j in data.changeUsersKeys[i])
+            const isKeyChange = !!data.changeUsersKeys
+            const messageObj  = isKeyChange ? data.changeUsersKeys[i] : users[i].votes[j]
+            const { voteOptionIndex, voteWeight, isValid } = messageObj
             const stateIndex = i + 1
-            const voteOptionIndex = isKeyChange ?
-                data.changeUsersKeys[i][j].voteOptionIndex : users[i].votes[j].voteOptionIndex
-            const newVoteWeight  = isKeyChange ?
-                data.changeUsersKeys[i][j].voteWeight : users[i].votes[j].voteWeight
+            const voteType = stateIndex % 2 == 1
+            const positiveVotes = voteType ? voteWeight : 0
+            const negativeVotes = voteType ? 0 : voteWeight
+
             const nonce = users[i].votes[j].nonce
             const salt = '0x' + genRandomSalt().toString(16)
             const userPrivKey = isKeyChange ?
                 users[i].changeKeypair() : userKeypairs[i].privKey
             const userKeypair = userKeypairs[i]
             // Run the publish command
-            const publishCommand = `node build/index.js publish` +
+            let publishCommand = `node build/index.js publish` +
                 ` -sk ${userPrivKey.serialize()}` +
                 ` -p ${userKeypair.pubKey.serialize()}` +
                 ` -x ${maciAddress}` +
                 ` -i ${stateIndex}` +
                 ` -v ${voteOptionIndex}` +
-                ` -w ${newVoteWeight}` +
+                ` -w ${positiveVotes}` +
                 ` -n ${nonce}` +
                 ` -o ${pollId}`
+
+            if(!voteType) publishCommand += ` -wv ${negativeVotes}`
 
             console.log(publishCommand)
 
@@ -204,12 +212,13 @@ const executeSuite = async (data: any, expect: any) => {
             // key, so we have to retrieve it from the standard output
             const encPrivKey = PrivKey.unserialize(publishRegMatch[2])
             const encPubKey = new PubKey(genPubKey(encPrivKey.rawPrivKey))
+            const voteLeaf = new VoteLeaf(BigInt(positiveVotes), BigInt(negativeVotes))
 
             const command = new Command(
                 BigInt(stateIndex),
                 userKeypair.pubKey,
                 BigInt(voteOptionIndex),
-                BigInt(newVoteWeight),
+                voteLeaf.pack(),
                 BigInt(nonce),
                 BigInt(pollId),
                 BigInt(salt),
@@ -283,6 +292,7 @@ const executeSuite = async (data: any, expect: any) => {
     console.log(e.stdout)
 
     const tally = JSON.parse(fs.readFileSync(path.join(__dirname, '../../../cli/tally.json')).toString())
+
     // Validate generated proof file
     expect(JSON.stringify(tally.pollId)).toEqual(pollId)
     expectTally(

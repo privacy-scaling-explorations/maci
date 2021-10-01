@@ -1,5 +1,6 @@
 include "./hasherSha256.circom";
 include "./messageHasher.circom";
+include "./voteLeaf.circom";
 include "./messageToCommand.circom";
 include "./privToPubKey.circom";
 include "./stateLeafAndBallotTransformer.circom";
@@ -42,12 +43,12 @@ template ProcessMessages(
     var STATE_LEAF_PUB_Y_IDX = 1;
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
     var STATE_LEAF_TIMESTAMP_IDX = 3;
-    
+
     // Note that we sha256 hash some values from the contract, pass in the hash
     // as a public input, and pass in said values as private inputs. This saves
     // a lot of gas for the verifier at the cost of constraints for the prover.
 
-    //  ----------------------------------------------------------------------- 
+    //  -----------------------------------------------------------------------
     // The only public input, which is the SHA256 hash of a values provided
     // by the contract
     signal input inputHash;
@@ -116,13 +117,13 @@ template ProcessMessages(
     signal private input currentBallots[batchSize][BALLOT_LENGTH];
     signal private input currentBallotsPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
 
-    signal private input currentVoteWeights[batchSize];
-    signal private input currentVoteWeightsPathElements[batchSize][voteOptionTreeDepth][TREE_ARITY - 1];
+    signal private input currentVoteLeaves[batchSize];
+    signal private input currentVoteLeavesPathElements[batchSize][voteOptionTreeDepth][TREE_ARITY - 1];
 
     var msgTreeZeroValue = 8370432830353022751713833565135785980866757267633941821328460903436894336785;
 
     // Verify currentSbCommitment
-    component currentSbCommitmentHasher = Hasher3(); 
+    component currentSbCommitmentHasher = Hasher3();
     currentSbCommitmentHasher.in[0] <== currentStateRoot;
     currentSbCommitmentHasher.in[1] <== currentBallotRoot;
     currentSbCommitmentHasher.in[2] <== currentSbSalt;
@@ -146,7 +147,7 @@ template ProcessMessages(
 
     inputHasher.hash === inputHash;
 
-    //  ----------------------------------------------------------------------- 
+    //  -----------------------------------------------------------------------
     //      0. Ensure that the maximum vote options signal is valid and whether
     //      the maximum users signal is valid
     component maxVoValid = LessEqThan(32);
@@ -171,7 +172,7 @@ template ProcessMessages(
         messageHashers[i].encPubKey[1] <== encPubKeys[i][1];
     }
 
-    //  ----------------------------------------------------------------------- 
+    //  -----------------------------------------------------------------------
     //  Check whether each message exists in the message tree. Throw if
     //  otherwise (aka create a constraint that prevents such a proof).
 
@@ -222,7 +223,7 @@ template ProcessMessages(
         msgBatchLeavesExists.path_index[i - msgBatchDepth] <== msgBatchPathIndices.out[i];
     }
 
-    //  ----------------------------------------------------------------------- 
+    //  -----------------------------------------------------------------------
     //  Decrypt each Message to a Command
 
     // MessageToCommand derives the ECDH shared key from the coordinator's
@@ -255,7 +256,7 @@ template ProcessMessages(
     stateRoots[batchSize] <== currentStateRoot;
     ballotRoots[batchSize] <== currentBallotRoot;
 
-    //  ----------------------------------------------------------------------- 
+    //  -----------------------------------------------------------------------
     //  Process messages in reverse order
     component processors[batchSize];
     for (var i = batchSize - 1; i >= 0; i --) {
@@ -279,7 +280,7 @@ template ProcessMessages(
         for (var j = 0; j < stateTreeDepth; j ++) {
             for (var k = 0; k < TREE_ARITY - 1; k ++) {
 
-                processors[i].stateLeafPathElements[j][k] 
+                processors[i].stateLeafPathElements[j][k]
                     <== currentStateLeavesPathElements[i][j][k];
 
                 processors[i].ballotPathElements[j][k]
@@ -287,12 +288,12 @@ template ProcessMessages(
             }
         }
 
-        processors[i].currentVoteWeight <== currentVoteWeights[i];
+        processors[i].currentVoteLeaf <== currentVoteLeaves[i];
 
         for (var j = 0; j < voteOptionTreeDepth; j ++) {
             for (var k = 0; k < TREE_ARITY - 1; k ++) {
-                processors[i].currentVoteWeightsPathElements[j][k]
-                    <== currentVoteWeightsPathElements[i][j][k];
+                processors[i].currentVoteLeafPathElements[j][k]
+                    <== currentVoteLeavesPathElements[i][j][k];
             }
         }
 
@@ -300,7 +301,7 @@ template ProcessMessages(
         processors[i].cmdNewPubKey[0] <== commands[i].newPubKey[0];
         processors[i].cmdNewPubKey[1] <== commands[i].newPubKey[1];
         processors[i].cmdVoteOptionIndex <== commands[i].voteOptionIndex;
-        processors[i].cmdNewVoteWeight <== commands[i].newVoteWeight;
+        processors[i].cmdNewVoteLeaf <== commands[i].newVoteLeaf;
         processors[i].cmdNonce <== commands[i].nonce;
         processors[i].cmdPollId <== commands[i].pollId;
         processors[i].cmdSalt <== commands[i].salt;
@@ -358,13 +359,13 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     signal input ballot[BALLOT_LENGTH];
     signal input ballotPathElements[stateTreeDepth][TREE_ARITY - 1];
 
-    signal input currentVoteWeight;
-    signal input currentVoteWeightsPathElements[voteOptionTreeDepth][TREE_ARITY - 1];
+    signal input currentVoteLeaf;
+    signal input currentVoteLeafPathElements[voteOptionTreeDepth][TREE_ARITY - 1];
 
     signal input cmdStateIndex;
     signal input cmdNewPubKey[2];
     signal input cmdVoteOptionIndex;
-    signal input cmdNewVoteWeight;
+    signal input cmdNewVoteLeaf;
     signal input cmdNonce;
     signal input cmdPollId;
     signal input cmdSalt;
@@ -375,36 +376,36 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     signal output newStateRoot;
     signal output newBallotRoot;
 
-    //  ----------------------------------------------------------------------- 
+    //  -----------------------------------------------------------------------
     // 1. Transform a state leaf and a ballot with a command.
     // The result is a new state leaf, a new ballot, and an isValid signal (0
     // or 1)
     component transformer = StateLeafAndBallotTransformer();
-    transformer.numSignUps                     <== numSignUps;
-    transformer.maxVoteOptions                 <== maxVoteOptions;
-    transformer.slPubKey[STATE_LEAF_PUB_X_IDX] <== stateLeaf[STATE_LEAF_PUB_X_IDX];
-    transformer.slPubKey[STATE_LEAF_PUB_Y_IDX] <== stateLeaf[STATE_LEAF_PUB_Y_IDX];
-    transformer.slVoiceCreditBalance           <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX];
-    transformer.slTimestamp                    <== stateLeaf[STATE_LEAF_TIMESTAMP_IDX];
-    transformer.pollEndTimestamp               <== pollEndTimestamp;
-    transformer.ballotNonce                    <== ballot[BALLOT_NONCE_IDX];
-    transformer.ballotCurrentVotesForOption    <== currentVoteWeight;
-    transformer.cmdStateIndex                  <== cmdStateIndex;
-    transformer.cmdNewPubKey[0]                <== cmdNewPubKey[0];
-    transformer.cmdNewPubKey[1]                <== cmdNewPubKey[1];
-    transformer.cmdVoteOptionIndex             <== cmdVoteOptionIndex;
-    transformer.cmdNewVoteWeight               <== cmdNewVoteWeight;
-    transformer.cmdNonce                       <== cmdNonce;
-    transformer.cmdPollId                      <== cmdPollId;
-    transformer.cmdSalt                        <== cmdSalt;
-    transformer.cmdSigR8[0]                    <== cmdSigR8[0];
-    transformer.cmdSigR8[1]                    <== cmdSigR8[1];
-    transformer.cmdSigS                        <== cmdSigS;
+    transformer.numSignUps                      <== numSignUps;
+    transformer.maxVoteOptions                  <== maxVoteOptions;
+    transformer.slPubKey[STATE_LEAF_PUB_X_IDX]  <== stateLeaf[STATE_LEAF_PUB_X_IDX];
+    transformer.slPubKey[STATE_LEAF_PUB_Y_IDX]  <== stateLeaf[STATE_LEAF_PUB_Y_IDX];
+    transformer.slVoiceCreditBalance            <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX];
+    transformer.slTimestamp                     <== stateLeaf[STATE_LEAF_TIMESTAMP_IDX];
+    transformer.pollEndTimestamp                <== pollEndTimestamp;
+    transformer.ballotNonce                     <== ballot[BALLOT_NONCE_IDX];
+    transformer.ballotCurrentVoteLeafForOption  <== currentVoteLeaf;
+    transformer.cmdStateIndex                   <== cmdStateIndex;
+    transformer.cmdNewPubKey[0]                 <== cmdNewPubKey[0];
+    transformer.cmdNewPubKey[1]                 <== cmdNewPubKey[1];
+    transformer.cmdVoteOptionIndex              <== cmdVoteOptionIndex;
+    transformer.cmdNewVoteLeaf                  <== cmdNewVoteLeaf;
+    transformer.cmdNonce                        <== cmdNonce;
+    transformer.cmdPollId                       <== cmdPollId;
+    transformer.cmdSalt                         <== cmdSalt;
+    transformer.cmdSigR8[0]                     <== cmdSigR8[0];
+    transformer.cmdSigR8[1]                     <== cmdSigR8[1];
+    transformer.cmdSigS                         <== cmdSigS;
     for (var i = 0; i < PACKED_CMD_LENGTH; i ++) {
         transformer.packedCommand[i]           <== packedCmd[i];
     }
 
-    //  ----------------------------------------------------------------------- 
+    //  -----------------------------------------------------------------------
     // 2. If isValid is 0, generate indices for leaf 0
     //    Otherwise, generate indices for commmand.stateIndex
     component stateIndexMux = Mux1();
@@ -415,7 +416,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     component stateLeafPathIndices = QuinGeneratePathIndices(stateTreeDepth);
     stateLeafPathIndices.in <== stateIndexMux.out;
 
-    //  ----------------------------------------------------------------------- 
+    //  -----------------------------------------------------------------------
     // 3. Verify that the original state leaf exists in the given state root
     component stateLeafQip = QuinTreeInclusionProof(stateTreeDepth);
     component stateLeafHasher = Hasher4();
@@ -431,7 +432,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     }
     stateLeafQip.root === currentStateRoot;
 
-    //  ----------------------------------------------------------------------- 
+    //  -----------------------------------------------------------------------
     // 4. Verify that the original ballot exists in the given ballot root
     component ballotHasher = HashLeftRight();
     ballotHasher.left <== ballot[BALLOT_NONCE_IDX];
@@ -447,14 +448,25 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     }
     ballotQip.root === currentBallotRoot;
 
-    //  ----------------------------------------------------------------------- 
-    // 5. Verify that currentVoteWeight exists in the ballot's vote option root
+    //  -----------------------------------------------------------------------
+    // 5. Verify that currentVoteLeaf exists in the ballot's vote option root
     // at cmdVoteOptionIndex
+
+    component currentVoteLeafSq = CalculateSquaredVoteLeaf();
+    currentVoteLeafSq.packedLeaf <== currentVoteLeaf;
+
+    component newVoteLeafMux = Mux1();
+    newVoteLeafMux.s <== transformer.isValid;
+    newVoteLeafMux.c[0] <== currentVoteLeaf;
+    newVoteLeafMux.c[1] <== cmdNewVoteLeaf;
+
+    component newVoteLeafSq = CalculateSquaredVoteLeaf();
+    newVoteLeafSq.packedLeaf <== newVoteLeafMux.out;
 
     signal b;
     signal c;
-    b <== currentVoteWeight * currentVoteWeight;
-    c <== cmdNewVoteWeight * cmdNewVoteWeight;
+    b <== currentVoteLeafSq.out;
+    c <== newVoteLeafSq.out;
 
     component enoughVoiceCredits = GreaterEqThan(252);
     enoughVoiceCredits.in[0] <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + b - c;
@@ -473,20 +485,20 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     currentVoteWeightPathIndices.in <== cmdVoteOptionIndexMux.out;
 
     component currentVoteWeightQip = QuinTreeInclusionProof(voteOptionTreeDepth);
-    currentVoteWeightQip.leaf <== currentVoteWeight;
+    currentVoteWeightQip.leaf <== currentVoteLeaf;
     for (var i = 0; i < voteOptionTreeDepth; i ++) {
         currentVoteWeightQip.path_index[i] <== currentVoteWeightPathIndices.out[i];
         for (var j = 0; j < TREE_ARITY - 1; j++) {
-            currentVoteWeightQip.path_elements[i][j] <== currentVoteWeightsPathElements[i][j];
+            currentVoteWeightQip.path_elements[i][j] <== currentVoteLeafPathElements[i][j];
         }
     }
 
     currentVoteWeightQip.root === ballot[BALLOT_VO_ROOT_IDX];
 
-    component voteWeightMux = Mux1();
-    voteWeightMux.s <== isMessageValid.out;
-    voteWeightMux.c[0] <== currentVoteWeight;
-    voteWeightMux.c[1] <== cmdNewVoteWeight;
+    component voteLeafMux = Mux1();
+    voteLeafMux.s <== isMessageValid.out;
+    voteLeafMux.c[0] <== currentVoteLeaf;
+    voteLeafMux.c[1] <== cmdNewVoteLeaf;
 
     component newSlVoiceCreditBalance = Mux1();
     newSlVoiceCreditBalance.c[0] <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX];
@@ -498,14 +510,14 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     voiceCreditBalanceMux.c[0] <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX];
     voiceCreditBalanceMux.c[1] <== newSlVoiceCreditBalance.out;
 
-    //  ----------------------------------------------------------------------- 
+    //  -----------------------------------------------------------------------
     // 5.1. Update the ballot's vote option root with the new vote weight
     component newVoteOptionTreeQip = QuinTreeInclusionProof(voteOptionTreeDepth);
-    newVoteOptionTreeQip.leaf <== voteWeightMux.out;
+    newVoteOptionTreeQip.leaf <== voteLeafMux.out;
     for (var i = 0; i < voteOptionTreeDepth; i ++) {
         newVoteOptionTreeQip.path_index[i] <== currentVoteWeightPathIndices.out[i];
         for (var j = 0; j < TREE_ARITY - 1; j++) {
-            newVoteOptionTreeQip.path_elements[i][j] <== currentVoteWeightsPathElements[i][j];
+            newVoteOptionTreeQip.path_elements[i][j] <== currentVoteLeafPathElements[i][j];
         }
     }
 
@@ -517,7 +529,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     newBallotVoRootMux.c[1] <== newVoteOptionTreeQip.root;
     newBallotVoRoot <== newBallotVoRootMux.out;
 
-    //  ----------------------------------------------------------------------- 
+    //  -----------------------------------------------------------------------
     // 6. Generate a new state root
     component newStateLeafHasher = Hasher4();
     newStateLeafHasher.in[STATE_LEAF_PUB_X_IDX] <== transformer.newSlPubKey[STATE_LEAF_PUB_X_IDX];
@@ -535,9 +547,9 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     }
     newStateRoot <== newStateLeafQip.root;
 
-    //  ----------------------------------------------------------------------- 
+    //  -----------------------------------------------------------------------
     // 7. Generate a new ballot root
-    
+
     component newBallotNonceMux = Mux1();
     newBallotNonceMux.s <== isMessageValid.out;
     newBallotNonceMux.c[0] <== ballot[BALLOT_NONCE_IDX];
@@ -566,7 +578,7 @@ template ProcessMessagesInputHasher() {
     // - batchEndIndex (50 bits)
 
     // Hash coordPubKey:
-    // - coordPubKeyHash 
+    // - coordPubKeyHash
 
     // Other inputs that can't be compressed or packed:
     // - msgRoot, currentSbCommitment, newSbCommitment
@@ -585,7 +597,7 @@ template ProcessMessagesInputHasher() {
     signal output batchStartIndex;
     signal output batchEndIndex;
     signal output hash;
-    
+
     // 1. Unpack packedVals and ensure that it is valid
     component unpack = UnpackElement(4);
     unpack.in <== packedVals;

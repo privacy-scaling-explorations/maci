@@ -4,7 +4,7 @@ import * as fs from 'fs'
 import { genProof, verifyProof, extractVk } from 'maci-circuits'
 import { hashLeftRight, hash3 } from 'maci-crypto'
 import { PrivKey, Keypair } from 'maci-domainobjs'
-import { genTallyResultCommitment } from 'maci-core'
+import { genTallyResultCommitment, genTallyResultSubtotalCommitment } from 'maci-core'
 
 import {
     parseArtifact,
@@ -273,7 +273,7 @@ const genProofs = async (args: any) => {
     }
 
     // Build an off-chain representation of the MACI contract using data in the contract storage
-    
+
     const maciState = await genMaciStateFromContract(
         signer.provider,
         maciAddress,
@@ -292,7 +292,7 @@ const genProofs = async (args: any) => {
     const numMessages = poll.messages.length
     let totalMessageBatches = numMessages <= messageBatchSize ?
     1
-    : 
+    :
     Math.floor(numMessages / messageBatchSize)
 
     if (numMessages > messageBatchSize && numMessages % messageBatchSize > 0) {
@@ -328,7 +328,7 @@ const genProofs = async (args: any) => {
             console.error('Error: generated an invalid proof')
             return 1
         }
-        
+
         processProofs.push({
             circuitInputs,
             proof: r.proof,
@@ -343,7 +343,7 @@ const genProofs = async (args: any) => {
     const numStateLeaves = poll.stateLeaves.length
     let totalTallyBatches = numStateLeaves <= tallyBatchSize ?
     1
-    : 
+    :
     Math.floor(numStateLeaves / tallyBatchSize)
     if (
         numStateLeaves > tallyBatchSize &&
@@ -355,6 +355,7 @@ const genProofs = async (args: any) => {
     let tallyCircuitInputs
     while (poll.hasUntalliedBallots()) {
         tallyCircuitInputs = poll.tallyVotes()
+
         const r = genProof(
             tallyCircuitInputs,
             rapidsnarkExe,
@@ -373,7 +374,7 @@ const genProofs = async (args: any) => {
             console.error('Error: generated an invalid proof')
             return 1
         }
-        
+
         tallyProofs.push({
             circuitInputs: tallyCircuitInputs,
             proof: r.proof,
@@ -393,7 +394,7 @@ const genProofs = async (args: any) => {
         pollId,
         newTallyCommitment: asHex(tallyCircuitInputs.newTallyCommitment),
         results: {
-            tally: poll.results.map((x) => x.toString()),
+            tally: poll.results.map((x) => [ x[0].toString(), x[1].toString() ]),
             salt: asHex(tallyCircuitInputs.newResultsRootSalt),
         },
         totalSpentVoiceCredits: {
@@ -409,7 +410,7 @@ const genProofs = async (args: any) => {
     // Verify the results
     // Compute newResultsCommitment
     const newResultsCommitment = genTallyResultCommitment(
-        tallyFileData.results.tally.map((x) => BigInt(x)),
+        tallyFileData.results.tally.map((x) => [ BigInt(x[0]), BigInt(x[1]) ]),
         BigInt(tallyFileData.results.salt),
         poll.treeDepths.voteOptionTreeDepth,
     )
@@ -420,7 +421,7 @@ const genProofs = async (args: any) => {
     )
 
     // Compute newPerVOSpentVoiceCreditsCommitment
-    const newPerVOSpentVoiceCreditsCommitment = genTallyResultCommitment(
+    const newPerVOSpentVoiceCreditsCommitment = genTallyResultSubtotalCommitment(
         tallyFileData.perVOSpentVoiceCredits.tally.map((x) => BigInt(x)),
         BigInt(tallyFileData.perVOSpentVoiceCredits.salt),
         poll.treeDepths.voteOptionTreeDepth,

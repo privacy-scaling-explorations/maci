@@ -20,6 +20,7 @@ import {
     Keypair,
     StateLeaf,
     Ballot,
+    VoteLeaf
 } from 'maci-domainobjs'
 
 interface TreeDepths {
@@ -91,7 +92,7 @@ class Poll {
     public spentVoiceCreditSubtotalSalts: {[key: number]: BigInt} = {}
 
     // For vote tallying
-    public results: BigInt[] = []
+    public results: BigInt[][] = []
     public perVOSpentVoiceCredits: BigInt[] = []
     public numBatchesTallied = 0
 
@@ -129,7 +130,9 @@ class Poll {
         )
 
         for (let i = 0; i < this.maxValues.maxVoteOptions; i ++) {
-            this.results.push(BigInt(0))
+            this.results[i] = []
+            this.results[i].push(BigInt(0))
+            this.results[i].push(BigInt(0))
             this.perVOSpentVoiceCredits.push(BigInt(0))
         }
 
@@ -225,7 +228,7 @@ class Poll {
         let totalBatches =
             this.messages.length <= batchSize ?
             1
-            : 
+            :
             Math.floor(this.messages.length / batchSize)
 
         if (
@@ -402,8 +405,8 @@ class Poll {
         circuitInputs.currentStateLeavesPathElements = currentStateLeavesPathElements
         circuitInputs.currentBallots = currentBallots.map((x) => x.asCircuitInputs())
         circuitInputs.currentBallotsPathElements = currentBallotsPathElements
-        circuitInputs.currentVoteWeights = currentVoteWeights
-        circuitInputs.currentVoteWeightsPathElements = currentVoteWeightsPathElements
+        circuitInputs.currentVoteLeaves = currentVoteWeights
+        circuitInputs.currentVoteLeavesPathElements = currentVoteWeightsPathElements
 
         this.numBatchesProcessed ++
 
@@ -442,7 +445,7 @@ class Poll {
     }
 
     /*
-     * Generates inputs for the ProcessMessages circuit. 
+     * Generates inputs for the ProcessMessages circuit.
      */
     public genProcessMessagesCircuitInputsPartial = (
         _index: number,
@@ -511,7 +514,7 @@ class Poll {
         ])
 
         // Generate a SHA256 hash of inputs which the contract provides
-        const packedVals = 
+        const packedVals =
             BigInt(this.maxValues.maxVoteOptions) +
             (BigInt(this.numSignUps) << BigInt(50)) +
             (BigInt(_index) << BigInt(100)) +
@@ -546,7 +549,7 @@ class Poll {
         }
         const stateLeaves = this.stateLeaves.map((x) => x.copy())
         const ballots = this.ballots.map((x) => x.copy())
-        
+
         for (let i = 0; i < this.messages.length; i ++) {
             const messageIndex = this.messages.length - i - 1
             const r = this.processMessage(messageIndex)
@@ -621,11 +624,13 @@ class Poll {
         }
 
         const prevSpentCred = ballot.votes[Number(command.voteOptionIndex)]
+        const newVoteLeaf = VoteLeaf.unpack(command.newVoteLeaf)
+        const creditsToSpend = BigInt(newVoteLeaf.pos) + BigInt(newVoteLeaf.neg)
 
         const voiceCreditsLeft =
             BigInt(stateLeaf.voiceCreditBalance) +
             (BigInt(prevSpentCred) * BigInt(prevSpentCred)) -
-            (BigInt(command.newVoteWeight) * BigInt(command.newVoteWeight))
+            (creditsToSpend * creditsToSpend)
 
 
         // If the remaining voice credits is insufficient, do nothing
@@ -650,7 +655,7 @@ class Poll {
         const newBallot = ballot.copy()
         newBallot.nonce = BigInt(newBallot.nonce) + BigInt(1)
         newBallot.votes[Number(command.voteOptionIndex)] =
-            command.newVoteWeight
+            command.newVoteLeaf
 
         const originalStateLeafPathElements
             = this.stateTree.genMerklePath(Number(stateLeafIndex)).pathElements
@@ -753,7 +758,7 @@ class Poll {
             ])
 
         const ballots: Ballot[] = []
-        const currentResults = this.results.map((x) => BigInt(x.toString()))
+        const currentResults = this.results.map((x) => [ BigInt(x[0]).toString(), BigInt(x[1]).toString() ])
         const currentPerVOSpentVoiceCredits = this.perVOSpentVoiceCredits.map((x) => BigInt(x.toString()))
         const currentSpentVoiceCreditSubtotal = BigInt(this.totalSpentVoiceCredits.toString())
 
@@ -770,14 +775,17 @@ class Poll {
 
             for (let j = 0; j < this.maxValues.maxVoteOptions; j++) {
                 const v = BigInt(this.ballots[i].votes[j])
+                const voteLeaf = VoteLeaf.unpack(v)
+                const spentCredits = BigInt(voteLeaf.pos) + BigInt(voteLeaf.neg)
 
-                this.results[j] = BigInt(this.results[j]) + v
+                this.results[j][0] = BigInt(this.results[j][0]) + BigInt(voteLeaf.pos)
+                this.results[j][1] = BigInt(this.results[j][1]) + BigInt(voteLeaf.neg)
 
                 this.perVOSpentVoiceCredits[j] =
-                    BigInt(this.perVOSpentVoiceCredits[j]) + (BigInt(v) * BigInt(v))
+                    BigInt(this.perVOSpentVoiceCredits[j]) + (spentCredits * spentCredits)
 
                 this.totalSpentVoiceCredits =
-                    BigInt(this.totalSpentVoiceCredits) + BigInt(v) * BigInt(v)
+                    BigInt(this.totalSpentVoiceCredits) + (spentCredits * spentCredits)
             }
         }
 
@@ -880,6 +888,7 @@ class Poll {
     }
 
     public genResultsCommitment = (_salt: BigInt) => {
+      const bitsPerVal = BigInt(50)
         const resultsTree = new IncrementalQuinTree(
             this.treeDepths.voteOptionTreeDepth,
             BigInt(0),
@@ -888,7 +897,10 @@ class Poll {
         )
 
         for (const r of this.results) {
-            resultsTree.insert(r)
+            const [ pos, neg ] = [ BigInt(r[0]), BigInt(r[1]) ]
+            const voteLeaf = ((pos << bitsPerVal) + neg).toString()
+
+            resultsTree.insert(voteLeaf)
         }
 
         return hashLeftRight(resultsTree.root, _salt)
@@ -905,7 +917,10 @@ class Poll {
             }
             for (let j = 0; j < this.results.length; j ++) {
                 const v = BigInt(this.ballots[i].votes[j])
-                subtotal = BigInt(subtotal) + v * v
+                const voteLeaf = VoteLeaf.unpack(v)
+                const spentCredits = BigInt(voteLeaf.pos) + BigInt(voteLeaf.neg)
+
+                subtotal = BigInt(subtotal) + (spentCredits * spentCredits)
             }
         }
         return hashLeftRight(subtotal, _salt)
@@ -938,7 +953,10 @@ class Poll {
             }
             for (let j = 0; j < this.results.length; j ++) {
                 const v = BigInt(this.ballots[i].votes[j])
-                leaves[j] = BigInt(leaves[j]) + v * v
+                const voteLeaf = VoteLeaf.unpack(v)
+                const spentCredits = BigInt(voteLeaf.pos) + BigInt(voteLeaf.neg)
+
+                leaves[j] = BigInt(leaves[j]) + (spentCredits * spentCredits)
             }
         }
 
@@ -1002,7 +1020,7 @@ class Poll {
         copied.maciStateRef = this.maciStateRef
         copied.messageAq = this.messageAq.copy()
         copied.messageTree = this.messageTree.copy()
-        copied.results = this.results.map((x: BigInt) => BigInt(x.toString()))
+        copied.results = this.results.map((x) => [ BigInt(x[0]), BigInt(x[1]) ])
         copied.perVOSpentVoiceCredits = this.perVOSpentVoiceCredits.map((x: BigInt) => BigInt(x.toString()))
 
         copied.numBatchesProcessed = Number(this.numBatchesProcessed.toString())
@@ -1032,7 +1050,7 @@ class Poll {
     }
 
     public equals = (p: Poll): boolean => {
-        const result = 
+        const result =
             this.duration === p.duration &&
             this.coordinatorKeypair.equals(p.coordinatorKeypair) &&
             this.treeDepths.intStateTreeDepth ===
@@ -1189,7 +1207,7 @@ class MaciState {
                 return false
             }
         }
-        
+
         return true
     }
 
@@ -1199,7 +1217,7 @@ class MaciState {
         numSignUps: number,
     ) => {
         // Note: the << operator has lower precedence than +
-        const packedVals = 
+        const packedVals =
             (BigInt(batchStartIndex) / BigInt(batchSize)) +
             (BigInt(numSignUps) << BigInt(50))
 
@@ -1289,10 +1307,26 @@ const genTallyResultCommitment = (
     salt: BigInt,
     depth: number,
 ): BigInt => {
+    const tree = new IncrementalQuinTree(depth, BigInt(0), 5, hash5)
+    const bitsPerVal = BigInt(50)
 
+    for (const result of results) {
+        const [ pos, neg ] = [ BigInt(result[0]), BigInt(result[1]) ]
+        const voteLeaf = ((pos << bitsPerVal) + neg).toString()
+
+        tree.insert(voteLeaf)
+    }
+    return hashLeftRight(tree.root, salt)
+}
+
+const genTallyResultSubtotalCommitment = (
+    results: BigInt[],
+    salt: BigInt,
+    depth: number,
+): BigInt => {
     const tree = new IncrementalQuinTree(depth, BigInt(0), 5, hash5)
     for (const result of results) {
-        tree.insert(BigInt(result))
+        tree.insert(result)
     }
     return hashLeftRight(tree.root, salt)
 }
@@ -1305,5 +1339,6 @@ export {
     genProcessVkSig,
     genTallyVkSig,
     genTallyResultCommitment,
+    genTallyResultSubtotalCommitment,
     STATE_TREE_DEPTH,
 }

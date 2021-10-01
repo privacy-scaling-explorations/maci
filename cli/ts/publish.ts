@@ -8,6 +8,7 @@ import {
     PrivKey,
     Keypair,
     Command,
+    VoteLeaf
 } from 'maci-domainobjs'
 
 import {
@@ -97,12 +98,22 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-w', '--new-vote-weight'],
+        ['-w', '--vote-weight'],
         {
             required: true,
             action: 'store',
             type: 'int',
             help: 'The new vote weight',
+        }
+    )
+
+    parser.addArgument(
+        ['-wv', '--negative-vote-weight'],
+        {
+            required: false,
+            action: 'store',
+            type: 'int',
+            help: 'The new negative vote weight',
         }
     )
 
@@ -170,7 +181,7 @@ const publish = async (args: any) => {
     }
 
     const userMaciPrivkey = PrivKey.unserialize(serializedPrivkey)
-    
+
     // State index
     const stateIndex = BigInt(args.state_index)
     if (stateIndex < 0) {
@@ -250,7 +261,7 @@ const publish = async (args: any) => {
     /*
      * TODO: Find a way to batch transaction requests via Hardhat; otherwise,
      * use Multicall
-    const [maxValues, coordinatorPubKeyResult] = 
+    const [maxValues, coordinatorPubKeyResult] =
         await batchTransactionRequests(
             ethProvider,
             [
@@ -276,15 +287,20 @@ const publish = async (args: any) => {
         BigInt(coordinatorPubKeyResult.x.toString()),
         BigInt(coordinatorPubKeyResult.y.toString()),
     ])
-    
+
     const pollContractEthers = new ethers.Contract(
         pollAddr,
         pollContractAbi,
         signer,
     )
 
-    // The new vote weight
-    const newVoteWeight = BigInt(args.new_vote_weight)
+    // The new vote leaf
+    const positive = args.vote_weight
+    const optional = args.negative_vote_weight
+
+    const negative = optional == null ? 0 : optional
+
+    const newVoteLeaf = new VoteLeaf(BigInt(positive), BigInt(negative))
 
     const encKeypair = new Keypair()
 
@@ -292,7 +308,7 @@ const publish = async (args: any) => {
         stateIndex,
         userMaciPubKey,
         voteOptionIndex,
-        newVoteWeight,
+        newVoteLeaf.pack(),
         nonce,
         pollId,
         salt,

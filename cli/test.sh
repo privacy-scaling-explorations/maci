@@ -18,7 +18,7 @@ node build/index.js publish \
     -sk macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c \
     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -i 1 -v 0 -w 9 -n 1 -o 0
-    
+
 node build/index.js timeTravel -s 30 && \
 node build/index.js mergeMessages -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a -o 0 && \
 node build/index.js mergeSignups -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a -o 0 && \

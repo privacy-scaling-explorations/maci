@@ -75,7 +75,7 @@ class VerifyingKey {
         }
 
         return new VerifyingKey(
-            new G1Point( 
+            new G1Point(
                 BigInt(data.alpha1.x),
                 BigInt(data.alpha1.y),
             ),
@@ -101,10 +101,10 @@ class VerifyingKey {
             icEqual = icEqual && this.ic[i].equals(vk.ic[i])
         }
 
-        return this.alpha1.equals(vk.alpha1) && 
-            this.beta2.equals(vk.beta2) && 
-            this.gamma2.equals(vk.gamma2) && 
-            this.delta2.equals(vk.delta2) && 
+        return this.alpha1.equals(vk.alpha1) &&
+            this.beta2.equals(vk.beta2) &&
+            this.gamma2.equals(vk.gamma2) &&
+            this.delta2.equals(vk.delta2) &&
             icEqual
     }
 
@@ -123,7 +123,7 @@ class VerifyingKey {
         }
 
         return new VerifyingKey(
-            new G1Point( 
+            new G1Point(
                 BigInt(this.alpha1.x.toString()),
                 BigInt(this.alpha1.y.toString()),
             ),
@@ -224,7 +224,7 @@ class PrivKey {
             const value = BigInt('0x' + x)
             validValue = value < SNARK_FIELD_SIZE
         } catch {
-            // comment to make linter happy 
+            // comment to make linter happy
         }
 
         return correctPrefix && validValue
@@ -252,7 +252,7 @@ class PubKey {
     }
 
     public asContractParam = () => {
-        return { 
+        return {
             x: this.rawPubKey[0].toString(),
             y: this.rawPubKey[1].toString(),
         }
@@ -272,7 +272,7 @@ class PubKey {
     public serialize = (): string => {
         // Blank leaves have pubkey [0, 0], which packPubKey does not support
         if (
-            BigInt(this.rawPubKey[0]) === BigInt(0) && 
+            BigInt(this.rawPubKey[0]) === BigInt(0) &&
             BigInt(this.rawPubKey[1]) === BigInt(0)
         ) {
             return SERIALIZED_PUB_KEY_PREFIX + 'z'
@@ -336,7 +336,7 @@ class Keypair {
     public copy = (): Keypair => {
         return new Keypair(this.privKey.copy())
     }
-    
+
     public static genEcdhSharedKey(
         privKey: PrivKey,
         pubKey: PubKey,
@@ -354,17 +354,16 @@ class Keypair {
             this.pubKey.rawPubKey[1] === keypair.pubKey.rawPubKey[1]
 
         // If this assertion fails, something is very wrong and this function
-        // should not return anything 
-        // XOR is equivalent to: (x && !y) || (!x && y ) 
-        const x = (equalPrivKey && equalPubKey) 
-        const y = (!equalPrivKey && !equalPubKey) 
+        // should not return anything
+        // XOR is equivalent to: (x && !y) || (!x && y )
+        const x = (equalPrivKey && equalPubKey)
+        const y = (!equalPrivKey && !equalPubKey)
 
         assert((x && !y) || (!x && y))
 
         return equalPrivKey
     }
 }
-
 
 interface IStateLeaf {
     pubKey: PubKey;
@@ -375,12 +374,123 @@ interface VoteOptionTreeLeaf {
     votes: BigInt;
 }
 
+interface IVoteLeaf {
+    pos: BigInt;
+    neg: BigInt;
+}
+
+/*
+ * To represent both positive and negative votes for a particular vote option,
+ * we shift the positive votes left by 248 bits, and add the negative votes.
+ *
+ * The maximum value for a positive or negative vote is
+ * 0xfffffffffffffffffffffffffffffff.
+ *
+ * For instance, we encode 0x80 positive votes and 0x0100 negative votes as such:
+ * 0x800000000000000000000000000000100
+ *
+ * The maximum value per vote is 2 ** 124 - 1. We chose this value so that the maximum
+ * encoded value is always less than the BabyJub field size:
+ *
+ * 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff <
+ * 0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001
+ *
+ */
+
+const VOTE_LEAF_BITS_PER_VAL = 25
+const MAX_VOTE_LEAF_POS_OR_NEG_VAL = BigInt(Math.pow(2, VOTE_LEAF_BITS_PER_VAL) - 1)
+
+class VoteLeaf implements IVoteLeaf {
+    public pos: BigInt
+    public neg: BigInt
+
+    constructor(
+        _pos: BigInt,
+        _neg: BigInt,
+        debug = false,
+    ) {
+        if (!debug) {
+            assert(VoteLeaf.isWithinRange(_pos))
+            assert(VoteLeaf.isWithinRange(_neg))
+        }
+        this.pos = _pos
+        this.neg = _neg
+    }
+
+    /*
+     * Convert this object into a number where the last 124 bits represent the
+     * negative votes and the remaining bits represent the positive votes.  For
+     * instance, we encode 0x80 positive votes and 0x0100 negative votes as
+     * such:
+     * 0x800000000000000000000000000000100
+     */
+    public pack = (): BigInt => {
+        const [ pos, neg ] = [ BigInt(this.pos), BigInt(this.neg) ]
+        const packed = (pos << BigInt(VOTE_LEAF_BITS_PER_VAL)) + neg
+        assert(packed < SNARK_FIELD_SIZE)
+
+        return packed
+    }
+
+    /*
+     * Returns the same value as pack() but is named as such for consistency
+     * with other domain objects.
+     */
+    public asCircuitInputs = (): BigInt => {
+        return this.pack()
+    }
+
+    /*
+     * Deep-copies this object.
+     */
+    public copy = (): VoteLeaf => {
+        return new VoteLeaf(
+            BigInt(this.pos.toString()),
+            BigInt(this.neg.toString()),
+        )
+    }
+
+    /*
+     * Converts the output of pack() into a VoteLeaf
+     */
+    public static unpack = (_voteData: BigInt): VoteLeaf => {
+        const bitsPerVal = BigInt(VOTE_LEAF_BITS_PER_VAL)
+        const packedLeaf = BigInt(_voteData)
+
+        const pos = packedLeaf >> bitsPerVal
+        const neg = packedLeaf - (pos << bitsPerVal)
+
+        // No need to do a range check here as the constructor does it
+        return new VoteLeaf(pos, neg)
+    }
+
+    /*
+     * Checks whether the given value is less than or equal to 2 ** 124 - 1
+     */
+    public static isWithinRange = (_value: BigInt): boolean => {
+        return _value <= MAX_VOTE_LEAF_POS_OR_NEG_VAL
+    }
+
+    /*
+     * Range-checks a packed vote leaf value.
+     */
+    public static isValidVoteData = (_voteData: BigInt): boolean => {
+        const bitsPerVal = BigInt(VOTE_LEAF_BITS_PER_VAL)
+        const packedLeaf = BigInt(_voteData)
+
+        const pos = packedLeaf >> bitsPerVal
+        const neg = packedLeaf - (pos << bitsPerVal)
+
+        return VoteLeaf.isWithinRange(pos) && VoteLeaf.isWithinRange(neg)
+    }
+}
+
 /*
  * An encrypted command and signature.
  */
 class Message {
     public data: BigInt[]
-    public static DATA_LENGTH = 10 
+    public static DATA_LENGTH = 10
 
     constructor (
         data: BigInt[],
@@ -650,7 +760,7 @@ interface ICommand {
     stateIndex: BigInt;
     newPubKey: PubKey;
     voteOptionIndex: BigInt;
-    newVoteWeight: BigInt;
+    newVoteLeaf: BigInt;
     nonce: BigInt;
 
     sign: (PrivKey) => Signature;
@@ -664,7 +774,7 @@ class Command implements ICommand {
     public stateIndex: BigInt
     public newPubKey: PubKey
     public voteOptionIndex: BigInt
-    public newVoteWeight: BigInt
+    public newVoteLeaf: BigInt
     public nonce: BigInt
     public pollId: BigInt
     public salt: BigInt
@@ -673,22 +783,25 @@ class Command implements ICommand {
         stateIndex: BigInt,
         newPubKey: PubKey,
         voteOptionIndex: BigInt,
-        newVoteWeight: BigInt,
+        newVoteLeaf: BigInt,
         nonce: BigInt,
         pollId: BigInt,
         salt: BigInt = genRandomSalt(),
+        debug = false,
     ) {
         const limit50Bits = BigInt(2 ** 50)
         assert(limit50Bits >= stateIndex)
         assert(limit50Bits >= voteOptionIndex)
-        assert(limit50Bits >= newVoteWeight)
+        if (!debug) {
+            assert(limit50Bits >= newVoteLeaf)
+        }
         assert(limit50Bits >= nonce)
         assert(limit50Bits >= pollId)
 
         this.stateIndex = stateIndex
         this.newPubKey = newPubKey
         this.voteOptionIndex = voteOptionIndex
-        this.newVoteWeight = newVoteWeight
+        this.newVoteLeaf = newVoteLeaf
         this.nonce = nonce
         this.pollId = pollId
         this.salt = salt
@@ -700,7 +813,7 @@ class Command implements ICommand {
             BigInt(this.stateIndex.toString()),
             this.newPubKey.copy(),
             BigInt(this.voteOptionIndex.toString()),
-            BigInt(this.newVoteWeight.toString()),
+            BigInt(this.newVoteLeaf.toString()),
             BigInt(this.nonce.toString()),
             BigInt(this.pollId.toString()),
             BigInt(this.salt.toString()),
@@ -716,7 +829,7 @@ class Command implements ICommand {
         const p =
             BigInt(this.stateIndex) +
             (BigInt(this.voteOptionIndex) << BigInt(50)) +
-            (BigInt(this.newVoteWeight) << BigInt(100)) +
+            (BigInt(this.newVoteLeaf) << BigInt(100)) +
             (BigInt(this.nonce) << BigInt(150)) +
             (BigInt(this.pollId) << BigInt(200))
 
@@ -743,7 +856,7 @@ class Command implements ICommand {
             this.newPubKey[0] === command.newPubKey[0] &&
             this.newPubKey[1] === command.newPubKey[1] &&
             this.voteOptionIndex === command.voteOptionIndex &&
-            this.newVoteWeight === command.newVoteWeight &&
+            this.newVoteLeaf === command.newVoteLeaf &&
             this.nonce === command.nonce &&
             this.pollId === command.pollId &&
             this.salt === command.salt
@@ -806,7 +919,7 @@ class Command implements ICommand {
         const ciphertext: Ciphertext = encrypt(plaintext, sharedKey, BigInt(0))
 
         const message = new Message(ciphertext)
-        
+
         return message
     }
 
@@ -845,7 +958,7 @@ class Command implements ICommand {
         // bits 201 - 250: pollId
         const stateIndex = extract(p, 0)
         const voteOptionIndex = extract(p, 50)
-        const newVoteWeight = extract(p, 100)
+        const newVoteLeaf = extract(p, 100)
         const nonce = extract(p, 150)
         const pollId = extract(p, 200)
 
@@ -856,7 +969,7 @@ class Command implements ICommand {
             stateIndex,
             newPubKey,
             voteOptionIndex,
-            newVoteWeight,
+            newVoteLeaf,
             nonce,
             pollId,
             salt,
@@ -881,5 +994,6 @@ export {
     PubKey,
     PrivKey,
     VerifyingKey,
+    VoteLeaf,
     Proof,
 }

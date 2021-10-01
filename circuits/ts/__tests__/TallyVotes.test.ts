@@ -1,5 +1,5 @@
 jest.setTimeout(1200000)
-import { 
+import {
     genWitness,
 } from './utils'
 
@@ -13,6 +13,7 @@ import {
     Command,
     Message,
     VerifyingKey,
+    VoteLeaf
 } from 'maci-domainobjs'
 
 import {
@@ -20,6 +21,7 @@ import {
     G1Point,
     G2Point,
     IncrementalQuinTree,
+    genRandomSalt,
 } from 'maci-crypto'
 
 const voiceCreditBalance = BigInt(100)
@@ -68,7 +70,7 @@ const circuit = 'tallyVotes_test'
 describe('TallyVotes circuit', () => {
     describe('1 user, 2 messages', () => {
         const maciState = new MaciState()
-        const voteWeight = BigInt(9)
+        const voteLeaf = new VoteLeaf(BigInt(9), BigInt(0))
         const voteOptionIndex = BigInt(0)
         let stateIndex
         let pollId
@@ -114,7 +116,7 @@ describe('TallyVotes circuit', () => {
                 stateIndex,
                 userKeypair.pubKey,
                 voteOptionIndex, // voteOptionIndex,
-                voteWeight, // vote weight
+                voteLeaf.pack(), // vote weight
                 BigInt(1), // nonce
                 BigInt(pollId),
             )
@@ -147,11 +149,11 @@ describe('TallyVotes circuit', () => {
         })
 
         it('should produce the correct result commitments', async () => {
-
             const generatedInputs = poll.tallyVotes()
             const newResults = poll.results
 
-            expect(newResults[Number(voteOptionIndex)]).toEqual(voteWeight)
+            expect(newResults[Number(voteOptionIndex)][0]).toEqual(BigInt(voteLeaf.pos))
+            expect(newResults[Number(voteOptionIndex)][1]).toEqual(BigInt(voteLeaf.neg))
 
             const witness = await genWitness(circuit, generatedInputs)
             expect(witness.length > 0).toBeTruthy()
@@ -160,21 +162,122 @@ describe('TallyVotes circuit', () => {
         })
     })
 
-    const NUM_BATCHES = 2
+    describe('1 user, 1 invalid message with an oversized vote leaf', () => {
+        const maciState = new MaciState()
+        const voteLeaf = new VoteLeaf(
+            BigInt('1125899906842625'),
+            BigInt(0),
+            true, // debug mode
+        )
+        const voteOptionIndex = BigInt(0)
+        let stateIndex
+        let pollId
+        let poll
+        const messages: Message[] = []
+        const commands: Command[] = []
+        let messageTree
+
+        beforeAll(async () => {
+            // Sign up and publish
+            const userKeypair = new Keypair()
+            stateIndex = maciState.signUp(
+                userKeypair.pubKey,
+                voiceCreditBalance,
+                BigInt(Math.floor(Date.now() / 1000)),
+            )
+
+            maciState.stateAq.mergeSubRoots(0)
+            maciState.stateAq.merge(STATE_TREE_DEPTH)
+
+            pollId = maciState.deployPoll(
+                duration,
+                BigInt(Math.floor(Date.now() / 1000) + duration),
+                maxValues,
+                treeDepths,
+                messageBatchSize,
+                coordinatorKeypair,
+                testProcessVk,
+                testTallyVk,
+            )
+
+            poll = maciState.polls[pollId]
+
+            messageTree = new IncrementalQuinTree(
+                treeDepths.messageTreeDepth,
+                poll.messageAq.zeroValue,
+                5,
+                hash5,
+            )
+
+            // First command (invalid)
+            const command = new Command(
+                stateIndex,
+                userKeypair.pubKey,
+                voteOptionIndex, // voteOptionIndex,
+                voteLeaf.pack(), // vote weight
+                BigInt(1), // nonce
+                BigInt(pollId),
+                genRandomSalt(),
+                true, // debug mode
+            )
+
+            const signature = command.sign(userKeypair.privKey)
+
+            const ecdhKeypair = new Keypair()
+            const sharedKey = Keypair.genEcdhSharedKey(
+                ecdhKeypair.privKey,
+                coordinatorKeypair.pubKey,
+            )
+            const message = command.encrypt(signature, sharedKey)
+            messages.push(message)
+            commands.push(command)
+            messageTree.insert(message.hash(ecdhKeypair.pubKey))
+
+            poll.publishMessage(message, ecdhKeypair.pubKey)
+
+            poll.messageAq.mergeSubRoots(0)
+            poll.messageAq.merge(treeDepths.messageTreeDepth)
+
+            expect(messageTree.root.toString())
+                .toEqual(
+                    poll.messageAq.getRoot(
+                        treeDepths.messageTreeDepth,
+                    ).toString()
+                )
+            // Process messages
+            poll.processMessages()
+        })
+
+        it('should produce the correct result commitments', async () => {
+            const generatedInputs = poll.tallyVotes()
+            const newResults = poll.results
+
+            expect(newResults[Number(voteOptionIndex)][0]).toEqual(BigInt(0))
+            expect(newResults[Number(voteOptionIndex)][1]).toEqual(BigInt(0))
+
+            const witness = await genWitness(circuit, generatedInputs)
+            expect(witness.length > 0).toBeTruthy()
+        })
+    })
+
+    const NUM_BATCHES = 4
     const x = messageBatchSize * NUM_BATCHES
 
     describe(`${x} users, ${x} messages`, () => {
         it('should produce the correct state root and ballot root', async () => {
             const maciState = new MaciState()
             const userKeypairs: Keypair[] = []
+            const stateIndices: BigInt[] = []
             for (let i = 0; i < x; i ++) {
                 const k = new Keypair()
-                userKeypairs.push(k)
-                maciState.signUp(
+                const stateIndex = maciState.signUp(
                     k.pubKey,
                     voiceCreditBalance,
                     BigInt(Math.floor(Date.now() / 1000) + duration),
                 )
+
+                stateIndices.push(stateIndex)
+                userKeypairs.push(k)
             }
 
             maciState.stateAq.mergeSubRoots(0)
@@ -195,11 +298,17 @@ describe('TallyVotes circuit', () => {
 
             const numMessages = messageBatchSize * NUM_BATCHES
             for (let i = 0; i < numMessages; i ++) {
+                const randomVoteWeight = Math.floor(Math.random() * 9) + 1
+                const randomVoteType = randomVoteWeight % 2
+                const pos = randomVoteType == 1 ? 0 : randomVoteWeight
+                const neg = randomVoteType == 1 ? randomVoteWeight : 0
+                const msgVoteLeaf = new VoteLeaf(BigInt(pos), BigInt(neg))
+
                 const command = new Command(
-                    BigInt(i),
+                    stateIndices[i],
                     userKeypairs[i].pubKey,
-                    BigInt(i), //vote option index
-                    BigInt(1), // vote weight
+                    BigInt(0), //vote option index
+                    msgVoteLeaf.pack(), // vote weight
                     BigInt(1), // nonce
                     BigInt(pollId),
                 )
@@ -229,11 +338,10 @@ describe('TallyVotes circuit', () => {
                 // currentSpentVoiceCreditSubtotal, and
                 // currentPerVOSpentVoiceCredits
                 if (i === 0) {
-                    generatedInputs.currentResults[0] = '123'
-                    generatedInputs.currentSpentVoiceCreditSubtotal = '456'
+                    generatedInputs.currentResults[0] = [ '3434', '9999' ]
                     generatedInputs.currentPerVOSpentVoiceCredits[0] = '789'
+                    generatedInputs.currentSpentVoiceCreditSubtotal = '456'
                 }
-
                 const witness = await genWitness(circuit, generatedInputs)
                 expect(witness.length > 0).toBeTruthy()
             }
