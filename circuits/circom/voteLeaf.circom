@@ -40,7 +40,7 @@ template ValidPackedVoteLeaf() {
   n <-- packedLeaf % POW;
 
 // Pack p and n and check that they match packedLeaf
-packedLeaf === p * POW + n;
+  packedLeaf === p * POW + n;
   component eqChecker = IsEqual();
   eqChecker.in[0] <== packedLeaf;
   eqChecker.in[1] <== p * POW + n;
