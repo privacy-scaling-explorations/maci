@@ -187,26 +187,14 @@ describe('TallyVotes circuit', () => {
             */
 
             // Start the tally from non-zero value
-            generatedInputs.currentResults = generatedInputs.currentResults.map(x => { return '1' })
+            const randIdx = Math.floor(Math.random() * (generatedInputs.currentResults.length - 1))
+            generatedInputs.currentResults[randIdx] = '1'
             const witness = await genWitness(circuit, generatedInputs)
             expect(witness.length > 0).toBeTruthy()
 
-            for (let i = 0; i < newResults.length; i++) {
-                for (let j = 0; j < messageBatchSize; j++){
-                    const curr = await getSignalByName(circuit, witness, `main.resultCalc[${i}].nums[${j}]`)
-                    if (i ==0 && j == 1) {
-                        expect(Number(curr)).toEqual(Number(voteWeight))
-                    } else {
-                        expect(Number(curr)).toEqual(0)
-                    }
-
-                    const voiceCredits = await getSignalByName(circuit, witness, `main.newPerVOSpentVoiceCredits[${i}].nums[${j}]`)
-                    if (i == 0 && j == 1) {
-                        expect(Number(voiceCredits)).toEqual(Number(voteWeight) ** 2)
-                    } else if(j == 1){
-                        expect(Number(voiceCredits)).toEqual(0)
-                    }
-                }
+            for (let j = 0; j < messageBatchSize; j++){
+                const curr = await getSignalByName(circuit, witness, `main.resultCalc[${randIdx}].nums[${j}]`)
+                expect(Number(curr)).toEqual(0)
             }
 
             for (let i = 1; i < (5 ** treeDepths.voteOptionTreeDepth) * messageBatchSize; i++) {
