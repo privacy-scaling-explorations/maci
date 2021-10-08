@@ -51,3 +51,4 @@ post](https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413).
 - [Kirill Goncharov](https://github.com/xuhcc)
 - [Kobi Gurkan](http://kobi.one/)
 - [Koh Wei Jie](https://kohweijie.com)
+- [Samuel Gosling](https://twitter.com/xGozzy)
