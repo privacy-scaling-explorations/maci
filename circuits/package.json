@@ -62,9 +62,9 @@
         "axios": "^0.21.0",
         "circom-helper": "0.1.10",
         "jest": "^26.6.3",
-        "maci-core": "^1.0.0",
-        "maci-crypto": "^1.0.0",
-        "maci-domainobjs": "^1.0.0",
+        "maci-core": "^1.0.1",
+        "maci-crypto": "^1.0.1",
+        "maci-domainobjs": "^1.0.1",
         "ts-jest": "^26.5.4",
         "typescript": "^3.8.3"
     },

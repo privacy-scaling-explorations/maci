@@ -19,8 +19,8 @@
         "@maci-contracts": "../contracts"
     },
     "dependencies": {
-        "maci-crypto": "^1.0.0",
-        "maci-domainobjs": "^1.0.0",
+        "maci-crypto": "^1.0.1",
+        "maci-domainobjs": "^1.0.1",
         "module-alias": "^2.2.2"
     },
     "devDependencies": {
