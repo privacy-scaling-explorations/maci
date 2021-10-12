@@ -10,10 +10,10 @@
         "test-debug": "node --inspect-brk ./node_modules/.bin/jest"
     },
     "devDependencies": {
-        "@types/node": "^14.14.35",
-        "maci-crypto": "^1.0.0",
         "@types/jest": "^26.0.21",
+        "@types/node": "^14.14.35",
         "jest": "^26.6.3",
+        "maci-crypto": "^1.0.0",
         "ts-jest": "^26.5.4"
     },
     "dependencies": {
