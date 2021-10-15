@@ -39,17 +39,7 @@ npm run build
 For development purposes, you can generate the proving and verifying keys for
 the zk-SNARK circuits, along with their Solidity verifier contracts as such.
 
-Install Rust:
-
-```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-```
-
-Also install [`zkutil`](https://github.com/poma/zkutil) and ensure that the `zkutil` binary is in the `~/.cargo/bin/` directory.
-
-```bash
-cargo install zkutil && zkutil --help
-```
+Navigate to the rapidsnark [repo](https://github.com/iden3/rapidsnark) to install the necessary tooling.
 
 Build the zk-SNARKs and generate their proving and verifying keys:
 
