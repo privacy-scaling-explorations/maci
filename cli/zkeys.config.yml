@@ -2,10 +2,8 @@
 out: "./zkeys"
 
 # Make sure that these paths are correct
-circomPath: "./node_modules/circom/cli.js"
+circomPath: "../../.local/bin/circom"
 snarkjsPath: "./node_modules/snarkjs/build/cli.cjs"
-circomRuntimePath: "./node_modules/circom_runtime"
-ffiasmPath: "./node_modules/ffiasm"
 
 circuits:
 - template: "../circuits/circom/processMessages.circom"

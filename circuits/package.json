@@ -4,7 +4,7 @@
     "description": "",
     "main": "build/index.js",
     "scripts": {
-        "circom-helper": "NODE_OPTIONS=--max-old-space-size=16384 circom-helper -c ./circomHelperConfig.json -nc -b ./build/test/ -p 9001 -m 16384 -s 1048576",
+        "circom-helper": "circom-helper -c ./circomHelperConfig.json -b ./build/test/ -p 9001 -nc",
         "build-test-circuits": "NODE_OPTIONS=--max-old-space-size=16384 circom-helper -c ./circomHelperConfig.json -y -nc -b ./build/test/ -p 9001 -m 16384 -s 1048576",
         "watch": "tsc --watch",
         "build": "tsc",
@@ -50,8 +50,7 @@
     },
     "dependencies": {
         "argparse": "^1.0.10",
-        "circom": "0.5.45",
-        "circomlib": "git://github.com/weijiekoh/circomlib.git#0e78dde8c813b95f4585b0613927e9c4269de500",
+        "circomlib": "git://github.com/weijiekoh/circomlib.git#ac85e82c1914d47789e2032fb11ceb2cfdd38a2b",
         "shelljs": "^0.8.3",
         "snarkjs": "0.4.6",
         "tmp": "^0.2.1"
@@ -60,7 +59,7 @@
         "@types/jest": "^26.0.21",
         "@types/node": "^14.14.35",
         "axios": "^0.21.0",
-        "circom-helper": "0.1.10",
+        "circom-helper": "^0.3.0",
         "jest": "^26.6.3",
         "maci-core": "^1.0.0",
         "maci-crypto": "^1.0.0",

@@ -1,9 +1,10 @@
+pragma circom 2.0.0;
 include "../node_modules/circomlib/circuits/bitify.circom";
 include "../node_modules/circomlib/circuits/escalarmulfix.circom";
 
 template PrivToPubKey() {
     // Needs to be hashed, and then pruned before supplying it to the circuit
-    signal private input privKey;
+    signal input privKey;
     signal output pubKey[2];
 
     component privBits = Num2Bits(253);

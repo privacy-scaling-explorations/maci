@@ -1,3 +1,4 @@
+pragma circom 2.0.0;
 include "../node_modules/circomlib/circuits/comparators.circom";
 include "./trees/incrementalQuinTree.circom";
 include "./trees/calculateTotal.circom";
@@ -28,15 +29,15 @@ template TallyVotes(
     var BALLOT_NONCE_IDX = 0;
     var BALLOT_VO_ROOT_IDX = 1;
 
-    signal private input stateRoot;
-    signal private input ballotRoot;
-    signal private input sbSalt;
+    signal input stateRoot;
+    signal input ballotRoot;
+    signal input sbSalt;
 
     // The only public input (inputHash) is the hash of the following:
-    signal private input packedVals;
-    signal private input sbCommitment;
-    signal private input currentTallyCommitment;
-    signal private input newTallyCommitment;
+    signal input packedVals;
+    signal input sbCommitment;
+    signal input currentTallyCommitment;
+    signal input newTallyCommitment;
     
     // A tally commitment is the hash of the following salted values:
     //   - the vote results
@@ -47,22 +48,22 @@ template TallyVotes(
 
     var k = stateTreeDepth - intStateTreeDepth;
     // The ballots
-    signal private input ballots[batchSize][BALLOT_LENGTH];
-    signal private input ballotPathElements[k][TREE_ARITY - 1];
-    signal private input votes[batchSize][numVoteOptions];
+    signal input ballots[batchSize][BALLOT_LENGTH];
+    signal input ballotPathElements[k][TREE_ARITY - 1];
+    signal input votes[batchSize][numVoteOptions];
 
-    signal private input currentResults[numVoteOptions];
-    signal private input currentResultsRootSalt;
+    signal input currentResults[numVoteOptions];
+    signal input currentResultsRootSalt;
 
-    signal private input currentSpentVoiceCreditSubtotal;
-    signal private input currentSpentVoiceCreditSubtotalSalt;
+    signal input currentSpentVoiceCreditSubtotal;
+    signal input currentSpentVoiceCreditSubtotalSalt;
 
-    signal private input currentPerVOSpentVoiceCredits[numVoteOptions];
-    signal private input currentPerVOSpentVoiceCreditsRootSalt;
+    signal input currentPerVOSpentVoiceCredits[numVoteOptions];
+    signal input currentPerVOSpentVoiceCreditsRootSalt;
 
-    signal private input newResultsRootSalt;
-    signal private input newPerVOSpentVoiceCreditsRootSalt;
-    signal private input newSpentVoiceCreditSubtotalSalt;
+    signal input newResultsRootSalt;
+    signal input newPerVOSpentVoiceCreditsRootSalt;
+    signal input newSpentVoiceCreditSubtotalSalt;
 
     //  ----------------------------------------------------------------------- 
     // Verify sbCommitment
@@ -200,30 +201,30 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     var numVoteOptions = TREE_ARITY ** voteOptionTreeDepth;
 
     // 1 if this is the first batch, and 0 otherwise
-    signal private input isFirstBatch;
-    signal private input currentTallyCommitment;
-    signal private input newTallyCommitment;
+    signal input isFirstBatch;
+    signal input currentTallyCommitment;
+    signal input newTallyCommitment;
 
     // Results
-    signal private input currentResults[numVoteOptions];
-    signal private input currentResultsRootSalt;
+    signal input currentResults[numVoteOptions];
+    signal input currentResultsRootSalt;
 
-    signal private input newResults[numVoteOptions];
-    signal private input newResultsRootSalt;
+    signal input newResults[numVoteOptions];
+    signal input newResultsRootSalt;
 
     // Spent voice credits
-    signal private input currentSpentVoiceCreditSubtotal;
-    signal private input currentSpentVoiceCreditSubtotalSalt;
+    signal input currentSpentVoiceCreditSubtotal;
+    signal input currentSpentVoiceCreditSubtotalSalt;
 
-    signal private input newSpentVoiceCreditSubtotal;
-    signal private input newSpentVoiceCreditSubtotalSalt;
+    signal input newSpentVoiceCreditSubtotal;
+    signal input newSpentVoiceCreditSubtotalSalt;
 
     // Spent voice credits per vote option
-    signal private input currentPerVOSpentVoiceCredits[numVoteOptions];
-    signal private input currentPerVOSpentVoiceCreditsRootSalt;
+    signal input currentPerVOSpentVoiceCredits[numVoteOptions];
+    signal input currentPerVOSpentVoiceCreditsRootSalt;
 
-    signal private input newPerVOSpentVoiceCredits[numVoteOptions];
-    signal private input newPerVOSpentVoiceCreditsRootSalt;
+    signal input newPerVOSpentVoiceCredits[numVoteOptions];
+    signal input newPerVOSpentVoiceCreditsRootSalt;
 
     // Compute the commitment to the current results
     component currentResultsRoot = QuinCheckRoot(voteOptionTreeDepth);

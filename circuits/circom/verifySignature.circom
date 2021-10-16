@@ -1,3 +1,4 @@
+pragma circom 2.0.0;
 include "../node_modules/circomlib/circuits/compconstant.circom";
 include "../node_modules/circomlib/circuits/comparators.circom";
 include "../node_modules/circomlib/circuits/pointbits.circom";
@@ -91,7 +92,7 @@ template EdDSAPoseidonVerifier_patched() {
 
     component leftRightValid = IsEqual();
     leftRightValid.in[0] <== rightValid.out + leftValid.out;
-    leftRightValid.in[1] <== 2
+    leftRightValid.in[1] <== 2;
 
     // If A is not zero, isZero.out will be 0.
     // To prevent a scenario where the user can DoS the proof generation by
@@ -123,7 +124,7 @@ template VerifySignature() {
     signal input S;
 
     var k = 4;
-    signal private input preimage[k];
+    signal input preimage[k];
 
     signal output valid;
 
