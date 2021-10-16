@@ -1,3 +1,4 @@
+pragma circom 2.0.0;
 // Refer to:
 // https://github.com/peppersec/tornado-mixer/blob/master/circuits/merkleTree.circom
 // https://github.com/appliedzkp/semaphore/blob/master/circuits/circom/semaphore-base.circom
@@ -46,8 +47,8 @@ template LeafExists(levels){
   // levels is depth of tree
   signal input leaf;
 
-  signal private input path_elements[levels][1];
-  signal private input path_index[levels];
+  signal input path_elements[levels][1];
+  signal input path_index[levels];
 
   signal input root;
 
@@ -89,7 +90,7 @@ template CheckRoot(levels) {
     var numIntermediateHashers = numLeafHashers - 1;
 
     // Inputs to the snark
-    signal private input leaves[totalLeaves];
+    signal input leaves[totalLeaves];
 
     // The output
     signal output root;

@@ -1,3 +1,4 @@
+pragma circom 2.0.0;
 include "./verifySignature.circom";
 include "../node_modules/circomlib/circuits/comparators.circom";
 

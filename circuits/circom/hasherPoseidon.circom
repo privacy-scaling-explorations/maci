@@ -1,7 +1,8 @@
-include "./poseidon/poseidonHashT3.circom"
-include "./poseidon/poseidonHashT4.circom"
-include "./poseidon/poseidonHashT5.circom"
-include "./poseidon/poseidonHashT6.circom"
+pragma circom 2.0.0;
+include "./poseidon/poseidonHashT3.circom";
+include "./poseidon/poseidonHashT4.circom";
+include "./poseidon/poseidonHashT5.circom";
+include "./poseidon/poseidonHashT6.circom";
 
 template Hasher3() {
     var length = 3;

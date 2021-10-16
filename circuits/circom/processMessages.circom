@@ -1,3 +1,4 @@
+pragma circom 2.0.0;
 include "./hasherSha256.circom";
 include "./messageHasher.circom";
 include "./messageToCommand.circom";
@@ -51,20 +52,20 @@ template ProcessMessages(
     // The only public input, which is the SHA256 hash of a values provided
     // by the contract
     signal input inputHash;
-    signal private input packedVals;
+    signal input packedVals;
 
     signal numSignUps;
     signal maxVoteOptions;
 
-    signal private input pollEndTimestamp;
+    signal input pollEndTimestamp;
     // The existing message root
-    signal private input msgRoot;
+    signal input msgRoot;
 
     // The messages
-    signal private input msgs[batchSize][MSG_LENGTH];
+    signal input msgs[batchSize][MSG_LENGTH];
 
     // The message leaf Merkle proofs
-    signal private input msgSubrootPathElements[msgTreeDepth - msgBatchDepth][TREE_ARITY - 1];
+    signal input msgSubrootPathElements[msgTreeDepth - msgBatchDepth][TREE_ARITY - 1];
 
     // The index of the first message leaf in the batch, inclusive. Note that
     // messages are processed in reverse order, so this is not be the index of
@@ -78,16 +79,16 @@ template ProcessMessages(
     signal batchEndIndex;
 
     // The coordinator's private key
-    signal private input coordPrivKey;
+    signal input coordPrivKey;
 
     // The cooordinator's public key from the contract.
-    signal private input coordPubKey[2];
+    signal input coordPubKey[2];
 
     // The ECDH public key per message
-    signal private input encPubKeys[batchSize][2];
+    signal input encPubKeys[batchSize][2];
 
     // The state root before it is processed
-    signal private input currentStateRoot;
+    signal input currentStateRoot;
 
     // The state leaves upon which messages are applied.
     //     transform(currentStateLeaf[4], message5) => newStateLeaf4
@@ -98,26 +99,26 @@ template ProcessMessages(
     //     ...
     // Likewise, currentStateLeavesPathElements contains the Merkle path to
     // each incremental new state root.
-    signal private input currentStateLeaves[batchSize][STATE_LEAF_LENGTH];
-    signal private input currentStateLeavesPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
+    signal input currentStateLeaves[batchSize][STATE_LEAF_LENGTH];
+    signal input currentStateLeavesPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
 
     // The salted commitment to the state root and ballot root
-    signal private input currentSbCommitment;
-    signal private input currentSbSalt;
+    signal input currentSbCommitment;
+    signal input currentSbSalt;
 
     // The salted commitment to the new state root and ballot root
-    signal private input newSbCommitment;
-    signal private input newSbSalt;
+    signal input newSbCommitment;
+    signal input newSbSalt;
 
     // The ballots before any messages are processed
-    signal private input currentBallotRoot;
+    signal input currentBallotRoot;
 
     // Intermediate ballots, like currentStateLeaves
-    signal private input currentBallots[batchSize][BALLOT_LENGTH];
-    signal private input currentBallotsPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
+    signal input currentBallots[batchSize][BALLOT_LENGTH];
+    signal input currentBallotsPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
 
-    signal private input currentVoteWeights[batchSize];
-    signal private input currentVoteWeightsPathElements[batchSize][voteOptionTreeDepth][TREE_ARITY - 1];
+    signal input currentVoteWeights[batchSize];
+    signal input currentVoteWeightsPathElements[batchSize][voteOptionTreeDepth][TREE_ARITY - 1];
 
     var msgTreeZeroValue = 8370432830353022751713833565135785980866757267633941821328460903436894336785;
 
