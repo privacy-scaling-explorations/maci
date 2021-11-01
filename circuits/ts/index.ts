@@ -238,10 +238,10 @@ const genProofAndPublicSignals = async (
 
     const proveCmd = `${zkutilPath} prove -c ${circuitR1csPath} -p ${paramsPath} -w ${witnessJsonPath} -r ${proofPath} -o ${publicJsonPath}`
 
-    //const proveStart = Date.now()
+    const proveStart = Date.now()
     shell.exec(proveCmd)
-    //const proveEnd = Date.now()
-    //console.log('Proof generation took', (proveEnd - proveStart) / 1000, 'seconds')
+    const proveEnd = Date.now()
+    console.log('Proof generation took', (proveEnd - proveStart) / 1000, 'seconds')
 
     const witness = unstringifyBigInts(JSON.parse(fs.readFileSync(witnessJsonPath).toString()))
     const publicSignals = unstringifyBigInts(JSON.parse(fs.readFileSync(publicJsonPath).toString()))

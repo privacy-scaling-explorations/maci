@@ -34,6 +34,7 @@ const genMaciStateFromContract = async (
     address: string,
     coordinatorKeypair: Keypair,
     zerothLeaf: StateLeaf,
+    logData: any = {},
     processMessages = true,
 ) => {
 
@@ -59,42 +60,96 @@ const genMaciStateFromContract = async (
         maxVoteOptionIndex,
     )
 
-    const signUpLogs = await provider.getLogs({
-        ...maciContract.filters.SignUp(),
-        fromBlock: 0,
-    })
-    
-    const publishMessageLogs = await provider.getLogs({
-        ...maciContract.filters.PublishMessage(),
-        fromBlock: 0,
-    })
+    if (Object.keys(logData).length > 0) {
+        const signUpLogs = logData.signUpLogs
+        const publishMessageLogs = logData.publishMessageLogs
 
-    const iface = new ethers.utils.Interface(maciContractAbi)
-    for (const log of signUpLogs) {
-        const event = iface.parseLog(log)
-        const voiceCreditBalance = BigInt(event.values._voiceCreditBalance.toString())
-        const pubKey = new PubKey([
-            BigInt(event.values._userPubKey[0]),
-            BigInt(event.values._userPubKey[1]),
-        ])
+        let i = 0
+        for (const log of signUpLogs) {
+            if (i % 2000 === 0) {
+                console.log(`${i} / ${signUpLogs.length}`)
+            }
+            const voiceCreditBalance = BigInt(log.voiceCreditBalance)
+            const pubKey = new PubKey([
+                BigInt(log.pubKey[0]),
+                BigInt(log.pubKey[1]),
+            ])
 
-        maciState.signUp(
-            pubKey,
-            voiceCreditBalance,
-        )
-    }
+            maciState.signUp(
+                pubKey,
+                voiceCreditBalance,
+            )
+            i ++
+        }
 
-    for (const log of publishMessageLogs) {
-        const event = iface.parseLog(log)
-        const msgIv = BigInt(event.values._message[0].toString())
-        const msgData = event.values._message[1].map((x) => BigInt(x.toString()))
-        const message = new Message(msgIv, msgData)
-        const encPubKey = new PubKey([
-            BigInt(event.values._encPubKey[0]),
-            BigInt(event.values._encPubKey[1]),
-        ])
+        i = 0
 
-        maciState.publishMessage(message, encPubKey)
+        for (const log of publishMessageLogs) {
+            if (i % 500 === 0) {
+                console.log(`${i} / ${publishMessageLogs.length}`)
+            }
+            const msgIv = BigInt(log.msgIv)
+            const msgData = log.msgData.map((x) => BigInt(x))
+            const message = new Message(msgIv, msgData)
+            const encPubKey = new PubKey([
+                BigInt(log.encPubKey[0]),
+                BigInt(log.encPubKey[1]),
+            ])
+
+            maciState.publishMessage(message, encPubKey)
+            i ++
+        }
+    } else {
+
+        console.log('Fetching signup logs')
+        const signUpLogs = await provider.getLogs({
+            ...maciContract.filters.SignUp(),
+            fromBlock: 0,
+        })
+        
+        console.log('Fetching publish message logs')
+        const publishMessageLogs = await provider.getLogs({
+            ...maciContract.filters.PublishMessage(),
+            fromBlock: 0,
+        })
+
+        let i = 0
+        const iface = new ethers.utils.Interface(maciContractAbi)
+        for (const log of signUpLogs) {
+            if (i % 100 === 0) {
+                console.log(`${i} / ${signUpLogs.length}`)
+            }
+            const event = iface.parseLog(log)
+            const voiceCreditBalance = BigInt(event.values._voiceCreditBalance.toString())
+            const pubKey = new PubKey([
+                BigInt(event.values._userPubKey[0]),
+                BigInt(event.values._userPubKey[1]),
+            ])
+
+            maciState.signUp(
+                pubKey,
+                voiceCreditBalance,
+            )
+            i ++
+        }
+
+        i = 0
+        for (const log of publishMessageLogs) {
+            if (i % 100 === 0) {
+                console.log(`${i} / ${publishMessageLogs.length}`)
+            }
+            const event = iface.parseLog(log)
+            const msgIv = BigInt(event.values._message[0].toString())
+            const msgData = event.values._message[1].map((x) => BigInt(x.toString()))
+            const message = new Message(msgIv, msgData)
+            const encPubKey = new PubKey([
+                BigInt(event.values._encPubKey[0]),
+                BigInt(event.values._encPubKey[1]),
+            ])
+
+            maciState.publishMessage(message, encPubKey)
+            i ++
+        }
     }
 
     if (!processMessages) {

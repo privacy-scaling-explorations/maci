@@ -69,14 +69,14 @@ describe('Quin Merkle Tree', () => {
             .toEqual(tree.root.toString())
     })
 
-    it('insert() should calculate a correct root', () => {
+    it('insert() should calculate a correct root', async () => {
         const tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
         const numToInsert = LEAVES_PER_NODE + 2
         const leaves: BigInt[] = []
         for (let i = 0; i < numToInsert; i ++) {
             const leaf = BigInt(i + 1)
             leaves.push(leaf)
-            tree.insert(leaf)
+            await tree.insert(leaf)
         }
 
         for (let i = leaves.length; i < LEAVES_PER_NODE ** DEPTH; i ++) {
@@ -87,14 +87,14 @@ describe('Quin Merkle Tree', () => {
             .toEqual(tree.root.toString())
     })
 
-    it('update() should calculate a correct root', () => {
+    it('update() should calculate a correct root', async () => {
         const tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
         const numToInsert = LEAVES_PER_NODE * 2
         const leaves: BigInt[] = []
         for (let i = 0; i < numToInsert; i ++) {
             const leaf = BigInt(i + 1)
             leaves.push(leaf)
-            tree.insert(leaf)
+            await tree.insert(leaf)
         }
 
         for (let i = leaves.length; i < LEAVES_PER_NODE ** DEPTH; i ++) {
@@ -108,18 +108,18 @@ describe('Quin Merkle Tree', () => {
             .toEqual(tree.root.toString())
     })
 
-    it('copy() should produce a deep copy', () => {
+    it('copy() should produce a deep copy', async () => {
         const tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
         const numToInsert = LEAVES_PER_NODE * 2
         for (let i = 0; i < numToInsert; i ++) {
             const leaf = BigInt(i + 1)
-            tree.insert(leaf)
+            await tree.insert(leaf)
         }
 
         const newTree = tree.copy()
         const leaf = genRandomSalt()
-        tree.insert(leaf)
-        newTree.insert(leaf)
+        await tree.insert(leaf)
+        await newTree.insert(leaf)
         expect(tree.root.toString()).toEqual(newTree.root.toString())
 
         tree.update(0, leaf)
@@ -155,11 +155,11 @@ describe('Quin Merkle Tree', () => {
         let tree
         const numToInsert = 5 ** DEPTH
 
-        beforeAll(() => {
+        beforeAll(async () => {
             tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
             for (let i = 0; i < numToInsert; i ++) {
                 const leaf = BigInt(i + 1)
-                tree.insert(leaf)
+                await tree.insert(leaf)
             }
         })
 
@@ -203,14 +203,14 @@ describe('Quin Merkle Tree', () => {
             expect(isValid).toBeTruthy()
         })
 
-        it('genMerklePath() should calculate a correct Merkle path for each most recently inserted leaf', () => {
+        it('genMerklePath() should calculate a correct Merkle path for each most recently inserted leaf', async () => {
             const tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
             const numToInsert = LEAVES_PER_NODE * 2
 
             expect.assertions(numToInsert)
             for (let i = 0; i < numToInsert; i ++) {
                 const leaf = BigInt(i + 1)
-                tree.insert(leaf)
+                await tree.insert(leaf)
 
                 const path = tree.genMerklePath(i)
                 const isValid = IncrementalQuinTree.verifyMerklePath(

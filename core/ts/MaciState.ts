@@ -307,12 +307,20 @@ class MaciState {
         )
         const { command } = Command.decrypt(message, sharedKey)
 
-        const msgTreePath = this.messageTree.genMerklePath(_index)
-        assert(IncrementalQuinTree.verifyMerklePath(msgTreePath, this.messageTree.hashFunc))
+        let start
+        let end
 
+        const msgTreePath = this.messageTree.genMerklePath(_index)
+        //assert(IncrementalQuinTree.verifyMerklePath(msgTreePath, this.messageTree.hashFunc))
+
+        start = Date.now()
         const stateTree = this.genStateTree()
+        end = Date.now()
+        console.log('\t', (end - start) / 1000, 'genStateTree()')
+
         const stateTreeMaxIndex = BigInt(stateTree.nextIndex) - BigInt(1)
 
+        start = Date.now()
         const voteOptionTree = new IncrementalQuinTree(
             this.voteOptionTreeDepth,
             BigInt(0),
@@ -325,6 +333,7 @@ class MaciState {
         let stateLeaf
 
         const stateIndex = Number(command.stateIndex)
+
         if (
                 Math.floor(stateIndex) === stateIndex &&
                 stateIndex >= 0 &&
@@ -359,6 +368,8 @@ class MaciState {
             voteOptionTree.insert(BigInt(0))
             voteOptionTreePath = voteOptionTree.genMerklePath(0)
         }
+        end = Date.now()
+        console.log('\t', (end - start) / 1000, 'vote option tree()')
 
         //assert(IncrementalQuinTree.verifyMerklePath(voteOptionTreePath, voteOptionTree.hashFunc))
         //assert(IncrementalQuinTree.verifyMerklePath(stateTreePath, stateTree.hashFunc))
@@ -438,6 +449,10 @@ class MaciState {
 
         let messageIndex
         for (let i = 0; i < _batchSize; i++) {
+            let start
+            let end
+
+            start = Date.now()
             messageIndex = messageIndices[i]
 
             // Generate circuit inputs for the message
@@ -460,14 +475,26 @@ class MaciState {
             voteOptionTreeRoots.push(ustCircuitInputs.vote_options_tree_root)
             voteOptionTreePathElements.push(ustCircuitInputs.vote_options_tree_path_elements)
             voteOptionTreePathIndices.push(ustCircuitInputs.vote_options_tree_path_index)
+
+            end = Date.now()
+            console.log((end - start) / 1000, `clonedMaciState.genUpdateStateTreeCircuitInputs() #${i}`)
         }
 
+        let start
+        let end
+
+        start = Date.now()
         const stateTree = clonedMaciState.genStateTree()
+        end = Date.now()
+        console.log((end - start) / 1000, `clonedMaciState.genStateTree()`)
 
         const randomLeafRoot = stateTree.root
 
         // Insert the random leaf
+        start = Date.now()
         stateTree.update(0, _randomStateLeaf.hash())
+        end = Date.now()
+        console.log((end - start) / 1000, `stateTree.update(0, _randomStateLeaf.hash())`)
 
         const randomStateLeafPathElements = stateTree.genMerklePath(0).pathElements
 

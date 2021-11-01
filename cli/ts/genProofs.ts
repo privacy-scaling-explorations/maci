@@ -112,6 +112,15 @@ const configureSubparser = (subparsers: any) => {
         }
     )
 
+    parser.addArgument(
+        ['-l', '--logs-file'],
+        {
+            required: false,
+            type: 'string',
+            help: 'The logs file produced by fetchLogs.',
+        }
+    )
+
     // TODO: support resumable proof generation
     //parser.addArgument(
         //['-r', '--resume'],
@@ -179,6 +188,13 @@ const genProofs = async (args: any) => {
         provider,
     )
 
+    let logs = {}
+    if (args.logs_file) {
+        logs = JSON.parse(
+            fs.readFileSync(args.logs_file).toString(),
+        )
+    }
+
     // Build an off-chain representation of the MACI contract using data in the contract storage
     let maciState
     try {
@@ -187,6 +203,7 @@ const genProofs = async (args: any) => {
             maciAddress,
             coordinatorKeypair,
             StateLeaf.genBlankLeaf(BigInt(0)),
+            logs,
             false,
         )
     } catch (e) {
@@ -226,16 +243,32 @@ const genProofs = async (args: any) => {
             StateLeaf.genRandomLeaf()
             :
             zerothLeaf
+
+        const genInputsStart = Date.now()
         const circuitInputs = maciState.genBatchUpdateStateTreeCircuitInputs(
             i,
             messageBatchSize,
             randomStateLeaf,
         )
+        const genInputsEnd = Date.now()
+        console.log(
+            'genBatchUpdateStateTreeCircuitInputs() took',
+            (genInputsEnd - genInputsStart) / 1000,
+            'seconds'
+        )
+
+        const batchProcessStart = Date.now()
         // Process the batch of messages
         maciState.batchProcessMessage(
             i,
             messageBatchSize,
             randomStateLeaf,
+        )
+        const batchProcessEnd = Date.now()
+        console.log(
+            'batchProcessMessage() took',
+            (batchProcessEnd - batchProcessStart) / 1000,
+            'seconds'
         )
 
         const stateRootAfter = maciState.genStateRoot()
@@ -303,6 +336,8 @@ const genProofs = async (args: any) => {
             saveOutput(outputFile, processProofs, tallyProofs)
         }
     }
+
+    return
 
     // Tally votes
 

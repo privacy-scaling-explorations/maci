@@ -63,6 +63,11 @@ import {
 } from './coordinatorReset'
 
 import {
+    fetchLogs,
+    configureSubparser as configureSubparserForFetchLogs,
+} from './fetchLogs'
+
+import {
     download,
     configureSubparser as configureSubparserForDownload,
 } from './download'
@@ -120,6 +125,9 @@ const main = async () => {
     // Subcommand: coordinatorReset
     configureSubparserForCoordinatorReset(subparsers)
 
+    // Subcommand: fetchLogs
+    configureSubparserForFetchLogs(subparsers)
+
     // Subcommand: download
     configureSubparserForDownload(subparsers)
 
@@ -154,6 +162,8 @@ const main = async () => {
         await processAndTallyWithoutProofs(args)
     } else if (args.subcommand === 'coordinatorReset') {
         await coordinatorReset(args)
+    } else if (args.subcommand === 'fetchLogs') {
+        await fetchLogs(args)
     } else if (args.subcommand === 'download') {
         await download(args)
     } else if (args.subcommand === 'replay') {
