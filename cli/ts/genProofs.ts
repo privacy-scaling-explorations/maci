@@ -363,8 +363,6 @@ const genProofs = async (args: any) => {
         }
     }
 
-    return
-
     // Tally votes
 
     const tallyBatchSize = Number(await maciContract.tallyBatchSize())
