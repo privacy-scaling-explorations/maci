@@ -87,6 +87,25 @@ describe('Quin Merkle Tree', () => {
             .toEqual(tree.root.toString())
     })
 
+    it('serialize() and unserialize() should work', async () => {
+        const tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
+        const numToInsert = LEAVES_PER_NODE ** DEPTH
+        for (let i = 0; i < numToInsert; i ++) {
+            const leaf = BigInt(i + 1)
+            await tree.insert(leaf)
+        }
+
+        const s = tree.serialize()
+        const n = IncrementalQuinTree.unserialize(s)
+
+        expect(tree.root.toString()).toEqual(n.root.toString())
+        expect(tree.nextIndex.toString()).toEqual(n.nextIndex.toString())
+        expect(stringifyBigInts(tree.zeros).toString()).toEqual(stringifyBigInts(n.zeros).toString())
+        expect(stringifyBigInts(tree.leaves).toString()).toEqual(stringifyBigInts(n.leaves).toString())
+        expect(stringifyBigInts(tree.filledSubtrees).toString()).toEqual(stringifyBigInts(n.filledSubtrees).toString())
+        expect(stringifyBigInts(tree.filledPaths).toString()).toEqual(stringifyBigInts(n.filledPaths).toString())
+    })
+
     it('update() should calculate a correct root', async () => {
         const tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, LEAVES_PER_NODE)
         const numToInsert = LEAVES_PER_NODE * 2

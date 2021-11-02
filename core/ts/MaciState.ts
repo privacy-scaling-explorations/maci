@@ -30,6 +30,47 @@ class MaciState {
     private currentResultsSalt: BigInt = BigInt(0)
 
     public messageTree: IncrementalQuinTree
+    public stateTree: IncrementalQuinTree
+
+    public serialize = (): string => {
+        return JSON.stringify(stringifyBigInts({
+            coordinatorKeypair: this.coordinatorKeypair.serialize(),
+            users: this.users.map((x) => x.serialize()),
+            stateTreeDepth: this.stateTreeDepth,
+            messageTreeDepth: this.messageTreeDepth,
+            voteOptionTreeDepth: this.voteOptionTreeDepth,
+            messages: this.messages.map((x) => x.serialize()),
+            zerothStateLeaf: this.zerothStateLeaf.serialize(),
+            maxVoteOptionIndex: this.maxVoteOptionIndex,
+            encPubKeys: this.encPubKeys.map((x) => x.serialize()),
+            emptyVoteOptionTreeRoot: this.emptyVoteOptionTreeRoot,
+            currentResultsSalt: this.currentResultsSalt,
+            messageTree: this.messageTree.serialize(),
+            stateTree: this.stateTree.serialize(),
+        }))
+    }
+
+    public static unserialize = (s: string): MaciState => {
+        const d = JSON.parse(s)
+        const maciState = new MaciState(
+            Keypair.unserialize(d.coordinatorKeypair),
+            BigInt(d.stateTreeDepth),
+            BigInt(d.messageTreeDepth),
+            BigInt(d.voteOptionTreeDepth),
+            BigInt(d.maxVoteOptionIndex),
+        )
+
+        maciState.users = d.users.map((x) => User.unserialize(x))
+        maciState.messages = d.messages.map((x) => Message.unserialize(x))
+        maciState.zerothStateLeaf = StateLeaf.unserialize(d.zerothStateLeaf)
+        maciState.encPubKeys = d.encPubKeys.map((x) => PubKey.unserialize(x))
+        maciState.emptyVoteOptionTreeRoot = BigInt(d.emptyVoteOptionTreeRoot)
+        maciState.currentResultsSalt = BigInt(d.currentResultsSalt)
+        maciState.messageTree = IncrementalQuinTree.unserialize(d.messageTree)
+        maciState.stateTree = IncrementalQuinTree.unserialize(d.stateTree)
+
+        return maciState
+    }
 
     // encPubKeys contains the public keys used to generate ephemeral shared
     // keys which encrypt each message
@@ -56,6 +97,13 @@ class MaciState {
 
         this.zerothStateLeaf = this.genBlankLeaf()
 
+        this.stateTree = new IncrementalQuinTree(
+            this.stateTreeDepth,
+            this.genBlankLeaf().hash(),
+            2,
+        )
+        this.stateTree.insert(this.zerothStateLeaf.hash())
+
         this.messageTree = new IncrementalQuinTree(
             this.messageTreeDepth,
             NOTHING_UP_MY_SLEEVE,
@@ -81,26 +129,29 @@ class MaciState {
      * StateLeaf objects
      */
     public genStateTree = (): IncrementalQuinTree => {
-        const stateTree = new IncrementalQuinTree(
-            this.stateTreeDepth,
-            this.genBlankLeaf().hash(),
-            2,
-        )
+        //const stateTree = new IncrementalQuinTree(
+            //this.stateTreeDepth,
+            //this.genBlankLeaf().hash(),
+            //2,
+        //)
 
-        stateTree.insert(this.zerothStateLeaf.hash())
+        //stateTree.insert(this.zerothStateLeaf.hash())
 
-        for (const user of this.users) {
-            const stateLeaf = user.genStateLeaf(this.voteOptionTreeDepth)
-            stateTree.insert(stateLeaf.hash())
-        }
-        return stateTree
+        //for (const user of this.users) {
+            //const stateLeaf = user.genStateLeaf(this.voteOptionTreeDepth)
+            //stateTree.insert(stateLeaf.hash())
+        //}
+
+        //return stateTree
+        return this.stateTree
     }
 
     /*
      * Computes the state root
      */
     public genStateRoot = (): BigInt => {
-        return this.genStateTree().root
+        return this.stateTree.root
+        //return this.genStateTree().root
     }
 
     /*
@@ -136,10 +187,12 @@ class MaciState {
             BigInt(this.maxVoteOptionIndex.toString()),
         )
 
+        copied.zerothStateLeaf = this.zerothStateLeaf
         copied.users = this.users.map((x: User) => x.copy())
         copied.messages = this.messages.map((x: Message) => x.copy())
         copied.encPubKeys = this.encPubKeys.map((x: PubKey) => x.copy())
         copied.messageTree = this.messageTree.copy()
+        copied.stateTree = this.stateTree.copy()
 
         return copied
     }
@@ -163,6 +216,9 @@ class MaciState {
             BigInt(0),
         )
         this.users.push(user)
+        const stateLeaf = user.genStateLeaf(this.voteOptionTreeDepth)
+        this.stateTree.insert(stateLeaf.hash())
+        assert(this.stateTree.root.toString() === this.genStateTree().root.toString())
     }
 
     /*
@@ -207,12 +263,12 @@ class MaciState {
             command.salt < BigInt(0) ||
             command.voteOptionIndex < BigInt(0)
         ) {
-            return
+            return -1
         }
 
         // If the state tree index in the command is invalid, do nothing
         if (command.stateIndex > BigInt(this.users.length)) {
-            return
+            return -1
         }
 
         const userIndex = BigInt(command.stateIndex) - BigInt(1)
@@ -224,12 +280,12 @@ class MaciState {
 
         // If the signature is invalid, do nothing
         if (!command.verifySignature(signature, user.pubKey)) {
-            return
+            return -1
         }
 
         // If the nonce is invalid, do nothing
         if (command.nonce !== BigInt(user.nonce) + BigInt(1)) {
-            return
+            return -1
         }
 
         // If there are insufficient vote credits, do nothing
@@ -241,12 +297,12 @@ class MaciState {
             (BigInt(command.newVoteWeight) * BigInt(command.newVoteWeight))
 
         if (voiceCreditsLeft < 0) {
-            return
+            return -1
         }
 
         // If the vote option index is invalid, do nothing
         if (command.voteOptionIndex > this.maxVoteOptionIndex) {
-            return
+            return -1
         }
 
         // Deep-copy the user and update their votes, pubkey, voice credit
@@ -258,7 +314,11 @@ class MaciState {
         newUser.pubKey = command.newPubKey.copy()
 
         // Replace the entry in this.users
-        this.users[Number(userIndex)] = newUser
+        const i = Number(userIndex)
+        this.users[i] = newUser
+        //this.stateTree.update(i + 1, newUser.genStateLeaf(this.voteOptionTreeDepth).hash())
+
+        return i
     }
 
     /*
@@ -276,6 +336,8 @@ class MaciState {
     ) => {
         assert(this.messages.length > _index)
 
+        const userIndices: number[] = []
+
         for (let i = 0; i < _batchSize; i++) {
             const messageIndex = _index + _batchSize - i - 1;
 
@@ -283,9 +345,32 @@ class MaciState {
                 continue
             }
 
-            this.processMessage(messageIndex)
+            const index = this.processMessage(messageIndex)
+            if (index >= 0) {
+                userIndices.push(index)
+            }
         }
+
         this.zerothStateLeaf = _randomStateLeaf
+
+        const leaves: BigInt[] = [
+            ...this.stateTree.leaves.map((x) => BigInt(x.toString()))
+        ]
+
+        leaves[0] = this.zerothStateLeaf.hash()
+
+        for (const i of userIndices) {
+            leaves[i + 1] = this.users[i].genStateLeaf(this.voteOptionTreeDepth).hash()
+        }
+        const tree = new IncrementalQuinTree(
+            this.stateTreeDepth,
+            this.genBlankLeaf().hash(),
+            2,
+        )
+        for (const leaf of leaves) {
+            tree.insert(leaf)
+        }
+        this.stateTree = tree
     }
 
     /*
@@ -313,14 +398,11 @@ class MaciState {
         const msgTreePath = this.messageTree.genMerklePath(_index)
         //assert(IncrementalQuinTree.verifyMerklePath(msgTreePath, this.messageTree.hashFunc))
 
-        start = Date.now()
-        const stateTree = this.genStateTree()
-        end = Date.now()
-        console.log('\t', (end - start) / 1000, 'genStateTree()')
+        //const stateTree = this.genStateTree()
+        const stateTree = this.stateTree
 
         const stateTreeMaxIndex = BigInt(stateTree.nextIndex) - BigInt(1)
 
-        start = Date.now()
         const voteOptionTree = new IncrementalQuinTree(
             this.voteOptionTreeDepth,
             BigInt(0),
@@ -368,8 +450,6 @@ class MaciState {
             voteOptionTree.insert(BigInt(0))
             voteOptionTreePath = voteOptionTree.genMerklePath(0)
         }
-        end = Date.now()
-        console.log('\t', (end - start) / 1000, 'vote option tree()')
 
         //assert(IncrementalQuinTree.verifyMerklePath(voteOptionTreePath, voteOptionTree.hashFunc))
         //assert(IncrementalQuinTree.verifyMerklePath(stateTreePath, stateTree.hashFunc))
@@ -447,11 +527,11 @@ class MaciState {
         // process the messages in reverse order
         messageIndices.reverse()
 
+        let start
+        let end
+
         let messageIndex
         for (let i = 0; i < _batchSize; i++) {
-            let start
-            let end
-
             start = Date.now()
             messageIndex = messageIndices[i]
 
@@ -460,7 +540,18 @@ class MaciState {
 
             if (messageIndex < BigInt(clonedMaciState.messages.length)) {
                 // Process the message
-                clonedMaciState.processMessage(messageIndex)
+                const index = clonedMaciState.processMessage(messageIndex)
+
+                if (index >= 0) {
+                    // NOTE: this is a major performance bottleneck
+                    clonedMaciState.stateTree.update(
+                        index + 1,
+                        clonedMaciState.users[index].genStateLeaf(
+                            clonedMaciState.voteOptionTreeDepth,
+                        ).hash(),
+                    )
+
+                }
             }
 
             messages.push(clonedMaciState.messages[messageIndex])
@@ -475,30 +566,16 @@ class MaciState {
             voteOptionTreeRoots.push(ustCircuitInputs.vote_options_tree_root)
             voteOptionTreePathElements.push(ustCircuitInputs.vote_options_tree_path_elements)
             voteOptionTreePathIndices.push(ustCircuitInputs.vote_options_tree_path_index)
-
             end = Date.now()
             console.log((end - start) / 1000, `clonedMaciState.genUpdateStateTreeCircuitInputs() #${i}`)
         }
 
-        let start
-        let end
+        //clonedMaciState.zerothStateLeaf = _randomStateLeaf
+        //clonedMaciState.stateTree.update(0, _randomStateLeaf.hash())
 
-        start = Date.now()
-        const stateTree = clonedMaciState.genStateTree()
-        end = Date.now()
-        console.log((end - start) / 1000, `clonedMaciState.genStateTree()`)
+        const randomStateLeafPathElements = clonedMaciState.stateTree.genMerklePath(0).pathElements
 
-        const randomLeafRoot = stateTree.root
-
-        // Insert the random leaf
-        start = Date.now()
-        stateTree.update(0, _randomStateLeaf.hash())
-        end = Date.now()
-        console.log((end - start) / 1000, `stateTree.update(0, _randomStateLeaf.hash())`)
-
-        const randomStateLeafPathElements = stateTree.genMerklePath(0).pathElements
-
-        return stringifyBigInts({
+        const inputs = stringifyBigInts({
             'coordinator_public_key': clonedMaciState.coordinatorKeypair.pubKey.asCircuitInputs(),
             'message': messages.map((x) => x.asCircuitInputs()),
             'ecdh_private_key': clonedMaciState.coordinatorKeypair.privKey.asCircuitInputs(),
@@ -511,16 +588,21 @@ class MaciState {
             'state_tree_root': stateRoots,
             'state_tree_path_elements': stateTreePathElements,
             'state_tree_path_index': stateTreePathIndices,
-            'random_leaf_root': randomLeafRoot,
+            'random_leaf_root': clonedMaciState.stateTree.root,
             'random_leaf_path_elements': randomStateLeafPathElements,
             'vote_options_leaf_raw': voteOptionLeaves,
             'state_tree_data_raw': stateLeaves,
-            'state_tree_max_leaf_index': BigInt(stateTree.nextIndex) - BigInt(1),
+            'state_tree_max_leaf_index': BigInt(clonedMaciState.stateTree.nextIndex) - BigInt(1),
             'vote_options_max_leaf_index': clonedMaciState.maxVoteOptionIndex,
             'vote_options_tree_root': voteOptionTreeRoots,
             'vote_options_tree_path_elements': voteOptionTreePathElements,
             'vote_options_tree_path_index': voteOptionTreePathIndices,
         })
+
+        return {
+            circuitInputs: inputs,
+            maciState: clonedMaciState,
+        }
     }
 
     /*

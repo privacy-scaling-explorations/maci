@@ -59,6 +59,36 @@ class IncrementalQuinTree {
     // The hash function to use
     public hashFunc: (leaves: BigInt[]) => BigInt
 
+    public serialize = (): string => {
+        return JSON.stringify(stringifyBigInts({
+            leavesPerNode: this.leavesPerNode,
+            depth: this.depth,
+            zeroValue: this.zeroValue,
+            root: this.root,
+            nextIndex: this.nextIndex,
+            leaves: this.leaves,
+            zeros: this.zeros,
+            filledSubtrees: this.filledSubtrees,
+            filledPaths: this.filledPaths,
+        }))
+    }
+
+    public static unserialize = (s: string): IncrementalQuinTree => {
+        const d = unstringifyBigInts(JSON.parse(s))
+        const tree = new IncrementalQuinTree(
+            d.depth,
+            d.zeroValue,
+            d.leavesPerNode,
+        )
+        tree.root = d.root
+        tree.nextIndex = d.nextIndex
+        tree.leaves = d.leaves
+        tree.zeros = d.zeros
+        tree.filledSubtrees = d.filledSubtrees
+        tree.filledPaths = d.filledPaths
+
+        return tree
+    }
 
     constructor (
         _depth: number,

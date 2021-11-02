@@ -10,10 +10,8 @@ import { MaciState } from 'maci-core'
 import {
     Keypair,
     Command,
+    PrivKey,
 } from 'maci-domainobjs'
-import {
-    genRandomSalt,
-} from 'maci-crypto'
 
 import { config } from 'maci-config'
 
@@ -23,11 +21,11 @@ const voteOptionTreeDepth = config.maci.merkleTrees.voteOptionTreeDepth
 const initialVoiceCreditBalance = config.maci.initialVoiceCreditBalance
 const voteOptionsMaxIndex = config.maci.voteOptionsMaxLeafIndex
 
-const user = new Keypair()
+const user = new Keypair(new PrivKey(BigInt(1111)))
 const voteOptionIndex = BigInt(0)
 const newVoteWeight = BigInt(9)
 const nonce = BigInt(1)
-const salt = genRandomSalt()
+const salt = BigInt(1234)
 
 describe('State tree root update verification circuit', () => {
     let circuit 
@@ -82,6 +80,7 @@ describe('State tree root update verification circuit', () => {
 
         // Process the message
         maciState.processMessage(0)
+        maciState.stateTree.update(1, maciState.users[0].genStateLeaf(maciState.voteOptionTreeDepth).hash())
         const stateRootAfter = maciState.genStateRoot().toString()
 
         expect(stateRootBefore).not.toEqual(stateRootAfter)

@@ -26,6 +26,8 @@ import {
 } from 'maci-domainobjs'
 
 import { 
+    User,
+    MaciState,
     genPerVOSpentVoiceCreditsCommitment,
     genTallyResultCommitment,
     genSpentVoiceCreditsCommitment,
@@ -120,6 +122,15 @@ const configureSubparser = (subparsers: any) => {
             help: 'The logs file produced by fetchLogs.',
         }
     )
+    
+    parser.addArgument(
+        ['-m', '--macistate'],
+        {
+            required: false,
+            type: 'string',
+            help: 'The serialized MaciState file to load or save.',
+        }
+    )
 
     // TODO: support resumable proof generation
     //parser.addArgument(
@@ -197,18 +208,30 @@ const genProofs = async (args: any) => {
 
     // Build an off-chain representation of the MACI contract using data in the contract storage
     let maciState
-    try {
-        maciState = await genMaciStateFromContract(
-            provider,
-            maciAddress,
-            coordinatorKeypair,
-            StateLeaf.genBlankLeaf(BigInt(0)),
-            logs,
-            false,
-        )
-    } catch (e) {
-        console.error(e)
-        return
+
+    if (args.macistate && fs.existsSync(args.macistate)) {
+        console.log('Loading MaciState from', args.macistate)
+        const m = fs.readFileSync(args.macistate).toString()
+        maciState = MaciState.unserialize(m)
+        console.log('Loaded MaciState.')
+    } else {
+        try {
+            maciState = await genMaciStateFromContract(
+                provider,
+                maciAddress,
+                coordinatorKeypair,
+                StateLeaf.genBlankLeaf(BigInt(0)),
+                logs,
+                false,
+            )
+        } catch (e) {
+            console.error(e)
+            return
+        }
+
+        console.log('Writing MaciState to', args.macistate)
+        const m = maciState.serialize()
+        fs.writeFileSync(args.macistate, m)
     }
 
     const numMessages = maciState.messages.length
@@ -245,11 +268,13 @@ const genProofs = async (args: any) => {
             zerothLeaf
 
         const genInputsStart = Date.now()
-        const circuitInputs = maciState.genBatchUpdateStateTreeCircuitInputs(
+        const r = maciState.genBatchUpdateStateTreeCircuitInputs(
             i,
             messageBatchSize,
             randomStateLeaf,
         )
+        const circuitInputs = r.circuitInputs
+
         const genInputsEnd = Date.now()
         console.log(
             'genBatchUpdateStateTreeCircuitInputs() took',
@@ -257,19 +282,20 @@ const genProofs = async (args: any) => {
             'seconds'
         )
 
-        const batchProcessStart = Date.now()
-        // Process the batch of messages
-        maciState.batchProcessMessage(
-            i,
-            messageBatchSize,
-            randomStateLeaf,
-        )
-        const batchProcessEnd = Date.now()
-        console.log(
-            'batchProcessMessage() took',
-            (batchProcessEnd - batchProcessStart) / 1000,
-            'seconds'
-        )
+        maciState = r.maciState
+        //const batchProcessStart = Date.now()
+        //// Process the batch of messages
+        //maciState.batchProcessMessage(
+            //i,
+            //messageBatchSize,
+            //randomStateLeaf,
+        //)
+        //const batchProcessEnd = Date.now()
+        //console.log(
+            //'batchProcessMessage() took',
+            //(batchProcessEnd - batchProcessStart) / 1000,
+            //'seconds'
+        //)
 
         const stateRootAfter = maciState.genStateRoot()
 

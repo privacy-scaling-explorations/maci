@@ -4,6 +4,7 @@ import {
     Keypair,
     PrivKey,
     PubKey,
+    Message,
 } from '../'
 
 import {
@@ -62,6 +63,16 @@ describe('Domain objects', () => {
             const k = new Keypair(new PrivKey(rawKeyPair.privKey))
             expect(rawKeyPair.pubKey[0]).toEqual(k.pubKey.rawPubKey[0])
             expect(rawKeyPair.pubKey[1]).toEqual(k.pubKey.rawPubKey[1])
+        })
+
+        it('Keypair.serialize() and unserialize() should work correctly', () => {
+            const k = new Keypair()
+
+            const s = k.serialize()
+            expect(s.startsWith('macisk.')).toBeTruthy()
+
+            const c = Keypair.unserialize(s)
+            expect(c.privKey.rawPrivKey.toString()).toEqual(BigInt(k.privKey.rawPrivKey).toString())
         })
 
         it('PrivKey.serialize() and unserialize() should work correctly', () => {
@@ -221,6 +232,17 @@ describe('Domain objects', () => {
             const m3 = m1.copy()
             m1.iv = BigInt(8888)
             expect(m1.iv.toString()).not.toEqual(m3.iv.toString())
+        })
+
+        it('Message serialization and unserialization should work', () => {
+            const c = command.copy()
+            const m1 = c.encrypt(signature, ecdhSharedKey)
+
+            const s = m1.serialize()
+            const d = Message.unserialize(s)
+            
+            expect(d.iv.toString()).toEqual(m1.iv.toString())
+            expect(d.data.toString()).toEqual(m1.data.toString())
         })
     })
 })

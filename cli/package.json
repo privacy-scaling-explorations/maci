@@ -22,6 +22,7 @@
         "maci-crypto": "^0.9.1",
         "maci-domainobjs": "^0.9.1",
         "prompt-sync": "4.2.0",
+        "serialijse": "0.3.0",
         "source-map-support": "^0.5.19"
     },
     "devDependencies": {

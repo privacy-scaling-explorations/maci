@@ -7,6 +7,7 @@ import {
 import {
     IncrementalQuinTree,
     NOTHING_UP_MY_SLEEVE_PUBKEY,
+    stringifyBigInts,
 } from 'maci-crypto'
 
 /*
@@ -40,6 +41,25 @@ class User {
         this.votes = _votes.map(BigInt)
         this.voiceCreditBalance = BigInt(_voiceCreditBalance)
         this.nonce = BigInt(_nonce)
+    }
+
+    public serialize(): string {
+        return JSON.stringify(stringifyBigInts({
+            pubKey: this.pubKey.serialize(),
+            votes: this.votes.map((x) => x.toString()),
+            voiceCreditBalance: this.voiceCreditBalance,
+            nonce: this.nonce,
+        }))
+    }
+
+    public static unserialize(s: string): User {
+        const d = JSON.parse(s)
+        return new User(
+            PubKey.unserialize(d.pubKey),
+            d.votes.map((x) => BigInt(x)),
+            BigInt(d.voiceCreditBalance),
+            BigInt(d.nonce),
+        )
     }
 
     /*

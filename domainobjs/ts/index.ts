@@ -21,6 +21,7 @@ import {
     unpackPubKey,
     SNARK_FIELD_SIZE,
     NOTHING_UP_MY_SLEEVE_PUBKEY,
+    stringifyBigInts,
 } from 'maci-crypto'
 
 const SERIALIZED_PRIV_KEY_PREFIX = 'macisk.'
@@ -161,6 +162,14 @@ class Keypair {
     public copy = (): Keypair => {
         return new Keypair(this.privKey.copy())
     }
+
+    public serialize = (): string => {
+        return this.privKey.serialize()
+    }
+
+    public static unserialize = (privKeyStr: string): Keypair => {
+        return new Keypair(PrivKey.unserialize(privKeyStr))
+    }
     
     public static genEcdhSharedKey(
         privKey: PrivKey,
@@ -216,6 +225,21 @@ class Message {
         assert(data.length === 10)
         this.iv = iv
         this.data = data
+    }
+
+    public serialize = (): string => {
+        return JSON.stringify(stringifyBigInts({
+            iv: this.iv,
+            data: this.data,
+        }))
+    }
+
+    public static unserialize = (s: string): Message => {
+        const d = JSON.parse(s)
+        return new Message(
+            BigInt(d.iv),
+            d.data.map((x) => BigInt(x)),
+        )
     }
 
     private asArray = (): BigInt[] => {
