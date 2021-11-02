@@ -112,6 +112,9 @@ abstract contract AccQueue is Ownable, Hasher {
     function hashLevel(uint256 _level, uint256 _leaf)
         virtual internal returns (uint256) {}
 
+    function hashLevelLeaf(uint256 _level, uint256 _leaf)
+        virtual view public returns (uint256) {}
+
     /*
      * Returns the zero leaf at a specified level.
      * This is a virtual function as the hash function which the overriding
@@ -506,6 +509,11 @@ abstract contract AccQueueBinary is AccQueue {
         return hashed;
     }
 
+    function hashLevelLeaf(uint256 _level, uint256 _leaf) override view public returns (uint256) {
+        uint256 hashed = hashLeftRight(leafQueue.levels[_level][0], _leaf);
+        return hashed;
+    }
+
     function _fill(uint256 _level) override internal {
         while (_level < subDepth) {
             uint256 n = leafQueue.indices[_level];
@@ -548,6 +556,18 @@ abstract contract AccQueueQuinary is AccQueue {
         // Free up storage slots to refund gas. Note that using a loop here
         // would result in lower gas savings.
         delete leafQueue.levels[_level];
+
+        return hashed;
+    }
+
+    function hashLevelLeaf(uint256 _level, uint256 _leaf) override view public returns (uint256) {
+        uint256[5] memory inputs;
+        inputs[0] = leafQueue.levels[_level][0];
+        inputs[1] = leafQueue.levels[_level][1];
+        inputs[2] = leafQueue.levels[_level][2];
+        inputs[3] = leafQueue.levels[_level][3];
+        inputs[4] = _leaf;
+        uint256 hashed = hash5(inputs);
 
         return hashed;
     }

@@ -366,6 +366,23 @@ contract Poll is
         extContracts.messageAq.insertSubTree(_messageSubRoot);
         // TODO: emit event
     }
+
+    /*
+    * Verify the number of spent voice credits given a vote option
+    */
+    function verifyPerVOSpentVoiceCredits(
+        uint256 _index,
+        uint256 _leaf
+    ) public view returns (bool) {
+        uint256 computedRoot = extContracts.messageAq.hashLevelLeaf(_index, _leaf);
+        uint256[3] memory sb;
+        sb[0] = computedRoot;
+        sb[1] = emptyBallotRoots[treeDepths.voteOptionTreeDepth - 1];
+        sb[2] = uint256(0);
+
+        uint256 sbCommitment = hash3(sb);
+        return sbCommitment == currentSbCommitment;
+    }
 }
 
 contract PollProcessorAndTallyer is
