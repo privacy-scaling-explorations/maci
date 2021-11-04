@@ -323,6 +323,7 @@ const genProofs = async (args: any) => {
             return 1
         }
 
+        debugger
         // Verify the proof
         const isValid = verifyProof(
             r.publicInputs,
