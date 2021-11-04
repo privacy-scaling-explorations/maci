@@ -41,6 +41,13 @@ npx task buildProver
 Note the location of the `rapidsnark` binary (e.g.
 `/home/user/rapidsnark/build/prover`).
 
+Next, install circom v2:
+
+https://docs.circom.io/
+
+Note the location of the `circom` binary (e.g. `$HOME/.cargo/bin/circom`). You
+will need it later.
+
 ### Install MACI
 
 ```bash
@@ -55,6 +62,29 @@ Install dependencies for `circom-helper` and `zkey-manager`:
 
 ```bash
 sudo apt-get install libgmp-dev nlohmann-json3-dev nasm g++
+```
+
+### Configure circom-helper and zkey-manager
+
+Edit `circuits/circomHelperConfig.json` to include the relative path to the
+circom binary.
+
+```json
+    "circom": "RELATIVE_PATH_TO_CIRCOM",
+    "snarkjs": "./node_modules/snarkjs/build/cli.cjs",
+    "circuitDirs": [
+        "./circom/test/"
+    ]
+}
+```
+
+Edit `cli/zkeys.config.yml` to include the relative path to the
+circom binary.
+
+```yml
+...
+circomPath: "RELATIVE_PATH_TO_CIRCOM"
+...
 ```
 
 ### Download `.zkey` files
