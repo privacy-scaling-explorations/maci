@@ -58,8 +58,8 @@ const executeSuite = async (data: any, expect: any) => {
         ` -m ${config.constants.maci.messageTreeDepth}` +
         ` -v ${config.constants.maci.voteOptionTreeDepth}` +
         ` -b ${config.constants.poll.messageBatchDepth}` +
-        ` -p ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey` +
-        ` -t ./zkeys/TallyVotes_10-1-2.test.0.zkey` +
+        ` -p ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey` +
+        ` -t ./zkeys/TallyVotes_10-1-2_test.0.zkey` +
         ` -k ${vkAddress}`
 
     console.log(setVerifyingKeysCommand)
@@ -266,10 +266,10 @@ const executeSuite = async (data: any, expect: any) => {
         ` -sk ${coordinatorKeypair.privKey.serialize()}` +
         ` -o ${pollId}` +
         ` -r ~/rapidsnark/build/prover` +
-        ` -wp ./zkeys/ProcessMessages_10-2-1-2.test` +
-        ` -wt ./zkeys/TallyVotes_10-1-2.test` +
-        ` -zp ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey` +
-        ` -zt ./zkeys/TallyVotes_10-1-2.test.0.zkey` +
+        ` -wp ./zkeys/ProcessMessages_10-2-1-2_test` +
+        ` -wt ./zkeys/TallyVotes_10-1-2_test` +
+        ` -zp ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey` +
+        ` -zt ./zkeys/TallyVotes_10-1-2_test.0.zkey` +
         ` -t tally.json` +
         ` -f proofs.json`
 

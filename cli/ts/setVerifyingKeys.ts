@@ -138,7 +138,7 @@ const setVerifyingKeys = async (args: any) => {
     }
 
     // Check the pm zkey filename against specified params
-    const pmMatch = pmZkeyFile.match(/.+_(\d+)-(\d+)-(\d+)-(\d+)\./)
+    const pmMatch = pmZkeyFile.match(/.+_(\d+)-(\d+)-(\d+)-(\d+)_/)
     if (pmMatch == null) {
         console.error(`Error: ${pmZkeyFile} has an invalid filename`)
         return 1
@@ -148,7 +148,7 @@ const setVerifyingKeys = async (args: any) => {
     const pmMsgBatchDepth = Number(pmMatch[3])
     const pmVoteOptionTreeDepth = Number(pmMatch[4])
 
-    const tvMatch = tvZkeyFile.match(/.+_(\d+)-(\d+)-(\d+)\./)
+    const tvMatch = tvZkeyFile.match(/.+_(\d+)-(\d+)-(\d+)_/)
     if (tvMatch == null) {
         console.error(`Error: ${tvZkeyFile} has an invalid filename`)
         return 1

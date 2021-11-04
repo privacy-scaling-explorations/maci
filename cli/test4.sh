@@ -1,7 +1,7 @@
 # 8 signups, 10 messages
 node build/index.js deployVkRegistry
 
-node build/index.js setVerifyingKeys -s 10 -i 1 -m 2 -v 2 -b 1 -p ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey -t ./zkeys/TallyVotes_10-1-2.test.0.zkey -k 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
+node build/index.js setVerifyingKeys -s 10 -i 1 -m 2 -v 2 -b 1 -p ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey -t ./zkeys/TallyVotes_10-1-2_test.0.zkey -k 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
 
 node build/index.js create -r 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
 
@@ -35,7 +35,7 @@ node build/index.js mergeMessages -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a 
 
 rm -f proofs.json tally.json
 
-node build/index.js genProofs -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a -sk macisk.1b421413d3e82a3e955b591b2d8f943032537e7a8634223710c6c0f0094a058b -o 0 -r ~/rapidsnark/build/prover -wp ./zkeys/ProcessMessages_10-2-1-2.test -wt ./zkeys/TallyVotes_10-1-2.test -zp ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey -zt ./zkeys/TallyVotes_10-1-2.test.0.zkey -t tally.json -f proofs.json
+node build/index.js genProofs -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a -sk macisk.1b421413d3e82a3e955b591b2d8f943032537e7a8634223710c6c0f0094a058b -o 0 -r ~/rapidsnark/build/prover -wp ./zkeys/ProcessMessages_10-2-1-2_test -wt ./zkeys/TallyVotes_10-1-2_test -zp ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey -zt ./zkeys/TallyVotes_10-1-2_test.0.zkey -t tally.json -f proofs.json
 
 node build/index.js proveOnChain \
     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \

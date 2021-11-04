@@ -1,12 +1,12 @@
 node build/index.js deployVkRegistry && \
 node build/index.js setVerifyingKeys -s 10 -i 1 -m 2 -v 2 -b 1 \
-    -p ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey \
-    -t ./zkeys/TallyVotes_10-1-2.test.0.zkey \
+    -p ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
+    -t ./zkeys/TallyVotes_10-1-2_test.0.zkey \
     -k 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0 && \
 node build/index.js create \
     -r 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0 && \
 node ./build/index.js deployPoll -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
-    -pk macipk.495140c99cbc090c74363d5e3f32705a92a9e1df8e5ebe2fd6831de9c813f01f \
+    -pk macipk.81722e96a9296698f90cbd895786a0088d3ab5c36b0176f2c65b5415de7b5b2f \
     -t 120 -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2 
 
 # Sign up 6 times
@@ -71,13 +71,13 @@ node build/index.js mergeMessages -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a 
 node build/index.js mergeSignups -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a -o 0 && \
 rm -f tally.json proofs.json && \
 node build/index.js genProofs -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
-    -sk macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
+    -sk macisk.1b421413d3e82a3e955b591b2d8f943032537e7a8634223710c6c0f0094a058b \
     -o 0 \
     -r ~/rapidsnark/build/prover \
-    -wp ./zkeys/ProcessMessages_10-2-1-2.test \
-    -wt ./zkeys/TallyVotes_10-1-2.test \
-    -zp ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey \
-    -zt ./zkeys/TallyVotes_10-1-2.test.0.zkey \
+    -wp ./zkeys/ProcessMessages_10-2-1-2_test \
+    -wt ./zkeys/TallyVotes_10-1-2_test \
+    -zp ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
+    -zt ./zkeys/TallyVotes_10-1-2_test.0.zkey \
     -t tally.json \
     -f proofs.json
 
