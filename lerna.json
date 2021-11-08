@@ -6,7 +6,8 @@
     "core",
     "crypto",
     "domainobjs",
-    "integrationTests"
+    "integrationTests",
+    "server"
   ],
   "version": "1.0.4",
   "npmClient": "npm"

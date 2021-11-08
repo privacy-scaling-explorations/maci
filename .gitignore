@@ -136,3 +136,11 @@ typings/
 .dynamodb/
 
 *.kate-swp
+
+# docker related
+**/data/
+cli/contractAddress.txt
+cli/output.json
+cli/processinput.json
+cli/tallyinput.json
+
