@@ -48,8 +48,6 @@ RUN cd ~ \
     && npm i && npm run bootstrap && npm run build
 
 # HTTP port
-EXPOSE 8000
-# JSON-RPC port
-EXPOSE 8020
+EXPOSE 8080
 
 
