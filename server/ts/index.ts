@@ -41,6 +41,10 @@ const initApp = ():any => {
     res.status(err.status || 500).send(err.message)
   });
 
+  app.use(function(req, res, next) {
+    res.status(404).send('Invalid request...');
+  });
+
   return app;
 }
 
