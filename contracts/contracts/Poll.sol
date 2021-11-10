@@ -408,6 +408,30 @@ contract Poll is
         return currentSbCommitment == hash3(sb);
     }
 
+    function verifyTallyResult(
+        uint256 _voteOptionIndex,
+        uint256 _tallyResult,
+        uint256[][] memory _tallyResultProof,
+        uint256 _tallyResultSalt,
+        uint256 _spentVoiceCreditsHash,
+        uint256 _perVOSpentVoiceCreditsHash,
+        uint256 _tallyCommitment
+    ) public view returns (bool){
+         uint256 computedRoot = computeMerkleRootFromPath(
+            treeDepths.voteOptionTreeDepth,
+            _voteOptionIndex,
+            _tallyResult,
+            _tallyResultProof
+        );
+
+        uint256[3] memory tally;
+        tally[0] = computedRoot;
+        tally[1] = _spentVoiceCreditsHash;
+        tally[2] = _perVOSpentVoiceCreditsHash;
+
+        return hash3(tally) == _tallyCommitment;
+    }
+
 
     function computeMerkleRootFromPath(
         uint8 _depth,
@@ -793,24 +817,6 @@ contract PollProcessorAndTallyer is
         // Update the tally commitment and the tally batch num
         tallyCommitment = _newTallyCommitment;
         tallyBatchNum ++;
-    }
-
-    function verifyTallyResult(
-        uint256 _voteOptionIndex,
-        uint256 _tallyResult,
-        uint256[][] memory _tallyResultProof,
-        uint256 _tallyResultSalt
-    ) public view returns (bool){
-        /*
-         uint256 computedRoot = computeMerkleRootFromPath(
-            _poll.treeDepths.voteOptionTreeDepth,
-            _index,
-            _leaf,
-            _tallyResultProof
-        );
-        */
-        // return hash3(computedTally) == tallyCommitment;
-        return true;
     }
 
     function verifyTallyProof(
