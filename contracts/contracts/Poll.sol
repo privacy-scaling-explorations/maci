@@ -169,6 +169,8 @@ contract Poll is
     string constant ERROR_MAX_MESSAGES_REACHED = "PollE06";
     string constant ERROR_STATE_AQ_ALREADY_MERGED = "PollE07";
 
+    uint8 private constant LEAVES_PER_NODE = 5;
+
     event PublishMessage(Message _message, PubKey _encPubKey);
     event MergeMaciStateAqSubRoots(uint256 _numSrQueueOps);
     event MergeMaciStateAq(uint256 _stateRoot);
@@ -214,6 +216,11 @@ contract Poll is
             ERROR_VOTING_PERIOD_NOT_PASSED
         );
         _;
+    }
+
+    function isAfterDeadline() public view returns (bool) {
+        uint256 secondsPassed = block.timestamp - deployTime;
+        return secondsPassed > duration;
     }
 
     /*
@@ -370,18 +377,69 @@ contract Poll is
     /*
     * Verify the number of spent voice credits given a vote option
     */
-    function verifyPerVOSpentVoiceCredits(
-        uint256 _index,
-        uint256 _leaf
+    function verifySpentVoiceCredits(
+        uint256 _totalSpent,
+        uint256 _totalSpentSalt
     ) public view returns (bool) {
-        uint256 computedRoot = extContracts.messageAq.hashLevelLeaf(_index, _leaf);
+        uint256 ballotRoot = hashLeftRight(_totalSpent, _totalSpentSalt);
+        return ballotRoot == emptyBallotRoots[treeDepths.voteOptionTreeDepth - 1];
+    }
+
+    function verifyPerVOSpentVoiceCredits(
+        uint256 _voteOptionIndex,
+        uint256 _spent,
+        uint256[][] memory _spentProof,
+        uint256 _spentSalt
+    ) public view returns (bool) {
+         uint256 computedRoot = computeMerkleRootFromPath(
+            treeDepths.voteOptionTreeDepth,
+            _voteOptionIndex,
+            _spent,
+            _spentProof
+        );
+
+        uint256 ballotRoot = hashLeftRight(computedRoot, _spentSalt);
+
         uint256[3] memory sb;
-        sb[0] = computedRoot;
-        sb[1] = emptyBallotRoots[treeDepths.voteOptionTreeDepth - 1];
+        sb[0] = mergedStateRoot;
+        sb[1] = ballotRoot;
         sb[2] = uint256(0);
 
-        uint256 sbCommitment = hash3(sb);
-        return sbCommitment == currentSbCommitment;
+        return currentSbCommitment == hash3(sb);
+    }
+
+
+    function computeMerkleRootFromPath(
+        uint8 _depth,
+        uint256 _index,
+        uint256 _leaf,
+        uint256[][] memory _pathElements
+    ) internal pure returns (uint256) {
+        uint256 pos = _index % LEAVES_PER_NODE;
+        uint256 current = _leaf;
+        uint8 k;
+
+        uint256[LEAVES_PER_NODE] memory level;
+
+        for (uint8 i = 0; i < _depth; i ++) {
+            for (uint8 j = 0; j < LEAVES_PER_NODE; j ++) {
+                if (j == pos) {
+                    level[j] = current;
+                } else {
+                    if (j > pos) {
+                        k = j - 1;
+                    } else {
+                        k = j;
+                    }
+                    level[j] = _pathElements[i][k];
+                }
+            }
+
+            _index /= LEAVES_PER_NODE;
+            pos = _index % LEAVES_PER_NODE;
+            current = hash5(level);
+        }
+        return current;
     }
 }
 
@@ -737,6 +795,24 @@ contract PollProcessorAndTallyer is
         tallyBatchNum ++;
     }
 
+    function verifyTallyResult(
+        uint256 _voteOptionIndex,
+        uint256 _tallyResult,
+        uint256[][] memory _tallyResultProof,
+        uint256 _tallyResultSalt
+    ) public view returns (bool){
+        /*
+         uint256 computedRoot = computeMerkleRootFromPath(
+            _poll.treeDepths.voteOptionTreeDepth,
+            _index,
+            _leaf,
+            _tallyResultProof
+        );
+        */
+        // return hash3(computedTally) == tallyCommitment;
+        return true;
+    }
+
     function verifyTallyProof(
         Poll _poll,
         uint256[8] memory _proof,
@@ -744,7 +820,7 @@ contract PollProcessorAndTallyer is
         uint256 _batchStartIndex,
         uint256 _tallyBatchSize,
         uint256 _newTallyCommitment
-    ) internal view returns (bool) {
+    ) public view returns (bool) {
         (
             uint8 intStateTreeDepth,
             ,
