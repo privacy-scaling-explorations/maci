@@ -375,7 +375,10 @@ contract Poll is
     }
 
     /*
-    * Verify the number of spent voice credits given a vote option
+    * @notice Verify the number of spent voice credits from the tally.json
+    * @param _totalSpent spent field retrieved in the totalSpentVoiceCredits object
+    * @param _totalSpentSalt the corresponding salt in the totalSpentVoiceCredit object
+    * @return valid a boolean representing successful verification
     */
     function verifySpentVoiceCredits(
         uint256 _totalSpent,
@@ -385,6 +388,14 @@ contract Poll is
         return ballotRoot == emptyBallotRoots[treeDepths.voteOptionTreeDepth - 1];
     }
 
+    /*
+    * @notice Verify the number of spent voice credits per vote option from the tally.json
+    * @param _voteOptionIndex the index of the vote option where credits were spent
+    * @param _spent the spent voice credits for a given vote option index
+    * @param _spentProof proof generated for the perVOSpentVoiceCredits
+    * @param _salt the corresponding salt given in the tally perVOSpentVoiceCredits object
+    * @return valid a boolean representing successful verification
+    */
     function verifyPerVOSpentVoiceCredits(
         uint256 _voteOptionIndex,
         uint256 _spent,
@@ -408,6 +419,17 @@ contract Poll is
         return currentSbCommitment == hash3(sb);
     }
 
+    /*
+    * @notice Verify the result generated of the tally.json
+    * @param _voteOptionIndex the index of the vote option to verify the correctness of the tally
+    * @param _tallyResult Flattened array of the tally 
+    * @param _tallyResultProof Corresponding proof of the tally result
+    * @param _tallyResultSalt the respective salt in the results object in the tally.json
+    * @param _spentVoiceCreditsHash hashLeftRight(number of spent voice credits, spent salt) 
+    * @param _perVOSpentVoiceCreditsHash hashLeftRight(merkle root of the no spent voice credits per vote option, perVOSpentVoiceCredits salt)
+    * @param _tallyCommitment newTallyCommitment field in the tally.json
+    * @return valid a boolean representing successful verification
+    */
     function verifyTallyResult(
         uint256 _voteOptionIndex,
         uint256 _tallyResult,
@@ -819,6 +841,16 @@ contract PollProcessorAndTallyer is
         tallyBatchNum ++;
     }
 
+    /*
+    * @notice Verify the tally proof using the verifiying key
+    * @param _poll contract address of the poll proof to be verified
+    * @param _proof the proof generated after processing all messages
+    * @param _numSignUps number of signups for a given poll
+    * @param _batchStartIndex the number of batches multiplied by the size of the batch
+    * @param _tallyBatchSize batch size for the tally
+    * @param _newTallyCommitment the tally commitment to be verified at a given batch index
+    * @return valid a boolean representing successful verification
+    */
     function verifyTallyProof(
         Poll _poll,
         uint256[8] memory _proof,
