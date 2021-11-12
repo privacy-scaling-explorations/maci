@@ -169,6 +169,8 @@ contract Poll is
     string constant ERROR_MAX_MESSAGES_REACHED = "PollE06";
     string constant ERROR_STATE_AQ_ALREADY_MERGED = "PollE07";
 
+    uint8 private constant LEAVES_PER_NODE = 5;
+
     event PublishMessage(Message _message, PubKey _encPubKey);
     event MergeMaciStateAqSubRoots(uint256 _numSrQueueOps);
     event MergeMaciStateAq(uint256 _stateRoot);
@@ -214,6 +216,11 @@ contract Poll is
             ERROR_VOTING_PERIOD_NOT_PASSED
         );
         _;
+    }
+
+    function isAfterDeadline() public view returns (bool) {
+        uint256 secondsPassed = block.timestamp - deployTime;
+        return secondsPassed > duration;
     }
 
     /*
@@ -365,6 +372,120 @@ contract Poll is
     isAfterVotingDeadline {
         extContracts.messageAq.insertSubTree(_messageSubRoot);
         // TODO: emit event
+    }
+
+    /*
+    * @notice Verify the number of spent voice credits from the tally.json
+    * @param _totalSpent spent field retrieved in the totalSpentVoiceCredits object
+    * @param _totalSpentSalt the corresponding salt in the totalSpentVoiceCredit object
+    * @return valid a boolean representing successful verification
+    */
+    function verifySpentVoiceCredits(
+        uint256 _totalSpent,
+        uint256 _totalSpentSalt
+    ) public view returns (bool) {
+        uint256 ballotRoot = hashLeftRight(_totalSpent, _totalSpentSalt);
+        return ballotRoot == emptyBallotRoots[treeDepths.voteOptionTreeDepth - 1];
+    }
+
+    /*
+    * @notice Verify the number of spent voice credits per vote option from the tally.json
+    * @param _voteOptionIndex the index of the vote option where credits were spent
+    * @param _spent the spent voice credits for a given vote option index
+    * @param _spentProof proof generated for the perVOSpentVoiceCredits
+    * @param _salt the corresponding salt given in the tally perVOSpentVoiceCredits object
+    * @return valid a boolean representing successful verification
+    */
+    function verifyPerVOSpentVoiceCredits(
+        uint256 _voteOptionIndex,
+        uint256 _spent,
+        uint256[][] memory _spentProof,
+        uint256 _spentSalt
+    ) public view returns (bool) {
+         uint256 computedRoot = computeMerkleRootFromPath(
+            treeDepths.voteOptionTreeDepth,
+            _voteOptionIndex,
+            _spent,
+            _spentProof
+        );
+
+        uint256 ballotRoot = hashLeftRight(computedRoot, _spentSalt);
+
+        uint256[3] memory sb;
+        sb[0] = mergedStateRoot;
+        sb[1] = ballotRoot;
+        sb[2] = uint256(0);
+
+        return currentSbCommitment == hash3(sb);
+    }
+
+    /*
+    * @notice Verify the result generated of the tally.json
+    * @param _voteOptionIndex the index of the vote option to verify the correctness of the tally
+    * @param _tallyResult Flattened array of the tally 
+    * @param _tallyResultProof Corresponding proof of the tally result
+    * @param _tallyResultSalt the respective salt in the results object in the tally.json
+    * @param _spentVoiceCreditsHash hashLeftRight(number of spent voice credits, spent salt) 
+    * @param _perVOSpentVoiceCreditsHash hashLeftRight(merkle root of the no spent voice credits per vote option, perVOSpentVoiceCredits salt)
+    * @param _tallyCommitment newTallyCommitment field in the tally.json
+    * @return valid a boolean representing successful verification
+    */
+    function verifyTallyResult(
+        uint256 _voteOptionIndex,
+        uint256 _tallyResult,
+        uint256[][] memory _tallyResultProof,
+        uint256 _tallyResultSalt,
+        uint256 _spentVoiceCreditsHash,
+        uint256 _perVOSpentVoiceCreditsHash,
+        uint256 _tallyCommitment
+    ) public view returns (bool){
+         uint256 computedRoot = computeMerkleRootFromPath(
+            treeDepths.voteOptionTreeDepth,
+            _voteOptionIndex,
+            _tallyResult,
+            _tallyResultProof
+        );
+
+        uint256[3] memory tally;
+        tally[0] = computedRoot;
+        tally[1] = _spentVoiceCreditsHash;
+        tally[2] = _perVOSpentVoiceCreditsHash;
+
+        return hash3(tally) == _tallyCommitment;
+    }
+
+
+    function computeMerkleRootFromPath(
+        uint8 _depth,
+        uint256 _index,
+        uint256 _leaf,
+        uint256[][] memory _pathElements
+    ) internal pure returns (uint256) {
+        uint256 pos = _index % LEAVES_PER_NODE;
+        uint256 current = _leaf;
+        uint8 k;
+
+        uint256[LEAVES_PER_NODE] memory level;
+
+        for (uint8 i = 0; i < _depth; i ++) {
+            for (uint8 j = 0; j < LEAVES_PER_NODE; j ++) {
+                if (j == pos) {
+                    level[j] = current;
+                } else {
+                    if (j > pos) {
+                        k = j - 1;
+                    } else {
+                        k = j;
+                    }
+                    level[j] = _pathElements[i][k];
+                }
+            }
+
+            _index /= LEAVES_PER_NODE;
+            pos = _index % LEAVES_PER_NODE;
+            current = hash5(level);
+        }
+        return current;
     }
 }
 
@@ -720,6 +841,16 @@ contract PollProcessorAndTallyer is
         tallyBatchNum ++;
     }
 
+    /*
+    * @notice Verify the tally proof using the verifiying key
+    * @param _poll contract address of the poll proof to be verified
+    * @param _proof the proof generated after processing all messages
+    * @param _numSignUps number of signups for a given poll
+    * @param _batchStartIndex the number of batches multiplied by the size of the batch
+    * @param _tallyBatchSize batch size for the tally
+    * @param _newTallyCommitment the tally commitment to be verified at a given batch index
+    * @return valid a boolean representing successful verification
+    */
     function verifyTallyProof(
         Poll _poll,
         uint256[8] memory _proof,
@@ -727,7 +858,7 @@ contract PollProcessorAndTallyer is
         uint256 _batchStartIndex,
         uint256 _tallyBatchSize,
         uint256 _newTallyCommitment
-    ) internal view returns (bool) {
+    ) public view returns (bool) {
         (
             uint8 intStateTreeDepth,
             ,
