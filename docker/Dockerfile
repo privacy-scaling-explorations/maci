@@ -1,8 +1,8 @@
 FROM ubuntu:20.04 as maci-node
 
 ARG COMMIT_SHA=unknown
-ARG REPO_NAME="https://github.com/appliedzkp/maci.git"
-ARG BRANCH_NAME=v1
+ARG REPO_NAME="https://github.com/chaosma/maci.git"
+ARG BRANCH_NAME=cordservice
 ARG TAG_NAME=unknown
 
 # install dependency
@@ -44,10 +44,9 @@ RUN cd ~ \
 RUN cd ~ \
     && git clone $REPO_NAME \
     && cd maci \
-    && git checkout v1 \
+    && git checkout ${BRANCH_NAME} \
     && npm i && npm run bootstrap && npm run build
 
 # HTTP port
 EXPOSE 8080
-
 

@@ -6,11 +6,11 @@ Preconfigured Docker image for running Coordinator Service.
 
 ```sh
 docker run -it \
-  -e postgres_host=<HOST> \
-  -e postgres_port=<PORT> \
-  -e postgres_user=<USER> \
-  -e postgres_pass=<PASSWORD> \
-  -e postgres_db=<DBNAME> \
+  -e mongo_host=<HOST> \
+  -e mongo_port=<PORT> \
+  -e mongo_user=<USER> \
+  -e mongo_pass=<PASSWORD> \
+  -e mongo_db=<DBNAME> \
   maci-node:a1
 ```
 

@@ -12,6 +12,8 @@
             "axios": "^0.24.0",
             "express": "^4.17.1",
             "minilog": "^3.1.0",
+            "mongodb": "^4.1.4",
+            "pg": "^8.7.1",
             "shelljs": "^0.8.3"
       },
       "devDependencies": {

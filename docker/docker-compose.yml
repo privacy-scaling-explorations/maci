@@ -2,25 +2,23 @@ version: '3'
 services:
   maci-node:
     tty: true
-    image: maci-node:a2
+    image: maci-node:a1
     ports:
-      - '8000:8000'
       - '8080:8080'
     depends_on:
-      - postgres
+      - mongo
     environment:
-      postgres_host: postgres
-      postgres_user: maci-coordinator
-      postgres_pass: let-me-in
-      postgres_db: maci-db
-  postgres:
-    image: postgres
+      mongo_host: mongo
+      mongo_user: maci-coordinator
+      mongo_pass: let-me-in
+      mongo_db: maci-db
+  mongo:
+    image: mongo
+    restart: always
     ports:
-      - '5432:5432'
-    command: ["postgres", "-cshared_preload_libraries=pg_stat_statements"]
+      - '27017:27017'
     environment:
-      POSTGRES_USER: maci-coordinator
-      POSTGRES_PASSWORD: let-me-in
-      POSTGRES_DB: maci-db
+      MONGO_INITDB_ROOT_USERNAME: maci-coordinator
+      MONGO_INITDB_ROOT_PASSWORD: let-me-in
     volumes:
-      - ./data/postgres:/var/lib/postgresql/data
+      - ./data/mongodb:/var/lib/mongodb/data

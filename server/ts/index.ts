@@ -1,6 +1,7 @@
 import * as express from 'express'
 import * as shelljs from 'shelljs'
 import * as fs from 'fs'
+import * as pg from 'pg'
 import * as minilog from 'minilog'
 
 const HTTP_PORT = 8080
