@@ -12,6 +12,8 @@ services:
       mongo_user: maci-coordinator
       mongo_pass: let-me-in
       mongo_db: maci-db
+    volumes:
+      - /home/chao/opensource/maci:/root/dev-maci
   mongo:
     image: mongo
     restart: always
