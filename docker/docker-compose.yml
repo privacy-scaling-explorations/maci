@@ -12,6 +12,8 @@ services:
       mongo_user: maci-coordinator
       mongo_pass: let-me-in
       mongo_db: maci-db
+      mongo_uri: 'mongodb://maci-coordinator:let-me-in@172.18.0.1'
+
     volumes:
       - /home/chao/opensource/maci:/root/dev-maci
   mongo:
@@ -23,4 +25,4 @@ services:
       MONGO_INITDB_ROOT_USERNAME: maci-coordinator
       MONGO_INITDB_ROOT_PASSWORD: let-me-in
     volumes:
-      - ./data/mongodb:/var/lib/mongodb/data
+      - ./data/mongodb:/data/db

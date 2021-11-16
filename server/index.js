@@ -1,19 +1,16 @@
-import * as express from 'express'
-import * as shelljs from 'shelljs'
-import * as fs from 'fs'
-import * as pg from 'pg'
-import * as minilog from 'minilog'
+//import * as express from 'express'
+//import * as shelljs from 'shelljs'
+//import * as pg from 'pg'
+//import logger from './logger' 
+//import * as database from './db'
+const express = require('express')
+const shelljs = require('shelljs')
+const pg = require('pg')
+const logger = require('./logger').logger
+const db = require('./db')
+
 
 const HTTP_PORT = 8080
-
-const initLogger = (): any => {
-  minilog.pipe(fs.createWriteStream('./debug.log'))
-  minilog.enable()
-  let logger = minilog('app')
-  return logger
-}
-
-let logger = initLogger()
 
 const logErrors = (err, next) => {
   logger.error(err.stack);
@@ -24,16 +21,16 @@ const signupRouter = express.Router()
 signupRouter.get('/echo', function(req, res){
   logger.info('-----req.query:-----')
   logger.info(req.query)
+  db.ping()
   res.send({
     hello: 'world'
   })
 })
 
-
-const initApp = ():any => {
+function initApp() {
   let app = express()
 
-  app.use(express.urlencoded())
+  app.use(express.urlencoded({extended: true}))
   app.use(express.json())
   app.use('/signup/', signupRouter)
 
@@ -49,13 +46,15 @@ const initApp = ():any => {
   return app;
 }
 
-
-
-const startServer = () => {
+function startServer() {
   let app = initApp()
   app.listen(HTTP_PORT, function () {
     logger.info('server is listening on port ' + HTTP_PORT);
   });
 }
 
-startServer();
+async function main() {
+   startServer()
+}
+
+main()
