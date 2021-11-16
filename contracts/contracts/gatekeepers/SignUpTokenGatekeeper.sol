@@ -7,11 +7,13 @@ import { SignUpToken } from '../SignUpToken.sol';
 contract SignUpTokenGatekeeper is SignUpGatekeeper {
 
     SignUpToken token;
+    address maciInstance;
 
     mapping (uint256 => bool) internal registeredTokenIds;
 
-    constructor(SignUpToken _token) {
+    constructor(SignUpToken _token, address _maciInstance) {
         token = _token;
+        maciInstance = _maciInstance;
     }
 
     /*
@@ -22,9 +24,10 @@ contract SignUpTokenGatekeeper is SignUpGatekeeper {
      * @param _data The ABI-encoded tokenId as a uint256.
      */
     function register(address _user, bytes memory _data) public override {
+        require(maciInstance == msg.sender, "SignUpTokenGatekeeper: only specified MACI instance can call this function");
         // Decode the given _data bytes into a uint256 which is the token ID
         uint256 tokenId = abi.decode(_data, (uint256));
-        
+
         // Check if the user owns the token
         bool ownsToken = token.ownerOf(tokenId) == _user;
         require(ownsToken == true, "SignUpTokenGatekeeper: this user does not own the token");
