@@ -2,16 +2,22 @@ const minilog = require('minilog')
 const path = require('path')
 const fs = require('fs')
 
-const LOG_DIR = './logs'
+const logDir = './logs'
+const logFile = path.join(logDir, 'server.log')
+const logFileOld = path.join(logDir, 'old.log')
+
 const initLogger = () => {
-  if (!fs.existsSync(LOG_DIR)){
-    fs.mkdirSync(LOG_DIR);
+  if (!fs.existsSync(logDir)){
+    fs.mkdirSync(logDir)
+  } 
+  if (fs.existsSync(logFile)) {
+     fs.renameSync(logFile, logFileOld)
   }
-  //let log_path = path.join(LOG_DIR, `${Date.now()}.log`)
-  let log_path = path.join(LOG_DIR, 'debug.log')
-  minilog.pipe(fs.createWriteStream(log_path))
   minilog.enable()
+  minilog.pipe(fs.createWriteStream(logFile))
+
   let logger = minilog('app')
+  logger.info("logger init...")
   return logger
 }
 
