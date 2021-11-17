@@ -1,4 +1,5 @@
 import * as prompt from 'prompt-async'
+import * as fs from 'fs'
 
 prompt.colors = false
 prompt.message = ''
@@ -132,6 +133,19 @@ const delay = (ms: number): Promise<void> => {
     return new Promise((resolve: Function) => setTimeout(resolve, ms))
 }
 
+const readJSONFile = (filename:string) => {
+   if (!fs.existsSync(filename)) {
+      return ""
+   }
+   let data = fs.readFileSync(filename).toString()
+   let jdata = JSON.parse(data)
+   return jdata
+}
+
+const writeJSONFile = (filename:string, data:string|Object) => {
+    fs.writeFileSync(filename, JSON.stringify(data))
+}
+
 export {
     promptPwd,
     calcBinaryTreeDepthFromMaxLeaves,
@@ -145,4 +159,6 @@ export {
     currentBlockTimestamp,
     batchTransactionRequests,
     delay,
+    readJSONFile,
+    writeJSONFile,
 }

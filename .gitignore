@@ -143,4 +143,6 @@ cli/contractAddress.txt
 cli/output.json
 cli/processinput.json
 cli/tallyinput.json
+cli/contractAddress.txt
+cli/contractAddress.old
 

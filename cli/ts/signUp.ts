@@ -11,6 +11,7 @@ import {
 import {
     validateEthAddress,
     contractExists,
+    readJSONFile,
 } from './utils'
 
 const { ethers } = require('hardhat')
@@ -20,6 +21,7 @@ import {
     DEFAULT_SG_DATA,
     DEFAULT_IVCP_DATA,
 } from './defaults'
+import {contractFilepath} from './config'
 
 const configureSubparser = (subparsers: any) => {
     const parser = subparsers.addParser(
@@ -40,7 +42,6 @@ const configureSubparser = (subparsers: any) => {
     parser.addArgument(
         ['-x', '--contract'],
         {
-            required: true,
             type: 'string',
             help: 'The MACI contract address',
         }
@@ -75,13 +76,19 @@ const signup = async (args: any) => {
 
     const userMaciPubKey = PubKey.unserialize(args.pubkey)
 
+
+    let contractAddrs = readJSONFile(contractFilepath)
+    if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
+        console.error('Error: MACI contract address is empty') 
+        return 
+    }
+    const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
+
     // MACI contract
-    if (!validateEthAddress(args.contract)) {
+    if (!validateEthAddress(maciAddress)) {
         console.error('Error: invalid MACI contract address')
         return
     }
-
-    const maciAddress = args.contract
 
     const sgData = args.sg_data ? args.sg_data : DEFAULT_SG_DATA
     const ivcpData = args.ivcp_data ? args.ivcp_data : DEFAULT_IVCP_DATA

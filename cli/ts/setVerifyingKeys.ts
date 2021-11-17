@@ -8,6 +8,8 @@ import { VerifyingKey } from 'maci-domainobjs'
 import { genProcessVkSig, genTallyVkSig } from 'maci-core'
 import { parseArtifact, getDefaultSigner } from 'maci-contracts'
 import { contractExists } from './utils'
+import { contractFilepath } from './config'
+import { readJSONFile } from './utils'
 
 const configureSubparser = (subparsers: any) => {
     const createParser = subparsers.addParser(
@@ -19,7 +21,6 @@ const configureSubparser = (subparsers: any) => {
         ['-k', '--vk_registry'],
         {
             action: 'store',
-            required: true,
             type: 'string',
             help: 'The VkRegistry contract address',
         }
@@ -97,7 +98,12 @@ const configureSubparser = (subparsers: any) => {
 }
 
 const setVerifyingKeys = async (args: any) => {
-    const vkRegistryAddress = args.vk_registry
+    let contractAddrs = readJSONFile(contractFilepath)
+    if ((!contractAddrs||!contractAddrs["VkRegistry"]) && !args.vk_registry) {
+        console.error('Error: vkRegistry contract address is empty') 
+        return 1
+    }
+    const vkRegistryAddress = args.vk_registry ? args.vk_registry: contractAddrs["VkRegistry"]
     // State tree depth
     const stateTreeDepth = args.state_tree_depth
     const intStateTreeDepth = args.int_state_tree_depth
