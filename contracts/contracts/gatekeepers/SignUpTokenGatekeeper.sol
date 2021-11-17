@@ -8,8 +8,8 @@ import { MACI } from '../MACI.sol';
 
 contract SignUpTokenGatekeeper is SignUpGatekeeper {
 
-    SignUpToken token;
-    MACI maci;
+    SignUpToken public token;
+    MACI public maci;
 
     mapping (uint256 => bool) internal registeredTokenIds;
 
@@ -22,7 +22,6 @@ contract SignUpTokenGatekeeper is SignUpGatekeeper {
      * @param _maci The MACI contract interface to be stored
      */
     function addMACI(MACI _maci) public override {
-        require(_maci.isInitialised() == false);
         maci = _maci;
     }
 
@@ -34,6 +33,7 @@ contract SignUpTokenGatekeeper is SignUpGatekeeper {
      * @param _data The ABI-encoded tokenId as a uint256.
      */
     function register(address _user, bytes memory _data) public override {
+        require(maci.isInitialised() == true, "SignUpTokenGatekeeper: MACI instance is invalid");
         require(address(maci) == msg.sender, "SignUpTokenGatekeeper: only specified MACI instance can call this function");
         // Decode the given _data bytes into a uint256 which is the token ID
         uint256 tokenId = abi.decode(_data, (uint256));
