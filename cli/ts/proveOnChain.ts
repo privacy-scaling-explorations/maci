@@ -215,7 +215,6 @@ const proveOnChain = async (args: any) => {
         :
         1 + Math.floor((1 + numSignUps) / tallyBatchSize)
 
-    debugger
     if (expectedNumProcessProofs !== data.processProofs.length) {
         console.error('Error: the message processing proofs in', args.proof_file, 'are incomplete')
         return

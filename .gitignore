@@ -1,3 +1,4 @@
+integrationTests/*_suite_maciState.json
 cli/logs.json
 cli/macistate.txt
 cli/logs32.test.json

@@ -330,18 +330,6 @@ const genProofs = async (args: any) => {
         }
         const { witness, proof, publicSignals } = result
 
-        // Get the public signals from the contract
-        const ecdhPubKeys2: PubKey[] = []
-        for (const p of circuitInputs['ecdh_public_key']) {
-            const pubKey = new PubKey(p)
-            ecdhPubKeys2.push(pubKey)
-        }
-        const contractPublicSignals = await maciContract.genBatchUstPublicSignals(
-            '0x' + stateRootAfter.toString(16),
-            ecdhPubKeys2.map((x) => x.asContractParam()),
-        )
-        debugger
-
         // Get the circuit-generated root
         //const circuitNewStateRoot = getSignalByName(circuit, witness, 'main.root')
         const circuitNewStateRoot = getSignalByNameViaSym(circuitName, witness, 'main.root')

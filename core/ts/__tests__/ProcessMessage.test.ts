@@ -120,7 +120,6 @@ describe('Message processing', () => {
             expect(copiedState.messages.length).toEqual(1)
             const oldState = copiedState.copy()
             copiedState.processMessage(0)
-            copiedState.stateTree.update(1, copiedState.users[0].genStateLeaf(voteOptionTreeDepth).hash())
             const newStateRoot = copiedState.genStateRoot()
 
             expect(newStateRoot.toString()).not.toEqual(oldState.genStateRoot().toString())

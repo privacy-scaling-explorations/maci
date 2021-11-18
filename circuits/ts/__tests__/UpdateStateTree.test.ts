@@ -80,7 +80,6 @@ describe('State tree root update verification circuit', () => {
 
         // Process the message
         maciState.processMessage(0)
-        maciState.stateTree.update(1, maciState.users[0].genStateLeaf(maciState.voteOptionTreeDepth).hash())
         const stateRootAfter = maciState.genStateRoot().toString()
 
         expect(stateRootBefore).not.toEqual(stateRootAfter)

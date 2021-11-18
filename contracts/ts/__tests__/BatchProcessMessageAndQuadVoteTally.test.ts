@@ -339,7 +339,6 @@ describe('BatchProcessMessage', () => {
             const tree = new IncrementalQuinTree(depth, BigInt(0), 5, hash5)
             for (let i = 0; i < tally.length; i += 5) {
                 const batch = hash5(tally.slice(i, i + 5))
-                debugger
                 tree.insert(batch)
             }
 

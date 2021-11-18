@@ -324,7 +324,7 @@ class MaciState {
         // Replace the entry in this.users
         const i = Number(userIndex)
         this.users[i] = newUser
-        //this.stateTree.update(i + 1, newUser.genStateLeaf(this.voteOptionTreeDepth).hash())
+        this.stateTree.update(i + 1, newUser.genStateLeaf(this.voteOptionTreeDepth).hash())
 
         return i
     }
@@ -367,23 +367,6 @@ class MaciState {
         }
 
         this.stateTree.update(0, this.zerothStateLeaf.hash())
-
-        //debugger
-        //leaves[0] = this.zerothStateLeaf.hash()
-
-        //for (const i of userIndices) {
-            //leaves[i + 1] = this.users[i].genStateLeaf(this.voteOptionTreeDepth).hash()
-        //}
-        //const tree = new IncrementalQuinTree(
-            //this.stateTreeDepth,
-            //this.genBlankLeaf().hash(),
-            //2,
-            //hash2,
-        //)
-        //for (const leaf of leaves) {
-            //tree.insert(leaf)
-        //}
-        //this.stateTree = tree
     }
 
     /*
