@@ -25,9 +25,9 @@ solcBin=$(pwd)/solc
 wget -nc -q -O $solcBin https://github.com/ethereum/solidity/releases/download/v0.6.12/${solcPlatform}
 chmod a+x $solcBin
 
-paths="$(pwd)/sol/,$(pwd)/node_modules/@openzeppelin/"
-oz_map="@openzeppelin/=$(pwd)/node_modules/@openzeppelin/"
-
+pwd="$(pwd -P)"
+paths="$pwd/sol/,$pwd/node_modules/@openzeppelin/"
+oz_map="@openzeppelin/=$pwd/node_modules/@openzeppelin/"
 ./scripts/writeMerkleZeroesContracts.sh
 
 echo 'Building contracts'
