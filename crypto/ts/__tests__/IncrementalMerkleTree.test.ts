@@ -37,9 +37,11 @@ const calculateRoot = (
     return hashes[hashes.length - 1]
 }
 
+const hash2 = (x) => hashLeftRight(x[0], x[1])
+
 describe('Merkle Tree', () => {
 
-    const tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, 2)
+    const tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, 2, hash2)
 
     it('Should calculate the correct root', () => {
         const leaves: BigInt[] = []
@@ -53,8 +55,8 @@ describe('Merkle Tree', () => {
     })
 
     it('an updated tree should have the same root as another tree with the same leaves', () => {
-        const tree1 = new IncrementalQuinTree(2, ZERO_VALUE, 2)
-        const tree2 = new IncrementalQuinTree(2, ZERO_VALUE, 2)
+        const tree1 = new IncrementalQuinTree(2, ZERO_VALUE, 2, hash2)
+        const tree2 = new IncrementalQuinTree(2, ZERO_VALUE, 2, hash2)
 
         for (let i = 0; i < 4; i++) {
             tree1.insert(hashOne(BigInt(i + 1)))
@@ -71,12 +73,12 @@ describe('Merkle Tree', () => {
         // The roots must not match
         expect(tree1.root).not.toEqual(tree2.root)
 
-        const tree3 = new IncrementalQuinTree(2, ZERO_VALUE, 2)
-        for (const leaf of tree1.leaves) {
-            tree3.insert(leaf)
+        const tree3 = new IncrementalQuinTree(2, ZERO_VALUE, 2, hash2)
+        for (let i = 0; i < tree1.leavesPerNode ** tree1.depth; i ++) {
+            tree3.insert(tree1.getNode(i))
         }
-        expect(tree1.root).toEqual(tree3.root)
-        expect(tree3.getLeaf(indexToUpdate).toString()).toEqual(newVal.toString())
+        expect(tree1.root.toString()).toEqual(tree3.root.toString())
+        expect(tree3.getNode(indexToUpdate).toString()).toEqual(newVal.toString())
     })
 
     it('copy() should produce a different object with the same attributes', () => {
@@ -86,17 +88,18 @@ describe('Merkle Tree', () => {
         expect(tree === copiedTree).toBeFalsy()
         expect(tree.depth).toEqual(copiedTree.depth)
         expect(tree.zeroValue).toEqual(copiedTree.zeroValue)
-        expect(JSON.stringify(stringifyBigInts(tree.leaves)))
-            .toEqual(JSON.stringify(stringifyBigInts(copiedTree.leaves)))
-        expect(JSON.stringify(stringifyBigInts(tree.zeros))).toEqual(JSON.stringify(stringifyBigInts(copiedTree.zeros)))
-        expect(tree.filledSubtrees).toEqual(copiedTree.filledSubtrees)
-        expect(tree.filledPaths).toEqual(copiedTree.filledPaths)
         expect(tree.root).toEqual(copiedTree.root)
         expect(tree.nextIndex).toEqual(copiedTree.nextIndex)
+        expect(tree.numNodes).toEqual(copiedTree.numNodes)
 
         const path1 = tree.genMerklePath(2)
         const path2 = copiedTree.genMerklePath(2)
         expect(JSON.stringify(stringifyBigInts(path1))).toEqual(JSON.stringify(stringifyBigInts(path2)))
+
+        expect(tree.zeros.length).toEqual(copiedTree.zeros.length)
+        for (let i = 0; i < tree.zeros.length; i ++) {
+            expect(tree.zeros[i].toString()).toEqual(copiedTree.zeros[i].toString())
+        }
     })
 
     it('intermediate tree generation', () => {
@@ -106,8 +109,8 @@ describe('Merkle Tree', () => {
             BigInt(7), 
             BigInt(7),
         ]
-        const largeTree = new IncrementalQuinTree(4, 0, 2)
-        const subTree = new IncrementalQuinTree(2, 0, 2)
+        const largeTree = new IncrementalQuinTree(4, 0, 2, hash2)
+        const subTree = new IncrementalQuinTree(2, 0, 2, hash2)
 
         const b = subTree.root
 
@@ -116,7 +119,7 @@ describe('Merkle Tree', () => {
             subTree.insert(leaf)
         }
 
-        const agg = new IncrementalQuinTree(2, 0, 2)
+        const agg = new IncrementalQuinTree(2, 0, 2, hash2)
         agg.insert(subTree.root)
         agg.insert(b)
         agg.insert(b)
@@ -132,7 +135,7 @@ describe('Merkle Tree', () => {
         const numToInsert = 2 ** DEPTH
 
         beforeAll(() => {
-            tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, 2)
+            tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, 2, hash2)
             for (let i = 0; i < numToInsert; i ++) {
                 const leaf = BigInt(i + 1)
                 tree.insert(leaf)
@@ -180,7 +183,7 @@ describe('Merkle Tree', () => {
         })
 
         it('genMerklePath() should calculate a correct Merkle path for each most recently inserted leaf', () => {
-            const tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, 2)
+            const tree = new IncrementalQuinTree(DEPTH, ZERO_VALUE, 2, hash2)
             const numToInsert = 2 * 2
 
             expect.assertions(numToInsert)

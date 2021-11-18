@@ -2,6 +2,7 @@ cli/logs.json
 cli/macistate.txt
 cli/logs32.test.json
 cli/macistate32.test.json
+cli/macistate_test.json
 
 **/zkeys/*
 **/artifacts/*

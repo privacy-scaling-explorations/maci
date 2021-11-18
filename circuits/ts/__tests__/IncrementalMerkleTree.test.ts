@@ -10,10 +10,13 @@ import {
     IncrementalQuinTree,
     hashOne,
     stringifyBigInts,
+    hashLeftRight,
 } from 'maci-crypto'
 
 const LEVELS = 4
 const ZERO_VALUE = 0
+
+const hash2 = (x) => hashLeftRight(x[0], x[1])
 
 describe('Merkle Tree circuits', () => {
     describe('LeafExists', () => {
@@ -24,7 +27,7 @@ describe('Merkle Tree circuits', () => {
         })
 
         it('Valid LeafExists inputs should work', async () => {
-            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2)
+            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2, hash2)
             const leaves: BigInt[] = []
 
             for (let i = 0; i < 2 ** LEVELS; i++) {
@@ -52,7 +55,7 @@ describe('Merkle Tree circuits', () => {
 
         it('Invalid LeafExists inputs should not work', async () => {
             expect.assertions(2 ** LEVELS)
-            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2)
+            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2, hash2)
             const leaves: BigInt[] = []
 
             for (let i = 0; i < 2 ** LEVELS; i++) {
@@ -89,7 +92,7 @@ describe('Merkle Tree circuits', () => {
         })
 
         it('Valid CheckRoot inputs should work', async () => {
-            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2)
+            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2, hash2)
             const leaves: BigInt[] = []
 
             for (let i = 0; i < 2 ** LEVELS; i++) {
@@ -108,7 +111,7 @@ describe('Merkle Tree circuits', () => {
         })
 
         it('Different leaves should generate a different root', async () => {
-            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2)
+            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2, hash2)
             const leaves: BigInt[] = []
             for (let i = 0; i < 2 ** LEVELS; i++) {
                 const randomVal = genRandomSalt()
@@ -136,7 +139,7 @@ describe('Merkle Tree circuits', () => {
         })
 
         it('Valid update proofs should work', async () => {
-            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2)
+            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2, hash2)
 
             // Populate the tree
             for (let i = 0; i < 2 ** LEVELS; i++) {
@@ -168,7 +171,7 @@ describe('Merkle Tree circuits', () => {
         })
 
         it('Invalid update proofs should not work', async () => {
-            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2)
+            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 2, hash2)
 
             // Populate the tree
             for (let i = 0; i < 2 ** LEVELS; i++) {

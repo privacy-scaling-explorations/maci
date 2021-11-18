@@ -16,6 +16,7 @@
     },
     "dependencies": {
         "blake-hash": "^1.1.0",
+        "optimisedmt": "^0.0.7",
         "circomlib": "0.5.1",
         "circomlibjs": "0.0.2",
         "ethers": "^4.0.45",

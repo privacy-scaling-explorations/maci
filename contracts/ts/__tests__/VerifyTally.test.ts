@@ -6,6 +6,7 @@ import {
     hashLeftRight,
     genRandomSalt,
     IncrementalQuinTree,
+    hash5,
 } from 'maci-crypto'
 import { genTallyResultCommitment } from 'maci-core'
 
@@ -62,7 +63,7 @@ describe('VerifyTally', () => {
         const salt = genRandomSalt()
         const commitment = genTallyResultCommitment(results, salt, DEPTH)
 
-        const tree = new IncrementalQuinTree(DEPTH, BigInt(0))
+        const tree = new IncrementalQuinTree(DEPTH, BigInt(0), 5, hash5)
         for (const result of results) {
             tree.insert(result)
         }

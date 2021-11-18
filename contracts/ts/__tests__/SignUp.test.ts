@@ -23,6 +23,7 @@ import {
     hashLeftRight,
     IncrementalQuinTree,
     NOTHING_UP_MY_SLEEVE,
+    hash5,
 } from 'maci-crypto'
 
 import {
@@ -66,7 +67,7 @@ describe('MACI', () => {
 
     // This array contains four commands from the same user
     for (let i = 0; i < config.maci.messageBatchSize; i++) {
-        const voteOptionTree = new IncrementalQuinTree(voteOptionTreeDepth, BigInt(0))
+        const voteOptionTree = new IncrementalQuinTree(voteOptionTreeDepth, BigInt(0), 5, hash5)
 
         const newVoteWeight = BigInt(9)
 
@@ -121,7 +122,7 @@ describe('MACI', () => {
     })
 
     it('the emptyVoteOptionTreeRoot value should be correct', async () => {
-        const temp = new IncrementalQuinTree(voteOptionTreeDepth, BigInt(0))
+        const temp = new IncrementalQuinTree(voteOptionTreeDepth, BigInt(0), 5, hash5)
         const emptyVoteOptionTreeRoot = temp.root
 
         const root = await maciContract.emptyVoteOptionTreeRoot()
@@ -130,7 +131,7 @@ describe('MACI', () => {
 
     it('the currentResultsCommitment value should be correct', async () => {
         const crc = await maciContract.currentResultsCommitment()
-        const tree = new IncrementalQuinTree(voteOptionTreeDepth, 0)
+        const tree = new IncrementalQuinTree(voteOptionTreeDepth, 0, 5, hash5)
         const expected = hashLeftRight(tree.root, BigInt(0))
 
         expect(crc.toString()).toEqual(expected.toString())

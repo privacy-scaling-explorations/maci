@@ -283,19 +283,20 @@ const genProofs = async (args: any) => {
         )
 
         maciState = r.maciState
-        //const batchProcessStart = Date.now()
-        //// Process the batch of messages
-        //maciState.batchProcessMessage(
-            //i,
-            //messageBatchSize,
-            //randomStateLeaf,
-        //)
-        //const batchProcessEnd = Date.now()
-        //console.log(
-            //'batchProcessMessage() took',
-            //(batchProcessEnd - batchProcessStart) / 1000,
-            //'seconds'
-        //)
+
+        const batchProcessStart = Date.now()
+        // Process the batch of messages
+        maciState.batchProcessMessage(
+            i,
+            messageBatchSize,
+            randomStateLeaf,
+        )
+        const batchProcessEnd = Date.now()
+        console.log(
+            'batchProcessMessage() took',
+            (batchProcessEnd - batchProcessStart) / 1000,
+            'seconds'
+        )
 
         const stateRootAfter = maciState.genStateRoot()
 
@@ -328,6 +329,18 @@ const genProofs = async (args: any) => {
             return
         }
         const { witness, proof, publicSignals } = result
+
+        // Get the public signals from the contract
+        const ecdhPubKeys2: PubKey[] = []
+        for (const p of circuitInputs['ecdh_public_key']) {
+            const pubKey = new PubKey(p)
+            ecdhPubKeys2.push(pubKey)
+        }
+        const contractPublicSignals = await maciContract.genBatchUstPublicSignals(
+            '0x' + stateRootAfter.toString(16),
+            ecdhPubKeys2.map((x) => x.asContractParam()),
+        )
+        debugger
 
         // Get the circuit-generated root
         //const circuitNewStateRoot = getSignalByName(circuit, witness, 'main.root')

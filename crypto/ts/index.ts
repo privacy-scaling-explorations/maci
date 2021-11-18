@@ -5,7 +5,8 @@ const ff = require('ffjavascript')
 const createBlakeHash = require('blake-hash')
 import { babyJub, mimc7, eddsa } from 'circomlib'
 const poseidon = require('../node_modules/circomlibjs/src/poseidon.js')
-import { IncrementalQuinTree } from './IncrementalQuinTree'
+//import { IncrementalQuinTree } from './IncrementalQuinTree'
+import { OptimisedMT as IncrementalQuinTree } from 'optimisedmt'
 const stringifyBigInts: (obj: object) => any = ff.utils.stringifyBigInts
 const unstringifyBigInts: (obj: object) => any = ff.utils.unstringifyBigInts
 

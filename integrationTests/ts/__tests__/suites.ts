@@ -229,7 +229,8 @@ const executeSuite = async (data: any, expect: any) => {
         ` -sk ${coordinatorKeypair.privKey.serialize()}` +
         ` -t ${tallyFile}` +
         ` -o ${proofsFile}` +
-        ` -x ${maciAddress}`
+        ` -x ${maciAddress}` +
+        ` -m ${Date.now()}_suite_maciState.json`
 
     console.log(genProofsCmd)
 

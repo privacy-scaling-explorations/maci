@@ -6,6 +6,7 @@ import {
 } from '../'
 
 import {
+    hash5,
     genRandomSalt,
     IncrementalQuinTree,
 } from 'maci-crypto'
@@ -22,7 +23,7 @@ describe('Quin Merkle Tree circuits', () => {
         })
 
         it('Valid QuinTreeInsertionProof inputs should work', async () => {
-            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE)
+            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 5, hash5)
 
             for (let i = 0; i < 30; i++) {
                 const randomVal = genRandomSalt()
@@ -39,7 +40,7 @@ describe('Quin Merkle Tree circuits', () => {
             const circuitInputs = {
                 path_elements: path.pathElements,
                 path_index: path.indices,
-                leaf: tree.leaves[index],
+                leaf: tree.getNode(index),
             }
             const witness = await executeCircuit(circuit, circuitInputs)
             const circuitRoot = getSignalByName(circuit, witness, 'main.root').toString()
@@ -47,7 +48,7 @@ describe('Quin Merkle Tree circuits', () => {
         })
 
         it('An modified Merkle proof should produce a different root', async () => {
-            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE)
+            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 5, hash5)
 
             for (let i = 0; i < 30; i++) {
                 const randomVal = genRandomSalt()
@@ -66,7 +67,7 @@ describe('Quin Merkle Tree circuits', () => {
             const circuitInputs = {
                 path_elements: path.pathElements,
                 path_index: path.indices,
-                leaf: tree.leaves[index],
+                leaf: tree.getNode(index),
             }
 
             const witness = await executeCircuit(circuit, circuitInputs)
@@ -83,7 +84,7 @@ describe('Quin Merkle Tree circuits', () => {
         })
 
         it('Valid CheckRoot inputs should work', async () => {
-            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE)
+            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 5, hash5)
             const leaves: BigInt[] = []
 
             for (let i = 0; i < 5 ** LEVELS; i++) {
@@ -103,7 +104,7 @@ describe('Quin Merkle Tree circuits', () => {
         })
 
         it('Different leaves should generate a different root', async () => {
-            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE)
+            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 5, hash5)
             const leaves: BigInt[] = []
 
             for (let i = 0; i < 5 ** LEVELS; i++) {
@@ -133,7 +134,7 @@ describe('Quin Merkle Tree circuits', () => {
         })
 
         it('Valid QuinLeafExists inputs should work', async () => {
-            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE)
+            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 5, hash5)
 
             const index = 7
             for (let i = 0; i < 30; i++) {
@@ -150,7 +151,7 @@ describe('Quin Merkle Tree circuits', () => {
             const circuitInputs = {
                 path_elements: path.pathElements,
                 path_index: path.indices,
-                leaf: tree.leaves[index],
+                leaf: tree.getNode(index),
                 root: tree.root,
             }
             await executeCircuit(circuit, circuitInputs)
@@ -158,7 +159,7 @@ describe('Quin Merkle Tree circuits', () => {
 
         it('Invalid QuinLeafExists inputs should not work', async () => {
             expect.assertions(2)
-            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE)
+            const tree = new IncrementalQuinTree(LEVELS, ZERO_VALUE, 5, hash5)
 
             const index = 7
             for (let i = 0; i < 30; i++) {
@@ -177,7 +178,7 @@ describe('Quin Merkle Tree circuits', () => {
             const circuitInputs = {
                 path_elements: path.pathElements,
                 path_index: path.indices,
-                leaf: tree.leaves[index],
+                leaf: tree.getNode(index),
                 root: tree.root,
             }
             try {

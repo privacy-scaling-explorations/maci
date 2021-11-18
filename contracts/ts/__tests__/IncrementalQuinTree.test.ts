@@ -6,6 +6,7 @@ import {
     genRandomSalt,
     NOTHING_UP_MY_SLEEVE,
     IncrementalQuinTree,
+    hash5,
 } from 'maci-crypto'
 
 import { JSONRPCDeployer } from '../deploy'
@@ -62,7 +63,7 @@ describe('IncrementalQuinTree', () => {
             ComputeRootBin,
         )
 
-        tree = new IncrementalQuinTree(DEPTH, NOTHING_UP_MY_SLEEVE)
+        tree = new IncrementalQuinTree(DEPTH, NOTHING_UP_MY_SLEEVE, 5, hash5)
     })
 
     it('an empty tree should have the correct root', async () => {

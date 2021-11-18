@@ -8,6 +8,7 @@ import {
     IncrementalQuinTree,
     NOTHING_UP_MY_SLEEVE_PUBKEY,
     stringifyBigInts,
+    hash5,
 } from 'maci-crypto'
 
 /*
@@ -109,6 +110,8 @@ class User {
         const voteOptionTree = new IncrementalQuinTree(
             _voteOptionTreeDepth,
             BigInt(0),
+            5,
+            hash5,
         )
 
         let lastIndex = this.votes.length - 1

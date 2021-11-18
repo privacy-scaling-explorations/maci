@@ -6,6 +6,7 @@ import {
     genRandomSalt,
     NOTHING_UP_MY_SLEEVE,
     IncrementalQuinTree,
+    hashLeftRight,
 } from 'maci-crypto'
 
 import { JSONRPCDeployer } from '../deploy'
@@ -21,6 +22,8 @@ let crContract
 let PoseidonT3Contract, PoseidonT6Contract
 
 const DEPTH = 32
+
+const hash2 = (x) => hashLeftRight(x[0], x[1])
 
 let tree
 describe('IncrementalMerkleTree', () => {
@@ -63,7 +66,7 @@ describe('IncrementalMerkleTree', () => {
             ComputeRootBin,
         )
 
-        tree = new IncrementalQuinTree(DEPTH, NOTHING_UP_MY_SLEEVE, 2)
+        tree = new IncrementalQuinTree(DEPTH, NOTHING_UP_MY_SLEEVE, 2, hash2)
     })
 
     it('an empty tree should have the correct root', async () => {

@@ -12,7 +12,10 @@ import {
     stringifyBigInts,
     NOTHING_UP_MY_SLEEVE,
     IncrementalQuinTree,
+    hash5,
 } from 'maci-crypto'
+
+const hash2 = (x) => hashLeftRight(x[0], x[1])
 
 import { User } from './User'
 
@@ -92,6 +95,8 @@ class MaciState {
         const emptyVoteOptionTree = new IncrementalQuinTree(
             this.voteOptionTreeDepth,
             BigInt(0),
+            5, 
+            hash5
         )
         this.emptyVoteOptionTreeRoot = emptyVoteOptionTree.root
 
@@ -101,6 +106,7 @@ class MaciState {
             this.stateTreeDepth,
             this.genBlankLeaf().hash(),
             2,
+            hash2,
         )
         this.stateTree.insert(this.zerothStateLeaf.hash())
 
@@ -108,6 +114,7 @@ class MaciState {
             this.messageTreeDepth,
             NOTHING_UP_MY_SLEEVE,
             2,
+            hash2
         )
     }
 
@@ -162,6 +169,7 @@ class MaciState {
             this.messageTreeDepth,
             NOTHING_UP_MY_SLEEVE,
             2,
+            hash2,
         )
 
         for (const message of this.messages) {
@@ -353,24 +361,29 @@ class MaciState {
 
         this.zerothStateLeaf = _randomStateLeaf
 
-        const leaves: BigInt[] = [
-            ...this.stateTree.leaves.map((x) => BigInt(x.toString()))
-        ]
-
-        leaves[0] = this.zerothStateLeaf.hash()
-
-        for (const i of userIndices) {
-            leaves[i + 1] = this.users[i].genStateLeaf(this.voteOptionTreeDepth).hash()
+        const leaves: BigInt[] = []
+        for (let i = 0; i < this.stateTree.nextIndex; i ++) {
+            leaves.push(this.stateTree.getNode(i))
         }
-        const tree = new IncrementalQuinTree(
-            this.stateTreeDepth,
-            this.genBlankLeaf().hash(),
-            2,
-        )
-        for (const leaf of leaves) {
-            tree.insert(leaf)
-        }
-        this.stateTree = tree
+
+        this.stateTree.update(0, this.zerothStateLeaf.hash())
+
+        //debugger
+        //leaves[0] = this.zerothStateLeaf.hash()
+
+        //for (const i of userIndices) {
+            //leaves[i + 1] = this.users[i].genStateLeaf(this.voteOptionTreeDepth).hash()
+        //}
+        //const tree = new IncrementalQuinTree(
+            //this.stateTreeDepth,
+            //this.genBlankLeaf().hash(),
+            //2,
+            //hash2,
+        //)
+        //for (const leaf of leaves) {
+            //tree.insert(leaf)
+        //}
+        //this.stateTree = tree
     }
 
     /*
@@ -392,11 +405,8 @@ class MaciState {
         )
         const { command } = Command.decrypt(message, sharedKey)
 
-        let start
-        let end
-
         const msgTreePath = this.messageTree.genMerklePath(_index)
-        //assert(IncrementalQuinTree.verifyMerklePath(msgTreePath, this.messageTree.hashFunc))
+        assert(IncrementalQuinTree.verifyMerklePath(msgTreePath, this.messageTree.hashFunc))
 
         //const stateTree = this.genStateTree()
         const stateTree = this.stateTree
@@ -406,6 +416,8 @@ class MaciState {
         const voteOptionTree = new IncrementalQuinTree(
             this.voteOptionTreeDepth,
             BigInt(0),
+            5,
+            hash5,
         )
 
         let userIndex
@@ -543,7 +555,6 @@ class MaciState {
                 const index = clonedMaciState.processMessage(messageIndex)
 
                 if (index >= 0) {
-                    // NOTE: this is a major performance bottleneck
                     clonedMaciState.stateTree.update(
                         index + 1,
                         clonedMaciState.users[index].genStateLeaf(
@@ -567,7 +578,7 @@ class MaciState {
             voteOptionTreePathElements.push(ustCircuitInputs.vote_options_tree_path_elements)
             voteOptionTreePathIndices.push(ustCircuitInputs.vote_options_tree_path_index)
             end = Date.now()
-            console.log((end - start) / 1000, `clonedMaciState.genUpdateStateTreeCircuitInputs() #${i}`)
+            //console.log((end - start) / 1000, `clonedMaciState.genUpdateStateTreeCircuitInputs() #${i}`)
         }
 
         //clonedMaciState.zerothStateLeaf = _randomStateLeaf
@@ -935,12 +946,14 @@ class MaciState {
             batchTreeDepth,
             blankStateLeafHash,
             2,
+            hash2,
         )
 
         const intermediateTree = new IncrementalQuinTree(
             this.stateTreeDepth - batchTreeDepth,
             emptyBatchTree.root,
             2,
+            hash2,
         )
 
         const numBatches = (this.users.length + 1) % Number(_batchSize) === 0 ?
@@ -975,7 +988,7 @@ class MaciState {
         assert(intermediateTree.root === this.genStateRoot())
 
         const intermediatePathIndex = BigInt(_startIndex) / BigInt(_batchSize)
-        const intermediateStateRoot = intermediateTree.leaves[Number(intermediatePathIndex)]
+        const intermediateStateRoot = intermediateTree.getNode(Number(intermediatePathIndex))
         const intermediatePathElements = intermediateTree.genMerklePath(Number(intermediatePathIndex)).pathElements
 
         const a = BigInt(Math.ceil(
@@ -1044,7 +1057,7 @@ const genTallyResultCommitment = (
     voteOptionTreeDepth: number,
 ): BigInt => {
 
-    const tree = new IncrementalQuinTree(voteOptionTreeDepth, BigInt(0))
+    const tree = new IncrementalQuinTree(voteOptionTreeDepth, BigInt(0), 5, hash5)
     for (const result of results) {
         tree.insert(BigInt(result))
     }
