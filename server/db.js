@@ -4,7 +4,6 @@ const logger = require('./logger').logger
 const MongoClient = require('mongodb').MongoClient;
 
 const dbName = 'poll'
-const collectionName = 'poll-v1.0.0'
 const uri = process.env.mongo_uri
 if (!uri) {
   logger.error('mongo_uri is not defined')
@@ -18,6 +17,7 @@ MongoClient.connect(uri, function(err, client) {
     logger.error(`cannot connect to mongodb with error ${err}`)
     process.exit(1)
   }
+  logger.info('successfully connected to mongodb')
   dbClient = client
 });
 
@@ -46,4 +46,9 @@ exports.ping = async function ping() {
   return true
 }
 
-
+exports.insertRecord = async function insertRecard(data) {
+  if (!dbClient) {
+    logger.error('db is not initialized')
+    return false
+  }
+}
