@@ -9,7 +9,7 @@ import { genProcessVkSig, genTallyVkSig } from 'maci-core'
 import { parseArtifact, getDefaultSigner } from 'maci-contracts'
 import { contractExists } from './utils'
 import { contractFilepath } from './config'
-import { readJSONFile } from './utils'
+import { readJSONFile } from 'maci-common'
 
 const configureSubparser = (subparsers: any) => {
     const createParser = subparsers.addParser(

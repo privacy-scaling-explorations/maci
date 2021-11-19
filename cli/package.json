@@ -8,7 +8,7 @@
     },
     "scripts": {
         "watch": "tsc --watch",
-        "build": "tsc",
+        "build": "npm link ../common && tsc",
         "test": "jest",
         "test-debug": "node --inspect-brk ./node_modules/.bin/jest"
     },

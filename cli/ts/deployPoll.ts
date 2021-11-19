@@ -10,7 +10,8 @@ import {
     PubKey,
 } from 'maci-domainobjs'
 
-import {contractExists, readJSONFile, writeJSONFile} from './utils'
+import {contractExists} from './utils'
+import {readJSONFile, writeJSONFile} from 'maci-common'
 import {contractFilepath} from './config'
 
 const configureSubparser = (subparsers: any) => {

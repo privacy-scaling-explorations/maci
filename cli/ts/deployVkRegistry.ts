@@ -2,7 +2,7 @@
 //const { ethers } = require('hardhat')
 
 import * as fs from 'fs'
-import {writeJSONFile} from './utils'
+import {writeJSONFile} from 'maci-common'
 import {contractFilepath, contractFilepathOld} from './config'
 
 import {

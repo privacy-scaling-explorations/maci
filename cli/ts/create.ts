@@ -5,7 +5,7 @@ import {
     deployVerifier,
 } from 'maci-contracts'
 
-import {readJSONFile, writeJSONFile} from './utils'
+import {readJSONFile, writeJSONFile} from 'maci-common'
 import {contractFilepath} from './config'
 
 import {

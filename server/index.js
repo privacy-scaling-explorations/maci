@@ -1,15 +1,19 @@
-//import * as express from 'express'
-//import * as shelljs from 'shelljs'
-//import * as pg from 'pg'
-//import logger from './logger' 
-//import * as database from './db'
 const express = require('express')
 const shelljs = require('shelljs')
 const pg = require('pg')
 const logger = require('./logger').logger
 const db = require('./db')
 
+process.on('unhandledRejection', (err) => {
+    logger.error(`unhandledRejection: ${err}`)
+})
 
+process.on('uncaughtException', (err) => {
+    logger.error(`unhandledException: ${err}`)
+})
+
+
+let dbClient
 const HTTP_PORT = 8080
 
 const logErrors = (err, next) => {
@@ -21,7 +25,7 @@ const signupRouter = express.Router()
 signupRouter.get('/echo', function(req, res){
   logger.info('-----req.query:-----')
   logger.info(req.query)
-  db.ping()
+  db.ping(dbClient)
   res.send({
     hello: 'world'
   })
@@ -46,7 +50,7 @@ function initApp() {
   return app;
 }
 
-function startServer() {
+async function startServer() {
   let app = initApp()
   app.listen(HTTP_PORT, function () {
     logger.info('server is listening on port ' + HTTP_PORT);
@@ -54,6 +58,10 @@ function startServer() {
 }
 
 async function main() {
+   dbClient = await db.initConnection()
+   if (!dbClient) {
+     return
+   }
    startServer()
 }
 

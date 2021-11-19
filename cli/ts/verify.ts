@@ -12,8 +12,8 @@ import {
     calcQuinTreeDepthFromMaxLeaves,
     validateEthAddress,
     contractExists,
-    readJSONFile,
 } from './utils'
+import {readJSONFile} from 'maci-common'
 import {contractFilepath} from './config'
 
 import * as ethers from 'ethers'

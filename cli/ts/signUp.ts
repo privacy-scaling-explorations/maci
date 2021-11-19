@@ -11,8 +11,9 @@ import {
 import {
     validateEthAddress,
     contractExists,
-    readJSONFile,
 } from './utils'
+
+import {readJSONFile} from 'maci-common'
 
 const { ethers } = require('hardhat')
 

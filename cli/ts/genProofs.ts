@@ -17,8 +17,8 @@ import {
     promptPwd,
     validateEthAddress,
     contractExists,
-    readJSONFile,
 } from './utils'
+import {readJSONFile} from 'maci-common'
 import {contractFilepath} from './config'
 
 const configureSubparser = (subparsers: any) => {

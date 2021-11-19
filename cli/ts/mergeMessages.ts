@@ -7,8 +7,8 @@ import {
     validateEthAddress,
     contractExists,
     currentBlockTimestamp,
-    readJSONFile,
 } from './utils'
+import {readJSONFile} from 'maci-common'
 
 import * as ethers from 'ethers'
 

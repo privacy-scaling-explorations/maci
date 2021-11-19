@@ -4,51 +4,56 @@ const logger = require('./logger').logger
 const MongoClient = require('mongodb').MongoClient;
 
 const dbName = 'poll'
+const collectionName = 'contracts_v1'
 const uri = process.env.mongo_uri
 if (!uri) {
   logger.error('mongo_uri is not defined')
   process.exit(1)
 }
 
-let dbClient 
-// initialize connection once
-MongoClient.connect(uri, function(err, client) {
+exports.initConnection = async function initConnection() {
+  let [err, dbClient] = await to(MongoClient.connect(uri))
   if (err) {
-    logger.error(`cannot connect to mongodb with error ${err}`)
-    process.exit(1)
+    logger.error(`cannot connect to mongodb with uri: ${uri}`)
+    return false
   }
-  logger.info('successfully connected to mongodb')
-  dbClient = client
-});
+  return dbClient
+}
 
 
-exports.createCollection = async function createCollection() {
+exports.ping = async function ping(dbClient) {
   if (!dbClient) {
      logger.error('db is not initialized')
      return false
   }
-  let dbo = dbClient.db(dbName)
-  let err  = await to(dbo.createCollection(collectionName))
-  if (err) {
-    logger.error(`cannot create collection ${COLLECTION_V1} with error ${err}`)
-    return false
-  }
+  let res = await dbClient.db('admin').command({ping: 1})
+  logger.info(`pong: ${JSON.stringify(res)}`)
   return true
 }
 
-exports.ping = async function ping() {
-  if (!dbClient) {
-     logger.error('db is not initialized')
-     return false
-  }
-  await dbClient.db('admin').command({ping: 1})
-  logger.info('connected successfully to the mongodb')
-  return true
+
+// below are cli options for admin
+exports.updateRecord = async function update(data) {
+  let client = await MongoClient.connect(uri)
+  let query = { 'MACI': data['MACI'] }
+  await client.db(dbName).collection(collectionName).updateOne(query, {$set: data}, {upsert: true})
+  logger.info('record updated')
+  client.close()
 }
 
-exports.insertRecord = async function insertRecard(data) {
-  if (!dbClient) {
-    logger.error('db is not initialized')
-    return false
-  }
+exports.removeRecord = async function remove(maciAddr) {
+  let client = await MongoClient.connect(uri)
+  let query = { 'MACI': maciAddr };
+  await client.db(dbName).collection(collectionName).deleteOne(query)
+  logger.info(`record deleted for maci addr ${maciAddr}`)
+  client.close()
+}
+
+
+exports.queryRecord = async function remove(maciAddr) {
+  let client = await MongoClient.connect(uri)
+  let query = { 'MACI': maciAddr };
+  let res = await client.db(dbName).collection(collectionName).findOne(query)
+  logger.info(`record for maci addr ${maciAddr} is: ${JSON.stringify(res)}`)
+  client.close()
 }
