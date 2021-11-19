@@ -8,7 +8,7 @@
     },
     "scripts": {
         "watch": "tsc --watch",
-        "build": "npm link ../common && tsc",
+        "build": "tsc",
         "test": "jest",
         "test-debug": "node --inspect-brk ./node_modules/.bin/jest"
     },
@@ -27,6 +27,7 @@
         "maci-core": "^1.0.4",
         "maci-crypto": "^1.0.4",
         "maci-domainobjs": "^1.0.4",
+        "maci-common": "^1.0.0",
         "prompt-async": "^0.9.9",
         "shelljs": "^0.8.4",
         "snarkjs": "0.4.10",
