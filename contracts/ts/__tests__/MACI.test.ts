@@ -413,7 +413,7 @@ describe('MACI', () => {
         let pollContract
         let messageAqContract
 
-        beforeAll(async () => {
+        beforeEach(async () => {
             const pollContractAddress = await maciContract.getPoll(pollId)
             pollContract = new ethers.Contract(
                 pollContractAddress,
@@ -429,6 +429,14 @@ describe('MACI', () => {
                 accQueueQuinaryMaciAbi,
                 signer,
             )
+        })
+
+        it('should revert if subtrees are not merged for StateAq', async () => {
+            try {
+                await pollContract.mergeMaciStateAq(0, { gasLimit: 4000000 })
+            } catch (e) {
+                const error = 'PollE08'
+                expect(e.message.endsWith(error)).toBeTruthy()
         })
 
         it('coordinator should be able to merge the message AccQueue', async () => {

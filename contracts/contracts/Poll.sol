@@ -168,6 +168,7 @@ contract Poll is
     string constant ERROR_INVALID_PUBKEY = "PollE05";
     string constant ERROR_MAX_MESSAGES_REACHED = "PollE06";
     string constant ERROR_STATE_AQ_ALREADY_MERGED = "PollE07";
+    string constant ERROR_STATE_AQ_SUBTREES_NEED_MERGE = "PollE08";
 
     uint8 private constant LEAVES_PER_NODE = 5;
 
@@ -323,9 +324,9 @@ contract Poll is
         // deadline
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
 
-        if (extContracts.maci.stateAq().subTreesMerged()) {
-            extContracts.maci.mergeStateAq(_pollId);
-        }
+        require(extContracts.maci.stateAq().subTreesMerged(), ERROR_STATE_AQ_SUBTREES_NEED_MERGE);
+        extContracts.maci.mergeStateAq(_pollId);
+
         stateAqMerged = true;
 
         mergedStateRoot = extContracts.maci.getStateAqRoot();
