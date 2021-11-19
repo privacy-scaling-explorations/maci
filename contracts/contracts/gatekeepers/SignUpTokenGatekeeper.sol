@@ -1,19 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.7.2;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
+
 import { SignUpGatekeeper } from './SignUpGatekeeper.sol';
 import { SignUpToken } from '../SignUpToken.sol';
 
 import { MACI } from '../MACI.sol';
 
-contract SignUpTokenGatekeeper is SignUpGatekeeper {
+contract SignUpTokenGatekeeper is SignUpGatekeeper, Ownable {
 
     SignUpToken public token;
     MACI public maci;
 
     mapping (uint256 => bool) internal registeredTokenIds;
 
-    constructor(SignUpToken _token) {
+    constructor(SignUpToken _token) Ownable() {
         token = _token;
     }
 
@@ -21,7 +23,7 @@ contract SignUpTokenGatekeeper is SignUpGatekeeper {
      * Adds an uninitialised MACI instance to allow for token singups
      * @param _maci The MACI contract interface to be stored
      */
-    function addMACI(MACI _maci) public override {
+    function setMaciInstance(MACI _maci) public onlyOwner override {
         maci = _maci;
     }
 
@@ -33,7 +35,6 @@ contract SignUpTokenGatekeeper is SignUpGatekeeper {
      * @param _data The ABI-encoded tokenId as a uint256.
      */
     function register(address _user, bytes memory _data) public override {
-        require(maci.isInitialised() == true, "SignUpTokenGatekeeper: MACI instance is invalid");
         require(address(maci) == msg.sender, "SignUpTokenGatekeeper: only specified MACI instance can call this function");
         // Decode the given _data bytes into a uint256 which is the token ID
         uint256 tokenId = abi.decode(_data, (uint256));

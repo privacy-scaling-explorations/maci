@@ -6,7 +6,7 @@ import { MACI } from '../MACI.sol';
 
 contract FreeForAllGatekeeper is SignUpGatekeeper {
 
-    function addMACI(MACI _maci) public override {
+    function setMaciInstance(MACI _maci) public override {
     }
 
     /*

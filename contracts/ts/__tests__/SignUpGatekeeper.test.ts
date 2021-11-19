@@ -47,34 +47,32 @@ describe('SignUpGatekeeper', () => {
             maciContract = r.maciContract
         })
 
-        it('Adds MACI instance', async () => {
+        it('sets MACI instance correctly', async () => {
+            await signUpTokenGatekeeperContract.setMaciInstance(maciContract.address)
+
             expect(
                 await signUpTokenGatekeeperContract.maci()
             ).toBe(maciContract.address)
         })
 
-        /*
         it('Reverts if address provided is not a MACI instance', async () => {
             const user = new Keypair()
-            const iface = maciContract.interface
+            const signer = await getDefaultSigner()
+
+            await signUpToken.giveToken(await signer.address)
 
             try {
                 await maciContract.signUp(
                     user.pubKey.asContractParam(),
-                    ethers.utils.defaultAbiCoder.encode(
-                        signUpToken.interface.format(ethers.utils.FormatTypes.json),
-                        [0,1]
-                    ),
+                    ethers.utils.defaultAbiCoder.encode(['uint256'], [1]),
                     ethers.utils.defaultAbiCoder.encode(['uint256'], [0]),
                     { gasLimit: 300000 },
                 )
             } catch (e) {
-                console.log(e.message)
-                //const error = "Transaction reverted: function selector was not recognized and there's no fallback function"
-                //expect(e.message.endsWith(error)).toBeTruthy()
+                const error = "SignUpTokenGatekeeper: only specified MACI instance can call this function"
+                expect(e.message.endsWith(error)).toBeTruthy()
             }
         })
-        */
     })
 });
 

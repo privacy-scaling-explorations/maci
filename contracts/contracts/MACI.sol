@@ -118,12 +118,9 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         stateAq.enqueue(BLANK_STATE_LEAF_HASH);
 
         pollFactory = _pollFactory;
-
         signUpGatekeeper = _signUpGatekeeper;
-        signUpGatekeeper.addMACI(this);
-
-
         initialVoiceCreditProxy = _initialVoiceCreditProxy;
+
         signUpTimestamp = block.timestamp;
     }
 
