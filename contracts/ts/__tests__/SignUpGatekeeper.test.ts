@@ -38,10 +38,10 @@ describe('SignUpGatekeeper', () => {
         beforeEach(async () => {
             freeForAllContract = await deployFreeForAllSignUpGatekeeper()
             signUpToken = await deploySignupToken()
-            signUpTokenGatekeeperContract= await deploySignupTokenGatekeeper(signUpToken.address)
+            signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(signUpToken.address)
             const r = await deployTestContracts(
                 initialVoiceCreditBalance,
-                signUpTokenGatekeeperContract.address
+                signUpTokenGatekeeperContract
             )
 
             maciContract = r.maciContract
