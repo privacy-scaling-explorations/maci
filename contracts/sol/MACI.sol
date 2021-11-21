@@ -138,7 +138,7 @@ contract MACI is DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
     string constant ERROR_SIGNUP_PERIOD_PASSED = "E11";
     string constant ERROR_SIGNUP_PERIOD_NOT_OVER = "E12";
     string constant ERROR_VOTING_PERIOD_PASSED = "E13";
-    string constant ERROR_VOTING_PERIOD_NOT_OVER = "E13";
+    string constant ERROR_VOTING_PERIOD_NOT_OVER = "E14";
 
     // Events
     event SignUp(

@@ -208,14 +208,6 @@ describe('BatchProcessMessage', () => {
         })
 
         it('batchProcessMessage should verify a proof and update the stateRoot', async () => {
-            // Move forward in time
-            await timeTravel(
-                deployer.provider,
-                config.maci.signUpDurationInSeconds +
-                config.maci.votingDurationInSeconds +
-                1,
-            )
-
             const start = Date.now()
             // Generate circuit inputs
             batchUstCircuitInputs = 
@@ -275,6 +267,27 @@ describe('BatchProcessMessage', () => {
 
             const formattedProof = formatProofForVerifierContract(batchUstR.proof)
             //const formattedProof = [0, 0, 0, 0, 0, 0, 0, 0]
+
+            // Test ERROR_VOTING_PERIOD_NOT_OVER
+            try {
+                await maciContract.batchProcessMessage(
+                    '0x' + stateRootAfter.toString(16),
+                    ecdhPubKeys.map((x) => x.asContractParam()),
+                    formattedProof,
+                    { gasLimit: 2000000 },
+                )
+            } catch (e) {
+                debugger
+                expect(e.message.endsWith('E14')).toBeTruthy()
+            }
+
+            // Move forward in time
+            await timeTravel(
+                deployer.provider,
+                config.maci.signUpDurationInSeconds +
+                config.maci.votingDurationInSeconds +
+                1,
+            )
 
             const tx = await maciContract.batchProcessMessage(
                 '0x' + stateRootAfter.toString(16),
