@@ -1095,6 +1095,8 @@ class MaciState {
         this.STATE_TREE_ARITY,
         blankStateLeafHash,
     )
+
+    public stateAqs: AccQueue[] = []
     public pollBeingProcessed = true
     public currentPollBeingProcessed
     public numSignUps = 0
@@ -1146,6 +1148,7 @@ class MaciState {
         )
 
         this.polls.push(poll)
+        this.stateAqs.push(this.stateAq)
         return this.polls.length - 1
     }
 

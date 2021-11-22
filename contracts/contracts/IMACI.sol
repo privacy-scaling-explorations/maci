@@ -7,9 +7,9 @@ interface IMACI {
 
     function stateTreeDepth() external view returns (uint8);
     function vkRegistry() external view returns (VkRegistry);
-    function getStateAqRoot() external view returns (uint256);
+    function getStateAqRoot(uint256 _pollId) external view returns (uint256);
     function mergeStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId) external;
     function mergeStateAq(uint256 _pollId) external returns (uint256);
     function numSignUps() external view returns (uint256);
-    function stateAq() external view returns (AccQueue);
+    function stateAqs(uint256 _pollId) external view returns (AccQueue);
 }

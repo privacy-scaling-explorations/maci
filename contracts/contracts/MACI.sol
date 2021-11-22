@@ -73,9 +73,12 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     PollFactory public pollFactory;
     MessageAqFactory public messageAqFactory;
 
+    // The state AccQueue with the blank state root
+    AccQueue public stateAq;
+
     // The state AccQueue. Represents a mapping between each user's public key
     // and their voice credit balance.
-    AccQueue public override stateAq;
+    mapping(uint256 => AccQueue) public override stateAqs;
 
     // Whether the init() function has been successfully executed yet.
     bool isInitialised = false;
@@ -223,7 +226,12 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         uint256 stateLeaf = hashStateLeaf(
             StateLeaf(_pubKey, voiceCreditBalance, timestamp)
         );
-        uint256 stateIndex = stateAq.enqueue(stateLeaf);
+
+        uint256 stateIndex = 0;
+
+        for (uint i = 0; i < nextPollId; i++) {
+            stateIndex = stateAqs[i].enqueue(stateLeaf);
+        }
 
         // Increment the number of signups
         numSignUps ++;
@@ -255,7 +263,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     onlyPoll(_pollId)
     override
     afterInit {
-        stateAq.mergeSubRoots(_numSrQueueOps);
+        stateAqs[_pollId].mergeSubRoots(_numSrQueueOps);
 
         emit MergeStateAqSubRoots(_pollId, _numSrQueueOps);
     }
@@ -268,15 +276,15 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     override
     afterInit
     returns (uint256) {
-        uint256 root = stateAq.merge(stateTreeDepth);
+        uint256 root = stateAqs[_pollId].merge(stateTreeDepth);
 
         emit MergeStateAq(_pollId);
 
         return root;
     }
 
-    function getStateAqRoot() public view override returns (uint256) {
-        return stateAq.getMainRoot(stateTreeDepth);
+    function getStateAqRoot(uint _pollId) public view override returns (uint256) {
+        return stateAqs[_pollId].getMainRoot(stateTreeDepth);
     }
 
     /*
@@ -308,6 +316,8 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         );
 
         polls[pollId] = p;
+        // Initialize the state AccQueue with a blank state
+        stateAqs[pollId] = stateAq;
 
         // Increment the poll ID for the next poll
         nextPollId ++;

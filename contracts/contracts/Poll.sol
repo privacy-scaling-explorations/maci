@@ -298,7 +298,7 @@ contract Poll is
         // This function can only be called once per Poll
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
 
-        if (!extContracts.maci.stateAq().subTreesMerged()) {
+        if (!extContracts.maci.stateAqs(_pollId).subTreesMerged()) {
             extContracts.maci.mergeStateAqSubRoots(_numSrQueueOps, _pollId);
         }
         
@@ -324,12 +324,12 @@ contract Poll is
         // deadline
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
 
-        require(extContracts.maci.stateAq().subTreesMerged(), ERROR_STATE_AQ_SUBTREES_NEED_MERGE);
+        require(extContracts.maci.stateAqs(_pollId).subTreesMerged(), ERROR_STATE_AQ_SUBTREES_NEED_MERGE);
         extContracts.maci.mergeStateAq(_pollId);
 
         stateAqMerged = true;
 
-        mergedStateRoot = extContracts.maci.getStateAqRoot();
+        mergedStateRoot = extContracts.maci.getStateAqRoot(_pollId);
         // Set currentSbCommitment
         uint256[3] memory sb;
         sb[0] = mergedStateRoot;

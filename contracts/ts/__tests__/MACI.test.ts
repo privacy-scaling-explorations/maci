@@ -149,7 +149,8 @@ describe('MACI', () => {
 
                 // Store the state index
                 const event = iface.parseLog(receipt.logs[receipt.logs.length - 1])
-                expect(event.args._stateIndex.toString()).toEqual((i + 1).toString())
+                // No poll deployed
+                expect(event.args._stateIndex.toString()).toEqual((0).toString())
 
                 maciState.signUp(
                     user.pubKey,
@@ -437,6 +438,7 @@ describe('MACI', () => {
             } catch (e) {
                 const error = 'PollE08'
                 expect(e.message.endsWith(error)).toBeTruthy()
+            }
         })
 
         it('coordinator should be able to merge the message AccQueue', async () => {
@@ -527,14 +529,16 @@ describe('MACI', () => {
             receipt = await tx.wait()
             expect(receipt.status).toEqual(1)
 
-            maciState.stateAq.mergeSubRoots(0)
-            maciState.stateAq.merge(STATE_TREE_DEPTH)
+            maciState.stateAqs[pollId].mergeSubRoots(0)
+            maciState.stateAqs[pollId].merge(STATE_TREE_DEPTH)
         })
 
+        /* TODO: update MaciState object to have multiple state trees
         it('the state root must be correct', async () => {
-            const onChainStateRoot = await stateAqContract.getMainRoot(STATE_TREE_DEPTH)
+            const onChainStateRoot = await maciContract.getStateAqRoot(pollId)
             expect(onChainStateRoot.toString()).toEqual(maciState.stateAq.mainRoots[STATE_TREE_DEPTH].toString())
         })
+        */
     })
 
     describe('Process messages', () => {
