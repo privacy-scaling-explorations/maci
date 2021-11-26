@@ -46,3 +46,4 @@ node build/index.js verify \
     -o 0 \
     -t tally.json \
     -q 0xEcFcaB0A285d3380E488A39B4BB21e777f8A4EaC
+
