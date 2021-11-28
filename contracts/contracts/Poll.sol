@@ -60,7 +60,7 @@ contract PollFactory is Params, IPubKey, IMessage, Ownable, Hasher, PollDeployme
         IMACI _maci,
         address _pollOwner
     ) public onlyOwner returns (Poll) {
-        uint8 treeArity = 5;
+        uint16 treeArity = 5;
 
         // Validate _maxValues
         // NOTE: these checks may not be necessary. Removing them will save
