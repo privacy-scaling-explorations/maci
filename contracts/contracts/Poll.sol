@@ -434,7 +434,6 @@ contract Poll is
         uint256 _voteOptionIndex,
         uint256 _tallyResult,
         uint256[][] memory _tallyResultProof,
-        uint256 _tallyResultSalt,
         uint256 _spentVoiceCreditsHash,
         uint256 _perVOSpentVoiceCreditsHash,
         uint256 _tallyCommitment

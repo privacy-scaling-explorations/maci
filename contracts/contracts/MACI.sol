@@ -290,9 +290,9 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     ) public afterInit {
         uint256 pollId = nextPollId;
 
-        if (pollId != 0) {
+        if (pollId > 0) {
             require(
-                polls[pollId].isAfterDeadline() && stateAq.treeMerged() == true,
+                stateAq.treeMerged() == true,
                 "MACI: previous poll must be completed before using a new instance"
             );
         }
