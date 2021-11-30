@@ -148,10 +148,10 @@ contract Poll is
     // the case that none of the messages are valid.
     uint256 public currentSbCommitment;
 
-    uint256 internal numSignUps;
     uint256 internal numMessages;
 
     function numSignUpsAndMessages() public view returns (uint256, uint256) {
+        uint numSignUps = extContracts.maci.numSignUps();
         return (numSignUps, numMessages);
     }
 
@@ -299,10 +299,6 @@ contract Poll is
 
         if (!extContracts.maci.stateAq().subTreesMerged()) {
             extContracts.maci.mergeStateAqSubRoots(_numSrQueueOps, _pollId);
-        }
-        
-        if (numSignUps == 0) {
-            numSignUps = extContracts.maci.numSignUps();
         }
 
         emit MergeMaciStateAqSubRoots(_numSrQueueOps);

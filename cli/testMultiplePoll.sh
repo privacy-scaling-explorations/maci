@@ -1,4 +1,4 @@
-# one signup and one valid message
+# one signup and one valid message for multiple polls
 node build/index.js deployVkRegistry  && \
 node build/index.js setVerifyingKeys -s 10 -i 1 -m 2 -v 2 -b 1 \
     -p ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey \
@@ -59,6 +59,7 @@ node build/index.js publish \
 
 node build/index.js timeTravel -s 140 && \
 node build/index.js mergeMessages -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a -o 1 && \
+node build/index.js mergeSignups -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a -o 1 && \
 
 rm -f tally.json proofs.json && \
 node build/index.js genProofs -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
@@ -71,7 +72,6 @@ node build/index.js genProofs -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -zt ./zkeys/TallyVotes_10-1-2.test.0.zkey \
     -t tally.json \
     -f proofs.json
-
 
 node build/index.js proveOnChain \
     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
