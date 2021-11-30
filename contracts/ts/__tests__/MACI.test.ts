@@ -437,6 +437,7 @@ describe('MACI', () => {
             } catch (e) {
                 const error = 'PollE08'
                 expect(e.message.endsWith(error)).toBeTruthy()
+            }
         })
 
         it('coordinator should be able to merge the message AccQueue', async () => {
