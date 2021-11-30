@@ -68,6 +68,9 @@ abstract contract AccQueue is Ownable, Hasher {
     // Whether the subtrees have been merged
     bool public subTreesMerged;
 
+    // Whether entire merkle tree has been merged
+    bool public treeMerged;
+
     // The root of the shortest possible tree which fits all current subtree
     // roots
     uint256 internal smallSRTroot;
@@ -423,6 +426,7 @@ abstract contract AccQueue is Ownable, Hasher {
         // If the depth is the same as the SRT depth, just use the SRT root
         if (_depth == srtDepth) {
             mainRoots[_depth] = smallSRTroot;
+            treeMerged = true;
             return smallSRTroot;
         } else {
 
@@ -451,6 +455,7 @@ abstract contract AccQueue is Ownable, Hasher {
             }
 
             mainRoots[_depth] = root;
+            treeMerged = true;
             return root;
         }
     }
