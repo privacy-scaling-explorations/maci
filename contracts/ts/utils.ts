@@ -33,9 +33,14 @@ const formatProofForVerifierContract = (
 
 const deployTestContracts = async (
     initialVoiceCreditBalance,
+    gatekeeperContract?
 ) => {
     const mockVerifierContract = await deployMockVerifier()
-    const freeForAllSignUpGatekeeperContract = await deployFreeForAllSignUpGatekeeper()
+
+    if (!gatekeeperContract) {
+        gatekeeperContract = await deployFreeForAllSignUpGatekeeper()
+    }
+
     const constantIntialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
         initialVoiceCreditBalance,
     )
@@ -46,7 +51,7 @@ const deployTestContracts = async (
     await vkRegistryContract.deployTransaction.wait()
 
     const contracts = await deployMaci(
-        freeForAllSignUpGatekeeperContract.address,
+        gatekeeperContract.address,
         constantIntialVoiceCreditProxyContract.address,
         mockVerifierContract.address,
         vkRegistryContract.address,
@@ -57,7 +62,7 @@ const deployTestContracts = async (
 
     return {
         mockVerifierContract,
-        freeForAllSignUpGatekeeperContract,
+        gatekeeperContract,
         constantIntialVoiceCreditProxyContract,
         maciContract,
         stateAqContract,

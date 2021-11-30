@@ -78,7 +78,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     AccQueue public override stateAq;
 
     // Whether the init() function has been successfully executed yet.
-    bool isInitialised = false;
+    bool public isInitialised = false;
 
     // Address of the SignUpGatekeeper, a contract which determines whether a
     // user may sign up to vote
@@ -120,6 +120,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         pollFactory = _pollFactory;
         signUpGatekeeper = _signUpGatekeeper;
         initialVoiceCreditProxy = _initialVoiceCreditProxy;
+
         signUpTimestamp = block.timestamp;
     }
 
