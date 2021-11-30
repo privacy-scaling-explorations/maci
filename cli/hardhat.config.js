@@ -12,7 +12,7 @@ const config = {
   defaultNetwork: 'localhost',
   networks: {
     localhost: {
-      url: process.env.ETH_PROVIDER || DEFAULT_ETH_PROVIDER,
+      url: process.env.ETH_PROVIDER || process.env.hardhat_uri || DEFAULT_ETH_PROVIDER,
       accounts: [ process.env.ETH_SK || DEFAULT_ETH_SK ],
       loggingEnabled: false,
     },

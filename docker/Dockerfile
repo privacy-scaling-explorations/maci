@@ -49,4 +49,5 @@ RUN cd ~ \
 
 # HTTP port
 EXPOSE 8080
+EXPOSE 8545
 
