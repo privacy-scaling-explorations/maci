@@ -101,10 +101,28 @@ postRouter.post('/', async function(req, res) {
       logger.debug(`publishMessage...${cmd}`)
       output = shelljs.exec(cmd, { silent })
       break
-
+    case "verify":
+      if(!("maci" in req.body && req.body["maci"])||!("poll_id" in req.body && req.body["poll_id"])){
+         res.send("missing parameters...")
+         break
+      }
+      query = { 'MACI': req.body["maci"]}
+      dbres = await dbClient.db(db.dbName).collection(db.collectionName).findOne(query)
+      if(!dbres) {
+        res.send(`MACI contract address ${req.body["maci"]} not exist`)
+        break
+      }
+      let pptKey = "PollProcessorAndTally-" + req.body["poll_id"]
+      if (!(pptKey in dbres)) {
+         res.send(`PollProcessAndTally contract for poll ${req.body["poll_id"]} not exists`)
+         break
+      }
+      pptAddr = dbres[pptKey]
+      cmd = `${cliCmd} verify -t ${req.body["tally_file"]} -x ${req.body["maci"]} -o ${req.body["poll_id"]} -q ${pptAddr}`
+      output = shelljs.exec(cmd, { silent })
+      break
     default:
       res.send("unknown method...")
-      return
   }
   if (!output) {
       return

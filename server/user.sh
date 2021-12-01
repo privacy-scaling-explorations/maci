@@ -117,6 +117,36 @@ function publish(){
     post_request $json_str
 }
 
+function verify(){
+    while [[ $# -gt 0 ]]; do
+      key="$1"
+      case $key in
+        -t|--tally_file)
+          tally_file="$2"
+          shift 
+          shift 
+          ;;
+        -x|--maci)
+          maci="$2"
+          shift 
+          shift 
+          ;;
+        -o|--poll_id)
+          poll_id="$2"
+          shift 
+          shift 
+          ;;
+        *)   
+          shift
+          ;;
+      esac
+    done
+    json_fmt='{"method":"%s","maci":"%s","tally_file":"%s","poll_id":"%s","version":"%s"}'
+    json_str=$(printf "$json_fmt" "verify" "$maci" "$tally_file" "$poll_id" "$version")
+    echo $json_str
+    post_request $json_str
+}
+
 function get_request() {
     res=$(curl $GET_URI)
     echo $res

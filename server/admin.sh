@@ -30,7 +30,7 @@ help(){
     echo "commands:"
     echo "    deploy"
     echo "    store"
-    echo "    prove"
+    echo "    process"
 }
 
 deploy(){
@@ -49,16 +49,61 @@ store(){
     node admin.js update -f ../cli/contractAddress.txt -p $msg_zkey -t $tally_zkey
 }
 
+
+
+timeTravel(){
+    eval $CMD timeTravel -s $duration
+}
+
+#params for merge
+poll_id=0
+merge(){
+    echo "merge signup and messages ..."
+    eval $CMD mergeMessages -o $poll_id
+    eval $CMD mergeSignups -o $poll_id
+}
+
+# params for genProof
+pid=0
+prover="~/rapidsnark/build/prover"
+pwitness=$DirName/../cli/zkeys/ProcessMessages_10-2-1-2.test
+twitness=$DirName/../cli/zkeys/TallyVotes_10-1-2.test
+pzkey=$DirName/../cli/zkeys/ProcessMessages_10-2-1-2.test.0.zkey
+tzkey=$DirName/../cli/zkeys/TallyVotes_10-1-2.test.0.zkey
+tally_file=$DirName/../cli/tally.json 
+prove_file=$DirName/../cli/proofs.json
+txn="" # -tx $txn, where txn is the transaction hash of deployVkRegistry, optional
+prove(){
+    echo "genProof..."
+    eval $CMD genProofs \
+       -sk $cordsk \
+       -o $pid \
+       -r $prover \
+       -wp $pwitness \
+       -wt $twitness \
+       -zp $pzkey \
+       -zt $tzkey \
+       -t  $tally_file \
+       -f  $prove_file 
+}
+
+proveOnChain() {
+    echo "prove on chain..."
+    eval $CMD proveOnChain -o $pid -f $prove_file
+}
+
+process(){
+   timeTravel
+   merge
+   prove
+   proveOnChain
+}
+
+
 command=$1
 case $command in
     "" | "-h" | "--help")
         help
-        ;;
-    "deploy")
-        deploy
-        ;;
-    "store")
-        store
         ;;
     *)
         shift
