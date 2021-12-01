@@ -9,8 +9,9 @@ const cliPath = path.join(
     __dirname,
     '..',
     'cli',
-    './build/index.js',
 )
+
+const cliCmd = `cd ${cliPath} && node build/index.js`
 
 process.on('unhandledRejection', (err) => {
     logger.error(`unhandledRejection: ${err}`)
@@ -32,9 +33,6 @@ const logErrors = (err, next) => {
 const getRouter = express.Router()
 getRouter.get('/', function(req, res){
   logger.debug('new get request received...')
-  for (const [key, value] of Object.entries(req.query)) {
-    logger.debug(key, value);
-  }
   if (!("method" in req.query)) {
     res.send("method not defined")
     return
@@ -51,36 +49,69 @@ getRouter.get('/', function(req, res){
 })
 
 const postRouter = express.Router()
-postRouter.post('/', function(req, res) {
+postRouter.post('/', async function(req, res) {
   logger.debug('new post request received...')
-  for (const [key, value] of Object.entries(req.body)) {
-      logger.debug(key, value);
-  }
+  //for (const [key, value] of Object.entries(req.body)) {
+  //    logger.debug(key, value);
+  //}
   if (!("method" in req.body)) {
     res.send("method not defined")
     return
   }
 
-  let output
+  let output, cmd, query, dbres
   let silent = true
   switch(req.body["method"]) {
     case "signup":
-      if(!("pubkey" in req.body)){
-         res.send("public key not specified")
+      if(!("pubkey" in req.body && req.body["pubkey"]) || !("maci" in req.body && req.body["maci"])){
+         res.send("missing parameters...")
          break
       }
-      let signupCmd = `node ${cliPath} signup -p ${req.body["pubkey"]}`
-      logger.debug(`process signup...${signupCmd}`)
-      output = shelljs.exec(signupCmd, { silent })
+      query = { 'MACI': req.body["maci"]};
+      dbres = await dbClient.db(db.dbName).collection(db.collectionName).findOne(query)
+      if(!dbres) {
+        res.send(`MACI contract address ${req.body["maci"]} not exist`)
+        break
+      }
+      cmd = `${cliCmd} signup -p ${req.body["pubkey"]} -x ${req.body["maci"]}`
+      logger.debug(`process signup...${cmd}`)
+      output = shelljs.exec(cmd, { silent })
       break
+    case "genkey":
+      cmd = `${cliCmd} genMaciKeypair`
+      logger.debug(`process genkey...${cmd}`)
+      output = shelljs.exec(cmd, { silent })
+      break
+    case "publish": // TODO: change http to https to protect private key
+      if(!("pubkey" in req.body && req.body["pubkey"]) || !("maci" in req.body && req.body["maci"])){
+         res.send("missing parameters...")
+         break
+      }
+      query = { 'MACI': req.body["maci"]}
+      dbres = await dbClient.db(db.dbName).collection(db.collectionName).findOne(query)
+      if(!dbres) {
+        res.send(`MACI contract address ${req.body["maci"]} not exist`)
+        break
+      }
+
+      cmd = `${cliCmd} publish -p ${req.body["pubkey"]} -x ${req.body["maci"]} -sk ${req.body["privkey"]} -i ${req.body["state_index"]} -v ${req.body["vote_option_index"]} -w ${req.body["new_vote_weight"]} -n ${req.body["nonce"]} -o ${req.body["poll_id"]}`
+      if (req.body["salt"]) {
+        cmd += ` -s ${req.body["salt"]}`
+      }
+      logger.debug(`publishMessage...${cmd}`)
+      output = shelljs.exec(cmd, { silent })
+      break
+
     default:
       res.send("unknown method...")
       return
   }
-  if (output.stderr) {
-     res.send(`${req.body.method} failed with ${output.stderr}`)
+  if (!output) {
+      return
+  } else if(output.stderr) {
+     res.send(`${req.body.method} failed with error: ${output.stderr}`)
   } else {
-    res.send("${req.body.method} success...")
+    res.send(`${output}`)
   }
 })
 

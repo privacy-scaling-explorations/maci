@@ -12,10 +12,29 @@ const updateSubparser = (subparsers) => {
         {
             required: true,
             type: 'string',
-            help: 'Insert or update the records from the local file into mongodb',
+            help: 'file location of deployed contract addresses'
+        }
+    )
+    createParser.addArgument(
+        ['-p', '--process_messages_zkey'],
+        {
+            action: 'store',
+            type: 'string',
+            required: true,
+            help: 'The .zkey file for the message processing circuit. '
+        }
+    )
+    createParser.addArgument(
+        ['-t', '--tally_votes_zkey'],
+        {
+            action: 'store',
+            type: 'string',
+            required: true,
+            help: 'The .zkey file for the vote tallying circuit. '
         }
     )
 }
+
 const removeSubparser = (subparsers) => {
     const createParser = subparsers.addParser(
         'delete',
@@ -47,8 +66,14 @@ const querySubparser = (subparsers) => {
 }
 
 const update = async (args) => {
-    let contractAddrs = readJSONFile(args.file_record)
-    updateRecord(contractAddrs)
+    let data = readJSONFile(args.file_record)
+    if (args.process_messages_zkey) {
+      data["messageZkey"] = args.process_messages_zkey
+    }
+    if (args.tally_votes_zkey) {
+      data["tallyZkey"] = args.tally_votes_zkey
+    }
+    updateRecord(data)
     return 
 }
 

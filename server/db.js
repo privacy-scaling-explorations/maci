@@ -6,12 +6,13 @@ const MongoClient = require('mongodb').MongoClient;
 const dbName = 'poll'
 const collectionName = 'contracts_v1'
 const uri = process.env.mongo_uri
+
 if (!uri) {
   logger.error('mongo_uri is not defined')
   process.exit(1)
 }
 
-exports.initConnection = async function initConnection() {
+async function initConnection() {
   let [err, dbClient] = await to(MongoClient.connect(uri))
   if (err) {
     logger.error(`cannot connect to mongodb with uri: ${uri}`)
@@ -21,7 +22,7 @@ exports.initConnection = async function initConnection() {
 }
 
 
-exports.ping = async function ping(dbClient) {
+async function ping(dbClient) {
   if (!dbClient) {
      logger.error('db is not initialized')
      return false
@@ -33,7 +34,7 @@ exports.ping = async function ping(dbClient) {
 
 
 // below are cli options for admin
-exports.updateRecord = async function update(data) {
+async function updateRecord(data) {
   let client = await MongoClient.connect(uri)
   let query = { 'MACI': data['MACI'] }
   await client.db(dbName).collection(collectionName).updateOne(query, {$set: data}, {upsert: true})
@@ -41,7 +42,7 @@ exports.updateRecord = async function update(data) {
   client.close()
 }
 
-exports.removeRecord = async function remove(maciAddr) {
+async function removeRecord(maciAddr) {
   let client = await MongoClient.connect(uri)
   let query = { 'MACI': maciAddr };
   await client.db(dbName).collection(collectionName).deleteOne(query)
@@ -50,10 +51,20 @@ exports.removeRecord = async function remove(maciAddr) {
 }
 
 
-exports.queryRecord = async function remove(maciAddr) {
+async function queryRecord(maciAddr) {
   let client = await MongoClient.connect(uri)
   let query = { 'MACI': maciAddr };
   let res = await client.db(dbName).collection(collectionName).findOne(query)
   logger.info(`record for maci addr ${maciAddr} is: ${JSON.stringify(res)}`)
   client.close()
+}
+
+module.exports = {
+    dbName,
+    collectionName,
+    initConnection,
+    ping,
+    updateRecord,
+    removeRecord,
+    queryRecord,
 }
