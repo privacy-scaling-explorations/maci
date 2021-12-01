@@ -122,6 +122,9 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         initialVoiceCreditProxy = _initialVoiceCreditProxy;
 
         signUpTimestamp = block.timestamp;
+
+        // Verify linked poseidon libraries
+        require(hash2([uint256(1),uint256(1)]) != 0, "MACI: poseidon hash libraries not linked");
     }
 
     /*
