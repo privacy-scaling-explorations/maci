@@ -291,6 +291,13 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     ) public afterInit {
         uint256 pollId = nextPollId;
 
+        if (pollId > 0) {
+            require(
+                stateAq.treeMerged() == true,
+                "MACI: previous poll must be completed before using a new instance"
+            );
+        }
+
         // The message batch size and the tally batch size
         BatchSizes memory batchSizes = BatchSizes(
             MESSAGE_TREE_ARITY ** uint8(_treeDepths.messageTreeSubDepth),

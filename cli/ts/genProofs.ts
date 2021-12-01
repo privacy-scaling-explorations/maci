@@ -249,8 +249,9 @@ const genProofs = async (args: any) => {
         signer,
     )
 
-    // Check that the state and message trees have been merged
-    if (!(await pollContract.stateAqMerged())) {
+
+    // Check that the state and message trees have been merged for at least the first poll
+    if (!(await pollContract.stateAqMerged()) && pollId == 0) {
         console.error(
             'Error: the state tree has not been merged yet. ' +
             'Please use the mergeSignups subcommmand to do so.'
