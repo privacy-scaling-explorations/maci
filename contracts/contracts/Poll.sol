@@ -60,7 +60,7 @@ contract PollFactory is Params, IPubKey, IMessage, Ownable, Hasher, PollDeployme
         IMACI _maci,
         address _pollOwner
     ) public onlyOwner returns (Poll) {
-        uint8 treeArity = 5;
+        uint256 treeArity = 5;
 
         // Validate _maxValues
         // NOTE: these checks may not be necessary. Removing them will save
@@ -71,10 +71,10 @@ contract PollFactory is Params, IPubKey, IMessage, Ownable, Hasher, PollDeployme
         // of the inputs (aka packedVal)
 
         require(
-            _maxValues.maxMessages <= treeArity ** _treeDepths.messageTreeDepth &&
+            _maxValues.maxMessages <= treeArity ** uint256(_treeDepths.messageTreeDepth) &&
             _maxValues.maxMessages >= _batchSizes.messageBatchSize &&
             _maxValues.maxMessages % _batchSizes.messageBatchSize == 0 &&
-            _maxValues.maxVoteOptions <= treeArity ** _treeDepths.voteOptionTreeDepth &&
+            _maxValues.maxVoteOptions <= treeArity ** uint256(_treeDepths.voteOptionTreeDepth) &&
             _maxValues.maxVoteOptions < (2 ** 50),
             "PollFactory: invalid _maxValues"
         );
