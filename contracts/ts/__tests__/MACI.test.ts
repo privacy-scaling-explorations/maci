@@ -313,9 +313,8 @@ describe('MACI', () => {
             expect(sb.toString()).toEqual('0')
 
             const sm = await pollContract.numSignUpsAndMessages()
-            // There are 0 signups until the coordinator merges the state tree
-            // via Poll.mergeStateAq()
-            expect(Number(sm[0])).toEqual(0)
+            // There are 3 signups via the MACI instance
+            expect(Number(sm[0])).toEqual(3)
 
             // There are 0 messages until a user publishes a message
             expect(Number(sm[1])).toEqual(0)
