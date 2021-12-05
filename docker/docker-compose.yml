@@ -2,7 +2,7 @@ version: '3'
 services:
   maci-node:
     tty: true
-    image: maci-node:a3
+    image: chaosma/maci:v0.2
     ports:
       - '8080:8080'
     depends_on:
@@ -13,9 +13,10 @@ services:
       mongo_pass: let-me-in
       mongo_db: maci-db
       mongo_uri: 'mongodb://maci-coordinator:let-me-in@host.docker.internal'
-      hardhat_uri: 'http://host.docker.internal:8545'
+      hardhat_uri: 'http://127.0.0.1:8545'
     volumes:
-      - /home/chao/opensource/maci:/root/dev-maci
+      - ~/maci:/root/dev-maci
+      - ~/maci/cli/zkeys:/root/maci/cli/zkeys
   mongo:
     image: mongo
     restart: always

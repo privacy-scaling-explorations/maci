@@ -3,11 +3,10 @@ FROM ubuntu:20.04 as maci-node
 ARG COMMIT_SHA=unknown
 ARG REPO_NAME="https://github.com/chaosma/maci.git"
 ARG BRANCH_NAME=cordservice
-ARG TAG_NAME=unknown
 
 # install dependency
 RUN apt-get update \
-    && apt-get install -y curl git \
+    && apt-get install -y curl wget git \
     && apt-get install -y build-essential libgmp-dev libsodium-dev nasm \ 
     && apt-get install -y libgmp-dev nlohmann-json3-dev nasm g++ 
     
@@ -24,7 +23,6 @@ ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
 
 # add metadata
 RUN echo "REPO_NAME='$REPO_NAME'" > /etc/image-info \
-    && echo "TAG_NAME='$TAG_NAME'" >> /etc/image-info \
     && echo "BRANCH_NAME='$BRANCH_NAME'" >> /etc/image-info \
     && echo "NODE_VERSION='$(node --version)'" >> /etc/image-info 
 
@@ -46,6 +44,8 @@ RUN cd ~ \
     && cd maci \
     && git checkout ${BRANCH_NAME} \
     && npm i && npm run bootstrap && npm run build
+
+RUN cd ~/maci/contracts && npm run compileSol
 
 # HTTP port
 EXPOSE 8080
