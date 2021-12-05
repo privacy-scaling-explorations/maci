@@ -1,5 +1,11 @@
 #!/bin/bash
 
+function copy_tally() {
+  CONTAINER_ID=$(docker container ls | grep maci-node | cut -d' ' -f1)
+  docker cp $1 $CONTAINER_ID:/root/maci/cli/ 
+}
+
+
 # 1. admin deploy contracts and store info into database
 ./admin.sh deploy
 ./admin.sh store
@@ -22,4 +28,5 @@ rm -f $tally_file $prove_file
 
 # 4. user verify proof
 pid=0
+copy_tally $tally_file
 ./user.sh verify -t $tally_file -x $maci -o $pid

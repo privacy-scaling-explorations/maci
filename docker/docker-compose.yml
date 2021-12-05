@@ -2,7 +2,7 @@ version: '3'
 services:
   maci-node:
     tty: true
-    image: chaosma/maci:v0.2
+    image: chaosma/maci:v0.4
     ports:
       - '8080:8080'
     depends_on:

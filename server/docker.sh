@@ -3,6 +3,12 @@
 DOCKER_CONFIG="../docker"
 SCRIPT='node /root/maci/server/index.js'
 
+function setup(){
+  CONTAINER_ID=$(docker container ls | grep maci-node | cut -d' ' -f1)
+  HOST_IP=$(docker inspect "$CONTAINER_ID" | jq -r .[0].NetworkSettings.Networks[].Gateway)
+  docker exec $CONTAINER_ID sed -i "s/host.docker.internal/$HOST_IP/g" /root/maci/server/admin.sh
+}
+
 function run_script() {
   CONTAINER_ID=$(docker container ls | grep maci-node | cut -d' ' -f1)
   docker exec -it $CONTAINER_ID $SCRIPT 
@@ -22,6 +28,7 @@ function stop_docker() {
 
 function start_docker() {
   cd $DOCKER_CONFIG && docker-compose up -d
+  setup
   run_script
 }
 

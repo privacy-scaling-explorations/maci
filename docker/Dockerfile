@@ -6,7 +6,7 @@ ARG BRANCH_NAME=cordservice
 
 # install dependency
 RUN apt-get update \
-    && apt-get install -y curl wget git \
+    && apt-get install -y curl wget git jq\
     && apt-get install -y build-essential libgmp-dev libsodium-dev nasm \ 
     && apt-get install -y libgmp-dev nlohmann-json3-dev nasm g++ 
     
