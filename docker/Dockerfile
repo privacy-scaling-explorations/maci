@@ -43,8 +43,9 @@ RUN cd ~ \
     && git clone $REPO_NAME \
     && cd maci \
     && git checkout ${BRANCH_NAME} \
-    && npm i && npm run bootstrap && npm run build
-
+    && npm i 
+RUN cd ~/maci && npm run bootstrap
+RUN cd ~/maci && npm run build
 RUN cd ~/maci/contracts && npm run compileSol
 
 # HTTP port
