@@ -148,7 +148,7 @@ const mergeSignups = async (args: any) => {
     const stateTreeDepth = Number(await maciContractEthers.stateTreeDepth())
     const mainRoot = (await accQueueContract.getMainRoot(stateTreeDepth.toString())).toString()
 
-    if (mainRoot === '0') {
+    if (mainRoot === '0' || pollId > 0) {
         console.log('Merging subroots to a main state root...')
         const tx = await pollContract.mergeMaciStateAq(pollId.toString())
         const receipt = await tx.wait()

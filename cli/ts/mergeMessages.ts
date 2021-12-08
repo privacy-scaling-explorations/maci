@@ -70,7 +70,7 @@ const mergeMessages = async (args: any) => {
         return 1
     }
 
-    const pollId = args.poll_id
+    const pollId = Number(args.poll_id)
 
     if (pollId < 0) {
         console.error('Error: the Poll ID should be a positive integer.')

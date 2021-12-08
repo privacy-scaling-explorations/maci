@@ -68,6 +68,9 @@ abstract contract AccQueue is Ownable, Hasher {
     // Whether the subtrees have been merged
     bool public subTreesMerged;
 
+    // Whether entire merkle tree has been merged
+    bool public treeMerged;
+
     // The root of the shortest possible tree which fits all current subtree
     // roots
     uint256 internal smallSRTroot;
@@ -111,6 +114,9 @@ abstract contract AccQueue is Ownable, Hasher {
      */
     function hashLevel(uint256 _level, uint256 _leaf)
         virtual internal returns (uint256) {}
+
+    function hashLevelLeaf(uint256 _level, uint256 _leaf)
+        virtual view public returns (uint256) {}
 
     /*
      * Returns the zero leaf at a specified level.
@@ -420,6 +426,7 @@ abstract contract AccQueue is Ownable, Hasher {
         // If the depth is the same as the SRT depth, just use the SRT root
         if (_depth == srtDepth) {
             mainRoots[_depth] = smallSRTroot;
+            treeMerged = true;
             return smallSRTroot;
         } else {
 
@@ -448,6 +455,7 @@ abstract contract AccQueue is Ownable, Hasher {
             }
 
             mainRoots[_depth] = root;
+            treeMerged = true;
             return root;
         }
     }
@@ -506,6 +514,11 @@ abstract contract AccQueueBinary is AccQueue {
         return hashed;
     }
 
+    function hashLevelLeaf(uint256 _level, uint256 _leaf) override view public returns (uint256) {
+        uint256 hashed = hashLeftRight(leafQueue.levels[_level][0], _leaf);
+        return hashed;
+    }
+
     function _fill(uint256 _level) override internal {
         while (_level < subDepth) {
             uint256 n = leafQueue.indices[_level];
@@ -548,6 +561,18 @@ abstract contract AccQueueQuinary is AccQueue {
         // Free up storage slots to refund gas. Note that using a loop here
         // would result in lower gas savings.
         delete leafQueue.levels[_level];
+
+        return hashed;
+    }
+
+    function hashLevelLeaf(uint256 _level, uint256 _leaf) override view public returns (uint256) {
+        uint256[5] memory inputs;
+        inputs[0] = leafQueue.levels[_level][0];
+        inputs[1] = leafQueue.levels[_level][1];
+        inputs[2] = leafQueue.levels[_level][2];
+        inputs[3] = leafQueue.levels[_level][3];
+        inputs[4] = _leaf;
+        uint256 hashed = hash5(inputs);
 
         return hashed;
     }

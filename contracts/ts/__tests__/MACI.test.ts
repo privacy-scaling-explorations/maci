@@ -313,9 +313,8 @@ describe('MACI', () => {
             expect(sb.toString()).toEqual('0')
 
             const sm = await pollContract.numSignUpsAndMessages()
-            // There are 0 signups until the coordinator merges the state tree
-            // via Poll.mergeStateAq()
-            expect(Number(sm[0])).toEqual(0)
+            // There are 3 signups via the MACI instance
+            expect(Number(sm[0])).toEqual(3)
 
             // There are 0 messages until a user publishes a message
             expect(Number(sm[1])).toEqual(0)
@@ -413,7 +412,7 @@ describe('MACI', () => {
         let pollContract
         let messageAqContract
 
-        beforeAll(async () => {
+        beforeEach(async () => {
             const pollContractAddress = await maciContract.getPoll(pollId)
             pollContract = new ethers.Contract(
                 pollContractAddress,
@@ -429,6 +428,15 @@ describe('MACI', () => {
                 accQueueQuinaryMaciAbi,
                 signer,
             )
+        })
+
+        it('should revert if subtrees are not merged for StateAq', async () => {
+            try {
+                await pollContract.mergeMaciStateAq(0, { gasLimit: 4000000 })
+            } catch (e) {
+                const error = 'PollE08'
+                expect(e.message.endsWith(error)).toBeTruthy()
+            }
         })
 
         it('coordinator should be able to merge the message AccQueue', async () => {

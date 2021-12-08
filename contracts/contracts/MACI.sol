@@ -78,7 +78,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     AccQueue public override stateAq;
 
     // Whether the init() function has been successfully executed yet.
-    bool isInitialised = false;
+    bool public isInitialised = false;
 
     // Address of the SignUpGatekeeper, a contract which determines whether a
     // user may sign up to vote
@@ -120,7 +120,11 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         pollFactory = _pollFactory;
         signUpGatekeeper = _signUpGatekeeper;
         initialVoiceCreditProxy = _initialVoiceCreditProxy;
+
         signUpTimestamp = block.timestamp;
+
+        // Verify linked poseidon libraries
+        require(hash2([uint256(1),uint256(1)]) != 0, "MACI: poseidon hash libraries not linked");
     }
 
     /*
@@ -289,6 +293,13 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         PubKey memory _coordinatorPubKey
     ) public afterInit {
         uint256 pollId = nextPollId;
+
+        if (pollId > 0) {
+            require(
+                stateAq.treeMerged() == true,
+                "MACI: previous poll must be completed before using a new instance"
+            );
+        }
 
         // The message batch size and the tally batch size
         BatchSizes memory batchSizes = BatchSizes(

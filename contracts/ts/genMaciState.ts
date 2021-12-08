@@ -389,7 +389,9 @@ const genMaciStateFromContract = async (
                 action.data.numSrQueueOps,
             )
         } else if (action['type'] === 'MergeMaciStateAq') {
-            maciState.stateAq.merge(stateTreeDepth)
+            if (pollId == 0) {
+                maciState.stateAq.merge(stateTreeDepth)
+            }
         } else if (action['type'] === 'MergeMessageAqSubRoots') {
             maciState.polls[pollId].messageAq.mergeSubRoots(
                 action.data.numSrQueueOps,
