@@ -10,8 +10,6 @@
         "test-processMessage-debug": "node --inspect-brk ./node_modules/.bin/jest ProcessMessage.test.ts",
         "test-maciState": "jest MaciState.test.ts",
         "test-maciState-debug": "node --inspect-brk ./node_modules/.bin/jest MaciState.test.ts",
-        "test-user": "jest User.test.ts",
-        "test-user-debug": "node --inspect-brk ./node_modules/.bin/jest User.test.ts",
         "test": "jest",
         "test-debug": "node --inspect-brk ./node_modules/.bin/jest"
     },

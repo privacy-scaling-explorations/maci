@@ -1,4 +1,3 @@
-const { ethers } = require('hardhat')
 import * as path from 'path'
 import * as fs from 'fs'
 import {
@@ -17,10 +16,6 @@ import {
 import {
     genRandomSalt,
 } from 'maci-crypto'
-
-import {
-    getDefaultSigner,
-} from 'maci-contracts'
 
 import { genPubKey } from 'maci-crypto'
 
