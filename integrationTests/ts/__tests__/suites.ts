@@ -258,7 +258,7 @@ const executeSuite = async (data: any, expect: any) => {
     }
     console.log(e.stdout)
 
-    const removeOldProofs = `rm -f tally.json proofs.json`
+    const removeOldProofs = `rm -f tally.json proofs`
     e = exec(removeOldProofs)
 
     const genProofsCommand = `node build/index.js genProofs` +
@@ -271,7 +271,7 @@ const executeSuite = async (data: any, expect: any) => {
         ` -zp ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey` +
         ` -zt ./zkeys/TallyVotes_10-1-2.test.0.zkey` +
         ` -t tally.json` +
-        ` -f proofs.json`
+        ` -f proofs/`
 
     console.log(genProofsCommand)
     e = exec(genProofsCommand)
@@ -297,7 +297,7 @@ const executeSuite = async (data: any, expect: any) => {
         ` -x ${maciAddress}` +
         ` -o ${pollId}` +
         ` -q ${pptAddress}` +
-        ` -f proofs.json`
+        ` -f proofs/`
 
     console.log(proveOnChainCommand)
     e = exec(proveOnChainCommand)

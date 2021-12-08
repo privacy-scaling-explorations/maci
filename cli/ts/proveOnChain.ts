@@ -1,5 +1,6 @@
 import * as ethers from 'ethers'
 import * as fs from 'fs'
+import * as path from 'path'
 
 import { hashLeftRight } from 'maci-crypto'
 import {
@@ -49,11 +50,11 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-f', '--proof-file'],
+        ['-f', '--proof-dir'],
         {
             required: true,
             type: 'string',
-            help: 'The proof output file from the genProofs subcommand',
+            help: 'The proof output directory from the genProofs subcommand',
         }
     )
 }
@@ -127,21 +128,34 @@ const proveOnChain = async (args: any) => {
         signer,
     )
 
-    // Read the proof file
-    let data
+    let data = {
+        processProofs: {},
+        tallyProofs: {},
+    }
+
+    let numProcessProofs = 0
+
     if (typeof args.proof_file === 'object' && args.proof_file !== null) {
         // Argument is a javascript object
         data = args.proof_file
     } else {
-        // Argument is a filename
-        try {
-            data = JSON.parse(fs.readFileSync(args.proof_file).toString())
-            if (data.processProofs == undefined || data.tallyProofs == undefined) {
-                throw new Error()
+        // Read the proof directory
+        const filenames = fs.readdirSync(args.proof_dir)
+        for (let i = 0; i < filenames.length; i ++) {
+            const filename = filenames[i]
+            const filepath = path.join(args.proof_dir, filename)
+            let match = filename.match(/process_(\d+)/)
+            if (match != null) {
+                data.processProofs[Number(match[1])] = JSON.parse(fs.readFileSync(filepath).toString())
+                numProcessProofs ++
+                continue
             }
-        } catch {
-            console.error('Error: could not parse the proof file')
-            return
+
+            match = filename.match(/tally_(\d+)/)
+            if (match != null) {
+                data.tallyProofs[Number(match[1])] = JSON.parse(fs.readFileSync(filepath).toString())
+                continue
+            }
         }
     }
 
@@ -152,19 +166,19 @@ const proveOnChain = async (args: any) => {
     const messageBatchSize = Number(batchSizes.messageBatchSize)
     const tallyBatchSize = Number(batchSizes.tallyBatchSize)
     let totalMessageBatches = numMessages <= messageBatchSize ?
-    1
-    : 
-    Math.floor(numMessages / messageBatchSize)
+        1
+        : 
+        Math.floor(numMessages / messageBatchSize)
 
     if (numMessages > messageBatchSize && numMessages % messageBatchSize > 0) {
         totalMessageBatches ++
     }
 
-    if (data.processProofs.length !== totalMessageBatches) {
+    if (numProcessProofs !== totalMessageBatches) {
         console.error(
             `Error: ${args.proof_file} does not have the correct ` +
             `number of message processing proofs ` +
-            `(expected ${totalMessageBatches}, got ${data.processProofs.length}.`,
+            `(expected ${totalMessageBatches}, got ${numProcessProofs}.`,
         )
     }
 

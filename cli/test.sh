@@ -22,7 +22,7 @@ node build/index.js publish \
 node build/index.js timeTravel -s 30 && \
 node build/index.js mergeMessages -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a -o 0 && \
 node build/index.js mergeSignups -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a -o 0 && \
-rm -f tally.json proofs.json && \
+rm -rf proofs tally.json && \
 node build/index.js genProofs -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -sk macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
     -o 0 \
@@ -32,13 +32,13 @@ node build/index.js genProofs -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -zp ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey \
     -zt ./zkeys/TallyVotes_10-1-2.test.0.zkey \
     -t tally.json \
-    -f proofs.json
+    -f proofs/
 
 node build/index.js proveOnChain \
     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -o 0 \
     -q 0xEcFcaB0A285d3380E488A39B4BB21e777f8A4EaC \
-    -f proofs.json
+    -f proofs/
 
 node build/index.js verify \
     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \

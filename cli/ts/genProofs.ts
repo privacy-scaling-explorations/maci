@@ -1,5 +1,6 @@
 import * as ethers from 'ethers'
 import * as fs from 'fs'
+import * as path from 'path'
 
 import { genProof, verifyProof, extractVk } from 'maci-circuits'
 import { hashLeftRight, hash3 } from 'maci-crypto'
@@ -121,7 +122,7 @@ const configureSubparser = (subparsers: any) => {
         {
             required: true,
             type: 'string',
-            help: 'The output file',
+            help: 'The output directory for proofs',
         }
     )
 
@@ -136,11 +137,15 @@ const configureSubparser = (subparsers: any) => {
 }
 
 const genProofs = async (args: any) => {
-    const outputFile = args.output
+    const outputDir = args.output
 
-    if (fs.existsSync(outputFile)) {
-        console.error(`Error: ${outputFile} exists. Please specify a different filepath.`)
-        return 1
+    //if (fs.existsSync(outputDir)) {
+    if (!fs.existsSync(outputDir)) {
+        //console.error(`Error: ${outputDir} exists. Please specify a different directory to save proofs in.`)
+        //return 1
+    //} else {
+        // Create the directory
+        fs.mkdirSync(outputDir)
     }
 
     if (fs.existsSync(args.tally_file)) {
@@ -330,12 +335,16 @@ const genProofs = async (args: any) => {
             return 1
         }
         
-        processProofs.push({
+        const thisProof = {
             circuitInputs,
             proof: r.proof,
             publicInputs: r.publicInputs,
-        })
-        saveOutput(outputFile, processProofs, tallyProofs)
+        }
+
+        processProofs.push(thisProof)
+
+        saveOutput(outputDir, thisProof, `process_${poll.numBatchesProcessed - 1}.json`)
+
         console.log(`\nProgress: ${poll.numBatchesProcessed} / ${totalMessageBatches}`)
     }
 
@@ -375,12 +384,16 @@ const genProofs = async (args: any) => {
             return 1
         }
         
-        tallyProofs.push({
+        const thisProof = {
             circuitInputs: tallyCircuitInputs,
             proof: r.proof,
             publicInputs: r.publicInputs,
-        })
-        saveOutput(outputFile, processProofs, tallyProofs)
+        }
+
+        tallyProofs.push(thisProof)
+
+        saveOutput(outputDir, thisProof, `tally_${poll.numBatchesTallied - 1}.json`)
+
         console.log(`\nProgress: ${poll.numBatchesTallied} / ${totalTallyBatches}`)
     }
 
@@ -446,10 +459,14 @@ const genProofs = async (args: any) => {
     return 0
 }
 
-const saveOutput = (outputFile: string, processProofs: any, tallyProofs: any) => {
+const saveOutput = (
+    outputDir: string,
+    proof: any,
+    filename: string,
+) => {
     fs.writeFileSync(
-        outputFile,
-        JSON.stringify({ processProofs, tallyProofs }, null, 2),
+        path.join(outputDir, filename),
+        JSON.stringify(proof, null, 2),
     )
 }
 
