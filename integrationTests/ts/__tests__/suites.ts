@@ -258,7 +258,7 @@ const executeSuite = async (data: any, expect: any) => {
     }
     console.log(e.stdout)
 
-    const removeOldProofs = `rm -f tally.json proofs`
+    const removeOldProofs = `rm -rf tally.json proofs`
     e = exec(removeOldProofs)
 
     const genProofsCommand = `node build/index.js genProofs` +
