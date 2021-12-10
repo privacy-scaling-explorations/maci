@@ -212,81 +212,81 @@ describe('TallyVotes circuit', () => {
     const NUM_BATCHES = 2
     const x = messageBatchSize * NUM_BATCHES
 
-    //describe(`${x} users, ${x} messages`, () => {
-        //it('should produce the correct state root and ballot root', async () => {
-            //const maciState = new MaciState()
-            //const userKeypairs: Keypair[] = []
-            //for (let i = 0; i < x; i ++) {
-                //const k = new Keypair()
-                //userKeypairs.push(k)
-                //maciState.signUp(
-                    //k.pubKey,
-                    //voiceCreditBalance,
-                    //BigInt(Math.floor(Date.now() / 1000) + duration),
-                //)
-            //}
+    describe(`${x} users, ${x} messages`, () => {
+        it('should produce the correct state root and ballot root', async () => {
+            const maciState = new MaciState()
+            const userKeypairs: Keypair[] = []
+            for (let i = 0; i < x; i ++) {
+                const k = new Keypair()
+                userKeypairs.push(k)
+                maciState.signUp(
+                    k.pubKey,
+                    voiceCreditBalance,
+                    BigInt(Math.floor(Date.now() / 1000) + duration),
+                )
+            }
 
-            //maciState.stateAq.mergeSubRoots(0)
-            //maciState.stateAq.merge(STATE_TREE_DEPTH)
+            maciState.stateAq.mergeSubRoots(0)
+            maciState.stateAq.merge(STATE_TREE_DEPTH)
 
-            //const pollId = maciState.deployPoll(
-                //duration,
-                //BigInt(Math.floor(Date.now() / 1000) + duration),
-                //maxValues,
-                //treeDepths,
-                //messageBatchSize,
-                //coordinatorKeypair,
-                //testProcessVk,
-                //testTallyVk,
-            //)
+            const pollId = maciState.deployPoll(
+                duration,
+                BigInt(Math.floor(Date.now() / 1000) + duration),
+                maxValues,
+                treeDepths,
+                messageBatchSize,
+                coordinatorKeypair,
+                testProcessVk,
+                testTallyVk,
+            )
 
-            //const poll = maciState.polls[pollId]
+            const poll = maciState.polls[pollId]
 
-            //const numMessages = messageBatchSize * NUM_BATCHES
-            //for (let i = 0; i < numMessages; i ++) {
-                //const command = new Command(
-                    //BigInt(i),
-                    //userKeypairs[i].pubKey,
-                    //BigInt(i), //vote option index
-                    //BigInt(1), // vote weight
-                    //BigInt(1), // nonce
-                    //BigInt(pollId),
-                //)
+            const numMessages = messageBatchSize * NUM_BATCHES
+            for (let i = 0; i < numMessages; i ++) {
+                const command = new Command(
+                    BigInt(i),
+                    userKeypairs[i].pubKey,
+                    BigInt(i), //vote option index
+                    BigInt(1), // vote weight
+                    BigInt(1), // nonce
+                    BigInt(pollId),
+                )
 
-                //const signature = command.sign(userKeypairs[i].privKey)
+                const signature = command.sign(userKeypairs[i].privKey)
 
-                //const ecdhKeypair = new Keypair()
-                //const sharedKey = Keypair.genEcdhSharedKey(
-                    //ecdhKeypair.privKey,
-                    //coordinatorKeypair.pubKey,
-                //)
-                //const message = command.encrypt(signature, sharedKey)
-                //poll.publishMessage(message, ecdhKeypair.pubKey)
-            //}
+                const ecdhKeypair = new Keypair()
+                const sharedKey = Keypair.genEcdhSharedKey(
+                    ecdhKeypair.privKey,
+                    coordinatorKeypair.pubKey,
+                )
+                const message = command.encrypt(signature, sharedKey)
+                poll.publishMessage(message, ecdhKeypair.pubKey)
+            }
 
-            //poll.messageAq.mergeSubRoots(0)
-            //poll.messageAq.merge(treeDepths.messageTreeDepth)
+            poll.messageAq.mergeSubRoots(0)
+            poll.messageAq.merge(treeDepths.messageTreeDepth)
 
-            //for (let i = 0; i < NUM_BATCHES; i ++) {
-                //poll.processMessages()
-            //}
+            for (let i = 0; i < NUM_BATCHES; i ++) {
+                poll.processMessages()
+            }
 
-            //for (let i = 0; i < NUM_BATCHES; i ++) {
-                //const generatedInputs = poll.tallyVotes()
+            for (let i = 0; i < NUM_BATCHES; i ++) {
+                const generatedInputs = poll.tallyVotes()
 
-                //// For the 0th batch, the circuit should ignore currentResults,
-                //// currentSpentVoiceCreditSubtotal, and
-                //// currentPerVOSpentVoiceCredits
-                //if (i === 0) {
-                    //generatedInputs.currentResults[0] = '123'
-                    //generatedInputs.currentSpentVoiceCreditSubtotal = '456'
-                    //generatedInputs.currentPerVOSpentVoiceCredits[0] = '789'
-                //}
+                // For the 0th batch, the circuit should ignore currentResults,
+                // currentSpentVoiceCreditSubtotal, and
+                // currentPerVOSpentVoiceCredits
+                if (i === 0) {
+                    generatedInputs.currentResults[0] = '123'
+                    generatedInputs.currentSpentVoiceCreditSubtotal = '456'
+                    generatedInputs.currentPerVOSpentVoiceCredits[0] = '789'
+                }
 
-                //const witness = await genWitness(circuit, generatedInputs)
-                //expect(witness.length > 0).toBeTruthy()
+                const witness = await genWitness(circuit, generatedInputs)
+                expect(witness.length > 0).toBeTruthy()
 
-            //}
-        //})
-    //})
+            }
+        })
+    })
 })
