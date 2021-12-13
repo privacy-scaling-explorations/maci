@@ -190,7 +190,6 @@ describe('TallyVotes circuit', () => {
             const witness = await genWitness(circuit, generatedInputs)
             expect(witness.length > 0).toBeTruthy()
 
-            debugger
 
             for (let j = 0; j < messageBatchSize; j++){
                 const curr = await getSignalByName(circuit, witness, `main.resultCalc[${randIdx}].nums[${j}]`)
