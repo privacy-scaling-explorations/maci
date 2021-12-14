@@ -17,7 +17,6 @@ import {
 } from 'maci-domainobjs'
 
 import {
-    hash3,
     hash5,
     G1Point,
     G2Point,
@@ -80,7 +79,6 @@ describe('TallyVotes circuit', () => {
             maciState = new MaciState()
             const messages: Message[] = []
             const commands: Command[] = []
-            let messageTree
             // Sign up and publish
             const userKeypair = new Keypair()
             stateIndex = maciState.signUp(
@@ -105,7 +103,7 @@ describe('TallyVotes circuit', () => {
 
             poll = maciState.polls[pollId]
 
-            messageTree = new IncrementalQuinTree(
+            const messageTree = new IncrementalQuinTree(
                 treeDepths.messageTreeDepth,
                 poll.messageAq.zeroValue,
                 5,
@@ -166,8 +164,8 @@ describe('TallyVotes circuit', () => {
         })
 
         it('should produce the correct result if the inital tally is not zero', async () => {
-            let generatedInputs = poll.tallyVotes()
-            const newResults = poll.results
+            const generatedInputs = poll.tallyVotes()
+            //const newResults = poll.results
 
             // TODO: show that check constraint fails
             /*
@@ -191,6 +189,7 @@ describe('TallyVotes circuit', () => {
             generatedInputs.currentResults[randIdx] = '1'
             const witness = await genWitness(circuit, generatedInputs)
             expect(witness.length > 0).toBeTruthy()
+
 
             for (let j = 0; j < messageBatchSize; j++){
                 const curr = await getSignalByName(circuit, witness, `main.resultCalc[${randIdx}].nums[${j}]`)

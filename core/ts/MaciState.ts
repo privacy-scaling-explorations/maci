@@ -142,7 +142,7 @@ class Poll {
 
     private copyStateFromMaci = () => {
         // Copy the state tree, ballot tree, state leaves, and ballot leaves
-        assert(this.maciStateRef.stateLeaves.length === this.maciStateRef.stateTree.leaves.length)
+        assert(this.maciStateRef.stateLeaves.length === this.maciStateRef.stateTree.nextIndex)
 
         this.stateLeaves = this.maciStateRef.stateLeaves.map(
             (x) => x.copy()
@@ -465,7 +465,7 @@ class Poll {
         }
         commands = commands.slice(_index, _index + messageBatchSize)
 
-        while(this.messageTree.leaves.length < _index + messageBatchSize) {
+        while(this.messageTree.nextIndex < _index + messageBatchSize) {
             this.messageTree.insert(
                 this.messageTree.zeroValue
             )
@@ -597,7 +597,7 @@ class Poll {
             return
         }
 
-        if (stateLeafIndex >= BigInt(this.stateTree.leaves.length)) {
+        if (stateLeafIndex >= BigInt(this.stateTree.nextIndex)) {
             return
         }
 
