@@ -74,7 +74,7 @@ Refer to the [Glossary](#Glossary) for defintions of terms.
 
     - Generate a zk-SNARK proof that this state root transition is valid. (Note that "state root" refers to the root of the state tree in the contract, not the Ethereum state root as defined in the Yellow Paper.)
 
-    - An invalid message can one which is signed by a public key which a user had already replaced with another key, among other criteria. To allow a bribee to plausibly claim that they have voted correctly even if they use an old public key, we insert a random leaf at index `0` whether or not the message is valid.
+    - An invalid message can be one that is signed by a public key which a user had already replaced with another key, among other criteria. To allow a bribee to plausibly claim that they have voted correctly even if they use an old public key, we insert a random leaf at index `0` whether or not the message is valid.
 
 ![](https://i.imgur.com/kNQR9ks.png)
 
