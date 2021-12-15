@@ -1,5 +1,4 @@
 import * as prompt from 'prompt-async'
-import * as fs from 'fs'
 
 prompt.colors = false
 prompt.message = ''
