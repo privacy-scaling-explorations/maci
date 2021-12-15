@@ -71,7 +71,7 @@ twitness=$DirName/../cli/zkeys/TallyVotes_10-1-2.test
 pzkey=$DirName/../cli/zkeys/ProcessMessages_10-2-1-2.test.0.zkey
 tzkey=$DirName/../cli/zkeys/TallyVotes_10-1-2.test.0.zkey
 tally_file=$DirName/../cli/tally.json 
-prove_file=$DirName/../cli/proofs.json
+proof_dir=$DirName/../cli/proofs
 txn="" # -tx $txn, where txn is the transaction hash of deployVkRegistry, optional
 prove(){
     echo "genProof..."
@@ -84,12 +84,12 @@ prove(){
        -zp $pzkey \
        -zt $tzkey \
        -t  $tally_file \
-       -f  $prove_file 
+       -f  $proof_dir
 }
 
 proveOnChain() {
     echo "prove on chain..."
-    eval $CMD proveOnChain -o $pid -f $prove_file
+    eval $CMD proveOnChain -o $pid -f $proof_dir
 }
 
 process(){
