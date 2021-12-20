@@ -1,0 +1,19 @@
+FROM chaosma/maci:v0.4 as maci-node
+
+ARG COMMIT_SHA=unknown
+ARG REPO_NAME="https://github.com/chaosma/maci.git"
+ARG BRANCH_NAME=cordservice
+
+# update maci
+RUN cd ~ \
+    && cd maci \
+    && git checkout ${BRANCH_NAME} \
+    && git fetch && git reset --hard origin/$BRANCH_NAME \
+    && npm i
+RUN cd ~/maci && npm run bootstrap
+RUN cd ~/maci && npm run build
+RUN cd ~/maci/contracts && npm run compileSol
+
+# HTTP port
+EXPOSE 8080
+EXPOSE 8545
