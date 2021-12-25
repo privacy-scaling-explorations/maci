@@ -139,3 +139,6 @@ typings/
 
 # DynamoDB Local files
 .dynamodb/
+
+cli/contractAddress.txt
+cli/contractAddress.old

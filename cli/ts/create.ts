@@ -16,7 +16,11 @@ import {
     promptPwd,
     validateEthSk,
     checkDeployerProviderConnection,
+    writeJSONFile,
 } from './utils'
+
+import {contractFilepath} from './config'
+
 
 import {
     DEFAULT_ETH_PROVIDER,
@@ -189,7 +193,6 @@ const configureSubparser = (subparsers: any) => {
 }
 
 const create = async (args: any) => {
-
     // The deployer's Ethereum private key
     // They may either enter it as a command-line option or via the
     // standard input
@@ -400,6 +403,14 @@ const create = async (args: any) => {
     )
 
     console.log('MACI:', contracts.maciContract.address)
+    let contractAddrs = {}
+    contractAddrs['InitialVoiceCreditProxy'] = initialVoiceCreditProxyContractAddress
+    contractAddrs['SignUpGatekeeper'] = signUpGatekeeperAddress
+    contractAddrs['MACI'] = contracts.maciContract.address
+    contractAddrs['BatchUpdateStateTreeVerifier'] = contracts.batchUstVerifierContract.address
+    contractAddrs['QuadVoteTallyVerifier'] = contracts.quadVoteTallyVerifierContract.address
+    writeJSONFile(contractFilepath, contractAddrs)
+
 }
 
 export {

@@ -1,3 +1,4 @@
+const fs = require('fs')
 import * as ethers from 'ethers'
 import * as prompt from 'prompt-sync'
 
@@ -217,6 +218,20 @@ const delay = (ms: number): Promise<void> => {
     return new Promise((resolve: Function) => setTimeout(resolve, ms))
 }
 
+const readJSONFile = (filename) => {
+   if (!fs.existsSync(filename)) {
+      return ""
+   }
+   let data = fs.readFileSync(filename).toString()
+   let jdata = JSON.parse(data)
+   return jdata
+}
+
+const writeJSONFile = (filename, data) => {
+    fs.writeFileSync(filename, JSON.stringify(data))
+}
+
+
 export {
     promptPwd,
     calcBinaryTreeDepthFromMaxLeaves,
@@ -229,4 +244,6 @@ export {
     contractExists,
     genMaciStateFromContract,
     delay,
+    readJSONFile,
+    writeJSONFile,
 }
