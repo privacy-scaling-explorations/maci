@@ -27,7 +27,10 @@ import {
     contractExists,
     genMaciStateFromContract,
     checkDeployerProviderConnection,
+    readJSONFile,
 } from './utils'
+
+import {contractFilepath} from './config'
 
 import {
     DEFAULT_ETH_PROVIDER,
@@ -89,7 +92,6 @@ const configureSubparser = (subparsers: any) => {
     parser.addArgument(
         ['-x', '--contract'],
         {
-            required: true,
             type: 'string',
             help: 'The MACI contract address',
         }
@@ -106,12 +108,18 @@ const configureSubparser = (subparsers: any) => {
 }
 
 const proveOnChain = async (args: any) => {
+    let contractAddrs = readJSONFile(contractFilepath)
+    if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
+        console.error('Error: MACI contract address is empty')
+        return 
+    }
+    const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
     // MACI contract
-    if (!validateEthAddress(args.contract)) {
+    if (!validateEthAddress(maciAddress)) {
         console.error('Error: invalid MACI contract address')
         return
     }
-
+ 
     let ethSk
     // The coordinator's Ethereum private key
     // The user may either enter it as a command-line option or via the
@@ -142,8 +150,6 @@ const proveOnChain = async (args: any) => {
     const provider = new ethers.providers.JsonRpcProvider(ethProvider)
 
     const wallet = new ethers.Wallet(ethSk, provider)
-
-    const maciAddress = args.contract
 
     if (! (await contractExists(provider, maciAddress))) {
         console.error('Error: there is no contract deployed at the specified address')
