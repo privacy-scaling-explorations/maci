@@ -24,6 +24,7 @@ import {contractFilepath} from './config'
 
 import {
     DEFAULT_ETH_PROVIDER,
+    DEFAULT_ETH_SK,
     DEFAULT_MAX_USERS,
     DEFAULT_MAX_MESSAGES,
     DEFAULT_MAX_VOTE_OPTIONS,
@@ -40,7 +41,7 @@ const configureSubparser = (subparsers: any) => {
         { addHelp: true },
     )
 
-    const deployerPrivkeyGroup = createParser.addMutuallyExclusiveGroup({ required: true })
+    const deployerPrivkeyGroup = createParser.addMutuallyExclusiveGroup({ required: false })
 
     deployerPrivkeyGroup.addArgument(
         ['-dp', '--prompt-for-deployer-privkey'],
@@ -200,7 +201,7 @@ const create = async (args: any) => {
     if (args.prompt_for_deployer_privkey) {
         deployerPrivkey = await promptPwd('Deployer\'s Ethereum private key')
     } else {
-        deployerPrivkey = args.deployer_privkey
+        deployerPrivkey = args.deployer_privkey ? args.deployer_privkey : DEFAULT_ETH_SK
     }
 
     if (deployerPrivkey.startsWith('0x')) {
@@ -219,7 +220,7 @@ const create = async (args: any) => {
     if (args.prompt_for_maci_privkey) {
         coordinatorPrivkey = await promptPwd('Coordinator\'s MACI private key')
     } else {
-        coordinatorPrivkey = args.privkey
+        coordinatorPrivkey = args.privkey 
     }
 
     if (!PrivKey.isValidSerializedPrivKey(coordinatorPrivkey)) {
@@ -340,7 +341,7 @@ const create = async (args: any) => {
     }
 
     // Ethereum provider
-    const ethProvider = args.eth_provider ? args.eth_provider : DEFAULT_ETH_PROVIDER
+    const ethProvider = args.eth_provider || process.env.ETH_PROVIDER || DEFAULT_ETH_PROVIDER
 
     if (! (await checkDeployerProviderConnection(deployerPrivkey, ethProvider))) {
         console.error('Error: unable to connect to the Ethereum provider at', ethProvider)

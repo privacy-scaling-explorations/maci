@@ -34,6 +34,7 @@ import {contractFilepath} from './config'
 
 import {
     DEFAULT_ETH_PROVIDER,
+    DEFAULT_ETH_SK,
 } from './defaults'
 
 const configureSubparser = (subparsers: any) => {
@@ -70,7 +71,7 @@ const configureSubparser = (subparsers: any) => {
         }
     )
 
-    const ethPrivkeyGroup = parser.addMutuallyExclusiveGroup({ required: true })
+    const ethPrivkeyGroup = parser.addMutuallyExclusiveGroup({ required: false })
 
     ethPrivkeyGroup.addArgument(
         ['-dp', '--prompt-for-eth-privkey'],
@@ -127,7 +128,7 @@ const proveOnChain = async (args: any) => {
     if (args.prompt_for_eth_privkey) {
         ethSk = await promptPwd('Your Ethereum private key')
     } else {
-        ethSk = args.eth_privkey
+        ethSk = args.eth_privkey?args.eth_privkey:DEFAULT_ETH_SK
     }
 
     if (ethSk.startsWith('0x')) {

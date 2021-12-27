@@ -141,7 +141,7 @@ const genProofs = async (args: any) => {
 
 
     // Ethereum provider
-    const ethProvider = args.eth_provider ? args.eth_provider : DEFAULT_ETH_PROVIDER
+    const ethProvider = args.eth_provider || process.env.ETH_PROVIDER || DEFAULT_ETH_PROVIDER
 
     const provider = new ethers.providers.JsonRpcProvider(ethProvider)
 
