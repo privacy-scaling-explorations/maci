@@ -1,17 +1,10 @@
 const express = require('express')
-const shelljs = require('shelljs')
 const pg = require('pg')
-const path = require('path')
 const logger = require('./logger').logger
 const db = require('./db')
+const handler_v1 = require('./handler_v1');
+const handler_v0_10 = require('./handler_v0_10');
 
-const cliPath = path.join(
-    __dirname,
-    '..',
-    'cli',
-)
-
-const cliCmd = `cd ${cliPath} && node build/index.js`
 
 process.on('unhandledRejection', (err) => {
     logger.error(`unhandledRejection: ${err}`)
@@ -58,78 +51,20 @@ postRouter.post('/', async function(req, res) {
     res.send("method not defined")
     return
   }
+  if (!("version" in req.body)) {
+    res.send("version not defined")
+    return
+  }
 
-  let output, cmd, query, dbres
-  let silent = true
-  switch(req.body["method"]) {
-    case "signup":
-      if(!("pubkey" in req.body && req.body["pubkey"]) || !("maci" in req.body && req.body["maci"])){
-         res.send("missing parameters...")
-         break
-      }
-      query = { 'MACI': req.body["maci"]};
-      dbres = await dbClient.db(db.dbName).collection(db.collectionName).findOne(query)
-      if(!dbres) {
-        res.send(`MACI contract address ${req.body["maci"]} not exist`)
-        break
-      }
-      cmd = `${cliCmd} signup -p ${req.body["pubkey"]} -x ${req.body["maci"]}`
-      logger.debug(`process signup...${cmd}`)
-      output = shelljs.exec(cmd, { silent })
+  switch(req.body["version"]) {
+    case "v1.0":
+      await handler_v1(req, res, dbClient)
       break
-    case "genkey":
-      cmd = `${cliCmd} genMaciKeypair`
-      logger.debug(`process genkey...${cmd}`)
-      output = shelljs.exec(cmd, { silent })
-      break
-    case "publish": // TODO: change http to https to protect private key
-      if(!("pubkey" in req.body && req.body["pubkey"]) || !("maci" in req.body && req.body["maci"])){
-         res.send("missing parameters...")
-         break
-      }
-      query = { 'MACI': req.body["maci"]}
-      dbres = await dbClient.db(db.dbName).collection(db.collectionName).findOne(query)
-      if(!dbres) {
-        res.send(`MACI contract address ${req.body["maci"]} not exist`)
-        break
-      }
-
-      cmd = `${cliCmd} publish -p ${req.body["pubkey"]} -x ${req.body["maci"]} -sk ${req.body["privkey"]} -i ${req.body["state_index"]} -v ${req.body["vote_option_index"]} -w ${req.body["new_vote_weight"]} -n ${req.body["nonce"]} -o ${req.body["poll_id"]}`
-      if (req.body["salt"]) {
-        cmd += ` -s ${req.body["salt"]}`
-      }
-      logger.debug(`publishMessage...${cmd}`)
-      output = shelljs.exec(cmd, { silent })
-      break
-    case "verify":
-      if(!("maci" in req.body && req.body["maci"])||!("poll_id" in req.body && req.body["poll_id"])){
-         res.send("missing parameters...")
-         break
-      }
-      query = { 'MACI': req.body["maci"]}
-      dbres = await dbClient.db(db.dbName).collection(db.collectionName).findOne(query)
-      if(!dbres) {
-        res.send(`MACI contract address ${req.body["maci"]} not exist`)
-        break
-      }
-      let pptKey = "PollProcessorAndTally-" + req.body["poll_id"]
-      if (!(pptKey in dbres)) {
-         res.send(`PollProcessAndTally contract for poll ${req.body["poll_id"]} not exists`)
-         break
-      }
-      pptAddr = dbres[pptKey]
-      cmd = `${cliCmd} verify -t ${req.body["tally_file"]} -x ${req.body["maci"]} -o ${req.body["poll_id"]} -q ${pptAddr}`
-      output = shelljs.exec(cmd, { silent })
+    case "v0.10":
+      await handler_v0_10(req, res, dbClient)
       break
     default:
-      res.send("unknown method...")
-  }
-  if (!output) {
-      return
-  } else if(output.stderr) {
-     res.send(`${req.body.method} failed with error: ${output.stderr}`)
-  } else {
-    res.send(`${output}`)
+      res.send("unknown version...")
   }
 })
 

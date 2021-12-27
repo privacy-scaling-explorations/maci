@@ -26,6 +26,7 @@ max_votes=25
 
 
 help(){
+    echo "admin.sh v1.0"
     echo "Usage: $ProgName <command> [options]"
     echo "commands:"
     echo "    deploy"

@@ -11,7 +11,9 @@ docker build -t maci-node:v1 - < Dockerfile
 # replace the host.docker.internal by docker network ip
 cd docker
 ./setup.sh
-# Also manually replace 127.0.0.1 in hardhat_uri by docker network ip
+
+# manually replace 127.0.0.1 in ETH_PROVIDER by docker network ip
+# manually replace SCRIPT location to dev-maci 
 
 # modify the source location of dev-maci in docker-compose.yml if necessary
 
@@ -47,7 +49,7 @@ In real production, we will replace the hardhat local testnet by real ethereum c
 ```bash
 ### replace host.docker.internal by docker network ip
 cd docker && ./setup.sh
-# Unlike local developemnt, keep hardhat_uri in this case
+# Unlike local developemnt, keep ETH_PROVIDER in this case
 
 #### setup zkeys
 cd server && ./docker.sh -u # then Ctrl-C

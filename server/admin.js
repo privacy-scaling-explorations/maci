@@ -20,7 +20,6 @@ const updateSubparser = (subparsers) => {
         {
             action: 'store',
             type: 'string',
-            required: true,
             help: 'The .zkey file for the message processing circuit. '
         }
     )
@@ -29,7 +28,6 @@ const updateSubparser = (subparsers) => {
         {
             action: 'store',
             type: 'string',
-            required: true,
             help: 'The .zkey file for the vote tallying circuit. '
         }
     )

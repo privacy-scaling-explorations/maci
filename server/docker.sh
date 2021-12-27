@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 DOCKER_CONFIG="../docker"
-SCRIPT='node /root/maci/server/index.js'
+SCRIPT='node /root/dev-maci/server/index.js'
 
 function setup(){
   CONTAINER_ID=$(docker container ls | grep maci-node | cut -d' ' -f1)

@@ -13,9 +13,10 @@ services:
       mongo_pass: let-me-in
       mongo_db: maci-db
       mongo_uri: 'mongodb://maci-coordinator:let-me-in@host.docker.internal'
-      hardhat_uri: 'http://127.0.0.1:8545'
+      ETH_PROVIDER: 'http://127.0.0.1:8545'
     volumes:
       - ~/maci:/root/dev-maci
+      - ~/v0.10:/root/v0.10
       - ~/maci/cli/zkeys:/root/maci/cli/zkeys
   mongo:
     image: mongo
