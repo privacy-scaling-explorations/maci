@@ -7,7 +7,7 @@ const cliPath = path.join(
     __dirname,
     '..',
     '..',
-    'v0.10',
+    'maci_v0_10',
     'cli',
 )
 const cliCmd = `cd ${cliPath} && node build/index.js`

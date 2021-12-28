@@ -4,8 +4,8 @@
 export mongo_uri='mongodb://maci-coordinator:let-me-in@host.docker.internal'
 
 ProgName=$(basename $0)
-DirName=$(dirname $0)"/../../v0.10"
-CliDirName=$(dirname $0)"/../../v0.10/cli"
+DirName=$(dirname $0)"/../../maci_v0_10"
+CliDirName=$(dirname $0)"/../../maci_v0_10/cli"
 CMD="cd $CliDirName && node build/index.js"
 
 help(){

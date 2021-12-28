@@ -34,6 +34,7 @@ echo "Host IP: $HOST_IP"
 # Inject the host IP into docker-compose.yml and server/admin.sh
 sed -i -e "s/host.docker.internal/$HOST_IP/g" docker-compose.yml
 sed -i -e "s/host.docker.internal/$HOST_IP/g" ../server/admin.sh
+sed -i -e "s/host.docker.internal/$HOST_IP/g" ../server/admin_v0_10.sh
 
 function stop_graph_node {
     # Ensure maci-node is stopped

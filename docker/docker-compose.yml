@@ -2,7 +2,7 @@ version: '3'
 services:
   maci-node:
     tty: true
-    image: chaosma/maci:v0.4
+    image: chaosma/maci:v0.5
     ports:
       - '8080:8080'
     depends_on:
@@ -16,7 +16,7 @@ services:
       ETH_PROVIDER: 'http://127.0.0.1:8545'
     volumes:
       - ~/maci:/root/dev-maci
-      - ~/v0.10:/root/v0.10
+      - ~/maci_v0_10:/root/dev-maci_v0_10
       - ~/maci/cli/zkeys:/root/maci/cli/zkeys
   mongo:
     image: mongo
