@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 
 DOCKER_CONFIG="../docker"
-SCRIPT='node /root/dev-maci/server/index.js'
+SCRIPT='node /root/maci/server/index.js'
 
 function setup(){
   CONTAINER_ID=$(docker container ls | grep maci-node | cut -d' ' -f1)
   HOST_IP=$(docker inspect "$CONTAINER_ID" | jq -r .[0].NetworkSettings.Networks[].Gateway)
   docker exec $CONTAINER_ID sed -i "s/host.docker.internal/$HOST_IP/g" /root/maci/server/admin.sh
+  docker exec $CONTAINER_ID sed -i "s/host.docker.internal/$HOST_IP/g" /root/maci/server/admin_v0_10.sh
 }
 
 function run_script() {

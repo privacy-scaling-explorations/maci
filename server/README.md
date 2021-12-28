@@ -5,27 +5,23 @@
 Follow [instruction](https://appliedzkp.github.io/maci/) to setup environment and dependency, then
 
 ```bash
-# build docker image
-docker build -t maci-node:v1 - < Dockerfile
-
-# replace the host.docker.internal by docker network ip
+docker build -t maci-node:v0.5 - < LightDockerfile
 cd docker
 ./setup.sh
-
-# manually replace 127.0.0.1 in ETH_PROVIDER by docker network ip
-# manually replace SCRIPT location to dev-maci 
-
-# modify the source location of dev-maci in docker-compose.yml if necessary
-
 ```
 
 ### Development
 
-The following happens in local machine, not in docker
-
 ```bash
+### Setup
+# docker/docker-compose.yml: manually replace ETH_PROVIDER from 127.0.0.1 to docker network ip
+# server/docker.sh: manually replace SCRIPT location to local maci repo location
+
 ### In one terminal
+# for v1.0
 cd contracts && npm run hardhat
+# for v0.10
+cd contracts && npm run ganache
 
 ### In second terminal
 cd server && ./docker.sh -u
@@ -33,7 +29,10 @@ cd server && ./docker.sh -u
 cd server && ./docker.sh -ud
 
 ### In third terminal
+# for v1.0
 cd server && ./test.sh
+# for v0.10
+cd server && ./test_v0_10.sh
 
 ### turnoff docker after finish
 cd server && ./docker.sh -d
@@ -44,14 +43,10 @@ cd server && ./docker.sh -d
 
 In real production, we will replace the hardhat local testnet by real ethereum compatible network
 
-### Setup
+### Setup zkeys
 
 ```bash
-### replace host.docker.internal by docker network ip
-cd docker && ./setup.sh
-# Unlike local developemnt, keep ETH_PROVIDER in this case
-
-#### setup zkeys
+#### setup zkeys if you haven't done it before
 cd server && ./docker.sh -u # then Ctrl-C
 # login into docker
 ./docker.sh -l
@@ -68,18 +63,28 @@ cd server && ./docker.sh -u
 ## In second terminal
 cd server && ./docker.sh -l
 # now in docker
+# for v1.0
 cd ~/maci/contracts && npm run hardhat
+# for v0.10
+cd ~/maci_v0_10/contracts && npm run ganache
 
 ### In third terminal, admin role
 cd server && ./docker.sh -l
 # now in docker
 cd ~/maci/server
 # run any commands for admin, e.g.
+# v1.0
 ./admin.sh deploy
 ./admin.sh store 
+# v0.10
+./admin_v0_10.sh deploy
+./admin_v0_10.sh store
 
 ### In fourth terminal, user role
 cd server 
 # run any commands for user, e.g.
-./user.sh signup -p $pk -x $mac
+# v1.0
+./user.sh signup -p $pk -x $maci
+# v0.10
+./user_v0_10.sh signup -p $pk -x $maci
 ```
