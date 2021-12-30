@@ -83,6 +83,17 @@ own unit tests.
 - `integrationTests`: Integration tests which use the command-line interface
   to perform end-to-end tests.
 
+#### Compiling Circom
+
+Prior to using the generated `zkey` files for corresponding circuits, it is now required to compile `circom` locally. To get started the follow the instructions [here](https://docs.circom.io/getting-started/installation/)
+and be sure that the installation directory matches the value in the `circom` field inside `circuits/circomHelperConfig.json`.
+
+For example:
+```json
+{
+    "circom": "../$RELATIVE_PATH_TO_CIRCOM"
+}
+```
 
 ### Testing
 

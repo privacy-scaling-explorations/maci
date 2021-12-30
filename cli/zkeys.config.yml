@@ -2,32 +2,33 @@
 out: "./zkeys"
 
 # Make sure that these paths are correct
-circomPath: "./node_modules/circom/cli.js"
+circomPath: "../../.local/bin/circom"
 snarkjsPath: "./node_modules/snarkjs/build/cli.cjs"
-circomRuntimePath: "./node_modules/circom_runtime"
-ffiasmPath: "./node_modules/ffiasm"
 
 circuits:
 - template: "../circuits/circom/processMessages.circom"
   component: "ProcessMessages"
   params: [10, 2, 1, 2] # stateTreeDepth, msgTreeDepth, msgBatchDepth, voteOptionTreeDepth
   type: "test"
+  pubInputs: ["inputHash"]
 
 #- template: "../circuits/circom/processMessages.circom"
   #component: "ProcessMessages"
   #params: [10, 8, 2, 6]
   #type: "prod"
-  #url: ""
+  #pubInputs: ["inputHash"]
 
 - template: "../circuits/circom/tallyVotes.circom"
   component: "TallyVotes"
   params: [10, 1, 2] # stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth
   type: "test"
+  pubInputs: ["inputHash"]
 
 #- template: "../circuits/circom/tallyVotes.circom"
   #component: "TallyVotes"
   #params: [10, 3, 6]
   #type: "prod"
+  #pubInputs: ["inputHash"]
 
 ptauFiles:
   1:
