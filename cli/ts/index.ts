@@ -77,6 +77,11 @@ import {
     configureSubparser as configureSubparserForVerify,
 } from './verify'
 
+import {
+    checkVerifyingKey,
+    configureSubparser as configureSubparserForCheckVerifyKey,
+} from './checkVerifyingKey'
+
 const main = async () => {
     const parser = new argparse.ArgumentParser({ 
         description: 'Minimal Anti-Collusion Infrastructure',
@@ -129,6 +134,9 @@ const main = async () => {
     // Subcommand: verify
     configureSubparserForVerify(subparsers)
 
+    // Subcommand: checkVerifyKey
+    configureSubparserForCheckVerifyKey(subparsers)
+
     const args = parser.parseArgs()
 
     // Execute the subcommand method
@@ -160,6 +168,8 @@ const main = async () => {
         await proveOnChain(args)
     } else if (args.subcommand === 'verify') {
         await verify(args)
+    } else if (args.subcommand === 'checkVerifyingKey') {
+        await checkVerifyingKey(args)
     }
 }
 
