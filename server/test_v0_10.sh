@@ -12,9 +12,6 @@ maci=0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4
 ./user_v0_10.sh publish -p $pk -x $maci -sk $sk -i 1 -v 0 -w 9 -n 1 
 
 
-CliDirName=$(dirname $0)/../../v0.10/cli
-maci_state_file=$CliDirName/macistate_test.json 
-rm -f $maci_state_file
 # 3. admin prove and submit on-chain
 ./admin_v0_10.sh process
 

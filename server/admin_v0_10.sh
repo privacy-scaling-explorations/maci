@@ -21,8 +21,8 @@ help(){
 privkey=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3
 cordsk=macisk.8715ab59a3e88a7ceec80f214ec24a95287ef2cb399a329b6964a87f85cf51c
 ethprovider="http://localhost:8545"
-signup_duration=15
-voting_duration=15
+signup_duration=115
+voting_duration=115
 message_batch_size=4
 tally_batch_size=4
 
@@ -48,7 +48,7 @@ proof_file=$CliDirName/proofs.json
 maci_state=$CliDirName/macistate_test.json
 prove(){
     echo "genProof..."
-    eval $CMD genProofs -x $maci -sk $cordsk -o $proof_file -t $tally_file -m $maci_state
+    eval $CMD genProofs -x $maci -sk $cordsk -o $proof_file -t $tally_file 
 }
 
 proveOnChain() {
