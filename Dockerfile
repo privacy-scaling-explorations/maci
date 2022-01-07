@@ -4,7 +4,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 RUN apt-get update -qq --fix-missing && \
     apt-get install -qq -y curl build-essential libssl-dev libgmp-dev \
-                       libsodium-dev nlohmann-json3-dev git nasm
+                       libsodium-dev nlohmann-json3-dev git nasm wget
 
 # Install Node & NPM via nvm
 ENV NODE_VERSION=15.8.0
