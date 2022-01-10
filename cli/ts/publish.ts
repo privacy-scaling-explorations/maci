@@ -187,7 +187,7 @@ const publish = async (args: any) => {
     if (args.prompt_for_eth_privkey) {
         ethSk = await promptPwd('Your Ethereum private key')
     } else {
-        ethSk = args.eth_privkey?args.eth_privkey:DEFAULT_ETH_SK
+        ethSk = args.eth_privkey ? args.eth_privkey : DEFAULT_ETH_SK
     }
 
     if (ethSk.startsWith('0x')) {
