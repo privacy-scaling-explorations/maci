@@ -24,6 +24,8 @@ import {
     batchTransactionRequests,
 } from './utils'
 
+import {readJSONFile} from 'maci-common'
+import {contractFilepath} from './config'
 
 import {
     DEFAULT_ETH_PROVIDER,
@@ -51,7 +53,6 @@ const configureSubparser = (subparsers: any) => {
     parser.addArgument(
         ['-x', '--contract'],
         {
-            required: true,
             type: 'string',
             help: 'The MACI contract address',
         }
@@ -145,13 +146,19 @@ const publish = async (args: any) => {
 
     const userMaciPubKey = PubKey.unserialize(args.pubkey)
 
+
+    let contractAddrs = readJSONFile(contractFilepath)
+    if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
+        console.error('Error: MACI contract address is empty') 
+        return 1
+    }
+    const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
+
     // MACI contract
-    if (!validateEthAddress(args.contract)) {
+    if (!validateEthAddress(maciAddress)) {
         console.error('Error: invalid MACI contract address')
         return 1
     }
-
-    const maciAddress = args.contract
 
     // Ethereum provider
     const ethProvider = args.eth_provider ? args.eth_provider : DEFAULT_ETH_PROVIDER

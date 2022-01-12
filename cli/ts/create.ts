@@ -5,6 +5,9 @@ import {
     deployVerifier,
 } from 'maci-contracts'
 
+import {readJSONFile, writeJSONFile} from 'maci-common'
+import {contractFilepath} from './config'
+
 import {
     DEFAULT_INITIAL_VOICE_CREDITS,
 } from './defaults'
@@ -18,7 +21,6 @@ const configureSubparser = (subparsers: any) => {
     createParser.addArgument(
         ['-r', '--vk-registry'],
         {
-            required: true,
             type: 'string',
             help: 'The VkRegistry contract address',
         }
@@ -55,6 +57,11 @@ const configureSubparser = (subparsers: any) => {
 }
 
 const create = async (args: any) => {
+    let contractAddrs = readJSONFile(contractFilepath)
+    if ((!contractAddrs||!contractAddrs["VkRegistry"]) && !args.vk_registry) {
+        console.error('Error: vkRegistry contract address is empty') 
+        return 1
+    }
 
     // Initial voice credits
     const initialVoiceCredits = args.initial_voice_credits ? args.initial_voice_credits : DEFAULT_INITIAL_VOICE_CREDITS
@@ -94,9 +101,14 @@ const create = async (args: any) => {
 
 
     const verifierContract = await deployVerifier(true)
-    const vkRegistryContractAddress = args.vk_registry
+
+    const vkRegistryContractAddress = args.vk_registry ? args.vk_registry: contractAddrs["VkRegistry"]
+
     const {
         maciContract,
+        stateAqContract,
+        pollFactoryContract,
+        messageAqContract,
     } = await deployMaci(
         signUpGatekeeperAddress,
         initialVoiceCreditProxyContractAddress,
@@ -105,6 +117,16 @@ const create = async (args: any) => {
     )
 
     console.log('MACI:', maciContract.address)
+
+    contractAddrs['InitialVoiceCreditProxy'] = initialVoiceCreditProxyContractAddress
+    contractAddrs['SignUpGatekeeper'] = signUpGatekeeperAddress
+    contractAddrs['Verifier'] = verifierContract.address
+    contractAddrs['MACI'] = maciContract.address
+    contractAddrs['StateAq'] = stateAqContract.address
+    contractAddrs['PollFactory'] = pollFactoryContract.address
+    contractAddrs['MessageAqFactory'] = messageAqContract.address
+    writeJSONFile(contractFilepath, contractAddrs)
+
     return 0
 }
 

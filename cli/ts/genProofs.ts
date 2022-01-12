@@ -18,6 +18,8 @@ import {
     validateEthAddress,
     contractExists,
 } from './utils'
+import {readJSONFile} from 'maci-common'
+import {contractFilepath} from './config'
 
 const configureSubparser = (subparsers: any) => {
     const parser = subparsers.addParser(
@@ -47,7 +49,6 @@ const configureSubparser = (subparsers: any) => {
     parser.addArgument(
         ['-x', '--contract'],
         {
-            required: true,
             type: 'string',
             help: 'The MACI contract address',
         }
@@ -126,6 +127,16 @@ const configureSubparser = (subparsers: any) => {
         }
     )
 
+    parser.addArgument(
+        ['-tx', '--transaction-hash'],
+        {
+            type: 'string',
+            help: 'transaction hash of MACI contract creation',
+        }
+    )
+
+
+
     // TODO: support resumable proof generation
     //parser.addArgument(
         //['-r', '--resume'],
@@ -201,13 +212,18 @@ const genProofs = async (args: any) => {
     const maciPrivkey = PrivKey.unserialize(serializedPrivkey)
     const coordinatorKeypair = new Keypair(maciPrivkey)
 
+    let contractAddrs = readJSONFile(contractFilepath)
+    if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
+        console.error('Error: MACI contract address is empty') 
+        return 1
+    }
+    const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
+
     // MACI contract
-    if (!validateEthAddress(args.contract)) {
+    if (!validateEthAddress(maciAddress)) {
         console.error('Error: invalid MACI contract address')
         return 1
     }
-
-    const maciAddress = args.contract
 
     const signer = await getDefaultSigner()
 
@@ -279,12 +295,21 @@ const genProofs = async (args: any) => {
     }
 
     // Build an off-chain representation of the MACI contract using data in the contract storage
-    
+
+    // some rpc endpoint like bsc chain has limitation to retreive history logs
+    let fromBlock = 0
+    const txHash = args.transaction_hash
+    if (txHash) {
+        let txn = await signer.provider.getTransaction(txHash);
+        fromBlock = txn.blockNumber
+    }
+    console.log(`fromBlock = ${fromBlock}`)
     const maciState = await genMaciStateFromContract(
         signer.provider,
         maciAddress,
         coordinatorKeypair,
         pollId,
+        fromBlock,
     )
 
     const poll = maciState.polls[pollId]

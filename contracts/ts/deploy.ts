@@ -305,6 +305,8 @@ const deployMaci = async (
     return {
         maciContract,
         stateAqContract,
+        pollFactoryContract,
+        messageAqContract,
     }
 }
 

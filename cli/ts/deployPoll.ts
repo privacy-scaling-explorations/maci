@@ -10,10 +10,9 @@ import {
     PubKey,
 } from 'maci-domainobjs'
 
-
-import {
-    contractExists,
-} from './utils'
+import {contractExists} from './utils'
+import {readJSONFile, writeJSONFile} from 'maci-common'
+import {contractFilepath} from './config'
 
 const configureSubparser = (subparsers: any) => {
     const createParser = subparsers.addParser(
@@ -26,7 +25,6 @@ const configureSubparser = (subparsers: any) => {
         {
             action: 'store',
             type: 'string',
-            required: true,
             help: 'The MACI contract address',
         }
     )
@@ -113,6 +111,12 @@ const configureSubparser = (subparsers: any) => {
 }
 
 const deployPoll = async (args: any) => {
+    let contractAddrs = readJSONFile(contractFilepath)
+    if ((!contractAddrs||!contractAddrs["MACI"]) && !args.maci_address) {
+        console.error('Error: MACI contract address is empty') 
+        return 1
+    }
+
     // The poll duration
     const duration = args.duration
     if (duration <= 0) {
@@ -140,8 +144,9 @@ const deployPoll = async (args: any) => {
 
     const signer = await getDefaultSigner()
 
-    if (!(await contractExists(signer.provider, args.maci_address))) {
-        console.error('Error: a MACI contract is not deployed at', args.maci_address)
+    const maciAddress = args.maci_address ? args.maci_address: contractAddrs["MACI"]
+    if (!(await contractExists(signer.provider, maciAddress))) {
+        console.error('Error: a MACI contract is not deployed at', maciAddress)
         return 1
     }
 
@@ -163,7 +168,7 @@ const deployPoll = async (args: any) => {
 
     const [ maciAbi ] = parseArtifact('MACI')
     const maciContract = new ethers.Contract(
-        args.maci_address,
+        maciAddress,
         maciAbi,
         signer,
     )
@@ -193,6 +198,11 @@ const deployPoll = async (args: any) => {
         console.log('Poll ID:', pollId.toString())
         console.log('Poll contract:', pollAddr)
         console.log('PollProcessorAndTallyer contract:', pptContract.address)
+        contractAddrs['Verifier-' + pollId.toString()] = verifierContract.address
+        contractAddrs['PollProcessorAndTally-' + pollId.toString()] = pptContract.address
+        contractAddrs['Poll-' + pollId.toString()] = pollAddr
+        writeJSONFile(contractFilepath, contractAddrs)
+
     } catch (e) {
         console.error('Error: could not deploy poll')
         console.error(e.message)

@@ -13,6 +13,8 @@ import {
     validateEthAddress,
     contractExists,
 } from './utils'
+import {readJSONFile} from 'maci-common'
+import {contractFilepath} from './config'
 
 import * as ethers from 'ethers'
 
@@ -35,7 +37,6 @@ const configureSubparser = (subparsers: any) => {
     parser.addArgument(
         ['-x', '--contract'],
         {
-            required: true,
             type: 'string',
             help: 'The MACI contract address',
         }
@@ -54,7 +55,6 @@ const configureSubparser = (subparsers: any) => {
     parser.addArgument(
         ['-q', '--ppt'],
         {
-            required: true,
             type: 'string',
             help: 'The PollProcessorAndTallyer contract address',
         }
@@ -64,23 +64,42 @@ const configureSubparser = (subparsers: any) => {
 const verify = async (args: any) => {
     const signer = await getDefaultSigner()
 
-    if (!validateEthAddress(args.ppt)) {
-        console.error('Error: invalid PollProcessorAndTallyer contract address')
+    const pollId = Number(args.poll_id)
+
+    // check existence of MACI and ppt contract addresses
+    let contractAddrs = readJSONFile(contractFilepath)
+    if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
+        console.error('Error: MACI contract address is empty') 
         return 1
+    }
+    if ((!contractAddrs||!contractAddrs["PollProcessorAndTally-"+pollId]) && !args.ppt) {
+        console.error('Error: PollProcessorAndTally contract address is empty') 
+        return 1
+    }
+
+    const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
+    const pptAddress = args.ppt ? args.ppt: contractAddrs["PollProcessorAndTally-"+pollId]
+
+    // MACI contract
+    if (!validateEthAddress(maciAddress)) {
+        console.error('Error: invalid MACI contract address')
+        return
+    }
+
+    // PollProcessorAndTallyer contract
+    if (!validateEthAddress(pptAddress)) {
+        console.error('Error: invalid PollProcessorAndTallyer contract address')
+        return
     }
 
     const [ maciContractAbi ] = parseArtifact('MACI')
     const [ pollContractAbi ] = parseArtifact('Poll')
     const [ pptContractAbi ] = parseArtifact('PollProcessorAndTallyer')
 
-    const pptAddress = args.ppt
     if (! (await contractExists(signer.provider, pptAddress))) {
         console.error(`Error: there is no contract deployed at ${pptAddress}.`)
         return 1
     }
-
-    const maciAddress = args.contract
-    const pollId = Number(args.poll_id)
 
 	const maciContract = new ethers.Contract(
         maciAddress,

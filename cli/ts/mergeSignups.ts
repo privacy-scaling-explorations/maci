@@ -8,12 +8,15 @@ import {
     contractExists,
     currentBlockTimestamp,
 } from './utils'
+import {readJSONFile} from 'maci-common'
 
 import * as ethers from 'ethers'
 
 import {
     DEFAULT_SR_QUEUE_OPS,
 } from './defaults'
+
+import {contractFilepath} from './config'
 
 const configureSubparser = (subparsers: any) => {
     const parser = subparsers.addParser(
@@ -24,7 +27,6 @@ const configureSubparser = (subparsers: any) => {
     parser.addArgument(
         ['-x', '--contract'],
         {
-            required: true,
             type: 'string',
             help: 'The MACI contract address',
         }
@@ -52,14 +54,19 @@ const configureSubparser = (subparsers: any) => {
 }
 
 const mergeSignups = async (args: any) => {
+    let contractAddrs = readJSONFile(contractFilepath)
+    if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
+        console.error('Error: MACI contract address is empty') 
+        return 1
+    }
+    const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
+
     // MACI contract
-    if (!validateEthAddress(args.contract)) {
+    if (!validateEthAddress(maciAddress)) {
         console.error('Error: invalid MACI contract address')
         return 1
     }
-
-    const maciAddress = args.contract
-
+    
     const signer = await getDefaultSigner()
 
     if (! (await contractExists(signer.provider, maciAddress))) {

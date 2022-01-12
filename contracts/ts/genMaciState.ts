@@ -28,6 +28,7 @@ const genMaciStateFromContract = async (
     address: string,
     coordinatorKeypair: Keypair,
     pollId: number,
+    fromBlock: number = 0,
 ): Promise<MaciState> => {
     pollId = Number(pollId)
     // Verify and sort pollIds
@@ -54,7 +55,7 @@ const genMaciStateFromContract = async (
     // Fetch event logs
     const initLogs = await provider.getLogs({
         ...maciContract.filters.Init(),
-        fromBlock: 0,
+        fromBlock: fromBlock,
     })
 
     // init() should only be called up to 1 time
@@ -65,22 +66,22 @@ const genMaciStateFromContract = async (
 
     const signUpLogs = await provider.getLogs({
         ...maciContract.filters.SignUp(),
-        fromBlock: 0,
+        fromBlock: fromBlock,
     })
 
     const mergeStateAqSubRootsLogs = await provider.getLogs({
         ...maciContract.filters.MergeStateAqSubRoots(),
-        fromBlock: 0,
+        fromBlock: fromBlock,
     })
 
     const mergeStateAqLogs = await provider.getLogs({
         ...maciContract.filters.MergeStateAq(),
-        fromBlock: 0,
+        fromBlock: fromBlock,
     })
 
     const deployPollLogs = await provider.getLogs({
         ...maciContract.filters.DeployPoll(),
-        fromBlock: 0,
+        fromBlock: fromBlock,
     })
 
     let messageAqFactoryAddress
@@ -232,27 +233,27 @@ const genMaciStateFromContract = async (
 
     const publishMessageLogs = await provider.getLogs({
         ...pollContract.filters.PublishMessage(),
-        fromBlock: 0,
+        fromBlock: fromBlock,
     })
 
     const mergeMaciStateAqSubRootsLogs = await provider.getLogs({
         ...pollContract.filters.MergeMaciStateAqSubRoots(),
-        fromBlock: 0,
+        fromBlock: fromBlock,
     })
 
     const mergeMaciStateAqLogs = await provider.getLogs({
         ...pollContract.filters.MergeMaciStateAq(),
-        fromBlock: 0,
+        fromBlock: fromBlock,
     })
 
     const mergeMessageAqSubRootsLogs = await provider.getLogs({
         ...pollContract.filters.MergeMessageAqSubRoots(),
-        fromBlock: 0,
+        fromBlock: fromBlock,
     })
 
     const mergeMessageAqLogs = await provider.getLogs({
         ...pollContract.filters.MergeMessageAq(),
-        fromBlock: 0,
+        fromBlock: fromBlock,
     })
 
     for (const log of publishMessageLogs) {
@@ -436,3 +437,4 @@ const sortActions = (actions: Action[]) => {
 }
 
 export { genMaciStateFromContract }
+
