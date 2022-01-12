@@ -15,9 +15,4 @@ contract SignUpToken is ERC721, Ownable {
         _mint(to, curTokenId);
         curTokenId += 1;
     }
-
-    // How many tokens are allocated
-    function getCurrentSupply() public view returns (uint256) {
-        return curTokenId;
-    }
 }
