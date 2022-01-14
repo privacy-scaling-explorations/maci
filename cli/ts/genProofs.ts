@@ -36,7 +36,10 @@ import {
     validateEthAddress,
     contractExists,
     genMaciStateFromContract,
+    readJSONFile,
 } from './utils'
+
+import {contractFilepath} from './config'
 
 import {
     DEFAULT_ETH_PROVIDER,
@@ -79,7 +82,6 @@ const configureSubparser = (subparsers: any) => {
     parser.addArgument(
         ['-x', '--contract'],
         {
-            required: true,
             type: 'string',
             help: 'The MACI contract address',
         }
@@ -137,18 +139,23 @@ const genProofs = async (args: any) => {
         zerothLeaf = StateLeaf.genRandomLeaf()
     }
 
-    // MACI contract
-    if (!validateEthAddress(args.contract)) {
-        console.error('Error: invalid MACI contract address')
-        return
-    }
 
     // Ethereum provider
-    const ethProvider = args.eth_provider ? args.eth_provider : DEFAULT_ETH_PROVIDER
+    const ethProvider = args.eth_provider || process.env.ETH_PROVIDER || DEFAULT_ETH_PROVIDER
 
     const provider = new ethers.providers.JsonRpcProvider(ethProvider)
 
-    const maciAddress = args.contract
+     let contractAddrs = readJSONFile(contractFilepath)
+     if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
+         console.error('Error: MACI contract address is empty')
+         return 
+     }
+     const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
+
+    if (!validateEthAddress(maciAddress)) {
+        console.error('Error: invalid MACI contract address')
+        return
+    }
 
     if (! (await contractExists(provider, maciAddress))) {
         console.error('Error: there is no contract deployed at the specified address')

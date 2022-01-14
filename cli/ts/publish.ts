@@ -21,12 +21,16 @@ import {
     validateSaltFormat,
     contractExists,
     checkDeployerProviderConnection,
+    readJSONFile,
 } from './utils'
+
+import {contractFilepath} from './config'
 
 import * as ethers from 'ethers'
 
 import {
     DEFAULT_ETH_PROVIDER,
+    DEFAULT_ETH_SK,
 } from './defaults'
 
 const DEFAULT_SALT = genRandomSalt()
@@ -58,7 +62,6 @@ const configureSubparser = (subparsers: any) => {
     parser.addArgument(
         ['-x', '--contract'],
         {
-            required: true,
             type: 'string',
             help: 'The MACI contract address',
         }
@@ -83,7 +86,7 @@ const configureSubparser = (subparsers: any) => {
         }
     )
 
-    const ethPrivkeyGroup = parser.addMutuallyExclusiveGroup({ required: true })
+    const ethPrivkeyGroup = parser.addMutuallyExclusiveGroup({ required: false})
 
     ethPrivkeyGroup.addArgument(
         ['-dp', '--prompt-for-eth-privkey'],
@@ -161,16 +164,21 @@ const publish = async (args: any) => {
 
     const userMaciPubKey = PubKey.unserialize(args.pubkey)
 
+     let contractAddrs = readJSONFile(contractFilepath)
+     if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
+         console.error('Error: MACI contract address is empty')
+         return 
+     }
+     const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
+
     // MACI contract
-    if (!validateEthAddress(args.contract)) {
+    if (!validateEthAddress(maciAddress)) {
         console.error('Error: invalid MACI contract address')
         return
     }
 
-    const maciAddress = args.contract
-
     // Ethereum provider
-    const ethProvider = args.eth_provider ? args.eth_provider : DEFAULT_ETH_PROVIDER
+    const ethProvider = args.eth_provider || process.env.ETH_PROVIDER || DEFAULT_ETH_PROVIDER
 
     let ethSk
     // The deployer's Ethereum private key
@@ -179,7 +187,7 @@ const publish = async (args: any) => {
     if (args.prompt_for_eth_privkey) {
         ethSk = await promptPwd('Your Ethereum private key')
     } else {
-        ethSk = args.eth_privkey
+        ethSk = args.eth_privkey ? args.eth_privkey : DEFAULT_ETH_SK
     }
 
     if (ethSk.startsWith('0x')) {
