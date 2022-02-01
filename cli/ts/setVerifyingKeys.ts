@@ -301,4 +301,5 @@ const compareVks = (vk: VerifyingKey, vkOnChain: any): boolean => {
 export {
     setVerifyingKeys,
     configureSubparser,
+    compareVks,
 }
