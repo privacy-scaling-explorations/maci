@@ -1,9 +1,9 @@
 include "./decrypt.circom";
-include "./ecdh.circom"
+include "./ecdh.circom";
 include "./hasherPoseidon.circom";
-include "./trees/incrementalMerkleTree.circom"
-include "./trees/incrementalQuinTree.circom"
-include "./publickey_derivation.circom"
+include "./trees/incrementalMerkleTree.circom";
+include "./trees/incrementalQuinTree.circom";
+include "./publickey_derivation.circom";
 include "./verify_signature.circom";
 
 include "../node_modules/circomlib/circuits/comparators.circom";
