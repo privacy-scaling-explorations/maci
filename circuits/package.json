@@ -48,7 +48,7 @@
         "circomlib": "0.5.1",
         "n-readlines": "^1.0.1",
         "shelljs": "^0.8.3",
-        "snarkjs": "0.3.59"
+        "snarkjs": "0.4.10"
     },
     "devDependencies": {
         "@types/jest": "^24.0.25",
