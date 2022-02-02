@@ -1,4 +1,4 @@
-include "./trees/incrementalMerkleTree.circom"
+include "./trees/incrementalMerkleTree.circom";
 include "./updateStateTree.circom";
 include "../node_modules/circomlib/circuits/mux1.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
