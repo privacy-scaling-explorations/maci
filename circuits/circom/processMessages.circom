@@ -279,6 +279,8 @@ template ProcessMessages(
             processors[i].ballot[j] <== currentBallots[i][j];
         }
 
+        stateLeafPathIndices.in <== commands[i].stateIndex
+
         for (var j = 0; j < stateTreeDepth; j ++) {
             stateRootQip.path_index[j] <== stateLeafPathIndices.out[j];
 
@@ -293,7 +295,7 @@ template ProcessMessages(
         }
 
         stateRootQip.leaf <== stateRootHasher.hash;
-        stateLeafQip.root === statetRoots[i + 1];
+        stateLeafQip.root === stateRoots[i + 1];
         processors[i].currentStateRoot <== stateRoots[i + 1];
 
         processors[i].currentVoteWeight <== currentVoteWeights[i];
