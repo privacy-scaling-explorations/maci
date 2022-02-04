@@ -1,3 +1,4 @@
+pragma circom 2.0.0;
 include "../trees/incrementalMerkleTree.circom"
 
-component main = LeafExists(4);
+component main {public [leaf, root]} = LeafExists(4);

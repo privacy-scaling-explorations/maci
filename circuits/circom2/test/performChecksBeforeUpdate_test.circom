@@ -1,3 +1,4 @@
+pragma circom 2.0.0;
 include "../updateStateTree.circom"
 
 // message_length
