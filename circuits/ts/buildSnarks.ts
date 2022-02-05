@@ -119,6 +119,14 @@ const main = () => {
         }
     )
 
+    parser.addArgument(
+        ['-cc', '--circom-compiler'],
+        {
+            help: 'The path to the circom2 bin',
+            required: false
+        }
+    )
+
     const args = parser.parseArgs()
     const vkOut = args.vk_out
     const solOut = args.sol_out
@@ -132,6 +140,7 @@ const main = () => {
     const verifierName = args.verifier_name
     const paramsOut = args.params_out
     const pkOut = args.pk_out
+    const circom2Bin = args.circom_compiler
 
     // Check if the input circom file exists
     const inputFileExists = fileExists(inputFile)
@@ -163,7 +172,12 @@ const main = () => {
         console.log(`Compiling ${inputFile}...`)
         // Compile the .circom file
         //shell.exec(`node ./node_modules/circom/cli.js ${inputFile} -r ${circuitOut} -s ${symOut} -w ${wasmOut}`)
-        shell.exec(`node --stack-size=1073741 ./node_modules/circom/cli.js ${inputFile} -r ${circuitOut} -s ${symOut} -c ${cOut}`)
+        if (circom2Bin) {
+            console.log(`Using circom2 compiler at ${circom2Bin}...`)
+            shell.exec(`${circom2Bin} --c --json --r1cs --sym --wasm --wat --output ${paramsOut} ${inputFile}`)
+        } else {
+            shell.exec(`node --stack-size=1073741 ./node_modules/circom/cli.js ${inputFile} -r ${circuitOut} -s ${symOut} -c ${cOut}`)
+        }
         console.log('Generated', circuitOut)
 
         // Compile the .c file
