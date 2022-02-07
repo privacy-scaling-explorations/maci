@@ -261,7 +261,7 @@ const genPrivKey = (): PrivKey => {
 /*
  * @return A BabyJub-compatible salt.
  */
-const genRandomSalt = (): PrivKey=> {
+const genRandomSalt = (): PrivKey => {
 
     return genRandomBabyJubValue()
 }

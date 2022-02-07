@@ -182,7 +182,7 @@ const publish = async (args: any) => {
     const stateIndex = BigInt(args.state_index)
     if (stateIndex < 0) {
         console.error('Error: the state index must be greater than 0')
-        return
+        return 0
     }
 
     // Vote option index
@@ -190,7 +190,7 @@ const publish = async (args: any) => {
 
     if (voteOptionIndex < 0) {
         console.error('Error: the vote option index should be 0 or greater')
-        return
+        return 0
     }
 
     // The nonce
@@ -198,7 +198,7 @@ const publish = async (args: any) => {
 
     if (nonce < 0) {
         console.error('Error: the nonce should be 0 or greater')
-        return
+        return 0
     }
 
     // The salt
@@ -206,14 +206,14 @@ const publish = async (args: any) => {
     if (args.salt) {
         if (!validateSaltFormat(args.salt)) {
             console.error('Error: the salt should be a 32-byte hexadecimal string')
-            return
+            return 0
         }
 
         salt = BigInt(args.salt)
 
         if (!validateSaltSize(args.salt)) {
             console.error('Error: the salt should less than the BabyJub field size')
-            return
+            return 0
         }
     } else {
         salt = DEFAULT_SALT

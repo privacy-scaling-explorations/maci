@@ -272,8 +272,8 @@ class PubKey {
     public serialize = (): string => {
         // Blank leaves have pubkey [0, 0], which packPubKey does not support
         if (
-            BigInt(this.rawPubKey[0]) === BigInt(0) && 
-            BigInt(this.rawPubKey[1]) === BigInt(0)
+            BigInt(`${this.rawPubKey[0]}`) === BigInt(0) && 
+            BigInt(`${this.rawPubKey[1]}`) === BigInt(0)
         ) {
             return SERIALIZED_PUB_KEY_PREFIX + 'z'
         }
@@ -714,11 +714,11 @@ class Command implements ICommand {
      */
     public asArray = (): BigInt[] => {
         const p =
-            BigInt(this.stateIndex) +
-            (BigInt(this.voteOptionIndex) << BigInt(50)) +
-            (BigInt(this.newVoteWeight) << BigInt(100)) +
-            (BigInt(this.nonce) << BigInt(150)) +
-            (BigInt(this.pollId) << BigInt(200))
+            BigInt(`${this.stateIndex}`) +
+            (BigInt(`${this.voteOptionIndex}`) << BigInt(50)) +
+            (BigInt(`${this.newVoteWeight}`) << BigInt(100)) +
+            (BigInt(`${this.nonce}`) << BigInt(150)) +
+            (BigInt(`${this.pollId}`) << BigInt(200))
 
         const a = [
             p,
@@ -820,7 +820,7 @@ class Command implements ICommand {
 
         const decrypted = decrypt(message.data, sharedKey, BigInt(0), 7)
 
-        const p = BigInt(decrypted[0])
+        const p = BigInt(`${decrypted[0]}`)
 
         // Returns the value of the 50 bits at position `pos` in `val`
         // create 50 '1' bits
@@ -833,7 +833,7 @@ class Command implements ICommand {
                     (
                         (BigInt(1) << BigInt(50)) - BigInt(1)
                     ) << BigInt(pos)
-                ) & BigInt(val)
+                ) & BigInt(`${val}`)
             ) >> BigInt(pos)
         }
 

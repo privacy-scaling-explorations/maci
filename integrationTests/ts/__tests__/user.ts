@@ -23,7 +23,7 @@ export class UserCommand {
     ) {
         this.keypair = _keypair
         this.votes = _votes
-        this.voiceCreditBalance = BigInt(_voiceCreditBalance)
+        this.voiceCreditBalance = _voiceCreditBalance
     }
 
     public changeKeypair(): PrivKey {

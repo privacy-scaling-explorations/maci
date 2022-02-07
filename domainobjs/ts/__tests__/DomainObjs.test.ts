@@ -28,7 +28,7 @@ describe('Domain objects', () => {
     const random50bitBigInt = (): BigInt => {
         return (
             (BigInt(1) << BigInt(50)) - BigInt(1)
-        ) & BigInt(genRandomSalt())
+        ) & BigInt(`${genRandomSalt()}`)
     }
 
     const command: Command = new Command(
@@ -119,7 +119,7 @@ describe('Domain objects', () => {
             expect(sk1.rawPrivKey.toString()).toEqual(BigInt(d).toString())
 
             const c = PrivKey.unserialize(s)
-            expect(sk1.rawPrivKey.toString()).toEqual(BigInt(c.rawPrivKey).toString())
+            expect(sk1.rawPrivKey.toString()).toEqual(BigInt(`${c.rawPrivKey}`).toString())
         })
 
         it('PrivKey.isValidSerializedPrivKey() should work correctly', () => {

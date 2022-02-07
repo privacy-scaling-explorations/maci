@@ -124,7 +124,7 @@ const checkVerifyingKey = async (args: any) => {
     const signer = await getDefaultSigner()
     if (!await contractExists(signer.provider, maciAddress)) {
         console.error('Error: there is no contract deployed at the specified address')
-        return
+        return {}
     }
 
     const [ maciContractAbi ] = parseArtifact('MACI')
