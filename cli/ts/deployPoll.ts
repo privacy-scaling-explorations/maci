@@ -155,7 +155,7 @@ const deployPoll = async (args: any) => {
 
     if (!PubKey.isValidSerializedPubKey(coordinatorPubkey)) {
         console.error('Error: invalid MACI public key')
-        return
+        return {}
     }
 
     const unserialisedPubkey = PubKey.unserialize(coordinatorPubkey)

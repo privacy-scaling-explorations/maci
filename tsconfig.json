@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "experimentalDecorators": true,
-        "alwaysStrict": true,
+        "alwaysStrict": false,
         "allowJs": true,
         "noImplicitAny": false,
         "forceConsistentCasingInFileNames": true,
@@ -10,7 +10,7 @@
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
         "sourceMap": true,
-        "strict": true,
+        "strict": false,
         "outDir": "./build"
     },
     "exclude": [

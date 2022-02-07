@@ -587,18 +587,18 @@ class Poll {
         )
         const { command, signature } = Command.decrypt(message, sharedKey)
 
-        const stateLeafIndex = BigInt(command.stateIndex)
+        const stateLeafIndex = BigInt(`${command.stateIndex}`)
 
         // If the state tree index in the command is invalid, do nothing
         if (
             stateLeafIndex >= BigInt(this.ballots.length) ||
             stateLeafIndex < BigInt(1)
         ) {
-            return
+            return {}
         }
 
         if (stateLeafIndex >= BigInt(this.stateTree.nextIndex)) {
-            return
+            return {}
         }
 
         // The user to update (or not)
@@ -610,27 +610,27 @@ class Poll {
         // If the signature is invalid, do nothing
         if (!command.verifySignature(signature, stateLeaf.pubKey)) {
             //console.log('Invalid signature. pubkeyx =', stateLeaf.pubKey.rawPubKey[0], 'sig', signature)
-            return
+            return {}
         }
 
         //console.log('Valid signature. pubkeyx =', stateLeaf.pubKey.rawPubKey[0], 'sig', signature)
 
         // If the nonce is invalid, do nothing
-        if (command.nonce !== BigInt(ballot.nonce) + BigInt(1)) {
-            return
+        if (command.nonce !== BigInt(`${ballot.nonce}`) + BigInt(1)) {
+            return {}
         }
 
         const prevSpentCred = ballot.votes[Number(command.voteOptionIndex)]
 
         const voiceCreditsLeft =
-            BigInt(stateLeaf.voiceCreditBalance) +
-            (BigInt(prevSpentCred) * BigInt(prevSpentCred)) -
-            (BigInt(command.newVoteWeight) * BigInt(command.newVoteWeight))
+            BigInt(`${stateLeaf.voiceCreditBalance}`) +
+            (BigInt(`${prevSpentCred}`) * BigInt(`${prevSpentCred}`)) -
+            (BigInt(`${command.newVoteWeight}`) * BigInt(`${command.newVoteWeight}`))
 
 
         // If the remaining voice credits is insufficient, do nothing
         if (voiceCreditsLeft < BigInt(0)) {
-            return
+            return {}
         }
 
         // If the vote option index is invalid, do nothing
@@ -638,7 +638,7 @@ class Poll {
             command.voteOptionIndex < BigInt(0) ||
             command.voteOptionIndex >= BigInt(this.maxValues.maxVoteOptions)
         ) {
-            return
+            return {}
         }
 
         // Deep-copy the state leaf and update its attributes
@@ -648,7 +648,7 @@ class Poll {
 
         // Deep-copy the ballot and update its attributes
         const newBallot = ballot.copy()
-        newBallot.nonce = BigInt(newBallot.nonce) + BigInt(1)
+        newBallot.nonce = BigInt(`${newBallot.nonce}`) + BigInt(1)
         newBallot.votes[Number(command.voteOptionIndex)] =
             command.newVoteWeight
 
@@ -769,15 +769,15 @@ class Poll {
             ballots.push(this.ballots[i])
 
             for (let j = 0; j < this.maxValues.maxVoteOptions; j++) {
-                const v = BigInt(this.ballots[i].votes[j])
+                const v = BigInt(`${this.ballots[i].votes[j]}`)
 
-                this.results[j] = BigInt(this.results[j]) + v
+                this.results[j] = BigInt(`${this.results[j]}`) + v
 
                 this.perVOSpentVoiceCredits[j] =
-                    BigInt(this.perVOSpentVoiceCredits[j]) + (BigInt(v) * BigInt(v))
+                    BigInt(`${this.perVOSpentVoiceCredits[j]}`) + (BigInt(v) * BigInt(v))
 
                 this.totalSpentVoiceCredits =
-                    BigInt(this.totalSpentVoiceCredits) + BigInt(v) * BigInt(v)
+                    BigInt(`${this.totalSpentVoiceCredits}`) + BigInt(v) * BigInt(v)
             }
         }
 
@@ -904,7 +904,7 @@ class Poll {
                 break
             }
             for (let j = 0; j < this.results.length; j ++) {
-                const v = BigInt(this.ballots[i].votes[j])
+                const v = BigInt(`${this.ballots[i].votes[j]}`)
                 subtotal = BigInt(subtotal) + v * v
             }
         }
@@ -937,8 +937,8 @@ class Poll {
                 break
             }
             for (let j = 0; j < this.results.length; j ++) {
-                const v = BigInt(this.ballots[i].votes[j])
-                leaves[j] = BigInt(leaves[j]) + v * v
+                const v = BigInt(`${this.ballots[i].votes[j]}`)
+                leaves[j] = BigInt(`${leaves[j]}`) + v * v
             }
         }
 
@@ -1209,7 +1209,7 @@ class MaciState {
     public static unpackTallyVotesSmallVals = (
         packedVals: BigInt,
     ) => {
-        let asBin = BigInt(packedVals).toString(2)
+        let asBin = (packedVals).toString(2)
         assert(asBin.length <= 100)
         while (asBin.length < 100) {
             asBin = '0' + asBin
@@ -1226,8 +1226,8 @@ class MaciState {
         batchStartIndex: number,
         batchEndIndex: number,
     ) => {
-        return BigInt(maxVoteOptions) +
-            (BigInt(numUsers) << BigInt(50)) +
+        return BigInt(`${maxVoteOptions}`) +
+            (BigInt(`${numUsers}`) << BigInt(50)) +
             (BigInt(batchStartIndex) << BigInt(100)) +
             (BigInt(batchEndIndex) << BigInt(150))
     }
@@ -1235,7 +1235,7 @@ class MaciState {
     public static unpackProcessMessageSmallVals = (
         packedVals: BigInt,
     ) => {
-        let asBin = BigInt(packedVals).toString(2)
+        let asBin = (packedVals).toString(2)
         assert(asBin.length <= 200)
         while (asBin.length < 200) {
             asBin = '0' + asBin
@@ -1292,7 +1292,7 @@ const genTallyResultCommitment = (
 
     const tree = new IncrementalQuinTree(depth, BigInt(0), 5, hash5)
     for (const result of results) {
-        tree.insert(BigInt(result))
+        tree.insert(result)
     }
     return hashLeftRight(tree.root, salt)
 }

@@ -83,13 +83,13 @@ const verify = async (args: any) => {
     // MACI contract
     if (!validateEthAddress(maciAddress)) {
         console.error('Error: invalid MACI contract address')
-        return
+        return 0
     }
 
     // PollProcessorAndTallyer contract
     if (!validateEthAddress(pptAddress)) {
         console.error('Error: invalid PollProcessorAndTallyer contract address')
-        return
+        return 0
     }
 
     const [ maciContractAbi ] = parseArtifact('MACI')
@@ -134,7 +134,7 @@ const verify = async (args: any) => {
         contents = fs.readFileSync(args.tally_file, { encoding: 'utf8' })
     } catch {
         console.error('Error: unable to open ', args.tally_file)
-        return
+        return 0
     }
 
     // Parse the tally file
@@ -143,7 +143,7 @@ const verify = async (args: any) => {
         data = JSON.parse(contents)
     } catch {
         console.error('Error: unable to parse ', args.tally_file)
-        return
+        return 0
     }
 
     console.log(data)
@@ -154,7 +154,7 @@ const verify = async (args: any) => {
 
     if (!validResultsCommitment) {
         console.error('Error: invalid results commitment format')
-        return
+        return 0
     }
 
     // Ensure that the lengths of data.results.tally and

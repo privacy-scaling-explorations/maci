@@ -160,7 +160,6 @@ class AccQueue {
         assert(this.numLeaves < this.hashLength ** this.MAX_DEPTH)
 
         // Ensure that _value is a BigInt
-        _leaf = BigInt(_leaf)
         this._enqueue(_leaf, 0)
 
         const leafIndex = this.numLeaves
