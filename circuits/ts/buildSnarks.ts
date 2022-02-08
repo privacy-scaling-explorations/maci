@@ -174,7 +174,7 @@ const main = () => {
         //shell.exec(`node ./node_modules/circom/cli.js ${inputFile} -r ${circuitOut} -s ${symOut} -w ${wasmOut}`)
         if (circom2Bin) {
             console.log(`Using circom2 compiler at ${circom2Bin}...`)
-            shell.exec(`${circom2Bin} --c --json --r1cs --sym --wasm --wat --output ${paramsOut} ${inputFile}`)
+            shell.exec(`${circom2Bin} --c --json --r1cs --sym --wasm --wat --output ./params ${inputFile}`)
         } else {
             shell.exec(`node --stack-size=1073741 ./node_modules/circom/cli.js ${inputFile} -r ${circuitOut} -s ${symOut} -c ${cOut}`)
         }
