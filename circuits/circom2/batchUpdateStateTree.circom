@@ -22,14 +22,20 @@ template BatchUpdateStateTree(
     signal input coordinator_public_key[2];
 
     var MESSAGE_LENGTH = 11;
+    signal input message[batch_size][MESSAGE_LENGTH];
 
     //  The vote option index's weight, which is an unhashed value
+    signal input vote_options_leaf_raw[batch_size];
 
     // The vote option tree root
+    signal input vote_options_tree_root[batch_size];
+    signal input vote_options_tree_path_elements[batch_size][vote_options_tree_depth][4];
+    signal input vote_options_tree_path_index[batch_size][vote_options_tree_depth];
     signal input vote_options_max_leaf_index;
 
     // Message tree
     signal input msg_tree_root;
+    signal input msg_tree_path_elements[batch_size][message_tree_depth][1];
     signal input msg_tree_batch_start_index;
     signal input msg_tree_batch_end_index;
     signal message_indices[batch_size];
@@ -65,17 +71,25 @@ template BatchUpdateStateTree(
     }
 
     // The random leaf
+    signal input random_leaf;
+    signal input random_leaf_path_elements[state_tree_depth][1];
     component random_leaf_path_index = Num2Bits(state_tree_depth);
     random_leaf_path_index.in <== 0;
 
     // The root after we insert the random leaf. This is the final root after
     // all commands have been processed.
+    signal input random_leaf_root;
 
     // State tree
     var state_tree_data_length = 5;
     signal input state_tree_max_leaf_index;
+    signal input state_tree_root[batch_size];
+    signal input state_tree_path_elements[batch_size][state_tree_depth][1];
+    signal input state_tree_path_index[batch_size][state_tree_depth];
+    signal input state_tree_data_raw[batch_size][state_tree_data_length];
 
     // Shared keys
+    signal input ecdh_private_key;
     signal input ecdh_public_key[batch_size][2];
 
     component new_state_tree[batch_size];

@@ -329,7 +329,7 @@ template UpdateStateTree(
     }
     perform_checks_before_update.msg_tree_root <== msg_tree_root;
     for (var i = 0; i < message_tree_depth; i++) {
-        perform_checks_before_update.msg_tree_path_elements[i] <== msg_tree_path_elements[i];
+        perform_checks_before_update.msg_tree_path_elements[i][0] <== msg_tree_path_elements[i][0];
         perform_checks_before_update.msg_tree_path_index[i] <== msg_tree_path_index[i];
     }
 
