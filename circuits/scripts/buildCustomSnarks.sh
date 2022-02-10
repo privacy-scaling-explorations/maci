@@ -55,7 +55,7 @@ mkdir -p params
 
 # Write custom circuit files
 echo -e 'include "../batchUpdateStateTree.circom";\n' >> $bcircuitdir
-echo "component main = BatchUpdateStateTree($std, $mtd, $votd, $bs);" >> $bcircuitdir
+echo "component main {public [coordinator_public_key, vote_options_max_leaf_index, msg_tree_root, state_tree_max_leaf_index, ecdh_public_key]} = BatchUpdateStateTree($std, $mtd, $votd, $bs);" >> $bcircuitdir
 
 echo -e 'include "../quadVoteTally.circom";\n' >> $qcircuitdir
 echo "component main = QuadVoteTally($std, $istd, $votd);" >> $qcircuitdir
@@ -63,11 +63,13 @@ echo "component main = QuadVoteTally($std, $istd, $votd);" >> $qcircuitdir
 echo "Building batchUpdateStateTree_custom"
 echo "Building quadVoteTally_custom"
 
-bcompile="NODE_OPTIONS=--max-old-space-size=16384 node --stack-size=1073741 build/buildSnarks.js -i $bcircuitdir -j params/batchUstCustom.r1cs -c params/batchUstCustom.c -y params/batchUstCustom.sym -p params/batchUstPkCustom.json -v params/batchUstVkCustom.json -s params/BatchUpdateStateTreeVerifierCustom.sol -vs BatchUpdateStateTreeVerifierCustom -pr params/batchUstCustom.params -w params/batchUstCustom -a params/batchUstCustom.wasm"
-qcompile="NODE_OPTIONS=--max-old-space-size=16384 node --stack-size=1073741 build/buildSnarks.js -i $qcircuitdir -j params/qvtCircuitCustom.r1cs -c params/qvtCustom.c -y params/qvtCustom.sym -p params/qvtPkCustom.bin -v params/qvtVkCustom.json -s params/QuadVoteTallyVerifierCustom.sol -vs QuadVoteTallyVerifierCustom -pr params/qvtCustom.params -w params/qvtCustom -a params/qvtCustom.wasm"
+bcompile="NODE_OPTIONS=--max-old-space-size=16384 node --stack-size=1073741 build/buildSnarks.js -i $bcircuitdir -j params/batchUpdateStateTree_custom.r1cs -c params/batchUpdateStateTree_custom_cpp -y params/batchUpdateStateTree_custom.sym -p params/batchUpdateStateTree_custom.json -v params/batchUpdateStateTree_custom.json -s params/BatchUpdateStateTreeVerifierCustom.sol -vs BatchUpdateStateTreeVerifierCustom -pr params/batchUpdateStateTree_custom.params -w params/batchUpdateStateTree_custom -a params/batchUpdateStateTree_custom.wasm"
+qcompile="NODE_OPTIONS=--max-old-space-size=16384 node --stack-size=1073741 build/buildSnarks.js -i $qcircuitdir -j params/quadVoteTally_custom.r1cs -c params/quadVoteTally_custom_cpp -y params/quadVoteTally_custom.sym -p params/quadVoteTally_custom.bin -v params/quadVoteTally_custom.json -s params/QuadVoteTallyVerifierCustom.sol -vs QuadVoteTallyVerifierCustom -pr params/quadVoteTally_custom.params -w params/quadVoteTally_custom -a params/quadVoteTally_custom.wasm"
 
 if [ -z "$circom_path" ]
 then
+    bcompile="NODE_OPTIONS=--max-old-space-size=16384 node --stack-size=1073741 build/buildSnarks.js -i $bcircuitdir -j params/batchUstCustom.r1cs -c params/batchUstCustom.c -y params/batchUstCustom.sym -p params/batchUstPkCustom.json -v params/batchUstVkCustom.json -s params/BatchUpdateStateTreeVerifierCustom.sol -vs BatchUpdateStateTreeVerifierCustom -pr params/batchUstCustom.params -w params/batchUstCustom -a params/batchUstCustom.wasm"
+    qcompile="NODE_OPTIONS=--max-old-space-size=16384 node --stack-size=1073741 build/buildSnarks.js -i $qcircuitdir -j params/qvtCircuitCustom.r1cs -c params/qvtCustom.c -y params/qvtCustom.sym -p params/qvtPkCustom.bin -v params/qvtVkCustom.json -s params/QuadVoteTallyVerifierCustom.sol -vs QuadVoteTallyVerifierCustom -pr params/qvtCustom.params -w params/qvtCustom -a params/qvtCustom.wasm"
     eval "$bcompile"
     eval "$qcompile"
 else

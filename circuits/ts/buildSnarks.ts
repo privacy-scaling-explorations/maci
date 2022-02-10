@@ -174,24 +174,29 @@ const main = () => {
         //shell.exec(`node ./node_modules/circom/cli.js ${inputFile} -r ${circuitOut} -s ${symOut} -w ${wasmOut}`)
         if (circom2Bin) {
             console.log(`Using circom2 compiler at ${circom2Bin}...`)
-            shell.exec(`${circom2Bin} --c --json --r1cs --sym --wasm --wat --output ./params ${inputFile}`)
+            shell.exec(`${circom2Bin} -c --json --r1cs --sym --wasm --wat --output ./params ${inputFile}`)
         } else {
             shell.exec(`node --stack-size=1073741 ./node_modules/circom/cli.js ${inputFile} -r ${circuitOut} -s ${symOut} -c ${cOut}`)
         }
         console.log('Generated', circuitOut)
 
         // Compile the .c file
-        const srcs = 
-            path.join(path.resolve(dirpath), 'main.cpp') + ' ' +
-            path.join(path.resolve(dirpath), 'calcwit.cpp') + ' ' +
-            path.join(path.resolve(dirpath), 'utils.cpp') + ' ' +
-            path.join(path.resolve(dirpath), 'fr.cpp') + ' ' +
-            path.join(path.resolve(dirpath), 'fr.o')
-        const compileCmd = `g++ -pthread ${srcs} ` +
-            `${cOut} -o ${witnessGenOut} ` + 
-            `-lgmp -std=c++11 -O3 -fopenmp -DSANITY_CHECK`
-        shell.exec(compileCmd, { silent: true })
-        //console.log('Generated', witnessGenOut)
+        //
+        if (circom2Bin) {
+            shell.exec(`cd ./params/batchUpdateStateTree_custom_cpp/ && make`, { silent: true })
+        } else {
+            const srcs = 
+                path.join(path.resolve(dirpath), 'main.cpp') + ' ' +
+                path.join(path.resolve(dirpath), 'calcwit.cpp') + ' ' +
+                path.join(path.resolve(dirpath), 'utils.cpp') + ' ' +
+                path.join(path.resolve(dirpath), 'fr.cpp') + ' ' +
+                path.join(path.resolve(dirpath), 'fr.o')
+            const compileCmd = `g++ -pthread ${srcs} ` +
+                `${cOut} -o ${witnessGenOut} ` + 
+                `-lgmp -std=c++11 -O3 -fopenmp -DSANITY_CHECK`
+            shell.exec(compileCmd, { silent: true })
+            //console.log('Generated', witnessGenOut)
+        }
     }
 
     const paramsFileExists = fileExists(paramsOut)
