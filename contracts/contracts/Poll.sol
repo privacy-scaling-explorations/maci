@@ -431,6 +431,7 @@ contract Poll is
         uint256 _voteOptionIndex,
         uint256 _tallyResult,
         uint256[][] memory _tallyResultProof,
+        uint256 _tallyResultSalt,
         uint256 _spentVoiceCreditsHash,
         uint256 _perVOSpentVoiceCreditsHash,
         uint256 _tallyCommitment
@@ -442,8 +443,10 @@ contract Poll is
             _tallyResultProof
         );
 
+        uint256 tallyRoot = hashLeftRight(computedRoot, _tallyResultSalt);
+
         uint256[3] memory tally;
-        tally[0] = computedRoot;
+        tally[0] = tallyRoot;
         tally[1] = _spentVoiceCreditsHash;
         tally[2] = _perVOSpentVoiceCreditsHash;
 
