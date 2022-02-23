@@ -2,6 +2,16 @@
 
 set -e
 
+rargs=4
+function checkargs {
+    if [ $# -lt $rargs ]
+    then
+        help
+        echo "Error: missing arguments" >&2
+        exit 1
+    fi
+}
+
 help() {
     echo "Builds the batchUpdateTreeSnark and QuadTallySnark with custom parameters."
     echo
@@ -11,13 +21,11 @@ help() {
     echo "s State tree depth"
     echo "m Message tree depth"
     echo "v Vote options tree depth"
-    echo "i Intermediate state tree depth ex. 2^i = Batch size"
     echo "b Batch size for update state tree"
     echo "l Set max-old-space-size for Node commands"
 }
 
 nl=16384
-
 while getopts ":h:s:m:v:i:b:l:" option; do
    case $option in
       h)
@@ -29,8 +37,6 @@ while getopts ":h:s:m:v:i:b:l:" option; do
          mtd="$OPTARG";;
       v)
          votd="$OPTARG";;
-      i)
-         istd="$OPTARG";;
       b)
          bs="$OPTARG";;
       l)
@@ -40,6 +46,11 @@ while getopts ":h:s:m:v:i:b:l:" option; do
          exit;;
    esac
 done
+
+checkargs $std $mtd $votd $bs
+
+# Intermediate state tree depth should be 2^i = Batch size
+istd=$(echo "l($bs)/l(2)" | bc -l | cut -d . -f1)
 
 cd "$(dirname "$0")"
 cd ..
