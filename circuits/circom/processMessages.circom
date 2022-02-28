@@ -253,6 +253,10 @@ template ProcessMessages(
     signal stateRoots[batchSize + 1];
     signal ballotRoots[batchSize + 1];
 
+    component stateLeafPathIndices = QuinGeneratePathIndices(stateTreeDepth);
+    component stateRootQip = QuinTreeInclusionProof(stateTreeDepth);
+    component stateRootHasher = Hasher4();
+
     stateRoots[batchSize] <== currentStateRoot;
     ballotRoots[batchSize] <== currentBallotRoot;
 
@@ -265,11 +269,10 @@ template ProcessMessages(
         processors[i].numSignUps <== numSignUps;
         processors[i].maxVoteOptions <== maxVoteOptions;
         processors[i].pollEndTimestamp <== pollEndTimestamp;
-
-        processors[i].currentStateRoot <== stateRoots[i + 1];
         processors[i].currentBallotRoot <== ballotRoots[i + 1];
 
         for (var j = 0; j < STATE_LEAF_LENGTH; j ++) {
+            stateRootHasher.in[i] <== curentStatetLeaves[i][j];
             processors[i].stateLeaf[j] <== currentStateLeaves[i][j];
         }
 
@@ -277,9 +280,13 @@ template ProcessMessages(
             processors[i].ballot[j] <== currentBallots[i][j];
         }
 
-        for (var j = 0; j < stateTreeDepth; j ++) {
-            for (var k = 0; k < TREE_ARITY - 1; k ++) {
+        stateLeafPathIndices.in <== commands[i].stateIndex
 
+        for (var j = 0; j < stateTreeDepth; j ++) {
+            stateRootQip.path_index[j] <== stateLeafPathIndices.out[j];
+
+            for (var k = 0; k < TREE_ARITY - 1; k ++) {
+                stateRootQip.path_elements[j][k] <== currentStateLeavesPathElements[j][k];
                 processors[i].stateLeafPathElements[j][k] 
                     <== currentStateLeavesPathElements[i][j][k];
 
@@ -287,6 +294,10 @@ template ProcessMessages(
                     <== currentBallotsPathElements[i][j][k];
             }
         }
+
+        stateRootQip.leaf <== stateRootHasher.hash;
+        stateLeafQip.root === stateRoots[i + 1];
+        processors[i].currentStateRoot <== stateRoots[i + 1];
 
         processors[i].currentVoteWeight <== currentVoteWeights[i];
 
