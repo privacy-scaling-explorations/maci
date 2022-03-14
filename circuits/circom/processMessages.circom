@@ -252,10 +252,10 @@ template ProcessMessages(
 
     signal stateRoots[batchSize + 1];
     signal ballotRoots[batchSize + 1];
+    component stateRootHasher[batchSize];
 
-    component stateLeafPathIndices = QuinGeneratePathIndices(stateTreeDepth);
-    component stateRootQip = QuinTreeInclusionProof(stateTreeDepth);
-    component stateRootHasher = Hasher4();
+    component stateLeafPathIndices[batchSize];
+    component stateRootQip[batchSize];
 
     stateRoots[batchSize] <== currentStateRoot;
     ballotRoots[batchSize] <== currentBallotRoot;
@@ -264,6 +264,9 @@ template ProcessMessages(
     //  Process messages in reverse order
     component processors[batchSize];
     for (var i = batchSize - 1; i >= 0; i --) {
+        stateLeafPathIndices[i] = QuinGeneratePathIndices(stateTreeDepth);
+        stateRootQip[i] = QuinTreeInclusionProof(stateTreeDepth);
+        stateRootHasher[i] = Hasher4();
         processors[i] = ProcessOne(stateTreeDepth, voteOptionTreeDepth);
 
         processors[i].numSignUps <== numSignUps;
@@ -272,7 +275,7 @@ template ProcessMessages(
         processors[i].currentBallotRoot <== ballotRoots[i + 1];
 
         for (var j = 0; j < STATE_LEAF_LENGTH; j ++) {
-            stateRootHasher.in[i] <== curentStatetLeaves[i][j];
+            stateRootHasher[i].in[j] <== currentStateLeaves[i][j];
             processors[i].stateLeaf[j] <== currentStateLeaves[i][j];
         }
 
@@ -280,13 +283,12 @@ template ProcessMessages(
             processors[i].ballot[j] <== currentBallots[i][j];
         }
 
-        stateLeafPathIndices.in <== commands[i].stateIndex
+        stateLeafPathIndices[i].in <== commands[i].stateIndex;
 
         for (var j = 0; j < stateTreeDepth; j ++) {
-            stateRootQip.path_index[j] <== stateLeafPathIndices.out[j];
+            stateRootQip[i].path_index[j] <== stateLeafPathIndices[i].out[j];
 
             for (var k = 0; k < TREE_ARITY - 1; k ++) {
-                stateRootQip.path_elements[j][k] <== currentStateLeavesPathElements[j][k];
                 processors[i].stateLeafPathElements[j][k] 
                     <== currentStateLeavesPathElements[i][j][k];
 
@@ -295,8 +297,7 @@ template ProcessMessages(
             }
         }
 
-        stateRootQip.leaf <== stateRootHasher.hash;
-        stateLeafQip.root === stateRoots[i + 1];
+        stateRootQip[i].leaf <== stateRootHasher[i].hash;
         processors[i].currentStateRoot <== stateRoots[i + 1];
 
         processors[i].currentVoteWeight <== currentVoteWeights[i];
