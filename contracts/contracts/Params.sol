@@ -10,6 +10,8 @@ contract Params {
         uint8 messageTreeSubDepth;
         uint8 messageTreeDepth;
         uint8 voteOptionTreeDepth;
+        uint8 intCoeffTreeDepth;
+        uint8 coeffTreeDepth;
     }
 
     struct BatchSizes {

@@ -148,6 +148,7 @@ const proveOnChain = async (args: any) => {
     let data = {
         processProofs: {},
         tallyProofs: {},
+        coeffProofs: {},
     }
 
     let numProcessProofs = 0
@@ -173,11 +174,17 @@ const proveOnChain = async (args: any) => {
                 data.tallyProofs[Number(match[1])] = JSON.parse(fs.readFileSync(filepath).toString())
                 continue
             }
+            match = filename.match(/coeff_(\d+)/)
+            if (match != null) {
+                data.coeffProofs[Number(match[1])] = JSON.parse(fs.readFileSync(filepath).toString())
+                continue
+            }
         }
     }
 
     const numSignUpsAndMessages = await pollContract.numSignUpsAndMessages()
     const numSignUps = Number(numSignUpsAndMessages[0])
+    const numCoeffTotal = numSignUps * (numSignUps - 1) / 2
     const numMessages = Number(numSignUpsAndMessages[1])
     const batchSizes = await pollContract.batchSizes()
     const messageBatchSize = Number(batchSizes.messageBatchSize)
@@ -365,6 +372,95 @@ const proveOnChain = async (args: any) => {
     }
 
     // ------------------------------------------------------------------------
+    // coeff calculation proofs
+    const treeArity = 5
+    const coeffBatchSize = treeArity ** Number(treeDepths.intCoeffTreeDepth)
+    let totalCoeffBatches = Math.ceil(numCoeffTotal/coeffBatchSize)
+    let coeffBatchNum = Number(await pptContract.coeffBatchNum())
+    console.log(`number of coeff batch processed: ${coeffBatchNum}`)
+
+    for (let i = coeffBatchNum; i < totalCoeffBatches; i++) {
+        const batchStartIndex = i * coeffBatchSize
+        const { proof, circuitInputs, publicInputs } = data.coeffProofs[i]
+
+        const coeffCommitmentOnChain = await pptContract.coeffCommitment()
+        const coeffCommitment = coeffBatchNum == 0 ? '0' : circuitInputs.coeffCommitment
+        if (coeffCommitmentOnChain.toString() !== coeffCommitment) {
+            console.error(`Error: coeffCommitment mismatch. onChain=${coeffCommitmentOnChain.toString()}, input=${coeffCommitment}, batchNum=${i}`)
+            return 1
+        }
+        const packedValsOnChain = BigInt(
+            await pptContract.genCoeffPackedVals(
+                numCoeffTotal,
+                batchStartIndex,
+                coeffBatchSize,
+            )
+        )
+        if (circuitInputs.packedVals !== packedValsOnChain.toString()) {
+            console.error('Error: packedVals mismatch.')
+            return 1
+        }
+        const currentSbCommitmentOnChain = await pptContract.sbCommitment()
+        if (currentSbCommitmentOnChain.toString() !== circuitInputs.sbCommitment) {
+            console.error('Error: currentSbCommitment mismatch.')
+            return 1
+        }
+        const publicInputHashOnChain = await pptContract.genCoeffPublicInputHash(
+            numCoeffTotal,
+            batchStartIndex,
+            coeffBatchSize,
+            circuitInputs.coeffCommitment,
+        )
+        if (publicInputHashOnChain.toString() !== publicInputs[0]) {
+            console.error('Error: public input mismatch.')
+            return 1
+        }
+
+        const txErr = 'Error: coeffCalculation() failed...'
+        const formattedProof = formatProofForVerifierContract(proof)
+        let tx
+        try {
+            tx = await pptContract.coeffCalculation(
+                pollContract.address,
+                circuitInputs.coeffCommitment,
+                formattedProof,
+            )
+        } catch (e) {
+            console.error(txErr)
+            console.error(e)
+        }
+
+        const receipt = await tx.wait()
+
+        if (receipt.status !== 1) {
+            console.error(txErr)
+            return 1
+        }
+
+        console.log(`Progress: ${coeffBatchNum + 1} / ${totalCoeffBatches}`)
+        console.log(`Transaction hash: ${tx.hash}`)
+
+        // Wait for the node to catch up
+        coeffBatchNum = Number(await pptContract.coeffBatchNum())
+        let backOff = 1000
+        let numAttempts = 0
+        while (coeffBatchNum !== i + 1) {
+            await delay(backOff)
+            backOff *= 1.2
+            numAttempts ++
+            if (numAttempts >= 100) {
+                break
+            }
+        }
+    }
+
+    if (coeffBatchNum === totalCoeffBatches) {
+        console.log('All coeff calculation proofs have been submitted.')
+        console.log('OK')
+    }
+
+
+    // ------------------------------------------------------------------------
     // Vote tallying proofs
     const totalTallyBatches = numSignUps < tallyBatchSize ?
         1
@@ -462,6 +558,7 @@ const proveOnChain = async (args: any) => {
         console.log()
         console.log('OK')
     }
+
     return 0
 }
 

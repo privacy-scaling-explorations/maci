@@ -283,6 +283,7 @@ contract Poll is
         ]);
     }
 
+    
     /*
      * The first step of merging the MACI state AccQueue. This allows the
      * ProcessMessages circuit to access the latest state tree and ballots via
@@ -498,6 +499,8 @@ contract PollProcessorAndTallyer is
     string constant ERROR_PROCESSING_NOT_COMPLETE = "PptE07";
     string constant ERROR_ALL_BALLOTS_TALLIED = "PptE08";
     string constant ERROR_STATE_AQ_NOT_MERGED = "PptE09";
+    string constant ERROR_ALL_COEFF_CALCULATED = "PptE10";
+    string constant ERROR_INVALID_COEFF_PROOF = "PptE11";
 
     // The commitment to the state and ballot roots
     uint256 public sbCommitment;
@@ -528,6 +531,9 @@ contract PollProcessorAndTallyer is
     uint256 public tallyCommitment;
 
     uint256 public tallyBatchNum;
+
+    uint256 public coeffCommitment;
+    uint256 public coeffBatchNum;
 
     Verifier public verifier;
 
@@ -584,7 +590,7 @@ contract PollProcessorAndTallyer is
         require(_poll.stateAqMerged(), ERROR_STATE_AQ_NOT_MERGED);
 
         // Retrieve stored vals
-        ( , , uint8 messageTreeDepth, ) = _poll.treeDepths();
+        ( , , uint8 messageTreeDepth,,, ) = _poll.treeDepths();
         (uint256 messageBatchSize, ) = _poll.batchSizes();
 
         AccQueue messageAq;
@@ -653,8 +659,8 @@ contract PollProcessorAndTallyer is
         uint256[8] memory _proof
     ) internal view returns (bool) {
 
-        ( , , uint8 messageTreeDepth, uint8 voteOptionTreeDepth) = _poll.treeDepths();
-        (uint256 messageBatchSize, ) = _poll.batchSizes();
+        ( , , uint8 messageTreeDepth, uint8 voteOptionTreeDepth,,) = _poll.treeDepths();
+        (uint256 messageBatchSize,) = _poll.batchSizes();
         (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
         (VkRegistry vkRegistry, IMACI maci, ) = _poll.extContracts();
 
@@ -732,7 +738,7 @@ contract PollProcessorAndTallyer is
     ) public view returns (uint256) {
         (, uint256 maxVoteOptions) = _poll.maxValues();
         (, uint256 numMessages) = _poll.numSignUpsAndMessages();
-        (uint8 mbs, ) = _poll.batchSizes();
+        (uint8 mbs,) = _poll.batchSizes();
         uint256 messageBatchSize = uint256(mbs);
 
         uint256 batchEndIndex = _currentMessageBatchIndex + messageBatchSize;
@@ -758,6 +764,123 @@ contract PollProcessorAndTallyer is
         processingComplete = _processingComplete;
         currentMessageBatchIndex = _currentMessageBatchIndex;
         numBatchesProcessed ++;
+    }
+
+
+    function genCoeffPackedVals(
+        uint256 _numCoeffTotal,
+        uint256 _batchStartIndex,
+        uint256 _coeffBatchSize
+    ) public pure returns (uint256) {
+
+        // TODO: ensure that each value is less than or equal to 2 ** 50
+        uint256 result =
+            (_batchStartIndex / _coeffBatchSize) +
+            (_numCoeffTotal << uint256(50));
+
+        return result;
+    }
+
+    function genCoeffPublicInputHash(
+        uint256 _numCoeffTotal,
+        uint256 _batchStartIndex,
+        uint256 _coeffBatchSize,
+        uint256 _coeffCommitment
+    ) public view returns (uint256) {
+        uint256 packedVals = genCoeffPackedVals(
+            _numCoeffTotal,
+            _batchStartIndex,
+            _coeffBatchSize
+        );
+        uint256[] memory input = new uint256[](3);
+        input[0] = packedVals;
+        input[1] = sbCommitment;
+        input[2] = _coeffCommitment; 
+        uint256 inputHash = sha256Hash(input);
+        return inputHash;
+    }
+
+    function updateCoeffCommitment(uint256 _coeffCommitment) public onlyOwner {
+        // only update at the first batch
+        if (coeffBatchNum == 0) {
+            coeffCommitment = _coeffCommitment;
+        }
+    }
+
+
+    function coeffCalculation(
+        Poll _poll,
+        uint256 _coeffCommitment,
+        uint256[8] memory _proof
+    )
+    public
+    onlyOwner
+    votingPeriodOver(_poll)
+    {
+        // Require that all messages have been processed
+        require(
+            processingComplete,
+            ERROR_PROCESSING_NOT_COMPLETE
+        );
+
+        
+        uint256 treeArity = 5;
+        ( ,,,, uint256 intCoeffTreeDepth,) = _poll.treeDepths(); 
+        uint256 coeffBatchSize = treeArity ** intCoeffTreeDepth;
+        uint256 batchStartIndex = coeffBatchNum * coeffBatchSize;
+        (uint256 numSignUps,) = _poll.numSignUpsAndMessages();
+        uint256 numCoeffTotal = numSignUps * (numSignUps - 1) / 2;
+
+        // Require that there are untalied ballots left
+        require(
+            batchStartIndex <= numCoeffTotal,
+            ERROR_ALL_COEFF_CALCULATED
+        );
+
+        uint256[4] memory packedParams = [
+            numCoeffTotal,
+            batchStartIndex,
+            coeffBatchSize,
+            _coeffCommitment
+        ];
+
+        bool isValid = verifyCoeffProof(
+            _poll,
+            _proof,
+            packedParams
+        );
+        require(isValid, ERROR_INVALID_COEFF_PROOF);
+        updateCoeffCommitment(_coeffCommitment);
+        coeffBatchNum ++;
+    }
+
+    function verifyCoeffProof(
+        Poll _poll,
+        uint256[8] memory _proof,
+        uint256[4] memory params // numCoeffTotal, batchStartIndex, coeffBatchSize, coeffCommitment
+    ) public view returns (bool) {
+        (uint8 intStateTreeDepth,,,uint8 voteOptionTreeDepth,uint8 intCoeffTreeDepth, uint8 coeffTreeDepth) = _poll.treeDepths();
+        (VkRegistry vkRegistry, IMACI maci, ) = _poll.extContracts();
+
+        // Get the verifying key
+        VerifyingKey memory vk = vkRegistry.getCoeffVk(
+            maci.stateTreeDepth(),
+            intStateTreeDepth,
+            voteOptionTreeDepth,
+            intCoeffTreeDepth,
+            coeffTreeDepth
+        );
+
+        // Get the public inputs
+        uint256 publicInputHash = genCoeffPublicInputHash(
+            params[0],
+            params[1],
+            params[2],
+            params[3] 
+        );
+
+        // Verify the proof
+        return verifier.verify(_proof, vk, publicInputHash);
     }
 
     /*
@@ -855,12 +978,7 @@ contract PollProcessorAndTallyer is
         uint256 _tallyBatchSize,
         uint256 _newTallyCommitment
     ) public view returns (bool) {
-        (
-            uint8 intStateTreeDepth,
-            ,
-            ,
-            uint8 voteOptionTreeDepth
-        ) = _poll.treeDepths();
+        (uint8 intStateTreeDepth,,,uint8 voteOptionTreeDepth,,) = _poll.treeDepths();
 
         (VkRegistry vkRegistry, IMACI maci, ) = _poll.extContracts();
 

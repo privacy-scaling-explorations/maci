@@ -18,6 +18,9 @@ contract VkRegistry is Ownable, SnarkCommon {
     mapping (uint256 => VerifyingKey) internal tallyVks; 
     mapping (uint256 => bool) internal tallyVkSet; 
 
+    mapping (uint256 => VerifyingKey) internal coeffVks; 
+    mapping (uint256 => bool) internal coeffVkSet; 
+
     //TODO: event for setVerifyingKeys
 
     function isProcessVkSet(uint256 _sig) public view returns (bool) {
@@ -26,6 +29,10 @@ contract VkRegistry is Ownable, SnarkCommon {
 
     function isTallyVkSet(uint256 _sig) public view returns (bool) {
         return tallyVkSet[_sig];
+    }
+
+    function isCoeffVkSet(uint256 _sig) public view returns (bool) {
+        return coeffVkSet[_sig];
     }
 
     function genProcessVkSig(
@@ -58,8 +65,11 @@ contract VkRegistry is Ownable, SnarkCommon {
         uint256 _messageTreeDepth,
         uint256 _voteOptionTreeDepth,
         uint256 _messageBatchSize,
+        uint256 _intCoeffTreeDepth,
+        uint256 _coeffTreeDepth,
         VerifyingKey memory _processVk,
-        VerifyingKey memory _tallyVk
+        VerifyingKey memory _tallyVk,
+        VerifyingKey memory _coeffVk
     ) public onlyOwner {
 
         uint256 processVkSig = genProcessVkSig(
@@ -78,6 +88,16 @@ contract VkRegistry is Ownable, SnarkCommon {
         );
 
         require(tallyVkSet[tallyVkSig] == false, "VkRegistry: tally vk already set");
+
+        uint256 coeffVkSig = genCoeffVkSig(
+            _stateTreeDepth,
+            _intStateTreeDepth,
+            _voteOptionTreeDepth,
+            _intCoeffTreeDepth,
+            _coeffTreeDepth
+        );
+
+        require(coeffVkSet[coeffVkSig] == false, "VkRegistry: coeff vk already set");
 
         VerifyingKey storage processVk = processVks[processVkSig];
         processVk.alpha1 = _processVk.alpha1;
@@ -99,6 +119,16 @@ contract VkRegistry is Ownable, SnarkCommon {
             tallyVk.ic.push(_tallyVk.ic[i]);
         }
         tallyVkSet[tallyVkSig] = true;
+
+        VerifyingKey storage coeffVk = coeffVks[coeffVkSig];
+        coeffVk.alpha1 = _coeffVk.alpha1;
+        coeffVk.beta2 = _coeffVk.beta2;
+        coeffVk.gamma2 = _coeffVk.gamma2;
+        coeffVk.delta2 = _coeffVk.delta2;
+        for (uint8 i = 0; i < _coeffVk.ic.length; i ++) {
+            coeffVk.ic.push(_coeffVk.ic[i]);
+        }
+        coeffVkSet[coeffVkSig] = true;
     }
 
     function hasProcessVk(
@@ -175,4 +205,63 @@ contract VkRegistry is Ownable, SnarkCommon {
 
         return getTallyVkBySig(sig);
     }
+
+    function hasCoeffVk(
+        uint256 _stateTreeDepth,
+        uint256 _intStateTreeDepth,
+        uint256 _voteOptionTreeDepth,
+        uint256 _intCoeffTreeDepth,
+        uint256 _coeffTreeDepth
+    ) public view returns (bool) {
+        uint256 sig = genCoeffVkSig(
+            _stateTreeDepth,
+            _intStateTreeDepth,
+            _voteOptionTreeDepth,
+            _intCoeffTreeDepth,
+            _coeffTreeDepth
+        );
+        return coeffVkSet[sig];
+    }
+
+    function getCoeffVk(
+        uint256 _stateTreeDepth,
+        uint256 _intStateTreeDepth,
+        uint256 _voteOptionTreeDepth,
+        uint256 _intCoeffTreeDepth,
+        uint256 _coeffTreeDepth
+    ) public view returns (VerifyingKey memory) {
+        uint256 sig = genCoeffVkSig(
+            _stateTreeDepth,
+            _intStateTreeDepth,
+            _voteOptionTreeDepth,
+            _intCoeffTreeDepth,
+            _coeffTreeDepth
+        );
+
+        return getCoeffVkBySig(sig);
+    }
+
+    function genCoeffVkSig(
+        uint256 _stateTreeDepth,
+        uint256 _intStateTreeDepth,
+        uint256 _voteOptionTreeDepth,
+        uint256 _intCoeffTreeDepth,
+        uint256 _coeffTreeDepth
+    ) public pure returns (uint256) {
+        return 
+            (_stateTreeDepth << 192) +
+            (_intStateTreeDepth << 144) +
+            (_voteOptionTreeDepth << 96 ) +
+            (_intCoeffTreeDepth << 48) +
+            _coeffTreeDepth;
+
+    }
+
+    function getCoeffVkBySig(
+        uint256 _sig
+    ) public view returns (VerifyingKey memory) {
+        require(coeffVkSet[_sig] == true, "VkRegistry: coeff calculation verifying key not set");
+        return coeffVks[_sig];
+    }
+
 }

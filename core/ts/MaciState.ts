@@ -7,6 +7,7 @@ import {
     NOTHING_UP_MY_SLEEVE,
     hashLeftRight,
     hash3,
+    hash4,
     hash5,
     sha256Hash,
     stringifyBigInts,
@@ -27,6 +28,8 @@ interface TreeDepths {
     messageTreeDepth: number;
     messageTreeSubDepth: number;
     voteOptionTreeDepth: number;
+    intCoeffTreeDepth: number;
+    coeffTreeDepth: number;
 }
 
 interface BatchSizes {
@@ -69,6 +72,7 @@ class Poll {
     public STATE_TREE_ARITY = 5
     public MESSAGE_TREE_ARITY = 5
     public VOTE_OPTION_TREE_ARITY = 5
+    public COEFF_TREE_ARITY = 5
 
     public stateCopied = false
     public stateLeaves: StateLeaf[] = [blankStateLeaf]
@@ -96,6 +100,23 @@ class Poll {
     public numBatchesTallied = 0
 
     public totalSpentVoiceCredits: BigInt = BigInt(0)
+
+
+    // For coefficient and subsidy calculation
+    public subsidy: BigInt[] = []  // size: M, M is number of vote options
+    public coeffsalt: BigInt = BigInt(0)
+    public subsidySalts: {[key: number]: BigInt} = {}
+    public numCoeffBatchesCalced = 0
+    public numSubsidyBatchesCalced = 0
+    public numCoeffTotal = 0
+    public MM = 50   // adjustable parameter
+    public WW = 4     // number of digits for float representation
+    public ballotTree1: IncrementalQuinTree // used for coefficient calculation
+    public ballotTree2: IncrementalQuinTree  // used for coefficient calculation
+    public ballotHashs1: BigInt[] = []
+    public ballotHashs2: BigInt[] = []
+    public coeffTree: IncrementalQuinTree // store coefficient results
+    public coeff: BigInt[] = [] // store coefficient results
 
     constructor(
         _duration: number,
@@ -131,6 +152,7 @@ class Poll {
         for (let i = 0; i < this.maxValues.maxVoteOptions; i ++) {
             this.results.push(BigInt(0))
             this.perVOSpentVoiceCredits.push(BigInt(0))
+            this.subsidy.push(BigInt(0))
         }
 
         const blankBallot = Ballot.genBlankBallot(
@@ -717,6 +739,252 @@ class Poll {
         return this.numBatchesTallied * batchSize < this.ballots.length
     }
 
+    public isCoeffCalculationFinished = () => {
+        const batchSize = this.COEFF_TREE_ARITY ** this.treeDepths.intCoeffTreeDepth  
+        this.numCoeffTotal = this.numSignUps * (this.numSignUps - 1) / 2
+        return this.numCoeffBatchesCalced * batchSize >= this.numCoeffTotal
+    }
+
+    public coeffOrderChecking = () => {
+        const ballotTreeRoot = this.ballotTree.root
+        this.genCoeffBallotTrees()  // will only be calculated once
+        const ballotTreeRoot1 = this.ballotTree1.root
+        const ballotTreeRoot2 = this.ballotTree2.root
+        let ballotHashs1 = this.ballotHashs1.map(x => BigInt(x.toString()))
+        let ballotHashs2 = this.ballotHashs2.map(x => BigInt(x.toString()))
+        let ballotHashs = this.ballots.map(x=>x.hash())
+
+        const emptyBallot = new Ballot(
+            this.maxValues.maxVoteOptions,
+            this.treeDepths.voteOptionTreeDepth,
+        )
+        const emptyBallotHash = emptyBallot.hash()
+        
+        const MaxSize = this.STATE_TREE_ARITY ** STATE_TREE_DEPTH
+        // fill ballotHashs with 0 to match circuitInput size 
+        for (let i = this.ballots.length; i < MaxSize; i++) {
+            ballotHashs.push(emptyBallotHash)
+        }
+
+        const CoeffMaxSize = this.COEFF_TREE_ARITY ** this.treeDepths.coeffTreeDepth
+        // fill ballotHashs1, ballotHashs2 with 0 to match circuitInput size
+        // zero value also indicates the end of the actual hash array
+        for (let i = this.ballotHashs1.length; i < MaxSize; i++) {
+            ballotHashs1.push(emptyBallotHash)
+            ballotHashs2.push(emptyBallotHash)
+        }
+    
+        const stateRoot = this.stateTree.root
+        const coeffTreeRoot = this.coeffTree.root
+        const sbSalt = this.sbSalts[this.currentMessageBatchIndex]
+        const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt])
+
+        const batchStartIndex = this.numCoeffBatchesCalced * batchSize
+        if (!this.coeffsalt) {
+            this.coeffsalt = genRandomSalt()
+        }
+        const coeffCommitment = hash4([ballotTreeRoot1, ballotTreeRoot2, coeffTreeRoot, this.coeffsalt])
+
+        const packedVals = MaciState.packCoeffSmallVals(
+            batchStartIndex,
+            batchSize,
+            this.numCoeffTotal,
+        )
+
+        const inputHash = sha256Hash([
+            packedVals,
+            sbCommitment,
+            coeffCommitment,
+        ])
+
+
+
+
+        const circuitInputs = stringifyBigInts({
+            ballotTreeRoot,
+            ballotTreeRoot1,
+            ballotTreeRoot2,
+            ballotHashs,
+            ballotHashs1,
+            ballotHashs2,
+            emptyBallotHash,
+
+            stateRoot,
+            coeffTreeRoot,
+            sbSalt,
+            coeffSalt,
+
+            sbCommitment,
+            coeffCommitment,
+            packedVals,
+            inputHash
+        })
+        return circuitInputs
+    }
+
+    public coeffPerBatch = () => {
+        const batchSize = this.COEFF_TREE_ARITY ** this.treeDepths.intCoeffTreeDepth  
+
+        assert(!this.isCoeffCalculationFinished(), 'No more coeff batches to calculate')
+
+        const batchStartIndex = this.numCoeffBatchesCalced * batchSize
+
+
+
+
+        const stateRoot = this.stateTree.root
+        const ballotRoot = this.ballotTree.root
+        const sbSalt = this.sbSalts[this.currentMessageBatchIndex]
+        const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt])
+
+        this.genCoeffBallotTrees()  // will only be calculated once
+        const ballotTreeRoot1 = this.ballotTree1.root
+        const ballotTreeRoot2 = this.ballotTree2.root
+        const coeffTreeRoot = this.coeffTree.root
+        if (!this.coeffsalt) {
+            this.coeffsalt = genRandomSalt()
+        }
+        const coeffCommitment = hash4([ballotTreeRoot1, ballotTreeRoot2, coeffTreeRoot, this.coeffsalt])
+
+        const packedVals = MaciState.packCoeffSmallVals(
+            batchStartIndex,
+            batchSize,
+            this.numCoeffTotal,
+        )
+
+        const inputHash = sha256Hash([
+            packedVals,
+            sbCommitment,
+            coeffCommitment,
+        ])
+
+        const [ballots1, ballots2] = this.genCoeffBatch()
+
+        const ballotSubrootProof1 = this.ballotTree1.genMerkleSubrootPath(
+                batchStartIndex,
+                batchStartIndex + batchSize,
+            )
+
+        const ballotSubrootProof2 = this.ballotTree2.genMerkleSubrootPath(
+                batchStartIndex,
+                batchStartIndex + batchSize,
+            )
+
+        const coeffSubrootProof = this.coeffTree.genMerkleSubrootPath(
+                batchStartIndex,
+                batchStartIndex + batchSize,
+            )
+
+        const circuitInputs = stringifyBigInts({
+            stateRoot,
+            ballotRoot,
+            ballotTreeRoot1,
+            ballotTreeRoot2,
+            coeffTreeRoot,
+
+            sbSalt,
+            coeffSalt: this.coeffsalt,
+
+            sbCommitment,
+            coeffCommitment,
+
+            packedVals, // contains numCoeffTotal and batchStartIndex
+            inputHash,
+
+            ballots1: ballots1.map((x) => x.asCircuitInputs()),
+            ballots2: ballots2.map((x) => x.asCircuitInputs()),
+            votes1: ballots1.map((x) => x.votes),
+            votes2: ballots2.map((x) => x.votes),
+            ballotPathElements1: ballotSubrootProof1.pathElements,
+            ballotPathElements2: ballotSubrootProof2.pathElements,
+            coeffPathElements: coeffSubrootProof.pathElements,
+        })
+
+        this.numCoeffBatchesCalced++
+        return circuitInputs
+    }
+
+    public coefficientCalculation = (row: number, col: number): BigInt  => {
+        let sum = BigInt(0)
+        for (let j = 0; j < this.maxValues.maxVoteOptions; j++) {
+            sum += BigInt(this.ballots[row].votes[j]) * BigInt(this.ballots[col].votes[j])
+        }
+        let res = BigInt(this.MM * (10 ** this.WW))/(BigInt(this.MM)+BigInt(sum))
+        return res
+    }
+
+    public genCoeffBallotTrees  = () => {
+        if (this.ballotTree1) {
+            return
+        }
+        const emptyBallot = new Ballot(
+            this.maxValues.maxVoteOptions,
+            this.treeDepths.voteOptionTreeDepth,
+        )
+
+        //let treeDepth = Math.ceil(Math.log(this.numCoeffTotal)/Math.log(this.STATE_TREE_ARITY))
+        let treeDepth = this.treeDepths.coeffTreeDepth
+        this.ballotTree1 = new IncrementalQuinTree(
+            treeDepth,
+            emptyBallot.hash(),
+            this.COEFF_TREE_ARITY,
+            hash5,
+        )
+        this.ballotTree2 = new IncrementalQuinTree(
+            treeDepth,
+            emptyBallot.hash(),
+            this.COEFF_TREE_ARITY,
+            hash5,
+        )
+        this.coeffTree = new IncrementalQuinTree(
+            treeDepth,
+            BigInt(1),
+            this.COEFF_TREE_ARITY,
+            hash5,
+        )
+
+        // we include the first "empty" ballot
+        // but the final result will not be affected
+        for (let i = 0; i < this.numCoeffTotal; i++) {
+            const [row, col] = matrixIndex(i)
+            this.ballotTree1.insert(this.ballots[row].hash())
+            this.ballotTree2.insert(this.ballots[col].hash())
+            this.ballotHashs1.push(this.ballots[row].hash())
+            this.ballotHashs2.push(this.ballots[col].hash())
+            let res = this.coefficientCalculation(row, col)
+            this.coeffTree.insert(res)
+            this.coeff.push(res)
+        }
+    }
+
+    public genCoeffBatch = () : Ballot[][] => {
+        let batchSize = this.COEFF_TREE_ARITY ** this.treeDepths.intCoeffTreeDepth
+        let ballots1: Ballot[] = [] 
+        let ballots2: Ballot[] = [] 
+        for (
+            let i = this.numCoeffBatchesCalced * batchSize;
+            i < this.numCoeffBatchesCalced * batchSize + batchSize;
+            i ++
+        ) {
+            if (i >= this.numCoeffTotal) {
+                break
+            }
+            const [row, col] = matrixIndex(i)
+            ballots1.push(this.ballots[row])
+            ballots2.push(this.ballots[col])
+        }
+        const emptyBallot = new Ballot(
+            this.maxValues.maxVoteOptions,
+            this.treeDepths.voteOptionTreeDepth,
+        )
+        while (ballots1.length < batchSize) {
+            ballots1.push(emptyBallot)
+            ballots2.push(emptyBallot)
+        }
+        return [ballots1, ballots2]
+    }
+
+
     /*
      * Tally a batch of Ballots and update this.results
      */
@@ -980,6 +1248,10 @@ class Poll {
                     Number(this.treeDepths.messageTreeSubDepth),
                 voteOptionTreeDepth:
                     Number(this.treeDepths.voteOptionTreeDepth),
+                intCoeffTreeDepth:
+                    Number(this.treeDepths.intCoeffTreeDepth),
+                coeffTreeDepth:
+                    Number(this.treeDepths.coeffTreeDepth),
             },
             {
                 tallyBatchSize:
@@ -1011,6 +1283,8 @@ class Poll {
             }
         })
         copied.ballots = this.ballots.map((x: Ballot) => x.copy())
+        copied.ballotHashs1 = this.ballotHashs1.map(x => BigInt(x.toString()))
+        copied.ballotHashs2 = this.ballotHashs2.map(x => BigInt(x.toString()))
         copied.encPubKeys = this.encPubKeys.map((x: PubKey) => x.copy())
         if (this.ballotTree) {
             copied.ballotTree = this.ballotTree.copy()
@@ -1021,6 +1295,7 @@ class Poll {
         copied.messageTree = this.messageTree.copy()
         copied.results = this.results.map((x: BigInt) => BigInt(x.toString()))
         copied.perVOSpentVoiceCredits = this.perVOSpentVoiceCredits.map((x: BigInt) => BigInt(x.toString()))
+
 
         copied.numBatchesProcessed = Number(this.numBatchesProcessed.toString())
         copied.numBatchesTallied = Number(this.numBatchesTallied.toString())
@@ -1045,6 +1320,23 @@ class Poll {
             copied.spentVoiceCreditSubtotalSalts[k] = BigInt(this.spentVoiceCreditSubtotalSalts[k].toString())
         }
 
+
+        // subsidy related copy
+        copied.subsidy = this.subsidy.map((x: BigInt) => BigInt(x.toString()))
+        copied.numCoeffBatchesCalced = Number(this.numCoeffBatchesCalced.toString())
+        copied.numCoeffTotal = Number(this.numCoeffTotal.toString())
+        copied.numSubsidyBatchesCalced = Number(this.numSubsidyBatchesCalced.toString())
+        copied.MM = Number(this.MM.toString())
+        copied.WW = Number(this.WW.toString())
+        copied.coeffsalt = BigInt(this.coeffsalt.toString())
+        if (this.ballotTree1) {
+            copied.ballotTree1 = this.ballotTree1.copy()
+            copied.ballotTree2 = this.ballotTree2.copy()
+            copied.coeffTree = this.coeffTree.copy()
+        }
+        for (const k of Object.keys(this.subsidySalts)) {
+            copied.subsidySalts[k] = BigInt(this.subsidySalts[k].toString())
+        }
         return copied
     }
 
@@ -1210,6 +1502,22 @@ class MaciState {
         return true
     }
 
+
+    public static packCoeffSmallVals = (
+        batchStartIndex: number,
+        batchSize: number,
+        numCoeffTotal: number,
+    ) => {
+        // Note: the << operator has lower precedence than +
+        const packedVals = 
+            (BigInt(batchStartIndex) / BigInt(batchSize)) +
+            (BigInt(numCoeffTotal) << BigInt(50))
+
+        return packedVals
+    }
+
+
+
     public static packTallyVotesSmallVals = (
         batchStartIndex: number,
         batchSize: number,
@@ -1293,6 +1601,21 @@ const genTallyVkSig = (
             BigInt(_voteOptionTreeDepth)
 }
 
+
+const genCoeffVkSig = (
+    _stateTreeDepth: number,
+    _intStateTreeDepth: number,
+    _voteOptionTreeDepth: number,
+    _intCoeffTreeDepth: number,
+    _coeffTreeDepth: number,
+): BigInt => {
+    return (BigInt(_stateTreeDepth) << BigInt(192)) +
+           (BigInt(_intStateTreeDepth) << BigInt(144)) +
+           (BigInt(_voteOptionTreeDepth) << BigInt(96)) +
+           (BigInt(_intCoeffTreeDepth) << BigInt(48)) +
+           BigInt(_coeffTreeDepth) 
+}
+
 /*
  * A helper function which hashes a list of results with a salt and returns the
  * hash.
@@ -1314,6 +1637,25 @@ const genTallyResultCommitment = (
     return hashLeftRight(tree.root, salt)
 }
 
+/*
+ * A helper function which maps 1D index to upper triangle of N by N matrix
+ * for example, a 4 by 4 matrix, 0 => (0,1), 1 => (0,2), 2 => (1,2), 3 => (0, 3)
+ * 4 => (1, 3). 5 => (2, 3)
+ * @param index: 1D index
+ * @param matrixSize: size of the 2D matrix
+ * @return the 2D index pair
+ */
+const matrixIndex = (index: number): [number, number] => {
+    let prevCol = Math.floor((Math.sqrt(8*index+1)-1)/2)
+    assert(index >= 0)
+    let col = prevCol + 1
+    let prev = prevCol * (prevCol + 1)/2
+    let row = index - prev
+    console.log(`hehe, index=${index}, row=${row}, col=${col}`)
+    return [row, col]
+}
+
+
 export {
     MaxValues,
     TreeDepths,
@@ -1321,6 +1663,7 @@ export {
     Poll,
     genProcessVkSig,
     genTallyVkSig,
+    genCoeffVkSig,
     genTallyResultCommitment,
     STATE_TREE_DEPTH,
 }

@@ -225,6 +225,8 @@ const genMaciStateFromContract = async (
         messageTreeDepth: Number(onChainTreeDepths.messageTreeDepth),
         messageTreeSubDepth: Number(onChainTreeDepths.messageTreeSubDepth),
         voteOptionTreeDepth: Number(onChainTreeDepths.voteOptionTreeDepth),
+        intCoeffTreeDepth: Number(onChainTreeDepths.intCoeffTreeDepth),
+        coeffTreeDepth: Number(onChainTreeDepths.coeffTreeDepth),
     }
     const batchSizes = {
         tallyBatchSize: Number(onChainBatchSizes.tallyBatchSize),
