@@ -15,6 +15,13 @@ contract Params {
     struct BatchSizes {
         uint8 messageBatchSize;
         uint8 tallyBatchSize;
+        uint8 coeffBatchSize;
+        uint8 subsidyBatchSize;
+    }
+
+    struct ExtBatchSizes {
+        uint8 coeffBatchSize;
+        uint8 subsidyBatchSize;
     }
 
     struct MaxValues {

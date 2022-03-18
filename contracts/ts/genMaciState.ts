@@ -229,6 +229,8 @@ const genMaciStateFromContract = async (
     const batchSizes = {
         tallyBatchSize: Number(onChainBatchSizes.tallyBatchSize),
         messageBatchSize: Number(onChainBatchSizes.messageBatchSize),
+        coeffBatchSize: Number(onChainBatchSizes.coeffBatchSize),
+        subsidyBatchSize: Number(onChainBatchSizes.subsidyBatchSize),
     }
 
     const publishMessageLogs = await provider.getLogs({
@@ -375,6 +377,8 @@ const genMaciStateFromContract = async (
                     maxValues,
                     treeDepths,
                     batchSizes.messageBatchSize,
+                    batchSizes.coeffBatchSize,
+                    batchSizes.subsidyBatchSize,
                     coordinatorKeypair,
                 )
             } else {

@@ -585,7 +585,7 @@ contract PollProcessorAndTallyer is
 
         // Retrieve stored vals
         ( , , uint8 messageTreeDepth, ) = _poll.treeDepths();
-        (uint256 messageBatchSize, ) = _poll.batchSizes();
+        (uint256 messageBatchSize,,, ) = _poll.batchSizes();
 
         AccQueue messageAq;
         (, , messageAq) = _poll.extContracts();
@@ -654,7 +654,7 @@ contract PollProcessorAndTallyer is
     ) internal view returns (bool) {
 
         ( , , uint8 messageTreeDepth, uint8 voteOptionTreeDepth) = _poll.treeDepths();
-        (uint256 messageBatchSize, ) = _poll.batchSizes();
+        (uint256 messageBatchSize,,, ) = _poll.batchSizes();
         (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
         (VkRegistry vkRegistry, IMACI maci, ) = _poll.extContracts();
 
@@ -732,7 +732,7 @@ contract PollProcessorAndTallyer is
     ) public view returns (uint256) {
         (, uint256 maxVoteOptions) = _poll.maxValues();
         (, uint256 numMessages) = _poll.numSignUpsAndMessages();
-        (uint8 mbs, ) = _poll.batchSizes();
+        (uint8 mbs, ,,) = _poll.batchSizes();
         uint256 messageBatchSize = uint256(mbs);
 
         uint256 batchEndIndex = _currentMessageBatchIndex + messageBatchSize;
@@ -812,7 +812,7 @@ contract PollProcessorAndTallyer is
             ERROR_PROCESSING_NOT_COMPLETE
         );
 
-        ( , uint256 tallyBatchSize) = _poll.batchSizes(); 
+        ( , uint256 tallyBatchSize,,) = _poll.batchSizes(); 
         uint256 batchStartIndex = tallyBatchNum * tallyBatchSize;
         (uint256 numSignUps,) = _poll.numSignUpsAndMessages();
 
