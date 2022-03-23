@@ -844,8 +844,8 @@ class Poll {
             this.treeDepths.voteOptionTreeDepth,
         )
 
-        let treeDepth = Math.ceil(Math.log(this.numCoeffTotal)/Math.log(this.STATE_TREE_ARITY))
-        console.log(`coefficient tree depth is: ${treeDepth}`)
+        //let treeDepth = Math.ceil(Math.log(this.numCoeffTotal)/Math.log(this.STATE_TREE_ARITY))
+        let treeDepth = this.treeDepths.coeffTreeDepth
         this.ballotTree1 = new IncrementalQuinTree(
             treeDepth,
             emptyBallot.hash(),
