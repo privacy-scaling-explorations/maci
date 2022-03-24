@@ -101,6 +101,15 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
+        ['-wc', '--coeff-witnessgen'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The path to the coeff calculation witness generation binary',
+        }
+    )
+
+    parser.addArgument(
         ['-zp', '--process-zkey'],
         {
             required: true,
@@ -117,6 +126,16 @@ const configureSubparser = (subparsers: any) => {
             help: 'The path to the TallyVotes .zkey file',
         }
     )
+
+    parser.addArgument(
+        ['-zc', '--coeff-zkey'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The path to the CoeffPerBatch .zkey file',
+        }
+    )
+
 
     parser.addArgument(
         ['-f', '--output'],
@@ -195,6 +214,7 @@ const genProofs = async (args: any) => {
     // Extract the verifying keys
     const processVk = extractVk(args.process_zkey)
     const tallyVk = extractVk(args.tally_zkey)
+    const coeffVk = extractVk(args.coeff_zkey)
 
     // The coordinator's MACI private key
     let serializedPrivkey
@@ -317,6 +337,7 @@ const genProofs = async (args: any) => {
     // TODO: support resumable proof generation
     const processProofs: any[] = []
     const tallyProofs: any[] = []
+    const coeffProofs: any[] = []
 
     console.log('Generating proofs of message processing...')
     const messageBatchSize = poll.batchSizes.messageBatchSize
@@ -373,6 +394,35 @@ const genProofs = async (args: any) => {
         console.log(`\nProgress: ${poll.numBatchesProcessed} / ${totalMessageBatches}`)
     }
 
+    console.log('\nGenerating proofs of coeff calculation...')
+    const coeffBatchSize = poll.COEFF_TREE_ARITY ** poll.treeDepths.intCoeffTreeDepth
+    const numCoeffTotal = poll.numCoeffTotal
+    let totalCoeffBatches = Math.ceil(numCoeffTotal/coeffBatchSize)
+    
+    let coeffCircuitInputs
+    while (!poll.isCoeffCalculationFinished()) {
+        coeffCircuitInputs = poll.coeffPerBatch()
+        const r = genProof(coeffCircuitInputs, rapidsnarkExe, args.coeff_witnessgen, args.coeff_zkey)
+
+        const isValid = verifyProof(r.publicInputs, r.proof, coeffVk) 
+        if (!isValid) {
+            console.error('Error: generated an invalid coeff calc proof')
+            return 1
+        }
+        const thisProof = {
+            circuitInputs: coeffCircuitInputs,
+            proof: r.proof,
+            publicInputs: r.publicInputs,
+        }
+
+        coeffProofs.push(thisProof)
+        saveOutput(outputDir, thisProof, `coeff_${poll.numCoeffBatchesCalced - 1}.json`)
+        console.log(`\nProgress: ${poll.numCoeffBatchesCalced} / ${totalCoeffBatches}`)
+    }
+
+
+
+    /* hehe, for test
     console.log('\nGenerating proofs of vote tallying...')
     const tallyBatchSize = poll.batchSizes.tallyBatchSize
     const numStateLeaves = poll.stateLeaves.length
@@ -480,6 +530,7 @@ const genProofs = async (args: any) => {
     } else {
         console.error('Error: the newTallyCommitment is invalid.')
     }
+    */
 
     return 0
 }

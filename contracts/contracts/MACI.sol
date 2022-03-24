@@ -290,7 +290,6 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         uint256 _duration,
         MaxValues memory _maxValues,
         TreeDepths memory _treeDepths,
-        ExtBatchSizes memory _batchSizes,
         PubKey memory _coordinatorPubKey
     ) public afterInit {
         uint256 pollId = nextPollId;
@@ -305,9 +304,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         // The message batch size and the tally batch size
         BatchSizes memory batchSizes = BatchSizes(
             MESSAGE_TREE_ARITY ** uint8(_treeDepths.messageTreeSubDepth),
-            STATE_TREE_ARITY ** uint8(_treeDepths.intStateTreeDepth),
-            _batchSizes.coeffBatchSize,
-            _batchSizes.subsidyBatchSize
+            STATE_TREE_ARITY ** uint8(_treeDepths.intStateTreeDepth)
         );
 
         Poll p = pollFactory.deploy(

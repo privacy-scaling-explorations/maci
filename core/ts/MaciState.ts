@@ -6,7 +6,6 @@ import {
     SNARK_FIELD_SIZE,
     NOTHING_UP_MY_SLEEVE,
     hashLeftRight,
-    hashOne,
     hash3,
     hash4,
     hash5,
@@ -36,7 +35,6 @@ interface TreeDepths {
 interface BatchSizes {
     tallyBatchSize: number;
     messageBatchSize: number;
-    subsidyBatchSize: number;
 }
 
 interface MaxValues {
@@ -110,7 +108,7 @@ class Poll {
     public subsidySalts: {[key: number]: BigInt} = {}
     public numCoeffBatchesCalced = 0
     public numSubsidyBatchesCalced = 0
-    public numCoeffTotal : number
+    public numCoeffTotal = 0
     public MM = 100   // adjustable parameter
     public ballotTree1: IncrementalQuinTree // used for coefficient calculation
     public ballotTree2: IncrementalQuinTree  // used for coefficient calculation
@@ -134,8 +132,6 @@ class Poll {
         this.maciStateRef = _maciStateRef
         this.pollId = _maciStateRef.polls.length
         this.numSignUps = Number(_maciStateRef.numSignUps.toString())
-        this.numCoeffTotal = this.numSignUps * (this.numSignUps - 1)/2
-
 
         this.messageTree = new IncrementalQuinTree(
             this.treeDepths.messageTreeDepth,
@@ -724,25 +720,8 @@ class Poll {
 
     public isCoeffCalculationFinished = () => {
         const batchSize = this.COEFF_TREE_ARITY ** this.treeDepths.intCoeffTreeDepth  
+        this.numCoeffTotal = this.numSignUps * (this.numSignUps - 1) / 2
         return this.numCoeffBatchesCalced * batchSize >= this.numCoeffTotal
-    }
-
-    public isSubsidyCalculationFinished = () => {
-        const batchSize = this.batchSizes.subsidyBatchSize
-        return this.numSubsidyBatchesCalced * batchSize >= this.maxValues.maxVoteOptions
-    }
-
-    public subsidyPerBatch = () => {
-        const batchSize = this.batchSizes.subsidyBatchSize
-
-        assert(!this.isSubsidyCalculationFinished(), 'No more subsidy batches to calculate')
-
-        const batchStartIndex = this.numSubsidyBatchesCalced * batchSize
-        const currentSalt = batchStartIndex === 0 ? BigInt(0) : this.subsidySalts[batchStartIndex - batchSize]
-
-        const circuitInputs = {}
-        this.numSubsidyBatchesCalced++
-        return circuitInputs
     }
 
     public coeffPerBatch = () => {
@@ -862,13 +841,13 @@ class Poll {
             treeDepth,
             BigInt(1),
             this.STATE_TREE_ARITY,
-            hashOne,
+            hash5,
         )
 
         for (let i = 0; i < this.numCoeffTotal; i++) {
-            const [row, col] = matrixIndex(i, this.numCoeffTotal)
-            this.ballotTree1.insert(this.ballots[row])
-            this.ballotTree2.insert(this.ballots[col])
+            const [row, col] = matrixIndex(i, this.numSignUps)
+            this.ballotTree1.insert(this.ballots[row].hash())
+            this.ballotTree2.insert(this.ballots[col].hash())
             let res = this.coefficientCalculation(row, col)
             this.coeffTree.insert(res)
         }
@@ -886,7 +865,7 @@ class Poll {
             if (i >= this.numCoeffTotal) {
                 break
             }
-            const [row, col] = matrixIndex(i, this.numCoeffTotal)
+            const [row, col] = matrixIndex(i, this.numSignUps)
             ballots1.push(this.ballots[row])
             ballots2.push(this.ballots[col])
         }
@@ -1175,8 +1154,6 @@ class Poll {
                     Number(this.batchSizes.tallyBatchSize.toString()),
                 messageBatchSize:
                     Number(this.batchSizes.messageBatchSize.toString()),
-                subsidyBatchSize:
-                    Number(this.batchSizes.subsidyBatchSize.toString()),
             },
             {
                 maxUsers:
@@ -1354,7 +1331,6 @@ class MaciState {
         _maxValues: MaxValues,
         _treeDepths: TreeDepths,
         _messageBatchSize: number,
-        _subsidyBatchSize: number,
         _coordinatorKeypair: Keypair,
     ): number {
         const poll: Poll = new Poll(
@@ -1366,7 +1342,6 @@ class MaciState {
                 messageBatchSize: _messageBatchSize,
                 tallyBatchSize:
                     this.STATE_TREE_ARITY ** _treeDepths.intStateTreeDepth,
-                subsidyBatchSize: _subsidyBatchSize,
             },
             _maxValues,
             this,

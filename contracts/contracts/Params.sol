@@ -10,18 +10,13 @@ contract Params {
         uint8 messageTreeSubDepth;
         uint8 messageTreeDepth;
         uint8 voteOptionTreeDepth;
+        uint8 intCoeffTreeDepth;
+        uint8 coeffTreeDepth;
     }
 
     struct BatchSizes {
         uint8 messageBatchSize;
         uint8 tallyBatchSize;
-        uint8 coeffBatchSize;
-        uint8 subsidyBatchSize;
-    }
-
-    struct ExtBatchSizes {
-        uint8 coeffBatchSize;
-        uint8 subsidyBatchSize;
     }
 
     struct MaxValues {
