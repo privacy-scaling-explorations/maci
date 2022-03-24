@@ -109,7 +109,8 @@ class Poll {
     public numCoeffBatchesCalced = 0
     public numSubsidyBatchesCalced = 0
     public numCoeffTotal = 0
-    public MM = 100   // adjustable parameter
+    public MM = 50   // adjustable parameter
+    public WW = 4     // number of digits for float representation
     public ballotTree1: IncrementalQuinTree // used for coefficient calculation
     public ballotTree2: IncrementalQuinTree  // used for coefficient calculation
     public coeffTree: IncrementalQuinTree // store coefficient results
@@ -811,7 +812,8 @@ class Poll {
         for (let j = 0; j < this.maxValues.maxVoteOptions; j++) {
             sum += BigInt(this.ballots[row].votes[j]) * BigInt(this.ballots[col].votes[j])
         }
-        return  BigInt(this.MM)/(BigInt(this.MM)+BigInt(sum))
+        let res = BigInt(this.MM * (10 ** this.WW))/(BigInt(this.MM)+BigInt(sum))
+        return res
     }
 
     public genCoeffBallotTrees  = () => {
@@ -1221,6 +1223,7 @@ class Poll {
         copied.numCoeffTotal = Number(this.numCoeffTotal.toString())
         copied.numSubsidyBatchesCalced = Number(this.numSubsidyBatchesCalced.toString())
         copied.MM = Number(this.MM.toString())
+        copied.WW = Number(this.WW.toString())
         copied.coeffsalt = BigInt(this.coeffsalt.toString())
         if (this.ballotTree1) {
             copied.ballotTree1 = this.ballotTree1.copy()

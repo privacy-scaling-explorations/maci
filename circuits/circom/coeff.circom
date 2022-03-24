@@ -17,6 +17,9 @@ template CoefficientPerBatch (
     intCoeffTreeDepth,
     voteOptionTreeDepth
 ) {
+    var MM = 50; // protocol params should be consistent with MaciState.ts
+    var WW = 4; // number of decimal, should consist with MaciState.ts
+    var NN = 64; // maximum width of bits < 10**NN
     assert(voteOptionTreeDepth > 0);
     assert(intCoeffTreeDepth > 0);
     assert(intCoeffTreeDepth < coeffTreeDepth);
@@ -114,7 +117,7 @@ template CoefficientPerBatch (
         ballotTreeVerifier2.leaves[i] <== ballotHashers2[i].hash;
     }
     ballotTreeVerifier2.index <== inputHasher.batchNum;
-    ballotTreeVerifier2.root <== ballotTreeRoot1;
+    ballotTreeVerifier2.root <== ballotTreeRoot2;
     for (var i = 0; i < k; i ++) {
         for (var j = 0; j < TREE_ARITY - 1; j ++) {
             ballotTreeVerifier2.pathElements[i][j] <== ballotPathElements2[i][j];
@@ -148,18 +151,29 @@ template CoefficientPerBatch (
 
     //  ----------------------------------------------------------------------- 
     // calculate coeff leaves for this batch
-    component resultCalc[batchSize];
+    component tmpResult[batchSize];
+    component finalResult[batchSize];
     for (var i = 0; i < batchSize; i++) {
-        resultCalc[i] = CalculateTotal(numVoteOptions);
+        tmpResult[i] = CalculateTotal(numVoteOptions);
+        finalResult[i] = DivisionFromNormal(WW,NN);
         for (var j = 0; j < numVoteOptions; j++) {
-            resultCalc[i].nums[j] <== votes1[i][j] * votes2[i][j];
+            tmpResult[i].nums[j] <== votes1[i][j] * votes2[i][j];
         }
+        finalResult[i].a <== MM;
+        finalResult[i].b <== MM + tmpResult[i].sum;
     }
+
+    /*
+    signal output res[batchSize];
+    for (var i = 0; i < batchSize; i++) {
+        res[i] <== finalResult[i].c;
+    } */
 
     // verify coeffcient calculation for this batch
     component coeffTreeVerifier = BatchMerkleTreeVerifier(coeffTreeDepth, intCoeffTreeDepth, TREE_ARITY); 
     for (var i = 0; i < batchSize; i ++) {
-        coeffTreeVerifier.leaves[i] <== resultCalc[i].sum;
+        coeffTreeVerifier.leaves[i] <== finalResult[i].c;
+        log(finalResult[i].c);
     }
     coeffTreeVerifier.index <== inputHasher.batchNum;
     coeffTreeVerifier.root <== coeffTreeRoot;
