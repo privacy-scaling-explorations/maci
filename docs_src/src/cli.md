@@ -77,8 +77,8 @@ VkRegistry: 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
 Note that the filename of the `.zkey` files must follow this format:
 
 ```
-ProcessMessages_<STATE_TREE_DEPTH>-<MSG_TREE_DEPTH>-<MSG_SUBTREE_DEPTH>-<VOTE_OPTION_TREE_DEPTH>.test.<CONTRIBUTION_NUM>.zkey
-TallyVotes_<STATE_TREE_DEPTH>-<INT_STATE_TREE_DEPTH>-<VOTE_OPTION_TREE_DEPTH>>.test.<CONTRIBUTION_NUM>>.zkey
+ProcessMessages_<STATE_TREE_DEPTH>-<MSG_TREE_DEPTH>-<MSG_SUBTREE_DEPTH>-<VOTE_OPTION_TREE_DEPTH>_test.<CONTRIBUTION_NUM>.zkey
+TallyVotes_<STATE_TREE_DEPTH>-<INT_STATE_TREE_DEPTH>-<VOTE_OPTION_TREE_DEPTH>>_test.<CONTRIBUTION_NUM>>.zkey
 ```
 
 Example usage:
@@ -88,9 +88,9 @@ ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 ETH_PROVIDER=http://localhost:8545 \
 node build/index.js setVerifyingKeys \
     -s 10 -i 1 -m 2 -v 2 -b 1 \
-    -p ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey \
-    -t ./zkeys/TallyVotes_10-1-2.test.0.zkey \
-    -k 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0                                                       
+    -p ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
+    -t ./zkeys/TallyVotes_10-1-2_test.0.zkey \
+    -k 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
 ```
 
 Example output:
@@ -108,7 +108,7 @@ Example usage:
 ```bash
 ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 ETH_PROVIDER=http://localhost:8545 \
-node build/index.js create -k 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
+node build/index.js create -r 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
 ```
 
 Example output:
@@ -136,8 +136,8 @@ ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 ETH_PROVIDER=http://localhost:8545 \
 node ./build/index.js deployPoll \
     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
-    -pk macipk.495140c99cbc090c74363d5e3f32705a92a9e1df8e5ebe2fd6831de9c813f01f \
-    -t 120 -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2
+    -pk macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
+    -t 30 -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2
 ```
 
 Example output:
@@ -158,7 +158,7 @@ Example usage:
 ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 ETH_PROVIDER=http://localhost:8545 \
 node ./build/index.js signup \
-    -p macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
+    -p macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
 ```
 
@@ -171,13 +171,13 @@ State index: 1
 
 ### User: publish message
 
-Example usage: 
+Example usage:
 
 ```bash
 ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 ETH_PROVIDER=http://localhost:8545 \
 node build/index.js publish \
-    -p macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
+    -p macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
     -sk macisk.2ae4f199bf3925a2407f7c775c9261f351ab861d8e9ecbb84622bdd3f6d41b08 \
     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -i 1 -v 0 -w 9 -n 1 -o 0
@@ -210,15 +210,14 @@ Example usage:
 ```bash
 node build/index.js genProofs -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -sk macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
-    -q 0xAa588d3737B611baFD7bD713445b314BD453a5C8 \
     -o 0 \
     -t tally.json \
     -f proofs.json \
     -r ~/rapidsnark/build/prover \
-    -wp ./zkeys/ProcessMessages_10-2-1-2.test \
-    -wt ./zkeys/TallyVotes_10-1-2.test \
-    -zp ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey \
-    -zt ./zkeys/TallyVotes_10-1-2.test.0.zkey
+    -wp ./zkeys/ProcessMessages_10-2-1-2_test \
+    -wt ./zkeys/TallyVotes_10-1-2_test \
+    -zp ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
+    -zt ./zkeys/TallyVotes_10-1-2_test.0.zkey \
 ```
 
 ### Anyone: verify tally
