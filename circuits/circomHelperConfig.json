@@ -2,6 +2,7 @@
     "circom": "../../.local/bin/circom",
     "snarkjs": "./node_modules/snarkjs/build/cli.cjs",
     "circuitDirs": [
+        "./circom/prod/",
         "./circom/test/"
     ]
 }
