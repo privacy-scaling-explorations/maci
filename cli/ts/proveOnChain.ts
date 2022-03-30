@@ -462,7 +462,6 @@ const proveOnChain = async (args: any) => {
 
     // ------------------------------------------------------------------------
     // Vote tallying proofs
-    /* hehe, comment out for coeff testing 
     const totalTallyBatches = numSignUps < tallyBatchSize ?
         1
         :
@@ -559,7 +558,6 @@ const proveOnChain = async (args: any) => {
         console.log()
         console.log('OK')
     }
-    */
 
     return 0
 }

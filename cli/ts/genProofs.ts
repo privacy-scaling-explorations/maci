@@ -453,7 +453,6 @@ const genProofs = async (args: any) => {
     fs.writeFileSync(args.coeff_file, JSON.stringify(coeffFileData, null, 4))
 
 
-    /* hehe, for test
     console.log('\nGenerating proofs of vote tallying...')
     const tallyBatchSize = poll.batchSizes.tallyBatchSize
     const numStateLeaves = poll.stateLeaves.length
@@ -557,7 +556,6 @@ const genProofs = async (args: any) => {
     } else {
         console.error('Error: the newTallyCommitment is invalid.')
     }
-    */
 
     return 0
 }
