@@ -74,6 +74,16 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
+        ['-cf', '--coeff-file'],
+        {
+            required: true,
+            type: 'string',
+            help: 'A filepath in which to save the coeff data and commitment.',
+        }
+    )
+
+
+    parser.addArgument(
         ['-r', '--rapidsnark'],
         {
             required: true,
@@ -180,6 +190,11 @@ const genProofs = async (args: any) => {
 
     if (fs.existsSync(args.tally_file)) {
         console.error(`Error: ${args.tally_file} exists. Please specify a different filepath.`)
+        return 1
+    }
+
+    if (fs.existsSync(args.coeff_file)) {
+        console.error(`Error: ${args.coeff_file} exists. Please specify a different filepath.`)
         return 1
     }
 
@@ -396,7 +411,7 @@ const genProofs = async (args: any) => {
 
     console.log('\nGenerating proofs of coeff calculation...')
     const coeffBatchSize = poll.COEFF_TREE_ARITY ** poll.treeDepths.intCoeffTreeDepth
-    const numCoeffTotal = poll.numCoeffTotal
+    const numCoeffTotal = poll.numSignUps * (poll.numSignUps - 1) / 2
     let totalCoeffBatches = Math.ceil(numCoeffTotal/coeffBatchSize)
     
     let coeffCircuitInputs
@@ -420,6 +435,22 @@ const genProofs = async (args: any) => {
         console.log(`\nProgress: ${poll.numCoeffBatchesCalced} / ${totalCoeffBatches}`)
     }
 
+    const asHex = (val): string => {
+        return '0x' + BigInt(val).toString(16)
+    }
+
+    const coeffFileData = {
+        provider: signer.provider.connection.url,
+        maci: args.contract,
+        pollId,
+        coeffCommitment: asHex(coeffCircuitInputs.coeffCommitment),
+        coeff: {
+            coeff: poll.coeff.map((x) => x.toString()),
+            salt: asHex(coeffCircuitInputs.coeffSalt),
+        }
+    }
+
+    fs.writeFileSync(args.coeff_file, JSON.stringify(coeffFileData, null, 4))
 
 
     /* hehe, for test
@@ -470,10 +501,6 @@ const genProofs = async (args: any) => {
         saveOutput(outputDir, thisProof, `tally_${poll.numBatchesTallied - 1}.json`)
 
         console.log(`\nProgress: ${poll.numBatchesTallied} / ${totalTallyBatches}`)
-    }
-
-    const asHex = (val): string => {
-        return '0x' + BigInt(val).toString(16)
     }
 
     const tallyFileData = {

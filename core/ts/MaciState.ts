@@ -114,6 +114,7 @@ class Poll {
     public ballotTree1: IncrementalQuinTree // used for coefficient calculation
     public ballotTree2: IncrementalQuinTree  // used for coefficient calculation
     public coeffTree: IncrementalQuinTree // store coefficient results
+    public coeff: BigInt[] = [] // store coefficient results
 
     constructor(
         _duration: number,
@@ -852,6 +853,7 @@ class Poll {
             this.ballotTree2.insert(this.ballots[col].hash())
             let res = this.coefficientCalculation(row, col)
             this.coeffTree.insert(res)
+            this.coeff.push(res)
         }
     }
 
@@ -1497,6 +1499,21 @@ const genTallyVkSig = (
             BigInt(_voteOptionTreeDepth)
 }
 
+
+const genCoeffVkSig = (
+    _stateTreeDepth: number,
+    _intStateTreeDepth: number,
+    _voteOptionTreeDepth: number,
+    _intCoeffTreeDepth: number,
+    _coeffTreeDepth: number,
+): BigInt => {
+    return (BigInt(_stateTreeDepth) << BigInt(192)) +
+           (BigInt(_intStateTreeDepth) << BigInt(144)) +
+           (BigInt(_voteOptionTreeDepth) << BigInt(96)) +
+           (BigInt(_intCoeffTreeDepth) << BigInt(48)) +
+           BigInt(_coeffTreeDepth) 
+}
+
 /*
  * A helper function which hashes a list of results with a salt and returns the
  * hash.
@@ -1544,6 +1561,7 @@ export {
     Poll,
     genProcessVkSig,
     genTallyVkSig,
+    genCoeffVkSig,
     genTallyResultCommitment,
     STATE_TREE_DEPTH,
 }
