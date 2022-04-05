@@ -83,7 +83,7 @@ const testEmptyUponDeployment = async (aqContract: any) => {
     try {
         await aqContract.getSubRoot(0)
     } catch (e) {
-        const error = 'AccQueue: _index must refer to a complete subtree'
+        const error = "'AccQueue: _index must refer to a complete subtree'"
         expect(e.message.endsWith(error)).toBeTruthy()
     }
 }
@@ -425,7 +425,7 @@ describe('AccQueues', () => {
             try {
                 await aqContract.getSubRoot(0)
             } catch (e) {
-                const error = "AccQueue: _index must refer to a complete subtree"
+                const error = "'AccQueue: _index must refer to a complete subtree'"
                 expect(e.message.endsWith(error)).toBeTruthy()
             }
         })
@@ -465,7 +465,7 @@ describe('AccQueues', () => {
             try {
                 await aqContract.getSubRoot(0)
             } catch (e) {
-                const error = "AccQueue: _index must refer to a complete subtree"
+                const error = "'AccQueue: _index must refer to a complete subtree'"
                 expect(e.message.endsWith(error)).toBeTruthy()
             }
         })
@@ -656,7 +656,7 @@ describe('AccQueues', () => {
             try {
                 await (await aqContract.mergeSubRoots(0, { gasLimit: 1000000 })).wait()
             } catch (e) {
-                const error = 'AccQueue: nothing to merge'
+                const error = "'AccQueue: nothing to merge'"
                 expect(e.message.endsWith(error)).toBeTruthy()
             }
         })
@@ -675,7 +675,7 @@ describe('AccQueues', () => {
             try {
                 await (await aqContract.merge(0, { gasLimit: 1000000 })).wait()
             } catch (e) {
-                const error = 'AccQueue: _depth must be more than 0'
+                const error = "'AccQueue: _depth must be more than 0'"
                 expect(e.message.endsWith(error)).toBeTruthy()
             }
         })
@@ -713,7 +713,7 @@ describe('AccQueues', () => {
             try {
                 await (await aqContract.merge(1, { gasLimit: 1000000 })).wait()
             } catch (e) {
-                const error = 'AccQueue: _depth must be gte the SRT depth'
+                const error = "'AccQueue: _depth must be gte the SRT depth'"
                 expect(e.message.endsWith(error)).toBeTruthy()
             }
         })
@@ -879,7 +879,7 @@ describe('AccQueues', () => {
             try {
                 await aqContract.getSmallSRTroot()
             } catch (e) {
-                const error = 'AccQueue: subtrees must be merged first'
+                const error = "'AccQueue: subtrees must be merged first'"
                 expect(e.message.endsWith(error)).toBeTruthy()
             }
 
@@ -936,7 +936,7 @@ describe('AccQueues', () => {
             try {
                 await aqContract.getSmallSRTroot()
             } catch (e) {
-                const error = 'AccQueue: subtrees must be merged first'
+                const error = "'AccQueue: subtrees must be merged first'"
                 expect(e.message.endsWith(error)).toBeTruthy()
             }
 
@@ -979,7 +979,7 @@ describe('AccQueues', () => {
             try {
                 await (await (aqContract.mergeSubRoots(0, { gasLimit: 1000000 }))).wait()
             } catch (e) {
-                const error = 'AccQueue: nothing to merge'
+                const error = "'AccQueue: nothing to merge'"
                 expect(e.message.endsWith(error)).toBeTruthy()
             }
         })
@@ -989,7 +989,7 @@ describe('AccQueues', () => {
             try {
                 await (await (aqContract.merge(1, { gasLimit: 1000000 }))).wait()
             } catch (e) {
-                const error = 'AccQueue: subtrees must be merged before calling merge()'
+                const error = "'AccQueue: subtrees must be merged before calling merge()'"
                 expect(e.message.endsWith(error)).toBeTruthy()
             }
         })
@@ -1004,7 +1004,7 @@ describe('AccQueues', () => {
             try {
                 await (await (aqContract.merge(1))).wait()
             } catch (e) {
-                const error = 'AccQueue: subtrees must be merged before calling merge()'
+                const error = "'AccQueue: subtrees must be merged before calling merge()'"
                 expect(e.message.endsWith(error)).toBeTruthy()
             }
         })
@@ -1017,7 +1017,7 @@ describe('AccQueues', () => {
             try {
                 await (await (aqContract.merge(1))).wait()
             } catch (e) {
-                const error = 'AccQueue: _depth must be gte the SRT depth'
+                const error = "'AccQueue: _depth must be gte the SRT depth'"
                 expect(e.message.endsWith(error)).toBeTruthy()
             }
         })

@@ -329,17 +329,14 @@ class Poll {
 
         for (let i = 0; i < batchSize; i ++) {
             const m = this.currentMessageBatchIndex + batchSize - i - 1
-            const messageIndex = m >= this.messages.length ?
-                this.messages.length - 1
-                :
-                m
 
-            const r = this.processMessage(messageIndex)
-            //console.log(messageIndex, r ? 'valid' : 'invalid')
-
-            // If the command is valid
-            if (r) {
-                // TODO: replace with try/catch after implementing error
+            try{
+                // If the command is valid
+              
+                const r = this.processMessage(m)
+                // console.log(messageIndex, r ? 'valid' : 'invalid')
+                // console.log("r:"+r.newStateLeaf )
+                // DONE: replace with try/catch after implementing error
                 // handling
                 const index = r.stateLeafIndex
 
@@ -357,46 +354,54 @@ class Poll {
                 this.ballots[index] = r.newBallot
                 this.ballotTree.update(index, r.newBallot.hash())
 
-            } else {
-                // Since the command is invalid, use a blank state leaf
-                currentStateLeaves.unshift(this.stateLeaves[0].copy())
-                currentStateLeavesPathElements.unshift(
-                    this.stateTree.genMerklePath(0).pathElements
-                )
+            }catch(e){
+                if (e.message === 'no-op') {
 
-                currentBallots.unshift(this.ballots[0].copy())
-                currentBallotsPathElements.unshift(
-                    this.ballotTree.genMerklePath(0).pathElements
-                )
+                      // Since the command is invalid, use a blank state leaf
+                      currentStateLeaves.unshift(this.stateLeaves[0].copy())
+                      currentStateLeavesPathElements.unshift(
+                          this.stateTree.genMerklePath(0).pathElements
+                      )
 
-                // Since the command is invalid, use vote option index 0
-                currentVoteWeights.unshift(this.ballots[0].votes[0])
+                      currentBallots.unshift(this.ballots[0].copy())
+                      currentBallotsPathElements.unshift(
+                          this.ballotTree.genMerklePath(0).pathElements
+                      )
 
-                // No need to iterate through the entire votes array if the
-                // remaining elements are 0
-                let lastIndexToInsert = this.ballots[0].votes.length - 1
-                while (lastIndexToInsert > 0) {
-                    if (this.ballots[0].votes[lastIndexToInsert] === BigInt(0)) {
-                        lastIndexToInsert --
-                    } else {
-                        break
-                    }
+                      // Since the command is invalid, use vote option index 0
+                      currentVoteWeights.unshift(this.ballots[0].votes[0])
+
+                      // No need to iterate through the entire votes array if the
+                      // remaining elements are 0
+                      let lastIndexToInsert = this.ballots[0].votes.length - 1
+                      while (lastIndexToInsert > 0) {
+                          if (this.ballots[0].votes[lastIndexToInsert] === BigInt(0)) {
+                              lastIndexToInsert --
+                          } else {
+                              break
+                          }
+                      }
+
+                      const vt = new IncrementalQuinTree(
+                          this.treeDepths.voteOptionTreeDepth,
+                          BigInt(0),
+                          5,
+                          hash5,
+                      )
+                      for (let i = 0; i <= lastIndexToInsert; i ++) {
+                          vt.insert(this.ballots[0].votes[i])
+                      }
+                      currentVoteWeightsPathElements.unshift(
+                          vt.genMerklePath(0).pathElements
+                      )
+               
+
+                } else {
+                    throw e
                 }
-
-                const vt = new IncrementalQuinTree(
-                    this.treeDepths.voteOptionTreeDepth,
-                    BigInt(0),
-                    5,
-                    hash5,
-                )
-                for (let i = 0; i <= lastIndexToInsert; i ++) {
-                    vt.insert(this.ballots[0].votes[i])
-                }
-                currentVoteWeightsPathElements.unshift(
-                    vt.genMerklePath(0).pathElements
-                )
-
             }
+
+          
         }
         circuitInputs.currentStateLeaves = currentStateLeaves.map((x) => x.asCircuitInputs())
         circuitInputs.currentStateLeavesPathElements = currentStateLeavesPathElements
@@ -546,148 +551,160 @@ class Poll {
         }
         const stateLeaves = this.stateLeaves.map((x) => x.copy())
         const ballots = this.ballots.map((x) => x.copy())
-        
-        for (let i = 0; i < this.messages.length; i ++) {
-            const messageIndex = this.messages.length - i - 1
-            const r = this.processMessage(messageIndex)
-            if (r) {
-                // TODO: replace with try/catch after implementing error
-                // handling
-                const index = r.stateLeafIndex
-                stateLeaves[index] = r.newStateLeaf
-                ballots[index] = r.newBallot
-            }
+        while (this.hasUnprocessedMessages()){
+          this.processMessages(this.pollId)
         }
 
         return { stateLeaves, ballots }
     }
 
     /*
-     * Process one message
-     */
+    * Process one message
+    */
     private processMessage = (
         _index: number,
     ) => {
         //TODO: throw custom errors for no-ops
 
-        // Ensure that the index is valid
-        assert(_index >= 0)
-        assert(this.messages.length > _index)
+        try{
+            // Ensure that the index is valid
+            assert(_index >= 0)
+            assert(this.messages.length > _index)
 
-        // Ensure that there is the correct number of ECDH shared keys
-        assert(this.encPubKeys.length === this.messages.length)
+            // Ensure that there is the correct number of ECDH shared keys
+            assert(this.encPubKeys.length === this.messages.length)
 
-        const message = this.messages[_index]
-        const encPubKey = this.encPubKeys[_index]
+            const message = this.messages[_index]
+            const encPubKey = this.encPubKeys[_index]
 
-        // Decrypt the message
-        const sharedKey = Keypair.genEcdhSharedKey(
-            this.coordinatorKeypair.privKey,
-            encPubKey,
-        )
-        const { command, signature } = Command.decrypt(message, sharedKey)
+            // Decrypt the message
+            const sharedKey = Keypair.genEcdhSharedKey(
+                this.coordinatorKeypair.privKey,
+                encPubKey,
+            )
+            const { command, signature } = Command.decrypt(message, sharedKey)
 
-        const stateLeafIndex = BigInt(`${command.stateIndex}`)
+            const stateLeafIndex = BigInt(`${command.stateIndex}`)
 
-        // If the state tree index in the command is invalid, do nothing
-        if (
-            stateLeafIndex >= BigInt(this.ballots.length) ||
-            stateLeafIndex < BigInt(1)
-        ) {
-            return {}
+            // If the state tree index in the command is invalid, do nothing
+            if (
+                stateLeafIndex >= BigInt(this.ballots.length) ||
+                stateLeafIndex < BigInt(1)
+            ) {
+                throw Error("no-op")
+                // console.log("invalid state tree index")
+                return {}
+            }
+
+            if (stateLeafIndex >= BigInt(this.stateTree.nextIndex)) {
+                // console.log("invalid state tree index")
+                //TODO: handle error 
+                return {}
+            }
+
+            // The user to update (or not)
+            const stateLeaf = this.stateLeaves[Number(stateLeafIndex)]
+
+            // The ballot to update (or not)
+            const ballot = this.ballots[Number(stateLeafIndex)]
+
+            // If the signature is invalid, do nothing
+            if (!command.verifySignature(signature, stateLeaf.pubKey)) {
+                // console.log('Invalid signature. pubkeyx =', stateLeaf.pubKey.rawPubKey[0], 'sig', signature)
+                throw Error("no-op")
+                return {}
+            }
+
+            //console.log('Valid signature. pubkeyx =', stateLeaf.pubKey.rawPubKey[0], 'sig', signature)
+
+            // If the nonce is invalid, do nothing
+            if (command.nonce !== BigInt(`${ballot.nonce}`) + BigInt(1)) {
+              // console.log('Invalid nonce. nonce =', ballot.nonce, 'command.nonce =', command.nonce) 
+                throw Error("no-op")
+                return {}
+            }
+
+            const prevSpentCred = ballot.votes[Number(command.voteOptionIndex)]
+
+            const voiceCreditsLeft =
+                BigInt(`${stateLeaf.voiceCreditBalance}`) +
+                (BigInt(`${prevSpentCred}`) * BigInt(`${prevSpentCred}`)) -
+                (BigInt(`${command.newVoteWeight}`) * BigInt(`${command.newVoteWeight}`))
+
+
+            // If the remaining voice credits is insufficient, do nothing
+            if (voiceCreditsLeft < BigInt(0)) {
+                // console.log("no op")
+                throw Error("no-op")
+                return {}
+            }
+
+            // If the vote option index is invalid, do nothing
+            if (
+                command.voteOptionIndex < BigInt(0) ||
+                command.voteOptionIndex >= BigInt(this.maxValues.maxVoteOptions)
+            ) {
+              // console.log("no op")
+                throw Error("no-op")
+                return {}
+            }
+
+            // Deep-copy the state leaf and update its attributes
+            const newStateLeaf = stateLeaf.copy()
+            newStateLeaf.voiceCreditBalance = voiceCreditsLeft
+            newStateLeaf.pubKey = command.newPubKey.copy()
+
+            // Deep-copy the ballot and update its attributes
+            const newBallot = ballot.copy()
+            newBallot.nonce = BigInt(`${newBallot.nonce}`) + BigInt(1)
+            newBallot.votes[Number(command.voteOptionIndex)] =
+                command.newVoteWeight
+
+            const originalStateLeafPathElements
+                = this.stateTree.genMerklePath(Number(stateLeafIndex)).pathElements
+
+            const originalBallotPathElements
+                = this.ballotTree.genMerklePath(Number(stateLeafIndex)).pathElements
+
+            const voteOptionIndex = Number(command.voteOptionIndex)
+
+            const originalVoteWeight = ballot.votes[voteOptionIndex]
+            const vt = new IncrementalQuinTree(
+                this.treeDepths.voteOptionTreeDepth,
+                BigInt(0),
+                5,
+                hash5,
+            )
+            for (let i = 0; i < this.ballots[0].votes.length; i ++) {
+                vt.insert(ballot.votes[i])
+            }
+
+            const originalVoteWeightsPathElements =
+                vt.genMerklePath(voteOptionIndex).pathElements
+
+            return {
+                stateLeafIndex: Number(stateLeafIndex),
+
+                newStateLeaf,
+                originalStateLeaf: stateLeaf.copy(),
+                originalStateLeafPathElements,
+                originalVoteWeight,
+                originalVoteWeightsPathElements,
+
+                newBallot,
+                originalBallot: ballot.copy(),
+                originalBallotPathElements,
+                command,
+            }
+
+        }catch(e){
+            //TODO: throw custom errors for no-ops
+            switch(e.message){
+                default:
+                    throw Error("no-op")
+            }
         }
-
-        if (stateLeafIndex >= BigInt(this.stateTree.nextIndex)) {
-            return {}
-        }
-
-        // The user to update (or not)
-        const stateLeaf = this.stateLeaves[Number(stateLeafIndex)]
-
-        // The ballot to update (or not)
-        const ballot = this.ballots[Number(stateLeafIndex)]
-
-        // If the signature is invalid, do nothing
-        if (!command.verifySignature(signature, stateLeaf.pubKey)) {
-            //console.log('Invalid signature. pubkeyx =', stateLeaf.pubKey.rawPubKey[0], 'sig', signature)
-            return {}
-        }
-
-        //console.log('Valid signature. pubkeyx =', stateLeaf.pubKey.rawPubKey[0], 'sig', signature)
-
-        // If the nonce is invalid, do nothing
-        if (command.nonce !== BigInt(`${ballot.nonce}`) + BigInt(1)) {
-            return {}
-        }
-
-        const prevSpentCred = ballot.votes[Number(command.voteOptionIndex)]
-
-        const voiceCreditsLeft =
-            BigInt(`${stateLeaf.voiceCreditBalance}`) +
-            (BigInt(`${prevSpentCred}`) * BigInt(`${prevSpentCred}`)) -
-            (BigInt(`${command.newVoteWeight}`) * BigInt(`${command.newVoteWeight}`))
-
-
-        // If the remaining voice credits is insufficient, do nothing
-        if (voiceCreditsLeft < BigInt(0)) {
-            return {}
-        }
-
-        // If the vote option index is invalid, do nothing
-        if (
-            command.voteOptionIndex < BigInt(0) ||
-            command.voteOptionIndex >= BigInt(this.maxValues.maxVoteOptions)
-        ) {
-            return {}
-        }
-
-        // Deep-copy the state leaf and update its attributes
-        const newStateLeaf = stateLeaf.copy()
-        newStateLeaf.voiceCreditBalance = voiceCreditsLeft
-        newStateLeaf.pubKey = command.newPubKey.copy()
-
-        // Deep-copy the ballot and update its attributes
-        const newBallot = ballot.copy()
-        newBallot.nonce = BigInt(`${newBallot.nonce}`) + BigInt(1)
-        newBallot.votes[Number(command.voteOptionIndex)] =
-            command.newVoteWeight
-
-        const originalStateLeafPathElements
-            = this.stateTree.genMerklePath(Number(stateLeafIndex)).pathElements
-
-        const originalBallotPathElements
-            = this.ballotTree.genMerklePath(Number(stateLeafIndex)).pathElements
-
-        const voteOptionIndex = Number(command.voteOptionIndex)
-
-        const originalVoteWeight = ballot.votes[voteOptionIndex]
-        const vt = new IncrementalQuinTree(
-            this.treeDepths.voteOptionTreeDepth,
-            BigInt(0),
-            5,
-            hash5,
-        )
-        for (let i = 0; i < this.ballots[0].votes.length; i ++) {
-            vt.insert(ballot.votes[i])
-        }
-
-        const originalVoteWeightsPathElements =
-            vt.genMerklePath(voteOptionIndex).pathElements
-
-        return {
-            stateLeafIndex: Number(stateLeafIndex),
-
-            newStateLeaf,
-            originalStateLeaf: stateLeaf.copy(),
-            originalStateLeafPathElements,
-            originalVoteWeight,
-            originalVoteWeightsPathElements,
-
-            newBallot,
-            originalBallot: ballot.copy(),
-            originalBallotPathElements,
-            command,
-        }
+        
     }
 
     private isMessageAqMerged = (): boolean => {

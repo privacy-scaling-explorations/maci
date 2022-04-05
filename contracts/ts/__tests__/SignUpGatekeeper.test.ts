@@ -59,7 +59,8 @@ describe('SignUpGatekeeper', () => {
             const user = new Keypair()
             const signer = await getDefaultSigner()
 
-            await signUpToken.giveToken(await signer.address)
+            await signUpToken.giveToken(await signer.address, 0)
+            
 
             try {
                 await maciContract.signUp(
@@ -69,7 +70,7 @@ describe('SignUpGatekeeper', () => {
                     { gasLimit: 300000 },
                 )
             } catch (e) {
-                const error = "SignUpTokenGatekeeper: only specified MACI instance can call this function"
+                const error = "'SignUpTokenGatekeeper: only specified MACI instance can call this function'"
                 expect(e.message.endsWith(error)).toBeTruthy()
             }
         })
