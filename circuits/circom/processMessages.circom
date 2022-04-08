@@ -252,10 +252,6 @@ template ProcessMessages(
 
     signal stateRoots[batchSize + 1];
     signal ballotRoots[batchSize + 1];
-    component stateRootHasher[batchSize];
-
-    component stateLeafPathIndices[batchSize];
-    component stateRootQip[batchSize];
 
     stateRoots[batchSize] <== currentStateRoot;
     ballotRoots[batchSize] <== currentBallotRoot;
@@ -264,18 +260,16 @@ template ProcessMessages(
     //  Process messages in reverse order
     component processors[batchSize];
     for (var i = batchSize - 1; i >= 0; i --) {
-        stateLeafPathIndices[i] = QuinGeneratePathIndices(stateTreeDepth);
-        stateRootQip[i] = QuinTreeInclusionProof(stateTreeDepth);
-        stateRootHasher[i] = Hasher4();
         processors[i] = ProcessOne(stateTreeDepth, voteOptionTreeDepth);
 
         processors[i].numSignUps <== numSignUps;
         processors[i].maxVoteOptions <== maxVoteOptions;
         processors[i].pollEndTimestamp <== pollEndTimestamp;
+
+        processors[i].currentStateRoot <== stateRoots[i + 1];
         processors[i].currentBallotRoot <== ballotRoots[i + 1];
 
         for (var j = 0; j < STATE_LEAF_LENGTH; j ++) {
-            stateRootHasher[i].in[j] <== currentStateLeaves[i][j];
             processors[i].stateLeaf[j] <== currentStateLeaves[i][j];
         }
 
@@ -283,12 +277,9 @@ template ProcessMessages(
             processors[i].ballot[j] <== currentBallots[i][j];
         }
 
-        stateLeafPathIndices[i].in <== commands[i].stateIndex;
-
         for (var j = 0; j < stateTreeDepth; j ++) {
-            stateRootQip[i].path_index[j] <== stateLeafPathIndices[i].out[j];
-
             for (var k = 0; k < TREE_ARITY - 1; k ++) {
+
                 processors[i].stateLeafPathElements[j][k] 
                     <== currentStateLeavesPathElements[i][j][k];
 
@@ -296,9 +287,6 @@ template ProcessMessages(
                     <== currentBallotsPathElements[i][j][k];
             }
         }
-
-        stateRootQip[i].leaf <== stateRootHasher[i].hash;
-        processors[i].currentStateRoot <== stateRoots[i + 1];
 
         processors[i].currentVoteWeight <== currentVoteWeights[i];
 
@@ -473,8 +461,13 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     enoughVoiceCredits.in[0] <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + b - c;
     enoughVoiceCredits.in[1] <== 0;
 
+    component isMessageValid = IsEqual();
+    var bothValid = 2; 
+    isMessageValid.in[0] <== bothValid;
+    isMessageValid.in[1] <== transformer.isValid + enoughVoiceCredits.out;
+
     component cmdVoteOptionIndexMux = Mux1();
-    cmdVoteOptionIndexMux.s <== transformer.isValid;
+    cmdVoteOptionIndexMux.s <== isMessageValid.out;
     cmdVoteOptionIndexMux.c[0] <== 0;
     cmdVoteOptionIndexMux.c[1] <== cmdVoteOptionIndex;
 
@@ -493,7 +486,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     currentVoteWeightQip.root === ballot[BALLOT_VO_ROOT_IDX];
 
     component voteWeightMux = Mux1();
-    voteWeightMux.s <== transformer.isValid;
+    voteWeightMux.s <== isMessageValid.out;
     voteWeightMux.c[0] <== currentVoteWeight;
     voteWeightMux.c[1] <== cmdNewVoteWeight;
 
@@ -503,7 +496,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     newSlVoiceCreditBalance.s <== enoughVoiceCredits.out;
 
     component voiceCreditBalanceMux = Mux1();
-    voiceCreditBalanceMux.s <== transformer.isValid;
+    voiceCreditBalanceMux.s <== isMessageValid.out;
     voiceCreditBalanceMux.c[0] <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX];
     voiceCreditBalanceMux.c[1] <== newSlVoiceCreditBalance.out;
 
@@ -521,7 +514,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     // The new vote option root in the ballot
     signal newBallotVoRoot;
     component newBallotVoRootMux = Mux1();
-    newBallotVoRootMux.s <== transformer.isValid;
+    newBallotVoRootMux.s <== isMessageValid.out;
     newBallotVoRootMux.c[0] <== ballot[BALLOT_VO_ROOT_IDX];
     newBallotVoRootMux.c[1] <== newVoteOptionTreeQip.root;
     newBallotVoRoot <== newBallotVoRootMux.out;
@@ -548,7 +541,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     // 7. Generate a new ballot root
     
     component newBallotNonceMux = Mux1();
-    newBallotNonceMux.s <== transformer.isValid;
+    newBallotNonceMux.s <== isMessageValid.out;
     newBallotNonceMux.c[0] <== ballot[BALLOT_NONCE_IDX];
     newBallotNonceMux.c[1] <== transformer.newBallotNonce;
 
