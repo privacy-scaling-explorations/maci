@@ -462,7 +462,8 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     enoughVoiceCredits.in[1] <== 0;
 
     component isMessageValid = IsEqual();
-    isMessageValid.in[0] <== 2;
+    var bothValid = 2; 
+    isMessageValid.in[0] <== bothValid;
     isMessageValid.in[1] <== transformer.isValid + enoughVoiceCredits.out;
 
     component cmdVoteOptionIndexMux = Mux1();
