@@ -730,7 +730,7 @@ class Poll {
 
     public hasUnfinishedSubsidyCalculation = () => {
         const batchSize = this.batchSizes.subsidyBatchSize
-        return (this.rbi * batchSize < this.ballots.length) || (this.cbi * batchSize < this.ballots.length)
+        return (this.rbi * batchSize < this.ballots.length) && (this.cbi * batchSize < this.ballots.length)
     }
 
     public subsidyPerBatch = (): BigInt[] => {
@@ -747,6 +747,7 @@ class Poll {
         let currentSubsidyCommitment  = BigInt(0)
         let currentSubsidySalt = BigInt(0)
         let saltIndex = this.previousSubsidyIndexToString()
+        console.log(`prevIdx=${saltIndex}, curIdx=${this.rbi}-${this.cbi}`)
         if (this.rbi !== 0 || this.cbi !== 0) {
             currentSubsidySalt = BigInt(this.subsidySalts[saltIndex])
             currentSubsidyCommitment = BigInt(genTallyResultCommitment(this.subsidy, currentSubsidySalt, this.treeDepths.voteOptionTreeDepth))
@@ -766,8 +767,8 @@ class Poll {
         const newSubsidyCommitment = genTallyResultCommitment(this.subsidy, newSubsidySalt, this.treeDepths.voteOptionTreeDepth)
 
         const packedVals = MaciState.packSubsidySmallVals(
-            rowStartIndex,
-            colStartIndex,
+            this.rbi,
+            this.cbi,
             this.numSignUps,
         )
 
@@ -808,12 +809,12 @@ class Poll {
 
     public increaseSubsidyIndex = () => {
         const batchSize = this.batchSizes.subsidyBatchSize
-        if (this.cbi * batchSize < this.ballots.length) {
+        if (this.cbi * batchSize + batchSize < this.ballots.length ) {
             this.cbi++
-        } else if (this.rbi * batchSize < this.ballots.length) {
+        } else {
             this.rbi++
             this.cbi = 0
-        }
+        } 
         return
     }
 
@@ -834,10 +835,10 @@ class Poll {
         return rbi.toString() + "-" + cbi.toString()
     }
 
-    public coefficientCalculation = (row: number, col: number): BigInt  => {
+    public coefficientCalculation = (rowBallot: Ballot, colBallot: Ballot): BigInt  => {
         let sum = BigInt(0)
-        for (let j = 0; j < this.maxValues.maxVoteOptions; j++) {
-            sum += BigInt(this.ballots[row].votes[j]) * BigInt(this.ballots[col].votes[j])
+        for (let p = 0; p < this.maxValues.maxVoteOptions; p++) {
+            sum += BigInt(rowBallot.votes[p]) * BigInt(colBallot.votes[p])
         }
         let res = BigInt(this.MM * (10 ** this.WW))/(BigInt(this.MM)+BigInt(sum))
         return res
@@ -852,19 +853,24 @@ class Poll {
             this.treeDepths.voteOptionTreeDepth,
         )
         for (let i = 0; i < batchSize; i++) {
+            const row = rowStartIndex + i
+            const col = colStartIndex + i
+            const rowBallot = (row < this.ballots.length)?this.ballots[row]:emptyBallot
+            const colBallot = (col < this.ballots.length)?this.ballots[col]:emptyBallot
+            ballots1.push(rowBallot)
+            ballots2.push(colBallot)
+        }
+        for (let i = 0; i < batchSize; i++) {
             for (let j = 0; j < batchSize; j++) {
                 const row = rowStartIndex + i
                 const col = colStartIndex + j
-
                 const rowBallot = (row < this.ballots.length)?this.ballots[row]:emptyBallot
                 const colBallot = (col < this.ballots.length)?this.ballots[col]:emptyBallot
-                ballots1.push(rowBallot)
-                ballots2.push(colBallot)
 
-                const kij = this.coefficientCalculation(row, col)
+                const kij = this.coefficientCalculation(rowBallot, colBallot)
                 for (let p = 0; p < this.maxValues.maxVoteOptions; p++) {
-                    const vip = BigInt(this.ballots[row].votes[p])
-                    const vjp = BigInt(this.ballots[col].votes[p])
+                    const vip = BigInt(rowBallot.votes[p])
+                    const vjp = BigInt(colBallot.votes[p])
                     this.subsidy[p] = BigInt(this.subsidy[p]) + BigInt(kij) * vip * vjp
                 }
             }

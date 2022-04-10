@@ -84,8 +84,8 @@ template SubsidyPerBatch (
     signal colStartIndex;
 
     numSignUps <== inputHasher.numSignUps;
-    rowStartIndex <== inputHasher.rowIndex;
-    colStartIndex <== inputHasher.colIndex;
+    rowStartIndex <== inputHasher.rbi * batchSize;
+    colStartIndex <== inputHasher.cbi * batchSize;
 
     component validRowIndex = LessEqThan(50);
     validRowIndex.in[0] <== rowStartIndex;
@@ -107,7 +107,7 @@ template SubsidyPerBatch (
         ballotHashers1[i].right <== ballots1[i][BALLOT_VO_ROOT_IDX];
         ballotTreeVerifier1.leaves[i] <== ballotHashers1[i].hash;
     }
-    ballotTreeVerifier1.index <== rowStartIndex;
+    ballotTreeVerifier1.index <== inputHasher.rbi;
     ballotTreeVerifier1.root <== ballotRoot;
     for (var i = 0; i < k; i ++) {
         for (var j = 0; j < TREE_ARITY - 1; j ++) {
@@ -123,7 +123,7 @@ template SubsidyPerBatch (
         ballotHashers2[i].right <== ballots2[i][BALLOT_VO_ROOT_IDX];
         ballotTreeVerifier2.leaves[i] <== ballotHashers2[i].hash;
     }
-    ballotTreeVerifier2.index <== colStartIndex;
+    ballotTreeVerifier2.index <== inputHasher.cbi;
     ballotTreeVerifier2.root <== ballotRoot;
     for (var i = 0; i < k; i ++) {
         for (var j = 0; j < TREE_ARITY - 1; j ++) {
@@ -207,11 +207,10 @@ template SubsidyPerBatch (
         rcv.newSubsidy[i] <== subsidy[i].sum;
     }
 
-    /*
-    signal output res[batchSize];
-    for (var i = 0; i < batchSize; i++) {
-        res[i] <== finalResult[i].c;
-    } */
+    signal output res[numVoteOptions];
+    for (var i = 0; i < numVoteOptions; i++) {
+        res[i] <== rcv.newSubsidy[i];
+    } 
 
 }
 
@@ -244,7 +243,6 @@ template SubsidyCommitmentVerifier(voteOptionTreeDepth) {
     component currentResultsCommitment = HashLeftRight();
     currentResultsCommitment.left <== currentResultsRoot.root;
     currentResultsCommitment.right <== currentSubsidySalt;
-    currentResultsCommitment.hash === currentSubsidyCommitment;
 
     // Check if the current tally commitment is correct only if this is not the first batch
     component iz = IsZero();
@@ -282,15 +280,15 @@ template SubsidyInputHasher() {
     signal input newSubsidyCommitment;
 
     signal output numSignUps;
-    signal output rowIndex;
-    signal output colIndex;
+    signal output rbi;
+    signal output cbi;
     signal output hash;
 
     component unpack = UnpackElement(3);
     unpack.in <== packedVals;
     numSignUps <== unpack.out[0];
-    rowIndex <== unpack.out[1];
-    colIndex <== unpack.out[2];
+    rbi <== unpack.out[1];
+    cbi <== unpack.out[2];
 
     component hasher = Sha256Hasher4();
     hasher.in[0] <== packedVals;

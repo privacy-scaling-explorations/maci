@@ -416,6 +416,7 @@ const genProofs = async (args: any) => {
     console.log(`subsidyBatchSize=${subsidyBatchSize}, numLeaves=${numLeaves}, totalSubsidyBatch=${totalSubsidyBatches}`)
     
     let subsidyCircuitInputs
+    let numBatchesCalced = 0
     while (poll.hasUnfinishedSubsidyCalculation()) {
         subsidyCircuitInputs = poll.subsidyPerBatch()
         const r = genProof(subsidyCircuitInputs, rapidsnarkExe, args.subsidy_witnessgen, args.subsidy_zkey)
@@ -432,8 +433,8 @@ const genProofs = async (args: any) => {
         }
 
         subsidyProofs.push(thisProof)
-        const numBatchesCalced = poll.rbi * subsidyBatchSize + poll.cbi
-        saveOutput(outputDir, thisProof, `subsidy_${poll.numBatchesCalced - 1}.json`)
+        numBatchesCalced++
+        saveOutput(outputDir, thisProof, `subsidy_${numBatchesCalced - 1}.json`)
         console.log(`\nProgress: ${numBatchesCalced} / ${totalSubsidyBatches}`)
     }
 
