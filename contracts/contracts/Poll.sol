@@ -499,8 +499,6 @@ contract PollProcessorAndTallyer is
     string constant ERROR_PROCESSING_NOT_COMPLETE = "PptE07";
     string constant ERROR_ALL_BALLOTS_TALLIED = "PptE08";
     string constant ERROR_STATE_AQ_NOT_MERGED = "PptE09";
-    string constant ERROR_ALL_COEFF_CALCULATED = "PptE10";
-    string constant ERROR_INVALID_COEFF_PROOF = "PptE11";
 
     // The commitment to the state and ballot roots
     uint256 public sbCommitment;
@@ -531,9 +529,6 @@ contract PollProcessorAndTallyer is
     uint256 public tallyCommitment;
 
     uint256 public tallyBatchNum;
-
-    uint256 public coeffCommitment;
-    uint256 public coeffBatchNum;
 
     Verifier public verifier;
 
@@ -590,8 +585,8 @@ contract PollProcessorAndTallyer is
         require(_poll.stateAqMerged(), ERROR_STATE_AQ_NOT_MERGED);
 
         // Retrieve stored vals
-        ( , , uint8 messageTreeDepth,,, ) = _poll.treeDepths();
-        (uint256 messageBatchSize, ) = _poll.batchSizes();
+        ( , , uint8 messageTreeDepth,) = _poll.treeDepths();
+        (uint256 messageBatchSize,, ) = _poll.batchSizes();
 
         AccQueue messageAq;
         (, , messageAq) = _poll.extContracts();
@@ -659,8 +654,8 @@ contract PollProcessorAndTallyer is
         uint256[8] memory _proof
     ) internal view returns (bool) {
 
-        ( , , uint8 messageTreeDepth, uint8 voteOptionTreeDepth,,) = _poll.treeDepths();
-        (uint256 messageBatchSize,) = _poll.batchSizes();
+        ( , , uint8 messageTreeDepth, uint8 voteOptionTreeDepth) = _poll.treeDepths();
+        (uint256 messageBatchSize,,) = _poll.batchSizes();
         (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
         (VkRegistry vkRegistry, IMACI maci, ) = _poll.extContracts();
 
@@ -738,7 +733,7 @@ contract PollProcessorAndTallyer is
     ) public view returns (uint256) {
         (, uint256 maxVoteOptions) = _poll.maxValues();
         (, uint256 numMessages) = _poll.numSignUpsAndMessages();
-        (uint8 mbs,) = _poll.batchSizes();
+        (uint8 mbs,,) = _poll.batchSizes();
         uint256 messageBatchSize = uint256(mbs);
 
         uint256 batchEndIndex = _currentMessageBatchIndex + messageBatchSize;
@@ -767,6 +762,7 @@ contract PollProcessorAndTallyer is
     }
 
 
+    /*
     function genCoeffPackedVals(
         uint256 _numCoeffTotal,
         uint256 _batchStartIndex,
@@ -881,7 +877,8 @@ contract PollProcessorAndTallyer is
 
         // Verify the proof
         return verifier.verify(_proof, vk, publicInputHash);
-    }
+    } 
+    */
 
     /*
      * Pack the batch start index and number of signups into a 100-bit value.
@@ -935,7 +932,7 @@ contract PollProcessorAndTallyer is
             ERROR_PROCESSING_NOT_COMPLETE
         );
 
-        ( , uint256 tallyBatchSize) = _poll.batchSizes(); 
+        ( , uint256 tallyBatchSize,) = _poll.batchSizes(); 
         uint256 batchStartIndex = tallyBatchNum * tallyBatchSize;
         (uint256 numSignUps,) = _poll.numSignUpsAndMessages();
 
@@ -978,7 +975,7 @@ contract PollProcessorAndTallyer is
         uint256 _tallyBatchSize,
         uint256 _newTallyCommitment
     ) public view returns (bool) {
-        (uint8 intStateTreeDepth,,,uint8 voteOptionTreeDepth,,) = _poll.treeDepths();
+        (uint8 intStateTreeDepth,,,uint8 voteOptionTreeDepth) = _poll.treeDepths();
 
         (VkRegistry vkRegistry, IMACI maci, ) = _poll.extContracts();
 

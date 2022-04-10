@@ -80,26 +80,6 @@ const configureSubparser = (subparsers: any) => {
     )
 
     createParser.addArgument(
-        ['-ic', '--int-coeff-tree-depth'],
-        {
-            action: 'store',
-            type: 'int',
-            required: true,
-            help: 'The intermediate coeff tree depth',
-        }
-    )
-
-    createParser.addArgument(
-        ['-c', '--coeff-tree-depth'],
-        {
-            action: 'store',
-            type: 'int',
-            required: true,
-            help: 'The coeff tree depth',
-        }
-    )
-
-    createParser.addArgument(
         ['-m', '--msg-tree-depth'],
         {
             action: 'store',
@@ -161,8 +141,6 @@ const deployPoll = async (args: any) => {
     const messageTreeSubDepth = args.msg_batch_depth
     const messageTreeDepth = args.msg_tree_depth
     const voteOptionTreeDepth = args.vote_option_tree_depth
-    const intCoeffTreeDepth = args.int_coeff_tree_depth
-    const coeffTreeDepth = args.coeff_tree_depth
 
     const signer = await getDefaultSigner()
 
@@ -204,8 +182,6 @@ const deployPoll = async (args: any) => {
                 messageTreeSubDepth,
                 messageTreeDepth,
                 voteOptionTreeDepth,
-                intCoeffTreeDepth,
-                coeffTreeDepth,
             },
             unserialisedPubkey.asContractParam(),
         )

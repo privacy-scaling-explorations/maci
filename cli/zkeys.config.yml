@@ -2,7 +2,7 @@
 out: "./zkeys"
 
 # Make sure that these paths are correct
-circomPath: "../../.local/bin/circom"
+circomPath: "/home/chao/.cargo/bin/circom"
 snarkjsPath: "./node_modules/snarkjs/build/cli.cjs"
 
 circuits:
@@ -31,9 +31,9 @@ circuits:
   #pubInputs: ["inputHash"]
 
 
-- template: "../circuits/circom/coeff.circom"
-  component: "CoefficientPerBatch"
-  params: [10, 1, 2] # coeffTreeDepth, intCoeffTreeDepth, voteOptionTreeDepth
+- template: "../circuits/circom/subsidy.circom"
+  component: "SubsidyPerBatch"
+  params: [10, 1, 2] # stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth
   type: "test"
   pubInputs: ["inputHash"]
 

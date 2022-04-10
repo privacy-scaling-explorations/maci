@@ -5,7 +5,7 @@ import * as path from 'path'
 
 import { extractVk } from 'maci-circuits'
 import { VerifyingKey } from 'maci-domainobjs'
-import { genProcessVkSig, genTallyVkSig, genCoeffVkSig } from 'maci-core'
+import { genProcessVkSig, genTallyVkSig } from 'maci-core'
 import { parseArtifact, getDefaultSigner } from 'maci-contracts'
 import { contractExists } from './utils'
 import { contractFilepath } from './config'
@@ -67,26 +67,6 @@ const configureSubparser = (subparsers: any) => {
     )
 
     createParser.addArgument(
-        ['-ic', '--int-coeff-tree-depth'],
-        {
-            action: 'store',
-            type: 'int',
-            required: true,
-            help: 'The intermediate coeff tree depth. '
-        }
-    )
-
-    createParser.addArgument(
-        ['-cf', '--coeff-tree-depth'],
-        {
-            action: 'store',
-            type: 'int',
-            required: true,
-            help: 'The coeff tree depth. '
-        }
-    )
-
-        createParser.addArgument(
         ['-b', '--msg-batch-depth'],
         {
             action: 'store',
@@ -115,15 +95,7 @@ const configureSubparser = (subparsers: any) => {
             help: 'The .zkey file for the vote tallying circuit. '
         }
     )
-    createParser.addArgument(
-        ['-cz', '--coeff-zkey'],
-        {
-            action: 'store',
-            type: 'string',
-            required: true,
-            help: 'The .zkey file for the vote tallying circuit. '
-        }
-    )
+    
 }
 
 const setVerifyingKeys = async (args: any) => {
@@ -140,16 +112,11 @@ const setVerifyingKeys = async (args: any) => {
     const voteOptionTreeDepth = args.vote_option_tree_depth
     const msgBatchDepth = args.msg_batch_depth
 
-    const intCoeffTreeDepth = args.int_coeff_tree_depth
-    const coeffTreeDepth = args.coeff_tree_depth
-
     const pmZkeyFile = path.resolve(args.process_messages_zkey)
     const tvZkeyFile = path.resolve(args.tally_votes_zkey)
-    const cfZkeyFile = path.resolve(args.coeff_zkey)
 
     const processVk: VerifyingKey = VerifyingKey.fromObj(extractVk(pmZkeyFile))
     const tallyVk: VerifyingKey = VerifyingKey.fromObj(extractVk(tvZkeyFile))
-    const coeffVk: VerifyingKey = VerifyingKey.fromObj(extractVk(cfZkeyFile))
 
     if (!fs.existsSync(pmZkeyFile)) {
         console.error(`Error: ${pmZkeyFile} does not exist.`)
@@ -159,10 +126,6 @@ const setVerifyingKeys = async (args: any) => {
         console.error(`Error: ${tvZkeyFile} does not exist.`)
         return 1
     }
-    if (!fs.existsSync(cfZkeyFile)) {
-        console.error(`Error: ${cfZkeyFile} does not exist.`)
-        return 1
-    }
 
     // Simple validation
     if (
@@ -170,9 +133,7 @@ const setVerifyingKeys = async (args: any) => {
         intStateTreeDepth < 1 ||
         msgTreeDepth < 1 ||
         voteOptionTreeDepth < 1 ||
-        msgBatchDepth < 1 ||
-        intCoeffTreeDepth < 1 ||
-        coeffTreeDepth < 1
+        msgBatchDepth < 1 
     ) {
         console.error('Error: invalid depth or batch size parameters')
         return 1
@@ -259,23 +220,6 @@ const setVerifyingKeys = async (args: any) => {
 
     const isTallyVkSet = await vkRegistryContract.isTallyVkSet(tallyVkSig)
 
-    // Query the contract to see if the coeffVk has been set
-    const coeffVkSig = genCoeffVkSig(
-        stateTreeDepth,
-        intStateTreeDepth,
-        voteOptionTreeDepth,
-        intCoeffTreeDepth,
-        coeffTreeDepth
-    )
-
-    const isCoeffVkSet = await vkRegistryContract.isCoeffVkSet(coeffVkSig)
-
-
-    if (isCoeffVkSet) {
-        console.error('Error: this coeff calculation verifying key is already set in the contract')
-        return 1
-    }
-
     try {
         console.log('Setting verifying keys...')
         const tx = await vkRegistryContract.setVerifyingKeys(
@@ -284,11 +228,8 @@ const setVerifyingKeys = async (args: any) => {
             msgTreeDepth,
             voteOptionTreeDepth,
             5 ** msgBatchDepth,
-            intCoeffTreeDepth,
-            coeffTreeDepth,
             processVk.asContractParam(),
-            tallyVk.asContractParam(),
-            coeffVk.asContractParam()
+            tallyVk.asContractParam()
         )
 
         const receipt = await tx.wait()
@@ -311,13 +252,6 @@ const setVerifyingKeys = async (args: any) => {
             voteOptionTreeDepth,
         )
 
-        const coeffVkOnChain = await vkRegistryContract.getCoeffVk(
-            stateTreeDepth,
-            intStateTreeDepth,
-            voteOptionTreeDepth,
-            intCoeffTreeDepth,
-            coeffTreeDepth,
-        )
 
         if (!compareVks(processVk, processVkOnChain)) {
             console.error('Error: processVk mismatch')
@@ -325,10 +259,6 @@ const setVerifyingKeys = async (args: any) => {
         }
         if (!compareVks(tallyVk, tallyVkOnChain)) {
             console.error('Error: tallyVk mismatch')
-            return 1
-        }
-        if (!compareVks(coeffVk, coeffVkOnChain)) {
-            console.error('Error: coeffVk mismatch')
             return 1
         }
 

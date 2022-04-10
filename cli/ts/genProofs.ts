@@ -74,11 +74,11 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-cf', '--coeff-file'],
+        ['-sf', '--subsidy-file'],
         {
             required: true,
             type: 'string',
-            help: 'A filepath in which to save the coeff data and commitment.',
+            help: 'A filepath in which to save the subsidy data and commitment.',
         }
     )
 
@@ -111,11 +111,11 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-wc', '--coeff-witnessgen'],
+        ['-ws', '--subsidy-witnessgen'],
         {
             required: true,
             type: 'string',
-            help: 'The path to the coeff calculation witness generation binary',
+            help: 'The path to the subsidy calculation witness generation binary',
         }
     )
 
@@ -138,11 +138,11 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-zc', '--coeff-zkey'],
+        ['-zs', '--subsidy-zkey'],
         {
             required: true,
             type: 'string',
-            help: 'The path to the CoeffPerBatch .zkey file',
+            help: 'The path to the SubsidyPerBatch .zkey file',
         }
     )
 
@@ -193,8 +193,8 @@ const genProofs = async (args: any) => {
         return 1
     }
 
-    if (fs.existsSync(args.coeff_file)) {
-        console.error(`Error: ${args.coeff_file} exists. Please specify a different filepath.`)
+    if (fs.existsSync(args.subsidy_file)) {
+        console.error(`Error: ${args.subsidy_file} exists. Please specify a different filepath.`)
         return 1
     }
 
@@ -229,7 +229,7 @@ const genProofs = async (args: any) => {
     // Extract the verifying keys
     const processVk = extractVk(args.process_zkey)
     const tallyVk = extractVk(args.tally_zkey)
-    const coeffVk = extractVk(args.coeff_zkey)
+    const subsidyVk = extractVk(args.subsidy_zkey)
 
     // The coordinator's MACI private key
     let serializedPrivkey
@@ -352,7 +352,7 @@ const genProofs = async (args: any) => {
     // TODO: support resumable proof generation
     const processProofs: any[] = []
     const tallyProofs: any[] = []
-    const coeffProofs: any[] = []
+    const subsidyProofs: any[] = []
 
     console.log('Generating proofs of message processing...')
     const messageBatchSize = poll.batchSizes.messageBatchSize
@@ -409,48 +409,50 @@ const genProofs = async (args: any) => {
         console.log(`\nProgress: ${poll.numBatchesProcessed} / ${totalMessageBatches}`)
     }
 
-    console.log('\nGenerating proofs of coeff calculation...')
-    const coeffBatchSize = poll.COEFF_TREE_ARITY ** poll.treeDepths.intCoeffTreeDepth
-    const numCoeffTotal = poll.numSignUps * (poll.numSignUps - 1) / 2
-    let totalCoeffBatches = Math.ceil(numCoeffTotal/coeffBatchSize)
+    console.log('\nGenerating proofs of subsidy calculation...')
+    const subsidyBatchSize = poll.batchSizes.subsidyBatchSize
+    const numLeaves = poll.stateLeaves.length
+    let totalSubsidyBatches = Math.ceil(numLeaves/subsidyBatchSize) ** 2
+    console.log(`subsidyBatchSize=${subsidyBatchSize}, numLeaves=${numLeaves}, totalSubsidyBatch=${totalSubsidyBatches}`)
     
-    let coeffCircuitInputs
-    while (!poll.isCoeffCalculationFinished()) {
-        coeffCircuitInputs = poll.coeffPerBatch()
-        const r = genProof(coeffCircuitInputs, rapidsnarkExe, args.coeff_witnessgen, args.coeff_zkey)
+    let subsidyCircuitInputs
+    while (poll.hasUnfinishedSubsidyCalculation()) {
+        subsidyCircuitInputs = poll.subsidyPerBatch()
+        const r = genProof(subsidyCircuitInputs, rapidsnarkExe, args.subsidy_witnessgen, args.subsidy_zkey)
 
-        const isValid = verifyProof(r.publicInputs, r.proof, coeffVk) 
+        const isValid = verifyProof(r.publicInputs, r.proof, subsidyVk) 
         if (!isValid) {
-            console.error('Error: generated an invalid coeff calc proof')
+            console.error('Error: generated an invalid subsidy calc proof')
             return 1
         }
         const thisProof = {
-            circuitInputs: coeffCircuitInputs,
+            circuitInputs: subsidyCircuitInputs,
             proof: r.proof,
             publicInputs: r.publicInputs,
         }
 
-        coeffProofs.push(thisProof)
-        saveOutput(outputDir, thisProof, `coeff_${poll.numCoeffBatchesCalced - 1}.json`)
-        console.log(`\nProgress: ${poll.numCoeffBatchesCalced} / ${totalCoeffBatches}`)
+        subsidyProofs.push(thisProof)
+        const numBatchesCalced = poll.rbi * subsidyBatchSize + poll.cbi
+        saveOutput(outputDir, thisProof, `subsidy_${poll.numBatchesCalced - 1}.json`)
+        console.log(`\nProgress: ${numBatchesCalced} / ${totalSubsidyBatches}`)
     }
 
     const asHex = (val): string => {
         return '0x' + BigInt(val).toString(16)
     }
 
-    const coeffFileData = {
+    const subsidyFileData = {
         provider: signer.provider.connection.url,
         maci: maciAddress,
         pollId,
-        coeffCommitment: asHex(coeffCircuitInputs.coeffCommitment),
-        coeff: {
-            coeff: poll.coeff.map((x) => x.toString()),
-            salt: asHex(coeffCircuitInputs.coeffSalt),
+        newSubsidyCommitment: asHex(subsidyCircuitInputs.newSubsidyCommitment),
+        subsidy: {
+            result: poll.subsidy.map((x) => x.toString()),
+            salt: asHex(subsidyCircuitInputs.newSubsidySalt),
         }
     }
 
-    fs.writeFileSync(args.coeff_file, JSON.stringify(coeffFileData, null, 4))
+    fs.writeFileSync(args.subsidy_file, JSON.stringify(subsidyFileData, null, 4))
 
 
     console.log('\nGenerating proofs of vote tallying...')
