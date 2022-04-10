@@ -207,10 +207,11 @@ template SubsidyPerBatch (
         rcv.newSubsidy[i] <== subsidy[i].sum;
     }
 
+    /*
     signal output res[numVoteOptions];
     for (var i = 0; i < numVoteOptions; i++) {
         res[i] <== rcv.newSubsidy[i];
-    } 
+    } */
 
 }
 

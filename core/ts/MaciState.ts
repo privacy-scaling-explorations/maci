@@ -1485,20 +1485,16 @@ const genTallyVkSig = (
             BigInt(_voteOptionTreeDepth)
 }
 
-
-const genCoeffVkSig = (
+const genSubsidyVkSig = (
     _stateTreeDepth: number,
     _intStateTreeDepth: number,
     _voteOptionTreeDepth: number,
-    _intCoeffTreeDepth: number,
-    _coeffTreeDepth: number,
 ): BigInt => {
-    return (BigInt(_stateTreeDepth) << BigInt(192)) +
-           (BigInt(_intStateTreeDepth) << BigInt(144)) +
-           (BigInt(_voteOptionTreeDepth) << BigInt(96)) +
-           (BigInt(_intCoeffTreeDepth) << BigInt(48)) +
-           BigInt(_coeffTreeDepth) 
+    return (BigInt(_stateTreeDepth) << BigInt(128)) +
+           (BigInt(_intStateTreeDepth) << BigInt(64)) +
+            BigInt(_voteOptionTreeDepth)
 }
+
 
 /*
  * A helper function which hashes a list of results with a salt and returns the
@@ -1528,7 +1524,7 @@ export {
     Poll,
     genProcessVkSig,
     genTallyVkSig,
-    genCoeffVkSig,
+    genSubsidyVkSig,
     genTallyResultCommitment,
     STATE_TREE_DEPTH,
 }

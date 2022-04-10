@@ -148,7 +148,7 @@ const proveOnChain = async (args: any) => {
     let data = {
         processProofs: {},
         tallyProofs: {},
-        coeffProofs: {},
+        subsidyProofs: {},
     }
 
     let numProcessProofs = 0
@@ -174,9 +174,9 @@ const proveOnChain = async (args: any) => {
                 data.tallyProofs[Number(match[1])] = JSON.parse(fs.readFileSync(filepath).toString())
                 continue
             }
-            match = filename.match(/coeff_(\d+)/)
+            match = filename.match(/subsidy_(\d+)/)
             if (match != null) {
-                data.coeffProofs[Number(match[1])] = JSON.parse(fs.readFileSync(filepath).toString())
+                data.subsidyProofs[Number(match[1])] = JSON.parse(fs.readFileSync(filepath).toString())
                 continue
             }
         }
@@ -184,11 +184,11 @@ const proveOnChain = async (args: any) => {
 
     const numSignUpsAndMessages = await pollContract.numSignUpsAndMessages()
     const numSignUps = Number(numSignUpsAndMessages[0])
-    const numCoeffTotal = numSignUps * (numSignUps - 1) / 2
     const numMessages = Number(numSignUpsAndMessages[1])
     const batchSizes = await pollContract.batchSizes()
     const messageBatchSize = Number(batchSizes.messageBatchSize)
     const tallyBatchSize = Number(batchSizes.tallyBatchSize)
+    const subsidyBatchSize = Number(batchSizes.subsidyBatchSize)
     let totalMessageBatches = numMessages <= messageBatchSize ?
         1
         : 
@@ -372,32 +372,28 @@ const proveOnChain = async (args: any) => {
     }
 
     // ------------------------------------------------------------------------
-    // coeff calculation proofs
+    // subsidy calculation proofs
     const treeArity = 5
-    const coeffBatchSize = treeArity ** Number(treeDepths.intCoeffTreeDepth)
-    let totalCoeffBatches = Math.ceil(numCoeffTotal/coeffBatchSize)
-    let coeffBatchNum = Number(await pptContract.coeffBatchNum())
-    console.log(`number of coeff batch processed: ${coeffBatchNum}`)
+    let rbi = Number(await pptContract.rbi())
+    let cbi = Number(await pptContract.cbi())
+    let numLeaves = numSignUps + 1
+    let subsidyBatchNum = rbi * Math.ceil(numLeaves/subsidyBatchSize)  + cbi
+    let totalBatchNum = Math.ceil(numLeaves/subsidyBatchSize) ** 2
+    console.log(`number of subsidy batch processed: ${subsidyBatchNum}, numleaf=${numLeaves}`)
 
-    for (let i = coeffBatchNum; i < totalCoeffBatches; i++) {
-        const batchStartIndex = i * coeffBatchSize
-        const { proof, circuitInputs, publicInputs } = data.coeffProofs[i]
+    for (let i = subsidyBatchNum; i < totalBatchNum; i++) {
+        const { proof, circuitInputs, publicInputs } = data.subsidyProofs[i]
 
-        const coeffCommitmentOnChain = await pptContract.coeffCommitment()
-        const coeffCommitment = coeffBatchNum == 0 ? '0' : circuitInputs.coeffCommitment
-        if (coeffCommitmentOnChain.toString() !== coeffCommitment) {
-            console.error(`Error: coeffCommitment mismatch. onChain=${coeffCommitmentOnChain.toString()}, input=${coeffCommitment}, batchNum=${i}`)
+        const subsidyCommitmentOnChain = await pptContract.subsidyCommitment()
+        if (subsidyCommitmentOnChain.toString() !== circuitInputs.currentSubsidyCommitment) {
+            console.error(`Error: subsidycommitment mismatch`)
             return 1
         }
         const packedValsOnChain = BigInt(
-            await pptContract.genCoeffPackedVals(
-                numCoeffTotal,
-                batchStartIndex,
-                coeffBatchSize,
-            )
+            await pptContract.genSubsidyPackedVals(numSignUps)
         )
         if (circuitInputs.packedVals !== packedValsOnChain.toString()) {
-            console.error('Error: packedVals mismatch.')
+            console.error('Error: subsidy packedVals mismatch.')
             return 1
         }
         const currentSbCommitmentOnChain = await pptContract.sbCommitment()
@@ -405,24 +401,23 @@ const proveOnChain = async (args: any) => {
             console.error('Error: currentSbCommitment mismatch.')
             return 1
         }
-        const publicInputHashOnChain = await pptContract.genCoeffPublicInputHash(
-            numCoeffTotal,
-            batchStartIndex,
-            coeffBatchSize,
-            circuitInputs.coeffCommitment,
+        const publicInputHashOnChain = await pptContract.genSubsidyPublicInputHash(
+            numSignUps,
+            circuitInputs.newSubsidyCommitment,
         )
+        
         if (publicInputHashOnChain.toString() !== publicInputs[0]) {
             console.error('Error: public input mismatch.')
             return 1
         }
 
-        const txErr = 'Error: coeffCalculation() failed...'
+        const txErr = 'Error: updateSubsidy() failed...'
         const formattedProof = formatProofForVerifierContract(proof)
         let tx
         try {
-            tx = await pptContract.coeffCalculation(
+            tx = await pptContract.updateSubsidy(
                 pollContract.address,
-                circuitInputs.coeffCommitment,
+                circuitInputs.newSubsidyCommitment,
                 formattedProof,
             )
         } catch (e) {
@@ -437,14 +432,15 @@ const proveOnChain = async (args: any) => {
             return 1
         }
 
-        console.log(`Progress: ${coeffBatchNum + 1} / ${totalCoeffBatches}`)
+        console.log(`Progress: ${subsidyBatchNum + 1} / ${totalBatchNum}`)
         console.log(`Transaction hash: ${tx.hash}`)
 
         // Wait for the node to catch up
-        coeffBatchNum = Number(await pptContract.coeffBatchNum())
+        let nrbi = Number(await pptContract.rbi())
+        let ncbi = Number(await pptContract.cbi())
         let backOff = 1000
         let numAttempts = 0
-        while (coeffBatchNum !== i + 1) {
+        while (nrbi === rbi && ncbi === cbi) {
             await delay(backOff)
             backOff *= 1.2
             numAttempts ++
@@ -452,10 +448,15 @@ const proveOnChain = async (args: any) => {
                 break
             }
         }
+
+        rbi = nrbi
+        cbi = ncbi
+        subsidyBatchNum = rbi * subsidyBatchNum + cbi
     }
 
-    if (coeffBatchNum === totalCoeffBatches) {
-        console.log('All coeff calculation proofs have been submitted.')
+    if (subsidyBatchNum === totalBatchNum) {
+        console.log('All subsidy calculation proofs have been submitted.')
+        console.log()
         console.log('OK')
     }
 

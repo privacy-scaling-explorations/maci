@@ -11,6 +11,7 @@ solc
 cli/tally.json
 **/test_tally.json
 **/tally.json
+**/subsidy.json
 integrationTests/test_tally.json
 integrationTests/artifacts/**
 deployedAddresses.json

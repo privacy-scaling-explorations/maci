@@ -35,6 +35,16 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
+        ['-sf', '--subsidy-file'],
+        {
+            required: true,
+            type: 'string',
+            help: 'A filepath in which to save the final tally result and salt.',
+        }
+    )
+
+
+    parser.addArgument(
         ['-x', '--contract'],
         {
             type: 'string',
@@ -125,11 +135,69 @@ const verify = async (args: any) => {
         signer,
     )
 
+    // ----------------------------------------------
+    // verify subsidy result
+
+    const onChainSubsidyCommitment = BigInt(await pptContract.subsidyCommitment())
+    console.log(onChainSubsidyCommitment.toString(16))
+    // Read the subsidy file
+    let contents
+    try {
+        contents = fs.readFileSync(args.subsidy_file, { encoding: 'utf8' })
+    } catch {
+        console.error('Error: unable to open ', args.subsidy_file)
+        return 0
+    }
+   // Parse the file
+    let data
+    try {
+        data = JSON.parse(contents)
+    } catch {
+        console.error('Error: unable to parse ', args.subsidy_file)
+        return 0
+    }
+    console.log('-------------subsidy data -------------------')
+    console.log(data)
+
+    let validResultsCommitment =
+        data.newSubsidyCommitment &&
+        data.newSubsidyCommitment.match(/0x[a-fA-F0-9]+/)
+
+    if (!validResultsCommitment) {
+        console.error('Error: invalid results commitment format')
+        return 0
+    }
+
+    const treeDepths = await pollContract.treeDepths()
+    const voteOptionTreeDepth = Number(treeDepths.voteOptionTreeDepth)
+    const numVoteOptions = 5 ** voteOptionTreeDepth
+    const wrongNumVoteOptions = 'Error: wrong number of vote options.'
+    if (data.results.subsidy.length !== numVoteOptions) {
+        console.error(wrongNumVoteOptions)
+        return 1
+    }
+
+    // to compute newSubsidyCommitment, we can use genTallyResultCommitment
+    const newSubsidyCommitment = genTallyResultCommitment(
+        data.results.subsidy.map((x) => BigInt(x)),
+        data.results.salt,
+        voteOptionTreeDepth
+    )
+
+    if (onChainSubsidyCommitment !== newSubsidyCommitment) {
+        console.log('Error: the on-chain subsidy commitment does not match.')
+        return 1
+    }
+
+
+
+
+    // ----------------------------------------------
+    // verify tally result
     const onChainTallyCommitment = BigInt(await pptContract.tallyCommitment())
     console.log(onChainTallyCommitment.toString(16))
 
     // Read the tally file
-    let contents
     try {
         contents = fs.readFileSync(args.tally_file, { encoding: 'utf8' })
     } catch {
@@ -138,7 +206,6 @@ const verify = async (args: any) => {
     }
 
     // Parse the tally file
-    let data
     try {
         data = JSON.parse(contents)
     } catch {
@@ -146,9 +213,10 @@ const verify = async (args: any) => {
         return 0
     }
 
+    console.log('-------------tally data -------------------')
     console.log(data)
     // Check the results commitment
-    const validResultsCommitment =
+    validResultsCommitment =
         data.newTallyCommitment &&
         data.newTallyCommitment.match(/0x[a-fA-F0-9]+/)
 
@@ -160,10 +228,6 @@ const verify = async (args: any) => {
     // Ensure that the lengths of data.results.tally and
     // data.perVOSpentVoiceCredits.tally are correct
     // Get vote option tree depth
-    const treeDepths = await pollContract.treeDepths()
-    const voteOptionTreeDepth = Number(treeDepths.voteOptionTreeDepth)
-    const numVoteOptions = 5 ** voteOptionTreeDepth
-    const wrongNumVoteOptions = 'Error: wrong number of vote options.'
     if (data.results.tally.length !== numVoteOptions) {
         console.error(wrongNumVoteOptions)
         return 1
@@ -211,7 +275,7 @@ const verify = async (args: any) => {
         return 1
     }
 
-    console.log('OK')
+    console.log('OK. finish verify')
 
     return 0
 }

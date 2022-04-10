@@ -7,7 +7,7 @@ import {
     Poll,
     genProcessVkSig,
     genTallyVkSig,
-    genCoeffVkSig
+    genSubsidyVkSig
 } from './MaciState'
 
 export {
@@ -19,5 +19,5 @@ export {
     Poll,
     genProcessVkSig,
     genTallyVkSig,
-    genCoeffVkSig
+    genSubsidyVkSig
 }

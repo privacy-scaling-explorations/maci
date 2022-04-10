@@ -447,8 +447,8 @@ const genProofs = async (args: any) => {
         maci: maciAddress,
         pollId,
         newSubsidyCommitment: asHex(subsidyCircuitInputs.newSubsidyCommitment),
-        subsidy: {
-            result: poll.subsidy.map((x) => x.toString()),
+        results: {
+            subsidy: poll.subsidy.map((x) => x.toString()),
             salt: asHex(subsidyCircuitInputs.newSubsidySalt),
         }
     }

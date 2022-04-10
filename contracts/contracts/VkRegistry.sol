@@ -18,6 +18,9 @@ contract VkRegistry is Ownable, SnarkCommon {
     mapping (uint256 => VerifyingKey) internal tallyVks; 
     mapping (uint256 => bool) internal tallyVkSet; 
 
+    mapping (uint256 => VerifyingKey) internal subsidyVks; 
+    mapping (uint256 => bool) internal subsidyVkSet; 
+
     //TODO: event for setVerifyingKeys
 
     function isProcessVkSet(uint256 _sig) public view returns (bool) {
@@ -26,6 +29,10 @@ contract VkRegistry is Ownable, SnarkCommon {
 
     function isTallyVkSet(uint256 _sig) public view returns (bool) {
         return tallyVkSet[_sig];
+    }
+
+    function isSubsidyVkSet(uint256 _sig) public view returns (bool) {
+        return subsidyVkSet[_sig];
     }
 
     function genProcessVkSig(
@@ -52,6 +59,17 @@ contract VkRegistry is Ownable, SnarkCommon {
             _voteOptionTreeDepth;
     }
 
+    function genSubsidyVkSig(
+        uint256 _stateTreeDepth,
+        uint256 _intStateTreeDepth,
+        uint256 _voteOptionTreeDepth
+    ) public pure returns (uint256) {
+        return 
+            (_stateTreeDepth << 128) +
+            (_intStateTreeDepth << 64) +
+            _voteOptionTreeDepth;
+    }
+
     function setVerifyingKeys(
         uint256 _stateTreeDepth,
         uint256 _intStateTreeDepth,
@@ -59,7 +77,8 @@ contract VkRegistry is Ownable, SnarkCommon {
         uint256 _voteOptionTreeDepth,
         uint256 _messageBatchSize,
         VerifyingKey memory _processVk,
-        VerifyingKey memory _tallyVk
+        VerifyingKey memory _tallyVk,
+        VerifyingKey memory _subsidyVk
     ) public onlyOwner {
 
         uint256 processVkSig = genProcessVkSig(
@@ -78,6 +97,14 @@ contract VkRegistry is Ownable, SnarkCommon {
         );
 
         require(tallyVkSet[tallyVkSig] == false, "VkRegistry: tally vk already set");
+
+        uint256 subsidyVkSig = genSubsidyVkSig(
+            _stateTreeDepth,
+            _intStateTreeDepth,
+            _voteOptionTreeDepth
+        );
+
+        require(subsidyVkSet[subsidyVkSig] == false, "VkRegistry: subsidy vk already set");
 
         VerifyingKey storage processVk = processVks[processVkSig];
         processVk.alpha1 = _processVk.alpha1;
@@ -100,6 +127,15 @@ contract VkRegistry is Ownable, SnarkCommon {
         }
         tallyVkSet[tallyVkSig] = true;
 
+        VerifyingKey storage subsidyVk = subsidyVks[subsidyVkSig];
+        subsidyVk.alpha1 = _subsidyVk.alpha1;
+        subsidyVk.beta2 = _subsidyVk.beta2;
+        subsidyVk.gamma2 = _subsidyVk.gamma2;
+        subsidyVk.delta2 = _subsidyVk.delta2;
+        for (uint8 i = 0; i < _subsidyVk.ic.length; i ++) {
+            subsidyVk.ic.push(_subsidyVk.ic[i]);
+        }
+        subsidyVkSet[subsidyVkSig] = true;
     }
 
     function hasProcessVk(
@@ -177,5 +213,39 @@ contract VkRegistry is Ownable, SnarkCommon {
         return getTallyVkBySig(sig);
     }
 
+    function hasSubsidyVk(
+        uint256 _stateTreeDepth,
+        uint256 _intStateTreeDepth,
+        uint256 _voteOptionTreeDepth
+    ) public view returns (bool) {
+        uint256 sig = genSubsidyVkSig(
+            _stateTreeDepth,
+            _intStateTreeDepth,
+            _voteOptionTreeDepth
+        );
 
+        return subsidyVkSet[sig];
+    }
+
+    function getSubsidyVkBySig(
+        uint256 _sig
+    ) public view returns (VerifyingKey memory) {
+        require(subsidyVkSet[_sig] == true, "VkRegistry: subsidy verifying key not set");
+
+        return subsidyVks[_sig];
+    }
+
+    function getSubsidyVk(
+        uint256 _stateTreeDepth,
+        uint256 _intStateTreeDepth,
+        uint256 _voteOptionTreeDepth
+    ) public view returns (VerifyingKey memory) {
+        uint256 sig = genSubsidyVkSig(
+            _stateTreeDepth,
+            _intStateTreeDepth,
+            _voteOptionTreeDepth
+        );
+
+        return getSubsidyVkBySig(sig);
+    }
 }
