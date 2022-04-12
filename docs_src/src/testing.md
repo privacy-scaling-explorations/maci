@@ -41,8 +41,8 @@ From the main `maci/` directory, run:
 ```bash
 cd cli &&
 mkdir -p zkeys && \
-wget -O zkeys/ProcessMessages_10-2-1-2.test.0.zkey https://macitestcircuits.blob.core.windows.net/test/ProcessMessages_10-2-1-2.test.0.zkey && \
-wget -O zkeys/TallyVotes_10-1-2.test.0.zkey https://macitestcircuits.blob.core.windows.net/test/TallyVotes_10-1-2.test.0.zkey
+wget -O zkeys/ProcessMessages_10-2-1-2_test.0.zkey https://macitestcircuits.blob.core.windows.net/test/ProcessMessages_10-2-1-2_test.0.zkey && \
+wget -O zkeys/TallyVotes_10-1-2_test.0.zkey https://macitestcircuits.blob.core.windows.net/test/TallyVotes_10-1-2_test.0.zkey
 ```
 
 ### Compile or download the witness generation binaries
@@ -51,8 +51,8 @@ You may download precompiled witness generation binaries but there is no guarant
 
 ```bash
 mkdir -p zkeys && \
-wget -O ProcessMessages_10-2-1-2.test https://macitestcircuits.blob.core.windows.net/test/ProcessMessages_10-2-1-2.test && \
-wget -O TallyVotes_10-1-2.test https://macitestcircuits.blob.core.windows.net/test/TallyVotes_10-1-2.test
+wget -O ProcessMessages_10-2-1-2_test https://macitestcircuits.blob.core.windows.net/test/ProcessMessages_10-2-1-2_test && \
+wget -O TallyVotes_10-1-2_test https://macitestcircuits.blob.core.windows.net/test/TallyVotes_10-1-2_test
 ```
 
 Otherwise, you may compile them yourself.
@@ -66,10 +66,10 @@ npx zkey-manager compile -c ./zkeys.config.yml
 You should see the following files in `cli/zkeys/`:
 
 ```
-ProcessMessages_10-2-1-2.test
-ProcessMessages_10-2-1-2.test.0.zkey
-TallyVotes_10-1-2.test
-TallyVotes_10-1-2.test.0.zkey
+ProcessMessages_10-2-1-2_test
+ProcessMessages_10-2-1-2_test.0.zkey
+TallyVotes_10-1-2_test
+TallyVotes_10-1-2_test.0.zkey
 ```
 
 ### Check the Rapidsnark binary

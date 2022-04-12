@@ -1,8 +1,8 @@
 # one signup and one valid message for multiple polls
 node build/index.js deployVkRegistry  && \
 node build/index.js setVerifyingKeys -s 10 -i 1 -m 2 -v 2 -b 1 \
-    -p ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey \
-    -t ./zkeys/TallyVotes_10-1-2.test.0.zkey \
+    -p ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
+    -t ./zkeys/TallyVotes_10-1-2_test.0.zkey \
     -k 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0 && \
 node build/index.js create \
     -r 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0 && \
@@ -28,10 +28,10 @@ node build/index.js genProofs -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -sk macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
     -o 0 \
     -r ~/rapidsnark/build/prover \
-    -wp ./zkeys/ProcessMessages_10-2-1-2.test \
-    -wt ./zkeys/TallyVotes_10-1-2.test \
-    -zp ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey \
-    -zt ./zkeys/TallyVotes_10-1-2.test.0.zkey \
+    -wp ./zkeys/ProcessMessages_10-2-1-2_test \
+    -wt ./zkeys/TallyVotes_10-1-2_test \
+    -zp ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
+    -zt ./zkeys/TallyVotes_10-1-2_test.0.zkey \
     -t tally.json \
     -f proofs/
 
@@ -66,10 +66,10 @@ node build/index.js genProofs -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -sk macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
     -o 1 \
     -r ~/rapidsnark/build/prover \
-    -wp ./zkeys/ProcessMessages_10-2-1-2.test \
-    -wt ./zkeys/TallyVotes_10-1-2.test \
-    -zp ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey \
-    -zt ./zkeys/TallyVotes_10-1-2.test.0.zkey \
+    -wp ./zkeys/ProcessMessages_10-2-1-2_test \
+    -wt ./zkeys/TallyVotes_10-1-2_test \
+    -zp ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
+    -zt ./zkeys/TallyVotes_10-1-2_test.0.zkey \
     -t tally.json \
     -f proofs/
 
