@@ -1,0 +1,92 @@
+name: E2E
+
+on:
+  push: 
+    branches: [ v1 ]
+  pull_request:
+    branches: [ v1 ]
+
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+
+  e2e:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js 16
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes \
+            build-essential \
+            g++ \
+            git \
+            libgmp-dev \
+            libsodium-dev \
+            nasm \
+            nlohmann-json3-dev
+
+
+      # To prevent `npm install` failure of circuit package, 
+      # it has to checkout manually because version of `circomlib` has pinned to a specific commit
+      - name: Checkout circomlib
+        run: |
+          git init circuits/node_modules/circomlib
+          cd circuits/node_modules/circomlib
+          git remote add origin https://github.com/weijiekoh/circomlib
+          git -c protocol.version=2 fetch --no-tags --prune --progress --no-recurse-submodules --depth=1 origin ac85e82c1914d47789e2032fb11ceb2cfdd38a2b
+          git checkout --progress --force ac85e82c1914d47789e2032fb11ceb2cfdd38a2b
+          rm -rf ./.git
+
+      - name: Initialize Project
+        run: |
+          git config --global url."https://github.com/".insteadOf git://github.com/
+          npm install
+          npx lerna bootstrap --no-ci
+          npm run build
+
+      - name: Compile Contracts
+        run: |
+          cd contracts
+          npm run compileSol
+
+      - name: Download rapidsnark (1c137)
+        run: |
+          mkdir -p ~/rapidsnark/build
+          wget -O ~/rapidsnark/build/prover https://maci-devops-zkeys.s3.ap-northeast-2.amazonaws.com/rapidsnark-linux-amd64-1c137
+          chmod +x ~/rapidsnark/build/prover
+
+      - name: Download circom v2.0.3
+        run: |
+          mkdir -p /home/runner/work/maci/.local/bin
+          wget -O /home/runner/work/maci/.local/bin/circom https://maci-devops-zkeys.s3.ap-northeast-2.amazonaws.com/circom-linux-amd64-v2.0.3
+          chmod +x  /home/runner/work/maci/.local/bin/circom
+
+      - name: Generate zkeys
+        run: |
+          cd cli
+          mkdir -p zkeys
+          wget -O zkeys/powersOfTau28_hez_final_20.ptau https://maci-devops-zkeys.s3.ap-northeast-2.amazonaws.com/powersOfTau28_hez_final_20.ptau
+          npx zkey-manager compile -c ./zkeys.config.yml
+          npx zkey-manager genZkeys -c ./zkeys.config.yml
+
+      - name: Bespoke Test
+        run: ./.github/scripts/run-e2e-tests.sh
+
+      - name: Integration Test
+        run: |
+          cd contracts
+          nohup npm run hardhat > /dev/null 2>&1 &
+          while [[ "$(lsof -i :8545)" -eq '0' ]]; do sleep 1; done
+
+          cd ../integrationTests
+          npm run test
