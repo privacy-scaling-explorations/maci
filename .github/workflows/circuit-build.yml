@@ -52,6 +52,12 @@ jobs:
 
       - name: Run circom-helper
         run: |
+          
+          # Prevent error `Error: ENOENT: no such file or directory, scandir '/home/ubuntu/maci/circuits/circom/prod/'`
+          # TODO: Add `./circom/prod/` to `circuitDirs` of `circuits/circomHelperConfig.json` when
+          #      `circuits/scripts/buildCustomSnarks.sh` script executed
+          mkdir circom/prod
+          
           nohup npm run circom-helper &
 
           # Wait until circom-helper listen to port 9001
