@@ -875,6 +875,18 @@ class Poll {
                 }
             }
         }
+
+        if (rowStartIndex === colStartIndex) {
+            for (let i = 0; i < batchSize; i++) {
+                const idx = rowStartIndex + i
+                const diagBallot = (idx < this.ballots.length)?this.ballots[idx]:emptyBallot
+                const kii = this.coefficientCalculation(diagBallot, diagBallot)
+                for (let p = 0; p < this.maxValues.maxVoteOptions; p++) {
+                    const vip = BigInt(diagBallot.votes[p])
+                    this.subsidy[p] = BigInt(this.subsidy[p]) - BigInt(kii) * vip * vip
+                }
+            }
+        }
         return [ballots1, ballots2]
     }
 

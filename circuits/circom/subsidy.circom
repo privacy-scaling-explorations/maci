@@ -155,7 +155,6 @@ template SubsidyPerBatch (
     //  ----------------------------------------------------------------------- 
     // calculate coefficients for this batch
     signal vsquares[batchSize*batchSize][numVoteOptions];
-
     component tmp[batchSize*batchSize];
     component kij[batchSize*batchSize];
     var idx = 0;
@@ -193,6 +192,25 @@ template SubsidyPerBatch (
         }
     }
 
+    // substract the duplicate kii terms
+    signal vi2[batchSize][numVoteOptions]; // vi*vi
+    signal vi2real[batchSize][numVoteOptions];
+    component isDiag = IsZero();
+    isDiag.in <== rowStartIndex - colStartIndex;
+    for (var i = 0; i < batchSize; i++) {
+        for (var p = 0; p < numVoteOptions; p++) {
+            vi2[i][p] <== votes1[i][p] * votes2[i][p];
+            vi2real[i][p] <== vi2[i][p] * isDiag.out;
+        }
+    }
+    component duplicate[numVoteOptions];
+    for (var p = 0; p < numVoteOptions; p++) {
+        duplicate[p] = CalculateTotal(batchSize);
+        for (var i = 0; i < batchSize; i++) {
+            var idx = i * batchSize + i;
+            duplicate[p].nums[i] <== kij[idx].c * vi2real[i][p];
+        }
+    }
 
     // Verify the current and new subsidy results
     component rcv = SubsidyCommitmentVerifier(voteOptionTreeDepth);
@@ -204,7 +222,7 @@ template SubsidyPerBatch (
 
     for (var i = 0; i < numVoteOptions; i ++) {
         rcv.currentSubsidy[i] <== currentSubsidy[i];
-        rcv.newSubsidy[i] <== subsidy[i].sum;
+        rcv.newSubsidy[i] <== subsidy[i].sum - duplicate[i].sum;
     }
 
     /*
