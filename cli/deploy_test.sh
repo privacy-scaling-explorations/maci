@@ -5,8 +5,8 @@ cordpk=macipk.d49f1ed2fd22ca7e3bf96a5d3bcf245e6b440fc77cfa360ae50ff7b67990fb1e
 
 node build/index.js deployVkRegistry  && \
 node build/index.js setVerifyingKeys -s 10 -i 1 -m 2 -v 2 -b 1 \
-    -p ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey \
-    -t ./zkeys/TallyVotes_10-1-2.test.0.zkey  && \
+    -p ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
+    -t ./zkeys/TallyVotes_10-1-2_test.0.zkey  && \
 node build/index.js create  && \
 node ./build/index.js deployPoll \
     -pk $cordpk \

@@ -9,8 +9,8 @@ pk1=macipk.d30bf8402e7d731e86ccc6d24726446bba3ee18e8df013ebb0c96a5b14914da9
 # Step 1
 #node build/index.js deployVkRegistry && \
 #node build/index.js setVerifyingKeys -s 10 -i 1 -m 2 -v 2 -b 1 \
-#    -p ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey \
-#    -t ./zkeys/TallyVotes_10-1-2.test.0.zkey  && \
+#    -p ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
+#    -t ./zkeys/TallyVotes_10-1-2_test.0.zkey  && \
 #node build/index.js create  && \
 #node ./build/index.js deployPoll \
 #    -pk $cordpk \
@@ -37,10 +37,10 @@ node build/index.js genProofs \
     -sk $cordsk \
     -o 0 \
     -r ~/rapidsnark/build/prover \
-    -wp ./zkeys/ProcessMessages_10-2-1-2.test \
-    -wt ./zkeys/TallyVotes_10-1-2.test \
-    -zp ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey \
-    -zt ./zkeys/TallyVotes_10-1-2.test.0.zkey \
+    -wp ./zkeys/ProcessMessages_10-2-1-2_test \
+    -wt ./zkeys/TallyVotes_10-1-2_test \
+    -zp ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
+    -zt ./zkeys/TallyVotes_10-1-2_test.0.zkey \
     -t tally.json \
     -f proofs.json
 

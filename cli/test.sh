@@ -1,5 +1,8 @@
 # one signup and one valid message
 
+set -e
+
+
 node build/index.js deployVkRegistry && \
 node build/index.js setVerifyingKeys -s 10 -i 1 -m 2 -v 2 -b 1 \
     -p ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \

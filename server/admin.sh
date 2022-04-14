@@ -14,8 +14,8 @@ int_state_tree_depth=1
 msg_tree_depth=2
 vote_option_tree_depth=2
 msg_batch_depth=1
-msg_zkey=$DirName"/../cli/zkeys/ProcessMessages_10-2-1-2.test.0.zkey"
-tally_zkey=$DirName"/../cli/zkeys/TallyVotes_10-1-2.test.0.zkey"
+msg_zkey=$DirName"/../cli/zkeys/ProcessMessages_10-2-1-2_test.0.zkey"
+tally_zkey=$DirName"/../cli/zkeys/TallyVotes_10-1-2_test.0.zkey"
 
 #params for deployPoll
 cordsk=macisk.27281729e0ece51695bd064eeb4215da20498e19bd4eeab75f83b99ed80226b5
@@ -67,10 +67,10 @@ merge(){
 # params for genProof
 pid=0
 prover="~/rapidsnark/build/prover"
-pwitness=$DirName/../cli/zkeys/ProcessMessages_10-2-1-2.test
-twitness=$DirName/../cli/zkeys/TallyVotes_10-1-2.test
-pzkey=$DirName/../cli/zkeys/ProcessMessages_10-2-1-2.test.0.zkey
-tzkey=$DirName/../cli/zkeys/TallyVotes_10-1-2.test.0.zkey
+pwitness=$DirName/../cli/zkeys/ProcessMessages_10-2-1-2_test
+twitness=$DirName/../cli/zkeys/TallyVotes_10-1-2_test
+pzkey=$DirName/../cli/zkeys/ProcessMessages_10-2-1-2_test.0.zkey
+tzkey=$DirName/../cli/zkeys/TallyVotes_10-1-2_test.0.zkey
 tally_file=$DirName/../cli/tally.json 
 proof_dir=$DirName/../cli/proofs
 txn="" # -tx $txn, where txn is the transaction hash of deployVkRegistry, optional

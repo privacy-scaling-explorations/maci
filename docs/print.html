@@ -328,13 +328,13 @@ TallyVotes_&lt;STATE_TREE_DEPTH&gt;-&lt;INT_STATE_TREE_DEPTH&gt;-&lt;VOTE_OPTION
 ETH_PROVIDER=http://localhost:8545 \
 node build/index.js setVerifyingKeys \
     -s 10 -i 1 -m 2 -v 2 -b 1 \
-    -p ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey \
-    -t ./zkeys/TallyVotes_10-1-2.test.0.zkey \
+    -p ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
+    -t ./zkeys/TallyVotes_10-1-2_test.0.zkey \
     -k 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0                                                       
 </code></pre>
 <p>Example output:</p>
-<pre><code>Generating ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey.vk.json, please wait...
-Generating ./zkeys/TallyVotes_10-1-2.test.0.zkey.vk.json, please wait...
+<pre><code>Generating ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey.vk.json, please wait...
+Generating ./zkeys/TallyVotes_10-1-2_test.0.zkey.vk.json, please wait...
 Transaction hash: 0x582631c36a4e21e0b65c3f9100c6343408c8683a36ded36fc02a9be07fa079e8
 </code></pre>
 <h3 id="coordinator-create-maci-instance"><a class="header" href="#coordinator-create-maci-instance">Coordinator: Create MACI instance</a></h3>
@@ -415,10 +415,10 @@ node build/index.js mergeMessages -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a 
     -t tally.json \
     -f proofs.json \
     -r ~/rapidsnark/build/prover \
-    -wp ./zkeys/ProcessMessages_10-2-1-2.test \
-    -wt ./zkeys/TallyVotes_10-1-2.test \
-    -zp ./zkeys/ProcessMessages_10-2-1-2.test.0.zkey \
-    -zt ./zkeys/TallyVotes_10-1-2.test.0.zkey
+    -wp ./zkeys/ProcessMessages_10-2-1-2_test \
+    -wt ./zkeys/TallyVotes_10-1-2_test \
+    -zp ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
+    -zt ./zkeys/TallyVotes_10-1-2_test.0.zkey
 </code></pre>
 <h3 id="anyone-verify-tally"><a class="header" href="#anyone-verify-tally">Anyone: verify tally</a></h3>
 <p>Example usage:</p>
@@ -535,24 +535,24 @@ command-line flags.</p>
 <p>From the main <code>maci/</code> directory, run:</p>
 <pre><code class="language-bash">cd cli &amp;&amp;
 mkdir -p zkeys &amp;&amp; \
-wget -O zkeys/ProcessMessages_10-2-1-2.test.0.zkey https://macitestcircuits.blob.core.windows.net/test/ProcessMessages_10-2-1-2.test.0.zkey &amp;&amp; \
-wget -O zkeys/TallyVotes_10-1-2.test.0.zkey https://macitestcircuits.blob.core.windows.net/test/TallyVotes_10-1-2.test.0.zkey
+wget -O zkeys/ProcessMessages_10-2-1-2_test.0.zkey https://macitestcircuits.blob.core.windows.net/test/ProcessMessages_10-2-1-2_test.0.zkey &amp;&amp; \
+wget -O zkeys/TallyVotes_10-1-2_test.0.zkey https://macitestcircuits.blob.core.windows.net/test/TallyVotes_10-1-2_test.0.zkey
 </code></pre>
 <h3 id="compile-or-download-the-witness-generation-binaries"><a class="header" href="#compile-or-download-the-witness-generation-binaries">Compile or download the witness generation binaries</a></h3>
 <p>You may download precompiled witness generation binaries but there is no guarantee that they will work on your machine.</p>
 <pre><code class="language-bash">mkdir -p zkeys &amp;&amp; \
-wget -O ProcessMessages_10-2-1-2.test https://macitestcircuits.blob.core.windows.net/test/ProcessMessages_10-2-1-2.test &amp;&amp; \
-wget -O TallyVotes_10-1-2.test https://macitestcircuits.blob.core.windows.net/test/TallyVotes_10-1-2.test
+wget -O ProcessMessages_10-2-1-2_test https://macitestcircuits.blob.core.windows.net/test/ProcessMessages_10-2-1-2_test &amp;&amp; \
+wget -O TallyVotes_10-1-2_test https://macitestcircuits.blob.core.windows.net/test/TallyVotes_10-1-2_test
 </code></pre>
 <p>Otherwise, you may compile them yourself.</p>
 <p>From the main <code>maci/cli</code> directory, run:</p>
 <pre><code>npx zkey-manager compile -c ./zkeys.config.yml
 </code></pre>
 <p>You should see the following files in <code>cli/zkeys/</code>:</p>
-<pre><code>ProcessMessages_10-2-1-2.test
-ProcessMessages_10-2-1-2.test.0.zkey
-TallyVotes_10-1-2.test
-TallyVotes_10-1-2.test.0.zkey
+<pre><code>ProcessMessages_10-2-1-2_test
+ProcessMessages_10-2-1-2_test.0.zkey
+TallyVotes_10-1-2_test
+TallyVotes_10-1-2_test.0.zkey
 </code></pre>
 <h3 id="check-the-rapidsnark-binary"><a class="header" href="#check-the-rapidsnark-binary">Check the Rapidsnark binary</a></h3>
 <p>Next, ensure that the <code>rapidsnark</code> <code>prover</code> binary is in
