@@ -26,10 +26,11 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-          
+
       - name: Build
         run: |
           git config --global url."https://github.com/".insteadOf git://github.com/
+          npm install --global npm
           npm install
           npm run build
         working-directory: core

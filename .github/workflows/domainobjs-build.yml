@@ -29,6 +29,7 @@ jobs:
       - name: Build
         run: |
           git config --global url."https://github.com/".insteadOf git://github.com/
+          npm install --global npm
           npm install
           npm run build
         working-directory: domainobjs
