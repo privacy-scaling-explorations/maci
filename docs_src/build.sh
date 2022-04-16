@@ -1,6 +1,0 @@
-#!/bin/bash
-
-cd "$(dirname "$0")"
-mkdir -p ../docs
-
-mdbook build -d ../docs

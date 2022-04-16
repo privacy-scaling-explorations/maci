@@ -1,0 +1,259 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Installation - Minimum Anti-Collusion Infrastructure</title>
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <!-- MathJax -->
+        <script async type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html" class="active"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="cli.html"><strong aria-hidden="true">3.</strong> Command-line interface</a></li><li class="chapter-item expanded "><a href="circuits.html"><strong aria-hidden="true">4.</strong> Circuits</a></li><li class="chapter-item expanded "><a href="trustedsetup.html"><strong aria-hidden="true">5.</strong> Trusted setup</a></li><li class="chapter-item expanded "><a href="testing.html"><strong aria-hidden="true">6.</strong> Testing</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Minimum Anti-Collusion Infrastructure</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
+<h2 id="requirements"><a class="header" href="#requirements">Requirements</a></h2>
+<p>You need the following to use MACI:</p>
+<ul>
+<li>An x86-64 system</li>
+<li>A Linux system, preferably a Debian-based distribution like Ubuntu</li>
+<li>NodeJS. Use <a href="https://github.com/nvm-sh/nvm"><code>nvm</code></a> to install it. MACI has
+been tested with Node 14.</li>
+<li>The <code>libgmp-dev</code> <code>nlohmann-json3-dev</code> <code>nasm</code> and <code>g++</code> Debian/Ubuntu
+packages. They are needed to run <code>circom-helper</code>, which in turn is used to
+develop and test zk-SNARK circuits.</li>
+<li>The <a href="https://github.com/iden3/rapidsnark"><code>rapidsnark</code></a> tool.</li>
+</ul>
+<h2 id="installation-1"><a class="header" href="#installation-1">Installation</a></h2>
+<h3 id="install-rapidsnark"><a class="header" href="#install-rapidsnark">Install <code>rapidsnark</code></a></h3>
+<p>First, install dependencies:</p>
+<pre><code class="language-bash">sudo apt-get install build-essential libgmp-dev libsodium-dev nasm git
+</code></pre>
+<p>Next, clone <code>rapidsnark</code> and build it:</p>
+<pre><code class="language-bash">git clone https://github.com/iden3/rapidsnark.git &amp;&amp; \
+cd rapidsnark &amp;&amp; \
+git checkout 1c13721de4a316b0b254c310ccec9341f5e2208e
+
+npm install &amp;&amp; \
+git submodule init &amp;&amp; \
+git submodule update &amp;&amp; \
+npx task createFieldSources &amp;&amp; \
+npx task buildProver
+</code></pre>
+<p>Note the location of the <code>rapidsnark</code> binary (e.g.
+<code>/home/user/rapidsnark/build/prover</code>).</p>
+<p>Next, install circom v2:</p>
+<p>https://docs.circom.io/</p>
+<p>Note the location of the <code>circom</code> binary (e.g. <code>$HOME/.cargo/bin/circom</code>). You
+will need it later.</p>
+<h3 id="install-maci"><a class="header" href="#install-maci">Install MACI</a></h3>
+<pre><code class="language-bash">git clone https://github.com/appliedzkp/maci.git &amp;&amp; \
+cd maci &amp;&amp; \
+npm i &amp;&amp; \
+npm run bootstrap &amp;&amp; \
+npm run build
+</code></pre>
+<p>Install dependencies for <code>circom-helper</code> and <code>zkey-manager</code>:</p>
+<pre><code class="language-bash">sudo apt-get install libgmp-dev nlohmann-json3-dev nasm g++
+</code></pre>
+<h3 id="configure-circom-helper-and-zkey-manager"><a class="header" href="#configure-circom-helper-and-zkey-manager">Configure circom-helper and zkey-manager</a></h3>
+<p>Edit <code>circuits/circomHelperConfig.json</code> to include the relative path to the
+circom binary.</p>
+<pre><code class="language-json">    &quot;circom&quot;: &quot;RELATIVE_PATH_TO_CIRCOM&quot;,
+    &quot;snarkjs&quot;: &quot;./node_modules/snarkjs/build/cli.cjs&quot;,
+    &quot;circuitDirs&quot;: [
+        &quot;./circom/test/&quot;
+    ]
+}
+</code></pre>
+<p>Edit <code>cli/zkeys.config.yml</code> to include the relative path to the
+circom binary.</p>
+<pre><code class="language-yml">...
+circomPath: &quot;RELATIVE_PATH_TO_CIRCOM&quot;
+...
+</code></pre>
+<h3 id="download-zkey-files"><a class="header" href="#download-zkey-files">Download <code>.zkey</code> files</a></h3>
+<p>MACI has two zk-SNARK circuits. Each circuit is parameterised. There should one
+<code>.zkey</code> file for each circuit and set of parameters.</p>
+<p>Unless you wish to generate a fresh set of <code>.zkey</code> files, you should obtain
+them from someone who has performed a multi-party trusted setup for said
+circuits..</p>
+<p>Note the locations of the <code>.zkey</code> files as the CLI requires them as
+command-line flags.</p>
+<h3 id="generate-zkey-files"><a class="header" href="#generate-zkey-files">Generate <code>.zkey</code> files</a></h3>
+<p>If you wish to generate <code>.zkey</code> files from scratch, first navigate to <code>cli/</code>
+and edit <code>zkeys.config.yml</code>. Set the parameters you need.</p>
+<p>Next, run the following to compile the circuits with parameters you specified:</p>
+<pre><code class="language-bash">npx zkey-manager compile -c zkeys.config.yml
+</code></pre>
+<p>Next, download the <code>.ptau</code> file:</p>
+<pre><code class="language-bash">npx zkey-manager downloadPtau -c zkeys.config.yml
+</code></pre>
+<p>Finally, generate the <code>.zkey</code> files. This may require a lot of memory and time.</p>
+<pre><code class="language-bash">npx zkey-manager genZkeys -c zkeys.config.yml
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="cli.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="cli.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+    </body>
+</html>

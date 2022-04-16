@@ -1,8 +1,0 @@
-[book]
-authors = ["Koh Wei Jie"]
-language = "en"
-multilingual = false
-src = "src"
-title = "Minimum Anti-Collusion Infrastructure"
-[output.html]
-mathjax-support = true

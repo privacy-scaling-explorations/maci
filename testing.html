@@ -1,0 +1,223 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Testing - Minimum Anti-Collusion Infrastructure</title>
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <!-- MathJax -->
+        <script async type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="cli.html"><strong aria-hidden="true">3.</strong> Command-line interface</a></li><li class="chapter-item expanded "><a href="circuits.html"><strong aria-hidden="true">4.</strong> Circuits</a></li><li class="chapter-item expanded "><a href="trustedsetup.html"><strong aria-hidden="true">5.</strong> Trusted setup</a></li><li class="chapter-item expanded "><a href="testing.html" class="active"><strong aria-hidden="true">6.</strong> Testing</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Minimum Anti-Collusion Infrastructure</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="testing"><a class="header" href="#testing">Testing</a></h1>
+<h2 id="contracts"><a class="header" href="#contracts">Contracts</a></h2>
+<p>First, compile the contracts.</p>
+<p>From the main <code>maci/</code> directory, run:</p>
+<pre><code class="language-bash">cd contracts &amp;&amp; \
+npm run compileSol
+</code></pre>
+<p>Run Hardhat Network (a local Ethereum testnet) in a separate terminal:</p>
+<pre><code class="language-bash">cd contracts &amp;&amp; \
+npm run hardhat
+</code></pre>
+<h2 id="cli"><a class="header" href="#cli">CLI</a></h2>
+<p>You can test the CLI locally. First, you need to either generate <code>.zkey</code> files,
+or download them. Do not use these testing <code>.zkey</code> files in production.</p>
+<h3 id="download-zkey-files"><a class="header" href="#download-zkey-files">Download <code>.zkey</code> files</a></h3>
+<p>MACI has two zk-SNARK circuits. Each circuit is parameterised. There should one
+<code>.zkey</code> file for each circuit and set of parameters.</p>
+<p>Unless you wish to generate a fresh set of <code>.zkey</code> files, you should obtain
+them from someone who has performed a multi-party trusted setup for said
+circuits..</p>
+<p>Note the locations of the <code>.zkey</code> files as the CLI requires them as
+command-line flags.</p>
+<p>From the main <code>maci/</code> directory, run:</p>
+<pre><code class="language-bash">cd cli &amp;&amp;
+mkdir -p zkeys &amp;&amp; \
+wget -O zkeys/ProcessMessages_10-2-1-2_test.0.zkey https://macitestcircuits.blob.core.windows.net/test/ProcessMessages_10-2-1-2_test.0.zkey &amp;&amp; \
+wget -O zkeys/TallyVotes_10-1-2_test.0.zkey https://macitestcircuits.blob.core.windows.net/test/TallyVotes_10-1-2_test.0.zkey
+</code></pre>
+<h3 id="compile-or-download-the-witness-generation-binaries"><a class="header" href="#compile-or-download-the-witness-generation-binaries">Compile or download the witness generation binaries</a></h3>
+<p>You may download precompiled witness generation binaries but there is no guarantee that they will work on your machine.</p>
+<pre><code class="language-bash">mkdir -p zkeys &amp;&amp; \
+wget -O ProcessMessages_10-2-1-2_test https://macitestcircuits.blob.core.windows.net/test/ProcessMessages_10-2-1-2_test &amp;&amp; \
+wget -O TallyVotes_10-1-2_test https://macitestcircuits.blob.core.windows.net/test/TallyVotes_10-1-2_test
+</code></pre>
+<p>Otherwise, you may compile them yourself.</p>
+<p>From the main <code>maci/cli</code> directory, run:</p>
+<pre><code>npx zkey-manager compile -c ./zkeys.config.yml
+</code></pre>
+<p>You should see the following files in <code>cli/zkeys/</code>:</p>
+<pre><code>ProcessMessages_10-2-1-2_test
+ProcessMessages_10-2-1-2_test.0.zkey
+TallyVotes_10-1-2_test
+TallyVotes_10-1-2_test.0.zkey
+</code></pre>
+<h3 id="check-the-rapidsnark-binary"><a class="header" href="#check-the-rapidsnark-binary">Check the Rapidsnark binary</a></h3>
+<p>Next, ensure that the <code>rapidsnark</code> <code>prover</code> binary is in
+<code>~/rapidsnark/build/prover</code>.</p>
+<h3 id="run-cli-tests"><a class="header" href="#run-cli-tests">Run CLI tests</a></h3>
+<p>In <code>maci/cli/</code>, run:</p>
+<pre><code class="language-bash">./test.sh
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="trustedsetup.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="trustedsetup.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+    </body>
+</html>

@@ -1,0 +1,829 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Minimum Anti-Collusion Infrastructure</title>
+        <meta name="robots" content="noindex" />
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <!-- MathJax -->
+        <script async type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="cli.html"><strong aria-hidden="true">3.</strong> Command-line interface</a></li><li class="chapter-item expanded "><a href="circuits.html"><strong aria-hidden="true">4.</strong> Circuits</a></li><li class="chapter-item expanded "><a href="trustedsetup.html"><strong aria-hidden="true">5.</strong> Trusted setup</a></li><li class="chapter-item expanded "><a href="testing.html"><strong aria-hidden="true">6.</strong> Testing</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Minimum Anti-Collusion Infrastructure</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
+<p>Minimum Anti-Collusion Infrastructure (MACI) is a base layer for
+bribery-resistant, secure, and private digital voting.</p>
+<p>The documentation here pertains to version 1.0, temporarily located in the <code>v1</code>
+branch.</p>
+<p>Applications like <a href="https://clr.fund/">clr.fund</a> build atop MACI to increase
+privacy and discourage bribery for public goods funding.</p>
+<p>MACI offers the following guarantees:</p>
+<ul>
+<li><strong>Collusion resistance</strong>: no-one except a trusted coordinator should be
+certain of the validity of a vote, reducing the effectiveness of bribery.</li>
+<li><strong>Receipt-freeness</strong>: no-one voter prove (besides to the coordinator) which
+way they voted.</li>
+<li><strong>Privacy</strong>: no-one except a trusted coordinator should be able to decrypt a
+vote.</li>
+<li><strong>Uncensorability</strong>: no-one — not even the trusted coordinator — should be
+able to censor a vote.</li>
+<li><strong>Unforgeability</strong>: only the owner of a user's private key may cast a vote
+tied to its corresponding public key.</li>
+<li><strong>Non-repudiation</strong>: no-one may modify or delete a vote after it is cast,
+although a user may cast another vote to nullify it.</li>
+<li><strong>Correct execution</strong>: no-one — not even the trusted coordinator — should be
+able to produce a false tally of votes.</li>
+</ul>
+<p>Under the hood, MACI uses Ethereum smart contracts and zero-knowledge proofs.
+It inherits security and uncensorability from the underlying Ethereum
+blockchain, ensures unforgeability via asymmetric encryption, and achieves
+collusion resistance, privacy, and correct execution via zk-SNARK proofs.</p>
+<p>Although MACI can provide collusion resistance only if the coordinator is
+honest, a dishonest coordinator can neither censor nor tamper with its
+execution.</p>
+<p>Note that MACI presumes an identity system where each legitimate member
+controls a unique Ethereum private key.</p>
+<p>MACI was originally proposed by Vitalik Buterin in <a href="https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413">this ethresear.ch
+post</a>.</p>
+<h2 id="credits"><a class="header" href="#credits">Credits</a></h2>
+<ul>
+<li><a href="https://github.com/barryWhiteHat">Barry WhiteHat</a></li>
+<li><a href="https://github.com/corydickson">Cory Dickson</a></li>
+<li><a href="https://twitter.com/ChihChengLiang">Chih-Cheng Liang</a></li>
+<li><a href="https://han0110.github.io/">Han Jian</a></li>
+<li><a href="https://kndrck.co/">Kendrick Tan</a></li>
+<li><a href="https://github.com/xuhcc">Kirill Goncharov</a></li>
+<li><a href="http://kobi.one/">Kobi Gurkan</a></li>
+<li><a href="https://kohweijie.com">Koh Wei Jie</a></li>
+<li><a href="https://twitter.com/xGozzy">Samuel Gosling</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
+<h2 id="requirements"><a class="header" href="#requirements">Requirements</a></h2>
+<p>You need the following to use MACI:</p>
+<ul>
+<li>An x86-64 system</li>
+<li>A Linux system, preferably a Debian-based distribution like Ubuntu</li>
+<li>NodeJS. Use <a href="https://github.com/nvm-sh/nvm"><code>nvm</code></a> to install it. MACI has
+been tested with Node 14.</li>
+<li>The <code>libgmp-dev</code> <code>nlohmann-json3-dev</code> <code>nasm</code> and <code>g++</code> Debian/Ubuntu
+packages. They are needed to run <code>circom-helper</code>, which in turn is used to
+develop and test zk-SNARK circuits.</li>
+<li>The <a href="https://github.com/iden3/rapidsnark"><code>rapidsnark</code></a> tool.</li>
+</ul>
+<h2 id="installation-1"><a class="header" href="#installation-1">Installation</a></h2>
+<h3 id="install-rapidsnark"><a class="header" href="#install-rapidsnark">Install <code>rapidsnark</code></a></h3>
+<p>First, install dependencies:</p>
+<pre><code class="language-bash">sudo apt-get install build-essential libgmp-dev libsodium-dev nasm git
+</code></pre>
+<p>Next, clone <code>rapidsnark</code> and build it:</p>
+<pre><code class="language-bash">git clone https://github.com/iden3/rapidsnark.git &amp;&amp; \
+cd rapidsnark &amp;&amp; \
+git checkout 1c13721de4a316b0b254c310ccec9341f5e2208e
+
+npm install &amp;&amp; \
+git submodule init &amp;&amp; \
+git submodule update &amp;&amp; \
+npx task createFieldSources &amp;&amp; \
+npx task buildProver
+</code></pre>
+<p>Note the location of the <code>rapidsnark</code> binary (e.g.
+<code>/home/user/rapidsnark/build/prover</code>).</p>
+<p>Next, install circom v2:</p>
+<p>https://docs.circom.io/</p>
+<p>Note the location of the <code>circom</code> binary (e.g. <code>$HOME/.cargo/bin/circom</code>). You
+will need it later.</p>
+<h3 id="install-maci"><a class="header" href="#install-maci">Install MACI</a></h3>
+<pre><code class="language-bash">git clone https://github.com/appliedzkp/maci.git &amp;&amp; \
+cd maci &amp;&amp; \
+npm i &amp;&amp; \
+npm run bootstrap &amp;&amp; \
+npm run build
+</code></pre>
+<p>Install dependencies for <code>circom-helper</code> and <code>zkey-manager</code>:</p>
+<pre><code class="language-bash">sudo apt-get install libgmp-dev nlohmann-json3-dev nasm g++
+</code></pre>
+<h3 id="configure-circom-helper-and-zkey-manager"><a class="header" href="#configure-circom-helper-and-zkey-manager">Configure circom-helper and zkey-manager</a></h3>
+<p>Edit <code>circuits/circomHelperConfig.json</code> to include the relative path to the
+circom binary.</p>
+<pre><code class="language-json">    &quot;circom&quot;: &quot;RELATIVE_PATH_TO_CIRCOM&quot;,
+    &quot;snarkjs&quot;: &quot;./node_modules/snarkjs/build/cli.cjs&quot;,
+    &quot;circuitDirs&quot;: [
+        &quot;./circom/test/&quot;
+    ]
+}
+</code></pre>
+<p>Edit <code>cli/zkeys.config.yml</code> to include the relative path to the
+circom binary.</p>
+<pre><code class="language-yml">...
+circomPath: &quot;RELATIVE_PATH_TO_CIRCOM&quot;
+...
+</code></pre>
+<h3 id="download-zkey-files"><a class="header" href="#download-zkey-files">Download <code>.zkey</code> files</a></h3>
+<p>MACI has two zk-SNARK circuits. Each circuit is parameterised. There should one
+<code>.zkey</code> file for each circuit and set of parameters.</p>
+<p>Unless you wish to generate a fresh set of <code>.zkey</code> files, you should obtain
+them from someone who has performed a multi-party trusted setup for said
+circuits..</p>
+<p>Note the locations of the <code>.zkey</code> files as the CLI requires them as
+command-line flags.</p>
+<h3 id="generate-zkey-files"><a class="header" href="#generate-zkey-files">Generate <code>.zkey</code> files</a></h3>
+<p>If you wish to generate <code>.zkey</code> files from scratch, first navigate to <code>cli/</code>
+and edit <code>zkeys.config.yml</code>. Set the parameters you need.</p>
+<p>Next, run the following to compile the circuits with parameters you specified:</p>
+<pre><code class="language-bash">npx zkey-manager compile -c zkeys.config.yml
+</code></pre>
+<p>Next, download the <code>.ptau</code> file:</p>
+<pre><code class="language-bash">npx zkey-manager downloadPtau -c zkeys.config.yml
+</code></pre>
+<p>Finally, generate the <code>.zkey</code> files. This may require a lot of memory and time.</p>
+<pre><code class="language-bash">npx zkey-manager genZkeys -c zkeys.config.yml
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="command-line-interface"><a class="header" href="#command-line-interface">Command-line interface</a></h1>
+<p>MACI provides a command-line interface that allows for effective deployment and
+testing. Applications that build on top of MACI, such as
+<a href="https://clr.fund/">clr.fund</a>, implement their own web UIs.</p>
+<p>Note that all the example commands default to a local Ethereum testnet at
+<code>http://localhost:8545</code>, and use the Ethereum private key
+<code>0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3</code>. Do not
+send any real funds to the address generated by this key.</p>
+<p>For testing purposes, you can run:</p>
+<pre><code class="language-bash"># in maci/contracts
+npm run hardhat
+</code></pre>
+<h2 id="subcommands"><a class="header" href="#subcommands">Subcommands</a></h2>
+<table><thead><tr><th>Role</th><th>Action</th><th>Subcommand</th></tr></thead><tbody>
+<tr><td>User</td><td>Generate MACI keypair</td><td><code>genMaciKeypair</code></td></tr>
+<tr><td>User</td><td>Generate MACI public key</td><td><code>genMaciPubkey</code></td></tr>
+<tr><td>Coordinator</td><td>Deploy VkRegistry</td><td><code>deployVkRegistry</code></td></tr>
+<tr><td>Coordinator</td><td>Set verifying keys</td><td><code>setVerifyingKeys</code></td></tr>
+<tr><td>Coordinator</td><td>Create MACI instance</td><td><code>create </code></td></tr>
+<tr><td>Coordinator</td><td>Deploy a new poll</td><td><code>deployPoll</code></td></tr>
+<tr><td>Coordinator</td><td>Deploy a new poll processor and tallyer</td><td><code>deployPpt</code></td></tr>
+<tr><td>User</td><td>Sign up</td><td><code>signup</code></td></tr>
+<tr><td>User</td><td>Change key / vote</td><td><code>publish</code></td></tr>
+<tr><td>Coordinator</td><td>Merge state tree</td><td><code>mergeSignups</code></td></tr>
+<tr><td>Coordinator</td><td>Merge message tree</td><td><code>mergeMessages</code></td></tr>
+<tr><td>Coordinator</td><td>Generate message processing and vote tallying proofs</td><td><code>genProofs</code></td></tr>
+<tr><td>Coordinator</td><td>Submit proofs</td><td><code>proveOnChain</code></td></tr>
+<tr><td>Coordinator</td><td>Process and tally all votes without producing proofs</td><td><code>processAndTallyWithoutProofs</code></td></tr>
+<tr><td>Coordinator</td><td>Roll back message processing and vote tallying in the MACI contract</td><td><code>coordinatorReset</code></td></tr>
+</tbody></table>
+<h2 id="public-and-private-key-format"><a class="header" href="#public-and-private-key-format">Public and private key format</a></h2>
+<p>MACI uses private keys in the BabyJub field for operations which occur within
+zk-SNARKs, such as decrypting messages or signing commands. As MACI is deployed
+on Ethereum, we seek to avoid confusing BabyJub private keys with Ethereum
+private keys. To that end, users should pass serialized formats of public and
+private keys to this CLI. We use <code>maci-domainobj</code>'s <code>PrivKey.serialize</code> and
+<code>PubKey.serialize</code> functions to do so. </p>
+<p>Examples of serialized public and private keys:</p>
+<pre><code>Private key: macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e
+Public key:  macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330
+</code></pre>
+<h3 id="coordinator-deploy-vkregistry"><a class="header" href="#coordinator-deploy-vkregistry">Coordinator: Deploy VkRegistry</a></h3>
+<p>This command deploys an instance of a VkRegistry contract. Multiple MACI
+contracts can refer to the same VkRegistry as long as they are all owned (via
+<code>Ownable.sol</code>) by the same account.</p>
+<p>Example usage:</p>
+<pre><code class="language-bash">ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+ETH_PROVIDER=http://localhost:8545 \
+node build/index.js deployVkRegistry
+</code></pre>
+<p>Example output:</p>
+<pre><code>VkRegistry: 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
+</code></pre>
+<h3 id="coordinator-set-verifying-keys"><a class="header" href="#coordinator-set-verifying-keys">Coordinator: Set verifying keys</a></h3>
+<p>Note that the filename of the <code>.zkey</code> files must follow this format:</p>
+<pre><code>ProcessMessages_&lt;STATE_TREE_DEPTH&gt;-&lt;MSG_TREE_DEPTH&gt;-&lt;MSG_SUBTREE_DEPTH&gt;-&lt;VOTE_OPTION_TREE_DEPTH&gt;_test.&lt;CONTRIBUTION_NUM&gt;.zkey
+TallyVotes_&lt;STATE_TREE_DEPTH&gt;-&lt;INT_STATE_TREE_DEPTH&gt;-&lt;VOTE_OPTION_TREE_DEPTH&gt;&gt;_test.&lt;CONTRIBUTION_NUM&gt;&gt;.zkey
+</code></pre>
+<p>Example usage:</p>
+<pre><code class="language-bash">ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+ETH_PROVIDER=http://localhost:8545 \
+node build/index.js setVerifyingKeys \
+    -s 10 -i 1 -m 2 -v 2 -b 1 \
+    -p ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
+    -t ./zkeys/TallyVotes_10-1-2_test.0.zkey \
+    -k 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
+</code></pre>
+<p>Example output:</p>
+<pre><code>Generating ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey.vk.json, please wait...
+Generating ./zkeys/TallyVotes_10-1-2_test.0.zkey.vk.json, please wait...
+Transaction hash: 0x582631c36a4e21e0b65c3f9100c6343408c8683a36ded36fc02a9be07fa079e8
+</code></pre>
+<h3 id="coordinator-create-maci-instance"><a class="header" href="#coordinator-create-maci-instance">Coordinator: Create MACI instance</a></h3>
+<p>Example usage:</p>
+<pre><code class="language-bash">ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+ETH_PROVIDER=http://localhost:8545 \
+node build/index.js create -r 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
+</code></pre>
+<p>Example output:</p>
+<pre><code>Deploying Poseidon Contracts
+Deploying Poseidon
+Linking Poseidon libraries
+Linking Poseidon libraries
+Linking Poseidon libraries
+Deploying MACI
+Transferring PollFactory ownership to MACI
+Transferring MessageAqFactory ownership to PollFactory
+Initialising MACI
+PollProcessorAndTallyer: 0xAa588d3737B611baFD7bD713445b314BD453a5C8
+MACI: 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
+</code></pre>
+<h3 id="coordinator-deploy-poll"><a class="header" href="#coordinator-deploy-poll">Coordinator: Deploy poll</a></h3>
+<p>Example usage:</p>
+<pre><code class="language-bash">ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+ETH_PROVIDER=http://localhost:8545 \
+node ./build/index.js deployPoll \
+    -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
+    -pk macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
+    -t 30 -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2
+</code></pre>
+<p>Example output:</p>
+<pre><code>Deploying Verifier
+Deploying PollProcessorAndTallyer
+Verifier: 0xEcFcaB0A285d3380E488A39B4BB21e777f8A4EaC
+Poll ID: 0
+Poll contract: 0x440B7f9b667420af04e88d4dA0B9122E05cCa5A0
+</code></pre>
+<h3 id="user-sign-up"><a class="header" href="#user-sign-up">User: sign up</a></h3>
+<p>Example usage:</p>
+<pre><code class="language-bash">ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+ETH_PROVIDER=http://localhost:8545 \
+node ./build/index.js signup \
+    -p macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
+    -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
+</code></pre>
+<p>Example output:</p>
+<pre><code>Transaction hash: 0xcae04f618a0b45896732632121248c312cbc68584519c1e43932b110da9078bc
+State index: 1
+</code></pre>
+<h3 id="user-publish-message"><a class="header" href="#user-publish-message">User: publish message</a></h3>
+<p>Example usage:</p>
+<pre><code class="language-bash">ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+ETH_PROVIDER=http://localhost:8545 \
+node build/index.js publish \
+    -p macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
+    -sk macisk.2ae4f199bf3925a2407f7c775c9261f351ab861d8e9ecbb84622bdd3f6d41b08 \
+    -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
+    -i 1 -v 0 -w 9 -n 1 -o 0
+</code></pre>
+<h3 id="coordinator-merge-state-tree"><a class="header" href="#coordinator-merge-state-tree">Coordinator: merge state tree</a></h3>
+<p>Example usage:</p>
+<pre><code class="language-bash">ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+ETH_PROVIDER=http://localhost:8545 \
+node build/index.js mergeSignups -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a -o 0
+</code></pre>
+<h3 id="coordinator-merge-message-tree"><a class="header" href="#coordinator-merge-message-tree">Coordinator: merge message tree</a></h3>
+<p>Example usage:</p>
+<pre><code class="language-bash">ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
+ETH_PROVIDER=http://localhost:8545 \
+node build/index.js mergeMessages -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a -o 0
+</code></pre>
+<h3 id="coordinator-generate-proofs"><a class="header" href="#coordinator-generate-proofs">Coordinator: generate proofs</a></h3>
+<p>Example usage:</p>
+<pre><code class="language-bash">node build/index.js genProofs -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
+    -sk macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
+    -o 0 \
+    -t tally.json \
+    -f proofs.json \
+    -r ~/rapidsnark/build/prover \
+    -wp ./zkeys/ProcessMessages_10-2-1-2_test \
+    -wt ./zkeys/TallyVotes_10-1-2_test \
+    -zp ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
+    -zt ./zkeys/TallyVotes_10-1-2_test.0.zkey \
+</code></pre>
+<h3 id="anyone-verify-tally"><a class="header" href="#anyone-verify-tally">Anyone: verify tally</a></h3>
+<p>Example usage:</p>
+<pre><code class="language-bash">node build/index.js verify \
+    -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
+    -o 0 \
+    -t tally.json \
+    -q 0xEcFcaB0A285d3380E488A39B4BB21e777f8A4EaC
+</code></pre>
+<h2 id="demonstration"><a class="header" href="#demonstration">Demonstration</a></h2>
+<h3 id="scenario"><a class="header" href="#scenario">Scenario:</a></h3>
+<ol>
+<li>Alice votes for Party A</li>
+<li>Alice changes her key</li>
+<li>Eve tries to bribe Alice to change her vote to Party B</li>
+<li>Alice submits an invalid vote for Party B</li>
+<li>The coordinator processes the votes, computes, and verifies the final tally</li>
+<li>The expected result is: Party A has some votes and Party B has 0 votes.</li>
+</ol>
+<p>Implication: Alice's invalid vote was not counted, and Eve had no way to tell.</p>
+<h3 id="examples-of-serialized-public-and-private-keys"><a class="header" href="#examples-of-serialized-public-and-private-keys">Examples of serialized public and private keys:</a></h3>
+<pre><code>Coordinator:
+Private key: macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e
+Public key:  macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330
+
+Alice:
+Private key: macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c
+Public key:  macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391
+</code></pre>
+<h3 id="coordinator-deploy-vkregistry-1"><a class="header" href="#coordinator-deploy-vkregistry-1">Coordinator: Deploy VkRegistry</a></h3>
+<pre><code class="language-bash">node build/index.js deployVkRegistry
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">VkRegistry: 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
+</code></pre>
+<h3 id="coordinator-set-verifying-keys-1"><a class="header" href="#coordinator-set-verifying-keys-1">Coordinator: Set verifying keys</a></h3>
+<pre><code class="language-bash">node build/index.js setVerifyingKeys \
+    --vk_registry 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0 \
+    --state-tree-depth 10 \
+    --int-state-tree-depth 1 \
+    --msg-tree-depth 2 \
+    --vote-option-tree-depth 2 \
+    --msg-batch-depth 1 \
+    --process-messages-zkey ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
+    --tally-votes-zkey ./zkeys/TallyVotes_10-1-2_test.0.zkey
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">Setting verifying keys...
+Transaction hash: 0x16236fe5e124f3d0c33ddf20a37ceba9730a659630258a1e858b3e335e057b8e
+</code></pre>
+<h3 id="coordinator-create-maci-instance-1"><a class="header" href="#coordinator-create-maci-instance-1">Coordinator: Create MACI instance</a></h3>
+<pre><code class="language-bash">node build/index.js create \
+    --vk-registry 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">Deploying InitialVoiceCreditProxy
+Deploying Poseidon contracts
+Linking Poseidon libraries to MACI
+Linking Poseidon libraries to PollFactory
+Linking Poseidon libraries to MessageAqFactory
+Deploying MACI
+Transferring PollFactory ownership to MACI
+Transferring MessageAqFactory ownership to PollFactory
+Initialising MACI
+MACI: 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
+</code></pre>
+<h3 id="coordinator-deploy-poll-1"><a class="header" href="#coordinator-deploy-poll-1">Coordinator: Deploy poll</a></h3>
+<pre><code class="language-bash">node ./build/index.js deployPoll \
+    --maci-address 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
+    --pubkey macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
+    --duration 1000 \
+    --max-messages 25 \
+    --max-vote-options 25 \
+    --int-state-tree-depth 1 \
+    --msg-tree-depth 2 \
+    --msg_batch_depth 1 \
+    --vote-option-tree-depth 2
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">Verifier: 0x0d8cc4b8d15D4c3eF1d70af0071376fb26B5669b
+Poll ID: 0
+Poll contract: 0x08e8f54262de52fe7Dfd0Bc0C9Ea87689d70e985
+PollProcessorAndTallyer contract: 0xEcFcaB0A285d3380E488A39B4BB21e777f8A4EaC
+</code></pre>
+<h3 id="alice-sign-up"><a class="header" href="#alice-sign-up">Alice: sign up</a></h3>
+<pre><code class="language-bash">node ./build/index.js signup \
+    --pubkey macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391 \
+    --contract 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">Transaction hash: 0xcdff1e0cd3021cdc3ba2c65cfd74bac3715c32efdd2052c0e8f3a677a81a758b
+State index: 1
+</code></pre>
+<h3 id="alice-votes-for-party-a-option-index-0"><a class="header" href="#alice-votes-for-party-a-option-index-0">Alice: votes for Party A (option index 0)</a></h3>
+<pre><code class="language-bash">node build/index.js publish \
+    --pubkey macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391 \
+    --privkey macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c \
+    --contract 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
+    --state-index 1 \
+    --vote-option-index 0 \
+    --new-vote-weight 9 \
+    --nonce 1 \
+    --poll-id 0
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">Transaction hash: 0xc0964069834b171bb698ffc61e31e1be456c740ff1967ccad7d8cd8ed362e545
+Ephemeral private key: macisk.1bf4bba7086c213606bb4a775b1ceaa4c2e7119c329748e675375f0d79c900dc
+</code></pre>
+<h3 id="alice-submits-an-invalid-vote-for-party-b-option-index-1-with-different-public-key"><a class="header" href="#alice-submits-an-invalid-vote-for-party-b-option-index-1-with-different-public-key">Alice: submits an invalid vote for Party B (option index 1) with different public key</a></h3>
+<pre><code class="language-bash">node build/index.js publish \
+    --pubkey macipk.d5788ea6ccf1ec295df99aaef859031fe7bd359e7e03acb80eb6e8a192f2ce19 \
+    --privkey macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c \
+    --contract 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
+    --state-index 1 \
+    --vote-option-index 1 \
+    --new-vote-weight 9 \
+    --nonce 2 \
+    --poll-id 0
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">Transaction hash: 0xc13b97e23b387d8c160e0f8b1bfb33dc0ff4441fe63a37f0fc3ec84a0cfa0600
+Ephemeral private key: macisk.5bc9f217a29c5defad1ca9be3d649add1eca30037589527476e8335b24cf75b
+</code></pre>
+<p>Time Travel</p>
+<pre><code>node build timeTravel -s 1000
+</code></pre>
+<h3 id="coordinator-merge-state-tree-1"><a class="header" href="#coordinator-merge-state-tree-1">Coordinator: merge state tree</a></h3>
+<pre><code class="language-bash">node build/index.js mergeSignups \
+    --contract 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
+    --poll-id 0
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">Merging state subroots 1 / 1
+Executed mergeMaciStateAqSubRoots(); gas used: 723525
+Transaction hash: 0x14621b208fdadbf277edf80b393f1a9694099ae9676903e148fa485eecfadd4b
+
+All state subtrees have been merged.
+Merging subroots to a main state root...
+Executed mergeStateAq(); gas used: 1015876
+Transaction hash: 0xf2903b1c3c83b87c551a71f29e07762b464691ca58b0c6849b2f9b8f5783011f
+The state tree has been merged.
+</code></pre>
+<h3 id="coordinator-merge-message-tree-1"><a class="header" href="#coordinator-merge-message-tree-1">Coordinator: merge message tree</a></h3>
+<pre><code class="language-bash">node build/index.js mergeMessages \
+    --contract 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
+    --poll-id 0
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">Merging message subroots 1 / 1
+Executed mergeMaciStateAqSubRoots(); gas used: 604387
+Transaction hash: 0xe0c0306b80febe1f6947b6ccbefabef38d01abce0b7611f49ce1cc7e20f196a5
+
+All message subtrees have been merged.
+Merging subroots to a main message root...
+Executed mergeMessageAq(); gas used: 174376
+Transaction hash: 0x424581f08d5f8e9f4fd63b083f9446cc2bff3b8e4b67ebc834076d6e9c34ec20
+The message tree has been merged.
+</code></pre>
+<h3 id="coordinator-generate-proofs-1"><a class="header" href="#coordinator-generate-proofs-1">Coordinator: generate proofs</a></h3>
+<pre><code class="language-bash">node build/index.js genProofs \
+    --contract 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
+    --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
+    --poll-id 0 \
+    --tally-file tally.json \
+    --output proofs \
+    --rapidsnark ~/rapidsnark/build/prover \
+    --process-witnessgen ./zkeys/ProcessMessages_10-2-1-2_test \
+    --tally-witnessgen ./zkeys/TallyVotes_10-1-2_test \
+    --process-zkey ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
+    --tally-zkey ./zkeys/TallyVotes_10-1-2_test.0.zkey
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">fromBlock = 0
+Generating proofs of message processing...
+
+Progress: 1 / 1
+
+Generating proofs of vote tallying...
+
+Progress: 1 / 1
+
+OK
+</code></pre>
+<h3 id="coordinator-prove-on-chain"><a class="header" href="#coordinator-prove-on-chain">Coordinator: prove on chain</a></h3>
+<pre><code class="language-bash">node build/index.js proveOnChain \
+    --contract 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
+    --poll-id 0 \
+    --ppt 0xEcFcaB0A285d3380E488A39B4BB21e777f8A4EaC \
+    --proof-dir proofs/
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">Submitting proofs of message processing...
+Transaction hash: 0x59388e69899612390ef22de235629e9355e14f888bb330b46511cc06d8f2035d
+Progress: 1 / 1
+All message processing proofs have been submitted.
+
+Submitting proofs of vote tallying...
+Progress: 1 / 1
+Transaction hash: 0xc90e3bd0618def86b709c995485271f806c60701a3f4246903498f27346b9f5e
+All vote tallying proofs have been submitted.
+
+OK
+</code></pre>
+<h3 id="anyone-verify"><a class="header" href="#anyone-verify">Anyone: verify</a></h3>
+<pre><code class="language-bash">node build/index.js verify \
+    --contract 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
+    --poll-id 0 \
+    --tally-file tally.json \
+    --ppt 0xEcFcaB0A285d3380E488A39B4BB21e777f8A4EaC
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">{
+  provider: 'http://localhost:8545',
+  maci: '0xf204a4Ef082f5c04bB89F7D5E6568B796096735a',
+  pollId: 0,
+  newTallyCommitment: '0x29b47e79c10709047ba9788580c2dc8528f003eab42d30670df78a47b121aa6c',
+  results: {
+    tally: [
+      '9', '0', '0', '0', '0', '0',
+      '0', '0', '0', '0', '0', '0',
+      '0', '0', '0', '0', '0', '0',
+      '0', '0', '0', '0', '0', '0',
+      '0'
+    ],
+    salt: '0x132065c8ad3968008aeb7c114a04de228fa5b3618743ad00f64ad3f773a2e4d2'
+  },
+  totalSpentVoiceCredits: {
+    spent: '81',
+    salt: '0x2940f93e085350a04f6ff85e1ebffbc391fc3498f1cb41ab47f8899dc9c6efc6'
+  },
+  perVOSpentVoiceCredits: {
+    tally: [
+      '81', '0', '0', '0', '0', '0',
+      '0',  '0', '0', '0', '0', '0',
+      '0',  '0', '0', '0', '0', '0',
+      '0',  '0', '0', '0', '0', '0',
+      '0'
+    ],
+    salt: '0x2db5c3d6b015f8e2ea1cf7ffed7a44af0db8a8c09a5077415c076b6ebcee0571'
+  }
+}
+OK
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="circuits"><a class="header" href="#circuits">Circuits</a></h1>
+<p>MACI has two zk-SNARK circuits:</p>
+<ol>
+<li><code>ProcessMessages.circom</code>, which takes a batch of messages, and updates the
+state and ballot trees according to the contents of said messages.</li>
+<li><code>TallyVotes.circom</code>, which counts votes from users' ballots, batch by batch.</li>
+</ol>
+<p>Each circuit is parameterised and it is important to set the right parameters
+to your use case. For example, if you want to support up to 3125 messages, the message tree depth parameter should be set to <code>5</code> (as \(5^5 = 3125\)).</p>
+<p>Next, navigate to the <code>cli/</code> directory and edit <code>zkeys.config.yml</code>.</p>
+<p>This config file defines the parameters required for MACI's circuits.</p>
+<h3 id="message-processing"><a class="header" href="#message-processing">Message processing</a></h3>
+<table><thead><tr><th>#</th><th>Parameter</th><th>Description</th></tr></thead><tbody>
+<tr><td>0</td><td>State tree depth</td><td>Should be set to 10. Allows 9,765,625 signups.</td></tr>
+<tr><td>1</td><td>Message tree depth</td><td>Allows \(5^{n}\) votes or key-change messages.</td></tr>
+<tr><td>2</td><td>Message batch tree depth</td><td>Allows \(5^{n}\) messages to be processed per batch.</td></tr>
+<tr><td>3</td><td>Vote option tree depth</td><td>Allows \(5^{n}\) vote options.</td></tr>
+</tbody></table>
+<h3 id="vote-tallying"><a class="header" href="#vote-tallying">Vote tallying</a></h3>
+<table><thead><tr><th>#</th><th>Parameter</th><th>Description</th></tr></thead><tbody>
+<tr><td>0</td><td>State tree depth</td><td>Should be set to 10. Allows 9,765,625 signups.</td></tr>
+<tr><td>1</td><td>State leaf batch depth</td><td>Allows \(5^{n}\) users' votes to be processed per batch.</td></tr>
+<tr><td>2</td><td>Message batch tree depth</td><td>Allows \(5^{n}\) messages to be processed per batch.</td></tr>
+</tbody></table>
+<h2 id="compile-circuits"><a class="header" href="#compile-circuits">Compile circuits</a></h2>
+<p>Run:</p>
+<pre><code class="language-bash">npx zkey-manager compile -c ./zkeys.config.yml
+</code></pre>
+<p>The larger the trees, the more time this process may take. You may also need a
+machine with a very large amount of memory.</p>
+<h2 id="measure-the-circuit-sizes"><a class="header" href="#measure-the-circuit-sizes">Measure the circuit sizes</a></h2>
+<p>The size of a circuit is denoted by its number of constraints. The larger this
+number, the more time it takes to compile it, generate its <code>.zkey</code> file, and
+perform phase 2 contributions.</p>
+<p>Run this command to measure a circuit:</p>
+<pre><code class="language-bash">npx snarkjs r1cs info CIRCUIT_NAME.circom
+</code></pre>
+<h2 id="download-the-ptau-file"><a class="header" href="#download-the-ptau-file">Download the <code>.ptau</code> file</a></h2>
+<p>This file should be the result of the Perpetual Powers of Tau trusted setup
+contribution which <a href="https://blog.hermez.io/hermez-cryptographic-setup/">Hermez Network
+selected</a>.</p>
+<p>Run:</p>
+<pre><code class="language-bash">npx zkey-manager downloadPtau -c ./zkeys.config.yml
+</code></pre>
+<p><code>zkey-manager</code> will select the smallest <code>.ptau</code> file that fits the largest
+circuit specified in <code>zkeys.config.yml</code>. </p>
+<h2 id="generate-zkey-files-1"><a class="header" href="#generate-zkey-files-1">Generate <code>.zkey</code> files</a></h2>
+<p>Run:</p>
+<pre><code class="language-bash">npx zkey-manager genZkeys -c ./zkeys.config.yml
+</code></pre>
+<p>This generates the initial <code>.zkey</code> files for each circuit.</p>
+<p>You should perform at least one contribution to each circuit, even if you
+choose not to perform a multi-party trusted setup.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="trusted-setup"><a class="header" href="#trusted-setup">Trusted setup</a></h1>
+<p>MACI currently uses Groth16 zk-SNARKs written in <code>circom</code>. Teams who wish to
+build on MACI may choose to perform a multi-party trusted setup. This allows
+observers to have a higher degree of confidence that the coordinator cannot
+generate fake proofs. Some teams, however, may forgo the trusted setup.</p>
+<p>There are two possible reasons for doing so: if a team does not intend
+to manage a large amount of value, and if their users accept that the risk of
+coordinator misbehaviour is insufficient to justify doing the work nof a
+trusted setup. After all, MACI's security model presumes a trusted coordinator.</p>
+<p>In any case, MACI can be relatively easily modified to support PLONK, which
+does not require a circuit-specific trusted setup. Its circuits, written in
+<a href="https://github.com/iden3/circom"><code>circom</code></a>, are compatible with Fluidex's
+<a href="https://github.com/Fluidex/plonkit"><code>plonkit</code></a> tool. The downside to using
+PLONK is that proof generation is not as optimised as it is for Groth16.</p>
+<h2 id="how-to-run-the-trusted-setup"><a class="header" href="#how-to-run-the-trusted-setup">How to run the trusted setup</a></h2>
+<p>First, follow the instructions in the <a href="./installation.html">Installation</a>
+section to install dependencies for MACI.</p>
+<p>Next, configure and compile circuits following instructions in
+<a href="./circuits.html">Circuits</a>.</p>
+<p>Finally, use the <a href="https://github.com/appliedzkp/multisetups"><code>multisetups</code></a>
+tool to do this.</p>
+<p>You should perform at least one contribution to each circuit, even if you
+choose not to perform a multi-party trusted setup.</p>
+<p>We don't recommend a browser-based trusted setup (which <a href="https://ceremony.tornado.cash/">Tornado
+Cash</a> and <a href="https://mpc.zkopru.network/">Zkopru</a>
+used) for the MACI circuits as they are too large to be feasibly processed in
+the browser.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="testing"><a class="header" href="#testing">Testing</a></h1>
+<h2 id="contracts"><a class="header" href="#contracts">Contracts</a></h2>
+<p>First, compile the contracts.</p>
+<p>From the main <code>maci/</code> directory, run:</p>
+<pre><code class="language-bash">cd contracts &amp;&amp; \
+npm run compileSol
+</code></pre>
+<p>Run Hardhat Network (a local Ethereum testnet) in a separate terminal:</p>
+<pre><code class="language-bash">cd contracts &amp;&amp; \
+npm run hardhat
+</code></pre>
+<h2 id="cli"><a class="header" href="#cli">CLI</a></h2>
+<p>You can test the CLI locally. First, you need to either generate <code>.zkey</code> files,
+or download them. Do not use these testing <code>.zkey</code> files in production.</p>
+<h3 id="download-zkey-files-1"><a class="header" href="#download-zkey-files-1">Download <code>.zkey</code> files</a></h3>
+<p>MACI has two zk-SNARK circuits. Each circuit is parameterised. There should one
+<code>.zkey</code> file for each circuit and set of parameters.</p>
+<p>Unless you wish to generate a fresh set of <code>.zkey</code> files, you should obtain
+them from someone who has performed a multi-party trusted setup for said
+circuits..</p>
+<p>Note the locations of the <code>.zkey</code> files as the CLI requires them as
+command-line flags.</p>
+<p>From the main <code>maci/</code> directory, run:</p>
+<pre><code class="language-bash">cd cli &amp;&amp;
+mkdir -p zkeys &amp;&amp; \
+wget -O zkeys/ProcessMessages_10-2-1-2_test.0.zkey https://macitestcircuits.blob.core.windows.net/test/ProcessMessages_10-2-1-2_test.0.zkey &amp;&amp; \
+wget -O zkeys/TallyVotes_10-1-2_test.0.zkey https://macitestcircuits.blob.core.windows.net/test/TallyVotes_10-1-2_test.0.zkey
+</code></pre>
+<h3 id="compile-or-download-the-witness-generation-binaries"><a class="header" href="#compile-or-download-the-witness-generation-binaries">Compile or download the witness generation binaries</a></h3>
+<p>You may download precompiled witness generation binaries but there is no guarantee that they will work on your machine.</p>
+<pre><code class="language-bash">mkdir -p zkeys &amp;&amp; \
+wget -O ProcessMessages_10-2-1-2_test https://macitestcircuits.blob.core.windows.net/test/ProcessMessages_10-2-1-2_test &amp;&amp; \
+wget -O TallyVotes_10-1-2_test https://macitestcircuits.blob.core.windows.net/test/TallyVotes_10-1-2_test
+</code></pre>
+<p>Otherwise, you may compile them yourself.</p>
+<p>From the main <code>maci/cli</code> directory, run:</p>
+<pre><code>npx zkey-manager compile -c ./zkeys.config.yml
+</code></pre>
+<p>You should see the following files in <code>cli/zkeys/</code>:</p>
+<pre><code>ProcessMessages_10-2-1-2_test
+ProcessMessages_10-2-1-2_test.0.zkey
+TallyVotes_10-1-2_test
+TallyVotes_10-1-2_test.0.zkey
+</code></pre>
+<h3 id="check-the-rapidsnark-binary"><a class="header" href="#check-the-rapidsnark-binary">Check the Rapidsnark binary</a></h3>
+<p>Next, ensure that the <code>rapidsnark</code> <code>prover</code> binary is in
+<code>~/rapidsnark/build/prover</code>.</p>
+<h3 id="run-cli-tests"><a class="header" href="#run-cli-tests">Run CLI tests</a></h3>
+<p>In <code>maci/cli/</code>, run:</p>
+<pre><code class="language-bash">./test.sh
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+            </nav>
+
+        </div>
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        <script type="text/javascript">
+        window.addEventListener('load', function() {
+            MathJax.Hub.Register.StartupHook('End', function() {
+                window.setTimeout(window.print, 100);
+            });
+        });
+        </script>
+    </body>
+</html>
