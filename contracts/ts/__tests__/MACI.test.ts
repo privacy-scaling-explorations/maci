@@ -99,8 +99,6 @@ const treeDepths: TreeDepths = {
 }
 
 const messageBatchSize = 25
-const coeffBatchSize = 5
-const subsidyBatchSize = 5
 const tallyBatchSize = STATE_TREE_ARITY ** treeDepths.intStateTreeDepth
 
 const initialVoiceCreditBalance = 100
@@ -290,8 +288,6 @@ describe('MACI', () => {
                 maxValues,
                 treeDepths,
                 messageBatchSize,
-                coeffBatchSize,
-                subsidyBatchSize,
                 coordinator,
             )
             expect(p.toString()).toEqual(pollId.toString())

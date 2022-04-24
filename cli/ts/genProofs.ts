@@ -4,7 +4,7 @@ import * as path from 'path'
 
 import { genProof, verifyProof, extractVk } from 'maci-circuits'
 import { hashLeftRight, hash3 } from 'maci-crypto'
-import { PrivKey, Keypair } from 'maci-domainobjs'
+import { PrivKey, Keypair, VerifyingKey } from 'maci-domainobjs'
 import { genTallyResultCommitment } from 'maci-core'
 
 import {
@@ -76,7 +76,6 @@ const configureSubparser = (subparsers: any) => {
     parser.addArgument(
         ['-sf', '--subsidy-file'],
         {
-            required: true,
             type: 'string',
             help: 'A filepath in which to save the subsidy data and commitment.',
         }
@@ -113,7 +112,6 @@ const configureSubparser = (subparsers: any) => {
     parser.addArgument(
         ['-ws', '--subsidy-witnessgen'],
         {
-            required: true,
             type: 'string',
             help: 'The path to the subsidy calculation witness generation binary',
         }
@@ -140,7 +138,6 @@ const configureSubparser = (subparsers: any) => {
     parser.addArgument(
         ['-zs', '--subsidy-zkey'],
         {
-            required: true,
             type: 'string',
             help: 'The path to the SubsidyPerBatch .zkey file',
         }
@@ -179,22 +176,13 @@ const configureSubparser = (subparsers: any) => {
 const genProofs = async (args: any) => {
     const outputDir = args.output
 
-    //if (fs.existsSync(outputDir)) {
     if (!fs.existsSync(outputDir)) {
-        //console.error(`Error: ${outputDir} exists. Please specify a different directory to save proofs in.`)
-        //return 1
-    //} else {
         // Create the directory
         fs.mkdirSync(outputDir)
     }
 
     if (fs.existsSync(args.tally_file)) {
         console.error(`Error: ${args.tally_file} exists. Please specify a different filepath.`)
-        return 1
-    }
-
-    if (fs.existsSync(args.subsidy_file)) {
-        console.error(`Error: ${args.subsidy_file} exists. Please specify a different filepath.`)
         return 1
     }
 
@@ -226,10 +214,35 @@ const genProofs = async (args: any) => {
         return 1
     }
 
+    let subsidyVk: VerifyingKey
+    if (args.subsidy_file) {
+        if (fs.existsSync(args.subsidy_file)) {
+            console.error(`Error: ${args.subsidy_file} exists. Please specify a different filepath.`)
+            return 1
+        }
+        if (!args.subsidy_zkey) {
+            console.error('Please specify subsidy zkey file location')
+            return 1
+        }
+        if (!args.subsidy_witnessgen) {
+            console.error('Please specify subsidy witnessgen file location')
+            return 1
+        }
+
+        if (!fs.existsSync(args.subsidy_zkey)) {
+            console.error(`Error: ${args.subsidy_zkey} does not exist.`)
+            return 1
+        }
+        if (!fs.existsSync(args.subsidy_witnessgen)) {
+            console.error(`Error: ${args.subsidy_witnessgen} does not exist.`)
+            return 1
+        }
+        subsidyVk = extractVk(args.subsidy_zkey)
+    }
+
     // Extract the verifying keys
     const processVk = extractVk(args.process_zkey)
     const tallyVk = extractVk(args.tally_zkey)
-    const subsidyVk = extractVk(args.subsidy_zkey)
 
     // The coordinator's MACI private key
     let serializedPrivkey
@@ -409,51 +422,55 @@ const genProofs = async (args: any) => {
         console.log(`\nProgress: ${poll.numBatchesProcessed} / ${totalMessageBatches}`)
     }
 
-    console.log('\nGenerating proofs of subsidy calculation...')
-    const subsidyBatchSize = poll.batchSizes.subsidyBatchSize
-    const numLeaves = poll.stateLeaves.length
-    let totalSubsidyBatches = Math.ceil(numLeaves/subsidyBatchSize) ** 2
-    console.log(`subsidyBatchSize=${subsidyBatchSize}, numLeaves=${numLeaves}, totalSubsidyBatch=${totalSubsidyBatches}`)
-    
-    let subsidyCircuitInputs
-    let numBatchesCalced = 0
-    while (poll.hasUnfinishedSubsidyCalculation()) {
-        subsidyCircuitInputs = poll.subsidyPerBatch()
-        const r = genProof(subsidyCircuitInputs, rapidsnarkExe, args.subsidy_witnessgen, args.subsidy_zkey)
-
-        const isValid = verifyProof(r.publicInputs, r.proof, subsidyVk) 
-        if (!isValid) {
-            console.error('Error: generated an invalid subsidy calc proof')
-            return 1
-        }
-        const thisProof = {
-            circuitInputs: subsidyCircuitInputs,
-            proof: r.proof,
-            publicInputs: r.publicInputs,
-        }
-
-        subsidyProofs.push(thisProof)
-        numBatchesCalced++
-        saveOutput(outputDir, thisProof, `subsidy_${numBatchesCalced - 1}.json`)
-        console.log(`\nProgress: ${numBatchesCalced} / ${totalSubsidyBatches}`)
-    }
 
     const asHex = (val): string => {
         return '0x' + BigInt(val).toString(16)
     }
 
-    const subsidyFileData = {
-        provider: signer.provider.connection.url,
-        maci: maciAddress,
-        pollId,
-        newSubsidyCommitment: asHex(subsidyCircuitInputs.newSubsidyCommitment),
-        results: {
-            subsidy: poll.subsidy.map((x) => x.toString()),
-            salt: asHex(subsidyCircuitInputs.newSubsidySalt),
+    if (args.subsidy_file) {
+        console.log('\nGenerating proofs of subsidy calculation...')
+        const subsidyBatchSize = poll.batchSizes.subsidyBatchSize
+        const numLeaves = poll.stateLeaves.length
+        let totalSubsidyBatches = Math.ceil(numLeaves/subsidyBatchSize) ** 2
+        console.log(`subsidyBatchSize=${subsidyBatchSize}, numLeaves=${numLeaves}, totalSubsidyBatch=${totalSubsidyBatches}`)
+        
+        let subsidyCircuitInputs
+        let numBatchesCalced = 0
+        while (poll.hasUnfinishedSubsidyCalculation()) {
+            subsidyCircuitInputs = poll.subsidyPerBatch()
+            const r = genProof(subsidyCircuitInputs, rapidsnarkExe, args.subsidy_witnessgen, args.subsidy_zkey)
+    
+            const isValid = verifyProof(r.publicInputs, r.proof, subsidyVk) 
+            if (!isValid) {
+                console.error('Error: generated an invalid subsidy calc proof')
+                return 1
+            }
+            const thisProof = {
+                circuitInputs: subsidyCircuitInputs,
+                proof: r.proof,
+                publicInputs: r.publicInputs,
+            }
+    
+            subsidyProofs.push(thisProof)
+            numBatchesCalced++
+            saveOutput(outputDir, thisProof, `subsidy_${numBatchesCalced - 1}.json`)
+            console.log(`\nProgress: ${numBatchesCalced} / ${totalSubsidyBatches}`)
         }
+    
+    
+        const subsidyFileData = {
+            provider: signer.provider.connection.url,
+            maci: maciAddress,
+            pollId,
+            newSubsidyCommitment: asHex(subsidyCircuitInputs.newSubsidyCommitment),
+            results: {
+                subsidy: poll.subsidy.map((x) => x.toString()),
+                salt: asHex(subsidyCircuitInputs.newSubsidySalt),
+            }
+        }
+    
+        fs.writeFileSync(args.subsidy_file, JSON.stringify(subsidyFileData, null, 4))
     }
-
-    fs.writeFileSync(args.subsidy_file, JSON.stringify(subsidyFileData, null, 4))
 
 
     console.log('\nGenerating proofs of vote tallying...')

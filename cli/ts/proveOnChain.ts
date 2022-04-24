@@ -373,93 +373,93 @@ const proveOnChain = async (args: any) => {
 
     // ------------------------------------------------------------------------
     // subsidy calculation proofs
-    const treeArity = 5
-    let rbi = Number(await pptContract.rbi())
-    let cbi = Number(await pptContract.cbi())
-    let numLeaves = numSignUps + 1
-    let subsidyBatchNum = rbi * Math.ceil(numLeaves/subsidyBatchSize)  + cbi
-    let totalBatchNum = Math.ceil(numLeaves/subsidyBatchSize) ** 2
-    console.log(`number of subsidy batch processed: ${subsidyBatchNum}, numleaf=${numLeaves}`)
+    if (Object.keys(data.subsidyProofs).length !== 0) {
+        let rbi = Number(await pptContract.rbi())
+        let cbi = Number(await pptContract.cbi())
+        let numLeaves = numSignUps + 1
+        let subsidyBatchNum = rbi * Math.ceil(numLeaves/subsidyBatchSize)  + cbi
+        let totalBatchNum = Math.ceil(numLeaves/subsidyBatchSize) ** 2
+        console.log(`number of subsidy batch processed: ${subsidyBatchNum}, numleaf=${numLeaves}`)
 
-    for (let i = subsidyBatchNum; i < totalBatchNum; i++) {
-        const { proof, circuitInputs, publicInputs } = data.subsidyProofs[i]
-
-        const subsidyCommitmentOnChain = await pptContract.subsidyCommitment()
-        if (subsidyCommitmentOnChain.toString() !== circuitInputs.currentSubsidyCommitment) {
-            console.error(`Error: subsidycommitment mismatch`)
-            return 1
-        }
-        const packedValsOnChain = BigInt(
-            await pptContract.genSubsidyPackedVals(numSignUps)
-        )
-        if (circuitInputs.packedVals !== packedValsOnChain.toString()) {
-            console.error('Error: subsidy packedVals mismatch.')
-            return 1
-        }
-        const currentSbCommitmentOnChain = await pptContract.sbCommitment()
-        if (currentSbCommitmentOnChain.toString() !== circuitInputs.sbCommitment) {
-            console.error('Error: currentSbCommitment mismatch.')
-            return 1
-        }
-        const publicInputHashOnChain = await pptContract.genSubsidyPublicInputHash(
-            numSignUps,
-            circuitInputs.newSubsidyCommitment,
-        )
-        
-        if (publicInputHashOnChain.toString() !== publicInputs[0]) {
-            console.error('Error: public input mismatch.')
-            return 1
-        }
-
-        const txErr = 'Error: updateSubsidy() failed...'
-        const formattedProof = formatProofForVerifierContract(proof)
-        let tx
-        try {
-            tx = await pptContract.updateSubsidy(
-                pollContract.address,
-                circuitInputs.newSubsidyCommitment,
-                formattedProof,
-            )
-        } catch (e) {
-            console.error(txErr)
-            console.error(e)
-        }
-
-        const receipt = await tx.wait()
-
-        if (receipt.status !== 1) {
-            console.error(txErr)
-            return 1
-        }
-
-        console.log(`Progress: ${subsidyBatchNum + 1} / ${totalBatchNum}`)
-        console.log(`Transaction hash: ${tx.hash}`)
-
-        // Wait for the node to catch up
-        let nrbi = Number(await pptContract.rbi())
-        let ncbi = Number(await pptContract.cbi())
-        let backOff = 1000
-        let numAttempts = 0
-        while (nrbi === rbi && ncbi === cbi) {
-            await delay(backOff)
-            backOff *= 1.2
-            numAttempts ++
-            if (numAttempts >= 100) {
-                break
+        for (let i = subsidyBatchNum; i < totalBatchNum; i++) {
+            const { proof, circuitInputs, publicInputs } = data.subsidyProofs[i]
+    
+            const subsidyCommitmentOnChain = await pptContract.subsidyCommitment()
+            if (subsidyCommitmentOnChain.toString() !== circuitInputs.currentSubsidyCommitment) {
+                console.error(`Error: subsidycommitment mismatch`)
+                return 1
             }
+            const packedValsOnChain = BigInt(
+                await pptContract.genSubsidyPackedVals(numSignUps)
+            )
+            if (circuitInputs.packedVals !== packedValsOnChain.toString()) {
+                console.error('Error: subsidy packedVals mismatch.')
+                return 1
+            }
+            const currentSbCommitmentOnChain = await pptContract.sbCommitment()
+            if (currentSbCommitmentOnChain.toString() !== circuitInputs.sbCommitment) {
+                console.error('Error: currentSbCommitment mismatch.')
+                return 1
+            }
+            const publicInputHashOnChain = await pptContract.genSubsidyPublicInputHash(
+                numSignUps,
+                circuitInputs.newSubsidyCommitment,
+            )
+            
+            if (publicInputHashOnChain.toString() !== publicInputs[0]) {
+                console.error('Error: public input mismatch.')
+                return 1
+            }
+    
+            const txErr = 'Error: updateSubsidy() failed...'
+            const formattedProof = formatProofForVerifierContract(proof)
+            let tx
+            try {
+                tx = await pptContract.updateSubsidy(
+                    pollContract.address,
+                    circuitInputs.newSubsidyCommitment,
+                    formattedProof,
+                )
+            } catch (e) {
+                console.error(txErr)
+                console.error(e)
+            }
+    
+            const receipt = await tx.wait()
+    
+            if (receipt.status !== 1) {
+                console.error(txErr)
+                return 1
+            }
+    
+            console.log(`Progress: ${subsidyBatchNum + 1} / ${totalBatchNum}`)
+            console.log(`Transaction hash: ${tx.hash}`)
+    
+            // Wait for the node to catch up
+            let nrbi = Number(await pptContract.rbi())
+            let ncbi = Number(await pptContract.cbi())
+            let backOff = 1000
+            let numAttempts = 0
+            while (nrbi === rbi && ncbi === cbi) {
+                await delay(backOff)
+                backOff *= 1.2
+                numAttempts ++
+                if (numAttempts >= 100) {
+                    break
+                }
+            }
+    
+            rbi = nrbi
+            cbi = ncbi
+            subsidyBatchNum = rbi * subsidyBatchNum + cbi
         }
-
-        rbi = nrbi
-        cbi = ncbi
-        subsidyBatchNum = rbi * subsidyBatchNum + cbi
+    
+        if (subsidyBatchNum === totalBatchNum) {
+            console.log('All subsidy calculation proofs have been submitted.')
+            console.log()
+            console.log('OK')
+        }
     }
-
-    if (subsidyBatchNum === totalBatchNum) {
-        console.log('All subsidy calculation proofs have been submitted.')
-        console.log()
-        console.log('OK')
-    }
-
 
     // ------------------------------------------------------------------------
     // Vote tallying proofs

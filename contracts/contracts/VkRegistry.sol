@@ -77,8 +77,7 @@ contract VkRegistry is Ownable, SnarkCommon {
         uint256 _voteOptionTreeDepth,
         uint256 _messageBatchSize,
         VerifyingKey memory _processVk,
-        VerifyingKey memory _tallyVk,
-        VerifyingKey memory _subsidyVk
+        VerifyingKey memory _tallyVk
     ) public onlyOwner {
 
         uint256 processVkSig = genProcessVkSig(
@@ -97,14 +96,6 @@ contract VkRegistry is Ownable, SnarkCommon {
         );
 
         require(tallyVkSet[tallyVkSig] == false, "VkRegistry: tally vk already set");
-
-        uint256 subsidyVkSig = genSubsidyVkSig(
-            _stateTreeDepth,
-            _intStateTreeDepth,
-            _voteOptionTreeDepth
-        );
-
-        require(subsidyVkSet[subsidyVkSig] == false, "VkRegistry: subsidy vk already set");
 
         VerifyingKey storage processVk = processVks[processVkSig];
         processVk.alpha1 = _processVk.alpha1;
@@ -126,6 +117,22 @@ contract VkRegistry is Ownable, SnarkCommon {
             tallyVk.ic.push(_tallyVk.ic[i]);
         }
         tallyVkSet[tallyVkSig] = true;
+    }
+
+    function setSubsidyKeys(
+        uint256 _stateTreeDepth,
+        uint256 _intStateTreeDepth,
+        uint256 _voteOptionTreeDepth,
+        VerifyingKey memory _subsidyVk
+    ) public onlyOwner {
+
+        uint256 subsidyVkSig = genSubsidyVkSig(
+            _stateTreeDepth,
+            _intStateTreeDepth,
+            _voteOptionTreeDepth
+        );
+
+        require(subsidyVkSet[subsidyVkSig] == false, "VkRegistry: subsidy vk already set");
 
         VerifyingKey storage subsidyVk = subsidyVks[subsidyVkSig];
         subsidyVk.alpha1 = _subsidyVk.alpha1;
