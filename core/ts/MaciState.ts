@@ -750,7 +750,7 @@ class Poll {
         console.log(`prevIdx=${saltIndex}, curIdx=${this.rbi}-${this.cbi}`)
         if (this.rbi !== 0 || this.cbi !== 0) {
             currentSubsidySalt = BigInt(this.subsidySalts[saltIndex])
-            currentSubsidyCommitment = BigInt(genTallyResultCommitment(this.subsidy, currentSubsidySalt, this.treeDepths.voteOptionTreeDepth))
+            currentSubsidyCommitment = BigInt(genTallyResultCommitment(this.subsidy, currentSubsidySalt, this.treeDepths.voteOptionTreeDepth).valueOf())
         }
 
         const rowStartIndex = this.rbi * batchSize
@@ -838,7 +838,7 @@ class Poll {
     public coefficientCalculation = (rowBallot: Ballot, colBallot: Ballot): BigInt  => {
         let sum = BigInt(0)
         for (let p = 0; p < this.maxValues.maxVoteOptions; p++) {
-            sum += BigInt(rowBallot.votes[p]) * BigInt(colBallot.votes[p])
+            sum += BigInt(rowBallot.votes[p].valueOf()) * BigInt(colBallot.votes[p].valueOf())
         }
         let res = BigInt(this.MM * (10 ** this.WW))/(BigInt(this.MM)+BigInt(sum))
         return res
@@ -869,9 +869,9 @@ class Poll {
 
                 const kij = this.coefficientCalculation(rowBallot, colBallot)
                 for (let p = 0; p < this.maxValues.maxVoteOptions; p++) {
-                    const vip = BigInt(rowBallot.votes[p])
-                    const vjp = BigInt(colBallot.votes[p])
-                    this.subsidy[p] = BigInt(this.subsidy[p]) + BigInt(kij) * vip * vjp
+                    const vip = BigInt(rowBallot.votes[p].valueOf())
+                    const vjp = BigInt(colBallot.votes[p].valueOf())
+                    this.subsidy[p] = BigInt(this.subsidy[p].valueOf()) + BigInt(kij.valueOf()) * vip * vjp
                 }
             }
         }
@@ -882,8 +882,8 @@ class Poll {
                 const diagBallot = (idx < this.ballots.length)?this.ballots[idx]:emptyBallot
                 const kii = this.coefficientCalculation(diagBallot, diagBallot)
                 for (let p = 0; p < this.maxValues.maxVoteOptions; p++) {
-                    const vip = BigInt(diagBallot.votes[p])
-                    this.subsidy[p] = BigInt(this.subsidy[p]) - BigInt(kii) * vip * vip
+                    const vip = BigInt(diagBallot.votes[p].valueOf())
+                    this.subsidy[p] = BigInt(this.subsidy[p].valueOf()) - BigInt(kii.valueOf()) * vip * vip
                 }
             }
         }
