@@ -367,6 +367,7 @@ const genProofs = async (args: any) => {
     const tallyProofs: any[] = []
     const subsidyProofs: any[] = []
 
+    let startTime = Date.now()
     console.log('Generating proofs of message processing...')
     const messageBatchSize = poll.batchSizes.messageBatchSize
     const numMessages = poll.messages.length
@@ -422,12 +423,16 @@ const genProofs = async (args: any) => {
         console.log(`\nProgress: ${poll.numBatchesProcessed} / ${totalMessageBatches}`)
     }
 
+    let endTime = Date.now() 
+    console.log(`----------gen processMessage proof took ${(endTime - startTime)/1000} seconds`)
+
 
     const asHex = (val): string => {
         return '0x' + BigInt(val).toString(16)
     }
 
     if (args.subsidy_file) {
+        startTime = Date.now()
         console.log('\nGenerating proofs of subsidy calculation...')
         const subsidyBatchSize = poll.batchSizes.subsidyBatchSize
         const numLeaves = poll.stateLeaves.length
@@ -470,10 +475,13 @@ const genProofs = async (args: any) => {
         }
     
         fs.writeFileSync(args.subsidy_file, JSON.stringify(subsidyFileData, null, 4))
+        endTime = Date.now()
+        console.log(`----------gen subsidy proof took ${(endTime - startTime)/1000} seconds`)
     }
 
 
     console.log('\nGenerating proofs of vote tallying...')
+    startTime = Date.now()
     const tallyBatchSize = poll.batchSizes.tallyBatchSize
     const numStateLeaves = poll.stateLeaves.length
     let totalTallyBatches = numStateLeaves <= tallyBatchSize ?
@@ -576,6 +584,8 @@ const genProofs = async (args: any) => {
     } else {
         console.error('Error: the newTallyCommitment is invalid.')
     }
+    endTime = Date.now()
+    console.log(`----------gen tally proof took ${(endTime - startTime)/1000} seconds`)
 
     return 0
 }
