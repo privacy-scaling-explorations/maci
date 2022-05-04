@@ -318,7 +318,7 @@ const publish = async (args: any) => {
         tx = await pollContractEthers.publishMessage(
             message.asContractParam(),
             encKeypair.pubKey.asContractParam(),
-            { gasLimit: 1000000 },
+            { gasLimit: 10000000 },
         )
         await tx.wait()
 
