@@ -1,0 +1,40 @@
+name: Crypto
+
+on:
+  push:
+    branches: [ v1 ]
+  pull_request:
+    branches: [ v1 ]
+
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        node-version: [14, 16]
+
+    steps:
+      - uses: actions/checkout@v3
+    
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Build
+        run: |
+          git config --global url."https://github.com/".insteadOf git://github.com/
+          npm install --global npm
+          npm install
+          npm install -D typescript
+          npm run build
+        working-directory: crypto
+
+      - name: Test
+        run: npm run test
+        working-directory: crypto

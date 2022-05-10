@@ -1,0 +1,70 @@
+name: Circuit
+
+on:
+  push:
+    branches: [ v1 ]
+  pull_request:
+    branches: [ v1 ]
+
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        node-version: [14, 16]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes \
+            build-essential \
+            libgmp-dev \
+            libsodium-dev \
+            nasm \
+            nlohmann-json3-dev \
+            git
+
+      - name: Build
+        run: |
+          git config --global url."https://github.com/".insteadOf git://github.com/
+          npm install --global npm
+          npm install
+          npm run build
+        working-directory: circuits
+
+      - name: Download circom Binary v2.0.3
+        run: |
+          mkdir -p /home/runner/work/maci/.local/bin
+          wget -O /home/runner/work/maci/.local/bin/circom https://maci-devops-zkeys.s3.ap-northeast-2.amazonaws.com/circom-linux-amd64-v2.0.3
+          chmod +x /home/runner/work/maci/.local/bin/circom
+
+      - name: Run circom-helper
+        run: |
+          
+          # Prevent error `Error: ENOENT: no such file or directory, scandir '/home/ubuntu/maci/circuits/circom/prod/'`
+          # TODO: Add `./circom/prod/` to `circuitDirs` of `circuits/circomHelperConfig.json` when
+          #      `circuits/scripts/buildCustomSnarks.sh` script executed
+          mkdir circom/prod
+          
+          nohup npm run circom-helper &
+
+          # Wait until circom-helper listen to port 9001
+          while [[ "$(lsof -i :9001)" -eq '0' ]]; do sleep 1; done
+        working-directory: circuits
+      
+      - name: Test
+        run: npm run test
+        working-directory: circuits

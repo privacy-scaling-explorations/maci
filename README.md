@@ -164,3 +164,7 @@ Run `docker build -t maci .` to build all stages.
 
 To run a specific build step `docker build --target circuits -t maci .`
 Note: a cached version of `builder` job must be on your system prior as it relies on existing artifacts
+
+### CI pipeline
+
+CI pipeline ensures that we have automated tests that constantly validate. For more information about pipeline workflows, see https://github.com/appliedzkp/maci/wiki/MACI-CI-pipeline.
