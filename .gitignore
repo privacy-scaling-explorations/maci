@@ -145,3 +145,5 @@ cli/tallyinput.json
 **/contractAddress.txt
 **/contractAddress.old
 
+# mdBook rendered files
+publish
