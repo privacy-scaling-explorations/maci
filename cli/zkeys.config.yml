@@ -30,6 +30,14 @@ circuits:
   #type: "prod"
   #pubInputs: ["inputHash"]
 
+
+- template: "../circuits/circom/subsidy.circom"
+  component: "SubsidyPerBatch"
+  params: [10, 1, 2] # stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth
+  type: "test"
+  pubInputs: ["inputHash"]
+
+
 ptauFiles:
   1:
       url: "https://hermezptau.blob.core.windows.net/ptau/powersOfTau28_hez_final_01.ptau"

@@ -283,6 +283,7 @@ contract Poll is
         ]);
     }
 
+    
     /*
      * The first step of merging the MACI state AccQueue. This allows the
      * ProcessMessages circuit to access the latest state tree and ballots via
@@ -498,6 +499,8 @@ contract PollProcessorAndTallyer is
     string constant ERROR_PROCESSING_NOT_COMPLETE = "PptE07";
     string constant ERROR_ALL_BALLOTS_TALLIED = "PptE08";
     string constant ERROR_STATE_AQ_NOT_MERGED = "PptE09";
+    string constant ERROR_ALL_SUBSIDY_CALCULATED = "PptE10";
+    string constant ERROR_INVALID_SUBSIDY_PROOF = "PptE11";
 
     // The commitment to the state and ballot roots
     uint256 public sbCommitment;
@@ -528,6 +531,11 @@ contract PollProcessorAndTallyer is
     uint256 public tallyCommitment;
 
     uint256 public tallyBatchNum;
+
+    uint256 public subsidyCommitment;
+
+    uint256 public rbi; // row batch index
+    uint256 public cbi; // column batch index
 
     Verifier public verifier;
 
@@ -584,8 +592,8 @@ contract PollProcessorAndTallyer is
         require(_poll.stateAqMerged(), ERROR_STATE_AQ_NOT_MERGED);
 
         // Retrieve stored vals
-        ( , , uint8 messageTreeDepth, ) = _poll.treeDepths();
-        (uint256 messageBatchSize, ) = _poll.batchSizes();
+        ( , , uint8 messageTreeDepth,) = _poll.treeDepths();
+        (uint256 messageBatchSize,, ) = _poll.batchSizes();
 
         AccQueue messageAq;
         (, , messageAq) = _poll.extContracts();
@@ -654,7 +662,7 @@ contract PollProcessorAndTallyer is
     ) internal view returns (bool) {
 
         ( , , uint8 messageTreeDepth, uint8 voteOptionTreeDepth) = _poll.treeDepths();
-        (uint256 messageBatchSize, ) = _poll.batchSizes();
+        (uint256 messageBatchSize,,) = _poll.batchSizes();
         (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
         (VkRegistry vkRegistry, IMACI maci, ) = _poll.extContracts();
 
@@ -732,7 +740,7 @@ contract PollProcessorAndTallyer is
     ) public view returns (uint256) {
         (, uint256 maxVoteOptions) = _poll.maxValues();
         (, uint256 numMessages) = _poll.numSignUpsAndMessages();
-        (uint8 mbs, ) = _poll.batchSizes();
+        (uint8 mbs,,) = _poll.batchSizes();
         uint256 messageBatchSize = uint256(mbs);
 
         uint256 batchEndIndex = _currentMessageBatchIndex + messageBatchSize;
@@ -759,6 +767,101 @@ contract PollProcessorAndTallyer is
         currentMessageBatchIndex = _currentMessageBatchIndex;
         numBatchesProcessed ++;
     }
+
+
+    function genSubsidyPackedVals(uint256 _numSignUps) public view returns (uint256) {
+        // TODO: ensure that each value is less than or equal to 2 ** 50
+        uint256 result =
+            (_numSignUps << uint256(100)) +
+            (rbi << uint256(50))+ 
+            cbi;
+
+        return result;
+    }
+
+    function genSubsidyPublicInputHash(
+        uint256 _numSignUps,
+        uint256 _newSubsidyCommitment
+    ) public view returns (uint256) {
+        uint256 packedVals = genSubsidyPackedVals(_numSignUps);
+        uint256[] memory input = new uint256[](4);
+        input[0] = packedVals;
+        input[1] = sbCommitment;
+        input[2] = subsidyCommitment; 
+        input[3] = _newSubsidyCommitment; 
+        uint256 inputHash = sha256Hash(input);
+        return inputHash;
+    }
+
+
+    function updateSubsidy(
+        Poll _poll,
+        uint256 _newSubsidyCommitment,
+        uint256[8] memory _proof
+    )
+    public
+    onlyOwner
+    votingPeriodOver(_poll)
+    {
+        // Require that all messages have been processed
+        require(
+            processingComplete,
+            ERROR_PROCESSING_NOT_COMPLETE
+        );
+
+        
+        (uint8 intStateTreeDepth,,,uint8 voteOptionTreeDepth) = _poll.treeDepths();
+        uint256 subsidyBatchSize = 5 ** intStateTreeDepth; // treeArity is fixed to 5
+        (uint256 numSignUps,) = _poll.numSignUpsAndMessages();
+        uint256 numLeaves = numSignUps + 1;
+
+        // Require that there are untalied ballots left
+        require(
+            rbi * subsidyBatchSize <= numLeaves,
+            ERROR_ALL_SUBSIDY_CALCULATED
+        );
+        require(
+            cbi * subsidyBatchSize <= numLeaves,
+            ERROR_ALL_SUBSIDY_CALCULATED
+        );
+
+        bool isValid = verifySubsidyProof(_poll,_proof,numSignUps, _newSubsidyCommitment);
+        require(isValid, ERROR_INVALID_SUBSIDY_PROOF);
+        subsidyCommitment = _newSubsidyCommitment;
+        increaseSubsidyIndex(subsidyBatchSize, numLeaves);
+    }
+
+    function increaseSubsidyIndex(uint256 batchSize, uint256 numLeaves) internal {
+        if (cbi * batchSize + batchSize < numLeaves) {
+            cbi++;
+        } else {
+            rbi++;
+            cbi = 0;
+        }
+    }
+
+    function verifySubsidyProof(
+        Poll _poll,
+        uint256[8] memory _proof,
+        uint256 _numSignUps,
+        uint256 _newSubsidyCommitment
+    ) public view returns (bool) {
+        (uint8 intStateTreeDepth,,,uint8 voteOptionTreeDepth) = _poll.treeDepths();
+        (VkRegistry vkRegistry, IMACI maci, ) = _poll.extContracts();
+
+        // Get the verifying key
+        VerifyingKey memory vk = vkRegistry.getSubsidyVk(
+            maci.stateTreeDepth(),
+            intStateTreeDepth,
+            voteOptionTreeDepth
+        );
+
+        // Get the public inputs
+        uint256 publicInputHash = genSubsidyPublicInputHash(_numSignUps, _newSubsidyCommitment);
+
+        // Verify the proof
+        return verifier.verify(_proof, vk, publicInputHash);
+    } 
 
     /*
      * Pack the batch start index and number of signups into a 100-bit value.
@@ -812,7 +915,7 @@ contract PollProcessorAndTallyer is
             ERROR_PROCESSING_NOT_COMPLETE
         );
 
-        ( , uint256 tallyBatchSize) = _poll.batchSizes(); 
+        ( , uint256 tallyBatchSize,) = _poll.batchSizes(); 
         uint256 batchStartIndex = tallyBatchNum * tallyBatchSize;
         (uint256 numSignUps,) = _poll.numSignUpsAndMessages();
 
@@ -855,12 +958,7 @@ contract PollProcessorAndTallyer is
         uint256 _tallyBatchSize,
         uint256 _newTallyCommitment
     ) public view returns (bool) {
-        (
-            uint8 intStateTreeDepth,
-            ,
-            ,
-            uint8 voteOptionTreeDepth
-        ) = _poll.treeDepths();
+        (uint8 intStateTreeDepth,,,uint8 voteOptionTreeDepth) = _poll.treeDepths();
 
         (VkRegistry vkRegistry, IMACI maci, ) = _poll.extContracts();
 

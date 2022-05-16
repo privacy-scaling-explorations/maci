@@ -304,6 +304,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         // The message batch size and the tally batch size
         BatchSizes memory batchSizes = BatchSizes(
             MESSAGE_TREE_ARITY ** uint8(_treeDepths.messageTreeSubDepth),
+            STATE_TREE_ARITY ** uint8(_treeDepths.intStateTreeDepth),
             STATE_TREE_ARITY ** uint8(_treeDepths.intStateTreeDepth)
         );
 

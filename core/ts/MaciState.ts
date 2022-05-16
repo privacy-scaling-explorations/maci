@@ -31,6 +31,7 @@ interface TreeDepths {
 
 interface BatchSizes {
     tallyBatchSize: number;
+    subsidyBatchSize: number;
     messageBatchSize: number;
 }
 
@@ -97,6 +98,15 @@ class Poll {
 
     public totalSpentVoiceCredits: BigInt = BigInt(0)
 
+
+    // For coefficient and subsidy calculation
+    public subsidy: BigInt[] = []  // size: M, M is number of vote options
+    public subsidySalts: {[key: number]: BigInt} = {}
+    public rbi = 0 // row batch index
+    public cbi = 0 // column batch index
+    public MM = 50   // adjustable parameter
+    public WW = 4     // number of digits for float representation
+
     constructor(
         _duration: number,
         _pollEndTimestamp: BigInt,
@@ -131,6 +141,7 @@ class Poll {
         for (let i = 0; i < this.maxValues.maxVoteOptions; i ++) {
             this.results.push(BigInt(0))
             this.perVOSpentVoiceCredits.push(BigInt(0))
+            this.subsidy.push(BigInt(0))
         }
 
         const blankBallot = Ballot.genBlankBallot(
@@ -717,6 +728,169 @@ class Poll {
         return this.numBatchesTallied * batchSize < this.ballots.length
     }
 
+    public hasUnfinishedSubsidyCalculation = () => {
+        const batchSize = this.batchSizes.subsidyBatchSize
+        return (this.rbi * batchSize < this.ballots.length) && (this.cbi * batchSize < this.ballots.length)
+    }
+
+    public subsidyPerBatch = (): BigInt[] => {
+        const batchSize = this.batchSizes.subsidyBatchSize
+
+        assert(this.hasUnfinishedSubsidyCalculation(), 'No more subsidy batches to calculate')
+
+        const stateRoot = this.stateTree.root
+        const ballotRoot = this.ballotTree.root
+        const sbSalt = this.sbSalts[this.currentMessageBatchIndex]
+        const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt])
+
+        const currentSubsidy = this.subsidy.map((x) => BigInt(x.toString()))
+        let currentSubsidyCommitment  = BigInt(0)
+        let currentSubsidySalt = BigInt(0)
+        let saltIndex = this.previousSubsidyIndexToString()
+        console.log(`prevIdx=${saltIndex}, curIdx=${this.rbi}-${this.cbi}`)
+        if (this.rbi !== 0 || this.cbi !== 0) {
+            currentSubsidySalt = BigInt(this.subsidySalts[saltIndex])
+            currentSubsidyCommitment = BigInt(genTallyResultCommitment(this.subsidy, currentSubsidySalt, this.treeDepths.voteOptionTreeDepth).valueOf())
+        }
+
+        const rowStartIndex = this.rbi * batchSize
+        const colStartIndex = this.cbi * batchSize
+        const [ballots1, ballots2] = this.subsidyCalculation(rowStartIndex, colStartIndex)
+
+        const ballotSubrootProof1 = this.ballotTree.genMerkleSubrootPath(rowStartIndex,rowStartIndex + batchSize)
+        const ballotSubrootProof2 = this.ballotTree.genMerkleSubrootPath(colStartIndex,colStartIndex + batchSize)
+
+
+        const newSubsidySalt = genRandomSalt()
+        saltIndex = this.rbi.toString() + "-" + this.cbi.toString()
+        this.subsidySalts[saltIndex] = newSubsidySalt
+        const newSubsidyCommitment = genTallyResultCommitment(this.subsidy, newSubsidySalt, this.treeDepths.voteOptionTreeDepth)
+
+        const packedVals = MaciState.packSubsidySmallVals(
+            this.rbi,
+            this.cbi,
+            this.numSignUps,
+        )
+
+        const inputHash = sha256Hash([
+            packedVals,
+            sbCommitment,
+            currentSubsidyCommitment,
+            newSubsidyCommitment
+        ])
+
+        const circuitInputs = stringifyBigInts({
+            stateRoot,
+            ballotRoot,
+
+            sbSalt,
+            currentSubsidySalt,
+            newSubsidySalt,
+
+            sbCommitment,
+            currentSubsidyCommitment,
+            newSubsidyCommitment,
+            currentSubsidy,
+
+            packedVals, 
+            inputHash,
+
+            ballots1: ballots1.map((x) => x.asCircuitInputs()),
+            ballots2: ballots2.map((x) => x.asCircuitInputs()),
+            votes1: ballots1.map((x) => x.votes),
+            votes2: ballots2.map((x) => x.votes),
+            ballotPathElements1: ballotSubrootProof1.pathElements,
+            ballotPathElements2: ballotSubrootProof2.pathElements,
+        })
+
+        this.increaseSubsidyIndex()
+        return circuitInputs
+    }
+
+    public increaseSubsidyIndex = () => {
+        const batchSize = this.batchSizes.subsidyBatchSize
+        if (this.cbi * batchSize + batchSize < this.ballots.length ) {
+            this.cbi++
+        } else {
+            this.rbi++
+            this.cbi = 0
+        } 
+        return
+    }
+
+    public previousSubsidyIndexToString = ():string => {
+        const batchSize = this.batchSizes.subsidyBatchSize
+        const numBatches = Math.ceil(this.ballots.length/batchSize)
+        let cbi = this.cbi
+        let rbi = this.rbi
+        if (this.cbi === 0 && this.rbi === 0) {
+            return "0-0"
+        }
+        if (this.cbi !== 0 ) {
+            cbi --
+        } else {
+            rbi --
+            cbi = numBatches - 1
+        }
+        return rbi.toString() + "-" + cbi.toString()
+    }
+
+    public coefficientCalculation = (rowBallot: Ballot, colBallot: Ballot): BigInt  => {
+        let sum = BigInt(0)
+        for (let p = 0; p < this.maxValues.maxVoteOptions; p++) {
+            sum += BigInt(rowBallot.votes[p].valueOf()) * BigInt(colBallot.votes[p].valueOf())
+        }
+        let res = BigInt(this.MM * (10 ** this.WW))/(BigInt(this.MM)+BigInt(sum))
+        return res
+    }
+
+    public subsidyCalculation = (rowStartIndex:number, colStartIndex:number): Ballot[][] => {
+        const batchSize = this.batchSizes.subsidyBatchSize
+        let ballots1: Ballot[] = [] 
+        let ballots2: Ballot[] = [] 
+        const emptyBallot = new Ballot(
+            this.maxValues.maxVoteOptions,
+            this.treeDepths.voteOptionTreeDepth,
+        )
+        for (let i = 0; i < batchSize; i++) {
+            const row = rowStartIndex + i
+            const col = colStartIndex + i
+            const rowBallot = (row < this.ballots.length)?this.ballots[row]:emptyBallot
+            const colBallot = (col < this.ballots.length)?this.ballots[col]:emptyBallot
+            ballots1.push(rowBallot)
+            ballots2.push(colBallot)
+        }
+        for (let i = 0; i < batchSize; i++) {
+            for (let j = 0; j < batchSize; j++) {
+                const row = rowStartIndex + i
+                const col = colStartIndex + j
+                const rowBallot = (row < this.ballots.length)?this.ballots[row]:emptyBallot
+                const colBallot = (col < this.ballots.length)?this.ballots[col]:emptyBallot
+
+                const kij = this.coefficientCalculation(rowBallot, colBallot)
+                for (let p = 0; p < this.maxValues.maxVoteOptions; p++) {
+                    const vip = BigInt(rowBallot.votes[p].valueOf())
+                    const vjp = BigInt(colBallot.votes[p].valueOf())
+                    this.subsidy[p] = BigInt(this.subsidy[p].valueOf()) + BigInt(kij.valueOf()) * vip * vjp
+                }
+            }
+        }
+
+        if (rowStartIndex === colStartIndex) {
+            for (let i = 0; i < batchSize; i++) {
+                const idx = rowStartIndex + i
+                const diagBallot = (idx < this.ballots.length)?this.ballots[idx]:emptyBallot
+                const kii = this.coefficientCalculation(diagBallot, diagBallot)
+                for (let p = 0; p < this.maxValues.maxVoteOptions; p++) {
+                    const vip = BigInt(diagBallot.votes[p].valueOf())
+                    this.subsidy[p] = BigInt(this.subsidy[p].valueOf()) - BigInt(kii.valueOf()) * vip * vip
+                }
+            }
+        }
+        return [ballots1, ballots2]
+    }
+
+
     /*
      * Tally a batch of Ballots and update this.results
      */
@@ -984,6 +1158,8 @@ class Poll {
             {
                 tallyBatchSize:
                     Number(this.batchSizes.tallyBatchSize.toString()),
+                subsidyBatchSize:
+                    Number(this.batchSizes.subsidyBatchSize.toString()),
                 messageBatchSize:
                     Number(this.batchSizes.messageBatchSize.toString()),
             },
@@ -1022,6 +1198,7 @@ class Poll {
         copied.results = this.results.map((x: BigInt) => BigInt(x.toString()))
         copied.perVOSpentVoiceCredits = this.perVOSpentVoiceCredits.map((x: BigInt) => BigInt(x.toString()))
 
+
         copied.numBatchesProcessed = Number(this.numBatchesProcessed.toString())
         copied.numBatchesTallied = Number(this.numBatchesTallied.toString())
         copied.pollId = Number(this.pollId.toString())
@@ -1045,6 +1222,16 @@ class Poll {
             copied.spentVoiceCreditSubtotalSalts[k] = BigInt(this.spentVoiceCreditSubtotalSalts[k].toString())
         }
 
+
+        // subsidy related copy
+        copied.subsidy = this.subsidy.map((x: BigInt) => BigInt(x.toString()))
+        copied.rbi = Number(this.rbi.toString())
+        copied.cbi = Number(this.cbi.toString())
+        copied.MM = Number(this.MM.toString())
+        copied.WW = Number(this.WW.toString())
+        for (const k of Object.keys(this.subsidySalts)) {
+            copied.subsidySalts[k] = BigInt(this.subsidySalts[k].toString())
+        }
         return copied
     }
 
@@ -1155,6 +1342,7 @@ class MaciState {
              _treeDepths,
             {
                 messageBatchSize: _messageBatchSize,
+                subsidyBatchSize: this.STATE_TREE_ARITY ** _treeDepths.intStateTreeDepth,
                 tallyBatchSize:
                     this.STATE_TREE_ARITY ** _treeDepths.intStateTreeDepth,
             },
@@ -1209,6 +1397,22 @@ class MaciState {
         
         return true
     }
+
+
+    public static packSubsidySmallVals = (
+        row: number,
+        col: number,
+        numSignUps: number,
+    ) => {
+        // Note: the << operator has lower precedence than +
+        const packedVals = 
+            (BigInt(numSignUps) << BigInt(100)) +
+            (BigInt(row) << BigInt(50)) +
+            BigInt(col)
+        return packedVals
+    }
+
+
 
     public static packTallyVotesSmallVals = (
         batchStartIndex: number,
@@ -1293,6 +1497,17 @@ const genTallyVkSig = (
             BigInt(_voteOptionTreeDepth)
 }
 
+const genSubsidyVkSig = (
+    _stateTreeDepth: number,
+    _intStateTreeDepth: number,
+    _voteOptionTreeDepth: number,
+): BigInt => {
+    return (BigInt(_stateTreeDepth) << BigInt(128)) +
+           (BigInt(_intStateTreeDepth) << BigInt(64)) +
+            BigInt(_voteOptionTreeDepth)
+}
+
+
 /*
  * A helper function which hashes a list of results with a salt and returns the
  * hash.
@@ -1321,6 +1536,7 @@ export {
     Poll,
     genProcessVkSig,
     genTallyVkSig,
+    genSubsidyVkSig,
     genTallyResultCommitment,
     STATE_TREE_DEPTH,
 }

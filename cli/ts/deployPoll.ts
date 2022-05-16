@@ -184,6 +184,7 @@ const deployPoll = async (args: any) => {
                 voteOptionTreeDepth,
             },
             unserialisedPubkey.asContractParam(),
+	    { gasLimit: 10000000 }
         )
         const receipt = await tx.wait()
         const iface = maciContract.interface

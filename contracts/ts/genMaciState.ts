@@ -228,6 +228,7 @@ const genMaciStateFromContract = async (
     }
     const batchSizes = {
         tallyBatchSize: Number(onChainBatchSizes.tallyBatchSize),
+        subsidyBatchSize: Number(onChainBatchSizes.subsidyBatchSize),
         messageBatchSize: Number(onChainBatchSizes.messageBatchSize),
     }
 
