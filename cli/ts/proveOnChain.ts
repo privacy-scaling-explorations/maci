@@ -377,8 +377,9 @@ const proveOnChain = async (args: any) => {
         let rbi = Number(await pptContract.rbi())
         let cbi = Number(await pptContract.cbi())
         let numLeaves = numSignUps + 1
-        let subsidyBatchNum = rbi * Math.ceil(numLeaves/subsidyBatchSize)  + cbi
-        let totalBatchNum = Math.ceil(numLeaves/subsidyBatchSize) ** 2
+        let num1DBatches = Math.ceil(numLeaves/subsidyBatchSize)
+        let subsidyBatchNum = rbi * num1DBatches + cbi
+        let totalBatchNum = num1DBatches ** 2
         console.log(`number of subsidy batch processed: ${subsidyBatchNum}, numleaf=${numLeaves}`)
 
         for (let i = subsidyBatchNum; i < totalBatchNum; i++) {
@@ -451,7 +452,7 @@ const proveOnChain = async (args: any) => {
     
             rbi = nrbi
             cbi = ncbi
-            subsidyBatchNum = rbi * subsidyBatchNum + cbi
+            subsidyBatchNum = rbi * num1DBatches + cbi
         }
     
         if (subsidyBatchNum === totalBatchNum) {
