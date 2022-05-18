@@ -401,8 +401,8 @@ describe('MACI', () => {
                     { gasLimit: 300000 },
                 )
             } catch (e) {
-                const error = "'PollE03'"
-                expect(e.message.endsWith(error)).toBeTruthy()
+                const error = 'PollE03'
+                expect(e.message.slice(0,e.message.length-1).endsWith(error)).toBeTruthy()
             }
         })
 
@@ -434,8 +434,8 @@ describe('MACI', () => {
             try {
                 await pollContract.mergeMaciStateAq(0, { gasLimit: 4000000 })
             } catch (e) {
-                const error = "'PollE08'"
-                expect(e.message.endsWith(error)).toBeTruthy()
+                const error = 'PollE08'
+                expect(e.message.slice(0,e.message.length-1).endsWith(error)).toBeTruthy()
             }
         })
 
