@@ -58,7 +58,7 @@ Refer to the [Glossary](#Glossary) for defintions of terms.
 
         -  Otherwise, the user should use the most current public key they have registered.
 
-    -  Submit the the message, as well as the ephemeral public key in the clear to the contract using its `publishMessage()` function, which hashes the command and inserts it into the message tree.
+    -  Submit the message, as well as the epheremal public key in the clear to the contract using its `publishMessage()` function, which hashes the command and inserts it into the message tree.
 
 5. The coordinator processes all the commands after the voting period ends.
 
