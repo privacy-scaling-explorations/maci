@@ -2,7 +2,7 @@
 
 ### Setup
 
-Follow [instruction](https://appliedzkp.github.io/maci/) to setup environment and dependency, then
+Follow [instruction](https://privacy-scaling-explorations.github.io/maci/) to setup environment and dependency, then
 
 ```bash
 docker build -t maci-node:v0.5 - < LightDockerfile

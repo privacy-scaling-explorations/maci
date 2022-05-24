@@ -24,7 +24,7 @@ section to install dependencies for MACI.
 Next, configure and compile circuits following instructions in
 [Circuits](./circuits.html).
 
-Finally, use the [`multisetups`](https://github.com/appliedzkp/multisetups)
+Finally, use the [`multisetups`](https://github.com/privacy-scaling-explorations/multisetups)
 tool to do this.
 
 You should perform at least one contribution to each circuit, even if you

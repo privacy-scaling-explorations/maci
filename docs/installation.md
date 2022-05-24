@@ -51,7 +51,7 @@ will need it later.
 ### Install MACI
 
 ```bash
-git clone https://github.com/appliedzkp/maci.git && \
+git clone https://github.com/privacy-scaling-explorations/maci.git && \
 cd maci && \
 npm i && \
 npm run bootstrap && \

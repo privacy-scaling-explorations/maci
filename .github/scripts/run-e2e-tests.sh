@@ -37,7 +37,7 @@ do
     file_name=$(basename "$file_path")
 
     # Skipping testKeyChange.sh temporally
-    # related issue: https://github.com/appliedzkp/maci/issues/400
+    # related issue: https://github.com/privacy-scaling-explorations/maci/issues/400
     if [ "$file_name" = "testKeyChange.sh" ]; then
         continue
     fi

@@ -1,4 +1,4 @@
 # maci-cli
 
 Please refer to the [documentation for the
-CLI](http://appliedzkp.github.io/maci/cli.html).
+CLI](http://privacy-scaling-explorations.github.io/maci/cli.html).
