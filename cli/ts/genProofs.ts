@@ -17,6 +17,7 @@ import {
     promptPwd,
     validateEthAddress,
     contractExists,
+    isPathExist,
 } from './utils'
 import {readJSONFile} from 'maci-common'
 import {contractFilepath} from './config'
@@ -186,31 +187,21 @@ const genProofs = async (args: any) => {
         return 1
     }
 
-    // Check that args.witness_gen_exe exists
     const rapidsnarkExe = args.rapidsnark
+    const processDatFile = args.process_witnessgen + ".dat"
+    const tallyDatFile =  args.tally_witnessgen + ".dat"
 
-    if (!fs.existsSync(rapidsnarkExe)) {
-        console.error(`Error: ${rapidsnarkExe} does not exist.`)
-        return 1
-    }
-
-    if (!fs.existsSync(args.process_witnessgen)) {
-        console.error(`Error: ${args.process_witnessgen} does not exist.`)
-        return 1
-    }
-
-    if (!fs.existsSync(args.tally_witnessgen)) {
-        console.error(`Error: ${args.process_witnessgen} does not exist.`)
-        return 1
-    }
-
-    if (!fs.existsSync(args.process_zkey)) {
-        console.error(`Error: ${args.process_zkey} does not exist.`)
-        return 1
-    }
-
-    if (!fs.existsSync(args.tally_zkey)) {
-        console.error(`Error: ${args.tally_zkey} does not exist.`)
+    const [ok, path] = isPathExist([
+        rapidsnarkExe,
+        args.process_witnessgen,
+        args.tally_witnessgen,
+        processDatFile,
+        tallyDatFile,
+        args.process_zkey,
+        args.tally_zkey,
+        ])
+    if (!ok) {
+        console.error(`Error: ${path} does not exist.`)
         return 1
     }
 
@@ -229,14 +220,18 @@ const genProofs = async (args: any) => {
             return 1
         }
 
-        if (!fs.existsSync(args.subsidy_zkey)) {
-            console.error(`Error: ${args.subsidy_zkey} does not exist.`)
+        const subsidyDatFile = args.subsidy_witnessgen + ".dat"
+
+        const [ok, path] = isPathExist([
+            args.subsidy_witnessgen,
+            subsidyDatFile,
+            args.subsidy_zkey,
+            ])
+        if (!ok) {
+            console.error(`Error: ${path} does not exist.`)
             return 1
         }
-        if (!fs.existsSync(args.subsidy_witnessgen)) {
-            console.error(`Error: ${args.subsidy_witnessgen} does not exist.`)
-            return 1
-        }
+
         subsidyVk = extractVk(args.subsidy_zkey)
     }
 
@@ -260,7 +255,7 @@ const genProofs = async (args: any) => {
     const maciPrivkey = PrivKey.unserialize(serializedPrivkey)
     const coordinatorKeypair = new Keypair(maciPrivkey)
 
-    let contractAddrs = readJSONFile(contractFilepath)
+    const contractAddrs = readJSONFile(contractFilepath)
     if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
         console.error('Error: MACI contract address is empty') 
         return 1
@@ -348,7 +343,7 @@ const genProofs = async (args: any) => {
     let fromBlock = 0
     const txHash = args.transaction_hash
     if (txHash) {
-        let txn = await signer.provider.getTransaction(txHash);
+        const txn = await signer.provider.getTransaction(txHash);
         fromBlock = txn.blockNumber
     }
     console.log(`fromBlock = ${fromBlock}`)
@@ -436,7 +431,7 @@ const genProofs = async (args: any) => {
         console.log('\nGenerating proofs of subsidy calculation...')
         const subsidyBatchSize = poll.batchSizes.subsidyBatchSize
         const numLeaves = poll.stateLeaves.length
-        let totalSubsidyBatches = Math.ceil(numLeaves/subsidyBatchSize) ** 2
+        const totalSubsidyBatches = Math.ceil(numLeaves/subsidyBatchSize) ** 2
         console.log(`subsidyBatchSize=${subsidyBatchSize}, numLeaves=${numLeaves}, totalSubsidyBatch=${totalSubsidyBatches}`)
         
         let subsidyCircuitInputs
