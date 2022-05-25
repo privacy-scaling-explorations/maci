@@ -24,7 +24,6 @@ constants:
   maci:
     maxUsers: 15
     maxMessages: 25
-    maxVoteOptions: 25
     initialVoiceCredits: 1000
     signupDuration: 120
     votingDuration: 120

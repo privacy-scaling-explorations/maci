@@ -60,16 +60,6 @@ const configureSubparser = (subparsers: any) => {
     )
 
     createParser.addArgument(
-        ['-mv', '--max-vote-options'],
-        {
-            action: 'store',
-            type: 'int',
-            required: true,
-            help: 'The maximum number of vote options',
-        }
-    )
-
-    createParser.addArgument(
         ['-i', '--int-state-tree-depth'],
         {
             action: 'store',
@@ -131,16 +121,11 @@ const deployPoll = async (args: any) => {
         return 1
     }
 
-    // Max vote options
-    const maxVoteOptions = args.max_vote_options
-    if (maxVoteOptions <= 0) {
-        console.error('Error: the maximum number of vote options be positive')
-        return 1
-    }
     const intStateTreeDepth = args.int_state_tree_depth
     const messageTreeSubDepth = args.msg_batch_depth
     const messageTreeDepth = args.msg_tree_depth
     const voteOptionTreeDepth = args.vote_option_tree_depth
+    const maxVoteOptions = 5 ** voteOptionTreeDepth
 
     const signer = await getDefaultSigner()
 

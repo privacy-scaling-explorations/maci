@@ -14,8 +14,6 @@ macipk=macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391
 macisk=macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c 
 
 duration=120
-#maxVoteOption=$((5 ** $voteOptionTreeDepth))
-maxVoteOption=25
 #maxMsg=$((5 ** $msgTreeDepth))
 maxMsg=20
 
@@ -51,7 +49,7 @@ node build/index.js setVerifyingKeys -s $stateTreeDepth -i $intStateTreeDepth -m
 node build/index.js create 
 node ./build/index.js deployPoll \
     -pk $cordpk \
-    -t $duration -g $maxMsg -mv $maxVoteOption -i $intStateTreeDepth -m $msgTreeDepth -v $voteOptionTreeDepth -b $msgBatchDepth 
+    -t $duration -g $maxMsg -i $intStateTreeDepth -m $msgTreeDepth -v $voteOptionTreeDepth -b $msgBatchDepth 
 
 
 for ((i=1;i<=$maxSignUp;i++))

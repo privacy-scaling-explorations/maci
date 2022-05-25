@@ -5,7 +5,7 @@ node build/index.js setVerifyingKeys -s 10 -i 1 -m 2 -v 2 -b 1 -p ./zkeys/Proces
 
 node build/index.js create -r 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
 
-node build/index.js deployPoll -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a -pk macipk.81722e96a9296698f90cbd895786a0088d3ab5c36b0176f2c65b5415de7b5b2f -t 20 -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2
+node build/index.js deployPoll -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a -pk macipk.81722e96a9296698f90cbd895786a0088d3ab5c36b0176f2c65b5415de7b5b2f -t 20 -g 25 -i 1 -m 2 -b 1 -v 2
 
 node ../cli/build/index.js signup -p macipk.b1672ac299bb443f89bca9aeface6edfa5319a4b2135588ca1bfb352d7d09d1e -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
 node ../cli/build/index.js signup -p macipk.6be0cedb8656b09ebb1af0bb691ba134620d0325366256bb8b543f83f6d6b811 -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a

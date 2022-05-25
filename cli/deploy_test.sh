@@ -10,7 +10,7 @@ node build/index.js setVerifyingKeys -s 10 -i 1 -m 2 -v 2 -b 1 \
 node build/index.js create  && \
 node ./build/index.js deployPoll \
     -pk $cordpk \
-    -t 20 -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2  && \
+    -t 20 -g 25 -i 1 -m 2 -b 1 -v 2  && \
 node ./build/index.js deployPoll \
     -pk $cordpk \
-    -t 20 -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2  
+    -t 20 -g 25 -i 1 -m 2 -b 1 -v 2  

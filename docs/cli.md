@@ -137,7 +137,7 @@ ETH_PROVIDER=http://localhost:8545 \
 node ./build/index.js deployPoll \
     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -pk macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
-    -t 30 -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2
+    -t 30 -g 25 -i 1 -m 2 -b 1 -v 2
 ```
 
 Example output:
@@ -316,7 +316,6 @@ node ./build/index.js deployPoll \
     --pubkey macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
     --duration 1000 \
     --max-messages 25 \
-    --max-vote-options 25 \
     --int-state-tree-depth 1 \
     --msg-tree-depth 2 \
     --msg_batch_depth 1 \

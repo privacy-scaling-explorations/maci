@@ -9,7 +9,7 @@ node build/index.js create \
     -r 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0 && \
 node ./build/index.js deployPoll -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -pk macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
-    -t 20 -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2 && \
+    -t 20 -g 25 -i 1 -m 2 -b 1 -v 2 && \
 node ./build/index.js signup \
     -p macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391 \
     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a && \

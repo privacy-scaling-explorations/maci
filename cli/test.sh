@@ -12,7 +12,7 @@ node build/index.js setVerifyingKeys -s 10 -i 1 -m 2 -v 2 -b 1 \
 node build/index.js create 
 node ./build/index.js deployPoll \
     -pk macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
-    -t 40 -g 20 -mv 25 -i 1 -m 2 -b 1 -v 2  
+    -t 40 -g 20 -i 1 -m 2 -b 1 -v 2  
 
 node ./build/index.js signup \
     -p macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391  

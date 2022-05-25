@@ -27,7 +27,7 @@ node build/index.js setVerifyingKeys -s 10 -i 1 -m 2 -v 2 -b 1 \
 node build/index.js create  
 node ./build/index.js deployPoll \
     -pk $cordpk \
-    -t $durationInSecs -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2 
+    -t $durationInSecs -g 25 -i 1 -m 2 -b 1 -v 2 
 
 
 node ./build/index.js signup \
@@ -83,10 +83,10 @@ node build/index.js verify \
 
 node ./build/index.js deployPoll \
     -pk $cordpk \
-    -t $durationInSecs -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2  
+    -t $durationInSecs -g 25 -i 1 -m 2 -b 1 -v 2  
 node ./build/index.js deployPoll \
     -pk $cordpk \
-    -t $durationInSecs -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2  
+    -t $durationInSecs -g 25 -i 1 -m 2 -b 1 -v 2  
 
 node build/index.js publish \
     -p $pk1 \

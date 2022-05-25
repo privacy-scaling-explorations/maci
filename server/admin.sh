@@ -40,7 +40,7 @@ deploy(){
     eval $CMD setVerifyingKeys -s $state_tree_depth -i $int_state_tree_depth -m $msg_tree_depth \
     -v $vote_option_tree_depth -b $msg_batch_depth  -p $msg_zkey -t $tally_zkey && \
     eval $CMD create && \
-    eval $CMD deployPoll -pk $cordpk -t $duration -g $max_msgs -mv $max_votes \
+    eval $CMD deployPoll -pk $cordpk -t $duration -g $max_msgs \
                  -i $int_state_tree_depth -m $msg_tree_depth -v $vote_option_tree_depth -b $msg_batch_depth
 }
 

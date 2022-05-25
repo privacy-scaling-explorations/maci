@@ -14,7 +14,7 @@ pk1=macipk.d30bf8402e7d731e86ccc6d24726446bba3ee18e8df013ebb0c96a5b14914da9
 #node build/index.js create  && \
 #node ./build/index.js deployPoll \
 #    -pk $cordpk \
-#    -t $durationInSecs -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2 && \
+#    -t $durationInSecs -g 25 -i 1 -m 2 -b 1 -v 2 && \
 #node ./build/index.js signup \
 #    -p $pk1  && \
 #node build/index.js publish \

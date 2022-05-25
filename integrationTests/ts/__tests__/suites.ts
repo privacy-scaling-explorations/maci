@@ -79,7 +79,6 @@ const executeSuite = async (data: any, expect: any) => {
         ` -pk ${coordinatorKeypair.pubKey.serialize()}` +
         ` -t ${config.constants.poll.duration}` +
         ` -g ${config.constants.maci.maxMessages}` +
-        ` -mv ${config.constants.maci.maxVoteOptions}` +
         ` -i ${config.constants.poll.intStateTreeDepth}` +
         ` -m ${config.constants.poll.messageTreeDepth}` +
         ` -b ${config.constants.poll.messageBatchDepth}` +
@@ -103,7 +102,7 @@ const executeSuite = async (data: any, expect: any) => {
     const maxValues = {} as MaxValues
     maxValues.maxUsers = config.constants.maci.maxUsers
     maxValues.maxMessages = config.constants.maci.maxMessages
-    maxValues.maxVoteOptions  = config.constants.maci.maxVoteOptions
+    maxValues.maxVoteOptions  = 5 ** config.constants.maci.voteOptionTreeDepth
     const messageBatchSize = 5 ** config.constants.poll.messageBatchDepth
     maciState.deployPoll(
         config.constants.poll.duration,
