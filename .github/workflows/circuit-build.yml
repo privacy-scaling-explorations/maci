@@ -45,10 +45,10 @@ jobs:
           npm run build
         working-directory: circuits
 
-      - name: Download circom Binary v2.0.3
+      - name: Download circom Binary v2.0.4
         run: |
           mkdir -p /home/runner/work/maci/.local/bin
-          wget -O /home/runner/work/maci/.local/bin/circom https://maci-devops-zkeys.s3.ap-northeast-2.amazonaws.com/circom-linux-amd64-v2.0.3
+          wget -O /home/runner/work/maci/.local/bin/circom https://maci-devops.s3.ap-northeast-2.amazonaws.com/circom-linux-amd64-v2.0.4
           chmod +x /home/runner/work/maci/.local/bin/circom
 
       - name: Run circom-helper

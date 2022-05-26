@@ -1,3 +1,4 @@
+import * as fs from 'fs'
 import * as prompt from 'prompt-async'
 
 prompt.colors = false
@@ -132,6 +133,15 @@ const delay = (ms: number): Promise<void> => {
     return new Promise((resolve: Function) => setTimeout(resolve, ms))
 }
 
+const isPathExist = (paths: Array<string>): [boolean, string] => {
+    for (const path of paths) {
+        if (!fs.existsSync(path)) {
+            return [false, path]
+        }
+    }
+    return [true, null]
+}
+
 export {
     promptPwd,
     calcBinaryTreeDepthFromMaxLeaves,
@@ -145,4 +155,5 @@ export {
     currentBlockTimestamp,
     batchTransactionRequests,
     delay,
+    isPathExist,
 }
