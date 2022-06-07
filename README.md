@@ -6,7 +6,7 @@ post](https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413) for a
 high-level view.
 
 Documentation for developers and integrators can be found here:
-https://appliedzkp.github.io/maci/
+https://privacy-scaling-explorations.github.io/maci/
 
 We welcome contributions to this project. Please join our
 [Telegram group](https://t.me/joinchat/LUgOpE7J2gstRcZqdERyvw) to discuss.
@@ -29,7 +29,7 @@ If you are missing the correct version of glibc see `circuits/scripts/installGli
 Clone this repository, install NodeJS dependencies, and build the source code:
 
 ```bash
-git clone git@github.com:appliedzkp/maci.git && \
+git clone git@github.com:privacy-scaling-explorations/maci.git && \
 cd maci && \
 npm i && \
 npm run bootstrap && \
@@ -167,4 +167,4 @@ Note: a cached version of `builder` job must be on your system prior as it relie
 
 ### CI pipeline
 
-CI pipeline ensures that we have automated tests that constantly validate. For more information about pipeline workflows, see https://github.com/appliedzkp/maci/wiki/MACI-CI-pipeline.
+CI pipeline ensures that we have automated tests that constantly validate. For more information about pipeline workflows, see https://github.com/privacy-scaling-explorations/maci/wiki/MACI-CI-pipeline.

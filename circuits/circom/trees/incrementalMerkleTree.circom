@@ -1,7 +1,7 @@
 pragma circom 2.0.0;
 // Refer to:
 // https://github.com/peppersec/tornado-mixer/blob/master/circuits/merkleTree.circom
-// https://github.com/appliedzkp/semaphore/blob/master/circuits/circom/semaphore-base.circom
+// https://github.com/semaphore-protocol/semaphore/blob/audited/circuits/circom/semaphore-base.circom
 
 include "../../node_modules/circomlib/circuits/mux1.circom";
 include "../hasherPoseidon.circom";
