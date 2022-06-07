@@ -32,7 +32,8 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     // so that there can be as many users as possible.  i.e. 5 ** 10 = 9765625
     uint8 public override stateTreeDepth = 10;
 
-    // IMPORTANT: remember to change the spent voice credits tree in Poll.sol
+    // IMPORTANT: remember to change the ballot tree depth 
+    // in contracts/ts/genEmptyBallotRootsContract.ts file
     // if we change the state tree depth!
 
     uint8 constant internal STATE_TREE_SUBDEPTH = 2;
