@@ -26,6 +26,15 @@ const configureSubparser = (subparsers: any) => {
         }
     )
 
+    createParser.addArgument(
+        ['-e', '--erc20-address'],
+        {
+            type: 'string',
+            help: 'The topup credit contract address',
+        }
+    )
+
+
     const vcGroup = createParser.addMutuallyExclusiveGroup()
 
     vcGroup.addArgument(
@@ -104,6 +113,8 @@ const create = async (args: any) => {
 
     const vkRegistryContractAddress = args.vk_registry ? args.vk_registry: contractAddrs["VkRegistry"]
 
+    const topupCreditContractAddress = args.erc20_address ? args.erc20_address: contractAddrs["TopupCredit"]
+
     const {
         maciContract,
         stateAqContract,
@@ -114,6 +125,7 @@ const create = async (args: any) => {
         initialVoiceCreditProxyContractAddress,
         verifierContract.address,
         vkRegistryContractAddress,
+        topupCreditContractAddress
     )
 
     console.log('MACI:', maciContract.address)

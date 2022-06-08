@@ -6,6 +6,7 @@ interface SnarkProof {
 
 import {
     deployVkRegistry,
+    deployTopupCredit,
     deployMaci,
     deployPpt,
     deployMockVerifier,
@@ -50,11 +51,14 @@ const deployTestContracts = async (
     const vkRegistryContract = await deployVkRegistry()
     await vkRegistryContract.deployTransaction.wait()
 
+    const topupCreditContract = await deployTopupCredit()
+
     const contracts = await deployMaci(
         gatekeeperContract.address,
         constantIntialVoiceCreditProxyContract.address,
         mockVerifierContract.address,
         vkRegistryContract.address,
+        topupCreditContract.address
     )
 
     const maciContract = contracts.maciContract

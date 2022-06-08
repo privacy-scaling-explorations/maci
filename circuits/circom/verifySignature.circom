@@ -21,7 +21,7 @@ template EdDSAPoseidonVerifier_patched() {
     var i;
 
     // Ensure S<Subgroup Order
-    component snum2bits = Num2Bits(253);
+    component snum2bits = Num2Bits(254);
     snum2bits.in <== S;
 
     component compConstant = CompConstant(2736030358979909402780800718157159386076813972158567259200215660948447373040);
