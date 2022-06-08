@@ -63,9 +63,9 @@ describe('Cryptographic operations', () => {
             expect(h < SNARK_FIELD_SIZE).toBeTruthy()
         })
 
-        it('Hashing more than 12 elements should throw', () => {
+        it('Hashing more than 13 elements should throw', () => {
             const arr: any[] = []
-            for (let i = 0; i < 13; i++) {
+            for (let i = 0; i < 14; i++) {
                 arr.push(BigInt(i))
             }
 
