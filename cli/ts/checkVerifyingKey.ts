@@ -17,7 +17,10 @@ import {
 
 
 import { extractVk } from 'maci-circuits'
+import { readJSONFile } from 'maci-common'
 import { VerifyingKey } from 'maci-domainobjs'
+
+import {contractFilepath} from './config'
 
 const { ethers } = require('hardhat')
 
@@ -30,7 +33,6 @@ const configureSubparser = (subparsers: any) => {
     parser.addArgument(
         ['-x', '--contract'],
         {
-            required: true,
             type: 'string',
             help: 'The MACI contract address',
         }
@@ -108,7 +110,13 @@ const configureSubparser = (subparsers: any) => {
 }
 
 const checkVerifyingKey = async (args: any) => {
-    const maciAddress = args.contract
+    let contractAddrs = readJSONFile(contractFilepath)
+    if ((!contractAddrs||!contractAddrs["MACI"]) && !args.maci_address) {
+        console.error('Error: MACI contract address is empty') 
+        return 1
+    }
+
+    const maciAddress = args.maci_address ? args.maci_address: contractAddrs["MACI"]
     const stateTreeDepth = args.state_tree_depth
     const intStateTreeDepth = args.int_state_tree_depth
     const msgTreeDepth = args.msg_tree_depth
