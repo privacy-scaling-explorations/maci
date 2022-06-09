@@ -34,16 +34,14 @@ jobs:
             libgmp-dev \
             libsodium-dev \
             nasm \
-            nlohmann-json3-dev \
-            git
+            nlohmann-json3-dev
 
       - name: Build
         run: |
           git config --global url."https://github.com/".insteadOf git://github.com/
-          npm install --global npm
           npm install
+          npx lerna bootstrap --no-ci
           npm run build
-        working-directory: circuits
 
       - name: Download circom Binary v2.0.4
         run: |
