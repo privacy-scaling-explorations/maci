@@ -3,6 +3,7 @@ import {
     deployFreeForAllSignUpGatekeeper,
     deployMaci,
     deployVerifier,
+    deployTopupCredit as deployTopupCreditContract,
 } from 'maci-contracts'
 
 import {readJSONFile, writeJSONFile} from 'maci-common'
@@ -25,15 +26,6 @@ const configureSubparser = (subparsers: any) => {
             help: 'The VkRegistry contract address',
         }
     )
-
-    createParser.addArgument(
-        ['-e', '--erc20-address'],
-        {
-            type: 'string',
-            help: 'The topup credit contract address',
-        }
-    )
-
 
     const vcGroup = createParser.addMutuallyExclusiveGroup()
 
@@ -71,6 +63,9 @@ const create = async (args: any) => {
         console.error('Error: vkRegistry contract address is empty') 
         return 1
     }
+
+    const TopupCreditContract = await deployTopupCreditContract()
+    console.log('TopupCredit:', TopupCreditContract.address)
 
     // Initial voice credits
     const initialVoiceCredits = args.initial_voice_credits ? args.initial_voice_credits : DEFAULT_INITIAL_VOICE_CREDITS
@@ -113,8 +108,6 @@ const create = async (args: any) => {
 
     const vkRegistryContractAddress = args.vk_registry ? args.vk_registry: contractAddrs["VkRegistry"]
 
-    const topupCreditContractAddress = args.erc20_address ? args.erc20_address: contractAddrs["TopupCredit"]
-
     const {
         maciContract,
         stateAqContract,
@@ -125,7 +118,7 @@ const create = async (args: any) => {
         initialVoiceCreditProxyContractAddress,
         verifierContract.address,
         vkRegistryContractAddress,
-        topupCreditContractAddress
+        TopupCreditContract.address 
     )
 
     console.log('MACI:', maciContract.address)
@@ -137,6 +130,7 @@ const create = async (args: any) => {
     contractAddrs['StateAq'] = stateAqContract.address
     contractAddrs['PollFactory'] = pollFactoryContract.address
     contractAddrs['MessageAqFactory'] = messageAqContract.address
+    contractAddrs['TopupCredit'] = TopupCreditContract.address
     writeJSONFile(contractFilepath, contractAddrs)
 
     return 0

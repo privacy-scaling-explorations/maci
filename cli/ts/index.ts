@@ -23,11 +23,6 @@ import {
 } from './genMaciPubkey'
 
 import {
-    deployTopupCredit,
-    configureSubparser as configureSubparserForDeployTopupCredit,
-} from './deployTopupCredit'
-
-import {
     deployVkRegistry,
     configureSubparser as configureSubparserForDeployVkRegistry,
 } from './deployVkRegistry'
@@ -116,9 +111,6 @@ const main = async () => {
     // Subcommand: genMaciKeypair
     configureSubparserForGenMaciKeypair(subparsers)
 
-    // Subcommand: deployTopupCredit
-    configureSubparserForDeployTopupCredit(subparsers)
-
     // Subcommand: deployVkRegistry
     configureSubparserForDeployVkRegistry(subparsers)
 
@@ -170,8 +162,6 @@ const main = async () => {
         await genMaciKeypair(args)
     } else if (args.subcommand === 'genMaciPubkey') {
         await genMaciPubkey(args)
-    } else if (args.subcommand === 'deployTopupCredit') {
-        await deployTopupCredit()
     } else if (args.subcommand === 'deployVkRegistry') {
         await deployVkRegistry(args)
     } else if (args.subcommand === 'setVerifyingKeys') {
