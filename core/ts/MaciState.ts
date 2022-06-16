@@ -510,7 +510,7 @@ class Poll {
                         )
 
                         const newStateLeaf = this.stateLeaves[Number(stateIndex)].copy()
-                        newStateLeaf.voiceCreditBalance = BigInt(newStateLeaf.voiceCreditBalance) + BigInt(amount)
+                        newStateLeaf.voiceCreditBalance = BigInt(newStateLeaf.voiceCreditBalance.valueOf()) + BigInt(amount)
                         this.stateLeaves[Number(stateIndex)] = newStateLeaf
                         this.stateTree.update(Number(stateIndex), newStateLeaf.hash())
     
