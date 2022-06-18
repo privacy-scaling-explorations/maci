@@ -4,7 +4,7 @@ import {
 } from '../'
 
 import {
-    Command,
+    PCommand,
     Message,
     Keypair,
     VerifyingKey,
@@ -132,7 +132,7 @@ describe('MaciState', () => {
                 testTallyVk,
             )
 
-            const command = new Command(
+            const command = new PCommand(
                 stateIndex,
                 userKeypair.pubKey,
                 voteOptionIndex,
@@ -245,7 +245,7 @@ describe('MaciState', () => {
             for (let i = 0; i < messageBatchSize - 1; i ++) {
                 const userKeypair = users[i]
 
-                const command = new Command(
+                const command = new PCommand(
                     BigInt(i + 1),
                     userKeypair.pubKey,
                     BigInt(i), // vote option index
@@ -270,7 +270,7 @@ describe('MaciState', () => {
             // 24 invalid votes
             for (let i = 0; i < messageBatchSize - 1; i ++) {
                 const userKeypair = users[i]
-                const command = new Command(
+                const command = new PCommand(
                     BigInt(i + 1),
                     userKeypair.pubKey,
                     BigInt(i), // vote option index
@@ -417,7 +417,7 @@ describe('MaciState', () => {
                 testProcessVk,
                 testTallyVk,
             )
-            const command = new Command(
+            const command = new PCommand(
                 BigInt(0),
                 userKeypair.pubKey,
                 BigInt(0),

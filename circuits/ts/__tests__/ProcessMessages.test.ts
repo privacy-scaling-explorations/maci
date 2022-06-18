@@ -13,7 +13,7 @@ import {
 import {
     PrivKey,
     Keypair,
-    Command,
+    PCommand,
     Message,
     VerifyingKey,
     Ballot,
@@ -79,7 +79,7 @@ describe('ProcessMessage circuit', () => {
         let pollId
         let poll
         const messages: Message[] = []
-        const commands: Command[] = []
+        const commands: PCommand[] = []
         let messageTree
 
         beforeAll(async () => {
@@ -115,7 +115,7 @@ describe('ProcessMessage circuit', () => {
             )
 
             // First command (valid)
-            const command = new Command(
+            const command = new PCommand(
                 stateIndex, //BigInt(1),
                 userKeypair.pubKey,
                 voteOptionIndex, // voteOptionIndex,
@@ -139,7 +139,7 @@ describe('ProcessMessage circuit', () => {
             poll.publishMessage(message, ecdhKeypair.pubKey)
 
             // Second command (valid)
-            const command2 = new Command(
+            const command2 = new PCommand(
                 stateIndex,
                 userKeypair.pubKey,
                 voteOptionIndex, // voteOptionIndex,
@@ -244,7 +244,7 @@ describe('ProcessMessage circuit', () => {
         let pollId
         let poll
         const messages: Message[] = []
-        const commands: Command[] = []
+        const commands: PCommand[] = []
         let messageTree
 
         beforeAll(async () => {
@@ -286,7 +286,7 @@ describe('ProcessMessage circuit', () => {
                 hash5,
             )
 
-            const command = new Command(
+            const command = new PCommand(
                 BigInt(1),
                 userKeypair.pubKey,
                 BigInt(0), // voteOptionIndex,
@@ -364,7 +364,7 @@ describe('ProcessMessage circuit', () => {
         let pollId
         let poll
         const messages: Message[] = []
-        const commands: Command[] = []
+        const commands: PCommand[] = []
         let messageTree
 
         beforeAll(async () => {
@@ -403,7 +403,7 @@ describe('ProcessMessage circuit', () => {
             )
 
             // Vote for option 0
-            const command = new Command(
+            const command = new PCommand(
                 stateIndex, //BigInt(1),
                 userKeypair.pubKey,
                 BigInt(0), // voteOptionIndex,
@@ -427,7 +427,7 @@ describe('ProcessMessage circuit', () => {
             poll.publishMessage(message, ecdhKeypair.pubKey)
 
             // Vote for option 1
-            const command2 = new Command(
+            const command2 = new PCommand(
                 stateIndex,
                 userKeypair2.pubKey,
                 BigInt(1), // voteOptionIndex,
@@ -450,7 +450,7 @@ describe('ProcessMessage circuit', () => {
             poll.publishMessage(message2, ecdhKeypair2.pubKey)
 
             // Change key
-            const command3 = new Command(
+            const command3 = new PCommand(
                 stateIndex, //BigInt(1),
                 userKeypair2.pubKey,
                 BigInt(1), // voteOptionIndex,
@@ -551,7 +551,7 @@ describe('ProcessMessage circuit', () => {
             // Second batch is not a full batch
             const numMessages = (messageBatchSize * NUM_BATCHES) - 1
             for (let i = 0; i < numMessages; i ++) {
-                const command = new Command(
+                const command = new PCommand(
                     stateIndex,
                     userKeypair.pubKey,
                     BigInt(i), //vote option index

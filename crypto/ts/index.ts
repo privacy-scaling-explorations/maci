@@ -182,10 +182,10 @@ const hash5 = (elements: Plaintext): BigInt => hashN(5, elements)
 
 /*
  * A convenience function for to use Poseidon to hash a Plaintext with
- * no more than 12 elements
+ * no more than 13 elements
  */
-const hash12 = (elements: Plaintext): BigInt => {
-    const max = 12
+const hash13 = (elements: Plaintext): BigInt => {
+    const max = 13
     const elementLength = elements.length
     if (elementLength > max) {
         throw new TypeError(`the length of the elements array should be at most 10; got ${elements.length}`)
@@ -196,11 +196,12 @@ const hash12 = (elements: Plaintext): BigInt => {
             elementsPadded.push(BigInt(0))
         }
     }
-    return poseidonT5([
-        poseidonT6(elementsPadded.slice(0, 5)),
-        poseidonT6(elementsPadded.slice(5, 10)),
-        elementsPadded[10],
+    return poseidonT6([
+        elementsPadded[0],
+        poseidonT6(elementsPadded.slice(1, 6)),
+        poseidonT6(elementsPadded.slice(6, 11)),
         elementsPadded[11],
+        elementsPadded[12],
     ])
 }
 
@@ -413,7 +414,7 @@ export {
     hash3,
     hash4,
     hash5,
-    hash12,
+    hash13,
     hashLeftRight,
     verifySignature,
     Signature,

@@ -7,7 +7,7 @@ import {
 
 import {
     Keypair,
-    Command,
+    PCommand,
 } from 'maci-domainobjs'
 
 import { 
@@ -22,7 +22,7 @@ describe('Signature verification circuit', () => {
     it('verifies a valid signature', async () => {
 
         const keypair = new Keypair()
-        const command = new Command(
+        const command = new PCommand(
             BigInt(0),
             keypair.pubKey,
             BigInt(123),
@@ -52,7 +52,7 @@ describe('Signature verification circuit', () => {
 
     it('rejects an invalid signature (wrong signer)', async () => {
         const keypair = new Keypair()
-        const command = new Command(
+        const command = new PCommand(
             BigInt(0),
             keypair.pubKey,
             BigInt(123),
@@ -95,7 +95,7 @@ describe('Signature verification circuit', () => {
     it('rejects an invalid signature', async () => {
 
         const keypair = new Keypair()
-        const command = new Command(
+        const command = new PCommand(
             BigInt(0),
             keypair.pubKey,
             BigInt(123),

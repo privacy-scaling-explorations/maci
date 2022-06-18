@@ -7,7 +7,7 @@ import {
     sign,
     sha256Hash,
     hash5,
-    hash12,
+    hash13,
     verifySignature,
     genRandomSalt,
 } from '../'
@@ -57,19 +57,19 @@ describe('Cryptographic operations', () => {
         )
     })
 
-    describe('hash12', () => {
+    describe('hash13', () => {
         it('Hashing a smaller array should work', () => {
-            const h = hash12([BigInt(1), BigInt(2), BigInt(3)])
+            const h = hash13([BigInt(1), BigInt(2), BigInt(3)])
             expect(h < SNARK_FIELD_SIZE).toBeTruthy()
         })
 
-        it('Hashing more than 12 elements should throw', () => {
+        it('Hashing more than 13 elements should throw', () => {
             const arr: any[] = []
-            for (let i = 0; i < 13; i++) {
+            for (let i = 0; i < 14; i++) {
                 arr.push(BigInt(i))
             }
 
-            expect(() => hash12(arr)).toThrow(TypeError)
+            expect(() => hash13(arr)).toThrow(TypeError)
         })
     })
 
