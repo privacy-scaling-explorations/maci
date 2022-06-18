@@ -1,7 +1,6 @@
 import {
     genJsonRpcDeployer,
     deployMockVerifier,
-    deployTopupCredit,
     deployVkRegistry,
     deployMaci,
     deploySignupToken,
@@ -30,7 +29,6 @@ export {
     solDir,
     parseArtifact,
     genJsonRpcDeployer,
-    deployTopupCredit,
     deployVkRegistry,
     deployMaci,
     deployMockVerifier,

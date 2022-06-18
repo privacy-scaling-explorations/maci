@@ -56,6 +56,7 @@ const genProof = (
     const proof = JSON.parse(fs.readFileSync(proofJsonPath).toString())
     const publicInputs = JSON.parse(fs.readFileSync(publicJsonPath).toString())
 
+    // Delete the temp files and the temp directory
     for (const f of [
         proofJsonPath,
         publicJsonPath,

@@ -11,7 +11,7 @@ import {
 } from 'maci-crypto'
 
 import {
-    PCommand,
+    Command,
     Keypair,
 } from 'maci-domainobjs'
 
@@ -23,7 +23,7 @@ describe('MessageValidator circuit', () => {
         const { privKey, pubKey } = new Keypair()
 
         // Note that the command fields don't matter in this test
-        const command: PCommand = new PCommand(
+        const command: Command = new Command(
             BigInt(1),
             pubKey,
             BigInt(2),

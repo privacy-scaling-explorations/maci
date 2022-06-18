@@ -2,21 +2,23 @@
 pragma experimental ABIEncoderV2;
 pragma solidity ^0.7.2;
 
-import {IMACI} from "./IMACI.sol";
-import {Params} from "./Params.sol";
-import {Hasher} from "./crypto/Hasher.sol";
-import {Verifier} from "./crypto/Verifier.sol";
-import {SnarkCommon} from "./crypto/SnarkCommon.sol";
-import {SnarkConstants} from "./crypto/SnarkConstants.sol";
-import {DomainObjs, IPubKey, IMessage} from "./DomainObjs.sol";
-import {AccQueue, AccQueueQuinaryMaci} from "./trees/AccQueue.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {VkRegistry} from "./VkRegistry.sol";
-import {EmptyBallotRoots} from "./trees/EmptyBallotRoots.sol";
-import {TopupCredit} from "./TopupCredit.sol";
+import { IMACI } from "./IMACI.sol";
+import { Params } from "./Params.sol";
+import { Hasher } from "./crypto/Hasher.sol";
+import { Verifier } from "./crypto/Verifier.sol";
+import { SnarkCommon } from "./crypto/SnarkCommon.sol";
+import { SnarkConstants } from "./crypto/SnarkConstants.sol";
+import { DomainObjs, IPubKey, IMessage } from "./DomainObjs.sol";
+import { AccQueue, AccQueueQuinaryMaci } from "./trees/AccQueue.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { VkRegistry } from "./VkRegistry.sol";
+import { EmptyBallotRoots } from "./trees/EmptyBallotRoots.sol";
 
 contract MessageAqFactory is Ownable {
-    function deploy(uint256 _subDepth) public onlyOwner returns (AccQueue) {
+    function deploy(uint256 _subDepth)
+    public
+    onlyOwner
+    returns (AccQueue) {
         AccQueue aq = new AccQueueQuinaryMaci(_subDepth);
         aq.transferOwnership(owner());
         return aq;
@@ -28,7 +30,6 @@ contract PollDeploymentParams {
         VkRegistry vkRegistry;
         IMACI maci;
         AccQueue messageAq;
-        TopupCredit topupCredit;
     }
 }
 
@@ -36,20 +37,13 @@ contract PollDeploymentParams {
  * A factory contract which deploys Poll contracts. It allows the MACI contract
  * size to stay within the limit set by EIP-170.
  */
-contract PollFactory is
-    Params,
-    IPubKey,
-    IMessage,
-    Ownable,
-    Hasher,
-    PollDeploymentParams
-{
+contract PollFactory is Params, IPubKey, IMessage, Ownable, Hasher, PollDeploymentParams {
+
     MessageAqFactory public messageAqFactory;
 
     function setMessageAqFactory(MessageAqFactory _messageAqFactory)
-        public
-        onlyOwner
-    {
+    public
+    onlyOwner {
         messageAqFactory = _messageAqFactory;
     }
 
@@ -64,7 +58,6 @@ contract PollFactory is
         PubKey memory _coordinatorPubKey,
         VkRegistry _vkRegistry,
         IMACI _maci,
-        TopupCredit _topupCredit,
         address _pollOwner
     ) public onlyOwner returns (Poll) {
         uint256 treeArity = 5;
@@ -78,19 +71,16 @@ contract PollFactory is
         // of the inputs (aka packedVal)
 
         require(
-            _maxValues.maxMessages <=
-                treeArity**uint256(_treeDepths.messageTreeDepth) &&
-                _maxValues.maxMessages >= _batchSizes.messageBatchSize &&
-                _maxValues.maxMessages % _batchSizes.messageBatchSize == 0 &&
-                _maxValues.maxVoteOptions <=
-                treeArity**uint256(_treeDepths.voteOptionTreeDepth) &&
-                _maxValues.maxVoteOptions < (2**50),
+            _maxValues.maxMessages <= treeArity ** uint256(_treeDepths.messageTreeDepth) &&
+            _maxValues.maxMessages >= _batchSizes.messageBatchSize &&
+            _maxValues.maxMessages % _batchSizes.messageBatchSize == 0 &&
+            _maxValues.maxVoteOptions <= treeArity ** uint256(_treeDepths.voteOptionTreeDepth) &&
+            _maxValues.maxVoteOptions < (2 ** 50),
             "PollFactory: invalid _maxValues"
         );
 
-        AccQueue messageAq = messageAqFactory.deploy(
-            _treeDepths.messageTreeSubDepth
-        );
+        AccQueue messageAq =
+            messageAqFactory.deploy(_treeDepths.messageTreeSubDepth);
 
         ExtContracts memory extContracts;
 
@@ -98,7 +88,6 @@ contract PollFactory is
         extContracts.vkRegistry = _vkRegistry;
         extContracts.maci = _maci;
         extContracts.messageAq = messageAq;
-        extContracts.topupCredit = _topupCredit;
 
         Poll poll = new Poll(
             _duration,
@@ -124,16 +113,10 @@ contract PollFactory is
  * Do not deploy this directly. Use PollFactory.deploy() which performs some
  * checks on the Poll constructor arguments.
  */
-contract Poll is
-    Params,
-    Hasher,
-    IMessage,
-    IPubKey,
-    SnarkCommon,
-    Ownable,
-    PollDeploymentParams,
-    EmptyBallotRoots
-{
+contract Poll is 
+    Params, Hasher, IMessage, IPubKey, SnarkCommon, Ownable,
+    PollDeploymentParams, EmptyBallotRoots {
+
     // The coordinator's public key
     PubKey public coordinatorPubKey;
 
@@ -168,7 +151,7 @@ contract Poll is
     uint256 internal numMessages;
 
     function numSignUpsAndMessages() public view returns (uint256, uint256) {
-        uint256 numSignUps = extContracts.maci.numSignUps();
+        uint numSignUps = extContracts.maci.numSignUps();
         return (numSignUps, numMessages);
     }
 
@@ -190,7 +173,6 @@ contract Poll is
     uint8 private constant LEAVES_PER_NODE = 5;
 
     event PublishMessage(Message _message, PubKey _encPubKey);
-    event TopupMessage(Message _message);
     event MergeMaciStateAqSubRoots(uint256 _numSrQueueOps);
     event MergeMaciStateAq(uint256 _stateRoot);
     event MergeMessageAqSubRoots(uint256 _numSrQueueOps);
@@ -210,13 +192,11 @@ contract Poll is
         PubKey memory _coordinatorPubKey,
         ExtContracts memory _extContracts
     ) {
+
         extContracts = _extContracts;
 
         coordinatorPubKey = _coordinatorPubKey;
-        coordinatorPubKeyHash = hashLeftRight(
-            _coordinatorPubKey.x,
-            _coordinatorPubKey.y
-        );
+        coordinatorPubKeyHash = hashLeftRight(_coordinatorPubKey.x, _coordinatorPubKey.y);
         duration = _duration;
         maxValues = _maxValues;
         batchSizes = _batchSizes;
@@ -232,39 +212,16 @@ contract Poll is
      */
     modifier isAfterVotingDeadline() {
         uint256 secondsPassed = block.timestamp - deployTime;
-        require(secondsPassed > duration, ERROR_VOTING_PERIOD_NOT_PASSED);
+        require(
+            secondsPassed > duration,
+            ERROR_VOTING_PERIOD_NOT_PASSED
+        );
         _;
     }
 
     function isAfterDeadline() public view returns (bool) {
         uint256 secondsPassed = block.timestamp - deployTime;
         return secondsPassed > duration;
-    }
-
-    function topup(uint256 stateIndex, uint256 amount) public {
-        uint256 secondsPassed = block.timestamp - deployTime;
-        require(secondsPassed <= duration, ERROR_VOTING_PERIOD_PASSED);
-        require(
-            numMessages <= maxValues.maxMessages,
-            ERROR_MAX_MESSAGES_REACHED
-        );
-        extContracts.topupCredit.transferFrom(
-            msg.sender,
-            address(this),
-            amount
-        );
-        uint256[10] memory dat;
-        dat[0] = stateIndex;
-        dat[1] = amount;
-        for(uint i = 2; i< 10; i++) {
-            dat[i] = 0;
-        }
-        PubKey memory _padKey = PubKey(PAD_PUBKEY_X, PAD_PUBKEY_Y);
-        Message memory _message = Message({msgType: 2, data: dat});
-        uint256 messageLeaf = hashMessageAndEncPubKey(_message, _padKey);
-        extContracts.messageAq.enqueue(messageLeaf);
-        numMessages++;
-        emit TopupMessage(_message);
     }
 
     /*
@@ -275,24 +232,27 @@ contract Poll is
      *     coordinator's private key to generate an ECDH shared key with which
      *     to encrypt the message.
      */
-    function publishMessage(Message memory _message, PubKey memory _encPubKey)
-        public
-    {
+    function publishMessage(
+        Message memory _message,
+        PubKey memory _encPubKey
+    ) public {
         uint256 secondsPassed = block.timestamp - deployTime;
-        require(secondsPassed <= duration, ERROR_VOTING_PERIOD_PASSED);
+        require(
+            secondsPassed <= duration,
+            ERROR_VOTING_PERIOD_PASSED
+        );
         require(
             numMessages <= maxValues.maxMessages,
             ERROR_MAX_MESSAGES_REACHED
         );
         require(
             _encPubKey.x < SNARK_SCALAR_FIELD &&
-                _encPubKey.y < SNARK_SCALAR_FIELD,
+            _encPubKey.y < SNARK_SCALAR_FIELD,
             ERROR_INVALID_PUBKEY
         );
-        _message.msgType = 1;
         uint256 messageLeaf = hashMessageAndEncPubKey(_message, _encPubKey);
         extContracts.messageAq.enqueue(messageLeaf);
-        numMessages++;
+        numMessages ++;
 
         emit PublishMessage(_message, _encPubKey);
     }
@@ -301,7 +261,6 @@ contract Poll is
         Message memory _message,
         PubKey memory _encPubKey
     ) public pure returns (uint256) {
-        require(_message.data.length == 10, "invalid message length");
         uint256[5] memory n;
         n[0] = _message.data[0];
         n[1] = _message.data[1];
@@ -316,28 +275,27 @@ contract Poll is
         m[3] = _message.data[8];
         m[4] = _message.data[9];
 
-        return
-            hash5(
-                [
-                    _message.msgType,
-                    hash5(n),
-                    hash5(m),
-                    _encPubKey.x,
-                    _encPubKey.y
-                ]
-            );
+        return hash4([
+            hash5(n),
+            hash5(m),
+            _encPubKey.x,
+            _encPubKey.y
+        ]);
     }
 
+    
     /*
      * The first step of merging the MACI state AccQueue. This allows the
      * ProcessMessages circuit to access the latest state tree and ballots via
      * currentSbCommitment.
      */
-    function mergeMaciStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId)
-        public
-        onlyOwner
-        isAfterVotingDeadline
-    {
+    function mergeMaciStateAqSubRoots(
+        uint256 _numSrQueueOps,
+        uint256 _pollId
+    )
+    public
+    onlyOwner
+    isAfterVotingDeadline {
         // This function can only be called once per Poll
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
 
@@ -353,19 +311,17 @@ contract Poll is
      * ProcessMessages circuit to access the latest state tree and ballots via
      * currentSbCommitment.
      */
-    function mergeMaciStateAq(uint256 _pollId)
-        public
-        onlyOwner
-        isAfterVotingDeadline
-    {
+    function mergeMaciStateAq(
+        uint256 _pollId
+    )
+    public
+    onlyOwner
+    isAfterVotingDeadline {
         // This function can only be called once per Poll after the voting
         // deadline
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
 
-        require(
-            extContracts.maci.stateAq().subTreesMerged(),
-            ERROR_STATE_AQ_SUBTREES_NEED_MERGE
-        );
+        require(extContracts.maci.stateAq().subTreesMerged(), ERROR_STATE_AQ_SUBTREES_NEED_MERGE);
         extContracts.maci.mergeStateAq(_pollId);
 
         stateAqMerged = true;
@@ -386,10 +342,9 @@ contract Poll is
      * ProcessMessages circuit can access the message root.
      */
     function mergeMessageAqSubRoots(uint256 _numSrQueueOps)
-        public
-        onlyOwner
-        isAfterVotingDeadline
-    {
+    public
+    onlyOwner
+    isAfterVotingDeadline {
         extContracts.messageAq.mergeSubRoots(_numSrQueueOps);
         emit MergeMessageAqSubRoots(_numSrQueueOps);
     }
@@ -398,10 +353,11 @@ contract Poll is
      * The second step in merging the message AccQueue so that the
      * ProcessMessages circuit can access the message root.
      */
-    function mergeMessageAq() public onlyOwner isAfterVotingDeadline {
-        uint256 root = extContracts.messageAq.merge(
-            treeDepths.messageTreeDepth
-        );
+    function mergeMessageAq()
+    public
+    onlyOwner
+    isAfterVotingDeadline {
+        uint256 root = extContracts.messageAq.merge(treeDepths.messageTreeDepth);
         emit MergeMessageAq(root);
     }
 
@@ -409,44 +365,42 @@ contract Poll is
      * Enqueue a batch of messages.
      */
     function batchEnqueueMessage(uint256 _messageSubRoot)
-        public
-        onlyOwner
-        isAfterVotingDeadline
-    {
+    public
+    onlyOwner
+    isAfterVotingDeadline {
         extContracts.messageAq.insertSubTree(_messageSubRoot);
         // TODO: emit event
     }
 
     /*
-     * @notice Verify the number of spent voice credits from the tally.json
-     * @param _totalSpent spent field retrieved in the totalSpentVoiceCredits object
-     * @param _totalSpentSalt the corresponding salt in the totalSpentVoiceCredit object
-     * @return valid a boolean representing successful verification
-     */
+    * @notice Verify the number of spent voice credits from the tally.json
+    * @param _totalSpent spent field retrieved in the totalSpentVoiceCredits object
+    * @param _totalSpentSalt the corresponding salt in the totalSpentVoiceCredit object
+    * @return valid a boolean representing successful verification
+    */
     function verifySpentVoiceCredits(
         uint256 _totalSpent,
         uint256 _totalSpentSalt
     ) public view returns (bool) {
         uint256 ballotRoot = hashLeftRight(_totalSpent, _totalSpentSalt);
-        return
-            ballotRoot == emptyBallotRoots[treeDepths.voteOptionTreeDepth - 1];
+        return ballotRoot == emptyBallotRoots[treeDepths.voteOptionTreeDepth - 1];
     }
 
     /*
-     * @notice Verify the number of spent voice credits per vote option from the tally.json
-     * @param _voteOptionIndex the index of the vote option where credits were spent
-     * @param _spent the spent voice credits for a given vote option index
-     * @param _spentProof proof generated for the perVOSpentVoiceCredits
-     * @param _salt the corresponding salt given in the tally perVOSpentVoiceCredits object
-     * @return valid a boolean representing successful verification
-     */
+    * @notice Verify the number of spent voice credits per vote option from the tally.json
+    * @param _voteOptionIndex the index of the vote option where credits were spent
+    * @param _spent the spent voice credits for a given vote option index
+    * @param _spentProof proof generated for the perVOSpentVoiceCredits
+    * @param _salt the corresponding salt given in the tally perVOSpentVoiceCredits object
+    * @return valid a boolean representing successful verification
+    */
     function verifyPerVOSpentVoiceCredits(
         uint256 _voteOptionIndex,
         uint256 _spent,
         uint256[][] memory _spentProof,
         uint256 _spentSalt
     ) public view returns (bool) {
-        uint256 computedRoot = computeMerkleRootFromPath(
+         uint256 computedRoot = computeMerkleRootFromPath(
             treeDepths.voteOptionTreeDepth,
             _voteOptionIndex,
             _spent,
@@ -464,16 +418,16 @@ contract Poll is
     }
 
     /*
-     * @notice Verify the result generated of the tally.json
-     * @param _voteOptionIndex the index of the vote option to verify the correctness of the tally
-     * @param _tallyResult Flattened array of the tally
-     * @param _tallyResultProof Corresponding proof of the tally result
-     * @param _tallyResultSalt the respective salt in the results object in the tally.json
-     * @param _spentVoiceCreditsHash hashLeftRight(number of spent voice credits, spent salt)
-     * @param _perVOSpentVoiceCreditsHash hashLeftRight(merkle root of the no spent voice credits per vote option, perVOSpentVoiceCredits salt)
-     * @param _tallyCommitment newTallyCommitment field in the tally.json
-     * @return valid a boolean representing successful verification
-     */
+    * @notice Verify the result generated of the tally.json
+    * @param _voteOptionIndex the index of the vote option to verify the correctness of the tally
+    * @param _tallyResult Flattened array of the tally 
+    * @param _tallyResultProof Corresponding proof of the tally result
+    * @param _tallyResultSalt the respective salt in the results object in the tally.json
+    * @param _spentVoiceCreditsHash hashLeftRight(number of spent voice credits, spent salt) 
+    * @param _perVOSpentVoiceCreditsHash hashLeftRight(merkle root of the no spent voice credits per vote option, perVOSpentVoiceCredits salt)
+    * @param _tallyCommitment newTallyCommitment field in the tally.json
+    * @return valid a boolean representing successful verification
+    */
     function verifyTallyResult(
         uint256 _voteOptionIndex,
         uint256 _tallyResult,
@@ -481,8 +435,8 @@ contract Poll is
         uint256 _spentVoiceCreditsHash,
         uint256 _perVOSpentVoiceCreditsHash,
         uint256 _tallyCommitment
-    ) public view returns (bool) {
-        uint256 computedRoot = computeMerkleRootFromPath(
+    ) public view returns (bool){
+         uint256 computedRoot = computeMerkleRootFromPath(
             treeDepths.voteOptionTreeDepth,
             _voteOptionIndex,
             _tallyResult,
@@ -497,6 +451,7 @@ contract Poll is
         return hash3(tally) == _tallyCommitment;
     }
 
+
     function computeMerkleRootFromPath(
         uint8 _depth,
         uint256 _index,
@@ -509,8 +464,8 @@ contract Poll is
 
         uint256[LEAVES_PER_NODE] memory level;
 
-        for (uint8 i = 0; i < _depth; i++) {
-            for (uint8 j = 0; j < LEAVES_PER_NODE; j++) {
+        for (uint8 i = 0; i < _depth; i ++) {
+            for (uint8 j = 0; j < LEAVES_PER_NODE; j ++) {
                 if (j == pos) {
                     level[j] = current;
                 } else {
@@ -532,12 +487,8 @@ contract Poll is
 }
 
 contract PollProcessorAndTallyer is
-    Ownable,
-    SnarkCommon,
-    SnarkConstants,
-    IPubKey,
-    PollDeploymentParams
-{
+    Ownable, SnarkCommon, SnarkConstants, IPubKey, PollDeploymentParams{
+
     // Error codes
     string constant ERROR_VOTING_PERIOD_NOT_PASSED = "PptE01";
     string constant ERROR_NO_MORE_MESSAGES = "PptE02";
@@ -588,16 +539,20 @@ contract PollProcessorAndTallyer is
 
     Verifier public verifier;
 
-    constructor(Verifier _verifier) {
+    constructor(
+        Verifier _verifier
+    ) {
         verifier = _verifier;
     }
 
     modifier votingPeriodOver(Poll _poll) {
-        (uint256 deployTime, uint256 duration) = _poll
-            .getDeployTimeAndDuration();
+        (uint256 deployTime, uint256 duration) = _poll.getDeployTimeAndDuration();
         // Require that the voting period is over
         uint256 secondsPassed = block.timestamp - deployTime;
-        require(secondsPassed > duration, ERROR_VOTING_PERIOD_NOT_PASSED);
+        require(
+            secondsPassed > duration,
+            ERROR_VOTING_PERIOD_NOT_PASSED
+        );
         _;
     }
 
@@ -625,7 +580,11 @@ contract PollProcessorAndTallyer is
         Poll _poll,
         uint256 _newSbCommitment,
         uint256[8] memory _proof
-    ) public onlyOwner votingPeriodOver(_poll) {
+    )
+    public
+    onlyOwner
+    votingPeriodOver(_poll)
+    {
         // There must be unprocessed messages
         require(!processingComplete, ERROR_NO_MORE_MESSAGES);
 
@@ -633,11 +592,11 @@ contract PollProcessorAndTallyer is
         require(_poll.stateAqMerged(), ERROR_STATE_AQ_NOT_MERGED);
 
         // Retrieve stored vals
-        (, , uint8 messageTreeDepth, ) = _poll.treeDepths();
-        (uint256 messageBatchSize, , ) = _poll.batchSizes();
+        ( , , uint8 messageTreeDepth,) = _poll.treeDepths();
+        (uint256 messageBatchSize,, ) = _poll.batchSizes();
 
         AccQueue messageAq;
-        (, , messageAq, ) = _poll.extContracts();
+        (, , messageAq) = _poll.extContracts();
 
         // Require that the message queue has been merged
         uint256 messageRoot = messageAq.getMainRoot(messageTreeDepth);
@@ -653,8 +612,7 @@ contract PollProcessorAndTallyer is
 
             if (r == 0) {
                 currentMessageBatchIndex =
-                    (numMessages / messageBatchSize) *
-                    messageBatchSize;
+                    (numMessages / messageBatchSize) * messageBatchSize;
             } else {
                 currentMessageBatchIndex = numMessages;
             }
@@ -702,11 +660,11 @@ contract PollProcessorAndTallyer is
         uint256 _newSbCommitment,
         uint256[8] memory _proof
     ) internal view returns (bool) {
-        (, , uint8 messageTreeDepth, uint8 voteOptionTreeDepth) = _poll
-            .treeDepths();
-        (uint256 messageBatchSize, , ) = _poll.batchSizes();
+
+        ( , , uint8 messageTreeDepth, uint8 voteOptionTreeDepth) = _poll.treeDepths();
+        (uint256 messageBatchSize,,) = _poll.batchSizes();
         (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
-        (VkRegistry vkRegistry, IMACI maci, , ) = _poll.extContracts();
+        (VkRegistry vkRegistry, IMACI maci, ) = _poll.extContracts();
 
         // Calculate the public input hash (a SHA256 hash of several values)
         uint256 publicInputHash = genProcessMessagesPublicInputHash(
@@ -754,8 +712,7 @@ contract PollProcessorAndTallyer is
             _numSignUps
         );
 
-        (uint256 deployTime, uint256 duration) = _poll
-            .getDeployTimeAndDuration();
+        (uint256 deployTime, uint256 duration) = _poll.getDeployTimeAndDuration();
 
         uint256[] memory input = new uint256[](6);
         input[0] = packedVals;
@@ -774,7 +731,7 @@ contract PollProcessorAndTallyer is
      * representation of four 50-bit values. This function generates this
      * 250-bit value, which consists of the maximum number of vote options, the
      * number of signups, the current message batch index, and the end index of
-     * the current batch.
+    * the current batch.
      */
     function genProcessMessagesPackedVals(
         Poll _poll,
@@ -783,7 +740,7 @@ contract PollProcessorAndTallyer is
     ) public view returns (uint256) {
         (, uint256 maxVoteOptions) = _poll.maxValues();
         (, uint256 numMessages) = _poll.numSignUpsAndMessages();
-        (uint8 mbs, , ) = _poll.batchSizes();
+        (uint8 mbs,,) = _poll.batchSizes();
         uint256 messageBatchSize = uint256(mbs);
 
         uint256 batchEndIndex = _currentMessageBatchIndex + messageBatchSize;
@@ -791,7 +748,8 @@ contract PollProcessorAndTallyer is
             batchEndIndex = numMessages;
         }
 
-        uint256 result = maxVoteOptions +
+        uint256 result =
+            maxVoteOptions +
             (_numSignUps << uint256(50)) +
             (_currentMessageBatchIndex << uint256(100)) +
             (batchEndIndex << uint256(150));
@@ -807,17 +765,15 @@ contract PollProcessorAndTallyer is
         sbCommitment = _newSbCommitment;
         processingComplete = _processingComplete;
         currentMessageBatchIndex = _currentMessageBatchIndex;
-        numBatchesProcessed++;
+        numBatchesProcessed ++;
     }
 
-    function genSubsidyPackedVals(uint256 _numSignUps)
-        public
-        view
-        returns (uint256)
-    {
+
+    function genSubsidyPackedVals(uint256 _numSignUps) public view returns (uint256) {
         // TODO: ensure that each value is less than or equal to 2 ** 50
-        uint256 result = (_numSignUps << uint256(100)) +
-            (rbi << uint256(50)) +
+        uint256 result =
+            (_numSignUps << uint256(100)) +
+            (rbi << uint256(50))+ 
             cbi;
 
         return result;
@@ -831,24 +787,32 @@ contract PollProcessorAndTallyer is
         uint256[] memory input = new uint256[](4);
         input[0] = packedVals;
         input[1] = sbCommitment;
-        input[2] = subsidyCommitment;
-        input[3] = _newSubsidyCommitment;
+        input[2] = subsidyCommitment; 
+        input[3] = _newSubsidyCommitment; 
         uint256 inputHash = sha256Hash(input);
         return inputHash;
     }
+
 
     function updateSubsidy(
         Poll _poll,
         uint256 _newSubsidyCommitment,
         uint256[8] memory _proof
-    ) public onlyOwner votingPeriodOver(_poll) {
+    )
+    public
+    onlyOwner
+    votingPeriodOver(_poll)
+    {
         // Require that all messages have been processed
-        require(processingComplete, ERROR_PROCESSING_NOT_COMPLETE);
+        require(
+            processingComplete,
+            ERROR_PROCESSING_NOT_COMPLETE
+        );
 
-        (uint8 intStateTreeDepth, , , uint8 voteOptionTreeDepth) = _poll
-            .treeDepths();
-        uint256 subsidyBatchSize = 5**intStateTreeDepth; // treeArity is fixed to 5
-        (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
+        
+        (uint8 intStateTreeDepth,,,uint8 voteOptionTreeDepth) = _poll.treeDepths();
+        uint256 subsidyBatchSize = 5 ** intStateTreeDepth; // treeArity is fixed to 5
+        (uint256 numSignUps,) = _poll.numSignUpsAndMessages();
         uint256 numLeaves = numSignUps + 1;
 
         // Require that there are untalied ballots left
@@ -861,20 +825,13 @@ contract PollProcessorAndTallyer is
             ERROR_ALL_SUBSIDY_CALCULATED
         );
 
-        bool isValid = verifySubsidyProof(
-            _poll,
-            _proof,
-            numSignUps,
-            _newSubsidyCommitment
-        );
+        bool isValid = verifySubsidyProof(_poll,_proof,numSignUps, _newSubsidyCommitment);
         require(isValid, ERROR_INVALID_SUBSIDY_PROOF);
         subsidyCommitment = _newSubsidyCommitment;
         increaseSubsidyIndex(subsidyBatchSize, numLeaves);
     }
 
-    function increaseSubsidyIndex(uint256 batchSize, uint256 numLeaves)
-        internal
-    {
+    function increaseSubsidyIndex(uint256 batchSize, uint256 numLeaves) internal {
         if (cbi * batchSize + batchSize < numLeaves) {
             cbi++;
         } else {
@@ -889,9 +846,8 @@ contract PollProcessorAndTallyer is
         uint256 _numSignUps,
         uint256 _newSubsidyCommitment
     ) public view returns (bool) {
-        (uint8 intStateTreeDepth, , , uint8 voteOptionTreeDepth) = _poll
-            .treeDepths();
-        (VkRegistry vkRegistry, IMACI maci, , ) = _poll.extContracts();
+        (uint8 intStateTreeDepth,,,uint8 voteOptionTreeDepth) = _poll.treeDepths();
+        (VkRegistry vkRegistry, IMACI maci, ) = _poll.extContracts();
 
         // Get the verifying key
         VerifyingKey memory vk = vkRegistry.getSubsidyVk(
@@ -901,14 +857,11 @@ contract PollProcessorAndTallyer is
         );
 
         // Get the public inputs
-        uint256 publicInputHash = genSubsidyPublicInputHash(
-            _numSignUps,
-            _newSubsidyCommitment
-        );
+        uint256 publicInputHash = genSubsidyPublicInputHash(_numSignUps, _newSubsidyCommitment);
 
         // Verify the proof
         return verifier.verify(_proof, vk, publicInputHash);
-    }
+    } 
 
     /*
      * Pack the batch start index and number of signups into a 100-bit value.
@@ -918,8 +871,10 @@ contract PollProcessorAndTallyer is
         uint256 _batchStartIndex,
         uint256 _tallyBatchSize
     ) public pure returns (uint256) {
+
         // TODO: ensure that each value is less than or equal to 2 ** 50
-        uint256 result = (_batchStartIndex / _tallyBatchSize) +
+        uint256 result =
+            (_batchStartIndex / _tallyBatchSize) +
             (_numSignUps << uint256(50));
 
         return result;
@@ -949,16 +904,26 @@ contract PollProcessorAndTallyer is
         Poll _poll,
         uint256 _newTallyCommitment,
         uint256[8] memory _proof
-    ) public onlyOwner votingPeriodOver(_poll) {
+    )
+    public
+    onlyOwner
+    votingPeriodOver(_poll)
+    {
         // Require that all messages have been processed
-        require(processingComplete, ERROR_PROCESSING_NOT_COMPLETE);
+        require(
+            processingComplete,
+            ERROR_PROCESSING_NOT_COMPLETE
+        );
 
-        (, uint256 tallyBatchSize, ) = _poll.batchSizes();
+        ( , uint256 tallyBatchSize,) = _poll.batchSizes(); 
         uint256 batchStartIndex = tallyBatchNum * tallyBatchSize;
-        (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
+        (uint256 numSignUps,) = _poll.numSignUpsAndMessages();
 
         // Require that there are untalied ballots left
-        require(batchStartIndex <= numSignUps, ERROR_ALL_BALLOTS_TALLIED);
+        require(
+            batchStartIndex <= numSignUps,
+            ERROR_ALL_BALLOTS_TALLIED
+        );
 
         bool isValid = verifyTallyProof(
             _poll,
@@ -972,19 +937,19 @@ contract PollProcessorAndTallyer is
 
         // Update the tally commitment and the tally batch num
         tallyCommitment = _newTallyCommitment;
-        tallyBatchNum++;
+        tallyBatchNum ++;
     }
 
     /*
-     * @notice Verify the tally proof using the verifiying key
-     * @param _poll contract address of the poll proof to be verified
-     * @param _proof the proof generated after processing all messages
-     * @param _numSignUps number of signups for a given poll
-     * @param _batchStartIndex the number of batches multiplied by the size of the batch
-     * @param _tallyBatchSize batch size for the tally
-     * @param _newTallyCommitment the tally commitment to be verified at a given batch index
-     * @return valid a boolean representing successful verification
-     */
+    * @notice Verify the tally proof using the verifiying key
+    * @param _poll contract address of the poll proof to be verified
+    * @param _proof the proof generated after processing all messages
+    * @param _numSignUps number of signups for a given poll
+    * @param _batchStartIndex the number of batches multiplied by the size of the batch
+    * @param _tallyBatchSize batch size for the tally
+    * @param _newTallyCommitment the tally commitment to be verified at a given batch index
+    * @return valid a boolean representing successful verification
+    */
     function verifyTallyProof(
         Poll _poll,
         uint256[8] memory _proof,
@@ -993,10 +958,9 @@ contract PollProcessorAndTallyer is
         uint256 _tallyBatchSize,
         uint256 _newTallyCommitment
     ) public view returns (bool) {
-        (uint8 intStateTreeDepth, , , uint8 voteOptionTreeDepth) = _poll
-            .treeDepths();
+        (uint8 intStateTreeDepth,,,uint8 voteOptionTreeDepth) = _poll.treeDepths();
 
-        (VkRegistry vkRegistry, IMACI maci, , ) = _poll.extContracts();
+        (VkRegistry vkRegistry, IMACI maci, ) = _poll.extContracts();
 
         // Get the verifying key
         VerifyingKey memory vk = vkRegistry.getTallyVk(

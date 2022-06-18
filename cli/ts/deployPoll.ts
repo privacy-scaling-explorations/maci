@@ -30,15 +30,6 @@ const configureSubparser = (subparsers: any) => {
     )
 
     createParser.addArgument(
-        ['-e', '--erc20-address'],
-        {
-            action: 'store',
-            type: 'string',
-            help: 'The topup credit contract address',
-        }
-    )
-
-    createParser.addArgument(
         ['-pk', '--pubkey'],
         {
             action: 'store',

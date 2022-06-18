@@ -24,7 +24,6 @@ const parseArtifact = (filename: string) => {
 		filePath += `${filename}.sol`
 	}
 
-
 	if (filename.includes('Verifier')) {
 		filePath += 'crypto/Verifier.sol/'
 	}
@@ -116,12 +115,6 @@ const genJsonRpcDeployer = (
         privateKey,
         url,
     )
-}
-
-const deployTopupCredit = async () => {
-	const signer = await getDefaultSigner()
-    const topupCreditFactory = await ethers.getContractFactory('TopupCredit', signer)
-    return await topupCreditFactory.deploy()
 }
 
 const deployVkRegistry = async () => {
@@ -242,7 +235,6 @@ const deployMaci = async (
     initialVoiceCreditBalanceAddress: string,
     verifierContractAddress: string,
     vkRegistryContractAddress: string,
-    topupCreditContractAddress: string,
     quiet = false,
 ) => {
 
@@ -300,7 +292,6 @@ const deployMaci = async (
     await (await (maciContract.init(
         vkRegistryContractAddress,
         messageAqContract.address,
-        topupCreditContractAddress
     ))).wait()
 
     const [ AccQueueQuinaryMaciAbi, ] = parseArtifact('AccQueue')
@@ -345,7 +336,6 @@ const writeContractAddress = (
 }
 
 export {
-    deployTopupCredit,
     deployVkRegistry,
     deployMaci,
     deploySignupToken,
