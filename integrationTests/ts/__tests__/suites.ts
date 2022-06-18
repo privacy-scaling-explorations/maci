@@ -4,7 +4,7 @@ import {
     PubKey,
     PrivKey,
     Keypair,
-    PCommand,
+    Command,
 } from 'maci-domainobjs'
 
 import {
@@ -200,7 +200,7 @@ const executeSuite = async (data: any, expect: any) => {
             const encPrivKey = PrivKey.unserialize(publishRegMatch[2])
             const encPubKey = new PubKey(genPubKey(encPrivKey.rawPrivKey))
 
-            const command = new PCommand(
+            const command = new Command(
                 BigInt(stateIndex),
                 userKeypair.pubKey,
                 BigInt(voteOptionIndex),

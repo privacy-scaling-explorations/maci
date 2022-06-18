@@ -11,7 +11,7 @@ import {
 
 import {
     Keypair,
-    PCommand,
+    Command,
 } from 'maci-domainobjs'
 
 describe('MessageToCommand circuit', () => {
@@ -32,7 +32,7 @@ describe('MessageToCommand circuit', () => {
             ) & BigInt(genRandomSalt())
         }
 
-        const command: PCommand = new PCommand(
+        const command: Command = new Command(
             random50bitBigInt(),
             newPubKey,
             random50bitBigInt(),

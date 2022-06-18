@@ -2,7 +2,7 @@ import * as path from 'path'
 import * as fs from 'fs'
 import {
     StateLeaf,
-    PCommand,
+    Command,
     Keypair,
     PrivKey,
     PubKey,
@@ -31,7 +31,7 @@ describe('Domain objects', () => {
         ) & BigInt(`${genRandomSalt()}`)
     }
 
-    const command: PCommand = new PCommand(
+    const command: Command = new Command(
         random50bitBigInt(),
         newPubKey,
         random50bitBigInt(),
@@ -216,7 +216,7 @@ describe('Domain objects', () => {
     describe('Commands and Messages', () => {
         const signature = command.sign(privKey)
         const message = command.encrypt(signature, ecdhSharedKey)
-        const decrypted = PCommand.decrypt(message, ecdhSharedKey)
+        const decrypted = Command.decrypt(message, ecdhSharedKey)
 
         it ('command.sign() should produce a valid signature', () => {
             expect(command.verifySignature(signature, pubKey)).toBeTruthy()
@@ -235,7 +235,7 @@ describe('Domain objects', () => {
         })
 
         it('Command.copy() should perform a deep copy', () => {
-            const c1: PCommand = new PCommand(
+            const c1: Command = new Command(
                 BigInt(10),
                 newPubKey,
                 BigInt(0),

@@ -5,7 +5,7 @@ import { parseArtifact, getDefaultSigner } from '../deploy'
 import { deployTestContracts } from '../utils'
 import { genMaciStateFromContract } from '../genMaciState'
 import {
-    PCommand,
+    Command,
     VerifyingKey,
     Keypair,
 } from 'maci-domainobjs'
@@ -351,7 +351,7 @@ describe('MACI', () => {
         it('should publish a message to the Poll contract', async () => {
             const keypair = new Keypair()
 
-            const command = new PCommand(
+            const command = new Command(
                 BigInt(1),
                 keypair.pubKey,
                 BigInt(0),
@@ -381,7 +381,7 @@ describe('MACI', () => {
             await timeTravel(signer.provider, Number(dd[0]) + 1)
 
             const keypair = new Keypair()
-            const command = new PCommand(
+            const command = new Command(
                 BigInt(0),
                 keypair.pubKey,
                 BigInt(0),

@@ -12,7 +12,7 @@ import {
     decrypt,
     sign,
     hashLeftRight,
-    hash13,
+    hash12,
     hash4,
     hash5,
     verifySignature,
@@ -379,27 +379,23 @@ interface VoteOptionTreeLeaf {
  * An encrypted command and signature.
  */
 class Message {
-    public msgType: BigInt
     public data: BigInt[]
-    public static DATA_LENGTH = 10
+    public static DATA_LENGTH = 10 
 
     constructor (
-        msgType: BigInt,
         data: BigInt[],
     ) {
         assert(data.length === Message.DATA_LENGTH)
-        this.msgType = msgType
         this.data = data
     }
 
     private asArray = (): BigInt[] => {
-        return [this.msgType].concat(this.data)
+        return this.data
     }
 
     public asContractParam = () => {
         return {
-            msgType: this.msgType,
-            data: this.data.map((x:BigInt) => x.toString()),
+            data: this.data.map((x: BigInt) => x.toString()),
         }
     }
 
@@ -411,26 +407,21 @@ class Message {
     public hash = (
         _encPubKey: PubKey,
     ): BigInt => {
-       return hash13([
-           ...[this.msgType],
-           ...this.data,
-           ..._encPubKey.rawPubKey,
-       ])
+        return hash12([
+            ...this.data,
+            ..._encPubKey.rawPubKey,
+        ])
     }
 
     public copy = (): Message => {
 
         return new Message(
-            BigInt(this.msgType.toString()),
             this.data.map((x: BigInt) => BigInt(x.toString())),
         )
     }
 
     public equals = (m: Message): boolean => {
         if (this.data.length !== m.data.length) {
-            return false
-        }
-        if (this.msgType !== m.msgType) {
             return false
         }
 
@@ -655,51 +646,21 @@ class StateLeaf implements IStateLeaf {
     }
 }
 
-class Command {
-   public cmdType: BigInt;
-   constructor() {
-   }
-   public copy = (): Command => {
-       throw new Error("Abstract method!")
-   }
-   public equals = (Command): boolean => {
-       throw new Error("Abstract method!")
-   }
-}
+interface ICommand {
+    stateIndex: BigInt;
+    newPubKey: PubKey;
+    voteOptionIndex: BigInt;
+    newVoteWeight: BigInt;
+    nonce: BigInt;
 
-
-
-class TCommand extends Command {
-    public cmdType: BigInt
-    public stateIndex: BigInt
-    public amount: BigInt
-    public pollId: BigInt
-
-    constructor(stateIndex: BigInt, amount: BigInt) {
-        super()
-        this.cmdType = BigInt(2)
-        this.stateIndex = stateIndex
-        this.amount = amount
-    }
-
-    public copy = (): TCommand => {
-        return new TCommand(
-            BigInt(this.stateIndex.toString()),
-            BigInt(this.amount.toString()),
-        )
-    }
-
-    public equals = (command: TCommand): boolean => {
-        return this.stateIndex === command.stateIndex &&
-            this.amount === command.amount
-    }
+    sign: (PrivKey) => Signature;
+    encrypt: (EcdhSharedKey, Signature) => Message;
 }
 
 /*
  * Unencrypted data whose fields include the user's public key, vote etc.
  */
-class PCommand extends Command {
-    public cmdType: BigInt
+class Command implements ICommand {
     public stateIndex: BigInt
     public newPubKey: PubKey
     public voteOptionIndex: BigInt
@@ -717,7 +678,6 @@ class PCommand extends Command {
         pollId: BigInt,
         salt: BigInt = genRandomSalt(),
     ) {
-        super()
         const limit50Bits = BigInt(2 ** 50)
         assert(limit50Bits >= stateIndex)
         assert(limit50Bits >= voteOptionIndex)
@@ -725,7 +685,6 @@ class PCommand extends Command {
         assert(limit50Bits >= nonce)
         assert(limit50Bits >= pollId)
 
-        this.cmdType = BigInt(1)
         this.stateIndex = stateIndex
         this.newPubKey = newPubKey
         this.voteOptionIndex = voteOptionIndex
@@ -735,9 +694,9 @@ class PCommand extends Command {
         this.salt = salt
     }
 
-    public copy = (): PCommand => {
+    public copy = (): Command => {
 
-        return new PCommand(
+        return new Command(
             BigInt(this.stateIndex.toString()),
             this.newPubKey.copy(),
             BigInt(this.voteOptionIndex.toString()),
@@ -778,7 +737,8 @@ class PCommand extends Command {
     /*
      * Check whether this command has deep equivalence to another command
      */
-    public equals = (command: PCommand): boolean => {
+    public equals = (command: Command): boolean => {
+
         return this.stateIndex === command.stateIndex &&
             this.newPubKey[0] === command.newPubKey[0] &&
             this.newPubKey[1] === command.newPubKey[1] &&
@@ -845,7 +805,7 @@ class PCommand extends Command {
 
         const ciphertext: Ciphertext = encrypt(plaintext, sharedKey, BigInt(0))
 
-        const message = new Message(BigInt(1), ciphertext)
+        const message = new Message(ciphertext)
         
         return message
     }
@@ -892,7 +852,7 @@ class PCommand extends Command {
         const newPubKey = new PubKey([decrypted[1], decrypted[2]])
         const salt = decrypted[3]
 
-        const command = new PCommand(
+        const command = new Command(
             stateIndex,
             newPubKey,
             voteOptionIndex,
@@ -911,13 +871,10 @@ class PCommand extends Command {
     }
 }
 
-
 export {
     StateLeaf,
     Ballot,
     VoteOptionTreeLeaf,
-    PCommand,
-    TCommand,
     Command,
     Message,
     Keypair,
