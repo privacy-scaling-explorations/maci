@@ -63,7 +63,7 @@ From the main `maci/cli` directory, run:
 npx zkey-manager compile -c ./zkeys.config.yml
 ```
 
-You should see the following files in `cli/zkeys/`:
+You should see the following files in `maci/cli/zkeys/`:
 
 ```
 ProcessMessages_10-2-1-2_test
@@ -74,13 +74,15 @@ TallyVotes_10-1-2_test.0.zkey
 
 ### Check the Rapidsnark binary
 
-Next, ensure that the `rapidsnark` `prover` binary is in
+Next, ensure that the `prover` binary of `rapidsnark` is in
 `~/rapidsnark/build/prover`.
 
 ### Run CLI tests
 
-In `maci/cli/`, run:
+You could find a tests in `maci/cli/tests`.
+
+e.g. In `maci/cli/tests/vanilla`:
 
 ```bash
-./test.sh
+./test1.sh
 ```
