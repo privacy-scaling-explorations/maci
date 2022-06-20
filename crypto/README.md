@@ -5,7 +5,7 @@ employs.
 
 ## Constants
 
-**`NOTHING_UP_MY_SLEEVE`**: The Keccack256 hash of the string "Maci", modulo
+**`NOTHING_UP_MY_SLEEVE`**: The Keccak256 hash of the string "Maci", modulo
 the BN254 group order.
 
 ## Types and interfaces

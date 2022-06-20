@@ -17,7 +17,7 @@ node build/genZerosContract.js \
 
 # Binary tree with zero = maciNums
 node build/genZerosContract.js \
-    MerkleBinaryMaci $maciNums 2 33 "Binary tree zeros (Keccack hash of 'Maci')" 0 0 \
+    MerkleBinaryMaci $maciNums 2 33 "Binary tree zeros (Keccak hash of 'Maci')" 0 0 \
     > contracts/trees/zeros/MerkleBinaryMaci.sol
 
 # Quinary tree with zero = 0
@@ -27,7 +27,7 @@ node build/genZerosContract.js \
 
 # Quinary tree with zero = maciNums
 node build/genZerosContract.js \
-    MerkleQuinaryMaci $maciNums 5 33 "Quinary tree zeros (Keccack hash of 'Maci')" 0 0 \
+    MerkleQuinaryMaci $maciNums 5 33 "Quinary tree zeros (Keccak hash of 'Maci')" 0 0 \
     > contracts/trees/zeros/MerkleQuinaryMaci.sol
 
 # Quinary tree with zero = blank state leaf
@@ -37,5 +37,5 @@ node build/genZerosContract.js \
 
 ## Quinary tree with SHA256 for subtrees and zero = maciNums
 #node build/genZerosContract.js \
-    #MerkleQuinaryMaciWithSha256 $maciNums 5 33 "Quinary tree (with SHA256) zeros (Keccack hash of 'Maci')" 1 2 \
+    #MerkleQuinaryMaciWithSha256 $maciNums 5 33 "Quinary tree (with SHA256) zeros (Keccak hash of 'Maci')" 1 2 \
     #> contracts/trees/zeros/MerkleQuinaryMaciWithSha256.sol
