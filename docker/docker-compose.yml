@@ -12,7 +12,7 @@ services:
       mongo_user: maci-coordinator
       mongo_pass: let-me-in
       mongo_db: maci-db
-      mongo_uri: 'mongodb://maci-coordinator:let-me-in@192.168.224.1'
+      mongo_uri: 'mongodb://maci-coordinator:let-me-in@host.docker.internal'
       ETH_PROVIDER: 'http://127.0.0.1:8545'
     volumes:
       - ~/maci:/root/dev-maci
