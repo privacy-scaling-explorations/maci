@@ -71,7 +71,7 @@ const executeSuite = async (data: any, expect: any) => {
     const createOutput = exec(createCommand).stdout.trim()
     console.log(createOutput)
 
-    const regMatch = createOutput.match(/(0x[a-fA-F0-9]{40})/)
+    const regMatch = createOutput.match(/MACI: (0x[a-fA-F0-9]{40})/)
     const maciAddress = regMatch[1]
 
     const deployPoll = `node build/index.js deployPoll` +
@@ -86,7 +86,12 @@ const executeSuite = async (data: any, expect: any) => {
         ` -v ${config.constants.maci.voteOptionTreeDepth}`
 
     console.log(deployPoll)
-    const deployPollOutput = exec(deployPoll).stdout.trim()
+    const deployExec = exec(deployPoll)
+    if (deployExec.stderr) {
+        console.log(deployExec.stderr)
+        return false
+    }
+    const deployPollOutput = deployExec.stdout.trim()
     console.log(deployPollOutput)
 
     const deployPollRegMatch = deployPollOutput.match(/PollProcessorAndTallyer contract: (0x[a-fA-F0-9]{40})/)
