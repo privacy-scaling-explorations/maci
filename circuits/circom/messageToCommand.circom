@@ -9,7 +9,7 @@ template MessageToCommand() {
     var PACKED_CMD_LENGTH = 4;
     var UNPACKED_CMD_LENGTH = 8;
 
-    signal input message[10];
+    signal input message[11];
     signal input encPrivKey;
     signal input encPubKey[2];
 
@@ -33,8 +33,8 @@ template MessageToCommand() {
     decryptor.key[0] <== ecdh.sharedKey[0];
     decryptor.key[1] <== ecdh.sharedKey[1];
     decryptor.nonce <== 0;
-    for (var i = 0; i < 10; i++) {
-        decryptor.ciphertext[i] <== message[i];
+    for (var i = 1; i < 11; i++) { // the first one is msg type, skip
+        decryptor.ciphertext[i-1] <== message[i];
     }
 
     signal packedCommand[PACKED_CMD_LENGTH];

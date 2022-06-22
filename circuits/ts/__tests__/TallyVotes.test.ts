@@ -11,7 +11,7 @@ import {
 
 import {
     Keypair,
-    Command,
+    PCommand,
     Message,
     VerifyingKey,
 } from 'maci-domainobjs'
@@ -78,7 +78,7 @@ describe('TallyVotes circuit', () => {
         beforeEach(async () => {
             maciState = new MaciState()
             const messages: Message[] = []
-            const commands: Command[] = []
+            const commands: PCommand[] = []
             // Sign up and publish
             const userKeypair = new Keypair()
             stateIndex = maciState.signUp(
@@ -111,7 +111,7 @@ describe('TallyVotes circuit', () => {
             )
 
             // First command (valid)
-            const command = new Command(
+            const command = new PCommand(
                 stateIndex,
                 userKeypair.pubKey,
                 voteOptionIndex, // voteOptionIndex,
@@ -243,7 +243,7 @@ describe('TallyVotes circuit', () => {
 
             const numMessages = messageBatchSize * NUM_BATCHES
             for (let i = 0; i < numMessages; i ++) {
-                const command = new Command(
+                const command = new PCommand(
                     BigInt(i),
                     userKeypairs[i].pubKey,
                     BigInt(i), //vote option index

@@ -7,7 +7,7 @@ import {
     PubKey,
     PrivKey,
     Keypair,
-    Command,
+    PCommand,
 } from 'maci-domainobjs'
 
 import {
@@ -295,7 +295,7 @@ const publish = async (args: any) => {
 
     const encKeypair = new Keypair()
 
-    const command = new Command(
+    const command:PCommand = new PCommand(
         stateIndex,
         userMaciPubKey,
         voteOptionIndex,

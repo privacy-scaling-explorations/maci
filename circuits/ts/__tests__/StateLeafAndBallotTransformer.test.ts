@@ -10,7 +10,7 @@ import {
 } from 'maci-crypto'
 
 import {
-    Command,
+    PCommand,
     Keypair,
 } from 'maci-domainobjs'
 
@@ -34,7 +34,7 @@ const ballotCurrentVotesForOption = BigInt(0)
 const slTimestamp = 1
 const pollEndTimestamp = 2
 
-const command: Command = new Command(
+const command: PCommand = new PCommand(
     stateIndex,
     newPubKey,
     voteOptionIndex,
