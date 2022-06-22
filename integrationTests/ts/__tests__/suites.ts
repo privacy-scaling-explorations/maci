@@ -86,7 +86,12 @@ const executeSuite = async (data: any, expect: any) => {
         ` -v ${config.constants.maci.voteOptionTreeDepth}`
 
     console.log(deployPoll)
-    const deployPollOutput = exec(deployPoll).stdout.trim()
+    const deployExec = exec(deployPoll)
+    if (deployExec.stderr) {
+        console.log(deployExec.stderr)
+        return false
+    }
+    const deployPollOutput = deployExec.stdout.trim()
     console.log(deployPollOutput)
 
     const deployPollRegMatch = deployPollOutput.match(/PollProcessorAndTallyer contract: (0x[a-fA-F0-9]{40})/)
