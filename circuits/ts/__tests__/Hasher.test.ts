@@ -5,7 +5,7 @@ import {
 } from './utils'
 
 import {
-    Command,
+    PCommand,
     Keypair,
 } from 'maci-domainobjs'
 
@@ -14,7 +14,7 @@ import {
     genRandomSalt,
     sha256Hash,
     hashLeftRight,
-    hash12,
+    hash13,
     hash5,
     hash4,
     hash3,
@@ -147,11 +147,11 @@ describe('Poseidon hash circuits', () => {
             })
         })
 
-        describe('Hasher12', () => {
-            it('correctly hashes 12 random values', async () => {
-                const circuit =  'hasher12_test'
+        describe('Hasher13', () => {
+            it('correctly hashes 13 random values', async () => {
+                const circuit =  'hasher13_test'
                 const preImages: any = []
-                for (let i = 0; i < 12; i++) {
+                for (let i = 0; i < 13; i++) {
                     preImages.push(genRandomSalt())
                 }
                 const circuitInputs = stringifyBigInts({
@@ -161,7 +161,7 @@ describe('Poseidon hash circuits', () => {
                 const witness = await genWitness(circuit, circuitInputs)
                 const output = await getSignalByName(circuit, witness, 'main.hash')
 
-                const outputJS = hash12(preImages)
+                const outputJS = hash13(preImages)
 
                 expect(output.toString()).toEqual(outputJS.toString())
             })
@@ -197,7 +197,7 @@ describe('Poseidon hash circuits', () => {
                 ) & BigInt(genRandomSalt())
             }
 
-            const command: Command = new Command(
+            const command: PCommand = new PCommand(
                 random50bitBigInt(),
                 k.pubKey,
                 random50bitBigInt(),

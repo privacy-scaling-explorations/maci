@@ -6,6 +6,7 @@ include "./privToPubKey.circom";
 include "./stateLeafAndBallotTransformer.circom";
 include "./trees/incrementalQuinTree.circom";
 include "../node_modules/circomlib/circuits/mux1.circom";
+include "../node_modules/circomlib/circuits/comparators.circom";
 
 /*
  * Proves the correctness of processing a batch of messages.
@@ -30,7 +31,7 @@ template ProcessMessages(
     var TREE_ARITY = 5;
     var batchSize = TREE_ARITY ** msgBatchDepth;
 
-    var MSG_LENGTH = 10;
+    var MSG_LENGTH = 11;
     var PACKED_CMD_LENGTH = 4;
 
     var STATE_LEAF_LENGTH = 4;
@@ -89,6 +90,12 @@ template ProcessMessages(
 
     // The state root before it is processed
     signal input currentStateRoot;
+
+    // topup signals
+    signal input topupAmounts[batchSize];
+    signal input topupStateIndexes[batchSize];
+    signal input topupStateLeaves[batchSize][STATE_LEAF_LENGTH];
+    signal input topupStateLeavesPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
 
     // The state leaves upon which messages are applied.
     //     transform(currentStateLeaf[4], message5) => newStateLeaf4
@@ -258,8 +265,14 @@ template ProcessMessages(
 
     //  ----------------------------------------------------------------------- 
     //  Process messages in reverse order
-    component processors[batchSize];
+    signal tmpStateRoot1[batchSize];
+    signal tmpStateRoot2[batchSize];
+    signal tmpBallotRoot1[batchSize];
+    signal tmpBallotRoot2[batchSize];
+    component processors[batchSize]; // vote type processor
+    component processors2[batchSize]; // topup type processor
     for (var i = batchSize - 1; i >= 0; i --) {
+        // process it as vote type message
         processors[i] = ProcessOne(stateTreeDepth, voteOptionTreeDepth);
 
         processors[i].numSignUps <== numSignUps;
@@ -312,8 +325,29 @@ template ProcessMessages(
             processors[i].packedCmd[j] <== commands[i].packedCommandOut[j];
         }
 
-        stateRoots[i] <== processors[i].newStateRoot;
-        ballotRoots[i] <== processors[i].newBallotRoot;
+        // --------------------------------------------
+        // process it as topup type message, 
+        processors2[i] = ProcessTopup(stateTreeDepth);
+        processors2[i].msgType <== msgs[i][0];
+        processors2[i].stateTreeIndex <== topupStateIndexes[i];
+        processors2[i].amount <== topupAmounts[i];
+        processors2[i].numSignUps <== numSignUps;
+        for (var j = 0; j < STATE_LEAF_LENGTH; j ++) {
+            processors2[i].stateLeaf[j] <== topupStateLeaves[i][j];
+        }
+        for (var j = 0; j < stateTreeDepth; j ++) {
+            for (var k = 0; k < TREE_ARITY - 1; k ++) {
+                processors2[i].stateLeafPathElements[j][k] 
+                    <== topupStateLeavesPathElements[i][j][k];
+            }
+        }
+        // pick the correct result by msg type
+        tmpStateRoot1[i] <== processors[i].newStateRoot * (2-msgs[i][0]); 
+        tmpStateRoot2[i] <== processors2[i].newStateRoot * (msgs[i][0]-1);
+        tmpBallotRoot1[i] <== processors[i].newBallotRoot * (2-msgs[i][0]); 
+        tmpBallotRoot2[i] <== ballotRoots[i+1] * (msgs[i][0]-1);
+        stateRoots[i] <== tmpStateRoot1[i] + tmpStateRoot2[i];
+        ballotRoots[i] <== tmpBallotRoot1[i] + tmpBallotRoot2[i];
     }
 
     component sbCommitmentHasher = Hasher3();
@@ -322,6 +356,76 @@ template ProcessMessages(
     sbCommitmentHasher.in[2] <== newSbSalt;
 
     sbCommitmentHasher.hash === newSbCommitment;
+}
+
+template ProcessTopup(stateTreeDepth) {
+    var STATE_LEAF_LENGTH = 4;
+    var MSG_LENGTH = 11;
+    var TREE_ARITY = 5;
+
+    var STATE_LEAF_PUB_X_IDX = 0;
+    var STATE_LEAF_PUB_Y_IDX = 1;
+    var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
+    var STATE_LEAF_TIMESTAMP_IDX = 3;
+
+    signal input msgType;
+    signal input stateTreeIndex;
+    signal input amount;
+    signal input numSignUps;
+
+    signal input stateLeaf[STATE_LEAF_LENGTH];
+    signal input stateLeafPathElements[stateTreeDepth][TREE_ARITY - 1];
+
+    signal output newStateRoot;
+
+    // skip several checkings here, because ProcessOne already checks
+
+    // check stateIndex, if invalid index, set index and amount to zero
+    component validStateLeafIndex = LessEqThan(252);
+    validStateLeafIndex.in[0] <== stateTreeIndex;
+    validStateLeafIndex.in[1] <== numSignUps;
+
+    component indexMux = Mux1();
+    indexMux.s <== validStateLeafIndex.out;
+    indexMux.c[0] <== 0;
+    indexMux.c[1] <== stateTreeIndex;
+
+    component amtMux =  Mux1();
+    amtMux.s <== validStateLeafIndex.out;
+    amtMux.c[0] <== 0;
+    amtMux.c[1] <== amount;
+    
+
+    // check less than field size
+    // amt = 0 for vote type msg (msgType=1); amt not changed for topup msg (msgType=2) 
+    // this is to avoid possible overflow failure for vote type message here
+    signal newCreditBalance;
+    signal amt;
+    amt <== amtMux.out * (msgType - 1); 
+    component validCreditBalance = LessEqThan(252);
+    newCreditBalance <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + amt;
+    validCreditBalance.in[0] <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX];
+    validCreditBalance.in[1] <== newCreditBalance;
+
+    // update credit voice balance
+    component newStateLeafHasher = Hasher4();
+    newStateLeafHasher.in[STATE_LEAF_PUB_X_IDX] <== stateLeaf[STATE_LEAF_PUB_X_IDX];
+    newStateLeafHasher.in[STATE_LEAF_PUB_Y_IDX] <== stateLeaf[STATE_LEAF_PUB_Y_IDX];
+    newStateLeafHasher.in[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] <== newCreditBalance;
+    newStateLeafHasher.in[STATE_LEAF_TIMESTAMP_IDX] <== stateLeaf[STATE_LEAF_TIMESTAMP_IDX];
+
+    component stateLeafPathIndices = QuinGeneratePathIndices(stateTreeDepth);
+    stateLeafPathIndices.in <== indexMux.out;
+
+    component newStateLeafQip = QuinTreeInclusionProof(stateTreeDepth);
+    newStateLeafQip.leaf <== newStateLeafHasher.hash;
+    for (var i = 0; i < stateTreeDepth; i ++) {
+        newStateLeafQip.path_index[i] <== stateLeafPathIndices.out[i];
+        for (var j = 0; j < TREE_ARITY - 1; j++) {
+            newStateLeafQip.path_elements[i][j] <== stateLeafPathElements[i][j];
+        }
+    }
+    newStateRoot <== newStateLeafQip.root;
 }
 
 template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
@@ -333,7 +437,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     */
     var STATE_LEAF_LENGTH = 4;
     var BALLOT_LENGTH = 2;
-    var MSG_LENGTH = 10;
+    var MSG_LENGTH = 11;
     var PACKED_CMD_LENGTH = 4;
     var TREE_ARITY = 5;
 

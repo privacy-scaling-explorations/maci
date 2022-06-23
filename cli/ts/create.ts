@@ -3,6 +3,7 @@ import {
     deployFreeForAllSignUpGatekeeper,
     deployMaci,
     deployVerifier,
+    deployTopupCredit as deployTopupCreditContract,
 } from 'maci-contracts'
 
 import {readJSONFile, writeJSONFile} from 'maci-common'
@@ -63,6 +64,9 @@ const create = async (args: any) => {
         return 1
     }
 
+    const TopupCreditContract = await deployTopupCreditContract()
+    console.log('TopupCredit:', TopupCreditContract.address)
+
     // Initial voice credits
     const initialVoiceCredits = args.initial_voice_credits ? args.initial_voice_credits : DEFAULT_INITIAL_VOICE_CREDITS
 
@@ -114,6 +118,7 @@ const create = async (args: any) => {
         initialVoiceCreditProxyContractAddress,
         verifierContract.address,
         vkRegistryContractAddress,
+        TopupCreditContract.address 
     )
 
     console.log('MACI:', maciContract.address)
@@ -125,6 +130,7 @@ const create = async (args: any) => {
     contractAddrs['StateAq'] = stateAqContract.address
     contractAddrs['PollFactory'] = pollFactoryContract.address
     contractAddrs['MessageAqFactory'] = messageAqContract.address
+    contractAddrs['TopupCredit'] = TopupCreditContract.address
     writeJSONFile(contractFilepath, contractAddrs)
 
     return 0
