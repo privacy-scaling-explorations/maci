@@ -28,7 +28,7 @@ sudo apt-get install build-essential libgmp-dev libsodium-dev git nlohmann-json3
 Clone this repository, install NodeJS dependencies, and build the source code:
 
 ```bash
-git clone git@github.com:appliedzkp/maci.git && \
+git clone git@github.com:privacy-scaling-explorations/maci.git && \
 cd maci && \
 npm i && \
 npm run bootstrap && \
