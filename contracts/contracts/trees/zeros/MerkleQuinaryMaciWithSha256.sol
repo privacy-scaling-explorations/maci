@@ -4,7 +4,7 @@ pragma solidity ^0.7.2;
 abstract contract MerkleZeros {
     uint256[33] internal zeros;
 
-    // Quinary tree (with SHA256) zeros (Keccack hash of 'Maci')
+    // Quinary tree (with SHA256) zeros (Keccak hash of 'Maci')
     constructor() {
         zeros[0] = uint256(8370432830353022751713833565135785980866757267633941821328460903436894336785);
         zeros[1] = uint256(15325010760924867811060011598468731160102892305643597546418886993209427402124);

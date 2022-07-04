@@ -29,7 +29,7 @@ We maintain two Merkle roots in the MACI contract:
 | `messageTree` | Messages ⁠— both valid and invalid ⁠— submitted by users. |
 | `stateTree` | The current mapping between public keys and votes. Leaf 0 is reserved for a random value. |
 
-The zero value (for empty leaves) for each tree is a nothing-up-my-sleeve value: the Keccack256 hash of the string 'Maci':
+The zero value (for empty leaves) for each tree is a nothing-up-my-sleeve value: the Keccak256 hash of the string 'Maci':
 
 ```solidity
 uint256 SNARK_SCALAR_FIELD = 21888242871839275222246405745257275088548364400416034343698204186575808495617;

@@ -114,17 +114,16 @@ node build/index.js create -r 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
 Example output:
 
 ```
-Deploying Poseidon Contracts
-Deploying Poseidon
-Linking Poseidon libraries
-Linking Poseidon libraries
-Linking Poseidon libraries
+Deploying InitialVoiceCreditProxy
+Deploying Poseidon contracts
+Linking Poseidon libraries to MACI
+Linking Poseidon libraries to PollFactory
+Linking Poseidon libraries to MessageAqFactory
 Deploying MACI
 Transferring PollFactory ownership to MACI
 Transferring MessageAqFactory ownership to PollFactory
 Initialising MACI
-PollProcessorAndTallyer: 0xAa588d3737B611baFD7bD713445b314BD453a5C8
-MACI: 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
+MACI: 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D
 ```
 
 ### Coordinator: Deploy poll
@@ -135,7 +134,7 @@ Example usage:
 ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 ETH_PROVIDER=http://localhost:8545 \
 node ./build/index.js deployPoll \
-    -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
+    -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D \
     -pk macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
     -t 30 -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2
 ```
@@ -143,11 +142,10 @@ node ./build/index.js deployPoll \
 Example output:
 
 ```
-Deploying Verifier
-Deploying PollProcessorAndTallyer
-Verifier: 0xEcFcaB0A285d3380E488A39B4BB21e777f8A4EaC
+Verifier: 0x5E70a420373D6BcB1ca3D08FEeB78a2F80727B29
 Poll ID: 0
-Poll contract: 0x440B7f9b667420af04e88d4dA0B9122E05cCa5A0
+Poll contract: 0x710FA420C3bE4bb0730265d6581BDda11087A901
+PollProcessorAndTallyer contract: 0x62C3204a98bbbd73C8fc3B8bfCDa467CB079dF47
 ```
 
 ### User: sign up
@@ -159,7 +157,7 @@ ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 ETH_PROVIDER=http://localhost:8545 \
 node ./build/index.js signup \
     -p macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
-    -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
+    -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D
 ```
 
 Example output:
@@ -179,7 +177,7 @@ ETH_PROVIDER=http://localhost:8545 \
 node build/index.js publish \
     -p macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
     -sk macisk.2ae4f199bf3925a2407f7c775c9261f351ab861d8e9ecbb84622bdd3f6d41b08 \
-    -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
+    -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D \
     -i 1 -v 0 -w 9 -n 1 -o 0
 ```
 
@@ -190,7 +188,7 @@ Example usage:
 ```bash
 ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 ETH_PROVIDER=http://localhost:8545 \
-node build/index.js mergeSignups -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a -o 0
+node build/index.js mergeSignups -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D -o 0
 ```
 
 ### Coordinator: merge message tree
@@ -200,7 +198,7 @@ Example usage:
 ```bash
 ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 ETH_PROVIDER=http://localhost:8545 \
-node build/index.js mergeMessages -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a -o 0
+node build/index.js mergeMessages -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D -o 0
 ```
 
 ### Coordinator: generate proofs
@@ -208,7 +206,7 @@ node build/index.js mergeMessages -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a 
 Example usage:
 
 ```bash
-node build/index.js genProofs -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
+node build/index.js genProofs -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D \
     -sk macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
     -o 0 \
     -t tally.json \
@@ -220,6 +218,18 @@ node build/index.js genProofs -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -zt ./zkeys/TallyVotes_10-1-2_test.0.zkey \
 ```
 
+### Coordinator: prove on chain
+
+Example usage:
+
+```bash
+node build/index.js proveOnChain \
+    -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D \
+    -o 0 \
+    -q 0x62C3204a98bbbd73C8fc3B8bfCDa467CB079dF47 \
+    -f proofs/
+```
+
 ### Anyone: verify tally
 
 Example usage:
@@ -229,7 +239,7 @@ node build/index.js verify \
     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -o 0 \
     -t tally.json \
-    -q 0xEcFcaB0A285d3380E488A39B4BB21e777f8A4EaC
+    -q 0x62C3204a98bbbd73C8fc3B8bfCDa467CB079dF47
 ```
 
 ## Demonstration
