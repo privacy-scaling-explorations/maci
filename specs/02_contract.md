@@ -75,7 +75,7 @@ uint256[8] memory _proof
 
 This function accepts a batch update state root transition zk-SNARK proof (`_proof`) and public inputs to the zk-SNARK.
 
-It verifies the proof, updates the processed message counter, and updates the state root in storage with `newStateRoot`. 
+It verifies the proof, updates the processed message counter, and updates the state root in storage with `newStateRoot`.
 
 If the proof is valid, this means that the coordinator has correctly updated the state tree root according to the commands in the given batch of messages.
 
@@ -157,28 +157,36 @@ The last valid message per user should have a nonce of `1`. Each valid message t
 
 For example, Alice publishes 5 messages, all of which vote for the same option:
 
-a. Nonce: 2; vote weight: 10
-b. Nonce: 1; vote weight: 20
-c. Nonce: 3; vote weight: 10
-d. Nonce: 2; vote weight: 1
-e. Nonce: 1; vote weight: 0
+a) Nonce: 2; vote weight: 10
+
+b) Nonce: 1; vote weight: 20
+
+c) Nonce: 3; vote weight: 10
+
+d) Nonce: 2; vote weight: 1
+
+e) Nonce: 1; vote weight: 0
 
 Since messages are processed in reverse order, messages (e), (d), and (c) are valid, but (b) and (a) are not. As such, her option receives 10 votes.
 
-(b) is invalid because at the point at which it is processed, the latest nonce is 3, but (b) gives a nonce of (2). The same applies for (a), whose nonce has been seen before.
+(b) is invalid because at the point at which it is processed, the latest nonce is 3, but (b) gives a nonce of 1. The same applies for (a), whose nonce has been seen before.
 
 Take another example, where Eve bribes Bob to vote for option 1, but Bob wants to vote for option 2 instead.
 
-a. Nonce: 1; vote weight: 10; option: 1
-b. Nonce: 1; vote weight: 10; option: 2
+a) Nonce: 1; vote weight: 10; option: 1
 
-Bob casts vote (a) and shows it to Eve. Later, he secretly casts (c). Since (c) is processed first, it makes (a) invalid, but Eve has no way to tell.
+b) Nonce: 1; vote weight: 10; option: 2
 
-If a user changes their mind, they may have to cast new votes to invalidate their old ones: 
+Bob casts vote (a) and shows it to Eve. Later, he secretly casts (b). Since (b) is processed first, it makes (a) invalid, but Eve has no way to tell.
+
+If a user changes their mind, they may have to cast new votes to invalidate their old ones:
 
 a) Nonce: 2; vote weight: 10; option: 1
+
 b) Nonce: 1; vote weight: 10; option: 2
+
 c) Nonce: 2; vote weight: 5; option: 1
+
 d) Nonce: 1; vote weight: 5; option: 1
 
 In the above example, if a user changes their mind after casting vote (b), they have to start over.
@@ -195,4 +203,4 @@ Given a `command` from a user Alice, we say that the state transition from an `o
 6. The specified vote option is indeed a choice that the user may make in the system.
 7. The user has enough voice credits left.
 8. Inserting the newly produced state leaf into the current state tree with `oldStateRoot` results in a new state tree with a root equal to `newStateRoot`.
-9. The state leaf index is less or equal to than the maximum state leaf index (2 ** state tree depth) and is not equal to 0.
+9. The state leaf index is less than or equal to the maximum state leaf index (2 ** state tree depth) and is not equal to 0.
