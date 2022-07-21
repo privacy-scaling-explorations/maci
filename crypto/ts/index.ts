@@ -275,7 +275,7 @@ const decrypt = (
 
     const plaintext: Plaintext = ciphertext.data.map(
         (e: BigInt, i: number): BigInt => {
-            return BigInt(e) - BigInt(mimc7.hash(sharedKey, BigInt(ciphertext.iv) + BigInt(i)))
+            return BigInt(e as bigint) - BigInt(mimc7.hash(sharedKey, BigInt(ciphertext.iv as bigint) + BigInt(i)))
         }
     )
 

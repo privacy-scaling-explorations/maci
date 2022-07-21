@@ -75,7 +75,7 @@ class IncrementalQuinTree {
 
         this.depth = Number(_depth)
         this.nextIndex = 0
-        this.zeroValue = BigInt(_zeroValue)
+        this.zeroValue = BigInt(_zeroValue as bigint)
 
         // Set this.hashFunc depending on the number of leaves per node
         if (this.leavesPerNode === 2) {
@@ -121,7 +121,7 @@ class IncrementalQuinTree {
         _value: Leaf,
     ) {
         // Ensure that _value is a BigInt
-        _value = BigInt(_value)
+        _value = BigInt(_value as bigint)
 
         // A node is one level above the leaf
         // m is the leaf's relative position within its node
@@ -179,7 +179,7 @@ class IncrementalQuinTree {
             throw new Error('The leaf index specified is too large')
         }
 
-        _value = BigInt(_value)
+        _value = BigInt(_value as bigint)
 
         const temp = this.leaves
         temp[_index] = _value
@@ -305,13 +305,17 @@ class IncrementalQuinTree {
         }
 
         // Hash the first level
-        const firstLevel: BigInt[] = pathElements[0].map(BigInt)
+        const firstLevel: BigInt[] = pathElements[0].map((i: BigInt): BigInt => {
+            return BigInt(i as bigint);
+        })            
         firstLevel.splice(Number(_proof.indices[0]), 0, _proof.leaf)
         let currentLevelHash: BigInt = _hashFunc(firstLevel)
 
         // Verify the proof
         for (let i = 1; i < pathElements.length; i ++) {
-            const level: BigInt[] = pathElements[i].map(BigInt)
+            const level: BigInt[] = pathElements[i].map((i: BigInt): BigInt => {
+                return BigInt(i as bigint);
+            })            
             level.splice(Number(_proof.indices[i]), 0, currentLevelHash)
             currentLevelHash = _hashFunc(level)
         }
