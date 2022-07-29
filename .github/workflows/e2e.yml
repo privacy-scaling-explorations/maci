@@ -63,10 +63,10 @@ jobs:
           wget -O ~/rapidsnark/build/prover https://maci-devops-zkeys.s3.ap-northeast-2.amazonaws.com/rapidsnark-linux-amd64-1c137
           chmod +x ~/rapidsnark/build/prover
 
-      - name: Download circom Binary v2.0.4
+      - name: Download circom Binary v2.0.5
         run: |
           mkdir -p /home/runner/work/maci/.local/bin
-          wget -O /home/runner/work/maci/.local/bin/circom https://maci-devops.s3.ap-northeast-2.amazonaws.com/circom-linux-amd64-v2.0.4
+          wget -O /home/runner/work/maci/.local/bin/circom https://maci-devops.s3.ap-northeast-2.amazonaws.com/circom-linux-amd64-v2.0.5
           chmod +x /home/runner/work/maci/.local/bin/circom
 
       - name: Generate zkeys
