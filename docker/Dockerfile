@@ -1,8 +1,8 @@
 FROM ubuntu:20.04 as maci-node
 
 ARG COMMIT_SHA=unknown
-ARG REPO_NAME="https://github.com/chaosma/maci.git"
-ARG BRANCH_NAME=cordservice
+ARG REPO_NAME="https://github.com/privacy-scaling-explorations/maci.git"
+ARG BRANCH_NAME=v1
 
 # install dependency
 RUN apt-get update \

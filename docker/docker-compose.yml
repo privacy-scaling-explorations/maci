@@ -2,7 +2,7 @@ version: '3'
 services:
   maci-node:
     tty: true
-    image: maci-node:v0.5
+    image: maci-node:latest
     ports:
       - '8080:8080'
     depends_on:
