@@ -97,10 +97,12 @@ describe('MaciState', () => {
         // The end result should be that option 0 gets 3 votes
         // because the user spends 9 voice credits on it
         it ('the state root should be correct', () => {
+            const timestamp = BigInt(Math.floor(Date.now() / 1000))
+
             const stateLeaf = new StateLeaf(
                 userKeypair.pubKey,
                 voiceCreditBalance,
-                BigInt(Math.floor(Date.now() / 1000)),
+                timestamp,
             )
 
             stateTree.insert(stateLeaf.hash())
@@ -108,13 +110,14 @@ describe('MaciState', () => {
             stateIndex = maciState.signUp(
                 userKeypair.pubKey,
                 voiceCreditBalance,
-                BigInt(Math.floor(Date.now() / 1000)),
+                timestamp,
             )
 
             expect(stateIndex.toString()).toEqual('1')
 
             maciState.stateAq.mergeSubRoots(0)
             maciState.stateAq.merge(STATE_TREE_DEPTH)
+            console.log(`root=${stateTree.root.toString()}`)
 
             expect(maciState.stateAq.getRoot(STATE_TREE_DEPTH).toString())
                 .toEqual(stateTree.root.toString())
