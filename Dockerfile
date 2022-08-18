@@ -1,4 +1,4 @@
-FROM ubuntu:21.04
+FROM ubuntu:22.04
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
@@ -7,7 +7,7 @@ RUN apt-get update -qq --fix-missing && \
                        libsodium-dev nlohmann-json3-dev git nasm wget
 
 # Install Node & NPM via nvm
-ENV NODE_VERSION=15.8.0
+ENV NODE_VERSION=12.18.1
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
 ENV NVM_DIR=/root/.nvm
 RUN . "$NVM_DIR/nvm.sh" && nvm install ${NODE_VERSION}
