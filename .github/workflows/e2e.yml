@@ -1,10 +1,12 @@
-name: E2E
+name: CI
 
 on:
-  push: 
+  push:
     branches: [ v1 ]
   pull_request:
     branches: [ v1 ]
+  schedule:
+    - cron: 0 0 * * *
 
 concurrency: 
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -13,26 +15,21 @@ concurrency:
 jobs:
 
   e2e:
-    runs-on: ubuntu-20.04
+    uses: ./.github/workflows/reusable-e2e.yml
 
+  npm-publish:
+    needs: e2e
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-20.04
+    
     steps:
       - uses: actions/checkout@v3
-
+      
       - name: Use Node.js 16
         uses: actions/setup-node@v3
         with:
           node-version: 16
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install --yes \
-            build-essential \
-            libgmp-dev \
-            libsodium-dev \
-            nasm \
-            nlohmann-json3-dev
-
+          registry-url: 'https://registry.npmjs.org'
 
       # To prevent `npm install` failure of circuit package, 
       # it has to checkout manually because version of `circomlib` has pinned to a specific commit
@@ -45,11 +42,12 @@ jobs:
           git checkout --progress --force ac85e82c1914d47789e2032fb11ceb2cfdd38a2b
           rm -rf ./.git
 
+
       - name: Initialize Project
         run: |
           git config --global url."https://github.com/".insteadOf git://github.com/
           npm install
-          npx lerna bootstrap --no-ci
+          npx lerna bootstrap
           npm run build
 
       - name: Compile Contracts
@@ -57,36 +55,14 @@ jobs:
           cd contracts
           npm run compileSol
 
-      - name: Download rapidsnark (1c137)
+      - name: Publish Project
         run: |
-          mkdir -p ~/rapidsnark/build
-          wget -O ~/rapidsnark/build/prover https://maci-devops-zkeys.s3.ap-northeast-2.amazonaws.com/rapidsnark-linux-amd64-1c137
-          chmod +x ~/rapidsnark/build/prover
+          # Prevent `git commit error` when running `lerna version`
+          # It will not pushed to GitHub. It is ephemeral
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
 
-      - name: Download circom Binary v2.0.5
-        run: |
-          mkdir -p /home/runner/work/maci/.local/bin
-          wget -O /home/runner/work/maci/.local/bin/circom https://maci-devops.s3.ap-northeast-2.amazonaws.com/circom-linux-amd64-v2.0.5
-          chmod +x /home/runner/work/maci/.local/bin/circom
-
-      - name: Generate zkeys
-        run: |
-          cd cli
-          mkdir -p zkeys
-          wget -O zkeys/powersOfTau28_hez_final_20.ptau https://maci-devops-zkeys.s3.ap-northeast-2.amazonaws.com/powersOfTau28_hez_final_20.ptau
-          npx zkey-manager compile -c ./zkeys.config.yml
-          npx zkey-manager genZkeys -c ./zkeys.config.yml
-
-      - name: Run Hardhat Network
-        run: ./.github/scripts/hnctl.sh start_hardhat_network
-
-      - name: Bespoke Test
-        run: ./.github/scripts/run-e2e-tests.sh
-
-      - name: Integration Test
-        run: |
-          cd integrationTests
-          npm run test
-
-      - name: Destroy Hardhat Network
-        run: ./.github/scripts/hnctl.sh destroy_hardhat_network
+          lerna version 0.0.0-ci.$(git rev-parse --short HEAD) --no-push --yes
+          lerna publish from-git --dist-tag ci --yes
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

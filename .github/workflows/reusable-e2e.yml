@@ -1,37 +1,30 @@
-name: E2E Nightly
+name: E2E
 
 on:
-  schedule:
-    - cron: 0 0 * * *
+  workflow_call:
 
 jobs:
 
-  e2e-nightly:
+  e2e:
     runs-on: ubuntu-20.04
-    strategy:
-      matrix:
-        node-version: [14, 16]
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+      - name: Use Node.js 16
+        uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
-
+          node-version: 16
+      
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install --yes \
             build-essential \
-            g++ \
-            git \
             libgmp-dev \
             libsodium-dev \
             nasm \
             nlohmann-json3-dev
-
 
       # To prevent `npm install` failure of circuit package, 
       # it has to checkout manually because version of `circomlib` has pinned to a specific commit
@@ -48,7 +41,7 @@ jobs:
         run: |
           git config --global url."https://github.com/".insteadOf git://github.com/
           npm install
-          npx lerna bootstrap --no-ci
+          npx lerna bootstrap
           npm run build
 
       - name: Compile Contracts
