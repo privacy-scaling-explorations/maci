@@ -219,15 +219,6 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
             _initialVoiceCreditProxyData
         );
 
-        // The limit on voice credits is 2 ^ 32 which is hardcoded into the
-        // MessageValidator circuit, specifically at check that there are
-        // sufficient voice credits (using GreaterEqThan(32)).
-        // TODO: perhaps increase this to 2 ^ 50 = 1125899906842624?
-        require(
-            voiceCreditBalance <= 4294967296,
-            "MACI: too many voice credits"
-        );
-
         uint256 timestamp = block.timestamp;
         // Create a state leaf and enqueue it.
         uint256 stateLeaf = hashStateLeaf(
