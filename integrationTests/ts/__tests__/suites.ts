@@ -19,7 +19,7 @@ import {
 
 import { genPubKey } from 'maci-crypto'
 
-import { exec, loadYaml, genTestUserCommands, expectTally } from './utils'
+import { exec, loadYaml, genTestUserCommands, expectTally, expectSubsidy } from './utils'
 
 const execute = (command: any) => {
     console.log(command)
@@ -59,6 +59,16 @@ const executeSuite = async (data: any, expect: any) => {
         const vkAddress = vkAddressMatch[1]
         console.log(vkAddress)
 
+        let subsidyZkeyFilePath
+        let subsidyWitnessCalculatorPath
+        let subsidyResultFilePath
+        const subsidyEnabled = data.subsidy && data.subsidy.enabled
+        subsidyEnabled ? subsidyZkeyFilePath = " --subsidy-zkey ./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey" : subsidyZkeyFilePath = ''
+        subsidyEnabled ? subsidyWitnessCalculatorPath = " --subsidy-witnessgen ./zkeys/SubsidyPerBatch_10-1-2_test" : subsidyWitnessCalculatorPath = ''
+        subsidyEnabled ? subsidyResultFilePath = " --subsidy-file subsidy.json" : subsidyResultFilePath = ''
+        let genProofSubsidyArgument = subsidyResultFilePath + subsidyWitnessCalculatorPath + subsidyZkeyFilePath
+        
+
         const setVerifyingKeysCommand = `node build/index.js setVerifyingKeys` +
             ` -s ${config.constants.maci.stateTreeDepth}` +
             ` -i ${config.constants.poll.intStateTreeDepth}` +
@@ -67,7 +77,8 @@ const executeSuite = async (data: any, expect: any) => {
             ` -b ${config.constants.poll.messageBatchDepth}` +
             ` -p ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey` +
             ` -t ./zkeys/TallyVotes_10-1-2_test.0.zkey` +
-            ` -k ${vkAddress}`
+            ` -k ${vkAddress}` +
+            ` ${subsidyZkeyFilePath}`
 
         execute(setVerifyingKeysCommand)
 
@@ -123,7 +134,8 @@ const executeSuite = async (data: any, expect: any) => {
             data.numUsers,
             config.defaultVote.voiceCreditBalance,
             data.numVotesPerUser,
-            data.bribers
+            data.bribers,
+            data.votes
         )
 
         // Sign up
@@ -218,7 +230,7 @@ const executeSuite = async (data: any, expect: any) => {
         const mergeSignupsCommand = `node build/index.js mergeSignups -x ${maciAddress} -o ${pollId}`
         execute(mergeSignupsCommand)
 
-        const removeOldProofs = `rm -rf tally.json proofs`
+        const removeOldProofs = `rm -rf tally.json subsidy.json proofs/`
         execute(removeOldProofs)
 
         const genProofsCommand = `node build/index.js genProofs` +
@@ -231,7 +243,8 @@ const executeSuite = async (data: any, expect: any) => {
             ` -zp ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey` +
             ` -zt ./zkeys/TallyVotes_10-1-2_test.0.zkey` +
             ` -t tally.json` +
-            ` -f proofs/`
+            ` -f proofs/` +
+            ` ${genProofSubsidyArgument}`
         execute(genProofsCommand)
 
         const tally = JSON.parse(fs.readFileSync(path.join(__dirname, '../../../cli/tally.json')).toString())
@@ -244,6 +257,17 @@ const executeSuite = async (data: any, expect: any) => {
             data.expectedTotalSpentVoiceCredits,
             tally
         )
+        if (data.subsidy) {
+            const subsidy = JSON.parse(fs.readFileSync(path.join(__dirname, '../../../cli/subsidy.json')).toString())
+            // Validate generated proof file
+            expect(JSON.stringify(subsidy.pollId)).toEqual(pollId)
+            expectSubsidy(
+                config.constants.maci.maxMessages,
+                data.subsidy.expectedSubsidy,
+                subsidy
+            )
+        }
+        
 
         const proveOnChainCommand = `node build/index.js proveOnChain` +
             ` -x ${maciAddress}` +
@@ -256,7 +280,8 @@ const executeSuite = async (data: any, expect: any) => {
             ` -x ${maciAddress}` +
             ` -o ${pollId}` +
             ` -q ${pptAddress}` +
-            ` -t tally.json`
+            ` -t tally.json` +
+            ` ${subsidyResultFilePath}`
         execute(verifyCommand)
     }
     catch(e) {

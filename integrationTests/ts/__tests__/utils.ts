@@ -135,6 +135,17 @@ interface Tally {
     }
 }
 
+interface Subsidy {
+    provider: string,
+    maci: string,
+    pollId: number,
+    newSubsidyCommitment: string,
+    results: {
+        subsidy: string[],
+        salt: string
+    }
+}
+
 const expectTally = (
     maxMessages: number,
     expectedTally: number[],
@@ -144,13 +155,30 @@ const expectTally = (
 ) => {
     let genTally: string[] = Array(maxMessages).fill('0')
     const calculateTally =
-    expectedTally.map((voteOption) => {
-        if (voteOption != 0) genTally[voteOption - 1] = (parseInt(genTally[voteOption - 1]) + voteOption).toString()
+    expectedTally.map((voteOption, index) => {
+        if (voteOption != 0) {
+            genTally[index] = voteOption.toString()
+        }
     })
 
     expect(tallyFile.results.tally).toEqual(genTally)
     expect(tallyFile.totalSpentVoiceCredits.spent).toEqual(expectedTotalSpentVoiceCredits.toString())
 }
 
+const expectSubsidy = (
+    maxMessages: number,
+    expectedSubsidy: number[],
+    SubsidyFile: Subsidy
+) => {
+    let genSubsidy: string[] = Array(maxMessages).fill('0')
+    const calculateTally =
+    expectedSubsidy.map((value, index) => {
+        if (value != 0) {
+            genSubsidy[index] = value.toString()
+        }
+    })
 
-export { exec, delay, loadYaml, genTestAccounts, genTestUserCommands, expectTally }
+    expect(SubsidyFile.results.subsidy).toEqual(genSubsidy)
+}
+
+export { exec, delay, loadYaml, genTestAccounts, genTestUserCommands, expectTally, expectSubsidy }
