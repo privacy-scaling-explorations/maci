@@ -149,19 +149,26 @@ interface Subsidy {
 const expectTally = (
     maxMessages: number,
     expectedTally: number[],
-    expectedSpentVoiceCredits: number[],
+    expectedPerVOSpentVoiceCredits: number[],
     expectedTotalSpentVoiceCredits: number,
     tallyFile: Tally
 ) => {
     let genTally: string[] = Array(maxMessages).fill('0')
+    let genPerVOSpentVoiceCredits: string[] = Array(maxMessages).fill('0')
     const calculateTally =
-    expectedTally.map((voteOption, index) => {
-        if (voteOption != 0) {
-            genTally[index] = voteOption.toString()
+    expectedTally.map((voteWeight, voteOption) => {
+        if (voteWeight != 0) {
+            genTally[voteOption] = voteWeight.toString()
+        }
+    })
+    expectedPerVOSpentVoiceCredits.map((spentCredit, index) => {
+        if (spentCredit != 0) {
+            genPerVOSpentVoiceCredits[index] = spentCredit.toString()
         }
     })
 
     expect(tallyFile.results.tally).toEqual(genTally)
+    expect(tallyFile.perVOSpentVoiceCredits.tally).toEqual(genPerVOSpentVoiceCredits)
     expect(tallyFile.totalSpentVoiceCredits.spent).toEqual(expectedTotalSpentVoiceCredits.toString())
 }
 
