@@ -143,7 +143,7 @@ const executeSuite = async (data: any, expect: any) => {
             const userKeypair = users[i].keypair
             userKeypairs.push(userKeypair)
             // Run the signup command
-            const signupCommand = `node ../cli/build/index.js signup` +
+            const signupCommand = `node build/index.js signup` +
                 ` -p ${userKeypair.pubKey.serialize()}` +
                 ` -x ${maciAddress}`
             execute(signupCommand)
@@ -257,7 +257,7 @@ const executeSuite = async (data: any, expect: any) => {
             data.expectedTotalSpentVoiceCredits,
             tally
         )
-        if (data.subsidy) {
+        if (subsidyEnabled) {
             const subsidy = JSON.parse(fs.readFileSync(path.join(__dirname, '../../../cli/subsidy.json')).toString())
             // Validate generated proof file
             expect(JSON.stringify(subsidy.pollId)).toEqual(pollId)
