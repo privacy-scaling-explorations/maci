@@ -1,27 +1,27 @@
-name: CI
+name: Release
 
 on:
-  push:
-    branches: [ v1 ]
-  pull_request:
-    branches: [ v1 ]
-  schedule:
-    - cron: 0 0 * * *
+  push: 
+    tags: ['*']
 
-concurrency: 
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
-  cancel-in-progress: true
 
 jobs:
 
-  e2e:
-    uses: ./.github/workflows/reusable-e2e.yml
-
-  npm-publish:
-    needs: e2e
-    if: ${{ github.event_name == 'push' }}
+  draft-release:
     runs-on: ubuntu-20.04
-    
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Draft Release
+        run: |
+          gh release create ${GITHUB_REF##*/} --title "${GITHUB_REF##*/}" --draft --generate-notes --prerelease
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish:
+    runs-on: ubuntu-20.04
+
     steps:
       - uses: actions/checkout@v3
       
@@ -42,7 +42,6 @@ jobs:
           git checkout --progress --force ac85e82c1914d47789e2032fb11ceb2cfdd38a2b
           rm -rf ./.git
 
-
       - name: Initialize Project
         run: |
           git config --global url."https://github.com/".insteadOf git://github.com/
@@ -55,14 +54,8 @@ jobs:
           cd contracts
           npm run compileSol
 
-      - name: Publish Project
+      - name: Publish NPM
         run: |
-          # Prevent `git commit error` when running `lerna version`
-          # It will not pushed to GitHub. It is ephemeral
-          git config --global user.email "you@example.com"
-          git config --global user.name "Your Name"
-
-          lerna version 0.0.0-ci.$(git rev-parse --short HEAD) --no-push --yes
-          lerna publish from-git --dist-tag ci --yes
+          npx lerna publish from-git --yes
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

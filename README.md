@@ -1,5 +1,7 @@
 # Minimal Anti-Collusion Infrastructure
 
+[![CI](https://github.com/privacy-scaling-explorations/maci/actions/workflows/e2e.yml/badge.svg)](https://github.com/privacy-scaling-explorations/maci/actions/workflows/e2e.yml)
+
 Please refer to
 the original [ethresear.ch
 post](https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413) for a
