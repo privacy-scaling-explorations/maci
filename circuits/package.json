@@ -3,6 +3,7 @@
   "version": "1.1.2",
   "description": "zk-SNARK circuits for MACI",
   "main": "build/index.js",
+  "types": "build/index.d.ts",
   "scripts": {
     "build-test-circuits": "bash ./scripts/build.sh",
     "watch": "tsc --watch",

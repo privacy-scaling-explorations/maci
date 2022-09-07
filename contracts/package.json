@@ -3,6 +3,7 @@
   "version": "1.1.2",
   "description": "Solidity Smart Contracts for MACI (Minimal Anti-Collusion Infrastructure)",
   "main": "build/index.js",
+  "types": "build/index.d.ts",
   "scripts": {
     "watch": "tsc --watch",
     "hardhat": "./scripts/runHardhat.sh",
