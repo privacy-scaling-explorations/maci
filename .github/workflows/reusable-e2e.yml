@@ -39,9 +39,8 @@ jobs:
 
       - name: Initialize Project
         run: |
-          git config --global url."https://github.com/".insteadOf git://github.com/
           npm install
-          npx lerna bootstrap
+          npm run bootstrap
           npm run build
 
       - name: Compile Contracts
@@ -52,20 +51,20 @@ jobs:
       - name: Download rapidsnark (1c137)
         run: |
           mkdir -p ~/rapidsnark/build
-          wget -O ~/rapidsnark/build/prover https://maci-devops-zkeys.s3.ap-northeast-2.amazonaws.com/rapidsnark-linux-amd64-1c137
+          wget -qO ~/rapidsnark/build/prover https://maci-devops-zkeys.s3.ap-northeast-2.amazonaws.com/rapidsnark-linux-amd64-1c137
           chmod +x ~/rapidsnark/build/prover
 
-      - name: Download circom Binary v2.0.5
+      - name: Download circom Binary v2.0.8
         run: |
           mkdir -p /home/runner/work/maci/.local/bin
-          wget -O /home/runner/work/maci/.local/bin/circom https://maci-devops.s3.ap-northeast-2.amazonaws.com/circom-linux-amd64-v2.0.5
+          wget -qO /home/runner/work/maci/.local/bin/circom https://github.com/iden3/circom/releases/download/v2.0.8/circom-linux-amd64
           chmod +x /home/runner/work/maci/.local/bin/circom
 
       - name: Generate zkeys
         run: |
           cd cli
           mkdir -p zkeys
-          wget -O zkeys/powersOfTau28_hez_final_20.ptau https://maci-devops-zkeys.s3.ap-northeast-2.amazonaws.com/powersOfTau28_hez_final_20.ptau
+          wget -qO zkeys/powersOfTau28_hez_final_20.ptau https://maci-devops-zkeys.s3.ap-northeast-2.amazonaws.com/powersOfTau28_hez_final_20.ptau
           npx zkey-manager compile -c ./zkeys.config.yml
           npx zkey-manager genZkeys -c ./zkeys.config.yml
 

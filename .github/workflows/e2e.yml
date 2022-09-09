@@ -45,7 +45,6 @@ jobs:
 
       - name: Initialize Project
         run: |
-          git config --global url."https://github.com/".insteadOf git://github.com/
           npm install
           npx lerna bootstrap
           npm run build
