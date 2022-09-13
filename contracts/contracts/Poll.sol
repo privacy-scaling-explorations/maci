@@ -44,6 +44,13 @@ contract PollFactory is
     Hasher,
     PollDeploymentParams
 {
+
+    // The Keccack256 hash of 'Maci'
+    uint256 internal constant NOTHING_UP_MY_SLEEVE =
+        uint256(
+            8370432830353022751713833565135785980866757267633941821328460903436894336785
+        );
+
     MessageAqFactory public messageAqFactory;
 
     function setMessageAqFactory(MessageAqFactory _messageAqFactory)
@@ -91,6 +98,7 @@ contract PollFactory is
         AccQueue messageAq = messageAqFactory.deploy(
             _treeDepths.messageTreeSubDepth
         );
+        messageAq.enqueue(NOTHING_UP_MY_SLEEVE);
 
         ExtContracts memory extContracts;
 

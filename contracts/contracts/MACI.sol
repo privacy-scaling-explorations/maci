@@ -34,11 +34,6 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     uint8 internal constant STATE_TREE_ARITY = 5;
     uint8 internal constant MESSAGE_TREE_ARITY = 5;
 
-    // The Keccack256 hash of 'Maci'
-    uint256 internal constant NOTHING_UP_MY_SLEEVE =
-        uint256(
-            8370432830353022751713833565135785980866757267633941821328460903436894336785
-        );
 
     //// The hash of a blank state leaf
     uint256 internal constant BLANK_STATE_LEAF_HASH =
