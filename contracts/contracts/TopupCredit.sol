@@ -5,8 +5,8 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract TopupCredit is ERC20, Ownable {
-    uint8 private _decimals = 1;
-    uint256 MAXIMUM_AIRDROP_AMOUNT = 100000 * 10**_decimals;
+    uint8 private constant _decimals = 1;
+    uint256 public constant MAXIMUM_AIRDROP_AMOUNT = 100000 * 10**_decimals;
 
     constructor() ERC20("TopupCredit", "TopupCredit") {
     }
