@@ -15,12 +15,12 @@ contract TopupCredit is ERC20, Ownable {
         return _decimals;
     }
 
-    function airdropTo(address account, uint256 amount) public {
+    function airdropTo(address account, uint256 amount) public onlyOwner {
         require(amount < MAXIMUM_AIRDROP_AMOUNT);
         _mint(account, amount);
     }
 
-    function airdrop(uint256 amount) public {
+    function airdrop(uint256 amount) public onlyOwner {
         require(amount < MAXIMUM_AIRDROP_AMOUNT, "amount exceed maximum limit");
         _mint(msg.sender, amount);
     }
