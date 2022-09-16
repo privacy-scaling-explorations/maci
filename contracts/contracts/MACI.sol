@@ -136,7 +136,9 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         MessageAqFactory _messageAqFactory,
         TopupCredit _topupCredit
     ) public onlyOwner {
-        require(isInitialised == false, "MACI: already initialised");
+        require(!isInitialised, "MACI: already initialised");
+
+        isInitialised = true;
 
         vkRegistry = _vkRegistry;
         messageAqFactory = _messageAqFactory;
@@ -164,13 +166,11 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
             "MACI: VkRegistry owner incorrectly set"
         );
 
-        isInitialised = true;
-
         emit Init(_vkRegistry, _messageAqFactory);
     }
 
     modifier afterInit() {
-        require(isInitialised == true, "MACI: not initialised");
+        require(isInitialised, "MACI: not initialised");
         _;
     }
 
@@ -199,6 +199,9 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
             "MACI: maximum number of signups reached"
         );
 
+        // Increment the number of signups
+        numSignUps++;
+
         // Register the user via the sign-up gatekeeper. This function should
         // throw if the user has already registered or if ineligible to do so.
         signUpGatekeeper.register(msg.sender, _signUpGatekeeperData);
@@ -220,9 +223,6 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
             StateLeaf(_pubKey, voiceCreditBalance, timestamp)
         );
         uint256 stateIndex = stateAq.enqueue(stateLeaf);
-
-        // Increment the number of signups
-        numSignUps++;
 
         emit SignUp(stateIndex, _pubKey, voiceCreditBalance, timestamp);
     }
@@ -286,9 +286,12 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     ) public afterInit {
         uint256 pollId = nextPollId;
 
+        // Increment the poll ID for the next poll
+        nextPollId++;
+
         if (pollId > 0) {
             require(
-                stateAq.treeMerged() == true,
+                stateAq.treeMerged(),
                 "MACI: previous poll must be completed before using a new instance"
             );
         }
@@ -313,9 +316,6 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         );
 
         polls[pollId] = p;
-
-        // Increment the poll ID for the next poll
-        nextPollId++;
 
         emit DeployPoll(pollId, address(p), _coordinatorPubKey);
     }

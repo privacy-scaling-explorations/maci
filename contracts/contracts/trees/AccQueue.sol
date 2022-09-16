@@ -294,7 +294,7 @@ abstract contract AccQueue is Ownable, Hasher {
         uint256 _numSrQueueOps
     ) public onlyOwner {
         // This function can only be called once unless a new subtree is created
-        require(subTreesMerged == false, "AccQueue: subtrees already merged");
+        require(!subTreesMerged, "AccQueue: subtrees already merged");
 
         // There must be subtrees to merge
         require(numLeaves > 0, "AccQueue: nothing to merge");
@@ -315,7 +315,8 @@ abstract contract AccQueue is Ownable, Hasher {
         uint256 depth = calcMinHeight();
 
         uint256 queueOpsPerformed = 0;
-        for (uint256 i = nextSubRootIndex; i < currentSubtreeIndex; i ++) {
+        uint256 _nextSubRootIndex = nextSubRootIndex;
+        for (uint256 i = _nextSubRootIndex; i < currentSubtreeIndex; i ++) {
 
             if (_numSrQueueOps != 0 && queueOpsPerformed == _numSrQueueOps) {
                 // If the limit is not 0, stop if the limit has been reached
@@ -330,11 +331,13 @@ abstract contract AccQueue is Ownable, Hasher {
             );
 
             // Increment the next subroot counter
-            nextSubRootIndex ++;
+            _nextSubRootIndex ++;
 
             // Increment the ops counter
             queueOpsPerformed ++;
         }
+
+        _nextSubRootIndex = nextSubRootIndex;
 
         // The height of the tree of subroots
         uint256 m = hashLength ** depth;
@@ -404,7 +407,7 @@ abstract contract AccQueue is Ownable, Hasher {
         require(_depth > 0, "AccQueue: _depth must be more than 0");
 
         // Ensure that the subtrees have been merged
-        require(subTreesMerged == true, "AccQueue: subtrees must be merged before calling merge()");
+        require(subTreesMerged, "AccQueue: subtrees must be merged before calling merge()");
 
         // Check the depth
         require(_depth <= MAX_DEPTH, "AccQueue: _depth must be lte MAX_DEPTH");

@@ -11,6 +11,8 @@ import {SnarkConstants} from "./crypto/SnarkConstants.sol";
 import {DomainObjs, IPubKey, IMessage} from "./DomainObjs.sol";
 import {AccQueue, AccQueueQuinaryMaci} from "./trees/AccQueue.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import {VkRegistry} from "./VkRegistry.sol";
 import {EmptyBallotRoots} from "./trees/EmptyBallotRoots.sol";
 import {TopupCredit} from "./TopupCredit.sol";
@@ -142,6 +144,8 @@ contract Poll is
     PollDeploymentParams,
     EmptyBallotRoots
 {
+    using SafeERC20 for ERC20;
+
     // The coordinator's public key
     PubKey public coordinatorPubKey;
 
@@ -186,14 +190,12 @@ contract Poll is
 
     // Error codes. We store them as constants and keep them short to reduce
     // this contract's bytecode size.
-    string constant ERROR_VK_NOT_SET = "PollE01";
-    string constant ERROR_SB_COMMITMENT_NOT_SET = "PollE02";
-    string constant ERROR_VOTING_PERIOD_PASSED = "PollE03";
-    string constant ERROR_VOTING_PERIOD_NOT_PASSED = "PollE04";
-    string constant ERROR_INVALID_PUBKEY = "PollE05";
-    string constant ERROR_MAX_MESSAGES_REACHED = "PollE06";
-    string constant ERROR_STATE_AQ_ALREADY_MERGED = "PollE07";
-    string constant ERROR_STATE_AQ_SUBTREES_NEED_MERGE = "PollE08";
+    string constant ERROR_VOTING_PERIOD_PASSED = "PollE01";
+    string constant ERROR_VOTING_PERIOD_NOT_PASSED = "PollE02";
+    string constant ERROR_INVALID_PUBKEY = "PollE03";
+    string constant ERROR_MAX_MESSAGES_REACHED = "PollE04";
+    string constant ERROR_STATE_AQ_ALREADY_MERGED = "PollE05";
+    string constant ERROR_STATE_AQ_SUBTREES_NEED_MERGE = "PollE06";
 
     uint8 private constant LEAVES_PER_NODE = 5;
 
@@ -256,6 +258,9 @@ contract Poll is
             numMessages <= maxValues.maxMessages,
             ERROR_MAX_MESSAGES_REACHED
         );
+
+        numMessages++;
+
         extContracts.topupCredit.transferFrom(
             msg.sender,
             address(this),
@@ -271,7 +276,7 @@ contract Poll is
         Message memory _message = Message({msgType: 2, data: dat});
         uint256 messageLeaf = hashMessageAndEncPubKey(_message, _padKey);
         extContracts.messageAq.enqueue(messageLeaf);
-        numMessages++;
+        
         emit TopupMessage(_message);
     }
 
@@ -297,10 +302,10 @@ contract Poll is
                 _encPubKey.y < SNARK_SCALAR_FIELD,
             ERROR_INVALID_PUBKEY
         );
+        numMessages++;
         _message.msgType = 1;
         uint256 messageLeaf = hashMessageAndEncPubKey(_message, _encPubKey);
         extContracts.messageAq.enqueue(messageLeaf);
-        numMessages++;
 
         emit PublishMessage(_message, _encPubKey);
     }
@@ -370,13 +375,13 @@ contract Poll is
         // deadline
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
 
+        stateAqMerged = true;
+
         require(
             extContracts.maci.stateAq().subTreesMerged(),
             ERROR_STATE_AQ_SUBTREES_NEED_MERGE
         );
         extContracts.maci.mergeStateAq(_pollId);
-
-        stateAqMerged = true;
 
         mergedStateRoot = extContracts.maci.getStateAqRoot();
         // Set currentSbCommitment
@@ -558,6 +563,8 @@ contract PollProcessorAndTallyer is
     string constant ERROR_STATE_AQ_NOT_MERGED = "PptE09";
     string constant ERROR_ALL_SUBSIDY_CALCULATED = "PptE10";
     string constant ERROR_INVALID_SUBSIDY_PROOF = "PptE11";
+    string constant ERROR_VK_NOT_SET = "PollE12";
+
 
     // The commitment to the state and ballot roots
     uint256 public sbCommitment;
@@ -715,6 +722,8 @@ contract PollProcessorAndTallyer is
         (uint256 messageBatchSize, , ) = _poll.batchSizes();
         (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
         (VkRegistry vkRegistry, IMACI maci, , ) = _poll.extContracts();
+
+        require(address(vkRegistry) != address(0), ERROR_VK_NOT_SET);
 
         // Calculate the public input hash (a SHA256 hash of several values)
         uint256 publicInputHash = genProcessMessagesPublicInputHash(
@@ -900,6 +909,8 @@ contract PollProcessorAndTallyer is
         (uint8 intStateTreeDepth, , , uint8 voteOptionTreeDepth) = _poll
             .treeDepths();
         (VkRegistry vkRegistry, IMACI maci, , ) = _poll.extContracts();
+
+        require(address(vkRegistry) != address(0), ERROR_VK_NOT_SET);
 
         // Get the verifying key
         VerifyingKey memory vk = vkRegistry.getSubsidyVk(

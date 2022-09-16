@@ -41,11 +41,11 @@ contract SignUpTokenGatekeeper is SignUpGatekeeper, Ownable {
 
         // Check if the user owns the token
         bool ownsToken = token.ownerOf(tokenId) == _user;
-        require(ownsToken == true, "SignUpTokenGatekeeper: this user does not own the token");
+        require(ownsToken, "SignUpTokenGatekeeper: this user does not own the token");
 
         // Check if the token has already been used
         bool alreadyRegistered = registeredTokenIds[tokenId];
-        require(alreadyRegistered == false, "SignUpTokenGatekeeper: this token has already been used to sign up");
+        require(!alreadyRegistered, "SignUpTokenGatekeeper: this token has already been used to sign up");
 
         // Mark the token as already used
         registeredTokenIds[tokenId] = true;

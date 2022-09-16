@@ -87,7 +87,7 @@ contract VkRegistry is Ownable, SnarkCommon {
             _messageBatchSize
         );
 
-        require(processVkSet[processVkSig] == false, "VkRegistry: process vk already set");
+        require(!processVkSet[processVkSig], "VkRegistry: process vk already set");
 
         uint256 tallyVkSig = genTallyVkSig(
             _stateTreeDepth,
@@ -95,7 +95,7 @@ contract VkRegistry is Ownable, SnarkCommon {
             _voteOptionTreeDepth
         );
 
-        require(tallyVkSet[tallyVkSig] == false, "VkRegistry: tally vk already set");
+        require(!tallyVkSet[tallyVkSig], "VkRegistry: tally vk already set");
 
         VerifyingKey storage processVk = processVks[processVkSig];
         processVk.alpha1 = _processVk.alpha1;
@@ -132,7 +132,7 @@ contract VkRegistry is Ownable, SnarkCommon {
             _voteOptionTreeDepth
         );
 
-        require(subsidyVkSet[subsidyVkSig] == false, "VkRegistry: subsidy vk already set");
+        require(!subsidyVkSet[subsidyVkSig], "VkRegistry: subsidy vk already set");
 
         VerifyingKey storage subsidyVk = subsidyVks[subsidyVkSig];
         subsidyVk.alpha1 = _subsidyVk.alpha1;
@@ -163,7 +163,7 @@ contract VkRegistry is Ownable, SnarkCommon {
     function getProcessVkBySig(
         uint256 _sig
     ) public view returns (VerifyingKey memory) {
-        require(processVkSet[_sig] == true, "VkRegistry: process verifying key not set");
+        require(processVkSet[_sig], "VkRegistry: process verifying key not set");
 
         return processVks[_sig];
     }
@@ -201,7 +201,7 @@ contract VkRegistry is Ownable, SnarkCommon {
     function getTallyVkBySig(
         uint256 _sig
     ) public view returns (VerifyingKey memory) {
-        require(tallyVkSet[_sig] == true, "VkRegistry: tally verifying key not set");
+        require(tallyVkSet[_sig], "VkRegistry: tally verifying key not set");
 
         return tallyVks[_sig];
     }
@@ -237,7 +237,7 @@ contract VkRegistry is Ownable, SnarkCommon {
     function getSubsidyVkBySig(
         uint256 _sig
     ) public view returns (VerifyingKey memory) {
-        require(subsidyVkSet[_sig] == true, "VkRegistry: subsidy verifying key not set");
+        require(subsidyVkSet[_sig], "VkRegistry: subsidy verifying key not set");
 
         return subsidyVks[_sig];
     }
