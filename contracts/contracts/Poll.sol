@@ -381,9 +381,9 @@ contract Poll is
             extContracts.maci.stateAq().subTreesMerged(),
             ERROR_STATE_AQ_SUBTREES_NEED_MERGE
         );
-        extContracts.maci.mergeStateAq(_pollId);
+        
+        mergedStateRoot = extContracts.maci.mergeStateAq(_pollId);
 
-        mergedStateRoot = extContracts.maci.getStateAqRoot();
         // Set currentSbCommitment
         uint256[3] memory sb;
         sb[0] = mergedStateRoot;
