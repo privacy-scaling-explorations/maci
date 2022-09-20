@@ -9,6 +9,7 @@ import { MerkleZeros as MerkleQuinary0 } from "./zeros/MerkleQuinary0.sol";
 import { MerkleZeros as MerkleQuinaryMaci } from "./zeros/MerkleQuinaryMaci.sol";
 import { MerkleZeros as MerkleQuinaryBlankSl } from "./zeros/MerkleQuinaryBlankSl.sol";
 import { MerkleZeros as MerkleQuinaryMaciWithSha256 } from "./zeros/MerkleQuinaryMaciWithSha256.sol";
+import "hardhat/console.sol";
 
 /*
  * This contract defines a Merkle tree where each leaf insertion only updates a
@@ -315,9 +316,7 @@ abstract contract AccQueue is Ownable, Hasher {
         uint256 depth = calcMinHeight();
 
         uint256 queueOpsPerformed = 0;
-        uint256 _nextSubRootIndex = nextSubRootIndex;
-        for (uint256 i = _nextSubRootIndex; i < currentSubtreeIndex; i ++) {
-
+        for (uint256 i = nextSubRootIndex; i < currentSubtreeIndex; i ++) {
             if (_numSrQueueOps != 0 && queueOpsPerformed == _numSrQueueOps) {
                 // If the limit is not 0, stop if the limit has been reached
                 return;
@@ -331,14 +330,12 @@ abstract contract AccQueue is Ownable, Hasher {
             );
 
             // Increment the next subroot counter
-            _nextSubRootIndex ++;
+            nextSubRootIndex ++;
 
             // Increment the ops counter
             queueOpsPerformed ++;
         }
-
-        _nextSubRootIndex = nextSubRootIndex;
-
+        
         // The height of the tree of subroots
         uint256 m = hashLength ** depth;
 
