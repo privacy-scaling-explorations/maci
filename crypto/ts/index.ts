@@ -130,6 +130,12 @@ const sha256Hash = (input: BigInt[]) => {
 }
 
 // Hash up to 2 elements
+const poseidonT2 = (inputs: BigInt[]) => {
+    assert(inputs.length === 1)
+    return poseidon(inputs)
+}
+
+// Hash up to 2 elements
 const poseidonT3 = (inputs: BigInt[]) => {
     assert(inputs.length === 2)
     return poseidon(inputs)
@@ -153,6 +159,12 @@ const poseidonT6 = (inputs: BigInt[]) => {
     return poseidon(inputs)
 }
 
+// Hash up to 6 elements
+const poseidonT7 = (inputs: BigInt[]) => {
+    assert(inputs.length === 6)
+    return poseidon(inputs)
+}
+
 const hashN = (numElements: number, elements: Plaintext): BigInt => {
     const elementLength = elements.length
     if (elements.length > numElements) {
@@ -166,19 +178,23 @@ const hashN = (numElements: number, elements: Plaintext): BigInt => {
     }
 
     const funcs = {
+        1: poseidonT2,
         2: poseidonT3,
         3: poseidonT4,
         4: poseidonT5,
         5: poseidonT6,
+        6: poseidonT7,
     }
 
     return funcs[numElements](elements)
 }
 
+const hash1 = (elements: Plaintext): BigInt => hashN(1, elements)
 const hash2 = (elements: Plaintext): BigInt => hashN(2, elements)
 const hash3 = (elements: Plaintext): BigInt => hashN(3, elements)
 const hash4 = (elements: Plaintext): BigInt => hashN(4, elements)
 const hash5 = (elements: Plaintext): BigInt => hashN(5, elements)
+const hash6 = (elements: Plaintext): BigInt => hashN(6, elements)
 
 /*
  * A convenience function for to use Poseidon to hash a Plaintext with
@@ -410,10 +426,12 @@ export {
     sign,
     sha256Hash,
     hashOne,
+    hash1,
     hash2,
     hash3,
     hash4,
     hash5,
+    hash6,
     hash13,
     hashLeftRight,
     verifySignature,
