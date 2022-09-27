@@ -55,10 +55,12 @@ const getInitialVoiceCreditProxyAbi = () => {
 
 const linkPoseidonLibraries = async (
     solFileToLink: string,
+    poseidonT2Address,
     poseidonT3Address,
     poseidonT4Address,
     poseidonT5Address,
     poseidonT6Address,
+    poseidonT7Address,
     quiet = false,
 ) => {
 	const signer = await getDefaultSigner()
@@ -69,10 +71,12 @@ const linkPoseidonLibraries = async (
 		{
 			signer,
 			libraries: {
+                PoseidonT2: poseidonT2Address,
 				PoseidonT3: poseidonT3Address,
 				PoseidonT4: poseidonT4Address,
 				PoseidonT5: poseidonT5Address,
 				PoseidonT6: poseidonT6Address,
+                PoseidonT7: poseidonT7Address,
 			},
 		},
 	)
@@ -190,26 +194,34 @@ const log = (msg: string, quiet: boolean) => {
 const deployPoseidonContracts = async (quiet = false) => {
     log('Deploying Poseidon contracts', quiet)
 	const signer = await getDefaultSigner()
+    const PoseidonT2ContractFactory = await ethers.getContractFactory('PoseidonT2', signer)
     const PoseidonT3ContractFactory = await ethers.getContractFactory('PoseidonT3', signer)
     const PoseidonT4ContractFactory = await ethers.getContractFactory('PoseidonT4', signer)
     const PoseidonT5ContractFactory = await ethers.getContractFactory('PoseidonT5', signer)
     const PoseidonT6ContractFactory = await ethers.getContractFactory('PoseidonT6', signer)
+    const PoseidonT7ContractFactory = await ethers.getContractFactory('PoseidonT7', signer)
 
+    const PoseidonT2Contract = await PoseidonT2ContractFactory.deploy()
 	const PoseidonT3Contract = await PoseidonT3ContractFactory.deploy()
     const PoseidonT4Contract = await PoseidonT4ContractFactory.deploy()
     const PoseidonT5Contract = await PoseidonT5ContractFactory.deploy()
     const PoseidonT6Contract = await PoseidonT6ContractFactory.deploy()
+    const PoseidonT7Contract = await PoseidonT7ContractFactory.deploy()
 
+    await PoseidonT2Contract.deployTransaction.wait()
     await PoseidonT3Contract.deployTransaction.wait()
     await PoseidonT4Contract.deployTransaction.wait()
     await PoseidonT5Contract.deployTransaction.wait()
     await PoseidonT6Contract.deployTransaction.wait()
+    await PoseidonT7Contract.deployTransaction.wait()
 
     return {
+        PoseidonT2Contract,
         PoseidonT3Contract,
         PoseidonT4Contract,
         PoseidonT5Contract,
         PoseidonT6Contract,
+        PoseidonT7Contract,
     }
 }
 
@@ -249,10 +261,12 @@ const deployMaci = async (
     const signer = await getDefaultSigner()
 
     const {
+        PoseidonT2Contract,
         PoseidonT3Contract,
         PoseidonT4Contract,
         PoseidonT5Contract,
         PoseidonT6Contract,
+        PoseidonT7Contract,
     } = await deployPoseidonContracts(quiet)
 
     const contractsToLink = ['MACI', 'PollFactory', 'MessageAqFactory']
@@ -261,10 +275,12 @@ const deployMaci = async (
     const linkedContractFactories = contractsToLink.map( async (contractName: string) => {
         return await linkPoseidonLibraries(
             contractName,
+            PoseidonT2Contract.address,
             PoseidonT3Contract.address,
             PoseidonT4Contract.address,
             PoseidonT5Contract.address,
             PoseidonT6Contract.address,
+            PoseidonT7Contract.address,
             quiet
         )
     })

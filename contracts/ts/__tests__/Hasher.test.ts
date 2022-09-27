@@ -15,13 +15,15 @@ let hasherContract
 
 describe('Hasher', () => {
     beforeAll(async () => {
-        const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } = await deployPoseidonContracts()
+        const { PoseidonT2Contract, PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract, PoseidonT7Contract } = await deployPoseidonContracts()
         const hasherContractFactory = await linkPoseidonLibraries(
 			'Hasher',
+            PoseidonT2Contract.address,
 			PoseidonT3Contract.address,
 			PoseidonT4Contract.address,
 			PoseidonT5Contract.address,
 			PoseidonT6Contract.address,
+            PoseidonT7Contract.address,
         )
 
         hasherContract = await hasherContractFactory.deploy()
