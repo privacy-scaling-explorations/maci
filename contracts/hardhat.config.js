@@ -1,9 +1,9 @@
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
+ require('hardhat-artifactor')
 require('hardhat-contract-sizer')
 require('@nomiclabs/hardhat-ethers')
-require('hardhat-artifactor')
 
 module.exports = {
   solidity: {
