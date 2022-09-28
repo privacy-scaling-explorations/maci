@@ -31,7 +31,7 @@
         "@nomiclabs/hardhat-ethers": "^2.0.2",
         "@openzeppelin/contracts": "^3.3.0-solc-0.7",
         "argparse": "^1.0.10",
-        "circomlib": "0.5.1",
+        "circomlibjs": "0.1.7",
         "hardhat": "^2.0.11",
         "hardhat-artifactor": "^0.2.0",
         "hardhat-contract-sizer": "^2.0.3",

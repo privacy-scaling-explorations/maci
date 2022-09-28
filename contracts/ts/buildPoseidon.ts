@@ -1,8 +1,8 @@
 const { overwriteArtifact } = require('hardhat')
-const poseidonGenContract = require('circomlib/src/poseidon_gencontract.js')
+const { poseidonContract } = require('circomlibjs')
 
 const buildPoseidon = async (numInputs: number) => {
-    await overwriteArtifact(`PoseidonT${numInputs + 1}`, poseidonGenContract.createCode(numInputs))
+    await overwriteArtifact(`PoseidonT${numInputs + 1}`, poseidonContract.createCode(numInputs))
 }
 
 const buildPoseidonT2 = () => buildPoseidon(1)
