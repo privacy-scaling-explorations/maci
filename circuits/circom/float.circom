@@ -145,7 +145,17 @@ template MultiplicationFromFloat(W, n) {
     assert(10**W < 2**n);
 
     component div = IntegerDivision(n);
-    // TODO: check a*b is not overflow
+
+    // not the best way, but works in our case
+    component lta = LessThan(252);
+    lta.in[0] <== a; 
+    lta.in[1] <== 2 ** 126;
+    lta.out === 1;
+    component ltb = LessThan(252);
+    ltb.in[0] <== b; 
+    ltb.in[1] <== 2 ** 126;
+    ltb.out === 1;
+
     div.a <== a * b;
     div.b <== 10**W;
     c <== div.c;
