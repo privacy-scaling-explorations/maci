@@ -47,7 +47,7 @@ const config: HardhatUserConfig = {
     rinkarby: {
       url:
         process.env.JSONRPC_HTTP_URL ||
-        "https://arb-rinkeby.g.alchemy.com/v2/MYJB1DM24FooXyz_jm2xm1yYfHG4SWUz",
+        "https://rinkeby.arbitrum.io/rpc",
       accounts,
     },
     arbitrum: {

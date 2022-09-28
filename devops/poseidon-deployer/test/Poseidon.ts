@@ -114,7 +114,7 @@ const deployParentContract = async (childContracts: {
 
   await factoryContract.deploy(salt);
 
-  const hasherAddress = await factoryContract.getAddress();
+  const hasherAddress = await factoryContract.hasherAddress();
   const hasherContract = await ethers.getContractAt("Hasher", hasherAddress);
   return hasherContract;
 };
@@ -298,7 +298,7 @@ describe("Poseidon", function () {
 
       await factoryContract.deploy(salt);
 
-      const hasherAddress = await factoryContract.getAddress();
+      const hasherAddress = await factoryContract.hasherAddress();
 
       expect(hasherAddress).to.equal(expectedParentAddress);
     });

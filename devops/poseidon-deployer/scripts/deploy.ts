@@ -97,7 +97,7 @@ const deployParentContract = async (childContracts: {
     "0x0000000000000000000000000000000000000000000000000000000000000001";
   await factoryContract.deploy(salt);
 
-  const hasherAddress = await factoryContract.getAddress();
+  const hasherAddress = await factoryContract.hasherAddress();
   const hasherContract = await ethers.getContractAt("Hasher", hasherAddress);
   return { hasherContract, factoryContract };
 };
