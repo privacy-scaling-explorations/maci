@@ -17,6 +17,7 @@ template SubsidyPerBatch (
     intStateTreeDepth,
     voteOptionTreeDepth
 ) {
+    // keep MM < 2 ** 196 to avoid overflow: https://hackmd.io/@chaosma/H1_9xmT2K
     var MM = 50; // protocol params should be consistent with MaciState.ts
     var WW = 4; // number of decimal in float representation, should consist with MaciState.ts
     var NN = 64; // maximum width of bits (10**NN < 2**253) in float division
