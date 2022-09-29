@@ -2,6 +2,7 @@ node_modules
 .env
 typechain
 typechain-types
+package-lock.json
 
 #Hardhat files
 cache

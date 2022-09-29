@@ -9,6 +9,9 @@ import {
   PoseidonT6,
   PoseidonT7,
 } from "../typechain-types";
+const { buildPoseidon } = require('circomlibjs');
+
+let poseidon: any;
 
 const deployChildContracts = async (): Promise<{
   poseidonT2: PoseidonT2;
@@ -103,22 +106,20 @@ const deployParentContract = async (childContracts: {
 };
 
 const deploy = async () => {
+  poseidon = await buildPoseidon();
+
   const childContracts = await deployChildContracts();
   const { hasherContract, factoryContract } = await deployParentContract(
     childContracts
   );
 
   try {
-    expect(await hasherContract.hash2(["1", "2"])).to.equal(
-      ethers.BigNumber.from(
-        "0x115cc0f5e7d690413df64c6b9662e9cf2a3617f2743245519e19607a4417189a"
-      )
+    expect((await hasherContract.hash2(["1", "2"])).toString()).to.equal(
+      poseidon.F.toString(poseidon(["1", "2"]))
     );
 
-    expect(await hasherContract.hash4(["1", "2", "3", "4"])).to.equal(
-      ethers.BigNumber.from(
-        "0x299c867db6c1fdd79dcefa40e4510b9837e60ebb1ce0663dbaa525df65250465"
-      )
+    expect((await hasherContract.hash4(["1", "2", "3", "4"])).toString()).to.equal(
+      poseidon.F.toString(poseidon(["1", "2", "3", "4"]))
     );
 
     const signers = await ethers.getSigners();
@@ -133,7 +134,7 @@ const deploy = async () => {
     console.log("PoseidonT6: " + childContracts.poseidonT6.address);
     console.log("PoseidonT7: " + childContracts.poseidonT7.address);
   } catch (e) {
-    console.error("[ERROR] poseidon didn't deployed properly: " + e);
+    console.error("[ERROR] poseidon didn't deploy properly: " + e);
   }
 };
 

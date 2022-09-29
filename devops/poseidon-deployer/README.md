@@ -1,6 +1,6 @@
 # poseidon-deployer
 
-`poseidon-deployer` is the tool to deploy Poseidon hash functions. It supports `create2` to maintain same address across networks.
+`poseidon-deployer` is the tool to deploy Poseidon hash functions. It supports `create2` to maintain the same address across networks.
 
 ## Quick Start
 

@@ -21,6 +21,7 @@ import {
   PoseidonT6,
   PoseidonT7,
 } from "../typechain-types";
+const { buildPoseidon } = require('circomlibjs');
 
 // salt for `create2` opcode of EVM
 const salt =
@@ -129,29 +130,55 @@ describe("Poseidon", function () {
     poseidonT7: PoseidonT7;
   };
   let hasherContract: any;
+  let poseidon: any;
 
   this.beforeAll(async () => {
     childContracts = await loadFixture(deployChildContracts);
     hasherContract = await deployParentContract(childContracts);
+    poseidon = await buildPoseidon();
   });
 
   // See https://github.com/privacy-scaling-explorations/poseidon_in_circomlib_check
   describe("Poseidon functionality", function () {
+    it("T2 - [1]", async function () {
+      expect((await childContracts.poseidonT2.poseidon(["1"])).toString()).to.equal(
+        poseidon.F.toString(poseidon(["1"]))
+      );
+    });
+
     it("T3 - [1, 2]", async function () {
-      expect(await childContracts.poseidonT3.poseidon(["1", "2"])).to.equal(
-        ethers.BigNumber.from(
-          "0x115cc0f5e7d690413df64c6b9662e9cf2a3617f2743245519e19607a4417189a"
-        )
+      expect((await childContracts.poseidonT3.poseidon(["1", "2"])).toString()).to.equal(
+        poseidon.F.toString(poseidon(["1", "2"]))
+      );
+    });
+
+    it("T4 - [1, 2, 3]", async function () {
+      expect((await childContracts.poseidonT4.poseidon(["1", "2", "3"])).toString()).to.equal(
+        poseidon.F.toString(poseidon(["1", "2", "3"]))
       );
     });
 
     it("T5 - [1, 2, 3, 4]", async function () {
       expect(
-        await childContracts.poseidonT5.poseidon(["1", "2", "3", "4"])
+        (await childContracts.poseidonT5.poseidon(["1", "2", "3", "4"])).toString()
       ).to.equal(
-        ethers.BigNumber.from(
-          "0x299c867db6c1fdd79dcefa40e4510b9837e60ebb1ce0663dbaa525df65250465"
-        )
+        poseidon.F.toString(poseidon(["1", "2", "3", "4"]))
+      );
+    });
+
+    it("T6 - [1, 2, 3, 4, 5]", async function () {
+      expect(
+        (await childContracts.poseidonT6.poseidon(["1", "2", "3", "4", "5"])).toString()
+      ).to.equal(
+        poseidon.F.toString(poseidon(["1", "2", "3", "4", "5"]))
+      );
+    });
+
+    it("T7 - [1, 2, 3, 4, 5, 6]", async function () {
+      expect(
+        (await childContracts.poseidonT7.poseidon(["1", "2", "3", "4", "5", "6"])).toString()
+      ).to.equal(
+        poseidon.F.toString(poseidon(["1", "2", "3", "4", "5", "6"]))
       );
     });
   });
@@ -159,16 +186,12 @@ describe("Poseidon", function () {
   describe("Ensure Poseidon is working while using contract deployment pattern", function () {
     // `Hasher` contract of `contracts/poseidon.sol`
     it("Call libraries via Hasher contract", async function () {
-      expect(await hasherContract.hash2(["1", "2"])).to.equal(
-        ethers.BigNumber.from(
-          "0x115cc0f5e7d690413df64c6b9662e9cf2a3617f2743245519e19607a4417189a"
-        )
+      expect((await hasherContract.hash2(["1", "2"])).toString()).to.equal(
+        poseidon.F.toString(poseidon(["1", "2"]))
       );
 
-      expect(await hasherContract.hash4(["1", "2", "3", "4"])).to.equal(
-        ethers.BigNumber.from(
-          "0x299c867db6c1fdd79dcefa40e4510b9837e60ebb1ce0663dbaa525df65250465"
-        )
+      expect((await hasherContract.hash4(["1", "2", "3", "4"])).toString()).to.equal(
+        poseidon.F.toString(poseidon(["1", "2", "3", "4"]))
       );
     });
 
@@ -270,16 +293,12 @@ describe("Poseidon", function () {
 
       expectedParentAddress = parentContract.address;
 
-      expect(await parentContract.hash2(["1", "2"])).to.equal(
-        ethers.BigNumber.from(
-          "0x115cc0f5e7d690413df64c6b9662e9cf2a3617f2743245519e19607a4417189a"
-        )
+      expect((await parentContract.hash2(["1", "2"])).toString()).to.equal(
+        poseidon.F.toString(poseidon(["1", "2"]))
       );
 
-      expect(await parentContract.hash4(["1", "2", "3", "4"])).to.equal(
-        ethers.BigNumber.from(
-          "0x299c867db6c1fdd79dcefa40e4510b9837e60ebb1ce0663dbaa525df65250465"
-        )
+      expect((await parentContract.hash4(["1", "2", "3", "4"])).toString()).to.equal(
+        poseidon.F.toString(poseidon(["1", "2", "3", "4"]))
       );
     });
 
@@ -290,11 +309,15 @@ describe("Poseidon", function () {
 
       const factoryContract = await deployParentContractFactory(childContracts);
 
+      const nonceBefore = await signers[0].getTransactionCount("latest");
       // send tx to increase nonce
       await signers[0].sendTransaction({
         to: "0x0000000000000000000000000000000000000000",
         value: ethers.utils.parseEther("1"),
       });
+      const nonceAfter = await signers[0].getTransactionCount("latest");
+      // Check that nonce increase correctly 
+      expect(nonceBefore + 1).to.equal(nonceAfter);
 
       await factoryContract.deploy(salt);
 
