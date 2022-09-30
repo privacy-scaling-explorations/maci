@@ -718,7 +718,7 @@ describe('AccQueues', () => {
             }
         })
 
-        it('Merging without enqueing anything should not change the root', async () => {
+        it('Merging without enqueing new data should not change the root', async () => {
             const MAIN_DEPTH = 5
             const ZERO = BigInt(0)
     
