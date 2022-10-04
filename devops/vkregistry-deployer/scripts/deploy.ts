@@ -13,6 +13,7 @@ const deployVkRegistry = async () => {
     const VkRegistryAddress = await factoryContract.vkRegistryAddress();
     const vkContract = await ethers.getContractAt("VkRegistry", VkRegistryAddress);
     const actualOwner = await vkContract.owner();
+    // confirm the owner was set correctly
     expect(actualOwner).to.eq(signerAddress);
 
     console.log("vkRegistry contract address:", VkRegistryAddress, "\n");
