@@ -3,14 +3,14 @@ pragma experimental ABIEncoderV2;
 pragma solidity ^0.7.2;
 
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { Owned } from "./utils/Owned.sol";
 
 /*
  * Stores verifying keys for the circuits.
  * Each circuit has a signature which is its compile-time constants represented
  * as a uint256.
  */
-contract VkRegistry is Ownable, SnarkCommon {
+contract VkRegistry is Owned, SnarkCommon {
 
     mapping (uint256 => VerifyingKey) internal processVks; 
     mapping (uint256 => bool) internal processVkSet; 
@@ -20,6 +20,10 @@ contract VkRegistry is Ownable, SnarkCommon {
 
     mapping (uint256 => VerifyingKey) internal subsidyVks; 
     mapping (uint256 => bool) internal subsidyVkSet; 
+
+    constructor(address _owner) Owned(_owner) {
+
+    }
 
     //TODO: event for setVerifyingKeys
 

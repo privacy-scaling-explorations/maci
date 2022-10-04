@@ -6,15 +6,19 @@
     "deploy:gnosis": "npx hardhat run scripts/deploy.ts --network gnosis",
     "deploy:rinkarby": "npx hardhat run scripts/deploy.ts --network rinkarby",
     "deploy:arbitrum": "npx hardhat run scripts/deploy.ts --network arbitrum",
-    "test": "npx hardhat test test/Poseidon.ts"
+    "test": "npx hardhat test test/VkRegistry.ts"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.1.1",
     "@nomiclabs/hardhat-etherscan": "^3.1.0",
     "@typechain/hardhat": "^6.1.3",
+    "@types/chai": "^4.3.3",
+    "@types/jest": "^29.1.1",
+    "chai": "^4.3.6",
     "dotenv": "^16.0.2",
-    "hardhat": "^2.11.1",
+    "ethers": "^5.7.1",
+    "hardhat": "^2.11.2",
     "hardhat-contract-sizer": "^2.0.3",
-    "maci-contracts": "^1.1.0"
+    "maci-contracts": "file:../../contracts"
   }
 }

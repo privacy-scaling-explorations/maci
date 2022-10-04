@@ -7,11 +7,9 @@ contract Factory {
 
     address public vkRegistryAddress;
     
-    function deploy(bytes32 salt) public payable returns (address) {
-        VkRegistry vkRegistry = new VkRegistry{salt: salt}();
+    function deploy(bytes32 salt, address _owner) public payable {
+        VkRegistry vkRegistry = new VkRegistry{salt: salt}(_owner);
 
         vkRegistryAddress = address(vkRegistry);
-
-        return vkRegistryAddress;
    }
  }
