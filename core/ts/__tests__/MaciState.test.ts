@@ -66,7 +66,7 @@ const blankStateLeafHash = blankStateLeaf.hash()
 
 describe('MaciState', () => {
     describe('Process and tally 1 message from 1 user', () => {
-        let maciState
+        let maciState: MaciState
         let pollId
         let stateTree
         let msgTree
@@ -92,6 +92,7 @@ describe('MaciState', () => {
                 5,
                 hash5,
             )
+            msgTree.insert(NOTHING_UP_MY_SLEEVE)
         })
 
         // The end result should be that option 0 gets 3 votes
@@ -131,8 +132,6 @@ describe('MaciState', () => {
                 treeDepths,
                 messageBatchSize,
                 coordinatorKeypair,
-                testProcessVk,
-                testTallyVk,
             )
 
             const command = new PCommand(
@@ -181,7 +180,7 @@ describe('MaciState', () => {
         })
 
         it('Process a batch of messages (though only 1 message is in the batch)', () => {
-            maciState.polls[pollId].processMessages()
+            maciState.polls[pollId].processMessages(pollId)
 
             // Check the ballot
             expect(maciState.polls[pollId].ballots[1].votes[Number(voteOptionIndex)].toString())
@@ -194,7 +193,7 @@ describe('MaciState', () => {
         it('Tally ballots', () => {
             let total = BigInt(0)
             for (const v of maciState.polls[pollId].results) {
-                total = total + v
+                total = BigInt(Number(total) + Number(v))
             }
             expect(total.toString()).toEqual('0')
 
@@ -204,7 +203,7 @@ describe('MaciState', () => {
 
             total = BigInt(0)
             for (const v of maciState.polls[pollId].results) {
-                total = total + v
+                total = BigInt(Number(total) + Number(v))
             }
             expect(total.toString()).toEqual(voteWeight.toString())
         })
@@ -268,7 +267,8 @@ describe('MaciState', () => {
                 maciState.polls[pollId].publishMessage(message, ecdhKeypair.pubKey)
             }
 
-            expect(maciState.polls[pollId].messageAq.numLeaves).toEqual(messageBatchSize - 1)
+            // needs to account the initial NOTHING_UP_MY_SLEEVE leaf
+            expect(maciState.polls[pollId].messageAq.numLeaves).toEqual(messageBatchSize)
 
             // 24 invalid votes
             for (let i = 0; i < messageBatchSize - 1; i ++) {

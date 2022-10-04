@@ -1481,7 +1481,6 @@ class MaciState {
     }
 
 
-
     public static packTallyVotesSmallVals = (
         batchStartIndex: number,
         batchSize: number,
