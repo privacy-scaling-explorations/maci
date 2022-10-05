@@ -6,8 +6,10 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract TopupCredit is ERC20, Ownable {
     uint8 private constant _decimals = 1;
+     // keep the maximum amount less than 2**126 < sqrt(field_size)
+    // to avoid overflow
     uint256 public constant MAXIMUM_AIRDROP_AMOUNT = 100000 * 10**_decimals;
-
+    
     constructor() ERC20("TopupCredit", "TopupCredit") {
     }
 
