@@ -31,7 +31,7 @@ Whitelisted voters named Alice, Bob, and Charlie register to vote by sending the
 
 A later version of MACI will have to mitigate a [vote-buying attack](https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413/3) where a user may be bribed immediately when the voting period starts, such that their very first message is influenced by a briber. One solution to this is to have the contract to mandate that the first message that each participant sends is to change their key (see below). For the sake of simplicity, however, this specification will not address this issue. 
 
-When Alice casts her vote, she signs her vote with her private key, encrypts her signature with Dave's public key, and submits the result to the smart contract.
+When Alice casts her vote, she signs her vote with her private key, encrypts both her vote and her signature with Dave's public key, and submits the result to the smart contract.
 
 Each voter may change her keypair at any time. To do this, she creates and signs a key-change command, encrypts it, and sends it to the smart contract. This makes it impossible for a briber to ever be sure that their bribe has any effect on the bribee's vote.
 
@@ -52,15 +52,15 @@ Refer to the [Glossary](#Glossary) for defintions of terms.
 
 4. Each user votes. To do this, they:
 
-    -  Sign their command using the key which they had signed up with and then use a random (ephemeral) key as well as the coordinator's public key to generate a shared key (via ECDH) encrypt it.
+    -  Sign their command using the key which they had signed up with and then use a random (ephemeral) key as well as the coordinator's public key to generate a shared key (via ECDH). Using this shared key they encrypt both the signature and the command.
 
-        -  If they are bribed, the user should sign it using an old public key which has already been replaced with a new one.
+        -  If they are bribed, the user can cheat the briber by signing the command using an old public key which has already been replaced with a new one.
 
-        -  Otherwise, the user should use the most current public key they have registered.
+        -  Otherwise, an honest user should use the most current public key they have registered.
 
-    -  Submit the message, as well as the epheremal public key in the clear to the contract using its `publishMessage()` function, which hashes the command and inserts it into the message tree.
+    -  Submit the encrypted message M, as well as the unencrypted epheremal public key K to the contract using its `publishMessage()` function, which hashes M and K and inserts the hash into the message tree.
 
-5. The coordinator processes all the commands after the voting period ends.
+5. The coordinator decrypts the messages and processes all the commands after the voting period ends.
 
 6. For each batch of commands, they perform the following steps:
     
@@ -80,7 +80,7 @@ Refer to the [Glossary](#Glossary) for defintions of terms.
 
 *Figure 1: The relationship between each users, the coordinator, the contract functions, as well as the state tree and the message tree.*
 
-7. When the voting period ends, the coordinator tallies all the votes. It then generates zk-SNARK proof that the computed result is valid without revealing the plaintext of the votes. While this specification specifically describes a quadratic voting use case, the circuit used to generate this proof should differ based on the particular nature of the voting system.
+7. When the voting period ends, the coordinator tallies all the votes. It then generates a zk-SNARK proof that the computed result is valid without revealing the plaintext of the votes. While this specification specifically describes a quadratic voting use case, the circuit used to generate this proof should differ based on the particular nature of the voting system.
 
 ## Availability and visibility of messages
 
@@ -106,13 +106,13 @@ We define an EdDSA private key as a random value (initially 256 bits large) modu
 
 #### Command signing and encryption
 
-The following steps are needed to sign and encrypt a message:
+The following steps are needed to sign and encrypt a command:
 
-1. Hash the command
-2. Sign the hash with the user's EdDSA private key
+1. Hash the command.
+2. Sign the hash with the user's EdDSA private key.
 3. Generate an ECDH shared key using a random private key (the ephemeral key) and the coordinator's public key.
-4. Encrypt both the signature and the data included in the command with the shared key
-5. Note that when we call `publishMessage`, we pass in the encrypted data, the signing public key, and random public key.
+4. Encrypt both the signature and the data included in the command with the shared key.
+5. Note that when we call `publishMessage`, we pass in the encrypted data, the signing public key, and a random public key.
 
 ## Glossary
 
@@ -123,7 +123,7 @@ Some terms in this specification are similar to one another but should not be us
 | Command | Unencrypted data whose fields include the user's public key, vote etc. |
 | Message | An encrypted command and signature (`Encrypt([Command, Signature], Key)`. |
 | State | The mapping between each user's public key and the full set of information about which options they voted for and the weight per vote. Note that this does not refer to the Ethereum state as defined in the Yellow Paper. |
-| Vote | The options which the user voted for |
-| Vote option | One out of many possible choices which a user may vote for |
+| Vote | The options which the user voted for. |
+| Vote option | One out of many possible choices which a user may vote for. |
 | Vote option tree | The unique tree of weights that each user assigns to vote options. This represents the full set of information about which options a user had voted for and how many voice credits they had spent per vote.  |
 | Voice credit | One unit which denotes the strength of a user's vote for a particular option. In a quadratic voting use case, users start out with a limited number of voice credits and spend them on votes. |
