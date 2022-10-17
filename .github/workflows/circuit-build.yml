@@ -26,6 +26,9 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
+      - name: Update npm to latest version
+        run: npm install --global npm@latest
+
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -38,15 +41,15 @@ jobs:
 
       - name: Build
         run: |
-          git config --global url."https://github.com/".insteadOf git://github.com/
           npm install
-          npx lerna bootstrap --no-ci
+          npm run bootstrap
           npm run build
 
-      - name: Download circom Binary v2.0.5
+      # Pinning to v2.0.7 dueto circom-helper fails when circom prints warnings; the new feature of v2.0.8
+      - name: Download circom Binary v2.0.7
         run: |
           mkdir -p /home/runner/work/maci/.local/bin
-          wget -O /home/runner/work/maci/.local/bin/circom https://maci-devops.s3.ap-northeast-2.amazonaws.com/circom-linux-amd64-v2.0.5
+          wget -qO /home/runner/work/maci/.local/bin/circom https://github.com/iden3/circom/releases/download/v2.0.7/circom-linux-amd64
           chmod +x /home/runner/work/maci/.local/bin/circom
 
       - name: Run circom-helper

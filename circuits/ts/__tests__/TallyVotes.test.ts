@@ -184,8 +184,16 @@ describe('TallyVotes circuit', () => {
             ).toString()
             */
 
+            
+            function generateRandomIndex() {
+                return Math.floor(Math.random() * (generatedInputs.currentResults.length - 1))
+            }
             // Start the tally from non-zero value
-            const randIdx = Math.floor(Math.random() * (generatedInputs.currentResults.length - 1))
+            let randIdx = generateRandomIndex()
+            while (randIdx === 0) {
+                randIdx = generateRandomIndex()
+            }
+            
             generatedInputs.currentResults[randIdx] = '1'
             const witness = await genWitness(circuit, generatedInputs)
             expect(witness.length > 0).toBeTruthy()

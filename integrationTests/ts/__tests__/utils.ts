@@ -135,22 +135,57 @@ interface Tally {
     }
 }
 
+interface Subsidy {
+    provider: string,
+    maci: string,
+    pollId: number,
+    newSubsidyCommitment: string,
+    results: {
+        subsidy: string[],
+        salt: string
+    }
+}
+
 const expectTally = (
     maxMessages: number,
     expectedTally: number[],
-    expectedSpentVoiceCredits: number[],
+    expectedPerVOSpentVoiceCredits: number[],
     expectedTotalSpentVoiceCredits: number,
     tallyFile: Tally
 ) => {
     let genTally: string[] = Array(maxMessages).fill('0')
+    let genPerVOSpentVoiceCredits: string[] = Array(maxMessages).fill('0')
     const calculateTally =
-    expectedTally.map((voteOption) => {
-        if (voteOption != 0) genTally[voteOption - 1] = (parseInt(genTally[voteOption - 1]) + voteOption).toString()
+    expectedTally.map((voteWeight, voteOption) => {
+        if (voteWeight != 0) {
+            genTally[voteOption] = voteWeight.toString()
+        }
+    })
+    expectedPerVOSpentVoiceCredits.map((spentCredit, index) => {
+        if (spentCredit != 0) {
+            genPerVOSpentVoiceCredits[index] = spentCredit.toString()
+        }
     })
 
     expect(tallyFile.results.tally).toEqual(genTally)
+    expect(tallyFile.perVOSpentVoiceCredits.tally).toEqual(genPerVOSpentVoiceCredits)
     expect(tallyFile.totalSpentVoiceCredits.spent).toEqual(expectedTotalSpentVoiceCredits.toString())
 }
 
+const expectSubsidy = (
+    maxMessages: number,
+    expectedSubsidy: number[],
+    SubsidyFile: Subsidy
+) => {
+    let genSubsidy: string[] = Array(maxMessages).fill('0')
+    const calculateTally =
+    expectedSubsidy.map((value, index) => {
+        if (value != 0) {
+            genSubsidy[index] = value.toString()
+        }
+    })
 
-export { exec, delay, loadYaml, genTestAccounts, genTestUserCommands, expectTally }
+    expect(SubsidyFile.results.subsidy).toEqual(genSubsidy)
+}
+
+export { exec, delay, loadYaml, genTestAccounts, genTestUserCommands, expectTally, expectSubsidy }

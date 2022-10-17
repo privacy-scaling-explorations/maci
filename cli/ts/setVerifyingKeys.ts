@@ -122,10 +122,6 @@ const setVerifyingKeys = async (args: any) => {
 
     const pmZkeyFile = path.resolve(args.process_messages_zkey)
     const tvZkeyFile = path.resolve(args.tally_votes_zkey)
-
-    const processVk: VerifyingKey = VerifyingKey.fromObj(extractVk(pmZkeyFile))
-    const tallyVk: VerifyingKey = VerifyingKey.fromObj(extractVk(tvZkeyFile))
-
     if (!fs.existsSync(pmZkeyFile)) {
         console.error(`Error: ${pmZkeyFile} does not exist.`)
         return 1
@@ -135,15 +131,20 @@ const setVerifyingKeys = async (args: any) => {
         return 1
     }
 
+    const processVk: VerifyingKey = VerifyingKey.fromObj(extractVk(pmZkeyFile))
+    const tallyVk: VerifyingKey = VerifyingKey.fromObj(extractVk(tvZkeyFile))
+
+
     let ssZkeyFile: string
     let subsidyVk:VerifyingKey
     if (args.subsidy_zkey) {
         ssZkeyFile = path.resolve(args.subsidy_zkey)
-        subsidyVk = VerifyingKey.fromObj(extractVk(ssZkeyFile))
         if (!fs.existsSync(ssZkeyFile)) {
             console.error(`Error: ${ssZkeyFile} does not exist.`)
             return 1
         }
+
+        subsidyVk = VerifyingKey.fromObj(extractVk(ssZkeyFile))
     }
 
     // Simple validation

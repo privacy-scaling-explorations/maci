@@ -5,8 +5,8 @@
             "description": "Full tree, 4 batches, no bribers",
             "numVotesPerUser": 1,
             "numUsers": 15,
-            "expectedTally": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
-            "expectedSpentVoiceCredits": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+            "expectedTally": [15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "expectedSpentVoiceCredits": [15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             "expectedTotalSpentVoiceCredits": 15
         },
         {
@@ -14,8 +14,8 @@
             "description": "Full tree, 4 full batches,  no bribers",
             "numVotesPerUser": 1,
             "numUsers": 16,
-            "expectedTally": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-            "expectedSpentVoiceCredits": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+            "expectedTally": [16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "expectedSpentVoiceCredits": [16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             "expectedTotalSpentVoiceCredits": 16
         },
         {
@@ -23,8 +23,8 @@
             "description": "Quarter tree, 1 batch, no bribers",
             "numUsers": 4,
             "numVotesPerUser": 1,
-            "expectedTally": [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "expectedSpentVoiceCredits": [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "expectedTally": [4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "expectedSpentVoiceCredits": [4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             "expectedTotalSpentVoiceCredits": 4
         },
         {
@@ -32,9 +32,9 @@
             "description": "2 batches, 1 briber",
             "numUsers": 3,
             "numVotesPerUser": 2,
-            "bribers": { "0": { "voteOptionIndices": [0,1] }, "1": { "voteOptionIndices": [0,1]}},
-            "expectedTally": [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "expectedSpentVoiceCredits": [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "bribers": { "0": { "voteOptionIndices": [1,0] }, "1": { "voteOptionIndices": [1,0]}},
+            "expectedTally": [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "expectedSpentVoiceCredits": [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             "expectedTotalSpentVoiceCredits": 3
         },
         {
@@ -62,9 +62,36 @@
                     "1": { "voteOptionIndex": 1, "voteWeight": 5, "valid": true }
                 }
             },
-            "expectedTally": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "expectedSpentVoiceCredits": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "expectedTotalSpentVoiceCredits": 2
+            "expectedTally": [0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "expectedSpentVoiceCredits": [0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "expectedTotalSpentVoiceCredits": 8
+        },
+        {
+            "name": "Subsidy test",
+            "description": "has subsidy result",
+            "numUsers": 4,
+            "numVotesPerUser": 1,
+            "votes": {
+                "0": {
+                    "0": { "voteOptionIndex": 0, "voteWeight": 1, "valid": true }
+                },
+                "1": {
+                    "0": { "voteOptionIndex": 0, "voteWeight": 1, "valid": true }
+                },
+                "2": {
+                    "0": { "voteOptionIndex": 0, "voteWeight": 1, "valid": true }
+                },
+                "3": {
+                    "0": { "voteOptionIndex": 0, "voteWeight": 1, "valid": true }
+                }
+            },
+            "expectedTally": [4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "expectedSpentVoiceCredits": [4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "expectedTotalSpentVoiceCredits": 4,
+            "subsidy": {
+                "enabled": true,
+                "expectedSubsidy": [117636, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            }
         }
     ]
 }
