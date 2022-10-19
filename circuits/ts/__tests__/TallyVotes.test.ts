@@ -21,6 +21,7 @@ import {
     G1Point,
     G2Point,
     IncrementalQuinTree,
+    NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
 
 const voiceCreditBalance = BigInt(100)
@@ -105,7 +106,7 @@ describe('TallyVotes circuit', () => {
 
             const messageTree = new IncrementalQuinTree(
                 treeDepths.messageTreeDepth,
-                poll.messageAq.zeroValue,
+                NOTHING_UP_MY_SLEEVE,
                 5,
                 hash5,
             )
@@ -130,6 +131,7 @@ describe('TallyVotes circuit', () => {
             const message = command.encrypt(signature, sharedKey)
             messages.push(message)
             commands.push(command)
+            messageTree.insert(NOTHING_UP_MY_SLEEVE);
             messageTree.insert(message.hash(ecdhKeypair.pubKey))
 
             poll.publishMessage(message, ecdhKeypair.pubKey)
