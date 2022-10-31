@@ -25,6 +25,7 @@ import {
     G2Point,
     IncrementalQuinTree,
     stringifyBigInts,
+    NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
 
 const voiceCreditBalance = BigInt(100)
@@ -109,7 +110,7 @@ describe('ProcessMessage circuit', () => {
 
             messageTree = new IncrementalQuinTree(
                 treeDepths.messageTreeDepth,
-                poll.messageAq.zeroValue,
+                NOTHING_UP_MY_SLEEVE,
                 5,
                 hash5,
             )
@@ -134,6 +135,7 @@ describe('ProcessMessage circuit', () => {
             const message = command.encrypt(signature, sharedKey)
             messages.push(message)
             commands.push(command)
+            messageTree.insert(NOTHING_UP_MY_SLEEVE);
             messageTree.insert(message.hash(ecdhKeypair.pubKey))
 
             poll.publishMessage(message, ecdhKeypair.pubKey)
@@ -281,7 +283,7 @@ describe('ProcessMessage circuit', () => {
 
             messageTree = new IncrementalQuinTree(
                 treeDepths.messageTreeDepth,
-                poll.messageAq.zeroValue,
+                NOTHING_UP_MY_SLEEVE,
                 5,
                 hash5,
             )
@@ -305,6 +307,7 @@ describe('ProcessMessage circuit', () => {
             const message = command.encrypt(signature, sharedKey)
             messages.push(message)
             commands.push(command)
+            messageTree.insert(NOTHING_UP_MY_SLEEVE);
             messageTree.insert(message.hash(ecdhKeypair.pubKey))
             poll.publishMessage(message, ecdhKeypair.pubKey)
 
@@ -397,7 +400,7 @@ describe('ProcessMessage circuit', () => {
 
             messageTree = new IncrementalQuinTree(
                 treeDepths.messageTreeDepth,
-                poll.messageAq.zeroValue,
+                NOTHING_UP_MY_SLEEVE,
                 5,
                 hash5,
             )
@@ -423,6 +426,7 @@ describe('ProcessMessage circuit', () => {
             const message = command.encrypt(signature, sharedKey)
             messages.push(message)
             commands.push(command)
+            messageTree.insert(NOTHING_UP_MY_SLEEVE);
             messageTree.insert(message.hash(ecdhKeypair.pubKey))
             poll.publishMessage(message, ecdhKeypair.pubKey)
 
