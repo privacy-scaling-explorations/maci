@@ -104,13 +104,6 @@ describe('TallyVotes circuit', () => {
 
             poll = maciState.polls[pollId]
 
-            const messageTree = new IncrementalQuinTree(
-                treeDepths.messageTreeDepth,
-                NOTHING_UP_MY_SLEEVE,
-                5,
-                hash5,
-            )
-
             // First command (valid)
             const command = new PCommand(
                 stateIndex,
@@ -131,15 +124,13 @@ describe('TallyVotes circuit', () => {
             const message = command.encrypt(signature, sharedKey)
             messages.push(message)
             commands.push(command)
-            messageTree.insert(NOTHING_UP_MY_SLEEVE);
-            messageTree.insert(message.hash(ecdhKeypair.pubKey))
 
             poll.publishMessage(message, ecdhKeypair.pubKey)
 
             poll.messageAq.mergeSubRoots(0)
             poll.messageAq.merge(treeDepths.messageTreeDepth)
 
-            expect(messageTree.root.toString())
+            expect(poll.messageTree.root.toString())
                 .toEqual(
                     poll.messageAq.getRoot(
                         treeDepths.messageTreeDepth,

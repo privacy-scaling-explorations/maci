@@ -81,7 +81,6 @@ describe('ProcessMessage circuit', () => {
         let poll
         const messages: Message[] = []
         const commands: PCommand[] = []
-        let messageTree
 
         beforeAll(async () => {
             // Sign up and publish
@@ -108,13 +107,6 @@ describe('ProcessMessage circuit', () => {
 
             poll = maciState.polls[pollId]
 
-            messageTree = new IncrementalQuinTree(
-                treeDepths.messageTreeDepth,
-                NOTHING_UP_MY_SLEEVE,
-                5,
-                hash5,
-            )
-
             // First command (valid)
             const command = new PCommand(
                 stateIndex, //BigInt(1),
@@ -135,8 +127,6 @@ describe('ProcessMessage circuit', () => {
             const message = command.encrypt(signature, sharedKey)
             messages.push(message)
             commands.push(command)
-            messageTree.insert(NOTHING_UP_MY_SLEEVE);
-            messageTree.insert(message.hash(ecdhKeypair.pubKey))
 
             poll.publishMessage(message, ecdhKeypair.pubKey)
 
@@ -159,13 +149,12 @@ describe('ProcessMessage circuit', () => {
             const message2 = command2.encrypt(signature2, sharedKey2)
             messages.push(message2)
             commands.push(command2)
-            messageTree.insert(message2.hash(ecdhKeypair2.pubKey))
             poll.publishMessage(message2, ecdhKeypair2.pubKey)
 
             poll.messageAq.mergeSubRoots(0)
             poll.messageAq.merge(treeDepths.messageTreeDepth)
 
-            expect(messageTree.root.toString())
+            expect(poll.messageTree.root.toString())
                 .toEqual(
                     poll.messageAq.getRoot(
                         treeDepths.messageTreeDepth,
@@ -186,6 +175,8 @@ describe('ProcessMessage circuit', () => {
                 poll.STATE_TREE_ARITY,
                 hash5,
             )
+
+            ballotTree.insert(emptyBallot.hash())
 
             for (let i = 0; i < poll.stateLeaves.length; i ++) {
                 ballotTree.insert(emptyBallotHash)
@@ -247,7 +238,6 @@ describe('ProcessMessage circuit', () => {
         let poll
         const messages: Message[] = []
         const commands: PCommand[] = []
-        let messageTree
 
         beforeAll(async () => {
             // Sign up and publish
@@ -281,13 +271,6 @@ describe('ProcessMessage circuit', () => {
 
             poll = maciState.polls[pollId]
 
-            messageTree = new IncrementalQuinTree(
-                treeDepths.messageTreeDepth,
-                NOTHING_UP_MY_SLEEVE,
-                5,
-                hash5,
-            )
-
             const command = new PCommand(
                 BigInt(1),
                 userKeypair.pubKey,
@@ -307,15 +290,14 @@ describe('ProcessMessage circuit', () => {
             const message = command.encrypt(signature, sharedKey)
             messages.push(message)
             commands.push(command)
-            messageTree.insert(NOTHING_UP_MY_SLEEVE);
-            messageTree.insert(message.hash(ecdhKeypair.pubKey))
+        
             poll.publishMessage(message, ecdhKeypair.pubKey)
 
             // Merge
             poll.messageAq.mergeSubRoots(0)
             poll.messageAq.merge(treeDepths.messageTreeDepth)
 
-            expect(messageTree.root.toString())
+            expect(poll.messageTree.root.toString())
                 .toEqual(
                     poll.messageAq.getRoot(
                         treeDepths.messageTreeDepth,
@@ -336,6 +318,8 @@ describe('ProcessMessage circuit', () => {
                 poll.STATE_TREE_ARITY,
                 hash5,
             )
+
+            ballotTree.insert(emptyBallot.hash())
 
             for (let i = 0; i < poll.stateLeaves.length; i ++) {
                 ballotTree.insert(emptyBallotHash)
@@ -368,7 +352,6 @@ describe('ProcessMessage circuit', () => {
         let poll
         const messages: Message[] = []
         const commands: PCommand[] = []
-        let messageTree
 
         beforeAll(async () => {
             // Sign up and publish
@@ -398,13 +381,6 @@ describe('ProcessMessage circuit', () => {
 
             poll = maciState.polls[pollId]
 
-            messageTree = new IncrementalQuinTree(
-                treeDepths.messageTreeDepth,
-                NOTHING_UP_MY_SLEEVE,
-                5,
-                hash5,
-            )
-
             // Vote for option 0
             const command = new PCommand(
                 stateIndex, //BigInt(1),
@@ -426,8 +402,7 @@ describe('ProcessMessage circuit', () => {
             const message = command.encrypt(signature, sharedKey)
             messages.push(message)
             commands.push(command)
-            messageTree.insert(NOTHING_UP_MY_SLEEVE);
-            messageTree.insert(message.hash(ecdhKeypair.pubKey))
+
             poll.publishMessage(message, ecdhKeypair.pubKey)
 
             // Vote for option 1
@@ -450,7 +425,6 @@ describe('ProcessMessage circuit', () => {
             const message2 = command2.encrypt(signature2, sharedKey2)
             messages.push(message2)
             commands.push(command2)
-            messageTree.insert(message2.hash(ecdhKeypair2.pubKey))
             poll.publishMessage(message2, ecdhKeypair2.pubKey)
 
             // Change key
@@ -474,14 +448,13 @@ describe('ProcessMessage circuit', () => {
             const message3 = command3.encrypt(signature3, sharedKey3)
             messages.push(message3)
             commands.push(command3)
-            messageTree.insert(message3.hash(ecdhKeypair3.pubKey))
             poll.publishMessage(message3, ecdhKeypair3.pubKey)
 
             // Merge
             poll.messageAq.mergeSubRoots(0)
             poll.messageAq.merge(treeDepths.messageTreeDepth)
 
-            expect(messageTree.root.toString())
+            expect(poll.messageTree.root.toString())
                 .toEqual(
                     poll.messageAq.getRoot(
                         treeDepths.messageTreeDepth,
@@ -502,6 +475,8 @@ describe('ProcessMessage circuit', () => {
                 poll.STATE_TREE_ARITY,
                 hash5,
             )
+
+            ballotTree.insert(NOTHING_UP_MY_SLEEVE)
 
             for (let i = 0; i < poll.stateLeaves.length; i ++) {
                 ballotTree.insert(emptyBallotHash)
@@ -580,6 +555,8 @@ describe('ProcessMessage circuit', () => {
 
             for (let i = 0; i < NUM_BATCHES; i ++) {
                 const generatedInputs = poll.processMessages()
+                console.log(generatedInputs)
+                console.log(circuit)
 
                 const witness = await genWitness(circuit, generatedInputs)
                 expect(witness.length > 0).toBeTruthy()
