@@ -17,11 +17,8 @@ import {
 } from 'maci-domainobjs'
 
 import {
-    hash5,
     G1Point,
     G2Point,
-    IncrementalQuinTree,
-    NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
 
 const voiceCreditBalance = BigInt(100)
@@ -97,9 +94,7 @@ describe('TallyVotes circuit', () => {
                 maxValues,
                 treeDepths,
                 messageBatchSize,
-                coordinatorKeypair,
-                testProcessVk,
-                testTallyVk,
+                coordinatorKeypair
             )
 
             poll = maciState.polls[pollId]
@@ -236,8 +231,6 @@ describe('TallyVotes circuit', () => {
                 treeDepths,
                 messageBatchSize,
                 coordinatorKeypair,
-                testProcessVk,
-                testTallyVk,
             )
 
             const poll = maciState.polls[pollId]

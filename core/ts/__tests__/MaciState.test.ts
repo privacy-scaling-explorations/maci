@@ -151,11 +151,13 @@ describe('MaciState', () => {
                 coordinatorKeypair.pubKey,
             )
             const message = command.encrypt(signature, sharedKey)
-            maciState.polls[pollId].publishMessage(message, ecdhKeypair.pubKey)
 
+            maciState.polls[pollId].publishMessage(message, ecdhKeypair.pubKey)
             msgTree.insert(message.hash(ecdhKeypair.pubKey))
+
             maciState.polls[pollId].messageAq.mergeSubRoots(0)
             maciState.polls[pollId].messageAq.merge(treeDepths.messageTreeDepth)
+            
             expect(maciState.polls[pollId].messageAq.getRoot(treeDepths.messageTreeDepth).toString())
                 .toEqual(msgTree.root.toString())
         })
