@@ -17,11 +17,8 @@ import {
 } from 'maci-domainobjs'
 
 import {
-    hash5,
     G1Point,
     G2Point,
-    IncrementalQuinTree,
-    NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
 
 const voiceCreditBalance = BigInt(100)
@@ -97,19 +94,10 @@ describe('TallyVotes circuit', () => {
                 maxValues,
                 treeDepths,
                 messageBatchSize,
-                coordinatorKeypair,
-                testProcessVk,
-                testTallyVk,
+                coordinatorKeypair
             )
 
             poll = maciState.polls[pollId]
-
-            const messageTree = new IncrementalQuinTree(
-                treeDepths.messageTreeDepth,
-                NOTHING_UP_MY_SLEEVE,
-                5,
-                hash5,
-            )
 
             // First command (valid)
             const command = new PCommand(
@@ -131,14 +119,16 @@ describe('TallyVotes circuit', () => {
             const message = command.encrypt(signature, sharedKey)
             messages.push(message)
             commands.push(command)
+
             messageTree.insert(message.hash(ecdhKeypair.pubKey))
+
 
             poll.publishMessage(message, ecdhKeypair.pubKey)
 
             poll.messageAq.mergeSubRoots(0)
             poll.messageAq.merge(treeDepths.messageTreeDepth)
 
-            expect(messageTree.root.toString())
+            expect(poll.messageTree.root.toString())
                 .toEqual(
                     poll.messageAq.getRoot(
                         treeDepths.messageTreeDepth,
@@ -244,8 +234,6 @@ describe('TallyVotes circuit', () => {
                 treeDepths,
                 messageBatchSize,
                 coordinatorKeypair,
-                testProcessVk,
-                testTallyVk,
             )
 
             const poll = maciState.polls[pollId]

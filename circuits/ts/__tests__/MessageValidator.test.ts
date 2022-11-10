@@ -6,7 +6,6 @@ import {
 
 import { 
     stringifyBigInts,
-    encrypt,
     genRandomSalt,
 } from 'maci-crypto'
 

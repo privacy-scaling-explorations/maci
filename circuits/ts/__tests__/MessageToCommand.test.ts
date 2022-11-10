@@ -29,7 +29,7 @@ describe('MessageToCommand circuit', () => {
         const random50bitBigInt = (): BigInt => {
             return (
                 (BigInt(1) << BigInt(50)) - BigInt(1)
-            ) & BigInt(genRandomSalt())
+            ) & BigInt(genRandomSalt().toString())
         }
 
         const command: PCommand = new PCommand(
