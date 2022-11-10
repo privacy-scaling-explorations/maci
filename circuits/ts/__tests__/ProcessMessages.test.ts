@@ -106,6 +106,9 @@ describe('ProcessMessage circuit', () => {
             messages.push(message)
             commands.push(command)
 
+            messageTree.insert(message.hash(ecdhKeypair.pubKey))
+
+
             poll.publishMessage(message, ecdhKeypair.pubKey)
 
             // Second command (valid)
@@ -268,7 +271,9 @@ describe('ProcessMessage circuit', () => {
             const message = command.encrypt(signature, sharedKey)
             messages.push(message)
             commands.push(command)
-        
+
+            messageTree.insert(message.hash(ecdhKeypair.pubKey))
+
             poll.publishMessage(message, ecdhKeypair.pubKey)
 
             // Merge
@@ -380,6 +385,8 @@ describe('ProcessMessage circuit', () => {
             const message = command.encrypt(signature, sharedKey)
             messages.push(message)
             commands.push(command)
+
+            messageTree.insert(message.hash(ecdhKeypair.pubKey))
 
             poll.publishMessage(message, ecdhKeypair.pubKey)
 

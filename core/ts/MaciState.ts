@@ -139,9 +139,6 @@ class Poll {
             NOTHING_UP_MY_SLEEVE,
         )
 
-        this.messageAq.enqueue(NOTHING_UP_MY_SLEEVE);
-        this.messageTree.insert(NOTHING_UP_MY_SLEEVE);
-
         for (let i = 0; i < this.maxValues.maxVoteOptions; i ++) {
             this.results.push(BigInt(0))
             this.perVOSpentVoiceCredits.push(BigInt(0))
