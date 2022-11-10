@@ -18,7 +18,7 @@ import {
     TreeDepths,
 } from 'maci-core'
 
-import { G1Point, G2Point } from 'maci-crypto'
+import { G1Point, G2Point, NOTHING_UP_MY_SLEEVE } from 'maci-crypto'
 
 const STATE_TREE_DEPTH = 10
 const STATE_TREE_ARITY = 5
@@ -291,6 +291,10 @@ describe('MACI', () => {
                 coordinator,
             )
             expect(p.toString()).toEqual(pollId.toString())
+            
+            // insert/enqueue NOTHING_UP_MY_SLEEVE
+            maciState.polls[pollId].messageTree.insert(NOTHING_UP_MY_SLEEVE)
+            maciState.polls[pollId].messageAq.enqueue(NOTHING_UP_MY_SLEEVE)
         })
 
         it('should set correct storage values', async () => {

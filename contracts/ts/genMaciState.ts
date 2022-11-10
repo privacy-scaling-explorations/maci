@@ -15,6 +15,7 @@ import {
 
 import * as ethers from 'ethers'
 import * as assert from 'assert'
+import { NOTHING_UP_MY_SLEEVE } from 'maci-crypto'
 
 interface Action {
     type: string;
@@ -399,7 +400,7 @@ const genMaciStateFromContract = async (
             //maciState.stateAq.merge()
         } else if (action['type'] === 'DeployPoll') {
             if (action.data.pollId === pollId) {
-                maciState.deployPoll(
+                const pollId = maciState.deployPoll(
                     duration,
                     BigInt(deployTime + duration),
                     maxValues,
@@ -407,6 +408,9 @@ const genMaciStateFromContract = async (
                     batchSizes.messageBatchSize,
                     coordinatorKeypair,
                 )
+                // TODO look to add this from events
+                maciState.polls[pollId].messageTree.insert(NOTHING_UP_MY_SLEEVE)
+                maciState.polls[pollId].messageAq.enqueue(NOTHING_UP_MY_SLEEVE)
             } else {
                 maciState.deployNullPoll()
             }

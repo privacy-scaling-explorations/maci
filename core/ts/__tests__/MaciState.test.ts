@@ -92,7 +92,6 @@ describe('MaciState', () => {
                 5,
                 hash5,
             )
-            msgTree.insert(NOTHING_UP_MY_SLEEVE)
         })
 
         // The end result should be that option 0 gets 3 votes
@@ -269,8 +268,7 @@ describe('MaciState', () => {
                 maciState.polls[pollId].publishMessage(message, ecdhKeypair.pubKey)
             }
 
-            // needs to account the initial NOTHING_UP_MY_SLEEVE leaf
-            expect(maciState.polls[pollId].messageAq.numLeaves).toEqual(messageBatchSize)
+            expect(maciState.polls[pollId].messageAq.numLeaves).toEqual(messageBatchSize - 1)
 
             // 24 invalid votes
             for (let i = 0; i < messageBatchSize - 1; i ++) {

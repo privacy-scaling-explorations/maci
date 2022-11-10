@@ -120,9 +120,6 @@ describe('TallyVotes circuit', () => {
             messages.push(message)
             commands.push(command)
 
-            messageTree.insert(message.hash(ecdhKeypair.pubKey))
-
-
             poll.publishMessage(message, ecdhKeypair.pubKey)
 
             poll.messageAq.mergeSubRoots(0)

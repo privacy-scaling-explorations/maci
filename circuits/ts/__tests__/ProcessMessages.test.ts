@@ -106,9 +106,6 @@ describe('ProcessMessage circuit', () => {
             messages.push(message)
             commands.push(command)
 
-            messageTree.insert(message.hash(ecdhKeypair.pubKey))
-
-
             poll.publishMessage(message, ecdhKeypair.pubKey)
 
             // Second command (valid)
@@ -166,9 +163,7 @@ describe('ProcessMessage circuit', () => {
             const currentBallotRoot = ballotTree.root
 
             const generatedInputs = poll.processMessages(pollId)
-            console.log('currentStateLeavesPathElements', generatedInputs['currentStateLeavesPathElements'].length)
-            console.log('currentBallotsPathElements', generatedInputs['currentBallotsPathElements'].length)
-             
+                        
             // Calculate the witness
             const witness = await genWitness(circuit, generatedInputs)
             expect(witness.length > 0).toBeTruthy()
@@ -272,8 +267,6 @@ describe('ProcessMessage circuit', () => {
             messages.push(message)
             commands.push(command)
 
-            messageTree.insert(message.hash(ecdhKeypair.pubKey))
-
             poll.publishMessage(message, ecdhKeypair.pubKey)
 
             // Merge
@@ -358,8 +351,6 @@ describe('ProcessMessage circuit', () => {
                 treeDepths,
                 messageBatchSize,
                 coordinatorKeypair,
-                // testProcessVk,
-                // testTallyVk,
             )
 
             poll = maciState.polls[pollId]
@@ -385,8 +376,6 @@ describe('ProcessMessage circuit', () => {
             const message = command.encrypt(signature, sharedKey)
             messages.push(message)
             commands.push(command)
-
-            messageTree.insert(message.hash(ecdhKeypair.pubKey))
 
             poll.publishMessage(message, ecdhKeypair.pubKey)
 
@@ -506,8 +495,6 @@ describe('ProcessMessage circuit', () => {
                 treeDepths,
                 messageBatchSize,
                 coordinatorKeypair,
-                // testProcessVk,
-                // testTallyVk,
             )
 
             const poll = maciState.polls[pollId]
