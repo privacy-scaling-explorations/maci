@@ -239,7 +239,7 @@ class Poll {
             let {command, signature} = PCommand.decrypt(_message, sharedKey)
             this.commands.push(command)
         }  catch(e) {
-           console.log(`error cannot decryption: ${e.message}`)
+           //console.log(`error cannot decryption: ${e.message}`)
            let keyPair = new Keypair()
            let command = new PCommand(BigInt(0), keyPair.pubKey,BigInt(0),BigInt(0),BigInt(0),BigInt(0),BigInt(0))
            this.commands.push(command)
