@@ -2,7 +2,6 @@ import {
     Keypair,
     PubKey,
     Message,
-    VerifyingKey,
 } from 'maci-domainobjs'
 
 import {

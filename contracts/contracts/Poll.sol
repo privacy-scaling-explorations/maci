@@ -291,9 +291,9 @@ contract Poll is
         return secondsPassed > duration;
     }
 
-    // should be call immediately after Poll creation and messageAq ownership transferred
+    // should be called immediately after Poll creation and messageAq ownership transferred
     function init() public {
-        require(isInit == false, "Poll contract already init");
+        require(!isInit, "Poll contract already init");
         isInit = true;
         numMessages++;
         // init messageAq here by inserting placeholderLeaf
