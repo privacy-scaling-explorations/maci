@@ -34,25 +34,64 @@ contract PollDeploymentParams {
     }
 }
 
+contract Utilities is SnarkConstants, Hasher, IPubKey, IMessage {
+    function padAndHashMessage(
+        uint256[2] memory dataToPad, // we only need two for now
+        uint256 msgType
+    ) public pure returns (Message memory, PubKey memory, uint256) {
+        uint256[10] memory dat;
+        dat[0] = dataToPad[0];
+        dat[1] = dataToPad[1];
+        for(uint i = 2; i< 10; i++) {
+            dat[i] = 0;
+        }
+        PubKey memory _padKey = PubKey(PAD_PUBKEY_X, PAD_PUBKEY_Y);
+        Message memory _message = Message({msgType: msgType, data: dat});
+        return (_message, _padKey, hashMessageAndEncPubKey(_message, _padKey));
+    }
+
+    function hashMessageAndEncPubKey(
+        Message memory _message,
+        PubKey memory _encPubKey
+    ) public pure returns (uint256) {
+        require(_message.data.length == 10, "invalid message length");
+        uint256[5] memory n;
+        n[0] = _message.data[0];
+        n[1] = _message.data[1];
+        n[2] = _message.data[2];
+        n[3] = _message.data[3];
+        n[4] = _message.data[4];
+
+        uint256[5] memory m;
+        m[0] = _message.data[5];
+        m[1] = _message.data[6];
+        m[2] = _message.data[7];
+        m[3] = _message.data[8];
+        m[4] = _message.data[9];
+
+        return
+            hash5(
+                [
+                    _message.msgType,
+                    hash5(n),
+                    hash5(m),
+                    _encPubKey.x,
+                    _encPubKey.y
+                ]
+            );
+    }
+}
+
 /*
  * A factory contract which deploys Poll contracts. It allows the MACI contract
  * size to stay within the limit set by EIP-170.
  */
 contract PollFactory is
     Params,
-    IPubKey,
-    IMessage,
+    Utilities,
     Ownable,
-    Hasher,
     PollDeploymentParams
 {
-
-    // The Keccack256 hash of 'Maci'
-    uint256 internal constant NOTHING_UP_MY_SLEEVE =
-        uint256(
-            8370432830353022751713833565135785980866757267633941821328460903436894336785
-        );
-
     MessageAqFactory public messageAqFactory;
 
     function setMessageAqFactory(MessageAqFactory _messageAqFactory)
@@ -100,7 +139,6 @@ contract PollFactory is
         AccQueue messageAq = messageAqFactory.deploy(
             _treeDepths.messageTreeSubDepth
         );
-        messageAq.enqueue(NOTHING_UP_MY_SLEEVE);
 
         ExtContracts memory extContracts;
 
@@ -123,6 +161,9 @@ contract PollFactory is
         // run enqueue/merge
         messageAq.transferOwnership(address(poll));
 
+        // init messageAq 
+        poll.init();
+
         // TODO: should this be _maci.owner() instead?
         poll.transferOwnership(_pollOwner);
 
@@ -136,9 +177,7 @@ contract PollFactory is
  */
 contract Poll is
     Params,
-    Hasher,
-    IMessage,
-    IPubKey,
+    Utilities,
     SnarkCommon,
     Ownable,
     PollDeploymentParams,
@@ -146,6 +185,7 @@ contract Poll is
 {
     using SafeERC20 for ERC20;
 
+    bool internal isInit = false;
     // The coordinator's public key
     PubKey public coordinatorPubKey;
 
@@ -251,6 +291,20 @@ contract Poll is
         return secondsPassed > duration;
     }
 
+    // should be call immediately after Poll creation and messageAq ownership transferred
+    function init() public {
+        require(isInit == false, "Poll contract already init");
+        isInit = true;
+        numMessages++;
+        // init messageAq here by inserting placeholderLeaf
+        uint256[2] memory dat;
+        dat[0] = NOTHING_UP_MY_SLEEVE;
+        dat[1] = 0;
+        (Message memory _message, PubKey memory _padKey, uint256 placeholderLeaf) = padAndHashMessage(dat, 1); 
+        extContracts.messageAq.enqueue(placeholderLeaf);
+        emit PublishMessage(_message, _padKey); 
+    }
+
     function topup(uint256 stateIndex, uint256 amount) public {
         uint256 secondsPassed = block.timestamp - deployTime;
         require(secondsPassed <= duration, ERROR_VOTING_PERIOD_PASSED);
@@ -266,15 +320,10 @@ contract Poll is
             address(this),
             amount
         );
-        uint256[10] memory dat;
+        uint256[2] memory dat;
         dat[0] = stateIndex;
         dat[1] = amount;
-        for(uint i = 2; i< 10; i++) {
-            dat[i] = 0;
-        }
-        PubKey memory _padKey = PubKey(PAD_PUBKEY_X, PAD_PUBKEY_Y);
-        Message memory _message = Message({msgType: 2, data: dat});
-        uint256 messageLeaf = hashMessageAndEncPubKey(_message, _padKey);
+        (Message memory _message, ,  uint256 messageLeaf) = padAndHashMessage(dat, 2);
         extContracts.messageAq.enqueue(messageLeaf);
         
         emit TopupMessage(_message);
@@ -310,37 +359,7 @@ contract Poll is
         emit PublishMessage(_message, _encPubKey);
     }
 
-    function hashMessageAndEncPubKey(
-        Message memory _message,
-        PubKey memory _encPubKey
-    ) public pure returns (uint256) {
-        require(_message.data.length == 10, "invalid message length");
-        uint256[5] memory n;
-        n[0] = _message.data[0];
-        n[1] = _message.data[1];
-        n[2] = _message.data[2];
-        n[3] = _message.data[3];
-        n[4] = _message.data[4];
-
-        uint256[5] memory m;
-        m[0] = _message.data[5];
-        m[1] = _message.data[6];
-        m[2] = _message.data[7];
-        m[3] = _message.data[8];
-        m[4] = _message.data[9];
-
-        return
-            hash5(
-                [
-                    _message.msgType,
-                    hash5(n),
-                    hash5(m),
-                    _encPubKey.x,
-                    _encPubKey.y
-                ]
-            );
-    }
-
+    
     /*
      * The first step of merging the MACI state AccQueue. This allows the
      * ProcessMessages circuit to access the latest state tree and ballots via
