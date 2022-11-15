@@ -659,12 +659,25 @@ contract PollProcessorAndTallyer is
     }
 
     /*
+     * Hashes an array of values using SHA256 and returns its modulo with the
+     * snark scalar field. This function is used to hash inputs to circuits,
+     * where said inputs would otherwise be public inputs. As such, the only
+     * public input to the circuit is the SHA256 hash, and all others are
+     * private inputs. The circuit will verify that the hash is valid. Doing so
+     * saves a lot of gas during verification, though it makes the circuit take
+     * up more constraints.
+     */
+    function sha256Hash(uint256[] memory array) public pure returns (uint256) {
+        return uint256(sha256(abi.encodePacked(array))) % SNARK_SCALAR_FIELD;
+    }
+
+    /*
      * Update the Poll's currentSbCommitment if the proof is valid.
      * @param _poll The poll to update
      * @param _newSbCommitment The new state root and ballot root commitment
      *                         after all messages are processed
      * @param _proof The zk-SNARK proof
-    */
+     */
     function processMessages(
         Poll _poll,
         uint256 _newSbCommitment,
@@ -831,8 +844,8 @@ contract PollProcessorAndTallyer is
         (, uint256 numMessages) = _poll.numSignUpsAndMessages();
         (uint24 mbs, , ) = _poll.batchSizes();
         uint256 messageBatchSize = uint256(mbs);
-        uint256 batchEndIndex = _currentMessageBatchIndex + messageBatchSize;
 
+        uint256 batchEndIndex = _currentMessageBatchIndex + messageBatchSize;
         if (batchEndIndex > numMessages) {
             batchEndIndex = numMessages;
         }
@@ -853,9 +866,7 @@ contract PollProcessorAndTallyer is
         sbCommitment = _newSbCommitment;
         processingComplete = _processingComplete;
         currentMessageBatchIndex = _currentMessageBatchIndex;
-        unchecked {
-            numBatchesProcessed++;
-        }
+        numBatchesProcessed++;
     }
 
     function genSubsidyPackedVals(uint256 _numSignUps)
@@ -892,8 +903,6 @@ contract PollProcessorAndTallyer is
     ) public onlyOwner votingPeriodOver(_poll) {
         // Require that all messages have been processed
         require(processingComplete, ERROR_PROCESSING_NOT_COMPLETE);
-        
-        subsidyCommitment = _newSubsidyCommitment;
 
         (uint8 intStateTreeDepth, , , uint8 voteOptionTreeDepth) = _poll
             .treeDepths();
@@ -918,6 +927,7 @@ contract PollProcessorAndTallyer is
             _newSubsidyCommitment
         );
         require(isValid, ERROR_INVALID_SUBSIDY_PROOF);
+        subsidyCommitment = _newSubsidyCommitment;
         increaseSubsidyIndex(subsidyBatchSize, numLeaves);
     }
 
@@ -925,13 +935,9 @@ contract PollProcessorAndTallyer is
         internal
     {
         if (cbi * batchSize + batchSize < numLeaves) {
-            unchecked {
-                cbi++;
-            }
+            cbi++;
         } else {
-            unchecked {
-                rbi++;
-            }
+            rbi++;
             cbi = 0;
         }
     }
@@ -967,7 +973,7 @@ contract PollProcessorAndTallyer is
 
     /*
      * Pack the batch start index and number of signups into a 100-bit value.
-    */
+     */
     function genTallyVotesPackedVals(
         uint256 _numSignUps,
         uint256 _batchStartIndex,
@@ -1070,20 +1076,5 @@ contract PollProcessorAndTallyer is
 
         // Verify the proof
         return verifier.verify(_proof, vk, publicInputHash);
-    }
-
-    /*
-    * Hashes an array of values using SHA256 and returns its modulo with the
-    * snark scalar field. This function is used to hash inputs to circuits,
-    * where said inputs would otherwise be public inputs. As such, the only
-    * public input to the circuit is the SHA256 hash, and all others are
-    * private inputs. The circuit will verify that the hash is valid. Doing so
-    * saves a lot of gas during verification, though it makes the circuit take
-    * up more constraints.
-    * @param array The values to hash
-    * @return uint256 The sha256 hash
-    */
-    function sha256Hash(uint256[] memory array) public pure returns (uint256) {
-        return uint256(sha256(abi.encodePacked(array))) % SNARK_SCALAR_FIELD;
     }
 }
