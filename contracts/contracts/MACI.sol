@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma experimental ABIEncoderV2;
-pragma solidity ^0.7.2;
+pragma solidity ^0.8.10;
 
 import {Poll, PollFactory, PollProcessorAndTallyer, MessageAqFactory} from "./Poll.sol";
-
 import {InitialVoiceCreditProxy} from "./initialVoiceCreditProxy/InitialVoiceCreditProxy.sol";
-
 import {SignUpGatekeeper} from "./gatekeepers/SignUpGatekeeper.sol";
 import {AccQueue, AccQueueQuinaryBlankSl} from "./trees/AccQueue.sol";
 import {IMACI} from "./IMACI.sol";
@@ -15,6 +12,7 @@ import {VkRegistry} from "./VkRegistry.sol";
 import {TopupCredit} from "./TopupCredit.sol";
 import {SnarkCommon} from "./crypto/SnarkCommon.sol";
 import {SnarkConstants} from "./crypto/SnarkConstants.sol";
+
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /*
@@ -34,7 +32,6 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     uint8 internal constant STATE_TREE_ARITY = 5;
     uint8 internal constant MESSAGE_TREE_ARITY = 5;
 
-
     //// The hash of a blank state leaf
     uint256 internal constant BLANK_STATE_LEAF_HASH =
         uint256(
@@ -46,9 +43,6 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
 
     // A mapping of poll IDs to Poll contracts.
     mapping(uint256 => Poll) public polls;
-
-    //// A mapping of block timestamps to state roots
-    //mapping (uint256 => uint256) public stateRootSnapshots;
 
     // The number of signups
     uint256 public override numSignUps;
@@ -105,6 +99,25 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     event MergeStateAqSubRoots(uint256 _pollId, uint256 _numSrQueueOps);
     event MergeStateAq(uint256 _pollId);
 
+    /*
+    * Ensure certain functions only run after the contract has been initialized
+    */
+    modifier afterInit() {
+        require(isInitialised, "MACI: not initialised");
+        _;
+    }
+
+    /*
+    * Only allow a Poll contract to call the modified function.
+    */
+    modifier onlyPoll(uint256 _pollId) {
+        require(
+            msg.sender == address(polls[_pollId]),
+            "MACI: only a Poll contract can call this function"
+        );
+        _;
+    }
+
     constructor(
         PollFactory _pollFactory,
         SignUpGatekeeper _signUpGatekeeper,
@@ -130,6 +143,9 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     /*
      * Initialise the various factory/helper contracts. This should only be run
      * once and it must be run before deploying the first Poll.
+     * @param _vkRegistry The VkRegistry contract
+     * @param _messageAqFactory The MessageAqFactory contract 
+     * @param _topupCredit The topupCredit contract 
      */
     function init(
         VkRegistry _vkRegistry,
@@ -169,11 +185,6 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         emit Init(_vkRegistry, _messageAqFactory);
     }
 
-    modifier afterInit() {
-        require(isInitialised, "MACI: not initialised");
-        _;
-    }
-
     /*
      * Allows any eligible user sign up. The sign-up gatekeeper should prevent
      * double sign-ups or ineligible users from doing so.  This function will
@@ -195,7 +206,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     ) public afterInit {
         // The circuits only support up to (5 ** 10 - 1) signups
         require(
-            numSignUps < STATE_TREE_ARITY**stateTreeDepth,
+            numSignUps < uint256(STATE_TREE_ARITY) ** uint256(stateTreeDepth),
             "MACI: maximum number of signups reached"
         );
 
@@ -205,7 +216,10 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         );
 
         // Increment the number of signups
-        numSignUps++;
+        // cannot overflow as numSignUps < 5 ** 10 -1
+        unchecked {
+            numSignUps++;
+        }
 
         // Register the user via the sign-up gatekeeper. This function should
         // throw if the user has already registered or if ineligible to do so.
@@ -227,57 +241,11 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         emit SignUp(stateIndex, _pubKey, voiceCreditBalance, timestamp);
     }
 
-    //function signUpViaRelayer(
-    //MaciPubKey memory pubKey,
-    //bytes memory signature,
-    // uint256 nonce
-    //) public {
-    //// TODO: validate signature and sign up
-    //)
-
     /*
-     * Only allow a Poll contract to call the modified function.
-     */
-    modifier onlyPoll(uint256 _pollId) {
-        require(
-            msg.sender == address(polls[_pollId]),
-            "MACI: only a Poll contract can call this function"
-        );
-        _;
-    }
-
-    function mergeStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId)
-        public
-        override
-        onlyPoll(_pollId)
-        afterInit
-    {
-        stateAq.mergeSubRoots(_numSrQueueOps);
-
-        emit MergeStateAqSubRoots(_pollId, _numSrQueueOps);
-    }
-
-    function mergeStateAq(uint256 _pollId)
-        public
-        override
-        onlyPoll(_pollId)
-        afterInit
-        returns (uint256)
-    {
-        uint256 root = stateAq.merge(stateTreeDepth);
-
-        emit MergeStateAq(_pollId);
-
-        return root;
-    }
-
-    function getStateAqRoot() public view override returns (uint256) {
-        return stateAq.getMainRoot(stateTreeDepth);
-    }
-
-    /*
-     * Deploy a new Poll contract.
-     */
+    * Deploy a new Poll contract.
+    * @param _duration How long should the Poll last for
+    * @param _treeDepths The depth of the Merkle trees
+    */
     function deployPoll(
         uint256 _duration,
         MaxValues memory _maxValues,
@@ -287,7 +255,10 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         uint256 pollId = nextPollId;
 
         // Increment the poll ID for the next poll
-        nextPollId++;
+        // 2 ** 256 polls available
+        unchecked {
+            nextPollId++;
+        }
 
         if (pollId > 0) {
             require(
@@ -298,11 +269,11 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
 
         // The message batch size and the tally batch size
         BatchSizes memory batchSizes = BatchSizes(
-            MESSAGE_TREE_ARITY**uint8(_treeDepths.messageTreeSubDepth),
-            STATE_TREE_ARITY**uint8(_treeDepths.intStateTreeDepth),
-            STATE_TREE_ARITY**uint8(_treeDepths.intStateTreeDepth)
+            uint24(MESSAGE_TREE_ARITY)**_treeDepths.messageTreeSubDepth,
+            uint24(STATE_TREE_ARITY)**_treeDepths.intStateTreeDepth,
+            uint24(STATE_TREE_ARITY)**_treeDepths.intStateTreeDepth
         );
-
+ 
         Poll p = pollFactory.deploy(
             _duration,
             _maxValues,
@@ -320,6 +291,54 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         emit DeployPoll(pollId, address(p), _coordinatorPubKey);
     }
 
+        /*
+    /* Allow Poll contracts to merge the state subroots
+    /* @param _numSrQueueOps Number of operations
+    /* @param _pollId The active Poll ID
+    */
+    function mergeStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId)
+        public
+        override
+        onlyPoll(_pollId)
+        afterInit
+    {
+        stateAq.mergeSubRoots(_numSrQueueOps);
+
+        emit MergeStateAqSubRoots(_pollId, _numSrQueueOps);
+    }
+
+    /*
+    /* Allow Poll contracts to merge the state root
+    /* @param _pollId The active Poll ID
+    /* @returns uint256 The calculated Merkle root
+    */
+    function mergeStateAq(uint256 _pollId)
+        public
+        override
+        onlyPoll(_pollId)
+        afterInit
+        returns (uint256)
+    {
+        uint256 root = stateAq.merge(stateTreeDepth);
+
+        emit MergeStateAq(_pollId);
+
+        return root;
+    }
+
+    /*
+    * Return the main root of the StateAq contract
+    * @returns uint256 The Merkle root
+    */
+    function getStateAqRoot() public view override returns (uint256) {
+        return stateAq.getMainRoot(stateTreeDepth);
+    }
+
+    /*
+    * Get the Poll details
+    * @param _pollId The identifier of the Poll to retrieve
+    * @returns Poll The Poll data
+    */
     function getPoll(uint256 _pollId) public view returns (Poll) {
         require(_pollId < nextPollId, "MACI: poll with _pollId does not exist");
         return polls[_pollId];

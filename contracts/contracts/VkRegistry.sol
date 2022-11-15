@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma experimental ABIEncoderV2;
-pragma solidity ^0.7.2;
+pragma solidity ^0.8.10;
 
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
@@ -21,7 +21,9 @@ contract VkRegistry is Ownable, SnarkCommon {
     mapping (uint256 => VerifyingKey) internal subsidyVks; 
     mapping (uint256 => bool) internal subsidyVkSet; 
 
-    //TODO: event for setVerifyingKeys
+    event ProcessVkSet(uint256 _sig);
+    event TallyVkSet(uint256 _sig);
+    event SubsidyVkSet(uint256 _sig);
 
     function isProcessVkSet(uint256 _sig) public view returns (bool) {
         return processVkSet[_sig];
@@ -117,6 +119,9 @@ contract VkRegistry is Ownable, SnarkCommon {
             tallyVk.ic.push(_tallyVk.ic[i]);
         }
         tallyVkSet[tallyVkSig] = true;
+
+        emit TallyVkSet(tallyVkSig);
+        emit ProcessVkSet(processVkSig);
     }
 
     function setSubsidyKeys(
@@ -143,6 +148,8 @@ contract VkRegistry is Ownable, SnarkCommon {
             subsidyVk.ic.push(_subsidyVk.ic[i]);
         }
         subsidyVkSet[subsidyVkSig] = true;
+
+        emit SubsidyVkSet(subsidyVkSig);
     }
 
     function hasProcessVk(

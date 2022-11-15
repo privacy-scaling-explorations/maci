@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma experimental ABIEncoderV2;
-pragma solidity ^0.7.2;
+pragma solidity ^0.8.10;
 
 import {IMACI} from "./IMACI.sol";
 import {Params} from "./Params.sol";
@@ -12,12 +12,17 @@ import {DomainObjs, IPubKey, IMessage} from "./DomainObjs.sol";
 import {AccQueue, AccQueueQuinaryMaci} from "./trees/AccQueue.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {VkRegistry} from "./VkRegistry.sol";
 import {EmptyBallotRoots} from "./trees/EmptyBallotRoots.sol";
 import {TopupCredit} from "./TopupCredit.sol";
 
 contract MessageAqFactory is Ownable {
+    /*
+    * Deploys a new AccQueue contract
+    * @param _subDepth Subtree depth
+    * @return AccQueue The AccQueue contract
+    */
     function deploy(uint256 _subDepth) public onlyOwner returns (AccQueue) {
         AccQueue aq = new AccQueueQuinaryMaci(_subDepth);
         aq.transferOwnership(owner());
@@ -42,8 +47,11 @@ contract Utilities is SnarkConstants, Hasher, IPubKey, IMessage {
         uint256[10] memory dat;
         dat[0] = dataToPad[0];
         dat[1] = dataToPad[1];
-        for(uint i = 2; i< 10; i++) {
+        for(uint i = 2; i< 10;) {
             dat[i] = 0;
+            unchecked {
+                ++i;
+            }
         }
         PubKey memory _padKey = PubKey(PAD_PUBKEY_X, PAD_PUBKEY_Y);
         Message memory _message = Message({msgType: msgType, data: dat});
@@ -54,7 +62,7 @@ contract Utilities is SnarkConstants, Hasher, IPubKey, IMessage {
         Message memory _message,
         PubKey memory _encPubKey
     ) public pure returns (uint256) {
-        require(_message.data.length == 10, "invalid message length");
+        require(_message.data.length == 10, "Invalid message");
         uint256[5] memory n;
         n[0] = _message.data[0];
         n[1] = _message.data[1];
@@ -286,34 +294,46 @@ contract Poll is
         _;
     }
 
-    function isAfterDeadline() public view returns (bool) {
+    modifier isWithinVotingDeadline() {
         uint256 secondsPassed = block.timestamp - deployTime;
-        return secondsPassed > duration;
+        require(secondsPassed < duration, ERROR_VOTING_PERIOD_PASSED);
+        _;
     }
 
     // should be called immediately after Poll creation and messageAq ownership transferred
     function init() public {
         require(!isInit, "Poll contract already init");
+        // set to true so it cannot be called again
         isInit = true;
-        numMessages++;
+
+        unchecked {
+            numMessages++;
+        }
+
         // init messageAq here by inserting placeholderLeaf
         uint256[2] memory dat;
         dat[0] = NOTHING_UP_MY_SLEEVE;
         dat[1] = 0;
         (Message memory _message, PubKey memory _padKey, uint256 placeholderLeaf) = padAndHashMessage(dat, 1); 
         extContracts.messageAq.enqueue(placeholderLeaf);
+        
         emit PublishMessage(_message, _padKey); 
     }
 
-    function topup(uint256 stateIndex, uint256 amount) public {
-        uint256 secondsPassed = block.timestamp - deployTime;
-        require(secondsPassed <= duration, ERROR_VOTING_PERIOD_PASSED);
+    /*
+    * Allows to publish a Topup message
+    * @param stateIndex The index of user in the state queue
+    * @param amount The amount of credits to topup
+    */
+    function topup(uint256 stateIndex, uint256 amount) public isWithinVotingDeadline {
         require(
             numMessages <= maxValues.maxMessages,
             ERROR_MAX_MESSAGES_REACHED
         );
 
-        numMessages++;
+        unchecked {
+            numMessages++;
+        }
 
         extContracts.topupCredit.transferFrom(
             msg.sender,
@@ -338,10 +358,8 @@ contract Poll is
      *     to encrypt the message.
      */
     function publishMessage(Message memory _message, PubKey memory _encPubKey)
-        public
+        public isWithinVotingDeadline
     {
-        uint256 secondsPassed = block.timestamp - deployTime;
-        require(secondsPassed <= duration, ERROR_VOTING_PERIOD_PASSED);
         require(
             numMessages <= maxValues.maxMessages,
             ERROR_MAX_MESSAGES_REACHED
@@ -351,7 +369,11 @@ contract Poll is
                 _encPubKey.y < SNARK_SCALAR_FIELD,
             ERROR_INVALID_PUBKEY
         );
-        numMessages++;
+
+        unchecked {
+            numMessages++;
+        }
+
         _message.msgType = 1;
         uint256 messageLeaf = hashMessageAndEncPubKey(_message, _encPubKey);
         extContracts.messageAq.enqueue(messageLeaf);
@@ -370,7 +392,7 @@ contract Poll is
         onlyOwner
         isAfterVotingDeadline
     {
-        // This function can only be called once per Poll
+        // This function cannot be called after the stateAq was merged
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
 
         if (!extContracts.maci.stateAq().subTreesMerged()) {
@@ -384,6 +406,7 @@ contract Poll is
      * The second step of merging the MACI state AccQueue. This allows the
      * ProcessMessages circuit to access the latest state tree and ballots via
      * currentSbCommitment.
+     * @param _pollId The ID of the Poll 
      */
     function mergeMaciStateAq(uint256 _pollId)
         public
@@ -541,8 +564,8 @@ contract Poll is
 
         uint256[LEAVES_PER_NODE] memory level;
 
-        for (uint8 i = 0; i < _depth; i++) {
-            for (uint8 j = 0; j < LEAVES_PER_NODE; j++) {
+        for (uint8 i = 0; i < _depth; ++i) {
+            for (uint8 j = 0; j < LEAVES_PER_NODE; ++j) {
                 if (j == pos) {
                     level[j] = current;
                 } else {
@@ -636,25 +659,12 @@ contract PollProcessorAndTallyer is
     }
 
     /*
-     * Hashes an array of values using SHA256 and returns its modulo with the
-     * snark scalar field. This function is used to hash inputs to circuits,
-     * where said inputs would otherwise be public inputs. As such, the only
-     * public input to the circuit is the SHA256 hash, and all others are
-     * private inputs. The circuit will verify that the hash is valid. Doing so
-     * saves a lot of gas during verification, though it makes the circuit take
-     * up more constraints.
-     */
-    function sha256Hash(uint256[] memory array) public pure returns (uint256) {
-        return uint256(sha256(abi.encodePacked(array))) % SNARK_SCALAR_FIELD;
-    }
-
-    /*
      * Update the Poll's currentSbCommitment if the proof is valid.
      * @param _poll The poll to update
      * @param _newSbCommitment The new state root and ballot root commitment
      *                         after all messages are processed
      * @param _proof The zk-SNARK proof
-     */
+    */
     function processMessages(
         Poll _poll,
         uint256 _newSbCommitment,
@@ -819,10 +829,10 @@ contract PollProcessorAndTallyer is
     ) public view returns (uint256) {
         (, uint256 maxVoteOptions) = _poll.maxValues();
         (, uint256 numMessages) = _poll.numSignUpsAndMessages();
-        (uint8 mbs, , ) = _poll.batchSizes();
+        (uint24 mbs, , ) = _poll.batchSizes();
         uint256 messageBatchSize = uint256(mbs);
-
         uint256 batchEndIndex = _currentMessageBatchIndex + messageBatchSize;
+
         if (batchEndIndex > numMessages) {
             batchEndIndex = numMessages;
         }
@@ -843,7 +853,9 @@ contract PollProcessorAndTallyer is
         sbCommitment = _newSbCommitment;
         processingComplete = _processingComplete;
         currentMessageBatchIndex = _currentMessageBatchIndex;
-        numBatchesProcessed++;
+        unchecked {
+            numBatchesProcessed++;
+        }
     }
 
     function genSubsidyPackedVals(uint256 _numSignUps)
@@ -880,6 +892,8 @@ contract PollProcessorAndTallyer is
     ) public onlyOwner votingPeriodOver(_poll) {
         // Require that all messages have been processed
         require(processingComplete, ERROR_PROCESSING_NOT_COMPLETE);
+        
+        subsidyCommitment = _newSubsidyCommitment;
 
         (uint8 intStateTreeDepth, , , uint8 voteOptionTreeDepth) = _poll
             .treeDepths();
@@ -904,7 +918,6 @@ contract PollProcessorAndTallyer is
             _newSubsidyCommitment
         );
         require(isValid, ERROR_INVALID_SUBSIDY_PROOF);
-        subsidyCommitment = _newSubsidyCommitment;
         increaseSubsidyIndex(subsidyBatchSize, numLeaves);
     }
 
@@ -912,9 +925,13 @@ contract PollProcessorAndTallyer is
         internal
     {
         if (cbi * batchSize + batchSize < numLeaves) {
-            cbi++;
+            unchecked {
+                cbi++;
+            }
         } else {
-            rbi++;
+            unchecked {
+                rbi++;
+            }
             cbi = 0;
         }
     }
@@ -950,7 +967,7 @@ contract PollProcessorAndTallyer is
 
     /*
      * Pack the batch start index and number of signups into a 100-bit value.
-     */
+    */
     function genTallyVotesPackedVals(
         uint256 _numSignUps,
         uint256 _batchStartIndex,
@@ -1053,5 +1070,20 @@ contract PollProcessorAndTallyer is
 
         // Verify the proof
         return verifier.verify(_proof, vk, publicInputHash);
+    }
+
+    /*
+    * Hashes an array of values using SHA256 and returns its modulo with the
+    * snark scalar field. This function is used to hash inputs to circuits,
+    * where said inputs would otherwise be public inputs. As such, the only
+    * public input to the circuit is the SHA256 hash, and all others are
+    * private inputs. The circuit will verify that the hash is valid. Doing so
+    * saves a lot of gas during verification, though it makes the circuit take
+    * up more constraints.
+    * @param array The values to hash
+    * @return uint256 The sha256 hash
+    */
+    function sha256Hash(uint256[] memory array) public pure returns (uint256) {
+        return uint256(sha256(abi.encodePacked(array))) % SNARK_SCALAR_FIELD;
     }
 }

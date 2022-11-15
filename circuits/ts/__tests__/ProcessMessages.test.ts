@@ -15,14 +15,11 @@ import {
     Keypair,
     PCommand,
     Message,
-    VerifyingKey,
     Ballot,
 } from 'maci-domainobjs'
 
 import {
     hash5,
-    G1Point,
-    G2Point,
     IncrementalQuinTree,
     stringifyBigInts,
     NOTHING_UP_MY_SLEEVE,
