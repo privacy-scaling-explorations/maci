@@ -28,7 +28,7 @@ describe('Splice circuit', () => {
             items.splice(index, 0, leaf)
 
             expect(JSON.stringify(stringifyBigInts(items.map(BigInt)))).toEqual(
-                JSON.stringify(stringifyBigInts(output.map(BigInt)))
+                JSON.stringify(stringifyBigInts(output.map(String)))
             )
         }
     })

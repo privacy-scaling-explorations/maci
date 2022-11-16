@@ -45,7 +45,7 @@
         "test-tallyVotes-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest ts/__tests__/TallyVotes.test.ts"
     },
     "dependencies": {
-        "argparse": "^1.0.10",
+        "argparse": "^2.0.1",
         "circomlib": "git://github.com/weijiekoh/circomlib.git#ac85e82c1914d47789e2032fb11ceb2cfdd38a2b",
         "shelljs": "^0.8.3",
         "snarkjs": "0.4.10",
@@ -54,14 +54,14 @@
     "devDependencies": {
         "@types/jest": "^26.0.21",
         "@types/node": "^14.14.35",
-        "axios": "^0.21.0",
+        "axios": "^1.1.3",
         "circom-helper": "^0.3.0",
         "jest": "^26.6.3",
         "maci-core": "^1.1.0",
         "maci-crypto": "^1.1.0",
         "maci-domainobjs": "^1.1.0",
         "ts-jest": "^26.5.4",
-        "typescript": "^3.8.3"
+        "typescript": "^4.2.3"
     },
     "gitHead": "f567a17293114ba2d5e89c711d00a9f4c197f070"
 }

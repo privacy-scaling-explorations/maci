@@ -317,7 +317,7 @@ const testMerge = async (
     await (await aqContract.merge(MAIN_DEPTH, { gasLimit: 8000000 })).wait()
     const contractMainRoot = (await aqContract.getMainRoot(MAIN_DEPTH)).toString()
     expect(expectedMainRoot).toEqual(contractMainRoot)
-}
+}   
 
 /*
  * Enqueue, merge, enqueue, and merge again
@@ -716,6 +716,31 @@ describe('AccQueues', () => {
                 const error = "'AccQueue: _depth must be gte the SRT depth'"
                 expect(e.message.endsWith(error)).toBeTruthy()
             }
+        })
+
+        it('Merging without enqueing new data should not change the root', async () => {
+            const MAIN_DEPTH = 5
+            const ZERO = BigInt(0)
+    
+            const r = await deploy(
+                'AccQueueBinary0',
+                SUB_DEPTH,
+                HASH_LENGTH,
+                ZERO
+            )
+    
+            const aq = r.aq
+            const aqContract = r.aqContract
+            // Merge once
+            await testMerge(aq, aqContract, 1, MAIN_DEPTH)
+            // Get the root
+            const expectedMainRoot = (await aqContract.getMainRoot(MAIN_DEPTH)).toString()   
+            // Merge again 
+            await (await aqContract.merge(MAIN_DEPTH, { gasLimit: 8000000 })).wait()
+            // Get the root again 
+            const root = (await aqContract.getMainRoot(MAIN_DEPTH)).toString()   
+            // Check that the roots match
+            expect(root).toEqual(expectedMainRoot)
         })
     })
 

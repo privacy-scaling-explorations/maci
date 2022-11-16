@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma experimental ABIEncoderV2;
-pragma solidity ^0.7.2;
+pragma solidity ^0.8.10;
 
 import {IMACI} from "./IMACI.sol";
 import {Params} from "./Params.sol";
@@ -11,11 +10,18 @@ import {SnarkConstants} from "./crypto/SnarkConstants.sol";
 import {DomainObjs, IPubKey, IMessage} from "./DomainObjs.sol";
 import {AccQueue, AccQueueQuinaryMaci} from "./trees/AccQueue.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {VkRegistry} from "./VkRegistry.sol";
 import {EmptyBallotRoots} from "./trees/EmptyBallotRoots.sol";
 import {TopupCredit} from "./TopupCredit.sol";
 
 contract MessageAqFactory is Ownable {
+    /*
+    * Deploys a new AccQueue contract
+    * @param _subDepth Subtree depth
+    * @return AccQueue The AccQueue contract
+    */
     function deploy(uint256 _subDepth) public onlyOwner returns (AccQueue) {
         AccQueue aq = new AccQueueQuinaryMaci(_subDepth);
         aq.transferOwnership(owner());
@@ -32,16 +38,65 @@ contract PollDeploymentParams {
     }
 }
 
+contract Utilities is SnarkConstants, Hasher, IPubKey, IMessage {
+    function padAndHashMessage(
+        uint256[2] memory dataToPad, // we only need two for now
+        uint256 msgType
+    ) public pure returns (Message memory, PubKey memory, uint256) {
+        uint256[10] memory dat;
+        dat[0] = dataToPad[0];
+        dat[1] = dataToPad[1];
+        for(uint i = 2; i< 10;) {
+            dat[i] = 0;
+            unchecked {
+                ++i;
+            }
+        }
+        PubKey memory _padKey = PubKey(PAD_PUBKEY_X, PAD_PUBKEY_Y);
+        Message memory _message = Message({msgType: msgType, data: dat});
+        return (_message, _padKey, hashMessageAndEncPubKey(_message, _padKey));
+    }
+
+    function hashMessageAndEncPubKey(
+        Message memory _message,
+        PubKey memory _encPubKey
+    ) public pure returns (uint256) {
+        require(_message.data.length == 10, "Invalid message");
+        uint256[5] memory n;
+        n[0] = _message.data[0];
+        n[1] = _message.data[1];
+        n[2] = _message.data[2];
+        n[3] = _message.data[3];
+        n[4] = _message.data[4];
+
+        uint256[5] memory m;
+        m[0] = _message.data[5];
+        m[1] = _message.data[6];
+        m[2] = _message.data[7];
+        m[3] = _message.data[8];
+        m[4] = _message.data[9];
+
+        return
+            hash5(
+                [
+                    _message.msgType,
+                    hash5(n),
+                    hash5(m),
+                    _encPubKey.x,
+                    _encPubKey.y
+                ]
+            );
+    }
+}
+
 /*
  * A factory contract which deploys Poll contracts. It allows the MACI contract
  * size to stay within the limit set by EIP-170.
  */
 contract PollFactory is
     Params,
-    IPubKey,
-    IMessage,
+    Utilities,
     Ownable,
-    Hasher,
     PollDeploymentParams
 {
     MessageAqFactory public messageAqFactory;
@@ -113,6 +168,9 @@ contract PollFactory is
         // run enqueue/merge
         messageAq.transferOwnership(address(poll));
 
+        // init messageAq 
+        poll.init();
+
         // TODO: should this be _maci.owner() instead?
         poll.transferOwnership(_pollOwner);
 
@@ -126,14 +184,15 @@ contract PollFactory is
  */
 contract Poll is
     Params,
-    Hasher,
-    IMessage,
-    IPubKey,
+    Utilities,
     SnarkCommon,
     Ownable,
     PollDeploymentParams,
     EmptyBallotRoots
 {
+    using SafeERC20 for ERC20;
+
+    bool internal isInit = false;
     // The coordinator's public key
     PubKey public coordinatorPubKey;
 
@@ -178,14 +237,12 @@ contract Poll is
 
     // Error codes. We store them as constants and keep them short to reduce
     // this contract's bytecode size.
-    string constant ERROR_VK_NOT_SET = "PollE01";
-    string constant ERROR_SB_COMMITMENT_NOT_SET = "PollE02";
-    string constant ERROR_VOTING_PERIOD_PASSED = "PollE03";
-    string constant ERROR_VOTING_PERIOD_NOT_PASSED = "PollE04";
-    string constant ERROR_INVALID_PUBKEY = "PollE05";
-    string constant ERROR_MAX_MESSAGES_REACHED = "PollE06";
-    string constant ERROR_STATE_AQ_ALREADY_MERGED = "PollE07";
-    string constant ERROR_STATE_AQ_SUBTREES_NEED_MERGE = "PollE08";
+    string constant ERROR_VOTING_PERIOD_PASSED = "PollE01";
+    string constant ERROR_VOTING_PERIOD_NOT_PASSED = "PollE02";
+    string constant ERROR_INVALID_PUBKEY = "PollE03";
+    string constant ERROR_MAX_MESSAGES_REACHED = "PollE04";
+    string constant ERROR_STATE_AQ_ALREADY_MERGED = "PollE05";
+    string constant ERROR_STATE_AQ_SUBTREES_NEED_MERGE = "PollE06";
 
     uint8 private constant LEAVES_PER_NODE = 5;
 
@@ -236,34 +293,58 @@ contract Poll is
         _;
     }
 
-    function isAfterDeadline() public view returns (bool) {
+    modifier isWithinVotingDeadline() {
         uint256 secondsPassed = block.timestamp - deployTime;
-        return secondsPassed > duration;
+        require(secondsPassed < duration, ERROR_VOTING_PERIOD_PASSED);
+        _;
     }
 
-    function topup(uint256 stateIndex, uint256 amount) public {
-        uint256 secondsPassed = block.timestamp - deployTime;
-        require(secondsPassed <= duration, ERROR_VOTING_PERIOD_PASSED);
+    // should be called immediately after Poll creation and messageAq ownership transferred
+    function init() public {
+        require(!isInit, "Poll contract already init");
+        // set to true so it cannot be called again
+        isInit = true;
+
+        unchecked {
+            numMessages++;
+        }
+
+        // init messageAq here by inserting placeholderLeaf
+        uint256[2] memory dat;
+        dat[0] = NOTHING_UP_MY_SLEEVE;
+        dat[1] = 0;
+        (Message memory _message, PubKey memory _padKey, uint256 placeholderLeaf) = padAndHashMessage(dat, 1); 
+        extContracts.messageAq.enqueue(placeholderLeaf);
+        
+        emit PublishMessage(_message, _padKey); 
+    }
+
+    /*
+    * Allows to publish a Topup message
+    * @param stateIndex The index of user in the state queue
+    * @param amount The amount of credits to topup
+    */
+    function topup(uint256 stateIndex, uint256 amount) public isWithinVotingDeadline {
         require(
             numMessages <= maxValues.maxMessages,
             ERROR_MAX_MESSAGES_REACHED
         );
+
+        unchecked {
+            numMessages++;
+        }
+
         extContracts.topupCredit.transferFrom(
             msg.sender,
             address(this),
             amount
         );
-        uint256[10] memory dat;
+        uint256[2] memory dat;
         dat[0] = stateIndex;
         dat[1] = amount;
-        for(uint i = 2; i< 10; i++) {
-            dat[i] = 0;
-        }
-        PubKey memory _padKey = PubKey(PAD_PUBKEY_X, PAD_PUBKEY_Y);
-        Message memory _message = Message({msgType: 2, data: dat});
-        uint256 messageLeaf = hashMessageAndEncPubKey(_message, _padKey);
+        (Message memory _message, ,  uint256 messageLeaf) = padAndHashMessage(dat, 2);
         extContracts.messageAq.enqueue(messageLeaf);
-        numMessages++;
+        
         emit TopupMessage(_message);
     }
 
@@ -276,10 +357,8 @@ contract Poll is
      *     to encrypt the message.
      */
     function publishMessage(Message memory _message, PubKey memory _encPubKey)
-        public
+        public isWithinVotingDeadline
     {
-        uint256 secondsPassed = block.timestamp - deployTime;
-        require(secondsPassed <= duration, ERROR_VOTING_PERIOD_PASSED);
         require(
             numMessages <= maxValues.maxMessages,
             ERROR_MAX_MESSAGES_REACHED
@@ -289,45 +368,19 @@ contract Poll is
                 _encPubKey.y < SNARK_SCALAR_FIELD,
             ERROR_INVALID_PUBKEY
         );
+
+        unchecked {
+            numMessages++;
+        }
+
         _message.msgType = 1;
         uint256 messageLeaf = hashMessageAndEncPubKey(_message, _encPubKey);
         extContracts.messageAq.enqueue(messageLeaf);
-        numMessages++;
 
         emit PublishMessage(_message, _encPubKey);
     }
 
-    function hashMessageAndEncPubKey(
-        Message memory _message,
-        PubKey memory _encPubKey
-    ) public pure returns (uint256) {
-        require(_message.data.length == 10, "invalid message length");
-        uint256[5] memory n;
-        n[0] = _message.data[0];
-        n[1] = _message.data[1];
-        n[2] = _message.data[2];
-        n[3] = _message.data[3];
-        n[4] = _message.data[4];
-
-        uint256[5] memory m;
-        m[0] = _message.data[5];
-        m[1] = _message.data[6];
-        m[2] = _message.data[7];
-        m[3] = _message.data[8];
-        m[4] = _message.data[9];
-
-        return
-            hash5(
-                [
-                    _message.msgType,
-                    hash5(n),
-                    hash5(m),
-                    _encPubKey.x,
-                    _encPubKey.y
-                ]
-            );
-    }
-
+    
     /*
      * The first step of merging the MACI state AccQueue. This allows the
      * ProcessMessages circuit to access the latest state tree and ballots via
@@ -338,7 +391,7 @@ contract Poll is
         onlyOwner
         isAfterVotingDeadline
     {
-        // This function can only be called once per Poll
+        // This function cannot be called after the stateAq was merged
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
 
         if (!extContracts.maci.stateAq().subTreesMerged()) {
@@ -352,6 +405,7 @@ contract Poll is
      * The second step of merging the MACI state AccQueue. This allows the
      * ProcessMessages circuit to access the latest state tree and ballots via
      * currentSbCommitment.
+     * @param _pollId The ID of the Poll 
      */
     function mergeMaciStateAq(uint256 _pollId)
         public
@@ -362,15 +416,15 @@ contract Poll is
         // deadline
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
 
+        stateAqMerged = true;
+
         require(
             extContracts.maci.stateAq().subTreesMerged(),
             ERROR_STATE_AQ_SUBTREES_NEED_MERGE
         );
-        extContracts.maci.mergeStateAq(_pollId);
+        
+        mergedStateRoot = extContracts.maci.mergeStateAq(_pollId);
 
-        stateAqMerged = true;
-
-        mergedStateRoot = extContracts.maci.getStateAqRoot();
         // Set currentSbCommitment
         uint256[3] memory sb;
         sb[0] = mergedStateRoot;
@@ -509,8 +563,8 @@ contract Poll is
 
         uint256[LEAVES_PER_NODE] memory level;
 
-        for (uint8 i = 0; i < _depth; i++) {
-            for (uint8 j = 0; j < LEAVES_PER_NODE; j++) {
+        for (uint8 i = 0; i < _depth; ++i) {
+            for (uint8 j = 0; j < LEAVES_PER_NODE; ++j) {
                 if (j == pos) {
                     level[j] = current;
                 } else {
@@ -550,6 +604,8 @@ contract PollProcessorAndTallyer is
     string constant ERROR_STATE_AQ_NOT_MERGED = "PptE09";
     string constant ERROR_ALL_SUBSIDY_CALCULATED = "PptE10";
     string constant ERROR_INVALID_SUBSIDY_PROOF = "PptE11";
+    string constant ERROR_VK_NOT_SET = "PollE12";
+
 
     // The commitment to the state and ballot roots
     uint256 public sbCommitment;
@@ -708,6 +764,8 @@ contract PollProcessorAndTallyer is
         (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
         (VkRegistry vkRegistry, IMACI maci, , ) = _poll.extContracts();
 
+        require(address(vkRegistry) != address(0), ERROR_VK_NOT_SET);
+
         // Calculate the public input hash (a SHA256 hash of several values)
         uint256 publicInputHash = genProcessMessagesPublicInputHash(
             _poll,
@@ -783,7 +841,7 @@ contract PollProcessorAndTallyer is
     ) public view returns (uint256) {
         (, uint256 maxVoteOptions) = _poll.maxValues();
         (, uint256 numMessages) = _poll.numSignUpsAndMessages();
-        (uint8 mbs, , ) = _poll.batchSizes();
+        (uint24 mbs, , ) = _poll.batchSizes();
         uint256 messageBatchSize = uint256(mbs);
 
         uint256 batchEndIndex = _currentMessageBatchIndex + messageBatchSize;
@@ -892,6 +950,8 @@ contract PollProcessorAndTallyer is
         (uint8 intStateTreeDepth, , , uint8 voteOptionTreeDepth) = _poll
             .treeDepths();
         (VkRegistry vkRegistry, IMACI maci, , ) = _poll.extContracts();
+
+        require(address(vkRegistry) != address(0), ERROR_VK_NOT_SET);
 
         // Get the verifying key
         VerifyingKey memory vk = vkRegistry.getSubsidyVk(

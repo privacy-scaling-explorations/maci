@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma experimental ABIEncoderV2;
-pragma solidity ^0.7.2;
+pragma solidity ^0.8.10;
 
 contract Params {
     // This structs help to reduce the number of parameters to the constructor
@@ -13,9 +12,9 @@ contract Params {
     }
 
     struct BatchSizes {
-        uint8 messageBatchSize;
-        uint8 tallyBatchSize;
-        uint8 subsidyBatchSize;
+        uint24 messageBatchSize;
+        uint24 tallyBatchSize;
+        uint24 subsidyBatchSize;
     }
 
     struct MaxValues {

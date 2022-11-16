@@ -2,7 +2,6 @@ import {
     Keypair,
     PubKey,
     Message,
-    VerifyingKey,
 } from 'maci-domainobjs'
 
 import {
@@ -387,16 +386,6 @@ const genMaciStateFromContract = async (
                 action.data.voiceCreditBalance,
                 action.data.timestamp,
             )
-
-        // TODO: consider removing MergeStateAqSubRoots and MergeStateAq as the
-        // functions in Poll which call them already have their own events
-
-        //} else if (action['type'] === 'MergeStateAqSubRoots') {
-            //maciState.stateAq.mergeSubRoots(
-                //action.data.numSrQueueOps,
-            //)
-        //} else if (action['type'] === 'MergeStateAq') {
-            //maciState.stateAq.merge()
         } else if (action['type'] === 'DeployPoll') {
             if (action.data.pollId === pollId) {
                 maciState.deployPoll(

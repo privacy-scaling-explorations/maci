@@ -235,8 +235,15 @@ class Poll {
             this.coordinatorKeypair.privKey,
             _encPubKey,
         )
-        const { command, signature } = PCommand.decrypt(_message, sharedKey)
-        this.commands.push(command)
+        try {
+            let {command, signature} = PCommand.decrypt(_message, sharedKey)
+            this.commands.push(command)
+        }  catch(e) {
+           //console.log(`error cannot decrypt: ${e.message}`)
+           let keyPair = new Keypair()
+           let command = new PCommand(BigInt(0), keyPair.pubKey,BigInt(0),BigInt(0),BigInt(0),BigInt(0),BigInt(0))
+           this.commands.push(command)
+        }
     }
 
     /*
@@ -359,10 +366,6 @@ class Poll {
 
         const currentVoteWeights: BigInt[] = []
         const currentVoteWeightsPathElements: any[] = []
-        const topupAmounts: BigInt[] = []
-        const topupStateIndexes: BigInt[] = []
-        const topupStateLeaves: StateLeaf[] = []
-        const topupStateLeavesPathElements: any[] = []
 
         for (let i = 0; i < batchSize; i ++) {
             const idx = this.currentMessageBatchIndex + batchSize - i - 1
@@ -376,14 +379,6 @@ class Poll {
             switch(message.msgType) {
                 case BigInt(1):
                     try{
-                        // still needed for top message
-                        topupAmounts.unshift(BigInt(0))
-                        topupStateIndexes.unshift(BigInt(0))
-                        topupStateLeaves.unshift(this.stateLeaves[0].copy())
-                        topupStateLeavesPathElements.unshift(
-                            this.stateTree.genMerklePath(0).pathElements
-                        )
-
                         // If the command is valid
                         const r = this.processMessage(idx)
                         // console.log(messageIndex, r ? 'valid' : 'invalid')
@@ -454,78 +449,50 @@ class Poll {
                     break
                 case BigInt(2):
                     try {
-                        
-                         // still need to generate vote type message circuit inputs
-                         currentStateLeaves.unshift(this.stateLeaves[0].copy())
-                         currentStateLeavesPathElements.unshift(
-                             this.stateTree.genMerklePath(0).pathElements
-                         )
-                         currentBallots.unshift(this.ballots[0].copy())
-                         currentBallotsPathElements.unshift(
-                             this.ballotTree.genMerklePath(0).pathElements
-                         )
-                         // Since the command is invalid, use vote option index 0
-                         currentVoteWeights.unshift(this.ballots[0].votes[0])
-                         // No need to iterate through the entire votes array if the
-                         // remaining elements are 0
-                         let lastIndexToInsert = this.ballots[0].votes.length - 1
-                         while (lastIndexToInsert > 0) {
-                             if (this.ballots[0].votes[lastIndexToInsert] === BigInt(0)) {
-                                 lastIndexToInsert --
-                             } else {
-                                 break
-                             }
-                         }
-                         const vt = new IncrementalQuinTree(
-                             this.treeDepths.voteOptionTreeDepth,
-                             BigInt(0),
-                             5,
-                             hash5,
-                         )
-                         for (let i = 0; i <= lastIndexToInsert; i ++) {
-                             vt.insert(this.ballots[0].votes[i])
-                         }
-                         currentVoteWeightsPathElements.unshift(
-                             vt.genMerklePath(0).pathElements
-                         )
-
                         // --------------------------------------
                         // generate topup circuit inputs
                         let stateIndex = BigInt(message.data[0])
                         let amount = BigInt(message.data[1])
 
-                        if (
-                            stateIndex >= BigInt(this.ballots.length) ||
-                            stateIndex < BigInt(1) ||
-                            amount < BigInt(1)
-                        ) {
-                            throw Error("no-op")
-                            return {}
+                        if ( stateIndex >= BigInt(this.ballots.length) ) {
+                            stateIndex = BigInt(0)
+                            amount = BigInt(0)
                         }
-                        topupStateIndexes.unshift(stateIndex)
-                        topupAmounts.unshift(amount)
-                        topupStateLeaves.unshift(this.stateLeaves[Number(stateIndex)].copy())
-                        topupStateLeavesPathElements.unshift(
-                            this.stateTree.genMerklePath(Number(stateIndex)).pathElements
+
+                        currentStateLeaves.unshift(this.stateLeaves[Number(stateIndex)].copy())
+                        currentStateLeavesPathElements.unshift(
+                             this.stateTree.genMerklePath(Number(stateIndex)).pathElements
                         )
 
                         const newStateLeaf = this.stateLeaves[Number(stateIndex)].copy()
                         newStateLeaf.voiceCreditBalance = BigInt(newStateLeaf.voiceCreditBalance.valueOf()) + BigInt(amount)
                         this.stateLeaves[Number(stateIndex)] = newStateLeaf
                         this.stateTree.update(Number(stateIndex), newStateLeaf.hash())
-    
+
+                         // we still need them as placeholder for vote command
+                         let currentBallot = this.ballots[Number(stateIndex)].copy()
+                         currentBallots.unshift(currentBallot)
+                         currentBallotsPathElements.unshift(
+                             this.ballotTree.genMerklePath(Number(stateIndex)).pathElements
+                         )
+                         currentVoteWeights.unshift(currentBallot.votes[0])
+
+                         const vt = new IncrementalQuinTree(
+                             this.treeDepths.voteOptionTreeDepth,
+                             BigInt(0),
+                             5,
+                             hash5,
+                         )
+                         for (let i = 0; i < this.ballots[0].votes.length; i ++) {
+                             vt.insert(currentBallot.votes[i])
+                         }
+             
+                         currentVoteWeightsPathElements.unshift(
+                             vt.genMerklePath(0).pathElements
+                         )
                         
                     } catch(e) {
-                        if (e.message === "no-op") {
-                            topupAmounts.unshift(BigInt(0))
-                            topupStateIndexes.unshift(BigInt(0))
-                            topupStateLeaves.unshift(this.stateLeaves[0].copy())
-                            topupStateLeavesPathElements.unshift(
-                                this.stateTree.genMerklePath(0).pathElements
-                            )
-                        } else {
-                            throw e
-                        }
+                        throw e
                     }
                     break
                 default:
@@ -540,10 +507,6 @@ class Poll {
         circuitInputs.currentBallotsPathElements = currentBallotsPathElements
         circuitInputs.currentVoteWeights = currentVoteWeights
         circuitInputs.currentVoteWeightsPathElements = currentVoteWeightsPathElements
-        circuitInputs.topupAmounts = topupAmounts.map((x) => BigInt(x.toString()))
-        circuitInputs.topupStateIndexes = topupStateIndexes.map((x) => BigInt(x.toString()))
-        circuitInputs.topupStateLeaves = topupStateLeaves.map((x) => x.asCircuitInputs())
-        circuitInputs.topupStateLeavesPathElements = topupStateLeavesPathElements
 
         this.numBatchesProcessed ++
 
@@ -1520,7 +1483,6 @@ class MaciState {
             BigInt(col)
         return packedVals
     }
-
 
 
     public static packTallyVotesSmallVals = (

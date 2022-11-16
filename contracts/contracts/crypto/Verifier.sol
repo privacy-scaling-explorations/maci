@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.7.2;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.10;
 
 import { Pairing } from "./Pairing.sol";
 import { SnarkConstants } from "./SnarkConstants.sol";

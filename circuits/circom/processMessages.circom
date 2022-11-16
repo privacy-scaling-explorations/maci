@@ -91,12 +91,6 @@ template ProcessMessages(
     // The state root before it is processed
     signal input currentStateRoot;
 
-    // topup signals
-    signal input topupAmounts[batchSize];
-    signal input topupStateIndexes[batchSize];
-    signal input topupStateLeaves[batchSize][STATE_LEAF_LENGTH];
-    signal input topupStateLeavesPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
-
     // The state leaves upon which messages are applied.
     //     transform(currentStateLeaf[4], message5) => newStateLeaf4
     //     transform(currentStateLeaf[3], message4) => newStateLeaf3
@@ -275,6 +269,7 @@ template ProcessMessages(
         // process it as vote type message
         processors[i] = ProcessOne(stateTreeDepth, voteOptionTreeDepth);
 
+        processors[i].msgType <== msgs[i][0];
         processors[i].numSignUps <== numSignUps;
         processors[i].maxVoteOptions <== maxVoteOptions;
         processors[i].pollEndTimestamp <== pollEndTimestamp;
@@ -311,6 +306,7 @@ template ProcessMessages(
         }
 
         processors[i].cmdStateIndex <== commands[i].stateIndex;
+        processors[i].topupStateIndex <== msgs[i][1];
         processors[i].cmdNewPubKey[0] <== commands[i].newPubKey[0];
         processors[i].cmdNewPubKey[1] <== commands[i].newPubKey[1];
         processors[i].cmdVoteOptionIndex <== commands[i].voteOptionIndex;
@@ -329,16 +325,16 @@ template ProcessMessages(
         // process it as topup type message, 
         processors2[i] = ProcessTopup(stateTreeDepth);
         processors2[i].msgType <== msgs[i][0];
-        processors2[i].stateTreeIndex <== topupStateIndexes[i];
-        processors2[i].amount <== topupAmounts[i];
+        processors2[i].stateTreeIndex <== msgs[i][1];
+        processors2[i].amount <== msgs[i][2];
         processors2[i].numSignUps <== numSignUps;
         for (var j = 0; j < STATE_LEAF_LENGTH; j ++) {
-            processors2[i].stateLeaf[j] <== topupStateLeaves[i][j];
+            processors2[i].stateLeaf[j] <== currentStateLeaves[i][j];
         }
         for (var j = 0; j < stateTreeDepth; j ++) {
             for (var k = 0; k < TREE_ARITY - 1; k ++) {
                 processors2[i].stateLeafPathElements[j][k] 
-                    <== topupStateLeavesPathElements[i][j][k];
+                    <== currentStateLeavesPathElements[i][j][k];
             }
         }
         // pick the correct result by msg type
@@ -378,32 +374,32 @@ template ProcessTopup(stateTreeDepth) {
 
     signal output newStateRoot;
 
-    // skip several checkings here, because ProcessOne already checks
+    // skip state leaf verify, because it's checked in ProcessOne 
 
+    signal amt;
+    signal index;
+    amt <== amount * (msgType - 1); 
+    index <== stateTreeIndex * (msgType - 1);
+    component validCreditBalance = LessEqThan(252);
     // check stateIndex, if invalid index, set index and amount to zero
     component validStateLeafIndex = LessEqThan(252);
-    validStateLeafIndex.in[0] <== stateTreeIndex;
+    validStateLeafIndex.in[0] <== index;
     validStateLeafIndex.in[1] <== numSignUps;
 
     component indexMux = Mux1();
     indexMux.s <== validStateLeafIndex.out;
     indexMux.c[0] <== 0;
-    indexMux.c[1] <== stateTreeIndex;
+    indexMux.c[1] <== index;
 
     component amtMux =  Mux1();
     amtMux.s <== validStateLeafIndex.out;
     amtMux.c[0] <== 0;
-    amtMux.c[1] <== amount;
+    amtMux.c[1] <== amt;
     
 
     // check less than field size
-    // amt = 0 for vote type msg (msgType=1); amt not changed for topup msg (msgType=2) 
-    // this is to avoid possible overflow failure for vote type message here
     signal newCreditBalance;
-    signal amt;
-    amt <== amtMux.out * (msgType - 1); 
-    component validCreditBalance = LessEqThan(252);
-    newCreditBalance <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + amt;
+    newCreditBalance <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + amtMux.out;
     validCreditBalance.in[0] <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX];
     validCreditBalance.in[1] <== newCreditBalance;
 
@@ -449,6 +445,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
     var STATE_LEAF_TIMESTAMP_IDX = 3;
 
+    signal input msgType;
     signal input numSignUps;
     signal input maxVoteOptions;
 
@@ -467,6 +464,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     signal input currentVoteWeightsPathElements[voteOptionTreeDepth][TREE_ARITY - 1];
 
     signal input cmdStateIndex;
+    signal input topupStateIndex;
     signal input cmdNewPubKey[2];
     signal input cmdVoteOptionIndex;
     signal input cmdNewVoteWeight;
@@ -510,12 +508,19 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     }
 
     //  ----------------------------------------------------------------------- 
-    // 2. If isValid is 0, generate indices for leaf 0
-    //    Otherwise, generate indices for commmand.stateIndex
+    // 2. If msgType = 0 and isValid is 0, generate indices for leaf 0
+    //  Otherwise, generate indices for commmand.stateIndex or topupStateIndex depending on msgType
+    signal indexByType;
+    signal tmpIndex1;
+    signal tmpIndex2;
+    tmpIndex1 <== cmdStateIndex * (2 - msgType);
+    tmpIndex2 <== topupStateIndex * (msgType - 1);
+    indexByType <== tmpIndex1 + tmpIndex2;
+
     component stateIndexMux = Mux1();
-    stateIndexMux.s <== transformer.isValid;
+    stateIndexMux.s <== transformer.isValid + msgType - 1;
     stateIndexMux.c[0] <== 0;
-    stateIndexMux.c[1] <== cmdStateIndex;
+    stateIndexMux.c[1] <== indexByType;
 
     component stateLeafPathIndices = QuinGeneratePathIndices(stateTreeDepth);
     stateLeafPathIndices.in <== stateIndexMux.out;

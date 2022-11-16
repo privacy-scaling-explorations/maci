@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.7.2;
+pragma solidity ^0.8.10;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { PoseidonT3, PoseidonT6, Hasher } from "../crypto/Hasher.sol";
@@ -9,6 +9,7 @@ import { MerkleZeros as MerkleQuinary0 } from "./zeros/MerkleQuinary0.sol";
 import { MerkleZeros as MerkleQuinaryMaci } from "./zeros/MerkleQuinaryMaci.sol";
 import { MerkleZeros as MerkleQuinaryBlankSl } from "./zeros/MerkleQuinaryBlankSl.sol";
 import { MerkleZeros as MerkleQuinaryMaciWithSha256 } from "./zeros/MerkleQuinaryMaciWithSha256.sol";
+import "hardhat/console.sol";
 
 /*
  * This contract defines a Merkle tree where each leaf insertion only updates a
@@ -294,7 +295,7 @@ abstract contract AccQueue is Ownable, Hasher {
         uint256 _numSrQueueOps
     ) public onlyOwner {
         // This function can only be called once unless a new subtree is created
-        require(subTreesMerged == false, "AccQueue: subtrees already merged");
+        require(!subTreesMerged, "AccQueue: subtrees already merged");
 
         // There must be subtrees to merge
         require(numLeaves > 0, "AccQueue: nothing to merge");
@@ -316,7 +317,6 @@ abstract contract AccQueue is Ownable, Hasher {
 
         uint256 queueOpsPerformed = 0;
         for (uint256 i = nextSubRootIndex; i < currentSubtreeIndex; i ++) {
-
             if (_numSrQueueOps != 0 && queueOpsPerformed == _numSrQueueOps) {
                 // If the limit is not 0, stop if the limit has been reached
                 return;
@@ -335,7 +335,7 @@ abstract contract AccQueue is Ownable, Hasher {
             // Increment the ops counter
             queueOpsPerformed ++;
         }
-
+        
         // The height of the tree of subroots
         uint256 m = hashLength ** depth;
 
@@ -404,7 +404,7 @@ abstract contract AccQueue is Ownable, Hasher {
         require(_depth > 0, "AccQueue: _depth must be more than 0");
 
         // Ensure that the subtrees have been merged
-        require(subTreesMerged == true, "AccQueue: subtrees must be merged before calling merge()");
+        require(subTreesMerged, "AccQueue: subtrees must be merged before calling merge()");
 
         // Check the depth
         require(_depth <= MAX_DEPTH, "AccQueue: _depth must be lte MAX_DEPTH");

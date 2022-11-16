@@ -15,7 +15,7 @@ describe('UnpackElement circuit', () => {
         const circuit = 'unpackElement_test'
         const elements: string[] = []
         for (let i = 0; i < 5; i ++) {
-            let e = (BigInt(genRandomSalt()) % (BigInt(2 ** 50))).toString(2)
+            let e = (BigInt(genRandomSalt().toString()) % (BigInt(2 ** 50))).toString(2)
             while (e.length < 50) {
                 e = '0' + e
             }
@@ -39,7 +39,7 @@ describe('UnpackElement circuit', () => {
         const circuit = 'unpackElement4_test'
         const elements: string[] = []
         for (let i = 0; i < 4; i ++) {
-            let e = (BigInt(genRandomSalt()) % (BigInt(2 ** 50))).toString(2)
+            let e = (BigInt(genRandomSalt().toString()) % (BigInt(2 ** 50))).toString(2)
             while (e.length < 50) {
                 e = '0' + e
             }

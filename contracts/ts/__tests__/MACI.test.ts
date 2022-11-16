@@ -8,6 +8,8 @@ import {
     PCommand,
     VerifyingKey,
     Keypair,
+    PubKey,
+    Message,
 } from 'maci-domainobjs'
 
 import {
@@ -18,7 +20,7 @@ import {
     TreeDepths,
 } from 'maci-core'
 
-import { G1Point, G2Point } from 'maci-crypto'
+import { G1Point, G2Point, NOTHING_UP_MY_SLEEVE } from 'maci-crypto'
 
 const STATE_TREE_DEPTH = 10
 const STATE_TREE_ARITY = 5
@@ -291,6 +293,40 @@ describe('MACI', () => {
                 coordinator,
             )
             expect(p.toString()).toEqual(pollId.toString())
+            
+            // publish the NOTHING_UP_MY_SLEEVE message
+            const messageData = [
+                NOTHING_UP_MY_SLEEVE, 
+                BigInt(0)
+            ]
+            for (let i = 2; i < 10; i++) {
+                messageData.push(BigInt(0))
+            }
+            const message = new Message(
+                BigInt(1),
+                messageData
+            )
+            const padKey = new PubKey([
+                BigInt('10457101036533406547632367118273992217979173478358440826365724437999023779287'),
+                BigInt('19824078218392094440610104313265183977899662750282163392862422243483260492317'),
+            ])
+            maciState.polls[pollId].publishMessage(message, padKey)
+
+        })
+
+        it('should fail when attempting to init twice a Poll', async () => {
+            const pollContractAddress = await maciContract.getPoll(pollId)
+            const pollContract = new ethers.Contract(
+                pollContractAddress,
+                pollAbi,
+                signer,
+            )
+
+            try {
+                await pollContract.init()
+            } catch (error) {
+                expect(error).not.toBe(null)
+            }
         })
 
         it('should set correct storage values', async () => {
@@ -316,8 +352,9 @@ describe('MACI', () => {
             // There are 3 signups via the MACI instance
             expect(Number(sm[0])).toEqual(3)
 
-            // There are 0 messages until a user publishes a message
-            expect(Number(sm[1])).toEqual(0)
+            // There are 1 messages until a user publishes a message
+            // As we enqueue the NOTHING_UP_MY_SLEEVE hash
+            expect(Number(sm[1])).toEqual(1)
 
             const onChainMaxValues = await pollContract.maxValues()
 
@@ -401,7 +438,7 @@ describe('MACI', () => {
                     { gasLimit: 300000 },
                 )
             } catch (e) {
-                const error = 'PollE03'
+                const error = 'PollE01'
                 expect(e.message.slice(0,e.message.length-1).endsWith(error)).toBeTruthy()
             }
         })
@@ -434,7 +471,7 @@ describe('MACI', () => {
             try {
                 await pollContract.mergeMaciStateAq(0, { gasLimit: 4000000 })
             } catch (e) {
-                const error = 'PollE08'
+                const error = 'PollE06'
                 expect(e.message.slice(0,e.message.length-1).endsWith(error)).toBeTruthy()
             }
         })

@@ -1,7 +1,7 @@
 {
     "name": "maci-contracts",
     "version": "1.1.0",
-    "description": "",
+    "description": "Solidity Smart Contracts for MACI (Minimal Anti-Collusion Infrastructure)",
     "main": "build/index.js",
     "scripts": {
         "watch": "tsc --watch",
@@ -28,11 +28,11 @@
         "@maci-contracts": "."
     },
     "dependencies": {
-        "@nomiclabs/hardhat-ethers": "^2.0.2",
-        "@openzeppelin/contracts": "^3.3.0-solc-0.7",
+        "@nomiclabs/hardhat-ethers": "^2.2.1",
+        "@openzeppelin/contracts": "^4.8.0",
         "argparse": "^1.0.10",
         "circomlib": "0.5.1",
-        "hardhat": "^2.0.11",
+        "hardhat": "^2.12.2",
         "hardhat-artifactor": "^0.2.0",
         "hardhat-contract-sizer": "^2.0.3",
         "module-alias": "^2.2.2"
