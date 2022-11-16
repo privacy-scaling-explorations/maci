@@ -15,9 +15,8 @@
     "dependencies": {
         "@nomiclabs/hardhat-ethers": "^2.0.2",
         "argparse": "^1.0.10",
-        "circom": "0.5.45",
-        "circom_runtime": "0.1.13",
-        "circomlib": "0.5.2",
+        "circom_runtime": "^0.1.22",
+        "circomlib": "^2.0.5",
         "ethers": "^5.0.0",
         "ffiasm": "0.1.3",
         "hardhat": "^2.0.11",
