@@ -62,7 +62,7 @@ npm run buildQuadVoteTallySnark
 ```
 
 This should take no more than 5 minutes. We used to provide download links to
-working versions of the keys and compiiled circuit files, but now that we can
+working versions of the keys and compiled circuit files, but now that we can
 use `snarkjs` to produce them very quickly, we no longer maintain them.
 
 Note that if you change the circuits and recompile them, you should also update
