@@ -18,7 +18,7 @@ NODE_OPTIONS=--max-old-space-size=13000 node \
     --no-incremental-marking \
     --max-semi-space-size=1024 \
     --initial-heap-size=2048000 \
-    build/buildSnarks.js -i circom/prod/batchUpdateStateTree_large.circom -j params/batchUstLarge.r1cs -c params/batchUstLarge.c -y params/batchUstLarge.sym -p params/batchUstPkLarge.json -v params/batchUstVkLarge.json -s params/BatchUpdateStateTreeVerifierLarge.sol -vs BatchUpdateStateTreeVerifierLarge -pr params/batchUstLarge.params -w params/batchUstLarge -a params/batchUstLarge.wasm
+    build/buildSnarks.js -ml 13000 -i circom/prod/batchUpdateStateTree_large.circom -j params/batchUstLarge.r1cs -c params/batchUstLarge.c -y params/batchUstLarge.sym -p params/batchUstPkLarge.json -v params/batchUstVkLarge.json -s params/BatchUpdateStateTreeVerifierLarge.sol -vs BatchUpdateStateTreeVerifierLarge -pr params/batchUstLarge.params -w params/batchUstLarge -a params/batchUstLarge.wasm
 
 
 echo "Building quadVoteTally_Large"
@@ -33,7 +33,7 @@ NODE_OPTIONS=--max-old-space-size=16384 node \
     --no-incremental-marking \
     --max-semi-space-size=1024 \
     --initial-heap-size=2048000 \
-    build/buildSnarks.js -i circom/prod/quadVoteTally_large.circom -j params/qvtCircuitLarge.r1cs -c params/qvtLarge.c -y params/qvtLarge.sym -p params/qvtPkLarge.bin -v params/qvtVkLarge.json -s params/QuadVoteTallyVerifierLarge.sol -vs QuadVoteTallyVerifierLarge -pr params/qvtLarge.params -w params/qvtLarge -a params/qvtLarge.wasm
+    build/buildSnarks.js -ml 16384 -i circom/prod/quadVoteTally_large.circom -j params/qvtCircuitLarge.r1cs -c params/qvtLarge.c -y params/qvtLarge.sym -p params/qvtPkLarge.bin -v params/qvtVkLarge.json -s params/QuadVoteTallyVerifierLarge.sol -vs QuadVoteTallyVerifierLarge -pr params/qvtLarge.params -w params/qvtLarge -a params/qvtLarge.wasm
 
 echo 'Copying BatchUpdateStateTreeVerifierLarge.sol to contracts/sol.'
 cp ./params/BatchUpdateStateTreeVerifierLarge.sol ../contracts/sol/
