@@ -9,7 +9,6 @@ import { MerkleZeros as MerkleQuinary0 } from "./zeros/MerkleQuinary0.sol";
 import { MerkleZeros as MerkleQuinaryMaci } from "./zeros/MerkleQuinaryMaci.sol";
 import { MerkleZeros as MerkleQuinaryBlankSl } from "./zeros/MerkleQuinaryBlankSl.sol";
 import { MerkleZeros as MerkleQuinaryMaciWithSha256 } from "./zeros/MerkleQuinaryMaciWithSha256.sol";
-import "hardhat/console.sol";
 
 /*
  * This contract defines a Merkle tree where each leaf insertion only updates a

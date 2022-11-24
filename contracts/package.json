@@ -31,7 +31,8 @@
         "@nomiclabs/hardhat-ethers": "^2.2.1",
         "@openzeppelin/contracts": "^4.8.0",
         "argparse": "^1.0.10",
-        "circomlib": "0.5.1",
+        "circomlib": "^2.0.5",
+        "circomlibjs": "^0.1.7",
         "hardhat": "^2.12.2",
         "hardhat-artifactor": "^0.2.0",
         "hardhat-contract-sizer": "^2.0.3",
@@ -47,7 +48,6 @@
         "maci-crypto": "^1.1.0",
         "maci-domainobjs": "^1.1.0",
         "shelljs": "^0.8.4",
-        "truffle-artifactor": "^4.0.30",
         "ts-jest": "^26.5.4"
     },
     "gitHead": "f567a17293114ba2d5e89c711d00a9f4c197f070"
