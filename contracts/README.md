@@ -1,60 +1,49 @@
 # `maci-contracts`
 
-This submodule contains all the Ethereum contracts and tests for MACI.
+This submodule contains all the Ethereum contracts and tests for MACI. 
+
+For more information please refer to the [documentation for Contracts](http://privacy-scaling-explorations.github.io/maci/contracts.html).
 
 ## Contracts
 
-**`MACI.sol`**
-
-The main contract to which all on-chain interactions should occur.
-
-It should not contain much code besides its constructor function. Rather, it
-should inherit from the following contracts, each of which defines a specific
-class of functions:
+* **`MACI.sol`**
+    - The main contract that allows users to sign-up, deploy new Polls, and merge Merkle Trees. 
 
 * **`Polls.sol`**
+    - All data pertaining to a poll resides here. It should be deployed via the PollFactory contract
 
-    - Defines all contract storage variables and constants. All data pertaining
-      to a poll resides here.
+* **`PollFactory`**
+    - Resides inside `Poll.sol` and allows to deploy a new Poll contract.
 
 * **`DomainObjs.sol`**
-
     - Defines `struct`s that represent domain objects.
 
-* **`External.sol`**
+* **`IMACI`**
+    - The interface for the MACI contract - describes callable functions
 
-    - Defines functions that interact with external contracts (i.e. sign-up
-      gatekeepers and voice credit oracles).
+* **`Params`**
+    - Contains a number of `structs` needed by the other contracts
 
-* **`VoterInteractions.sol`**
+* **`SignUpToken`**
+    - An implementation of what a Signup token would look like to gatekeep access to MACI
 
-    - Defines functions for voters (i.e. sign up and publish messages).
+* **`TopupCredit`**
+    - A smart contract that can be used by coordinators to airdrop topup credits to voters
 
-* **`CoordinatorInteractions.sol`**
+* **`VkRegistry`**
+    - A contract holding the verifying keys for the circuits
 
-    - Defines functions for coordinators (i.e. process and tally votes).
+* **`crypto/`**
+    - Contracts with cryptographic functions including hash functions.
 
-* **`Getters.sol`**
+* **`trees/`**
+    - Contains Merkle tree contracts.
 
-    - Defines convenience view functions, particularly those which are more
-      complex than reading a single variable.
+* **`gatekeepers/`**
+    - Abstract contract for creating signup gatekeepers and two sample implementations (FreeForAll and SignUpToken gatekeepers)
 
-**`crypto/`**
+* **`initialVoiceCreditProxy/`**
+    - Contains contracts implementations for retrieving voice credits assigned to voters
 
-Contracts with cryptographic functions including hash functions.
-
-**`trees/`**
-
-Merkle tree contracts.
-
-**`verifiers/`**
-
-zk-SNARK verifier contracts.
-
-**`tally/`**
-
-Contracts with convenience functions for tally verification.
-
-**`testing/`**
-
-Contracts with testing and gas benchmark functions only for development purposes.
+* **`HasherBenchmarks/`**
+    - Contract with testing and gas benchmark functions only for development purposes.
