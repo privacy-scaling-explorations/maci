@@ -1,7 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
 const { ethers } = require('hardhat')
-import { BigNumber } from 'ethers'
 
 const abiDir = path.join(__dirname, '..', 'artifacts')
 const solDir = path.join(__dirname, '..', 'contracts')
@@ -123,7 +122,7 @@ const deployTopupCredit = async () => {
     const topupCreditFactory = await ethers.getContractFactory('TopupCredit', signer)
     const gasFees = await signer.provider.getFeeData()
     return await topupCreditFactory.deploy({
-        maxFeePerGas: BigNumber.from(gasFees['maxFeePerGas']).mul(2),
+        maxFeePerGas: gasFees['maxFeePerGas'],
     })
 }
 
@@ -132,7 +131,7 @@ const deployVkRegistry = async () => {
     const vkRegistryFactory = await ethers.getContractFactory('VkRegistry', signer)
     const gasFees = await signer.provider.getFeeData()
     return await vkRegistryFactory.deploy({
-        maxFeePerGas: BigNumber.from(gasFees['maxFeePerGas']).mul(2),
+        maxFeePerGas: gasFees['maxFeePerGas'],
     })
 }
 
