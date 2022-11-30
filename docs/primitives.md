@@ -115,7 +115,7 @@ Public keys also translate to a point on the Baby Jubjub elliptic curve, and is 
 
 #### Key Pair 
 
-A Key Pair it's a private key and its corresponding public key.
+A Key Pair is a private key and its corresponding public key.
 
 #### Command 
 
