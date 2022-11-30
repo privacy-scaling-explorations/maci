@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 const { ethers } = require('hardhat')
+import { BigNumber } from 'ethers'
 
 const abiDir = path.join(__dirname, '..', 'artifacts')
 const solDir = path.join(__dirname, '..', 'contracts')
@@ -23,7 +24,6 @@ const parseArtifact = (filename: string) => {
 		filePath += 'initialVoiceCreditProxy/'
 		filePath += `${filename}.sol`
 	}
-
 
 	if (filename.includes('Verifier')) {
 		filePath += 'crypto/Verifier.sol/'
@@ -121,13 +121,19 @@ const genJsonRpcDeployer = (
 const deployTopupCredit = async () => {
 	const signer = await getDefaultSigner()
     const topupCreditFactory = await ethers.getContractFactory('TopupCredit', signer)
-    return await topupCreditFactory.deploy()
+    const gasFees = await signer.provider.getFeeData()
+    return await topupCreditFactory.deploy({
+        maxFeePerGas: BigNumber.from(gasFees['maxFeePerGas']).mul(2),
+    })
 }
 
 const deployVkRegistry = async () => {
 	const signer = await getDefaultSigner()
     const vkRegistryFactory = await ethers.getContractFactory('VkRegistry', signer)
-    return await vkRegistryFactory.deploy()
+    const gasFees = await signer.provider.getFeeData()
+    return await vkRegistryFactory.deploy({
+        maxFeePerGas: BigNumber.from(gasFees['maxFeePerGas']).mul(2),
+    })
 }
 
 const deployMockVerifier = async (quiet = false) => {
@@ -169,6 +175,7 @@ const deploySignupTokenGatekeeper = async (
 
 	const signer = await getDefaultSigner()
     const factory = await ethers.getContractFactory('SignUpTokenGatekeeper', signer)
+
     return await factory.deploy(signUpTokenAddress)
 }
 
@@ -195,10 +202,20 @@ const deployPoseidonContracts = async (quiet = false) => {
     const PoseidonT5ContractFactory = await ethers.getContractFactory('PoseidonT5', signer)
     const PoseidonT6ContractFactory = await ethers.getContractFactory('PoseidonT6', signer)
 
-	const PoseidonT3Contract = await PoseidonT3ContractFactory.deploy()
-    const PoseidonT4Contract = await PoseidonT4ContractFactory.deploy()
-    const PoseidonT5Contract = await PoseidonT5ContractFactory.deploy()
-    const PoseidonT6Contract = await PoseidonT6ContractFactory.deploy()
+    const gasFees = await signer.provider.getFeeData()
+
+	const PoseidonT3Contract = await PoseidonT3ContractFactory.deploy({
+        maxFeePerGas: gasFees['maxFeePerGas'],
+    })
+    const PoseidonT4Contract = await PoseidonT4ContractFactory.deploy({
+        maxFeePerGas: gasFees['maxFeePerGas'],
+    })
+    const PoseidonT5Contract = await PoseidonT5ContractFactory.deploy({
+        maxFeePerGas: gasFees['maxFeePerGas'],
+    })
+    const PoseidonT6Contract = await PoseidonT6ContractFactory.deploy({
+        maxFeePerGas: gasFees['maxFeePerGas'],
+    })
 
     await PoseidonT3Contract.deployTransaction.wait()
     await PoseidonT4Contract.deployTransaction.wait()
@@ -217,8 +234,11 @@ const deployPollFactory = async (quiet = false) => {
 	const signer = await getDefaultSigner()
     log('Deploying PollFactory', quiet)
     const pollFactory = await ethers.getContractFactory('PollFactory', signer)
+    const gasFees = await signer.provider.getFeeData()
 
-    return await pollFactory.deploy()
+    return await pollFactory.deploy({
+        maxFeePerGas: gasFees['maxFeePerGas'],
+    })
 }
 
 const deployPpt = async (verifierContractAddress: string, quiet = false) => {
@@ -226,7 +246,11 @@ const deployPpt = async (verifierContractAddress: string, quiet = false) => {
     log('Deploying PollProcessorAndTallyer', quiet)
     const pptFactory = await ethers.getContractFactory('PollProcessorAndTallyer', signer)
 
-    return await pptFactory.deploy(verifierContractAddress)
+    const gasFees = await signer.provider.getFeeData()
+
+    return await pptFactory.deploy(verifierContractAddress, {
+        maxFeePerGas: gasFees['maxFeePerGas'],
+    })
 }
 
 const deployMessageAqFactory = async (quiet = false) => {
@@ -234,7 +258,11 @@ const deployMessageAqFactory = async (quiet = false) => {
     log('Deploying MessageAqFactory', quiet)
     const messageAqFactory = await ethers.getContractFactory('MessageAqFactory', signer)
     // MessageAqFactory
-    return await messageAqFactory.deploy()
+    const gasFees = await signer.provider.getFeeData()
+
+    return await messageAqFactory.deploy({
+        maxFeePerGas: gasFees['maxFeePerGas'],
+    })
 }
 
 const deployMaci = async (
@@ -279,28 +307,51 @@ const deployMaci = async (
     await pollFactoryContract.deployTransaction.wait()
 
     log('Deploying MACI', quiet)
+
+    let gasFees = await signer.provider.getFeeData()
+
     const maciContract = await maciContractFactory.deploy(
         pollFactoryContract.address,
         signUpTokenGatekeeperContractAddress,
         initialVoiceCreditBalanceAddress,
+        {
+            maxFeePerGas: gasFees['maxFeePerGas'],
+        }
     )
 
     await maciContract.deployTransaction.wait()
 
-    log('Transferring PollFactory ownership to MACI', quiet)
-    await (await (pollFactoryContract.transferOwnership(maciContract.address))).wait()
+    gasFees = await signer.provider.getFeeData()
 
-    const messageAqContract = await messageAqFactory.deploy()
+    log('Transferring PollFactory ownership to MACI', quiet)
+    await (await (pollFactoryContract.transferOwnership(maciContract.address, {
+        maxFeePerGas: gasFees['maxFeePerGas'],
+    }))).wait()
+
+    gasFees = await signer.provider.getFeeData()
+
+    const messageAqContract = await messageAqFactory.deploy({
+        maxFeePerGas: gasFees['maxFeePerGas'],
+    })
     await messageAqContract.deployTransaction.wait()
 
+    gasFees = await signer.provider.getFeeData()
+
     log('Transferring MessageAqFactory ownership to PollFactory', quiet)
-    await (await (messageAqContract.transferOwnership(pollFactoryContract.address))).wait()
+    await (await (messageAqContract.transferOwnership(pollFactoryContract.address, {
+        maxFeePerGas: gasFees['maxFeePerGas'],
+    }))).wait()
 
     log('Initialising MACI', quiet)
+    gasFees = await signer.provider.getFeeData()
+
     await (await (maciContract.init(
         vkRegistryContractAddress,
         messageAqContract.address,
-        topupCreditContractAddress
+        topupCreditContractAddress,
+        {
+            maxFeePerGas: gasFees['maxFeePerGas'],
+        }
     ))).wait()
 
     const [ AccQueueQuinaryMaciAbi, ] = parseArtifact('AccQueue')
