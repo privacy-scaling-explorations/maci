@@ -16,7 +16,7 @@ For more information please refer to the [documentation for Contracts](http://pr
     - Resides inside `Poll.sol` and allows to deploy a new Poll contract.
 
 * **`DomainObjs.sol`**
-    - Defines `struct`s that represent domain objects.
+    - Defines `structs` that represent domain objects.
 
 * **`IMACI`**
     - The interface for the MACI contract - describes callable functions
