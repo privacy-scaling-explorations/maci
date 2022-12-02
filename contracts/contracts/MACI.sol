@@ -39,7 +39,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         );
 
     // Each poll has an incrementing ID
-    uint256 internal nextPollId = 0;
+    uint256 public nextPollId;
 
     // A mapping of poll IDs to Poll contracts.
     mapping(uint256 => Poll) public polls;
@@ -69,7 +69,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     AccQueue public override stateAq;
 
     // Whether the init() function has been successfully executed yet.
-    bool public isInitialised = false;
+    bool public isInitialised;
 
     // Address of the SignUpGatekeeper, a contract which determines whether a
     // user may sign up to vote
