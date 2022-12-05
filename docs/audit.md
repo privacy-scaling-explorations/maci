@@ -1,6 +1,6 @@
 # Security Audit 2022 
 
-In the summer of 2022, MACI v1 was audited by Hashcloak. The audit covered both the zk-SNARK circuits and the Solidity smart contracts.
+In the summer of 2022, MACI v1 was audited by HashCloak. The audit covered both the zk-SNARK circuits and the Solidity smart contracts.
 
 This audited revealed a number of high severity issues which have been remediated by the MACI development team. We will be looking at those in details in the following sections.
 
@@ -92,4 +92,4 @@ function deployPoll(
 
 As seen above, an external call is made, before updating the state with the new poll. The issue is tracked [here](https://github.com/privacy-scaling-explorations/maci/pull/522#discussion_r981863147) and only left open as the code does not enforce best practices, however it does not pose any immediate risk. 
 
-The rest of the issues were succesffuly fixed and merged in the v1 branch.
+The rest of the issues were succesffuly fixed and reflected in the v1.1.1. For the full report, please refer to the `audit` folder inside the root of the repository.

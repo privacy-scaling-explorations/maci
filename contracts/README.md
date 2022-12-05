@@ -7,16 +7,16 @@ For more information please refer to the [documentation for Contracts](http://pr
 ## Contracts
 
 * **`MACI.sol`**
-    - The main contract that allows users to sign-up, deploy new Polls, and merge Merkle Trees. 
+    - The main contract that allows users to sign-up, deploy new Polls, and merge Merkle Trees
 
 * **`Polls.sol`**
     - All data pertaining to a poll resides here. It should be deployed via the PollFactory contract
 
 * **`PollFactory`**
-    - Resides inside `Poll.sol` and allows to deploy a new Poll contract.
+    - Resides inside `Poll.sol` and allows to deploy a new Poll contract
 
 * **`DomainObjs.sol`**
-    - Defines `structs` that represent domain objects.
+    - Defines `structs` that represent domain objects
 
 * **`IMACI`**
     - The interface for the MACI contract - describes callable functions
@@ -34,10 +34,10 @@ For more information please refer to the [documentation for Contracts](http://pr
     - A contract holding the verifying keys for the circuits
 
 * **`crypto/`**
-    - Contracts with cryptographic functions including hash functions.
+    - Contracts with cryptographic functions including hash functions
 
 * **`trees/`**
-    - Contains Merkle tree contracts.
+    - Contains Merkle tree contracts
 
 * **`gatekeepers/`**
     - Abstract contract for creating signup gatekeepers and two sample implementations (FreeForAll and SignUpToken gatekeepers)
@@ -46,4 +46,4 @@ For more information please refer to the [documentation for Contracts](http://pr
     - Contains contracts implementations for retrieving voice credits assigned to voters
 
 * **`HasherBenchmarks/`**
-    - Contract with testing and gas benchmark functions only for development purposes.
+    - Contract with testing and gas benchmark functions only for development purposes
