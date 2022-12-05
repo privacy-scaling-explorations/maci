@@ -2,6 +2,7 @@ const path = require('path')
 const shelljs = require('shelljs')
 const logger = require('./logger').logger
 const db = require('./db')
+const { whitelist } = require('utils')
 
 const cliPath = path.join(
     __dirname,
@@ -10,7 +11,6 @@ const cliPath = path.join(
 )
 
 const cliCmd = `cd ${cliPath} && node build/index.js`
-
 
 async function handler(req, res, dbClient) {
   let output, cmd, query, dbres
@@ -21,13 +21,20 @@ async function handler(req, res, dbClient) {
          res.send("missing parameters...")
          break
       }
+      
+      const pubKey = req.body['pubkey']
+      const maci = req.body['maci']
+
+      if (!whitelist(pubKey) || !whitelist(maci)) break 
+
       query = { 'MACI': req.body["maci"]};
       dbres = await dbClient.db(db.dbName).collection(db.collectionName).findOne(query)
       if(!dbres) {
         res.send(`MACI contract address ${req.body["maci"]} not exist`)
         break
       }
-      cmd = `${cliCmd} signup -p ${req.body["pubkey"]} -x ${req.body["maci"]}`
+
+      cmd = `${cliCmd} signup -p ${pubKey} -x ${maci}`
       logger.debug(`process signup...${cmd}`)
       output = shelljs.exec(cmd, { silent })
       break
@@ -41,6 +48,18 @@ async function handler(req, res, dbClient) {
          res.send("missing parameters...")
          break
       }
+
+      if(
+        !whitelist(req.body['pubKey']) || 
+        !whitelist(req.body['maci']) || 
+        !whitelist(req.body['privKey']) || 
+        !whitelist(req.body["state_index"]) ||
+        !whitelist(req.body["vote_option_index"]) ||
+        !whitelist(req.body["new_vote_weight"]) ||
+        !whitelist(req.body["nonce"]) ||
+        !whitelist(req.body["poll_id"])
+      ) break 
+
       query = { 'MACI': req.body["maci"]}
       dbres = await dbClient.db(db.dbName).collection(db.collectionName).findOne(query)
       if(!dbres) {
@@ -60,13 +79,16 @@ async function handler(req, res, dbClient) {
          res.send("missing parameters...")
          break
       }
+
+      if (!whitelist(req.body['maci']) || !whitelist(req.body['poll_id'])) break 
+
       query = { 'MACI': req.body["maci"]}
       dbres = await dbClient.db(db.dbName).collection(db.collectionName).findOne(query)
       if(!dbres) {
         res.send(`MACI contract address ${req.body["maci"]} not exist`)
         break
       }
-      let pptKey = "PollProcessorAndTally-" + req.body["poll_id"]
+      const pptKey = "PollProcessorAndTally-" + req.body["poll_id"]
       if (!(pptKey in dbres)) {
          res.send(`PollProcessAndTally contract for poll ${req.body["poll_id"]} not exists`)
          break
