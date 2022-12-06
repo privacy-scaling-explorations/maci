@@ -1,5 +1,7 @@
 # Minimal Anti-Collusion Infrastructure
 
+> To see the latest development, please check out the [`v1`](https://github.com/privacy-scaling-explorations/maci/tree/v1) branch. This branch contains version 0.9.4.
+
 Please refer to the [implementation spec](./specs/) for technical details, and
 the original [ethresear.ch
 post](https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413) for a
