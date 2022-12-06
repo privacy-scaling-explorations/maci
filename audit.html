@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Circuits - Minimum Anti-Collusion Infrastructure</title>
+        <title>Latest audit - Minimum Anti-Collusion Infrastructure</title>
         <!-- Custom HTML head -->
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
@@ -77,7 +77,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="primitives.html"><strong aria-hidden="true">3.</strong> MACI Primitives</a></li><li class="chapter-item expanded "><a href="cli.html"><strong aria-hidden="true">4.</strong> Command-line interface</a></li><li class="chapter-item expanded "><a href="contracts.html"><strong aria-hidden="true">5.</strong> Smart Contracts</a></li><li class="chapter-item expanded "><a href="circuits.html" class="active"><strong aria-hidden="true">6.</strong> Circuits</a></li><li class="chapter-item expanded "><a href="trustedsetup.html"><strong aria-hidden="true">7.</strong> Trusted setup</a></li><li class="chapter-item expanded "><a href="testing.html"><strong aria-hidden="true">8.</strong> Testing</a></li><li class="chapter-item expanded "><a href="integrating-maci.html"><strong aria-hidden="true">9.</strong> Integrating MACI</a></li><li class="chapter-item expanded "><a href="audit.html"><strong aria-hidden="true">10.</strong> Latest audit</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="primitives.html"><strong aria-hidden="true">3.</strong> MACI Primitives</a></li><li class="chapter-item expanded "><a href="cli.html"><strong aria-hidden="true">4.</strong> Command-line interface</a></li><li class="chapter-item expanded "><a href="contracts.html"><strong aria-hidden="true">5.</strong> Smart Contracts</a></li><li class="chapter-item expanded "><a href="circuits.html"><strong aria-hidden="true">6.</strong> Circuits</a></li><li class="chapter-item expanded "><a href="trustedsetup.html"><strong aria-hidden="true">7.</strong> Trusted setup</a></li><li class="chapter-item expanded "><a href="testing.html"><strong aria-hidden="true">8.</strong> Testing</a></li><li class="chapter-item expanded "><a href="integrating-maci.html"><strong aria-hidden="true">9.</strong> Integrating MACI</a></li><li class="chapter-item expanded "><a href="audit.html" class="active"><strong aria-hidden="true">10.</strong> Latest audit</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -136,76 +136,80 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="circuits"><a class="header" href="#circuits">Circuits</a></h1>
-<p>MACI has three zk-SNARK circuits:</p>
-<ol>
-<li><code>ProcessMessages.circom</code>, which takes a batch of messages, and updates the
-state and ballot trees according to the contents of said messages.</li>
-<li><code>TallyVotes.circom</code>, which counts votes from users' ballots, batch by batch.</li>
-<li><code>Subsidy.circom</code>, which implements <a href="https://hackmd.io/@chaosma/H1_9xmT2K">pairwise subsidy</a></li>
-</ol>
-<p>Each circuit is parameterised and it is important to set the right parameters
-to your use case. For example, if you want to support up to 3125 messages, the message tree depth parameter should be set to <code>5</code> (as $5^5 = 3125$).</p>
-<p>Next, navigate to the <code>cli/</code> directory and edit <code>zkeys.config.yml</code>.</p>
-<p>This config file defines the parameters required for MACI's circuits.</p>
-<h3 id="message-processing"><a class="header" href="#message-processing">Message processing</a></h3>
-<table><thead><tr><th>#</th><th>Parameter</th><th>Description</th></tr></thead><tbody>
-<tr><td>0</td><td>State tree depth</td><td>Should be set to 10. Allows 9,765,625 signups.</td></tr>
-<tr><td>1</td><td>Message tree depth</td><td>Allows $(5^{n})$ votes or key-change messages.</td></tr>
-<tr><td>2</td><td>Message batch tree depth</td><td>Allows $(5^{n})$ messages to be processed per batch.</td></tr>
-<tr><td>3</td><td>Vote option tree depth</td><td>Allows $(5^{n})$ vote options.</td></tr>
-</tbody></table>
-<h3 id="vote-tallying"><a class="header" href="#vote-tallying">Vote tallying</a></h3>
-<table><thead><tr><th>#</th><th>Parameter</th><th>Description</th></tr></thead><tbody>
-<tr><td>0</td><td>State tree depth</td><td>Should be set to 10. Allows 9,765,625 signups.</td></tr>
-<tr><td>1</td><td>State leaf batch depth</td><td>Allows $(5^{n})$ users' votes to be processed per batch.</td></tr>
-<tr><td>2</td><td>Message batch tree depth</td><td>Allows $(5^{n})$ messages to be processed per batch.</td></tr>
-</tbody></table>
-<h3 id="subsisdy"><a class="header" href="#subsisdy">Subsisdy</a></h3>
-<table><thead><tr><th>#</th><th>Parameter</th><th>Description</th></tr></thead><tbody>
-<tr><td>0</td><td>State tree depth</td><td>Should be set to 10. Allows 9,765,625 signups.</td></tr>
-<tr><td>1</td><td>State leaf batch depth</td><td>Allows $(5^{n})$ users' votes to be processed per batch.</td></tr>
-<tr><td>2</td><td>Vote option tree depth</td><td>Allows $(5^{n})$ vote options.</td></tr>
-</tbody></table>
-<h2 id="compile-circuits"><a class="header" href="#compile-circuits">Compile circuits</a></h2>
-<p>Run:</p>
-<pre><code class="language-bash">npx zkey-manager compile -c ./zkeys.config.yml
+                        <h1 id="security-audit-2022"><a class="header" href="#security-audit-2022">Security Audit 2022</a></h1>
+<p>In the summer of 2022, MACI v1 was audited by HashCloak. The audit covered both the zk-SNARK circuits and the Solidity smart contracts.</p>
+<p>This audited revealed a number of high severity issues which have been remediated by the MACI development team. We will be looking at those in details in the following sections.</p>
+<h2 id="data-is-not-fully-verified-during-a-state-update"><a class="header" href="#data-is-not-fully-verified-during-a-state-update">Data is not fully verified during a state update</a></h2>
+<p>This issue could have allowed a malicious coordinator to change the MACI state arbitrarly, for instance by tampering with the voice credits and the voting public key of any user. </p>
+<p>In more details, the <code>processMessages.circom</code> circuit, did not fully verify that after a state update, the new state was the result of executing an arbitrary number of user messages on the previous state. <code>topupStateLeaves</code> and <code>topupStateLeavesPathElements</code> were never verified against the current state, and <code>topupStateIndexes</code> and <code>topupAmounts</code> were not verified against the message root. </p>
+<p>This was rectified with commit <a href="https://github.com/privacy-scaling-explorations/maci/pull/522/commits/6df6a4054da926b07f35c5befab4f1f8af33dcc6">6df6a4054da926b07f35c5befab4f1f8af33dcc6</a></p>
+<h2 id="token-for-top-up-is-a-free-resource"><a class="header" href="#token-for-top-up-is-a-free-resource">Token for top-up is a free resource</a></h2>
+<p>The provided <code>TopupCredit.sol</code> contract implemented unprotected <code>airdrop</code> and <code>airdropTo</code> functions, which could have allowed anyone to receive unlimited voice credits. While this contract was provided as a template, the issue has been rectified by adding the <code>onlyOwner</code> modifier to these two functions.</p>
+<pre><code class="language-javascript">function airdropTo(address account, uint256 amount) public onlyOwner {
+    require(amount &lt; MAXIMUM_AIRDROP_AMOUNT);
+    _mint(account, amount);
+}
+
+function airdrop(uint256 amount) public onlyOwner {
+    require(amount &lt; MAXIMUM_AIRDROP_AMOUNT, &quot;amount exceed maximum limit&quot;);
+    _mint(msg.sender, amount);
+}
 </code></pre>
-<p>The larger the trees, the more time this process may take. You may also need a
-machine with a very large amount of memory.</p>
-<h2 id="measure-the-circuit-sizes"><a class="header" href="#measure-the-circuit-sizes">Measure the circuit sizes</a></h2>
-<p>The size of a circuit is denoted by its number of constraints. The larger this
-number, the more time it takes to compile it, generate its <code>.zkey</code> file, and
-perform phase 2 contributions.</p>
-<p>Run this command to measure a circuit:</p>
-<pre><code class="language-bash">npx snarkjs r1cs info CIRCUIT_NAME.circom
+<h2 id="integer-overflow-problem-and-improper-bit-length-restriction"><a class="header" href="#integer-overflow-problem-and-improper-bit-length-restriction">Integer overflow problem and improper bit length restriction</a></h2>
+<p>This issue within the <code>float.circom</code> circuit could have resulted in a overflow on the <code>IntegerDivision</code> template. This stemmed from the lack of validation of input size, as well as not preventing a division by zero. Furthemore, it was pointed out that using assert in circuits did not contribute to constraints verification, and could have been bypassed by a malicious coordinator. </p>
+<p>The issue was rectified with commit <a href="https://github.com/privacy-scaling-explorations/maci/pull/523/commits/efd4617724e956d2566062c6fe882e1d45cba7c4">efd4617724e956d2566062c6fe882e1d45cba7c4</a></p>
+<h2 id="messagequeue-in-pollfactory-is-uninitialized"><a class="header" href="#messagequeue-in-pollfactory-is-uninitialized">MessageQueue in PollFactory is uninitialized</a></h2>
+<p>MACI uses a message queue (a quinary merkle tree) to store all the messages to be processed for a single poll. When deploying a new poll, a corresponding message queue contract is deployed as well, however this was never initialized with a zero value. </p>
+<p>Should the queue never be initialized with the zero value, a malicious user could submit a message to initialize the queue with a value they know how to decrypt, which however would take a very long time to generate a proof for. This could result in a denial of service attack against the coordinator. </p>
+<p>The code was fixed by enqueing a message containing the zero value <code>NOTHING_UP_MY_SLEEVE</code> which is the result of:</p>
+<p><code>keccak256(&quot;Maci&quot;) % p</code></p>
+<p>Transalted into code, an <code>init</code> function was included in the Poll contract, with the following enqueing of the placeholder leaf:</p>
+<pre><code class="language-javascript">// init messageAq here by inserting placeholderLeaf
+uint256[2] memory dat;
+dat[0] = NOTHING_UP_MY_SLEEVE;
+dat[1] = 0;
+(Message memory _message, PubKey memory _padKey, uint256 placeholderLeaf) = padAndHashMessage(dat, 1); 
+extContracts.messageAq.enqueue(placeholderLeaf);
 </code></pre>
-<h2 id="download-the-ptau-file"><a class="header" href="#download-the-ptau-file">Download the <code>.ptau</code> file</a></h2>
-<p>This file should be the result of the Perpetual Powers of Tau trusted setup
-contribution which <a href="https://blog.hermez.io/hermez-cryptographic-setup/">Hermez Network
-selected</a>.</p>
-<p>Run:</p>
-<pre><code class="language-bash">npx zkey-manager downloadPtau -c ./zkeys.config.yml
+<h2 id="additional-issues-and-improvements"><a class="header" href="#additional-issues-and-improvements">Additional issues and improvements</a></h2>
+<p>The rest of the issues were either low risk, informational or general optimizations. </p>
+<p>As an example, there were certain functions which did not enforce the checks-effets-interaction pattern, which could potentially have led to reentrancy attacks. While most of these have been fully remediated, the <code>deployPoll</code> function within MACI is not currently enfocing the pattern when deploying a new poll contract using the <code>PollFactory</code> factory contract.</p>
+<pre><code class="language-javascript">function deployPoll(
+    uint256 _duration,
+    MaxValues memory _maxValues,
+    TreeDepths memory _treeDepths,
+    PubKey memory _coordinatorPubKey
+) public afterInit {
+    uint256 pollId = nextPollId;
+
+   [..snip]
+
+    Poll p = pollFactory.deploy(
+        _duration,
+        _maxValues,
+        _treeDepths,
+        batchSizes,
+        _coordinatorPubKey,
+        vkRegistry,
+        this,
+        topupCredit,
+        owner()
+    );
+
+    polls[pollId] = p;
+
+    emit DeployPoll(pollId, address(p), _coordinatorPubKey);
+}
 </code></pre>
-<p><code>zkey-manager</code> will select the smallest <code>.ptau</code> file that fits the largest
-circuit specified in <code>zkeys.config.yml</code>. </p>
-<h2 id="generate-zkey-files"><a class="header" href="#generate-zkey-files">Generate <code>.zkey</code> files</a></h2>
-<p>Run:</p>
-<pre><code class="language-bash">npx zkey-manager genZkeys -c ./zkeys.config.yml
-</code></pre>
-<p>This generates the initial <code>.zkey</code> files for each circuit.</p>
-<p>You should perform at least one contribution to each circuit, even if you
-choose not to perform a multi-party trusted setup.</p>
+<p>As seen above, an external call is made, before updating the state with the new poll. The issue is tracked <a href="https://github.com/privacy-scaling-explorations/maci/pull/522#discussion_r981863147">here</a> and only left open as the code does not enforce best practices, however it does not pose any immediate risk. </p>
+<p>The rest of the issues were succesffuly fixed and reflected in the v1.1.1. For the full report, please refer to the <code>audit</code> folder inside the root of the repository.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="contracts.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="integrating-maci.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
-                            </a>
-                            <a rel="next" href="trustedsetup.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <i class="fa fa-angle-right"></i>
                             </a>
                         <div style="clear: both"></div>
                     </nav>
@@ -213,11 +217,8 @@ choose not to perform a multi-party trusted setup.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="contracts.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="integrating-maci.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
-                    </a>
-                    <a rel="next" href="trustedsetup.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
 
