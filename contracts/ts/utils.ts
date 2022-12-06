@@ -45,12 +45,10 @@ const deployTestContracts = async (
     const constantIntialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
         initialVoiceCreditBalance,
     )
-    const pptContract = await deployPpt(mockVerifierContract.address)
 
+    const pptContract = await deployPpt(mockVerifierContract.address)
     // VkRegistry
     const vkRegistryContract = await deployVkRegistry()
-    await vkRegistryContract.deployTransaction.wait()
-
     const topupCreditContract = await deployTopupCredit()
 
     const contracts = await deployMaci(
