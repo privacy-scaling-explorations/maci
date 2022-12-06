@@ -1,15 +1,14 @@
 import * as fs from 'fs'
 import * as path from 'path'
 const { ethers } = require('hardhat')
+import { Contract, ContractFactory } from 'ethers'
 
 const abiDir = path.join(__dirname, '..', 'artifacts')
 const solDir = path.join(__dirname, '..', 'contracts')
 
 const getDefaultSigner = async () => {
 	const signers = await ethers.getSigners()
-	const signer = signers[0]
-
-	return signer
+	return signers[0]
 }
 
 const parseArtifact = (filename: string) => {
@@ -52,35 +51,7 @@ const getInitialVoiceCreditProxyAbi = () => {
     return abi
 }
 
-const linkPoseidonLibraries = async (
-    solFileToLink: string,
-    poseidonT3Address,
-    poseidonT4Address,
-    poseidonT5Address,
-    poseidonT6Address,
-    quiet = false,
-) => {
-	const signer = await getDefaultSigner()
-
-	log('Linking Poseidon libraries to ' + solFileToLink, quiet)
-	const contractFactory = await ethers.getContractFactory(
-		solFileToLink,
-		{
-			signer,
-			libraries: {
-				PoseidonT3: poseidonT3Address,
-				PoseidonT4: poseidonT4Address,
-				PoseidonT5: poseidonT5Address,
-				PoseidonT6: poseidonT6Address,
-			},
-		},
-	)
-
-	return contractFactory
-}
-
 export class JSONRPCDeployer {
-
     provider: any
     signer: any
     options: any
@@ -117,109 +88,85 @@ const genJsonRpcDeployer = (
     )
 }
 
-const deployTopupCredit = async () => {
-	const signer = await getDefaultSigner()
-    const topupCreditFactory = await ethers.getContractFactory('TopupCredit', signer)
-    const gasFees = await signer.provider.getFeeData()
-    return await topupCreditFactory.deploy({
-        maxFeePerGas: gasFees['maxFeePerGas'],
-    })
-}
-
-const deployVkRegistry = async () => {
-	const signer = await getDefaultSigner()
-    const vkRegistryFactory = await ethers.getContractFactory('VkRegistry', signer)
-    const gasFees = await signer.provider.getFeeData()
-    return await vkRegistryFactory.deploy({
-        maxFeePerGas: gasFees['maxFeePerGas'],
-    })
-}
-
-const deployMockVerifier = async (quiet = false) => {
-    log('Deploying MockVerifier', quiet)
-	const signer = await getDefaultSigner()
-    const factory = await ethers.getContractFactory('MockVerifier', signer)
-    return await factory.deploy()
-}
-
-const deployVerifier = async (quiet = false) => {
-    log('Deploying Verifier', quiet)
-	const signer = await getDefaultSigner()
-    const factory = await ethers.getContractFactory('Verifier', signer)
-    return await factory.deploy()
-}
-
-const deployConstantInitialVoiceCreditProxy = async (
-    amount: number,
-    quiet = false
-) => {
-    log('Deploying InitialVoiceCreditProxy', quiet)
-	const signer = await getDefaultSigner()
-    const voiceCreditFactory = await ethers.getContractFactory('ConstantInitialVoiceCreditProxy', signer)
-    return await voiceCreditFactory.deploy(amount.toString())
-}
-
-const deploySignupToken = async (quiet = false) => {
-    log('Deploying SignUpToken', quiet)
-	const signer = await getDefaultSigner()
-    const factory = await ethers.getContractFactory('SignUpToken', signer)
-    return await factory.deploy()
-}
-
-const deploySignupTokenGatekeeper = async (
-    signUpTokenAddress: string,
-    quiet = false
-) => {
-    log('Deploying SignUpTokenGatekeeper', quiet)
-
-	const signer = await getDefaultSigner()
-    const factory = await ethers.getContractFactory('SignUpTokenGatekeeper', signer)
-
-    return await factory.deploy(signUpTokenAddress)
-}
-
-const deployFreeForAllSignUpGatekeeper = async (
-    quiet = false
-) => {
-    log('Deploying FreeForAllGatekeeper', quiet)
-	const signer = await getDefaultSigner()
-    const factory = await ethers.getContractFactory('FreeForAllGatekeeper', signer)
-    return await factory.deploy()
-}
-
 const log = (msg: string, quiet: boolean) => {
     if (!quiet) {
         console.log(msg)
     }
 }
 
-const deployPoseidonContracts = async (quiet = false) => {
-    log('Deploying Poseidon contracts', quiet)
+const linkPoseidonLibraries = async (
+    solFileToLink: string,
+    poseidonT3Address: string,
+    poseidonT4Address: string,
+    poseidonT5Address: string,
+    poseidonT6Address: string,
+    quiet: boolean = false,
+) => {
 	const signer = await getDefaultSigner()
-    const PoseidonT3ContractFactory = await ethers.getContractFactory('PoseidonT3', signer)
-    const PoseidonT4ContractFactory = await ethers.getContractFactory('PoseidonT4', signer)
-    const PoseidonT5ContractFactory = await ethers.getContractFactory('PoseidonT5', signer)
-    const PoseidonT6ContractFactory = await ethers.getContractFactory('PoseidonT6', signer)
 
-    const gasFees = await signer.provider.getFeeData()
+	log('Linking Poseidon libraries to ' + solFileToLink, quiet)
+	const contractFactory = await ethers.getContractFactory(
+		solFileToLink,
+		{
+			signer,
+			libraries: {
+				PoseidonT3: poseidonT3Address,
+				PoseidonT4: poseidonT4Address,
+				PoseidonT5: poseidonT5Address,
+				PoseidonT6: poseidonT6Address,
+			},
+		},
+	)
 
-	const PoseidonT3Contract = await PoseidonT3ContractFactory.deploy({
-        maxFeePerGas: gasFees['maxFeePerGas'],
-    })
-    const PoseidonT4Contract = await PoseidonT4ContractFactory.deploy({
-        maxFeePerGas: gasFees['maxFeePerGas'],
-    })
-    const PoseidonT5Contract = await PoseidonT5ContractFactory.deploy({
-        maxFeePerGas: gasFees['maxFeePerGas'],
-    })
-    const PoseidonT6Contract = await PoseidonT6ContractFactory.deploy({
-        maxFeePerGas: gasFees['maxFeePerGas'],
-    })
+	return contractFactory
+}
 
-    await PoseidonT3Contract.deployTransaction.wait()
-    await PoseidonT4Contract.deployTransaction.wait()
-    await PoseidonT5Contract.deployTransaction.wait()
-    await PoseidonT6Contract.deployTransaction.wait()
+const deployTopupCredit = async (quiet = false) => {
+    return await deployContract('TopupCredit', quiet)
+}
+
+const deployVkRegistry = async (quiet = false) => {
+    return await deployContract('VkRegistry', quiet)
+}
+
+const deployMockVerifier = async (quiet = false) => {
+    return await deployContract('MockVerifier', quiet)
+}
+
+const deployVerifier = async (quiet = false) => {
+    return await deployContract('Verifier', quiet)
+}
+
+const deployConstantInitialVoiceCreditProxy = async (
+    amount: number,
+    quiet = false
+) => {
+    return await deployContract('ConstantInitialVoiceCreditProxy', quiet, amount.toString())
+}
+
+const deploySignupToken = async (quiet = false) => {
+    return await deployContract('SignUpToken', quiet)
+}
+
+const deploySignupTokenGatekeeper = async (
+    signUpTokenAddress: string,
+    quiet = false
+) => {
+    return await deployContract('SignUpTokenGatekeeper', quiet, signUpTokenAddress)
+}
+
+const deployFreeForAllSignUpGatekeeper = async (
+    quiet = false
+) => {
+    return await deployContract('FreeForAllGatekeeper', quiet)
+}
+
+
+const deployPoseidonContracts = async (quiet = false) => {
+    const PoseidonT3Contract = await deployContract('PoseidonT3', quiet)
+    const PoseidonT4Contract = await deployContract('PoseidonT4', quiet)
+    const PoseidonT5Contract = await deployContract('PoseidonT5', quiet)
+    const PoseidonT6Contract = await deployContract('PoseidonT6', quiet)
 
     return {
         PoseidonT3Contract,
@@ -230,38 +177,59 @@ const deployPoseidonContracts = async (quiet = false) => {
 }
 
 const deployPollFactory = async (quiet = false) => {
-	const signer = await getDefaultSigner()
-    log('Deploying PollFactory', quiet)
-    const pollFactory = await ethers.getContractFactory('PollFactory', signer)
-    const gasFees = await signer.provider.getFeeData()
-
-    return await pollFactory.deploy({
-        maxFeePerGas: gasFees['maxFeePerGas'],
-    })
+    return await deployContract('PollFactory', quiet)
 }
 
 const deployPpt = async (verifierContractAddress: string, quiet = false) => {
-	const signer = await getDefaultSigner()
-    log('Deploying PollProcessorAndTallyer', quiet)
-    const pptFactory = await ethers.getContractFactory('PollProcessorAndTallyer', signer)
-
-    const gasFees = await signer.provider.getFeeData()
-
-    return await pptFactory.deploy(verifierContractAddress, {
-        maxFeePerGas: gasFees['maxFeePerGas'],
-    })
+    return await deployContract('PollProcessorAndTallyer', quiet, verifierContractAddress)
 }
 
 const deployMessageAqFactory = async (quiet = false) => {
-	const signer = await getDefaultSigner()
-    log('Deploying MessageAqFactory', quiet)
-    const messageAqFactory = await ethers.getContractFactory('MessageAqFactory', signer)
-    // MessageAqFactory
-    const gasFees = await signer.provider.getFeeData()
+    return await deployContract('MessageAqFactory', quiet)
+}
 
-    return await messageAqFactory.deploy({
-        maxFeePerGas: gasFees['maxFeePerGas'],
+// Deploy a contract given a name and args
+const deployContract = async (contractName: string, quiet: boolean = false, ...args: any) : Promise<Contract>  =>  {
+    log(`Deploying ${contractName}`, quiet)
+    const signer = await getDefaultSigner()
+    const contractFactory = await ethers.getContractFactory(contractName, signer)
+    const contract: Contract = await contractFactory.deploy(...args, {
+        maxFeePerGas: await getFeeData['maxFeePerGas']
     })
+    
+    await contract.deployTransaction.wait()
+    return contract
+}
+
+// deploy a contract with linked libraries
+const deployContractWithLinkedLibraries = async (contractFactory: ContractFactory, name: string, quiet: boolean = false, ...args: any) : Promise<Contract> => {
+    log(`Deploying ${name}`, quiet)
+    const contract = await contractFactory.deploy(...args, {
+        maxFeePerGas: await getFeeData['maxFeePerGas']
+    })
+    await contract.deployTransaction.wait()
+    return contract
+}
+
+
+const transferOwnership = async (contract: Contract, newOwner: string, quiet: boolean = false) => {
+    await (await (contract.transferOwnership(newOwner, {
+        maxFeePerGas: await getFeeData['maxFeePerGas'],
+    }))).wait()
+}
+
+const initMaci = async (contract: Contract, quiet: boolean = false, ...args: any) => {
+    log('Initializing MACI', quiet)
+    await (await contract.init(...args, {
+        maxFeePerGas: await getFeeData['maxFeePerGas']
+    })).wait()
+}
+
+const getFeeData = async (): Promise<any> => {
+    const signer = await getDefaultSigner()
+    const fee = await signer.provider.getFeeData()
+    console.log('fee', fee)
+    return await signer.provider.getFeeData()
 }
 
 const deployMaci = async (
@@ -273,8 +241,6 @@ const deployMaci = async (
     quiet = false,
 ) => {
 
-    const signer = await getDefaultSigner()
-
     const {
         PoseidonT3Contract,
         PoseidonT4Contract,
@@ -285,7 +251,7 @@ const deployMaci = async (
     const contractsToLink = ['MACI', 'PollFactory', 'MessageAqFactory']
 
     // Link Poseidon contracts to MACI
-    const linkedContractFactories = contractsToLink.map( async (contractName: string) => {
+    const linkedContractFactories = contractsToLink.map(async (contractName: string) => {
         return await linkPoseidonLibraries(
             contractName,
             PoseidonT3Contract.address,
@@ -302,63 +268,40 @@ const deployMaci = async (
         messageAqFactory,
     ] = await Promise.all(linkedContractFactories)
 
-    const pollFactoryContract = await pollFactoryContractFactory.deploy()
-    await pollFactoryContract.deployTransaction.wait()
-
-    log('Deploying MACI', quiet)
-
-    let gasFees = await signer.provider.getFeeData()
-
-    const maciContract = await maciContractFactory.deploy(
-        pollFactoryContract.address,
-        signUpTokenGatekeeperContractAddress,
-        initialVoiceCreditBalanceAddress,
-        {
-            maxFeePerGas: gasFees['maxFeePerGas'],
-        }
+    const pollFactoryContract = await deployContractWithLinkedLibraries(
+        pollFactoryContractFactory,
+        'PollFactory',
+        quiet
     )
 
-    await maciContract.deployTransaction.wait()
+    const maciContract = await deployContractWithLinkedLibraries(
+        maciContractFactory, 
+        'MACI',
+        quiet,
+        pollFactoryContract.address,
+        signUpTokenGatekeeperContractAddress,
+        initialVoiceCreditBalanceAddress
+    )
 
-    gasFees = await signer.provider.getFeeData()
+    log('Transferring ownership of PollFactoryContract to MACI', quiet)
+    await transferOwnership(pollFactoryContract, maciContract.address, quiet)
 
-    log('Transferring PollFactory ownership to MACI', quiet)
-    await (await (pollFactoryContract.transferOwnership(maciContract.address, {
-        maxFeePerGas: gasFees['maxFeePerGas'],
-    }))).wait()
-
-    gasFees = await signer.provider.getFeeData()
-
-    const messageAqContract = await messageAqFactory.deploy({
-        maxFeePerGas: gasFees['maxFeePerGas'],
-    })
-    await messageAqContract.deployTransaction.wait()
-
-    gasFees = await signer.provider.getFeeData()
+    const messageAqContract = await deployContractWithLinkedLibraries(
+        messageAqFactory,
+        'MessageAqFactory'
+    )
 
     log('Transferring MessageAqFactory ownership to PollFactory', quiet)
-    await (await (messageAqContract.transferOwnership(pollFactoryContract.address, {
-        maxFeePerGas: gasFees['maxFeePerGas'],
-    }))).wait()
+    await transferOwnership(messageAqContract, pollFactoryContract.address, quiet)
 
-    log('Initialising MACI', quiet)
-    gasFees = await signer.provider.getFeeData()
-
-    await (await (maciContract.init(
-        vkRegistryContractAddress,
-        messageAqContract.address,
-        topupCreditContractAddress,
-        {
-            maxFeePerGas: gasFees['maxFeePerGas'],
-        }
-    ))).wait()
+    await initMaci(maciContract, quiet, vkRegistryContractAddress, messageAqContract.address, topupCreditContractAddress)
 
     const [ AccQueueQuinaryMaciAbi, ] = parseArtifact('AccQueue')
     const stateAqContractAddress = await maciContract.stateAq()
     const stateAqContract = new ethers.Contract(
         stateAqContractAddress,
         AccQueueQuinaryMaciAbi,
-        signer,
+        await getDefaultSigner(),
     )
 
     return {
@@ -369,7 +312,7 @@ const deployMaci = async (
     }
 }
 
-const writeContractAddress = (
+const writeContractAddresses = (
 	maciContractAddress: string,
 	vkRegistryContractAddress: string,
 	stateAqContractAddress: string,
@@ -395,6 +338,8 @@ const writeContractAddress = (
 }
 
 export {
+    deployContract,
+    deployContractWithLinkedLibraries,
     deployTopupCredit,
     deployVkRegistry,
     deployMaci,
@@ -409,10 +354,13 @@ export {
     deployMessageAqFactory,
     genJsonRpcDeployer,
     getInitialVoiceCreditProxyAbi,
+    initMaci,
+    transferOwnership,
     abiDir,
     solDir,
     parseArtifact,
     linkPoseidonLibraries,
     deployPoseidonContracts,
-	getDefaultSigner
+	getDefaultSigner,
+    writeContractAddresses
 }
