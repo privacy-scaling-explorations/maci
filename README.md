@@ -37,7 +37,7 @@ Below you can find a list of the packages included in this repository.
 
 ### Requirements
 
-You should have Node 14 installed. Use `nvm` to install it and manage versions.
+You should have Node 16 (or 14) installed. Use `nvm` to install it and manage versions.
 
 You also need a Ubuntu/Debian Linux machine on an Intel CPU.
 
@@ -51,10 +51,10 @@ If you are missing the correct version of glibc see `circuits/scripts/installGli
 Clone this repository, install NodeJS dependencies, and build the source code:
 
 ```bash
-git clone git@github.com:privacy-scaling-explorations/maci.git && \
-cd maci && \
-npm i && \
-npm run bootstrap && \
+git clone git@github.com:privacy-scaling-explorations/maci.git
+cd maci
+npm install
+npm run bootstrap
 npm run build
 ```
 
@@ -70,9 +70,11 @@ cd circuits
 npm run build-test-circuits
 ```
 
-This should take no more than 5 minutes. We used to provide download links to
-working versions of the keys and compiiled circuit files, but now that we can
-use `snarkjs` to produce them very quickly, we no longer maintain them.
+This can take around 10 to 15 minutes, depending on the specs of your machine.
+Once ready, the following will appear on screen:
+     ```
+     Launched JSON-RPC server at port 9001
+     ```
 
 Note that if you change the circuits and recompile them, you should also update
 and recompile the verifier contracts in `contracts/contracts` with their new
@@ -165,14 +167,14 @@ before running the tests:
 
 ```bash
 cd contracts
-./scripts/runTestsInCircleCi.sh
+./scripts/runTestsInCi.sh
 ```
 
 Or run all integration tests (this also starts its own Hardhat instance):
 
 ```bash
 cd integrationTests
-./scripts/runTestsInCircleCi.sh
+./scripts/runTestsInCi.sh
 ```
 
 You can ignore the Hardhat errors which this script emits as you should already
