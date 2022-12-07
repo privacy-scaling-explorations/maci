@@ -1,5 +1,8 @@
 # `maci-core`
 
+[![NPM Package][core-npm-badge]][core-npm-link]
+[![Actions Status][core-actions-badge]][core-actions-link]
+
 This submodule assists with handling key business logic functions and
 processes.
 
@@ -96,3 +99,8 @@ main root) whenever the MACI contract's `mergeMessageAqSubRoots()` and
 
 They should contain the same leaves, even if the `messageAq` is not yet merged.
 `messageTree` exists for developer convenience.
+
+[core-npm-badge]: https://img.shields.io/npm/v/maci-core.svg
+[core-npm-link]: https://www.npmjs.com/package/maci-core
+[core-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/core-build.yml/badge.svg
+[core-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3Acore
