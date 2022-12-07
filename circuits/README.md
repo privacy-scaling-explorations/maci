@@ -1,5 +1,8 @@
 # Circuits
 
+[![NPM Package][circuits-npm-badge]][circuits-npm-link]
+[![Actions Status][circuits-actions-badge]][circuits-actions-link]
+
 This package contains the zk-SNARK circuits written in Circom 2.0.
 
 The main circuits are:
@@ -24,3 +27,7 @@ In order to test the circuits package follow the instructions below:
 3. run `npm run test` to run all tests or add `-$CIRCUIT_NAME` to test individually (e.g. `npm run test-processMessages`)
 
 
+[circuits-npm-badge]: https://img.shields.io/npm/v/maci-circuits.svg
+[circuits-npm-link]: https://www.npmjs.com/package/maci-circuits
+[circuits-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/circuit-build.yml/badge.svg
+[circuits-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3ACircuit
