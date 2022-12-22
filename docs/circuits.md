@@ -29,7 +29,7 @@ This config file defines the parameters required for MACI's circuits.
 |-|-|-|
 | 0 | State tree depth | Should be set to 10. Allows 9,765,625 signups. | 
 | 1 | State leaf batch depth | Allows $(5^{n})$ users' votes to be processed per batch. | 
-| 2 | Message batch tree depth | Allows $(5^{n})$ messages to be processed per batch. |
+| 2 | Vote option tree depth | Allows $(5^{n})$ vote options. |
 
 ### Subsisdy 
 
