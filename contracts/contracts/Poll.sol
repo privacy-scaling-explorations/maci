@@ -937,7 +937,7 @@ contract PollProcessorAndTallyer is
             cbi++;
         } else {
             rbi++;
-            cbi = 0;
+            cbi = rbi;
         }
     }
 

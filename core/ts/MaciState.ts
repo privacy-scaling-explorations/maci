@@ -894,7 +894,7 @@ class Poll {
             this.cbi++
         } else {
             this.rbi++
-            this.cbi = 0
+            this.cbi = this.rbi
         } 
         return
     }
@@ -907,7 +907,7 @@ class Poll {
         if (this.cbi === 0 && this.rbi === 0) {
             return "0-0"
         }
-        if (this.cbi !== 0 ) {
+        if (this.cbi > this.rbi ) {
             cbi --
         } else {
             rbi --
@@ -952,22 +952,13 @@ class Poll {
                 for (let p = 0; p < this.maxValues.maxVoteOptions; p++) {
                     const vip = BigInt(rowBallot.votes[p].valueOf())
                     const vjp = BigInt(colBallot.votes[p].valueOf())
-                    this.subsidy[p] = BigInt(this.subsidy[p].valueOf()) + BigInt(kij.valueOf()) * vip * vjp
+                    if (rowStartIndex !== colStartIndex || (rowStartIndex === colStartIndex && i < j)) {
+                       this.subsidy[p] = BigInt(this.subsidy[p].valueOf()) + BigInt(2) * BigInt(kij.valueOf()) * vip * vjp
+                    }
                 }
             }
         }
 
-        if (rowStartIndex === colStartIndex) {
-            for (let i = 0; i < batchSize; i++) {
-                const idx = rowStartIndex + i
-                const diagBallot = (idx < this.ballots.length)?this.ballots[idx]:emptyBallot
-                const kii = this.coefficientCalculation(diagBallot, diagBallot)
-                for (let p = 0; p < this.maxValues.maxVoteOptions; p++) {
-                    const vip = BigInt(diagBallot.votes[p].valueOf())
-                    this.subsidy[p] = BigInt(this.subsidy[p].valueOf()) - BigInt(kii.valueOf()) * vip * vip
-                }
-            }
-        }
         return [ballots1, ballots2]
     }
 
