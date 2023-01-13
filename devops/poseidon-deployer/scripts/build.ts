@@ -13,8 +13,6 @@ const buildPoseidonT4 = () => buildPoseidon(3);
 const buildPoseidonT5 = () => buildPoseidon(4);
 const buildPoseidonT6 = () => buildPoseidon(5);
 const buildPoseidonT7 = () => buildPoseidon(6);
-const buildPoseidonT8 = () => buildPoseidon(7);
-const buildPoseidonT9 = () => buildPoseidon(8);
 
 buildPoseidonT2();
 buildPoseidonT3();

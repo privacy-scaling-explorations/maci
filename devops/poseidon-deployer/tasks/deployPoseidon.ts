@@ -1,13 +1,52 @@
 import { task } from "hardhat/config";
 import { Contract } from "ethers";
 import { verifyPoseidonContracts } from "./utils";
+import { writeFileSync } from "fs";
 
-task("deploy-poseidon:EOA", "Deploy Poseidon Contracts by EOA").setAction(
-  async (_, { ethers }) => {
+// Check if tnArray contains only T2 to T7
+const onlyContainsT2toT7 = (value) =>
+  ["T2", "T3", "T4", "T5", "T6", "T7"].includes(value);
+
+task("deploy-poseidon:EOA", "Deploy Poseidon Contracts by EOA")
+  .addOptionalVariadicPositionalParam(
+    "tnArray",
+    "Kind of Poseidon contracts which want to be deployed (T2 to T7)"
+  )
+  .addOptionalParam(
+    "output",
+    "write deployed contract address(es) to given path"
+  )
+  .setAction(async ({ tnArray, output }, { ethers }) => {
+    const TNs = [];
+
+    switch (typeof tnArray) {
+      case "object":
+        if (!tnArray.every(onlyContainsT2toT7)) {
+          throw new Error(
+            `received wrong value of TN: ${tnArray}. Only values between T2~T7 could be deployed`
+          );
+        }
+
+        // Ensure no duplicate TN
+        const set = new Set(tnArray);
+        if (tnArray.length != set.size) {
+          throw new Error(`Duplicate TNs are not allowed: ${tnArray}`);
+        }
+
+        for (const TN of tnArray) {
+          const T = TN.charAt(1);
+          TNs.push(T);
+        }
+        break;
+
+      default:
+        for (let T = 2; T <= 7; T++) {
+          TNs.push(T);
+        }
+    }
+
     const poseidonAddressBook = new Map();
-
-    // Deploy poseidonTN contracts (N: 2, 3, ..., 7)
-    for (let TN = 2; TN <= 7; TN++) {
+    for (const TN of TNs) {
       try {
         const factory = await ethers.getContractFactory(`PoseidonT${TN}`);
         const contract = await factory.deploy();
@@ -21,9 +60,21 @@ task("deploy-poseidon:EOA", "Deploy Poseidon Contracts by EOA").setAction(
       }
     }
 
+    if (output) {
+      // `contents` follows TOML syntax
+      const contents = `[poseidonAddresses]
+  T2 = "${poseidonAddressBook.get("T2")}"
+  T3 = "${poseidonAddressBook.get("T3")}"
+  T4 = "${poseidonAddressBook.get("T4")}"
+  T5 = "${poseidonAddressBook.get("T5")}"
+  T6 = "${poseidonAddressBook.get("T6")}"
+  T7 = "${poseidonAddressBook.get("T7")}"`;
+
+      writeFileSync(output, contents);
+    }
+
     return poseidonAddressBook;
-  }
-);
+  });
 
 task(
   "deploy-poseidon:callPoseidonFactory",
@@ -42,11 +93,6 @@ task(
     "32-bytes long hexstring used to determine contract address"
   )
   .setAction(async ({ tnArray, factoryAddress, salt }, { ethers }) => {
-
-    // Check if tnArray contains only T2 to T7
-    const onlyContainsT2toT7 = (value) =>
-      ["T2", "T3", "T4", "T5", "T6", "T7"].includes(value);
-
     if (!tnArray.every(onlyContainsT2toT7)) {
       throw new Error(
         `received wrong value of TN: ${tnArray}. Only values between T2~T7 could be deployed`
@@ -80,10 +126,7 @@ task(
         calls.push(call);
       }
     } catch (e) {
-      throw new Error(
-        "failed to call poseidonFactory: \n" +
-          e
-      );
+      throw new Error("failed to call poseidonFactory: \n" + e);
     }
 
     try {

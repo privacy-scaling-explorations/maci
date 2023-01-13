@@ -83,45 +83,63 @@ describe("Check Poseidon contracts", function () {
     it("Should not process T1", async function () {
       const salt = genSalt();
 
-      const promise = hre.run("deploy-poseidon:callPoseidonFactory", {
+      const promise1 = hre.run("deploy-poseidon:EOA", {
+        tnArray: ["T1"],
+      });
+      expect(promise1).to.eventually.throw();
+
+      const promise2 = hre.run("deploy-poseidon:callPoseidonFactory", {
         tnArray: ["T1"],
         factoryAddress: factoryAddress,
         salt: salt,
       });
-      expect(promise).to.eventually.throw();
+      expect(promise2).to.eventually.throw();
     });
 
     it("Should not process T8", async function () {
       const salt = genSalt();
 
-      const promise = hre.run("deploy-poseidon:callPoseidonFactory", {
+      const promise1 = hre.run("deploy-poseidon:EOA", {
+        tnArray: ["T8"],
+      });
+      expect(promise1).to.eventually.throw();
+
+      const promise2 = hre.run("deploy-poseidon:callPoseidonFactory", {
         tnArray: ["T8"],
         factoryAddress: factoryAddress,
         salt: salt,
       });
-      expect(promise).to.eventually.throw();
+      expect(promise2).to.eventually.throw();
     });
 
     it("No duplicate TNs: [T2, T2]", async function () {
-      const salt = genSalt();
+      const promise1 = hre.run("deploy-poseidon:EOA", {
+        tnArray: ["T2", "T2"],
+      });
+      expect(promise1).to.eventually.throw();
 
-      const promise = hre.run("deploy-poseidon:callPoseidonFactory", {
+      const salt = genSalt();
+      const promise2 = hre.run("deploy-poseidon:callPoseidonFactory", {
         tnArray: ["T2", "T2"],
         factoryAddress: factoryAddress,
         salt: salt,
       });
-      expect(promise).to.eventually.throw();
+      expect(promise2).to.eventually.throw();
     });
 
     it("No duplicate TNs: [T6, T7, T6]", async function () {
-      const salt = genSalt();
+      const promise1 = hre.run("deploy-poseidon:EOA", {
+        tnArray: ["T6", "T7", "T6"],
+      });
+      expect(promise1).to.eventually.throw();
 
-      const promise = hre.run("deploy-poseidon:callPoseidonFactory", {
+      const salt = genSalt();
+      const promise2 = hre.run("deploy-poseidon:callPoseidonFactory", {
         tnArray: ["T6", "T7", "T6"],
         factoryAddress: factoryAddress,
         salt: salt,
       });
-      expect(promise).to.eventually.throw();
+      expect(promise2).to.eventually.throw();
     });
   });
 });
