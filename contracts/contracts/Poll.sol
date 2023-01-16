@@ -448,52 +448,6 @@ contract Poll is
     }
 
     /*
-     * @notice Verify the number of spent voice credits from the tally.json
-     * @param _totalSpent spent field retrieved in the totalSpentVoiceCredits object
-     * @param _totalSpentSalt the corresponding salt in the totalSpentVoiceCredit object
-     * @return valid a boolean representing successful verification
-     */
-    function verifySpentVoiceCredits(
-        uint256 _totalSpent,
-        uint256 _totalSpentSalt
-    ) public view returns (bool) {
-        uint256 ballotRoot = hashLeftRight(_totalSpent, _totalSpentSalt);
-        return
-            ballotRoot == emptyBallotRoots[treeDepths.voteOptionTreeDepth - 1];
-    }
-
-    /*
-     * @notice Verify the number of spent voice credits per vote option from the tally.json
-     * @param _voteOptionIndex the index of the vote option where credits were spent
-     * @param _spent the spent voice credits for a given vote option index
-     * @param _spentProof proof generated for the perVOSpentVoiceCredits
-     * @param _salt the corresponding salt given in the tally perVOSpentVoiceCredits object
-     * @return valid a boolean representing successful verification
-     */
-    function verifyPerVOSpentVoiceCredits(
-        uint256 _voteOptionIndex,
-        uint256 _spent,
-        uint256[][] memory _spentProof,
-        uint256 _spentSalt
-    ) public view returns (bool) {
-        uint256 computedRoot = computeMerkleRootFromPath(
-            treeDepths.voteOptionTreeDepth,
-            _voteOptionIndex,
-            _spent,
-            _spentProof
-        );
-
-        uint256 ballotRoot = hashLeftRight(computedRoot, _spentSalt);
-
-        uint256[3] memory sb;
-        sb[0] = mergedStateRoot;
-        sb[1] = ballotRoot;
-        sb[2] = uint256(0);
-
-        return currentSbCommitment == hash3(sb);
-    }
-
-    /*
      * @notice Verify the result generated of the tally.json
      * @param _voteOptionIndex the index of the vote option to verify the correctness of the tally
      * @param _tallyResult Flattened array of the tally
