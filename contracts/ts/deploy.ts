@@ -184,10 +184,6 @@ const deployPpt = async (verifierContractAddress: string, quiet = false) => {
     return await deployContract('PollProcessorAndTallyer', quiet, verifierContractAddress)
 }
 
-const deployMessageAqFactory = async (quiet = false) => {
-    return await deployContract('MessageAqFactory', quiet)
-}
-
 // Deploy a contract given a name and args
 const deployContract = async (contractName: string, quiet: boolean = false, ...args: any) : Promise<Contract>  =>  {
     log(`Deploying ${contractName}`, quiet)
@@ -248,7 +244,7 @@ const deployMaci = async (
         PoseidonT6Contract,
     } = await deployPoseidonContracts(quiet)
 
-    const contractsToLink = ['MACI', 'PollFactory', 'MessageAqFactory']
+    const contractsToLink = ['MACI', 'PollFactory']
 
     // Link Poseidon contracts to MACI
     const linkedContractFactories = contractsToLink.map(async (contractName: string) => {
@@ -265,7 +261,6 @@ const deployMaci = async (
     const [
         maciContractFactory,
         pollFactoryContractFactory,
-        messageAqFactory,
     ] = await Promise.all(linkedContractFactories)
 
     const pollFactoryContract = await deployContractWithLinkedLibraries(
@@ -286,15 +281,7 @@ const deployMaci = async (
     log('Transferring ownership of PollFactoryContract to MACI', quiet)
     await transferOwnership(pollFactoryContract, maciContract.address, quiet)
 
-    const messageAqContract = await deployContractWithLinkedLibraries(
-        messageAqFactory,
-        'MessageAqFactory'
-    )
-
-    log('Transferring MessageAqFactory ownership to PollFactory', quiet)
-    await transferOwnership(messageAqContract, pollFactoryContract.address, quiet)
-
-    await initMaci(maciContract, quiet, vkRegistryContractAddress, messageAqContract.address, topupCreditContractAddress)
+    await initMaci(maciContract, quiet, vkRegistryContractAddress, topupCreditContractAddress)
 
     const [ AccQueueQuinaryMaciAbi, ] = parseArtifact('AccQueue')
     const stateAqContractAddress = await maciContract.stateAq()
@@ -308,7 +295,6 @@ const deployMaci = async (
         maciContract,
         stateAqContract,
         pollFactoryContract,
-        messageAqContract,
     }
 }
 
@@ -351,7 +337,6 @@ export {
     deployVerifier,
     deployPollFactory,
     deployPpt,
-    deployMessageAqFactory,
     genJsonRpcDeployer,
     getInitialVoiceCreditProxyAbi,
     initMaci,
