@@ -10,19 +10,50 @@
     "server",
     "common"
   ],
-  "version": "1.1.1",
+  "version": "1.1.2",
   "npmClient": "npm",
   "changelogPreset": {
     "name": "conventionalcommits",
     "types": [
-      {"type": "feat", "section": "Features"},
-      {"type": "fix", "section": "Bug Fixes"},
-      {"type": "refactor", "section": "Code Refactoring"},
-      {"type": "perf", "section": "Performance Improvements"},
-      {"type": "chore", "section": "Miscellaneous"},
-      {"type": "docs", "section": "Miscellaneous"},
-      {"type": "style", "section": "Miscellaneous"},
-      {"type": "test", "section": "Miscellaneous"}
-  ]
+      {
+        "type": "feat",
+        "section": "Features"
+      },
+      {
+        "type": "fix",
+        "section": "Bug Fixes"
+      },
+      {
+        "type": "refactor",
+        "section": "Code Refactoring"
+      },
+      {
+        "type": "perf",
+        "section": "Performance Improvements"
+      },
+      {
+        "type": "chore",
+        "section": "Miscellaneous"
+      },
+      {
+        "type": "docs",
+        "section": "Miscellaneous"
+      },
+      {
+        "type": "style",
+        "section": "Miscellaneous"
+      },
+      {
+        "type": "test",
+        "section": "Miscellaneous"
+      }
+    ],
+    "issuePrefixes": [
+      "#"
+    ],
+    "issueUrlFormat": "{{host}}/{{owner}}/{{repository}}/issues/{{id}}",
+    "commitUrlFormat": "{{host}}/{{owner}}/{{repository}}/commit/{{hash}}",
+    "compareUrlFormat": "{{host}}/{{owner}}/{{repository}}/compare/{{previousTag}}...{{currentTag}}",
+    "userUrlFormat": "{{host}}/{{user}}"
   }
 }
