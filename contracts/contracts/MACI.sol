@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import {Poll, PollFactory, PollProcessorAndTallyer, MessageAqFactory} from "./Poll.sol";
+import {Poll, PollFactory, PollProcessorAndTallyer} from "./Poll.sol";
 import {InitialVoiceCreditProxy} from "./initialVoiceCreditProxy/InitialVoiceCreditProxy.sol";
 import {SignUpGatekeeper} from "./gatekeepers/SignUpGatekeeper.sol";
 import {AccQueue, AccQueueQuinaryBlankSl} from "./trees/AccQueue.sol";
@@ -62,7 +62,6 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     TopupCredit public topupCredit;
 
     PollFactory public pollFactory;
-    MessageAqFactory public messageAqFactory;
 
     // The state AccQueue. Represents a mapping between each user's public key
     // and their voice credit balance.
@@ -84,7 +83,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     uint256 public signUpTimestamp;
 
     // Events
-    event Init(VkRegistry _vkRegistry, MessageAqFactory _messageAqFactory);
+    event Init(VkRegistry _vkRegistry, TopupCredit _topupCredit);
     event SignUp(
         uint256 _stateIndex,
         PubKey _userPubKey,
@@ -144,12 +143,10 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
      * Initialise the various factory/helper contracts. This should only be run
      * once and it must be run before deploying the first Poll.
      * @param _vkRegistry The VkRegistry contract
-     * @param _messageAqFactory The MessageAqFactory contract 
      * @param _topupCredit The topupCredit contract 
      */
     function init(
         VkRegistry _vkRegistry,
-        MessageAqFactory _messageAqFactory,
         TopupCredit _topupCredit
     ) public onlyOwner {
         require(!isInitialised, "MACI: already initialised");
@@ -157,7 +154,6 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         isInitialised = true;
 
         vkRegistry = _vkRegistry;
-        messageAqFactory = _messageAqFactory;
         topupCredit = _topupCredit;
 
         // Check that the factory contracts have correct access controls before
@@ -167,22 +163,13 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
             "MACI: PollFactory owner incorrectly set"
         );
 
-        // The PollFactory needs to store the MessageAqFactory address
-        pollFactory.setMessageAqFactory(messageAqFactory);
-
-        // The MessageAQFactory owner must be the PollFactory contract
-        require(
-            messageAqFactory.owner() == address(pollFactory),
-            "MACI: MessageAqFactory owner incorrectly set"
-        );
-
         // The VkRegistry owner must be the owner of this contract
         require(
             vkRegistry.owner() == owner(),
             "MACI: VkRegistry owner incorrectly set"
         );
 
-        emit Init(_vkRegistry, _messageAqFactory);
+        emit Init(_vkRegistry, _topupCredit);
     }
 
     /*

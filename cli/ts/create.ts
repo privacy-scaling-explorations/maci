@@ -112,7 +112,6 @@ const create = async (args: any) => {
         maciContract,
         stateAqContract,
         pollFactoryContract,
-        messageAqContract,
     } = await deployMaci(
         signUpGatekeeperAddress,
         initialVoiceCreditProxyContractAddress,
@@ -129,7 +128,6 @@ const create = async (args: any) => {
     contractAddrs['MACI'] = maciContract.address
     contractAddrs['StateAq'] = stateAqContract.address
     contractAddrs['PollFactory'] = pollFactoryContract.address
-    contractAddrs['MessageAqFactory'] = messageAqContract.address
     contractAddrs['TopupCredit'] = TopupCreditContract.address
     writeJSONFile(contractFilepath, contractAddrs)
 
