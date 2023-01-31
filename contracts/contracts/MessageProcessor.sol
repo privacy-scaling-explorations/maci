@@ -10,13 +10,6 @@ import {CommonUtilities} from "./Utility.sol";
 import {Verifier} from "./crypto/Verifier.sol";
 import {VkRegistry} from "./VkRegistry.sol";
 
-/*
-    SnarkCommon,
-    SnarkConstants,
-    IPubKey,
-    PollDeploymentParams
-    */
-
 contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities {
 
     string constant ERROR_VOTING_PERIOD_PASSED = "ProcessE01";

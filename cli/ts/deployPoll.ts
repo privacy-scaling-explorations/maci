@@ -2,7 +2,8 @@ const { ethers } = require('hardhat')
 import {
     parseArtifact,
     deployVerifier,
-    deployMessageProcessor,
+    deployTally,
+    deployContract,
     getDefaultSigner,
 } from 'maci-contracts'
 
@@ -172,8 +173,11 @@ const deployPoll = async (args: any) => {
     // Deploy a MessageProcessor contract
     const verifierContract = await deployVerifier(true)
     console.log('Verifier:', verifierContract.address)
-    const mpContract = await deployMessageProcessor(verifierContract.address, true)
+    const mpContract = await deployContract('MessageProcessor', true, verifierContract.address)
     await mpContract.deployTransaction.wait()
+
+    const tallyContract = await deployTally(verifierContract.address, contractAddrs['PoseidonT3'],contractAddrs['PoseidonT4'],contractAddrs['PoseidonT5'],contractAddrs['PoseidonT6'])
+    await tallyContract.deployTransaction.wait()
 
     const [ maciAbi ] = parseArtifact('MACI')
     const maciContract = new ethers.Contract(
@@ -208,8 +212,10 @@ const deployPoll = async (args: any) => {
         console.log('Poll ID:', pollId.toString())
         console.log('Poll contract:', pollAddr)
         console.log('MessageProcessor contract:', mpContract.address)
+        console.log('Tally contract:', tallyContract.address)
         contractAddrs['Verifier-' + pollId.toString()] = verifierContract.address
         contractAddrs['MessageProcessor-' + pollId.toString()] = mpContract.address
+        contractAddrs['Tally-' + pollId.toString()] = tallyContract.address
         contractAddrs['Poll-' + pollId.toString()] = pollAddr
         writeJSONFile(contractFilepath, contractAddrs)
 

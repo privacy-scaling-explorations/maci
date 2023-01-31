@@ -169,8 +169,6 @@ contract Poll is
     string constant ERROR_STATE_AQ_ALREADY_MERGED = "PollE05";
     string constant ERROR_STATE_AQ_SUBTREES_NEED_MERGE = "PollE06";
 
-    uint8 private constant LEAVES_PER_NODE = 5;
-
     event PublishMessage(Message _message, PubKey _encPubKey);
     event TopupMessage(Message _message);
     event MergeMaciStateAqSubRoots(uint256 _numSrQueueOps);

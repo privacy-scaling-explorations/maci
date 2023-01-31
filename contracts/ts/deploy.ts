@@ -180,10 +180,6 @@ const deployPollFactory = async (quiet = false) => {
     return await deployContract('PollFactory', quiet)
 }
 
-const deployMessageProcessor = async (verifierContractAddress: string, quiet = false) => {
-    return await deployContract('MessageProcessor', quiet, verifierContractAddress)
-}
-
 // Deploy a contract given a name and args
 const deployContract = async (contractName: string, quiet: boolean = false, ...args: any) : Promise<Contract>  =>  {
     log(`Deploying ${contractName}`, quiet)
@@ -228,6 +224,32 @@ const getFeeData = async (): Promise<any> => {
     return await signer.provider.getFeeData()
 }
 
+const deployTally = async (
+    verifierAddress,
+    poseidonT3Address,
+    poseidonT4Address,
+    poseidonT5Address,
+    poseidonT6Address,
+    quiet = false
+    ) => {
+    // Link Poseidon contracts to Tally
+    const tallyFactory = await linkPoseidonLibraries(
+            'Tally',
+            poseidonT3Address,
+            poseidonT4Address,
+            poseidonT5Address,
+            poseidonT6Address,
+            quiet
+        )
+    const tallyContract = await deployContractWithLinkedLibraries(
+        tallyFactory,
+        'Tally',
+        quiet,
+        verifierAddress,
+    )
+    return tallyContract
+}
+
 const deployMaci = async (
     signUpTokenGatekeeperContractAddress: string,
     initialVoiceCreditBalanceAddress: string,
@@ -243,6 +265,8 @@ const deployMaci = async (
         PoseidonT5Contract,
         PoseidonT6Contract,
     } = await deployPoseidonContracts(quiet)
+
+    const poseidonAddrs = [PoseidonT3Contract.address, PoseidonT4Contract.address, PoseidonT5Contract.address, PoseidonT6Contract.address]
 
     const contractsToLink = ['MACI', 'PollFactory']
 
@@ -295,6 +319,7 @@ const deployMaci = async (
         maciContract,
         stateAqContract,
         pollFactoryContract,
+        poseidonAddrs,
     }
 }
 
@@ -327,7 +352,7 @@ export {
     deployTopupCredit,
     deployVkRegistry,
     deployMaci,
-    deployMessageProcessor,
+    deployTally,
     deploySignupToken,
     deploySignupTokenGatekeeper,
     deployConstantInitialVoiceCreditProxy,

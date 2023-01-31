@@ -8,8 +8,8 @@ import {
     deployVkRegistry,
     deployTopupCredit,
     deployMaci,
-    deployMessageProcessor,
     deployMockVerifier,
+    deployContract,
     deployFreeForAllSignUpGatekeeper,
     deployConstantInitialVoiceCreditProxy,
 } from './'
@@ -46,7 +46,7 @@ const deployTestContracts = async (
         initialVoiceCreditBalance,
     )
 
-    const mpContract = await deployMessageProcessor(mockVerifierContract.address)
+    const mpContract = await deployContract('MessageProcessor', true, mockVerifierContract.address)
     // VkRegistry
     const vkRegistryContract = await deployVkRegistry()
     const topupCreditContract = await deployTopupCredit()
