@@ -110,7 +110,8 @@ describe('MACI', () => {
     let maciContract
     let stateAqContract
     let vkRegistryContract
-    let pptContract
+    let mpContract
+    let tallyContract
     let pollId: number
 
     describe('Deployment', () => {
@@ -122,7 +123,7 @@ describe('MACI', () => {
             maciContract = r.maciContract
             stateAqContract = r.stateAqContract
             vkRegistryContract = r.vkRegistryContract
-            pptContract = r.pptContract
+            mpContract = r.mpContract
         })
 
         it('MACI.stateTreeDepth should be correct', async () => {
@@ -505,7 +506,7 @@ describe('MACI', () => {
         it('tallyVotes() should fail as the messages have not been processed yet', async () => {
             const pollContractAddress = await maciContract.getPoll(pollId)
             try {
-                await pptContract.tallyVotes(
+                await tallyContract.tallyVotes(
                     pollContractAddress,
                     0,
                     [0, 0, 0, 0, 0, 0, 0, 0],
@@ -524,7 +525,7 @@ describe('MACI', () => {
                 const pollContractAddress = await maciContract.getPoll(pollId)
 
                 // Submit the proof
-                await pptContract.processMessages(
+                await mpContract.processMessages(
                     pollContractAddress,
                     0,
                     [0, 0, 0, 0, 0, 0, 0, 0],
@@ -599,7 +600,7 @@ describe('MACI', () => {
                 poll.messages.length,
             )
             const onChainPackedVals = BigInt(
-                await pptContract.genProcessMessagesPackedVals(
+                await mpContract.genProcessMessagesPackedVals(
                     pollContract.address,
                     0,
                     users.length,
@@ -612,7 +613,7 @@ describe('MACI', () => {
             const pollContractAddress = await maciContract.getPoll(pollId)
 
             // Submit the proof
-            const tx = await pptContract.processMessages(
+            const tx = await mpContract.processMessages(
                 pollContractAddress,
                 generatedInputs.newSbCommitment,
                 [0, 0, 0, 0, 0, 0, 0, 0],
@@ -621,10 +622,10 @@ describe('MACI', () => {
             const receipt = await tx.wait()
             expect(receipt.status).toEqual(1)
 
-            const processingComplete = await pptContract.processingComplete()
+            const processingComplete = await mpContract.processingComplete()
             expect(processingComplete).toBeTruthy()
 
-            const onChainNewSbCommitment = await pptContract.sbCommitment()
+            const onChainNewSbCommitment = await mpContract.sbCommitment()
             expect(generatedInputs.newSbCommitment).toEqual(onChainNewSbCommitment.toString())
         })
     })
@@ -643,7 +644,7 @@ describe('MACI', () => {
 
         it('genTallyVotesPackedVals() should generate the correct value', async () => {
             const onChainPackedVals = BigInt(
-                await pptContract.genTallyVotesPackedVals(
+                await tallyContract.genTallyVotesPackedVals(
                     users.length,
                     0,
                     tallyBatchSize,
@@ -663,7 +664,7 @@ describe('MACI', () => {
             const generatedInputs = poll.tallyVotes(pollId)
 
             const pollContractAddress = await maciContract.getPoll(pollId)
-            const tx = await pptContract.tallyVotes(
+            const tx = await tallyContract.tallyVotes(
                 pollContractAddress,
                 generatedInputs.newTallyCommitment,
                 [0, 0, 0, 0, 0, 0, 0, 0],
@@ -672,12 +673,12 @@ describe('MACI', () => {
             const receipt = await tx.wait()
             expect(receipt.status).toEqual(1)
 
-            const onChainNewTallyCommitment = await pptContract.tallyCommitment()
+            const onChainNewTallyCommitment = await tallyContract.tallyCommitment()
 
             expect(generatedInputs.newTallyCommitment).toEqual(onChainNewTallyCommitment.toString())
 
             try {
-                await pptContract.tallyVotes(
+                await tallyContract.tallyVotes(
                     pollContractAddress,
                     generatedInputs.newTallyCommitment,
                     [0, 0, 0, 0, 0, 0, 0, 0],

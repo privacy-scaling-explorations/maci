@@ -43,10 +43,10 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-q', '--ppt'],
+        ['-q', '--mp'],
         {
             type: 'string',
-            help: 'The PollProcessorAndTallyer contract address',
+            help: 'The MessageProcessor contract address',
         }
     )
 
@@ -70,13 +70,13 @@ const proveOnChain = async (args: any) => {
         console.error('Error: MACI contract address is empty') 
         return 1
     }
-    if ((!contractAddrs||!contractAddrs["PollProcessorAndTally-"+pollId]) && !args.ppt) {
-        console.error('Error: PollProcessorAndTally contract address is empty') 
+    if ((!contractAddrs||!contractAddrs["MessageProcessor-"+pollId]) && !args.ppt) {
+        console.error('Error: MessageProcessor contract address is empty') 
         return 1
     }
 
     const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
-    const pptAddress = args.ppt ? args.ppt: contractAddrs["PollProcessorAndTally-"+pollId]
+    const mpAddress = args.mp ? args.mp : contractAddrs["MessageProcessor-"+pollId]
 
     // MACI contract
     if (!validateEthAddress(maciAddress)) {
@@ -84,20 +84,20 @@ const proveOnChain = async (args: any) => {
         return {}
     }
 
-    // PollProcessorAndTallyer contract
-    if (!validateEthAddress(pptAddress)) {
-        console.error('Error: invalid PollProcessorAndTallyer contract address')
+    // MessageProcessor contract
+    if (!validateEthAddress(mpAddress)) {
+        console.error('Error: invalid MessageProcessor contract address')
         return {}
     }
 
-    if (! (await contractExists(signer.provider, pptAddress))) {
+    if (! (await contractExists(signer.provider, mpAddress))) {
         console.error('Error: there is no contract deployed at the specified address')
         return {}
     }
 
     const [ maciContractAbi ] = parseArtifact('MACI')
     const [ pollContractAbi ] = parseArtifact('Poll')
-    const [ pptContractAbi ] = parseArtifact('PollProcessorAndTallyer')
+    const [ mpContractAbi ] = parseArtifact('MessageProcessor')
     const [ messageAqContractAbi ] = parseArtifact('AccQueue')
     const [ vkRegistryContractAbi ] = parseArtifact('VkRegistry')
     const [ verifierContractAbi ] = parseArtifact('Verifier')
@@ -120,9 +120,9 @@ const proveOnChain = async (args: any) => {
         signer,
     )
 
-    const pptContract = new ethers.Contract(
-        pptAddress,
-        pptContractAbi,
+    const mpContract = new ethers.Contract(
+        mpAddress,
+        mpContractAbi,
         signer,
     )
 
@@ -138,7 +138,7 @@ const proveOnChain = async (args: any) => {
         signer,
     )
 
-    const verifierContractAddress = await pptContract.verifier()
+    const verifierContractAddress = await mpContract.verifier()
     const verifierContract = new ethers.Contract(
         verifierContractAddress,
         verifierContractAbi,
@@ -208,7 +208,7 @@ const proveOnChain = async (args: any) => {
 
     const treeDepths = await pollContract.treeDepths()
 
-    let numBatchesProcessed = Number(await pptContract.numBatchesProcessed())
+    let numBatchesProcessed = Number(await mpContract.numBatchesProcessed())
     const messageRootOnChain = await messageAqContract.getMainRoot(
         Number(treeDepths.messageTreeDepth),
     )
@@ -274,7 +274,7 @@ const proveOnChain = async (args: any) => {
         if (numBatchesProcessed === 0) {
             currentSbCommitmentOnChain = BigInt(await pollContract.currentSbCommitment())
         } else {
-            currentSbCommitmentOnChain = BigInt(await pptContract.sbCommitment())
+            currentSbCommitmentOnChain = BigInt(await mpContract.sbCommitment())
         }
 
         if (currentSbCommitmentOnChain.toString() !== circuitInputs.currentSbCommitment) {
@@ -293,7 +293,7 @@ const proveOnChain = async (args: any) => {
             return 1
         }
 
-        const packedValsOnChain = BigInt(await pptContract.genProcessMessagesPackedVals(
+        const packedValsOnChain = BigInt(await mpContract.genProcessMessagesPackedVals(
             pollContract.address,
             currentMessageBatchIndex,
             numSignUps,
@@ -306,7 +306,7 @@ const proveOnChain = async (args: any) => {
 
         const formattedProof = formatProofForVerifierContract(proof)
 
-        const publicInputHashOnChain = BigInt(await pptContract.genProcessMessagesPublicInputHash(
+        const publicInputHashOnChain = BigInt(await mpContract.genProcessMessagesPublicInputHash(
             pollContract.address,
             currentMessageBatchIndex,
             messageRootOnChain.toString(),
@@ -333,7 +333,7 @@ const proveOnChain = async (args: any) => {
 
         let tx
         try {
-            tx = await pptContract.processMessages(
+            tx = await mpContract.processMessages(
                 pollContract.address,
                 '0x' + BigInt(circuitInputs.newSbCommitment).toString(16),
                 formattedProof,
@@ -353,7 +353,7 @@ const proveOnChain = async (args: any) => {
         console.log(`Transaction hash: ${tx.hash}`)
 
         // Wait for the node to catch up
-        numBatchesProcessed = Number(await pptContract.numBatchesProcessed())
+        numBatchesProcessed = Number(await mpContract.numBatchesProcessed())
         let backOff = 1000
         let numAttempts = 0
         while (numBatchesProcessed !== i + 1) {
@@ -371,6 +371,7 @@ const proveOnChain = async (args: any) => {
         console.log('All message processing proofs have been submitted.')
     }
 
+    /* hehe, temp comment out
     // ------------------------------------------------------------------------
     // subsidy calculation proofs
     if (Object.keys(data.subsidyProofs).length !== 0) {
@@ -560,6 +561,8 @@ const proveOnChain = async (args: any) => {
         console.log()
         console.log('OK')
     }
+
+    hehe temp comment out */
 
     return 0
 }

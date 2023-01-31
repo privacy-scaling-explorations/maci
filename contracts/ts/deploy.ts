@@ -180,8 +180,8 @@ const deployPollFactory = async (quiet = false) => {
     return await deployContract('PollFactory', quiet)
 }
 
-const deployPpt = async (verifierContractAddress: string, quiet = false) => {
-    return await deployContract('PollProcessorAndTallyer', quiet, verifierContractAddress)
+const deployMessageProcessor = async (verifierContractAddress: string, quiet = false) => {
+    return await deployContract('MessageProcessor', quiet, verifierContractAddress)
 }
 
 // Deploy a contract given a name and args
@@ -303,7 +303,6 @@ const writeContractAddresses = (
 	vkRegistryContractAddress: string,
 	stateAqContractAddress: string,
 	signUpTokenAddress: string,
-	pptContractAddress: string,
 	outputAddressFile: string
 ) => {
     const addresses = {
@@ -311,7 +310,6 @@ const writeContractAddresses = (
         VkRegistry: vkRegistryContractAddress,
         StateAqContract: stateAqContractAddress,
         SignUpToken: signUpTokenAddress,
-        ProcessAndTallyContract: pptContractAddress,
     }
 
     const addressJsonPath = path.join(__dirname, '..', outputAddressFile)
@@ -329,6 +327,7 @@ export {
     deployTopupCredit,
     deployVkRegistry,
     deployMaci,
+    deployMessageProcessor,
     deploySignupToken,
     deploySignupTokenGatekeeper,
     deployConstantInitialVoiceCreditProxy,
@@ -336,7 +335,6 @@ export {
     deployMockVerifier,
     deployVerifier,
     deployPollFactory,
-    deployPpt,
     genJsonRpcDeployer,
     getInitialVoiceCreditProxyAbi,
     initMaci,

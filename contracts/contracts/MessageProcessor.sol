@@ -6,7 +6,7 @@ import {IMACI} from "./IMACI.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Poll} from "./Poll.sol";
 import {SnarkCommon} from "./crypto/SnarkCommon.sol";
-import {Utilities} from "./Utility.sol";
+import {CommonUtilities} from "./Utility.sol";
 import {Verifier} from "./crypto/Verifier.sol";
 import {VkRegistry} from "./VkRegistry.sol";
 
@@ -17,7 +17,7 @@ import {VkRegistry} from "./VkRegistry.sol";
     PollDeploymentParams
     */
 
-contract MessageProcessor is Ownable, SnarkCommon, Utilities {
+contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities {
 
     string constant ERROR_VOTING_PERIOD_PASSED = "ProcessE01";
     string constant ERROR_VOTING_PERIOD_NOT_PASSED = "ProcessE02";
