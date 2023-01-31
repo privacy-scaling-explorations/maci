@@ -14,7 +14,7 @@ import {Verifier} from "./crypto/Verifier.sol";
 import {EmptyBallotRoots} from "./trees/EmptyBallotRoots.sol";
 import {TopupCredit} from "./TopupCredit.sol";
 import {Utilities} from "./Utility.sol";
-import {MessageProcessor} from "./Process.sol";
+import {MessageProcessor} from "./MessageProcessor.sol";
 
 contract PollDeploymentParams {
     struct ExtContracts {

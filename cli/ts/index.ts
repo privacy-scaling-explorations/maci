@@ -82,10 +82,12 @@ import {
     configureSubparser as configureSubparserForProveOnChain,
 } from './proveOnChain'
 
+/*
 import {
     verify,
     configureSubparser as configureSubparserForVerify,
 } from './verify'
+*/
 
 import {
     checkVerifyingKey,
@@ -148,7 +150,8 @@ const main = async () => {
     configureSubparserForProveOnChain(subparsers)
 
     // Subcommand: verify
-    configureSubparserForVerify(subparsers)
+    // hehe, temp comment out
+    //configureSubparserForVerify(subparsers)
 
     // Subcommand: checkVerifyKey
     configureSubparserForCheckVerifyKey(subparsers)
@@ -186,9 +189,10 @@ const main = async () => {
         await genProofs(args)
     } else if (args.subcommand === 'proveOnChain') {
         await proveOnChain(args)
-    } else if (args.subcommand === 'verify') {
+    } /* else if (args.subcommand === 'verify') {
         await verify(args)
-    } else if (args.subcommand === 'checkVerifyingKey') {
+    } hehe temp comment out */ 
+    else if (args.subcommand === 'checkVerifyingKey') {
         await checkVerifyingKey(args)
     }
 }
