@@ -51,6 +51,14 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
+        ['-t', '--tally'],
+        {
+            type: 'string',
+            help: 'The Tally contract address',
+        }
+    )
+
+    parser.addArgument(
         ['-f', '--proof-dir'],
         {
             required: true,
@@ -64,19 +72,24 @@ const proveOnChain = async (args: any) => {
     const signer = await getDefaultSigner()
     const pollId = Number(args.poll_id)
 
-    // check existence of MACI and ppt contract addresses
+    // check existence of contract addresses
     let contractAddrs = readJSONFile(contractFilepath)
     if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
         console.error('Error: MACI contract address is empty') 
         return 1
     }
-    if ((!contractAddrs||!contractAddrs["MessageProcessor-"+pollId]) && !args.ppt) {
+    if ((!contractAddrs||!contractAddrs["MessageProcessor-"+pollId]) && !args.mp) {
         console.error('Error: MessageProcessor contract address is empty') 
+        return 1
+    }
+    if ((!contractAddrs||!contractAddrs["Tally-"+pollId]) && !args.tally) {
+        console.error('Error: Tally contract address is empty') 
         return 1
     }
 
     const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
     const mpAddress = args.mp ? args.mp : contractAddrs["MessageProcessor-"+pollId]
+    const tallyAddress = args.tally ? args.mp : contractAddrs["Tally-"+pollId]
 
     // MACI contract
     if (!validateEthAddress(maciAddress)) {
@@ -95,9 +108,16 @@ const proveOnChain = async (args: any) => {
         return {}
     }
 
+
+    if (!validateEthAddress(tallyAddress)) {
+        console.error('Error: invalid Tally contract address')
+        return {}
+    }
+
     const [ maciContractAbi ] = parseArtifact('MACI')
     const [ pollContractAbi ] = parseArtifact('Poll')
     const [ mpContractAbi ] = parseArtifact('MessageProcessor')
+    const [ tallyContractAbi ] = parseArtifact('Tally')
     const [ messageAqContractAbi ] = parseArtifact('AccQueue')
     const [ vkRegistryContractAbi ] = parseArtifact('VkRegistry')
     const [ verifierContractAbi ] = parseArtifact('Verifier')
@@ -123,6 +143,12 @@ const proveOnChain = async (args: any) => {
     const mpContract = new ethers.Contract(
         mpAddress,
         mpContractAbi,
+        signer,
+    )
+
+    const tallyContract = new ethers.Contract(
+        tallyAddress,
+        tallyContractAbi,
         signer,
     )
 
@@ -462,6 +488,7 @@ const proveOnChain = async (args: any) => {
             console.log('OK')
         }
     }
+    hehe temp comment out */
 
     // ------------------------------------------------------------------------
     // Vote tallying proofs
@@ -470,7 +497,7 @@ const proveOnChain = async (args: any) => {
         :
         Math.floor(numSignUps / tallyBatchSize) + 1
 
-    let tallyBatchNum = Number(await pptContract.tallyBatchNum())
+    let tallyBatchNum = Number(await tallyContract.tallyBatchNum())
 
     console.log()
     if (tallyBatchNum < totalTallyBatches) {
@@ -479,19 +506,23 @@ const proveOnChain = async (args: any) => {
 
     for (let i = tallyBatchNum; i < totalTallyBatches; i ++) {
 
+        if (i == 0) {
+            await tallyContract.updateSbCommitment(mpContract.address)
+        }
+
         const batchStartIndex = i * tallyBatchSize
 
         const txErr = 'Error: tallyVotes() failed'
         const { proof, circuitInputs, publicInputs } = data.tallyProofs[i]
 
-        const currentTallyCommitmentOnChain = await pptContract.tallyCommitment()
+        const currentTallyCommitmentOnChain = await tallyContract.tallyCommitment()
         if (currentTallyCommitmentOnChain.toString() !== circuitInputs.currentTallyCommitment) {
             console.error('Error: currentTallyCommitment mismatch.')
             return 1
         }
 
         const packedValsOnChain = BigInt(
-            await pptContract.genTallyVotesPackedVals(
+            await tallyContract.genTallyVotesPackedVals(
                 numSignUps,
                 batchStartIndex,
                 tallyBatchSize,
@@ -502,28 +533,29 @@ const proveOnChain = async (args: any) => {
             return 1
         }
 
-        const currentSbCommitmentOnChain = await pptContract.sbCommitment()
+        const currentSbCommitmentOnChain = await mpContract.sbCommitment()
         if (currentSbCommitmentOnChain.toString() !== circuitInputs.sbCommitment) {
             console.error('Error: currentSbCommitment mismatch.')
             return 1
         }
 
-        const publicInputHashOnChain = await pptContract.genTallyVotesPublicInputHash(
+        const publicInputHashOnChain = await tallyContract.genTallyVotesPublicInputHash(
             numSignUps,
             batchStartIndex,
             tallyBatchSize,
             circuitInputs.newTallyCommitment,
         )
         if (publicInputHashOnChain.toString() !== publicInputs[0]) {
-            console.error('Error: public input mismatch.')
+            console.error(`Error: public input mismatch. tallyBatchNum=${i}, onchain=${publicInputHashOnChain.toString()}, offchain=${publicInputs[0]}`)
             return 1
         }
 
         const formattedProof = formatProofForVerifierContract(proof)
         let tx
         try {
-            tx = await pptContract.tallyVotes(
+            tx = await tallyContract.tallyVotes(
                 pollContract.address,
+                mpContract.address,
                 '0x' + BigInt(circuitInputs.newTallyCommitment).toString(16),
                 formattedProof,
             )
@@ -543,7 +575,7 @@ const proveOnChain = async (args: any) => {
         console.log(`Transaction hash: ${tx.hash}`)
 
         // Wait for the node to catch up
-        tallyBatchNum = Number(await pptContract.tallyBatchNum())
+        tallyBatchNum = Number(await tallyContract.tallyBatchNum())
         let backOff = 1000
         let numAttempts = 0
         while (tallyBatchNum !== i + 1) {
@@ -562,7 +594,6 @@ const proveOnChain = async (args: any) => {
         console.log('OK')
     }
 
-    hehe temp comment out */
 
     return 0
 }
