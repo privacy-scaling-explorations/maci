@@ -1,35 +1,31 @@
-**/zkeys/*
-**/artifacts/*
+circuits/params/*
+cli/proofs
+cli/proofs.json
+cli/zkeys
+*.zkey
+*.r1cs
+*.sym
 
-cli/zkeys/*
-cli/artifacts/*
-cli/preProofTally.json
-
-integrationTests/artifacts/*
-integrationTests/cache/*
-
-contracts/cache/*
-contracts/artifacts/*
-contracts/sol/QuadVoteTallyVerifier.sol
-contracts/sol/QuadVoteTallyVerifierLarge.sol
-contracts/sol/QuadVoteTallyVerifierMedium.sol
-contracts/sol/QuadVoteTallyVerifierSmall.sol
-contracts/sol/BatchUpdateStateTreeVerifier.sol
-contracts/sol/BatchUpdateStateTreeVerifierLarge.sol
-contracts/sol/BatchUpdateStateTreeVerifierMedium.sol
-contracts/sol/BatchUpdateStateTreeVerifierSmall.sol
 solc
 *.ptau
+cli/tally.json
 **/test_tally.json
 **/tally.json
-**/tally_without_proofs.json
-**/proofs.json
+**/subsidy.json
+integrationTests/test_tally.json
+integrationTests/artifacts/**
 deployedAddresses.json
 .etherlime-store
 **/build/
 circuits/build
-circuits/params
+circuits/circom/test.bak
+
+cli/artifacts
+contracts/artifacts
 contracts/compiled
+cli/cache
+contracts/cache
+
 node_modules
 blake2sdef.json
 build/.snark_checksum
@@ -140,5 +136,15 @@ typings/
 # DynamoDB Local files
 .dynamodb/
 
-cli/contractAddress.txt
-cli/contractAddress.old
+*.kate-swp
+
+# docker related
+**/data/
+cli/output.json
+cli/processinput.json
+cli/tallyinput.json
+**/contractAddress.txt
+**/contractAddress.old
+
+# mdBook rendered files
+publish

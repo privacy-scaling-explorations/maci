@@ -1,22 +1,24 @@
 import * as fs from 'fs'
 
-import {
-    genPerVOSpentVoiceCreditsCommitment,
-    genTallyResultCommitment,
-    genSpentVoiceCreditsCommitment,
-} from 'maci-core'
+import { genTallyResultCommitment } from 'maci-core'
+import { hash2, hash3 } from 'maci-crypto'
 
 import {
-    maciContractAbi,
+    parseArtifact,
+    getDefaultSigner,
 } from 'maci-contracts'
 
 import {
+    calcQuinTreeDepthFromMaxLeaves,
     validateEthAddress,
     contractExists,
-    calcQuinTreeDepthFromMaxLeaves,
 } from './utils'
+import {readJSONFile} from 'maci-common'
+import {contractFilepath} from './config'
 
 import * as ethers from 'ethers'
+
+const Web3 = require('web3')
 
 const configureSubparser = (subparsers: any) => {
     const parser = subparsers.addParser(
@@ -31,16 +33,119 @@ const configureSubparser = (subparsers: any) => {
             help: 'A filepath in which to save the final vote tally and salt.',
         }
     )
+
+    parser.addArgument(
+        ['-sf', '--subsidy-file'],
+        {
+            type: 'string',
+            help: 'A filepath in which to save the final tally result and salt.',
+        }
+    )
+
+
+    parser.addArgument(
+        ['-x', '--contract'],
+        {
+            type: 'string',
+            help: 'The MACI contract address',
+        }
+    )
+
+    parser.addArgument(
+        ['-o', '--poll-id'],
+        {
+            action: 'store',
+            required: true,
+            type: 'string',
+            help: 'The Poll ID',
+        }
+    )
+
+    parser.addArgument(
+        ['-q', '--ppt'],
+        {
+            type: 'string',
+            help: 'The PollProcessorAndTallyer contract address',
+        }
+    )
 }
 
 const verify = async (args: any) => {
+    const signer = await getDefaultSigner()
+
+    const pollId = Number(args.poll_id)
+
+    // check existence of MACI and ppt contract addresses
+    let contractAddrs = readJSONFile(contractFilepath)
+    if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
+        console.error('Error: MACI contract address is empty') 
+        return 1
+    }
+    if ((!contractAddrs||!contractAddrs["PollProcessorAndTally-"+pollId]) && !args.ppt) {
+        console.error('Error: PollProcessorAndTally contract address is empty') 
+        return 1
+    }
+
+    const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
+    const pptAddress = args.ppt ? args.ppt: contractAddrs["PollProcessorAndTally-"+pollId]
+
+    // MACI contract
+    if (!validateEthAddress(maciAddress)) {
+        console.error('Error: invalid MACI contract address')
+        return 0
+    }
+
+    // PollProcessorAndTallyer contract
+    if (!validateEthAddress(pptAddress)) {
+        console.error('Error: invalid PollProcessorAndTallyer contract address')
+        return 0
+    }
+
+    const [ maciContractAbi ] = parseArtifact('MACI')
+    const [ pollContractAbi ] = parseArtifact('Poll')
+    const [ pptContractAbi ] = parseArtifact('PollProcessorAndTallyer')
+
+    if (! (await contractExists(signer.provider, pptAddress))) {
+        console.error(`Error: there is no contract deployed at ${pptAddress}.`)
+        return 1
+    }
+
+	const maciContract = new ethers.Contract(
+        maciAddress,
+        maciContractAbi,
+        signer,
+    )
+
+    const pollAddr = await maciContract.polls(pollId)
+    if (! (await contractExists(signer.provider, pollAddr))) {
+        console.error('Error: there is no Poll contract with this poll ID linked to the specified MACI contract.')
+        return 1
+    }
+
+    const pollContract = new ethers.Contract(
+        pollAddr,
+        pollContractAbi,
+        signer,
+    )
+
+    const pptContract = new ethers.Contract(
+        pptAddress,
+        pptContractAbi,
+        signer,
+    )
+
+       // ----------------------------------------------
+    // verify tally result
+    const onChainTallyCommitment = BigInt(await pptContract.tallyCommitment())
+    console.log(onChainTallyCommitment.toString(16))
+
     // Read the tally file
     let contents
     try {
         contents = fs.readFileSync(args.tally_file, { encoding: 'utf8' })
     } catch {
         console.error('Error: unable to open ', args.tally_file)
-        return
+        return 0
     }
 
     // Parse the tally file
@@ -49,155 +154,131 @@ const verify = async (args: any) => {
         data = JSON.parse(contents)
     } catch {
         console.error('Error: unable to parse ', args.tally_file)
-        return
+        return 0
     }
 
-    // Check the results salt
-    const validResultsSalt = data.results.salt && data.results.salt.match(/0x[a-fA-F0-9]+/)
-
-    if (!validResultsSalt) {
-        console.error('Error: invalid results salt')
-        return
-    }
-
+    console.log('-------------tally data -------------------')
+    console.log(data)
     // Check the results commitment
-    const validResultsCommitment = data.results.commitment && data.results.commitment.match(/0x[a-fA-F0-9]+/)
+    let validResultsCommitment =
+        data.newTallyCommitment &&
+        data.newTallyCommitment.match(/0x[a-fA-F0-9]+/)
 
     if (!validResultsCommitment) {
         console.error('Error: invalid results commitment format')
-        return
+        return 0
     }
 
-    // Ensure that the length of data.results.tally is a square root of 2
-    const depth = calcQuinTreeDepthFromMaxLeaves(data.results.tally.length)
-    if (Math.floor(depth).toString() !== depth.toString()) {
-        console.error('Error: invalid results tally field length')
-        return
+    const treeDepths = await pollContract.treeDepths()
+    const voteOptionTreeDepth = Number(treeDepths.voteOptionTreeDepth)
+    const numVoteOptions = 5 ** voteOptionTreeDepth
+    const wrongNumVoteOptions = 'Error: wrong number of vote options.'
+    // Ensure that the lengths of data.results.tally and
+    // data.perVOSpentVoiceCredits.tally are correct
+    // Get vote option tree depth
+    if (data.results.tally.length !== numVoteOptions) {
+        console.error(wrongNumVoteOptions)
+        return 1
+    }
+
+    if (data.perVOSpentVoiceCredits.tally.length !== numVoteOptions) {
+        console.error(wrongNumVoteOptions)
+        return 1
     }
 
     // Verify that the results commitment matches the output of
     // genTallyResultCommitment()
-    const tally = data.results.tally.map(BigInt)
-    const salt = BigInt(data.results.salt)
-    const resultsCommitment = BigInt(data.results.commitment)
 
-    const expectedResultsCommitment = genTallyResultCommitment(tally, salt, depth)
-    if (expectedResultsCommitment.toString() === resultsCommitment.toString()) {
-        console.log('The results commitment in the specified file is correct given the tally and salt')
-    } else {
-        console.error('Error: the results commitment in the specified file is incorrect')
-        return
-    }
+    // Verify the results
 
-    // Check the total spent voice credits salt
-    const validTvcSalt = data.totalVoiceCredits.salt && data.totalVoiceCredits.salt.match(/0x[a-fA-F0-9]+/)
-
-    if (!validTvcSalt) {
-        console.error('Error: invalid total spent voice credits results salt')
-        return
-    }
-
-    // Check the total spent voice credits commitment
-    const validTvcCommitment = data.totalVoiceCredits.commitment && data.totalVoiceCredits.commitment.match(/0x[a-fA-F0-9]+/)
-
-    if (!validTvcCommitment) {
-        console.error('Error: invalid total spent voice credits commitment format')
-        return
-    }
-
-    // Verify that the total spent voice credits commitment matches the output of
-    // genSpentVoiceCreditsCommitment()
-    const tvcSpent = BigInt(data.totalVoiceCredits.spent)
-    const tvcSalt = BigInt(data.totalVoiceCredits.salt)
-    const tvcCommitment = BigInt(data.totalVoiceCredits.commitment)
-    const expectedTvcCommitment = genSpentVoiceCreditsCommitment(tvcSpent, tvcSalt)
-    if (expectedTvcCommitment.toString() === tvcCommitment.toString()) {
-        console.log('The total spent voice credit commitment in the specified file is correct given the tally and salt')
-    } else {
-        console.error('Error: the total spent voice credit commitment in the specified file is incorrect')
-        return
-    }
-
-    const pvcTally = data.totalVoiceCreditsPerVoteOption.tally.map((x) => BigInt(x))
-    const pvcSalt = BigInt(data.totalVoiceCreditsPerVoteOption.salt)
-    const pvcCommitment = BigInt(data.totalVoiceCreditsPerVoteOption.commitment)
-
-    const expectedPvcCommitment = genPerVOSpentVoiceCreditsCommitment(pvcTally, pvcSalt, depth)
-
-    if (expectedPvcCommitment.toString() === pvcCommitment.toString()) {
-        console.log('The per vote option spent voice credit commitment in the specified file is correct given the tally and salt')
-    } else {
-        console.error('Error: the per vote option spent voice credit commitment in the specified file is incorrect')
-        return
-    }
-
-    const maciAddress = data.maci
-
-    // MACI contract
-    if (!validateEthAddress(maciAddress)) {
-        console.error('Error: invalid MACI contract address')
-        return
-    }
-
-    // Ethereum provider
-    const ethProvider = data.provider
-    const provider = new ethers.providers.JsonRpcProvider(ethProvider)
-
-    try {
-        await provider.getBlockNumber()
-    } catch {
-        console.error('Error: unable to connect to the Ethereum provider at', ethProvider)
-        return
-    }
-
-    if (! (await contractExists(provider, maciAddress))) {
-        console.error('Error: there is no contract deployed at the specified address')
-        return
-    }
-
-    const maciContract = new ethers.Contract(
-        maciAddress,
-        maciContractAbi,
-        provider,
+    // Compute newResultsCommitment
+    const newResultsCommitment = genTallyResultCommitment(
+        data.results.tally.map((x) => BigInt(x)),
+        data.results.salt,
+        voteOptionTreeDepth
     )
 
-    const onChainResultsCommitment = BigInt((await maciContract.currentResultsCommitment()).toString())
-    if (onChainResultsCommitment.toString() === expectedResultsCommitment.toString()) {
-        console.log('The results commitment in the MACI contract on-chain is valid')
-    } else {
-        console.error('Error: the results commitment in the MACI contract does not match the expected commitment')
-    }
+    // Compute newSpentVoiceCreditsCommitment
+    const newSpentVoiceCreditsCommitment = hash2([
+        BigInt(data.totalSpentVoiceCredits.spent),
+        BigInt(data.totalSpentVoiceCredits.salt),
+    ])
 
-    const onChainTvcCommitment = BigInt(
-        (await maciContract.currentSpentVoiceCreditsCommitment()).toString()
+    // Compute newPerVOSpentVoiceCreditsCommitment
+    const newPerVOSpentVoiceCreditsCommitment = genTallyResultCommitment(
+        data.perVOSpentVoiceCredits.tally.map((x) => BigInt(x)),
+        data.perVOSpentVoiceCredits.salt,
+        voteOptionTreeDepth
     )
-    if (onChainTvcCommitment.toString() === expectedTvcCommitment.toString()) {
-        console.log('The total spent voice credit commitment in the MACI contract on-chain is valid')
-    } else {
-        console.error('Error: the total spent voice credit commitment in the MACI contract does not match the expected commitment')
+
+    // Compute newTallyCommitment
+    const newTallyCommitment = hash3([
+        newResultsCommitment,
+        newSpentVoiceCreditsCommitment,
+        newPerVOSpentVoiceCreditsCommitment,
+    ])
+
+    if (onChainTallyCommitment !== newTallyCommitment) {
+        console.log('Error: the on-chain tally commitment does not match.')
+        return 1
     }
 
-    const onChainPvcCommitment = BigInt(
-        (await maciContract.currentPerVOSpentVoiceCreditsCommitment()).toString()
-    )
-    if (onChainPvcCommitment.toString() === expectedPvcCommitment.toString()) {
-        console.log('The per vote option spent voice credit commitment in the MACI contract on-chain is valid')
-    } else {
-        console.error('Error: the per vote option spent voice credit commitment in the MACI contract does not match the expected commitment')
+    // ----------------------------------------------
+    // verify subsidy result
+
+    if (args.subsidy_file) {
+        const onChainSubsidyCommitment = BigInt(await pptContract.subsidyCommitment())
+        console.log(onChainSubsidyCommitment.toString(16))
+        // Read the subsidy file
+        try {
+            contents = fs.readFileSync(args.subsidy_file, { encoding: 'utf8' })
+        } catch {
+            console.error('Error: unable to open ', args.subsidy_file)
+            return 0
+        }
+       // Parse the file
+        try {
+            data = JSON.parse(contents)
+        } catch {
+            console.error('Error: unable to parse ', args.subsidy_file)
+            return 0
+        }
+        console.log('-------------subsidy data -------------------')
+        console.log(data)
+    
+        validResultsCommitment =
+            data.newSubsidyCommitment &&
+            data.newSubsidyCommitment.match(/0x[a-fA-F0-9]+/)
+    
+        if (!validResultsCommitment) {
+            console.error('Error: invalid results commitment format')
+            return 0
+        }
+    
+        if (data.results.subsidy.length !== numVoteOptions) {
+            console.error(wrongNumVoteOptions)
+            return 1
+        }
+    
+        // to compute newSubsidyCommitment, we can use genTallyResultCommitment
+        const newSubsidyCommitment = genTallyResultCommitment(
+            data.results.subsidy.map((x) => BigInt(x)),
+            data.results.salt,
+            voteOptionTreeDepth
+        )
+    
+        if (onChainSubsidyCommitment !== newSubsidyCommitment) {
+            console.log('Error: the on-chain subsidy commitment does not match.')
+            return 1
+        }
     }
 
-    // Check the total votes
-    let expectedTotalVotes = BigInt(0)
-    for (const t of tally) {
-        expectedTotalVotes += t
-    }
 
-    const onChainTotalVotes = await maciContract.totalVotes()
-    if (onChainTotalVotes.toString() === expectedTotalVotes.toString()) {
-        console.log('The total sum of votes in the MACI contract on-chain is valid.')
-    } else {
-        console.error('Error: the total votes value in the MACI contract does not match the expected sum of the vote tally')
-    }
+
+
+    console.log('OK. finish verify')
+
+    return 0
 }
 
 export {

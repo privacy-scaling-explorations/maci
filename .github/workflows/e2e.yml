@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [ v1 ]
+  pull_request:
+    branches: [ v1 ]
+  schedule:
+    - cron: 0 0 * * *
+
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+
+  e2e:
+    uses: ./.github/workflows/reusable-e2e.yml
+
+  npm-publish:
+    needs: e2e
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-20.04
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Use Node.js 16
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          registry-url: 'https://registry.npmjs.org'
+
+      # To prevent `npm install` failure of circuit package, 
+      # it has to checkout manually because version of `circomlib` has pinned to a specific commit
+      - name: Checkout circomlib
+        run: |
+          git init circuits/node_modules/circomlib
+          cd circuits/node_modules/circomlib
+          git remote add origin https://github.com/weijiekoh/circomlib
+          git -c protocol.version=2 fetch --no-tags --prune --progress --no-recurse-submodules --depth=1 origin ac85e82c1914d47789e2032fb11ceb2cfdd38a2b
+          git checkout --progress --force ac85e82c1914d47789e2032fb11ceb2cfdd38a2b
+          rm -rf ./.git
+
+
+      - name: Initialize Project
+        run: |
+          npm install
+          npx lerna bootstrap
+          npm run build
+
+      - name: Compile Contracts
+        run: |
+          cd contracts
+          npm run compileSol
+
+      - name: Publish Project
+        run: |
+          # Prevent `git commit error` when running `lerna version`
+          # It will not pushed to GitHub. It is ephemeral
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
+
+          lerna version 0.0.0-ci.$(git rev-parse --short HEAD) --no-push --yes
+          lerna publish from-git --dist-tag ci --yes
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

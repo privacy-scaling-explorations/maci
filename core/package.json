@@ -1,6 +1,6 @@
 {
     "name": "maci-core",
-    "version": "0.9.1",
+    "version": "1.1.2",
     "description": "",
     "main": "build/index.js",
     "scripts": {
@@ -8,10 +8,8 @@
         "build": "tsc",
         "test-processMessage": "jest ProcessMessage.test.ts",
         "test-processMessage-debug": "node --inspect-brk ./node_modules/.bin/jest ProcessMessage.test.ts",
-        "test-macistate": "jest MaciState.test.ts",
-        "test-macistate-debug": "node --inspect-brk ./node_modules/.bin/jest MaciState.test.ts",
-        "test-user": "jest User.test.ts",
-        "test-user-debug": "node --inspect-brk ./node_modules/.bin/jest User.test.ts",
+        "test-maciState": "jest MaciState.test.ts",
+        "test-maciState-debug": "node --inspect-brk ./node_modules/.bin/jest MaciState.test.ts",
         "test": "jest",
         "test-debug": "node --inspect-brk ./node_modules/.bin/jest"
     },
@@ -19,17 +17,15 @@
         "@maci-contracts": "../contracts"
     },
     "dependencies": {
-        "ethers": "^4.0.45",
-        "maci-config": "^0.9.1",
-        "maci-crypto": "^0.9.1",
-        "maci-domainobjs": "^0.9.1",
+        "maci-crypto": "^1.1.2",
+        "maci-domainobjs": "^1.1.2",
         "module-alias": "^2.2.2"
     },
     "devDependencies": {
-        "@types/jest": "^24.0.25",
-        "@types/node": "^13.1.2",
-        "jest": "^24.9.0",
-        "ts-jest": "^24.2.0"
+        "@types/jest": "^26.0.21",
+        "@types/node": "^14.14.35",
+        "jest": "^26.6.3",
+        "ts-jest": "^26.5.4"
     },
-    "gitHead": "081845366eb65fffbfa7e60aca3cb69347de488e"
+    "gitHead": "f567a17293114ba2d5e89c711d00a9f4c197f070"
 }

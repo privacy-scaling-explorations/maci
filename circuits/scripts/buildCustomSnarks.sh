@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -e
 
 rargs=4
@@ -10,23 +9,33 @@ function checkargs {
         echo "Error: missing arguments" >&2
         exit 1
     fi
+
+    # Intermediate state tree depth such that 5^istd > max number of messages
+    istd=$(echo "l($n)/l(5)" | bc -l )
+
+    if [ $(echo $istd | cut -d . -f2) -ne "00000000000000000000" ]
+    then
+        echo "Error: Max number of messages must have a prime factor of 5" 1>&2
+        exit 1
+    fi
+
+    istd=$(echo $istd | cut -d . -f1)
 }
 
 help() {
-    echo "Builds the batchUpdateTreeSnark and QuadTallySnark with custom parameters."
+    echo "Builds the processMessage and tallyVotes with custom parameters."
     echo
-    echo "Syntax: buildCustomSnarks [-h|s|m|v|i|b|l]"
+    echo "Syntax: buildCustomSnarks [-h|s|m|v|i|b|n]"
     echo
     echo "options: "
     echo "s State tree depth"
     echo "m Message tree depth"
     echo "v Vote options tree depth"
-    echo "b Batch size for update state tree"
-    echo "l Set max-old-space-size for Node commands"
+    echo "b Message Batch depth (msgSubTreeDepth)"
+    echo "n Max number of messages"
 }
 
-nl=16384
-while getopts ":h:s:m:v:i:b:l:" option; do
+while getopts ":h:s:m:v:i:b:n:" option; do
    case $option in
       h)
          help
@@ -38,44 +47,32 @@ while getopts ":h:s:m:v:i:b:l:" option; do
       v)
          votd="$OPTARG";;
       b)
-         bs="$OPTARG";;
-      l)
-         nl="$OPTARG";;
+         b="$OPTARG";;
+      n)
+         n="$OPTARG";;
      \?)
          echo "Error: Invalid option" 1>&2
          exit;;
    esac
 done
 
-checkargs $std $mtd $votd $bs
-
-# Intermediate state tree depth should be 2^i = Batch size
-istd=$(echo "l($bs)/l(2)" | bc -l | cut -d . -f1)
+checkargs $std $mtd $votd $b $n
 
 cd "$(dirname "$0")"
 cd ..
-mkdir -p params
 
-bcircuitdir="./circom/prod/batchUpdateStateTree_custom.circom"
-qcircuitdir="./circom/prod/quadVoteTally_custom.circom"
-
-touch $bcircuitdir
-touch $qcircuitdir
+pcircuitdir="./circom/prod/processMessages_custom.circom"
+tcircuitdir="./circom/prod/tallyVotes_custom.circom"
+touch $pcircuitdir
+touch $tcircuitdir
 
 # Write custom circuit files
-echo -e 'include "../batchUpdateStateTree.circom";\n' > $bcircuitdir
-echo "component main = BatchUpdateStateTree($std, $mtd, $votd, $bs);" >> $bcircuitdir
+echo -e "pragma circom 2.0.0;" > $pcircuitdir
+echo -e 'include "../processMessages.circom";\n' >> $pcircuitdir
+echo "component main {public [inputHash]} = ProcessMessages($std, $mtd, $b, $votd);" >> $pcircuitdir
 
-echo -e 'include "../quadVoteTally.circom";\n' > $qcircuitdir
-echo "component main = QuadVoteTally($std, $istd, $votd);" >> $qcircuitdir
+echo -e "pragma circom 2.0.0;" > $tcircuitdir
+echo -e 'include "../tallyVotes.circom";\n' > $tcircuitdir
+echo "component main {public [inputHash]} = TallyVotes($std, $istd, $votd);" >> $tcircuitdir
 
-echo "Building batchUpdateStateTree_custom"
-NODE_OPTIONS=--max-old-space-size=$nl node --stack-size=1073741 build/buildSnarks.js -ml $nl -i circom/prod/batchUpdateStateTree_custom.circom -j params/batchUstCustom.r1cs -c params/batchUstCustom.c -y params/batchUstCustom.sym -p params/batchUstPkCustom.json -v params/batchUstVkCustom.json -s params/BatchUpdateStateTreeVerifierCustom.sol -vs BatchUpdateStateTreeVerifierCustom -pr params/batchUstCustom.params -w params/batchUstCustom -a params/batchUstCustom.wasm -ml $nl
-echo "Building quadVoteTally_custom"
-NODE_OPTIONS=--max-old-space-size=$nl node --stack-size=1073741 build/buildSnarks.js -ml $nl -i circom/prod/quadVoteTally_custom.circom -j params/qvtCircuitCustom.r1cs -c params/qvtCustom.c -y params/qvtCustom.sym -p params/qvtPkCustom.bin -v params/qvtVkCustom.json -s params/QuadVoteTallyVerifierCustom.sol -vs QuadVoteTallyVerifierCustom -pr params/qvtCustom.params -w params/qvtCustom -a params/qvtCustom.wasm -ml $nl
-
-echo 'Copying BatchUpdateStateTreeVerifierCustom.sol to contracts/sol.'
-cp ./params/BatchUpdateStateTreeVerifierCustom.sol ../contracts/sol/
-
-echo 'Copying QuadVoteTallyVerifierCustom.sol to contracts/sol.'
-cp ./params/QuadVoteTallyVerifierCustom.sol ../contracts/sol/
+npm run circom-helper

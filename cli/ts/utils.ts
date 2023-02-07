@@ -1,6 +1,5 @@
-const fs = require('fs')
-import * as ethers from 'ethers'
-import * as prompt from 'prompt-sync'
+import * as fs from 'fs'
+import * as prompt from 'prompt-async'
 
 prompt.colors = false
 prompt.message = ''
@@ -8,147 +7,11 @@ prompt.message = ''
 import { SNARK_FIELD_SIZE } from 'maci-crypto'
 
 import {
-    MaciState,
-} from 'maci-core'
-
-import {
-    PubKey,
-    Keypair,
-    Message,
-    StateLeaf,
-} from 'maci-domainobjs'
-
-import {
     genJsonRpcDeployer,
-    maciContractAbi,
 } from 'maci-contracts'
 
-/*
- * Retrieves and parses on-chain MACI contract data to create an off-chain
- * representation as a MaciState object.
- * @param provider An Ethereum provider
- * @param address The address of the MACI contract
- * @coordinatorKeypair The coordinator's keypair
- */
-const genMaciStateFromContract = async (
-    provider: ethers.providers.Provider,
-    address: string,
-    coordinatorKeypair: Keypair,
-    zerothLeaf: StateLeaf,
-    processMessages = true,
-) => {
-
-    const maciContract = new ethers.Contract(
-        address,
-        maciContractAbi,
-        provider,
-    )
-
-    const treeDepths = await maciContract.treeDepths()
-    const stateTreeDepth = BigInt(treeDepths[0].toString())
-    const messageTreeDepth = BigInt(treeDepths[1].toString())
-    const voteOptionTreeDepth = BigInt(treeDepths[2].toString())
-    const maxVoteOptionIndex = BigInt((
-            await maciContract.voteOptionsMaxLeafIndex()
-        ).toString())
-
-    const maciState = new MaciState(
-        coordinatorKeypair,
-        stateTreeDepth,
-        messageTreeDepth,
-        voteOptionTreeDepth,
-        maxVoteOptionIndex,
-    )
-
-    const signUpLogs = await provider.getLogs({
-        ...maciContract.filters.SignUp(),
-        fromBlock: 0,
-    })
-    
-    const publishMessageLogs = await provider.getLogs({
-        ...maciContract.filters.PublishMessage(),
-        fromBlock: 0,
-    })
-
-    const iface = new ethers.utils.Interface(maciContractAbi)
-    for (const log of signUpLogs) {
-        const event = iface.parseLog(log)
-        const voiceCreditBalance = BigInt(event.values._voiceCreditBalance.toString())
-        const pubKey = new PubKey([
-            BigInt(event.values._userPubKey[0]),
-            BigInt(event.values._userPubKey[1]),
-        ])
-
-        maciState.signUp(
-            pubKey,
-            voiceCreditBalance,
-        )
-    }
-
-    for (const log of publishMessageLogs) {
-        const event = iface.parseLog(log)
-        const msgIv = BigInt(event.values._message[0].toString())
-        const msgData = event.values._message[1].map((x) => BigInt(x.toString()))
-        const message = new Message(msgIv, msgData)
-        const encPubKey = new PubKey([
-            BigInt(event.values._encPubKey[0]),
-            BigInt(event.values._encPubKey[1]),
-        ])
-
-        maciState.publishMessage(message, encPubKey)
-    }
-
-    if (!processMessages) {
-        return maciState
-    }
-    
-    // Check whether the above steps were done correctly before processing
-    // messages
-    const onChainStateRoot = await maciContract.getStateTreeRoot()
-
-    if (maciState.genStateRoot().toString(16) !== BigInt(onChainStateRoot).toString(16)) {
-        throw new Error('Error: could not correctly recreate the state tree from on-chain data. The state root differs.')
-    }
-
-    const onChainMessageRoot = await maciContract.getMessageTreeRoot()
-    if (maciState.messageTree.root.toString(16) !== BigInt(onChainMessageRoot).toString(16)) {
-        throw new Error('Error: could not correctly recreate the message tree from on-chain data. The message root differs.')
-    }
-
-    // Process the messages so that the users array is up to date with the
-    // contract's state tree
-    const currentMessageBatchIndex = Number((await maciContract.currentMessageBatchIndex()).toString())
-    const messageBatchSize = Number((await maciContract.messageBatchSize()).toString())
-    const numMessages = maciState.messages.length
-    const maxMessageBatchIndex = numMessages % messageBatchSize === 0 ?
-        numMessages
-        :
-        (1 + Math.floor(numMessages / messageBatchSize)) * messageBatchSize
-
-    const hasUnprocessedMessages = await maciContract.hasUnprocessedMessages()
-
-    // Process messages up to the latest batch (in reverse order)
-    if (hasUnprocessedMessages) {
-        for (let i = currentMessageBatchIndex; i > currentMessageBatchIndex; i -= messageBatchSize) {
-            maciState.batchProcessMessage(
-                i,
-                messageBatchSize,
-                zerothLeaf,
-            )
-        }
-    } else {
-        // Process all messages (in reverse order)
-        for (let i = maxMessageBatchIndex; i > 0; i -= messageBatchSize) {
-            maciState.batchProcessMessage(
-                i - messageBatchSize,
-                messageBatchSize,
-                zerothLeaf,
-            )
-        }
-    }
-
-    return maciState
-}
+const Web3 = require('web3')
+const { ethers } = require('hardhat')
 
 const calcBinaryTreeDepthFromMaxLeaves = (maxLeaves: number) => {
     let result = 0
@@ -171,7 +34,15 @@ const validateEthAddress = (address: string) => {
 }
 
 const promptPwd = async (name: string) => {
-    return prompt()(name + ': ', null, { echo: ''})
+    prompt.start()
+    const input = await prompt.get([
+        {
+            name,
+            hidden: true,
+        }
+    ])
+
+    return input[name]
 }
 
 const checkDeployerProviderConnection = async (
@@ -207,30 +78,69 @@ const validateEthSk = (sk: string): boolean => {
 }
 
 const contractExists = async (
-    provider: ethers.providers.Provider,
+    provider: any,
     address: string,
 ) => {
     const code = await provider.getCode(address)
     return code.length > 2
 }
 
+const batchTransactionRequests = async (
+    provider: any, 
+    requests: Array<any>,
+    fromAddress?: string
+) => {
+    const web3 = new Web3(provider)
+    const batch = new web3.BatchRequest()
+
+    const callbacks = Array(requests.length).fill(
+        async (error: any, result: any) => {
+            if (error.message) {
+                console.error(error.message)
+                throw error
+            }
+
+            return result
+        }
+    )
+
+    callbacks.forEach((cb, index) => {
+        batch.add(
+            requests[index].call.request(
+                { from: fromAddress ? fromAddress : web3.eth.Contract.defaultAccount },
+                cb
+            )
+        )
+    })
+
+    try {
+        batch.execute()
+        return await Promise.all(callbacks)
+    } catch {
+        return []
+    }
+}
+
+const currentBlockTimestamp = async (
+    provider: any, 
+): Promise<number> => {
+    const blockNum = await provider.getBlockNumber()
+    const block = await provider.getBlock(blockNum)
+    return Number(block.timestamp)
+}
+
 const delay = (ms: number): Promise<void> => {
     return new Promise((resolve: Function) => setTimeout(resolve, ms))
 }
 
-const readJSONFile = (filename) => {
-   if (!fs.existsSync(filename)) {
-      return ""
-   }
-   let data = fs.readFileSync(filename).toString()
-   let jdata = JSON.parse(data)
-   return jdata
+const isPathExist = (paths: Array<string>): [boolean, string] => {
+    for (const path of paths) {
+        if (!fs.existsSync(path)) {
+            return [false, path]
+        }
+    }
+    return [true, null]
 }
-
-const writeJSONFile = (filename, data) => {
-    fs.writeFileSync(filename, JSON.stringify(data))
-}
-
 
 export {
     promptPwd,
@@ -242,8 +152,8 @@ export {
     validateSaltFormat,
     validateEthAddress,
     contractExists,
-    genMaciStateFromContract,
+    currentBlockTimestamp,
+    batchTransactionRequests,
     delay,
-    readJSONFile,
-    writeJSONFile,
+    isPathExist,
 }

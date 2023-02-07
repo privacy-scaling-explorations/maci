@@ -1,50 +1,28 @@
 require('module-alias/register')
-import { genTestAccounts } from '../accounts'
-import { config } from 'maci-config'
 import {
     genRandomSalt,
 } from 'maci-crypto'
 
-import { JSONRPCDeployer } from '../deploy'
-const PoseidonT3 = require('@maci-contracts/compiled/PoseidonT3.json')
-const PoseidonT6 = require('@maci-contracts/compiled/PoseidonT6.json')
+import { deployPoseidonContracts } from '../deploy'
+import { linkPoseidonLibraries } from '../'
 
-import { loadAB, linkPoseidonContracts } from '../'
-
-const accounts = genTestAccounts(1)
-let deployer
 let hasherContract
-let PoseidonT3Contract, PoseidonT6Contract
 
 describe('Hasher', () => {
     beforeAll(async () => {
-        deployer = new JSONRPCDeployer(
-            accounts[0].privateKey,
-            config.get('chain.url'),
-            {
-                gasLimit: 8800000,
-            },
-        )
-
-        console.log('Deploying Poseidon')
-
-        PoseidonT3Contract = await deployer.deploy(PoseidonT3.abi, PoseidonT3.bytecode, {})
-        PoseidonT6Contract = await deployer.deploy(PoseidonT6.abi, PoseidonT6.bytecode, {})
-
+        const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } = await deployPoseidonContracts()
         // Link Poseidon contracts
-        linkPoseidonContracts(
-            ['HasherBenchmarks.sol'],
+        const hasherContractFactory = await linkPoseidonLibraries(
+            'HasherBenchmarks',
             PoseidonT3Contract.address,
+            PoseidonT4Contract.address,
+            PoseidonT5Contract.address,
             PoseidonT6Contract.address,
         )
 
-        const [ HasherAbi, HasherBin ] = loadAB('HasherBenchmarks')
-
         console.log('Deploying Hasher')
-        hasherContract = await deployer.deploy(
-            HasherAbi,
-            HasherBin,
-        )
+        hasherContract = await hasherContractFactory.deploy()
+    	await hasherContract.deployTransaction.wait()
     })
 
     it('hashLeftRight', async () => {
@@ -67,15 +45,15 @@ describe('Hasher', () => {
         console.log('hash5:', receipt.gasUsed.toString())
     })
 
-    it('hash11', async () => {
-        const values: string[] = []
-        for (let i = 0; i < 11; i++) {
-            values.push(genRandomSalt().toString())
-        }
+    //it('hash11', async () => {
+        //const values: string[] = []
+        //for (let i = 0; i < 11; i++) {
+            //values.push(genRandomSalt().toString())
+        //}
 
-        const tx = await hasherContract.hash11Benchmark(values)
-        const receipt = await tx.wait()
-        console.log('hash11:', receipt.gasUsed.toString())
-    })
+        //const tx = await hasherContract.hash11Benchmark(values)
+        //const receipt = await tx.wait()
+        //console.log('hash11:', receipt.gasUsed.toString())
+    //})
 })
 

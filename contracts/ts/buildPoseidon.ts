@@ -1,27 +1,25 @@
-import * as Artifactor from 'truffle-artifactor'
+const { ethers, overwriteArtifact } = require('hardhat')
+const { poseidonContract } = require('circomlibjs')
 
-const poseidonGenContract = require('circomlib/src/poseidon_gencontract.js')
-const artifactor = new Artifactor('compiled/')
-
-const buildPoseidonT3 = async () => {
-  await artifactor.save({
-    contractName: 'PoseidonT3',
-    abi: poseidonGenContract.generateABI(2),
-    unlinked_binary: poseidonGenContract.createCode(2)
-  })
+const buildPoseidon = async (numInputs: number) => {
+    await overwriteArtifact(`PoseidonT${numInputs + 1}`, poseidonContract.createCode(numInputs))
 }
 
-const buildPoseidonT6 = async () => {
-  await artifactor.save({
-    contractName: 'PoseidonT6',
-    abi: poseidonGenContract.generateABI(5),
-    unlinked_binary: poseidonGenContract.createCode(5)
-  })
-}
+const buildPoseidonT3 = () => buildPoseidon(2)
+const buildPoseidonT4 = () => buildPoseidon(3)
+const buildPoseidonT5 = () => buildPoseidon(4)
+const buildPoseidonT6 = () => buildPoseidon(5)
 
 if (require.main === module) {
-  buildPoseidonT3()
-  buildPoseidonT6()
+    buildPoseidonT3()
+    buildPoseidonT4()
+    buildPoseidonT5()
+    buildPoseidonT6()
 }
 
-export { buildPoseidonT3, buildPoseidonT6 }
+export {
+    buildPoseidonT3,
+    buildPoseidonT4,
+    buildPoseidonT5,
+    buildPoseidonT6,
+}

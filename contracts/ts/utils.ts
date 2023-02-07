@@ -1,44 +1,75 @@
+interface SnarkProof {
+    pi_a: BigInt[];
+    pi_b: BigInt[][];
+    pi_c: BigInt[];
+}
+
 import {
+    deployVkRegistry,
+    deployTopupCredit,
     deployMaci,
+    deployPpt,
+    deployMockVerifier,
     deployFreeForAllSignUpGatekeeper,
     deployConstantInitialVoiceCreditProxy,
 } from './'
 
-const formatProofForVerifierContract = (_proof: any) => {
+const formatProofForVerifierContract = (
+    _proof: SnarkProof,
+) => {
+
     return ([
         _proof.pi_a[0],
         _proof.pi_a[1],
+
         _proof.pi_b[0][1],
         _proof.pi_b[0][0],
         _proof.pi_b[1][1],
         _proof.pi_b[1][0],
+
         _proof.pi_c[0],
         _proof.pi_c[1],
     ]).map((x) => x.toString())
 }
 
 const deployTestContracts = async (
-    deployer,
     initialVoiceCreditBalance,
+    gatekeeperContract?
 ) => {
-    const freeForAllSignUpGatekeeperContract = await deployFreeForAllSignUpGatekeeper(deployer)
+    const mockVerifierContract = await deployMockVerifier()
+
+    if (!gatekeeperContract) {
+        gatekeeperContract = await deployFreeForAllSignUpGatekeeper()
+    }
+
     const constantIntialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
-        deployer,
         initialVoiceCreditBalance,
     )
 
+    const pptContract = await deployPpt(mockVerifierContract.address)
+    // VkRegistry
+    const vkRegistryContract = await deployVkRegistry()
+    const topupCreditContract = await deployTopupCredit()
+
     const contracts = await deployMaci(
-        deployer,
-        freeForAllSignUpGatekeeperContract.address,
+        gatekeeperContract.address,
         constantIntialVoiceCreditProxyContract.address,
+        mockVerifierContract.address,
+        vkRegistryContract.address,
+        topupCreditContract.address
     )
 
     const maciContract = contracts.maciContract
+    const stateAqContract = contracts.stateAqContract
 
     return {
-        freeForAllSignUpGatekeeperContract,
+        mockVerifierContract,
+        gatekeeperContract,
         constantIntialVoiceCreditProxyContract,
         maciContract,
+        stateAqContract,
+        vkRegistryContract,
+        pptContract,
     }
 }
 

@@ -1,14 +1,18 @@
+import * as path from 'path'
+import * as fs from 'fs'
 import {
     StateLeaf,
-    Command,
+    PCommand,
     Keypair,
     PrivKey,
     PubKey,
+    VerifyingKey,
 } from '../'
 
 import {
     genKeypair,
     unpackPubKey,
+    genRandomSalt,
 } from 'maci-crypto'
 
 describe('Domain objects', () => {
@@ -21,29 +25,69 @@ describe('Domain objects', () => {
 
     const ecdhSharedKey = Keypair.genEcdhSharedKey(privKey, pubKey1)
 
-    const command: Command = new Command(
-        BigInt(10),
+    const random50bitBigInt = (): BigInt => {
+        return (
+            (BigInt(1) << BigInt(50)) - BigInt(1)
+        ) & BigInt(`${genRandomSalt()}`)
+    }
+
+    const command: PCommand = new PCommand(
+        random50bitBigInt(),
         newPubKey,
-        BigInt(0),
-        BigInt(9),
-        BigInt(123),
+        random50bitBigInt(),
+        random50bitBigInt(),
+        random50bitBigInt(),
+        random50bitBigInt(),
+        genRandomSalt(),
     )
+
+    describe('Verifying keys', () => {
+        it('Should convert a JSON file from snarkjs to a VerifyingKey', () => {
+            const file = path.join(__dirname, 'test_vk.json')
+            const j = fs.readFileSync(file).toString()
+            const d = JSON.parse(j)
+            const vk = VerifyingKey.fromJSON(j)
+
+            expect.assertions(15 + (d.IC.length * 2))
+
+            expect(d.vk_alpha_1[0]).toEqual(vk.alpha1.x.toString())
+            expect(d.vk_alpha_1[1]).toEqual(vk.alpha1.y.toString())
+
+            expect(d.vk_beta_2[0][0]).toEqual(vk.beta2.x[1].toString())
+            expect(d.vk_beta_2[0][1]).toEqual(vk.beta2.x[0].toString())
+            expect(d.vk_beta_2[1][0]).toEqual(vk.beta2.y[1].toString())
+            expect(d.vk_beta_2[1][1]).toEqual(vk.beta2.y[0].toString())
+
+            expect(d.vk_gamma_2[0][0]).toEqual(vk.gamma2.x[1].toString())
+            expect(d.vk_gamma_2[0][1]).toEqual(vk.gamma2.x[0].toString())
+            expect(d.vk_gamma_2[1][0]).toEqual(vk.gamma2.y[1].toString())
+            expect(d.vk_gamma_2[1][1]).toEqual(vk.gamma2.y[0].toString())
+
+            expect(d.vk_delta_2[0][0]).toEqual(vk.delta2.x[1].toString())
+            expect(d.vk_delta_2[0][1]).toEqual(vk.delta2.x[0].toString())
+            expect(d.vk_delta_2[1][0]).toEqual(vk.delta2.y[1].toString())
+            expect(d.vk_delta_2[1][1]).toEqual(vk.delta2.y[0].toString())
+
+            expect(d.IC.length).toEqual(vk.ic.length)
+            for (let i = 0 ; i < d.IC.length; i ++) {
+                expect(d.IC[i][0]).toEqual(vk.ic[i].x.toString())
+                expect(d.IC[i][1]).toEqual(vk.ic[i].y.toString())
+            }
+        })
+    })
 
     describe('State leaves', () => {
         it('The serialize() and unserialize() functions should work correctly', () => {
             const stateLeaf = new StateLeaf(
                 pubKey,
                 BigInt(123),
-                BigInt(456),
-                BigInt(789),
+                BigInt(1231267),
             )
 
             const serialized = stateLeaf.serialize()
             const unserialized = StateLeaf.unserialize(serialized)
 
-            expect(unserialized.voteOptionTreeRoot.toString()).toEqual(stateLeaf.voteOptionTreeRoot.toString())
             expect(unserialized.voiceCreditBalance.toString()).toEqual(stateLeaf.voiceCreditBalance.toString())
-            expect(unserialized.nonce.toString()).toEqual(stateLeaf.nonce.toString())
         })
     })
 
@@ -75,7 +119,7 @@ describe('Domain objects', () => {
             expect(sk1.rawPrivKey.toString()).toEqual(BigInt(d).toString())
 
             const c = PrivKey.unserialize(s)
-            expect(sk1.rawPrivKey.toString()).toEqual(BigInt(c.rawPrivKey).toString())
+            expect(sk1.rawPrivKey.toString()).toEqual(BigInt(`${c.rawPrivKey}`).toString())
         })
 
         it('PrivKey.isValidSerializedPrivKey() should work correctly', () => {
@@ -172,7 +216,7 @@ describe('Domain objects', () => {
     describe('Commands and Messages', () => {
         const signature = command.sign(privKey)
         const message = command.encrypt(signature, ecdhSharedKey)
-        const decrypted = Command.decrypt(message, ecdhSharedKey)
+        const decrypted = PCommand.decrypt(message, ecdhSharedKey)
 
         it ('command.sign() should produce a valid signature', () => {
             expect(command.verifySignature(signature, pubKey)).toBeTruthy()
@@ -180,21 +224,23 @@ describe('Domain objects', () => {
         
         it ('A decrypted message should match the original command', () => {
             expect(decrypted.command.equals(command)).toBeTruthy()
-            expect(decrypted.signature.R8[0]).toEqual(signature.R8[0])
-            expect(decrypted.signature.R8[1]).toEqual(signature.R8[1])
-            expect(decrypted.signature.S).toEqual(signature.S)
+            expect(decrypted.signature.R8[0].toString()).toEqual(signature.R8[0].toString())
+            expect(decrypted.signature.R8[1].toString()).toEqual(signature.R8[1].toString())
+            expect(decrypted.signature.S.toString()).toEqual(signature.S.toString())
         })
 
         it ('A decrypted message should have a valid signature', () => {
-            expect(decrypted.command.verifySignature(decrypted.signature, pubKey)).toBeTruthy()
+            const isValid = decrypted.command.verifySignature(decrypted.signature, pubKey) 
+            expect(isValid).toBeTruthy()
         })
 
         it('Command.copy() should perform a deep copy', () => {
-            const c1: Command = new Command(
+            const c1: PCommand = new PCommand(
                 BigInt(10),
                 newPubKey,
                 BigInt(0),
                 BigInt(9),
+                BigInt(1),
                 BigInt(123),
             )
 
@@ -208,19 +254,6 @@ describe('Domain objects', () => {
             c1.nonce = BigInt(8888)
 
             expect(c1.nonce.toString()).not.toEqual(c3.nonce.toString())
-        })
-
-        it('Message.copy() should perform a deep copy', () => {
-            const c = command.copy()
-            const m1 = c.encrypt(signature, ecdhSharedKey)
-
-            const m2 = m1
-            m1.iv = BigInt(9999)
-            expect(m1.iv.toString()).toEqual(m2.iv.toString())
-
-            const m3 = m1.copy()
-            m1.iv = BigInt(8888)
-            expect(m1.iv.toString()).not.toEqual(m3.iv.toString())
         })
     })
 })

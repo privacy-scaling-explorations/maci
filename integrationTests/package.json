@@ -1,6 +1,6 @@
 {
     "name": "maci-integrationtests",
-    "version": "0.9.4",
+    "version": "1.1.2",
     "description": "",
     "main": "build/index.js",
     "scripts": {
@@ -8,12 +8,6 @@
         "build": "tsc",
         "test": "jest",
         "test-debug": "node --inspect-brk ./node_modules/.bin/jest",
-        "test-cli-create": "jest cli-create.test.ts",
-        "test-cli-create-debug": "node --inspect-brk ./node_modules/.bin/jest cli-create.test.ts",
-        "test-cli-signupAndPublish": "jest cli-signupAndPublish.test.ts",
-        "test-cli-signupAndPublish-debug": "node --inspect-brk ./node_modules/.bin/jest cli-signupAndPublish.test.ts",
-        "test-cli-processTallyVerify": "NODE_OPTIONS=--max-old-space-size=4096 jest cli-processTallyVerify.test.ts",
-        "test-cli-processTallyVerify-debug": "node --inspect-brk ./node_modules/.bin/jest cli-processTallyVerify.test.ts",
         "test-cli-genMaciKeypair": "jest cli-genMaciKeypair.test.ts",
         "test-cli-genMaciKeypair-debug": "node --inspect-brk ./node_modules/.bin/jest cli-genMaciKeypair.test.ts",
         "test-cli-genMaciPubkey": "jest cli-genMaciPubkey.test.ts",
@@ -26,20 +20,24 @@
         "@maci-integrationTests": "./"
     },
     "devDependencies": {
-        "@types/jest": "^24.0.25",
-        "@types/node": "^13.1.2",
-        "ethers": "^4.0.45",
-        "jest": "^24.9.0",
-        "maci-circuits": "^0.9.1",
-        "maci-cli": "^0.9.4",
-        "maci-config": "^0.9.1",
-        "maci-contracts": "^0.9.4",
-        "maci-core": "^0.9.1",
-        "maci-crypto": "^0.9.1",
-        "maci-domainobjs": "^0.9.1",
+        "@nomiclabs/hardhat-ethers": "^2.0.2",
+        "@types/jest": "^26.0.21",
+        "@types/node": "^14.14.35",
+        "ethers": "^5.0.32",
+        "hardhat": "^2.0.11",
+        "hardhat-artifactor": "^0.2.0",
+        "hardhat-contract-sizer": "^2.0.3",
+        "jest": "^26.6.3",
+        "js-yaml": "^4.0.0",
+        "maci-circuits": "^1.1.2",
+        "maci-cli": "^1.1.2",
+        "maci-contracts": "^1.1.2",
+        "maci-core": "^1.1.2",
+        "maci-crypto": "^1.1.2",
+        "maci-domainobjs": "^1.1.2",
         "module-alias": "^2.2.2",
-        "shelljs": "^0.8.3",
-        "ts-jest": "^24.2.0"
+        "shelljs": "^0.8.5",
+        "ts-jest": "^26.5.4"
     },
-    "gitHead": "081845366eb65fffbfa7e60aca3cb69347de488e"
+    "gitHead": "f567a17293114ba2d5e89c711d00a9f4c197f070"
 }

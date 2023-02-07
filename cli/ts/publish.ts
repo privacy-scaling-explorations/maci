@@ -1,12 +1,13 @@
 import {
-    maciContractAbi,
+    parseArtifact,
+    getDefaultSigner,
 } from 'maci-contracts'
 
 import {
     PubKey,
     PrivKey,
     Keypair,
-    Command,
+    PCommand,
 } from 'maci-domainobjs'
 
 import {
@@ -15,23 +16,22 @@ import {
 
 import {
     promptPwd,
-    validateEthSk,
     validateEthAddress,
     validateSaltSize,
     validateSaltFormat,
     contractExists,
     checkDeployerProviderConnection,
-    readJSONFile,
+    batchTransactionRequests,
 } from './utils'
 
+import {readJSONFile} from 'maci-common'
 import {contractFilepath} from './config'
-
-import * as ethers from 'ethers'
 
 import {
     DEFAULT_ETH_PROVIDER,
-    DEFAULT_ETH_SK,
 } from './defaults'
+
+const { ethers } = require('hardhat')
 
 const DEFAULT_SALT = genRandomSalt()
 
@@ -39,15 +39,6 @@ const configureSubparser = (subparsers: any) => {
     const parser = subparsers.addParser(
         'publish',
         { addHelp: true },
-    )
-
-    parser.addArgument(
-        ['-e', '--eth-provider'],
-        {
-            action: 'store',
-            type: 'string',
-            help: `A connection string to an Ethereum provider. Default: ${DEFAULT_ETH_PROVIDER}`,
-        }
     )
 
     parser.addArgument(
@@ -83,25 +74,6 @@ const configureSubparser = (subparsers: any) => {
             action: 'store',
             type: 'string',
             help: 'Your serialized MACI private key',
-        }
-    )
-
-    const ethPrivkeyGroup = parser.addMutuallyExclusiveGroup({ required: false})
-
-    ethPrivkeyGroup.addArgument(
-        ['-dp', '--prompt-for-eth-privkey'],
-        {
-            action: 'storeTrue',
-            help: 'Whether to prompt for the user\'s Ethereum private key and ignore -d / --eth-privkey',
-        }
-    )
-
-    ethPrivkeyGroup.addArgument(
-        ['-d', '--eth-privkey'],
-        {
-            action: 'store',
-            type: 'string',
-            help: 'The deployer\'s Ethereum private key',
         }
     )
 
@@ -153,51 +125,43 @@ const configureSubparser = (subparsers: any) => {
             help: 'The message salt',
         }
     )
+
+    parser.addArgument(
+        ['-o', '--poll-id'],
+        {
+            action: 'store',
+            required: true,
+            type: 'string',
+            help: 'The Poll ID',
+        }
+    )
 }
 
 const publish = async (args: any) => {
     // User's MACI public key
     if (!PubKey.isValidSerializedPubKey(args.pubkey)) {
         console.error('Error: invalid MACI public key')
-        return
+        return 1
     }
 
     const userMaciPubKey = PubKey.unserialize(args.pubkey)
 
-     let contractAddrs = readJSONFile(contractFilepath)
-     if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
-         console.error('Error: MACI contract address is empty')
-         return 
-     }
-     const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
+
+    let contractAddrs = readJSONFile(contractFilepath)
+    if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
+        console.error('Error: MACI contract address is empty') 
+        return 1
+    }
+    const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
 
     // MACI contract
     if (!validateEthAddress(maciAddress)) {
         console.error('Error: invalid MACI contract address')
-        return
+        return 1
     }
 
     // Ethereum provider
-    const ethProvider = args.eth_provider || process.env.ETH_PROVIDER || DEFAULT_ETH_PROVIDER
-
-    let ethSk
-    // The deployer's Ethereum private key
-    // The user may either enter it as a command-line option or via the
-    // standard input
-    if (args.prompt_for_eth_privkey) {
-        ethSk = await promptPwd('Your Ethereum private key')
-    } else {
-        ethSk = args.eth_privkey ? args.eth_privkey : DEFAULT_ETH_SK
-    }
-
-    if (ethSk.startsWith('0x')) {
-        ethSk = ethSk.slice(2)
-    }
-
-    if (!validateEthSk(ethSk)) {
-        console.error('Error: invalid Ethereum private key')
-        return
-    }
+    const ethProvider = args.eth_provider ? args.eth_provider : DEFAULT_ETH_PROVIDER
 
     // The user's MACI private key
     let serializedPrivkey
@@ -209,7 +173,7 @@ const publish = async (args: any) => {
 
     if (!PrivKey.isValidSerializedPrivKey(serializedPrivkey)) {
         console.error('Error: invalid MACI private key')
-        return
+        return 1
     }
 
     const userMaciPrivkey = PrivKey.unserialize(serializedPrivkey)
@@ -218,7 +182,7 @@ const publish = async (args: any) => {
     const stateIndex = BigInt(args.state_index)
     if (stateIndex < 0) {
         console.error('Error: the state index must be greater than 0')
-        return
+        return 0
     }
 
     // Vote option index
@@ -226,7 +190,7 @@ const publish = async (args: any) => {
 
     if (voteOptionIndex < 0) {
         console.error('Error: the vote option index should be 0 or greater')
-        return
+        return 0
     }
 
     // The nonce
@@ -234,7 +198,7 @@ const publish = async (args: any) => {
 
     if (nonce < 0) {
         console.error('Error: the nonce should be 0 or greater')
-        return
+        return 0
     }
 
     // The salt
@@ -242,62 +206,102 @@ const publish = async (args: any) => {
     if (args.salt) {
         if (!validateSaltFormat(args.salt)) {
             console.error('Error: the salt should be a 32-byte hexadecimal string')
-            return
+            return 0
         }
 
         salt = BigInt(args.salt)
 
         if (!validateSaltSize(args.salt)) {
             console.error('Error: the salt should less than the BabyJub field size')
-            return
+            return 0
         }
     } else {
         salt = DEFAULT_SALT
     }
 
-    if (! (await checkDeployerProviderConnection(ethSk, ethProvider))) {
-        console.error('Error: unable to connect to the Ethereum provider at', ethProvider)
-        return
+    const signer = await getDefaultSigner()
+    if (! (await contractExists(signer.provider, maciAddress))) {
+        console.error('Error: there is no MACI contract deployed at the specified address')
+        return 1
     }
 
-    const provider = new ethers.providers.JsonRpcProvider(ethProvider)
+    const pollId = args.poll_id
 
-    if (! (await contractExists(provider, maciAddress))) {
-        console.error('Error: there is no contract deployed at the specified address')
-        return
+    if (pollId < 0) {
+        console.error('Error: the Poll ID should be a positive integer.')
+        return 1
     }
 
-    const wallet = new ethers.Wallet(ethSk, provider)
-    const maciContract = new ethers.Contract(
+    const [ maciContractAbi ] = parseArtifact('MACI')
+    const [ pollContractAbi ] = parseArtifact('Poll')
+
+	const maciContractEthers = new ethers.Contract(
         maciAddress,
         maciContractAbi,
-        wallet,
+        signer,
     )
 
+    const pollAddr = await maciContractEthers.getPoll(pollId)
+    if (! (await contractExists(signer.provider, pollAddr))) {
+        console.error('Error: there is no Poll contract with this poll ID linked to the specified MACI contract.')
+        return 1
+    }
+
+    //const pollContract = new web3.eth.Contract(pollContractAbi, pollAddr)
+    const pollContract = new ethers.Contract(
+        pollAddr,
+        pollContractAbi,
+        signer,
+    )
+
+    /*
+     * TODO: Find a way to batch transaction requests via Hardhat; otherwise,
+     * use Multicall
+    const [maxValues, coordinatorPubKeyResult] = 
+        await batchTransactionRequests(
+            ethProvider,
+            [
+                pollContract.methods.maxValues(),
+                pollContract.methods.coordinatorPubKey(),
+            ],
+            wallet.address
+        )
+
+    const a = await maxValues()
+    */
+    const maxValues = await pollContract.maxValues()
+    const coordinatorPubKeyResult = await pollContract.coordinatorPubKey()
+    const maxVoteOptions = Number(maxValues.maxVoteOptions)
+
     // Validate the vote option index against the max leaf index on-chain
-    const maxVoteOptions = (await maciContract.voteOptionsMaxLeafIndex()).toNumber()
     if (maxVoteOptions < voteOptionIndex) {
         console.error('Error: the vote option index is invalid')
-        return
+        throw new Error()
     }
+
+    const coordinatorPubKey = new PubKey([
+        BigInt(coordinatorPubKeyResult.x.toString()),
+        BigInt(coordinatorPubKeyResult.y.toString()),
+    ])
+    
+    const pollContractEthers = new ethers.Contract(
+        pollAddr,
+        pollContractAbi,
+        signer,
+    )
 
     // The new vote weight
     const newVoteWeight = BigInt(args.new_vote_weight)
 
-    const coordinatorPubKeyOnChain = await maciContract.coordinatorPubKey()
-    const coordinatorPubKey = new PubKey([
-        BigInt(coordinatorPubKeyOnChain.x.toString()),
-        BigInt(coordinatorPubKeyOnChain.y.toString()),
-    ])
-
     const encKeypair = new Keypair()
 
-    const command = new Command(
+    const command:PCommand = new PCommand(
         stateIndex,
         userMaciPubKey,
         voteOptionIndex,
         newVoteWeight,
         nonce,
+        pollId,
         salt,
     )
     const signature = command.sign(userMaciPrivkey)
@@ -311,22 +315,28 @@ const publish = async (args: any) => {
 
     let tx
     try {
-        tx = await maciContract.publishMessage(
+        tx = await pollContractEthers.publishMessage(
             message.asContractParam(),
             encKeypair.pubKey.asContractParam(),
-            //{ gasLimit: 5000000 }
+            { gasLimit: 10000000 },
         )
+        await tx.wait()
 
         console.log('Transaction hash:', tx.hash)
         console.log('Ephemeral private key:', encKeypair.privKey.serialize())
     } catch(e) {
-        console.error('Error: the transaction failed')
         if (e.message) {
-            console.error(e.message)
+            if (e.message.endsWith('PollE03')) {
+                console.error('Error: the voting period is over.')
+            } else {
+                console.error('Error: the transaction failed.')
+                console.error(e.message)
+            }
         }
-        return
+        return 1
     }
-    await tx.wait()
+
+    return 0
 }
 
 export {

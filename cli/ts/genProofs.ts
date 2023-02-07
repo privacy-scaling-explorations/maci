@@ -1,63 +1,31 @@
 import * as ethers from 'ethers'
 import * as fs from 'fs'
+import * as path from 'path'
+
+import { genProof, verifyProof, extractVk } from 'maci-circuits'
+import { hashLeftRight, hash3 } from 'maci-crypto'
+import { PrivKey, Keypair, VerifyingKey } from 'maci-domainobjs'
+import { genTallyResultCommitment } from 'maci-core'
 
 import {
-    genRandomSalt,
-    stringifyBigInts,
-} from 'maci-crypto'
-
-import {
-    maciContractAbi,
+    parseArtifact,
+    getDefaultSigner,
+    genMaciStateFromContract,
 } from 'maci-contracts'
-
-import {
-    genBatchUstProofAndPublicSignals,
-    verifyBatchUstProof,
-    genQvtProofAndPublicSignals,
-    verifyQvtProof,
-    getSignalByNameViaSym,
-} from 'maci-circuits'
-
-import {
-    PubKey,
-    PrivKey,
-    Keypair,
-    StateLeaf,
-} from 'maci-domainobjs'
-
-import { 
-    genPerVOSpentVoiceCreditsCommitment,
-    genTallyResultCommitment,
-    genSpentVoiceCreditsCommitment,
-} from 'maci-core'
 
 import {
     promptPwd,
     validateEthAddress,
     contractExists,
-    genMaciStateFromContract,
-    readJSONFile,
+    isPathExist,
 } from './utils'
-
+import {readJSONFile} from 'maci-common'
 import {contractFilepath} from './config'
-
-import {
-    DEFAULT_ETH_PROVIDER,
-} from './defaults'
 
 const configureSubparser = (subparsers: any) => {
     const parser = subparsers.addParser(
         'genProofs',
         { addHelp: true },
-    )
-
-    parser.addArgument(
-        ['-e', '--eth-provider'],
-        {
-            action: 'store',
-            type: 'string',
-            help: `A connection string to an Ethereum provider. Default: ${DEFAULT_ETH_PROVIDER}`,
-        }
     )
 
     const maciPrivkeyGroup = parser.addMutuallyExclusiveGroup({ required: true })
@@ -88,11 +56,12 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-o', '--output'],
+        ['-o', '--poll-id'],
         {
+            action: 'store',
             required: true,
             type: 'string',
-            help: 'The output file',
+            help: 'The Poll ID',
         }
     )
 
@@ -106,13 +75,94 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-z', '--final-zeroth-leaf'],
+        ['-sf', '--subsidy-file'],
         {
-            required: false,
             type: 'string',
-            help: 'The serialized zeroth state leaf to update the state tree after processing the final message batch.',
+            help: 'A filepath in which to save the subsidy data and commitment.',
         }
     )
+
+
+    parser.addArgument(
+        ['-r', '--rapidsnark'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The path to the rapidsnark binary',
+        }
+    )
+
+    parser.addArgument(
+        ['-wp', '--process-witnessgen'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The path to the ProcessMessages witness generation binary',
+        }
+    )
+
+    parser.addArgument(
+        ['-wt', '--tally-witnessgen'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The path to the TallyVotes witness generation binary',
+        }
+    )
+
+    parser.addArgument(
+        ['-ws', '--subsidy-witnessgen'],
+        {
+            type: 'string',
+            help: 'The path to the subsidy calculation witness generation binary',
+        }
+    )
+
+    parser.addArgument(
+        ['-zp', '--process-zkey'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The path to the ProcessMessages .zkey file',
+        }
+    )
+
+    parser.addArgument(
+        ['-zt', '--tally-zkey'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The path to the TallyVotes .zkey file',
+        }
+    )
+
+    parser.addArgument(
+        ['-zs', '--subsidy-zkey'],
+        {
+            type: 'string',
+            help: 'The path to the SubsidyPerBatch .zkey file',
+        }
+    )
+
+
+    parser.addArgument(
+        ['-f', '--output'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The output directory for proofs',
+        }
+    )
+
+    parser.addArgument(
+        ['-tx', '--transaction-hash'],
+        {
+            type: 'string',
+            help: 'transaction hash of MACI contract creation',
+        }
+    )
+
+
 
     // TODO: support resumable proof generation
     //parser.addArgument(
@@ -125,397 +175,424 @@ const configureSubparser = (subparsers: any) => {
 }
 
 const genProofs = async (args: any) => {
-    // Zeroth leaf
-    const serialized = args.final_zeroth_leaf
-    let zerothLeaf: StateLeaf
-    if (serialized) {
-        try {
-            zerothLeaf = StateLeaf.unserialize(serialized)
-        } catch {
-            console.error('Error: invalid zeroth state leaf')
-            return
+    const outputDir = args.output
+
+    if (!fs.existsSync(outputDir)) {
+        // Create the directory
+        fs.mkdirSync(outputDir)
+    }
+
+    if (fs.existsSync(args.tally_file)) {
+        console.error(`Error: ${args.tally_file} exists. Please specify a different filepath.`)
+        return 1
+    }
+
+    const rapidsnarkExe = args.rapidsnark
+    const processDatFile = args.process_witnessgen + ".dat"
+    const tallyDatFile =  args.tally_witnessgen + ".dat"
+
+    const [ok, path] = isPathExist([
+        rapidsnarkExe,
+        args.process_witnessgen,
+        args.tally_witnessgen,
+        processDatFile,
+        tallyDatFile,
+        args.process_zkey,
+        args.tally_zkey,
+        ])
+    if (!ok) {
+        console.error(`Error: ${path} does not exist.`)
+        return 1
+    }
+
+    let subsidyVk: VerifyingKey
+    if (args.subsidy_file) {
+        if (fs.existsSync(args.subsidy_file)) {
+            console.error(`Error: ${args.subsidy_file} exists. Please specify a different filepath.`)
+            return 1
         }
-    } else {
-        zerothLeaf = StateLeaf.genRandomLeaf()
+        if (!args.subsidy_zkey) {
+            console.error('Please specify subsidy zkey file location')
+            return 1
+        }
+        if (!args.subsidy_witnessgen) {
+            console.error('Please specify subsidy witnessgen file location')
+            return 1
+        }
+
+        const subsidyDatFile = args.subsidy_witnessgen + ".dat"
+
+        const [ok, path] = isPathExist([
+            args.subsidy_witnessgen,
+            subsidyDatFile,
+            args.subsidy_zkey,
+            ])
+        if (!ok) {
+            console.error(`Error: ${path} does not exist.`)
+            return 1
+        }
+
+        subsidyVk = extractVk(args.subsidy_zkey)
     }
 
-
-    // Ethereum provider
-    const ethProvider = args.eth_provider || process.env.ETH_PROVIDER || DEFAULT_ETH_PROVIDER
-
-    const provider = new ethers.providers.JsonRpcProvider(ethProvider)
-
-     let contractAddrs = readJSONFile(contractFilepath)
-     if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
-         console.error('Error: MACI contract address is empty')
-         return 
-     }
-     const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
-
-    if (!validateEthAddress(maciAddress)) {
-        console.error('Error: invalid MACI contract address')
-        return
-    }
-
-    if (! (await contractExists(provider, maciAddress))) {
-        console.error('Error: there is no contract deployed at the specified address')
-        return
-    }
+    // Extract the verifying keys
+    const processVk = extractVk(args.process_zkey)
+    const tallyVk = extractVk(args.tally_zkey)
 
     // The coordinator's MACI private key
-    // They may either enter it as a command-line option or via the
-    // standard input
-    let coordinatorPrivkey
+    let serializedPrivkey
     if (args.prompt_for_maci_privkey) {
-        coordinatorPrivkey = await promptPwd('Coordinator\'s MACI private key')
+        serializedPrivkey = await promptPwd('Your MACI private key')
     } else {
-        coordinatorPrivkey = args.privkey
+        serializedPrivkey = args.privkey
     }
 
-    if (!PrivKey.isValidSerializedPrivKey(coordinatorPrivkey)) {
+    if (!PrivKey.isValidSerializedPrivKey(serializedPrivkey)) {
         console.error('Error: invalid MACI private key')
-        return
+        return 1
     }
 
-    const unserialisedPrivkey = PrivKey.unserialize(coordinatorPrivkey)
-    const coordinatorKeypair = new Keypair(unserialisedPrivkey)
+    const maciPrivkey = PrivKey.unserialize(serializedPrivkey)
+    const coordinatorKeypair = new Keypair(maciPrivkey)
 
-    const maciContract = new ethers.Contract(
+    const contractAddrs = readJSONFile(contractFilepath)
+    if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
+        console.error('Error: MACI contract address is empty') 
+        return 1
+    }
+    const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
+
+    // MACI contract
+    if (!validateEthAddress(maciAddress)) {
+        console.error('Error: invalid MACI contract address')
+        return 1
+    }
+
+    const signer = await getDefaultSigner()
+
+    if (! (await contractExists(signer.provider, maciAddress))) {
+        console.error('Error: there is no MACI contract deployed at the specified address')
+        return 1
+    }
+
+    const pollId = Number(args.poll_id)
+
+    if (pollId < 0) {
+        console.error('Error: the Poll ID should be a positive integer.')
+        return 1
+    }
+
+    const [ maciContractAbi ] = parseArtifact('MACI')
+    const [ pollContractAbi ] = parseArtifact('Poll')
+    const [ accQueueContractAbi ] = parseArtifact('AccQueue')
+
+	const maciContractEthers = new ethers.Contract(
         maciAddress,
         maciContractAbi,
-        provider,
+        signer,
     )
 
-    // Build an off-chain representation of the MACI contract using data in the contract storage
-    let maciState
-    try {
-        maciState = await genMaciStateFromContract(
-            provider,
-            maciAddress,
-            coordinatorKeypair,
-            StateLeaf.genBlankLeaf(BigInt(0)),
-            false,
+    const pollAddr = await maciContractEthers.polls(pollId)
+    if (! (await contractExists(signer.provider, pollAddr))) {
+        console.error('Error: there is no Poll contract with this poll ID linked to the specified MACI contract.')
+        return 1
+    }
+
+    const pollContract = new ethers.Contract(
+        pollAddr,
+        pollContractAbi,
+        signer,
+    )
+
+    const extContracts = await pollContract.extContracts()
+    const messageAqContractAddr = extContracts.messageAq
+
+    const messageAqContract = new ethers.Contract(
+        messageAqContractAddr,
+        accQueueContractAbi,
+        signer,
+    )
+
+
+    // Check that the state and message trees have been merged for at least the first poll
+    if (!(await pollContract.stateAqMerged()) && pollId == 0) {
+        console.error(
+            'Error: the state tree has not been merged yet. ' +
+            'Please use the mergeSignups subcommmand to do so.'
         )
-    } catch (e) {
-        console.error(e)
-        return
+        return 1
     }
 
-    const numMessages = maciState.messages.length
-    if (numMessages === 0) {
-        console.error('No messages to process.')
-        return
+    const messageTreeDepth = Number(
+        (await pollContract.treeDepths()).messageTreeDepth
+    )
+
+    const mainRoot = (await messageAqContract.getMainRoot(messageTreeDepth.toString())).toString()
+
+    if (mainRoot === '0') {
+        console.error(
+            'Error: the message tree has not been merged yet. ' +
+            'Please use the mergeMessages subcommmand to do so.'
+        )
+        return 1
     }
-    const messageBatchSize  = Number(await maciContract.messageBatchSize())
 
-    const outputFile = args.output
+    // Build an off-chain representation of the MACI contract using data in the contract storage
 
+    // some rpc endpoint like bsc chain has limitation to retreive history logs
+    let fromBlock = 0
+    const txHash = args.transaction_hash
+    if (txHash) {
+        const txn = await signer.provider.getTransaction(txHash);
+        fromBlock = txn.blockNumber
+    }
+    console.log(`fromBlock = ${fromBlock}`)
+    const maciState = await genMaciStateFromContract(
+        signer.provider,
+        maciAddress,
+        coordinatorKeypair,
+        pollId,
+        fromBlock,
+    )
+
+    const poll = maciState.polls[pollId]
+
+    // TODO: support resumable proof generation
     const processProofs: any[] = []
     const tallyProofs: any[] = []
-    //if (fs.existsSync(outputFile)) {
-        //proofs = JSON.parse(fs.readFileSync(outputFile).toString())
-    //}
+    const subsidyProofs: any[] = []
 
-    const currentMessageBatchIndex = numMessages % messageBatchSize === 0 ?
-        (numMessages / messageBatchSize - 1) * messageBatchSize
-        :
-        Math.floor(numMessages / messageBatchSize) * messageBatchSize
-
-
+    let startTime = Date.now()
     console.log('Generating proofs of message processing...')
-    let proofNum = 1
+    const messageBatchSize = poll.batchSizes.messageBatchSize
+    const numMessages = poll.messages.length
+    let totalMessageBatches = numMessages <= messageBatchSize ?
+    1
+    : 
+    Math.floor(numMessages / messageBatchSize)
 
-    for (let i = currentMessageBatchIndex; i >= 0; i -= messageBatchSize) {
-        console.log(`\nProgress: ${proofNum} / ${1 + currentMessageBatchIndex / messageBatchSize}; batch index: ${i}`)
-        proofNum ++
-
-        const randomStateLeaf = i > 0 ?
-            StateLeaf.genRandomLeaf()
-            :
-            zerothLeaf
-        const circuitInputs = maciState.genBatchUpdateStateTreeCircuitInputs(
-            i,
-            messageBatchSize,
-            randomStateLeaf,
-        )
-        // Process the batch of messages
-        maciState.batchProcessMessage(
-            i,
-            messageBatchSize,
-            randomStateLeaf,
-        )
-
-        const stateRootAfter = maciState.genStateRoot()
-
-        let result
-
-        let configType
-        let circuitName
-        if (maciState.stateTreeDepth === 12) {
-            configType = 'prod-large'
-            circuitName = 'batchUstLarge'
-        } else if (maciState.stateTreeDepth === 9) {
-            configType = 'prod-medium'
-            circuitName = 'batchUstMedium'
-        } else if (maciState.stateTreeDepth === 8) {
-            configType = 'prod-small'
-            circuitName = 'batchUstSmall'
-        } else if (maciState.stateTreeDepth === 32) {
-            configType = 'prod-32'
-            circuitName = 'batchUst32'
-        } else {
-            configType = 'test'
-            circuitName = 'batchUst'
-        }
-
-        try {
-            result = await genBatchUstProofAndPublicSignals(circuitInputs, configType)
-        } catch (e) {
-            console.error('Error: unable to compute batch update state tree witness data')
-            console.error(e)
-            return
-        }
-        const { witness, proof, publicSignals } = result
-
-        // Get the circuit-generated root
-        //const circuitNewStateRoot = getSignalByName(circuit, witness, 'main.root')
-        const circuitNewStateRoot = getSignalByNameViaSym(circuitName, witness, 'main.root')
-        if (!circuitNewStateRoot.toString() === stateRootAfter.toString()) {
-            console.error('Error: circuit-computed root mismatch')
-            return
-        }
-
-        const ecdhPubKeys: string[] = []
-        for (const p of circuitInputs['ecdh_public_key']) {
-            const pubKey = new PubKey(p.map((x) => BigInt(x)))
-            ecdhPubKeys.push(pubKey.serialize())
-        }
-
-        const isValid = await verifyBatchUstProof(proof, publicSignals, configType)
-        if (!isValid) {
-            console.error('Error: could not generate a valid proof or the verifying key is incorrect')
-            return
-        }
-
-        processProofs.push(stringifyBigInts({
-            stateRootAfter,
-            circuitInputs,
-            publicSignals,
-            proof,
-            ecdhPubKeys,
-            randomStateLeaf: randomStateLeaf.serialize(),
-        }))
-
-        if (outputFile) {
-            saveOutput(outputFile, processProofs, tallyProofs)
-        }
+    if (numMessages > messageBatchSize && numMessages % messageBatchSize > 0) {
+        totalMessageBatches ++
     }
 
-    // Tally votes
+    while (poll.hasUnprocessedMessages()) {
 
-    const tallyBatchSize = Number(await maciContract.tallyBatchSize())
-    const numStateLeaves = 1 + maciState.users.length
+        const circuitInputs = poll.processMessages(pollId)
 
-    let currentResultsSalt = BigInt(0)
-    let currentTvcSalt = BigInt(0)
-    let currentPvcSalt = BigInt(0)
-    let cumulativeTally
-    let newResultsCommitment
-    let newSpentVoiceCredits
-    let newSpentVoiceCreditsCommitment
-    let newResultsSalt
-    let newSpentVoiceCreditsSalt
-    let newPerVOSpentVoiceCreditsSalt
-    let newPerVOSpentVoiceCreditsCommitment
-    let totalPerVOSpentVoiceCredits
+        let r
+        try {
+            r = genProof(
+                circuitInputs,
+                rapidsnarkExe,
+                args.process_witnessgen,
+                args.process_zkey,
+            )
+        } catch (e) {
+            console.error('Error: could not generate proof.')
+            console.error(e)
+            return 1
+        }
+
+        // Verify the proof
+        const isValid = verifyProof(
+            r.publicInputs,
+            r.proof,
+            processVk,
+        )
+
+        if (!isValid) {
+            console.error('Error: generated an invalid proof')
+            return 1
+        }
+        
+        const thisProof = {
+            circuitInputs,
+            proof: r.proof,
+            publicInputs: r.publicInputs,
+        }
+
+        processProofs.push(thisProof)
+
+        saveOutput(outputDir, thisProof, `process_${poll.numBatchesProcessed - 1}.json`)
+
+        console.log(`\nProgress: ${poll.numBatchesProcessed} / ${totalMessageBatches}`)
+    }
+
+    let endTime = Date.now() 
+    console.log(`----------gen processMessage proof took ${(endTime - startTime)/1000} seconds`)
+
+
+    const asHex = (val): string => {
+        return '0x' + BigInt(val).toString(16)
+    }
+
+    if (args.subsidy_file) {
+        startTime = Date.now()
+        console.log('\nGenerating proofs of subsidy calculation...')
+        const subsidyBatchSize = poll.batchSizes.subsidyBatchSize
+        const numLeaves = poll.stateLeaves.length
+        const totalSubsidyBatches = Math.ceil(numLeaves/subsidyBatchSize) ** 2
+        console.log(`subsidyBatchSize=${subsidyBatchSize}, numLeaves=${numLeaves}, totalSubsidyBatch=${totalSubsidyBatches}`)
+        
+        let subsidyCircuitInputs
+        let numBatchesCalced = 0
+        while (poll.hasUnfinishedSubsidyCalculation()) {
+            subsidyCircuitInputs = poll.subsidyPerBatch()
+            const r = genProof(subsidyCircuitInputs, rapidsnarkExe, args.subsidy_witnessgen, args.subsidy_zkey)
+    
+            const isValid = verifyProof(r.publicInputs, r.proof, subsidyVk) 
+            if (!isValid) {
+                console.error('Error: generated an invalid subsidy calc proof')
+                return 1
+            }
+            const thisProof = {
+                circuitInputs: subsidyCircuitInputs,
+                proof: r.proof,
+                publicInputs: r.publicInputs,
+            }
+    
+            subsidyProofs.push(thisProof)
+            numBatchesCalced++
+            saveOutput(outputDir, thisProof, `subsidy_${numBatchesCalced - 1}.json`)
+            console.log(`\nProgress: ${numBatchesCalced} / ${totalSubsidyBatches}`)
+        }
+    
+    
+        const subsidyFileData = {
+            provider: signer.provider.connection.url,
+            maci: maciAddress,
+            pollId,
+            newSubsidyCommitment: asHex(subsidyCircuitInputs.newSubsidyCommitment),
+            results: {
+                subsidy: poll.subsidy.map((x) => x.toString()),
+                salt: asHex(subsidyCircuitInputs.newSubsidySalt),
+            }
+        }
+    
+        fs.writeFileSync(args.subsidy_file, JSON.stringify(subsidyFileData, null, 4))
+        endTime = Date.now()
+        console.log(`----------gen subsidy proof took ${(endTime - startTime)/1000} seconds`)
+    }
+
 
     console.log('\nGenerating proofs of vote tallying...')
-    for (let i = 0; i < numStateLeaves; i += tallyBatchSize) {
-        const startIndex = i
+    startTime = Date.now()
+    const tallyBatchSize = poll.batchSizes.tallyBatchSize
+    const numStateLeaves = poll.stateLeaves.length
+    let totalTallyBatches = numStateLeaves <= tallyBatchSize ?
+    1
+    : 
+    Math.floor(numStateLeaves / tallyBatchSize)
+    if (
+        numStateLeaves > tallyBatchSize &&
+        numStateLeaves % tallyBatchSize > 0
+    ) {
+        totalTallyBatches ++
+    }
 
-        console.log(`\nProgress: ${1 + i / tallyBatchSize} / ${1 + Math.floor(numStateLeaves / tallyBatchSize)}; batch index: ${i}`)
-
-        cumulativeTally = maciState.computeCumulativeVoteTally(startIndex)
-
-        const tally = maciState.computeBatchVoteTally(startIndex, tallyBatchSize)
-        let totalVotes = BigInt(0)
-        for (let i = 0; i < tally.length; i++) {
-            cumulativeTally[i] = BigInt(cumulativeTally[i]) + BigInt(tally[i])
-            totalVotes += cumulativeTally[i]
-        }
-
-        newResultsSalt = genRandomSalt()
-        newSpentVoiceCreditsSalt = genRandomSalt()
-        newPerVOSpentVoiceCreditsSalt = genRandomSalt()
-
-        // Generate circuit inputs
-        const circuitInputs 
-            = maciState.genQuadVoteTallyCircuitInputs(
-                startIndex,
-                tallyBatchSize,
-                currentResultsSalt,
-                newResultsSalt,
-                currentTvcSalt,
-                newSpentVoiceCreditsSalt,
-                currentPvcSalt,
-                newPerVOSpentVoiceCreditsSalt,
-            )
-
-        currentResultsSalt = BigInt(newResultsSalt)
-        currentTvcSalt = BigInt(newSpentVoiceCreditsSalt)
-        currentPvcSalt = BigInt(newPerVOSpentVoiceCreditsSalt)
-
-        let configType
-        let circuitName
-        if (maciState.stateTreeDepth === 12) {
-            configType = 'prod-large'
-            circuitName = 'qvtLarge'
-        } else if (maciState.stateTreeDepth === 9) {
-            configType = 'prod-medium'
-            circuitName = 'qvtMedium'
-        } else if (maciState.stateTreeDepth === 8) {
-            configType = 'prod-small'
-            circuitName = 'qvtSmall'
-        } else if (maciState.stateTreeDepth === 32) {
-            configType = 'prod-32'
-            circuitName = 'qvt32'
-        } else {
-            configType = 'test'
-            circuitName = 'qvt'
-        }
-
-        let result
-        try {
-            result = await genQvtProofAndPublicSignals(circuitInputs, configType)
-        } catch (e) {
-            console.error('Error: unable to compute quadratic vote tally witness data')
-            console.error(e)
-            return
-        }
-
-        const { witness, proof, publicSignals } = result
-
-        // The vote tally commmitment
-        const expectedNewResultsCommitmentOutput =
-            getSignalByNameViaSym(circuitName, witness, 'main.newResultsCommitment')
-
-        newResultsCommitment = genTallyResultCommitment(
-            cumulativeTally,
-            newResultsSalt,
-            maciState.voteOptionTreeDepth,
+    let tallyCircuitInputs
+    while (poll.hasUntalliedBallots()) {
+        tallyCircuitInputs = poll.tallyVotes()
+        const r = genProof(
+            tallyCircuitInputs,
+            rapidsnarkExe,
+            args.tally_witnessgen,
+            args.tally_zkey,
         )
 
-        if (expectedNewResultsCommitmentOutput.toString() !== newResultsCommitment.toString()) {
-            console.error('Error: result commitment mismatch')
-            return
-        }
-
-        // The commitment to the total spent voice credits
-        const expectedSpentVoiceCreditsCommitmentOutput =
-            getSignalByNameViaSym(circuitName, witness, 'main.newSpentVoiceCreditsCommitment')
-
-        const currentSpentVoiceCredits = maciState.computeCumulativeSpentVoiceCredits(startIndex)
-
-        newSpentVoiceCredits = 
-            currentSpentVoiceCredits + 
-            maciState.computeBatchSpentVoiceCredits(startIndex, tallyBatchSize)
-
-        newSpentVoiceCreditsCommitment = genSpentVoiceCreditsCommitment(
-            newSpentVoiceCredits,
-            currentTvcSalt,
+        // Verify the proof
+        const isValid = verifyProof(
+            r.publicInputs,
+            r.proof,
+            tallyVk,
         )
 
-        if (expectedSpentVoiceCreditsCommitmentOutput.toString() !== newSpentVoiceCreditsCommitment.toString()) {
-            console.error('Error: total spent voice credits commitment mismatch')
-            return
-        }
-
-        // The commitment to the spent voice credits per vote option
-        const expectedPerVOSpentVoiceCreditsCommitmentOutput =
-            getSignalByNameViaSym(circuitName, witness, 'main.newPerVOSpentVoiceCreditsCommitment')
-
-        const currentPerVOSpentVoiceCredits 
-            = maciState.computeCumulativePerVOSpentVoiceCredits(startIndex)
-
-        const perVOSpentVoiceCredits = maciState.computeBatchPerVOSpentVoiceCredits(
-            startIndex,
-            tallyBatchSize,
-        )
-
-        totalPerVOSpentVoiceCredits = []
-        for (let i = 0; i < currentPerVOSpentVoiceCredits.length; i ++) {
-            totalPerVOSpentVoiceCredits[i] = currentPerVOSpentVoiceCredits[i] + perVOSpentVoiceCredits[i]
-        }
-
-        newPerVOSpentVoiceCreditsCommitment = genPerVOSpentVoiceCreditsCommitment(
-            totalPerVOSpentVoiceCredits,
-            newPerVOSpentVoiceCreditsSalt,
-            maciState.voteOptionTreeDepth,
-        )
-
-        if (
-            expectedPerVOSpentVoiceCreditsCommitmentOutput.toString() !== 
-            newPerVOSpentVoiceCreditsCommitment.toString()
-        ) {
-            console.error('Error: total spent voice credits per vote option commitment mismatch')
-            return
-        }
-
-        const isValid = verifyQvtProof(proof, publicSignals, configType)
         if (!isValid) {
-            console.error('Error: could not generate a valid proof or the verifying key is incorrect')
-            return
+            console.error('Error: generated an invalid proof')
+            return 1
+        }
+        
+        const thisProof = {
+            circuitInputs: tallyCircuitInputs,
+            proof: r.proof,
+            publicInputs: r.publicInputs,
         }
 
-        tallyProofs.push(stringifyBigInts({
-            circuitInputs,
-            publicSignals,
-            proof,
-            newResultsCommitment,
-            newSpentVoiceCreditsCommitment,
-            newPerVOSpentVoiceCreditsCommitment,
-            totalVotes,
-        }))
+        tallyProofs.push(thisProof)
 
-        if (outputFile) {
-            saveOutput(outputFile, processProofs, tallyProofs)
-        }
+        saveOutput(outputDir, thisProof, `tally_${poll.numBatchesTallied - 1}.json`)
+
+        console.log(`\nProgress: ${poll.numBatchesTallied} / ${totalTallyBatches}`)
     }
 
     const tallyFileData = {
-        provider: ethProvider,
-        maci: maciContract.address,
+        provider: signer.provider.connection.url,
+        maci: maciAddress,
+        pollId,
+        newTallyCommitment: asHex(tallyCircuitInputs.newTallyCommitment),
         results: {
-            commitment: '0x' + BigInt(newResultsCommitment.toString()).toString(16),
-            tally: cumulativeTally.map((x) => x.toString()),
-            salt: '0x' + currentResultsSalt.toString(16),
+            tally: poll.results.map((x) => x.toString()),
+            salt: asHex(tallyCircuitInputs.newResultsRootSalt),
         },
-        totalVoiceCredits: {
-            spent: newSpentVoiceCredits.toString(),
-            commitment: '0x' + newSpentVoiceCreditsCommitment.toString(16),
-            salt: '0x' + newSpentVoiceCreditsSalt.toString(16),
+        totalSpentVoiceCredits: {
+            spent: poll.totalSpentVoiceCredits.toString(),
+            salt: asHex(tallyCircuitInputs.newSpentVoiceCreditSubtotalSalt),
         },
-        totalVoiceCreditsPerVoteOption: {
-            commitment: '0x' + newPerVOSpentVoiceCreditsCommitment.toString(16),
-            tally: totalPerVOSpentVoiceCredits.map((x) => x.toString()),
-            salt: '0x' + newPerVOSpentVoiceCreditsSalt.toString(16),
+        perVOSpentVoiceCredits: {
+            tally: poll.perVOSpentVoiceCredits.map((x) => x.toString()),
+            salt: asHex(tallyCircuitInputs.newPerVOSpentVoiceCreditsRootSalt),
         },
     }
 
-    if (args.tally_file) {
-        fs.writeFileSync(args.tally_file, JSON.stringify(tallyFileData, null, 4))
+    // Verify the results
+    // Compute newResultsCommitment
+    const newResultsCommitment = genTallyResultCommitment(
+        tallyFileData.results.tally.map((x) => BigInt(x)),
+        BigInt(tallyFileData.results.salt),
+        poll.treeDepths.voteOptionTreeDepth,
+    )
+    // Compute newSpentVoiceCreditsCommitment
+    const newSpentVoiceCreditsCommitment = hashLeftRight(
+        BigInt(tallyFileData.totalSpentVoiceCredits.spent),
+        BigInt(tallyFileData.totalSpentVoiceCredits.salt),
+    )
+
+    // Compute newPerVOSpentVoiceCreditsCommitment
+    const newPerVOSpentVoiceCreditsCommitment = genTallyResultCommitment(
+        tallyFileData.perVOSpentVoiceCredits.tally.map((x) => BigInt(x)),
+        BigInt(tallyFileData.perVOSpentVoiceCredits.salt),
+        poll.treeDepths.voteOptionTreeDepth,
+    )
+
+    // Compute newTallyCommitment
+    const newTallyCommitment = hash3([
+        newResultsCommitment,
+        newSpentVoiceCreditsCommitment,
+        newPerVOSpentVoiceCreditsCommitment
+    ])
+
+    fs.writeFileSync(args.tally_file, JSON.stringify(tallyFileData, null, 4))
+
+    console.log()
+    if ('0x' + newTallyCommitment.toString(16) === tallyFileData.newTallyCommitment) {
+        console.log('OK')
+    } else {
+        console.error('Error: the newTallyCommitment is invalid.')
     }
-    console.log('OK')
-    return {
-        proofs: { processProofs, tallyProofs },
-        tally: tallyFileData,
-    }
+    endTime = Date.now()
+    console.log(`----------gen tally proof took ${(endTime - startTime)/1000} seconds`)
+
+    return 0
 }
 
-const saveOutput = (outputFile: string, processProofs: any, tallyProofs: any) => {
+const saveOutput = (
+    outputDir: string,
+    proof: any,
+    filename: string,
+) => {
     fs.writeFileSync(
-        outputFile,
-        JSON.stringify({ processProofs, tallyProofs }, null, 2),
+        path.join(outputDir, filename),
+        JSON.stringify(proof, null, 2),
     )
 }
 

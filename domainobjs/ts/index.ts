@@ -1,16 +1,20 @@
 import * as assert from 'assert'
+import base64url from "base64url"
 import {
     Ciphertext,
-    Plaintext,
     EcdhSharedKey,
     Signature,
     PubKey as RawPubKey,
     PrivKey as RawPrivKey,
+    G1Point,
+    G2Point,
     encrypt,
     decrypt,
     sign,
+    hashLeftRight,
+    hash13,
+    hash4,
     hash5,
-    hash11,
     verifySignature,
     genRandomSalt,
     genKeypair,
@@ -19,11 +23,173 @@ import {
     genEcdhSharedKey,
     packPubKey,
     unpackPubKey,
+    IncrementalQuinTree,
     SNARK_FIELD_SIZE,
-    NOTHING_UP_MY_SLEEVE_PUBKEY,
 } from 'maci-crypto'
 
 const SERIALIZED_PRIV_KEY_PREFIX = 'macisk.'
+
+class VerifyingKey {
+    public alpha1: G1Point
+    public beta2: G2Point
+    public gamma2: G2Point
+    public delta2: G2Point
+    public ic: G1Point[]
+
+    constructor (
+        _alpha1: G1Point,
+        _beta2: G2Point,
+        _gamma2: G2Point,
+        _delta2: G2Point,
+        _ic: G1Point[],
+    ) {
+        this.alpha1 = _alpha1
+        this.beta2 = _beta2
+        this.gamma2 = _gamma2
+        this.delta2 = _delta2
+        this.ic = _ic
+    }
+
+    public asContractParam() {
+        return {
+            alpha1: this.alpha1.asContractParam(),
+            beta2: this.beta2.asContractParam(),
+            gamma2: this.gamma2.asContractParam(),
+            delta2: this.delta2.asContractParam(),
+            ic: this.ic.map((x) => x.asContractParam()),
+        }
+    }
+
+    public static fromContract(data: any): VerifyingKey {
+        const convertG2 = (point: any): G2Point => {
+            return new G2Point(
+                [
+                    BigInt(point.x[0]),
+                    BigInt(point.x[1]),
+                ],
+                [
+                    BigInt(point.y[0]),
+                    BigInt(point.y[1]),
+                ],
+            )
+        }
+
+        return new VerifyingKey(
+            new G1Point( 
+                BigInt(data.alpha1.x),
+                BigInt(data.alpha1.y),
+            ),
+            convertG2(data.beta2),
+            convertG2(data.gamma2),
+            convertG2(data.delta2),
+            data.ic.map(
+                (c: any) => new G1Point(BigInt(c.x), BigInt(c.y))
+            ),
+        )
+    }
+
+    public equals(vk: VerifyingKey): boolean {
+        let icEqual = this.ic.length === vk.ic.length
+
+        // Immediately return false if the length doesn't match
+        if (!icEqual) {
+            return false
+        }
+
+        // Each element in ic must match
+        for (let i = 0; i < this.ic.length; i ++) {
+            icEqual = icEqual && this.ic[i].equals(vk.ic[i])
+        }
+
+        return this.alpha1.equals(vk.alpha1) && 
+            this.beta2.equals(vk.beta2) && 
+            this.gamma2.equals(vk.gamma2) && 
+            this.delta2.equals(vk.delta2) && 
+            icEqual
+    }
+
+    public copy(): VerifyingKey {
+        const copyG2 = (point: any): G2Point => {
+            return new G2Point(
+                [
+                    BigInt(point.x[0].toString()),
+                    BigInt(point.x[1].toString()),
+                ],
+                [
+                    BigInt(point.y[0].toString()),
+                    BigInt(point.y[1].toString()),
+                ],
+            )
+        }
+
+        return new VerifyingKey(
+            new G1Point( 
+                BigInt(this.alpha1.x.toString()),
+                BigInt(this.alpha1.y.toString()),
+            ),
+            copyG2(this.beta2),
+            copyG2(this.gamma2),
+            copyG2(this.delta2),
+            this.ic.map(
+                (c: any) => new G1Point(BigInt(c.x.toString()), BigInt(c.y.toString()))
+            ),
+        )
+    }
+
+    public static fromJSON = (j: string): VerifyingKey => {
+        const data = JSON.parse(j)
+        return VerifyingKey.fromObj(data)
+    }
+
+    public static fromObj = (data: any): VerifyingKey => {
+        const alpha1 = new G1Point(
+            BigInt(data.vk_alpha_1[0]),
+            BigInt(data.vk_alpha_1[1]),
+        )
+        const beta2 = new G2Point(
+            [
+                BigInt(data.vk_beta_2[0][1]),
+                BigInt(data.vk_beta_2[0][0]),
+            ],
+            [
+                BigInt(data.vk_beta_2[1][1]),
+                BigInt(data.vk_beta_2[1][0]),
+            ],
+        )
+        const gamma2 = new G2Point(
+            [
+                BigInt(data.vk_gamma_2[0][1]),
+                BigInt(data.vk_gamma_2[0][0]),
+            ],
+            [
+                BigInt(data.vk_gamma_2[1][1]),
+                BigInt(data.vk_gamma_2[1][0]),
+            ],
+        )
+        const delta2 = new G2Point(
+            [
+                BigInt(data.vk_delta_2[0][1]),
+                BigInt(data.vk_delta_2[0][0]),
+            ],
+            [
+                BigInt(data.vk_delta_2[1][1]),
+                BigInt(data.vk_delta_2[1][0]),
+            ],
+        )
+        const ic = data.IC.map((ic) => new G1Point(
+            BigInt(ic[0]),
+            BigInt(ic[1]),
+        ))
+
+        return new VerifyingKey(alpha1, beta2, gamma2, delta2, ic)
+    }
+}
+
+interface Proof {
+    a: G1Point;
+    b: G2Point;
+    c: G1Point;
+}
 
 class PrivKey {
     public rawPrivKey: RawPrivKey
@@ -106,13 +272,22 @@ class PubKey {
     public serialize = (): string => {
         // Blank leaves have pubkey [0, 0], which packPubKey does not support
         if (
-            BigInt(this.rawPubKey[0]) === BigInt(0) && 
-            BigInt(this.rawPubKey[1]) === BigInt(0)
+            BigInt(`${this.rawPubKey[0]}`) === BigInt(0) && 
+            BigInt(`${this.rawPubKey[1]}`) === BigInt(0)
         ) {
             return SERIALIZED_PUB_KEY_PREFIX + 'z'
         }
         const packed = packPubKey(this.rawPubKey).toString('hex')
         return SERIALIZED_PUB_KEY_PREFIX + packed.toString()
+    }
+
+    public hash = (): BigInt => {
+        return hashLeftRight(this.rawPubKey[0], this.rawPubKey[1])
+    }
+
+    public equals = (p: PubKey): boolean => {
+        return this.rawPubKey[0] === p.rawPubKey[0] &&
+            this.rawPubKey[1] === p.rawPubKey[1]
     }
 
     public static unserialize = (s: string): PubKey => {
@@ -193,9 +368,7 @@ class Keypair {
 
 interface IStateLeaf {
     pubKey: PubKey;
-    voteOptionTreeRoot: BigInt;
     voiceCreditBalance: BigInt;
-    nonce: BigInt;
 }
 
 interface VoteOptionTreeLeaf {
@@ -206,30 +379,27 @@ interface VoteOptionTreeLeaf {
  * An encrypted command and signature.
  */
 class Message {
-    public iv: BigInt
+    public msgType: BigInt
     public data: BigInt[]
+    public static DATA_LENGTH = 10
 
     constructor (
-        iv: BigInt,
+        msgType: BigInt,
         data: BigInt[],
     ) {
-        assert(data.length === 10)
-        this.iv = iv
+        assert(data.length === Message.DATA_LENGTH)
+        this.msgType = msgType
         this.data = data
     }
 
     private asArray = (): BigInt[] => {
-
-        return [
-            this.iv,
-            ...this.data,
-        ]
+        return [this.msgType].concat(this.data)
     }
 
     public asContractParam = () => {
         return {
-            iv: this.iv.toString(),
-            data: this.data.map((x: BigInt) => x.toString()),
+            msgType: this.msgType,
+            data: this.data.map((x:BigInt) => x.toString()),
         }
     }
 
@@ -238,70 +408,194 @@ class Message {
         return this.asArray()
     }
 
-    public hash = (): BigInt => {
-
-        return hash11(this.asArray())
+    public hash = (
+        _encPubKey: PubKey,
+    ): BigInt => {
+       return hash13([
+           ...[this.msgType],
+           ...this.data,
+           ..._encPubKey.rawPubKey,
+       ])
     }
 
     public copy = (): Message => {
 
         return new Message(
-            BigInt(this.iv.toString()),
+            BigInt(this.msgType.toString()),
             this.data.map((x: BigInt) => BigInt(x.toString())),
         )
+    }
+
+    public equals = (m: Message): boolean => {
+        if (this.data.length !== m.data.length) {
+            return false
+        }
+        if (this.msgType !== m.msgType) {
+            return false
+        }
+
+        for (let i = 0; i < this.data.length; i ++) {
+            if (this.data[i] !== m.data[i]) {
+                return false
+            }
+        }
+
+        return true
     }
 }
 
 /*
- * A leaf in the state tree, which maps public keys to votes
+ * A Ballot represents a User's votes in a Poll, as well as their next valid
+ * nonce.
+ * @param _voiceCreditBalance The user's voice credit balance
+ * @param _nonce The number of valid commands which the user has already
+ *               published
+ */
+class Ballot {
+    public votes: BigInt[] = []
+    public nonce: BigInt = BigInt(0)
+    public voteOptionTreeDepth: number
+
+    constructor(
+        _numVoteOptions: number,
+        _voteOptionTreeDepth: number,
+    ) {
+        this.voteOptionTreeDepth = _voteOptionTreeDepth
+        assert(5 ** _voteOptionTreeDepth >= _numVoteOptions)
+        assert(_numVoteOptions >= 0)
+        for (let i = 0; i < _numVoteOptions; i ++) {
+            this.votes.push(BigInt(0))
+        }
+    }
+
+    public hash = (): BigInt => {
+        const vals = this.asArray()
+        return hashLeftRight(vals[0], vals[1])
+    }
+
+    public asCircuitInputs = (): BigInt[] => {
+        return this.asArray()
+    }
+
+    public asArray = (): BigInt[] => {
+        let lastIndexToInsert = this.votes.length - 1
+        while (lastIndexToInsert > 0) {
+            if (this.votes[lastIndexToInsert] !== BigInt(0)) {
+                break
+            }
+            lastIndexToInsert --
+        }
+        const voTree = new IncrementalQuinTree(
+            this.voteOptionTreeDepth,
+            BigInt(0),
+            5,
+            hash5,
+        )
+        for (let i = 0; i <= lastIndexToInsert; i ++) {
+            voTree.insert(this.votes[i])
+        }
+
+        return [this.nonce, voTree.root]
+    }
+
+    public copy = (): Ballot => {
+        const b = new Ballot(this.votes.length, this.voteOptionTreeDepth)
+
+        b.votes = this.votes.map((x) => BigInt(x.toString()))
+        b.nonce = BigInt(this.nonce.toString())
+
+        return b
+    }
+
+    public equals(b: Ballot): boolean {
+        for (let i = 0; i < this.votes.length; i ++) {
+            if (b.votes[i] !== this.votes[i]) {
+                return false
+            }
+        }
+        return b.nonce === this.nonce &&
+            this.votes.length === b.votes.length
+    }
+
+
+    public static genRandomBallot(
+        _numVoteOptions: number,
+        _voteOptionTreeDepth: number,
+    ) {
+        const ballot = new Ballot(
+            _numVoteOptions,
+            _voteOptionTreeDepth,
+        )
+        ballot.nonce = genRandomSalt()
+        return ballot
+    }
+
+    public static genBlankBallot(
+        _numVoteOptions: number,
+        _voteOptionTreeDepth: number,
+    ) {
+        const ballot = new Ballot(
+            _numVoteOptions,
+            _voteOptionTreeDepth,
+        )
+        return ballot
+    }
+}
+
+/*
+ * A leaf in the state tree, which maps public keys to voice credit balances
  */
 class StateLeaf implements IStateLeaf {
     public pubKey: PubKey
-    public voteOptionTreeRoot: BigInt
     public voiceCreditBalance: BigInt
-    public nonce: BigInt
+    public timestamp: BigInt
 
     constructor (
         pubKey: PubKey,
-        voteOptionTreeRoot: BigInt,
         voiceCreditBalance: BigInt,
-        nonce: BigInt,
+        timestamp: BigInt,
     ) {
         this.pubKey = pubKey
-        this.voteOptionTreeRoot = voteOptionTreeRoot
         this.voiceCreditBalance = voiceCreditBalance
-        // The this is the current nonce. i.e. a user who has published 0 valid
-        // command should have this value at 0, and the first command should
-        // have a nonce of 1
-        this.nonce = nonce
+        this.timestamp = timestamp
     }
 
+    /*
+     * Deep-copies the object
+     */
     public copy(): StateLeaf {
         return new StateLeaf(
             this.pubKey.copy(),
-            BigInt(this.voteOptionTreeRoot.toString()),
             BigInt(this.voiceCreditBalance.toString()),
-            BigInt(this.nonce.toString()),
+            BigInt(this.timestamp.toString()),
         )
     }
 
-    public static genBlankLeaf(
-        emptyVoteOptionTreeRoot: BigInt,
-    ): StateLeaf {
+    public static genBlankLeaf(): StateLeaf {
+        // The public key for a blank state leaf is the first Pedersen base
+        // point from iden3's circomlib implementation of the Pedersen hash.
+        // Since it is generated using a hash-to-curve function, we are
+        // confident that no-one knows the private key associated with this
+        // public key. See:
+        // https://github.com/iden3/circomlib/blob/d5ed1c3ce4ca137a6b3ca48bec4ac12c1b38957a/src/pedersen_printbases.js
+        // Its hash should equal
+        // 6769006970205099520508948723718471724660867171122235270773600567925038008762.
         return new StateLeaf(
-            new PubKey(NOTHING_UP_MY_SLEEVE_PUBKEY),
-            emptyVoteOptionTreeRoot,
+            new PubKey([
+                BigInt('10457101036533406547632367118273992217979173478358440826365724437999023779287'),
+                BigInt('19824078218392094440610104313265183977899662750282163392862422243483260492317'),
+            ]),
             BigInt(0),
             BigInt(0),
         )
     }
 
     public static genRandomLeaf() {
+        const keypair = new Keypair()
         return new StateLeaf(
-            new PubKey(NOTHING_UP_MY_SLEEVE_PUBKEY),
+            keypair.pubKey,
             genRandomSalt(),
-            genRandomSalt(),
-            genRandomSalt(),
+            BigInt(0),
         )
     }
 
@@ -309,9 +603,8 @@ class StateLeaf implements IStateLeaf {
 
         return [
             ...this.pubKey.asArray(),
-            this.voteOptionTreeRoot,
             this.voiceCreditBalance,
-            this.nonce,
+            this.timestamp,
         ]
     }
 
@@ -322,51 +615,97 @@ class StateLeaf implements IStateLeaf {
 
     public hash = (): BigInt => {
 
-        return hash5(this.asArray())
+        return hash4(this.asArray())
+    }
+
+    public asContractParam() {
+        return {
+            pubKey: this.pubKey.asContractParam(),
+            voiceCreditBalance: this.voiceCreditBalance.toString(),
+            timestamp: this.timestamp.toString(),
+        }
+    }
+
+    public equals(s: StateLeaf): boolean {
+        return this.pubKey.equals(s.pubKey) &&
+            this.voiceCreditBalance === s.voiceCreditBalance &&
+            this.timestamp === s.timestamp
     }
 
     public serialize = (): string => {
-        const j = {
-            pubKey: this.pubKey.serialize(),
-            voteOptionTreeRoot: this.voteOptionTreeRoot.toString(16),
-            voiceCreditBalance: this.voiceCreditBalance.toString(16),
-            nonce: this.nonce.toString(16),
-        }
+        const j = [
+            this.pubKey.serialize(),
+            this.voiceCreditBalance.toString(16),
+            this.timestamp.toString(16),
+        ]
 
-        return Buffer.from(JSON.stringify(j, null, 0), 'utf8').toString('base64')
+        return base64url(
+            Buffer.from(JSON.stringify(j, null, 0), 'utf8')
+        )
     }
 
     static unserialize = (serialized: string): StateLeaf => {
-        const j = JSON.parse(Buffer.from(serialized, 'base64').toString('utf8'))
+        const j = JSON.parse(base64url.decode(serialized))
+
         return new StateLeaf(
-            PubKey.unserialize(j.pubKey),
-            BigInt('0x' + j.voteOptionTreeRoot),
-            BigInt('0x' + j.voiceCreditBalance),
-            BigInt('0x' + j.nonce),
+            PubKey.unserialize(j[0]),
+            BigInt('0x' + j[1]),
+            BigInt('0x' + j[2]),
         )
     }
 }
 
-interface ICommand {
-    stateIndex: BigInt;
-    newPubKey: PubKey;
-    voteOptionIndex: BigInt;
-    newVoteWeight: BigInt;
-    nonce: BigInt;
+class Command {
+   public cmdType: BigInt;
+   constructor() {
+   }
+   public copy = (): Command => {
+       throw new Error("Abstract method!")
+   }
+   public equals = (Command): boolean => {
+       throw new Error("Abstract method!")
+   }
+}
 
-    sign: (PrivKey) => Signature;
-    encrypt: (EcdhSharedKey, Signature) => Message;
+
+
+class TCommand extends Command {
+    public cmdType: BigInt
+    public stateIndex: BigInt
+    public amount: BigInt
+    public pollId: BigInt
+
+    constructor(stateIndex: BigInt, amount: BigInt) {
+        super()
+        this.cmdType = BigInt(2)
+        this.stateIndex = stateIndex
+        this.amount = amount
+    }
+
+    public copy = (): TCommand => {
+        return new TCommand(
+            BigInt(this.stateIndex.toString()),
+            BigInt(this.amount.toString()),
+        )
+    }
+
+    public equals = (command: TCommand): boolean => {
+        return this.stateIndex === command.stateIndex &&
+            this.amount === command.amount
+    }
 }
 
 /*
  * Unencrypted data whose fields include the user's public key, vote etc.
  */
-class Command implements ICommand {
+class PCommand extends Command {
+    public cmdType: BigInt
     public stateIndex: BigInt
     public newPubKey: PubKey
     public voteOptionIndex: BigInt
     public newVoteWeight: BigInt
     public nonce: BigInt
+    public pollId: BigInt
     public salt: BigInt
 
     constructor (
@@ -375,56 +714,83 @@ class Command implements ICommand {
         voteOptionIndex: BigInt,
         newVoteWeight: BigInt,
         nonce: BigInt,
+        pollId: BigInt,
         salt: BigInt = genRandomSalt(),
     ) {
+        super()
+        const limit50Bits = BigInt(2 ** 50)
+        assert(limit50Bits >= stateIndex)
+        assert(limit50Bits >= voteOptionIndex)
+        assert(limit50Bits >= newVoteWeight)
+        assert(limit50Bits >= nonce)
+        assert(limit50Bits >= pollId)
+
+        this.cmdType = BigInt(1)
         this.stateIndex = stateIndex
         this.newPubKey = newPubKey
         this.voteOptionIndex = voteOptionIndex
         this.newVoteWeight = newVoteWeight
         this.nonce = nonce
+        this.pollId = pollId
         this.salt = salt
     }
 
-    public copy = (): Command => {
+    public copy = (): PCommand => {
 
-        return new Command(
+        return new PCommand(
             BigInt(this.stateIndex.toString()),
             this.newPubKey.copy(),
             BigInt(this.voteOptionIndex.toString()),
             BigInt(this.newVoteWeight.toString()),
             BigInt(this.nonce.toString()),
+            BigInt(this.pollId.toString()),
             BigInt(this.salt.toString()),
         )
     }
 
+    /*
+     * Returns this Command as an array. Note that 5 of the Command's fields
+     * are packed into a single 250-bit value. This allows Messages to be
+     * smaller and thereby save gas when the user publishes a message.
+     */
     public asArray = (): BigInt[] => {
+        const p =
+            BigInt(`${this.stateIndex}`) +
+            (BigInt(`${this.voteOptionIndex}`) << BigInt(50)) +
+            (BigInt(`${this.newVoteWeight}`) << BigInt(100)) +
+            (BigInt(`${this.nonce}`) << BigInt(150)) +
+            (BigInt(`${this.pollId}`) << BigInt(200))
 
-        return [
-            this.stateIndex,
+        const a = [
+            p,
             ...this.newPubKey.asArray(),
-            this.voteOptionIndex,
-            this.newVoteWeight,
-            this.nonce,
             this.salt,
         ]
+        assert(a.length === 4)
+        return a
+    }
+
+    public asCircuitInputs = (): BigInt[] => {
+
+        return this.asArray()
     }
 
     /*
      * Check whether this command has deep equivalence to another command
      */
-    public equals = (command: Command): boolean => {
-
-        return this.stateIndex == command.stateIndex &&
-            this.newPubKey[0] == command.newPubKey[0] &&
-            this.newPubKey[1] == command.newPubKey[1] &&
-            this.voteOptionIndex == command.voteOptionIndex &&
-            this.newVoteWeight == command.newVoteWeight &&
-            this.nonce == command.nonce &&
-            this.salt == command.salt
+    public equals = (command: PCommand): boolean => {
+        return this.stateIndex === command.stateIndex &&
+            this.newPubKey[0] === command.newPubKey[0] &&
+            this.newPubKey[1] === command.newPubKey[1] &&
+            this.voteOptionIndex === command.voteOptionIndex &&
+            this.newVoteWeight === command.newVoteWeight &&
+            this.nonce === command.nonce &&
+            this.pollId === command.pollId &&
+            this.salt === command.salt
     }
 
     public hash = (): BigInt => {
-        return hash11(this.asArray())
+        return hash4(this.asArray())
     }
 
     /*
@@ -456,21 +822,30 @@ class Command implements ICommand {
 
     /*
      * Encrypts this command along with a signature to produce a Message.
+     * To save gas, we can constrain the following values to 50 bits and pack
+     * them into a 250-bit value:
+     * 0. state index
+     * 3. vote option index
+     * 4. new vote weight
+     * 5. nonce
+     * 6. poll ID
      */
     public encrypt = (
         signature: Signature,
         sharedKey: EcdhSharedKey,
     ): Message => {
-
-        const plaintext: Plaintext = [
+        const plaintext = [
             ...this.asArray(),
             signature.R8[0],
             signature.R8[1],
             signature.S,
         ]
 
-        const ciphertext: Ciphertext = encrypt(plaintext, sharedKey)
-        const message = new Message(ciphertext.iv, ciphertext.data)
+        assert(plaintext.length === 7)
+
+        const ciphertext: Ciphertext = encrypt(plaintext, sharedKey, BigInt(0))
+
+        const message = new Message(BigInt(1), ciphertext)
         
         return message
     }
@@ -483,32 +858,71 @@ class Command implements ICommand {
         sharedKey: EcdhSharedKey,
     ) => {
 
-        const decrypted = decrypt(message, sharedKey)
+        const decrypted = decrypt(message.data, sharedKey, BigInt(0), 7)
 
-        const command = new Command(
-            decrypted[0],
-            new PubKey([decrypted[1], decrypted[2]]),
-            decrypted[3],
-            decrypted[4],
-            decrypted[5],
-            decrypted[6],
+        const p = BigInt(`${decrypted[0]}`)
+
+        // Returns the value of the 50 bits at position `pos` in `val`
+        // create 50 '1' bits
+        // shift left by pos
+        // AND with val
+        // shift right by pos
+        const extract = (val: BigInt, pos: number): BigInt => {
+            return BigInt(
+                (
+                    (
+                        (BigInt(1) << BigInt(50)) - BigInt(1)
+                    ) << BigInt(pos)
+                ) & BigInt(`${val}`)
+            ) >> BigInt(pos)
+        }
+
+        // p is a packed value
+        // bits 0 - 50:    stateIndex
+        // bits 51 - 100:  voteOptionIndex
+        // bits 101 - 150: newVoteWeight
+        // bits 151 - 200: nonce
+        // bits 201 - 250: pollId
+        const stateIndex = extract(p, 0)
+        const voteOptionIndex = extract(p, 50)
+        const newVoteWeight = extract(p, 100)
+        const nonce = extract(p, 150)
+        const pollId = extract(p, 200)
+
+        const newPubKey = new PubKey([decrypted[1], decrypted[2]])
+        const salt = decrypted[3]
+
+        const command = new PCommand(
+            stateIndex,
+            newPubKey,
+            voteOptionIndex,
+            newVoteWeight,
+            nonce,
+            pollId,
+            salt,
         )
 
         const signature = {
-            R8: [decrypted[7], decrypted[8]],
-            S: decrypted[9],
+            R8: [decrypted[4], decrypted[5]],
+            S: decrypted[6],
         }
 
         return { command, signature }
     }
 }
 
+
 export {
     StateLeaf,
+    Ballot,
     VoteOptionTreeLeaf,
+    PCommand,
+    TCommand,
     Command,
     Message,
     Keypair,
     PubKey,
     PrivKey,
+    VerifyingKey,
+    Proof,
 }

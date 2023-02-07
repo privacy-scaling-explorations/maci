@@ -23,9 +23,34 @@ import {
 } from './genMaciPubkey'
 
 import {
+    deployVkRegistry,
+    configureSubparser as configureSubparserForDeployVkRegistry,
+} from './deployVkRegistry'
+
+import {
+    setVerifyingKeys,
+    configureSubparser as configureSubparserForSetVerifyingKeys,
+} from './setVerifyingKeys'
+
+import {
     create,
     configureSubparser as configureSubparserForCreate,
 } from './create'
+
+import {
+    deployPoll,
+    configureSubparser as configureSubparserForDeployPoll,
+} from './deployPoll'
+
+import {
+    airdrop,
+    configureSubparser as configureSubparserForAirdrop,
+} from './airdrop'
+
+import {
+    topup,
+    configureSubparser as configureSubparserForTopup,
+} from './topup'
 
 import {
     signup,
@@ -38,6 +63,16 @@ import {
 } from './publish'
 
 import {
+    mergeMessages,
+    configureSubparser as configureSubparserForMergeMessages,
+} from './mergeMessages'
+
+import {
+    mergeSignups,
+    configureSubparser as configureSubparserForMergeSignups,
+} from './mergeSignups'
+
+import {
     genProofs,
     configureSubparser as configureSubparserForGenProofs,
 } from './genProofs'
@@ -48,39 +83,14 @@ import {
 } from './proveOnChain'
 
 import {
-    checkStateRoot,
-    configureSubparser as configureSubparserForCheckStateRoot,
-} from './checkStateRoot'
-
-import {
     verify,
     configureSubparser as configureSubparserForVerify,
 } from './verify'
 
 import {
-    processAndTallyWithoutProofs,
-    configureSubparser as configureSubparserForPtwp,
-} from './ptwp'
-
-import {
-    coordinatorReset,
-    configureSubparser as configureSubparserForCoordinatorReset,
-} from './coordinatorReset'
-
-import {
-    download,
-    configureSubparser as configureSubparserForDownload,
-} from './download'
-
-import {
-    replay,
-    configureSubparser as configureSubparserForReplay,
-} from './replay'
-
-import {
-    replayCsv,
-    configureSubparser as configureSubparserForReplayCsv,
-} from './replayCsv'
+    checkVerifyingKey,
+    configureSubparser as configureSubparserForCheckVerifyKey,
+} from './checkVerifyingKey'
 
 const main = async () => {
     const parser = new argparse.ArgumentParser({ 
@@ -92,7 +102,7 @@ const main = async () => {
         dest: 'subcommand',
     })
 
-     // Subcommand: timeTravel
+    // Subcommand: timeTravel
     configureSubparserForTimeTravel(subparsers)
 
     // Subcommand: genMaciPubkey
@@ -101,17 +111,35 @@ const main = async () => {
     // Subcommand: genMaciKeypair
     configureSubparserForGenMaciKeypair(subparsers)
 
+    // Subcommand: deployVkRegistry
+    configureSubparserForDeployVkRegistry(subparsers)
+
+    // Subcommand: setVerifyingKeys
+    configureSubparserForSetVerifyingKeys(subparsers)
+
     // Subcommand: create
     configureSubparserForCreate(subparsers)
+
+    // Subcommand: deployPoll
+    configureSubparserForDeployPoll(subparsers)
+
+    // Subcommand: airdrop 
+    configureSubparserForAirdrop(subparsers)
+
+    // Subcommand: topup 
+    configureSubparserForTopup(subparsers)
 
     // Subcommand: signup
     configureSubparserForSignup(subparsers)
 
     // Subcommand: publish
     configureSubparserForPublish(subparsers)
-    
-    // Subcommand: checkStateRoot
-    configureSubparserForCheckStateRoot(subparsers)
+
+    // Subcommand: mergeMessages
+    configureSubparserForMergeMessages(subparsers)
+
+    // Subcommand: mergeSignups
+    configureSubparserForMergeSignups(subparsers)
 
     // Subcommand: genProofs
     configureSubparserForGenProofs(subparsers)
@@ -122,20 +150,8 @@ const main = async () => {
     // Subcommand: verify
     configureSubparserForVerify(subparsers)
 
-    // Subcommand: processAndTallyWithoutProofs
-    configureSubparserForPtwp(subparsers)
-
-    // Subcommand: coordinatorReset
-    configureSubparserForCoordinatorReset(subparsers)
-
-    // Subcommand: download
-    configureSubparserForDownload(subparsers)
-
-    // Subcommand: replay
-    configureSubparserForReplay(subparsers)
-
-    // Subcommand: replayCsv
-    configureSubparserForReplayCsv(subparsers)
+    // Subcommand: checkVerifyKey
+    configureSubparserForCheckVerifyKey(subparsers)
 
     const args = parser.parseArgs()
 
@@ -146,30 +162,34 @@ const main = async () => {
         await genMaciKeypair(args)
     } else if (args.subcommand === 'genMaciPubkey') {
         await genMaciPubkey(args)
+    } else if (args.subcommand === 'deployVkRegistry') {
+        await deployVkRegistry(args)
+    } else if (args.subcommand === 'setVerifyingKeys') {
+        await setVerifyingKeys(args)
     } else if (args.subcommand === 'create') {
         await create(args)
+    } else if (args.subcommand === 'deployPoll') {
+        await deployPoll(args)
+    } else if (args.subcommand === 'airdrop') {
+        await airdrop(args)
+    } else if (args.subcommand === 'topup') {
+        await topup(args)
     } else if (args.subcommand === 'signup') {
         await signup(args)
     } else if (args.subcommand === 'publish') {
         await publish(args)
-    } else if (args.subcommand === 'checkStateRoot') {
-        await checkStateRoot(args)
+    } else if (args.subcommand === 'mergeMessages') {
+        await mergeMessages(args)
+    } else if (args.subcommand === 'mergeSignups') {
+        await mergeSignups(args)
     } else if (args.subcommand === 'genProofs') {
         await genProofs(args)
     } else if (args.subcommand === 'proveOnChain') {
         await proveOnChain(args)
     } else if (args.subcommand === 'verify') {
         await verify(args)
-    } else if (args.subcommand === 'processAndTallyWithoutProofs') {
-        await processAndTallyWithoutProofs(args)
-    } else if (args.subcommand === 'coordinatorReset') {
-        await coordinatorReset(args)
-    } else if (args.subcommand === 'download') {
-        await download(args)
-    } else if (args.subcommand === 'replay') {
-        await replay(args)
-    } else if (args.subcommand === 'replayCsv') {
-        await replayCsv(args)
+    } else if (args.subcommand === 'checkVerifyingKey') {
+        await checkVerifyingKey(args)
     }
 }
 
@@ -178,14 +198,6 @@ if (require.main === module) {
 }
 
 export {
-    genProofs,
-    proveOnChain,
-    coordinatorReset,
-    download,
-    replay,
-    replayCsv,
-    verify,
-    processAndTallyWithoutProofs,
     calcBinaryTreeDepthFromMaxLeaves,
     calcQuinTreeDepthFromMaxLeaves,
 }

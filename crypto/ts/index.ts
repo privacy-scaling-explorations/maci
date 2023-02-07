@@ -3,37 +3,91 @@ import * as crypto from 'crypto'
 import * as ethers from 'ethers'
 const ff = require('ffjavascript')
 const createBlakeHash = require('blake-hash')
-import { babyJub, mimc7, poseidon, eddsa } from 'circomlib'
-import { IncrementalQuinTree } from './IncrementalQuinTree'
+import { babyJub, poseidon, poseidonEncrypt, poseidonDecrypt, eddsa } from 'circomlib'
+import { AccQueue } from './AccQueue'
+import { OptimisedMT as IncrementalQuinTree } from 'optimisedmt'
 const stringifyBigInts: (obj: object) => any = ff.utils.stringifyBigInts
 const unstringifyBigInts: (obj: object) => any = ff.utils.unstringifyBigInts
 
 type SnarkBigInt = BigInt
 type PrivKey = BigInt
 type PubKey = BigInt[]
-type EcdhSharedKey = BigInt
+type EcdhSharedKey = BigInt[]
 type Plaintext = BigInt[]
+type Ciphertext = BigInt[]
 
+class G1Point {
+    public x: BigInt
+    public y: BigInt
+
+    constructor (
+        _x: BigInt,
+        _y: BigInt,
+    ) {
+        // TODO: add range checks
+        this.x = _x
+        this.y = _y
+    }
+
+    public equals(pt: G1Point): boolean {
+        return this.x === pt.x && this.y === pt.y
+    }
+
+    public asContractParam() {
+        return {
+            x: this.x.toString(),
+            y: this.y.toString(),
+        }
+    }
+}
+
+class G2Point {
+    public x: BigInt[]
+    public y: BigInt[]
+
+    constructor (
+        _x: BigInt[],
+        _y: BigInt[],
+    ) {
+        // TODO: add range checks
+        this.x = _x
+        this.y = _y
+    }
+
+    public equals(pt: G2Point): boolean {
+        return this.x[0] === pt.x[0] &&
+               this.x[1] === pt.x[1] &&
+               this.y[0] === pt.y[0] &&
+               this.y[1] === pt.y[1]
+    }
+
+    public asContractParam() {
+        return {
+            x: this.x.map((n) => n.toString()),
+            y: this.y.map((n) => n.toString()),
+        }
+    }
+}
+
+/*
+ * A private key and a public key
+ */
 interface Keypair {
     privKey: PrivKey;
     pubKey: PubKey;
 }
 
-interface Ciphertext {
-    // The initialisation vector
-    iv: BigInt;
-
-    // The encrypted data
-    data: BigInt[];
-}
-
 // An EdDSA signature.
-// TODO: document what R8 and S mean
+// R8 is a Baby Jubjub elliptic curve point and S is an element of the finite
+// field of order `l` where `l` is the large prime number dividing the order of
+// Baby Jubjub: see
+// https://iden3-docs.readthedocs.io/en/latest/_downloads/a04267077fb3fdbf2b608e014706e004/Ed-DSA.pdf
 interface Signature {
     R8: BigInt[];
     S: BigInt;
 }
 
+// The BN254 group order p
 const SNARK_FIELD_SIZE = BigInt(
     '21888242871839275222246405745257275088548364400416034343698204186575808495617'
 )
@@ -41,29 +95,55 @@ const SNARK_FIELD_SIZE = BigInt(
 // A nothing-up-my-sleeve zero value
 // Should be equal to 8370432830353022751713833565135785980866757267633941821328460903436894336785
 const NOTHING_UP_MY_SLEEVE =
-    BigInt(ethers.utils.solidityKeccak256(['bytes'], [ethers.utils.toUtf8Bytes('Maci')])) % SNARK_FIELD_SIZE
+    BigInt(
+        ethers.utils.solidityKeccak256(
+            ['bytes'],
+            [ethers.utils.toUtf8Bytes('Maci')],
+        ),
+    ) % SNARK_FIELD_SIZE
 
-// The pubkey is the first Pedersen base point from iden3's circomlib
-// See https://github.com/iden3/circomlib/blob/d5ed1c3ce4ca137a6b3ca48bec4ac12c1b38957a/src/pedersen_printbases.js
-const NOTHING_UP_MY_SLEEVE_PUBKEY: PubKey = [
-    BigInt('10457101036533406547632367118273992217979173478358440826365724437999023779287'),
-    BigInt('19824078218392094440610104313265183977899662750282163392862422243483260492317')
-]
-
+assert(
+    NOTHING_UP_MY_SLEEVE ===
+    BigInt('8370432830353022751713833565135785980866757267633941821328460903436894336785')
+)
 /*
  * Convert a BigInt to a Buffer
  */
 const bigInt2Buffer = (i: BigInt): Buffer => {
-    let hexStr = i.toString(16)
-    while (hexStr.length < 64) {
-        hexStr = '0' + hexStr
+    return Buffer.from(i.toString(16), 'hex')
+}
+
+/*
+ * Hash an array of uint256 values the same way that the EVM does.
+ */
+const sha256Hash = (input: BigInt[]) => {
+    const types: string[] = []
+    for (let i = 0; i < input.length; i ++) {
+        types.push('uint256')
     }
-    return Buffer.from(hexStr, 'hex')
+    return BigInt(
+        ethers.utils.soliditySha256(
+            types,
+            input.map((x) => x.toString()),
+        ),
+    ) % SNARK_FIELD_SIZE
 }
 
 // Hash up to 2 elements
 const poseidonT3 = (inputs: BigInt[]) => {
     assert(inputs.length === 2)
+    return poseidon(inputs)
+}
+
+// Hash up to 3 elements
+const poseidonT4 = (inputs: BigInt[]) => {
+    assert(inputs.length === 3)
+    return poseidon(inputs)
+}
+
+// Hash up to 4 elements
+const poseidonT5 = (inputs: BigInt[]) => {
+    assert(inputs.length === 4)
     return poseidon(inputs)
 }
 
@@ -73,41 +153,55 @@ const poseidonT6 = (inputs: BigInt[]) => {
     return poseidon(inputs)
 }
 
-const hash5 = (elements: Plaintext): BigInt => {
+const hashN = (numElements: number, elements: Plaintext): BigInt => {
     const elementLength = elements.length
-    if (elements.length > 5) {
-        throw new Error(`elements length should not greater than 5, got ${elements.length}`)
+    if (elements.length > numElements) {
+        throw new TypeError(`the length of the elements array should be at most ${numElements}; got ${elements.length}`)
     }
     const elementsPadded = elements.slice()
-    if (elementLength < 5) {
-        for (let i = elementLength; i < 5; i++) {
+    if (elementLength < numElements) {
+        for (let i = elementLength; i < numElements; i++) {
             elementsPadded.push(BigInt(0))
         }
     }
-    return poseidonT6(elementsPadded)
+
+    const funcs = {
+        2: poseidonT3,
+        3: poseidonT4,
+        4: poseidonT5,
+        5: poseidonT6,
+    }
+
+    return funcs[numElements](elements)
 }
+
+const hash2 = (elements: Plaintext): BigInt => hashN(2, elements)
+const hash3 = (elements: Plaintext): BigInt => hashN(3, elements)
+const hash4 = (elements: Plaintext): BigInt => hashN(4, elements)
+const hash5 = (elements: Plaintext): BigInt => hashN(5, elements)
 
 /*
  * A convenience function for to use Poseidon to hash a Plaintext with
- * no more than 11 elements
+ * no more than 13 elements
  */
-const hash11 = (elements: Plaintext): BigInt => {
+const hash13 = (elements: Plaintext): BigInt => {
+    const max = 13
     const elementLength = elements.length
-    if (elementLength > 11) {
-        throw new TypeError(`elements length should not greater than 11, got ${elementLength}`)
+    if (elementLength > max) {
+        throw new TypeError(`the length of the elements array should be at most 10; got ${elements.length}`)
     }
     const elementsPadded = elements.slice()
-    if (elementLength < 11) {
-        for (let i = elementLength; i < 11; i++) {
+    if (elementLength < max) {
+        for (let i = elementLength; i < max; i++) {
             elementsPadded.push(BigInt(0))
         }
     }
-    return poseidonT3([
-        poseidonT3([
-            poseidonT6(elementsPadded.slice(0, 5)),
-            poseidonT6(elementsPadded.slice(5, 10))
-        ])
-        , elementsPadded[10]
+    return poseidonT6([
+        elementsPadded[0],
+        poseidonT6(elementsPadded.slice(1, 6)),
+        poseidonT6(elementsPadded.slice(6, 11)),
+        elementsPadded[11],
+        elementsPadded[12],
     ])
 }
 
@@ -168,7 +262,7 @@ const genPrivKey = (): PrivKey => {
 /*
  * @return A BabyJub-compatible salt.
  */
-const genRandomSalt = (): PrivKey=> {
+const genRandomSalt = (): PrivKey => {
 
     return genRandomBabyJubValue()
 }
@@ -176,7 +270,7 @@ const genRandomSalt = (): PrivKey=> {
 /*
  * An internal function which formats a random private key to be compatible
  * with the BabyJub curve. This is the format which should be passed into the
- * PublicKey and other circuits.
+ * PubKey and other circuits.
  */
 const formatPrivKeyForBabyJub = (privKey: PrivKey) => {
     const sBuff = eddsa.pruneBuffer(
@@ -211,6 +305,7 @@ const unpackPubKey = (packed: Buffer): PubKey => {
  * @return A public key associated with the private key
  */
 const genPubKey = (privKey: PrivKey): PubKey => {
+    // Check whether privKey is a field element
     privKey = BigInt(privKey.toString())
     assert(privKey < SNARK_FIELD_SIZE)
     return eddsa.prv2pub(bigInt2Buffer(privKey))
@@ -226,8 +321,8 @@ const genKeypair = (): Keypair => {
 }
 
 /*
- * Generates an Elliptic-curve Diffie–Hellman shared key given a private key
- * and a public key.
+ * Generates an Elliptic-Curve Diffie–Hellman (ECDH) shared key given a private
+ * key and a public key.
  * @return The ECDH shared key.
  */
 const genEcdhSharedKey = (
@@ -235,7 +330,7 @@ const genEcdhSharedKey = (
     pubKey: PubKey,
 ): EcdhSharedKey => {
 
-    return babyJub.mulPointEscalar(pubKey, formatPrivKeyForBabyJub(privKey))[0]
+    return babyJub.mulPointEscalar(pubKey, formatPrivKeyForBabyJub(privKey))
 }
 
 /*
@@ -245,22 +340,14 @@ const genEcdhSharedKey = (
 const encrypt = (
     plaintext: Plaintext,
     sharedKey: EcdhSharedKey,
+    nonce = BigInt(0),
 ): Ciphertext => {
 
-    // Generate the IV
-    const iv = mimc7.multiHash(plaintext, BigInt(0))
-
-    const ciphertext: Ciphertext = {
-        iv,
-        data: plaintext.map((e: BigInt, i: number): BigInt => {
-            return e + mimc7.hash(
-                sharedKey,
-                iv + BigInt(i),
-            )
-        }),
-    }
-
-    // TODO: add asserts here
+    const ciphertext = poseidonEncrypt(
+        plaintext,
+        sharedKey,
+        nonce,
+    )
     return ciphertext
 }
 
@@ -271,14 +358,16 @@ const encrypt = (
 const decrypt = (
     ciphertext: Ciphertext,
     sharedKey: EcdhSharedKey,
+    nonce: BigInt,
+    length: number,
 ): Plaintext => {
 
-    const plaintext: Plaintext = ciphertext.data.map(
-        (e: BigInt, i: number): BigInt => {
-            return BigInt(e) - BigInt(mimc7.hash(sharedKey, BigInt(ciphertext.iv) + BigInt(i)))
-        }
+    const plaintext = poseidonDecrypt(
+        ciphertext,
+        sharedKey,
+        nonce,
+        length,
     )
-
     return plaintext
 }
 
@@ -319,14 +408,20 @@ export {
     encrypt,
     decrypt,
     sign,
+    sha256Hash,
     hashOne,
+    hash2,
+    hash3,
+    hash4,
     hash5,
-    hash11,
+    hash13,
     hashLeftRight,
     verifySignature,
     Signature,
     PrivKey,
     PubKey,
+    G1Point,
+    G2Point,
     Keypair,
     EcdhSharedKey,
     Ciphertext,
@@ -336,8 +431,8 @@ export {
     unstringifyBigInts,
     formatPrivKeyForBabyJub,
     IncrementalQuinTree,
+    AccQueue,
     NOTHING_UP_MY_SLEEVE,
-    NOTHING_UP_MY_SLEEVE_PUBKEY,
     SNARK_FIELD_SIZE,
     bigInt2Buffer,
     packPubKey,

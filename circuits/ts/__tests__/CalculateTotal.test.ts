@@ -1,14 +1,12 @@
 jest.setTimeout(90000)
-import {
-    compileAndLoadCircuit,
-    executeCircuit,
+import { 
+    genWitness,
     getSignalByName,
-} from '../'
-
+} from './utils'
 
 describe('CalculateTotal circuit', () => {
     it('should correctly sum a list of values', async () => {
-        const circuit = await compileAndLoadCircuit('test/calculateTotal_test.circom')
+        const circuit = 'calculateTotal_test'
 
         const nums: number[] = []
         for (let i=0; i < 6; i++) {
@@ -20,8 +18,8 @@ describe('CalculateTotal circuit', () => {
             nums,
         }
 
-        const witness = await executeCircuit(circuit, circuitInputs)
-        const result = getSignalByName(circuit, witness, 'main.sum').toString()
+        const witness = await genWitness(circuit, circuitInputs)
+        const result = await getSignalByName(circuit, witness, 'main.sum')
         expect(result.toString()).toEqual(sum.toString())
     })
 })

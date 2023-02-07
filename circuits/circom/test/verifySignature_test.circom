@@ -1,3 +1,4 @@
-include "../verify_signature.circom"
+pragma circom 2.0.0;
+include "../verifySignature.circom";
 
-component main = VerifySignature7();
+component main {public [pubKey, R8, S]} = VerifySignature();
