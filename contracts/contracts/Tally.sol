@@ -44,9 +44,6 @@ contract Tally is
     // The final commitment to the state and ballot roots
     uint256 public sbCommitment;
 
-    uint256 public rbi; // row batch index
-    uint256 public cbi; // column batch index
-
     Verifier public verifier;
 
     constructor(Verifier _verifier) {
