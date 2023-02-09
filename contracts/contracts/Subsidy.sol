@@ -18,7 +18,6 @@ contract Subsidy is
 
     uint256 public rbi; // row batch index
     uint256 public cbi; // column batch index
-    Verifier public verifier;
     // The final commitment to the state and ballot roots
     uint256 public sbCommitment;
     uint256 public subsidyCommitment;
@@ -30,6 +29,12 @@ contract Subsidy is
     string constant ERROR_ALL_SUBSIDY_CALCULATED = "SubsidyE04";
     string constant ERROR_VK_NOT_SET = "SubsidyE05";
 
+    Verifier public verifier;
+
+    constructor(Verifier _verifier) {
+        verifier = _verifier;
+    }
+
     modifier votingPeriodOver(Poll _poll) {
         (uint256 deployTime, uint256 duration) = _poll
             .getDeployTimeAndDuration();
@@ -39,6 +44,8 @@ contract Subsidy is
         _;
     }
 
+    // TODO: make sure correct mp address is passed or change to private function
+    // TODO: reuse subsidy.sol for multiple polls
     function updateSbCommitment(MessageProcessor _mp) public {
         // Require that all messages have been processed
         require(_mp.processingComplete(), ERROR_PROCESSING_NOT_COMPLETE);
@@ -89,7 +96,7 @@ contract Subsidy is
         (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
         uint256 numLeaves = numSignUps + 1;
 
-        // Require that there are untalied ballots left
+        // Require that there are unfinished ballots left
         require(
             rbi * subsidyBatchSize <= numLeaves,
             ERROR_ALL_SUBSIDY_CALCULATED

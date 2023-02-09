@@ -179,6 +179,9 @@ const deployPoll = async (args: any) => {
     const tallyContract = await deployTally(verifierContract.address, contractAddrs['PoseidonT3'],contractAddrs['PoseidonT4'],contractAddrs['PoseidonT5'],contractAddrs['PoseidonT6'])
     await tallyContract.deployTransaction.wait()
 
+    const subsidyContract = await deployContract('Subsidy', true, verifierContract.address)
+    await subsidyContract.deployTransaction.wait()
+
     const [ maciAbi ] = parseArtifact('MACI')
     const maciContract = new ethers.Contract(
         maciAddress,
@@ -213,9 +216,11 @@ const deployPoll = async (args: any) => {
         console.log('Poll contract:', pollAddr)
         console.log('MessageProcessor contract:', mpContract.address)
         console.log('Tally contract:', tallyContract.address)
+        console.log('Subsidy contract:', subsidyContract.address)
         contractAddrs['Verifier-' + pollId.toString()] = verifierContract.address
         contractAddrs['MessageProcessor-' + pollId.toString()] = mpContract.address
         contractAddrs['Tally-' + pollId.toString()] = tallyContract.address
+        contractAddrs['Subsidy-' + pollId.toString()] = subsidyContract.address
         contractAddrs['Poll-' + pollId.toString()] = pollAddr
         writeJSONFile(contractFilepath, contractAddrs)
 
