@@ -94,6 +94,8 @@ contract Tally is
         return inputHash;
     }
 
+    // TODO: make sure correct mp address is passed or change to private function
+    // TODO: reuse tally.sol for multiple polls
     function updateSbCommitment(MessageProcessor _mp) public {
         // Require that all messages have been processed
         require(_mp.processingComplete(), ERROR_PROCESSING_NOT_COMPLETE);

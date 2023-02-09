@@ -59,6 +59,13 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
+        ['-s', '--subsidy'],
+        {
+            type: 'string',
+            help: 'The Subsidy contract address',
+        }
+    )
+    parser.addArgument(
         ['-f', '--proof-dir'],
         {
             required: true,
@@ -86,10 +93,15 @@ const proveOnChain = async (args: any) => {
         console.error('Error: Tally contract address is empty') 
         return 1
     }
+    if ((!contractAddrs||!contractAddrs["Subsidy-"+pollId]) && !args.subsidy) {
+        console.error('Error: Subsidy contract address is empty') 
+        return 1
+    }
 
     const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
     const mpAddress = args.mp ? args.mp : contractAddrs["MessageProcessor-"+pollId]
-    const tallyAddress = args.tally ? args.mp : contractAddrs["Tally-"+pollId]
+    const tallyAddress = args.tally ? args.tally : contractAddrs["Tally-"+pollId]
+    const subsidyAddress = args.subsidy ? args.subsidy : contractAddrs["Subsidy-"+pollId]
 
     // MACI contract
     if (!validateEthAddress(maciAddress)) {
@@ -113,11 +125,16 @@ const proveOnChain = async (args: any) => {
         console.error('Error: invalid Tally contract address')
         return {}
     }
+    if (!validateEthAddress(subsidyAddress)) {
+        console.error('Error: invalid Subsidy contract address')
+        return {}
+    }
 
     const [ maciContractAbi ] = parseArtifact('MACI')
     const [ pollContractAbi ] = parseArtifact('Poll')
     const [ mpContractAbi ] = parseArtifact('MessageProcessor')
     const [ tallyContractAbi ] = parseArtifact('Tally')
+    const [ subsidyContractAbi ] = parseArtifact('Subsidy')
     const [ messageAqContractAbi ] = parseArtifact('AccQueue')
     const [ vkRegistryContractAbi ] = parseArtifact('VkRegistry')
     const [ verifierContractAbi ] = parseArtifact('Verifier')
@@ -149,6 +166,12 @@ const proveOnChain = async (args: any) => {
     const tallyContract = new ethers.Contract(
         tallyAddress,
         tallyContractAbi,
+        signer,
+    )
+
+    const subsidyContract = new ethers.Contract(
+        subsidyAddress,
+        subsidyContractAbi,
         signer,
     )
 
@@ -397,12 +420,11 @@ const proveOnChain = async (args: any) => {
         console.log('All message processing proofs have been submitted.')
     }
 
-    /* hehe, temp comment out
     // ------------------------------------------------------------------------
     // subsidy calculation proofs
     if (Object.keys(data.subsidyProofs).length !== 0) {
-        let rbi = Number(await pptContract.rbi())
-        let cbi = Number(await pptContract.cbi())
+        let rbi = Number(await subsidyContract.rbi())
+        let cbi = Number(await subsidyContract.cbi())
         let numLeaves = numSignUps + 1
         let num1DBatches = Math.ceil(numLeaves/subsidyBatchSize)
         let subsidyBatchNum = rbi * num1DBatches + cbi
@@ -410,26 +432,30 @@ const proveOnChain = async (args: any) => {
         console.log(`number of subsidy batch processed: ${subsidyBatchNum}, numleaf=${numLeaves}`)
 
         for (let i = subsidyBatchNum; i < totalBatchNum; i++) {
+
+            if (i == 0) {
+                await subsidyContract.updateSbCommitment(mpContract.address)
+            }
             const { proof, circuitInputs, publicInputs } = data.subsidyProofs[i]
     
-            const subsidyCommitmentOnChain = await pptContract.subsidyCommitment()
+            const subsidyCommitmentOnChain = await subsidyContract.subsidyCommitment()
             if (subsidyCommitmentOnChain.toString() !== circuitInputs.currentSubsidyCommitment) {
                 console.error(`Error: subsidycommitment mismatch`)
                 return 1
             }
             const packedValsOnChain = BigInt(
-                await pptContract.genSubsidyPackedVals(numSignUps)
+                await subsidyContract.genSubsidyPackedVals(numSignUps)
             )
             if (circuitInputs.packedVals !== packedValsOnChain.toString()) {
                 console.error('Error: subsidy packedVals mismatch.')
                 return 1
             }
-            const currentSbCommitmentOnChain = await pptContract.sbCommitment()
+            const currentSbCommitmentOnChain = await subsidyContract.sbCommitment()
             if (currentSbCommitmentOnChain.toString() !== circuitInputs.sbCommitment) {
                 console.error('Error: currentSbCommitment mismatch.')
                 return 1
             }
-            const publicInputHashOnChain = await pptContract.genSubsidyPublicInputHash(
+            const publicInputHashOnChain = await subsidyContract.genSubsidyPublicInputHash(
                 numSignUps,
                 circuitInputs.newSubsidyCommitment,
             )
@@ -443,8 +469,9 @@ const proveOnChain = async (args: any) => {
             const formattedProof = formatProofForVerifierContract(proof)
             let tx
             try {
-                tx = await pptContract.updateSubsidy(
+                tx = await subsidyContract.updateSubsidy(
                     pollContract.address,
+                    mpContract.address,
                     circuitInputs.newSubsidyCommitment,
                     formattedProof,
                 )
@@ -464,8 +491,8 @@ const proveOnChain = async (args: any) => {
             console.log(`Transaction hash: ${tx.hash}`)
     
             // Wait for the node to catch up
-            let nrbi = Number(await pptContract.rbi())
-            let ncbi = Number(await pptContract.cbi())
+            let nrbi = Number(await subsidyContract.rbi())
+            let ncbi = Number(await subsidyContract.cbi())
             let backOff = 1000
             let numAttempts = 0
             while (nrbi === rbi && ncbi === cbi) {
@@ -488,7 +515,6 @@ const proveOnChain = async (args: any) => {
             console.log('OK')
         }
     }
-    hehe temp comment out */
 
     // ------------------------------------------------------------------------
     // Vote tallying proofs
