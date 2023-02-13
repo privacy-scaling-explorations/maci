@@ -1,0 +1,23 @@
+name: Trigger Ceremony
+
+on:
+  push:
+  # Updates to the \audit branch can only be made through the submission and successful merging of a pull request
+    branches: [ audit ]
+
+
+jobs:
+
+  trigger:
+    runs-on: ubuntu-22.04
+    
+    steps:
+
+      - name: Trigger
+        run: |
+          curl -X GET https://ceremony.appliedzkp.org/create
+          echo "Ceremony is triggered"
+
+
+          # When server received a request via https://ceremony.appliedzkp.org/create,
+          it will use \audit branch to proceed ceremony

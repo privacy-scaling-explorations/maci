@@ -1,0 +1,31 @@
+name: Check Ceremony
+
+on:
+  pull_request:
+    branches: [ main ]
+
+
+jobs:
+
+  check:
+    runs-on: ubuntu-22.04
+    
+    steps:
+
+      - name: Trigger
+        run: |
+          # check if latest ceremony is completed && 
+          # latest ceremony's circuit hash is same with \audit branch
+
+          # ${GITHUB_REF##*/} indicates source branch of pull rquest
+          result=curl -X GET https://ceremony.appliedzkp.org/${GITHUB_REF##*/}
+
+          assert(result.status == FINALIZED)
+          assert(result.circuit_hash.processMessages == my.circuit_hash.processMessages)
+          assert(result.circuit_hash.TallyVotes == my.circuit_hash.TallyVotes)
+
+          echo 'ceremony is finalized. You can merge this branch into \main'
+
+
+
+          
