@@ -379,7 +379,7 @@ const proveOnChain = async (args: any) => {
         let numLeaves = numSignUps + 1
         let num1DBatches = Math.ceil(numLeaves/subsidyBatchSize)
         let subsidyBatchNum = rbi * num1DBatches + cbi
-        let totalBatchNum = num1DBatches ** 2
+        let totalBatchNum = num1DBatches * (num1DBatches + 1)/2
         console.log(`number of subsidy batch processed: ${subsidyBatchNum}, numleaf=${numLeaves}`)
 
         for (let i = subsidyBatchNum; i < totalBatchNum; i++) {

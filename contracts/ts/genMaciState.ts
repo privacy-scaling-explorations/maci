@@ -83,13 +83,11 @@ const genMaciStateFromContract = async (
         fromBlock: fromBlock,
     })
 
-    let messageAqFactoryAddress
     let vkRegistryAddress
 
     for (const log of initLogs) {
         const event = maciIface.parseLog(log)
         vkRegistryAddress = event.args._vkRegistry
-        messageAqFactoryAddress = event.args._messageAqFactory
     }
 
     const actions: Action[] = []

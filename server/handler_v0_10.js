@@ -2,6 +2,7 @@ const path = require('path')
 const shelljs = require('shelljs')
 const logger = require('./logger').logger
 const db = require('./db')
+const { whitelist } = require('./utils')
 
 const cliPath = path.join(
     __dirname,
@@ -21,6 +22,9 @@ async function handler(req, res, dbClient) {
          res.send("missing parameters...")
          break
       }
+
+      if (!whitelist(req.body['maci']) || !whitelist(req.body['pubKey'])) break 
+
       query = { 'MACI': req.body["maci"]};
       dbres = await dbClient.db(db.dbName).collection(db.collectionName).findOne(query)
       if(!dbres) {
@@ -41,6 +45,18 @@ async function handler(req, res, dbClient) {
          res.send("missing parameters...")
          break
       }
+
+      if (
+        !whitelist(req.body['maci']) || 
+        !whitelist(req.body["pubkey"]) || 
+        !whitelist(req.body["maci"]) || 
+        !whitelist(req.body["privkey"]) || 
+        !whitelist(req.body["state_index"]) || 
+        !whitelist(req.body["vote_option_index"]) || 
+        !whitelist(req.body["new_vote_weight"]) || 
+        !whitelist(req.body["nonce"])
+      ) break 
+
       query = { 'MACI': req.body["maci"]}
       dbres = await dbClient.db(db.dbName).collection(db.collectionName).findOne(query)
       if(!dbres) {
@@ -50,6 +66,7 @@ async function handler(req, res, dbClient) {
 
       cmd = `${cliCmd} publish -p ${req.body["pubkey"]} -x ${req.body["maci"]} -sk ${req.body["privkey"]} -i ${req.body["state_index"]} -v ${req.body["vote_option_index"]} -w ${req.body["new_vote_weight"]} -n ${req.body["nonce"]}`
       if (req.body["salt"]) {
+        if (!whitelist(req.body['salt'])) break 
         cmd += ` -s ${req.body["salt"]}`
       }
       logger.debug(`publishMessage...${cmd}`)

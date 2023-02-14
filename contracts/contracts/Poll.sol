@@ -16,19 +16,6 @@ import {VkRegistry} from "./VkRegistry.sol";
 import {EmptyBallotRoots} from "./trees/EmptyBallotRoots.sol";
 import {TopupCredit} from "./TopupCredit.sol";
 
-contract MessageAqFactory is Ownable {
-    /*
-    * Deploys a new AccQueue contract
-    * @param _subDepth Subtree depth
-    * @return AccQueue The AccQueue contract
-    */
-    function deploy(uint256 _subDepth) public onlyOwner returns (AccQueue) {
-        AccQueue aq = new AccQueueQuinaryMaci(_subDepth);
-        aq.transferOwnership(owner());
-        return aq;
-    }
-}
-
 contract PollDeploymentParams {
     struct ExtContracts {
         VkRegistry vkRegistry;
@@ -95,19 +82,10 @@ contract Utilities is SnarkConstants, Hasher, IPubKey, IMessage {
  */
 contract PollFactory is
     Params,
-    Utilities,
+    IPubKey,
     Ownable,
     PollDeploymentParams
 {
-    MessageAqFactory public messageAqFactory;
-
-    function setMessageAqFactory(MessageAqFactory _messageAqFactory)
-        public
-        onlyOwner
-    {
-        messageAqFactory = _messageAqFactory;
-    }
-
     /*
      * Deploy a new Poll contract and AccQueue contract for messages.
      */
@@ -143,9 +121,7 @@ contract PollFactory is
             "PollFactory: invalid _maxValues"
         );
 
-        AccQueue messageAq = messageAqFactory.deploy(
-            _treeDepths.messageTreeSubDepth
-        );
+        AccQueue messageAq = new AccQueueQuinaryMaci(_treeDepths.messageTreeSubDepth);
 
         ExtContracts memory extContracts;
 
@@ -937,7 +913,7 @@ contract PollProcessorAndTallyer is
             cbi++;
         } else {
             rbi++;
-            cbi = 0;
+            cbi = rbi;
         }
     }
 

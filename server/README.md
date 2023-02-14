@@ -1,3 +1,5 @@
+[![NPM Package][server-npm-badge]][server-npm-link]
+
 ## Local Development
 
 ### Setup
@@ -88,3 +90,6 @@ cd server
 # v0.10
 ./user_v0_10.sh signup -p $pk -x $maci
 ```
+
+[server-npm-badge]: https://img.shields.io/npm/v/maci-server.svg
+[server-npm-link]: https://www.npmjs.com/package/maci-server
