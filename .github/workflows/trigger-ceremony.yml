@@ -21,3 +21,10 @@ jobs:
 
           # When server received a request via https://ceremony.appliedzkp.org/create,
           it will use \audit branch to proceed ceremony
+
+      - name: Verify Ceremony was set up correctly
+        run: |
+          curl -X GET https://ceremony.appliedzkp.org/maci > ceremony_info.json
+
+          ./scripts/verifyCeremony.sh ceremony_info.json
+          echo "Ceremony verification complete"
