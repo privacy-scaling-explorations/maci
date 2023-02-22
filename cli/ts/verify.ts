@@ -62,32 +62,46 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-q', '--ppt'],
+        ['-tc', '--tally-contract'],
         {
             type: 'string',
-            help: 'The PollProcessorAndTallyer contract address',
+            help: 'The Tally contract address',
+        }
+    )
+
+    parser.addArgument(
+        ['-sc', '--subsidy-contract'],
+        {
+            type: 'string',
+            help: 'The Subsidy contract address',
         }
     )
 }
+
 
 const verify = async (args: any) => {
     const signer = await getDefaultSigner()
 
     const pollId = Number(args.poll_id)
 
-    // check existence of MACI and ppt contract addresses
+    // check existence of MACI, Tally and Subsidy contract addresses
     let contractAddrs = readJSONFile(contractFilepath)
     if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
         console.error('Error: MACI contract address is empty') 
         return 1
     }
-    if ((!contractAddrs||!contractAddrs["PollProcessorAndTally-"+pollId]) && !args.ppt) {
-        console.error('Error: PollProcessorAndTally contract address is empty') 
+    if ((!contractAddrs||!contractAddrs["Tally-"+pollId]) && !args.tally_contract) {
+        console.error('Error: Tally contract address is empty') 
+        return 1
+    }
+    if ((!contractAddrs||!contractAddrs["Subsidy-"+pollId]) && !args.subsidy_contract) {
+        console.error('Error: Subsidy contract address is empty') 
         return 1
     }
 
     const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
-    const pptAddress = args.ppt ? args.ppt: contractAddrs["PollProcessorAndTally-"+pollId]
+    const tallyAddress = args.tally_contract? args.tally_contract: contractAddrs["Tally-"+pollId]
+    const subsidyAddress = args.subsidy_contract? args.subsidy_contract: contractAddrs["Subsidy-"+pollId]
 
     // MACI contract
     if (!validateEthAddress(maciAddress)) {
@@ -95,18 +109,28 @@ const verify = async (args: any) => {
         return 0
     }
 
-    // PollProcessorAndTallyer contract
-    if (!validateEthAddress(pptAddress)) {
-        console.error('Error: invalid PollProcessorAndTallyer contract address')
+    // Tally contract
+    if (!validateEthAddress(tallyAddress)) {
+        console.error('Error: invalid Tally contract address')
         return 0
     }
 
+    // Subsidy contract
+    if (!validateEthAddress(subsidyAddress)) {
+        console.error('Error: invalid Subsidy contract address')
+        return 0
+    }
     const [ maciContractAbi ] = parseArtifact('MACI')
     const [ pollContractAbi ] = parseArtifact('Poll')
-    const [ pptContractAbi ] = parseArtifact('PollProcessorAndTallyer')
+    const [ tallyContractAbi ] = parseArtifact('Tally')
+    const [ subsidyContractAbi ] = parseArtifact('Subsidy')
 
-    if (! (await contractExists(signer.provider, pptAddress))) {
-        console.error(`Error: there is no contract deployed at ${pptAddress}.`)
+    if (! (await contractExists(signer.provider, tallyAddress))) {
+        console.error(`Error: there is no contract deployed at ${tallyAddress}.`)
+        return 1
+    }
+    if (! (await contractExists(signer.provider, subsidyAddress))) {
+        console.error(`Error: there is no contract deployed at ${subsidyAddress}.`)
         return 1
     }
 
@@ -128,15 +152,21 @@ const verify = async (args: any) => {
         signer,
     )
 
-    const pptContract = new ethers.Contract(
-        pptAddress,
-        pptContractAbi,
+    const tallyContract = new ethers.Contract(
+        tallyAddress,
+        tallyContractAbi,
+        signer,
+    )
+
+    const subsidyContract = new ethers.Contract(
+        subsidyAddress,
+        subsidyContractAbi,
         signer,
     )
 
        // ----------------------------------------------
     // verify tally result
-    const onChainTallyCommitment = BigInt(await pptContract.tallyCommitment())
+    const onChainTallyCommitment = BigInt(await tallyContract.tallyCommitment())
     console.log(onChainTallyCommitment.toString(16))
 
     // Read the tally file
@@ -227,7 +257,7 @@ const verify = async (args: any) => {
     // verify subsidy result
 
     if (args.subsidy_file) {
-        const onChainSubsidyCommitment = BigInt(await pptContract.subsidyCommitment())
+        const onChainSubsidyCommitment = BigInt(await subsidyContract.subsidyCommitment())
         console.log(onChainSubsidyCommitment.toString(16))
         // Read the subsidy file
         try {
