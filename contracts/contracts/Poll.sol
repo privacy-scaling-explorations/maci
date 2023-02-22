@@ -13,7 +13,7 @@ import {VkRegistry} from "./VkRegistry.sol";
 import {Verifier} from "./crypto/Verifier.sol";
 import {EmptyBallotRoots} from "./trees/EmptyBallotRoots.sol";
 import {TopupCredit} from "./TopupCredit.sol";
-import {Utilities} from "./Utility.sol";
+import {Utilities} from "./utilities/Utility.sol";
 import {MessageProcessor} from "./MessageProcessor.sol";
 
 contract PollDeploymentParams {

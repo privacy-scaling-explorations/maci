@@ -18,10 +18,10 @@ contract Tally is
     Hasher
 {
     // Error codes
-    string constant ERROR_VOTING_PERIOD_NOT_PASSED = "TallyE01";
-    string constant ERROR_PROCESSING_NOT_COMPLETE = "TallyE02";
-    string constant ERROR_INVALID_TALLY_VOTES_PROOF = "TallyE03";
-    string constant ERROR_ALL_BALLOTS_TALLIED = "TallyE04";
+    error VOTING_PERIOD_NOT_PASSED();
+    error PROCESSING_NOT_COMPLETE();
+    error INVALID_TALLY_VOTES_PROOF();
+    error ALL_BALLOTS_TALLIED();
 
     uint8 private constant LEAVES_PER_NODE = 5;
 
@@ -55,25 +55,42 @@ contract Tally is
             .getDeployTimeAndDuration();
         // Require that the voting period is over
         uint256 secondsPassed = block.timestamp - deployTime;
-        require(secondsPassed > duration, ERROR_VOTING_PERIOD_NOT_PASSED);
+        if (secondsPassed <= duration ) {
+            revert VOTING_PERIOD_NOT_PASSED();
+        }
         _;
     }
 
     /*
-     * Pack the batch start index and number of signups into a 100-bit value.
+     * @notice Pack the batch start index and number of signups into a 100-bit value.
+     * @param _numSignUps: number of signups
+     * @param _batchStartIndex: the start index of given batch
+     * @param _tallyBatchSize: size of batch
+     * @return an uint256 representing 3 inputs together
      */
     function genTallyVotesPackedVals(
         uint256 _numSignUps,
         uint256 _batchStartIndex,
         uint256 _tallyBatchSize
     ) public pure returns (uint256) {
-        // TODO: ensure that each value is less than or equal to 2 ** 50
+        require(_numSignUps < 2**50, "numSignUPs out of range");
+        require(_batchStartIndex < 2**50, "batchStartIndex out of range");
+        require(_tallyBatchSize < 2**50, "tallyBatchSize out of range");
+
         uint256 result = (_batchStartIndex / _tallyBatchSize) +
             (_numSignUps << uint256(50));
 
         return result;
     }
 
+    /*
+     * @notice generate hash of public inputs for tally circuit
+     * @param _numSignUps: number of signups
+     * @param _batchStartIndex: the start index of given batch
+     * @param _tallyBatchSize: size of batch
+     * @param _newTallyCommitment: the new tally commitment to be updated
+     * @return hash of public inputs
+     */
     function genTallyVotesPublicInputHash(
         uint256 _numSignUps,
         uint256 _batchStartIndex,
@@ -94,11 +111,13 @@ contract Tally is
         return inputHash;
     }
 
-    // TODO: make sure correct mp address is passed or change to private function
+    // TODO: make sure correct mp address is passed 
     // TODO: reuse tally.sol for multiple polls
     function updateSbCommitment(MessageProcessor _mp) public {
         // Require that all messages have been processed
-        require(_mp.processingComplete(), ERROR_PROCESSING_NOT_COMPLETE);
+        if (!_mp.processingComplete()) {
+            revert PROCESSING_NOT_COMPLETE();
+        }
         if (sbCommitment == 0) {
             sbCommitment = _mp.sbCommitment();
         }
@@ -117,7 +136,9 @@ contract Tally is
         (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
 
         // Require that there are untalied ballots left
-        require(batchStartIndex <= numSignUps, ERROR_ALL_BALLOTS_TALLIED);
+        if (batchStartIndex > numSignUps) {
+            revert ALL_BALLOTS_TALLIED();
+        }
 
         bool isValid = verifyTallyProof(
             _poll,
@@ -127,7 +148,9 @@ contract Tally is
             tallyBatchSize,
             _newTallyCommitment
         );
-        require(isValid, ERROR_INVALID_TALLY_VOTES_PROOF);
+        if (!isValid) {
+            revert INVALID_TALLY_VOTES_PROOF();
+        }
 
         // Update the tally commitment and the tally batch num
         tallyCommitment = _newTallyCommitment;
@@ -209,40 +232,4 @@ contract Tally is
         return current;
     }
 
-
-     /*
-     * @notice Verify the result generated of the tally.json
-     * @param _voteOptionIndex the index of the vote option to verify the correctness of the tally
-     * @param _tallyResult Flattened array of the tally
-     * @param _tallyResultProof Corresponding proof of the tally result
-     * @param _tallyResultSalt the respective salt in the results object in the tally.json
-     * @param _spentVoiceCreditsHash hashLeftRight(number of spent voice credits, spent salt)
-     * @param _perVOSpentVoiceCreditsHash hashLeftRight(merkle root of the no spent voice credits per vote option, perVOSpentVoiceCredits salt)
-     * @param _tallyCommitment newTallyCommitment field in the tally.json
-     * @return valid a boolean representing successful verification
-     */
-    function verifyTallyResult(
-        Poll _poll,
-        uint256 _voteOptionIndex,
-        uint256 _tallyResult,
-        uint256[][] memory _tallyResultProof,
-        uint256 _spentVoiceCreditsHash,
-        uint256 _perVOSpentVoiceCreditsHash,
-        uint256 _tallyCommitment
-    ) public view returns (bool) {
-        (, , , uint8 voteOptionTreeDepth) = _poll.treeDepths();
-        uint256 computedRoot = computeMerkleRootFromPath(
-            voteOptionTreeDepth,
-            _voteOptionIndex,
-            _tallyResult,
-            _tallyResultProof
-        );
-
-        uint256[3] memory tally;
-        tally[0] = computedRoot;
-        tally[1] = _spentVoiceCreditsHash;
-        tally[2] = _perVOSpentVoiceCreditsHash;
-
-        return hash3(tally) == _tallyCommitment;
-    }
 }

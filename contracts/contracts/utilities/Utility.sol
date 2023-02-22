@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
-import {DomainObjs, IPubKey, IMessage} from "./DomainObjs.sol";
-import {Hasher} from "./crypto/Hasher.sol";
-import {SnarkConstants} from "./crypto/SnarkConstants.sol";
+import {DomainObjs, IPubKey, IMessage} from "../DomainObjs.sol";
+import {Hasher} from "../crypto/Hasher.sol";
+import {SnarkConstants} from "../crypto/SnarkConstants.sol";
 
 
 contract CommonUtilities is SnarkConstants {

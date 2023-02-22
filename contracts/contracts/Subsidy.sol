@@ -6,7 +6,7 @@ import {MessageProcessor} from "./MessageProcessor.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Poll} from "./Poll.sol";
 import {SnarkCommon} from "./crypto/SnarkCommon.sol";
-import {CommonUtilities} from "./Utility.sol";
+import {CommonUtilities} from "./utilities/Utility.sol";
 import {Verifier} from "./crypto/Verifier.sol";
 import {VkRegistry} from "./VkRegistry.sol";
 
