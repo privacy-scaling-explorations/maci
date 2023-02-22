@@ -1,4 +1,5 @@
 pragma circom 2.0.0;
+include "../../node_modules/circomlib/circuits/bitify.circom";
 include "../../node_modules/circomlib/circuits/mux1.circom";
 include "../../node_modules/circomlib/circuits/comparators.circom";
 include "../hasherPoseidon.circom";
@@ -32,6 +33,9 @@ template QuinSelector(choices) {
     signal input index;
     signal output out;
     
+    // Ensure choices < 2^3
+    component n2b = Num2Bits(3);
+    n2b.in  <== choices;
     // Ensure that index < choices
     component lessThan = LessThan(3);
     lessThan.in[0] <== index;
@@ -280,10 +284,6 @@ template QuinGeneratePathIndices(levels) {
     n[levels] <-- m;
 
     // Do a range check on each out[i]
-    for (var i = 1; i < levels + 1; i ++) {
-        n[i - 1] === n[i] * BASE + out[i-1];
-    }
-    
     component leq[levels];
     component sum = CalculateTotal(levels);
     for (var i = 0; i < levels; i ++) {
