@@ -1,19 +1,19 @@
 pragma circom 2.0.0;
 include "./verifySignature.circom";
-include "../node_modules/circomlib/circuits/comparators.circom";
+include "./utils.circom";
 
 template MessageValidator() {
     // a) Whether the state leaf index is valid
     signal input stateTreeIndex;
     signal input numSignUps;
-    component validStateLeafIndex = LessEqThan(252);
+    component validStateLeafIndex = SafeLessEqThan(252);
     validStateLeafIndex.in[0] <== stateTreeIndex;
     validStateLeafIndex.in[1] <== numSignUps;
 
     // b) Whether the max vote option tree index is correct
     signal input voteOptionIndex;
     signal input maxVoteOptions;
-    component validVoteOptionIndex = LessThan(252);
+    component validVoteOptionIndex = SafeLessThan(252);
     validVoteOptionIndex.in[0] <== voteOptionIndex;
     validVoteOptionIndex.in[1] <== maxVoteOptions;
 
@@ -44,7 +44,7 @@ template MessageValidator() {
     // e) Whether the state leaf was inserted before the Poll period ended
     signal input slTimestamp;
     signal input pollEndTimestamp;
-    component validTimestamp = LessEqThan(252);
+    component validTimestamp = SafeLessEqThan(252);
     validTimestamp.in[0] <== slTimestamp;
     validTimestamp.in[1] <== pollEndTimestamp;
 
@@ -55,12 +55,12 @@ template MessageValidator() {
 
     // Check that voteWeight is < sqrt(field size), so voteWeight ^ 2 will not
     // overflow
-    component validVoteWeight = LessEqThan(252);
+    component validVoteWeight = SafeLessEqThan(252);
     validVoteWeight.in[0] <== voteWeight;
     validVoteWeight.in[1] <== 147946756881789319005730692170996259609;
 
     // Check that currentVoiceCreditBalance + (currentVotesForOption ** 2) >= (voteWeight ** 2)
-    component sufficientVoiceCredits = GreaterEqThan(252);
+    component sufficientVoiceCredits = SafeGreaterEqThan(252);
     sufficientVoiceCredits.in[0] <== (currentVotesForOption * currentVotesForOption) + currentVoiceCreditBalance;
     sufficientVoiceCredits.in[1] <== voteWeight * voteWeight;
 

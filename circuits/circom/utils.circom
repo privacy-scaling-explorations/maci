@@ -20,7 +20,18 @@ template SafeLessThan(n) {
     out <== 1-n2b.out[n];
 }
 
+// N is the number of bits the input  have.
+// The MSF is the sign bit.
+template SafeLessEqThan(n) {
+    signal input in[2];
+    signal output out;
 
+    component lt = SafeLessThan(n);
+
+    lt.in[0] <== in[0];
+    lt.in[1] <== in[1]+1;
+    lt.out ==> out;
+}
 
 // N is the number of bits the input  have.
 // The MSF is the sign bit.
@@ -32,5 +43,18 @@ template SafeGreaterThan(n) {
 
     lt.in[0] <== in[1];
     lt.in[1] <== in[0];
+    lt.out ==> out;
+}
+
+// N is the number of bits the input  have.
+// The MSF is the sign bit.
+template SafeGreaterEqThan(n) {
+    signal input in[2];
+    signal output out;
+
+    component lt = SafeLessThan(n);
+
+    lt.in[0] <== in[1];
+    lt.in[1] <== in[0]+1;
     lt.out ==> out;
 }
