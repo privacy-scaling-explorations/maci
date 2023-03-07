@@ -2,7 +2,9 @@ const { ethers } = require('hardhat')
 import {
     parseArtifact,
     deployVerifier,
+    deployMessageProcessor,
     deployTally,
+    deploySubsidy,
     deployContract,
     getDefaultSigner,
 } from 'maci-contracts'
@@ -173,13 +175,13 @@ const deployPoll = async (args: any) => {
     // Deploy a MessageProcessor contract
     const verifierContract = await deployVerifier(true)
     console.log('Verifier:', verifierContract.address)
-    const mpContract = await deployContract('MessageProcessor', true, verifierContract.address)
+    const mpContract = await deployMessageProcessor(verifierContract.address, contractAddrs['PoseidonT3'],contractAddrs['PoseidonT4'],contractAddrs['PoseidonT5'],contractAddrs['PoseidonT6'])
     await mpContract.deployTransaction.wait()
 
     const tallyContract = await deployTally(verifierContract.address, contractAddrs['PoseidonT3'],contractAddrs['PoseidonT4'],contractAddrs['PoseidonT5'],contractAddrs['PoseidonT6'])
     await tallyContract.deployTransaction.wait()
 
-    const subsidyContract = await deployContract('Subsidy', true, verifierContract.address)
+    const subsidyContract = await deploySubsidy(verifierContract.address, contractAddrs['PoseidonT3'],contractAddrs['PoseidonT4'],contractAddrs['PoseidonT5'],contractAddrs['PoseidonT6'])
     await subsidyContract.deployTransaction.wait()
 
     const [ maciAbi ] = parseArtifact('MACI')

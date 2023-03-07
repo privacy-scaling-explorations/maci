@@ -6,6 +6,7 @@ import {MessageProcessor} from "./MessageProcessor.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Poll} from "./Poll.sol";
 import {SnarkCommon} from "./crypto/SnarkCommon.sol";
+import {Hasher} from "./crypto/Hasher.sol";
 import {CommonUtilities} from "./utilities/Utility.sol";
 import {Verifier} from "./crypto/Verifier.sol";
 import {VkRegistry} from "./VkRegistry.sol";
@@ -13,6 +14,7 @@ import {VkRegistry} from "./VkRegistry.sol";
 contract Subsidy is
     Ownable,
     CommonUtilities,
+    Hasher,
     SnarkCommon
 {
 
@@ -23,11 +25,10 @@ contract Subsidy is
     uint256 public subsidyCommitment;
 
     // Error codes
-    string constant ERROR_VOTING_PERIOD_NOT_PASSED = "SubsidyE01";
-    string constant ERROR_PROCESSING_NOT_COMPLETE = "SubsidyE02";
-    string constant ERROR_INVALID_SUBSIDY_PROOF = "SubsidyE03";
-    string constant ERROR_ALL_SUBSIDY_CALCULATED = "SubsidyE04";
-    string constant ERROR_VK_NOT_SET = "SubsidyE05";
+    error PROCESSING_NOT_COMPLETE();
+    error INVALID_SUBSIDY_PROOF();
+    error ALL_SUBSIDY_CALCULATED();
+    error VK_NOT_SET();
 
     Verifier public verifier;
 
@@ -35,20 +36,13 @@ contract Subsidy is
         verifier = _verifier;
     }
 
-    modifier votingPeriodOver(Poll _poll) {
-        (uint256 deployTime, uint256 duration) = _poll
-            .getDeployTimeAndDuration();
-        // Require that the voting period is over
-        uint256 secondsPassed = block.timestamp - deployTime;
-        require(secondsPassed > duration, ERROR_VOTING_PERIOD_NOT_PASSED);
-        _;
-    }
-
     // TODO: make sure correct mp address is passed or change to private function
     // TODO: reuse subsidy.sol for multiple polls
     function updateSbCommitment(MessageProcessor _mp) public {
         // Require that all messages have been processed
-        require(_mp.processingComplete(), ERROR_PROCESSING_NOT_COMPLETE);
+        if (!_mp.processingComplete()) {
+            revert PROCESSING_NOT_COMPLETE();
+        }
         if (sbCommitment == 0) {
             sbCommitment = _mp.sbCommitment();
         }
@@ -87,7 +81,8 @@ contract Subsidy is
         MessageProcessor _mp,
         uint256 _newSubsidyCommitment,
         uint256[8] memory _proof
-    ) public onlyOwner votingPeriodOver(_poll) {
+    ) public onlyOwner {
+        _votingPeriodOver(_poll);
         updateSbCommitment(_mp);
 
         (uint8 intStateTreeDepth, , , uint8 voteOptionTreeDepth) = _poll
@@ -97,14 +92,9 @@ contract Subsidy is
         uint256 numLeaves = numSignUps + 1;
 
         // Require that there are unfinished ballots left
-        require(
-            rbi * subsidyBatchSize <= numLeaves,
-            ERROR_ALL_SUBSIDY_CALCULATED
-        );
-        require(
-            cbi * subsidyBatchSize <= numLeaves,
-            ERROR_ALL_SUBSIDY_CALCULATED
-        );
+        if (rbi * subsidyBatchSize > numLeaves) {
+            revert ALL_SUBSIDY_CALCULATED();
+        }
 
         bool isValid = verifySubsidyProof(
             _poll,
@@ -112,7 +102,9 @@ contract Subsidy is
             numSignUps,
             _newSubsidyCommitment
         );
-        require(isValid, ERROR_INVALID_SUBSIDY_PROOF);
+        if (!isValid) {
+            revert INVALID_SUBSIDY_PROOF();
+        }
         subsidyCommitment = _newSubsidyCommitment;
         increaseSubsidyIndex(subsidyBatchSize, numLeaves);
     }
@@ -138,7 +130,9 @@ contract Subsidy is
             .treeDepths();
         (VkRegistry vkRegistry, IMACI maci, , ) = _poll.extContracts();
 
-        require(address(vkRegistry) != address(0), ERROR_VK_NOT_SET);
+        if (address(vkRegistry) == address(0)) {
+            revert VK_NOT_SET();
+        }
 
         // Get the verifying key
         VerifyingKey memory vk = vkRegistry.getSubsidyVk(

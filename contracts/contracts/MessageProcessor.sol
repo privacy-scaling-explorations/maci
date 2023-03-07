@@ -6,14 +6,13 @@ import {IMACI} from "./IMACI.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Poll} from "./Poll.sol";
 import {SnarkCommon} from "./crypto/SnarkCommon.sol";
+import {Hasher} from "./crypto/Hasher.sol";
 import {CommonUtilities} from "./utilities/Utility.sol";
 import {Verifier} from "./crypto/Verifier.sol";
 import {VkRegistry} from "./VkRegistry.sol";
 
-contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities {
+contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
 
-    string constant ERROR_VOTING_PERIOD_PASSED = "ProcessE01";
-    string constant ERROR_VOTING_PERIOD_NOT_PASSED = "ProcessE02";
     string constant ERROR_NO_MORE_MESSAGES = "ProcessE03";
     string constant ERROR_STATE_AQ_NOT_MERGED = "ProcessE04";
     string constant ERROR_MESSAGE_AQ_NOT_MERGED = "ProcessE04";
@@ -38,14 +37,6 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities {
         verifier = _verifier;
     }
 
-    modifier votingPeriodOver(Poll _poll) {
-        (uint256 deployTime, uint256 duration) = _poll
-            .getDeployTimeAndDuration();
-        // Require that the voting period is over
-        uint256 secondsPassed = block.timestamp - deployTime;
-        require(secondsPassed > duration, ERROR_VOTING_PERIOD_NOT_PASSED);
-        _;
-    }
 
     /*
      * Update the Poll's currentSbCommitment if the proof is valid.
@@ -58,7 +49,8 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities {
         Poll _poll,
         uint256 _newSbCommitment,
         uint256[8] memory _proof
-    ) public onlyOwner votingPeriodOver(_poll) {
+    ) public onlyOwner {
+        _votingPeriodOver(_poll);
         // There must be unprocessed messages
         require(!processingComplete, ERROR_NO_MORE_MESSAGES);
 

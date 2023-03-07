@@ -10,15 +10,16 @@ import {MessageProcessor} from "./MessageProcessor.sol";
 import {SnarkCommon} from "./crypto/SnarkCommon.sol";
 import {Verifier} from "./crypto/Verifier.sol";
 import {VkRegistry} from "./VkRegistry.sol";
+import {CommonUtilities} from "./utilities/Utility.sol";
 
 
 contract Tally is
     Ownable,
     SnarkCommon,
+    CommonUtilities,
     Hasher
 {
     // Error codes
-    error VOTING_PERIOD_NOT_PASSED();
     error PROCESSING_NOT_COMPLETE();
     error INVALID_TALLY_VOTES_PROOF();
     error ALL_BALLOTS_TALLIED();
@@ -50,16 +51,6 @@ contract Tally is
         verifier = _verifier;
     }
 
-    modifier votingPeriodOver(Poll _poll) {
-        (uint256 deployTime, uint256 duration) = _poll
-            .getDeployTimeAndDuration();
-        // Require that the voting period is over
-        uint256 secondsPassed = block.timestamp - deployTime;
-        if (secondsPassed <= duration ) {
-            revert VOTING_PERIOD_NOT_PASSED();
-        }
-        _;
-    }
 
     /*
      * @notice Pack the batch start index and number of signups into a 100-bit value.
@@ -128,7 +119,8 @@ contract Tally is
         MessageProcessor _mp,
         uint256 _newTallyCommitment,
         uint256[8] memory _proof
-    ) public onlyOwner votingPeriodOver(_poll) {
+    ) public onlyOwner {
+        _votingPeriodOver(_poll);
         updateSbCommitment(_mp);
 
         (, uint256 tallyBatchSize, ) = _poll.batchSizes();

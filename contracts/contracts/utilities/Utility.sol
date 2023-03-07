@@ -3,20 +3,20 @@ pragma solidity ^0.8.10;
 import {DomainObjs, IPubKey, IMessage} from "../DomainObjs.sol";
 import {Hasher} from "../crypto/Hasher.sol";
 import {SnarkConstants} from "../crypto/SnarkConstants.sol";
+import {Poll} from "../Poll.sol";
 
 
-contract CommonUtilities is SnarkConstants {
-     /*
-     * Hashes an array of values using SHA256 and returns its modulo with the
-     * snark scalar field. This function is used to hash inputs to circuits,
-     * where said inputs would otherwise be public inputs. As such, the only
-     * public input to the circuit is the SHA256 hash, and all others are
-     * private inputs. The circuit will verify that the hash is valid. Doing so
-     * saves a lot of gas during verification, though it makes the circuit take
-     * up more constraints.
-     */
-    function sha256Hash(uint256[] memory array) public pure returns (uint256) {
-        return uint256(sha256(abi.encodePacked(array))) % SNARK_SCALAR_FIELD;
+contract CommonUtilities {
+     error VOTING_PERIOD_NOT_PASSED();
+    // common function for MessageProcessor, Tally and Subsidy
+    function _votingPeriodOver(Poll _poll) internal {
+        (uint256 deployTime, uint256 duration) = _poll
+            .getDeployTimeAndDuration();
+        // Require that the voting period is over
+        uint256 secondsPassed = block.timestamp - deployTime;
+        if (secondsPassed <= duration ) {
+            revert VOTING_PERIOD_NOT_PASSED();
+        }
     }
 }
 

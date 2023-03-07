@@ -224,6 +224,32 @@ const getFeeData = async (): Promise<any> => {
     return await signer.provider.getFeeData()
 }
 
+const deployMessageProcessor = async (
+    verifierAddress,
+    poseidonT3Address,
+    poseidonT4Address,
+    poseidonT5Address,
+    poseidonT6Address,
+    quiet = false
+    ) => {
+    // Link Poseidon contracts to MessageProcessor
+    const mpFactory = await linkPoseidonLibraries(
+            'MessageProcessor',
+            poseidonT3Address,
+            poseidonT4Address,
+            poseidonT5Address,
+            poseidonT6Address,
+            quiet
+        )
+    const mpContract = await deployContractWithLinkedLibraries(
+        mpFactory,
+        'MessageProcessor',
+        quiet,
+        verifierAddress,
+    )
+    return mpContract
+}
+
 const deployTally = async (
     verifierAddress,
     poseidonT3Address,
@@ -248,6 +274,32 @@ const deployTally = async (
         verifierAddress,
     )
     return tallyContract
+}
+
+const deploySubsidy = async (
+    verifierAddress,
+    poseidonT3Address,
+    poseidonT4Address,
+    poseidonT5Address,
+    poseidonT6Address,
+    quiet = false
+    ) => {
+    // Link Poseidon contracts to Subsidy
+    const subsidyFactory = await linkPoseidonLibraries(
+            'Subsidy',
+            poseidonT3Address,
+            poseidonT4Address,
+            poseidonT5Address,
+            poseidonT6Address,
+            quiet
+        )
+    const subsidyContract = await deployContractWithLinkedLibraries(
+        subsidyFactory,
+        'Subsidy',
+        quiet,
+        verifierAddress,
+    )
+    return subsidyContract
 }
 
 const deployMaci = async (
@@ -352,7 +404,9 @@ export {
     deployTopupCredit,
     deployVkRegistry,
     deployMaci,
+    deployMessageProcessor,
     deployTally,
+    deploySubsidy,
     deploySignupToken,
     deploySignupTokenGatekeeper,
     deployConstantInitialVoiceCreditProxy,
