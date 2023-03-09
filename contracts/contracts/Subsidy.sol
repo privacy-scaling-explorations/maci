@@ -58,6 +58,7 @@ contract Subsidy is
     {
         require(_numSignUps < 2**50, "numSignUps too large");
         require(rbi < 2**50, "rbi too large"); 
+        require(cbi < 2**50, "cbi too large"); 
         uint256 result = (_numSignUps << 100) +
             (rbi << 50) +
             cbi;

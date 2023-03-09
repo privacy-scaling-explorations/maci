@@ -11,13 +11,18 @@ import {CommonUtilities} from "./utilities/Utility.sol";
 import {Verifier} from "./crypto/Verifier.sol";
 import {VkRegistry} from "./VkRegistry.sol";
 
+/*
+ * MessageProcessor is used to process messages published by signup users
+ * it will process message by batch due to large size of messages
+ * after it finishes processing, the sbCommitment will be used for Tally and Subsidy contracts
+ */
 contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
 
-    string constant ERROR_NO_MORE_MESSAGES = "ProcessE03";
-    string constant ERROR_STATE_AQ_NOT_MERGED = "ProcessE04";
-    string constant ERROR_MESSAGE_AQ_NOT_MERGED = "ProcessE04";
-    string constant ERROR_INVALID_PROCESS_MESSAGE_PROOF = "ProcessE05";
-    string constant ERROR_VK_NOT_SET = "ProcessE06";
+    error NO_MORE_MESSAGES();
+    error STATE_AQ_NOT_MERGED();
+    error MESSAGE_AQ_NOT_MERGED();
+    error INVALID_PROCESS_MESSAGE_PROOF();
+    error VK_NOT_SET();
 
 
     // Whether there are unprocessed messages left
@@ -49,13 +54,17 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         Poll _poll,
         uint256 _newSbCommitment,
         uint256[8] memory _proof
-    ) public onlyOwner {
+    ) external onlyOwner {
         _votingPeriodOver(_poll);
         // There must be unprocessed messages
-        require(!processingComplete, ERROR_NO_MORE_MESSAGES);
+        if (processingComplete) {
+            revert NO_MORE_MESSAGES();
+        }
 
         // The state AccQueue must be merged
-        require(_poll.stateAqMerged(), ERROR_STATE_AQ_NOT_MERGED);
+        if (!_poll.stateAqMerged()) {
+            revert STATE_AQ_NOT_MERGED();
+        }
 
         // Retrieve stored vals
         (, , uint8 messageTreeDepth, ) = _poll.treeDepths();
@@ -66,7 +75,9 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
 
         // Require that the message queue has been merged
         uint256 messageRoot = messageAq.getMainRoot(messageTreeDepth);
-        require(messageRoot != 0, ERROR_MESSAGE_AQ_NOT_MERGED);
+        if (messageRoot == 0) {
+            revert MESSAGE_AQ_NOT_MERGED();
+        }
 
         // Copy the state and ballot commitment and set the batch index if this
         // is the first batch to process
@@ -101,7 +112,9 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
             _newSbCommitment,
             _proof
         );
-        require(isValid, ERROR_INVALID_PROCESS_MESSAGE_PROOF);
+        if (!isValid) {
+            revert INVALID_PROCESS_MESSAGE_PROOF();
+        }
 
         {
             (, uint256 numMessages) = _poll.numSignUpsAndMessages();
@@ -133,7 +146,9 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
         (VkRegistry vkRegistry, IMACI maci, , ) = _poll.extContracts();
 
-        require(address(vkRegistry) != address(0), ERROR_VK_NOT_SET);
+        if (address(vkRegistry) == address(0)) {
+            revert VK_NOT_SET();
+        }
 
         // Calculate the public input hash (a SHA256 hash of several values)
         uint256 publicInputHash = genProcessMessagesPublicInputHash(
@@ -157,13 +172,19 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     }
 
     /*
-     * Returns the SHA256 hash of the packed values (see
+     * @notice Returns the SHA256 hash of the packed values (see
      * genProcessMessagesPackedVals), the hash of the coordinator's public key,
      * the message root, and the commitment to the current state root and
      * ballot root. By passing the SHA256 hash of these values to the circuit
      * as a single public input and the preimage as private inputs, we reduce
      * its verification gas cost though the number of constraints will be
      * higher and proving time will be higher.
+     * @param _poll: contract address 
+     * @param _currentMessageBatchIndex: batch index of current message batch
+     * @param _numSignUps: number of users that signup
+     * @param _currentSbCommitment: current sbCommitment
+     * @param _newSbCommitment: new sbCommitment after we update this message batch
+     * @return returns the SHA256 hash of the packed values 
      */
     function genProcessMessagesPublicInputHash(
         Poll _poll,
@@ -218,14 +239,25 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
             batchEndIndex = numMessages;
         }
 
+        require(maxVoteOptions < 2**50, "maxVoteOptions too large");
+        require(_numSignUps < 2**50, "numSignUps too large");
+        require(_currentMessageBatchIndex < 2**50, "currentMessageBatchIndex too large");
+        require(batchEndIndex < 2**50, "batchEndIndex too large");
         uint256 result = maxVoteOptions +
-            (_numSignUps << uint256(50)) +
-            (_currentMessageBatchIndex << uint256(100)) +
-            (batchEndIndex << uint256(150));
+            (_numSignUps << 50) +
+            (_currentMessageBatchIndex << 100) +
+            (batchEndIndex << 150);
 
         return result;
     }
 
+    /*
+     * @notice update message processing state variables
+     * @param _newSbCommitment: sbCommitment to be updated
+     * @param _currentMessageBatchIndex: currentMessageBatchIndex to be updated
+     * @param _processingComplete: update flag that indicate processing is finished or not
+     * @return None
+     */
     function updateMessageProcessingData(
         uint256 _newSbCommitment,
         uint256 _currentMessageBatchIndex,
