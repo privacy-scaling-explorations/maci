@@ -88,7 +88,7 @@ contract Subsidy is
         _votingPeriodOver(_poll);
         updateSbCommitment(_mp);
 
-        (uint8 intStateTreeDepth, , , uint8 voteOptionTreeDepth) = _poll
+        (uint8 intStateTreeDepth, , , ) = _poll
             .treeDepths();
 
         uint256 subsidyBatchSize = 0;

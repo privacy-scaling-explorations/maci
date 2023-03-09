@@ -9,7 +9,7 @@ import {Poll} from "../Poll.sol";
 contract CommonUtilities {
      error VOTING_PERIOD_NOT_PASSED();
     // common function for MessageProcessor, Tally and Subsidy
-    function _votingPeriodOver(Poll _poll) internal {
+    function _votingPeriodOver(Poll _poll) internal view {
         (uint256 deployTime, uint256 duration) = _poll
             .getDeployTimeAndDuration();
         // Require that the voting period is over
