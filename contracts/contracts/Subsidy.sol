@@ -24,6 +24,8 @@ contract Subsidy is
     uint256 public sbCommitment;
     uint256 public subsidyCommitment;
 
+    uint8 public constant treeArity = 5;
+
     // Error codes
     error PROCESSING_NOT_COMPLETE();
     error INVALID_SUBSIDY_PROOF();
@@ -54,9 +56,10 @@ contract Subsidy is
         view
         returns (uint256)
     {
-        // TODO: ensure that each value is less than or equal to 2 ** 50
-        uint256 result = (_numSignUps << uint256(100)) +
-            (rbi << uint256(50)) +
+        require(_numSignUps < 2**50, "numSignUps too large");
+        require(rbi < 2**50, "rbi too large"); 
+        uint256 result = (_numSignUps << 100) +
+            (rbi << 50) +
             cbi;
 
         return result;
@@ -81,13 +84,18 @@ contract Subsidy is
         MessageProcessor _mp,
         uint256 _newSubsidyCommitment,
         uint256[8] memory _proof
-    ) public onlyOwner {
+    ) external onlyOwner {
         _votingPeriodOver(_poll);
         updateSbCommitment(_mp);
 
         (uint8 intStateTreeDepth, , , uint8 voteOptionTreeDepth) = _poll
             .treeDepths();
-        uint256 subsidyBatchSize = 5**intStateTreeDepth; // treeArity is fixed to 5
+
+        uint256 subsidyBatchSize = 0;
+        unchecked {
+            subsidyBatchSize = uint256(treeArity)**intStateTreeDepth; 
+        } 
+
         (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
         uint256 numLeaves = numSignUps + 1;
 
@@ -109,6 +117,15 @@ contract Subsidy is
         increaseSubsidyIndex(subsidyBatchSize, numLeaves);
     }
 
+    /*
+     * @notice increase subsidy batch index (rbi, cbi) to next, 
+     * it will try to cbi++ if the whole batch can fit into numLeaves 
+     * otherwise it will increase row index: rbi++ 
+     * @param batchSize: the size of 1 dimensional batch over the signup users, 
+     * notice each batch for subsidy calculation is 2 dimenional: batchSize*batchSize
+     * @param numLeaves: total number of leaves in stateTree, i.e. number of signup users
+     * @return None
+     */
     function increaseSubsidyIndex(uint256 batchSize, uint256 numLeaves)
         internal
     {
