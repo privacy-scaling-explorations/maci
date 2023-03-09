@@ -92,10 +92,7 @@ contract Subsidy is
         (uint8 intStateTreeDepth, , , ) = _poll
             .treeDepths();
 
-        uint256 subsidyBatchSize = 0;
-        unchecked {
-            subsidyBatchSize = uint256(treeArity)**intStateTreeDepth; 
-        } 
+        uint256 subsidyBatchSize = uint256(treeArity)**intStateTreeDepth; 
 
         (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
         uint256 numLeaves = numSignUps + 1;
