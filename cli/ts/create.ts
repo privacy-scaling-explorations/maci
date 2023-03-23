@@ -121,6 +121,7 @@ const create = async (args: any) => {
         TopupCreditContract.address 
     )
 
+    console.log('MACI:', maciContract.address)
 
     contractAddrs['InitialVoiceCreditProxy'] = initialVoiceCreditProxyContractAddress
     contractAddrs['SignUpGatekeeper'] = signUpGatekeeperAddress
