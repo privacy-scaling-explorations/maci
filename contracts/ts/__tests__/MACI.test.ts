@@ -124,6 +124,7 @@ describe('MACI', () => {
             stateAqContract = r.stateAqContract
             vkRegistryContract = r.vkRegistryContract
             mpContract = r.mpContract
+            tallyContract = r.tallyContract
         })
 
         it('MACI.stateTreeDepth should be correct', async () => {
@@ -508,11 +509,12 @@ describe('MACI', () => {
             try {
                 await tallyContract.tallyVotes(
                     pollContractAddress,
+                    mpContract.address,
                     0,
                     [0, 0, 0, 0, 0, 0, 0, 0],
                 )
             } catch (e) {
-                const error = "'PptE07'"
+                const error = "'PROCESSING_NOT_COMPLETE()'"
                 expect(e.message.endsWith(error)).toBeTruthy()
             }
 
@@ -532,7 +534,7 @@ describe('MACI', () => {
                 )
 
             } catch (e) {
-                expect(e.message.endsWith("'PptE09'")).toBeTruthy()
+                expect(e.message.endsWith("'STATE_AQ_NOT_MERGED()'")).toBeTruthy()
             }
         })
     })
@@ -666,6 +668,7 @@ describe('MACI', () => {
             const pollContractAddress = await maciContract.getPoll(pollId)
             const tx = await tallyContract.tallyVotes(
                 pollContractAddress,
+                mpContract.address,
                 generatedInputs.newTallyCommitment,
                 [0, 0, 0, 0, 0, 0, 0, 0],
             )
@@ -680,11 +683,12 @@ describe('MACI', () => {
             try {
                 await tallyContract.tallyVotes(
                     pollContractAddress,
+                    mpContract.address,
                     generatedInputs.newTallyCommitment,
                     [0, 0, 0, 0, 0, 0, 0, 0],
                 )
             } catch (e) {
-                const error = "'PptE08'"
+                const error = "'ALL_BALLOTS_TALLIED()'"
                 expect(e.message.endsWith(error)).toBeTruthy()
             }
         })
@@ -698,7 +702,6 @@ describe('MACI', () => {
                 coordinator,
                 0,
             )
-
             // TODO: check roots
         })
     })
