@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import {Poll, PollFactory, PollProcessorAndTallyer} from "./Poll.sol";
+import {Poll, PollFactory} from "./Poll.sol";
 import {InitialVoiceCreditProxy} from "./initialVoiceCreditProxy/InitialVoiceCreditProxy.sol";
 import {SignUpGatekeeper} from "./gatekeepers/SignUpGatekeeper.sol";
 import {AccQueue, AccQueueQuinaryBlankSl} from "./trees/AccQueue.sol";
