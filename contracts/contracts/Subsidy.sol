@@ -38,9 +38,7 @@ contract Subsidy is
         verifier = _verifier;
     }
 
-    // TODO: make sure correct mp address is passed or change to private function
-    // TODO: reuse subsidy.sol for multiple polls
-    function updateSbCommitment(MessageProcessor _mp) public {
+    function updateSbCommitment(MessageProcessor _mp) public onlyOwner {
         // Require that all messages have been processed
         if (!_mp.processingComplete()) {
             revert PROCESSING_NOT_COMPLETE();
