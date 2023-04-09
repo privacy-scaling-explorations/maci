@@ -295,7 +295,7 @@ const publish = async (args: any) => {
 
     const encKeypair = new Keypair()
 
-    const command:PCommand = new PCommand(
+    const command: PCommand = new PCommand(
         stateIndex,
         userMaciPubKey,
         voteOptionIndex,
@@ -313,7 +313,7 @@ const publish = async (args: any) => {
         )
     )
 
-    let tx
+    let tx = null;
     try {
         tx = await pollContractEthers.publishMessage(
             message.asContractParam(),
