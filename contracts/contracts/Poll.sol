@@ -244,8 +244,8 @@ contract Poll is
     event MergeMaciStateAq(uint256 _stateRoot);
     event MergeMessageAqSubRoots(uint256 _numSrQueueOps);
     event MergeMessageAq(uint256 _messageRoot);
-    event AttemptKeyDeactivation(address _sender, uint256 _leafIndex);
-    event DeactivateKey(PubKey _usersPubKey);
+    event AttemptKeyDeactivation(address _sender);
+    event DeactivateKey(PubKey _usersPubKey, uint256 _leafIndex);
 
     ExtContracts public extContracts;
 
@@ -394,14 +394,12 @@ contract Poll is
      * @param _message The encrypted message which contains state leaf index
      * @param _messageHash The keccak256 hash of the _message to be used for signature verification
      * @param _signature The ECDSA signature of User who attempts to deactivate MACI public key
-     * @return leafIndex The index of the leaf in the deactivated keys tree
      */
     function deactivateKey(
         Message memory _message,
-        // PubKey memory _coordinatorPubKey,
         bytes32 _messageHash,
         bytes memory _signature
-    ) external isWithinVotingDeadline returns (uint256 leafIndex) {
+    ) external isWithinVotingDeadline {
         require(
             msg.sender == ECDSA.recover(_messageHash, _signature),
             ERROR_INVALID_SENDER
@@ -412,42 +410,32 @@ contract Poll is
             ERROR_MAX_MESSAGES_REACHED
         );
 
-        // TODO: PROVERI NA DA LI PROSLEDJIVATI _coordinatorPubKey kao calldata param ili kupiti iz storage promenljive coordinatorPubKey
-
-        // require(
-        //     _coordinatorPubKey.x < SNARK_SCALAR_FIELD &&
-        //         _coordinatorPubKey.y < SNARK_SCALAR_FIELD,
-        //     ERROR_INVALID_PUBKEY
-        // );
-
         unchecked {
             numMessages++;
         }
 
-        // TODO: PROVERI DA LI ENFORCOVATI TIP PORUKE; JER 1: vote message (size 10), 2: topup message (size 2)
-        // https://github.com/0x3327/maci/blob/d18d8228e5b86278c3577956a35cd7cae422fe92/contracts/contracts/DomainObjs.sol#L17
-
-        // _message.msgType = 1;
+        _message.msgType = 3;
 
         uint256 messageLeaf = hashMessageAndEncPubKey(
             _message,
             coordinatorPubKey
         );
 
-        leafIndex = extContracts.messageAq.enqueue(messageLeaf);
+        extContracts.messageAq.enqueue(messageLeaf);
 
-        emit AttemptKeyDeactivation(msg.sender, leafIndex);
+        emit AttemptKeyDeactivation(msg.sender);
     }
 
     /**
      * @notice Confirms the deactivation of a MACI public key. This function must be called by Coordinator after User calls the deactivateKey function
      * @param _usersPubKey The MACI public key to be deactivated
      * @param _elGamalEncryptedMessage The El Gamal encrypted message
+     * @return leafIndex The index of the leaf in the deactivated keys tree
      */
     function confirmDeactivation(
         PubKey memory _usersPubKey,
         Message memory _elGamalEncryptedMessage
-    ) external onlyOwner {
+    ) external onlyOwner returns (uint256 leafIndex) {
         require(
             numDeactivatedKeys <= maxValues.maxMessages,
             ERROR_MAX_DEACTIVATED_KEYS_REACHED
@@ -462,19 +450,14 @@ contract Poll is
             numDeactivatedKeys++;
         }
 
-        // TODO: PROVERI DA LI ENFORCOVATI TIP PORUKE; JER 1: vote message (size 10), 2: topup message (size 2)
-        // https://github.com/0x3327/maci/blob/d18d8228e5b86278c3577956a35cd7cae422fe92/contracts/contracts/DomainObjs.sol#L17
-
-        // _message.msgType = 1;
-
         uint256 leaf = hashMessageAndEncPubKey(
             _elGamalEncryptedMessage,
             _usersPubKey
         );
 
-        extContracts.deactivatedKeysAq.enqueue(leaf);
+        leafIndex = extContracts.deactivatedKeysAq.enqueue(leaf);
 
-        emit DeactivateKey(_usersPubKey);
+        emit DeactivateKey(_usersPubKey, leafIndex);
     }
 
     /*

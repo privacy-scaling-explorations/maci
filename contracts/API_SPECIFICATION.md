@@ -51,7 +51,7 @@ node ./build/index.js generateNewKey --proof <zkProof> --message <encryptedMessa
 This function attempts to deactivate User's MACI public key. For deactivation to be confirmed, the Coordinator must call the `confirmKeyDeactivation` function.
 
 ```solidity
-function deactivateKey(Message memory _message, bytes32 _messageHash, bytes memory _signature) external returns (uint256 leafIndex);
+function deactivateKey(Message memory _message, bytes32 _messageHash, bytes memory _signature) external;
 ```
 
 #### Parameters
@@ -60,22 +60,22 @@ function deactivateKey(Message memory _message, bytes32 _messageHash, bytes memo
 - `_messageHash`: The keccak256 hash of the \_message to be used for signature verification.
 - `_signature`: The ECDSA signature of User who attempts to deactivate MACI public key.
 
-#### Return Values
-
-- `leafIndex`: The index of the leaf in the deactivated keys tree.
-
 ### confirmDeactivation
 
 This function confirms the deactivation of a User's MACI public key. It must be called by Coordinator after User calls the `deactivateKey` function.
 
 ```solidity
-function confirmDeactivation(PubKey memory _usersPubKey, Message memory _elGamalEncryptedMessage) external;
+function confirmDeactivation(PubKey memory _usersPubKey, Message memory _elGamalEncryptedMessage) external returns(uint256 leafIndex);
 ```
 
 #### Parameters
 
 - `_usersPubKey`: The MACI public key to be deactivated.
 - `_elGamalEncryptedMessage`: The El Gamal encrypted message.
+
+#### Return Values
+
+- `leafIndex`: The index of the leaf in the deactivated keys tree.
 
 ### generateNewKey
 
