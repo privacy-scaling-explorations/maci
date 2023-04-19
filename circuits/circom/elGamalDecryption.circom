@@ -4,34 +4,37 @@ include "../node_modules/circomlib/circuits/babyjub.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
 
 template ElGamalDecrypt() {
-    signal input X[2];
+    // Masking key
+    signal input kG[2];
+
+    // Encrypted message
     signal input Me[2];
-    signal private input prB;
+
+    // Private key
+    signal private input sk;
+
+    // Decrypted message
     signal output m;
 
-    // Private key of person B converting to bits
-    component prBBits = Num2Bits(253);
-    prBBits.in <== prB;
-    
-    // calculate pub_B*x
-    component pubBx = EscalarMulAny(253);
-    for (var i = 0; i < 253; i ++) 
-    {
-        pubBx.e[i] <== prBBits.out[i];
+    // kG * sk
+    component mulkGSk = EscalarMulAny(253);
+    for (var i = 0; i < 253; i ++) {
+        mulkGSk.e[i] <== sk.out[i];
     }
-    pubBx.p[0] <== X[0];
-    pubBx.p[1] <== X[1];
+    mulkGSk.p[0] <== kG[0];
+    mulkGSk.p[1] <== kG[1];
 
-    // calculate inverse x of pubBx 
-    signal inverse;
-    inverse <== 0 - pubBx.out[0];
+    // Inverse y coordinate for point km * sk 
+    signal yInv;
+    kMsKInv <== 0 - kMsKInv[1];
 
-    // decrypts message
-    component decrypteMessage = BabyAdd();
-    decryptedMessage.x1 <== inverse;
-    decryptedMessage.y1 <== pubBx.out[1];
-    decryptedMessage.x2 <== Me[0];
-    decryptedMessage.y2 <== Me[1];
+    // Decrypts message point
+    // M = Me * kGSk^-1
+    component M = BabyAdd();
+    M.x1 <== kGSk.out[0];
+    M.y1 <== yInv;
+    M.x2 <== Me[0];
+    M.y2 <== Me[1];
 
-    m <== decryptedMessage.xout;
+    m <== M.xout;
 }
