@@ -3,7 +3,7 @@ include "../node_modules/circomlib/circuits/escalarmulany.circom";
 include "../node_modules/circomlib/circuits/babyjub.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
 
-template ElGamalEncryption() {
+template ElGamalEncrypt() {
     // Curve point M(m,y) mapped from message m 
     signal private input M[2];
 
