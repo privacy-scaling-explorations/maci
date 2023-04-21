@@ -13,15 +13,8 @@ describe('ElGamal encryption and decryption', () => {
     const decCircuit  = 'elGamalDecryption_test'
 
     it('Should output the input bit from the composition of encryption and decryption', async () => {
-        // expect.assertions(2)
         const keypair = new Keypair()            
             
-        console.log('priv', keypair.privKey)
-        console.log('privCircuit', keypair.privKey.asCircuitInputs())
-
-        console.log('pub', keypair.pubKey)
-        console.log('pubCircuit', keypair.pubKey.asCircuitInputs())
-
         for (let bit = 0; bit < 2; bit ++ ) {
             // Encryption
             const k = genRandomSalt();
