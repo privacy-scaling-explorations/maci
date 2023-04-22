@@ -1,4 +1,32 @@
 #!/usr/bin/env node
+import * as findUp from "find-up";
+
+const isHardhatConfigExist = () => {
+    const JS_CONFIG_FILENAME = "hardhat.config.js";
+    const TS_CONFIG_FILENAME = "hardhat.config.ts";
+
+    const tsConfigPath = findUp.sync(TS_CONFIG_FILENAME);
+    if (tsConfigPath !== null) {
+      return true;
+    }
+  
+    const pathToConfigFile = findUp.sync(JS_CONFIG_FILENAME);
+    if (pathToConfigFile === null) {
+        return false
+    }
+  
+    return true;
+  }
+
+  
+if (!isHardhatConfigExist()) {
+  console.error(`ERROR: File not found: hardhat.config.js
+  
+maci-cli requires a hardhat.config.js file to be present in your project directory in order to function properly. This file is used by hardhat to deploy contracts. Please make sure that the hardhat.config.js file is present in your project directory and try again. If the file is missing, please create one using the Hardhat documentation: https://hardhat.org/hardhat-runner/docs/config`);
+  process.exit(1);
+}
+  
+
 import 'source-map-support/register'
 
 import * as argparse from 'argparse' 
