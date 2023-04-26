@@ -33,6 +33,8 @@
         "test-quinBatchLeavesExists-debug": "node --inspect-brk ./node_modules/.bin/jest QuinBatchLeavesExists.test.ts",
         "test-ecdh": "jest Ecdh.test.ts",
         "test-ecdh-debug": "node --inspect-brk ./node_modules/.bin/jest Ecdh.test.ts",
+        "test-elGamalRerandomize": "jest elGamalRerandomize.test.ts",
+        "test-elGamalRerandomize-debug": "node --inspect-brk ./node_modules/.bin/jest elGamalRerandomize.test.ts",
         "test-privToPubKey": "jest PrivToPubKey.test.ts",
         "test-privToPubKey-debug": "node --inspect-brk ./node_modules/.bin/jest PrivToPubKey.test.ts",
         "test-decrypt": "jest Decrypt.test.ts",
