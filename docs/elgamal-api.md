@@ -1,4 +1,4 @@
-# MACI API Specification
+# ElGamal MACI API Specification
 
 This API documentation describes the new additions to the MACI project for public key generation and deactivation. These changes include new console commands on the CLI side and new functions in Solidity smart contracts.
 
