@@ -10,3 +10,5 @@
 * [Testing](testing.md)
 * [Integrating MACI](integrating-maci.md)
 * [Latest audit](audit.md)
+* [ElGamal extension](elgamal-general.md)
+* [ElGamal API specification](elgamal-api.md)
