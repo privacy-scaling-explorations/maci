@@ -5,7 +5,7 @@
     "main": "build/index.js",
     "scripts": {
         "circom-helper": "circom-helper -c ./circomHelperConfig.json -b ./build/test/ -p 9001 -nc",
-        "build-test-circuits": "NODE_OPTIONS=--max-old-space-size=16384 circom-helper -c ./circomHelperConfig.json -y -nc -b ./build/test/ -p 9001",
+        "build-test-circuits": "NODE_OPTIONS=--max-old-space-size=16384 circom-helper -c ./circomHelperConfig.json -y -nc -b ./build/test/ -p 9001 -m 16384 -s 1048576",
         "watch": "tsc --watch",
         "build": "tsc",
         "test": "jest",
