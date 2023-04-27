@@ -7,7 +7,7 @@ import {
     stringifyBigInts, 
     genRandomSalt,
     IncrementalQuinTree,
-    hash2,
+    hash4,
     hash5,
 } from 'maci-crypto'
 
@@ -25,9 +25,17 @@ describe('Key deactivation circuit', () => {
     it('Deactivated key should be found in the tree', async () => {
         const deactivatedKeysTree = new IncrementalQuinTree(NUM_LEVELS, ZERO_VALUE, 5, hash5)
         const keypair = new Keypair();
+        
+        // Generate random cyphertext as a point on the curve
+        const pseudoCiphertext = new Keypair();
+        const [c1, c2] = pseudoCiphertext.pubKey.rawPubKey;
 
         // Create key leaf as hash of the x and y key components
-        const keyLeaf = hash2(keypair.pubKey.asCircuitInputs().map(c => BigInt(c)));
+        const keyLeaf = hash4(
+        [
+            ...keypair.pubKey.rawPubKey,
+            ...pseudoCiphertext.pubKey.rawPubKey,
+        ]);
 
         // Add hash to the set of deactivated keys 
         deactivatedKeysTree.insert(keyLeaf);
@@ -46,6 +54,8 @@ describe('Key deactivation circuit', () => {
             key: keypair.pubKey.asCircuitInputs(),
             path_elements: inclusionProof.pathElements,
             path_index: inclusionProof.indices,
+            c1,
+            c2,
         })
 
         const witness = await genWitness(circuit, circuitInputs)
@@ -57,7 +67,16 @@ describe('Key deactivation circuit', () => {
         const deactivatedKeysTree = new IncrementalQuinTree(NUM_LEVELS, ZERO_VALUE, 5, hash5)
         const keypair = new Keypair();
         
-        const keyLeaf = hash2(keypair.pubKey.asCircuitInputs().map(c => BigInt(c)));
+        // Random ciphertext
+        const pseudoCiphertext = new Keypair();
+        const [c1, c2] = pseudoCiphertext.pubKey.rawPubKey;
+
+        const keyLeaf = hash4(
+            [
+                ...keypair.pubKey.rawPubKey,
+                ...pseudoCiphertext.pubKey.rawPubKey,
+            ]);
+
         deactivatedKeysTree.insert(keyLeaf);
         const newTreeRoot = deactivatedKeysTree.root;
 
@@ -70,6 +89,8 @@ describe('Key deactivation circuit', () => {
             key: activeKeypair.pubKey.asCircuitInputs(),
             path_elements: inclusionProof.pathElements,
             path_index: inclusionProof.indices,
+            c1,
+            c2,
         })
 
         // The isDeactivated flag should be 0 for the actice key

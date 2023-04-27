@@ -9,6 +9,11 @@ template IsDeactivatedKey(levels) {
 
     signal input root;
     signal input key[2];
+
+    // Ciphertext of the encrypted key status
+    signal input c1;
+    signal input c2;
+
     signal input path_index[levels];
     signal input path_elements[levels][LEAVES_PER_PATH_LEVEL];
     signal output isDeactivated;
@@ -16,9 +21,11 @@ template IsDeactivatedKey(levels) {
 
     // Hash public key x and y coordinates
     signal keyHash;
-    component keyHasher = PoseidonHashT3();
+    component keyHasher = PoseidonHashT5();
     keyHasher.inputs[0] <== key[0];
     keyHasher.inputs[1] <== key[1];
+    keyHasher.inputs[2] <== c1;
+    keyHasher.inputs[3] <== c2;
 
     keyHash <== keyHasher.out;
 
