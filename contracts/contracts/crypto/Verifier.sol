@@ -9,7 +9,7 @@ abstract contract IVerifier is SnarkCommon {
     function verify(
         uint256[8] memory,
         VerifyingKey memory,
-        uint256
+        uint256[] memory input
     ) virtual public view returns (bool);
 }
 
@@ -18,7 +18,7 @@ contract MockVerifier is IVerifier, SnarkConstants {
     function verify(
         uint256[8] memory,
         VerifyingKey memory,
-        uint256
+        uint256[] memory input
     ) override public view returns (bool) {
         return result;
     }
@@ -46,7 +46,7 @@ contract Verifier is IVerifier, SnarkConstants {
     function verify(
         uint256[8] memory _proof,
         VerifyingKey memory vk,
-        uint256 input
+        uint256[] memory input
     ) override public view returns (bool) {
         Proof memory proof;
         proof.a = Pairing.G1Point(_proof[0], _proof[1]);
@@ -69,17 +69,13 @@ contract Verifier is IVerifier, SnarkConstants {
         require(proof.c.x < PRIME_Q, ERROR_PROOF_Q);
         require(proof.c.y < PRIME_Q, ERROR_PROOF_Q);
 
-        // Make sure that the input is less than the snark scalar field
-        require(input < SNARK_SCALAR_FIELD, ERROR_INPUT_VAL);
-
         // Compute the linear combination vk_x
         Pairing.G1Point memory vk_x = Pairing.G1Point(0, 0);
 
-        vk_x = Pairing.plus(
-            vk_x,
-            Pairing.scalar_mul(vk.ic[1], input)
-        );
-
+        for (uint i = 0; i < input.length; i++) {
+            require(input[i] < SNARK_SCALAR_FIELD, ERROR_INPUT_VAL);
+            vk_x = Pairing.plus(vk_x, Pairing.scalar_mul(vk.ic[i + 1], input[i]));
+        }
         vk_x = Pairing.plus(vk_x, vk.ic[0]);
 
         return Pairing.pairing(

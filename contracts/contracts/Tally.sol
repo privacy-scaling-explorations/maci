@@ -186,7 +186,9 @@ contract Tally is
         );
 
         // Verify the proof
-        return verifier.verify(_proof, vk, publicInputHash);
+        uint256[] memory input = new uint256[](1);
+        input[0] = publicInputHash;
+        return verifier.verify(_proof, vk, input);
     }
 
     function computeMerkleRootFromPath(

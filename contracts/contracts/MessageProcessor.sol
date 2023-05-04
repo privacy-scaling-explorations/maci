@@ -104,7 +104,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
             }
         }
 
-        bool isValid = verifyProcessProof(
+        bool isValid = verifyProcessProof_v2(
             _poll,
             currentMessageBatchIndex,
             messageRoot,
@@ -168,7 +168,60 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
             messageBatchSize
         );
 
-        return verifier.verify(_proof, vk, publicInputHash);
+        uint256[] memory input = new uint256[](1);
+        input[0] = publicInputHash;
+        return verifier.verify(_proof, vk, input);
+    }
+
+    function verifyProcessProof_v2(
+        Poll _poll,
+        uint256 _currentMessageBatchIndex,
+        uint256 _messageRoot,
+        uint256 _currentSbCommitment,
+        uint256 _newSbCommitment,
+        uint256[8] memory _proof
+    ) internal view returns (bool) {
+        (, , uint8 messageTreeDepth, uint8 voteOptionTreeDepth) = _poll
+            .treeDepths();
+        (uint256 messageBatchSize, , ) = _poll.batchSizes();
+        (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
+        (VkRegistry vkRegistry, IMACI maci, , ) = _poll.extContracts();
+
+        if (address(vkRegistry) == address(0)) {
+            revert VK_NOT_SET();
+        }
+
+        // Calculate the public input hash (a SHA256 hash of several values)
+        uint256 publicInputHash = genProcessMessagesHash(
+            _poll,
+            _currentMessageBatchIndex,
+            _messageRoot,
+            numSignUps,
+            _currentSbCommitment
+        );
+
+        // Calculate the output hash (a SHA256 hash of several values)
+        uint256 outputHash = genProcessMessagesHash(
+            _poll,
+            _currentMessageBatchIndex,
+            _messageRoot,
+            numSignUps,
+            _newSbCommitment
+        );
+
+
+        // Get the verifying key from the VkRegistry
+        VerifyingKey memory vk = vkRegistry.getProcessVk(
+            maci.stateTreeDepth(),
+            messageTreeDepth,
+            voteOptionTreeDepth,
+            messageBatchSize
+        );
+
+        uint256[] memory input = new uint256[](2);
+        input[0] = outputHash;
+        input[1] = publicInputHash;
+        return verifier.verify(_proof, vk, input);
     }
 
     /*
@@ -216,6 +269,45 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
 
         return inputHash;
     }
+
+/*
+     * @notice Returns the SHA256 hash of input/output Hash
+     * @param _poll: contract address 
+     * @param _currentMessageBatchIndex: batch index of current message batch
+     * @param _numSignUps: number of users that signup
+     * @param _sbCommitment: sbCommitment
+     * @return returns the SHA256 hash of the packed values 
+     */
+    function genProcessMessagesHash(
+        Poll _poll,
+        uint256 _currentMessageBatchIndex,
+        uint256 _messageRoot,
+        uint256 _numSignUps,
+        uint256 _sbCommitment
+    ) public view returns (uint256) {
+        uint256 coordinatorPubKeyHash = _poll.coordinatorPubKeyHash();
+
+        uint256 packedVals = genProcessMessagesPackedVals(
+            _poll,
+            _currentMessageBatchIndex,
+            _numSignUps
+        );
+
+        (uint256 deployTime, uint256 duration) = _poll
+            .getDeployTimeAndDuration();
+
+        uint256[] memory input = new uint256[](5);
+        input[0] = packedVals;
+        input[1] = coordinatorPubKeyHash;
+        input[2] = _messageRoot;
+        input[3] = _sbCommitment;
+        input[4] = deployTime + duration;
+        uint256 inputHash = sha256Hash(input);
+
+        return inputHash;
+    }
+
+
 
     /*
      * One of the inputs to the ProcessMessages circuit is a 250-bit

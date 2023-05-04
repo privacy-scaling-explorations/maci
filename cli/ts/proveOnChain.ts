@@ -355,24 +355,24 @@ const proveOnChain = async (args: any) => {
 
         const formattedProof = formatProofForVerifierContract(proof)
 
-        const publicInputHashOnChain = BigInt(await mpContract.genProcessMessagesPublicInputHash(
+        const publicInputHashOnChain = BigInt(await mpContract.genProcessMessagesHash(
             pollContract.address,
             currentMessageBatchIndex,
             messageRootOnChain.toString(),
             numSignUps,
             circuitInputs.currentSbCommitment,
-            circuitInputs.newSbCommitment,
         ))
 
-        if (publicInputHashOnChain.toString() !== publicInputs[0].toString()) {
-            console.error('Public input mismatch.')
+        // chao: in processMessage_v2.circom, we add outputHash, thus publicInputHash is at index 1 
+        if (publicInputHashOnChain.toString() !== publicInputs[1].toString()) {
+            console.error(`Public input mismatch. onchain=${publicInputHashOnChain.toString()}, offchain=${publicInputs[1].toString()}`)
             return 1
         }
 
         const isValidOnChain = await verifierContract.verify(
             formattedProof,
             onChainProcessVk,
-            publicInputHashOnChain.toString(),
+            [publicInputs[0].toString(), publicInputs[1].toString()],
         )
 
         if (!isValidOnChain) {

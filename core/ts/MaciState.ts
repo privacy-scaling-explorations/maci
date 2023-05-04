@@ -528,12 +528,12 @@ class Poll {
         ])
 
         const coordPubKeyHash = this.coordinatorKeypair.pubKey.hash()
-        circuitInputs.inputHash = sha256Hash([
+        circuitInputs.step_in = [null]
+        circuitInputs.step_in[0] = sha256Hash([
             circuitInputs.packedVals,
             coordPubKeyHash,
             circuitInputs.msgRoot,
             circuitInputs.currentSbCommitment,
-            circuitInputs.newSbCommitment,
             this.pollEndTimestamp,
         ])
 
