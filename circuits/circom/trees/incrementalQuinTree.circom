@@ -1,9 +1,10 @@
 pragma circom 2.0.0;
+include "../../node_modules/circomlib/circuits/bitify.circom";
 include "../../node_modules/circomlib/circuits/mux1.circom";
-include "../../node_modules/circomlib/circuits/comparators.circom";
 include "../hasherPoseidon.circom";
 include "./calculateTotal.circom";
 include "./checkRoot.circom";
+include "../utils.circom";
 
 // This file contains circuits for quintary Merkle tree verifcation.
 // It assumes that each node contains 5 leaves, as we use the PoseidonT6
@@ -33,7 +34,7 @@ template QuinSelector(choices) {
     signal output out;
     
     // Ensure that index < choices
-    component lessThan = LessThan(3);
+    component lessThan = SafeLessThan(3);
     lessThan.in[0] <== index;
     lessThan.in[1] <== choices;
     lessThan.out === 1;
@@ -111,7 +112,7 @@ template Splicer(numItems) {
     */
     for (i = 0; i < numItems + 1; i ++) {
         // greaterThen[i].out will be 1 if the i is greater than the index
-        greaterThan[i] = GreaterThan(3);
+        greaterThan[i] = SafeGreaterThan(3);
         greaterThan[i].in[0] <== i;
         greaterThan[i].in[1] <== index;
 
@@ -279,16 +280,11 @@ template QuinGeneratePathIndices(levels) {
 
     n[levels] <-- m;
 
-    // Do a range check on each out[i]
-    for (var i = 1; i < levels + 1; i ++) {
-        n[i - 1] === n[i] * BASE + out[i-1];
-    }
-    
     component leq[levels];
     component sum = CalculateTotal(levels);
     for (var i = 0; i < levels; i ++) {
         // Check that each output element is less than the base
-        leq[i] = LessThan(3);
+        leq[i] = SafeLessThan(3);
         leq[i].in[0] <== out[i];
         leq[i].in[1] <== BASE;
         leq[i].out === 1;

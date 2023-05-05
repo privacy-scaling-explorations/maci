@@ -11,7 +11,7 @@ contract TopupCredit is ERC20, Ownable {
     constructor() ERC20("TopupCredit", "TopupCredit") {
     }
 
-    function decimals() public view override returns (uint8) {
+    function decimals() public pure override returns (uint8) {
         return _decimals;
     }
 

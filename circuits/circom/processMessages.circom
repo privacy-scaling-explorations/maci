@@ -6,7 +6,7 @@ include "./privToPubKey.circom";
 include "./stateLeafAndBallotTransformer.circom";
 include "./trees/incrementalQuinTree.circom";
 include "../node_modules/circomlib/circuits/mux1.circom";
-include "../node_modules/circomlib/circuits/comparators.circom";
+include "./utils.circom";
 
 /*
  * Proves the correctness of processing a batch of messages.
@@ -194,7 +194,7 @@ template ProcessMessages(
     component muxes[batchSize];
 
     for (var i = 0; i < batchSize; i ++) {
-        lt[i] = LessThan(32);
+        lt[i] = SafeLessThan(32);
         lt[i].in[0] <== batchStartIndex + i;
         lt[i].in[1] <== batchEndIndex;
 
@@ -566,9 +566,9 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     b <== currentVoteWeight * currentVoteWeight;
     c <== cmdNewVoteWeight * cmdNewVoteWeight;
 
-    component enoughVoiceCredits = GreaterEqThan(252);
-    enoughVoiceCredits.in[0] <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + b - c;
-    enoughVoiceCredits.in[1] <== 0;
+    component enoughVoiceCredits = SafeGreaterEqThan(252);
+    enoughVoiceCredits.in[0] <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + b;
+    enoughVoiceCredits.in[1] <== c;
 
     component isMessageValid = IsEqual();
     var bothValid = 2; 

@@ -180,10 +180,6 @@ const deployPollFactory = async (quiet = false) => {
     return await deployContract('PollFactory', quiet)
 }
 
-const deployPpt = async (verifierContractAddress: string, quiet = false) => {
-    return await deployContract('PollProcessorAndTallyer', quiet, verifierContractAddress)
-}
-
 // Deploy a contract given a name and args
 const deployContract = async (contractName: string, quiet: boolean = false, ...args: any) : Promise<Contract>  =>  {
     log(`Deploying ${contractName}`, quiet)
@@ -228,6 +224,84 @@ const getFeeData = async (): Promise<any> => {
     return await signer.provider.getFeeData()
 }
 
+const deployMessageProcessor = async (
+    verifierAddress,
+    poseidonT3Address,
+    poseidonT4Address,
+    poseidonT5Address,
+    poseidonT6Address,
+    quiet = false
+    ) => {
+    // Link Poseidon contracts to MessageProcessor
+    const mpFactory = await linkPoseidonLibraries(
+            'MessageProcessor',
+            poseidonT3Address,
+            poseidonT4Address,
+            poseidonT5Address,
+            poseidonT6Address,
+            quiet
+        )
+    const mpContract = await deployContractWithLinkedLibraries(
+        mpFactory,
+        'MessageProcessor',
+        quiet,
+        verifierAddress,
+    )
+    return mpContract
+}
+
+const deployTally = async (
+    verifierAddress,
+    poseidonT3Address,
+    poseidonT4Address,
+    poseidonT5Address,
+    poseidonT6Address,
+    quiet = false
+    ) => {
+    // Link Poseidon contracts to Tally
+    const tallyFactory = await linkPoseidonLibraries(
+            'Tally',
+            poseidonT3Address,
+            poseidonT4Address,
+            poseidonT5Address,
+            poseidonT6Address,
+            quiet
+        )
+    const tallyContract = await deployContractWithLinkedLibraries(
+        tallyFactory,
+        'Tally',
+        quiet,
+        verifierAddress,
+    )
+    return tallyContract
+}
+
+const deploySubsidy = async (
+    verifierAddress,
+    poseidonT3Address,
+    poseidonT4Address,
+    poseidonT5Address,
+    poseidonT6Address,
+    quiet = false
+    ) => {
+    // Link Poseidon contracts to Subsidy
+    const subsidyFactory = await linkPoseidonLibraries(
+            'Subsidy',
+            poseidonT3Address,
+            poseidonT4Address,
+            poseidonT5Address,
+            poseidonT6Address,
+            quiet
+        )
+    const subsidyContract = await deployContractWithLinkedLibraries(
+        subsidyFactory,
+        'Subsidy',
+        quiet,
+        verifierAddress,
+    )
+    return subsidyContract
+}
+
 const deployMaci = async (
     signUpTokenGatekeeperContractAddress: string,
     initialVoiceCreditBalanceAddress: string,
@@ -243,6 +317,8 @@ const deployMaci = async (
         PoseidonT5Contract,
         PoseidonT6Contract,
     } = await deployPoseidonContracts(quiet)
+
+    const poseidonAddrs = [PoseidonT3Contract.address, PoseidonT4Contract.address, PoseidonT5Contract.address, PoseidonT6Contract.address]
 
     const contractsToLink = ['MACI', 'PollFactory']
 
@@ -295,6 +371,7 @@ const deployMaci = async (
         maciContract,
         stateAqContract,
         pollFactoryContract,
+        poseidonAddrs,
     }
 }
 
@@ -303,7 +380,6 @@ const writeContractAddresses = (
 	vkRegistryContractAddress: string,
 	stateAqContractAddress: string,
 	signUpTokenAddress: string,
-	pptContractAddress: string,
 	outputAddressFile: string
 ) => {
     const addresses = {
@@ -311,7 +387,6 @@ const writeContractAddresses = (
         VkRegistry: vkRegistryContractAddress,
         StateAqContract: stateAqContractAddress,
         SignUpToken: signUpTokenAddress,
-        ProcessAndTallyContract: pptContractAddress,
     }
 
     const addressJsonPath = path.join(__dirname, '..', outputAddressFile)
@@ -329,6 +404,9 @@ export {
     deployTopupCredit,
     deployVkRegistry,
     deployMaci,
+    deployMessageProcessor,
+    deployTally,
+    deploySubsidy,
     deploySignupToken,
     deploySignupTokenGatekeeper,
     deployConstantInitialVoiceCreditProxy,
@@ -336,7 +414,6 @@ export {
     deployMockVerifier,
     deployVerifier,
     deployPollFactory,
-    deployPpt,
     genJsonRpcDeployer,
     getInitialVoiceCreditProxyAbi,
     initMaci,
