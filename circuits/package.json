@@ -13,6 +13,8 @@
         "test-quinGenPath-debug": "node --inspect-brk ./node_modules/.bin/jest QuinGeneratePathIndices.test.ts",
         "test-hasher": "jest Hasher.test.ts",
         "test-hasher-debug": "node --inspect-brk ./node_modules/.bin/jest Hasher.test.ts",
+        "test-key-deactivation": "jest KeyDeactivation.test.ts",
+        "test-key-deactivation-debug": "node --inspect-brk ./node_modules/.bin/jest KeyDeactivation.test.ts",
         "test-unpackElement": "jest UnpackElement.test.ts",
         "test-unpackElement-debug": "node --inspect-brk ./node_modules/.bin/jest UnpackElement.test.ts",
         "test-quadVoteTally": "NODE_OPTIONS=--max-old-space-size=4096 jest QuadVoteTally.test.ts",
