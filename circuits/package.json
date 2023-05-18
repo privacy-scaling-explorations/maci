@@ -11,6 +11,8 @@
         "test": "jest",
         "test-quinGenPath": "jest QuinGeneratePathIndices.test.ts",
         "test-quinGenPath-debug": "node --inspect-brk ./node_modules/.bin/jest QuinGeneratePathIndices.test.ts",
+        "test-hasPrivateKey": "jest HasPrivateKey.test.ts",
+        "test-hasPrivateKey-debug": "node --inspect-brk ./node_modules/.bin/jest HasPrivateKey.test.ts",
         "test-hasher": "jest Hasher.test.ts",
         "test-hasher-debug": "node --inspect-brk ./node_modules/.bin/jest Hasher.test.ts",
         "test-unpackElement": "jest UnpackElement.test.ts",
