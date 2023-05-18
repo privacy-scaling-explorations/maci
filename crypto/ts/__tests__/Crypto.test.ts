@@ -10,6 +10,9 @@ import {
     hash13,
     verifySignature,
     genRandomSalt,
+    elGamalEncryptBit,
+    elGamalDecryptBit,
+    genPrivKey,
 } from '../'
 
 
@@ -192,6 +195,20 @@ describe('Cryptographic operations', () => {
                 pubKey1,
             )
             expect(valid).toBeFalsy()
+        })
+    })
+
+    describe('ElGamal bit encryption and decryption', () => {
+        it('An encrypted bit should be successfuly decrypted back', () => {
+            const { privKey, pubKey } = genKeypair();
+
+            for (let bit = 0; bit < 2; bit ++) {
+                const y = genPrivKey();
+
+                const [c1, c2] = elGamalEncryptBit(pubKey, BigInt(bit), y);
+                const dBit = elGamalDecryptBit(privKey, c1, c2);
+                expect(BigInt(bit)).toEqual(dBit);
+            }
         })
     })
 })
