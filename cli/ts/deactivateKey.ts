@@ -1,15 +1,13 @@
-import { contractFilepath } from './config'
-
 import {
-    getDefaultSigner,
     parseArtifact,
+    getDefaultSigner,
 } from 'maci-contracts'
 
 import {
     PubKey,
     PrivKey,
-    PCommand,
     Keypair,
+    PCommand,
 } from 'maci-domainobjs'
 
 import {
@@ -17,48 +15,33 @@ import {
 } from 'maci-crypto'
 
 import {
-    validateEthAddress,
     promptPwd,
-    validateSaltFormat,
+    validateEthAddress,
     validateSaltSize,
-    ,
+    validateSaltFormat,
     contractExists,
+    checkDeployerProviderConnection,
+    batchTransactionRequests,
 } from './utils'
 
-const { ethers } = require('hardhat')
-
 import {readJSONFile} from 'maci-common'
+import {contractFilepath} from './config'
 
 import {
     DEFAULT_ETH_PROVIDER,
 } from './defaults'
 
+const { ethers } = require('hardhat')
+
+const DEFAULT_SALT = genRandomSalt()
+
 const configureSubparser = (subparsers: any) => {
-    const deactivateKeyParser = subparsers.addParser(
-        'deactivateKey',
+    const parser = subparsers.addParser(
+        'publish',
         { addHelp: true },
     )
 
-    deactivateKeyParser.addArgument(
-        ['-p', '--pubkey'],
-        {
-            required: true,
-            type: 'string',
-            help: 'This command will deactivate your current public key.',
-        }
-    )
-
-    deactivateKeyParser.addArgument(
-        ['-i', '--state-index'],
-        {
-            required: true,
-            action: 'store',
-            type: 'int',
-            help: 'The user\'s state index',
-        }
-    )
-
-    deactivateKeyParser.addArgument(
+    parser.addArgument(
         ['-x', '--contract'],
         {
             type: 'string',
@@ -66,26 +49,7 @@ const configureSubparser = (subparsers: any) => {
         }
     )
 
-    deactivateKeyParser.addArgument(
-        ['-n', '--nonce'],
-        {
-            required: true,
-            action: 'store',
-            type: 'int',
-            help: 'The message nonce',
-        }
-    )
-
-    deactivateKeyParser.addArgument(
-        ['-s', '--salt'],
-        {
-            action: 'store',
-            type: 'string',
-            help: 'The message salt',
-        }
-    )
-
-    const maciPrivkeyGroup = deactivateKeyParser.addMutuallyExclusiveGroup({ required: true })
+    const maciPrivkeyGroup = parser.addMutuallyExclusiveGroup({ required: true })
 
     maciPrivkeyGroup.addArgument(
         ['-dsk', '--prompt-for-maci-privkey'],
@@ -104,35 +68,74 @@ const configureSubparser = (subparsers: any) => {
         }
     )
 
+    parser.addArgument(
+        ['-i', '--state-index'],
+        {
+            required: true,
+            action: 'store',
+            type: 'int',
+            help: 'The user\'s state index',
+        }
+    )
+
+    parser.addArgument(
+        ['-n', '--nonce'],
+        {
+            required: true,
+            action: 'store',
+            type: 'int',
+            help: 'The message nonce',
+        }
+    )
+
+    parser.addArgument(
+        ['-s', '--salt'],
+        {
+            action: 'store',
+            type: 'string',
+            help: 'The message salt',
+        }
+    )
+
+    parser.addArgument(
+        ['-o', '--poll-id'],
+        {
+            action: 'store',
+            required: true,
+            type: 'string',
+            help: 'The Poll ID',
+        }
+    )
 }
 
-const deactivateKey = async (args: any) => { // eslint-disable-line @typescript-eslint/no-unused-vars
+const publish = async (args: any) => {
     // User's MACI public key
     if (!PubKey.isValidSerializedPubKey(args.pubkey)) {
         console.error('Error: invalid MACI public key')
         return 1
     }
 
-    const userMaciPubKey = PubKey.unserialize(args.pubkey)
+    // Hardcoded for key deactivation
+    const userMaciPubKey = new PubKey([BigInt(0), BigInt(0)])
 
-    // MACI contract address
-    const contractAddrs = readJSONFile(contractFilepath)
+
+    let contractAddrs = readJSONFile(contractFilepath)
     if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
         console.error('Error: MACI contract address is empty') 
         return 1
     }
     const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
 
-    // Verify that MACI contract exists
+    // MACI contract
     if (!validateEthAddress(maciAddress)) {
         console.error('Error: invalid MACI contract address')
         return 1
     }
 
     // Ethereum provider
-    // const ethProvider = args.eth_provider ? args.eth_provider : DEFAULT_ETH_PROVIDER
+    const ethProvider = args.eth_provider ? args.eth_provider : DEFAULT_ETH_PROVIDER
 
-    // Verify user's MACI private key
+    // The user's MACI private key
     let serializedPrivkey
     if (args.prompt_for_maci_privkey) {
         serializedPrivkey = await promptPwd('Your MACI private key')
@@ -146,24 +149,27 @@ const deactivateKey = async (args: any) => { // eslint-disable-line @typescript-
     }
 
     const userMaciPrivkey = PrivKey.unserialize(serializedPrivkey)
-
-    // State leaf index
+    
+    // State index
     const stateIndex = BigInt(args.state_index)
     if (stateIndex < 0) {
         console.error('Error: the state index must be greater than 0')
         return 0
     }
 
-    // Vote option index,
-    // hardcoded to 0 for key deactivation command
-    const voteOptionIndex = 0;
+    // Vote option index - Set to 0 for key deactivation
+    const voteOptionIndex = BigInt(0)
 
-    // Command nonce
+    // The nonce
     const nonce = BigInt(args.nonce)
 
-    // Command salt
-    const DEFAULT_SALT = genRandomSalt()
-    let salt = null;
+    if (nonce < 0) {
+        console.error('Error: the nonce should be 0 or greater')
+        return 0
+    }
+
+    // The salt
+    let salt
     if (args.salt) {
         if (!validateSaltFormat(args.salt)) {
             console.error('Error: the salt should be a 32-byte hexadecimal string')
@@ -180,72 +186,76 @@ const deactivateKey = async (args: any) => { // eslint-disable-line @typescript-
         salt = DEFAULT_SALT
     }
 
-    // Verify poll ID
-    const pollId = args.poll_id
-    if (pollId < 0) {
-        console.error('Error: the Poll ID should be a positive integer.')
-        return 1
-    }
-
-    // Get contract artifacts
-    const [ maciContractAbi ] = parseArtifact('MACI')
-    const [ pollContractAbi ] = parseArtifact('Poll')
-
-    // === Process MACI contract ===
-
-    // Verify that MACI contract address is deployed at the given address
     const signer = await getDefaultSigner()
     if (! (await contractExists(signer.provider, maciAddress))) {
         console.error('Error: there is no MACI contract deployed at the specified address')
         return 1
     }
 
-    // Initialize MACI contract object
-    const maciContractEthers = new ethers.Contract(
+    const pollId = args.poll_id
+
+    if (pollId < 0) {
+        console.error('Error: the Poll ID should be a positive integer.')
+        return 1
+    }
+
+    const [ maciContractAbi ] = parseArtifact('MACI')
+    const [ pollContractAbi ] = parseArtifact('Poll')
+
+	const maciContractEthers = new ethers.Contract(
         maciAddress,
         maciContractAbi,
         signer,
     )
 
-    // === Process Poll contract ===
-
-    // Verify that Poll contract address is deployed at the given address
     const pollAddr = await maciContractEthers.getPoll(pollId)
     if (! (await contractExists(signer.provider, pollAddr))) {
         console.error('Error: there is no Poll contract with this poll ID linked to the specified MACI contract.')
         return 1
     }
 
-    // Initialize Poll contract object
+    //const pollContract = new web3.eth.Contract(pollContractAbi, pollAddr)
     const pollContract = new ethers.Contract(
         pollAddr,
         pollContractAbi,
         signer,
     )
 
-    // Fetch and process poll coordinator's public key
+    const maxValues = await pollContract.maxValues()
     const coordinatorPubKeyResult = await pollContract.coordinatorPubKey()
+    const maxVoteOptions = Number(maxValues.maxVoteOptions)
+
+    // Validate the vote option index against the max leaf index on-chain
+    if (maxVoteOptions < voteOptionIndex) {
+        console.error('Error: the vote option index is invalid')
+        throw new Error()
+    }
+
     const coordinatorPubKey = new PubKey([
         BigInt(coordinatorPubKeyResult.x.toString()),
         BigInt(coordinatorPubKeyResult.y.toString()),
     ])
+    
+    const pollContractEthers = new ethers.Contract(
+        pollAddr,
+        pollContractAbi,
+        signer,
+    )
 
-    // Setting vote weight to hardcoded value 0 for key deactivation command
-    const voteWeight = BigInt(0)
+    // The new vote weight - Set to 0 for key deactivation
+    const newVoteWeight = BigInt(0)
 
-    // Create key deactivation command 
+    const encKeypair = new Keypair()
+
     const command: PCommand = new PCommand(
         stateIndex,
         userMaciPubKey,
-        voteOptionIndex, // 0
-        voteWeight,      // 0
+        voteOptionIndex,
+        newVoteWeight,
         nonce,
         pollId,
         salt,
     )
-
-    // Create encrypted message
-    const encKeypair = new Keypair()
     const signature = command.sign(userMaciPrivkey)
     const message = command.encrypt(
         signature,
@@ -255,10 +265,9 @@ const deactivateKey = async (args: any) => { // eslint-disable-line @typescript-
         )
     )
 
-    // Send transaction
     let tx = null;
     try {
-        tx = await pollContract.deacticateKey(
+        tx = await pollContractEthers.deactivateKey(
             message.asContractParam(),
             encKeypair.pubKey.asContractParam(),
             { gasLimit: 10000000 },
@@ -283,6 +292,6 @@ const deactivateKey = async (args: any) => { // eslint-disable-line @typescript-
 }
 
 export {
-    deactivateKey,
+    publish,
     configureSubparser,
 }
