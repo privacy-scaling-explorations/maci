@@ -37,7 +37,7 @@ const DEFAULT_SALT = genRandomSalt()
 
 const configureSubparser = (subparsers: any) => {
     const parser = subparsers.addParser(
-        'publish',
+        'deactivateKey',
         { addHelp: true },
     )
 
@@ -108,7 +108,7 @@ const configureSubparser = (subparsers: any) => {
     )
 }
 
-const publish = async (args: any) => {
+const deactivateKey = async (args: any) => {
     // User's MACI public key
     if (!PubKey.isValidSerializedPubKey(args.pubkey)) {
         console.error('Error: invalid MACI public key')
@@ -292,6 +292,6 @@ const publish = async (args: any) => {
 }
 
 export {
-    publish,
+    deactivateKey,
     configureSubparser,
 }
