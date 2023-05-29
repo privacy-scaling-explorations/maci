@@ -17,7 +17,7 @@ invalidVote:
   voteCreditBalance: 1
 constants:
   poll:
-    duration: 1200
+    duration: 3600
     intStateTreeDepth: 1
     messageTreeDepth: 2
     messageBatchDepth: 1
@@ -27,7 +27,7 @@ constants:
     maxVoteOptions: 25
     initialVoiceCredits: 1000
     signupDuration: 120
-    votingDuration: 120
+    votingDuration: 3600
     signUpDurationInSeconds: 3600 # 1 hour
     votingDurationInSeconds: 3600 # 1 hour
     coordinatorPrivKey: "2222222222263902553431241761119057960280734584214105336279476766401963593688"
