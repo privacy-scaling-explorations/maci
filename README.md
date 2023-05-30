@@ -37,14 +37,14 @@ Below you can find a list of the packages included in this repository.
 
 ### Requirements
 
-You should have Node 16 (or 14) installed. Use `nvm` to install it and manage versions.
+You should have Node.js (version `>=14 and <=18`) installed. Use `nvm` to install it and manage versions.
 
 You also need a Ubuntu/Debian Linux machine on an Intel CPU.
 
 ### Get started
 
 Install dependencies:
-`sudo apt-get install build-essential libgmp-dev libssl-dev libsodium-dev git nlohmann-json3-dev nasm g++ libgcc-s1`
+`sudo apt-get install build-essential libgmp-dev libsodium-dev nlohmann-json3-dev nasm`
 
 If you are missing the correct version of glibc see `circuits/scripts/installGlibc.sh`
 
@@ -71,10 +71,6 @@ npm run build-test-circuits
 ```
 
 This can take around 10 to 15 minutes, depending on the specs of your machine.
-Once ready, the following will appear on screen:
-     ```
-     Launched JSON-RPC server at port 9001
-     ```
 
 Note that if you change the circuits and recompile them, you should also update
 and recompile the verifier contracts in `contracts/contracts` with their new
@@ -107,17 +103,6 @@ own unit tests.
 - `integrationTests`: Integration tests which use the command-line interface
   to perform end-to-end tests.
 
-#### Compiling Circom
-
-Prior to using the generated `zkey` files for corresponding circuits, it is now required to compile `circom` locally. To get started the follow the instructions [here](https://docs.circom.io/getting-started/installation/)
-and be sure that the installation directory matches the value in the `circom` field inside `circuits/circomHelperConfig.json`.
-
-For example:
-```json
-{
-    "circom": "../$RELATIVE_PATH_TO_CIRCOM"
-}
-```
 
 ### Testing
 
