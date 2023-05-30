@@ -4,7 +4,6 @@ on:
   push:
     branches: [ master, audit, dev ]
   pull_request:
-    branches: [ master, audit, dev ]
 
 concurrency: 
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -28,7 +27,7 @@ jobs:
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
-        if: ${{ github.ref == 'refs/heads/v1' }}
+        if: ${{ github.ref == 'refs/heads/dev' }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./publish

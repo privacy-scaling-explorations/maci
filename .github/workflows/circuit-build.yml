@@ -4,7 +4,6 @@ on:
   push:
     branches: [ master, audit, dev ]
   pull_request:
-    branches: [ master, audit, dev ]
 
 concurrency: 
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -12,8 +11,9 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
+      fail-fast: false
       matrix:
         node-version: [14, 16, 18]
 
@@ -39,33 +39,31 @@ jobs:
             nasm \
             nlohmann-json3-dev
 
-      - name: Build
+      - name: Build maci-circuits package
         run: |
           npm install
           npm run bootstrap
           npm run build
 
-      # Pinning to v2.0.7 dueto circom-helper fails when circom prints warnings; the new feature of v2.0.8
-      - name: Download circom Binary v2.0.7
+      - name: Download circom Binary v2.1.5
         run: |
           mkdir -p /home/runner/work/maci/.local/bin
-          wget -qO /home/runner/work/maci/.local/bin/circom https://github.com/iden3/circom/releases/download/v2.0.7/circom-linux-amd64
+          wget -qO /home/runner/work/maci/.local/bin/circom https://github.com/iden3/circom/releases/download/v2.1.5/circom-linux-amd64
           chmod +x /home/runner/work/maci/.local/bin/circom
 
-      - name: Run circom-helper
+      - name: Build circuits
+        run: npm run build-test-circuits
+        working-directory: circuits
+      
+      - name: Launch circom-helper
         run: |
-          
-          # Prevent error `Error: ENOENT: no such file or directory, scandir '/home/ubuntu/maci/circuits/circom/prod/'`
-          # TODO: Add `./circom/prod/` to `circuitDirs` of `circuits/circomHelperConfig.json` when
-          #      `circuits/scripts/buildCustomSnarks.sh` script executed
-          mkdir circom/prod
-          
+          # circom-helper exposes a JSON-RPC API which allows developers to generate witnesses and access signal values
           nohup npm run circom-helper &
 
           # Wait until circom-helper listen to port 9001
           while [[ "$(lsof -i :9001)" -eq '0' ]]; do sleep 1; done
         working-directory: circuits
       
-      - name: Test
+      - name: Test circuits
         run: npm run test
         working-directory: circuits
