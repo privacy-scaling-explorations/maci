@@ -2,7 +2,10 @@ const { ethers } = require('hardhat')
 import {
     parseArtifact,
     deployVerifier,
-    deployPpt,
+    deployMessageProcessor,
+    deployTally,
+    deploySubsidy,
+    deployContract,
     getDefaultSigner,
 } from 'maci-contracts'
 
@@ -169,11 +172,17 @@ const deployPoll = async (args: any) => {
 
     const unserialisedPubkey = PubKey.unserialize(coordinatorPubkey)
 
-    // Deploy a PollProcessorAndTallyer contract
+    // Deploy a MessageProcessor contract
     const verifierContract = await deployVerifier(true)
     console.log('Verifier:', verifierContract.address)
-    const pptContract = await deployPpt(verifierContract.address, true)
-    await pptContract.deployTransaction.wait()
+    const mpContract = await deployMessageProcessor(verifierContract.address, contractAddrs['PoseidonT3'],contractAddrs['PoseidonT4'],contractAddrs['PoseidonT5'],contractAddrs['PoseidonT6'])
+    await mpContract.deployTransaction.wait()
+
+    const tallyContract = await deployTally(verifierContract.address, contractAddrs['PoseidonT3'],contractAddrs['PoseidonT4'],contractAddrs['PoseidonT5'],contractAddrs['PoseidonT6'])
+    await tallyContract.deployTransaction.wait()
+
+    const subsidyContract = await deploySubsidy(verifierContract.address, contractAddrs['PoseidonT3'],contractAddrs['PoseidonT4'],contractAddrs['PoseidonT5'],contractAddrs['PoseidonT6'])
+    await subsidyContract.deployTransaction.wait()
 
     const [ maciAbi ] = parseArtifact('MACI')
     const maciContract = new ethers.Contract(
@@ -207,9 +216,13 @@ const deployPoll = async (args: any) => {
         const pollAddr = log.args._pollAddr
         console.log('Poll ID:', pollId.toString())
         console.log('Poll contract:', pollAddr)
-        console.log('PollProcessorAndTallyer contract:', pptContract.address)
+        console.log('MessageProcessor contract:', mpContract.address)
+        console.log('Tally contract:', tallyContract.address)
+        console.log('Subsidy contract:', subsidyContract.address)
         contractAddrs['Verifier-' + pollId.toString()] = verifierContract.address
-        contractAddrs['PollProcessorAndTally-' + pollId.toString()] = pptContract.address
+        contractAddrs['MessageProcessor-' + pollId.toString()] = mpContract.address
+        contractAddrs['Tally-' + pollId.toString()] = tallyContract.address
+        contractAddrs['Subsidy-' + pollId.toString()] = subsidyContract.address
         contractAddrs['Poll-' + pollId.toString()] = pollAddr
         writeJSONFile(contractFilepath, contractAddrs)
 

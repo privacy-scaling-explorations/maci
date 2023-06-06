@@ -188,7 +188,8 @@ const main = async () => {
         await proveOnChain(args)
     } else if (args.subcommand === 'verify') {
         await verify(args)
-    } else if (args.subcommand === 'checkVerifyingKey') {
+    } 
+    else if (args.subcommand === 'checkVerifyingKey') {
         await checkVerifyingKey(args)
     }
 }
