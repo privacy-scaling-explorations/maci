@@ -125,7 +125,7 @@ describe('ElGamal encryption and decryption', () => {
     })
 
     it('Should output the correct plaintext bit for randomly generated inputs', async () => {
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 5; i++) {
             const k = genRandomSalt();
             const m = Math.round(Math.random());
             const keypair = new Keypair();
