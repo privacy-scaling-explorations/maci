@@ -4,7 +4,8 @@ import { readJSONFile } from 'maci-common';
 import { contractExists, validateEthAddress } from './utils';
 import { contractFilepath } from './config';
 import { DEFAULT_ETH_PROVIDER } from './defaults';
-import { elGamalEncrypt } from '../../crypto/ts';
+import { elGamalEncryptBit } from '../../crypto/ts';
+import * as assert from 'assert';
 
 const configureSubparser = (subparsers: any) => {
 	const createParser = subparsers.addParser('joinPoll', { addHelp: true });
@@ -26,6 +27,12 @@ const configureSubparser = (subparsers: any) => {
 		action: 'store',
 		type: 'string',
 		help: 'The Ethereum provider to use for listening to events',
+	});
+
+	createParser.addArgument(['-fb', '--from-block'], {
+		action: 'store',
+		type: 'int',
+		help: 'The block number to start listening from',
 	});
 };
 
@@ -85,28 +92,37 @@ const confirmDeactivation = async (args: any) => {
 	// Initialize Poll contract object
 	const pollContract = new ethers.Contract(pollAddr, pollContractAbi, signer);
 
+	const pollIface = new ethers.utils.Interface(pollContractAbi);
+
 	// Ethereum provider
 	const ethProvider = args.eth_provider
 		? args.eth_provider
 		: DEFAULT_ETH_PROVIDER;
 
-	const filter = {
-		address: pollAddr,
-		// event AttemptKeyDeactivation(address _sender, PubKey _sendersPubKey);
-		topics: [
-			ethers.utils.id('AttemptKeyDeactivation(address,uint256,uint256)'),
-		],
-	};
+	// Block number to start listening from
+	const fromBlock = args.from_block ? args.from_block : 0;
 
-	ethProvider.on(filter, async (log, event) => {
+	const deactivationAttemptsLogs = await ethProvider.getLogs({
+		// event AttemptKeyDeactivation(address indexed _sender, PubKey indexed _sendersPubKey);
+		...pollContract.filters.AttemptKeyDeactivation(),
+		fromBlock: fromBlock,
+	});
+
+	for (const log of deactivationAttemptsLogs) {
+		assert(log != undefined);
+		const event = pollIface.parseLog(log);
 		const sendersPubKey = event.args._sendersPubKey;
-		const elGamalEncryptedMessage = await elGamalEncrypt();
+		const elGamalEncryptedMessage = await elGamalEncryptBit(
+			sendersPubKey,
+			BigInt(0),
+			BigInt(0)
+		);
 
 		await pollContract.confirmDeactivation(
 			sendersPubKey,
 			elGamalEncryptedMessage
 		);
-	});
+	}
 };
 
 export { confirmDeactivation, configureSubparser };
