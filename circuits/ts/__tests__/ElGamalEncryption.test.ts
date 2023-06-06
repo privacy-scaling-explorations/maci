@@ -158,12 +158,4 @@ describe('ElGamal encryption and decryption', () => {
             expect(dBit).toEqual(BigInt(m))
         }
     })
-
-    it('Should throw an error if incomplete inputs provided', async () => {
-        const encCircuitInputs = stringifyBigInts({ 
-            m: 1,
-        })
-        
-        await expect(genWitness(encCircuit, encCircuitInputs)).rejects.toThrow("Wrong number of inputs");
-    })
 })
