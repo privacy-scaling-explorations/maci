@@ -9,7 +9,7 @@ import {
 } from './utils'
 
 describe('ElGamal encryption and decryption', () => {
-    const encCircuit  = 'elGamalEncryption_test'
+    const encCircuit  = 'elGamalEncryption_ElGamalEncryptBit_test'
     const decCircuit  = 'elGamalDecryption_test'
 
     it('Should output the input bit from the composition of encryption and decryption', async () => {
