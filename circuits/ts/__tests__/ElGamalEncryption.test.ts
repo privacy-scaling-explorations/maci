@@ -262,10 +262,10 @@ describe('ElGamal point encryption and decryption', () => {
             sk: keypair1.privKey.asCircuitInputs(),
         });
         const decWitness1 = await genWitness(decCircuit, decCircuitInputs1);
-        const dBit1 = BigInt(await getSignalByName(decCircuit, decWitness1, `main.M[0]`));
-        const dBit2 = BigInt(await getSignalByName(decCircuit, decWitness1, `main.M[1]`));
-        expect(dBit1).toEqual(BigInt(0));
-        expect(dBit2).toEqual(BigInt(1));
+        const m0Bit = BigInt(await getSignalByName(decCircuit, decWitness1, `main.M[0]`));
+        const m1Bit = BigInt(await getSignalByName(decCircuit, decWitness1, `main.M[1]`));
+        expect(m0Bit).toEqual(BigInt(0));
+        expect(m1Bit).toEqual(BigInt(1));
     
         // Decrypt with wrong private key
         const decCircuitInputs2 = stringifyBigInts({ 
@@ -274,8 +274,10 @@ describe('ElGamal point encryption and decryption', () => {
             sk: keypair2.privKey.asCircuitInputs(),
         });
         const decWitness2 = await genWitness(decCircuit, decCircuitInputs2);
-        const dBit3 = BigInt(await getSignalByName(decCircuit, decWitness2, `main.M[0]`));
-        expect(dBit3).not.toEqual(BigInt(0));
+        const m0BitWrong = BigInt(await getSignalByName(decCircuit, decWitness2, `main.M[0]`));
+        const m1BitWrong = BigInt(await getSignalByName(decCircuit, decWitness2, `main.M[1]`));
+        expect(m0BitWrong).not.toEqual(BigInt(0));
+        expect(m1BitWrong).not.toEqual(BigInt(1));
     })
 
     it('Should output the correct encrypted message and masking key for k=1', async () => {
