@@ -196,7 +196,172 @@ describe('ElGamal point encryption and decryption', () => {
 
         const decWitness = await genWitness(decCircuit, decCircuitInputs)
         const m0Bit = BigInt(await getSignalByName(decCircuit, decWitness, `main.M[0]`));
+        const m1Bit = BigInt(await getSignalByName(decCircuit, decWitness, `main.M[1]`));
 
         expect(m0Bit).toEqual(BigInt(0));
+        expect(m1Bit).toEqual(BigInt(1));
     })
+
+    it('Should yield different ciphertexts for the same message with different public keys', async () => {
+        const k = genRandomSalt();
+        const keypair1 = new Keypair();
+        const keypair2 = new Keypair();
+        
+        // Encryption with public key 1
+        const encCircuitInputs1 = stringifyBigInts({ 
+            k,
+            M: [0, 1],
+            pk: keypair1.pubKey.asCircuitInputs(),
+        });
+        const encWitness1 = await genWitness(encCircuit, encCircuitInputs1);
+        const Me1 = [
+            BigInt(await getSignalByName(encCircuit, encWitness1, `main.Me[0]`)),
+            BigInt(await getSignalByName(encCircuit, encWitness1, `main.Me[1]`)),
+        ];
+    
+        // Encryption with public key 2
+        const encCircuitInputs2 = stringifyBigInts({ 
+            k,
+            M: [0, 1],
+            pk: keypair2.pubKey.asCircuitInputs(),
+        });
+        const encWitness2 = await genWitness(encCircuit, encCircuitInputs2);
+        const Me2 = [
+            BigInt(await getSignalByName(encCircuit, encWitness2, `main.Me[0]`)),
+            BigInt(await getSignalByName(encCircuit, encWitness2, `main.Me[1]`)),
+        ];
+    
+        expect(Me1).not.toEqual(Me2);
+    })
+
+    it('Should not decrypt with the wrong private key', async () => {
+        const k = genRandomSalt();
+        const keypair1 = new Keypair();
+        const keypair2 = new Keypair();
+        
+        // Encrypt
+        const encCircuitInputs = stringifyBigInts({ 
+            k,
+            M: [0, 1],
+            pk: keypair1.pubKey.asCircuitInputs(),
+        });
+        const encWitness = await genWitness(encCircuit, encCircuitInputs);
+        const Me = [
+            BigInt(await getSignalByName(encCircuit, encWitness, `main.Me[0]`)),
+            BigInt(await getSignalByName(encCircuit, encWitness, `main.Me[1]`)),
+        ];
+        const kG = [
+            BigInt(await getSignalByName(encCircuit, encWitness, `main.kG[0]`)),
+            BigInt(await getSignalByName(encCircuit, encWitness, `main.kG[1]`)),
+        ];
+    
+        // Decrypt with correct private key
+        const decCircuitInputs1 = stringifyBigInts({ 
+            kG, 
+            Me,
+            sk: keypair1.privKey.asCircuitInputs(),
+        });
+        const decWitness1 = await genWitness(decCircuit, decCircuitInputs1);
+        const dBit1 = BigInt(await getSignalByName(decCircuit, decWitness1, `main.M[0]`));
+        const dBit2 = BigInt(await getSignalByName(decCircuit, decWitness1, `main.M[1]`));
+        expect(dBit1).toEqual(BigInt(0));
+        expect(dBit2).toEqual(BigInt(1));
+    
+        // Decrypt with wrong private key
+        const decCircuitInputs2 = stringifyBigInts({ 
+            kG, 
+            Me,
+            sk: keypair2.privKey.asCircuitInputs(),
+        });
+        const decWitness2 = await genWitness(decCircuit, decCircuitInputs2);
+        const dBit3 = BigInt(await getSignalByName(decCircuit, decWitness2, `main.M[0]`));
+        expect(dBit3).not.toEqual(BigInt(0));
+    })
+
+    it('Should output the correct encrypted message and masking key for k=1', async () => {
+        const keypair = new Keypair()            
+            
+        // Encryption
+        const k = BigInt(1);
+        const encCircuitInputs = stringifyBigInts({ 
+            k,
+            M: [0, 1],
+            pk: keypair.pubKey.asCircuitInputs(),
+        })
+    
+        const encWitness = await genWitness(encCircuit, encCircuitInputs);
+    
+        const Me = [
+            BigInt(await getSignalByName(encCircuit, encWitness, `main.Me[0]`)),
+            BigInt(await getSignalByName(encCircuit, encWitness, `main.Me[1]`)),
+        ];
+        const kG = [
+            BigInt(await getSignalByName(encCircuit, encWitness, `main.kG[0]`)),
+            BigInt(await getSignalByName(encCircuit, encWitness, `main.kG[1]`)),
+        ];
+
+        // Decryption
+        const decCircuitInputs = stringifyBigInts({ 
+            kG, 
+            Me,
+            sk: keypair.privKey.asCircuitInputs(),
+        })
+
+        const decWitness = await genWitness(decCircuit, decCircuitInputs)
+        const m0Bit = BigInt(await getSignalByName(decCircuit, decWitness, `main.M[0]`));
+        const m1Bit = BigInt(await getSignalByName(decCircuit, decWitness, `main.M[1]`));
+    
+        expect(m0Bit).toEqual(BigInt(0));
+        expect(m1Bit).toEqual(BigInt(1));
+    });
+
+    it('Should output the point at infinity when given M as the point at infinity', async () => {
+        const keypair = new Keypair()            
+            
+        // Encryption
+        const k = genRandomSalt();
+        const encCircuitInputs = stringifyBigInts({ 
+            k,
+            M: [BigInt(0), BigInt(0)],
+            pk: keypair.pubKey.asCircuitInputs(),
+        })
+    
+        const encWitness = await genWitness(encCircuit, encCircuitInputs);
+    
+        const Me = [
+            BigInt(await getSignalByName(encCircuit, encWitness, `main.Me[0]`)),
+            BigInt(await getSignalByName(encCircuit, encWitness, `main.Me[1]`)),
+        ];
+        const kG = [
+            BigInt(await getSignalByName(encCircuit, encWitness, `main.kG[0]`)),
+            BigInt(await getSignalByName(encCircuit, encWitness, `main.kG[1]`)),
+        ];
+    
+        expect(Me).toEqual([BigInt(0), BigInt(0)]); // should be the point at infinity
+        expect(kG).not.toEqual([BigInt(0), BigInt(0)]); // should be different from M
+    });
+
+    it('Should output the point at infinity when given pk as the point at infinity', async () => {
+        // Encryption
+        const k = genRandomSalt();
+        const encCircuitInputs = stringifyBigInts({ 
+            k,
+            M: [0, 1],
+            pk: [BigInt(0), BigInt(0)],
+        })
+    
+        const encWitness = await genWitness(encCircuit, encCircuitInputs);
+    
+        const Me = [
+            BigInt(await getSignalByName(encCircuit, encWitness, `main.Me[0]`)),
+            BigInt(await getSignalByName(encCircuit, encWitness, `main.Me[1]`)),
+        ];
+        const kG = [
+            BigInt(await getSignalByName(encCircuit, encWitness, `main.kG[0]`)),
+            BigInt(await getSignalByName(encCircuit, encWitness, `main.kG[1]`)),
+        ];
+    
+        expect(Me).toEqual([BigInt(0), BigInt(1)]); // should be the point at infinity
+        expect(kG).not.toEqual([BigInt(0), BigInt(1)]); // should be different from M
+    });
 })
