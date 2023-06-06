@@ -191,7 +191,7 @@ contract Poll is
     event MergeMaciStateAq(uint256 _stateRoot);
     event MergeMessageAqSubRoots(uint256 _numSrQueueOps);
     event MergeMessageAq(uint256 _messageRoot);
-    event AttemptKeyDeactivation(address _sender);
+    event AttemptKeyDeactivation(address indexed _sender, PubKey indexed _sendersPubKey);
     event DeactivateKey(PubKey _usersPubKey, uint256 _leafIndex);
 
     ExtContracts public extContracts;
@@ -341,11 +341,13 @@ contract Poll is
      * @param _message The encrypted message which contains state leaf index
      * @param _messageHash The keccak256 hash of the _message to be used for signature verification
      * @param _signature The ECDSA signature of User who attempts to deactivate MACI public key
+     * @param _usersPubKey The MACI public key to be deactivated
      */
     function deactivateKey(
         Message memory _message,
         bytes32 _messageHash,
-        bytes memory _signature
+        bytes memory _signature,
+        PubKey memory _usersPubKey
     ) external isWithinVotingDeadline {
         require(
             msg.sender ==
@@ -374,7 +376,7 @@ contract Poll is
 
         extContracts.messageAq.enqueue(messageLeaf);
 
-        emit AttemptKeyDeactivation(msg.sender);
+        emit AttemptKeyDeactivation(msg.sender, _usersPubKey);
     }
 
     /**
