@@ -240,6 +240,46 @@ describe('ElGamal point encryption and decryption', () => {
         expect(m1Bit).toEqual(BigInt(0));
     })
 
+    it('Should output the given input point made from keypair from the composition of encryption and decryption', async () => {
+        const keypair = new Keypair()            
+        const keyPairForCurvePoints = new Keypair()        
+        const [c1, c2] = keyPairForCurvePoints.pubKey.rawPubKey; // key is used here to get c1 and c2 we know are part of the curve   
+            
+        // Encryption
+        const k = genRandomSalt();
+        const encCircuitInputs = stringifyBigInts({ 
+            k,
+            M: [c1, c2],
+            pk: keypair.pubKey.asCircuitInputs(),
+        })
+
+        const encWitness = await genWitness(encCircuit, encCircuitInputs)
+        
+        const Me = [
+            BigInt(await getSignalByName(encCircuit, encWitness, `main.Me[0]`)),
+            BigInt(await getSignalByName(encCircuit, encWitness, `main.Me[1]`)),
+        ];
+
+        const kG = [
+            BigInt(await getSignalByName(encCircuit, encWitness, `main.kG[0]`)),
+            BigInt(await getSignalByName(encCircuit, encWitness, `main.kG[1]`)),
+        ];
+
+        // Decryption
+        const decCircuitInputs = stringifyBigInts({ 
+            kG, 
+            Me,
+            sk: keypair.privKey.asCircuitInputs(),
+        })
+
+        const decWitness = await genWitness(decCircuit, decCircuitInputs)
+        const m0Bit = BigInt(await getSignalByName(decCircuit, decWitness, `main.M[0]`));
+        const m1Bit = BigInt(await getSignalByName(decCircuit, decWitness, `main.M[1]`));
+
+        expect(m0Bit).toEqual(c1);
+        expect(m1Bit).toEqual(c2);
+    })
+
     it('Should not output the input point [1, 0] from the composition of encryption and decryption as the point is not on the curve', async () => {
         const keypair = new Keypair()            
             
