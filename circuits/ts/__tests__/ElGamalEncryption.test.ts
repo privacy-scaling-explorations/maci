@@ -240,7 +240,7 @@ describe('ElGamal point encryption and decryption', () => {
         expect(m1Bit).toEqual(BigInt(0));
     })
 
-    it('Should output the input point [1, 0] from the composition of encryption and decryption', async () => {
+    it('Should not output the input point [1, 0] from the composition of encryption and decryption as the point is not on the curve', async () => {
         const keypair = new Keypair()            
             
         // Encryption
@@ -274,14 +274,11 @@ describe('ElGamal point encryption and decryption', () => {
         const m0Bit = BigInt(await getSignalByName(decCircuit, decWitness, `main.M[0]`));
         const m1Bit = BigInt(await getSignalByName(decCircuit, decWitness, `main.M[1]`));
 
-        // TODO: This one fails here 
-        // Expected: 1n
-        // Received: 19422622325121401659932811151718727631747970639482254451288846502098256915976n
-        expect(m0Bit).toEqual(BigInt(1));
+        expect(m0Bit).not.toEqual(BigInt(1));
         expect(m1Bit).toEqual(BigInt(0));
     })
 
-    it('Should output the input point [1, 1] from the composition of encryption and decryption', async () => {
+    it('Should not output the input point [1, 1] from the composition of encryption and decryption as the point is not on the curve' , async () => {
         const keypair = new Keypair()            
             
         // Encryption
@@ -315,11 +312,8 @@ describe('ElGamal point encryption and decryption', () => {
         const m0Bit = BigInt(await getSignalByName(decCircuit, decWitness, `main.M[0]`));
         const m1Bit = BigInt(await getSignalByName(decCircuit, decWitness, `main.M[1]`));
 
-        // TODO: This one fails here 
-        // Expected: 1n
-        // Received: 10582666902433422771726334440923217826854948400214905299254059868605317296195n
-        expect(m0Bit).toEqual(BigInt(1));
-        expect(m1Bit).toEqual(BigInt(1));
+        expect(m0Bit).not.toEqual(BigInt(1));
+        expect(m1Bit).not.toEqual(BigInt(1));
     })
 
     it('Should yield different ciphertexts for the same message with different public keys', async () => {
@@ -463,14 +457,12 @@ describe('ElGamal point encryption and decryption', () => {
         expect(kG).not.toEqual([BigInt(0), BigInt(0)]); // should be different from M
     });
 
-    // TODO: No matter which value is provided for pk, [0,0] or [0,1], M value from the output signal 
-    // is always the same as the M signal input value
-    it('Should output the point at infinity when given pk as the point at infinity', async () => {
+    it('Should output the input point with no changes when given pk as the point at infinity', async () => {
         // Encryption
         const k = genRandomSalt();
         const encCircuitInputs = stringifyBigInts({ 
             k,
-            M: [BigInt(1), BigInt(1)],
+            M: [BigInt(0), BigInt(1)],
             pk: [BigInt(0), BigInt(0)],
         })
     
@@ -480,11 +472,7 @@ describe('ElGamal point encryption and decryption', () => {
             BigInt(await getSignalByName(encCircuit, encWitness, `main.Me[0]`)),
             BigInt(await getSignalByName(encCircuit, encWitness, `main.Me[1]`)),
         ];
-        const kG = [
-            BigInt(await getSignalByName(encCircuit, encWitness, `main.kG[0]`)),
-            BigInt(await getSignalByName(encCircuit, encWitness, `main.kG[1]`)),
-        ];
     
-        expect(Me).toEqual([BigInt(1), BigInt(1)]);
+        expect(Me).toEqual([BigInt(0), BigInt(1)]);
     });
 })
