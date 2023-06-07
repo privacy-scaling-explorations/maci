@@ -30,7 +30,8 @@ npm run hardhat
 | User | Sign up | `signup` |
 | User | Deactivate current public key | `deactivateKey` |
 | User | Generate new public key based on the deactivated one | `generateNewKey` |
-| User | Vote | `publish` |
+| User | Change key / vote | `publish` |
+| Coordinator | Confirm user's public key deactivation | `confirmDeactivation` |
 | Coordinator | Merge state tree | `mergeSignups` |
 | Coordinator | Merge message tree | `mergeMessages` |
 | Coordinator | Generate message processing and vote tallying proofs | `genProofs` |
