@@ -463,14 +463,12 @@ describe('ElGamal point encryption and decryption', () => {
         expect(kG).not.toEqual([BigInt(0), BigInt(0)]); // should be different from M
     });
 
-    // TODO: No matter which value is provided for pk, [0,0] or [0,1], M value from the output signal 
-    // is always the same as the M signal input value
     it('Should output the point at infinity when given pk as the point at infinity', async () => {
         // Encryption
         const k = genRandomSalt();
         const encCircuitInputs = stringifyBigInts({ 
             k,
-            M: [BigInt(1), BigInt(1)],
+            M: [BigInt(0), BigInt(1)],
             pk: [BigInt(0), BigInt(0)],
         })
     
@@ -485,6 +483,6 @@ describe('ElGamal point encryption and decryption', () => {
             BigInt(await getSignalByName(encCircuit, encWitness, `main.kG[1]`)),
         ];
     
-        expect(Me).toEqual([BigInt(1), BigInt(1)]);
+        expect(Me).toEqual([BigInt(0), BigInt(1)]);
     });
 })
