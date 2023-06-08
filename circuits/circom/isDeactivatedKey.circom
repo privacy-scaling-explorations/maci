@@ -11,27 +11,41 @@ template IsDeactivatedKey(levels) {
     signal input key[2];
 
     // Ciphertext of the encrypted key status
-    signal input c1;
-    signal input c2;
+    signal input c1[2];
+    signal input c2[2];
+
+    signal input salt;
 
     signal input path_index[levels];
     signal input path_elements[levels][LEAVES_PER_PATH_LEVEL];
     signal output isDeactivated;
     signal output computedRoot;
 
-    // Hash public key x and y coordinates
+    // Hash public key x and y coordinates with salt: hash(key[0], key[1], salt)
     signal keyHash;
-    component keyHasher = PoseidonHashT5();
+
+    // Tree leaf hash: hash(keyHash, c1[0], c1[1], c2[0], c2[1])
+    signal leafHash;
+
+    component keyHasher = PoseidonHashT4();
     keyHasher.inputs[0] <== key[0];
     keyHasher.inputs[1] <== key[1];
-    keyHasher.inputs[2] <== c1;
-    keyHasher.inputs[3] <== c2;
+    keyHasher.inputs[2] <== salt;
 
     keyHash <== keyHasher.out;
 
+    component leafHasher = PoseidonHashT5();
+    leafHasher.inputs[0] <== keyHash;
+    leafHasher.inputs[1] <== c1[0];
+    leafHasher.inputs[2] <== c1[1];
+    leafHasher.inputs[3] <== c2[0];
+    leafHasher.inputs[4] <== c2[1];
+
+    leafHash <== leafHasher.out;
+
     // Compute root for the given proof params
     component incProof = QuinTreeInclusionProof(levels);
-    incProof.leaf <== keyHash;
+    incProof.leaf <== leafHash;
 
     for (var i = 0; i < levels; i++) {
         incProof.path_index[i] <== path_index[i];
