@@ -5,50 +5,72 @@ include "../node_modules/circomlib/circuits/bitify.circom";
 include "../node_modules/circomlib/circuits/comparators.circom";
 include "../node_modules/circomlib/circuits/escalarmulany.circom";
 
-
 include "./trees/incrementalQuinTree.circom";
-include './poseidon/poseidonHashT3.circom';
-import './messageToCommand.circom';
-import './messageHasher.circom';
-import './unpackElement.circom';
-import './isDeactivatedKey.circom';
-import './ecdh.circom';
+include "./poseidon/poseidonHashT3.circom";
+include "./isDeactivatedKey.circom";
+include "./messageToCommand.circom";
+include "./verifySignature.circom";
+include "./messageHasher.circom";
 
 template ProcessDeactivationMessages(msgQueueSize, stateTreeDepth) {
     var MSG_LENGTH = 11;
     var TREE_ARITY = 5;
     var msgTreeZeroValue = 8370432830353022751713833565135785980866757267633941821328460903436894336785;
 
+    // Coordinator's key
     signal input coordPrivKey;
     signal input coordPubKey;
+
+    // Encryption keys for each message
     signal input encPubKeys[msgQueueSize][2];
+
+    // Key deactivation messages
     signal input msgs[msgQueueSize][MSG_LENGTH];
+
+    // Inclusion proof path elements for deactivated keys
     signal input deactivatedTreePathElements[msgQueueSize][stateTreeDepth][TREE_ARITY - 1];
+
+    // Inclusion proof path elements for state tree leaves
     signal input stateLeafPathElements[msgQueueSize][stateTreeDepth][TREE_ARITY - 1];
+
+    // State leaves for each message
     signal input currentStateLeaves[msgQueueSize][STATE_LEAF_LENGTH];
+
+    // ElGamal ciphertext values of key deactivation statuses for each message
     signal input elGamalEnc[msgQueueSize][2][2];
+
+    // ElGamal randomness
+    signal input maskingValues[msgQueueSize];
+
+    // Root hash of deactivated keys tree
     signal input deactivatedTreeRoot;
+
+    // State tree root hash
     signal input currentStateRoot;
+
+    // Total number of key deactivation messages
     signal input numMsgs;
 
     // Incremental array of root hashes
     signal messageHashes[msgQueueSize + 1];    
     messageHashes[0] <== msgTreeZeroValue;
 
-    signal output newMessageRoot;
-    signal output newDeactivatedTreeRoot;
+    // Message chain hash
+    signal output newMessageChainHash;
 
     // Process each message
     component processor[msgQueueSize];
     for (var i = 0; i < msgQueueSize; i++) {
-        processor[i] = ProcessSingleDeactivationMessage(stateTreeDepth, TREE_ARITY);
+        processor[i].currentMessageIndex <== i;
         processor[i].prevHash <== messageHashes[i];
+        processor[i].deactivatedTreeRoot <== deactivatedTreeRoot;
         processor[i].msg <== msgs[i];
         processor[i].coordPrivKey <== coordPrivKey;
         processor[i].coordPubKey <== coordPubKey;
         processor[i].encPubKey[0] <== encPubKeys[i][0];
         processor[i].encPubKey[1] <== encPubKeys[i][1];
         processor[i].currentStateRoot <== currentStateRoot;
+        processor[i].maskingValue <== maskingValues[i];
 
         // Copy deactivated tree path elements and state tree path elements
         for (var j = 0; j < stateTreeDepth; j++) {
@@ -74,12 +96,13 @@ template ProcessDeactivationMessages(msgQueueSize, stateTreeDepth) {
     }
 
     // Output final hash
-    newMessageRoot <== messageHashes[msgQueueSize];
+    newMessageChainHash <== messageHashes[msgQueueSize];
 }
 
 template ProcessSingleDeactivationMessage(stateTreeDepth, treeArity) {
     var MSG_LENGTH = 11;
     var STATE_LEAF_LENGTH = 4;
+    var PACKED_CMD_LENGTH = 4;
 
     // Decrypt message into a command
     signal input prevHash;
@@ -87,12 +110,15 @@ template ProcessSingleDeactivationMessage(stateTreeDepth, treeArity) {
     signal input coordPrivKey;
     signal input coordPubKey;
     signal input encPubKey[2];
+    signal input maskingValue;
     signal input c1[2];
     signal input c2[2];
+    signal input deactivatedTreeRoot;
     signal input deactivatedTreePathElements[stateTreeDepth][TREE_ARITY - 1];
     signal input stateLeafPathElements[stateTreeDepth][TREE_ARITY - 1];
     signal input stateLeaf[STATE_LEAF_LENGTH];
     signal input currentStateRoot;
+    signal input currentMessageIndex;
 
     signal output newHash;
 
@@ -117,15 +143,60 @@ template ProcessSingleDeactivationMessage(stateTreeDepth, treeArity) {
     isVoteWeightValid.in[0] <== 0;
     isVoteWeightValid.in[1] <== command.newVoteWeight;
 
+    // Verify message signature
+    component validSignature = VerifySignature();
+    validSignature.pubKey[0] <== stateLeaf[0];
+    validSignature.pubKey[1] <== stateLeaf[1];
+    validSignature.R8[0] <== command.sigR8[0];
+    validSignature.R8[1] <== command.sigR8[1];
+    validSignature.S <== command.sigS;
+    for (var i = 0; i < PACKED_CMD_LENGTH; i ++) {
+        validSignature.preimage[i] <== command.packedCommandOut[i];
+    }
+
+    // Verify that the state leaf exists in the given state root
+    // ------------------------------------------------------------------
+    component stateLeafQip = QuinTreeInclusionProof(stateTreeDepth);
+    component stateLeafHasher = Hasher4();
+    for (var i = 0; i < STATE_LEAF_LENGTH; i++) {
+        stateLeafHasher.in[i] <== stateLeaf[i];
+    }
+
+    component validStateLeafIndex = LessEqThan(252);
+    validStateLeafIndex.in[0] <== command.stateIndex;
+    validStateLeafIndex.in[1] <== numSignUps;
+
+    component indexMux = Mux1();
+    indexMux.s <== validStateLeafIndex.out;
+    indexMux.c[0] <== 0;
+    indexMux.c[1] <== index;
+
+    component stateLeafPathIndices = QuinGeneratePathIndices(stateTreeDepth);
+    stateLeafPathIndices.in <== indexMux.out;
+
+    stateLeafQip.leaf <== stateLeafHasher.hash;
+    for (var i = 0; i < stateTreeDepth; i ++) {
+        stateLeafQip.path_index[i] <== stateLeafPathIndices.out[i];
+        for (var j = 0; j < treeArity - 1; j++) {
+            stateLeafQip.path_elements[i][j] <== stateLeafPathElements[i][j];
+        }
+    }
+
+    component stateLeafValid = IsEqual();
+    stateLeafValid.in[0] <== stateLeafQip.root;
+    stateLeafValid.in[1] <== currentStateRoot;
+
     component isDataValid = IsEqual();
     isDataValid.in[0] <== 1;
-    isDataValid.in[1] <== isPubKeyValid.out * isVoteWeightValid.out;
+    isDataValid.in[1] <== isPubKeyValid.out * isVoteWeightValid.out * stateLeafValid.out * validSignature.valid;
 
     // Compute ElGamal encryption
     // --------------------------
     component elGamalBit = ElGamalEncryptBit();
     elGamalBit.pk[0] <== coordPubKey[0];
     elGamalBit.pk[1] <== coordPubKey[1];
+    elGamalBit.m <== maskingValue;
+    elGamalBit.bit <== isDataValid.out;
 
     elGamalBit.Me[0] === c1[0];
     elGamalBit.Me[1] === c1[1];
@@ -141,32 +212,27 @@ template ProcessSingleDeactivationMessage(stateTreeDepth, treeArity) {
 
     // Verify that the deactivated leaf exists in the given deactivated keys root
     // --------------------------------------------------------------------------
+    // Get inclusion proof path indices for deactivated keys tree
+    component deactLeafPathIndices = QuinGeneratePathIndices(stateTreeDepth);
+    deactLeafPathIndices.in <== currentMessageIndex;
+
     component isInDeactivated = IsDeactivatedKey(stateTreeDepth);
-    isInDeactivated.root <== newDeactivatedTreeRoot;
-    signal input key[2];
+    isInDeactivated.root <== deactivatedTreeRoot;
+    isInDeactivated.key[0] <== newPubKey[0];
+    isInDeactivated.key[1] <== newPubKey[1];
+    isInDeactivated.c1[0] <== c1[0];
+    isInDeactivated.c1[1] <== c1[1];
+    isInDeactivated.c2[0] <== c2[0];
+    isInDeactivated.c2[1] <== c2[1];
 
-    // Ciphertext of the encrypted key status
-    signal input c1;
-    signal input c2;
-
-    signal input path_index[levels];
-    signal input path_elements[levels][LEAVES_PER_PATH_LEVEL];
-    isInDeactivated.
-
-    // Verify that the state leaf exists in the given state root
-    // ------------------------------------------------------------------
-    component stateLeafQip = QuinTreeInclusionProof(stateTreeDepth);
-    component stateLeafHasher = Hasher4();
-    for (var i = 0; i < STATE_LEAF_LENGTH; i++) {
-        stateLeafHasher.in[i] <== stateLeaf[i];
-    }
-    stateLeafQip.leaf <== stateLeafHasher.hash;
     for (var i = 0; i < stateTreeDepth; i ++) {
+        isInDeactivated.path_index[i] <== deactLeafPathIndices.out[i];
         for (var j = 0; j < treeArity - 1; j++) {
-            stateLeafQip.path_elements[i][j] <== stateLeafPathElements[i][j];
+            deactLeafQip.path_elements[i][j] <== deactivatedTreePathElements[i][j];
         }
     }
-    stateLeafQip.root === currentStateRoot;
+
+    isInDeactivated.isDeactivated === 1;
     // ------------------------------------------------------------------
     // Compute new "root" hash
     // -------------------------------------------
@@ -179,10 +245,10 @@ template ProcessSingleDeactivationMessage(stateTreeDepth, treeArity) {
     messageHashers.encPubKey[1] <== encPubKey[1];
     
     // Hashing previous hash and message hash
-    component newRootHash = PoseidonHashT3()
-    newRootHash.in[0] <== prevHash
-    newRootHash.in[1] <== messageHashers.hash
+    component newChainHash = PoseidonHashT3()
+    newChainHash.in[0] <== prevHash
+    newChainHash.in[1] <== messageHashers.hash
 
-    newHash <== newRootHash.out
+    newHash <== newChainHash.out
     // -------------------------------------------
 }
