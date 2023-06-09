@@ -6,6 +6,7 @@ import { contractFilepath } from './config';
 import { DEFAULT_ETH_PROVIDER } from './defaults';
 import { elGamalEncryptBit } from '../../crypto/ts';
 import * as assert from 'assert';
+import { PubKey } from 'maci-domainobjs';
 
 const configureSubparser = (subparsers: any) => {
 	const createParser = subparsers.addParser('joinPoll', { addHelp: true });
@@ -103,7 +104,7 @@ const confirmDeactivation = async (args: any) => {
 	const fromBlock = args.from_block ? args.from_block : 0;
 
 	const deactivationAttemptsLogs = await ethProvider.getLogs({
-		// event AttemptKeyDeactivation(address indexed _sender, PubKey indexed _sendersPubKey);
+		// event AttemptKeyDeactivation(address indexed _sender, uint256 indexed _sendersPubKeyX, uint256 indexed _sendersPubKeyY);
 		...pollContract.filters.AttemptKeyDeactivation(),
 		fromBlock: fromBlock,
 	});
@@ -111,17 +112,26 @@ const confirmDeactivation = async (args: any) => {
 	for (const log of deactivationAttemptsLogs) {
 		assert(log != undefined);
 		const event = pollIface.parseLog(log);
-		const sendersPubKey = event.args._sendersPubKey;
+		const sendersPubKeyX = event.args._sendersPubKeyX;
+		const sendersPubKeyY = event.args._sendersPubKeyY;
+		const sendersRawPubKey = [sendersPubKeyX, sendersPubKeyY];
+		const sendersPubKey = new PubKey(sendersRawPubKey);
+
 		const elGamalEncryptedMessage = await elGamalEncryptBit(
-			sendersPubKey,
+			sendersRawPubKey,
 			BigInt(0),
 			BigInt(0)
 		);
 
-		await pollContract.confirmDeactivation(
-			sendersPubKey,
-			elGamalEncryptedMessage
-		);
+		try {
+			await pollContract.confirmDeactivation(
+				sendersPubKey,
+				elGamalEncryptedMessage
+			);
+		} catch (e) {
+			console.error(e);
+			return 1;
+		}
 	}
 };
 
