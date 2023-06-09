@@ -116,7 +116,7 @@ The coordinator encrypts the message, which represents the result of key deactiv
 const elGamalEncryptedMessage = await elGamalEncryptBit(coordinatorPubKey, BigInt(0), BigInt(0));
 ```
 
-#### El Gamal Encryption
+### El Gamal Encryption
 
 `elGamalEncryptBit` in [index.ts](../crypto/ts/index.ts).
 
