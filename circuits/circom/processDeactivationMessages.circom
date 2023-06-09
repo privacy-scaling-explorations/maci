@@ -1,4 +1,4 @@
-
+pragma circom 2.0.0;
 
 include "./elGamalEncryption.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
@@ -15,11 +15,12 @@ include "./messageHasher.circom";
 template ProcessDeactivationMessages(msgQueueSize, stateTreeDepth) {
     var MSG_LENGTH = 11;
     var TREE_ARITY = 5;
+    var STATE_LEAF_LENGTH = 4;
     var msgTreeZeroValue = 8370432830353022751713833565135785980866757267633941821328460903436894336785;
 
     // Coordinator's key
     signal input coordPrivKey;
-    signal input coordPubKey;
+    signal input coordPubKey[2];
 
     // Encryption keys for each message
     signal input encPubKeys[msgQueueSize][2];
@@ -51,6 +52,9 @@ template ProcessDeactivationMessages(msgQueueSize, stateTreeDepth) {
     // Total number of key deactivation messages
     signal input numMsgs;
 
+    // Total number of signups
+    signal input numSignUps;
+
     // Incremental array of root hashes
     signal messageHashes[msgQueueSize + 1];    
     messageHashes[0] <== msgTreeZeroValue;
@@ -61,12 +65,20 @@ template ProcessDeactivationMessages(msgQueueSize, stateTreeDepth) {
     // Process each message
     component processor[msgQueueSize];
     for (var i = 0; i < msgQueueSize; i++) {
+        processor[i] = ProcessSingleDeactivationMessage(stateTreeDepth, TREE_ARITY);
         processor[i].currentMessageIndex <== i;
         processor[i].prevHash <== messageHashes[i];
         processor[i].deactivatedTreeRoot <== deactivatedTreeRoot;
-        processor[i].msg <== msgs[i];
+        processor[i].numSignUps <== numSignUps;
+
+        for (var j = 0; j < MSG_LENGTH; j++) {
+            processor[i].msg[j] <== msgs[i][j];
+        }
+        
+        
         processor[i].coordPrivKey <== coordPrivKey;
-        processor[i].coordPubKey <== coordPubKey;
+        processor[i].coordPubKey[0] <== coordPubKey[0];
+        processor[i].coordPubKey[1] <== coordPubKey[1];
         processor[i].encPubKey[0] <== encPubKeys[i][0];
         processor[i].encPubKey[1] <== encPubKeys[i][1];
         processor[i].currentStateRoot <== currentStateRoot;
@@ -74,7 +86,7 @@ template ProcessDeactivationMessages(msgQueueSize, stateTreeDepth) {
 
         // Copy deactivated tree path elements and state tree path elements
         for (var j = 0; j < stateTreeDepth; j++) {
-            for (var k = 0; k < TREE_ARITY; k++) {
+            for (var k = 0; k < TREE_ARITY - 1; k++) {
                 processor[i].deactivatedTreePathElements[j][k] <== deactivatedTreePathElements[i][j][k];
                 processor[i].stateLeafPathElements[j][k] <== stateLeafPathElements[i][j][k];
             }
@@ -82,7 +94,7 @@ template ProcessDeactivationMessages(msgQueueSize, stateTreeDepth) {
 
         // Copy state leaves
         for (var j = 0; j < STATE_LEAF_LENGTH; j++) {
-            processor[i].currentStateLeaf[j] <== currentStateLeaves[i][j];
+            processor[i].stateLeaf[j] <== currentStateLeaves[i][j];
         }
 
         // Copy c1 and c2 enc values
@@ -92,7 +104,7 @@ template ProcessDeactivationMessages(msgQueueSize, stateTreeDepth) {
         processor[i].c2[0] <== elGamalEnc[i][1][0];
         processor[i].c2[1] <== elGamalEnc[i][1][1];
 
-        messageHashes[i + 1] <== processor.newHash;
+        messageHashes[i + 1] <== processor[i].newHash;
     }
 
     // Output final hash
@@ -106,16 +118,17 @@ template ProcessSingleDeactivationMessage(stateTreeDepth, treeArity) {
 
     // Decrypt message into a command
     signal input prevHash;
-    signal input msg;
+    signal input msg[MSG_LENGTH];
     signal input coordPrivKey;
-    signal input coordPubKey;
+    signal input coordPubKey[2];
     signal input encPubKey[2];
     signal input maskingValue;
     signal input c1[2];
     signal input c2[2];
+    signal input numSignUps;
     signal input deactivatedTreeRoot;
-    signal input deactivatedTreePathElements[stateTreeDepth][TREE_ARITY - 1];
-    signal input stateLeafPathElements[stateTreeDepth][TREE_ARITY - 1];
+    signal input deactivatedTreePathElements[stateTreeDepth][treeArity - 1];
+    signal input stateLeafPathElements[stateTreeDepth][treeArity - 1];
     signal input stateLeaf[STATE_LEAF_LENGTH];
     signal input currentStateRoot;
     signal input currentMessageIndex;
@@ -169,7 +182,7 @@ template ProcessSingleDeactivationMessage(stateTreeDepth, treeArity) {
     component indexMux = Mux1();
     indexMux.s <== validStateLeafIndex.out;
     indexMux.c[0] <== 0;
-    indexMux.c[1] <== index;
+    indexMux.c[1] <== command.stateIndex;
 
     component stateLeafPathIndices = QuinGeneratePathIndices(stateTreeDepth);
     stateLeafPathIndices.in <== indexMux.out;
@@ -187,16 +200,16 @@ template ProcessSingleDeactivationMessage(stateTreeDepth, treeArity) {
     stateLeafValid.in[1] <== currentStateRoot;
 
     component isDataValid = IsEqual();
-    isDataValid.in[0] <== 1;
-    isDataValid.in[1] <== isPubKeyValid.out * isVoteWeightValid.out * stateLeafValid.out * validSignature.valid;
+    isDataValid.in[0] <== 4;
+    isDataValid.in[1] <== isPubKeyValid.out + isVoteWeightValid.out + stateLeafValid.out + validSignature.valid;
 
     // Compute ElGamal encryption
     // --------------------------
     component elGamalBit = ElGamalEncryptBit();
     elGamalBit.pk[0] <== coordPubKey[0];
     elGamalBit.pk[1] <== coordPubKey[1];
-    elGamalBit.m <== maskingValue;
-    elGamalBit.bit <== isDataValid.out;
+    elGamalBit.k <== maskingValue;
+    elGamalBit.m <== isDataValid.out;
 
     elGamalBit.Me[0] === c1[0];
     elGamalBit.Me[1] === c1[1];
@@ -205,10 +218,10 @@ template ProcessSingleDeactivationMessage(stateTreeDepth, treeArity) {
     elGamalBit.kG[1] === c2[1];
     // --------------------------
     // Compute deactivated key leaf hash
-    component deactivatedLeafHasher = poseidonHashT3();
-    deactivatedLeafHasher.in[0] <== stateLeaf[0];
-    deactivatedLeafHasher.in[1] <== stateLeaf[1];
-    deactivatedLeafHasher.in[2] <== command.salt;
+    component deactivatedLeafHasher = PoseidonHashT4();
+    deactivatedLeafHasher.inputs[0] <== stateLeaf[0];
+    deactivatedLeafHasher.inputs[1] <== stateLeaf[1];
+    deactivatedLeafHasher.inputs[2] <== command.salt;
 
     // Verify that the deactivated leaf exists in the given deactivated keys root
     // --------------------------------------------------------------------------
@@ -218,17 +231,18 @@ template ProcessSingleDeactivationMessage(stateTreeDepth, treeArity) {
 
     component isInDeactivated = IsDeactivatedKey(stateTreeDepth);
     isInDeactivated.root <== deactivatedTreeRoot;
-    isInDeactivated.key[0] <== newPubKey[0];
-    isInDeactivated.key[1] <== newPubKey[1];
+    isInDeactivated.key[0] <== command.newPubKey[0];
+    isInDeactivated.key[1] <== command.newPubKey[1];
     isInDeactivated.c1[0] <== c1[0];
     isInDeactivated.c1[1] <== c1[1];
     isInDeactivated.c2[0] <== c2[0];
     isInDeactivated.c2[1] <== c2[1];
+    isInDeactivated.salt <== command.salt;
 
     for (var i = 0; i < stateTreeDepth; i ++) {
         isInDeactivated.path_index[i] <== deactLeafPathIndices.out[i];
         for (var j = 0; j < treeArity - 1; j++) {
-            deactLeafQip.path_elements[i][j] <== deactivatedTreePathElements[i][j];
+            isInDeactivated.path_elements[i][j] <== deactivatedTreePathElements[i][j];
         }
     }
 
@@ -237,18 +251,18 @@ template ProcessSingleDeactivationMessage(stateTreeDepth, treeArity) {
     // Compute new "root" hash
     // -------------------------------------------
     // Hashing message
-    messageHashers = MessageHasher();
+    component messageHasher = MessageHasher();
     for (var j = 0; j < MSG_LENGTH; j ++) {
-        messageHashers.in[j] <== msgs[i][j];
+        messageHasher.in[j] <== msg[j];
     }
-    messageHashers.encPubKey[0] <== encPubKey[0];
-    messageHashers.encPubKey[1] <== encPubKey[1];
+    messageHasher.encPubKey[0] <== encPubKey[0];
+    messageHasher.encPubKey[1] <== encPubKey[1];
     
     // Hashing previous hash and message hash
-    component newChainHash = PoseidonHashT3()
-    newChainHash.in[0] <== prevHash
-    newChainHash.in[1] <== messageHashers.hash
+    component newChainHash = PoseidonHashT3();
+    newChainHash.inputs[0] <== prevHash;
+    newChainHash.inputs[1] <== messageHasher.hash;
 
-    newHash <== newChainHash.out
+    newHash <== newChainHash.out;
     // -------------------------------------------
 }

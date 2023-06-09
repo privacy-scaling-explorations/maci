@@ -34,7 +34,7 @@ template IsDeactivatedKey(levels) {
 
     keyHash <== keyHasher.out;
 
-    component leafHasher = PoseidonHashT5();
+    component leafHasher = PoseidonHashT6();
     leafHasher.inputs[0] <== keyHash;
     leafHasher.inputs[1] <== c1[0];
     leafHasher.inputs[2] <== c1[1];
