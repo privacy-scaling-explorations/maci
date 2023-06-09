@@ -825,7 +825,8 @@ describe('MACI', () => {
 					.deactivateKey(
 						deactivationMessage.asContractParam(),
 						deactivationMessageHash,
-						ecdsaSignature
+						ecdsaSignature,
+						keypair.pubKey.asContractParam()
 					);
 			} catch (e) {
 				const error = 'PollE07'; // ERROR_INVALID_SENDER
@@ -843,13 +844,17 @@ describe('MACI', () => {
 			const tx = await pollContract.deactivateKey(
 				deactivationMessage.asContractParam(),
 				deactivationMessageHash,
-				ecdsaSignature
+				ecdsaSignature,
+				keypair.pubKey.asContractParam()
 			);
 
 			const receipt = await tx.wait();
 
 			expect(receipt.events[0].event).toEqual('AttemptKeyDeactivation');
 			expect(receipt.events[0].args[0]).toEqual(signer.address);
+			const { x, y } = keypair.pubKey.asContractParam();
+			expect(receipt.events[0].args[1]).toEqual(BigNumber.from(x));
+			expect(receipt.events[0].args[2]).toEqual(BigNumber.from(y));
 
 			const [, numMessagesAfter] =
 				await pollContract.numSignUpsAndMessagesAndDeactivatedKeys();
@@ -867,7 +872,8 @@ describe('MACI', () => {
 				await pollContract.deactivateKey(
 					deactivationMessage.asContractParam(),
 					deactivationMessageHash,
-					ecdsaSignature
+					ecdsaSignature,
+					keypair.pubKey.asContractParam()
 				);
 			} catch (e) {
 				const error = 'PollE01'; // ERROR_VOTING_PERIOD_PASSED

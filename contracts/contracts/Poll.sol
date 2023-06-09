@@ -191,7 +191,7 @@ contract Poll is
     event MergeMaciStateAq(uint256 _stateRoot);
     event MergeMessageAqSubRoots(uint256 _numSrQueueOps);
     event MergeMessageAq(uint256 _messageRoot);
-    event AttemptKeyDeactivation(address indexed _sender, PubKey indexed _sendersPubKey);
+    event AttemptKeyDeactivation(address indexed _sender, uint256 indexed _sendersPubKeyX, uint256 indexed _sendersPubKeyY);
     event DeactivateKey(PubKey _usersPubKey, uint256 _leafIndex);
 
     ExtContracts public extContracts;
@@ -376,7 +376,7 @@ contract Poll is
 
         extContracts.messageAq.enqueue(messageLeaf);
 
-        emit AttemptKeyDeactivation(msg.sender, _usersPubKey);
+        emit AttemptKeyDeactivation(msg.sender, _usersPubKey.x, _usersPubKey.y);
     }
 
     /**
