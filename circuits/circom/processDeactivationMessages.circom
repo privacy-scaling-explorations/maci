@@ -49,9 +49,6 @@ template ProcessDeactivationMessages(msgQueueSize, stateTreeDepth) {
     // State tree root hash
     signal input currentStateRoot;
 
-    // Total number of key deactivation messages
-    signal input numMsgs;
-
     // Total number of signups
     signal input numSignUps;
 
@@ -61,6 +58,9 @@ template ProcessDeactivationMessages(msgQueueSize, stateTreeDepth) {
 
     // Message chain hash
     signal output newMessageChainHash;
+
+    // Hash selectors
+    component hashMuxes[msgQueueSize];
 
     // Process each message
     component processor[msgQueueSize];
@@ -74,8 +74,7 @@ template ProcessDeactivationMessages(msgQueueSize, stateTreeDepth) {
         for (var j = 0; j < MSG_LENGTH; j++) {
             processor[i].msg[j] <== msgs[i][j];
         }
-        
-        
+
         processor[i].coordPrivKey <== coordPrivKey;
         processor[i].coordPubKey[0] <== coordPubKey[0];
         processor[i].coordPubKey[1] <== coordPubKey[1];
@@ -104,7 +103,13 @@ template ProcessDeactivationMessages(msgQueueSize, stateTreeDepth) {
         processor[i].c2[0] <== elGamalEnc[i][1][0];
         processor[i].c2[1] <== elGamalEnc[i][1][1];
 
-        messageHashes[i + 1] <== processor[i].newHash;
+        hashMuxes[i] = Mux1();
+        hashMuxes[i].s <== processor[i].isValid;
+
+        hashMuxes[i].c[0] <== messageHashes[i];
+        hashMuxes[i].c[1] <== processor[i].newHash;
+
+        messageHashes[i + 1] <== hashMuxes[i].out;
     }
 
     // Output final hash
@@ -133,6 +138,7 @@ template ProcessSingleDeactivationMessage(stateTreeDepth, treeArity) {
     signal input currentStateRoot;
     signal input currentMessageIndex;
 
+    signal output isValid;
     signal output newHash;
 
     // Decode message
@@ -145,6 +151,12 @@ template ProcessSingleDeactivationMessage(stateTreeDepth, treeArity) {
     for (var j = 0; j < MSG_LENGTH; j ++) {
         command.message[j] <== msg[j];
     }
+
+    signal messageType <== msg[0];
+    component isValidMessageType = IsEqual();
+    isValidMessageType.in[0] <== 1;
+    isValidMessageType.in[1] <== messageType;
+
     // ------------------------------------
     // Verify if pubkey value is (0,0)
     component isPubKeyValid = IsEqual();
@@ -211,11 +223,32 @@ template ProcessSingleDeactivationMessage(stateTreeDepth, treeArity) {
     elGamalBit.k <== maskingValue;
     elGamalBit.m <== isDataValid.out;
 
-    elGamalBit.Me[0] === c1[0];
-    elGamalBit.Me[1] === c1[1];
+    component isC10Valid = IsEqual();
+    component isC11Valid = IsEqual();
+    component isC20Valid = IsEqual();
+    component isC21Valid = IsEqual();
+    component isEncryptionValid = IsEqual();
 
-    elGamalBit.kG[0] === c2[0];
-    elGamalBit.kG[1] === c2[1];
+    // Validate C1
+    isC10Valid.in[0] <== elGamalBit.Me[0];
+    isC10Valid.in[1] <== c1[0];
+
+    isC11Valid.in[0] <== elGamalBit.Me[1];
+    isC11Valid.in[1] <== c1[1];
+
+    // Validate C2
+    isC20Valid.in[0] <== elGamalBit.kG[0];
+    isC20Valid.in[1] <== c2[0];
+
+    isC21Valid.in[0] <== elGamalBit.kG[1];
+    isC21Valid.in[1] <== c2[1];
+
+    // Validate C1 and C2
+    isEncryptionValid.in[0] <== isC10Valid.out + isC11Valid.out + isC20Valid.out + isC21Valid.out;
+    isEncryptionValid.in[1] <== 4;
+
+    isValidMessageType.out === isEncryptionValid.out;
+
     // --------------------------
     // Compute deactivated key leaf hash
     component deactivatedLeafHasher = PoseidonHashT4();
@@ -263,6 +296,7 @@ template ProcessSingleDeactivationMessage(stateTreeDepth, treeArity) {
     newChainHash.inputs[0] <== prevHash;
     newChainHash.inputs[1] <== messageHasher.hash;
 
+    isValid <== isValidMessageType.out;
     newHash <== newChainHash.out;
     // -------------------------------------------
 }

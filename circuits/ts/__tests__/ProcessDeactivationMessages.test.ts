@@ -17,12 +17,15 @@ import {
     PCommand,
     Message,
     Ballot,
+    StateLeaf,
+    DeactivatedKeyLeaf,
 } from 'maci-domainobjs'
 
 import {
     hash2,
     hash5,
     IncrementalQuinTree,
+    elGamalEncryptBit,
     stringifyBigInts,
     NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
@@ -59,7 +62,7 @@ describe('ProcessDeactivationMessages circuit', () => {
         const messages: Message[] = []
         const commands: PCommand[] = []
         const H0 = BigInt('8370432830353022751713833565135785980866757267633941821328460903436894336785');
-        let H = H0;
+        let H;
         const userKeypair = new Keypair(new PrivKey(BigInt(1)));
 
         beforeAll(async () => {
@@ -114,30 +117,119 @@ describe('ProcessDeactivationMessages circuit', () => {
             commands.push(command)
 
             poll.publishMessage(message, ecdhKeypair.pubKey)
-            
+            poll.messageAq.mergeSubRoots(0)
+            poll.messageAq.merge(treeDepths.messageTreeDepth)
+
+
+            const messageArr = [message];
+            for (let i = 1; i < maxValues.maxMessages; i += 1) {
+                messageArr.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
+            }
+
+            // console.log(messageArr);
+            // console.log(maciState.stateLeaves)
+
             // ecdhKeypair.pubKey -> encPubKey
             const messageHash = message.hash(ecdhKeypair.pubKey);
 
-            console.log(maciState.stateLeaves);
+            // console.log(maciState.stateLeaves);
 
-            // const DEACT_TREE_ARITY = 5;
+            const DEACT_TREE_ARITY = 5;
 
-            // const deactivatedKeys = IncrementalQuinTree(
-            //     STATE_TREE_DEPTH,
-            //     H0,
-            //     DEACT_TREE_ARITY,
-            //     hash5,
-            // )
+            const deactivatedKeys = new IncrementalQuinTree(
+                STATE_TREE_DEPTH,
+                H0,
+                DEACT_TREE_ARITY,
+                hash5,
+            )
 
-            
+            const salt = (new Keypair()).privKey.rawPrivKey
 
-            // deactivatedKeys.enqueue()
+            const mask = BigInt(Math.ceil(Math.random() * 1000))
+            const maskingValues = [mask.toString()]
+
+            const status = BigInt(1);
+            const [c1, c2] = elGamalEncryptBit(
+                coordinatorKeypair.pubKey.rawPubKey, 
+                status, 
+                mask
+            )
+
+            for (let i = 1; i < maxValues.maxMessages; i += 1) {
+                maskingValues.push('0')
+            }
+
+            deactivatedKeys.insert( (new DeactivatedKeyLeaf(
+                userKeypair.pubKey,
+                c1,
+                c2,
+                salt,
+            )).hash())
  
-            // H = hash2([H, messageHash]);
+            console.log(messageHash)
+            H = hash2([H0, messageHash])
 
-            // const inputs = {
+            // console.log(ecdhKeypair.pubKey);
+            // console.log(message.asCircuitInputs());
+            // console.log(messages);
 
-            // }
+            const encPubKeys = [ecdhKeypair.pubKey.asCircuitInputs()];
+            // Pad array
+            for (let i = 1; i < maxValues.maxMessages; i += 1) {
+                encPubKeys.push(['0', '0']);
+            }
+
+            const deactivatedTreePathElements = [deactivatedKeys.genMerklePath(1).pathElements];
+            // Pad array
+            for (let i = 1; i < maxValues.maxMessages; i += 1) {
+                deactivatedTreePathElements.push(deactivatedKeys.genMerklePath(0).pathElements)
+            }
+            
+            const stateLeafPathElements = [maciState.stateTree.genMerklePath(stateIndex).pathElements];
+            // Pad array
+            for (let i = 1; i < maxValues.maxMessages; i += 1) {
+                stateLeafPathElements.push(maciState.stateTree.genMerklePath(0).pathElements)
+            }
+
+            const currentStateLeaves = [maciState.stateLeaves[1].asCircuitInputs()];
+            // Pad array
+            for (let i = 1; i < maxValues.maxMessages; i += 1) {
+                currentStateLeaves.push(maciState.stateLeaves[0].asCircuitInputs())
+            }
+
+            const elGamalEnc = [[c1.toString(), c2.toString()]]
+            // Pad array
+            for (let i = 1; i < maxValues.maxMessages; i += 1) {
+                currentStateLeaves.push(['0', '0'])
+            }
+
+            console.log(stateLeafPathElements[0])
+
+            const inputs = stringifyBigInts({
+                coordPrivKey: coordinatorKeypair.privKey.asCircuitInputs(),
+                coordPubKey: coordinatorKeypair.pubKey.asCircuitInputs(),
+                encPubKeys,
+                msgs: messageArr.map(m => m.asCircuitInputs()),
+                deactivatedTreePathElements,
+                stateLeafPathElements,
+                currentStateLeaves,
+                elGamalEnc,
+                maskingValues,
+                deactivatedTreeRoot: deactivatedKeys.root,
+                currentStateRoot: maciState.stateTree.root,
+                // newMessageChainHash: messageHash,
+            //     deactivatedTreePathElements[msgQueueSize][stateTreeDepth][TREE_ARITY - 1]: '',
+                // stateLeafPathElements[msgQueueSize][stateTreeDepth][TREE_ARITY - 1]: '',
+            //     currentStateLeaves[msgQueueSize][STATE_LEAF_LENGTH]: '',
+            //     elGamalEnc[msgQueueSize][2][2]: '',
+            //     maskingValues[msgQueueSize]: '',
+            //     deactivatedTreeRoot: '',
+            //     currentStateRoot: '',
+            })
+
+            // console.log(inputs);
+            const witness = await genWitness(circuit, inputs)
+            expect(witness.length > 0).toBeTruthy()
 
             return 0;
         })

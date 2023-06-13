@@ -372,7 +372,7 @@ interface IStateLeaf {
     voiceCreditBalance: BigInt;
 }
 
-interface IDeactivatedKeysLeaf {
+interface IDeactivatedKeyLeaf {
     pubKey: PubKey;
     c1: BigInt[];
     c2: BigInt[];
@@ -553,7 +553,7 @@ class Ballot {
 /*
  * A leaf in the deactivated keys tree, containing hashed deactivated public key with deactivation status
  */
-class DeactivatedKeysLeaf implements IDeactivatedKeysLeaf {
+class DeactivatedKeyLeaf implements IDeactivatedKeyLeaf {
     public pubKey: PubKey;
     public c1: BigInt[];
     public c2: BigInt[];
@@ -574,8 +574,8 @@ class DeactivatedKeysLeaf implements IDeactivatedKeysLeaf {
     /*
      * Deep-copies the object
      */
-    public copy(): DeactivatedKeysLeaf {
-        return new DeactivatedKeysLeaf(
+    public copy(): DeactivatedKeyLeaf {
+        return new DeactivatedKeyLeaf(
             this.pubKey.copy(),
             [BigInt(this.c1[0].toString()), BigInt(this.c1[1].toString())],
             [BigInt(this.c2[0].toString()), BigInt(this.c2[1].toString())],
@@ -583,7 +583,7 @@ class DeactivatedKeysLeaf implements IDeactivatedKeysLeaf {
         )
     }
 
-    public static genBlankLeaf(): DeactivatedKeysLeaf {
+    public static genBlankLeaf(): DeactivatedKeyLeaf {
         // The public key for a blank state leaf is the first Pedersen base
         // point from iden3's circomlib implementation of the Pedersen hash.
         // Since it is generated using a hash-to-curve function, we are
@@ -592,7 +592,7 @@ class DeactivatedKeysLeaf implements IDeactivatedKeysLeaf {
         // https://github.com/iden3/circomlib/blob/d5ed1c3ce4ca137a6b3ca48bec4ac12c1b38957a/src/pedersen_printbases.js
         // Its hash should equal
         // 6769006970205099520508948723718471724660867171122235270773600567925038008762.
-        return new DeactivatedKeysLeaf(
+        return new DeactivatedKeyLeaf(
             new PubKey([
                 BigInt('10457101036533406547632367118273992217979173478358440826365724437999023779287'),
                 BigInt('19824078218392094440610104313265183977899662750282163392862422243483260492317'),
@@ -605,7 +605,7 @@ class DeactivatedKeysLeaf implements IDeactivatedKeysLeaf {
 
     public static genRandomLeaf() {
         const keypair = new Keypair()
-        return new DeactivatedKeysLeaf(
+        return new DeactivatedKeyLeaf(
             keypair.pubKey,
             [BigInt(0), BigInt(0)],
             [BigInt(0), BigInt(0)],
@@ -640,7 +640,7 @@ class DeactivatedKeysLeaf implements IDeactivatedKeysLeaf {
         }
     }
 
-    public equals(s: DeactivatedKeysLeaf): boolean {
+    public equals(s: DeactivatedKeyLeaf): boolean {
         return this.pubKey.equals(s.pubKey) &&
             this.c1[0] === s.c1[0] &&
             this.c1[0] === s.c1[1] &&
@@ -664,10 +664,10 @@ class DeactivatedKeysLeaf implements IDeactivatedKeysLeaf {
         )
     }
 
-    static unserialize = (serialized: string): DeactivatedKeysLeaf => {
+    static unserialize = (serialized: string): DeactivatedKeyLeaf => {
         const j = JSON.parse(base64url.decode(serialized))
 
-        return new DeactivatedKeysLeaf(
+        return new DeactivatedKeyLeaf(
             PubKey.unserialize(j[0]),
             [BigInt('0x' + j[1]), BigInt('0x' + j[2])],
             [BigInt('0x' + j[3]), BigInt('0x' + j[4])],
@@ -1048,6 +1048,7 @@ class PCommand extends Command {
 
 export {
     StateLeaf,
+    DeactivatedKeyLeaf,
     Ballot,
     VoteOptionTreeLeaf,
     PCommand,
