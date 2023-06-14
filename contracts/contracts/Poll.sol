@@ -58,12 +58,12 @@ contract PollFactory is Params, IPubKey, Ownable, PollDeploymentParams {
 
         require(
             _maxValues.maxMessages <=
-                treeArity**uint256(_treeDepths.messageTreeDepth) &&
+                treeArity ** uint256(_treeDepths.messageTreeDepth) &&
                 _maxValues.maxMessages >= _batchSizes.messageBatchSize &&
                 _maxValues.maxMessages % _batchSizes.messageBatchSize == 0 &&
                 _maxValues.maxVoteOptions <=
-                treeArity**uint256(_treeDepths.voteOptionTreeDepth) &&
-                _maxValues.maxVoteOptions < (2**50),
+                treeArity ** uint256(_treeDepths.voteOptionTreeDepth) &&
+                _maxValues.maxVoteOptions < (2 ** 50),
             "PollFactory: invalid _maxValues"
         );
 
@@ -122,6 +122,13 @@ contract Poll is
 {
     using SafeERC20 for ERC20;
 
+    struct Proof {
+        uint256[2] a;
+        uint256[2][2] b;
+        uint256[2] c;
+        uint256[] input;
+    }
+
     bool internal isInit = false;
     // The coordinator's public key
     PubKey public coordinatorPubKey;
@@ -160,11 +167,7 @@ contract Poll is
     function numSignUpsAndMessagesAndDeactivatedKeys()
         public
         view
-        returns (
-            uint256,
-            uint256,
-            uint256
-        )
+        returns (uint256, uint256, uint256)
     {
         uint256 numSignUps = extContracts.maci.numSignUps();
         return (numSignUps, numMessages, numDeactivatedKeys);
@@ -184,6 +187,9 @@ contract Poll is
     string constant ERROR_STATE_AQ_SUBTREES_NEED_MERGE = "PollE06";
     string constant ERROR_INVALID_SENDER = "PollE07";
     string constant ERROR_MAX_DEACTIVATED_KEYS_REACHED = "PollE08";
+    string constant ERROR_SIGNUP_PERIOD_NOT_PASSED = "PollE09";
+    // TODO: Fix Warning: 1 contracts exceed the size limit for mainnet deployment.
+    // string constant ERROR_VERIFICATION_FAILED = "PollE10";
 
     event PublishMessage(Message _message, PubKey _encPubKey);
     event TopupMessage(Message _message);
@@ -191,8 +197,12 @@ contract Poll is
     event MergeMaciStateAq(uint256 _stateRoot);
     event MergeMessageAqSubRoots(uint256 _numSrQueueOps);
     event MergeMessageAq(uint256 _messageRoot);
-    event AttemptKeyDeactivation(address indexed _sender, uint256 indexed _sendersPubKeyX, uint256 indexed _sendersPubKeyY);
-    event DeactivateKey(PubKey _usersPubKey, uint256 _leafIndex);
+    event AttemptKeyDeactivation(
+        address indexed _sender,
+        uint256 indexed _sendersPubKeyX,
+        uint256 indexed _sendersPubKeyY
+    );
+    event DeactivateKey(uint256 _subRoot);
 
     ExtContracts public extContracts;
 
@@ -240,6 +250,15 @@ contract Poll is
         _;
     }
 
+    modifier isAfterSignUpDeadline() {
+        uint256 secondsPassed = block.timestamp - deployTime;
+        require(
+            secondsPassed > extContracts.maci.signUpDeadline(),
+            ERROR_SIGNUP_PERIOD_NOT_PASSED
+        );
+        _;
+    }
+
     // should be called immediately after Poll creation and messageAq ownership transferred
     function init() public {
         require(!isInit, "Poll contract already init");
@@ -273,10 +292,10 @@ contract Poll is
      * @param stateIndex The index of user in the state queue
      * @param amount The amount of credits to topup
      */
-    function topup(uint256 stateIndex, uint256 amount)
-        public
-        isWithinVotingDeadline
-    {
+    function topup(
+        uint256 stateIndex,
+        uint256 amount
+    ) public isWithinVotingDeadline {
         require(
             numMessages <= maxValues.maxMessages,
             ERROR_MAX_MESSAGES_REACHED
@@ -311,10 +330,10 @@ contract Poll is
      *     coordinator's private key to generate an ECDH shared key with which
      *     to encrypt the message.
      */
-    function publishMessage(Message memory _message, PubKey memory _encPubKey)
-        public
-        isWithinVotingDeadline
-    {
+    function publishMessage(
+        Message memory _message,
+        PubKey memory _encPubKey
+    ) public isWithinVotingDeadline {
         require(
             numMessages <= maxValues.maxMessages,
             ERROR_MAX_MESSAGES_REACHED
@@ -381,36 +400,56 @@ contract Poll is
 
     /**
      * @notice Confirms the deactivation of a MACI public key. This function must be called by Coordinator after User calls the deactivateKey function
-     * @param _usersPubKey The MACI public key to be deactivated
+     * @param _subRoot The subroot of the deactivated keys tree, used for batches
+     * @param _subTreeCapacity The capacity of the subroot of the deactivated keys tree
      * @param _elGamalEncryptedMessage The El Gamal encrypted message
-     * @return leafIndex The index of the leaf in the deactivated keys tree
      */
     function confirmDeactivation(
-        PubKey memory _usersPubKey,
+        uint256 _subRoot,
+        uint256 _subTreeCapacity,
         Message memory _elGamalEncryptedMessage
-    ) external onlyOwner returns (uint256 leafIndex) {
+    ) external onlyOwner {
         require(
             numDeactivatedKeys <= maxValues.maxMessages,
             ERROR_MAX_DEACTIVATED_KEYS_REACHED
         );
-        require(
-            _usersPubKey.x < SNARK_SCALAR_FIELD &&
-                _usersPubKey.y < SNARK_SCALAR_FIELD,
-            ERROR_INVALID_PUBKEY
-        );
 
         unchecked {
-            numDeactivatedKeys++;
+            numDeactivatedKeys += _subTreeCapacity;
         }
 
-        uint256 leaf = hashMessageAndEncPubKey(
-            _elGamalEncryptedMessage,
-            _usersPubKey
-        );
+        extContracts.deactivatedKeysAq.insertSubTree(_subRoot);
 
-        leafIndex = extContracts.deactivatedKeysAq.enqueue(leaf);
+        emit DeactivateKey(_subRoot);
+    }
 
-        emit DeactivateKey(_usersPubKey, leafIndex);
+    /**
+     * @notice Completes the deactivation of all MACI public keys.
+     * @param _numSrQueueOps The number of subroot queue operations to merge
+     * @param _pollId The pollId of the Poll contract
+     */
+    function completeDeactivation(
+        // address _verifierContract,
+        // Proof memory _proof
+        uint256 _numSrQueueOps,
+        uint256 _pollId
+    ) external onlyOwner isAfterSignUpDeadline {
+        mergeMaciStateAqSubRoots(_numSrQueueOps, _pollId);
+        mergeMaciStateAq(_numSrQueueOps);
+
+        extContracts.deactivatedKeysAq.mergeSubRoots(_numSrQueueOps);
+        extContracts.deactivatedKeysAq.merge(treeDepths.messageTreeDepth);
+
+        // TODO: Fix Warning: 1 contracts exceed the size limit for mainnet deployment.
+        // require(
+        //     IVerifier(_verifierContract).verifyProof(
+        //         _proof.a,
+        //         _proof.b,
+        //         _proof.c,
+        //         _proof.input
+        //     ),
+        //     ERROR_VERIFICATION_FAILED
+        // );
     }
 
     /*
@@ -418,11 +457,10 @@ contract Poll is
      * ProcessMessages circuit to access the latest state tree and ballots via
      * currentSbCommitment.
      */
-    function mergeMaciStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId)
-        public
-        onlyOwner
-        isAfterVotingDeadline
-    {
+    function mergeMaciStateAqSubRoots(
+        uint256 _numSrQueueOps,
+        uint256 _pollId
+    ) public onlyOwner isAfterVotingDeadline {
         // This function cannot be called after the stateAq was merged
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
 
@@ -439,11 +477,9 @@ contract Poll is
      * currentSbCommitment.
      * @param _pollId The ID of the Poll
      */
-    function mergeMaciStateAq(uint256 _pollId)
-        public
-        onlyOwner
-        isAfterVotingDeadline
-    {
+    function mergeMaciStateAq(
+        uint256 _pollId
+    ) public onlyOwner isAfterVotingDeadline {
         // This function can only be called once per Poll after the voting
         // deadline
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
@@ -471,11 +507,9 @@ contract Poll is
      * The first step in merging the message AccQueue so that the
      * ProcessMessages circuit can access the message root.
      */
-    function mergeMessageAqSubRoots(uint256 _numSrQueueOps)
-        public
-        onlyOwner
-        isAfterVotingDeadline
-    {
+    function mergeMessageAqSubRoots(
+        uint256 _numSrQueueOps
+    ) public onlyOwner isAfterVotingDeadline {
         extContracts.messageAq.mergeSubRoots(_numSrQueueOps);
         emit MergeMessageAqSubRoots(_numSrQueueOps);
     }
