@@ -10,6 +10,9 @@ import {
     hash13,
     verifySignature,
     genRandomSalt,
+    elGamalEncryptBit,
+    elGamalDecryptBit,
+    genPrivKey,
 } from '../'
 
 
@@ -193,5 +196,37 @@ describe('Cryptographic operations', () => {
             )
             expect(valid).toBeFalsy()
         })
+    })
+
+    describe('ElGamal bit encryption and decryption', () => {
+        it('An encrypted bit should be successfuly decrypted back', () => {
+            const { privKey, pubKey } = genKeypair();
+
+            for (let bit = 0; bit < 2; bit ++) {
+                const y = genPrivKey();
+
+                const [c1, c2] = elGamalEncryptBit(pubKey, BigInt(bit), y);
+                const dBit = elGamalDecryptBit(privKey, c1, c2);
+                expect(BigInt(bit)).toEqual(dBit);
+            }
+        })
+
+        it('Trying to encrypt bit > 1 throws Invalid bit value error', () => {
+            const { privKey, pubKey } = genKeypair();
+            const y = genPrivKey();
+
+            expect(() => elGamalEncryptBit(pubKey, BigInt(2), y)).toThrow('Invalid bit value')
+        })
+        
+        // TODO: Test 'Invalid point value' error in elGamalDecryptBit
+        // it('Trying to decrypt point which is not 0 or G throws Invalid point value error', () => {
+        //     const { privKey, pubKey } = genKeypair();
+        //     const y = genPrivKey();
+
+        //     const [c1, c2] = elGamalEncryptBit(pubKey, BigInt(0), y);
+        //     const dBit = elGamalDecryptBit(privKey, c1, c2);
+            
+        //     expect(BigInt(0)).toEqual(dBit);
+        // })
     })
 })

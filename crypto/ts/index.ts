@@ -12,6 +12,7 @@ const unstringifyBigInts: (obj: object) => any = ff.utils.unstringifyBigInts
 type SnarkBigInt = BigInt
 type PrivKey = BigInt
 type PubKey = BigInt[]
+type Point = BigInt[]
 type EcdhSharedKey = BigInt[]
 type Plaintext = BigInt[]
 type Ciphertext = BigInt[]
@@ -399,6 +400,99 @@ const verifySignature = (
     return eddsa.verifyPoseidon(msg, signature, pubKey)
 }
 
+/* 
+ * Perform encryption using ElGamal algorithm of message point M using randomness y
+ * @returns the cyphertext.
+ */
+const elGamalEncrypt = (
+    pubKey: PubKey, 
+    m: Point, 
+    y: PrivKey
+): Ciphertext[] => {
+    const s = babyJub.mulPointEscalar(pubKey, formatPrivKeyForBabyJub(y))
+    const c1 = babyJub.mulPointEscalar(babyJub.Base8, formatPrivKeyForBabyJub(y))
+    const c2 = babyJub.addPoint(m, s)
+    return [c1, c2]
+}
+
+/*
+ * Performs decryption of the message point encrypted using ElGamal encryption algorithm
+ * @returns the plain text.
+ */
+const elGamalDecrypt = (
+    privKey: PrivKey, 
+    c1: Ciphertext, 
+    c2: Ciphertext
+): Point => {
+    const s = babyJub.mulPointEscalar(c1, formatPrivKeyForBabyJub(privKey))
+    const sInv = [SNARK_FIELD_SIZE - s[0], s[1]]
+    const m = babyJub.addPoint(c2, sInv)
+    return m;
+}
+
+/*
+ * Maps bit to a point on the curve
+ * @returns the point.
+ */
+const bitToCurve = (
+    bit: BigInt
+): Point => {
+    switch(bit) {
+        case BigInt(0):
+            return [BigInt(0), BigInt(1)]
+        case BigInt(1):
+            return babyJub.Base8
+        default: 
+            throw new Error('Invalid bit value');
+    }
+}
+
+/*
+ * Maps curve point to bit
+ * @returns the bit value.
+ */
+const curveToBit = (
+    p: Point
+): BigInt => {
+    if (p[0] == BigInt(0) && p[1] == BigInt(1)) {
+        return BigInt(0)
+    } else if (p[0] == babyJub.Base8[0] && p[1] == babyJub.Base8[1]) {
+        return BigInt(1)
+    } else {
+        throw new Error('Invalid point value')
+    }
+}
+
+/* 
+ * Perform encryption of a single bit using ElGamal algorithm using randomness y
+ * @returns the cyphertext.
+ */
+const elGamalEncryptBit = (
+    pubKey: PubKey, 
+    bit: BigInt, 
+    y: PrivKey,
+): Ciphertext[] => {
+    const m = bitToCurve(bit)
+    return elGamalEncrypt(pubKey, m, y)
+}
+
+/*
+ * Performs decryption of the message point encrypted bit using ElGamal encryption algorithm
+ * @returns the decrypted bit.
+ */
+const elGamalDecryptBit = (
+    privKey: PrivKey, 
+    c1: Ciphertext, 
+    c2: Ciphertext
+): BigInt => {
+    const m = elGamalDecrypt(privKey, c1, c2)
+    return curveToBit(m)
+}
+
+const babyJubMaxValue = BigInt(babyJub.p)
+
+const babyJubAddPoint = (a: any, b: any) => babyJub.addPoint(a,b)
+
 export {
     genRandomSalt,
     genPrivKey,
@@ -407,6 +501,10 @@ export {
     genEcdhSharedKey,
     encrypt,
     decrypt,
+    elGamalEncrypt,
+    elGamalEncryptBit,
+    elGamalDecrypt,
+    elGamalDecryptBit,
     sign,
     sha256Hash,
     hashOne,
@@ -437,4 +535,6 @@ export {
     bigInt2Buffer,
     packPubKey,
     unpackPubKey,
+    babyJubMaxValue,
+    babyJubAddPoint
 }
