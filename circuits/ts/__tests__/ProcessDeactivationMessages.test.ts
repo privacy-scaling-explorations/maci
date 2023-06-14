@@ -166,16 +166,16 @@ describe('ProcessDeactivationMessages circuit', () => {
                 salt,
             )).hash())
  
-            console.log(messageHash)
+            // console.log(messageHash)
             H = hash2([H0, messageHash])
 
             // console.log(ecdhKeypair.pubKey);
             // console.log(message.asCircuitInputs());
             // console.log(messages);
 
-            const encPubKeys = [ecdhKeypair.pubKey.asCircuitInputs()];
+            const encPubKeys = [];
             // Pad array
-            for (let i = 1; i < maxValues.maxMessages; i += 1) {
+            for (let i = 0; i < maxValues.maxMessages; i += 1) {
                 encPubKeys.push(['0', '0']);
             }
 
@@ -197,13 +197,17 @@ describe('ProcessDeactivationMessages circuit', () => {
                 currentStateLeaves.push(maciState.stateLeaves[0].asCircuitInputs())
             }
 
-            const elGamalEnc = [[c1.toString(), c2.toString()]]
+            const elGamalEnc = [[c1, c2]]
             // Pad array
             for (let i = 1; i < maxValues.maxMessages; i += 1) {
-                currentStateLeaves.push(['0', '0'])
+                elGamalEnc.push(elGamalEncryptBit(
+                    coordinatorKeypair.pubKey.rawPubKey, 
+                    BigInt(0), 
+                    BigInt(1)
+                ))
             }
 
-            console.log(stateLeafPathElements[0])
+            // console.log(stateLeafPathElements[0])
 
             const inputs = stringifyBigInts({
                 coordPrivKey: coordinatorKeypair.privKey.asCircuitInputs(),
@@ -217,15 +221,48 @@ describe('ProcessDeactivationMessages circuit', () => {
                 maskingValues,
                 deactivatedTreeRoot: deactivatedKeys.root,
                 currentStateRoot: maciState.stateTree.root,
-                // newMessageChainHash: messageHash,
-            //     deactivatedTreePathElements[msgQueueSize][stateTreeDepth][TREE_ARITY - 1]: '',
-                // stateLeafPathElements[msgQueueSize][stateTreeDepth][TREE_ARITY - 1]: '',
-            //     currentStateLeaves[msgQueueSize][STATE_LEAF_LENGTH]: '',
-            //     elGamalEnc[msgQueueSize][2][2]: '',
-            //     maskingValues[msgQueueSize]: '',
-            //     deactivatedTreeRoot: '',
-            //     currentStateRoot: '',
+                numSignUps: 1,
+                /*
+                    // Coordinator's key
+                    signal input coordPrivKey;
+                    signal input coordPubKey[2];
+
+                    // Encryption keys for each message
+                    signal input encPubKeys[msgQueueSize][2];
+
+                    // Key deactivation messages
+                    signal input msgs[msgQueueSize][MSG_LENGTH];
+
+                    // Inclusion proof path elements for deactivated keys
+                    signal input deactivatedTreePathElements[msgQueueSize][stateTreeDepth][TREE_ARITY - 1];
+
+                    // Inclusion proof path elements for state tree leaves
+                    signal input stateLeafPathElements[msgQueueSize][stateTreeDepth][TREE_ARITY - 1];
+
+                    // State leaves for each message
+                    signal input currentStateLeaves[msgQueueSize][STATE_LEAF_LENGTH];
+
+                    // ElGamal ciphertext values of key deactivation statuses for each message
+                    signal input elGamalEnc[msgQueueSize][2][2];
+
+                    // ElGamal randomness
+                    signal input maskingValues[msgQueueSize];
+
+                    // Root hash of deactivated keys tree
+                    signal input deactivatedTreeRoot;
+
+                    // State tree root hash
+                    signal input currentStateRoot;
+
+                    // Total number of signups
+                    signal input numSignUps;
+                */
             })
+
+            // console.log([[c1, c2]])
+            console.log(inputs)
+
+            
 
             // console.log(inputs);
             const witness = await genWitness(circuit, inputs)

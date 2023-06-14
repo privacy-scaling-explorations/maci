@@ -1,12 +1,12 @@
 pragma circom 2.0.0;
 
-include "./elGamalEncryption.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
 include "../node_modules/circomlib/circuits/comparators.circom";
 include "../node_modules/circomlib/circuits/escalarmulany.circom";
 
 include "./trees/incrementalQuinTree.circom";
 include "./poseidon/poseidonHashT3.circom";
+include "./elGamalEncryption.circom";
 include "./isDeactivatedKey.circom";
 include "./messageToCommand.circom";
 include "./verifySignature.circom";
@@ -221,7 +221,7 @@ template ProcessSingleDeactivationMessage(stateTreeDepth, treeArity) {
     elGamalBit.pk[0] <== coordPubKey[0];
     elGamalBit.pk[1] <== coordPubKey[1];
     elGamalBit.k <== maskingValue;
-    elGamalBit.m <== isDataValid.out;
+    elGamalBit.m <== isDataValid.out * isValidMessageType.out;
 
     component isC10Valid = IsEqual();
     component isC11Valid = IsEqual();
@@ -230,24 +230,24 @@ template ProcessSingleDeactivationMessage(stateTreeDepth, treeArity) {
     component isEncryptionValid = IsEqual();
 
     // Validate C1
-    isC10Valid.in[0] <== elGamalBit.Me[0];
+    isC10Valid.in[0] <== elGamalBit.kG[0];
     isC10Valid.in[1] <== c1[0];
 
-    isC11Valid.in[0] <== elGamalBit.Me[1];
+    isC11Valid.in[0] <== elGamalBit.kG[1];
     isC11Valid.in[1] <== c1[1];
 
     // Validate C2
-    isC20Valid.in[0] <== elGamalBit.kG[0];
+    isC20Valid.in[0] <== elGamalBit.Me[0];
     isC20Valid.in[1] <== c2[0];
 
-    isC21Valid.in[0] <== elGamalBit.kG[1];
+    isC21Valid.in[0] <== elGamalBit.Me[1];
     isC21Valid.in[1] <== c2[1];
 
     // Validate C1 and C2
     isEncryptionValid.in[0] <== isC10Valid.out + isC11Valid.out + isC20Valid.out + isC21Valid.out;
     isEncryptionValid.in[1] <== 4;
 
-    isValidMessageType.out === isEncryptionValid.out;
+    isEncryptionValid.out === 1;
 
     // --------------------------
     // Compute deactivated key leaf hash
@@ -279,7 +279,7 @@ template ProcessSingleDeactivationMessage(stateTreeDepth, treeArity) {
         }
     }
 
-    isInDeactivated.isDeactivated === 1;
+    isInDeactivated.isDeactivated === isValidMessageType.out;
     // ------------------------------------------------------------------
     // Compute new "root" hash
     // -------------------------------------------
