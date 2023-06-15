@@ -35,7 +35,7 @@ const voiceCreditBalance = BigInt(100)
 const duration = 30
 const maxValues = {
     maxUsers: 25,
-    maxMessages: 25,
+    maxMessages: 3,
     maxVoteOptions: 25,
 }
 
@@ -93,6 +93,8 @@ describe('ProcessDeactivationMessages circuit', () => {
         })
 
         it('should process deactivation message', async () => {
+            const salt = (new Keypair()).privKey.rawPrivKey
+
              // Key deactivation command
              const command = new PCommand(
                 stateIndex, //BigInt(1),
@@ -101,6 +103,7 @@ describe('ProcessDeactivationMessages circuit', () => {
                 voteWeight, // vote weight
                 BigInt(2), // nonce
                 BigInt(pollId),
+                salt,
             )
 
             const signature = command.sign(userKeypair.privKey)
@@ -114,11 +117,11 @@ describe('ProcessDeactivationMessages circuit', () => {
             // Encrypt command and publish
             const message = command.encrypt(signature, sharedKey)
             messages.push(message)
-            commands.push(command)
+            // commands.push(command)
 
-            poll.publishMessage(message, ecdhKeypair.pubKey)
-            poll.messageAq.mergeSubRoots(0)
-            poll.messageAq.merge(treeDepths.messageTreeDepth)
+            // poll.publishMessage(message, ecdhKeypair.pubKey)
+            // poll.messageAq.mergeSubRoots(0)
+            // poll.messageAq.merge(treeDepths.messageTreeDepth)
 
 
             const messageArr = [message];
@@ -126,7 +129,6 @@ describe('ProcessDeactivationMessages circuit', () => {
                 messageArr.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
             }
 
-            // console.log(messageArr);
             // console.log(maciState.stateLeaves)
 
             // ecdhKeypair.pubKey -> encPubKey
@@ -143,8 +145,6 @@ describe('ProcessDeactivationMessages circuit', () => {
                 hash5,
             )
 
-            const salt = (new Keypair()).privKey.rawPrivKey
-
             const mask = BigInt(Math.ceil(Math.random() * 1000))
             const maskingValues = [mask.toString()]
 
@@ -155,9 +155,21 @@ describe('ProcessDeactivationMessages circuit', () => {
                 mask
             )
 
+            console.log(maciState.stateLeaves[1])
+            console.log(userKeypair.pubKey)
+            console.log(maciState.stateLeaves[1].asCircuitInputs())
+
             for (let i = 1; i < maxValues.maxMessages; i += 1) {
-                maskingValues.push('0')
+                maskingValues.push('1')
             }
+
+            // Insert empty node
+            // deactivatedKeys.insert( (new DeactivatedKeyLeaf(
+            //     new PubKey([BigInt(0), BigInt(0)]),
+            //     [BigInt(0), BigInt(0)],
+            //     [BigInt(0), BigInt(0)],
+            //     BigInt(0),
+            // )).hash())
 
             deactivatedKeys.insert( (new DeactivatedKeyLeaf(
                 userKeypair.pubKey,
@@ -165,7 +177,6 @@ describe('ProcessDeactivationMessages circuit', () => {
                 c2,
                 salt,
             )).hash())
- 
             // console.log(messageHash)
             H = hash2([H0, messageHash])
 
@@ -173,13 +184,15 @@ describe('ProcessDeactivationMessages circuit', () => {
             // console.log(message.asCircuitInputs());
             // console.log(messages);
 
-            const encPubKeys = [];
+            const encPubKeys = [ecdhKeypair.pubKey.asCircuitInputs()];
             // Pad array
-            for (let i = 0; i < maxValues.maxMessages; i += 1) {
-                encPubKeys.push(['0', '0']);
+            for (let i = 1; i < maxValues.maxMessages; i += 1) {
+                encPubKeys.push(new PubKey([BigInt(0), BigInt(0)]).asCircuitInputs());
             }
 
-            const deactivatedTreePathElements = [deactivatedKeys.genMerklePath(1).pathElements];
+            console.log(encPubKeys)
+
+            const deactivatedTreePathElements = [deactivatedKeys.genMerklePath(0).pathElements];
             // Pad array
             for (let i = 1; i < maxValues.maxMessages; i += 1) {
                 deactivatedTreePathElements.push(deactivatedKeys.genMerklePath(0).pathElements)
@@ -211,7 +224,7 @@ describe('ProcessDeactivationMessages circuit', () => {
 
             const inputs = stringifyBigInts({
                 coordPrivKey: coordinatorKeypair.privKey.asCircuitInputs(),
-                coordPubKey: coordinatorKeypair.pubKey.asCircuitInputs(),
+                coordPubKey: coordinatorKeypair.pubKey.rawPubKey,
                 encPubKeys,
                 msgs: messageArr.map(m => m.asCircuitInputs()),
                 deactivatedTreePathElements,
@@ -222,45 +235,10 @@ describe('ProcessDeactivationMessages circuit', () => {
                 deactivatedTreeRoot: deactivatedKeys.root,
                 currentStateRoot: maciState.stateTree.root,
                 numSignUps: 1,
-                /*
-                    // Coordinator's key
-                    signal input coordPrivKey;
-                    signal input coordPubKey[2];
-
-                    // Encryption keys for each message
-                    signal input encPubKeys[msgQueueSize][2];
-
-                    // Key deactivation messages
-                    signal input msgs[msgQueueSize][MSG_LENGTH];
-
-                    // Inclusion proof path elements for deactivated keys
-                    signal input deactivatedTreePathElements[msgQueueSize][stateTreeDepth][TREE_ARITY - 1];
-
-                    // Inclusion proof path elements for state tree leaves
-                    signal input stateLeafPathElements[msgQueueSize][stateTreeDepth][TREE_ARITY - 1];
-
-                    // State leaves for each message
-                    signal input currentStateLeaves[msgQueueSize][STATE_LEAF_LENGTH];
-
-                    // ElGamal ciphertext values of key deactivation statuses for each message
-                    signal input elGamalEnc[msgQueueSize][2][2];
-
-                    // ElGamal randomness
-                    signal input maskingValues[msgQueueSize];
-
-                    // Root hash of deactivated keys tree
-                    signal input deactivatedTreeRoot;
-
-                    // State tree root hash
-                    signal input currentStateRoot;
-
-                    // Total number of signups
-                    signal input numSignUps;
-                */
             })
 
             // console.log([[c1, c2]])
-            console.log(inputs)
+            // console.log(inputs)
 
             
 
@@ -268,6 +246,9 @@ describe('ProcessDeactivationMessages circuit', () => {
             const witness = await genWitness(circuit, inputs)
             expect(witness.length > 0).toBeTruthy()
 
+            const newMessageChainHash = await getSignalByName(circuit, witness, 'main.newMessageChainHash')
+
+            console.log(H, newMessageChainHash)
             return 0;
         })
     })
