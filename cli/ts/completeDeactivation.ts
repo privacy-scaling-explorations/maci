@@ -22,10 +22,16 @@ const configureSubparser = (subparsers: any) => {
 		help: 'The poll ID',
 	});
 
-	createParser.addArgument(['-nsq', '--num-sr-queue-ops'], {
+	createParser.addArgument(['-snsq', '--state-num-sr-queue-ops'], {
 		action: 'store',
 		type: 'int',
-		help: 'The number of subroot queue operations to merge',
+		help: 'The number of subroot queue operations to merge for the MACI state tree',
+	});
+
+	createParser.addArgument(['-dnsq', '--deactivated-keys-num-sr-queue-ops'], {
+		action: 'store',
+		type: 'int',
+		help: 'The number of subroot queue operations to merge for the deactivated keys tree',
 	});
 };
 
@@ -85,10 +91,20 @@ const completeDeactivation = async (args: any) => {
 	// Initialize Poll contract object
 	const pollContract = new ethers.Contract(pollAddr, pollContractAbi, signer);
 
-	const numSrQueueOps = args.num_sr_queue_ops ? args.num_sr_queue_ops : 0;
+	const stateNumSrQueueOps = args.state_num_sr_queue_ops
+		? args.state_num_sr_queue_ops
+		: 0;
+
+	const deactivatedKeysNumSrQueueOps = args.deactivated_keys_num_sr_queue_ops
+		? args.deactivated_keys_num_sr_queue_ops
+		: 0;
 
 	try {
-		await pollContract.completeDeactivation(numSrQueueOps, pollId);
+		await pollContract.completeDeactivation(
+			stateNumSrQueueOps,
+			deactivatedKeysNumSrQueueOps,
+			pollId
+		);
 	} catch (e) {
 		console.error(e);
 		return 1;
