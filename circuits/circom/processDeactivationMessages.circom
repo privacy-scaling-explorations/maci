@@ -213,7 +213,7 @@ template ProcessSingleDeactivationMessage(stateTreeDepth, treeArity) {
 
     component isDataValid = IsEqual();
     isDataValid.in[0] <== 4;
-    isDataValid.in[1] <== isPubKeyValid.out + isVoteWeightValid.out + stateLeafValid.out + validSignature.valid;
+    isDataValid.in[1] <== isPubKeyValid.out + isVoteWeightValid.out + validSignature.valid + stateLeafValid.out;
 
     // Compute ElGamal encryption
     // --------------------------
@@ -221,7 +221,7 @@ template ProcessSingleDeactivationMessage(stateTreeDepth, treeArity) {
     elGamalBit.pk[0] <== coordPubKey[0];
     elGamalBit.pk[1] <== coordPubKey[1];
     elGamalBit.k <== maskingValue;
-    elGamalBit.m <== isDataValid.out * isValidMessageType.out;
+    elGamalBit.m <== isValidMessageType.out * isDataValid.out;
 
     component isC10Valid = IsEqual();
     component isC11Valid = IsEqual();
@@ -264,8 +264,8 @@ template ProcessSingleDeactivationMessage(stateTreeDepth, treeArity) {
 
     component isInDeactivated = IsDeactivatedKey(stateTreeDepth);
     isInDeactivated.root <== deactivatedTreeRoot;
-    isInDeactivated.key[0] <== command.newPubKey[0];
-    isInDeactivated.key[1] <== command.newPubKey[1];
+    isInDeactivated.key[0] <== stateLeaf[0];
+    isInDeactivated.key[1] <== stateLeaf[1];
     isInDeactivated.c1[0] <== c1[0];
     isInDeactivated.c1[1] <== c1[1];
     isInDeactivated.c2[0] <== c2[0];
