@@ -3,13 +3,9 @@ import { parseArtifact, getDefaultSigner } from 'maci-contracts';
 import { readJSONFile } from 'maci-common';
 import { contractExists, validateEthAddress } from './utils';
 import { contractFilepath } from './config';
-import { DEFAULT_ETH_PROVIDER } from './defaults';
-import { elGamalEncryptBit } from '../../crypto/ts';
-import * as assert from 'assert';
-import { PubKey } from 'maci-domainobjs';
 
 const configureSubparser = (subparsers: any) => {
-	const createParser = subparsers.addParser('confirmDeactivation', {
+	const createParser = subparsers.addParser('completeDeactivation', {
 		addHelp: true,
 	});
 
@@ -26,20 +22,14 @@ const configureSubparser = (subparsers: any) => {
 		help: 'The poll ID',
 	});
 
-	createParser.addArgument(['-ep', '--eth-provider'], {
-		action: 'store',
-		type: 'string',
-		help: 'The Ethereum provider to use for listening to events',
-	});
-
-	createParser.addArgument(['-fb', '--from-block'], {
+	createParser.addArgument(['-nsq', '--num-sr-queue-ops'], {
 		action: 'store',
 		type: 'int',
-		help: 'The block number to start listening from',
+		help: 'The number of subroot queue operations to merge',
 	});
 };
 
-const confirmDeactivation = async (args: any) => {
+const completeDeactivation = async (args: any) => {
 	// MACI contract address
 	const contractAddrs = readJSONFile(contractFilepath);
 	if ((!contractAddrs || !contractAddrs['MACI']) && !args.maci_address) {
@@ -95,46 +85,14 @@ const confirmDeactivation = async (args: any) => {
 	// Initialize Poll contract object
 	const pollContract = new ethers.Contract(pollAddr, pollContractAbi, signer);
 
-	const pollIface = new ethers.utils.Interface(pollContractAbi);
+	const numSrQueueOps = args.num_sr_queue_ops ? args.num_sr_queue_ops : 0;
 
-	// Ethereum provider
-	const ethProvider = args.eth_provider
-		? args.eth_provider
-		: DEFAULT_ETH_PROVIDER;
-
-	// Block number to start listening from
-	const fromBlock = args.from_block ? args.from_block : 0;
-
-	const deactivationAttemptsLogs = await ethProvider.getLogs({
-		// event AttemptKeyDeactivation(address indexed _sender, uint256 indexed _sendersPubKeyX, uint256 indexed _sendersPubKeyY);
-		...pollContract.filters.AttemptKeyDeactivation(),
-		fromBlock: fromBlock,
-	});
-
-	for (const log of deactivationAttemptsLogs) {
-		assert(log != undefined);
-		const event = pollIface.parseLog(log);
-		const sendersPubKeyX = event.args._sendersPubKeyX;
-		const sendersPubKeyY = event.args._sendersPubKeyY;
-		const sendersRawPubKey = [sendersPubKeyX, sendersPubKeyY];
-		const sendersPubKey = new PubKey(sendersRawPubKey);
-
-		const elGamalEncryptedMessage = await elGamalEncryptBit(
-			sendersRawPubKey,
-			BigInt(0),
-			BigInt(0)
-		);
-
-		try {
-			await pollContract.confirmDeactivation(
-				sendersPubKey,
-				elGamalEncryptedMessage
-			);
-		} catch (e) {
-			console.error(e);
-			return 1;
-		}
+	try {
+		await pollContract.completeDeactivation(numSrQueueOps, pollId);
+	} catch (e) {
+		console.error(e);
+		return 1;
 	}
 };
 
-export { confirmDeactivation, configureSubparser };
+export { completeDeactivation, configureSubparser };
