@@ -122,12 +122,13 @@ contract Poll is
 {
     using SafeERC20 for ERC20;
 
-    struct Proof {
-        uint256[2] a;
-        uint256[2][2] b;
-        uint256[2] c;
-        uint256[] input;
-    }
+    // TODO: Fix Warning: 1 contracts exceed the size limit for mainnet deployment.
+    // struct Proof {
+    //     uint256[2] a;
+    //     uint256[2][2] b;
+    //     uint256[2] c;
+    //     uint256[] input;
+    // }
 
     bool internal isInit = false;
     // The coordinator's public key
@@ -425,19 +426,23 @@ contract Poll is
 
     /**
      * @notice Completes the deactivation of all MACI public keys.
-     * @param _numSrQueueOps The number of subroot queue operations to merge
+     * @param _stateNumSrQueueOps The number of subroot queue operations to merge for the MACI state tree
+     * @param _deactivatedKeysNumSrQueueOps The number of subroot queue operations to merge for the deactivated keys tree
      * @param _pollId The pollId of the Poll contract
      */
     function completeDeactivation(
         // address _verifierContract,
         // Proof memory _proof
-        uint256 _numSrQueueOps,
+        uint256 _stateNumSrQueueOps,
+        uint256 _deactivatedKeysNumSrQueueOps,
         uint256 _pollId
     ) external onlyOwner isAfterSignUpDeadline {
-        mergeMaciStateAqSubRoots(_numSrQueueOps, _pollId);
-        mergeMaciStateAq(_numSrQueueOps);
+        mergeMaciStateAqSubRoots(_stateNumSrQueueOps, _pollId);
+        mergeMaciStateAq(_stateNumSrQueueOps);
 
-        extContracts.deactivatedKeysAq.mergeSubRoots(_numSrQueueOps);
+        extContracts.deactivatedKeysAq.mergeSubRoots(
+            _deactivatedKeysNumSrQueueOps
+        );
         extContracts.deactivatedKeysAq.merge(treeDepths.messageTreeDepth);
 
         // TODO: Fix Warning: 1 contracts exceed the size limit for mainnet deployment.
