@@ -2,9 +2,8 @@ name: CI
 
 on:
   push:
-    branches: [ v1 ]
+    branches: [ master, audit, dev ]
   pull_request:
-    branches: [ v1 ]
   schedule:
     - cron: 0 0 * * *
 

@@ -228,7 +228,7 @@ function mergeMaciStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId)
     }
 ```
 
-If the subtrees have not been merged on the MACI contract's `stateAq`, then it will merge it by calling `mergeStateAqSubroots`. It accets two parameters:
+If the subtrees have not been merged on the MACI contract's `stateAq`, then it will merge it by calling `mergeStateAqSubroots`. It accepts two parameters:
 
 * `_numSrQueueOps` - the number of operations required
 * `_pollId` - the id of the poll

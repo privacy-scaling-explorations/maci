@@ -14,6 +14,7 @@ contract CommonUtilities {
             .getDeployTimeAndDuration();
         // Require that the voting period is over
         uint256 secondsPassed = block.timestamp - deployTime;
+
         if (secondsPassed <= duration) {
             revert VOTING_PERIOD_NOT_PASSED();
         }

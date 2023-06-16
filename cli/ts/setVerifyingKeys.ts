@@ -113,7 +113,6 @@ const setVerifyingKeys = async (args: any) => {
         return 1
     }
     const vkRegistryAddress = args.vk_registry ? args.vk_registry: contractAddrs["VkRegistry"]
-    // State tree depth
     const stateTreeDepth = args.state_tree_depth
     const intStateTreeDepth = args.int_state_tree_depth
     const msgTreeDepth = args.msg_tree_depth
