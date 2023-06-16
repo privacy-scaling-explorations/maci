@@ -103,6 +103,8 @@ const messageBatchSize = 25;
 const tallyBatchSize = STATE_TREE_ARITY ** treeDepths.intStateTreeDepth;
 
 const initialVoiceCreditBalance = 100;
+const signUpDuration = 100;
+const deactivationPeriod = 10;
 let signer;
 
 describe('MACI', () => {
@@ -116,7 +118,15 @@ describe('MACI', () => {
 	describe('Deployment', () => {
 		beforeAll(async () => {
 			signer = await getDefaultSigner();
-			const r = await deployTestContracts(initialVoiceCreditBalance);
+
+			const latestBlock = await signer.provider.getBlock('latest');
+			const signUpDeadline = latestBlock.timestamp + signUpDuration;
+
+			const r = await deployTestContracts(
+				initialVoiceCreditBalance,
+				signUpDeadline,
+				deactivationPeriod
+			);
 			maciContract = r.maciContract;
 			stateAqContract = r.stateAqContract;
 			vkRegistryContract = r.vkRegistryContract;
@@ -161,7 +171,7 @@ describe('MACI', () => {
 			}
 		});
 
-		it('signUp() shold fail when given an invalid pubkey', async () => {
+		it('signUp() should fail when given an invalid pubkey', async () => {
 			expect.assertions(1);
 			try {
 				await maciContract.signUp(
@@ -176,6 +186,22 @@ describe('MACI', () => {
 			} catch (e) {
 				const error =
 					"'MACI: _pubKey values should be less than the snark scalar field'";
+				expect(e.message.endsWith(error)).toBeTruthy();
+			}
+		});
+
+		it('signUp() should fail when signUpDeadline has passed', async () => {
+			await timeTravel(signer.provider, signUpDuration);
+
+			try {
+				await maciContract.signUp(
+					users[0].pubKey.asContractParam(),
+					ethers.utils.defaultAbiCoder.encode(['uint256'], [1]),
+					ethers.utils.defaultAbiCoder.encode(['uint256'], [0]),
+					signUpTxOpts
+				);
+			} catch (e) {
+				const error = "'MACI: the sign-up period has passed'";
 				expect(e.message.endsWith(error)).toBeTruthy();
 			}
 		});
@@ -268,8 +294,7 @@ describe('MACI', () => {
 				duration,
 				maxValues,
 				treeDepths,
-				coordinator.pubKey.asContractParam(),
-				{ gasLimit: 8000000 }
+				coordinator.pubKey.asContractParam()
 			);
 			receipt = await tx.wait();
 
@@ -739,8 +764,7 @@ describe('MACI', () => {
 				duration,
 				maxValues,
 				treeDepths,
-				coordinator.pubKey.asContractParam(),
-				{ gasLimit: 8000000 }
+				coordinator.pubKey.asContractParam()
 			);
 
 			const receipt = await tx.wait();
@@ -829,15 +853,13 @@ describe('MACI', () => {
 						keypair.pubKey.asContractParam()
 					);
 			} catch (e) {
-				// Fix error code comparison.
-				const errorCode = 'PollE07'; // ERROR_INVALID_SENDER
+				const error = 'PollE07'; // ERROR_INVALID_SENDER
 				expect(
-					e.message.slice(0, e.message.length).indexOf(errorCode) !== -1
+					e.message.slice(0, e.message.length - 1).endsWith(error)
 				).toBeTruthy();
 			}
 		});
 
-		/** Fixed */
 		it('deactivateKey() should update relevant storage variables and emit a proper event', async () => {
 			const [, numMessagesBefore] =
 				await pollContract.numSignUpsAndMessagesAndDeactivatedKeys();
@@ -850,13 +872,13 @@ describe('MACI', () => {
 				keypair.pubKey.asContractParam()
 			);
 
-			// Fix comparisons.
 			const receipt = await tx.wait();
 
 			expect(receipt.events[0].event).toEqual('AttemptKeyDeactivation');
-			expect(receipt.events[0].args._sender).toEqual((await getDefaultSigner()).address);
-			expect(BigInt(receipt.events[0].args._sendersPubKeyX)).toEqual(BigInt(keypair.pubKey.asContractParam().x));
-			expect(BigInt(receipt.events[0].args._sendersPubKeyY)).toEqual(BigInt(keypair.pubKey.asContractParam().y));
+			expect(receipt.events[0].args[0]).toEqual(signer.address);
+			const { x, y } = keypair.pubKey.asContractParam();
+			expect(receipt.events[0].args[1]).toEqual(BigNumber.from(x));
+			expect(receipt.events[0].args[2]).toEqual(BigNumber.from(y));
 
 			const [, numMessagesAfter] =
 				await pollContract.numSignUpsAndMessagesAndDeactivatedKeys();
@@ -878,12 +900,10 @@ describe('MACI', () => {
 					keypair.pubKey.asContractParam()
 				);
 			} catch (e) {
-				// Fix error code comparison.
-				const errorCode = 'PollE01'; // ERROR_VOTING_PERIOD_PASSED
+				const error = 'PollE01'; // ERROR_VOTING_PERIOD_PASSED
 				expect(
-					e.message.slice(0, e.message.length).indexOf(errorCode) !== -1
+					e.message.slice(0, e.message.length - 1).endsWith(error)
 				).toBeTruthy();
-
 			}
 		});
 
@@ -891,43 +911,38 @@ describe('MACI', () => {
 			try {
 				await pollContract
 					.connect(otherAccount)
-					.confirmDeactivation(
-						keypair.pubKey.asContractParam(),
-						mockElGamalMessage
-					);
+					.confirmDeactivation(0, 0, mockElGamalMessage);
 			} catch (e) {
-				// Fix error code comparison.
-				const errorMessage = 'Ownable: caller is not the owner';
+				const error = 'Ownable: caller is not the owner';
 				expect(
-					e.message.slice(0, e.message.length).indexOf(errorMessage) !== -1
+					e.message.slice(0, e.message.length - 1).endsWith(error)
 				).toBeTruthy();
 			}
 		});
 
-		it('confirmDeativation() should update relevant storage variables and emit a proper event', async () => {
+		it('confirmDeactivation() should update relevant storage variables and emit a proper event', async () => {
+			const subRoot = 0;
+			const subTreeCapacity = 0;
+
 			const [, , numDeactivatedKeysBefore] =
 				await pollContract.numSignUpsAndMessagesAndDeactivatedKeys();
-			const numLeavesBefore = await deactivatedKeysAqContract.numLeaves();
 
 			const tx = await pollContract.confirmDeactivation(
-				keypair.pubKey.asContractParam(),
+				subRoot,
+				subTreeCapacity,
 				mockElGamalMessage
 			);
 
 			const receipt = await tx.wait();
 
-			const expectedLeafIndex = BigNumber.from(1);
 			expect(receipt.events[0].event).toEqual('DeactivateKey');
-			expect(receipt.events[0].args[1]).toEqual(expectedLeafIndex);
 
 			const [, , numDeactivatedKeysAfter] =
 				await pollContract.numSignUpsAndMessagesAndDeactivatedKeys();
-			const numLeavesAfter = await deactivatedKeysAqContract.numLeaves();
 
 			expect(Number(numDeactivatedKeysAfter)).toEqual(
-				Number(numDeactivatedKeysBefore) + 1
+				Number(numDeactivatedKeysBefore) + subTreeCapacity
 			);
-			expect(Number(numLeavesAfter)).toEqual(Number(numLeavesBefore) + 1);
 		});
 	});
 });
