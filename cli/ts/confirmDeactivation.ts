@@ -135,6 +135,8 @@ const confirmDeactivation = async (args: any) => {
 			return 1;
 		}
 	}
+
+	return 0;
 };
 
 export { confirmDeactivation, configureSubparser };
