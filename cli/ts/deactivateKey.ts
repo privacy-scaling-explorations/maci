@@ -109,11 +109,12 @@ const configureSubparser = (subparsers: any) => {
 }
 
 const deactivateKey = async (args: any) => {
-    // User's MACI public key
-    if (!PubKey.isValidSerializedPubKey(args.pubkey)) {
-        console.error('Error: invalid MACI public key')
-        return 1
-    }
+    // TODO: Why is this here if line 119 below?
+    // // User's MACI public key
+    // if (!PubKey.isValidSerializedPubKey(args.pubkey)) {
+    //     console.error('Error: invalid MACI public key')
+    //     return 1
+    // }
 
     // Hardcoded for key deactivation
     const userMaciPubKey = new PubKey([BigInt(0), BigInt(0)])
