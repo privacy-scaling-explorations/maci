@@ -62,8 +62,9 @@ For development purposes, you can generate the proving and verifying keys for
 the zk-SNARK circuits, along with their Solidity verifier contracts as such.
 
 Navigate to the rapidsnark [repo](https://github.com/iden3/rapidsnark) to install the necessary tooling.
+More details can be found in /docs/installation.md, Section Install `rapidsnark`;
 
-Build the zk-SNARKs and generate their proving and verifying keys:
+To build the circom circuits, follow the /docs/installation.md, Section Configure circom-helper and zkey-manager. Then run:
 
 ```bash
 cd circuits
@@ -87,6 +88,9 @@ npm run compileSol
 ```
 
 Avoid using `npx hardhat compile` and instead use the provided command as artifacts are copied into their relevant directories.
+
+To build the zk-SNARKs and generate their proving and verifying keys, follow the instructions from /docs/installation.md, 
+Section: Generate `.zkey` files.
 
 ### Local development
 
@@ -198,6 +202,17 @@ Run all integration tests (this also starts its own Hardhat instance so make sur
 cd integrationTests
 ./scripts/runTestsInCi.sh
 ```
+
+### CLI tests
+
+Make sure dependencies are installed, circuits are built, zkeys keys generated and contract compiled.
+Navigate to /cli/tests/vanilla and execute each test like this:
+
+```bash
+cd cli/tests/vanilla
+bash ./test1.sh
+```
+You can find more details about running cli tests in /docs/testing.md
 
 ### Docker
 

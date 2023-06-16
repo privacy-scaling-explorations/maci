@@ -110,7 +110,7 @@ Next, run the following to compile the circuits with parameters you specified:
 npx zkey-manager compile -c zkeys.config.yml
 ```
 
-Next, download the `.ptau` file:
+Next, download the `.ptau` file. It can take some time as the file is not small.
 
 ```bash
 npx zkey-manager downloadPtau -c zkeys.config.yml
