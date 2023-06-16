@@ -118,8 +118,7 @@ const deactivateKey = async (args: any) => {
     // Hardcoded for key deactivation
     const userMaciPubKey = new PubKey([BigInt(0), BigInt(0)])
 
-
-    let contractAddrs = readJSONFile(contractFilepath)
+    const contractAddrs = readJSONFile(contractFilepath)
     if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
         console.error('Error: MACI contract address is empty') 
         return 1
@@ -278,8 +277,8 @@ const deactivateKey = async (args: any) => {
         console.log('Ephemeral private key:', encKeypair.privKey.serialize())
     } catch(e) {
         if (e.message) {
-            if (e.message.endsWith('PollE03')) {
-                console.error('Error: the voting period is over.')
+            if (e.message.endsWith('PollE10')) {
+                console.error('Error: the key deactivation period is over.')
             } else {
                 console.error('Error: the transaction failed.')
                 console.error(e.message)
