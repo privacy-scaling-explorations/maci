@@ -11,6 +11,7 @@ import { Keypair } from 'maci-domainobjs';
 
 const initialVoiceCreditBalance = 100;
 const signUpDuration = 100;
+const deactivationPeriod = 10;
 
 describe('SignUpGatekeeper', () => {
 	let signUpToken;
@@ -53,7 +54,8 @@ describe('SignUpGatekeeper', () => {
 			const r = await deployTestContracts(
 				initialVoiceCreditBalance,
 				signUpDeadline,
-				signUpTokenGatekeeperContract
+				signUpTokenGatekeeperContract,
+				deactivationPeriod
 			);
 
 			maciContract = r.maciContract;

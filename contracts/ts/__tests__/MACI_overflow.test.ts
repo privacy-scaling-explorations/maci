@@ -31,6 +31,7 @@ const treeDepths: TreeDepths = {
 
 const initialVoiceCreditBalance = 100;
 const signUpDuration = 100;
+const deactivationPeriod = 10;
 let signer: ethers.Signer;
 const [pollAbi] = parseArtifact('Poll');
 
@@ -48,7 +49,8 @@ describe('Overflow testing', () => {
 
 		const r = await deployTestContracts(
 			initialVoiceCreditBalance,
-			signUpDeadline
+			signUpDeadline,
+			deactivationPeriod
 		);
 		maciContract = r.maciContract;
 		stateAqContract = r.stateAqContract;

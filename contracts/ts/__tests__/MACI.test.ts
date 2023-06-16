@@ -104,6 +104,7 @@ const tallyBatchSize = STATE_TREE_ARITY ** treeDepths.intStateTreeDepth;
 
 const initialVoiceCreditBalance = 100;
 const signUpDuration = 100;
+const deactivationPeriod = 10;
 let signer;
 
 describe('MACI', () => {
@@ -123,7 +124,8 @@ describe('MACI', () => {
 
 			const r = await deployTestContracts(
 				initialVoiceCreditBalance,
-				signUpDeadline
+				signUpDeadline,
+				deactivationPeriod
 			);
 			maciContract = r.maciContract;
 			stateAqContract = r.stateAqContract;

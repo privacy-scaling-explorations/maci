@@ -327,6 +327,7 @@ const deployMaci = async (
 	vkRegistryContractAddress: string,
 	topupCreditContractAddress: string,
 	signUpDeadline: number,
+	deactivationPeriod: number,
 	quiet = false
 ) => {
 	const {
@@ -376,7 +377,8 @@ const deployMaci = async (
 		pollFactoryContract.address,
 		signUpTokenGatekeeperContractAddress,
 		initialVoiceCreditBalanceAddress,
-		signUpDeadline
+		signUpDeadline,
+		deactivationPeriod
 	);
 
 	log('Transferring ownership of PollFactoryContract to MACI', quiet);

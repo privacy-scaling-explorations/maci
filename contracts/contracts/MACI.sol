@@ -48,7 +48,10 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     uint256 public override numSignUps;
 
     // The deadline for signing up
-    uint40 public signUpDeadline;
+    uint40 public immutable signUpDeadline;
+
+    // The number of seconds for key deactivation
+    uint40 public immutable deactivationPeriod;
 
     // A mapping of block timestamps to the number of state leaves
     mapping(uint256 => uint256) public numStateLeaves;
@@ -124,7 +127,8 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         PollFactory _pollFactory,
         SignUpGatekeeper _signUpGatekeeper,
         InitialVoiceCreditProxy _initialVoiceCreditProxy,
-        uint40 _signUpDeadline
+        uint40 _signUpDeadline,
+        uint40 _deactivationPeriod
     ) {
         // Deploy the state AccQueue
         stateAq = new AccQueueQuinaryBlankSl(STATE_TREE_SUBDEPTH);
@@ -136,6 +140,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
 
         signUpTimestamp = block.timestamp;
         signUpDeadline = _signUpDeadline;
+        deactivationPeriod = _deactivationPeriod;
 
         // Verify linked poseidon libraries
         require(

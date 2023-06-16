@@ -44,6 +44,12 @@ const configureSubparser = (subparsers: any) => {
 		type: 'int',
 		help: 'The signup deadline.',
 	});
+
+	createParser.addArgument(['-p', '--deactivation-period'], {
+		action: 'store',
+		type: 'int',
+		help: 'The deactivation period.',
+	});
 };
 
 const create = async (args: any) => {
@@ -107,6 +113,8 @@ const create = async (args: any) => {
 
 	const signUpDeadline = args.signup_deadline;
 
+	const deactivationPeriod = args.deactivation_period;
+
 	const { maciContract, stateAqContract, pollFactoryContract, poseidonAddrs } =
 		await deployMaci(
 			signUpGatekeeperAddress,
@@ -114,7 +122,8 @@ const create = async (args: any) => {
 			verifierContract.address,
 			vkRegistryContractAddress,
 			TopupCreditContract.address,
-			signUpDeadline
+			signUpDeadline,
+			deactivationPeriod
 		);
 
 	console.log('MACI:', maciContract.address);

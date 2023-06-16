@@ -34,6 +34,7 @@ const formatProofForVerifierContract = (_proof: SnarkProof) => {
 const deployTestContracts = async (
 	initialVoiceCreditBalance,
 	signUpDeadline,
+	deactivationPeriod,
 	gatekeeperContract?
 ) => {
 	const mockVerifierContract = await deployMockVerifier();
@@ -56,7 +57,8 @@ const deployTestContracts = async (
 			mockVerifierContract.address,
 			vkRegistryContract.address,
 			topupCreditContract.address,
-			signUpDeadline
+			signUpDeadline,
+			deactivationPeriod
 		);
 	const mpContract = await deployMessageProcessor(
 		mockVerifierContract.address,

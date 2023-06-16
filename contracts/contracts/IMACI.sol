@@ -12,4 +12,5 @@ interface IMACI {
     function numSignUps() external view returns (uint256);
     function stateAq() external view returns (AccQueue);
     function signUpDeadline() external view returns (uint40);
+    function deactivationPeriod() external view returns (uint40);
 }

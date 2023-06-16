@@ -188,9 +188,9 @@ contract Poll is
     string constant ERROR_STATE_AQ_SUBTREES_NEED_MERGE = "PollE06";
     string constant ERROR_INVALID_SENDER = "PollE07";
     string constant ERROR_MAX_DEACTIVATED_KEYS_REACHED = "PollE08";
-    string constant ERROR_SIGNUP_PERIOD_NOT_PASSED = "PollE09";
+    string constant ERROR_DEACTIVATION_PERIOD_NOT_PASSED = "PollE10";
     // TODO: Fix Warning: 1 contracts exceed the size limit for mainnet deployment.
-    // string constant ERROR_VERIFICATION_FAILED = "PollE10";
+    // string constant ERROR_VERIFICATION_FAILED = "PollE09";
 
     event PublishMessage(Message _message, PubKey _encPubKey);
     event TopupMessage(Message _message);
@@ -251,11 +251,11 @@ contract Poll is
         _;
     }
 
-    modifier isAfterSignUpDeadline() {
+    modifier isAfterDeactivationPeriod() {
         uint256 secondsPassed = block.timestamp - deployTime;
         require(
-            secondsPassed > extContracts.maci.signUpDeadline(),
-            ERROR_SIGNUP_PERIOD_NOT_PASSED
+            secondsPassed > extContracts.maci.deactivationPeriod(),
+            ERROR_DEACTIVATION_PERIOD_NOT_PASSED
         );
         _;
     }
@@ -436,7 +436,7 @@ contract Poll is
         uint256 _stateNumSrQueueOps,
         uint256 _deactivatedKeysNumSrQueueOps,
         uint256 _pollId
-    ) external onlyOwner isAfterSignUpDeadline {
+    ) external onlyOwner isAfterDeactivationPeriod {
         mergeMaciStateAqSubRoots(_stateNumSrQueueOps, _pollId);
         mergeMaciStateAq(_stateNumSrQueueOps);
 
