@@ -1696,6 +1696,14 @@ const genProcessVkSig = (
             BigInt(_voteOptionTreeDepth)
 }
 
+const genDeactivationVkSig = (
+    _messageQueueSize: number,
+    _stateTreeDepth: number,
+): BigInt => {
+    return (BigInt(_messageQueueSize) << BigInt(64)) +
+           BigInt(_stateTreeDepth)
+}
+
 const genTallyVkSig = (
     _stateTreeDepth: number,
     _intStateTreeDepth: number,
@@ -1743,6 +1751,7 @@ export {
     TreeDepths,
     MaciState,
     Poll,
+    genDeactivationVkSig,
     genProcessVkSig,
     genTallyVkSig,
     genSubsidyVkSig,
