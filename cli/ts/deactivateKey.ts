@@ -277,7 +277,7 @@ const deactivateKey = async (args: any) => {
         console.log('Ephemeral private key:', encKeypair.privKey.serialize())
     } catch(e) {
         if (e.message) {
-            if (e.message.endsWith('PollE10')) {
+            if (e.message.endsWith('PollE11')) {
                 console.error('Error: the key deactivation period is over.')
             } else {
                 console.error('Error: the transaction failed.')

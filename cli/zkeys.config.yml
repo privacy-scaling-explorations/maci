@@ -41,7 +41,7 @@ circuits:
   component: "SubsidyPerBatch"
   params: [5, 10] # (deactivation)msgQueueSize, stateTreeDepth
   type: "test"
-  pubInputs: ["deactivatedTreeRoot, numSignUps, currentStateRoot"]
+  pubInputs: ["inputHash"]
 
 ptauFiles:
   1:

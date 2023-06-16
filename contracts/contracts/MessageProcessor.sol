@@ -171,6 +171,24 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         return verifier.verify(_proof, vk, publicInputHash);
     }
 
+    function genProcessMessagesPublicInputHash(
+        Poll _poll,
+        uint256 _deactivatedTreeRoot,
+        uint256 _numSignUps,
+        uint256 _currentStateRoot,
+        uint256 _chainHash
+    ) public view returns (uint256) {
+        
+        uint256[] memory input = new uint256[](4);
+        input[0] = _deactivatedTreeRoot;
+        input[1] = _numSignUps;
+        input[2] = _currentStateRoot;
+        input[3] = _chainHash;
+        uint256 inputHash = sha256Hash(input);
+
+        return inputHash;
+    }
+
     /*
      * @notice Returns the SHA256 hash of the packed values (see
      * genProcessMessagesPackedVals), the hash of the coordinator's public key,
