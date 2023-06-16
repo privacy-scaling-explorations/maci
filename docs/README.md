@@ -22,6 +22,8 @@ MACI offers the following guarantees:
   although a user may cast another vote to nullify it.
 * **Correct execution**: no-one — not even the trusted coordinator — should be
   able to produce a false tally of votes.
+* **Anonymity**: no-one — not even the trusted coordinator — should be
+  able to deduce how the user voted.
 
 Under the hood, MACI uses Ethereum smart contracts and zero-knowledge proofs.
 It inherits security and uncensorability from the underlying Ethereum

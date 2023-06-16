@@ -177,7 +177,6 @@ describe('ProcessDeactivationMessages circuit', () => {
                 c2,
                 salt,
             )).hash())
-
             // console.log(messageHash)
             H = hash2([H0, messageHash])
 

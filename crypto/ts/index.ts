@@ -490,6 +490,10 @@ const elGamalDecryptBit = (
     return curveToBit(m)
 }
 
+const babyJubMaxValue = BigInt(babyJub.p)
+
+const babyJubAddPoint = (a: any, b: any) => babyJub.addPoint(a,b)
+
 export {
     genRandomSalt,
     genPrivKey,
@@ -532,4 +536,6 @@ export {
     bigInt2Buffer,
     packPubKey,
     unpackPubKey,
+    babyJubMaxValue,
+    babyJubAddPoint
 }

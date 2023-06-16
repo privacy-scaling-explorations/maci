@@ -191,7 +191,8 @@ contract Poll is
     event MergeMaciStateAq(uint256 _stateRoot);
     event MergeMessageAqSubRoots(uint256 _numSrQueueOps);
     event MergeMessageAq(uint256 _messageRoot);
-    event AttemptKeyDeactivation(Message _message);
+    event AttemptKeyDeactivation(address indexed _sender, uint256 indexed _sendersPubKeyX, uint256 indexed _sendersPubKeyY);
+    event DeactivateKey(PubKey _usersPubKey, uint256 _leafIndex);
 
     ExtContracts public extContracts;
 
@@ -340,11 +341,13 @@ contract Poll is
      * @param _message The encrypted message which contains state leaf index
      * @param _messageHash The keccak256 hash of the _message to be used for signature verification
      * @param _signature The ECDSA signature of User who attempts to deactivate MACI public key
+     * @param _usersPubKey The MACI public key to be deactivated
      */
     function deactivateKey(
         Message memory _message,
         bytes32 _messageHash,
-        bytes memory _signature
+        bytes memory _signature,
+        PubKey memory _usersPubKey
     ) external isWithinVotingDeadline {
         require(
             msg.sender ==
@@ -364,7 +367,7 @@ contract Poll is
             numMessages++;
         }
 
-        _message.msgType = 1;
+        _message.msgType = 3;
 
         uint256 messageLeaf = hashMessageAndEncPubKey(
             _message,
@@ -372,9 +375,42 @@ contract Poll is
         );
 
         extContracts.messageAq.enqueue(messageLeaf);
-        
-        emit PublishMessage(_message, _encPubKey);
-        emit AttemptKeyDeactivation(_message);
+
+        emit AttemptKeyDeactivation(msg.sender, _usersPubKey.x, _usersPubKey.y);
+    }
+
+    /**
+     * @notice Confirms the deactivation of a MACI public key. This function must be called by Coordinator after User calls the deactivateKey function
+     * @param _usersPubKey The MACI public key to be deactivated
+     * @param _elGamalEncryptedMessage The El Gamal encrypted message
+     * @return leafIndex The index of the leaf in the deactivated keys tree
+     */
+    function confirmDeactivation(
+        PubKey memory _usersPubKey,
+        Message memory _elGamalEncryptedMessage
+    ) external onlyOwner returns (uint256 leafIndex) {
+        require(
+            numDeactivatedKeys <= maxValues.maxMessages,
+            ERROR_MAX_DEACTIVATED_KEYS_REACHED
+        );
+        require(
+            _usersPubKey.x < SNARK_SCALAR_FIELD &&
+                _usersPubKey.y < SNARK_SCALAR_FIELD,
+            ERROR_INVALID_PUBKEY
+        );
+
+        unchecked {
+            numDeactivatedKeys++;
+        }
+
+        uint256 leaf = hashMessageAndEncPubKey(
+            _elGamalEncryptedMessage,
+            _usersPubKey
+        );
+
+        leafIndex = extContracts.deactivatedKeysAq.enqueue(leaf);
+
+        emit DeactivateKey(_usersPubKey, leafIndex);
     }
 
     /*
@@ -454,10 +490,4 @@ contract Poll is
         );
         emit MergeMessageAq(root);
     }
-<<<<<<< HEAD
-
 }
-
-=======
-}
->>>>>>> 47719e5acbee50cfa9caf0dea5989a1fd2ce1a02
