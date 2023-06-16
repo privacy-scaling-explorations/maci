@@ -92,6 +92,11 @@ import {
     configureSubparser as configureSubparserForCheckVerifyKey,
 } from './checkVerifyingKey'
 
+import {
+    deactivateKey,
+    configureSubparser as configureSubparserForDeactivateKey,
+} from './deactivateKey'
+
 const main = async () => {
     const parser = new argparse.ArgumentParser({ 
         description: 'Minimal Anti-Collusion Infrastructure',
@@ -153,6 +158,9 @@ const main = async () => {
     // Subcommand: checkVerifyKey
     configureSubparserForCheckVerifyKey(subparsers)
 
+    // Subcommand: deactivateKey
+    configureSubparserForDeactivateKey(subparsers)
+
     const args = parser.parseArgs()
 
     // Execute the subcommand method
@@ -191,7 +199,9 @@ const main = async () => {
     } 
     else if (args.subcommand === 'checkVerifyingKey') {
         await checkVerifyingKey(args)
-    }
+    } else if (args.subcommand === 'deactivateKey') {
+        await deactivateKey(args)
+    } 
 }
 
 if (require.main === module) {

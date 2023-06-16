@@ -12,13 +12,7 @@ import {Verifier} from "./crypto/Verifier.sol";
 import {VkRegistry} from "./VkRegistry.sol";
 import {CommonUtilities} from "./utilities/Utility.sol";
 
-
-contract Tally is
-    Ownable,
-    SnarkCommon,
-    CommonUtilities,
-    Hasher
-{
+contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
     // Error codes
     error PROCESSING_NOT_COMPLETE();
     error INVALID_TALLY_VOTES_PROOF();
@@ -50,7 +44,6 @@ contract Tally is
     constructor(Verifier _verifier) {
         verifier = _verifier;
     }
-
 
     /*
      * @notice Pack the batch start index and number of signups into a 100-bit value.
@@ -102,7 +95,7 @@ contract Tally is
         return inputHash;
     }
 
-    // TODO: make sure correct mp address is passed 
+    // TODO: make sure correct mp address is passed
     // TODO: reuse tally.sol for multiple polls
     function updateSbCommitment(MessageProcessor _mp) public {
         // Require that all messages have been processed
@@ -125,7 +118,8 @@ contract Tally is
 
         (, uint256 tallyBatchSize, ) = _poll.batchSizes();
         uint256 batchStartIndex = tallyBatchNum * tallyBatchSize;
-        (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
+        (uint256 numSignUps, , ) = _poll
+            .numSignUpsAndMessagesAndDeactivatedKeys();
 
         // Require that there are untalied ballots left
         if (batchStartIndex > numSignUps) {
@@ -170,7 +164,7 @@ contract Tally is
         (uint8 intStateTreeDepth, , , uint8 voteOptionTreeDepth) = _poll
             .treeDepths();
 
-        (VkRegistry vkRegistry, IMACI maci, , ) = _poll.extContracts();
+        (VkRegistry vkRegistry, IMACI maci, , , ) = _poll.extContracts();
 
         // Get the verifying key
         VerifyingKey memory vk = vkRegistry.getTallyVk(
@@ -223,5 +217,4 @@ contract Tally is
         }
         return current;
     }
-
 }
