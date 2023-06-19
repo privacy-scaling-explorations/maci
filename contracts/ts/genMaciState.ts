@@ -221,6 +221,11 @@ const genMaciStateFromContract = async (
 		messageBatchSize: Number(onChainBatchSizes.messageBatchSize),
 	};
 
+	const attemptKeyDeactivationLogs = await provider.getLogs({
+		...pollContract.filters.AttemptKeyDeactivation(),
+		fromBlock: fromBlock,
+	});
+
 	const publishMessageLogs = await provider.getLogs({
 		...pollContract.filters.PublishMessage(),
 		fromBlock: fromBlock,
@@ -266,6 +271,32 @@ const genMaciStateFromContract = async (
 
 		actions.push({
 			type: 'PublishMessage',
+			// @ts-ignore
+			blockNumber: log.blockNumber,
+			// @ts-ignore
+			transactionIndex: log.transactionIndex,
+			data: {
+				message,
+				encPubKey,
+			},
+		});
+	}
+
+	for (const log of attemptKeyDeactivationLogs) {
+		assert(log != undefined);
+		const event = pollIface.parseLog(log);
+
+		const message = new Message(
+			BigInt(event.args._message[0]),
+			event.args._message[1].map((x) => BigInt(x))
+		);
+
+		const encPubKey = new PubKey(
+			event.args._encPubKey.map((x) => BigInt(x.toString()))
+		);
+
+		actions.push({
+			type: 'AttemptKeyDeactivation',
 			// @ts-ignore
 			blockNumber: log.blockNumber,
 			// @ts-ignore
@@ -389,6 +420,11 @@ const genMaciStateFromContract = async (
 			}
 		} else if (action['type'] === 'PublishMessage') {
 			maciState.polls[pollId].publishMessage(
+				action.data.message,
+				action.data.encPubKey
+			);
+		} else if (action['type'] === 'AttemptKeyDeactivation') {
+			maciState.polls[pollId].deactivateKey(
 				action.data.message,
 				action.data.encPubKey
 			);

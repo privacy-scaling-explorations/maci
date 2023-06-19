@@ -21,6 +21,7 @@ import {
 
 import {
     hash2,
+    sha256Hash,
     hash5,
     IncrementalQuinTree,
     elGamalEncryptBit,
@@ -156,6 +157,8 @@ describe('ProcessDeactivationMessages circuit', () => {
                 ))
             }
 
+            const numSignUps = BigInt(1);
+
             const inputs = stringifyBigInts({
                 coordPrivKey: coordinatorKeypair.privKey.asCircuitInputs(),
                 coordPubKey: coordinatorKeypair.pubKey.rawPubKey,
@@ -168,14 +171,21 @@ describe('ProcessDeactivationMessages circuit', () => {
                 maskingValues,
                 deactivatedTreeRoot: deactivatedKeys.root,
                 currentStateRoot: maciState.stateTree.root,
-                numSignUps: 1,
+                numSignUps,
+                chainHash: H0,
+                inputHash: sha256Hash([
+                    deactivatedKeys.root,
+                    numSignUps,
+                    maciState.stateTree.root,
+                    H0,
+                ]),
             })
 
             const witness = await genWitness(circuit, inputs)
             expect(witness.length > 0).toBeTruthy()
 
-            const newMessageChainHash = await getSignalByName(circuit, witness, 'main.newMessageChainHash')
-            expect(newMessageChainHash).toEqual(H0.toString());
+            // const newMessageChainHash = await getSignalByName(circuit, witness, 'main.newMessageChainHash')
+            // expect(newMessageChainHash).toEqual(H0.toString());
         })
 
         it('should process exactly 1 deactivation message', async () => {
@@ -282,6 +292,8 @@ describe('ProcessDeactivationMessages circuit', () => {
                 ))
             }
 
+            const numSignUps = BigInt(1);
+
             const inputs = stringifyBigInts({
                 coordPrivKey: coordinatorKeypair.privKey.asCircuitInputs(),
                 coordPubKey: coordinatorKeypair.pubKey.rawPubKey,
@@ -294,14 +306,21 @@ describe('ProcessDeactivationMessages circuit', () => {
                 maskingValues,
                 deactivatedTreeRoot: deactivatedKeys.root,
                 currentStateRoot: maciState.stateTree.root,
-                numSignUps: 1,
+                numSignUps,
+                chainHash: H,
+                inputHash: sha256Hash([
+                    deactivatedKeys.root,
+                    numSignUps,
+                    maciState.stateTree.root,
+                    H,
+                ]),
             })
 
             const witness = await genWitness(circuit, inputs)
             expect(witness.length > 0).toBeTruthy()
 
-            const newMessageChainHash = await getSignalByName(circuit, witness, 'main.newMessageChainHash')
-            expect(newMessageChainHash).toEqual(H.toString());
+            // const newMessageChainHash = await getSignalByName(circuit, witness, 'main.newMessageChainHash')
+            // expect(newMessageChainHash).toEqual(H.toString());
         })
 
         it('should process exactly 2 deactivation messages', async () => {
@@ -450,6 +469,7 @@ describe('ProcessDeactivationMessages circuit', () => {
                 ))
             }
         
+            const numSignUps = BigInt(1)
             const inputs = stringifyBigInts({
                 coordPrivKey: coordinatorKeypair.privKey.asCircuitInputs(),
                 coordPubKey: coordinatorKeypair.pubKey.rawPubKey,
@@ -462,14 +482,21 @@ describe('ProcessDeactivationMessages circuit', () => {
                 maskingValues,
                 deactivatedTreeRoot: deactivatedKeys.root,
                 currentStateRoot: maciState.stateTree.root,
-                numSignUps: 1,
+                numSignUps,
+                chainHash: H2,
+                inputHash: sha256Hash([
+                    deactivatedKeys.root,
+                    numSignUps,
+                    maciState.stateTree.root,
+                    H2,
+                ]),
             })
         
             const witness = await genWitness(circuit, inputs)
             expect(witness.length > 0).toBeTruthy()
         
-            const newMessageChainHash = await getSignalByName(circuit, witness, 'main.newMessageChainHash')
-            expect(newMessageChainHash).toEqual(H2.toString());
+            // const newMessageChainHash = await getSignalByName(circuit, witness, 'main.newMessageChainHash')
+            // expect(newMessageChainHash).toEqual(H2.toString());
         })
     })
 
@@ -515,7 +542,7 @@ describe('ProcessDeactivationMessages circuit', () => {
         })
         
         it('should throw if numSignUps 0 instead of 1 with 1 deactivation message', async () => {
-            const NUM_OF_SIGNUPS = 0; // Wrong number, should be 1
+            const NUM_OF_SIGNUPS = BigInt(0); // Wrong number, should be 1
             const VOTE_WEIGHT = voteWeight;
             const MESSAGE_PUB_KEY = new PubKey([BigInt(0), BigInt(0)]);
             const KEY_FOR_COORD_PART_OF_SHARED_KEY = coordinatorKeypair.pubKey;
@@ -641,13 +668,20 @@ describe('ProcessDeactivationMessages circuit', () => {
                 deactivatedTreeRoot: deactivatedKeys.root,
                 currentStateRoot: maciState.stateTree.root,
                 numSignUps: NUM_OF_SIGNUPS,
+                chainHash: H,
+                inputHash: sha256Hash([
+                    deactivatedKeys.root,
+                    NUM_OF_SIGNUPS,
+                    maciState.stateTree.root,
+                    H,
+                ]),
             })
 
             await expect(genWitness(circuit, inputs)).rejects.toThrow();
         })
 
         it('should throw if public key part of shared key is not coordinators', async () => {
-            const NUM_OF_SIGNUPS = 1;
+            const NUM_OF_SIGNUPS = BigInt(1);
             const VOTE_WEIGHT = voteWeight;
             const MESSAGE_PUB_KEY = new PubKey([BigInt(0), BigInt(0)]);
             const ecdhKeypair = new Keypair()
@@ -773,13 +807,20 @@ describe('ProcessDeactivationMessages circuit', () => {
                 deactivatedTreeRoot: deactivatedKeys.root,
                 currentStateRoot: maciState.stateTree.root,
                 numSignUps: NUM_OF_SIGNUPS,
+                chainHash: H,
+                inputHash: sha256Hash([
+                    deactivatedKeys.root,
+                    NUM_OF_SIGNUPS,
+                    maciState.stateTree.root,
+                    H,
+                ]),
             })
 
             await expect(genWitness(circuit, inputs)).rejects.toThrow();
         })
 
         it('should throw if deactivatedTreePathElements passed to the circuit are invalid', async () => {
-            const NUM_OF_SIGNUPS = 1;
+            const NUM_OF_SIGNUPS = BigInt(1);
             const VOTE_WEIGHT = voteWeight;
             const MESSAGE_PUB_KEY = new PubKey([BigInt(0), BigInt(0)]);
             const KEY_FOR_COORD_PART_OF_SHARED_KEY = coordinatorKeypair.pubKey;
@@ -906,13 +947,20 @@ describe('ProcessDeactivationMessages circuit', () => {
                 deactivatedTreeRoot: deactivatedKeys.root,
                 currentStateRoot: maciState.stateTree.root,
                 numSignUps: NUM_OF_SIGNUPS,
+                chainHash: H,
+                inputHash: sha256Hash([
+                    deactivatedKeys.root,
+                    NUM_OF_SIGNUPS,
+                    maciState.stateTree.root,
+                    H,
+                ]),
             })
 
             await expect(genWitness(circuit, inputs)).rejects.toThrow();
         })
 
         it('should throw if stateLeafPathElements passed to the circuit are invalid', async () => {
-            const NUM_OF_SIGNUPS = 1;
+            const NUM_OF_SIGNUPS = BigInt(1);
             const VOTE_WEIGHT = voteWeight;
             const MESSAGE_PUB_KEY = new PubKey([BigInt(0), BigInt(0)]);
             const KEY_FOR_COORD_PART_OF_SHARED_KEY = coordinatorKeypair.pubKey;
@@ -1039,13 +1087,20 @@ describe('ProcessDeactivationMessages circuit', () => {
                 deactivatedTreeRoot: deactivatedKeys.root,
                 currentStateRoot: maciState.stateTree.root,
                 numSignUps: NUM_OF_SIGNUPS,
+                chainHash: H,
+                inputHash: sha256Hash([
+                    deactivatedKeys.root,
+                    NUM_OF_SIGNUPS,
+                    maciState.stateTree.root,
+                    H,
+                ]),
             })
 
             await expect(genWitness(circuit, inputs)).rejects.toThrow();
         })
 
         it('should throw if pub key in the PCommand not special case [0, 0]', async () => {
-            const NUM_OF_SIGNUPS = 1;
+            const NUM_OF_SIGNUPS = BigInt(1);
             const VOTE_WEIGHT = voteWeight;
             const MESSAGE_PUB_KEY = new PubKey([BigInt(1), BigInt(0)]);// Wrong pub key, must be 0,0 for this special case of deactivation
             const KEY_FOR_COORD_PART_OF_SHARED_KEY = coordinatorKeypair.pubKey;
@@ -1172,13 +1227,20 @@ describe('ProcessDeactivationMessages circuit', () => {
                 deactivatedTreeRoot: deactivatedKeys.root,
                 currentStateRoot: maciState.stateTree.root,
                 numSignUps: NUM_OF_SIGNUPS,
+                chainHash: H,
+                inputHash: sha256Hash([
+                    deactivatedKeys.root,
+                    NUM_OF_SIGNUPS,
+                    maciState.stateTree.root,
+                    H,
+                ]),
             })
 
             await expect(genWitness(circuit, inputs)).rejects.toThrow();
         })
 
         it('should throw if voteWeight in the PCommand not 0', async () => {
-            const NUM_OF_SIGNUPS = 1;
+            const NUM_OF_SIGNUPS = BigInt(1);
             const VOTE_WEIGHT = BigInt(1); // Wrong vote weight, should be voteWeight var
             const MESSAGE_PUB_KEY = new PubKey([BigInt(0), BigInt(0)]);
             const KEY_FOR_COORD_PART_OF_SHARED_KEY = coordinatorKeypair.pubKey;
@@ -1305,13 +1367,20 @@ describe('ProcessDeactivationMessages circuit', () => {
                 deactivatedTreeRoot: deactivatedKeys.root,
                 currentStateRoot: maciState.stateTree.root,
                 numSignUps: NUM_OF_SIGNUPS,
+                chainHash: H,
+                inputHash: sha256Hash([
+                    deactivatedKeys.root,
+                    NUM_OF_SIGNUPS,
+                    maciState.stateTree.root,
+                    H,
+                ]),
             })
 
             await expect(genWitness(circuit, inputs)).rejects.toThrow();
         })
 
         it('should throw if elgamalEncryption not performed with coordination pub key', async () => {
-            const NUM_OF_SIGNUPS = 1;
+            const NUM_OF_SIGNUPS = BigInt(1);
             const VOTE_WEIGHT = voteWeight;
             const MESSAGE_PUB_KEY = new PubKey([BigInt(0), BigInt(0)]);
             const KEY_FOR_COORD_PART_OF_SHARED_KEY = coordinatorKeypair.pubKey;
@@ -1437,6 +1506,13 @@ describe('ProcessDeactivationMessages circuit', () => {
                 deactivatedTreeRoot: deactivatedKeys.root,
                 currentStateRoot: maciState.stateTree.root,
                 numSignUps: NUM_OF_SIGNUPS,
+                chainHash: H,
+                inputHash: sha256Hash([
+                    deactivatedKeys.root,
+                    NUM_OF_SIGNUPS,
+                    maciState.stateTree.root,
+                    H,
+                ]),
             })
 
             await expect(genWitness(circuit, inputs)).rejects.toThrow();

@@ -11,12 +11,19 @@ include "./isDeactivatedKey.circom";
 include "./messageToCommand.circom";
 include "./verifySignature.circom";
 include "./messageHasher.circom";
+include "./hasherSha256.circom";
 
 template ProcessDeactivationMessages(msgQueueSize, stateTreeDepth) {
     var MSG_LENGTH = 11;
     var TREE_ARITY = 5;
     var STATE_LEAF_LENGTH = 4;
     var msgTreeZeroValue = 8370432830353022751713833565135785980866757267633941821328460903436894336785;
+
+    // Hash of all public inputs
+    signal input inputHash;
+
+    // Chain hash of all deactivation messages
+    signal input chainHash;
 
     // Coordinator's key
     signal input coordPrivKey;
@@ -55,9 +62,6 @@ template ProcessDeactivationMessages(msgQueueSize, stateTreeDepth) {
     // Incremental array of root hashes
     signal messageHashes[msgQueueSize + 1];    
     messageHashes[0] <== msgTreeZeroValue;
-
-    // Message chain hash
-    signal output newMessageChainHash;
 
     // Hash selectors
     component hashMuxes[msgQueueSize];
@@ -112,8 +116,18 @@ template ProcessDeactivationMessages(msgQueueSize, stateTreeDepth) {
         messageHashes[i + 1] <== hashMuxes[i].out;
     }
 
-    // Output final hash
-    newMessageChainHash <== messageHashes[msgQueueSize];
+    // Verify chain hash
+    // newMessageChainHash <== messageHashes[msgQueueSize];
+    chainHash === messageHashes[msgQueueSize];
+
+    component inputHasher = Sha256Hasher4();
+    inputHasher.in[0] <== deactivatedTreeRoot;
+    inputHasher.in[1] <== numSignUps;
+    inputHasher.in[2] <== currentStateRoot; 
+    inputHasher.in[3] <== chainHash;
+
+    // Verify input hash
+    inputHasher.hash === inputHash;
 }
 
 template ProcessSingleDeactivationMessage(stateTreeDepth, treeArity) {
