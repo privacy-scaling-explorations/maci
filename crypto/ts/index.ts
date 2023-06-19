@@ -255,7 +255,7 @@ const genRandomBabyJubValue = (): BigInt => {
 /*
  * @return A BabyJub-compatible private key.
  */
-const genPrivKey = (): PrivKey => {
+const genPrivKey = (): BigInt => {
 
     return genRandomBabyJubValue()
 }
@@ -421,11 +421,11 @@ const elGamalEncrypt = (
  * @returns the plain text.
  */
 const elGamalDecrypt = (
-    privKey: BigInt, 
+    privKey: PrivKey, 
     c1: Ciphertext, 
     c2: Ciphertext
 ): Point => {
-    const s = babyJub.mulPointEscalar(c1, privKey)
+    const s = babyJub.mulPointEscalar(c1, formatPrivKeyForBabyJub(privKey))
     const sInv = [SNARK_FIELD_SIZE - s[0], s[1]]
     const m = babyJub.addPoint(c2, sInv)
     return m;
