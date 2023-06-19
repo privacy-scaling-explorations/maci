@@ -49,7 +49,7 @@ interface MaxValues {
 
 const STATE_TREE_DEPTH = 10
 const DEACT_KEYS_TREE_DEPTH = 10
-const DEACT_MESSAGE_INIT_HASH = BigInt('8370432830353022751713833565135785980866757267633941821328460903436894336785')
+const DEACT_MESSAGE_INIT_HASH: BigInt = BigInt('8370432830353022751713833565135785980866757267633941821328460903436894336785')
 
 // Also see: Polls.sol
 class Poll {
@@ -98,7 +98,7 @@ class Poll {
     )
     public deactivationMessages: Message[] = []
     public deactivationEncPubKeys: PubKey[] = []
-    public deactivationCommands: Command[] = []
+    public deactivationCommands: PCommand[] = []
     public deactivationSignatures: Signature[] = []
 
     // For message processing
@@ -363,11 +363,12 @@ class Poll {
                 salt,
             } = deactCommand;
 
-            const computedStateIndex = stateIndex > 0 && stateIndex <= this.numSignUps ? stateIndex: 0;
+            const stateIndexInt = parseInt(stateIndex.toString());
+            const computedStateIndex = stateIndexInt > 0 && stateIndexInt <= this.numSignUps ? stateIndexInt: 0;
             const { pubKey } = this.stateLeaves[computedStateIndex];
 
             // Verify deactivation message
-            const status = deactCommand.type.toString() == '1' // Check message type
+            const status = deactCommand.cmdType.toString() == '1' // Check message type
                 && computedStateIndex != 0
                 && signature != null
                 && verifySignature(
