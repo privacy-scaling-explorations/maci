@@ -47,7 +47,8 @@ contract PollFactory is Params, IPubKey, Ownable, PollDeploymentParams {
         address _pollOwner
     ) public onlyOwner returns (Poll) {
         uint256 treeArity = 5;
-
+        uint256 deactivationChainHash = 8370432830353022751713833565135785980866757267633941821328460903436894336785;
+        
         // Validate _maxValues
         // NOTE: these checks may not be necessary. Removing them will save
         // 0.28 Kb of bytecode.
@@ -146,6 +147,8 @@ contract Poll is
     // The duration of the polling period, in seconds
     uint256 internal duration;
 
+    uint256 internal deactivationChainHash;
+
     function getDeployTimeAndDuration() public view returns (uint256, uint256) {
         return (deployTime, duration);
     }
@@ -189,6 +192,7 @@ contract Poll is
     string constant ERROR_INVALID_SENDER = "PollE07";
     string constant ERROR_MAX_DEACTIVATED_KEYS_REACHED = "PollE08";
     string constant ERROR_DEACTIVATION_PERIOD_NOT_PASSED = "PollE10";
+    string constant ERROR_DEACTIVATION_PERIOD_PASSED = "PollE11";
     // TODO: Fix Warning: 1 contracts exceed the size limit for mainnet deployment.
     // string constant ERROR_VERIFICATION_FAILED = "PollE09";
 
@@ -227,6 +231,7 @@ contract Poll is
             _coordinatorPubKey.y
         );
         duration = _duration;
+        deactivationChainHash = 8370432830353022751713833565135785980866757267633941821328460903436894336785;
         maxValues = _maxValues;
         batchSizes = _batchSizes;
         treeDepths = _treeDepths;
@@ -248,6 +253,15 @@ contract Poll is
     modifier isWithinVotingDeadline() {
         uint256 secondsPassed = block.timestamp - deployTime;
         require(secondsPassed < duration, ERROR_VOTING_PERIOD_PASSED);
+        _;
+    }
+
+    modifier isWithinDeactivationPeriod() {
+        uint256 secondsPassed = block.timestamp - deployTime;
+        require(
+            secondsPassed < extContracts.maci.deactivationPeriod(),
+            ERROR_DEACTIVATION_PERIOD_PASSED
+        );
         _;
     }
 
@@ -359,44 +373,42 @@ contract Poll is
     /**
      * @notice Attempts to deactivate the User's MACI public key
      * @param _message The encrypted message which contains state leaf index
-     * @param _messageHash The keccak256 hash of the _message to be used for signature verification
-     * @param _signature The ECDSA signature of User who attempts to deactivate MACI public key
-     * @param _usersPubKey The MACI public key to be deactivated
+     * @param _encPubKey An epheremal public key which can be combined with the
+     *     coordinator's private key to generate an ECDH shared key with which
+     *     to encrypt the message.
      */
     function deactivateKey(
-        Message memory _message,
-        bytes32 _messageHash,
-        bytes memory _signature,
-        PubKey memory _usersPubKey
-    ) external isWithinVotingDeadline {
-        require(
-            msg.sender ==
-                ECDSA.recover(
-                    ECDSA.toEthSignedMessageHash(_messageHash),
-                    _signature
-                ),
-            ERROR_INVALID_SENDER
-        );
-
+        Message memory _message, 
+        PubKey memory _encPubKey
+    ) external isWithinDeactivationPeriod {
         require(
             numMessages <= maxValues.maxMessages,
             ERROR_MAX_MESSAGES_REACHED
         );
 
+         require(
+            _encPubKey.x < SNARK_SCALAR_FIELD &&
+                _encPubKey.y < SNARK_SCALAR_FIELD,
+            ERROR_INVALID_PUBKEY
+        );
+
         unchecked {
             numMessages++;
+            numDeactivatedKeys++;
         }
 
-        _message.msgType = 3;
+        _message.msgType = 1; // Same as vote, keeping the modified circuit complexity minimal
 
         uint256 messageLeaf = hashMessageAndEncPubKey(
             _message,
-            coordinatorPubKey
+            _encPubKey
         );
 
+        deactivationChainHash = hash2([deactivationChainHash, messageLeaf]);
         extContracts.messageAq.enqueue(messageLeaf);
 
-        emit AttemptKeyDeactivation(msg.sender, _usersPubKey.x, _usersPubKey.y);
+        emit PublishMessage(_message, _encPubKey);
+        emit AttemptKeyDeactivation(msg.sender, _encPubKey.x, _encPubKey.y);
     }
 
     /**

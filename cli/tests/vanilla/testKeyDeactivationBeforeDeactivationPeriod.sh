@@ -22,21 +22,22 @@ $MACI_CLI signup \
 $MACI_CLI timeTravel \
     --seconds 100
 
-# key deactivation happens after original period 86400s from prepare_test.sh has expired 
+# key deactivation happens before original period 86400s from prepare_test.sh has expired 
 $MACI_CLI timeTravel \
-    --seconds 90000
+    --seconds 10
 
 KEY_DEACTIVATION_RESULT=$($MACI_CLI deactivateKey \
     --privkey macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c \
     --state-index 1 \
-    --nonce 2 \
+    --nonce 1 \
     --salt 0x798D81BE4A9870C079B8DE539496AB95 \
     --poll-id "$POLL_ID")
 
-if [[ $KEY_DEACTIVATION_RESULT == "" ]]
+echo $KEY_DEACTIVATION_RESULT
+
+if [[ $KEY_DEACTIVATION_RESULT == *"Transaction hash"* ]]
 then
-  echo "Test OK, PollE10 error should have been thrown" 
+  echo "Test Ok"
 else
   echo "Test NOk"
 fi
-

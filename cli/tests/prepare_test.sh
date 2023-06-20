@@ -28,7 +28,9 @@ init_maci() {
         --tally-votes-zkey "$ZKEYS_DIR"/TallyVotes_"$TALLY_VOTES_PARAMS".0.zkey \
         $SET_VERIFYING_KEYS_FLAG_SUBSIDY
 
-    $MACI_CLI create
+    $MACI_CLI create \
+        --signup-deadline 1689834390 \
+        --deactivation-period 86400
 }
 
 deploy_poll() {

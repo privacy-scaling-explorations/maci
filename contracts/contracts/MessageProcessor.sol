@@ -171,7 +171,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         return verifier.verify(_proof, vk, publicInputHash);
     }
 
-    function genProcessMessagesPublicInputHash(
+    function genProcessDeactivationMessagesPublicInputHash(
         Poll _poll,
         uint256 _deactivatedTreeRoot,
         uint256 _numSignUps,
