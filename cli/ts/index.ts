@@ -102,6 +102,11 @@ import {
 	configureSubparser as configureSubparserForCompleteDeactivation,
 } from './completeDeactivation';
 
+import {
+    deactivateKey,
+    configureSubparser as configureSubparserForDeactivateKey,
+} from './deactivateKey'
+
 const main = async () => {
 	const parser = new argparse.ArgumentParser({
 		description: 'Minimal Anti-Collusion Infrastructure',
@@ -163,6 +168,7 @@ const main = async () => {
 	// Subcommand: checkVerifyKey
 	configureSubparserForCheckVerifyKey(subparsers);
 
+<<<<<<< HEAD
 	// Subcommand: confirmDeactivation
 	configureSubparserForConfirmDeactivation(subparsers);
 
@@ -210,7 +216,9 @@ const main = async () => {
 		await confirmDeactivation(args);
 	} else if (args.subcommand === 'completeDeactivation') {
 		await completeDeactivation(args);
-	}
+    } else if (args.subcommand === 'deactivateKey') {
+        await deactivateKey(args)
+    } 
 };
 
 if (require.main === module) {

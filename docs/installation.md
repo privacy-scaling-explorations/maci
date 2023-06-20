@@ -94,7 +94,7 @@ MACI has two zk-SNARK circuits. Each circuit is parameterised. There should one
 
 Unless you wish to generate a fresh set of `.zkey` files, you should obtain
 them from someone who has performed a multi-party trusted setup for said
-circuits..
+circuits.
 
 Note the locations of the `.zkey` files as the CLI requires them as
 command-line flags.
@@ -110,7 +110,7 @@ Next, run the following to compile the circuits with parameters you specified:
 npx zkey-manager compile -c zkeys.config.yml
 ```
 
-Next, download the `.ptau` file:
+Next, download the `.ptau` file. It can take some time as the file is not small.
 
 ```bash
 npx zkey-manager downloadPtau -c zkeys.config.yml

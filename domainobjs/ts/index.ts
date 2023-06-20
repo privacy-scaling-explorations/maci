@@ -1,32 +1,32 @@
 import * as assert from 'assert';
 import base64url from 'base64url';
 import {
-	Ciphertext,
-	EcdhSharedKey,
-	Signature,
-	PubKey as RawPubKey,
-	PrivKey as RawPrivKey,
-	G1Point,
-	G2Point,
-	encrypt,
-	decrypt,
-	sign,
-	hashLeftRight,
-	hash13,
-	hash3,
-	hash4,
-	hash5,
-	verifySignature,
-	genRandomSalt,
-	genKeypair,
-	genPubKey,
-	formatPrivKeyForBabyJub,
-	genEcdhSharedKey,
-	packPubKey,
-	unpackPubKey,
-	IncrementalQuinTree,
-	SNARK_FIELD_SIZE,
-} from 'maci-crypto';
+    Ciphertext,
+    EcdhSharedKey,
+    Signature,
+    PubKey as RawPubKey,
+    PrivKey as RawPrivKey,
+    G1Point,
+    G2Point,
+    encrypt,
+    decrypt,
+    sign,
+    hashLeftRight,
+    hash13,
+    hash3,
+    hash4,
+    hash5,
+    verifySignature,
+    genRandomSalt,
+    genKeypair,
+    genPubKey,
+    formatPrivKeyForBabyJub,
+    genEcdhSharedKey,
+    packPubKey,
+    unpackPubKey,
+    IncrementalQuinTree,
+    SNARK_FIELD_SIZE,
+} from 'maci-crypto'
 
 const SERIALIZED_PRIV_KEY_PREFIX = 'macisk.';
 
@@ -326,10 +326,10 @@ interface IStateLeaf {
 }
 
 interface IDeactivatedKeyLeaf {
-	pubKey: PubKey;
-	c1: BigInt[];
-	c2: BigInt[];
-	salt: BigInt;
+    pubKey: PubKey;
+    c1: BigInt[];
+    c2: BigInt[];
+    salt: BigInt;
 }
 
 interface VoteOptionTreeLeaf {
@@ -485,122 +485,126 @@ class Ballot {
  * A leaf in the deactivated keys tree, containing hashed deactivated public key with deactivation status
  */
 class DeactivatedKeyLeaf implements IDeactivatedKeyLeaf {
-	public pubKey: PubKey;
-	public c1: BigInt[];
-	public c2: BigInt[];
-	public salt: BigInt;
+    public pubKey: PubKey;
+    public c1: BigInt[];
+    public c2: BigInt[];
+    public salt: BigInt;
 
-	constructor(pubKey: PubKey, c1: BigInt[], c2: BigInt[], salt: BigInt) {
-		this.pubKey = pubKey;
-		this.c1 = c1;
-		this.c2 = c2;
-		this.salt = salt;
-	}
+    constructor (
+        pubKey: PubKey,
+        c1: BigInt[],
+        c2: BigInt[],
+        salt: BigInt
+    ) {
+        this.pubKey = pubKey
+        this.c1 = c1
+        this.c2 = c2
+        this.salt = salt
+    }
 
-	/*
-	 * Deep-copies the object
-	 */
-	public copy(): DeactivatedKeyLeaf {
-		return new DeactivatedKeyLeaf(
-			this.pubKey.copy(),
-			[BigInt(this.c1[0].toString()), BigInt(this.c1[1].toString())],
-			[BigInt(this.c2[0].toString()), BigInt(this.c2[1].toString())],
-			BigInt(this.salt.toString())
-		);
-	}
+    /*
+     * Deep-copies the object
+     */
+    public copy(): DeactivatedKeyLeaf {
+        return new DeactivatedKeyLeaf(
+            this.pubKey.copy(),
+            [BigInt(this.c1[0].toString()), BigInt(this.c1[1].toString())],
+            [BigInt(this.c2[0].toString()), BigInt(this.c2[1].toString())],
+            BigInt(this.salt.toString()),
+        )
+    }
 
-	public static genBlankLeaf(): DeactivatedKeyLeaf {
-		// The public key for a blank state leaf is the first Pedersen base
-		// point from iden3's circomlib implementation of the Pedersen hash.
-		// Since it is generated using a hash-to-curve function, we are
-		// confident that no-one knows the private key associated with this
-		// public key. See:
-		// https://github.com/iden3/circomlib/blob/d5ed1c3ce4ca137a6b3ca48bec4ac12c1b38957a/src/pedersen_printbases.js
-		// Its hash should equal
-		// 6769006970205099520508948723718471724660867171122235270773600567925038008762.
-		return new DeactivatedKeyLeaf(
-			new PubKey([
-				BigInt(
-					'10457101036533406547632367118273992217979173478358440826365724437999023779287'
-				),
-				BigInt(
-					'19824078218392094440610104313265183977899662750282163392862422243483260492317'
-				),
-			]),
-			[BigInt(0), BigInt(0)],
-			[BigInt(0), BigInt(0)],
-			BigInt(0)
-		);
-	}
+    public static genBlankLeaf(): DeactivatedKeyLeaf {
+        // The public key for a blank state leaf is the first Pedersen base
+        // point from iden3's circomlib implementation of the Pedersen hash.
+        // Since it is generated using a hash-to-curve function, we are
+        // confident that no-one knows the private key associated with this
+        // public key. See:
+        // https://github.com/iden3/circomlib/blob/d5ed1c3ce4ca137a6b3ca48bec4ac12c1b38957a/src/pedersen_printbases.js
+        // Its hash should equal
+        // 6769006970205099520508948723718471724660867171122235270773600567925038008762.
+        return new DeactivatedKeyLeaf(
+            new PubKey([
+                BigInt('10457101036533406547632367118273992217979173478358440826365724437999023779287'),
+                BigInt('19824078218392094440610104313265183977899662750282163392862422243483260492317'),
+            ]),
+            [BigInt(0), BigInt(0)],
+            [BigInt(0), BigInt(0)],
+            BigInt(0)
+        )
+    }
 
-	public static genRandomLeaf() {
-		const keypair = new Keypair();
-		return new DeactivatedKeyLeaf(
-			keypair.pubKey,
-			[BigInt(0), BigInt(0)],
-			[BigInt(0), BigInt(0)],
-			genRandomSalt()
-		);
-	}
+    public static genRandomLeaf() {
+        const keypair = new Keypair()
+        return new DeactivatedKeyLeaf(
+            keypair.pubKey,
+            [BigInt(0), BigInt(0)],
+            [BigInt(0), BigInt(0)],
+            genRandomSalt()
+        )
+    }
 
-	private asArray = (): BigInt[] => {
-		return [
-			hash3([...this.pubKey.asArray(), this.salt]),
-			...this.c1,
-			...this.c2,
-		];
-	};
+    private asArray = (): BigInt[] => {
 
-	public asCircuitInputs = (): BigInt[] => {
-		return this.asArray();
-	};
+        return [
+            hash3([...this.pubKey.asArray(), this.salt]),
+            ...this.c1,
+            ...this.c2,
+        ]
+    }
 
-	public hash = (): BigInt => {
-		return hash5(this.asArray());
-	};
+    public asCircuitInputs = (): BigInt[] => {
 
-	public asContractParam() {
-		return {
-			pubKeyHash: hash3([...this.pubKey.asArray(), this.salt]),
-			c1: this.c1,
-			c2: this.c2,
-		};
-	}
+        return this.asArray()
+    }
 
-	public equals(s: DeactivatedKeyLeaf): boolean {
-		return (
-			this.pubKey.equals(s.pubKey) &&
-			this.c1[0] === s.c1[0] &&
-			this.c1[0] === s.c1[1] &&
-			this.c2[0] === s.c2[0] &&
-			this.c2[0] === s.c2[1] &&
-			this.salt === s.salt
-		);
-	}
+    public hash = (): BigInt => {
 
-	public serialize = (): string => {
-		const j = [
-			this.pubKey.serialize(),
-			this.c1[0].toString(16),
-			this.c1[1].toString(16),
-			this.c2[0].toString(16),
-			this.c2[1].toString(16),
-			this.salt.toString(16),
-		];
+        return hash5(this.asArray())
+    }
 
-		return base64url(Buffer.from(JSON.stringify(j, null, 0), 'utf8'));
-	};
+    public asContractParam() {
+        return {
+            pubKeyHash: hash3([...this.pubKey.asArray(), this.salt]),
+            c1: this.c1,
+            c2: this.c2,
+        }
+    }
 
-	static unserialize = (serialized: string): DeactivatedKeyLeaf => {
-		const j = JSON.parse(base64url.decode(serialized));
+    public equals(s: DeactivatedKeyLeaf): boolean {
+        return this.pubKey.equals(s.pubKey) &&
+            this.c1[0] === s.c1[0] &&
+            this.c1[0] === s.c1[1] &&
+            this.c2[0] === s.c2[0] &&
+            this.c2[0] === s.c2[1] &&
+            this.salt === s.salt
+    }
 
-		return new DeactivatedKeyLeaf(
-			PubKey.unserialize(j[0]),
-			[BigInt('0x' + j[1]), BigInt('0x' + j[2])],
-			[BigInt('0x' + j[3]), BigInt('0x' + j[4])],
-			BigInt('0x' + j[5])
-		);
-	};
+    public serialize = (): string => {
+        const j = [
+            this.pubKey.serialize(),
+            this.c1[0].toString(16),
+            this.c1[1].toString(16),
+            this.c2[0].toString(16),
+            this.c2[1].toString(16),
+            this.salt.toString(16),
+        ]
+
+        return base64url(
+            Buffer.from(JSON.stringify(j, null, 0), 'utf8')
+        )
+    }
+
+    static unserialize = (serialized: string): DeactivatedKeyLeaf => {
+        const j = JSON.parse(base64url.decode(serialized))
+
+        return new DeactivatedKeyLeaf(
+            PubKey.unserialize(j[0]),
+            [BigInt('0x' + j[1]), BigInt('0x' + j[2])],
+            [BigInt('0x' + j[3]), BigInt('0x' + j[4])],
+            BigInt('0x' + j[5]),
+        )
+    }
 }
 
 /*
@@ -940,17 +944,17 @@ class PCommand extends Command {
 }
 
 export {
-	StateLeaf,
-	DeactivatedKeyLeaf,
-	Ballot,
-	VoteOptionTreeLeaf,
-	PCommand,
-	TCommand,
-	Command,
-	Message,
-	Keypair,
-	PubKey,
-	PrivKey,
-	VerifyingKey,
-	Proof,
-};
+    StateLeaf,
+    DeactivatedKeyLeaf,
+    Ballot,
+    VoteOptionTreeLeaf,
+    PCommand,
+    TCommand,
+    Command,
+    Message,
+    Keypair,
+    PubKey,
+    PrivKey,
+    VerifyingKey,
+    Proof,
+}
