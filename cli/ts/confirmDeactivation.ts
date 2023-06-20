@@ -4,9 +4,10 @@ import { readJSONFile } from 'maci-common';
 import { contractExists, validateEthAddress } from './utils';
 import { contractFilepath } from './config';
 import { DEFAULT_ETH_PROVIDER } from './defaults';
-import { elGamalEncryptBit } from '../../crypto/ts';
+import { IncrementalQuinTree, elGamalEncryptBit } from '../../crypto/ts';
 import * as assert from 'assert';
-import { PubKey } from 'maci-domainobjs';
+import { PubKey, DeactivatedKeyLeaf, Keypair } from 'maci-domainobjs';
+import { hash5 } from 'maci-crypto';
 
 const configureSubparser = (subparsers: any) => {
 	const createParser = subparsers.addParser('confirmDeactivation', {
@@ -16,6 +17,7 @@ const configureSubparser = (subparsers: any) => {
 	createParser.addArgument(['-x', '--maci-address'], {
 		action: 'store',
 		type: 'string',
+		required: true,
 		help: 'The MACI contract address',
 	});
 
@@ -29,13 +31,22 @@ const configureSubparser = (subparsers: any) => {
 	createParser.addArgument(['-ep', '--eth-provider'], {
 		action: 'store',
 		type: 'string',
+		required: true,
 		help: 'The Ethereum provider to use for listening to events',
 	});
 
 	createParser.addArgument(['-fb', '--from-block'], {
 		action: 'store',
 		type: 'int',
+		required: true,
 		help: 'The block number to start listening from',
+	});
+
+	createParser.addArgument(['-bs', '--batch-size'], {
+		action: 'store',
+		type: 'int',
+		required: true,
+		help: 'The capacity of the subroot of the deactivated keys tree to be merged',
 	});
 };
 
@@ -111,30 +122,105 @@ const confirmDeactivation = async (args: any) => {
 		fromBlock: fromBlock,
 	});
 
-	for (const log of deactivationAttemptsLogs) {
-		assert(log != undefined);
-		const event = pollIface.parseLog(log);
-		const sendersPubKeyX = event.args._sendersPubKeyX;
-		const sendersPubKeyY = event.args._sendersPubKeyY;
-		const sendersRawPubKey = [sendersPubKeyX, sendersPubKeyY];
-		const sendersPubKey = new PubKey(sendersRawPubKey);
+	const coordinatorPubKey = await pollContract.coordinatorPubKey();
+	const batchSize = args.batch_size ? args.batch_size : 1;
+	const HASH_LENGTH = 5;
+	const zeroValue = BigInt(0);
+	const H0 = BigInt(
+		'8370432830353022751713833565135785980866757267633941821328460903436894336785'
+	);
 
-		const elGamalEncryptedMessage = await elGamalEncryptBit(
-			sendersRawPubKey,
-			BigInt(0),
-			BigInt(0)
-		);
+	const numSubTrees = Math.floor(deactivationAttemptsLogs.length / batchSize);
+	const lastSubTree = deactivationAttemptsLogs.length % batchSize;
+
+	for (let i = 0; i < numSubTrees; i++) {
+		const subTree = new IncrementalQuinTree(batchSize, H0, HASH_LENGTH, hash5);
+		let encryptedPublicKeys = [];
+
+		for (let j = 0; j < batchSize; j++) {
+			const log = deactivationAttemptsLogs[i * batchSize + j];
+			assert(log != undefined);
+
+			const event = pollIface.parseLog(log);
+
+			const sendersPubKeyX = event.args._sendersPubKeyX;
+			const sendersPubKeyY = event.args._sendersPubKeyY;
+			const sendersRawPubKey = [sendersPubKeyX, sendersPubKeyY];
+			const sendersPubKey = new PubKey(sendersRawPubKey);
+
+			const salt = new Keypair().privKey.rawPrivKey;
+			const mask = BigInt(Math.ceil(Math.random() * 1000));
+			const status = BigInt(1);
+			const [c1, c2] = elGamalEncryptBit(coordinatorPubKey, status, mask);
+
+			const leaf = new DeactivatedKeyLeaf(sendersPubKey, c1, c2, salt).hash();
+			subTree.insert(leaf);
+
+			encryptedPublicKeys.push(sendersPubKey.asCircuitInputs());
+		}
 
 		try {
 			await pollContract.confirmDeactivation(
-				sendersPubKey,
-				elGamalEncryptedMessage
+				subTree.root,
+				batchSize,
+				encryptedPublicKeys
 			);
 		} catch (e) {
 			console.error(e);
 			return 1;
 		}
 	}
+
+	// last sub tree
+	if (lastSubTree > 0) {
+		const subTree = new IncrementalQuinTree(batchSize, H0, HASH_LENGTH, hash5);
+		let encryptedPublicKeys = [];
+
+		for (let j = 0; j < lastSubTree; j++) {
+			const log = deactivationAttemptsLogs[numSubTrees * batchSize + j];
+			assert(log != undefined);
+
+			const event = pollIface.parseLog(log);
+
+			const sendersPubKeyX = event.args._sendersPubKeyX;
+			const sendersPubKeyY = event.args._sendersPubKeyY;
+			const sendersRawPubKey = [sendersPubKeyX, sendersPubKeyY];
+			const sendersPubKey = new PubKey(sendersRawPubKey);
+
+			const salt = new Keypair().privKey.rawPrivKey;
+			const mask = BigInt(Math.ceil(Math.random() * 1000));
+			const status = BigInt(1);
+			const [c1, c2] = elGamalEncryptBit(coordinatorPubKey, status, mask);
+
+			const leaf = new DeactivatedKeyLeaf(sendersPubKey, c1, c2, salt).hash();
+			subTree.insert(leaf);
+
+			encryptedPublicKeys.push(sendersPubKey.asCircuitInputs());
+		}
+
+		if (HASH_LENGTH - lastSubTree > 0) {
+			// fill with zeros
+			for (let k = 0; k < HASH_LENGTH - lastSubTree; k++) {
+				subTree.insert(zeroValue);
+				encryptedPublicKeys.push(
+					new PubKey([zeroValue, zeroValue]).asCircuitInputs()
+				);
+			}
+		}
+
+		try {
+			await pollContract.confirmDeactivation(
+				subTree.root,
+				lastSubTree,
+				encryptedPublicKeys
+			);
+		} catch (e) {
+			console.error(e);
+			return 1;
+		}
+	}
+
+	return 0;
 };
 
 export { confirmDeactivation, configureSubparser };

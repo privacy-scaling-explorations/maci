@@ -12,6 +12,7 @@ const configureSubparser = (subparsers: any) => {
 	createParser.addArgument(['-x', '--maci-address'], {
 		action: 'store',
 		type: 'string',
+		required: true,
 		help: 'The MACI contract address',
 	});
 
@@ -25,12 +26,14 @@ const configureSubparser = (subparsers: any) => {
 	createParser.addArgument(['-snsq', '--state-num-sr-queue-ops'], {
 		action: 'store',
 		type: 'int',
+		required: true,
 		help: 'The number of subroot queue operations to merge for the MACI state tree',
 	});
 
 	createParser.addArgument(['-dnsq', '--deactivated-keys-num-sr-queue-ops'], {
 		action: 'store',
 		type: 'int',
+		required: true,
 		help: 'The number of subroot queue operations to merge for the deactivated keys tree',
 	});
 };
@@ -109,6 +112,8 @@ const completeDeactivation = async (args: any) => {
 		console.error(e);
 		return 1;
 	}
+
+	return 0;
 };
 
 export { completeDeactivation, configureSubparser };

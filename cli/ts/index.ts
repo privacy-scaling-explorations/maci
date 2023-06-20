@@ -1,204 +1,220 @@
 #!/usr/bin/env node
-import 'source-map-support/register'
+import 'source-map-support/register';
 
-import * as argparse from 'argparse' 
-import { 
-    calcBinaryTreeDepthFromMaxLeaves,
-    calcQuinTreeDepthFromMaxLeaves,
-} from './utils'
+import * as argparse from 'argparse';
+import {
+	calcBinaryTreeDepthFromMaxLeaves,
+	calcQuinTreeDepthFromMaxLeaves,
+} from './utils';
 
 import {
-    timeTravel,
-    configureSubparser as configureSubparserForTimeTravel,
-} from './timeTravel'
+	timeTravel,
+	configureSubparser as configureSubparserForTimeTravel,
+} from './timeTravel';
 
 import {
-    genMaciKeypair,
-    configureSubparser as configureSubparserForGenMaciKeypair,
-} from './genMaciKeypair'
+	genMaciKeypair,
+	configureSubparser as configureSubparserForGenMaciKeypair,
+} from './genMaciKeypair';
 
 import {
-    genMaciPubkey,
-    configureSubparser as configureSubparserForGenMaciPubkey,
-} from './genMaciPubkey'
+	genMaciPubkey,
+	configureSubparser as configureSubparserForGenMaciPubkey,
+} from './genMaciPubkey';
 
 import {
-    deployVkRegistry,
-    configureSubparser as configureSubparserForDeployVkRegistry,
-} from './deployVkRegistry'
+	deployVkRegistry,
+	configureSubparser as configureSubparserForDeployVkRegistry,
+} from './deployVkRegistry';
 
 import {
-    setVerifyingKeys,
-    configureSubparser as configureSubparserForSetVerifyingKeys,
-} from './setVerifyingKeys'
+	setVerifyingKeys,
+	configureSubparser as configureSubparserForSetVerifyingKeys,
+} from './setVerifyingKeys';
 
 import {
-    create,
-    configureSubparser as configureSubparserForCreate,
-} from './create'
+	create,
+	configureSubparser as configureSubparserForCreate,
+} from './create';
 
 import {
-    deployPoll,
-    configureSubparser as configureSubparserForDeployPoll,
-} from './deployPoll'
+	deployPoll,
+	configureSubparser as configureSubparserForDeployPoll,
+} from './deployPoll';
 
 import {
-    airdrop,
-    configureSubparser as configureSubparserForAirdrop,
-} from './airdrop'
+	airdrop,
+	configureSubparser as configureSubparserForAirdrop,
+} from './airdrop';
 
 import {
-    topup,
-    configureSubparser as configureSubparserForTopup,
-} from './topup'
+	topup,
+	configureSubparser as configureSubparserForTopup,
+} from './topup';
 
 import {
-    signup,
-    configureSubparser as configureSubparserForSignup,
-} from './signUp'
+	signup,
+	configureSubparser as configureSubparserForSignup,
+} from './signUp';
 
 import {
-    publish,
-    configureSubparser as configureSubparserForPublish,
-} from './publish'
+	publish,
+	configureSubparser as configureSubparserForPublish,
+} from './publish';
 
 import {
-    mergeMessages,
-    configureSubparser as configureSubparserForMergeMessages,
-} from './mergeMessages'
+	mergeMessages,
+	configureSubparser as configureSubparserForMergeMessages,
+} from './mergeMessages';
 
 import {
-    mergeSignups,
-    configureSubparser as configureSubparserForMergeSignups,
-} from './mergeSignups'
+	mergeSignups,
+	configureSubparser as configureSubparserForMergeSignups,
+} from './mergeSignups';
 
 import {
-    genProofs,
-    configureSubparser as configureSubparserForGenProofs,
-} from './genProofs'
+	genProofs,
+	configureSubparser as configureSubparserForGenProofs,
+} from './genProofs';
 
 import {
-    proveOnChain,
-    configureSubparser as configureSubparserForProveOnChain,
-} from './proveOnChain'
+	proveOnChain,
+	configureSubparser as configureSubparserForProveOnChain,
+} from './proveOnChain';
 
 import {
-    verify,
-    configureSubparser as configureSubparserForVerify,
-} from './verify'
+	verify,
+	configureSubparser as configureSubparserForVerify,
+} from './verify';
 
 import {
-    checkVerifyingKey,
-    configureSubparser as configureSubparserForCheckVerifyKey,
-} from './checkVerifyingKey'
+	checkVerifyingKey,
+	configureSubparser as configureSubparserForCheckVerifyKey,
+} from './checkVerifyingKey';
+
+import {
+	confirmDeactivation,
+	configureSubparser as configureSubparserForConfirmDeactivation,
+} from './confirmDeactivation';
+
+import {
+	completeDeactivation,
+	configureSubparser as configureSubparserForCompleteDeactivation,
+} from './completeDeactivation';
 
 const main = async () => {
-    const parser = new argparse.ArgumentParser({ 
-        description: 'Minimal Anti-Collusion Infrastructure',
-    })
+	const parser = new argparse.ArgumentParser({
+		description: 'Minimal Anti-Collusion Infrastructure',
+	});
 
-    const subparsers = parser.addSubparsers({
-        title: 'Subcommands',
-        dest: 'subcommand',
-    })
+	const subparsers = parser.addSubparsers({
+		title: 'Subcommands',
+		dest: 'subcommand',
+	});
 
-    // Subcommand: timeTravel
-    configureSubparserForTimeTravel(subparsers)
+	// Subcommand: timeTravel
+	configureSubparserForTimeTravel(subparsers);
 
-    // Subcommand: genMaciPubkey
-    configureSubparserForGenMaciPubkey(subparsers)
+	// Subcommand: genMaciPubkey
+	configureSubparserForGenMaciPubkey(subparsers);
 
-    // Subcommand: genMaciKeypair
-    configureSubparserForGenMaciKeypair(subparsers)
+	// Subcommand: genMaciKeypair
+	configureSubparserForGenMaciKeypair(subparsers);
 
-    // Subcommand: deployVkRegistry
-    configureSubparserForDeployVkRegistry(subparsers)
+	// Subcommand: deployVkRegistry
+	configureSubparserForDeployVkRegistry(subparsers);
 
-    // Subcommand: setVerifyingKeys
-    configureSubparserForSetVerifyingKeys(subparsers)
+	// Subcommand: setVerifyingKeys
+	configureSubparserForSetVerifyingKeys(subparsers);
 
-    // Subcommand: create
-    configureSubparserForCreate(subparsers)
+	// Subcommand: create
+	configureSubparserForCreate(subparsers);
 
-    // Subcommand: deployPoll
-    configureSubparserForDeployPoll(subparsers)
+	// Subcommand: deployPoll
+	configureSubparserForDeployPoll(subparsers);
 
-    // Subcommand: airdrop 
-    configureSubparserForAirdrop(subparsers)
+	// Subcommand: airdrop
+	configureSubparserForAirdrop(subparsers);
 
-    // Subcommand: topup 
-    configureSubparserForTopup(subparsers)
+	// Subcommand: topup
+	configureSubparserForTopup(subparsers);
 
-    // Subcommand: signup
-    configureSubparserForSignup(subparsers)
+	// Subcommand: signup
+	configureSubparserForSignup(subparsers);
 
-    // Subcommand: publish
-    configureSubparserForPublish(subparsers)
+	// Subcommand: publish
+	configureSubparserForPublish(subparsers);
 
-    // Subcommand: mergeMessages
-    configureSubparserForMergeMessages(subparsers)
+	// Subcommand: mergeMessages
+	configureSubparserForMergeMessages(subparsers);
 
-    // Subcommand: mergeSignups
-    configureSubparserForMergeSignups(subparsers)
+	// Subcommand: mergeSignups
+	configureSubparserForMergeSignups(subparsers);
 
-    // Subcommand: genProofs
-    configureSubparserForGenProofs(subparsers)
+	// Subcommand: genProofs
+	configureSubparserForGenProofs(subparsers);
 
-    // Subcommand: proveOnChain
-    configureSubparserForProveOnChain(subparsers)
+	// Subcommand: proveOnChain
+	configureSubparserForProveOnChain(subparsers);
 
-    // Subcommand: verify
-    configureSubparserForVerify(subparsers)
+	// Subcommand: verify
+	configureSubparserForVerify(subparsers);
 
-    // Subcommand: checkVerifyKey
-    configureSubparserForCheckVerifyKey(subparsers)
+	// Subcommand: checkVerifyKey
+	configureSubparserForCheckVerifyKey(subparsers);
 
-    const args = parser.parseArgs()
+	// Subcommand: confirmDeactivation
+	configureSubparserForConfirmDeactivation(subparsers);
 
-    // Execute the subcommand method
-    if (args.subcommand === 'timeTravel') {
-        await timeTravel(args)
-    } else if (args.subcommand === 'genMaciKeypair') {
-        await genMaciKeypair(args)
-    } else if (args.subcommand === 'genMaciPubkey') {
-        await genMaciPubkey(args)
-    } else if (args.subcommand === 'deployVkRegistry') {
-        await deployVkRegistry(args)
-    } else if (args.subcommand === 'setVerifyingKeys') {
-        await setVerifyingKeys(args)
-    } else if (args.subcommand === 'create') {
-        await create(args)
-    } else if (args.subcommand === 'deployPoll') {
-        await deployPoll(args)
-    } else if (args.subcommand === 'airdrop') {
-        await airdrop(args)
-    } else if (args.subcommand === 'topup') {
-        await topup(args)
-    } else if (args.subcommand === 'signup') {
-        await signup(args)
-    } else if (args.subcommand === 'publish') {
-        await publish(args)
-    } else if (args.subcommand === 'mergeMessages') {
-        await mergeMessages(args)
-    } else if (args.subcommand === 'mergeSignups') {
-        await mergeSignups(args)
-    } else if (args.subcommand === 'genProofs') {
-        await genProofs(args)
-    } else if (args.subcommand === 'proveOnChain') {
-        await proveOnChain(args)
-    } else if (args.subcommand === 'verify') {
-        await verify(args)
-    } 
-    else if (args.subcommand === 'checkVerifyingKey') {
-        await checkVerifyingKey(args)
-    }
-}
+	// Subcommand: completeDeactivation
+	configureSubparserForCompleteDeactivation(subparsers);
+
+	const args = parser.parseArgs();
+
+	// Execute the subcommand method
+	if (args.subcommand === 'timeTravel') {
+		await timeTravel(args);
+	} else if (args.subcommand === 'genMaciKeypair') {
+		await genMaciKeypair(args);
+	} else if (args.subcommand === 'genMaciPubkey') {
+		await genMaciPubkey(args);
+	} else if (args.subcommand === 'deployVkRegistry') {
+		await deployVkRegistry(args);
+	} else if (args.subcommand === 'setVerifyingKeys') {
+		await setVerifyingKeys(args);
+	} else if (args.subcommand === 'create') {
+		await create(args);
+	} else if (args.subcommand === 'deployPoll') {
+		await deployPoll(args);
+	} else if (args.subcommand === 'airdrop') {
+		await airdrop(args);
+	} else if (args.subcommand === 'topup') {
+		await topup(args);
+	} else if (args.subcommand === 'signup') {
+		await signup(args);
+	} else if (args.subcommand === 'publish') {
+		await publish(args);
+	} else if (args.subcommand === 'mergeMessages') {
+		await mergeMessages(args);
+	} else if (args.subcommand === 'mergeSignups') {
+		await mergeSignups(args);
+	} else if (args.subcommand === 'genProofs') {
+		await genProofs(args);
+	} else if (args.subcommand === 'proveOnChain') {
+		await proveOnChain(args);
+	} else if (args.subcommand === 'verify') {
+		await verify(args);
+	} else if (args.subcommand === 'checkVerifyingKey') {
+		await checkVerifyingKey(args);
+	} else if (args.subcommand === 'confirmDeactivation') {
+		await confirmDeactivation(args);
+	} else if (args.subcommand === 'completeDeactivation') {
+		await completeDeactivation(args);
+	}
+};
 
 if (require.main === module) {
-    main()
+	main();
 }
 
-export {
-    calcBinaryTreeDepthFromMaxLeaves,
-    calcQuinTreeDepthFromMaxLeaves,
-}
+export { calcBinaryTreeDepthFromMaxLeaves, calcQuinTreeDepthFromMaxLeaves };
