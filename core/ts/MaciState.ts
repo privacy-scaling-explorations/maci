@@ -346,6 +346,7 @@ class Poll {
     ) => {
         const maskingValues = [];
         const elGamalEnc = [];
+        const deactivatedLeaves = [];
 
         for (let i = 0; i < this.deactivationMessages.length; i += 1) {
             const deactCommand = this.deactivationCommands[i];
@@ -392,12 +393,15 @@ class Poll {
 
             elGamalEnc.push([c1, c2]);
 
-            this.deactivatedKeysTree.insert( (new DeactivatedKeyLeaf(
+            const deactivatedLeaf = (new DeactivatedKeyLeaf(
                 pubKey,
                 c1,
                 c2,
                 salt,
-            )).hash())
+            )).hash()
+
+            this.deactivatedKeysTree.insert(deactivatedLeaf)
+            deactivatedLeaves.push(deactivatedLeaf);
         }
 
         const deactivatedTreePathElements = [];
@@ -406,9 +410,7 @@ class Poll {
             deactivatedTreePathElements.push(merklePath.pathElements);
         }
 
-        
-
-        const inputs = stringifyBigInts({
+        const circuitInputs = stringifyBigInts({
             coordPrivKey: this.coordinatorKeypair.privKey.asCircuitInputs(),
             coordPubKey: this.coordinatorKeypair.pubKey.rawPubKey,
             encPubKeys: this.deactivationEncPubKeys.map(k => k.asCircuitInputs()),
@@ -423,7 +425,7 @@ class Poll {
             numSignUps: this.numSignUps,
         })
         
-        return inputs;
+        return { circuitInputs, deactivatedLeaves };
     }
 
     /*

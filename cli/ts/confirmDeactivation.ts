@@ -1,12 +1,12 @@
 const { ethers } = require('hardhat');
-import { parseArtifact, getDefaultSigner } from 'maci-contracts';
-import { readJSONFile } from 'maci-common';
+import { parseArtifact, getDefaultSigner, genMaciStateFromContract } from 'maci-contracts';
+import { readJSONFile, promptPwd } from 'maci-common';
 import { contractExists, validateEthAddress } from './utils';
 import { contractFilepath } from './config';
 import { DEFAULT_ETH_PROVIDER } from './defaults';
 import { IncrementalQuinTree, elGamalEncryptBit } from '../../crypto/ts';
 import * as assert from 'assert';
-import { PubKey, DeactivatedKeyLeaf, Keypair } from 'maci-domainobjs';
+import { PubKey, DeactivatedKeyLeaf, Keypair, PrivKey} from 'maci-domainobjs';
 import { hash5 } from 'maci-crypto';
 
 const configureSubparser = (subparsers: any) => {
@@ -27,6 +27,25 @@ const configureSubparser = (subparsers: any) => {
 		required: true,
 		help: 'The poll ID',
 	});
+
+	const maciPrivkeyGroup = createParser.addMutuallyExclusiveGroup({ required: true })
+
+	maciPrivkeyGroup.addArgument(
+        ['-dsk', '--prompt-for-maci-privkey'],
+        {
+            action: 'storeTrue',
+            help: 'Whether to prompt for your serialized MACI private key',
+        }
+    )
+
+    maciPrivkeyGroup.addArgument(
+        ['-sk', '--privkey'],
+        {
+            action: 'store',
+            type: 'string',
+            help: 'Your serialized MACI private key',
+        }
+    )
 
 	createParser.addArgument(['-ep', '--eth-provider'], {
 		action: 'store',
@@ -113,23 +132,61 @@ const confirmDeactivation = async (args: any) => {
 		? args.eth_provider
 		: DEFAULT_ETH_PROVIDER;
 
-	// Block number to start listening from
+	// // Block number to start listening from
+	// const fromBlock = args.from_block ? args.from_block : 0;
+
+	// const deactivationAttemptsLogs = await ethProvider.getLogs({
+	// 	// event AttemptKeyDeactivation(address indexed _sender, uint256 indexed _sendersPubKeyX, uint256 indexed _sendersPubKeyY);
+	// 	...pollContract.filters.AttemptKeyDeactivation(),
+	// 	fromBlock: fromBlock,
+	// });
+
+	// const coordinatorPubKey = await pollContract.coordinatorPubKey();
+	// const batchSize = args.batch_size ? args.batch_size : 1;
+	// const HASH_LENGTH = 5;
+	// const zeroValue = BigInt(0);
+	// const H0 = BigInt(
+	// 	'8370432830353022751713833565135785980866757267633941821328460903436894336785'
+	// );
+
+	const batchSize = args.batch_size ? args.batch_size : 1;
+	let serializedPrivkey
+    if (args.prompt_for_maci_privkey) {
+        serializedPrivkey = await promptPwd('Your MACI private key')
+    } else {
+        serializedPrivkey = args.privkey
+    }
+
+    if (!PrivKey.isValidSerializedPrivKey(serializedPrivkey)) {
+        console.error('Error: invalid MACI private key')
+        return 1
+    }
+
 	const fromBlock = args.from_block ? args.from_block : 0;
 
-	const deactivationAttemptsLogs = await ethProvider.getLogs({
-		// event AttemptKeyDeactivation(address indexed _sender, uint256 indexed _sendersPubKeyX, uint256 indexed _sendersPubKeyY);
-		...pollContract.filters.AttemptKeyDeactivation(),
-		fromBlock: fromBlock,
-	});
+	const maciPrivkey = PrivKey.unserialize(serializedPrivkey)
+    const coordinatorKeypair = new Keypair(maciPrivkey)
 
-	const coordinatorPubKey = await pollContract.coordinatorPubKey();
-	const batchSize = args.batch_size ? args.batch_size : 1;
-	const HASH_LENGTH = 5;
-	const zeroValue = BigInt(0);
-	const H0 = BigInt(
-		'8370432830353022751713833565135785980866757267633941821328460903436894336785'
-	);
+	// Reconstruct MACI state
+	const maciState = await genMaciStateFromContract(
+        signer.provider,
+        maciAddress,
+        coordinatorKeypair,
+        pollId,
+        fromBlock,
+    )
 
+	const { circuitInputs, deactivatedLeaves } = maciState.deactivatedKeysTree.processDeactivationMessages();
+	const numBatches = deactivatedLeaves.length % batchSize;
+
+	for (let i = 0; i < batchSize; i++ ) {
+		const batch = deactivatedLeaves.slice(batchSize * i, batchSize * (i + 1));
+
+		// TODO: Submit batch
+	}
+
+
+	/*
 	const numSubTrees = Math.floor(deactivationAttemptsLogs.length / batchSize);
 	const lastSubTree = deactivationAttemptsLogs.length % batchSize;
 
@@ -218,7 +275,8 @@ const confirmDeactivation = async (args: any) => {
 			console.error(e);
 			return 1;
 		}
-	}
+		*/
+	// }
 
 	return 0;
 };
