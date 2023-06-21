@@ -51,7 +51,7 @@ template ProcessMessages_v2(
 
     //  ----------------------------------------------------------------------- 
     // TODO: need verify inputHash and outputHash in order to use sbCommitment as output 
-    signal output outputHash[1];
+    signal output step_out[1];
     // The only public input, which is the SHA256 hash of a values provided
     // by the contract
     signal input step_in[1]; // inputHash
@@ -141,11 +141,13 @@ template ProcessMessages_v2(
     inputHasher.currentSbCommitment <== currentSbCommitment;
     inputHasher.pollEndTimestamp <== pollEndTimestamp;
 
-    // The unpacked values from packedVals
-    inputHasher.maxVoteOptions ==> maxVoteOptions;
-    inputHasher.numSignUps ==> numSignUps;
-    inputHasher.batchStartIndex ==> batchStartIndex;
-    inputHasher.batchEndIndex ==> batchEndIndex;
+    // Unpack packedVals 
+    component unpack = UnpackElement(4);
+    unpack.in <== packedVals;
+    maxVoteOptions <== unpack.out[3];
+    numSignUps <== unpack.out[2];
+    batchStartIndex <== unpack.out[1];
+    batchEndIndex <== unpack.out[0];
 
     inputHasher.hash === step_in[0];
 
@@ -354,16 +356,23 @@ template ProcessMessages_v2(
 
     sbCommitmentHasher.hash === newSbCommitment;
 
+    // generate packedVal for next batch
+    component nextBatch = PackNextBatch(batchSize);
+    nextBatch.in[0] <== batchEndIndex;
+    nextBatch.in[1] <== batchStartIndex;
+    nextBatch.in[2] <== numSignUps;
+    nextBatch.in[3] <== maxVoteOptions;
+
     // generate output hash 
     component outputHasher = ProcessMessagesHasher();
-    outputHasher.packedVals <== packedVals;
+    outputHasher.packedVals <== nextBatch.out;
     outputHasher.coordPubKey[0] <== coordPubKey[0];
     outputHasher.coordPubKey[1] <== coordPubKey[1];
     outputHasher.msgRoot <== msgRoot;
     outputHasher.currentSbCommitment <== newSbCommitment;
     outputHasher.pollEndTimestamp <== pollEndTimestamp;
 
-    outputHash[0] <== outputHasher.hash;
+    step_out[0] <== outputHasher.hash;
 }
 
 template ProcessTopup(stateTreeDepth) {
@@ -682,12 +691,6 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
 }
 
 template ProcessMessagesHasher() {
-    // Combine the following into 1 input element:
-    // - maxVoteOptions (50 bits)
-    // - numSignUps (50 bits)
-    // - batchStartIndex (50 bits)
-    // - batchEndIndex (50 bits)
-
     // Hash coordPubKey:
     // - coordPubKeyHash 
 
@@ -702,27 +705,15 @@ template ProcessMessagesHasher() {
     signal input currentSbCommitment;
     signal input pollEndTimestamp;
 
-    signal output maxVoteOptions;
-    signal output numSignUps;
-    signal output batchStartIndex;
-    signal output batchEndIndex;
     signal output hash;
     
-    // 1. Unpack packedVals and ensure that it is valid
-    component unpack = UnpackElement(4);
-    unpack.in <== packedVals;
 
-    maxVoteOptions <== unpack.out[3];
-    numSignUps <== unpack.out[2];
-    batchStartIndex <== unpack.out[1];
-    batchEndIndex <== unpack.out[0];
-
-    // 2. Hash coordPubKey
+    // 1. Hash coordPubKey
     component pubKeyHasher = HashLeftRight();
     pubKeyHasher.left <== coordPubKey[0];
     pubKeyHasher.right <== coordPubKey[1];
 
-    // 3. Hash the 6 inputs with SHA256
+    // 2. Hash the 6 inputs with SHA256
     component hasher = Sha256Hasher5();
     hasher.in[0] <== packedVals;
     hasher.in[1] <== pubKeyHasher.hash;

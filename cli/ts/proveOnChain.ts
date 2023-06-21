@@ -346,6 +346,7 @@ const proveOnChain = async (args: any) => {
             pollContract.address,
             currentMessageBatchIndex,
             numSignUps,
+            false
         )).toString()
 
         if (circuitInputs.packedVals !== packedValsOnChain) {
@@ -361,9 +362,10 @@ const proveOnChain = async (args: any) => {
             messageRootOnChain.toString(),
             numSignUps,
             circuitInputs.currentSbCommitment,
+            false
         ))
 
-        // chao: in processMessage_v2.circom, we add outputHash, thus publicInputHash is at index 1 
+        // chao: in processMessage_v2.circom, we add step_out, thus publicInputHash is at index 1 
         if (publicInputHashOnChain.toString() !== publicInputs[1].toString()) {
             console.error(`Public input mismatch. onchain=${publicInputHashOnChain.toString()}, offchain=${publicInputs[1].toString()}`)
             return 1

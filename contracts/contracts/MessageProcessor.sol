@@ -157,7 +157,8 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
             _messageRoot,
             numSignUps,
             _currentSbCommitment,
-            _newSbCommitment
+            _newSbCommitment,
+            false
         );
 
         // Get the verifying key from the VkRegistry
@@ -197,7 +198,8 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
             _currentMessageBatchIndex,
             _messageRoot,
             numSignUps,
-            _currentSbCommitment
+            _currentSbCommitment,
+            false
         );
 
         // Calculate the output hash (a SHA256 hash of several values)
@@ -206,7 +208,8 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
             _currentMessageBatchIndex,
             _messageRoot,
             numSignUps,
-            _newSbCommitment
+            _newSbCommitment,
+            true
         );
 
 
@@ -245,14 +248,16 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         uint256 _messageRoot,
         uint256 _numSignUps,
         uint256 _currentSbCommitment,
-        uint256 _newSbCommitment
+        uint256 _newSbCommitment,
+        bool isNextBatch
     ) public view returns (uint256) {
         uint256 coordinatorPubKeyHash = _poll.coordinatorPubKeyHash();
 
         uint256 packedVals = genProcessMessagesPackedVals(
             _poll,
             _currentMessageBatchIndex,
-            _numSignUps
+            _numSignUps,
+            isNextBatch
         );
 
         (uint256 deployTime, uint256 duration) = _poll
@@ -283,14 +288,16 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         uint256 _currentMessageBatchIndex,
         uint256 _messageRoot,
         uint256 _numSignUps,
-        uint256 _sbCommitment
+        uint256 _sbCommitment,
+        bool isNextBatch
     ) public view returns (uint256) {
         uint256 coordinatorPubKeyHash = _poll.coordinatorPubKeyHash();
 
         uint256 packedVals = genProcessMessagesPackedVals(
             _poll,
             _currentMessageBatchIndex,
-            _numSignUps
+            _numSignUps,
+            isNextBatch
         );
 
         (uint256 deployTime, uint256 duration) = _poll
@@ -319,7 +326,8 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     function genProcessMessagesPackedVals(
         Poll _poll,
         uint256 _currentMessageBatchIndex,
-        uint256 _numSignUps
+        uint256 _numSignUps,
+        bool isNextBatch
     ) public view returns (uint256) {
         (, uint256 maxVoteOptions) = _poll.maxValues();
         (, uint256 numMessages) = _poll.numSignUpsAndMessages();
@@ -329,6 +337,13 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         uint256 batchEndIndex = _currentMessageBatchIndex + messageBatchSize;
         if (batchEndIndex > numMessages) {
             batchEndIndex = numMessages;
+        }
+
+        if (isNextBatch) {
+            if (_currentMessageBatchIndex > 0) {
+               _currentMessageBatchIndex -= messageBatchSize; 
+               batchEndIndex = _currentMessageBatchIndex + messageBatchSize;
+            }
         }
 
         require(maxVoteOptions < 2**50, "maxVoteOptions too large");
