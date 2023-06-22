@@ -176,7 +176,7 @@ const confirmDeactivation = async (args: any) => {
         fromBlock,
     )
 
-	const { circuitInputs, deactivatedLeaves } = maciState.deactivatedKeysTree.processDeactivationMessages();
+	const { circuitInputs, deactivatedLeaves } = maciState.polls[pollId].processDeactivationMessages();
 	const numBatches = deactivatedLeaves.length % batchSize;
 
 	for (let i = 0; i < batchSize; i++ ) {

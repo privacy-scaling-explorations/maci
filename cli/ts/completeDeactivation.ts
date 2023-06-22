@@ -193,7 +193,7 @@ const completeDeactivation = async (args: any) => {
 
 	// TODO: Check if state and deactivated keys trees are merged
 
-	const { circuitInputs, deactivatedLeaves } = maciState.deactivatedKeysTree.processDeactivationMessages();
+	const { circuitInputs, deactivatedLeaves } = maciState.polls[pollId].processDeactivationMessages();
 	
 	let r
         try {

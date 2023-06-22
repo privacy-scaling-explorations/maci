@@ -365,12 +365,19 @@ class Poll {
             } = deactCommand;
 
             const stateIndexInt = parseInt(stateIndex.toString());
-            const computedStateIndex = stateIndexInt > 0 && stateIndexInt <= this.numSignUps ? stateIndexInt: 0;
-            const { pubKey } = this.stateLeaves[computedStateIndex];
+            const computedStateIndex = stateIndexInt > 0 && stateIndexInt <= this.numSignUps ? stateIndexInt - 1: -1;
+
+            let pubKey: any;
+            
+            if (computedStateIndex > -1) {
+                pubKey = this.stateLeaves[computedStateIndex].pubKey;
+            } else {
+                pubKey = new PubKey([BigInt(0), BigInt(0)]);
+            }
 
             // Verify deactivation message
             const status = deactCommand.cmdType.toString() == '1' // Check message type
-                && computedStateIndex != 0
+                && computedStateIndex != -1
                 && signature != null
                 && verifySignature(
                     deactMessage.hash(encPubKey), 
@@ -387,8 +394,8 @@ class Poll {
 
             const [c1, c2] = elGamalEncryptBit(
                 this.coordinatorKeypair.pubKey.rawPubKey,
-                mask,
                 status ? BigInt(1) : BigInt(0),
+                mask,
             )
 
             elGamalEnc.push([c1, c2]);
@@ -423,6 +430,13 @@ class Poll {
             deactivatedTreeRoot: this.deactivatedKeysTree.root,
             currentStateRoot: this.stateTree.root,
             numSignUps: this.numSignUps,
+            chainHash: this.deactivatedKeysChainHash,
+            inputHash: sha256Hash([
+                this.deactivatedKeysTree.root,
+                this.numSignUps,
+                this.stateTree.root,
+                this.deactivatedKeysChainHash,
+            ]),
         })
         
         return { circuitInputs, deactivatedLeaves };
