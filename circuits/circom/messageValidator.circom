@@ -1,5 +1,7 @@
 pragma circom 2.0.0;
-include "./";
+include "./utils.circom";
+include "./verifySignature.circom";
+include "../node_modules/circomlib/circuits/comparators.circom";
 include "../node_modules/circomlib/circuits/comparators.circom";
 
 template MessageValidator() {

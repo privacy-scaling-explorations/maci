@@ -35,7 +35,8 @@ KEY_DEACTIVATION_RESULT=$($MACI_CLI deactivateKey \
 
 if [[ $KEY_DEACTIVATION_RESULT == "" ]]
 then
-  echo "Test OK, PollE10 error should have been thrown" 
+  # TODO: Extend this to assert for the exact error number from error output of the deactivate key command above 
+  echo "Test OK if PollE11 error is thrown" 
 else
   echo "Test NOk"
 fi

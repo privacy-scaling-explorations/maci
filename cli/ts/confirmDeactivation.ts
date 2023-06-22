@@ -50,8 +50,8 @@ const configureSubparser = (subparsers: any) => {
 	createParser.addArgument(['-ep', '--eth-provider'], {
 		action: 'store',
 		type: 'string',
-		required: true,
-		help: 'The Ethereum provider to use for listening to events',
+		// required: true, // TODO: Why required when default given bellow?
+		help: 'The Ethereum provider to use for listening to events. Default: http://localhost:8545',
 	});
 
 	createParser.addArgument(['-fb', '--from-block'], {
@@ -64,8 +64,8 @@ const configureSubparser = (subparsers: any) => {
 	createParser.addArgument(['-bs', '--batch-size'], {
 		action: 'store',
 		type: 'int',
-		required: true,
-		help: 'The capacity of the subroot of the deactivated keys tree to be merged',
+		// required: true, // TODO: Why required when default given bellow?
+		help: 'The capacity of the subroot of the deactivated keys tree to be merged. Default: 1',
 	});
 };
 
@@ -88,7 +88,7 @@ const confirmDeactivation = async (args: any) => {
 
 	// Verify poll ID
 	const pollId = args.poll_id;
-	if (!pollId || pollId < 0) {
+	if (pollId < 0) {
 		console.error('Error: the Poll ID should be a positive integer.');
 		return 1;
 	}

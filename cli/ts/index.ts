@@ -168,7 +168,9 @@ const main = async () => {
 	// Subcommand: checkVerifyKey
 	configureSubparserForCheckVerifyKey(subparsers);
 
-<<<<<<< HEAD
+	// Subcommand: deactivateKey
+	configureSubparserForDeactivateKey(subparsers);
+
 	// Subcommand: confirmDeactivation
 	configureSubparserForConfirmDeactivation(subparsers);
 

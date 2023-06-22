@@ -206,13 +206,20 @@ cd integrationTests
 ### CLI tests
 
 Make sure dependencies are installed, circuits are built, zkeys keys generated and contract compiled.
-Navigate to /cli/tests/vanilla and execute each test like this:
+First run hardhat:
+
+```bash
+cd contracts
+npm run hardhat
+```
+
+Then navigate to /cli/tests/vanilla and execute each test like this:
 
 ```bash
 cd cli/tests/vanilla
 bash ./test1.sh
 ```
-You can find more details about running cli tests in /docs/testing.md
+You can find more details about running cli tests in /docs/testing.md.
 
 ### Docker
 

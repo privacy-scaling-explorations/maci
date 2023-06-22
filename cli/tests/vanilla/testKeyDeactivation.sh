@@ -27,7 +27,7 @@ $MACI_CLI deactivateKey \
     --state-index 1 \
     --nonce 2 \
     --salt 0x798D81BE4A9870C079B8DE539496AB95 \
-    --poll-id "$POLL_ID"
+    --poll-id $POLL_ID
 
 # key deactivation period
 $MACI_CLI timeTravel \
@@ -35,22 +35,11 @@ $MACI_CLI timeTravel \
 
 # $MACI_CLI generateNewKey  \ add when implemented
 
-# $MACI_CLI confirmDeactivation \ add when implemented
+$MACI_CLI confirmDeactivation \
+    --maci-address 0x75c35C980C0d37ef46DF04d31A140b65503c0eEd \
+    --poll-id $POLL_ID \
+    --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
+    --from-block 0 \
+    --batch-size 1 \
 
-# this should fail until generateNewKey and confirmDeactivation are implemented. atm, user is trying to vote with deactivated key.
-
-$MACI_CLI publish \
-    --pubkey macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391 \
-    --privkey macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c \
-    --state-index 1 \
-    --vote-option-index 0 \
-    --new-vote-weight 9 \
-    --nonce 1 \
-    --poll-id "$POLL_ID"
-
-$MACI_CLI timeTravel \
-    --seconds 90
-
-gen_proofs "$POLL_ID"
-
-prove_and_verify_on_chain "$POLL_ID"
+# ...

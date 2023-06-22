@@ -245,9 +245,9 @@ const completeDeactivation = async (args: any) => {
 	// } catch (e) {
 	// 	console.error(e);
 	// 	return 1;
-	}
 
 	return 0;
-};
+
+	};
 
 export { completeDeactivation, configureSubparser };
