@@ -114,7 +114,7 @@ const completeDeactivation = async (args: any) => {
     }
 
 	// Extract the verifying keys
-    const processVk = extractVk(args.process_zkey)
+    const processVk = extractVk(args.process_deactivation_zkey)
 
 	// MACI contract address
 	const contractAddrs = readJSONFile(contractFilepath);
@@ -134,7 +134,7 @@ const completeDeactivation = async (args: any) => {
 
 	// Verify poll ID
 	const pollId = args.poll_id;
-	if (!pollId || pollId < 0) {
+	if (pollId < 0) {
 		console.error('Error: the Poll ID should be a positive integer.');
 		return 1;
 	}

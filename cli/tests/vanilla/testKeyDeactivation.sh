@@ -8,7 +8,7 @@ ZKEYS_DIR="$BASE_DIR"/../../zkeys
 
 ZKEYS_POSTFIX="test"
 
-PROCESS_MESSAGES_PARAMS="10-2-1-2_$ZKEYS_POSTFIX"
+PROCESS_DEACTIVATION_MESSAGES_PARAMS="5-10_$ZKEYS_POSTFIX"
 
 . "$BASE_DIR"/../prepare_test.sh
 
@@ -63,7 +63,7 @@ $MACI_CLI completeDeactivation \
     --state-num-sr-queue-ops 1 \
     --deactivated-keys-num-sr-queue-ops 1 \
     --from-block 0 \
-    --process-deactivation-witnessgen "$ZKEYS_DIR"/ProcessMessages_"$PROCESS_MESSAGES_PARAMS" \
-    --process-deactivation-zkey "$ZKEYS_DIR"/ProcessMessages_"$PROCESS_MESSAGES_PARAMS".0.zkey \
+    --process-deactivation-witnessgen "$ZKEYS_DIR"/ProcessDeactivationMessages_"$PROCESS_DEACTIVATION_MESSAGES_PARAMS" \
+    --process-deactivation-zkey "$ZKEYS_DIR"/ProcessDeactivationMessages_"$PROCESS_DEACTIVATION_MESSAGES_PARAMS".0.zkey \
     --rapidsnark ~/rapidsnark/build/prover \
 

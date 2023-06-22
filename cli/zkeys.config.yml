@@ -12,7 +12,7 @@ circuits:
   type: "test"
   pubInputs: ["inputHash"]
 
-#- template: "../circuits/circom/processMessages.circom"
+# #- template: "../circuits/circom/processMessages.circom"
   #component: "ProcessMessages"
   #params: [10, 8, 2, 6]
   #type: "prod"
@@ -24,7 +24,7 @@ circuits:
   type: "test"
   pubInputs: ["inputHash"]
 
-#- template: "../circuits/circom/tallyVotes.circom"
+# #- template: "../circuits/circom/tallyVotes.circom"
   #component: "TallyVotes"
   #params: [10, 3, 6]
   #type: "prod"
@@ -37,8 +37,8 @@ circuits:
   type: "test"
   pubInputs: ["inputHash"]
 
-  - template: "../circuits/circom/processDeactivationMessages.circom"
-  component: "SubsidyPerBatch"
+- template: "../circuits/circom/processDeactivationMessages.circom"
+  component: "ProcessDeactivationMessages"
   params: [5, 10] # (deactivation)msgQueueSize, stateTreeDepth
   type: "test"
   pubInputs: ["inputHash"]
