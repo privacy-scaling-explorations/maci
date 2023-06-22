@@ -4,6 +4,12 @@ set -e
 
 BASE_DIR="$(dirname "$BASH_SOURCE")"
 
+ZKEYS_DIR="$BASE_DIR"/../../zkeys
+
+ZKEYS_POSTFIX="test"
+
+PROCESS_MESSAGES_PARAMS="10-2-1-2_$ZKEYS_POSTFIX"
+
 . "$BASE_DIR"/../prepare_test.sh
 
 # 1 signup and 1 message
@@ -34,9 +40,9 @@ $MACI_CLI timeTravel \
 
 # $MACI_CLI generateNewKey  \ add when implemented
 
-# missing triggering of smart contract code to pass batches
 # --from-block since MACI deployed
 # --maci-address read from previous commands
+# missing triggering of smart contract code to pass batches
 $MACI_CLI confirmDeactivation \
     --maci-address 0x75c35C980C0d37ef46DF04d31A140b65503c0eEd \
     --poll-id $POLL_ID \
@@ -44,7 +50,20 @@ $MACI_CLI confirmDeactivation \
     --from-block 0 \
     --batch-size 1 \
 
-# missing triggering of smart contract code to pass batches
-# completeDeactivation should be triggered after expiration of period
 
-# ...
+# key deactivation happens after original period 86400s from prepare_test.sh has expired 
+$MACI_CLI timeTravel \
+    --seconds 90000
+
+# missing triggering of smart contract code to pass batches
+$MACI_CLI completeDeactivation \
+    --maci-address 0x75c35C980C0d37ef46DF04d31A140b65503c0eEd \
+    --poll-id $POLL_ID \
+    --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
+    --state-num-sr-queue-ops 1 \
+    --deactivated-keys-num-sr-queue-ops 1 \
+    --from-block 0 \
+    --process-deactivation-witnessgen "$ZKEYS_DIR"/ProcessMessages_"$PROCESS_MESSAGES_PARAMS" \
+    --process-deactivation-zkey "$ZKEYS_DIR"/ProcessMessages_"$PROCESS_MESSAGES_PARAMS".0.zkey \
+    --rapidsnark ~/rapidsnark/build/prover \
+

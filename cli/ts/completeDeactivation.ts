@@ -75,7 +75,7 @@ const configureSubparser = (subparsers: any) => {
     )
 
 	createParser.addArgument(
-        ['-zpd', '--process-zkey'],
+        ['-zpd', '--process-deactivation-zkey'],
         {
             required: true,
             type: 'string',
@@ -96,6 +96,11 @@ const configureSubparser = (subparsers: any) => {
 const completeDeactivation = async (args: any) => {
 	const rapidsnarkExe = args.rapidsnark
     const processDeactivationDatFile = args.process_deactivation_witnessgen + ".dat"
+
+	console.log("rapidsnarkExe: ", rapidsnarkExe)
+	console.log("args.process_deactivation_witnessgen: ", args.process_deactivation_witnessgen)
+	console.log("processDeactivationDatFile: ",processDeactivationDatFile)
+	console.log("args.process_deactivation_zkey: ",args.process_deactivation_zkey)
 
 	const [ok, path] = isPathExist([
         rapidsnarkExe,
