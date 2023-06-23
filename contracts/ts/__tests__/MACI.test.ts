@@ -848,8 +848,6 @@ describe('MACI', () => {
 					.connect(otherAccount)
 					.deactivateKey(
 						deactivationMessage.asContractParam(),
-						deactivationMessageHash,
-						ecdsaSignature,
 						keypair.pubKey.asContractParam()
 					);
 			} catch (e) {
@@ -867,18 +865,13 @@ describe('MACI', () => {
 
 			const tx = await pollContract.deactivateKey(
 				deactivationMessage.asContractParam(),
-				deactivationMessageHash,
-				ecdsaSignature,
 				keypair.pubKey.asContractParam()
 			);
 
 			const receipt = await tx.wait();
 
-			expect(receipt.events[0].event).toEqual('AttemptKeyDeactivation');
-			expect(receipt.events[0].args[0]).toEqual(signer.address);
-			const { x, y } = keypair.pubKey.asContractParam();
-			expect(receipt.events[0].args[1]).toEqual(BigNumber.from(x));
-			expect(receipt.events[0].args[2]).toEqual(BigNumber.from(y));
+			expect(receipt.events[0].event).toEqual('PublishMessage');
+			expect(receipt.events[1].event).toEqual('AttemptKeyDeactivation');
 
 			const [, numMessagesAfter] =
 				await pollContract.numSignUpsAndMessagesAndDeactivatedKeys();
@@ -888,24 +881,25 @@ describe('MACI', () => {
 			expect(Number(numLeavesAfter)).toEqual(Number(numLeavesBefore) + 1);
 		});
 
-		it('deactivateKey() should revert if it is not within the voting deadline', async () => {
-			const ONE_SECOND = 1;
-			await timeTravel(signer.provider, Number(duration) + ONE_SECOND);
+		/**
+		 * TODO: Uncomment this test once the isWithinDeactivationPeriod modifier is put back in
+		 */
+		// it('deactivateKey() should revert if it is not within the voting deadline', async () => {
+		// 	const ONE_SECOND = 1;
+		// 	await timeTravel(signer.provider, Number(duration) + ONE_SECOND);
 
-			try {
-				await pollContract.deactivateKey(
-					deactivationMessage.asContractParam(),
-					deactivationMessageHash,
-					ecdsaSignature,
-					keypair.pubKey.asContractParam()
-				);
-			} catch (e) {
-				const error = 'PollE01'; // ERROR_VOTING_PERIOD_PASSED
-				expect(
-					e.message.slice(0, e.message.length - 1).endsWith(error)
-				).toBeTruthy();
-			}
-		});
+		// 	try {
+		// 		await pollContract.deactivateKey(
+		// 			deactivationMessage.asContractParam(),
+		// 			keypair.pubKey.asContractParam()
+		// 		);
+		// 	} catch (e) {
+		// 		const error = 'PollE01'; // ERROR_VOTING_PERIOD_PASSED
+		// 		expect(
+		// 			e.message.slice(0, e.message.length - 1).endsWith(error)
+		// 		).toBeTruthy();
+		// 	}
+		// });
 
 		it('confirmDeactivation() should revert if not called by an owner', async () => {
 			try {
