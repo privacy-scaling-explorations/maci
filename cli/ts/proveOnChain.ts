@@ -365,9 +365,23 @@ const proveOnChain = async (args: any) => {
             false
         ))
 
+        const publicOutputHashOnChain = BigInt(await mpContract.genProcessMessagesHash(
+            pollContract.address,
+            currentMessageBatchIndex,
+            messageRootOnChain.toString(),
+            numSignUps,
+            circuitInputs.newSbCommitment,
+            true
+        ))
+
         // chao: in processMessage_v2.circom, we add step_out, thus publicInputHash is at index 1 
         if (publicInputHashOnChain.toString() !== publicInputs[1].toString()) {
             console.error(`Public input mismatch. onchain=${publicInputHashOnChain.toString()}, offchain=${publicInputs[1].toString()}`)
+            return 1
+        }
+
+        if (publicOutputHashOnChain.toString() !== publicInputs[0].toString()) {
+            console.error(`Public output mismatch. onchain=${publicOutputHashOnChain.toString()}, offchain=${publicInputs[0].toString()}`)
             return 1
         }
 

@@ -335,14 +335,15 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         uint256 messageBatchSize = uint256(mbs);
 
         uint256 batchEndIndex = _currentMessageBatchIndex + messageBatchSize;
-        if (batchEndIndex > numMessages) {
-            batchEndIndex = numMessages;
-        }
 
         if (isNextBatch) {
             if (_currentMessageBatchIndex > 0) {
                _currentMessageBatchIndex -= messageBatchSize; 
                batchEndIndex = _currentMessageBatchIndex + messageBatchSize;
+            }
+        } else {
+            if (batchEndIndex > numMessages) {
+                batchEndIndex = numMessages;
             }
         }
 
