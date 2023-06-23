@@ -272,5 +272,6 @@ const completeDeactivation = async (args: any) => {
 	// return 0;
 
 	};
+};
 
 export { completeDeactivation, configureSubparser };
