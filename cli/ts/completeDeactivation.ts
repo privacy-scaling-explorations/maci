@@ -1,5 +1,5 @@
 const { ethers } = require('hardhat');
-import { parseArtifact, getDefaultSigner, genMaciStateFromContract } from 'maci-contracts';
+import { parseArtifact, getDefaultSigner, genMaciStateFromContract, formatProofForVerifierContract } from 'maci-contracts';
 import { genProof, verifyProof, extractVk } from 'maci-circuits'
 import { readJSONFile, promptPwd } from 'maci-common';
 import { contractExists, validateEthAddress, isPathExist } from './utils';
@@ -198,8 +198,8 @@ const completeDeactivation = async (args: any) => {
     )
 
 	const mpAddress = args.mp
-	? args.mp
-	: contractAddrs['MessageProcessor-' + pollId];
+		? args.mp
+		: contractAddrs['MessageProcessor-' + pollId];
 
 	const mpContract = new ethers.Contract(mpAddress, mpContractAbi, signer);
 
@@ -234,22 +234,23 @@ const completeDeactivation = async (args: any) => {
         }
         
 		const { proof } = r;
+		const formattedProof = formatProofForVerifierContract(proof);
 
 		const stateNumSrQueueOps = args.state_num_sr_queue_ops;
 		const deactivatedKeysNumSrQueueOps = args.state_num_sr_queue_ops; 
 
 	try {
 		await mpContract.completeDeactivation(
-			proof,
+			formattedProof,
 			stateNumSrQueueOps,
 			deactivatedKeysNumSrQueueOps,
-			pollContract,
+			pollContract.address,
 			pollId
 		);
 	} catch (e) {
 		console.error(e);
 		return 1;
-
+	};
 	// const stateNumSrQueueOps = args.state_num_sr_queue_ops
 	// 	? args.state_num_sr_queue_ops
 	// 	: 0;
@@ -269,9 +270,7 @@ const completeDeactivation = async (args: any) => {
 	// 	console.error(e);
 	// 	return 1;
 
-	// return 0;
-
-	};
+	return 0;
 };
 
 export { completeDeactivation, configureSubparser };
