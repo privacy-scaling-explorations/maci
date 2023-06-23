@@ -139,7 +139,7 @@ contract Poll is
     // The duration of the polling period, in seconds
     uint256 internal duration;
 
-    uint256 internal deactivationChainHash;
+    uint256 public deactivationChainHash;
 
     function getDeployTimeAndDuration() public view returns (uint256, uint256) {
         return (deployTime, duration);
@@ -242,24 +242,6 @@ contract Poll is
         require(secondsPassed < duration, ERROR_VOTING_PERIOD_PASSED);
         _;
     }
-
-    // modifier isWithinDeactivationPeriod() {
-    //     uint256 secondsPassed = block.timestamp - deployTime;
-    //     require(
-    //         secondsPassed < extContracts.maci.deactivationPeriod(),
-    //         ERROR_DEACTIVATION_PERIOD_PASSED
-    //     );
-    //     _;
-    // }
-
-    // modifier isAfterDeactivationPeriod() {
-    //     uint256 secondsPassed = block.timestamp - deployTime;
-    //     require(
-    //         secondsPassed > extContracts.maci.deactivationPeriod(),
-    //         ERROR_DEACTIVATION_PERIOD_NOT_PASSED
-    //     );
-    //     _;
-    // }
 
     // should be called immediately after Poll creation and messageAq ownership transferred
     function init() public {
@@ -424,49 +406,6 @@ contract Poll is
         extContracts.deactivatedKeysAq.insertSubTree(_subRoot);
 
         emit DeactivateKey(_subRoot);
-    }
-
-    /**
-     * @notice Completes the deactivation of all MACI public keys.
-     * @param _verifierContract The address of the Verifier contract
-     * @param _proof The Zk proof
-     * @param _vk The Verifying Key
-     * @param _input The public input for the zk circuit
-     * @param _stateNumSrQueueOps The number of subroot queue operations to merge for the MACI state tree
-     * @param _deactivatedKeysNumSrQueueOps The number of subroot queue operations to merge for the deactivated keys tree
-     * @param _pollId The pollId of the Poll contract
-     */
-    function completeDeactivation(
-        address _verifierContract,
-        uint256[8] memory _proof,
-        VerifyingKey memory _vk,
-        uint256 _input,
-        uint256 _stateNumSrQueueOps,
-        uint256 _deactivatedKeysNumSrQueueOps,
-        uint256 _pollId
-    )
-        external
-        onlyOwner // isAfterDeactivationPeriod
-    {
-        // uint256 secondsPassed = block.timestamp - deployTime;
-        // require(
-        //     block.timestamp - deployTime >
-        //         extContracts.maci.deactivationPeriod(),
-        //     ERROR_DEACTIVATION_PERIOD_NOT_PASSED
-        // );
-
-        mergeMaciStateAqSubRoots(_stateNumSrQueueOps, _pollId);
-        mergeMaciStateAq(_stateNumSrQueueOps);
-
-        extContracts.deactivatedKeysAq.mergeSubRoots(
-            _deactivatedKeysNumSrQueueOps
-        );
-        extContracts.deactivatedKeysAq.merge(treeDepths.messageTreeDepth);
-
-        require(
-            IVerifier(_verifierContract).verify(_proof, _vk, _input),
-            ERROR_VERIFICATION_FAILED
-        );
     }
 
     /*

@@ -131,6 +131,66 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         }
     }
 
+    /**
+     * @notice Completes the deactivation of all MACI public keys.
+     * @param _proof The Zk proof
+     * @param _stateNumSrQueueOps The number of subroot queue operations to merge for the MACI state tree
+     * @param _deactivatedKeysNumSrQueueOps The number of subroot queue operations to merge for the deactivated keys tree
+     * @param _pollId The pollId of the Poll contract
+     */
+    function completeDeactivation(
+        uint256[8] memory _proof,
+        uint256 _stateNumSrQueueOps,
+        uint256 _deactivatedKeysNumSrQueueOps,
+        Poll poll,
+        uint256 _pollId
+    ) external onlyOwner {
+        (
+            VkRegistry vkRegistry,
+            IMACI maci,
+            ,
+            AccQueue deactivatedKeysAq,
+
+        ) = poll.extContracts();
+
+        (, uint8 messageTreeSubDepth, uint8 messageTreeDepth, ) = poll
+            .treeDepths();
+
+        {
+            (uint256 deployTime, ) = poll.getDeployTimeAndDuration();
+
+            uint256 secondsPassed = block.timestamp - deployTime;
+            require(
+                block.timestamp - deployTime > maci.deactivationPeriod(),
+                "Deactivation period has not passed"
+            );
+        }
+
+        poll.mergeMaciStateAqSubRoots(_stateNumSrQueueOps, _pollId);
+        poll.mergeMaciStateAq(_stateNumSrQueueOps);
+
+        deactivatedKeysAq.mergeSubRoots(_deactivatedKeysNumSrQueueOps);
+        deactivatedKeysAq.merge(messageTreeDepth);
+
+        VerifyingKey memory vk = vkRegistry.getProcessDeactivationVk(
+            maci.stateTreeDepth(),
+            messageTreeSubDepth
+        );
+
+        (uint256 numSignUps, , ) = poll
+            .numSignUpsAndMessagesAndDeactivatedKeys();
+
+        uint256 input = genProcessDeactivationMessagesPublicInputHash(
+            poll,
+            deactivatedKeysAq.getMainRoot(messageTreeSubDepth),
+            numSignUps,
+            maci.getStateAqRoot(),
+            poll.deactivationChainHash()
+        );
+
+        require(verifier.verify(_proof, vk, input), "Verification failed");
+    }
+
     function verifyProcessProof(
         Poll _poll,
         uint256 _currentMessageBatchIndex,
@@ -178,7 +238,6 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         uint256 _currentStateRoot,
         uint256 _chainHash
     ) public view returns (uint256) {
-        
         uint256[] memory input = new uint256[](4);
         input[0] = _deactivatedTreeRoot;
         input[1] = _numSignUps;
@@ -258,13 +317,13 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
             batchEndIndex = numMessages;
         }
 
-        require(maxVoteOptions < 2**50, "maxVoteOptions too large");
-        require(_numSignUps < 2**50, "numSignUps too large");
+        require(maxVoteOptions < 2 ** 50, "maxVoteOptions too large");
+        require(_numSignUps < 2 ** 50, "numSignUps too large");
         require(
-            _currentMessageBatchIndex < 2**50,
+            _currentMessageBatchIndex < 2 ** 50,
             "currentMessageBatchIndex too large"
         );
-        require(batchEndIndex < 2**50, "batchEndIndex too large");
+        require(batchEndIndex < 2 ** 50, "batchEndIndex too large");
         uint256 result = maxVoteOptions +
             (_numSignUps << 50) +
             (_currentMessageBatchIndex << 100) +

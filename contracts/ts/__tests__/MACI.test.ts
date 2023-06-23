@@ -48,6 +48,14 @@ const testProcessVk = new VerifyingKey(
 	[new G1Point(BigInt(14), BigInt(15)), new G1Point(BigInt(16), BigInt(17))]
 );
 
+const testProcessDeactivationVk = new VerifyingKey(
+	new G1Point(BigInt(0), BigInt(1)),
+	new G2Point([BigInt(2), BigInt(3)], [BigInt(4), BigInt(5)]),
+	new G2Point([BigInt(6), BigInt(7)], [BigInt(8), BigInt(9)]),
+	new G2Point([BigInt(10), BigInt(11)], [BigInt(12), BigInt(13)]),
+	[new G1Point(BigInt(14), BigInt(15)), new G1Point(BigInt(16), BigInt(17))]
+);
+
 const testTallyVk = new VerifyingKey(
 	new G1Point(BigInt(0), BigInt(1)),
 	new G2Point([BigInt(2), BigInt(3)], [BigInt(4), BigInt(5)]),
@@ -239,8 +247,8 @@ describe('MACI', () => {
 				treeDepths.voteOptionTreeDepth,
 				messageBatchSize,
 				testProcessVk.asContractParam(),
-				testTallyVk.asContractParam(),
-				{ gasLimit: 1000000 }
+				testProcessDeactivationVk.asContractParam(),
+				testTallyVk.asContractParam()
 			);
 			let receipt = await tx.wait();
 			expect(receipt.status).toEqual(1);
