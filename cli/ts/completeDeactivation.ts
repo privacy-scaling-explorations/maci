@@ -141,6 +141,7 @@ const completeDeactivation = async (args: any) => {
 
 	// Get contract artifacts
 	const [maciContractAbi] = parseArtifact('MACI');
+	const [mpContractAbi] = parseArtifact('MessageProcessor');
 	const [pollContractAbi] = parseArtifact('Poll');
 
 	// Verify that MACI contract address is deployed at the given address
@@ -196,6 +197,12 @@ const completeDeactivation = async (args: any) => {
         fromBlock,
     )
 
+	const mpAddress = args.mp
+	? args.mp
+	: contractAddrs['MessageProcessor-' + pollId];
+
+	const mpContract = new ethers.Contract(mpAddress, mpContractAbi, signer);
+
 	// TODO: Check if state and deactivated keys trees are merged
 
 	const { circuitInputs, deactivatedLeaves } = maciState.polls[pollId].processDeactivationMessages();
@@ -228,9 +235,20 @@ const completeDeactivation = async (args: any) => {
         
 		const { proof } = r;
 
-		// TODO: Submit proof to complete deactivation SC method
-		// TODO: Verify proof in smart contract
-		
+		const stateNumSrQueueOps = args.state_num_sr_queue_ops;
+		const deactivatedKeysNumSrQueueOps = args.state_num_sr_queue_ops; 
+
+	try {
+		await mpContract.completeDeactivation(
+			proof,
+			stateNumSrQueueOps,
+			deactivatedKeysNumSrQueueOps,
+			pollContract,
+			pollId
+		);
+	} catch (e) {
+		console.error(e);
+		return 1;
 
 	// const stateNumSrQueueOps = args.state_num_sr_queue_ops
 	// 	? args.state_num_sr_queue_ops
@@ -251,7 +269,7 @@ const completeDeactivation = async (args: any) => {
 	// 	console.error(e);
 	// 	return 1;
 
-	return 0;
+	// return 0;
 
 	};
 

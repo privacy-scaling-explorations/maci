@@ -104,6 +104,15 @@ const configureSubparser = (subparsers: any) => {
             help: 'The .zkey file for the subsidy circuit. '
         }
     )
+
+    createParser.addArgument(
+        ['-zpd', '--process-deactivation-zkey'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The path to the ProcessDeactivationMessages .zkey file',
+        }
+    )
 }
 
 const setVerifyingKeys = async (args: any) => {
@@ -121,6 +130,8 @@ const setVerifyingKeys = async (args: any) => {
 
     const pmZkeyFile = path.resolve(args.process_messages_zkey)
     const tvZkeyFile = path.resolve(args.tally_votes_zkey)
+    const pdmZkeyFile = path.resolve(args.process_deactivation_zkey)
+    
     if (!fs.existsSync(pmZkeyFile)) {
         console.error(`Error: ${pmZkeyFile} does not exist.`)
         return 1
@@ -129,8 +140,13 @@ const setVerifyingKeys = async (args: any) => {
         console.error(`Error: ${tvZkeyFile} does not exist.`)
         return 1
     }
+    if (!fs.existsSync(pdmZkeyFile)) {
+        console.error(`Error: ${pdmZkeyFile} does not exist.`)
+        return 1
+    }
 
     const processVk: VerifyingKey = VerifyingKey.fromObj(extractVk(pmZkeyFile))
+    const processDeactivationVk: VerifyingKey = VerifyingKey.fromObj(extractVk(pdmZkeyFile))
     const tallyVk: VerifyingKey = VerifyingKey.fromObj(extractVk(tvZkeyFile))
 
 
@@ -282,6 +298,7 @@ const setVerifyingKeys = async (args: any) => {
             voteOptionTreeDepth,
             5 ** msgBatchDepth,
             processVk.asContractParam(),
+            processDeactivationVk.asContractParam(),
             tallyVk.asContractParam()
         )
 
