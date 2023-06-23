@@ -191,7 +191,7 @@ class Poll {
 
         // Update chain hash
         this.deactivatedKeysChainHash = hash2([this.deactivatedKeysChainHash, messageHash])
-        this.deactivationEncPubKeys.push()
+        this.deactivationEncPubKeys.push(_encPubKey)
 
         // Decrypt the message and store the Command
         const sharedKey = Keypair.genEcdhSharedKey(
@@ -348,6 +348,8 @@ class Poll {
         const elGamalEnc = [];
         const deactivatedLeaves = [];
 
+        let computedStateIndex = 0;
+
         for (let i = 0; i < this.deactivationMessages.length; i += 1) {
             const deactCommand = this.deactivationCommands[i];
             const deactMessage = this.deactivationMessages[i];
@@ -365,7 +367,7 @@ class Poll {
             } = deactCommand;
 
             const stateIndexInt = parseInt(stateIndex.toString());
-            const computedStateIndex = stateIndexInt > 0 && stateIndexInt <= this.numSignUps ? stateIndexInt - 1: -1;
+            computedStateIndex = stateIndexInt > 0 && stateIndexInt <= this.numSignUps ? stateIndexInt - 1: -1;
 
             let pubKey: any;
             
@@ -411,10 +413,51 @@ class Poll {
             deactivatedLeaves.push(deactivatedLeaf);
         }
 
+        const maxMessages = 5; // TODO: Temp
+
+        // Pad array
+        for (let i = 1; i < maxMessages; i += 1) {
+            this.deactivationEncPubKeys.push(new PubKey([BigInt(0), BigInt(0)]))
+        }
+
         const deactivatedTreePathElements = [];
         for (let i = 0; i < this.deactivationMessages.length; i += 1) {
-            const merklePath = this.deactivatedKeysTree.genMerklePath(0);
+            const merklePath = this.deactivatedKeysTree.genMerklePath(i);
             deactivatedTreePathElements.push(merklePath.pathElements);
+        }
+
+        // Pad array
+        for (let i = this.deactivationMessages.length; i < maxMessages; i += 1) {
+            deactivatedTreePathElements.push(this.stateTree.genMerklePath(0).pathElements)
+        }
+
+        const stateLeafPathElements = [this.stateTree.genMerklePath(computedStateIndex).pathElements];
+        // Pad array
+        for (let i = 1; i < maxMessages; i += 1) {
+            stateLeafPathElements.push(this.stateTree.genMerklePath(0).pathElements)
+        }
+
+        const currentStateLeaves = [this.stateLeaves[computedStateIndex].asCircuitInputs()];
+        // Pad array
+        for (let i = 1; i < maxMessages; i += 1) {
+            currentStateLeaves.push(blankStateLeaf.asCircuitInputs())
+        }
+
+        // Pad array
+        for (let i = this.deactivationMessages.length; i < maxMessages; i += 1) {
+            const padMask = genRandomSalt(); 
+            const [padc1, padc2] = elGamalEncryptBit(
+                this.coordinatorKeypair.pubKey.rawPubKey,
+                BigInt(0),
+                padMask,
+            )
+
+            maskingValues.push(padMask);
+            elGamalEnc.push([padc1, padc2]);
+        }
+
+        for (let i = this.deactivationMessages.length; i < maxMessages; i += 1) {
+            this.deactivationMessages.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
         }
 
         const circuitInputs = stringifyBigInts({
@@ -423,8 +466,8 @@ class Poll {
             encPubKeys: this.deactivationEncPubKeys.map(k => k.asCircuitInputs()),
             msgs: this.deactivationMessages.map(m => m.asCircuitInputs()),
             deactivatedTreePathElements,
-            stateLeafPathElements: this.stateLeaves,
-            currentStateLeaves: this.stateLeaves.map(l => l.asCircuitInputs()),
+            stateLeafPathElements: stateLeafPathElements,
+            currentStateLeaves: currentStateLeaves,
             elGamalEnc,
             maskingValues,
             deactivatedTreeRoot: this.deactivatedKeysTree.root,
