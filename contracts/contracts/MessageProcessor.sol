@@ -133,6 +133,45 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
 
     /**
      * @notice Completes the deactivation of all MACI public keys.
+     * @param _stateNumSrQueueOps The number of subroot queue operations to merge for the MACI state tree
+     * @param poll Poll contract address
+     * @param _pollId The pollId of the Poll contract
+     */
+    function mergeForDeactivation(
+        uint256 _stateNumSrQueueOps,
+        Poll poll,
+        uint256 _pollId
+    ) external onlyOwner {
+        (
+            ,
+            IMACI maci,
+            ,
+            AccQueue deactivatedKeysAq,
+
+        ) = poll.extContracts();
+
+        (, uint8 messageTreeSubDepth, uint8 messageTreeDepth, ) = poll
+            .treeDepths();
+
+        {
+            (uint256 deployTime, ) = poll.getDeployTimeAndDuration();
+
+            uint256 secondsPassed = block.timestamp - deployTime;
+            require(
+                block.timestamp - deployTime > maci.deactivationPeriod(),
+                "Deactivation period has not passed"
+            );
+        }
+
+        poll.mergeMaciStateAqSubRoots(_stateNumSrQueueOps, _pollId);
+        poll.mergeMaciStateAq(_stateNumSrQueueOps);
+
+        deactivatedKeysAq.mergeSubRoots(0);
+        deactivatedKeysAq.merge(messageTreeDepth);
+    }
+
+    /**
+     * @notice Completes the deactivation of all MACI public keys.
      * @param _proof The Zk proof
      * @param _stateNumSrQueueOps The number of subroot queue operations to merge for the MACI state tree
      * @param _pollId The pollId of the Poll contract
@@ -163,12 +202,6 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
                 "Deactivation period has not passed"
             );
         }
-
-        poll.mergeMaciStateAqSubRoots(_stateNumSrQueueOps, _pollId);
-        poll.mergeMaciStateAq(_stateNumSrQueueOps);
-
-        deactivatedKeysAq.mergeSubRoots(0);
-        deactivatedKeysAq.merge(messageTreeDepth);
 
         VerifyingKey memory vk = vkRegistry.getProcessDeactivationVk(
             maci.stateTreeDepth(),

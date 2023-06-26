@@ -237,19 +237,23 @@ const completeDeactivation = async (args: any) => {
 		const formattedProof = formatProofForVerifierContract(proof);
 
 		const stateNumSrQueueOps = args.state_num_sr_queue_ops;
-		const deactivatedKeysNumSrQueueOps = args.state_num_sr_queue_ops; 
 
 	try {
+		await mpContract.mergeForDeactivation(
+			stateNumSrQueueOps,
+			pollContract.address,
+			pollId
+		);
+
 		await mpContract.completeDeactivation(
 			formattedProof,
-			stateNumSrQueueOps,
 			pollContract.address,
 			pollId
 		);
 	} catch (e) {
 		console.error(e);
 		return 1;
-	};
+	}
 	// const stateNumSrQueueOps = args.state_num_sr_queue_ops
 	// 	? args.state_num_sr_queue_ops
 	// 	: 0;
