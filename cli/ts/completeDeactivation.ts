@@ -243,7 +243,6 @@ const completeDeactivation = async (args: any) => {
 		await mpContract.completeDeactivation(
 			formattedProof,
 			stateNumSrQueueOps,
-			deactivatedKeysNumSrQueueOps,
 			pollContract.address,
 			pollId
 		);

@@ -180,9 +180,18 @@ const confirmDeactivation = async (args: any) => {
 	const numBatches = deactivatedLeaves.length % batchSize;
 
 	for (let i = 0; i < batchSize; i++ ) {
-		const batch = deactivatedLeaves.slice(batchSize * i, batchSize * (i + 1));
+		const batch = deactivatedLeaves.slice(batchSize * i, batchSize * (i + 1)).map(leaf => leaf.asArray());
 
 		// TODO: Submit batch
+		try {
+			await pollContract.confirmDeactivation(
+				batch, 
+				batchSize,
+			);
+		} catch (e) {
+			console.error(e);
+			return 1;
+		}
 	}
 
 

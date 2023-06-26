@@ -135,13 +135,11 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
      * @notice Completes the deactivation of all MACI public keys.
      * @param _proof The Zk proof
      * @param _stateNumSrQueueOps The number of subroot queue operations to merge for the MACI state tree
-     * @param _deactivatedKeysNumSrQueueOps The number of subroot queue operations to merge for the deactivated keys tree
      * @param _pollId The pollId of the Poll contract
      */
     function completeDeactivation(
         uint256[8] memory _proof,
         uint256 _stateNumSrQueueOps,
-        uint256 _deactivatedKeysNumSrQueueOps,
         Poll poll,
         uint256 _pollId
     ) external onlyOwner {
@@ -169,7 +167,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         poll.mergeMaciStateAqSubRoots(_stateNumSrQueueOps, _pollId);
         poll.mergeMaciStateAq(_stateNumSrQueueOps);
 
-        deactivatedKeysAq.mergeSubRoots(_deactivatedKeysNumSrQueueOps);
+        deactivatedKeysAq.mergeSubRoots(0);
         deactivatedKeysAq.merge(messageTreeDepth);
 
         VerifyingKey memory vk = vkRegistry.getProcessDeactivationVk(

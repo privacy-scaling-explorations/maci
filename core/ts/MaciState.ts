@@ -407,9 +407,9 @@ class Poll {
                 c1,
                 c2,
                 salt,
-            )).hash()
+            ))
 
-            this.deactivatedKeysTree.insert(deactivatedLeaf)
+            this.deactivatedKeysTree.insert(deactivatedLeaf.hash())
             deactivatedLeaves.push(deactivatedLeaf);
         }
 

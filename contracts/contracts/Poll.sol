@@ -194,7 +194,7 @@ contract Poll is
     event MergeMessageAqSubRoots(uint256 _numSrQueueOps);
     event MergeMessageAq(uint256 _messageRoot);
     event AttemptKeyDeactivation(Message _message, PubKey _encPubKey);
-    event DeactivateKey(uint256 _subRoot);
+    event DeactivateKey(uint256 keyHash, uint256[2] c1, uint256[2] c2);
 
     ExtContracts public extContracts;
 
@@ -385,27 +385,31 @@ contract Poll is
 
     /**
      * @notice Confirms the deactivation of a MACI public key. This function must be called by Coordinator after User calls the deactivateKey function
-     * @param _subRoot The subroot of the deactivated keys tree, used for batches
-     * @param _subTreeCapacity The capacity of the subroot of the deactivated keys tree
-     * @param _elGamalEncryptedMessage The El Gamal encrypted message
+     * @param _batchLeaves Deactivated keys leaves
+     * @param _batchSize The capacity of the subroot of the deactivated keys tree
      */
     function confirmDeactivation(
-        uint256 _subRoot,
-        uint256 _subTreeCapacity,
-        Message memory _elGamalEncryptedMessage
+        uint256[][5] memory _batchLeaves,
+        uint256 _batchSize
     ) external onlyOwner {
         require(
             numDeactivatedKeys <= maxValues.maxMessages,
             ERROR_MAX_DEACTIVATED_KEYS_REACHED
         );
 
-        unchecked {
-            numDeactivatedKeys += _subTreeCapacity;
+        for (uint256 i = 0; i < _batchSize; i++) {
+            uint256 keyHash = _batchLeaves[i][0];
+            uint256[2] memory c1;
+            uint256[2] memory c2;
+
+            c1[0] = _batchLeaves[i][1];
+            c1[1] = _batchLeaves[i][2];
+            c2[0] = _batchLeaves[i][3];
+            c2[1] = _batchLeaves[i][4];
+
+            extContracts.deactivatedKeysAq.enqueue(hash5([keyHash, c1[0], c1[1], c2[0], c2[1]]));
+            emit DeactivateKey(keyHash, c1, c2);
         }
-
-        extContracts.deactivatedKeysAq.insertSubTree(_subRoot);
-
-        emit DeactivateKey(_subRoot);
     }
 
     /*
