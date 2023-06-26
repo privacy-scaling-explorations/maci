@@ -389,7 +389,7 @@ contract Poll is
      * @param _batchSize The capacity of the subroot of the deactivated keys tree
      */
     function confirmDeactivation(
-        uint256[][5] memory _batchLeaves,
+        uint256[][] memory _batchLeaves,
         uint256 _batchSize
     ) external onlyOwner {
         require(
@@ -420,7 +420,7 @@ contract Poll is
     function mergeMaciStateAqSubRoots(
         uint256 _numSrQueueOps,
         uint256 _pollId
-    ) public onlyOwner isAfterVotingDeadline {
+    ) public isAfterVotingDeadline {
         // This function cannot be called after the stateAq was merged
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
 
@@ -439,7 +439,7 @@ contract Poll is
      */
     function mergeMaciStateAq(
         uint256 _pollId
-    ) public onlyOwner isAfterVotingDeadline {
+    ) public isAfterVotingDeadline {
         // This function can only be called once per Poll after the voting
         // deadline
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
@@ -469,7 +469,7 @@ contract Poll is
      */
     function mergeMessageAqSubRoots(
         uint256 _numSrQueueOps
-    ) public onlyOwner isAfterVotingDeadline {
+    ) public isAfterVotingDeadline {
         extContracts.messageAq.mergeSubRoots(_numSrQueueOps);
         emit MergeMessageAqSubRoots(_numSrQueueOps);
     }
@@ -478,7 +478,7 @@ contract Poll is
      * The second step in merging the message AccQueue so that the
      * ProcessMessages circuit can access the message root.
      */
-    function mergeMessageAq() public onlyOwner isAfterVotingDeadline {
+    function mergeMessageAq() public isAfterVotingDeadline {
         uint256 root = extContracts.messageAq.merge(
             treeDepths.messageTreeDepth
         );

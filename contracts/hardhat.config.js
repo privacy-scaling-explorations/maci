@@ -21,8 +21,11 @@ module.exports = {
 				mnemonic:
 					'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat',
 			},
-			loggingEnabled: false,
+			loggingEnabled: true,
 			allowUnlimitedContractSize: true,
+			throwOnTransactionFailures: true,
+			throwOnCallFailures: true,
+			blockGasLimit: 25000000
 		},
 	},
 	contractSizer: {

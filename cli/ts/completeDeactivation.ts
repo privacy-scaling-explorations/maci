@@ -244,14 +244,22 @@ const completeDeactivation = async (args: any) => {
 			pollContract.address,
 			pollId
 		);
+	} catch (e) {
+		console.error("mpContract.mergeForDeactivation");
+		console.error(e);
+		throw e;
+		return 1;
+	}
 
+	try {
 		await mpContract.completeDeactivation(
 			formattedProof,
 			pollContract.address,
-			pollId
 		);
 	} catch (e) {
+		console.error("mpContract.completeDeactivation");
 		console.error(e);
+		throw e;
 		return 1;
 	}
 	// const stateNumSrQueueOps = args.state_num_sr_queue_ops

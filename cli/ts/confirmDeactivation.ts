@@ -190,7 +190,7 @@ const confirmDeactivation = async (args: any) => {
 			);
 		} catch (e) {
 			console.error(e);
-			return 1;
+			throw e;
 		}
 	}
 
