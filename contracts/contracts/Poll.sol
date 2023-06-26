@@ -72,9 +72,7 @@ contract PollFactory is Params, IPubKey, Ownable, PollDeploymentParams {
             _treeDepths.messageTreeSubDepth
         );
 
-        AccQueue deactivatedKeysAq = new AccQueueQuinaryMaci(
-            _treeDepths.messageTreeSubDepth
-        );
+        AccQueue deactivatedKeysAq = new AccQueueQuinaryMaci(10);
 
         ExtContracts memory extContracts;
 
@@ -266,7 +264,7 @@ contract Poll is
         extContracts.messageAq.enqueue(placeholderLeaf);
 
         // init deactivatedKeysAq here by inserting the same placeholderLeaf
-        extContracts.deactivatedKeysAq.enqueue(placeholderLeaf);
+        // extContracts.deactivatedKeysAq.enqueue();
 
         emit PublishMessage(_message, _padKey);
     }

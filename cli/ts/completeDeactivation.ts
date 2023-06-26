@@ -143,6 +143,7 @@ const completeDeactivation = async (args: any) => {
 	const [maciContractAbi] = parseArtifact('MACI');
 	const [mpContractAbi] = parseArtifact('MessageProcessor');
 	const [pollContractAbi] = parseArtifact('Poll');
+	const [accQueueContractAbi] = parseArtifact('AccQueue');
 
 	// Verify that MACI contract address is deployed at the given address
 	const signer = await getDefaultSigner();
@@ -228,6 +229,9 @@ const completeDeactivation = async (args: any) => {
             processVk,
         )
 
+		console.log('circuitInputs:', JSON.stringify(circuitInputs, null, 2));
+		console.log('r.publicInputs:', JSON.stringify(r.publicInputs, null, 2))
+
         if (!isValid) {
             console.error('Error: generated an invalid proof')
             return 1
@@ -238,6 +242,15 @@ const completeDeactivation = async (args: any) => {
 
 		const stateNumSrQueueOps = args.state_num_sr_queue_ops;
 
+		
+	const numSignUpsAndMessagesAndDeactivatedKeys = await pollContract.numSignUpsAndMessagesAndDeactivatedKeys()
+	console.log('numSignUpsAndMessagesAndDeactivatedKeys:', numSignUpsAndMessagesAndDeactivatedKeys)
+	
+	const deactivationChainHash = await pollContract.deactivationChainHash();
+	console.log('deactivationChainHash:', deactivationChainHash);
+	
+	const stateAqRoot = (await maciContractEthers.getStateAqRoot())
+	console.log(stateAqRoot);
 	try {
 		await mpContract.mergeForDeactivation(
 			stateNumSrQueueOps,
@@ -250,6 +263,18 @@ const completeDeactivation = async (args: any) => {
 		throw e;
 		return 1;
 	}
+
+	const extContracts = await pollContract.extContracts()
+    const deactivatedKeysAqAddr = extContracts.deactivatedKeysAq
+
+    const deactivatedKeysAqContract = new ethers.Contract(
+        deactivatedKeysAqAddr,
+        accQueueContractAbi,
+        signer,
+    )
+
+	const deactivatedKeysRoot = (await deactivatedKeysAqContract.getMainRoot('10')).toString()
+	console.log('deactivatedKeysRoot:', deactivatedKeysRoot);
 
 	try {
 		await mpContract.completeDeactivation(

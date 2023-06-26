@@ -141,7 +141,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         uint256 _stateNumSrQueueOps,
         Poll poll,
         uint256 _pollId
-    ) external onlyOwner {
+    ) external {
         (
             ,
             IMACI maci,
@@ -166,8 +166,8 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         poll.mergeMaciStateAqSubRoots(_stateNumSrQueueOps, _pollId);
         poll.mergeMaciStateAq(_stateNumSrQueueOps);
 
-        deactivatedKeysAq.mergeSubRoots(0);
-        deactivatedKeysAq.merge(messageTreeDepth);
+        deactivatedKeysAq.mergeSubRoots(_stateNumSrQueueOps);
+        deactivatedKeysAq.merge(10);
     }
 
     /**
@@ -178,7 +178,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     function completeDeactivation(
         uint256[8] memory _proof,
         Poll poll
-    ) external onlyOwner {
+    ) external {
         (
             VkRegistry vkRegistry,
             IMACI maci,
@@ -210,7 +210,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
 
         uint256 input = genProcessDeactivationMessagesPublicInputHash(
             poll,
-            deactivatedKeysAq.getMainRoot(messageTreeSubDepth),
+            deactivatedKeysAq.getMainRoot(10),
             numSignUps,
             maci.getStateAqRoot(),
             poll.deactivationChainHash()

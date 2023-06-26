@@ -177,16 +177,20 @@ const confirmDeactivation = async (args: any) => {
     )
 
 	const { circuitInputs, deactivatedLeaves } = maciState.polls[pollId].processDeactivationMessages();
-	const numBatches = deactivatedLeaves.length % batchSize;
+	const numBatches = Math.ceil(deactivatedLeaves.length / batchSize);
 
-	for (let i = 0; i < batchSize; i++ ) {
+	for (let i = 0; i < numBatches; i++ ) {
 		const batch = deactivatedLeaves.slice(batchSize * i, batchSize * (i + 1)).map(leaf => leaf.asArray());
 
 		// TODO: Submit batch
 		try {
+			console.log('Batch', i+1);
+			console.log(batch);
+			console.log('Batch length:', batch.length);
+			
 			await pollContract.confirmDeactivation(
 				batch, 
-				batchSize,
+				batch.length,
 			);
 		} catch (e) {
 			console.error(e);
