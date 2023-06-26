@@ -174,7 +174,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
 
         VerifyingKey memory vk = vkRegistry.getProcessDeactivationVk(
             maci.stateTreeDepth(),
-            messageTreeSubDepth
+            messageTreeDepth
         );
 
         (uint256 numSignUps, , ) = poll
