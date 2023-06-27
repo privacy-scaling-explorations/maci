@@ -29,7 +29,7 @@ The user sends their public key (two coordinates of the elliptic curve) which is
 
 Contract's `signUp` function creates `StateLeaf` that contains the user’s `pubKey`, `voteCredits`, and registration `timestamp`. It hashes `StateLeaf` using the *Poseidon* hash function where elements of the array are $x$ and $y$ coordinates of the `pubKey`, and the aforementioned `voteCredits` and `timestamp`.
 
-## Public Key Deactivation using El Gamal encryption (message type: 3)
+## Public Key Deactivation using El Gamal encryption
 
 The user’s public key deactivation takes the following steps.
 
@@ -37,7 +37,6 @@ The user’s public key deactivation takes the following steps.
 
 `deactivateKey` function in [deactivateKey.ts](../cli/ts/deactivateKey.ts).
 
-A new message type is added (type 3).
 The command being encrypted here takes the arguments:
 
 - `stateIndex`: State leaf index
@@ -53,7 +52,7 @@ const userMaciPubKey = new PubKey([BigInt(0), BigInt(0)])
 - `pollId`: Id of the poll to which the key deactivation relates
 - `salt`
 
-The reason `userMaciPubKey` is hardcoded in this message is that the command that forms the key deactivation message (`PCommand`), and the circom circuit that processes the messages are the same as in other messages (like publishing a vote or swapping a key), and when sent, it is added to the same message tree (`MessageAq`). Assigning (0, 0) to the `userMaciPubKey` parameter, along with setting `voteOptionIndex` and `newVoteWeight` to 0 effectively identifies these types of messages in the message tree.
+The reason `userMaciPubKey` is hardcoded in this message is that the command that forms the key deactivation message (`PCommand`), and the circom circuit that processes the messages are the same as in other messages (like publishing a vote or swapping a key), and when sent, it is added to the same message tree (`MessageAq`). Assigning (0, 0) to the `userMaciPubKey` parameter, along with setting `voteOptionIndex` and `newVoteWeight` to 0 effectively identifies these types of messages in the message tree (along with other parameters of the command).
 
 The command is signed with the user’s MACI private key and encrypted using a generated ECDH shared key (see [shared key generation](primitives.md#shared-key-generation)).
 
@@ -74,13 +73,13 @@ In the `Poll` smart contract, within `deactivateKey()` function, the received me
 ```solidity
 uint256 messageLeaf = hashMessageAndEncPubKey(
     _message,
-    coordinatorPubKey
+    _encPubKey
 );
 
 extContracts.messageAq.enqueue(messageLeaf);
 ```
 
-Additionally, we store the incremental hash of each new deactivation message. Pseudocode:
+Additionally, we store the incremental hash of each new deactivation message (chain hash update). Pseudocode:
 
 ```javascript
 // ​​Message1
@@ -92,28 +91,100 @@ H2 = hash(H1, hash(M2));
 //...
 ```
 
-Since the deactivation period is different from the voting period, and in order to process deactivation messages, a merge of the message tree needs to be done. This can compromise the merging of the tree upon voting completion. This is why, we store this hash of the deactivation messages that is later used to prove the correctness of message processing.
+Actual code:
 
-<!-- TODO: check this phrasing-->
-At the end of the deactivation (rerandomization) period, the coordinator proves through circom circuit `processDeactivationMessages.circom` that all deactivation messages are correctly processed. He proves that by relying on the incremental hashing of the incoming messages - he proves the hash of the final message he provided is equal to the stored hash.
+```solidity
+deactivationChainHash = hash2([deactivationChainHash, messageLeaf]);
+```
+
+Since the deactivation period is different from the voting period, and in order to process deactivation messages, a merge of the message tree needs to be done. This can compromise the merging of the tree upon voting completion. This is why we store this hash of the deactivation messages that is later used to prove the correctness of message processing.
+
+`PublishMessage` and `AttemptKeyDeactivation` events are emitted.
 
 ### Step 3: Coordinator confirms deactivation
 
 `confirmDeactivation` in [confirmDeactivation.ts](../cli/ts/confirmDeactivation.ts).
 
-<!-- TODO: verify denotation of rerandomizationPeriod -->
-The coordinator waits for the deactivation period to expire, upon which he parses the events from the smart contract (previous step). The deactivation period is the parameter of the `Poll` smart contract (denoted as `rerandomizationPeriod`).
-Upon registering the `AttemptKeyDeactivation` event, the coordinator confirms key deactivation. The coordinator takes the `sendersPubKey` as an argument from the event:
+<!-- TODO: Does he wait for the deactivation period or reacts immediately? -->
+The coordinator waits for the deactivation period to expire upon which he collects all `AttemptKeyDeactivation` events and starts to process the deactivation messages, in batches.
+
+He reconstructs the MACI state using `genMaciStateFromContract()` function which merges the state tree.
+
+He then calls the `processDeactivationMessages()` function of the [MaciState.ts](../core/ts/MaciState.ts).
+Here, for all deactivation messages, the following important things are happening:
+
+- Verification of the deactivation message
+
+It verifies the signature, `pubKey` set to `(0,0)`, `voteOptionIndex` and `newVoteWeight` set to 0, etc. This verification renders the status of deactivation.
+
+- El Gamal encryption of the status
+
+The deactivation status is encrypted using El Gamal encryption where `[c1, c2]` are ciphertexts of deactivation status:
 
 ```javascript
-const sendersPubKey = event.args._sendersPubKey;
+const [c1, c2] = elGamalEncryptBit(
+    this.coordinatorKeypair.pubKey.rawPubKey,
+    status ? BigInt(1) : BigInt(0),
+    mask,
+)
 ```
 
-The coordinator encrypts the message, which represents the result of key deactivation, using his own public key and utilizing El Gamal encryption:
+For details on this encryption, see [El Gamal Encryption](#el-gamal-encryption) section below.
 
-<!-- TODO: edit this if changed in the meantime -->
+- Construction of deactivated-keys tree leaf:
+
 ```javascript
-const elGamalEncryptedMessage = await elGamalEncryptBit(coordinatorPubKey, BigInt(0), BigInt(0));
+const deactivatedLeaf = (new DeactivatedKeyLeaf(
+    pubKey,
+    c1,
+    c2,
+    salt,
+)).hash()
+```
+
+`processDeactivationMessages()` function returns the deactivated-keys tree leaves along with circuit inputs used for generating proof of correct processing (explained in the next step).
+
+The coordinator then submits all deactivated-keys tree leaves in batches to the `Poll` smart contract (`confirmDeactivation()` function). On the smart contract, these leaves are added to the deactivated-keys tree:
+
+```solidity
+extContracts.deactivatedKeysAq.insertSubTree(_subRoot);
+```
+
+`DeactivateKey` event is emitted:
+
+```solidity
+emit DeactivateKey(_subRoot);
+```
+
+### Step 4: Complete deactivation
+
+`completeDeactivation` in [completeDeactivation.ts](../cli/ts/completeDeactivation.ts).
+
+In `completeDeactivation()` function, again, the MACI state is reconstructed and `processDeactivationMessages()` is called to obtain `circuitInputs`.These inputs are required for [processDeactivationMessages.circom](../circuits/circom/processDeactivationMessages.circom) to generate proof of correct processing of deactivation messages.
+
+The coordinator submits the proof to the `completeDeactivation()` function of the `MessageProcessor` smart contract. On the smart contract, two important things are happening:
+
+1. Merge of the deactivated-keys tree:
+
+```solidity
+deactivatedKeysAq.mergeSubRoots(_deactivatedKeysNumSrQueueOps);
+deactivatedKeysAq.merge(messageTreeDepth);
+```
+
+2. Verification of the submitted proof
+
+The verification (partly) relies on the incremental hashing of the (incoming) deactivation messages (deactivation chain hash) - proves the hash of the final message he provided is equal to the stored hash.
+
+```solidity
+uint256 input = genProcessDeactivationMessagesPublicInputHash(
+    poll,
+    deactivatedKeysAq.getMainRoot(messageTreeSubDepth),
+    numSignUps,
+    maci.getStateAqRoot(),
+    poll.deactivationChainHash()
+);
+
+require(verifier.verify(_proof, vk, input), "Verification failed");
 ```
 
 ### El Gamal Encryption
@@ -154,28 +225,11 @@ For more information, see [El Gamal general](elgamal-general.md) document.
 For the generation of ZK proofs, there exists an equivalent circom circuit that takes care of the El Gamal Encryption: [elGamalEncryption.circom](../circuits/circom/elGamalEncryption.circom).
 The coordinator proves through this ZK circuit that he encrypted the status correctly.
 
-The coordinator then triggers the `Poll` contract function `confirmDeactivation()` that takes `elGamalEncryptedMessage` and `hash(sendersPubKey, salt)` as parameters.
-The `sendersPubKey` is the public key of the user. Salt is the argument of the `confirmDeactivation` message in `cli`.
-
-In the contract, the hash of the public key and encrypted status is written in the deactivated-keys tree.
-An event is generated so that the user on the other side can react to generate a new key.
-
-```javascript
-uint256 leaf = hashMessageAndEncPubKey(
-    _elGamalEncryptedMessage,
-    _usersPubKey
-);
-
-leafIndex = extContracts.deactivatedKeysAq.enqueue(leaf);
-
-emit DeactivateKey(_usersPubKey, leafIndex);
-```
-
 ## New Key Generation
 
 `generateNewKey` in [generateNewKey.ts](../cli/ts/generateNewKey.ts).
 
-A new message type is added (type 4).
+A new message type is added (type 3).
 
 The user provides inclusion proof that the deactivated key exists in the tree, rerandomizes `[c1, c2]` to `[c1’, c2’]` (described in the following section), and sends that and a `nullifier` in the `generateNewKey` message.
 This is where the connection between the old public key and the new one is lost since the user only provides ZK proof that his old public key exists in this tree without making a particular reference ([verifyDeactivatedKey.circom](../circuits/circom/verifyDeactivatedKey.circom)).
