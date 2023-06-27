@@ -418,7 +418,7 @@ contract Poll is
     function mergeMaciStateAqSubRoots(
         uint256 _numSrQueueOps,
         uint256 _pollId
-    ) public isAfterVotingDeadline { // TODO: Before mil2 PR - onlyOwner fails here because the caller is MessageProcessor and not Maci
+    ) public isAfterVotingDeadline { // TODO: During milestone 3 - onlyOwner fails here because the caller is MessageProcessor and not Maci
         // This function cannot be called after the stateAq was merged
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
 
@@ -437,7 +437,7 @@ contract Poll is
      */
     function mergeMaciStateAq(
         uint256 _pollId
-    ) public isAfterVotingDeadline { // TODO: Before mil2 PR - onlyOwner fails here because the caller is MessageProcessor and not Maci
+    ) public isAfterVotingDeadline { // TODO: During milestone 3 - onlyOwner fails here because the caller is MessageProcessor and not Maci
         // This function can only be called once per Poll after the voting
         // deadline
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
