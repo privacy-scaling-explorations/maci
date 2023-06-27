@@ -204,8 +204,6 @@ const completeDeactivation = async (args: any) => {
 
 	const mpContract = new ethers.Contract(mpAddress, mpContractAbi, signer);
 
-	// TODO: Check if state and deactivated keys trees are merged
-
 	const { circuitInputs, deactivatedLeaves } = maciState.polls[pollId].processDeactivationMessages();
 	
 	let r

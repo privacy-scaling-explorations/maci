@@ -182,7 +182,6 @@ const confirmDeactivation = async (args: any) => {
 	for (let i = 0; i < numBatches; i++ ) {
 		const batch = deactivatedLeaves.slice(batchSize * i, batchSize * (i + 1)).map(leaf => leaf.asArray());
 
-		// TODO: Submit batch
 		try {
 			console.log(deactivatedLeaves.slice(batchSize * i, batchSize * (i + 1)));
 			console.log('Batch', i+1);

@@ -92,7 +92,7 @@ class Poll {
     public deactivatedKeysChainHash = DEACT_MESSAGE_INIT_HASH
     public deactivatedKeysTree = new IncrementalQuinTree(
         DEACT_KEYS_TREE_DEPTH,
-        DEACT_MESSAGE_INIT_HASH,
+        NOTHING_UP_MY_SLEEVE,
         this.DEACT_KEYS_TREE_ARITY,
         hash5,
     )
@@ -219,8 +219,9 @@ class Poll {
         this.stateLeaves = this.maciStateRef.stateLeaves.map(
             (x) => x.copy()
         )
+        
         this.stateTree = this.maciStateRef.stateTree.copy()
-
+        
         // Create as many ballots as state leaves
         const emptyBallot = new Ballot(
             this.maxValues.maxVoteOptions,
@@ -350,6 +351,10 @@ class Poll {
 
         let computedStateIndex = 0;
 
+        if (!this.stateCopied) {
+            this.copyStateFromMaci()
+        }
+
         for (let i = 0; i < this.deactivationMessages.length; i += 1) {
             const deactCommand = this.deactivationCommands[i];
             const deactMessage = this.deactivationMessages[i];
@@ -391,7 +396,7 @@ class Poll {
                 && voteOptionIndex.toString() == '0'
                 && newVoteWeight.toString() == '0'
 
-            const mask = genRandomSalt()
+            const mask = BigInt(1)
             maskingValues.push(mask);
 
             const [c1, c2] = elGamalEncryptBit(
@@ -402,12 +407,21 @@ class Poll {
 
             elGamalEnc.push([c1, c2]);
 
+            // TODO: Verification bug
+
             const deactivatedLeaf = (new DeactivatedKeyLeaf(
                 pubKey,
                 c1,
                 c2,
                 salt,
             ))
+
+            console.log("deactivatedLeaf.pubKey: " + deactivatedLeaf.pubKey);
+            console.log("deactivatedLeaf.c1: " + deactivatedLeaf.c1);
+            console.log("deactivatedLeaf.c2: " + deactivatedLeaf.c2);
+            console.log("deactivatedLeaf.salt: " + deactivatedLeaf.salt);
+            console.log("deactivatedLeaf.hash(): " + deactivatedLeaf.hash());
+            console.log("hash3([...pubKey, salt]): " + hash3([...pubKey.asArray(), salt]));
 
             this.deactivatedKeysTree.insert(deactivatedLeaf.hash())
             deactivatedLeaves.push(deactivatedLeaf);
@@ -459,6 +473,8 @@ class Poll {
         for (let i = this.deactivationMessages.length; i < maxMessages; i += 1) {
             this.deactivationMessages.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
         }
+
+        console.log("this.deactivatedKeysTree:", this.deactivatedKeysTree)
 
         const circuitInputs = stringifyBigInts({
             coordPrivKey: this.coordinatorKeypair.privKey.asCircuitInputs(),
@@ -1579,7 +1595,7 @@ class MaciState {
         this.stateAq.enqueue(blankStateLeafHash)
     }
 
-    public signUp(
+public signUp(
         _pubKey: PubKey,
         _initialVoiceCreditBalance: BigInt,
         _timestamp: BigInt,
