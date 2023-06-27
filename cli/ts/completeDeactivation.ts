@@ -248,9 +248,6 @@ const completeDeactivation = async (args: any) => {
 	
 	const deactivationChainHash = await pollContract.deactivationChainHash();
 	console.log('deactivationChainHash:', deactivationChainHash);
-	
-	const stateAqRoot = (await maciContractEthers.getStateAqRoot())
-	console.log(stateAqRoot);
 	try {
 		await mpContract.mergeForDeactivation(
 			stateNumSrQueueOps,
@@ -263,6 +260,9 @@ const completeDeactivation = async (args: any) => {
 		throw e;
 		return 1;
 	}
+
+	const stateAqRoot = (await maciContractEthers.getStateAqRoot())
+	console.log('stateAqRoot:', stateAqRoot);
 
 	const extContracts = await pollContract.extContracts()
     const deactivatedKeysAqAddr = extContracts.deactivatedKeysAq

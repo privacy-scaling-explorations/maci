@@ -184,6 +184,7 @@ const confirmDeactivation = async (args: any) => {
 
 		// TODO: Submit batch
 		try {
+			console.log(deactivatedLeaves.slice(batchSize * i, batchSize * (i + 1)));
 			console.log('Batch', i+1);
 			console.log(batch);
 			console.log('Batch length:', batch.length);

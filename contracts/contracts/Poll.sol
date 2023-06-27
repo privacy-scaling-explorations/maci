@@ -72,7 +72,7 @@ contract PollFactory is Params, IPubKey, Ownable, PollDeploymentParams {
             _treeDepths.messageTreeSubDepth
         );
 
-        AccQueue deactivatedKeysAq = new AccQueueQuinaryMaci(10);
+        AccQueue deactivatedKeysAq = new AccQueueQuinaryMaci(2);
 
         ExtContracts memory extContracts;
 
@@ -249,7 +249,6 @@ contract Poll is
 
         unchecked {
             numMessages++;
-            numDeactivatedKeys++;
         }
 
         // init messageAq here by inserting placeholderLeaf

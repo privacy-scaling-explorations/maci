@@ -92,7 +92,7 @@ class Poll {
     public deactivatedKeysChainHash = DEACT_MESSAGE_INIT_HASH
     public deactivatedKeysTree = new IncrementalQuinTree(
         DEACT_KEYS_TREE_DEPTH,
-        NOTHING_UP_MY_SLEEVE,
+        DEACT_MESSAGE_INIT_HASH,
         this.DEACT_KEYS_TREE_ARITY,
         hash5,
     )
