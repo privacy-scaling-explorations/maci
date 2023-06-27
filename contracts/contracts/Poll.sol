@@ -71,8 +71,7 @@ contract PollFactory is Params, IPubKey, Ownable, PollDeploymentParams {
             _treeDepths.messageTreeSubDepth
         );
 
-        // TODO: Before mil2 PR - Is this magic number 1 ok like this?
-        AccQueue deactivatedKeysAq = new AccQueueQuinaryMaci(1);
+        AccQueue deactivatedKeysAq = new AccQueueQuinaryMaci(_treeDepths.messageTreeSubDepth);
 
         ExtContracts memory extContracts;
 
@@ -261,10 +260,6 @@ contract Poll is
             uint256 placeholderLeaf
         ) = padAndHashMessage(dat, 1);
         extContracts.messageAq.enqueue(placeholderLeaf);
-
-        // TODO: Before mil2 PR - Do we need a more detailed explanation of this?
-        // init deactivatedKeysAq here by inserting the same placeholderLeaf
-        // extContracts.deactivatedKeysAq.enqueue();
 
         emit PublishMessage(_message, _padKey);
     }

@@ -23,6 +23,8 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     error INVALID_PROCESS_MESSAGE_PROOF();
     error VK_NOT_SET();
 
+    uint8 public constant DEACT_TREE_DEPTH = 10;
+
     // Whether there are unprocessed messages left
     bool public processingComplete;
     // The number of batches processed
@@ -167,8 +169,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         poll.mergeMaciStateAq(_stateNumSrQueueOps);
 
         deactivatedKeysAq.mergeSubRoots(_stateNumSrQueueOps);
-        // TODO: Before mil2 PR - Do we want to add dkTreeDepth to pool.treeDepths() ?
-        deactivatedKeysAq.merge(10);
+        deactivatedKeysAq.merge(DEACT_TREE_DEPTH);
     }
 
     /**
@@ -211,7 +212,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
 
         uint256 input = genProcessDeactivationMessagesPublicInputHash(
             poll,
-            deactivatedKeysAq.getMainRoot(10), // TODO: Before mil2 PR - Do we want to add dkTreeDepth to pool.treeDepths() ?
+            deactivatedKeysAq.getMainRoot(DEACT_TREE_DEPTH),
             numSignUps,
             maci.getStateAqRoot(),
             poll.deactivationChainHash()
