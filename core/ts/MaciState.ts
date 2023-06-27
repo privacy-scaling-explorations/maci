@@ -407,21 +407,12 @@ class Poll {
 
             elGamalEnc.push([c1, c2]);
 
-            // TODO: Verification bug
-
             const deactivatedLeaf = (new DeactivatedKeyLeaf(
                 pubKey,
                 c1,
                 c2,
                 salt,
             ))
-
-            console.log("deactivatedLeaf.pubKey: " + deactivatedLeaf.pubKey);
-            console.log("deactivatedLeaf.c1: " + deactivatedLeaf.c1);
-            console.log("deactivatedLeaf.c2: " + deactivatedLeaf.c2);
-            console.log("deactivatedLeaf.salt: " + deactivatedLeaf.salt);
-            console.log("deactivatedLeaf.hash(): " + deactivatedLeaf.hash());
-            console.log("hash3([...pubKey, salt]): " + hash3([...pubKey.asArray(), salt]));
 
             this.deactivatedKeysTree.insert(deactivatedLeaf.hash())
             deactivatedLeaves.push(deactivatedLeaf);

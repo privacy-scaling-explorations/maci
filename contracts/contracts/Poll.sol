@@ -192,7 +192,7 @@ contract Poll is
     event MergeMessageAqSubRoots(uint256 _numSrQueueOps);
     event MergeMessageAq(uint256 _messageRoot);
     event AttemptKeyDeactivation(Message _message, PubKey _encPubKey);
-    event DeactivateKey(uint256 keyHash, uint256[2] c1, uint256[2] c2, uint256 contractHash5Result);
+    event DeactivateKey(uint256 keyHash, uint256[2] c1, uint256[2] c2);
 
     ExtContracts public extContracts;
 
@@ -394,8 +394,6 @@ contract Poll is
             ERROR_MAX_DEACTIVATED_KEYS_REACHED
         );
 
-        // TODO: Verification bug
-
         for (uint256 i = 0; i < _batchSize; i++) {
             uint256 keyHash = _batchLeaves[i][0];
             uint256[2] memory c1;
@@ -406,9 +404,8 @@ contract Poll is
             c2[0] = _batchLeaves[i][3];
             c2[1] = _batchLeaves[i][4];
 
-            uint256 hash5result = hash5([keyHash, c1[0], c1[1], c2[0], c2[1]]);
-            extContracts.deactivatedKeysAq.enqueue(hash5result);
-            emit DeactivateKey(keyHash, c1, c2, hash5result);
+            extContracts.deactivatedKeysAq.enqueue(hash5([keyHash, c1[0], c1[1], c2[0], c2[1]]));
+            emit DeactivateKey(keyHash, c1, c2);
         }
     }
 

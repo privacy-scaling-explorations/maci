@@ -6,7 +6,6 @@ import { MaciState } from 'maci-core';
 
 import * as ethers from 'ethers';
 import * as assert from 'assert';
-import { hash5, IncrementalQuinTree, NOTHING_UP_MY_SLEEVE } from 'maci-crypto';
 
 interface Action {
 	type: string;
@@ -39,13 +38,6 @@ const genMaciStateFromContract = async (
 	// Check stateTreeDepth
 	const stateTreeDepth = await maciContract.stateTreeDepth();
 	assert(stateTreeDepth === maciState.stateTreeDepth);
-
-	const dkTree = new IncrementalQuinTree(
-        10,
-        NOTHING_UP_MY_SLEEVE,
-        5,
-        hash5,
-    )
 
 	// Fetch event logs
 	const initLogs = await provider.getLogs({
@@ -334,8 +326,7 @@ const genMaciStateFromContract = async (
 			data: {
 				keyHash: event.args.keyHash,
 				c1: event.args.c1,
-				c2: event.args.c2,
-				contractHash5Result: event.args.contractHash5Result
+				c2: event.args.c2
 			},
 		});
 	}
@@ -461,15 +452,7 @@ const genMaciStateFromContract = async (
 				action.data.encPubKey
 			);
 		} else if (action['type'] === 'DeactivateKey') {
-			console.log("action.data.contractHash5Result: " + action.data.contractHash5Result);
-			const hash5result = hash5([action.data.keyHash, ...action.data.c1, ...action.data.c2])
-			console.log("action.data.keyHash: " + action.data.keyHash);
-			console.log("action.data.c1[0]: " + action.data.c1[0]);
-			console.log("action.data.c1[1]: " + action.data.c1[1]);
-			console.log("action.data.c2[0]: " + action.data.c2[0]);
-			console.log("action.data.c2[1]: " + action.data.c2[1]);
-			console.log("hash5result: " + hash5result);
-			dkTree.insert(hash5result);
+			// TODO: Implement reaction to DeactivateKey contract event as part of subsequent milestones
 		} else if (action['type'] === 'TopupMessage') {
 			maciState.polls[pollId].topupMessage(action.data.message);
 		} else if (action['type'] === 'MergeMaciStateAqSubRoots') {
@@ -491,8 +474,6 @@ const genMaciStateFromContract = async (
 			);
 		}
 	}
-
-	console.log("genMaciState dkTree.root: " + dkTree.root)
 
 	// Set numSignUps
 	const [numSignUps, numMessages] =
