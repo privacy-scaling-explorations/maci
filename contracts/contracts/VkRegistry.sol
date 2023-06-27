@@ -90,7 +90,7 @@ contract VkRegistry is Ownable, SnarkCommon {
         VerifyingKey memory _processVk,
         VerifyingKey memory _deactivationVk,
         VerifyingKey memory _tallyVk
-    ) public {
+    ) public onlyOwner {
         uint256 processVkSig = genProcessVkSig(
             _stateTreeDepth,
             _messageTreeDepth,

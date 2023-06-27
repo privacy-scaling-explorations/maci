@@ -141,7 +141,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         uint256 _stateNumSrQueueOps,
         Poll poll,
         uint256 _pollId
-    ) external {
+    ) external onlyOwner {
         (
             ,
             IMACI maci,
@@ -179,7 +179,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     function completeDeactivation(
         uint256[8] memory _proof,
         Poll poll
-    ) external {
+    ) external onlyOwner {
         (
             VkRegistry vkRegistry,
             IMACI maci,

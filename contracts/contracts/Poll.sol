@@ -418,7 +418,7 @@ contract Poll is
     function mergeMaciStateAqSubRoots(
         uint256 _numSrQueueOps,
         uint256 _pollId
-    ) public isAfterVotingDeadline {
+    ) public isAfterVotingDeadline { // TODO: Before mil2 PR - onlyOwner fails here because the caller is MessageProcessor and not Maci
         // This function cannot be called after the stateAq was merged
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
 
@@ -437,7 +437,7 @@ contract Poll is
      */
     function mergeMaciStateAq(
         uint256 _pollId
-    ) public isAfterVotingDeadline {
+    ) public isAfterVotingDeadline { // TODO: Before mil2 PR - onlyOwner fails here because the caller is MessageProcessor and not Maci
         // This function can only be called once per Poll after the voting
         // deadline
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
@@ -467,7 +467,7 @@ contract Poll is
      */
     function mergeMessageAqSubRoots(
         uint256 _numSrQueueOps
-    ) public isAfterVotingDeadline {
+    ) public onlyOwner isAfterVotingDeadline {
         extContracts.messageAq.mergeSubRoots(_numSrQueueOps);
         emit MergeMessageAqSubRoots(_numSrQueueOps);
     }
@@ -476,7 +476,7 @@ contract Poll is
      * The second step in merging the message AccQueue so that the
      * ProcessMessages circuit can access the message root.
      */
-    function mergeMessageAq() public isAfterVotingDeadline {
+    function mergeMessageAq() public onlyOwner isAfterVotingDeadline {
         uint256 root = extContracts.messageAq.merge(
             treeDepths.messageTreeDepth
         );

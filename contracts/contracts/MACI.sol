@@ -301,7 +301,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     function mergeStateAqSubRoots(
         uint256 _numSrQueueOps,
         uint256 _pollId
-    ) public override afterInit {
+    ) public override afterInit { // TODO: Before mil2 PR - onlyPoll fails here because the caller is MessageProcessor and not Poll
         stateAq.mergeSubRoots(_numSrQueueOps);
 
         emit MergeStateAqSubRoots(_pollId, _numSrQueueOps);
@@ -314,7 +314,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     */
     function mergeStateAq(
         uint256 _pollId
-    ) public override afterInit returns (uint256) {
+    ) public override afterInit returns (uint256) { // TODO: Before mil2 PR - onlyPoll fails here because the caller is MessageProcessor and not Poll
         uint256 root = stateAq.merge(stateTreeDepth);
 
         emit MergeStateAq(_pollId);
