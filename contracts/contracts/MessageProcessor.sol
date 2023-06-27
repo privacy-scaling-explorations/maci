@@ -167,6 +167,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         poll.mergeMaciStateAq(_stateNumSrQueueOps);
 
         deactivatedKeysAq.mergeSubRoots(_stateNumSrQueueOps);
+        // TODO: Before mil2 PR - Do we want to add dkTreeDepth to pool.treeDepths() ?
         deactivatedKeysAq.merge(10);
     }
 
@@ -210,7 +211,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
 
         uint256 input = genProcessDeactivationMessagesPublicInputHash(
             poll,
-            deactivatedKeysAq.getMainRoot(10),
+            deactivatedKeysAq.getMainRoot(10), // TODO: Before mil2 PR - Do we want to add dkTreeDepth to pool.treeDepths() ?
             numSignUps,
             maci.getStateAqRoot(),
             poll.deactivationChainHash()

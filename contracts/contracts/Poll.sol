@@ -262,6 +262,7 @@ contract Poll is
         ) = padAndHashMessage(dat, 1);
         extContracts.messageAq.enqueue(placeholderLeaf);
 
+        // TODO: Before mil2 PR - Do we need a more detailed explanation of this?
         // init deactivatedKeysAq here by inserting the same placeholderLeaf
         // extContracts.deactivatedKeysAq.enqueue();
 
