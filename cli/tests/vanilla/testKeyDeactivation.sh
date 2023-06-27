@@ -41,10 +41,7 @@ $MACI_CLI timeTravel \
 # $MACI_CLI generateNewKey  \ add when implemented
 
 # --from-block since MACI deployed
-# --maci-address read from previous commands
-# missing triggering of smart contract code to pass batches
 $MACI_CLI confirmDeactivation \
-    --maci-address 0x75c35C980C0d37ef46DF04d31A140b65503c0eEd \
     --poll-id $POLL_ID \
     --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
     --from-block 0 \
@@ -57,7 +54,6 @@ $MACI_CLI timeTravel \
 
 # missing triggering of smart contract code to pass batches
 $MACI_CLI completeDeactivation \
-    --maci-address 0x75c35C980C0d37ef46DF04d31A140b65503c0eEd \
     --poll-id $POLL_ID \
     --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
     --state-num-sr-queue-ops 1 \

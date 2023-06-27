@@ -14,7 +14,6 @@ const configureSubparser = (subparsers: any) => {
 	createParser.addArgument(['-x', '--maci-address'], {
 		action: 'store',
 		type: 'string',
-		required: true,
 		help: 'The MACI contract address',
 	});
 
@@ -96,11 +95,6 @@ const configureSubparser = (subparsers: any) => {
 const completeDeactivation = async (args: any) => {
 	const rapidsnarkExe = args.rapidsnark
     const processDeactivationDatFile = args.process_deactivation_witnessgen + ".dat"
-
-	console.log("rapidsnarkExe: ", rapidsnarkExe)
-	console.log("args.process_deactivation_witnessgen: ", args.process_deactivation_witnessgen)
-	console.log("processDeactivationDatFile: ",processDeactivationDatFile)
-	console.log("args.process_deactivation_zkey: ",args.process_deactivation_zkey)
 
 	const [ok, path] = isPathExist([
         rapidsnarkExe,

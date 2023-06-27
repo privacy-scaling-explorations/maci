@@ -4,10 +4,7 @@ import { readJSONFile, promptPwd } from 'maci-common';
 import { contractExists, validateEthAddress } from './utils';
 import { contractFilepath } from './config';
 import { DEFAULT_ETH_PROVIDER } from './defaults';
-import { IncrementalQuinTree, elGamalEncryptBit } from '../../crypto/ts';
-import * as assert from 'assert';
-import { PubKey, DeactivatedKeyLeaf, Keypair, PrivKey} from 'maci-domainobjs';
-import { hash5 } from 'maci-crypto';
+import { Keypair, PrivKey} from 'maci-domainobjs';
 
 const configureSubparser = (subparsers: any) => {
 	const createParser = subparsers.addParser('confirmDeactivation', {
@@ -17,7 +14,6 @@ const configureSubparser = (subparsers: any) => {
 	createParser.addArgument(['-x', '--maci-address'], {
 		action: 'store',
 		type: 'string',
-		required: true,
 		help: 'The MACI contract address',
 	});
 
@@ -50,7 +46,6 @@ const configureSubparser = (subparsers: any) => {
 	createParser.addArgument(['-ep', '--eth-provider'], {
 		action: 'store',
 		type: 'string',
-		// required: true, // TODO: Why required when default given bellow?
 		help: 'The Ethereum provider to use for listening to events. Default: http://localhost:8545',
 	});
 
@@ -64,7 +59,6 @@ const configureSubparser = (subparsers: any) => {
 	createParser.addArgument(['-bs', '--batch-size'], {
 		action: 'store',
 		type: 'int',
-		// required: true, // TODO: Why required when default given bellow?
 		help: 'The capacity of the subroot of the deactivated keys tree to be merged. Default: 1',
 	});
 };
