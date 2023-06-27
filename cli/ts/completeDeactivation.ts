@@ -90,6 +90,12 @@ const configureSubparser = (subparsers: any) => {
             help: 'The path to the rapidsnark binary',
         }
     )
+
+	createParser.addArgument(['-sd', '--seed'], {
+		action: 'store',
+		type: 'int',
+		help: 'Random generator seed value',
+	});
 };
 
 const completeDeactivation = async (args: any) => {
@@ -198,7 +204,8 @@ const completeDeactivation = async (args: any) => {
 
 	const mpContract = new ethers.Contract(mpAddress, mpContractAbi, signer);
 
-	const { circuitInputs, deactivatedLeaves } = maciState.polls[pollId].processDeactivationMessages();
+	const seed = args.seed ? BigInt(args.seed) : BigInt(42);
+	const { circuitInputs, deactivatedLeaves } = maciState.polls[pollId].processDeactivationMessages(seed);
 	
 	let r
 	try {

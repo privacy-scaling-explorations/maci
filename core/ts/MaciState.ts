@@ -92,7 +92,7 @@ class Poll {
     public deactivatedKeysChainHash = DEACT_MESSAGE_INIT_HASH
     public deactivatedKeysTree = new IncrementalQuinTree(
         DEACT_KEYS_TREE_DEPTH,
-        NOTHING_UP_MY_SLEEVE,
+        DEACT_MESSAGE_INIT_HASH,
         this.DEACT_KEYS_TREE_ARITY,
         hash5,
     )
@@ -219,9 +219,8 @@ class Poll {
         this.stateLeaves = this.maciStateRef.stateLeaves.map(
             (x) => x.copy()
         )
-        
         this.stateTree = this.maciStateRef.stateTree.copy()
-        
+
         // Create as many ballots as state leaves
         const emptyBallot = new Ballot(
             this.maxValues.maxVoteOptions,
@@ -343,17 +342,19 @@ class Poll {
      * Process key deactivation messages
      */
     public processDeactivationMessages = (
-        _pollId: number
+        _seed: BigInt
     ) => {
         const maskingValues = [];
         const elGamalEnc = [];
         const deactivatedLeaves = [];
 
-        let computedStateIndex = 0;
-
         if (!this.stateCopied) {
             this.copyStateFromMaci()
         }
+
+        let mask: BigInt = _seed;
+;
+        let computedStateIndex = 0;
 
         for (let i = 0; i < this.deactivationMessages.length; i += 1) {
             const deactCommand = this.deactivationCommands[i];
@@ -396,7 +397,8 @@ class Poll {
                 && voteOptionIndex.toString() == '0'
                 && newVoteWeight.toString() == '0'
 
-            const mask = BigInt(1)
+            mask = hash2([mask, salt]);
+
             maskingValues.push(mask);
 
             const [c1, c2] = elGamalEncryptBit(
@@ -593,7 +595,10 @@ class Poll {
                     try{
                         // If the command is valid
                         const r = this.processMessage(idx)
-                        
+                        // console.log(messageIndex, r ? 'valid' : 'invalid')
+                        // console.log("r:"+r.newStateLeaf )
+                        // DONE: replace with try/catch after implementing error
+                        // handling
                         const index = r.stateLeafIndex
         
                         currentStateLeaves.unshift(r.originalStateLeaf)
@@ -1581,7 +1586,7 @@ class MaciState {
         this.stateAq.enqueue(blankStateLeafHash)
     }
 
-public signUp(
+    public signUp(
         _pubKey: PubKey,
         _initialVoiceCreditBalance: BigInt,
         _timestamp: BigInt,

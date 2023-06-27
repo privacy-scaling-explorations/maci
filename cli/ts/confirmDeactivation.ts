@@ -61,6 +61,12 @@ const configureSubparser = (subparsers: any) => {
 		type: 'int',
 		help: 'The capacity of the subroot of the deactivated keys tree to be merged. Default: 1',
 	});
+
+	createParser.addArgument(['-sd', '--seed'], {
+		action: 'store',
+		type: 'int',
+		help: 'Random generator seed value',
+	});
 };
 
 const confirmDeactivation = async (args: any) => {
@@ -147,7 +153,8 @@ const confirmDeactivation = async (args: any) => {
         fromBlock,
     )
 
-	const { circuitInputs, deactivatedLeaves } = maciState.polls[pollId].processDeactivationMessages();
+	const seed = args.seed ? BigInt(args.seed) : BigInt(42);
+	const { circuitInputs, deactivatedLeaves } = maciState.polls[pollId].processDeactivationMessages(seed);
 	const numBatches = Math.ceil(deactivatedLeaves.length / batchSize);
 
 	for (let i = 0; i < numBatches; i++ ) {
