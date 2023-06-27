@@ -47,7 +47,6 @@ contract PollFactory is Params, IPubKey, Ownable, PollDeploymentParams {
         address _pollOwner
     ) public onlyOwner returns (Poll) {
         uint256 treeArity = 5;
-        uint256 deactivationChainHash = 8370432830353022751713833565135785980866757267633941821328460903436894336785;
 
         // Validate _maxValues
         // NOTE: these checks may not be necessary. Removing them will save
@@ -72,6 +71,7 @@ contract PollFactory is Params, IPubKey, Ownable, PollDeploymentParams {
             _treeDepths.messageTreeSubDepth
         );
 
+        // TODO: Before mil2 PR - Is this magic number 1 ok like this?
         AccQueue deactivatedKeysAq = new AccQueueQuinaryMaci(1);
 
         ExtContracts memory extContracts;

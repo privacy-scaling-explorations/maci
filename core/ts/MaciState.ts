@@ -465,8 +465,6 @@ class Poll {
             this.deactivationMessages.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
         }
 
-        console.log("this.deactivatedKeysTree:", this.deactivatedKeysTree)
-
         const circuitInputs = stringifyBigInts({
             coordPrivKey: this.coordinatorKeypair.privKey.asCircuitInputs(),
             coordPubKey: this.coordinatorKeypair.pubKey.rawPubKey,
@@ -595,10 +593,7 @@ class Poll {
                     try{
                         // If the command is valid
                         const r = this.processMessage(idx)
-                        // console.log(messageIndex, r ? 'valid' : 'invalid')
-                        // console.log("r:"+r.newStateLeaf )
-                        // DONE: replace with try/catch after implementing error
-                        // handling
+                        
                         const index = r.stateLeafIndex
         
                         currentStateLeaves.unshift(r.originalStateLeaf)
