@@ -201,45 +201,36 @@ const completeDeactivation = async (args: any) => {
 	const { circuitInputs, deactivatedLeaves } = maciState.polls[pollId].processDeactivationMessages();
 	
 	let r
-        try {
-            r = genProof(
-                circuitInputs,
-                rapidsnarkExe,
-                args.process_deactivation_witnessgen,
-                args.process_deactivation_zkey,
-            )
-        } catch (e) {
-            console.error('Error: could not generate proof.')
-            console.error(e)
-            return 1
-        }
+	try {
+		r = genProof(
+			circuitInputs,
+			rapidsnarkExe,
+			args.process_deactivation_witnessgen,
+			args.process_deactivation_zkey,
+		)
+	} catch (e) {
+		console.error('Error: could not generate proof.')
+		console.error(e)
+		return 1
+	}
 
-        // Verify the proof
-        const isValid = verifyProof(
-            r.publicInputs,
-            r.proof,
-            processVk,
-        )
+	// Verify the proof
+	const isValid = verifyProof(
+		r.publicInputs,
+		r.proof,
+		processVk,
+	)
 
-		console.log('circuitInputs:', JSON.stringify(circuitInputs, null, 2));
-		console.log('r.publicInputs:', JSON.stringify(r.publicInputs, null, 2))
-
-        if (!isValid) {
-            console.error('Error: generated an invalid proof')
-            return 1
-        }
-        
-		const { proof } = r;
-		const formattedProof = formatProofForVerifierContract(proof);
-
-		const stateNumSrQueueOps = args.state_num_sr_queue_ops;
-
-		
-	const numSignUpsAndMessagesAndDeactivatedKeys = await pollContract.numSignUpsAndMessagesAndDeactivatedKeys()
-	console.log('numSignUpsAndMessagesAndDeactivatedKeys:', numSignUpsAndMessagesAndDeactivatedKeys)
+	if (!isValid) {
+		console.error('Error: generated an invalid proof')
+		return 1
+	}
 	
-	const deactivationChainHash = await pollContract.deactivationChainHash();
-	console.log('deactivationChainHash:', deactivationChainHash);
+	const { proof } = r;
+	const formattedProof = formatProofForVerifierContract(proof);
+
+	const stateNumSrQueueOps = args.state_num_sr_queue_ops;
+		
 	try {
 		await mpContract.mergeForDeactivation(
 			stateNumSrQueueOps,
@@ -249,24 +240,8 @@ const completeDeactivation = async (args: any) => {
 	} catch (e) {
 		console.error("mpContract.mergeForDeactivation");
 		console.error(e);
-		throw e;
 		return 1;
 	}
-
-	const stateAqRoot = (await maciContractEthers.getStateAqRoot())
-	console.log('stateAqRoot:', stateAqRoot);
-
-	const extContracts = await pollContract.extContracts()
-    const deactivatedKeysAqAddr = extContracts.deactivatedKeysAq
-
-    const deactivatedKeysAqContract = new ethers.Contract(
-        deactivatedKeysAqAddr,
-        accQueueContractAbi,
-        signer,
-    )
-
-	const deactivatedKeysRoot = (await deactivatedKeysAqContract.getMainRoot('10')).toString()
-	console.log('deactivatedKeysRoot:', deactivatedKeysRoot);
 
 	try {
 		await mpContract.completeDeactivation(
@@ -276,27 +251,8 @@ const completeDeactivation = async (args: any) => {
 	} catch (e) {
 		console.error("mpContract.completeDeactivation");
 		console.error(e);
-		throw e;
 		return 1;
 	}
-	// const stateNumSrQueueOps = args.state_num_sr_queue_ops
-	// 	? args.state_num_sr_queue_ops
-	// 	: 0;
-
-	// const deactivatedKeysNumSrQueueOps = args.deactivated_keys_num_sr_queue_ops
-	// 	? args.deactivated_keys_num_sr_queue_ops
-	// 	: 0;
-
-	// 	// TODO: Merge deactivated keys tree
-	// try {
-	// 	await pollContract.completeDeactivation(
-	// 		stateNumSrQueueOps,
-	// 		deactivatedKeysNumSrQueueOps,
-	// 		pollId
-	// 	);
-	// } catch (e) {
-	// 	console.error(e);
-	// 	return 1;
 
 	return 0;
 };

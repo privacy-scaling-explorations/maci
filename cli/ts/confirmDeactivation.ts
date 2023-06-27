@@ -119,32 +119,9 @@ const confirmDeactivation = async (args: any) => {
 	// Initialize Poll contract object
 	const pollContract = new ethers.Contract(pollAddr, pollContractAbi, signer);
 
-	const pollIface = new ethers.utils.Interface(pollContractAbi);
-
-	// Ethereum provider
-	const ethProvider = args.eth_provider
-		? args.eth_provider
-		: DEFAULT_ETH_PROVIDER;
-
-	// // Block number to start listening from
-	// const fromBlock = args.from_block ? args.from_block : 0;
-
-	// const deactivationAttemptsLogs = await ethProvider.getLogs({
-	// 	// event AttemptKeyDeactivation(address indexed _sender, uint256 indexed _sendersPubKeyX, uint256 indexed _sendersPubKeyY);
-	// 	...pollContract.filters.AttemptKeyDeactivation(),
-	// 	fromBlock: fromBlock,
-	// });
-
-	// const coordinatorPubKey = await pollContract.coordinatorPubKey();
-	// const batchSize = args.batch_size ? args.batch_size : 1;
-	// const HASH_LENGTH = 5;
-	// const zeroValue = BigInt(0);
-	// const H0 = BigInt(
-	// 	'8370432830353022751713833565135785980866757267633941821328460903436894336785'
-	// );
-
 	const batchSize = args.batch_size ? args.batch_size : 1;
-	let serializedPrivkey
+	let serializedPrivkey;
+
     if (args.prompt_for_maci_privkey) {
         serializedPrivkey = await promptPwd('Your MACI private key')
     } else {
@@ -174,116 +151,20 @@ const confirmDeactivation = async (args: any) => {
 	const numBatches = Math.ceil(deactivatedLeaves.length / batchSize);
 
 	for (let i = 0; i < numBatches; i++ ) {
-		const batch = deactivatedLeaves.slice(batchSize * i, batchSize * (i + 1)).map(leaf => leaf.asArray());
+		const batch = deactivatedLeaves
+			.slice(batchSize * i, batchSize * (i + 1))
+			.map(leaf => leaf.asArray());
 
 		try {
-			console.log(deactivatedLeaves.slice(batchSize * i, batchSize * (i + 1)));
-			console.log('Batch', i+1);
-			console.log(batch);
-			console.log('Batch length:', batch.length);
-			
 			await pollContract.confirmDeactivation(
 				batch, 
 				batch.length,
 			);
 		} catch (e) {
 			console.error(e);
-			throw e;
-		}
-	}
-
-
-	/*
-	const numSubTrees = Math.floor(deactivationAttemptsLogs.length / batchSize);
-	const lastSubTree = deactivationAttemptsLogs.length % batchSize;
-
-	for (let i = 0; i < numSubTrees; i++) {
-		const subTree = new IncrementalQuinTree(batchSize, H0, HASH_LENGTH, hash5);
-		let encryptedPublicKeys = [];
-
-		for (let j = 0; j < batchSize; j++) {
-			const log = deactivationAttemptsLogs[i * batchSize + j];
-			assert(log != undefined);
-
-			const event = pollIface.parseLog(log);
-
-			const sendersPubKeyX = event.args._sendersPubKeyX;
-			const sendersPubKeyY = event.args._sendersPubKeyY;
-			const sendersRawPubKey = [sendersPubKeyX, sendersPubKeyY];
-			const sendersPubKey = new PubKey(sendersRawPubKey);
-
-			const salt = new Keypair().privKey.rawPrivKey;
-			const mask = BigInt(Math.ceil(Math.random() * 1000));
-			const status = BigInt(1);
-			const [c1, c2] = elGamalEncryptBit(coordinatorPubKey, status, mask);
-
-			const leaf = new DeactivatedKeyLeaf(sendersPubKey, c1, c2, salt).hash();
-			subTree.insert(leaf);
-
-			encryptedPublicKeys.push(sendersPubKey.asCircuitInputs());
-		}
-
-		try {
-			await pollContract.confirmDeactivation(
-				subTree.root,
-				batchSize,
-				encryptedPublicKeys
-			);
-		} catch (e) {
-			console.error(e);
 			return 1;
 		}
 	}
-
-	// last sub tree
-	if (lastSubTree > 0) {
-		const subTree = new IncrementalQuinTree(batchSize, H0, HASH_LENGTH, hash5);
-		let encryptedPublicKeys = [];
-
-		for (let j = 0; j < lastSubTree; j++) {
-			const log = deactivationAttemptsLogs[numSubTrees * batchSize + j];
-			assert(log != undefined);
-
-			const event = pollIface.parseLog(log);
-
-			const sendersPubKeyX = event.args._sendersPubKeyX;
-			const sendersPubKeyY = event.args._sendersPubKeyY;
-			const sendersRawPubKey = [sendersPubKeyX, sendersPubKeyY];
-			const sendersPubKey = new PubKey(sendersRawPubKey);
-
-			const salt = new Keypair().privKey.rawPrivKey;
-			const mask = BigInt(Math.ceil(Math.random() * 1000));
-			const status = BigInt(1);
-			const [c1, c2] = elGamalEncryptBit(coordinatorPubKey, status, mask);
-
-			const leaf = new DeactivatedKeyLeaf(sendersPubKey, c1, c2, salt).hash();
-			subTree.insert(leaf);
-
-			encryptedPublicKeys.push(sendersPubKey.asCircuitInputs());
-		}
-
-		if (HASH_LENGTH - lastSubTree > 0) {
-			// fill with zeros
-			for (let k = 0; k < HASH_LENGTH - lastSubTree; k++) {
-				subTree.insert(zeroValue);
-				encryptedPublicKeys.push(
-					new PubKey([zeroValue, zeroValue]).asCircuitInputs()
-				);
-			}
-		}
-
-		try {
-			await pollContract.confirmDeactivation(
-				subTree.root,
-				lastSubTree,
-				encryptedPublicKeys
-			);
-		} catch (e) {
-			console.error(e);
-			return 1;
-		}
-		*/
-	// }
 
 	return 0;
 };

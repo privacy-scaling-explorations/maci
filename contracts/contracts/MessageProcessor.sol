@@ -163,10 +163,10 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
             );
         }
 
-        poll.mergeMaciStateAqSubRoots(0, _pollId);
-        poll.mergeMaciStateAq(0);
+        poll.mergeMaciStateAqSubRoots(_stateNumSrQueueOps, _pollId);
+        poll.mergeMaciStateAq(_stateNumSrQueueOps);
 
-        deactivatedKeysAq.mergeSubRoots(0);
+        deactivatedKeysAq.mergeSubRoots(_stateNumSrQueueOps);
         deactivatedKeysAq.merge(10);
     }
 
