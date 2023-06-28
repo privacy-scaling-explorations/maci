@@ -35,7 +35,7 @@ template GenerateKeyFromDeactivated(STATE_TREE_DEPTH) {
     signal input newCreditBalance;
 
     // State leaf generation timestamp
-    signal input stateLeafTimestamp
+    signal input stateLeafTimestamp;
 
     // Deactivated keys tree inclusion proof
     signal input deactivatedKeysInclusionProof[STATE_TREE_DEPTH][TREE_ARITY - 1];
@@ -45,7 +45,7 @@ template GenerateKeyFromDeactivated(STATE_TREE_DEPTH) {
     signal input c2[2];
 
     // Coordinator's public key
-    signal input coordinatorPubKey
+    signal input coordinatorPubKey[2];
 
     // Rerandomized ciphertext
     signal input c1r[2];
