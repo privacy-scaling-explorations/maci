@@ -43,6 +43,12 @@ circuits:
   type: "test"
   pubInputs: ["inputHash"]
 
+- template: "../circuits/circom/generateKeyFromDeactivated.circom"
+  component: "GenerateKeyFromDeactivated"
+  params: [10] # stateTreeDepth
+  type: "test"
+  pubInputs: ["inputHash"]
+
 ptauFiles:
   1:
       url: "https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_01.ptau"
