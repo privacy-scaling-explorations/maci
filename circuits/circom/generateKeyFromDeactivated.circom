@@ -44,6 +44,16 @@ template GenerateKeyFromDeactivated(STATE_TREE_DEPTH) {
     signal input c1[2];
     signal input c2[2];
 
+    // Coordinator's public key
+    signal input coordinatorPubKey
+
+    // Rerandomized ciphertext
+    signal input c1r[2];
+    signal input c2r[2];
+
+    // Rerandomization value
+    signal input z;
+
     // Deactivation nullifier
     signal input nullifier;
 
@@ -62,15 +72,21 @@ template GenerateKeyFromDeactivated(STATE_TREE_DEPTH) {
 
     // 6. Verify deactivated key inclusion proof
 
-    // 7. verify nullifier construction 
+    // 7. Verify nullifier construction 
     // hash(newPriv, salt)
 
-    // 8. Verify output hash
+    // 8. Verify rerandomized values
 
-    component inputHasher = Sha256Hasher3();
+    // 9. Verify output hash
+
+    component inputHasher = Sha256Hasher(7);
     hash.in[0] <== stateTreeRoot;
     hash.in[1] <== deactivatedKeysRoot;
     nash.in[2] <== nullifier;
+    nash.in[3] <== c1r[0];
+    nash.in[4] <== c1r[1];
+    nash.in[5] <== c2r[0];
+    nash.in[6] <== c2r[1];
 
     inputHasher.hash === inputHash;
 }
