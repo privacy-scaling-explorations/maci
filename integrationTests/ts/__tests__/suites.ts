@@ -77,6 +77,7 @@ const executeSuite = async (data: any, expect: any) => {
             ` -b ${config.constants.poll.messageBatchDepth}` +
             ` -p ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey` +
             ` -t ./zkeys/TallyVotes_10-1-2_test.0.zkey` +
+            ` -zpd ./zkeys/ProcessDeactivationMessages_5-10_test.0.zkey` +
             ` -k ${vkAddress}` +
             ` ${subsidyZkeyFilePath}`
 

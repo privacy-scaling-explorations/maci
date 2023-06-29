@@ -196,7 +196,7 @@ cd contracts
 
 For `integrationTests`, first make sure to install necessary tooling for rapidsnark as explained above, build the zk-SNARKs and generate their proving and verifying keys.
 
-Run all integration tests (this also starts its own Hardhat instance so make sure to any running hardhat instance):
+Run all integration tests (this also starts its own Hardhat instance so make sure to kill any running hardhat instance):
 
 ```bash
 cd integrationTests
