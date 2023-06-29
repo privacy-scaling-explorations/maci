@@ -139,16 +139,22 @@ const mergeSignups = async (args: any) => {
             `Merging state subroots ${indices[0] + 1} / ${indices[1] + 1}`,
         )
 
-        const tx = await pollContract.mergeMaciStateAqSubRoots(
-            args.num_queue_ops.toString(),
-            pollId.toString(),
-        )
-        const receipt = await tx.wait()
-
-        console.log(
-            `Executed mergeMaciStateAqSubRoots(); ` +
-            `gas used: ${receipt.gasUsed.toString()}`)
-        console.log(`Transaction hash: ${receipt.transactionHash}\n`)
+        if (!(await pollContract.stateAqMerged())) {
+            const tx = await pollContract.mergeMaciStateAqSubRoots(
+                args.num_queue_ops.toString(),
+                pollId.toString(),
+            )
+            const receipt = await tx.wait()
+    
+            console.log(
+                `Executed mergeMaciStateAqSubRoots(); ` +
+                `gas used: ${receipt.gasUsed.toString()}`)
+            console.log(`Transaction hash: ${receipt.transactionHash}\n`)
+        } else {
+            console.log(
+                `State subroots alread merged. Continuing...`,
+            )   
+        }
     }
 
     // Check if the state AQ has been fully merged
