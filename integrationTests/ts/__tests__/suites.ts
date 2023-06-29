@@ -76,8 +76,8 @@ const executeSuite = async (data: any, expect: any) => {
             ` -v ${config.constants.maci.voteOptionTreeDepth}` +
             ` -b ${config.constants.poll.messageBatchDepth}` +
             ` -p ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey` +
-            ` -t ./zkeys/TallyVotes_10-1-2_test.0.zkey` +
             ` -zpd ./zkeys/ProcessDeactivationMessages_5-10_test.0.zkey` +
+            ` -t ./zkeys/TallyVotes_10-1-2_test.0.zkey` +
             ` -k ${vkAddress}` +
             ` ${subsidyZkeyFilePath}`
 
@@ -85,7 +85,9 @@ const executeSuite = async (data: any, expect: any) => {
 
         // Run the create subcommand
         const createCommand = `node build/index.js create` +
-            ` -r ${vkAddress}`
+            ` -r ${vkAddress}` +
+            ` --signup-deadline 1689834390`+
+            ` --deactivation-period 86400`
         const createOutput = execute(createCommand).stdout.trim()
         const regMatch = createOutput.match(/MACI: (0x[a-fA-F0-9]{40})/)
         const maciAddress = regMatch[1]
