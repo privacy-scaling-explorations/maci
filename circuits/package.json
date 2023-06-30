@@ -16,6 +16,8 @@
         "test-key-deactivation": "jest KeyDeactivation.test.ts",
         "test-key-deactivation-debug": "node --inspect-brk ./node_modules/.bin/jest KeyDeactivation.test.ts",
         "test-unpackElement": "jest UnpackElement.test.ts",
+        "test-generateKeyFromDeactivated": "jest GenerateKeyFromDeactivated.test.ts",
+        "test-generateKeyFromDeactivated-debug": "node --inspect-brk ./node_modules/.bin/jest GenerateKeyFromDeactivated.test.ts",
         "test-elGamalEncryption": "jest ElGamalEncryption.test.ts",
         "test-elGamalEncryption-debug": "node --inspect-brk ./node_modules/.bin/jest ElGamalEncryption.test.ts",
         "test-unpackElement-debug": "node --inspect-brk ./node_modules/.bin/jest UnpackElement.test.ts",

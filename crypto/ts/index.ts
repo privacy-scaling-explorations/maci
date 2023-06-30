@@ -490,6 +490,28 @@ const elGamalDecryptBit = (
     return curveToBit(m)
 }
 
+const elGamalRerandomize = (
+    pubKey: PubKey,
+    z: BigInt,
+    c1: BigInt[],
+    c2: BigInt[],
+) => {
+    // c1' = z*G + c1
+    // c2' = pubKey * z + c2
+
+    const c1r = babyJub.addPoint(
+        babyJub.mulPointEscalar(babyJub.Base8, z),
+        c1
+    );
+
+    const c2r = babyJub.addPoint(
+        babyJub.mulPointEscalar(pubKey, z),
+        c2
+    );
+    
+    return [c1r, c2r];
+}
+
 const babyJubMaxValue = BigInt(babyJub.p)
 
 const babyJubAddPoint = (a: any, b: any) => babyJub.addPoint(a,b)
@@ -506,6 +528,7 @@ export {
     elGamalEncryptBit,
     elGamalDecrypt,
     elGamalDecryptBit,
+    elGamalRerandomize,
     sign,
     sha256Hash,
     hashOne,
@@ -537,5 +560,5 @@ export {
     packPubKey,
     unpackPubKey,
     babyJubMaxValue,
-    babyJubAddPoint
+    babyJubAddPoint,
 }
