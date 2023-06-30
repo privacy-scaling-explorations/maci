@@ -54,8 +54,8 @@ describe('SignUpGatekeeper', () => {
 			const r = await deployTestContracts(
 				initialVoiceCreditBalance,
 				signUpDeadline,
-				signUpTokenGatekeeperContract,
-				deactivationPeriod
+				deactivationPeriod,
+				signUpTokenGatekeeperContract
 			);
 
 			maciContract = r.maciContract;
@@ -63,7 +63,7 @@ describe('SignUpGatekeeper', () => {
 
 		// TODO: TypeError: Cannot read properties of undefined (reading 'address')
 		// await signUpTokenGatekeeperContract.setMaciInstance(maciContract.address);
-		it.skip('sets MACI instance correctly', async () => {
+		it('sets MACI instance correctly', async () => {
 			await signUpTokenGatekeeperContract.setMaciInstance(maciContract.address);
 
 			expect(await signUpTokenGatekeeperContract.maci()).toBe(
@@ -72,7 +72,7 @@ describe('SignUpGatekeeper', () => {
 		});
 
 		// TODO: invalid address or ENS name (argument="name", value=undefined, code=INVALID_ARGUMENT, version=contracts/5.5.0)
-		it.skip('Reverts if address provided is not a MACI instance', async () => {
+		it('Reverts if address provided is not a MACI instance', async () => {
 			const user = new Keypair();
 			const signer = await getDefaultSigner();
 

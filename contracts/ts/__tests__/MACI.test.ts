@@ -576,7 +576,8 @@ describe('MACI', () => {
 	});
 
 	describe('Process messages (negative test)', () => {
-		// TODO: Skipped as the tree is merged and negative test does not make sense at this point
+		// TODO: Skipped temporarely - will be addressed as part of milestone 3 as more changes are expected here.
+		// Skipped as the tree is merged and negative test does not make sense at this point.
 		it.skip('processMessages() should fail if the state AQ has not been merged', async () => {
 			try {
 				const pollContractAddress = await maciContract.getPoll(pollId);
@@ -601,7 +602,8 @@ describe('MACI', () => {
 			pollContract = new ethers.Contract(pollContractAddress, pollAbi, signer);
 		});
 
-		// TODO: Currently skipped as the tree is already merged as part  of deactivation process.
+		// TODO: Skipped temporarely - will be addressed as part of milestone 3 as more changes are expected here.
+		// Currently skipped as the tree is already merged as part  of deactivation process.
 		// in Milestone 3 we need to extend the test to make sure  pollContract.mergeMaciStateAqSubRoots
 		// can be called in case deactivation hasn't happened
 		it.skip('The Poll should be able to merge the signUp AccQueue', async () => {
@@ -748,6 +750,7 @@ describe('MACI', () => {
 	});
 
 	describe('Generate MaciState from contract', () => {
+		// TODO: Skipped temporarely - will be addressed as part of milestone 3 as more changes are expected here.
 		/* TODO: assert(received)
 
 		Expected value to be equal to:
@@ -929,7 +932,8 @@ describe('MACI', () => {
 		// 	}
 		// });
 
-		// TODO: During milestone 3 - onlyOwner fails here because the caller is MessageProcessor and not Maci
+		// TODO: Skipped temporarely - will be addressed as part of milestone 3 as more changes are expected here.
+		// onlyOwner fails here because the caller is MessageProcessor and not Maci
 		it.skip('confirmDeactivation() should revert if not called by an owner', async () => {
 			try {
 				await pollContract
@@ -942,6 +946,7 @@ describe('MACI', () => {
 				).toBeTruthy();
 			}
 		});
+		// TODO: Skipped temporarely - will be addressed as part of milestone 3 as more changes are expected here.
 		// TODO:  invalid value for array (argument="value", value=0, code=INVALID_ARGUMENT, version=contracts/5.5.0)
 		it.skip('confirmDeactivation() should update relevant storage variables and emit a proper event', async () => {
 			const subRoot = 0;
