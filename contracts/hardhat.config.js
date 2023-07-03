@@ -21,7 +21,7 @@ module.exports = {
 				mnemonic:
 					'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat',
 			},
-			loggingEnabled: true,
+			loggingEnabled: false,
 			allowUnlimitedContractSize: true,
 			throwOnTransactionFailures: true,
 			throwOnCallFailures: true,

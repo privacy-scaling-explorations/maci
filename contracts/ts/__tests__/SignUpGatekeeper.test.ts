@@ -54,8 +54,8 @@ describe('SignUpGatekeeper', () => {
 			const r = await deployTestContracts(
 				initialVoiceCreditBalance,
 				signUpDeadline,
-				signUpTokenGatekeeperContract,
-				deactivationPeriod
+				deactivationPeriod,
+				signUpTokenGatekeeperContract
 			);
 
 			maciContract = r.maciContract;
