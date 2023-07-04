@@ -11,13 +11,7 @@ import {CommonUtilities} from "./utilities/Utility.sol";
 import {Verifier} from "./crypto/Verifier.sol";
 import {VkRegistry} from "./VkRegistry.sol";
 
-contract Subsidy is
-    Ownable,
-    CommonUtilities,
-    Hasher,
-    SnarkCommon
-{
-
+contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
     uint256 public rbi; // row batch index
     uint256 public cbi; // column batch index
     // The final commitment to the state and ballot roots
@@ -50,18 +44,15 @@ contract Subsidy is
         }
     }
 
-
     function genSubsidyPackedVals(uint256 _numSignUps)
         public
         view
         returns (uint256)
     {
         require(_numSignUps < 2**50, "numSignUps too large");
-        require(rbi < 2**50, "rbi too large"); 
-        require(cbi < 2**50, "cbi too large"); 
-        uint256 result = (_numSignUps << 100) +
-            (rbi << 50) +
-            cbi;
+        require(rbi < 2**50, "rbi too large");
+        require(cbi < 2**50, "cbi too large");
+        uint256 result = (_numSignUps << 100) + (rbi << 50) + cbi;
 
         return result;
     }
@@ -89,12 +80,12 @@ contract Subsidy is
         _votingPeriodOver(_poll);
         updateSbCommitment(_mp);
 
-        (uint8 intStateTreeDepth, , , ) = _poll
-            .treeDepths();
+        (uint8 intStateTreeDepth, , , ) = _poll.treeDepths();
 
-        uint256 subsidyBatchSize = uint256(treeArity)**intStateTreeDepth; 
+        uint256 subsidyBatchSize = uint256(treeArity)**intStateTreeDepth;
 
-        (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
+        (uint256 numSignUps, , ) = _poll
+            .numSignUpsAndMessagesAndDeactivatedKeys();
         uint256 numLeaves = numSignUps + 1;
 
         // Require that there are unfinished ballots left
@@ -116,10 +107,10 @@ contract Subsidy is
     }
 
     /*
-     * @notice increase subsidy batch index (rbi, cbi) to next, 
-     * it will try to cbi++ if the whole batch can fit into numLeaves 
-     * otherwise it will increase row index: rbi++ 
-     * @param batchSize: the size of 1 dimensional batch over the signup users, 
+     * @notice increase subsidy batch index (rbi, cbi) to next,
+     * it will try to cbi++ if the whole batch can fit into numLeaves
+     * otherwise it will increase row index: rbi++
+     * @param batchSize: the size of 1 dimensional batch over the signup users,
      * notice each batch for subsidy calculation is 2 dimenional: batchSize*batchSize
      * @param numLeaves: total number of leaves in stateTree, i.e. number of signup users
      * @return None
@@ -143,7 +134,7 @@ contract Subsidy is
     ) public view returns (bool) {
         (uint8 intStateTreeDepth, , , uint8 voteOptionTreeDepth) = _poll
             .treeDepths();
-        (VkRegistry vkRegistry, IMACI maci, , ) = _poll.extContracts();
+        (VkRegistry vkRegistry, IMACI maci, , , ) = _poll.extContracts();
 
         if (address(vkRegistry) == address(0)) {
             revert VK_NOT_SET();
@@ -165,7 +156,4 @@ contract Subsidy is
         // Verify the proof
         return verifier.verify(_proof, vk, publicInputHash);
     }
-
-
-
 }

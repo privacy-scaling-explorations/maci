@@ -5,7 +5,7 @@
     "main": "build/index.js",
     "scripts": {
         "circom-helper": "circom-helper -c ./circomHelperConfig.json -b ./build/test/ -p 9001 -nc",
-        "build-test-circuits": "NODE_OPTIONS=--max-old-space-size=16384 circom-helper -c ./circomHelperConfig.json -y -nc -b ./build/test/ -p 9001 -m 16384 -s 1048576",
+        "build-test-circuits": "NODE_OPTIONS=--max-old-space-size=16384 circom-helper -c ./circomHelperConfig.json -y -nc -b ./build/test/ -p 9001",
         "watch": "tsc --watch",
         "build": "tsc",
         "test": "jest",
@@ -47,6 +47,8 @@
         "test-calculateTotal-debug": "node --inspect-brk ./node_modules/.bin/jest CalculateTotal.test.ts",
         "test-processMessages": "NODE_OPTIONS=--max-old-space-size=4096 jest ts/__tests__/ProcessMessages.test.ts",
         "test-processMessages-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest ts/__tests__/ProcessMessages.test.ts",
+        "test-processDeactivationMessages": "NODE_OPTIONS=--max-old-space-size=4096 jest ts/__tests__/ProcessDeactivationMessages.test.ts",
+        "test-processDeactivationMessages-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest ts/__tests__/ProcessDeactivationMessages.test.ts",
         "test-tallyVotes": "NODE_OPTIONS=--max-old-space-size=4096 jest ts/__tests__/TallyVotes.test.ts",
         "test-tallyVotes-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest ts/__tests__/TallyVotes.test.ts"
     },

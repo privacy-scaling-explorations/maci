@@ -5,16 +5,17 @@ import {Hasher} from "../crypto/Hasher.sol";
 import {SnarkConstants} from "../crypto/SnarkConstants.sol";
 import {Poll} from "../Poll.sol";
 
-
 contract CommonUtilities {
-     error VOTING_PERIOD_NOT_PASSED();
+    error VOTING_PERIOD_NOT_PASSED();
+
     // common function for MessageProcessor, Tally and Subsidy
     function _votingPeriodOver(Poll _poll) internal view {
         (uint256 deployTime, uint256 duration) = _poll
             .getDeployTimeAndDuration();
         // Require that the voting period is over
         uint256 secondsPassed = block.timestamp - deployTime;
-        if (secondsPassed <= duration ) {
+
+        if (secondsPassed <= duration) {
             revert VOTING_PERIOD_NOT_PASSED();
         }
     }
@@ -28,7 +29,7 @@ contract Utilities is SnarkConstants, Hasher, IPubKey, IMessage {
         uint256[10] memory dat;
         dat[0] = dataToPad[0];
         dat[1] = dataToPad[1];
-        for(uint i = 2; i< 10;) {
+        for (uint i = 2; i < 10; ) {
             dat[i] = 0;
             unchecked {
                 ++i;
@@ -71,4 +72,12 @@ contract Utilities is SnarkConstants, Hasher, IPubKey, IMessage {
     }
 }
 
-
+// TODO: Fix Warning: 1 contracts exceed the size limit for mainnet deployment.
+// interface IVerifier {
+//     function verifyProof(
+//         uint256[2] memory a,
+//         uint256[2][2] memory b,
+//         uint256[2] memory c,
+//         uint256[] memory input
+//     ) external view returns (bool);
+// }

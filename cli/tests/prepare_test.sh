@@ -13,7 +13,7 @@ ZKEYS_POSTFIX="test"
 PROCESS_MESSAGES_PARAMS="10-2-1-2_$ZKEYS_POSTFIX"
 TALLY_VOTES_PARAMS="10-1-2_$ZKEYS_POSTFIX"
 SUBSIDY_PER_BATCH_PARAMS="10-1-2_$ZKEYS_POSTFIX"
-
+PROCESS_DEACTIVATION_MESSAGES_PARAMS="5-10_$ZKEYS_POSTFIX"
 
 init_maci() {
     $MACI_CLI deployVkRegistry
@@ -25,10 +25,13 @@ init_maci() {
         --vote-option-tree-depth 2 \
         --msg-batch-depth 1 \
         --process-messages-zkey "$ZKEYS_DIR"/ProcessMessages_"$PROCESS_MESSAGES_PARAMS".0.zkey \
+        --process-deactivation-zkey "$ZKEYS_DIR"/ProcessDeactivationMessages_"$PROCESS_DEACTIVATION_MESSAGES_PARAMS".0.zkey \
         --tally-votes-zkey "$ZKEYS_DIR"/TallyVotes_"$TALLY_VOTES_PARAMS".0.zkey \
         $SET_VERIFYING_KEYS_FLAG_SUBSIDY
 
-    $MACI_CLI create
+    $MACI_CLI create \
+        --signup-deadline 1689834390 \
+        --deactivation-period 86400
 }
 
 deploy_poll() {
@@ -65,8 +68,8 @@ gen_proofs() {
         --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
         --poll-id $1 \
         --rapidsnark ~/rapidsnark/build/prover \
-        --process-witnessgen ./zkeys/ProcessMessages_"$PROCESS_MESSAGES_PARAMS" \
-        --tally-witnessgen ./zkeys/TallyVotes_"$TALLY_VOTES_PARAMS" \
+        --process-witnessgen "$ZKEYS_DIR"/ProcessMessages_"$PROCESS_MESSAGES_PARAMS" \
+        --tally-witnessgen "$ZKEYS_DIR"/TallyVotes_"$TALLY_VOTES_PARAMS" \
         --process-zkey "$ZKEYS_DIR"/ProcessMessages_"$PROCESS_MESSAGES_PARAMS".0.zkey \
         --tally-zkey "$ZKEYS_DIR"/TallyVotes_"$TALLY_VOTES_PARAMS".0.zkey \
         --tally-file tally.json \
@@ -94,7 +97,7 @@ set_subsidy_option() {
         SUBSIDY_ON="true"
     fi
 
-    GEN_PROOFS_FLAG_SUBSIDY_WITNESS="--subsidy-witnessgen ./zkeys/SubsidyPerBatch_$SUBSIDY_PER_BATCH_PARAMS"
+    GEN_PROOFS_FLAG_SUBSIDY_WITNESS="--subsidy-witnessgen "$ZKEYS_DIR"/SubsidyPerBatch_$SUBSIDY_PER_BATCH_PARAMS"
     GEN_PROOFS_FLAG_SUBSIDY_ZKEY="--subsidy-zkey "$ZKEYS_DIR"/SubsidyPerBatch_"$SUBSIDY_PER_BATCH_PARAMS".0.zkey"
     SUBSIDDY_OPTION_GEN_PROOFS=''
     SET_VERIFYING_KEYS_FLAG_SUBSIDY=''

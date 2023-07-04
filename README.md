@@ -62,8 +62,9 @@ For development purposes, you can generate the proving and verifying keys for
 the zk-SNARK circuits, along with their Solidity verifier contracts as such.
 
 Navigate to the rapidsnark [repo](https://github.com/iden3/rapidsnark) to install the necessary tooling.
+More details can be found in /docs/installation.md, Section Install `rapidsnark`;
 
-Build the zk-SNARKs and generate their proving and verifying keys:
+To build the circom circuits, follow the /docs/installation.md, Section Configure circom-helper and zkey-manager. Then run:
 
 ```bash
 cd circuits
@@ -87,6 +88,9 @@ npm run compileSol
 ```
 
 Avoid using `npx hardhat compile` and instead use the provided command as artifacts are copied into their relevant directories.
+
+To build the zk-SNARKs and generate their proving and verifying keys, follow the instructions from /docs/installation.md, 
+Section: Generate `.zkey` files.
 
 ### Local development
 
@@ -121,12 +125,14 @@ For example:
 
 ### Testing
 
+It is implied that the previous steps have been completed before running tests.
+
 ### Unit tests
 
 The following submodules contain unit tests: `core`, `crypto`, `circuits`,
 `contracts`, and `domainobjs`.
 
-Except for the `contracts` submodule, run unit tests as such (the following
+Except for the `contracts` and `circuits` submodule, run unit tests as such (the following
 example is for `crypto`):
 
 ```bash
@@ -134,10 +140,28 @@ cd crypto
 npm run test
 ```
 
-For `contracts` and `integrationTests`, run the tests one by one. This prevents
-incorrect nonce errors.
+For `circuits`, first build the zk-SNARKs as explained above and then run in one terminal:
 
-First, start a Hardhat instance in a separate terminal:
+```bash
+cd circuits
+npm run circom-helper
+```
+wait for *Launched JSON-RPC server at port 9001* message and then run in another terminal:
+
+```bash
+cd circuits
+npm run test
+```
+
+Note that some tests might fail due to jest timeout. You can fix this by adjusting the timeout period defined at the top of the test file.
+
+For example, in the file *MessageToCommand.test.ts*, increase timeout_in_ms on this line: ```jest.setTimeout(<timeout_in_ms>)```.
+
+For `contracts` and `integrationTests`, run the tests one by one. This prevents incorrect nonce errors.
+
+For `contracts`, first, compile the contracts as explained above.
+
+Then, start a Hardhat instance in a separate terminal:
 
 ```bash
 cd contracts
@@ -170,17 +194,32 @@ cd contracts
 ./scripts/runTestsInCi.sh
 ```
 
-Or run all integration tests (this also starts its own Hardhat instance):
+For `integrationTests`, first make sure to install necessary tooling for rapidsnark as explained above, build the zk-SNARKs and generate their proving and verifying keys.
+
+Run all integration tests (this also starts its own Hardhat instance so make sure to kill any running hardhat instance):
 
 ```bash
 cd integrationTests
 ./scripts/runTestsInCi.sh
 ```
 
-You can ignore the Hardhat errors which this script emits as you should already
-have Hardhat running in a separate terminal. Otherwise, you will have to exit
-Ganache using the `kill` command.
+### CLI tests
 
+Make sure dependencies are installed, circuits are built, zkeys keys generated and contract compiled.
+First run hardhat:
+
+```bash
+cd contracts
+npm run hardhat
+```
+
+Then navigate to /cli/tests/vanilla and execute each test like this:
+
+```bash
+cd cli/tests/vanilla
+bash ./test1.sh
+```
+You can find more details about running cli tests in /docs/testing.md.
 
 ### Docker
 

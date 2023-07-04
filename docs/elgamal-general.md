@@ -6,9 +6,9 @@ In basic MACI protocol, a coordinator is the only point in the system which can 
 ### El Gamal encryption
 In 1985, Taher Elgamal created an asymmetric cryptographic algorithm based on the Diffie-Hellman key exchange. Similar to the ECDH algorithm, the security of ElGamal is based on the difficult or practically unfeasable computation of the discrete logarithm.
 
-Let $G$ be a generator point on the elliptic curve over a finite field $F_p$ (where $p$ is a a large prime number). Let $pr_A$ and $pr_B$ be the private keys of participants $A$ and $B$. Then $pub_A = a * G$ and $pub_B = b * G$ are their respective public keys. Let person $A$ be the participant who will encrypt the data fot the participant B. Participant $A$ performs to following algorithm:
+Let $G$ be a generator point on the elliptic curve over a finite field $F_p$ (where $p$ is a a large prime number). Let $pr_A$ and $pr_B$ be the private keys of participants $A$ and $B$. Then $pub_A = a * G$ and $pub_B = b * G$ are their respective public keys. Let person $A$ be the participant who will encrypt the data for the participant B. Participant $A$ performs the following algorithm:
 
-1) choose an arbitrary $k$ from the interval $(1,p)$;
+1) choose an arbitrary $y$ from the interval $(1,p)$;
 
 2) calculate $c_1: = y * G$;
 

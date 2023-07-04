@@ -17,13 +17,13 @@ import {VkRegistry} from "./VkRegistry.sol";
  * after it finishes processing, the sbCommitment will be used for Tally and Subsidy contracts
  */
 contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
-
     error NO_MORE_MESSAGES();
     error STATE_AQ_NOT_MERGED();
     error MESSAGE_AQ_NOT_MERGED();
     error INVALID_PROCESS_MESSAGE_PROOF();
     error VK_NOT_SET();
 
+    uint8 public constant DEACT_TREE_DEPTH = 10;
 
     // Whether there are unprocessed messages left
     bool public processingComplete;
@@ -33,7 +33,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     // processMessages(), this action relates to messages
     // currentMessageBatchIndex to currentMessageBatchIndex + messageBatchSize.
     uint256 public currentMessageBatchIndex;
-   // The commitment to the state and ballot roots
+    // The commitment to the state and ballot roots
     uint256 public sbCommitment;
 
     Verifier public verifier;
@@ -41,7 +41,6 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     constructor(Verifier _verifier) {
         verifier = _verifier;
     }
-
 
     /*
      * Update the Poll's currentSbCommitment if the proof is valid.
@@ -71,7 +70,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         (uint256 messageBatchSize, , ) = _poll.batchSizes();
 
         AccQueue messageAq;
-        (, , messageAq, ) = _poll.extContracts();
+        (, , messageAq, , ) = _poll.extContracts();
 
         // Require that the message queue has been merged
         uint256 messageRoot = messageAq.getMainRoot(messageTreeDepth);
@@ -84,7 +83,8 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         if (numBatchesProcessed == 0) {
             uint256 currentSbCommitment = _poll.currentSbCommitment();
             sbCommitment = currentSbCommitment;
-            (, uint256 numMessages) = _poll.numSignUpsAndMessages();
+            (, uint256 numMessages, ) = _poll
+                .numSignUpsAndMessagesAndDeactivatedKeys();
             uint256 r = numMessages % messageBatchSize;
 
             if (r == 0) {
@@ -117,7 +117,8 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         }
 
         {
-            (, uint256 numMessages) = _poll.numSignUpsAndMessages();
+            (, uint256 numMessages, ) = _poll
+                .numSignUpsAndMessagesAndDeactivatedKeys();
             // Decrease the message batch start index to ensure that each
             // message batch is processed in order
             if (currentMessageBatchIndex > 0) {
@@ -132,6 +133,94 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         }
     }
 
+    /**
+     * @notice Completes the deactivation of all MACI public keys.
+     * @param _stateNumSrQueueOps The number of subroot queue operations to merge for the MACI state tree
+     * @param poll Poll contract address
+     * @param _pollId The pollId of the Poll contract
+     */
+    function mergeForDeactivation(
+        uint256 _stateNumSrQueueOps,
+        Poll poll,
+        uint256 _pollId
+    ) external onlyOwner {
+        (
+            ,
+            IMACI maci,
+            ,
+            AccQueue deactivatedKeysAq,
+
+        ) = poll.extContracts();
+
+        (, uint8 messageTreeSubDepth, uint8 messageTreeDepth, ) = poll
+            .treeDepths();
+
+        {
+            (uint256 deployTime, ) = poll.getDeployTimeAndDuration();
+
+            uint256 secondsPassed = block.timestamp - deployTime;
+            require(
+                block.timestamp - deployTime > maci.deactivationPeriod(),
+                "Deactivation period has not passed"
+            );
+        }
+
+        poll.mergeMaciStateAqSubRoots(_stateNumSrQueueOps, _pollId);
+        poll.mergeMaciStateAq(_stateNumSrQueueOps);
+
+        deactivatedKeysAq.mergeSubRoots(_stateNumSrQueueOps);
+        deactivatedKeysAq.merge(DEACT_TREE_DEPTH);
+    }
+
+    /**
+     * @notice Completes the deactivation of all MACI public keys.
+     * @param _proof The Zk proof
+     * @param poll Poll contract address
+     */
+    function completeDeactivation(
+        uint256[8] memory _proof,
+        Poll poll
+    ) external onlyOwner {
+        (
+            VkRegistry vkRegistry,
+            IMACI maci,
+            ,
+            AccQueue deactivatedKeysAq,
+
+        ) = poll.extContracts();
+
+        (, uint8 messageTreeSubDepth, uint8 messageTreeDepth, ) = poll
+            .treeDepths();
+
+        {
+            (uint256 deployTime, ) = poll.getDeployTimeAndDuration();
+
+            uint256 secondsPassed = block.timestamp - deployTime;
+            require(
+                block.timestamp - deployTime > maci.deactivationPeriod(),
+                "Deactivation period has not passed"
+            );
+        }
+
+        VerifyingKey memory vk = vkRegistry.getProcessDeactivationVk(
+            maci.stateTreeDepth(),
+            messageTreeDepth
+        );
+
+        (uint256 numSignUps, , ) = poll
+            .numSignUpsAndMessagesAndDeactivatedKeys();
+
+        uint256 input = genProcessDeactivationMessagesPublicInputHash(
+            poll,
+            deactivatedKeysAq.getMainRoot(DEACT_TREE_DEPTH),
+            numSignUps,
+            maci.getStateAqRoot(),
+            poll.deactivationChainHash()
+        );
+
+        require(verifier.verify(_proof, vk, input), "Verification failed");
+    }
+
     function verifyProcessProof(
         Poll _poll,
         uint256 _currentMessageBatchIndex,
@@ -143,8 +232,9 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         (, , uint8 messageTreeDepth, uint8 voteOptionTreeDepth) = _poll
             .treeDepths();
         (uint256 messageBatchSize, , ) = _poll.batchSizes();
-        (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
-        (VkRegistry vkRegistry, IMACI maci, , ) = _poll.extContracts();
+        (uint256 numSignUps, , ) = _poll
+            .numSignUpsAndMessagesAndDeactivatedKeys();
+        (VkRegistry vkRegistry, IMACI maci, , , ) = _poll.extContracts();
 
         if (address(vkRegistry) == address(0)) {
             revert VK_NOT_SET();
@@ -171,6 +261,23 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         return verifier.verify(_proof, vk, publicInputHash);
     }
 
+    function genProcessDeactivationMessagesPublicInputHash(
+        Poll _poll,
+        uint256 _deactivatedTreeRoot,
+        uint256 _numSignUps,
+        uint256 _currentStateRoot,
+        uint256 _chainHash
+    ) public view returns (uint256) {
+        uint256[] memory input = new uint256[](4);
+        input[0] = _deactivatedTreeRoot;
+        input[1] = _numSignUps;
+        input[2] = _currentStateRoot;
+        input[3] = _chainHash;
+        uint256 inputHash = sha256Hash(input);
+
+        return inputHash;
+    }
+
     /*
      * @notice Returns the SHA256 hash of the packed values (see
      * genProcessMessagesPackedVals), the hash of the coordinator's public key,
@@ -179,12 +286,12 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
      * as a single public input and the preimage as private inputs, we reduce
      * its verification gas cost though the number of constraints will be
      * higher and proving time will be higher.
-     * @param _poll: contract address 
+     * @param _poll: contract address
      * @param _currentMessageBatchIndex: batch index of current message batch
      * @param _numSignUps: number of users that signup
      * @param _currentSbCommitment: current sbCommitment
      * @param _newSbCommitment: new sbCommitment after we update this message batch
-     * @return returns the SHA256 hash of the packed values 
+     * @return returns the SHA256 hash of the packed values
      */
     function genProcessMessagesPublicInputHash(
         Poll _poll,
@@ -230,7 +337,8 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         uint256 _numSignUps
     ) public view returns (uint256) {
         (, uint256 maxVoteOptions) = _poll.maxValues();
-        (, uint256 numMessages) = _poll.numSignUpsAndMessages();
+        (, uint256 numMessages, ) = _poll
+            .numSignUpsAndMessagesAndDeactivatedKeys();
         (uint24 mbs, , ) = _poll.batchSizes();
         uint256 messageBatchSize = uint256(mbs);
 
@@ -239,10 +347,13 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
             batchEndIndex = numMessages;
         }
 
-        require(maxVoteOptions < 2**50, "maxVoteOptions too large");
-        require(_numSignUps < 2**50, "numSignUps too large");
-        require(_currentMessageBatchIndex < 2**50, "currentMessageBatchIndex too large");
-        require(batchEndIndex < 2**50, "batchEndIndex too large");
+        require(maxVoteOptions < 2 ** 50, "maxVoteOptions too large");
+        require(_numSignUps < 2 ** 50, "numSignUps too large");
+        require(
+            _currentMessageBatchIndex < 2 ** 50,
+            "currentMessageBatchIndex too large"
+        );
+        require(batchEndIndex < 2 ** 50, "batchEndIndex too large");
         uint256 result = maxVoteOptions +
             (_numSignUps << 50) +
             (_currentMessageBatchIndex << 100) +
@@ -268,7 +379,4 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         currentMessageBatchIndex = _currentMessageBatchIndex;
         numBatchesProcessed++;
     }
-
-
-
 }

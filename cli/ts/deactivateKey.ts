@@ -37,17 +37,8 @@ const DEFAULT_SALT = genRandomSalt()
 
 const configureSubparser = (subparsers: any) => {
     const parser = subparsers.addParser(
-        'publish',
+        'deactivateKey',
         { addHelp: true },
-    )
-
-    parser.addArgument(
-        ['-p', '--pubkey'],
-        {
-            required: true,
-            type: 'string',
-            help: 'The MACI public key which should replace the user\'s public key in the state tree',
-        }
     )
 
     parser.addArgument(
@@ -88,26 +79,6 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-v', '--vote-option-index'],
-        {
-            required: true,
-            action: 'store',
-            type: 'int',
-            help: 'The vote option index',
-        }
-    )
-
-    parser.addArgument(
-        ['-w', '--new-vote-weight'],
-        {
-            required: true,
-            action: 'store',
-            type: 'int',
-            help: 'The new vote weight',
-        }
-    )
-
-    parser.addArgument(
         ['-n', '--nonce'],
         {
             required: true,
@@ -137,17 +108,18 @@ const configureSubparser = (subparsers: any) => {
     )
 }
 
-const publish = async (args: any) => {
-    // User's MACI public key
-    if (!PubKey.isValidSerializedPubKey(args.pubkey)) {
-        console.error('Error: invalid MACI public key')
-        return 1
-    }
+const deactivateKey = async (args: any) => {
+    // TODO: Why is this here if line 119 below?
+    // // User's MACI public key
+    // if (!PubKey.isValidSerializedPubKey(args.pubkey)) {
+    //     console.error('Error: invalid MACI public key')
+    //     return 1
+    // }
 
-    const userMaciPubKey = PubKey.unserialize(args.pubkey)
+    // Hardcoded for key deactivation
+    const userMaciPubKey = new PubKey([BigInt(0), BigInt(0)])
 
-
-    let contractAddrs = readJSONFile(contractFilepath)
+    const contractAddrs = readJSONFile(contractFilepath)
     if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
         console.error('Error: MACI contract address is empty') 
         return 1
@@ -185,13 +157,8 @@ const publish = async (args: any) => {
         return 0
     }
 
-    // Vote option index
-    const voteOptionIndex = BigInt(args.vote_option_index)
-
-    if (voteOptionIndex < 0) {
-        console.error('Error: the vote option index should be 0 or greater')
-        return 0
-    }
+    // Vote option index - Set to 0 for key deactivation
+    const voteOptionIndex = BigInt(0)
 
     // The nonce
     const nonce = BigInt(args.nonce)
@@ -254,21 +221,6 @@ const publish = async (args: any) => {
         signer,
     )
 
-    /*
-     * TODO: Find a way to batch transaction requests via Hardhat; otherwise,
-     * use Multicall
-    const [maxValues, coordinatorPubKeyResult] = 
-        await batchTransactionRequests(
-            ethProvider,
-            [
-                pollContract.methods.maxValues(),
-                pollContract.methods.coordinatorPubKey(),
-            ],
-            wallet.address
-        )
-
-    const a = await maxValues()
-    */
     const maxValues = await pollContract.maxValues()
     const coordinatorPubKeyResult = await pollContract.coordinatorPubKey()
     const maxVoteOptions = Number(maxValues.maxVoteOptions)
@@ -290,8 +242,8 @@ const publish = async (args: any) => {
         signer,
     )
 
-    // The new vote weight
-    const newVoteWeight = BigInt(args.new_vote_weight)
+    // The new vote weight - Set to 0 for key deactivation
+    const newVoteWeight = BigInt(0)
 
     const encKeypair = new Keypair()
 
@@ -315,7 +267,7 @@ const publish = async (args: any) => {
 
     let tx = null;
     try {
-        tx = await pollContractEthers.publishMessage(
+        tx = await pollContractEthers.deactivateKey(
             message.asContractParam(),
             encKeypair.pubKey.asContractParam(),
             { gasLimit: 10000000 },
@@ -326,8 +278,8 @@ const publish = async (args: any) => {
         console.log('Ephemeral private key:', encKeypair.privKey.serialize())
     } catch(e) {
         if (e.message) {
-            if (e.message.endsWith('PollE03')) {
-                console.error('Error: the voting period is over.')
+            if (e.message.endsWith('PollE11')) {
+                console.error('Error: the key deactivation period is over.')
             } else {
                 console.error('Error: the transaction failed.')
                 console.error(e.message)
@@ -340,6 +292,6 @@ const publish = async (args: any) => {
 }
 
 export {
-    publish,
+    deactivateKey,
     configureSubparser,
 }

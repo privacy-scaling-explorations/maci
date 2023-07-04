@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import { SnarkCommon } from "./crypto/SnarkCommon.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import {SnarkCommon} from "./crypto/SnarkCommon.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /*
  * Stores verifying keys for the circuits.
@@ -10,17 +10,20 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
  * as a uint256.
  */
 contract VkRegistry is Ownable, SnarkCommon {
+    mapping(uint256 => VerifyingKey) internal processVks;
+    mapping(uint256 => bool) internal processVkSet;
 
-    mapping (uint256 => VerifyingKey) internal processVks; 
-    mapping (uint256 => bool) internal processVkSet; 
+    mapping(uint256 => VerifyingKey) internal processDeactivationVks;
+    mapping(uint256 => bool) internal processDeactivationVkSet;
 
-    mapping (uint256 => VerifyingKey) internal tallyVks; 
-    mapping (uint256 => bool) internal tallyVkSet; 
+    mapping(uint256 => VerifyingKey) internal tallyVks;
+    mapping(uint256 => bool) internal tallyVkSet;
 
-    mapping (uint256 => VerifyingKey) internal subsidyVks; 
-    mapping (uint256 => bool) internal subsidyVkSet; 
+    mapping(uint256 => VerifyingKey) internal subsidyVks;
+    mapping(uint256 => bool) internal subsidyVkSet;
 
     event ProcessVkSet(uint256 _sig);
+    event ProcessDeactivationVkSet(uint256 _sig);
     event TallyVkSet(uint256 _sig);
     event SubsidyVkSet(uint256 _sig);
 
@@ -42,11 +45,18 @@ contract VkRegistry is Ownable, SnarkCommon {
         uint256 _voteOptionTreeDepth,
         uint256 _messageBatchSize
     ) public pure returns (uint256) {
-        return 
+        return
             (_messageBatchSize << 192) +
             (_stateTreeDepth << 128) +
             (_messageTreeDepth << 64) +
             _voteOptionTreeDepth;
+    }
+
+    function genProcessDeactivationVkSig(
+        uint256 _stateTreeDepth,
+        uint256 _deactivationTreeDepth
+    ) public pure returns (uint256) {
+        return (_stateTreeDepth << 128) + _deactivationTreeDepth;
     }
 
     function genTallyVkSig(
@@ -54,7 +64,7 @@ contract VkRegistry is Ownable, SnarkCommon {
         uint256 _intStateTreeDepth,
         uint256 _voteOptionTreeDepth
     ) public pure returns (uint256) {
-        return 
+        return
             (_stateTreeDepth << 128) +
             (_intStateTreeDepth << 64) +
             _voteOptionTreeDepth;
@@ -65,7 +75,7 @@ contract VkRegistry is Ownable, SnarkCommon {
         uint256 _intStateTreeDepth,
         uint256 _voteOptionTreeDepth
     ) public pure returns (uint256) {
-        return 
+        return
             (_stateTreeDepth << 128) +
             (_intStateTreeDepth << 64) +
             _voteOptionTreeDepth;
@@ -78,9 +88,9 @@ contract VkRegistry is Ownable, SnarkCommon {
         uint256 _voteOptionTreeDepth,
         uint256 _messageBatchSize,
         VerifyingKey memory _processVk,
+        VerifyingKey memory _deactivationVk,
         VerifyingKey memory _tallyVk
     ) public onlyOwner {
-
         uint256 processVkSig = genProcessVkSig(
             _stateTreeDepth,
             _messageTreeDepth,
@@ -88,7 +98,20 @@ contract VkRegistry is Ownable, SnarkCommon {
             _messageBatchSize
         );
 
-        require(!processVkSet[processVkSig], "VkRegistry: process vk already set");
+        require(
+            !processVkSet[processVkSig],
+            "VkRegistry: process vk already set"
+        );
+
+        uint256 deactivationVkSig = genProcessDeactivationVkSig(
+            _stateTreeDepth,
+            _messageTreeDepth
+        );
+
+        require(
+            !processDeactivationVkSet[deactivationVkSig],
+            "VkRegistry: process deactivation vk already set"
+        );
 
         uint256 tallyVkSig = genTallyVkSig(
             _stateTreeDepth,
@@ -103,23 +126,37 @@ contract VkRegistry is Ownable, SnarkCommon {
         processVk.beta2 = _processVk.beta2;
         processVk.gamma2 = _processVk.gamma2;
         processVk.delta2 = _processVk.delta2;
-        for (uint8 i = 0; i < _processVk.ic.length; i ++) {
+        for (uint8 i = 0; i < _processVk.ic.length; i++) {
             processVk.ic.push(_processVk.ic[i]);
         }
 
         processVkSet[processVkSig] = true;
+
+        VerifyingKey storage deactivationVk = processDeactivationVks[
+            deactivationVkSig
+        ];
+        deactivationVk.alpha1 = _deactivationVk.alpha1;
+        deactivationVk.beta2 = _deactivationVk.beta2;
+        deactivationVk.gamma2 = _deactivationVk.gamma2;
+        deactivationVk.delta2 = _deactivationVk.delta2;
+        for (uint8 i = 0; i < _deactivationVk.ic.length; i++) {
+            deactivationVk.ic.push(_deactivationVk.ic[i]);
+        }
+
+        processDeactivationVkSet[deactivationVkSig] = true;
 
         VerifyingKey storage tallyVk = tallyVks[tallyVkSig];
         tallyVk.alpha1 = _tallyVk.alpha1;
         tallyVk.beta2 = _tallyVk.beta2;
         tallyVk.gamma2 = _tallyVk.gamma2;
         tallyVk.delta2 = _tallyVk.delta2;
-        for (uint8 i = 0; i < _tallyVk.ic.length; i ++) {
+        for (uint8 i = 0; i < _tallyVk.ic.length; i++) {
             tallyVk.ic.push(_tallyVk.ic[i]);
         }
         tallyVkSet[tallyVkSig] = true;
 
         emit TallyVkSet(tallyVkSig);
+        emit ProcessDeactivationVkSet(deactivationVkSig);
         emit ProcessVkSet(processVkSig);
     }
 
@@ -129,21 +166,23 @@ contract VkRegistry is Ownable, SnarkCommon {
         uint256 _voteOptionTreeDepth,
         VerifyingKey memory _subsidyVk
     ) public onlyOwner {
-
         uint256 subsidyVkSig = genSubsidyVkSig(
             _stateTreeDepth,
             _intStateTreeDepth,
             _voteOptionTreeDepth
         );
 
-        require(!subsidyVkSet[subsidyVkSig], "VkRegistry: subsidy vk already set");
+        require(
+            !subsidyVkSet[subsidyVkSig],
+            "VkRegistry: subsidy vk already set"
+        );
 
         VerifyingKey storage subsidyVk = subsidyVks[subsidyVkSig];
         subsidyVk.alpha1 = _subsidyVk.alpha1;
         subsidyVk.beta2 = _subsidyVk.beta2;
         subsidyVk.gamma2 = _subsidyVk.gamma2;
         subsidyVk.delta2 = _subsidyVk.delta2;
-        for (uint8 i = 0; i < _subsidyVk.ic.length; i ++) {
+        for (uint8 i = 0; i < _subsidyVk.ic.length; i++) {
             subsidyVk.ic.push(_subsidyVk.ic[i]);
         }
         subsidyVkSet[subsidyVkSig] = true;
@@ -169,7 +208,10 @@ contract VkRegistry is Ownable, SnarkCommon {
     function getProcessVkBySig(
         uint256 _sig
     ) public view returns (VerifyingKey memory) {
-        require(processVkSet[_sig], "VkRegistry: process verifying key not set");
+        require(
+            processVkSet[_sig],
+            "VkRegistry: process verifying key not set"
+        );
 
         return processVks[_sig];
     }
@@ -188,6 +230,29 @@ contract VkRegistry is Ownable, SnarkCommon {
         );
 
         return getProcessVkBySig(sig);
+    }
+
+    function getProcessDeactivationVkBySig(
+        uint256 _sig
+    ) public view returns (VerifyingKey memory) {
+        require(
+            processDeactivationVkSet[_sig],
+            "VkRegistry: deactivation verifying key not set"
+        );
+
+        return processDeactivationVks[_sig];
+    }
+
+    function getProcessDeactivationVk(
+        uint256 _stateTreeDepth,
+        uint256 _deactivationTreeDepth
+    ) public view returns (VerifyingKey memory) {
+        uint256 sig = genProcessDeactivationVkSig(
+            _stateTreeDepth,
+            _deactivationTreeDepth
+        );
+
+        return getProcessDeactivationVkBySig(sig);
     }
 
     function hasTallyVk(
@@ -243,7 +308,10 @@ contract VkRegistry is Ownable, SnarkCommon {
     function getSubsidyVkBySig(
         uint256 _sig
     ) public view returns (VerifyingKey memory) {
-        require(subsidyVkSet[_sig], "VkRegistry: subsidy verifying key not set");
+        require(
+            subsidyVkSet[_sig],
+            "VkRegistry: subsidy verifying key not set"
+        );
 
         return subsidyVks[_sig];
     }

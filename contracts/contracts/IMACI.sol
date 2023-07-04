@@ -11,4 +11,6 @@ interface IMACI {
     function mergeStateAq(uint256 _pollId) external returns (uint256);
     function numSignUps() external view returns (uint256);
     function stateAq() external view returns (AccQueue);
+    function signUpDeadline() external view returns (uint40);
+    function deactivationPeriod() external view returns (uint40);
 }

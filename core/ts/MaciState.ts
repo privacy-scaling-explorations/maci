@@ -6,11 +6,14 @@ import {
     SNARK_FIELD_SIZE,
     NOTHING_UP_MY_SLEEVE,
     hashLeftRight,
+    hash2,
     hash3,
     hash5,
     sha256Hash,
     stringifyBigInts,
     Signature,
+    verifySignature,
+    elGamalEncryptBit,
 } from 'maci-crypto'
 import {
     PubKey,
@@ -21,6 +24,7 @@ import {
     Message,
     Keypair,
     StateLeaf,
+    DeactivatedKeyLeaf,
     Ballot,
 } from 'maci-domainobjs'
 
@@ -44,6 +48,8 @@ interface MaxValues {
 }
 
 const STATE_TREE_DEPTH = 10
+const DEACT_KEYS_TREE_DEPTH = 10
+const DEACT_MESSAGE_INIT_HASH: BigInt = BigInt('8370432830353022751713833565135785980866757267633941821328460903436894336785')
 
 // Also see: Polls.sol
 class Poll {
@@ -71,6 +77,7 @@ class Poll {
     public STATE_TREE_ARITY = 5
     public MESSAGE_TREE_ARITY = 5
     public VOTE_OPTION_TREE_ARITY = 5
+    public DEACT_KEYS_TREE_ARITY = 5
 
     public stateCopied = false
     public stateLeaves: StateLeaf[] = [blankStateLeaf]
@@ -80,6 +87,19 @@ class Poll {
         this.STATE_TREE_ARITY,
         hash5,
     )
+
+    // For key deactivation
+    public deactivatedKeysChainHash = DEACT_MESSAGE_INIT_HASH
+    public deactivatedKeysTree = new IncrementalQuinTree(
+        DEACT_KEYS_TREE_DEPTH,
+        DEACT_MESSAGE_INIT_HASH,
+        this.DEACT_KEYS_TREE_ARITY,
+        hash5,
+    )
+    public deactivationMessages: Message[] = []
+    public deactivationEncPubKeys: PubKey[] = []
+    public deactivationCommands: PCommand[] = []
+    public deactivationSignatures: Signature[] = []
 
     // For message processing
     public numBatchesProcessed = 0
@@ -150,6 +170,46 @@ class Poll {
             _treeDepths.voteOptionTreeDepth,
         )
         this.ballots.push(blankBallot)
+    }
+
+    public deactivateKey = (
+        _message: Message,
+        _encPubKey: PubKey,
+    ) => {
+        assert(_message.msgType == BigInt(1))
+        assert(
+            _encPubKey.rawPubKey[0] < SNARK_FIELD_SIZE &&
+            _encPubKey.rawPubKey[1] < SNARK_FIELD_SIZE
+        )
+        for (const d of _message.data) {
+            assert(d < SNARK_FIELD_SIZE)
+        }
+
+        this.deactivationMessages.push(_message)
+
+        const messageHash = _message.hash(_encPubKey)
+
+        // Update chain hash
+        this.deactivatedKeysChainHash = hash2([this.deactivatedKeysChainHash, messageHash])
+        this.deactivationEncPubKeys.push(_encPubKey)
+
+        // Decrypt the message and store the Command
+        const sharedKey = Keypair.genEcdhSharedKey(
+            this.coordinatorKeypair.privKey,
+            _encPubKey,
+        )
+
+        try {
+            const { command, signature } = PCommand.decrypt(_message, sharedKey)
+            this.deactivationSignatures.push(signature)
+            this.deactivationCommands.push(command)
+        }  catch(e) {
+           //console.log(`error cannot decrypt: ${e.message}`)
+           const keyPair = new Keypair()
+           const command = new PCommand(BigInt(1), keyPair.pubKey,BigInt(0),BigInt(0),BigInt(0),BigInt(0),BigInt(0))
+           this.deactivationCommands.push(command)
+           this.deactivationSignatures.push(null)
+        }
     }
 
     private copyStateFromMaci = () => {
@@ -276,6 +336,160 @@ class Poll {
         }
 
         return this.numBatchesProcessed < totalBatches
+    }
+
+    /*
+     * Process key deactivation messages
+     */
+    public processDeactivationMessages = (
+        _seed: BigInt
+    ) => {
+        const maskingValues = [];
+        const elGamalEnc = [];
+        const deactivatedLeaves = [];
+
+        if (!this.stateCopied) {
+            this.copyStateFromMaci()
+        }
+
+        let mask: BigInt = _seed;
+;
+        let computedStateIndex = 0;
+
+        for (let i = 0; i < this.deactivationMessages.length; i += 1) {
+            const deactCommand = this.deactivationCommands[i];
+            const deactMessage = this.deactivationMessages[i];
+            const deactSignatures = this.deactivationSignatures[i];
+            const encPubKey = this.deactivationEncPubKeys[i];
+
+            const signature = deactSignatures[i];
+
+            const {
+                stateIndex,
+                newPubKey,
+                voteOptionIndex,
+                newVoteWeight,
+                salt,
+            } = deactCommand;
+
+            const stateIndexInt = parseInt(stateIndex.toString());
+            computedStateIndex = stateIndexInt > 0 && stateIndexInt <= this.numSignUps ? stateIndexInt - 1: -1;
+
+            let pubKey: any;
+            
+            if (computedStateIndex > -1) {
+                pubKey = this.stateLeaves[computedStateIndex].pubKey;
+            } else {
+                pubKey = new PubKey([BigInt(0), BigInt(0)]);
+            }
+
+            // Verify deactivation message
+            const status = deactCommand.cmdType.toString() == '1' // Check message type
+                && computedStateIndex != -1
+                && signature != null
+                && verifySignature(
+                    deactMessage.hash(encPubKey), 
+                    signature, 
+                    pubKey.rawPubKey
+                ) // Check signature
+                && newPubKey.rawPubKey[0].toString() == '0'
+                && newPubKey.rawPubKey[1].toString() == '0'
+                && voteOptionIndex.toString() == '0'
+                && newVoteWeight.toString() == '0'
+
+            mask = hash2([mask, salt]);
+
+            maskingValues.push(mask);
+
+            const [c1, c2] = elGamalEncryptBit(
+                this.coordinatorKeypair.pubKey.rawPubKey,
+                status ? BigInt(1) : BigInt(0),
+                mask,
+            )
+
+            elGamalEnc.push([c1, c2]);
+
+            const deactivatedLeaf = (new DeactivatedKeyLeaf(
+                pubKey,
+                c1,
+                c2,
+                salt,
+            ))
+
+            this.deactivatedKeysTree.insert(deactivatedLeaf.hash())
+            deactivatedLeaves.push(deactivatedLeaf);
+        }
+
+        const maxMessages = 5; // TODO: Temp
+
+        // Pad array
+        for (let i = 1; i < maxMessages; i += 1) {
+            this.deactivationEncPubKeys.push(new PubKey([BigInt(0), BigInt(0)]))
+        }
+
+        const deactivatedTreePathElements = [];
+        for (let i = 0; i < this.deactivationMessages.length; i += 1) {
+            const merklePath = this.deactivatedKeysTree.genMerklePath(i);
+            deactivatedTreePathElements.push(merklePath.pathElements);
+        }
+
+        // Pad array
+        for (let i = this.deactivationMessages.length; i < maxMessages; i += 1) {
+            deactivatedTreePathElements.push(this.stateTree.genMerklePath(0).pathElements)
+        }
+
+        const stateLeafPathElements = [this.stateTree.genMerklePath(computedStateIndex).pathElements];
+        // Pad array
+        for (let i = 1; i < maxMessages; i += 1) {
+            stateLeafPathElements.push(this.stateTree.genMerklePath(0).pathElements)
+        }
+
+        const currentStateLeaves = [this.stateLeaves[computedStateIndex].asCircuitInputs()];
+        // Pad array
+        for (let i = 1; i < maxMessages; i += 1) {
+            currentStateLeaves.push(blankStateLeaf.asCircuitInputs())
+        }
+
+        // Pad array
+        for (let i = this.deactivationMessages.length; i < maxMessages; i += 1) {
+            const padMask = genRandomSalt(); 
+            const [padc1, padc2] = elGamalEncryptBit(
+                this.coordinatorKeypair.pubKey.rawPubKey,
+                BigInt(0),
+                padMask,
+            )
+
+            maskingValues.push(padMask);
+            elGamalEnc.push([padc1, padc2]);
+        }
+
+        for (let i = this.deactivationMessages.length; i < maxMessages; i += 1) {
+            this.deactivationMessages.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
+        }
+
+        const circuitInputs = stringifyBigInts({
+            coordPrivKey: this.coordinatorKeypair.privKey.asCircuitInputs(),
+            coordPubKey: this.coordinatorKeypair.pubKey.rawPubKey,
+            encPubKeys: this.deactivationEncPubKeys.map(k => k.asCircuitInputs()),
+            msgs: this.deactivationMessages.map(m => m.asCircuitInputs()),
+            deactivatedTreePathElements,
+            stateLeafPathElements: stateLeafPathElements,
+            currentStateLeaves: currentStateLeaves,
+            elGamalEnc,
+            maskingValues,
+            deactivatedTreeRoot: this.deactivatedKeysTree.root,
+            currentStateRoot: this.stateTree.root,
+            numSignUps: this.numSignUps,
+            chainHash: this.deactivatedKeysChainHash,
+            inputHash: sha256Hash([
+                this.deactivatedKeysTree.root,
+                this.numSignUps,
+                this.stateTree.root,
+                this.deactivatedKeysChainHash,
+            ]),
+        })
+        
+        return { circuitInputs, deactivatedLeaves };
     }
 
     /*
@@ -1549,6 +1763,14 @@ const genProcessVkSig = (
             BigInt(_voteOptionTreeDepth)
 }
 
+const genDeactivationVkSig = (
+    _messageQueueSize: number,
+    _stateTreeDepth: number,
+): BigInt => {
+    return (BigInt(_messageQueueSize) << BigInt(64)) +
+           BigInt(_stateTreeDepth)
+}
+
 const genTallyVkSig = (
     _stateTreeDepth: number,
     _intStateTreeDepth: number,
@@ -1596,6 +1818,7 @@ export {
     TreeDepths,
     MaciState,
     Poll,
+    genDeactivationVkSig,
     genProcessVkSig,
     genTallyVkSig,
     genSubsidyVkSig,

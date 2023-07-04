@@ -255,7 +255,7 @@ const genRandomBabyJubValue = (): BigInt => {
 /*
  * @return A BabyJub-compatible private key.
  */
-const genPrivKey = (): PrivKey => {
+const genPrivKey = (): BigInt => {
 
     return genRandomBabyJubValue()
 }
@@ -407,10 +407,11 @@ const verifySignature = (
 const elGamalEncrypt = (
     pubKey: PubKey, 
     m: Point, 
-    y: PrivKey
+    y: BigInt
 ): Ciphertext[] => {
-    const s = babyJub.mulPointEscalar(pubKey, formatPrivKeyForBabyJub(y))
-    const c1 = babyJub.mulPointEscalar(babyJub.Base8, formatPrivKeyForBabyJub(y))
+    const s = babyJub.mulPointEscalar(pubKey, y)
+    const c1 = babyJub.mulPointEscalar(babyJub.Base8, y)
+
     const c2 = babyJub.addPoint(m, s)
     return [c1, c2]
 }
@@ -470,7 +471,7 @@ const curveToBit = (
 const elGamalEncryptBit = (
     pubKey: PubKey, 
     bit: BigInt, 
-    y: PrivKey,
+    y: BigInt,
 ): Ciphertext[] => {
     const m = bitToCurve(bit)
     return elGamalEncrypt(pubKey, m, y)
@@ -488,6 +489,10 @@ const elGamalDecryptBit = (
     const m = elGamalDecrypt(privKey, c1, c2)
     return curveToBit(m)
 }
+
+const babyJubMaxValue = BigInt(babyJub.p)
+
+const babyJubAddPoint = (a: any, b: any) => babyJub.addPoint(a,b)
 
 export {
     genRandomSalt,
@@ -531,4 +536,6 @@ export {
     bigInt2Buffer,
     packPubKey,
     unpackPubKey,
+    babyJubMaxValue,
+    babyJubAddPoint
 }
