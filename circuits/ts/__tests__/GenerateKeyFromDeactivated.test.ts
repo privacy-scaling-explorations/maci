@@ -15,12 +15,14 @@ import {
     PubKey,
     Keypair,
     PCommand,
+    KCommand,
     Message,
     DeactivatedKeyLeaf,
 } from 'maci-domainobjs'
 
 import {
     hash2,
+    encrypt,
     sha256Hash,
     hash5,
     IncrementalQuinTree,
@@ -50,7 +52,7 @@ const coordinatorKeypair = new Keypair()
 const circuit = 'generateKeyFromDeactivated_test'
 
 describe('GenerateKeyFromDeactivated circuit', () => {
-    describe('1 user, 0, 1 deactivation messages', () => {
+    describe('1 user, 1 deactivation messages', () => {
         const maciState = new MaciState()
         const voteWeight = BigInt(0)
         const voteOptionIndex = BigInt(0)
@@ -99,6 +101,11 @@ describe('GenerateKeyFromDeactivated circuit', () => {
             }
 
             // ecdhKeypair.pubKey -> encPubKey
+            const ecdhKeypair = new Keypair()
+            const sharedKey = Keypair.genEcdhSharedKey(
+                ecdhKeypair.privKey,
+                coordinatorKeypair.pubKey,
+            )
 
             const DEACT_TREE_ARITY = 5;
 
@@ -128,44 +135,35 @@ describe('GenerateKeyFromDeactivated circuit', () => {
             );
             const numSignUps = BigInt(1);
 
-            const nullifier = hash2([BigInt(userKeypair.privKey.asCircuitInputs()), salt])
+            const nullifier = hash2([BigInt(userKeypair.privKey.asCircuitInputs()), salt]);
 
-            const inputs = stringifyBigInts({
-                oldPrivKey: userKeypair.privKey.asCircuitInputs(),         
-                numSignUps,
-                stateIndex,
-                salt,
-                stateTreeRoot: maciState.stateTree.root,
-                deactivatedKeysRoot: deactivatedKeys.root,
-                stateTreeInclusionProof: maciState.stateTree.genMerklePath(stateIndex).pathElements,
-                oldCreditBalance: voiceCreditBalance,
-                newCreditBalance: voiceCreditBalance,
-                stateLeafTimestamp: maciState.stateLeaves[1].asCircuitInputs()[3],
-                deactivatedKeysInclusionProof: deactivatedKeys.genMerklePath(0).pathElements,
-                deactivatedKeyIndex: BigInt(0),
-                c1: testC1,
-                c2: testC2,
-                coordinatorPubKey: coordinatorKeypair.pubKey.asCircuitInputs(),
+
+            const kCommand = new KCommand(
+                newUserKeypair.pubKey,
+                voiceCreditBalance,
+                nullifier,
                 c1r,
                 c2r,
+                pollId,   
+            )
+
+            const { circuitInputs: inputs } = kCommand.prepareValues(
+                userKeypair.privKey,
+                maciState.stateLeaves,
+                maciState.stateTree,
+                BigInt(1),
+                stateIndex,
+                salt,
+                coordinatorKeypair.pubKey,
+                deactivatedKeys,
+                BigInt(0),
                 z,
-                nullifier,
-                inputHash: sha256Hash([
-                    maciState.stateTree.root,
-                    deactivatedKeys.root,
-                    nullifier,
-                    c1r[0],
-                    c1r[1],
-                    c2r[0],
-                    c2r[1],
-                ]),
-            })
+                testC1,
+                testC2,
+            )
 
             const witness = await genWitness(circuit, inputs)
             expect(witness.length > 0).toBeTruthy()
-
-            // const newMessageChainHash = await getSignalByName(circuit, witness, 'main.newMessageChainHash')
-            // expect(newMessageChainHash).toEqual(H0.toString());
         })
     })
 })

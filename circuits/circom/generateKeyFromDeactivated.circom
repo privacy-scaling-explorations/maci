@@ -6,16 +6,22 @@ include "./isDeactivatedKey.circom";
 include "./poseidon/poseidonHashT3.circom";
 include "./hasherSha256.circom";
 include "./privToPubKey.circom";
-
+include "./poseidonEncryption.circom";
+include "./ecdh.circom";
 
 template GenerateKeyFromDeactivated(STATE_TREE_DEPTH) {
     var TREE_ARITY = 5;
     var STATE_LEAF_LENGTH = 4;
+    var MESSAGE_LENGTH = 9;
+    var ENC_MESSAGE_LENGTH = 10;
 
     signal input inputHash; // Hashed inputs
     
     // Private key of the deactivated key
     signal input oldPrivKey;
+
+    // New public key
+    signal input newPubKey[2];
 
     // Number of signups
     signal input numSignUps;
@@ -57,6 +63,9 @@ template GenerateKeyFromDeactivated(STATE_TREE_DEPTH) {
     // Coordinator's public key
     signal input coordinatorPubKey[2];
 
+    // Enc. public key
+    signal input encPrivKey;
+
     // Rerandomized ciphertext
     signal input c1r[2];
     signal input c2r[2];
@@ -66,6 +75,9 @@ template GenerateKeyFromDeactivated(STATE_TREE_DEPTH) {
 
     // Deactivation nullifier
     signal input nullifier;
+
+    // Encrypted nullifier
+    signal input pollId;
 
     // ==============================================
     // 1. Generate old pub key
@@ -146,6 +158,43 @@ template GenerateKeyFromDeactivated(STATE_TREE_DEPTH) {
     nullifierHasher.inputs[1] <== salt;
     nullifierHasher.out === nullifier;
 
+    // 7c. Verify nullifier encryption
+    component ecdh = Ecdh();
+    ecdh.privKey <== encPrivKey;
+    ecdh.pubKey[0] <== coordinatorPubKey[0];
+    ecdh.pubKey[1] <== coordinatorPubKey[1];
+
+    signal message[MESSAGE_LENGTH];
+    message[0] <== newPubKey[0];
+    message[1] <== newPubKey[1];
+    message[2] <== newCreditBalance;
+    message[3] <== nullifier;
+    message[4] <== c1r[0];
+    message[5] <== c1r[1];
+    message[6] <== c2r[0];
+    message[7] <== c2r[1];
+    message[8] <== pollId;
+
+    component messageEncryptor = PoseidonEncrypt(MESSAGE_LENGTH);
+    messageEncryptor.key[0] <== ecdh.sharedKey[0];
+    messageEncryptor.key[1] <== ecdh.sharedKey[1];
+    messageEncryptor.nonce <== 0;
+
+    for (var i = 0; i < MESSAGE_LENGTH; i ++) {
+        messageEncryptor.plaintext[i] <== message[i];
+    }    
+    
+    // 9. Generate encrypted message hash
+    component messageHasher = Sha256Hasher(ENC_MESSAGE_LENGTH);
+    for (var i = 0; i < ENC_MESSAGE_LENGTH; i++) {
+        messageHasher.in[i] <== messageEncryptor.encrypted[i];
+    }
+
+    // 7d. Generate encPubKey
+    signal encPubKey[2];
+    component privToPubEnc = PrivToPubKey();
+    privToPubEnc.privKey <== encPrivKey;
+
     // 8. Verify rerandomized values
     component rerandomize = ElGamalRerandomize();
     rerandomize.z <== z;
@@ -161,15 +210,15 @@ template GenerateKeyFromDeactivated(STATE_TREE_DEPTH) {
     rerandomize.c2r[0] === c2r[0];
     rerandomize.c2r[1] === c2r[1];
     
-    // 9. Verify output hash
+    // 10. Verify output hash
     component inputHasher = Sha256Hasher(7);
     inputHasher.in[0] <== stateTreeRoot;
     inputHasher.in[1] <== deactivatedKeysRoot;
-    inputHasher.in[2] <== nullifier;
-    inputHasher.in[3] <== c1r[0];
-    inputHasher.in[4] <== c1r[1];
-    inputHasher.in[5] <== c2r[0];
-    inputHasher.in[6] <== c2r[1];
-
+    inputHasher.in[2] <== messageHasher.hash;
+    inputHasher.in[3] <== coordinatorPubKey[0];
+    inputHasher.in[4] <== coordinatorPubKey[1];
+    inputHasher.in[5] <== privToPubEnc.pubKey[0];
+    inputHasher.in[6] <== privToPubEnc.pubKey[1];
+    
     inputHasher.hash === inputHash;
 }

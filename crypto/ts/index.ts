@@ -180,6 +180,7 @@ const hash2 = (elements: Plaintext): BigInt => hashN(2, elements)
 const hash3 = (elements: Plaintext): BigInt => hashN(3, elements)
 const hash4 = (elements: Plaintext): BigInt => hashN(4, elements)
 const hash5 = (elements: Plaintext): BigInt => hashN(5, elements)
+const hash9 = (elements: Plaintext): BigInt => hashN(9, elements)
 
 /*
  * A convenience function for to use Poseidon to hash a Plaintext with
@@ -536,6 +537,7 @@ export {
     hash3,
     hash4,
     hash5,
+    hash9,
     hash13,
     hashLeftRight,
     verifySignature,
