@@ -2,7 +2,6 @@ jest.setTimeout(1200000)
 import * as fs from 'fs'
 import { 
     genWitness,
-    getSignalByName,
 } from './utils'
 
 import {
@@ -22,12 +21,9 @@ import {
 
 import {
     hash2,
-    encrypt,
-    sha256Hash,
     hash5,
     IncrementalQuinTree,
     elGamalRerandomize,
-    stringifyBigInts,
 } from 'maci-crypto'
 
 const voiceCreditBalance = BigInt(100)
@@ -52,15 +48,11 @@ const coordinatorKeypair = new Keypair()
 const circuit = 'generateKeyFromDeactivated_test'
 
 describe('GenerateKeyFromDeactivated circuit', () => {
-    describe('1 user, 1 deactivation messages', () => {
+    describe('1 user, 1 GenerateKeyFromDeactivated messages', () => {
         const maciState = new MaciState()
-        const voteWeight = BigInt(0)
-        const voteOptionIndex = BigInt(0)
         let stateIndex
         let pollId
         let poll
-        const messages: Message[] = []
-        const commands: PCommand[] = []
         const H0 = BigInt('8370432830353022751713833565135785980866757267633941821328460903436894336785');
         const userKeypair = new Keypair(new PrivKey(BigInt(1)));
         const newUserKeypair = new Keypair(new PrivKey(BigInt(2)));
@@ -100,13 +92,6 @@ describe('GenerateKeyFromDeactivated circuit', () => {
                 messageArr.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
             }
 
-            // ecdhKeypair.pubKey -> encPubKey
-            const ecdhKeypair = new Keypair()
-            const sharedKey = Keypair.genEcdhSharedKey(
-                ecdhKeypair.privKey,
-                coordinatorKeypair.pubKey,
-            )
-
             const DEACT_TREE_ARITY = 5;
 
             const deactivatedKeys = new IncrementalQuinTree(
@@ -133,10 +118,8 @@ describe('GenerateKeyFromDeactivated circuit', () => {
                 testC1,
                 testC2,
             );
-            const numSignUps = BigInt(1);
 
             const nullifier = hash2([BigInt(userKeypair.privKey.asCircuitInputs()), salt]);
-
 
             const kCommand = new KCommand(
                 newUserKeypair.pubKey,
@@ -164,6 +147,140 @@ describe('GenerateKeyFromDeactivated circuit', () => {
 
             const witness = await genWitness(circuit, inputs)
             expect(witness.length > 0).toBeTruthy()
+        })
+
+        it('should throw because random key passed to circuit instead of coordinators', async () => {
+            
+            const randomKeypair = new Keypair(new PrivKey(BigInt(999)));
+            
+            const salt = (new Keypair()).privKey.rawPrivKey
+
+            const messageArr = [];
+            for (let i = 0; i < maxValues.maxMessages; i += 1) {
+                messageArr.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
+            }
+
+            const DEACT_TREE_ARITY = 5;
+
+            const deactivatedKeys = new IncrementalQuinTree(
+                STATE_TREE_DEPTH,
+                H0,
+                DEACT_TREE_ARITY,
+                hash5,
+            )
+
+            const testC1 = [BigInt(1), BigInt(1)];
+            const testC2 = [BigInt(2), BigInt(2)];
+
+            deactivatedKeys.insert( (new DeactivatedKeyLeaf(
+                userKeypair.pubKey,
+                testC1,
+                testC2,
+                salt,
+            )).hash())
+
+            const z = BigInt(42);
+            const [c1r, c2r] = elGamalRerandomize(
+                coordinatorKeypair.pubKey.rawPubKey,
+                z,
+                testC1,
+                testC2,
+            );
+
+            const nullifier = hash2([BigInt(userKeypair.privKey.asCircuitInputs()), salt]);
+
+            const kCommand = new KCommand(
+                newUserKeypair.pubKey,
+                voiceCreditBalance,
+                nullifier,
+                c1r,
+                c2r,
+                pollId,   
+            )
+
+            const { circuitInputs: inputs } = kCommand.prepareValues(
+                userKeypair.privKey,
+                maciState.stateLeaves,
+                maciState.stateTree,
+                BigInt(1),
+                stateIndex,
+                salt,
+                randomKeypair.pubKey,
+                deactivatedKeys,
+                BigInt(0),
+                z,
+                testC1,
+                testC2,
+            )
+
+            await expect(genWitness(circuit, inputs)).rejects.toThrow();
+        })
+
+        it('should throw because key passed to circuit not in the tree of deactivated keys', async () => {
+            
+            const keyPairNotInDeactivatedKeysTree = new Keypair(new PrivKey(BigInt(999)));
+            
+            const salt = (new Keypair()).privKey.rawPrivKey
+
+            const messageArr = [];
+            for (let i = 0; i < maxValues.maxMessages; i += 1) {
+                messageArr.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
+            }
+
+            const DEACT_TREE_ARITY = 5;
+
+            const deactivatedKeys = new IncrementalQuinTree(
+                STATE_TREE_DEPTH,
+                H0,
+                DEACT_TREE_ARITY,
+                hash5,
+            )
+
+            const testC1 = [BigInt(1), BigInt(1)];
+            const testC2 = [BigInt(2), BigInt(2)];
+
+            deactivatedKeys.insert( (new DeactivatedKeyLeaf(
+                userKeypair.pubKey,
+                testC1,
+                testC2,
+                salt,
+            )).hash())
+
+            const z = BigInt(42);
+            const [c1r, c2r] = elGamalRerandomize(
+                coordinatorKeypair.pubKey.rawPubKey,
+                z,
+                testC1,
+                testC2,
+            );
+
+            const nullifier = hash2([BigInt(userKeypair.privKey.asCircuitInputs()), salt]);
+
+            const kCommand = new KCommand(
+                newUserKeypair.pubKey,
+                voiceCreditBalance,
+                nullifier,
+                c1r,
+                c2r,
+                pollId,   
+            )
+
+            const { circuitInputs: inputs } = kCommand.prepareValues(
+                keyPairNotInDeactivatedKeysTree.privKey,
+                maciState.stateLeaves,
+                maciState.stateTree,
+                BigInt(1),
+                stateIndex,
+                salt,
+                keyPairNotInDeactivatedKeysTree.pubKey,
+                deactivatedKeys,
+                BigInt(0),
+                z,
+                testC1,
+                testC2,
+            )
+
+            await expect(genWitness(circuit, inputs)).rejects.toThrow();
         })
     })
 })
