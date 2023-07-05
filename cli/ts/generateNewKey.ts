@@ -230,4 +230,10 @@ const generateNewKey = async (args: any) => {
     }
 
     // TODO: add generateNewKey logic
+    return 0;
+}
+
+export {
+    generateNewKey,
+    configureSubparser,
 }
