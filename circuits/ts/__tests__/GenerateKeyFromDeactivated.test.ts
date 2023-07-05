@@ -490,5 +490,70 @@ describe('GenerateKeyFromDeactivated circuit', () => {
 
             await expect(genWitness(circuit, inputs)).rejects.toThrow();
         })
+
+        it('should throw because nulifier hash passed to circuit as part of input hash is invalid', async () => {
+            
+            const salt = (new Keypair()).privKey.rawPrivKey
+
+            const messageArr = [];
+            for (let i = 0; i < maxValues.maxMessages; i += 1) {
+                messageArr.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
+            }
+
+            const DEACT_TREE_ARITY = 5;
+
+            const deactivatedKeys = new IncrementalQuinTree(
+                STATE_TREE_DEPTH,
+                H0,
+                DEACT_TREE_ARITY,
+                hash5,
+            )
+
+            const testC1 = [BigInt(1), BigInt(1)];
+            const testC2 = [BigInt(2), BigInt(2)];
+
+            deactivatedKeys.insert( (new DeactivatedKeyLeaf(
+                userKeypair.pubKey,
+                testC1,
+                testC2,
+                salt,
+            )).hash())
+
+            const z = BigInt(42);
+            const [c1r, c2r] = elGamalRerandomize(
+                coordinatorKeypair.pubKey.rawPubKey,
+                z,
+                testC1,
+                testC2,
+            );
+
+            const wrongNullifier = BigInt(9999999999999);
+
+            const kCommand = new KCommand(
+                newUserKeypair.pubKey,
+                voiceCreditBalance,
+                wrongNullifier,
+                c1r,
+                c2r,
+                pollId,   
+            )
+
+            const { circuitInputs: inputs } = kCommand.prepareValues(
+                userKeypair.privKey,
+                maciState.stateLeaves,
+                maciState.stateTree,
+                BigInt(1),
+                stateIndex,
+                salt,
+                coordinatorKeypair.pubKey,
+                deactivatedKeys,
+                BigInt(0),
+                z,
+                testC1,
+                testC2,
+            )
+
+            await expect(genWitness(circuit, inputs)).rejects.toThrow();
+        })
     })
 })
