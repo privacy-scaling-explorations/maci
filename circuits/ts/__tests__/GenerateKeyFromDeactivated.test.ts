@@ -1,5 +1,4 @@
 jest.setTimeout(1200000)
-import * as fs from 'fs'
 import { 
     genWitness,
 } from './utils'
@@ -216,7 +215,7 @@ describe('GenerateKeyFromDeactivated circuit', () => {
             await expect(genWitness(circuit, inputs)).rejects.toThrow();
         })
 
-        it('should throw because key passed to circuit not in the tree of deactivated keys', async () => {
+        it('should throw because the key that should be deactivated that is passed to circuit is not in the tree of deactivated keys', async () => {
             
             const keyPairNotInDeactivatedKeysTree = new Keypair(new PrivKey(BigInt(999)));
             
@@ -272,7 +271,74 @@ describe('GenerateKeyFromDeactivated circuit', () => {
                 BigInt(1),
                 stateIndex,
                 salt,
-                keyPairNotInDeactivatedKeysTree.pubKey,
+                coordinatorKeypair.pubKey,
+                deactivatedKeys,
+                BigInt(0),
+                z,
+                testC1,
+                testC2,
+            )
+
+            await expect(genWitness(circuit, inputs)).rejects.toThrow();
+        })
+
+        it('should throw because credit balance in the kCommand is bigger than the initial credit balance', async () => {
+            
+            const wrongCreditBalance = voiceCreditBalance + BigInt(1);
+
+            const salt = (new Keypair()).privKey.rawPrivKey
+
+            const messageArr = [];
+            for (let i = 0; i < maxValues.maxMessages; i += 1) {
+                messageArr.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
+            }
+
+            const DEACT_TREE_ARITY = 5;
+
+            const deactivatedKeys = new IncrementalQuinTree(
+                STATE_TREE_DEPTH,
+                H0,
+                DEACT_TREE_ARITY,
+                hash5,
+            )
+
+            const testC1 = [BigInt(1), BigInt(1)];
+            const testC2 = [BigInt(2), BigInt(2)];
+
+            deactivatedKeys.insert( (new DeactivatedKeyLeaf(
+                userKeypair.pubKey,
+                testC1,
+                testC2,
+                salt,
+            )).hash())
+
+            const z = BigInt(42);
+            const [c1r, c2r] = elGamalRerandomize(
+                coordinatorKeypair.pubKey.rawPubKey,
+                z,
+                testC1,
+                testC2,
+            );
+
+            const nullifier = hash2([BigInt(userKeypair.privKey.asCircuitInputs()), salt]);
+
+            const kCommand = new KCommand(
+                newUserKeypair.pubKey,
+                wrongCreditBalance,
+                nullifier,
+                c1r,
+                c2r,
+                pollId,   
+            )
+
+            const { circuitInputs: inputs } = kCommand.prepareValues(
+                userKeypair.privKey,
+                maciState.stateLeaves,
+                maciState.stateTree,
+                BigInt(1),
+                stateIndex,
+                salt,
+                coordinatorKeypair.pubKey,
                 deactivatedKeys,
                 BigInt(0),
                 z,
