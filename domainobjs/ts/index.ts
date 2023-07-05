@@ -1046,13 +1046,13 @@ class KCommand extends Command {
 	 * Decrypts a Message to produce a Command.
 	 */
 	public static decrypt = (message: Message, sharedKey: EcdhSharedKey) => {
-		const decrypted = decrypt(message.data, sharedKey, BigInt(0), 7);
-		const newPubKey = new PubKey([decrypted[1], decrypted[2]]);
-		const newCreditBalance = decrypted[3];
-		const nullifier = decrypted[4];
-		const c1r = [decrypted[5], decrypted[6]];
-		const c2r = [decrypted[7], decrypted[8]];
-		const pollId = decrypted[9];
+		const decrypted = decrypt(message.data, sharedKey, BigInt(0), 9);
+		const newPubKey = new PubKey([decrypted[0], decrypted[1]]);
+		const newCreditBalance = decrypted[2];
+		const nullifier = decrypted[3];
+		const c1r = [decrypted[4], decrypted[5]];
+		const c2r = [decrypted[6], decrypted[7]];
+		const pollId = decrypted[8];
 
 		const command = new KCommand(
 			newPubKey,
