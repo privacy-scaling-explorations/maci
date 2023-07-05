@@ -54,7 +54,7 @@ describe('GenerateKeyFromDeactivated circuit', () => {
         let poll
         const H0 = BigInt('8370432830353022751713833565135785980866757267633941821328460903436894336785');
         const userKeypair = new Keypair(new PrivKey(BigInt(1)));
-        const newUserKeypair = new Keypair(new PrivKey(BigInt(2)));
+        const newUserKeypair = new Keypair(new PrivKey(BigInt(7)));
 
         beforeAll(async () => {
             // Sign up and publish
@@ -282,6 +282,80 @@ describe('GenerateKeyFromDeactivated circuit', () => {
             await expect(genWitness(circuit, inputs)).rejects.toThrow();
         })
 
+        it('should throw because the key that should be deactivated that is passed to circuit is not in the state tree', async () => {
+            
+            const keyPairNotInStateTree = new Keypair(new PrivKey(BigInt(999)));
+            
+            const salt = (new Keypair()).privKey.rawPrivKey
+
+            const messageArr = [];
+            for (let i = 0; i < maxValues.maxMessages; i += 1) {
+                messageArr.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
+            }
+
+            const DEACT_TREE_ARITY = 5;
+
+            const deactivatedKeys = new IncrementalQuinTree(
+                STATE_TREE_DEPTH,
+                H0,
+                DEACT_TREE_ARITY,
+                hash5,
+            )
+
+            const testC1 = [BigInt(1), BigInt(1)];
+            const testC2 = [BigInt(2), BigInt(2)];
+
+            deactivatedKeys.insert( (new DeactivatedKeyLeaf(
+                userKeypair.pubKey,
+                testC1,
+                testC2,
+                salt,
+            )).hash())
+
+            deactivatedKeys.insert( (new DeactivatedKeyLeaf(
+                keyPairNotInStateTree.pubKey,
+                testC1,
+                testC2,
+                salt,
+            )).hash())
+
+            const z = BigInt(42);
+            const [c1r, c2r] = elGamalRerandomize(
+                coordinatorKeypair.pubKey.rawPubKey,
+                z,
+                testC1,
+                testC2,
+            );
+
+            const nullifier = hash2([BigInt(userKeypair.privKey.asCircuitInputs()), salt]);
+
+            const kCommand = new KCommand(
+                newUserKeypair.pubKey,
+                voiceCreditBalance,
+                nullifier,
+                c1r,
+                c2r,
+                pollId,   
+            )
+
+            const { circuitInputs: inputs } = kCommand.prepareValues(
+                keyPairNotInStateTree.privKey,
+                maciState.stateLeaves,
+                maciState.stateTree,
+                BigInt(1),
+                stateIndex,
+                salt,
+                coordinatorKeypair.pubKey,
+                deactivatedKeys,
+                BigInt(0),
+                z,
+                testC1,
+                testC2,
+            )
+
+            await expect(genWitness(circuit, inputs)).rejects.toThrow();
+        })
+
         it('should throw because credit balance in the kCommand is bigger than the initial credit balance', async () => {
             
             const wrongCreditBalance = voiceCreditBalance + BigInt(1);
@@ -328,6 +402,74 @@ describe('GenerateKeyFromDeactivated circuit', () => {
                 nullifier,
                 c1r,
                 c2r,
+                pollId,   
+            )
+
+            const { circuitInputs: inputs } = kCommand.prepareValues(
+                userKeypair.privKey,
+                maciState.stateLeaves,
+                maciState.stateTree,
+                BigInt(1),
+                stateIndex,
+                salt,
+                coordinatorKeypair.pubKey,
+                deactivatedKeys,
+                BigInt(0),
+                z,
+                testC1,
+                testC2,
+            )
+
+            await expect(genWitness(circuit, inputs)).rejects.toThrow();
+        })
+
+        it('should throw because elgamalRerandomize output c1r, c2r passed to circuit is invalid', async () => {
+            
+            const salt = (new Keypair()).privKey.rawPrivKey
+
+            const messageArr = [];
+            for (let i = 0; i < maxValues.maxMessages; i += 1) {
+                messageArr.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
+            }
+
+            const DEACT_TREE_ARITY = 5;
+
+            const deactivatedKeys = new IncrementalQuinTree(
+                STATE_TREE_DEPTH,
+                H0,
+                DEACT_TREE_ARITY,
+                hash5,
+            )
+
+            const testC1 = [BigInt(1), BigInt(1)];
+            const testC2 = [BigInt(2), BigInt(2)];
+
+            deactivatedKeys.insert( (new DeactivatedKeyLeaf(
+                userKeypair.pubKey,
+                testC1,
+                testC2,
+                salt,
+            )).hash())
+
+            const z = BigInt(42);
+            const [c1r, c2r] = elGamalRerandomize(
+                coordinatorKeypair.pubKey.rawPubKey,
+                z,
+                testC1,
+                testC2,
+            );
+
+            const wrongC1r = [BigInt(997), BigInt(994)];
+            const wrongC2r = [BigInt(998), BigInt(993)];
+
+            const nullifier = hash2([BigInt(userKeypair.privKey.asCircuitInputs()), salt]);
+
+            const kCommand = new KCommand(
+                newUserKeypair.pubKey,
+                voiceCreditBalance,
+                nullifier,
+                wrongC1r,
+                wrongC2r,
                 pollId,   
             )
 
