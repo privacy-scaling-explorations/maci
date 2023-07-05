@@ -180,6 +180,7 @@ const hash2 = (elements: Plaintext): BigInt => hashN(2, elements)
 const hash3 = (elements: Plaintext): BigInt => hashN(3, elements)
 const hash4 = (elements: Plaintext): BigInt => hashN(4, elements)
 const hash5 = (elements: Plaintext): BigInt => hashN(5, elements)
+const hash9 = (elements: Plaintext): BigInt => hashN(9, elements)
 
 /*
  * A convenience function for to use Poseidon to hash a Plaintext with
@@ -490,6 +491,28 @@ const elGamalDecryptBit = (
     return curveToBit(m)
 }
 
+const elGamalRerandomize = (
+    pubKey: PubKey,
+    z: BigInt,
+    c1: BigInt[],
+    c2: BigInt[],
+) => {
+    // c1' = z*G + c1
+    // c2' = pubKey * z + c2
+
+    const c1r = babyJub.addPoint(
+        babyJub.mulPointEscalar(babyJub.Base8, z),
+        c1
+    );
+
+    const c2r = babyJub.addPoint(
+        babyJub.mulPointEscalar(pubKey, z),
+        c2
+    );
+    
+    return [c1r, c2r];
+}
+
 const babyJubMaxValue = BigInt(babyJub.p)
 
 const babyJubAddPoint = (a: any, b: any) => babyJub.addPoint(a,b)
@@ -506,6 +529,7 @@ export {
     elGamalEncryptBit,
     elGamalDecrypt,
     elGamalDecryptBit,
+    elGamalRerandomize,
     sign,
     sha256Hash,
     hashOne,
@@ -513,6 +537,7 @@ export {
     hash3,
     hash4,
     hash5,
+    hash9,
     hash13,
     hashLeftRight,
     verifySignature,
@@ -537,5 +562,5 @@ export {
     packPubKey,
     unpackPubKey,
     babyJubMaxValue,
-    babyJubAddPoint
+    babyJubAddPoint,
 }

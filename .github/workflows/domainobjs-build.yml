@@ -2,7 +2,7 @@ name: Domainobjs
 
 on:
   push:
-    branches: [ master, audit, dev ]
+    branches: [ master, audit, dev, feat/elgamal ]
   pull_request:
 
 concurrency: 
