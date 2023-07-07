@@ -1,5 +1,4 @@
 jest.setTimeout(1200000)
-import * as fs from 'fs'
 import { 
     genWitness,
     getSignalByName,
@@ -12,7 +11,6 @@ import {
 
 import {
     PrivKey,
-    PubKey,
     Keypair,
     PCommand,
     KCommand,
@@ -22,8 +20,6 @@ import {
 
 import {
     hash2,
-    encrypt,
-    sha256Hash,
     hash5,
     IncrementalQuinTree,
     elGamalRerandomize,
@@ -53,15 +49,12 @@ const coordinatorKeypair = new Keypair()
 const circuit = 'newKeyMessageToCommand_test'
 
 describe('NewKeyMessageToCommand circuit', () => {
-    describe('1 user, 1 deactivation messages', () => {
+    describe('1 signup, 1 deactivation messages', () => {
         const maciState = new MaciState()
-        const voteWeight = BigInt(0)
-        const voteOptionIndex = BigInt(0)
         let stateIndex
         let pollId
         let poll
-        const messages: Message[] = []
-        const commands: PCommand[] = []
+        let numOfSignups = 0;
         const H0 = BigInt('8370432830353022751713833565135785980866757267633941821328460903436894336785');
         const userKeypair = new Keypair(new PrivKey(BigInt(1)));
         const newUserKeypair = new Keypair(new PrivKey(BigInt(999)));
@@ -74,6 +67,8 @@ describe('NewKeyMessageToCommand circuit', () => {
                 // BigInt(1), 
                 BigInt(Math.floor(Date.now() / 1000)),
             )
+
+            numOfSignups++;
 
             // Merge state tree
             maciState.stateAq.mergeSubRoots(0)
@@ -133,7 +128,6 @@ describe('NewKeyMessageToCommand circuit', () => {
                 c1,
                 c2,
             );
-            const numSignUps = BigInt(1);
 
             const nullifier = hash2([BigInt(userKeypair.privKey.asCircuitInputs()), salt]);
 
@@ -151,7 +145,7 @@ describe('NewKeyMessageToCommand circuit', () => {
                 userKeypair.privKey,
                 maciState.stateLeaves,
                 maciState.stateTree,
-                BigInt(1),
+                BigInt(numOfSignups),
                 stateIndex,
                 salt,
                 coordinatorKeypair.pubKey,
@@ -161,9 +155,6 @@ describe('NewKeyMessageToCommand circuit', () => {
                 c1,
                 c2,
             )
-
-            // const encMessage = kCommand.encrypt(sharedKey);
-            // console.log(kCommand);
 
             const inputs = stringifyBigInts({
                 message: message.asCircuitInputs(),
