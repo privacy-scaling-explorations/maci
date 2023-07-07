@@ -88,7 +88,7 @@ describe('NewKeyMessageToCommand circuit', () => {
             poll = maciState.polls[pollId]
         })
 
-        it('should decrypt new key messages', async () => {
+        it('should decrypt new key messages if all input params are correct', async () => {
             const salt = (new Keypair()).privKey.rawPrivKey
 
             const DEACT_TREE_ARITY = 5;
@@ -175,7 +175,7 @@ describe('NewKeyMessageToCommand circuit', () => {
             expect(BigInt(decodedStatus)).toEqual(BigInt(1));
         })
 
-        it('should throw because random private key passed to circuit instead of coordinators', async () => {
+        it('should return isValidStatus != 1 because random private key passed to circuit instead of coordinators', async () => {
             const randomKeypair = new Keypair(new PrivKey(BigInt(999)));
 
             const salt = (new Keypair()).privKey.rawPrivKey
@@ -246,7 +246,7 @@ describe('NewKeyMessageToCommand circuit', () => {
             expect(BigInt(decodedStatus)).not.toEqual(BigInt(1));
         })
 
-        it('should throw because random public key passed to circuit instead of shared one', async () => {
+        it('should return isValidStatus != 1 because random public key passed to circuit instead of shared one', async () => {
             const randomKeypair = new Keypair(new PrivKey(BigInt(999)));
             const salt = (new Keypair()).privKey.rawPrivKey
 
@@ -316,7 +316,7 @@ describe('NewKeyMessageToCommand circuit', () => {
             expect(BigInt(decodedStatus)).not.toEqual(BigInt(1));
         })
 
-        it('should throw because malformed message passed to circuit', async () => {
+        it('should return isValidStatus != 1 because malformed message passed to circuit', async () => {
             const salt = (new Keypair()).privKey.rawPrivKey
 
             const DEACT_TREE_ARITY = 5;
@@ -371,20 +371,22 @@ describe('NewKeyMessageToCommand circuit', () => {
                 c2,
             )
 
+            const malformedMessageAsCircuitInputs = [
+                BigInt(0),
+                BigInt(0),
+                BigInt(0),
+                BigInt(0),
+                BigInt(0),
+                BigInt(0),
+                BigInt(0),
+                BigInt(0),
+                BigInt(0),
+                BigInt(0),
+                BigInt(0)
+            ]
+
             const inputs = stringifyBigInts({
-                message: [
-                    BigInt(0),
-                    BigInt(0),
-                    BigInt(0),
-                    BigInt(0),
-                    BigInt(0),
-                    BigInt(0),
-                    BigInt(0),
-                    BigInt(0),
-                    BigInt(0),
-                    BigInt(0),
-                    BigInt(0)
-                ],
+                message: malformedMessageAsCircuitInputs,
                 encPrivKey: coordinatorKeypair.privKey.asCircuitInputs(),
                 encPubKey: encPubKey.asCircuitInputs(),
             });
