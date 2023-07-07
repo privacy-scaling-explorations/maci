@@ -29,26 +29,25 @@ const configureSubparser = (subparsers: any) => {
         addHelp: true,
     });
 
-    const maciPrivkeyGroup = parser.addMutuallyExclusiveGroup({ required: true })
-
     parser.addArgument(
         ['-x', '--contract'],
         {
+            action: 'store',
             type: 'string',
             help: 'The MACI contract address',
         }
     )
 
-    maciPrivkeyGroup.addArgument(
-        ['-dsk', '--prompt-for-maci-oldPrivkey'],
+    parser.addArgument(
+        ['-posk', '--prompt-for-maci-oldPrivkey'],
         {
             action: 'storeTrue',
             help: 'Whether to prompt for your serialized old MACI private key',
         }
     )
 
-    maciPrivkeyGroup.addArgument(
-        ['-sk', '--oldPrivkey'],
+    parser.addArgument(
+        ['-opk', '--oldPrivkey'],
         {
             action: 'store',
             type: 'string',
@@ -56,32 +55,22 @@ const configureSubparser = (subparsers: any) => {
         }
     )
 
-    maciPrivkeyGroup.addArgument(
-        ['-dsk', '--prompt-for-maci-newPrivkey'],
+    parser.addArgument(
+        ['-pnsk', '--prompt-for-maci-newPrivkey'],
         {
             action: 'storeTrue',
             help: 'Whether to prompt for your serialized new MACI private key',
         }
     )
 
-    maciPrivkeyGroup.addArgument(
-        ['-sk', '--newPrivkey'],
+    parser.addArgument(
+        ['-npk', '--newPrivkey'],
         {
             action: 'store',
             type: 'string',
             help: 'Your new serialized MACI private key',
         }
     )
-
-    parser.addArgument(
-        ['-fb', '--from-block'],
-        {
-            action: 'store',
-            type: 'int',
-            required: true,
-            help: 'The block number to start listening from',
-        }
-    );
 
     parser.addArgument(
         ['-i', '--state-index'],
@@ -113,20 +102,39 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
+        ['-fb', '--from-block'],
+        {
+            action: 'store',
+            type: 'int',
+            required: true,
+            help: 'The block number to start listening from',
+        }
+    );
+
+    parser.addArgument(
         ['-wpd', '--new-key-generation-witnessgen'],
         {
             required: true,
             type: 'string',
-            help: 'The path to the NewKeyGenerationMessage witness generation binary',
+            help: 'The path to the NewKeyGenerationM-essage witness generation binary',
         }
     )
 
     parser.addArgument(
-        ['-zpd', '--new-kewy-generation-zkey'],
+        ['-zpd', '--new-key-generation-zkey'],
         {
             required: true,
             type: 'string',
             help: 'The path to the NewKeyGenerationMessage .zkey file',
+        }
+    );
+
+    parser.addArgument(
+        ['-r', '--rapidsnark'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The path to the rapidsnark binary',
         }
     );
 };
