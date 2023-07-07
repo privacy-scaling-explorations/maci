@@ -164,11 +164,27 @@ describe('NewKeyMessageToCommand circuit', () => {
 
             const witness = await genWitness(circuit, inputs);
             expect(witness.length > 0).toBeTruthy();
-            
+
+            const decodednewPubKey0 = await getSignalByName(circuit, witness, 'main.newPubKey[0]');
+            const decodednewPubKey1 = await getSignalByName(circuit, witness, 'main.newPubKey[1]');            
             const decodedNewCreditBalance = await getSignalByName(circuit, witness, 'main.newCreditBalance');
+            const decodedNulifier = await getSignalByName(circuit, witness, 'main.nullifier');
+            const decodedPollId = await getSignalByName(circuit, witness, 'main.pollId');
+            const decodedC1r0 = await getSignalByName(circuit, witness, 'main.c1r[0]');
+            const decodedC1r1 = await getSignalByName(circuit, witness, 'main.c1r[1]');
+            const decodedC2r0 = await getSignalByName(circuit, witness, 'main.c2r[0]');
+            const decodedC2r1 = await getSignalByName(circuit, witness, 'main.c2r[1]');
             const decodedStatus = await getSignalByName(circuit, witness, 'main.isValidStatus');
-            
+
+            expect(newUserKeypair.pubKey.rawPubKey[0]).toEqual(BigInt(decodednewPubKey0));
+            expect(newUserKeypair.pubKey.rawPubKey[1]).toEqual(BigInt(decodednewPubKey1));
             expect(BigInt(voiceCreditBalance)).toEqual(BigInt(decodedNewCreditBalance));
+            expect(nullifier).toEqual(BigInt(decodedNulifier));
+            expect(BigInt(pollId)).toEqual(BigInt(decodedPollId));
+            expect(c1r[0]).toEqual(BigInt(decodedC1r0));
+            expect(c1r[1]).toEqual(BigInt(decodedC1r1));
+            expect(c2r[0]).toEqual(BigInt(decodedC2r0));
+            expect(c2r[1]).toEqual(BigInt(decodedC2r1));
             expect(BigInt(decodedStatus)).toEqual(BigInt(1));
         })
     })
