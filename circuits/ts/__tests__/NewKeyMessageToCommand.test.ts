@@ -91,18 +91,6 @@ describe('NewKeyMessageToCommand circuit', () => {
         it('should decrypt new key messages', async () => {
             const salt = (new Keypair()).privKey.rawPrivKey
 
-            const messageArr = [];
-            for (let i = 0; i < maxValues.maxMessages; i += 1) {
-                messageArr.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
-            }
-
-            // ecdhKeypair.pubKey -> encPubKey
-            const ecdhKeypair = new Keypair()
-            const sharedKey = Keypair.genEcdhSharedKey(
-                ecdhKeypair.privKey,
-                coordinatorKeypair.pubKey,
-            )
-
             const DEACT_TREE_ARITY = 5;
 
             const deactivatedKeys = new IncrementalQuinTree(
@@ -130,7 +118,6 @@ describe('NewKeyMessageToCommand circuit', () => {
             );
 
             const nullifier = hash2([BigInt(userKeypair.privKey.asCircuitInputs()), salt]);
-
 
             const kCommand = new KCommand(
                 newUserKeypair.pubKey,
@@ -186,6 +173,227 @@ describe('NewKeyMessageToCommand circuit', () => {
             expect(c2r[0]).toEqual(BigInt(decodedC2r0));
             expect(c2r[1]).toEqual(BigInt(decodedC2r1));
             expect(BigInt(decodedStatus)).toEqual(BigInt(1));
+        })
+
+        it('should throw because random private key passed to circuit instead of coordinators', async () => {
+            const randomKeypair = new Keypair(new PrivKey(BigInt(999)));
+
+            const salt = (new Keypair()).privKey.rawPrivKey
+
+            const DEACT_TREE_ARITY = 5;
+
+            const deactivatedKeys = new IncrementalQuinTree(
+                STATE_TREE_DEPTH,
+                H0,
+                DEACT_TREE_ARITY,
+                hash5,
+            )
+
+            const [c1, c2] = elGamalEncryptBit(coordinatorKeypair.pubKey.rawPubKey, BigInt(1), BigInt(15));
+
+            deactivatedKeys.insert( (new DeactivatedKeyLeaf(
+                userKeypair.pubKey,
+                c1,
+                c2,
+                salt,
+            )).hash())
+
+            const z = BigInt(42);
+            const [c1r, c2r] = elGamalRerandomize(
+                coordinatorKeypair.pubKey.rawPubKey,
+                z,
+                c1,
+                c2,
+            );
+
+            const nullifier = hash2([BigInt(userKeypair.privKey.asCircuitInputs()), salt]);
+
+            const kCommand = new KCommand(
+                newUserKeypair.pubKey,
+                voiceCreditBalance,
+                nullifier,
+                c1r,
+                c2r,
+                pollId,   
+            )
+
+            const { message, encPubKey } = kCommand.prepareValues(
+                userKeypair.privKey,
+                maciState.stateLeaves,
+                maciState.stateTree,
+                BigInt(numOfSignups),
+                stateIndex,
+                salt,
+                coordinatorKeypair.pubKey,
+                deactivatedKeys,
+                BigInt(0),
+                z,
+                c1,
+                c2,
+            )
+
+            const inputs = stringifyBigInts({
+                message: message.asCircuitInputs(),
+                encPrivKey: randomKeypair.privKey.asCircuitInputs(),
+                encPubKey: encPubKey.asCircuitInputs(),
+            });
+
+            const witness = await genWitness(circuit, inputs);
+            expect(witness.length > 0).toBeTruthy();
+
+            const decodedStatus = await getSignalByName(circuit, witness, 'main.isValidStatus');
+
+            expect(BigInt(decodedStatus)).not.toEqual(BigInt(1));
+        })
+
+        it('should throw because random public key passed to circuit instead of shared one', async () => {
+            const randomKeypair = new Keypair(new PrivKey(BigInt(999)));
+            const salt = (new Keypair()).privKey.rawPrivKey
+
+            const DEACT_TREE_ARITY = 5;
+
+            const deactivatedKeys = new IncrementalQuinTree(
+                STATE_TREE_DEPTH,
+                H0,
+                DEACT_TREE_ARITY,
+                hash5,
+            )
+
+            const [c1, c2] = elGamalEncryptBit(coordinatorKeypair.pubKey.rawPubKey, BigInt(1), BigInt(15));
+
+            deactivatedKeys.insert( (new DeactivatedKeyLeaf(
+                userKeypair.pubKey,
+                c1,
+                c2,
+                salt,
+            )).hash())
+
+            const z = BigInt(42);
+            const [c1r, c2r] = elGamalRerandomize(
+                coordinatorKeypair.pubKey.rawPubKey,
+                z,
+                c1,
+                c2,
+            );
+
+            const nullifier = hash2([BigInt(userKeypair.privKey.asCircuitInputs()), salt]);
+
+            const kCommand = new KCommand(
+                newUserKeypair.pubKey,
+                voiceCreditBalance,
+                nullifier,
+                c1r,
+                c2r,
+                pollId,   
+            )
+
+            const { message, encPubKey } = kCommand.prepareValues(
+                userKeypair.privKey,
+                maciState.stateLeaves,
+                maciState.stateTree,
+                BigInt(numOfSignups),
+                stateIndex,
+                salt,
+                coordinatorKeypair.pubKey,
+                deactivatedKeys,
+                BigInt(0),
+                z,
+                c1,
+                c2,
+            )
+
+            const inputs = stringifyBigInts({
+                message: message.asCircuitInputs(),
+                encPrivKey: coordinatorKeypair.privKey.asCircuitInputs(),
+                encPubKey: randomKeypair.pubKey.asCircuitInputs(),
+            });
+
+            const witness = await genWitness(circuit, inputs);
+            expect(witness.length > 0).toBeTruthy();
+
+            const decodedStatus = await getSignalByName(circuit, witness, 'main.isValidStatus');
+
+            expect(BigInt(decodedStatus)).not.toEqual(BigInt(1));
+        })
+
+        it('should throw because malformed message passed to circuit', async () => {
+            const salt = (new Keypair()).privKey.rawPrivKey
+
+            const DEACT_TREE_ARITY = 5;
+
+            const deactivatedKeys = new IncrementalQuinTree(
+                STATE_TREE_DEPTH,
+                H0,
+                DEACT_TREE_ARITY,
+                hash5,
+            )
+
+            const [c1, c2] = elGamalEncryptBit(coordinatorKeypair.pubKey.rawPubKey, BigInt(1), BigInt(15));
+
+            deactivatedKeys.insert( (new DeactivatedKeyLeaf(
+                userKeypair.pubKey,
+                c1,
+                c2,
+                salt,
+            )).hash())
+
+            const z = BigInt(42);
+            const [c1r, c2r] = elGamalRerandomize(
+                coordinatorKeypair.pubKey.rawPubKey,
+                z,
+                c1,
+                c2,
+            );
+
+            const nullifier = hash2([BigInt(userKeypair.privKey.asCircuitInputs()), salt]);
+
+            const kCommand = new KCommand(
+                newUserKeypair.pubKey,
+                voiceCreditBalance,
+                nullifier,
+                c1r,
+                c2r,
+                pollId,   
+            )
+
+            const { message, encPubKey } = kCommand.prepareValues(
+                userKeypair.privKey,
+                maciState.stateLeaves,
+                maciState.stateTree,
+                BigInt(numOfSignups),
+                stateIndex,
+                salt,
+                coordinatorKeypair.pubKey,
+                deactivatedKeys,
+                BigInt(0),
+                z,
+                c1,
+                c2,
+            )
+
+            const inputs = stringifyBigInts({
+                message: [
+                    BigInt(0),
+                    BigInt(0),
+                    BigInt(0),
+                    BigInt(0),
+                    BigInt(0),
+                    BigInt(0),
+                    BigInt(0),
+                    BigInt(0),
+                    BigInt(0),
+                    BigInt(0),
+                    BigInt(0)
+                ],
+                encPrivKey: coordinatorKeypair.privKey.asCircuitInputs(),
+                encPubKey: encPubKey.asCircuitInputs(),
+            });
+
+            const witness = await genWitness(circuit, inputs);
+            expect(witness.length > 0).toBeTruthy();
+
+            const decodedStatus = await getSignalByName(circuit, witness, 'main.isValidStatus');
+            expect(BigInt(decodedStatus)).not.toEqual(BigInt(1));
         })
     })
 })
