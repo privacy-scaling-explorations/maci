@@ -107,6 +107,11 @@ import {
     configureSubparser as configureSubparserForDeactivateKey,
 } from './deactivateKey'
 
+import {
+	generateNewKey,
+	configureSubparser as configureSubparserForGenerateNewKey
+} from './generateNewKey'
+
 const main = async () => {
 	const parser = new argparse.ArgumentParser({
 		description: 'Minimal Anti-Collusion Infrastructure',
@@ -177,6 +182,9 @@ const main = async () => {
 	// Subcommand: completeDeactivation
 	configureSubparserForCompleteDeactivation(subparsers);
 
+	// Subcommand: generateNewKey
+	configureSubparserForGenerateNewKey(subparsers);
+
 	const args = parser.parseArgs();
 
 	// Execute the subcommand method
@@ -220,7 +228,9 @@ const main = async () => {
 		await completeDeactivation(args);
     } else if (args.subcommand === 'deactivateKey') {
         await deactivateKey(args)
-    } 
+    }  else if(args.subcommand === 'generateNewKey') {
+		await generateNewKey(args)
+	}
 };
 
 if (require.main === module) {
