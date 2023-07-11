@@ -249,6 +249,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
      * @param _treeDepths The depth of the Merkle trees
      */
     function deployPoll(
+        address _messageProcessorAddress,
         uint256 _duration,
         MaxValues memory _maxValues,
         TreeDepths memory _treeDepths,
@@ -277,6 +278,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         );
 
         Poll p = pollFactory.deploy(
+            _messageProcessorAddress,
             _duration,
             _maxValues,
             _treeDepths,
@@ -301,8 +303,11 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     function mergeStateAqSubRoots(
         uint256 _numSrQueueOps,
         uint256 _pollId
-    ) public override afterInit { // TODO: During milestone 3 - onlyPoll fails here because the caller is MessageProcessor and not Poll
+    ) public override afterInit {
+        // TODO: During milestone 3 - onlyPoll fails here because the caller is MessageProcessor and not Poll
+        // stateAq.transferOwnership()
         stateAq.mergeSubRoots(_numSrQueueOps);
+        // stateAq.transferOwnership(address(this));
 
         emit MergeStateAqSubRoots(_pollId, _numSrQueueOps);
     }
@@ -314,7 +319,8 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     */
     function mergeStateAq(
         uint256 _pollId
-    ) public override afterInit returns (uint256) { // TODO: During milestone 3 - onlyPoll fails here because the caller is MessageProcessor and not Poll
+    ) public override afterInit returns (uint256) {
+        // TODO: During milestone 3 - onlyPoll fails here because the caller is MessageProcessor and not Poll
         uint256 root = stateAq.merge(stateTreeDepth);
 
         emit MergeStateAq(_pollId);

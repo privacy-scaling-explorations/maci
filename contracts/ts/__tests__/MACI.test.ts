@@ -297,8 +297,11 @@ describe('MACI', () => {
 			compareVks(testProcessVk, processVkOnChain);
 			compareVks(testTallyVk, tallyVkOnChain);
 
+			console.log('OVDEEEEEEEEE', mpContract.address);
+
 			// Create the poll and get the poll ID from the tx event logs
 			tx = await maciContract.deployPoll(
+				mpContract.address,
 				duration,
 				maxValues,
 				treeDepths,
@@ -317,6 +320,7 @@ describe('MACI', () => {
 			pollId = event.args._pollId;
 
 			const p = maciState.deployPoll(
+				mpContract.address,
 				duration,
 				BigInt(deployTime + duration),
 				maxValues,
@@ -792,6 +796,7 @@ describe('MACI', () => {
 			otherAccount = otherSigner;
 
 			const tx = await maciContract.deployPoll(
+				mpContract.address,
 				duration,
 				maxValues,
 				treeDepths,
