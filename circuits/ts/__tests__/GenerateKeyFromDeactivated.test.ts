@@ -87,11 +87,6 @@ describe('GenerateKeyFromDeactivated circuit', () => {
         it('should accept proof based on deactivation messages', async () => {
             const salt = (new Keypair()).privKey.rawPrivKey
 
-            const messageArr = [];
-            for (let i = 0; i < maxValues.maxMessages; i += 1) {
-                messageArr.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
-            }
-
             const DEACT_TREE_ARITY = 5;
 
             const deactivatedKeys = new IncrementalQuinTree(
@@ -155,11 +150,6 @@ describe('GenerateKeyFromDeactivated circuit', () => {
             
             const salt = (new Keypair()).privKey.rawPrivKey
 
-            const messageArr = [];
-            for (let i = 0; i < maxValues.maxMessages; i += 1) {
-                messageArr.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
-            }
-
             const DEACT_TREE_ARITY = 5;
 
             const deactivatedKeys = new IncrementalQuinTree(
@@ -222,11 +212,6 @@ describe('GenerateKeyFromDeactivated circuit', () => {
             
             const salt = (new Keypair()).privKey.rawPrivKey
 
-            const messageArr = [];
-            for (let i = 0; i < maxValues.maxMessages; i += 1) {
-                messageArr.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
-            }
-
             const DEACT_TREE_ARITY = 5;
 
             const deactivatedKeys = new IncrementalQuinTree(
@@ -288,11 +273,6 @@ describe('GenerateKeyFromDeactivated circuit', () => {
             const keyPairNotInStateTree = new Keypair(new PrivKey(BigInt(999)));
             
             const salt = (new Keypair()).privKey.rawPrivKey
-
-            const messageArr = [];
-            for (let i = 0; i < maxValues.maxMessages; i += 1) {
-                messageArr.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
-            }
 
             const DEACT_TREE_ARITY = 5;
 
@@ -363,11 +343,6 @@ describe('GenerateKeyFromDeactivated circuit', () => {
 
             const salt = (new Keypair()).privKey.rawPrivKey
 
-            const messageArr = [];
-            for (let i = 0; i < maxValues.maxMessages; i += 1) {
-                messageArr.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
-            }
-
             const DEACT_TREE_ARITY = 5;
 
             const deactivatedKeys = new IncrementalQuinTree(
@@ -427,11 +402,6 @@ describe('GenerateKeyFromDeactivated circuit', () => {
         it('should throw because elgamalRerandomize output c1r, c2r passed to circuit is invalid', async () => {
             
             const salt = (new Keypair()).privKey.rawPrivKey
-
-            const messageArr = [];
-            for (let i = 0; i < maxValues.maxMessages; i += 1) {
-                messageArr.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
-            }
 
             const DEACT_TREE_ARITY = 5;
 
@@ -495,11 +465,6 @@ describe('GenerateKeyFromDeactivated circuit', () => {
         it('should throw because nulifier hash passed to circuit as part of input hash is invalid', async () => {
             
             const salt = (new Keypair()).privKey.rawPrivKey
-
-            const messageArr = [];
-            for (let i = 0; i < maxValues.maxMessages; i += 1) {
-                messageArr.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
-            }
 
             const DEACT_TREE_ARITY = 5;
 
@@ -611,11 +576,6 @@ describe('GenerateKeyFromDeactivated circuit', () => {
 
         it('should accept proof based on deactivation messages', async () => {
             const salt = (new Keypair()).privKey.rawPrivKey
-
-            const messageArr = [];
-            for (let i = 0; i < maxValues.maxMessages; i += 1) {
-                messageArr.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
-            }
 
             const DEACT_TREE_ARITY = 5;
 
