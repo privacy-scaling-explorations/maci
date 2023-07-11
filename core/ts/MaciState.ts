@@ -1612,7 +1612,6 @@ class MaciState {
     }
 
     public deployPoll(
-        _messageProcessorAddress: string,
         _duration: number,
         _pollEndTimestamp: BigInt,
         _maxValues: MaxValues,

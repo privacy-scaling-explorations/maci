@@ -297,8 +297,6 @@ describe('MACI', () => {
 			compareVks(testProcessVk, processVkOnChain);
 			compareVks(testTallyVk, tallyVkOnChain);
 
-			console.log('OVDEEEEEEEEE', mpContract.address);
-
 			// Create the poll and get the poll ID from the tx event logs
 			tx = await maciContract.deployPoll(
 				mpContract.address,
@@ -320,7 +318,6 @@ describe('MACI', () => {
 			pollId = event.args._pollId;
 
 			const p = maciState.deployPoll(
-				mpContract.address,
 				duration,
 				BigInt(deployTime + duration),
 				maxValues,
@@ -625,7 +622,6 @@ describe('MACI', () => {
 			maciState.stateAq.merge(STATE_TREE_DEPTH);
 		});
 
-		// TODO: Cannot read properties of undefined (reading 'toString') maciState.stateAq.mainRoots[STATE_TREE_DEPTH].toString()
 		it('the state root must be correct', async () => {
 			maciState.stateAq.mergeSubRoots(0);
 			maciState.stateAq.merge(STATE_TREE_DEPTH);
@@ -937,13 +933,11 @@ describe('MACI', () => {
 		// 	}
 		// });
 
-		// TODO: Skipped temporarely - will be addressed as part of milestone 3 as more changes are expected here.
-		// onlyOwner fails here because the caller is MessageProcessor and not Maci
-		it.skip('confirmDeactivation() should revert if not called by an owner', async () => {
+		it('confirmDeactivation() should revert if not called by an owner', async () => {
 			try {
 				await pollContract
 					.connect(otherAccount)
-					.confirmDeactivation(0, 0, mockElGamalMessage);
+					.confirmDeactivation([[0]], 0);
 			} catch (e) {
 				const error = 'Ownable: caller is not the owner';
 				expect(
@@ -951,10 +945,10 @@ describe('MACI', () => {
 				).toBeTruthy();
 			}
 		});
-		// TODO: Skipped temporarely - will be addressed as part of milestone 3 as more changes are expected here.
-		// TODO:  invalid value for array (argument="value", value=0, code=INVALID_ARGUMENT, version=contracts/5.5.0)
+
+		// TODO: Milestone 3 - we need to pass in proper batch info to confirm deactivation here
 		it.skip('confirmDeactivation() should update relevant storage variables and emit a proper event', async () => {
-			const subRoot = 0;
+			const subRoot = [[0]];
 			const subTreeCapacity = 0;
 
 			const [, , numDeactivatedKeysBefore] =
@@ -963,7 +957,6 @@ describe('MACI', () => {
 			const tx = await pollContract.confirmDeactivation(
 				subRoot,
 				subTreeCapacity,
-				mockElGamalMessage
 			);
 
 			const receipt = await tx.wait();
