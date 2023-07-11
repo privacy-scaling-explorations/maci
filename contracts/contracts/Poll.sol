@@ -192,6 +192,7 @@ contract Poll is
     event MergeMessageAq(uint256 _messageRoot);
     event AttemptKeyDeactivation(Message _message, PubKey _encPubKey);
     event DeactivateKey(uint256 keyHash, uint256[2] c1, uint256[2] c2);
+    event AttemptKeyGeneration(Message _message, PubKey _encPubKey);
 
     ExtContracts public extContracts;
 
@@ -476,5 +477,13 @@ contract Poll is
             treeDepths.messageTreeDepth
         );
         emit MergeMessageAq(root);
+    }
+
+    function generateNewKey(
+        Message memory _message,
+        PubKey memory _encPubKey
+    ) external {
+        // TODO: implement logic
+        emit AttemptKeyGeneration(_message, _encPubKey);
     }
 }

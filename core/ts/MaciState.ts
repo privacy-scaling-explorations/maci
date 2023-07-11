@@ -172,6 +172,13 @@ class Poll {
         this.ballots.push(blankBallot)
     }
 
+    public generateNewKey = (
+        _message: Message,
+        _encPubKey: PubKey,
+    ) => {
+        // TODO: implemente generateNewKeyLogic
+    }
+
     public deactivateKey = (
         _message: Message,
         _encPubKey: PubKey,

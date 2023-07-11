@@ -261,6 +261,11 @@ const genMaciStateFromContract = async (
 		fromBlock: fromBlock,
 	});
 
+	const attemptKeyGenerationLogs = await provider.getLogs({
+		...pollContract.filters.AttemptKeyGeneration(),
+		fromBlock: fromBlock,
+	});
+
 	for (const log of publishMessageLogs) {
 		assert(log != undefined);
 		const event = pollIface.parseLog(log);
@@ -416,6 +421,32 @@ const genMaciStateFromContract = async (
 		});
 	}
 
+	for (const log of attemptKeyGenerationLogs) {
+		assert(log != undefined);
+		const event = pollIface.parseLog(log);
+
+		const message = new Message(
+			BigInt(event.args._message[0]),
+			event.args._message[1].map((x) => BigInt(x))
+		);
+
+		const encPubKey = new PubKey(
+			event.args._encPubKey.map((x) => BigInt(x.toString()))
+		);
+
+		actions.push({
+			type: 'AttemptKeyGeneration',
+			// @ts-ignore
+			blockNumber: log.blockNumber,
+			// @ts-ignore
+			transactionIndex: log.transactionIndex,
+			data: {
+				message,
+				encPubKey,
+			},
+		});
+	}
+
 	// Sort actions
 	sortActions(actions);
 
@@ -471,6 +502,11 @@ const genMaciStateFromContract = async (
 			assert(
 				poll.messageAq.mainRoots[treeDepths.messageTreeDepth] ===
 					action.data.messageRoot
+			);
+		} else if (action['type'] === 'AttemptKeyGeneration') {
+			maciState.polls[pollId].generateNewKey(
+				action.data.message,
+				action.data.encPubKey
 			);
 		}
 	}
