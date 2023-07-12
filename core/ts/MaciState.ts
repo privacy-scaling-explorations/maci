@@ -176,6 +176,7 @@ class Poll {
     public generateNewKey = (
         _message: Message,
         _encPubKey: PubKey,
+        _newStateIndex: Number
     ) => {
         assert(_message.msgType == BigInt(1))
         assert(
@@ -204,7 +205,7 @@ class Poll {
         }  catch(e) {
            //console.log(`error cannot decrypt: ${e.message}`)
            let keyPair = new Keypair()
-           let command = new KCommand(BigInt(0), keyPair.pubKey,BigInt(0),BigInt(0),BigInt(0),BigInt(0),BigInt(0))
+           let command = new KCommand(BigInt(0), keyPair.pubKey,BigInt(0),BigInt(0),[BigInt(0), BigInt(0)],[BigInt(0), BigInt(0)],BigInt(0))
            this.commands.push(command)
         }
     }

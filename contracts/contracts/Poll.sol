@@ -156,6 +156,7 @@ contract Poll is
 
     uint256 internal numMessages;
     uint256 internal numDeactivatedKeys;
+    uint256 internal newStateIndex;
 
     function numSignUpsAndMessagesAndDeactivatedKeys()
         public
@@ -192,7 +193,7 @@ contract Poll is
     event MergeMessageAq(uint256 _messageRoot);
     event AttemptKeyDeactivation(Message _message, PubKey _encPubKey);
     event DeactivateKey(uint256 keyHash, uint256[2] c1, uint256[2] c2);
-    event AttemptKeyGeneration(Message _message, PubKey _encPubKey);
+    event AttemptKeyGeneration(Message _message, PubKey _encPubKey, uint256 _newStateIndex);
 
     ExtContracts public extContracts;
 
@@ -484,6 +485,7 @@ contract Poll is
         PubKey memory _encPubKey
     ) external {
         // TODO: implement logic
-        emit AttemptKeyGeneration(_message, _encPubKey);
+        // AttemptKeyGeneration newStateIndex param is hardcoded for now. Should be calculated.
+        emit AttemptKeyGeneration(_message, _encPubKey, 0);
     }
 }
