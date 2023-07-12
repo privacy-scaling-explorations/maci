@@ -200,12 +200,12 @@ class Poll {
             _encPubKey,
         )
         try {
-            let {command, signature} = KCommand.decrypt(_message, sharedKey)
+            let {command} = KCommand.decrypt(_message, sharedKey)
             this.commands.push(command)
         }  catch(e) {
            //console.log(`error cannot decrypt: ${e.message}`)
            let keyPair = new Keypair()
-           let command = new KCommand(keyPair.pubKey,BigInt(0),BigInt(0),[BigInt(0), BigInt(0)],[BigInt(0), BigInt(0)],BigInt(0))
+           let command = new KCommand(keyPair.pubKey, BigInt(0), BigInt(0), [BigInt(0), BigInt(0)], [BigInt(0), BigInt(0)], BigInt(0))
            this.commands.push(command)
         }
     }
@@ -334,7 +334,7 @@ class Poll {
             _encPubKey,
         )
         try {
-            let {command, signature} = KCommand.decrypt(_message, sharedKey)
+            let {command, signature} = PCommand.decrypt(_message, sharedKey)
             this.commands.push(command)
         }  catch(e) {
            //console.log(`error cannot decrypt: ${e.message}`)
