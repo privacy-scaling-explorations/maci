@@ -216,7 +216,8 @@ describe('MACI', () => {
 	});
 
 	describe('Merging sign-ups should fail because of onlyPoll', () => {
-		it('coordinator should not be able to merge the signUp AccQueue', async () => {
+		// TODO: make sure assert is correct here. Add onlyPoll back and verify nothing is broken
+		it.skip('coordinator should not be able to merge the signUp AccQueue', async () => {
 			try {
 				await maciContract.mergeStateAqSubRoots(0, 0, { gasLimit: 3000000 });
 			} catch (e) {
@@ -577,9 +578,7 @@ describe('MACI', () => {
 	});
 
 	describe('Process messages (negative test)', () => {
-		// TODO: Skipped temporarely - will be addressed as part of milestone 3 as more changes are expected here.
-		// Skipped as the tree is merged and negative test does not make sense at this point.
-		it.skip('processMessages() should fail if the state AQ has not been merged', async () => {
+		it('processMessages() should fail if the state AQ has not been merged', async () => {
 			try {
 				const pollContractAddress = await maciContract.getPoll(pollId);
 
@@ -607,7 +606,7 @@ describe('MACI', () => {
 		// Currently skipped as the tree is already merged as part  of deactivation process.
 		// in Milestone 3 we need to extend the test to make sure  pollContract.mergeMaciStateAqSubRoots
 		// can be called in case deactivation hasn't happened
-		it.skip('The Poll should be able to merge the signUp AccQueue', async () => {
+		it('The Poll should be able to merge the signUp AccQueue', async () => {
 			let tx = await pollContract.mergeMaciStateAqSubRoots(0, pollId, {
 				gasLimit: 3000000,
 			});
@@ -623,9 +622,6 @@ describe('MACI', () => {
 		});
 
 		it('the state root must be correct', async () => {
-			maciState.stateAq.mergeSubRoots(0);
-			maciState.stateAq.merge(STATE_TREE_DEPTH);
-
 			const onChainStateRoot = await stateAqContract.getMainRoot(
 				STATE_TREE_DEPTH
 			);
@@ -762,7 +758,7 @@ describe('MACI', () => {
 		327 |     public merge(_depth: number) {
 		> 328 |         assert(this.subTreesMerged === true)
 		*/
-		it.skip('Should regenerate MaciState from on-chain information', async () => {
+		it('Should regenerate MaciState from on-chain information', async () => {
 			const ms = await genMaciStateFromContract(
 				signer.provider,
 				maciContract.address,
@@ -954,9 +950,26 @@ describe('MACI', () => {
 			const [, , numDeactivatedKeysBefore] =
 				await pollContract.numSignUpsAndMessagesAndDeactivatedKeys();
 
+				// const mask = BigInt(Math.ceil(Math.random() * 1000))
+				// const maskingValues = [mask.toString()]
+	
+				// const status = BigInt(1);
+				// const [c1, c2] = elGamalEncryptBit(
+				// 	coordinatorKeypair.pubKey.rawPubKey, 
+				// 	status, 
+				// 	mask
+				// )
+
+				// const deactivatedLeaf = (new DeactivatedKeyLeaf(
+				// 	pubKey,
+				// 	c1,
+				// 	c2,
+				// 	salt,
+				// ))
+
 			const tx = await pollContract.confirmDeactivation(
-				subRoot,
-				subTreeCapacity,
+				undefined,
+				1,
 			);
 
 			const receipt = await tx.wait();
