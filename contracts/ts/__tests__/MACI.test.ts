@@ -593,10 +593,6 @@ describe('MACI', () => {
 			pollContract = new ethers.Contract(pollContractAddress, pollAbi, signer);
 		});
 
-		// TODO: Skipped temporarely - will be addressed as part of milestone 3 as more changes are expected here.
-		// Currently skipped as the tree is already merged as part  of deactivation process.
-		// in Milestone 3 we need to extend the test to make sure  pollContract.mergeMaciStateAqSubRoots
-		// can be called in case deactivation hasn't happened
 		it('The Poll should be able to merge the signUp AccQueue', async () => {
 			let tx = await pollContract.mergeMaciStateAqSubRoots(0, pollId, {
 				gasLimit: 3000000,
