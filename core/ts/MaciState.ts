@@ -205,7 +205,7 @@ class Poll {
         }  catch(e) {
            //console.log(`error cannot decrypt: ${e.message}`)
            let keyPair = new Keypair()
-           let command = new KCommand(BigInt(0), keyPair.pubKey,BigInt(0),BigInt(0),[BigInt(0), BigInt(0)],[BigInt(0), BigInt(0)],BigInt(0))
+           let command = new KCommand(keyPair.pubKey,BigInt(0),BigInt(0),[BigInt(0), BigInt(0)],[BigInt(0), BigInt(0)],BigInt(0))
            this.commands.push(command)
         }
     }
