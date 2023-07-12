@@ -12,6 +12,7 @@ import {
 	Keypair,
 	PubKey,
 	Message,
+	DeactivatedKeyLeaf,
 } from 'maci-domainobjs';
 
 import {
@@ -22,7 +23,7 @@ import {
 	TreeDepths,
 } from 'maci-core';
 
-import { G1Point, G2Point, NOTHING_UP_MY_SLEEVE } from 'maci-crypto';
+import { G1Point, G2Point, NOTHING_UP_MY_SLEEVE, elGamalEncryptBit } from 'maci-crypto';
 
 const STATE_TREE_DEPTH = 10;
 const STATE_TREE_ARITY = 5;
@@ -932,33 +933,31 @@ describe('MACI', () => {
 			}
 		});
 
-		// TODO: Milestone 3 - we need to pass in proper batch info to confirm deactivation here
-		it.skip('confirmDeactivation() should update relevant storage variables and emit a proper event', async () => {
-			const subRoot = [[0]];
+		it('confirmDeactivation() should update relevant storage variables and emit a proper event', async () => {
 			const subTreeCapacity = 0;
 
 			const [, , numDeactivatedKeysBefore] =
 				await pollContract.numSignUpsAndMessagesAndDeactivatedKeys();
 
-				// const mask = BigInt(Math.ceil(Math.random() * 1000))
-				// const maskingValues = [mask.toString()]
-	
-				// const status = BigInt(1);
-				// const [c1, c2] = elGamalEncryptBit(
-				// 	coordinatorKeypair.pubKey.rawPubKey, 
-				// 	status, 
-				// 	mask
-				// )
+			const salt = (new Keypair()).privKey.rawPrivKey
+			const mask = BigInt(Math.ceil(Math.random() * 1000))	
+			const status = BigInt(1);
 
-				// const deactivatedLeaf = (new DeactivatedKeyLeaf(
-				// 	pubKey,
-				// 	c1,
-				// 	c2,
-				// 	salt,
-				// ))
+			const [c1, c2] = elGamalEncryptBit(
+				coordinator.pubKey.rawPubKey, 
+				status, 
+				mask
+			)
+
+			const deactivatedLeaf = (new DeactivatedKeyLeaf(
+				keypair.pubKey,
+				c1,
+				c2,
+				salt
+			)) as any
 
 			const tx = await pollContract.confirmDeactivation(
-				undefined,
+				[deactivatedLeaf.asArray()],
 				1,
 			);
 
