@@ -733,18 +733,6 @@ describe('MACI', () => {
 	});
 
 	describe('Generate MaciState from contract', () => {
-		// TODO: Skipped temporarely - will be addressed as part of milestone 3 as more changes are expected here.
-		/* TODO: assert(received)
-
-		Expected value to be equal to:
-		true
-		Received:
-		false
-
-		326 |      
-		327 |     public merge(_depth: number) {
-		> 328 |         assert(this.subTreesMerged === true)
-		*/
 		it('Should regenerate MaciState from on-chain information', async () => {
 			const ms = await genMaciStateFromContract(
 				signer.provider,
