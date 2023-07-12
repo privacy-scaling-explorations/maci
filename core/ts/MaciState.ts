@@ -20,6 +20,7 @@ import {
     VerifyingKey,
     Command,
     PCommand,
+    KCommand,
     TCommand,
     Message,
     Keypair,
@@ -176,7 +177,36 @@ class Poll {
         _message: Message,
         _encPubKey: PubKey,
     ) => {
-        // TODO: implemente generateNewKeyLogic
+        assert(_message.msgType == BigInt(1))
+        assert(
+            _encPubKey.rawPubKey[0] < SNARK_FIELD_SIZE &&
+            _encPubKey.rawPubKey[1] < SNARK_FIELD_SIZE
+        )
+        for (const d of _message.data) {
+            assert(d < SNARK_FIELD_SIZE)
+        }
+
+        this.encPubKeys.push(_encPubKey)
+        this.messages.push(_message)
+
+        const messageLeaf = _message.hash(_encPubKey)
+        this.messageAq.enqueue(messageLeaf)
+        this.messageTree.insert(messageLeaf)
+
+        // Decrypt the message and store the Command
+        const sharedKey = Keypair.genEcdhSharedKey(
+            this.coordinatorKeypair.privKey,
+            _encPubKey,
+        )
+        try {
+            let {command, signature} = KCommand.decrypt(_message, sharedKey)
+            this.commands.push(command)
+        }  catch(e) {
+           //console.log(`error cannot decrypt: ${e.message}`)
+           let keyPair = new Keypair()
+           let command = new KCommand(BigInt(0), keyPair.pubKey,BigInt(0),BigInt(0),BigInt(0),BigInt(0),BigInt(0))
+           this.commands.push(command)
+        }
     }
 
     public deactivateKey = (
@@ -303,7 +333,7 @@ class Poll {
             _encPubKey,
         )
         try {
-            let {command, signature} = PCommand.decrypt(_message, sharedKey)
+            let {command, signature} = KCommand.decrypt(_message, sharedKey)
             this.commands.push(command)
         }  catch(e) {
            //console.log(`error cannot decrypt: ${e.message}`)
