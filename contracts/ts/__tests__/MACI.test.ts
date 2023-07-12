@@ -216,21 +216,11 @@ describe('MACI', () => {
 	});
 
 	describe('Merging sign-ups should fail because of onlyPoll', () => {
-		// TODO: make sure assert is correct here. Add onlyPoll back and verify nothing is broken
-		it.skip('coordinator should not be able to merge the signUp AccQueue', async () => {
-			try {
-				await maciContract.mergeStateAqSubRoots(0, 0, { gasLimit: 3000000 });
-			} catch (e) {
-				const error = "'MACI: only a Poll contract can call this function'";
-				expect(e.message.endsWith(error)).toBeTruthy();
-			}
+		it('coordinator should not be able to merge the signUp AccQueue', async () => {
+			const error = "'MACI: only a Poll contract can call this function'";
 
-			try {
-				await maciContract.mergeStateAq(0, { gasLimit: 3000000 });
-			} catch (e) {
-				const error = "'MACI: only a Poll contract can call this function'";
-				expect(e.message.endsWith(error)).toBeTruthy();
-			}
+			await expect(maciContract.mergeStateAqSubRoots(0, 0, { gasLimit: 3000000 })).rejects.toThrow(error);
+			await expect(maciContract.mergeStateAq(0, { gasLimit: 3000000 })).rejects.toThrow(error);
 		});
 	});
 
