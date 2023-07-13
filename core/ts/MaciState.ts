@@ -178,7 +178,7 @@ class Poll {
         _encPubKey: PubKey,
         _newStateIndex: Number
     ) => {
-        assert(_message.msgType == BigInt(1))
+        assert(_message.msgType == BigInt(3))
         assert(
             _encPubKey.rawPubKey[0] < SNARK_FIELD_SIZE &&
             _encPubKey.rawPubKey[1] < SNARK_FIELD_SIZE
@@ -203,7 +203,6 @@ class Poll {
             let {command} = KCommand.decrypt(_message, sharedKey)
             this.commands.push(command)
         }  catch(e) {
-           //console.log(`error cannot decrypt: ${e.message}`)
            let keyPair = new Keypair()
            let command = new KCommand(keyPair.pubKey, BigInt(0), BigInt(0), [BigInt(0), BigInt(0)], [BigInt(0), BigInt(0)], BigInt(0))
            this.commands.push(command)
