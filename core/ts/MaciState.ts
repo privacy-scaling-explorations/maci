@@ -20,6 +20,7 @@ import {
     VerifyingKey,
     Command,
     PCommand,
+    KCommand,
     TCommand,
     Message,
     Keypair,
@@ -175,8 +176,37 @@ class Poll {
     public generateNewKey = (
         _message: Message,
         _encPubKey: PubKey,
+        _newStateIndex: Number
     ) => {
-        // TODO: implemente generateNewKeyLogic
+        assert(_message.msgType == BigInt(3))
+        assert(
+            _encPubKey.rawPubKey[0] < SNARK_FIELD_SIZE &&
+            _encPubKey.rawPubKey[1] < SNARK_FIELD_SIZE
+        )
+        for (const d of _message.data) {
+            assert(d < SNARK_FIELD_SIZE)
+        }
+
+        this.encPubKeys.push(_encPubKey)
+        this.messages.push(_message)
+
+        const messageLeaf = _message.hash(_encPubKey)
+        this.messageAq.enqueue(messageLeaf)
+        this.messageTree.insert(messageLeaf)
+
+        // Decrypt the message and store the Command
+        const sharedKey = Keypair.genEcdhSharedKey(
+            this.coordinatorKeypair.privKey,
+            _encPubKey,
+        )
+        try {
+            let {command} = KCommand.decrypt(_message, sharedKey)
+            this.commands.push(command)
+        }  catch(e) {
+           let keyPair = new Keypair()
+           let command = new KCommand(keyPair.pubKey, BigInt(0), BigInt(0), [BigInt(0), BigInt(0)], [BigInt(0), BigInt(0)], BigInt(0))
+           this.commands.push(command)
+        }
     }
 
     public deactivateKey = (

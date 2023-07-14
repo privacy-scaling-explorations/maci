@@ -434,6 +434,8 @@ const genMaciStateFromContract = async (
 			event.args._encPubKey.map((x) => BigInt(x.toString()))
 		);
 
+		const newStateIndex = Number(event.args._newStateIndex);
+
 		actions.push({
 			type: 'AttemptKeyGeneration',
 			// @ts-ignore
@@ -443,6 +445,7 @@ const genMaciStateFromContract = async (
 			data: {
 				message,
 				encPubKey,
+				newStateIndex
 			},
 		});
 	}
@@ -506,7 +509,8 @@ const genMaciStateFromContract = async (
 		} else if (action['type'] === 'AttemptKeyGeneration') {
 			maciState.polls[pollId].generateNewKey(
 				action.data.message,
-				action.data.encPubKey
+				action.data.encPubKey,
+				action.data.newStateIndex
 			);
 		}
 	}
