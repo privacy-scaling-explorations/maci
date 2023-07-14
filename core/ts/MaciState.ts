@@ -1862,3 +1862,4 @@ export {
     genTallyResultCommitment,
     STATE_TREE_DEPTH,
 }
+3

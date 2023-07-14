@@ -4,10 +4,14 @@ import {
 
 import {
     PrivKey,
+    PubKey,
+    KCommand
 } from 'maci-domainobjs'
 
 import {
     genRandomSalt,
+    elGamalRerandomize,
+    hash2
 } from 'maci-crypto'
 
 import {
@@ -23,6 +27,15 @@ import { readJSONFile } from 'maci-common'
 import { contractFilepath } from './config'
 
 const DEFAULT_SALT = genRandomSalt()
+// TODO: check thi value
+const H0 = BigInt('8370432830353022751713833565135785980866757267633941821328460903436894336785')
+// TODO: check thi value
+const DEACT_TREE_ARITY = 5;
+
+
+// value taken from generateKeyFromDeactivated
+const voiceCreditBalance = BigInt(100)
+
 
 const configureSubparser = (subparsers: any) => {
     const parser = subparsers.addParser('generateNewKey', {
@@ -35,6 +48,15 @@ const configureSubparser = (subparsers: any) => {
             action: 'store',
             type: 'string',
             help: 'The MACI contract address',
+        }
+    )
+
+    parser.addArgument(
+        ['-p', '--newpubkey'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The MACI public key which should replace the user\'s new public key in the state tree',
         }
     )
 
@@ -143,7 +165,7 @@ const generateNewKey = async (args: any) => {
     const rapidsnarkExe = args.rapidsnark
     const newKeyGenerationDatFile = args.new_key_generation_witnessgen + ".dat"
 
-	const [ok, path] = isPathExist([
+    const [ok, path] = isPathExist([
         rapidsnarkExe,
         args.new_key_generation_witnessgen,
         newKeyGenerationDatFile,
@@ -236,7 +258,33 @@ const generateNewKey = async (args: any) => {
         return 1
     }
 
-    // TODO: add generateNewKey logic
+    const userMaciNewPubKey = PubKey.unserialize(args.newpubkey)
+
+    // c1 annd c2 represend status of previous key deactivation. Hardcoded for now. Should get it from event DeactivateKey
+    const c1 = [BigInt(1), BigInt(1)];
+    const c2 = [BigInt(2), BigInt(2)];
+    // z represents random value we use for 
+    const z = BigInt(42);
+
+    // serialized or unserialized key?
+    const [c1r, c2r] = elGamalRerandomize(
+        args.newpubkey,
+        z,
+        c1,
+        c2,
+    );
+
+    const nullifier = hash2([BigInt(args.oldPrivkey.asCircuitInputs()), salt]);
+
+    const command: KCommand = new KCommand(
+        args.newpubkey,
+        voiceCreditBalance,
+        nullifier,
+        c1r,
+        c2r,
+        pollId,
+    )
+
     return 0;
 }
 
