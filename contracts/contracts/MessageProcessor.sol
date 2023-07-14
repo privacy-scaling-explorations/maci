@@ -10,6 +10,8 @@ import {Hasher} from "./crypto/Hasher.sol";
 import {CommonUtilities} from "./utilities/Utility.sol";
 import {Verifier} from "./crypto/Verifier.sol";
 import {VkRegistry} from "./VkRegistry.sol";
+import {DomainObjs} from "./DomainObjs.sol";
+
 
 /*
  * MessageProcessor is used to process messages published by signup users
@@ -24,6 +26,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     error VK_NOT_SET();
 
     uint8 public constant DEACT_TREE_DEPTH = 10;
+    string constant ERROR_MAX_DEACTIVATED_KEYS_REACHED = "PollE08";
 
     // Whether there are unprocessed messages left
     bool public processingComplete;
@@ -134,6 +137,51 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     }
 
     /**
+     * @notice Confirms the deactivation of a MACI public key. This function must be called by Coordinator after User calls the deactivateKey function
+     * @param _batchLeaves Deactivated keys leaves
+     * @param _batchSize The capacity of the subroot of the deactivated keys tree
+     */
+    function confirmDeactivation(
+        uint256[][] memory _batchLeaves,
+        uint256 _batchSize,
+        Poll poll
+    ) external onlyOwner {
+        (
+            ,
+            ,
+            ,
+            AccQueue deactivatedKeysAq,
+
+        ) = poll.extContracts();
+
+        ( , , uint256 numDeactivatedKeys) = poll
+            .numSignUpsAndMessagesAndDeactivatedKeys();
+        
+        (uint256 maxMessages, ) = poll.maxValues();
+
+        require(
+            numDeactivatedKeys <= maxMessages,
+            ERROR_MAX_DEACTIVATED_KEYS_REACHED
+        );
+
+        for (uint256 i = 0; i < _batchSize; i++) {
+            uint256 keyHash = _batchLeaves[i][0];
+            uint256[2] memory c1;
+            uint256[2] memory c2;
+
+            c1[0] = _batchLeaves[i][1];
+            c1[1] = _batchLeaves[i][2];
+            c2[0] = _batchLeaves[i][3];
+            c2[1] = _batchLeaves[i][4];
+
+            deactivatedKeysAq.enqueue(
+                hash5([keyHash, c1[0], c1[1], c2[0], c2[1]])
+            );
+            // emit DeactivateKey(keyHash, c1, c2);
+        }
+    }
+
+    /**
      * @notice Completes the deactivation of all MACI public keys.
      * @param _stateNumSrQueueOps The number of subroot queue operations to merge for the MACI state tree
      * @param poll Poll contract address
@@ -219,6 +267,64 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         );
 
         require(verifier.verify(_proof, vk, input), "Verification failed");
+    }
+
+    function generateNewKeyFromDeactivated(
+        DomainObjs.Message memory _message,
+        DomainObjs.PubKey memory _encPubKey,
+        Poll poll,
+        uint256[8] memory _proof
+    ) external returns (uint256) {
+        (
+            VkRegistry vkRegistry,
+            IMACI maci,
+            ,
+            AccQueue deactivatedKeysAq,
+
+        ) = poll.extContracts();
+
+        (, , uint8 messageTreeDepth, ) = poll
+            .treeDepths();
+
+        uint256 numSignUps = maci.numSignUps();
+        // uint256 newStateIndex = numSignUps + numGeneratedKeys;
+
+        // require(
+        //     numMessages <= maxValues.maxMessages,
+        //     ERROR_MAX_MESSAGES_REACHED
+        // );
+        // require(
+        //     _encPubKey.x < SNARK_SCALAR_FIELD &&
+        //         _encPubKey.y < SNARK_SCALAR_FIELD,
+        //     ERROR_INVALID_PUBKEY
+        // );
+
+        // VERIFY
+        VerifyingKey memory vk = vkRegistry.getProcessDeactivationVk(
+            maci.stateTreeDepth(),
+            messageTreeDepth
+        );
+
+        // uint256 input = genProcessDeactivationMessagesPublicInputHash(
+        //     poll,
+        //     maci.getStateAqRoot(),
+        //     deactivatedKeysAq.getMainRoot(DEACT_TREE_DEPTH),
+        //     _message.hash,
+        //     poll.deactivationChainHash()
+        // );
+
+        //     			inputHash: sha256Hash([
+			// 	stateTreeRoot, maci.getStateAqRoot(),
+			// 	deactivatedKeysRoot, deactivatedKeysAq.getMainRoot(DEACT_TREE_DEPTH),
+			// 	messageHash, _message.hash,
+			// 	...coordinatorPubKey.asCircuitInputs(), _encPubKey
+			// 	...ecdhKeypair.pubKey.asCircuitInputs(),
+			// ]),
+
+        // require(verifier.verify(_proof, vk, input), "Verification failed");
+
+
+        // INVOKE POLL
     }
 
     function verifyProcessProof(

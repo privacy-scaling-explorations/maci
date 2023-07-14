@@ -185,10 +185,6 @@ contract Poll is
     string constant ERROR_MAX_MESSAGES_REACHED = "PollE04";
     string constant ERROR_STATE_AQ_ALREADY_MERGED = "PollE05";
     string constant ERROR_STATE_AQ_SUBTREES_NEED_MERGE = "PollE06";
-    string constant ERROR_INVALID_SENDER = "PollE07";
-    string constant ERROR_MAX_DEACTIVATED_KEYS_REACHED = "PollE08";
-    string constant ERROR_VERIFICATION_FAILED = "PollE09";
-    string constant ERROR_DEACTIVATION_PERIOD_NOT_PASSED = "PollE10";
     string constant ERROR_DEACTIVATION_PERIOD_PASSED = "PollE11";
 
     event PublishMessage(Message _message, PubKey _encPubKey);
@@ -396,33 +392,12 @@ contract Poll is
     function generateNewKeyFromDeactivated(
         Message memory _message,
         PubKey memory _encPubKey,
-        uint256[8] memory _proof
+        uint256 newStateIndex
     ) external returns (uint256) {
-        uint256 numSignUps = extContracts.maci.numSignUps();
-        uint256 newStateIndex = numSignUps + numGeneratedKeys;
-
-        require(
-            numMessages <= maxValues.maxMessages,
-            ERROR_MAX_MESSAGES_REACHED
-        );
-        require(
-            _encPubKey.x < SNARK_SCALAR_FIELD &&
-                _encPubKey.y < SNARK_SCALAR_FIELD,
-            ERROR_INVALID_PUBKEY
-        );
-
         unchecked {
             numMessages++;
             numGeneratedKeys++;
         }
-
-            //     			inputHash: sha256Hash([
-			// 	stateTreeRoot,
-			// 	deactivatedKeysRoot,
-			// 	messageHash,
-			// 	...coordinatorPubKey.asCircuitInputs(),
-			// 	...ecdhKeypair.pubKey.asCircuitInputs(),
-			// ]),
 
         _message.msgType = 3;
         uint256 messageLeaf = hashMessageAndEncPubKey(_message, _encPubKey);
@@ -431,37 +406,6 @@ contract Poll is
         emit AttemptKeyGeneration(_message, _encPubKey, newStateIndex);
 
         return newStateIndex;
-    }
-
-    /**
-     * @notice Confirms the deactivation of a MACI public key. This function must be called by Coordinator after User calls the deactivateKey function
-     * @param _batchLeaves Deactivated keys leaves
-     * @param _batchSize The capacity of the subroot of the deactivated keys tree
-     */
-    function confirmDeactivation(
-        uint256[][] memory _batchLeaves,
-        uint256 _batchSize
-    ) external onlyOwner {
-        require(
-            numDeactivatedKeys <= maxValues.maxMessages,
-            ERROR_MAX_DEACTIVATED_KEYS_REACHED
-        );
-
-        for (uint256 i = 0; i < _batchSize; i++) {
-            uint256 keyHash = _batchLeaves[i][0];
-            uint256[2] memory c1;
-            uint256[2] memory c2;
-
-            c1[0] = _batchLeaves[i][1];
-            c1[1] = _batchLeaves[i][2];
-            c2[0] = _batchLeaves[i][3];
-            c2[1] = _batchLeaves[i][4];
-
-            extContracts.deactivatedKeysAq.enqueue(
-                hash5([keyHash, c1[0], c1[1], c2[0], c2[1]])
-            );
-            emit DeactivateKey(keyHash, c1, c2);
-        }
     }
 
     /*
