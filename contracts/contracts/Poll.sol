@@ -162,7 +162,7 @@ contract Poll is
 
     uint256 internal numMessages;
     uint256 internal numDeactivatedKeys;
-    uint256 internal newStateIndex;
+    uint256 internal numGeneratedKeys;
 
     function numSignUpsAndMessagesAndDeactivatedKeys()
         public
@@ -387,6 +387,53 @@ contract Poll is
     }
 
     /**
+     * @notice Attempts to generate new key from the deactivated one
+     * @param _message The encrypted message which contains state leaf index
+     * @param _encPubKey An epheremal public key which can be combined with the
+     *     coordinator's private key to generate an ECDH shared key with which
+     *     to encrypt the message.
+     */
+    function generateNewKeyFromDeactivated(
+        Message memory _message,
+        PubKey memory _encPubKey,
+        uint256[8] memory _proof
+    ) external returns (uint256) {
+        uint256 numSignUps = extContracts.maci.numSignUps();
+        uint256 newStateIndex = numSignUps + numGeneratedKeys;
+
+        require(
+            numMessages <= maxValues.maxMessages,
+            ERROR_MAX_MESSAGES_REACHED
+        );
+        require(
+            _encPubKey.x < SNARK_SCALAR_FIELD &&
+                _encPubKey.y < SNARK_SCALAR_FIELD,
+            ERROR_INVALID_PUBKEY
+        );
+
+        unchecked {
+            numMessages++;
+            numGeneratedKeys++;
+        }
+
+            //     			inputHash: sha256Hash([
+			// 	stateTreeRoot,
+			// 	deactivatedKeysRoot,
+			// 	messageHash,
+			// 	...coordinatorPubKey.asCircuitInputs(),
+			// 	...ecdhKeypair.pubKey.asCircuitInputs(),
+			// ]),
+
+        _message.msgType = 3;
+        uint256 messageLeaf = hashMessageAndEncPubKey(_message, _encPubKey);
+        extContracts.messageAq.enqueue(messageLeaf);
+
+        emit AttemptKeyGeneration(_message, _encPubKey, newStateIndex);
+
+        return newStateIndex;
+    }
+
+    /**
      * @notice Confirms the deactivation of a MACI public key. This function must be called by Coordinator after User calls the deactivateKey function
      * @param _batchLeaves Deactivated keys leaves
      * @param _batchSize The capacity of the subroot of the deactivated keys tree
@@ -488,14 +535,5 @@ contract Poll is
             treeDepths.messageTreeDepth
         );
         emit MergeMessageAq(root);
-    }
-
-    function generateNewKey(
-        Message memory _message,
-        PubKey memory _encPubKey
-    ) external {
-        // TODO: implement logic
-        // AttemptKeyGeneration newStateIndex param is hardcoded for now. Should be calculated.
-        emit AttemptKeyGeneration(_message, _encPubKey, 0);
     }
 }
