@@ -144,7 +144,7 @@ const deactivatedLeaf = (new DeactivatedKeyLeaf(
 
 `processDeactivationMessages()` function returns the deactivated-keys tree leaves along with circuit inputs used for generating proof of correct processing (explained in the next step).
 
-The coordinator then submits all deactivated-keys tree leaves in batches to the `Poll` smart contract (`confirmDeactivation()` function). On the smart contract, these leaves are added to the deactivated-keys tree:
+The coordinator then submits all deactivated-keys tree leaves in batches to the `MessageProcessor` smart contract (`confirmDeactivation()` function). On the smart contract, these leaves are added to the deactivated-keys tree:
 
 ```solidity
 extContracts.deactivatedKeysAq.insertSubTree(_subRoot);

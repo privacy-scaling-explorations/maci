@@ -141,6 +141,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
      * @param _batchLeaves Deactivated keys leaves
      * @param _batchSize The capacity of the subroot of the deactivated keys tree
      */
+     // TODO: reschuffle - Register DeactivateKey event and make sure all listeners switched 
     function confirmDeactivation(
         uint256[][] memory _batchLeaves,
         uint256 _batchSize,
@@ -200,13 +201,9 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
 
         ) = poll.extContracts();
 
-        (, uint8 messageTreeSubDepth, uint8 messageTreeDepth, ) = poll
-            .treeDepths();
-
         {
             (uint256 deployTime, ) = poll.getDeployTimeAndDuration();
 
-            uint256 secondsPassed = block.timestamp - deployTime;
             require(
                 block.timestamp - deployTime > maci.deactivationPeriod(),
                 "Deactivation period has not passed"
@@ -237,13 +234,12 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
 
         ) = poll.extContracts();
 
-        (, uint8 messageTreeSubDepth, uint8 messageTreeDepth, ) = poll
+        (, , uint8 messageTreeDepth, ) = poll
             .treeDepths();
 
         {
             (uint256 deployTime, ) = poll.getDeployTimeAndDuration();
 
-            uint256 secondsPassed = block.timestamp - deployTime;
             require(
                 block.timestamp - deployTime > maci.deactivationPeriod(),
                 "Deactivation period has not passed"
@@ -269,6 +265,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         require(verifier.verify(_proof, vk, input), "Verification failed");
     }
 
+    // TODO: Perform all the checks including verifier and pass the call to poll contract
     function generateNewKeyFromDeactivated(
         DomainObjs.Message memory _message,
         DomainObjs.PubKey memory _encPubKey,
@@ -305,6 +302,8 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
             messageTreeDepth
         );
 
+        uint256 input = 0;
+
         // uint256 input = genProcessDeactivationMessagesPublicInputHash(
         //     poll,
         //     maci.getStateAqRoot(),
@@ -321,8 +320,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
 			// 	...ecdhKeypair.pubKey.asCircuitInputs(),
 			// ]),
 
-        // require(verifier.verify(_proof, vk, input), "Verification failed");
-
+        require(verifier.verify(_proof, vk, input), "Verification failed");
 
         // INVOKE POLL
     }

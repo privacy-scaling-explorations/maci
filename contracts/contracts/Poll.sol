@@ -98,9 +98,13 @@ contract PollFactory is Params, IPubKey, Ownable, PollDeploymentParams {
         // Make the Poll contract own the messageAq contract, so only it can
         // run enqueue/merge
         messageAq.transferOwnership(address(poll));
-        deactivatedKeysAq.transferOwnership(address(poll));
 
-        // init messageAq & deactivatedKeysAq
+        // Make the MessageProcessor contract own the deactivatedKeysAq contract, so only it can
+        // run enqueue/merge
+        // Avoiding 'Stack too deep' by not referencing the local variable _messageProcessorAddress
+        deactivatedKeysAq.transferOwnership(poll.messageProcessorAddress());
+
+        // init messageAq
         poll.init();
 
         // TODO: should this be _maci.owner() instead?
@@ -142,7 +146,7 @@ contract Poll is
 
     uint256 public deactivationChainHash;
 
-    address immutable messageProcessorAddress;
+    address public immutable messageProcessorAddress;
 
     function getDeployTimeAndDuration() public view returns (uint256, uint256) {
         return (deployTime, duration);

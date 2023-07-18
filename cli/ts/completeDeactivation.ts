@@ -143,7 +143,6 @@ const completeDeactivation = async (args: any) => {
 	const [maciContractAbi] = parseArtifact('MACI');
 	const [mpContractAbi] = parseArtifact('MessageProcessor');
 	const [pollContractAbi] = parseArtifact('Poll');
-	const [accQueueContractAbi] = parseArtifact('AccQueue');
 
 	// Verify that MACI contract address is deployed at the given address
 	const signer = await getDefaultSigner();
