@@ -265,7 +265,6 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
         require(verifier.verify(_proof, vk, input), "Verification failed");
     }
 
-    // TODO: Perform all the checks including verifier and pass the call to poll contract
     function generateNewKeyFromDeactivated(
         DomainObjs.Message memory _message,
         DomainObjs.PubKey memory _coordPubKey,
