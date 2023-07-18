@@ -198,7 +198,6 @@ contract Poll is
     event MergeMessageAqSubRoots(uint256 _numSrQueueOps);
     event MergeMessageAq(uint256 _messageRoot);
     event AttemptKeyDeactivation(Message _message, PubKey _encPubKey);
-    event DeactivateKey(uint256 keyHash, uint256[2] c1, uint256[2] c2);
     event AttemptKeyGeneration(Message _message, PubKey _encPubKey, uint256 _newStateIndex);
 
     ExtContracts public extContracts;

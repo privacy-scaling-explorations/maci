@@ -12,7 +12,6 @@ import {Verifier} from "./crypto/Verifier.sol";
 import {VkRegistry} from "./VkRegistry.sol";
 import {DomainObjs} from "./DomainObjs.sol";
 
-
 /*
  * MessageProcessor is used to process messages published by signup users
  * it will process message by batch due to large size of messages
@@ -40,6 +39,8 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     uint256 public sbCommitment;
 
     Verifier public verifier;
+
+    event DeactivateKey(uint256 keyHash, uint256[2] c1, uint256[2] c2);
 
     constructor(Verifier _verifier) {
         verifier = _verifier;
@@ -141,7 +142,6 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
      * @param _batchLeaves Deactivated keys leaves
      * @param _batchSize The capacity of the subroot of the deactivated keys tree
      */
-     // TODO: reschuffle - Register DeactivateKey event and make sure all listeners switched 
     function confirmDeactivation(
         uint256[][] memory _batchLeaves,
         uint256 _batchSize,
@@ -178,7 +178,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
             deactivatedKeysAq.enqueue(
                 hash5([keyHash, c1[0], c1[1], c2[0], c2[1]])
             );
-            // emit DeactivateKey(keyHash, c1, c2);
+            emit DeactivateKey(keyHash, c1, c2);
         }
     }
 
