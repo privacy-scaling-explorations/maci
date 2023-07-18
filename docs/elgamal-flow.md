@@ -177,7 +177,6 @@ The verification (partly) relies on the incremental hashing of the (incoming) de
 
 ```solidity
 uint256 input = genProcessDeactivationMessagesPublicInputHash(
-    poll,
     deactivatedKeysAq.getMainRoot(messageTreeSubDepth),
     numSignUps,
     maci.getStateAqRoot(),

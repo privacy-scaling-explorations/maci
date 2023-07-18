@@ -394,9 +394,20 @@ contract Poll is
      */
     function generateNewKeyFromDeactivated(
         Message memory _message,
-        PubKey memory _encPubKey,
-        uint256 newStateIndex
+        PubKey memory _encPubKey
     ) external returns (uint256) {
+        require(
+            numMessages <= maxValues.maxMessages,
+            ERROR_MAX_MESSAGES_REACHED
+        );
+        require(
+            _encPubKey.x < SNARK_SCALAR_FIELD &&
+                _encPubKey.y < SNARK_SCALAR_FIELD,
+            ERROR_INVALID_PUBKEY
+        );
+
+        uint256 newStateIndex = numMessages + numGeneratedKeys;
+
         unchecked {
             numMessages++;
             numGeneratedKeys++;

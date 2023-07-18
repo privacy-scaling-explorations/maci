@@ -11,13 +11,14 @@ import {CommonUtilities} from "./utilities/Utility.sol";
 import {Verifier} from "./crypto/Verifier.sol";
 import {VkRegistry} from "./VkRegistry.sol";
 import {DomainObjs} from "./DomainObjs.sol";
+import {Utilities} from "./utilities/Utility.sol";
 
 /*
  * MessageProcessor is used to process messages published by signup users
  * it will process message by batch due to large size of messages
  * after it finishes processing, the sbCommitment will be used for Tally and Subsidy contracts
  */
-contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
+contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
     error NO_MORE_MESSAGES();
     error STATE_AQ_NOT_MERGED();
     error MESSAGE_AQ_NOT_MERGED();
@@ -255,7 +256,6 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
             .numSignUpsAndMessagesAndDeactivatedKeys();
 
         uint256 input = genProcessDeactivationMessagesPublicInputHash(
-            poll,
             deactivatedKeysAq.getMainRoot(DEACT_TREE_DEPTH),
             numSignUps,
             maci.getStateAqRoot(),
@@ -268,7 +268,8 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     // TODO: Perform all the checks including verifier and pass the call to poll contract
     function generateNewKeyFromDeactivated(
         DomainObjs.Message memory _message,
-        DomainObjs.PubKey memory _encPubKey,
+        DomainObjs.PubKey memory _coordPubKey,
+        DomainObjs.PubKey memory _sharedPubKey,
         Poll poll,
         uint256[8] memory _proof
     ) external returns (uint256) {
@@ -283,46 +284,22 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         (, , uint8 messageTreeDepth, ) = poll
             .treeDepths();
 
-        uint256 numSignUps = maci.numSignUps();
-        // uint256 newStateIndex = numSignUps + numGeneratedKeys;
-
-        // require(
-        //     numMessages <= maxValues.maxMessages,
-        //     ERROR_MAX_MESSAGES_REACHED
-        // );
-        // require(
-        //     _encPubKey.x < SNARK_SCALAR_FIELD &&
-        //         _encPubKey.y < SNARK_SCALAR_FIELD,
-        //     ERROR_INVALID_PUBKEY
-        // );
-
-        // VERIFY
         VerifyingKey memory vk = vkRegistry.getProcessDeactivationVk(
             maci.stateTreeDepth(),
             messageTreeDepth
         );
 
-        uint256 input = 0;
-
-        // uint256 input = genProcessDeactivationMessagesPublicInputHash(
-        //     poll,
-        //     maci.getStateAqRoot(),
-        //     deactivatedKeysAq.getMainRoot(DEACT_TREE_DEPTH),
-        //     _message.hash,
-        //     poll.deactivationChainHash()
-        // );
-
-        //     			inputHash: sha256Hash([
-			// 	stateTreeRoot, maci.getStateAqRoot(),
-			// 	deactivatedKeysRoot, deactivatedKeysAq.getMainRoot(DEACT_TREE_DEPTH),
-			// 	messageHash, _message.hash,
-			// 	...coordinatorPubKey.asCircuitInputs(), _encPubKey
-			// 	...ecdhKeypair.pubKey.asCircuitInputs(),
-			// ]),
+        uint256 input = genGenerateNewKeyFromDeactivatedPublicInputHash(
+            maci.getStateAqRoot(),
+            deactivatedKeysAq.getMainRoot(DEACT_TREE_DEPTH),
+            hashMessageAndEncPubKey(_message, _coordPubKey),
+            _coordPubKey,
+            _sharedPubKey
+        );
 
         require(verifier.verify(_proof, vk, input), "Verification failed");
 
-        // INVOKE POLL
+        return poll.generateNewKeyFromDeactivated(_message, _coordPubKey);
     }
 
     function verifyProcessProof(
@@ -366,17 +343,36 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     }
 
     function genProcessDeactivationMessagesPublicInputHash(
-        Poll _poll,
         uint256 _deactivatedTreeRoot,
         uint256 _numSignUps,
         uint256 _currentStateRoot,
         uint256 _chainHash
-    ) public view returns (uint256) {
+    ) private pure returns (uint256) {
         uint256[] memory input = new uint256[](4);
         input[0] = _deactivatedTreeRoot;
         input[1] = _numSignUps;
         input[2] = _currentStateRoot;
         input[3] = _chainHash;
+        uint256 inputHash = sha256Hash(input);
+
+        return inputHash;
+    }
+
+    function genGenerateNewKeyFromDeactivatedPublicInputHash(
+        uint256 _currentStateRoot,
+        uint256 _deactivatedTreeRoot,
+        uint256 _messageHash,
+        DomainObjs.PubKey memory _coordPublicKey,
+        DomainObjs.PubKey memory _sharedPublicKey
+    ) private pure returns (uint256) {
+        uint256[] memory input = new uint256[](7);
+        input[0] = _currentStateRoot;
+        input[1] = _deactivatedTreeRoot;
+        input[2] = _messageHash;
+        input[3] = _coordPublicKey.x;
+        input[4] = _coordPublicKey.y;
+        input[5] = _sharedPublicKey.x;
+        input[6] = _sharedPublicKey.y;
         uint256 inputHash = sha256Hash(input);
 
         return inputHash;
