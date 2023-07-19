@@ -66,6 +66,7 @@ $MACI_CLI completeDeactivation \
 $MACI_CLI generateNewKey \
     --oldPrivkey macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c \
     --newPrivkey macisk.acd54022725c8cf56dcd392808e3c4d170100d9fba4009ef0e8173ffe17f2e0 \
+    --coordPrivkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
     --state-index 1 \
     --salt 0x798D81BE4A9870C079B8DE539496AB95 \
     --poll-id $POLL_ID \

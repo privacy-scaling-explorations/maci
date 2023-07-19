@@ -13,7 +13,7 @@ import {
     stringifyBigInts,
     Signature,
     verifySignature,
-    elGamalEncryptBit,
+    elGamalEncryptBit
 } from 'maci-crypto'
 import {
     PubKey,
@@ -27,6 +27,7 @@ import {
     StateLeaf,
     DeactivatedKeyLeaf,
     Ballot,
+    PrivKey
 } from 'maci-domainobjs'
 
 interface TreeDepths {
@@ -108,10 +109,10 @@ class Poll {
     public maciStateRef: MaciState
     public pollId: number
 
-    public sbSalts: {[key: number]: BigInt} = {}
-    public resultRootSalts: {[key: number]: BigInt} = {}
-    public preVOSpentVoiceCreditsRootSalts: {[key: number]: BigInt} = {}
-    public spentVoiceCreditSubtotalSalts: {[key: number]: BigInt} = {}
+    public sbSalts: { [key: number]: BigInt } = {}
+    public resultRootSalts: { [key: number]: BigInt } = {}
+    public preVOSpentVoiceCreditsRootSalts: { [key: number]: BigInt } = {}
+    public spentVoiceCreditSubtotalSalts: { [key: number]: BigInt } = {}
 
     // For vote tallying
     public results: BigInt[] = []
@@ -123,7 +124,7 @@ class Poll {
 
     // For coefficient and subsidy calculation
     public subsidy: BigInt[] = []  // size: M, M is number of vote options
-    public subsidySalts: {[key: number]: BigInt} = {}
+    public subsidySalts: { [key: number]: BigInt } = {}
     public rbi = 0 // row batch index
     public cbi = 0 // column batch index
     public MM = 50   // adjustable parameter
@@ -160,7 +161,7 @@ class Poll {
             NOTHING_UP_MY_SLEEVE,
         )
 
-        for (let i = 0; i < this.maxValues.maxVoteOptions; i ++) {
+        for (let i = 0; i < this.maxValues.maxVoteOptions; i++) {
             this.results.push(BigInt(0))
             this.perVOSpentVoiceCredits.push(BigInt(0))
             this.subsidy.push(BigInt(0))
@@ -200,12 +201,12 @@ class Poll {
             _encPubKey,
         )
         try {
-            let {command} = KCommand.decrypt(_message, sharedKey)
+            let { command } = KCommand.decrypt(_message, sharedKey)
             this.commands.push(command)
-        }  catch(e) {
-           let keyPair = new Keypair()
-           let command = new KCommand(keyPair.pubKey, BigInt(0), BigInt(0), [BigInt(0), BigInt(0)], [BigInt(0), BigInt(0)], BigInt(0))
-           this.commands.push(command)
+        } catch (e) {
+            let keyPair = new Keypair()
+            let command = new KCommand(keyPair.pubKey, BigInt(0), BigInt(0), [BigInt(0), BigInt(0)], [BigInt(0), BigInt(0)], BigInt(0))
+            this.commands.push(command)
         }
     }
 
@@ -240,12 +241,12 @@ class Poll {
             const { command, signature } = PCommand.decrypt(_message, sharedKey)
             this.deactivationSignatures.push(signature)
             this.deactivationCommands.push(command)
-        }  catch(e) {
-           //console.log(`error cannot decrypt: ${e.message}`)
-           const keyPair = new Keypair()
-           const command = new PCommand(BigInt(1), keyPair.pubKey,BigInt(0),BigInt(0),BigInt(0),BigInt(0),BigInt(0))
-           this.deactivationCommands.push(command)
-           this.deactivationSignatures.push(null)
+        } catch (e) {
+            //console.log(`error cannot decrypt: ${e.message}`)
+            const keyPair = new Keypair()
+            const command = new PCommand(BigInt(1), keyPair.pubKey, BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0))
+            this.deactivationCommands.push(command)
+            this.deactivationSignatures.push(null)
         }
     }
 
@@ -290,16 +291,16 @@ class Poll {
         }
         this.messages.push(_message)
         let padKey = new PubKey([
-                BigInt('10457101036533406547632367118273992217979173478358440826365724437999023779287'),
-                BigInt('19824078218392094440610104313265183977899662750282163392862422243483260492317'),
-            ])
+            BigInt('10457101036533406547632367118273992217979173478358440826365724437999023779287'),
+            BigInt('19824078218392094440610104313265183977899662750282163392862422243483260492317'),
+        ])
 
         this.encPubKeys.push(padKey)
         const messageLeaf = _message.hash(padKey)
         this.messageAq.enqueue(messageLeaf)
         this.messageTree.insert(messageLeaf)
 
-        const command = new TCommand(_message.data[0],_message.data[1])
+        const command = new TCommand(_message.data[0], _message.data[1])
         this.commands.push(command)
     }
 
@@ -333,13 +334,13 @@ class Poll {
             _encPubKey,
         )
         try {
-            let {command, signature} = PCommand.decrypt(_message, sharedKey)
+            let { command, signature } = PCommand.decrypt(_message, sharedKey)
             this.commands.push(command)
-        }  catch(e) {
-           //console.log(`error cannot decrypt: ${e.message}`)
-           let keyPair = new Keypair()
-           let command = new PCommand(BigInt(0), keyPair.pubKey,BigInt(0),BigInt(0),BigInt(0),BigInt(0),BigInt(0))
-           this.commands.push(command)
+        } catch (e) {
+            //console.log(`error cannot decrypt: ${e.message}`)
+            let keyPair = new Keypair()
+            let command = new PCommand(BigInt(0), keyPair.pubKey, BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0))
+            this.commands.push(command)
         }
     }
 
@@ -361,15 +362,15 @@ class Poll {
 
         let totalBatches =
             this.messages.length <= batchSize ?
-            1
-            : 
-            Math.floor(this.messages.length / batchSize)
+                1
+                :
+                Math.floor(this.messages.length / batchSize)
 
         if (
             this.messages.length > batchSize &&
             this.messages.length % batchSize > 0
         ) {
-            totalBatches ++
+            totalBatches++
         }
 
         return this.numBatchesProcessed < totalBatches
@@ -390,7 +391,7 @@ class Poll {
         }
 
         let mask: BigInt = _seed;
-;
+        ;
         let computedStateIndex = 0;
 
         for (let i = 0; i < this.deactivationMessages.length; i += 1) {
@@ -410,10 +411,10 @@ class Poll {
             } = deactCommand;
 
             const stateIndexInt = parseInt(stateIndex.toString());
-            computedStateIndex = stateIndexInt > 0 && stateIndexInt <= this.numSignUps ? stateIndexInt - 1: -1;
+            computedStateIndex = stateIndexInt > 0 && stateIndexInt <= this.numSignUps ? stateIndexInt - 1 : -1;
 
             let pubKey: any;
-            
+
             if (computedStateIndex > -1) {
                 pubKey = this.stateLeaves[computedStateIndex].pubKey;
             } else {
@@ -425,8 +426,8 @@ class Poll {
                 && computedStateIndex != -1
                 && signature != null
                 && verifySignature(
-                    deactMessage.hash(encPubKey), 
-                    signature, 
+                    deactMessage.hash(encPubKey),
+                    signature,
                     pubKey.rawPubKey
                 ) // Check signature
                 && newPubKey.rawPubKey[0].toString() == '0'
@@ -489,7 +490,7 @@ class Poll {
 
         // Pad array
         for (let i = this.deactivationMessages.length; i < maxMessages; i += 1) {
-            const padMask = genRandomSalt(); 
+            const padMask = genRandomSalt();
             const [padc1, padc2] = elGamalEncryptBit(
                 this.coordinatorKeypair.pubKey.rawPubKey,
                 BigInt(0),
@@ -525,8 +526,36 @@ class Poll {
                 this.deactivatedKeysChainHash,
             ]),
         })
-        
+
         return { circuitInputs, deactivatedLeaves };
+    }
+
+    public generateCircuitInputsForGenerateNewKey(kcommand: KCommand, deactivatedPrivateKey: PrivKey, stateIndex: BigInt, salt: string, z: BigInt, c1: BigInt[], c2: BigInt[]) {
+        if (!this.stateCopied) {
+            this.copyStateFromMaci()
+        }
+        
+        // get deactivatedKeyIndex from deactivatedKeysTree by deactivated key and salt
+        const stateIndexInt = parseInt(stateIndex.toString());
+        const computedStateIndex = stateIndexInt > 0 && stateIndexInt <= this.numSignUps ? stateIndexInt - 1 : -1;
+        const currentStateLeaves = [this.stateLeaves[computedStateIndex]];
+
+        const circuitInputs = kcommand.prepareValues(
+            deactivatedPrivateKey,
+            currentStateLeaves,
+            this.stateTree,
+            BigInt(this.numSignUps),
+            stateIndex,
+            BigInt(salt),
+            this.coordinatorKeypair.pubKey,
+            this.deactivatedKeysTree,
+            BigInt(0),
+            z,
+            c1,
+            c2
+        )
+
+        return circuitInputs;
     }
 
     /*
@@ -618,7 +647,7 @@ class Poll {
         const currentVoteWeights: BigInt[] = []
         const currentVoteWeightsPathElements: any[] = []
 
-        for (let i = 0; i < batchSize; i ++) {
+        for (let i = 0; i < batchSize; i++) {
             const idx = this.currentMessageBatchIndex + batchSize - i - 1
             assert(idx >= 0)
             let message
@@ -627,9 +656,9 @@ class Poll {
             } else {
                 message = this.messages[idx]
             }
-            switch(message.msgType) {
+            switch (message.msgType) {
                 case BigInt(1):
-                    try{
+                    try {
                         // If the command is valid
                         const r = this.processMessage(idx)
                         // console.log(messageIndex, r ? 'valid' : 'invalid')
@@ -637,62 +666,62 @@ class Poll {
                         // DONE: replace with try/catch after implementing error
                         // handling
                         const index = r.stateLeafIndex
-        
+
                         currentStateLeaves.unshift(r.originalStateLeaf)
                         currentBallots.unshift(r.originalBallot)
                         currentVoteWeights.unshift(r.originalVoteWeight)
                         currentVoteWeightsPathElements.unshift(r.originalVoteWeightsPathElements)
-        
+
                         currentStateLeavesPathElements.unshift(r.originalStateLeafPathElements)
                         currentBallotsPathElements.unshift(r.originalBallotPathElements)
-        
+
                         this.stateLeaves[index] = r.newStateLeaf.copy()
                         this.stateTree.update(index, r.newStateLeaf.hash())
-        
+
                         this.ballots[index] = r.newBallot
                         this.ballotTree.update(index, r.newBallot.hash())
-        
-                    }catch(e){
+
+                    } catch (e) {
                         if (e.message === 'no-op') {
-                              // Since the command is invalid, use a blank state leaf
-                              currentStateLeaves.unshift(this.stateLeaves[0].copy())
-                              currentStateLeavesPathElements.unshift(
-                                  this.stateTree.genMerklePath(0).pathElements
-                              )
-        
-                              currentBallots.unshift(this.ballots[0].copy())
-                              currentBallotsPathElements.unshift(
-                                  this.ballotTree.genMerklePath(0).pathElements
-                              )
-        
-                              // Since the command is invalid, use vote option index 0
-                              currentVoteWeights.unshift(this.ballots[0].votes[0])
-        
-                              // No need to iterate through the entire votes array if the
-                              // remaining elements are 0
-                              let lastIndexToInsert = this.ballots[0].votes.length - 1
-                              while (lastIndexToInsert > 0) {
-                                  if (this.ballots[0].votes[lastIndexToInsert] === BigInt(0)) {
-                                      lastIndexToInsert --
-                                  } else {
-                                      break
-                                  }
-                              }
-        
-                              const vt = new IncrementalQuinTree(
-                                  this.treeDepths.voteOptionTreeDepth,
-                                  BigInt(0),
-                                  5,
-                                  hash5,
-                              )
-                              for (let i = 0; i <= lastIndexToInsert; i ++) {
-                                  vt.insert(this.ballots[0].votes[i])
-                              }
-                              currentVoteWeightsPathElements.unshift(
-                                  vt.genMerklePath(0).pathElements
-                              )
-                       
-        
+                            // Since the command is invalid, use a blank state leaf
+                            currentStateLeaves.unshift(this.stateLeaves[0].copy())
+                            currentStateLeavesPathElements.unshift(
+                                this.stateTree.genMerklePath(0).pathElements
+                            )
+
+                            currentBallots.unshift(this.ballots[0].copy())
+                            currentBallotsPathElements.unshift(
+                                this.ballotTree.genMerklePath(0).pathElements
+                            )
+
+                            // Since the command is invalid, use vote option index 0
+                            currentVoteWeights.unshift(this.ballots[0].votes[0])
+
+                            // No need to iterate through the entire votes array if the
+                            // remaining elements are 0
+                            let lastIndexToInsert = this.ballots[0].votes.length - 1
+                            while (lastIndexToInsert > 0) {
+                                if (this.ballots[0].votes[lastIndexToInsert] === BigInt(0)) {
+                                    lastIndexToInsert--
+                                } else {
+                                    break
+                                }
+                            }
+
+                            const vt = new IncrementalQuinTree(
+                                this.treeDepths.voteOptionTreeDepth,
+                                BigInt(0),
+                                5,
+                                hash5,
+                            )
+                            for (let i = 0; i <= lastIndexToInsert; i++) {
+                                vt.insert(this.ballots[0].votes[i])
+                            }
+                            currentVoteWeightsPathElements.unshift(
+                                vt.genMerklePath(0).pathElements
+                            )
+
+
                         } else {
                             throw e
                         }
@@ -705,14 +734,14 @@ class Poll {
                         let stateIndex = BigInt(message.data[0])
                         let amount = BigInt(message.data[1])
 
-                        if ( stateIndex >= BigInt(this.ballots.length) ) {
+                        if (stateIndex >= BigInt(this.ballots.length)) {
                             stateIndex = BigInt(0)
                             amount = BigInt(0)
                         }
 
                         currentStateLeaves.unshift(this.stateLeaves[Number(stateIndex)].copy())
                         currentStateLeavesPathElements.unshift(
-                             this.stateTree.genMerklePath(Number(stateIndex)).pathElements
+                            this.stateTree.genMerklePath(Number(stateIndex)).pathElements
                         )
 
                         const newStateLeaf = this.stateLeaves[Number(stateIndex)].copy()
@@ -720,29 +749,29 @@ class Poll {
                         this.stateLeaves[Number(stateIndex)] = newStateLeaf
                         this.stateTree.update(Number(stateIndex), newStateLeaf.hash())
 
-                         // we still need them as placeholder for vote command
-                         let currentBallot = this.ballots[Number(stateIndex)].copy()
-                         currentBallots.unshift(currentBallot)
-                         currentBallotsPathElements.unshift(
-                             this.ballotTree.genMerklePath(Number(stateIndex)).pathElements
-                         )
-                         currentVoteWeights.unshift(currentBallot.votes[0])
+                        // we still need them as placeholder for vote command
+                        let currentBallot = this.ballots[Number(stateIndex)].copy()
+                        currentBallots.unshift(currentBallot)
+                        currentBallotsPathElements.unshift(
+                            this.ballotTree.genMerklePath(Number(stateIndex)).pathElements
+                        )
+                        currentVoteWeights.unshift(currentBallot.votes[0])
 
-                         const vt = new IncrementalQuinTree(
-                             this.treeDepths.voteOptionTreeDepth,
-                             BigInt(0),
-                             5,
-                             hash5,
-                         )
-                         for (let i = 0; i < this.ballots[0].votes.length; i ++) {
-                             vt.insert(currentBallot.votes[i])
-                         }
-             
-                         currentVoteWeightsPathElements.unshift(
-                             vt.genMerklePath(0).pathElements
-                         )
-                        
-                    } catch(e) {
+                        const vt = new IncrementalQuinTree(
+                            this.treeDepths.voteOptionTreeDepth,
+                            BigInt(0),
+                            5,
+                            hash5,
+                        )
+                        for (let i = 0; i < this.ballots[0].votes.length; i++) {
+                            vt.insert(currentBallot.votes[i])
+                        }
+
+                        currentVoteWeightsPathElements.unshift(
+                            vt.genMerklePath(0).pathElements
+                        )
+
+                    } catch (e) {
                         throw e
                     }
                     break
@@ -759,7 +788,7 @@ class Poll {
         circuitInputs.currentVoteWeights = currentVoteWeights
         circuitInputs.currentVoteWeightsPathElements = currentVoteWeightsPathElements
 
-        this.numBatchesProcessed ++
+        this.numBatchesProcessed++
 
         if (this.currentMessageBatchIndex > 0) {
             this.currentMessageBatchIndex -= batchSize
@@ -819,7 +848,7 @@ class Poll {
         }
         commands = commands.slice(_index, _index + messageBatchSize)
 
-        while(this.messageTree.nextIndex < _index + messageBatchSize) {
+        while (this.messageTree.nextIndex < _index + messageBatchSize) {
             this.messageTree.insert(
                 this.messageTree.zeroValue
             )
@@ -859,7 +888,7 @@ class Poll {
         ])
 
         // Generate a SHA256 hash of inputs which the contract provides
-        const packedVals = 
+        const packedVals =
             BigInt(this.maxValues.maxVoteOptions) +
             (BigInt(this.numSignUps) << BigInt(50)) +
             (BigInt(_index) << BigInt(100)) +
@@ -894,8 +923,8 @@ class Poll {
         }
         const stateLeaves = this.stateLeaves.map((x) => x.copy())
         const ballots = this.ballots.map((x) => x.copy())
-        while (this.hasUnprocessedMessages()){
-          this.processMessages(this.pollId)
+        while (this.hasUnprocessedMessages()) {
+            this.processMessages(this.pollId)
         }
 
         return { stateLeaves, ballots }
@@ -909,7 +938,7 @@ class Poll {
     ) => {
         //TODO: throw custom errors for no-ops
 
-        try{
+        try {
             // Ensure that the index is valid
             assert(_index >= 0)
             assert(this.messages.length > _index)
@@ -962,7 +991,7 @@ class Poll {
 
             // If the nonce is invalid, do nothing
             if (command.nonce !== BigInt(`${ballot.nonce}`) + BigInt(1)) {
-              // console.log('Invalid nonce. nonce =', ballot.nonce, 'command.nonce =', command.nonce) 
+                // console.log('Invalid nonce. nonce =', ballot.nonce, 'command.nonce =', command.nonce) 
                 throw Error("no-op")
                 return {}
             }
@@ -987,7 +1016,7 @@ class Poll {
                 command.voteOptionIndex < BigInt(0) ||
                 command.voteOptionIndex >= BigInt(this.maxValues.maxVoteOptions)
             ) {
-              // console.log("no op")
+                // console.log("no op")
                 throw Error("no-op")
                 return {}
             }
@@ -1018,7 +1047,7 @@ class Poll {
                 5,
                 hash5,
             )
-            for (let i = 0; i < this.ballots[0].votes.length; i ++) {
+            for (let i = 0; i < this.ballots[0].votes.length; i++) {
                 vt.insert(ballot.votes[i])
             }
 
@@ -1040,14 +1069,14 @@ class Poll {
                 command,
             }
 
-        }catch(e){
+        } catch (e) {
             //TODO: throw custom errors for no-ops
-            switch(e.message){
+            switch (e.message) {
                 default:
                     throw Error("no-op")
             }
         }
-        
+
     }
 
     private isMessageAqMerged = (): boolean => {
@@ -1076,7 +1105,7 @@ class Poll {
         const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt])
 
         const currentSubsidy = this.subsidy.map((x) => BigInt(x.toString()))
-        let currentSubsidyCommitment  = BigInt(0)
+        let currentSubsidyCommitment = BigInt(0)
         let currentSubsidySalt = BigInt(0)
         let saltIndex = this.previousSubsidyIndexToString()
         console.log(`prevIdx=${saltIndex}, curIdx=${this.rbi}-${this.cbi}`)
@@ -1089,8 +1118,8 @@ class Poll {
         const colStartIndex = this.cbi * batchSize
         const [ballots1, ballots2] = this.subsidyCalculation(rowStartIndex, colStartIndex)
 
-        const ballotSubrootProof1 = this.ballotTree.genMerkleSubrootPath(rowStartIndex,rowStartIndex + batchSize)
-        const ballotSubrootProof2 = this.ballotTree.genMerkleSubrootPath(colStartIndex,colStartIndex + batchSize)
+        const ballotSubrootProof1 = this.ballotTree.genMerkleSubrootPath(rowStartIndex, rowStartIndex + batchSize)
+        const ballotSubrootProof2 = this.ballotTree.genMerkleSubrootPath(colStartIndex, colStartIndex + batchSize)
 
 
         const newSubsidySalt = genRandomSalt()
@@ -1124,7 +1153,7 @@ class Poll {
             newSubsidyCommitment,
             currentSubsidy,
 
-            packedVals, 
+            packedVals,
             inputHash,
 
             ballots1: ballots1.map((x) => x.asCircuitInputs()),
@@ -1141,45 +1170,45 @@ class Poll {
 
     public increaseSubsidyIndex = () => {
         const batchSize = this.batchSizes.subsidyBatchSize
-        if (this.cbi * batchSize + batchSize < this.ballots.length ) {
+        if (this.cbi * batchSize + batchSize < this.ballots.length) {
             this.cbi++
         } else {
             this.rbi++
             this.cbi = this.rbi
-        } 
+        }
         return
     }
 
-    public previousSubsidyIndexToString = ():string => {
+    public previousSubsidyIndexToString = (): string => {
         const batchSize = this.batchSizes.subsidyBatchSize
-        const numBatches = Math.ceil(this.ballots.length/batchSize)
+        const numBatches = Math.ceil(this.ballots.length / batchSize)
         let cbi = this.cbi
         let rbi = this.rbi
         if (this.cbi === 0 && this.rbi === 0) {
             return "0-0"
         }
-        if (this.cbi > this.rbi ) {
-            cbi --
+        if (this.cbi > this.rbi) {
+            cbi--
         } else {
-            rbi --
+            rbi--
             cbi = numBatches - 1
         }
         return rbi.toString() + "-" + cbi.toString()
     }
 
-    public coefficientCalculation = (rowBallot: Ballot, colBallot: Ballot): BigInt  => {
+    public coefficientCalculation = (rowBallot: Ballot, colBallot: Ballot): BigInt => {
         let sum = BigInt(0)
         for (let p = 0; p < this.maxValues.maxVoteOptions; p++) {
             sum += BigInt(rowBallot.votes[p].valueOf()) * BigInt(colBallot.votes[p].valueOf())
         }
-        let res = BigInt(this.MM * (10 ** this.WW))/(BigInt(this.MM)+BigInt(sum))
+        let res = BigInt(this.MM * (10 ** this.WW)) / (BigInt(this.MM) + BigInt(sum))
         return res
     }
 
-    public subsidyCalculation = (rowStartIndex:number, colStartIndex:number): Ballot[][] => {
+    public subsidyCalculation = (rowStartIndex: number, colStartIndex: number): Ballot[][] => {
         const batchSize = this.batchSizes.subsidyBatchSize
-        let ballots1: Ballot[] = [] 
-        let ballots2: Ballot[] = [] 
+        let ballots1: Ballot[] = []
+        let ballots2: Ballot[] = []
         const emptyBallot = new Ballot(
             this.maxValues.maxVoteOptions,
             this.treeDepths.voteOptionTreeDepth,
@@ -1187,8 +1216,8 @@ class Poll {
         for (let i = 0; i < batchSize; i++) {
             const row = rowStartIndex + i
             const col = colStartIndex + i
-            const rowBallot = (row < this.ballots.length)?this.ballots[row]:emptyBallot
-            const colBallot = (col < this.ballots.length)?this.ballots[col]:emptyBallot
+            const rowBallot = (row < this.ballots.length) ? this.ballots[row] : emptyBallot
+            const colBallot = (col < this.ballots.length) ? this.ballots[col] : emptyBallot
             ballots1.push(rowBallot)
             ballots2.push(colBallot)
         }
@@ -1196,15 +1225,15 @@ class Poll {
             for (let j = 0; j < batchSize; j++) {
                 const row = rowStartIndex + i
                 const col = colStartIndex + j
-                const rowBallot = (row < this.ballots.length)?this.ballots[row]:emptyBallot
-                const colBallot = (col < this.ballots.length)?this.ballots[col]:emptyBallot
+                const rowBallot = (row < this.ballots.length) ? this.ballots[row] : emptyBallot
+                const colBallot = (col < this.ballots.length) ? this.ballots[col] : emptyBallot
 
                 const kij = this.coefficientCalculation(rowBallot, colBallot)
                 for (let p = 0; p < this.maxValues.maxVoteOptions; p++) {
                     const vip = BigInt(rowBallot.votes[p].valueOf())
                     const vjp = BigInt(colBallot.votes[p].valueOf())
                     if (rowStartIndex !== colStartIndex || (rowStartIndex === colStartIndex && i < j)) {
-                       this.subsidy[p] = BigInt(this.subsidy[p].valueOf()) + BigInt(2) * BigInt(kij.valueOf()) * vip * vjp
+                        this.subsidy[p] = BigInt(this.subsidy[p].valueOf()) + BigInt(2) * BigInt(kij.valueOf()) * vip * vjp
                     }
                 }
             }
@@ -1274,7 +1303,7 @@ class Poll {
         for (
             let i = this.numBatchesTallied * batchSize;
             i < this.numBatchesTallied * batchSize + batchSize;
-            i ++
+            i++
         ) {
             if (i >= this.ballots.length) {
                 break
@@ -1337,7 +1366,7 @@ class Poll {
         const stateRoot = this.stateTree.root
         const ballotRoot = this.ballotTree.root
         const sbSalt = this.sbSalts[this.currentMessageBatchIndex]
-        const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt ])
+        const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt])
 
         const packedVals = MaciState.packTallyVotesSmallVals(
             batchStartIndex,
@@ -1352,9 +1381,9 @@ class Poll {
         ])
 
         const ballotSubrootProof = this.ballotTree.genMerkleSubrootPath(
-                batchStartIndex,
-                batchStartIndex + batchSize,
-            )
+            batchStartIndex,
+            batchStartIndex + batchSize,
+        )
 
         const votes = ballots.map((x) => x.votes)
 
@@ -1388,7 +1417,7 @@ class Poll {
             newSpentVoiceCreditSubtotalSalt,
         })
 
-        this.numBatchesTallied ++
+        this.numBatchesTallied++
 
         return circuitInputs
     }
@@ -1413,11 +1442,11 @@ class Poll {
         _numBallotsToCount: number,
     ) => {
         let subtotal = BigInt(0)
-        for (let i = 0; i < _numBallotsToCount; i ++) {
+        for (let i = 0; i < _numBallotsToCount; i++) {
             if (i >= this.ballots.length) {
                 break
             }
-            for (let j = 0; j < this.results.length; j ++) {
+            for (let j = 0; j < this.results.length; j++) {
                 const v = BigInt(`${this.ballots[i].votes[j]}`)
                 subtotal = BigInt(subtotal) + v * v
             }
@@ -1426,7 +1455,7 @@ class Poll {
     }
 
     //public genSpentVoiceCreditSubtotalCommitment = (_salt) => {
-        //return hashLeftRight(this.totalSpentVoiceCredits, _salt)
+    //return hashLeftRight(this.totalSpentVoiceCredits, _salt)
     //}
 
     public genPerVOSpentVoiceCreditsCommitment = (
@@ -1442,21 +1471,21 @@ class Poll {
 
         const leaves: BigInt[] = []
 
-        for (let i = 0; i < this.results.length; i ++) {
+        for (let i = 0; i < this.results.length; i++) {
             leaves.push(BigInt(0))
         }
 
-        for (let i = 0; i < _numBallotsToCount; i ++) {
+        for (let i = 0; i < _numBallotsToCount; i++) {
             if (i >= this.ballots.length) {
                 break
             }
-            for (let j = 0; j < this.results.length; j ++) {
+            for (let j = 0; j < this.results.length; j++) {
                 const v = BigInt(`${this.ballots[i].votes[j]}`)
                 leaves[j] = BigInt(`${leaves[j]}`) + v * v
             }
         }
 
-        for (let i = 0; i < leaves.length; i ++) {
+        for (let i = 0; i < leaves.length; i++) {
             resultsTree.insert(leaves[i])
         }
 
@@ -1550,36 +1579,36 @@ class Poll {
     }
 
     public equals = (p: Poll): boolean => {
-        const result = 
+        const result =
             this.duration === p.duration &&
             this.coordinatorKeypair.equals(p.coordinatorKeypair) &&
             this.treeDepths.intStateTreeDepth ===
-                p.treeDepths.intStateTreeDepth &&
+            p.treeDepths.intStateTreeDepth &&
             this.treeDepths.messageTreeDepth ===
-                p.treeDepths.messageTreeDepth &&
+            p.treeDepths.messageTreeDepth &&
             this.treeDepths.messageTreeSubDepth ===
-                p.treeDepths.messageTreeSubDepth &&
+            p.treeDepths.messageTreeSubDepth &&
             this.treeDepths.voteOptionTreeDepth ===
-                p.treeDepths.voteOptionTreeDepth &&
+            p.treeDepths.voteOptionTreeDepth &&
             this.batchSizes.tallyBatchSize === p.batchSizes.tallyBatchSize &&
             this.batchSizes.messageBatchSize ===
-                p.batchSizes.messageBatchSize &&
+            p.batchSizes.messageBatchSize &&
             this.maxValues.maxUsers === p.maxValues.maxUsers &&
             this.maxValues.maxMessages === p.maxValues.maxMessages &&
             this.maxValues.maxVoteOptions === p.maxValues.maxVoteOptions &&
             this.messages.length === p.messages.length &&
             this.encPubKeys.length === p.encPubKeys.length
 
-        if (! result) {
+        if (!result) {
             return false
         }
 
-        for (let i = 0; i < this.messages.length; i ++) {
+        for (let i = 0; i < this.messages.length; i++) {
             if (!this.messages[i].equals(p.messages[i])) {
                 return false
             }
         }
-        for (let i = 0; i < this.encPubKeys.length; i ++) {
+        for (let i = 0; i < this.encPubKeys.length; i++) {
             if (!this.encPubKeys[i].equals(p.encPubKeys[i])) {
                 return false
             }
@@ -1617,7 +1646,7 @@ class MaciState {
     public currentPollBeingProcessed
     public numSignUps = 0
 
-    constructor () {
+    constructor() {
         this.stateLeaves.push(blankStateLeaf)
         this.stateTree.insert(blankStateLeafHash)
         this.stateAq.enqueue(blankStateLeafHash)
@@ -1637,7 +1666,7 @@ class MaciState {
         const leafIndex = this.stateAq.enqueue(h)
         this.stateTree.insert(h)
         this.stateLeaves.push(stateLeaf.copy())
-        this.numSignUps ++
+        this.numSignUps++
         return leafIndex
     }
 
@@ -1653,7 +1682,7 @@ class MaciState {
             _duration,
             _pollEndTimestamp,
             _coordinatorKeypair,
-             _treeDepths,
+            _treeDepths,
             {
                 messageBatchSize: _messageBatchSize,
                 subsidyBatchSize: this.STATE_TREE_ARITY ** _treeDepths.intStateTreeDepth,
@@ -1698,17 +1727,17 @@ class MaciState {
             return false
         }
 
-        for (let i = 0; i < this.polls.length; i ++) {
+        for (let i = 0; i < this.polls.length; i++) {
             if (!this.polls[i].equals(m.polls[i])) {
                 return false
             }
         }
-        for (let i = 0; i < this.stateLeaves.length; i ++) {
+        for (let i = 0; i < this.stateLeaves.length; i++) {
             if (!this.stateLeaves[i].equals(m.stateLeaves[i])) {
                 return false
             }
         }
-        
+
         return true
     }
 
@@ -1719,7 +1748,7 @@ class MaciState {
         numSignUps: number,
     ) => {
         // Note: the << operator has lower precedence than +
-        const packedVals = 
+        const packedVals =
             (BigInt(numSignUps) << BigInt(100)) +
             (BigInt(row) << BigInt(50)) +
             BigInt(col)
@@ -1733,7 +1762,7 @@ class MaciState {
         numSignUps: number,
     ) => {
         // Note: the << operator has lower precedence than +
-        const packedVals = 
+        const packedVals =
             (BigInt(batchStartIndex) / BigInt(batchSize)) +
             (BigInt(numSignUps) << BigInt(50))
 
@@ -1795,9 +1824,9 @@ const genProcessVkSig = (
     _batchSize: number
 ): BigInt => {
     return (BigInt(_batchSize) << BigInt(192)) +
-           (BigInt(_stateTreeDepth) << BigInt(128)) +
-           (BigInt(_messageTreeDepth) << BigInt(64)) +
-            BigInt(_voteOptionTreeDepth)
+        (BigInt(_stateTreeDepth) << BigInt(128)) +
+        (BigInt(_messageTreeDepth) << BigInt(64)) +
+        BigInt(_voteOptionTreeDepth)
 }
 
 const genDeactivationVkSig = (
@@ -1805,7 +1834,7 @@ const genDeactivationVkSig = (
     _stateTreeDepth: number,
 ): BigInt => {
     return (BigInt(_messageQueueSize) << BigInt(64)) +
-           BigInt(_stateTreeDepth)
+        BigInt(_stateTreeDepth)
 }
 
 const genTallyVkSig = (
@@ -1814,8 +1843,8 @@ const genTallyVkSig = (
     _voteOptionTreeDepth: number,
 ): BigInt => {
     return (BigInt(_stateTreeDepth) << BigInt(128)) +
-           (BigInt(_intStateTreeDepth) << BigInt(64)) +
-            BigInt(_voteOptionTreeDepth)
+        (BigInt(_intStateTreeDepth) << BigInt(64)) +
+        BigInt(_voteOptionTreeDepth)
 }
 
 const genSubsidyVkSig = (
@@ -1824,8 +1853,8 @@ const genSubsidyVkSig = (
     _voteOptionTreeDepth: number,
 ): BigInt => {
     return (BigInt(_stateTreeDepth) << BigInt(128)) +
-           (BigInt(_intStateTreeDepth) << BigInt(64)) +
-            BigInt(_voteOptionTreeDepth)
+        (BigInt(_intStateTreeDepth) << BigInt(64)) +
+        BigInt(_voteOptionTreeDepth)
 }
 
 
@@ -1862,4 +1891,3 @@ export {
     genTallyResultCommitment,
     STATE_TREE_DEPTH,
 }
-3

@@ -1,11 +1,13 @@
 import {
-    getDefaultSigner
+    getDefaultSigner,
+    genMaciStateFromContract
 } from 'maci-contracts'
 
 import {
     PrivKey,
     PubKey,
-    KCommand
+    KCommand,
+    Keypair
 } from 'maci-domainobjs'
 
 import {
@@ -27,15 +29,9 @@ import { readJSONFile } from 'maci-common'
 import { contractFilepath } from './config'
 
 const DEFAULT_SALT = genRandomSalt()
-// TODO: check thi value
-const H0 = BigInt('8370432830353022751713833565135785980866757267633941821328460903436894336785')
-// TODO: check thi value
-const DEACT_TREE_ARITY = 5;
-
 
 // value taken from generateKeyFromDeactivated
 const voiceCreditBalance = BigInt(100)
-
 
 const configureSubparser = (subparsers: any) => {
     const parser = subparsers.addParser('generateNewKey', {
@@ -91,6 +87,23 @@ const configureSubparser = (subparsers: any) => {
             action: 'store',
             type: 'string',
             help: 'Your new serialized MACI private key',
+        }
+    )
+
+    parser.addArgument(
+        ['-pnsk', '--prompt-for-maci-coordPrivkey'],
+        {
+            action: 'storeTrue',
+            help: 'Whether to prompt for coordinators serialized MACI private key',
+        }
+    )
+
+    parser.addArgument(
+        ['-npk', '--coordPrivkey'],
+        {
+            action: 'store',
+            type: 'string',
+            help: 'Coordinators serialized MACI private key',
         }
     )
 
@@ -246,9 +259,9 @@ const generateNewKey = async (args: any) => {
     }
 
     const signer = await getDefaultSigner()
-    if (!(await contractExists(signer.provider, maciAddress))) {
-        console.error('Error: there is no MACI contract deployed at the specified address')
-        return 1
+    if (!await contractExists(signer.provider, maciAddress)) {
+        console.error('Error: there is no contract deployed at the specified address')
+        return 0
     }
 
     const pollId = args.poll_id
@@ -260,10 +273,26 @@ const generateNewKey = async (args: any) => {
 
     const userMaciNewPubKey = PubKey.unserialize(args.newpubkey)
 
-    // c1 annd c2 represend status of previous key deactivation. Hardcoded for now. Should get it from event DeactivateKey
+    let serializedCoordPrivkey
+    if (args.prompt_for_coord_privkey) {
+        serializedCoordPrivkey = await promptPwd('Coordinators MACI private key')
+    } else {
+        serializedCoordPrivkey = args.coordPrivkey
+    }
+
+    if (!PrivKey.isValidSerializedPrivKey(serializedCoordPrivkey)) {
+        console.error('Error: invalid coordinators MACI private key')
+        return 1
+    }
+
+    const maciCoordPrivkey = PrivKey.unserialize(serializedCoordPrivkey)
+    const coordinatorKeypair = new Keypair(maciCoordPrivkey)
+
+    // get c1 and c2 from MaciState
     const c1 = [BigInt(1), BigInt(1)];
     const c2 = [BigInt(2), BigInt(2)];
-    // z represents random value we use for 
+
+    // z represents random value we use for c1 and c2 rerandomizing
     const z = BigInt(42);
 
     // serialized or unserialized key?
@@ -283,6 +312,27 @@ const generateNewKey = async (args: any) => {
         c1r,
         c2r,
         pollId,
+    )
+
+    // Reconstruct MACI state
+    const maciState = await genMaciStateFromContract(
+        signer.provider,
+        maciAddress,
+        coordinatorKeypair,
+        pollId,
+        fromBlock,
+    )
+
+    // add new logic for forvarding c1, c2 and deactivatedKeyIndex
+
+    const circomInputs = maciState.generateCircuitInputsForGenerateNewKey(
+        command,
+        userMaciOldPrivkey,
+        stateIndex,
+        salt,
+        z,
+        c1,
+        c2
     )
 
     return 0;
