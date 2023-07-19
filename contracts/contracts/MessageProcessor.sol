@@ -212,7 +212,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
         }
 
         poll.mergeMaciStateAqSubRoots(_stateNumSrQueueOps, _pollId);
-        poll.mergeMaciStateAq(_stateNumSrQueueOps);
+        poll.mergeMaciStateAq(_pollId);
 
         deactivatedKeysAq.mergeSubRoots(_stateNumSrQueueOps);
         deactivatedKeysAq.merge(DEACT_TREE_DEPTH);
