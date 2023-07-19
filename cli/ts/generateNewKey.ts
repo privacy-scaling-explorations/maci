@@ -25,13 +25,21 @@ import {
     isPathExist
 } from './utils'
 
+const { ethers } = require('hardhat')
+
 import { readJSONFile } from 'maci-common'
 import { contractFilepath } from './config'
 
 const DEFAULT_SALT = genRandomSalt()
+// TODO: check this value
+const H0 = BigInt('8370432830353022751713833565135785980866757267633941821328460903436894336785')
+// TODO: check this value
+const DEACT_TREE_ARITY = 5;
+
 
 // value taken from generateKeyFromDeactivated
 const voiceCreditBalance = BigInt(100)
+
 
 const configureSubparser = (subparsers: any) => {
     const parser = subparsers.addParser('generateNewKey', {
@@ -272,6 +280,7 @@ const generateNewKey = async (args: any) => {
     }
 
     const userMaciNewPubKey = PubKey.unserialize(args.newpubkey)
+    const userMaciOldPubKey = PubKey.unserialize(args.oldpubkey)
 
     let serializedCoordPrivkey
     if (args.prompt_for_coord_privkey) {
@@ -323,16 +332,13 @@ const generateNewKey = async (args: any) => {
         fromBlock,
     )
 
-    // add new logic for forvarding c1, c2 and deactivatedKeyIndex
-
     const circomInputs = maciState.generateCircuitInputsForGenerateNewKey(
         command,
         userMaciOldPrivkey,
+        userMaciOldPubKey,
         stateIndex,
-        salt,
-        z,
-        c1,
-        c2
+        BigInt(salt),
+        z
     )
 
     return 0;

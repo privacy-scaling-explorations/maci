@@ -130,6 +130,10 @@ class Poll {
     public MM = 50   // adjustable parameter
     public WW = 4     // number of digits for float representation
 
+    // TODO: used to store info about deactivatedKey events happening on chain so we can use it to search for deactiavtedKeyIndex.
+    // Add a concrete type instead of any
+    public deactivatedKeyEvents: any[] = [];
+
     constructor(
         _duration: number,
         _pollEndTimestamp: BigInt,
@@ -208,6 +212,15 @@ class Poll {
             let command = new KCommand(keyPair.pubKey, BigInt(0), BigInt(0), [BigInt(0), BigInt(0)], [BigInt(0), BigInt(0)], BigInt(0))
             this.commands.push(command)
         }
+    }
+
+    public processDeactivateKeyEvent = (
+        _keyHash: BigInt,
+        _c1: BigInt[],
+        _c2: BigInt[]
+    ) => {
+        const deactiavtedKeyEvent = { keyHash: _keyHash, c1: _c1, c2: _c2 };
+        this.deactivatedKeyEvents.push(deactiavtedKeyEvent);
     }
 
     public deactivateKey = (
@@ -530,12 +543,21 @@ class Poll {
         return { circuitInputs, deactivatedLeaves };
     }
 
-    public generateCircuitInputsForGenerateNewKey(kcommand: KCommand, deactivatedPrivateKey: PrivKey, stateIndex: BigInt, salt: string, z: BigInt, c1: BigInt[], c2: BigInt[]) {
+    public generateCircuitInputsForGenerateNewKey(kcommand: KCommand, deactivatedPrivateKey: PrivKey, deactivatedPublicKey: PubKey, stateIndex: BigInt, salt: BigInt, z: BigInt) {
         if (!this.stateCopied) {
             this.copyStateFromMaci()
         }
-        
-        // get deactivatedKeyIndex from deactivatedKeysTree by deactivated key and salt
+
+        const deactivatedKeyHash = hash3([...deactivatedPublicKey.asArray(), salt]);
+        const deactivatedKeyIndex = this.deactivatedKeyEvents.findIndex(d => d.keyHash === deactivatedKeyHash);
+
+        if(deactivatedKeyIndex === -1) {
+            console.log("Key index is -1");
+            return;
+        }
+
+        const deactivatedKeyEvent = this.deactivatedKeyEvents[deactivatedKeyIndex];
+
         const stateIndexInt = parseInt(stateIndex.toString());
         const computedStateIndex = stateIndexInt > 0 && stateIndexInt <= this.numSignUps ? stateIndexInt - 1 : -1;
         const currentStateLeaves = [this.stateLeaves[computedStateIndex]];
@@ -546,13 +568,13 @@ class Poll {
             this.stateTree,
             BigInt(this.numSignUps),
             stateIndex,
-            BigInt(salt),
+            salt,
             this.coordinatorKeypair.pubKey,
             this.deactivatedKeysTree,
-            BigInt(0),
+            BigInt(deactivatedKeyIndex),
             z,
-            c1,
-            c2
+            deactivatedKeyEvent.c1,
+            deactivatedKeyEvent.c2
         )
 
         return circuitInputs;
