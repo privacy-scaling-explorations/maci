@@ -23,6 +23,7 @@ import {
     IncrementalQuinTree,
     stringifyBigInts,
     NOTHING_UP_MY_SLEEVE,
+    smt,
 } from 'maci-crypto'
 
 const voiceCreditBalance = BigInt(100)

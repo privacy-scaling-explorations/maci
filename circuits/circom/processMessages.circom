@@ -2,10 +2,13 @@ pragma circom 2.0.0;
 include "./hasherSha256.circom";
 include "./messageHasher.circom";
 include "./messageToCommand.circom";
+include "./newKeyMessageToCommand.circom";
 include "./privToPubKey.circom";
 include "./stateLeafAndBallotTransformer.circom";
 include "./trees/incrementalQuinTree.circom";
 include "../node_modules/circomlib/circuits/mux1.circom";
+include "../node_modules/circomlib/circuits/smt/smtverifier.circom";
+include "../node_modules/circomlib/circuits/smt/smtprocessor.circom";
 include "./utils.circom";
 
 /*
@@ -31,7 +34,7 @@ template ProcessMessages(
     var TREE_ARITY = 5;
     var batchSize = TREE_ARITY ** msgBatchDepth;
 
-    var MSG_LENGTH = 11;
+    var MSG_LENGTH = 12;
     var PACKED_CMD_LENGTH = 4;
 
     var STATE_LEAF_LENGTH = 4;
@@ -91,6 +94,9 @@ template ProcessMessages(
     // The state root before it is processed
     signal input currentStateRoot;
 
+    // The nullifier root before it is processed
+    signal input currentNullifierRoot;
+
     // The state leaves upon which messages are applied.
     //     transform(currentStateLeaf[4], message5) => newStateLeaf4
     //     transform(currentStateLeaf[3], message4) => newStateLeaf3
@@ -102,6 +108,15 @@ template ProcessMessages(
     // each incremental new state root.
     signal input currentStateLeaves[batchSize][STATE_LEAF_LENGTH];
     signal input currentStateLeavesPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
+
+    // Nullifier paths
+    signal input currentNullifierLeavesPathElements[batchSize][stateTreeDepth];
+
+    // Nullifier inclusion flags
+    signal input nullifierInclusionFlags[batchSize];
+
+    // Number of attempted new key generations
+    signal input numKeyGens[batchSize];
 
     // The salted commitment to the state root and ballot root
     signal input currentSbCommitment;
@@ -166,7 +181,7 @@ template ProcessMessages(
     component messageHashers[batchSize];
     for (var i = 0; i < batchSize; i ++) {
         messageHashers[i] = MessageHasher();
-        for (var j = 0; j < MSG_LENGTH; j ++) {
+        for (var j = 0; j < MSG_LENGTH - 1; j ++) {
             messageHashers[i].in[j] <== msgs[i][j];
         }
         messageHashers[i].encPubKey[0] <== encPubKeys[i][0];
@@ -241,31 +256,48 @@ template ProcessMessages(
 
     // Decrypt each Message into a Command
     component commands[batchSize];
+    component keyGenCommands[batchSize];
     for (var i = 0; i < batchSize; i ++) {
         commands[i] = MessageToCommand();
         commands[i].encPrivKey <== coordPrivKey;
         commands[i].encPubKey[0] <== encPubKeys[i][0];
         commands[i].encPubKey[1] <== encPubKeys[i][1];
-        for (var j = 0; j < MSG_LENGTH; j ++) {
+        for (var j = 0; j < MSG_LENGTH - 1; j ++) {
             commands[i].message[j] <== msgs[i][j];
+        }
+
+        keyGenCommands[i] = NewKeyMessageToCommand();
+        keyGenCommands[i].encPrivKey <== coordPrivKey;
+        keyGenCommands[i].encPubKey[0] <== encPubKeys[i][0];
+        keyGenCommands[i].encPubKey[1] <== encPubKeys[i][1];
+        for (var j = 0; j < MSG_LENGTH - 1; j ++) {
+            keyGenCommands[i].message[j] <== msgs[i][j];
         }
     }
 
+    signal nullifierRoots[batchSize + 1];
     signal stateRoots[batchSize + 1];
     signal ballotRoots[batchSize + 1];
 
     stateRoots[batchSize] <== currentStateRoot;
     ballotRoots[batchSize] <== currentBallotRoot;
+    nullifierRoots[batchSize] <== currentNullifierRoot;
 
     //  ----------------------------------------------------------------------- 
     //  Process messages in reverse order
     signal tmpStateRoot1[batchSize];
     signal tmpStateRoot2[batchSize];
+    signal tmpStateRoot3[batchSize];
     signal tmpBallotRoot1[batchSize];
     signal tmpBallotRoot2[batchSize];
     component processors[batchSize]; // vote type processor
     component processors2[batchSize]; // topup type processor
-    for (var i = batchSize - 1; i >= 0; i --) {
+    component processors3[batchSize]; // new key generation processor
+
+    component isVoteMessage[batchSize];
+    component isTopupMessage[batchSize];
+    component isNewKeyGenMessage[batchSize];
+    for (var i = batchSize - 1; i >= 0; i--) {
         // process it as vote type message
         processors[i] = ProcessOne(stateTreeDepth, voteOptionTreeDepth);
 
@@ -307,6 +339,7 @@ template ProcessMessages(
 
         processors[i].cmdStateIndex <== commands[i].stateIndex;
         processors[i].topupStateIndex <== msgs[i][1];
+        processors[i].keyGenStateIndex <== msgs[i][MSG_LENGTH - 1];
         processors[i].cmdNewPubKey[0] <== commands[i].newPubKey[0];
         processors[i].cmdNewPubKey[1] <== commands[i].newPubKey[1];
         processors[i].cmdVoteOptionIndex <== commands[i].voteOptionIndex;
@@ -337,13 +370,67 @@ template ProcessMessages(
                     <== currentStateLeavesPathElements[i][j][k];
             }
         }
+
+        // --------------------------------------------
+        // process it as new key generation type message
+        processors3[i] = ProcessNewKeyGeneration(stateTreeDepth);
+        processors3[i].newPubKey[0] <== keyGenCommands[i].newPubKey[0];
+        processors3[i].newPubKey[1] <== keyGenCommands[i].newPubKey[1];
+        processors3[i].newCreditBalance <== keyGenCommands[i].newCreditBalance;
+        processors3[i].nullifier <== keyGenCommands[i].nullifier;
+        processors3[i].c1r[0] <== keyGenCommands[i].c1r[0];
+        processors3[i].c1r[1] <== keyGenCommands[i].c1r[1];
+        processors3[i].c2r[0] <== keyGenCommands[i].c2r[0];
+        processors3[i].c2r[1] <== keyGenCommands[i].c2r[1];
+        processors3[i].pollId <== keyGenCommands[i].pollId;
+        processors3[i].isValidStatus <== keyGenCommands[i].isValidStatus;
+
+        for (var j = 0; j < stateTreeDepth; j++) {
+            for (var k = 0; k < TREE_ARITY - 1; k++) {
+                processors3[i].stateLeafPathElements[j][k] <== currentStateLeavesPathElements[i][j][k];
+            }
+        }
+
+        processors3[i].coordPrivKey <== coordPrivKey;
+        processors3[i].msgType <== msgs[i][0];
+        
+        processors3[i].cmdStateIndex <== commands[i].stateIndex;
+        processors3[i].topupStateIndex <== msgs[i][1];
+        processors3[i].keyGenStateIndex <== msgs[i][MSG_LENGTH - 1];
+        processors3[i].numSignUps <== numSignUps;
+        processors3[i].numKeyGens <== numKeyGens[i];
+        processors3[i].currentStateRoot <== stateRoots[i + 1];
+
+        for (var j = 0; j < stateTreeDepth; j++) {
+            processors3[i].nullifierLeafPathElements[j] <== currentNullifierLeavesPathElements[i][j];
+        }
+
+        processors3[i].currentNullifierRoot <== nullifierRoots[i + 1];
+        processors3[i].nullifierInclusionFlag <== nullifierInclusionFlags[i];
+
+        isVoteMessage[i] = IsEqual();
+        isVoteMessage[i].in[0] <== 1;
+        isVoteMessage[i].in[1] <== msgs[i][0];
+
+        isTopupMessage[i] = IsEqual();
+        isTopupMessage[i].in[0] <== 2;
+        isTopupMessage[i].in[1] <== msgs[i][0];
+
+        isNewKeyGenMessage[i] = IsEqual();
+        isNewKeyGenMessage[i].in[0] <== 3;
+        isNewKeyGenMessage[i].in[1] <== msgs[i][0];
+
         // pick the correct result by msg type
-        tmpStateRoot1[i] <== processors[i].newStateRoot * (2-msgs[i][0]); 
-        tmpStateRoot2[i] <== processors2[i].newStateRoot * (msgs[i][0]-1);
-        tmpBallotRoot1[i] <== processors[i].newBallotRoot * (2-msgs[i][0]); 
-        tmpBallotRoot2[i] <== ballotRoots[i+1] * (msgs[i][0]-1);
+        tmpStateRoot1[i] <== processors[i].newStateRoot * isVoteMessage[i].out; 
+        tmpStateRoot2[i] <== processors2[i].newStateRoot * isTopupMessage[i].out;
+        tmpStateRoot3[i] <== processors3[i].newStateRoot * isNewKeyGenMessage[i].out;
+
+        tmpBallotRoot1[i] <== processors[i].newBallotRoot * isVoteMessage[i].out; 
+        tmpBallotRoot2[i] <== ballotRoots[i+1] * (isTopupMessage[i].out + isNewKeyGenMessage[i].out);
+
         stateRoots[i] <== tmpStateRoot1[i] + tmpStateRoot2[i];
         ballotRoots[i] <== tmpBallotRoot1[i] + tmpBallotRoot2[i];
+        nullifierRoots[i] <== processors3[i].newNullifierRoot;
     }
 
     component sbCommitmentHasher = Hasher3();
@@ -356,7 +443,7 @@ template ProcessMessages(
 
 template ProcessTopup(stateTreeDepth) {
     var STATE_LEAF_LENGTH = 4;
-    var MSG_LENGTH = 11;
+    var MSG_LENGTH = 12;
     var TREE_ARITY = 5;
 
     var STATE_LEAF_PUB_X_IDX = 0;
@@ -376,10 +463,14 @@ template ProcessTopup(stateTreeDepth) {
 
     // skip state leaf verify, because it's checked in ProcessOne 
 
+    component isValidMsgType = IsEqual();
+    isValidMsgType.in[0] <== msgType;
+    isValidMsgType.in[1] <== 2;
+
     signal amt;
     signal index;
-    amt <== amount * (msgType - 1); 
-    index <== stateTreeIndex * (msgType - 1);
+    amt <== amount * isValidMsgType.out; 
+    index <== stateTreeIndex * isValidMsgType.out;
     component validCreditBalance = LessEqThan(252);
     // check stateIndex, if invalid index, set index and amount to zero
     component validStateLeafIndex = LessEqThan(252);
@@ -424,6 +515,145 @@ template ProcessTopup(stateTreeDepth) {
     newStateRoot <== newStateLeafQip.root;
 }
 
+template ProcessNewKeyGeneration(stateTreeDepth) {
+    var MSG_LENGTH = 12;
+    var TREE_ARITY = 5;
+    var STATE_LEAF_LENGTH = 4;
+    var STATE_LEAF_PUB_X_IDX = 0;
+    var STATE_LEAF_PUB_Y_IDX = 1;
+    var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
+    var STATE_LEAF_TIMESTAMP_IDX = 3;
+
+    signal input newPubKey[2];
+    signal input newCreditBalance;
+    signal input nullifier;
+    signal input c1r[2];
+    signal input c2r[2];
+    signal input pollId;
+    signal input isValidStatus;
+
+    signal input coordPrivKey;
+
+    signal input msgType;
+    signal input cmdStateIndex;
+    signal input topupStateIndex;
+    signal input keyGenStateIndex;
+    signal input numSignUps;
+    signal input currentStateRoot;
+    signal input stateLeafPathElements[stateTreeDepth][TREE_ARITY - 1];
+    signal input numKeyGens;
+
+    signal input nullifierLeafPathElements[stateTreeDepth];
+    signal input currentNullifierRoot;
+    signal input nullifierInclusionFlag;
+
+    signal output newNullifierRoot;
+    signal output newStateRoot;
+
+    signal indexByType;
+    signal tmpIndex1;
+    signal tmpIndex2;
+    signal tmpIndex3;
+
+    component isVoteType = IsEqual();
+    isVoteType.in[0] <== 1;
+    isVoteType.in[1] <== msgType;
+
+    component isTopupType = IsEqual();
+    isTopupType.in[0] <== 2;
+    isTopupType.in[1] <== msgType;
+
+    component isKeyGenType = IsEqual();
+    isKeyGenType.in[0] <== 3;
+    isKeyGenType.in[1] <== msgType;
+
+    signal stateIndex;
+    tmpIndex1 <== cmdStateIndex * isVoteType.out;
+    tmpIndex2 <== topupStateIndex * isTopupType.out;
+    tmpIndex3 <== keyGenStateIndex * isKeyGenType.out;
+    stateIndex <== tmpIndex1 + tmpIndex2 + tmpIndex3;
+
+    component validStateLeafIndex = LessEqThan(252);
+    validStateLeafIndex.in[0] <== stateIndex;
+    validStateLeafIndex.in[1] <== numSignUps + numKeyGens;
+
+    component indexMux = Mux1();
+    indexMux.s <== validStateLeafIndex.out;
+    indexMux.c[0] <== 0;
+    indexMux.c[1] <== stateIndex;
+
+    component stateLeafPathIndices = QuinGeneratePathIndices(stateTreeDepth);
+    stateLeafPathIndices.in <== indexMux.out;
+
+    component stateLeafQip = QuinTreeInclusionProof(stateTreeDepth);
+    component stateLeafHasher = Hasher4();
+    for (var i = 0; i < STATE_LEAF_LENGTH; i++) {
+        stateLeafHasher.in[i] <== 0;
+    }
+    stateLeafQip.leaf <== stateLeafHasher.hash;
+    for (var i = 0; i < stateTreeDepth; i ++) {
+        stateLeafQip.path_index[i] <== stateLeafPathIndices.out[i];
+        for (var j = 0; j < TREE_ARITY - 1; j++) {
+            stateLeafQip.path_elements[i][j] <== stateLeafPathElements[i][j];
+        }
+    }
+
+    signal tmp1 <== (1 - isKeyGenType.out) * currentStateRoot;
+    signal tmp2 <== (isKeyGenType.out) * stateLeafQip.root;
+    stateLeafQip.root === tmp1 + tmp2;
+
+    component nullifierTreeVerifier = SMTVerifier(stateTreeDepth);
+    nullifierTreeVerifier.enabled <== 1;
+    nullifierTreeVerifier.root <== currentNullifierRoot;
+
+    for (var i = 0; i < stateTreeDepth; i++) {
+        nullifierTreeVerifier.siblings[i] <== nullifierLeafPathElements[i];
+    }
+
+    nullifierTreeVerifier.oldKey <== nullifier;
+    nullifierTreeVerifier.oldValue <== (1 - nullifierInclusionFlag) * nullifier;
+    nullifierTreeVerifier.isOld0 <== nullifierInclusionFlag;
+    nullifierTreeVerifier.key <== nullifier;
+    nullifierTreeVerifier.value <== nullifier;
+    nullifierTreeVerifier.fnc <== nullifierInclusionFlag;
+
+    component nullifierInsertProcessor = SMTProcessor(stateTreeDepth);
+    nullifierInsertProcessor.oldRoot <== currentNullifierRoot;
+
+    for (var i = 0; i < stateTreeDepth; i++) {
+        nullifierInsertProcessor.siblings[i] <== nullifierLeafPathElements[i];
+    }
+    
+    nullifierInsertProcessor.oldKey <== nullifier;
+    nullifierInsertProcessor.oldValue <== (1 - nullifierInclusionFlag) * nullifier;
+    nullifierInsertProcessor.isOld0 <== nullifierInclusionFlag;
+    nullifierInsertProcessor.newKey <== nullifier;
+    nullifierInsertProcessor.newValue <== nullifier;
+    nullifierInsertProcessor.fnc[0] <== 1;
+    nullifierInsertProcessor.fnc[1] <== 0;
+
+    signal tmp3 <== (1 - nullifierInclusionFlag) * currentNullifierRoot;
+    signal tmp4 <== (nullifierInclusionFlag) * nullifierInsertProcessor.newRoot;
+
+    newNullifierRoot <== tmp3 + tmp4;
+
+    component newStateLeafHasher = Hasher4();
+    newStateLeafHasher.in[STATE_LEAF_PUB_X_IDX] <== newPubKey[0] * nullifierInclusionFlag;
+    newStateLeafHasher.in[STATE_LEAF_PUB_Y_IDX] <== newPubKey[1] * nullifierInclusionFlag;
+    newStateLeafHasher.in[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] <== newCreditBalance * nullifierInclusionFlag;
+    newStateLeafHasher.in[STATE_LEAF_TIMESTAMP_IDX] <== 0;
+
+    component newStateLeafQip = QuinTreeInclusionProof(stateTreeDepth);
+    newStateLeafQip.leaf <== newStateLeafHasher.hash;
+    for (var i = 0; i < stateTreeDepth; i ++) {
+        newStateLeafQip.path_index[i] <== stateLeafPathIndices.out[i];
+        for (var j = 0; j < TREE_ARITY - 1; j++) {
+            newStateLeafQip.path_elements[i][j] <== stateLeafPathElements[i][j];
+        }
+    }
+    newStateRoot <== newStateLeafQip.root;
+}
+
 template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     /*
         transform(currentStateLeaves0, cmd0) -> newStateLeaves0, isValid0
@@ -433,7 +663,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     */
     var STATE_LEAF_LENGTH = 4;
     var BALLOT_LENGTH = 2;
-    var MSG_LENGTH = 11;
+    var MSG_LENGTH = 12;
     var PACKED_CMD_LENGTH = 4;
     var TREE_ARITY = 5;
 
@@ -465,6 +695,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
 
     signal input cmdStateIndex;
     signal input topupStateIndex;
+    signal input keyGenStateIndex;
     signal input cmdNewPubKey[2];
     signal input cmdVoteOptionIndex;
     signal input cmdNewVoteWeight;
@@ -513,12 +744,27 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     signal indexByType;
     signal tmpIndex1;
     signal tmpIndex2;
-    tmpIndex1 <== cmdStateIndex * (2 - msgType);
-    tmpIndex2 <== topupStateIndex * (msgType - 1);
-    indexByType <== tmpIndex1 + tmpIndex2;
+    signal tmpIndex3;
+
+    component isVoteType = IsEqual();
+    isVoteType.in[0] <== 1;
+    isVoteType.in[1] <== msgType;
+
+    component isTopupType = IsEqual();
+    isTopupType.in[0] <== 2;
+    isTopupType.in[1] <== msgType;
+
+    component isKeyGenType = IsEqual();
+    isKeyGenType.in[0] <== 3;
+    isKeyGenType.in[1] <== msgType;
+
+    tmpIndex1 <== cmdStateIndex * isVoteType.out;
+    tmpIndex2 <== topupStateIndex * isTopupType.out;
+    tmpIndex3 <== keyGenStateIndex * isKeyGenType.out;
+    indexByType <== tmpIndex1 + tmpIndex2 + tmpIndex3;
 
     component stateIndexMux = Mux1();
-    stateIndexMux.s <== transformer.isValid + msgType - 1;
+    stateIndexMux.s <== transformer.isValid + isVoteType.out - 1;
     stateIndexMux.c[0] <== 0;
     stateIndexMux.c[1] <== indexByType;
 
@@ -718,7 +964,7 @@ template ProcessMessagesInputHasher() {
     hasher.in[2] <== msgRoot;
     hasher.in[3] <== currentSbCommitment;
     hasher.in[4] <== newSbCommitment;
-    hasher.in[5] <== pollEndTimestamp;
+    hasher.in[5] <== pollEndTimestamp;   
 
     hash <== hasher.hash;
 }
