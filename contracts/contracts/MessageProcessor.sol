@@ -10,13 +10,15 @@ import {Hasher} from "./crypto/Hasher.sol";
 import {CommonUtilities} from "./utilities/Utility.sol";
 import {Verifier} from "./crypto/Verifier.sol";
 import {VkRegistry} from "./VkRegistry.sol";
+import {DomainObjs} from "./DomainObjs.sol";
+import {Utilities} from "./utilities/Utility.sol";
 
 /*
  * MessageProcessor is used to process messages published by signup users
  * it will process message by batch due to large size of messages
  * after it finishes processing, the sbCommitment will be used for Tally and Subsidy contracts
  */
-contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
+contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
     error NO_MORE_MESSAGES();
     error STATE_AQ_NOT_MERGED();
     error MESSAGE_AQ_NOT_MERGED();
@@ -24,6 +26,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     error VK_NOT_SET();
 
     uint8 public constant DEACT_TREE_DEPTH = 10;
+    string constant ERROR_MAX_DEACTIVATED_KEYS_REACHED = "PollE08";
 
     // Whether there are unprocessed messages left
     bool public processingComplete;
@@ -37,6 +40,8 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     uint256 public sbCommitment;
 
     Verifier public verifier;
+
+    event DeactivateKey(uint256 keyHash, uint256[2] c1, uint256[2] c2);
 
     constructor(Verifier _verifier) {
         verifier = _verifier;
@@ -134,6 +139,51 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     }
 
     /**
+     * @notice Confirms the deactivation of a MACI public key. This function must be called by Coordinator after User calls the deactivateKey function
+     * @param _batchLeaves Deactivated keys leaves
+     * @param _batchSize The capacity of the subroot of the deactivated keys tree
+     */
+    function confirmDeactivation(
+        uint256[][] memory _batchLeaves,
+        uint256 _batchSize,
+        Poll poll
+    ) external onlyOwner {
+        (
+            ,
+            ,
+            ,
+            AccQueue deactivatedKeysAq,
+
+        ) = poll.extContracts();
+
+        ( , , uint256 numDeactivatedKeys) = poll
+            .numSignUpsAndMessagesAndDeactivatedKeys();
+        
+        (uint256 maxMessages, ) = poll.maxValues();
+
+        require(
+            numDeactivatedKeys <= maxMessages,
+            ERROR_MAX_DEACTIVATED_KEYS_REACHED
+        );
+
+        for (uint256 i = 0; i < _batchSize; i++) {
+            uint256 keyHash = _batchLeaves[i][0];
+            uint256[2] memory c1;
+            uint256[2] memory c2;
+
+            c1[0] = _batchLeaves[i][1];
+            c1[1] = _batchLeaves[i][2];
+            c2[0] = _batchLeaves[i][3];
+            c2[1] = _batchLeaves[i][4];
+
+            deactivatedKeysAq.enqueue(
+                hash5([keyHash, c1[0], c1[1], c2[0], c2[1]])
+            );
+            emit DeactivateKey(keyHash, c1, c2);
+        }
+    }
+
+    /**
      * @notice Completes the deactivation of all MACI public keys.
      * @param _stateNumSrQueueOps The number of subroot queue operations to merge for the MACI state tree
      * @param poll Poll contract address
@@ -152,13 +202,9 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
 
         ) = poll.extContracts();
 
-        (, uint8 messageTreeSubDepth, uint8 messageTreeDepth, ) = poll
-            .treeDepths();
-
         {
             (uint256 deployTime, ) = poll.getDeployTimeAndDuration();
 
-            uint256 secondsPassed = block.timestamp - deployTime;
             require(
                 block.timestamp - deployTime > maci.deactivationPeriod(),
                 "Deactivation period has not passed"
@@ -189,13 +235,12 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
 
         ) = poll.extContracts();
 
-        (, uint8 messageTreeSubDepth, uint8 messageTreeDepth, ) = poll
+        (, , uint8 messageTreeDepth, ) = poll
             .treeDepths();
 
         {
             (uint256 deployTime, ) = poll.getDeployTimeAndDuration();
 
-            uint256 secondsPassed = block.timestamp - deployTime;
             require(
                 block.timestamp - deployTime > maci.deactivationPeriod(),
                 "Deactivation period has not passed"
@@ -211,7 +256,6 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
             .numSignUpsAndMessagesAndDeactivatedKeys();
 
         uint256 input = genProcessDeactivationMessagesPublicInputHash(
-            poll,
             deactivatedKeysAq.getMainRoot(DEACT_TREE_DEPTH),
             numSignUps,
             maci.getStateAqRoot(),
@@ -219,6 +263,42 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         );
 
         require(verifier.verify(_proof, vk, input), "Verification failed");
+    }
+
+    function generateNewKeyFromDeactivated(
+        DomainObjs.Message memory _message,
+        DomainObjs.PubKey memory _coordPubKey,
+        DomainObjs.PubKey memory _sharedPubKey,
+        Poll poll,
+        uint256[8] memory _proof
+    ) external returns (uint256) {
+        (
+            VkRegistry vkRegistry,
+            IMACI maci,
+            ,
+            AccQueue deactivatedKeysAq,
+
+        ) = poll.extContracts();
+
+        (, , uint8 messageTreeDepth, ) = poll
+            .treeDepths();
+
+        VerifyingKey memory vk = vkRegistry.getProcessDeactivationVk(
+            maci.stateTreeDepth(),
+            messageTreeDepth
+        );
+
+        uint256 input = genGenerateNewKeyFromDeactivatedPublicInputHash(
+            maci.getStateAqRoot(),
+            deactivatedKeysAq.getMainRoot(DEACT_TREE_DEPTH),
+            hashMessageData(_message),
+            _coordPubKey,
+            _sharedPubKey
+        );
+
+        require(verifier.verify(_proof, vk, input), "Verification failed");
+
+        return poll.generateNewKeyFromDeactivated(_message, _coordPubKey);
     }
 
     function verifyProcessProof(
@@ -262,18 +342,58 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     }
 
     function genProcessDeactivationMessagesPublicInputHash(
-        Poll _poll,
         uint256 _deactivatedTreeRoot,
         uint256 _numSignUps,
         uint256 _currentStateRoot,
         uint256 _chainHash
-    ) public view returns (uint256) {
+    ) private pure returns (uint256) {
         uint256[] memory input = new uint256[](4);
         input[0] = _deactivatedTreeRoot;
         input[1] = _numSignUps;
         input[2] = _currentStateRoot;
         input[3] = _chainHash;
         uint256 inputHash = sha256Hash(input);
+
+        return inputHash;
+    }
+
+    function genGenerateNewKeyFromDeactivatedPublicInputHash(
+        uint256 _currentStateRoot,
+        uint256 _deactivatedTreeRoot,
+        uint256 _messageHash,
+        DomainObjs.PubKey memory _coordPublicKey,
+        DomainObjs.PubKey memory _sharedPublicKey
+    ) private pure returns (uint256) {
+        uint256[] memory input = new uint256[](7);
+        input[0] = _currentStateRoot;
+        input[1] = _deactivatedTreeRoot;
+        input[2] = _messageHash;
+        input[3] = _coordPublicKey.x;
+        input[4] = _coordPublicKey.y;
+        input[5] = _sharedPublicKey.x;
+        input[6] = _sharedPublicKey.y;
+        uint256 inputHash = sha256Hash(input);
+
+        return inputHash;
+    }
+
+    function hashMessageData(
+        DomainObjs.Message memory _message
+    ) private pure returns (uint256) {
+        uint256[] memory n = new uint256[](10);
+        
+        n[0] = _message.data[0];
+        n[1] = _message.data[1];
+        n[2] = _message.data[2];
+        n[3] = _message.data[3];
+        n[4] = _message.data[4];
+        n[5] = _message.data[5];
+        n[6] = _message.data[6];
+        n[7] = _message.data[7];
+        n[8] = _message.data[8];
+        n[9] = _message.data[9];
+
+        uint256 inputHash = sha256Hash(n);
 
         return inputHash;
     }

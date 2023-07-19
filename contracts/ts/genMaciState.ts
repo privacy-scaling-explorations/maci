@@ -27,11 +27,13 @@ const genMaciStateFromContract = async (
 
 	const [pollContractAbi] = parseArtifact('Poll');
 	const [maciContractAbi] = parseArtifact('MACI');
+	const [mpContractAbi] = parseArtifact('MessageProcessor');
 
 	const maciContract = new ethers.Contract(address, maciContractAbi, provider);
 
 	const maciIface = new ethers.utils.Interface(maciContractAbi);
 	const pollIface = new ethers.utils.Interface(pollContractAbi);
+	const mpIface = new ethers.utils.Interface(mpContractAbi);
 
 	const maciState = new MaciState();
 
@@ -186,6 +188,14 @@ const genMaciStateFromContract = async (
 		provider
 	);
 
+	const mpContractAddress = await pollContract.messageProcessorAddress();
+
+	const mpContract = new ethers.Contract(
+		mpContractAddress,
+		mpContractAbi,
+		provider
+	);
+
 	const coordinatorPubKeyOnChain = await pollContract.coordinatorPubKey();
 	assert(
 		coordinatorPubKeyOnChain[0].toString() ===
@@ -226,11 +236,6 @@ const genMaciStateFromContract = async (
 		fromBlock: fromBlock,
 	});
 
-	const deactivateKeyLogs = await provider.getLogs({
-		...pollContract.filters.DeactivateKey(),
-		fromBlock: fromBlock,
-	});
-
 	const publishMessageLogs = await provider.getLogs({
 		...pollContract.filters.PublishMessage(),
 		fromBlock: fromBlock,
@@ -263,6 +268,11 @@ const genMaciStateFromContract = async (
 
 	const attemptKeyGenerationLogs = await provider.getLogs({
 		...pollContract.filters.AttemptKeyGeneration(),
+		fromBlock: fromBlock,
+	});
+
+	const deactivateKeyLogs = await provider.getLogs({
+		...mpContract.filters.DeactivateKey(),
 		fromBlock: fromBlock,
 	});
 
@@ -314,24 +324,6 @@ const genMaciStateFromContract = async (
 			data: {
 				message,
 				encPubKey,
-			},
-		});
-	}
-
-	for (const log of deactivateKeyLogs) {
-		assert(log != undefined);
-		const event = pollIface.parseLog(log);
-
-		actions.push({
-			type: 'DeactivateKey',
-			// @ts-ignore
-			blockNumber: log.blockNumber,
-			// @ts-ignore
-			transactionIndex: log.transactionIndex,
-			data: {
-				keyHash: event.args.keyHash,
-				c1: event.args.c1,
-				c2: event.args.c2
 			},
 		});
 	}
@@ -446,6 +438,24 @@ const genMaciStateFromContract = async (
 				message,
 				encPubKey,
 				newStateIndex
+			},
+		});
+	}
+
+	for (const log of deactivateKeyLogs) {
+		assert(log != undefined);
+		const event = mpIface.parseLog(log);
+
+		actions.push({
+			type: 'DeactivateKey',
+			// @ts-ignore
+			blockNumber: log.blockNumber,
+			// @ts-ignore
+			transactionIndex: log.transactionIndex,
+			data: {
+				keyHash: event.args.keyHash,
+				c1: event.args.c1,
+				c2: event.args.c2
 			},
 		});
 	}
