@@ -553,7 +553,7 @@ class Poll {
 
         if(deactivatedKeyIndex === -1) {
             console.log("Key index is -1");
-            return;
+            return {};
         }
 
         const deactivatedKeyEvent = this.deactivatedKeyEvents[deactivatedKeyIndex];
