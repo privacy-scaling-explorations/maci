@@ -13,7 +13,8 @@ import {
     stringifyBigInts,
     Signature,
     verifySignature,
-    elGamalEncryptBit
+    elGamalEncryptBit,
+    elGamalRerandomize
 } from 'maci-crypto'
 import {
     PubKey,
@@ -543,7 +544,7 @@ class Poll {
         return { circuitInputs, deactivatedLeaves };
     }
 
-    public generateCircuitInputsForGenerateNewKey(kcommand: KCommand, deactivatedPrivateKey: PrivKey, deactivatedPublicKey: PubKey, stateIndex: BigInt, salt: BigInt, z: BigInt) {
+    public generateCircuitInputsForGenerateNewKey(newPublicKey: PubKey, deactivatedPrivateKey: PrivKey, deactivatedPublicKey: PubKey, stateIndex: BigInt, salt: BigInt, pollId: BigInt) {
         if (!this.stateCopied) {
             this.copyStateFromMaci()
         }
@@ -551,7 +552,7 @@ class Poll {
         const deactivatedKeyHash = hash3([...deactivatedPublicKey.asArray(), salt]);
         const deactivatedKeyIndex = this.deactivatedKeyEvents.findIndex(d => d.keyHash === deactivatedKeyHash);
 
-        if(deactivatedKeyIndex === -1) {
+        if (deactivatedKeyIndex === -1) {
             console.log("Key index is -1");
             return {};
         }
@@ -561,6 +562,30 @@ class Poll {
         const stateIndexInt = parseInt(stateIndex.toString());
         const computedStateIndex = stateIndexInt > 0 && stateIndexInt <= this.numSignUps ? stateIndexInt - 1 : -1;
         const currentStateLeaves = [this.stateLeaves[computedStateIndex]];
+
+        const z = BigInt(42);
+
+        const [c1r, c2r] = elGamalRerandomize(
+            newPublicKey.rawPubKey,
+            z,
+            deactivatedKeyEvent.c1,
+            deactivatedKeyEvent.c2,
+        );
+
+        // TODO: check if asCircuitInputs should be used
+        const nullifier = hash2([BigInt(deactivatedPrivateKey.asCircuitInputs()), salt]);
+
+        // TODO: set proper value for voiceCreditBalance
+        const voiceCreditBalance = BigInt(100)
+
+        const kcommand: KCommand = new KCommand(
+            newPublicKey,
+            voiceCreditBalance,
+            nullifier,
+            c1r,
+            c2r,
+            pollId,
+        )
 
         const circuitInputs = kcommand.prepareValues(
             deactivatedPrivateKey,
@@ -577,7 +602,7 @@ class Poll {
             deactivatedKeyEvent.c2
         )
 
-        return circuitInputs;
+        return { circuitInputs, kcommand };
     }
 
     /*

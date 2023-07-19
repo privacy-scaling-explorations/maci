@@ -298,32 +298,6 @@ const generateNewKey = async (args: any) => {
     const maciCoordPrivKey = PrivKey.unserialize(serializedCoordPrivKey)
     const coordinatorKeypair = new Keypair(maciCoordPrivKey)
 
-    // get c1 and c2 from MaciState
-    const c1 = [BigInt(1), BigInt(1)];
-    const c2 = [BigInt(2), BigInt(2)];
-
-    // z represents random value we use for c1 and c2 rerandomizing
-    const z = BigInt(42);
-
-    // serialized or unserialized key?
-    const [c1r, c2r] = elGamalRerandomize(
-        args.newPubKey,
-        z,
-        c1,
-        c2,
-    );
-
-    const nullifier = hash2([BigInt(args.oldPrivkey.asCircuitInputs()), salt]);
-
-    const command: KCommand = new KCommand(
-        args.newPubKey,
-        voiceCreditBalance,
-        nullifier,
-        c1r,
-        c2r,
-        pollId,
-    )
-
     // Reconstruct MACI state
     const maciState = await genMaciStateFromContract(
         signer.provider,
@@ -333,13 +307,13 @@ const generateNewKey = async (args: any) => {
         fromBlock,
     )
 
-    const circomInputs = maciState.generateCircuitInputsForGenerateNewKey(
-        command,
+    const { circomInputs, kCommand } = maciState.generateCircuitInputsForGenerateNewKey(
+        userMaciNewPubKey,
         userMaciOldPrivKey,
         userMaciOldPubKey,
         stateIndex,
         BigInt(salt),
-        z
+        pollId
     )
 
     return 0;
