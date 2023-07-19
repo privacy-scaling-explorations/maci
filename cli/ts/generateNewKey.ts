@@ -48,8 +48,9 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-n', '--newPubKey'],
+        ['-n', '--new-pub-key'],
         {
+            action: 'store',
             required: true,
             type: 'string',
             help: 'The MACI public key which should replace the user\'s new public key in the state tree',
@@ -65,17 +66,19 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-npk', '--newPrivKey'],
+        ['-npk', '--new-priv-key'],
         {
             action: 'store',
+            required: true,
             type: 'string',
             help: 'Your new serialized MACI private key',
         }
     )
 
     parser.addArgument(
-        ['-o', '--oldPubKey'],
+        ['-o', '--old-pub-key'],
         {
+            action: 'store',
             required: true,
             type: 'string',
             help: 'The MACI public key which should replace the user\'s old public key in the state tree',
@@ -83,7 +86,7 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-posk', '--prompt-for-maci-oldPrivKey'],
+        ['-posk', '--prompt-for-maci-old-priv-key'],
         {
             action: 'storeTrue',
             help: 'Whether to prompt for your serialized old MACI private key',
@@ -91,16 +94,17 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-opk', '--oldPrivKey'],
+        ['-opk', '--old-priv-key'],
         {
             action: 'store',
+            required: true,
             type: 'string',
             help: 'Your old serialized MACI private key',
         }
     )
 
     parser.addArgument(
-        ['-pcsk', '--prompt-for-maci-coordPrivKey'],
+        ['-pcsk', '--prompt-for-maci-coord-priv-key'],
         {
             action: 'storeTrue',
             help: 'Whether to prompt for coordinators serialized MACI private key',
@@ -108,9 +112,10 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-cpk', '--coordPrivKey'],
+        ['-cpk', '--coord-priv-key'],
         {
             action: 'store',
+            required: true,
             type: 'string',
             help: 'Coordinators serialized MACI private key',
         }
@@ -212,10 +217,10 @@ const generateNewKey = async (args: any) => {
 
     // The user's old MACI private key
     let serializedOldPrivKey
-    if (args.prompt_for_maci_oldPrivKey) {
+    if (args.prompt_for_maci_old_priv_key) {
         serializedOldPrivKey = await promptPwd('Your old MACI private key')
     } else {
-        serializedOldPrivKey = args.oldPrivKey
+        serializedOldPrivKey = args.old_priv_key
     }
 
     if (!PrivKey.isValidSerializedPrivKey(serializedOldPrivKey)) {
@@ -227,10 +232,10 @@ const generateNewKey = async (args: any) => {
 
     // The user's new MACI private key
     let serializedNewPrivKey
-    if (args.prompt_for_maci_newPrivKey) {
+    if (args.prompt_for_maci_new_priv_key) {
         serializedNewPrivKey = await promptPwd('Your new MACI private key')
     } else {
-        serializedNewPrivKey = args.newPrivKey
+        serializedNewPrivKey = args.new_priv_key
     }
 
     if (!PrivKey.isValidSerializedPrivKey(serializedNewPrivKey)) {
@@ -280,14 +285,14 @@ const generateNewKey = async (args: any) => {
         return 1
     }
 
-    const userMaciNewPubKey = PubKey.unserialize(args.newPubKey)
-    const userMaciOldPubKey = PubKey.unserialize(args.oldpubkey)
+    const userMaciNewPubKey = PubKey.unserialize(args.new_pub_key)
+    const userMaciOldPubKey = PubKey.unserialize(args.old_pub_key)
 
     let serializedCoordPrivKey
-    if (args.prompt_for_coord_privkey) {
+    if (args.prompt_for_coord_priv_key) {
         serializedCoordPrivKey = await promptPwd('Coordinators MACI private key')
     } else {
-        serializedCoordPrivKey = args.coordPrivKey
+        serializedCoordPrivKey = args.coord_priv_key
     }
 
     if (!PrivKey.isValidSerializedPrivKey(serializedCoordPrivKey)) {
@@ -307,7 +312,7 @@ const generateNewKey = async (args: any) => {
         fromBlock,
     )
 
-    const { circomInputs, kCommand } = maciState.generateCircuitInputsForGenerateNewKey(
+    const { circomInputs, kCommand } = maciState.polls[pollId].generateCircuitInputsForGenerateNewKey(
         userMaciNewPubKey,
         userMaciOldPrivKey,
         userMaciOldPubKey,
