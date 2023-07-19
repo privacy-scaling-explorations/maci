@@ -291,7 +291,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
         uint256 input = genGenerateNewKeyFromDeactivatedPublicInputHash(
             maci.getStateAqRoot(),
             deactivatedKeysAq.getMainRoot(DEACT_TREE_DEPTH),
-            hashMessageAndEncPubKey(_message, _coordPubKey),
+            hashMessageData(_message),
             _coordPubKey,
             _sharedPubKey
         );
@@ -373,6 +373,27 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
         input[5] = _sharedPublicKey.x;
         input[6] = _sharedPublicKey.y;
         uint256 inputHash = sha256Hash(input);
+
+        return inputHash;
+    }
+
+    function hashMessageData(
+        DomainObjs.Message memory _message
+    ) private pure returns (uint256) {
+        uint256[] memory n = new uint256[](10);
+        
+        n[0] = _message.data[0];
+        n[1] = _message.data[1];
+        n[2] = _message.data[2];
+        n[3] = _message.data[3];
+        n[4] = _message.data[4];
+        n[5] = _message.data[5];
+        n[6] = _message.data[6];
+        n[7] = _message.data[7];
+        n[8] = _message.data[8];
+        n[9] = _message.data[9];
+
+        uint256 inputHash = sha256Hash(n);
 
         return inputHash;
     }
