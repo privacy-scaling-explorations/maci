@@ -20,8 +20,6 @@ import {
     validateSaltSize,
     validateSaltFormat,
     contractExists,
-    checkDeployerProviderConnection,
-    batchTransactionRequests,
 } from './utils'
 
 import {readJSONFile} from 'maci-common'

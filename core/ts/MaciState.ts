@@ -407,6 +407,10 @@ class Poll {
         let mask: BigInt = _seed;
         ;
         let computedStateIndex = 0;
+        let stateIndexTemp = 0;
+
+        const stateLeafPathElements = [];
+        const currentStateLeaves = [];
 
         for (let i = 0; i < this.deactivationMessages.length; i += 1) {
             const deactCommand = this.deactivationCommands[i];
@@ -425,14 +429,20 @@ class Poll {
             } = deactCommand;
 
             const stateIndexInt = parseInt(stateIndex.toString());
+            stateIndexTemp = stateIndexInt;
+
             computedStateIndex = stateIndexInt > 0 && stateIndexInt <= this.numSignUps ? stateIndexInt - 1 : -1;
 
             let pubKey: any;
 
             if (computedStateIndex > -1) {
-                pubKey = this.stateLeaves[computedStateIndex].pubKey;
+                pubKey = this.stateLeaves[stateIndexTemp].pubKey;
+                stateLeafPathElements.push(this.stateTree.genMerklePath(stateIndexTemp).pathElements);
+                currentStateLeaves.push(this.stateLeaves[stateIndexTemp].asCircuitInputs());
             } else {
                 pubKey = new PubKey([BigInt(0), BigInt(0)]);
+                stateLeafPathElements.push(this.stateTree.genMerklePath(0).pathElements);
+                currentStateLeaves.push(this.stateLeaves[0].asCircuitInputs());
             }
 
             // Verify deactivation message
@@ -468,6 +478,8 @@ class Poll {
                 salt,
             ))
 
+            console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!deactivatedLeaf.pubKey that goes into deactivateleavles for batch for confirmDeactiovation", pubKey);
+
             this.deactivatedKeysTree.insert(deactivatedLeaf.hash())
             deactivatedLeaves.push(deactivatedLeaf);
         }
@@ -490,15 +502,13 @@ class Poll {
             deactivatedTreePathElements.push(this.stateTree.genMerklePath(0).pathElements)
         }
 
-        const stateLeafPathElements = [this.stateTree.genMerklePath(computedStateIndex).pathElements];
         // Pad array
-        for (let i = 1; i < maxMessages; i += 1) {
+        for (let i = stateLeafPathElements.length; i < maxMessages; i += 1) {
             stateLeafPathElements.push(this.stateTree.genMerklePath(0).pathElements)
         }
 
-        const currentStateLeaves = [this.stateLeaves[computedStateIndex].asCircuitInputs()];
         // Pad array
-        for (let i = 1; i < maxMessages; i += 1) {
+        for (let i = currentStateLeaves.length; i < maxMessages; i += 1) {
             currentStateLeaves.push(blankStateLeaf.asCircuitInputs())
         }
 
@@ -549,8 +559,13 @@ class Poll {
             this.copyStateFromMaci()
         }
 
+        console.log("!!!!!!!!!!!!!!!!!!!!...deactivatedPublicKey: ", deactivatedPublicKey);
+
         const deactivatedKeyHash = hash3([...deactivatedPublicKey.asArray(), salt]);
-        const deactivatedKeyIndex = this.deactivatedKeyEvents.findIndex(d => d.keyHash === deactivatedKeyHash);
+        console.log("!!!!!!!!!!!!!!!!!!!!locally calculated deactivatedKeyHash: ", deactivatedKeyHash);
+        console.log("!!!!!!!!!!!!!!!!!!!!deactivatedKeyEvents.keyHash: ", this.deactivatedKeyEvents[0].keyHash.toString());
+
+        const deactivatedKeyIndex = this.deactivatedKeyEvents.findIndex(d => d.keyHash.toString() === deactivatedKeyHash);
 
         if (deactivatedKeyIndex === -1) {
             console.log("Key index is -1");

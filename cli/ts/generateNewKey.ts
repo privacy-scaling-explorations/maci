@@ -287,6 +287,7 @@ const generateNewKey = async (args: any) => {
 
     const userMaciNewPubKey = PubKey.unserialize(args.new_pub_key)
     const userMaciOldPubKey = PubKey.unserialize(args.old_pub_key)
+    console.log("!!!!!!!!!!!!!!!!!!!!generate new key ... args.old_pub_key: ", args.old_pub_key);
 
     let serializedCoordPrivKey
     if (args.prompt_for_coord_priv_key) {
@@ -311,6 +312,9 @@ const generateNewKey = async (args: any) => {
         pollId,
         fromBlock,
     )
+
+    console.log("!!!!!!!!!!!!!!!!!!!!...userMaciOldPubKey provided from gen new key command by the user", userMaciOldPubKey);
+    
 
     const { circomInputs, kCommand } = maciState.polls[pollId].generateCircuitInputsForGenerateNewKey(
         userMaciNewPubKey,

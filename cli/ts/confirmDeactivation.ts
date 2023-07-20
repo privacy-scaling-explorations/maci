@@ -169,6 +169,8 @@ const confirmDeactivation = async (args: any) => {
 		const batch = deactivatedLeaves
 			.slice(batchSize * i, batchSize * (i + 1))
 			.map(leaf => leaf.asArray());
+		
+		console.log("!!!!!!!!!!!!!!!!!!!1111batch", batch);
 
 		try {
 			await mpContract.confirmDeactivation(
