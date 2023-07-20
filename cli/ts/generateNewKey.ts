@@ -116,7 +116,7 @@ const configureSubparser = (subparsers: any) => {
         {
             required: true,
             type: 'string',
-            help: 'The path to the NewKeyGenerationM-essage witness generation binary',
+            help: 'The path to the NewKeyGenerationMessage witness generation binary',
         }
     )
 
