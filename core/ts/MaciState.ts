@@ -753,6 +753,101 @@ class Poll {
                         throw e
                     }
                     break
+
+                case BigInt(3):
+                    try{
+                        // If the command is valid
+                        const r = this.processKeyGenMessage(idx)
+                        // console.log(messageIndex, r ? 'valid' : 'invalid')
+                        // console.log("r:"+r.newStateLeaf )
+                        // DONE: replace with try/catch after implementing error
+                        // handling
+                        // const index = r.stateLeafIndex
+        
+                    }catch(e){
+                        if (e.message === 'no-op') {
+                                // Since the command is invalid, use a blank state leaf
+                                currentStateLeaves.unshift(this.stateLeaves[0].copy())
+                                currentStateLeavesPathElements.unshift(
+                                    this.stateTree.genMerklePath(0).pathElements
+                                )
+        
+                                currentBallots.unshift(this.ballots[0].copy())
+                                currentBallotsPathElements.unshift(
+                                    this.ballotTree.genMerklePath(0).pathElements
+                                )
+        
+                                // Since the command is invalid, use vote option index 0
+                                currentVoteWeights.unshift(this.ballots[0].votes[0])
+        
+                                // No need to iterate through the entire votes array if the
+                                // remaining elements are 0
+                                let lastIndexToInsert = this.ballots[0].votes.length - 1
+                                while (lastIndexToInsert > 0) {
+                                    if (this.ballots[0].votes[lastIndexToInsert] === BigInt(0)) {
+                                        lastIndexToInsert --
+                                    } else {
+                                        break
+                                    }
+                                }
+        
+                                const vt = new IncrementalQuinTree(
+                                    this.treeDepths.voteOptionTreeDepth,
+                                    BigInt(0),
+                                    5,
+                                    hash5,
+                                )
+                                for (let i = 0; i <= lastIndexToInsert; i ++) {
+                                    vt.insert(this.ballots[0].votes[i])
+                                }
+                                currentVoteWeightsPathElements.unshift(
+                                    vt.genMerklePath(0).pathElements
+                                )
+                        
+        
+                        } else {
+                            throw e
+                        }
+                    } finally {
+                        // Since the command is invalid, use a blank state leaf
+                        currentStateLeaves.unshift(this.stateLeaves[0].copy())
+                        currentStateLeavesPathElements.unshift(
+                            this.stateTree.genMerklePath(0).pathElements
+                        )
+
+                        currentBallots.unshift(this.ballots[0].copy())
+                        currentBallotsPathElements.unshift(
+                            this.ballotTree.genMerklePath(0).pathElements
+                        )
+
+                        // Since the command is invalid, use vote option index 0
+                        currentVoteWeights.unshift(this.ballots[0].votes[0])
+
+                        // No need to iterate through the entire votes array if the
+                        // remaining elements are 0
+                        let lastIndexToInsert = this.ballots[0].votes.length - 1
+                        while (lastIndexToInsert > 0) {
+                            if (this.ballots[0].votes[lastIndexToInsert] === BigInt(0)) {
+                                lastIndexToInsert --
+                            } else {
+                                break
+                            }
+                        }
+
+                        const vt = new IncrementalQuinTree(
+                            this.treeDepths.voteOptionTreeDepth,
+                            BigInt(0),
+                            5,
+                            hash5,
+                        )
+                        for (let i = 0; i <= lastIndexToInsert; i ++) {
+                            vt.insert(this.ballots[0].votes[i])
+                        }
+                        currentVoteWeightsPathElements.unshift(
+                            vt.genMerklePath(0).pathElements
+                        )
+                    }
+                    break
                 default:
                     break
             } // end msgType switch
@@ -906,6 +1001,30 @@ class Poll {
         }
 
         return { stateLeaves, ballots }
+    }
+
+    /*
+    * Process one key generation message
+    */
+    private processKeyGenMessage = (
+        _index: number,
+    ) => {
+        // Ensure that the index is valid
+        assert(_index >= 0)
+        assert(this.messages.length > _index)
+
+        // Ensure that there is the correct number of ECDH shared keys
+        assert(this.encPubKeys.length === this.messages.length)
+
+        const message = this.messages[_index]
+        const encPubKey = this.encPubKeys[_index]
+
+        // Decrypt the message
+        const sharedKey = Keypair.genEcdhSharedKey(
+            this.coordinatorKeypair.privKey,
+            encPubKey,
+        )
+        const { command } = KCommand.decrypt(message, sharedKey)
     }
 
     /*

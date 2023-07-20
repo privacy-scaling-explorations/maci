@@ -23,7 +23,6 @@ import {
     IncrementalQuinTree,
     stringifyBigInts,
     NOTHING_UP_MY_SLEEVE,
-    smt,
 } from 'maci-crypto'
 
 const voiceCreditBalance = BigInt(100)
@@ -136,6 +135,10 @@ describe('ProcessMessage circuit', () => {
                         treeDepths.messageTreeDepth,
                     ).toString()
                 )
+
+            console.log(smtTree);
+            const nullifierTree = new smtTree.newMemEmptyTrie()
+            console.log(nullifierTree);
         })
 
         it('should produce the correct state root and ballot root', async () => {
