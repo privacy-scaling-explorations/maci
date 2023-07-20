@@ -648,7 +648,6 @@ describe('MACI', () => {
 			expect(packedVals.toString(16)).toEqual(onChainPackedVals.toString(16));
 		});
 
-		// TODO: VM Exception while processing transaction: reverted with custom error 'NO_MORE_MESSAGES()'
 		it('processMessages() should update the state and ballot root commitment', async () => {
 			const pollContractAddress = await maciContract.getPoll(pollId);
 
@@ -906,9 +905,9 @@ describe('MACI', () => {
 
 		it('confirmDeactivation() should revert if not called by an owner', async () => {
 			try {
-				await pollContract
+				await mpContract
 					.connect(otherAccount)
-					.confirmDeactivation([[0]], 0);
+					.confirmDeactivation([[0]], 0, pollContract.address);
 			} catch (e) {
 				const error = 'Ownable: caller is not the owner';
 				expect(
@@ -940,9 +939,10 @@ describe('MACI', () => {
 				salt
 			)) as any
 
-			const tx = await pollContract.confirmDeactivation(
+			const tx = await mpContract.confirmDeactivation(
 				[deactivatedLeaf.asArray()],
 				1,
+				pollContract.address
 			);
 
 			const receipt = await tx.wait();

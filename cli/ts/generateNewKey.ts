@@ -147,7 +147,6 @@ const generateNewKey = async (args: any) => {
         rapidsnarkExe,
         args.new_key_generation_witnessgen,
         newKeyGenerationDatFile,
-        args.new_key_generation,
         ])
     if (!ok) {
         console.error(`Error: ${path} does not exist.`)

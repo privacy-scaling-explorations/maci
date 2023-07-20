@@ -9,6 +9,7 @@ ZKEYS_DIR="$BASE_DIR"/../../zkeys
 ZKEYS_POSTFIX="test"
 
 PROCESS_DEACTIVATION_MESSAGES_PARAMS="5-10_$ZKEYS_POSTFIX"
+NEW_KEY_GENERATION_PARAMS="10_$ZKEYS_POSTFIX"
 
 . "$BASE_DIR"/../prepare_test.sh
 
@@ -69,8 +70,8 @@ $MACI_CLI generateNewKey \
     --salt 0x798D81BE4A9870C079B8DE539496AB95 \
     --poll-id $POLL_ID \
     --from-block 0 \
-    --new-key-generation-witnessgen "$ZKEYS_DIR"/GenerateNewKey_"$NEW_KEY_GENERATION_PARAMS" \
-    --new-key-generation-zkey "$ZKEYS_DIR"/GenerateNewKey_"$NEW_KEY_GENERATION".0.zkey \
+    --new-key-generation-witnessgen "$ZKEYS_DIR"/GenerateKeyFromDeactivated_"$NEW_KEY_GENERATION_PARAMS" \
+    --new-key-generation-zkey "$ZKEYS_DIR"/GenerateKeyFromDeactivated_"$NEW_KEY_GENERATION_PARAMS".0.zkey \
     --rapidsnark ~/rapidsnark/build/prover \
 
 # $MACI_CLI publish \

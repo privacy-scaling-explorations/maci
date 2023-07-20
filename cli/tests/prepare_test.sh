@@ -29,8 +29,9 @@ init_maci() {
         --tally-votes-zkey "$ZKEYS_DIR"/TallyVotes_"$TALLY_VOTES_PARAMS".0.zkey \
         $SET_VERIFYING_KEYS_FLAG_SUBSIDY
 
+    # TODO: Make signup-deadline dynamic now + 30 days for example
     $MACI_CLI create \
-        --signup-deadline 1689834390 \
+        --signup-deadline 1692424915 \
         --deactivation-period 86400
 }
 

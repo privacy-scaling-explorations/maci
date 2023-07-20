@@ -84,9 +84,10 @@ const executeSuite = async (data: any, expect: any) => {
         execute(setVerifyingKeysCommand)
 
         // Run the create subcommand
+        // TODO: Make signup-deadline dynamic now + 30 days for example
         const createCommand = `node build/index.js create` +
             ` -r ${vkAddress}` +
-            ` --signup-deadline 1689834390`+
+            ` --signup-deadline 1692424915`+
             ` --deactivation-period 86400`
         const createOutput = execute(createCommand).stdout.trim()
         const regMatch = createOutput.match(/MACI: (0x[a-fA-F0-9]{40})/)
