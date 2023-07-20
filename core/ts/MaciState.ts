@@ -256,7 +256,7 @@ class Poll {
             this.deactivationSignatures.push(signature)
             this.deactivationCommands.push(command)
         } catch (e) {
-            //console.log(`error cannot decrypt: ${e.message}`)
+            console.log(`error cannot decrypt: ${e.message}`)
             const keyPair = new Keypair()
             const command = new PCommand(BigInt(1), keyPair.pubKey, BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0))
             this.deactivationCommands.push(command)
@@ -412,12 +412,16 @@ class Poll {
         const stateLeafPathElements = [];
         const currentStateLeaves = [];
 
+
         for (let i = 0; i < this.deactivationMessages.length; i += 1) {
             const deactCommand = this.deactivationCommands[i];
             const deactMessage = this.deactivationMessages[i];
-            const deactSignatures = this.deactivationSignatures[i];
+            const deactSignatures = this.deactivationSignatures;
             const encPubKey = this.deactivationEncPubKeys[i];
 
+            console.log(deactSignatures);
+            console.log(i);
+            console.log(deactSignatures[i]);
             const signature = deactSignatures[i];
 
             const {
@@ -445,12 +449,16 @@ class Poll {
                 currentStateLeaves.push(this.stateLeaves[0].asCircuitInputs());
             }
 
+            console.log(deactMessage.hash(encPubKey),
+            signature,
+            pubKey.rawPubKey);
+
             // Verify deactivation message
             const status = deactCommand.cmdType.toString() == '1' // Check message type
                 && computedStateIndex != -1
                 && signature != null
                 && verifySignature(
-                    deactMessage.hash(encPubKey),
+                    deactCommand.hash(),
                     signature,
                     pubKey.rawPubKey
                 ) // Check signature
