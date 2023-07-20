@@ -72,6 +72,7 @@ describe('Overflow testing', () => {
 
 	it('Deploy Poll - should not overflow', async () => {
 		await maciContract.deployPoll(
+			mpContract.address,
 			duration,
 			maxValues,
 			treeDepths,
@@ -145,6 +146,7 @@ describe('Overflow testing', () => {
 		// require _maxValues.maxVoteOptions < (2**50)
 		// require 25 < 2 ** 50 -> 25 < 1125899906842624
 		const tx = await maciContract.deployPoll(
+			mpContract.address,
 			duration,
 			_maxValues,
 			_treeDepths,

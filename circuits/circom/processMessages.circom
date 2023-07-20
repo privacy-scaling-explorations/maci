@@ -116,7 +116,7 @@ template ProcessMessages(
     signal input nullifierInclusionFlags[batchSize];
 
     // Number of attempted new key generations
-    signal input numKeyGens[batchSize];
+    signal input numKeyGens;
 
     // The salted commitment to the state root and ballot root
     signal input currentSbCommitment;
@@ -309,6 +309,8 @@ template ProcessMessages(
         processors[i].currentStateRoot <== stateRoots[i + 1];
         processors[i].currentBallotRoot <== ballotRoots[i + 1];
 
+        processors[i].numKeyGens <== numKeyGens;
+
         for (var j = 0; j < STATE_LEAF_LENGTH; j ++) {
             processors[i].stateLeaf[j] <== currentStateLeaves[i][j];
         }
@@ -361,6 +363,8 @@ template ProcessMessages(
         processors2[i].stateTreeIndex <== msgs[i][1];
         processors2[i].amount <== msgs[i][2];
         processors2[i].numSignUps <== numSignUps;
+        processors2[i].numKeyGens <== numKeyGens;
+
         for (var j = 0; j < STATE_LEAF_LENGTH; j ++) {
             processors2[i].stateLeaf[j] <== currentStateLeaves[i][j];
         }
@@ -398,7 +402,7 @@ template ProcessMessages(
         processors3[i].topupStateIndex <== msgs[i][1];
         processors3[i].keyGenStateIndex <== msgs[i][MSG_LENGTH - 1];
         processors3[i].numSignUps <== numSignUps;
-        processors3[i].numKeyGens <== numKeyGens[i];
+        processors3[i].numKeyGens <== numKeyGens;
         processors3[i].currentStateRoot <== stateRoots[i + 1];
 
         for (var j = 0; j < stateTreeDepth; j++) {
@@ -455,6 +459,7 @@ template ProcessTopup(stateTreeDepth) {
     signal input stateTreeIndex;
     signal input amount;
     signal input numSignUps;
+    signal input numKeyGens;
 
     signal input stateLeaf[STATE_LEAF_LENGTH];
     signal input stateLeafPathElements[stateTreeDepth][TREE_ARITY - 1];
@@ -475,7 +480,7 @@ template ProcessTopup(stateTreeDepth) {
     // check stateIndex, if invalid index, set index and amount to zero
     component validStateLeafIndex = LessEqThan(252);
     validStateLeafIndex.in[0] <== index;
-    validStateLeafIndex.in[1] <== numSignUps;
+    validStateLeafIndex.in[1] <== numSignUps + numKeyGens;
 
     component indexMux = Mux1();
     indexMux.s <== validStateLeafIndex.out;
@@ -677,6 +682,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
 
     signal input msgType;
     signal input numSignUps;
+    signal input numKeyGens;
     signal input maxVoteOptions;
 
     signal input pollEndTimestamp;
@@ -714,7 +720,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     // The result is a new state leaf, a new ballot, and an isValid signal (0
     // or 1)
     component transformer = StateLeafAndBallotTransformer();
-    transformer.numSignUps                     <== numSignUps;
+    transformer.numSignUps                     <== numSignUps + numKeyGens;
     transformer.maxVoteOptions                 <== maxVoteOptions;
     transformer.slPubKey[STATE_LEAF_PUB_X_IDX] <== stateLeaf[STATE_LEAF_PUB_X_IDX];
     transformer.slPubKey[STATE_LEAF_PUB_Y_IDX] <== stateLeaf[STATE_LEAF_PUB_Y_IDX];
@@ -764,7 +770,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     indexByType <== tmpIndex1 + tmpIndex2 + tmpIndex3;
 
     component stateIndexMux = Mux1();
-    stateIndexMux.s <== transformer.isValid + isVoteType.out - 1;
+    stateIndexMux.s <== transformer.isValid * isVoteType.out;
     stateIndexMux.c[0] <== 0;
     stateIndexMux.c[1] <== indexByType;
 

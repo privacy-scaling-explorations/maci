@@ -14,12 +14,14 @@ import {
     Signature,
     verifySignature,
     elGamalEncryptBit,
+    smt,
 } from 'maci-crypto'
 import {
     PubKey,
     VerifyingKey,
     Command,
     PCommand,
+    KCommand,
     TCommand,
     Message,
     Keypair,
@@ -101,6 +103,8 @@ class Poll {
     public deactivationCommands: PCommand[] = []
     public deactivationSignatures: Signature[] = []
 
+    public nullifiersTree: smt.SMT;
+
     // For message processing
     public numBatchesProcessed = 0
     public currentMessageBatchIndex
@@ -172,6 +176,46 @@ class Poll {
         this.ballots.push(blankBallot)
     }
 
+    public initNullifiersTree = async () => {
+        this.nullifiersTree = await smt.newMemEmptyTrie();
+    }
+
+    public generateNewKey = (
+        _message: Message,
+        _encPubKey: PubKey,
+        _newStateIndex: Number
+    ) => {
+        assert(_message.msgType == BigInt(3))
+        assert(
+            _encPubKey.rawPubKey[0] < SNARK_FIELD_SIZE &&
+            _encPubKey.rawPubKey[1] < SNARK_FIELD_SIZE
+        )
+        for (const d of _message.data) {
+            assert(d < SNARK_FIELD_SIZE)
+        }
+
+        this.encPubKeys.push(_encPubKey)
+        this.messages.push(_message)
+
+        const messageLeaf = _message.hash(_encPubKey)
+        this.messageAq.enqueue(messageLeaf)
+        this.messageTree.insert(messageLeaf)
+
+        // Decrypt the message and store the Command
+        const sharedKey = Keypair.genEcdhSharedKey(
+            this.coordinatorKeypair.privKey,
+            _encPubKey,
+        )
+        try {
+            let {command} = KCommand.decrypt(_message, sharedKey)
+            this.commands.push(command)
+        }  catch(e) {
+           let keyPair = new Keypair()
+           let command = new KCommand(keyPair.pubKey, BigInt(0), BigInt(0), [BigInt(0), BigInt(0)], [BigInt(0), BigInt(0)], BigInt(0))
+           this.commands.push(command)
+        }
+    }
+
     public deactivateKey = (
         _message: Message,
         _encPubKey: PubKey,
@@ -240,7 +284,7 @@ class Poll {
             this.ballots.push(emptyBallot)
         }
 
-        this.numSignUps = Number(this.maciStateRef.numSignUps.toString())
+        this.numSignUps = Number(this.maciStateRef.numSignUps.toString()) // TODO: Collect num generated
 
         this.stateCopied = true
     }

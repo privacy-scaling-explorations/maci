@@ -62,16 +62,16 @@ $MACI_CLI completeDeactivation \
 # TODO: consider using genMaciKeypair instead of hardcoded key pairs
 # TODO: remove comments once generateNewKey.ts implemented
 
-# $MACI_CLI generateNewKey \
-#     --privkey macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c \
-#     --privkey macisk.acd54022725c8cf56dcd392808e3c4d170100d9fba4009ef0e8173ffe17f2e0 \
-#     --state-index 1 \
-#     --salt 0x798D81BE4A9870C079B8DE539496AB95 \
-#     --poll-id $POLL_ID \
-#     --from-block 0 \
-#     --new-key-generation-witnessgen "$ZKEYS_DIR"/GenerateNewKey_"$NEW_KEY_GENERATION_PARAMS" \
-#     --process-deactivation-zkey "$ZKEYS_DIR"/GenerateNewKey_"$NEW_KEY_GENERATION".0.zkey \
-#     --rapidsnark ~/rapidsnark/build/prover \ 
+$MACI_CLI generateNewKey \
+    --oldPrivkey macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c \
+    --newPrivkey macisk.acd54022725c8cf56dcd392808e3c4d170100d9fba4009ef0e8173ffe17f2e0 \
+    --state-index 1 \
+    --salt 0x798D81BE4A9870C079B8DE539496AB95 \
+    --poll-id $POLL_ID \
+    --from-block 0 \
+    --new-key-generation-witnessgen "$ZKEYS_DIR"/GenerateNewKey_"$NEW_KEY_GENERATION_PARAMS" \
+    --new-key-generation-zkey "$ZKEYS_DIR"/GenerateNewKey_"$NEW_KEY_GENERATION".0.zkey \
+    --rapidsnark ~/rapidsnark/build/prover \
 
 # $MACI_CLI publish \
 #     --pubkey macipk.e57109205d2b33b90db8421727a2d4fb91cdf3a8e050fbd12aa5a9f4045585a2 \

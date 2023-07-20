@@ -36,6 +36,7 @@ contract PollFactory is Params, IPubKey, Ownable, PollDeploymentParams {
      * Deploy a new Poll contract and AccQueue contract for messages.
      */
     function deploy(
+        address _messageProcessorAddress,
         uint256 _duration,
         MaxValues memory _maxValues,
         TreeDepths memory _treeDepths,
@@ -71,7 +72,9 @@ contract PollFactory is Params, IPubKey, Ownable, PollDeploymentParams {
             _treeDepths.messageTreeSubDepth
         );
 
-        AccQueue deactivatedKeysAq = new AccQueueQuinaryMaci(_treeDepths.messageTreeSubDepth);
+        AccQueue deactivatedKeysAq = new AccQueueQuinaryMaci(
+            _treeDepths.messageTreeSubDepth
+        );
 
         ExtContracts memory extContracts;
 
@@ -83,6 +86,7 @@ contract PollFactory is Params, IPubKey, Ownable, PollDeploymentParams {
         extContracts.topupCredit = _topupCredit;
 
         Poll poll = new Poll(
+            _messageProcessorAddress,
             _duration,
             _maxValues,
             _treeDepths,
@@ -138,6 +142,8 @@ contract Poll is
 
     uint256 public deactivationChainHash;
 
+    address immutable messageProcessorAddress;
+
     function getDeployTimeAndDuration() public view returns (uint256, uint256) {
         return (deployTime, duration);
     }
@@ -156,6 +162,7 @@ contract Poll is
 
     uint256 internal numMessages;
     uint256 internal numDeactivatedKeys;
+    uint256 internal newStateIndex;
 
     function numSignUpsAndMessagesAndDeactivatedKeys()
         public
@@ -192,6 +199,7 @@ contract Poll is
     event MergeMessageAq(uint256 _messageRoot);
     event AttemptKeyDeactivation(Message _message, PubKey _encPubKey);
     event DeactivateKey(uint256 keyHash, uint256[2] c1, uint256[2] c2);
+    event AttemptKeyGeneration(Message _message, PubKey _encPubKey, uint256 _newStateIndex);
 
     ExtContracts public extContracts;
 
@@ -200,6 +208,7 @@ contract Poll is
      * When a Poll is deployed, its voting period starts immediately.
      */
     constructor(
+        address _messageProcessorAddress,
         uint256 _duration,
         MaxValues memory _maxValues,
         TreeDepths memory _treeDepths,
@@ -219,6 +228,7 @@ contract Poll is
         maxValues = _maxValues;
         batchSizes = _batchSizes;
         treeDepths = _treeDepths;
+        messageProcessorAddress = _messageProcessorAddress;
 
         // Record the current timestamp
         deployTime = block.timestamp;
@@ -400,7 +410,9 @@ contract Poll is
             c2[0] = _batchLeaves[i][3];
             c2[1] = _batchLeaves[i][4];
 
-            extContracts.deactivatedKeysAq.enqueue(hash5([keyHash, c1[0], c1[1], c2[0], c2[1]]));
+            extContracts.deactivatedKeysAq.enqueue(
+                hash5([keyHash, c1[0], c1[1], c2[0], c2[1]])
+            );
             emit DeactivateKey(keyHash, c1, c2);
         }
     }
@@ -413,7 +425,8 @@ contract Poll is
     function mergeMaciStateAqSubRoots(
         uint256 _numSrQueueOps,
         uint256 _pollId
-    ) public isAfterVotingDeadline { // TODO: During milestone 3 - onlyOwner fails here because the caller is MessageProcessor and not Maci
+    ) public isAfterVotingDeadline {
+        require(msg.sender == messageProcessorAddress || msg.sender == owner());
         // This function cannot be called after the stateAq was merged
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
 
@@ -430,9 +443,8 @@ contract Poll is
      * currentSbCommitment.
      * @param _pollId The ID of the Poll
      */
-    function mergeMaciStateAq(
-        uint256 _pollId
-    ) public isAfterVotingDeadline { // TODO: During milestone 3 - onlyOwner fails here because the caller is MessageProcessor and not Maci
+    function mergeMaciStateAq(uint256 _pollId) public isAfterVotingDeadline {
+        require(msg.sender == messageProcessorAddress || msg.sender == owner());
         // This function can only be called once per Poll after the voting
         // deadline
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
@@ -476,5 +488,14 @@ contract Poll is
             treeDepths.messageTreeDepth
         );
         emit MergeMessageAq(root);
+    }
+
+    function generateNewKey(
+        Message memory _message,
+        PubKey memory _encPubKey
+    ) external {
+        // TODO: implement logic
+        // AttemptKeyGeneration newStateIndex param is hardcoded for now. Should be calculated.
+        emit AttemptKeyGeneration(_message, _encPubKey, 0);
     }
 }
