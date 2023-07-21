@@ -117,7 +117,7 @@ const configureSubparser = (subparsers: any) => {
             action: 'store',
             required: true,
             type: 'string',
-            help: 'Coordinators serialized MACI private key',
+            help: 'Coordinator\'s serialized MACI private key',
         }
     )
 
