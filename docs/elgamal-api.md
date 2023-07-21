@@ -127,9 +127,9 @@ node ./build/index.js generateNewKey --new-pub-key <newMaciPublicKey> --new-priv
 
 #### Arguments
 
-- `--new-pub-key`, `-n`: MACI public key which should replace the user's public key in the state tree.
+- `--new-pub-key`, `-n`: User's new MACI public key.
 - `--new-priv-key`, `-npk`: Users's new serialized MACI private key.
-- `--old-pub-key`, `-o`: MACI public key which should replace the user's old public key in the state tree.
+- `--old-pub-key`, `-o`: User's old MACI public key.
 - `--old-priv-key`, `-opk`: Users's old serialized MACI private key.
 - `--coord-priv-key`, `-cpk`: Coordinator's serialized MACI private key.
 - `--state-index`, `-i`: User's state index.
