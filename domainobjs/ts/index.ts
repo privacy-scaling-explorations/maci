@@ -1108,7 +1108,9 @@ class KCommand extends Command {
 			deactivatedKeysRoot,
 			stateTreeInclusionProof,
 			oldCreditBalance,
-			newCreditBalance: this.newCreditBalance,
+			// TODO: Temp fix since balance should not change for Kcommand?
+			// Proper fix is to read the balance value from the state leaf before initializing KCommand
+			newCreditBalance: oldCreditBalance, 
 			stateLeafTimestamp: timestamp,
 			deactivatedKeysInclusionProof,
 			deactivatedKeyIndex,
