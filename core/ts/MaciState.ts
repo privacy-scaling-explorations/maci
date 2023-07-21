@@ -14,11 +14,10 @@ import {
     Signature,
     verifySignature,
     elGamalEncryptBit,
-    elGamalRerandomize
+    elGamalRerandomize,
 } from 'maci-crypto'
 import {
     PubKey,
-    VerifyingKey,
     Command,
     PCommand,
     KCommand,
@@ -48,6 +47,12 @@ interface MaxValues {
     maxUsers: number;
     maxMessages: number;
     maxVoteOptions: number;
+}
+
+interface DeactivatedKeyEvent {
+    keyHash: BigInt;
+    c1: bigint[];
+    c2: bigint[];
 }
 
 const STATE_TREE_DEPTH = 10
@@ -131,9 +136,8 @@ class Poll {
     public MM = 50   // adjustable parameter
     public WW = 4     // number of digits for float representation
 
-    // TODO: used to store info about deactivatedKey events happening on chain so we can use it to search for deactiavtedKeyIndex.
-    // Add a concrete type instead of any
-    public deactivatedKeyEvents: any[] = [];
+    // used to store info about deactivatedKey events happening on chain so we can use it to search for deactiavtedKeyIndex.
+    public deactivatedKeyEvents: DeactivatedKeyEvent[] = [];
 
     constructor(
         _duration: number,
@@ -220,7 +224,8 @@ class Poll {
         _c1: BigInt[],
         _c2: BigInt[]
     ) => {
-        const deactiavtedKeyEvent = { keyHash: _keyHash, c1: _c1, c2: _c2 };
+        const deactiavtedKeyEvent = { keyHash: _keyHash, c1: _c1.map(c => BigInt(c.toString())), c2: _c2.map(c => BigInt(c.toString())) } as DeactivatedKeyEvent;
+        console.log("deactiavtedKeyEvent at prcessing from chain", deactiavtedKeyEvent);
         this.deactivatedKeyEvents.push(deactiavtedKeyEvent);
     }
 
@@ -415,13 +420,8 @@ class Poll {
 
         for (let i = 0; i < this.deactivationMessages.length; i += 1) {
             const deactCommand = this.deactivationCommands[i];
-            const deactMessage = this.deactivationMessages[i];
             const deactSignatures = this.deactivationSignatures;
-            const encPubKey = this.deactivationEncPubKeys[i];
 
-            console.log(deactSignatures);
-            console.log(i);
-            console.log(deactSignatures[i]);
             const signature = deactSignatures[i];
 
             const {
@@ -448,10 +448,6 @@ class Poll {
                 stateLeafPathElements.push(this.stateTree.genMerklePath(0).pathElements);
                 currentStateLeaves.push(this.stateLeaves[0].asCircuitInputs());
             }
-
-            console.log(deactMessage.hash(encPubKey),
-            signature,
-            pubKey.rawPubKey);
 
             // Verify deactivation message
             const status = deactCommand.cmdType.toString() == '1' // Check message type
@@ -485,8 +481,6 @@ class Poll {
                 c2,
                 salt,
             ))
-
-            console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!deactivatedLeaf.pubKey that goes into deactivateleavles for batch for confirmDeactiovation", pubKey);
 
             this.deactivatedKeysTree.insert(deactivatedLeaf.hash())
             deactivatedLeaves.push(deactivatedLeaf);
@@ -567,24 +561,15 @@ class Poll {
             this.copyStateFromMaci()
         }
 
-        console.log("!!!!!!!!!!!!!!!!!!!!...deactivatedPublicKey: ", deactivatedPublicKey);
-
-        const deactivatedKeyHash = hash3([...deactivatedPublicKey.asArray(), salt]);
-        console.log("!!!!!!!!!!!!!!!!!!!!locally calculated deactivatedKeyHash: ", deactivatedKeyHash);
-        console.log("!!!!!!!!!!!!!!!!!!!!deactivatedKeyEvents.keyHash: ", this.deactivatedKeyEvents[0].keyHash.toString());
-
-        const deactivatedKeyIndex = this.deactivatedKeyEvents.findIndex(d => d.keyHash.toString() === deactivatedKeyHash);
+        const deactivatedKeyHash: BigInt = hash3([...deactivatedPublicKey.asArray(), salt]);
+        const deactivatedKeyIndex = this.deactivatedKeyEvents.findIndex(d => d.keyHash.toString() == deactivatedKeyHash.toString());
 
         if (deactivatedKeyIndex === -1) {
-            console.log("Key index is -1");
+            console.log("Deactivated key is missing from the deactivated key events collection from contract");
             return {};
         }
 
         const deactivatedKeyEvent = this.deactivatedKeyEvents[deactivatedKeyIndex];
-
-        const stateIndexInt = parseInt(stateIndex.toString());
-        const computedStateIndex = stateIndexInt > 0 && stateIndexInt <= this.numSignUps ? stateIndexInt - 1 : -1;
-        const currentStateLeaves = [this.stateLeaves[computedStateIndex]];
 
         const z = BigInt(42);
 
@@ -610,9 +595,9 @@ class Poll {
             pollId,
         )
 
-        const circuitInputs = kcommand.prepareValues(
+        return kcommand.prepareValues(
             deactivatedPrivateKey,
-            currentStateLeaves,
+            this.stateLeaves,
             this.stateTree,
             BigInt(this.numSignUps),
             stateIndex,
@@ -624,8 +609,6 @@ class Poll {
             deactivatedKeyEvent.c1,
             deactivatedKeyEvent.c2
         )
-
-        return { circuitInputs, kcommand };
     }
 
     /*

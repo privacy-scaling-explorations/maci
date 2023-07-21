@@ -1,19 +1,20 @@
 import {
     getDefaultSigner,
-    genMaciStateFromContract
+    genMaciStateFromContract,
+    formatProofForVerifierContract,
+    parseArtifact
 } from 'maci-contracts'
 
 import {
     PrivKey,
     PubKey,
-    KCommand,
     Keypair
 } from 'maci-domainobjs'
 
+import { genProof, verifyProof, extractVk } from 'maci-circuits'
+
 import {
     genRandomSalt,
-    elGamalRerandomize,
-    hash2
 } from 'maci-crypto'
 
 import {
@@ -27,6 +28,7 @@ import {
 
 import { readJSONFile } from 'maci-common'
 import { contractFilepath } from './config'
+import { ethers } from 'ethers'
 
 const DEFAULT_SALT = genRandomSalt()
 
@@ -196,11 +198,15 @@ const generateNewKey = async (args: any) => {
         rapidsnarkExe,
         args.new_key_generation_witnessgen,
         newKeyGenerationDatFile,
+        args.new_key_generation_zkey
         ])
+
     if (!ok) {
         console.error(`Error: ${path} does not exist.`)
         return 1
     }
+
+    const processVk = extractVk(args.new_key_generation_zkey)
 
     const contractAddrs = readJSONFile(contractFilepath)
     if ((!contractAddrs || !contractAddrs["MACI"]) && !args.contract) {
@@ -272,6 +278,8 @@ const generateNewKey = async (args: any) => {
         salt = DEFAULT_SALT
     }
 
+    const [mpContractAbi] = parseArtifact('MessageProcessor');
+
     const signer = await getDefaultSigner()
     if (!await contractExists(signer.provider, maciAddress)) {
         console.error('Error: there is no contract deployed at the specified address')
@@ -285,9 +293,11 @@ const generateNewKey = async (args: any) => {
         return 1
     }
 
+    const mpAddress = contractAddrs['MessageProcessor-' + pollId];
+	const mpContract = new ethers.Contract(mpAddress, mpContractAbi, signer);
+
     const userMaciNewPubKey = PubKey.unserialize(args.new_pub_key)
     const userMaciOldPubKey = PubKey.unserialize(args.old_pub_key)
-    console.log("!!!!!!!!!!!!!!!!!!!!generate new key ... args.old_pub_key: ", args.old_pub_key);
 
     let serializedCoordPrivKey
     if (args.prompt_for_coord_priv_key) {
@@ -313,10 +323,7 @@ const generateNewKey = async (args: any) => {
         fromBlock,
     )
 
-    console.log("!!!!!!!!!!!!!!!!!!!!...userMaciOldPubKey provided from gen new key command by the user", userMaciOldPubKey);
-    
-
-    const { circomInputs, kCommand } = maciState.polls[pollId].generateCircuitInputsForGenerateNewKey(
+    const { circuitInputs, encPubKey, message } = maciState.polls[pollId].generateCircuitInputsForGenerateNewKey(
         userMaciNewPubKey,
         userMaciOldPrivKey,
         userMaciOldPubKey,
@@ -324,6 +331,60 @@ const generateNewKey = async (args: any) => {
         BigInt(salt),
         pollId
     )
+
+    if (!circuitInputs) {
+        console.error('Error: Could not prepare cirucit inputs.')
+		return 1
+    }
+
+    let r
+	try {
+		r = genProof(
+			circuitInputs,
+			rapidsnarkExe,
+			args.new_key_generation_witnessgen,
+			args.new_key_generation_zkey,
+		)
+	} catch (e) {
+		console.error('Error: could not generate proof.')
+		console.error(e)
+		return 1
+	}
+
+	// Verify the proof
+	const isValid = verifyProof(
+		r.publicInputs,
+		r.proof,
+		processVk,
+	)
+
+	if (!isValid) {
+		console.error('Error: generated an invalid proof')
+		return 1
+	}
+	
+	const { proof } = r;
+	const formattedProof = formatProofForVerifierContract(proof);
+
+    let tx = null;
+    try {
+        tx = await mpContract.generateNewKeyFromDeactivated(
+            formattedProof,
+            message.asContractParam(),
+            coordinatorKeypair.pubKey.asCircuitInputs(),
+            encPubKey.asContractParam(),
+            { gasLimit: 10000000 },
+        )
+        await tx.wait()
+
+        console.log('generateNewKeyFromDeactivated Transaction hash:', tx.hash)
+    } catch(e) {
+        if (e.message) {
+            console.error('Error: the transaction failed.')
+            console.error(e.message)
+        }
+        return 1;
+    }
 
     return 0;
 }

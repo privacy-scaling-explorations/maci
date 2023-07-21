@@ -1086,7 +1086,7 @@ class KCommand extends Command {
 		const stateLeaf = stateLeaves[parseInt(stateIndex.toString())];
 		const { voiceCreditBalance: oldCreditBalance, timestamp } = stateLeaf;
 
-		const stateTreeInclusionProof = stateTree.genMerklePath(stateIndex).pathElements;
+		const stateTreeInclusionProof = stateTree.genMerklePath(Number(stateIndex)).pathElements;
 		const deactivatedKeysInclusionProof = deactivatedKeysTree.genMerklePath(parseInt(deactivatedKeyIndex.toString())).pathElements;
 
 		const ecdhKeypair = new Keypair()
