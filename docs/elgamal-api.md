@@ -122,19 +122,22 @@ The `generateNewKey` command is used to generate a new key based on the previous
 #### Usage
 
 ```sh
-node ./build/index.js generateNewKey --oldPrivkey <oldMaciPrivateKey> --newPrivkey <newMaciPrivateKey> --state-index <stateIndex> --salt <salt> --poll-id <pollId> --from-block <fromBlock> --new-key-generation-witnessgen <pathToWitnessGenLib> --new-key-generation-zkey <pathToZkeyFile> --rapidsnark <pathToRapidSnarkLib>
+node ./build/index.js generateNewKey --new-pub-key <newMaciPublicKey> --new-priv-key <newMaciPrivateKey> --old-pub-key <oldMaciPublicKey> --old-priv-key <oldMaciPrivateKey> --coord-priv-key <coordinatorPrivateKey> --state-index <stateIndex> --salt <salt> --poll-id <pollId> --from-block <fromBlock> --new-key-generation-witnessgen <pathToWitnessGenLib> --new-key-generation-zkey <pathToZkeyFile> --rapidsnark <pathToRapidSnarkLib>
 ```
 
 #### Arguments
 
-- `--oldPrivkey`, `-opk`: Users's old serialized MACI private key.
-- `--newPrivkey`, `-npk`: Users's new serialized MACI private key.
+- `--new-pub-key`, `-n`: MACI public key which should replace the user's public key in the state tree.
+- `--new-priv-key`, `-npk`: Users's new serialized MACI private key.
+- `--old-pub-key`, `-o`: MACI public key which should replace the user's old public key in the state tree.
+- `--old-priv-key`, `-opk`: Users's old serialized MACI private key.
+- `--coord-priv-key`, `-cpk`: Coordinator's serialized MACI private key.
 - `--state-index`, `-i`: User's state index.
 - `--salt`, `-s`: Message salt.
 - `--poll-id`, `-o`: ID of the Poll.
 - `--from-block`, `-fb`: The block number to start listening from.
 - `--new-key-generation-witnessgen`, `-wpd`: The path to the NewKeyGenerationMessage witness generation binary.
-- `--process-deactivation-zkey`, `-zpd`: The path to the NewKeyGenerationMessage .zkey file.
+- `--new-key-generation-zkey`, `-zpd`: The path to the NewKeyGenerationMessage .zkey file.
 - `--rapidsnark`, `-r`: The path to the rapidsnark binary.
 
 #### Response
