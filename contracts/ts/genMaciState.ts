@@ -496,7 +496,11 @@ const genMaciStateFromContract = async (
 				action.data.encPubKey
 			);
 		} else if (action['type'] === 'DeactivateKey') {
-			// TODO: Implement reaction to DeactivateKey contract event as part of subsequent milestones
+			maciState.polls[pollId].processDeactivateKeyEvent(
+				action.data.keyHash,
+				action.data.c1,
+				action.data.c2
+			);
 		} else if (action['type'] === 'TopupMessage') {
 			maciState.polls[pollId].topupMessage(action.data.message);
 		} else if (action['type'] === 'MergeMaciStateAqSubRoots') {

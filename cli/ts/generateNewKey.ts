@@ -1,13 +1,19 @@
 import {
-    getDefaultSigner
+    getDefaultSigner,
+    genMaciStateFromContract
 } from 'maci-contracts'
 
 import {
     PrivKey,
+    PubKey,
+    KCommand,
+    Keypair
 } from 'maci-domainobjs'
 
 import {
     genRandomSalt,
+    elGamalRerandomize,
+    hash2
 } from 'maci-crypto'
 
 import {
@@ -24,6 +30,9 @@ import { contractFilepath } from './config'
 
 const DEFAULT_SALT = genRandomSalt()
 
+// value taken from generateKeyFromDeactivated
+const voiceCreditBalance = BigInt(100)
+
 const configureSubparser = (subparsers: any) => {
     const parser = subparsers.addParser('generateNewKey', {
         addHelp: true,
@@ -39,24 +48,17 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-posk', '--prompt-for-maci-oldPrivkey'],
-        {
-            action: 'storeTrue',
-            help: 'Whether to prompt for your serialized old MACI private key',
-        }
-    )
-
-    parser.addArgument(
-        ['-opk', '--oldPrivkey'],
+        ['-n', '--new-pub-key'],
         {
             action: 'store',
+            required: true,
             type: 'string',
-            help: 'Your old serialized MACI private key',
+            help: 'The MACI public key which should replace the user\'s new public key in the state tree',
         }
     )
 
     parser.addArgument(
-        ['-pnsk', '--prompt-for-maci-newPrivkey'],
+        ['-pnsk', '--prompt-for-maci-newPrivKey'],
         {
             action: 'storeTrue',
             help: 'Whether to prompt for your serialized new MACI private key',
@@ -64,11 +66,58 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-npk', '--newPrivkey'],
+        ['-npk', '--new-priv-key'],
         {
             action: 'store',
+            required: true,
             type: 'string',
             help: 'Your new serialized MACI private key',
+        }
+    )
+
+    parser.addArgument(
+        ['-o', '--old-pub-key'],
+        {
+            action: 'store',
+            required: true,
+            type: 'string',
+            help: 'The MACI public key which should replace the user\'s old public key in the state tree',
+        }
+    )
+
+    parser.addArgument(
+        ['-posk', '--prompt-for-maci-old-priv-key'],
+        {
+            action: 'storeTrue',
+            help: 'Whether to prompt for your serialized old MACI private key',
+        }
+    )
+
+    parser.addArgument(
+        ['-opk', '--old-priv-key'],
+        {
+            action: 'store',
+            required: true,
+            type: 'string',
+            help: 'Your old serialized MACI private key',
+        }
+    )
+
+    parser.addArgument(
+        ['-pcsk', '--prompt-for-maci-coord-priv-key'],
+        {
+            action: 'storeTrue',
+            help: 'Whether to prompt for coordinators serialized MACI private key',
+        }
+    )
+
+    parser.addArgument(
+        ['-cpk', '--coord-priv-key'],
+        {
+            action: 'store',
+            required: true,
+            type: 'string',
+            help: 'Coordinators serialized MACI private key',
         }
     )
 
@@ -92,7 +141,7 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-o', '--poll-id'],
+        ['-po', '--poll-id'],
         {
             action: 'store',
             required: true,
@@ -143,7 +192,7 @@ const generateNewKey = async (args: any) => {
     const rapidsnarkExe = args.rapidsnark
     const newKeyGenerationDatFile = args.new_key_generation_witnessgen + ".dat"
 
-	const [ok, path] = isPathExist([
+    const [ok, path] = isPathExist([
         rapidsnarkExe,
         args.new_key_generation_witnessgen,
         newKeyGenerationDatFile,
@@ -167,34 +216,34 @@ const generateNewKey = async (args: any) => {
     }
 
     // The user's old MACI private key
-    let serializedOldPrivkey
-    if (args.prompt_for_maci_oldPrivkey) {
-        serializedOldPrivkey = await promptPwd('Your old MACI private key')
+    let serializedOldPrivKey
+    if (args.prompt_for_maci_old_priv_key) {
+        serializedOldPrivKey = await promptPwd('Your old MACI private key')
     } else {
-        serializedOldPrivkey = args.oldPrivkey
+        serializedOldPrivKey = args.old_priv_key
     }
 
-    if (!PrivKey.isValidSerializedPrivKey(serializedOldPrivkey)) {
+    if (!PrivKey.isValidSerializedPrivKey(serializedOldPrivKey)) {
         console.error('Error: invalid old MACI private key')
         return 1
     }
 
-    const userMaciOldPrivkey = PrivKey.unserialize(serializedOldPrivkey)
+    const userMaciOldPrivKey = PrivKey.unserialize(serializedOldPrivKey)
 
     // The user's new MACI private key
-    let serializedNewPrivkey
-    if (args.prompt_for_maci_newPrivkey) {
-        serializedNewPrivkey = await promptPwd('Your new MACI private key')
+    let serializedNewPrivKey
+    if (args.prompt_for_maci_new_priv_key) {
+        serializedNewPrivKey = await promptPwd('Your new MACI private key')
     } else {
-        serializedNewPrivkey = args.oldPrivkey
+        serializedNewPrivKey = args.new_priv_key
     }
 
-    if (!PrivKey.isValidSerializedPrivKey(serializedNewPrivkey)) {
+    if (!PrivKey.isValidSerializedPrivKey(serializedNewPrivKey)) {
         console.error('Error: invalid new MACI private key')
         return 1
     }
 
-    const userMaciNewPrivkey = PrivKey.unserialize(serializedNewPrivkey)
+    const userMaciNewPrivKey = PrivKey.unserialize(serializedNewPrivKey)
 
     const fromBlock = args.from_block ? args.from_block : 0;
 
@@ -224,9 +273,9 @@ const generateNewKey = async (args: any) => {
     }
 
     const signer = await getDefaultSigner()
-    if (!(await contractExists(signer.provider, maciAddress))) {
-        console.error('Error: there is no MACI contract deployed at the specified address')
-        return 1
+    if (!await contractExists(signer.provider, maciAddress)) {
+        console.error('Error: there is no contract deployed at the specified address')
+        return 0
     }
 
     const pollId = args.poll_id
@@ -236,7 +285,42 @@ const generateNewKey = async (args: any) => {
         return 1
     }
 
-    // TODO: add generateNewKey logic
+    const userMaciNewPubKey = PubKey.unserialize(args.new_pub_key)
+    const userMaciOldPubKey = PubKey.unserialize(args.old_pub_key)
+
+    let serializedCoordPrivKey
+    if (args.prompt_for_coord_priv_key) {
+        serializedCoordPrivKey = await promptPwd('Coordinators MACI private key')
+    } else {
+        serializedCoordPrivKey = args.coord_priv_key
+    }
+
+    if (!PrivKey.isValidSerializedPrivKey(serializedCoordPrivKey)) {
+        console.error('Error: invalid coordinators MACI private key')
+        return 1
+    }
+
+    const maciCoordPrivKey = PrivKey.unserialize(serializedCoordPrivKey)
+    const coordinatorKeypair = new Keypair(maciCoordPrivKey)
+
+    // Reconstruct MACI state
+    const maciState = await genMaciStateFromContract(
+        signer.provider,
+        maciAddress,
+        coordinatorKeypair,
+        pollId,
+        fromBlock,
+    )
+
+    const { circomInputs, kCommand } = maciState.polls[pollId].generateCircuitInputsForGenerateNewKey(
+        userMaciNewPubKey,
+        userMaciOldPrivKey,
+        userMaciOldPubKey,
+        stateIndex,
+        BigInt(salt),
+        pollId
+    )
+
     return 0;
 }
 
