@@ -24,22 +24,21 @@ This API documentation describes the new additions to the MACI project for publi
       - [Arguments](#arguments-3)
       - [Response](#response-3)
   - [Smart Contract Functions](#smart-contract-functions)
-    - [deactivateKey](#deactivatekey)
+    - [deactivateKey (Poll smart contract)](#deactivatekey-poll-smart-contract)
       - [Parameters](#parameters)
-    - [confirmDeactivation](#confirmdeactivation)
+      - [Response](#response-4)
+    - [confirmDeactivation (MessageProcessor smart contract)](#confirmdeactivation-messageprocessor-smart-contract)
       - [Parameters](#parameters-1)
-      - [Return Values](#return-values)
-    - [generateNewKey](#generatenewkey)
+      - [Response](#response-5)
+    - [mergeForDeactivation (MessageProcessor smart contract)](#mergefordeactivation-messageprocessor-smart-contract)
       - [Parameters](#parameters-2)
-
-<!-- SC function list
-  - deactivateKey
-  - confirmDeactivation
-  - mergeForDeactivation (not sure if needed)
-  - completeDeactivation (MP contract)
-  - getProcessDeactivationVkBySig (not sure if needed)
-  - generateNewKey (for now document just parameters)
-  - -->
+      - [Response](#response-6)
+    - [completeDeactivation (MessageProcessor smart contract)](#completedeactivation-messageprocessor-smart-contract)
+      - [Parameters](#parameters-3)
+      - [Response](#response-7)
+    - [generateNewKeyFromDeactivated (Poll smart contract)](#generatenewkeyfromdeactivated-poll-smart-contract)
+      - [Parameters](#parameters-4)
+      - [Response](#response-8)
 
 <!-- TODO: Clean up parameters in CLI/SC commands - required, non-required, never used, etc. - they should be consistent with command usage -->
 ## CLI Commands
@@ -146,46 +145,100 @@ If there is an error, the console warns the user. Returns an exit status of 1.
 
 ## Smart Contract Functions
 
-### deactivateKey
+### deactivateKey (Poll smart contract)
 
-This function attempts to deactivate the User's MACI public key. For deactivation to be confirmed, the Coordinator must call the `confirmKeyDeactivation` function.
+This function attempts to deactivate the user's MACI public key. For deactivation to be confirmed, the coordinator must call the `confirmKeyDeactivation` function.
 
 ```solidity
-function deactivateKey(Message memory _message, bytes32 _messageHash, bytes memory _signature) external;
+function deactivateKey(Message memory _message, PubKey memory _encPubKey) external;
 ```
 
 #### Parameters
 
 - `_message`: The encrypted message which contains a state leaf index.
-- `_messageHash`: The keccak256 hash of the \_message to be used for signature verification.
-- `_signature`: The ECDSA signature of User who attempts to deactivate the MACI public key.
+- `_encPubKey`: An epheremal public key which can be combined with the coordinator's private key to generate an ECDH shared key with which to encrypt the message.
 
-### confirmDeactivation
+#### Response
 
-This function confirms the deactivation of a User's MACI public key. It must be called by the Coordinator after the User calls the `deactivateKey` function.
+Events emitted:
+
+- `PublishMessage`
+- `AttemptKeyDeactivation`
+
+### confirmDeactivation (MessageProcessor smart contract)
+
+Confirms the deactivation of the user's MACI public key. It must be called by the coordinator after the user calls the `deactivateKey` function.
 
 ```solidity
-function confirmDeactivation(PubKey memory _usersPubKey, Message memory _elGamalEncryptedMessage) external returns(uint256 leafIndex);
+function confirmDeactivation(uint256[][] memory _batchLeaves, uint256 _batchSize, Poll poll) external onlyOwner;
 ```
 
 #### Parameters
 
-- `_usersPubKey`: The MACI public key to be deactivated.
-- `_elGamalEncryptedMessage`: The El Gamal encrypted message.
+- `_batchLeaves`: Deactivated keys leaves.
+- `_batchSize`: The capacity of the subroot of the deactivated keys tree.
+- `poll`: Poll smart contract address.
 
-#### Return Values
+#### Response
 
-- `leafIndex`: The index of the leaf in the deactivated keys tree.
+Events emitted:
 
-### generateNewKey
+- `DeactivateKey`
 
-This method generates a new key based on the current one after verifying the zero-knowledge proof.
+### mergeForDeactivation (MessageProcessor smart contract)
+
+Merges the state tree and the deactivated keys tree. It is a prerequisite for `completeDeactivation` function.
 
 ```solidity
-function generateNewKey(bytes memory _zkProof, Message memory _encryptedMessage) external;
+function mergeForDeactivation(uint256 _stateNumSrQueueOps, Poll poll, uint256 _pollId) external onlyOwner;
 ```
 
 #### Parameters
 
-- `_zkProof`: The zero-knowledge proof required for the key generation process.
-- `_encryptedMessage`: The encrypted message to submit during the key generation process.
+- `_stateNumSrQueueOps`: The number of subroot queue operations to merge for the MACI state tree.
+- `poll`: Poll smart contract address.
+- `_pollId`: Id of the poll.
+
+#### Response
+
+None.
+
+### completeDeactivation (MessageProcessor smart contract)
+
+Completes deactivation of all MACI public keys.
+
+```solidity
+function completeDeactivation(uint256[8] memory _proof, Poll poll) external onlyOwner;
+```
+
+#### Parameters
+
+- `_proof`: ZK proof of correct processing of deactivation messages.
+- `poll`: Poll smart contract address.
+
+#### Response
+
+None.
+
+### generateNewKeyFromDeactivated (Poll smart contract)
+
+Attempts to generate new key from the deactivated one.
+
+```solidity
+function generateNewKeyFromDeactivated(Message memory _message, PubKey memory _encPubKey) external returns (uint256);
+```
+
+#### Parameters
+
+- `_message`: Encrypted message containing the state leaf index.
+- `_encPubKey`: Epheremal public key which can be combined with the coordinator's private key to generate an ECDH shared key with which to encrypt the message.
+
+#### Response
+
+Events emitted:
+
+- `AttemptKeyGeneration`
+
+Returns:
+
+- `newStateIndex` of type `uint256`.
