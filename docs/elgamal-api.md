@@ -241,4 +241,4 @@ Events emitted:
 
 Returns:
 
-- `newStateIndex` of type `uint256`.
+- `uint256` `newStateIndex`.
