@@ -162,6 +162,7 @@ emit DeactivateKey(_subRoot);
 
 In `completeDeactivation()` function, again, the MACI state is reconstructed and `processDeactivationMessages()` is called to obtain `circuitInputs`.These inputs are required for [processDeactivationMessages.circom](../circuits/circom/processDeactivationMessages.circom) to generate proof of correct processing of deactivation messages.
 
+<!-- TODO: Adjust this -->
 The coordinator submits the proof to the `completeDeactivation()` function of the `MessageProcessor` smart contract. On the smart contract, two important things are happening:
 
 1. Merge of the deactivated-keys tree:
