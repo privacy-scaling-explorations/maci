@@ -12,6 +12,7 @@ import {Verifier} from "./crypto/Verifier.sol";
 import {VkRegistry} from "./VkRegistry.sol";
 import {DomainObjs} from "./DomainObjs.sol";
 import {Utilities} from "./utilities/Utility.sol";
+import "hardhat/console.sol";
 
 /*
  * MessageProcessor is used to process messages published by signup users
@@ -288,6 +289,8 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
             messageTreeDepth
         );
 
+        console.log("messageHash", hashMessageData(_message));
+
         uint256 input = genGenerateNewKeyFromDeactivatedPublicInputHash(
             maci.getStateAqRoot(),
             deactivatedKeysAq.getMainRoot(DEACT_TREE_DEPTH),
@@ -295,6 +298,8 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
             _coordPubKey,
             _sharedPubKey
         );
+
+        console.log("inputHash", input);
 
         require(verifier.verify(_proof, vk, input), "Verification failed");
 
@@ -393,9 +398,9 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
         n[8] = _message.data[8];
         n[9] = _message.data[9];
 
-        uint256 inputHash = sha256Hash(n);
+        uint256 messageHash = sha256Hash(n);
 
-        return inputHash;
+        return messageHash;
     }
 
     /*

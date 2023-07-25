@@ -225,7 +225,6 @@ class Poll {
         _c2: BigInt[]
     ) => {
         const deactiavtedKeyEvent = { keyHash: _keyHash, c1: _c1.map(c => BigInt(c.toString())), c2: _c2.map(c => BigInt(c.toString())) } as DeactivatedKeyEvent;
-        console.log("deactiavtedKeyEvent at prcessing from chain", deactiavtedKeyEvent);
         this.deactivatedKeyEvents.push(deactiavtedKeyEvent);
     }
 
@@ -574,17 +573,20 @@ class Poll {
         const z = BigInt(42);
 
         const [c1r, c2r] = elGamalRerandomize(
-            newPublicKey.rawPubKey,
+            this.coordinatorKeypair.pubKey.rawPubKey,
             z,
             deactivatedKeyEvent.c1,
             deactivatedKeyEvent.c2,
         );
 
+        const deactivatedLeafTemphash = hash5([deactivatedKeyHash, ...deactivatedKeyEvent.c1, ...deactivatedKeyEvent.c2]);
+        this.deactivatedKeysTree.insert(deactivatedLeafTemphash) // TODO: Move to genmacistate
+
         // TODO: check if asCircuitInputs should be used
         const nullifier = hash2([BigInt(deactivatedPrivateKey.asCircuitInputs()), salt]);
 
-        // TODO: set proper value for voiceCreditBalance
-        const voiceCreditBalance = BigInt(100)
+        // TODO: set proper value for voiceCreditBalance - take from input param
+        const voiceCreditBalance = BigInt(5)
 
         const kcommand: KCommand = new KCommand(
             newPublicKey,

@@ -1072,7 +1072,7 @@ class KCommand extends Command {
 		stateTree: any,
         numSignUps: BigInt,
         stateIndex: BigInt,
-        salt: BigInt, // Salt used in key deactivation message
+        salt: BigInt,
 		coordinatorPubKey: PubKey,
         deactivatedKeysTree: any,
 		deactivatedKeyIndex: BigInt,
@@ -1098,6 +1098,15 @@ class KCommand extends Command {
 		const encryptedMessage = this.encrypt(sharedKey);
 		const messageHash = sha256Hash(encryptedMessage.asContractParam().data.map((x:string) => BigInt(x)));
 
+		console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!messageHash", messageHash);
+		console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!inputHash", sha256Hash([
+			stateTreeRoot,
+			deactivatedKeysRoot,
+			messageHash,
+			...coordinatorPubKey.asCircuitInputs(),
+			...ecdhKeypair.pubKey.asCircuitInputs(),
+		]));
+
 		const circuitInputs = stringifyBigInts({
 			oldPrivKey: deactivatedPrivateKey.asCircuitInputs(),         
 			newPubKey: this.newPubKey.asCircuitInputs(),
@@ -1110,9 +1119,9 @@ class KCommand extends Command {
 			oldCreditBalance,
 			// TODO: Temp fix since balance should not change for Kcommand?
 			// Proper fix is to read the balance value from the state leaf before initializing KCommand
-			newCreditBalance: oldCreditBalance, 
+			newCreditBalance: BigInt(5), 
 			stateLeafTimestamp: timestamp,
-			deactivatedKeysInclusionProof,
+			deactivatedKeysInclusionProof: deactivatedKeysInclusionProof,
 			deactivatedKeyIndex,
 			c1,
 			c2,

@@ -278,6 +278,8 @@ const generateNewKey = async (args: any) => {
         salt = DEFAULT_SALT
     }
 
+    const [maciContractAbi] = parseArtifact('MACI');
+    const [pollContractAbi] = parseArtifact('Poll');
     const [mpContractAbi] = parseArtifact('MessageProcessor');
 
     const signer = await getDefaultSigner()
@@ -286,12 +288,29 @@ const generateNewKey = async (args: any) => {
         return 0
     }
 
+    // Initialize MACI contract object
+	const maciContractEthers = new ethers.Contract(
+		maciAddress,
+		maciContractAbi,
+		signer
+	);
+
     const pollId = args.poll_id
 
     if (pollId < 0) {
         console.error('Error: the Poll ID should be a positive integer.')
         return 1
     }
+
+	const pollAddr = await maciContractEthers.getPoll(pollId);
+	if (!(await contractExists(signer.provider, pollAddr))) {
+		console.error(
+			'Error: there is no Poll contract with this poll ID linked to the specified MACI contract.'
+		);
+		return 1;
+	}
+
+	const pollContract = new ethers.Contract(pollAddr, pollContractAbi, signer);
 
     const mpAddress = contractAddrs['MessageProcessor-' + pollId];
 	const mpContract = new ethers.Contract(mpAddress, mpContractAbi, signer);
@@ -369,10 +388,11 @@ const generateNewKey = async (args: any) => {
     let tx = null;
     try {
         tx = await mpContract.generateNewKeyFromDeactivated(
-            formattedProof,
             message.asContractParam(),
-            coordinatorKeypair.pubKey.asCircuitInputs(),
+            coordinatorKeypair.pubKey.asContractParam(),
             encPubKey.asContractParam(),
+            pollContract.address,
+            formattedProof,
             { gasLimit: 10000000 },
         )
         await tx.wait()
