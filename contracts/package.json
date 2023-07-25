@@ -22,7 +22,9 @@
         "test-accQueue": "jest AccQueue.test.ts",
         "test-accQueue-debug": "node --inspect-brk ./node_modules/.bin/jest AccQueue.test.ts",
         "test-accQueueBenchmark": "jest AccQueueBenchmark.test.ts",
-        "test-accQueueBenchmark-debug": "node --inspect-brk ./node_modules/.bin/jest AccQueueBenchmark.test.ts"
+        "test-accQueueBenchmark-debug": "node --inspect-brk ./node_modules/.bin/jest AccQueueBenchmark.test.ts",
+        "test-e2e": "jest E2E.test.ts",
+        "test-e2e-debug": "node --inspect-brk ./node_modules/.bin/jest E2E.test.ts"
     },
     "_moduleAliases": {
         "@maci-contracts": "."
