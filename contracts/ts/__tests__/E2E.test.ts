@@ -1,20 +1,20 @@
-import { Contract, Signer } from "ethers";
-import { deployConstantInitialVoiceCreditProxy, deployFreeForAllSignUpGatekeeper, deployMaci, deployMessageProcessor, deployTally, deployTopupCredit, deployVerifier, deployVkRegistry } from "../deploy";
+import { Contract, Signer, ethers, getDefaultProvider } from "ethers";
+import { deployConstantInitialVoiceCreditProxy, deployFreeForAllSignUpGatekeeper, deployMaci, deployMessageProcessor, deployTally, deployTopupCredit, deployVerifier, deployVkRegistry, getDefaultSigner } from "../deploy";
 import path = require("path");
 import { Keypair, PubKey, VerifyingKey } from "maci-domainobjs";
 import { extractVk } from "maci-circuits"
 import { genProcessVkSig, genTallyVkSig, genDeactivationVkSig } from 'maci-core'
 import { compareVks } from "../utils";
-
+import { timeTravel } from "./utils";
 jest.setTimeout(2000000)
 
 describe("MACI - E2E", () => {
     // Agents.
-    let deployer: Signer;
+    let signer: Signer;
     let user1: Signer;
     let project1: Signer;
     let project2: Signer;
-    let deployerAddress: string;
+    let provider: ethers.providers.Provider
 
     // Circuits configs.
     const pollId = 0
@@ -46,14 +46,16 @@ describe("MACI - E2E", () => {
 
     // Costants.
     const initialVoiceCredits = 100
-    const signUpDeadline = 1692424915 // The deadline for signing up on MACI expressed as unix timestamp in seconds.
-    const deactivationPeriod = 86400 // The length of the deactivation period in ms.
+    const signUpDuration = 86400 // The sign up period duration expressed in seconds.
+    const signUpDeadline = Math.floor(new Date().getTime() / 1000) + (signUpDuration) // The deadline for signing up on MACI expressed as unix timestamp in seconds.
+    const deactivationPeriod = 86400 // The length of the deactivation period in seconds.
     const pollDuration = 90 // The Poll duration expressed in seconds.
     const maxMessages = 25 // The max number of supported messages.
     const maxVoteOptions = 25 // The max number of supported vote options.
 
     // Keys.
     let coordinatorKeyPair: Keypair
+    let user1KeyPair: Keypair
 
     // zkeys folder path.
     const zKeysPath = `${__dirname}../../../../cli/zkeys`
@@ -80,6 +82,11 @@ describe("MACI - E2E", () => {
     // debug = false - avoid console.log from test case.
     const quiet = true
     const debug = false
+
+    beforeAll(async () => {
+        signer = await getDefaultSigner();
+        provider = signer.provider
+    })
 
     it("should initialize MACI infrastructure", async () => {
         vkRegistryContract = await deployVkRegistry(quiet)
@@ -268,7 +275,7 @@ describe("MACI - E2E", () => {
         const iface = maciContract.interface
         const log = iface.parseLog(receipt.logs[receipt.logs.length - 1])
         const name = log.name
-        
+
         // Get data.
         pollContractAddress = log.args._pollAddr
 
@@ -279,5 +286,68 @@ describe("MACI - E2E", () => {
             console.log("PollContractAddress: ", pollContractAddress)
             console.log("PollId: ", pollId)
         }
+    })
+
+    it("should signup one user", async () => {
+        // Create user1 keypair.
+        user1KeyPair = new Keypair()
+
+        expect(PubKey.isValidSerializedPubKey(user1KeyPair.pubKey.serialize())).toBe(true)
+
+        const signUpGatekeeperData = ethers.utils.defaultAbiCoder.encode(["uint256"], [1]);
+        const initialVoiceCreditProxyData = ethers.utils.defaultAbiCoder.encode(["uint256"], [0]);
+
+        // signup user1.
+        const tx = await maciContract.signUp(
+            user1KeyPair.pubKey.asContractParam(),
+            signUpGatekeeperData,
+            initialVoiceCreditProxyData,
+            { gasLimit: 1000000 }
+        )
+        const receipt = await tx.wait()
+
+        // Events.
+        const iface = maciContract.interface
+
+        // Get data.
+        const stateIndex = iface.parseLog(receipt.logs[0]).args[0]
+
+        expect(Number(stateIndex)).toBe(1)
+
+        if (debug) {
+            console.log("TransactionHash: ", tx.hash)
+            console.log("StateIndex: ", stateIndex)
+        }
+    })
+
+    it("should not be possible to signup when period ends", async () => {
+        // Time-travel.
+        await timeTravel(signer.provider, signUpDuration);
+
+        // Should revert when trying to signup.
+        const user2KeyPair = new Keypair()
+
+        expect(PubKey.isValidSerializedPubKey(user2KeyPair.pubKey.serialize())).toBe(true)
+
+        const signUpGatekeeperData = ethers.utils.defaultAbiCoder.encode(["uint256"], [1]);
+        const initialVoiceCreditProxyData = ethers.utils.defaultAbiCoder.encode(["uint256"], [0]);
+
+        // Should revert.
+        ///@todo add waffle chai matchers.
+        try {
+            await maciContract.signUp(
+                user2KeyPair.pubKey.asContractParam(),
+                signUpGatekeeperData,
+                initialVoiceCreditProxyData,
+                { gasLimit: 1000000 }
+            )
+        } catch (e) {
+            const error = "'MACI: the sign-up period has passed'";
+            expect(e.message.endsWith(error)).toBeTruthy();
+        }
+    })
+
+    it("should confirm the deactivation of user key", async () => {
+        /// @todo.
     })
 })
