@@ -1,11 +1,13 @@
 import { Contract, Signer, ethers, getDefaultProvider } from "ethers";
-import { deployConstantInitialVoiceCreditProxy, deployFreeForAllSignUpGatekeeper, deployMaci, deployMessageProcessor, deployTally, deployTopupCredit, deployVerifier, deployVkRegistry, getDefaultSigner } from "../deploy";
+import { deployConstantInitialVoiceCreditProxy, deployFreeForAllSignUpGatekeeper, deployMaci, deployMessageProcessor, deployTally, deployTopupCredit, deployVerifier, deployVkRegistry, getDefaultSigner, parseArtifact } from "../deploy";
 import path = require("path");
-import { Keypair, PubKey, VerifyingKey } from "maci-domainobjs";
+import { Keypair, Message, PCommand, PubKey, VerifyingKey } from "maci-domainobjs";
 import { extractVk } from "maci-circuits"
 import { genProcessVkSig, genTallyVkSig, genDeactivationVkSig } from 'maci-core'
 import { compareVks } from "../utils";
-import { timeTravel } from "./utils";
+import { timeTravel, validateSaltFormat, validateSaltSize } from "./utils";
+import { MaciState } from "maci-core"
+// import { genRandomSalt } from "maci-crypto";
 jest.setTimeout(2000000)
 
 describe("MACI - E2E", () => {
@@ -37,12 +39,12 @@ describe("MACI - E2E", () => {
     let pollFactoryContract: Contract
     let messageProcessorContract: Contract
     let tallyContract: Contract
+    let pollContract: Contract
     // Contracts Addresses.
     let poseidonT3ContractAddress: string
     let poseidonT4ContractAddress: string
     let poseidonT5ContractAddress: string
     let poseidonT6ContractAddress: string
-    let pollContractAddress: string
 
     // Costants.
     const initialVoiceCredits = 100
@@ -52,10 +54,17 @@ describe("MACI - E2E", () => {
     const pollDuration = 90 // The Poll duration expressed in seconds.
     const maxMessages = 25 // The max number of supported messages.
     const maxVoteOptions = 25 // The max number of supported vote options.
+    const seed = 42 // Random generator seed value used for masking values during the message deactivation processing.
+    const fromBlock = 0 // Indicates which block to start from to find events.
+
+    const maciState = new MaciState(); // A reproduction of MACI on-chain state.
 
     // Keys.
     let coordinatorKeyPair: Keypair
     let user1KeyPair: Keypair
+
+    // Data from contracts interactions.
+    let userStateIndex: Number
 
     // zkeys folder path.
     const zKeysPath = `${__dirname}../../../../cli/zkeys`
@@ -78,12 +87,13 @@ describe("MACI - E2E", () => {
     let pdmVkOnChain: VerifyingKey
 
     // Test configs.
-    // quiet = true - avoid console.log from deploy methods.
-    // debug = false - avoid console.log from test case.
+    /// @dev quiet = true - avoid console.log from deploy methods.
+    /// @dev debug = false - avoid console.log from test case.
     const quiet = true
     const debug = false
 
     beforeAll(async () => {
+        // Get default signer and provider.
         signer = await getDefaultSigner();
         provider = signer.provider
     })
@@ -270,22 +280,59 @@ describe("MACI - E2E", () => {
             { gasLimit: 10000000 }
         )
         const receipt = await tx.wait()
+        const block = await signer.provider.getBlock(receipt.blockHash);
+        const deployTime = block.timestamp;
 
         // Events.
         const iface = maciContract.interface
         const log = iface.parseLog(receipt.logs[receipt.logs.length - 1])
         const name = log.name
 
-        // Get data.
-        pollContractAddress = log.args._pollAddr
-
         expect(name).toBe("DeployPoll")
         expect(pollId).toBe(Number(log.args._pollId))
 
         if (debug) {
-            console.log("PollContractAddress: ", pollContractAddress)
+            console.log("PollContractAddress: ", log.args._pollAddr)
             console.log("PollId: ", pollId)
         }
+
+        // Instantiate Poll smart contract.
+        const [pollContractAbi] = parseArtifact('Poll')
+        pollContract = new ethers.Contract(
+            log.args._pollAddr,
+            pollContractAbi,
+            signer,
+        )
+
+        /// @todo add checks.
+        // expect
+
+        // if (debug) {
+        //     console.log("MaxValues: ", maxValues)
+        //     console.log("CoordinatorPubKeyResult: ", coordinatorPubKeyResult)
+        // }
+
+        // update maci state.
+        const poll = maciState.deployPoll(
+            pollDuration,
+            BigInt(deployTime + pollDuration),
+            {
+                maxMessages,
+                maxVoteOptions
+            },
+            {
+                intStateTreeDepth,
+                messageTreeSubDepth: msgBatchDepth,
+                messageTreeDepth: msgTreeDepth,
+                voteOptionTreeDepth,
+            },
+            messageBatchSize,
+            coordinatorKeyPair
+        );
+        expect(poll.toString()).toEqual(pollId.toString());
+
+        if (debug)
+            console.log("MACI State: ", maciState)
     })
 
     it("should signup one user", async () => {
@@ -311,43 +358,149 @@ describe("MACI - E2E", () => {
 
         // Get data.
         const stateIndex = iface.parseLog(receipt.logs[0]).args[0]
+        const event = iface.parseLog(receipt.logs[receipt.logs.length - 1]);
 
+        expect(event.args._stateIndex.toString()).toEqual((1).toString());
         expect(Number(stateIndex)).toBe(1)
 
         if (debug) {
             console.log("TransactionHash: ", tx.hash)
             console.log("StateIndex: ", stateIndex)
         }
+
+        userStateIndex = stateIndex
+
+        // update maci state.
+        maciState.signUp(
+            user1KeyPair.pubKey,
+            BigInt(event.args._voiceCreditBalance.toString()),
+            BigInt(event.args._timestamp.toString())
+        );
+
+        if (debug)
+            console.log("MACI State: ", maciState)
     })
 
-    it("should not be possible to signup when period ends", async () => {
-        // Time-travel.
-        await timeTravel(signer.provider, signUpDuration);
+    if (debug) {
+        it("should not be possible to signup when period ends", async () => {
+            // Time-travel.
+            await timeTravel(signer.provider, signUpDuration);
 
-        // Should revert when trying to signup.
-        const user2KeyPair = new Keypair()
+            // Should revert when trying to signup.
+            const user2KeyPair = new Keypair()
 
-        expect(PubKey.isValidSerializedPubKey(user2KeyPair.pubKey.serialize())).toBe(true)
+            expect(PubKey.isValidSerializedPubKey(user2KeyPair.pubKey.serialize())).toBe(true)
 
-        const signUpGatekeeperData = ethers.utils.defaultAbiCoder.encode(["uint256"], [1]);
-        const initialVoiceCreditProxyData = ethers.utils.defaultAbiCoder.encode(["uint256"], [0]);
+            const signUpGatekeeperData = ethers.utils.defaultAbiCoder.encode(["uint256"], [1]);
+            const initialVoiceCreditProxyData = ethers.utils.defaultAbiCoder.encode(["uint256"], [0]);
 
-        // Should revert.
-        ///@todo add waffle chai matchers.
-        try {
-            await maciContract.signUp(
-                user2KeyPair.pubKey.asContractParam(),
-                signUpGatekeeperData,
-                initialVoiceCreditProxyData,
-                { gasLimit: 1000000 }
+            // Should revert.
+            ///@todo add waffle chai matchers.
+            try {
+                await maciContract.signUp(
+                    user2KeyPair.pubKey.asContractParam(),
+                    signUpGatekeeperData,
+                    initialVoiceCreditProxyData,
+                    { gasLimit: 1000000 }
+                )
+            } catch (e) {
+                const error = "'MACI: the sign-up period has passed'";
+                expect(e.message.endsWith(error)).toBeTruthy();
+            }
+        })
+    }
+
+    it("should deactivate the user key", async () => {
+        const pollAddr = await maciContract.getPoll(pollId);
+
+        expect(pollAddr).toBe(pollContract.address)
+        expect(PubKey.isValidSerializedPubKey(user1KeyPair.pubKey.serialize())).toBe(true)
+        expect(Number(userStateIndex)).toBeGreaterThan(0)
+
+        // Prepare data.
+        const voteOptionIndex = BigInt(0) // must be zero for key deactivation.
+        const newVoteWeight = BigInt(0) // must be zero for key deactivation.
+        const messageNonce = BigInt(2)
+        const maxValues = await pollContract.maxValues()
+        const maxVoteOptions = Number(maxValues.maxVoteOptions)
+        const salt = "0x798D81BE4A9870C079B8DE539496AB95"
+        /// @todo using random salt can lead to invalid salt size.
+        // const salt = genRandomSalt()
+
+        expect(validateSaltFormat(salt) && validateSaltSize(salt)).toBe(true)
+
+        // New keypair.
+        const newUserKeyPair = new Keypair()
+
+        // Create new command.
+        const command: PCommand = new PCommand(
+            BigInt(userStateIndex.toString()),
+            user1KeyPair.pubKey,
+            voteOptionIndex,
+            newVoteWeight,
+            messageNonce,
+            BigInt(pollId.toString()),
+            BigInt(salt),
+        )
+        // Sign the command with the user private key.
+        const signature = command.sign(user1KeyPair.privKey)
+        // Encrypt the command with an ECDH shared key between user1 (new key) and coordinator.
+        const message = command.encrypt(
+            signature,
+            Keypair.genEcdhSharedKey(
+                newUserKeyPair.privKey,
+                coordinatorKeyPair.pubKey,
             )
-        } catch (e) {
-            const error = "'MACI: the sign-up period has passed'";
-            expect(e.message.endsWith(error)).toBeTruthy();
-        }
+        )
+
+        // Send tx.
+        const tx = await pollContract.deactivateKey(
+            message.asContractParam(),
+            newUserKeyPair.pubKey.asContractParam(),
+            { gasLimit: 10000000 },
+        )
+        await tx.wait()
+
+        // update maci state.
+        maciState.polls[pollId].deactivateKey(message, newUserKeyPair.pubKey)
     })
 
     it("should confirm the deactivation of user key", async () => {
-        /// @todo.
+        // Time-travel (1m).
+        await timeTravel(signer.provider, 60);
+
+        // Process the deactivation messages on MACI state.
+        const { circuitInputs, deactivatedLeaves } = maciState.polls[pollId].processDeactivationMessages(seed);
+        const numBatches = Math.ceil(deactivatedLeaves.length / messageBatchSize);
+
+        expect(deactivatedLeaves.length).toBe(1)
+        expect(numBatches).toBe(1)
+
+        // Prepare batch.
+        // nb. there should be just one batch.
+        const batch = deactivatedLeaves.map((leaf: any) => leaf.asArray());
+
+        const tx = await messageProcessorContract.confirmDeactivation(
+            batch, 
+            batch.length,
+            pollContract.address,
+        );
+        const receipt = await tx.wait()
+
+        // Events.
+        const iface = messageProcessorContract.interface
+        const log = iface.parseLog(receipt.logs[receipt.logs.length - 1])
+        
+        // Checks.
+        expect(log.name).toBe("DeactivateKey")
+        // expect(log.args.keyHash).toBe()
+        // expect(log.args.c1).toBe()
+        // expect(log.args.c2).toBe()
+        
+        if (debug) {
+            console.log("CircuitInputs: ", circuitInputs)
+            console.log("DeactivatedLeaves: ", deactivatedLeaves)
+            console.log("Batch: ", batch)
+        }
     })
 })
