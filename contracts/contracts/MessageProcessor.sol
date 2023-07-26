@@ -289,23 +289,6 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
             messageTreeDepth
         );
 
-        console.log("vk[alpha1].x", vk.alpha1.x);
-        console.log("vk[alpha1].y", vk.alpha1.y);
-        console.log("vk.beta2.x[0]", vk.beta2.x[0]);
-        console.log("vk.beta2.x[1]", vk.beta2.x[1]);
-        console.log("vk.beta2.y[0]", vk.beta2.y[0]);
-        console.log("vk.beta2.y[1]", vk.beta2.y[1]);
-        console.log("vk.gamma2.x[0]", vk.gamma2.x[0]);
-        console.log("vk.gamma2.x[1]", vk.gamma2.x[1]);
-        console.log("vk.gamma2.y[0]", vk.gamma2.y[0]);
-        console.log("vk.gamma2.y[1]", vk.gamma2.y[1]);
-        console.log("vk.delta2.x[0]", vk.delta2.x[0]);
-        console.log("vk.delta2.x[1]", vk.delta2.x[1]);
-        console.log("vk.delta2.y[0]", vk.delta2.y[0]);
-        console.log("vk.delta2.y[1]", vk.delta2.y[1]);
-
-        console.log("messageHash", hashMessageData(_message));
-
         uint256 input = genGenerateNewKeyFromDeactivatedPublicInputHash(
             maci.getStateAqRoot(),
             deactivatedKeysAq.getMainRoot(DEACT_TREE_DEPTH),
@@ -313,8 +296,6 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
             _coordPubKey,
             _sharedPubKey
         );
-
-        console.log("inputHash", input);
 
         require(verifier.verify(_proof, vk, input), "Verification failed");
 

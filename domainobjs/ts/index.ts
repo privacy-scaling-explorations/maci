@@ -1098,15 +1098,6 @@ class KCommand extends Command {
 		const encryptedMessage = this.encrypt(sharedKey);
 		const messageHash = sha256Hash(encryptedMessage.asContractParam().data.map((x:string) => BigInt(x)));
 
-		console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!messageHash", messageHash);
-		console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!inputHash", sha256Hash([
-			stateTreeRoot,
-			deactivatedKeysRoot,
-			messageHash,
-			...coordinatorPubKey.asCircuitInputs(),
-			...ecdhKeypair.pubKey.asCircuitInputs(),
-		]));
-
 		const circuitInputs = stringifyBigInts({
 			oldPrivKey: deactivatedPrivateKey.asCircuitInputs(),         
 			newPubKey: this.newPubKey.asCircuitInputs(),
