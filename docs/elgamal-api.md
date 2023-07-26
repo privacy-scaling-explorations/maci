@@ -36,9 +36,12 @@ This API documentation describes the new additions to the MACI project for publi
     - [completeDeactivation (MessageProcessor smart contract)](#completedeactivation-messageprocessor-smart-contract)
       - [Parameters](#parameters-3)
       - [Response](#response-7)
-    - [generateNewKeyFromDeactivated (Poll smart contract)](#generatenewkeyfromdeactivated-poll-smart-contract)
+    - [generateNewKeyFromDeactivated (MessageProcessor smart contract)](#generatenewkeyfromdeactivated-messageprocessor-smart-contract)
       - [Parameters](#parameters-4)
       - [Response](#response-8)
+    - [generateNewKeyFromDeactivated (Poll smart contract)](#generatenewkeyfromdeactivated-poll-smart-contract)
+      - [Parameters](#parameters-5)
+      - [Response](#response-9)
 
 <!-- TODO: Clean up parameters in CLI/SC commands - required, non-required, never used, etc. - they should be consistent with command usage -->
 ## CLI Commands
@@ -223,6 +226,30 @@ function completeDeactivation(uint256[8] memory _proof, Poll poll) external only
 
 None.
 
+### generateNewKeyFromDeactivated (MessageProcessor smart contract)
+
+Attempts to generate new key from the deactivated one.
+
+```solidity
+function generateNewKeyFromDeactivated(Message memory _message, PubKey memory _coordPubKey, PubKey memory _sharedPubKey, Poll poll, uint256[8] memory _proof) external returns (uint256);
+```
+
+#### Parameters
+
+- `_message`: Encrypted message containing the state leaf index.
+- `_coordPubKey`: Coordinator's public key.
+<!-- TODO: verify this description -->
+- `_sharedPubKey`: Shared public key used to generate input hash.
+- `poll`: Poll smart contract address.
+<!-- TODO: verify this description -->
+- `_proof`: Generated inclusion proof (deactivated key exists in the tree).
+
+#### Response
+
+Returns:
+
+- `uint256` `newStateIndex` obtained from calling Poll smart contract function `generateNewKeyFromDeactivated`.
+  
 ### generateNewKeyFromDeactivated (Poll smart contract)
 
 Attempts to generate new key from the deactivated one.
