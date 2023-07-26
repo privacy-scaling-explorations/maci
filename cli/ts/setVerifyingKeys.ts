@@ -113,6 +113,15 @@ const configureSubparser = (subparsers: any) => {
             help: 'The path to the ProcessDeactivationMessages .zkey file',
         }
     )
+
+    createParser.addArgument(
+        ['-znkg', '--new-key-generation-zkey'],
+        {
+            required: true,
+            type: 'string',
+            help: 'The path to the GenerateKeyFromDeactivated .zkey file',
+        }
+    )
 }
 
 const setVerifyingKeys = async (args: any) => {
@@ -131,6 +140,7 @@ const setVerifyingKeys = async (args: any) => {
     const pmZkeyFile = path.resolve(args.process_messages_zkey)
     const tvZkeyFile = path.resolve(args.tally_votes_zkey)
     const pdmZkeyFile = path.resolve(args.process_deactivation_zkey)
+    const nkgZkeyFile = path.resolve(args.new_key_generation_zkey)
     
     if (!fs.existsSync(pmZkeyFile)) {
         console.error(`Error: ${pmZkeyFile} does not exist.`)
@@ -145,10 +155,15 @@ const setVerifyingKeys = async (args: any) => {
         return 1
     }
 
+    if (!fs.existsSync(nkgZkeyFile)) {
+        console.error(`Error: ${nkgZkeyFile} does not exist.`)
+        return 1
+    }
+
     const processVk: VerifyingKey = VerifyingKey.fromObj(extractVk(pmZkeyFile))
     const processDeactivationVk: VerifyingKey = VerifyingKey.fromObj(extractVk(pdmZkeyFile))
     const tallyVk: VerifyingKey = VerifyingKey.fromObj(extractVk(tvZkeyFile))
-
+    const newKeyGenerationVk: VerifyingKey = VerifyingKey.fromObj(extractVk(nkgZkeyFile))
 
     let ssZkeyFile: string
     let subsidyVk:VerifyingKey
@@ -299,7 +314,8 @@ const setVerifyingKeys = async (args: any) => {
             5 ** msgBatchDepth,
             processVk.asContractParam(),
             processDeactivationVk.asContractParam(),
-            tallyVk.asContractParam()
+            tallyVk.asContractParam(),
+            newKeyGenerationVk.asContractParam()
         )
 
         const receipt = await tx.wait()
@@ -322,12 +338,22 @@ const setVerifyingKeys = async (args: any) => {
             voteOptionTreeDepth,
         )
 
+        const newKeyGenerationVkOnChain = await vkRegistryContract.getNewKeyGenerationVk(
+            stateTreeDepth,
+            msgTreeDepth
+        )
+
         if (!compareVks(processVk, processVkOnChain)) {
             console.error('Error: processVk mismatch')
             return 1
         }
         if (!compareVks(tallyVk, tallyVkOnChain)) {
             console.error('Error: tallyVk mismatch')
+            return 1
+        }
+
+        if (!compareVks(newKeyGenerationVk, newKeyGenerationVkOnChain)) {
+            console.error('Error: newKeyGenerationVk mismatch')
             return 1
         }
 

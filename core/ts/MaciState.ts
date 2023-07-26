@@ -1884,6 +1884,7 @@ const genProcessVkSig = (
         BigInt(_voteOptionTreeDepth)
 }
 
+// TODO: Not used anywhere.Also one for new key generation is missing.
 const genDeactivationVkSig = (
     _messageQueueSize: number,
     _stateTreeDepth: number,

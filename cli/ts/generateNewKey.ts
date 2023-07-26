@@ -206,7 +206,7 @@ const generateNewKey = async (args: any) => {
         return 1
     }
 
-    const processVk = extractVk(args.new_key_generation_zkey)
+    const newKeyGenerationVk = extractVk(args.new_key_generation_zkey)
 
     const contractAddrs = readJSONFile(contractFilepath)
     if ((!contractAddrs || !contractAddrs["MACI"]) && !args.contract) {
@@ -374,7 +374,7 @@ const generateNewKey = async (args: any) => {
 	const isValid = verifyProof(
 		r.publicInputs,
 		r.proof,
-		processVk,
+		newKeyGenerationVk,
 	)
 
 	if (!isValid) {

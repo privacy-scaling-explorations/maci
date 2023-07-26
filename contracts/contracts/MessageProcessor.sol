@@ -284,10 +284,25 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
         (, , uint8 messageTreeDepth, ) = poll
             .treeDepths();
 
-        VerifyingKey memory vk = vkRegistry.getProcessDeactivationVk(
+        VerifyingKey memory vk = vkRegistry.getNewKeyGenerationVk(
             maci.stateTreeDepth(),
             messageTreeDepth
         );
+
+        console.log("vk[alpha1].x", vk.alpha1.x);
+        console.log("vk[alpha1].y", vk.alpha1.y);
+        console.log("vk.beta2.x[0]", vk.beta2.x[0]);
+        console.log("vk.beta2.x[1]", vk.beta2.x[1]);
+        console.log("vk.beta2.y[0]", vk.beta2.y[0]);
+        console.log("vk.beta2.y[1]", vk.beta2.y[1]);
+        console.log("vk.gamma2.x[0]", vk.gamma2.x[0]);
+        console.log("vk.gamma2.x[1]", vk.gamma2.x[1]);
+        console.log("vk.gamma2.y[0]", vk.gamma2.y[0]);
+        console.log("vk.gamma2.y[1]", vk.gamma2.y[1]);
+        console.log("vk.delta2.x[0]", vk.delta2.x[0]);
+        console.log("vk.delta2.x[1]", vk.delta2.x[1]);
+        console.log("vk.delta2.y[0]", vk.delta2.y[0]);
+        console.log("vk.delta2.y[1]", vk.delta2.y[1]);
 
         console.log("messageHash", hashMessageData(_message));
 
@@ -336,11 +351,9 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
         );
 
         // Get the verifying key from the VkRegistry
-        VerifyingKey memory vk = vkRegistry.getProcessVk(
+        VerifyingKey memory vk = vkRegistry.getNewKeyGenerationVk(
             maci.stateTreeDepth(),
-            messageTreeDepth,
-            voteOptionTreeDepth,
-            messageBatchSize
+            messageTreeDepth
         );
 
         return verifier.verify(_proof, vk, publicInputHash);
