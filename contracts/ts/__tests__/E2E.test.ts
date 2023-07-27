@@ -61,6 +61,9 @@ describe("MACI - E2E", () => {
     const stateNumSrQueueOps = 1 // The number of subroot queue operations to merge for the MACI state tree.
     const deactivatedKeysNumSrQueueOps = 1 // The number of subroot queue operations to merge for the deactivated keys tree.
     const maciState = new MaciState(); // A reproduction of MACI on-chain state.
+    /// @todo using random salt can lead to invalid salt size.
+    // const salt = genRandomSalt()
+    const salt = "0x798D81BE4A9870C079B8DE539496AB95"
 
     // Keys.
     let coordinatorKeyPair: Keypair
@@ -356,12 +359,6 @@ describe("MACI - E2E", () => {
         const voteOptionIndex = BigInt(0) // must be zero for key deactivation.
         const newVoteWeight = BigInt(0) // must be zero for key deactivation.
         const messageNonce = BigInt(2)
-        /// @todo using random salt can lead to invalid salt size.
-        // const salt = genRandomSalt()
-        const salt = "0x798D81BE4A9870C079B8DE539496AB95"
-
-        // Generate a new keypair for the user.
-        newUser1KeyPair = new Keypair()
 
         // Create new command.
         const command: PCommand = new PCommand(
@@ -381,7 +378,7 @@ describe("MACI - E2E", () => {
         const message = command.encrypt(
             signature,
             Keypair.genEcdhSharedKey(
-                newUser1KeyPair.privKey,
+                user1KeyPair.privKey,
                 coordinatorKeyPair.pubKey,
             )
         )
@@ -389,7 +386,7 @@ describe("MACI - E2E", () => {
         // Send tx.
         const tx = await pollContract.deactivateKey(
             message.asContractParam(),
-            newUser1KeyPair.pubKey.asContractParam(),
+            user1KeyPair.pubKey.asContractParam(),
             { gasLimit: 10000000 },
         )
         const receipt = await tx.wait()
@@ -400,20 +397,20 @@ describe("MACI - E2E", () => {
         const logAttemptKeyDeactivation = iface.parseLog(receipt.logs[1])
 
         // update maci state.
-        maciState.polls[pollId].deactivateKey(message, newUser1KeyPair.pubKey)
+        maciState.polls[pollId].deactivateKey(message, user1KeyPair.pubKey)
 
         // Checks.
         expect(logPublishMessage.name).toBe("PublishMessage")
         expect(Number(message.msgType)).toBe(Number(logPublishMessage.args._message.msgType))
         expect(message.data).toStrictEqual(logPublishMessage.args._message.data.map((x: any) => BigInt(x)))
-        expect(String(newUser1KeyPair.pubKey.asContractParam().x)).toBe(String(logPublishMessage.args._encPubKey.x))
-        expect(String(newUser1KeyPair.pubKey.asContractParam().y)).toBe(String(logPublishMessage.args._encPubKey.y))
+        expect(String(user1KeyPair.pubKey.asContractParam().x)).toBe(String(logPublishMessage.args._encPubKey.x))
+        expect(String(user1KeyPair.pubKey.asContractParam().y)).toBe(String(logPublishMessage.args._encPubKey.y))
 
         expect(logAttemptKeyDeactivation.name).toBe("AttemptKeyDeactivation")
         expect(Number(message.msgType)).toBe(Number(logAttemptKeyDeactivation.args._message.msgType))
         expect(message.data).toStrictEqual(logAttemptKeyDeactivation.args._message.data.map((x: any) => BigInt(x)))
-        expect(String(newUser1KeyPair.pubKey.asContractParam().x)).toBe(String(logAttemptKeyDeactivation.args._encPubKey.x))
-        expect(String(newUser1KeyPair.pubKey.asContractParam().y)).toBe(String(logAttemptKeyDeactivation.args._encPubKey.y))
+        expect(String(user1KeyPair.pubKey.asContractParam().x)).toBe(String(logAttemptKeyDeactivation.args._encPubKey.x))
+        expect(String(user1KeyPair.pubKey.asContractParam().y)).toBe(String(logAttemptKeyDeactivation.args._encPubKey.y))
 
         expect(pollAddr).toBe(pollContract.address)
         expect(Number(userStateIndex)).toBeGreaterThan(0)
@@ -437,6 +434,7 @@ describe("MACI - E2E", () => {
         // nb. there should be just one batch.
         const numBatches = Math.ceil(data.deactivatedLeaves.length / messageBatchSize);
         const batch = data.deactivatedLeaves.map((leaf: any) => leaf.asArray());
+        const keyHash = batch[0][0]
 
         const tx = await messageProcessorContract.confirmDeactivation(
             batch,
@@ -444,6 +442,14 @@ describe("MACI - E2E", () => {
             pollContract.address,
         );
         const receipt = await tx.wait()
+
+        // Process the event.
+        // nb. this is necessary for the subsequent new key generation.
+        maciState.polls[pollId].processDeactivateKeyEvent(
+            keyHash,
+            c1,
+            c2
+        )
 
         // Events.
         const iface = messageProcessorContract.interface
@@ -453,7 +459,7 @@ describe("MACI - E2E", () => {
         expect(log.name).toBe("DeactivateKey")
         expect(c1).toStrictEqual(log.args.c1.map((x: any) => String(x)))
         expect(c2).toStrictEqual(log.args.c2.map((x: any) => String(x)))
-        expect(batch[0][0]).toBe(BigInt(log.args.keyHash))
+        expect(keyHash).toBe(BigInt(log.args.keyHash))
         expect(data.deactivatedLeaves.length).toBe(1)
         expect(numBatches).toBe(1)
     })
@@ -508,7 +514,7 @@ describe("MACI - E2E", () => {
             pollContract.address,
         )
         await tx.wait()
-        
+
         // Events.
         const logMergeStateAqSubRoots = maciContract.interface.parseLog(receipt.logs[0])
         const logMergeMaciStateAqSubRoots = pollContract.interface.parseLog(receipt.logs[1])
@@ -526,5 +532,21 @@ describe("MACI - E2E", () => {
         expect(Number(logMergeStateAq.args._pollId)).toBe(Number(pollId))
         expect(logMergeMaciStateAq.name).toBe("MergeMaciStateAq")
         expect(BigInt(logMergeMaciStateAq.args._stateRoot)).toBe(BigInt(maciState.stateTree.root))
+    })
+
+    it("should generate a new user key", async () => {
+        // Generate a new keypair for the user.
+        newUser1KeyPair = new Keypair()
+
+        const { circomInputs, kCommand } = maciState.polls[pollId].generateCircuitInputsForGenerateNewKey(
+            newUser1KeyPair.pubKey,
+            user1KeyPair.privKey,
+            user1KeyPair.pubKey,
+            userStateIndex,
+            BigInt(salt),
+            pollId
+        )
+      
+        /// @todo to be continued.
     })
 })
