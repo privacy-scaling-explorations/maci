@@ -136,7 +136,8 @@ class Poll {
     public MM = 50   // adjustable parameter
     public WW = 4     // number of digits for float representation
 
-    // used to store info about deactivatedKey events happening on chain so we can use it to search for deactiavtedKeyIndex.
+    // used to store info about deactivatedKey events happening on chain 
+    // so we can use it to search for deactivatedKeyIndex
     public deactivatedKeyEvents: DeactivatedKeyEvent[] = [];
 
     constructor(
@@ -227,8 +228,8 @@ class Poll {
         const deactivatedKeyEvent = { keyHash: _keyHash, c1: _c1.map(c => BigInt(c.toString())), c2: _c2.map(c => BigInt(c.toString())) } as DeactivatedKeyEvent;
         this.deactivatedKeyEvents.push(deactivatedKeyEvent);
 
-        const deactivatedLeafTemphash = hash5([deactivatedKeyEvent.keyHash, ...deactivatedKeyEvent.c1, ...deactivatedKeyEvent.c2]);
-        this.deactivatedKeysTree.insert(deactivatedLeafTemphash);
+        const deactivatedLeafHash = hash5([deactivatedKeyEvent.keyHash, ...deactivatedKeyEvent.c1, ...deactivatedKeyEvent.c2]);
+        this.deactivatedKeysTree.insert(deactivatedLeafHash);
     }
 
     public deactivateKey = (
@@ -414,7 +415,6 @@ class Poll {
         let mask: BigInt = _seed;
         ;
         let computedStateIndex = 0;
-        let stateIndexTemp = 0;
 
         const stateLeafPathElements = [];
         const currentStateLeaves = [];
@@ -435,16 +435,14 @@ class Poll {
             } = deactCommand;
 
             const stateIndexInt = parseInt(stateIndex.toString());
-            stateIndexTemp = stateIndexInt;
-
             computedStateIndex = stateIndexInt > 0 && stateIndexInt <= this.numSignUps ? stateIndexInt - 1 : -1;
 
             let pubKey: any;
 
             if (computedStateIndex > -1) {
-                pubKey = this.stateLeaves[stateIndexTemp].pubKey;
-                stateLeafPathElements.push(this.stateTree.genMerklePath(stateIndexTemp).pathElements);
-                currentStateLeaves.push(this.stateLeaves[stateIndexTemp].asCircuitInputs());
+                pubKey = this.stateLeaves[stateIndexInt].pubKey;
+                stateLeafPathElements.push(this.stateTree.genMerklePath(stateIndexInt).pathElements);
+                currentStateLeaves.push(this.stateLeaves[stateIndexInt].asCircuitInputs());
             } else {
                 pubKey = new PubKey([BigInt(0), BigInt(0)]);
                 stateLeafPathElements.push(this.stateTree.genMerklePath(0).pathElements);
