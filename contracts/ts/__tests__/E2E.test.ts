@@ -4,10 +4,11 @@ import path = require("path");
 import { Keypair, Message, PCommand, PubKey, VerifyingKey } from "maci-domainobjs";
 import { extractVk } from "maci-circuits"
 import { genProcessVkSig, genTallyVkSig, genDeactivationVkSig } from 'maci-core'
-import { compareVks } from "../utils";
+import { compareVks, formatProofForVerifierContract } from "../utils";
 import { timeTravel, validateSaltFormat, validateSaltSize } from "./utils";
 import { MaciState } from "maci-core"
-import { hash5 } from "maci-crypto";
+import { groth16 } from "snarkjs"
+import { getCurveFromName } from "ffjavascript"
 // import { genRandomSalt } from "maci-crypto";
 jest.setTimeout(2000000)
 
@@ -57,15 +58,18 @@ describe("MACI - E2E", () => {
     const maxVoteOptions = 25 // The max number of supported vote options.
     const seed = 42 // Random generator seed value used for masking values during the message deactivation processing.
     const fromBlock = 0 // Indicates which block to start from to find events.
-
+    const stateNumSrQueueOps = 1 // The number of subroot queue operations to merge for the MACI state tree.
+    const deactivatedKeysNumSrQueueOps = 1 // The number of subroot queue operations to merge for the deactivated keys tree.
     const maciState = new MaciState(); // A reproduction of MACI on-chain state.
 
     // Keys.
     let coordinatorKeyPair: Keypair
     let user1KeyPair: Keypair
+    let newUser1KeyPair: Keypair
 
-    // Data from contracts interactions.
+    // Data from contracts/state interactions.
     let userStateIndex: Number
+    let circuitInputs: any
 
     // zkeys folder path.
     const zKeysPath = `${__dirname}../../../../cli/zkeys`
@@ -78,14 +82,23 @@ describe("MACI - E2E", () => {
     const pmZkeyFile = path.resolve(`${zKeysPath}/${pmZkeyName}.0.zkey`)
     const tvZkeyFile = path.resolve(`${zKeysPath}/${tvZkeyName}.0.zkey`)
     const pdmZkeyFile = path.resolve(`${zKeysPath}/${pdmZkeyName}.0.zkey`)
+    // Wasm.
+    const pdmWasmName = `${pdmZkeyName}_js/${pdmZkeyName}`
+    const pdmWasmFile = path.resolve(`${zKeysPath}/${pdmWasmName}.wasm`)
 
     // Vkeys.
+    let rawPmVk: any
+    let rawTvVk: any
+    let rawPdmVk: any
     let pmVk: VerifyingKey
     let tvVk: VerifyingKey
     let pdmVk: VerifyingKey
     let pmVkOnChain: VerifyingKey
     let tvVkOnChain: VerifyingKey
     let pdmVkOnChain: VerifyingKey
+
+    // Snarkjs.
+    let curve: any
 
     // Test configs.
     /// @dev quiet = true - avoid console.log from deploy methods.
@@ -95,6 +108,14 @@ describe("MACI - E2E", () => {
         // Get default signer and provider.
         signer = await getDefaultSigner();
         provider = signer.provider
+
+        // Snarkjs workaround for graceful termination.
+        curve = await getCurveFromName("bn128")
+    })
+
+    afterAll(async () => {
+        // Snarkjs workaround for graceful termination.
+        await curve.terminate()
     })
 
     it("should initialize MACI infrastructure", async () => {
@@ -102,9 +123,13 @@ describe("MACI - E2E", () => {
         await vkRegistryContract.deployTransaction.wait()
 
         // extract verification keys.
-        pmVk = VerifyingKey.fromObj(extractVk(pmZkeyFile))
-        tvVk = VerifyingKey.fromObj(extractVk(tvZkeyFile))
-        pdmVk = VerifyingKey.fromObj(extractVk(pdmZkeyFile))
+        rawPmVk = extractVk(pmZkeyFile)
+        rawTvVk = extractVk(tvZkeyFile)
+        rawPdmVk = extractVk(pdmZkeyFile)
+
+        pmVk = VerifyingKey.fromObj(rawPmVk)
+        tvVk = VerifyingKey.fromObj(rawTvVk)
+        pdmVk = VerifyingKey.fromObj(rawPdmVk)
 
         // Query the contract to check if the pmVk, tvVk and pdmVk have already been set.
         const pmVkSig = genProcessVkSig(
@@ -336,7 +361,7 @@ describe("MACI - E2E", () => {
         const salt = "0x798D81BE4A9870C079B8DE539496AB95"
 
         // Generate a new keypair for the user.
-        const newUserKeyPair = new Keypair()
+        newUser1KeyPair = new Keypair()
 
         // Create new command.
         const command: PCommand = new PCommand(
@@ -356,7 +381,7 @@ describe("MACI - E2E", () => {
         const message = command.encrypt(
             signature,
             Keypair.genEcdhSharedKey(
-                newUserKeyPair.privKey,
+                newUser1KeyPair.privKey,
                 coordinatorKeyPair.pubKey,
             )
         )
@@ -364,7 +389,7 @@ describe("MACI - E2E", () => {
         // Send tx.
         const tx = await pollContract.deactivateKey(
             message.asContractParam(),
-            newUserKeyPair.pubKey.asContractParam(),
+            newUser1KeyPair.pubKey.asContractParam(),
             { gasLimit: 10000000 },
         )
         const receipt = await tx.wait()
@@ -375,21 +400,21 @@ describe("MACI - E2E", () => {
         const logAttemptKeyDeactivation = iface.parseLog(receipt.logs[1])
 
         // update maci state.
-        maciState.polls[pollId].deactivateKey(message, newUserKeyPair.pubKey)
+        maciState.polls[pollId].deactivateKey(message, newUser1KeyPair.pubKey)
 
         // Checks.
         expect(logPublishMessage.name).toBe("PublishMessage")
         expect(Number(message.msgType)).toBe(Number(logPublishMessage.args._message.msgType))
         expect(message.data).toStrictEqual(logPublishMessage.args._message.data.map((x: any) => BigInt(x)))
-        expect(String(newUserKeyPair.pubKey.asContractParam().x)).toBe(String(logPublishMessage.args._encPubKey.x))
-        expect(String(newUserKeyPair.pubKey.asContractParam().y)).toBe(String(logPublishMessage.args._encPubKey.y))
+        expect(String(newUser1KeyPair.pubKey.asContractParam().x)).toBe(String(logPublishMessage.args._encPubKey.x))
+        expect(String(newUser1KeyPair.pubKey.asContractParam().y)).toBe(String(logPublishMessage.args._encPubKey.y))
 
         expect(logAttemptKeyDeactivation.name).toBe("AttemptKeyDeactivation")
         expect(Number(message.msgType)).toBe(Number(logAttemptKeyDeactivation.args._message.msgType))
         expect(message.data).toStrictEqual(logAttemptKeyDeactivation.args._message.data.map((x: any) => BigInt(x)))
-        expect(String(newUserKeyPair.pubKey.asContractParam().x)).toBe(String(logAttemptKeyDeactivation.args._encPubKey.x))
-        expect(String(newUserKeyPair.pubKey.asContractParam().y)).toBe(String(logAttemptKeyDeactivation.args._encPubKey.y))
-        
+        expect(String(newUser1KeyPair.pubKey.asContractParam().x)).toBe(String(logAttemptKeyDeactivation.args._encPubKey.x))
+        expect(String(newUser1KeyPair.pubKey.asContractParam().y)).toBe(String(logAttemptKeyDeactivation.args._encPubKey.y))
+
         expect(pollAddr).toBe(pollContract.address)
         expect(Number(userStateIndex)).toBeGreaterThan(0)
         expect(validateSaltFormat(salt) && validateSaltSize(salt)).toBe(true)
@@ -401,15 +426,17 @@ describe("MACI - E2E", () => {
         await timeTravel(signer.provider, 60);
 
         // Process the deactivation messages on MACI state.
-        const { circuitInputs, deactivatedLeaves } = maciState.polls[pollId].processDeactivationMessages(seed);
+        const data = maciState.polls[pollId].processDeactivationMessages(seed);
+        circuitInputs = data.circuitInputs
+
         // Get ElGamal ciphertext.
         const c1 = circuitInputs.elGamalEnc[0][0]
         const c2 = circuitInputs.elGamalEnc[0][1]
 
         // Prepare batch.
         // nb. there should be just one batch.
-        const numBatches = Math.ceil(deactivatedLeaves.length / messageBatchSize);
-        const batch = deactivatedLeaves.map((leaf: any) => leaf.asArray());
+        const numBatches = Math.ceil(data.deactivatedLeaves.length / messageBatchSize);
+        const batch = data.deactivatedLeaves.map((leaf: any) => leaf.asArray());
 
         const tx = await messageProcessorContract.confirmDeactivation(
             batch,
@@ -427,7 +454,77 @@ describe("MACI - E2E", () => {
         expect(c1).toStrictEqual(log.args.c1.map((x: any) => String(x)))
         expect(c2).toStrictEqual(log.args.c2.map((x: any) => String(x)))
         expect(batch[0][0]).toBe(BigInt(log.args.keyHash))
-        expect(deactivatedLeaves.length).toBe(1)
+        expect(data.deactivatedLeaves.length).toBe(1)
         expect(numBatches).toBe(1)
+    })
+
+    it("should complete the deactivation of user key", async () => {
+        // Time-travel (signUpDuration + 1m).
+        await timeTravel(signer.provider, signUpDuration + 3600)
+
+        // Generate proof to confirm deactivation.
+        const { proof, publicSignals } = await groth16.fullProve(
+            {
+                inputHash: circuitInputs.inputHash,
+                chainHash: circuitInputs.chainHash,
+                coordPrivKey: circuitInputs.coordPrivKey,
+                coordPubKey: circuitInputs.coordPubKey,
+                encPubKeys: circuitInputs.encPubKeys,
+                msgs: circuitInputs.msgs,
+                deactivatedTreePathElements: circuitInputs.deactivatedTreePathElements,
+                stateLeafPathElements: circuitInputs.stateLeafPathElements,
+                currentStateLeaves: circuitInputs.currentStateLeaves,
+                elGamalEnc: circuitInputs.elGamalEnc,
+                maskingValues: circuitInputs.maskingValues,
+                deactivatedTreeRoot: circuitInputs.deactivatedTreeRoot,
+                currentStateRoot: circuitInputs.currentStateRoot,
+                numSignUps: circuitInputs.numSignUps
+            },
+            pdmWasmFile,
+            pdmZkeyFile
+        )
+
+        // Check proof validity.
+        const isValidProof = await groth16.verify(
+            rawPdmVk,
+            publicSignals,
+            proof
+        )
+
+        // Format proof for verifier contract.
+        const formattedProof = formatProofForVerifierContract(proof);
+
+        // Merge for deactivation.
+        let tx = await messageProcessorContract.mergeForDeactivation(
+            stateNumSrQueueOps,
+            pollContract.address,
+            pollId
+        )
+        const receipt = await tx.wait()
+
+        // Complete deactivation.
+        tx = await messageProcessorContract.completeDeactivation(
+            formattedProof,
+            pollContract.address,
+        )
+        await tx.wait()
+        
+        // Events.
+        const logMergeStateAqSubRoots = maciContract.interface.parseLog(receipt.logs[0])
+        const logMergeMaciStateAqSubRoots = pollContract.interface.parseLog(receipt.logs[1])
+        const logMergeStateAq = maciContract.interface.parseLog(receipt.logs[2])
+        const logMergeMaciStateAq = pollContract.interface.parseLog(receipt.logs[3])
+
+        // Checks.
+        expect(isValidProof).toBe(true)
+        expect(logMergeStateAqSubRoots.name).toBe("MergeStateAqSubRoots")
+        expect(Number(logMergeStateAqSubRoots.args._pollId)).toBe(Number(pollId))
+        expect(Number(logMergeStateAqSubRoots.args._numSrQueueOps)).toBe(Number(stateNumSrQueueOps))
+        expect(logMergeMaciStateAqSubRoots.name).toBe("MergeMaciStateAqSubRoots")
+        expect(Number(logMergeMaciStateAqSubRoots.args._numSrQueueOps)).toBe(Number(stateNumSrQueueOps))
+        expect(logMergeStateAq.name).toBe("MergeStateAq")
+        expect(Number(logMergeStateAq.args._pollId)).toBe(Number(pollId))
+        expect(logMergeMaciStateAq.name).toBe("MergeMaciStateAq")
+        expect(BigInt(logMergeMaciStateAq.args._stateRoot)).toBe(BigInt(maciState.stateTree.root))
     })
 })
