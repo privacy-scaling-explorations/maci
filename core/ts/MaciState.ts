@@ -224,8 +224,11 @@ class Poll {
         _c1: BigInt[],
         _c2: BigInt[]
     ) => {
-        const deactiavtedKeyEvent = { keyHash: _keyHash, c1: _c1.map(c => BigInt(c.toString())), c2: _c2.map(c => BigInt(c.toString())) } as DeactivatedKeyEvent;
-        this.deactivatedKeyEvents.push(deactiavtedKeyEvent);
+        const deactivatedKeyEvent = { keyHash: _keyHash, c1: _c1.map(c => BigInt(c.toString())), c2: _c2.map(c => BigInt(c.toString())) } as DeactivatedKeyEvent;
+        this.deactivatedKeyEvents.push(deactivatedKeyEvent);
+
+        const deactivatedLeafTemphash = hash5([deactivatedKeyEvent.keyHash, ...deactivatedKeyEvent.c1, ...deactivatedKeyEvent.c2]);
+        this.deactivatedKeysTree.insert(deactivatedLeafTemphash);
     }
 
     public deactivateKey = (
@@ -481,7 +484,6 @@ class Poll {
                 salt,
             ))
 
-            this.deactivatedKeysTree.insert(deactivatedLeaf.hash())
             deactivatedLeaves.push(deactivatedLeaf);
         }
 
@@ -579,18 +581,14 @@ class Poll {
             deactivatedKeyEvent.c2,
         );
 
-        const deactivatedLeafTemphash = hash5([deactivatedKeyHash, ...deactivatedKeyEvent.c1, ...deactivatedKeyEvent.c2]);
-        this.deactivatedKeysTree.insert(deactivatedLeafTemphash) // TODO: Move to genmacistate
-
-        // TODO: check if asCircuitInputs should be used
         const nullifier = hash2([BigInt(deactivatedPrivateKey.asCircuitInputs()), salt]);
 
-        // TODO: set proper value for voiceCreditBalance - take from input param
-        const voiceCreditBalance = BigInt(5)
+        // TODO: set proper value for newCreditBalance - take from input param?
+        const newCreditBalance = BigInt(5)
 
         const kcommand: KCommand = new KCommand(
             newPublicKey,
-            voiceCreditBalance,
+            newCreditBalance,
             nullifier,
             c1r,
             c2r,
