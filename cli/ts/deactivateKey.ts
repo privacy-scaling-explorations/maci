@@ -267,8 +267,7 @@ const deactivateKey = async (args: any) => {
     try {
         tx = await pollContractEthers.deactivateKey(
             message.asContractParam(),
-            encKeypair.pubKey.asContractParam(),
-            { gasLimit: 10000000 },
+            encKeypair.pubKey.asContractParam()
         )
         await tx.wait()
 

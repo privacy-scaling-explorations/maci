@@ -392,8 +392,7 @@ const generateNewKey = async (args: any) => {
             coordinatorKeypair.pubKey.asContractParam(),
             encPubKey.asContractParam(),
             pollContract.address,
-            formattedProof,
-            { gasLimit: 10000000 },
+            formattedProof
         )
         await tx.wait()
 

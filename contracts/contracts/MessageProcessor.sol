@@ -332,9 +332,11 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
         );
 
         // Get the verifying key from the VkRegistry
-        VerifyingKey memory vk = vkRegistry.getNewKeyGenerationVk(
+        VerifyingKey memory vk = vkRegistry.getProcessVk(
             maci.stateTreeDepth(),
-            messageTreeDepth
+            messageTreeDepth,
+            voteOptionTreeDepth,
+            messageBatchSize
         );
 
         return verifier.verify(_proof, vk, publicInputHash);
