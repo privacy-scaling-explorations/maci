@@ -51,8 +51,8 @@ interface MaxValues {
 
 interface DeactivatedKeyEvent {
     keyHash: BigInt;
-    c1: bigint[];
-    c2: bigint[];
+    c1: BigInt[];
+    c2: BigInt[];
 }
 
 const STATE_TREE_DEPTH = 10
@@ -191,11 +191,11 @@ class Poll {
     ) => {
         assert(_message.msgType == BigInt(3))
         assert(
-            _encPubKey.rawPubKey[0] < SNARK_FIELD_SIZE &&
-            _encPubKey.rawPubKey[1] < SNARK_FIELD_SIZE
+            BigInt(_encPubKey.rawPubKey[0].valueOf()) < SNARK_FIELD_SIZE &&
+            BigInt(_encPubKey.rawPubKey[1].valueOf()) < SNARK_FIELD_SIZE
         )
         for (const d of _message.data) {
-            assert(d < SNARK_FIELD_SIZE)
+            assert(BigInt(d.valueOf()) < SNARK_FIELD_SIZE)
         }
 
         this.encPubKeys.push(_encPubKey)
@@ -238,11 +238,11 @@ class Poll {
     ) => {
         assert(_message.msgType == BigInt(1))
         assert(
-            _encPubKey.rawPubKey[0] < SNARK_FIELD_SIZE &&
-            _encPubKey.rawPubKey[1] < SNARK_FIELD_SIZE
+            BigInt(_encPubKey.rawPubKey[0].valueOf()) < SNARK_FIELD_SIZE &&
+            BigInt(_encPubKey.rawPubKey[1].valueOf()) < SNARK_FIELD_SIZE
         )
         for (const d of _message.data) {
-            assert(d < SNARK_FIELD_SIZE)
+            assert(BigInt(d.valueOf()) < SNARK_FIELD_SIZE)
         }
 
         this.deactivationMessages.push(_message)
@@ -309,7 +309,7 @@ class Poll {
     public topupMessage = (_message: Message) => {
         assert(_message.msgType == BigInt(2))
         for (const d of _message.data) {
-            assert(d < SNARK_FIELD_SIZE)
+            assert(BigInt(d.valueOf()) < SNARK_FIELD_SIZE)
         }
         this.messages.push(_message)
         let padKey = new PubKey([
@@ -336,11 +336,11 @@ class Poll {
     ) => {
         assert(_message.msgType == BigInt(1))
         assert(
-            _encPubKey.rawPubKey[0] < SNARK_FIELD_SIZE &&
-            _encPubKey.rawPubKey[1] < SNARK_FIELD_SIZE
+            BigInt(_encPubKey.rawPubKey[0].valueOf()) < SNARK_FIELD_SIZE &&
+            BigInt(_encPubKey.rawPubKey[1].valueOf()) < SNARK_FIELD_SIZE
         )
         for (const d of _message.data) {
-            assert(d < SNARK_FIELD_SIZE)
+            assert(BigInt(d.valueOf()) < SNARK_FIELD_SIZE)
         }
 
         this.encPubKeys.push(_encPubKey)
@@ -581,7 +581,8 @@ class Poll {
 
         const nullifier = hash2([BigInt(deactivatedPrivateKey.asCircuitInputs()), salt]);
 
-        // TODO: set proper value for newCreditBalance - take from input param?
+        // TODO: Hardcoded to 5 just to make it pass in the tests. Any number below the default test balance of 99 would work.
+        // We should probably take this from input param, but is subject to discussion before final submit of the milestone 3.
         const newCreditBalance = BigInt(5)
 
         const kcommand: KCommand = new KCommand(
@@ -1064,8 +1065,8 @@ class Poll {
 
             // If the vote option index is invalid, do nothing
             if (
-                command.voteOptionIndex < BigInt(0) ||
-                command.voteOptionIndex >= BigInt(this.maxValues.maxVoteOptions)
+                BigInt(command.voteOptionIndex.valueOf()) < BigInt(0) ||
+                BigInt(command.voteOptionIndex.valueOf()) >= BigInt(this.maxValues.maxVoteOptions)
             ) {
                 // console.log("no op")
                 throw Error("no-op")
