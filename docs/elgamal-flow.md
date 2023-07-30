@@ -234,7 +234,7 @@ A new message type is added (type 3). This command is invoke by the user.
 In `generateNewKey()` function, the user needs to provide his old and new public-private key pair.
 <!-- TODO: Fix prompting for coordinator's private key; currently it is done because genMaciStateFromContract requires coord's keypair.-->
 
-The MACI state is reconstructed using `genMaciStateFromContract()` function which merges the state tree.
+The MACI state is reconstructed using `genMaciStateFromContract()` function which which fetches the events and state from the smart contracts and replays them in the local maci state to reconstruct it.
 
 From the reconstructed MACI state, `generateCircuitInputsForGenerateNewKey()` is called which takes the following arguments:
 
