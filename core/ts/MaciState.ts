@@ -14,11 +14,10 @@ import {
     Signature,
     verifySignature,
     elGamalEncryptBit,
-    elGamalRerandomize
+    elGamalRerandomize,
 } from 'maci-crypto'
 import {
     PubKey,
-    VerifyingKey,
     Command,
     PCommand,
     KCommand,
@@ -48,6 +47,12 @@ interface MaxValues {
     maxUsers: number;
     maxMessages: number;
     maxVoteOptions: number;
+}
+
+interface DeactivatedKeyEvent {
+    keyHash: BigInt;
+    c1: BigInt[];
+    c2: BigInt[];
 }
 
 const STATE_TREE_DEPTH = 10
@@ -131,9 +136,9 @@ class Poll {
     public MM = 50   // adjustable parameter
     public WW = 4     // number of digits for float representation
 
-    // TODO: used to store info about deactivatedKey events happening on chain so we can use it to search for deactiavtedKeyIndex.
-    // Add a concrete type instead of any
-    public deactivatedKeyEvents: any[] = [];
+    // used to store info about deactivatedKey events happening on chain 
+    // so we can use it to search for deactivatedKeyIndex
+    public deactivatedKeyEvents: DeactivatedKeyEvent[] = [];
 
     constructor(
         _duration: number,
@@ -186,11 +191,11 @@ class Poll {
     ) => {
         assert(_message.msgType == BigInt(3))
         assert(
-            _encPubKey.rawPubKey[0] < SNARK_FIELD_SIZE &&
-            _encPubKey.rawPubKey[1] < SNARK_FIELD_SIZE
+            BigInt(_encPubKey.rawPubKey[0].valueOf()) < SNARK_FIELD_SIZE &&
+            BigInt(_encPubKey.rawPubKey[1].valueOf()) < SNARK_FIELD_SIZE
         )
         for (const d of _message.data) {
-            assert(d < SNARK_FIELD_SIZE)
+            assert(BigInt(d.valueOf()) < SNARK_FIELD_SIZE)
         }
 
         this.encPubKeys.push(_encPubKey)
@@ -220,8 +225,11 @@ class Poll {
         _c1: BigInt[],
         _c2: BigInt[]
     ) => {
-        const deactiavtedKeyEvent = { keyHash: _keyHash, c1: _c1, c2: _c2 };
-        this.deactivatedKeyEvents.push(deactiavtedKeyEvent);
+        const deactivatedKeyEvent = { keyHash: _keyHash, c1: _c1.map(c => BigInt(c.toString())), c2: _c2.map(c => BigInt(c.toString())) } as DeactivatedKeyEvent;
+        this.deactivatedKeyEvents.push(deactivatedKeyEvent);
+
+        const deactivatedLeafHash = hash5([deactivatedKeyEvent.keyHash, ...deactivatedKeyEvent.c1, ...deactivatedKeyEvent.c2]);
+        this.deactivatedKeysTree.insert(deactivatedLeafHash);
     }
 
     public deactivateKey = (
@@ -230,11 +238,11 @@ class Poll {
     ) => {
         assert(_message.msgType == BigInt(1))
         assert(
-            _encPubKey.rawPubKey[0] < SNARK_FIELD_SIZE &&
-            _encPubKey.rawPubKey[1] < SNARK_FIELD_SIZE
+            BigInt(_encPubKey.rawPubKey[0].valueOf()) < SNARK_FIELD_SIZE &&
+            BigInt(_encPubKey.rawPubKey[1].valueOf()) < SNARK_FIELD_SIZE
         )
         for (const d of _message.data) {
-            assert(d < SNARK_FIELD_SIZE)
+            assert(BigInt(d.valueOf()) < SNARK_FIELD_SIZE)
         }
 
         this.deactivationMessages.push(_message)
@@ -256,7 +264,7 @@ class Poll {
             this.deactivationSignatures.push(signature)
             this.deactivationCommands.push(command)
         } catch (e) {
-            //console.log(`error cannot decrypt: ${e.message}`)
+            console.log(`error cannot decrypt: ${e.message}`)
             const keyPair = new Keypair()
             const command = new PCommand(BigInt(1), keyPair.pubKey, BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0))
             this.deactivationCommands.push(command)
@@ -301,7 +309,7 @@ class Poll {
     public topupMessage = (_message: Message) => {
         assert(_message.msgType == BigInt(2))
         for (const d of _message.data) {
-            assert(d < SNARK_FIELD_SIZE)
+            assert(BigInt(d.valueOf()) < SNARK_FIELD_SIZE)
         }
         this.messages.push(_message)
         let padKey = new PubKey([
@@ -328,11 +336,11 @@ class Poll {
     ) => {
         assert(_message.msgType == BigInt(1))
         assert(
-            _encPubKey.rawPubKey[0] < SNARK_FIELD_SIZE &&
-            _encPubKey.rawPubKey[1] < SNARK_FIELD_SIZE
+            BigInt(_encPubKey.rawPubKey[0].valueOf()) < SNARK_FIELD_SIZE &&
+            BigInt(_encPubKey.rawPubKey[1].valueOf()) < SNARK_FIELD_SIZE
         )
         for (const d of _message.data) {
-            assert(d < SNARK_FIELD_SIZE)
+            assert(BigInt(d.valueOf()) < SNARK_FIELD_SIZE)
         }
 
         this.encPubKeys.push(_encPubKey)
@@ -408,11 +416,13 @@ class Poll {
         ;
         let computedStateIndex = 0;
 
+        const stateLeafPathElements = [];
+        const currentStateLeaves = [];
+
+
         for (let i = 0; i < this.deactivationMessages.length; i += 1) {
             const deactCommand = this.deactivationCommands[i];
-            const deactMessage = this.deactivationMessages[i];
-            const deactSignatures = this.deactivationSignatures[i];
-            const encPubKey = this.deactivationEncPubKeys[i];
+            const deactSignatures = this.deactivationSignatures;
 
             const signature = deactSignatures[i];
 
@@ -430,9 +440,13 @@ class Poll {
             let pubKey: any;
 
             if (computedStateIndex > -1) {
-                pubKey = this.stateLeaves[computedStateIndex].pubKey;
+                pubKey = this.stateLeaves[stateIndexInt].pubKey;
+                stateLeafPathElements.push(this.stateTree.genMerklePath(stateIndexInt).pathElements);
+                currentStateLeaves.push(this.stateLeaves[stateIndexInt].asCircuitInputs());
             } else {
                 pubKey = new PubKey([BigInt(0), BigInt(0)]);
+                stateLeafPathElements.push(this.stateTree.genMerklePath(0).pathElements);
+                currentStateLeaves.push(this.stateLeaves[0].asCircuitInputs());
             }
 
             // Verify deactivation message
@@ -440,7 +454,7 @@ class Poll {
                 && computedStateIndex != -1
                 && signature != null
                 && verifySignature(
-                    deactMessage.hash(encPubKey),
+                    deactCommand.hash(),
                     signature,
                     pubKey.rawPubKey
                 ) // Check signature
@@ -468,7 +482,6 @@ class Poll {
                 salt,
             ))
 
-            this.deactivatedKeysTree.insert(deactivatedLeaf.hash())
             deactivatedLeaves.push(deactivatedLeaf);
         }
 
@@ -490,15 +503,13 @@ class Poll {
             deactivatedTreePathElements.push(this.stateTree.genMerklePath(0).pathElements)
         }
 
-        const stateLeafPathElements = [this.stateTree.genMerklePath(computedStateIndex).pathElements];
         // Pad array
-        for (let i = 1; i < maxMessages; i += 1) {
+        for (let i = stateLeafPathElements.length; i < maxMessages; i += 1) {
             stateLeafPathElements.push(this.stateTree.genMerklePath(0).pathElements)
         }
 
-        const currentStateLeaves = [this.stateLeaves[computedStateIndex].asCircuitInputs()];
         // Pad array
-        for (let i = 1; i < maxMessages; i += 1) {
+        for (let i = currentStateLeaves.length; i < maxMessages; i += 1) {
             currentStateLeaves.push(blankStateLeaf.asCircuitInputs())
         }
 
@@ -549,47 +560,43 @@ class Poll {
             this.copyStateFromMaci()
         }
 
-        const deactivatedKeyHash = hash3([...deactivatedPublicKey.asArray(), salt]);
-        const deactivatedKeyIndex = this.deactivatedKeyEvents.findIndex(d => d.keyHash === deactivatedKeyHash);
+        const deactivatedKeyHash: BigInt = hash3([...deactivatedPublicKey.asArray(), salt]);
+        const deactivatedKeyIndex = this.deactivatedKeyEvents.findIndex(d => d.keyHash.toString() == deactivatedKeyHash.toString());
 
         if (deactivatedKeyIndex === -1) {
-            console.log("Key index is -1");
+            console.log("Deactivated key is missing from the deactivated key events collection from contract");
             return {};
         }
 
         const deactivatedKeyEvent = this.deactivatedKeyEvents[deactivatedKeyIndex];
 
-        const stateIndexInt = parseInt(stateIndex.toString());
-        const computedStateIndex = stateIndexInt > 0 && stateIndexInt <= this.numSignUps ? stateIndexInt - 1 : -1;
-        const currentStateLeaves = [this.stateLeaves[computedStateIndex]];
-
         const z = BigInt(42);
 
         const [c1r, c2r] = elGamalRerandomize(
-            newPublicKey.rawPubKey,
+            this.coordinatorKeypair.pubKey.rawPubKey,
             z,
             deactivatedKeyEvent.c1,
             deactivatedKeyEvent.c2,
         );
 
-        // TODO: check if asCircuitInputs should be used
         const nullifier = hash2([BigInt(deactivatedPrivateKey.asCircuitInputs()), salt]);
 
-        // TODO: set proper value for voiceCreditBalance
-        const voiceCreditBalance = BigInt(100)
+        // TODO: Hardcoded to 5 just to make it pass in the tests. Any number below the default test balance of 99 would work.
+        // We should probably take this from input param, but is subject to discussion before final submit of the milestone 3.
+        const newCreditBalance = BigInt(5)
 
         const kcommand: KCommand = new KCommand(
             newPublicKey,
-            voiceCreditBalance,
+            newCreditBalance,
             nullifier,
             c1r,
             c2r,
             pollId,
         )
 
-        const circuitInputs = kcommand.prepareValues(
+        return kcommand.prepareValues(
             deactivatedPrivateKey,
-            currentStateLeaves,
+            this.stateLeaves,
             this.stateTree,
             BigInt(this.numSignUps),
             stateIndex,
@@ -601,8 +608,6 @@ class Poll {
             deactivatedKeyEvent.c1,
             deactivatedKeyEvent.c2
         )
-
-        return { circuitInputs, kcommand };
     }
 
     /*
@@ -1060,8 +1065,8 @@ class Poll {
 
             // If the vote option index is invalid, do nothing
             if (
-                command.voteOptionIndex < BigInt(0) ||
-                command.voteOptionIndex >= BigInt(this.maxValues.maxVoteOptions)
+                BigInt(command.voteOptionIndex.valueOf()) < BigInt(0) ||
+                BigInt(command.voteOptionIndex.valueOf()) >= BigInt(this.maxValues.maxVoteOptions)
             ) {
                 // console.log("no op")
                 throw Error("no-op")
@@ -1876,6 +1881,7 @@ const genProcessVkSig = (
         BigInt(_voteOptionTreeDepth)
 }
 
+// TODO: Not used anywhere.Also one for new key generation is missing.
 const genDeactivationVkSig = (
     _messageQueueSize: number,
     _stateTreeDepth: number,

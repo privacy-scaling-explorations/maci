@@ -22,10 +22,14 @@ contract VkRegistry is Ownable, SnarkCommon {
     mapping(uint256 => VerifyingKey) internal subsidyVks;
     mapping(uint256 => bool) internal subsidyVkSet;
 
+    mapping(uint256 => VerifyingKey) internal newKeyGenerationVks;
+    mapping(uint256 => bool) internal newKeyGenerationVkSet;
+
     event ProcessVkSet(uint256 _sig);
     event ProcessDeactivationVkSet(uint256 _sig);
     event TallyVkSet(uint256 _sig);
     event SubsidyVkSet(uint256 _sig);
+    event NewKeyGenerationVkSet(uint256 _sig);
 
     function isProcessVkSet(uint256 _sig) public view returns (bool) {
         return processVkSet[_sig];
@@ -37,6 +41,10 @@ contract VkRegistry is Ownable, SnarkCommon {
 
     function isSubsidyVkSet(uint256 _sig) public view returns (bool) {
         return subsidyVkSet[_sig];
+    }
+
+    function isGenNewKeyGenerationVkSet(uint256 _sig) public view returns (bool) {
+        return newKeyGenerationVkSet[_sig];
     }
 
     function genProcessVkSig(
@@ -81,6 +89,14 @@ contract VkRegistry is Ownable, SnarkCommon {
             _voteOptionTreeDepth;
     }
 
+    function genNewKeyGenerationVkSig(
+        uint256 _stateTreeDepth,
+        uint256 _messageTreeDepth
+    ) public pure returns (uint256) {
+        return
+            (_stateTreeDepth << 128) + _messageTreeDepth;
+    }
+
     function setVerifyingKeys(
         uint256 _stateTreeDepth,
         uint256 _intStateTreeDepth,
@@ -89,7 +105,8 @@ contract VkRegistry is Ownable, SnarkCommon {
         uint256 _messageBatchSize,
         VerifyingKey memory _processVk,
         VerifyingKey memory _deactivationVk,
-        VerifyingKey memory _tallyVk
+        VerifyingKey memory _tallyVk,
+        VerifyingKey memory _newKeyGenerationVk
     ) public onlyOwner {
         uint256 processVkSig = genProcessVkSig(
             _stateTreeDepth,
@@ -120,6 +137,16 @@ contract VkRegistry is Ownable, SnarkCommon {
         );
 
         require(!tallyVkSet[tallyVkSig], "VkRegistry: tally vk already set");
+
+        uint256 newKeyGenerationVkSig = genNewKeyGenerationVkSig(
+            _stateTreeDepth,
+            _messageTreeDepth
+        );
+
+        require(
+            !newKeyGenerationVkSet[newKeyGenerationVkSig],
+            "VkRegistry: new key generation vk already set"
+        );
 
         VerifyingKey storage processVk = processVks[processVkSig];
         processVk.alpha1 = _processVk.alpha1;
@@ -155,6 +182,17 @@ contract VkRegistry is Ownable, SnarkCommon {
         }
         tallyVkSet[tallyVkSig] = true;
 
+        VerifyingKey storage newKeyGenerationVk = newKeyGenerationVks[newKeyGenerationVkSig];
+        newKeyGenerationVk.alpha1 = _newKeyGenerationVk.alpha1;
+        newKeyGenerationVk.beta2 = _newKeyGenerationVk.beta2;
+        newKeyGenerationVk.gamma2 = _newKeyGenerationVk.gamma2;
+        newKeyGenerationVk.delta2 = _newKeyGenerationVk.delta2;
+        for (uint8 i = 0; i < _newKeyGenerationVk.ic.length; i++) {
+            newKeyGenerationVk.ic.push(_newKeyGenerationVk.ic[i]);
+        }
+        newKeyGenerationVkSet[newKeyGenerationVkSig] = true;
+
+        emit NewKeyGenerationVkSet(newKeyGenerationVkSig);
         emit TallyVkSet(tallyVkSig);
         emit ProcessDeactivationVkSet(deactivationVkSig);
         emit ProcessVkSet(processVkSig);
@@ -289,6 +327,29 @@ contract VkRegistry is Ownable, SnarkCommon {
         );
 
         return getTallyVkBySig(sig);
+    }
+
+    function getnewKeyGenerationVkBySig(
+        uint256 _sig
+    ) public view returns (VerifyingKey memory) {
+        require(
+            newKeyGenerationVkSet[_sig],
+            "VkRegistry: new key generation verifying key not set"
+        );
+
+        return newKeyGenerationVks[_sig];
+    }
+
+    function getNewKeyGenerationVk(
+        uint256 _stateTreeDepth,
+        uint256 _messageTreeDepth
+    ) public view returns (VerifyingKey memory) {
+        uint256 sig = genNewKeyGenerationVkSig(
+            _stateTreeDepth,
+            _messageTreeDepth
+        );
+
+        return getnewKeyGenerationVkBySig(sig);
     }
 
     function hasSubsidyVk(

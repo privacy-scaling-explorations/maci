@@ -12,6 +12,7 @@ import {Verifier} from "./crypto/Verifier.sol";
 import {VkRegistry} from "./VkRegistry.sol";
 import {DomainObjs} from "./DomainObjs.sol";
 import {Utilities} from "./utilities/Utility.sol";
+import "hardhat/console.sol";
 
 /*
  * MessageProcessor is used to process messages published by signup users
@@ -283,7 +284,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
         (, , uint8 messageTreeDepth, ) = poll
             .treeDepths();
 
-        VerifyingKey memory vk = vkRegistry.getProcessDeactivationVk(
+        VerifyingKey memory vk = vkRegistry.getNewKeyGenerationVk(
             maci.stateTreeDepth(),
             messageTreeDepth
         );
@@ -393,9 +394,9 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
         n[8] = _message.data[8];
         n[9] = _message.data[9];
 
-        uint256 inputHash = sha256Hash(n);
+        uint256 messageHash = sha256Hash(n);
 
-        return inputHash;
+        return messageHash;
     }
 
     /*

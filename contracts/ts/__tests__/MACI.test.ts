@@ -65,6 +65,14 @@ const testTallyVk = new VerifyingKey(
 	[new G1Point(BigInt(14), BigInt(15)), new G1Point(BigInt(16), BigInt(17))]
 );
 
+const testNewKeyGenerationVk = new VerifyingKey(
+	new G1Point(BigInt(0), BigInt(1)),
+	new G2Point([BigInt(2), BigInt(3)], [BigInt(4), BigInt(5)]),
+	new G2Point([BigInt(6), BigInt(7)], [BigInt(8), BigInt(9)]),
+	new G2Point([BigInt(10), BigInt(11)], [BigInt(12), BigInt(13)]),
+	[new G1Point(BigInt(14), BigInt(15)), new G1Point(BigInt(16), BigInt(17))]
+);
+
 const compareVks = (vk: VerifyingKey, vkOnChain: any) => {
 	expect(vk.ic.length).toEqual(vkOnChain.ic.length);
 	for (let i = 0; i < vk.ic.length; i++) {
@@ -240,7 +248,8 @@ describe('MACI', () => {
 				messageBatchSize,
 				testProcessVk.asContractParam(),
 				testProcessDeactivationVk.asContractParam(),
-				testTallyVk.asContractParam()
+				testTallyVk.asContractParam(),
+				testNewKeyGenerationVk.asContractParam()
 			);
 			let receipt = await tx.wait();
 			expect(receipt.status).toEqual(1);
@@ -286,8 +295,14 @@ describe('MACI', () => {
 				treeDepths.voteOptionTreeDepth
 			);
 
+			const newKeyGenerationVkOnChain = await vkRegistryContract.getNewKeyGenerationVk(
+				std.toString(),
+				treeDepths.messageTreeDepth
+			);
+
 			compareVks(testProcessVk, processVkOnChain);
 			compareVks(testTallyVk, tallyVkOnChain);
+			compareVks(testNewKeyGenerationVk, newKeyGenerationVkOnChain);
 
 			// Create the poll and get the poll ID from the tx event logs
 			tx = await maciContract.deployPoll(
