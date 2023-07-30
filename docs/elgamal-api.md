@@ -85,7 +85,7 @@ node ./build/index.js confirmDeactivation --poll-id <pollId> --privkey <maciPriv
 - `--poll-id`, `-pi`: ID of the Poll.
 - `--privkey`, `-sk`: Coordinator's serialized MACI private key.
 - `--from-block`, `-fb`: The block number to start listening from.
-- `--batch-size`, `-bs`: The capacity of the subroot of the deactivated keys tree to be merged. Default: 1.
+- `--batch-size`, `-bs`: The size of the batch of messages to be sent for processing. Default: 1.
 
 #### Response
 
@@ -134,6 +134,7 @@ node ./build/index.js generateNewKey --new-pub-key <newMaciPublicKey> --new-priv
 - `--new-priv-key`, `-npk`: Users's new serialized MACI private key.
 - `--old-pub-key`, `-o`: User's old MACI public key.
 - `--old-priv-key`, `-opk`: Users's old serialized MACI private key.
+<!-- TODO: This argument is the legacy from the usage of genMaciStateFromContract function; See how to work around it. -->
 - `--coord-priv-key`, `-cpk`: Coordinator's serialized MACI private key.
 - `--state-index`, `-i`: User's state index.
 - `--salt`, `-s`: Message salt.
@@ -145,8 +146,7 @@ node ./build/index.js generateNewKey --new-pub-key <newMaciPublicKey> --new-priv
 
 #### Response
 
-<!-- TODO: Edit this once generateNewKey command logic is finished -->
-If the operation is successful, it does not produce any visible output. Returns an exit status of 0.
+If successful, it prints out a transaction hash. Returns an exit status of 0.
 If there is an error, the console warns the user. Returns an exit status of 1.
 
 ## Smart Contract Functions
@@ -230,6 +230,8 @@ None.
 
 Attempts to generate new key from the deactivated one.
 
+Called from the cli command generateNewKey. This function then calls the generateNewKeyFromDeactivated function on the Poll smart contract. Reason: Contract size limit prevents having everything in the Poll smart contract at the moment.
+
 ```solidity
 function generateNewKeyFromDeactivated(Message memory _message, PubKey memory _coordPubKey, PubKey memory _sharedPubKey, Poll poll, uint256[8] memory _proof) external returns (uint256);
 ```
@@ -238,10 +240,8 @@ function generateNewKeyFromDeactivated(Message memory _message, PubKey memory _c
 
 - `_message`: Encrypted message containing the state leaf index.
 - `_coordPubKey`: Coordinator's public key.
-<!-- TODO: verify this description -->
-- `_sharedPubKey`: Shared public key used to generate input hash.
+- `_sharedPubKey`: Shared public key used to create the shared key which is used for message encryption.
 - `poll`: Poll smart contract address.
-<!-- TODO: verify this description -->
 - `_proof`: Generated inclusion proof (deactivated key exists in the tree).
 
 #### Response
@@ -253,6 +253,8 @@ Returns:
 ### generateNewKeyFromDeactivated (Poll smart contract)
 
 Attempts to generate new key from the deactivated one.
+
+Called from the generateNewKeyFromDeactivated function from the Message Processor smart contract.
 
 ```solidity
 function generateNewKeyFromDeactivated(Message memory _message, PubKey memory _encPubKey) external returns (uint256);
