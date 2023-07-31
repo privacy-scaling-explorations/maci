@@ -227,9 +227,6 @@ class Poll {
     ) => {
         const deactivatedKeyEvent = { keyHash: _keyHash, c1: _c1.map(c => BigInt(c.toString())), c2: _c2.map(c => BigInt(c.toString())) } as DeactivatedKeyEvent;
         this.deactivatedKeyEvents.push(deactivatedKeyEvent);
-
-        const deactivatedLeafHash = hash5([deactivatedKeyEvent.keyHash, ...deactivatedKeyEvent.c1, ...deactivatedKeyEvent.c2]);
-        this.deactivatedKeysTree.insert(deactivatedLeafHash);
     }
 
     public deactivateKey = (
@@ -481,7 +478,8 @@ class Poll {
                 c2,
                 salt,
             ))
-
+            
+            this.deactivatedKeysTree.insert(deactivatedLeaf.hash());
             deactivatedLeaves.push(deactivatedLeaf);
         }
 
@@ -578,6 +576,9 @@ class Poll {
             deactivatedKeyEvent.c1,
             deactivatedKeyEvent.c2,
         );
+
+        const deactivatedLeafHash = hash5([deactivatedKeyHash, ...deactivatedKeyEvent.c1, ...deactivatedKeyEvent.c2]);
+        this.deactivatedKeysTree.insert(deactivatedLeafHash) 
 
         const nullifier = hash2([BigInt(deactivatedPrivateKey.asCircuitInputs()), salt]);
 
