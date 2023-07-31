@@ -440,6 +440,48 @@ const executeSuiteElgamal = async (data: any, expect: any) => {
             )
         }
 
+        console.log(`Deactivating keys for ${data.numUsers} users`)
+
+        // Deactivating keys for every user
+        for (let i = 0; i < users.length; i++) {
+            // Run the deactivateKey command
+            const deactivateKeyCommand = `node build/index.js deactivateKey` +
+                ` --privkey ${userKeypairs[i].privKey.serialize()}` +
+                ` --state-index ${i + 1}` +
+                ` --nonce 2 ` +
+                ` --salt 0x798D81BE4A9870C079B8DE539496AB95 ` + 
+                ` --poll-id ${pollId}`
+
+            execute(deactivateKeyCommand)
+        }
+
+        console.log(`Confirming deactivation`);
+
+        const confirmDeactivationCommand = `node build/index.js confirmDeactivation` +  
+            ` --poll-id ${pollId} ` +
+            ` --privkey ${coordinatorKeypair.privKey.serialize()} ` +
+            ` --from-block 0 ` +
+            ` --batch-size 1` 
+        execute(confirmDeactivationCommand)
+
+        // Completing deactivation
+        console.log(`Completing deactivation`)
+
+        const completeDeactivationCommand = `node build/index.js completeDeactivation` +  
+            ` --poll-id ${pollId} ` +
+            ` --privkey ${coordinatorKeypair.privKey.serialize()} ` +
+            ` --state-num-sr-queue-ops ${data.numUsers} ` +
+            ` --deactivated-keys-num-sr-queue-ops ${data.numUsers} ` +
+            ` --from-block 0 ` +
+            ` --process-deactivation-witnessgen ./zkeys/ProcessDeactivationMessages_5-10_test ` +
+            ` --process-deactivation-zkey ./zkeys/ProcessDeactivationMessages_5-10_test.0.zkey ` +
+            ` --rapidsnark ~/rapidsnark/build/prover `
+        execute(completeDeactivationCommand)
+
+        // Generating new key for every user
+        console.log(`Generating new keys`)
+        // TODO we need to produce new keys here
+
         // Publish messages
         console.log(`Publishing messages`)
 
