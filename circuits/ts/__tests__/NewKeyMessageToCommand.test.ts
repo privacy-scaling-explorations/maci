@@ -12,9 +12,7 @@ import {
 import {
     PrivKey,
     Keypair,
-    PCommand,
     KCommand,
-    Message,
     DeactivatedKeyLeaf,
 } from 'maci-domainobjs'
 
@@ -27,7 +25,7 @@ import {
     elGamalEncryptBit,
 } from 'maci-crypto'
 
-const voiceCreditBalance = BigInt(100)
+const newCreditBalance = BigInt(100)
 
 const duration = 30
 const maxValues = {
@@ -63,7 +61,7 @@ describe('NewKeyMessageToCommand circuit', () => {
             // Sign up and publish
             stateIndex = maciState.signUp(
                 userKeypair.pubKey,
-                voiceCreditBalance,
+                newCreditBalance,
                 // BigInt(1), 
                 BigInt(Math.floor(Date.now() / 1000)),
             )
@@ -121,7 +119,7 @@ describe('NewKeyMessageToCommand circuit', () => {
 
             const kCommand = new KCommand(
                 newUserKeypair.pubKey,
-                voiceCreditBalance,
+                newCreditBalance,
                 nullifier,
                 c1r,
                 c2r,
@@ -165,7 +163,7 @@ describe('NewKeyMessageToCommand circuit', () => {
 
             expect(newUserKeypair.pubKey.rawPubKey[0]).toEqual(BigInt(decodednewPubKey0));
             expect(newUserKeypair.pubKey.rawPubKey[1]).toEqual(BigInt(decodednewPubKey1));
-            expect(BigInt(voiceCreditBalance)).toEqual(BigInt(decodedNewCreditBalance));
+            expect(BigInt(newCreditBalance)).toEqual(BigInt(decodedNewCreditBalance));
             expect(nullifier).toEqual(BigInt(decodedNulifier));
             expect(BigInt(pollId)).toEqual(BigInt(decodedPollId));
             expect(c1r[0]).toEqual(BigInt(decodedC1r0));
@@ -210,7 +208,7 @@ describe('NewKeyMessageToCommand circuit', () => {
 
             const kCommand = new KCommand(
                 newUserKeypair.pubKey,
-                voiceCreditBalance,
+                newCreditBalance,
                 nullifier,
                 c1r,
                 c2r,
@@ -280,7 +278,7 @@ describe('NewKeyMessageToCommand circuit', () => {
 
             const kCommand = new KCommand(
                 newUserKeypair.pubKey,
-                voiceCreditBalance,
+                newCreditBalance,
                 nullifier,
                 c1r,
                 c2r,
@@ -349,7 +347,7 @@ describe('NewKeyMessageToCommand circuit', () => {
 
             const kCommand = new KCommand(
                 newUserKeypair.pubKey,
-                voiceCreditBalance,
+                newCreditBalance,
                 nullifier,
                 c1r,
                 c2r,

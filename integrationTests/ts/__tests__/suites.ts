@@ -78,6 +78,7 @@ const executeSuite = async (data: any, expect: any) => {
             ` -p ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey` +
             ` -zpd ./zkeys/ProcessDeactivationMessages_5-10_test.0.zkey` +
             ` -t ./zkeys/TallyVotes_10-1-2_test.0.zkey` +
+            ` -znkg ./zkeys/GenerateKeyFromDeactivated_10_test.0.zkey` +
             ` -k ${vkAddress}` +
             ` ${subsidyZkeyFilePath}`
 
