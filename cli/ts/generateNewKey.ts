@@ -119,7 +119,7 @@ const configureSubparser = (subparsers: any) => {
             action: 'store',
             required: true,
             type: 'string',
-            help: 'Coordinators serialized MACI private key',
+            help: 'Coordinator\'s serialized MACI private key',
         }
     )
 
@@ -167,7 +167,7 @@ const configureSubparser = (subparsers: any) => {
         {
             required: true,
             type: 'string',
-            help: 'The path to the NewKeyGenerationM-essage witness generation binary',
+            help: 'The path to the NewKeyGenerationMessage witness generation binary',
         }
     )
 
