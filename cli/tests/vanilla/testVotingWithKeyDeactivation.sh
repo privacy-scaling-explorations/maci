@@ -43,7 +43,6 @@ $MACI_CLI confirmDeactivation \
 $MACI_CLI timeTravel \
     --seconds 35
 
-# missing triggering of smart contract code to pass batches
 $MACI_CLI completeDeactivation \
     --poll-id $POLL_ID \
     --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e  \
