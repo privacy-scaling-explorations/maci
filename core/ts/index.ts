@@ -8,6 +8,7 @@ import {
     genProcessVkSig,
     genTallyVkSig,
     genSubsidyVkSig,
+    genNewKeyGenerationVkSig,
     genDeactivationVkSig
 } from './MaciState'
 
@@ -21,5 +22,6 @@ export {
     genProcessVkSig,
     genTallyVkSig,
     genSubsidyVkSig,
+    genNewKeyGenerationVkSig,
     genDeactivationVkSig
 }

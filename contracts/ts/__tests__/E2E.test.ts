@@ -3,7 +3,7 @@ import { deployConstantInitialVoiceCreditProxy, deployFreeForAllSignUpGatekeeper
 import path = require("path");
 import { Keypair, Message, PCommand, PubKey, VerifyingKey } from "maci-domainobjs";
 import { extractVk } from "maci-circuits"
-import { genProcessVkSig, genTallyVkSig, genDeactivationVkSig } from 'maci-core'
+import { genProcessVkSig, genTallyVkSig, genDeactivationVkSig, genNewKeyGenerationVkSig } from 'maci-core'
 import { compareVks, formatProofForVerifierContract } from "../utils";
 import { timeTravel, validateSaltFormat, validateSaltSize } from "./utils";
 import { MaciState } from "maci-core"
@@ -82,9 +82,11 @@ describe("MACI - E2E", () => {
     const tvZkeyName = `TallyVotes_${stateTreeDepth}-${intStateTreeDepth}-${voteOptionTreeDepth}_${zKeyPostfix}`
     // const spbZkeyName = `SubsidyPerBatch_${stateTreeDepth}-${intStateTreeDepth}-${voteOptionTreeDepth}_${zKeyPostfix}` // subsidy x batch.
     const pdmZkeyName = `ProcessDeactivationMessages_${msgQueueSize}-${stateTreeDepth}_${zKeyPostfix}`
+    const gnkZkeyName = `GenerateKeyFromDeactivated_${stateTreeDepth}_${zKeyPostfix}`
     const pmZkeyFile = path.resolve(`${zKeysPath}/${pmZkeyName}.0.zkey`)
     const tvZkeyFile = path.resolve(`${zKeysPath}/${tvZkeyName}.0.zkey`)
     const pdmZkeyFile = path.resolve(`${zKeysPath}/${pdmZkeyName}.0.zkey`)
+    const gnkZkeyFile = path.resolve(`${zKeysPath}/${gnkZkeyName}.0.zkey`)
     // Wasm.
     const pdmWasmName = `${pdmZkeyName}_js/${pdmZkeyName}`
     const pdmWasmFile = path.resolve(`${zKeysPath}/${pdmWasmName}.wasm`)
@@ -93,12 +95,15 @@ describe("MACI - E2E", () => {
     let rawPmVk: any
     let rawTvVk: any
     let rawPdmVk: any
+    let rawGnkVk: any
     let pmVk: VerifyingKey
     let tvVk: VerifyingKey
     let pdmVk: VerifyingKey
+    let gnkVk: VerifyingKey
     let pmVkOnChain: VerifyingKey
     let tvVkOnChain: VerifyingKey
     let pdmVkOnChain: VerifyingKey
+    let gnkVkOnChain: VerifyingKey
 
     // Snarkjs.
     let curve: any
@@ -129,10 +134,12 @@ describe("MACI - E2E", () => {
         rawPmVk = extractVk(pmZkeyFile)
         rawTvVk = extractVk(tvZkeyFile)
         rawPdmVk = extractVk(pdmZkeyFile)
+        rawGnkVk = extractVk(gnkZkeyFile)
 
         pmVk = VerifyingKey.fromObj(rawPmVk)
         tvVk = VerifyingKey.fromObj(rawTvVk)
         pdmVk = VerifyingKey.fromObj(rawPdmVk)
+        gnkVk = VerifyingKey.fromObj(rawGnkVk)
 
         // Query the contract to check if the pmVk, tvVk and pdmVk have already been set.
         const pmVkSig = genProcessVkSig(
@@ -150,10 +157,15 @@ describe("MACI - E2E", () => {
             stateTreeDepth,
             msgTreeDepth
         )
+        const gnkVkSig = genNewKeyGenerationVkSig(
+            stateTreeDepth,
+            msgTreeDepth
+        )
 
         const isPmVkSet = await vkRegistryContract.isProcessVkSet(pmVkSig)
         const isTvVkSet = await vkRegistryContract.isTallyVkSet(tvVkSig)
         const isPdmVkSet = await vkRegistryContract.isProcessVkSet(pdmVkSig)
+        const isGnkVkSet = await vkRegistryContract.isGenNewKeyGenerationVkSet(pdmVkSig)
 
         // Set VKeys.
         const tx = await vkRegistryContract.setVerifyingKeys(
@@ -164,7 +176,8 @@ describe("MACI - E2E", () => {
             messageBatchSize,
             pmVk.asContractParam(),
             pdmVk.asContractParam(),
-            tvVk.asContractParam()
+            tvVk.asContractParam(),
+            gnkVk.asContractParam()
         )
         const receipt = await tx.wait()
 
@@ -183,6 +196,11 @@ describe("MACI - E2E", () => {
         )
 
         pdmVkOnChain = await vkRegistryContract.getProcessDeactivationVk(
+            stateTreeDepth,
+            msgTreeDepth
+        )
+
+        gnkVkOnChain = await vkRegistryContract.getNewKeyGenerationVk(
             stateTreeDepth,
             msgTreeDepth
         )
@@ -226,9 +244,11 @@ describe("MACI - E2E", () => {
         expect(isPmVkSet).toBe(false)
         expect(isTvVkSet).toBe(false)
         expect(isPdmVkSet).toBe(false)
+        expect(isGnkVkSet).toBe(false)
         expect(compareVks(pmVk, pmVkOnChain)).toBe(true)
         expect(compareVks(tvVk, tvVkOnChain)).toBe(true)
         expect(compareVks(pdmVk, pdmVkOnChain)).toBe(true)
+        expect(compareVks(gnkVk, gnkVkOnChain)).toBe(true)
     })
 
     it("should deploy Poll", async () => {
@@ -538,7 +558,7 @@ describe("MACI - E2E", () => {
         // Generate a new keypair for the user.
         newUser1KeyPair = new Keypair()
 
-        const { circomInputs, kCommand } = maciState.polls[pollId].generateCircuitInputsForGenerateNewKey(
+        const { circuitInputs, encPubKey, message } = maciState.polls[pollId].generateCircuitInputsForGenerateNewKey(
             newUser1KeyPair.pubKey,
             user1KeyPair.privKey,
             user1KeyPair.pubKey,
@@ -546,7 +566,11 @@ describe("MACI - E2E", () => {
             BigInt(salt),
             pollId
         )
-      
+
+        // DEBUG.
+        // console.log("circuitInputs ", circuitInputs)
+        // console.log("encPubKey ", encPubKey)
+        // console.log("message ", message)
         /// @todo to be continued.
     })
 })

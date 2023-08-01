@@ -1911,6 +1911,13 @@ const genSubsidyVkSig = (
         BigInt(_voteOptionTreeDepth)
 }
 
+const genNewKeyGenerationVkSig = (
+    _stateTreeDepth: number,
+    _messageTreeDepth: number
+): BigInt => {
+    return (BigInt(_stateTreeDepth) << BigInt(128)) +
+        BigInt(_messageTreeDepth)
+}
 
 /*
  * A helper function which hashes a list of results with a salt and returns the
@@ -1942,6 +1949,7 @@ export {
     genProcessVkSig,
     genTallyVkSig,
     genSubsidyVkSig,
+    genNewKeyGenerationVkSig,
     genTallyResultCommitment,
     STATE_TREE_DEPTH,
 }
