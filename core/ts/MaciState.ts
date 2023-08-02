@@ -485,9 +485,11 @@ class Poll {
 
         const maxMessages = 5; // TODO: Temp
 
-        // Pad array
-        for (let i = 1; i < maxMessages; i += 1) {
-            this.deactivationEncPubKeys.push(new PubKey([BigInt(0), BigInt(0)]))
+        if (this.deactivationEncPubKeys.length < maxMessages) {
+            // Pad array
+            for (let i = 1; i < maxMessages; i += 1) {
+                this.deactivationEncPubKeys.push(new PubKey([BigInt(0), BigInt(0)]))
+            }
         }
 
         const deactivatedTreePathElements = [];
@@ -496,34 +498,36 @@ class Poll {
             deactivatedTreePathElements.push(merklePath.pathElements);
         }
 
-        // Pad array
-        for (let i = this.deactivationMessages.length; i < maxMessages; i += 1) {
-            deactivatedTreePathElements.push(this.stateTree.genMerklePath(0).pathElements)
+        if (this.deactivationEncPubKeys.length < maxMessages) {
+            // Pad array
+            for (let i = this.deactivationMessages.length; i < maxMessages; i += 1) {
+                deactivatedTreePathElements.push(this.stateTree.genMerklePath(0).pathElements)
+            }
+    
+            // Pad array
+            for (let i = stateLeafPathElements.length; i < maxMessages; i += 1) {
+                stateLeafPathElements.push(this.stateTree.genMerklePath(0).pathElements)
+            }
+    
+            // Pad array
+            for (let i = currentStateLeaves.length; i < maxMessages; i += 1) {
+                currentStateLeaves.push(blankStateLeaf.asCircuitInputs())
+            }
+
+            // Pad array
+            for (let i = this.deactivationMessages.length; i < maxMessages; i += 1) {
+                const padMask = genRandomSalt();
+                const [padc1, padc2] = elGamalEncryptBit(
+                    this.coordinatorKeypair.pubKey.rawPubKey,
+                    BigInt(0),
+                    padMask,
+                )
+
+                maskingValues.push(padMask);
+                elGamalEnc.push([padc1, padc2]);
+            }
         }
-
-        // Pad array
-        for (let i = stateLeafPathElements.length; i < maxMessages; i += 1) {
-            stateLeafPathElements.push(this.stateTree.genMerklePath(0).pathElements)
-        }
-
-        // Pad array
-        for (let i = currentStateLeaves.length; i < maxMessages; i += 1) {
-            currentStateLeaves.push(blankStateLeaf.asCircuitInputs())
-        }
-
-        // Pad array
-        for (let i = this.deactivationMessages.length; i < maxMessages; i += 1) {
-            const padMask = genRandomSalt();
-            const [padc1, padc2] = elGamalEncryptBit(
-                this.coordinatorKeypair.pubKey.rawPubKey,
-                BigInt(0),
-                padMask,
-            )
-
-            maskingValues.push(padMask);
-            elGamalEnc.push([padc1, padc2]);
-        }
-
+        
         for (let i = this.deactivationMessages.length; i < maxMessages; i += 1) {
             this.deactivationMessages.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
         }
