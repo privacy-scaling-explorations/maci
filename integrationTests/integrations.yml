@@ -27,6 +27,7 @@ constants:
     maxVoteOptions: 25
     initialVoiceCredits: 1000
     signupDuration: 120
+    deactivationPeriodDuration: 30
     votingDuration: 240
     signUpDurationInSeconds: 3600 # 1 hour
     votingDurationInSeconds: 3600 # 1 hour

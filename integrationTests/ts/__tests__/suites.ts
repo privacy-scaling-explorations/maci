@@ -360,7 +360,7 @@ const executeSuiteElgamal = async (data: any, expect: any) => {
         const createCommand = `node build/index.js create` +
             ` -r ${vkAddress}` +
             ` --signup-deadline 1692424915`+
-            ` --deactivation-period 86400`
+            ` --deactivation-period ${config.constants.maci.deactivationPeriodDuration}`
         const createOutput = execute(createCommand).stdout.trim()
         const regMatch = createOutput.match(/MACI: (0x[a-fA-F0-9]{40})/)
         const maciAddress = regMatch[1]
@@ -464,14 +464,17 @@ const executeSuiteElgamal = async (data: any, expect: any) => {
             ` --batch-size 1` 
         execute(confirmDeactivationCommand)
 
+        const timeTravelCommand2 = `node build/index.js timeTravel -s ${config.constants.maci.deactivationPeriodDuration}`
+        execute(timeTravelCommand2)
+
         // Completing deactivation
         console.log(`Completing deactivation`)
 
         const completeDeactivationCommand = `node build/index.js completeDeactivation` +  
             ` --poll-id ${pollId} ` +
             ` --privkey ${coordinatorKeypair.privKey.serialize()} ` +
-            ` --state-num-sr-queue-ops ${data.numUsers} ` +
-            ` --deactivated-keys-num-sr-queue-ops ${data.numUsers} ` +
+            ` --state-num-sr-queue-ops 1 ` +
+            ` --deactivated-keys-num-sr-queue-ops 1 ` +
             ` --from-block 0 ` +
             ` --process-deactivation-witnessgen ./zkeys/ProcessDeactivationMessages_5-10_test ` +
             ` --process-deactivation-zkey ./zkeys/ProcessDeactivationMessages_5-10_test.0.zkey ` +
