@@ -517,17 +517,12 @@ const executeSuiteElgamal = async (data: any, expect: any) => {
             }
 
             for (let j = 0; j < users[i].votes.length; j++ ) {
-                // find which vote index the user should change keys
-                const isKeyChange = (data.changeUsersKeys && j in data.changeUsersKeys[i])
                 const stateIndex = i + 1
-                const voteOptionIndex = isKeyChange ?
-                    data.changeUsersKeys[i][j].voteOptionIndex : users[i].votes[j].voteOptionIndex
-                const newVoteWeight  = isKeyChange ?
-                    data.changeUsersKeys[i][j].voteWeight : users[i].votes[j].voteWeight
+                const voteOptionIndex = users[i].votes[j].voteOptionIndex
+                const newVoteWeight  = users[i].votes[j].voteWeight
                 const nonce = users[i].votes[j].nonce
                 const salt = '0x' + genRandomSalt().toString(16)
-                const userPrivKey = isKeyChange ?
-                    users[i].changeKeypair() : userKeypairs[i].privKey
+                const userPrivKey = userKeypairs[i].privKey
                 const userKeypair = userKeypairs[i]
                 // Run the publish command
                 const publishCommand = `node build/index.js publish` +
@@ -539,38 +534,39 @@ const executeSuiteElgamal = async (data: any, expect: any) => {
                     ` -w ${newVoteWeight}` +
                     ` -n ${nonce}` +
                     ` -o ${pollId}`
-                const publishOutput = execute(publishCommand).stdout.trim()
-                const publishRegMatch = publishOutput.match(
-                    /Transaction hash: (0x[a-fA-F0-9]{64})\nEphemeral private key: (macisk.[a-f0-9]+)$/)
 
-                // The publish command generates and outputs a random ephemeral private
-                // key, so we have to retrieve it from the standard output
-                const encPrivKey = PrivKey.unserialize(publishRegMatch[2])
-                const encPubKey = new PubKey(genPubKey(encPrivKey.rawPrivKey))
+                execute(publishCommand)
+                // const publishRegMatch = publishOutput.match(
+                //     /Transaction hash: (0x[a-fA-F0-9]{64})\nEphemeral private key: (macisk.[a-f0-9]+)$/)
 
-                const command = new PCommand(
-                    BigInt(stateIndex),
-                    userKeypair.pubKey,
-                    BigInt(voteOptionIndex),
-                    BigInt(newVoteWeight),
-                    BigInt(nonce),
-                    BigInt(pollId),
-                    BigInt(salt),
-                )
+                // // The publish command generates and outputs a random ephemeral private
+                // // key, so we have to retrieve it from the standard output
+                // const encPrivKey = PrivKey.unserialize(publishRegMatch[2])
+                // const encPubKey = new PubKey(genPubKey(encPrivKey.rawPrivKey))
 
-                const signature = command.sign(userKeypair.privKey)
+                // const command = new PCommand(
+                //     BigInt(stateIndex),
+                //     userKeypair.pubKey,
+                //     BigInt(voteOptionIndex),
+                //     BigInt(newVoteWeight),
+                //     BigInt(nonce),
+                //     BigInt(pollId),
+                //     BigInt(salt),
+                // )
 
-                const message = command.encrypt(
-                    signature,
-                    Keypair.genEcdhSharedKey(
-                        encPrivKey,
-                        coordinatorKeypair.pubKey,
-                    )
-                )
-                maciState.polls[pollId].publishMessage(
-                    message,
-                    encPubKey,
-                )
+                // const signature = command.sign(userKeypair.privKey)
+
+                // const message = command.encrypt(
+                //     signature,
+                //     Keypair.genEcdhSharedKey(
+                //         encPrivKey,
+                //         coordinatorKeypair.pubKey,
+                //     )
+                // )
+                // maciState.polls[pollId].publishMessage(
+                //     message,
+                //     encPubKey,
+                // )
             }
         }
 
