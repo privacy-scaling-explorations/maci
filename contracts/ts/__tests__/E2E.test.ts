@@ -48,6 +48,9 @@ describe("MACI - E2E", () => {
     let poseidonT5ContractAddress: string
     let poseidonT6ContractAddress: string
 
+    // State.
+    let maciState = new MaciState(); // A reproduction of MACI on-chain state.
+
     // Costants.
     const initialVoiceCredits = 100
     const signUpDuration = 86400 // The sign up period duration expressed in seconds.
@@ -60,7 +63,6 @@ describe("MACI - E2E", () => {
     const fromBlock = 0 // Indicates which block to start from to find events.
     const stateNumSrQueueOps = 1 // The number of subroot queue operations to merge for the MACI state tree.
     const deactivatedKeysNumSrQueueOps = 1 // The number of subroot queue operations to merge for the deactivated keys tree.
-    const maciState = new MaciState(); // A reproduction of MACI on-chain state.
     /// @todo using random salt can lead to invalid salt size.
     // const salt = genRandomSalt()
     const salt = "0x798D81BE4A9870C079B8DE539496AB95"
@@ -73,6 +75,7 @@ describe("MACI - E2E", () => {
     // Data from contracts/state interactions.
     let userStateIndex: Number
     let circuitInputs: any
+    let numOfGeneratedKeys: number = 0
 
     // zkeys folder path.
     const zKeysPath = `${__dirname}../../../../cli/zkeys`
@@ -90,6 +93,8 @@ describe("MACI - E2E", () => {
     // Wasm.
     const pdmWasmName = `${pdmZkeyName}_js/${pdmZkeyName}`
     const pdmWasmFile = path.resolve(`${zKeysPath}/${pdmWasmName}.wasm`)
+    const gnkWasmName = `${gnkZkeyName}_js/${gnkZkeyName}`
+    const gnkWasmFile = path.resolve(`${zKeysPath}/${gnkWasmName}.wasm`)
 
     // Vkeys.
     let rawPmVk: any
@@ -165,7 +170,7 @@ describe("MACI - E2E", () => {
         const isPmVkSet = await vkRegistryContract.isProcessVkSet(pmVkSig)
         const isTvVkSet = await vkRegistryContract.isTallyVkSet(tvVkSig)
         const isPdmVkSet = await vkRegistryContract.isProcessVkSet(pdmVkSig)
-        const isGnkVkSet = await vkRegistryContract.isGenNewKeyGenerationVkSet(pdmVkSig)
+        const isGnkVkSet = await vkRegistryContract.isGenNewKeyGenerationVkSet(gnkVkSig)
 
         // Set VKeys.
         const tx = await vkRegistryContract.setVerifyingKeys(
@@ -558,6 +563,7 @@ describe("MACI - E2E", () => {
         // Generate a new keypair for the user.
         newUser1KeyPair = new Keypair()
 
+        // Generate the circuit inputs necessary for new key generation.
         const { circuitInputs, encPubKey, message } = maciState.polls[pollId].generateCircuitInputsForGenerateNewKey(
             newUser1KeyPair.pubKey,
             user1KeyPair.privKey,
@@ -567,10 +573,69 @@ describe("MACI - E2E", () => {
             pollId
         )
 
-        // DEBUG.
-        // console.log("circuitInputs ", circuitInputs)
-        // console.log("encPubKey ", encPubKey)
-        // console.log("message ", message)
-        /// @todo to be continued.
+        // Generate proof to new key generation.
+        const { proof, publicSignals } = await groth16.fullProve(
+            {
+                inputHash: circuitInputs.inputHash,
+                oldPrivKey: circuitInputs.oldPrivKey,
+                newPubKey: circuitInputs.newPubKey,
+                numSignUps: circuitInputs.numSignUps,
+                stateIndex: circuitInputs.stateIndex,
+                salt: circuitInputs.salt,
+                stateTreeRoot: circuitInputs.stateTreeRoot,
+                deactivatedKeysRoot: circuitInputs.deactivatedKeysRoot,
+                stateTreeInclusionProof: circuitInputs.stateTreeInclusionProof,
+                oldCreditBalance: circuitInputs.oldCreditBalance,
+                newCreditBalance: circuitInputs.newCreditBalance,
+                stateLeafTimestamp: circuitInputs.stateLeafTimestamp,
+                deactivatedKeysInclusionProof: circuitInputs.deactivatedKeysInclusionProof,
+                deactivatedKeyIndex: circuitInputs.deactivatedKeyIndex,
+                c1: circuitInputs.c1,
+                c2: circuitInputs.c2,
+                coordinatorPubKey: circuitInputs.coordinatorPubKey,
+                encPrivKey: circuitInputs.encPrivKey,
+                c1r: circuitInputs.c1r,
+                c2r: circuitInputs.c2r,
+                z: circuitInputs.z,
+                nullifier: circuitInputs.nullifier,
+                pollId: circuitInputs.pollId
+            },
+            gnkWasmFile,
+            gnkZkeyFile
+        )
+
+        // Check proof validity.
+        const isValidProof = await groth16.verify(
+            rawGnkVk,
+            publicSignals,
+            proof
+        )
+
+        // Format proof for verifier contract.
+        const formattedProof = formatProofForVerifierContract(proof);
+
+        // Generate new key from deactivated key.
+        const tx = await messageProcessorContract.generateNewKeyFromDeactivated(
+            message.asContractParam(),
+            coordinatorKeyPair.pubKey.asContractParam(),
+            encPubKey.asContractParam(),
+            pollContract.address,
+            formattedProof
+        )
+        const receipt = await tx.wait()
+
+        // State update.
+        numOfGeneratedKeys += 1
+        
+        // Events.
+        const logAttemptKeyGeneration = pollContract.interface.parseLog(receipt.logs[0])
+        
+        // Checks.
+        expect(isValidProof).toBe(true)
+        expect(logAttemptKeyGeneration.name).toBe("AttemptKeyGeneration")
+        expect(logAttemptKeyGeneration.args._message.data.map((x: any) => BigInt(x))).toStrictEqual(message.data)
+        expect(String(logAttemptKeyGeneration.args._encPubKey.x)).toBe(String(encPubKey.asContractParam().x))
+        expect(String(logAttemptKeyGeneration.args._encPubKey.y)).toBe(String(encPubKey.asContractParam().y))
+        expect(Number(logAttemptKeyGeneration.args._newStateIndex)).toBe(Number(circuitInputs.numSignUps) + Number(numOfGeneratedKeys))
     })
 })
