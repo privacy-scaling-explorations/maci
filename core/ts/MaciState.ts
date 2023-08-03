@@ -487,7 +487,7 @@ class Poll {
 
         if (this.deactivationEncPubKeys.length < maxMessages) {
             // Pad array
-            for (let i = 1; i < maxMessages; i += 1) {
+            for (let i = this.deactivationEncPubKeys.length; i < maxMessages; i += 1) {
                 this.deactivationEncPubKeys.push(new PubKey([BigInt(0), BigInt(0)]))
             }
         }
@@ -498,22 +498,28 @@ class Poll {
             deactivatedTreePathElements.push(merklePath.pathElements);
         }
 
-        if (this.deactivationEncPubKeys.length < maxMessages) {
+        if (this.deactivationMessages.length < maxMessages) {
             // Pad array
             for (let i = this.deactivationMessages.length; i < maxMessages; i += 1) {
                 deactivatedTreePathElements.push(this.stateTree.genMerklePath(0).pathElements)
             }
+        }
     
+        if (stateLeafPathElements.length < maxMessages) {
             // Pad array
             for (let i = stateLeafPathElements.length; i < maxMessages; i += 1) {
                 stateLeafPathElements.push(this.stateTree.genMerklePath(0).pathElements)
             }
+        }
     
+        if (currentStateLeaves.length < maxMessages) {
             // Pad array
             for (let i = currentStateLeaves.length; i < maxMessages; i += 1) {
                 currentStateLeaves.push(blankStateLeaf.asCircuitInputs())
             }
+        }
 
+        if (this.deactivationMessages.length < maxMessages) {
             // Pad array
             for (let i = this.deactivationMessages.length; i < maxMessages; i += 1) {
                 const padMask = genRandomSalt();
@@ -526,10 +532,10 @@ class Poll {
                 maskingValues.push(padMask);
                 elGamalEnc.push([padc1, padc2]);
             }
-        }
-        
-        for (let i = this.deactivationMessages.length; i < maxMessages; i += 1) {
-            this.deactivationMessages.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
+
+            for (let i = this.deactivationMessages.length; i < maxMessages; i += 1) {
+                this.deactivationMessages.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
+            }
         }
 
         const circuitInputs = stringifyBigInts({
@@ -581,8 +587,10 @@ class Poll {
             deactivatedKeyEvent.c2,
         );
 
-        const deactivatedLeafHash = hash5([deactivatedKeyHash, ...deactivatedKeyEvent.c1, ...deactivatedKeyEvent.c2]);
-        this.deactivatedKeysTree.insert(deactivatedLeafHash) 
+        this.deactivatedKeyEvents.forEach(dke => {
+            const deactivatedLeafHash = hash5([dke.keyHash, ...dke.c1, ...dke.c2]);
+            this.deactivatedKeysTree.insert(deactivatedLeafHash) 
+        });
 
         const nullifier = hash2([BigInt(deactivatedPrivateKey.asCircuitInputs()), salt]);
 
