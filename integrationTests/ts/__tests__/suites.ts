@@ -481,9 +481,32 @@ const executeSuiteElgamal = async (data: any, expect: any) => {
             ` --rapidsnark ~/rapidsnark/build/prover `
         execute(completeDeactivationCommand)
 
+        console.log(`Generating new keys for ${data.numUsers} users`)
+
         // Generating new key for every user
-        console.log(`Generating new keys`)
-        // TODO we need to produce new keys here
+        for (let i = 0; i < users.length; i++) {
+            // Run the generateNewKey command
+            const oldUserPubKey = userKeypairs[i].pubKey.serialize(); 
+            const oldUserPrivKey = userKeypairs[i].privKey.serialize(); 
+            
+            users[i].changeKeypair();
+
+            const generateNewKeyCommand = `node build/index.js generateNewKey ` +
+                ` --new-pub-key ${userKeypairs[i].pubKey.serialize()} ` +
+                ` --new-priv-key ${userKeypairs[i].privKey.serialize()} ` +
+                ` --old-pub-key ${oldUserPubKey} ` +
+                ` --old-priv-key ${oldUserPrivKey} ` +
+                ` --coord-priv-key ${coordinatorKeypair.privKey.serialize()} ` + // TODO: This is wrong, no private key of coord should be available to the user
+                ` --state-index ${i + 1} ` +
+                ` --salt 0x798D81BE4A9870C079B8DE539496AB95 ` +
+                ` --poll-id ${pollId} ` +
+                ` --from-block 0 ` +
+                ` --new-key-generation-witnessgen ./zkeys/GenerateKeyFromDeactivated_10_test ` +
+                ` --new-key-generation-zkey ./zkeys/GenerateKeyFromDeactivated_10_test.0.zkey ` +
+                ` --rapidsnark ~/rapidsnark/build/prover `
+
+            execute(generateNewKeyCommand)
+        }
 
         // Publish messages
         console.log(`Publishing messages`)
