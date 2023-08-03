@@ -149,17 +149,11 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
         uint256 _batchSize,
         Poll poll
     ) external onlyOwner {
-        (
-            ,
-            ,
-            ,
-            AccQueue deactivatedKeysAq,
+        (, , , AccQueue deactivatedKeysAq, ) = poll.extContracts();
 
-        ) = poll.extContracts();
-
-        ( , , uint256 numDeactivatedKeys) = poll
+        (, , uint256 numDeactivatedKeys) = poll
             .numSignUpsAndMessagesAndDeactivatedKeys();
-        
+
         (uint256 maxMessages, ) = poll.maxValues();
 
         require(
@@ -195,13 +189,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
         Poll poll,
         uint256 _pollId
     ) external onlyOwner {
-        (
-            ,
-            IMACI maci,
-            ,
-            AccQueue deactivatedKeysAq,
-
-        ) = poll.extContracts();
+        (, IMACI maci, , AccQueue deactivatedKeysAq, ) = poll.extContracts();
 
         {
             (uint256 deployTime, ) = poll.getDeployTimeAndDuration();
@@ -236,8 +224,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
 
         ) = poll.extContracts();
 
-        (, , uint8 messageTreeDepth, ) = poll
-            .treeDepths();
+        (, , uint8 messageTreeDepth, ) = poll.treeDepths();
 
         {
             (uint256 deployTime, ) = poll.getDeployTimeAndDuration();
@@ -281,8 +268,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
 
         ) = poll.extContracts();
 
-        (, , uint8 messageTreeDepth, ) = poll
-            .treeDepths();
+        (, , uint8 messageTreeDepth, ) = poll.treeDepths();
 
         VerifyingKey memory vk = vkRegistry.getNewKeyGenerationVk(
             maci.stateTreeDepth(),
@@ -296,10 +282,10 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
             _coordPubKey,
             _sharedPubKey
         );
-
+        
         require(verifier.verify(_proof, vk, input), "Verification failed");
 
-        return poll.generateNewKeyFromDeactivated(_message, _coordPubKey);
+        return poll.generateNewKeyFromDeactivated(_message, _sharedPubKey);
     }
 
     function verifyProcessProof(
@@ -382,7 +368,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
         DomainObjs.Message memory _message
     ) private pure returns (uint256) {
         uint256[] memory n = new uint256[](10);
-        
+
         n[0] = _message.data[0];
         n[1] = _message.data[1];
         n[2] = _message.data[2];
