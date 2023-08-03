@@ -478,7 +478,6 @@ class Poll {
                 c2,
                 salt,
             ))
-            
             this.deactivatedKeysTree.insert(deactivatedLeaf.hash());
             deactivatedLeaves.push(deactivatedLeaf);
         }
@@ -577,8 +576,11 @@ class Poll {
             deactivatedKeyEvent.c2,
         );
 
-        const deactivatedLeafHash = hash5([deactivatedKeyHash, ...deactivatedKeyEvent.c1, ...deactivatedKeyEvent.c2]);
-        this.deactivatedKeysTree.insert(deactivatedLeafHash) 
+        if (this.deactivatedKeysTree.nextIndex === 0)
+            this.deactivatedKeyEvents.forEach(dke => {
+                const deactivatedLeafHash = hash5([deactivatedKeyHash, ...dke.c1, ...dke.c2]);
+                this.deactivatedKeysTree.insert(deactivatedLeafHash)
+            });
 
         const nullifier = hash2([BigInt(deactivatedPrivateKey.asCircuitInputs()), salt]);
 
