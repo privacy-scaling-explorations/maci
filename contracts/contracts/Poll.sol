@@ -430,7 +430,7 @@ contract Poll is
     function mergeMaciStateAqSubRoots(
         uint256 _numSrQueueOps,
         uint256 _pollId
-    ) public isAfterVotingDeadline {
+    ) public {
         require(msg.sender == messageProcessorAddress || msg.sender == owner());
         // This function cannot be called after the stateAq was merged
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
@@ -448,7 +448,7 @@ contract Poll is
      * currentSbCommitment.
      * @param _pollId The ID of the Poll
      */
-    function mergeMaciStateAq(uint256 _pollId) public isAfterVotingDeadline {
+    function mergeMaciStateAq(uint256 _pollId) public {
         require(msg.sender == messageProcessorAddress || msg.sender == owner());
         // This function can only be called once per Poll after the voting
         // deadline
