@@ -1,0 +1,13 @@
+{
+    "suites": [
+        {
+            "name": "Happy path",
+            "description": "Full tree, 4 batches, no bribers",
+            "numVotesPerUser": 1,
+            "numUsers": 5,
+            "expectedTally": [15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "expectedSpentVoiceCredits": [15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "expectedTotalSpentVoiceCredits": 15
+        }
+    ]
+}

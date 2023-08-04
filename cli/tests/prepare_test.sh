@@ -34,7 +34,7 @@ init_maci() {
     # TODO: Make signup-deadline dynamic now + 30 days for example
     $MACI_CLI create \
         --signup-deadline 1692424915 \
-        --deactivation-period 86400
+        --deactivation-period 30
 }
 
 deploy_poll() {
