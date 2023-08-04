@@ -678,6 +678,9 @@ describe("MACI - E2E", () => {
         // Events.
         const logPublishMessage = pollContract.interface.parseLog(receipt.logs[0])
 
+        // update maci state.
+        maciState.polls[pollId].publishMessage(message, user1KeyPair.pubKey)
+
         // Checks.
         expect(logPublishMessage.name).toBe("PublishMessage")
         expect(logPublishMessage.args._message.data.map((x: any) => BigInt(x))).toStrictEqual(message.data)
