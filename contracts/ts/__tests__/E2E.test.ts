@@ -55,8 +55,8 @@ describe("MACI - E2E", () => {
     const initialVoiceCredits = 100
     const signUpDuration = 86400 // The sign up period duration expressed in seconds.
     const signUpDeadline = Math.floor(new Date().getTime() / 1000) + (signUpDuration) // The deadline for signing up on MACI expressed as unix timestamp in seconds.
-    const deactivationPeriod = 86400 // The length of the deactivation period in seconds.
-    const pollDuration = 90 // The Poll duration expressed in seconds.
+    const deactivationPeriod = 30 // The length of the deactivation period in seconds.
+    const pollDuration = (signUpDuration + deactivationPeriod) * 2 // The Poll duration expressed in seconds.
     const maxMessages = 25 // The max number of supported messages.
     const maxVoteOptions = 25 // The max number of supported vote options.
     const seed = 42 // Random generator seed value used for masking values during the message deactivation processing.
@@ -491,7 +491,7 @@ describe("MACI - E2E", () => {
 
     it("should complete the deactivation of user key", async () => {
         // Time-travel (signUpDuration + 1m).
-        await timeTravel(signer.provider, signUpDuration + 3600)
+        await timeTravel(signer.provider, signUpDuration + deactivationPeriod)
 
         // Generate proof to confirm deactivation.
         const { proof, publicSignals } = await groth16.fullProve(
@@ -626,10 +626,10 @@ describe("MACI - E2E", () => {
 
         // State update.
         numOfGeneratedKeys += 1
-        
+
         // Events.
         const logAttemptKeyGeneration = pollContract.interface.parseLog(receipt.logs[0])
-        
+
         // Checks.
         expect(isValidProof).toBe(true)
         expect(logAttemptKeyGeneration.name).toBe("AttemptKeyGeneration")
@@ -637,5 +637,51 @@ describe("MACI - E2E", () => {
         expect(String(logAttemptKeyGeneration.args._encPubKey.x)).toBe(String(encPubKey.asContractParam().x))
         expect(String(logAttemptKeyGeneration.args._encPubKey.y)).toBe(String(encPubKey.asContractParam().y))
         expect(Number(logAttemptKeyGeneration.args._newStateIndex)).toBe(Number(circuitInputs.numSignUps) + Number(numOfGeneratedKeys))
+    })
+
+    it("should publish the vote message for the user", async () => {
+        // Prepare data.
+        const messageNonce = BigInt(1)
+        const voteOptionIndex = 0
+        const newVoteWeight = 1
+
+        // Prepare the command.
+        const command: PCommand = new PCommand(
+            BigInt(userStateIndex.toString()),
+            user1KeyPair.pubKey,
+            BigInt(voteOptionIndex),
+            BigInt(newVoteWeight),
+            messageNonce,
+            BigInt(pollId.toString()),
+            BigInt(salt)
+        )
+
+        // Sign the command with the user private key.
+        const signature = command.sign(user1KeyPair.privKey)
+
+        // Encrypt the command with an ECDH shared key between user1 (new key) and coordinator.
+        const message = command.encrypt(
+            signature,
+            Keypair.genEcdhSharedKey(
+                user1KeyPair.privKey,
+                coordinatorKeyPair.pubKey,
+            )
+        )
+
+        const tx = await pollContract.publishMessage(
+            message.asContractParam(),
+            user1KeyPair.pubKey.asContractParam(),
+            { gasLimit: 10000000 },
+        )
+        const receipt = await tx.wait()
+
+        // Events.
+        const logPublishMessage = pollContract.interface.parseLog(receipt.logs[0])
+
+        // Checks.
+        expect(logPublishMessage.name).toBe("PublishMessage")
+        expect(logPublishMessage.args._message.data.map((x: any) => BigInt(x))).toStrictEqual(message.data)
+        expect(String(logPublishMessage.args._encPubKey.x)).toBe(String(user1KeyPair.pubKey.asContractParam().x))
+        expect(String(logPublishMessage.args._encPubKey.y)).toBe(String(user1KeyPair.pubKey.asContractParam().y))
     })
 })
