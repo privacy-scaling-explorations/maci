@@ -483,59 +483,47 @@ class Poll {
             deactivatedLeaves.push(deactivatedLeaf);
         }
 
-        const maxMessages = 5; // TODO: Temp
+        const maxMessages = 5; // TODO: Where do we read this from?
 
-        if (this.deactivationEncPubKeys.length < maxMessages) {
-            // Pad array
-            for (let i = this.deactivationEncPubKeys.length; i < maxMessages; i += 1) {
-                this.deactivationEncPubKeys.push(new PubKey([BigInt(0), BigInt(0)]))
-            }
+        // Pad array
+        for (let i = this.deactivationEncPubKeys.length; i < maxMessages; i += 1) {
+            this.deactivationEncPubKeys.push(new PubKey([BigInt(0), BigInt(0)]))
         }
 
+        // Pad array
         const deactivatedTreePathElements = [];
         for (let i = 0; i < this.deactivationMessages.length; i += 1) {
             const merklePath = this.deactivatedKeysTree.genMerklePath(i);
             deactivatedTreePathElements.push(merklePath.pathElements);
         }
 
-        if (this.deactivationMessages.length < maxMessages) {
-            // Pad array
-            for (let i = this.deactivationMessages.length; i < maxMessages; i += 1) {
-                deactivatedTreePathElements.push(this.stateTree.genMerklePath(0).pathElements)
-            }
+        // Pad array
+        for (let i = this.deactivationMessages.length; i < maxMessages; i += 1) {
+            deactivatedTreePathElements.push(this.stateTree.genMerklePath(0).pathElements)
         }
     
-        if (stateLeafPathElements.length < maxMessages) {
-            // Pad array
-            for (let i = stateLeafPathElements.length; i < maxMessages; i += 1) {
-                stateLeafPathElements.push(this.stateTree.genMerklePath(0).pathElements)
-            }
+        // Pad array
+        for (let i = stateLeafPathElements.length; i < maxMessages; i += 1) {
+            stateLeafPathElements.push(this.stateTree.genMerklePath(0).pathElements)
         }
     
-        if (currentStateLeaves.length < maxMessages) {
-            // Pad array
-            for (let i = currentStateLeaves.length; i < maxMessages; i += 1) {
-                currentStateLeaves.push(blankStateLeaf.asCircuitInputs())
-            }
+        // Pad array
+        for (let i = currentStateLeaves.length; i < maxMessages; i += 1) {
+            currentStateLeaves.push(blankStateLeaf.asCircuitInputs())
         }
 
-        if (this.deactivationMessages.length < maxMessages) {
-            // Pad array
-            for (let i = this.deactivationMessages.length; i < maxMessages; i += 1) {
-                const padMask = genRandomSalt();
-                const [padc1, padc2] = elGamalEncryptBit(
-                    this.coordinatorKeypair.pubKey.rawPubKey,
-                    BigInt(0),
-                    padMask,
-                )
+        // Pad array
+        for (let i = this.deactivationMessages.length; i < maxMessages; i += 1) {
+            const padMask = genRandomSalt();
+            const [padc1, padc2] = elGamalEncryptBit(
+                this.coordinatorKeypair.pubKey.rawPubKey,
+                BigInt(0),
+                padMask,
+            )
 
-                maskingValues.push(padMask);
-                elGamalEnc.push([padc1, padc2]);
-            }
-
-            for (let i = this.deactivationMessages.length; i < maxMessages; i += 1) {
-                this.deactivationMessages.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
-            }
+            maskingValues.push(padMask);
+            elGamalEnc.push([padc1, padc2]);
+            this.deactivationMessages.push(new Message(BigInt(0), Array(10).fill(BigInt(0))))
         }
 
         const circuitInputs = stringifyBigInts({
