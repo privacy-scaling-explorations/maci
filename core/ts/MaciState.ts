@@ -482,7 +482,7 @@ class Poll {
             deactivatedLeaves.push(deactivatedLeaf);
         }
 
-        const maxMessages = 5; // TODO: Where do we read this from?
+        const maxMessages = 5; //  TODO: Where do we read this from?
 
         // Pad array
         for (let i = this.deactivationEncPubKeys.length; i < maxMessages; i += 1) {
