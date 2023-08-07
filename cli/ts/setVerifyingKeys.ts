@@ -5,7 +5,7 @@ import * as path from 'path'
 
 import { extractVk } from 'maci-circuits'
 import { VerifyingKey } from 'maci-domainobjs'
-import { genProcessVkSig, genTallyVkSig, genSubsidyVkSig } from 'maci-core'
+import { genProcessVkSig, genTallyVkSig, genSubsidyVkSig, genNewKeyGenerationVkSig } from 'maci-core'
 import { parseArtifact, getDefaultSigner } from 'maci-contracts'
 import { contractExists } from './utils'
 import { contractFilepath } from './config'
@@ -95,7 +95,7 @@ const configureSubparser = (subparsers: any) => {
             help: 'The .zkey file for the vote tallying circuit. '
         }
     )
-    
+
     createParser.addArgument(
         ['-ss', '--subsidy-zkey'],
         {
@@ -126,11 +126,11 @@ const configureSubparser = (subparsers: any) => {
 
 const setVerifyingKeys = async (args: any) => {
     let contractAddrs = readJSONFile(contractFilepath)
-    if ((!contractAddrs||!contractAddrs["VkRegistry"]) && !args.vk_registry) {
-        console.error('Error: vkRegistry contract address is empty') 
+    if ((!contractAddrs || !contractAddrs["VkRegistry"]) && !args.vk_registry) {
+        console.error('Error: vkRegistry contract address is empty')
         return 1
     }
-    const vkRegistryAddress = args.vk_registry ? args.vk_registry: contractAddrs["VkRegistry"]
+    const vkRegistryAddress = args.vk_registry ? args.vk_registry : contractAddrs["VkRegistry"]
     const stateTreeDepth = args.state_tree_depth
     const intStateTreeDepth = args.int_state_tree_depth
     const msgTreeDepth = args.msg_tree_depth
@@ -141,7 +141,7 @@ const setVerifyingKeys = async (args: any) => {
     const tvZkeyFile = path.resolve(args.tally_votes_zkey)
     const pdmZkeyFile = path.resolve(args.process_deactivation_zkey)
     const nkgZkeyFile = path.resolve(args.new_key_generation_zkey)
-    
+
     if (!fs.existsSync(pmZkeyFile)) {
         console.error(`Error: ${pmZkeyFile} does not exist.`)
         return 1
@@ -166,7 +166,7 @@ const setVerifyingKeys = async (args: any) => {
     const newKeyGenerationVk: VerifyingKey = VerifyingKey.fromObj(extractVk(nkgZkeyFile))
 
     let ssZkeyFile: string
-    let subsidyVk:VerifyingKey
+    let subsidyVk: VerifyingKey
     if (args.subsidy_zkey) {
         ssZkeyFile = path.resolve(args.subsidy_zkey)
         if (!fs.existsSync(ssZkeyFile)) {
@@ -183,7 +183,7 @@ const setVerifyingKeys = async (args: any) => {
         intStateTreeDepth < 1 ||
         msgTreeDepth < 1 ||
         voteOptionTreeDepth < 1 ||
-        msgBatchDepth < 1 
+        msgBatchDepth < 1
     ) {
         console.error('Error: invalid depth or batch size parameters')
         return 1
@@ -221,7 +221,7 @@ const setVerifyingKeys = async (args: any) => {
 
         stateTreeDepth != tvStateTreeDepth ||
         intStateTreeDepth != tvIntStateTreeDepth ||
-        voteOptionTreeDepth != tvVoteOptionTreeDepth 
+        voteOptionTreeDepth != tvVoteOptionTreeDepth
 
     ) {
         console.error('Error: incorrect .zkey file; please check the circuit params')
@@ -231,12 +231,12 @@ const setVerifyingKeys = async (args: any) => {
 
     // Check whether there is a contract deployed at the VkRegistry address
     const signer = await getDefaultSigner()
-    if (!(await contractExists(signer.provider,vkRegistryAddress))) {
+    if (!(await contractExists(signer.provider, vkRegistryAddress))) {
         console.error('Error: a VkRegistry contract is not deployed at', vkRegistryAddress)
         return 1
     }
 
-    const [ vkRegistryAbi ] = parseArtifact('VkRegistry')
+    const [vkRegistryAbi] = parseArtifact('VkRegistry')
     const vkRegistryContract = new ethers.Contract(
         vkRegistryAddress,
         vkRegistryAbi,
@@ -270,7 +270,7 @@ const setVerifyingKeys = async (args: any) => {
     )
 
     const isTallyVkSet = await vkRegistryContract.isTallyVkSet(tallyVkSig)
-    if (isTallyVkSet ) {
+    if (isTallyVkSet) {
         console.error('Error: this tally verifying key is already set in the contract')
         return 1
     }
@@ -285,9 +285,9 @@ const setVerifyingKeys = async (args: any) => {
         const ssIntStateTreeDepth = Number(ssMatch[2])
         const ssVoteOptionTreeDepth = Number(ssMatch[3])
         if (
-        stateTreeDepth != ssStateTreeDepth ||
-        intStateTreeDepth != ssIntStateTreeDepth ||
-        voteOptionTreeDepth != ssVoteOptionTreeDepth
+            stateTreeDepth != ssStateTreeDepth ||
+            intStateTreeDepth != ssIntStateTreeDepth ||
+            voteOptionTreeDepth != ssVoteOptionTreeDepth
         ) {
             console.error('Error: incorrect .zkey file; please check the circuit params')
             return 1
@@ -298,10 +298,25 @@ const setVerifyingKeys = async (args: any) => {
             voteOptionTreeDepth,
         )
         const isSubsidyVkSet = await vkRegistryContract.isSubsidyVkSet(subsidyVkSig)
-        if (isSubsidyVkSet ) {
+        if (isSubsidyVkSet) {
             console.error('Error: this subsidy verifying key is already set in the contract')
             return 1
         }
+    }
+
+    // Query the contract to see if the new key generation Vk has been set
+    const newKeyGenerationVkSig = genNewKeyGenerationVkSig(
+        stateTreeDepth,
+        msgTreeDepth
+    )
+
+    const isGenNewKeyGenerationVkSet = await vkRegistryContract.isGenNewKeyGenerationVkSet(
+        newKeyGenerationVkSig
+    )
+
+    if (isGenNewKeyGenerationVkSet) {
+        console.error('Error: this new key generation verifying key is already set in the contract')
+        return 1
     }
 
     try {
@@ -365,12 +380,12 @@ const setVerifyingKeys = async (args: any) => {
                 voteOptionTreeDepth,
                 subsidyVk.asContractParam()
             )
-    
+
             const receipt = await tx.wait()
             if (receipt.status !== 1) {
                 console.error('Error: set subsidy keys transaction failed')
             }
-    
+
             console.log('Transaction hash:', tx.hash)
 
             const subsidyVkOnChain = await vkRegistryContract.getSubsidyVk(
@@ -395,7 +410,7 @@ const setVerifyingKeys = async (args: any) => {
 
 const compareVks = (vk: VerifyingKey, vkOnChain: any): boolean => {
     let isEqual = vk.ic.length === vkOnChain.ic.length
-    for (let i = 0; i < vk.ic.length; i ++) {
+    for (let i = 0; i < vk.ic.length; i++) {
         isEqual = isEqual && vk.ic[i].x.toString() === vkOnChain.ic[i].x.toString()
         isEqual = isEqual && vk.ic[i].y.toString() === vkOnChain.ic[i].y.toString()
     }
