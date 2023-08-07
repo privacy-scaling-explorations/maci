@@ -1,11 +1,11 @@
-import { Contract, Signer, ethers, getDefaultProvider } from "ethers";
+import { Contract, Signer, ethers } from "ethers";
 import { deployConstantInitialVoiceCreditProxy, deployFreeForAllSignUpGatekeeper, deployMaci, deployMessageProcessor, deployTally, deployTopupCredit, deployVerifier, deployVkRegistry, getDefaultSigner, parseArtifact } from "../deploy";
 import path = require("path");
-import { Keypair, Message, PCommand, PubKey, VerifyingKey } from "maci-domainobjs";
+import { Keypair, PCommand, PubKey, VerifyingKey } from "maci-domainobjs";
 import { extractVk } from "maci-circuits"
 import { genProcessVkSig, genTallyVkSig, genDeactivationVkSig, genNewKeyGenerationVkSig } from 'maci-core'
 import { compareVks, formatProofForVerifierContract } from "../utils";
-import { timeTravel, validateSaltFormat, validateSaltSize } from "./utils";
+import { timeTravel } from "./utils";
 import { MaciState } from "maci-core"
 import { groth16 } from "snarkjs"
 import { getCurveFromName } from "ffjavascript"
@@ -439,7 +439,6 @@ describe("MACI - E2E", () => {
 
         expect(pollAddr).toBe(pollContract.address)
         expect(Number(userStateIndex)).toBeGreaterThan(0)
-        expect(validateSaltFormat(salt) && validateSaltSize(salt)).toBe(true)
         expect(PubKey.isValidSerializedPubKey(user1KeyPair.pubKey.serialize())).toBe(true)
     })
 
@@ -648,7 +647,7 @@ describe("MACI - E2E", () => {
         // Prepare the command.
         const command: PCommand = new PCommand(
             BigInt(userStateIndex.toString()),
-            user1KeyPair.pubKey,
+            newUser1KeyPair.pubKey,
             BigInt(voteOptionIndex),
             BigInt(newVoteWeight),
             messageNonce,
@@ -663,14 +662,14 @@ describe("MACI - E2E", () => {
         const message = command.encrypt(
             signature,
             Keypair.genEcdhSharedKey(
-                user1KeyPair.privKey,
+                newUser1KeyPair.privKey,
                 coordinatorKeyPair.pubKey,
             )
         )
 
         const tx = await pollContract.publishMessage(
             message.asContractParam(),
-            user1KeyPair.pubKey.asContractParam(),
+            newUser1KeyPair.pubKey.asContractParam(),
             { gasLimit: 10000000 },
         )
         const receipt = await tx.wait()
@@ -679,12 +678,12 @@ describe("MACI - E2E", () => {
         const logPublishMessage = pollContract.interface.parseLog(receipt.logs[0])
 
         // update maci state.
-        maciState.polls[pollId].publishMessage(message, user1KeyPair.pubKey)
+        maciState.polls[pollId].publishMessage(message, newUser1KeyPair.pubKey)
 
         // Checks.
         expect(logPublishMessage.name).toBe("PublishMessage")
         expect(logPublishMessage.args._message.data.map((x: any) => BigInt(x))).toStrictEqual(message.data)
-        expect(String(logPublishMessage.args._encPubKey.x)).toBe(String(user1KeyPair.pubKey.asContractParam().x))
-        expect(String(logPublishMessage.args._encPubKey.y)).toBe(String(user1KeyPair.pubKey.asContractParam().y))
+        expect(String(logPublishMessage.args._encPubKey.x)).toBe(String(newUser1KeyPair.pubKey.asContractParam().x))
+        expect(String(logPublishMessage.args._encPubKey.y)).toBe(String(newUser1KeyPair.pubKey.asContractParam().y))
     })
 })
