@@ -30,10 +30,11 @@ init_maci() {
         --new-key-generation-zkey "$ZKEYS_DIR"/GenerateKeyFromDeactivated_"$NEW_KEY_GENERATION_PARAMS".0.zkey \
         --tally-votes-zkey "$ZKEYS_DIR"/TallyVotes_"$TALLY_VOTES_PARAMS".0.zkey \
         $SET_VERIFYING_KEYS_FLAG_SUBSIDY
+    
+    TenDaysFromNowAsUnixTimestamp="$(date  -d '+10 day' +%s)"
 
-    # TODO: Make signup-deadline dynamic now + 30 days for example
     $MACI_CLI create \
-        --signup-deadline 1692424915 \
+        --signup-deadline $TenDaysFromNowAsUnixTimestamp \
         --deactivation-period 30
 }
 

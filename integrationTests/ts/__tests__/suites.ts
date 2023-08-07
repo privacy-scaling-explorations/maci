@@ -84,11 +84,12 @@ const executeSuite = async (data: any, expect: any) => {
 
         execute(setVerifyingKeysCommand)
 
+        const TenDaysFromNowAsUnixTimestamp = execute(`date  -d '+10 day' +%s`).stdout.trim()
+
         // Run the create subcommand
-        // TODO: Make signup-deadline dynamic now + 30 days for example
         const createCommand = `node build/index.js create` +
             ` -r ${vkAddress}` +
-            ` --signup-deadline 1692424915`+
+            ` --signup-deadline ${TenDaysFromNowAsUnixTimestamp}`+
             ` --deactivation-period 86400`
         const createOutput = execute(createCommand).stdout.trim()
         const regMatch = createOutput.match(/MACI: (0x[a-fA-F0-9]{40})/)
@@ -355,11 +356,13 @@ const executeSuiteElgamal = async (data: any, expect: any) => {
 
         execute(setVerifyingKeysCommand)
 
+        const TenDaysFromNowAsUnixTimestamp = execute(`date  -d '+10 day' +%s`).stdout.trim()
+
         // Run the create subcommand
         // TODO: Make signup-deadline dynamic now + 30 days for example
         const createCommand = `node build/index.js create` +
             ` -r ${vkAddress}` +
-            ` --signup-deadline 1692424915`+
+            ` --signup-deadline ${TenDaysFromNowAsUnixTimestamp}`+
             ` --deactivation-period ${config.constants.maci.deactivationPeriodDuration}`
         const createOutput = execute(createCommand).stdout.trim()
         const regMatch = createOutput.match(/MACI: (0x[a-fA-F0-9]{40})/)
