@@ -8,7 +8,7 @@ module.exports = {
         "/node_modules/",
         /// nb. temporary since the E2E test must be moved outside of `contracts` folder
         /// or is going to break the CI (no `zkeys` folder).
-        /// @todo remove this line after having moved the E2E.
+        /// @todo remove this line to run the E2E test with `npm run test` or `npm run test-e2e`.
         "ts/__tests__/E2E.test.ts"
     ],
     testRegex: 'ts/__tests__/.*\\.test\\.ts$',

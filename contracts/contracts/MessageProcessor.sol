@@ -256,7 +256,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
     function generateNewKeyFromDeactivated(
         DomainObjs.Message memory _message,
         DomainObjs.PubKey memory _coordPubKey,
-        DomainObjs.PubKey memory _sharedPubKey,
+        DomainObjs.PubKey memory _encPubKey,
         Poll poll,
         uint256[8] memory _proof
     ) external returns (uint256) {
@@ -280,12 +280,12 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
             deactivatedKeysAq.getMainRoot(DEACT_TREE_DEPTH),
             hashMessageData(_message),
             _coordPubKey,
-            _sharedPubKey
+            _encPubKey
         );
         
         require(verifier.verify(_proof, vk, input), "Verification failed");
 
-        return poll.generateNewKeyFromDeactivated(_message, _sharedPubKey);
+        return poll.generateNewKeyFromDeactivated(_message, _encPubKey);
     }
 
     function verifyProcessProof(
@@ -349,7 +349,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
         uint256 _deactivatedTreeRoot,
         uint256 _messageHash,
         DomainObjs.PubKey memory _coordPublicKey,
-        DomainObjs.PubKey memory _sharedPublicKey
+        DomainObjs.PubKey memory _encPubKey
     ) private pure returns (uint256) {
         uint256[] memory input = new uint256[](7);
         input[0] = _currentStateRoot;
@@ -357,8 +357,8 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Utilities {
         input[2] = _messageHash;
         input[3] = _coordPublicKey.x;
         input[4] = _coordPublicKey.y;
-        input[5] = _sharedPublicKey.x;
-        input[6] = _sharedPublicKey.y;
+        input[5] = _encPubKey.x;
+        input[6] = _encPubKey.y;
         uint256 inputHash = sha256Hash(input);
 
         return inputHash;

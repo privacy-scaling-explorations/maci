@@ -301,7 +301,7 @@ uint256 input = genGenerateNewKeyFromDeactivatedPublicInputHash(
     deactivatedKeysAq.getMainRoot(DEACT_TREE_DEPTH),
     hashMessageData(_message),
     _coordPubKey,
-    _sharedPubKey
+    _encPubKey
 );
 ```
 
