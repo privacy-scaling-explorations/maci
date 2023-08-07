@@ -22,7 +22,9 @@
         "test-accQueue": "jest AccQueue.test.ts",
         "test-accQueue-debug": "node --inspect-brk ./node_modules/.bin/jest AccQueue.test.ts",
         "test-accQueueBenchmark": "jest AccQueueBenchmark.test.ts",
-        "test-accQueueBenchmark-debug": "node --inspect-brk ./node_modules/.bin/jest AccQueueBenchmark.test.ts"
+        "test-accQueueBenchmark-debug": "node --inspect-brk ./node_modules/.bin/jest AccQueueBenchmark.test.ts",
+        "test-e2e": "jest E2E.test.ts --runInBand --detectOpenHandles",
+        "test-e2e-debug": "node --inspect-brk ./node_modules/.bin/jest E2E.test.ts --runInBand"
     },
     "_moduleAliases": {
         "@maci-contracts": "."
@@ -33,10 +35,12 @@
         "argparse": "^1.0.10",
         "circomlib": "^2.0.5",
         "circomlibjs": "^0.1.7",
+        "ffjavascript": "^0.2.59",
         "hardhat": "^2.12.2",
         "hardhat-artifactor": "^0.2.0",
         "hardhat-contract-sizer": "^2.0.3",
         "module-alias": "^2.2.2",
+        "snarkjs": "^0.5.0",
         "typescript": "^4.2.3"
     },
     "devDependencies": {

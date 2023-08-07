@@ -233,14 +233,14 @@ Attempts to generate new key from the deactivated one.
 Called from the cli command generateNewKey. This function then calls the generateNewKeyFromDeactivated function on the Poll smart contract. Reason: Contract size limit prevents having everything in the Poll smart contract at the moment.
 
 ```solidity
-function generateNewKeyFromDeactivated(Message memory _message, PubKey memory _coordPubKey, PubKey memory _sharedPubKey, Poll poll, uint256[8] memory _proof) external returns (uint256);
+function generateNewKeyFromDeactivated(Message memory _message, PubKey memory _coordPubKey, PubKey memory _encPubKey, Poll poll, uint256[8] memory _proof) external returns (uint256);
 ```
 
 #### Parameters
 
 - `_message`: Encrypted message containing the state leaf index.
 - `_coordPubKey`: Coordinator's public key.
-- `_sharedPubKey`: Shared public key used to create the shared key which is used for message encryption.
+- `_encPubKey`: Shared public key used to create the shared key which is used for message encryption.
 - `poll`: Poll smart contract address.
 - `_proof`: Generated inclusion proof (deactivated key exists in the tree).
 
