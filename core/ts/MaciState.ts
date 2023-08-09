@@ -720,7 +720,6 @@ class Poll {
                 case BigInt(1):
                     try {
                         // If the command is valid
-                        // TODO: Pass coord PK if coord invokes
                         const r = this.processMessage(idx)
                         // console.log(messageIndex, r ? 'valid' : 'invalid')
                         // console.log("r:"+r.newStateLeaf )

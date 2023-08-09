@@ -17,13 +17,18 @@ interface Action {
 const genMaciStateFromContract = async (
 	provider: ethers.providers.Provider,
 	address: string,
-	coordinatorKeypair: Keypair,
 	pollId: number,
+	coordinatorKeypair: Keypair,
 	fromBlock: number = 0
 ): Promise<MaciState> => {
 	pollId = Number(pollId);
 	// Verify and sort pollIds
 	assert(pollId >= 0);
+
+	// This is a hack so that both the coordinator and the regular user can use the same method
+	// for reconstructing MACI state when issuing commands. Proper way would be to split this
+	// method into two separate ones.
+	const isTriggeredByCoordinator = coordinatorKeypair != null;
 
 	const [pollContractAbi] = parseArtifact('Poll');
 	const [maciContractAbi] = parseArtifact('MACI');
@@ -196,15 +201,17 @@ const genMaciStateFromContract = async (
 		provider
 	);
 
-	// const coordinatorPubKeyOnChain = await pollContract.coordinatorPubKey();
-	// assert(
-	// 	coordinatorPubKeyOnChain[0].toString() ===
-	// 		coordinatorKeypair.pubKey.rawPubKey[0].toString()
-	// );
-	// assert(
-	// 	coordinatorPubKeyOnChain[1].toString() ===
-	// 		coordinatorKeypair.pubKey.rawPubKey[1].toString()
-	// );
+	if (isTriggeredByCoordinator) {
+		const coordinatorPubKeyOnChain = await pollContract.coordinatorPubKey();
+		assert(
+			coordinatorPubKeyOnChain[0].toString() ===
+				coordinatorKeypair.pubKey.rawPubKey[0].toString()
+		);
+		assert(
+			coordinatorPubKeyOnChain[1].toString() ===
+				coordinatorKeypair.pubKey.rawPubKey[1].toString()
+		);
+	}
 
 	const dd = await pollContract.getDeployTimeAndDuration();
 	const deployTime = Number(dd[0]);
@@ -486,8 +493,7 @@ const genMaciStateFromContract = async (
 				maciState.deployNullPoll();
 			}
 		} else if (action['type'] === 'PublishMessage') {
-			// TODO: Pass coord PK if coord invokes
-			if (!coordinatorKeypair) {
+			if (!isTriggeredByCoordinator) {
 				continue;
 			}
 			maciState.polls[pollId].publishMessage(
@@ -495,8 +501,7 @@ const genMaciStateFromContract = async (
 				action.data.encPubKey
 			);
 		} else if (action['type'] === 'AttemptKeyDeactivation') {
-			// TODO: Pass coord PK if coord invokes
-			if (!coordinatorKeypair) {
+			if (!isTriggeredByCoordinator) {
 				continue;
 			}
 			maciState.polls[pollId].deactivateKey(
@@ -529,8 +534,7 @@ const genMaciStateFromContract = async (
 					action.data.messageRoot
 			);
 		} else if (action['type'] === 'AttemptKeyGeneration') {
-			// TODO: Pass coord PK if coord invokes
-			if (!coordinatorKeypair) {
+			if (!isTriggeredByCoordinator) {
 				continue;
 			}
 			maciState.polls[pollId].generateNewKey(
@@ -547,7 +551,7 @@ const genMaciStateFromContract = async (
 
 	const poll = maciState.polls[pollId];
 
-	if (coordinatorKeypair) {
+	if (isTriggeredByCoordinator) {
 		assert(Number(numMessages) === poll.messages.length);
 	}
 

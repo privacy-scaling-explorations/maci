@@ -147,8 +147,8 @@ const confirmDeactivation = async (args: any) => {
 	const maciState = await genMaciStateFromContract(
         signer.provider,
         maciAddress,
-        coordinatorKeypair,
         pollId,
+        coordinatorKeypair,
         fromBlock,
     )
 

@@ -286,8 +286,8 @@ const generateNewKey = async (args: any) => {
     const maciState = await genMaciStateFromContract(
         signer.provider,
         maciAddress,
-        null,
         pollId,
+        null,
         fromBlock,
     )
 

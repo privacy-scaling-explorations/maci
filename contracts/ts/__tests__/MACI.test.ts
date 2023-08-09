@@ -751,8 +751,8 @@ describe('MACI', () => {
 			const ms = await genMaciStateFromContract(
 				signer.provider,
 				maciContract.address,
+				0,
 				coordinator,
-				0
 			);
 			// TODO: check roots
 		});
