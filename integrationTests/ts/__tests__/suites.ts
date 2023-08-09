@@ -496,10 +496,8 @@ const executeSuiteElgamal = async (data: any, expect: any) => {
 
             const generateNewKeyCommand = `node build/index.js generateNewKey ` +
                 ` --new-pub-key ${userKeypairs[i].pubKey.serialize()} ` +
-                ` --new-priv-key ${userKeypairs[i].privKey.serialize()} ` +
                 ` --old-pub-key ${oldUserPubKey} ` +
                 ` --old-priv-key ${oldUserPrivKey} ` +
-                ` --coord-priv-key ${coordinatorKeypair.privKey.serialize()} ` + // TODO: This is wrong, no private key of coord should be available to the user
                 ` --state-index ${i + 1} ` +
                 ` --salt 0x798D81BE4A9870C079B8DE539496AB95 ` +
                 ` --poll-id ${pollId} ` +

@@ -550,7 +550,14 @@ class Poll {
         return { circuitInputs, deactivatedLeaves };
     }
 
-    public generateCircuitInputsForGenerateNewKey(newPublicKey: PubKey, deactivatedPrivateKey: PrivKey, deactivatedPublicKey: PubKey, stateIndex: BigInt, salt: BigInt, pollId: BigInt) {
+    public generateCircuitInputsForGenerateNewKey(
+        newPublicKey: PubKey, 
+        deactivatedPrivateKey: PrivKey, 
+        deactivatedPublicKey: PubKey,
+        coordinatorPublicKey: PubKey,
+        stateIndex: BigInt, 
+        salt: BigInt, 
+        pollId: BigInt) {
         if (!this.stateCopied) {
             this.copyStateFromMaci()
         }
@@ -568,7 +575,7 @@ class Poll {
         const z = BigInt(42);
 
         const [c1r, c2r] = elGamalRerandomize(
-            this.coordinatorKeypair.pubKey.rawPubKey,
+            coordinatorPublicKey.rawPubKey,
             z,
             deactivatedKeyEvent.c1,
             deactivatedKeyEvent.c2,
@@ -602,7 +609,7 @@ class Poll {
             BigInt(this.numSignUps),
             stateIndex,
             salt,
-            this.coordinatorKeypair.pubKey,
+            coordinatorPublicKey,
             this.deactivatedKeysTree,
             BigInt(deactivatedKeyIndex),
             z,
@@ -713,6 +720,7 @@ class Poll {
                 case BigInt(1):
                     try {
                         // If the command is valid
+                        // TODO: Pass coord PK if coord invokes
                         const r = this.processMessage(idx)
                         // console.log(messageIndex, r ? 'valid' : 'invalid')
                         // console.log("r:"+r.newStateLeaf )

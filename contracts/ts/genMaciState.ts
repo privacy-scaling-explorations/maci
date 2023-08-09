@@ -196,15 +196,15 @@ const genMaciStateFromContract = async (
 		provider
 	);
 
-	const coordinatorPubKeyOnChain = await pollContract.coordinatorPubKey();
-	assert(
-		coordinatorPubKeyOnChain[0].toString() ===
-			coordinatorKeypair.pubKey.rawPubKey[0].toString()
-	);
-	assert(
-		coordinatorPubKeyOnChain[1].toString() ===
-			coordinatorKeypair.pubKey.rawPubKey[1].toString()
-	);
+	// const coordinatorPubKeyOnChain = await pollContract.coordinatorPubKey();
+	// assert(
+	// 	coordinatorPubKeyOnChain[0].toString() ===
+	// 		coordinatorKeypair.pubKey.rawPubKey[0].toString()
+	// );
+	// assert(
+	// 	coordinatorPubKeyOnChain[1].toString() ===
+	// 		coordinatorKeypair.pubKey.rawPubKey[1].toString()
+	// );
 
 	const dd = await pollContract.getDeployTimeAndDuration();
 	const deployTime = Number(dd[0]);
@@ -486,11 +486,19 @@ const genMaciStateFromContract = async (
 				maciState.deployNullPoll();
 			}
 		} else if (action['type'] === 'PublishMessage') {
+			// TODO: Pass coord PK if coord invokes
+			if (!coordinatorKeypair) {
+				continue;
+			}
 			maciState.polls[pollId].publishMessage(
 				action.data.message,
 				action.data.encPubKey
 			);
 		} else if (action['type'] === 'AttemptKeyDeactivation') {
+			// TODO: Pass coord PK if coord invokes
+			if (!coordinatorKeypair) {
+				continue;
+			}
 			maciState.polls[pollId].deactivateKey(
 				action.data.message,
 				action.data.encPubKey
@@ -521,6 +529,10 @@ const genMaciStateFromContract = async (
 					action.data.messageRoot
 			);
 		} else if (action['type'] === 'AttemptKeyGeneration') {
+			// TODO: Pass coord PK if coord invokes
+			if (!coordinatorKeypair) {
+				continue;
+			}
 			maciState.polls[pollId].generateNewKey(
 				action.data.message,
 				action.data.encPubKey,
@@ -534,7 +546,10 @@ const genMaciStateFromContract = async (
 		await pollContract.numSignUpsAndMessagesAndDeactivatedKeys();
 
 	const poll = maciState.polls[pollId];
-	assert(Number(numMessages) === poll.messages.length);
+
+	if (coordinatorKeypair) {
+		assert(Number(numMessages) === poll.messages.length);
+	}
 
 	maciState.polls[pollId].numSignUps = Number(numSignUps);
 

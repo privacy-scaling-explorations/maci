@@ -7,8 +7,7 @@ import {
 
 import {
     PrivKey,
-    PubKey,
-    Keypair
+    PubKey
 } from 'maci-domainobjs'
 
 import { genProof, verifyProof, extractVk } from 'maci-circuits'
@@ -59,23 +58,6 @@ const configureSubparser = (subparsers: any) => {
         }
     )
 
-    parser.addArgument(
-        ['-pnsk', '--prompt-for-maci-newPrivKey'],
-        {
-            action: 'storeTrue',
-            help: 'Whether to prompt for your serialized new MACI private key',
-        }
-    )
-
-    parser.addArgument(
-        ['-npk', '--new-priv-key'],
-        {
-            action: 'store',
-            required: true,
-            type: 'string',
-            help: 'Your new serialized MACI private key',
-        }
-    )
 
     parser.addArgument(
         ['-o', '--old-pub-key'],
@@ -110,16 +92,6 @@ const configureSubparser = (subparsers: any) => {
         {
             action: 'storeTrue',
             help: 'Whether to prompt for coordinators serialized MACI private key',
-        }
-    )
-
-    parser.addArgument(
-        ['-cpk', '--coord-priv-key'],
-        {
-            action: 'store',
-            required: true,
-            type: 'string',
-            help: 'Coordinator\'s serialized MACI private key',
         }
     )
 
@@ -236,21 +208,6 @@ const generateNewKey = async (args: any) => {
 
     const userMaciOldPrivKey = PrivKey.unserialize(serializedOldPrivKey)
 
-    // The user's new MACI private key
-    let serializedNewPrivKey
-    if (args.prompt_for_maci_new_priv_key) {
-        serializedNewPrivKey = await promptPwd('Your new MACI private key')
-    } else {
-        serializedNewPrivKey = args.new_priv_key
-    }
-
-    if (!PrivKey.isValidSerializedPrivKey(serializedNewPrivKey)) {
-        console.error('Error: invalid new MACI private key')
-        return 1
-    }
-
-    const userMaciNewPrivKey = PrivKey.unserialize(serializedNewPrivKey)
-
     const fromBlock = args.from_block ? args.from_block : 0;
 
     // State index
@@ -318,26 +275,18 @@ const generateNewKey = async (args: any) => {
     const userMaciNewPubKey = PubKey.unserialize(args.new_pub_key)
     const userMaciOldPubKey = PubKey.unserialize(args.old_pub_key)
 
-    let serializedCoordPrivKey
-    if (args.prompt_for_coord_priv_key) {
-        serializedCoordPrivKey = await promptPwd('Coordinators MACI private key')
-    } else {
-        serializedCoordPrivKey = args.coord_priv_key
-    }
+    const coordinatorPubKeyResult = await pollContract.coordinatorPubKey();
 
-    if (!PrivKey.isValidSerializedPrivKey(serializedCoordPrivKey)) {
-        console.error('Error: invalid coordinators MACI private key')
-        return 1
-    }
-
-    const maciCoordPrivKey = PrivKey.unserialize(serializedCoordPrivKey)
-    const coordinatorKeypair = new Keypair(maciCoordPrivKey)
+    const coordinatorPubKey = new PubKey([
+        BigInt(coordinatorPubKeyResult.x.toString()),
+        BigInt(coordinatorPubKeyResult.y.toString()),
+    ])
 
     // Reconstruct MACI state
     const maciState = await genMaciStateFromContract(
         signer.provider,
         maciAddress,
-        coordinatorKeypair,
+        null,
         pollId,
         fromBlock,
     )
@@ -346,6 +295,7 @@ const generateNewKey = async (args: any) => {
         userMaciNewPubKey,
         userMaciOldPrivKey,
         userMaciOldPubKey,
+        coordinatorPubKey,
         stateIndex,
         BigInt(salt),
         pollId
@@ -389,7 +339,7 @@ const generateNewKey = async (args: any) => {
     try {
         tx = await mpContract.generateNewKeyFromDeactivated(
             message.asContractParam(),
-            coordinatorKeypair.pubKey.asContractParam(),
+            coordinatorPubKey.asContractParam(),
             encPubKey.asContractParam(),
             pollContract.address,
             formattedProof

@@ -204,6 +204,7 @@ const completeDeactivation = async (args: any) => {
 	const mpContract = new ethers.Contract(mpAddress, mpContractAbi, signer);
 
 	const seed = args.seed ? BigInt(args.seed) : BigInt(42);
+	// TODO: Pass coord PK if coord invokes
 	const { circuitInputs, deactivatedLeaves } = maciState.polls[pollId].processDeactivationMessages(seed);
 	
 	let r
