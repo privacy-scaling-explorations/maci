@@ -567,6 +567,7 @@ describe("MACI - E2E", () => {
             newUser1KeyPair.pubKey,
             user1KeyPair.privKey,
             user1KeyPair.pubKey,
+            coordinatorKeyPair.pubKey,
             userStateIndex,
             BigInt(salt),
             pollId
