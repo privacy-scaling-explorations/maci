@@ -604,9 +604,13 @@ template ProcessNewKeyGeneration(stateTreeDepth) {
 
     component stateLeafQip = QuinTreeInclusionProof(stateTreeDepth);
     component stateLeafHasher = Hasher4();
-    for (var i = 0; i < STATE_LEAF_LENGTH; i++) {
-        stateLeafHasher.in[i] <== 0;
-    }
+    
+    // Empty state leaf
+    stateLeafHasher.in[0] <== 10457101036533406547632367118273992217979173478358440826365724437999023779287;
+    stateLeafHasher.in[1] <== 19824078218392094440610104313265183977899662750282163392862422243483260492317;
+    stateLeafHasher.in[2] <== 0;
+    stateLeafHasher.in[3] <== 0;
+    
     stateLeafQip.leaf <== stateLeafHasher.hash;
     for (var i = 0; i < stateTreeDepth; i ++) {
         stateLeafQip.path_index[i] <== stateLeafPathIndices.out[i];
@@ -806,7 +810,10 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
             stateLeafQip.path_elements[i][j] <== stateLeafPathElements[i][j];
         }
     }
-    stateLeafQip.root === currentStateRoot;
+
+    signal tmp1 <== (isVoteType.out) * currentStateRoot;
+    signal tmp2 <== (1 - isVoteType.out) * stateLeafQip.root;
+    stateLeafQip.root === tmp1 + tmp2;
 
     //  ----------------------------------------------------------------------- 
     // 4. Verify that the original ballot exists in the given ballot root

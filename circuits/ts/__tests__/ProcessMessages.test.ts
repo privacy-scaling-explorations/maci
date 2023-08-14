@@ -14,6 +14,8 @@ import {
     PrivKey,
     Keypair,
     PCommand,
+    KCommand,
+    PubKey,
     Message,
     Ballot,
 } from 'maci-domainobjs'
@@ -23,6 +25,10 @@ import {
     IncrementalQuinTree,
     stringifyBigInts,
     NOTHING_UP_MY_SLEEVE,
+    elGamalRerandomize,
+    hash2,
+    hash4,
+    elGamalDecryptBit,
 } from 'maci-crypto'
 
 const voiceCreditBalance = BigInt(100)
@@ -82,15 +88,7 @@ describe('ProcessMessage circuit', () => {
 
             poll = maciState.polls[pollId]
             await poll.initNullifiersTree();
-            // console.log('------------------------------------')
-            // console.log(await poll.nullifiersTree.find(1))
-            // await poll.nullifiersTree.insert(1, 2)
-            // const w = await poll.nullifiersTree.insert(2, 3)
-            // console.log(w.oldKey, w.oldValue, w.siblings, w.isOld0);
-            // console.log('------------------------------------')
-
-
-
+ 
             // First command (valid)
             const command = new PCommand(
                 stateIndex, //BigInt(1),
@@ -144,10 +142,6 @@ describe('ProcessMessage circuit', () => {
                         treeDepths.messageTreeDepth,
                     ).toString()
                 )
-
-            // console.log(smtTree);
-            // const nullifierTree = new smtTree.newMemEmptyTrie()
-            // console.log(nullifierTree);
         })
 
         it('should produce the correct state root and ballot root', async () => {
@@ -540,6 +534,124 @@ describe('ProcessMessage circuit', () => {
 
             for (let i = 0; i < NUM_BATCHES; i ++) {
                 const generatedInputs = await poll.processMessages(pollId)
+
+                const witness = await genWitness(circuit, generatedInputs)
+                expect(witness.length > 0).toBeTruthy()
+
+            }
+        })
+    })
+
+    describe.only('1 user, 1 key deactivation and new key generation', () => {
+        const maciState = new MaciState()
+        const voteWeight = BigInt(9)
+        const voteOptionIndex = BigInt(0)
+        let stateIndex
+        let pollId
+        let poll
+        const messages: Message[] = []
+        const commands: PCommand[] = []
+
+        beforeAll(async () => {
+            // Sign up and publish
+            const userKeypair = new Keypair(new PrivKey(BigInt(123)))
+            const userKeypair2 = new Keypair(new PrivKey(BigInt(456)))
+
+            stateIndex = maciState.signUp(
+                userKeypair.pubKey,
+                voiceCreditBalance,
+                BigInt(1), //BigInt(Math.floor(Date.now() / 1000)),
+            )
+            console.log('Signing up with', userKeypair.pubKey.rawPubKey[0])
+
+            maciState.stateAq.mergeSubRoots(0)
+            maciState.stateAq.merge(STATE_TREE_DEPTH)
+
+            pollId = maciState.deployPoll(
+                duration,
+                BigInt(2 + duration), //BigInt(Math.floor(Date.now() / 1000) + duration),
+                maxValues,
+                treeDepths,
+                messageBatchSize,
+                coordinatorKeypair,
+            )
+
+            poll = maciState.polls[pollId]
+            await poll.initNullifiersTree();
+
+            // Deactivate key
+            const command = new PCommand(
+                stateIndex, //BigInt(1),
+                new PubKey([BigInt(0), BigInt(0)]),
+                BigInt(0), // voteOptionIndex,
+                BigInt(0), // vote weight
+                BigInt(1), // nonce
+                BigInt(pollId),
+            )
+
+            const signature = command.sign(userKeypair.privKey)
+
+            const ecdhKeypair = new Keypair()
+            const sharedKey = Keypair.genEcdhSharedKey(
+                ecdhKeypair.privKey,
+                coordinatorKeypair.pubKey,
+            )
+            const message = command.encrypt(signature, sharedKey)
+            messages.push(message)
+            commands.push(command)
+
+            poll.deactivateKey(message, ecdhKeypair.pubKey);
+            poll.stateCopied = true;
+            const { deactivatedLeaves } = poll.processDeactivationMessages(42);
+            console.log(deactivatedLeaves);
+            const deactivatedLeaf = deactivatedLeaves[0];
+            const { c1, c2, salt } = deactivatedLeaf;
+            console.log('Decrypt c1, c2', elGamalDecryptBit(coordinatorKeypair.privKey.rawPrivKey, c1, c2));
+
+            // Computing rerandomized values
+            const [c1r, c2r] = elGamalRerandomize(coordinatorKeypair.pubKey.rawPubKey, BigInt(15), c1, c2);
+
+            const keyGenCommand = new KCommand(
+                userKeypair2.pubKey, 
+                voiceCreditBalance, 
+                hash2([userKeypair.privKey.rawPrivKey, salt]),
+                c1r, 
+                c2r,
+                pollId,
+            )
+
+            const ecdhKeypair2 = new Keypair()
+            const sharedKey2 = Keypair.genEcdhSharedKey(
+                ecdhKeypair2.privKey,
+                coordinatorKeypair.pubKey,
+            )
+
+            const keyGenMessage = keyGenCommand.encrypt(sharedKey2);
+            poll.generateNewKey(
+                keyGenMessage,
+                ecdhKeypair2.pubKey,
+                2,
+            )
+
+            // Merge
+            poll.messageAq.mergeSubRoots(0)
+            poll.messageAq.merge(treeDepths.messageTreeDepth)
+
+            expect(poll.messageTree.root.toString())
+                .toEqual(
+                    poll.messageAq.getRoot(
+                        treeDepths.messageTreeDepth,
+                    ).toString()
+                )
+        })
+
+        it.only('test', async () => {
+            // console.log(poll.messages);
+            for (let i = 0; i < NUM_BATCHES; i ++) {
+                // console.log(hash4([BigInt(0), BigInt(0), BigInt(0), BigInt(0)]))
+                // console.log(poll.stateTree);
+                const generatedInputs = await poll.processMessages(pollId)
+                // console.log(generatedInputs);
 
                 const witness = await genWitness(circuit, generatedInputs)
                 expect(witness.length > 0).toBeTruthy()
