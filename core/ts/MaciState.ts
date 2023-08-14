@@ -210,6 +210,7 @@ class Poll {
         )
         try {
             let {command} = KCommand.decrypt(_message, sharedKey)
+            command.setNewStateIndex(BigInt(`${_newStateIndex}`))
             this.numKeyGens += 1;
             this.commands.push(command)
         }  catch(e) {
@@ -614,7 +615,7 @@ class Poll {
 
         // Generate circuit inputs
         const circuitInputs = stringifyBigInts(
-            this.genProcessMessagesCircuitInputsPartial(
+            await this.genProcessMessagesCircuitInputsPartial(
                 this.currentMessageBatchIndex
             )
         )
@@ -634,7 +635,6 @@ class Poll {
 
         for (let i = 0; i < batchSize; i ++) {
             const zeroProof = await this.nullifiersTree.find(BigInt(0));
-            console.log(zeroProof);
             const zeroNullifierElements = zeroProof.siblings;
             for (let i = zeroNullifierElements.length; i < STATE_TREE_DEPTH; i+= 1) {
                 zeroNullifierElements.push(BigInt(0))
@@ -858,7 +858,6 @@ class Poll {
                             throw e
                         }
                     } finally {
-                        // Since the command is invalid, use a blank state leaf
                         currentStateLeaves.unshift(this.stateLeaves[0].copy())
                         currentStateLeavesPathElements.unshift(
                             this.stateTree.genMerklePath(0).pathElements
@@ -956,7 +955,7 @@ class Poll {
     /*
      * Generates inputs for the ProcessMessages circuit. 
      */
-    public genProcessMessagesCircuitInputsPartial = (
+    public genProcessMessagesCircuitInputsPartial = async (
         _index: number,
     ) => {
         const messageBatchSize = this.batchSizes.messageBatchSize
@@ -973,8 +972,15 @@ class Poll {
             ]
         ))
 
+        const zeroProof = await this.nullifiersTree.find(BigInt(0));
+        const zeroNullifierElements = zeroProof.siblings;
+        for (let i = zeroNullifierElements.length; i < STATE_TREE_DEPTH; i+= 1) {
+            zeroNullifierElements.push(BigInt(0))
+        }
+
+
         while (msgs.length % messageBatchSize > 0) {
-            msgs.push(msgs[msgs.length - 1])
+            msgs.push([...new Message(BigInt(1), Array(10).fill(BigInt(0))).asCircuitInputs(), BigInt(0)])
         }
 
         msgs = msgs.slice(_index, _index + messageBatchSize)
@@ -1083,12 +1089,14 @@ class Poll {
         const message = this.messages[_index]
         const encPubKey = this.encPubKeys[_index]
 
-        // Decrypt the message
-        const sharedKey = Keypair.genEcdhSharedKey(
-            this.coordinatorKeypair.privKey,
-            encPubKey,
-        )
-        const { command } = KCommand.decrypt(message, sharedKey);
+        // // Decrypt the message
+        // const sharedKey = Keypair.genEcdhSharedKey(
+        //     this.coordinatorKeypair.privKey,
+        //     encPubKey,
+        // )
+        // const { command } = KCommand.decrypt(message, sharedKey);
+
+        const command = this.commands[_index] as KCommand;
 
         const {
             newPubKey,
@@ -1104,12 +1112,14 @@ class Poll {
         let deactivationStatus = null;
         try {
             const dec = elGamalDecryptBit(this.coordinatorKeypair.privKey.rawPrivKey, c1r, c2r);
+            console.log(dec);
             if (dec == BigInt(1)) {
                 deactivationStatus = 1;
             } else {
                 deactivationStatus = 0;
             }
         } catch (err) {
+            console.log('Failed to decrypt');
             deactivationStatus = 0
         }
 
@@ -1127,6 +1137,7 @@ class Poll {
 
         // Add nullifier to the tree
         if (!found) {
+            console.log('NOT FOUND!')
             const res = await this.nullifiersTree.insert(nullifier, nullifier);
             siblings = res.siblings
         }
@@ -1141,14 +1152,17 @@ class Poll {
         // Generate state tree path
         let stateTreeInclusionProof;
 
-        const oldStateRoot = this.stateTree.root();
-        let newStateRoot = this.stateTree.root();
+        const oldStateRoot = this.stateTree.root;
+        let newStateRoot = this.stateTree.root;
 
-        if (!found && deactivationStatus === 1 && Number(newStateIndex) > this.stateLeaves.length) {
+        console.log(deactivationStatus, Number(newStateIndex), this.stateLeaves.length)
+        if (!found && deactivationStatus === 1 && Number(newStateIndex) >= this.stateLeaves.length) {
+            console.log('INSERT INTO STATE TREE!')
             stateTreeInclusionProof = this.stateTree.genMerklePath(newStateIndex);
             this.stateTree.insert(stateLeaf.hash());
             newStateRoot = this.stateTree.root();
         } else {
+            console.log('DO NOT INSERT INTO STATE TREE!', !found, deactivationStatus === 1, Number(newStateIndex) >= this.stateLeaves.length);
             stateTreeInclusionProof = this.stateTree.genMerklePath(0);
         }
 
