@@ -65,6 +65,14 @@ const testTallyVk = new VerifyingKey(
 	[new G1Point(BigInt(14), BigInt(15)), new G1Point(BigInt(16), BigInt(17))]
 );
 
+const testNewKeyGenerationVk = new VerifyingKey(
+	new G1Point(BigInt(0), BigInt(1)),
+	new G2Point([BigInt(2), BigInt(3)], [BigInt(4), BigInt(5)]),
+	new G2Point([BigInt(6), BigInt(7)], [BigInt(8), BigInt(9)]),
+	new G2Point([BigInt(10), BigInt(11)], [BigInt(12), BigInt(13)]),
+	[new G1Point(BigInt(14), BigInt(15)), new G1Point(BigInt(16), BigInt(17))]
+);
+
 const compareVks = (vk: VerifyingKey, vkOnChain: any) => {
 	expect(vk.ic.length).toEqual(vkOnChain.ic.length);
 	for (let i = 0; i < vk.ic.length; i++) {
@@ -240,7 +248,8 @@ describe('MACI', () => {
 				messageBatchSize,
 				testProcessVk.asContractParam(),
 				testProcessDeactivationVk.asContractParam(),
-				testTallyVk.asContractParam()
+				testTallyVk.asContractParam(),
+				testNewKeyGenerationVk.asContractParam()
 			);
 			let receipt = await tx.wait();
 			expect(receipt.status).toEqual(1);
@@ -286,8 +295,14 @@ describe('MACI', () => {
 				treeDepths.voteOptionTreeDepth
 			);
 
+			const newKeyGenerationVkOnChain = await vkRegistryContract.getNewKeyGenerationVk(
+				std.toString(),
+				treeDepths.messageTreeDepth
+			);
+
 			compareVks(testProcessVk, processVkOnChain);
 			compareVks(testTallyVk, tallyVkOnChain);
+			compareVks(testNewKeyGenerationVk, newKeyGenerationVkOnChain);
 
 			// Create the poll and get the poll ID from the tx event logs
 			tx = await maciContract.deployPoll(
@@ -648,7 +663,6 @@ describe('MACI', () => {
 			expect(packedVals.toString(16)).toEqual(onChainPackedVals.toString(16));
 		});
 
-		// TODO: VM Exception while processing transaction: reverted with custom error 'NO_MORE_MESSAGES()'
 		it('processMessages() should update the state and ballot root commitment', async () => {
 			const pollContractAddress = await maciContract.getPoll(pollId);
 
@@ -737,8 +751,8 @@ describe('MACI', () => {
 			const ms = await genMaciStateFromContract(
 				signer.provider,
 				maciContract.address,
+				0,
 				coordinator,
-				0
 			);
 			// TODO: check roots
 		});
@@ -906,9 +920,9 @@ describe('MACI', () => {
 
 		it('confirmDeactivation() should revert if not called by an owner', async () => {
 			try {
-				await pollContract
+				await mpContract
 					.connect(otherAccount)
-					.confirmDeactivation([[0]], 0);
+					.confirmDeactivation([[0]], 0, pollContract.address);
 			} catch (e) {
 				const error = 'Ownable: caller is not the owner';
 				expect(
@@ -940,9 +954,10 @@ describe('MACI', () => {
 				salt
 			)) as any
 
-			const tx = await pollContract.confirmDeactivation(
+			const tx = await mpContract.confirmDeactivation(
 				[deactivatedLeaf.asArray()],
 				1,
+				pollContract.address
 			);
 
 			const receipt = await tx.wait();

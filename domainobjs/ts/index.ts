@@ -1080,7 +1080,7 @@ class KCommand extends Command {
 		stateTree: any,
         numSignUps: BigInt,
         stateIndex: BigInt,
-        salt: BigInt, // Salt used in key deactivation message
+        salt: BigInt,
 		coordinatorPubKey: PubKey,
         deactivatedKeysTree: any,
 		deactivatedKeyIndex: BigInt,
@@ -1094,7 +1094,7 @@ class KCommand extends Command {
 		const stateLeaf = stateLeaves[parseInt(stateIndex.toString())];
 		const { voiceCreditBalance: oldCreditBalance, timestamp } = stateLeaf;
 
-		const stateTreeInclusionProof = stateTree.genMerklePath(stateIndex).pathElements;
+		const stateTreeInclusionProof = stateTree.genMerklePath(Number(stateIndex)).pathElements;
 		const deactivatedKeysInclusionProof = deactivatedKeysTree.genMerklePath(parseInt(deactivatedKeyIndex.toString())).pathElements;
 
 		const ecdhKeypair = new Keypair()
@@ -1116,9 +1116,9 @@ class KCommand extends Command {
 			deactivatedKeysRoot,
 			stateTreeInclusionProof,
 			oldCreditBalance,
-			newCreditBalance: this.newCreditBalance,
+			newCreditBalance: this.newCreditBalance, 
 			stateLeafTimestamp: timestamp,
-			deactivatedKeysInclusionProof,
+			deactivatedKeysInclusionProof: deactivatedKeysInclusionProof,
 			deactivatedKeyIndex,
 			c1,
 			c2,

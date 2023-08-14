@@ -18,11 +18,7 @@ deploy_poll
 $MACI_CLI signup \
     --pubkey macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391
 
-# signup period
-$MACI_CLI timeTravel \
-    --seconds 100
-
-# key deactivation happens before original period 86400s from prepare_test.sh has expired 
+# key deactivation happens before original period 30s from prepare_test.sh has expired 
 $MACI_CLI timeTravel \
     --seconds 10
 

@@ -433,7 +433,7 @@ template ProcessMessages(
         tmpBallotRoot1[i] <== processors[i].newBallotRoot * isVoteMessage[i].out; 
         tmpBallotRoot2[i] <== ballotRoots[i+1] * (isTopupMessage[i].out + isNewKeyGenMessage[i].out);
 
-        stateRoots[i] <== tmpStateRoot1[i] + tmpStateRoot2[i];
+        stateRoots[i] <== tmpStateRoot1[i] + tmpStateRoot2[i] + tmpStateRoot3[i];
         ballotRoots[i] <== tmpBallotRoot1[i] + tmpBallotRoot2[i];
         nullifierRoots[i] <== processors3[i].newNullifierRoot;
     }
@@ -631,11 +631,12 @@ template ProcessNewKeyGeneration(stateTreeDepth) {
         nullifierTreeVerifier.siblings[i] <== nullifierLeafPathElements[i];
     }
 
-    nullifierTreeVerifier.oldKey <== nullifierInclusionFlag * nullifier;
-    nullifierTreeVerifier.oldValue <== nullifierInclusionFlag * nullifier;
+    signal valueFlag <== isKeyGenType.out * (1 - nullifierInclusionFlag);
+    nullifierTreeVerifier.oldKey <== valueFlag * nullifier;
+    nullifierTreeVerifier.oldValue <== valueFlag * nullifier;
     nullifierTreeVerifier.isOld0 <== 0;
-    nullifierTreeVerifier.key <== nullifierInclusionFlag * nullifier;
-    nullifierTreeVerifier.value <== nullifierInclusionFlag * nullifier;
+    nullifierTreeVerifier.key <== isKeyGenType.out * nullifier;
+    nullifierTreeVerifier.value <== isKeyGenType.out * nullifier;
     nullifierTreeVerifier.fnc <== nullifierInclusionFlag;
 
     component nullifierInsertProcessor = SMTProcessor(stateTreeDepth);
@@ -645,8 +646,6 @@ template ProcessNewKeyGeneration(stateTreeDepth) {
         nullifierInsertProcessor.siblings[i] <== nullifierLeafPathElements[i];
     }
     
-    // signal oldNullifierFlag <== (1 - nullifierInclusionFlag) * isKeyGenType.out;
-
     nullifierInsertProcessor.oldKey <== 0;
     nullifierInsertProcessor.oldValue <== 0;
     nullifierInsertProcessor.isOld0 <== 0;
@@ -662,9 +661,10 @@ template ProcessNewKeyGeneration(stateTreeDepth) {
     newNullifierRoot <== tmp3 + tmp4;
 
     component newStateLeafHasher = Hasher4();
-    newStateLeafHasher.in[STATE_LEAF_PUB_X_IDX] <== newPubKey[0] * validNullifier;
-    newStateLeafHasher.in[STATE_LEAF_PUB_Y_IDX] <== newPubKey[1] * validNullifier;
-    newStateLeafHasher.in[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] <== newCreditBalance * validNullifier;
+
+    newStateLeafHasher.in[STATE_LEAF_PUB_X_IDX] <== newPubKey[0];
+    newStateLeafHasher.in[STATE_LEAF_PUB_Y_IDX] <== newPubKey[1];
+    newStateLeafHasher.in[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] <== newCreditBalance;
     newStateLeafHasher.in[STATE_LEAF_TIMESTAMP_IDX] <== 0;
 
     component newStateLeafQip = QuinTreeInclusionProof(stateTreeDepth);
@@ -675,7 +675,10 @@ template ProcessNewKeyGeneration(stateTreeDepth) {
             newStateLeafQip.path_elements[i][j] <== stateLeafPathElements[i][j];
         }
     }
-    newStateRoot <== newStateLeafQip.root;
+
+    signal tmp5 <== (1 - validNullifier) * currentStateRoot;
+    signal tmp6 <== (validNullifier) * newStateLeafQip.root;
+    newStateRoot <== tmp5 + tmp6;
 }
 
 template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {

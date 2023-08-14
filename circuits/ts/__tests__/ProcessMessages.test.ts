@@ -599,14 +599,15 @@ describe('ProcessMessage circuit', () => {
             const message = command.encrypt(signature, sharedKey)
             messages.push(message)
             commands.push(command)
+            
+            poll.publishMessage(message, ecdhKeypair.pubKey)
 
             poll.deactivateKey(message, ecdhKeypair.pubKey);
-            poll.stateCopied = true;
             const { deactivatedLeaves } = poll.processDeactivationMessages(42);
-            console.log(deactivatedLeaves);
+            // console.log(deactivatedLeaves);
             const deactivatedLeaf = deactivatedLeaves[0];
             const { c1, c2, salt } = deactivatedLeaf;
-            console.log('Decrypt c1, c2', elGamalDecryptBit(coordinatorKeypair.privKey.rawPrivKey, c1, c2));
+            // console.log('Decrypt c1, c2', elGamalDecryptBit(coordinatorKeypair.privKey.rawPrivKey, c1, c2));
 
             // Computing rerandomized values
             const [c1r, c2r] = elGamalRerandomize(coordinatorKeypair.pubKey.rawPubKey, BigInt(15), c1, c2);
@@ -646,17 +647,11 @@ describe('ProcessMessage circuit', () => {
         })
 
         it.only('test', async () => {
-            // console.log(poll.messages);
-            for (let i = 0; i < NUM_BATCHES; i ++) {
-                // console.log(hash4([BigInt(0), BigInt(0), BigInt(0), BigInt(0)]))
-                // console.log(poll.stateTree);
-                const generatedInputs = await poll.processMessages(pollId)
-                // console.log(generatedInputs);
+            const generatedInputs = await poll.processMessages(pollId)
+            console.log(generatedInputs);
 
-                const witness = await genWitness(circuit, generatedInputs)
-                expect(witness.length > 0).toBeTruthy()
-
-            }
+            const witness = await genWitness(circuit, generatedInputs)
+            expect(witness.length > 0).toBeTruthy()
         })
     })
 })

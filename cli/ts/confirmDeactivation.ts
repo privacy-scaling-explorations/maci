@@ -3,7 +3,6 @@ import { parseArtifact, getDefaultSigner, genMaciStateFromContract } from 'maci-
 import { readJSONFile, promptPwd } from 'maci-common';
 import { contractExists, validateEthAddress } from './utils';
 import { contractFilepath } from './config';
-import { DEFAULT_ETH_PROVIDER } from './defaults';
 import { Keypair, PrivKey} from 'maci-domainobjs';
 
 const configureSubparser = (subparsers: any) => {
@@ -96,6 +95,7 @@ const confirmDeactivation = async (args: any) => {
 	// Get contract artifacts
 	const [maciContractAbi] = parseArtifact('MACI');
 	const [pollContractAbi] = parseArtifact('Poll');
+	const [mpContractAbi] = parseArtifact('MessageProcessor');
 
 	// Verify that MACI contract address is deployed at the given address
 	const signer = await getDefaultSigner();
@@ -124,7 +124,6 @@ const confirmDeactivation = async (args: any) => {
 
 	// Initialize Poll contract object
 	const pollContract = new ethers.Contract(pollAddr, pollContractAbi, signer);
-
 	const batchSize = args.batch_size ? args.batch_size : 1;
 	let serializedPrivkey;
 
@@ -148,10 +147,19 @@ const confirmDeactivation = async (args: any) => {
 	const maciState = await genMaciStateFromContract(
         signer.provider,
         maciAddress,
-        coordinatorKeypair,
         pollId,
+        coordinatorKeypair,
         fromBlock,
     )
+
+	// TODO: reschuffle - add mp param to command
+	// const mpAddress = args.mp
+	// 	? args.mp
+	// 	: contractAddrs['MessageProcessor-' + pollId];
+
+	const mpAddress = contractAddrs['MessageProcessor-' + pollId];
+
+	const mpContract = new ethers.Contract(mpAddress, mpContractAbi, signer);
 
 	const seed = args.seed ? BigInt(args.seed) : BigInt(42);
 	const { circuitInputs, deactivatedLeaves } = maciState.polls[pollId].processDeactivationMessages(seed);
@@ -161,11 +169,12 @@ const confirmDeactivation = async (args: any) => {
 		const batch = deactivatedLeaves
 			.slice(batchSize * i, batchSize * (i + 1))
 			.map(leaf => leaf.asArray());
-
+		
 		try {
-			await pollContract.confirmDeactivation(
+			await mpContract.confirmDeactivation(
 				batch, 
 				batch.length,
+				pollContract.address,
 			);
 		} catch (e) {
 			console.error(e);

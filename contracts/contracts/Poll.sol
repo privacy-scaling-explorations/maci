@@ -98,9 +98,13 @@ contract PollFactory is Params, IPubKey, Ownable, PollDeploymentParams {
         // Make the Poll contract own the messageAq contract, so only it can
         // run enqueue/merge
         messageAq.transferOwnership(address(poll));
-        deactivatedKeysAq.transferOwnership(address(poll));
 
-        // init messageAq & deactivatedKeysAq
+        // Make the MessageProcessor contract own the deactivatedKeysAq contract, so only it can
+        // run enqueue/merge
+        // Avoiding 'Stack too deep' by not referencing the local variable _messageProcessorAddress
+        deactivatedKeysAq.transferOwnership(poll.messageProcessorAddress());
+
+        // init messageAq
         poll.init();
 
         // TODO: should this be _maci.owner() instead?
@@ -142,7 +146,7 @@ contract Poll is
 
     uint256 public deactivationChainHash;
 
-    address immutable messageProcessorAddress;
+    address public immutable messageProcessorAddress;
 
     function getDeployTimeAndDuration() public view returns (uint256, uint256) {
         return (deployTime, duration);
@@ -162,7 +166,7 @@ contract Poll is
 
     uint256 internal numMessages;
     uint256 internal numDeactivatedKeys;
-    uint256 internal newStateIndex;
+    uint256 internal numGeneratedKeys;
 
     function numSignUpsAndMessagesAndDeactivatedKeys()
         public
@@ -185,10 +189,6 @@ contract Poll is
     string constant ERROR_MAX_MESSAGES_REACHED = "PollE04";
     string constant ERROR_STATE_AQ_ALREADY_MERGED = "PollE05";
     string constant ERROR_STATE_AQ_SUBTREES_NEED_MERGE = "PollE06";
-    string constant ERROR_INVALID_SENDER = "PollE07";
-    string constant ERROR_MAX_DEACTIVATED_KEYS_REACHED = "PollE08";
-    string constant ERROR_VERIFICATION_FAILED = "PollE09";
-    string constant ERROR_DEACTIVATION_PERIOD_NOT_PASSED = "PollE10";
     string constant ERROR_DEACTIVATION_PERIOD_PASSED = "PollE11";
 
     event PublishMessage(Message _message, PubKey _encPubKey);
@@ -198,7 +198,6 @@ contract Poll is
     event MergeMessageAqSubRoots(uint256 _numSrQueueOps);
     event MergeMessageAq(uint256 _messageRoot);
     event AttemptKeyDeactivation(Message _message, PubKey _encPubKey);
-    event DeactivateKey(uint256 keyHash, uint256[2] c1, uint256[2] c2);
     event AttemptKeyGeneration(Message _message, PubKey _encPubKey, uint256 _newStateIndex);
 
     ExtContracts public extContracts;
@@ -387,34 +386,40 @@ contract Poll is
     }
 
     /**
-     * @notice Confirms the deactivation of a MACI public key. This function must be called by Coordinator after User calls the deactivateKey function
-     * @param _batchLeaves Deactivated keys leaves
-     * @param _batchSize The capacity of the subroot of the deactivated keys tree
+     * @notice Attempts to generate new key from the deactivated one
+     * @param _message The encrypted message which contains state leaf index
+     * @param _encPubKey An epheremal public key which can be combined with the
+     *     coordinator's private key to generate an ECDH shared key with which
+     *     to encrypt the message.
      */
-    function confirmDeactivation(
-        uint256[][] memory _batchLeaves,
-        uint256 _batchSize
-    ) external onlyOwner {
+    function generateNewKeyFromDeactivated(
+        Message memory _message,
+        PubKey memory _encPubKey
+    ) external returns (uint256) {
         require(
-            numDeactivatedKeys <= maxValues.maxMessages,
-            ERROR_MAX_DEACTIVATED_KEYS_REACHED
+            numMessages <= maxValues.maxMessages,
+            ERROR_MAX_MESSAGES_REACHED
+        );
+        require(
+            _encPubKey.x < SNARK_SCALAR_FIELD &&
+                _encPubKey.y < SNARK_SCALAR_FIELD,
+            ERROR_INVALID_PUBKEY
         );
 
-        for (uint256 i = 0; i < _batchSize; i++) {
-            uint256 keyHash = _batchLeaves[i][0];
-            uint256[2] memory c1;
-            uint256[2] memory c2;
+        uint256 newStateIndex = numMessages + numGeneratedKeys;
 
-            c1[0] = _batchLeaves[i][1];
-            c1[1] = _batchLeaves[i][2];
-            c2[0] = _batchLeaves[i][3];
-            c2[1] = _batchLeaves[i][4];
-
-            extContracts.deactivatedKeysAq.enqueue(
-                hash5([keyHash, c1[0], c1[1], c2[0], c2[1]])
-            );
-            emit DeactivateKey(keyHash, c1, c2);
+        unchecked {
+            numMessages++;
+            numGeneratedKeys++;
         }
+
+        _message.msgType = 3;
+        uint256 messageLeaf = hashMessageAndEncPubKey(_message, _encPubKey);
+        extContracts.messageAq.enqueue(messageLeaf);
+
+        emit AttemptKeyGeneration(_message, _encPubKey, newStateIndex);
+
+        return newStateIndex;
     }
 
     /*
@@ -425,7 +430,7 @@ contract Poll is
     function mergeMaciStateAqSubRoots(
         uint256 _numSrQueueOps,
         uint256 _pollId
-    ) public isAfterVotingDeadline {
+    ) public {
         require(msg.sender == messageProcessorAddress || msg.sender == owner());
         // This function cannot be called after the stateAq was merged
         require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
@@ -443,7 +448,7 @@ contract Poll is
      * currentSbCommitment.
      * @param _pollId The ID of the Poll
      */
-    function mergeMaciStateAq(uint256 _pollId) public isAfterVotingDeadline {
+    function mergeMaciStateAq(uint256 _pollId) public {
         require(msg.sender == messageProcessorAddress || msg.sender == owner());
         // This function can only be called once per Poll after the voting
         // deadline
@@ -488,14 +493,5 @@ contract Poll is
             treeDepths.messageTreeDepth
         );
         emit MergeMessageAq(root);
-    }
-
-    function generateNewKey(
-        Message memory _message,
-        PubKey memory _encPubKey
-    ) external {
-        // TODO: implement logic
-        // AttemptKeyGeneration newStateIndex param is hardcoded for now. Should be calculated.
-        emit AttemptKeyGeneration(_message, _encPubKey, 0);
     }
 }
