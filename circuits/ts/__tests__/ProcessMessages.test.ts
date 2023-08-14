@@ -81,6 +81,15 @@ describe('ProcessMessage circuit', () => {
             )
 
             poll = maciState.polls[pollId]
+            await poll.initNullifiersTree();
+            // console.log('------------------------------------')
+            // console.log(await poll.nullifiersTree.find(1))
+            // await poll.nullifiersTree.insert(1, 2)
+            // const w = await poll.nullifiersTree.insert(2, 3)
+            // console.log(w.oldKey, w.oldValue, w.siblings, w.isOld0);
+            // console.log('------------------------------------')
+
+
 
             // First command (valid)
             const command = new PCommand(
@@ -136,9 +145,9 @@ describe('ProcessMessage circuit', () => {
                     ).toString()
                 )
 
-            console.log(smtTree);
-            const nullifierTree = new smtTree.newMemEmptyTrie()
-            console.log(nullifierTree);
+            // console.log(smtTree);
+            // const nullifierTree = new smtTree.newMemEmptyTrie()
+            // console.log(nullifierTree);
         })
 
         it('should produce the correct state root and ballot root', async () => {
@@ -163,7 +172,7 @@ describe('ProcessMessage circuit', () => {
             const currentStateRoot = maciState.stateTree.root
             const currentBallotRoot = ballotTree.root
 
-            const generatedInputs = poll.processMessages(pollId)
+            const generatedInputs = await poll.processMessages(pollId)
                         
             // Calculate the witness
             const witness = await genWitness(circuit, generatedInputs)
@@ -247,6 +256,7 @@ describe('ProcessMessage circuit', () => {
             )
 
             poll = maciState.polls[pollId]
+            await poll.initNullifiersTree();
 
             const command = new PCommand(
                 BigInt(1),
@@ -304,7 +314,7 @@ describe('ProcessMessage circuit', () => {
             const currentStateRoot = maciState.stateTree.root
             const currentBallotRoot = ballotTree.root
 
-            const generatedInputs = poll.processMessages(pollId)
+            const generatedInputs = await poll.processMessages(pollId)
 
             // Calculate the witness
             const witness = await genWitness(circuit, generatedInputs)
@@ -355,6 +365,7 @@ describe('ProcessMessage circuit', () => {
             )
 
             poll = maciState.polls[pollId]
+            await poll.initNullifiersTree();
 
             // Vote for option 0
             const command = new PCommand(
@@ -459,7 +470,7 @@ describe('ProcessMessage circuit', () => {
             const currentStateRoot = maciState.stateTree.root
             const currentBallotRoot = ballotTree.root
 
-            const generatedInputs = poll.processMessages(pollId)
+            const generatedInputs = await poll.processMessages(pollId)
 
             // Calculate the witness
             const witness = await genWitness(circuit, generatedInputs)
@@ -499,6 +510,7 @@ describe('ProcessMessage circuit', () => {
             )
 
             const poll = maciState.polls[pollId]
+            await poll.initNullifiersTree();
 
             // Second batch is not a full batch
             const numMessages = (messageBatchSize * NUM_BATCHES) - 1
@@ -527,7 +539,7 @@ describe('ProcessMessage circuit', () => {
             poll.messageAq.merge(treeDepths.messageTreeDepth)
 
             for (let i = 0; i < NUM_BATCHES; i ++) {
-                const generatedInputs = poll.processMessages(pollId)
+                const generatedInputs = await poll.processMessages(pollId)
 
                 const witness = await genWitness(circuit, generatedInputs)
                 expect(witness.length > 0).toBeTruthy()

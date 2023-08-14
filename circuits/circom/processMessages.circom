@@ -9,6 +9,7 @@ include "./trees/incrementalQuinTree.circom";
 include "../node_modules/circomlib/circuits/mux1.circom";
 include "../node_modules/circomlib/circuits/smt/smtverifier.circom";
 include "../node_modules/circomlib/circuits/smt/smtprocessor.circom";
+include "./elGamalDecryption.circom";
 include "./utils.circom";
 
 /*
@@ -587,6 +588,17 @@ template ProcessNewKeyGeneration(stateTreeDepth) {
     indexMux.c[0] <== 0;
     indexMux.c[1] <== stateIndex;
 
+    component elGamalDecryption = ElGamalDecryptBit();
+    elGamalDecryption.kG[0] <== c1r[0];
+    elGamalDecryption.kG[1] <== c1r[1];
+    elGamalDecryption.Me[0] <== c2r[0];
+    elGamalDecryption.Me[1] <== c2r[1];
+    elGamalDecryption.sk <== coordPrivKey;
+
+    component validDeactivation = IsEqual();
+    validDeactivation.in[0] <== elGamalDecryption.m;
+    validDeactivation.in[1] <== 1;
+
     component stateLeafPathIndices = QuinGeneratePathIndices(stateTreeDepth);
     stateLeafPathIndices.in <== indexMux.out;
 
@@ -603,8 +615,8 @@ template ProcessNewKeyGeneration(stateTreeDepth) {
         }
     }
 
-    signal tmp1 <== (1 - isKeyGenType.out) * currentStateRoot;
-    signal tmp2 <== (isKeyGenType.out) * stateLeafQip.root;
+    signal tmp1 <== (isKeyGenType.out) * currentStateRoot;
+    signal tmp2 <== (1 - isKeyGenType.out) * stateLeafQip.root;
     stateLeafQip.root === tmp1 + tmp2;
 
     component nullifierTreeVerifier = SMTVerifier(stateTreeDepth);
@@ -615,11 +627,11 @@ template ProcessNewKeyGeneration(stateTreeDepth) {
         nullifierTreeVerifier.siblings[i] <== nullifierLeafPathElements[i];
     }
 
-    nullifierTreeVerifier.oldKey <== nullifier;
-    nullifierTreeVerifier.oldValue <== (1 - nullifierInclusionFlag) * nullifier;
-    nullifierTreeVerifier.isOld0 <== nullifierInclusionFlag;
-    nullifierTreeVerifier.key <== nullifier;
-    nullifierTreeVerifier.value <== nullifier;
+    nullifierTreeVerifier.oldKey <== nullifierInclusionFlag * nullifier;
+    nullifierTreeVerifier.oldValue <== nullifierInclusionFlag * nullifier;
+    nullifierTreeVerifier.isOld0 <== 0;
+    nullifierTreeVerifier.key <== nullifierInclusionFlag * nullifier;
+    nullifierTreeVerifier.value <== nullifierInclusionFlag * nullifier;
     nullifierTreeVerifier.fnc <== nullifierInclusionFlag;
 
     component nullifierInsertProcessor = SMTProcessor(stateTreeDepth);
@@ -629,23 +641,26 @@ template ProcessNewKeyGeneration(stateTreeDepth) {
         nullifierInsertProcessor.siblings[i] <== nullifierLeafPathElements[i];
     }
     
-    nullifierInsertProcessor.oldKey <== nullifier;
-    nullifierInsertProcessor.oldValue <== (1 - nullifierInclusionFlag) * nullifier;
-    nullifierInsertProcessor.isOld0 <== nullifierInclusionFlag;
+    // signal oldNullifierFlag <== (1 - nullifierInclusionFlag) * isKeyGenType.out;
+
+    nullifierInsertProcessor.oldKey <== 0;
+    nullifierInsertProcessor.oldValue <== 0;
+    nullifierInsertProcessor.isOld0 <== 0;
     nullifierInsertProcessor.newKey <== nullifier;
     nullifierInsertProcessor.newValue <== nullifier;
-    nullifierInsertProcessor.fnc[0] <== 1;
+    nullifierInsertProcessor.fnc[0] <== nullifierInclusionFlag;
     nullifierInsertProcessor.fnc[1] <== 0;
 
-    signal tmp3 <== (1 - nullifierInclusionFlag) * currentNullifierRoot;
-    signal tmp4 <== (nullifierInclusionFlag) * nullifierInsertProcessor.newRoot;
+    signal validNullifier <== nullifierInclusionFlag * validDeactivation.out;
+    signal tmp3 <== (1 - validNullifier) * currentNullifierRoot;
+    signal tmp4 <== (validNullifier) * nullifierInsertProcessor.newRoot;
 
     newNullifierRoot <== tmp3 + tmp4;
 
     component newStateLeafHasher = Hasher4();
-    newStateLeafHasher.in[STATE_LEAF_PUB_X_IDX] <== newPubKey[0] * nullifierInclusionFlag;
-    newStateLeafHasher.in[STATE_LEAF_PUB_Y_IDX] <== newPubKey[1] * nullifierInclusionFlag;
-    newStateLeafHasher.in[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] <== newCreditBalance * nullifierInclusionFlag;
+    newStateLeafHasher.in[STATE_LEAF_PUB_X_IDX] <== newPubKey[0] * validNullifier;
+    newStateLeafHasher.in[STATE_LEAF_PUB_Y_IDX] <== newPubKey[1] * validNullifier;
+    newStateLeafHasher.in[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] <== newCreditBalance * validNullifier;
     newStateLeafHasher.in[STATE_LEAF_TIMESTAMP_IDX] <== 0;
 
     component newStateLeafQip = QuinTreeInclusionProof(stateTreeDepth);

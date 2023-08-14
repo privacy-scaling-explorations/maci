@@ -958,6 +958,7 @@ class KCommand extends Command {
 	public c1r: BigInt[];
 	public c2r: BigInt[];
 	public pollId: BigInt;
+	public newStateIndex: BigInt;
 
 	constructor(
 		newPubKey: PubKey,
@@ -966,6 +967,7 @@ class KCommand extends Command {
 		c1r: BigInt[],
 		c2r: BigInt[],
 		pollId: BigInt,
+		newStateIndex: BigInt = null
 	) {
 		super();
 		this.cmdType = BigInt(3);
@@ -975,6 +977,11 @@ class KCommand extends Command {
 		this.nullifier = nullifier;
 		this.c1r = c1r;
 		this.c2r = c2r;
+		this.newStateIndex = newStateIndex ? newStateIndex : BigInt(0);
+	}
+
+	public setNewStateIndex(newStateIndex: BigInt) {
+		this.newStateIndex = newStateIndex;
 	}
 
 	public copy = (): KCommand => {
@@ -985,6 +992,7 @@ class KCommand extends Command {
 			[BigInt(this.c1r[0].toString()), BigInt(this.c1r[1].toString())],
 			[BigInt(this.c2r[0].toString()), BigInt(this.c2r[1].toString())],
 			BigInt(this.pollId.toString()),
+			BigInt(this.newStateIndex.toString()),
 		);
 	};
 

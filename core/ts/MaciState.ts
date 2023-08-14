@@ -15,6 +15,7 @@ import {
     verifySignature,
     elGamalEncryptBit,
     smt,
+    elGamalDecryptBit,
 } from 'maci-crypto'
 import {
     PubKey,
@@ -102,7 +103,7 @@ class Poll {
     public deactivationEncPubKeys: PubKey[] = []
     public deactivationCommands: PCommand[] = []
     public deactivationSignatures: Signature[] = []
-
+    public numKeyGens: number = 0
     public nullifiersTree: smt.SMT;
 
     // For message processing
@@ -178,6 +179,7 @@ class Poll {
 
     public initNullifiersTree = async () => {
         this.nullifiersTree = await smt.newMemEmptyTrie();
+        await this.nullifiersTree.insert(0, 0)
     }
 
     public generateNewKey = (
@@ -208,6 +210,7 @@ class Poll {
         )
         try {
             let {command} = KCommand.decrypt(_message, sharedKey)
+            this.numKeyGens += 1;
             this.commands.push(command)
         }  catch(e) {
            let keyPair = new Keypair()
@@ -548,7 +551,7 @@ class Poll {
      * @param _pollId The ID of the poll associated with the messages to
      *        process
      */
-    public processMessages = (
+    public processMessages = async (
         _pollId: number,
     ) => {
         assert(this.hasUnprocessedMessages(), 'No more messages to process')
@@ -625,7 +628,18 @@ class Poll {
         const currentVoteWeights: BigInt[] = []
         const currentVoteWeightsPathElements: any[] = []
 
+        const currentNullifierRoot = this.nullifiersTree.root;
+        const currentNullifierLeavesPathElements: BigInt[] = [];
+        const nullifierInclusionFlags: BigInt[] = [];
+
         for (let i = 0; i < batchSize; i ++) {
+            const zeroProof = await this.nullifiersTree.find(BigInt(0));
+            console.log(zeroProof);
+            const zeroNullifierElements = zeroProof.siblings;
+            for (let i = zeroNullifierElements.length; i < STATE_TREE_DEPTH; i+= 1) {
+                zeroNullifierElements.push(BigInt(0))
+            }
+
             const idx = this.currentMessageBatchIndex + batchSize - i - 1
             assert(idx >= 0)
             let message
@@ -636,6 +650,8 @@ class Poll {
             }
             switch(message.msgType) {
                 case BigInt(1):
+                    currentNullifierLeavesPathElements.unshift(zeroNullifierElements);
+                    nullifierInclusionFlags.unshift(BigInt(0));
                     try{
                         // If the command is valid
                         const r = this.processMessage(idx)
@@ -706,6 +722,9 @@ class Poll {
                     }
                     break
                 case BigInt(2):
+                    currentNullifierLeavesPathElements.unshift(zeroNullifierElements);
+                    nullifierInclusionFlags.unshift(BigInt(0));
+
                     try {
                         // --------------------------------------
                         // generate topup circuit inputs
@@ -757,16 +776,46 @@ class Poll {
                 case BigInt(3):
                     try{
                         // If the command is valid
-                        const r = this.processKeyGenMessage(idx)
-                        // console.log(messageIndex, r ? 'valid' : 'invalid')
-                        // console.log("r:"+r.newStateLeaf )
-                        // DONE: replace with try/catch after implementing error
-                        // handling
-                        // const index = r.stateLeafIndex
+                        const r = await this.processKeyGenMessage(idx)
+                        const { 
+                            nullifierInclusionFlag,
+                            nullifierLeafPathElements,
+                            isOld0,
+                            oldStateRoot,
+                            newStateRoot,
+                            stateTreeInclusionProof,
+                            newPubKey,
+                            newCreditBalance,
+                            nullifier,
+                            stateLeaf,
+                            c1r,
+                            c2r,
+                            message,
+                            encPubKey,
+                            oldNullifiersRoot,
+                            newNullifiersRoot,
+                        } = r;
+
+                        currentNullifierLeavesPathElements.unshift(nullifierLeafPathElements);
+                        nullifierInclusionFlags.unshift(BigInt(nullifierInclusionFlag));
+
+                        // TODO: Add variables for storing new params
         
                     }catch(e){
                         if (e.message === 'no-op') {
                                 // Since the command is invalid, use a blank state leaf
+                                const {
+                                    found,//: true/false
+                                    siblings, //: [list]/[]
+                                    notFoundKey, //: record[1]
+                                    notFoundValue, //record[2]
+                                    isOld0, // false/true
+                                } = await this.nullifiersTree.find(BigInt(0));
+                                nullifierInclusionFlags.unshift(BigInt(0));
+                                currentNullifierLeavesPathElements.unshift(zeroProof.siblings);
+
+
+                                // currentNullifierLeavesPathElements = siblings;
                                 currentStateLeaves.unshift(this.stateLeaves[0].copy())
                                 currentStateLeavesPathElements.unshift(
                                     this.stateTree.genMerklePath(0).pathElements
@@ -860,6 +909,10 @@ class Poll {
         circuitInputs.currentBallotsPathElements = currentBallotsPathElements
         circuitInputs.currentVoteWeights = currentVoteWeights
         circuitInputs.currentVoteWeightsPathElements = currentVoteWeightsPathElements
+        circuitInputs.currentNullifierLeavesPathElements = currentNullifierLeavesPathElements
+        circuitInputs.nullifierInclusionFlags = nullifierInclusionFlags
+        circuitInputs.numKeyGens = this.numKeyGens
+        circuitInputs.currentNullifierRoot = currentNullifierRoot
 
         this.numBatchesProcessed ++
 
@@ -894,6 +947,9 @@ class Poll {
         if (this.numBatchesProcessed * batchSize >= this.messages.length) {
             this.maciStateRef.pollBeingProcessed = false
         }
+
+        // console.log(circuitInputs)
+        // console.log(stringifyBigInts(circuitInputs));
         return stringifyBigInts(circuitInputs)
     }
 
@@ -908,7 +964,15 @@ class Poll {
         assert(_index <= this.messages.length)
         assert(_index % messageBatchSize === 0)
 
-        let msgs = this.messages.map((x) => x.asCircuitInputs())
+        let msgs = this.messages.map((x, index) => x.asCircuitInputs().concat(
+            [
+                this.commands[index] instanceof KCommand ? 
+                    (this.commands[index] as KCommand).newStateIndex 
+                    : 
+                    BigInt(0)
+            ]
+        ))
+
         while (msgs.length % messageBatchSize > 0) {
             msgs.push(msgs[msgs.length - 1])
         }
@@ -1006,7 +1070,7 @@ class Poll {
     /*
     * Process one key generation message
     */
-    private processKeyGenMessage = (
+    private processKeyGenMessage = async (
         _index: number,
     ) => {
         // Ensure that the index is valid
@@ -1024,7 +1088,93 @@ class Poll {
             this.coordinatorKeypair.privKey,
             encPubKey,
         )
-        const { command } = KCommand.decrypt(message, sharedKey)
+        const { command } = KCommand.decrypt(message, sharedKey);
+
+        const {
+            newPubKey,
+			newCreditBalance,
+			nullifier,
+			c1r,
+			c2r,
+			pollId,
+            newStateIndex,
+        } = command;
+
+        // TODO: Verify c1r, c2r
+        let deactivationStatus = null;
+        try {
+            const dec = elGamalDecryptBit(this.coordinatorKeypair.privKey.rawPrivKey, c1r, c2r);
+            if (dec == BigInt(1)) {
+                deactivationStatus = 1;
+            } else {
+                deactivationStatus = 0;
+            }
+        } catch (err) {
+            deactivationStatus = 0
+        }
+
+        const oldNullifiersRoot = this.nullifiersTree.root;
+        // Check if nullifier is included
+
+        const {
+            found,//: true/false
+            siblings: foundSiblings, //: [list]/[]
+            notFoundKey, //: record[1]
+            notFoundValue, //record[2]
+            isOld0, // false/true
+        } = await this.nullifiersTree.find(nullifier);
+        let siblings = foundSiblings;
+
+        // Add nullifier to the tree
+        if (!found) {
+            const res = await this.nullifiersTree.insert(nullifier, nullifier);
+            siblings = res.siblings
+        }
+        const newNullifiersRoot = this.nullifiersTree.root;
+
+        // Generate (non)inclusion proof for the nullifier
+        // ^^^
+
+        const stateLeaf = !found && deactivationStatus === 1 ? new StateLeaf(newPubKey, newCreditBalance, BigInt(0)) : StateLeaf.genBlankLeaf();
+        assert(pollId.toString() == this.pollId.toString(), 'Wrong poll');
+
+        // Generate state tree path
+        let stateTreeInclusionProof;
+
+        const oldStateRoot = this.stateTree.root();
+        let newStateRoot = this.stateTree.root();
+
+        if (!found && deactivationStatus === 1 && Number(newStateIndex) > this.stateLeaves.length) {
+            stateTreeInclusionProof = this.stateTree.genMerklePath(newStateIndex);
+            this.stateTree.insert(stateLeaf.hash());
+            newStateRoot = this.stateTree.root();
+        } else {
+            stateTreeInclusionProof = this.stateTree.genMerklePath(0);
+        }
+
+        const nullifierLeafPathElements = siblings;
+        for (let i = siblings.length; i < STATE_TREE_DEPTH; i += 1) {
+            nullifierLeafPathElements.push(BigInt(0));
+        }
+
+        return {
+            nullifierInclusionFlag: found || deactivationStatus === 0 ? 0 : 1,
+            nullifierLeafPathElements,
+            isOld0,
+            oldStateRoot,
+            newStateRoot,
+            stateTreeInclusionProof,
+            newPubKey,
+			newCreditBalance,
+			nullifier,
+            stateLeaf,
+			c1r,
+			c2r,
+            message,
+            encPubKey,
+            oldNullifiersRoot,
+            newNullifiersRoot,
+        }
     }
 
     /*
