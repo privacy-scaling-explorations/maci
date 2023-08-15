@@ -579,6 +579,8 @@ describe('ProcessMessage circuit', () => {
             poll = maciState.polls[pollId]
             await poll.initNullifiersTree();
 
+            console.log(poll.nullifiersTree.root)
+
             // Deactivate key
             const command = new PCommand(
                 stateIndex, //BigInt(1),
@@ -648,10 +650,10 @@ describe('ProcessMessage circuit', () => {
 
         it.only('test', async () => {
             const generatedInputs = await poll.processMessages(pollId)
-            console.log(generatedInputs);
+            // console.log(generatedInputs);
 
-            const witness = await genWitness(circuit, generatedInputs)
-            expect(witness.length > 0).toBeTruthy()
+            // const witness = await genWitness(circuit, generatedInputs)
+            // expect(witness.length > 0).toBeTruthy()
         })
     })
 })

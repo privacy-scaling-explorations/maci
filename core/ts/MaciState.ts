@@ -8,6 +8,7 @@ import {
     hashLeftRight,
     hash2,
     hash3,
+    hash4,
     hash5,
     sha256Hash,
     stringifyBigInts,
@@ -1016,9 +1017,11 @@ class Poll {
         circuitInputs.newSbSalt = newSbSalt
         const newStateRoot = this.stateTree.root
         const newBallotRoot = this.ballotTree.root
-        circuitInputs.newSbCommitment = hash3([
+        const nulifiersRoot = this.nullifiersTree.root
+        circuitInputs.newSbCommitment = hash4([
             newStateRoot,
             newBallotRoot,
+            nulifiersRoot,
             newSbSalt,
         ])
 
@@ -1118,9 +1121,11 @@ class Poll {
 
         const currentStateRoot = this.stateTree.root
         const currentBallotRoot = this.ballotTree.root
-        const currentSbCommitment = hash3([
+        const nullifiersRoot = this.nullifiersTree.root
+        const currentSbCommitment = hash4([
             currentStateRoot,
             currentBallotRoot,
+            nullifiersRoot,
             this.sbSalts[this.currentMessageBatchIndex],
         ])
 
@@ -1458,8 +1463,9 @@ class Poll {
 
         const stateRoot = this.stateTree.root
         const ballotRoot = this.ballotTree.root
+        const nullifiersRoot = this.nullifiersTree.root
         const sbSalt = this.sbSalts[this.currentMessageBatchIndex]
-        const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt])
+        const sbCommitment = hash4([stateRoot, ballotRoot, nullifiersRoot, sbSalt])
 
         const currentSubsidy = this.subsidy.map((x) => BigInt(x.toString()))
         let currentSubsidyCommitment = BigInt(0)
@@ -1499,6 +1505,7 @@ class Poll {
 
         const circuitInputs = stringifyBigInts({
             stateRoot,
+            nullifiersRoot,
             ballotRoot,
 
             sbSalt,
@@ -1722,8 +1729,9 @@ class Poll {
 
         const stateRoot = this.stateTree.root
         const ballotRoot = this.ballotTree.root
+        const nullifiersRoot = this.nullifiersTree.root
         const sbSalt = this.sbSalts[this.currentMessageBatchIndex]
-        const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt])
+        const sbCommitment = hash4([stateRoot, ballotRoot, nullifiersRoot, sbSalt])
 
         const packedVals = MaciState.packTallyVotesSmallVals(
             batchStartIndex,
@@ -1747,6 +1755,7 @@ class Poll {
         const circuitInputs = stringifyBigInts({
             stateRoot,
             ballotRoot,
+            nullifiersRoot,
             sbSalt,
 
             sbCommitment,

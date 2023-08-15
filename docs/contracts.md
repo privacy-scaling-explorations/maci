@@ -255,12 +255,13 @@ function mergeMaciStateAq(uint256 _pollId)
         mergedStateRoot = extContracts.maci.mergeStateAq(_pollId);
 
         // Set currentSbCommitment
-        uint256[3] memory sb;
+        uint256[4] memory sb;
         sb[0] = mergedStateRoot;
         sb[1] = emptyBallotRoots[treeDepths.voteOptionTreeDepth - 1];
-        sb[2] = uint256(0);
+        sb[2] = 3108394280857290448796042949317662357879960495408018998613518544538624657019;
+        sb[3] = uint256(0);
 
-        currentSbCommitment = hash3(sb);
+        currentSbCommitment = hash4(sb);
         emit MergeMaciStateAq(mergedStateRoot);
     }
 ```

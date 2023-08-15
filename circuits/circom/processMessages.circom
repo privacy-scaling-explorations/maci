@@ -140,10 +140,11 @@ template ProcessMessages(
     var msgTreeZeroValue = 8370432830353022751713833565135785980866757267633941821328460903436894336785;
 
     // Verify currentSbCommitment
-    component currentSbCommitmentHasher = Hasher3(); 
+    component currentSbCommitmentHasher = Hasher4(); 
     currentSbCommitmentHasher.in[0] <== currentStateRoot;
     currentSbCommitmentHasher.in[1] <== currentBallotRoot;
-    currentSbCommitmentHasher.in[2] <== currentSbSalt;
+    currentSbCommitmentHasher.in[2] <== currentNullifierRoot;
+    currentSbCommitmentHasher.in[3] <== currentSbSalt;
     currentSbCommitmentHasher.hash === currentSbCommitment;
 
     // Verify "public" inputs and assign unpacked values
@@ -438,10 +439,11 @@ template ProcessMessages(
         nullifierRoots[i] <== processors3[i].newNullifierRoot;
     }
 
-    component sbCommitmentHasher = Hasher3();
+    component sbCommitmentHasher = Hasher4();
     sbCommitmentHasher.in[0] <== stateRoots[0];
     sbCommitmentHasher.in[1] <== ballotRoots[0];
-    sbCommitmentHasher.in[2] <== newSbSalt;
+    sbCommitmentHasher.in[2] <== nullifierRoots[0];
+    sbCommitmentHasher.in[3] <== newSbSalt;
 
     sbCommitmentHasher.hash === newSbCommitment;
 }
