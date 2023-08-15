@@ -68,7 +68,10 @@ class Poll {
     public treeDepths: TreeDepths
     public batchSizes: BatchSizes
     public maxValues: MaxValues
-    // This should be parametrized once we decide how to parametrize circuits
+    // This should be parametrized once we decide how to parametrize circuits.
+    // Using the maxValues.maxMessages (25) param here leads to this
+    // https://github.com/NomicFoundation/hardhat/issues/2672 and this
+    // https://github.com/NomicFoundation/hardhat/issues/3136 currently.
     public msgQueueSizeForProcessDeactivationMessagesCircuit = 5;
 
     public numSignUps: number
