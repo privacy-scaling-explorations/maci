@@ -132,7 +132,7 @@ describe('TallyVotes circuit', () => {
                     ).toString()
                 )
             // Process messages
-            poll.processMessages()
+            await poll.processMessages()
         })
 
         it('should produce the correct result commitments', async () => {
@@ -261,7 +261,7 @@ describe('TallyVotes circuit', () => {
             poll.messageAq.merge(treeDepths.messageTreeDepth)
 
             for (let i = 0; i < NUM_BATCHES; i ++) {
-                poll.processMessages()
+                await poll.processMessages()
             }
 
             for (let i = 0; i < NUM_BATCHES; i ++) {

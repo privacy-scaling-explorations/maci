@@ -633,7 +633,7 @@ describe('MACI', () => {
 		});
 	});
 
-	describe('Process messages', () => {
+	describe('Process messages', async () => {
 		let pollContract;
 		let poll;
 		let generatedInputs;
@@ -643,7 +643,7 @@ describe('MACI', () => {
 			pollContract = new ethers.Contract(pollContractAddress, pollAbi, signer);
 
 			poll = maciState.polls[pollId];
-			generatedInputs = poll.processMessages(pollId);
+			generatedInputs = await poll.processMessages(pollId);
 		});
 
 		it('genProcessMessagesPackedVals() should generate the correct value', async () => {

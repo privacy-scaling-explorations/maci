@@ -1159,14 +1159,14 @@ class Poll {
      * leaves; rather, it copies and then updates them. This makes it possible
      * to test the result of multiple processMessage() invocations.
      */
-    public processAllMessages = () => {
+    public processAllMessages = async () => {
         if (!this.stateCopied) {
             this.copyStateFromMaci()
         }
         const stateLeaves = this.stateLeaves.map((x) => x.copy())
         const ballots = this.ballots.map((x) => x.copy())
         while (this.hasUnprocessedMessages()) {
-            this.processMessages(this.pollId)
+            await this.processMessages(this.pollId)
         }
 
         return { stateLeaves, ballots }

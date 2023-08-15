@@ -77,8 +77,7 @@ $MACI_CLI publish \
 $MACI_CLI timeTravel \
     --seconds 60
 
-# TODO: Currently lines below fail because elgamal processing of votes is not complete
-# Uncomment as soon as that part is finished
-# gen_proofs "$POLL_ID"
+# TODO: Verify voting results are propely asserted
+gen_proofs "$POLL_ID"
 
-# prove_and_verify_on_chain "$POLL_ID"
+prove_and_verify_on_chain "$POLL_ID"
