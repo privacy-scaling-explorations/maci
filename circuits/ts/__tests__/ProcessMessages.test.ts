@@ -648,12 +648,12 @@ describe('ProcessMessage circuit', () => {
                 )
         })
 
-        it.only('test', async () => {
+        it('Test one valid key generation', async () => {
             const generatedInputs = await poll.processMessages(pollId)
             // console.log(generatedInputs);
 
-            // const witness = await genWitness(circuit, generatedInputs)
-            // expect(witness.length > 0).toBeTruthy()
+            const witness = await genWitness(circuit, generatedInputs)
+            expect(witness.length > 0).toBeTruthy()
         })
     })
 })
