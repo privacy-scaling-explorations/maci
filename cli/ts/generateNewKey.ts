@@ -106,6 +106,16 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
+        ['-ncb', '--new-credit-balance'],
+        {
+            required: true,
+            action: 'store',
+            type: 'int',
+            help: 'The new credit balance user wants to have associated with the new address',
+        }
+    )
+
+    parser.addArgument(
         ['-s', '--salt'],
         {
             action: 'store',
@@ -217,6 +227,13 @@ const generateNewKey = async (args: any) => {
         return 0
     }
 
+    // New credit balance
+    const newCreditBalance = BigInt(args.new_credit_balance)
+    if (newCreditBalance < 0) {
+        console.error('Error: the new credit balance must be greater than 0')
+        return 0
+    }
+
     // The salt
     let salt
     if (args.salt) {
@@ -297,6 +314,7 @@ const generateNewKey = async (args: any) => {
         userMaciOldPubKey,
         coordinatorPubKey,
         stateIndex,
+        newCreditBalance,
         BigInt(salt),
         pollId
     )

@@ -58,6 +58,7 @@ $MACI_CLI generateNewKey \
     --old-pub-key macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391 \
     --old-priv-key macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c \
     --state-index 1 \
+    --new-credit-balance 5 \
     --salt 0x798D81BE4A9870C079B8DE539496AB95 \
     --poll-id $POLL_ID \
     --from-block 0 \

@@ -555,7 +555,8 @@ class Poll {
         deactivatedPrivateKey: PrivKey, 
         deactivatedPublicKey: PubKey,
         coordinatorPublicKey: PubKey,
-        stateIndex: BigInt, 
+        stateIndex: BigInt,
+        newCreditBalance: BigInt,
         salt: BigInt, 
         pollId: BigInt) {
         if (!this.stateCopied) {
@@ -588,10 +589,6 @@ class Poll {
             });
 
         const nullifier = hash2([BigInt(deactivatedPrivateKey.asCircuitInputs()), salt]);
-
-        // TODO: Hardcoded to 5 just to make it pass in the tests. Any number below the default test balance of 99 would work.
-        // We should probably take this from input param, but is subject to discussion before final submit of the milestone 3.
-        const newCreditBalance = BigInt(5)
 
         const kcommand: KCommand = new KCommand(
             newPublicKey,
