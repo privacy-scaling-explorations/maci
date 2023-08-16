@@ -9,9 +9,6 @@ import { OptimisedMT as IncrementalQuinTree } from 'optimisedmt'
 const stringifyBigInts: (obj: object) => any = ff.utils.stringifyBigInts
 const unstringifyBigInts: (obj: object) => any = ff.utils.unstringifyBigInts
 
-const smtTree = smt;
-console.log(smt);
-
 type SnarkBigInt = BigInt
 type PrivKey = BigInt
 type PubKey = BigInt[]
