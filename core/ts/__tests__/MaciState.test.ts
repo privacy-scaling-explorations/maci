@@ -123,7 +123,7 @@ describe('MaciState', () => {
                 .toEqual(stateTree.root.toString())
         })
 
-        it ('the message root should be correct', () => {
+        it ('the message root should be correct', async () => {
             pollId = maciState.deployPoll(
                 duration,
                 BigInt(Math.floor(Date.now() / 1000) + duration),
@@ -132,6 +132,9 @@ describe('MaciState', () => {
                 messageBatchSize,
                 coordinatorKeypair,
             )
+
+            const poll = maciState.polls[pollId]
+            await poll.initNullifiersTree();
 
             const command = new PCommand(
                 stateIndex,
@@ -217,7 +220,7 @@ describe('MaciState', () => {
 
         const users: Keypair[] = []
 
-        beforeAll(() => {
+        beforeAll(async () => {
             maciState = new MaciState()
             // Sign up and vote
             for (let i = 0; i < messageBatchSize - 1; i ++) {
@@ -241,6 +244,9 @@ describe('MaciState', () => {
                 testProcessVk,
                 testTallyVk,
             )
+
+            const poll = maciState.polls[pollId]
+            await poll.initNullifiersTree();
         })
 
         it('should process votes correctly', async () => {
@@ -295,17 +301,13 @@ describe('MaciState', () => {
 
             // processMessages() should fail if the state and message AQs are
             // not merged yet
-            expect(async () => {
-                await maciState.polls[pollId].processMessages()
-            }).toThrow()
+            await expect(maciState.polls[pollId].processMessages()).rejects.toThrow();
 
             // Merge the state aq
             maciState.stateAq.mergeSubRoots(0)
             maciState.stateAq.merge(STATE_TREE_DEPTH)
 
-            expect(async () => {
-                await maciState.polls[pollId].processMessages()
-            }).toThrow()
+            await expect(maciState.polls[pollId].processMessages()).rejects.toThrow();
 
             // Merge the message aq
             maciState.polls[pollId].messageAq.mergeSubRoots(0)
@@ -333,9 +335,7 @@ describe('MaciState', () => {
             // Attempt to process messages, but this should fail as there are
             // no more messages to process
             // TODO: use VError to test for specific errors
-            expect(async () => {
-                await maciState.polls[pollId].processMessages()
-            }).toThrow()
+            await expect(maciState.polls[pollId].processMessages()).rejects.toThrow();
 
             for (let i = 1; i < messageBatchSize; i ++) {
                 const leaf = maciState.polls[pollId].ballots[i].votes[i - 1]
