@@ -334,6 +334,8 @@ describe('MACI', () => {
 			);
 			expect(p.toString()).toEqual(pollId.toString());
 
+			await maciState.polls[p].initNullifiersTree();
+
 			// publish the NOTHING_UP_MY_SLEEVE message
 			const messageData = [NOTHING_UP_MY_SLEEVE, BigInt(0)];
 			for (let i = 2; i < 10; i++) {
