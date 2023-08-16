@@ -600,7 +600,7 @@ class Poll {
 
         if (this.deactivatedKeysTree.nextIndex === 0)
             this.deactivatedKeyEvents.forEach(dke => {
-                const deactivatedLeafHash = hash5([deactivatedKeyHash, ...dke.c1, ...dke.c2]);
+                const deactivatedLeafHash = hash5([dke.keyHash, ...dke.c1, ...dke.c2]);
                 this.deactivatedKeysTree.insert(deactivatedLeafHash)
             });
 
