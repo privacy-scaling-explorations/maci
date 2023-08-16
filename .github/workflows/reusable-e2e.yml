@@ -65,6 +65,7 @@ jobs:
           cd cli
           mkdir -p zkeys
           wget -qO zkeys/powersOfTau28_hez_final_20.ptau https://maci-devops-zkeys.s3.ap-northeast-2.amazonaws.com/powersOfTau28_hez_final_20.ptau
+          export NODE_OPTIONS="--max-old-space-size=16384"
           npx zkey-manager compile -c ./zkeys.config.yml
           npx zkey-manager genZkeys -c ./zkeys.config.yml
 
