@@ -98,6 +98,7 @@ describe('TallyVotes circuit', () => {
             )
 
             poll = maciState.polls[pollId]
+            await poll.initNullifiersTree();
 
             // First command (valid)
             const command = new PCommand(
@@ -234,6 +235,7 @@ describe('TallyVotes circuit', () => {
             )
 
             const poll = maciState.polls[pollId]
+            await poll.initNullifiersTree();
 
             const numMessages = messageBatchSize * NUM_BATCHES
             for (let i = 0; i < numMessages; i ++) {

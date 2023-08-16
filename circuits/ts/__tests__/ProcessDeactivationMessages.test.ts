@@ -89,6 +89,7 @@ describe('ProcessDeactivationMessages circuit', () => {
             )
 
             poll = maciState.polls[pollId]
+            await poll.initNullifiersTree();
         })
 
         it('should return empty array hash in case no deactivation messages', async () => {
@@ -539,6 +540,7 @@ describe('ProcessDeactivationMessages circuit', () => {
             )
 
             poll = maciState.polls[pollId]
+            await poll.initNullifiersTree();
         })
         
         it('should throw if numSignUps 0 instead of 1 with 1 deactivation message', async () => {
