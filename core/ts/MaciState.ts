@@ -1025,10 +1025,6 @@ class Poll {
             newSbSalt,
         ])
 
-        console.log(newStateRoot,
-            newBallotRoot,
-            newSbSalt,)
-
         const coordPubKeyHash = this.coordinatorKeypair.pubKey.hash()
         circuitInputs.inputHash = sha256Hash([
             circuitInputs.packedVals,
@@ -1440,8 +1436,6 @@ class Poll {
     }
 
     private isMessageAqMerged = (): boolean => {
-        console.log(this.treeDepths.messageTreeDepth, this.messageAq, this.messageTree.root);
-        console.log(this.messageAq.getRoot(0), this.messageTree.root)
         return this.messageAq.getRoot(this.treeDepths.messageTreeDepth) ===
             this.messageTree.root
     }
