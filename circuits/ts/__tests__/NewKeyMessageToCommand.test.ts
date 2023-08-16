@@ -84,6 +84,7 @@ describe('NewKeyMessageToCommand circuit', () => {
             )
 
             poll = maciState.polls[pollId]
+            await poll.initNullifiersTree();
         })
 
         it('should decrypt new key messages if all input params are correct', async () => {

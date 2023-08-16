@@ -376,7 +376,7 @@ const genProofs = async (args: any) => {
     }
 
     while (poll.hasUnprocessedMessages()) {
-        const circuitInputs = poll.processMessages(pollId)
+        const circuitInputs = await poll.processMessages(pollId)
 
         let r
         try {
