@@ -8,12 +8,15 @@ import {
     hashLeftRight,
     hash2,
     hash3,
+    hash4,
     hash5,
     sha256Hash,
     stringifyBigInts,
     Signature,
     verifySignature,
     elGamalEncryptBit,
+    smt,
+    elGamalDecryptBit,
     elGamalRerandomize,
 } from 'maci-crypto'
 import {
@@ -68,6 +71,11 @@ class Poll {
     public treeDepths: TreeDepths
     public batchSizes: BatchSizes
     public maxValues: MaxValues
+    // This should be parametrized once we decide how to parametrize circuits.
+    // Using the maxValues.maxMessages (25) param here leads to this
+    // https://github.com/NomicFoundation/hardhat/issues/2672 and this
+    // https://github.com/NomicFoundation/hardhat/issues/3136 currently.
+    public msgQueueSizeForProcessDeactivationMessagesCircuit = 5;
 
     public numSignUps: number
 
@@ -108,6 +116,8 @@ class Poll {
     public deactivationEncPubKeys: PubKey[] = []
     public deactivationCommands: PCommand[] = []
     public deactivationSignatures: Signature[] = []
+    public numKeyGens: number = 0
+    public nullifiersTree: smt.SMT;
 
     // For message processing
     public numBatchesProcessed = 0
@@ -184,6 +194,11 @@ class Poll {
         this.ballots.push(blankBallot)
     }
 
+    public initNullifiersTree = async () => {
+        this.nullifiersTree = await smt.newMemEmptyTrie();
+        await this.nullifiersTree.insert(0, 0)
+    }
+
     public generateNewKey = (
         _message: Message,
         _encPubKey: PubKey,
@@ -211,7 +226,9 @@ class Poll {
             _encPubKey,
         )
         try {
-            let { command } = KCommand.decrypt(_message, sharedKey)
+            let {command} = KCommand.decrypt(_message, sharedKey)
+            command.setNewStateIndex(BigInt(`${_newStateIndex}`))
+            this.numKeyGens += 1;
             this.commands.push(command)
         } catch (e) {
             let keyPair = new Keypair()
@@ -297,7 +314,7 @@ class Poll {
             this.ballots.push(emptyBallot)
         }
 
-        this.numSignUps = Number(this.maciStateRef.numSignUps.toString())
+        this.numSignUps = Number(this.maciStateRef.numSignUps.toString()) // TODO: Collect num generated
 
         this.stateCopied = true
     }
@@ -437,6 +454,7 @@ class Poll {
             let pubKey: any;
 
             if (computedStateIndex > -1) {
+                console.log(this.stateLeaves, stateIndex);
                 pubKey = this.stateLeaves[stateIndexInt].pubKey;
                 stateLeafPathElements.push(this.stateTree.genMerklePath(stateIndexInt).pathElements);
                 currentStateLeaves.push(this.stateLeaves[stateIndexInt].asCircuitInputs());
@@ -482,10 +500,8 @@ class Poll {
             deactivatedLeaves.push(deactivatedLeaf);
         }
 
-        const maxMessages = 5; //  TODO: Where do we read this from?
-
         // Pad array
-        for (let i = this.deactivationEncPubKeys.length; i < maxMessages; i += 1) {
+        for (let i = this.deactivationEncPubKeys.length; i < this.msgQueueSizeForProcessDeactivationMessagesCircuit; i += 1) {
             this.deactivationEncPubKeys.push(new PubKey([BigInt(0), BigInt(0)]))
         }
 
@@ -497,22 +513,22 @@ class Poll {
         }
 
         // Pad array
-        for (let i = this.deactivationMessages.length; i < maxMessages; i += 1) {
+        for (let i = this.deactivationMessages.length; i < this.msgQueueSizeForProcessDeactivationMessagesCircuit; i += 1) {
             deactivatedTreePathElements.push(this.stateTree.genMerklePath(0).pathElements)
         }
     
         // Pad array
-        for (let i = stateLeafPathElements.length; i < maxMessages; i += 1) {
+        for (let i = stateLeafPathElements.length; i < this.msgQueueSizeForProcessDeactivationMessagesCircuit; i += 1) {
             stateLeafPathElements.push(this.stateTree.genMerklePath(0).pathElements)
         }
     
         // Pad array
-        for (let i = currentStateLeaves.length; i < maxMessages; i += 1) {
+        for (let i = currentStateLeaves.length; i < this.msgQueueSizeForProcessDeactivationMessagesCircuit; i += 1) {
             currentStateLeaves.push(blankStateLeaf.asCircuitInputs())
         }
 
         // Pad array
-        for (let i = this.deactivationMessages.length; i < maxMessages; i += 1) {
+        for (let i = this.deactivationMessages.length; i < this.msgQueueSizeForProcessDeactivationMessagesCircuit; i += 1) {
             const padMask = genRandomSalt();
             const [padc1, padc2] = elGamalEncryptBit(
                 this.coordinatorKeypair.pubKey.rawPubKey,
@@ -555,7 +571,8 @@ class Poll {
         deactivatedPrivateKey: PrivKey, 
         deactivatedPublicKey: PubKey,
         coordinatorPublicKey: PubKey,
-        stateIndex: BigInt, 
+        stateIndex: BigInt,
+        newCreditBalance: BigInt,
         salt: BigInt, 
         pollId: BigInt) {
         if (!this.stateCopied) {
@@ -583,15 +600,11 @@ class Poll {
 
         if (this.deactivatedKeysTree.nextIndex === 0)
             this.deactivatedKeyEvents.forEach(dke => {
-                const deactivatedLeafHash = hash5([deactivatedKeyHash, ...dke.c1, ...dke.c2]);
+                const deactivatedLeafHash = hash5([dke.keyHash, ...dke.c1, ...dke.c2]);
                 this.deactivatedKeysTree.insert(deactivatedLeafHash)
             });
 
         const nullifier = hash2([BigInt(deactivatedPrivateKey.asCircuitInputs()), salt]);
-
-        // TODO: Hardcoded to 5 just to make it pass in the tests. Any number below the default test balance of 99 would work.
-        // We should probably take this from input param, but is subject to discussion before final submit of the milestone 3.
-        const newCreditBalance = BigInt(5)
 
         const kcommand: KCommand = new KCommand(
             newPublicKey,
@@ -630,7 +643,7 @@ class Poll {
      * @param _pollId The ID of the poll associated with the messages to
      *        process
      */
-    public processMessages = (
+    public processMessages = async (
         _pollId: number,
     ) => {
         assert(this.hasUnprocessedMessages(), 'No more messages to process')
@@ -693,7 +706,7 @@ class Poll {
 
         // Generate circuit inputs
         const circuitInputs = stringifyBigInts(
-            this.genProcessMessagesCircuitInputsPartial(
+            await this.genProcessMessagesCircuitInputsPartial(
                 this.currentMessageBatchIndex
             )
         )
@@ -707,7 +720,17 @@ class Poll {
         const currentVoteWeights: BigInt[] = []
         const currentVoteWeightsPathElements: any[] = []
 
-        for (let i = 0; i < batchSize; i++) {
+        const currentNullifierRoot = this.nullifiersTree.root;
+        const currentNullifierLeavesPathElements: BigInt[] = [];
+        const nullifierInclusionFlags: BigInt[] = [];
+
+        for (let i = 0; i < batchSize; i ++) {
+            const zeroProof = await this.nullifiersTree.find(BigInt(0));
+            const zeroNullifierElements = zeroProof.siblings;
+            for (let i = zeroNullifierElements.length; i < STATE_TREE_DEPTH; i+= 1) {
+                zeroNullifierElements.push(BigInt(0))
+            }
+
             const idx = this.currentMessageBatchIndex + batchSize - i - 1
             assert(idx >= 0)
             let message
@@ -718,7 +741,9 @@ class Poll {
             }
             switch (message.msgType) {
                 case BigInt(1):
-                    try {
+                    currentNullifierLeavesPathElements.unshift(zeroNullifierElements);
+                    nullifierInclusionFlags.unshift(BigInt(0));
+                    try{
                         // If the command is valid
                         const r = this.processMessage(idx)
                         // console.log(messageIndex, r ? 'valid' : 'invalid')
@@ -788,6 +813,9 @@ class Poll {
                     }
                     break
                 case BigInt(2):
+                    currentNullifierLeavesPathElements.unshift(zeroNullifierElements);
+                    nullifierInclusionFlags.unshift(BigInt(0));
+
                     try {
                         // --------------------------------------
                         // generate topup circuit inputs
@@ -835,6 +863,130 @@ class Poll {
                         throw e
                     }
                     break
+
+                case BigInt(3):
+                    try{
+                        // If the command is valid
+                        const r = await this.processKeyGenMessage(idx)
+                        const { 
+                            nullifierInclusionFlag,
+                            nullifierLeafPathElements,
+                            isOld0,
+                            oldStateRoot,
+                            newStateRoot,
+                            stateTreeInclusionProof,
+                            newPubKey,
+                            newCreditBalance,
+                            nullifier,
+                            stateLeaf,
+                            c1r,
+                            c2r,
+                            message,
+                            encPubKey,
+                            oldNullifiersRoot,
+                            newNullifiersRoot,
+                        } = r;
+
+                        currentNullifierLeavesPathElements.unshift(nullifierLeafPathElements);
+                        nullifierInclusionFlags.unshift(BigInt(nullifierInclusionFlag));
+                        currentStateLeavesPathElements.unshift(
+                            stateTreeInclusionProof
+                        )
+
+                        // TODO: Add variables for storing new params
+        
+                    }catch(e){
+                        if (e.message === 'no-op') {
+                                // Since the command is invalid, use a blank state leaf
+                                const {
+                                    found,//: true/false
+                                    siblings, //: [list]/[]
+                                    notFoundKey, //: record[1]
+                                    notFoundValue, //record[2]
+                                    isOld0, // false/true
+                                } = await this.nullifiersTree.find(BigInt(0));
+                                nullifierInclusionFlags.unshift(BigInt(0));
+                                currentNullifierLeavesPathElements.unshift(zeroProof.siblings);
+
+
+                                // currentNullifierLeavesPathElements = siblings;
+                                currentStateLeaves.unshift(this.stateLeaves[0].copy())
+                                currentStateLeavesPathElements.unshift(
+                                    this.stateTree.genMerklePath(0).pathElements
+                                )
+        
+                                currentBallots.unshift(this.ballots[0].copy())
+                                currentBallotsPathElements.unshift(
+                                    this.ballotTree.genMerklePath(0).pathElements
+                                )
+        
+                                // Since the command is invalid, use vote option index 0
+                                currentVoteWeights.unshift(this.ballots[0].votes[0])
+        
+                                // No need to iterate through the entire votes array if the
+                                // remaining elements are 0
+                                let lastIndexToInsert = this.ballots[0].votes.length - 1
+                                while (lastIndexToInsert > 0) {
+                                    if (this.ballots[0].votes[lastIndexToInsert] === BigInt(0)) {
+                                        lastIndexToInsert --
+                                    } else {
+                                        break
+                                    }
+                                }
+        
+                                const vt = new IncrementalQuinTree(
+                                    this.treeDepths.voteOptionTreeDepth,
+                                    BigInt(0),
+                                    5,
+                                    hash5,
+                                )
+                                for (let i = 0; i <= lastIndexToInsert; i ++) {
+                                    vt.insert(this.ballots[0].votes[i])
+                                }
+                                currentVoteWeightsPathElements.unshift(
+                                    vt.genMerklePath(0).pathElements
+                                )
+                        
+        
+                        } else {
+                            throw e
+                        }
+                    } finally {
+                        currentStateLeaves.unshift(this.stateLeaves[0].copy())
+
+                        currentBallots.unshift(this.ballots[0].copy())
+                        currentBallotsPathElements.unshift(
+                            this.ballotTree.genMerklePath(0).pathElements
+                        )
+
+                        // Since the command is invalid, use vote option index 0
+                        currentVoteWeights.unshift(this.ballots[0].votes[0])
+
+                        // No need to iterate through the entire votes array if the
+                        // remaining elements are 0
+                        let lastIndexToInsert = this.ballots[0].votes.length - 1
+                        while (lastIndexToInsert > 0) {
+                            if (this.ballots[0].votes[lastIndexToInsert] === BigInt(0)) {
+                                lastIndexToInsert --
+                            } else {
+                                break
+                            }
+                        }
+
+                        const vt = new IncrementalQuinTree(
+                            this.treeDepths.voteOptionTreeDepth,
+                            BigInt(0),
+                            5,
+                            hash5,
+                        )
+                        for (let i = 0; i <= lastIndexToInsert; i ++) {
+                            vt.insert(this.ballots[0].votes[i])
+                        }
+                        currentVoteWeightsPathElements.unshift(
+                            vt.genMerklePath(0).pathElements
+                        )
+                    }
+                    break
                 default:
                     break
             } // end msgType switch
@@ -847,6 +999,10 @@ class Poll {
         circuitInputs.currentBallotsPathElements = currentBallotsPathElements
         circuitInputs.currentVoteWeights = currentVoteWeights
         circuitInputs.currentVoteWeightsPathElements = currentVoteWeightsPathElements
+        circuitInputs.currentNullifierLeavesPathElements = currentNullifierLeavesPathElements
+        circuitInputs.nullifierInclusionFlags = nullifierInclusionFlags
+        circuitInputs.numKeyGens = this.numKeyGens
+        circuitInputs.currentNullifierRoot = currentNullifierRoot
 
         this.numBatchesProcessed++
 
@@ -861,9 +1017,11 @@ class Poll {
         circuitInputs.newSbSalt = newSbSalt
         const newStateRoot = this.stateTree.root
         const newBallotRoot = this.ballotTree.root
-        circuitInputs.newSbCommitment = hash3([
+        const nulifiersRoot = this.nullifiersTree.root
+        circuitInputs.newSbCommitment = hash4([
             newStateRoot,
             newBallotRoot,
+            nulifiersRoot,
             newSbSalt,
         ])
 
@@ -881,13 +1039,16 @@ class Poll {
         if (this.numBatchesProcessed * batchSize >= this.messages.length) {
             this.maciStateRef.pollBeingProcessed = false
         }
+
+        // console.log(circuitInputs)
+        // console.log(stringifyBigInts(circuitInputs));
         return stringifyBigInts(circuitInputs)
     }
 
     /*
      * Generates inputs for the ProcessMessages circuit. 
      */
-    public genProcessMessagesCircuitInputsPartial = (
+    public genProcessMessagesCircuitInputsPartial = async (
         _index: number,
     ) => {
         const messageBatchSize = this.batchSizes.messageBatchSize
@@ -895,9 +1056,24 @@ class Poll {
         assert(_index <= this.messages.length)
         assert(_index % messageBatchSize === 0)
 
-        let msgs = this.messages.map((x) => x.asCircuitInputs())
+        let msgs = this.messages.map((x, index) => x.asCircuitInputs().concat(
+            [
+                this.commands[index] instanceof KCommand ? 
+                    (this.commands[index] as KCommand).newStateIndex 
+                    : 
+                    BigInt(0)
+            ]
+        ))
+
+        const zeroProof = await this.nullifiersTree.find(BigInt(0));
+        const zeroNullifierElements = zeroProof.siblings;
+        for (let i = zeroNullifierElements.length; i < STATE_TREE_DEPTH; i+= 1) {
+            zeroNullifierElements.push(BigInt(0))
+        }
+
+
         while (msgs.length % messageBatchSize > 0) {
-            msgs.push(msgs[msgs.length - 1])
+            msgs.push([...new Message(BigInt(1), Array(10).fill(BigInt(0))).asCircuitInputs(), BigInt(0)])
         }
 
         msgs = msgs.slice(_index, _index + messageBatchSize)
@@ -941,9 +1117,11 @@ class Poll {
 
         const currentStateRoot = this.stateTree.root
         const currentBallotRoot = this.ballotTree.root
-        const currentSbCommitment = hash3([
+        const nullifiersRoot = this.nullifiersTree.root
+        const currentSbCommitment = hash4([
             currentStateRoot,
             currentBallotRoot,
+            nullifiersRoot,
             this.sbSalts[this.currentMessageBatchIndex],
         ])
 
@@ -977,17 +1155,135 @@ class Poll {
      * leaves; rather, it copies and then updates them. This makes it possible
      * to test the result of multiple processMessage() invocations.
      */
-    public processAllMessages = () => {
+    public processAllMessages = async () => {
         if (!this.stateCopied) {
             this.copyStateFromMaci()
         }
         const stateLeaves = this.stateLeaves.map((x) => x.copy())
         const ballots = this.ballots.map((x) => x.copy())
         while (this.hasUnprocessedMessages()) {
-            this.processMessages(this.pollId)
+            await this.processMessages(this.pollId)
         }
 
         return { stateLeaves, ballots }
+    }
+
+    /*
+    * Process one key generation message
+    */
+    private processKeyGenMessage = async (
+        _index: number,
+    ) => {
+        // Ensure that the index is valid
+        assert(_index >= 0)
+        assert(this.messages.length > _index)
+
+        // Ensure that there is the correct number of ECDH shared keys
+        assert(this.encPubKeys.length === this.messages.length)
+
+        const message = this.messages[_index]
+        const encPubKey = this.encPubKeys[_index]
+
+        // // Decrypt the message
+        // const sharedKey = Keypair.genEcdhSharedKey(
+        //     this.coordinatorKeypair.privKey,
+        //     encPubKey,
+        // )
+        // const { command } = KCommand.decrypt(message, sharedKey);
+
+        const command = this.commands[_index] as KCommand;
+
+        const {
+            newPubKey,
+			newCreditBalance,
+			nullifier,
+			c1r,
+			c2r,
+			pollId,
+            newStateIndex,
+        } = command;
+
+        // TODO: Verify c1r, c2r
+        let deactivationStatus = null;
+        try {
+            const dec = elGamalDecryptBit(this.coordinatorKeypair.privKey.rawPrivKey, c1r, c2r);
+            console.log(dec);
+            if (dec == BigInt(1)) {
+                deactivationStatus = 1;
+            } else {
+                deactivationStatus = 0;
+            }
+        } catch (err) {
+            console.log('Failed to decrypt');
+            deactivationStatus = 0
+        }
+
+        const oldNullifiersRoot = this.nullifiersTree.root;
+        // Check if nullifier is included
+
+        const {
+            found,//: true/false
+            siblings: foundSiblings, //: [list]/[]
+            notFoundKey, //: record[1]
+            notFoundValue, //record[2]
+            isOld0, // false/true
+        } = await this.nullifiersTree.find(nullifier);
+        let siblings = foundSiblings;
+
+        // Add nullifier to the tree
+        if (!found) {
+            console.log('NOT FOUND!')
+            const res = await this.nullifiersTree.insert(nullifier, nullifier);
+            siblings = res.siblings
+        }
+        const newNullifiersRoot = this.nullifiersTree.root;
+
+        // Generate (non)inclusion proof for the nullifier
+        // ^^^
+
+        const stateLeaf = !found && deactivationStatus === 1 ? new StateLeaf(newPubKey, newCreditBalance, BigInt(0)) : StateLeaf.genBlankLeaf();
+        assert(pollId.toString() == this.pollId.toString(), 'Wrong poll');
+
+        // Generate state tree path
+        let stateTreeInclusionProof;
+
+        const oldStateRoot = this.stateTree.root;
+        let newStateRoot = this.stateTree.root;
+
+        console.log(deactivationStatus, Number(newStateIndex), this.stateLeaves.length)
+        if (!found && deactivationStatus === 1 && Number(newStateIndex) >= this.stateLeaves.length) {
+            console.log('INSERT INTO STATE TREE!')
+            stateTreeInclusionProof = this.stateTree.genMerklePath(Number(newStateIndex)).pathElements;
+            this.stateTree.insert(stateLeaf.hash());
+            newStateRoot = this.stateTree.root;
+        } else {
+            console.log('DO NOT INSERT INTO STATE TREE!', !found, deactivationStatus === 1, Number(newStateIndex) >= this.stateLeaves.length);
+            stateTreeInclusionProof = this.stateTree.genMerklePath(0).pathElements;
+        }
+
+        const nullifierLeafPathElements = siblings;
+        for (let i = siblings.length; i < STATE_TREE_DEPTH; i += 1) {
+            nullifierLeafPathElements.push(BigInt(0));
+        }
+
+        return {
+            nullifierInclusionFlag: found || deactivationStatus === 0 ? 0 : 1,
+            nullifierLeafPathElements,
+            isOld0,
+            oldStateRoot,
+            newStateRoot,
+            stateTreeInclusionProof,
+            newPubKey,
+			newCreditBalance,
+			nullifier,
+            stateLeaf,
+			c1r,
+			c2r,
+            message,
+            encPubKey,
+            oldNullifiersRoot,
+            newNullifiersRoot,
+        }
     }
 
     /*
@@ -1161,8 +1457,9 @@ class Poll {
 
         const stateRoot = this.stateTree.root
         const ballotRoot = this.ballotTree.root
+        const nullifiersRoot = this.nullifiersTree.root
         const sbSalt = this.sbSalts[this.currentMessageBatchIndex]
-        const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt])
+        const sbCommitment = hash4([stateRoot, ballotRoot, nullifiersRoot, sbSalt])
 
         const currentSubsidy = this.subsidy.map((x) => BigInt(x.toString()))
         let currentSubsidyCommitment = BigInt(0)
@@ -1202,6 +1499,7 @@ class Poll {
 
         const circuitInputs = stringifyBigInts({
             stateRoot,
+            nullifiersRoot,
             ballotRoot,
 
             sbSalt,
@@ -1425,8 +1723,9 @@ class Poll {
 
         const stateRoot = this.stateTree.root
         const ballotRoot = this.ballotTree.root
+        const nullifiersRoot = this.nullifiersTree.root
         const sbSalt = this.sbSalts[this.currentMessageBatchIndex]
-        const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt])
+        const sbCommitment = hash4([stateRoot, ballotRoot, nullifiersRoot, sbSalt])
 
         const packedVals = MaciState.packTallyVotesSmallVals(
             batchStartIndex,
@@ -1450,6 +1749,7 @@ class Poll {
         const circuitInputs = stringifyBigInts({
             stateRoot,
             ballotRoot,
+            nullifiersRoot,
             sbSalt,
 
             sbCommitment,

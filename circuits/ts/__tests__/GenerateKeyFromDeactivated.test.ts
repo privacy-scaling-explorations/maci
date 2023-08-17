@@ -82,6 +82,7 @@ describe('GenerateKeyFromDeactivated circuit', () => {
             )
 
             poll = maciState.polls[pollId]
+            await poll.initNullifiersTree();
         })
 
         it('should accept proof based on deactivation messages', async () => {
@@ -572,6 +573,7 @@ describe('GenerateKeyFromDeactivated circuit', () => {
             )
 
             poll = maciState.polls[pollId]
+            await poll.initNullifiersTree();
         })
 
         it('should accept proof based on deactivation messages', async () => {

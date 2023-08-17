@@ -489,6 +489,8 @@ const genMaciStateFromContract = async (
 					batchSizes.messageBatchSize,
 					coordinatorKeypair
 				);
+				// Initialize nullifiers tree
+				await maciState.polls[pollId].initNullifiersTree()
 			} else {
 				maciState.deployNullPoll();
 			}

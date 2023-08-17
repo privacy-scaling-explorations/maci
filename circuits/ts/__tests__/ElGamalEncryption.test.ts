@@ -43,9 +43,6 @@ describe('ElGamal (de)/(en)cryption - bit', () => {
             BigInt(await getSignalByName(encCircuit, encWitness, `main.kG[0]`)),
             BigInt(await getSignalByName(encCircuit, encWitness, `main.kG[1]`)),
         ];
-
-        console.log(kG, Me);
-        console.log(c1, c2)
     });
     
     it('should encrypt and decrypt the 0 and 1 bit correctly', async () => {

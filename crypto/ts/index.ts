@@ -3,7 +3,7 @@ import * as crypto from 'crypto'
 import * as ethers from 'ethers'
 const ff = require('ffjavascript')
 const createBlakeHash = require('blake-hash')
-import { babyJub, poseidon, poseidonEncrypt, poseidonDecrypt, eddsa } from 'circomlib'
+import { babyJub, poseidon, poseidonEncrypt, poseidonDecrypt, eddsa, smt } from 'circomlib'
 import { AccQueue } from './AccQueue'
 import { OptimisedMT as IncrementalQuinTree } from 'optimisedmt'
 const stringifyBigInts: (obj: object) => any = ff.utils.stringifyBigInts
@@ -563,4 +563,5 @@ export {
     unpackPubKey,
     babyJubMaxValue,
     babyJubAddPoint,
+    smt,
 }

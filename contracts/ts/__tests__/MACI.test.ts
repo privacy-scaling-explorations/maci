@@ -334,6 +334,8 @@ describe('MACI', () => {
 			);
 			expect(p.toString()).toEqual(pollId.toString());
 
+			await maciState.polls[p].initNullifiersTree();
+
 			// publish the NOTHING_UP_MY_SLEEVE message
 			const messageData = [NOTHING_UP_MY_SLEEVE, BigInt(0)];
 			for (let i = 2; i < 10; i++) {
@@ -633,7 +635,7 @@ describe('MACI', () => {
 		});
 	});
 
-	describe('Process messages', () => {
+	describe('Process messages', async () => {
 		let pollContract;
 		let poll;
 		let generatedInputs;
@@ -643,7 +645,7 @@ describe('MACI', () => {
 			pollContract = new ethers.Contract(pollContractAddress, pollAbi, signer);
 
 			poll = maciState.polls[pollId];
-			generatedInputs = poll.processMessages(pollId);
+			generatedInputs = await poll.processMessages(pollId);
 		});
 
 		it('genProcessMessagesPackedVals() should generate the correct value', async () => {

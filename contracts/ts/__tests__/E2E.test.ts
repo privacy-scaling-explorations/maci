@@ -560,7 +560,10 @@ describe("MACI - E2E", () => {
 
     it("should generate a new user key", async () => {
         // Generate a new keypair for the user.
-        newUser1KeyPair = new Keypair()
+        newUser1KeyPair = new Keypair();
+
+        // User would provide this value to further anonymuze voting
+        const newCreditBalance = BigInt(5);
 
         // Generate the circuit inputs necessary for new key generation.
         const { circuitInputs, encPubKey, message } = maciState.polls[pollId].generateCircuitInputsForGenerateNewKey(
@@ -569,6 +572,7 @@ describe("MACI - E2E", () => {
             user1KeyPair.pubKey,
             coordinatorKeyPair.pubKey,
             userStateIndex,
+            newCreditBalance,
             BigInt(salt),
             pollId
         )

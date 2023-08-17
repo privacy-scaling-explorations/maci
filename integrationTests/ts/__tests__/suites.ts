@@ -499,6 +499,7 @@ const executeSuiteElgamal = async (data: any, expect: any) => {
                 ` --old-pub-key ${oldUserPubKey} ` +
                 ` --old-priv-key ${oldUserPrivKey} ` +
                 ` --state-index ${i + 1} ` +
+                ` --new-credit-balance 5 ` +
                 ` --salt 0x798D81BE4A9870C079B8DE539496AB95 ` +
                 ` --poll-id ${pollId} ` +
                 ` --from-block 0 ` +
