@@ -38,5 +38,6 @@ The following set of documents describe how the user-anonymity in MACI is obtain
 - [El Gamal Flow](./elgamal-flow.md) document guides you through the user-process in MACI while focusing on the part of the protocol that takes care of the user anonymity (key deactivation/key activation, El Gamal encryption, rerandomization, nullifiers.).
 - [El Gamal API](./elgamal-api.md) is an API definition of the CLI commands and smart contract functions related to the user-anonymity aspect of the protocol.
 
+### Trusted setup
 
-<!-- Should integrating-maci, trustedsetup, and audit documents also be included? -->
+To read all about the trusted setup in MACI, visit the [Trusted setup](./trustedsetup.md) document.
