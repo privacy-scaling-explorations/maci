@@ -69,9 +69,9 @@ $MACI_CLI generateNewKey \
 $MACI_CLI publish \
     --pubkey macipk.e57109205d2b33b90db8421727a2d4fb91cdf3a8e050fbd12aa5a9f4045585a2 \
     --privkey macisk.acd54022725c8cf56dcd392808e3c4d170100d9fba4009ef0e8173ffe17f2e0 \
-    --state-index 1 \
+    --state-index 2 \
     --vote-option-index 0 \
-    --new-vote-weight 9 \
+    --new-vote-weight 2 \
     --nonce 1 \
     --poll-id $POLL_ID
     

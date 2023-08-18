@@ -359,7 +359,6 @@ const executeSuiteElgamal = async (data: any, expect: any) => {
         const TenDaysFromNowAsUnixTimestamp = execute(`date  -d '+10 day' +%s`).stdout.trim()
 
         // Run the create subcommand
-        // TODO: Make signup-deadline dynamic now + 30 days for example
         const createCommand = `node build/index.js create` +
             ` -r ${vkAddress}` +
             ` --signup-deadline ${TenDaysFromNowAsUnixTimestamp}`+
