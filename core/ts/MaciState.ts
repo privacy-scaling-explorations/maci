@@ -454,7 +454,6 @@ class Poll {
             let pubKey: any;
 
             if (computedStateIndex > -1) {
-                console.log(this.stateLeaves, stateIndex);
                 pubKey = this.stateLeaves[stateIndexInt].pubKey;
                 stateLeafPathElements.push(this.stateTree.genMerklePath(stateIndexInt).pathElements);
                 currentStateLeaves.push(this.stateLeaves[stateIndexInt].asCircuitInputs());
