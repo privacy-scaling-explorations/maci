@@ -16,6 +16,10 @@
         "test-key-deactivation": "jest KeyDeactivation.test.ts",
         "test-key-deactivation-debug": "node --inspect-brk ./node_modules/.bin/jest KeyDeactivation.test.ts",
         "test-unpackElement": "jest UnpackElement.test.ts",
+        "test-generateKeyFromDeactivated": "jest GenerateKeyFromDeactivated.test.ts",
+        "test-generateKeyFromDeactivated-debug": "node --inspect-brk ./node_modules/.bin/jest GenerateKeyFromDeactivated.test.ts",
+        "test-newKeyMessageToCommand": "jest NewKeyMessageToCommand.test.ts",
+        "test-newKeyMessageToCommand-debug": "node --inspect-brk ./node_modules/.bin/jest NewKeyMessageToCommand.test.ts",
         "test-elGamalEncryption": "jest ElGamalEncryption.test.ts",
         "test-elGamalEncryption-debug": "node --inspect-brk ./node_modules/.bin/jest ElGamalEncryption.test.ts",
         "test-unpackElement-debug": "node --inspect-brk ./node_modules/.bin/jest UnpackElement.test.ts",
@@ -54,7 +58,7 @@
     },
     "dependencies": {
         "argparse": "^2.0.1",
-        "circomlib": "https://github.com/weijiekoh/circomlib#ac85e82c1914d47789e2032fb11ceb2cfdd38a2b",
+        "circomlib": "github:weijiekoh/circomlib#ac85e82c1914d47789e2032fb11ceb2cfdd38a2b",
         "shelljs": "^0.8.3",
         "snarkjs": "^0.5.0",
         "tmp": "^0.2.1"

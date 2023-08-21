@@ -31,6 +31,7 @@ template TallyVotes(
 
     signal input stateRoot;
     signal input ballotRoot;
+    signal input nullifiersRoot;
     signal input sbSalt;
 
     // The only public input (inputHash) is the hash of the following:
@@ -67,10 +68,11 @@ template TallyVotes(
 
     //  ----------------------------------------------------------------------- 
     // Verify sbCommitment
-    component sbCommitmentHasher = Hasher3();
+    component sbCommitmentHasher = Hasher4();
     sbCommitmentHasher.in[0] <== stateRoot;
     sbCommitmentHasher.in[1] <== ballotRoot;
-    sbCommitmentHasher.in[2] <== sbSalt;
+    sbCommitmentHasher.in[2] <== nullifiersRoot;
+    sbCommitmentHasher.in[3] <== sbSalt;
     sbCommitmentHasher.hash === sbCommitment;
 
     //  ----------------------------------------------------------------------- 

@@ -144,7 +144,7 @@ const deactivatedLeaf = (new DeactivatedKeyLeaf(
 
 `processDeactivationMessages()` function returns the deactivated-keys tree leaves along with circuit inputs used for generating proof of correct processing (explained in the next step).
 
-The coordinator then submits all deactivated-keys tree leaves in batches to the `Poll` smart contract (`confirmDeactivation()` function). On the smart contract, these leaves are added to the deactivated-keys tree:
+The coordinator then submits all deactivated-keys tree leaves in batches to the `MessageProcessor` smart contract (`confirmDeactivation()` function). On the smart contract, these leaves are added to the deactivated-keys tree:
 
 ```solidity
 extContracts.deactivatedKeysAq.insertSubTree(_subRoot);
@@ -162,6 +162,7 @@ emit DeactivateKey(_subRoot);
 
 In `completeDeactivation()` function, again, the MACI state is reconstructed and `processDeactivationMessages()` is called to obtain `circuitInputs`.These inputs are required for [processDeactivationMessages.circom](../circuits/circom/processDeactivationMessages.circom) to generate proof of correct processing of deactivation messages.
 
+<!-- TODO: Adjust this -->
 The coordinator submits the proof to the `completeDeactivation()` function of the `MessageProcessor` smart contract. On the smart contract, two important things are happening:
 
 1. Merge of the deactivated-keys tree:
@@ -177,7 +178,6 @@ The verification (partly) relies on the incremental hashing of the (incoming) de
 
 ```solidity
 uint256 input = genProcessDeactivationMessagesPublicInputHash(
-    poll,
     deactivatedKeysAq.getMainRoot(messageTreeSubDepth),
     numSignUps,
     maci.getStateAqRoot(),
@@ -229,16 +229,96 @@ The coordinator proves through this ZK circuit that he encrypted the status corr
 
 `generateNewKey` in [generateNewKey.ts](../cli/ts/generateNewKey.ts).
 
-A new message type is added (type 3).
+A new message type is added (type 3). This command is invoke by the user.
 
-The user provides inclusion proof that the deactivated key exists in the tree, rerandomizes `[c1, c2]` to `[c1’, c2’]` (described in the following section), and sends that and a `nullifier` in the `generateNewKey` message.
-This is where the connection between the old public key and the new one is lost since the user only provides ZK proof that his old public key exists in this tree without making a particular reference ([verifyDeactivatedKey.circom](../circuits/circom/verifyDeactivatedKey.circom)).
-The coordinator checks whether that message is in the tree and whether `[c1, c2]` was encrypted status containing successful or unsuccessful deactivation.
+In `generateNewKey()` function, the user needs to provide his old and new public-private key pair.
+<!-- TODO: Fix prompting for coordinator's private key; currently it is done because genMaciStateFromContract requires coord's keypair.-->
 
-When processing messages, the coordinator decrypts `[c1’, c2’]` to the original status using `elGamalDecrypt` function.
+The MACI state is reconstructed using `genMaciStateFromContract()` function which which fetches the events and state from the smart contracts and replays them in the local maci state to reconstruct it.
 
-<!-- TODO: Complete this section -->
-*Note: To be fully documented as part of the next Milestone*.
+From the reconstructed MACI state, `generateCircuitInputsForGenerateNewKey()` is called which takes the following arguments:
+
+- `userMaciNewPubKey`
+- `userMaciOldPrivKey`
+- `userMaciOldPubKey`
+- `stateIndex`
+- `salt`
+- `pollId`
+
+At this point, function `generateCircuitInputsForGenerateNewKey` from [MaciState](../core/ts/MaciState.ts) has access to the `deactivatedKeyEvents` array, loaded with key-deactivation events.
+It finds `deactivatedKeyIndex` from this array based on the hash of the user's deactivated public key and salt:
+
+```javascript
+const deactivatedKeyHash = hash3([...deactivatedPublicKey.asArray(), salt]);
+const deactivatedKeyIndex = this.deactivatedKeyEvents.findIndex(d => d.keyHash === deactivatedKeyHash);
+```
+
+Key-deactivation event related to this user is then extracted from the `deactivatedKeyEvents` array based on the obtained index.
+
+Next, two things are happening:
+
+1. Deactivation status `c1` and `c2` is rerandomized (see [Rerandomization](#rerandomization) for detailed explanation):
+
+```javascript
+const [c1r, c2r] = elGamalRerandomize(
+    newPublicKey.rawPubKey,
+    z,
+    deactivatedKeyEvent.c1,
+    deactivatedKeyEvent.c2,
+);
+```
+
+2. The nullifier is generated based on the user's old private key (see [Nullifiers](#nullifiers) for more details):
+
+```javascript
+const nullifier = hash2([BigInt(deactivatedPrivateKey.asCircuitInputs()), salt]);
+```
+
+Using `nullifier`, rerandomized deactivation status (`c1r`, `c2r`) and user's `newPubKey`, the key generation command (`KCommand`) is created.
+
+Lastly, the circuit inputs are prepared which contain `deactivatedKeyIndex`, deactivation status (`c1`, `c2`) obtained from the deactivation event, and `deactivatedPrivateKey` among other parameters.
+
+Circuit inputs and the encrypted command (the message) are then returned from `generateCircuitInputsForGenerateNewKey`.
+
+Then, if the proof is valid, the message and the generated proof, along with other parameters, are sent to the `generateNewKeyFromDeactivated` function on the MessageProcessor smart contract:
+
+```javascript
+tx = await mpContract.generateNewKeyFromDeactivated(
+    message.asContractParam(),
+    coordinatorKeypair.pubKey.asContractParam(),
+    encPubKey.asContractParam(),
+    pollContract.address,
+    formattedProof,
+    { gasLimit: 10000000 },
+)
+```
+
+On the smart contract, the input hash is generated based on the root hash of deactivated-keys tree, hash of the sent message, and other parameters:
+
+```solidity
+uint256 input = genGenerateNewKeyFromDeactivatedPublicInputHash(
+    maci.getStateAqRoot(),
+    deactivatedKeysAq.getMainRoot(DEACT_TREE_DEPTH),
+    hashMessageData(_message),
+    _coordPubKey,
+    _encPubKey
+);
+```
+
+<!-- TODO: maybe provide more wording here (first sentence)? -->
+This input is verified against the `_proof` provided to this smart contract function. If it passes, the function `generateNewKeyFromDeactivated` on the Poll smart contract is called.
+
+*Note: generateNewKeyFromDeactivated function is divided into two parts in MessageProcessor and Poll smart contracts due to the size limitation.*
+
+This function on the Poll smart contract only adds the message to the message tree - the message leaf, hash of the message and ECDH public key:
+
+```solidity
+_message.msgType = 3;
+uint256 messageLeaf = hashMessageAndEncPubKey(_message, _encPubKey);
+extContracts.messageAq.enqueue(messageLeaf);
+```
+
+In the end, `AttemptKeyGeneration` event is emitted and `newStateIndex` are returned.
 
 ### Rerandomization
 
@@ -266,10 +346,15 @@ This function returns `CipherText` in the form of `[c1’, c2’]` that represen
 
 ### Nullifiers
 
-In order not to be able to create new key multiple times based on the old, deactivated one, the user must also send a nullifier in the message, which is a hash of the old private key. Nullifiers are stored in a sparse merkle tree and the coordinator checks whether the passed nullifier has already been seen - if so, he rejects it (non-inclusion proof).
+In order not to be able to create a new key multiple times based on the old, deactivated one, the user must also send a nullifier in the message, which is a hash of the old private key:
 
-<!-- TODO: Complete this section -->
-*Note: To be fully documented as part of the next Milestone*.
+```javascript
+const nullifier = hash2([BigInt(deactivatedPrivateKey.asCircuitInputs()), salt]);
+```
+
+Nullifier is passed in the generate-key message (message type 3) which is verified by the coordinator when processing key-generation messages.
+
+Nullifiers are stored in a sparse merkle tree and the coordinator checks whether the passed nullifier has already been seen - if so, he rejects it (non-inclusion proof).
 
 ## Voting
 

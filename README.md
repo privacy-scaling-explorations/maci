@@ -157,8 +157,6 @@ Note that some tests might fail due to jest timeout. You can fix this by adjusti
 
 For example, in the file *MessageToCommand.test.ts*, increase timeout_in_ms on this line: ```jest.setTimeout(<timeout_in_ms>)```.
 
-For `contracts` and `integrationTests`, run the tests one by one. This prevents incorrect nonce errors.
-
 For `contracts`, first, compile the contracts as explained above.
 
 Then, start a Hardhat instance in a separate terminal:
@@ -194,15 +192,6 @@ cd contracts
 ./scripts/runTestsInCi.sh
 ```
 
-For `integrationTests`, first make sure to install necessary tooling for rapidsnark as explained above, build the zk-SNARKs and generate their proving and verifying keys.
-
-Run all integration tests (this also starts its own Hardhat instance so make sure to kill any running hardhat instance):
-
-```bash
-cd integrationTests
-./scripts/runTestsInCi.sh
-```
-
 ### CLI tests
 
 Make sure dependencies are installed, circuits are built, zkeys keys generated and contract compiled.
@@ -221,6 +210,23 @@ bash ./test1.sh
 ```
 You can find more details about running cli tests in /docs/testing.md.
 
+### Integration tests
+
+First make sure to install necessary tooling for rapidsnark as explained above, build the zk-SNARKs and generate their proving and verifying keys.
+
+Then, start a Hardhat instance in a separate terminal:
+
+```bash
+cd contracts
+npm run hardhat
+```
+
+Run all integration tests:
+
+```bash
+cd integrationTests
+./scripts/runTestsLocally.sh
+```
 ### Docker
 
 Run `docker build -t maci .` to build all stages.

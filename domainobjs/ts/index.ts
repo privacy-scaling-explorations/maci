@@ -3,6 +3,8 @@ import base64url from 'base64url';
 import {
     Ciphertext,
     EcdhSharedKey,
+	elGamalRerandomize,
+	stringifyBigInts,
     Signature,
     PubKey as RawPubKey,
     PrivKey as RawPrivKey,
@@ -16,6 +18,8 @@ import {
     hash3,
     hash4,
     hash5,
+	hash9,
+	sha256Hash,
     verifySignature,
     genRandomSalt,
     genKeypair,
@@ -943,6 +947,201 @@ class PCommand extends Command {
 	};
 }
 
+/*
+ * Unencrypted data whose fields include the user's public key, vote etc.
+ */
+class KCommand extends Command {
+	public cmdType: BigInt;
+	public newPubKey: PubKey;
+	public newCreditBalance: BigInt;
+	public nullifier: BigInt;
+	public c1r: BigInt[];
+	public c2r: BigInt[];
+	public pollId: BigInt;
+	public newStateIndex: BigInt;
+
+	constructor(
+		newPubKey: PubKey,
+		newCreditBalance: BigInt,
+		nullifier: BigInt,
+		c1r: BigInt[],
+		c2r: BigInt[],
+		pollId: BigInt,
+		newStateIndex: BigInt = null
+	) {
+		super();
+		this.cmdType = BigInt(3);
+		this.newPubKey = newPubKey;
+		this.newCreditBalance = newCreditBalance;
+		this.pollId = pollId;
+		this.nullifier = nullifier;
+		this.c1r = c1r;
+		this.c2r = c2r;
+		this.newStateIndex = newStateIndex ? newStateIndex : BigInt(0);
+	}
+
+	public setNewStateIndex(newStateIndex: BigInt) {
+		this.newStateIndex = newStateIndex;
+	}
+
+	public copy = (): KCommand => {
+		return new KCommand(
+			this.newPubKey.copy(),
+			BigInt(this.newCreditBalance.toString()),
+			BigInt(this.nullifier.toString()),
+			[BigInt(this.c1r[0].toString()), BigInt(this.c1r[1].toString())],
+			[BigInt(this.c2r[0].toString()), BigInt(this.c2r[1].toString())],
+			BigInt(this.pollId.toString()),
+			BigInt(this.newStateIndex.toString()),
+		);
+	};
+
+	public asArray = (): BigInt[] => {		
+		const a = [
+			...this.newPubKey.asArray(), 
+			this.newCreditBalance,
+			this.nullifier,
+			...this.c1r,
+			...this.c2r,
+			this.pollId,
+		];
+		assert(a.length === 9);
+		return a;
+	};
+
+	public asCircuitInputs = (): BigInt[] => {
+		return this.asArray();
+	};
+
+	/*
+	 * Check whether this command has deep equivalence to another command
+	 */
+	public equals = (command: KCommand): boolean => {
+		return (
+			this.newPubKey[0] === command.newPubKey[0] &&
+			this.newPubKey[1] === command.newPubKey[1] &&
+			this.newCreditBalance === command.newCreditBalance &&
+			this.c1r[0] === command.c1r[0] &&
+			this.c1r[1] === command.c1r[1] &&
+			this.c2r[0] === command.c2r[0] &&
+			this.c2r[1] === command.c2r[1] &&
+			this.pollId === command.pollId
+		);
+	};
+
+	public hash = (): BigInt => {
+		return hash9(this.asArray());
+	};
+
+	public encrypt = (
+		sharedKey: EcdhSharedKey
+	): Message => {
+
+		const plaintext = [
+			...this.asArray()
+		];
+
+		assert(plaintext.length === 9);
+
+		const ciphertext: Ciphertext = encrypt(plaintext, sharedKey, BigInt(0));
+
+		const message = new Message(BigInt(3), ciphertext);
+
+		return message;
+	};
+
+	/*
+	 * Decrypts a Message to produce a Command.
+	 */
+	public static decrypt = (message: Message, sharedKey: EcdhSharedKey) => {
+		const decrypted = decrypt(message.data, sharedKey, BigInt(0), 9);
+		const newPubKey = new PubKey([decrypted[0], decrypted[1]]);
+		const newCreditBalance = decrypted[2];
+		const nullifier = decrypted[3];
+		const c1r = [decrypted[4], decrypted[5]];
+		const c2r = [decrypted[6], decrypted[7]];
+		const pollId = decrypted[8];
+
+		const command = new KCommand(
+			newPubKey,
+			newCreditBalance,
+			nullifier,
+			c1r,
+			c2r,
+			pollId,
+		);
+
+		return { command };
+	};
+
+	public prepareValues(
+		deactivatedPrivateKey: PrivKey,
+		stateLeaves: StateLeaf[],
+		stateTree: any,
+        numSignUps: BigInt,
+        stateIndex: BigInt,
+        salt: BigInt,
+		coordinatorPubKey: PubKey,
+        deactivatedKeysTree: any,
+		deactivatedKeyIndex: BigInt,
+		z: BigInt,
+		c1: BigInt[],
+		c2: BigInt[],
+	) {
+		const stateTreeRoot = stateTree.root;
+		const deactivatedKeysRoot = deactivatedKeysTree.root;
+		
+		const stateLeaf = stateLeaves[parseInt(stateIndex.toString())];
+		const { voiceCreditBalance: oldCreditBalance, timestamp } = stateLeaf;
+
+		const stateTreeInclusionProof = stateTree.genMerklePath(Number(stateIndex)).pathElements;
+		const deactivatedKeysInclusionProof = deactivatedKeysTree.genMerklePath(parseInt(deactivatedKeyIndex.toString())).pathElements;
+
+		const ecdhKeypair = new Keypair()
+		const sharedKey = Keypair.genEcdhSharedKey(
+			ecdhKeypair.privKey,
+			coordinatorPubKey,
+		)
+
+		const encryptedMessage = this.encrypt(sharedKey);
+		const messageHash = sha256Hash(encryptedMessage.asContractParam().data.map((x:string) => BigInt(x)));
+
+		const circuitInputs = stringifyBigInts({
+			oldPrivKey: deactivatedPrivateKey.asCircuitInputs(),         
+			newPubKey: this.newPubKey.asCircuitInputs(),
+			numSignUps,
+			stateIndex,
+			salt,
+			stateTreeRoot,
+			deactivatedKeysRoot,
+			stateTreeInclusionProof,
+			oldCreditBalance,
+			newCreditBalance: this.newCreditBalance, 
+			stateLeafTimestamp: timestamp,
+			deactivatedKeysInclusionProof: deactivatedKeysInclusionProof,
+			deactivatedKeyIndex,
+			c1,
+			c2,
+			coordinatorPubKey: coordinatorPubKey.asCircuitInputs(),
+			encPrivKey: ecdhKeypair.privKey.asCircuitInputs(),
+			c1r: this.c1r,
+			c2r: this.c2r,
+			z,
+			nullifier: this.nullifier,
+			pollId: this.pollId,
+			inputHash: sha256Hash([
+				stateTreeRoot,
+				deactivatedKeysRoot,
+				messageHash,
+				...coordinatorPubKey.asCircuitInputs(),
+				...ecdhKeypair.pubKey.asCircuitInputs(),
+			]),
+		})
+
+		return { circuitInputs, encPubKey: ecdhKeypair.pubKey, message: encryptedMessage };
+	}
+}
+
 export {
     StateLeaf,
     DeactivatedKeyLeaf,
@@ -950,6 +1149,7 @@ export {
     VoteOptionTreeLeaf,
     PCommand,
     TCommand,
+	KCommand,
     Command,
     Message,
     Keypair,

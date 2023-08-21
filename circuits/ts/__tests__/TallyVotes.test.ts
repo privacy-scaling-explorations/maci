@@ -98,6 +98,7 @@ describe('TallyVotes circuit', () => {
             )
 
             poll = maciState.polls[pollId]
+            await poll.initNullifiersTree();
 
             // First command (valid)
             const command = new PCommand(
@@ -132,7 +133,7 @@ describe('TallyVotes circuit', () => {
                     ).toString()
                 )
             // Process messages
-            poll.processMessages()
+            await poll.processMessages()
         })
 
         it('should produce the correct result commitments', async () => {
@@ -234,6 +235,7 @@ describe('TallyVotes circuit', () => {
             )
 
             const poll = maciState.polls[pollId]
+            await poll.initNullifiersTree();
 
             const numMessages = messageBatchSize * NUM_BATCHES
             for (let i = 0; i < numMessages; i ++) {
@@ -261,7 +263,7 @@ describe('TallyVotes circuit', () => {
             poll.messageAq.merge(treeDepths.messageTreeDepth)
 
             for (let i = 0; i < NUM_BATCHES; i ++) {
-                poll.processMessages()
+                await poll.processMessages()
             }
 
             for (let i = 0; i < NUM_BATCHES; i ++) {

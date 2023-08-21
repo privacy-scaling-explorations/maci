@@ -14,6 +14,7 @@ PROCESS_MESSAGES_PARAMS="10-2-1-2_$ZKEYS_POSTFIX"
 TALLY_VOTES_PARAMS="10-1-2_$ZKEYS_POSTFIX"
 SUBSIDY_PER_BATCH_PARAMS="10-1-2_$ZKEYS_POSTFIX"
 PROCESS_DEACTIVATION_MESSAGES_PARAMS="5-10_$ZKEYS_POSTFIX"
+NEW_KEY_GENERATION_PARAMS="10_$ZKEYS_POSTFIX"
 
 init_maci() {
     $MACI_CLI deployVkRegistry
@@ -26,12 +27,15 @@ init_maci() {
         --msg-batch-depth 1 \
         --process-messages-zkey "$ZKEYS_DIR"/ProcessMessages_"$PROCESS_MESSAGES_PARAMS".0.zkey \
         --process-deactivation-zkey "$ZKEYS_DIR"/ProcessDeactivationMessages_"$PROCESS_DEACTIVATION_MESSAGES_PARAMS".0.zkey \
+        --new-key-generation-zkey "$ZKEYS_DIR"/GenerateKeyFromDeactivated_"$NEW_KEY_GENERATION_PARAMS".0.zkey \
         --tally-votes-zkey "$ZKEYS_DIR"/TallyVotes_"$TALLY_VOTES_PARAMS".0.zkey \
         $SET_VERIFYING_KEYS_FLAG_SUBSIDY
+    
+    TenDaysFromNowAsUnixTimestamp="$(date  -d '+10 day' +%s)"
 
     $MACI_CLI create \
-        --signup-deadline 1689834390 \
-        --deactivation-period 86400
+        --signup-deadline $TenDaysFromNowAsUnixTimestamp \
+        --deactivation-period 30
 }
 
 deploy_poll() {

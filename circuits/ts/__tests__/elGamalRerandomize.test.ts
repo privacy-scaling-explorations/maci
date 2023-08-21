@@ -4,8 +4,8 @@ import {
     genPrivKey,
     elGamalEncryptBit,
     elGamalDecryptBit,
-    babyJubMaxValue,
-    babyJubAddPoint
+    babyJubMaxValue,   
+    elGamalRerandomize,
 } from 'maci-crypto'
 
 import {
@@ -89,6 +89,39 @@ describe('El Gamal rerandomization circuit', () => {
             expect(dBit).toEqual(BigInt(bit));
         }
     })
+
+    it('should match rerandomized values from crypto library', async () => {
+        const keypair = new Keypair();
+
+        for (let bit = 0; bit < 2; bit++) {
+            const y = BigInt(42);
+            const [c1, c2] = elGamalEncryptBit(keypair.pubKey.rawPubKey, BigInt(bit), y);
+            const [c1rLib, c2rLib] = elGamalRerandomize(keypair.pubKey.rawPubKey, y, c1, c2);
+
+            const circuitInputs = stringifyBigInts({
+                pubKey: keypair.pubKey.asCircuitInputs(),
+                c1,
+                c2,
+                z: y
+            });
+
+            const witness = await genWitness(circuit, circuitInputs);
+            const [c1r0, c1r1] = [
+                BigInt(await getSignalByName(circuit, witness, 'main.c1r[0]')),
+                BigInt(await getSignalByName(circuit, witness, 'main.c1r[1]')),
+            ];
+            const [c2r0, c2r1] = [ 
+                BigInt(await getSignalByName(circuit, witness, 'main.c2r[0]')),
+                BigInt(await getSignalByName(circuit, witness, 'main.c2r[1]')),
+            ];
+
+            expect(c1rLib[0].toString()).toEqual(c1r0.toString());
+            expect(c1rLib[1].toString()).toEqual(c1r1.toString());
+            expect(c2rLib[0].toString()).toEqual(c2r0.toString());
+            expect(c2rLib[1].toString()).toEqual(c2r1.toString());
+        }
+    })
+
     
     /** To be checked */
 

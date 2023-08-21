@@ -12,6 +12,7 @@ import {
 	Keypair,
 	PubKey,
 	Message,
+	DeactivatedKeyLeaf,
 } from 'maci-domainobjs';
 
 import {
@@ -22,7 +23,7 @@ import {
 	TreeDepths,
 } from 'maci-core';
 
-import { G1Point, G2Point, NOTHING_UP_MY_SLEEVE } from 'maci-crypto';
+import { G1Point, G2Point, NOTHING_UP_MY_SLEEVE, elGamalEncryptBit } from 'maci-crypto';
 
 const STATE_TREE_DEPTH = 10;
 const STATE_TREE_ARITY = 5;
@@ -57,6 +58,14 @@ const testProcessDeactivationVk = new VerifyingKey(
 );
 
 const testTallyVk = new VerifyingKey(
+	new G1Point(BigInt(0), BigInt(1)),
+	new G2Point([BigInt(2), BigInt(3)], [BigInt(4), BigInt(5)]),
+	new G2Point([BigInt(6), BigInt(7)], [BigInt(8), BigInt(9)]),
+	new G2Point([BigInt(10), BigInt(11)], [BigInt(12), BigInt(13)]),
+	[new G1Point(BigInt(14), BigInt(15)), new G1Point(BigInt(16), BigInt(17))]
+);
+
+const testNewKeyGenerationVk = new VerifyingKey(
 	new G1Point(BigInt(0), BigInt(1)),
 	new G2Point([BigInt(2), BigInt(3)], [BigInt(4), BigInt(5)]),
 	new G2Point([BigInt(6), BigInt(7)], [BigInt(8), BigInt(9)]),
@@ -217,19 +226,10 @@ describe('MACI', () => {
 
 	describe('Merging sign-ups should fail because of onlyPoll', () => {
 		it('coordinator should not be able to merge the signUp AccQueue', async () => {
-			try {
-				await maciContract.mergeStateAqSubRoots(0, 0, { gasLimit: 3000000 });
-			} catch (e) {
-				const error = "'MACI: only a Poll contract can call this function'";
-				expect(e.message.endsWith(error)).toBeTruthy();
-			}
+			const error = "'MACI: only a Poll contract can call this function'";
 
-			try {
-				await maciContract.mergeStateAq(0, { gasLimit: 3000000 });
-			} catch (e) {
-				const error = "'MACI: only a Poll contract can call this function'";
-				expect(e.message.endsWith(error)).toBeTruthy();
-			}
+			await expect(maciContract.mergeStateAqSubRoots(0, 0, { gasLimit: 3000000 })).rejects.toThrow(error);
+			await expect(maciContract.mergeStateAq(0, { gasLimit: 3000000 })).rejects.toThrow(error);
 		});
 	});
 
@@ -248,7 +248,8 @@ describe('MACI', () => {
 				messageBatchSize,
 				testProcessVk.asContractParam(),
 				testProcessDeactivationVk.asContractParam(),
-				testTallyVk.asContractParam()
+				testTallyVk.asContractParam(),
+				testNewKeyGenerationVk.asContractParam()
 			);
 			let receipt = await tx.wait();
 			expect(receipt.status).toEqual(1);
@@ -294,11 +295,18 @@ describe('MACI', () => {
 				treeDepths.voteOptionTreeDepth
 			);
 
+			const newKeyGenerationVkOnChain = await vkRegistryContract.getNewKeyGenerationVk(
+				std.toString(),
+				treeDepths.messageTreeDepth
+			);
+
 			compareVks(testProcessVk, processVkOnChain);
 			compareVks(testTallyVk, tallyVkOnChain);
+			compareVks(testNewKeyGenerationVk, newKeyGenerationVkOnChain);
 
 			// Create the poll and get the poll ID from the tx event logs
 			tx = await maciContract.deployPoll(
+				mpContract.address,
 				duration,
 				maxValues,
 				treeDepths,
@@ -325,6 +333,8 @@ describe('MACI', () => {
 				coordinator
 			);
 			expect(p.toString()).toEqual(pollId.toString());
+
+			await maciState.polls[p].initNullifiersTree();
 
 			// publish the NOTHING_UP_MY_SLEEVE message
 			const messageData = [NOTHING_UP_MY_SLEEVE, BigInt(0)];
@@ -576,9 +586,7 @@ describe('MACI', () => {
 	});
 
 	describe('Process messages (negative test)', () => {
-		// TODO: Skipped temporarely - will be addressed as part of milestone 3 as more changes are expected here.
-		// Skipped as the tree is merged and negative test does not make sense at this point.
-		it.skip('processMessages() should fail if the state AQ has not been merged', async () => {
+		it('processMessages() should fail if the state AQ has not been merged', async () => {
 			try {
 				const pollContractAddress = await maciContract.getPoll(pollId);
 
@@ -602,11 +610,7 @@ describe('MACI', () => {
 			pollContract = new ethers.Contract(pollContractAddress, pollAbi, signer);
 		});
 
-		// TODO: Skipped temporarely - will be addressed as part of milestone 3 as more changes are expected here.
-		// Currently skipped as the tree is already merged as part  of deactivation process.
-		// in Milestone 3 we need to extend the test to make sure  pollContract.mergeMaciStateAqSubRoots
-		// can be called in case deactivation hasn't happened
-		it.skip('The Poll should be able to merge the signUp AccQueue', async () => {
+		it('The Poll should be able to merge the signUp AccQueue', async () => {
 			let tx = await pollContract.mergeMaciStateAqSubRoots(0, pollId, {
 				gasLimit: 3000000,
 			});
@@ -621,11 +625,7 @@ describe('MACI', () => {
 			maciState.stateAq.merge(STATE_TREE_DEPTH);
 		});
 
-		// TODO: Cannot read properties of undefined (reading 'toString') maciState.stateAq.mainRoots[STATE_TREE_DEPTH].toString()
 		it('the state root must be correct', async () => {
-			maciState.stateAq.mergeSubRoots(0);
-			maciState.stateAq.merge(STATE_TREE_DEPTH);
-
 			const onChainStateRoot = await stateAqContract.getMainRoot(
 				STATE_TREE_DEPTH
 			);
@@ -635,7 +635,7 @@ describe('MACI', () => {
 		});
 	});
 
-	describe('Process messages', () => {
+	describe('Process messages', async () => {
 		let pollContract;
 		let poll;
 		let generatedInputs;
@@ -645,7 +645,7 @@ describe('MACI', () => {
 			pollContract = new ethers.Contract(pollContractAddress, pollAbi, signer);
 
 			poll = maciState.polls[pollId];
-			generatedInputs = poll.processMessages(pollId);
+			generatedInputs = await poll.processMessages(pollId);
 		});
 
 		it('genProcessMessagesPackedVals() should generate the correct value', async () => {
@@ -665,7 +665,6 @@ describe('MACI', () => {
 			expect(packedVals.toString(16)).toEqual(onChainPackedVals.toString(16));
 		});
 
-		// TODO: VM Exception while processing transaction: reverted with custom error 'NO_MORE_MESSAGES()'
 		it('processMessages() should update the state and ballot root commitment', async () => {
 			const pollContractAddress = await maciContract.getPoll(pollId);
 
@@ -750,24 +749,12 @@ describe('MACI', () => {
 	});
 
 	describe('Generate MaciState from contract', () => {
-		// TODO: Skipped temporarely - will be addressed as part of milestone 3 as more changes are expected here.
-		/* TODO: assert(received)
-
-		Expected value to be equal to:
-		true
-		Received:
-		false
-
-		326 |      
-		327 |     public merge(_depth: number) {
-		> 328 |         assert(this.subTreesMerged === true)
-		*/
-		it.skip('Should regenerate MaciState from on-chain information', async () => {
+		it('Should regenerate MaciState from on-chain information', async () => {
 			const ms = await genMaciStateFromContract(
 				signer.provider,
 				maciContract.address,
+				0,
 				coordinator,
-				0
 			);
 			// TODO: check roots
 		});
@@ -792,6 +779,7 @@ describe('MACI', () => {
 			otherAccount = otherSigner;
 
 			const tx = await maciContract.deployPoll(
+				mpContract.address,
 				duration,
 				maxValues,
 				treeDepths,
@@ -932,13 +920,11 @@ describe('MACI', () => {
 		// 	}
 		// });
 
-		// TODO: Skipped temporarely - will be addressed as part of milestone 3 as more changes are expected here.
-		// onlyOwner fails here because the caller is MessageProcessor and not Maci
-		it.skip('confirmDeactivation() should revert if not called by an owner', async () => {
+		it('confirmDeactivation() should revert if not called by an owner', async () => {
 			try {
-				await pollContract
+				await mpContract
 					.connect(otherAccount)
-					.confirmDeactivation(0, 0, mockElGamalMessage);
+					.confirmDeactivation([[0]], 0, pollContract.address);
 			} catch (e) {
 				const error = 'Ownable: caller is not the owner';
 				expect(
@@ -946,19 +932,34 @@ describe('MACI', () => {
 				).toBeTruthy();
 			}
 		});
-		// TODO: Skipped temporarely - will be addressed as part of milestone 3 as more changes are expected here.
-		// TODO:  invalid value for array (argument="value", value=0, code=INVALID_ARGUMENT, version=contracts/5.5.0)
-		it.skip('confirmDeactivation() should update relevant storage variables and emit a proper event', async () => {
-			const subRoot = 0;
+
+		it('confirmDeactivation() should update relevant storage variables and emit a proper event', async () => {
 			const subTreeCapacity = 0;
 
 			const [, , numDeactivatedKeysBefore] =
 				await pollContract.numSignUpsAndMessagesAndDeactivatedKeys();
 
-			const tx = await pollContract.confirmDeactivation(
-				subRoot,
-				subTreeCapacity,
-				mockElGamalMessage
+			const salt = (new Keypair()).privKey.rawPrivKey
+			const mask = BigInt(Math.ceil(Math.random() * 1000))	
+			const status = BigInt(1);
+
+			const [c1, c2] = elGamalEncryptBit(
+				coordinator.pubKey.rawPubKey, 
+				status, 
+				mask
+			)
+
+			const deactivatedLeaf = (new DeactivatedKeyLeaf(
+				keypair.pubKey,
+				c1,
+				c2,
+				salt
+			)) as any
+
+			const tx = await mpContract.confirmDeactivation(
+				[deactivatedLeaf.asArray()],
+				1,
+				pollContract.address
 			);
 
 			const receipt = await tx.wait();

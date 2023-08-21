@@ -14,7 +14,7 @@ contract IMessage {
     uint8 constant MESSAGE_DATA_LENGTH = 10;
 
     struct Message {
-        uint256 msgType; // 1: vote message (size 10), 2: topup message (size 2), 3: deactivate key, 4: generate new key
+        uint256 msgType; // 1: vote message (size 10), deactivate key (size 10); 2: topup message (size 2); 3: generate new key (size 10);
         uint256[MESSAGE_DATA_LENGTH] data; // data length is padded to size 10
     }
 }

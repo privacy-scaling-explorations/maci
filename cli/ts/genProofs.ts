@@ -350,8 +350,8 @@ const genProofs = async (args: any) => {
     const maciState = await genMaciStateFromContract(
         signer.provider,
         maciAddress,
-        coordinatorKeypair,
         pollId,
+        coordinatorKeypair,
         fromBlock,
     )
 
@@ -376,8 +376,7 @@ const genProofs = async (args: any) => {
     }
 
     while (poll.hasUnprocessedMessages()) {
-
-        const circuitInputs = poll.processMessages(pollId)
+        const circuitInputs = await poll.processMessages(pollId)
 
         let r
         try {

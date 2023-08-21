@@ -201,7 +201,7 @@ abstract contract AccQueue is Ownable, Hasher {
      * Fill any empty leaves of the current subtree with zeros and store the
      * resulting subroot.
      */
-    function fill() public { // TODO: During milestone 3 - onlyOwner fails here because the caller is MessageProcessor and not Maci 
+    function fill() public onlyOwner {
         if (numLeaves % subTreeCapacity == 0) {
             // If the subtree is completely empty, then the subroot is a
             // precalculated zero value
@@ -243,7 +243,7 @@ abstract contract AccQueue is Ownable, Hasher {
     /*
      * Insert a subtree. Used for batch enqueues.
      */
-    function insertSubTree(uint256 _subRoot) public { // TODO: During milestone 3 - onlyOwner fails here because the caller is MessageProcessor and not Maci
+    function insertSubTree(uint256 _subRoot) public onlyOwner {
         subRoots[currentSubtreeIndex] = _subRoot;
 
         // Increment the subtree index
@@ -292,7 +292,7 @@ abstract contract AccQueue is Ownable, Hasher {
      */
     function mergeSubRoots(
         uint256 _numSrQueueOps
-    ) public { // TODO: During milestone 3 - onlyOwner fails here because the caller is MessageProcessor and not Maci
+    ) public onlyOwner {
         // This function can only be called once unless a new subtree is created
         require(!subTreesMerged, "AccQueue: subtrees already merged");
 
@@ -397,7 +397,7 @@ abstract contract AccQueue is Ownable, Hasher {
      * @param _depth The depth of the main tree. It must fit all the leaves or
      *               this function will revert.
      */
-    function merge(uint256 _depth) public returns (uint256) { // TODO: During milestone 3 - onlyOwner fails here because the caller is MessageProcessor and not Maci
+    function merge(uint256 _depth) public onlyOwner returns (uint256) {
 
         // The tree depth must be more than 0
         require(_depth > 0, "AccQueue: _depth must be more than 0");

@@ -32,6 +32,7 @@ npm run hardhat
 | User | Generate new public key based on the deactivated one | `generateNewKey` |
 | User | Change key / vote | `publish` |
 | Coordinator | Confirm user's public key deactivation | `confirmDeactivation` |
+| Coordinator | Complete user's public key deactivation | `completeDeactivation` |
 | Coordinator | Merge state tree | `mergeSignups` |
 | Coordinator | Merge message tree | `mergeMessages` |
 | Coordinator | Generate message processing and vote tallying proofs | `genProofs` |
@@ -54,6 +55,10 @@ Examples of serialized public and private keys:
 Private key: macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e
 Public key:  macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330
 ```
+
+After initial key deactivation:
+New private key: macisk.acd54022725c8cf56dcd392808e3c4d170100d9fba4009ef0e8173ffe17f2e0
+New public key:  macipk.e57109205d2b33b90db8421727a2d4fb91cdf3a8e050fbd12aa5a9f4045585a2
 
 ### Coordinator: Deploy VkRegistry
 

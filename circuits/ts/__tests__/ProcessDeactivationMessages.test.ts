@@ -89,6 +89,7 @@ describe('ProcessDeactivationMessages circuit', () => {
             )
 
             poll = maciState.polls[pollId]
+            await poll.initNullifiersTree();
         })
 
         it('should return empty array hash in case no deactivation messages', async () => {
@@ -240,10 +241,6 @@ describe('ProcessDeactivationMessages circuit', () => {
                 status, 
                 mask
             )
-
-            console.log(maciState.stateLeaves[1])
-            console.log(userKeypair.pubKey)
-            console.log(maciState.stateLeaves[1].asCircuitInputs())
 
             for (let i = 1; i < maxValues.maxMessages; i += 1) {
                 maskingValues.push('1')
@@ -400,10 +397,6 @@ describe('ProcessDeactivationMessages circuit', () => {
                 mask2
             )
         
-            console.log(maciState.stateLeaves[1])
-            console.log(userKeypair.pubKey)
-            console.log(maciState.stateLeaves[1].asCircuitInputs())
-        
             for (let i = 2; i < maxValues.maxMessages; i += 1) {
                 maskingValues.push('1')
             }
@@ -539,6 +532,7 @@ describe('ProcessDeactivationMessages circuit', () => {
             )
 
             poll = maciState.polls[pollId]
+            await poll.initNullifiersTree();
         })
         
         it('should throw if numSignUps 0 instead of 1 with 1 deactivation message', async () => {
@@ -602,10 +596,6 @@ describe('ProcessDeactivationMessages circuit', () => {
                 mask
             )
 
-            console.log(maciState.stateLeaves[1])
-            console.log(userKeypair.pubKey)
-            console.log(maciState.stateLeaves[1].asCircuitInputs())
-
             for (let i = 1; i < maxValues.maxMessages; i += 1) {
                 maskingValues.push('1')
             }
@@ -624,8 +614,6 @@ describe('ProcessDeactivationMessages circuit', () => {
             for (let i = 1; i < maxValues.maxMessages; i += 1) {
                 encPubKeys.push(new PubKey([BigInt(0), BigInt(0)]).asCircuitInputs());
             }
-
-            console.log(encPubKeys)
 
             const deactivatedTreePathElements = [deactivatedKeys.genMerklePath(DEACTIVATED_KEYS_TREE_ELEMENT_INDEX).pathElements];
             // Pad array
@@ -741,10 +729,6 @@ describe('ProcessDeactivationMessages circuit', () => {
                 mask
             )
 
-            console.log(maciState.stateLeaves[1])
-            console.log(userKeypair.pubKey)
-            console.log(maciState.stateLeaves[1].asCircuitInputs())
-
             for (let i = 1; i < maxValues.maxMessages; i += 1) {
                 maskingValues.push('1')
             }
@@ -763,8 +747,6 @@ describe('ProcessDeactivationMessages circuit', () => {
             for (let i = 1; i < maxValues.maxMessages; i += 1) {
                 encPubKeys.push(new PubKey([BigInt(0), BigInt(0)]).asCircuitInputs());
             }
-
-            console.log(encPubKeys)
 
             const deactivatedTreePathElements = [deactivatedKeys.genMerklePath(DEACTIVATED_KEYS_TREE_ELEMENT_INDEX).pathElements];
             // Pad array
@@ -881,10 +863,6 @@ describe('ProcessDeactivationMessages circuit', () => {
                 mask
             )
 
-            console.log(maciState.stateLeaves[1])
-            console.log(userKeypair.pubKey)
-            console.log(maciState.stateLeaves[1].asCircuitInputs())
-
             for (let i = 1; i < maxValues.maxMessages; i += 1) {
                 maskingValues.push('1')
             }
@@ -903,8 +881,6 @@ describe('ProcessDeactivationMessages circuit', () => {
             for (let i = 1; i < maxValues.maxMessages; i += 1) {
                 encPubKeys.push(new PubKey([BigInt(0), BigInt(0)]).asCircuitInputs());
             }
-
-            console.log(encPubKeys)
 
             const deactivatedTreePathElements = [deactivatedKeys.genMerklePath(DEACTIVATED_KEYS_TREE_ELEMENT_INDEX).pathElements];
             // Pad array
@@ -1020,10 +996,6 @@ describe('ProcessDeactivationMessages circuit', () => {
                 status, 
                 mask
             )
-
-            console.log(maciState.stateLeaves[1])
-            console.log(userKeypair.pubKey)
-            console.log(maciState.stateLeaves[1].asCircuitInputs())
 
             for (let i = 1; i < maxValues.maxMessages; i += 1) {
                 maskingValues.push('1')
@@ -1161,10 +1133,6 @@ describe('ProcessDeactivationMessages circuit', () => {
                 mask
             )
 
-            console.log(maciState.stateLeaves[1])
-            console.log(userKeypair.pubKey)
-            console.log(maciState.stateLeaves[1].asCircuitInputs())
-
             for (let i = 1; i < maxValues.maxMessages; i += 1) {
                 maskingValues.push('1')
             }
@@ -1183,8 +1151,6 @@ describe('ProcessDeactivationMessages circuit', () => {
             for (let i = 1; i < maxValues.maxMessages; i += 1) {
                 encPubKeys.push(new PubKey([BigInt(0), BigInt(0)]).asCircuitInputs());
             }
-
-            console.log(encPubKeys)
 
             const deactivatedTreePathElements = [deactivatedKeys.genMerklePath(DEACTIVATED_KEYS_TREE_ELEMENT_INDEX).pathElements];
             // Pad array
@@ -1300,10 +1266,6 @@ describe('ProcessDeactivationMessages circuit', () => {
                 status, 
                 mask
             )
-
-            console.log(maciState.stateLeaves[1])
-            console.log(userKeypair.pubKey)
-            console.log(maciState.stateLeaves[1].asCircuitInputs())
 
             for (let i = 1; i < maxValues.maxMessages; i += 1) {
                 maskingValues.push('1')
@@ -1439,10 +1401,6 @@ describe('ProcessDeactivationMessages circuit', () => {
                 status, 
                 mask
             )
-
-            console.log(maciState.stateLeaves[1])
-            console.log(userKeypair.pubKey)
-            console.log(maciState.stateLeaves[1].asCircuitInputs())
 
             for (let i = 1; i < maxValues.maxMessages; i += 1) {
                 maskingValues.push('1')

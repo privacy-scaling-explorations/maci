@@ -193,6 +193,7 @@ const deployPoll = async (args: any) => {
 
     try {
         const tx = await maciContract.deployPoll(
+            mpContract.address,
             duration,
             { maxMessages, maxVoteOptions },
             {

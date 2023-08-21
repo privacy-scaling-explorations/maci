@@ -17,21 +17,28 @@ interface Action {
 const genMaciStateFromContract = async (
 	provider: ethers.providers.Provider,
 	address: string,
-	coordinatorKeypair: Keypair,
 	pollId: number,
+	coordinatorKeypair: Keypair,
 	fromBlock: number = 0
 ): Promise<MaciState> => {
 	pollId = Number(pollId);
 	// Verify and sort pollIds
 	assert(pollId >= 0);
 
+	// This is a hack so that both the coordinator and the regular user can use the same method
+	// for reconstructing MACI state when issuing commands. Proper way would be to split this
+	// method into two separate ones.
+	const isTriggeredByCoordinator = coordinatorKeypair != null;
+
 	const [pollContractAbi] = parseArtifact('Poll');
 	const [maciContractAbi] = parseArtifact('MACI');
+	const [mpContractAbi] = parseArtifact('MessageProcessor');
 
 	const maciContract = new ethers.Contract(address, maciContractAbi, provider);
 
 	const maciIface = new ethers.utils.Interface(maciContractAbi);
 	const pollIface = new ethers.utils.Interface(pollContractAbi);
+	const mpIface = new ethers.utils.Interface(mpContractAbi);
 
 	const maciState = new MaciState();
 
@@ -186,15 +193,25 @@ const genMaciStateFromContract = async (
 		provider
 	);
 
-	const coordinatorPubKeyOnChain = await pollContract.coordinatorPubKey();
-	assert(
-		coordinatorPubKeyOnChain[0].toString() ===
-			coordinatorKeypair.pubKey.rawPubKey[0].toString()
+	const mpContractAddress = await pollContract.messageProcessorAddress();
+
+	const mpContract = new ethers.Contract(
+		mpContractAddress,
+		mpContractAbi,
+		provider
 	);
-	assert(
-		coordinatorPubKeyOnChain[1].toString() ===
-			coordinatorKeypair.pubKey.rawPubKey[1].toString()
-	);
+
+	if (isTriggeredByCoordinator) {
+		const coordinatorPubKeyOnChain = await pollContract.coordinatorPubKey();
+		assert(
+			coordinatorPubKeyOnChain[0].toString() ===
+				coordinatorKeypair.pubKey.rawPubKey[0].toString()
+		);
+		assert(
+			coordinatorPubKeyOnChain[1].toString() ===
+				coordinatorKeypair.pubKey.rawPubKey[1].toString()
+		);
+	}
 
 	const dd = await pollContract.getDeployTimeAndDuration();
 	const deployTime = Number(dd[0]);
@@ -226,11 +243,6 @@ const genMaciStateFromContract = async (
 		fromBlock: fromBlock,
 	});
 
-	const deactivateKeyLogs = await provider.getLogs({
-		...pollContract.filters.DeactivateKey(),
-		fromBlock: fromBlock,
-	});
-
 	const publishMessageLogs = await provider.getLogs({
 		...pollContract.filters.PublishMessage(),
 		fromBlock: fromBlock,
@@ -258,6 +270,16 @@ const genMaciStateFromContract = async (
 
 	const mergeMessageAqLogs = await provider.getLogs({
 		...pollContract.filters.MergeMessageAq(),
+		fromBlock: fromBlock,
+	});
+
+	const attemptKeyGenerationLogs = await provider.getLogs({
+		...pollContract.filters.AttemptKeyGeneration(),
+		fromBlock: fromBlock,
+	});
+
+	const deactivateKeyLogs = await provider.getLogs({
+		...mpContract.filters.DeactivateKey(),
 		fromBlock: fromBlock,
 	});
 
@@ -309,24 +331,6 @@ const genMaciStateFromContract = async (
 			data: {
 				message,
 				encPubKey,
-			},
-		});
-	}
-
-	for (const log of deactivateKeyLogs) {
-		assert(log != undefined);
-		const event = pollIface.parseLog(log);
-
-		actions.push({
-			type: 'DeactivateKey',
-			// @ts-ignore
-			blockNumber: log.blockNumber,
-			// @ts-ignore
-			transactionIndex: log.transactionIndex,
-			data: {
-				keyHash: event.args.keyHash,
-				c1: event.args.c1,
-				c2: event.args.c2
 			},
 		});
 	}
@@ -416,6 +420,53 @@ const genMaciStateFromContract = async (
 		});
 	}
 
+	for (const log of attemptKeyGenerationLogs) {
+		assert(log != undefined);
+		const event = pollIface.parseLog(log);
+
+		const message = new Message(
+			BigInt(event.args._message[0]),
+			event.args._message[1].map((x) => BigInt(x))
+		);
+
+		const encPubKey = new PubKey(
+			event.args._encPubKey.map((x) => BigInt(x.toString()))
+		);
+
+		const newStateIndex = Number(event.args._newStateIndex);
+
+		actions.push({
+			type: 'AttemptKeyGeneration',
+			// @ts-ignore
+			blockNumber: log.blockNumber,
+			// @ts-ignore
+			transactionIndex: log.transactionIndex,
+			data: {
+				message,
+				encPubKey,
+				newStateIndex
+			},
+		});
+	}
+
+	for (const log of deactivateKeyLogs) {
+		assert(log != undefined);
+		const event = mpIface.parseLog(log);
+
+		actions.push({
+			type: 'DeactivateKey',
+			// @ts-ignore
+			blockNumber: log.blockNumber,
+			// @ts-ignore
+			transactionIndex: log.transactionIndex,
+			data: {
+				keyHash: event.args.keyHash,
+				c1: event.args.c1,
+				c2: event.args.c2
+			},
+		});
+	}
+
 	// Sort actions
 	sortActions(actions);
 
@@ -438,21 +489,33 @@ const genMaciStateFromContract = async (
 					batchSizes.messageBatchSize,
 					coordinatorKeypair
 				);
+				// Initialize nullifiers tree
+				await maciState.polls[pollId].initNullifiersTree()
 			} else {
 				maciState.deployNullPoll();
 			}
 		} else if (action['type'] === 'PublishMessage') {
+			if (!isTriggeredByCoordinator) {
+				continue;
+			}
 			maciState.polls[pollId].publishMessage(
 				action.data.message,
 				action.data.encPubKey
 			);
 		} else if (action['type'] === 'AttemptKeyDeactivation') {
+			if (!isTriggeredByCoordinator) {
+				continue;
+			}
 			maciState.polls[pollId].deactivateKey(
 				action.data.message,
 				action.data.encPubKey
 			);
 		} else if (action['type'] === 'DeactivateKey') {
-			// TODO: Implement reaction to DeactivateKey contract event as part of subsequent milestones
+			maciState.polls[pollId].processDeactivateKeyEvent(
+				action.data.keyHash,
+				action.data.c1,
+				action.data.c2
+			);
 		} else if (action['type'] === 'TopupMessage') {
 			maciState.polls[pollId].topupMessage(action.data.message);
 		} else if (action['type'] === 'MergeMaciStateAqSubRoots') {
@@ -472,6 +535,15 @@ const genMaciStateFromContract = async (
 				poll.messageAq.mainRoots[treeDepths.messageTreeDepth] ===
 					action.data.messageRoot
 			);
+		} else if (action['type'] === 'AttemptKeyGeneration') {
+			if (!isTriggeredByCoordinator) {
+				continue;
+			}
+			maciState.polls[pollId].generateNewKey(
+				action.data.message,
+				action.data.encPubKey,
+				action.data.newStateIndex
+			);
 		}
 	}
 
@@ -480,7 +552,10 @@ const genMaciStateFromContract = async (
 		await pollContract.numSignUpsAndMessagesAndDeactivatedKeys();
 
 	const poll = maciState.polls[pollId];
-	assert(Number(numMessages) === poll.messages.length);
+
+	if (isTriggeredByCoordinator) {
+		assert(Number(numMessages) === poll.messages.length);
+	}
 
 	maciState.polls[pollId].numSignUps = Number(numSignUps);
 
