@@ -1,6 +1,5 @@
 import * as ethers from 'ethers'
 import * as fs from 'fs'
-import * as path from 'path'
 
 import { genProof, verifyProof, extractVk } from 'maci-circuits'
 import { hashLeftRight, hash3 } from 'maci-crypto'
@@ -18,6 +17,7 @@ import {
     validateEthAddress,
     contractExists,
     isPathExist,
+    saveOutput,
 } from './utils'
 import {readJSONFile} from 'maci-common'
 import {contractFilepath} from './config'
@@ -583,17 +583,6 @@ const genProofs = async (args: any) => {
     console.log(`----------gen tally proof took ${(endTime - startTime)/1000} seconds`)
 
     return 0
-}
-
-const saveOutput = (
-    outputDir: string,
-    proof: any,
-    filename: string,
-) => {
-    fs.writeFileSync(
-        path.join(outputDir, filename),
-        JSON.stringify(proof, null, 2),
-    )
 }
 
 export {

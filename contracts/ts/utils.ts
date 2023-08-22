@@ -8,8 +8,10 @@ import {
     deployVkRegistry,
     deployTopupCredit,
     deployMaci,
-    deployPpt,
+    deployMessageProcessor,
+    deployTally,
     deployMockVerifier,
+    deployContract,
     deployFreeForAllSignUpGatekeeper,
     deployConstantInitialVoiceCreditProxy,
 } from './'
@@ -46,21 +48,19 @@ const deployTestContracts = async (
         initialVoiceCreditBalance,
     )
 
-    const pptContract = await deployPpt(mockVerifierContract.address)
     // VkRegistry
     const vkRegistryContract = await deployVkRegistry()
     const topupCreditContract = await deployTopupCredit()
 
-    const contracts = await deployMaci(
+    const {maciContract,stateAqContract,pollFactoryContract,poseidonAddrs} = await deployMaci(
         gatekeeperContract.address,
         constantIntialVoiceCreditProxyContract.address,
         mockVerifierContract.address,
         vkRegistryContract.address,
         topupCreditContract.address
     )
-
-    const maciContract = contracts.maciContract
-    const stateAqContract = contracts.stateAqContract
+    const mpContract = await deployMessageProcessor(mockVerifierContract.address, poseidonAddrs[0],poseidonAddrs[1],poseidonAddrs[2],poseidonAddrs[3])
+    const tallyContract = await deployTally(mockVerifierContract.address, poseidonAddrs[0],poseidonAddrs[1],poseidonAddrs[2],poseidonAddrs[3])
 
     return {
         mockVerifierContract,
@@ -69,7 +69,8 @@ const deployTestContracts = async (
         maciContract,
         stateAqContract,
         vkRegistryContract,
-        pptContract,
+        mpContract,
+        tallyContract,
     }
 }
 

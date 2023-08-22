@@ -1,4 +1,5 @@
 import * as fs from 'fs'
+import * as path from 'path'
 import * as prompt from 'prompt-async'
 
 prompt.colors = false
@@ -142,6 +143,17 @@ const isPathExist = (paths: Array<string>): [boolean, string] => {
     return [true, null]
 }
 
+const saveOutput = (
+    outputDir: string,
+    proof: any,
+    filename: string,
+) => {
+    fs.writeFileSync(
+        path.join(outputDir, filename),
+        JSON.stringify(proof, null, 2),
+    )
+}
+
 export {
     promptPwd,
     calcBinaryTreeDepthFromMaxLeaves,
@@ -156,4 +168,5 @@ export {
     batchTransactionRequests,
     delay,
     isPathExist,
+    saveOutput,
 }

@@ -73,6 +73,11 @@ import {
 } from './mergeSignups'
 
 import {
+    genCircuitInputs,
+    configureSubparser as configureSubparserForGenCircuitInputs,
+} from './genCircuitInputs'
+
+import {
     genProofs,
     configureSubparser as configureSubparserForGenProofs,
 } from './genProofs'
@@ -142,6 +147,9 @@ const main = async () => {
     configureSubparserForMergeSignups(subparsers)
 
     // Subcommand: genProofs
+    configureSubparserForGenCircuitInputs(subparsers)
+
+    // Subcommand: genProofs
     configureSubparserForGenProofs(subparsers)
 
     // Subcommand: proveOnChain
@@ -182,13 +190,16 @@ const main = async () => {
         await mergeMessages(args)
     } else if (args.subcommand === 'mergeSignups') {
         await mergeSignups(args)
+    } else if (args.subcommand === 'genCircuitInputs') {
+        await genCircuitInputs(args)
     } else if (args.subcommand === 'genProofs') {
         await genProofs(args)
     } else if (args.subcommand === 'proveOnChain') {
         await proveOnChain(args)
     } else if (args.subcommand === 'verify') {
         await verify(args)
-    } else if (args.subcommand === 'checkVerifyingKey') {
+    } 
+    else if (args.subcommand === 'checkVerifyingKey') {
         await checkVerifyingKey(args)
     }
 }

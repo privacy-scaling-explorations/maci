@@ -11,7 +11,7 @@ include "./utils.circom";
 /*
  * Proves the correctness of processing a batch of messages.
  */
-template ProcessMessages(
+template ProcessMessages_v2(
     stateTreeDepth,
     msgTreeDepth,
     msgBatchDepth, // aka msgSubtreeDepth
@@ -50,9 +50,11 @@ template ProcessMessages(
     // a lot of gas for the verifier at the cost of constraints for the prover.
 
     //  ----------------------------------------------------------------------- 
+    // TODO: need verify inputHash and outputHash in order to use sbCommitment as output 
+    signal output step_out[1];
     // The only public input, which is the SHA256 hash of a values provided
     // by the contract
-    signal input inputHash;
+    signal input step_in[1]; // inputHash
     signal input packedVals;
 
     signal numSignUps;
@@ -131,22 +133,23 @@ template ProcessMessages(
     currentSbCommitmentHasher.hash === currentSbCommitment;
 
     // Verify "public" inputs and assign unpacked values
-    component inputHasher = ProcessMessagesInputHasher();
+    component inputHasher = ProcessMessagesHasher();
     inputHasher.packedVals <== packedVals;
     inputHasher.coordPubKey[0] <== coordPubKey[0];
     inputHasher.coordPubKey[1] <== coordPubKey[1];
     inputHasher.msgRoot <== msgRoot;
     inputHasher.currentSbCommitment <== currentSbCommitment;
-    inputHasher.newSbCommitment <== newSbCommitment;
     inputHasher.pollEndTimestamp <== pollEndTimestamp;
 
-    // The unpacked values from packedVals
-    inputHasher.maxVoteOptions ==> maxVoteOptions;
-    inputHasher.numSignUps ==> numSignUps;
-    inputHasher.batchStartIndex ==> batchStartIndex;
-    inputHasher.batchEndIndex ==> batchEndIndex;
+    // Unpack packedVals 
+    component unpack = UnpackElement(4);
+    unpack.in <== packedVals;
+    maxVoteOptions <== unpack.out[3];
+    numSignUps <== unpack.out[2];
+    batchStartIndex <== unpack.out[1];
+    batchEndIndex <== unpack.out[0];
 
-    inputHasher.hash === inputHash;
+    inputHasher.hash === step_in[0];
 
     //  ----------------------------------------------------------------------- 
     //      0. Ensure that the maximum vote options signal is valid and whether
@@ -352,6 +355,24 @@ template ProcessMessages(
     sbCommitmentHasher.in[2] <== newSbSalt;
 
     sbCommitmentHasher.hash === newSbCommitment;
+
+    // generate packedVal for next batch
+    component nextBatch = PackNextBatch(batchSize);
+    nextBatch.in[0] <== batchEndIndex;
+    nextBatch.in[1] <== batchStartIndex;
+    nextBatch.in[2] <== numSignUps;
+    nextBatch.in[3] <== maxVoteOptions;
+
+    // generate output hash 
+    component outputHasher = ProcessMessagesHasher();
+    outputHasher.packedVals <== nextBatch.out;
+    outputHasher.coordPubKey[0] <== coordPubKey[0];
+    outputHasher.coordPubKey[1] <== coordPubKey[1];
+    outputHasher.msgRoot <== msgRoot;
+    outputHasher.currentSbCommitment <== newSbCommitment;
+    outputHasher.pollEndTimestamp <== pollEndTimestamp;
+
+    step_out[0] <== outputHasher.hash;
 }
 
 template ProcessTopup(stateTreeDepth) {
@@ -669,18 +690,12 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     newBallotRoot <== newBallotQip.root;
 }
 
-template ProcessMessagesInputHasher() {
-    // Combine the following into 1 input element:
-    // - maxVoteOptions (50 bits)
-    // - numSignUps (50 bits)
-    // - batchStartIndex (50 bits)
-    // - batchEndIndex (50 bits)
-
+template ProcessMessagesHasher() {
     // Hash coordPubKey:
     // - coordPubKeyHash 
 
     // Other inputs that can't be compressed or packed:
-    // - msgRoot, currentSbCommitment, newSbCommitment
+    // - msgRoot, currentSbCommitment
 
     // Also ensure that packedVals is valid
 
@@ -688,37 +703,23 @@ template ProcessMessagesInputHasher() {
     signal input coordPubKey[2];
     signal input msgRoot;
     signal input currentSbCommitment;
-    signal input newSbCommitment;
     signal input pollEndTimestamp;
 
-    signal output maxVoteOptions;
-    signal output numSignUps;
-    signal output batchStartIndex;
-    signal output batchEndIndex;
     signal output hash;
     
-    // 1. Unpack packedVals and ensure that it is valid
-    component unpack = UnpackElement(4);
-    unpack.in <== packedVals;
 
-    maxVoteOptions <== unpack.out[3];
-    numSignUps <== unpack.out[2];
-    batchStartIndex <== unpack.out[1];
-    batchEndIndex <== unpack.out[0];
-
-    // 2. Hash coordPubKey
+    // 1. Hash coordPubKey
     component pubKeyHasher = HashLeftRight();
     pubKeyHasher.left <== coordPubKey[0];
     pubKeyHasher.right <== coordPubKey[1];
 
-    // 3. Hash the 6 inputs with SHA256
-    component hasher = Sha256Hasher6();
+    // 2. Hash the 6 inputs with SHA256
+    component hasher = Sha256Hasher5();
     hasher.in[0] <== packedVals;
     hasher.in[1] <== pubKeyHasher.hash;
     hasher.in[2] <== msgRoot;
     hasher.in[3] <== currentSbCommitment;
-    hasher.in[4] <== newSbCommitment;
-    hasher.in[5] <== pollEndTimestamp;
+    hasher.in[4] <== pollEndTimestamp;
 
     hash <== hasher.hash;
 }

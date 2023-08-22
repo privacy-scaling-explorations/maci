@@ -43,7 +43,7 @@ creditPerVote=$(($maxCredit / $votePerUser))
 
 node build/index.js deployVkRegistry && \
 node build/index.js setVerifyingKeys -s $stateTreeDepth -i $intStateTreeDepth -m $msgTreeDepth -v $voteOptionTreeDepth -b $msgBatchDepth \
-    -p ./zkeys/ProcessMessages_"$stateTreeDepth"-"$msgTreeDepth"-"$msgBatchDepth"-"$voteOptionTreeDepth"_test.0.zkey \
+    -p ./zkeys/ProcessMessages_v2_"$stateTreeDepth"-"$msgTreeDepth"-"$msgBatchDepth"-"$voteOptionTreeDepth"_test.0.zkey \
     -t ./zkeys/TallyVotes_"$stateTreeDepth"-"$intStateTreeDepth"-"$voteOptionTreeDepth"_test.0.zkey  \
     -ss ./zkeys/SubsidyPerBatch_"$stateTreeDepth"-"$intStateTreeDepth"-"$voteOptionTreeDepth"_test.0.zkey 
 
@@ -86,17 +86,29 @@ end=`date +%s`
 runtime=$((end-start))
 echo "----------mergeSignups costs: "$runtime" seconds"
 
+
+echo "gen circuitInputs..."
+start=`date +%s`
+rm -rf circuit_inputs && \
+node build/index.js genCircuitInputs \
+    -sk $cordsk \
+    -o 0 \
+    -f circuit_inputs/
+end=`date +%s`
+runtime=$((end-start))
+echo "---------gen circuitInputs: "$runtime" seconds"
+
 echo "gen proofs..."
 start=`date +%s`
 rm -rf proofs subsidy.json tally.json && \
 node build/index.js genProofs \
-    -sk macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
+    -sk $cordsk \
     -o 0 \
     -r ~/rapidsnark/build/prover \
-    -wp ./zkeys/ProcessMessages_"$stateTreeDepth"-"$msgTreeDepth"-"$msgBatchDepth"-"$voteOptionTreeDepth"_test \
+    -wp ./zkeys/ProcessMessages_v2_"$stateTreeDepth"-"$msgTreeDepth"-"$msgBatchDepth"-"$voteOptionTreeDepth"_test \
     -wt ./zkeys/TallyVotes_"$stateTreeDepth"-"$intStateTreeDepth"-"$voteOptionTreeDepth"_test \
     -ws ./zkeys/SubsidyPerBatch_"$stateTreeDepth"-"$intStateTreeDepth"-"$voteOptionTreeDepth"_test \
-    -zp ./zkeys/ProcessMessages_"$stateTreeDepth"-"$msgTreeDepth"-"$msgBatchDepth"-"$voteOptionTreeDepth"_test.0.zkey \
+    -zp ./zkeys/ProcessMessages_v2_"$stateTreeDepth"-"$msgTreeDepth"-"$msgBatchDepth"-"$voteOptionTreeDepth"_test.0.zkey \
     -zt ./zkeys/TallyVotes_"$stateTreeDepth"-"$intStateTreeDepth"-"$voteOptionTreeDepth"_test.0.zkey  \
     -zs ./zkeys/SubsidyPerBatch_"$stateTreeDepth"-"$intStateTreeDepth"-"$voteOptionTreeDepth"_test.0.zkey \
     -t tally.json \

@@ -6,11 +6,11 @@ circomPath: "../../.local/bin/circom"
 snarkjsPath: "./node_modules/snarkjs/build/cli.cjs"
 
 circuits:
-- template: "../circuits/circom/processMessages.circom"
-  component: "ProcessMessages"
+- template: "../circuits/circom/processMessages_v2.circom"
+  component: "ProcessMessages_v2"
   params: [10, 2, 1, 2] # stateTreeDepth, msgTreeDepth, msgBatchDepth, voteOptionTreeDepth
   type: "test"
-  pubInputs: ["inputHash"]
+  pubInputs: ["step_in"]
 
 #- template: "../circuits/circom/processMessages.circom"
   #component: "ProcessMessages"
