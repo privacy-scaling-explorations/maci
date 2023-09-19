@@ -24,7 +24,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     // so that there can be as many users as possible.  i.e. 5 ** 10 = 9765625
     uint8 public constant override stateTreeDepth = 10;
 
-    // IMPORTANT: remember to change the ballot tree depth 
+    // IMPORTANT: remember to change the ballot tree depth
     // in contracts/ts/genEmptyBallotRootsContract.ts file
     // if we change the state tree depth!
 
@@ -232,13 +232,14 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     * Deploy a new Poll contract.
     * @param _duration How long should the Poll last for
     * @param _treeDepths The depth of the Merkle trees
+    * @returns a new Poll contract address
     */
     function deployPoll(
         uint256 _duration,
         MaxValues memory _maxValues,
         TreeDepths memory _treeDepths,
         PubKey memory _coordinatorPubKey
-    ) public afterInit {
+    ) public afterInit returns (address) {
         uint256 pollId = nextPollId;
 
         // Increment the poll ID for the next poll
@@ -276,6 +277,8 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         polls[pollId] = p;
 
         emit DeployPoll(pollId, address(p), _coordinatorPubKey);
+
+        return address(p);
     }
 
         /*
