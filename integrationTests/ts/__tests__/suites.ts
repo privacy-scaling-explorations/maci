@@ -19,7 +19,16 @@ import {
 
 import { genPubKey } from 'maci-crypto'
 
-import { exec, loadYaml, genTestUserCommands, expectTally, expectSubsidy } from './utils'
+import { 
+    exec,
+    loadYaml,
+    genTestUserCommands,
+    expectTally,
+    expectSubsidy,
+    verifySpentVoiceCredits,
+    verifyPerVOSpentVoiceCredits,
+    verifyTallyResult,
+} from './utils'
 
 const execute = (command: any) => {
     console.log(command)
@@ -283,6 +292,36 @@ const executeSuite = async (data: any, expect: any) => {
             ` -t tally.json` +
             ` ${subsidyResultFilePath}`
         execute(verifyCommand)
+
+        const verifiedSpentVoiceCredits = await verifySpentVoiceCredits(
+            pollAddress,
+            tally
+        )
+        expect(verifiedSpentVoiceCredits).toEqual(true)
+
+        // find the first vote option with non-zero votes
+        let voteOptionIndex: number
+        for (; voteOptionIndex < tally.results.tally.length; voteOptionIndex) {
+            if (tally.results.tally[voteOptionIndex] !== "0") {
+                break
+            }
+        }
+        if (voteOptionIndex > 0) {
+            const verifiedPerVOVoiceCredits = await verifyPerVOSpentVoiceCredits(
+                voteOptionIndex,
+                treeDepths.voteOptionTreeDepth,
+                pollAddress,
+                tally
+            )
+            expect(verifiedPerVOVoiceCredits).toEqual(true);
+            const verifiedTallyResult = await verifyTallyResult(
+                voteOptionIndex,
+                treeDepths.voteOptionTreeDepth,
+                pollAddress,
+                tally
+             )
+             expect(verifiedTallyResult).toEqual(true);
+        }
     }
     catch(e) {
         console.error(e)

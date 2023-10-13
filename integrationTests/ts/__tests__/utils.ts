@@ -10,6 +10,10 @@ import {
     Keypair,
     Command,
 } from 'maci-domainobjs'
+import { genTallyResultCommitment } from "maci-core"
+import { parseArtifact, getDefaultSigner } from "maci-contracts"
+import { IncrementalQuinTree, hash5, hashLeftRight } from "maci-crypto"
+
 
 const exec = (command: string) => {
     return shell.exec('cd ../cli/ && ' + command, { silent: true })
@@ -188,4 +192,119 @@ const expectSubsidy = (
     expect(SubsidyFile.results.subsidy).toEqual(genSubsidy)
 }
 
-export { exec, delay, loadYaml, genTestAccounts, genTestUserCommands, expectTally, expectSubsidy }
+const genMerkleProof = (index: number, results: string[], depth: number): BigInt => {
+    const tree = new IncrementalQuinTree(depth, BigInt(0), 5, hash5)
+    for (const result of results) {
+        tree.insert(result)
+    }
+    const proof = tree.genMerklePath(index);
+    return proof.pathElements.map((x) => x.map((y) => y.toString())),
+}
+
+const genTallyProof = (
+    voteOptionIndex: number,
+    voteOptionTreeDepth: number,
+    tallyFile: Tally
+) => {
+    const tallyResult = tallyFile.results.tally[voteOptionIndex]
+    const proof = genMerkleProof(voteOptionIndex, tallyFile.results.tally, voteOptionTreeDepth)
+    
+    const spentVoiceCreditsHash = hashLeftRight(
+        BigInt(tallyFile.totalSpentVoiceCredits.spent),
+        BigInt(tallyFile.totalSpentVoiceCredits.salt)
+    )
+    const perVOSpentVoiceCreditsHash = genTallyResultCommitment(
+        tallyFile.perVOSpentVoiceCredits.tally.map((x) => BigInt(x)),
+        BigInt(tallyFile.perVOSpentVoiceCredits.salt),
+        voteOptionIndex
+    )
+  
+    const tallyCommitment = tallyFile.newTallyCommitment
+  
+    return [
+        voteOptionIndex,
+        tallyResult,
+        proof,
+        spentVoiceCreditsHash,
+        perVOSpentVoiceCreditsHash,
+        tallyCommitment,
+    ]
+}
+
+const genSpentProof = (
+    voteOptionIndex: number,
+    voteOptionTreeDepth: number,
+    tallyFile: Tally
+) => {
+    const spent = tallyFile.perVOSpentVoiceCredits.tally[voteOptionIndex]
+    const spentSalt = tallyFile.perVOSpentVoiceCredits.salt
+    const spentProof = genMerkleProof(voteOptionIndex, tallyFile.perVOSpentVoiceCredits.tally, voteOptionTreeDepth)
+  
+    return [
+        voteOptionIndex,
+        spent,
+        spentProof,
+        spentSalt
+    ]
+}
+
+const verifySpentVoiceCredits = async (
+    pollAddress: string,
+    tallyFile: Tally
+): Promise<boolean> => {
+    const signer = await getDefaultSigner()
+  
+    const [pollAbi] = parseArtifact("Poll")
+    const poll = new ethers.Contract(pollAddress, pollAbi, signer)
+    const totalSpent = tallyFile.totalSpentVoiceCredits.spent
+    const totalSpentSalt = tallyFile.totalSpentVoiceCredits.salt
+    return poll.verifySpentVoiceCredits(totalSpent, totalSpentSalt)
+};
+
+const verifyPerVOSpentVoiceCredits = async (
+    voteOptionIndex: number,
+    voteOptionTreeDepth: number,
+    pollAddress: string,
+    tallyFile: Tally
+): Promise<boolean> => {
+  const signer = await getDefaultSigner()
+
+  const proof = genSpentProof(
+    voteOptionIndex,
+    voteOptionTreeDepth,
+    tallyFile
+  )
+
+  const [pollAbi] = parseArtifact("Poll")
+  const poll = new ethers.Contract(pollAddress, pollAbi, signer)
+  return poll.verifyPerVOSpentVoiceCredits(...proof)
+}
+
+const verifyTallyResult = async (
+    voteOptionIndex: number,
+    voteOptionTreeDepth: number,
+    pollAddress: string,
+    tallyFile: Tally
+): Promise<boolean> => {
+    const signer = await getDefaultSigner()
+  
+    const [pollAbi] = parseArtifact("Poll")
+    const poll = new ethers.Contract(pollAddress, pollAbi, signer)
+  
+    const proof = genTallyProof(voteOptionIndex, voteOptionTreeDepth, tallyFile)
+    return poll.verifyTallyResult(...proof)
+}
+
+
+export {
+    exec,
+    delay,
+    loadYaml,
+    genTestAccounts,
+    genTestUserCommands,
+    expectTally,
+    expectSubsidy,
+    verifySpentVoiceCredits,
+    verifyPerVOSpentVoiceCredits,
+    verifyTallyResult
+}
