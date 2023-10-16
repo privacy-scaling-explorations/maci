@@ -198,7 +198,7 @@ const genMerkleProof = (index: number, results: string[], depth: number): BigInt
         tree.insert(result)
     }
     const proof = tree.genMerklePath(index);
-    return proof.pathElements.map((x) => x.map((y) => y.toString())),
+    return proof.pathElements.map((x) => x.map((y) => y.toString()))
 }
 
 const genTallyProof = (
