@@ -88,6 +88,21 @@ import {
 } from './verify'
 
 import {
+    verifySpentVoiceCredits,
+    configureSubparser as configureSubparserForVerifySpentVoiceCredits,
+} from './verifySpentVoiceCredits'
+
+import {
+    verifyPerVOSpentVoiceCredits,
+    configureSubparser as configureSubparserForVerifyPerVOSpentVoiceCredits,
+} from './verifyPerVOSpentVoiceCredits'
+
+import {
+    verifyTallyResult,
+    configureSubparser as configureSubparserForVerifyTallyResult,
+} from './verifyTallyResult'
+
+import {
     checkVerifyingKey,
     configureSubparser as configureSubparserForCheckVerifyKey,
 } from './checkVerifyingKey'
@@ -150,6 +165,15 @@ const main = async () => {
     // Subcommand: verify
     configureSubparserForVerify(subparsers)
 
+    // Subcommand: verifySpentVoiceCredits
+    configureSubparserForVerifySpentVoiceCredits(subparsers)
+
+    // Subcommand: verifyPerVOSpentVoiceCredits
+    configureSubparserForVerifyPerVOSpentVoiceCredits(subparsers)
+
+    // Subcommand: verifyTallyResult
+    configureSubparserForVerifyTallyResult(subparsers)
+
     // Subcommand: checkVerifyKey
     configureSubparserForCheckVerifyKey(subparsers)
 
@@ -188,6 +212,12 @@ const main = async () => {
         await proveOnChain(args)
     } else if (args.subcommand === 'verify') {
         await verify(args)
+    } else if (args.subcommand === 'verifySpentVoiceCredits') {
+        await verifySpentVoiceCredits(args)
+    } else if (args.subcommand === 'verifyPerVOSpentVoiceCredits') {
+        await verifyPerVOSpentVoiceCredits(args)
+    } else if (args.subcommand === 'verifyTallyResult') {
+        await verifyTallyResult(args)
     } else if (args.subcommand === 'checkVerifyingKey') {
         await checkVerifyingKey(args)
     }

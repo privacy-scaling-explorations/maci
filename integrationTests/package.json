@@ -12,6 +12,9 @@
         "test-cli-genMaciKeypair-debug": "node --inspect-brk ./node_modules/.bin/jest cli-genMaciKeypair.test.ts",
         "test-cli-genMaciPubkey": "jest cli-genMaciPubkey.test.ts",
         "test-cli-genMaciPubkey-debug": "node --inspect-brk ./node_modules/.bin/jest cli-genMaciPubkey.test.ts",
+        "test-verifyTallyResult": "NODE_OPTIONS=--max-old-space-size=4096 jest verifyTallyResult.test.ts",
+        "test-verifySpentVoiceCredits": "NODE_OPTIONS=--max-old-space-size=4096 jest verifySpentVoiceCredits.test.ts",
+        "test-verifyPerVOSpentVoiceCredits": "NODE_OPTIONS=--max-old-space-size=4096 jest verifyPerVOSpentVoiceCredits.test.ts",
         "test-suites": "NODE_OPTIONS=--max-old-space-size=4096 jest suites.test.ts",
         "test-suites-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest suites.test.ts"
     },

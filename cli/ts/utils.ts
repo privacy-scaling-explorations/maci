@@ -1,5 +1,7 @@
 import * as fs from 'fs'
 import * as prompt from 'prompt-async'
+import { IncrementalQuinTree, hash5, hashLeftRight } from "maci-crypto"
+
 
 prompt.colors = false
 prompt.message = ''
@@ -12,6 +14,16 @@ import {
 
 const Web3 = require('web3')
 const { ethers } = require('hardhat')
+
+const genMerkleProof = (index: number, results: string[], depth: number): BigInt => {
+    const tree = new IncrementalQuinTree(depth, BigInt(0), 5, hash5)
+    for (const result of results) {
+        tree.insert(result)
+    }
+
+    const proof = tree.genMerklePath(index)
+    return proof.pathElements.map((x) => x.map((y) => y.toString()))
+}
 
 const calcBinaryTreeDepthFromMaxLeaves = (maxLeaves: number) => {
     let result = 0
@@ -144,6 +156,7 @@ const isPathExist = (paths: Array<string>): [boolean, string] => {
 
 export {
     promptPwd,
+    genMerkleProof,
     calcBinaryTreeDepthFromMaxLeaves,
     calcQuinTreeDepthFromMaxLeaves,
     validateEthSk,
