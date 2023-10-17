@@ -43,7 +43,7 @@ circuits.
 Note the locations of the `.zkey` files as the CLI requires them as
 command-line flags.
 
-You cand download a `.zkey` files and associated `.r1cs` file with witness generation binaries from [here](https://github.com/privacy-scaling-explorations/maci/wiki/Download-Precompiled-Circuit-and-Zkeys).
+You can download a `.zkey` files and associated `.r1cs` file with witness generation binaries from [here](https://github.com/privacy-scaling-explorations/maci/wiki/Download-Precompiled-Circuit-and-Zkeys).
 
 ### Compile the witness generation binaries
 
