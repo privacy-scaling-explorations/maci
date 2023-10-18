@@ -7,7 +7,7 @@ There is an Ethereum contract (`MACI`) which provides the following interface:
 
 
 - [Merkle trees in storage](#merkle-trees-in-storage)
-- [`signUp(PubKey _pubKey) payable`](#signuppubkey-_pubkey-payable)
+- [`signUp(PubKey _pubKey) payable`](#signuppubkey-_userpubkey-bytes-memory-_signupgatekeeperdata-bytes-memory-_initialvoicecreditproxydata)
 - [`publishMessage(uint256 _msg, PubKey _encPubKey)`](#publishmessageuint256-_msg-pubkey-_encpubkey)
 - [`batchProcessMessage(...)`](#batchprocessmessage)
 - [`proveVoteTallyBatch()`](#provevotetallybatch)
