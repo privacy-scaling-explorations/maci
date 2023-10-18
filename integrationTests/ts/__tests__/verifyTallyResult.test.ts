@@ -30,6 +30,14 @@ describe('Test verify on chain', () => {
                 ` -d ${voteOptionTreeDepth}` +
                 ` -t tally.json`
 
-	expect(() => execute(verifyTallyResultCommand)).toThrow(/verifyTallyResult returns FALSE/)
+	let verified = false
+	try {
+	  execute(verifyTallyResultCommand)
+	  verified = true
+	} catch (e) {
+	  console.log(e)
+	  verified = false
+	}
+	expect(verified).toEqual(true)
     })
 })

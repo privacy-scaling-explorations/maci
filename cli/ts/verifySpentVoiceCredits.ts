@@ -114,9 +114,6 @@ const verifySpentVoiceCredits = async (args: any) => {
         return 1
     }
 
-    console.log('-------------tally data -------------------')
-    console.log(data)
-
     const totalSpent = data.totalSpentVoiceCredits.spent
     const totalSpentSalt = data.totalSpentVoiceCredits.salt
     const result = await pollContract.verifySpentVoiceCredits(totalSpent, totalSpentSalt)
@@ -124,7 +121,6 @@ const verifySpentVoiceCredits = async (args: any) => {
         console.error('verifySpentVoiceCredits returns FALSE')
         return 1
     }
-
 
     console.log('OK. finish verifySpentVoiceCredits')
     return 0

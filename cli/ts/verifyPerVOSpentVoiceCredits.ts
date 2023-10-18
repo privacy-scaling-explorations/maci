@@ -141,9 +141,6 @@ const verifyPerVOSpentVoiceCredits = async (args: any) => {
         return 1
     }
 
-    console.log('-------------tally data -------------------')
-    console.log(data)
-
     const spent = data.perVOSpentVoiceCredits.tally[voteOptionIndex]
     const spentSalt = data.perVOSpentVoiceCredits.salt
     const spentProof = genMerkleProof(voteOptionIndex, data.perVOSpentVoiceCredits.tally, voteOptionTreeDepth)

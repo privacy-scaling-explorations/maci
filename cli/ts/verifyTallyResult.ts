@@ -147,9 +147,6 @@ const verifyTallyResult = async (args: any) => {
         return 1
     }
 
-    console.log('-------------tally data -------------------')
-    console.log(data)
-
     const proof = genMerkleProof(voteOptionIndex, data.results.tally, voteOptionTreeDepth)
     const tallyResult = data.results.tally[voteOptionIndex]
 

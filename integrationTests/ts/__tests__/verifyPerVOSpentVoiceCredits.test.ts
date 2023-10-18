@@ -29,6 +29,13 @@ describe('Test verifyPerVOSpentVoiceCredits on chain', () => {
             ` -d ${voteOptionTreeDepth}` +
             ` -t tally.json`
 
-	expect(() => execute(verifyPerVOSpentVoiceCreditsCommand)).toThrow(/verifyPerVOSpentVoiceCredits returns FALSE/)
+	let verified = false
+	try {
+	    execute(verifyPerVOSpentVoiceCreditsCommand)
+	    verified = true
+	} catch (e) {
+            console.log(e)
+	}
+	expect(verified).toEqual(true)
     })
 })

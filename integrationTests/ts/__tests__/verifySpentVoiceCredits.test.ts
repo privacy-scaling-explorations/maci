@@ -26,6 +26,13 @@ describe('Test verifySpentVoiceCredits on chain', () => {
             ` -o ${tally.pollId}` +
             ` -t tally.json`
 
-        expect(() => execute(verifySpentVoiceCreditsCommand)).toThrow(/verifySpentVoiceCredits returns FALSE/)
+	let verified = false
+	try {
+            execute(verifySpentVoiceCreditsCommand)
+	    verified = true
+	} catch(e) {
+            console.log(e)
+	}
+	expect(verified).toEqual(true)
     })
 })
