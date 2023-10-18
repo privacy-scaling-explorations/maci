@@ -18,8 +18,6 @@ import {contractFilepath} from './config'
 
 import * as ethers from 'ethers'
 
-const Web3 = require('web3')
-
 const configureSubparser = (subparsers: any) => {
     const parser = subparsers.addParser(
         'verifySpentVoiceCredits',

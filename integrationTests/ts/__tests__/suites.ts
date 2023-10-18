@@ -19,16 +19,7 @@ import {
 
 import { genPubKey } from 'maci-crypto'
 
-import { 
-    exec,
-    loadYaml,
-    genTestUserCommands,
-    expectTally,
-    expectSubsidy,
-    verifySpentVoiceCredits,
-    verifyPerVOSpentVoiceCredits,
-    verifyTallyResult,
-} from './utils'
+import { exec, loadYaml, genTestUserCommands, expectTally, expectSubsidy } from './utils'
 
 const execute = (command: any) => {
     console.log(command)
@@ -114,8 +105,6 @@ const executeSuite = async (data: any, expect: any) => {
         const pptAddress = deployPollRegMatch[1]
         const deployPollIdRegMatch = deployPollOutput.match(/Poll ID: ([0-9])/)
         const pollId = deployPollIdRegMatch[1]
-        const pollAddressRegMatch = deployPollOutput.match(/Poll contract: ([0-9])/)
-        const pollAddress  = pollAddressRegMatch[1]
 
         const treeDepths = {} as TreeDepths
         treeDepths.intStateTreeDepth = config.constants.poll.intStateTreeDepth
