@@ -1,7 +1,7 @@
 {
     "name": "maci-crypto",
     "version": "1.1.2",
-    "description": "",
+    "description": "A package containing cryptography utilities for MACI",
     "main": "build/index.js",
     "scripts": {
         "watch": "tsc --watch",

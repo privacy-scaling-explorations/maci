@@ -10,10 +10,9 @@ import {
     hash13,
     verifySignature,
     genRandomSalt,
+    SNARK_FIELD_SIZE
 } from '../'
 
-
-const SNARK_FIELD_SIZE = BigInt('21888242871839275222246405745257275088548364400416034343698204186575808495617')
 
 describe('Cryptographic operations', () => {
     const { privKey, pubKey } = genKeypair()
