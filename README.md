@@ -109,7 +109,7 @@ own unit tests.
 
 #### Compiling Circom
 
-Prior to using the generated `zkey` files for corresponding circuits, it is now required to compile `circom` locally. To get started the follow the instructions [here](https://docs.circom.io/getting-started/installation/)
+Prior to using the generated `zkey` files for corresponding circuits, it is now required to compile `circom` locally. To get started follow the instructions [here](https://docs.circom.io/getting-started/installation/)
 and be sure that the installation directory matches the value in the `circom` field inside `circuits/circomHelperConfig.json`.
 
 For example:

@@ -31,7 +31,7 @@ This config file defines the parameters required for MACI's circuits.
 | 1 | State leaf batch depth | Allows $(5^{n})$ users' votes to be processed per batch. | 
 | 2 | Vote option tree depth | Allows $(5^{n})$ vote options. |
 
-### Subsisdy 
+### Subsidy 
 
 | # | Parameter | Description |
 |-|-|-|

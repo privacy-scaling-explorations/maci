@@ -107,7 +107,7 @@ A verifying key is used to validate a zk-SNARK proof. Each unique permutation of
 
 #### Private Keys 
 
-MACI's private keys allow users to send and decrypt messages. This key translates to a scalar point on the Baby Jubjub ellpitic curve. All keys are serialized with the prefix `macisk`.
+MACI's private keys allow users to send and decrypt messages. This key translates to a scalar point on the Baby Jubjub elliptic curve. All keys are serialized with the prefix `macisk`.
 
 #### Public Keys 
 
@@ -127,7 +127,7 @@ A command represents an action that a user may take. Such as casting a vote in a
 | $cm_{p_{x}}$ | Public key x-coordinate | 253  |  If no change is necessary this parameter should reflect the current public key's x-coordinate
 | $cm_{p_{y}}$ | Public key y-coordinate | 253  |  If no change is necessary this parameter should reflect the current public key's y-coordinate
 | $cm_{i_{v}}$ | Vote option index | 50 | Option state leaf index of preference to assign the vote for
-| $cm_w$ | Voting weight | 50 | Voice credit balance allocation, this is an arbitary value dependent on a user's available credits
+| $cm_w$ | Voting weight | 50 | Voice credit balance allocation, this is an arbitrary value dependent on a user's available credits
 | $cm_n$ | Nonce | 50 | State leaf's index of actions committed plus one
 | $cm_{id}$ | Poll id | 50 | The poll's identifier to cast in regard to
 | $cm_s$ | Salt | 253 | An entropy value to inhibit brute force attacks
@@ -149,7 +149,7 @@ To decrypt a message using $k_s$ is expressed as
 
 $[p, R8[0], R8[1], cm_s]$ = $\mathsf{poseidonDecrypt}(M, k_s[0], k_s[1], cm_n, 7)$
 
-To unpack $p$ to it's original five parameters, it must be seperated into 50 bit values from the parent 250 bit value. To extract 50 bits at byte $n$, we:
+To unpack $p$ to its original five parameters, it must be separated into 50 bit values from the parent 250 bit value. To extract 50 bits at byte $n$, we:
 
 1. initialise 50 bits
 2. shift left by $n$ bits

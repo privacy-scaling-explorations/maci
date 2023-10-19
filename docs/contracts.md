@@ -101,10 +101,10 @@ Next, we have the `signUp` function, which allows users to `signUp` using a `Sig
 
 This function does the following:
 
-* checks that the maxium number of signups have not been reached. As of now, this will be $5 ** 10 - 1$ due to circuit limitations.
+* checks that the maximum number of signups has not been reached. As of now, this will be $5 ** 10 - 1$ due to circuit limitations.
 * checks that the provided public key is within the allowed boundaries
 * increases the number of signups 
-* registers the user using the sign up gatekeeper contract. It is important that whichever gatekeeper is used, it reverts if an user tries to sign up twice.
+* registers the user using the sign up gatekeeper contract. It is important that whichever gatekeeper is used, it reverts if a user tries to sign up twice.
 * calls the voice credit proxy to retrieve the number of allocated voice credits for the calling account
 * hashes the voice credits alongside the calling address and the current time 
 * enqueues this hashed data into the `stateAq` contract
@@ -203,7 +203,7 @@ This contract allows users to vote on a Poll.
 The main functions of the contract are as follows:
 
 * `topup` - This function accepts two parameters, a `stateIndex`, and an `amount`. It can only be called before the voting deadline.
-    After checking whether the deadline has passed or not, it will validate that the contract has not reached the maximum number of messages, if the checks passes, it will increase the number of messages by 1. 
+    After checking whether the deadline has passed or not, it will validate that the contract has not reached the maximum number of messages, if the checks pass, it will increase the number of messages by 1. 
     It will then try to transfer the amount of `topUpCredit` tokens.
     Finally, it will create a new Message object that will be hashed and enqueued in the `messageAq` contract. This messageAq contract is reserved for this one poll only and will only contain its messages.
 * `publishMessage` - This function allows anyone to publish a message, and it accepts the message object as well as an ephemeral public key. This key together with the coordinator public key will be used to generate a shared ECDH key that will encrypt the message.
@@ -228,7 +228,7 @@ function mergeMaciStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId)
     }
 ```
 
-If the subtrees have not been merged on the MACI contract's `stateAq`, then it will merge it by calling `mergeStateAqSubroots`. It accets two parameters:
+If the subtrees have not been merged on the MACI contract's `stateAq`, then it will merge it by calling `mergeStateAqSubroots`. It accepts two parameters:
 
 * `_numSrQueueOps` - the number of operations required
 * `_pollId` - the id of the poll

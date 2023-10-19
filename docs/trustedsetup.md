@@ -7,7 +7,7 @@ generate fake proofs. Some teams, however, may forgo the trusted setup.
 
 There are two possible reasons for doing so: if a team does not intend
 to manage a large amount of value, and if their users accept that the risk of
-coordinator misbehaviour is insufficient to justify doing the work nof a
+coordinator misbehaviour is insufficient to justify doing the work of a
 trusted setup. After all, MACI's security model presumes a trusted coordinator.
 
 In any case, MACI can be relatively easily modified to support PLONK, which
