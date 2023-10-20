@@ -128,6 +128,11 @@ import {
     configureSubparser as configureSubparserForCheckVerifyKey,
 } from "./checkVerifyingKey";
 
+import {
+    fetchLogs,
+    configureSubparser as configureSubparserForFetchLogs
+} from "./fetchLogs"
+
 const main = async () => {
     const parser = new argparse.ArgumentParser({
         description: "Minimal Anti-Collusion Infrastructure",
@@ -195,47 +200,52 @@ const main = async () => {
     // Subcommand: checkVerifyKey
     configureSubparserForCheckVerifyKey(subparsers);
 
-    const args = parser.parseArgs();
+    // Subcommand: fetchLogs
+    configureSubparserForFetchLogs(subparsers)
+
+    const args = parser.parseArgs()
 
     // Execute the subcommand method
-    if (args.subcommand === "timeTravel") {
-        await timeTravel(args);
-    } else if (args.subcommand === "genMaciKeypair") {
-        await genMaciKeypair(args);
-    } else if (args.subcommand === "genMaciPubkey") {
-        await genMaciPubkey(args);
-    } else if (args.subcommand === "deployVkRegistry") {
-        await deployVkRegistry(args);
-    } else if (args.subcommand === "setVerifyingKeys") {
-        await setVerifyingKeys(args);
-    } else if (args.subcommand === "create") {
-        await create(args);
-    } else if (args.subcommand === "deployPoll") {
-        await deployPoll(args);
-    } else if (args.subcommand === "deployPollWithSigner") {
-        await deployPollWithSigner(args);
-    } else if (args.subcommand === "fundWallet") {
-        await fundWallet(args);
-    } else if (args.subcommand === "airdrop") {
-        await airdrop(args);
-    } else if (args.subcommand === "topup") {
-        await topup(args);
-    } else if (args.subcommand === "signup") {
-        await signup(args);
-    } else if (args.subcommand === "publish") {
-        await publish(args);
-    } else if (args.subcommand === "mergeMessages") {
-        await mergeMessages(args);
-    } else if (args.subcommand === "mergeSignups") {
-        await mergeSignups(args);
-    } else if (args.subcommand === "genProofs") {
-        await genProofs(args);
-    } else if (args.subcommand === "proveOnChain") {
-        await proveOnChain(args);
-    } else if (args.subcommand === "verify") {
-        await verify(args);
-    } else if (args.subcommand === "checkVerifyingKey") {
-        await checkVerifyingKey(args);
+    if (args.subcommand === 'timeTravel') {
+        await timeTravel(args)
+    } else if (args.subcommand === 'genMaciKeypair') {
+        await genMaciKeypair(args)
+    } else if (args.subcommand === 'genMaciPubkey') {
+        await genMaciPubkey(args)
+    } else if (args.subcommand === 'deployVkRegistry') {
+        await deployVkRegistry(args)
+    } else if (args.subcommand === 'setVerifyingKeys') {
+        await setVerifyingKeys(args)
+    } else if (args.subcommand === 'create') {
+        await create(args)
+    } else if (args.subcommand === 'deployPoll') {
+        await deployPoll(args)
+    } else if (args.subcommand === 'deployPollWithSigner') {
+        await deployPollWithSigner(args)
+    } else if (args.subcommand === 'fundWallet') {
+        await fundWallet(args)
+    } else if (args.subcommand === 'airdrop') {
+        await airdrop(args)
+    } else if (args.subcommand === 'topup') {
+        await topup(args)
+    } else if (args.subcommand === 'signup') {
+        await signup(args)
+    } else if (args.subcommand === 'publish') {
+        await publish(args)
+    } else if (args.subcommand === 'mergeMessages') {
+        await mergeMessages(args)
+    } else if (args.subcommand === 'mergeSignups') {
+        await mergeSignups(args)
+    } else if (args.subcommand === 'genProofs') {
+        await genProofs(args)
+    } else if (args.subcommand === 'proveOnChain') {
+        await proveOnChain(args)
+    } else if (args.subcommand === 'verify') {
+        await verify(args)
+    } else if (args.subcommand === 'checkVerifyingKey') {
+        await checkVerifyingKey(args)
+    } else if (args.subcommand === 'fetchLogs') {
+        await fetchLogs(args)
     }
 };
 
