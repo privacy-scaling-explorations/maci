@@ -129,11 +129,31 @@ const configureSubparser = (subparsers: any) => {
         help: "The output directory for proofs",
     });
 
-    parser.addArgument(["-tx", "--transaction-hash"], {
-        type: "string",
-        help: "transaction hash of MACI contract creation",
-    });
-};
+    parser.addArgument(
+        ['-tx', '--transaction-hash'],
+        {
+            type: 'string',
+            help: 'transaction hash of MACI contract creation',
+        }
+    )
+
+    parser.addArgument(
+        ['-sb', '--start-block'],
+        {
+            required: true,
+            type: 'int',
+            help: 'The starting block to fetch logs from',
+        }
+    )
+
+    parser.addArgument(
+        ['-eb', '--end-block'],
+        {
+            type: 'int',
+            help: 'The last block to fetch logs from',
+        }
+    )
+}
 
 const genProofs = async (args: any) => {
     const outputDir = args.output;

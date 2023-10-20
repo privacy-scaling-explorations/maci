@@ -20,7 +20,9 @@ const genMaciStateFromContract = async (
     address: string,
     coordinatorKeypair: Keypair,
     pollId: number,
-    fromBlock = 0
+    fromBlock: number = 0,
+    blocksPerRequest: number = 50,
+    endBlock?: number
 ): Promise<MaciState> => {
     pollId = Number(pollId);
     // Verify and sort pollIds
@@ -42,11 +44,56 @@ const genMaciStateFromContract = async (
 
     assert(stateTreeDepth === maciState.stateTreeDepth);
 
-    // Fetch event logs
-    const initLogs = await provider.getLogs({
-        ...maciContract.filters.Init(),
-        fromBlock: fromBlock,
-    });
+    let initLogs: any[] = []
+    let signUpLogs: any[] = []
+    let mergeStateAqSubRootsLogs: any[] = []
+    let mergeStateAqLogs: any[] = []
+    let deployPollLogs: any[] = []
+    
+    // Fetch event logs in batches
+    for (let i = fromBlock; i < endBlock; i += blocksPerRequest + 1) {
+        const toBlock = (i + blocksPerRequest) >= endBlock ? undefined : i + blocksPerRequest
+
+        const tmpInitLogs = await provider.getLogs({
+            ...maciContract.filters.Init(),
+            fromBlock: fromBlock,
+            toBlock
+        })
+
+        initLogs = initLogs.concat(tmpInitLogs)
+
+        const tmpSignUpLogs = await provider.getLogs({
+            ...maciContract.filters.SignUp(),
+            fromBlock: fromBlock,
+            toBlock
+        })
+
+        signUpLogs = signUpLogs.concat(tmpSignUpLogs)
+    
+        const tmpMergeStateAqSubRootsLogs = await provider.getLogs({
+            ...maciContract.filters.MergeStateAqSubRoots(),
+            fromBlock: fromBlock,
+            toBlock
+        })
+
+        mergeStateAqSubRootsLogs = mergeStateAqSubRootsLogs.concat(tmpMergeStateAqSubRootsLogs)
+    
+        const tmpMergeStateAqLogs = await provider.getLogs({
+            ...maciContract.filters.MergeStateAq(),
+            fromBlock: fromBlock,
+            toBlock
+        })
+
+        mergeStateAqLogs = mergeStateAqLogs.concat(tmpMergeStateAqLogs)
+    
+        const tmpDeployPollLogs = await provider.getLogs({
+            ...maciContract.filters.DeployPoll(),
+            fromBlock: fromBlock,
+            toBlock
+        })
+
+        deployPollLogs = deployPollLogs.concat(tmpDeployPollLogs)
+    }
 
     // init() should only be called up to 1 time
     assert(
@@ -54,27 +101,7 @@ const genMaciStateFromContract = async (
         "More than 1 init() event detected which should not be possible"
     );
 
-    const signUpLogs = await provider.getLogs({
-        ...maciContract.filters.SignUp(),
-        fromBlock: fromBlock,
-    });
-
-    const mergeStateAqSubRootsLogs = await provider.getLogs({
-        ...maciContract.filters.MergeStateAqSubRoots(),
-        fromBlock: fromBlock,
-    });
-
-    const mergeStateAqLogs = await provider.getLogs({
-        ...maciContract.filters.MergeStateAq(),
-        fromBlock: fromBlock,
-    });
-
-    const deployPollLogs = await provider.getLogs({
-        ...maciContract.filters.DeployPoll(),
-        fromBlock: fromBlock,
-    });
-
-    let vkRegistryAddress;
+    let vkRegistryAddress
 
     for (const log of initLogs) {
         const mutableLog = {
@@ -122,11 +149,6 @@ const genMaciStateFromContract = async (
         const event = maciIface.parseLog(mutableLogs);
         const p = Number(event.args._pollId);
 
-        //// Skip in favour of Poll.MergeMaciStateAqSubRoots
-        //if (p === pollId) {
-        //continue
-        //}
-
         actions.push({
             type: "MergeStateAqSubRoots",
             // @ts-ignore
@@ -148,11 +170,6 @@ const genMaciStateFromContract = async (
         };
         const event = maciIface.parseLog(mutableLogs);
         const p = Number(event.args._pollId);
-
-        //// Skip in favour of Poll.MergeMaciStateAq
-        //if (p === pollId) {
-        //continue
-        //}
 
         actions.push({
             type: "MergeStateAq",
@@ -246,35 +263,64 @@ const genMaciStateFromContract = async (
         messageBatchSize: Number(onChainBatchSizes.messageBatchSize),
     };
 
-    const publishMessageLogs = await provider.getLogs({
-        ...pollContract.filters.PublishMessage(),
-        fromBlock: fromBlock,
-    });
+    // fetch poll contract logs
+    let publishMessageLogs: any[] = []
+    let topupLogs: any[] = []
+    let mergeMaciStateAqSubRootsLogs: any[] = []
+    let mergeMaciStateAqLogs: any[] = []
+    let mergeMessageAqSubRootsLogs: any[] = []
+    let mergeMessageAqLogs: any[] = []
 
-    const topupLogs = await provider.getLogs({
-        ...pollContract.filters.TopupMessage(),
-        fromBlock: fromBlock,
-    });
+    for (let i = fromBlock; i < endBlock; i += blocksPerRequest + 1) {
+        const toBlock = (i + blocksPerRequest) >= endBlock ? undefined : i + blocksPerRequest
+        const tmpPublishMessageLogs = await provider.getLogs({
+            ...pollContract.filters.PublishMessage(),
+            fromBlock: fromBlock,
+            toBlock
+        })
 
-    const mergeMaciStateAqSubRootsLogs = await provider.getLogs({
-        ...pollContract.filters.MergeMaciStateAqSubRoots(),
-        fromBlock: fromBlock,
-    });
+        publishMessageLogs = publishMessageLogs.concat(tmpPublishMessageLogs)
+    
+        const tmpTopupLogs = await provider.getLogs({
+            ...pollContract.filters.TopupMessage(),
+            fromBlock: fromBlock,
+            toBlock
+        })
 
-    const mergeMaciStateAqLogs = await provider.getLogs({
-        ...pollContract.filters.MergeMaciStateAq(),
-        fromBlock: fromBlock,
-    });
+        topupLogs = topupLogs.concat(tmpTopupLogs)    
+    
+        const tmpMergeMaciStateAqSubRootsLogs = await provider.getLogs({
+            ...pollContract.filters.MergeMaciStateAqSubRoots(),
+            fromBlock: fromBlock,
+            toBlock
+        })
 
-    const mergeMessageAqSubRootsLogs = await provider.getLogs({
-        ...pollContract.filters.MergeMessageAqSubRoots(),
-        fromBlock: fromBlock,
-    });
+        mergeMaciStateAqSubRootsLogs = mergeMaciStateAqSubRootsLogs.concat(tmpMergeMaciStateAqSubRootsLogs)
+    
+        const tmpMergeMaciStateAqLogs = await provider.getLogs({
+            ...pollContract.filters.MergeMaciStateAq(),
+            fromBlock: fromBlock,
+            toBlock
+        })
 
-    const mergeMessageAqLogs = await provider.getLogs({
-        ...pollContract.filters.MergeMessageAq(),
-        fromBlock: fromBlock,
-    });
+        mergeMaciStateAqLogs = mergeMaciStateAqLogs.concat(tmpMergeMaciStateAqLogs)
+    
+        const tmpMergeMessageAqSubRootsLogs = await provider.getLogs({
+            ...pollContract.filters.MergeMessageAqSubRoots(),
+            fromBlock: fromBlock,
+            toBlock
+        })
+
+        mergeMessageAqSubRootsLogs = mergeMessageAqSubRootsLogs.concat(tmpMergeMessageAqSubRootsLogs)
+    
+        const tmpMergeMessageAqLogs = await provider.getLogs({
+            ...pollContract.filters.MergeMessageAq(),
+            fromBlock: fromBlock,
+            toBlock
+        })
+
+        mergeMessageAqLogs = mergeMessageAqLogs.concat(tmpMergeMessageAqLogs)
+    }
 
     for (const log of publishMessageLogs) {
         assert(log != undefined);
