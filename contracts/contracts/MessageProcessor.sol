@@ -11,8 +11,9 @@ import {CommonUtilities} from "./utilities/Utility.sol";
 import {Verifier} from "./crypto/Verifier.sol";
 import {VkRegistry} from "./VkRegistry.sol";
 
-/*
- * MessageProcessor is used to process messages published by signup users
+/**
+ * @title MessageProcessor
+ * @dev MessageProcessor is used to process messages published by signup users
  * it will process message by batch due to large size of messages
  * after it finishes processing, the sbCommitment will be used for Tally and Subsidy contracts
  */
@@ -23,7 +24,10 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     error MESSAGE_AQ_NOT_MERGED();
     error INVALID_PROCESS_MESSAGE_PROOF();
     error VK_NOT_SET();
-
+    error MaxVoteOptionsTooLarge();
+    error NumSignUpsTooLarge();
+    error revert CurrentMessageBatchIndexTooLarge();
+    error BatchEndIndexTooLarge();
 
     // Whether there are unprocessed messages left
     bool public processingComplete;
@@ -43,7 +47,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     }
 
 
-    /*
+    /**
      * Update the Poll's currentSbCommitment if the proof is valid.
      * @param _poll The poll to update
      * @param _newSbCommitment The new state root and ballot root commitment
@@ -171,7 +175,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         return verifier.verify(_proof, vk, publicInputHash);
     }
 
-    /*
+    /**
      * @notice Returns the SHA256 hash of the packed values (see
      * genProcessMessagesPackedVals), the hash of the coordinator's public key,
      * the message root, and the commitment to the current state root and
@@ -217,12 +221,15 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         return inputHash;
     }
 
-    /*
+    /**
      * One of the inputs to the ProcessMessages circuit is a 250-bit
      * representation of four 50-bit values. This function generates this
      * 250-bit value, which consists of the maximum number of vote options, the
      * number of signups, the current message batch index, and the end index of
      * the current batch.
+     * @param _poll: the poll contract
+     * @param _currentMessageBatchIndex: batch index of current message batch
+     * @param _numSignUps: number of users that signup
      */
     function genProcessMessagesPackedVals(
         Poll _poll,
@@ -239,10 +246,12 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
             batchEndIndex = numMessages;
         }
 
-        require(maxVoteOptions < 2**50, "maxVoteOptions too large");
-        require(_numSignUps < 2**50, "numSignUps too large");
-        require(_currentMessageBatchIndex < 2**50, "currentMessageBatchIndex too large");
-        require(batchEndIndex < 2**50, "batchEndIndex too large");
+        if (maxVoteOptions >= 2**50) revert MaxVoteOptionsTooLarge();
+        if (_numSignUps >= 2**50) revert NumSignUpsTooLarge();
+        if (_currentMessageBatchIndex >= 2**50)
+            revert CurrentMessageBatchIndexTooLarge();
+        if (batchEndIndex >= 2**50) revert BatchEndIndexTooLarge();
+
         uint256 result = maxVoteOptions +
             (_numSignUps << 50) +
             (_currentMessageBatchIndex << 100) +
@@ -251,7 +260,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         return result;
     }
 
-    /*
+    /**
      * @notice update message processing state variables
      * @param _newSbCommitment: sbCommitment to be updated
      * @param _currentMessageBatchIndex: currentMessageBatchIndex to be updated
@@ -268,7 +277,4 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         currentMessageBatchIndex = _currentMessageBatchIndex;
         numBatchesProcessed++;
     }
-
-
-
 }

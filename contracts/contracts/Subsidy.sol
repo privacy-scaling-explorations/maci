@@ -31,6 +31,9 @@ contract Subsidy is
     error INVALID_SUBSIDY_PROOF();
     error ALL_SUBSIDY_CALCULATED();
     error VK_NOT_SET();
+    error NumSignUpsTooLarge();
+    error RbiTooLarge();
+    error CbiTooLarge();
 
     Verifier public verifier;
 
@@ -54,9 +57,9 @@ contract Subsidy is
         view
         returns (uint256)
     {
-        require(_numSignUps < 2**50, "numSignUps too large");
-        require(rbi < 2**50, "rbi too large"); 
-        require(cbi < 2**50, "cbi too large"); 
+        if (_numSignUps >= 2**50) revert NumSignUpsTooLarge();
+        if (rbi >= 2**50) revert RbiTooLarge();
+        if (cbi >= 2**50) revert CbiTooLarge();
         uint256 result = (_numSignUps << 100) +
             (rbi << 50) +
             cbi;
@@ -163,7 +166,4 @@ contract Subsidy is
         // Verify the proof
         return verifier.verify(_proof, vk, publicInputHash);
     }
-
-
-
 }

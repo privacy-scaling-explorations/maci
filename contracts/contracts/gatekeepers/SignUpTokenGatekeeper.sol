@@ -15,6 +15,10 @@ contract SignUpTokenGatekeeper is SignUpGatekeeper, Ownable {
 
     mapping (uint256 => bool) internal registeredTokenIds;
 
+    error AlreadyRegistered();
+    error NotTokenOwner();
+    error OnlyMACI();
+    
     constructor(SignUpToken _token) Ownable() {
         token = _token;
     }
@@ -35,17 +39,17 @@ contract SignUpTokenGatekeeper is SignUpGatekeeper, Ownable {
      * @param _data The ABI-encoded tokenId as a uint256.
      */
     function register(address _user, bytes memory _data) public override {
-        require(address(maci) == msg.sender, "SignUpTokenGatekeeper: only specified MACI instance can call this function");
+        if (address(maci) != msg.sender) revert OnlyMACI();
         // Decode the given _data bytes into a uint256 which is the token ID
         uint256 tokenId = abi.decode(_data, (uint256));
 
         // Check if the user owns the token
         bool ownsToken = token.ownerOf(tokenId) == _user;
-        require(ownsToken, "SignUpTokenGatekeeper: this user does not own the token");
+        if (!ownsToken) revert NotTokenOwner();
 
         // Check if the token has already been used
         bool alreadyRegistered = registeredTokenIds[tokenId];
-        require(!alreadyRegistered, "SignUpTokenGatekeeper: this token has already been used to sign up");
+        if (alreadyRegistered) revert AlreadyRegistered();
 
         // Mark the token as already used
         registeredTokenIds[tokenId] = true;

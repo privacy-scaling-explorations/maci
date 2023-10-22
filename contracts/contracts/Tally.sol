@@ -23,6 +23,9 @@ contract Tally is
     error PROCESSING_NOT_COMPLETE();
     error INVALID_TALLY_VOTES_PROOF();
     error ALL_BALLOTS_TALLIED();
+    error NumSignUpsTooLarge();
+    error BatchStartIndexTooLarge();
+    error TallyBatchSizeTooLarge();
 
     uint8 private constant LEAVES_PER_NODE = 5;
 
@@ -64,9 +67,9 @@ contract Tally is
         uint256 _batchStartIndex,
         uint256 _tallyBatchSize
     ) public pure returns (uint256) {
-        require(_numSignUps < 2**50, "numSignUPs out of range");
-        require(_batchStartIndex < 2**50, "batchStartIndex out of range");
-        require(_tallyBatchSize < 2**50, "tallyBatchSize out of range");
+        if (_numSignUps >= 2**50) revert NumSignUpsTooLarge();
+        if (_batchStartIndex >= 2**50) revert BatchStartIndexTooLarge();
+        if (_tallyBatchSize >= 2**50) revert TallyBatchSizeTooLarge();
 
         uint256 result = (_batchStartIndex / _tallyBatchSize) +
             (_numSignUps << uint256(50));

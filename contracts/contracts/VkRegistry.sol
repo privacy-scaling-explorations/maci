@@ -24,6 +24,13 @@ contract VkRegistry is Ownable, SnarkCommon {
     event TallyVkSet(uint256 _sig);
     event SubsidyVkSet(uint256 _sig);
 
+    error ProcessVkAlreadySet();
+    error TallyVkAlreadySet();
+    error SubsidyVkAlreadySet();
+    error ProcessVkNotSet();
+    error TallyVkNotSet();
+    error SubsidyVkNotSet();
+
     function isProcessVkSet(uint256 _sig) public view returns (bool) {
         return processVkSet[_sig];
     }
@@ -88,7 +95,7 @@ contract VkRegistry is Ownable, SnarkCommon {
             _messageBatchSize
         );
 
-        require(!processVkSet[processVkSig], "VkRegistry: process vk already set");
+        if (processVkSet[processVkSig]) revert ProcessVkAlreadySet();
 
         uint256 tallyVkSig = genTallyVkSig(
             _stateTreeDepth,
@@ -96,7 +103,7 @@ contract VkRegistry is Ownable, SnarkCommon {
             _voteOptionTreeDepth
         );
 
-        require(!tallyVkSet[tallyVkSig], "VkRegistry: tally vk already set");
+        if (tallyVkSet[tallyVkSig]) revert TallyVkAlreadySet();
 
         VerifyingKey storage processVk = processVks[processVkSig];
         processVk.alpha1 = _processVk.alpha1;
@@ -136,7 +143,7 @@ contract VkRegistry is Ownable, SnarkCommon {
             _voteOptionTreeDepth
         );
 
-        require(!subsidyVkSet[subsidyVkSig], "VkRegistry: subsidy vk already set");
+        if (subsidyVkSet[subsidyVkSig]) revert SubsidyVkAlreadySet();
 
         VerifyingKey storage subsidyVk = subsidyVks[subsidyVkSig];
         subsidyVk.alpha1 = _subsidyVk.alpha1;
@@ -169,7 +176,7 @@ contract VkRegistry is Ownable, SnarkCommon {
     function getProcessVkBySig(
         uint256 _sig
     ) public view returns (VerifyingKey memory) {
-        require(processVkSet[_sig], "VkRegistry: process verifying key not set");
+        if (!processVkSet[_sig]) revert ProcessVkNotSet();
 
         return processVks[_sig];
     }
@@ -207,7 +214,7 @@ contract VkRegistry is Ownable, SnarkCommon {
     function getTallyVkBySig(
         uint256 _sig
     ) public view returns (VerifyingKey memory) {
-        require(tallyVkSet[_sig], "VkRegistry: tally verifying key not set");
+        if (!tallyVkSet[_sig]) revert TallyVkNotSet();
 
         return tallyVks[_sig];
     }
@@ -243,7 +250,7 @@ contract VkRegistry is Ownable, SnarkCommon {
     function getSubsidyVkBySig(
         uint256 _sig
     ) public view returns (VerifyingKey memory) {
-        require(subsidyVkSet[_sig], "VkRegistry: subsidy verifying key not set");
+        if (!subsidyVkSet[_sig]) revert SubsidyVkNotSet();
 
         return subsidyVks[_sig];
     }
