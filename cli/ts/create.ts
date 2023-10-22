@@ -67,20 +67,20 @@ const create = async (args: any) => {
     const TopupCreditContract = await deployTopupCreditContract()
     console.log('TopupCredit:', TopupCreditContract.address)
 
-    // Initial voice credits
-    const initialVoiceCredits = args.initial_voice_credits ? args.initial_voice_credits : DEFAULT_INITIAL_VOICE_CREDITS
-
     // Initial voice credit proxy contract 
     const initialVoiceCreditProxy = args.initial_vc_proxy
 
     // Whether we should deploy a ConstantInitialVoiceCreditProxy
-    if (initialVoiceCreditProxy != undefined && initialVoiceCredits != undefined) {
+    if (initialVoiceCreditProxy && args.initial_voice_credits) {
         console.error('Error: only one of the following can be specified: the initial voice credit proxy or the amount of initial voice credits.')
         return 1
     }
 
-    let initialVoiceCreditProxyContractAddress
-    if (initialVoiceCreditProxy == undefined) {
+    let initialVoiceCreditProxyContractAddress: string 
+    if (initialVoiceCreditProxy === undefined) {
+        // check if we have the amount of credits to set, or use the default
+        const initialVoiceCredits = args.initial_voice_credits ? args.initial_voice_credits : DEFAULT_INITIAL_VOICE_CREDITS
+
         // Deploy a ConstantInitialVoiceCreditProxy contract
         const c = await deployConstantInitialVoiceCreditProxy(
             initialVoiceCredits,
