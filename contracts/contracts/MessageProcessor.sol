@@ -26,7 +26,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     error VK_NOT_SET();
     error MaxVoteOptionsTooLarge();
     error NumSignUpsTooLarge();
-    error revert CurrentMessageBatchIndexTooLarge();
+    error CurrentMessageBatchIndexTooLarge();
     error BatchEndIndexTooLarge();
 
     // Whether there are unprocessed messages left
@@ -248,8 +248,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
 
         if (maxVoteOptions >= 2**50) revert MaxVoteOptionsTooLarge();
         if (_numSignUps >= 2**50) revert NumSignUpsTooLarge();
-        if (_currentMessageBatchIndex >= 2**50)
-            revert CurrentMessageBatchIndexTooLarge();
+        if (_currentMessageBatchIndex >= 2**50) revert CurrentMessageBatchIndexTooLarge();
         if (batchEndIndex >= 2**50) revert BatchEndIndexTooLarge();
 
         uint256 result = maxVoteOptions +
@@ -265,7 +264,6 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
      * @param _newSbCommitment: sbCommitment to be updated
      * @param _currentMessageBatchIndex: currentMessageBatchIndex to be updated
      * @param _processingComplete: update flag that indicate processing is finished or not
-     * @return None
      */
     function updateMessageProcessingData(
         uint256 _newSbCommitment,

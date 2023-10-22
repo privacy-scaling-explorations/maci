@@ -142,7 +142,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         signUpTimestamp = block.timestamp;
 
         // Verify linked poseidon libraries
-        if (hash2([uin256(1), uint256(1)]) == 0) revert HashLibrariesNotLinked();
+        if (hash2([uint256(1), uint256(1)]) == 0) revert HashLibrariesNotLinked();
     }
 
     /*
@@ -190,10 +190,10 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         bytes memory _initialVoiceCreditProxyData
     ) public afterInit {
         // ensure we do not have more signups than what the circuits support
-        if (numSignsUps >= uint256(STATE_TREE_ARITY) ** uint256(stateTreeDepth))
+        if (numSignUps >= uint256(STATE_TREE_ARITY) ** uint256(stateTreeDepth))
             revert TooManySignups();
         
-        if (_publicKey.x >= SNARK_SCALAR_FIELD || _publicKey.y >= SNARK_SCALAR_FIELD) {
+        if (_pubKey.x >= SNARK_SCALAR_FIELD || _pubKey.y >= SNARK_SCALAR_FIELD) {
             revert InvalidMaciPublicKey();
         }
 
