@@ -9,7 +9,6 @@ import {
 } from 'maci-contracts'
 
 import {
-    calcQuinTreeDepthFromMaxLeaves,
     validateEthAddress,
     contractExists,
 } from './utils'
@@ -17,8 +16,6 @@ import {readJSONFile} from 'maci-common'
 import {contractFilepath} from './config'
 
 import * as ethers from 'ethers'
-
-const Web3 = require('web3')
 
 const configureSubparser = (subparsers: any) => {
     const parser = subparsers.addParser(
@@ -106,19 +103,19 @@ const verify = async (args: any) => {
     // MACI contract
     if (!validateEthAddress(maciAddress)) {
         console.error('Error: invalid MACI contract address')
-        return 0
+        return 1
     }
 
     // Tally contract
     if (!validateEthAddress(tallyAddress)) {
         console.error('Error: invalid Tally contract address')
-        return 0
+        return 1
     }
 
     // Subsidy contract
     if (!validateEthAddress(subsidyAddress)) {
         console.error('Error: invalid Subsidy contract address')
-        return 0
+        return 1
     }
     const [ maciContractAbi ] = parseArtifact('MACI')
     const [ pollContractAbi ] = parseArtifact('Poll')
@@ -129,7 +126,7 @@ const verify = async (args: any) => {
         console.error(`Error: there is no contract deployed at ${tallyAddress}.`)
         return 1
     }
-    if (! (await contractExists(signer.provider, subsidyAddress))) {
+    if (!(await contractExists(signer.provider, subsidyAddress))) {
         console.error(`Error: there is no contract deployed at ${subsidyAddress}.`)
         return 1
     }
@@ -141,7 +138,7 @@ const verify = async (args: any) => {
     )
 
     const pollAddr = await maciContract.polls(pollId)
-    if (! (await contractExists(signer.provider, pollAddr))) {
+    if (!(await contractExists(signer.provider, pollAddr))) {
         console.error('Error: there is no Poll contract with this poll ID linked to the specified MACI contract.')
         return 1
     }
@@ -175,7 +172,7 @@ const verify = async (args: any) => {
         contents = fs.readFileSync(args.tally_file, { encoding: 'utf8' })
     } catch {
         console.error('Error: unable to open ', args.tally_file)
-        return 0
+        return 1
     }
 
     // Parse the tally file
@@ -184,7 +181,7 @@ const verify = async (args: any) => {
         data = JSON.parse(contents)
     } catch {
         console.error('Error: unable to parse ', args.tally_file)
-        return 0
+        return 1
     }
 
     console.log('-------------tally data -------------------')
@@ -196,7 +193,7 @@ const verify = async (args: any) => {
 
     if (!validResultsCommitment) {
         console.error('Error: invalid results commitment format')
-        return 0
+        return 1
     }
 
     const treeDepths = await pollContract.treeDepths()
@@ -282,7 +279,7 @@ const verify = async (args: any) => {
     
         if (!validResultsCommitment) {
             console.error('Error: invalid results commitment format')
-            return 0
+            return 1
         }
     
         if (data.results.subsidy.length !== numVoteOptions) {
@@ -302,9 +299,6 @@ const verify = async (args: any) => {
             return 1
         }
     }
-
-
-
 
     console.log('OK. finish verify')
 

@@ -106,28 +106,28 @@ const proveOnChain = async (args: any) => {
     // MACI contract
     if (!validateEthAddress(maciAddress)) {
         console.error('Error: invalid MACI contract address')
-        return {}
+        return 1
     }
 
     // MessageProcessor contract
     if (!validateEthAddress(mpAddress)) {
         console.error('Error: invalid MessageProcessor contract address')
-        return {}
+        return 1
     }
 
     if (! (await contractExists(signer.provider, mpAddress))) {
         console.error('Error: there is no contract deployed at the specified address')
-        return {}
+        return 1
     }
 
 
     if (!validateEthAddress(tallyAddress)) {
         console.error('Error: invalid Tally contract address')
-        return {}
+        return 1
     }
     if (!validateEthAddress(subsidyAddress)) {
         console.error('Error: invalid Subsidy contract address')
-        return {}
+        return 1
     }
 
     const [ maciContractAbi ] = parseArtifact('MACI')

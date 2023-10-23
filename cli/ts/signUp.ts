@@ -18,7 +18,6 @@ import {readJSONFile} from 'maci-common'
 const { ethers } = require('hardhat')
 
 import {
-    DEFAULT_ETH_PROVIDER,
     DEFAULT_SG_DATA,
     DEFAULT_IVCP_DATA,
 } from './defaults'

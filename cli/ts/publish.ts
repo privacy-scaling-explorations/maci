@@ -19,9 +19,7 @@ import {
     validateEthAddress,
     validateSaltSize,
     validateSaltFormat,
-    contractExists,
-    checkDeployerProviderConnection,
-    batchTransactionRequests,
+    contractExists
 } from './utils'
 
 import {readJSONFile} from 'maci-common'
@@ -182,7 +180,7 @@ const publish = async (args: any) => {
     const stateIndex = BigInt(args.state_index)
     if (stateIndex < 0) {
         console.error('Error: the state index must be greater than 0')
-        return 0
+        return 1
     }
 
     // Vote option index
@@ -190,7 +188,7 @@ const publish = async (args: any) => {
 
     if (voteOptionIndex < 0) {
         console.error('Error: the vote option index should be 0 or greater')
-        return 0
+        return 1
     }
 
     // The nonce
@@ -198,7 +196,7 @@ const publish = async (args: any) => {
 
     if (nonce < 0) {
         console.error('Error: the nonce should be 0 or greater')
-        return 0
+        return 1
     }
 
     // The salt
@@ -206,14 +204,14 @@ const publish = async (args: any) => {
     if (args.salt) {
         if (!validateSaltFormat(args.salt)) {
             console.error('Error: the salt should be a 32-byte hexadecimal string')
-            return 0
+            return 1
         }
 
         salt = BigInt(args.salt)
 
         if (!validateSaltSize(args.salt)) {
             console.error('Error: the salt should less than the BabyJub field size')
-            return 0
+            return 1
         }
     } else {
         salt = DEFAULT_SALT
