@@ -8,48 +8,42 @@
         "hardhat": "./scripts/runHardhat.sh",
         "compileSol": "./scripts/compileSol.sh && cp -r artifacts/ ../integrationTests/artifacts",
         "build": "tsc",
-        "test": "npx jest --runInBand",
-        "test-maci": "jest MACI.test.ts",
-        "test-maci-debug": "node --inspect-brk ./node_modules/.bin/jest MACI.test.ts",
-        "test-hasher": "jest Hasher.test.ts",
-        "test-hasher-debug": "node --inspect-brk ./node_modules/.bin/jest Hasher.test.ts",
-        "test-domainObjs": "jest DomainObjs.test.ts",
-        "test-domainObjs-debug": "node --inspect-brk ./node_modules/.bin/jest DomainObjs.test.ts",
-        "test-signupGatekeeper": "jest SignUpGatekeeper.test.ts",
-        "test-signupGatekeeper-debug": "node --inspect-brk ./node_modules/.bin/jest SignUpGatekeeper.test.ts",
-        "test-verifier": "jest Verifier.test.ts",
-        "test-verifier-debug": "node --inspect-brk ./node_modules/.bin/jest Verifier.test.ts",
-        "test-accQueue": "jest AccQueue.test.ts",
-        "test-accQueue-debug": "node --inspect-brk ./node_modules/.bin/jest AccQueue.test.ts",
-        "test-accQueueBenchmark": "jest AccQueueBenchmark.test.ts",
-        "test-accQueueBenchmark-debug": "node --inspect-brk ./node_modules/.bin/jest AccQueueBenchmark.test.ts"
+        "test": "hardhat test",
+        "test-maci": "hardhat test ./tests/MACI.test.ts",
+        "test-hasher": "hardhat test ./tests/Hasher.test.ts",
+        "test-domainObjs": "hardhat test ./tests/DomainObjs.test.ts",
+        "test-signupGatekeeper": "hardhat test ./tests/SignUpGatekeeper.test.ts",
+        "test-verifier": "hardhat test ./tests/Verifier.test.ts",
+        "test-accQueue": "hardhat test ./tests/AccQueue.test.ts",
+        "test-accQueueBenchmark": "hardhat test ./tests/AccQueueBenchmark.test.ts"
     },
     "_moduleAliases": {
         "@maci-contracts": "."
     },
     "dependencies": {
-        "@nomiclabs/hardhat-ethers": "^2.2.1",
+        "@nomicfoundation/hardhat-chai-matchers": "^2.0.2",
+        "@nomicfoundation/hardhat-ethers": "^3.0.4",
         "@openzeppelin/contracts": "^4.8.0",
-        "argparse": "^1.0.10",
         "circomlib": "^2.0.5",
         "circomlibjs": "^0.1.7",
-        "hardhat": "^2.12.2",
+        "ethers": "^6.8.0",
+        "hardhat": "^2.18.2",
         "hardhat-artifactor": "^0.2.0",
-        "hardhat-contract-sizer": "^2.0.3",
-        "module-alias": "^2.2.2",
-        "typescript": "^4.2.3"
-    },
-    "devDependencies": {
-        "@types/jest": "^26.0.21",
-        "@types/node": "^14.14.35",
-        "ethers": "^5.0.32",
-        "jest": "^26.6.3",
+        "hardhat-contract-sizer": "^2.10.0",
         "maci-circuits": "^1.1.2",
         "maci-core": "^1.1.2",
         "maci-crypto": "^1.1.2",
         "maci-domainobjs": "^1.1.2",
-        "shelljs": "^0.8.4",
-        "ts-jest": "^26.5.4"
+        "module-alias": "^2.2.2",
+        "typescript": "^4.2.3"
+    },
+    "devDependencies": {
+        "@types/chai": "^4.3.9",
+        "@types/mocha": "^10.0.3",
+        "@types/node": "^14.14.35",
+        "chai": "^4.3.10",
+        "safe-buffer": "^5.2.1",
+        "shelljs": "^0.8.4"
     },
     "gitHead": "f567a17293114ba2d5e89c711d00a9f4c197f070"
 }

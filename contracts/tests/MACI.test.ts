@@ -1,9 +1,8 @@
-jest.setTimeout(90000)
-import * as ethers from 'ethers'
+import { AbiCoder, Contract } from 'ethers'
 import { timeTravel } from './utils'
-import { parseArtifact, getDefaultSigner } from '../deploy'
-import { deployTestContracts } from '../utils'
-import { genMaciStateFromContract } from '../genMaciState'
+import { parseArtifact, getDefaultSigner } from '../ts/deploy'
+import { deployTestContracts } from '../ts/utils'
+import { genMaciStateFromContract } from '../ts/genMaciState'
 import {
     PCommand,
     VerifyingKey,
@@ -15,10 +14,10 @@ import {
 import {
     MaciState,
     genProcessVkSig,
-    genTallyVkSig,
     MaxValues,
     TreeDepths,
 } from 'maci-core'
+import { expect } from 'chai'
 
 import { G1Point, G2Point, NOTHING_UP_MY_SLEEVE } from 'maci-crypto'
 
@@ -54,25 +53,25 @@ const testTallyVk = new VerifyingKey(
 )
 
 const compareVks = (vk: VerifyingKey, vkOnChain: any) => {
-    expect(vk.ic.length).toEqual(vkOnChain.ic.length)
+    expect(vk.ic.length).to.eq(vkOnChain.ic.length)
     for (let i = 0; i < vk.ic.length; i ++) {
-        expect(vk.ic[i].x.toString()).toEqual(vkOnChain.ic[i].x.toString())
-        expect(vk.ic[i].y.toString()).toEqual(vkOnChain.ic[i].y.toString())
+        expect(vk.ic[i].x.toString()).to.eq(vkOnChain.ic[i].x.toString())
+        expect(vk.ic[i].y.toString()).to.eq(vkOnChain.ic[i].y.toString())
     }
-    expect(vk.alpha1.x.toString()).toEqual(vkOnChain.alpha1.x.toString())
-    expect(vk.alpha1.y.toString()).toEqual(vkOnChain.alpha1.y.toString())
-    expect(vk.beta2.x[0].toString()).toEqual(vkOnChain.beta2.x[0].toString())
-    expect(vk.beta2.x[1].toString()).toEqual(vkOnChain.beta2.x[1].toString())
-    expect(vk.beta2.y[0].toString()).toEqual(vkOnChain.beta2.y[0].toString())
-    expect(vk.beta2.y[1].toString()).toEqual(vkOnChain.beta2.y[1].toString())
-    expect(vk.delta2.x[0].toString()).toEqual(vkOnChain.delta2.x[0].toString())
-    expect(vk.delta2.x[1].toString()).toEqual(vkOnChain.delta2.x[1].toString())
-    expect(vk.delta2.y[0].toString()).toEqual(vkOnChain.delta2.y[0].toString())
-    expect(vk.delta2.y[1].toString()).toEqual(vkOnChain.delta2.y[1].toString())
-    expect(vk.gamma2.x[0].toString()).toEqual(vkOnChain.gamma2.x[0].toString())
-    expect(vk.gamma2.x[1].toString()).toEqual(vkOnChain.gamma2.x[1].toString())
-    expect(vk.gamma2.y[0].toString()).toEqual(vkOnChain.gamma2.y[0].toString())
-    expect(vk.gamma2.y[1].toString()).toEqual(vkOnChain.gamma2.y[1].toString())
+    expect(vk.alpha1.x.toString()).to.eq(vkOnChain.alpha1.x.toString())
+    expect(vk.alpha1.y.toString()).to.eq(vkOnChain.alpha1.y.toString())
+    expect(vk.beta2.x[0].toString()).to.eq(vkOnChain.beta2.x[0].toString())
+    expect(vk.beta2.x[1].toString()).to.eq(vkOnChain.beta2.x[1].toString())
+    expect(vk.beta2.y[0].toString()).to.eq(vkOnChain.beta2.y[0].toString())
+    expect(vk.beta2.y[1].toString()).to.eq(vkOnChain.beta2.y[1].toString())
+    expect(vk.delta2.x[0].toString()).to.eq(vkOnChain.delta2.x[0].toString())
+    expect(vk.delta2.x[1].toString()).to.eq(vkOnChain.delta2.x[1].toString())
+    expect(vk.delta2.y[0].toString()).to.eq(vkOnChain.delta2.y[0].toString())
+    expect(vk.delta2.y[1].toString()).to.eq(vkOnChain.delta2.y[1].toString())
+    expect(vk.gamma2.x[0].toString()).to.eq(vkOnChain.gamma2.x[0].toString())
+    expect(vk.gamma2.x[1].toString()).to.eq(vkOnChain.gamma2.x[1].toString())
+    expect(vk.gamma2.y[0].toString()).to.eq(vkOnChain.gamma2.y[0].toString())
+    expect(vk.gamma2.y[1].toString()).to.eq(vkOnChain.gamma2.y[1].toString())
 }
 
 const users = [
@@ -113,12 +112,15 @@ describe('MACI', () => {
     let tallyContract
     let pollId: number
 
+    const abiCoder = AbiCoder.defaultAbiCoder()
+
     describe('Deployment', () => {
-        beforeAll(async () => {
+        before(async () => {
             signer = await getDefaultSigner()
             const r = await deployTestContracts(
                 initialVoiceCreditBalance,
             )
+
             maciContract = r.maciContract
             stateAqContract = r.stateAqContract
             vkRegistryContract = r.vkRegistryContract
@@ -128,31 +130,30 @@ describe('MACI', () => {
 
         it('MACI.stateTreeDepth should be correct', async () => {
             const std = await maciContract.stateTreeDepth()
-            expect(std.toString()).toEqual(STATE_TREE_DEPTH.toString())
+            expect(std.toString()).to.eq(STATE_TREE_DEPTH.toString())
         })
     })
 
     describe('Signups', () => {
 
         it('should sign up users', async () => {
-            expect.assertions(users.length * 2)
             const iface = maciContract.interface
 
             let i = 0
             for (const user of users) {
                 const tx = await maciContract.signUp(
                     user.pubKey.asContractParam(),
-                    ethers.utils.defaultAbiCoder.encode(['uint256'], [1]),
-                    ethers.utils.defaultAbiCoder.encode(['uint256'], [0]),
+                    abiCoder.encode(['uint256'], [1]),
+                    abiCoder.encode(['uint256'], [0]),
                     signUpTxOpts,
                 )
                 const receipt = await tx.wait()
-                expect(receipt.status).toEqual(1)
+                expect(receipt.status).to.eq(1)
                 console.log('signUp() gas used:', receipt.gasUsed.toString())
 
                 // Store the state index
                 const event = iface.parseLog(receipt.logs[receipt.logs.length - 1])
-                expect(event.args._stateIndex.toString()).toEqual((i + 1).toString())
+                expect(event.args._stateIndex.toString()).to.eq((i + 1).toString())
 
                 maciState.signUp(
                     user.pubKey,
@@ -164,40 +165,39 @@ describe('MACI', () => {
             }
         })
 
-        it('signUp() shold fail when given an invalid pubkey', async () => {
-            expect.assertions(1)
-            try {
-                await maciContract.signUp(
+        it('signUp() should fail when given an invalid pubkey', async () => {
+            await expect(
+                maciContract.signUp(
                     {
                         x: '21888242871839275222246405745257275088548364400416034343698204186575808495617',
                         y: '0',
                     },
-                    ethers.utils.defaultAbiCoder.encode(['uint256'], [1]),
-                    ethers.utils.defaultAbiCoder.encode(['uint256'], [0]),
+                    abiCoder.encode(['uint256'], [1]),
+                    abiCoder.encode(['uint256'], [0]),
                     signUpTxOpts,
                 )
-            } catch (e) {
-                const error = "'MACI: _pubKey values should be less than the snark scalar field'"               
-                expect(e.message.endsWith(error)).toBeTruthy()
-            }
+            ).to.be.revertedWithCustomError(
+                maciContract,
+                "InvalidMaciPublicKey"
+            )
         })
     })
 
     describe('Merging sign-ups should fail because of onlyPoll', () => {
         it('coordinator should not be able to merge the signUp AccQueue', async () => {
-            try {
-                await maciContract.mergeStateAqSubRoots(0, 0, { gasLimit: 3000000 })
-            } catch (e) {
-                const error = "'MACI: only a Poll contract can call this function'"
-                expect(e.message.endsWith(error)).toBeTruthy()
-            }
-
-            try {
-                await maciContract.mergeStateAq(0, { gasLimit: 3000000 })
-            } catch (e) {
-                const error = "'MACI: only a Poll contract can call this function'"
-                expect(e.message.endsWith(error)).toBeTruthy()
-            }
+            await expect(
+                maciContract.mergeStateAqSubRoots(0, 0, { gasLimit: 3000000 })
+            ).to.be.revertedWithCustomError(
+                maciContract,
+                "NotAPoll"
+            )
+            
+            await expect(
+                maciContract.mergeStateAq(0, { gasLimit: 3000000 })
+            ).to.be.revertedWithCustomError(
+                maciContract,
+                "NotAPoll"
+            )
         })
     })
 
@@ -219,7 +219,7 @@ describe('MACI', () => {
                 { gasLimit: 1000000 },
             )
             let receipt = await tx.wait()
-            expect(receipt.status).toEqual(1)
+            expect(receipt.status).to.eq(1)
 
             const pSig = await vkRegistryContract.genProcessVkSig(
                 std.toString(),
@@ -228,7 +228,7 @@ describe('MACI', () => {
                 messageBatchSize,
             )
 
-            expect(pSig.toString()).toEqual(
+            expect(pSig.toString()).to.eq(
                 genProcessVkSig(
                     std, 
                     treeDepths.messageTreeDepth,
@@ -238,7 +238,7 @@ describe('MACI', () => {
             )
 
             const isPSigSet = await vkRegistryContract.isProcessVkSet(pSig)
-            expect(isPSigSet).toBeTruthy()
+            expect(isPSigSet).to.be.true 
 
             const tSig = await vkRegistryContract.genTallyVkSig(
                 std.toString(),
@@ -246,7 +246,7 @@ describe('MACI', () => {
                 treeDepths.voteOptionTreeDepth,
             )
             const isTSigSet = await vkRegistryContract.isTallyVkSet(tSig)
-            expect(isTSigSet).toBeTruthy()
+            expect(isTSigSet).to.be.true 
 
             // Check that the VKs are set
             const processVkOnChain = await vkRegistryContract.getProcessVk(
@@ -280,7 +280,7 @@ describe('MACI', () => {
 
             console.log('deployPoll() gas used:', receipt.gasUsed.toString())
 
-            expect(receipt.status).toEqual(1)
+            expect(receipt.status).to.eq(1)
             const iface = maciContract.interface
             const event = iface.parseLog(receipt.logs[receipt.logs.length - 1])
             pollId = event.args._pollId
@@ -293,7 +293,7 @@ describe('MACI', () => {
                 messageBatchSize,
                 coordinator,
             )
-            expect(p.toString()).toEqual(pollId.toString())
+            expect(p.toString()).to.eq(pollId.toString())
             
             // publish the NOTHING_UP_MY_SLEEVE message
             const messageData = [
@@ -317,23 +317,19 @@ describe('MACI', () => {
 
         it('should fail when attempting to init twice a Poll', async () => {
             const pollContractAddress = await maciContract.getPoll(pollId)
-            const pollContract = new ethers.Contract(
+            const pollContract = new Contract(
                 pollContractAddress,
                 pollAbi,
                 signer,
             )
 
-            try {
-                await pollContract.init()
-            } catch (error) {
-                expect(error).not.toBe(null)
-            }
+            await expect(pollContract.init()).to.be.reverted
         })
 
         it('should set correct storage values', async () => {
             // Retrieve the Poll state and check that each value is correct
             const pollContractAddress = await maciContract.getPoll(pollId)
-            const pollContract = new ethers.Contract(
+            const pollContract = new Contract(
                 pollContractAddress,
                 pollAbi,
                 signer,
@@ -341,45 +337,45 @@ describe('MACI', () => {
 
             const dd = await pollContract.getDeployTimeAndDuration()
 
-            expect(Number(dd[0])).toEqual(deployTime)
-            expect(Number(dd[1])).toEqual(duration)
+            expect(Number(dd[0])).to.eq(deployTime)
+            expect(Number(dd[1])).to.eq(duration)
 
-            expect(await pollContract.stateAqMerged()).toBeFalsy()
+            expect(await pollContract.stateAqMerged()).to.be.false
 
             const sb = await pollContract.currentSbCommitment()
-            expect(sb.toString()).toEqual('0')
+            expect(sb.toString()).to.eq('0')
 
             const sm = await pollContract.numSignUpsAndMessages()
             // There are 3 signups via the MACI instance
-            expect(Number(sm[0])).toEqual(3)
+            expect(Number(sm[0])).to.eq(3)
 
             // There are 1 messages until a user publishes a message
             // As we enqueue the NOTHING_UP_MY_SLEEVE hash
-            expect(Number(sm[1])).toEqual(1)
+            expect(Number(sm[1])).to.eq(1)
 
             const onChainMaxValues = await pollContract.maxValues()
 
-            expect(Number(onChainMaxValues.maxMessages)).toEqual(maxValues.maxMessages)
-            expect(Number(onChainMaxValues.maxVoteOptions)).toEqual(maxValues.maxVoteOptions)
+            expect(Number(onChainMaxValues.maxMessages)).to.eq(maxValues.maxMessages)
+            expect(Number(onChainMaxValues.maxVoteOptions)).to.eq(maxValues.maxVoteOptions)
 
             const onChainTreeDepths = await pollContract.treeDepths()
-            expect(Number(onChainTreeDepths.intStateTreeDepth)).toEqual(treeDepths.intStateTreeDepth)
-            expect(Number(onChainTreeDepths.messageTreeDepth)).toEqual(treeDepths.messageTreeDepth)
-            expect(Number(onChainTreeDepths.messageTreeSubDepth)).toEqual(treeDepths.messageTreeSubDepth)
-            expect(Number(onChainTreeDepths.voteOptionTreeDepth)).toEqual(treeDepths.voteOptionTreeDepth)
+            expect(Number(onChainTreeDepths.intStateTreeDepth)).to.eq(treeDepths.intStateTreeDepth)
+            expect(Number(onChainTreeDepths.messageTreeDepth)).to.eq(treeDepths.messageTreeDepth)
+            expect(Number(onChainTreeDepths.messageTreeSubDepth)).to.eq(treeDepths.messageTreeSubDepth)
+            expect(Number(onChainTreeDepths.voteOptionTreeDepth)).to.eq(treeDepths.voteOptionTreeDepth)
 
             const onChainBatchSizes = await pollContract.batchSizes()
-            expect(Number(onChainBatchSizes.messageBatchSize)).toEqual(messageBatchSize)
-            expect(Number(onChainBatchSizes.tallyBatchSize)).toEqual(tallyBatchSize)
+            expect(Number(onChainBatchSizes.messageBatchSize)).to.eq(messageBatchSize)
+            expect(Number(onChainBatchSizes.tallyBatchSize)).to.eq(tallyBatchSize)
         })
     })
 
     describe('Publish messages (vote + key-change)', () => {
         let pollContract
 
-        beforeAll(async () => {
+        before(async () => {
             const pollContractAddress = await maciContract.getPoll(pollId)
-            pollContract = new ethers.Contract(
+            pollContract = new Contract(
                 pollContractAddress,
                 pollAbi,
                 signer,
@@ -408,13 +404,12 @@ describe('MACI', () => {
             )
             const receipt = await tx.wait()
             console.log('publishMessage() gas used:', receipt.gasUsed.toString())
-            expect(receipt.status).toEqual(1)
+            expect(receipt.status).to.eq(1)
 
             maciState.polls[pollId].publishMessage(message, keypair.pubKey)
         })
 
         it('shold not publish a message after the voting period', async () => {
-            expect.assertions(1)
             const dd = await pollContract.getDeployTimeAndDuration()
             await timeTravel(signer.provider, Number(dd[0]) + 1)
 
@@ -432,16 +427,17 @@ describe('MACI', () => {
             const signature = command.sign(keypair.privKey)
             const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey)
             const message = command.encrypt(signature, sharedKey)
-            try {
-                await pollContract.publishMessage(
+
+            await expect(
+                pollContract.publishMessage(
                     message.asContractParam(),
                     keypair.pubKey.asContractParam(),
                     { gasLimit: 300000 },
                 )
-            } catch (e) {
-                const error = 'PollE01'
-                expect(e.message.slice(0,e.message.length-1).endsWith(error)).toBeTruthy()
-            }
+            ).to.be.revertedWithCustomError(
+                pollContract,
+                "VotingPeriodOver"
+            )
         })
 
     })
@@ -452,7 +448,7 @@ describe('MACI', () => {
 
         beforeEach(async () => {
             const pollContractAddress = await maciContract.getPoll(pollId)
-            pollContract = new ethers.Contract(
+            pollContract = new Contract(
                 pollContractAddress,
                 pollAbi,
                 signer,
@@ -461,7 +457,7 @@ describe('MACI', () => {
             const extContracts = await pollContract.extContracts()
 
             const messageAqAddress = extContracts.messageAq
-            messageAqContract = new ethers.Contract(
+            messageAqContract = new Contract(
                 messageAqAddress,
                 accQueueQuinaryMaciAbi,
                 signer,
@@ -469,23 +465,23 @@ describe('MACI', () => {
         })
 
         it('should revert if subtrees are not merged for StateAq', async () => {
-            try {
-                await pollContract.mergeMaciStateAq(0, { gasLimit: 4000000 })
-            } catch (e) {
-                const error = 'PollE06'
-                expect(e.message.slice(0,e.message.length-1).endsWith(error)).toBeTruthy()
-            }
+            await expect(
+                pollContract.mergeMaciStateAq(0, { gasLimit: 4000000 })
+            ).to.be.revertedWithCustomError(
+                pollContract,
+                "StateAqSubtreesNeedMerge"
+            )
         })
 
         it('coordinator should be able to merge the message AccQueue', async () => {
             let tx = await pollContract.mergeMessageAqSubRoots(0, { gasLimit: 3000000 })
             let receipt = await tx.wait()
-            expect(receipt.status).toEqual(1)
+            expect(receipt.status).to.eq(1)
             console.log('mergeMessageAqSubRoots() gas used:', receipt.gasUsed.toString())
 
             tx = await pollContract.mergeMessageAq({ gasLimit: 4000000 })
             receipt = await tx.wait()
-            expect(receipt.status).toEqual(1)
+            expect(receipt.status).to.eq(1)
 
             const poll = maciState.polls[pollId]
             poll.messageAq.mergeSubRoots(0)
@@ -497,53 +493,51 @@ describe('MACI', () => {
         it('the message root must be correct', async () => {
             const onChainMessageRoot = await messageAqContract.getMainRoot(MESSAGE_TREE_DEPTH)
             expect(onChainMessageRoot.toString())
-                .toEqual(maciState.polls[pollId].messageAq.mainRoots[MESSAGE_TREE_DEPTH].toString())
+                .to.eq(maciState.polls[pollId].messageAq.mainRoots[MESSAGE_TREE_DEPTH].toString())
         })
     })
 
     describe('Tally votes (negative test)', () => {
-        expect.assertions(1)
         it('tallyVotes() should fail as the messages have not been processed yet', async () => {
             const pollContractAddress = await maciContract.getPoll(pollId)
-            try {
-                await tallyContract.tallyVotes(
+            await expect(
+                tallyContract.tallyVotes(
                     pollContractAddress,
-                    mpContract.address,
+                    await mpContract.getAddress(),
                     0,
                     [0, 0, 0, 0, 0, 0, 0, 0],
                 )
-            } catch (e) {
-                const error = "'PROCESSING_NOT_COMPLETE()'"
-                expect(e.message.endsWith(error)).toBeTruthy()
-            }
-
+            ).to.be.revertedWithCustomError(
+                tallyContract,
+                "ProcessingNotComplete"
+            )
         })
     })
 
     describe('Process messages (negative test)', () => {
         it('processMessages() should fail if the state AQ has not been merged', async () => {
-            try {
-                const pollContractAddress = await maciContract.getPoll(pollId)
+            const pollContractAddress = await maciContract.getPoll(pollId)
 
-                // Submit the proof
-                await mpContract.processMessages(
+            await expect(
+                mpContract.processMessages(
                     pollContractAddress,
                     0,
                     [0, 0, 0, 0, 0, 0, 0, 0],
                 )
-
-            } catch (e) {
-                expect(e.message.endsWith("'STATE_AQ_NOT_MERGED()'")).toBeTruthy()
-            }
+            ).to.be.revertedWithCustomError(
+                mpContract,
+                "StateAqNotMerged"
+            )
+            
         })
     })
 
     describe('Merge sign-ups as the Poll', () => {
         let pollContract
 
-        beforeAll(async () => {
+        before(async () => {
             const pollContractAddress = await maciContract.getPoll(pollId)
-            pollContract = new ethers.Contract(
+            pollContract = new Contract(
                 pollContractAddress,
                 pollAbi,
                 signer,
@@ -557,14 +551,14 @@ describe('MACI', () => {
                 { gasLimit: 3000000 },
             )
             let receipt = await tx.wait()
-            expect(receipt.status).toEqual(1)
+            expect(receipt.status).to.eq(1)
 
             tx = await pollContract.mergeMaciStateAq(
                 pollId,
                 { gasLimit: 3000000 },
             )
             receipt = await tx.wait()
-            expect(receipt.status).toEqual(1)
+            expect(receipt.status).to.eq(1)
 
             maciState.stateAq.mergeSubRoots(0)
             maciState.stateAq.merge(STATE_TREE_DEPTH)
@@ -572,7 +566,7 @@ describe('MACI', () => {
 
         it('the state root must be correct', async () => {
             const onChainStateRoot = await stateAqContract.getMainRoot(STATE_TREE_DEPTH)
-            expect(onChainStateRoot.toString()).toEqual(maciState.stateAq.mainRoots[STATE_TREE_DEPTH].toString())
+            expect(onChainStateRoot.toString()).to.eq(maciState.stateAq.mainRoots[STATE_TREE_DEPTH].toString())
         })
     })
 
@@ -581,9 +575,9 @@ describe('MACI', () => {
         let poll
         let generatedInputs
 
-        beforeAll(async () => {
+        before(async () => {
             const pollContractAddress = await maciContract.getPoll(pollId)
-            pollContract = new ethers.Contract(
+            pollContract = new Contract(
                 pollContractAddress,
                 pollAbi,
                 signer,
@@ -602,12 +596,12 @@ describe('MACI', () => {
             )
             const onChainPackedVals = BigInt(
                 await mpContract.genProcessMessagesPackedVals(
-                    pollContract.address,
+                    await pollContract.getAddress(),
                     0,
                     users.length,
                 )
             )
-            expect(packedVals.toString(16)).toEqual(onChainPackedVals.toString(16))
+            expect(packedVals.toString(16)).to.eq(onChainPackedVals.toString(16))
         })
 
         it('processMessages() should update the state and ballot root commitment', async () => {
@@ -621,22 +615,22 @@ describe('MACI', () => {
             )
 
             const receipt = await tx.wait()
-            expect(receipt.status).toEqual(1)
+            expect(receipt.status).to.eq(1)
 
             const processingComplete = await mpContract.processingComplete()
-            expect(processingComplete).toBeTruthy()
+            expect(processingComplete).to.be.true 
 
             const onChainNewSbCommitment = await mpContract.sbCommitment()
-            expect(generatedInputs.newSbCommitment).toEqual(onChainNewSbCommitment.toString())
+            expect(generatedInputs.newSbCommitment).to.eq(onChainNewSbCommitment.toString())
         })
     })
 
     describe('Tally votes', () => {
         let pollContract
 
-        beforeAll(async () => {
+        before(async () => {
             const pollContractAddress = await maciContract.getPoll(pollId)
-            pollContract = new ethers.Contract(
+            pollContract = new Contract(
                 pollContractAddress,
                 pollAbi,
                 signer,
@@ -656,52 +650,39 @@ describe('MACI', () => {
                 tallyBatchSize,
                 users.length
             )
-            expect(onChainPackedVals.toString()).toEqual(packedVals.toString())
+            expect(onChainPackedVals.toString()).to.eq(packedVals.toString())
         })
 
         it('tallyVotes() should update the tally commitment', async () => {
-            expect.assertions(3)
             const poll = maciState.polls[pollId]
             const generatedInputs = poll.tallyVotes()
 
             const pollContractAddress = await maciContract.getPoll(pollId)
             const tx = await tallyContract.tallyVotes(
                 pollContractAddress,
-                mpContract.address,
+                await mpContract.getAddress(),
                 generatedInputs.newTallyCommitment,
                 [0, 0, 0, 0, 0, 0, 0, 0],
             )
 
             const receipt = await tx.wait()
-            expect(receipt.status).toEqual(1)
+            expect(receipt.status).to.eq(1)
 
             const onChainNewTallyCommitment = await tallyContract.tallyCommitment()
 
-            expect(generatedInputs.newTallyCommitment).toEqual(onChainNewTallyCommitment.toString())
+            expect(generatedInputs.newTallyCommitment).to.eq(onChainNewTallyCommitment.toString())
 
-            try {
-                await tallyContract.tallyVotes(
+            await expect(
+                tallyContract.tallyVotes(
                     pollContractAddress,
-                    mpContract.address,
+                    await mpContract.getAddress(),
                     generatedInputs.newTallyCommitment,
                     [0, 0, 0, 0, 0, 0, 0, 0],
                 )
-            } catch (e) {
-                const error = "'ALL_BALLOTS_TALLIED()'"
-                expect(e.message.endsWith(error)).toBeTruthy()
-            }
-        })
-    })
-
-    describe('Generate MaciState from contract', () => {
-        it('Should regenerate MaciState from on-chain information', async () => {
-            const ms = await genMaciStateFromContract(
-                signer.provider,
-                maciContract.address,
-                coordinator,
-                0,
+            ).to.be.revertedWithCustomError(
+                tallyContract,
+                "AllBallotsTallied"
             )
-            // TODO: check roots
         })
     })
 })

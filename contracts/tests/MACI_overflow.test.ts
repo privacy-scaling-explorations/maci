@@ -1,11 +1,10 @@
-jest.setTimeout(90000)
-import * as ethers from 'ethers'
-import { parseArtifact, getDefaultSigner } from '../deploy'
-import { deployTestContracts } from '../utils'
+import { AbiCoder, Contract, Signer } from 'ethers'
+import { parseArtifact, getDefaultSigner } from '../ts/deploy'
+import { deployTestContracts } from '../ts/utils'
 import {
     Keypair,
 } from 'maci-domainobjs'
-
+import { expect } from 'chai'
 import {
     MaxValues,
     TreeDepths,
@@ -38,15 +37,18 @@ const treeDepths: TreeDepths = {
 }
 
 const initialVoiceCreditBalance = 100
-let signer: ethers.Signer
+let signer: Signer
 const [ pollAbi ] = parseArtifact('Poll')
 
 describe('Overflow testing', () => {
-    let maciContract: ethers.Contract
-    let stateAqContract: ethers.Contract
-    let vkRegistryContract: ethers.Contract
-    let mpContract: ethers.Contract
+    let maciContract: Contract
+    let stateAqContract: Contract
+    let vkRegistryContract: Contract
+    let mpContract: Contract
     let pollId: number
+
+    const abiCoder = AbiCoder.defaultAbiCoder()
+
     beforeEach(async () => {
         signer = await getDefaultSigner()
         const r = await deployTestContracts(
@@ -60,13 +62,13 @@ describe('Overflow testing', () => {
 
     it('MACI.stateTreeDepth should be correct', async () => {
         const std = await maciContract.stateTreeDepth()
-        expect(std.toString()).toEqual(STATE_TREE_DEPTH.toString())
+        expect(std.toString()).to.eq(STATE_TREE_DEPTH.toString())
     })
     it('SignUps - should not overflow', async () => {
         await maciContract.signUp(
             users[0].pubKey.asContractParam(),
-            ethers.utils.defaultAbiCoder.encode(['uint256'], [1]),
-            ethers.utils.defaultAbiCoder.encode(['uint256'], [0]),
+            abiCoder.encode(['uint256'], [1]),
+            abiCoder.encode(['uint256'], [0]),
         )
     })
 
