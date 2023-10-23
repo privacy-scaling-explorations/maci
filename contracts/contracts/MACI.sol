@@ -102,7 +102,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     * Ensure certain functions only run after the contract has been initialized
     */
     modifier afterInit() {
-        require(isInitialised, "MACI: not initialised");
+        if (!isInitialised) revert NotInit();
         _;
     }
 
@@ -110,13 +110,12 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     * Only allow a Poll contract to call the modified function.
     */
     modifier onlyPoll(uint256 _pollId) {
-        require(
-            msg.sender == address(polls[_pollId]),
-            "MACI: only a Poll contract can call this function"
-        );
+        if (msg.sender != address(polls[_pollId])) revert NotAPoll();
         _;
     }
 
+    error NotInit();
+    error NotAPoll();
     error AlreadyInitialized();
     error HashLibrariesNotLinked();
     error WrongPollOwner();
@@ -190,7 +189,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         bytes memory _initialVoiceCreditProxyData
     ) public afterInit {
         // ensure we do not have more signups than what the circuits support
-        if (numSignUps >= uint256(STATE_TREE_ARITY) ** uint256(stateTreeDepth))
+        if (numSignUps == uint256(STATE_TREE_ARITY) ** uint256(stateTreeDepth))
             revert TooManySignups();
         
         if (_pubKey.x >= SNARK_SCALAR_FIELD || _pubKey.y >= SNARK_SCALAR_FIELD) {

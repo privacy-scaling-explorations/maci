@@ -20,9 +20,9 @@ contract Tally is
     Hasher
 {
     // Error codes
-    error PROCESSING_NOT_COMPLETE();
-    error INVALID_TALLY_VOTES_PROOF();
-    error ALL_BALLOTS_TALLIED();
+    error ProcessingNotComplete();
+    error InvalidTallyVotesProof();
+    error AllBallotsTallied();
     error NumSignUpsTooLarge();
     error BatchStartIndexTooLarge();
     error TallyBatchSizeTooLarge();
@@ -108,7 +108,7 @@ contract Tally is
     function updateSbCommitment(MessageProcessor _mp) public onlyOwner {
         // Require that all messages have been processed
         if (!_mp.processingComplete()) {
-            revert PROCESSING_NOT_COMPLETE();
+            revert ProcessingNotComplete();
         }
         if (sbCommitment == 0) {
             sbCommitment = _mp.sbCommitment();
@@ -130,7 +130,7 @@ contract Tally is
 
         // Require that there are untalied ballots left
         if (batchStartIndex > numSignUps) {
-            revert ALL_BALLOTS_TALLIED();
+            revert AllBallotsTallied();
         }
 
         bool isValid = verifyTallyProof(
@@ -142,7 +142,7 @@ contract Tally is
             _newTallyCommitment
         );
         if (!isValid) {
-            revert INVALID_TALLY_VOTES_PROOF();
+            revert InvalidTallyVotesProof();
         }
 
         // Update the tally commitment and the tally batch num

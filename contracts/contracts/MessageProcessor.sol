@@ -19,11 +19,11 @@ import {VkRegistry} from "./VkRegistry.sol";
  */
 contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
 
-    error NO_MORE_MESSAGES();
-    error STATE_AQ_NOT_MERGED();
-    error MESSAGE_AQ_NOT_MERGED();
-    error INVALID_PROCESS_MESSAGE_PROOF();
-    error VK_NOT_SET();
+    error NoMoreMessages();
+    error StateAqNotMerged();
+    error MessageAqNotMerged();
+    error InvalidProcessMessageProof();
+    error VkNotSet();
     error MaxVoteOptionsTooLarge();
     error NumSignUpsTooLarge();
     error CurrentMessageBatchIndexTooLarge();
@@ -62,12 +62,12 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         _votingPeriodOver(_poll);
         // There must be unprocessed messages
         if (processingComplete) {
-            revert NO_MORE_MESSAGES();
+            revert NoMoreMessages();
         }
 
         // The state AccQueue must be merged
         if (!_poll.stateAqMerged()) {
-            revert STATE_AQ_NOT_MERGED();
+            revert StateAqNotMerged();
         }
 
         // Retrieve stored vals
@@ -80,7 +80,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         // Require that the message queue has been merged
         uint256 messageRoot = messageAq.getMainRoot(messageTreeDepth);
         if (messageRoot == 0) {
-            revert MESSAGE_AQ_NOT_MERGED();
+            revert MessageAqNotMerged();
         }
 
         // Copy the state and ballot commitment and set the batch index if this
@@ -117,7 +117,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
             _proof
         );
         if (!isValid) {
-            revert INVALID_PROCESS_MESSAGE_PROOF();
+            revert InvalidProcessMessageProof();
         }
 
         {
@@ -151,7 +151,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
         (VkRegistry vkRegistry, IMACI maci, , ) = _poll.extContracts();
 
         if (address(vkRegistry) == address(0)) {
-            revert VK_NOT_SET();
+            revert VkNotSet();
         }
 
         // Calculate the public input hash (a SHA256 hash of several values)
