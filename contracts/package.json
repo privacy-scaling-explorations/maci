@@ -21,13 +21,13 @@
         "@maci-contracts": "."
     },
     "dependencies": {
-        "@nomicfoundation/hardhat-chai-matchers": "^2.0.2",
-        "@nomicfoundation/hardhat-ethers": "^3.0.4",
+        "@nomicfoundation/hardhat-chai-matchers": "^1.0.0",
+        "@nomiclabs/hardhat-ethers": "^2.0.0",
         "@openzeppelin/contracts": "^4.8.0",
         "circomlib": "^2.0.5",
         "circomlibjs": "^0.1.7",
-        "ethers": "^6.8.0",
-        "hardhat": "^2.18.2",
+        "ethers": "^5.4.7",
+        "hardhat": "^2.12.6",
         "hardhat-artifactor": "^0.2.0",
         "hardhat-contract-sizer": "^2.10.0",
         "maci-circuits": "^1.1.2",

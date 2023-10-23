@@ -2,14 +2,8 @@
     "extends": "../tsconfig.json",
     "compilerOptions": {
         "outDir": "./build",
-        // "target": "ES2015",
-        // "moduleResolution": "NodeNext",
-        // "module": "NodeNext"
     },
     "include": [
         "./ts"
     ],
-    // "exclude": [
-    //     "node_modules"
-    // ]
 }

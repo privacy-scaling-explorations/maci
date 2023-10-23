@@ -1,8 +1,7 @@
-import { AbiCoder, Contract } from 'ethers'
+import { utils, Contract } from 'ethers'
 import { timeTravel } from './utils'
 import { parseArtifact, getDefaultSigner } from '../ts/deploy'
 import { deployTestContracts } from '../ts/utils'
-import { genMaciStateFromContract } from '../ts/genMaciState'
 import {
     PCommand,
     VerifyingKey,
@@ -112,8 +111,6 @@ describe('MACI', () => {
     let tallyContract
     let pollId: number
 
-    const abiCoder = AbiCoder.defaultAbiCoder()
-
     describe('Deployment', () => {
         before(async () => {
             signer = await getDefaultSigner()
@@ -143,8 +140,8 @@ describe('MACI', () => {
             for (const user of users) {
                 const tx = await maciContract.signUp(
                     user.pubKey.asContractParam(),
-                    abiCoder.encode(['uint256'], [1]),
-                    abiCoder.encode(['uint256'], [0]),
+                    utils.defaultAbiCoder.encode(['uint256'], [1]),
+                    utils.defaultAbiCoder.encode(['uint256'], [0]),
                     signUpTxOpts,
                 )
                 const receipt = await tx.wait()
@@ -172,8 +169,8 @@ describe('MACI', () => {
                         x: '21888242871839275222246405745257275088548364400416034343698204186575808495617',
                         y: '0',
                     },
-                    abiCoder.encode(['uint256'], [1]),
-                    abiCoder.encode(['uint256'], [0]),
+                    utils.defaultAbiCoder.encode(['uint256'], [1]),
+                    utils.defaultAbiCoder.encode(['uint256'], [0]),
                     signUpTxOpts,
                 )
             ).to.be.revertedWithCustomError(
@@ -503,7 +500,7 @@ describe('MACI', () => {
             await expect(
                 tallyContract.tallyVotes(
                     pollContractAddress,
-                    await mpContract.getAddress(),
+                    await mpContract.address,
                     0,
                     [0, 0, 0, 0, 0, 0, 0, 0],
                 )
@@ -596,7 +593,7 @@ describe('MACI', () => {
             )
             const onChainPackedVals = BigInt(
                 await mpContract.genProcessMessagesPackedVals(
-                    await pollContract.getAddress(),
+                    await pollContract.address,
                     0,
                     users.length,
                 )
@@ -660,7 +657,7 @@ describe('MACI', () => {
             const pollContractAddress = await maciContract.getPoll(pollId)
             const tx = await tallyContract.tallyVotes(
                 pollContractAddress,
-                await mpContract.getAddress(),
+                await mpContract.address,
                 generatedInputs.newTallyCommitment,
                 [0, 0, 0, 0, 0, 0, 0, 0],
             )
@@ -675,7 +672,7 @@ describe('MACI', () => {
             await expect(
                 tallyContract.tallyVotes(
                     pollContractAddress,
-                    await mpContract.getAddress(),
+                    await mpContract.address,
                     generatedInputs.newTallyCommitment,
                     [0, 0, 0, 0, 0, 0, 0, 0],
                 )

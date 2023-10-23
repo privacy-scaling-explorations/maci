@@ -17,15 +17,15 @@ describe('Hasher', () => {
         const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } = await deployPoseidonContracts(true)
         const hasherContractFactory = await linkPoseidonLibraries(
 			'Hasher',
-			await PoseidonT3Contract.getAddress(),
-			await PoseidonT4Contract.getAddress(),
-			await PoseidonT5Contract.getAddress(),
-			await PoseidonT6Contract.getAddress(),
+			PoseidonT3Contract.address,
+			PoseidonT4Contract.address,
+			PoseidonT5Contract.address,
+			PoseidonT6Contract.address,
             true
         )
 
         hasherContract = await hasherContractFactory.deploy()
-		await hasherContract.waitForDeployment()
+		await hasherContract.deployTransaction.wait()
     })
 
     it('maci-crypto.sha256Hash should match hasher.sha256Hash', async () => {

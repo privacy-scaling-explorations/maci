@@ -1,10 +1,10 @@
-import { AbiCoder } from 'ethers'
 import { getDefaultSigner, deploySignupToken, deploySignupTokenGatekeeper, deployFreeForAllSignUpGatekeeper } from '../ts/deploy'
 import { deployTestContracts } from '../ts/utils'
 import {
     Keypair,
 } from 'maci-domainobjs'
 import { expect } from 'chai'
+import { utils } from 'ethers'
 
 const initialVoiceCreditBalance = 100
 
@@ -13,12 +13,10 @@ describe('SignUpGatekeeper', () => {
     let freeForAllContract;
     let signUpTokenGatekeeperContract;
     
-    const abiCoder = AbiCoder.defaultAbiCoder()
-
     before(async () => {
         freeForAllContract = await deployFreeForAllSignUpGatekeeper(true)
         signUpToken = await deploySignupToken(true)
-        signUpTokenGatekeeperContract= await deploySignupTokenGatekeeper(await signUpToken.getAddress())
+        signUpTokenGatekeeperContract= await deploySignupTokenGatekeeper(await signUpToken.address)
     })
 
     describe('Deployment', () => {
@@ -31,7 +29,7 @@ describe('SignUpGatekeeper', () => {
         it('SignUpTokenGatekeeper has token address set', async () => {
             expect(
                 await signUpTokenGatekeeperContract.token()
-            ).to.eq(await signUpToken.getAddress())
+            ).to.eq(await signUpToken.address)
         })
     })
 
@@ -40,7 +38,7 @@ describe('SignUpGatekeeper', () => {
         beforeEach(async () => {
             freeForAllContract = await deployFreeForAllSignUpGatekeeper(true)
             signUpToken = await deploySignupToken(true)
-            signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(await signUpToken.getAddress(), true)
+            signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(await signUpToken.address, true)
             const r = await deployTestContracts(
                 initialVoiceCreditBalance,
                 signUpTokenGatekeeperContract,
@@ -50,24 +48,24 @@ describe('SignUpGatekeeper', () => {
         })
 
         it('sets MACI instance correctly', async () => {
-            await signUpTokenGatekeeperContract.setMaciInstance(await maciContract.getAddress())
+            await signUpTokenGatekeeperContract.setMaciInstance(await maciContract.address)
 
             expect(
                 await signUpTokenGatekeeperContract.maci()
-            ).to.eq(await maciContract.getAddress())
+            ).to.eq(await maciContract.address)
         })
 
         it('Reverts if address provided is not a MACI instance', async () => {
             const user = new Keypair()
             const signer = await getDefaultSigner()
 
-            await signUpToken.giveToken(await signer.getAddress(), 0)
+            await signUpToken.giveToken(await signer.address, 0)
             
             await expect(
                 maciContract.signUp(
                     user.pubKey.asContractParam(),
-                    abiCoder.encode(['uint256'], [1]),
-                    abiCoder.encode(['uint256'], [0]),
+                    utils.defaultAbiCoder.encode(['uint256'], [1]),
+                    utils.defaultAbiCoder.encode(['uint256'], [0]),
                     { gasLimit: 300000 },
                 )
             ).to.be.revertedWithCustomError(

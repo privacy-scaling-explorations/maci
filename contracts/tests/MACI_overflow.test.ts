@@ -1,4 +1,4 @@
-import { AbiCoder, Contract, Signer } from 'ethers'
+import { utils, Contract, Signer } from 'ethers'
 import { parseArtifact, getDefaultSigner } from '../ts/deploy'
 import { deployTestContracts } from '../ts/utils'
 import {
@@ -47,8 +47,6 @@ describe('Overflow testing', () => {
     let mpContract: Contract
     let pollId: number
 
-    const abiCoder = AbiCoder.defaultAbiCoder()
-
     beforeEach(async () => {
         signer = await getDefaultSigner()
         const r = await deployTestContracts(
@@ -67,8 +65,8 @@ describe('Overflow testing', () => {
     it('SignUps - should not overflow', async () => {
         await maciContract.signUp(
             users[0].pubKey.asContractParam(),
-            abiCoder.encode(['uint256'], [1]),
-            abiCoder.encode(['uint256'], [0]),
+            utils.defaultAbiCoder.encode(['uint256'], [1]),
+            utils.defaultAbiCoder.encode(['uint256'], [0]),
         )
     })
 

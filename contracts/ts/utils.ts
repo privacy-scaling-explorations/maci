@@ -54,15 +54,15 @@ const deployTestContracts = async (
     const topupCreditContract = await deployTopupCredit(true)
 
     const {maciContract,stateAqContract,pollFactoryContract,poseidonAddrs} = await deployMaci(
-        await gatekeeperContract.getAddress(),
-        await constantIntialVoiceCreditProxyContract.getAddress(),
-        await mockVerifierContract.getAddress(),
-        await vkRegistryContract.getAddress(),
-        await topupCreditContract.getAddress(),
+        gatekeeperContract.address,
+        constantIntialVoiceCreditProxyContract.address,
+        mockVerifierContract.address,
+        vkRegistryContract.address,
+        topupCreditContract.address,
         true
     )
-    const mpContract = await deployMessageProcessor(await mockVerifierContract.getAddress(), poseidonAddrs[0],poseidonAddrs[1],poseidonAddrs[2],poseidonAddrs[3], true)
-    const tallyContract = await deployTally(await mockVerifierContract.getAddress(), poseidonAddrs[0],poseidonAddrs[1],poseidonAddrs[2],poseidonAddrs[3], true)
+    const mpContract = await deployMessageProcessor(mockVerifierContract.address, poseidonAddrs[0],poseidonAddrs[1],poseidonAddrs[2],poseidonAddrs[3], true)
+    const tallyContract = await deployTally(mockVerifierContract.address, poseidonAddrs[0],poseidonAddrs[1],poseidonAddrs[2],poseidonAddrs[3], true)
 
     return {
         mockVerifierContract,

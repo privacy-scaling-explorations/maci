@@ -189,7 +189,7 @@ const deployContract = async (contractName: string, quiet: boolean = false, ...a
         maxFeePerGas: await getFeeData['maxFeePerGas']
     })
     
-    await contract.waitForDeployment()
+    await contract.deployTransaction.wait()
     return contract
 }
 
@@ -199,13 +199,13 @@ const deployContractWithLinkedLibraries = async (contractFactory: ContractFactor
     const contract = await contractFactory.deploy(...args, {
         maxFeePerGas: await getFeeData['maxFeePerGas']
     })
-    await contract.waitForDeployment()
-    return contract as Contract
+    await contract.deployTransaction.wait()
+    return contract 
 }
 
 
 const transferOwnership = async (contract: Contract, newOwner: string, quiet: boolean = false) => {
-    log(`Transferring ownership of ${await contract.getAddress()} to ${newOwner}`, quiet)
+    log(`Transferring ownership of ${contract.address} to ${newOwner}`, quiet)
     await (await (contract.transferOwnership(newOwner, {
         maxFeePerGas: await getFeeData['maxFeePerGas'],
     }))).wait()
@@ -319,7 +319,7 @@ const deployMaci = async (
         PoseidonT6Contract,
     } = await deployPoseidonContracts(quiet)
 
-    const poseidonAddrs = [await PoseidonT3Contract.getAddress(), await PoseidonT4Contract.getAddress(), await PoseidonT5Contract.getAddress(), await PoseidonT6Contract.getAddress()]
+    const poseidonAddrs = [PoseidonT3Contract.address, PoseidonT4Contract.address, PoseidonT5Contract.address, PoseidonT6Contract.address]
 
     const contractsToLink = ['MACI', 'PollFactory']
 
@@ -327,10 +327,10 @@ const deployMaci = async (
     const linkedContractFactories = contractsToLink.map(async (contractName: string) => {
         return await linkPoseidonLibraries(
             contractName,
-            await PoseidonT3Contract.getAddress(),
-            await PoseidonT4Contract.getAddress(),
-            await PoseidonT5Contract.getAddress(),
-            await PoseidonT6Contract.getAddress(),
+            PoseidonT3Contract.address,
+            PoseidonT4Contract.address,
+            PoseidonT5Contract.address,
+            PoseidonT6Contract.address,
             quiet
         )
     })
@@ -350,13 +350,13 @@ const deployMaci = async (
         maciContractFactory, 
         'MACI',
         quiet,
-        await pollFactoryContract.getAddress(),
+        pollFactoryContract.address,
         signUpTokenGatekeeperContractAddress,
         initialVoiceCreditBalanceAddress
     )
 
     log('Transferring ownership of PollFactoryContract to MACI', quiet)
-    await transferOwnership(pollFactoryContract, await maciContract.getAddress(), quiet)
+    await transferOwnership(pollFactoryContract, maciContract.address, quiet)
 
     await initMaci(maciContract, quiet, vkRegistryContractAddress, topupCreditContractAddress)
 

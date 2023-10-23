@@ -20,10 +20,10 @@ const deploy = async (
     // Link Poseidon contracts
 	const AccQueueFactory = await linkPoseidonLibraries(
 		contractName,
-		await PoseidonT3Contract.getAddress(),
-		await PoseidonT4Contract.getAddress(),
-		await PoseidonT5Contract.getAddress(),
-		await PoseidonT6Contract.getAddress(),
+		PoseidonT3Contract.address,
+		PoseidonT4Contract.address,
+		PoseidonT5Contract.address,
+		PoseidonT6Contract.address,
         true
 	)
 
@@ -31,7 +31,7 @@ const deploy = async (
 		SUB_DEPTH
 	)
 
-	await aqContract.waitForDeployment()
+	await aqContract.deployTransaction.wait()
 
     const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
     return { aq, aqContract }

@@ -14,16 +14,16 @@ describe('Hasher', () => {
         // Link Poseidon contracts
         const hasherContractFactory = await linkPoseidonLibraries(
             'HasherBenchmarks',
-            await PoseidonT3Contract.getAddress(),
-            await PoseidonT4Contract.getAddress(),
-            await PoseidonT5Contract.getAddress(),
-            await PoseidonT6Contract.getAddress(),
+            PoseidonT3Contract.address,
+            PoseidonT4Contract.address,
+            PoseidonT5Contract.address,
+            PoseidonT6Contract.address,
             true
         )
 
         console.log('Deploying Hasher')
         hasherContract = await hasherContractFactory.deploy()
-    	await hasherContract.waitForDeployment()
+    	await hasherContract.deployTransaction.wait()
     })
 
     it('hashLeftRight', async () => {

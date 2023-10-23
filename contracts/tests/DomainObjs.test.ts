@@ -17,15 +17,15 @@ describe('DomainObjs', () => {
             // Link Poseidon contracts
             const doContractFactory = await linkPoseidonLibraries(
                 'DomainObjs',
-                await PoseidonT3Contract.getAddress(),
-                await PoseidonT4Contract.getAddress(),
-                await PoseidonT5Contract.getAddress(),
-                await PoseidonT6Contract.getAddress(),
+                PoseidonT3Contract.address,
+                PoseidonT4Contract.address,
+                PoseidonT5Contract.address,
+                PoseidonT6Contract.address,
                 true
             )
 
             doContract = await doContractFactory.deploy()
-			await doContract.waitForDeployment()
+			await doContract.deployTransaction.wait()
         })
 
         it('should correctly hash a StateLeaf', async () => {

@@ -2,7 +2,7 @@
  * @type import('hardhat/config').HardhatUserConfig
  */
 require('hardhat-contract-sizer')
-require('@nomicfoundation/hardhat-ethers')
+require('@nomiclabs/hardhat-ethers')
 require('hardhat-artifactor')
 require("@nomicfoundation/hardhat-chai-matchers");
 

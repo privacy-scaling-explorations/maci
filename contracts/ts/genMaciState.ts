@@ -12,7 +12,7 @@ import {
     MaciState,
 } from 'maci-core'
 
-import { Provider, Interface, Contract } from 'ethers'
+import { Contract, providers, utils } from 'ethers'
 // import { assert } from 'assert'
 import assert = require("assert")
 
@@ -24,7 +24,7 @@ interface Action {
 }
 
 const genMaciStateFromContract = async (
-    provider: Provider,
+    provider: providers.Provider,
     address: string,
     coordinatorKeypair: Keypair,
     pollId: number,
@@ -43,8 +43,8 @@ const genMaciStateFromContract = async (
         provider,
     )
 
-    const maciIface = new Interface(maciContractAbi)
-    const pollIface = new Interface(pollContractAbi)
+    const maciIface = new utils.Interface(maciContractAbi)
+    const pollIface = new utils.Interface(pollContractAbi)
 
     const maciState = new MaciState()
 
