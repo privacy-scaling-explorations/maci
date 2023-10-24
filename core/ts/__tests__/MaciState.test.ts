@@ -1,6 +1,5 @@
 import { 
     MaciState,
-    STATE_TREE_DEPTH,
 } from '../'
 import {
     expect 
@@ -38,6 +37,8 @@ const treeDepths = {
 }
 
 const messageBatchSize = 25
+
+const STATE_TREE_DEPTH = 10
 
 const testProcessVk = new VerifyingKey(
     new G1Point(BigInt(0), BigInt(1)),
@@ -78,8 +79,13 @@ describe('MaciState', function() {
         let stateIndex
         const userKeypair = new Keypair()
 
+<<<<<<< HEAD
         before(() => {
             maciState = new MaciState()
+=======
+        beforeAll(() => {
+            maciState = new MaciState(STATE_TREE_DEPTH)
+>>>>>>> eb30332b (feat(state-tree-depth) - ensure stateTreeDepth is not hardcoded in the smart contracts and can be passed around as an argument)
             stateTree = new IncrementalQuinTree(
                 STATE_TREE_DEPTH,
                 blankStateLeafHash,
@@ -220,8 +226,13 @@ describe('MaciState', function() {
 
         const users: Keypair[] = []
 
+<<<<<<< HEAD
         before(() => {
             maciState = new MaciState()
+=======
+        beforeAll(() => {
+            maciState = new MaciState(STATE_TREE_DEPTH)
+>>>>>>> eb30332b (feat(state-tree-depth) - ensure stateTreeDepth is not hardcoded in the smart contracts and can be passed around as an argument)
             // Sign up and vote
             for (let i = 0; i < messageBatchSize - 1; i ++) {
                 const userKeypair = new Keypair()
@@ -406,8 +417,13 @@ describe('MaciState', function() {
         let m1
         const userKeypair = new Keypair()
 
+<<<<<<< HEAD
         before(() => {
             m1 = new MaciState()
+=======
+        beforeAll(() => {
+            m1 = new MaciState(STATE_TREE_DEPTH)
+>>>>>>> eb30332b (feat(state-tree-depth) - ensure stateTreeDepth is not hardcoded in the smart contracts and can be passed around as an argument)
             m1.signUp(
                 userKeypair.pubKey,
                 voiceCreditBalance,

@@ -110,12 +110,15 @@ describe('MACI', () => {
     let mpContract
     let tallyContract
     let pollId: number
+    let user: ethers.Signer
 
     describe('Deployment', () => {
         before(async () => {
             signer = await getDefaultSigner()
             const r = await deployTestContracts(
                 initialVoiceCreditBalance,
+                STATE_TREE_DEPTH,
+                true
             )
 
             maciContract = r.maciContract

@@ -6,7 +6,8 @@
     "scripts": {
         "watch": "tsc --watch",
         "hardhat": "./scripts/runHardhat.sh",
-        "compileSol": "./scripts/compileSol.sh && cp -r artifacts/ ../integrationTests/artifacts",
+        "compileSol": "./scripts/compileSol.sh $1",
+        "moveIntegrationArtifacts": "cp -r artifacts/ ../integrationTests/artifacts",
         "build": "tsc",
         "pretest": "npm run compileSol",
         "test": "hardhat test",
