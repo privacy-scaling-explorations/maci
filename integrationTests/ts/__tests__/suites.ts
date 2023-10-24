@@ -304,5 +304,6 @@ const executeSuite = async (data: any, expect: any) => {
 
 export {
     loadData,
+    execute,
     executeSuite,
 }

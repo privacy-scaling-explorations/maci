@@ -71,6 +71,16 @@ import {
 } from './deployPoll'
 
 import {
+    deployPollWithSigner,
+    configureSubparser as configureSubparserForDeployPollWithSigner,
+} from './deployPollWithSigner'
+
+import {
+    fundWallet,
+    configureSubparser as configureSubparserForFundWallet
+} from './fundWallet'
+
+import {
     airdrop,
     configureSubparser as configureSubparserForAirdrop,
 } from './airdrop'
@@ -151,6 +161,12 @@ const main = async () => {
     // Subcommand: deployPoll
     configureSubparserForDeployPoll(subparsers)
 
+    // Subcommand: deployPollWithSigner
+    configureSubparserForDeployPollWithSigner(subparsers)
+
+    // Subcommand: fundWallet
+    configureSubparserForFundWallet(subparsers)
+
     // Subcommand: airdrop 
     configureSubparserForAirdrop(subparsers)
 
@@ -198,6 +214,10 @@ const main = async () => {
         await create(args)
     } else if (args.subcommand === 'deployPoll') {
         await deployPoll(args)
+    } else if (args.subcommand === 'deployPollWithSigner') {
+        await deployPollWithSigner(args)
+    } else if (args.subcommand === 'fundWallet') {
+        await fundWallet(args)
     } else if (args.subcommand === 'airdrop') {
         await airdrop(args)
     } else if (args.subcommand === 'topup') {
