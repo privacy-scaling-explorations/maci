@@ -232,12 +232,12 @@ const genProofs = async (args: any) => {
             return 1
         }
 
-        subsidyVk = extractVk(args.subsidy_zkey)
+        subsidyVk = await extractVk(args.subsidy_zkey)
     }
 
     // Extract the verifying keys
-    const processVk = extractVk(args.process_zkey)
-    const tallyVk = extractVk(args.tally_zkey)
+    const processVk = await extractVk(args.process_zkey)
+    const tallyVk = await extractVk(args.tally_zkey)
 
     // The coordinator's MACI private key
     let serializedPrivkey
