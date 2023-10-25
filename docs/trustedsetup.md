@@ -10,7 +10,7 @@ to manage a large amount of value, and if their users accept that the risk of
 coordinator misbehaviour is insufficient to justify doing the work nof a
 trusted setup. After all, MACI's security model presumes a trusted coordinator.
 
-The PSE team is making available a trusted set of zKeys for MACI's circuits,
+The [PSE team](https://pse.dev/) is making available a trusted set of zKeys for MACI's circuits,
 which are available and accessible on
 [p0tion's website](https://ceremony.pse.dev/projects/Maci%20v1%20Trusted%20Setup%20Ceremony).
 For more info on trusted setup ceremonies please refer to p0tion's [docs](https://p0tion.super.site/).
