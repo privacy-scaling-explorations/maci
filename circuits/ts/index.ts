@@ -72,7 +72,7 @@ const verifyProof = async (publicInputs: any, proof: any, vk: any) => {
 }
 
 const extractVk = async (zkeyPath: string) => {
-    const vk = await zKey.exportJson(zkeyPath)
+    const vk = await zKey.exportVerificationKey(zkeyPath)
     return vk
 }
 

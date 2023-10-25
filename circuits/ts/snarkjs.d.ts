@@ -11,7 +11,10 @@ declare module 'snarkjs' {
     }
 
     export namespace zKey {
-        function exportJson(zkeyFileName: any): Promise<object>
+        function exportVerificationKey(
+            zkeyName: any,
+            logger?: any,
+        ): Promise<any>
     }
 
     export namespace groth16 {
