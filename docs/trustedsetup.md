@@ -11,10 +11,24 @@ coordinator misbehaviour is insufficient to justify doing the work nof a
 trusted setup. After all, MACI's security model presumes a trusted coordinator.
 
 The PSE team is making available a trusted set of zKeys for MACI's circuits,
-which will be available as soon as the first ceremony is completed and
-will be visible on
+which are available and accessible on
 [p0tion's website](https://ceremony.pse.dev/projects/Maci%20v1%20Trusted%20Setup%20Ceremony).
-For more info on the ceremony please refer to p0tion's [docs](https://p0tion.super.site/).
+For more info on trusted setup ceremonies please refer to p0tion's [docs](https://p0tion.super.site/).
+
+For your convenience, here is a list of the artifacts that can be used in production:
+
+| Artifact | Description | Parameters | Link |
+|--|--|--|--|
+| processMessages zKey | The production-ready zKey for the processMessages circuit. | 6-8-2-3 | https://maci-v1-trusted-setup-ceremony-pse-p0tion-production.s3.eu-central-1.amazonaws.com/circuits/processmessages_6-8-2-3/contributions/processmessages_6-8-2-3_final.zkey |
+| tallyVotes zKey | The production-ready zKey for the tallyVotes circuit. | 6-2-3 | https://maci-v1-trusted-setup-ceremony-pse-p0tion-production.s3.eu-central-1.amazonaws.com/circuits/tallyvotes_6-2-3/contributions/tallyvotes_6-2-3_final.zkey |
+| processMessages r1cs | The Rank-1 Constraint System file that was used to generate the zKey | 6-8-2-3 | https://maci-v1-trusted-setup-ceremony-pse-p0tion-production.s3.eu-central-1.amazonaws.com/circuits/processmessages_6-8-2-3/processmessages_6-8-2-3.r1cs |
+| tallyVotes r1cs | The Rank-1 Constraint System file that was used to generate the zKey | 6-2-3 | https://maci-v1-trusted-setup-ceremony-pse-p0tion-production.s3.eu-central-1.amazonaws.com/circuits/tallyvotes_6-2-3/tallyvotes_6-2-3.r1cs |
+| processMessage wasm | The WASM file that can be used to generate proofs | 6-8-2-3 | https://maci-v1-trusted-setup-ceremony-pse-p0tion-production.s3.eu-central-1.amazonaws.com/circuits/processmessages_6-8-2-3/processmessages_6-8-2-3.wasm |
+| tallyVotes wasm | The WASM file that can be used to generate proofs | 6-2-3 | https://maci-v1-trusted-setup-ceremony-pse-p0tion-production.s3.eu-central-1.amazonaws.com/circuits/tallyvotes_6-2-3/tallyvotes_6-2-3.wasm |
+| processMessages vKey | The verification key that can be used to verify the processMessages circuit's proofs | 6-8-2-3 | https://maci-v1-trusted-setup-ceremony-pse-p0tion-production.s3.eu-central-1.amazonaws.com/circuits/processmessages_6-8-2-3/processmessages_6-8-2-3_vkey.json |
+| tallyVotes vKey | The verification key that can be used to verify the tallyVotes circuit's proofs | 6-2-3 | https://maci-v1-trusted-setup-ceremony-pse-p0tion-production.s3.eu-central-1.amazonaws.com/circuits/tallyvotes_6-2-3/tallyvotes_6-2-3_vkey.json |
+| processMessages Solidity verifier | The Solidity smart contract which can be used to verify the processMessages circuit proofs on-chain | 6-8-2-3 | https://maci-v1-trusted-setup-ceremony-pse-p0tion-production.s3.eu-central-1.amazonaws.com/circuits/processmessages_6-8-2-3/processmessages_6-8-2-3_verifier.sol |
+| tallyVotes Solidity verifier | The Solidity smart contract which can be used to verify the tallyVotes circuit proofs on-chain | 6-2-3 | https://maci-v1-trusted-setup-ceremony-pse-p0tion-production.s3.eu-central-1.amazonaws.com/circuits/tallyvotes_6-2-3/tallyvotes_6-2-3_verifier.sol |
 
 In any case, MACI can be relatively easily modified to support PLONK, which
 does not require a circuit-specific trusted setup. Its circuits, written in
