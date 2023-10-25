@@ -2,14 +2,9 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as shelljs from 'shelljs'
 import * as tmp from 'tmp'
+import { zKey, groth16 } from 'snarkjs'
 
 import { stringifyBigInts } from 'maci-crypto'
-
-const snarkjsPath = path.join(
-    __dirname,
-    '..',
-    './node_modules/snarkjs/cli.js',
-)
 
 const genProof = (
     inputs: string[],
@@ -71,69 +66,14 @@ const genProof = (
     return { proof, publicInputs }
 }
 
-const verifyProof = (
-    publicInputs: any,
-    proof: any,
-    vk: any,
-) => {
-    // Create tmp directory
-    const tmpObj = tmp.dirSync()
-    const tmpDirPath = tmpObj.name
-
-    const publicJsonPath = path.join(tmpDirPath, 'public.json')
-    const proofJsonPath = path.join(tmpDirPath, 'proof.json')
-    const vkJsonPath = path.join(tmpDirPath, 'vk.json')
-
-    fs.writeFileSync(
-        publicJsonPath,
-        JSON.stringify(stringifyBigInts(publicInputs)),
-    )
-
-    fs.writeFileSync(
-        proofJsonPath,
-        JSON.stringify(stringifyBigInts(proof)),
-    )
-
-    fs.writeFileSync(
-        vkJsonPath,
-        JSON.stringify(stringifyBigInts(vk)),
-    )
-
-    const verifyCmd = `node ${snarkjsPath} g16v ${vkJsonPath} ${publicJsonPath} ${proofJsonPath}`
-    const output = shelljs.exec(verifyCmd, { silent: true })
-    const isValid = output.stdout && output.stdout.indexOf('OK!') > -1
-
-    //// Generate calldata
-    //const calldataCmd = `node ${snarkjsPath} zkesc ${publicJsonPath} ${proofJsonPath}`
-    //console.log(shelljs.exec(calldataCmd).stdout)
-
-    fs.unlinkSync(proofJsonPath)
-    fs.unlinkSync(publicJsonPath)
-    fs.unlinkSync(vkJsonPath)
-    tmpObj.removeCallback()
-
+const verifyProof = async (publicInputs: any, proof: any, vk: any) => {
+    const isValid = await groth16.verify(vk, publicInputs, proof)
     return isValid
 }
 
 const extractVk = (zkeyPath: string) => {
-    // Create tmp directory
-    const tmpObj = tmp.dirSync()
-    const tmpDirPath = tmpObj.name
-    const vkJsonPath = path.join(tmpDirPath, 'vk.json')
-
-    const exportCmd = `node ${snarkjsPath} zkev ${zkeyPath} ${vkJsonPath}`
-    shelljs.exec(exportCmd)
-
-    const vk = JSON.parse(fs.readFileSync(vkJsonPath).toString())
-
-    fs.unlinkSync(vkJsonPath)
-    tmpObj.removeCallback()
-
+    const vk = zKey.exportJson(zkeyPath)
     return vk
 }
 
-export {
-    genProof,
-    verifyProof,
-    extractVk,
-}
+export { genProof, verifyProof, extractVk }

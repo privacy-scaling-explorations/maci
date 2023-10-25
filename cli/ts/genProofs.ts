@@ -394,7 +394,7 @@ const genProofs = async (args: any) => {
         }
 
         // Verify the proof
-        const isValid = verifyProof(
+        const isValid = await verifyProof(
             r.publicInputs,
             r.proof,
             processVk,
@@ -440,7 +440,7 @@ const genProofs = async (args: any) => {
             subsidyCircuitInputs = poll.subsidyPerBatch()
             const r = genProof(subsidyCircuitInputs, rapidsnarkExe, args.subsidy_witnessgen, args.subsidy_zkey)
     
-            const isValid = verifyProof(r.publicInputs, r.proof, subsidyVk) 
+            const isValid = await verifyProof(r.publicInputs, r.proof, subsidyVk)
             if (!isValid) {
                 console.error('Error: generated an invalid subsidy calc proof')
                 return 1
@@ -501,7 +501,7 @@ const genProofs = async (args: any) => {
         )
 
         // Verify the proof
-        const isValid = verifyProof(
+        const isValid = await verifyProof(
             r.publicInputs,
             r.proof,
             tallyVk,
