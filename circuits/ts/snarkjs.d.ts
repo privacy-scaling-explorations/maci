@@ -3,11 +3,11 @@ declare module 'snarkjs' {
     export type PublicSignals = NumericString[]
 
     export interface Groth16Proof {
-        pi_a: NumericString[]
-        pi_b: NumericString[][]
-        pi_c: NumericString[]
-        protocol: string
-        curve: string
+        pi_a: NumericString[];
+        pi_b: NumericString[][];
+        pi_c: NumericString[];
+        protocol: string;
+        curve: string;
     }
 
     export namespace zKey {
