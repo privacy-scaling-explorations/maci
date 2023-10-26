@@ -6,6 +6,23 @@ import { zKey, groth16 } from 'snarkjs'
 
 import { stringifyBigInts } from 'maci-crypto'
 
+/*
+ * https://github.com/iden3/snarkjs/issues/152
+ * Need to cleanup the threads to avoid stalling
+ */
+const cleanThreads = async () => {
+    if (!globalThis) {
+      return Promise.resolve(true)
+    }
+
+    const curves = ['curve_bn128', 'curve_bls12381']
+    const promises = Promise.all(curves.map(curve => {
+       return globalThis[curve]?.terminate? globalThis[curve]?.terminate() : null
+    }).filter(Boolean))
+
+    return promises
+}
+
 const genProof = (
     inputs: string[],
     rapidsnarkExePath: string,
@@ -68,11 +85,13 @@ const genProof = (
 
 const verifyProof = async (publicInputs: any, proof: any, vk: any) => {
     const isValid = await groth16.verify(vk, publicInputs, proof)
+    await cleanThreads()
     return isValid
 }
 
 const extractVk = async (zkeyPath: string) => {
     const vk = await zKey.exportVerificationKey(zkeyPath)
+    await cleanThreads()
     return vk
 }
 
