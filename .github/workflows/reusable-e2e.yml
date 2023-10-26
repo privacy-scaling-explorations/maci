@@ -29,8 +29,12 @@ jobs:
           CHANGED_FILES=${{ steps.get-changed-files.outputs.all }}
           if echo "$CHANGED_FILES" | grep -q "circuit"; then
             echo "CHANGED=true" >> $GITHUB_ENV
+            echo "Changed"
+            echo ${{ env.CHANGED }}
           else
             echo "CHANGED=false" >> $GITHUB_ENV
+            echo "Not changed"
+            echo ${{ env.CHANGED }}
           fi
 
           echo ${{ env.CHANGED == 'true' }}
