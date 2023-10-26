@@ -15,6 +15,17 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
+
+      # Check for changes in the 'circuit' folder
+      - name: Check for changes in 'circuit' folder
+        id: check_changes
+        run: |
+          CHANGED=$(git diff --name-only HEAD~1..HEAD -- 'circuit')
+          if [ -n "$CHANGED" ]; then
+            echo "CHANGED=true" >> $GITHUB_ENV
+          else
+            echo "CHANGED=false" >> $GITHUB_ENV
+          fi
       
       - name: Install dependencies
         run: |
@@ -61,12 +72,20 @@ jobs:
           chmod +x /home/runner/work/maci/.local/bin/circom
 
       - name: Generate zkeys
+        if: ${{ github.env.CHANGED == 'true' }}
         run: |
           cd cli
           mkdir -p zkeys
           wget -qO zkeys/powersOfTau28_hez_final_20.ptau https://maci-devops-zkeys.s3.ap-northeast-2.amazonaws.com/powersOfTau28_hez_final_20.ptau
           npx zkey-manager compile -c ./zkeys.config.yml
           npx zkey-manager genZkeys -c ./zkeys.config.yml
+
+      - name: Download zkeys
+        if: ${{ github.env.CHANGED == 'false' }}
+        run: |
+          cd integrationTests
+          npm run download-zkeys
+          cd ../
 
       - name: Run Hardhat Network
         run: ./.github/scripts/hnctl.sh start_hardhat_network
