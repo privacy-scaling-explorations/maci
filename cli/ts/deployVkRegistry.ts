@@ -24,7 +24,7 @@ const deployVkRegistry = async (args: any) => {
       fs.renameSync(contractFilepath, contractFilepathOld)
     }
     writeJSONFile(contractFilepath, {'VkRegistry':vkRegistryContract.address})
-    return 0
+    return 
 }
 
 export {

@@ -139,7 +139,7 @@ const publish = async (args: any) => {
     // User's MACI public key
     if (!PubKey.isValidSerializedPubKey(args.pubkey)) {
         console.error('Error: invalid MACI public key')
-        return 1
+        return 
     }
 
     const userMaciPubKey = PubKey.unserialize(args.pubkey)
@@ -148,14 +148,14 @@ const publish = async (args: any) => {
     let contractAddrs = readJSONFile(contractFilepath)
     if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
         console.error('Error: MACI contract address is empty') 
-        return 1
+        return 
     }
     const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
 
     // MACI contract
     if (!validateEthAddress(maciAddress)) {
         console.error('Error: invalid MACI contract address')
-        return 1
+        return 
     }
 
     // Ethereum provider
@@ -171,7 +171,7 @@ const publish = async (args: any) => {
 
     if (!PrivKey.isValidSerializedPrivKey(serializedPrivkey)) {
         console.error('Error: invalid MACI private key')
-        return 1
+        return 
     }
 
     const userMaciPrivkey = PrivKey.unserialize(serializedPrivkey)
@@ -180,7 +180,7 @@ const publish = async (args: any) => {
     const stateIndex = BigInt(args.state_index)
     if (stateIndex < 0) {
         console.error('Error: the state index must be greater than 0')
-        return 1
+        return 
     }
 
     // Vote option index
@@ -188,7 +188,7 @@ const publish = async (args: any) => {
 
     if (voteOptionIndex < 0) {
         console.error('Error: the vote option index should be 0 or greater')
-        return 1
+        return 
     }
 
     // The nonce
@@ -196,7 +196,7 @@ const publish = async (args: any) => {
 
     if (nonce < 0) {
         console.error('Error: the nonce should be 0 or greater')
-        return 1
+        return 
     }
 
     // The salt
@@ -204,14 +204,14 @@ const publish = async (args: any) => {
     if (args.salt) {
         if (!validateSaltFormat(args.salt)) {
             console.error('Error: the salt should be a 32-byte hexadecimal string')
-            return 1
+            return 
         }
 
         salt = BigInt(args.salt)
 
         if (!validateSaltSize(args.salt)) {
             console.error('Error: the salt should less than the BabyJub field size')
-            return 1
+            return 
         }
     } else {
         salt = DEFAULT_SALT
@@ -220,14 +220,14 @@ const publish = async (args: any) => {
     const signer = await getDefaultSigner()
     if (! (await contractExists(signer.provider, maciAddress))) {
         console.error('Error: there is no MACI contract deployed at the specified address')
-        return 1
+        return 
     }
 
     const pollId = args.poll_id
 
     if (pollId < 0) {
         console.error('Error: the Poll ID should be a positive integer.')
-        return 1
+        return 
     }
 
     const [ maciContractAbi ] = parseArtifact('MACI')
@@ -242,7 +242,7 @@ const publish = async (args: any) => {
     const pollAddr = await maciContractEthers.getPoll(pollId)
     if (! (await contractExists(signer.provider, pollAddr))) {
         console.error('Error: there is no Poll contract with this poll ID linked to the specified MACI contract.')
-        return 1
+        return 
     }
 
     //const pollContract = new web3.eth.Contract(pollContractAbi, pollAddr)
@@ -331,10 +331,10 @@ const publish = async (args: any) => {
                 console.error(e.message)
             }
         }
-        return 1
+        return 
     }
 
-    return 0
+    return 
 }
 
 export {
