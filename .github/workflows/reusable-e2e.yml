@@ -32,6 +32,8 @@ jobs:
           else
             echo "CHANGED=false" >> $GITHUB_ENV
           fi
+
+          echo ${{ env.CHANGED == 'true' }}
       
       - name: Install dependencies
         run: |
@@ -78,7 +80,7 @@ jobs:
           chmod +x /home/runner/work/maci/.local/bin/circom
 
       - name: Generate zkeys
-        if: ${{ github.env.CHANGED == 'true' }}
+        if: ${{ env.CHANGED == 'true' }}
         run: |
           cd cli
           mkdir -p zkeys
@@ -87,7 +89,7 @@ jobs:
           npx zkey-manager genZkeys -c ./zkeys.config.yml
 
       - name: Download zkeys
-        if: ${{ github.env.CHANGED == 'false' }}
+        if: ${{ env.CHANGED == 'false' }}
         run: |
           cd integrationTests
           npm run download-zkeys
