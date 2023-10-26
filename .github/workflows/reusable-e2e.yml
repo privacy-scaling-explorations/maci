@@ -35,7 +35,8 @@ jobs:
             echo "No changes on circuits."
           fi
 
-          ${{ eq(env.CHANGED, 'true') }}
+          echo ${{ env.CHANGED == 'true' }}
+          echo ${{ env.CHANGED == true }}}
       
       - name: Install dependencies
         run: |
@@ -82,7 +83,7 @@ jobs:
           chmod +x /home/runner/work/maci/.local/bin/circom
 
       - name: Generate zkeys
-        if: ${{ eq(env.CHANGED, 'true') }}
+        if: ${{ env.CHANGED == 'true' }}
         run: |
           cd cli
           mkdir -p zkeys
@@ -91,7 +92,7 @@ jobs:
           npx zkey-manager genZkeys -c ./zkeys.config.yml
 
       - name: Download zkeys
-        if: ${{ eq(env.CHANGED, 'false') }}
+        if: ${{ env.CHANGED == 'false' }}
         run: |
           cd integrationTests
           npm run download-zkeys
