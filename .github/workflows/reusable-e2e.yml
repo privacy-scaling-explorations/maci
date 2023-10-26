@@ -95,10 +95,16 @@ jobs:
         run: |
           cd integrationTests
           npm run download-zkeys
-          cd ../
 
       - name: Bespoke Test
-        run: ./.github/scripts/run-e2e-tests.sh
+        run: |
+          if lsof -Pi :8545 -sTCP:LISTEN -t >/dev/null ; then
+              echo "Hardhat is running."
+          else
+              echo "Hardhat is not running."
+              exit 1
+          fi
+          ./.github/scripts/run-e2e-tests.sh
 
       - name: Integration Test
         run: |
