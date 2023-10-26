@@ -82,7 +82,7 @@ jobs:
           chmod +x /home/runner/work/maci/.local/bin/circom
 
       - name: Generate zkeys
-        if: ${{ env.CHANGED == 'true' }}
+        # if: ${{ env.CHANGED == 'false' }}
         run: |
           cd cli
           mkdir -p zkeys
@@ -90,11 +90,11 @@ jobs:
           npx zkey-manager compile -c ./zkeys.config.yml
           npx zkey-manager genZkeys -c ./zkeys.config.yml
 
-      - name: Download zkeys
-        if: ${{ env.CHANGED == 'false' }}
-        run: |
-          cd integrationTests
-          npm run download-zkeys
+      # - name: Download zkeys
+      #   if: ${{ env.CHANGED == 'false' }}
+      #   run: |
+      #     cd integrationTests
+      #     npm run download-zkeys
 
       - name: Bespoke Test
         run: |
