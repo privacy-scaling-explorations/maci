@@ -27,17 +27,15 @@ jobs:
         id: check_changes
         run: |
           CHANGED_FILES=${{ steps.get-changed-files.outputs.all }}
-          if echo "$CHANGED_FILES" | grep -q "circuit"; then
+          if echo "$CHANGED_FILES" | grep -q "circuit" && ! echo "$CHANGED_FILES" | grep -q ".github/workflows/circuit-build.yml"; then
             echo "CHANGED=true" >> $GITHUB_ENV
-            echo "Changed"
-            echo ${{ env.CHANGED }}
+            echo "Circuits have changes."
           else
             echo "CHANGED=false" >> $GITHUB_ENV
-            echo "Not changed"
-            echo ${{ env.CHANGED }}
+            echo "No changes on circuits."
           fi
 
-          echo ${{ env.CHANGED == 'true' }}
+          ${{ eq(env.CHANGED, 'true') }}
       
       - name: Install dependencies
         run: |
@@ -84,7 +82,7 @@ jobs:
           chmod +x /home/runner/work/maci/.local/bin/circom
 
       - name: Generate zkeys
-        if: ${{ env.CHANGED == 'true' }}
+        if: ${{ eq(env.CHANGED, 'true') }}
         run: |
           cd cli
           mkdir -p zkeys
@@ -93,7 +91,7 @@ jobs:
           npx zkey-manager genZkeys -c ./zkeys.config.yml
 
       - name: Download zkeys
-        if: ${{ env.CHANGED == 'false' }}
+        if: ${{ eq(env.CHANGED, 'false') }}
         run: |
           cd integrationTests
           npm run download-zkeys
