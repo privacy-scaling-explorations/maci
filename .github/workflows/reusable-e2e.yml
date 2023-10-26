@@ -34,9 +34,6 @@ jobs:
             echo "CHANGED=false" >> $GITHUB_ENV
             echo "No changes on circuits."
           fi
-
-          echo ${{ env.CHANGED == 'true' }}
-          echo ${{ env.CHANGED == true }}}
       
       - name: Install dependencies
         run: |
@@ -69,6 +66,7 @@ jobs:
         run: |
           cd contracts
           npm run compileSol
+          npm run hardhat &
 
       - name: Download rapidsnark (1c137)
         run: |
@@ -109,5 +107,5 @@ jobs:
           cd integrationTests
           npm run test
 
-      - name: Destroy Hardhat Network
-        run: ./.github/scripts/hnctl.sh destroy_hardhat_network
+      - name: Stop Hardhat
+        run: kill $(lsof -t -i:8545)
