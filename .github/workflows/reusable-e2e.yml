@@ -67,6 +67,7 @@ jobs:
           cd contracts
           npm run compileSol
           npm run hardhat &
+          sleep 5
 
       - name: Download rapidsnark (1c137)
         run: |
