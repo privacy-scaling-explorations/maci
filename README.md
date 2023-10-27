@@ -37,7 +37,7 @@ Below you can find a list of the packages included in this repository.
 
 ### Requirements
 
-You should have Node.js (version `>=14 and <=18`) installed. Use `nvm` to install it and manage versions.
+You should have Node.js (version `=18`) installed. Use `nvm` to install it and manage versions. This code has been tested with all version before Node.js v18 (14 and 16), however we do recommend using Node.js v18.
 
 You also need a Ubuntu/Debian Linux machine on an Intel CPU.
 
