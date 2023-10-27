@@ -230,7 +230,7 @@ const executeSuite = async (data: any, expect: any) => {
             }
         }
 
-        const timeTravelCommand = `node build/index.js timeTravel -s ${config.constants.maci.votingDuration}`
+        const timeTravelCommand = `node build/index.js timeTravel -s ${config.constants.poll.votingDuration}`
         execute(timeTravelCommand)
 
         const mergeMessagesCommand = `node build/index.js mergeMessages -x ${maciAddress} -o ${pollId}`
