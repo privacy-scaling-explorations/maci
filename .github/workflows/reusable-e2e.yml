@@ -78,11 +78,11 @@ jobs:
       - name: Download circom Binary v2.0.8
         run: |
           mkdir -p /home/runner/work/maci/.local/bin
-          wget -qO /home/ubuntu/maci/.local/bin/circom https://github.com/iden3/circom/releases/download/v2.0.8/circom-linux-amd64
-          chmod +x /home/ubuntu/maci/.local/bin/circom
+          wget -qO /home/runner/work/maci/.local/bin/circom https://github.com/iden3/circom/releases/download/v2.0.8/circom-linux-amd64
+          chmod +x /home/runner/work/maci/.local/bin/circom
 
       - name: Generate zkeys
-        if: ${{ env.CHANGED == 'false' }}
+        if: ${{ env.CHANGED == 'true' }}
         run: |
           cd cli
           mkdir -p zkeys
