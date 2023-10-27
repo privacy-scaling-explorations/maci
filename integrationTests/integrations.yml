@@ -17,7 +17,7 @@ invalidVote:
   voteCreditBalance: 1
 constants:
   poll:
-    duration: 120
+    duration: 200
     intStateTreeDepth: 1
     messageTreeDepth: 2
     messageBatchDepth: 1
