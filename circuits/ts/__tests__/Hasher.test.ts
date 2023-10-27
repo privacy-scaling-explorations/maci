@@ -233,7 +233,7 @@ describe('Poseidon hash circuits', function() {
         })
         it('correctly hashes a message', async () => {
             const k = new Keypair()
-            const random50bitBigInt = (): BigInt => {
+            const random50bitBigInt = (): bigint => {
                 return (
                     (BigInt(1) << BigInt(50)) - BigInt(1)
                 ) & BigInt(genRandomSalt().toString())

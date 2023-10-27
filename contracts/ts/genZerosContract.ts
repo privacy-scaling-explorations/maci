@@ -10,7 +10,7 @@ import {
 
 const genZerosContract = (
     contractName: string,
-    zeroVal: BigInt,
+    zeroVal: bigint,
     hashLength: number,
     numZeros: number,
     comment: string,
@@ -29,10 +29,10 @@ const genZerosContract = (
         ),
     ).toString()
 
-    const zeros: BigInt[] = [zeroVal]
+    const zeros: bigint[] = [zeroVal]
     for (let i = 1; i < numZeros; i ++) {
         const z = zeros[i - 1]
-        let hashed: BigInt
+        let hashed: bigint
 
         if (useSha256 && i <= subDepth) {
             if (hashLength === 2) {

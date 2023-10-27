@@ -10,7 +10,7 @@ import {
 import {
     Leaf,
     Queue
-} from "../types/"
+} from "./types"
 import { calcDepthFromNumLeaves, deepCopyBigIntArray } from "./utils"
 
 /**
@@ -71,6 +71,12 @@ export class AccQueue {
     // Whether the subtrees have been merged
     public subTreesMerged = false
 
+    /**
+     * Create a new instance of AccQueue
+     * @param _subDepth - the depth of the subtrees
+     * @param _hashLength - the number of leaves per node
+     * @param _zeroValue - the default value for empty leaves
+     */
     constructor (
         _subDepth: number,
         _hashLength: number,
@@ -212,7 +218,7 @@ export class AccQueue {
     }
 
 
-    /*
+    /**
      * Fill any empty leaves of the last subtree with zeros and store the
      * resulting subroot.
      */
@@ -252,11 +258,13 @@ export class AccQueue {
         this.smallSRTroot = BigInt(0)
     }
 
+    /**
+     * Private function that performs the actual fill operation
+     * @param _level - The level of the subtree
+     */
     private _fill(_level: number) {
-        if (_level > this.subDepth) {
-            return
-        }
-
+        if (_level > this.subDepth) return
+        
         const n = this.leafQueue.indices[_level]
 
         if (n !== 0) {
@@ -285,7 +293,11 @@ export class AccQueue {
         this._fill(_level + 1)
     }
 
-    public calcSRTdepth() {
+    /**
+     * Calculate the depth of the smallest possible Merkle tree which fits all
+     * @returns the depth of the smallest possible Merkle tree which fits all
+     */
+    public calcSRTdepth(): number {
         // Calculate the SRT depth
         let srtDepth = this.subDepth
         const subTreeCapacity = this.hashLength ** this.subDepth
@@ -299,6 +311,11 @@ export class AccQueue {
         return srtDepth
     }
 
+    /**
+     * Insert a subtree into the queue. This is used when the subtree is
+     * already computed.
+     * @param _subRoot - The root of the subtree
+     */
     public insertSubTree(_subRoot: bigint) {
         // If the current subtree is not full, fill it.
         const subTreeCapacity = this.hashLength ** this.subDepth
@@ -317,7 +334,7 @@ export class AccQueue {
         this.subTreesMerged = false
     }
 
-    /*
+    /**
      * Merge all the subroots into a tree of a specified depth.
      * It requires this.mergeSubRoots() to be run first.
      */
@@ -351,7 +368,7 @@ export class AccQueue {
         }
     }
 
-    /*
+    /**
      * Merge all the subroots into a tree of a specified depth.
      * Uses an IncrementalQuinTree instead of the two-step method that
      * AccQueue.sol uses. 
@@ -396,10 +413,11 @@ export class AccQueue {
         this.mainRoots[_depth] = tree.root
     }
 
-    /*
+    /**
      * Merge all subroots into the smallest possible Merkle tree which fits
      * them. e.g. if there are 5 subroots and hashLength == 2, the tree depth
      * is 3 since 2 ** 3 = 8 which is the next power of 2.
+     * @param _numSrQueueOps - The number of subroots to queue into the SRT
      */
     public mergeSubRoots(
         _numSrQueueOps = 0,
@@ -465,8 +483,11 @@ export class AccQueue {
         this.subTreesMerged = true
     }
 
-    /*
+    /**
      * Queues the _leaf (a subroot) into queuedSRTlevels
+     * @param _leaf - The leaf to insert
+     * @param _level - The level of the subtree
+     * @param _maxDepth - The maximum depth of the tree
      */
     private queueSubRoot(
         _leaf: bigint,
@@ -496,17 +517,28 @@ export class AccQueue {
         }
     }
 
-    public getRoot(_depth: number) {
+    /**
+     * Get the root at a certain depth
+     * @param _depth - The depth of the tree
+     * @returns the root 
+     */
+    public getRoot(_depth: number): bigint {
         return this.mainRoots[_depth]
     }
 
-    public hasRoot(_depth: number) {
+    /**
+     * Check if the root at a certain depth exists (subtree root)
+     * @param _depth - the depth of the tree
+     * @returns whether the root exists 
+     */
+    public hasRoot(_depth: number): boolean {
         const root = this.getRoot(_depth) 
         return !(root == null || root == undefined)
     }
 
     /**
      * @notice Deep-copies this object
+     * @returns a deep copy of this object
      */
     public copy(): AccQueue {
         const newAccQueue = new AccQueue(
@@ -534,6 +566,11 @@ export class AccQueue {
         return newAccQueue
     }
 
+    /**
+     * Hash an array of leaves
+     * @param _leaves - The leaves to hash
+     * @returns the hash value of the leaves
+     */
     public hash(_leaves: bigint[]): bigint  {
         assert(_leaves.length === this.hashLength)
         return this.hashFunc(_leaves)

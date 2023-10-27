@@ -7,7 +7,8 @@ export {
     unstringifyBigInts,
     bigInt2Buffer,
     deepCopyBigIntArray,
-    calcDepthFromNumLeaves
+    calcDepthFromNumLeaves,
+    genTreeCommitment
 } from "./utils"
 
 export {
@@ -48,3 +49,18 @@ export {
 } from "./crypto"
 
 export { OptimisedMT as IncrementalQuinTree } from 'optimisedmt'
+
+export {
+    SnarkBigInt,
+    PrivKey,
+    PubKey,
+    Point,
+    EcdhSharedKey,
+    Plaintext,
+    Ciphertext,
+    Queue,
+    Keypair,
+    Signature,
+    PoseidonFuncs,
+    Leaf
+} from "./types"

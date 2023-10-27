@@ -13,13 +13,13 @@ export interface Vote {
 export class UserCommand {
     public keypair: Keypair
     public votes: Vote[]
-    public voiceCreditBalance: BigInt
+    public voiceCreditBalance: bigint
 
     constructor(
         _keypair: Keypair,
         _votes: Vote[],
-        _voiceCreditBalance: BigInt,
-        _nonce: BigInt,
+        _voiceCreditBalance: bigint,
+        _nonce: bigint,
     ) {
         this.keypair = _keypair
         this.votes = _votes

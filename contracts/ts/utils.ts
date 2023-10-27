@@ -1,7 +1,7 @@
 interface SnarkProof {
-    pi_a: BigInt[];
-    pi_b: BigInt[][];
-    pi_c: BigInt[];
+    pi_a: bigint[];
+    pi_b: bigint[][];
+    pi_c: bigint[];
 }
 
 import {

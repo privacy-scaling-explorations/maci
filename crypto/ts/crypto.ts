@@ -17,7 +17,7 @@ import {
     PoseidonFuncs, 
     Keypair, 
     Signature
-} from "../types/"
+} from "./types"
 const createBlakeHash = require('blake-hash')
 
 /**
@@ -386,7 +386,7 @@ export const encrypt = (
 export const decrypt = (
     ciphertext: Ciphertext,
     sharedKey: EcdhSharedKey,
-    nonce: BigInt,
+    nonce: bigint,
     length: number,
 ): Plaintext => {
     const plaintext = poseidonDecrypt(
@@ -406,7 +406,7 @@ export const decrypt = (
  */
 export const sign = (
     privKey: PrivKey,
-    msg: BigInt,
+    msg: bigint,
 ): Signature => {
     return eddsa.signPoseidon(
         bigInt2Buffer(privKey),
@@ -435,7 +435,7 @@ export const verifySignature = (
  * @returns the point.
  */
 export const bitToCurve = (
-    bit: BigInt
+    bit: bigint
 ): Point => {
     switch(bit) {
         case BigInt(0):

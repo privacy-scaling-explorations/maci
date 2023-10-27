@@ -1,4 +1,5 @@
 import * as ff from 'ffjavascript'
+import { IncrementalQuinTree, hash5, hashLeftRight } from './index'
 
 /**
  * Convert a bigint to a string 
@@ -52,4 +53,23 @@ export const calcDepthFromNumLeaves = (
     }
 
     return depth
+}
+
+/**
+ * A helper function which hashes a list of results with a salt and returns the
+ * hash.
+ * @param results A list of values
+ * @parm salt A random salt
+ * @returns The hash of the leavees and the salt, with the salt last
+ */
+export const genTreeCommitment = (
+    leaves: bigint[],
+    salt: bigint,
+    depth: number,
+): bigint => {
+    const tree = new IncrementalQuinTree(depth, BigInt(0), 5, hash5)
+    for (const leaf of leaves) {
+        tree.insert(leaf)
+    }
+    return hashLeftRight(tree.root, salt)
 }

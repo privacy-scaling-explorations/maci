@@ -262,7 +262,7 @@ class PubKey {
         return this.rawPubKey.map((x) => x.toString())
     }
 
-    public asArray = (): BigInt[] => {
+    public asArray = (): bigint[] => {
         return [
             this.rawPubKey[0],
             this.rawPubKey[1],
@@ -281,7 +281,7 @@ class PubKey {
         return SERIALIZED_PUB_KEY_PREFIX + packed.toString()
     }
 
-    public hash = (): BigInt => {
+    public hash = (): bigint => {
         return hashLeftRight(this.rawPubKey[0], this.rawPubKey[1])
     }
 
@@ -368,31 +368,31 @@ class Keypair {
 
 interface IStateLeaf {
     pubKey: PubKey;
-    voiceCreditBalance: BigInt;
+    voiceCreditBalance: bigint;
 }
 
 interface VoteOptionTreeLeaf {
-    votes: BigInt;
+    votes: bigint;
 }
 
 /*
  * An encrypted command and signature.
  */
 class Message {
-    public msgType: BigInt
-    public data: BigInt[]
+    public msgType: bigint
+    public data: bigint[]
     public static DATA_LENGTH = 10
 
     constructor (
-        msgType: BigInt,
-        data: BigInt[],
+        msgType: bigint,
+        data: bigint[],
     ) {
         assert(data.length === Message.DATA_LENGTH)
         this.msgType = msgType
         this.data = data
     }
 
-    private asArray = (): BigInt[] => {
+    private asArray = (): bigint[] => {
         return [this.msgType].concat(this.data)
     }
 
@@ -403,14 +403,14 @@ class Message {
         }
     }
 
-    public asCircuitInputs = (): BigInt[] => {
+    public asCircuitInputs = (): bigint[] => {
 
         return this.asArray()
     }
 
     public hash = (
         _encPubKey: PubKey,
-    ): BigInt => {
+    ): bigint => {
        return hash13([
            ...[this.msgType],
            ...this.data,
@@ -422,7 +422,7 @@ class Message {
 
         return new Message(
             BigInt(this.msgType.toString()),
-            this.data.map((x: BigInt) => BigInt(x.toString())),
+            this.data.map((x: bigint) => BigInt(x.toString())),
         )
     }
 
@@ -452,8 +452,8 @@ class Message {
  *               published
  */
 class Ballot {
-    public votes: BigInt[] = []
-    public nonce: BigInt = BigInt(0)
+    public votes: bigint[] = []
+    public nonce: bigint = BigInt(0)
     public voteOptionTreeDepth: number
 
     constructor(
@@ -468,16 +468,16 @@ class Ballot {
         }
     }
 
-    public hash = (): BigInt => {
+    public hash = (): bigint => {
         const vals = this.asArray()
         return hashLeftRight(vals[0], vals[1])
     }
 
-    public asCircuitInputs = (): BigInt[] => {
+    public asCircuitInputs = (): bigint[] => {
         return this.asArray()
     }
 
-    public asArray = (): BigInt[] => {
+    public asArray = (): bigint[] => {
         let lastIndexToInsert = this.votes.length - 1
         while (lastIndexToInsert > 0) {
             if (this.votes[lastIndexToInsert] !== BigInt(0)) {
@@ -547,13 +547,13 @@ class Ballot {
  */
 class StateLeaf implements IStateLeaf {
     public pubKey: PubKey
-    public voiceCreditBalance: BigInt
-    public timestamp: BigInt
+    public voiceCreditBalance: bigint
+    public timestamp: bigint
 
     constructor (
         pubKey: PubKey,
-        voiceCreditBalance: BigInt,
-        timestamp: BigInt,
+        voiceCreditBalance: bigint,
+        timestamp: bigint,
     ) {
         this.pubKey = pubKey
         this.voiceCreditBalance = voiceCreditBalance
@@ -599,7 +599,7 @@ class StateLeaf implements IStateLeaf {
         )
     }
 
-    private asArray = (): BigInt[] => {
+    private asArray = (): bigint[] => {
 
         return [
             ...this.pubKey.asArray(),
@@ -608,12 +608,12 @@ class StateLeaf implements IStateLeaf {
         ]
     }
 
-    public asCircuitInputs = (): BigInt[] => {
+    public asCircuitInputs = (): bigint[] => {
 
         return this.asArray()
     }
 
-    public hash = (): BigInt => {
+    public hash = (): bigint => {
 
         return hash4(this.asArray())
     }
@@ -656,7 +656,7 @@ class StateLeaf implements IStateLeaf {
 }
 
 class Command {
-   public cmdType: BigInt;
+   public cmdType: bigint;
    constructor() {
    }
    public copy = (): Command => {
@@ -670,12 +670,12 @@ class Command {
 
 
 class TCommand extends Command {
-    public cmdType: BigInt
-    public stateIndex: BigInt
-    public amount: BigInt
-    public pollId: BigInt
+    public cmdType: bigint
+    public stateIndex: bigint
+    public amount: bigint
+    public pollId: bigint
 
-    constructor(stateIndex: BigInt, amount: BigInt) {
+    constructor(stateIndex: bigint, amount: bigint) {
         super()
         this.cmdType = BigInt(2)
         this.stateIndex = stateIndex
@@ -699,23 +699,23 @@ class TCommand extends Command {
  * Unencrypted data whose fields include the user's public key, vote etc.
  */
 class PCommand extends Command {
-    public cmdType: BigInt
-    public stateIndex: BigInt
+    public cmdType: bigint
+    public stateIndex: bigint
     public newPubKey: PubKey
-    public voteOptionIndex: BigInt
-    public newVoteWeight: BigInt
-    public nonce: BigInt
-    public pollId: BigInt
-    public salt: BigInt
+    public voteOptionIndex: bigint
+    public newVoteWeight: bigint
+    public nonce: bigint
+    public pollId: bigint
+    public salt: bigint
 
     constructor (
-        stateIndex: BigInt,
+        stateIndex: bigint,
         newPubKey: PubKey,
-        voteOptionIndex: BigInt,
-        newVoteWeight: BigInt,
-        nonce: BigInt,
-        pollId: BigInt,
-        salt: BigInt = genRandomSalt(),
+        voteOptionIndex: bigint,
+        newVoteWeight: bigint,
+        nonce: bigint,
+        pollId: bigint,
+        salt: bigint = genRandomSalt(),
     ) {
         super()
         const limit50Bits = BigInt(2 ** 50)
@@ -753,7 +753,7 @@ class PCommand extends Command {
      * are packed into a single 250-bit value. This allows Messages to be
      * smaller and thereby save gas when the user publishes a message.
      */
-    public asArray = (): BigInt[] => {
+    public asArray = (): bigint[] => {
         const p =
             BigInt(`${this.stateIndex}`) +
             (BigInt(`${this.voteOptionIndex}`) << BigInt(50)) +
@@ -770,7 +770,7 @@ class PCommand extends Command {
         return a
     }
 
-    public asCircuitInputs = (): BigInt[] => {
+    public asCircuitInputs = (): bigint[] => {
 
         return this.asArray()
     }
@@ -789,7 +789,7 @@ class PCommand extends Command {
             this.salt === command.salt
     }
 
-    public hash = (): BigInt => {
+    public hash = (): bigint => {
         return hash4(this.asArray())
     }
 
@@ -867,7 +867,7 @@ class PCommand extends Command {
         // shift left by pos
         // AND with val
         // shift right by pos
-        const extract = (val: BigInt, pos: number): BigInt => {
+        const extract = (val: bigint, pos: number): bigint => {
             return BigInt(
                 (
                     (

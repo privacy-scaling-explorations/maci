@@ -11,7 +11,8 @@
         "noFallthroughCasesInSwitch": true,
         "sourceMap": true,
         "strict": false,
-        "outDir": "./build"
+        "outDir": "./build",
+        "declaration": true
     },
     "exclude": [
         "node_modules/**"

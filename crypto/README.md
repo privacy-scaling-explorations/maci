@@ -43,7 +43,7 @@ initialisation vector and encrypted data.
 modulo the BN254 group order, and prevents modulo bias. Relies on Node.js's
 `crypto.randomBytes(32)` for entropy.
 
-**`genRandomSalt: BigInt`**
+**`genRandomSalt: bigint`**
 
 Returns a secure random salt value. Wraps `genRandomBabyJubValue()`.
 
@@ -90,29 +90,29 @@ Checks whether the given signature is valid.
 
 ### Hash functions
 
-**`sha256Hash = (input: BigInt[]): BigInt`**: a wrapper function over
+**`sha256Hash = (input: bigint[]): bigint`**: a wrapper function over
 `ethers.utils.soliditySha256`, where the output is modulo the BN254 group
 order.
 
-**`hashOne = (elements: Plaintext): BigInt`**: the Poseidon hash function for
+**`hashOne = (elements: Plaintext): bigint`**: the Poseidon hash function for
 one input. Equivalent to `hash2([input, 0])`.
 
-**`hash2 = (elements: Plaintext): BigInt`**: the Poseidon hash function for 2
+**`hash2 = (elements: Plaintext): bigint`**: the Poseidon hash function for 2
 inputs.
 
-**`hashLeftRight = (left: BigInt, right: BigInt): BigInt`**: equivalent to
+**`hashLeftRight = (left: bigint, right: bigint): bigint`**: equivalent to
 `hash2([left, right])`.
 
-**`hash3 = (elements: Plaintext): BigInt`**: the Poseidon hash function for 3
+**`hash3 = (elements: Plaintext): bigint`**: the Poseidon hash function for 3
 inputs.
 
-**`hash4 = (elements: Plaintext): BigInt`**: the Poseidon hash function for 4
+**`hash4 = (elements: Plaintext): bigint`**: the Poseidon hash function for 4
 inputs.
 
-**`hash5 = (elements: Plaintext): BigInt`**: the Poseidon hash function for 5
+**`hash5 = (elements: Plaintext): bigint`**: the Poseidon hash function for 5
 inputs.
 
-**`hash12 = (elements: Plaintext): BigInt`**: the Poseidon hash function for 12
+**`hash12 = (elements: Plaintext): bigint`**: the Poseidon hash function for 12
 inputs. Combines other Poseidon hash functions (accepting 5 and 6 inputs) to do
 so. Given the following inputs `[i_0, i_1, ... i_11]`, this function hashes
 them in the following manner:
