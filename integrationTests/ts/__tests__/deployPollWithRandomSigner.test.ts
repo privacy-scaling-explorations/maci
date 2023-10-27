@@ -30,7 +30,6 @@ describe('Test deployPollWithSigner', () => {
     const test = data.suites[0]
     it(test.description, async () => {
         const result = await executeSuite(test, expect)
-        // console.log(result)
         expect(result).toBeTruthy()
 
         let caughtException = false
