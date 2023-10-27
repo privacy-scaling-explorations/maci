@@ -1,9 +1,4 @@
-jest.setTimeout(1200000)
 import * as fs from 'fs'
-import { 
-    genWitness,
-    getSignalByName,
-} from './utils'
 
 import {
     MaciState,
@@ -25,6 +20,13 @@ import {
     NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
 
+import { 
+    getSignal,
+} from './utils'
+import * as path from 'path'
+import { expect } from 'chai'
+const tester = require("circom_tester").wasm
+
 const voiceCreditBalance = BigInt(100)
 
 const duration = 30
@@ -44,9 +46,20 @@ const treeDepths = {
 const messageBatchSize = 5
 
 const coordinatorKeypair = new Keypair()
-const circuit = 'processMessages_test'
 
-describe('ProcessMessage circuit', () => {
+describe('ProcessMessage circuit', function() {
+    this.timeout(90000)
+
+    let circuit: any 
+    let hasherCircuit: any
+
+    before(async () => {
+        const circuitPath = path.join(__dirname, '../../circom/test', `processMessages_test.circom`)
+        circuit = await tester(circuitPath)
+        const hasherCircuitPath = path.join(__dirname, '../../circom/test', `processMessagesInputHasher_test.circom`)
+        hasherCircuit = await tester(hasherCircuitPath)
+    })
+
     describe('1 user, 2 messages', () => {
         const maciState = new MaciState()
         const voteWeight = BigInt(9)
@@ -57,7 +70,7 @@ describe('ProcessMessage circuit', () => {
         const messages: Message[] = []
         const commands: PCommand[] = []
 
-        beforeAll(async () => {
+        before(async () => {
             // Sign up and publish
             const userKeypair = new Keypair(new PrivKey(BigInt(1)))
             stateIndex = maciState.signUp(
@@ -130,7 +143,7 @@ describe('ProcessMessage circuit', () => {
             poll.messageAq.merge(treeDepths.messageTreeDepth)
 
             expect(poll.messageTree.root.toString())
-                .toEqual(
+                .to.be.eq(
                     poll.messageAq.getRoot(
                         treeDepths.messageTreeDepth,
                     ).toString()
@@ -162,16 +175,16 @@ describe('ProcessMessage circuit', () => {
             const generatedInputs = poll.processMessages(pollId)
                         
             // Calculate the witness
-            const witness = await genWitness(circuit, generatedInputs)
-            expect(witness.length > 0).toBeTruthy()
+            const witness = await circuit.calculateWitness(generatedInputs, true)
+            await circuit.checkConstraints(witness)
 
             // The new roots, which should differ, since at least one of the
             // messages modified a Ballot or State Leaf
             const newStateRoot = poll.stateTree.root
             const newBallotRoot = poll.ballotTree.root
 
-            expect(newStateRoot.toString()).not.toEqual(currentStateRoot.toString())
-            expect(newBallotRoot.toString()).not.toEqual(currentBallotRoot.toString())
+            expect(newStateRoot.toString()).not.to.be.eq(currentStateRoot.toString())
+            expect(newBallotRoot.toString()).not.to.be.eq(currentBallotRoot.toString())
 
             fs.writeFileSync(
                 'input.json',
@@ -191,7 +204,6 @@ describe('ProcessMessage circuit', () => {
             )
 
             // Test the ProcessMessagesInputHasher circuit
-            const hasherCircuit = 'processMessagesInputHasher_test'
             const hasherCircuitInputs = stringifyBigInts({
                 packedVals,
                 coordPubKey: generatedInputs.coordPubKey,
@@ -201,9 +213,10 @@ describe('ProcessMessage circuit', () => {
                 pollEndTimestamp: generatedInputs.pollEndTimestamp,
             })
 
-            const hasherWitness = await genWitness(hasherCircuit, hasherCircuitInputs)
-            const hash = await getSignalByName(hasherCircuit, hasherWitness, 'main.hash')
-            expect(hash.toString()).toEqual(generatedInputs.inputHash.toString())
+            const hasherWitness = await hasherCircuit.calculateWitness(hasherCircuitInputs, true)
+            await circuit.checkConstraints(witness)
+            const hash = await getSignal(hasherCircuit, hasherWitness, 'hash')
+            expect(hash.toString()).to.be.eq(generatedInputs.inputHash.toString())
         })
     })
 
@@ -214,7 +227,7 @@ describe('ProcessMessage circuit', () => {
         const messages: Message[] = []
         const commands: PCommand[] = []
 
-        beforeAll(async () => {
+        before(async () => {
             // Sign up and publish
             const userKeypair = new Keypair(new PrivKey(BigInt(123)))
             const userKeypair2 = new Keypair(new PrivKey(BigInt(456)))
@@ -271,7 +284,7 @@ describe('ProcessMessage circuit', () => {
             poll.messageAq.merge(treeDepths.messageTreeDepth)
 
             expect(poll.messageTree.root.toString())
-                .toEqual(
+                .to.be.eq(
                     poll.messageAq.getRoot(
                         treeDepths.messageTreeDepth,
                     ).toString()
@@ -303,16 +316,17 @@ describe('ProcessMessage circuit', () => {
             const generatedInputs = poll.processMessages(pollId)
 
             // Calculate the witness
-            const witness = await genWitness(circuit, generatedInputs)
-            expect(witness.length > 0).toBeTruthy()
+   
+            const witness = await circuit.calculateWitness(generatedInputs,)
+            await circuit.checkConstraints(witness)
 
             // The new roots, which should differ, since at least one of the
             // messages modified a Ballot or State Leaf
             const newStateRoot = poll.stateTree.root
             const newBallotRoot = poll.ballotTree.root
 
-            expect(newStateRoot.toString()).not.toEqual(currentStateRoot.toString())
-            expect(newBallotRoot.toString()).not.toEqual(currentBallotRoot.toString())
+            expect(newStateRoot.toString()).not.to.be.eq(currentStateRoot.toString())
+            expect(newBallotRoot.toString()).not.to.be.eq(currentBallotRoot.toString())
         })
     })
  
@@ -326,7 +340,7 @@ describe('ProcessMessage circuit', () => {
         const messages: Message[] = []
         const commands: PCommand[] = []
 
-        beforeAll(async () => {
+        before(async () => {
             // Sign up and publish
             const userKeypair = new Keypair(new PrivKey(BigInt(123)))
             const userKeypair2 = new Keypair(new PrivKey(BigInt(456)))
@@ -336,7 +350,6 @@ describe('ProcessMessage circuit', () => {
                 voiceCreditBalance,
                 BigInt(1), //BigInt(Math.floor(Date.now() / 1000)),
             )
-            console.log('Signing up with', userKeypair.pubKey.rawPubKey[0])
 
             maciState.stateAq.mergeSubRoots(0)
             maciState.stateAq.merge(STATE_TREE_DEPTH)
@@ -426,7 +439,7 @@ describe('ProcessMessage circuit', () => {
             poll.messageAq.merge(treeDepths.messageTreeDepth)
 
             expect(poll.messageTree.root.toString())
-                .toEqual(
+                .to.be.eq(
                     poll.messageAq.getRoot(
                         treeDepths.messageTreeDepth,
                     ).toString()
@@ -458,16 +471,16 @@ describe('ProcessMessage circuit', () => {
             const generatedInputs = poll.processMessages(pollId)
 
             // Calculate the witness
-            const witness = await genWitness(circuit, generatedInputs)
-            expect(witness.length > 0).toBeTruthy()
+            const witness = await circuit.calculateWitness(generatedInputs, true)
+            await circuit.checkConstraints(witness)
 
             // The new roots, which should differ, since at least one of the
             // messages modified a Ballot or State Leaf
             const newStateRoot = poll.stateTree.root
             const newBallotRoot = poll.ballotTree.root
 
-            expect(newStateRoot.toString()).not.toEqual(currentStateRoot.toString())
-            expect(newBallotRoot.toString()).not.toEqual(currentBallotRoot.toString())
+            expect(newStateRoot.toString()).not.to.be.eq(currentStateRoot.toString())
+            expect(newBallotRoot.toString()).not.to.be.eq(currentBallotRoot.toString())
         })
     })
 
@@ -525,8 +538,8 @@ describe('ProcessMessage circuit', () => {
             for (let i = 0; i < NUM_BATCHES; i ++) {
                 const generatedInputs = poll.processMessages(pollId)
 
-                const witness = await genWitness(circuit, generatedInputs)
-                expect(witness.length > 0).toBeTruthy()
+                const witness = await circuit.calculateWitness(generatedInputs, true)
+                await circuit.checkConstraints(witness)
 
             }
         })

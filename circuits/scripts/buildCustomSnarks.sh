@@ -74,5 +74,3 @@ echo "component main {public [inputHash]} = ProcessMessages($std, $mtd, $b, $vot
 echo -e "pragma circom 2.0.0;" > $tcircuitdir
 echo -e 'include "../tallyVotes.circom";\n' > $tcircuitdir
 echo "component main {public [inputHash]} = TallyVotes($std, $istd, $votd);" >> $tcircuitdir
-
-npm run circom-helper

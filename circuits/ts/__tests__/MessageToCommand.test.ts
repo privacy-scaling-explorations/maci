@@ -1,7 +1,5 @@
-jest.setTimeout(90000)
 import { 
-    genWitness,
-    getSignalByName,
+    getSignal
 } from './utils'
 
 import { 
@@ -13,10 +11,17 @@ import {
     Keypair,
     PCommand,
 } from 'maci-domainobjs'
+import * as path from 'path'
+import { expect } from 'chai'
+const tester = require("circom_tester").wasm
+
 
 describe('MessageToCommand circuit', () => {
-    const circuit = 'messageToCommand_test'
-
+    let circuit: any 
+    before(async () => {
+        const circuitPath = path.join(__dirname, '../../circom/test', `messageToCommand_test.circom`)
+        circuit = await tester(circuitPath)
+    })
     it('Should decrypt a Message and output the fields of a Command', async () => {
         const { privKey, pubKey } = new Keypair()
         const k = new Keypair()
@@ -51,39 +56,40 @@ describe('MessageToCommand circuit', () => {
             encPubKey: pubKey1.asCircuitInputs(),
         })
 
-        const witness = await genWitness(circuit, circuitInputs)
+        const witness = await circuit.calculateWitness(circuitInputs, true)
+        await circuit.checkConstraints(witness)
 
-        const stateIndexOut = await getSignalByName(circuit, witness, 'main.stateIndex')
-        expect(command.stateIndex.toString()).toEqual(stateIndexOut)
+        const stateIndexOut = await getSignal(circuit, witness, 'stateIndex')
+        expect(command.stateIndex.toString()).to.be.eq(stateIndexOut.toString())
 
-        const newPubKey0 = await getSignalByName(circuit, witness, 'main.newPubKey[0]')
-        expect(command.newPubKey.rawPubKey[0].toString()).toEqual(newPubKey0)
+        const newPubKey0 = await getSignal(circuit, witness, 'newPubKey[0]')
+        expect(command.newPubKey.rawPubKey[0].toString()).to.be.eq(newPubKey0.toString())
 
-        const newPubKey1 = await getSignalByName(circuit, witness, 'main.newPubKey[1]')
-        expect(command.newPubKey.rawPubKey[1].toString()).toEqual(newPubKey1)
+        const newPubKey1 = await getSignal(circuit, witness, 'newPubKey[1]')
+        expect(command.newPubKey.rawPubKey[1].toString()).to.be.eq(newPubKey1.toString())
 
-        const voteOptionIndex = await getSignalByName(circuit, witness, 'main.voteOptionIndex')
-        expect(command.voteOptionIndex.toString()).toEqual(voteOptionIndex)
+        const voteOptionIndex = await getSignal(circuit, witness, 'voteOptionIndex')
+        expect(command.voteOptionIndex.toString()).to.be.eq(voteOptionIndex.toString())
 
-        const newVoteWeight = await getSignalByName(circuit, witness, 'main.newVoteWeight')
-        expect(command.newVoteWeight.toString()).toEqual(newVoteWeight)
+        const newVoteWeight = await getSignal(circuit, witness, 'newVoteWeight')
+        expect(command.newVoteWeight.toString()).to.be.eq(newVoteWeight.toString())
 
-        const nonce = await getSignalByName(circuit, witness, 'main.nonce')
-        expect(command.nonce.toString()).toEqual(nonce)
+        const nonce = await getSignal(circuit, witness, 'nonce')
+        expect(command.nonce.toString()).to.be.eq(nonce.toString())
 
-        const pollId = await getSignalByName(circuit, witness, 'main.pollId')
-        expect(command.pollId.toString()).toEqual(pollId)
+        const pollId = await getSignal(circuit, witness, 'pollId')
+        expect(command.pollId.toString()).to.be.eq(pollId.toString())
 
-        const salt = await getSignalByName(circuit, witness, 'main.salt')
-        expect(command.salt.toString()).toEqual(salt)
+        const salt = await getSignal(circuit, witness, 'salt')
+        expect(command.salt.toString()).to.be.eq(salt.toString())
 
-        const sigR80 = await getSignalByName(circuit, witness, 'main.sigR8[0]')
-        expect(signature.R8[0].toString()).toEqual(sigR80)
+        const sigR80 = await getSignal(circuit, witness, 'sigR8[0]')
+        expect(signature.R8[0].toString()).to.be.eq(sigR80.toString())
 
-        const sigR81 = await getSignalByName(circuit, witness, 'main.sigR8[1]')
-        expect(signature.R8[1].toString()).toEqual(sigR81)
+        const sigR81 = await getSignal(circuit, witness, 'sigR8[1]')
+        expect(signature.R8[1].toString()).to.be.eq(sigR81.toString())
 
-        const sigS = await getSignalByName(circuit, witness, 'main.sigS')
-        expect(signature.S.toString()).toEqual(sigS)
+        const sigS = await getSignal(circuit, witness, 'sigS')
+        expect(signature.S.toString()).to.be.eq(sigS.toString())
     })
 })

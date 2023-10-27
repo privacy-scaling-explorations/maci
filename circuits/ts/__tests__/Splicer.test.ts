@@ -1,33 +1,38 @@
-jest.setTimeout(900000)
 import { 
-    genWitness,
-    getSignalByName,
+    getSignal,
 } from './utils'
 
 import { 
     stringifyBigInts,
 } from 'maci-crypto'
+import * as path from 'path'
+import { expect } from 'chai'
+const tester = require("circom_tester").wasm
 
 describe('Splice circuit', () => {
-    const circuit  = 'splicer_test'
+    let circuit: any 
+    before(async () => {
+        const circuitPath = path.join(__dirname, '../../circom/test', `splicer_test.circom`)
+        circuit = await tester(circuitPath)
+    })
 
     it('Should output the correct reconstructed level', async () => {
-        expect.assertions(5)
         for (let index = 0; index < 5; index ++ ) {
             const items = [0, 20, 30, 40]
             const leaf  =  10
             const circuitInputs = stringifyBigInts({ in: items, leaf, index })
 
-            const witness = await genWitness(circuit, circuitInputs)
-
+            const witness = await circuit.calculateWitness(circuitInputs)
+            await circuit.checkConstraints(witness)
+            
             const output: BigInt[] = []
             for (let i = 0; i < items.length + 1; i ++) {
-                const selected = await getSignalByName(circuit, witness, `main.out[${i}]`)
+                const selected = await getSignal(circuit, witness, `out[${i}]`)
                 output.push(BigInt(selected))
             }
             items.splice(index, 0, leaf)
 
-            expect(JSON.stringify(stringifyBigInts(items.map(BigInt)))).toEqual(
+            expect(JSON.stringify(stringifyBigInts(items.map(BigInt)))).to.be.eq(
                 JSON.stringify(stringifyBigInts(output.map(String)))
             )
         }

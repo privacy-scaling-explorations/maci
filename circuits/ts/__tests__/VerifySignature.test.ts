@@ -1,4 +1,3 @@
-jest.setTimeout(90000)
 import {
     stringifyBigInts,
     verifySignature,
@@ -11,13 +10,20 @@ import {
 } from 'maci-domainobjs'
 
 import { 
-    genWitness,
-    getSignalByName,
+    getSignal,
 } from './utils'
+import * as path from 'path'
+import { expect } from 'chai'
+const tester = require("circom_tester").wasm
 
-const circuit = 'verifySignature_test'
+describe('Signature verification circuit', function() {
+    this.timeout(90000)
 
-describe('Signature verification circuit', () => {
+    let circuit: any 
+    before (async () => {
+        const circuitPath = path.join(__dirname, '../../circom/test', `verifySignature_test.circom`)
+        circuit = await tester(circuitPath)
+    })
 
     it('verifies a valid signature', async () => {
 
@@ -36,7 +42,7 @@ describe('Signature verification circuit', () => {
         const sig = command.sign(signer.privKey)
         const plaintext = hash4(command.asArray())
 
-        expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).toBeTruthy()
+        expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).to.be.true
 
         const circuitInputs = stringifyBigInts({
             pubKey: signer.pubKey.asCircuitInputs(),
@@ -45,9 +51,10 @@ describe('Signature verification circuit', () => {
             preimage: command.asCircuitInputs(),
         })
 
-        const witness = await genWitness(circuit, circuitInputs)
-        const isValid = await getSignalByName(circuit, witness, 'main.valid')
-        expect(isValid).toEqual('1')
+        const witness = await circuit.calculateWitness(circuitInputs)
+        await circuit.checkConstraints(witness)
+        const isValid = await getSignal(circuit, witness, 'valid')
+        expect(isValid.toString()).to.be.eq('1')
     })
 
     it('rejects an invalid signature (wrong signer)', async () => {
@@ -65,17 +72,17 @@ describe('Signature verification circuit', () => {
         const signer = new Keypair()
         const wrongSigner = new Keypair()
 
-        expect(signer.privKey.rawPrivKey).not.toEqual(wrongSigner.privKey.rawPrivKey)
+        expect(signer.privKey.rawPrivKey).not.to.be.eq(wrongSigner.privKey.rawPrivKey)
 
         const sig = command.sign(signer.privKey)
 
         const plaintext = hash4(command.asArray())
 
         // The signature is signed by `signer`
-        expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).toBeTruthy()
+        expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).to.be.true
 
         // The signature is not signed by `wrongSigner`
-        expect(verifySignature(plaintext, sig, wrongSigner.pubKey.rawPubKey)).toBeFalsy()
+        expect(verifySignature(plaintext, sig, wrongSigner.pubKey.rawPubKey)).to.be.false
 
         const circuitInputs = stringifyBigInts({
             pubKey: wrongSigner.pubKey.asCircuitInputs(),
@@ -84,12 +91,13 @@ describe('Signature verification circuit', () => {
             preimage: command.asCircuitInputs(),
         })
 
-        const witness = await genWitness(circuit, circuitInputs)
-        const isValid = await getSignalByName(circuit, witness, 'main.valid')
-        expect(isValid).toEqual('0')
+        const witness = await circuit.calculateWitness(circuitInputs)
+        await circuit.checkConstraints(witness)
+        const isValid = await getSignal(circuit, witness, 'valid')
+        expect(isValid.toString()).to.be.eq('0')
         expect(
-            await getSignalByName(circuit, witness, 'main.verifier.isCcZero.out'),
-        ).toEqual('1')
+            (await getSignal(circuit, witness, 'verifier.isCcZero.out')).toString(),
+        ).to.be.eq('1')
     })
 
     it('rejects an invalid signature', async () => {
@@ -109,7 +117,7 @@ describe('Signature verification circuit', () => {
         const sig = command.sign(signer.privKey)
         const plaintext = hash4(command.asArray())
 
-        expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).toBeTruthy()
+        expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).to.be.true
 
         const circuitInputs = stringifyBigInts({
             pubKey: signer.pubKey.asCircuitInputs(),
@@ -118,13 +126,14 @@ describe('Signature verification circuit', () => {
             preimage: command.asCircuitInputs(),
         })
 
-        expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).toBeTruthy()
+        expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).to.be.true
 
-        const witness = await genWitness(circuit, circuitInputs)
-        const isValid = await getSignalByName(circuit, witness, 'main.valid')
-        expect(isValid).toEqual('0')
+        const witness = await circuit.calculateWitness(circuitInputs)
+        await circuit.checkConstraints(witness)
+        const isValid = await getSignal(circuit, witness, 'valid')
+        expect(isValid.toString()).to.be.eq('0')
         expect(
-            await getSignalByName(circuit, witness, 'main.verifier.isCcZero.out'),
-        ).toEqual('0')
+            (await getSignal(circuit, witness, 'verifier.isCcZero.out')).toString(),
+        ).to.be.eq('0')
     })
 })

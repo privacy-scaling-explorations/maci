@@ -1,4 +1,3 @@
-jest.setTimeout(90000)
 import {
     Keypair,
 } from 'maci-domainobjs'
@@ -6,12 +5,19 @@ import {
 import { stringifyBigInts } from 'maci-crypto'
 
 import { 
-    genWitness,
-    getSignalByName,
+    getSignal,
 } from './utils'
+import * as path from 'path'
+import { expect } from 'chai'
+const tester = require("circom_tester").wasm
 
-describe('Public key derivation circuit', () => {
-    const circuit = 'privToPubKey_test'
+describe('Public key derivation circuit', function() {
+    this.timeout(90000)
+    let circuit: any 
+    before(async () => {
+        const circuitPath = path.join(__dirname, '../../circom/test', `privToPubKey_test.circom`)
+        circuit = await tester(circuitPath)
+    })
 
     it('correctly computes a public key', async () => {
 
@@ -21,11 +27,12 @@ describe('Public key derivation circuit', () => {
             'privKey': keypair.privKey.asCircuitInputs(),
         })
 
-        const witness = await genWitness(circuit, circuitInputs)
+        const witness = await circuit.calculateWitness(circuitInputs, true)
+        await circuit.checkConstraints(witness)
 
-        const derivedPubkey0 = await getSignalByName(circuit, witness, 'main.pubKey[0]')
-        const derivedPubkey1 = await getSignalByName(circuit, witness, 'main.pubKey[1]')
-        expect(derivedPubkey0).toEqual(keypair.pubKey.rawPubKey[0].toString())
-        expect(derivedPubkey1).toEqual(keypair.pubKey.rawPubKey[1].toString())
+        const derivedPubkey0 = await getSignal(circuit, witness, 'pubKey[0]')
+        const derivedPubkey1 = await getSignal(circuit, witness, 'pubKey[1]')
+        expect(derivedPubkey0.toString()).to.be.eq(keypair.pubKey.rawPubKey[0].toString())
+        expect(derivedPubkey1.toString()).to.be.eq(keypair.pubKey.rawPubKey[1].toString())
     })
 })

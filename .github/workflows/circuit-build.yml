@@ -54,16 +54,7 @@ jobs:
       - name: Build circuits
         run: npm run build-test-circuits
         working-directory: circuits
-      
-      - name: Launch circom-helper
-        run: |
-          # circom-helper exposes a JSON-RPC API which allows developers to generate witnesses and access signal values
-          nohup npm run circom-helper &
-
-          # Wait until circom-helper listen to port 9001
-          while [[ "$(lsof -i :9001)" -eq '0' ]]; do sleep 1; done
-        working-directory: circuits
-      
+            
       - name: Test circuits
         run: npm run test
         working-directory: circuits
