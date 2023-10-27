@@ -6,7 +6,7 @@ You need the following to use MACI:
 
 - An x86-64 system
 - A Linux system, preferably a Debian-based distribution like Ubuntu
-- NodeJS. Use [`nvm`](https://github.com/nvm-sh/nvm) to install it. MACI has
+- Node.js: use [`nvm`](https://github.com/nvm-sh/nvm) to install it. MACI has
   been tested with Node 14, 16 and 18. We do however recommend to use Node 18 as Node 14 is deprecated and Node 16 will soon be deprecated too. 
 - The `libgmp-dev` `nlohmann-json3-dev` `nasm` and `g++` Debian/Ubuntu
   packages. They are needed to run `circom-helper`, which in turn is used to
