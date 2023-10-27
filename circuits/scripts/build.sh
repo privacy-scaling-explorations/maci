@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Assuming this script file is located under circuits/circom/scripts and
+CWD=$(pwd)
 OUTPUT_PATH="../build/test/"
 CIRCUITS_PATH="./circom/test"
 mkdir -p "$OUTPUT_PATH"
@@ -16,11 +17,5 @@ do
     cd ""$OUTPUT_PATH""$filename"_cpp"
     make
 
-    cd ../
-
-    # Move generated files under $OUTPUT_PATH to allow circom-helper to recognize them
-    mv ""$OUTPUT_PATH""$filename"_cpp/"$filename"" ""$OUTPUT_PATH""$filename""
-    mv ""$OUTPUT_PATH""$filename"_cpp/"$filename".dat" ""$OUTPUT_PATH""$filename".dat"
-
-    chmod +x ""$OUTPUT_PATH""$filename""
+    cd "$CWD"
 done
