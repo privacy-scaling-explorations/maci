@@ -27,7 +27,13 @@ import {
     TimeTravelArgs,
     VerifyArgs
 } from "../ts/utils"
-import { INT_STATE_TREE_DEPTH, MSG_BATCH_DEPTH, MSG_TREE_DEPTH, STATE_TREE_DEPTH, VOTE_OPTION_TREE_DEPTH } from "./constants"
+import { 
+    INT_STATE_TREE_DEPTH, 
+    MSG_BATCH_DEPTH, 
+    MSG_TREE_DEPTH, 
+    STATE_TREE_DEPTH, 
+    VOTE_OPTION_TREE_DEPTH 
+} from "./constants"
 
 describe("Vanilla tests", function() {
     this.timeout(900000)
@@ -272,6 +278,7 @@ describe("Vanilla tests", function() {
             await verify(verifyOnChainArgs)
         })
     })
+    
     describe("test3", () => {
         const signupArgs1: SignUpArgs = {
             quiet: true,
@@ -371,6 +378,7 @@ describe("Vanilla tests", function() {
         })
 
     })
+
     describe("test4", () => {
         const signupArgs: SignUpArgs[] = Array(8).fill({
             quiet: true,
@@ -422,6 +430,7 @@ describe("Vanilla tests", function() {
             await verify(verifyOnChainArgs)
         })
     })
+
     describe("test5", () => {
         const signupArgs1: SignUpArgs = {
             quiet: true,
@@ -526,6 +535,7 @@ describe("Vanilla tests", function() {
             await verify(verifyOnChainArgs)
         })
     })
+
     describe("test6", () => {
         const signupArgs1: SignUpArgs = {
             quiet: true,
@@ -673,6 +683,7 @@ describe("Vanilla tests", function() {
             await checkVerifyingKeys(checkVerifyingKeysArgs)
         })
     })
+
     describe("keyChange", () => {
         const signupArgs: SignUpArgs = {
             quiet: true,
@@ -748,6 +759,7 @@ describe("Vanilla tests", function() {
             await verify(verifyOnChainArgs)
         })
     })
+
     describe("multiplePolls1", () => {
         const signupArgs: SignUpArgs = {
             quiet: true,
@@ -849,6 +861,7 @@ describe("Vanilla tests", function() {
             await verify(verifyOnChainArgs2)
         })
     })
+
     describe("multiplePolls2", () => {
         const signupArgs: SignUpArgs[] = [
             { quiet: true, maciPubKey: "macipk.d30bf8402e7d731e86ccc6d24726446bba3ee18e8df013ebb0c96a5b14914da9" },
