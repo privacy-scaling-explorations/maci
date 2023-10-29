@@ -19,7 +19,7 @@ export const deployPoll = async ({
     coordinatorPubkey,
     quiet 
 }: DeployPollArgs) => {
-    banner()
+    if(!quiet) banner()
 
     let _maciAddress = readContractAddress("MACI")
     if (!_maciAddress && !maciAddress) {

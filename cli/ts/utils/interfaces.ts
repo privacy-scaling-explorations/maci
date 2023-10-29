@@ -6,6 +6,10 @@ export interface DeployArgs {
     quiet?: boolean
 }
 
+export interface DeployVkRegistryArgs {
+    quiet?: boolean 
+}
+
 export interface AirdropArgs {
     amount: number,
     contractAddress?: string
@@ -29,13 +33,13 @@ export interface DeployPollArgs {
 
 export interface PublishArgs {
     pubkey: string 
-    maciContractAddress: string 
+    maciContractAddress?: string 
     stateIndex: number 
     voteOptionIndex: number 
     nonce: number 
-    salt: string  
+    salt?: string  
     pollId: number
-    newVoteWeight: string  
+    newVoteWeight: number  
     privateKey?: string 
     quiet?: boolean 
 }
@@ -66,7 +70,7 @@ export interface TimeTravelArgs {
 
 export interface SignUpArgs {
     maciPubKey: string
-    maciAddress: string 
+    maciAddress?: string 
     sgDataArg?: string
     ivcpDataArg?: string
     quiet?: boolean 
@@ -103,9 +107,9 @@ export interface FundWalletArgs {
 export interface VerifyArgs {
     quiet?: boolean
     pollId: string 
-    maciAddress: string 
-    tallyAddress: string 
-    subsidyAddress: string
+    maciAddress?: string 
+    tallyAddress?: string 
+    subsidyAddress?: string
     tallyFile: string 
     subsidyFile?: string
 }
@@ -139,4 +143,16 @@ export interface ProveOnChainArgs {
     tallyAddress?: string 
     subsidyAddress?: string
     proofDir: string 
+}
+
+export interface CheckVerifyingKeysArgs {
+    quiet?: boolean 
+    maciContract?: string
+    stateTreeDepth: number
+    intStateTreeDepth: number
+    messageTreeDepth: number
+    voteOptionTreeDepth: number
+    messageBatchDepth: number
+    processMessagesZkeyPath: string
+    tallyVotesZkeyPath: string
 }

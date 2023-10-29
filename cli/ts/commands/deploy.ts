@@ -24,7 +24,7 @@ export const deploy = async ({
     signupGatekeeperAddress,
     quiet
 }: DeployArgs) => {
-    banner()
+    if(!quiet) banner()
     // check if we have a vkRegistry already deployed or passed as arg
     const vkRegistryContractAddress = readContractAddress("VkRegistry")
     if (!vkRegistryContractAddress && !vkRegistryAddress) {

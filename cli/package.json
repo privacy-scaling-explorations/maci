@@ -12,7 +12,9 @@
     ],
     "scripts": {
         "watch": "tsc --watch",
-        "build": "tsc"
+        "build": "tsc",
+        "test": "ts-mocha -exit tests/*.test.ts",
+        "test-debug": "node --inspect-brk ./node_modules/.bin/jest"
     },
     "dependencies": {
         "@nomiclabs/hardhat-ethers": "^2.0.2",
@@ -39,6 +41,12 @@
         "zkey-manager": "^0.1.1"
     },
     "devDependencies": {
-        "@types/node": "^18.11.9"
-    }
+        "@types/node": "^18.11.9",
+        "@types/chai": "^4.3.9",
+        "@types/mocha": "^10.0.3",
+        "chai": "^4.3.10",
+        "mocha": "^10.2.0",
+        "ts-mocha": "^10.0.0"
+    },
+    "gitHead": "f567a17293114ba2d5e89c711d00a9f4c197f070"
 }

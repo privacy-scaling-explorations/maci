@@ -26,7 +26,7 @@ export const genProofs = async ({
     pollId,
     transactionHash
 }: GenProofsArgs) => {
-    banner()
+    if(!quiet) banner()
 
     if (!existsSync(outputDir)) {
         // Create the directory

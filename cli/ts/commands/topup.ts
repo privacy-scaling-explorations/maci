@@ -13,7 +13,7 @@ export const topup = async ({
     stateIndex,
     pollId
 }: TopupArgs) => {
-    banner()
+    if(!quiet) banner()
     const signer = await getDefaultSigner()
     if (!readContractAddress(maciAddress) && !maciAddress) 
         logError('Invalid MACI contract address')

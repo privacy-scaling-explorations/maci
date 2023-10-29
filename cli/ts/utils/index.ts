@@ -20,6 +20,7 @@ export {
     DEFAULT_SR_QUEUE_OPS
 } from "./defaults"
 export {
+    CheckVerifyingKeysArgs,
     DeployArgs,
     AirdropArgs,
     DeployPollArgs,
@@ -35,6 +36,7 @@ export {
     VerifyArgs,
     GenProofsArgs,
     ProveOnChainArgs,
+    DeployVkRegistryArgs
 } from "./interfaces"
 export {
     compareVks

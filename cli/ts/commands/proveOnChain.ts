@@ -18,7 +18,7 @@ export const proveOnChain = async ({
     subsidyAddress,
     proofDir
 }: ProveOnChainArgs) => {
-    banner()
+    if(!quiet) banner()
     const signer = await getDefaultSigner()
     
     // check existence of contract addresses
@@ -45,10 +45,9 @@ export const proveOnChain = async ({
     )
 
     const pollAddr = await maciContract.polls(pollId)
-    if (! (await contractExists(signer.provider, pollAddr))) {
+    if (!(await contractExists(signer.provider, pollAddr))) {
         logError('There is no Poll contract with this poll ID linked to the specified MACI contract.')
     }
-
 
     const pollContract = new Contract(
         pollAddr,

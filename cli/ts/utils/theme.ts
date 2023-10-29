@@ -23,7 +23,7 @@ export function logMagenta(text: string) {
 
 export function logError(text: string) {
     logRed(error(text))
-    process.exit(1)
+    throw new Error()
 }
 
 export const info = (text: string) => `[i] ${text}`

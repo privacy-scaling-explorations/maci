@@ -52,3 +52,6 @@ export {
 export {
     proveOnChain
 } from "./proveOnChain"
+export {
+    checkVerifyingKeys
+} from "./checkVerifyingKeys"

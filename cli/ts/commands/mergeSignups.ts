@@ -24,7 +24,7 @@ export const mergeSignups = async ({
     quiet,
     numQueueOps
 }: MergeSignupsArgs) => {
-    banner()
+    if(!quiet) banner()
     const signer = await getDefaultSigner()
 
     // maci contract validation

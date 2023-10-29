@@ -9,7 +9,7 @@ export const timeTravel = async ({
     provider,
     seconds 
 }: TimeTravelArgs) => {
-    banner()
+    if(!quiet) banner()
     const ethProvider = provider ? provider : DEFAULT_ETH_PROVIDER
     const rpcProvider = new providers.JsonRpcProvider(ethProvider)
 
