@@ -46,6 +46,7 @@ export interface PublishArgs {
 
 export interface GenMaciPubKeyArgs {
     privkey: string
+    quiet?: boolean 
 }
 
 export interface MergeMessagesArgs {
@@ -155,4 +156,12 @@ export interface CheckVerifyingKeysArgs {
     messageBatchDepth: number
     processMessagesZkeyPath: string
     tallyVotesZkeyPath: string
+}
+
+export interface GenKeyPairArgs { 
+    quiet?: boolean
+}
+
+export interface ShowContractsArgs { 
+    quiet?: boolean
 }

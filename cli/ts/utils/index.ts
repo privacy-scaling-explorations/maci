@@ -30,13 +30,15 @@ export {
     MergeSignupsArgs,
     TimeTravelArgs,
     SignUpArgs,
+    ShowContractsArgs,
     TopupArgs,
     SetVerifyingKeysArgs,
     FundWalletArgs,
     VerifyArgs,
     GenProofsArgs,
     ProveOnChainArgs,
-    DeployVkRegistryArgs
+    DeployVkRegistryArgs,
+    GenKeyPairArgs
 } from "./interfaces"
 export {
     compareVks

@@ -9,7 +9,8 @@ import { GenMaciPubKeyArgs } from "../utils/interfaces"
  * @param privKey - the user private key
  */
 export const genMaciPubKey = ({
-    privkey
+    privkey,
+    quiet 
 }: GenMaciPubKeyArgs) => {
     if(!quiet) banner()
 
