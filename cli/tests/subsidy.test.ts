@@ -32,6 +32,9 @@ import {
     STATE_TREE_DEPTH, 
     VOTE_OPTION_TREE_DEPTH 
 } from "./constants"
+import {
+    homedir
+} from "os"
 
 describe("Subsidy tests", function() {
     this.timeout(900000)
@@ -90,7 +93,7 @@ describe("Subsidy tests", function() {
         tallyFile: "./tally.json",
         subsidyFile: "./subsidy.json",
         outputDir: "./proofs",
-        rapidsnark: "~/rapidsnark/build/prover"
+        rapidsnark: `${homedir()}/rapidsnark/build/prover`
     }
 
     const proveOnChainArgs: ProveOnChainArgs = {
@@ -844,7 +847,7 @@ describe("Subsidy tests", function() {
             tallyFile: "./tally.json",
             subsidyFile: "./subsidy.json",
             outputDir: "./proofs",
-            rapidsnark: "~/rapidsnark/build/prover"
+            rapidsnark: `${homedir()}/rapidsnark/build/prover`
         }
     
         const proveOnChainArgs2: ProveOnChainArgs = {
@@ -1021,7 +1024,7 @@ describe("Subsidy tests", function() {
             tallyFile: "./tally.json",
             subsidyFile: "./subsidy.json",
             outputDir: "./proofs",
-            rapidsnark: "~/rapidsnark/build/prover"
+            rapidsnark: `${homedir()}/rapidsnark/build/prover`
         }
 
         const genProofsArgs3: GenProofsArgs = {
@@ -1037,7 +1040,7 @@ describe("Subsidy tests", function() {
             tallyFile: "./tally.json",
             subsidyFile: "./subsidy.json",
             outputDir: "./proofs",
-            rapidsnark: "~/rapidsnark/build/prover"
+            rapidsnark: `${homedir()}/rapidsnark/build/prover`
         }
 
         const proveOnChainArgs2: ProveOnChainArgs = {
