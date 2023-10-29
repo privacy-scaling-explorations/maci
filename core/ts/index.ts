@@ -1,11 +1,7 @@
 export { MaciState } from "./MaciState";
-
 export {
-  //genPerVOSpentVoiceCreditsCommitment,
-  //genSpentVoiceCreditsCommitment,
   Poll,
 } from "./Poll";
-
 export {
   MaxValues,
   TreeDepths,
