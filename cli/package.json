@@ -14,7 +14,8 @@
         "watch": "tsc --watch",
         "build": "tsc",
         "test": "ts-mocha -exit tests/*.test.ts",
-        "test-debug": "node --inspect-brk ./node_modules/.bin/jest"
+        "test:vanilla": "ts-mocha -exit tests/vanilla.test.ts",
+        "test:subsidy": "ts-mocha -exit tests/subsidy.test.ts"
     },
     "dependencies": {
         "@nomiclabs/hardhat-ethers": "^2.0.2",

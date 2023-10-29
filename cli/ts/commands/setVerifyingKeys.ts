@@ -117,7 +117,6 @@ export const setVerifyingKeys = async ({
         const ssStateTreeDepth = Number(ssMatch[1])
         const ssIntStateTreeDepth = Number(ssMatch[2])
         const ssVoteOptionTreeDepth = Number(ssMatch[3])
-        console.log("HERE")
         if (
             stateTreeDepth !== ssStateTreeDepth ||
             intStateTreeDepth !== ssIntStateTreeDepth ||
