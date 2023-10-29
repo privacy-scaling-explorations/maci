@@ -9,7 +9,7 @@ import { logGreen, success } from "../utils/theme"
  * and print it to the screen
  */
 export const genKeyPair = () => {
-    banner()
+    if(!quiet) banner()
     const keypair = new Keypair()
 
     const serializedPubKey = keypair.pubKey.serialize()

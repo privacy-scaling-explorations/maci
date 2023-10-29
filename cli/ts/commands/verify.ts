@@ -18,7 +18,7 @@ export const verify = async ({
     tallyFile,
     subsidyFile
 }: VerifyArgs) => {
-    banner()
+    if(!quiet) banner()
     const signer = await getDefaultSigner()
 
     // check existence of MACI, Tally and Subsidy contract addresses

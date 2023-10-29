@@ -20,7 +20,7 @@ export const mergeMessages = async ({
     pollId,
     numQueueOps
 }: MergeMessagesArgs) => {
-    banner()
+    if(!quiet) banner()
     const signer = await getDefaultSigner()
     // maci contract validation
 

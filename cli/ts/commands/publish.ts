@@ -26,7 +26,7 @@ export const publish = async ({
     pollId,
     newVoteWeight
 }: PublishArgs) => {
-    banner()
+    if(!quiet) banner()
 
     // validate that the pub key of the user is valid
     if (!PubKey.isValidSerializedPubKey(pubkey)) logError('invalid MACI public key')

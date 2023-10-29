@@ -4,7 +4,7 @@ import { banner } from "../utils/banner"
 import { logGreen, info } from "../utils/theme"
 
 export const showContracts = () => {
-    banner() 
+    if(!quiet) banner() 
     const data = JSON.parse(readFileSync(contractAddressesStore, "utf8").toString())
 
     for (const entry of Object.entries(data)) {

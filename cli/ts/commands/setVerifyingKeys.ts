@@ -27,7 +27,7 @@ export const setVerifyingKeys = async ({
     subsidyZkeyPath,
     quiet
 }: SetVerifyingKeysArgs) => {
-    banner()
+    if(!quiet) banner()
     if (!readContractAddress("VkRegistry") && !vkRegistry) {
         logError('vkRegistry contract address is empty') 
     }
@@ -39,8 +39,8 @@ export const setVerifyingKeys = async ({
     if (!existsSync(tallyVotesZkeyPath)) logError(`2 ${tallyVotesZkeyPath} does not exist.`)
     if (subsidyZkeyPath && !existsSync(subsidyZkeyPath)) logError(`3 ${subsidyZkeyPath} does not exist.`)
 
-    const processVk: VerifyingKey = VerifyingKey.fromObj(extractVk(processMessagesZkeyPath))
-    const tallyVk: VerifyingKey = VerifyingKey.fromObj(extractVk(tallyVotesZkeyPath))
+    const processVk: VerifyingKey = VerifyingKey.fromObj(await extractVk(processMessagesZkeyPath))
+    const tallyVk: VerifyingKey = VerifyingKey.fromObj(await extractVk(tallyVotesZkeyPath))
     
     // validate args 
     if (stateTreeDepth < 1 || intStateTreeDepth < 1 || messageTreeDepth < 1 || voteOptionTreeDepth < 1 || messageBatchDepth < 1) 

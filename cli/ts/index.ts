@@ -17,7 +17,8 @@ import {
     verify,
     genProofs,
     fundWallet,
-    proveOnChain
+    proveOnChain,
+    checkVerifyingKeys
 } from "./commands"
 import { readFileSync } from "fs"
 import { join } from "path"
@@ -43,6 +44,29 @@ program
         initialVoiceCredits: cmdOptions.initialVoiceCredits,
         initialVoiceCreditsProxyAddress: cmdOptions.initialVoiceCreditsProxyAddress,
         signupGatekeeperAddress: cmdOptions.signupGatekeeperAddress,
+    }))
+program 
+    .command("checkVerifyingKeys")
+    .description("check that the verifying keys in the contract match the local ones")
+    .option("-q, --quiet", "whether to print values to the console")
+    .option("-x, --maci-contract <maciContract>", "the MACI contract address")
+    .requiredOption("-s, --state-tree-depth <stateTreeDepth>", "the state tree depth")
+    .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the intermediate state tree depth")
+    .requiredOption("-m, --msg-tree-depth <messageTreeDepth>", "the message tree depth")
+    .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth")
+    .requiredOption("-b, --msg-batch-depth <messageBatchDepth>", "the message batch depth")
+    .requiredOption("-p, --process-messages-zkey <processMessagesZkeyPath>", "the process messages zkey path")
+    .requiredOption("-t, --tally-votes-zkey <tallyVotesZkeyPath>", "the tally votes zkey path")
+    .action(async (cmdOptions) => await checkVerifyingKeys({
+        quiet: cmdOptions.quiet,
+        maciContract: cmdOptions.maciContract,
+        stateTreeDepth: cmdOptions.stateTreeDepth,
+        intStateTreeDepth: cmdOptions.intStateTreeDepth,
+        messageTreeDepth: cmdOptions.msgTreeDepth,
+        voteOptionTreeDepth: cmdOptions.voteOptionTreeDepth,
+        messageBatchDepth: cmdOptions.msgBatchDepth,
+        processMessagesZkeyPath: cmdOptions.processMessagesZkey,
+        tallyVotesZkeyPath: cmdOptions.tallyVotesZkey
     }))
 program
     .command("genMaciPubKey")

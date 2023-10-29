@@ -18,7 +18,7 @@ export const fundWallet = async ({
     amount,
     address
 }: FundWalletArgs) => {
-    banner()
+    if(!quiet) banner()
     const signer = await getDefaultSigner()
     
     try {

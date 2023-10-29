@@ -11,7 +11,7 @@ import { GenMaciPubKeyArgs } from "../utils/interfaces"
 export const genMaciPubKey = ({
     privkey
 }: GenMaciPubKeyArgs) => {
-    banner()
+    if(!quiet) banner()
 
     if (!PrivKey.isValidSerializedPrivKey(privkey)) {
         logRed(error("Error, invalid private key"))

@@ -19,7 +19,7 @@ export const airdrop = async ({
     maciAddress,
     quiet
 }: AirdropArgs) => {
-    banner()
+    if(!quiet) banner()
     const topupCredit = readContractAddress("TopupCredit")
 
     if (!topupCredit && !contractAddress) {
