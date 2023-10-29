@@ -34,6 +34,7 @@ import {
     STATE_TREE_DEPTH, 
     VOTE_OPTION_TREE_DEPTH 
 } from "./constants"
+import { homedir } from "os"
 
 describe("Vanilla tests", function() {
     this.timeout(900000)
@@ -88,7 +89,7 @@ describe("Vanilla tests", function() {
         tallyZkey: "./zkeys/TallyVotes_10-1-2_test.0.zkey",
         tallyFile: "./tally.json",
         outputDir: "./proofs",
-        rapidsnark: "~/rapidsnark/build/prover"
+        rapidsnark: `${homedir()}/rapidsnark/build/prover`
     }
 
     const proveOnChainArgs: ProveOnChainArgs = {
@@ -278,7 +279,7 @@ describe("Vanilla tests", function() {
             await verify(verifyOnChainArgs)
         })
     })
-    
+
     describe("test3", () => {
         const signupArgs1: SignUpArgs = {
             quiet: true,
@@ -807,7 +808,7 @@ describe("Vanilla tests", function() {
             tallyZkey: "./zkeys/TallyVotes_10-1-2_test.0.zkey",
             tallyFile: "./tally.json",
             outputDir: "./proofs",
-            rapidsnark: "~/rapidsnark/build/prover"
+            rapidsnark: `${homedir()}/rapidsnark/build/prover`
         }
     
         const proveOnChainArgs2: ProveOnChainArgs = {
@@ -950,6 +951,77 @@ describe("Vanilla tests", function() {
             pollId: 2
         }
 
+        const mergeMessagesArgs2: MergeMessagesArgs = {
+            quiet: true,
+            pollId: 1,
+        }
+
+        const mergeSignupsArgs2: MergeSignupsArgs = {
+            quiet: true,
+            pollId: 1,
+        }
+
+        const mergeMessagesArgs3: MergeMessagesArgs = {
+            quiet: true,
+            pollId: 2,
+        }
+
+        const mergeSignupsArgs3: MergeSignupsArgs = {
+            quiet: true,
+            pollId: 2,
+        }
+
+        const genProofsArgs2: GenProofsArgs = {
+            quiet: true,
+            coordinatorPrivKey: "macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e",
+            pollId: 1,
+            processWitgen: "./zkeys/ProcessMessages_10-2-1-2_test.wtns",
+            tallyWitgen: "./zkeys/TallyVotes_10-1-2_test.wtns",
+            processZkey: "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+            tallyZkey: "./zkeys/TallyVotes_10-1-2_test.0.zkey",
+            tallyFile: "./tally.json",
+            outputDir: "./proofs",
+            rapidsnark: `${homedir()}/rapidsnark/build/prover`
+        }
+
+        const genProofsArgs3: GenProofsArgs = {
+            quiet: true,
+            coordinatorPrivKey: "macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e",
+            pollId: 1,
+            processWitgen: "./zkeys/ProcessMessages_10-2-1-2_test.wtns",
+            tallyWitgen: "./zkeys/TallyVotes_10-1-2_test.wtns",
+            processZkey: "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+            tallyZkey: "./zkeys/TallyVotes_10-1-2_test.0.zkey",
+            tallyFile: "./tally.json",
+            outputDir: "./proofs",
+            rapidsnark: `${homedir()}/rapidsnark/build/prover`
+        }
+
+        const proveOnChainArgs2: ProveOnChainArgs = {
+            quiet: true,
+            pollId: '1',
+            proofDir: "./proofs"
+        }
+    
+        const verifyOnChainArgs2: VerifyArgs = {
+            quiet: true,
+            pollId: '1',
+            tallyFile: "./tally.json",
+        }
+
+        const proveOnChainArgs3: ProveOnChainArgs = {
+            quiet: true,
+            pollId: '2',
+            proofDir: "./proofs"
+        }
+    
+        const verifyOnChainArgs3: VerifyArgs = {
+            quiet: true,
+            pollId: '2',
+            tallyFile: "./tally.json",
+        }
+
+
 
         before(async () => {
             // we deploy the vk registry contract
@@ -1001,19 +1073,19 @@ describe("Vanilla tests", function() {
         })
 
         it("should complete the second poll", async () => {
-            await mergeMessages(mergeMessagesArgs)
-            await mergeSignups(mergeSignupsArgs)
-            await genProofs(genProofsArgs)
-            await proveOnChain(proveOnChainArgs)
-            await verify(verifyOnChainArgs)
+            await mergeMessages(mergeMessagesArgs2)
+            await mergeSignups(mergeSignupsArgs2)
+            await genProofs(genProofsArgs2)
+            await proveOnChain(proveOnChainArgs2)
+            await verify(verifyOnChainArgs2)
         })
 
         it("should complete the third poll", async () => {
-            await mergeMessages(mergeMessagesArgs)
-            await mergeSignups(mergeSignupsArgs)
-            await genProofs(genProofsArgs)
-            await proveOnChain(proveOnChainArgs)
-            await verify(verifyOnChainArgs)
+            await mergeMessages(mergeMessagesArgs3)
+            await mergeSignups(mergeSignupsArgs3)
+            await genProofs(genProofsArgs3)
+            await proveOnChain(proveOnChainArgs3)
+            await verify(verifyOnChainArgs3)
         })
     })
 })
