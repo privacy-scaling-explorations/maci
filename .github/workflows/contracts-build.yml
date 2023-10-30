@@ -40,5 +40,5 @@ jobs:
         working-directory: contracts
 
       - name: Test
-        run: npx jest --runInBand
+        run: npm run test
         working-directory: contracts        
