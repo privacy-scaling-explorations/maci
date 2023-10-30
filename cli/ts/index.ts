@@ -249,4 +249,20 @@ if (require.main === module) {
 export {
     calcBinaryTreeDepthFromMaxLeaves,
     calcQuinTreeDepthFromMaxLeaves,
+    genProofs,
+    genMaciKeypair,
+    genMaciPubkey,
+    proveOnChain,
+    verify,
+    create,
+    topup,
+    checkVerifyingKey,
+    mergeMessages,
+    mergeSignups,
+    signup,
+    publish,
+    deployPoll,
+    deployVkRegistry,
+    airdrop,
+    setVerifyingKeys
 }

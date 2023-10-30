@@ -10,8 +10,7 @@ MACI offers the following guarantees:
 
 * **Collusion resistance**: no-one except a trusted coordinator should be
   certain of the validity of a vote, reducing the effectiveness of bribery.
-* **Receipt-freeness**: no-one voter prove (besides to the coordinator) which
-  way they voted.
+* **Receipt-freeness**: no voter should be able to prove (besides to the coordinator) which way they voted.
 * **Privacy**: no-one except a trusted coordinator should be able to decrypt a
   vote.
 * **Uncensorability**: no-one — not even the trusted coordinator — should be
