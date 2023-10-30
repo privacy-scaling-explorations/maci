@@ -32,8 +32,8 @@ export class G1Point {
         _x: bigint,
         _y: bigint,
     ) {
-        assert(_x < SNARK_FIELD_SIZE && _x > 0, 'G1Point x out of range')
-        assert(_y < SNARK_FIELD_SIZE && _y > 0, 'G1Point y out of range')
+        assert(_x < SNARK_FIELD_SIZE && _x >= 0, 'G1Point x out of range')
+        assert(_y < SNARK_FIELD_SIZE && _y >= 0, 'G1Point y out of range')
         this.x = _x
         this.y = _y
     }
@@ -72,8 +72,8 @@ export class G2Point {
         _x: bigint[],
         _y: bigint[],
     ) {
-        for (const n of _x) assert(n < SNARK_FIELD_SIZE && n > 0, 'G2Point x out of range')
-        for (const n of _y) assert(n < SNARK_FIELD_SIZE && n > 0, 'G2Point y out of range')
+        for (const n of _x) assert(n < SNARK_FIELD_SIZE && n >= 0, 'G2Point x out of range')
+        for (const n of _y) assert(n < SNARK_FIELD_SIZE && n >= 0, 'G2Point y out of range')
         this.x = _x
         this.y = _y
     }
