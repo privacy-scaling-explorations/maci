@@ -41,23 +41,17 @@ const executeSuite = async (data: any, expect: any) => {
         const config = loadYaml()
         const coordinatorKeypair = new Keypair()
 
-        const maciState = new MaciState(
-            coordinatorKeypair,
-            config.constants.maci.stateTreeDepth,
-            config.constants.maci.messageTreeDepth,
-            config.constants.maci.voteOptionTreeDepth,
-            config.constants.maci.maxVoteOptions,
-        )
+        const maciState = new MaciState()
 
         const deployVkRegistryCommand = `node build/index.js deployVkRegistry`
         const vkDeployOutput = exec(deployVkRegistryCommand)
         const vkAddressMatch = vkDeployOutput.stdout.trim().match(/(0x[a-fA-F0-9]{40})/)
         if (!vkAddressMatch) {
-            console.log(vkDeployOutput)
+            console.log("OUTPUT", vkDeployOutput)
             return false
         }
         const vkAddress = vkAddressMatch[1]
-        console.log(vkAddress)
+        console.log("DID WE FIND vk address", vkAddress)
 
         let subsidyZkeyFilePath
         let subsidyWitnessCalculatorPath
@@ -87,6 +81,7 @@ const executeSuite = async (data: any, expect: any) => {
             ` -r ${vkAddress}`
         const createOutput = execute(createCommand).stdout.trim()
         const regMatch = createOutput.match(/MACI: (0x[a-fA-F0-9]{40})/)
+        console.log("DID we find maci address", regMatch)
         const maciAddress = regMatch[1]
 
         const deployPollCommand = `node build/index.js deployPoll` +
