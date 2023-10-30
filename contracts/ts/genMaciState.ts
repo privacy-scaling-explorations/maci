@@ -50,9 +50,11 @@ const genMaciStateFromContract = async (
     let mergeStateAqLogs: any[] = []
     let deployPollLogs: any[] = []
     
+    const lastBlock = endBlock ? endBlock : await provider.getBlockNumber()
+    
     // Fetch event logs in batches
-    for (let i = fromBlock; i < endBlock; i += blocksPerRequest + 1) {
-        const toBlock = (i + blocksPerRequest) >= endBlock ? undefined : i + blocksPerRequest
+    for (let i = fromBlock; i < lastBlock; i += blocksPerRequest + 1) {
+        const toBlock = (i + blocksPerRequest) >= lastBlock ? undefined : i + blocksPerRequest
 
         const tmpInitLogs = await provider.getLogs({
             ...maciContract.filters.Init(),
@@ -271,8 +273,8 @@ const genMaciStateFromContract = async (
     let mergeMessageAqSubRootsLogs: any[] = []
     let mergeMessageAqLogs: any[] = []
 
-    for (let i = fromBlock; i < endBlock; i += blocksPerRequest + 1) {
-        const toBlock = (i + blocksPerRequest) >= endBlock ? undefined : i + blocksPerRequest
+    for (let i = fromBlock; i < lastBlock; i += blocksPerRequest + 1) {
+        const toBlock = (i + blocksPerRequest) >= lastBlock ? undefined : i + blocksPerRequest
         const tmpPublishMessageLogs = await provider.getLogs({
             ...pollContract.filters.PublishMessage(),
             fromBlock: fromBlock,
