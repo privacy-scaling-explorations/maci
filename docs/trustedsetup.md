@@ -17,6 +17,8 @@ For more info on trusted setup ceremonies please refer to p0tion's [docs](https:
 
 For your convenience, here is a list of the artifacts that can be used in production:
 
+> Please note these artifacts are generated from the most up to date version of the circom circuits, available in the [dev](https://github.com/privacy-scaling-explorations/maci/tree/dev/circuits) branch at this time. 
+
 | Artifact | Description | Parameters | Link |
 |--|--|--|--|
 | processMessages zKey | The production-ready zKey for the processMessages circuit. | 6-8-2-3 | https://maci-v1-trusted-setup-ceremony-pse-p0tion-production.s3.eu-central-1.amazonaws.com/circuits/processmessages_6-8-2-3/contributions/processmessages_6-8-2-3_final.zkey |

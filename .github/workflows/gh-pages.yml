@@ -2,9 +2,7 @@ name: GitHub Pages
 
 on:
   push: 
-    branches: [ v1 ]
-  pull_request:
-    branches: [ v1 ]
+    branches: [ master, dev ]
 
 concurrency: 
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
