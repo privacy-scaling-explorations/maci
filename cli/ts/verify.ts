@@ -9,7 +9,6 @@ import {
 } from 'maci-contracts'
 
 import {
-    calcQuinTreeDepthFromMaxLeaves,
     validateEthAddress,
     contractExists,
 } from './utils'
@@ -17,8 +16,6 @@ import {readJSONFile} from 'maci-common'
 import {contractFilepath} from './config'
 
 import * as ethers from 'ethers'
-
-const Web3 = require('web3')
 
 const configureSubparser = (subparsers: any) => {
     const parser = subparsers.addParser(
@@ -88,15 +85,15 @@ const verify = async (args: any) => {
     let contractAddrs = readJSONFile(contractFilepath)
     if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
         console.error('Error: MACI contract address is empty') 
-        return 1
+        return 
     }
     if ((!contractAddrs||!contractAddrs["Tally-"+pollId]) && !args.tally_contract) {
         console.error('Error: Tally contract address is empty') 
-        return 1
+        return 
     }
     if ((!contractAddrs||!contractAddrs["Subsidy-"+pollId]) && !args.subsidy_contract) {
         console.error('Error: Subsidy contract address is empty') 
-        return 1
+        return 
     }
 
     const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
@@ -106,19 +103,19 @@ const verify = async (args: any) => {
     // MACI contract
     if (!validateEthAddress(maciAddress)) {
         console.error('Error: invalid MACI contract address')
-        return 0
+        return 
     }
 
     // Tally contract
     if (!validateEthAddress(tallyAddress)) {
         console.error('Error: invalid Tally contract address')
-        return 0
+        return 
     }
 
     // Subsidy contract
     if (!validateEthAddress(subsidyAddress)) {
         console.error('Error: invalid Subsidy contract address')
-        return 0
+        return 
     }
     const [ maciContractAbi ] = parseArtifact('MACI')
     const [ pollContractAbi ] = parseArtifact('Poll')
@@ -127,11 +124,11 @@ const verify = async (args: any) => {
 
     if (! (await contractExists(signer.provider, tallyAddress))) {
         console.error(`Error: there is no contract deployed at ${tallyAddress}.`)
-        return 1
+        return 
     }
-    if (! (await contractExists(signer.provider, subsidyAddress))) {
+    if (!(await contractExists(signer.provider, subsidyAddress))) {
         console.error(`Error: there is no contract deployed at ${subsidyAddress}.`)
-        return 1
+        return 
     }
 
 	const maciContract = new ethers.Contract(
@@ -141,9 +138,9 @@ const verify = async (args: any) => {
     )
 
     const pollAddr = await maciContract.polls(pollId)
-    if (! (await contractExists(signer.provider, pollAddr))) {
+    if (!(await contractExists(signer.provider, pollAddr))) {
         console.error('Error: there is no Poll contract with this poll ID linked to the specified MACI contract.')
-        return 1
+        return 
     }
 
     const pollContract = new ethers.Contract(
@@ -175,7 +172,7 @@ const verify = async (args: any) => {
         contents = fs.readFileSync(args.tally_file, { encoding: 'utf8' })
     } catch {
         console.error('Error: unable to open ', args.tally_file)
-        return 0
+        return 
     }
 
     // Parse the tally file
@@ -184,7 +181,7 @@ const verify = async (args: any) => {
         data = JSON.parse(contents)
     } catch {
         console.error('Error: unable to parse ', args.tally_file)
-        return 0
+        return 
     }
 
     console.log('-------------tally data -------------------')
@@ -196,7 +193,7 @@ const verify = async (args: any) => {
 
     if (!validResultsCommitment) {
         console.error('Error: invalid results commitment format')
-        return 0
+        return 
     }
 
     const treeDepths = await pollContract.treeDepths()
@@ -208,12 +205,12 @@ const verify = async (args: any) => {
     // Get vote option tree depth
     if (data.results.tally.length !== numVoteOptions) {
         console.error(wrongNumVoteOptions)
-        return 1
+        return 
     }
 
     if (data.perVOSpentVoiceCredits.tally.length !== numVoteOptions) {
         console.error(wrongNumVoteOptions)
-        return 1
+        return 
     }
 
     // Verify that the results commitment matches the output of
@@ -250,7 +247,7 @@ const verify = async (args: any) => {
 
     if (onChainTallyCommitment !== newTallyCommitment) {
         console.log('Error: the on-chain tally commitment does not match.')
-        return 1
+        return 
     }
 
     // ----------------------------------------------
@@ -264,14 +261,14 @@ const verify = async (args: any) => {
             contents = fs.readFileSync(args.subsidy_file, { encoding: 'utf8' })
         } catch {
             console.error('Error: unable to open ', args.subsidy_file)
-            return 0
+            return 
         }
        // Parse the file
         try {
             data = JSON.parse(contents)
         } catch {
             console.error('Error: unable to parse ', args.subsidy_file)
-            return 0
+            return 
         }
         console.log('-------------subsidy data -------------------')
         console.log(data)
@@ -282,12 +279,12 @@ const verify = async (args: any) => {
     
         if (!validResultsCommitment) {
             console.error('Error: invalid results commitment format')
-            return 0
+            return 
         }
     
         if (data.results.subsidy.length !== numVoteOptions) {
             console.error(wrongNumVoteOptions)
-            return 1
+            return 
         }
     
         // to compute newSubsidyCommitment, we can use genTallyResultCommitment
@@ -299,16 +296,13 @@ const verify = async (args: any) => {
     
         if (onChainSubsidyCommitment !== newSubsidyCommitment) {
             console.log('Error: the on-chain subsidy commitment does not match.')
-            return 1
+            return 
         }
     }
 
-
-
-
     console.log('OK. finish verify')
 
-    return 0
+    return 
 }
 
 export {

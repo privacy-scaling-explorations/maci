@@ -83,19 +83,19 @@ const proveOnChain = async (args: any) => {
     let contractAddrs = readJSONFile(contractFilepath)
     if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
         console.error('Error: MACI contract address is empty') 
-        return 1
+        return 
     }
     if ((!contractAddrs||!contractAddrs["MessageProcessor-"+pollId]) && !args.mp) {
         console.error('Error: MessageProcessor contract address is empty') 
-        return 1
+        return 
     }
     if ((!contractAddrs||!contractAddrs["Tally-"+pollId]) && !args.tally) {
         console.error('Error: Tally contract address is empty') 
-        return 1
+        return 
     }
     if ((!contractAddrs||!contractAddrs["Subsidy-"+pollId]) && !args.subsidy) {
         console.error('Error: Subsidy contract address is empty') 
-        return 1
+        return 
     }
 
     const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
@@ -106,28 +106,28 @@ const proveOnChain = async (args: any) => {
     // MACI contract
     if (!validateEthAddress(maciAddress)) {
         console.error('Error: invalid MACI contract address')
-        return {}
+        return 
     }
 
     // MessageProcessor contract
     if (!validateEthAddress(mpAddress)) {
         console.error('Error: invalid MessageProcessor contract address')
-        return {}
+        return 
     }
 
     if (! (await contractExists(signer.provider, mpAddress))) {
         console.error('Error: there is no contract deployed at the specified address')
-        return {}
+        return 
     }
 
 
     if (!validateEthAddress(tallyAddress)) {
         console.error('Error: invalid Tally contract address')
-        return {}
+        return 
     }
     if (!validateEthAddress(subsidyAddress)) {
         console.error('Error: invalid Subsidy contract address')
-        return {}
+        return 
     }
 
     const [ maciContractAbi ] = parseArtifact('MACI')
@@ -148,7 +148,7 @@ const proveOnChain = async (args: any) => {
     const pollAddr = await maciContract.polls(pollId)
     if (! (await contractExists(signer.provider, pollAddr))) {
         console.error('Error: there is no Poll contract with this poll ID linked to the specified MACI contract.')
-        return 1
+        return 
     }
 
     const pollContract = new ethers.Contract(
@@ -310,12 +310,12 @@ const proveOnChain = async (args: any) => {
         // Perform checks
         if (circuitInputs.pollEndTimestamp !== pollEndTimestampOnChain.toString()) {
             console.error('Error: pollEndTimestamp mismatch.')
-            return 1
+            return 
         }
 
         if (BigInt(circuitInputs.msgRoot).toString() !== messageRootOnChain.toString()) {
             console.error('Error: message root mismatch.')
-            return 1
+            return 
         }
 
         let currentSbCommitmentOnChain
@@ -328,7 +328,7 @@ const proveOnChain = async (args: any) => {
 
         if (currentSbCommitmentOnChain.toString() !== circuitInputs.currentSbCommitment) {
             console.error('Error: currentSbCommitment mismatch.')
-            return 1
+            return 
         }
 
         const coordPubKeyHashOnChain = BigInt(await pollContract.coordinatorPubKeyHash())
@@ -339,7 +339,7 @@ const proveOnChain = async (args: any) => {
             ).toString() !== coordPubKeyHashOnChain.toString()
         ) {
             console.error('Error: coordPubKey mismatch.')
-            return 1
+            return 
         }
 
         const packedValsOnChain = BigInt(await mpContract.genProcessMessagesPackedVals(
@@ -350,7 +350,7 @@ const proveOnChain = async (args: any) => {
 
         if (circuitInputs.packedVals !== packedValsOnChain) {
             console.error('Error: packedVals mismatch.')
-            return 1
+            return 
         }
 
         const formattedProof = formatProofForVerifierContract(proof)
@@ -366,7 +366,7 @@ const proveOnChain = async (args: any) => {
 
         if (publicInputHashOnChain.toString() !== publicInputs[0].toString()) {
             console.error('Public input mismatch.')
-            return 1
+            return 
         }
 
         const isValidOnChain = await verifierContract.verify(
@@ -377,7 +377,7 @@ const proveOnChain = async (args: any) => {
 
         if (!isValidOnChain) {
             console.error('Error: the verifier contract found the proof invalid.')
-            return 1
+            return 
         }
 
         let tx
@@ -396,7 +396,7 @@ const proveOnChain = async (args: any) => {
 
         if (receipt.status !== 1) {
             console.error(txErr)
-            return 1
+            return 
         }
 
         console.log(`Transaction hash: ${tx.hash}`)
@@ -441,19 +441,19 @@ const proveOnChain = async (args: any) => {
             const subsidyCommitmentOnChain = await subsidyContract.subsidyCommitment()
             if (subsidyCommitmentOnChain.toString() !== circuitInputs.currentSubsidyCommitment) {
                 console.error(`Error: subsidycommitment mismatch`)
-                return 1
+                return 
             }
             const packedValsOnChain = BigInt(
                 await subsidyContract.genSubsidyPackedVals(numSignUps)
             )
             if (circuitInputs.packedVals !== packedValsOnChain.toString()) {
                 console.error('Error: subsidy packedVals mismatch.')
-                return 1
+                return 
             }
             const currentSbCommitmentOnChain = await subsidyContract.sbCommitment()
             if (currentSbCommitmentOnChain.toString() !== circuitInputs.sbCommitment) {
                 console.error('Error: currentSbCommitment mismatch.')
-                return 1
+                return 
             }
             const publicInputHashOnChain = await subsidyContract.genSubsidyPublicInputHash(
                 numSignUps,
@@ -462,7 +462,7 @@ const proveOnChain = async (args: any) => {
             
             if (publicInputHashOnChain.toString() !== publicInputs[0]) {
                 console.error('Error: public input mismatch.')
-                return 1
+                return 
             }
     
             const txErr = 'Error: updateSubsidy() failed...'
@@ -484,7 +484,7 @@ const proveOnChain = async (args: any) => {
     
             if (receipt.status !== 1) {
                 console.error(txErr)
-                return 1
+                return 
             }
     
             console.log(`Progress: ${subsidyBatchNum + 1} / ${totalBatchNum}`)
@@ -544,7 +544,7 @@ const proveOnChain = async (args: any) => {
         const currentTallyCommitmentOnChain = await tallyContract.tallyCommitment()
         if (currentTallyCommitmentOnChain.toString() !== circuitInputs.currentTallyCommitment) {
             console.error('Error: currentTallyCommitment mismatch.')
-            return 1
+            return 
         }
 
         const packedValsOnChain = BigInt(
@@ -556,13 +556,13 @@ const proveOnChain = async (args: any) => {
         )
         if (circuitInputs.packedVals !== packedValsOnChain.toString()) {
             console.error('Error: packedVals mismatch.')
-            return 1
+            return 
         }
 
         const currentSbCommitmentOnChain = await mpContract.sbCommitment()
         if (currentSbCommitmentOnChain.toString() !== circuitInputs.sbCommitment) {
             console.error('Error: currentSbCommitment mismatch.')
-            return 1
+            return 
         }
 
         const publicInputHashOnChain = await tallyContract.genTallyVotesPublicInputHash(
@@ -573,7 +573,7 @@ const proveOnChain = async (args: any) => {
         )
         if (publicInputHashOnChain.toString() !== publicInputs[0]) {
             console.error(`Error: public input mismatch. tallyBatchNum=${i}, onchain=${publicInputHashOnChain.toString()}, offchain=${publicInputs[0]}`)
-            return 1
+            return 
         }
 
         const formattedProof = formatProofForVerifierContract(proof)
@@ -594,7 +594,7 @@ const proveOnChain = async (args: any) => {
 
         if (receipt.status !== 1) {
             console.error(txErr)
-            return 1
+            return 
         }
 
         console.log(`Progress: ${tallyBatchNum + 1} / ${totalTallyBatches}`)
@@ -621,7 +621,7 @@ const proveOnChain = async (args: any) => {
     }
 
 
-    return 0
+    return 
 }
 
 export {

@@ -134,34 +134,34 @@ const deployPollWithSigner = async (args: any) => {
     let contractAddrs = readJSONFile(contractFilepath)
     if ((!contractAddrs||!contractAddrs["MACI"]) && !args.maci_address) {
         console.error('Error: MACI contract address is empty') 
-        return 1
+        return 
     }
 
     const privateKey = args.signer_private_key
     if (!privateKey) {
         console.error('Error: signer private key is empty') 
-        return 1
+        return 
     }
 
     // The poll duration
     const duration = args.duration
     if (duration <= 0) {
         console.error('Error: the duration should be positive')
-        return 1
+        return 
     }
 
     // Max values
     const maxMessages = args.max_messages
     if (maxMessages <= 0) {
         console.error('Error: the maximum number of messages should be positive')
-        return 1
+        return 
     }
 
     // Max vote options
     const maxVoteOptions = args.max_vote_options
     if (maxVoteOptions <= 0) {
         console.error('Error: the maximum number of vote options be positive')
-        return 1
+        return 
     }
     const intStateTreeDepth = args.int_state_tree_depth
     const messageTreeSubDepth = args.msg_batch_depth
@@ -174,7 +174,7 @@ const deployPollWithSigner = async (args: any) => {
     const maciAddress = args.maci_address ? args.maci_address: contractAddrs["MACI"]
     if (!(await contractExists(signer.provider, maciAddress))) {
         console.error('Error: a MACI contract is not deployed at', maciAddress)
-        return 1
+        return 
     }
 
     // The coordinator's MACI public key
@@ -182,7 +182,7 @@ const deployPollWithSigner = async (args: any) => {
 
     if (!PubKey.isValidSerializedPubKey(coordinatorPubkey)) {
         console.error('Error: invalid MACI public key')
-        return 1
+        return 
     }
 
     const unserialisedPubkey = PubKey.unserialize(coordinatorPubkey)
@@ -226,7 +226,7 @@ const deployPollWithSigner = async (args: any) => {
         const name = log.name
         if (name !== 'DeployPoll') {
             console.error('Error: invalid event log.')
-            return 1
+            return 
         }
         const pollId = log.args._pollId
         const pollAddr = log.args._pollAddr
@@ -245,10 +245,10 @@ const deployPollWithSigner = async (args: any) => {
     } catch (e) {
         console.error('Error: could not deploy poll')
         console.error(e.message)
-        return 1
+        return 
     }
 
-    return 0
+    return 
 }
 
 export {

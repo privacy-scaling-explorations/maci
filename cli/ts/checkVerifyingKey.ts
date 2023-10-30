@@ -113,7 +113,7 @@ const checkVerifyingKey = async (args: any) => {
     let contractAddrs = readJSONFile(contractFilepath)
     if ((!contractAddrs||!contractAddrs["MACI"]) && !args.maci_address) {
         console.error('Error: MACI contract address is empty') 
-        return 1
+        return 
     }
 
     const maciAddress = args.maci_address ? args.maci_address: contractAddrs["MACI"]
@@ -132,7 +132,7 @@ const checkVerifyingKey = async (args: any) => {
     const signer = await getDefaultSigner()
     if (!await contractExists(signer.provider, maciAddress)) {
         console.error('Error: there is no contract deployed at the specified address')
-        return {}
+        return 
     }
 
     const [ maciContractAbi ] = parseArtifact('MACI')
@@ -171,21 +171,20 @@ const checkVerifyingKey = async (args: any) => {
 
         if (!compareVks(processVk, processVkOnChain)) {
             console.error('Error: processVk mismatch')
-            return 1
+            return 
         }
 
         if (!compareVks(tallyVk, tallyVkOnChain)) {
             console.error('Error: tallyVk mismatch')
-            return 1
+            return 
         }
 
     } catch (e) {
         console.error(e.message)
-        return 1
+        return 
     }
 
     console.log('Success: zkey files match the keys in the registry')
-    return 0
 }
 
 export {
