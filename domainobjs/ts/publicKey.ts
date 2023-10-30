@@ -82,7 +82,7 @@ export class PubKey {
      * Hash the two baby jubjub coordinates
      * @returns the hash of this public key
      */
-	public hash = (): BigInt => {
+	public hash = (): bigint => {
 		return hashLeftRight(this.rawPubKey[0], this.rawPubKey[1])
 	}
 
