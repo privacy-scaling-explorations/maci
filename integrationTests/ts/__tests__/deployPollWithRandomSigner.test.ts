@@ -30,50 +30,51 @@ describe('Test deployPollWithSigner', () => {
     const test = data.suites[0]
     it(test.description, async () => {
         const result = await executeSuite(test, expect)
-        console.log(result)
         expect(result).toBeTruthy()
 
-
-	let caughtException = false
-	try {
+        let caughtException = false
+        try {
             const config = loadYaml()
 
-	    const tally = JSON.parse(fs.readFileSync(path.join(__dirname, '../../../cli/tally.json')).toString())
-	    const coordinatorKeypair = new Keypair()
+            const tally = JSON.parse(fs.readFileSync(path.join(__dirname, '../../../cli/tally.json')).toString())
+            const coordinatorKeypair = new Keypair()
 
-	    // start another round by a random user
-	    const wallet = Wallet.createRandom()
+            // start another round by a random user
+            const wallet = Wallet.createRandom()
 
-	    // fund wallet with 1 ETH
-	    const totalAmount = utils.parseEther("1")
-            const fundWalletCommand = `node build/index.js fundWallet` +
-            ` -w ${wallet.address}` +
-            ` -a ${totalAmount.toString()}`
-	    execute(fundWalletCommand)
-	    
-	    const duration = 999999
-            const deployPollCommand = `node build/index.js deployPollWithSigner` +
-            ` -x ${tally.maci}` +
-            ` -s ${wallet.privateKey}` +
-            ` -pk ${coordinatorKeypair.pubKey.serialize()}` +
-            ` -t ${duration}` +
-            ` -g ${config.constants.maci.maxMessages}` +
-            ` -mv ${config.constants.maci.maxVoteOptions}` +
-            ` -i ${config.constants.poll.intStateTreeDepth}` +
-            ` -m ${config.constants.poll.messageTreeDepth}` +
-            ` -b ${config.constants.poll.messageBatchDepth}` +
-            ` -v ${config.constants.maci.voteOptionTreeDepth}`
-	    execute(deployPollCommand)
+            // fund wallet with 1 ETH
+            const totalAmount = utils.parseEther("1")
+                const fundWalletCommand = `node build/index.js fundWallet` +
+                ` -w ${wallet.address}` +
+                ` -a ${totalAmount.toString()}`
+            execute(fundWalletCommand)
 
-	    // this is the second poll with pollId = 1
-	    const pollId = 1
-	    const pollDuration = await getPollDuration(tally.provider, tally.maci, pollId)
-	    expect(pollDuration.toString()).toEqual(duration.toString())
-	    
-	} catch (e) {
-	    console.log(e)
-	    caughtException = true
-	    expect(caughtException).toEqual(false)
-	}
+            // sleep for 5 seconds
+            await new Promise(resolve => setTimeout(resolve, 5000))
+            
+            const duration = 999999
+                const deployPollCommand = `node build/index.js deployPollWithSigner` +
+                ` -x ${tally.maci}` +
+                ` -s ${wallet.privateKey}` +
+                ` -pk ${coordinatorKeypair.pubKey.serialize()}` +
+                ` -t ${duration}` +
+                ` -g ${config.constants.maci.maxMessages}` +
+                ` -mv ${config.constants.maci.maxVoteOptions}` +
+                ` -i ${config.constants.poll.intStateTreeDepth}` +
+                ` -m ${config.constants.poll.messageTreeDepth}` +
+                ` -b ${config.constants.poll.messageBatchDepth}` +
+                ` -v ${config.constants.maci.voteOptionTreeDepth}`
+            execute(deployPollCommand)
+
+            // this is the second poll with pollId = 1
+            const pollId = 1
+            const pollDuration = await getPollDuration(tally.provider, tally.maci, pollId)
+            expect(pollDuration.toString()).toEqual(duration.toString())
+            
+        } catch (e) {
+            console.log(e)
+            caughtException = true
+        }
+        expect(caughtException).toEqual(false)
     })
 })
