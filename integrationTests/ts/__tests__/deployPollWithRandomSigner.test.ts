@@ -75,6 +75,7 @@ describe('Test deployPollWithSigner', () => {
             console.log(e)
             caughtException = true
         }
-        expect(caughtException).toEqual(false)
+        // we cannot deploy a poll with a random signer
+        expect(caughtException).toEqual(true)
     })
 })

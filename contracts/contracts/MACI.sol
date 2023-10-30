@@ -239,7 +239,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         MaxValues memory _maxValues,
         TreeDepths memory _treeDepths,
         PubKey memory _coordinatorPubKey
-    ) public afterInit returns (address) {
+    ) public afterInit onlyOwner returns (address) {
         uint256 pollId = nextPollId;
 
         // Increment the poll ID for the next poll
