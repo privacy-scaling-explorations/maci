@@ -13,6 +13,8 @@
         "test-cli-genMaciPubkey": "jest cli-genMaciPubkey.test.ts",
         "test-cli-genMaciPubkey-debug": "node --inspect-brk ./node_modules/.bin/jest cli-genMaciPubkey.test.ts",
         "test-suites": "NODE_OPTIONS=--max-old-space-size=4096 jest suites.test.ts",
+        "test-deployPoll": "NODE_OPTIONS=--max-old-space-size=4096 jest deployPollWithRandomSigner.test.ts",
+        "download-zkeys": "./scripts/download_zkeys.sh",
         "test-suites-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest suites.test.ts"
     },
     "_moduleAliases": {

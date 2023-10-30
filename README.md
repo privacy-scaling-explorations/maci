@@ -37,7 +37,7 @@ Below you can find a list of the packages included in this repository.
 
 ### Requirements
 
-You should have Node.js (version `>=14 and <=18`) installed. Use `nvm` to install it and manage versions.
+You should have Node.js v18 installed. Use `nvm` to install it and manage versions. This code has been tested with earlier Node versions (14 and 16), however we do recommend using Node 18.
 
 You also need a Ubuntu/Debian Linux machine on an Intel CPU.
 
@@ -48,7 +48,7 @@ Install dependencies:
 
 If you are missing the correct version of glibc see `circuits/scripts/installGlibc.sh`
 
-Clone this repository, install NodeJS dependencies, and build the source code:
+Clone this repository, install Node.js dependencies, and build the source code:
 
 ```bash
 git clone git@github.com:privacy-scaling-explorations/maci.git
