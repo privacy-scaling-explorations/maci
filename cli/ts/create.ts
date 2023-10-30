@@ -122,7 +122,9 @@ const create = async (args: any) => {
         vkRegistryContractAddress,
         topupCreditContract.address 
     )
-
+    
+    console.log('MACI:', maciContract.address)
+    
     contractAddrs['InitialVoiceCreditProxy'] = initialVoiceCreditProxyContractAddress
     contractAddrs['SignUpGatekeeper'] = signUpGatekeeperAddress
     contractAddrs['Verifier'] = verifierContract.address
