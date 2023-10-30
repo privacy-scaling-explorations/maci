@@ -140,7 +140,6 @@ const configureSubparser = (subparsers: any) => {
     parser.addArgument(
         ['-sb', '--start-block'],
         {
-            required: true,
             type: 'int',
             help: 'The starting block to fetch logs from',
         }
@@ -355,8 +354,8 @@ const genProofs = async (args: any) => {
     // Build an off-chain representation of the MACI contract using data in the contract storage
 
     // some rpc endpoint like bsc chain has limitation to retreive history logs
-    let fromBlock = 0;
-    const txHash = args.transaction_hash;
+    let fromBlock = args.start_block ? args.start_block : 0
+    const txHash = args.transaction_hash
     if (txHash) {
         const txn = await signer.provider.getTransaction(txHash);
         fromBlock = txn.blockNumber;
