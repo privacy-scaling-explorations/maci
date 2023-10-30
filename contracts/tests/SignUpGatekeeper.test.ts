@@ -7,6 +7,7 @@ import { expect } from 'chai'
 import { utils } from 'ethers'
 
 const initialVoiceCreditBalance = 100
+const STATE_TREE_DEPTH = 10
 
 describe('SignUpGatekeeper', () => {
     let signUpToken;
@@ -34,14 +35,16 @@ describe('SignUpGatekeeper', () => {
     })
 
     describe('SignUpTokenGatekeeper', () => {
-        let maciContract
+        let maciContract: any 
         beforeEach(async () => {
             freeForAllContract = await deployFreeForAllSignUpGatekeeper(true)
             signUpToken = await deploySignupToken(true)
             signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(await signUpToken.address, true)
             const r = await deployTestContracts(
                 initialVoiceCreditBalance,
-                signUpTokenGatekeeperContract,
+                STATE_TREE_DEPTH,
+                true,
+                signUpTokenGatekeeperContract
             )
 
             maciContract = r.maciContract

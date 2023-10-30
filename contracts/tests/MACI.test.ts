@@ -81,7 +81,7 @@ const users = [
 
 const signUpTxOpts = { gasLimit: 300000 }
 
-const maciState = new MaciState()
+const maciState = new MaciState(STATE_TREE_DEPTH)
 
 // Poll parameters
 const duration = 15
@@ -110,7 +110,6 @@ describe('MACI', () => {
     let mpContract
     let tallyContract
     let pollId: number
-    let user: ethers.Signer
 
     describe('Deployment', () => {
         before(async () => {
