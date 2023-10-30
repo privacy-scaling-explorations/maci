@@ -61,7 +61,7 @@ const create = async (args: any) => {
     let contractAddrs = readJSONFile(contractFilepath)
     if ((!contractAddrs||!contractAddrs["VkRegistry"]) && !args.vk_registry) {
         console.error('Error: vkRegistry contract address is empty') 
-        return 1
+        return 
     }
 
     const TopupCreditContract = await deployTopupCreditContract()
@@ -73,7 +73,7 @@ const create = async (args: any) => {
     // Whether we should deploy a ConstantInitialVoiceCreditProxy
     if (initialVoiceCreditProxy && args.initial_voice_credits) {
         console.error('Error: only one of the following can be specified: the initial voice credit proxy or the amount of initial voice credits.')
-        return 1
+        return 
     }
 
     let initialVoiceCreditProxyContractAddress: string 
@@ -135,7 +135,6 @@ const create = async (args: any) => {
     contractAddrs['PoseidonT5'] = poseidonAddrs[2]
     contractAddrs['PoseidonT6'] = poseidonAddrs[3]
     writeJSONFile(contractFilepath, contractAddrs)
-    return 0
 }
 
 export {

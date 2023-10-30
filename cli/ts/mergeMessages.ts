@@ -56,14 +56,14 @@ const mergeMessages = async (args: any) => {
     let contractAddrs = readJSONFile(contractFilepath)
     if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
         console.error('Error: MACI contract address is empty') 
-        return 1
+        return 
     }
     const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
 
     // MACI contract
     if (!validateEthAddress(maciAddress)) {
         console.error('Error: invalid MACI contract address')
-        return 1
+        return 
     }
 
     const signer = await getDefaultSigner()
@@ -73,14 +73,14 @@ const mergeMessages = async (args: any) => {
             'Error: there is no MACI contract deployed at the ' +
             'specified address',
         )
-        return 1
+        return 
     }
 
     const pollId = Number(args.poll_id)
 
     if (pollId < 0) {
         console.error('Error: the Poll ID should be a positive integer.')
-        return 1
+        return 
     }
 
     const [ maciContractAbi ] = parseArtifact('MACI')
@@ -99,7 +99,7 @@ const mergeMessages = async (args: any) => {
             'Error: there is no Poll contract with this poll ID linked to ' +
             'the specified MACI contract.',
         )
-        return 1
+        return 
     }
 
     const pollContract = new ethers.Contract(
@@ -124,7 +124,7 @@ const mergeMessages = async (args: any) => {
             'Error: the signer is not the owner of this Poll contract ' +
             pollAddr,
         )
-        return 1
+        return 
     }
 
     // Check if the voting period is over
@@ -139,7 +139,7 @@ const mergeMessages = async (args: any) => {
             'Error: the voting period is not over. ' +
             'Please wait till ' + new Date(deadline * 1000),
         )
-        return 1
+        return 
     }
 
     while (true) {
@@ -210,7 +210,7 @@ const mergeMessages = async (args: any) => {
     //}
     //console.log(numLeaves, messageAqSubDepth, numOps)
 
-    return 0
+    return 
 }
 
 export {

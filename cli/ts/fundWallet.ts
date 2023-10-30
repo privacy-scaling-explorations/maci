@@ -50,10 +50,10 @@ const fundWallet = async (args: any) => {
 	await tx.wait()
     } catch (e) {
         console.error(e)
-        return 1
+        return 
     }
 
-    return 0
+    return 
 }
 
 export {
