@@ -11,7 +11,7 @@ RUN apt-get update \
     && apt-get install -y libgmp-dev nlohmann-json3-dev nasm g++ 
     
 
-# install nvm and nodejs
+# install nvm and Node.js
 ENV NODE_VERSION=14.18.1
 RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
 ENV NVM_DIR=/root/.nvm
