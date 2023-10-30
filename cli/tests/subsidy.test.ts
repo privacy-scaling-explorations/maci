@@ -667,6 +667,8 @@ describe("Subsidy tests", function() {
     })
 
     describe("test7", () => {
+        after(() => { cleanSubsidy() })
+
         const signupArgs: SignUpArgs[] = Array(6).fill({
             quiet: true,
             maciPubKey: "macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391"
