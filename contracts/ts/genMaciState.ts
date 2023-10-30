@@ -58,7 +58,7 @@ const genMaciStateFromContract = async (
 
         const tmpInitLogs = await provider.getLogs({
             ...maciContract.filters.Init(),
-            fromBlock: fromBlock,
+            fromBlock: i,
             toBlock,
             address: address
         })
@@ -67,7 +67,7 @@ const genMaciStateFromContract = async (
 
         const tmpSignUpLogs = await provider.getLogs({
             ...maciContract.filters.SignUp(),
-            fromBlock: fromBlock,
+            fromBlock: i,
             toBlock,
             address: address
         })
@@ -76,7 +76,7 @@ const genMaciStateFromContract = async (
     
         const tmpMergeStateAqSubRootsLogs = await provider.getLogs({
             ...maciContract.filters.MergeStateAqSubRoots(),
-            fromBlock: fromBlock,
+            fromBlock: i,
             toBlock,
             address: address
         })
@@ -85,7 +85,7 @@ const genMaciStateFromContract = async (
     
         const tmpMergeStateAqLogs = await provider.getLogs({
             ...maciContract.filters.MergeStateAq(),
-            fromBlock: fromBlock,
+            fromBlock: i,
             toBlock,
             address: address
         })
@@ -94,7 +94,7 @@ const genMaciStateFromContract = async (
     
         const tmpDeployPollLogs = await provider.getLogs({
             ...maciContract.filters.DeployPoll(),
-            fromBlock: fromBlock,
+            fromBlock: i,
             toBlock,
             address: address
         })
@@ -282,7 +282,7 @@ const genMaciStateFromContract = async (
         const toBlock = (i + blocksPerRequest) >= lastBlock ? undefined : i + blocksPerRequest
         const tmpPublishMessageLogs = await provider.getLogs({
             ...pollContract.filters.PublishMessage(),
-            fromBlock: fromBlock,
+            fromBlock: i,
             toBlock
         })
 
@@ -290,7 +290,7 @@ const genMaciStateFromContract = async (
     
         const tmpTopupLogs = await provider.getLogs({
             ...pollContract.filters.TopupMessage(),
-            fromBlock: fromBlock,
+            fromBlock: i,
             toBlock,
             address: pollContract.address
         })
@@ -299,7 +299,7 @@ const genMaciStateFromContract = async (
     
         const tmpMergeMaciStateAqSubRootsLogs = await provider.getLogs({
             ...pollContract.filters.MergeMaciStateAqSubRoots(),
-            fromBlock: fromBlock,
+            fromBlock: i,
             toBlock,
             address: pollContract.address
         })
@@ -308,7 +308,7 @@ const genMaciStateFromContract = async (
     
         const tmpMergeMaciStateAqLogs = await provider.getLogs({
             ...pollContract.filters.MergeMaciStateAq(),
-            fromBlock: fromBlock,
+            fromBlock: i,
             toBlock,
             address: pollContract.address
         })
@@ -317,7 +317,7 @@ const genMaciStateFromContract = async (
     
         const tmpMergeMessageAqSubRootsLogs = await provider.getLogs({
             ...pollContract.filters.MergeMessageAqSubRoots(),
-            fromBlock: fromBlock,
+            fromBlock: i,
             toBlock,
             address: pollContract.address
         })
@@ -326,7 +326,7 @@ const genMaciStateFromContract = async (
     
         const tmpMergeMessageAqLogs = await provider.getLogs({
             ...pollContract.filters.MergeMessageAq(),
-            fromBlock: fromBlock,
+            fromBlock: i,
             toBlock,
             address: pollContract.address
         })
