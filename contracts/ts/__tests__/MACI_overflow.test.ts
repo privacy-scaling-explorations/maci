@@ -46,7 +46,7 @@ describe('Overflow testing', () => {
     let maciContract: ethers.Contract
     let stateAqContract: ethers.Contract
     let vkRegistryContract: ethers.Contract
-    let pptContract: ethers.Contract
+    let mpContract: ethers.Contract
     let pollId: number
     beforeEach(async () => {
         signer = await getDefaultSigner()
@@ -56,7 +56,7 @@ describe('Overflow testing', () => {
         maciContract = r.maciContract
         stateAqContract = r.stateAqContract
         vkRegistryContract = r.vkRegistryContract
-        pptContract = r.pptContract
+        mpContract = r.mpContract
     })
 
     it('MACI.stateTreeDepth should be correct', async () => {

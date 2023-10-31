@@ -2,7 +2,10 @@ const { ethers } = require('hardhat')
 import {
     parseArtifact,
     deployVerifier,
-    deployPpt,
+    deployMessageProcessor,
+    deployTally,
+    deploySubsidy,
+    deployContract,
     getDefaultSigner,
 } from 'maci-contracts'
 
@@ -123,28 +126,28 @@ const deployPoll = async (args: any) => {
     let contractAddrs = readJSONFile(contractFilepath)
     if ((!contractAddrs||!contractAddrs["MACI"]) && !args.maci_address) {
         console.error('Error: MACI contract address is empty') 
-        return 1
+        return 
     }
 
     // The poll duration
     const duration = args.duration
     if (duration <= 0) {
         console.error('Error: the duration should be positive')
-        return 1
+        return 
     }
 
     // Max values
     const maxMessages = args.max_messages
     if (maxMessages <= 0) {
         console.error('Error: the maximum number of messages should be positive')
-        return 1
+        return 
     }
 
     // Max vote options
     const maxVoteOptions = args.max_vote_options
     if (maxVoteOptions <= 0) {
         console.error('Error: the maximum number of vote options be positive')
-        return 1
+        return 
     }
     const intStateTreeDepth = args.int_state_tree_depth
     const messageTreeSubDepth = args.msg_batch_depth
@@ -156,7 +159,7 @@ const deployPoll = async (args: any) => {
     const maciAddress = args.maci_address ? args.maci_address: contractAddrs["MACI"]
     if (!(await contractExists(signer.provider, maciAddress))) {
         console.error('Error: a MACI contract is not deployed at', maciAddress)
-        return 1
+        return 
     }
 
     // The coordinator's MACI public key
@@ -164,16 +167,22 @@ const deployPoll = async (args: any) => {
 
     if (!PubKey.isValidSerializedPubKey(coordinatorPubkey)) {
         console.error('Error: invalid MACI public key')
-        return {}
+        return 
     }
 
     const unserialisedPubkey = PubKey.unserialize(coordinatorPubkey)
 
-    // Deploy a PollProcessorAndTallyer contract
+    // Deploy a MessageProcessor contract
     const verifierContract = await deployVerifier(true)
     console.log('Verifier:', verifierContract.address)
-    const pptContract = await deployPpt(verifierContract.address, true)
-    await pptContract.deployTransaction.wait()
+    const mpContract = await deployMessageProcessor(verifierContract.address, contractAddrs['PoseidonT3'],contractAddrs['PoseidonT4'],contractAddrs['PoseidonT5'],contractAddrs['PoseidonT6'])
+    await mpContract.deployTransaction.wait()
+
+    const tallyContract = await deployTally(verifierContract.address, contractAddrs['PoseidonT3'],contractAddrs['PoseidonT4'],contractAddrs['PoseidonT5'],contractAddrs['PoseidonT6'])
+    await tallyContract.deployTransaction.wait()
+
+    const subsidyContract = await deploySubsidy(verifierContract.address, contractAddrs['PoseidonT3'],contractAddrs['PoseidonT4'],contractAddrs['PoseidonT5'],contractAddrs['PoseidonT6'])
+    await subsidyContract.deployTransaction.wait()
 
     const [ maciAbi ] = parseArtifact('MACI')
     const maciContract = new ethers.Contract(
@@ -201,25 +210,29 @@ const deployPoll = async (args: any) => {
         const name = log.name
         if (name !== 'DeployPoll') {
             console.error('Error: invalid event log.')
-            return 1
+            return 
         }
         const pollId = log.args._pollId
         const pollAddr = log.args._pollAddr
         console.log('Poll ID:', pollId.toString())
         console.log('Poll contract:', pollAddr)
-        console.log('PollProcessorAndTallyer contract:', pptContract.address)
+        console.log('MessageProcessor contract:', mpContract.address)
+        console.log('Tally contract:', tallyContract.address)
+        console.log('Subsidy contract:', subsidyContract.address)
         contractAddrs['Verifier-' + pollId.toString()] = verifierContract.address
-        contractAddrs['PollProcessorAndTally-' + pollId.toString()] = pptContract.address
+        contractAddrs['MessageProcessor-' + pollId.toString()] = mpContract.address
+        contractAddrs['Tally-' + pollId.toString()] = tallyContract.address
+        contractAddrs['Subsidy-' + pollId.toString()] = subsidyContract.address
         contractAddrs['Poll-' + pollId.toString()] = pollAddr
         writeJSONFile(contractFilepath, contractAddrs)
 
     } catch (e) {
         console.error('Error: could not deploy poll')
         console.error(e.message)
-        return 1
+        return 
     }
 
-    return 0
+    return 
 }
 
 export {

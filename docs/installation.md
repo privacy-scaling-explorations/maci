@@ -6,8 +6,8 @@ You need the following to use MACI:
 
 - An x86-64 system
 - A Linux system, preferably a Debian-based distribution like Ubuntu
-- NodeJS. Use [`nvm`](https://github.com/nvm-sh/nvm) to install it. MACI has
-  been tested with Node 14.
+- Node.js: use [`nvm`](https://github.com/nvm-sh/nvm) to install it. MACI has
+  been tested with Node 14, 16 and 18. We do however recommend to use Node 18 as Node 14 is deprecated and Node 16 will soon be deprecated too. 
 - The `libgmp-dev` `nlohmann-json3-dev` `nasm` and `g++` Debian/Ubuntu
   packages. They are needed to run `circom-helper`, which in turn is used to
   develop and test zk-SNARK circuits.
@@ -45,8 +45,7 @@ Next, install circom v2:
 
 https://docs.circom.io/
 
-Note the location of the `circom` binary (e.g. `$HOME/.cargo/bin/circom`). You
-will need it later.
+Note the location of the `circom` binary (e.g. `$HOME/.cargo/bin/circom`), as you will need it later.
 
 ### Install MACI
 
@@ -70,6 +69,7 @@ Edit `circuits/circomHelperConfig.json` to include the relative path to the
 circom binary.
 
 ```json
+{
     "circom": "RELATIVE_PATH_TO_CIRCOM",
     "snarkjs": "./node_modules/snarkjs/build/cli.cjs",
     "circuitDirs": [

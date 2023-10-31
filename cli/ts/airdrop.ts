@@ -60,20 +60,20 @@ const airdrop = async (args: any) => {
     let contractAddrs = readJSONFile(contractFilepath)
     if ((!contractAddrs||!contractAddrs["TopupCredit"]) && !args.erc20_contract) {
         console.error('Error: ERC20 contract address is empty') 
-        return 1
+        return 
     }
     const ERC20Address = args.erc20_contract ? args.erc20_contract: contractAddrs["TopupCredit"]
 
     if (!validateEthAddress(ERC20Address)) {
         console.error('Error: invalid topup credit contract address')
-        return 1
+        return 
     }
 
     const signer = await getDefaultSigner()
 
     if (! await contractExists(signer.provider, ERC20Address)) {
         console.error('Error: there is no contract deployed at the specified address')
-        return 1
+        return 
     }
 
     const ERC20ContractAbi = parseArtifact('TopupCredit')[0]
@@ -85,7 +85,7 @@ const airdrop = async (args: any) => {
     const amount = args.amount 
     if (amount < 0) {
         console.error('Error: airdrop amount must be greater than 0')
-        return 1
+        return 
     }
 
     let tx
@@ -101,19 +101,19 @@ const airdrop = async (args: any) => {
         if (e.message) {
             console.error(e.message)
         }
-        return 1
+        return 
     }
 
     if (typeof args.poll_id !== 'undefined') {
         const pollId = args.poll_id
         if (pollId < 0) {
             console.error('Error: the Poll ID should be a positive integer.')
-            return 1
+            return 
         }
     
         if ((!contractAddrs["MACI"]) && !args.contract) {
             console.error('Error: MACI contract address is empty') 
-            return 1
+            return 
         }
         const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
         const maciContractAbi = parseArtifact('MACI')[0]
@@ -138,10 +138,10 @@ const airdrop = async (args: any) => {
             if (e.message) {
                 console.error(e.message)
             }
-            return 1
+            return 
         }
     }
-    return 0
+    return 
 }
 
 export {

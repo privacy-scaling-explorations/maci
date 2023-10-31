@@ -184,7 +184,7 @@ const genProofs = async (args: any) => {
 
     if (fs.existsSync(args.tally_file)) {
         console.error(`Error: ${args.tally_file} exists. Please specify a different filepath.`)
-        return 1
+        return 
     }
 
     const rapidsnarkExe = args.rapidsnark
@@ -202,22 +202,22 @@ const genProofs = async (args: any) => {
         ])
     if (!ok) {
         console.error(`Error: ${path} does not exist.`)
-        return 1
+        return 
     }
 
     let subsidyVk: VerifyingKey
     if (args.subsidy_file) {
         if (fs.existsSync(args.subsidy_file)) {
             console.error(`Error: ${args.subsidy_file} exists. Please specify a different filepath.`)
-            return 1
+            return 
         }
         if (!args.subsidy_zkey) {
             console.error('Please specify subsidy zkey file location')
-            return 1
+            return 
         }
         if (!args.subsidy_witnessgen) {
             console.error('Please specify subsidy witnessgen file location')
-            return 1
+            return 
         }
 
         const subsidyDatFile = args.subsidy_witnessgen + ".dat"
@@ -229,7 +229,7 @@ const genProofs = async (args: any) => {
             ])
         if (!ok) {
             console.error(`Error: ${path} does not exist.`)
-            return 1
+            return 
         }
 
         subsidyVk = await extractVk(args.subsidy_zkey)
@@ -249,7 +249,7 @@ const genProofs = async (args: any) => {
 
     if (!PrivKey.isValidSerializedPrivKey(serializedPrivkey)) {
         console.error('Error: invalid MACI private key')
-        return 1
+        return 
     }
 
     const maciPrivkey = PrivKey.unserialize(serializedPrivkey)
@@ -258,28 +258,28 @@ const genProofs = async (args: any) => {
     const contractAddrs = readJSONFile(contractFilepath)
     if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
         console.error('Error: MACI contract address is empty') 
-        return 1
+        return 
     }
     const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
 
     // MACI contract
     if (!validateEthAddress(maciAddress)) {
         console.error('Error: invalid MACI contract address')
-        return 1
+        return 
     }
 
     const signer = await getDefaultSigner()
 
     if (! (await contractExists(signer.provider, maciAddress))) {
         console.error('Error: there is no MACI contract deployed at the specified address')
-        return 1
+        return 
     }
 
     const pollId = Number(args.poll_id)
 
     if (pollId < 0) {
         console.error('Error: the Poll ID should be a positive integer.')
-        return 1
+        return 
     }
 
     const [ maciContractAbi ] = parseArtifact('MACI')
@@ -295,7 +295,7 @@ const genProofs = async (args: any) => {
     const pollAddr = await maciContractEthers.polls(pollId)
     if (! (await contractExists(signer.provider, pollAddr))) {
         console.error('Error: there is no Poll contract with this poll ID linked to the specified MACI contract.')
-        return 1
+        return 
     }
 
     const pollContract = new ethers.Contract(
@@ -320,7 +320,7 @@ const genProofs = async (args: any) => {
             'Error: the state tree has not been merged yet. ' +
             'Please use the mergeSignups subcommmand to do so.'
         )
-        return 1
+        return 
     }
 
     const messageTreeDepth = Number(
@@ -334,7 +334,7 @@ const genProofs = async (args: any) => {
             'Error: the message tree has not been merged yet. ' +
             'Please use the mergeMessages subcommmand to do so.'
         )
-        return 1
+        return 
     }
 
     // Build an off-chain representation of the MACI contract using data in the contract storage
@@ -390,7 +390,7 @@ const genProofs = async (args: any) => {
         } catch (e) {
             console.error('Error: could not generate proof.')
             console.error(e)
-            return 1
+            return 
         }
 
         // Verify the proof
@@ -402,7 +402,7 @@ const genProofs = async (args: any) => {
 
         if (!isValid) {
             console.error('Error: generated an invalid proof')
-            return 1
+            return 
         }
         
         const thisProof = {
@@ -443,7 +443,7 @@ const genProofs = async (args: any) => {
             const isValid = await verifyProof(r.publicInputs, r.proof, subsidyVk)
             if (!isValid) {
                 console.error('Error: generated an invalid subsidy calc proof')
-                return 1
+                return 
             }
             const thisProof = {
                 circuitInputs: subsidyCircuitInputs,
@@ -509,7 +509,7 @@ const genProofs = async (args: any) => {
 
         if (!isValid) {
             console.error('Error: generated an invalid proof')
-            return 1
+            return 
         }
         
         const thisProof = {
@@ -582,7 +582,7 @@ const genProofs = async (args: any) => {
     endTime = Date.now()
     console.log(`----------gen tally proof took ${(endTime - startTime)/1000} seconds`)
 
-    return 0
+    return 
 }
 
 const saveOutput = (

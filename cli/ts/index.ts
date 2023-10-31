@@ -1,4 +1,32 @@
 #!/usr/bin/env node
+import * as findUp from "find-up";
+
+const isHardhatConfigExist = () => {
+    const JS_CONFIG_FILENAME = "hardhat.config.js";
+    const TS_CONFIG_FILENAME = "hardhat.config.ts";
+
+    const tsConfigPath = findUp.sync(TS_CONFIG_FILENAME);
+    if (tsConfigPath !== null) {
+      return true;
+    }
+  
+    const pathToConfigFile = findUp.sync(JS_CONFIG_FILENAME);
+    if (pathToConfigFile === null) {
+        return false
+    }
+  
+    return true;
+  }
+
+  
+if (!isHardhatConfigExist()) {
+  console.error(`ERROR: File not found: hardhat.config.js
+  
+maci-cli requires a hardhat.config.js file to be present in your project directory in order to function properly. This file is used by hardhat to deploy contracts. Please make sure that the hardhat.config.js file is present in your project directory and try again. If the file is missing, please create one using the Hardhat documentation: https://hardhat.org/hardhat-runner/docs/config`);
+  process.exit(1);
+}
+  
+
 import 'source-map-support/register'
 
 import * as argparse from 'argparse' 
@@ -41,6 +69,16 @@ import {
     deployPoll,
     configureSubparser as configureSubparserForDeployPoll,
 } from './deployPoll'
+
+import {
+    deployPollWithSigner,
+    configureSubparser as configureSubparserForDeployPollWithSigner,
+} from './deployPollWithSigner'
+
+import {
+    fundWallet,
+    configureSubparser as configureSubparserForFundWallet
+} from './fundWallet'
 
 import {
     airdrop,
@@ -123,6 +161,12 @@ const main = async () => {
     // Subcommand: deployPoll
     configureSubparserForDeployPoll(subparsers)
 
+    // Subcommand: deployPollWithSigner
+    configureSubparserForDeployPollWithSigner(subparsers)
+
+    // Subcommand: fundWallet
+    configureSubparserForFundWallet(subparsers)
+
     // Subcommand: airdrop 
     configureSubparserForAirdrop(subparsers)
 
@@ -170,6 +214,10 @@ const main = async () => {
         await create(args)
     } else if (args.subcommand === 'deployPoll') {
         await deployPoll(args)
+    } else if (args.subcommand === 'deployPollWithSigner') {
+        await deployPollWithSigner(args)
+    } else if (args.subcommand === 'fundWallet') {
+        await fundWallet(args)
     } else if (args.subcommand === 'airdrop') {
         await airdrop(args)
     } else if (args.subcommand === 'topup') {
@@ -188,7 +236,8 @@ const main = async () => {
         await proveOnChain(args)
     } else if (args.subcommand === 'verify') {
         await verify(args)
-    } else if (args.subcommand === 'checkVerifyingKey') {
+    } 
+    else if (args.subcommand === 'checkVerifyingKey') {
         await checkVerifyingKey(args)
     }
 }
@@ -200,4 +249,20 @@ if (require.main === module) {
 export {
     calcBinaryTreeDepthFromMaxLeaves,
     calcQuinTreeDepthFromMaxLeaves,
+    genProofs,
+    genMaciKeypair,
+    genMaciPubkey,
+    proveOnChain,
+    verify,
+    create,
+    topup,
+    checkVerifyingKey,
+    mergeMessages,
+    mergeSignups,
+    signup,
+    publish,
+    deployPoll,
+    deployVkRegistry,
+    airdrop,
+    setVerifyingKeys
 }

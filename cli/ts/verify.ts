@@ -9,7 +9,6 @@ import {
 } from 'maci-contracts'
 
 import {
-    calcQuinTreeDepthFromMaxLeaves,
     validateEthAddress,
     contractExists,
 } from './utils'
@@ -17,8 +16,6 @@ import {readJSONFile} from 'maci-common'
 import {contractFilepath} from './config'
 
 import * as ethers from 'ethers'
-
-const Web3 = require('web3')
 
 const configureSubparser = (subparsers: any) => {
     const parser = subparsers.addParser(
@@ -62,52 +59,76 @@ const configureSubparser = (subparsers: any) => {
     )
 
     parser.addArgument(
-        ['-q', '--ppt'],
+        ['-tc', '--tally-contract'],
         {
             type: 'string',
-            help: 'The PollProcessorAndTallyer contract address',
+            help: 'The Tally contract address',
+        }
+    )
+
+    parser.addArgument(
+        ['-sc', '--subsidy-contract'],
+        {
+            type: 'string',
+            help: 'The Subsidy contract address',
         }
     )
 }
+
 
 const verify = async (args: any) => {
     const signer = await getDefaultSigner()
 
     const pollId = Number(args.poll_id)
 
-    // check existence of MACI and ppt contract addresses
+    // check existence of MACI, Tally and Subsidy contract addresses
     let contractAddrs = readJSONFile(contractFilepath)
     if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
         console.error('Error: MACI contract address is empty') 
-        return 1
+        return 
     }
-    if ((!contractAddrs||!contractAddrs["PollProcessorAndTally-"+pollId]) && !args.ppt) {
-        console.error('Error: PollProcessorAndTally contract address is empty') 
-        return 1
+    if ((!contractAddrs||!contractAddrs["Tally-"+pollId]) && !args.tally_contract) {
+        console.error('Error: Tally contract address is empty') 
+        return 
+    }
+    if ((!contractAddrs||!contractAddrs["Subsidy-"+pollId]) && !args.subsidy_contract) {
+        console.error('Error: Subsidy contract address is empty') 
+        return 
     }
 
     const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
-    const pptAddress = args.ppt ? args.ppt: contractAddrs["PollProcessorAndTally-"+pollId]
+    const tallyAddress = args.tally_contract? args.tally_contract: contractAddrs["Tally-"+pollId]
+    const subsidyAddress = args.subsidy_contract? args.subsidy_contract: contractAddrs["Subsidy-"+pollId]
 
     // MACI contract
     if (!validateEthAddress(maciAddress)) {
         console.error('Error: invalid MACI contract address')
-        return 0
+        return 
     }
 
-    // PollProcessorAndTallyer contract
-    if (!validateEthAddress(pptAddress)) {
-        console.error('Error: invalid PollProcessorAndTallyer contract address')
-        return 0
+    // Tally contract
+    if (!validateEthAddress(tallyAddress)) {
+        console.error('Error: invalid Tally contract address')
+        return 
     }
 
+    // Subsidy contract
+    if (!validateEthAddress(subsidyAddress)) {
+        console.error('Error: invalid Subsidy contract address')
+        return 
+    }
     const [ maciContractAbi ] = parseArtifact('MACI')
     const [ pollContractAbi ] = parseArtifact('Poll')
-    const [ pptContractAbi ] = parseArtifact('PollProcessorAndTallyer')
+    const [ tallyContractAbi ] = parseArtifact('Tally')
+    const [ subsidyContractAbi ] = parseArtifact('Subsidy')
 
-    if (! (await contractExists(signer.provider, pptAddress))) {
-        console.error(`Error: there is no contract deployed at ${pptAddress}.`)
-        return 1
+    if (! (await contractExists(signer.provider, tallyAddress))) {
+        console.error(`Error: there is no contract deployed at ${tallyAddress}.`)
+        return 
+    }
+    if (!(await contractExists(signer.provider, subsidyAddress))) {
+        console.error(`Error: there is no contract deployed at ${subsidyAddress}.`)
+        return 
     }
 
 	const maciContract = new ethers.Contract(
@@ -117,9 +138,9 @@ const verify = async (args: any) => {
     )
 
     const pollAddr = await maciContract.polls(pollId)
-    if (! (await contractExists(signer.provider, pollAddr))) {
+    if (!(await contractExists(signer.provider, pollAddr))) {
         console.error('Error: there is no Poll contract with this poll ID linked to the specified MACI contract.')
-        return 1
+        return 
     }
 
     const pollContract = new ethers.Contract(
@@ -128,15 +149,21 @@ const verify = async (args: any) => {
         signer,
     )
 
-    const pptContract = new ethers.Contract(
-        pptAddress,
-        pptContractAbi,
+    const tallyContract = new ethers.Contract(
+        tallyAddress,
+        tallyContractAbi,
+        signer,
+    )
+
+    const subsidyContract = new ethers.Contract(
+        subsidyAddress,
+        subsidyContractAbi,
         signer,
     )
 
        // ----------------------------------------------
     // verify tally result
-    const onChainTallyCommitment = BigInt(await pptContract.tallyCommitment())
+    const onChainTallyCommitment = BigInt(await tallyContract.tallyCommitment())
     console.log(onChainTallyCommitment.toString(16))
 
     // Read the tally file
@@ -145,7 +172,7 @@ const verify = async (args: any) => {
         contents = fs.readFileSync(args.tally_file, { encoding: 'utf8' })
     } catch {
         console.error('Error: unable to open ', args.tally_file)
-        return 0
+        return 
     }
 
     // Parse the tally file
@@ -154,7 +181,7 @@ const verify = async (args: any) => {
         data = JSON.parse(contents)
     } catch {
         console.error('Error: unable to parse ', args.tally_file)
-        return 0
+        return 
     }
 
     console.log('-------------tally data -------------------')
@@ -166,7 +193,7 @@ const verify = async (args: any) => {
 
     if (!validResultsCommitment) {
         console.error('Error: invalid results commitment format')
-        return 0
+        return 
     }
 
     const treeDepths = await pollContract.treeDepths()
@@ -178,12 +205,12 @@ const verify = async (args: any) => {
     // Get vote option tree depth
     if (data.results.tally.length !== numVoteOptions) {
         console.error(wrongNumVoteOptions)
-        return 1
+        return 
     }
 
     if (data.perVOSpentVoiceCredits.tally.length !== numVoteOptions) {
         console.error(wrongNumVoteOptions)
-        return 1
+        return 
     }
 
     // Verify that the results commitment matches the output of
@@ -220,28 +247,28 @@ const verify = async (args: any) => {
 
     if (onChainTallyCommitment !== newTallyCommitment) {
         console.log('Error: the on-chain tally commitment does not match.')
-        return 1
+        return 
     }
 
     // ----------------------------------------------
     // verify subsidy result
 
     if (args.subsidy_file) {
-        const onChainSubsidyCommitment = BigInt(await pptContract.subsidyCommitment())
+        const onChainSubsidyCommitment = BigInt(await subsidyContract.subsidyCommitment())
         console.log(onChainSubsidyCommitment.toString(16))
         // Read the subsidy file
         try {
             contents = fs.readFileSync(args.subsidy_file, { encoding: 'utf8' })
         } catch {
             console.error('Error: unable to open ', args.subsidy_file)
-            return 0
+            return 
         }
        // Parse the file
         try {
             data = JSON.parse(contents)
         } catch {
             console.error('Error: unable to parse ', args.subsidy_file)
-            return 0
+            return 
         }
         console.log('-------------subsidy data -------------------')
         console.log(data)
@@ -252,12 +279,12 @@ const verify = async (args: any) => {
     
         if (!validResultsCommitment) {
             console.error('Error: invalid results commitment format')
-            return 0
+            return 
         }
     
         if (data.results.subsidy.length !== numVoteOptions) {
             console.error(wrongNumVoteOptions)
-            return 1
+            return 
         }
     
         // to compute newSubsidyCommitment, we can use genTallyResultCommitment
@@ -269,16 +296,13 @@ const verify = async (args: any) => {
     
         if (onChainSubsidyCommitment !== newSubsidyCommitment) {
             console.log('Error: the on-chain subsidy commitment does not match.')
-            return 1
+            return 
         }
     }
 
-
-
-
     console.log('OK. finish verify')
 
-    return 0
+    return 
 }
 
 export {

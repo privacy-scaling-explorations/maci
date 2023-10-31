@@ -101,10 +101,19 @@ const executeSuite = async (data: any, expect: any) => {
             ` -v ${config.constants.maci.voteOptionTreeDepth}`
 
         const deployPollOutput = execute(deployPollCommand).stdout.trim()
-        const deployPollRegMatch = deployPollOutput.match(/PollProcessorAndTallyer contract: (0x[a-fA-F0-9]{40})/)
-        const pptAddress = deployPollRegMatch[1]
         const deployPollIdRegMatch = deployPollOutput.match(/Poll ID: ([0-9])/)
         const pollId = deployPollIdRegMatch[1]
+        const deployPollMPRegMatch = deployPollOutput.match(/MessageProcessor contract: (0x[a-fA-F0-9]{40})/)
+        const mpAddress = deployPollMPRegMatch[1]
+        const deployPollTallyRegMatch = deployPollOutput.match(/Tally contract: (0x[a-fA-F0-9]{40})/)
+        const tallyAddress = deployPollTallyRegMatch[1]
+
+        let subsidyAddress
+        const deployPollSubsidyRegMatch = deployPollOutput.match(/Subsidy contract: (0x[a-fA-F0-9]{40})/) 
+        const subsidyContract =  deployPollSubsidyRegMatch[1]
+        subsidyEnabled ? subsidyAddress = "--subsidy " + subsidyContract: subsidyAddress = ''
+
+
 
         const treeDepths = {} as TreeDepths
         treeDepths.intStateTreeDepth = config.constants.poll.intStateTreeDepth
@@ -272,14 +281,15 @@ const executeSuite = async (data: any, expect: any) => {
         const proveOnChainCommand = `node build/index.js proveOnChain` +
             ` -x ${maciAddress}` +
             ` -o ${pollId}` +
-            ` -q ${pptAddress}` +
-            ` -f proofs/`
+            ` --mp ${mpAddress}` +
+            ` --tally ${tallyAddress}` +
+            ` -f proofs/` +
+            ` ${subsidyAddress}`
         execute(proveOnChainCommand)
 
         const verifyCommand = `node build/index.js verify` +
             ` -x ${maciAddress}` +
             ` -o ${pollId}` +
-            ` -q ${pptAddress}` +
             ` -t tally.json` +
             ` ${subsidyResultFilePath}`
         execute(verifyCommand)
@@ -294,5 +304,6 @@ const executeSuite = async (data: any, expect: any) => {
 
 export {
     loadData,
+    execute,
     executeSuite,
 }

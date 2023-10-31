@@ -63,37 +63,37 @@ const topup = async (args: any) => {
     let contractAddrs = readJSONFile(contractFilepath)
     if ((!contractAddrs||!contractAddrs["MACI"]) && !args.contract) {
         console.error('Error: MACI contract address is empty') 
-        return 1
+        return 
     }
     const maciAddress = args.contract ? args.contract: contractAddrs["MACI"]
 
     // MACI contract
     if (!validateEthAddress(maciAddress)) {
         console.error('Error: invalid MACI contract address')
-        return 1
+        return 
     }
 
     const signer = await getDefaultSigner()
 
     if (! await contractExists(signer.provider, maciAddress)) {
         console.error('Error: there is no contract deployed at the specified address')
-        return 1
+        return 
     }
 
     const amount = args.amount 
     if (amount < 0) {
         console.error('Error: topup amount must be greater than 0')
-        return 1
+        return 
     }
     const stateIndex = BigInt(args.state_index)
     if (stateIndex < 0) {
         console.error('Error: the state index must be greater than 0')
-        return 1
+        return 
     }
     const pollId = args.poll_id
     if (pollId < 0) {
         console.error('Error: the Poll ID should be a positive integer.')
-        return 1
+        return 
     }
 
     const maciContractAbi = parseArtifact('MACI')[0]
@@ -106,7 +106,7 @@ const topup = async (args: any) => {
     const pollAddr = await maciContract.getPoll(pollId)
     if (! (await contractExists(signer.provider, pollAddr))) {
         console.error('Error: there is no Poll contract with this poll ID linked to the specified MACI contract.')
-        return 1
+        return 
     }
 
     const pollContract = new ethers.Contract(
@@ -134,9 +134,9 @@ const topup = async (args: any) => {
                 console.error(e.message)
             }
         }
-        return 1
+        return 
     }
-    return 0
+    return 
 }
 
 export {

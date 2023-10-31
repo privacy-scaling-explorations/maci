@@ -61,7 +61,7 @@ const create = async (args: any) => {
     let contractAddrs = readJSONFile(contractFilepath)
     if ((!contractAddrs||!contractAddrs["VkRegistry"]) && !args.vk_registry) {
         console.error('Error: vkRegistry contract address is empty') 
-        return 1
+        return 
     }
 
     const TopupCreditContract = await deployTopupCreditContract()
@@ -76,7 +76,7 @@ const create = async (args: any) => {
     // Whether we should deploy a ConstantInitialVoiceCreditProxy
     if (initialVoiceCreditProxy != undefined && initialVoiceCredits != undefined) {
         console.error('Error: only one of the following can be specified: the initial voice credit proxy or the amount of initial voice credits.')
-        return 1
+        return 
     }
 
     let initialVoiceCreditProxyContractAddress
@@ -112,7 +112,7 @@ const create = async (args: any) => {
         maciContract,
         stateAqContract,
         pollFactoryContract,
-        messageAqContract,
+        poseidonAddrs
     } = await deployMaci(
         signUpGatekeeperAddress,
         initialVoiceCreditProxyContractAddress,
@@ -129,11 +129,12 @@ const create = async (args: any) => {
     contractAddrs['MACI'] = maciContract.address
     contractAddrs['StateAq'] = stateAqContract.address
     contractAddrs['PollFactory'] = pollFactoryContract.address
-    contractAddrs['MessageAqFactory'] = messageAqContract.address
     contractAddrs['TopupCredit'] = TopupCreditContract.address
+    contractAddrs['PoseidonT3'] = poseidonAddrs[0]
+    contractAddrs['PoseidonT4'] = poseidonAddrs[1]
+    contractAddrs['PoseidonT5'] = poseidonAddrs[2]
+    contractAddrs['PoseidonT6'] = poseidonAddrs[3]
     writeJSONFile(contractFilepath, contractAddrs)
-
-    return 0
 }
 
 export {

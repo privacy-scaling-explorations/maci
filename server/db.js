@@ -21,7 +21,6 @@ async function initConnection() {
   return dbClient
 }
 
-
 async function ping(dbClient) {
   if (!dbClient) {
      logger.error('db is not initialized')
@@ -31,7 +30,6 @@ async function ping(dbClient) {
   logger.info(`pong: ${JSON.stringify(res)}`)
   return true
 }
-
 
 // below are cli options for admin
 async function updateRecord(data) {
@@ -49,7 +47,6 @@ async function removeRecord(maciAddr) {
   logger.info(`record deleted for maci addr ${maciAddr}`)
   client.close()
 }
-
 
 async function queryRecord(maciAddr) {
   let client = await MongoClient.connect(uri)

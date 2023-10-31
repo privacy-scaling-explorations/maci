@@ -2,9 +2,8 @@ name: Crypto
 
 on:
   push:
-    branches: [ v1 ]
+    branches: [ master, audit, dev ]
   pull_request:
-    branches: [ v1 ]
 
 concurrency: 
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -14,8 +13,9 @@ jobs:
   build:
     runs-on: ubuntu-20.04
     strategy:
+      fail-fast: false
       matrix:
-        node-version: [14, 16]
+        node-version: [18]
 
     steps:
       - uses: actions/checkout@v3

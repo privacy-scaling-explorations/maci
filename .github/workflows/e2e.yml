@@ -2,9 +2,8 @@ name: CI
 
 on:
   push:
-    branches: [ v1 ]
+    branches: [ master, audit, dev ]
   pull_request:
-    branches: [ v1 ]
   schedule:
     - cron: 0 0 * * *
 
@@ -25,10 +24,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - name: Use Node.js 16
+      - name: Use Node.js 18
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
           registry-url: 'https://registry.npmjs.org'
 
       # To prevent `npm install` failure of circuit package, 

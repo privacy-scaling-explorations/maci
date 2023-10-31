@@ -1,5 +1,8 @@
 # maci-domainobjs
 
+[![NPM Package][domainobjs-npm-badge]][domainobjs-npm-link]
+[![Actions Status][domainobjs-actions-badge]][domainobjs-actions-link]
+
 This module implements domain objects. A domain object is:
 
 > a logical container of purely domain information, usually represents a
@@ -58,3 +61,8 @@ Encapsulates a Groth16 zk-SNARK verifying key.
 ## `Proof`
 
 Encapsulates a Groth16 zk-SNARK proof.
+
+[domainobjs-npm-badge]: https://img.shields.io/npm/v/maci-domainobjs.svg
+[domainobjs-npm-link]: https://www.npmjs.com/package/maci-domainobjs
+[domainobjs-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/domainobjs-build.yml/badge.svg
+[domainobjs-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3Adomainobjs

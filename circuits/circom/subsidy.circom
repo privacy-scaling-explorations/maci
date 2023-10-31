@@ -179,37 +179,37 @@ template SubsidyPerBatch (
     
     component iz = IsZero();
     iz.in <== isFirstBatch.out;
-
-    component subsidy[numVoteOptions];
-    for (var p = 0; p < numVoteOptions; p ++) {
-        subsidy[p] = CalculateTotal(batchSize * batchSize + 1);
-        subsidy[p].nums[batchSize * batchSize] <== currentSubsidy[p] * iz.out;
-        var cnt = 0;
-        for (var i = 0; i < batchSize; i ++) {
-            for (var j = 0; j < batchSize; j ++) {
-                subsidy[p].nums[cnt] <== kij[cnt].c * vsquares[cnt][p];
-                cnt++;
-            }
-        }
-    }
-
-    // substract the duplicate kii terms
-    signal vi2[batchSize][numVoteOptions]; // vi*vi
-    signal vi2real[batchSize][numVoteOptions];
     component isDiag = IsZero();
     isDiag.in <== rowStartIndex - colStartIndex;
-    for (var i = 0; i < batchSize; i++) {
-        for (var p = 0; p < numVoteOptions; p++) {
-            vi2[i][p] <== votes1[i][p] * votes2[i][p];
-            vi2real[i][p] <== vi2[i][p] * isDiag.out;
-        }
-    }
-    component duplicate[numVoteOptions];
-    for (var p = 0; p < numVoteOptions; p++) {
-        duplicate[p] = CalculateTotal(batchSize);
+    signal lower[batchSize*(batchSize+1)/2][numVoteOptions]; 
+
+    component subsidy1[numVoteOptions];
+    component subsidy2[numVoteOptions];
+
+    for (var p = 0; p < numVoteOptions; p ++) {
+        subsidy1[p] = CalculateTotal(batchSize * (batchSize-1)/2 + 1);
+        subsidy2[p] = CalculateTotal(batchSize * (batchSize+1)/2);
+
+        // upper triangle of coefficients matrix
+        var cnt1 = 0;
+        subsidy1[p].nums[batchSize * (batchSize-1)/2] <== currentSubsidy[p] * iz.out;
         for (var i = 0; i < batchSize; i++) {
-            var idx = i * batchSize + i;
-            duplicate[p].nums[i] <== kij[idx].c * vi2real[i][p];
+            for (var j = i+1; j < batchSize; j ++) {
+                var idx = i * batchSize + j;
+                subsidy1[p].nums[cnt1] <== 2 * kij[idx].c * vsquares[idx][p];
+                cnt1++;
+            }
+        }
+
+        // lower half of coefficients matrix
+        var cnt2 = 0;
+        for (var i = 0; i < batchSize; i++) {
+            for (var j = 0; j <= i; j++) {
+                var idx = i * batchSize + j;
+                lower[cnt2][p] <== 2 * kij[idx].c * vsquares[idx][p]; 
+                subsidy2[p].nums[cnt2] <== lower[cnt2][p] * (1 - isDiag.out);
+                cnt2++;
+            }
         }
     }
 
@@ -223,7 +223,7 @@ template SubsidyPerBatch (
 
     for (var i = 0; i < numVoteOptions; i ++) {
         rcv.currentSubsidy[i] <== currentSubsidy[i];
-        rcv.newSubsidy[i] <== subsidy[i].sum - duplicate[i].sum;
+        rcv.newSubsidy[i] <== subsidy1[i].sum + subsidy2[i].sum; 
     }
 
     /*

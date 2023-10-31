@@ -12,11 +12,18 @@ cd contracts && \
 npm run compileSol
 ```
 
-Run Hardhat Network (a local Ethereum testnet) in a separate terminal:
+To run Contracts only tests, run:
 
 ```bash
 cd contracts && \
-npm run hardhat
+npm run test
+```
+
+To test the system as a whole, run Hardhat Network (a local Ethereum testnet) in a separate terminal:
+
+```bash
+cd contracts && \
+npm run test
 ```
 
 ## CLI
@@ -31,7 +38,7 @@ MACI has three zk-SNARK circuits. Each circuit is parameterised. There should on
 
 Unless you wish to generate a fresh set of `.zkey` files, you should obtain
 them from someone who has performed a multi-party trusted setup for said
-circuits..
+circuits.
 
 Note the locations of the `.zkey` files as the CLI requires them as
 command-line flags.
@@ -79,7 +86,7 @@ Next, ensure that the `prover` binary of `rapidsnark` is in
 
 ### Run CLI tests
 
-You could find a tests in `maci/cli/tests`.
+You can find the tests in `maci/cli/tests`.
 
 e.g. In `maci/cli/tests/vanilla`:
 

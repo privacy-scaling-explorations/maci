@@ -110,7 +110,7 @@ const setVerifyingKeys = async (args: any) => {
     let contractAddrs = readJSONFile(contractFilepath)
     if ((!contractAddrs||!contractAddrs["VkRegistry"]) && !args.vk_registry) {
         console.error('Error: vkRegistry contract address is empty') 
-        return 1
+        return 
     }
     const vkRegistryAddress = args.vk_registry ? args.vk_registry: contractAddrs["VkRegistry"]
     // State tree depth
@@ -124,11 +124,11 @@ const setVerifyingKeys = async (args: any) => {
     const tvZkeyFile = path.resolve(args.tally_votes_zkey)
     if (!fs.existsSync(pmZkeyFile)) {
         console.error(`Error: ${pmZkeyFile} does not exist.`)
-        return 1
+        return 
     }
     if (!fs.existsSync(tvZkeyFile)) {
         console.error(`Error: ${tvZkeyFile} does not exist.`)
-        return 1
+        return 
     }
 
     const processVk: VerifyingKey = VerifyingKey.fromObj(await extractVk(pmZkeyFile))
@@ -141,7 +141,7 @@ const setVerifyingKeys = async (args: any) => {
         ssZkeyFile = path.resolve(args.subsidy_zkey)
         if (!fs.existsSync(ssZkeyFile)) {
             console.error(`Error: ${ssZkeyFile} does not exist.`)
-            return 1
+            return 
         }
 
         subsidyVk = VerifyingKey.fromObj(await extractVk(ssZkeyFile))
@@ -156,19 +156,19 @@ const setVerifyingKeys = async (args: any) => {
         msgBatchDepth < 1 
     ) {
         console.error('Error: invalid depth or batch size parameters')
-        return 1
+        return 
     }
 
     if (stateTreeDepth < intStateTreeDepth) {
         console.error('Error: invalid state tree depth or intermediate state tree depth')
-        return 1
+        return 
     }
 
     // Check the pm zkey filename against specified params
     const pmMatch = pmZkeyFile.match(/.+_(\d+)-(\d+)-(\d+)-(\d+)_/)
     if (pmMatch == null) {
         console.error(`Error: ${pmZkeyFile} has an invalid filename`)
-        return 1
+        return 
     }
     const pmStateTreeDepth = Number(pmMatch[1])
     const pmMsgTreeDepth = Number(pmMatch[2])
@@ -178,7 +178,7 @@ const setVerifyingKeys = async (args: any) => {
     const tvMatch = tvZkeyFile.match(/.+_(\d+)-(\d+)-(\d+)_/)
     if (tvMatch == null) {
         console.error(`Error: ${tvZkeyFile} has an invalid filename`)
-        return 1
+        return 
     }
     const tvStateTreeDepth = Number(tvMatch[1])
     const tvIntStateTreeDepth = Number(tvMatch[2])
@@ -195,7 +195,7 @@ const setVerifyingKeys = async (args: any) => {
 
     ) {
         console.error('Error: incorrect .zkey file; please check the circuit params')
-        return 1
+        return 
     }
 
 
@@ -203,7 +203,7 @@ const setVerifyingKeys = async (args: any) => {
     const signer = await getDefaultSigner()
     if (!(await contractExists(signer.provider,vkRegistryAddress))) {
         console.error('Error: a VkRegistry contract is not deployed at', vkRegistryAddress)
-        return 1
+        return 
     }
 
     const [ vkRegistryAbi ] = parseArtifact('VkRegistry')
@@ -229,7 +229,7 @@ const setVerifyingKeys = async (args: any) => {
 
     if (isProcessVkSet) {
         console.error('Error: this process verifying key is already set in the contract')
-        return 1
+        return 
     }
 
     // Query the contract to see if the tallyVk has been set
@@ -242,14 +242,14 @@ const setVerifyingKeys = async (args: any) => {
     const isTallyVkSet = await vkRegistryContract.isTallyVkSet(tallyVkSig)
     if (isTallyVkSet ) {
         console.error('Error: this tally verifying key is already set in the contract')
-        return 1
+        return 
     }
 
     if (args.subsidy_zkey) {
         const ssMatch = ssZkeyFile.match(/.+_(\d+)-(\d+)-(\d+)_/)
         if (ssMatch == null) {
             console.error(`Error: ${ssZkeyFile} has an invalid filename`)
-            return 1
+            return 
         }
         const ssStateTreeDepth = Number(ssMatch[1])
         const ssIntStateTreeDepth = Number(ssMatch[2])
@@ -260,7 +260,7 @@ const setVerifyingKeys = async (args: any) => {
         voteOptionTreeDepth != ssVoteOptionTreeDepth
         ) {
             console.error('Error: incorrect .zkey file; please check the circuit params')
-            return 1
+            return 
         }
         const subsidyVkSig = genSubsidyVkSig(
             stateTreeDepth,
@@ -270,7 +270,7 @@ const setVerifyingKeys = async (args: any) => {
         const isSubsidyVkSet = await vkRegistryContract.isSubsidyVkSet(subsidyVkSig)
         if (isSubsidyVkSet ) {
             console.error('Error: this subsidy verifying key is already set in the contract')
-            return 1
+            return 
         }
     }
 
@@ -308,11 +308,11 @@ const setVerifyingKeys = async (args: any) => {
 
         if (!compareVks(processVk, processVkOnChain)) {
             console.error('Error: processVk mismatch')
-            return 1
+            return 
         }
         if (!compareVks(tallyVk, tallyVkOnChain)) {
             console.error('Error: tallyVk mismatch')
-            return 1
+            return 
         }
 
         if (args.subsidy_zkey) {
@@ -338,16 +338,16 @@ const setVerifyingKeys = async (args: any) => {
             )
             if (!compareVks(subsidyVk, subsidyVkOnChain)) {
                 console.error('Error: subsidyVk mismatch')
-                return 1
+                return 
             }
         }
 
-        return 0
+        return 
 
     } catch (e) {
         console.error('Error: transaction failed')
         console.error(e.message)
-        return 1
+        return 
     }
 }
 
