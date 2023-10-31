@@ -34,7 +34,7 @@ export const deepCopyBigIntArray = (arr: bigint[]): bigint[] => {
 }
 
 /**
- * Calcualte the depth of a tree given the number of leaves
+ * Calculate the depth of a tree given the number of leaves
  * @param hashLength the hashing function param length
  * @param numLeaves how many leaves
  * @returns the depth
@@ -58,9 +58,9 @@ export const calcDepthFromNumLeaves = (
 /**
  * A helper function which hashes a list of results with a salt and returns the
  * hash.
- * @param results A list of values
- * @parm salt A random salt
- * @returns The hash of the leavees and the salt, with the salt last
+ * @param leaves A list of values
+ * @param salt A random salt
+ * @returns The hash of the leaves and the salt, with the salt last
  */
 export const genTreeCommitment = (
     leaves: bigint[],

@@ -10,7 +10,8 @@ import {
     hash13,
     verifySignature,
     genRandomSalt,
-    SNARK_FIELD_SIZE
+    SNARK_FIELD_SIZE,
+    genTreeCommitment
 } from '../'
 
 
@@ -191,6 +192,29 @@ describe('Cryptographic operations', () => {
                 pubKey1,
             )
             expect(valid).toBeFalsy()
+        })
+    })
+
+    describe('genTreeCommitment', () => {
+        const leaves = [BigInt(1), BigInt(2), BigInt(3), BigInt(4), BigInt(5)]
+        const salt = BigInt(6)
+        const depth = 3
+        it("should generate a commitment to the tree root using the provided salt", () => {
+            const commitment = genTreeCommitment(leaves, salt, depth)
+            expect(commitment).toBeGreaterThan(0)
+            expect(commitment).toBeLessThan(SNARK_FIELD_SIZE)
+        })
+
+        it("should always generate the same commitment for th same inputs", () => {
+            const commitment = genTreeCommitment(leaves, salt, depth)
+            expect(commitment).toBeGreaterThan(0)
+            expect(commitment).toBeLessThan(SNARK_FIELD_SIZE)
+
+            const commitment2 = genTreeCommitment(leaves, salt, depth)
+            expect(commitment2).toBeGreaterThan(0)
+            expect(commitment2).toBeLessThan(SNARK_FIELD_SIZE)
+
+            expect(commitment).toEqual(commitment2)
         })
     })
 })
