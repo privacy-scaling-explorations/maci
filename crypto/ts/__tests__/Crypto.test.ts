@@ -205,7 +205,7 @@ describe('Cryptographic operations', () => {
             expect(commitment).toBeLessThan(SNARK_FIELD_SIZE)
         })
 
-        it("should always generate the same commitment for th same inputs", () => {
+        it("should always generate the same commitment for the same inputs", () => {
             const commitment = genTreeCommitment(leaves, salt, depth)
             expect(commitment).toBeGreaterThan(0)
             expect(commitment).toBeLessThan(SNARK_FIELD_SIZE)
