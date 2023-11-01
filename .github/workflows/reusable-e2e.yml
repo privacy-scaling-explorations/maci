@@ -89,7 +89,7 @@ jobs:
 
       - name: Integration Test
         run: |
-          cd integrationTests
+          cd cli
           npm run test
 
       - name: Stop Hardhat
