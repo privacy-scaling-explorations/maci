@@ -1,20 +1,21 @@
-jest.setTimeout(120000)
 import { stringifyBigInts } from 'maci-crypto'
-
-import { 
-    genWitness,
-    getSignalByName,
-} from './utils'
-
 import {
     Keypair,
 } from 'maci-domainobjs'
+import * as path from 'path'
+const tester = require("circom_tester").wasm;
+import { getSignal } from './utils';
+import { expect } from 'chai'
 
 describe('Public key derivation circuit', () => {
-    const circuit = 'ecdh_test'
+    const circuitPath = path.join(__dirname, '../../circom/test', `ecdh_test.circom`)
+    let circuit: any 
 
+    before(async () => {
+        circuit = await tester(circuitPath)
+    })
+    
     it('correctly computes a public key', async () => {
-
         const keypair = new Keypair()
         const keypair2 = new Keypair()
 
@@ -28,11 +29,13 @@ describe('Public key derivation circuit', () => {
             'pubKey': keypair2.pubKey.asCircuitInputs(),
         })
 
-        const witness = await genWitness(circuit, circuitInputs)
+        const witness = await circuit.calculateWitness(circuitInputs, true)
+        await circuit.checkConstraints(witness)
 
-        const circuitEcdhSharedKey0 = await getSignalByName(circuit, witness, 'main.sharedKey[0]')
-        const circuitEcdhSharedKey1 = await getSignalByName(circuit, witness, 'main.sharedKey[1]')
-        expect(circuitEcdhSharedKey0).toEqual(ecdhSharedKey[0].toString())
-        expect(circuitEcdhSharedKey1).toEqual(ecdhSharedKey[1].toString())
+
+        const circuitEcdhSharedKey0 = await getSignal(circuit, witness, 'sharedKey[0]')
+        const circuitEcdhSharedKey1 = await getSignal(circuit, witness, 'sharedKey[1]')
+        expect(circuitEcdhSharedKey0.toString()).to.be.eq(ecdhSharedKey[0].toString())
+        expect(circuitEcdhSharedKey1.toString()).to.be.eq(ecdhSharedKey[1].toString())
     })
 })

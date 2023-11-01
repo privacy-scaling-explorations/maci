@@ -1,13 +1,12 @@
-jest.setTimeout(90000)
 import { 
-    genWitness,
-    getSignalByName,
+    getSignal
 } from './utils'
 
 import {
     PCommand,
     Keypair,
 } from 'maci-domainobjs'
+const tester = require("circom_tester").wasm
 
 import {
     stringifyBigInts,
@@ -19,29 +18,44 @@ import {
     hash4,
     hash3,
 } from 'maci-crypto'
+import * as path from 'path'
+import { expect } from 'chai'
 
-describe('Poseidon hash circuits', () => {
+describe('Poseidon hash circuits', function() {
+    this.timeout(30000)
+
+    let circuit: any 
+
     describe('SHA256', () => {
         describe('Sha256HashLeftRight', () => {
+            before(async () => {
+                const circuitPath = path.join(__dirname, '../../circom/test', `sha256HashLeftRight_test.circom`)
+                circuit = await tester(circuitPath)
+            })
+
             it('correctly hashes two random values', async () => {
-                const circuit = 'sha256HashLeftRight_test'
 
                 const left = genRandomSalt()
                 const right = genRandomSalt()
 
                 const circuitInputs = stringifyBigInts({ left, right })
 
-                const witness = await genWitness(circuit, circuitInputs)
-                const output = await getSignalByName(circuit, witness, 'main.hash')
-
+                const witness = await circuit.calculateWitness(circuitInputs, true)
+                await circuit.checkConstraints(witness)
+                const output = await getSignal(circuit, witness, 'hash')
+        
                 const outputJS = sha256Hash([left, right])
-
-                expect(output.toString()).toEqual(outputJS.toString())
+        
+                expect(output.toString()).to.be.eq(outputJS.toString())
             })
         })
 
         describe('Sha256Hasher4', () => {
-            const circuit = 'sha256Hasher4_test'
+            before(async () => {
+                const circuitPath = path.join(__dirname, '../../circom/test', `sha256Hasher4_test.circom`)
+                circuit = await tester(circuitPath)
+            })
+
             it('correctly hashes 4 random values', async () => {
                 const preImages: any = []
                 for (let i = 0; i < 4; i++) {
@@ -52,17 +66,21 @@ describe('Poseidon hash circuits', () => {
                     in: preImages,
                 })
 
-                const witness = await genWitness(circuit, circuitInputs)
-                const output = await getSignalByName(circuit, witness, 'main.hash')
+                const witness = await circuit.calculateWitness(circuitInputs, true)
+                await circuit.checkConstraints(witness)
+                const output = await getSignal(circuit, witness, 'hash')
 
                 const outputJS = sha256Hash(preImages)
 
-                expect(output.toString()).toEqual(outputJS.toString())
+                expect(output.toString()).to.be.eq(outputJS.toString())
             })
         })
 
         describe('Sha256Hasher6', () => {
-            const circuit = 'sha256Hasher6_test'
+            before(async () => {
+                const circuitPath = path.join(__dirname, '../../circom/test', `sha256Hasher6_test.circom`)
+                circuit = await tester(circuitPath)
+            })
             it('correctly hashes 6 random values', async () => {
                 const preImages: any = []
                 for (let i = 0; i < 6; i++) {
@@ -73,19 +91,23 @@ describe('Poseidon hash circuits', () => {
                     in: preImages,
                 })
 
-                const witness = await genWitness(circuit, circuitInputs)
-                const output = await getSignalByName(circuit, witness, 'main.hash')
+                const witness = await circuit.calculateWitness(circuitInputs, true)
+                await circuit.checkConstraints(witness)
+                const output = await getSignal(circuit, witness, 'hash')
 
                 const outputJS = sha256Hash(preImages)
 
-                expect(output.toString()).toEqual(outputJS.toString())
+                expect(output.toString()).to.be.eq(outputJS.toString())
             })
         })
     })
 
     describe('Poseidon', () => {
         describe('Hasher5', () => {
-            const circuit = 'hasher5_test'
+            before(async () => {
+                const circuitPath = path.join(__dirname, '../../circom/test', `hasher5_test.circom`)
+                circuit = await tester(circuitPath)
+            })
             it('correctly hashes 5 random values', async () => {
                 const preImages: any = []
                 for (let i = 0; i < 5; i++) {
@@ -96,17 +118,21 @@ describe('Poseidon hash circuits', () => {
                     in: preImages,
                 })
 
-                const witness = await genWitness(circuit, circuitInputs)
-                const output = await getSignalByName(circuit, witness, 'main.hash')
+                const witness = await circuit.calculateWitness(circuitInputs, true)
+                await circuit.checkConstraints(witness)
+                const output = await getSignal(circuit, witness, 'hash')
 
                 const outputJS = hash5(preImages)
 
-                expect(output.toString()).toEqual(outputJS.toString())
+                expect(output.toString()).to.be.eq(outputJS.toString())
             })
         })
 
         describe('Hasher4', () => {
-            const circuit = 'hasher4_test'
+            before(async () => {
+                const circuitPath = path.join(__dirname, '../../circom/test', `hasher4_test.circom`)
+                circuit = await tester(circuitPath)
+            })
             it('correctly hashes 4 random values', async () => {
                 const preImages: any = []
                 for (let i = 0; i < 4; i++) {
@@ -117,17 +143,22 @@ describe('Poseidon hash circuits', () => {
                     in: preImages,
                 })
 
-                const witness = await genWitness(circuit, circuitInputs)
-                const output = await getSignalByName(circuit, witness, 'main.hash')
+                const witness = await circuit.calculateWitness(circuitInputs, true)
+                await circuit.checkConstraints(witness)
+                const output = await getSignal(circuit, witness, 'hash')
 
                 const outputJS = hash4(preImages)
 
-                expect(output.toString()).toEqual(outputJS.toString())
+                expect(output.toString()).to.be.eq(outputJS.toString())
             })
         })
 
         describe('Hasher3', () => {
-            const circuit = 'hasher3_test'
+            before(async () => {
+                const circuitPath = path.join(__dirname, '../../circom/test', `hasher3_test.circom`)
+                circuit = await tester(circuitPath)
+            })
+
             it('correctly hashes 3 random values', async () => {
                 const preImages: any = []
                 for (let i = 0; i < 3; i++) {
@@ -138,18 +169,22 @@ describe('Poseidon hash circuits', () => {
                     in: preImages,
                 })
 
-                const witness = await genWitness(circuit, circuitInputs)
-                const output = await getSignalByName(circuit, witness, 'main.hash')
+                const witness = await circuit.calculateWitness(circuitInputs, true)
+                await circuit.checkConstraints(witness)
+                const output = await getSignal(circuit, witness, 'hash')
 
                 const outputJS = hash3(preImages)
 
-                expect(output.toString()).toEqual(outputJS.toString())
+                expect(output.toString()).to.be.eq(outputJS.toString())
             })
         })
 
         describe('Hasher13', () => {
+            before(async () => {
+                const circuitPath = path.join(__dirname, '../../circom/test', `hasher13_test.circom`)
+                circuit = await tester(circuitPath)
+            })
             it('correctly hashes 13 random values', async () => {
-                const circuit =  'hasher13_test'
                 const preImages: any = []
                 for (let i = 0; i < 13; i++) {
                     preImages.push(genRandomSalt())
@@ -158,37 +193,44 @@ describe('Poseidon hash circuits', () => {
                     in: preImages,
                 })
 
-                const witness = await genWitness(circuit, circuitInputs)
-                const output = await getSignalByName(circuit, witness, 'main.hash')
+                const witness = await circuit.calculateWitness(circuitInputs, true)
+                await circuit.checkConstraints(witness)
+                const output = await getSignal(circuit, witness, 'hash')
 
                 const outputJS = hash13(preImages)
 
-                expect(output.toString()).toEqual(outputJS.toString())
+                expect(output.toString()).to.be.eq(outputJS.toString())
             })
         })
 
         describe('HashLeftRight', () => {
-
+            before(async () => {
+                const circuitPath = path.join(__dirname, '../../circom/test', `hashleftright_test.circom`)
+                circuit = await tester(circuitPath)
+            })
             it('correctly hashes two random values', async () => {
-                const circuit = 'hashleftright_test'
 
                 const left = genRandomSalt()
                 const right = genRandomSalt()
 
                 const circuitInputs = stringifyBigInts({ left, right })
 
-                const witness = await genWitness(circuit, circuitInputs)
-                const output = await getSignalByName(circuit, witness, 'main.hash')
+                const witness = await circuit.calculateWitness(circuitInputs, true)
+                await circuit.checkConstraints(witness)
+                const output = await getSignal(circuit, witness, 'hash')
 
                 const outputJS = hashLeftRight(left, right)
 
-                expect(output.toString()).toEqual(outputJS.toString())
+                expect(output.toString()).to.be.eq(outputJS.toString())
             })
         })
     })
     
     describe('MessageHasher', () => {
-        const circuit = 'messageHasher_test'
+        before(async () => {
+            const circuitPath = path.join(__dirname, '../../circom/test', `messageHasher_test.circom`)
+            circuit = await tester(circuitPath)
+        })
         it('correctly hashes a message', async () => {
             const k = new Keypair()
             const random50bitBigInt = (): BigInt => {
@@ -216,9 +258,10 @@ describe('Poseidon hash circuits', () => {
                 in: message.asCircuitInputs(),
                 encPubKey: k.pubKey.asCircuitInputs(),
             })
-            const witness = await genWitness(circuit, circuitInputs)
-            const output = await getSignalByName(circuit, witness, 'main.hash')
-            expect(output.toString()).toEqual(messageHash.toString())
+            const witness = await circuit.calculateWitness(circuitInputs, true)
+            await circuit.checkConstraints(witness)
+            const output = await getSignal(circuit, witness, 'hash')
+            expect(output.toString()).to.be.eq(messageHash.toString())
         })
     })
 })

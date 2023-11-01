@@ -1,7 +1,5 @@
-jest.setTimeout(90000)
 import { 
-    genWitness,
-    getSignalByName,
+    getSignal,
 } from './utils'
 
 import { 
@@ -13,6 +11,10 @@ import {
     PCommand,
     Keypair,
 } from 'maci-domainobjs'
+
+import * as path from 'path'
+import { expect } from 'chai'
+const tester = require("circom_tester").wasm
 
 const keypair = new Keypair()
 const stateIndex = BigInt(1)
@@ -46,8 +48,13 @@ const command: PCommand = new PCommand(
 
 const signature = command.sign(slKeypair.privKey)
 
-const circuit = 'stateLeafAndBallotTransformer_test'
-describe('StateLeafAndBallotTransformer circuit', () => {
+describe('StateLeafAndBallotTransformer circuit', function() {
+    this.timeout(90000)
+    let circuit: any 
+    before(async () => {
+        const circuitPath = path.join(__dirname, '../../circom/test', `stateLeafAndBallotTransformer_test.circom`)
+        circuit = await tester(circuitPath)
+    })
     it('Should output new state leaf and ballot values if the command is valid', async () => {
         const circuitInputs = stringifyBigInts({
             numSignUps,
@@ -70,18 +77,19 @@ describe('StateLeafAndBallotTransformer circuit', () => {
             packedCommand: command.asCircuitInputs(),
         })
 
-        const witness = await genWitness(circuit, circuitInputs)
+        const witness = await circuit.calculateWitness(circuitInputs)
+        await circuit.checkConstraints(witness)
 
-        const newSlPubKey0 = await getSignalByName(circuit, witness, 'main.newSlPubKey[0]')
-        const newSlPubKey1 = await getSignalByName(circuit, witness, 'main.newSlPubKey[1]')
-        const newBallotNonce = await getSignalByName(circuit, witness, 'main.newBallotNonce')
+        const newSlPubKey0 = await getSignal(circuit, witness, 'newSlPubKey[0]')
+        const newSlPubKey1 = await getSignal(circuit, witness, 'newSlPubKey[1]')
+        const newBallotNonce = await getSignal(circuit, witness, 'newBallotNonce')
 
-        expect(newSlPubKey0.toString()).toEqual(command.newPubKey.rawPubKey[0].toString())
-        expect(newSlPubKey1.toString()).toEqual(command.newPubKey.rawPubKey[1].toString())
-        expect(newBallotNonce.toString()).toEqual(command.nonce.toString())
+        expect(newSlPubKey0.toString()).to.be.eq(command.newPubKey.rawPubKey[0].toString())
+        expect(newSlPubKey1.toString()).to.be.eq(command.newPubKey.rawPubKey[1].toString())
+        expect(newBallotNonce.toString()).to.be.eq(command.nonce.toString())
 
-        const isValid = await getSignalByName(circuit, witness, 'main.isValid')
-        expect(isValid.toString()).toEqual('1')
+        const isValid = await getSignal(circuit, witness, 'isValid')
+        expect(isValid.toString()).to.be.eq('1')
     })
 
     it('Should output existing state leaf and ballot values if the command is invalid', async () => {
@@ -106,17 +114,18 @@ describe('StateLeafAndBallotTransformer circuit', () => {
             packedCommand: command.asCircuitInputs(),
         })
 
-        const witness = await genWitness(circuit, circuitInputs)
+        const witness = await circuit.calculateWitness(circuitInputs)
+        await circuit.checkConstraints(witness)
+        
+        const newSlPubKey0 = await getSignal(circuit, witness, 'newSlPubKey[0]')
+        const newSlPubKey1 = await getSignal(circuit, witness, 'newSlPubKey[1]')
+        const newBallotNonce = await getSignal(circuit, witness, 'newBallotNonce')
 
-        const newSlPubKey0 = await getSignalByName(circuit, witness, 'main.newSlPubKey[0]')
-        const newSlPubKey1 = await getSignalByName(circuit, witness, 'main.newSlPubKey[1]')
-        const newBallotNonce = await getSignalByName(circuit, witness, 'main.newBallotNonce')
+        expect(newSlPubKey0.toString()).to.be.eq(slPubKey.rawPubKey[0].toString())
+        expect(newSlPubKey1.toString()).to.be.eq(slPubKey.rawPubKey[1].toString())
+        expect(newBallotNonce.toString()).to.be.eq('0')
 
-        expect(newSlPubKey0.toString()).toEqual(slPubKey.rawPubKey[0].toString())
-        expect(newSlPubKey1.toString()).toEqual(slPubKey.rawPubKey[1].toString())
-        expect(newBallotNonce.toString()).toEqual('0')
-
-        const isValid = await getSignalByName(circuit, witness, 'main.isValid')
-        expect(isValid.toString()).toEqual('0')
+        const isValid = await getSignal(circuit, witness, 'isValid')
+        expect(isValid.toString()).to.be.eq('0')
     })
 })

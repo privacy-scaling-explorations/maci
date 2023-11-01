@@ -38,21 +38,14 @@ Please note that the circuit is configured with testing purpose parameters, whic
 
 To generate and validate ZK proofs from the artifacts produced by `circom`, you will need [`snarkjs`](https://github.com/iden3/snarkjs#groth16-1).
 
-
-
-
 ## Testing
 
-To test the circuits package, please follow the instructions below:
+To test the circuits package, please use `npm run test`. This will run all of the tests inside the tests folder.
 
-1. Configure `circomHelperConfig.json` with the correct path to the circom binary. If you installed it via `cargo`, the binary is likely located at `~/.cargo/bin/circom`.
-2. Run the command `npm run build-test-circuits` and wait for it to compile all the test circuits. This process may take approximately 10 to 15 minutes.
-3. Run the command `npm run circom-helper` and wait for it to expose the JSON-RPC endpoint. Once it is ready, you will see the following message on the screen:
-    ```
-    Launched JSON-RPC server at port 9001
-    ```
-4. To run all tests, use the command `npm run test`. If you want to test a specific circuit individually, you can append `-$CIRCUIT_NAME` to the command (e.g., `npm run test-processMessages`).
+To run individual tests, you can use the following commands (for all other circuits please refer to the `package.json` scripts section):
 
+* `npm run test-processMessages` to run the tests for the `processMessages` circuit.
+* `npm run test-tallyVotes` to run the tests for the `tallyVotes` circuit.
 
 [circuits-npm-badge]: https://img.shields.io/npm/v/maci-circuits.svg
 [circuits-npm-link]: https://www.npmjs.com/package/maci-circuits
