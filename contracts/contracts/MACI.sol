@@ -102,7 +102,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     * Ensure certain functions only run after the contract has been initialized
     */
     modifier afterInit() {
-        if (!isInitialised) revert NotInit();
+        if (!isInitialised) revert MaciNotInit();
         _;
     }
 
@@ -110,20 +110,20 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     * Only allow a Poll contract to call the modified function.
     */
     modifier onlyPoll(uint256 _pollId) {
-        if (msg.sender != address(polls[_pollId])) revert NotAPoll();
+        if (msg.sender != address(polls[_pollId])) revert CallerMustBePoll(msg.sender);
         _;
     }
 
-    error NotInit();
-    error NotAPoll();
+    error MaciNotInit();
+    error CallerMustBePoll(address _caller);
     error AlreadyInitialized();
-    error HashLibrariesNotLinked();
+    error PoseidonHashLibrariesNotLinked();
     error WrongPollOwner();
     error WrongVkRegistryOwner();
     error TooManySignups();
-    error InvalidMaciPublicKey();
-    error PreviousPollNotCompleted();
-    error PollDoesNotExist();
+    error MaciPubKeyLargerThanSnarkFieldSize();
+    error PreviousPollNotCompleted(uint256 pollId);
+    error PollDoesNotExist(uint256 pollId);
 
     constructor(
         PollFactory _pollFactory,
@@ -141,7 +141,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         signUpTimestamp = block.timestamp;
 
         // Verify linked poseidon libraries
-        if (hash2([uint256(1), uint256(1)]) == 0) revert HashLibrariesNotLinked();
+        if (hash2([uint256(1), uint256(1)]) == 0) revert PoseidonHashLibrariesNotLinked();
     }
 
     /*
@@ -193,7 +193,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
             revert TooManySignups();
         
         if (_pubKey.x >= SNARK_SCALAR_FIELD || _pubKey.y >= SNARK_SCALAR_FIELD) {
-            revert InvalidMaciPublicKey();
+            revert MaciPubKeyLargerThanSnarkFieldSize();
         }
 
         // Increment the number of signups
@@ -243,7 +243,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         }
 
         if (pollId > 0) {
-            if (!stateAq.treeMerged()) revert PreviousPollNotCompleted();
+            if (!stateAq.treeMerged()) revert PreviousPollNotCompleted(pollId);
         }
 
         // The message batch size and the tally batch size
@@ -321,7 +321,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     * @returns Poll The Poll data
     */
     function getPoll(uint256 _pollId) public view returns (Poll) {
-        if (_pollId >= nextPollId) revert PollDoesNotExist();
+        if (_pollId >= nextPollId) revert PollDoesNotExist(_pollId);
         return polls[_pollId];
     }
 }

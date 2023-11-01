@@ -146,7 +146,6 @@ describe('MACI', () => {
                 )
                 const receipt = await tx.wait()
                 expect(receipt.status).to.eq(1)
-                console.log('signUp() gas used:', receipt.gasUsed.toString())
 
                 // Store the state index
                 const event = iface.parseLog(receipt.logs[receipt.logs.length - 1])
@@ -175,7 +174,7 @@ describe('MACI', () => {
                 )
             ).to.be.revertedWithCustomError(
                 maciContract,
-                "InvalidMaciPublicKey"
+                "MaciPubKeyLargerThanSnarkFieldSize"
             )
         })
     })
@@ -186,14 +185,14 @@ describe('MACI', () => {
                 maciContract.mergeStateAqSubRoots(0, 0, { gasLimit: 3000000 })
             ).to.be.revertedWithCustomError(
                 maciContract,
-                "NotAPoll"
+                "CallerMustBePoll"
             )
             
             await expect(
                 maciContract.mergeStateAq(0, { gasLimit: 3000000 })
             ).to.be.revertedWithCustomError(
                 maciContract,
-                "NotAPoll"
+                "CallerMustBePoll"
             )
         })
     })
@@ -204,7 +203,6 @@ describe('MACI', () => {
             const std = await maciContract.stateTreeDepth()
 
             // Set VKs
-            console.log('Setting VKs')
             let tx = await vkRegistryContract.setVerifyingKeys(
                 std.toString(),
                 treeDepths.intStateTreeDepth,
@@ -274,8 +272,6 @@ describe('MACI', () => {
 
             const block = await signer.provider.getBlock(receipt.blockHash)
             deployTime = block.timestamp
-
-            console.log('deployPoll() gas used:', receipt.gasUsed.toString())
 
             expect(receipt.status).to.eq(1)
             const iface = maciContract.interface
@@ -400,7 +396,6 @@ describe('MACI', () => {
                 keypair.pubKey.asContractParam(),
             )
             const receipt = await tx.wait()
-            console.log('publishMessage() gas used:', receipt.gasUsed.toString())
             expect(receipt.status).to.eq(1)
 
             maciState.polls[pollId].publishMessage(message, keypair.pubKey)
@@ -474,7 +469,6 @@ describe('MACI', () => {
             let tx = await pollContract.mergeMessageAqSubRoots(0, { gasLimit: 3000000 })
             let receipt = await tx.wait()
             expect(receipt.status).to.eq(1)
-            console.log('mergeMessageAqSubRoots() gas used:', receipt.gasUsed.toString())
 
             tx = await pollContract.mergeMessageAq({ gasLimit: 4000000 })
             receipt = await tx.wait()
@@ -484,7 +478,6 @@ describe('MACI', () => {
             poll.messageAq.mergeSubRoots(0)
             poll.messageAq.merge(MESSAGE_TREE_DEPTH)
 
-            console.log('mergeMessageAq() gas used:', receipt.gasUsed.toString())
         })
 
         it('the message root must be correct', async () => {

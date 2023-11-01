@@ -163,9 +163,9 @@ contract Poll is
     // errors 
     error VotingPeriodOver();
     error VotingPeriodNotOver();
-    error AlreadyInit();
+    error PollAlreadyInit();
     error TooManyMessages();
-    error InvalidMaciPublicKey();
+    error MaciPubKeyLargerThanSnarkFieldSize();
     error StateAqAlreadyMerged();
     error StateAqSubtreesNeedMerge();
 
@@ -224,7 +224,7 @@ contract Poll is
 
     // should be called immediately after Poll creation and messageAq ownership transferred
     function init() public {
-        if (isInit) revert AlreadyInit();
+        if (isInit) revert PollAlreadyInit();
         // set to true so it cannot be called again
         isInit = true;
 
@@ -282,7 +282,7 @@ contract Poll is
         if (numMessages == maxValues.maxMessages) revert TooManyMessages();
 
         if (_encPubKey.x >= SNARK_SCALAR_FIELD || _encPubKey.y >= SNARK_SCALAR_FIELD) {
-            revert InvalidMaciPublicKey();
+            revert MaciPubKeyLargerThanSnarkFieldSize();
         }
 
         unchecked {

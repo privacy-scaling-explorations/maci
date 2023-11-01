@@ -81,23 +81,23 @@ abstract contract AccQueue is Ownable, Hasher {
     // The number of leaves inserted across all subtrees so far
     uint256 public numLeaves;
 
-    error ZeroSubdepth();
-    error SubdepthTooLarge();
+    error SubDepthCannotBeZero();
+    error SubdepthTooLarge(uint256 _subDepth, uint256 max);
     error InvalidHashLength();
-    error ZeroDepth();
+    error DepthCannotBeZero();
     error SubTreesAlreadyMerged();
     error NothingToMerge();
     error SubTreesNotMerged();
-    error DepthTooLarge();
-    error DepthTooSmall();
-    error InvalidIndex();
+    error DepthTooLarge(uint256 _depth, uint256 max);
+    error DepthTooSmall(uint256 _depth, uint256 min);
+    error InvalidIndex(uint256 _index);
     
     constructor(
         uint256 _subDepth,
         uint256 _hashLength
     ) {
-        if (_subDepth == 0) revert ZeroSubdepth();
-        if (_subDepth > MAX_DEPTH) revert SubdepthTooLarge();
+        if (_subDepth == 0) revert SubDepthCannotBeZero();
+        if (_subDepth > MAX_DEPTH) revert SubdepthTooLarge(_subDepth, MAX_DEPTH);
         if (_hashLength != 2 && _hashLength != 5) revert InvalidHashLength();
 
         isBinary = _hashLength == 2;
@@ -401,13 +401,13 @@ abstract contract AccQueue is Ownable, Hasher {
      */
     function merge(uint256 _depth) public onlyOwner returns (uint256) {
         // The tree depth must be more than 0
-        if (_depth == 0) revert ZeroDepth();
+        if (_depth == 0) revert DepthCannotBeZero();
 
         // Ensure that the subtrees have been merged
         if (!subTreesMerged) revert SubTreesNotMerged();
 
         // Check the depth
-        if (_depth > MAX_DEPTH) revert DepthTooLarge();
+        if (_depth > MAX_DEPTH) revert DepthTooLarge(_depth, MAX_DEPTH);
 
         // Calculate the SRT depth
         uint256 srtDepth = subDepth;
@@ -418,7 +418,7 @@ abstract contract AccQueue is Ownable, Hasher {
             srtDepth ++;
         }
 
-        if (_depth < srtDepth) revert DepthTooSmall();
+        if (_depth < srtDepth) revert DepthTooSmall(_depth, srtDepth);
 
         // If the depth is the same as the SRT depth, just use the SRT root
         if (_depth == srtDepth) {
@@ -463,7 +463,7 @@ abstract contract AccQueue is Ownable, Hasher {
      * @param _index The subroot index.
      */
     function getSubRoot(uint256 _index) public view returns (uint256) {
-        if (currentSubtreeIndex <= _index) revert InvalidIndex();
+        if (currentSubtreeIndex <= _index) revert InvalidIndex(_index);
         return subRoots[_index];
     }
 
@@ -483,7 +483,7 @@ abstract contract AccQueue is Ownable, Hasher {
      *               using mergeSubRoots() and merge(). 
      */
     function getMainRoot(uint256 _depth) public view returns (uint256) {
-        if (hashLength ** _depth < numLeaves) revert DepthTooSmall();
+        if (hashLength ** _depth < numLeaves) revert DepthTooSmall(_depth, numLeaves);
 
         return mainRoots[_depth];
     }

@@ -101,8 +101,6 @@ const testEnqueue = async (
         tree0.insert(leaf)
 
         const tx = await aqContract.enqueue(leaf.toString(), enqueueGasLimit)
-        //const receipt = await tx.wait()
-        //console.log(i, receipt.gasUsed.toString())
         await tx.wait()
     }
 
@@ -120,8 +118,6 @@ const testEnqueue = async (
         tree1.insert(leaf)
 
         const tx = await aqContract.enqueue(leaf.toString(), enqueueGasLimit)
-        //const receipt = await tx.wait()
-        //console.log(i, receipt.gasUsed.toString())
         await tx.wait()
     }
 
@@ -653,7 +649,7 @@ describe('AccQueues', () => {
             await (await aqContract.mergeSubRoots(0, { gasLimit: 1000000 })).wait()
             await expect(aqContract.merge(0, { gasLimit: 1000000 })).to.revertedWithCustomError(
                 aqContract,
-                "ZeroDepth"
+                "DepthCannotBeZero"
             )
         })
 
@@ -992,7 +988,7 @@ describe('AccQueues', () => {
 
             await expect(aqContract.merge(0, { gasLimit: 1000000 })).to.be.revertedWithCustomError(
                 aqContract,
-                "ZeroDepth"
+                "DepthCannotBeZero"
             )
         })
     })

@@ -19,7 +19,7 @@ contract Tally is
     CommonUtilities,
     Hasher
 {
-    // Error codes
+    // custom errors
     error ProcessingNotComplete();
     error InvalidTallyVotesProof();
     error AllBallotsTallied();
