@@ -64,23 +64,23 @@ const create = async (args: any) => {
         return 
     }
 
-    const TopupCreditContract = await deployTopupCreditContract()
-    console.log('TopupCredit:', TopupCreditContract.address)
-
-    // Initial voice credits
-    const initialVoiceCredits = args.initial_voice_credits ? args.initial_voice_credits : DEFAULT_INITIAL_VOICE_CREDITS
+    const topupCreditContract = await deployTopupCreditContract()
+    console.log('TopupCredit:', topupCreditContract.address)
 
     // Initial voice credit proxy contract 
     const initialVoiceCreditProxy = args.initial_vc_proxy
 
     // Whether we should deploy a ConstantInitialVoiceCreditProxy
-    if (initialVoiceCreditProxy != undefined && initialVoiceCredits != undefined) {
+    if (initialVoiceCreditProxy && args.initial_voice_credits) {
         console.error('Error: only one of the following can be specified: the initial voice credit proxy or the amount of initial voice credits.')
         return 
     }
 
-    let initialVoiceCreditProxyContractAddress
-    if (initialVoiceCreditProxy == undefined) {
+    let initialVoiceCreditProxyContractAddress: string 
+    if (!initialVoiceCreditProxy) {
+        // check if we have the amount of credits to set, or use the default
+        const initialVoiceCredits = args.initial_voice_credits ? args.initial_voice_credits : DEFAULT_INITIAL_VOICE_CREDITS
+
         // Deploy a ConstantInitialVoiceCreditProxy contract
         const c = await deployConstantInitialVoiceCreditProxy(
             initialVoiceCredits,
@@ -91,11 +91,12 @@ const create = async (args: any) => {
         initialVoiceCreditProxyContractAddress = initialVoiceCreditProxy
     }
 
+    console.log("Initial voice credit proxy", initialVoiceCreditProxyContractAddress)
     // Signup gatekeeper contract
     const signupGatekeeper = args.signup_gatekeeper
 
-    let signUpGatekeeperAddress
-    if (signupGatekeeper == undefined) {
+    let signUpGatekeeperAddress: string 
+    if (!signupGatekeeper) {
         // Deploy a FreeForAllGatekeeper contract
         const c = await deployFreeForAllSignUpGatekeeper(true)
         signUpGatekeeperAddress = c.address
@@ -103,11 +104,12 @@ const create = async (args: any) => {
         signUpGatekeeperAddress = signupGatekeeper
     }
 
-
+    console.log("Signup gatekeeper", signUpGatekeeperAddress)
     const verifierContract = await deployVerifier(true)
+    console.log("Verifier", verifierContract.address)
 
     const vkRegistryContractAddress = args.vk_registry ? args.vk_registry: contractAddrs["VkRegistry"]
-
+    console.log("VkRegistry", vkRegistryContractAddress)
     const {
         maciContract,
         stateAqContract,
@@ -118,18 +120,18 @@ const create = async (args: any) => {
         initialVoiceCreditProxyContractAddress,
         verifierContract.address,
         vkRegistryContractAddress,
-        TopupCreditContract.address 
+        topupCreditContract.address 
     )
-
+    
     console.log('MACI:', maciContract.address)
-
+    
     contractAddrs['InitialVoiceCreditProxy'] = initialVoiceCreditProxyContractAddress
     contractAddrs['SignUpGatekeeper'] = signUpGatekeeperAddress
     contractAddrs['Verifier'] = verifierContract.address
     contractAddrs['MACI'] = maciContract.address
     contractAddrs['StateAq'] = stateAqContract.address
     contractAddrs['PollFactory'] = pollFactoryContract.address
-    contractAddrs['TopupCredit'] = TopupCreditContract.address
+    contractAddrs['TopupCredit'] = topupCreditContract.address
     contractAddrs['PoseidonT3'] = poseidonAddrs[0]
     contractAddrs['PoseidonT4'] = poseidonAddrs[1]
     contractAddrs['PoseidonT5'] = poseidonAddrs[2]

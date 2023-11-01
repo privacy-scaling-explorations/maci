@@ -41,23 +41,15 @@ const executeSuite = async (data: any, expect: any) => {
         const config = loadYaml()
         const coordinatorKeypair = new Keypair()
 
-        const maciState = new MaciState(
-            coordinatorKeypair,
-            config.constants.maci.stateTreeDepth,
-            config.constants.maci.messageTreeDepth,
-            config.constants.maci.voteOptionTreeDepth,
-            config.constants.maci.maxVoteOptions,
-        )
+        const maciState = new MaciState()
 
         const deployVkRegistryCommand = `node build/index.js deployVkRegistry`
         const vkDeployOutput = exec(deployVkRegistryCommand)
         const vkAddressMatch = vkDeployOutput.stdout.trim().match(/(0x[a-fA-F0-9]{40})/)
         if (!vkAddressMatch) {
-            console.log(vkDeployOutput)
             return false
         }
         const vkAddress = vkAddressMatch[1]
-        console.log(vkAddress)
 
         let subsidyZkeyFilePath
         let subsidyWitnessCalculatorPath
@@ -122,13 +114,12 @@ const executeSuite = async (data: any, expect: any) => {
         treeDepths.voteOptionTreeDepth = config.constants.maci.voteOptionTreeDepth
 
         const maxValues = {} as MaxValues
-        maxValues.maxUsers = config.constants.maci.maxUsers
         maxValues.maxMessages = config.constants.maci.maxMessages
         maxValues.maxVoteOptions  = config.constants.maci.maxVoteOptions
         const messageBatchSize = 5 ** config.constants.poll.messageBatchDepth
         maciState.deployPoll(
             config.constants.poll.duration,
-            (Date.now() + (config.constants.poll.duration * 60000)),
+            BigInt((Date.now() + (config.constants.poll.duration * 60000))),
             maxValues,
             treeDepths,
             messageBatchSize,
@@ -160,7 +151,7 @@ const executeSuite = async (data: any, expect: any) => {
             maciState.signUp(
                 userKeypair.pubKey,
                 BigInt(config.constants.maci.initialVoiceCredits),
-                Date.now()
+                BigInt(Date.now())
             )
         }
 
