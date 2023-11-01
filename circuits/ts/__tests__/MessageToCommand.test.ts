@@ -31,7 +31,7 @@ describe('MessageToCommand circuit', () => {
         const newPubKey = k.pubKey
 
         const ecdhSharedKey = Keypair.genEcdhSharedKey(privKey, pubKey1)
-        const random50bitBigInt = (): BigInt => {
+        const random50bitBigInt = (): bigint => {
             return (
                 (BigInt(1) << BigInt(50)) - BigInt(1)
             ) & BigInt(genRandomSalt().toString())

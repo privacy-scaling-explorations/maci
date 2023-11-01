@@ -26,7 +26,6 @@ const MESSAGE_TREE_SUBDEPTH = 2
 // Poll parameters
 const duration = 15
 const maxValues: MaxValues = {
-    maxUsers: 25,
     maxMessages: 25,
     maxVoteOptions: 25,
 }
@@ -129,7 +128,6 @@ describe('Overflow testing', () => {
         }
 
         const _maxValues: MaxValues = {
-            maxUsers: 25,
             maxMessages: 3125,
             maxVoteOptions: 25
         }

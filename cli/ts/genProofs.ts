@@ -3,9 +3,8 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 import { genProof, verifyProof, extractVk } from 'maci-circuits'
-import { hashLeftRight, hash3 } from 'maci-crypto'
+import { hashLeftRight, hash3, genTreeCommitment } from 'maci-crypto'
 import { PrivKey, Keypair, VerifyingKey } from 'maci-domainobjs'
-import { genTallyResultCommitment } from 'maci-core'
 
 import {
     parseArtifact,
@@ -546,7 +545,7 @@ const genProofs = async (args: any) => {
 
     // Verify the results
     // Compute newResultsCommitment
-    const newResultsCommitment = genTallyResultCommitment(
+    const newResultsCommitment = genTreeCommitment(
         tallyFileData.results.tally.map((x) => BigInt(x)),
         BigInt(tallyFileData.results.salt),
         poll.treeDepths.voteOptionTreeDepth,
@@ -558,7 +557,7 @@ const genProofs = async (args: any) => {
     )
 
     // Compute newPerVOSpentVoiceCreditsCommitment
-    const newPerVOSpentVoiceCreditsCommitment = genTallyResultCommitment(
+    const newPerVOSpentVoiceCreditsCommitment = genTreeCommitment(
         tallyFileData.perVOSpentVoiceCredits.tally.map((x) => BigInt(x)),
         BigInt(tallyFileData.perVOSpentVoiceCredits.salt),
         poll.treeDepths.voteOptionTreeDepth,

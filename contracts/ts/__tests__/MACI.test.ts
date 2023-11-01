@@ -88,7 +88,6 @@ const maciState = new MaciState()
 // Poll parameters
 const duration = 15
 const maxValues: MaxValues = {
-    maxUsers: 25,
     maxMessages: 25,
     maxVoteOptions: 25,
 }
@@ -596,8 +595,8 @@ describe('MACI', () => {
 
         it('genProcessMessagesPackedVals() should generate the correct value', async () => {
             const packedVals = MaciState.packProcessMessageSmallVals(
-                maxValues.maxVoteOptions,
-                users.length,
+                BigInt(maxValues.maxVoteOptions),
+                BigInt(users.length),
                 0,
                 poll.messages.length,
             )
@@ -663,7 +662,7 @@ describe('MACI', () => {
         it('tallyVotes() should update the tally commitment', async () => {
             expect.assertions(3)
             const poll = maciState.polls[pollId]
-            const generatedInputs = poll.tallyVotes(pollId)
+            const generatedInputs = poll.tallyVotes()
 
             const pollContractAddress = await maciContract.getPoll(pollId)
             const tx = await tallyContract.tallyVotes(

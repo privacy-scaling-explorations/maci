@@ -10,7 +10,7 @@ import {
     hash5,
     sha256Hash,
     stringifyBigInts,
-    Signature,
+    genTreeCommitment
 } from 'maci-crypto'
 import {
     PubKey,
@@ -38,7 +38,6 @@ interface BatchSizes {
 }
 
 interface MaxValues {
-    maxUsers: number;
     maxMessages: number;
     maxVoteOptions: number;
 }
@@ -57,7 +56,7 @@ class Poll {
 
     public numSignUps: number
 
-    public pollEndTimestamp: BigInt
+    public pollEndTimestamp: bigint
 
     public ballots: Ballot[] = []
     public ballotTree: IncrementalQuinTree
@@ -87,22 +86,22 @@ class Poll {
     public maciStateRef: MaciState
     public pollId: number
 
-    public sbSalts: {[key: number]: BigInt} = {}
-    public resultRootSalts: {[key: number]: BigInt} = {}
-    public preVOSpentVoiceCreditsRootSalts: {[key: number]: BigInt} = {}
-    public spentVoiceCreditSubtotalSalts: {[key: number]: BigInt} = {}
+    public sbSalts: {[key: number]: bigint} = {}
+    public resultRootSalts: {[key: number]: bigint} = {}
+    public preVOSpentVoiceCreditsRootSalts: {[key: number]: bigint} = {}
+    public spentVoiceCreditSubtotalSalts: {[key: number]: bigint} = {}
 
     // For vote tallying
-    public results: BigInt[] = []
-    public perVOSpentVoiceCredits: BigInt[] = []
+    public results: bigint[] = []
+    public perVOSpentVoiceCredits: bigint[] = []
     public numBatchesTallied = 0
 
-    public totalSpentVoiceCredits: BigInt = BigInt(0)
+    public totalSpentVoiceCredits: bigint = BigInt(0)
 
 
     // For coefficient and subsidy calculation
-    public subsidy: BigInt[] = []  // size: M, M is number of vote options
-    public subsidySalts: {[key: number]: BigInt} = {}
+    public subsidy: bigint[] = []  // size: M, M is number of vote options
+    public subsidySalts: {[key: number]: bigint} = {}
     public rbi = 0 // row batch index
     public cbi = 0 // column batch index
     public MM = 50   // adjustable parameter
@@ -110,7 +109,7 @@ class Poll {
 
     constructor(
         _duration: number,
-        _pollEndTimestamp: BigInt,
+        _pollEndTimestamp: bigint,
         _coordinatorKeypair: Keypair,
         _treeDepths: TreeDepths,
         _batchSizes: BatchSizes,
@@ -364,7 +363,7 @@ class Poll {
         const currentBallots: Ballot[] = []
         const currentBallotsPathElements: any[] = []
 
-        const currentVoteWeights: BigInt[] = []
+        const currentVoteWeights: bigint[] = []
         const currentVoteWeightsPathElements: any[] = []
 
         for (let i = 0; i < batchSize; i ++) {
@@ -814,7 +813,7 @@ class Poll {
         return (this.rbi * batchSize < this.ballots.length) && (this.cbi * batchSize < this.ballots.length)
     }
 
-    public subsidyPerBatch = (): BigInt[] => {
+    public subsidyPerBatch = (): bigint[] => {
         const batchSize = this.batchSizes.subsidyBatchSize
 
         assert(this.hasUnfinishedSubsidyCalculation(), 'No more subsidy batches to calculate')
@@ -831,7 +830,7 @@ class Poll {
         console.log(`prevIdx=${saltIndex}, curIdx=${this.rbi}-${this.cbi}`)
         if (this.rbi !== 0 || this.cbi !== 0) {
             currentSubsidySalt = BigInt(this.subsidySalts[saltIndex])
-            currentSubsidyCommitment = BigInt(genTallyResultCommitment(this.subsidy, currentSubsidySalt, this.treeDepths.voteOptionTreeDepth).valueOf())
+            currentSubsidyCommitment = BigInt(genTreeCommitment(this.subsidy, currentSubsidySalt, this.treeDepths.voteOptionTreeDepth).valueOf())
         }
 
         const rowStartIndex = this.rbi * batchSize
@@ -845,7 +844,7 @@ class Poll {
         const newSubsidySalt = genRandomSalt()
         saltIndex = this.rbi.toString() + "-" + this.cbi.toString()
         this.subsidySalts[saltIndex] = newSubsidySalt
-        const newSubsidyCommitment = genTallyResultCommitment(this.subsidy, newSubsidySalt, this.treeDepths.voteOptionTreeDepth)
+        const newSubsidyCommitment = genTreeCommitment(this.subsidy, newSubsidySalt, this.treeDepths.voteOptionTreeDepth)
 
         const packedVals = MaciState.packSubsidySmallVals(
             this.rbi,
@@ -916,7 +915,7 @@ class Poll {
         return rbi.toString() + "-" + cbi.toString()
     }
 
-    public coefficientCalculation = (rowBallot: Ballot, colBallot: Ballot): BigInt  => {
+    public coefficientCalculation = (rowBallot: Ballot, colBallot: Ballot): bigint  => {
         let sum = BigInt(0)
         for (let p = 0; p < this.maxValues.maxVoteOptions; p++) {
             sum += BigInt(rowBallot.votes[p].valueOf()) * BigInt(colBallot.votes[p].valueOf())
@@ -1142,7 +1141,7 @@ class Poll {
         return circuitInputs
     }
 
-    public genResultsCommitment = (_salt: BigInt) => {
+    public genResultsCommitment = (_salt: bigint) => {
         const resultsTree = new IncrementalQuinTree(
             this.treeDepths.voteOptionTreeDepth,
             BigInt(0),
@@ -1158,7 +1157,7 @@ class Poll {
     }
 
     public genSpentVoiceCreditSubtotalCommitment = (
-        _salt: BigInt,
+        _salt: bigint,
         _numBallotsToCount: number,
     ) => {
         let subtotal = BigInt(0)
@@ -1179,7 +1178,7 @@ class Poll {
     //}
 
     public genPerVOSpentVoiceCreditsCommitment = (
-        _salt: BigInt,
+        _salt: bigint,
         _numBallotsToCount: number,
     ) => {
         const resultsTree = new IncrementalQuinTree(
@@ -1189,7 +1188,7 @@ class Poll {
             hash5,
         )
 
-        const leaves: BigInt[] = []
+        const leaves: bigint[] = []
 
         for (let i = 0; i < this.results.length; i ++) {
             leaves.push(BigInt(0))
@@ -1236,8 +1235,6 @@ class Poll {
                     Number(this.batchSizes.messageBatchSize.toString()),
             },
             {
-                maxUsers:
-                    Number(this.maxValues.maxUsers.toString()),
                 maxMessages:
                     Number(this.maxValues.maxMessages.toString()),
                 maxVoteOptions:
@@ -1258,8 +1255,8 @@ class Poll {
         copied.maciStateRef = this.maciStateRef
         copied.messageAq = this.messageAq.copy()
         copied.messageTree = this.messageTree.copy()
-        copied.results = this.results.map((x: BigInt) => BigInt(x.toString()))
-        copied.perVOSpentVoiceCredits = this.perVOSpentVoiceCredits.map((x: BigInt) => BigInt(x.toString()))
+        copied.results = this.results.map((x: bigint) => BigInt(x.toString()))
+        copied.perVOSpentVoiceCredits = this.perVOSpentVoiceCredits.map((x: bigint) => BigInt(x.toString()))
 
 
         copied.numBatchesProcessed = Number(this.numBatchesProcessed.toString())
@@ -1287,7 +1284,7 @@ class Poll {
 
 
         // subsidy related copy
-        copied.subsidy = this.subsidy.map((x: BigInt) => BigInt(x.toString()))
+        copied.subsidy = this.subsidy.map((x: bigint) => BigInt(x.toString()))
         copied.rbi = Number(this.rbi.toString())
         copied.cbi = Number(this.cbi.toString())
         copied.MM = Number(this.MM.toString())
@@ -1313,7 +1310,6 @@ class Poll {
             this.batchSizes.tallyBatchSize === p.batchSizes.tallyBatchSize &&
             this.batchSizes.messageBatchSize ===
                 p.batchSizes.messageBatchSize &&
-            this.maxValues.maxUsers === p.maxValues.maxUsers &&
             this.maxValues.maxMessages === p.maxValues.maxMessages &&
             this.maxValues.maxVoteOptions === p.maxValues.maxVoteOptions &&
             this.messages.length === p.messages.length &&
@@ -1374,8 +1370,8 @@ class MaciState {
 
     public signUp(
         _pubKey: PubKey,
-        _initialVoiceCreditBalance: BigInt,
-        _timestamp: BigInt,
+        _initialVoiceCreditBalance: bigint,
+        _timestamp: bigint,
     ): number {
         const stateLeaf = new StateLeaf(
             _pubKey,
@@ -1392,7 +1388,7 @@ class MaciState {
 
     public deployPoll(
         _duration: number,
-        _pollEndTimestamp: BigInt,
+        _pollEndTimestamp: bigint,
         _maxValues: MaxValues,
         _treeDepths: TreeDepths,
         _messageBatchSize: number,
@@ -1490,7 +1486,7 @@ class MaciState {
     }
 
     public static unpackTallyVotesSmallVals = (
-        packedVals: BigInt,
+        packedVals: bigint,
     ) => {
         let asBin = (packedVals).toString(2)
         assert(asBin.length <= 100)
@@ -1504,8 +1500,8 @@ class MaciState {
     }
 
     public static packProcessMessageSmallVals = (
-        maxVoteOptions: BigInt,
-        numUsers: BigInt,
+        maxVoteOptions: bigint,
+        numUsers: bigint,
         batchStartIndex: number,
         batchEndIndex: number,
     ) => {
@@ -1516,7 +1512,7 @@ class MaciState {
     }
 
     public static unpackProcessMessageSmallVals = (
-        packedVals: BigInt,
+        packedVals: bigint,
     ) => {
         let asBin = (packedVals).toString(2)
         assert(asBin.length <= 200)
@@ -1542,7 +1538,7 @@ const genProcessVkSig = (
     _messageTreeDepth: number,
     _voteOptionTreeDepth: number,
     _batchSize: number
-): BigInt => {
+): bigint => {
     return (BigInt(_batchSize) << BigInt(192)) +
            (BigInt(_stateTreeDepth) << BigInt(128)) +
            (BigInt(_messageTreeDepth) << BigInt(64)) +
@@ -1553,7 +1549,7 @@ const genTallyVkSig = (
     _stateTreeDepth: number,
     _intStateTreeDepth: number,
     _voteOptionTreeDepth: number,
-): BigInt => {
+): bigint => {
     return (BigInt(_stateTreeDepth) << BigInt(128)) +
            (BigInt(_intStateTreeDepth) << BigInt(64)) +
             BigInt(_voteOptionTreeDepth)
@@ -1563,33 +1559,12 @@ const genSubsidyVkSig = (
     _stateTreeDepth: number,
     _intStateTreeDepth: number,
     _voteOptionTreeDepth: number,
-): BigInt => {
+): bigint => {
     return (BigInt(_stateTreeDepth) << BigInt(128)) +
            (BigInt(_intStateTreeDepth) << BigInt(64)) +
             BigInt(_voteOptionTreeDepth)
 }
 
-
-/*
- * A helper function which hashes a list of results with a salt and returns the
- * hash.
- *
- * @param results A list of vote weights
- * @parm salt A random salt
- * @return The hash of the results and the salt, with the salt last
- */
-const genTallyResultCommitment = (
-    results: BigInt[],
-    salt: BigInt,
-    depth: number,
-): BigInt => {
-
-    const tree = new IncrementalQuinTree(depth, BigInt(0), 5, hash5)
-    for (const result of results) {
-        tree.insert(result)
-    }
-    return hashLeftRight(tree.root, salt)
-}
 
 export {
     MaxValues,
@@ -1599,6 +1574,5 @@ export {
     genProcessVkSig,
     genTallyVkSig,
     genSubsidyVkSig,
-    genTallyResultCommitment,
     STATE_TREE_DEPTH,
 }

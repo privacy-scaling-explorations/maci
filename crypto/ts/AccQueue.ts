@@ -5,45 +5,21 @@ import {
     hash5,
     stringifyBigInts,
     unstringifyBigInts,
-    IncrementalQuinTree,
-} from './'
+    IncrementalQuinTree
+} from './index'
+import {
+    Leaf,
+    Queue
+} from "./types"
+import { calcDepthFromNumLeaves, deepCopyBigIntArray } from "./utils"
 
-type Leaf = BigInt
-type Root = BigInt
-
-const deepCopyBigIntArray = (arr: BigInt[]) => {
-    return arr.map((x) => BigInt(x.toString()))
-}
-
-const calcDepthFromNumLeaves = (
-    hashLength: number,
-    numLeaves: number,
-) => {
-    let depth = 1
-    while (true) {
-        const max = hashLength ** depth
-        if (BigInt(max) >= numLeaves) {
-            break
-        }
-        depth ++
-    }
-
-    return depth
-}
-
-interface Queue {
-    levels: BigInt[][];
-    indices: number[];
-}
-
-/*
+/**
  * An Accumulator Queue which conforms to the implementation in AccQueue.sol.
  * Each enqueue() operation updates a subtree, and a merge() operation combines
  * all subtrees into a main tree.
- * It supports 2 or 5 elements per leaf.
+ * @notice It supports 2 or 5 elements per leaf.
  */
-class AccQueue {
-
+export class AccQueue {
     private MAX_DEPTH = 32
 
     // The depth per subtree
@@ -53,17 +29,17 @@ class AccQueue {
     public hashLength: number
 
     // The default value for empty leaves
-    public zeroValue: BigInt
+    public zeroValue: bigint
 
     // The current subtree index. e.g. the first subtree has index 0, the
     // second has 1, and so on
     public currentSubtreeIndex = 0
 
     // The hash function to use for the subtrees
-    public subHashFunc: (leaves: Leaf[]) => BigInt
+    public subHashFunc: (leaves: Leaf[]) => bigint
     
     // The hash function to use for rest of the tree (above the subroots)
-    public hashFunc: (leaves: Leaf[]) => BigInt
+    public hashFunc: (leaves: Leaf[]) => bigint
 
     // The number of leaves across all subtrees
     public numLeaves = 0
@@ -76,29 +52,35 @@ class AccQueue {
 
     // For merging subtrees into the smallest tree
     public nextSRindexToQueue = 0
-    public smallSRTroot: BigInt = BigInt(0)
+    public smallSRTroot: bigint = BigInt(0)
     public subRootQueue: Queue = {
         levels: [],
         indices: []
     }
 
     // The root of each complete subtree
-    public subRoots: BigInt[] = []
+    public subRoots: bigint[] = []
 
     // The root of merged subtrees
-    public mainRoots: BigInt[] = []
+    public mainRoots: bigint[] = []
 
     // The zero value per level. i.e. zeros[0] is zeroValue,
     // zeros[1] is the hash of leavesPerNode zeros, and so on.
-    public zeros: BigInt[] = []
+    public zeros: bigint[] = []
 
     // Whether the subtrees have been merged
     public subTreesMerged = false
 
+    /**
+     * Create a new instance of AccQueue
+     * @param _subDepth - the depth of the subtrees
+     * @param _hashLength - the number of leaves per node
+     * @param _zeroValue - the default value for empty leaves
+     */
     constructor (
         _subDepth: number,
         _hashLength: number,
-        _zeroValue: BigInt,
+        _zeroValue: bigint,
     ) {
         // This class supports either 2 leaves per node, or 5 leaves per node.
         // 5 is largest number of inputs which circomlib's Poseidon EVM hash
@@ -114,7 +96,7 @@ class AccQueue {
         // Set this.hashFunc depending on the number of leaves per node
         if (this.hashLength === 2) {
             // Uses PoseidonT3 under the hood, which accepts 2 inputs
-            this.hashFunc = (inputs: BigInt[]) => {
+            this.hashFunc = (inputs: bigint[]) => {
                 return hashLeftRight(inputs[0], inputs[1])
             }
         } else {
@@ -129,14 +111,14 @@ class AccQueue {
 
             this.zeros.push(hashed)
 
-            let e: BigInt[] = []
+            let e: bigint[] = []
             if (this.hashLength === 2) {
                 e = [0].map(BigInt)
                 hashed = this.hashFunc([hashed, hashed])
             } else {
                 e = [0, 0, 0, 0].map(BigInt)
                 hashed = this.hashFunc(
-                    [hashed, hashed, hashed, hashed, hashed ],
+                    [hashed, hashed, hashed, hashed, hashed],
                 )
             }
             this.leafQueue.levels.push(e)
@@ -146,32 +128,46 @@ class AccQueue {
         }
     }
 
-    public getSubRoot(_index: number) {
+    /**
+     * Get the subroot at a given index
+     * @param _index - The index of the subroot
+     * @returns the subroot
+     */
+    public getSubRoot(_index: number): bigint {
         return this.subRoots[_index]
     }
 
-    /*
+    /**
      * Enqueue a leaf into the current subtree
      * @param _leaf The leaf to insert.
+     * @returns The index of the leaf
      */
     public enqueue(
         _leaf: Leaf,
     ): number {
-        assert(this.numLeaves < this.hashLength ** this.MAX_DEPTH)
+        // validation 
+        assert(this.numLeaves < this.hashLength ** this.MAX_DEPTH, "AccQueue is full")
 
-        // Ensure that _value is a BigInt
         this._enqueue(_leaf, 0)
 
+        // the index is the number of leaves (0-index)
         const leafIndex = this.numLeaves
 
-        this.numLeaves ++
+        // increase the number of leaves
+        this.numLeaves++
+        // we set merged false because there are new leaves
         this.subTreesMerged = false
+        // reset the smallSRTroot because it is obsolete
         this.smallSRTroot = BigInt(0)
 
+        // @todo this can be moved in the constructor rather than computing every time 
         const subTreeCapacity = this.hashLength ** this.subDepth
+        // If the current subtree is full
         if (this.numLeaves % subTreeCapacity === 0) {
+            // store the subroot 
             this.subRoots[this.currentSubtreeIndex] = this.leafQueue.levels[this.subDepth][0]
-            this.currentSubtreeIndex ++
+            this.currentSubtreeIndex++
+            // reset the current subtree
             this.leafQueue.levels[this.subDepth][0] = BigInt(0)
             for (let i = 0; i < this.MAX_DEPTH; i ++) {
                 this.leafQueue.indices[i] = 0
@@ -181,22 +177,29 @@ class AccQueue {
         return leafIndex
     }
 
-    private _enqueue(
+    /**
+     * Private function that performs the actual enqueue operation
+     * @param _leaf - The leaf to insert
+     * @param _level - The level of the subtree
+     */
+    private _enqueue = (
         _leaf: Leaf,
         _level: number,
-    ) {
-        if (_level > this.subDepth) {
-            return;
-        }
+    ) => {
+        // small validation, do no throw
+        if (_level > this.subDepth) return
+        
+        // get the index to determine where to insert the next leaf
         const n = this.leafQueue.indices[_level]
 
+        // we check that the index is not the last one (1 or 4 depending on the hash length)
         if (n !== this.hashLength - 1) {
             // Just store the leaf
             this.leafQueue.levels[_level][n] = _leaf
-            this.leafQueue.indices[_level] ++
-            return
+            this.leafQueue.indices[_level]++
         } else {
-            let hashed: BigInt
+            // if not we compute the root 
+            let hashed: bigint
             if (this.hashLength === 2) {
                 hashed = this.hashFunc([this.leafQueue.levels[_level][0], _leaf])
                 this.leafQueue.levels[_level][0] = BigInt(0)
@@ -215,7 +218,7 @@ class AccQueue {
     }
 
 
-    /*
+    /**
      * Fill any empty leaves of the last subtree with zeros and store the
      * resulting subroot.
      */
@@ -255,16 +258,18 @@ class AccQueue {
         this.smallSRTroot = BigInt(0)
     }
 
+    /**
+     * Private function that performs the actual fill operation
+     * @param _level - The level of the subtree
+     */
     private _fill(_level: number) {
-        if (_level > this.subDepth) {
-            return
-        }
-
+        if (_level > this.subDepth) return
+        
         const n = this.leafQueue.indices[_level]
 
         if (n !== 0) {
             // Fill the subtree level and hash it
-            let hashed: BigInt
+            let hashed: bigint
             if (this.hashLength === 2) {
                 hashed = this.hashFunc([
                     this.leafQueue.levels[_level][0],
@@ -288,7 +293,11 @@ class AccQueue {
         this._fill(_level + 1)
     }
 
-    public calcSRTdepth() {
+    /**
+     * Calculate the depth of the smallest possible Merkle tree which fits all
+     * @returns the depth of the smallest possible Merkle tree which fits all
+     */
+    public calcSRTdepth(): number {
         // Calculate the SRT depth
         let srtDepth = this.subDepth
         const subTreeCapacity = this.hashLength ** this.subDepth
@@ -302,7 +311,12 @@ class AccQueue {
         return srtDepth
     }
 
-    public insertSubTree(_subRoot: BigInt) {
+    /**
+     * Insert a subtree into the queue. This is used when the subtree is
+     * already computed.
+     * @param _subRoot - The root of the subtree
+     */
+    public insertSubTree(_subRoot: bigint) {
         // If the current subtree is not full, fill it.
         const subTreeCapacity = this.hashLength ** this.subDepth
 
@@ -320,7 +334,7 @@ class AccQueue {
         this.subTreesMerged = false
     }
 
-    /*
+    /**
      * Merge all the subroots into a tree of a specified depth.
      * It requires this.mergeSubRoots() to be run first.
      */
@@ -340,7 +354,7 @@ class AccQueue {
 
             // Calculate the main root
             for (let i = srtDepth; i < _depth; i ++) {
-                const inputs: BigInt[] = [root]
+                const inputs: bigint[] = [root]
                 const z = this.zeros[i]
 
                 for (let j = 1; j < this.hashLength; j ++) {
@@ -354,7 +368,7 @@ class AccQueue {
         }
     }
 
-    /*
+    /**
      * Merge all the subroots into a tree of a specified depth.
      * Uses an IncrementalQuinTree instead of the two-step method that
      * AccQueue.sol uses. 
@@ -399,10 +413,11 @@ class AccQueue {
         this.mainRoots[_depth] = tree.root
     }
 
-    /*
+    /**
      * Merge all subroots into the smallest possible Merkle tree which fits
      * them. e.g. if there are 5 subroots and hashLength == 2, the tree depth
      * is 3 since 2 ** 3 = 8 which is the next power of 2.
+     * @param _numSrQueueOps - The number of subroots to queue into the SRT
      */
     public mergeSubRoots(
         _numSrQueueOps = 0,
@@ -468,11 +483,14 @@ class AccQueue {
         this.subTreesMerged = true
     }
 
-    /*
+    /**
      * Queues the _leaf (a subroot) into queuedSRTlevels
+     * @param _leaf - The leaf to insert
+     * @param _level - The level of the subtree
+     * @param _maxDepth - The maximum depth of the tree
      */
     private queueSubRoot(
-        _leaf: BigInt,
+        _leaf: bigint,
         _level: number,
         _maxDepth: number,
     ) {
@@ -486,7 +504,7 @@ class AccQueue {
             this.subRootQueue.indices[_level] ++
         } else {
             // Hash the elements in this level and queue it in the next level
-            const inputs: BigInt[] = []
+            const inputs: bigint[] = []
             for (let i = 0; i < this.hashLength - 1; i ++) {
                 inputs.push(this.subRootQueue.levels[_level][i])
             }
@@ -499,17 +517,28 @@ class AccQueue {
         }
     }
 
-    public getRoot(_depth: number) {
+    /**
+     * Get the root at a certain depth
+     * @param _depth - The depth of the tree
+     * @returns the root 
+     */
+    public getRoot(_depth: number): bigint {
         return this.mainRoots[_depth]
     }
 
-    public hasRoot(_depth: number) {
+    /**
+     * Check if the root at a certain depth exists (subtree root)
+     * @param _depth - the depth of the tree
+     * @returns whether the root exists 
+     */
+    public hasRoot(_depth: number): boolean {
         const root = this.getRoot(_depth) 
         return !(root == null || root == undefined)
     }
 
-    /*
-     * Deep-copies this object
+    /**
+     * @notice Deep-copies this object
+     * @returns a deep copy of this object
      */
     public copy(): AccQueue {
         const newAccQueue = new AccQueue(
@@ -537,12 +566,13 @@ class AccQueue {
         return newAccQueue
     }
 
-    public hash(_leaves: BigInt[]): BigInt  {
+    /**
+     * Hash an array of leaves
+     * @param _leaves - The leaves to hash
+     * @returns the hash value of the leaves
+     */
+    public hash(_leaves: bigint[]): bigint  {
         assert(_leaves.length === this.hashLength)
         return this.hashFunc(_leaves)
     }
-}
-
-export {
-    AccQueue,
 }

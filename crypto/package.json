@@ -1,7 +1,7 @@
 {
     "name": "maci-crypto",
     "version": "1.1.2",
-    "description": "",
+    "description": "A package containing cryptography utilities for MACI",
     "main": "build/index.js",
     "scripts": {
         "watch": "tsc --watch",
@@ -15,8 +15,8 @@
     "dependencies": {
         "blake-hash": "^1.1.0",
         "circomlib": "https://github.com/weijiekoh/circomlib.git#24ed08eee0bb613b8c0135d66c1013bd9f78d50a",
-        "ethers": "^5.0.32",
-        "ffjavascript": "^0.2.57",
+        "ethers": "^5.4.7",
+        "ffjavascript": "^0.2.62",
         "optimisedmt": "^0.0.7"
     },
     "devDependencies": {

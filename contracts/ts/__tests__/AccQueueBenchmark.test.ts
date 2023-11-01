@@ -14,7 +14,7 @@ const deploy = async (
     contractName: string,
     SUB_DEPTH: number,
     HASH_LENGTH: number,
-    ZERO: BigInt,
+    ZERO: bigint,
 ) => {
     const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } = await deployPoseidonContracts()
     // Link Poseidon contracts

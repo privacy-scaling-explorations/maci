@@ -95,7 +95,7 @@ const testEnqueue = async (
     aqContract: any,
     HASH_LENGTH: number,
     SUB_DEPTH: number,
-    ZERO: BigInt,
+    ZERO: bigint,
 ) => {
 
     const hashFunc = HASH_LENGTH === 5 ? hash5 : hash2
@@ -149,7 +149,7 @@ const testInsertSubTrees = async (
     MAIN_DEPTH: number,
 ) => {
 
-    const leaves: BigInt[] = []
+    const leaves: bigint[] = []
     for (let i = 0; i < NUM_SUBTREES; i ++) {
         const subTree = new IncrementalQuinTree(aq.subDepth, aq.zeros[0], aq.hashLength, aq.hashFunc)
         const leaf = BigInt(i)
@@ -204,7 +204,7 @@ const testEnqueueAndInsertSubTree = async (
     const z = aq.zeros[0]
     const n = BigInt(1)
 
-    const leaves: BigInt[] = []
+    const leaves: bigint[] = []
 
     const subTree = new IncrementalQuinTree(aq.subDepth, z, aq.hashLength, aq.hashFunc)
 
@@ -251,7 +251,7 @@ const testMerge = async (
     MAIN_DEPTH: number,
 ) => {
     // The raw leaves of the main tree
-    const leaves: BigInt[] = []
+    const leaves: bigint[] = []
     for (let i = 0; i < NUM_SUBTREES; i ++) {
         const leaf = BigInt(i)
 
@@ -377,7 +377,7 @@ const deploy = async (
     contractName: string,
     SUB_DEPTH: number,
     HASH_LENGTH: number,
-    ZERO: BigInt,
+    ZERO: bigint,
 ) => {
     const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } = await deployPoseidonContracts()
     // Link Poseidon contracts

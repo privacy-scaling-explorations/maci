@@ -1,7 +1,6 @@
 import * as fs from 'fs'
 
-import { genTallyResultCommitment } from 'maci-core'
-import { hash2, hash3 } from 'maci-crypto'
+import { hash2, hash3, genTreeCommitment } from 'maci-crypto'
 
 import {
     parseArtifact,
@@ -213,13 +212,10 @@ const verify = async (args: any) => {
         return 
     }
 
-    // Verify that the results commitment matches the output of
-    // genTallyResultCommitment()
-
     // Verify the results
 
     // Compute newResultsCommitment
-    const newResultsCommitment = genTallyResultCommitment(
+    const newResultsCommitment = genTreeCommitment(
         data.results.tally.map((x) => BigInt(x)),
         data.results.salt,
         voteOptionTreeDepth
@@ -232,7 +228,7 @@ const verify = async (args: any) => {
     ])
 
     // Compute newPerVOSpentVoiceCreditsCommitment
-    const newPerVOSpentVoiceCreditsCommitment = genTallyResultCommitment(
+    const newPerVOSpentVoiceCreditsCommitment = genTreeCommitment(
         data.perVOSpentVoiceCredits.tally.map((x) => BigInt(x)),
         data.perVOSpentVoiceCredits.salt,
         voteOptionTreeDepth
@@ -287,8 +283,8 @@ const verify = async (args: any) => {
             return 
         }
     
-        // to compute newSubsidyCommitment, we can use genTallyResultCommitment
-        const newSubsidyCommitment = genTallyResultCommitment(
+        // to compute newSubsidyCommitment, we can use genTreeCommitment
+        const newSubsidyCommitment = genTreeCommitment(
             data.results.subsidy.map((x) => BigInt(x)),
             data.results.salt,
             voteOptionTreeDepth

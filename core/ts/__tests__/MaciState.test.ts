@@ -495,11 +495,6 @@ describe('MaciState', () => {
             m14.polls[pollId].batchSizes.messageBatchSize = m14.polls[pollId].batchSizes.messageBatchSize + 1
             expect(m1.equals(m14)).not.toBeTruthy()
 
-            // modify poll.maxValues.maxUsers
-            const m15 = m1.copy()
-            m15.polls[pollId].maxValues.maxUsers = m15.polls[pollId].maxValues.maxUsers + 1
-            expect(m1.equals(m15)).not.toBeTruthy()
-
             // modify poll.maxValues.maxMessages
             const m16 = m1.copy()
             m16.polls[pollId].maxValues.maxMessages = m16.polls[pollId].maxValues.maxMessages + 1

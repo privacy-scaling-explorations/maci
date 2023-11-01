@@ -245,7 +245,7 @@ describe('TallyVotes circuit', function() {
             poll.messageAq.merge(treeDepths.messageTreeDepth)
 
             for (let i = 0; i < NUM_BATCHES; i ++) {
-                poll.processMessages()
+                poll.processMessages(pollId)
             }
 
             for (let i = 0; i < NUM_BATCHES; i ++) {
