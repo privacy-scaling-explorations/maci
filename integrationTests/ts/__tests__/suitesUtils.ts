@@ -41,7 +41,7 @@ const executeSuite = async (data: any, expect: any) => {
         const config = loadYaml()
         const coordinatorKeypair = new Keypair()
 
-        const maciState = new MaciState()
+        const maciState = new MaciState(config.constants.maci.stateTreeDepth)
 
         const deployVkRegistryCommand = `node build/index.js deployVkRegistry`
         const vkDeployOutput = exec(deployVkRegistryCommand)
