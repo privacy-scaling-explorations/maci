@@ -152,6 +152,14 @@ const configureSubparser = (subparsers: any) => {
             help: 'The last block to fetch logs from',
         }
     )
+
+    parser.addArgument(
+        ['-bb', '--blocks-per-batch'],
+        {
+            type: 'int',
+            help: 'How many blocks to fetch logs per batch',
+        }
+    )
 }
 
 const genProofs = async (args: any) => {
@@ -366,8 +374,10 @@ const genProofs = async (args: any) => {
         maciAddress,
         coordinatorKeypair,
         pollId,
-        fromBlock
-    );
+        fromBlock,
+        args.blocks_per_batch,
+        args.end_block
+    )
 
     const poll = maciState.polls[pollId];
 
