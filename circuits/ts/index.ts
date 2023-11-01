@@ -2,14 +2,26 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as shelljs from 'shelljs'
 import * as tmp from 'tmp'
+import { zKey, groth16 } from 'snarkjs'
 
 import { stringifyBigInts } from 'maci-crypto'
 
-const snarkjsPath = path.join(
-    __dirname,
-    '..',
-    './node_modules/snarkjs/cli.js',
-)
+/*
+ * https://github.com/iden3/snarkjs/issues/152
+ * Need to cleanup the threads to avoid stalling
+ */
+const cleanThreads = async () => {
+    if (!globalThis) {
+      return Promise.resolve(true)
+    }
+
+    const curves = ['curve_bn128', 'curve_bls12381']
+    const promises = Promise.all(curves.map(curve => {
+       return globalThis[curve]?.terminate? globalThis[curve]?.terminate() : null
+    }).filter(Boolean))
+
+    return promises
+}
 
 const genProof = (
     inputs: string[],
@@ -71,69 +83,16 @@ const genProof = (
     return { proof, publicInputs }
 }
 
-const verifyProof = (
-    publicInputs: any,
-    proof: any,
-    vk: any,
-) => {
-    // Create tmp directory
-    const tmpObj = tmp.dirSync()
-    const tmpDirPath = tmpObj.name
-
-    const publicJsonPath = path.join(tmpDirPath, 'public.json')
-    const proofJsonPath = path.join(tmpDirPath, 'proof.json')
-    const vkJsonPath = path.join(tmpDirPath, 'vk.json')
-
-    fs.writeFileSync(
-        publicJsonPath,
-        JSON.stringify(stringifyBigInts(publicInputs)),
-    )
-
-    fs.writeFileSync(
-        proofJsonPath,
-        JSON.stringify(stringifyBigInts(proof)),
-    )
-
-    fs.writeFileSync(
-        vkJsonPath,
-        JSON.stringify(stringifyBigInts(vk)),
-    )
-
-    const verifyCmd = `node ${snarkjsPath} g16v ${vkJsonPath} ${publicJsonPath} ${proofJsonPath}`
-    const output = shelljs.exec(verifyCmd, { silent: true })
-    const isValid = output.stdout && output.stdout.indexOf('OK!') > -1
-
-    //// Generate calldata
-    //const calldataCmd = `node ${snarkjsPath} zkesc ${publicJsonPath} ${proofJsonPath}`
-    //console.log(shelljs.exec(calldataCmd).stdout)
-
-    fs.unlinkSync(proofJsonPath)
-    fs.unlinkSync(publicJsonPath)
-    fs.unlinkSync(vkJsonPath)
-    tmpObj.removeCallback()
-
+const verifyProof = async (publicInputs: any, proof: any, vk: any) => {
+    const isValid = await groth16.verify(vk, publicInputs, proof)
+    await cleanThreads()
     return isValid
 }
 
-const extractVk = (zkeyPath: string) => {
-    // Create tmp directory
-    const tmpObj = tmp.dirSync()
-    const tmpDirPath = tmpObj.name
-    const vkJsonPath = path.join(tmpDirPath, 'vk.json')
-
-    const exportCmd = `node ${snarkjsPath} zkev ${zkeyPath} ${vkJsonPath}`
-    shelljs.exec(exportCmd)
-
-    const vk = JSON.parse(fs.readFileSync(vkJsonPath).toString())
-
-    fs.unlinkSync(vkJsonPath)
-    tmpObj.removeCallback()
-
+const extractVk = async (zkeyPath: string) => {
+    const vk = await zKey.exportVerificationKey(zkeyPath)
+    await cleanThreads()
     return vk
 }
 
-export {
-    genProof,
-    verifyProof,
-    extractVk,
-}
+export { genProof, verifyProof, extractVk }

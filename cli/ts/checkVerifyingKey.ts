@@ -126,8 +126,8 @@ const checkVerifyingKey = async (args: any) => {
     const pmZkeyFile = path.resolve(args.process_messages_zkey)
     const tvZkeyFile = path.resolve(args.tally_votes_zkey)
 
-    const processVk: VerifyingKey = VerifyingKey.fromObj(extractVk(pmZkeyFile))
-    const tallyVk: VerifyingKey = VerifyingKey.fromObj(extractVk(tvZkeyFile))
+    const processVk: VerifyingKey = VerifyingKey.fromObj(await extractVk(pmZkeyFile))
+    const tallyVk: VerifyingKey = VerifyingKey.fromObj(await extractVk(tvZkeyFile))
 
     const signer = await getDefaultSigner()
     if (!await contractExists(signer.provider, maciAddress)) {

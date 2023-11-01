@@ -131,8 +131,8 @@ const setVerifyingKeys = async (args: any) => {
         return 
     }
 
-    const processVk: VerifyingKey = VerifyingKey.fromObj(extractVk(pmZkeyFile))
-    const tallyVk: VerifyingKey = VerifyingKey.fromObj(extractVk(tvZkeyFile))
+    const processVk: VerifyingKey = VerifyingKey.fromObj(await extractVk(pmZkeyFile))
+    const tallyVk: VerifyingKey = VerifyingKey.fromObj(await extractVk(tvZkeyFile))
 
 
     let ssZkeyFile: string
@@ -144,7 +144,7 @@ const setVerifyingKeys = async (args: any) => {
             return 
         }
 
-        subsidyVk = VerifyingKey.fromObj(extractVk(ssZkeyFile))
+        subsidyVk = VerifyingKey.fromObj(await extractVk(ssZkeyFile))
     }
 
     // Simple validation
