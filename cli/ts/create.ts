@@ -118,6 +118,8 @@ const create = async (args: any) => {
     console.log("Verifier", verifierContract.address)
 
     const vkRegistryContractAddress = args.vk_registry ? args.vk_registry: contractAddrs["VkRegistry"]
+
+    const stateTreeDepth = args.state_tree_depth ? args.state_tree_depth: 10
     console.log("VkRegistry", vkRegistryContractAddress)
     const {
         maciContract,
@@ -129,7 +131,8 @@ const create = async (args: any) => {
         initialVoiceCreditProxyContractAddress,
         verifierContract.address,
         vkRegistryContractAddress,
-        topupCreditContract.address 
+        topupCreditContract.address,
+        stateTreeDepth
     )
     
     console.log('MACI:', maciContract.address)
