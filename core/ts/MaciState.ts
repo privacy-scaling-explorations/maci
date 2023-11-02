@@ -21,7 +21,8 @@ import {
     Keypair,
     StateLeaf,
     Ballot,
-} from "maci-domainobjs";
+    PrivKey,
+} from 'maci-domainobjs'
 
 interface TreeDepths {
     intStateTreeDepth: number;
@@ -1434,52 +1435,39 @@ class Poll {
             duration: this.duration.toString(),
             pollEndTimestamp: this.pollEndTimestamp.toString(),
             coordinatorPrivateKey: this.coordinatorKeypair.privKey.rawPrivKey.toString(),
-            treeDepths: JSON.stringify(this.treeDepths),
-            batchSizes: JSON.stringify(this.batchSizes),
-            maxValues: JSON.stringify(this.maxValues),
-            messages: JSON.stringify(this.messages, (_, v) => typeof v === 'bigint' ? v.toString() : v),
-            commands: JSON.stringify(this.commands, (_, v) => typeof v === 'bigint' ? v.toString() : v),
-            ballots: JSON.stringify(this.ballots, (_, v) => typeof v === 'bigint' ? v.toString() : v),
-            encPubKeys: JSON.stringify(this.encPubKeys, (_, v) => typeof v === 'bigint' ? v.toString() : v),
+            treeDepths: this.treeDepths,
+            batchSizes: this.batchSizes,
+            maxValues: this.maxValues,
+            messages: this.messages.map(message => message.toJSON()),
+            commands: this.commands.map(command => command.toJSON()),
+            ballots: this.ballots.map(ballot => ballot.toJSON()),
+            encPubKeys: this.encPubKeys.map(encPubKey => encPubKey.serialize()),
             ballotTree: this.ballotTree,
             currentMessageBatchIndex: this.currentMessageBatchIndex ? this.currentMessageBatchIndex.toString() : "",
-            // messageTree: this.messageTree,
-            // messageAq: this.messageAq,
-            stateLeaves: JSON.stringify(this.stateLeaves, replacer),
-            // stateTree: this.stateTree,            
+            stateLeaves: this.stateLeaves.map(leaf => leaf.toJSON()),
+            results: this.results.map(result => result.toString())
         }
     }
 
-    static fromJSON(json: any) {
+    static fromJSON(json: any, maciState: MaciState) {
         const poll = new Poll(
             json.duration,
             BigInt(json.pollEndTimestamp),
-            new Keypair(json.coordinatorPrivateKey),
+            new Keypair(new PrivKey(json.coordinatorPrivateKey)),
             json.treeDepths,
             json.batchSizes,
             json.maxValues,
-            json.maciStateRef
+            maciState
         );
-        poll.numSignUps = json.numSignUps;
-        poll.ballots = json.ballots.map;
+
+        // poll.ballots = json.ballots;
 
         return poll;
     }
 }
 
-function replacer(_, value) {
-    if (typeof value === 'bigint') {
-        return value.toString();
-    } else if (value !== null && typeof value === 'object') {
-        return Object.entries(value).reduce(
-            (acc, [key, val]) => ({ ...acc, [key]: replacer(key, val) }), {}
-        );
-    }
-    return value;
-}
-
-const blankStateLeaf = StateLeaf.genBlankLeaf();
-const blankStateLeafHash = blankStateLeaf.hash();
+const blankStateLeaf = StateLeaf.genBlankLeaf()
+const blankStateLeafHash = blankStateLeaf.hash()
 
 // A representation of the MACI contract
 // Also see MACI.sol
@@ -1686,16 +1674,19 @@ class MaciState {
             VOTE_OPTION_TREE_ARITY: this.VOTE_OPTION_TREE_ARITY,
             stateTreeDepth: this.stateTreeDepth,
             polls: this.polls.map(poll => poll.toJSON()),
-            stateLeaves: JSON.stringify(this.stateLeaves, replacer),
+            stateLeaves: this.stateLeaves.map(leaf => leaf.toJSON()),
             pollBeingProcessed: this.pollBeingProcessed,
             currentPollBeingProcessed: this.currentPollBeingProcessed ? this.currentPollBeingProcessed.toString() : "",
-            numSignUps: this.numSignUps.toString(),
+            numSignUps: this.numSignUps,
         }
     }
 
+    // create a new object from JSON 
     static fromJSON(json: any) {
         const maciState = new MaciState()
         Object.assign(maciState, json)
+        // re-generate the polls and set the maci state ref
+        maciState.polls = json.polls.map((jsonPoll: Poll) => Poll.fromJSON(jsonPoll, maciState))
         return maciState 
     }
 }

@@ -431,7 +431,7 @@ describe("MaciState", function () {
         });
     });
 
-    describe('Deep copy', () => {
+    describe.only('Deep copy', () => {
         let pollId
         let m1: MaciState 
         const userKeypair = new Keypair()
@@ -562,9 +562,10 @@ describe("MaciState", function () {
 
         it("should create a JSON object from a MaciState object", () => {
             const json = m1.toJSON()
-
+            console.log(json)
             writeFileSync('state.json', JSON.stringify(json, null, 4))
             const state = MaciState.fromJSON(json)
+            // console.log(state.polls[0].batchSizes)
         })
     })
 })
