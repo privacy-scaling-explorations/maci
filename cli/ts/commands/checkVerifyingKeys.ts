@@ -9,6 +9,7 @@ import { Contract } from "ethers";
  * Command to confirm that the verifying keys in the contract match the
  * local ones
  * @param param0 - an object containing the command line arguments
+ * @returns whether the verifying keys match or not
  */
 export const checkVerifyingKeys = async ({
     quiet,
@@ -20,7 +21,7 @@ export const checkVerifyingKeys = async ({
     messageBatchDepth,
     processMessagesZkeyPath,
     tallyVotesZkeyPath,
-}: CheckVerifyingKeysArgs) => {
+}: CheckVerifyingKeysArgs): Promise<boolean> => {
     if (!quiet) banner()
     const signer = await getDefaultSigner()
 
@@ -66,4 +67,6 @@ export const checkVerifyingKeys = async ({
     } catch (error: any) { logError(error.message) }
 
     if (!quiet) logGreen(success("Verifying keys match"))
+
+    return true 
 }

@@ -7,7 +7,7 @@ import {
     deployMaci,
     deployTopupCredit
  } from "maci-contracts"
-import { logError, logGreen, success, DeployArgs, DEFAULT_INITIAL_VOICE_CREDITS } from "../utils/"
+import { logError, logGreen, success, DeployArgs, DEFAULT_INITIAL_VOICE_CREDITS, DeployedContracts } from "../utils/"
 
 /**
  * Deploy MACI and related contracts
@@ -16,6 +16,7 @@ import { logError, logGreen, success, DeployArgs, DEFAULT_INITIAL_VOICE_CREDITS 
  * @param initialVoiceCreditsProxyAddress 
  * @param signupGatekeeperAddress
  * @param quiet
+ * @returns the addresses of the deployed contracts
  */
 export const deploy = async ({
     vkRegistryAddress,
@@ -23,7 +24,7 @@ export const deploy = async ({
     initialVoiceCreditsProxyAddress,
     signupGatekeeperAddress,
     quiet
-}: DeployArgs) => {
+}: DeployArgs): Promise<DeployedContracts> => {
     if(!quiet) banner()
     // check if we have a vkRegistry already deployed or passed as arg
     const vkRegistryContractAddress = readContractAddress("VkRegistry")
@@ -94,5 +95,19 @@ export const deploy = async ({
         logGreen(
             success(`MACI deployed at:  ${maciContract.address}`),
         )
+    }
+
+    return {
+        maciAddress: maciContract.address,
+        stateAqAddress: stateAqContract.address,
+        pollFactoryAddress: pollFactoryContract.address,
+        verifierAddress: verifierContract.address,
+        topupCreditAddress: topUpCredit.address,
+        poseidonT3Address: poseidonAddrs[0],
+        poseidonT4Address: poseidonAddrs[1],
+        poseidonT5Address: poseidonAddrs[2],
+        poseidonT6Address: poseidonAddrs[3],
+        signUpGatekeeperAddress: signupGatekeeperContractAddress,
+        initialVoiceCreditProxyAddress: initialVoiceCreditProxyContractAddress
     }
 }

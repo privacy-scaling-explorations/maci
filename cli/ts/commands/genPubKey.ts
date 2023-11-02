@@ -11,7 +11,7 @@ import { GenMaciPubKeyArgs } from "../utils/interfaces"
 export const genMaciPubKey = ({
     privkey,
     quiet 
-}: GenMaciPubKeyArgs) => {
+}: GenMaciPubKeyArgs): string => {
     if(!quiet) banner()
 
     if (!PrivKey.isValidSerializedPrivKey(privkey)) {
@@ -23,4 +23,6 @@ export const genMaciPubKey = ({
     const pubKey = new PubKey(genPubKey(unserializedKey.rawPrivKey))
 
     logGreen(success(`Public key: ${pubKey.serialize()}`))
+
+    return pubKey.serialize()
 }

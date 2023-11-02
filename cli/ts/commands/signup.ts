@@ -7,13 +7,18 @@ import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA } from "../utils/defaults"
 import { Contract } from "ethers"
 import { SignUpArgs } from "../utils/interfaces"
 
+/**
+ * Signup a user to the MACI contract
+ * @param param0 
+ * @returns the state index of the user
+ */
 export const signup = async ({
     maciPubKey,
     maciAddress,
     sgDataArg,
     ivcpDataArg,
     quiet 
-}: SignUpArgs) => {
+}: SignUpArgs): Promise<string> => {
     const signer = await getDefaultSigner()
     // validate user key
     if (!PubKey.isValidSerializedPubKey(maciPubKey)) logError('Invalid MACI public key')
@@ -39,6 +44,7 @@ export const signup = async ({
         signer,
     )
 
+    let stateIndex = ""
     try {
         const tx = await maciContract.signUp(
             userMaciPubKey.asContractParam(),
@@ -61,4 +67,5 @@ export const signup = async ({
         logError(error.message)
     }
 
+    return stateIndex.toString()
 }

@@ -14,6 +14,10 @@ import {
     readContractAddress
 } from "../utils"
 
+/**
+ * Merge the message queue on chain
+ * @param param0 the required params
+ */
 export const mergeMessages = async ({
     quiet,
     maciContractAddress,

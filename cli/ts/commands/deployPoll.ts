@@ -5,7 +5,7 @@ import { info, logError, logGreen } from "../utils/theme"
 import { contractExists } from "../utils/contracts"
 import { PubKey } from "maci-domainobjs"
 import { Contract } from "ethers"
-import { DeployPollArgs } from "../utils/interfaces"
+import { DeployPollArgs, PollContracts } from "../utils/interfaces"
 
 export const deployPoll = async ({
     maciAddress,
@@ -18,7 +18,7 @@ export const deployPoll = async ({
     voteOptionTreeDepth,
     coordinatorPubkey,
     quiet 
-}: DeployPollArgs) => {
+}: DeployPollArgs): Promise<PollContracts> => {
     if(!quiet) banner()
 
     let _maciAddress = readContractAddress("MACI")
@@ -91,6 +91,7 @@ export const deployPoll = async ({
     )
 
     // deploy the poll
+    let pollAddr: string = ""
     try {
         const tx = await maciContract.deployPoll(
             pollDuration,
@@ -112,7 +113,7 @@ export const deployPoll = async ({
         if (name !== "DeployPoll") logError("Invalid event log")
 
         const pollId = log.args._pollId
-        const pollAddr = log.args._pollAddr
+        pollAddr = log.args._pollAddr
         if (!quiet) {
             logGreen(info(`Poll ID: ${pollId.toString()}`))
             logGreen(info(`Poll contract: ${pollAddr}`))
@@ -121,12 +122,18 @@ export const deployPoll = async ({
             logGreen(info(`Subsidy contract: ${subsidyContract.address}`))
         }
         // store the addresss 
-        storeContractAddress("Verifier-" + pollId.toString(), verifierContract.address)
         storeContractAddress("MessageProcessor-" + pollId.toString(), messageProcessorContract.address)
         storeContractAddress("Tally-" + pollId.toString(), tallyContract.address)
         storeContractAddress("Subsidy-" + pollId.toString(), subsidyContract.address)
         storeContractAddress("Poll-" + pollId.toString(), pollAddr)
     } catch (error: any) {
         logError(error.message)
+    }
+
+    return {
+        messageProcessor: messageProcessorContract.address,
+        tally: tallyContract.address,
+        subsidy: subsidyContract.address,
+        poll: pollAddr
     }
 }

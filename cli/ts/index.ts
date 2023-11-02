@@ -38,13 +38,15 @@ program
     .option("-p, --initialVoiceCreditsProxyAddress <initialVoiceCreditsProxyAddress>", "the initial voice credits proxy contract address")
     .option("-g", "--signupGatekeeperAddress <signupGatekeeperAddress>", "the signup gatekeeper contract address")
     .option("-q, --quiet", "whether to print values to the console")
-    .action(async (cmdOptions) => await deploy({
-        quiet: cmdOptions.quiet,
-        vkRegistryAddress: cmdOptions.vkRegistryAddress,
-        initialVoiceCredits: cmdOptions.initialVoiceCredits,
-        initialVoiceCreditsProxyAddress: cmdOptions.initialVoiceCreditsProxyAddress,
-        signupGatekeeperAddress: cmdOptions.signupGatekeeperAddress,
-    }))
+    .action(async (cmdOptions) => { 
+        await deploy({
+            quiet: cmdOptions.quiet,
+            vkRegistryAddress: cmdOptions.vkRegistryAddress,
+            initialVoiceCredits: cmdOptions.initialVoiceCredits,
+            initialVoiceCreditsProxyAddress: cmdOptions.initialVoiceCreditsProxyAddress,
+            signupGatekeeperAddress: cmdOptions.signupGatekeeperAddress,
+        })
+    })
 program 
     .command("checkVerifyingKeys")
     .description("check that the verifying keys in the contract match the local ones")
@@ -57,26 +59,28 @@ program
     .requiredOption("-b, --msg-batch-depth <messageBatchDepth>", "the message batch depth")
     .requiredOption("-p, --process-messages-zkey <processMessagesZkeyPath>", "the process messages zkey path")
     .requiredOption("-t, --tally-votes-zkey <tallyVotesZkeyPath>", "the tally votes zkey path")
-    .action(async (cmdOptions) => await checkVerifyingKeys({
-        quiet: cmdOptions.quiet,
-        maciContract: cmdOptions.maciContract,
-        stateTreeDepth: cmdOptions.stateTreeDepth,
-        intStateTreeDepth: cmdOptions.intStateTreeDepth,
-        messageTreeDepth: cmdOptions.msgTreeDepth,
-        voteOptionTreeDepth: cmdOptions.voteOptionTreeDepth,
-        messageBatchDepth: cmdOptions.msgBatchDepth,
-        processMessagesZkeyPath: cmdOptions.processMessagesZkey,
-        tallyVotesZkeyPath: cmdOptions.tallyVotesZkey
-    }))
+    .action(async (cmdOptions) => { 
+        await checkVerifyingKeys({
+            quiet: cmdOptions.quiet,
+            maciContract: cmdOptions.maciContract,
+            stateTreeDepth: cmdOptions.stateTreeDepth,
+            intStateTreeDepth: cmdOptions.intStateTreeDepth,
+            messageTreeDepth: cmdOptions.msgTreeDepth,
+            voteOptionTreeDepth: cmdOptions.voteOptionTreeDepth,
+            messageBatchDepth: cmdOptions.msgBatchDepth,
+            processMessagesZkeyPath: cmdOptions.processMessagesZkey,
+            tallyVotesZkeyPath: cmdOptions.tallyVotesZkey
+        })
+    })
 program
     .command("genMaciPubKey")
     .description("generate a new MACI public key")
     .requiredOption("-sk, --privkey <privkey>", "the private key")
-    .action((cmdObj) => genMaciPubKey({ privkey: cmdObj.privkey }))
+    .action((cmdObj) => { genMaciPubKey({ privkey: cmdObj.privkey }) })
 program
     .command("genMaciKeyPair")
     .description("generate a new MACI key pair")
-    .action(genKeyPair)
+    .action(() => { genKeyPair })
 program
     .command("airdrop")
     .description("airdrop topup credits to the coordinator")
@@ -96,7 +100,7 @@ program
     .command("deployVkRegistry")
     .description("deploy a new verification key registry contract")
     .option("-q, --quiet", "whether to print values to the console")
-    .action(async (cmdObj) => await deployVkRegistryContract({ quiet: cmdObj.quiet }))
+    .action(async (cmdObj) => { await deployVkRegistryContract({ quiet: cmdObj.quiet }) })
 program
     .command("show")
     .description("show the deployed contract addresses")
@@ -114,18 +118,20 @@ program
     .requiredOption("-pk, --pubkey <coordinatorPubkey>", "the coordinator public key")
     .option("-x, --maci-address <maciAddress>", "the MACI contract address")
     .option("-q, --quiet", "whether to print values to the console")
-    .action(async (cmdObj) => await deployPoll({
-        pollDuration: cmdObj.duration,
-        maxMessages: cmdObj.maxMessages,
-        maxVoteOptions: cmdObj.maxVoteOptions,
-        intStateTreeDepth: cmdObj.intStateTreeDepth,
-        messageTreeSubDepth: cmdObj.msgBatchDepth,
-        messageTreeDepth: cmdObj.msgTreeDepth,
-        voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
-        coordinatorPubkey: cmdObj.pubkey,
-        maciAddress: cmdObj.maciAddress,
-        quiet: cmdObj.quiet
-    }))
+    .action(async (cmdObj) => { 
+        await deployPoll({
+            pollDuration: cmdObj.duration,
+            maxMessages: cmdObj.maxMessages,
+            maxVoteOptions: cmdObj.maxVoteOptions,
+            intStateTreeDepth: cmdObj.intStateTreeDepth,
+            messageTreeSubDepth: cmdObj.msgBatchDepth,
+            messageTreeDepth: cmdObj.msgTreeDepth,
+            voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
+            coordinatorPubkey: cmdObj.pubkey,
+            maciAddress: cmdObj.maciAddress,
+            quiet: cmdObj.quiet
+        })
+    })
 program
     .command("setVerifyingKeys")
     .description("set the verifying keys")
@@ -164,18 +170,20 @@ program
     .requiredOption("-o, --poll-id <pollId>", "the poll id")
     .requiredOption("-w, --new-vote-weight <newVoteWeight>", "the new vote weight")
     .option("-q, --quiet", "whether to print values to the console")
-    .action(async (cmdObj) => await publish({
-        pubkey: cmdObj.pubkey,
-        maciContractAddress: cmdObj.contract,
-        privateKey: cmdObj.privkey,
-        stateIndex: cmdObj.stateIndex,
-        voteOptionIndex: cmdObj.voteOptionIndex,
-        nonce: cmdObj.nonce,
-        salt: cmdObj.salt,
-        pollId: cmdObj.pollId,
-        newVoteWeight: cmdObj.newVoteWeight,
-        quiet: cmdObj.quiet
-    }))
+    .action(async (cmdObj) => {
+            await publish({
+            pubkey: cmdObj.pubkey,
+            maciContractAddress: cmdObj.contract,
+            privateKey: cmdObj.privkey,
+            stateIndex: cmdObj.stateIndex,
+            voteOptionIndex: cmdObj.voteOptionIndex,
+            nonce: cmdObj.nonce,
+            salt: cmdObj.salt,
+            pollId: cmdObj.pollId,
+            newVoteWeight: cmdObj.newVoteWeight,
+            quiet: cmdObj.quiet
+        })
+    })
 program
     .command("mergeMessages")
     .description("merge the message accumulator queue")
@@ -221,13 +229,15 @@ program
     .option("-s, --sg-data <sgData>", "the signup gateway data")
     .option("-i, --ivcp-data <ivcpData>", "the initial voice credit proxy data")
     .option("-q, --quiet", "whether to print values to the console")
-    .action(async (cmdObj) => await signup({
-        maciPubKey: cmdObj.pubkey,
-        maciAddress: cmdObj.maciAddress,
-        sgDataArg: cmdObj.sgData,
-        ivcpDataArg: cmdObj.ivcpData,
-        quiet: cmdObj.quiet,
-    }))
+    .action(async (cmdObj) => {
+            await signup({
+            maciPubKey: cmdObj.pubkey,
+            maciAddress: cmdObj.maciAddress,
+            sgDataArg: cmdObj.sgData,
+            ivcpDataArg: cmdObj.ivcpData,
+            quiet: cmdObj.quiet,
+        })
+    })
 program 
     .command("topup")
     .description("Top up an account with voice credits")

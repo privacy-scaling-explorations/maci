@@ -38,7 +38,9 @@ export {
     GenProofsArgs,
     ProveOnChainArgs,
     DeployVkRegistryArgs,
-    GenKeyPairArgs
+    GenKeyPairArgs,
+    DeployedContracts,
+    PollContracts
 } from "./interfaces"
 export {
     compareVks
