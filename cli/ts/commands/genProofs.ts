@@ -207,7 +207,7 @@ export const genProofs = async ({
             }
             // save the proof 
             processProofs.push(thisProof)
-            // @todo save to disk (think of how to make it resumable)
+            writeFileSync(`${outputDir}/process_${poll.numBatchesProcessed - 1}.json`, JSON.stringify(thisProof, null, 4))
             if (!quiet) logYellow(info(`Progress: ${poll.numBatchesProcessed} / ${totalMessageBatches}`))
         } catch (error: any) {
             logError(error.message)
@@ -255,8 +255,8 @@ export const genProofs = async ({
                     publicInputs: r.publicInputs,
                 }
                 subsidyProofs.push(thisProof)
+                writeFileSync(`${outputDir}/subsidy_${numBatchesCalulated}.json`, JSON.stringify(thisProof, null, 4))
                 numBatchesCalulated ++
-                // @todo save to disk (think of how to make it resumable)
                 if (!quiet) logYellow(info(`Progress: ${numBatchesCalulated} / ${totalSubsidyBatches}`))
             } catch (error: any) {
                 logError(error.message)
@@ -321,9 +321,7 @@ export const genProofs = async ({
 
             tallyProofs.push(thisProof)
 
-            // @todo resumable step
-            // saveOutput(outputDir, thisProof, `tally_${poll.numBatchesTallied - 1}.json`)
-
+            writeFileSync(`${outputDir}/tally_${poll.numBatchesTallied - 1}.json`, JSON.stringify(thisProof, null, 4))
             if (!quiet) logYellow(info(`\nProgress: ${poll.numBatchesTallied} / ${totalTallyBatches}`))
 
 

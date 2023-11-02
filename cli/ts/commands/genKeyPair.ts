@@ -20,4 +20,9 @@ export const genKeyPair = ({
 
     logGreen(success(`Public key: ${serializedPubKey}`))
     logGreen(success(`Private key: ${serializedPrivKey}`))
+
+    return {
+        publicKey: serializedPubKey,
+        privateKey: serializedPrivKey
+    }
 }

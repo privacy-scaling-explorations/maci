@@ -12,7 +12,7 @@ import { DeployVkRegistryArgs } from "../utils"
  */
 export const deployVkRegistryContract = async ({ 
     quiet
-}: DeployVkRegistryArgs) => {
+}: DeployVkRegistryArgs): Promise<string> => {
     if(!quiet) banner()
     // assume that the vkRegistry contract is the first one to be deployed
     renameSync(contractAddressesStore, oldContractAddressesStore)
@@ -23,4 +23,6 @@ export const deployVkRegistryContract = async ({
     storeContractAddress("VkRegistry", vkRegistry.address)
 
     if (!quiet) logGreen(success(`VkRegistry deployed at: ${vkRegistry.address}`))
+
+    return vkRegistry.address 
 } 

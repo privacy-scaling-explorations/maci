@@ -25,7 +25,7 @@ export const publish = async ({
     salt,
     pollId,
     newVoteWeight
-}: PublishArgs) => {
+}: PublishArgs): Promise<string> => {
     if(!quiet) banner()
 
     // validate that the pub key of the user is valid
@@ -129,4 +129,6 @@ export const publish = async ({
     } catch (error: any) {
         logError(error.message)
     }
+
+    return encKeypair.privKey.serialize()
 }
