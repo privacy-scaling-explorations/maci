@@ -1,0 +1,45 @@
+name: Typedoc
+
+on:
+  push:
+    # branches: [ dev ]
+
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+
+  typedoc:
+    runs-on: ubuntu-22.04
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          registry-url: 'https://registry.npmjs.org'
+
+      # To prevent `npm install` failure of circuit package, 
+      # it has to checkout manually because version of `circomlib` has pinned to a specific commit
+      - name: Checkout circomlib
+        run: |
+          git init circuits/node_modules/circomlib
+          cd circuits/node_modules/circomlib
+          git remote add origin https://github.com/weijiekoh/circomlib
+          git -c protocol.version=2 fetch --no-tags --prune --progress --no-recurse-submodules --depth=1 origin ac85e82c1914d47789e2032fb11ceb2cfdd38a2b
+          git checkout --progress --force ac85e82c1914d47789e2032fb11ceb2cfdd38a2b
+          rm -rf ./.git
+
+
+      - name: Initialize Project
+        run: |
+          npm install
+          npx lerna bootstrap
+          npm run build
+
+      - name: Compile Contracts
+        run: |
+          npm run docs
