@@ -38,8 +38,16 @@ jobs:
         run: |
           npm install
           npx lerna bootstrap
-          npm run build
+          # npm run build
 
       - name: Compile Contracts
         run: |
           npm run docs
+
+      # - name: Publish
+      #   uses: cloudflare/wrangler-action@v3
+      #   with:
+      #     command: pages deploy "packages/app/build" --project-name 'ethconqf'
+      #     apiToken: ${{ secrets.CF_API_TOKEN }}
+      #   env:
+      #     CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
