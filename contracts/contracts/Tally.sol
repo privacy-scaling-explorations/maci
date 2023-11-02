@@ -19,10 +19,13 @@ contract Tally is
     CommonUtilities,
     Hasher
 {
-    // Error codes
-    error PROCESSING_NOT_COMPLETE();
-    error INVALID_TALLY_VOTES_PROOF();
-    error ALL_BALLOTS_TALLIED();
+    // custom errors
+    error ProcessingNotComplete();
+    error InvalidTallyVotesProof();
+    error AllBallotsTallied();
+    error NumSignUpsTooLarge();
+    error BatchStartIndexTooLarge();
+    error TallyBatchSizeTooLarge();
 
     uint8 private constant LEAVES_PER_NODE = 5;
 
@@ -64,9 +67,9 @@ contract Tally is
         uint256 _batchStartIndex,
         uint256 _tallyBatchSize
     ) public pure returns (uint256) {
-        require(_numSignUps < 2**50, "numSignUPs out of range");
-        require(_batchStartIndex < 2**50, "batchStartIndex out of range");
-        require(_tallyBatchSize < 2**50, "tallyBatchSize out of range");
+        if (_numSignUps >= 2**50) revert NumSignUpsTooLarge();
+        if (_batchStartIndex >= 2**50) revert BatchStartIndexTooLarge();
+        if (_tallyBatchSize >= 2**50) revert TallyBatchSizeTooLarge();
 
         uint256 result = (_batchStartIndex / _tallyBatchSize) +
             (_numSignUps << uint256(50));
@@ -105,7 +108,7 @@ contract Tally is
     function updateSbCommitment(MessageProcessor _mp) public onlyOwner {
         // Require that all messages have been processed
         if (!_mp.processingComplete()) {
-            revert PROCESSING_NOT_COMPLETE();
+            revert ProcessingNotComplete();
         }
         if (sbCommitment == 0) {
             sbCommitment = _mp.sbCommitment();
@@ -127,7 +130,7 @@ contract Tally is
 
         // Require that there are untalied ballots left
         if (batchStartIndex > numSignUps) {
-            revert ALL_BALLOTS_TALLIED();
+            revert AllBallotsTallied();
         }
 
         bool isValid = verifyTallyProof(
@@ -139,7 +142,7 @@ contract Tally is
             _newTallyCommitment
         );
         if (!isValid) {
-            revert INVALID_TALLY_VOTES_PROOF();
+            revert InvalidTallyVotesProof();
         }
 
         // Update the tally commitment and the tally batch num

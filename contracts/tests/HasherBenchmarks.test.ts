@@ -3,14 +3,14 @@ import {
     genRandomSalt,
 } from 'maci-crypto'
 
-import { deployPoseidonContracts } from '../deploy'
+import { deployPoseidonContracts } from '../ts/deploy'
 import { linkPoseidonLibraries } from '../'
 
 let hasherContract
 
 describe('Hasher', () => {
-    beforeAll(async () => {
-        const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } = await deployPoseidonContracts()
+    before(async () => {
+        const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } = await deployPoseidonContracts(true)
         // Link Poseidon contracts
         const hasherContractFactory = await linkPoseidonLibraries(
             'HasherBenchmarks',
@@ -18,6 +18,7 @@ describe('Hasher', () => {
             PoseidonT4Contract.address,
             PoseidonT5Contract.address,
             PoseidonT6Contract.address,
+            true
         )
 
         console.log('Deploying Hasher')
@@ -44,16 +45,5 @@ describe('Hasher', () => {
         const receipt = await tx.wait()
         console.log('hash5:', receipt.gasUsed.toString())
     })
-
-    //it('hash11', async () => {
-        //const values: string[] = []
-        //for (let i = 0; i < 11; i++) {
-            //values.push(genRandomSalt().toString())
-        //}
-
-        //const tx = await hasherContract.hash11Benchmark(values)
-        //const receipt = await tx.wait()
-        //console.log('hash11:', receipt.gasUsed.toString())
-    //})
 })
 

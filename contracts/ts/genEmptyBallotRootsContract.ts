@@ -1,5 +1,5 @@
-import * as fs from 'fs'
-import * as path from 'path'
+import { readFileSync } from 'fs'
+import { join } from 'path'
 
 import { IncrementalQuinTree, hash5 } from 'maci-crypto'
 import {
@@ -9,8 +9,8 @@ import {
 const genEmptyBallotRootsContract = (
 ): string => {
 
-    const template = fs.readFileSync(
-        path.join(
+    const template = readFileSync(
+        join(
             __dirname,
             '..',
             'ts',

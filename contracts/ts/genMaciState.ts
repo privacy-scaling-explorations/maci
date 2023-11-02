@@ -6,14 +6,15 @@ import {
 
 import {
     parseArtifact,
-} from './'
+} from './index'
 
 import {
     MaciState,
 } from 'maci-core'
 
-import * as ethers from 'ethers'
-import * as assert from 'assert'
+import { Contract, providers, utils } from 'ethers'
+// import { assert } from 'assert'
+import assert = require("assert")
 
 interface Action {
     type: string;
@@ -23,7 +24,7 @@ interface Action {
 }
 
 const genMaciStateFromContract = async (
-    provider: ethers.providers.Provider,
+    provider: providers.Provider,
     address: string,
     coordinatorKeypair: Keypair,
     pollId: number,
@@ -36,14 +37,14 @@ const genMaciStateFromContract = async (
     const [ pollContractAbi, ] = parseArtifact('Poll')
     const [ maciContractAbi, ] = parseArtifact('MACI')
 
-    const maciContract = new ethers.Contract(
+    const maciContract = new Contract(
         address,
         maciContractAbi,
         provider,
     )
 
-    const maciIface = new ethers.utils.Interface(maciContractAbi)
-    const pollIface = new ethers.utils.Interface(pollContractAbi)
+    const maciIface = new utils.Interface(maciContractAbi)
+    const pollIface = new utils.Interface(pollContractAbi)
 
     const maciState = new MaciState()
 
@@ -86,7 +87,11 @@ const genMaciStateFromContract = async (
     let vkRegistryAddress
 
     for (const log of initLogs) {
-        const event = maciIface.parseLog(log)
+        const mutableLog = {
+            ...log,
+            topics: [...log.topics],
+        };
+        const event = maciIface.parseLog(mutableLog)
         vkRegistryAddress = event.args._vkRegistry
     }
 
@@ -94,7 +99,11 @@ const genMaciStateFromContract = async (
 
     for (const log of signUpLogs) {
         assert(log != undefined)
-        const event = maciIface.parseLog(log)
+        const mutableLog = {
+            ...log,
+            topics: [...log.topics],
+        }
+        const event = maciIface.parseLog(mutableLog)
         actions.push({
             type: 'SignUp',
             // @ts-ignore
@@ -116,7 +125,11 @@ const genMaciStateFromContract = async (
     // functions in Poll which call them already have their own events
     for (const log of mergeStateAqSubRootsLogs) {
         assert(log != undefined)
-        const event = maciIface.parseLog(log)
+        const mutableLogs = {
+            ...log,
+            topics: [...log.topics],
+        }
+        const event = maciIface.parseLog(mutableLogs)
         const p =  Number(event.args._pollId)
 
         //// Skip in favour of Poll.MergeMaciStateAqSubRoots
@@ -139,7 +152,11 @@ const genMaciStateFromContract = async (
  
     for (const log of mergeStateAqLogs) {
         assert(log != undefined)
-        const event = maciIface.parseLog(log)
+        const mutableLogs = {
+            ...log,
+            topics: [...log.topics],
+        }
+        const event = maciIface.parseLog(mutableLogs)
         const p =  Number(event.args._pollId)
 
         //// Skip in favour of Poll.MergeMaciStateAq
@@ -164,7 +181,11 @@ const genMaciStateFromContract = async (
     const pollContractAddresses: string[] = []
     for (const log of deployPollLogs) {
         assert(log != undefined)
-        const event = maciIface.parseLog(log)
+        const mutableLogs = {
+            ...log,
+            topics: [...log.topics],
+        }
+        const event = maciIface.parseLog(mutableLogs)
         const pubKey = new PubKey(
             event.args._pubKey.map((x) => BigInt(x.toString()))
         )
@@ -194,7 +215,7 @@ const genMaciStateFromContract = async (
     )
 
     const pollContractAddress = pollContractAddresses[pollId]
-    const pollContract = new ethers.Contract(
+    const pollContract = new Contract(
         pollContractAddress,
         pollContractAbi,
         provider,
@@ -262,7 +283,11 @@ const genMaciStateFromContract = async (
 
     for (const log of publishMessageLogs) {
         assert(log != undefined)
-        const event = pollIface.parseLog(log)
+        const mutableLogs = {
+            ...log,
+            topics: [...log.topics],
+        }
+        const event = pollIface.parseLog(mutableLogs)
 
         const message = new Message(
             BigInt(event.args._message[0]),
@@ -289,8 +314,11 @@ const genMaciStateFromContract = async (
 
     for (const log of topupLogs) {
         assert(log != undefined)
-        const event = pollIface.parseLog(log)
-
+        const mutableLog = {
+            ...log,
+            topics: [...log.topics],
+        };
+        const event = pollIface.parseLog(mutableLog)
         const message = new Message(
             BigInt(event.args._message[0]),
             event.args._message[1].map((x) => BigInt(x)), 
@@ -310,7 +338,11 @@ const genMaciStateFromContract = async (
 
     for (const log of mergeMaciStateAqSubRootsLogs) {
         assert(log != undefined)
-        const event = pollIface.parseLog(log)
+        const mutableLogs = {
+            ...log,
+            topics: [...log.topics],
+        }
+        const event = pollIface.parseLog(mutableLogs)
 
         const numSrQueueOps = Number(event.args._numSrQueueOps)
         actions.push({
@@ -327,7 +359,12 @@ const genMaciStateFromContract = async (
 
     for (const log of mergeMaciStateAqLogs) {
         assert(log != undefined)
-        const event = pollIface.parseLog(log)
+        const mutableLogs = {
+            ...log,
+            topics: [...log.topics],
+        }
+
+        const event = pollIface.parseLog(mutableLogs)
 
         const stateRoot = BigInt(event.args._stateRoot)
         actions.push({
@@ -342,7 +379,11 @@ const genMaciStateFromContract = async (
 
     for (const log of mergeMessageAqSubRootsLogs) {
         assert(log != undefined)
-        const event = pollIface.parseLog(log)
+        const mutableLogs = {
+            ...log,
+            topics: [...log.topics],
+        }
+        const event = pollIface.parseLog(mutableLogs)
 
         const numSrQueueOps = Number(event.args._numSrQueueOps)
         actions.push({
@@ -359,7 +400,11 @@ const genMaciStateFromContract = async (
 
     for (const log of mergeMessageAqLogs) {
         assert(log != undefined)
-        const event = pollIface.parseLog(log)
+        const mutableLogs = {
+            ...log,
+            topics: [...log.topics],
+        }
+        const event = pollIface.parseLog(mutableLogs)
 
         const messageRoot = BigInt(event.args._messageRoot)
         actions.push({

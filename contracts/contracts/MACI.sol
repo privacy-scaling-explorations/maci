@@ -102,7 +102,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     * Ensure certain functions only run after the contract has been initialized
     */
     modifier afterInit() {
-        require(isInitialised, "MACI: not initialised");
+        if (!isInitialised) revert MaciNotInit();
         _;
     }
 
@@ -110,12 +110,20 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     * Only allow a Poll contract to call the modified function.
     */
     modifier onlyPoll(uint256 _pollId) {
-        require(
-            msg.sender == address(polls[_pollId]),
-            "MACI: only a Poll contract can call this function"
-        );
+        if (msg.sender != address(polls[_pollId])) revert CallerMustBePoll(msg.sender);
         _;
     }
+
+    error MaciNotInit();
+    error CallerMustBePoll(address _caller);
+    error AlreadyInitialized();
+    error PoseidonHashLibrariesNotLinked();
+    error WrongPollOwner();
+    error WrongVkRegistryOwner();
+    error TooManySignups();
+    error MaciPubKeyLargerThanSnarkFieldSize();
+    error PreviousPollNotCompleted(uint256 pollId);
+    error PollDoesNotExist(uint256 pollId);
 
     constructor(
         PollFactory _pollFactory,
@@ -133,10 +141,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         signUpTimestamp = block.timestamp;
 
         // Verify linked poseidon libraries
-        require(
-            hash2([uint256(1), uint256(1)]) != 0,
-            "MACI: poseidon hash libraries not linked"
-        );
+        if (hash2([uint256(1), uint256(1)]) == 0) revert PoseidonHashLibrariesNotLinked();
     }
 
     /*
@@ -149,7 +154,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         VkRegistry _vkRegistry,
         TopupCredit _topupCredit
     ) public onlyOwner {
-        require(!isInitialised, "MACI: already initialised");
+        if (isInitialised) revert AlreadyInitialized();
 
         isInitialised = true;
 
@@ -158,16 +163,8 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
 
         // Check that the factory contracts have correct access controls before
         // allowing any functions in MACI to run (via the afterInit modifier)
-        require(
-            pollFactory.owner() == address(this),
-            "MACI: PollFactory owner incorrectly set"
-        );
-
-        // The VkRegistry owner must be the owner of this contract
-        require(
-            vkRegistry.owner() == owner(),
-            "MACI: VkRegistry owner incorrectly set"
-        );
+        if (pollFactory.owner() != address(this)) revert WrongPollOwner();
+        if (vkRegistry.owner() != owner()) revert WrongVkRegistryOwner();
 
         emit Init(_vkRegistry, _topupCredit);
     }
@@ -191,16 +188,13 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         bytes memory _signUpGatekeeperData,
         bytes memory _initialVoiceCreditProxyData
     ) public afterInit {
-        // The circuits only support up to (5 ** 10 - 1) signups
-        require(
-            numSignUps < uint256(STATE_TREE_ARITY) ** uint256(stateTreeDepth),
-            "MACI: maximum number of signups reached"
-        );
-
-        require(
-            _pubKey.x < SNARK_SCALAR_FIELD && _pubKey.y < SNARK_SCALAR_FIELD,
-            "MACI: _pubKey values should be less than the snark scalar field"
-        );
+        // ensure we do not have more signups than what the circuits support
+        if (numSignUps == uint256(STATE_TREE_ARITY) ** uint256(stateTreeDepth))
+            revert TooManySignups();
+        
+        if (_pubKey.x >= SNARK_SCALAR_FIELD || _pubKey.y >= SNARK_SCALAR_FIELD) {
+            revert MaciPubKeyLargerThanSnarkFieldSize();
+        }
 
         // Increment the number of signups
         // cannot overflow as numSignUps < 5 ** 10 -1
@@ -249,10 +243,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         }
 
         if (pollId > 0) {
-            require(
-                stateAq.treeMerged(),
-                "MACI: previous poll must be completed before using a new instance"
-            );
+            if (!stateAq.treeMerged()) revert PreviousPollNotCompleted(pollId);
         }
 
         // The message batch size and the tally batch size
@@ -330,7 +321,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     * @returns Poll The Poll data
     */
     function getPoll(uint256 _pollId) public view returns (Poll) {
-        require(_pollId < nextPollId, "MACI: poll with _pollId does not exist");
+        if (_pollId >= nextPollId) revert PollDoesNotExist(_pollId);
         return polls[_pollId];
     }
 }

@@ -1,4 +1,4 @@
-ts/__tests__
-build/__tests__
+tests 
+build/tests
 .etherlime-store
 solc

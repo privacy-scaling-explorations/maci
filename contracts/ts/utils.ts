@@ -4,6 +4,7 @@ interface SnarkProof {
     pi_c: bigint[];
 }
 
+import { Contract } from 'ethers';
 import {
     deployVkRegistry,
     deployTopupCredit,
@@ -11,10 +12,9 @@ import {
     deployMessageProcessor,
     deployTally,
     deployMockVerifier,
-    deployContract,
     deployFreeForAllSignUpGatekeeper,
     deployConstantInitialVoiceCreditProxy,
-} from './'
+} from './index'
 
 const formatProofForVerifierContract = (
     _proof: SnarkProof,
@@ -35,32 +35,34 @@ const formatProofForVerifierContract = (
 }
 
 const deployTestContracts = async (
-    initialVoiceCreditBalance,
-    gatekeeperContract?
+    initialVoiceCreditBalance: number,
+    gatekeeperContract?: Contract
 ) => {
-    const mockVerifierContract = await deployMockVerifier()
+    const mockVerifierContract = await deployMockVerifier(true)
 
     if (!gatekeeperContract) {
-        gatekeeperContract = await deployFreeForAllSignUpGatekeeper()
+        gatekeeperContract = await deployFreeForAllSignUpGatekeeper(true)
     }
 
     const constantIntialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
         initialVoiceCreditBalance,
+        true 
     )
 
     // VkRegistry
-    const vkRegistryContract = await deployVkRegistry()
-    const topupCreditContract = await deployTopupCredit()
+    const vkRegistryContract = await deployVkRegistry(true)
+    const topupCreditContract = await deployTopupCredit(true)
 
     const {maciContract,stateAqContract,pollFactoryContract,poseidonAddrs} = await deployMaci(
         gatekeeperContract.address,
         constantIntialVoiceCreditProxyContract.address,
         mockVerifierContract.address,
         vkRegistryContract.address,
-        topupCreditContract.address
+        topupCreditContract.address,
+        true
     )
-    const mpContract = await deployMessageProcessor(mockVerifierContract.address, poseidonAddrs[0],poseidonAddrs[1],poseidonAddrs[2],poseidonAddrs[3])
-    const tallyContract = await deployTally(mockVerifierContract.address, poseidonAddrs[0],poseidonAddrs[1],poseidonAddrs[2],poseidonAddrs[3])
+    const mpContract = await deployMessageProcessor(mockVerifierContract.address, poseidonAddrs[0],poseidonAddrs[1],poseidonAddrs[2],poseidonAddrs[3], true)
+    const tallyContract = await deployTally(mockVerifierContract.address, poseidonAddrs[0],poseidonAddrs[1],poseidonAddrs[2],poseidonAddrs[3], true)
 
     return {
         mockVerifierContract,

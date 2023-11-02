@@ -1,6 +1,6 @@
-import * as assert from 'assert'
-import * as fs from 'fs'
-import * as path from 'path'
+import assert = require("assert")
+import { readFileSync } from 'fs'
+import { join } from 'path'
 
 import {
     sha256Hash,
@@ -20,8 +20,8 @@ const genZerosContract = (
 
     assert(hashLength === 2 || hashLength === 5)
 
-    const template = fs.readFileSync(
-        path.join(
+    const template = readFileSync(
+        join(
             __dirname,
             '..',
             'ts',

@@ -1,10 +1,10 @@
-jest.setTimeout(9000000)
 require('module-alias/register')
 import {
     AccQueue,
     NOTHING_UP_MY_SLEEVE,
 } from 'maci-crypto'
 import { deployPoseidonContracts, linkPoseidonLibraries } from '../'
+import { expect } from 'chai'
 
 let aqContract
 let tx
@@ -16,7 +16,7 @@ const deploy = async (
     HASH_LENGTH: number,
     ZERO: bigint,
 ) => {
-    const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } = await deployPoseidonContracts()
+    const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } = await deployPoseidonContracts(true)
     // Link Poseidon contracts
 	const AccQueueFactory = await linkPoseidonLibraries(
 		contractName,
@@ -24,6 +24,7 @@ const deploy = async (
 		PoseidonT4Contract.address,
 		PoseidonT5Contract.address,
 		PoseidonT6Contract.address,
+        true
 	)
 
 	aqContract = await AccQueueFactory.deploy(
@@ -71,7 +72,7 @@ const testMerge = async (
 
     const contractSmallSRTroot = await aqContract.getSmallSRTroot()
 
-    expect(expectedSmallSRTroot.toString()).toEqual(contractSmallSRTroot.toString())
+    expect(expectedSmallSRTroot.toString()).to.eq(contractSmallSRTroot.toString())
 
     aq.merge(MAIN_DEPTH)
     tx = await aqContract.merge(MAIN_DEPTH, { gasLimit: 8000000 })
@@ -81,7 +82,7 @@ const testMerge = async (
     const expectedMainRoot = aq.mainRoots[MAIN_DEPTH]
     const contractMainRoot = await aqContract.getMainRoot(MAIN_DEPTH)
 
-    expect(expectedMainRoot.toString()).toEqual(contractMainRoot.toString())
+    expect(expectedMainRoot.toString()).to.eq(contractMainRoot.toString())
 }
 
 const testOneShot = async (
@@ -108,7 +109,7 @@ describe('AccQueue gas benchmarks', () => {
         const SUB_DEPTH = 3
         const HASH_LENGTH = 2
         const ZERO = BigInt(0)
-        beforeAll(async () => {
+        before(async () => {
             const r = await deploy(
                 'AccQueueBinary0',
                 SUB_DEPTH,
@@ -131,7 +132,7 @@ describe('AccQueue gas benchmarks', () => {
         const SUB_DEPTH = 3
         const HASH_LENGTH = 2
         const ZERO = BigInt(0)
-        beforeAll(async () => {
+        before(async () => {
             const r = await deploy(
                 'AccQueueBinary0',
                 SUB_DEPTH,
@@ -155,7 +156,7 @@ describe('AccQueue gas benchmarks', () => {
         const SUB_DEPTH = 2
         const HASH_LENGTH = 5
         const ZERO = BigInt(0)
-        beforeAll(async () => {
+        before(async () => {
             const r = await deploy(
                 'AccQueueQuinary0',
                 SUB_DEPTH,
@@ -178,7 +179,7 @@ describe('AccQueue gas benchmarks', () => {
         const SUB_DEPTH = 2
         const HASH_LENGTH = 5
         const ZERO = NOTHING_UP_MY_SLEEVE
-        beforeAll(async () => {
+        before(async () => {
             const r = await deploy(
                 'AccQueueQuinaryMaci',
                 SUB_DEPTH,
@@ -205,7 +206,7 @@ describe('AccQueue gas benchmarks', () => {
         const ZERO = BigInt(0)
         const NUM_SUBTREES = 32
         let aq: AccQueue
-        beforeAll(async () => {
+        before(async () => {
             const r = await deploy(
                 'AccQueueBinary0',
                 SUB_DEPTH,
@@ -229,7 +230,7 @@ describe('AccQueue gas benchmarks', () => {
         const NUM_SUBTREES = 32
         const NUM_MERGES = 4
         let aq: AccQueue
-        beforeAll(async () => {
+        before(async () => {
             const r = await deploy(
                 'AccQueueBinary0',
                 SUB_DEPTH,
@@ -252,7 +253,7 @@ describe('AccQueue gas benchmarks', () => {
         const ZERO = BigInt(0)
         const NUM_SUBTREES = 25
         let aq: AccQueue
-        beforeAll(async () => {
+        before(async () => {
             const r = await deploy(
                 'AccQueueQuinary0',
                 SUB_DEPTH,
@@ -276,7 +277,7 @@ describe('AccQueue gas benchmarks', () => {
         const NUM_SUBTREES = 20
         const NUM_MERGES = 4
         let aq: AccQueue
-        beforeAll(async () => {
+        before(async () => {
             const r = await deploy(
                 'AccQueueQuinary0',
                 SUB_DEPTH,

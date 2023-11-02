@@ -27,10 +27,13 @@ contract Subsidy is
     uint8 public constant treeArity = 5;
 
     // Error codes
-    error PROCESSING_NOT_COMPLETE();
-    error INVALID_SUBSIDY_PROOF();
-    error ALL_SUBSIDY_CALCULATED();
-    error VK_NOT_SET();
+    error ProcessingNotComplete();
+    error InvalidSubsidyProof();
+    error AllSubsidyCalculated();
+    error VkNotSet();
+    error NumSignUpsTooLarge();
+    error RbiTooLarge();
+    error CbiTooLarge();
 
     Verifier public verifier;
 
@@ -41,7 +44,7 @@ contract Subsidy is
     function updateSbCommitment(MessageProcessor _mp) public onlyOwner {
         // Require that all messages have been processed
         if (!_mp.processingComplete()) {
-            revert PROCESSING_NOT_COMPLETE();
+            revert ProcessingNotComplete();
         }
         if (sbCommitment == 0) {
             sbCommitment = _mp.sbCommitment();
@@ -54,9 +57,9 @@ contract Subsidy is
         view
         returns (uint256)
     {
-        require(_numSignUps < 2**50, "numSignUps too large");
-        require(rbi < 2**50, "rbi too large"); 
-        require(cbi < 2**50, "cbi too large"); 
+        if (_numSignUps >= 2**50) revert NumSignUpsTooLarge();
+        if (rbi >= 2**50) revert RbiTooLarge();
+        if (cbi >= 2**50) revert CbiTooLarge();
         uint256 result = (_numSignUps << 100) +
             (rbi << 50) +
             cbi;
@@ -97,7 +100,7 @@ contract Subsidy is
 
         // Require that there are unfinished ballots left
         if (rbi * subsidyBatchSize > numLeaves) {
-            revert ALL_SUBSIDY_CALCULATED();
+            revert AllSubsidyCalculated();
         }
 
         bool isValid = verifySubsidyProof(
@@ -107,7 +110,7 @@ contract Subsidy is
             _newSubsidyCommitment
         );
         if (!isValid) {
-            revert INVALID_SUBSIDY_PROOF();
+            revert InvalidSubsidyProof();
         }
         subsidyCommitment = _newSubsidyCommitment;
         increaseSubsidyIndex(subsidyBatchSize, numLeaves);
@@ -144,7 +147,7 @@ contract Subsidy is
         (VkRegistry vkRegistry, IMACI maci, , ) = _poll.extContracts();
 
         if (address(vkRegistry) == address(0)) {
-            revert VK_NOT_SET();
+            revert VkNotSet();
         }
 
         // Get the verifying key
@@ -163,7 +166,4 @@ contract Subsidy is
         // Verify the proof
         return verifier.verify(_proof, vk, publicInputHash);
     }
-
-
-
 }

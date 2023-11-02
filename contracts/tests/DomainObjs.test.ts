@@ -1,19 +1,18 @@
-jest.setTimeout(90000)
 import {
     StateLeaf,
     Keypair,
 } from 'maci-domainobjs'
 
 import { deployPoseidonContracts, linkPoseidonLibraries } from '../'
-
-let doContract
+import { expect } from 'chai'
+import { Contract } from 'ethers'
 
 describe('DomainObjs', () => {
+    let doContract: Contract
 
     describe('Deployment', () => {
-        beforeAll(async () => {
-            console.log('Deploying Poseidon')
-			const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } = await deployPoseidonContracts()
+        before(async () => {
+			const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } = await deployPoseidonContracts(true)
 
             // Link Poseidon contracts
             const doContractFactory = await linkPoseidonLibraries(
@@ -22,9 +21,8 @@ describe('DomainObjs', () => {
                 PoseidonT4Contract.address,
                 PoseidonT5Contract.address,
                 PoseidonT6Contract.address,
+                true
             )
-
-            console.log('Deploying DomainObjs')
 
             doContract = await doContractFactory.deploy()
 			await doContract.deployTransaction.wait()
@@ -43,7 +41,7 @@ describe('DomainObjs', () => {
             )
             const expectedHash = stateLeaf.hash()
 
-            expect(onChainHash.toString()).toEqual(expectedHash.toString())
+            expect(onChainHash.toString()).to.eq(expectedHash.toString())
         })
     })
 })

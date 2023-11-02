@@ -1,10 +1,10 @@
-import * as fs from 'fs'
-import * as path from 'path'
+import { readFileSync, writeFileSync } from 'fs'
+import { join } from 'path'
 const { ethers } = require('hardhat')
 import { Contract, ContractFactory } from 'ethers'
 
-const abiDir = path.join(__dirname, '..', 'artifacts')
-const solDir = path.join(__dirname, '..', 'contracts')
+const abiDir = join(__dirname, '..', 'artifacts')
+const solDir = join(__dirname, '..', 'contracts')
 
 const getDefaultSigner = async () => {
 	const signers = await ethers.getSigners()
@@ -40,7 +40,7 @@ const parseArtifact = (filename: string) => {
 	}
 
 	const contractArtifact = JSON.parse(
-		fs.readFileSync(path.join(abiDir, filePath, `${filename}.json`)).toString()
+	    readFileSync(join(abiDir, filePath, `${filename}.json`)).toString()
 	)
 
 	return [ contractArtifact.abi, contractArtifact.bytecode ]
@@ -200,11 +200,12 @@ const deployContractWithLinkedLibraries = async (contractFactory: ContractFactor
         maxFeePerGas: await getFeeData['maxFeePerGas']
     })
     await contract.deployTransaction.wait()
-    return contract
+    return contract 
 }
 
 
 const transferOwnership = async (contract: Contract, newOwner: string, quiet: boolean = false) => {
+    log(`Transferring ownership of ${contract.address} to ${newOwner}`, quiet)
     await (await (contract.transferOwnership(newOwner, {
         maxFeePerGas: await getFeeData['maxFeePerGas'],
     }))).wait()
@@ -225,12 +226,12 @@ const getFeeData = async (): Promise<any> => {
 }
 
 const deployMessageProcessor = async (
-    verifierAddress,
-    poseidonT3Address,
-    poseidonT4Address,
-    poseidonT5Address,
-    poseidonT6Address,
-    quiet = false
+    verifierAddress: string,
+    poseidonT3Address: string,
+    poseidonT4Address: string,
+    poseidonT5Address: string,
+    poseidonT6Address: string,
+    quiet: boolean = false
     ) => {
     // Link Poseidon contracts to MessageProcessor
     const mpFactory = await linkPoseidonLibraries(
@@ -251,12 +252,12 @@ const deployMessageProcessor = async (
 }
 
 const deployTally = async (
-    verifierAddress,
-    poseidonT3Address,
-    poseidonT4Address,
-    poseidonT5Address,
-    poseidonT6Address,
-    quiet = false
+    verifierAddress: string,
+    poseidonT3Address: string,
+    poseidonT4Address: string,
+    poseidonT5Address: string,
+    poseidonT6Address: string,
+    quiet: boolean = false
     ) => {
     // Link Poseidon contracts to Tally
     const tallyFactory = await linkPoseidonLibraries(
@@ -277,12 +278,12 @@ const deployTally = async (
 }
 
 const deploySubsidy = async (
-    verifierAddress,
-    poseidonT3Address,
-    poseidonT4Address,
-    poseidonT5Address,
-    poseidonT6Address,
-    quiet = false
+    verifierAddress: string,
+    poseidonT3Address: string,
+    poseidonT4Address: string,
+    poseidonT5Address: string,
+    poseidonT6Address: string,
+    quiet: boolean = false
     ) => {
     // Link Poseidon contracts to Subsidy
     const subsidyFactory = await linkPoseidonLibraries(
@@ -389,8 +390,8 @@ const writeContractAddresses = (
         SignUpToken: signUpTokenAddress,
     }
 
-    const addressJsonPath = path.join(__dirname, '..', outputAddressFile)
-    fs.writeFileSync(
+    const addressJsonPath = join(__dirname, '..', outputAddressFile)
+    writeFileSync(
         addressJsonPath,
         JSON.stringify(addresses),
     )

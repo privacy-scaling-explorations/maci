@@ -1,7 +1,7 @@
-jest.setTimeout(90000)
 import { deployVerifier } from '../'
 import { G1Point, G2Point } from 'maci-crypto'
 import { VerifyingKey } from 'maci-domainobjs'
+import { expect } from 'chai'
 
 const vk = new VerifyingKey(
     new G1Point(
@@ -72,11 +72,11 @@ describe('DomainObjs', () => {
 
     let verifierContract
     describe('Deployment', () => {
-        beforeAll(async () => {
+        before(async () => {
 
             console.log('Deploying Verifier')
 
-            verifierContract = await deployVerifier()
+            verifierContract = await deployVerifier(true)
         })
 
         it('should correctly verify a proof', async () => {
@@ -87,7 +87,7 @@ describe('DomainObjs', () => {
                 {gasLimit: 1000000 }
             )
             debugger
-            expect(isValid).toBeTruthy()
+            expect(isValid).to.be.true
         })
     })
 })

@@ -35,6 +35,8 @@ contract PollFactory is
     Ownable,
     PollDeploymentParams
 {
+    error InvalidMaxValues();
+
     /*
      * Deploy a new Poll contract and AccQueue contract for messages.
      */
@@ -58,17 +60,15 @@ contract PollFactory is
         // maxVoteOptions must be less than 2 ** 50 due to circuit limitations;
         // it will be packed as a 50-bit value along with other values as one
         // of the inputs (aka packedVal)
-
-        require(
-            _maxValues.maxMessages <=
-                treeArity**uint256(_treeDepths.messageTreeDepth) &&
-                _maxValues.maxMessages >= _batchSizes.messageBatchSize &&
-                _maxValues.maxMessages % _batchSizes.messageBatchSize == 0 &&
-                _maxValues.maxVoteOptions <=
-                treeArity**uint256(_treeDepths.voteOptionTreeDepth) &&
-                _maxValues.maxVoteOptions < (2**50),
-            "PollFactory: invalid _maxValues"
-        );
+        if (
+            _maxValues.maxMessages > treeArity**uint256(_treeDepths.messageTreeDepth) ||
+            _maxValues.maxMessages < _batchSizes.messageBatchSize ||
+            _maxValues.maxMessages % _batchSizes.messageBatchSize != 0 ||
+            _maxValues.maxVoteOptions > treeArity**uint256(_treeDepths.voteOptionTreeDepth) ||
+            _maxValues.maxVoteOptions >= (2**50)
+        ) {
+            revert InvalidMaxValues();
+        }
 
         AccQueue messageAq = new AccQueueQuinaryMaci(_treeDepths.messageTreeSubDepth);
 
@@ -160,14 +160,14 @@ contract Poll is
     TreeDepths public treeDepths;
     BatchSizes public batchSizes;
 
-    // Error codes. We store them as constants and keep them short to reduce
-    // this contract's bytecode size.
-    string constant ERROR_VOTING_PERIOD_PASSED = "PollE01";
-    string constant ERROR_VOTING_PERIOD_NOT_PASSED = "PollE02";
-    string constant ERROR_INVALID_PUBKEY = "PollE03";
-    string constant ERROR_MAX_MESSAGES_REACHED = "PollE04";
-    string constant ERROR_STATE_AQ_ALREADY_MERGED = "PollE05";
-    string constant ERROR_STATE_AQ_SUBTREES_NEED_MERGE = "PollE06";
+    // errors 
+    error VotingPeriodOver();
+    error VotingPeriodNotOver();
+    error PollAlreadyInit();
+    error TooManyMessages();
+    error MaciPubKeyLargerThanSnarkFieldSize();
+    error StateAqAlreadyMerged();
+    error StateAqSubtreesNeedMerge();
 
     event PublishMessage(Message _message, PubKey _encPubKey);
     event TopupMessage(Message _message);
@@ -212,19 +212,19 @@ contract Poll is
      */
     modifier isAfterVotingDeadline() {
         uint256 secondsPassed = block.timestamp - deployTime;
-        require(secondsPassed > duration, ERROR_VOTING_PERIOD_NOT_PASSED);
+        if (secondsPassed <= duration) revert VotingPeriodNotOver();
         _;
     }
 
     modifier isWithinVotingDeadline() {
         uint256 secondsPassed = block.timestamp - deployTime;
-        require(secondsPassed < duration, ERROR_VOTING_PERIOD_PASSED);
+        if (secondsPassed >= duration) revert VotingPeriodOver();
         _;
     }
 
     // should be called immediately after Poll creation and messageAq ownership transferred
     function init() public {
-        require(!isInit, "Poll contract already init");
+        if (isInit) revert PollAlreadyInit();
         // set to true so it cannot be called again
         isInit = true;
 
@@ -248,10 +248,7 @@ contract Poll is
     * @param amount The amount of credits to topup
     */
     function topup(uint256 stateIndex, uint256 amount) public isWithinVotingDeadline {
-        require(
-            numMessages <= maxValues.maxMessages,
-            ERROR_MAX_MESSAGES_REACHED
-        );
+        if (numMessages > maxValues.maxMessages) revert TooManyMessages();
 
         unchecked {
             numMessages++;
@@ -282,15 +279,11 @@ contract Poll is
     function publishMessage(Message memory _message, PubKey memory _encPubKey)
         public isWithinVotingDeadline
     {
-        require(
-            numMessages <= maxValues.maxMessages,
-            ERROR_MAX_MESSAGES_REACHED
-        );
-        require(
-            _encPubKey.x < SNARK_SCALAR_FIELD &&
-                _encPubKey.y < SNARK_SCALAR_FIELD,
-            ERROR_INVALID_PUBKEY
-        );
+        if (numMessages == maxValues.maxMessages) revert TooManyMessages();
+
+        if (_encPubKey.x >= SNARK_SCALAR_FIELD || _encPubKey.y >= SNARK_SCALAR_FIELD) {
+            revert MaciPubKeyLargerThanSnarkFieldSize();
+        }
 
         unchecked {
             numMessages++;
@@ -315,7 +308,7 @@ contract Poll is
         isAfterVotingDeadline
     {
         // This function cannot be called after the stateAq was merged
-        require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
+        if (stateAqMerged) revert StateAqAlreadyMerged();
 
         if (!extContracts.maci.stateAq().subTreesMerged()) {
             extContracts.maci.mergeStateAqSubRoots(_numSrQueueOps, _pollId);
@@ -337,14 +330,11 @@ contract Poll is
     {
         // This function can only be called once per Poll after the voting
         // deadline
-        require(!stateAqMerged, ERROR_STATE_AQ_ALREADY_MERGED);
+        if (stateAqMerged) revert StateAqAlreadyMerged();
 
         stateAqMerged = true;
 
-        require(
-            extContracts.maci.stateAq().subTreesMerged(),
-            ERROR_STATE_AQ_SUBTREES_NEED_MERGE
-        );
+        if (!extContracts.maci.stateAq().subTreesMerged()) revert StateAqSubtreesNeedMerge();
         
         mergedStateRoot = extContracts.maci.mergeStateAq(_pollId);
 

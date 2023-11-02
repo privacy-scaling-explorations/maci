@@ -10,7 +10,7 @@ import { MerkleZeros as MerkleQuinaryMaci } from "./zeros/MerkleQuinaryMaci.sol"
 import { MerkleZeros as MerkleQuinaryBlankSl } from "./zeros/MerkleQuinaryBlankSl.sol";
 import { MerkleZeros as MerkleQuinaryMaciWithSha256 } from "./zeros/MerkleQuinaryMaciWithSha256.sol";
 
-/*
+/**
  * This contract defines a Merkle tree where each leaf insertion only updates a
  * subtree. To obtain the main tree root, the contract owner must merge the
  * subtrees together. Merging subtrees requires at least 2 operations:
@@ -81,22 +81,24 @@ abstract contract AccQueue is Ownable, Hasher {
     // The number of leaves inserted across all subtrees so far
     uint256 public numLeaves;
 
+    error SubDepthCannotBeZero();
+    error SubdepthTooLarge(uint256 _subDepth, uint256 max);
+    error InvalidHashLength();
+    error DepthCannotBeZero();
+    error SubTreesAlreadyMerged();
+    error NothingToMerge();
+    error SubTreesNotMerged();
+    error DepthTooLarge(uint256 _depth, uint256 max);
+    error DepthTooSmall(uint256 _depth, uint256 min);
+    error InvalidIndex(uint256 _index);
+    
     constructor(
         uint256 _subDepth,
         uint256 _hashLength
     ) {
-        require(
-            _subDepth > 0,
-            "AccQueue: _subDepth must be more than 0"
-        );
-        require(
-            _subDepth <= MAX_DEPTH,
-            "AccQueue: only supports up to MAX_DEPTH levels"
-        );
-        require(
-            _hashLength == 2 || _hashLength == 5,
-            "AccQueue: only supports _hashLength of 2 or 5"
-        );
+        if (_subDepth == 0) revert SubDepthCannotBeZero();
+        if (_subDepth > MAX_DEPTH) revert SubdepthTooLarge(_subDepth, MAX_DEPTH);
+        if (_hashLength != 2 && _hashLength != 5) revert InvalidHashLength();
 
         isBinary = _hashLength == 2;
         subDepth = _subDepth;
@@ -104,7 +106,7 @@ abstract contract AccQueue is Ownable, Hasher {
         subTreeCapacity = _hashLength ** _subDepth;
     }
 
-    /*
+    /**
      * Hash the contents of the specified level and the specified leaf.
      * This is a virtual function as the hash function which the overriding
      * contract uses will be either hashLeftRight or hash5, which require
@@ -118,7 +120,7 @@ abstract contract AccQueue is Ownable, Hasher {
     function hashLevelLeaf(uint256 _level, uint256 _leaf)
         virtual view public returns (uint256) {}
 
-    /*
+    /**
      * Returns the zero leaf at a specified level.
      * This is a virtual function as the hash function which the overriding
      * contract uses will be either hashLeftRight or hash5, which will produce
@@ -128,7 +130,7 @@ abstract contract AccQueue is Ownable, Hasher {
      */
     function getZero(uint256 _level) internal virtual returns (uint256) {}
 
-    /*
+    /**
      * Add a leaf to the queue for the current subtree.
      * @param _leaf The leaf to add.
      */
@@ -162,7 +164,7 @@ abstract contract AccQueue is Ownable, Hasher {
         return leafIndex;
     }
 
-    /*
+    /**
      * Updates the queue at a given level and hashes any subroots that need to
      * be hashed.
      * @param _leaf The leaf to add.
@@ -197,7 +199,7 @@ abstract contract AccQueue is Ownable, Hasher {
         }
     }
 
-    /*
+    /**
      * Fill any empty leaves of the current subtree with zeros and store the
      * resulting subroot.
      */
@@ -233,14 +235,14 @@ abstract contract AccQueue is Ownable, Hasher {
         subTreesMerged = false;
     }
 
-    /*
+    /**
      * A function that queues zeros to the specified level, hashes,
      * the level, and enqueues the hash to the next level.
      * @param _level The level at which to queue zeros.
      */
     function _fill(uint256 _level) virtual internal {}
 
-    /*
+    /**
      * Insert a subtree. Used for batch enqueues.
      */
     function insertSubTree(uint256 _subRoot) public onlyOwner {
@@ -274,7 +276,7 @@ abstract contract AccQueue is Ownable, Hasher {
         return depth;
     }
 
-    /*
+    /**
      * Merge all subtrees to form the shortest possible tree.
      * This function can be called either once to merge all subtrees in a
      * single transaction, or multiple times to do the same in multiple
@@ -294,10 +296,10 @@ abstract contract AccQueue is Ownable, Hasher {
         uint256 _numSrQueueOps
     ) public onlyOwner {
         // This function can only be called once unless a new subtree is created
-        require(!subTreesMerged, "AccQueue: subtrees already merged");
+        if (subTreesMerged) revert SubTreesAlreadyMerged();
 
         // There must be subtrees to merge
-        require(numLeaves > 0, "AccQueue: nothing to merge");
+        if (numLeaves == 0) revert NothingToMerge();
 
         // Fill any empty leaves in the current subtree with zeros ony if the
         // current subtree is not full
@@ -392,21 +394,20 @@ abstract contract AccQueue is Ownable, Hasher {
         }
     }
 
-    /*
+    /**
      * Merge all subtrees to form a main tree with a desired depth.
      * @param _depth The depth of the main tree. It must fit all the leaves or
      *               this function will revert.
      */
     function merge(uint256 _depth) public onlyOwner returns (uint256) {
-
         // The tree depth must be more than 0
-        require(_depth > 0, "AccQueue: _depth must be more than 0");
+        if (_depth == 0) revert DepthCannotBeZero();
 
         // Ensure that the subtrees have been merged
-        require(subTreesMerged, "AccQueue: subtrees must be merged before calling merge()");
+        if (!subTreesMerged) revert SubTreesNotMerged();
 
         // Check the depth
-        require(_depth <= MAX_DEPTH, "AccQueue: _depth must be lte MAX_DEPTH");
+        if (_depth > MAX_DEPTH) revert DepthTooLarge(_depth, MAX_DEPTH);
 
         // Calculate the SRT depth
         uint256 srtDepth = subDepth;
@@ -417,10 +418,7 @@ abstract contract AccQueue is Ownable, Hasher {
             srtDepth ++;
         }
 
-        require(
-            _depth >= srtDepth,
-            "AccQueue: _depth must be gte the SRT depth"
-        );
+        if (_depth < srtDepth) revert DepthTooSmall(_depth, srtDepth);
 
         // If the depth is the same as the SRT depth, just use the SRT root
         if (_depth == srtDepth) {
@@ -465,10 +463,7 @@ abstract contract AccQueue is Ownable, Hasher {
      * @param _index The subroot index.
      */
     function getSubRoot(uint256 _index) public view returns (uint256) {
-        require(
-            currentSubtreeIndex > _index,
-            "AccQueue: _index must refer to a complete subtree"
-        );
+        if (currentSubtreeIndex <= _index) revert InvalidIndex(_index);
         return subRoots[_index];
     }
 
@@ -477,7 +472,7 @@ abstract contract AccQueue is Ownable, Hasher {
      * using mergeSubRoots.
      */
     function getSmallSRTroot() public view returns (uint256) {
-        require(subTreesMerged, "AccQueue: subtrees must be merged first");
+        if (!subTreesMerged) revert SubTreesNotMerged();
         return smallSRTroot;
     }
 
@@ -488,10 +483,7 @@ abstract contract AccQueue is Ownable, Hasher {
      *               using mergeSubRoots() and merge(). 
      */
     function getMainRoot(uint256 _depth) public view returns (uint256) {
-        require(
-            hashLength ** _depth >= numLeaves, 
-            "AccQueue: getMainRoot: _depth must be high enough"
-        );
+        if (hashLength ** _depth < numLeaves) revert DepthTooSmall(_depth, numLeaves);
 
         return mainRoots[_depth];
     }
