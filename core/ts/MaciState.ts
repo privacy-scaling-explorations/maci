@@ -1258,10 +1258,6 @@ class Poll {
         return hashLeftRight(subtotal, _salt);
     };
 
-    //public genSpentVoiceCreditSubtotalCommitment = (_salt) => {
-    //return hashLeftRight(this.totalSpentVoiceCredits, _salt)
-    //}
-
     public genPerVOSpentVoiceCreditsCommitment = (
         _salt: bigint,
         _numBallotsToCount: number
@@ -1428,8 +1424,58 @@ class Poll {
                 return false;
             }
         }
-        return true;
-    };
+        return true
+    }
+    
+
+
+    toJSON() {
+        return {
+            duration: this.duration.toString(),
+            pollEndTimestamp: this.pollEndTimestamp.toString(),
+            coordinatorPrivateKey: this.coordinatorKeypair.privKey.rawPrivKey.toString(),
+            treeDepths: JSON.stringify(this.treeDepths),
+            batchSizes: JSON.stringify(this.batchSizes),
+            maxValues: JSON.stringify(this.maxValues),
+            messages: JSON.stringify(this.messages, (_, v) => typeof v === 'bigint' ? v.toString() : v),
+            commands: JSON.stringify(this.commands, (_, v) => typeof v === 'bigint' ? v.toString() : v),
+            ballots: JSON.stringify(this.ballots, (_, v) => typeof v === 'bigint' ? v.toString() : v),
+            encPubKeys: JSON.stringify(this.encPubKeys, (_, v) => typeof v === 'bigint' ? v.toString() : v),
+            ballotTree: this.ballotTree,
+            currentMessageBatchIndex: this.currentMessageBatchIndex ? this.currentMessageBatchIndex.toString() : "",
+            // messageTree: this.messageTree,
+            // messageAq: this.messageAq,
+            stateLeaves: JSON.stringify(this.stateLeaves, replacer),
+            // stateTree: this.stateTree,            
+        }
+    }
+
+    static fromJSON(json: any) {
+        const poll = new Poll(
+            json.duration,
+            BigInt(json.pollEndTimestamp),
+            new Keypair(json.coordinatorPrivateKey),
+            json.treeDepths,
+            json.batchSizes,
+            json.maxValues,
+            json.maciStateRef
+        );
+        poll.numSignUps = json.numSignUps;
+        poll.ballots = json.ballots.map;
+
+        return poll;
+    }
+}
+
+function replacer(_, value) {
+    if (typeof value === 'bigint') {
+        return value.toString();
+    } else if (value !== null && typeof value === 'object') {
+        return Object.entries(value).reduce(
+            (acc, [key, val]) => ({ ...acc, [key]: replacer(key, val) }), {}
+        );
+    }
+    return value;
 }
 
 const blankStateLeaf = StateLeaf.genBlankLeaf();
@@ -1569,9 +1615,9 @@ class MaciState {
         const packedVals =
             (BigInt(numSignUps) << BigInt(100)) +
             (BigInt(row) << BigInt(50)) +
-            BigInt(col);
-        return packedVals;
-    };
+            BigInt(col)
+        return packedVals
+    }
 
     public static packTallyVotesSmallVals = (
         batchStartIndex: number,
@@ -1628,8 +1674,30 @@ class MaciState {
             numUsers,
             batchStartIndex,
             batchEndIndex,
-        };
-    };
+        }
+    }
+
+    // serialize to JSON 
+    toJSON() {
+        return {
+            STATE_TREE_ARITY: this.STATE_TREE_ARITY,
+            STATE_TREE_SUBDEPTH: this.STATE_TREE_SUBDEPTH,
+            MESSAGE_TREE_ARITY: this.MESSAGE_TREE_ARITY,
+            VOTE_OPTION_TREE_ARITY: this.VOTE_OPTION_TREE_ARITY,
+            stateTreeDepth: this.stateTreeDepth,
+            polls: this.polls.map(poll => poll.toJSON()),
+            stateLeaves: JSON.stringify(this.stateLeaves, replacer),
+            pollBeingProcessed: this.pollBeingProcessed,
+            currentPollBeingProcessed: this.currentPollBeingProcessed ? this.currentPollBeingProcessed.toString() : "",
+            numSignUps: this.numSignUps.toString(),
+        }
+    }
+
+    static fromJSON(json: any) {
+        const maciState = new MaciState()
+        Object.assign(maciState, json)
+        return maciState 
+    }
 }
 
 const genProcessVkSig = (

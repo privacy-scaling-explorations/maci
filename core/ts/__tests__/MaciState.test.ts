@@ -14,7 +14,8 @@ import {
     G2Point,
     NOTHING_UP_MY_SLEEVE,
     IncrementalQuinTree,
-} from "maci-crypto";
+} from 'maci-crypto'
+import { writeFileSync } from 'fs'
 
 const voiceCreditBalance = BigInt(100);
 
@@ -430,10 +431,10 @@ describe("MaciState", function () {
         });
     });
 
-    describe("Deep copy", () => {
-        let pollId;
-        let m1;
-        const userKeypair = new Keypair();
+    describe('Deep copy', () => {
+        let pollId
+        let m1: MaciState 
+        const userKeypair = new Keypair()
 
         before(() => {
             m1 = new MaciState(STATE_TREE_DEPTH);
@@ -448,10 +449,8 @@ describe("MaciState", function () {
                 maxValues,
                 treeDepths,
                 messageBatchSize,
-                coordinatorKeypair,
-                testProcessVk,
-                testTallyVk
-            );
+                coordinatorKeypair
+            )
             const command = new PCommand(
                 BigInt(0),
                 userKeypair.pubKey,
@@ -556,9 +555,16 @@ describe("MaciState", function () {
             expect(m1.equals(m20)).not.to.be.true;
 
             // modify poll.encPubKeys
-            const m21 = m1.copy();
-            m21.polls[pollId].encPubKeys[0] = new Keypair().pubKey;
-            expect(m1.equals(m21)).not.to.be.true;
-        });
-    });
-});
+            const m21 = m1.copy()
+            m21.polls[pollId].encPubKeys[0] = (new Keypair()).pubKey
+            expect(m1.equals(m21)).not.to.be.true
+        })
+
+        it("should create a JSON object from a MaciState object", () => {
+            const json = m1.toJSON()
+
+            writeFileSync('state.json', JSON.stringify(json, null, 4))
+            const state = MaciState.fromJSON(json)
+        })
+    })
+})

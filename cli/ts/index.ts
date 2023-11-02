@@ -126,7 +126,11 @@ import {
 import {
     checkVerifyingKey,
     configureSubparser as configureSubparserForCheckVerifyKey,
-} from "./checkVerifyingKey";
+} from './checkVerifyingKey'
+import {
+    fetchLogs,
+    configureSubparser as configureSubparserForFetchLogs,
+} from './fetchLogs'
 
 const main = async () => {
     const parser = new argparse.ArgumentParser({
@@ -195,6 +199,9 @@ const main = async () => {
     // Subcommand: checkVerifyKey
     configureSubparserForCheckVerifyKey(subparsers);
 
+    // Subcommand: fetchlogs
+    configureSubparserForFetchLogs(subparsers)
+
     const args = parser.parseArgs()
 
     // Execute the subcommand method
@@ -236,6 +243,8 @@ const main = async () => {
         await verify(args)
     } else if (args.subcommand === 'checkVerifyingKey') {
         await checkVerifyingKey(args)
+    } else if (args.subcommand === 'fetchLogs') {
+        await fetchLogs(args)
     }
 };
 
