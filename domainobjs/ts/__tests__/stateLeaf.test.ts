@@ -1,4 +1,5 @@
 import { Keypair, StateLeaf } from "../"
+import { expect } from "chai"
 
 describe('State leaves', () => {
     const { pubKey } = new Keypair()
@@ -15,7 +16,7 @@ describe('State leaves', () => {
 
         expect(
             unserialized.voiceCreditBalance.toString()
-            ).toEqual(stateLeaf.voiceCreditBalance.toString())
+            ).to.eq(stateLeaf.voiceCreditBalance.toString())
     })
 
     it("copy should create an exact copy of the state leaf", () => {
@@ -27,13 +28,13 @@ describe('State leaves', () => {
 
         const copy = stateLeaf.copy()
 
-        expect(stateLeaf.equals(copy)).toBeTruthy()
+        expect(stateLeaf.equals(copy)).to.be.true
     })
 
     it("genRandomLeaf should return a random leaf", () => {
         const randomLeaf = StateLeaf.genRandomLeaf()
         const randomLeaf2 = StateLeaf.genRandomLeaf()
-        expect(randomLeaf.equals(randomLeaf2)).toBeFalsy()
+        expect(randomLeaf.equals(randomLeaf2)).to.be.false
     })
 
     it("asCircuitInputs should return an array", () => {
@@ -44,9 +45,9 @@ describe('State leaves', () => {
         )
 
         const arr = stateLeaf.asCircuitInputs()
-        expect(arr).toBeInstanceOf(Array)
-        expect(arr.length).toBeGreaterThan(0)
-        expect(arr.length).toBe(4)
+        expect(arr).to.be.instanceOf(Array)
+        expect(arr.length).to.be.gt(0)
+        expect(arr.length).to.eq(4)
     })
 
     it("equals should return true when comparing two equal state leaves", () => {
@@ -62,7 +63,7 @@ describe('State leaves', () => {
             BigInt(1231267),
         )
 
-        expect(stateLeaf.equals(stateLeaf2)).toBeTruthy()
+        expect(stateLeaf.equals(stateLeaf2)).to.be.true
     })
 
     it("equals should return false when comparing two different state leaves", () => {
@@ -78,6 +79,6 @@ describe('State leaves', () => {
             BigInt(1231268),
         )
 
-        expect(stateLeaf.equals(stateLeaf2)).toBeFalsy()
+        expect(stateLeaf.equals(stateLeaf2)).to.be.false
     })
 })

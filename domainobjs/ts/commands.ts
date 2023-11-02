@@ -3,8 +3,6 @@ import * as assert from "assert"
 import { PubKey } from "./publicKey"
 import { PrivKey } from "./privateKey"
 import { Message } from "./message"
-import { StateLeaf } from "./stateLeaf"
-import { Keypair } from "./keyPair"
 
 /**
  * @notice Base class for Commands

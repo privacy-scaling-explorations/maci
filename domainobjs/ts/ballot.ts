@@ -1,8 +1,7 @@
 import * as assert from "assert"
-import { genRandomSalt, hash5, hashLeftRight } from "maci-crypto";
-import { OptimisedMT as IncrementalQuinTree } from "optimisedmt";
+import { genRandomSalt, hash5, hashLeftRight, IncrementalQuinTree } from "maci-crypto";
 
-/**
+/** 
  * A Ballot represents a User's votes in a Poll, as well as their next valid
  * nonce.
  * @param _voiceCreditBalance The user's voice credit balance

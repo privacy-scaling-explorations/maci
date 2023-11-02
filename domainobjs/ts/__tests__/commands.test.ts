@@ -1,5 +1,6 @@
 import { Keypair, Message, PCommand, TCommand } from "../"
 import { genRandomSalt } from "maci-crypto"
+import { expect } from "chai"
 
 describe("Commands & Messages", () => {
     const { privKey, pubKey } = new Keypair()
@@ -29,19 +30,19 @@ describe("Commands & Messages", () => {
     const decrypted = PCommand.decrypt(message, ecdhSharedKey)
 
     it('command.sign() should produce a valid signature', () => {
-        expect(command.verifySignature(signature, pubKey)).toBeTruthy()
+        expect(command.verifySignature(signature, pubKey)).to.be.true
     })
     
     it('decrypted message should match the original command', () => {
-        expect(decrypted.command.equals(command)).toBeTruthy()
-        expect(decrypted.signature.R8[0].toString()).toEqual(signature.R8[0].toString())
-        expect(decrypted.signature.R8[1].toString()).toEqual(signature.R8[1].toString())
-        expect(decrypted.signature.S.toString()).toEqual(signature.S.toString())
+        expect(decrypted.command.equals(command)).to.be.true
+        expect(decrypted.signature.R8[0].toString()).to.eq(signature.R8[0].toString())
+        expect(decrypted.signature.R8[1].toString()).to.eq(signature.R8[1].toString())
+        expect(decrypted.signature.S.toString()).to.eq(signature.S.toString())
     })
 
     it('decrypted message should have a valid signature', () => {
         const isValid = decrypted.command.verifySignature(decrypted.signature, pubKey) 
-        expect(isValid).toBeTruthy()
+        expect(isValid).to.be.true
     })
 
     it('Command.copy() should produce a deep copy', () => {
@@ -57,13 +58,13 @@ describe("Commands & Messages", () => {
         // shallow copy
         const c2 = c1
         c1.nonce = BigInt(9999)
-        expect(c1.nonce.toString()).toEqual(c2.nonce.toString())
+        expect(c1.nonce.toString()).to.eq(c2.nonce.toString())
 
         // deep copy
         const c3 = c1.copy()
         c1.nonce = BigInt(8888)
 
-        expect(c1.nonce.toString()).not.toEqual(c3.nonce.toString())
+        expect(c1.nonce.toString()).not.to.eq(c3.nonce.toString())
     })
 
     it("message.copy() should produce a deep copy", () => {
@@ -73,7 +74,7 @@ describe("Commands & Messages", () => {
         )
 
         const m2 = m1.copy()
-        expect(m2.equals(m1)).toBeTruthy()
+        expect(m2.equals(m1)).to.be.true
     })
 
     it("message.asCircuitInputs() should return a array", () => {
@@ -83,19 +84,19 @@ describe("Commands & Messages", () => {
         )    
 
         const arr = m1.asCircuitInputs()
-        expect(arr.length).toEqual(11)
-        expect(arr[0]).toEqual(BigInt(1))
-        expect(arr[1]).toEqual(BigInt(2))
-        expect(arr[2]).toEqual(BigInt(3))
-        expect(arr[3]).toEqual(BigInt(4))
-        expect(arr[4]).toEqual(BigInt(5))
-        expect(arr[5]).toEqual(BigInt(6))
-        expect(arr[6]).toEqual(BigInt(7))
-        expect(arr[7]).toEqual(BigInt(8))
-        expect(arr[8]).toEqual(BigInt(9))
-        expect(arr[9]).toEqual(BigInt(10))
-        expect(arr[10]).toEqual(BigInt(11))
-        expect(arr).toBeInstanceOf(Array)
+        expect(arr.length).to.eq(11)
+        expect(arr[0]).to.eq(BigInt(1))
+        expect(arr[1]).to.eq(BigInt(2))
+        expect(arr[2]).to.eq(BigInt(3))
+        expect(arr[3]).to.eq(BigInt(4))
+        expect(arr[4]).to.eq(BigInt(5))
+        expect(arr[5]).to.eq(BigInt(6))
+        expect(arr[6]).to.eq(BigInt(7))
+        expect(arr[7]).to.eq(BigInt(8))
+        expect(arr[8]).to.eq(BigInt(9))
+        expect(arr[9]).to.eq(BigInt(10))
+        expect(arr[10]).to.eq(BigInt(11))
+        expect(arr).to.be.instanceOf(Array)
     })
 
     describe("TCommand", () => {
@@ -110,7 +111,7 @@ describe("Commands & Messages", () => {
 
         it("copy should produce a deep copy", () => {
             const c = tCommand.copy()
-            expect(c.equals(tCommand)).toBeTruthy()
+            expect(c.equals(tCommand)).to.be.true
         })
     })
 })
