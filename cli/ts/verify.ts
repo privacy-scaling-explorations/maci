@@ -8,6 +8,7 @@ import {
 } from 'maci-contracts'
 
 import {
+    compareOnChainValue,
     validateEthAddress,
     contractExists,
 } from './utils'
@@ -241,9 +242,9 @@ const verify = async (args: any) => {
         newPerVOSpentVoiceCreditsCommitment,
     ])
 
-    if (onChainTallyCommitment !== newTallyCommitment) {
-        console.log('Error: the on-chain tally commitment does not match.')
-        return 
+    
+    if (!compareOnChainValue("tally commitment", onChainTallyCommitment, newTallyCommitment)) {
+        return
     }
 
     // ----------------------------------------------
@@ -289,10 +290,9 @@ const verify = async (args: any) => {
             data.results.salt,
             voteOptionTreeDepth
         )
-    
-        if (onChainSubsidyCommitment !== newSubsidyCommitment) {
-            console.log('Error: the on-chain subsidy commitment does not match.')
-            return 
+        
+        if (!compareOnChainValue("subsidy commitment", onChainSubsidyCommitment, newSubsidyCommitment)) {
+            return
         }
     }
 
