@@ -15,7 +15,7 @@ import {
     NOTHING_UP_MY_SLEEVE,
     IncrementalQuinTree,
 } from 'maci-crypto'
-import { existsSync, unlinkSync, writeFileSync } from 'fs'
+import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
 
 const voiceCreditBalance = BigInt(100);
 
@@ -431,11 +431,11 @@ describe("MaciState", function () {
         });
     });
 
-    describe.only('Deep copy', () => {
+    describe('Deep copy', () => {
         let pollId
         let m1: MaciState 
         const userKeypair = new Keypair()
-
+        const stateFile = 'state.json'
         before(() => {
             m1 = new MaciState(STATE_TREE_DEPTH);
             m1.signUp(
@@ -472,8 +472,12 @@ describe("MaciState", function () {
             m1.polls[pollId].publishMessage(message, encKeypair.pubKey);
         });
 
-        it("should correctly deep-copy a MaciState object", () => {
-            const m2 = m1.copy();
+        after(() => { 
+            if (existsSync(stateFile)) unlinkSync(stateFile)
+        })
+
+        it('should correctly deep-copy a MaciState object', () => {
+            const m2 = m1.copy()
 
             // modify stateTreeDepth
             m2.stateTreeDepth = m2.stateTreeDepth + 1;
@@ -562,8 +566,9 @@ describe("MaciState", function () {
 
         it("should create a JSON object from a MaciState object", () => {
             const json = m1.toJSON()
-            writeFileSync('state.json', JSON.stringify(json, null, 4))
-            const state = MaciState.fromJSON(json)
+            writeFileSync(stateFile, JSON.stringify(json, null, 4))
+            const content = JSON.parse(readFileSync(stateFile).toString())
+            const state = MaciState.fromJSON(content)
             expect(state.equals(m1)).to.be.true
         })
     })

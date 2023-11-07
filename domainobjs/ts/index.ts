@@ -338,7 +338,7 @@ class Keypair {
     }
 
     static fromJSON(json: any): Keypair {
-        return new Keypair(json.privKey)
+        return new Keypair(PrivKey.unserialize(json.privKey))
     }
 }
 
