@@ -10,6 +10,7 @@ import {
 } from 'maci-contracts'
 
 import {
+    compareOnChainValue,
     validateEthAddress,
     contractExists,
     delay,
@@ -304,18 +305,14 @@ const proveOnChain = async (args: any) => {
             currentMessageBatchIndex -= messageBatchSize
         }
 
-        const txErr = 'Error: processMessages() failed'
         const { proof, circuitInputs, publicInputs } = data.processProofs[i]
 
         // Perform checks
-        if (circuitInputs.pollEndTimestamp !== pollEndTimestampOnChain.toString()) {
-            console.error('Error: pollEndTimestamp mismatch.')
-            return 
+        if (!compareOnChainValue("pollEndTimestamp", pollEndTimestampOnChain.toString(), circuitInputs.pollEndTimestamp)) {
+            return
         }
-
-        if (BigInt(circuitInputs.msgRoot).toString() !== messageRootOnChain.toString()) {
-            console.error('Error: message root mismatch.')
-            return 
+        if (!compareOnChainValue("message root", messageRootOnChain.toString(), BigInt(circuitInputs.msgRoot).toString())) {
+            return
         }
 
         let currentSbCommitmentOnChain
@@ -325,21 +322,20 @@ const proveOnChain = async (args: any) => {
         } else {
             currentSbCommitmentOnChain = BigInt(await mpContract.sbCommitment())
         }
-
-        if (currentSbCommitmentOnChain.toString() !== circuitInputs.currentSbCommitment) {
-            console.error('Error: currentSbCommitment mismatch.')
-            return 
+        
+        if (!compareOnChainValue("currentSbCommitment", currentSbCommitmentOnChain.toString(), circuitInputs.currentSbCommitment)) {
+            return
         }
 
+
         const coordPubKeyHashOnChain = BigInt(await pollContract.coordinatorPubKeyHash())
-        if (
-            hashLeftRight(
-                BigInt(circuitInputs.coordPubKey[0]),
-                BigInt(circuitInputs.coordPubKey[1]),
-            ).toString() !== coordPubKeyHashOnChain.toString()
-        ) {
-            console.error('Error: coordPubKey mismatch.')
-            return 
+        const coordPubKeyHashOffChain = hashLeftRight(
+            BigInt(circuitInputs.coordPubKey[0]),
+            BigInt(circuitInputs.coordPubKey[1]),
+        ).toString()
+
+        if (!compareOnChainValue("coordPubKey", coordPubKeyHashOnChain.toString(), coordPubKeyHashOffChain)) {
+            return
         }
 
         const packedValsOnChain = BigInt(await mpContract.genProcessMessagesPackedVals(
@@ -348,9 +344,9 @@ const proveOnChain = async (args: any) => {
             numSignUps,
         )).toString()
 
-        if (circuitInputs.packedVals !== packedValsOnChain) {
-            console.error('Error: packedVals mismatch.')
-            return 
+        
+        if (!compareOnChainValue("packedVals", packedValsOnChain, circuitInputs.packedVals)) {
+            return
         }
 
         const formattedProof = formatProofForVerifierContract(proof)
@@ -364,9 +360,8 @@ const proveOnChain = async (args: any) => {
             circuitInputs.newSbCommitment,
         ))
 
-        if (publicInputHashOnChain.toString() !== publicInputs[0].toString()) {
-            console.error('Public input mismatch.')
-            return 
+        if (!compareOnChainValue("Public input", publicInputHashOnChain.toString(), publicInputs[0].toString())) {
+            return
         }
 
         const isValidOnChain = await verifierContract.verify(
@@ -380,6 +375,7 @@ const proveOnChain = async (args: any) => {
             return 
         }
 
+        const txErr = "Error: processMessages() failed"
         let tx
         try {
             tx = await mpContract.processMessages(
@@ -439,30 +435,26 @@ const proveOnChain = async (args: any) => {
             const { proof, circuitInputs, publicInputs } = data.subsidyProofs[i]
     
             const subsidyCommitmentOnChain = await subsidyContract.subsidyCommitment()
-            if (subsidyCommitmentOnChain.toString() !== circuitInputs.currentSubsidyCommitment) {
-                console.error(`Error: subsidycommitment mismatch`)
-                return 
+            if (!compareOnChainValue("subsidycommitment", subsidyCommitmentOnChain.toString(), circuitInputs.currentSubsidyCommitment)) {
+                return
             }
             const packedValsOnChain = BigInt(
                 await subsidyContract.genSubsidyPackedVals(numSignUps)
             )
-            if (circuitInputs.packedVals !== packedValsOnChain.toString()) {
-                console.error('Error: subsidy packedVals mismatch.')
-                return 
+            if (!compareOnChainValue("subsidy packedVals", packedValsOnChain.toString(), circuitInputs.packedVals)) {
+                return
             }
             const currentSbCommitmentOnChain = await subsidyContract.sbCommitment()
-            if (currentSbCommitmentOnChain.toString() !== circuitInputs.sbCommitment) {
-                console.error('Error: currentSbCommitment mismatch.')
-                return 
+            if (!compareOnChainValue("currentSbCommitment", currentSbCommitmentOnChain.toString(), circuitInputs.sbCommitment)) {
+                return
             }
             const publicInputHashOnChain = await subsidyContract.genSubsidyPublicInputHash(
                 numSignUps,
                 circuitInputs.newSubsidyCommitment,
             )
             
-            if (publicInputHashOnChain.toString() !== publicInputs[0]) {
-                console.error('Error: public input mismatch.')
-                return 
+            if (!compareOnChainValue("public input", publicInputHashOnChain.toString(), publicInputs[0])) {
+                return
             }
     
             const txErr = 'Error: updateSubsidy() failed...'
@@ -542,9 +534,9 @@ const proveOnChain = async (args: any) => {
         const { proof, circuitInputs, publicInputs } = data.tallyProofs[i]
 
         const currentTallyCommitmentOnChain = await tallyContract.tallyCommitment()
-        if (currentTallyCommitmentOnChain.toString() !== circuitInputs.currentTallyCommitment) {
-            console.error('Error: currentTallyCommitment mismatch.')
-            return 
+        
+        if (!compareOnChainValue("currentTallyCommitment", currentTallyCommitmentOnChain.toString(), circuitInputs.currentTallyCommitment)) {
+            return
         }
 
         const packedValsOnChain = BigInt(
@@ -554,15 +546,15 @@ const proveOnChain = async (args: any) => {
                 tallyBatchSize,
             )
         )
-        if (circuitInputs.packedVals !== packedValsOnChain.toString()) {
-            console.error('Error: packedVals mismatch.')
-            return 
+
+        if (!compareOnChainValue("packedVals", packedValsOnChain.toString(), circuitInputs.packedVals)) {
+            return
         }
 
         const currentSbCommitmentOnChain = await mpContract.sbCommitment()
-        if (currentSbCommitmentOnChain.toString() !== circuitInputs.sbCommitment) {
-            console.error('Error: currentSbCommitment mismatch.')
-            return 
+        
+        if (!compareOnChainValue("currentSbCommitment", currentSbCommitmentOnChain.toString(), circuitInputs.sbCommitment)) {
+            return
         }
 
         const publicInputHashOnChain = await tallyContract.genTallyVotesPublicInputHash(
@@ -571,9 +563,9 @@ const proveOnChain = async (args: any) => {
             tallyBatchSize,
             circuitInputs.newTallyCommitment,
         )
-        if (publicInputHashOnChain.toString() !== publicInputs[0]) {
-            console.error(`Error: public input mismatch. tallyBatchNum=${i}, onchain=${publicInputHashOnChain.toString()}, offchain=${publicInputs[0]}`)
-            return 
+        
+        if (!compareOnChainValue("public input", publicInputHashOnChain.toString(), publicInputs[0])) {
+            return
         }
 
         const formattedProof = formatProofForVerifierContract(proof)

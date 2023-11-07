@@ -142,6 +142,21 @@ const isPathExist = (paths: Array<string>): [boolean, string] => {
     return [true, null]
 }
 
+const compareOnChainValue = (
+    name: string,
+    onChainValue: any,
+    offChainValue: any,
+): boolean => {
+    if (onChainValue !== offChainValue) {
+        console.error(`Error: ${name} mismatch.`)
+        console.error("     onchainValue: " + onChainValue)
+        console.error("     offchainValue: " + offChainValue)
+        return false
+    }
+    return true
+}
+
+
 export {
     promptPwd,
     calcBinaryTreeDepthFromMaxLeaves,
@@ -155,5 +170,6 @@ export {
     currentBlockTimestamp,
     batchTransactionRequests,
     delay,
+    compareOnChainValue,
     isPathExist,
 }
