@@ -2,6 +2,12 @@ declare module 'snarkjs' {
     export type NumericString = `${number}` | string
     export type PublicSignals = NumericString[]
 
+    export interface FullProveResult {
+        proof: Groth16Proof;
+        publicSignals: PublicSignals;
+    }
+
+
     export interface Groth16Proof {
         pi_a: NumericString[];
         pi_b: NumericString[][];
@@ -24,5 +30,12 @@ declare module 'snarkjs' {
             _proof: Groth16Proof,
             logger?: any,
         ): Promise<boolean>
+        function fullProve(
+            _input: any,
+            wasmFile: string,
+            zkeyFileName: string,
+            logger?: any
+        ): Promise<FullProveResult>
+
     }
 }

@@ -28,6 +28,9 @@ const configureSubparser = (subparsers: any) => {
     )
 
     const maciPrivkeyGroup = parser.addMutuallyExclusiveGroup({ required: true })
+    const processMessageWasmGroup = parser.addMutuallyExclusiveGroup({ required: true })
+    const tallyVotesWasmGroup = parser.addMutuallyExclusiveGroup({ required: true })
+    const subsidyWasmGroup = parser.addMutuallyExclusiveGroup({ required: false })
 
     maciPrivkeyGroup.addArgument(
         ['-dsk', '--prompt-for-maci-privkey'],
@@ -81,35 +84,55 @@ const configureSubparser = (subparsers: any) => {
         }
     )
 
-
     parser.addArgument(
         ['-r', '--rapidsnark'],
         {
-            required: true,
             type: 'string',
             help: 'The path to the rapidsnark binary',
         }
     )
 
-    parser.addArgument(
+    processMessageWasmGroup.addArgument(
+        ['-pw', '--process-wasm'],
+        {
+            type: 'string',
+            help: 'The path to the ProcessMessages wasm file',
+        }
+    )
+
+    processMessageWasmGroup.addArgument(
         ['-wp', '--process-witnessgen'],
         {
-            required: true,
             type: 'string',
             help: 'The path to the ProcessMessages witness generation binary',
         }
     )
 
-    parser.addArgument(
+    tallyVotesWasmGroup.addArgument(
+        ['-tw', '--tally-wasm'],
+        {
+            type: 'string',
+            help: 'The path to the TallyVotes wasm file',
+        }
+    )
+
+    tallyVotesWasmGroup.addArgument(
         ['-wt', '--tally-witnessgen'],
         {
-            required: true,
             type: 'string',
             help: 'The path to the TallyVotes witness generation binary',
         }
     )
 
-    parser.addArgument(
+    subsidyWasmGroup.addArgument(
+        ['-sw', '--subsidy-wasm'],
+        {
+            type: 'string',
+            help: 'The path to the SubsidyPerBatch wasm file',
+        }
+    )
+
+    subsidyWasmGroup.addArgument(
         ['-ws', '--subsidy-witnessgen'],
         {
             type: 'string',
@@ -143,7 +166,6 @@ const configureSubparser = (subparsers: any) => {
         }
     )
 
-
     parser.addArgument(
         ['-f', '--output'],
         {
@@ -160,17 +182,6 @@ const configureSubparser = (subparsers: any) => {
             help: 'transaction hash of MACI contract creation',
         }
     )
-
-
-
-    // TODO: support resumable proof generation
-    //parser.addArgument(
-        //['-r', '--resume'],
-        //{
-            //action: 'storeTrue',
-            //help: 'Resume proof generation from the last proof in the specified output file',
-        //}
-    //)
 }
 
 const genProofs = async (args: any) => {
@@ -186,16 +197,39 @@ const genProofs = async (args: any) => {
         return 
     }
 
+    // if we are using the witness gen programs, then we assume we are running on an intel chip
+    // and thus can use rapidsnark for speed  
+    // @note that wasm and witnessgen are mutually exclusive so if we have the paths 
+    // to the witnesses we are sure that no path to the wasm files was provided
     const rapidsnarkExe = args.rapidsnark
-    const processDatFile = args.process_witnessgen + ".dat"
-    const tallyDatFile =  args.tally_witnessgen + ".dat"
+    if (args.subsidy_witnessgen && args.tally_withnessgen && args.process_witnessgen && !rapidsnarkExe) {
+        console.error("Please specify the path to the rapidsnark binary")
+        return 
+    }
+
+    // check that we have the files on disk
+    if (args.subsidy_witnessgen && args.tally_withnessgen && args.process_witnessgen) {
+        const [ok, path] = isPathExist([
+            rapidsnarkExe,
+            args.process_witnessgen + ".dat",
+            args.tally_witnessgen + ".dat",
+            ])
+        if (!ok) {
+            console.error(`Error: ${path} does not exist.`)
+            return 
+        }
+    } else {
+        const [ok, path] = isPathExist([
+            args.process_wasm,
+            args.tally_wasm,
+        ])
+        if (!ok) {
+            console.error(`Error: ${path} does not exist.`)
+            return 
+        }
+    }
 
     const [ok, path] = isPathExist([
-        rapidsnarkExe,
-        args.process_witnessgen,
-        args.tally_witnessgen,
-        processDatFile,
-        tallyDatFile,
         args.process_zkey,
         args.tally_zkey,
         ])
@@ -214,22 +248,32 @@ const genProofs = async (args: any) => {
             console.error('Please specify subsidy zkey file location')
             return 
         }
-        if (!args.subsidy_witnessgen) {
-            console.error('Please specify subsidy witnessgen file location')
+        if (!args.subsidy_witnessgen && !args.subsidy_wasm) {
+            console.error('Please specify either the subsidy witnessgen or the subsidy wasm file location')
             return 
         }
 
-        const subsidyDatFile = args.subsidy_witnessgen + ".dat"
-
-        const [ok, path] = isPathExist([
-            args.subsidy_witnessgen,
-            subsidyDatFile,
-            args.subsidy_zkey,
+        if (args.subsidy_witnessgen) {
+            const subsidyDatFile = args.subsidy_witnessgen + ".dat"
+            const [ok, path] = isPathExist([
+                args.subsidy_witnessgen,
+                subsidyDatFile,
+                args.subsidy_zkey,
             ])
-        if (!ok) {
-            console.error(`Error: ${path} does not exist.`)
-            return 
-        }
+            if (!ok) {
+                console.error(`Error: ${path} does not exist.`)
+                return 
+            }
+        } else {
+            const [ok, path] = isPathExist([
+                args.subsidy_wasm,
+                args.subsidy_zkey,
+                ])
+            if (!ok) {
+                console.error(`Error: ${path} does not exist.`)
+                return 
+            }
+        }       
 
         subsidyVk = await extractVk(args.subsidy_zkey)
     }
@@ -269,7 +313,7 @@ const genProofs = async (args: any) => {
 
     const signer = await getDefaultSigner()
 
-    if (! (await contractExists(signer.provider, maciAddress))) {
+    if (!(await contractExists(signer.provider, maciAddress))) {
         console.error('Error: there is no MACI contract deployed at the specified address')
         return 
     }
@@ -292,7 +336,7 @@ const genProofs = async (args: any) => {
     )
 
     const pollAddr = await maciContractEthers.polls(pollId)
-    if (! (await contractExists(signer.provider, pollAddr))) {
+    if (!(await contractExists(signer.provider, pollAddr))) {
         console.error('Error: there is no Poll contract with this poll ID linked to the specified MACI contract.')
         return 
     }
@@ -380,11 +424,12 @@ const genProofs = async (args: any) => {
 
         let r
         try {
-            r = genProof(
+            r = await genProof(
                 circuitInputs,
+                args.process_zkey,
                 rapidsnarkExe,
                 args.process_witnessgen,
-                args.process_zkey,
+                args.process_wasm
             )
         } catch (e) {
             console.error('Error: could not generate proof.')
@@ -394,7 +439,7 @@ const genProofs = async (args: any) => {
 
         // Verify the proof
         const isValid = await verifyProof(
-            r.publicInputs,
+            r.publicSignals,
             r.proof,
             processVk,
         )
@@ -407,7 +452,7 @@ const genProofs = async (args: any) => {
         const thisProof = {
             circuitInputs,
             proof: r.proof,
-            publicInputs: r.publicInputs,
+            publicInputs: r.publicSignals,
         }
 
         processProofs.push(thisProof)
@@ -437,9 +482,9 @@ const genProofs = async (args: any) => {
         let numBatchesCalced = 0
         while (poll.hasUnfinishedSubsidyCalculation()) {
             subsidyCircuitInputs = poll.subsidyPerBatch()
-            const r = genProof(subsidyCircuitInputs, rapidsnarkExe, args.subsidy_witnessgen, args.subsidy_zkey)
+            const r = await genProof(subsidyCircuitInputs, args.subsidy_zkey, rapidsnarkExe, args.subsidy_witnessgen, args.subsidy_wasm)
     
-            const isValid = await verifyProof(r.publicInputs, r.proof, subsidyVk)
+            const isValid = await verifyProof(r.publicSignals, r.proof, subsidyVk)
             if (!isValid) {
                 console.error('Error: generated an invalid subsidy calc proof')
                 return 
@@ -447,7 +492,7 @@ const genProofs = async (args: any) => {
             const thisProof = {
                 circuitInputs: subsidyCircuitInputs,
                 proof: r.proof,
-                publicInputs: r.publicInputs,
+                publicInputs: r.publicSignals,
             }
     
             subsidyProofs.push(thisProof)
@@ -492,16 +537,17 @@ const genProofs = async (args: any) => {
     let tallyCircuitInputs
     while (poll.hasUntalliedBallots()) {
         tallyCircuitInputs = poll.tallyVotes()
-        const r = genProof(
+        const r = await genProof(
             tallyCircuitInputs,
+            args.tally_zkey,
             rapidsnarkExe,
             args.tally_witnessgen,
-            args.tally_zkey,
+            args.tally_wasm 
         )
 
         // Verify the proof
         const isValid = await verifyProof(
-            r.publicInputs,
+            r.publicSignals,
             r.proof,
             tallyVk,
         )
@@ -514,7 +560,7 @@ const genProofs = async (args: any) => {
         const thisProof = {
             circuitInputs: tallyCircuitInputs,
             proof: r.proof,
-            publicInputs: r.publicInputs,
+            publicInputs: r.publicSignals,
         }
 
         tallyProofs.push(thisProof)

@@ -12,7 +12,7 @@ do
     echo "#### Compile Circuit: "$circuit""
     circom --O0 --r1cs --c --sym --output "$OUTPUT_PATH" "$circuit"
 
-    # Generate executable that could compute the witness of given circuit
+    # Generate executable that can compute the witness of this circuit
     filename=$(basename "$circuit" .circom)
     cd ""$OUTPUT_PATH""$filename"_cpp"
     make
