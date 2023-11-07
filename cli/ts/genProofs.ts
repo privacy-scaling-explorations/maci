@@ -202,13 +202,13 @@ const genProofs = async (args: any) => {
     // @note that wasm and witnessgen are mutually exclusive so if we have the paths 
     // to the witnesses we are sure that no path to the wasm files was provided
     const rapidsnarkExe = args.rapidsnark
-    if (args.subsidy_witnessgen && args.tally_withnessgen && args.process_witnessgen && !rapidsnarkExe) {
+    if (args.subsidy_witnessgen && args.tally_witnessgen && args.process_witnessgen && !rapidsnarkExe) {
         console.error("Please specify the path to the rapidsnark binary")
         return 
     }
 
     // check that we have the files on disk
-    if (args.subsidy_witnessgen && args.tally_withnessgen && args.process_witnessgen) {
+    if (args.subsidy_witnessgen && args.tally_witnessgen && args.process_witnessgen) {
         const [ok, path] = isPathExist([
             rapidsnarkExe,
             args.process_witnessgen + ".dat",
