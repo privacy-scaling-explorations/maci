@@ -20,7 +20,7 @@ import {
 } from './utils'
 import {readJSONFile} from 'maci-common'
 import {contractFilepath} from './config'
-import { MaciState } from 'maci-core'
+import { MaciState, Poll } from 'maci-core'
 
 const configureSubparser = (subparsers: any) => {
     const parser = subparsers.addParser("genProofs", { addHelp: true });
@@ -382,6 +382,8 @@ const genProofs = async (args: any) => {
         // @todo actually read the file first 
         const content = JSON.parse(fs.readFileSync(args.state_file, 'utf-8').toString())
         maciState = MaciState.fromJSON(content)
+        // ensure we merge all messages
+        maciState.polls.forEach((poll: Poll) => poll.mergeAllMessages()) 
     } else {
         // some rpc endpoint like bsc chain has limitation to retreive history logs
         let fromBlock = args.start_block ? args.start_block : 0

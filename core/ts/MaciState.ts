@@ -1438,7 +1438,7 @@ class Poll {
             ballots: this.ballots.map(ballot => ballot.toJSON()),
             encPubKeys: this.encPubKeys.map(encPubKey => encPubKey.serialize()),
             ballotTree: this.ballotTree,
-            currentMessageBatchIndex: this.currentMessageBatchIndex ? this.currentMessageBatchIndex.toString() : "",
+            currentMessageBatchIndex: this.currentMessageBatchIndex,
             stateLeaves: this.stateLeaves.map(leaf => leaf.toJSON()),
             results: this.results.map(result => result.toString()),
             numBatchesProcessed: this.numBatchesProcessed,
@@ -1466,7 +1466,19 @@ class Poll {
         poll.ballots = json.ballots.map((ballot: Ballot) => Ballot.fromJSON(ballot))
         poll.encPubKeys = json.encPubKeys.map((key: string) => PubKey.unserialize(key))
         poll.messages = json.messages.map((message: Message) => Message.fromJSON(message))
-        poll.commands = json.commands.map((command: Command) => Command.fromJSON(command))
+        poll.commands = json.commands.map((command: any) => {
+            switch (command.cmdType) {
+                case "1": {
+                    return PCommand.fromJSON(command) 
+                }
+                case "2": {
+                    return TCommand.fromJSON(command)
+                }
+                default: {
+                    return Command.fromJSON(command)
+                }
+            }
+        })
         poll.results = json.results.map((result: string) => BigInt(result))
         poll.currentMessageBatchIndex = json.currentMessageBatchIndex
         poll.numBatchesProcessed = json.numBatchesProcessed
@@ -1480,6 +1492,7 @@ class Poll {
 
         // copy maci state 
         poll.copyStateFromMaci()
+
         return poll
     }
 }
