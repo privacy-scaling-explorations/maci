@@ -249,7 +249,7 @@ const executeSuite = async (data: any, expect: any) => {
 
         const tally = JSON.parse(fs.readFileSync(path.join(__dirname, '../../../cli/tally.json')).toString())
         // Validate generated proof file
-        expect(JSON.stringify(tally.pollId)).toEqual(pollId)
+        expect(JSON.stringify(tally.pollId)).to.eq(pollId)
         expectTally(
             config.constants.maci.maxMessages,
             data.expectedTally,
@@ -260,7 +260,7 @@ const executeSuite = async (data: any, expect: any) => {
         if (subsidyEnabled) {
             const subsidy = JSON.parse(fs.readFileSync(path.join(__dirname, '../../../cli/subsidy.json')).toString())
             // Validate generated proof file
-            expect(JSON.stringify(subsidy.pollId)).toEqual(pollId)
+            expect(JSON.stringify(subsidy.pollId)).to.eq(pollId)
             expectSubsidy(
                 config.constants.maci.maxMessages,
                 data.subsidy.expectedSubsidy,

@@ -8,6 +8,7 @@
         "hardhat": "./scripts/runHardhat.sh",
         "compileSol": "./scripts/compileSol.sh && cp -r artifacts/ ../integrationTests/artifacts",
         "build": "tsc",
+        "pretest": "npm run compileSol",
         "test": "hardhat test",
         "test-maci": "hardhat test ./tests/MACI.test.ts",
         "test-hasher": "hardhat test ./tests/Hasher.test.ts",
@@ -39,7 +40,7 @@
     },
     "devDependencies": {
         "@types/chai": "^4.3.9",
-        "@types/mocha": "^10.0.3",
+        "@types/mocha": "^10.0.4",
         "@types/node": "^14.14.35",
         "chai": "^4.3.10",
         "safe-buffer": "^5.2.1",

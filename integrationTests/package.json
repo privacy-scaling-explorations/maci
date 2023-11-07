@@ -6,16 +6,12 @@
     "scripts": {
         "watch": "tsc --watch",
         "build": "tsc",
-        "test": "jest",
-        "test-debug": "node --inspect-brk ./node_modules/.bin/jest",
-        "test-cli-genMaciKeypair": "jest cli-genMaciKeypair.test.ts",
-        "test-cli-genMaciKeypair-debug": "node --inspect-brk ./node_modules/.bin/jest cli-genMaciKeypair.test.ts",
-        "test-cli-genMaciPubkey": "jest cli-genMaciPubkey.test.ts",
-        "test-cli-genMaciPubkey-debug": "node --inspect-brk ./node_modules/.bin/jest cli-genMaciPubkey.test.ts",
-        "test-suites": "NODE_OPTIONS=--max-old-space-size=4096 jest suites.test.ts",
-        "test-deployPoll": "NODE_OPTIONS=--max-old-space-size=4096 jest deployPollWithRandomSigner.test.ts",
-        "download-zkeys": "./scripts/download_zkeys.sh",
-        "test-suites-debug": "NODE_OPTIONS=--max-old-space-size=4096 node --inspect-brk ./node_modules/.bin/jest suites.test.ts"
+        "test": "ts-mocha --exit ts/__tests__/**.test.ts",
+        "test-cli-genMaciKeypair": "ts-mocha --exit  ts/__tests__/cli-genMaciKeypair.test.ts",
+        "test-cli-genMaciPubkey": "ts-mocha --exit  ts/__tests__/cli-genMaciPubkey.test.ts",
+        "test-suites": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit  ts/__tests__/suites.test.ts",
+        "test-deployPoll": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit  ts/__tests__/deployPollWithRandomSigner.test.ts",
+        "download-zkeys": "./scripts/download_zkeys.sh"
     },
     "_moduleAliases": {
         "@maci-contracts": "../contracts/",
@@ -23,13 +19,14 @@
     },
     "devDependencies": {
         "@nomiclabs/hardhat-ethers": "^2.0.2",
-        "@types/jest": "^26.0.21",
+        "@types/chai": "^4.3.9",
+        "@types/mocha": "^10.0.4",
         "@types/node": "^14.14.35",
+        "chai": "^4.3.10",
         "ethers": "^5.0.32",
         "hardhat": "^2.0.11",
         "hardhat-artifactor": "^0.2.0",
         "hardhat-contract-sizer": "^2.0.3",
-        "jest": "^26.6.3",
         "js-yaml": "^4.0.0",
         "maci-circuits": "^1.1.2",
         "maci-cli": "^1.1.2",
@@ -37,9 +34,10 @@
         "maci-core": "^1.1.2",
         "maci-crypto": "^1.1.2",
         "maci-domainobjs": "^1.1.2",
+        "mocha": "^10.2.0",
         "module-alias": "^2.2.2",
         "shelljs": "^0.8.5",
-        "ts-jest": "^26.5.4"
+        "ts-mocha": "^10.0.0"
     },
     "gitHead": "f567a17293114ba2d5e89c711d00a9f4c197f070"
 }

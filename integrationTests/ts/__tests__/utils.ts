@@ -4,11 +4,9 @@ import * as fs from 'fs'
 import * as yaml from 'js-yaml'
 import * as  path from 'path';
 import { Vote, UserCommand } from './user'
+import { expect } from 'chai';
 import {
-    PubKey,
-    PrivKey,
-    Keypair,
-    Command,
+    Keypair
 } from 'maci-domainobjs'
 
 const exec = (command: string) => {
@@ -167,9 +165,9 @@ const expectTally = (
         }
     })
 
-    expect(tallyFile.results.tally).toEqual(genTally)
-    expect(tallyFile.perVOSpentVoiceCredits.tally).toEqual(genPerVOSpentVoiceCredits)
-    expect(tallyFile.totalSpentVoiceCredits.spent).toEqual(expectedTotalSpentVoiceCredits.toString())
+    expect(tallyFile.results.tally).to.eq(genTally)
+    expect(tallyFile.perVOSpentVoiceCredits.tally).to.eq(genPerVOSpentVoiceCredits)
+    expect(tallyFile.totalSpentVoiceCredits.spent).to.eq(expectedTotalSpentVoiceCredits.toString())
 }
 
 const expectSubsidy = (
@@ -185,7 +183,7 @@ const expectSubsidy = (
         }
     })
 
-    expect(SubsidyFile.results.subsidy).toEqual(genSubsidy)
+    expect(SubsidyFile.results.subsidy).to.eq(genSubsidy)
 }
 
 export { exec, delay, loadYaml, genTestAccounts, genTestUserCommands, expectTally, expectSubsidy }

@@ -1,4 +1,7 @@
 import {
+    expect
+} from "chai"
+import {
     genPubKey,
     genKeypair,
     genEcdhSharedKey,
@@ -43,16 +46,16 @@ describe('Cryptographic operations', () => {
     describe('Hashing', () => {
         it('The hash of a plaintext should be smaller than the snark field size', () => {
             const h = hash5([0, 1, 2, 3, 4].map((x) => BigInt(x)))
-            expect(h < SNARK_FIELD_SIZE).toBeTruthy()
+            expect(h < SNARK_FIELD_SIZE).to.be.true
 
             const s = sha256Hash(plaintext)
-            expect(s < SNARK_FIELD_SIZE).toBeTruthy()
+            expect(s < SNARK_FIELD_SIZE).to.be.true
         })
     })
 
     describe('sha256Hash([0, 1])', () => {
         const s = sha256Hash([BigInt(0), BigInt(1)])
-        expect(s.toString()).toEqual(
+        expect(s.toString()).to.eq(
             '21788914573420223731318033363701224062123674814818143146813863227479480390499'
         )
     })
@@ -60,7 +63,7 @@ describe('Cryptographic operations', () => {
     describe('hash13', () => {
         it('Hashing a smaller array should work', () => {
             const h = hash13([BigInt(1), BigInt(2), BigInt(3)])
-            expect(h < SNARK_FIELD_SIZE).toBeTruthy()
+            expect(h < SNARK_FIELD_SIZE).to.be.true
         })
 
         it('Hashing more than 13 elements should throw', () => {
@@ -69,34 +72,34 @@ describe('Cryptographic operations', () => {
                 arr.push(BigInt(i))
             }
 
-            expect(() => hash13(arr)).toThrow(TypeError)
+            expect(() => hash13(arr)).to.throw
         })
     })
 
     describe('Public and private keys', () => {
         it('A private key should be smaller than the snark field size', () => {
-            expect(privKey < SNARK_FIELD_SIZE).toBeTruthy()
+            expect(privKey < SNARK_FIELD_SIZE).to.be.true
             // TODO: add tests to ensure that the prune buffer step worked
         })
 
         it('A public key\'s constitutent values should be smaller than the snark field size', () => {
             // TODO: Figure out if these checks are correct and enough
-            expect(pubKey[0] < SNARK_FIELD_SIZE).toBeTruthy()
-            expect(pubKey[1] < SNARK_FIELD_SIZE).toBeTruthy()
+            expect(pubKey[0] < SNARK_FIELD_SIZE).to.be.true
+            expect(pubKey[1] < SNARK_FIELD_SIZE).to.be.true
         })
     })
 
     describe('ECDH shared key generation', () => {
 
         it('The shared keys should match', () => {
-            expect(ecdhSharedKey[0].toString()).toEqual(ecdhSharedKey1[0].toString())
-            expect(ecdhSharedKey[1].toString()).toEqual(ecdhSharedKey1[1].toString())
+            expect(ecdhSharedKey[0].toString()).to.eq(ecdhSharedKey1[0].toString())
+            expect(ecdhSharedKey[1].toString()).to.eq(ecdhSharedKey1[1].toString())
         })
 
         it('A shared key should be smaller than the snark field size', () => {
             // TODO: Figure out if this check is correct and enough
-            expect(ecdhSharedKey[0] < SNARK_FIELD_SIZE).toBeTruthy()
-            expect(ecdhSharedKey[1] < SNARK_FIELD_SIZE).toBeTruthy()
+            expect(ecdhSharedKey[0] < SNARK_FIELD_SIZE).to.be.true
+            expect(ecdhSharedKey[1] < SNARK_FIELD_SIZE).to.be.true
         })
     })
 
@@ -107,28 +110,25 @@ describe('Cryptographic operations', () => {
                 :
                 1 + (plaintext.length % 3) * 3
 
-            expect(ciphertext).toHaveLength(expectedLength)
+            expect(ciphertext.length).to.eq(expectedLength)
         })
 
         it('The ciphertext should differ from the plaintext', () => {
-            expect.assertions(plaintext.length)
             for (let i = 0; i < plaintext.length; i++) {
-                expect(plaintext[i] !== ciphertext[i + 1]).toBeTruthy()
+                expect(plaintext[i] !== ciphertext[i + 1]).to.be.true
             }
         })
 
         it('The ciphertext should be smaller than the snark field size', () => {
             for (let i = 0; i < ciphertext.length; i++) {
                 // TODO: Figure out if this check is correct and enough
-                expect(ciphertext[i] < SNARK_FIELD_SIZE).toBeTruthy()
+                expect(ciphertext[i] < SNARK_FIELD_SIZE).to.be.true
             }
         })
 
         it('The decrypted ciphertext should be correct', () => {
-            expect.assertions(decryptedCiphertext.length)
-
             for (let i = 0; i < decryptedCiphertext.length; i++) {
-                expect(decryptedCiphertext[i]).toEqual(plaintext[i])
+                expect(decryptedCiphertext[i]).to.eq(plaintext[i])
             }
         })
 
@@ -139,7 +139,7 @@ describe('Cryptographic operations', () => {
 
             expect(() => {
                 decrypt(ciphertext, differentKey, nonce, plaintext.length)
-            }).toThrow()
+            }).to.throw
         })
     })
 
@@ -148,11 +148,11 @@ describe('Cryptographic operations', () => {
         const signature = sign(privKey, message)
 
         it('The signature should have the correct format and it constitutent parts should be smaller than the snark field size', () => {
-            expect(signature).toHaveProperty('R8')
-            expect(signature).toHaveProperty('S')
-            expect(signature.R8[0] < SNARK_FIELD_SIZE).toBeTruthy()
-            expect(signature.R8[1] < SNARK_FIELD_SIZE).toBeTruthy()
-            expect(signature.S < SNARK_FIELD_SIZE).toBeTruthy()
+            expect(signature).to.haveOwnProperty('R8')
+            expect(signature).to.haveOwnProperty('S')
+            expect(signature.R8[0] < SNARK_FIELD_SIZE).to.be.true
+            expect(signature.R8[1] < SNARK_FIELD_SIZE).to.be.true
+            expect(signature.S < SNARK_FIELD_SIZE).to.be.true
         })
 
         it('The signature should be valid', () => {
@@ -161,7 +161,7 @@ describe('Cryptographic operations', () => {
                 signature,
                 pubKey,
             )
-            expect(valid).toBeTruthy()
+            expect(valid).to.be.true
         })
 
         it('The signature should be invalid for a different message', () => {
@@ -170,7 +170,7 @@ describe('Cryptographic operations', () => {
                 signature,
                 pubKey,
             )
-            expect(valid).toBeFalsy()
+            expect(valid).to.be.false
         })
 
         it('The signature should be invalid if tampered with', () => {
@@ -182,7 +182,7 @@ describe('Cryptographic operations', () => {
                 },
                 pubKey,
             )
-            expect(valid).toBeFalsy()
+            expect(valid).to.be.false
         })
 
         it('The signature should be invalid for a different public key', () => {
@@ -191,7 +191,7 @@ describe('Cryptographic operations', () => {
                 signature,
                 pubKey1,
             )
-            expect(valid).toBeFalsy()
+            expect(valid).to.be.false
         })
     })
 
@@ -201,20 +201,19 @@ describe('Cryptographic operations', () => {
         const depth = 3
         it("should generate a commitment to the tree root using the provided salt", () => {
             const commitment = genTreeCommitment(leaves, salt, depth)
-            expect(commitment).toBeGreaterThan(0)
-            expect(commitment).toBeLessThan(SNARK_FIELD_SIZE)
+            expect(commitment).to.satisfy((num: bigint) => num > 0)
+            expect(commitment).to.satisfy((num: bigint) => num < SNARK_FIELD_SIZE)
         })
 
         it("should always generate the same commitment for the same inputs", () => {
             const commitment = genTreeCommitment(leaves, salt, depth)
-            expect(commitment).toBeGreaterThan(0)
-            expect(commitment).toBeLessThan(SNARK_FIELD_SIZE)
+            expect(commitment).to.satisfy((num: bigint) => num > 0)
+            expect(commitment).to.satisfy((num: bigint) => num < SNARK_FIELD_SIZE)
 
             const commitment2 = genTreeCommitment(leaves, salt, depth)
-            expect(commitment2).toBeGreaterThan(0)
-            expect(commitment2).toBeLessThan(SNARK_FIELD_SIZE)
-
-            expect(commitment).toEqual(commitment2)
+            expect(commitment).to.satisfy((num: bigint) => num > 0)
+            expect(commitment).to.satisfy((num: bigint) => num < SNARK_FIELD_SIZE)
+            expect(commitment).to.eq(commitment2)
         })
     })
 })

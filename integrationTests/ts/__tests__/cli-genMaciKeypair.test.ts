@@ -6,7 +6,9 @@ import {
 import {
     genPubKey,
 } from 'maci-crypto'
-
+import {
+    expect 
+} from "chai"
 import { exec } from './utils'
 
 describe('genMaciKeypair CLI subcommand', () => {
@@ -21,16 +23,16 @@ describe('genMaciKeypair CLI subcommand', () => {
 
         // Invoking the same command twice should result in different private
         // keys
-        expect(lines[0]).not.toEqual(lines2[0])
+        expect(lines[0]).not.to.eq(lines2[0])
 
         const sk = PrivKey.unserialize(lines[0].split(' ')[2])
-        expect(sk instanceof PrivKey).toBeTruthy()
+        expect(sk instanceof PrivKey).to.be.true
 
         const pk = PubKey.unserialize(lines[1].split(' ')[3])
-        expect(pk instanceof PubKey).toBeTruthy()
+        expect(pk instanceof PubKey).to.be.true
 
         const pk2 = genPubKey(sk.rawPrivKey)
-        expect(pk.rawPubKey[0].toString()).toEqual(pk2[0].toString())
-        expect(pk.rawPubKey[1].toString()).toEqual(pk2[1].toString())
+        expect(pk.rawPubKey[0].toString()).to.eq(pk2[0].toString())
+        expect(pk.rawPubKey[1].toString()).to.eq(pk2[1].toString())
     })
 })

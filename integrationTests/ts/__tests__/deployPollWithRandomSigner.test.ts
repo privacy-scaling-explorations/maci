@@ -1,11 +1,11 @@
-jest.setTimeout(3000000)
-
 import {
     loadData,
     execute,
     executeSuite,
 } from './suites'
-
+import {
+    expect 
+} from "chai"
 import { loadYaml } from './utils'
 import * as fs from 'fs'
 import * as path from 'path'
@@ -14,7 +14,6 @@ import { BigNumber, providers, Contract, Wallet, utils } from 'ethers'
 
 const maciAbi = ["function getPoll(uint256 _pollId) public view returns (address)"]
 const pollAbi = ["function getDeployTimeAndDuration() public view returns (uint256, uint256) "]
-
 
 async function getPollDuration(providerUrl: string, maci: string, pollId: number): Promise<BigNumber> {
     const provider = new providers.JsonRpcProvider(providerUrl)
@@ -25,12 +24,13 @@ async function getPollDuration(providerUrl: string, maci: string, pollId: number
     return duration
 }
 
-describe('Test deployPollWithSigner', () => {
+describe('Test deployPollWithSigner', function() {
+    this.timeout(3000000)
     const data = loadData('suites.json')
     const test = data.suites[0]
     it(test.description, async () => {
         const result = await executeSuite(test, expect)
-        expect(result).toBeTruthy()
+        expect(result).to.be.true
 
         let caughtException = false
         try {
@@ -69,13 +69,13 @@ describe('Test deployPollWithSigner', () => {
             // this is the second poll with pollId = 1
             const pollId = 1
             const pollDuration = await getPollDuration(tally.provider, tally.maci, pollId)
-            expect(pollDuration.toString()).toEqual(duration.toString())
+            expect(pollDuration.toString()).to.eq(duration.toString())
             
         } catch (e) {
             console.log(e)
             caughtException = true
         }
         // we cannot deploy a poll with a random signer
-        expect(caughtException).toEqual(true)
+        expect(caughtException).to.eq(true)
     })
 })

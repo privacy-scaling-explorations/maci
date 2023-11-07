@@ -2,7 +2,7 @@ describe('Message processing', () => {
     describe('Process a batch of messages', () => {
         let maciState
 
-        beforeAll(async () => {
+        before(async () => {
         })
 
         it('TODO: processMessage() should process a valid message', async () => {
