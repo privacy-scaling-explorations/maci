@@ -379,6 +379,7 @@ const genProofs = async (args: any) => {
     let maciState: MaciState
     // Build an off-chain representation of the MACI contract using data in the contract storage
     if (args.state_file) {
+        // @todo actually read the file first 
         maciState = MaciState.fromJSON(args.state_file)
     } else {
         // some rpc endpoint like bsc chain has limitation to retreive history logs

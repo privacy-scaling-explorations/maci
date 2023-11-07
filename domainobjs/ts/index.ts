@@ -173,6 +173,14 @@ class PrivKey {
         return formatPrivKeyForBabyJub(this.rawPrivKey).toString();
     };
 
+    toJSON() {
+        return this.serialize()
+    }
+
+    static fromJSON(json: any): PrivKey {
+        return PrivKey.unserialize(json)
+    }
+
     public serialize = (): string => {
         return SERIALIZED_PRIV_KEY_PREFIX + this.rawPrivKey.toString(16);
     };
@@ -188,14 +196,14 @@ class PrivKey {
 
         let validValue = false;
         try {
-            const value = BigInt("0x" + x);
-            validValue = value < SNARK_FIELD_SIZE;
+            const value = BigInt('0x' + x)
+            validValue = value < SNARK_FIELD_SIZE
         } catch {
-            // comment to make linter happy
+            // comment to make linter happy 
         }
 
-        return correctPrefix && validValue;
-    };
+        return correctPrefix && validValue
+    }
 }
 
 const SERIALIZED_PUB_KEY_PREFIX = "macipk.";
@@ -328,6 +336,13 @@ class Keypair {
             pubKey: this.pubKey.serialize(),
         }
     }
+
+    static fromJSON(json: any): Keypair {
+        const keypair = new Keypair()
+        keypair.privKey = PrivKey.unserialize(json.privKey)
+        keypair.pubKey = PubKey.unserialize(json.pubKey)
+        return keypair
+    }
 }
 
 interface IStateLeaf {
@@ -404,6 +419,13 @@ class Message {
 
     toJSON() {
         return this.asContractParam()
+    }
+
+    static fromJSON(json: any): Message {
+        return new Message(
+            BigInt(json.msgType),
+            json.data.map((x: any) => BigInt(x)),
+        )
     }
 }
 
@@ -499,6 +521,13 @@ class Ballot {
             nonce: this.nonce.toString(),
             voteOptionTreeDepth: this.voteOptionTreeDepth.toString()
         }
+    }
+
+    static fromJSON(json: any): Ballot {
+        const ballot = new Ballot(json.votes.length, parseInt(json.voteOptionTreeDepth))
+        ballot.votes = json.votes.map((x: any) => BigInt(x))
+        ballot.nonce = BigInt(json.nonce)
+        return ballot
     }
 }
 
@@ -614,24 +643,40 @@ class StateLeaf implements IStateLeaf {
             timestamp: this.timestamp.toString(),
         }
     }
+
+    static fromJSON(json: any): StateLeaf {
+        return new StateLeaf(
+            PubKey.unserialize(json.pubKey),
+            BigInt(json.voiceCreditBalance),
+            BigInt(json.timestamp),
+        )
+    }
 }
 
 class Command {
-   public cmdType: bigint;
-   constructor() {
-   }
-   public copy = (): Command => {
-       throw new Error("Abstract method!")
-   }
-   public equals = (Command): boolean => {
-       throw new Error("Abstract method!")
-   }
+    public cmdType: bigint;
 
-   toJSON() {
+    constructor() {}
+
+    public copy = (): Command => {
+        throw new Error("Abstract method!")
+    }
+
+    public equals = (Command): boolean => {
+        throw new Error("Abstract method!")
+    }
+
+    toJSON() {
         return {
             cmdType: this.cmdType.toString()
         }
-   }
+    }
+
+    static fromJSON(json: any): Command {
+        const command = new Command()
+        command.cmdType = BigInt(json.cmdType)
+        return command 
+    }
 }
 
 class TCommand extends Command {
@@ -668,6 +713,15 @@ class TCommand extends Command {
             cmdType: this.cmdType.toString(),
             pollId: this.pollId.toString()
         }
+    }
+
+    static fromJSON(json: any): TCommand {
+        const command = new TCommand(
+            BigInt(json.stateIndex),
+            BigInt(json.amount),
+        )
+        command.pollId = BigInt(json.pollId)
+        return command
     }
 }
 
@@ -872,7 +926,7 @@ class PCommand extends Command {
     toJSON() {
         return {
             stateIndex: this.stateIndex.toString(),
-            newPubKey: this.newPubKey.asContractParam(),
+            newPubKey: this.newPubKey.toJSON(),
             voteOptionIndex: this.voteOptionIndex.toString(),
             newVoteWeight: this.newVoteWeight.toString(),
             nonce: this.nonce.toString(),
@@ -880,6 +934,19 @@ class PCommand extends Command {
             salt: this.salt.toString(),
             cmdType: this.cmdType.toString()
         }
+    }
+
+    static fromJSON(json: any): PCommand {
+        const command = new PCommand(
+            BigInt(json.stateIndex),
+            PubKey.fromJSON(json.newPubKey),
+            BigInt(json.voteOptionIndex),
+            BigInt(json.newVoteWeight),
+            BigInt(json.nonce),
+            BigInt(json.pollId),
+            BigInt(json.salt),
+        )
+        return command
     }
 }
 

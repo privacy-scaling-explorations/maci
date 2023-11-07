@@ -15,7 +15,7 @@ import {
     NOTHING_UP_MY_SLEEVE,
     IncrementalQuinTree,
 } from 'maci-crypto'
-import { writeFileSync } from 'fs'
+import { existsSync, unlinkSync, writeFileSync } from 'fs'
 
 const voiceCreditBalance = BigInt(100);
 
@@ -562,10 +562,9 @@ describe("MaciState", function () {
 
         it("should create a JSON object from a MaciState object", () => {
             const json = m1.toJSON()
-            console.log(json)
             writeFileSync('state.json', JSON.stringify(json, null, 4))
             const state = MaciState.fromJSON(json)
-            // console.log(state.polls[0].batchSizes)
+            expect(state.equals(m1)).to.be.true
         })
     })
 })

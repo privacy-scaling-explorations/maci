@@ -240,21 +240,13 @@ class Poll {
             _encPubKey
         );
         try {
-            const { command } = PCommand.decrypt(_message, sharedKey);
-            this.commands.push(command);
-        } catch (e) {
-            //console.log(`error cannot decrypt: ${e.message}`)
-            const keyPair = new Keypair();
-            const command = new PCommand(
-                BigInt(0),
-                keyPair.pubKey,
-                BigInt(0),
-                BigInt(0),
-                BigInt(0),
-                BigInt(0),
-                BigInt(0)
-            );
-            this.commands.push(command);
+            const { command } = PCommand.decrypt(_message, sharedKey)
+            this.commands.push(command)
+        }  catch(e) {
+           //console.log(`error cannot decrypt: ${e.message}`)
+           let keyPair = new Keypair()
+           let command = new PCommand(BigInt(0), keyPair.pubKey,BigInt(0),BigInt(0),BigInt(0),BigInt(0),BigInt(0))
+           this.commands.push(command)
         }
     };
 
@@ -288,7 +280,7 @@ class Poll {
         return this.numBatchesProcessed < totalBatches;
     };
 
-    /*
+    /**
      * Process _batchSize messages starting from the saved index.  This
      * function will process messages even if the number of messages is not an
      * exact multiple of _batchSize. e.g. if there are 10 messages, _index is
@@ -579,8 +571,8 @@ class Poll {
         return stringifyBigInts(circuitInputs);
     };
 
-    /*
-     * Generates inputs for the ProcessMessages circuit.
+    /**
+     * Generates inputs for the ProcessMessages circuit. 
      */
     public genProcessMessagesCircuitInputsPartial = (_index: number) => {
         const messageBatchSize = this.batchSizes.messageBatchSize;
@@ -665,7 +657,7 @@ class Poll {
         });
     };
 
-    /*
+    /**
      * Process all messages. This function does not update the ballots or state
      * leaves; rather, it copies and then updates them. This makes it possible
      * to test the result of multiple processMessage() invocations.
@@ -683,10 +675,12 @@ class Poll {
         return { stateLeaves, ballots };
     };
 
-    /*
+    /**
      * Process one message
      */
-    private processMessage = (_index: number) => {
+    private processMessage = (
+        _index: number,
+    ) => {
         //TODO: throw custom errors for no-ops
 
         try {
@@ -1034,10 +1028,10 @@ class Poll {
             }
         }
 
-        return [ballots1, ballots2];
-    };
+        return [ballots1, ballots2]
+    }
 
-    /*
+    /**
      * Tally a batch of Ballots and update this.results
      */
     public tallyVotes = () => {
@@ -1411,9 +1405,8 @@ class Poll {
             this.messages.length === p.messages.length &&
             this.encPubKeys.length === p.encPubKeys.length;
 
-        if (!result) {
-            return false;
-        }
+
+        if (!result) return false
 
         for (let i = 0; i < this.messages.length; i++) {
             if (!this.messages[i].equals(p.messages[i])) {
@@ -1428,11 +1421,13 @@ class Poll {
         return true
     }
     
-
-
+    /**
+     * Serialize the Poll object to a JSON object
+     * @returns a JSON object
+     */
     toJSON() {
         return {
-            duration: this.duration.toString(),
+            duration: this.duration,
             pollEndTimestamp: this.pollEndTimestamp.toString(),
             coordinatorPrivateKey: this.coordinatorKeypair.privKey.rawPrivKey.toString(),
             treeDepths: this.treeDepths,
@@ -1445,11 +1440,18 @@ class Poll {
             ballotTree: this.ballotTree,
             currentMessageBatchIndex: this.currentMessageBatchIndex ? this.currentMessageBatchIndex.toString() : "",
             stateLeaves: this.stateLeaves.map(leaf => leaf.toJSON()),
-            results: this.results.map(result => result.toString())
+            results: this.results.map(result => result.toString()),
+            numBatchesProcessed: this.numBatchesProcessed,
         }
     }
 
-    static fromJSON(json: any, maciState: MaciState) {
+    /**
+     * Deserialize a json object into a Poll instance
+     * @param json the json object to deserialize 
+     * @param maciState the reference to the MaciState Class
+     * @returns a new Poll instance
+     */
+    static fromJSON(json: any, maciState: MaciState): Poll {
         const poll = new Poll(
             json.duration,
             BigInt(json.pollEndTimestamp),
@@ -1458,11 +1460,27 @@ class Poll {
             json.batchSizes,
             json.maxValues,
             maciState
-        );
+        )
 
-        // poll.ballots = json.ballots;
+        // set all properties
+        poll.ballots = json.ballots.map((ballot: Ballot) => Ballot.fromJSON(ballot))
+        poll.encPubKeys = json.encPubKeys.map((key: string) => PubKey.unserialize(key))
+        poll.messages = json.messages.map((message: Message) => Message.fromJSON(message))
+        poll.commands = json.commands.map((command: Command) => Command.fromJSON(command))
+        poll.results = json.results.map((result: string) => BigInt(result))
+        poll.currentMessageBatchIndex = json.currentMessageBatchIndex
+        poll.numBatchesProcessed = json.numBatchesProcessed
 
-        return poll;
+        // fill the trees
+        for (let i = 0; i < poll.messages.length; i++) {
+            const messageLeaf = poll.messages[i].hash(poll.encPubKeys[i])
+            poll.messageAq.enqueue(messageLeaf)
+            poll.messageTree.insert(messageLeaf)
+        }
+
+        // copy maci state 
+        poll.copyStateFromMaci()
+        return poll
     }
 }
 
@@ -1576,11 +1594,9 @@ class MaciState {
             this.polls.length === m.polls.length &&
             this.stateLeaves.length === m.stateLeaves.length;
 
-        if (!result) {
-            return false;
-        }
-
-        for (let i = 0; i < this.polls.length; i++) {
+        if (!result) return false
+        
+        for (let i = 0; i < this.polls.length; i ++) {
             if (!this.polls[i].equals(m.polls[i])) {
                 return false;
             }
@@ -1590,9 +1606,7 @@ class MaciState {
                 return false;
             }
         }
-
-        return true;
-    };
+    }
 
     public static packSubsidySmallVals = (
         row: number,
@@ -1665,7 +1679,10 @@ class MaciState {
         }
     }
 
-    // serialize to JSON 
+    /**
+     * Serialize the MaciState object to a JSON object
+     * @returns a JSON object
+     */    
     toJSON() {
         return {
             STATE_TREE_ARITY: this.STATE_TREE_ARITY,
@@ -1683,8 +1700,26 @@ class MaciState {
 
     // create a new object from JSON 
     static fromJSON(json: any) {
+        // create new instance
         const maciState = new MaciState()
-        Object.assign(maciState, json)
+
+        // assign the json values to the new instance
+        maciState.stateLeaves = json.stateLeaves.map((leaf: string) => StateLeaf.fromJSON(leaf))
+        maciState.pollBeingProcessed = json.pollBeingProcessed
+        maciState.currentPollBeingProcessed = json.currentPollBeingProcessed
+        maciState.numSignUps = json.numSignUps
+        maciState.STATE_TREE_ARITY = json.STATE_TREE_ARITY
+        maciState.STATE_TREE_SUBDEPTH = json.STATE_TREE_SUBDEPTH
+        maciState.MESSAGE_TREE_ARITY = json.MESSAGE_TREE_ARITY
+        maciState.VOTE_OPTION_TREE_ARITY = json.VOTE_OPTION_TREE_ARITY
+
+        // re create the state tree (start from index 1 as in the constructor we already add the blank leaf)
+        for (let i = 1; i < json.stateLeaves.length; i++) {
+            const leaf = StateLeaf.fromJSON(json.stateLeaves[i])
+            const leafHash = leaf.hash()
+            maciState.stateTree.insert(leafHash)
+        }
+        
         // re-generate the polls and set the maci state ref
         maciState.polls = json.polls.map((jsonPoll: Poll) => Poll.fromJSON(jsonPoll, maciState))
         return maciState 
@@ -1722,12 +1757,10 @@ const genSubsidyVkSig = (
     _intStateTreeDepth: number,
     _voteOptionTreeDepth: number
 ): bigint => {
-    return (
-        (BigInt(_stateTreeDepth) << BigInt(128)) +
-        (BigInt(_intStateTreeDepth) << BigInt(64)) +
-        BigInt(_voteOptionTreeDepth)
-    );
-};
+    return (BigInt(_stateTreeDepth) << BigInt(128)) +
+           (BigInt(_intStateTreeDepth) << BigInt(64)) +
+            BigInt(_voteOptionTreeDepth)
+}
 
 export {
     MaxValues,
