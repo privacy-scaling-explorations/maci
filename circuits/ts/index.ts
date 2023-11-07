@@ -74,7 +74,7 @@ const genProof = async (
 
     // Read the proof and public inputs
     const proof = JSON.parse(fs.readFileSync(proofJsonPath).toString())
-    const publicInputs = JSON.parse(fs.readFileSync(publicJsonPath).toString())
+    const publicSignals = JSON.parse(fs.readFileSync(publicJsonPath).toString())
 
     for (const f of [
         proofJsonPath,
@@ -88,7 +88,7 @@ const genProof = async (
     }
     tmpObj.removeCallback()
 
-    return { proof, publicInputs }
+    return { proof, publicSignals }
 }
 
 const verifyProof = async (publicInputs: any, proof: any, vk: any) => {
