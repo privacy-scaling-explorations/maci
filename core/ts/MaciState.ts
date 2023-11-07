@@ -1429,7 +1429,7 @@ class Poll {
         return {
             duration: this.duration,
             pollEndTimestamp: this.pollEndTimestamp.toString(),
-            coordinatorPrivateKey: this.coordinatorKeypair.privKey.rawPrivKey.toString(),
+            coordinatorKeypair: this.coordinatorKeypair.toJSON(),
             treeDepths: this.treeDepths,
             batchSizes: this.batchSizes,
             maxValues: this.maxValues,
@@ -1455,7 +1455,7 @@ class Poll {
         const poll = new Poll(
             json.duration,
             BigInt(json.pollEndTimestamp),
-            new Keypair(new PrivKey(json.coordinatorPrivateKey)),
+            Keypair.fromJSON(json.coordinatorKeypair),
             json.treeDepths,
             json.batchSizes,
             json.maxValues,

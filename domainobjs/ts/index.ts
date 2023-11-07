@@ -338,10 +338,7 @@ class Keypair {
     }
 
     static fromJSON(json: any): Keypair {
-        const keypair = new Keypair()
-        keypair.privKey = PrivKey.unserialize(json.privKey)
-        keypair.pubKey = PubKey.unserialize(json.pubKey)
-        return keypair
+        return new Keypair(json.privKey)
     }
 }
 
