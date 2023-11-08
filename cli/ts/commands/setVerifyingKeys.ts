@@ -171,7 +171,7 @@ export const setVerifyingKeys = async ({
 
         // set subsidy keys if any
         if (subsidyZkeyPath) {
-            const subsidyVk: VerifyingKey = VerifyingKey.fromObj(extractVk(subsidyZkeyPath))
+            const subsidyVk: VerifyingKey = VerifyingKey.fromObj(await extractVk(subsidyZkeyPath))
 
             const tx = await vkRegistryContract.setSubsidyKeys(
                 stateTreeDepth,

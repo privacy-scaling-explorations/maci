@@ -145,8 +145,8 @@ typings/
 cli/output.json
 cli/processinput.json
 cli/tallyinput.json
-**/contractAddress.txt
-**/contractAddress.old
+**/contractAddresses.json
+**/contractAddresses.old.json
 
 # mdBook rendered files
 publish
