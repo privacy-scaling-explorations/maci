@@ -10,7 +10,7 @@ import { banner } from "../utils/banner"
  * Utility that can be used to get 
  * topup credits aidropped
  * to the coordinator
- * @returns 
+ * @param param0 - the parameters to this function 
  */
 export const airdrop = async ({
     amount,

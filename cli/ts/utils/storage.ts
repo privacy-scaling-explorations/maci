@@ -19,6 +19,8 @@ export const storeContractAddress = (
     contractName: string, 
     address: string
 ) => {
+    // if it does not exist yet, then create it
+    if (!existsSync(contractAddressesStore)) writeFileSync(contractAddressesStore, "{}")
     const contractAddrs = readJSONFile(contractAddressesStore)
     contractAddrs[contractName] = address
     writeFileSync(contractAddressesStore, JSON.stringify(contractAddrs, null, 4))
