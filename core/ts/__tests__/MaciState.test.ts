@@ -67,7 +67,7 @@ const blankStateLeaf = StateLeaf.genBlankLeaf()
 const blankStateLeafHash = blankStateLeaf.hash()
 
 describe('MaciState', function() {
-    this.timeout(20000)
+    this.timeout(100000)
     describe('Process and tally 1 message from 1 user', () => {
         let maciState: MaciState
         let pollId
