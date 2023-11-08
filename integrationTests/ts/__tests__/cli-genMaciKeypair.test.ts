@@ -1,32 +1,27 @@
-import { PubKey, PrivKey } from "maci-domainobjs";
+import {
+    PubKey,
+    PrivKey,
+} from 'maci-domainobjs'
+import {
+    genPubKey,
+} from 'maci-crypto'
+import { genKeyPair } from 'maci-cli/ts/api'
 
-import { genPubKey } from "maci-crypto";
-import { expect } from "chai";
-import { exec } from "./utils";
+describe('genMaciKeypair CLI subcommand', () => {
+    it('genMaciKeypair should output a random private key and public key', async () => {
+        const keypair1 = genKeyPair({ quiet: true })
+        const keypair2 = genKeyPair({ quiet: true })
 
-describe("genMaciKeypair CLI subcommand", function () {
-  this.timeout(100000);
-  const command = "node ../cli/build/index.js genMaciKeypair";
+        // Invoking the same command twice should result in different private keys
+        expect(keypair1.privateKey).not.toEqual(keypair2.privateKey)
+        expect(keypair1.publicKey).not.toEqual(keypair2.publicKey)
+        expect(PrivKey.unserialize(keypair1.privateKey)).toBeInstanceOf(PrivKey)
+        expect(PubKey.unserialize(keypair1.publicKey)).toBeInstanceOf(PubKey)
+        expect(PrivKey.unserialize(keypair2.privateKey)).toBeInstanceOf(PrivKey)
+        expect(PubKey.unserialize(keypair2.publicKey)).toBeInstanceOf(PubKey)
 
-  it("genMaciKeypair should output a random private key and public key", async () => {
-    const output = exec(command).stdout;
-    const output2 = exec(command).stdout;
-
-    const lines = output.split("\n");
-    const lines2 = output2.split("\n");
-
-    // Invoking the same command twice should result in different private
-    // keys
-    expect(lines[0]).not.to.eq(lines2[0]);
-
-    const sk = PrivKey.unserialize(lines[0].split(" ")[2]);
-    expect(sk instanceof PrivKey).to.be.true;
-
-    const pk = PubKey.unserialize(lines[1].split(" ")[3]);
-    expect(pk instanceof PubKey).to.be.true;
-
-    const pk2 = genPubKey(sk.rawPrivKey);
-    expect(pk.rawPubKey[0].toString()).to.eq(pk2[0].toString());
-    expect(pk.rawPubKey[1].toString()).to.eq(pk2[1].toString());
-  });
-});
+        const publicKey2 = genPubKey(PrivKey.unserialize(keypair2.privateKey).rawPrivKey)
+        expect(PubKey.unserialize(keypair2.publicKey).rawPubKey[0].toString()).toEqual(publicKey2[0].toString())
+        expect(PubKey.unserialize(keypair2.publicKey).rawPubKey[1].toString()).toEqual(publicKey2[1].toString())
+    })
+})

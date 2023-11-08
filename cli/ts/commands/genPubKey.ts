@@ -22,7 +22,7 @@ export const genMaciPubKey = ({
     const unserializedKey = PrivKey.unserialize(privkey)
     const pubKey = new PubKey(genPubKey(unserializedKey.rawPrivKey))
 
-    logGreen(success(`Public key: ${pubKey.serialize()}`))
+    if (!quiet) logGreen(success(`Public key: ${pubKey.serialize()}`))
 
     return pubKey.serialize()
 }
