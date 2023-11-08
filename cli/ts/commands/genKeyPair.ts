@@ -18,8 +18,8 @@ export const genKeyPair = ({
     const serializedPubKey = keypair.pubKey.serialize()
     const serializedPrivKey = keypair.privKey.serialize()
 
-    logGreen(success(`Public key: ${serializedPubKey}`))
-    logGreen(success(`Private key: ${serializedPrivKey}`))
+    if (!quiet) logGreen(success(`Public key: ${serializedPubKey}`))
+    if (!quiet) logGreen(success(`Private key: ${serializedPrivKey}`))
 
     return {
         publicKey: serializedPubKey,

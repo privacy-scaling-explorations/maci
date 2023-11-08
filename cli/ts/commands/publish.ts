@@ -13,6 +13,7 @@ import { banner } from "../utils/banner"
 /**
  * Publish a new message to a MACI Poll contract
  * @param options - the publish command options 
+ * @returns the ephemeral private key used to encrypt the message
  */
 export const publish = async ({
     quiet,

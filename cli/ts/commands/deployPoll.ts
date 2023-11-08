@@ -7,6 +7,11 @@ import { PubKey } from "maci-domainobjs"
 import { Contract } from "ethers"
 import { DeployPollArgs, PollContracts } from "../utils/interfaces"
 
+/**
+ * Deploy a new Poll for the set of MACI's contracts already deployed
+ * @param param0 - the parameters required by the command 
+ * @returns the addresses of the deployed contracts
+ */
 export const deployPoll = async ({
     maciAddress,
     pollDuration,
