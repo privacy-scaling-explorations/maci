@@ -35,6 +35,7 @@ import {
 import {
     homedir
 } from "os"
+import { cleanSubsidy } from "./utils"
 
 describe("Subsidy tests", function() {
     this.timeout(900000)
@@ -110,6 +111,7 @@ describe("Subsidy tests", function() {
     }
 
     describe("test1", () => {
+        after(() => { cleanSubsidy() })
         before(async () => {
             // we deploy the vk registry contract
             await deployVkRegistryContract(deployVkRegistryArgs)
@@ -159,6 +161,7 @@ describe("Subsidy tests", function() {
     })
 
     describe("test2", () => {
+        after(() => { cleanSubsidy() })
         before(async () => {
             // we deploy the vk registry contract
             await deployVkRegistryContract(deployVkRegistryArgs)
@@ -286,6 +289,7 @@ describe("Subsidy tests", function() {
     })
 
     describe("test3", () => {
+        after(() => { cleanSubsidy() })
         const signupArgs1: SignUpArgs = {
             quiet: true,
             maciPubKey: "macipk.b1672ac299bb443f89bca9aeface6edfa5319a4b2135588ca1bfb352d7d09d1e",
@@ -386,6 +390,8 @@ describe("Subsidy tests", function() {
     })
 
     describe("test4", () => {
+        after(() => { cleanSubsidy() })
+
         const signupArgs: SignUpArgs[] = Array(8).fill({
             quiet: true,
             maciPubKey: "macipk.b1672ac299bb443f89bca9aeface6edfa5319a4b2135588ca1bfb352d7d09d1e",
@@ -438,6 +444,8 @@ describe("Subsidy tests", function() {
     })
 
     describe("test5", () => {
+        after(() => { cleanSubsidy() })
+
         const signupArgs1: SignUpArgs = {
             quiet: true,
             maciPubKey: "macipk.4d8797043f3f54b9090cb7ddbb79a618297e3f94011e2d2b206dc05a52722498",
@@ -543,6 +551,8 @@ describe("Subsidy tests", function() {
     })
 
     describe("test6", () => {
+        after(() => { cleanSubsidy() })
+
         const signupArgs1: SignUpArgs = {
             quiet: true,
             maciPubKey: "macipk.014cc8ef5a0022da608efab55e891417be0a474ba70b912dc6c2e6acea1a1499",
@@ -698,6 +708,7 @@ describe("Subsidy tests", function() {
             {
                 quiet: true,
                 pubkey: "macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391",
+                privateKey: "macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c",
                 stateIndex: 5,
                 voteOptionIndex: 4,
                 nonce: 1,
@@ -707,6 +718,7 @@ describe("Subsidy tests", function() {
             {
                 quiet: true,
                 pubkey: "macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391",
+                privateKey: "macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c",
                 stateIndex: 4,
                 voteOptionIndex: 4,
                 nonce: 2,
@@ -716,6 +728,7 @@ describe("Subsidy tests", function() {
             {
                 quiet: true,
                 pubkey: "macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391",
+                privateKey: "macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c",
                 stateIndex: 4,
                 voteOptionIndex: 3,
                 nonce: 1,
@@ -725,6 +738,7 @@ describe("Subsidy tests", function() {
             {
                 quiet: true,
                 pubkey: "macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391",
+                privateKey: "macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c",
                 stateIndex: 3,
                 voteOptionIndex: 3,
                 nonce: 2,
@@ -734,6 +748,7 @@ describe("Subsidy tests", function() {
             {
                 quiet: true,
                 pubkey: "macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391",
+                privateKey: "macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c",
                 stateIndex: 2,
                 voteOptionIndex: 2,
                 nonce: 2,
@@ -743,6 +758,7 @@ describe("Subsidy tests", function() {
             {
                 quiet: true,
                 pubkey: "macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391",
+                privateKey: "macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c",
                 stateIndex: 2,
                 voteOptionIndex: 1,
                 nonce: 1,
@@ -752,6 +768,7 @@ describe("Subsidy tests", function() {
             {
                 quiet: true,
                 pubkey: "macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391",
+                privateKey: "macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c",
                 stateIndex: 1,
                 voteOptionIndex: 1,
                 nonce: 2,
@@ -761,6 +778,7 @@ describe("Subsidy tests", function() {
             {
                 quiet: true,
                 pubkey: "macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391",
+                privateKey: "macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c",
                 stateIndex: 1,
                 voteOptionIndex: 0,
                 nonce: 1,
@@ -800,6 +818,8 @@ describe("Subsidy tests", function() {
     })
 
     describe("multiplePolls1", () => {
+        after(() => { cleanSubsidy() })
+
         const signupArgs: SignUpArgs = {
             quiet: true,
             maciPubKey: "macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391",
@@ -887,6 +907,8 @@ describe("Subsidy tests", function() {
             // prove and verify
             await proveOnChain(proveOnChainArgs)
             await verify(verifyOnChainArgs)
+            // cleanup 
+            cleanSubsidy()
         })
 
         it("should deploy a new poll", async () => {
@@ -1032,7 +1054,7 @@ describe("Subsidy tests", function() {
         const genProofsArgs3: GenProofsArgs = {
             quiet: true,
             coordinatorPrivKey: "macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e",
-            pollId: 1,
+            pollId: 2,
             processWitgen: "./zkeys/ProcessMessages_10-2-1-2_test",
             tallyWitgen: "./zkeys/TallyVotes_10-1-2_test",
             subsidyWitgen: "./zkeys/SubsidyPerBatch_10-1-2_test",
@@ -1071,7 +1093,7 @@ describe("Subsidy tests", function() {
             subsidyFile: "./subsidy.json",
         }
 
-
+        after(() => { cleanSubsidy() })
         before(async () => {
             // we deploy the vk registry contract
             await deployVkRegistryContract(deployVkRegistryArgs)
@@ -1097,6 +1119,8 @@ describe("Subsidy tests", function() {
             // prove and verify
             await proveOnChain(proveOnChainArgs)
             await verify(verifyOnChainArgs)
+            // cleanup
+            cleanSubsidy()
         })
 
         it("should deploy two more polls", async () => {
@@ -1127,6 +1151,7 @@ describe("Subsidy tests", function() {
             await genProofs(genProofsArgs2)
             await proveOnChain(proveOnChainArgs2)
             await verify(verifyOnChainArgs2)
+            cleanSubsidy()
         })
 
         it("should complete the third poll", async () => {

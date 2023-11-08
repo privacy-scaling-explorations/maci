@@ -35,6 +35,7 @@ import {
     VOTE_OPTION_TREE_DEPTH 
 } from "./constants"
 import { homedir } from "os"
+import { cleanVanilla } from "./utils"
 
 describe("Vanilla tests", function() {
     this.timeout(900000)
@@ -105,6 +106,9 @@ describe("Vanilla tests", function() {
     }
 
     describe("test1", () => {
+        after(async () => {
+            cleanVanilla()
+        })
         before(async () => {
             // we deploy the vk registry contract
             await deployVkRegistryContract(deployVkRegistryArgs)
@@ -154,6 +158,7 @@ describe("Vanilla tests", function() {
     })
 
     describe("test2", () => {
+        after (() => cleanVanilla())
         before(async () => {
             // we deploy the vk registry contract
             await deployVkRegistryContract(deployVkRegistryArgs)
@@ -281,6 +286,8 @@ describe("Vanilla tests", function() {
     })
 
     describe("test3", () => {
+        after (() => cleanVanilla())
+
         const signupArgs1: SignUpArgs = {
             quiet: true,
             maciPubKey: "macipk.b1672ac299bb443f89bca9aeface6edfa5319a4b2135588ca1bfb352d7d09d1e",
@@ -381,6 +388,8 @@ describe("Vanilla tests", function() {
     })
 
     describe("test4", () => {
+        after (() => cleanVanilla())
+
         const signupArgs: SignUpArgs[] = Array(8).fill({
             quiet: true,
             maciPubKey: "macipk.b1672ac299bb443f89bca9aeface6edfa5319a4b2135588ca1bfb352d7d09d1e",
@@ -433,6 +442,8 @@ describe("Vanilla tests", function() {
     })
 
     describe("test5", () => {
+        after (() => cleanVanilla())
+
         const signupArgs1: SignUpArgs = {
             quiet: true,
             maciPubKey: "macipk.4d8797043f3f54b9090cb7ddbb79a618297e3f94011e2d2b206dc05a52722498",
@@ -538,6 +549,8 @@ describe("Vanilla tests", function() {
     })
 
     describe("test6", () => {
+        after (() => cleanVanilla())
+
         const signupArgs1: SignUpArgs = {
             quiet: true,
             maciPubKey: "macipk.014cc8ef5a0022da608efab55e891417be0a474ba70b912dc6c2e6acea1a1499",
@@ -686,6 +699,8 @@ describe("Vanilla tests", function() {
     })
 
     describe("keyChange", () => {
+        after (() => cleanVanilla())
+
         const signupArgs: SignUpArgs = {
             quiet: true,
             maciPubKey: "macipk.b8590fdba5e9cde5606dad5db384be4d253d0a2064d1e03f9600ee021a7ebe16",
@@ -695,7 +710,7 @@ describe("Vanilla tests", function() {
             quiet: true,
             pubkey: "macipk.b8590fdba5e9cde5606dad5db384be4d253d0a2064d1e03f9600ee021a7ebe16",
             privateKey: "macisk.2ae4f199bf3925a2407f7c775c9261f351ab861d8e9ecbb84622bdd3f6d41b08",
-            stateIndex: 0,
+            stateIndex: 1,
             voteOptionIndex: 0,
             nonce: 1,
             newVoteWeight: 9,
@@ -706,7 +721,7 @@ describe("Vanilla tests", function() {
             quiet: true,
             pubkey: "macipk.b42b0da48010682d8c781d403f6b83db00c5e0970094ef3618393e7a3262c320",
             privateKey: "macisk.2ae4f199bf3925a2407f7c775c9261f351ab861d8e9ecbb84622bdd3f6d41b08",
-            stateIndex: 0,
+            stateIndex: 1,
             voteOptionIndex: 0,
             nonce: 1,
             newVoteWeight: 0,
@@ -717,7 +732,7 @@ describe("Vanilla tests", function() {
             quiet: true,
             pubkey: "macipk.b42b0da48010682d8c781d403f6b83db00c5e0970094ef3618393e7a3262c320",
             privateKey: "macisk.220b09bca39ddc56deaaecddcdf616529cd2ed3eeda2354795515f17894e1c65",
-            stateIndex: 0,
+            stateIndex: 1,
             voteOptionIndex: 1,
             nonce: 2,
             newVoteWeight: 9,
@@ -762,6 +777,8 @@ describe("Vanilla tests", function() {
     })
 
     describe("multiplePolls1", () => {
+        after (() => cleanVanilla())
+
         const signupArgs: SignUpArgs = {
             quiet: true,
             maciPubKey: "macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391",
@@ -845,6 +862,7 @@ describe("Vanilla tests", function() {
             // prove and verify
             await proveOnChain(proveOnChainArgs)
             await verify(verifyOnChainArgs)
+            cleanVanilla()
         })
 
         it("should deploy a new poll", async () => {
@@ -987,7 +1005,7 @@ describe("Vanilla tests", function() {
         const genProofsArgs3: GenProofsArgs = {
             quiet: true,
             coordinatorPrivKey: "macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e",
-            pollId: 1,
+            pollId: 2,
             processWitgen: "./zkeys/ProcessMessages_10-2-1-2_test",
             tallyWitgen: "./zkeys/TallyVotes_10-1-2_test",
             processZkey: "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
@@ -1021,7 +1039,7 @@ describe("Vanilla tests", function() {
             tallyFile: "./tally.json",
         }
 
-
+        after(() => { cleanVanilla() })
 
         before(async () => {
             // we deploy the vk registry contract
