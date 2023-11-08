@@ -73,18 +73,18 @@ export const proveOnChain = async ({
         signer,
     )
 
-    const messageAqContractAddress = await pollContract.extContracts()
+    const messageAqContractAddress = (await pollContract.extContracts()).messageAq
     if (!(await contractExists(signer.provider, messageAqContractAddress))) {
         logError('There is no MessageAq contract linked to the specified MACI contract.')
     }
 
     const messageAqContract = new Contract(
         messageAqContractAddress,
-        parseArtifact('MessageAq')[0],
+        parseArtifact('AccQueue')[0],
         signer,
     )
 
-    const vkRegistryContractAddress = await pollContract.extContracts()
+    const vkRegistryContractAddress = (await pollContract.extContracts()).vkRegistry
     if (!(await contractExists(signer.provider, vkRegistryContractAddress))) {
         logError('There is no VkRegistry contract linked to the specified MACI contract.')
     }

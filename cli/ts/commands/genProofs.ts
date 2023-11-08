@@ -5,6 +5,7 @@ import { extractVk, genProof, verifyProof } from "maci-circuits"
 import { genMaciStateFromContract, getDefaultSigner, parseArtifact } from "maci-contracts"
 import { Contract } from "ethers"
 import { hash3, hashLeftRight, genTreeCommitment } from "maci-crypto"
+import { join } from "path"
 
 export const genProofs = async ({
     outputDir,
@@ -123,6 +124,7 @@ export const genProofs = async ({
         parseArtifact('MACI')[0],
         signer
     )
+
     const pollAddr = await maciContract.polls(pollId)
     if (!(await contractExists(signer.provider, pollAddr))) logError('Poll contract does not exist')
     const pollContract = new Contract(
@@ -161,11 +163,12 @@ export const genProofs = async ({
 
     const maciState = await genMaciStateFromContract(
         signer.provider,
-        maciAddress,
+        maciContract.address,
         coordinatorKeypair,
         pollId,
         fromBlock
     )
+
     const poll = maciState.polls[pollId]
 
     const processProofs: any[] = []
@@ -207,7 +210,8 @@ export const genProofs = async ({
             }
             // save the proof 
             processProofs.push(thisProof)
-            writeFileSync(`${outputDir}/process_${poll.numBatchesProcessed - 1}.json`, JSON.stringify(thisProof, null, 4))
+            writeFileSync(join(outputDir, `process_${poll.numBatchesProcessed -1}.json`), JSON.stringify(thisProof, null, 4))
+
             if (!quiet) logYellow(info(`Progress: ${poll.numBatchesProcessed} / ${totalMessageBatches}`))
         } catch (error: any) {
             logError(error.message)
@@ -255,7 +259,7 @@ export const genProofs = async ({
                     publicInputs: r.publicInputs,
                 }
                 subsidyProofs.push(thisProof)
-                writeFileSync(`${outputDir}/subsidy_${numBatchesCalulated}.json`, JSON.stringify(thisProof, null, 4))
+                writeFileSync(join(outputDir,  `subsidy_${numBatchesCalulated}.json`), JSON.stringify(thisProof, null, 4))
                 numBatchesCalulated ++
                 if (!quiet) logYellow(info(`Progress: ${numBatchesCalulated} / ${totalSubsidyBatches}`))
             } catch (error: any) {
@@ -321,8 +325,9 @@ export const genProofs = async ({
 
             tallyProofs.push(thisProof)
 
-            writeFileSync(`${outputDir}/tally_${poll.numBatchesTallied - 1}.json`, JSON.stringify(thisProof, null, 4))
-            if (!quiet) logYellow(info(`\nProgress: ${poll.numBatchesTallied} / ${totalTallyBatches}`))
+            writeFileSync(join(outputDir, `tally_${poll.numBatchesTallied - 1}.json`), JSON.stringify(thisProof, null, 4))
+
+            if (!quiet) logYellow(info(`Progress: ${poll.numBatchesTallied} / ${totalTallyBatches}`))
 
 
         } catch (error: any) { logError(error.message) }

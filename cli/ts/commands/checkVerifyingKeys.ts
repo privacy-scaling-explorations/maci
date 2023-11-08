@@ -23,20 +23,23 @@ export const checkVerifyingKeys = async ({
     tallyVotesZkeyPath,
 }: CheckVerifyingKeysArgs): Promise<boolean> => {
     if (!quiet) banner()
+    // get the signer
     const signer = await getDefaultSigner()
 
+    // ensure we have the contract addresses that we need
     if (!readContractAddress("MACI") && !maciContract) logError("Please provide a MACI contract address")
     const maciAddress = maciContract ? maciContract : readContractAddress("MACI")
+    if (!(await contractExists(signer.provider, maciAddress))) logError("MACI contract does not exist")
+    
+    const maciContractInstance = new Contract(maciAddress, await parseArtifact("MACI")[0], signer) 
 
+    // we need to ensure that the zkey files exist
     if (!existsSync(processMessagesZkeyPath)) logError("Process messages zkey does not exist")
     if (!existsSync(tallyVotesZkeyPath)) logError("Tally votes zkey does not exist")
 
+    // extract the verification keys from the zkey files
     const processVk: VerifyingKey = VerifyingKey.fromObj(await extractVk(processMessagesZkeyPath))
     const tallyVk: VerifyingKey = VerifyingKey.fromObj(await extractVk(tallyVotesZkeyPath))
-
-    if (!(await contractExists(signer.provider, maciAddress))) logError("MACI contract does not exist")
-
-    const maciContractInstance = new Contract(maciAddress, await parseArtifact("MACI")[0], signer) 
 
     try {
         if (!quiet) logYellow(info("Retrieving verifying keys from the contract..."))
