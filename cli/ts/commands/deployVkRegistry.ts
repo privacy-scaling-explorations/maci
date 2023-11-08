@@ -1,6 +1,6 @@
 import { resetContractAddresses, storeContractAddress } from "../utils/storage"
 import { deployVkRegistry } from "maci-contracts"
-import { renameSync } from "fs"
+import { existsSync, renameSync } from "fs"
 import { contractAddressesStore, oldContractAddressesStore } from "../utils/constants"
 import { logGreen, success } from "../utils/theme"
 import { banner } from "../utils/banner"
@@ -15,8 +15,10 @@ export const deployVkRegistryContract = async ({
 }: DeployVkRegistryArgs): Promise<string> => {
     if(!quiet) banner()
     // assume that the vkRegistry contract is the first one to be deployed
-    renameSync(contractAddressesStore, oldContractAddressesStore)
-    resetContractAddresses()
+    if (existsSync(contractAddressesStore)) {
+        renameSync(contractAddressesStore, oldContractAddressesStore)
+        resetContractAddresses()
+    }
 
     const vkRegistry = await deployVkRegistry(true)
     await vkRegistry.deployTransaction.wait()
