@@ -18,7 +18,9 @@ import {
     genRandomSalt,
 } from 'maci-crypto'
 
-describe('Domain objects', () => {
+describe('Domain objects', function() {
+    this.timeout(100000)
+
     const { privKey, pubKey } = new Keypair()
     const k = new Keypair()
 

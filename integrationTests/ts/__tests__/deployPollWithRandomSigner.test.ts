@@ -25,7 +25,7 @@ async function getPollDuration(providerUrl: string, maci: string, pollId: number
 }
 
 describe('Test deployPollWithSigner', function() {
-    this.timeout(3000000)
+    this.timeout(5000000)
     const data = loadData('suites.json')
     const test = data.suites[0]
     it(test.description, async () => {

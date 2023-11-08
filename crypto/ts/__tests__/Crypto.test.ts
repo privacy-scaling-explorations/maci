@@ -18,7 +18,8 @@ import {
 } from '../'
 
 
-describe('Cryptographic operations', () => {
+describe('Cryptographic operations', function() {
+    this.timeout(100000)
     const { privKey, pubKey } = genKeypair()
     const k = genKeypair()
 

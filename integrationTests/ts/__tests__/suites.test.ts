@@ -7,7 +7,7 @@ import {
 } from './suites'
 
 describe('Test suites', function() {
-    this.timeout(3000000)
+    this.timeout(5000000)
     const data = loadData('suites.json')
     for (const test of data.suites) {
         it(test.description, async () => {

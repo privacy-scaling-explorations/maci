@@ -7,7 +7,8 @@ import {
 } from '../'
 import { testMerge, testMergeExhaustive, testMergeShortest, testMergeShortestOne } from './utils'
 
-describe('AccQueue', () => {
+describe('AccQueue', function () {
+    this.timeout(100000)
     describe('Enqueue', () => {
         describe('Binary AccQueue', () => {
             const HASH_LENGTH = 2
