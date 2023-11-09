@@ -33,7 +33,7 @@ const execute = (command: any) => {
 }
 
 const loadData = (name: string) => {
-    return require('@maci-integrationTests/ts/__tests__/' + name)
+    return JSON.parse(fs.readFileSync(path.join(__dirname, name)).toString())
 }
 
 const executeSuite = async (data: any, expect: any) => {

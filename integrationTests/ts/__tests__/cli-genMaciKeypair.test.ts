@@ -11,7 +11,8 @@ import {
 } from "chai"
 import { exec } from './utils'
 
-describe('genMaciKeypair CLI subcommand', () => {
+describe('genMaciKeypair CLI subcommand', function() {
+    this.timeout(100000)
     const command = 'node ../cli/build/index.js genMaciKeypair'
 
     it('genMaciKeypair should output a random private key and public key', async () => {

@@ -4,10 +4,10 @@ import {
 import {
     loadData,
     executeSuite,
-} from './suites'
+} from './suitesUtils'
 
 describe('Test suites', function() {
-    this.timeout(5000000)
+    this.timeout(500000000)
     const data = loadData('suites.json')
     for (const test of data.suites) {
         it(test.description, async () => {

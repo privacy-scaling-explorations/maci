@@ -2,7 +2,7 @@ import {
     loadData,
     execute,
     executeSuite,
-} from './suites'
+} from './suitesUtils'
 import {
     expect 
 } from "chai"

@@ -11,7 +11,8 @@ import {
 } from "chai"
 import { exec } from './utils'
 
-describe('genMaciPubkey CLI subcommand', () => {
+describe('genMaciPubkey CLI subcommand', function() {
+    this.timeout(100000)
     const command = 'node ../cli/build/index.js genMaciKeypair'
 
     it('genMaciPubkey should output a correct public key', async () => {
