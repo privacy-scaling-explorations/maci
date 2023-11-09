@@ -23,8 +23,6 @@ export const deployVkRegistryContract = async ({
     const vkRegistry = await deployVkRegistry(true)
     await vkRegistry.deployTransaction.wait()
     storeContractAddress("VkRegistry", vkRegistry.address)
-
     if (!quiet) logGreen(success(`VkRegistry deployed at: ${vkRegistry.address}`))
-
     return vkRegistry.address 
 } 

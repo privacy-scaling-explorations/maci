@@ -14,9 +14,15 @@ export const timeTravel = async ({
     const rpcProvider = new providers.JsonRpcProvider(ethProvider)
 
     try {
+        const blockBefore = await rpcProvider.getBlock('latest')
+
         await rpcProvider.send('evm_increaseTime', [Number(seconds)])
         await rpcProvider.send('evm_mine', [])
     
+        const blockAfter = await rpcProvider.getBlock('latest')
+        const timeIncreased = blockAfter.timestamp - blockBefore.timestamp === Number(seconds)
+
+        console.log("INCREASED", timeIncreased)
         if (!quiet) logGreen(success(`Fast-forwarded ${seconds} seconds`))
     } catch (error: any) {
         logError(error.message)

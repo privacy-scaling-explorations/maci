@@ -3,6 +3,10 @@
     "version": "1.1.2",
     "description": "CLI utilities for MACI",
     "main": "build/index.js",
+    "exports": {
+        ".": "./build/index.js",
+        "./api": "./build/api.js"
+    },
     "bin": {
         "maci-cli": "./build/index.js"
     },
@@ -13,9 +17,9 @@
     "scripts": {
         "watch": "tsc --watch",
         "build": "tsc",
-        "test": "ts-mocha -exit tests/*.test.ts",
-        "test:vanilla": "ts-mocha -exit tests/vanilla.test.ts",
-        "test:subsidy": "ts-mocha -exit tests/subsidy.test.ts"
+        "test": "ts-mocha --exit tests/*.test.ts",
+        "test:vanilla": "ts-mocha --exit tests/vanilla.test.ts",
+        "test:subsidy": "ts-mocha --exit tests/subsidy.test.ts"
     },
     "dependencies": {
         "@nomiclabs/hardhat-ethers": "^2.0.0",

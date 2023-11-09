@@ -27,5 +27,6 @@ export {
     VerifyArgs,
     CheckVerifyingKeysArgs,
     GenKeyPairArgs,
-    ShowContractsArgs
+    ShowContractsArgs,
+    PollContracts
 } from "./utils/index"

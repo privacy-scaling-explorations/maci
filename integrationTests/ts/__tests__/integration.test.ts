@@ -1,23 +1,48 @@
 import { MaciState, MaxValues, STATE_TREE_DEPTH, TreeDepths } from "maci-core"
-import { DeployedContracts, deploy, deployPoll, deployVkRegistryContract, genProofs, mergeMessages, mergeSignups, proveOnChain, publish, setVerifyingKeys, signup, timeTravel, verify } from "maci-cli/ts/api"
+import { 
+    deploy, 
+    deployPoll, 
+    deployVkRegistryContract, 
+    genProofs, 
+    mergeMessages, 
+    mergeSignups, 
+    proveOnChain, 
+    publish, 
+    setVerifyingKeys, 
+    signup, 
+    timeTravel, 
+    verify,
+    DeployedContracts, 
+    PollContracts
+} from "maci-cli/api"
 import { join } from "path"
-import { INT_STATE_TREE_DEPTH, MSG_BATCH_DEPTH, MSG_TREE_DEPTH, SG_DATA, VOTE_OPTION_TREE_DEPTH, duration, initialVoiceCredits, ivcpData, maxMessages, messageBatchDepth } from "./utils/constants"
+import { 
+    INT_STATE_TREE_DEPTH, 
+    MSG_BATCH_DEPTH, 
+    MSG_TREE_DEPTH, 
+    SG_DATA, 
+    VOTE_OPTION_TREE_DEPTH, 
+    duration, 
+    initialVoiceCredits, 
+    ivcpData, 
+    maxMessages, 
+    messageBatchDepth 
+} from "./utils/constants"
 import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs"
-import { getDefaultSigner } from "maci-contracts"
-import { PollContracts } from "maci-cli/ts/utils"
 import { homedir } from "os"
 import { expectSubsidy, expectTally, genTestUserCommands } from "./utils/utils"
 import { genPubKey, genRandomSalt } from "maci-crypto"
 import { existsSync, readFileSync, readdir, unlinkSync } from "fs"
+import { expect } from "chai"
 
 /**
  * MACI Integration tests 
  * @dev These tests use the cli code to perform full testing of the
  * protocol.
  */
-describe("integration tests", () => {
+describe("integration tests", function() {
+    this.timeout(10000000)
     // global variables we need shared between tests
-    let signer: any 
     let maciState: MaciState 
     let contracts: DeployedContracts
     let pollContracts: PollContracts
@@ -26,15 +51,12 @@ describe("integration tests", () => {
 
     // the code that we run before each test
     beforeEach(async () => {
-        // we get a signer
-        signer = await getDefaultSigner()
-
         // create a new maci state
         const maciState = new MaciState()
 
         // 1. deploy Vk Registry
         const vkRegistryAddress = await deployVkRegistryContract({quiet: true})
-       
+
         // 2. set verifying keys
         await setVerifyingKeys({
             vkRegistry: vkRegistryAddress,
@@ -48,23 +70,23 @@ describe("integration tests", () => {
             quiet: true
         })
 
-        // deploy maci
+        // 3. deploy maci
         contracts = await deploy({
             vkRegistryAddress: vkRegistryAddress,
             quiet: true
         })
 
-        // create a poll
+        // 4. create a poll
         pollContracts = await deployPoll({
             maciAddress: contracts.maciAddress,
-            pollDuration: 300,
+            pollDuration: duration,
             intStateTreeDepth: INT_STATE_TREE_DEPTH,
             messageTreeDepth: MSG_TREE_DEPTH,
             messageTreeSubDepth: MSG_BATCH_DEPTH,
             voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
             maxMessages: 25,
             maxVoteOptions: 25,
-            coordinatorPubkey: coordinatorKeypair.pubKey.rawPubKey.toString(),
+            coordinatorPubkey: coordinatorKeypair.pubKey.serialize(),
             quiet: true
         })
 
@@ -107,7 +129,7 @@ describe("integration tests", () => {
     })
 
     // read the test suite data
-    const data = JSON.parse(readFileSync(`./integrationTests/ts/__tests__/data/suites.json`).toString())
+    const data = JSON.parse(readFileSync(join(__dirname, `./data/suites.json`)).toString())
     for (const testCase of data.suites) {
         it(testCase.description, async () => {
             // check if we have subsidy enabled
@@ -188,11 +210,10 @@ describe("integration tests", () => {
                 }
             }
     
-            await timeTravel({quiet: true, provider: signer.provider, seconds: 3600})
-    
+            await timeTravel({quiet: false, seconds: duration * 1000000 })
             // merge messages
             await mergeMessages({quiet: true, pollId: 0, maciContractAddress: contracts.maciAddress})
-    
+
             // merge signups
             await mergeSignups({quiet: true, pollId: 0, maciContractAddress: contracts.maciAddress})
     
@@ -215,7 +236,7 @@ describe("integration tests", () => {
     
             // verify that the data stored on the tally file is correct
             const tally = JSON.parse(readFileSync(join(__dirname, "../../../cli/tally.json")).toString())
-            expect(JSON.stringify(tally.pollId)).toEqual(pollId)
+            expect(JSON.stringify(tally.pollId)).to.eq(pollId)
             expectTally(maxMessages, data.expectedTally, data.expectedPerVOSpentVoiceCredits, data.expectedTotalSpentVoiceCredits, tally)
             if (subsidyEnabled) {
                 const subsidy = JSON.parse(readFileSync(join(__dirname, "../../../cli/subsidy.json")).toString())
