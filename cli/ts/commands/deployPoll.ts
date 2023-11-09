@@ -97,6 +97,7 @@ export const deployPoll = async ({
 
     // deploy the poll
     let pollAddr: string = ""
+
     try {
         const tx = await maciContract.deployPoll(
             pollDuration,
