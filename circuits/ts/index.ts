@@ -2,6 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as shelljs from 'shelljs'
 import * as tmp from 'tmp'
+import * as os from 'os'
 import { zKey, groth16 } from 'snarkjs'
 
 import { stringifyBigInts } from 'maci-crypto'
@@ -23,13 +24,20 @@ const cleanThreads = async () => {
     return promises
 }
 
-const genProof = (
+const genProof = async (
     inputs: string[],
-    rapidsnarkExePath: string,
-    witnessExePath: string,
     zkeyPath: string,
+    rapidsnarkExePath?: string,
+    witnessExePath?: string,
+    wasmPath?: string,
     silent = true,
-): any => {
+): Promise<any> => {
+    // if we are running on an arm chip we can use snarkjs directly
+    if (isArm()) {
+        const { proof, publicSignals } = await groth16.fullProve(inputs, wasmPath, zkeyPath)
+        return { proof, publicSignals }
+    }
+    // intel chip flow (use rapidnsark)
     // Create tmp directory
     const tmpObj = tmp.dirSync()
     const tmpDirPath = tmpObj.name
@@ -66,7 +74,7 @@ const genProof = (
 
     // Read the proof and public inputs
     const proof = JSON.parse(fs.readFileSync(proofJsonPath).toString())
-    const publicInputs = JSON.parse(fs.readFileSync(publicJsonPath).toString())
+    const publicSignals = JSON.parse(fs.readFileSync(publicJsonPath).toString())
 
     for (const f of [
         proofJsonPath,
@@ -80,7 +88,7 @@ const genProof = (
     }
     tmpObj.removeCallback()
 
-    return { proof, publicInputs }
+    return { proof, publicSignals }
 }
 
 const verifyProof = async (publicInputs: any, proof: any, vk: any) => {
@@ -93,6 +101,14 @@ const extractVk = async (zkeyPath: string) => {
     const vk = await zKey.exportVerificationKey(zkeyPath)
     await cleanThreads()
     return vk
+}
+
+/**
+ * Check if we are running on an arm chip
+ * @returns whether we are running on an arm chip
+ */
+const isArm = (): boolean => {
+    return os.arch().includes('arm')
 }
 
 export { genProof, verifyProof, extractVk }
