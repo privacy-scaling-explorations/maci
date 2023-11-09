@@ -48,7 +48,7 @@ const getTestVoteValues = (
         }
         voteOptionIndex = bribers[userIndex].voteOptionIndices[voteIndex]
     } else {
-        voteOptionIndex = votes[userIndex][voteIndex].voteOptionIndex
+        if (useVotes) voteOptionIndex = votes[userIndex][voteIndex].voteOptionIndex
     }
 
     if (useVotes) {
@@ -67,12 +67,18 @@ export const genTestUserCommands = (
     presetVotes?: any,
 ) => {
     const usersCommands: UserCommand[] = []
-    for (let i=0; i< numUsers; i++) {
+    for (let i = 0; i< numUsers; i++) {
         const userKeypair = new Keypair()
         const votes: Vote[] = [];
 
-        for (let j=0; j < numVotesPerUser; j++) {
-            const { voteOptionIndex, voteWeight, valid } = getTestVoteValues(i , j, numVotesPerUser, presetVotes, bribers)
+        for (let j = 0; j < numVotesPerUser; j++) {
+            const { voteOptionIndex, voteWeight, valid } = getTestVoteValues(
+                i, 
+                j, 
+                numVotesPerUser, 
+                presetVotes, 
+                bribers
+            )
             const vote: Vote = {
                 voteOptionIndex,
                 voteWeight,
@@ -125,9 +131,10 @@ export const expectTally = (
         }
     })
    
-    expect(tallyFile.results.tally).to.eq(genTally)
-    expect(tallyFile.perVOSpentVoiceCredits.tally).to.eq(genPerVOSpentVoiceCredits)
+    expect(tallyFile.results.tally).to.deep.equal(genTally)
+    expect(tallyFile.perVOSpentVoiceCredits.tally).to.deep.equal(genPerVOSpentVoiceCredits)
     expect(tallyFile.totalSpentVoiceCredits.spent).to.eq(expectedTotalSpentVoiceCredits.toString())
+
 }
 
 /**
@@ -148,7 +155,7 @@ export const expectSubsidy = (
         }
     })
 
-    expect(subsidyFile.results.subsidy).to.eq(genSubsidy)
+    expect(subsidyFile.results.subsidy).to.deep.equal(genSubsidy)
 }
 
 /**

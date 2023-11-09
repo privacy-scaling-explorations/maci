@@ -56,7 +56,7 @@ describe("integration tests", function() {
     // the code that we run before each test
     beforeEach(async () => {
         // create a new maci state
-        const maciState = new MaciState()
+        maciState = new MaciState()
 
         // 1. deploy Vk Registry
         const vkRegistryAddress = await deployVkRegistryContract({quiet: true})
@@ -71,6 +71,7 @@ describe("integration tests", function() {
             messageBatchDepth: MSG_BATCH_DEPTH,
             processMessagesZkeyPath: join(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test.0.zkey"),
             tallyVotesZkeyPath: join(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test.0.zkey"),
+            subsidyZkeyPath: join(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test.0.zkey"),
             quiet: true
         })
 
@@ -118,32 +119,32 @@ describe("integration tests", function() {
         )
     })
 
-    // // after each test we need to cleanup some files
-    // afterEach(() => {
-    //     if (existsSync(join(__dirname, "../../../cli/tally.json"))) unlinkSync(join(__dirname, "../../../cli/tally.json"))
-    //     if (existsSync(join(__dirname, "../../../cli/subsidy.json"))) unlinkSync(join(__dirname, "../../../cli/subsidy.json"))
-    //     const directory = join(__dirname, "../../../cli/proofs/")
-    //     if (!existsSync(directory)) return
-    //     readdir(directory, (err, files) => {
-    //         if (err) throw err
-    //         for (const file of files) {
-    //             unlinkSync(join(directory, file))
-    //         }
-    //     })
-    // })
+    // after each test we need to cleanup some files
+    afterEach(() => {
+        if (existsSync(join(__dirname, "../../../cli/tally.json"))) unlinkSync(join(__dirname, "../../../cli/tally.json"))
+        if (existsSync(join(__dirname, "../../../cli/subsidy.json"))) unlinkSync(join(__dirname, "../../../cli/subsidy.json"))
+        const directory = join(__dirname, "../../../cli/proofs/")
+        if (!existsSync(directory)) return
+        readdir(directory, (err, files) => {
+            if (err) throw err
+            for (const file of files) {
+                unlinkSync(join(directory, file))
+            }
+        })
+    })
 
     // read the test suite data
     const data = JSON.parse(readFileSync(join(__dirname, `./data/suites.json`)).toString())
     for (const testCase of data.suites) {
         it(testCase.description, async () => {
             // check if we have subsidy enabled
-            const subsidyEnabled = data.subsidy && data.subsidy.enabled
+            const subsidyEnabled = testCase.subsidy && testCase.subsidy.enabled
     
             const users = genTestUserCommands(
-                data.numUsers,
-                data.numVotesPerUser,
-                data.bribers,
-                data.votes 
+                testCase.numUsers,
+                testCase.numVotesPerUser,
+                testCase.bribers,
+                testCase.votes 
             )
     
             // loop through all users and generate keypair + signup
@@ -170,11 +171,11 @@ describe("integration tests", function() {
                 // publish messages
                 for (let j = 0; j < users[i].votes.length; j++) {
                     const user = users[i]
-                    const isKeyChange = (data.changeUsersKeys && j in data.changeUsersKeys[i])
+                    const isKeyChange = (testCase.changeUsersKeys && j in testCase.changeUsersKeys[i])
                     const voteOptionIndex = isKeyChange ?
-                        data.changeUsersKeys[i][j].voteOptionIndex : user.votes[j].voteOptionIndex
+                    testCase.changeUsersKeys[i][j].voteOptionIndex : user.votes[j].voteOptionIndex
                     const newVoteWeight  = isKeyChange ?
-                        data.changeUsersKeys[i][j].voteWeight : user.votes[j].voteWeight
+                    testCase.changeUsersKeys[i][j].voteWeight : user.votes[j].voteWeight
                     const nonce = user.votes[j].nonce
                     const salt = '0x' + genRandomSalt().toString(16)
                     const userPrivKey = isKeyChange ?
@@ -245,11 +246,11 @@ describe("integration tests", function() {
 
             // verify that the data stored on the tally file is correct
             const tally = JSON.parse(readFileSync(join(__dirname, "../../../cli/tally.json")).toString())
-            console.log("TALLY", tally)
             expectTally(maxMessages, testCase.expectedTally, testCase.expectedSpentVoiceCredits, testCase.expectedTotalSpentVoiceCredits, tally)
+            
             if (subsidyEnabled) {
                 const subsidy = JSON.parse(readFileSync(join(__dirname, "../../../cli/subsidy.json")).toString())
-                expectSubsidy(maxMessages, testCase.expectedSubsidy, subsidy)
+                expectSubsidy(maxMessages, testCase.subsidy.expectedSubsidy, subsidy)
             }
             
             // prove on chain if everything matches
@@ -271,7 +272,7 @@ describe("integration tests", function() {
                 subsidyAddress: subsidyEnabled ? pollContracts.subsidy : undefined,
                 pollId: pollId.toString(),
                 tallyFile: join(__dirname, "../../../cli/tally.json"),
-                subsidyFile: subsidyEnabled ? "./subsidy.json" : undefined
+                subsidyFile: subsidyEnabled ? join(__dirname, "../../../cli/subsidy.json") : undefined
             })
         })
     }

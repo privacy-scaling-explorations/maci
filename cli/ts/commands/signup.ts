@@ -57,7 +57,7 @@ export const signup = async ({
         const iface = maciContract.interface
         // get state index from the event
         if (receipt && receipt.logs) {
-            const stateIndex = iface.parseLog(receipt.logs[0]).args[0]
+            stateIndex = iface.parseLog(receipt.logs[0]).args[0]
             if (!quiet) logGreen(success(`State index: ${stateIndex.toString()}`))
         } else {
             logError('Unable to retrieve the transaction receipt')
