@@ -336,7 +336,6 @@ export const genProofs = async ({
         } catch (error: any) { logError(error.message) }
     }
 
-    console.log("POLL", poll)
     const tallyFileData = {
         provider: signer.provider.connection.url,
         maci: maciAddress,
