@@ -36,9 +36,12 @@ import {
     homedir
 } from "os"
 import { cleanSubsidy } from "./utils"
+import { isArm } from "maci-circuits"
 
 describe("Subsidy tests", function() {
     this.timeout(900000)
+
+    const useWasm = isArm() 
 
     const deployVkRegistryArgs: DeployVkRegistryArgs = { quiet: true }
 
@@ -89,12 +92,16 @@ describe("Subsidy tests", function() {
         tallyWitgen: "./zkeys/TallyVotes_10-1-2_test",
         subsidyWitgen: "./zkeys/SubsidyPerBatch_10-1-2_test",
         processZkey: "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+        processWasm: "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
         subsidyZkey: "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
+        subsidyWasm: "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
         tallyZkey: "./zkeys/TallyVotes_10-1-2_test.0.zkey",
+        tallyWasm: "./zkeys/TallyVotes_10-1-2_test.wasm",
         tallyFile: "./tally.json",
         subsidyFile: "./subsidy.json",
         outputDir: "./proofs",
-        rapidsnark: `${homedir()}/rapidsnark/build/prover`
+        rapidsnark: `${homedir()}/rapidsnark/build/prover`,
+        useWasm
     }
 
     const proveOnChainArgs: ProveOnChainArgs = {
@@ -864,12 +871,16 @@ describe("Subsidy tests", function() {
             tallyWitgen: "./zkeys/TallyVotes_10-1-2_test",
             subsidyWitgen: "./zkeys/SubsidyPerBatch_10-1-2_test",
             processZkey: "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
-            tallyZkey: "./zkeys/TallyVotes_10-1-2_test.0.zkey",
+            processWasm: "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
             subsidyZkey: "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
+            subsidyWasm: "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
+            tallyZkey: "./zkeys/TallyVotes_10-1-2_test.0.zkey",
+            tallyWasm: "./zkeys/TallyVotes_10-1-2_test.wasm",
             tallyFile: "./tally.json",
             subsidyFile: "./subsidy.json",
             outputDir: "./proofs",
-            rapidsnark: `${homedir()}/rapidsnark/build/prover`
+            rapidsnark: `${homedir()}/rapidsnark/build/prover`,
+            useWasm
         }
     
         const proveOnChainArgs2: ProveOnChainArgs = {
@@ -1043,12 +1054,16 @@ describe("Subsidy tests", function() {
             tallyWitgen: "./zkeys/TallyVotes_10-1-2_test",
             subsidyWitgen: "./zkeys/SubsidyPerBatch_10-1-2_test",
             processZkey: "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
-            tallyZkey: "./zkeys/TallyVotes_10-1-2_test.0.zkey",
+            processWasm: "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
             subsidyZkey: "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
+            subsidyWasm: "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
+            tallyZkey: "./zkeys/TallyVotes_10-1-2_test.0.zkey",
+            tallyWasm: "./zkeys/TallyVotes_10-1-2_test.wasm",
             tallyFile: "./tally.json",
             subsidyFile: "./subsidy.json",
             outputDir: "./proofs",
-            rapidsnark: `${homedir()}/rapidsnark/build/prover`
+            rapidsnark: `${homedir()}/rapidsnark/build/prover`,
+            useWasm
         }
 
         const genProofsArgs3: GenProofsArgs = {
@@ -1059,12 +1074,16 @@ describe("Subsidy tests", function() {
             tallyWitgen: "./zkeys/TallyVotes_10-1-2_test",
             subsidyWitgen: "./zkeys/SubsidyPerBatch_10-1-2_test",
             processZkey: "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
-            tallyZkey: "./zkeys/TallyVotes_10-1-2_test.0.zkey",
+            processWasm: "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
             subsidyZkey: "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
+            subsidyWasm: "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
+            tallyZkey: "./zkeys/TallyVotes_10-1-2_test.0.zkey",
+            tallyWasm: "./zkeys/TallyVotes_10-1-2_test.wasm",
             tallyFile: "./tally.json",
             subsidyFile: "./subsidy.json",
             outputDir: "./proofs",
-            rapidsnark: `${homedir()}/rapidsnark/build/prover`
+            rapidsnark: `${homedir()}/rapidsnark/build/prover`,
+            useWasm
         }
 
         const proveOnChainArgs2: ProveOnChainArgs = {

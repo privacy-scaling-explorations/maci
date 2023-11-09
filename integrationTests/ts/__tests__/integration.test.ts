@@ -247,7 +247,7 @@ describe("integration tests", function() {
             // prove on chain if everything matches
             await proveOnChain({
                 quiet: true,
-                pollId: pollId,
+                pollId: pollId.toString(),
                 maciAddress: contracts.maciAddress,
                 messageProcessorAddress: pollContracts.messageProcessor,
                 tallyAddress: pollContracts.tally,

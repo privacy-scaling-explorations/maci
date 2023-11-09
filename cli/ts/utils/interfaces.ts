@@ -133,7 +133,8 @@ export interface GenProofsArgs {
     transactionHash?: string,
     processWasm?: string,
     tallyWasm?: string,
-    subsidyWasm?: string
+    subsidyWasm?: string,
+    useWasm?: boolean 
 }
 
 export interface ProveOnChainArgs {
