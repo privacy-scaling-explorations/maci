@@ -2,7 +2,7 @@ import { UserCommand } from './user'
 import { Subsidy, Tally, Vote } from './interfaces'
 import { Keypair } from 'maci-domainobjs'
 import { defaultVote } from './constants'
-import { readFileSync } from 'fs'
+import { expect } from "chai"
 
 /**
  * Test utility to generate vote objects for integrationt ests
@@ -123,9 +123,9 @@ export const expectTally = (
         }
     })
 
-    expect(tallyFile.results.tally).toEqual(genTally)
-    expect(tallyFile.perVOSpentVoiceCredits.tally).toEqual(genPerVOSpentVoiceCredits)
-    expect(tallyFile.totalSpentVoiceCredits.spent).toEqual(expectedTotalSpentVoiceCredits.toString())
+    expect(tallyFile.results.tally).to.eq(genTally)
+    expect(tallyFile.perVOSpentVoiceCredits.tally).to.eq(genPerVOSpentVoiceCredits)
+    expect(tallyFile.totalSpentVoiceCredits.spent).to.eq(expectedTotalSpentVoiceCredits.toString())
 }
 
 /**
@@ -146,7 +146,7 @@ export const expectSubsidy = (
         }
     })
 
-    expect(subsidyFile.results.subsidy).toEqual(genSubsidy)
+    expect(subsidyFile.results.subsidy).to.eq(genSubsidy)
 }
 
 /**
