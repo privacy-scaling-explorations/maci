@@ -36,8 +36,10 @@ import {
 } from "./constants"
 import { homedir } from "os"
 import { cleanVanilla } from "./utils"
+import { isArm } from "maci-circuits"
 
 describe("Vanilla tests", function() {
+    const useWasm = isArm() 
     this.timeout(900000)
 
     const deployVkRegistryArgs: DeployVkRegistryArgs = { quiet: true }
@@ -87,10 +89,13 @@ describe("Vanilla tests", function() {
         processWitgen: "./zkeys/ProcessMessages_10-2-1-2_test",
         tallyWitgen: "./zkeys/TallyVotes_10-1-2_test",
         processZkey: "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+        processWasm: "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
         tallyZkey: "./zkeys/TallyVotes_10-1-2_test.0.zkey",
+        tallyWasm: "./zkeys/TallyVotes_10-1-2_test.wasm",
         tallyFile: "./tally.json",
         outputDir: "./proofs",
-        rapidsnark: `${homedir()}/rapidsnark/build/prover`
+        rapidsnark: `${homedir()}/rapidsnark/build/prover`,
+        useWasm 
     }
 
     const proveOnChainArgs: ProveOnChainArgs = {
@@ -822,10 +827,13 @@ describe("Vanilla tests", function() {
             processWitgen: "./zkeys/ProcessMessages_10-2-1-2_test",
             tallyWitgen: "./zkeys/TallyVotes_10-1-2_test",
             processZkey: "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+            processWasm: "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
             tallyZkey: "./zkeys/TallyVotes_10-1-2_test.0.zkey",
+            tallyWasm: "./zkeys/TallyVotes_10-1-2_test.wasm",
             tallyFile: "./tally.json",
             outputDir: "./proofs",
-            rapidsnark: `${homedir()}/rapidsnark/build/prover`
+            rapidsnark: `${homedir()}/rapidsnark/build/prover`,
+            useWasm
         }
     
         const proveOnChainArgs2: ProveOnChainArgs = {
@@ -996,10 +1004,13 @@ describe("Vanilla tests", function() {
             processWitgen: "./zkeys/ProcessMessages_10-2-1-2_test",
             tallyWitgen: "./zkeys/TallyVotes_10-1-2_test",
             processZkey: "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+            processWasm: "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
             tallyZkey: "./zkeys/TallyVotes_10-1-2_test.0.zkey",
+            tallyWasm: "./zkeys/TallyVotes_10-1-2_test.wasm",
             tallyFile: "./tally.json",
             outputDir: "./proofs",
-            rapidsnark: `${homedir()}/rapidsnark/build/prover`
+            rapidsnark: `${homedir()}/rapidsnark/build/prover`,
+            useWasm
         }
 
         const genProofsArgs3: GenProofsArgs = {
@@ -1009,10 +1020,13 @@ describe("Vanilla tests", function() {
             processWitgen: "./zkeys/ProcessMessages_10-2-1-2_test",
             tallyWitgen: "./zkeys/TallyVotes_10-1-2_test",
             processZkey: "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+            processWasm: "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
             tallyZkey: "./zkeys/TallyVotes_10-1-2_test.0.zkey",
+            tallyWasm: "./zkeys/TallyVotes_10-1-2_test.wasm",
             tallyFile: "./tally.json",
             outputDir: "./proofs",
-            rapidsnark: `${homedir()}/rapidsnark/build/prover`
+            rapidsnark: `${homedir()}/rapidsnark/build/prover`,
+            useWasm
         }
 
         const proveOnChainArgs2: ProveOnChainArgs = {

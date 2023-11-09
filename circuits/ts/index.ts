@@ -106,8 +106,8 @@ const extractVk = async (zkeyPath: string) => {
  * Check if we are running on an arm chip
  * @returns whether we are running on an arm chip
  */
-const isArm = (): boolean => {
-  return os.arch().includes("arm");
-};
+export const isArm = (): boolean => {
+    return os.arch().includes('arm')
+}
 
 export { genProof, verifyProof, extractVk };

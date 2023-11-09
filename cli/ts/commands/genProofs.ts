@@ -25,7 +25,8 @@ export const genProofs = async ({
     coordinatorPrivKey,
     maciAddress,
     pollId,
-    transactionHash
+    transactionHash,
+    useWasm
 }: GenProofsArgs) => {
     if(!quiet) banner()
 
@@ -35,8 +36,17 @@ export const genProofs = async ({
     }
 
     // differentiate whether we are using wasm or rapidsnark
-    // so if we pass rapidsnark we assume we don't want to use wasm
-    if (rapidsnark) {   
+    if (useWasm) {
+        // if no rapidsnark then we assume we go with wasm
+        // so we expect those arguments
+        if (!processWasm) logError('Please specify the process wasm file location')
+        if (!tallyWasm) logError('Please specify the tally wasm file location')
+        const [ok, path] = doesPathExist([
+            processWasm, 
+            tallyWasm
+        ])
+        if (!ok) logError(`Could not find ${path}.`)
+    } else {
         const processDatFile = processWitgen + ".dat"
         const tallyDatFile =  tallyWitgen + ".dat"
         const [ok, path] = doesPathExist([
@@ -45,16 +55,6 @@ export const genProofs = async ({
             tallyWitgen, 
             processDatFile,
             tallyDatFile
-        ])
-        if (!ok) logError(`Could not find ${path}.`)
-    } else {
-        // if no rapidsnark then we assume we go with wasm
-        // so we expect those arguments
-        if (!processWasm) logError('Please specify the process wasm file location')
-        if (!tallyWasm) logError('Please specify the tally wasm file location')
-        const [ok, path] = doesPathExist([
-            processWasm, 
-            tallyWasm
         ])
         if (!ok) logError(`Could not find ${path}.`)
     }
@@ -66,7 +66,6 @@ export const genProofs = async ({
     ])
     if (!ok) logError(`Could not find ${path}.`)
 
-
     // the vk for the subsidy contract (optional)
     let subsidyVk: VerifyingKey
     if (subsidyFile) {
@@ -74,13 +73,14 @@ export const genProofs = async ({
         if (!subsidyZkey) logError('Please specify the subsidy zkey file location')
         if (!subsidyWitgen) logError('Please specify the subsidy witnessgen file location')
         
-        if (rapidsnark) {
+        if (!useWasm) {
             if (!subsidyWitgen) logError('Please specify the subsidy witnessgen file location')
             const subsidyDatFile = subsidyWitgen + ".dat"
             const [ok, path] = doesPathExist([
                 subsidyWitgen,
                 subsidyDatFile
             ])
+            if (!ok) logError(`Could not find ${path}.`)
         } else {
             // we expect to have the wasm file
             if (!subsidyWasm) logError('Please specify the subsidy wasm file location')
@@ -100,8 +100,8 @@ export const genProofs = async ({
     }
 
     // extract the rest of the verifying keys
-    const processVk = extractVk(processZkey)
-    const tallyVk = extractVk(tallyZkey)
+    const processVk = await extractVk(processZkey)
+    const tallyVk = await extractVk(tallyZkey)
 
     // the coordinator's MACI private key
     const privateKey = coordinatorPrivKey ? coordinatorPrivKey : await promptPwd('Insert your MACI private key')
@@ -193,10 +193,11 @@ export const genProofs = async ({
                 circuitInputs,
                 processZkey,
                 rapidsnark,
-                processWitgen
+                processWitgen,
+                processWasm
             )
             const isValid = await verifyProof(
-                r.publicInputs,
+                r.publicSignals,
                 r.proof,
                 processVk
             )
@@ -206,7 +207,7 @@ export const genProofs = async ({
             const thisProof = {
                 circuitInputs,
                 proof: r.proof,
-                publicInputs: r.publicInputs,
+                publicInputs: r.publicSignals,
             }
             // save the proof 
             processProofs.push(thisProof)
@@ -242,12 +243,13 @@ export const genProofs = async ({
             try {
                 const r = await genProof(
                     subsidyCircuitInputs,
+                    subsidyZkey,
                     rapidsnark,
                     subsidyWitgen,
-                    subsidyZkey
+                    subsidyWasm
                 )
                 const isValid = await verifyProof(
-                    r.publicInputs,
+                    r.publicSignals,
                     r.proof,
                     subsidyVk
                 )
@@ -256,7 +258,7 @@ export const genProofs = async ({
                 const thisProof = {
                     circuitInputs: subsidyCircuitInputs,
                     proof: r.proof,
-                    publicInputs: r.publicInputs,
+                    publicInputs: r.publicSignals,
                 }
                 subsidyProofs.push(thisProof)
                 writeFileSync(join(outputDir,  `subsidy_${numBatchesCalulated}.json`), JSON.stringify(thisProof, null, 4))
@@ -303,14 +305,15 @@ export const genProofs = async ({
             // generate the proof
             const r = await genProof(
                 tallyCircuitInputs,
+                tallyZkey,
                 rapidsnark,
                 tallyWitgen,
-                tallyZkey
+                tallyWasm
             )
 
             // verify it 
             const isValid = await verifyProof(
-                r.publicInputs,
+                r.publicSignals,
                 r.proof,
                 tallyVk
             )
@@ -320,7 +323,7 @@ export const genProofs = async ({
             const thisProof = {
                 circuitInputs: tallyCircuitInputs,
                 proof: r.proof,
-                publicInputs: r.publicInputs,
+                publicInputs: r.publicSignals,
             }
 
             tallyProofs.push(thisProof)
