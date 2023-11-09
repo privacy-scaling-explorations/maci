@@ -3,7 +3,6 @@ import * as fs from 'fs'
 
 import {
     genMaciStateFromContract,
-    parseArtifact,
 } from 'maci-contracts'
 
 import {
@@ -20,10 +19,9 @@ import {readJSONFile} from 'maci-common'
 import {contractFilepath} from './config'
 import { Keypair, PrivKey } from 'maci-domainobjs'
 
-
 const configureSubparser = (subparsers: any) => {
     const parser = subparsers.addParser(
-        'fetchLogs',
+        'genLocalState',
         { addHelp: true },
     )
 
@@ -116,9 +114,17 @@ const configureSubparser = (subparsers: any) => {
             help: 'The output file for signups and messages',
         }
     )
+
+    parser.addArgument(
+        ['-s', '--sleep'],
+        {
+            type: 'int',
+            help: 'The number of milliseconds to sleep between each RPC request to avoid getting rate limited',
+        }
+    )
 }
 
-const fetchLogs = async (args: any) => {
+const genLocalState = async (args: any) => {
     // read the contract addresses from the config file
     const contractAddrs = readJSONFile(contractFilepath)
 
@@ -127,7 +133,7 @@ const fetchLogs = async (args: any) => {
 
     // ensure we have at least one address
     if ((!contractAddrs||!contractAddrs["MACI"]||!contractAddrs[pollArtifactName]) && !args.maci_contract && !args.poll_contract) {
-        console.error('Error: MACI and Poll contract addresses are empty or this poll Id does not exist') 
+        console.error('Error: If no contract address is stored locally, please specify the poll id, the maci contract address and the poll address') 
         return 
     }
     // prioritize cli flag arg
@@ -136,12 +142,12 @@ const fetchLogs = async (args: any) => {
 
     // validate it's a valid eth address
     if (!validateEthAddress(maciAddress)) {
-        console.error('Error: invalid MACI contract address')
+        console.error("Error: invalid MACI contract address. Ensure the address starts with '0x' followed by the 40 hexadecimal characters")
         return
     }
 
     if (!validateEthAddress(pollAddress)) {
-        console.error("Error: invalid Poll contract address")
+        console.error("Error: invalid Poll contract address. Ensure the address starts with '0x' followed by the 40 hexadecimal characters")
         return 
     }
 
@@ -159,22 +165,6 @@ const fetchLogs = async (args: any) => {
         console.error('Error: there is no Poll contract deployed at the specified address')
         return
     }
-
-    // fetch abis
-    const [ maciContractAbi ] = parseArtifact('MACI')
-    const [ pollContractAbi ] = parseArtifact('Poll')
-
-    const maciContract = new ethers.Contract(
-        maciAddress,
-        maciContractAbi,
-        provider,
-    )
-
-    const pollContract = new ethers.Contract(
-        pollAddress,
-        pollContractAbi,
-        provider
-    )
 
     // The coordinator's MACI private key
     let serializedPrivkey: string 
@@ -194,7 +184,6 @@ const fetchLogs = async (args: any) => {
 
     // calculate the end block number 
     const endBlockNumber = args.end_block ? args.end_block : await provider.getBlockNumber()
-    console.log('Fetching logs till:', endBlockNumber)
 
     console.log('Fetching signup and publish message logs')
     // some rpc endpoint like bsc chain has limitation to retreive history logs
@@ -204,7 +193,8 @@ const fetchLogs = async (args: any) => {
         const txn = await provider.getTransaction(txHash);
         fromBlock = txn.blockNumber
     }
-    console.log(`fromBlock = ${fromBlock}`)
+    console.log(`Fetching logs from ${fromBlock} till ${endBlockNumber} and generating the offline maci state`)
+
     const maciState = await genMaciStateFromContract(
         provider,
         maciAddress,
@@ -212,7 +202,8 @@ const fetchLogs = async (args: any) => {
         pollId,
         fromBlock,
         args.blocks_per_batch,
-        args.end_block
+        args.end_block,
+        args.sleep
     )
 
     // write the state to a file
@@ -221,6 +212,6 @@ const fetchLogs = async (args: any) => {
 }
 
 export {
-    fetchLogs,
+    genLocalState,
     configureSubparser,
 }

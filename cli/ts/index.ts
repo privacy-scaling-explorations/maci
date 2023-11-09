@@ -128,9 +128,9 @@ import {
     configureSubparser as configureSubparserForCheckVerifyKey,
 } from './checkVerifyingKey'
 import {
-    fetchLogs,
-    configureSubparser as configureSubparserForFetchLogs,
-} from './fetchLogs'
+    genLocalState,
+    configureSubparser as configureSubparserForGenerateLocalState,
+} from './genLocalState'
 
 const main = async () => {
     const parser = new argparse.ArgumentParser({
@@ -199,8 +199,8 @@ const main = async () => {
     // Subcommand: checkVerifyKey
     configureSubparserForCheckVerifyKey(subparsers);
 
-    // Subcommand: fetchlogs
-    configureSubparserForFetchLogs(subparsers)
+    // Subcommand: genLocalState
+    configureSubparserForGenerateLocalState(subparsers)
 
     const args = parser.parseArgs()
 
@@ -243,8 +243,8 @@ const main = async () => {
         await verify(args)
     } else if (args.subcommand === 'checkVerifyingKey') {
         await checkVerifyingKey(args)
-    } else if (args.subcommand === 'fetchLogs') {
-        await fetchLogs(args)
+    } else if (args.subcommand === 'genLocalState') {
+        await genLocalState(args)
     }
 };
 

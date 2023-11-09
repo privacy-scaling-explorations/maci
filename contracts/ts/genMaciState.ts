@@ -6,7 +6,8 @@ import { MaciState } from "maci-core";
 
 import { Contract, providers, utils } from "ethers";
 // import { assert } from 'assert'
-import assert = require("assert");
+import assert = require("assert")
+import { sleep } from './utils'
 
 interface Action {
     type: string;
@@ -22,7 +23,8 @@ const genMaciStateFromContract = async (
     pollId: number,
     fromBlock: number = 0,
     blocksPerRequest: number = 50,
-    endBlock?: number
+    endBlock?: number,
+    sleepAmount?: number
 ): Promise<MaciState> => {
     pollId = Number(pollId);
     // Verify and sort pollIds
@@ -63,6 +65,9 @@ const genMaciStateFromContract = async (
             address: address
         })
 
+        // sleep to avoid rate limiting
+        if (sleepAmount) await sleep(sleepAmount)
+
         initLogs = initLogs.concat(tmpInitLogs)
 
         const tmpSignUpLogs = await provider.getLogs({
@@ -71,6 +76,8 @@ const genMaciStateFromContract = async (
             toBlock,
             address: address
         })
+
+        if (sleepAmount) await sleep(sleepAmount)
 
         signUpLogs = signUpLogs.concat(tmpSignUpLogs)
     
@@ -81,6 +88,8 @@ const genMaciStateFromContract = async (
             address: address
         })
 
+        if (sleepAmount) await sleep(sleepAmount)
+
         mergeStateAqSubRootsLogs = mergeStateAqSubRootsLogs.concat(tmpMergeStateAqSubRootsLogs)
     
         const tmpMergeStateAqLogs = await provider.getLogs({
@@ -90,6 +99,8 @@ const genMaciStateFromContract = async (
             address: address
         })
 
+        if (sleepAmount) await sleep(sleepAmount)
+
         mergeStateAqLogs = mergeStateAqLogs.concat(tmpMergeStateAqLogs)
     
         const tmpDeployPollLogs = await provider.getLogs({
@@ -98,6 +109,8 @@ const genMaciStateFromContract = async (
             toBlock,
             address: address
         })
+
+        if (sleepAmount) await sleep(sleepAmount)
 
         deployPollLogs = deployPollLogs.concat(tmpDeployPollLogs)
     }
@@ -285,6 +298,7 @@ const genMaciStateFromContract = async (
             fromBlock: i,
             toBlock
         })
+        if (sleepAmount) await sleep(sleepAmount)
 
         publishMessageLogs = publishMessageLogs.concat(tmpPublishMessageLogs)
     
@@ -294,6 +308,7 @@ const genMaciStateFromContract = async (
             toBlock,
             address: pollContract.address
         })
+        if (sleepAmount) await sleep(sleepAmount)
 
         topupLogs = topupLogs.concat(tmpTopupLogs)    
     
@@ -303,6 +318,7 @@ const genMaciStateFromContract = async (
             toBlock,
             address: pollContract.address
         })
+        if (sleepAmount) await sleep(sleepAmount)
 
         mergeMaciStateAqSubRootsLogs = mergeMaciStateAqSubRootsLogs.concat(tmpMergeMaciStateAqSubRootsLogs)
     
@@ -312,6 +328,7 @@ const genMaciStateFromContract = async (
             toBlock,
             address: pollContract.address
         })
+        if (sleepAmount) await sleep(sleepAmount)
 
         mergeMaciStateAqLogs = mergeMaciStateAqLogs.concat(tmpMergeMaciStateAqLogs)
     
@@ -321,6 +338,7 @@ const genMaciStateFromContract = async (
             toBlock,
             address: pollContract.address
         })
+        if (sleepAmount) await sleep(sleepAmount)
 
         mergeMessageAqSubRootsLogs = mergeMessageAqSubRootsLogs.concat(tmpMergeMessageAqSubRootsLogs)
     
@@ -330,6 +348,7 @@ const genMaciStateFromContract = async (
             toBlock,
             address: pollContract.address
         })
+        if (sleepAmount) await sleep(sleepAmount)
 
         mergeMessageAqLogs = mergeMessageAqLogs.concat(tmpMergeMessageAqLogs)
     }
@@ -349,7 +368,7 @@ const genMaciStateFromContract = async (
 
         const encPubKey = new PubKey(
             event.args._encPubKey.map((x) => BigInt(x.toString()))
-        );
+        )
 
         actions.push({
             type: "PublishMessage",

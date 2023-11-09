@@ -379,9 +379,13 @@ const genProofs = async (args: any) => {
     let maciState: MaciState
     // Build an off-chain representation of the MACI contract using data in the contract storage
     if (args.state_file) {
-        // @todo actually read the file first 
         const content = JSON.parse(fs.readFileSync(args.state_file, 'utf-8').toString())
-        maciState = MaciState.fromJSON(content)
+        try {
+            maciState = MaciState.fromJSON(content)
+        } catch (error: any) {
+            console.log('The provided state file is invalid. Please check that the correct path was provided and try again.')
+            return 
+        }
         // ensure we merge all messages
         maciState.polls.forEach((poll: Poll) => poll.mergeAllMessages()) 
     } else {

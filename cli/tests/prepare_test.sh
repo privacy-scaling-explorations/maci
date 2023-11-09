@@ -51,6 +51,55 @@ clean() {
         
 }
 
+gen_proofs_pre_fetch() {
+     echo "merge messages ..."
+    $MACI_CLI mergeMessages \
+        --poll-id $1
+    
+    echo "merge signups ..."
+    $MACI_CLI mergeSignups \
+        --poll-id $1
+
+    echo "gen proofs ..."
+
+    # generate the local state
+    $MACI_CLI genLocalState \
+        --poll-id $1 \
+        --output localState.json \
+        --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
+        --num-blocks-per-request 50
+
+    ARCH=$(uname -m)
+    if [[ $ARCH == *"arm"* ]]; then
+        # ARM parameters
+        $MACI_CLI genProofs \
+            --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
+            --poll-id $1 \
+            --process-wasm ./zkeys/ProcessMessages_"$PROCESS_MESSAGES_PARAMS"_js/ProcessMessages_"$PROCESS_MESSAGES_PARAMS".wasm \
+            --tally-wasm ./zkeys/TallyVotes_"$TALLY_VOTES_PARAMS"_js/TallyVotes_"$TALLY_VOTES_PARAMS".wasm \
+            --process-zkey "$ZKEYS_DIR"/ProcessMessages_"$PROCESS_MESSAGES_PARAMS".0.zkey \
+            --tally-zkey "$ZKEYS_DIR"/TallyVotes_"$TALLY_VOTES_PARAMS".0.zkey \
+            --tally-file tally.json \
+            --output proofs/ \
+            --state-file localState.json \
+            $SUBSIDDY_OPTION_GEN_PROOFS
+    else
+        # Intel parameters
+        $MACI_CLI genProofs \
+            --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
+            --poll-id $1 \
+            --rapidsnark ~/rapidsnark/build/prover \
+            --process-witnessgen ./zkeys/ProcessMessages_"$PROCESS_MESSAGES_PARAMS" \
+            --tally-witnessgen ./zkeys/TallyVotes_"$TALLY_VOTES_PARAMS" \
+            --process-zkey "$ZKEYS_DIR"/ProcessMessages_"$PROCESS_MESSAGES_PARAMS".0.zkey \
+            --tally-zkey "$ZKEYS_DIR"/TallyVotes_"$TALLY_VOTES_PARAMS".0.zkey \
+            --tally-file tally.json \
+            --output proofs/ \
+            --state-file localState.json \
+            $SUBSIDDY_OPTION_GEN_PROOFS
+    fi
+}
+
 gen_proofs() {
     echo "merge messages ..."
     $MACI_CLI mergeMessages \
