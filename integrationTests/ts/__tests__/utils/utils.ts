@@ -3,6 +3,7 @@ import { Subsidy, Tally, Vote } from './interfaces'
 import { Keypair } from 'maci-domainobjs'
 import { defaultVote } from './constants'
 import { expect } from "chai"
+import { arch } from 'os'
 
 /**
  * Test utility to generate vote objects for integrationt ests
@@ -116,13 +117,14 @@ export const expectTally = (
         if (voteWeight != 0) {
             genTally[voteOption] = voteWeight.toString()
         }
-    })
+    })    
+
     expectedPerVOSpentVoiceCredits.map((spentCredit, index) => {
         if (spentCredit != 0) {
             genPerVOSpentVoiceCredits[index] = spentCredit.toString()
         }
     })
-
+   
     expect(tallyFile.results.tally).to.eq(genTally)
     expect(tallyFile.perVOSpentVoiceCredits.tally).to.eq(genPerVOSpentVoiceCredits)
     expect(tallyFile.totalSpentVoiceCredits.spent).to.eq(expectedTotalSpentVoiceCredits.toString())
@@ -154,3 +156,9 @@ export const expectSubsidy = (
  * @param ms - the number of ms to sleep for
  */
 export const sleep = async (ms: number) => await new Promise(resolve => setTimeout(resolve, ms))
+
+/**
+ * Check whether we are running on an arm chip
+ * @returns whether we are running on an arm chip
+ */
+export const isArm = () => arch().includes('arm') 

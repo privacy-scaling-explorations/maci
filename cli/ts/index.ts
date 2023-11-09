@@ -291,9 +291,9 @@ program
     .requiredOption("-o, --poll-id <pollId>", "the poll id")
     .option("-t, --tally-file <tallyFile>", "the tally file")
     .option("-s, --subsidy-file <subsidyFile>", "the subsidy file")
-    .requiredOption("-r, --rapidsnark <rapidsnark>", "the path to the rapidsnark binary")
-    .requiredOption("-wp, --process-witnessgen <processWitnessgen>", "the path to the process witness generation binary")
-    .requiredOption("-wt, --tally-witnessgen <tallyWitnessgen>", "the path to the tally witness generation binary")
+    .option("-r, --rapidsnark <rapidsnark>", "the path to the rapidsnark binary")
+    .option("-wp, --process-witnessgen <processWitnessgen>", "the path to the process witness generation binary")
+    .option("-wt, --tally-witnessgen <tallyWitnessgen>", "the path to the tally witness generation binary")
     .option("-ws, --subsidy-witnessgen <subsidyWitnessgen>", "the path to the subsidy witness generation binary")
     .requiredOption("-zp, --process-zkey <processZkey>", "the path to the process zkey")
     .requiredOption("-zt, --tally-zkey <tallyZkey>", "the path to the tally zkey")
@@ -301,6 +301,10 @@ program
     .option("-q, --quiet", "whether to print values to the console")
     .requiredOption("-f, --output <outputDir>", "the output directory for proofs")
     .option('-tx, --transaction-hash <transactionHash>', 'transaction hash of MACI contract creation')
+    .option("-w, --wasm", "whether to use the wasm binaries")
+    .option("-pw, --process-wasm <processWasm>", "the path to the process witness generation wasm binary")
+    .option("-tw, --tally-wasm <tallyWasm>", "the path to the tally witness generation wasm binary")
+    .option("-sw, --subsidy-wasm <subsidyWasm>", "the path to the subsidy witness generation wasm binary")
     .action(async (cmdObj) => {
         await genProofs({
             coordinatorPrivKey: cmdObj.privkey,
@@ -318,6 +322,10 @@ program
             quiet: cmdObj.quiet,
             outputDir: cmdObj.output,
             transactionHash: cmdObj.transactionHash,
+            useWasm: cmdObj.wasm,
+            processWasm: cmdObj.processWasm,
+            tallyWasm: cmdObj.tallyWasm,
+            subsidyWasm: cmdObj.subsidyWasm
         })
     })
 program 
