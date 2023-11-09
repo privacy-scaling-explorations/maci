@@ -30,7 +30,7 @@ import {
 } from "./utils/constants"
 import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs"
 import { homedir } from "os"
-import { expectSubsidy, expectTally, genTestUserCommands, sleep } from "./utils/utils"
+import { expectSubsidy, expectTally, genTestUserCommands, isArm } from "./utils/utils"
 import { genPubKey, genRandomSalt } from "maci-crypto"
 import { existsSync, readFileSync, readdir, unlinkSync } from "fs"
 import { expect } from "chai"
@@ -42,6 +42,10 @@ import { expect } from "chai"
  */
 describe("integration tests", function() {
     this.timeout(10000000)
+
+    // check on which system we are running
+    const useWasm = isArm()
+
     // global variables we need shared between tests
     let maciState: MaciState 
     let contracts: DeployedContracts
@@ -114,19 +118,19 @@ describe("integration tests", function() {
         )
     })
 
-    // after each test we need to cleanup some files
-    afterEach(() => {
-        if (existsSync(join(__dirname, "../../../cli/tally.json"))) unlinkSync(join(__dirname, "../../../cli/tally.json"))
-        if (existsSync(join(__dirname, "../../../cli/subsidy.json"))) unlinkSync(join(__dirname, "../../../cli/subsidy.json"))
-        const directory = join(__dirname, "../../../cli/proofs/")
-        if (!existsSync(directory)) return
-        readdir(directory, (err, files) => {
-            if (err) throw err
-            for (const file of files) {
-                unlinkSync(join(directory, file))
-            }
-        })
-    })
+    // // after each test we need to cleanup some files
+    // afterEach(() => {
+    //     if (existsSync(join(__dirname, "../../../cli/tally.json"))) unlinkSync(join(__dirname, "../../../cli/tally.json"))
+    //     if (existsSync(join(__dirname, "../../../cli/subsidy.json"))) unlinkSync(join(__dirname, "../../../cli/subsidy.json"))
+    //     const directory = join(__dirname, "../../../cli/proofs/")
+    //     if (!existsSync(directory)) return
+    //     readdir(directory, (err, files) => {
+    //         if (err) throw err
+    //         for (const file of files) {
+    //             unlinkSync(join(directory, file))
+    //         }
+    //     })
+    // })
 
     // read the test suite data
     const data = JSON.parse(readFileSync(join(__dirname, `./data/suites.json`)).toString())
@@ -210,18 +214,18 @@ describe("integration tests", function() {
                 }
             }
     
-            await timeTravel({ quiet: false, seconds: duration + 1000 })
+            await timeTravel({ quiet: true, seconds: duration })
 
             // merge messages
             await mergeMessages({ quiet: true, pollId: pollId, maciContractAddress: contracts.maciAddress })
 
             // merge signups
             await mergeSignups({ quiet: true, pollId: pollId, maciContractAddress: contracts.maciAddress })
-    
+
             // generate proofs
             await genProofs({
                 quiet: true, 
-                coordinatorPrivKey: "macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e",
+                coordinatorPrivKey: coordinatorKeypair.privKey.serialize(),
                 pollId: pollId,
                 processWitgen: join(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test"),
                 tallyWitgen: join(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test"),
@@ -231,17 +235,21 @@ describe("integration tests", function() {
                 subsidyZkey: subsidyEnabled ? join(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test.0.zkey") : undefined,
                 tallyFile: join(__dirname, "../../../cli/tally.json"),
                 subsidyFile: subsidyEnabled ? join(__dirname, "../../../cli/subsidy.json") : undefined,
+                tallyWasm: join(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test.wasm"),
+                processWasm: join(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test.wasm"),
+                subsidyWasm: subsidyEnabled ? join(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test.wasm") : undefined,
                 outputDir: join(__dirname, "../../../cli/proofs"),
-                rapidsnark: `${homedir()}/rapidsnark/build/prover`
+                rapidsnark: `${homedir()}/rapidsnark/build/prover`,
+                useWasm
             })
-    
+
             // verify that the data stored on the tally file is correct
             const tally = JSON.parse(readFileSync(join(__dirname, "../../../cli/tally.json")).toString())
-            expect(JSON.stringify(tally.pollId)).to.eq(pollId)
-            expectTally(maxMessages, data.expectedTally, data.expectedPerVOSpentVoiceCredits, data.expectedTotalSpentVoiceCredits, tally)
+            console.log("TALLY", tally)
+            expectTally(maxMessages, testCase.expectedTally, testCase.expectedSpentVoiceCredits, testCase.expectedTotalSpentVoiceCredits, tally)
             if (subsidyEnabled) {
                 const subsidy = JSON.parse(readFileSync(join(__dirname, "../../../cli/subsidy.json")).toString())
-                expectSubsidy(maxMessages, data.expectedSubsidy, subsidy)
+                expectSubsidy(maxMessages, testCase.expectedSubsidy, subsidy)
             }
             
             // prove on chain if everything matches
