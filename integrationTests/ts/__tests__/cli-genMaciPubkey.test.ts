@@ -5,7 +5,7 @@ import {
 import { 
     genPubKey,
 } from 'maci-crypto'
-import { genKeyPair, genMaciPubKey } from 'maci-cli/api'
+import { genKeyPair, genMaciPubKey } from 'maci-cli'
 import { expect } from "chai"
 
 describe('genMaciPubkey CLI subcommand', () => {

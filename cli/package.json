@@ -3,10 +3,6 @@
     "version": "1.1.2",
     "description": "CLI utilities for MACI",
     "main": "build/index.js",
-    "exports": {
-        ".": "./build/index.js",
-        "./api": "./build/api.js"
-    },
     "bin": {
         "maci-cli": "./build/index.js"
     },

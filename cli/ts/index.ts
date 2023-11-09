@@ -337,4 +337,40 @@ program
         proofDir: cmdObj.proofDir,
         quiet: cmdObj.quiet
     }))
-program.parseAsync(process.argv)
+
+if (require.main === module) {
+    program.parseAsync(process.argv)
+}
+
+export {
+    airdrop,
+    checkVerifyingKeys,
+    deploy,
+    deployPoll,
+    deployVkRegistryContract,
+    fundWallet,
+    genKeyPair,
+    genMaciPubKey,
+    genProofs,
+    mergeMessages,
+    mergeSignups,
+    publish,
+    proveOnChain,
+    setVerifyingKeys,
+    signup,
+    timeTravel,
+    topup,
+    verify
+} from "./commands"
+
+export {
+    DeployedContracts,
+    DeployArgs,
+    GenProofsArgs,
+    ProveOnChainArgs,
+    VerifyArgs,
+    CheckVerifyingKeysArgs,
+    GenKeyPairArgs,
+    ShowContractsArgs,
+    PollContracts
+} from "./utils"

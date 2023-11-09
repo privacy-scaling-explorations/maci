@@ -14,7 +14,7 @@ import {
     verify,
     DeployedContracts, 
     PollContracts
-} from "maci-cli/api"
+} from "maci-cli"
 import { join } from "path"
 import { 
     INT_STATE_TREE_DEPTH, 
@@ -30,7 +30,7 @@ import {
 } from "./utils/constants"
 import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs"
 import { homedir } from "os"
-import { expectSubsidy, expectTally, genTestUserCommands } from "./utils/utils"
+import { expectSubsidy, expectTally, genTestUserCommands, sleep } from "./utils/utils"
 import { genPubKey, genRandomSalt } from "maci-crypto"
 import { existsSync, readFileSync, readdir, unlinkSync } from "fs"
 import { expect } from "chai"
@@ -210,18 +210,19 @@ describe("integration tests", function() {
                 }
             }
     
-            await timeTravel({quiet: false, seconds: duration * 1000000 })
+            await timeTravel({ quiet: false, seconds: duration + 1000 })
+
             // merge messages
-            await mergeMessages({quiet: true, pollId: 0, maciContractAddress: contracts.maciAddress})
+            await mergeMessages({ quiet: true, pollId: pollId, maciContractAddress: contracts.maciAddress })
 
             // merge signups
-            await mergeSignups({quiet: true, pollId: 0, maciContractAddress: contracts.maciAddress})
+            await mergeSignups({ quiet: true, pollId: pollId, maciContractAddress: contracts.maciAddress })
     
             // generate proofs
             await genProofs({
                 quiet: true, 
                 coordinatorPrivKey: "macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e",
-                pollId: 1,
+                pollId: pollId,
                 processWitgen: join(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test"),
                 tallyWitgen: join(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test"),
                 subsidyWitgen: subsidyEnabled ? join(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test") : undefined,
@@ -246,7 +247,7 @@ describe("integration tests", function() {
             // prove on chain if everything matches
             await proveOnChain({
                 quiet: true,
-                pollId: '0',
+                pollId: pollId,
                 maciAddress: contracts.maciAddress,
                 messageProcessorAddress: pollContracts.messageProcessor,
                 tallyAddress: pollContracts.tally,
