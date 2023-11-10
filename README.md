@@ -108,6 +108,9 @@ own unit tests.
 
 ### Unit tests
 
+Unit tests within the project are built using [Mocha](https://mochajs.org/) and [Chai](https://www.chaijs.com/). Mocha is a test framework that provides the environment to write and run JavaScript tests, while Chai is an assertion library that allows us to write assertions in a more expressive and readable way.
+
+
 The following submodules contain unit tests: `core`, `crypto`, `circuits`,
 `contracts`, and `domainobjs`.
 
