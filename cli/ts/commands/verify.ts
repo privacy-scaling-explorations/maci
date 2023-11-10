@@ -78,7 +78,6 @@ export const verify = async ({
     const validResultsCommitment = tallyData.newTallyCommitment && tallyData.newTallyCommitment.match(/0x[a-fA-F0-9]+/) 
     if (!validResultsCommitment) logError('Invalid results commitment format')
 
-
     const treeDepths = await pollContract.treeDepths()
     const voteOptionTreeDepth = Number(treeDepths.voteOptionTreeDepth)
     const numVoteOptions = 5 ** voteOptionTreeDepth

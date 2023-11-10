@@ -13,8 +13,10 @@ export const genKeyPair = ({
     quiet
 }: GenKeyPairArgs) => {
     if(!quiet) banner()
+    // create the new rando keypair
     const keypair = new Keypair()
 
+    // serialize both private and public keys
     const serializedPubKey = keypair.pubKey.serialize()
     const serializedPrivKey = keypair.privKey.serialize()
 

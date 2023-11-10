@@ -7,6 +7,10 @@ import { Contract } from "ethers"
 import { hash3, hashLeftRight, genTreeCommitment } from "maci-crypto"
 import { join } from "path"
 
+/**
+ * Generate proofs for the message processing, tally and subsidy calculations
+ * @param param0 - the parameters to this function
+ */
 export const genProofs = async ({
     outputDir,
     tallyFile,
@@ -30,6 +34,7 @@ export const genProofs = async ({
 }: GenProofsArgs) => {
     if(!quiet) banner()
 
+    // if we do not have the output directory just create it
     if (!existsSync(outputDir)) {
         // Create the directory
         mkdirSync(outputDir)
@@ -73,6 +78,7 @@ export const genProofs = async ({
         if (!subsidyZkey) logError('Please specify the subsidy zkey file location')
         if (!subsidyWitgen) logError('Please specify the subsidy witnessgen file location')
         
+        // we need different artifacts if using wasm or rapidsnark
         if (!useWasm) {
             if (!subsidyWitgen) logError('Please specify the subsidy witnessgen file location')
             const subsidyDatFile = subsidyWitgen + ".dat"
@@ -105,7 +111,6 @@ export const genProofs = async ({
 
     // the coordinator's MACI private key
     const privateKey = coordinatorPrivKey ? coordinatorPrivKey : await promptPwd('Insert your MACI private key')
-
     if (!PrivKey.isValidSerializedPrivKey(privateKey)) logError('Invalid MACI private key')
     const maciPrivKey = PrivKey.deserialize(privateKey)
     const coordinatorKeypair = new Keypair(maciPrivKey)
@@ -151,6 +156,7 @@ export const genProofs = async ({
         (await pollContract.treeDepths()).messageTreeDepth
     )
 
+    // check that the main root is set
     const mainRoot = (await messageAqContract.getMainRoot(messageTreeDepth.toString())).toString()
     if (mainRoot === '0') logError(
         'The message tree has not been merged yet. ' +
@@ -186,9 +192,11 @@ export const genProofs = async ({
 
     // while we have unprocessed messages, process them
     while(poll.hasUnprocessedMessages()) { 
+        // process messages in batches
         const circuitInputs = poll.processMessages(pollId)
 
         try {
+            // generate the proof for this batch
             const r = await genProof(
                 circuitInputs,
                 processZkey,
@@ -196,6 +204,7 @@ export const genProofs = async ({
                 processWitgen,
                 processWasm
             )
+            // verify it
             const isValid = await verifyProof(
                 r.publicSignals,
                 r.proof,
@@ -239,8 +248,10 @@ export const genProofs = async ({
         let subsidyCircuitInputs: any
         // calculate the subsidy for each batch
         while (poll.hasUnfinishedSubsidyCalculation()) {
+            // calculate subsidy in batches
             subsidyCircuitInputs = poll.subsidyPerBatch()
             try {
+                // generate proof for this batch
                 const r = await genProof(
                     subsidyCircuitInputs,
                     subsidyZkey,
@@ -248,6 +259,7 @@ export const genProofs = async ({
                     subsidyWitgen,
                     subsidyWasm
                 )
+                // check validity of it
                 const isValid = await verifyProof(
                     r.publicSignals,
                     r.proof,
@@ -299,6 +311,7 @@ export const genProofs = async ({
     let tallyCircuitInputs: any 
     // tally all ballots for this poll
     while (poll.hasUntalliedBallots()) {
+        // tally votes in batches
         tallyCircuitInputs = poll.tallyVotes()
 
         try {
@@ -326,8 +339,8 @@ export const genProofs = async ({
                 publicInputs: r.publicSignals,
             }
 
+            // save it
             tallyProofs.push(thisProof)
-
             writeFileSync(join(outputDir, `tally_${poll.numBatchesTallied - 1}.json`), JSON.stringify(thisProof, null, 4))
 
             if (!quiet) logYellow(info(`Progress: ${poll.numBatchesTallied} / ${totalTallyBatches}`))
@@ -336,6 +349,7 @@ export const genProofs = async ({
         } catch (error: any) { logError(error.message) }
     }
 
+    // create the tally file data to store for verification later
     const tallyFileData = {
         provider: signer.provider.connection.url,
         maci: maciAddress,
@@ -384,6 +398,7 @@ export const genProofs = async ({
 
     writeFileSync(tallyFile, JSON.stringify(tallyFileData, null, 4))
 
+    // compare the commitments
     if ('0x' + newTallyCommitment.toString(16) === tallyFileData.newTallyCommitment) {
         if (!quiet) logGreen(success('The tally commitment is correct'))
     } else {

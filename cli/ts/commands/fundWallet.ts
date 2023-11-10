@@ -21,6 +21,7 @@ export const fundWallet = async ({
     if(!quiet) banner()
     const signer = await getDefaultSigner()
     
+    // fund the wallet by sending Ether to it
     try {
         const tx = await signer.sendTransaction({ to: address, value: amount.toString() })
         const receipt = await tx.wait()

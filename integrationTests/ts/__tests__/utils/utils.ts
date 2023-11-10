@@ -59,13 +59,20 @@ const getTestVoteValues = (
     return { voteOptionIndex, voteWeight, valid }
 }
 
-
+/**
+ * Generate a list of user commands for integration tests
+ * @param numUsers - the number of users
+ * @param numVotesPerUser - the number of votes per user
+ * @param bribers - the number of bribers
+ * @param presetVotes - the preset votes if any
+ * @returns an array of UserCommand objects
+ */
 export const genTestUserCommands = (
     numUsers: number,
     numVotesPerUser: number,
     bribers?: any,
     presetVotes?: any,
-) => {
+): UserCommand[] => {
     const usersCommands: UserCommand[] = []
     for (let i = 0; i< numUsers; i++) {
         const userKeypair = new Keypair()
@@ -104,11 +111,11 @@ export const genTestUserCommands = (
 
 /**
  * Assertion function to validate that the tally results are as expected
- * @param maxMessages 
- * @param expectedTally 
- * @param expectedPerVOSpentVoiceCredits 
- * @param expectedTotalSpentVoiceCredits 
- * @param tallyFile 
+ * @param maxMessages - the max number of messages
+ * @param expectedTally - the expected tally values
+ * @param expectedPerVOSpentVoiceCredits - the expected per VO spent voice credits
+ * @param expectedTotalSpentVoiceCredits - the expected total spent voice credits
+ * @param tallyFile the tally file itself as an object
  */
 export const expectTally = (
     maxMessages: number,
@@ -134,14 +141,13 @@ export const expectTally = (
     expect(tallyFile.results.tally).to.deep.equal(genTally)
     expect(tallyFile.perVOSpentVoiceCredits.tally).to.deep.equal(genPerVOSpentVoiceCredits)
     expect(tallyFile.totalSpentVoiceCredits.spent).to.eq(expectedTotalSpentVoiceCredits.toString())
-
 }
 
 /**
  * Assertion function to ensure that the subsidy results are as expected
- * @param maxMessages 
- * @param expectedSubsidy 
- * @param SubsidyFile 
+ * @param maxMessages - the max number of messages
+ * @param expectedSubsidy - the expected subsidy values
+ * @param SubsidyFile - the subsidy file itself as an object
  */
 export const expectSubsidy = (
     maxMessages: number,

@@ -6,6 +6,10 @@ import { Contract } from "ethers"
 import { TopupArgs } from "../utils/interfaces"
 import { banner } from "../utils/index"
 
+/**
+ * Publish a topup message
+ * @param param0 - the arguments to this function
+ */
 export const topup = async ({
     amount,
     maciAddress,
@@ -15,13 +19,16 @@ export const topup = async ({
 }: TopupArgs) => {
     if(!quiet) banner()
     const signer = await getDefaultSigner()
+
+    // ensure we have a valid MACI contract address
     if (!readContractAddress(maciAddress) && !maciAddress) 
         logError('Invalid MACI contract address')
 
     const maciContractAddress = maciAddress ? maciAddress : readContractAddress(maciAddress)
     if (!(await contractExists(signer.provider, maciContractAddress))) logError('There is no contract deployed at the specified address')
 
-    if (amount <= 0) logError('Topup amount must be greater than 0')
+    // validate the params
+    if (amount < 1) logError('Topup amount must be greater than 0')
     if (stateIndex < 1) logError('State index must be greater than 0')
     if (pollId < 0) logError('Poll ID must be a positive integer')
 
@@ -41,6 +48,7 @@ export const topup = async ({
     )
   
     try {
+        // submit the topup message on chain
         const tx = await pollContract.topup(
             stateIndex,
             amount.toString(),

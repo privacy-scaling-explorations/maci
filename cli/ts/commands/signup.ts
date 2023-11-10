@@ -9,7 +9,7 @@ import { SignUpArgs } from "../utils/interfaces"
 
 /**
  * Signup a user to the MACI contract
- * @param param0 
+ * @param param0 - the params to this function
  * @returns the state index of the user
  */
 export const signup = async ({
@@ -25,15 +25,18 @@ export const signup = async ({
 
     const userMaciPubKey = PubKey.deserialize(maciPubKey)
 
+    // ensure we have the contract addresses
     if (!readContractAddress("MACI") && !maciAddress) logError('Invalid MACI contract address')
 
     const maciContractAddress = maciAddress ? maciAddress : readContractAddress("MACI")
     if (!(await contractExists(signer.provider, maciContractAddress))) logError('There is no contract deployed at the specified address')
+    
     const sgData = sgDataArg ? sgDataArg : DEFAULT_SG_DATA
     const ivcpData = ivcpDataArg ? ivcpDataArg : DEFAULT_IVCP_DATA
 
     const regex32ByteHex = /^0x[a-fA-F0-9]{64}$/
 
+    // we validate that the signup data and voice credit data is valid
     if (!sgData.match(regex32ByteHex)) logError('invalid signup gateway data')
     if (!ivcpData.match(regex32ByteHex)) logError('invalid initial voice credit proxy data')
 
@@ -46,6 +49,7 @@ export const signup = async ({
 
     let stateIndex = ""
     try {
+        // sign up to the MACI contract
         const tx = await maciContract.signUp(
             userMaciPubKey.asContractParam(),
             sgData,

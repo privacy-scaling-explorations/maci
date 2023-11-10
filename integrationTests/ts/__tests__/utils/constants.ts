@@ -1,3 +1,4 @@
+// this file contains all of the constants used in the integration tests
 export const invalidVote = {
     voteWeight: 2,
     nonce: 0,

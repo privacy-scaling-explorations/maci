@@ -28,6 +28,7 @@ export const setVerifyingKeys = async ({
     quiet
 }: SetVerifyingKeysArgs) => {
     if(!quiet) banner()
+    // we must either have the contract as param or stored to file
     if (!readContractAddress("VkRegistry") && !vkRegistry) {
         logError('vkRegistry contract address is empty') 
     }
@@ -39,6 +40,7 @@ export const setVerifyingKeys = async ({
     if (!existsSync(tallyVotesZkeyPath)) logError(`2 ${tallyVotesZkeyPath} does not exist.`)
     if (subsidyZkeyPath && !existsSync(subsidyZkeyPath)) logError(`3 ${subsidyZkeyPath} does not exist.`)
 
+    // extract the vks
     const processVk: VerifyingKey = VerifyingKey.fromObj(await extractVk(processMessagesZkeyPath))
     const tallyVk: VerifyingKey = VerifyingKey.fromObj(await extractVk(tallyVotesZkeyPath))
     
@@ -135,7 +137,7 @@ export const setVerifyingKeys = async ({
     // actually set those values
     try {
         if (!quiet) logYellow(info('Setting verifying keys...'))
-
+        // set them onchain
         const tx = await vkRegistryContract.setVerifyingKeys(
             stateTreeDepth,
             intStateTreeDepth,
@@ -166,7 +168,6 @@ export const setVerifyingKeys = async ({
         )
 
         if (!compareVks(processVk, processVkOnChain)) logError('processVk mismatch')
-
         if (!compareVks(tallyVk, tallyVkOnChain)) logError('tallyVk mismatch')
 
         // set subsidy keys if any

@@ -24,12 +24,14 @@ import { readFileSync } from "fs"
 import { join } from "path"
 
 const packagePath = join(__dirname, '..')
+// set the description version and name of the cli tool
 const { description, version, name } = JSON.parse(
     readFileSync(`${packagePath}/package.json`, "utf8")
 )
 const program = createCommand()
 program.name(name).description(description).version(version)
 
+// add the commands
 program
     .command("create")
     .description("deploy the contracts")
@@ -350,6 +352,7 @@ if (require.main === module) {
     program.parseAsync(process.argv)
 }
 
+// export everything so we can use in other packages
 export {
     airdrop,
     checkVerifyingKeys,

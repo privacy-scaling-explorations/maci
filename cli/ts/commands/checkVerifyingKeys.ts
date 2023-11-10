@@ -43,6 +43,7 @@ export const checkVerifyingKeys = async ({
 
     try {
         if (!quiet) logYellow(info("Retrieving verifying keys from the contract..."))
+        // retrieve the verifying keys from the contract
         const vkRegistryAddress = await maciContractInstance.vkRegistry()
         const vkRegistryContract = new Contract(
             vkRegistryAddress,
@@ -65,6 +66,7 @@ export const checkVerifyingKeys = async ({
             voteOptionTreeDepth
         )
 
+        // do the actual validation
         if (!compareVks(processVk, processVkOnChain)) logError("Process verifying keys do not match")
         if (!compareVks(tallyVk, tallyVkOnChain)) logError("Tally verifying keys do not match")
     } catch (error: any) { logError(error.message) }

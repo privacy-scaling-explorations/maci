@@ -1,5 +1,11 @@
 import { VerifyingKey } from "maci-domainobjs"
 
+/**
+ * Compare two verifying keys
+ * @param vk - the local verifying key 
+ * @param vkOnChain - the verifying key on chain
+ * @returns whether they are equal or not
+ */
 export const compareVks = (vk: VerifyingKey, vkOnChain: any): boolean => {
     let isEqual = vk.ic.length === vkOnChain.ic.length
     for (let i = 0; i < vk.ic.length; i ++) {

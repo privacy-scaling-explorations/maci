@@ -97,6 +97,7 @@ export const deploy = async ({
         )
     }
 
+    // return all addresses
     return {
         maciAddress: maciContract.address,
         stateAqAddress: stateAqContract.address,

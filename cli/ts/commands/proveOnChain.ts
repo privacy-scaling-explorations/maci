@@ -33,6 +33,7 @@ export const proveOnChain = async ({
     const tallyContractAddress = tallyAddress ? tallyAddress : readContractAddress("Tally-"+pollId)
     const subsidyContractAddress = subsidyAddress ? subsidyAddress : readContractAddress("Subsidy-"+pollId)
 
+    // check contracts are deployed on chain
     if (!(await contractExists(signer.provider, maciContractAddress))) logError("MACI contract does not exist")
     if (!(await contractExists(signer.provider, messageProcessorContractAddress))) logError("MessageProcessor contract does not exist")
     if (!(await contractExists(signer.provider, tallyContractAddress))) logError("Tally contract does not exist")
@@ -136,6 +137,7 @@ export const proveOnChain = async ({
         }
     }
 
+    // retrieve the values we need from the smart contracts
     const numSignUpsAndMessages = await pollContract.numSignUpsAndMessages()
     const numSignUps = Number(numSignUpsAndMessages[0])
     const numMessages = Number(numSignUpsAndMessages[1])
@@ -151,6 +153,8 @@ export const proveOnChain = async ({
     if (numMessages > messageBatchSize && numMessages % messageBatchSize > 0) {
         totalMessageBatches ++
     }
+
+    // perform validation
 
     if (numProcessProofs !== totalMessageBatches) {
         logRed(error(`The proof files inside ${proofDir} do not have the correct number of message processign proofs` +
@@ -237,6 +241,7 @@ export const proveOnChain = async ({
 
         if (publicInputHashOnChain.toString() !== publicInputs[0].toString()) logError('Public input mismatch.')
 
+        // verify the proof onchain using the verifier contract
         const isValidOnChain = await verifierContract.verify(
             formattedProof,
             onChainProcessVk,
@@ -245,6 +250,7 @@ export const proveOnChain = async ({
         if (!isValidOnChain) logError('The verifier contract found the proof invalid.')
 
         try {
+            // validate process messaging proof and store the new state and ballot root commitment
             const tx = await mpContract.processMessages(
                 pollContract.address,
                 '0x' + BigInt(circuitInputs.newSbCommitment).toString(16),
@@ -256,16 +262,6 @@ export const proveOnChain = async ({
 
             // Wait for the node to catch up
             numberBatchesProcessed = Number(await mpContract.numBatchesProcessed())
-            let backOff = 1000
-            let numAttempts = 0
-            while (numberBatchesProcessed !== i + 1) {
-                await delay(backOff)
-                backOff *= 1.2
-                numAttempts ++
-                if (numAttempts >= 100) {
-                    break
-                }
-            }
 
             if (!quiet) logYellow(info(`Progress: ${numberBatchesProcessed} / ${totalMessageBatches}`))
         } catch (error: any) {
@@ -276,8 +272,7 @@ export const proveOnChain = async ({
     if (numberBatchesProcessed === totalMessageBatches) 
         if (!quiet) logGreen(success('All message processing proofs have been submitted.'))
     
-    
-    // subsidy calculations if any proofs are provided
+    // subsidy calculations if any subsidy proofs are provided 
     if (Object.keys(data.subsidyProofs).length !== 0) {
         let rbi = Number(await subsidyContract.rbi())
         let cbi = Number(await subsidyContract.cbi())
@@ -292,6 +287,7 @@ export const proveOnChain = async ({
             if (i == 0) await subsidyContract.updateSbCommitment(mpContract.address)
             const { proof, circuitInputs, publicInputs } = data.subsidyProofs[i]
     
+            // ensure the commitment matches
             const subsidyCommitmentOnChain = await subsidyContract.subsidyCommitment()
             if (subsidyCommitmentOnChain.toString() !== circuitInputs.currentSubsidyCommitment) {
                 logError(`subsidycommitment mismatch`)
@@ -302,6 +298,7 @@ export const proveOnChain = async ({
             if (circuitInputs.packedVals !== packedValsOnChain.toString()) {
                 logError('subsidy packedVals mismatch.')
             }
+            // ensure the state and ballot root commitment matches
             const currentSbCommitmentOnChain = await subsidyContract.sbCommitment()
             if (currentSbCommitmentOnChain.toString() !== circuitInputs.sbCommitment) {
                 logError('currentSbCommitment mismatch.')
@@ -315,9 +312,11 @@ export const proveOnChain = async ({
                 logError('public input mismatch.')
             }
     
+            // format the proof so it can be verify on chain
             const formattedProof = formatProofForVerifierContract(proof)
         
             try {
+                // verify the proof on chain and set the new subsidy commitment
                 const tx = await subsidyContract.updateSubsidy(
                     pollContract.address,
                     mpContract.address,
@@ -333,22 +332,9 @@ export const proveOnChain = async ({
                     logYellow(info(`Progress: ${subsidyBatchNum + 1} / ${totalBatchNum}`))
                 }
 
-                // Wait for the node to catch up
-                // @todo this does not make too much sense 
                 let nrbi = Number(await subsidyContract.rbi())
                 let ncbi = Number(await subsidyContract.cbi())
-                let backOff = 1000
-                let numAttempts = 0
-                while (nrbi === rbi && ncbi === cbi) {
-                    await delay(backOff)
-                    backOff *= 1.2
-                    numAttempts ++
-                    if (numAttempts >= 100) {
-                        break
-                    }
-                }
-                // @todo what is the point of waiting if we store the ones before
-                // we start the delay loop 
+            
                 rbi = nrbi
                 cbi = ncbi
                 subsidyBatchNum = rbi * num1DBatches + cbi
@@ -402,8 +388,10 @@ export const proveOnChain = async ({
             logError(`public input mismatch. tallyBatchNum=${i}, onchain=${publicInputHashOnChain.toString()}, offchain=${publicInputs[0]}`)
 
 
+        // format the tally proof so it can be verified on chain
         const formattedProof = formatProofForVerifierContract(proof)
         try {
+            // verify the proof on chain 
             const tx = await tallyContract.tallyVotes(
                 pollContract.address,
                 mpContract.address,
@@ -419,20 +407,7 @@ export const proveOnChain = async ({
                 logYellow(info(`Transaction hash: ${tx.hash}`))
             }
 
-            // Wait for the node to catch up
-            // @todo check if we really need this
-            tallyBatchNum = Number(await tallyContract.tallyBatchNum())
-            let backOff = 1000
-            let numAttempts = 0
-            while (tallyBatchNum !== i + 1) {
-                await delay(backOff)
-                backOff *= 1.2
-                numAttempts ++
-                if (numAttempts >= 100) {
-                    break
-                }
-            }
-            
+            tallyBatchNum = Number(await tallyContract.tallyBatchNum())            
         } catch (error: any) { logError(error.message) }
     }
 

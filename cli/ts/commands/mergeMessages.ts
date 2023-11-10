@@ -26,8 +26,8 @@ export const mergeMessages = async ({
 }: MergeMessagesArgs) => {
     if(!quiet) banner()
     const signer = await getDefaultSigner()
-    // maci contract validation
 
+    // maci contract validation
     if (!readContractAddress("MACI") && !maciContractAddress) logError('Could not read contracts')
     const maciAddress = maciContractAddress ? maciContractAddress : readContractAddress("MACI")
     if (!(await contractExists(signer.provider, maciAddress))) logError('MACI contract does not exist')
@@ -101,8 +101,10 @@ export const mergeMessages = async ({
         (await pollContract.treeDepths()).messageTreeDepth
     )
 
+    // check if the main root was not already computed
     const mainRoot = (await accQueueContract.getMainRoot(messageTreeDepth.toString())).toString()
     if (mainRoot === '0') {
+        // go and merge the message tree
         if (!quiet) logYellow(info('Merging subroots to a main message root...'))
         const tx = await pollContract.mergeMessageAq()
         const receipt = await tx.wait()
