@@ -111,14 +111,20 @@ own unit tests.
 The following submodules contain unit tests: `core`, `crypto`, `circuits`,
 `contracts`, and `domainobjs`.
 
-Except for the `contracts` submodule, run unit tests as such (the following
-example is for `crypto`):
+You can run all unit tests from the root directory of the repo by running:
+
+```bash
+npm run test
+```
+
+Our you can run unit tests within each submodule. for example to run the `crypto` tests:
 
 ```bash
 cd crypto
 npm run test
 ```
 
+<!-- TODO: confirm if true -->
 For `contracts` and `integrationTests`, run the tests one by one. This prevents
 incorrect nonce errors.
 
@@ -136,12 +142,11 @@ cd contracts
 npm run test
 ```
 
-Or run tests individual as such:
+Or run individual tests:
 
 ```bash
 cd contracts
 npm run test-accQueue
-npx jest AccQueue
 ```
 
 Where both test commands run `AccQueue.test.ts`
