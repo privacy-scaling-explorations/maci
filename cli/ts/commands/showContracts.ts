@@ -4,6 +4,10 @@ import { banner } from "../utils/banner"
 import { logGreen, info } from "../utils/theme"
 import { ShowContractsArgs } from "../utils"
 
+/**
+ * Utility to print all contracts that have been deployed using maci-cli
+ * @param param0 - the params to this function
+ */
 export const showContracts = ({
     quiet
 }: ShowContractsArgs) => {

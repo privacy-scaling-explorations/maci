@@ -34,6 +34,7 @@ export const publish = async ({
     // deserialize
     const userMaciPubKey = PubKey.unserialize(pubkey)
 
+    // validation of the maci contract address
     if (!readContractAddress("MACI") && !maciContractAddress) logError('MACI contract address is empty')
 
     const maciAddress = maciContractAddress ? maciContractAddress: readContractAddress("MACI")
@@ -41,8 +42,8 @@ export const publish = async ({
     const signer = await getDefaultSigner()
     if (!(await contractExists(signer.provider, maciAddress))) logError('MACI contract does not exist')
 
+    // if no private key is passed we ask it securely
     const userPrivKey = privateKey ? privateKey : await promptPwd('Insert your MACI private key')
-
     if (!PrivKey.isValidSerializedPrivKey(userPrivKey)) logError('Invalid MACI private key')
 
     const userMaciPrivKey = PrivKey.unserialize(userPrivKey)
@@ -52,10 +53,8 @@ export const publish = async ({
     // check < 1 cause index zero is a blank state leaf
     if (stateIndex < 1) logError('invalid state index')
     if (nonce < 0) logError('invalid nonce')
-
     if (salt) if (!validateSalt(salt)) logError('Invalid salt')
     const userSalt = salt ? BigInt(salt) : genRandomSalt()
-    
     if (pollId < 0) logError('Invalid poll id')
 
     const maciContractAbi = parseArtifact('MACI')[0]
@@ -92,6 +91,7 @@ export const publish = async ({
 
     const encKeypair = new Keypair()
 
+    // create the command object
     const command: PCommand = new PCommand(
         BigInt(stateIndex),
         userMaciPubKey,
@@ -114,6 +114,7 @@ export const publish = async ({
     )
 
     try {
+        // submit the message onchain as well as the encryption public key
         const tx = await pollContract.publishMessage(
             message.asContractParam(),
             encKeypair.pubKey.asContractParam(),
@@ -131,5 +132,6 @@ export const publish = async ({
         logError(error.message)
     }
 
+    // we want the user to have the ephemeral private key
     return encKeypair.privKey.serialize()
 }

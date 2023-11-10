@@ -80,6 +80,7 @@ export const mergeSignups = async ({
 
         if (!quiet) logYellow(info(`Merging state subroots ${indices[0] + 1} / ${indices[1] + 1}`))
 
+        // first merge the subroots
         const tx = await pollContract.mergeMaciStateAqSubRoots(
             numQueueOps ? numQueueOps : DEFAULT_SR_QUEUE_OPS,
             pollId.toString()
@@ -98,6 +99,7 @@ export const mergeSignups = async ({
     const mainRoot = (await accQueueContract.getMainRoot(stateTreeDepth.toString())).toString()
 
     if (mainRoot === '0' || pollId > 0) {
+        // go and merge the state tree
         if (!quiet) logYellow(info('Merging subroots to a main state root...'))
         const tx = await pollContract.mergeMaciStateAq(pollId.toString())
         const receipt = await tx.wait()

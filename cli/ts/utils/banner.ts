@@ -1,5 +1,8 @@
 import { logRed, logYellow } from "./theme"
 
+/**
+ * Print a nice MACI banner
+ */
 export const banner = () => {
     logRed((`
 

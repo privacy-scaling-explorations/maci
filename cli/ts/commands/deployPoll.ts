@@ -65,28 +65,24 @@ export const deployPoll = async ({
     const poseidonT5 = readContractAddress("PoseidonT5")
     const poseidonT6 = readContractAddress("PoseidonT6")
 
-    // depoy the verifier contract
-    const verifierContract = await deployVerifier(true)
-    await verifierContract.deployTransaction.wait()
+    // get the verifier contract
+    const verifierContractAddress = readContractAddress("Verifier")
 
     // deploy the message processor
     const messageProcessorContract = await deployMessageProcessor(
-        verifierContract.address, 
+        verifierContractAddress, 
         poseidonT3,
         poseidonT4,
         poseidonT5,
         poseidonT6,
         true 
     )
-    await messageProcessorContract.deployTransaction.wait()
 
     // deploy the tally contract
-    const tallyContract = await deployTally(verifierContract.address, poseidonT3, poseidonT4, poseidonT5, poseidonT6, true)
-    await tallyContract.deployTransaction.wait()
+    const tallyContract = await deployTally(verifierContractAddress, poseidonT3, poseidonT4, poseidonT5, poseidonT6, true)
 
     // deploy the subsidy contract
-    const subsidyContract = await deploySubsidy(verifierContract.address, poseidonT3, poseidonT4, poseidonT5, poseidonT6, true)
-    await subsidyContract.deployTransaction.wait()
+    const subsidyContract = await deploySubsidy(verifierContractAddress, poseidonT3, poseidonT4, poseidonT5, poseidonT6, true)
 
     const maciAbi = parseArtifact("MACI")[0]
     const maciContract = new Contract(
@@ -99,6 +95,7 @@ export const deployPoll = async ({
     let pollAddr: string = ""
 
     try {
+        // deploy the poll contract via the maci contract
         const tx = await maciContract.deployPoll(
             pollDuration,
             { maxMessages, maxVoteOptions },
@@ -116,6 +113,8 @@ export const deployPoll = async ({
         const iface = maciContract.interface
         const log = iface.parseLog(receipt.logs[receipt.logs.length - 1])
         const name = log.name
+        // we are trying to get the poll id from the event logs
+        // if we do not find this log then we throw
         if (name !== "DeployPoll") logError("Invalid event log")
 
         const pollId = log.args._pollId
@@ -136,6 +135,7 @@ export const deployPoll = async ({
         logError(error.message)
     }
 
+    // we return all of the addresses
     return {
         messageProcessor: messageProcessorContract.address,
         tally: tallyContract.address,

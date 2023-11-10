@@ -8,6 +8,9 @@ export interface Vote {
     valid: boolean
 }
 
+/**
+ * A util interface that represents a tally file
+ */
 export interface Tally {
     provider: string,
     maci: string,
@@ -27,6 +30,9 @@ export interface Tally {
     }
 }
 
+/**
+ * A util interface that represents a subsidy file
+ */
 export interface Subsidy {
     provider: string,
     maci: string,

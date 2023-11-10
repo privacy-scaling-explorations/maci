@@ -79,11 +79,10 @@ export const airdrop = async ({
         )
 
         const pollAddr = await maciContract.getPoll(pollId)
-        const MAX_ALLOWANCE = constants.MaxUint256
         try {
             const tx = await tokenContract.approve(
                 pollAddr,
-                MAX_ALLOWANCE,
+                constants.MaxUint256,
                 { gasLimit: 1000000 }
             )
             await tx.wait()

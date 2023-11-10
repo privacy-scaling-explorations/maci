@@ -7,6 +7,7 @@ import { GenMaciPubKeyArgs } from "../utils/interfaces"
 /**
  * Generate a new Maci Public key from a private key
  * @param privKey - the user private key
+ * @return the public key serialized
  */
 export const genMaciPubKey = ({
     privkey,
@@ -14,15 +15,17 @@ export const genMaciPubKey = ({
 }: GenMaciPubKeyArgs): string => {
     if(!quiet) banner()
 
+    // we check that the provided private key is valid
     if (!PrivKey.isValidSerializedPrivKey(privkey)) {
         logRed(error("Error, invalid private key"))
         process.exit(1)
     }
 
+    // de serialize it and generate the public key
     const unserializedKey = PrivKey.unserialize(privkey)
     const pubKey = new PubKey(genPubKey(unserializedKey.rawPrivKey))
 
     if (!quiet) logGreen(success(`Public key: ${pubKey.serialize()}`))
-
+    // we give back the serialized public key
     return pubKey.serialize()
 }

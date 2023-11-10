@@ -1,3 +1,9 @@
+/**
+ * Small utility function to check whether a contract exists at a given address
+ * @param provider - the provider to use to interact with the chain
+ * @param address - the address of the contract to check
+ * @returns a boolean indicating whether the contract exists
+ */
 export const contractExists = async (
     provider: any,
     address: string,
@@ -6,6 +12,11 @@ export const contractExists = async (
     return code.length > 2
 }
 
+/**
+ * Small utility to retrieve the current block timestamp from the blockchain
+ * @param provider the provider to use to interact with the chain
+ * @returns the current block timestamp
+ */
 export const currentBlockTimestamp = async (
     provider: any, 
 ): Promise<number> => {

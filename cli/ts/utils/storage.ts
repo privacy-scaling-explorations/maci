@@ -2,18 +2,18 @@ import { contractAddressesStore } from "./constants"
 import { writeFileSync, readFileSync, existsSync } from "fs"
 
 /**
- * 
- * @param path 
- * @returns 
+ * Read a JSON file from disk
+ * @param path - the path of the file
+ * @returns the JSON object
  */
 export const readJSONFile = (path: string): object => {
     return JSON.parse(readFileSync(path).toString())
 }
 
 /**
- * 
- * @param contractName 
- * @param address 
+ * Store a contract address to the local address store file
+ * @param contractName - the name of the contract
+ * @param address - the address of the contract
  */
 export const storeContractAddress = (
     contractName: string, 
@@ -27,9 +27,9 @@ export const storeContractAddress = (
 }
 
 /**
- * 
- * @param contractName 
- * @returns 
+ * Read a contract address from the local address store file
+ * @param contractName - the name of the contract
+ * @returns the contract address or a undefined it it does not exist
  */
 export const readContractAddress = (
     contractName: string
@@ -39,7 +39,7 @@ export const readContractAddress = (
 }
 
 /**
- * Delete the content of the file
+ * Delete the content of the contract address file file
  */
 export const resetContractAddresses = () => {
     writeFileSync(contractAddressesStore, JSON.stringify({}, null, 4))
@@ -47,7 +47,7 @@ export const resetContractAddresses = () => {
 
 /**
  * Check if an array of paths exist on the local file system
- * @param paths the array of paths to check
+ * @param paths - the array of paths to check
  * @returns an array of boolean and string, 
  * where the boolean indicates whether all paths exist, and the string 
  * is the path that does not exist
