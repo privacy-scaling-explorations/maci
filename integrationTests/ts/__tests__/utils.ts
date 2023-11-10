@@ -153,7 +153,6 @@ const expectTally = (
 ) => {
     let genTally: string[] = Array(maxMessages).fill('0')
     let genPerVOSpentVoiceCredits: string[] = Array(maxMessages).fill('0')
-    const calculateTally =
     expectedTally.map((voteWeight, voteOption) => {
         if (voteWeight != 0) {
             genTally[voteOption] = voteWeight.toString()
@@ -165,8 +164,8 @@ const expectTally = (
         }
     })
 
-    expect(tallyFile.results.tally).to.eq(genTally)
-    expect(tallyFile.perVOSpentVoiceCredits.tally).to.eq(genPerVOSpentVoiceCredits)
+    expect(tallyFile.results.tally).to.deep.equal(genTally)
+    expect(tallyFile.perVOSpentVoiceCredits.tally).to.deep.equal(genPerVOSpentVoiceCredits)
     expect(tallyFile.totalSpentVoiceCredits.spent).to.eq(expectedTotalSpentVoiceCredits.toString())
 }
 
@@ -176,14 +175,13 @@ const expectSubsidy = (
     SubsidyFile: Subsidy
 ) => {
     let genSubsidy: string[] = Array(maxMessages).fill('0')
-    const calculateTally =
     expectedSubsidy.map((value, index) => {
         if (value != 0) {
             genSubsidy[index] = value.toString()
         }
     })
 
-    expect(SubsidyFile.results.subsidy).to.eq(genSubsidy)
+    expect(SubsidyFile.results.subsidy).to.deep.eq(genSubsidy)
 }
 
 export { exec, delay, loadYaml, genTestAccounts, genTestUserCommands, expectTally, expectSubsidy }
