@@ -14,7 +14,10 @@ Next, navigate to the `cli/` directory and edit `zkeys.config.yml`.
 
 This config file defines the parameters required for MACI's circuits.
 
-### Message processing
+<!-- TODO: fix math expressions - current syntax creates compilation errors -->
+<!-- https://docusaurus.io/docs/markdown-features/math-equations -->
+
+<!-- ### Message processing
 
 | #   | Parameter                | Description                                          |
 | --- | ------------------------ | ---------------------------------------------------- |

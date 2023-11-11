@@ -1,3 +1,10 @@
+---
+title: Introduction to MACI
+description: High-level introduction to Minimum Anti-Collusion Infrastructure (MACI)
+sidebar_label: Introduction
+sidebar_position: 1
+---
+
 # Introduction
 
 Minimum Anti-Collusion Infrastructure (MACI) is a base layer for

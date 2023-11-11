@@ -1,3 +1,10 @@
+---
+title: MACI Primitives
+description: A short introduction of the main primitives used by MACI
+sidebar_label: 'Primitives'
+sidebar_position: 3
+---
+
 ## MACI primitives
 
 This section provides a short introduction of the main primitives used by MACI.
@@ -15,7 +22,10 @@ $5472060717959818805561601436314318772137091100104008585924551046643952123905$
 
 and within the finite field with modulo $p$.
 
-### Key Pairs
+<!-- TODO: fix math expressions - current syntax creates compilation errors -->
+<!-- https://docusaurus.io/docs/markdown-features/math-equations -->
+
+<!-- ### Key Pairs
 
 MACI uses Node.js's `crypto.randomBytes(32)` function to generate a cryptographically strong pseudorandom 32-byte value, as well as an algorithm to prevent modulo bias. In pseudocode this is:
 
@@ -206,4 +216,4 @@ The code to derive $A_{b_x}$ and $A_{b_y}$ is [here](https://github.com/iden3/ci
 3. Use the method to convert a buffer to a point on the BabyJub curve described in [2.3.2].
 4. Multiply the point by 8. The result is the point with x-value $A_{b_x}$ and y-value $A_{b_y}$
 
-Given the [elliptic curve discrete logarithm problem](https://wstein.org/edu/2007/spring/ent/ent-html/node89.html), we assume that no-one knows the private key $s \in \mathbb{F}_p$ and by using the public key generation procedure in [1.4], we can derive $A_{b_x}$ and $A_{b_y}$. Furthermore, the string above (`PedersenGenerator...`) acts as a nothing-up-my-sleeve value.
+Given the [elliptic curve discrete logarithm problem](https://wstein.org/edu/2007/spring/ent/ent-html/node89.html), we assume that no-one knows the private key $s \in \mathbb{F}_p$ and by using the public key generation procedure in [1.4], we can derive $A_{b_x}$ and $A_{b_y}$. Furthermore, the string above (`PedersenGenerator...`) acts as a nothing-up-my-sleeve value. -->
