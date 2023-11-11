@@ -120,39 +120,21 @@ You can run all unit tests from the root directory of the repo by running:
 npm run test
 ```
 
-Our you can run unit tests within each submodule. for example to run the `crypto` tests:
+Or you can run unit tests within each submodule. for example to run the `crypto` tests:
 
 ```bash
 cd crypto
 npm run test
 ```
 
-<!-- TODO: confirm if true -->
-For `contracts` and `integrationTests`, run the tests one by one. This prevents
-incorrect nonce errors.
-
-First, start a Hardhat instance in a separate terminal:
-
-```bash
-cd contracts
-npm run hardhat
-```
-
-In another terminal you can run:
-
-```bash
-cd contracts
-npm run test
-```
-
-Or run individual tests:
+You can also run individual tests within submodules, for example:
 
 ```bash
 cd contracts
 npm run test-accQueue
 ```
 
-Where both test commands run `AccQueue.test.ts`
+This test command will run `AccQueue.test.ts`
 
 Alternatively you can run all unit tests as follows, but you should
 stop your Hardhat instance first as this will start its own instance
