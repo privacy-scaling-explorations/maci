@@ -21,6 +21,7 @@ import {
 
 import * as path from 'path'
 import { expect } from 'chai'
+import { beforeEach } from 'mocha'
 const tester = require("circom_tester").wasm
 
 const voiceCreditBalance = BigInt(100)

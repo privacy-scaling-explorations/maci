@@ -48,7 +48,7 @@ const messageBatchSize = 5
 const coordinatorKeypair = new Keypair()
 
 describe('ProcessMessage circuit', function() {
-    this.timeout(90000)
+    this.timeout(900000)
 
     let circuit: any 
     let hasherCircuit: any

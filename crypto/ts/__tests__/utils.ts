@@ -1,3 +1,4 @@
+import { expect } from "chai"
 import { AccQueue, IncrementalQuinTree, calcDepthFromNumLeaves } from "../"
 
 /**
@@ -30,8 +31,8 @@ export const testMerge = (
     }
 
     // The main root should not exist yet
-    expect(aq.hasRoot(MAIN_DEPTH)).toBeFalsy()
-    expect(aq2.hasRoot(MAIN_DEPTH)).toBeFalsy()
+    expect(aq.hasRoot(MAIN_DEPTH)).to.be.false
+    expect(aq2.hasRoot(MAIN_DEPTH)).to.be.false
 
     aq2.mergeSubRoots(0)
     aq2.merge(MAIN_DEPTH)
@@ -40,13 +41,13 @@ export const testMerge = (
     aq.mergeDirect(MAIN_DEPTH)
 
     // merge and mergeDirect should produce the same root
-    expect(aq.hasRoot(MAIN_DEPTH)).toBeTruthy()
-    expect(aq2.hasRoot(MAIN_DEPTH)).toBeTruthy()
+    expect(aq.hasRoot(MAIN_DEPTH)).to.be.true
+    expect(aq2.hasRoot(MAIN_DEPTH)).to.be.true
     expect(aq.getRoot(MAIN_DEPTH).toString())
-        .toEqual(aq2.getRoot(MAIN_DEPTH).toString())
+        .to.eq(aq2.getRoot(MAIN_DEPTH).toString())
 
     // merge and mergeDirect should produce the correct root
-    expect(aq.getRoot(MAIN_DEPTH).toString()).toEqual(tree.root.toString())
+    expect(aq.getRoot(MAIN_DEPTH).toString()).to.eq(tree.root.toString())
 }
 
 /**
@@ -78,14 +79,14 @@ export const testMergeShortest = (
 
     // Merge all but one subroot in aq2
     aq2.mergeSubRoots(2)
-    expect(aq.smallSRTroot.toString()).not.toEqual(aq2.smallSRTroot.toString())
+    expect(aq.smallSRTroot.toString()).not.to.eq(aq2.smallSRTroot.toString())
     aq2.mergeSubRoots(2)
-    expect(aq.smallSRTroot.toString()).not.toEqual(aq2.smallSRTroot.toString())
+    expect(aq.smallSRTroot.toString()).not.to.eq(aq2.smallSRTroot.toString())
 
     // Merge the last subroot in aq2
     aq2.mergeSubRoots(1)
 
-    expect(aq.smallSRTroot.toString()).toEqual(aq2.smallSRTroot.toString())
+    expect(aq.smallSRTroot.toString()).to.eq(aq2.smallSRTroot.toString())
 }
 
 /**
@@ -105,8 +106,8 @@ export const testMergeShortestOne = (
 
     aq.mergeSubRoots(0)
 
-    expect(aq.smallSRTroot.toString()).toEqual(smallTree.root.toString())
-    expect(aq.getSubRoot(0).toString()).toEqual(smallTree.root.toString())
+    expect(aq.smallSRTroot.toString()).to.eq(smallTree.root.toString())
+    expect(aq.getSubRoot(0).toString()).to.eq(smallTree.root.toString())
 }
 
 /**
@@ -137,6 +138,6 @@ export const testMergeExhaustive = (
         for (let i = 0; i < aq.subRoots.length; i++) {
             smallTree.insert(aq.subRoots[i])
         }
-        expect(aq.smallSRTroot.toString()).toEqual(smallTree.root.toString())
+        expect(aq.smallSRTroot.toString()).to.eq(smallTree.root.toString())
     }
 }

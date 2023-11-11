@@ -6,12 +6,9 @@
     "scripts": {
         "watch": "tsc --watch",
         "build": "tsc",
-        "test-processMessage": "jest ProcessMessage.test.ts",
-        "test-processMessage-debug": "node --inspect-brk ./node_modules/.bin/jest ProcessMessage.test.ts",
-        "test-maciState": "jest MaciState.test.ts",
-        "test-maciState-debug": "node --inspect-brk ./node_modules/.bin/jest MaciState.test.ts",
-        "test": "jest",
-        "test-debug": "node --inspect-brk ./node_modules/.bin/jest"
+        "test-processMessage": "ts-mocha --exit ts/__tests__/ProcessMessage.test.ts",
+        "test-maciState": "ts-mocha --exit ts/__tests__/MaciState.test.ts",
+        "test": "ts-mocha --exit ts/__tests__/*.test.ts"
     },
     "_moduleAliases": {
         "@maci-contracts": "../contracts"
@@ -22,10 +19,12 @@
         "module-alias": "^2.2.2"
     },
     "devDependencies": {
-        "@types/jest": "^26.0.21",
+        "@types/chai": "^4.3.9",
+        "@types/mocha": "^10.0.4",
         "@types/node": "^14.14.35",
-        "jest": "^26.6.3",
-        "ts-jest": "^26.5.4"
+        "chai": "^4.3.10",
+        "mocha": "^10.2.0",
+        "ts-mocha": "^10.0.0"
     },
     "gitHead": "f567a17293114ba2d5e89c711d00a9f4c197f070"
 }
