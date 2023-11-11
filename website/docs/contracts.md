@@ -1,3 +1,10 @@
+---
+title: MACI Smart Contracts
+description: MACI is composed of multiple smart contracts, which together with the zk-SNARK circuits, can be used to carry out on-chain voting
+sidebar_label: Smart Contracts
+sidebar_position: 5
+---
+
 # Smart Contracts
 
 MACI is composed of multiple smart contracts, which together with the zk-SNARK circuits, can be used to carry out on-chain voting.

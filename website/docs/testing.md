@@ -1,3 +1,10 @@
+---
+title: Testing MACI
+description: How to test MACI
+sidebar_label: Testing
+sidebar_position: 8
+---
+
 # Testing
 
 ## Contracts

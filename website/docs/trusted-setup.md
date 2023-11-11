@@ -1,3 +1,11 @@
+---
+title: MACI Trusted Setup
+description: Introduction to the MACI multi-party trusted setup
+sidebar_label: Trusted Setup
+sidebar_position: 7
+---
+
+
 # Trusted setup
 
 MACI currently uses Groth16 zk-SNARKs written in `circom`. Teams who wish to
