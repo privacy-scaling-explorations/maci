@@ -16,5 +16,5 @@
       "./circuits/**/*",
       "./integrationTests/**/*",
     ],
-    "out": "./docs/typedocs/",
+    "out": "./docs/typedoc/",
 }
