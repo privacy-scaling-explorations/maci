@@ -44,7 +44,8 @@
         "@types/node": "^18.11.9",
         "chai": "^4.3.10",
         "safe-buffer": "^5.2.1",
-        "shelljs": "^0.8.4"
+        "shelljs": "^0.8.4",
+        "ts-node": "^10.9.1"
     },
     "gitHead": "f567a17293114ba2d5e89c711d00a9f4c197f070"
 }
