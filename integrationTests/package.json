@@ -21,7 +21,7 @@
         "@nomiclabs/hardhat-ethers": "^2.0.2",
         "@types/chai": "^4.3.9",
         "@types/mocha": "^10.0.4",
-        "@types/node": "^14.14.35",
+        "@types/node": "^18.11.9",
         "chai": "^4.3.10",
         "ethers": "^5.0.32",
         "hardhat": "^2.0.11",
