@@ -435,7 +435,12 @@ describe("MaciState", function () {
         let pollId
         let m1: MaciState 
         const userKeypair = new Keypair()
-        const stateFile = 'state.json'
+        const stateFile = "./state.json"
+
+        after(() => {
+            if (existsSync(stateFile)) unlinkSync(stateFile)
+        })
+
         before(() => {
             m1 = new MaciState(STATE_TREE_DEPTH);
             m1.signUp(
@@ -471,10 +476,6 @@ describe("MaciState", function () {
 
             m1.polls[pollId].publishMessage(message, encKeypair.pubKey);
         });
-
-        after(() => { 
-            if (existsSync(stateFile)) unlinkSync(stateFile)
-        })
 
         it('should correctly deep-copy a MaciState object', () => {
             const m2 = m1.copy()
