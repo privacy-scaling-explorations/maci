@@ -33,7 +33,6 @@ import { homedir } from "os"
 import { expectSubsidy, expectTally, genTestUserCommands, isArm } from "./utils/utils"
 import { genPubKey, genRandomSalt } from "maci-crypto"
 import { existsSync, readFileSync, readdir, unlinkSync } from "fs"
-import { expect } from "chai"
 
 /**
  * MACI Integration tests 
