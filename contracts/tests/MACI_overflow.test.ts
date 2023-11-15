@@ -51,6 +51,8 @@ describe('Overflow testing', () => {
         signer = await getDefaultSigner()
         const r = await deployTestContracts(
             initialVoiceCreditBalance,
+            STATE_TREE_DEPTH,
+            true
         )
         maciContract = r.maciContract
         stateAqContract = r.stateAqContract

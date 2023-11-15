@@ -4,7 +4,6 @@ interface SnarkProof {
     pi_c: bigint[];
 }
 
-import { Contract } from 'ethers';
 import {
     deployVkRegistry,
     deployTopupCredit,
@@ -36,7 +35,9 @@ const formatProofForVerifierContract = (
 
 const deployTestContracts = async (
     initialVoiceCreditBalance: number,
-    gatekeeperContract?: Contract
+    stateTreeDepth: number,
+    quiet: boolean = false,
+    gatekeeperContract?: any
 ) => {
     const mockVerifierContract = await deployMockVerifier(true)
 
@@ -59,7 +60,8 @@ const deployTestContracts = async (
         mockVerifierContract.address,
         vkRegistryContract.address,
         topupCreditContract.address,
-        true
+        stateTreeDepth,
+        quiet
     )
     const mpContract = await deployMessageProcessor(mockVerifierContract.address, poseidonAddrs[0],poseidonAddrs[1],poseidonAddrs[2],poseidonAddrs[3], true)
     const tallyContract = await deployTally(mockVerifierContract.address, poseidonAddrs[0],poseidonAddrs[1],poseidonAddrs[2],poseidonAddrs[3], true)

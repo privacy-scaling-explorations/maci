@@ -1,10 +1,10 @@
 import {
+    STATE_TREE_DEPTH,
     getSignal,
 } from './utils'
 
 import {
     MaciState,
-    STATE_TREE_DEPTH,
 } from 'maci-core'
 
 import {
@@ -62,7 +62,7 @@ describe('TallyVotes circuit', function() {
         const voteOptionIndex = BigInt(0)
 
         beforeEach(async () => {
-            maciState = new MaciState()
+            maciState = new MaciState(STATE_TREE_DEPTH)
             const messages: Message[] = []
             const commands: PCommand[] = []
             // Sign up and publish
@@ -194,7 +194,7 @@ describe('TallyVotes circuit', function() {
 
     describe.skip(`${x} users, ${x} messages`, () => {
         it('should produce the correct state root and ballot root', async () => {
-            const maciState = new MaciState()
+            const maciState = new MaciState(STATE_TREE_DEPTH)
             const userKeypairs: Keypair[] = []
             for (let i = 0; i < x; i ++) {
                 const k = new Keypair()

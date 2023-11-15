@@ -309,6 +309,7 @@ const deployMaci = async (
     verifierContractAddress: string,
     vkRegistryContractAddress: string,
     topupCreditContractAddress: string,
+    stateTreeDepth: number = 10,
     quiet = false,
 ) => {
 
@@ -352,7 +353,8 @@ const deployMaci = async (
         quiet,
         pollFactoryContract.address,
         signUpTokenGatekeeperContractAddress,
-        initialVoiceCreditBalanceAddress
+        initialVoiceCreditBalanceAddress,
+        stateTreeDepth
     )
 
     log('Transferring ownership of PollFactoryContract to MACI', quiet)

@@ -1,6 +1,5 @@
 import { 
     MaciState,
-    STATE_TREE_DEPTH,
 } from '../'
 import {
     expect 
@@ -38,6 +37,8 @@ const treeDepths = {
 }
 
 const messageBatchSize = 25
+
+const STATE_TREE_DEPTH = 10
 
 const testProcessVk = new VerifyingKey(
     new G1Point(BigInt(0), BigInt(1)),
@@ -79,7 +80,7 @@ describe('MaciState', function() {
         const userKeypair = new Keypair()
 
         before(() => {
-            maciState = new MaciState()
+            maciState = new MaciState(STATE_TREE_DEPTH)
             stateTree = new IncrementalQuinTree(
                 STATE_TREE_DEPTH,
                 blankStateLeafHash,
@@ -221,7 +222,7 @@ describe('MaciState', function() {
         const users: Keypair[] = []
 
         before(() => {
-            maciState = new MaciState()
+            maciState = new MaciState(STATE_TREE_DEPTH)
             // Sign up and vote
             for (let i = 0; i < messageBatchSize - 1; i ++) {
                 const userKeypair = new Keypair()
@@ -407,7 +408,7 @@ describe('MaciState', function() {
         const userKeypair = new Keypair()
 
         before(() => {
-            m1 = new MaciState()
+            m1 = new MaciState(STATE_TREE_DEPTH)
             m1.signUp(
                 userKeypair.pubKey,
                 voiceCreditBalance,

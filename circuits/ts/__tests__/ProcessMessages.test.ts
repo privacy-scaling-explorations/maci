@@ -2,7 +2,6 @@ import * as fs from 'fs'
 
 import {
     MaciState,
-    STATE_TREE_DEPTH,
 } from 'maci-core'
 
 import {
@@ -21,6 +20,7 @@ import {
 } from 'maci-crypto'
 
 import { 
+    STATE_TREE_DEPTH,
     getSignal,
 } from './utils'
 import * as path from 'path'
@@ -61,7 +61,7 @@ describe('ProcessMessage circuit', function() {
     })
 
     describe('1 user, 2 messages', () => {
-        const maciState = new MaciState()
+        const maciState = new MaciState(STATE_TREE_DEPTH)
         const voteWeight = BigInt(9)
         const voteOptionIndex = BigInt(0)
         let stateIndex
@@ -221,7 +221,7 @@ describe('ProcessMessage circuit', function() {
     })
 
     describe('2 users, 1 message', () => {
-        const maciState = new MaciState()
+        const maciState = new MaciState(STATE_TREE_DEPTH)
         let pollId
         let poll
         const messages: Message[] = []
@@ -331,7 +331,7 @@ describe('ProcessMessage circuit', function() {
     })
  
     describe('1 user, key-change', () => {
-        const maciState = new MaciState()
+        const maciState = new MaciState(STATE_TREE_DEPTH)
         const voteWeight = BigInt(9)
         const voteOptionIndex = BigInt(0)
         let stateIndex
@@ -487,7 +487,7 @@ describe('ProcessMessage circuit', function() {
     const NUM_BATCHES = 2
     describe(`1 user, ${messageBatchSize * NUM_BATCHES} messages`, () => {
         it('should produce the correct state root and ballot root', async () => {
-            const maciState = new MaciState()
+            const maciState = new MaciState(STATE_TREE_DEPTH)
             const userKeypair = new Keypair()
             const stateIndex = maciState.signUp(
                 userKeypair.pubKey, 

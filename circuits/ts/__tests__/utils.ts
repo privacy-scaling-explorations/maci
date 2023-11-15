@@ -1,4 +1,4 @@
-const str2BigInt = (s: string): BigInt => {
+export const str2BigInt = (s: string): BigInt => {
     return BigInt(parseInt(
         Buffer.from(s).toString('hex'), 16
     ))
@@ -10,7 +10,7 @@ const str2BigInt = (s: string): BigInt => {
 // ffjavascript has no types so leave circuit with untyped
 type CircuitT = any;
 
-async function getSignal(circuit: CircuitT, witness: bigint[], name: string): Promise<bigint> {
+export const getSignal = async (circuit: CircuitT, witness: bigint[], name: string): Promise<bigint> => {
     const prefix = "main"
     // E.g. the full name of the signal "root" is "main.root"
     // You can look up the signal names using `circuit.getDecoratedOutput(witness))`
@@ -26,7 +26,4 @@ async function getSignal(circuit: CircuitT, witness: bigint[], name: string): Pr
     return BigInt(witness[indexInWitness]);
 }
 
-export {
-    str2BigInt,
-    getSignal
-}
+export const STATE_TREE_DEPTH = 10

@@ -7,6 +7,17 @@ This submodule contains all the Ethereum contracts and tests for MACI.
 
 For more information please refer to the [documentation for Contracts](http://privacy-scaling-explorations.github.io/maci/contracts.html).
 
+## Compile
+
+To compile the smart contracts, please run:
+
+```bash 
+npm run compileSol $stateTreeDepth
+```
+
+The $stateTreeDepth parameter is not mandatory, however this will be set to 10 if nothing is provided. This argument is important as it will determine the size of the state tree and the number of constraints in the circuit, thus requiring a different MACI setup.
+
+
 ## Contracts
 
 * **`MACI.sol`**
