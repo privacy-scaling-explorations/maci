@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkwebsite=self.webpackChunkwebsite||[]).push([[2535],{5641:e=>{e.exports=JSON.parse('{"title":"Recent posts","items":[{"title":"Welcome to MACI","permalink":"/blog/welcome","unlisted":false},{"title":"Maci v1.1.1 Release","permalink":"/blog/maci v1.1.1","unlisted":false}]}')}}]);
