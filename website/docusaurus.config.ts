@@ -93,16 +93,16 @@ const config: Config = {
           position: 'left',
           label: 'Documentation',
         },
-        {
-          to: '/typedoc',
-          label: 'TypeScript docs',
-          position: 'left'
-        },
-        {
-          to: '/solidity-docs',
-          label: 'Solidity docs',
-          position: 'left'
-        },
+        // {
+        //   to: '/typedoc',
+        //   label: 'TypeScript docs',
+        //   position: 'left'
+        // },
+        // {
+        //   to: '/solidity-docs',
+        //   label: 'Solidity docs',
+        //   position: 'left'
+        // },
         {to: '/blog', label: 'Blog', position: 'left'},
         {
           type: 'search',
@@ -123,7 +123,7 @@ const config: Config = {
           items: [
             {
               label: 'Documentation',
-              to: '/docs/intro',
+              to: '/docs/introduction',
             },
             {
               label: 'GitHub',

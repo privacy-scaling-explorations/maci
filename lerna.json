@@ -8,8 +8,7 @@
     "domainobjs",
     "integrationTests",
     "server",
-    "common",
-    "website"
+    "common"
   ],
   "version": "1.1.2",
   "npmClient": "npm",

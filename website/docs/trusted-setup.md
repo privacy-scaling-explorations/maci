@@ -26,11 +26,11 @@ PLONK is that proof generation is not as optimised as it is for Groth16.
 
 ## How to run the trusted setup
 
-First, follow the instructions in the [Installation](./installation.html)
+First, follow the instructions in the [Installation](./installation)
 section to install dependencies for MACI.
 
 Next, configure and compile circuits following instructions in
-[Circuits](./circuits.html).
+[Circuits](./circuits).
 
 Finally, use the [`multisetups`](https://github.com/privacy-scaling-explorations/multisetups)
 tool to do this.
