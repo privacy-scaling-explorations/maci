@@ -7,7 +7,7 @@ const GITHUB_URL = 'https://github.com/privacy-scaling-explorations/maci'
 const config: Config = {
   title: 'MACI',
   tagline: 'Minimal Anti-Collusion Infrastructure',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/maci-logo-2.png',
 
   // Set the production url of your site here
   url: 'https://maci.pse.dev',
@@ -56,9 +56,29 @@ const config: Config = {
     ],
   ],
 
+  plugins: [
+    [
+      '@easyops-cn/docusaurus-search-local',
+      {
+        hashed: true,
+        language: ["en"],        
+        // If the `indexDocs` is set to `true`, Docusaurus will index docs.
+        // If the `indexBlog` is set to `true`, Docusaurus will index blogs.
+        indexDocs: true,
+        indexBlog: true,
+        // If the `indexPages` is set to `true`, Docusaurus will index pages.
+        indexPages: false,
+        // Docs route base path, default to '/docs'.
+        docsRouteBasePath: '/docs',
+        // Blog route base path, default to '/blog'.
+        blogRouteBasePath: '/blog',
+      }
+    ]
+  ],
+
   themeConfig: {
     // TODO: Replace with your project's social card
-    image: 'img/docusaurus-social-card.jpg',
+    image: 'img/maci-logo-2.png',
     navbar: {
       title: 'MACI',
       // TODO: add logo?
@@ -73,7 +93,21 @@ const config: Config = {
           position: 'left',
           label: 'Documentation',
         },
+        {
+          to: '/typedoc',
+          label: 'TypeScript docs',
+          position: 'left'
+        },
+        {
+          to: '/solidity-docs',
+          label: 'Solidity docs',
+          position: 'left'
+        },
         {to: '/blog', label: 'Blog', position: 'left'},
+        {
+          type: 'search',
+          position: 'right'
+        },
         {
           href: GITHUB_URL,
           label: 'GitHub',
