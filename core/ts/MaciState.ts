@@ -1459,7 +1459,8 @@ class Poll {
             json.treeDepths,
             json.batchSizes,
             json.maxValues,
-            maciState
+            maciState,
+            maciState.stateTreeDepth
         )
 
         // set all properties
@@ -1714,7 +1715,7 @@ class MaciState {
     // create a new object from JSON 
     static fromJSON(json: any) {
         // create new instance
-        const maciState = new MaciState()
+        const maciState = new MaciState(json.stateTreeDepth)
 
         // assign the json values to the new instance
         maciState.stateLeaves = json.stateLeaves.map((leaf: string) => StateLeaf.fromJSON(leaf))
