@@ -22,7 +22,8 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     // The state tree depth is fixed. As such it should be as large as feasible
     // so that there can be as many users as possible.  i.e. 5 ** 10 = 9765625
-    uint8 public constant override stateTreeDepth = 10;
+    // this should also match the parameter of the circom circuits.
+    uint8 public immutable stateTreeDepth;
 
     // IMPORTANT: remember to change the ballot tree depth
     // in contracts/ts/genEmptyBallotRootsContract.ts file
@@ -128,7 +129,8 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     constructor(
         PollFactory _pollFactory,
         SignUpGatekeeper _signUpGatekeeper,
-        InitialVoiceCreditProxy _initialVoiceCreditProxy
+        InitialVoiceCreditProxy _initialVoiceCreditProxy,
+        uint8 _stateTreeDepth
     ) {
         // Deploy the state AccQueue
         stateAq = new AccQueueQuinaryBlankSl(STATE_TREE_SUBDEPTH);
@@ -137,6 +139,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         pollFactory = _pollFactory;
         signUpGatekeeper = _signUpGatekeeper;
         initialVoiceCreditProxy = _initialVoiceCreditProxy;
+        stateTreeDepth = _stateTreeDepth;
 
         signUpTimestamp = block.timestamp;
 
@@ -272,11 +275,11 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
         return address(p);
     }
 
-        /*
-    /* Allow Poll contracts to merge the state subroots
-    /* @param _numSrQueueOps Number of operations
-    /* @param _pollId The active Poll ID
-    */
+    /**
+     * Allow Poll contracts to merge the state subroots
+     * @param _numSrQueueOps Number of operations
+     * @param _pollId The active Poll ID
+     */
     function mergeStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId)
         public
         override

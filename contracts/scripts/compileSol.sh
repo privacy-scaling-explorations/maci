@@ -9,10 +9,10 @@ rm -rf ./artifacts/*
 rm -rf ./cache/*
 
 echo 'Writing Merkle zeros contracts'
-./scripts/writeMerkleZeroesContracts.sh
+./scripts/writeMerkleZeroesContracts.sh 
 
 echo 'Writing empty ballot tree root contract'
-./scripts/writeEmptyBallotRoots.sh
+./scripts/writeEmptyBallotRoots.sh $1
 
 echo 'Building contracts with Hardhat'
 npx hardhat compile

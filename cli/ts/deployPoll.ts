@@ -5,7 +5,6 @@ import {
     deployMessageProcessor,
     deployTally,
     deploySubsidy,
-    deployContract,
     getDefaultSigner,
 } from 'maci-contracts'
 

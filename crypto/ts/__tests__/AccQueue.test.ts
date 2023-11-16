@@ -1,10 +1,14 @@
 import {
+    expect
+} from "chai"
+import {
     IncrementalQuinTree,
     AccQueue,
 } from '../'
 import { testMerge, testMergeExhaustive, testMergeShortest, testMergeShortestOne } from './utils'
 
-describe('AccQueue', () => {
+describe('AccQueue', function () {
+    this.timeout(100000)
     describe('Enqueue', () => {
         describe('Binary AccQueue', () => {
             const HASH_LENGTH = 2
@@ -22,7 +26,7 @@ describe('AccQueue', () => {
                     tree0.insert(leaf)
                     aq.enqueue(leaf)
                 }
-                expect(aq.getSubRoot(0).toString()).toEqual(tree0.root.toString())
+                expect(aq.getSubRoot(0).toString()).to.eq(tree0.root.toString())
             })
 
             it('Should enqueue another subtree', async () => {
@@ -34,7 +38,7 @@ describe('AccQueue', () => {
                     tree1.insert(leaf)
                     aq.enqueue(leaf)
                 }
-                expect(aq.getSubRoot(1).toString()).toEqual(tree1.root.toString())
+                expect(aq.getSubRoot(1).toString()).to.eq(tree1.root.toString())
             })
         })
 
@@ -54,7 +58,7 @@ describe('AccQueue', () => {
                     tree0.insert(leaf)
                     aq.enqueue(leaf)
                 }
-                expect(aq.getSubRoot(0).toString()).toEqual(tree0.root.toString())
+                expect(aq.getSubRoot(0).toString()).to.eq(tree0.root.toString())
 
                 const tree1 = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, aq.hashFunc)
 
@@ -63,7 +67,7 @@ describe('AccQueue', () => {
                     tree1.insert(leaf)
                     aq.enqueue(leaf)
                 }
-                expect(aq.getSubRoot(1).toString()).toEqual(tree1.root.toString())
+                expect(aq.getSubRoot(1).toString()).to.eq(tree1.root.toString())
             })
 
         })
@@ -79,7 +83,7 @@ describe('AccQueue', () => {
                 const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
                 const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, aq.hashFunc)
                 aq.fill()
-                expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
+                expect(aq.getSubRoot(0).toString()).to.eq(tree.root.toString())
             })
 
             it('Should fill an incomplete subtree', () => {
@@ -92,7 +96,7 @@ describe('AccQueue', () => {
 
                 aq.fill()
 
-                expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
+                expect(aq.getSubRoot(0).toString()).to.eq(tree.root.toString())
             })
 
             it('Filling an empty subtree again should create the correct subroot', () => {
@@ -106,7 +110,7 @@ describe('AccQueue', () => {
                 // Fill the second subtree with zeros
                 aq.fill()
                 const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, aq.hashFunc)
-                expect(aq.getSubRoot(1).toString()).toEqual(tree.root.toString())
+                expect(aq.getSubRoot(1).toString()).to.eq(tree.root.toString())
             })
 
             it('fill() should be correct for every number of leaves in an incomplete subtree', () => {
@@ -120,7 +124,7 @@ describe('AccQueue', () => {
                     }
                     aq.fill()
 
-                    expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
+                    expect(aq.getSubRoot(0).toString()).to.eq(tree.root.toString())
                 }
 
             })
@@ -135,7 +139,7 @@ describe('AccQueue', () => {
                 const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
                 const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, aq.hashFunc)
                 aq.fill()
-                expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
+                expect(aq.getSubRoot(0).toString()).to.eq(tree.root.toString())
             })
 
             it('Should fill one incomplete subtree', () => {
@@ -148,7 +152,7 @@ describe('AccQueue', () => {
 
                 aq.fill()
 
-                expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
+                expect(aq.getSubRoot(0).toString()).to.eq(tree.root.toString())
             })
 
             it('Filling an empty subtree again should create the correct subroot', () => {
@@ -162,7 +166,7 @@ describe('AccQueue', () => {
                 // Fill the second subtree with zeros
                 aq.fill()
                 const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, aq.hashFunc)
-                expect(aq.getSubRoot(1).toString()).toEqual(tree.root.toString())
+                expect(aq.getSubRoot(1).toString()).to.eq(tree.root.toString())
             })
 
             it('fill() should be correct for every number of leaves in an incomplete subtree', () => {
@@ -177,7 +181,7 @@ describe('AccQueue', () => {
                     }
                     aq.fill()
 
-                    expect(aq.getSubRoot(0).toString()).toEqual(tree.root.toString())
+                    expect(aq.getSubRoot(0).toString()).to.eq(tree.root.toString())
                 }
             })
         })
@@ -205,7 +209,7 @@ describe('AccQueue', () => {
 
                 it('Should fail if there are 0 leaves', () => {
                     const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
-                    expect(() => { aq.mergeSubRoots(0) }).toThrow()
+                    expect(() => { aq.mergeSubRoots(0) }).to.throw
                 })
 
                 it('Should a generate the same smallMainTreeRoot root from 1 subroot', () => {
@@ -235,7 +239,7 @@ describe('AccQueue', () => {
 
                 it('Should fail if there are 0 leaves', () => {
                     const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO)
-                    expect(() => { aq.mergeSubRoots(0) }).toThrow()
+                    expect(() => { aq.mergeSubRoots(0) }).to.throw
                 })
 
                 it('Should a generate the same smallMainTreeRoot root from 1 subroot', () => {

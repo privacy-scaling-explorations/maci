@@ -14,7 +14,6 @@ import {
 } from 'maci-crypto'
 import {
     PubKey,
-    VerifyingKey,
     Command,
     PCommand,
     TCommand,
@@ -42,8 +41,6 @@ interface MaxValues {
     maxVoteOptions: number;
 }
 
-const STATE_TREE_DEPTH = 10
-
 // Also see: Polls.sol
 class Poll {
     public duration: number
@@ -53,6 +50,9 @@ class Poll {
     public treeDepths: TreeDepths
     public batchSizes: BatchSizes
     public maxValues: MaxValues
+
+    // the depth of the state tree
+    public stateTreeDepth: number 
 
     public numSignUps: number
 
@@ -73,12 +73,7 @@ class Poll {
 
     public stateCopied = false
     public stateLeaves: StateLeaf[] = [blankStateLeaf]
-    public stateTree = new IncrementalQuinTree(
-        STATE_TREE_DEPTH,
-        blankStateLeafHash,
-        this.STATE_TREE_ARITY,
-        hash5,
-    )
+    public stateTree: any 
 
     // For message processing
     public numBatchesProcessed = 0
@@ -98,7 +93,6 @@ class Poll {
 
     public totalSpentVoiceCredits: bigint = BigInt(0)
 
-
     // For coefficient and subsidy calculation
     public subsidy: bigint[] = []  // size: M, M is number of vote options
     public subsidySalts: {[key: number]: bigint} = {}
@@ -115,6 +109,7 @@ class Poll {
         _batchSizes: BatchSizes,
         _maxValues: MaxValues,
         _maciStateRef: MaciState,
+        _stateTreeDepth: number,
     ) {
         this.duration = _duration
         this.pollEndTimestamp = _pollEndTimestamp
@@ -125,7 +120,14 @@ class Poll {
         this.maciStateRef = _maciStateRef
         this.pollId = _maciStateRef.polls.length
         this.numSignUps = Number(_maciStateRef.numSignUps.toString())
+        this.stateTreeDepth = _stateTreeDepth
 
+        this.stateTree = new IncrementalQuinTree(
+            this.stateTreeDepth,
+            blankStateLeafHash,
+            this.STATE_TREE_ARITY,
+            hash5,
+        )
         this.messageTree = new IncrementalQuinTree(
             this.treeDepths.messageTreeDepth,
             NOTHING_UP_MY_SLEEVE,
@@ -167,7 +169,7 @@ class Poll {
         )
         const emptyBallotHash = emptyBallot.hash()
         this.ballotTree = new IncrementalQuinTree(
-            STATE_TREE_DEPTH,
+            this.stateTreeDepth,
             emptyBallot.hash(),
             this.STATE_TREE_ARITY,
             hash5,
@@ -188,7 +190,7 @@ class Poll {
     public topupMessage = (_message: Message) => {
         assert(_message.msgType == BigInt(2))
         for (const d of _message.data) {
-            assert(d < SNARK_FIELD_SIZE)
+            assert(d as bigint < SNARK_FIELD_SIZE)
         }
         this.messages.push(_message)
         let padKey = new PubKey([
@@ -215,11 +217,11 @@ class Poll {
     ) => {
         assert(_message.msgType == BigInt(1))
         assert(
-            _encPubKey.rawPubKey[0] < SNARK_FIELD_SIZE &&
-            _encPubKey.rawPubKey[1] < SNARK_FIELD_SIZE
+            _encPubKey.rawPubKey[0] as bigint < SNARK_FIELD_SIZE &&
+            _encPubKey.rawPubKey[1] as bigint < SNARK_FIELD_SIZE
         )
         for (const d of _message.data) {
-            assert(d < SNARK_FIELD_SIZE)
+            assert(d as bigint < SNARK_FIELD_SIZE)
         }
 
         this.encPubKeys.push(_encPubKey)
@@ -1241,6 +1243,7 @@ class Poll {
                     Number(this.maxValues.maxVoteOptions.toString()),
             },
             this.maciStateRef,
+            this.stateTreeDepth
         )
 
         copied.stateLeaves = this.stateLeaves.map((x: StateLeaf) => x.copy())
@@ -1344,15 +1347,10 @@ class MaciState {
     public MESSAGE_TREE_ARITY = 5
     public VOTE_OPTION_TREE_ARITY = 5
 
-    public stateTreeDepth = STATE_TREE_DEPTH
+    public stateTreeDepth: number 
     public polls: Poll[] = []
     public stateLeaves: StateLeaf[] = []
-    public stateTree = new IncrementalQuinTree(
-        STATE_TREE_DEPTH,
-        blankStateLeafHash,
-        this.STATE_TREE_ARITY,
-        hash5,
-    )
+    public stateTree: any 
     public stateAq: AccQueue = new AccQueue(
         this.STATE_TREE_SUBDEPTH,
         this.STATE_TREE_ARITY,
@@ -1362,7 +1360,14 @@ class MaciState {
     public currentPollBeingProcessed
     public numSignUps = 0
 
-    constructor () {
+    constructor (_stateTreeDepth: number) {
+        this.stateTreeDepth = _stateTreeDepth
+        this.stateTree = new IncrementalQuinTree(
+            this.stateTreeDepth,
+            blankStateLeafHash,
+            this.STATE_TREE_ARITY,
+            hash5,
+        )
         this.stateLeaves.push(blankStateLeaf)
         this.stateTree.insert(blankStateLeafHash)
         this.stateAq.enqueue(blankStateLeafHash)
@@ -1407,6 +1412,7 @@ class MaciState {
             },
             _maxValues,
             this,
+            this.stateTreeDepth
         )
 
         this.polls.push(poll)
@@ -1422,7 +1428,7 @@ class MaciState {
      * Deep-copy this object
      */
     public copy = (): MaciState => {
-        const copied = new MaciState()
+        const copied = new MaciState(this.stateTreeDepth)
 
         copied.stateLeaves = this.stateLeaves.map((x: StateLeaf) => x.copy())
         copied.polls = this.polls.map((x: Poll) => x.copy())
@@ -1573,6 +1579,5 @@ export {
     Poll,
     genProcessVkSig,
     genTallyVkSig,
-    genSubsidyVkSig,
-    STATE_TREE_DEPTH,
+    genSubsidyVkSig
 }

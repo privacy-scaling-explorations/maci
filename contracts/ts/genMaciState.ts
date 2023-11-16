@@ -46,10 +46,13 @@ const genMaciStateFromContract = async (
     const maciIface = new utils.Interface(maciContractAbi)
     const pollIface = new utils.Interface(pollContractAbi)
 
-    const maciState = new MaciState()
 
     // Check stateTreeDepth
     const stateTreeDepth = await maciContract.stateTreeDepth()
+    
+    // we need to pass the stateTreeDepth 
+    const maciState = new MaciState(stateTreeDepth)
+
     assert(stateTreeDepth === maciState.stateTreeDepth)
 
     // Fetch event logs

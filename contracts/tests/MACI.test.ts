@@ -81,7 +81,7 @@ const users = [
 
 const signUpTxOpts = { gasLimit: 300000 }
 
-const maciState = new MaciState()
+const maciState = new MaciState(STATE_TREE_DEPTH)
 
 // Poll parameters
 const duration = 15
@@ -116,6 +116,8 @@ describe('MACI', () => {
             signer = await getDefaultSigner()
             const r = await deployTestContracts(
                 initialVoiceCreditBalance,
+                STATE_TREE_DEPTH,
+                true
             )
 
             maciContract = r.maciContract

@@ -150,3 +150,6 @@ cli/tallyinput.json
 
 # mdBook rendered files
 publish
+
+# typedoc
+docs/typedoc/*

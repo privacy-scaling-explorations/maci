@@ -7,10 +7,13 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
+    "clean": "lerna exec -- rm -rf node_modules build && rm -rf node_modules",
     "lint": "eslint './**/**/*.ts'",
-    "lint-fix": "eslint './**/**/*.ts' --fix"
+    "lint-fix": "eslint './**/**/*.ts' --fix",
+    "test": "lerna run test --ignore maci-common --ignore maci-server --ignore maci-integrationtests --ignore maci-cli",
+    "docs": "typedoc --options typedoc.json"
   },
-  "author": "",
+  "author": "PSE",
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^2.31.0",
     "@typescript-eslint/parser": "^2.31.0",
@@ -18,6 +21,7 @@
     "cz-conventional-changelog": "^3.3.0",
     "eslint": "^6.8.0",
     "lerna": "^6.0.3",
+    "typedoc": "^0.25.2",
     "typescript": "^4.2.3"
   },
   "config": {

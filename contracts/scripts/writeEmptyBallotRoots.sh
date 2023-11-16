@@ -4,4 +4,5 @@ set -e
 cd "$(dirname "$0")"
 cd ..
 
-node build/genEmptyBallotRootsContract.js > contracts/trees/EmptyBallotRoots.sol
+# take the stateTreeDepth as cli arg
+node build/genEmptyBallotRootsContract.js $1 > contracts/trees/EmptyBallotRoots.sol

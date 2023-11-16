@@ -108,43 +108,33 @@ own unit tests.
 
 ### Unit tests
 
+Unit tests within the project are built using [Mocha](https://mochajs.org/) and [Chai](https://www.chaijs.com/). Mocha is a test framework that provides the environment to write and run JavaScript tests, while Chai is an assertion library that allows us to write assertions in a more expressive and readable way.
+
+
 The following submodules contain unit tests: `core`, `crypto`, `circuits`,
 `contracts`, and `domainobjs`.
 
-Except for the `contracts` submodule, run unit tests as such (the following
-example is for `crypto`):
+You can run all unit tests from the root directory of the repo by running:
+
+```bash
+npm run test
+```
+
+Or you can run unit tests within each submodule. for example to run the `crypto` tests:
 
 ```bash
 cd crypto
 npm run test
 ```
 
-For `contracts` and `integrationTests`, run the tests one by one. This prevents
-incorrect nonce errors.
-
-First, start a Hardhat instance in a separate terminal:
-
-```bash
-cd contracts
-npm run hardhat
-```
-
-In another terminal you can run:
-
-```bash
-cd contracts
-npm run test
-```
-
-Or run tests individual as such:
+You can also run individual tests within submodules, for example:
 
 ```bash
 cd contracts
 npm run test-accQueue
-npx jest AccQueue
 ```
 
-Where both test commands run `AccQueue.test.ts`
+This test command will run `AccQueue.test.ts`
 
 Alternatively you can run all unit tests as follows, but you should
 stop your Hardhat instance first as this will start its own instance
