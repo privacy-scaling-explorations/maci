@@ -41,17 +41,28 @@ const config: Config = {
           sidebarPath: './sidebars.ts',
           // TODO: change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          editUrl: function ({
+            locale,
+            version,
+            versionDocsDirPath,
+            docPath,
+          }) {
+            return `https://github.com/privacy-scaling-explorations/maci/edit/dev/website/${versionDocsDirPath}/${docPath}`
+          },
           remarkPlugins: [remarkMath],
           rehypePlugins: [rehypeKatex]
         },
         blog: {
           showReadingTime: true,
-          // TODO: change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+     
+          editUrl: function ({
+            locale,
+            blogDirPath,
+            blogPath,
+            permalink,
+          }) {
+            return `https://github.com/privacy-scaling-explorations/maci/edit/dev/website/${blogDirPath}/${blogPath}`
+          },
         },
         theme: {
           customCss: './src/css/custom.css',
