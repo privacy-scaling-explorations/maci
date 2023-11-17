@@ -14,7 +14,10 @@ const sidebars: SidebarsConfig = {
         'v1.x/integrating',
         'v1.x/circuits',
         'v1.x/cli',
-        'v1.x/audit'
+        'v1.x/audit',
+        'v1.x/release',
+        'v1.x/ci-pipeline',
+        'v1.x/troubleshooting',
       ]
     },
     {

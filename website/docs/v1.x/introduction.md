@@ -46,6 +46,8 @@ post](https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413).
 
 ## Credits
 
+MACI was originally developed by: 
+
 - [Barry WhiteHat](https://github.com/barryWhiteHat)
 - [Cory Dickson](https://github.com/corydickson)
 - [Chih-Cheng Liang](https://twitter.com/ChihChengLiang)
@@ -55,3 +57,5 @@ post](https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413).
 - [Kobi Gurkan](http://kobi.one/)
 - [Koh Wei Jie](https://kohweijie.com)
 - [Samuel Gosling](https://twitter.com/xGozzy)
+
+Currently, it is being mantained by the new MACI team, which will continue to work on improving the protocol and its documentation.

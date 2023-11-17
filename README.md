@@ -33,54 +33,6 @@ Below you can find a list of the packages included in this repository.
 
 ## Local Development and testing
 
-### Requirements
-
-You should have Node.js v18 installed. Use `nvm` to install it and manage versions. This code has been tested with earlier Node versions (14 and 16), however we do recommend using Node 18.
-
-You also need a Ubuntu/Debian Linux machine on an Intel CPU.
-
-### Get started
-
-Install dependencies:
-`sudo apt-get install build-essential libgmp-dev libsodium-dev nlohmann-json3-dev nasm`
-
-If you are missing the correct version of glibc see `circuits/scripts/installGlibc.sh`
-
-Clone this repository, install Node.js dependencies, and build the source code:
-
-```bash
-git clone git@github.com:privacy-scaling-explorations/maci.git
-cd maci
-npm install
-npm run bootstrap
-npm run build
-```
-
-For development purposes, you can generate the proving and verifying keys for
-the zk-SNARK circuits, along with their Solidity verifier contracts as such.
-
-Navigate to the rapidsnark [repo](https://github.com/iden3/rapidsnark) to install the necessary tooling.
-
-Build the zk-SNARKs and generate their proving and verifying keys:
-
-```bash
-cd circuits
-npm run build-test-circuits
-```
-
-This can take around 10 to 15 minutes, depending on the specs of your machine.
-
-Note that if you change the circuits and recompile them, you should also update
-and recompile the verifier contracts in `contracts/contracts` with their new
-versions, or the tests will fail:
-
-```bash
-cd contracts
-npm run compileSol
-```
-
-Avoid using `npx hardhat compile` and instead use the provided command as artifacts are copied into their relevant directories.
-
 ### Local development
 
 This repository is organised as Lerna submodules. Each submodule contains its
@@ -102,54 +54,9 @@ own unit tests.
 
 ### Testing
 
-### Unit tests
+### Testing
 
-Unit tests within the project are built using [Mocha](https://mochajs.org/) and [Chai](https://www.chaijs.com/). Mocha is a test framework that provides the environment to write and run JavaScript tests, while Chai is an assertion library that allows us to write assertions in a more expressive and readable way.
-
-The following submodules contain unit tests: `core`, `crypto`, `circuits`,
-`contracts`, and `domainobjs`.
-
-You can run all unit tests from the root directory of the repo by running:
-
-```bash
-npm run test
-```
-
-Or you can run unit tests within each submodule. for example to run the `crypto` tests:
-
-```bash
-cd crypto
-npm run test
-```
-
-You can also run individual tests within submodules, for example:
-
-```bash
-cd contracts
-npm run test-accQueue
-```
-
-This test command will run `AccQueue.test.ts`
-
-Alternatively you can run all unit tests as follows, but you should
-stop your Hardhat instance first as this will start its own instance
-before running the tests:
-
-```bash
-cd contracts
-./scripts/runTestsInCi.sh
-```
-
-Or run all integration tests (this also starts its own Hardhat instance):
-
-```bash
-cd integrationTests
-./scripts/runTestsInCi.sh
-```
-
-You can ignore the Hardhat errors which this script emits as you should already
-have Hardhat running in a separate terminal. Otherwise, you will have to exit
-Ganache using the `kill` command.
+Please refer to the [testing documentation](https://maci.pse.dev/v1.x/docs/testing) for more information.
 
 ### Docker
 

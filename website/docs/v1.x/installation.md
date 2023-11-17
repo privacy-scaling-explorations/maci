@@ -12,18 +12,21 @@ sidebar_position: 2
 
 You need the following to use MACI:
 
-- An x86-64 system
-- A Linux system, preferably a Debian-based distribution like Ubuntu
 - Node.js: use [`nvm`](https://github.com/nvm-sh/nvm) to install it. MACI has
+<<<<<<< HEAD
   been tested with Node 14, 16 and 18. We do however recommend to use Node 18 as Node 14 is deprecated and Node 16 will soon be deprecated too.
 - The `libgmp-dev` `nlohmann-json3-dev` `nasm` and `g++` Debian/Ubuntu
   packages. They are needed to run `circom-helper`, which in turn is used to
   develop and test zk-SNARK circuits.
 - The [`rapidsnark`](https://github.com/iden3/rapidsnark) tool.
+=======
+  been tested with Node 14, 16 and 18. We do however recommend to use Node 18 as Node 14 is deprecated and Node 16 will soon be deprecated too. 
+- The [`rapidsnark`](https://github.com/iden3/rapidsnark) tool if running on an intel chip (this allows for faster proof generation vs snarkjs).
+>>>>>>> a51afe97 (feat(revamp-docs) - start consolidating documentation in the new website)
 
 ## Installation
 
-### Install `rapidsnark`
+### Install `rapidsnark` (if on an intel chip)
 
 First, install dependencies:
 
@@ -48,7 +51,7 @@ npx task buildProver
 Note the location of the `rapidsnark` binary (e.g.
 `/home/user/rapidsnark/build/prover`).
 
-Next, install circom v2:
+### Install circom v2:
 
 https://docs.circom.io/
 
@@ -64,12 +67,14 @@ npm run bootstrap && \
 npm run build
 ```
 
-Install dependencies for `circom-helper` and `zkey-manager`:
+<!--  check if these are needed on a fresh ubuntu VM -->
+Install dependencies for and `zkey-manager`:
 
 ```bash
 sudo apt-get install libgmp-dev nlohmann-json3-dev nasm g++
 ```
 
+<<<<<<< HEAD
 ### Configure circom-helper and zkey-manager
 
 Edit `circuits/circomHelperConfig.json` to include the relative path to the
@@ -82,6 +87,9 @@ circom binary.
   "circuitDirs": ["./circom/test/"]
 }
 ```
+=======
+### Configure zkey-manager
+>>>>>>> a51afe97 (feat(revamp-docs) - start consolidating documentation in the new website)
 
 Edit `cli/zkeys.config.yml` to include the relative path to the
 circom binary.
@@ -94,7 +102,7 @@ circomPath: "RELATIVE_PATH_TO_CIRCOM"
 
 ### Download `.zkey` files
 
-MACI has two zk-SNARK circuits. Each circuit is parameterised. There should one
+MACI has two main zk-SNARK circuits (plus an optional Subsidy circuit). Each circuit is parameterised. There should one
 `.zkey` file for each circuit and set of parameters.
 
 Unless you wish to generate a fresh set of `.zkey` files, you should obtain
