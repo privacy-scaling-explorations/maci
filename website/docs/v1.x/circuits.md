@@ -24,7 +24,7 @@ This config file defines the parameters required for MACI's circuits.
 <!-- TODO: fix math expressions - current syntax creates compilation errors -->
 <!-- https://docusaurus.io/docs/markdown-features/math-equations -->
 
-<!-- ### Message processing
+### Message processing
 
 | #   | Parameter                | Description                                          |
 | --- | ------------------------ | ---------------------------------------------------- |

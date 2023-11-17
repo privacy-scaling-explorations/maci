@@ -1,6 +1,7 @@
 import {themes as prismThemes} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
+import remarkMath from 'remark-math';
 
 const GITHUB_URL = 'https://github.com/privacy-scaling-explorations/maci'
 
@@ -41,6 +42,7 @@ const config: Config = {
           // Remove this to remove the "edit this page" links.
           editUrl:
             'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          remarkPlugins: [remarkMath],
         },
         blog: {
           showReadingTime: true,
@@ -75,8 +77,17 @@ const config: Config = {
       }
     ]
   ],
-
+  stylesheets: [
+    {
+      href: 'https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.css',
+      type: 'text/css',
+      integrity:
+        'sha384-odtC+0UGzzFL/6PNoE8rX/SPcQDXBJ+uRepguP4QkPCm2LBxH3FA3y+fKSiJ+AmM',
+      crossorigin: 'anonymous',
+    },
+  ],
   themeConfig: {
+  
     // TODO: Replace with your project's social card
     image: 'img/maci-logo-2.png',
     navbar: {
@@ -160,6 +171,7 @@ const config: Config = {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
     },
+
   } satisfies Preset.ThemeConfig,
 };
 

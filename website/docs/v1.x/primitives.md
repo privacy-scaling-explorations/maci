@@ -25,7 +25,7 @@ and within the finite field with modulo $p$.
 <!-- TODO: fix math expressions - current syntax creates compilation errors -->
 <!-- https://docusaurus.io/docs/markdown-features/math-equations -->
 
-<!-- ### Key Pairs
+### Key Pairs
 
 MACI uses Node.js's `crypto.randomBytes(32)` function to generate a cryptographically strong pseudorandom 32-byte value, as well as an algorithm to prevent modulo bias. In pseudocode this is:
 
@@ -51,7 +51,7 @@ To sign messages, MACI uses the Edwards-curve Digital Signature Algorithm (EdDSA
 
 MACI uses the Poseidon hash function, which is proven to be very efficient in ZK applications. Poseidon accepts $n$ inputs and produces 1 output:
 
-$y = \mathsf{poseidon_n}([x_1, x_2, ..., x_n])$
+$y = poseidon_n([x_1, x_2, ..., x_n])$
 
 Also, SHA256 is used to compress public inputs to a circuit into a single field element in the finite field $F$ mod $p$.
 
@@ -59,8 +59,8 @@ Also, SHA256 is used to compress public inputs to a circuit into a single field 
 
 In order to encrypt messages, MACI uses Poseidon in DuplexSponge [mode](https://dusk.network/uploads/Encryption-with-Poseidon.pdf). This provides an encryption function and a decryption function:
 
-- $C$ as $\mathsf{poseidonEncrypt}(k_s[0], k_s[1], N, l, t[])$
-- $\mathsf{poseidonDecrypt}(k_s[0], k_s[1], N, l, C)$
+* $C$ as $poseidonEncrypt(k_s[0], k_s[1], N, l, t[])$
+* $poseidonDecrypt(k_s[0], k_s[1], N, l, C)$ -->
 
 In more details,
 
@@ -150,13 +150,13 @@ $t = [p, cm_{p_{x}}, cm_{p_{y}}, cm_s, R8[0], R8[1], S]$
 
 While the message can be computed with the formula below:
 
-$M$ = $\mathsf{poseidonEncrypt}(k_s[0], k_s[1], cm_n, 7, t)$
+$M$ = ${poseidonEncrypt}(k_s[0], k_s[1], cm_n, 7, t)$
 
 #### Decrypting a message
 
 To decrypt a message using $k_s$ is expressed as
 
-$[p, R8[0], R8[1], cm_s]$ = $\mathsf{poseidonDecrypt}(M, k_s[0], k_s[1], cm_n, 7)$
+$[p, R8[0], R8[1], cm_s]$ = ${poseidonDecrypt}(M, k_s[0], k_s[1], cm_n, 7)$
 
 To unpack $p$ to it's original five parameters, it must be seperated into 50 bit values from the parent 250 bit value. To extract 50 bits at byte $n$, we:
 
@@ -177,14 +177,14 @@ A Ballot represents a particular user's votes in a poll, as well as their next v
 
 The hash $blt$ is computed as such:
 
-1. Compute the Merkle root of $blt_v$, arity 5, of a tree of depth $blt_d$; let this value be $blt_r$
-2. Compute $\mathsf{poseidon_2}([blt_n, blt_r])$
+1. Compute the Merkle root of $blt_v$, arity 5, of a tree of depth $blt_d$; let this value  be $blt_r$
+2. Compute $\{poseidon_2}([blt_n, blt_r])$
 
 ### State leaf
 
 A state leaf represents a user's participation declared through an identity (their public key) and information relevant to their ability or right to cast votes in a poll (their voice credit balance and the block timestamp at which they signed up).
 
-We define a state leaf $sl$ as the $\mathsf{poseidon_4}$ hash of the following:
+We define a state leaf $sl$ as the $\{poseidon_4}$ hash of the following:
 
 | Symbol     | Name                      | Comments                                    |
 | ---------- | ------------------------- | ------------------------------------------- |
@@ -195,7 +195,7 @@ We define a state leaf $sl$ as the $\mathsf{poseidon_4}$ hash of the following:
 
 The hash $sl$ is computed as such:
 
-$sl = \mathsf{poseidon_4}([sl_{A_x}, sl_{A_y}, sl_{v}, sl_{t}])$
+$sl = \{poseidon_4}([sl_{A_x}, sl_{A_y}, sl_{v}, sl_{t}])$
 
 #### Blank state leaf
 
@@ -207,13 +207,13 @@ This value is computed as such:
 
 $A_{b_x} = 10457101036533406547632367118273992217979173478358440826365724437999023779287$
 $A_{b_y} = 19824078218392094440610104313265183977899662750282163392862422243483260492317$
-$sl_B = \mathsf{poseidon_4}([A_{b0}, A_{b1}, 0, 0])$
+$sl_B = \{poseidon_4}([A_{b0}, A_{b1}, 0, 0])$
 
 The code to derive $A_{b_x}$ and $A_{b_y}$ is [here](https://github.com/iden3/circomlib/blob/d5ed1c3ce4ca137a6b3ca48bec4ac12c1b38957a/src/pedersen_printbases.js). The function call required is `pedersenHash.getBasePoint('blake', 0)`
 
-1. Hash the string `PedersenGenerator_00000000000000000000000000000000_00000000000000000000000000000000` with $\mathsf{blake_{256}}$. In big-endian hexadecimal format, the hash should be `1b3ef77ef2cd620fd2358e69dd564f35556aad552fdd7f06b777bd3a1d697160`.
+1. Hash the string `PedersenGenerator_00000000000000000000000000000000_00000000000000000000000000000000` with $blake_{256}$. In big-endian hexadecimal format, the hash should be `1b3ef77ef2cd620fd2358e69dd564f35556aad552fdd7f06b777bd3a1d697160`.
 2. Set the 255th bit to 0. The result should be `1b3ef77ef2cd620fd2358e69dd564f35556aad552fdd7f06b777bd3a1d697120`.
 3. Use the method to convert a buffer to a point on the BabyJub curve described in [2.3.2].
 4. Multiply the point by 8. The result is the point with x-value $A_{b_x}$ and y-value $A_{b_y}$
 
-Given the [elliptic curve discrete logarithm problem](https://wstein.org/edu/2007/spring/ent/ent-html/node89.html), we assume that no-one knows the private key $s \in \mathbb{F}_p$ and by using the public key generation procedure in [1.4], we can derive $A_{b_x}$ and $A_{b_y}$. Furthermore, the string above (`PedersenGenerator...`) acts as a nothing-up-my-sleeve value. -->
+Given the [elliptic curve discrete logarithm problem](https://wstein.org/edu/2007/spring/ent/ent-html/node89.html), we assume that no-one knows the private key $s \in {F}_p$ and by using the public key generation procedure in [1.4], we can derive $A_{b_x}$ and $A_{b_y}$. Furthermore, the string above (`PedersenGenerator...`) acts as a nothing-up-my-sleeve value. 
