@@ -22,9 +22,6 @@ $5472060717959818805561601436314318772137091100104008585924551046643952123905$
 
 and within the finite field with modulo $p$.
 
-<!-- TODO: fix math expressions - current syntax creates compilation errors -->
-<!-- https://docusaurus.io/docs/markdown-features/math-equations -->
-
 ### Key Pairs
 
 MACI uses Node.js's `crypto.randomBytes(32)` function to generate a cryptographically strong pseudorandom 32-byte value, as well as an algorithm to prevent modulo bias. In pseudocode this is:
@@ -60,7 +57,7 @@ Also, SHA256 is used to compress public inputs to a circuit into a single field 
 In order to encrypt messages, MACI uses Poseidon in DuplexSponge [mode](https://dusk.network/uploads/Encryption-with-Poseidon.pdf). This provides an encryption function and a decryption function:
 
 * $C$ as $poseidonEncrypt(k_s[0], k_s[1], N, l, t[])$
-* $poseidonDecrypt(k_s[0], k_s[1], N, l, C)$ -->
+* $poseidonDecrypt(k_s[0], k_s[1], N, l, C)$ 
 
 In more details,
 
@@ -108,7 +105,7 @@ This contract holds user sign-ups and messages. When a leaf is inserted into the
 A verifying key $vk$ is comprised of the following elements:
 
 1. $\alpha$, a point in the curve on which $G_1$ is defined
-2. $\beta$, a point in the curve on which $G_2$ is defined
+2. $$\beta$$, a point in the curve on which $G_2$ is defined
 3. $\gamma$, a point in the curve on which $G_2$ is defined
 4. $\delta$, a point in the curve on which $G_2$ is defined
 5. $ic[]$, a list of points in the curve on which $G_1$ is defined
@@ -178,13 +175,13 @@ A Ballot represents a particular user's votes in a poll, as well as their next v
 The hash $blt$ is computed as such:
 
 1. Compute the Merkle root of $blt_v$, arity 5, of a tree of depth $blt_d$; let this value  be $blt_r$
-2. Compute $\{poseidon_2}([blt_n, blt_r])$
+2. Compute $poseidon_2([blt_n, blt_r])$
 
 ### State leaf
 
 A state leaf represents a user's participation declared through an identity (their public key) and information relevant to their ability or right to cast votes in a poll (their voice credit balance and the block timestamp at which they signed up).
 
-We define a state leaf $sl$ as the $\{poseidon_4}$ hash of the following:
+We define a state leaf $sl$ as the $poseidon_4$ hash of the following:
 
 | Symbol     | Name                      | Comments                                    |
 | ---------- | ------------------------- | ------------------------------------------- |
@@ -195,7 +192,7 @@ We define a state leaf $sl$ as the $\{poseidon_4}$ hash of the following:
 
 The hash $sl$ is computed as such:
 
-$sl = \{poseidon_4}([sl_{A_x}, sl_{A_y}, sl_{v}, sl_{t}])$
+$sl = poseidon_4([sl_{A_x}, sl_{A_y}, sl_{v}, sl_{t}])$
 
 #### Blank state leaf
 
@@ -207,7 +204,7 @@ This value is computed as such:
 
 $A_{b_x} = 10457101036533406547632367118273992217979173478358440826365724437999023779287$
 $A_{b_y} = 19824078218392094440610104313265183977899662750282163392862422243483260492317$
-$sl_B = \{poseidon_4}([A_{b0}, A_{b1}, 0, 0])$
+$sl_B = poseidon_4([A_{b0}, A_{b1}, 0, 0])$
 
 The code to derive $A_{b_x}$ and $A_{b_y}$ is [here](https://github.com/iden3/circomlib/blob/d5ed1c3ce4ca137a6b3ca48bec4ac12c1b38957a/src/pedersen_printbases.js). The function call required is `pedersenHash.getBasePoint('blake', 0)`
 

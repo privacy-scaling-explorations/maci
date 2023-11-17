@@ -2,6 +2,7 @@ import {themes as prismThemes} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 
 const GITHUB_URL = 'https://github.com/privacy-scaling-explorations/maci'
 
@@ -43,6 +44,7 @@ const config: Config = {
           editUrl:
             'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
           remarkPlugins: [remarkMath],
+          rehypePlugins: [rehypeKatex]
         },
         blog: {
           showReadingTime: true,
