@@ -59,3 +59,7 @@ MACI was originally developed by:
 - [Samuel Gosling](https://twitter.com/xGozzy)
 
 Currently, it is being mantained by the new MACI team, which will continue to work on improving the protocol and its documentation.
+
+:::info
+If you are using one of the previous versions of MACI, see the [MACI v0.x](/docs/v0.x/introduction) documentation.
+:::

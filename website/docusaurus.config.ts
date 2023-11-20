@@ -38,6 +38,7 @@ const config: Config = {
       'classic',
       {
         docs: {
+          routeBasePath: 'docs/',
           sidebarPath: './sidebars.ts',
           editUrl: function ({
             locale,
@@ -48,7 +49,8 @@ const config: Config = {
             return `https://github.com/privacy-scaling-explorations/maci/edit/dev/website/${versionDocsDirPath}/${docPath}`
           },
           remarkPlugins: [remarkMath],
-          rehypePlugins: [rehypeKatex]
+          rehypePlugins: [rehypeKatex],
+          includeCurrentVersion: false 
         },
         blog: {
           showReadingTime: true,
@@ -81,8 +83,8 @@ const config: Config = {
         indexBlog: true,
         // If the `indexPages` is set to `true`, Docusaurus will index pages.
         indexPages: true,
-        // Docs route base path, default to '/docs'.
-        docsRouteBasePath: '/docs',
+        // // Docs route base path, default to '/docs'.
+        // docsRouteBasePath: '/docs',
         // Blog route base path, default to '/blog'.
         blogRouteBasePath: '/blog',
       }
@@ -103,12 +105,15 @@ const config: Config = {
       title: 'MACI',
       items: [
         {
-          type: 'docSidebar',
-          sidebarId: 'docSidebar',
-          position: 'left',
-          label: 'Documentation',
+          label: "Documentation",
+          href: "/docs/introduction",
+          position: "left"
         },
-        {to: '/blog', label: 'Blog', position: 'left'},
+        {
+          to: '/blog', 
+          label: 'Blog', 
+          position: 'left'
+        },
         {
           type: 'search',
           position: 'right'
@@ -128,7 +133,7 @@ const config: Config = {
           items: [
             {
               label: 'Documentation',
-              to: '/docs/v1.x/introduction',
+              to: '/docs/introduction',
             },
             {
               label: 'GitHub',
