@@ -2,7 +2,7 @@ name: GitHub Pages
 
 on:
   push:
-    branches: [master, dev]
+    branches: [ master, dev ]
   pull_request:
 
 concurrency:
