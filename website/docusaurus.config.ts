@@ -39,8 +39,6 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          // TODO: change this to your repo.
-          // Remove this to remove the "edit this page" links.
           editUrl: function ({
             locale,
             version,
@@ -82,7 +80,7 @@ const config: Config = {
         indexDocs: true,
         indexBlog: true,
         // If the `indexPages` is set to `true`, Docusaurus will index pages.
-        indexPages: false,
+        indexPages: true,
         // Docs route base path, default to '/docs'.
         docsRouteBasePath: '/docs',
         // Blog route base path, default to '/blog'.
@@ -99,17 +97,10 @@ const config: Config = {
       crossorigin: 'anonymous',
     },
   ],
-  themeConfig: {
-  
-    // TODO: Replace with your project's social card
-    image: 'img/maci-logo-2.png',
+  themeConfig: {  
+    image: 'img/maci.jpeg',
     navbar: {
       title: 'MACI',
-      // TODO: add logo?
-      // logo: {
-      //   alt: 'My Site Logo',
-      //   src: 'img/logo.svg',
-      // },
       items: [
         {
           type: 'docSidebar',
@@ -117,16 +108,6 @@ const config: Config = {
           position: 'left',
           label: 'Documentation',
         },
-        // {
-        //   to: '/typedoc',
-        //   label: 'TypeScript docs',
-        //   position: 'left'
-        // },
-        // {
-        //   to: '/solidity-docs',
-        //   label: 'Solidity docs',
-        //   position: 'left'
-        // },
         {to: '/blog', label: 'Blog', position: 'left'},
         {
           type: 'search',

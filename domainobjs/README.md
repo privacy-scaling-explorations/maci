@@ -5,7 +5,7 @@
 
 This module implements domain objects. A domain object is:
 
-> a logical container of purely domain information, usually represents a
+> a logical container of purely domain information, usually representing a
 > logical entity in the problem domain space
 
 https://wiki.c2.com/?DomainObject

@@ -48,6 +48,25 @@ This config file defines the parameters required for MACI's circuits.
 
 ## Compile circuits
 
+### Prerequisites
+
+Before building the project, make sure you have the following dependencies installed:
+
+- [circom](https://docs.circom.io/downloads/downloads/)
+
+### Building MACI circuits
+
+To build the two main circuits of MACI, run the following commands:
+
+```
+circom --r1cs --sym --wasm --output ./build circom/test/processMessages_test.circom
+circom --r1cs --sym --wasm --output ./build circom/test/tallyVotes_test.circom
+```
+
+Please note that the circuit is configured with testing purpose parameters, which means it can only handle a limited amount of messages (up to 25 messages). For more information on the parameters and how to configure them, refer to [this page](https://privacy-scaling-explorations.github.io/maci/circuits.html#compile-circuits).
+
+### Generating zKeys
+
 Run:
 
 ```bash
@@ -57,7 +76,7 @@ npx zkey-manager compile -c ./zkeys.config.yml
 The larger the trees, the more time this process may take. You may also need a
 machine with a very large amount of memory.
 
-## Measure the circuit sizes
+#### Measure the circuit sizes
 
 The size of a circuit is denoted by its number of constraints. The larger this
 number, the more time it takes to compile it, generate its `.zkey` file, and
@@ -69,7 +88,7 @@ Run this command to measure a circuit:
 npx snarkjs r1cs info CIRCUIT_NAME.circom
 ```
 
-## Download the `.ptau` file
+#### Download the `.ptau` file
 
 This file should be the result of the Perpetual Powers of Tau trusted setup
 contribution which [Hermez Network
@@ -84,15 +103,15 @@ npx zkey-manager downloadPtau -c ./zkeys.config.yml
 `zkey-manager` will select the smallest `.ptau` file that fits the largest
 circuit specified in `zkeys.config.yml`.
 
-## Generate `.zkey` files
+### Generating and Validating ZK Proofs
 
-Run:
+To generate and validate ZK proofs from the artifacts produced by `circom`, you will need [`snarkjs`](https://github.com/iden3/snarkjs#groth16-1).
 
-```bash
-npx zkey-manager genZkeys -c ./zkeys.config.yml
-```
+## Testing
 
-This generates the initial `.zkey` files for each circuit.
+To test the circuits package, please use `npm run test`. This will run all of the tests inside the tests folder.
 
-You should perform at least one contribution to each circuit, even if you
-choose not to perform a multi-party trusted setup.
+To run individual tests, you can use the following commands (for all other circuits please refer to the `package.json` scripts section):
+
+* `npm run test-processMessages` to run the tests for the `processMessages` circuit.
+* `npm run test-tallyVotes` to run the tests for the `tallyVotes` circuit.

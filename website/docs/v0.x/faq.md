@@ -1,8 +1,5 @@
 # FAQ
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
 - [I: Attacks and mitigations](#i-attacks-and-mitigations)
   - [If the coordinator censors messages](#if-the-coordinator-censors-messages)
   - [If a user submits a message with an invalid signature](#if-a-user-submits-a-message-with-an-invalid-signature)

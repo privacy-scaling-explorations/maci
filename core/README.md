@@ -100,6 +100,10 @@ main root) whenever the MACI contract's `mergeMessageAqSubRoots()` and
 They should contain the same leaves, even if the `messageAq` is not yet merged.
 `messageTree` exists for developer convenience.
 
+## Testing 
+
+For more details about testing please refer to the [tests documentation](https://maci.pse.dev/docs/v1.x/testing).
+
 [core-npm-badge]: https://img.shields.io/npm/v/maci-core.svg
 [core-npm-link]: https://www.npmjs.com/package/maci-core
 [core-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/core-build.yml/badge.svg
