@@ -569,7 +569,7 @@ describe("MaciState", function () {
             const json = m1.toJSON()
             writeFileSync(stateFile, JSON.stringify(json, null, 4))
             const content = JSON.parse(readFileSync(stateFile).toString())
-            const state = MaciState.fromJSON(content)
+            const state = MaciState.fromJSON(content, coordinatorKeypair.privKey.serialize())
             expect(state.equals(m1)).to.be.true
         })
     })

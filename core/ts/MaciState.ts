@@ -1429,7 +1429,6 @@ class Poll {
         return {
             duration: this.duration,
             pollEndTimestamp: this.pollEndTimestamp.toString(),
-            coordinatorKeypair: this.coordinatorKeypair.toJSON(),
             treeDepths: this.treeDepths,
             batchSizes: this.batchSizes,
             maxValues: this.maxValues,
@@ -1451,11 +1450,15 @@ class Poll {
      * @param maciState the reference to the MaciState Class
      * @returns a new Poll instance
      */
-    static fromJSON(json: any, maciState: MaciState): Poll {
+    static fromJSON(
+        json: any, 
+        maciState: MaciState, 
+        coordinatorPrivateKey: string
+    ): Poll {
         const poll = new Poll(
             json.duration,
             BigInt(json.pollEndTimestamp),
-            Keypair.fromJSON(json.coordinatorKeypair),
+            new Keypair(PrivKey.unserialize(coordinatorPrivateKey)),
             json.treeDepths,
             json.batchSizes,
             json.maxValues,
@@ -1713,7 +1716,7 @@ class MaciState {
     }
 
     // create a new object from JSON 
-    static fromJSON(json: any) {
+    static fromJSON(json: any, coordinatorPrivateKey: string) {
         // create new instance
         const maciState = new MaciState(json.stateTreeDepth)
 
@@ -1735,7 +1738,7 @@ class MaciState {
         }
         
         // re-generate the polls and set the maci state ref
-        maciState.polls = json.polls.map((jsonPoll: Poll) => Poll.fromJSON(jsonPoll, maciState))
+        maciState.polls = json.polls.map((jsonPoll: Poll) => Poll.fromJSON(jsonPoll, maciState, coordinatorPrivateKey))
         return maciState 
     }
 }
