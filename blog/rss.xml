@@ -4,7 +4,7 @@
         <title>MACI Blog</title>
         <link>https://maci.pse.dev/blog</link>
         <description>MACI Blog</description>
-        <lastBuildDate>Mon, 20 Nov 2023 12:42:51 GMT</lastBuildDate>
+        <lastBuildDate>Mon, 20 Nov 2023 12:58:58 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
@@ -12,7 +12,7 @@
             <title><![CDATA[Welcome to MACI]]></title>
             <link>https://maci.pse.dev/blog/welcome</link>
             <guid>https://maci.pse.dev/blog/welcome</guid>
-            <pubDate>Mon, 20 Nov 2023 12:42:51 GMT</pubDate>
+            <pubDate>Mon, 20 Nov 2023 12:58:58 GMT</pubDate>
             <description><![CDATA[Welcome to the MACI blog! This is where we will post updates on the project, including new releases, new features, and other news.]]></description>
             <content:encoded><![CDATA[<p>Welcome to the MACI blog! This is where we will post updates on the project, including new releases, new features, and other news.</p>]]></content:encoded>
             <category>maci</category>
@@ -65,8 +65,8 @@
 <p>For further reading on coordinator services, please refer to this <a href="https://hackmd.io/@chaosma/SJtsfzKnF" target="_blank" rel="noopener noreferrer">doc</a>.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="how-to-use-maci">How to use MACI<a href="https://maci.pse.dev/blog/maci%20v1.1.1#how-to-use-maci" class="hash-link" aria-label="Direct link to How to use MACI" title="Direct link to How to use MACI">​</a></h2>
 <p>MACI can be used as a standalone application to carry out on-chain polls, or be implemented into new projects that can then benefit from its properties.</p>
-<p>For use as a standalone application, a <code>cli</code> package is provided which allows coordinators and voters to use MACI. Please refer to this <a href="https://privacy-scaling-explorations.github.io/maci/cli.html" target="_blank" rel="noopener noreferrer">doc</a> for details on how to use it.</p>
-<p>To implement MACI into a project, the <a href="https://privacy-scaling-explorations.github.io/maci/" target="_blank" rel="noopener noreferrer">documentation</a> can be used a reference, as well as reviewing how <a href="https://github.com/clrfund" target="_blank" rel="noopener noreferrer">clr.fund</a> and <a href="https://github.com/quadratic-funding/qfi/tree/feat/code-freeze" target="_blank" rel="noopener noreferrer">qfi</a> use MACI in their code.</p>
+<p>For use as a standalone application, a <code>cli</code> package is provided which allows coordinators and voters to use MACI. Please refer to this <a href="https://maci.pse.dev/docs/cli.html" target="_blank" rel="noopener noreferrer">doc</a> for details on how to use it.</p>
+<p>To implement MACI into a project, the <a href="https://maci.pse.dev/docs/introduction" target="_blank" rel="noopener noreferrer">documentation</a> can be used a reference, as well as reviewing how <a href="https://github.com/clrfund" target="_blank" rel="noopener noreferrer">clr.fund</a> and <a href="https://github.com/privacy-scaling-explorations/qf" target="_blank" rel="noopener noreferrer">qf</a> use MACI in their code.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="maci-0x">MACI 0.x<a href="https://maci.pse.dev/blog/maci%20v1.1.1#maci-0x" class="hash-link" aria-label="Direct link to MACI 0.x" title="Direct link to MACI 0.x">​</a></h2>
 <p>MACI version 0.x will be discontinued. MACI 1.x has feature parity, more robust code and newest features. Users are encouraged to use the latest version. Starting February 7, 2023, the team will focus solely on resolving issues for MACI 1.x, and will cease to provide support for version 0.x.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="how-to-get-involved">How to get involved<a href="https://maci.pse.dev/blog/maci%20v1.1.1#how-to-get-involved" class="hash-link" aria-label="Direct link to How to get involved" title="Direct link to How to get involved">​</a></h2>
