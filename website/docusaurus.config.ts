@@ -40,13 +40,8 @@ const config: Config = {
         docs: {
           routeBasePath: 'docs/',
           sidebarPath: './sidebars.ts',
-          editUrl: function ({
-            locale,
-            version,
-            versionDocsDirPath,
-            docPath,
-          }) {
-            return `https://github.com/privacy-scaling-explorations/maci/edit/dev/website/${versionDocsDirPath}/${docPath}`
+          editUrl: ({ versionDocsDirPath, docPath, }) => {
+            return `${GITHUB_URL}/edit/dev/website/${versionDocsDirPath}/${docPath}`;
           },
           remarkPlugins: [remarkMath],
           rehypePlugins: [rehypeKatex],
@@ -55,13 +50,8 @@ const config: Config = {
         blog: {
           showReadingTime: true,
      
-          editUrl: function ({
-            locale,
-            blogDirPath,
-            blogPath,
-            permalink,
-          }) {
-            return `https://github.com/privacy-scaling-explorations/maci/edit/dev/website/${blogDirPath}/${blogPath}`
+          editUrl: ({ blogDirPath, blogPath, }) => {
+            return `${GITHUB_URL}/edit/dev/website/${blogDirPath}/${blogPath}`;
           },
         },
         theme: {
