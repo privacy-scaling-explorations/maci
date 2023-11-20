@@ -105,6 +105,22 @@ const config: Config = {
           position: 'left'
         },
         {
+          type: 'docsVersionDropdown',
+          position: 'right',
+          dropdownActiveClassDisabled: true,
+          // TODO: add /versions page to explain major versions & link to blog posts
+          // dropdownItemsAfter: [
+          //   {
+          //     type: 'html',
+          //     value: '<hr class="dropdown-separator">',
+          //   },
+          //   {
+          //     to: '/versions',
+          //     label: 'All versions',
+          //   },
+          // ],
+        },
+        {
           type: 'search',
           position: 'right'
         },
