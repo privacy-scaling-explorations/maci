@@ -65,9 +65,6 @@ const genMaciStateFromContract = async (
             address: address
         })
 
-        // sleep to avoid rate limiting
-        if (sleepAmount) await sleep(sleepAmount)
-
         initLogs = initLogs.concat(tmpInitLogs)
 
         const tmpSignUpLogs = await provider.getLogs({
@@ -76,9 +73,6 @@ const genMaciStateFromContract = async (
             toBlock,
             address: address
         })
-
-        if (sleepAmount) await sleep(sleepAmount)
-
         signUpLogs = signUpLogs.concat(tmpSignUpLogs)
     
         const tmpMergeStateAqSubRootsLogs = await provider.getLogs({
@@ -87,9 +81,6 @@ const genMaciStateFromContract = async (
             toBlock,
             address: address
         })
-
-        if (sleepAmount) await sleep(sleepAmount)
-
         mergeStateAqSubRootsLogs = mergeStateAqSubRootsLogs.concat(tmpMergeStateAqSubRootsLogs)
     
         const tmpMergeStateAqLogs = await provider.getLogs({
@@ -98,9 +89,6 @@ const genMaciStateFromContract = async (
             toBlock,
             address: address
         })
-
-        if (sleepAmount) await sleep(sleepAmount)
-
         mergeStateAqLogs = mergeStateAqLogs.concat(tmpMergeStateAqLogs)
     
         const tmpDeployPollLogs = await provider.getLogs({
@@ -109,10 +97,9 @@ const genMaciStateFromContract = async (
             toBlock,
             address: address
         })
+        deployPollLogs = deployPollLogs.concat(tmpDeployPollLogs)
 
         if (sleepAmount) await sleep(sleepAmount)
-
-        deployPollLogs = deployPollLogs.concat(tmpDeployPollLogs)
     }
 
     // init() should only be called up to 1 time
@@ -293,13 +280,12 @@ const genMaciStateFromContract = async (
 
     for (let i = fromBlock; i < lastBlock; i += blocksPerRequest + 1) {
         const toBlock = (i + blocksPerRequest) >= lastBlock ? undefined : i + blocksPerRequest
+
         const tmpPublishMessageLogs = await provider.getLogs({
             ...pollContract.filters.PublishMessage(),
             fromBlock: i,
             toBlock
         })
-        if (sleepAmount) await sleep(sleepAmount)
-
         publishMessageLogs = publishMessageLogs.concat(tmpPublishMessageLogs)
     
         const tmpTopupLogs = await provider.getLogs({
@@ -308,8 +294,6 @@ const genMaciStateFromContract = async (
             toBlock,
             address: pollContract.address
         })
-        if (sleepAmount) await sleep(sleepAmount)
-
         topupLogs = topupLogs.concat(tmpTopupLogs)    
     
         const tmpMergeMaciStateAqSubRootsLogs = await provider.getLogs({
@@ -318,8 +302,6 @@ const genMaciStateFromContract = async (
             toBlock,
             address: pollContract.address
         })
-        if (sleepAmount) await sleep(sleepAmount)
-
         mergeMaciStateAqSubRootsLogs = mergeMaciStateAqSubRootsLogs.concat(tmpMergeMaciStateAqSubRootsLogs)
     
         const tmpMergeMaciStateAqLogs = await provider.getLogs({
@@ -328,8 +310,6 @@ const genMaciStateFromContract = async (
             toBlock,
             address: pollContract.address
         })
-        if (sleepAmount) await sleep(sleepAmount)
-
         mergeMaciStateAqLogs = mergeMaciStateAqLogs.concat(tmpMergeMaciStateAqLogs)
     
         const tmpMergeMessageAqSubRootsLogs = await provider.getLogs({
@@ -338,8 +318,6 @@ const genMaciStateFromContract = async (
             toBlock,
             address: pollContract.address
         })
-        if (sleepAmount) await sleep(sleepAmount)
-
         mergeMessageAqSubRootsLogs = mergeMessageAqSubRootsLogs.concat(tmpMergeMessageAqSubRootsLogs)
     
         const tmpMergeMessageAqLogs = await provider.getLogs({
@@ -348,9 +326,9 @@ const genMaciStateFromContract = async (
             toBlock,
             address: pollContract.address
         })
-        if (sleepAmount) await sleep(sleepAmount)
-
         mergeMessageAqLogs = mergeMessageAqLogs.concat(tmpMergeMessageAqLogs)
+
+        if (sleepAmount) await sleep(sleepAmount)
     }
 
     for (const log of publishMessageLogs) {
