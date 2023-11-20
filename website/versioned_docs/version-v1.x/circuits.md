@@ -63,7 +63,7 @@ circom --r1cs --sym --wasm --output ./build circom/test/processMessages_test.cir
 circom --r1cs --sym --wasm --output ./build circom/test/tallyVotes_test.circom
 ```
 
-Please note that the circuit is configured with testing purpose parameters, which means it can only handle a limited amount of messages (up to 25 messages). For more information on the parameters and how to configure them, refer to [this page](https://privacy-scaling-explorations.github.io/maci/circuits.html#compile-circuits).
+Please note that the circuit is configured with testing purpose parameters, which means it can only handle a limited amount of messages (up to 25 messages). For more information on the parameters and how to configure them, refer to [this page](https://maci.pse.dev/docs/circuits.html#compile-circuits).
 
 ### Generating zKeys
 

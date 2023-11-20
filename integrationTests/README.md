@@ -8,7 +8,7 @@ This submodule contains test suites that span between different submodules.
 The current approach is to test each CLI command and also chain
 them together to test the entire flow. 
 
-Please refer to the [tests documentation](https://maci.pse.dev/docs/v1.x/testing) for more information.
+Please refer to the [tests documentation](https://maci.pse.dev/docs/testing) for more information.
 
 [integrationTests-npm-badge]: https://img.shields.io/npm/v/maci-integrationtests.svg
 [integrationTests-npm-link]: https://www.npmjs.com/package/maci-integrationtests

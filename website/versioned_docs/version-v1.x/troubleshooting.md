@@ -11,7 +11,7 @@ sidebar_position: 13
 
 ### Case: missing `.dat` files
 
-If your logs look like the following, then make sure you have `ProcessMessages_10-2-1-2_test.dat` and `TallyVotes_10-1-2_test.dat` files in the same directory where your zkeys arec:
+If your logs look like the following, then make sure you have `ProcessMessages_10-2-1-2_test.dat` and `TallyVotes_10-1-2_test.dat` files in the same directory as your zkeys:
 
 ```
 node build/index.js genProofs -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
@@ -44,7 +44,7 @@ Error: Error executing ./zkeys/ProcessMessages_10-2-1-2_test /tmp/tmp-9904-zG0k8
     at fulfilled (/home/ubuntu/maci/cli/build/genProofs.js:5:58)
 ```
 
-You can generate the missing `.dat` files by the following command:
+You can generate the missing `.dat` files using the following command:
 ```
 cd cli/
 npx zkey-manager compile -c zkeys.config.yml

@@ -10,7 +10,7 @@ post](https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413) for a
 high-level view.
 
 Documentation for developers and integrators can be found here:
-https://privacy-scaling-explorations.github.io/maci/
+https://maci.pse.dev/
 
 We welcome contributions to this project. Please join our
 [Telegram group][telegram-link] to discuss.
@@ -56,7 +56,7 @@ own unit tests.
 
 ### Testing
 
-Please refer to the [testing documentation](https://maci.pse.dev/v1.x/docs/testing) for more information.
+Please refer to the [testing documentation](https://maci.pse.dev/docs/testing) for more information.
 
 ### Docker
 

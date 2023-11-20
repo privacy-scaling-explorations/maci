@@ -33,7 +33,7 @@ npm run test-crypto
 npm run test-accQueue
 ```
 
-For more details about testing please refer to the [tests documentation](https://maci.pse.dev/docs/v1.x/testing).
+For more details about testing please refer to the [tests documentation](https://maci.pse.dev/docs/testing).
 
 [crypto-npm-badge]: https://img.shields.io/npm/v/maci-crypto.svg
 [crypto-npm-link]: https://www.npmjs.com/package/maci-crypto

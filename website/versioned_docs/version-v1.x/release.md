@@ -19,10 +19,10 @@ To release a new version of maci v1, the following steps can be taken:
 git clone https://github.com/privacy-scaling-explorations/maci
 ```
 
-3. Switch to the `v1` branch:
+3. Switch to the `master` branch:
 
 ```
-git checkout v1
+git checkout master
 ```
 
 4. Install required dependencies:

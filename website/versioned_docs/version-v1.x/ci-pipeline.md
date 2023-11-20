@@ -7,7 +7,7 @@ sidebar_position: 11
 
 # Continuous Integration (CI) Pipeline
 
-CI (Continuous Integration) pipeline is an automated workflow to ensure that software is always in a working state. An event like opening a pull request cause a pipeline to run. The pipeline consists of an automated build process and a suite of automated tests (See [Build and Test](https://github.com/privacy-scaling-explorations/maci/wiki/Build-and-Test) for more detail).
+CI (Continuous Integration) pipeline is an automated workflow to ensure that software is always in a working state. An event like opening a pull request causes a pipeline to run. The pipeline consists of an automated build process and a suite of automated tests (See [Testing](https://pse.dev/docs/testing) for more details).
 
 ![cicd-maci drawio-7](https://user-images.githubusercontent.com/1610146/185962260-091cd952-5444-44f3-89e3-be64e81d4c21.png)
 
@@ -16,13 +16,13 @@ CI (Continuous Integration) pipeline is an automated workflow to ensure that sof
 
 ### Commit to Main Branch
 
-Each commit (i.e. a merged PR) to main branch trigger the pipeline. The pipeline creates packages that can be deployed to any environment. Packages are uploaded to an artifact repository (e.g. npm). 
+Each commit (i.e. a merged PR) to the main branch triggers the pipeline. The pipeline creates packages that can be deployed to any environment. Packages are uploaded to an artifact repository (e.g. npm). 
 
 ![cicd-maci drawio-12](https://user-images.githubusercontent.com/1610146/183404579-8bcb76fe-34b6-4748-a5ae-e2e4b010bd86.png)
 
 ### Pull Request (PR)
 
-When a pull request has been created (or updated), it triggers the PR pipeline. It gives the reviewer confidence that the software works as expected with the introduced code change from the pull request.
+When a pull request has been created (or updated), it triggers the PR pipeline. It gives the reviewer confidence that the software works as expected with the introduced code changes.
 
 ![cicd-maci drawio-9](https://user-images.githubusercontent.com/1610146/183391880-d3a20f29-2708-4d72-988d-4781c0396e48.png)
 
