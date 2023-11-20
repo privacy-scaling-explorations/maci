@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://maci.pse.dev/maci/blog</id>
     <title>MACI Blog</title>
-    <updated>2023-11-17T23:14:17.000Z</updated>
+    <updated>2023-11-20T08:43:27.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://maci.pse.dev/maci/blog"/>
     <subtitle>MACI Blog</subtitle>
@@ -11,7 +11,7 @@
         <title type="html"><![CDATA[Welcome to MACI]]></title>
         <id>https://maci.pse.dev/maci/blog/welcome</id>
         <link href="https://maci.pse.dev/maci/blog/welcome"/>
-        <updated>2023-11-17T23:14:17.000Z</updated>
+        <updated>2023-11-20T08:43:27.000Z</updated>
         <summary type="html"><![CDATA[Welcome to the MACI blog! This is where we will post updates on the project, including new releases, new features, and other news.]]></summary>
         <content type="html"><![CDATA[<p>Welcome to the MACI blog! This is where we will post updates on the project, including new releases, new features, and other news.</p>]]></content>
         <author>
@@ -40,7 +40,7 @@
 <p>Since its inception, MACI has been adopted by different projects, most notably <a href="https://github.com/clrfund" target="_blank" rel="noopener noreferrer">clr.fund</a> and <a href="https://github.com/quadratic-funding/qfi/tree/feat/code-freeze" target="_blank" rel="noopener noreferrer">QFI</a>. These projects prove how effective MACI can be, especially when integrated with applications that are otherwise prone to collusion, such as funding Public Goods.</p>
 <p>For a more detailed description of MACI, please refer to the <a href="https://medium.com/privacy-scaling-explorations/a-technical-introduction-to-maci-1-0-db95c3a9439a" target="_blank" rel="noopener noreferrer">v1 technical introduction article</a>.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="security-audit">Security Audit<a href="https://maci.pse.dev/maci/blog/maci%20v1.1.1#security-audit" class="hash-link" aria-label="Direct link to Security Audit" title="Direct link to Security Audit">​</a></h2>
-<p>MACI was <a href="https://github.com/privacy-scaling-explorations/maci/blob/v1/audit/202220930_Hashcloak_audit_report.pdf" target="_blank" rel="noopener noreferrer">audited</a> by HashCloack in the summer of 2022. The audit team discovered certain high risk vulnerabilities, whose fixes were the focus of the MACI team in the past months.</p>
+<p>MACI was <a target="_blank" href="https://maci.pse.dev/maci/assets/files/202220930_Hashcloak_audit_report-14721b7c4e340998f118116825f611e0.pdf">audited</a> by HashCloack in the summer of 2022. The audit team discovered certain high risk vulnerabilities, whose fixes were the focus of the MACI team in the past months.</p>
 <p>In more details, the audit revealed two high risk issues within the zk-SNARK circuits:</p>
 <ul>
 <li>Incomplete validation when processing messages</li>
