@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ master, audit, dev ]
+    branches: [ master, dev ]
   pull_request:
 
 concurrency: 
@@ -17,10 +17,10 @@ jobs:
   npm-publish:
     needs: e2e
     if: ${{ github.event_name == 'push' }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       
       - name: Use Node.js 18
         uses: actions/setup-node@v3
