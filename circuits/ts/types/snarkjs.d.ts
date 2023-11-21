@@ -20,12 +20,17 @@ declare module "snarkjs" {
   }
 
   export namespace groth16 {
-    function verify(
-      _vk_verifier: any,
-      _publicSignals: PublicSignals,
-      _proof: Groth16Proof,
-      logger?: any,
-    ): Promise<boolean>;
-    function fullProve(_input: any, wasmFile: string, zkeyFileName: string, logger?: any): Promise<FullProveResult>;
+      function verify(
+          _vk_verifier: any,
+          _publicSignals: PublicSignals,
+          _proof: Groth16Proof,
+          logger?: any
+      ): Promise<boolean>;
+      function fullProve(
+          _input: any,
+          wasmFile: string,
+          zkeyFileName: string,
+          logger?: any
+      ): Promise<FullProveResult>;
   }
 }
