@@ -1,6 +1,6 @@
-import { readFileSync, writeFileSync, unlinkSync, existsSync, mkdirSync } from 'fs'
+import { readFileSync, writeFileSync, unlinkSync, existsSync, mkdirSync, rmdirSync } from 'fs'
 import { join } from 'path'
-import { exec } from 'shelljs'
+import { execSync } from 'child_process'
 import { tmpdir } from 'os'
 import { zKey, groth16 } from 'snarkjs'
 import { stringifyBigInts } from 'maci-crypto'
@@ -52,20 +52,30 @@ export const genProof = async (
 
     // Generate the witness
     const witnessGenCmd = `${witnessExePath} ${inputJsonPath} ${outputWtnsPath}`
-    const witnessGenOutput = exec(witnessGenCmd, { silent })
-    if (witnessGenOutput.stderr) console.log(witnessGenOutput.stderr)
 
-    if (!existsSync(outputWtnsPath)) {
-        throw new Error('Error executing ' + witnessGenCmd)
+    try {
+        execSync(witnessGenCmd, { stdio: silent ? 'ignore' : 'pipe' })
+    
+        if (!existsSync(outputWtnsPath)) {
+            throw new Error('Error executing ' + witnessGenCmd)
+        }
+    } catch (error: any) {
+        throw new Error('Error executing ' + witnessGenCmd + ' ' + error.message)
     }
+   
 
     // Generate the proof
     const proofGenCmd = `${rapidsnarkExePath} ${zkeyPath} ${outputWtnsPath} ${proofJsonPath} ${publicJsonPath}`
-    exec(proofGenCmd, { silent })
+    try {
+        execSync(proofGenCmd, { stdio: silent ? 'ignore' : 'pipe' })
 
-    if (!existsSync(proofJsonPath)) {
-        throw new Error('Error executing ' + proofGenCmd)
-    }
+        if (!existsSync(proofJsonPath)) {
+            throw new Error('Error executing ' + proofGenCmd)
+        }
+    } catch(error: any) {
+        throw new Error('Error executing ' + proofGenCmd + ' ' + error.message)
+    } 
+   
 
     // Read the proof and public inputs
     const proof = JSON.parse(readFileSync(proofJsonPath).toString())
@@ -80,7 +90,7 @@ export const genProof = async (
     ]) if (existsSync(f)) unlinkSync(f)
     
     // remove tmp directory
-    unlinkSync(tmpPath)
+    rmdirSync(tmpPath)
     
     return { proof, publicSignals }
 }
