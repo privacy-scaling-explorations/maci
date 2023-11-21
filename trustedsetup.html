@@ -3,8 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Page not found - Minimum Anti-Collusion Infrastructure</title>
-        <base href="/">
+        <title>Trusted setup - Minimum Anti-Collusion Infrastructure</title>
         <!-- Custom HTML head -->
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
@@ -78,7 +77,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="primitives.html"><strong aria-hidden="true">3.</strong> MACI Primitives</a></li><li class="chapter-item expanded "><a href="cli.html"><strong aria-hidden="true">4.</strong> Command-line interface</a></li><li class="chapter-item expanded "><a href="contracts.html"><strong aria-hidden="true">5.</strong> Smart Contracts</a></li><li class="chapter-item expanded "><a href="circuits.html"><strong aria-hidden="true">6.</strong> Circuits</a></li><li class="chapter-item expanded "><a href="trustedsetup.html"><strong aria-hidden="true">7.</strong> Trusted setup</a></li><li class="chapter-item expanded "><a href="testing.html"><strong aria-hidden="true">8.</strong> Testing</a></li><li class="chapter-item expanded "><a href="integrating-maci.html"><strong aria-hidden="true">9.</strong> Integrating MACI</a></li><li class="chapter-item expanded "><a href="audit.html"><strong aria-hidden="true">10.</strong> Latest audit</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="primitives.html"><strong aria-hidden="true">3.</strong> MACI Primitives</a></li><li class="chapter-item expanded "><a href="cli.html"><strong aria-hidden="true">4.</strong> Command-line interface</a></li><li class="chapter-item expanded "><a href="contracts.html"><strong aria-hidden="true">5.</strong> Smart Contracts</a></li><li class="chapter-item expanded "><a href="circuits.html"><strong aria-hidden="true">6.</strong> Circuits</a></li><li class="chapter-item expanded "><a href="trustedsetup.html" class="active"><strong aria-hidden="true">7.</strong> Trusted setup</a></li><li class="chapter-item expanded "><a href="testing.html"><strong aria-hidden="true">8.</strong> Testing</a></li><li class="chapter-item expanded "><a href="integrating-maci.html"><strong aria-hidden="true">9.</strong> Integrating MACI</a></li><li class="chapter-item expanded "><a href="audit.html"><strong aria-hidden="true">10.</strong> Latest audit</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -137,19 +136,56 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="document-not-found-404"><a class="header" href="#document-not-found-404">Document not found (404)</a></h1>
-<p>This URL is invalid, sorry. Please use the navigation bar or search to continue.</p>
+                        <h1 id="trusted-setup"><a class="header" href="#trusted-setup">Trusted setup</a></h1>
+<p>MACI currently uses Groth16 zk-SNARKs written in <code>circom</code>. Teams who wish to
+build on MACI may choose to perform a multi-party trusted setup. This allows
+observers to have a higher degree of confidence that the coordinator cannot
+generate fake proofs. Some teams, however, may forgo the trusted setup.</p>
+<p>There are two possible reasons for doing so: if a team does not intend
+to manage a large amount of value, and if their users accept that the risk of
+coordinator misbehaviour is insufficient to justify doing the work nof a
+trusted setup. After all, MACI's security model presumes a trusted coordinator.</p>
+<p>In any case, MACI can be relatively easily modified to support PLONK, which
+does not require a circuit-specific trusted setup. Its circuits, written in
+<a href="https://github.com/iden3/circom"><code>circom</code></a>, are compatible with Fluidex's
+<a href="https://github.com/Fluidex/plonkit"><code>plonkit</code></a> tool. The downside to using
+PLONK is that proof generation is not as optimised as it is for Groth16.</p>
+<h2 id="how-to-run-the-trusted-setup"><a class="header" href="#how-to-run-the-trusted-setup">How to run the trusted setup</a></h2>
+<p>First, follow the instructions in the <a href="./installation.html">Installation</a>
+section to install dependencies for MACI.</p>
+<p>Next, configure and compile circuits following instructions in
+<a href="./circuits.html">Circuits</a>.</p>
+<p>Finally, use the <a href="https://github.com/privacy-scaling-explorations/multisetups"><code>multisetups</code></a>
+tool to do this.</p>
+<p>You should perform at least one contribution to each circuit, even if you
+choose not to perform a multi-party trusted setup.</p>
+<p>We don't recommend a browser-based trusted setup (which <a href="https://ceremony.tornado.cash/">Tornado
+Cash</a> and <a href="https://mpc.zkopru.network/">Zkopru</a>
+used) for the MACI circuits as they are too large to be feasibly processed in
+the browser.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="circuits.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="testing.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
                         <div style="clear: both"></div>
                     </nav>
                 </div>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="circuits.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="testing.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
             </nav>
 
         </div>

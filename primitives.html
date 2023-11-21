@@ -1,0 +1,333 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>MACI Primitives - Minimum Anti-Collusion Infrastructure</title>
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <!-- MathJax -->
+        <script async type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="primitives.html" class="active"><strong aria-hidden="true">3.</strong> MACI Primitives</a></li><li class="chapter-item expanded "><a href="cli.html"><strong aria-hidden="true">4.</strong> Command-line interface</a></li><li class="chapter-item expanded "><a href="contracts.html"><strong aria-hidden="true">5.</strong> Smart Contracts</a></li><li class="chapter-item expanded "><a href="circuits.html"><strong aria-hidden="true">6.</strong> Circuits</a></li><li class="chapter-item expanded "><a href="trustedsetup.html"><strong aria-hidden="true">7.</strong> Trusted setup</a></li><li class="chapter-item expanded "><a href="testing.html"><strong aria-hidden="true">8.</strong> Testing</a></li><li class="chapter-item expanded "><a href="integrating-maci.html"><strong aria-hidden="true">9.</strong> Integrating MACI</a></li><li class="chapter-item expanded "><a href="audit.html"><strong aria-hidden="true">10.</strong> Latest audit</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Minimum Anti-Collusion Infrastructure</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h2 id="maci-primitives"><a class="header" href="#maci-primitives">MACI primitives</a></h2>
+<p>This section provides a short introduction of the main primitives used by MACI.</p>
+<h3 id="elliptic-curves"><a class="header" href="#elliptic-curves">Elliptic Curves</a></h3>
+<p>MACI uses the Baby Jubjub Elliptic <a href="https://iden3-docs.readthedocs.io/en/latest/_downloads/33717d75ab84e11313cc0d8a090b636f/Baby-Jubjub.pdf">Curve</a>. The <code>p</code> scalar field of choosing is:</p>
+<p>$p=21888242871839275222246405745257275088548364400416034343698204186575808495617$</p>
+<p>with generator:</p>
+<p>$995203441582195749578291179787384436505546430278305826713579947235728471134$
+$5472060717959818805561601436314318772137091100104008585924551046643952123905$</p>
+<p>and within the finite field with modulo $p$.</p>
+<h3 id="key-pairs"><a class="header" href="#key-pairs">Key Pairs</a></h3>
+<p>MACI uses Node.js's <code>crypto.randomBytes(32)</code> function to generate a cryptographically strong pseudorandom 32-byte value, as well as an algorithm to prevent modulo bias. In pseudocode this is:</p>
+<pre><code class="language-python">lim = 2 ** 256
+min = lim - p
+rand = null
+while true:
+    rand = BigInt(crypto.getRandomBytes(32))
+    if rand &gt;= min:
+        break
+
+privKey = rand % p
+</code></pre>
+<p>A public key is a point on the Baby Jubjub <a href="https://iden3-docs.readthedocs.io/en/latest/_downloads/33717d75ab84e11313cc0d8a090b636f/Baby-Jubjub.pdf">curve</a>, which is deterministically derived from a private key <code>s</code>.</p>
+<h3 id="message-signing"><a class="header" href="#message-signing">Message Signing</a></h3>
+<p>To sign messages, MACI uses the Edwards-curve Digital Signature Algorithm (EdDSA), implemented by <a href="https://iden3-docs.readthedocs.io/en/latest/iden3_repos/research/publications/zkproof-standards-workshop-2/ed-dsa/ed-dsa.html#ed-dsa">iden3</a>.</p>
+<h3 id="hash-functions"><a class="header" href="#hash-functions">Hash Functions</a></h3>
+<p>MACI uses the Poseidon hash function, which is proven to be very efficient in ZK applications. Poseidon accepts $n$ inputs and produces 1 output:</p>
+<p>$y = \mathsf{poseidon_n}([x_1, x_2, ..., x_n])$</p>
+<p>Also, SHA256 is used to compress public inputs to a circuit into a single field element in the finite field $F$ mod $p$.</p>
+<h3 id="message-encryption"><a class="header" href="#message-encryption">Message Encryption</a></h3>
+<p>In order to encrypt messages, MACI uses Poseidon in DuplexSponge <a href="https://dusk.network/uploads/Encryption-with-Poseidon.pdf">mode</a>. This provides an encryption function and a decryption function:</p>
+<ul>
+<li>$C$ as $\mathsf{poseidonEncrypt}(k_s[0], k_s[1], N, l, t[])$</li>
+<li>$\mathsf{poseidonDecrypt}(k_s[0], k_s[1], N, l, C)$</li>
+</ul>
+<p>In more details, </p>
+<ul>
+<li>$k_s$ is the shared key, a point on the Baby Jubjub curve</li>
+<li>$N$ is the nonce, which we hardcode to 0</li>
+<li>$l$ is the length of the plaintext $t[]$</li>
+</ul>
+<p>The implementation can be found <a href="https://github.com/weijiekoh/circomlib/">here</a>.</p>
+<h3 id="shared-key-generation"><a class="header" href="#shared-key-generation">Shared Key Generation</a></h3>
+<p>The ECDH algorithm is used to generate a shared key, which is then used to encrypt each message. This allows to create messages which are only decryptable by the coordinator and the person sending the message. </p>
+<p>In more details:</p>
+<ul>
+<li>
+<p>The coordinator's public key $cPk$ is known to all. Their private key $cSk$ is secret.</p>
+</li>
+<li>
+<p>When the user publishes a message (i.e. casts a vote), they generate an ephemeral keypair with private key $eSk$ and public key $ePk$.</p>
+</li>
+<li>
+<p>The user generates the shared key $k$ using the coordinator's public key $cPk$ and the user's ephemeral private key $eSk$.</p>
+</li>
+<li>
+<p>The user encrypts the command and signature with $k$ to form a message.</p>
+</li>
+<li>
+<p>The user sends their ephemeral public key $ePk$ along with the ciphertext. The coordinator can recover the same shared key using their private key $cSk$ and the given ephemeral public key $ePk$.</p>
+</li>
+</ul>
+<h3 id="merkle-trees"><a class="header" href="#merkle-trees">Merkle Trees</a></h3>
+<p>Rather than using Binary merkle trees, MACI uses Quinary merkle trees (5 leaves per node). This allows for more gas efficient computation using the Poseidon hash function. </p>
+<h4 id="accumulator-queue"><a class="header" href="#accumulator-queue">Accumulator queue</a></h4>
+<p>This contract holds user sign-ups and messages. When a leaf is inserted into the <code>AccQueue</code>, the merkle root is not updated yet, instead the leaf is updated or the root of a subtree is re-computed. The smart contract exposes three functions:</p>
+<ul>
+<li><code>enqueue(leaf)</code>: Enqueues a leaf into a subtree
+four out of five times it is invoked, an enqueue operation may or may not require the contract to perform a hash function. When it does, only up to $t_d$ required number of hashes need to be computed</li>
+<li><code>mergeSubRoots()</code>: Merge all subtree roots into the shortest possible Merkle tree to fit
+Before computing the main Merkle root, it is necessary to compute the smallSRTroot (the smallest subroot tree root). This is the Merkle root of a tree which is small enough to fit all the subroots
+function which allows the coordinator to specify the number of queue operations to execute. The entire tree may be merged in a single transaction, or it may not.</li>
+<li><code>merge()</code>: Calculate the Merkle root of all the leaves at height $d_t$</li>
+</ul>
+<h3 id="domain-objects"><a class="header" href="#domain-objects">Domain Objects</a></h3>
+<h4 id="verifying-keys"><a class="header" href="#verifying-keys">Verifying Keys</a></h4>
+<p>A verifying key $vk$ is comprised of the following elements:</p>
+<ol>
+<li>$\alpha$, a point in the curve on which $G_1$ is defined</li>
+<li>$\beta$, a point in the curve on which $G_2$ is defined</li>
+<li>$\gamma$, a point in the curve on which $G_2$ is defined</li>
+<li>$\delta$, a point in the curve on which $G_2$ is defined</li>
+<li>$ic[]$, a list of points in the curve on which $G_1$ is defined</li>
+</ol>
+<p>A verifying key is used to validate a zk-SNARK proof. Each unique permutation of parameters to a particular circuit has a different verifying key.</p>
+<h4 id="private-keys"><a class="header" href="#private-keys">Private Keys</a></h4>
+<p>MACI's private keys allow users to send and decrypt messages. This key translates to a scalar point on the Baby Jubjub ellpitic curve. All keys are serialized with the prefix <code>macisk</code>.</p>
+<h4 id="public-keys"><a class="header" href="#public-keys">Public Keys</a></h4>
+<p>Public keys also translate to a point on the Baby Jubjub elliptic curve, and is derived from the private key $k$. These are serialized with the prefix <code>macipk</code>. </p>
+<h4 id="key-pair"><a class="header" href="#key-pair">Key Pair</a></h4>
+<p>A Key Pair is a private key and its corresponding public key.</p>
+<h4 id="command"><a class="header" href="#command">Command</a></h4>
+<p>A command represents an action that a user may take. Such as casting a vote in a poll or changing their public key if bribed. It is made up of the following parameters:</p>
+<table><thead><tr><th>Symbol</th><th>Name</th><th>Size</th><th>Description</th></tr></thead><tbody>
+<tr><td>$cm_i$</td><td>State index</td><td>50</td><td>State leaf index where the signing key is located</td></tr>
+<tr><td>$cm_{p_{x}}$</td><td>Public key x-coordinate</td><td>253</td><td>If no change is necessary this parameter should reflect the current public key's x-coordinate</td></tr>
+<tr><td>$cm_{p_{y}}$</td><td>Public key y-coordinate</td><td>253</td><td>If no change is necessary this parameter should reflect the current public key's y-coordinate</td></tr>
+<tr><td>$cm_{i_{v}}$</td><td>Vote option index</td><td>50</td><td>Option state leaf index of preference to assign the vote for</td></tr>
+<tr><td>$cm_w$</td><td>Voting weight</td><td>50</td><td>Voice credit balance allocation, this is an arbitary value dependent on a user's available credits</td></tr>
+<tr><td>$cm_n$</td><td>Nonce</td><td>50</td><td>State leaf's index of actions committed plus one</td></tr>
+<tr><td>$cm_{id}$</td><td>Poll id</td><td>50</td><td>The poll's identifier to cast in regard to</td></tr>
+<tr><td>$cm_s$</td><td>Salt</td><td>253</td><td>An entropy value to inhibit brute force attacks</td></tr>
+</tbody></table>
+<h4 id="message"><a class="header" href="#message">Message</a></h4>
+<p>A message is an encrypted command using the shared key $k_s$ between the voter and the coordinator. The plaintext $t$ is computed as such:</p>
+<p>$t = [p, cm_{p_{x}}, cm_{p_{y}}, cm_s, R8[0], R8[1], S]$</p>
+<p>While the message can be computed with the formula below:</p>
+<p>$M$ = $\mathsf{poseidonEncrypt}(k_s[0], k_s[1], cm_n, 7, t)$</p>
+<h4 id="decrypting-a-message"><a class="header" href="#decrypting-a-message">Decrypting a message</a></h4>
+<p>To decrypt a message using $k_s$ is expressed as</p>
+<p>$[p, R8[0], R8[1], cm_s]$ = $\mathsf{poseidonDecrypt}(M, k_s[0], k_s[1], cm_n, 7)$</p>
+<p>To unpack $p$ to it's original five parameters, it must be seperated into 50 bit values from the parent 250 bit value. To extract 50 bits at byte $n$, we:</p>
+<ol>
+<li>initialise 50 bits</li>
+<li>shift left by $n$ bits</li>
+<li>bitwise AND with $p$</li>
+<li>shift right by $n$ bits</li>
+</ol>
+<h3 id="ballot"><a class="header" href="#ballot">Ballot</a></h3>
+<p>A Ballot represents a particular user's votes in a poll, as well as their next valid nonce. It is akin to a voting slip, which belongs to only one voter and contains a list of their choices.</p>
+<table><thead><tr><th>Symbol</th><th>Name</th><th>Comments</th></tr></thead><tbody>
+<tr><td>$blt_{v}$</td><td>An array of vote weights</td><td>$blt_{v[i]}$ refers to the vote weights assigned to vote option $i$</td></tr>
+<tr><td>$blt_n$</td><td>The current nonce</td><td>Starts from 0 and increments, so the first valid command must have nonce 1</td></tr>
+<tr><td>$blt_d$</td><td>The vote option tree depth</td><td></td></tr>
+</tbody></table>
+<p>The hash $blt$ is computed as such:</p>
+<ol>
+<li>Compute the Merkle root of $blt_v$, arity 5, of a tree of depth $blt_d$; let this value  be $blt_r$</li>
+<li>Compute $\mathsf{poseidon_2}([blt_n, blt_r])$</li>
+</ol>
+<h3 id="state-leaf"><a class="header" href="#state-leaf">State leaf</a></h3>
+<p>A state leaf represents a user's participation declared through an identity (their public key) and information relevant to their ability or right to cast votes in a poll (their voice credit balance and the block timestamp at which they signed up).</p>
+<p>We define a state leaf $sl$ as the $\mathsf{poseidon_4}$ hash of the following:</p>
+<table><thead><tr><th>Symbol</th><th>Name</th><th>Comments</th></tr></thead><tbody>
+<tr><td>$sl_{P_x}$</td><td>Public key's x-coordinate</td><td></td></tr>
+<tr><td>$sl_{P_y}$</td><td>Public key's y-coordinate</td><td></td></tr>
+<tr><td>$sl_{v}$</td><td>Voice credit balance</td><td></td></tr>
+<tr><td>$sl_{t}$</td><td>Block timestamp</td><td>In Unix time (seconds since Jan 1 1970 UTC)</td></tr>
+</tbody></table>
+<p>The hash $sl$ is computed as such:</p>
+<p>$sl = \mathsf{poseidon_4}([sl_{A_x}, sl_{A_y}, sl_{v}, sl_{t}])$</p>
+<h4 id="blank-state-leaf"><a class="header" href="#blank-state-leaf">Blank state leaf</a></h4>
+<p>A blank state leaf $sl_B$ has the following value:</p>
+<p>$6769006970205099520508948723718471724660867171122235270773600567925038008762$</p>
+<p>This value is computed as such:</p>
+<p>$A_{b_x} = 10457101036533406547632367118273992217979173478358440826365724437999023779287$
+$A_{b_y} = 19824078218392094440610104313265183977899662750282163392862422243483260492317$
+$sl_B = \mathsf{poseidon_4}([A_{b0}, A_{b1}, 0, 0])$</p>
+<p>The code to derive $A_{b_x}$ and $A_{b_y}$ is <a href="https://github.com/iden3/circomlib/blob/d5ed1c3ce4ca137a6b3ca48bec4ac12c1b38957a/src/pedersen_printbases.js">here</a>. The function call required is <code>pedersenHash.getBasePoint('blake', 0)</code></p>
+<ol>
+<li>Hash the string <code>PedersenGenerator_00000000000000000000000000000000_00000000000000000000000000000000</code> with $\mathsf{blake_{256}}$. In big-endian hexadecimal format, the hash should be <code>1b3ef77ef2cd620fd2358e69dd564f35556aad552fdd7f06b777bd3a1d697160</code>.</li>
+<li>Set the 255th bit to 0. The result should be <code>1b3ef77ef2cd620fd2358e69dd564f35556aad552fdd7f06b777bd3a1d697120</code>.</li>
+<li>Use the method to convert a buffer to a point on the BabyJub curve described in [2.3.2].</li>
+<li>Multiply the point by 8. The result is the point with x-value $A_{b_x}$ and y-value $A_{b_y}$</li>
+</ol>
+<p>Given the <a href="https://wstein.org/edu/2007/spring/ent/ent-html/node89.html">elliptic curve discrete logarithm problem</a>, we assume that no-one knows the private key $s \in \mathbb{F}<em>p$ and by using the public key generation procedure in [1.4], we can derive $A</em>{b_x}$ and $A_{b_y}$. Furthermore, the string above (<code>PedersenGenerator...</code>) acts as a nothing-up-my-sleeve value.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="installation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="cli.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="installation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="cli.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+    </body>
+</html>
