@@ -21,3 +21,10 @@
   align-items: center;
   justify-content: center;
 }
+
+.introduction {
+  display: flex;
+  align-items: center;
+  padding: 4rem;
+  width: 100%;
+}
