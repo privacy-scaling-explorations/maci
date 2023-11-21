@@ -399,7 +399,7 @@ class Message {
     public asContractParam = () => {
         return {
             msgType: this.msgType,
-            data: this.data.map((x:BigInt) => x.toString()),
+            data: this.data.map((x: BigInt) => x.toString()),
         }
     }
 
@@ -453,7 +453,7 @@ class Message {
  */
 class Ballot {
     public votes: bigint[] = []
-    public nonce: bigint = BigInt(0)
+    public nonce = BigInt(0)
     public voteOptionTreeDepth: number
 
     constructor(
@@ -657,16 +657,16 @@ class StateLeaf implements IStateLeaf {
 
 class Command {
    public cmdType: bigint;
-   constructor() {
-   }
+
    public copy = (): Command => {
        throw new Error("Abstract method!")
    }
-   public equals = (Command): boolean => {
+
+   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   public equals = (command: Command): boolean => {
        throw new Error("Abstract method!")
    }
 }
-
 
 
 class TCommand extends Command {

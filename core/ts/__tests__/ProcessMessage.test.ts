@@ -1,3 +1,4 @@
+/* eslint-disable */
 describe('Message processing', () => {
     describe('Process a batch of messages', () => {
         let maciState

@@ -618,17 +618,6 @@ describe('MACI', () => {
     })
 
     describe('Tally votes', () => {
-        let pollContract
-
-        before(async () => {
-            const pollContractAddress = await maciContract.getPoll(pollId)
-            pollContract = new Contract(
-                pollContractAddress,
-                pollAbi,
-                signer,
-            )
-        })
-
         it('genTallyVotesPackedVals() should generate the correct value', async () => {
             const onChainPackedVals = BigInt(
                 await tallyContract.genTallyVotesPackedVals(

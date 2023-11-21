@@ -40,7 +40,7 @@ const parseArtifact = (filename: string) => {
 	}
 
 	const contractArtifact = JSON.parse(
-	    readFileSync(join(abiDir, filePath, `${filename}.json`)).toString()
+        readFileSync(join(abiDir, filePath, `${filename}.json`)).toString()
 	)
 
 	return [ contractArtifact.abi, contractArtifact.bytecode ]
@@ -69,14 +69,6 @@ export class JSONRPCDeployer {
     }
 }
 
-class HardhatDeployer extends JSONRPCDeployer {
-
-    constructor(privateKey: string, port: number, options?: any) {
-        const url = `http://localhost:${port}/`
-        super(privateKey, url, options)
-    }
-}
-
 const genJsonRpcDeployer = (
     privateKey: string,
     url: string,
@@ -100,7 +92,7 @@ const linkPoseidonLibraries = async (
     poseidonT4Address: string,
     poseidonT5Address: string,
     poseidonT6Address: string,
-    quiet: boolean = false,
+    quiet = false,
 ) => {
 	const signer = await getDefaultSigner()
 
@@ -181,7 +173,7 @@ const deployPollFactory = async (quiet = false) => {
 }
 
 // Deploy a contract given a name and args
-const deployContract = async (contractName: string, quiet: boolean = false, ...args: any) : Promise<Contract>  =>  {
+const deployContract = async (contractName: string, quiet = false, ...args: any): Promise<Contract>  =>  {
     log(`Deploying ${contractName}`, quiet)
     const signer = await getDefaultSigner()
     const contractFactory = await ethers.getContractFactory(contractName, signer)
@@ -194,7 +186,7 @@ const deployContract = async (contractName: string, quiet: boolean = false, ...a
 }
 
 // deploy a contract with linked libraries
-const deployContractWithLinkedLibraries = async (contractFactory: ContractFactory, name: string, quiet: boolean = false, ...args: any) : Promise<Contract> => {
+const deployContractWithLinkedLibraries = async (contractFactory: ContractFactory, name: string, quiet = false, ...args: any): Promise<Contract> => {
     log(`Deploying ${name}`, quiet)
     const contract = await contractFactory.deploy(...args, {
         maxFeePerGas: await getFeeData['maxFeePerGas']
@@ -204,14 +196,14 @@ const deployContractWithLinkedLibraries = async (contractFactory: ContractFactor
 }
 
 
-const transferOwnership = async (contract: Contract, newOwner: string, quiet: boolean = false) => {
+const transferOwnership = async (contract: Contract, newOwner: string, quiet = false) => {
     log(`Transferring ownership of ${contract.address} to ${newOwner}`, quiet)
     await (await (contract.transferOwnership(newOwner, {
         maxFeePerGas: await getFeeData['maxFeePerGas'],
     }))).wait()
 }
 
-const initMaci = async (contract: Contract, quiet: boolean = false, ...args: any) => {
+const initMaci = async (contract: Contract, quiet = false, ...args: any) => {
     log('Initializing MACI', quiet)
     await (await contract.init(...args, {
         maxFeePerGas: await getFeeData['maxFeePerGas']
@@ -231,7 +223,7 @@ const deployMessageProcessor = async (
     poseidonT4Address: string,
     poseidonT5Address: string,
     poseidonT6Address: string,
-    quiet: boolean = false
+    quiet = false
     ) => {
     // Link Poseidon contracts to MessageProcessor
     const mpFactory = await linkPoseidonLibraries(
@@ -257,7 +249,7 @@ const deployTally = async (
     poseidonT4Address: string,
     poseidonT5Address: string,
     poseidonT6Address: string,
-    quiet: boolean = false
+    quiet = false
     ) => {
     // Link Poseidon contracts to Tally
     const tallyFactory = await linkPoseidonLibraries(
@@ -283,7 +275,7 @@ const deploySubsidy = async (
     poseidonT4Address: string,
     poseidonT5Address: string,
     poseidonT6Address: string,
-    quiet: boolean = false
+    quiet = false
     ) => {
     // Link Poseidon contracts to Subsidy
     const subsidyFactory = await linkPoseidonLibraries(
@@ -309,7 +301,7 @@ const deployMaci = async (
     verifierContractAddress: string,
     vkRegistryContractAddress: string,
     topupCreditContractAddress: string,
-    stateTreeDepth: number = 10,
+    stateTreeDepth = 10,
     quiet = false,
 ) => {
 

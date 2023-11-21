@@ -23,7 +23,7 @@ describe('Hasher', () => {
 
         console.log('Deploying Hasher')
         hasherContract = await hasherContractFactory.deploy()
-    	await hasherContract.deployTransaction.wait()
+        await hasherContract.deployTransaction.wait()
     })
 
     it('hashLeftRight', async () => {

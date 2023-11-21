@@ -58,7 +58,7 @@ const executeSuite = async (data: any, expect: any) => {
         subsidyEnabled ? subsidyZkeyFilePath = " --subsidy-zkey ./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey" : subsidyZkeyFilePath = ''
         subsidyEnabled ? subsidyWitnessCalculatorPath = " --subsidy-witnessgen ./zkeys/SubsidyPerBatch_10-1-2_test" : subsidyWitnessCalculatorPath = ''
         subsidyEnabled ? subsidyResultFilePath = " --subsidy-file subsidy.json" : subsidyResultFilePath = ''
-        let genProofSubsidyArgument = subsidyResultFilePath + subsidyWitnessCalculatorPath + subsidyZkeyFilePath
+        const genProofSubsidyArgument = subsidyResultFilePath + subsidyWitnessCalculatorPath + subsidyZkeyFilePath
         
 
         const setVerifyingKeysCommand = `node build/index.js setVerifyingKeys` +
