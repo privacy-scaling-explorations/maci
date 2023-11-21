@@ -52,7 +52,7 @@ export class AccQueue {
 
     // For merging subtrees into the smallest tree
     public nextSRindexToQueue = 0
-    public smallSRTroot: bigint = BigInt(0)
+    public smallSRTroot = BigInt(0)
     public subRootQueue: Queue = {
         levels: [],
         indices: []

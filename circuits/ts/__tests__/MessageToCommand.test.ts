@@ -23,7 +23,7 @@ describe('MessageToCommand circuit', () => {
         circuit = await tester(circuitPath)
     })
     it('Should decrypt a Message and output the fields of a Command', async () => {
-        const { privKey, pubKey } = new Keypair()
+        const { privKey } = new Keypair()
         const k = new Keypair()
 
         const pubKey1 = k.pubKey

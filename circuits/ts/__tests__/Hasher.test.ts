@@ -249,7 +249,7 @@ describe('Poseidon hash circuits', function() {
                 genRandomSalt(),
             )
 
-            const { privKey, pubKey } = new Keypair()
+            const { privKey } = new Keypair()
             const ecdhSharedKey = Keypair.genEcdhSharedKey(privKey, k.pubKey)
             const signature = command.sign(privKey)
             const message = command.encrypt(signature, ecdhSharedKey)

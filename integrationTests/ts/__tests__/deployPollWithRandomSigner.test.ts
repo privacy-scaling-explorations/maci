@@ -20,7 +20,7 @@ async function getPollDuration(providerUrl: string, maci: string, pollId: number
     const maciContract = new Contract(maci, maciAbi, provider)
     const pollAddress = await maciContract.getPoll(pollId)
     const pollContract = new Contract(pollAddress, pollAbi, provider)
-    const [_, duration] = await pollContract.getDeployTimeAndDuration()
+    const [ duration ] = await pollContract.getDeployTimeAndDuration()
     return duration
 }
 

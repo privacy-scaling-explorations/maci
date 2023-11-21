@@ -85,10 +85,10 @@ const genTestUserCommands = (
     }
 
     const config = loadYaml()
-    let usersCommands: UserCommand[] = []
+    const usersCommands: UserCommand[] = []
     for (let i=0; i< numUsers; i++) {
         const userKeypair = new Keypair()
-        let votes: Vote[] = [];
+        const votes: Vote[] = [];
 
         for (let j=0; j < numVotesPerUser; j++) {
             const { voteOptionIndex, voteWeight, valid } = getTestVoteValues(i,j)
@@ -115,33 +115,33 @@ const genTestUserCommands = (
 }
 
 interface Tally {
-    provider: string,
-    maci: string,
-    pollId: number,
-    newTallyCommitment: string,
+    provider: string;
+    maci: string;
+    pollId: number;
+    newTallyCommitment: string;
     results: {
-        tally: string[],
-        salt: string
-    }
+        tally: string[];
+        salt: string;
+    };
     totalSpentVoiceCredits: {
-        spent: string,
-        salt: string
-    }
+        spent: string;
+        salt: string;
+    };
     perVOSpentVoiceCredits: {
-        tally: string[],
-        salt: string
-    }
+        tally: string[];
+        salt: string;
+    };
 }
 
 interface Subsidy {
-    provider: string,
-    maci: string,
-    pollId: number,
-    newSubsidyCommitment: string,
+    provider: string;
+    maci: string;
+    pollId: number;
+    newSubsidyCommitment: string;
     results: {
-        subsidy: string[],
-        salt: string
-    }
+        subsidy: string[];
+        salt: string;
+    };
 }
 
 const expectTally = (
@@ -151,8 +151,8 @@ const expectTally = (
     expectedTotalSpentVoiceCredits: number,
     tallyFile: Tally
 ) => {
-    let genTally: string[] = Array(maxMessages).fill('0')
-    let genPerVOSpentVoiceCredits: string[] = Array(maxMessages).fill('0')
+    const genTally: string[] = Array(maxMessages).fill('0')
+    const genPerVOSpentVoiceCredits: string[] = Array(maxMessages).fill('0')
     expectedTally.map((voteWeight, voteOption) => {
         if (voteWeight != 0) {
             genTally[voteOption] = voteWeight.toString()
@@ -174,7 +174,7 @@ const expectSubsidy = (
     expectedSubsidy: number[],
     SubsidyFile: Subsidy
 ) => {
-    let genSubsidy: string[] = Array(maxMessages).fill('0')
+    const genSubsidy: string[] = Array(maxMessages).fill('0')
     expectedSubsidy.map((value, index) => {
         if (value != 0) {
             genSubsidy[index] = value.toString()

@@ -333,7 +333,6 @@ describe('ProcessMessage circuit', function() {
     describe('1 user, key-change', () => {
         const maciState = new MaciState(STATE_TREE_DEPTH)
         const voteWeight = BigInt(9)
-        const voteOptionIndex = BigInt(0)
         let stateIndex
         let pollId
         let poll

@@ -1,6 +1,5 @@
 import {
     STATE_TREE_DEPTH,
-    getSignal,
 } from './utils'
 
 import {
@@ -11,13 +10,7 @@ import {
     Keypair,
     PCommand,
     Message,
-    VerifyingKey,
 } from 'maci-domainobjs'
-
-import {
-    G1Point,
-    G2Point,
-} from 'maci-crypto'
 
 import * as path from 'path'
 import { expect } from 'chai'

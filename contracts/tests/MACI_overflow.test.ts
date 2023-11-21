@@ -1,5 +1,4 @@
-import { utils, Contract, Signer } from 'ethers'
-import { parseArtifact, getDefaultSigner } from '../ts/deploy'
+import { utils, Contract } from 'ethers'
 import { deployTestContracts } from '../ts/utils'
 import {
     Keypair,
@@ -18,7 +17,6 @@ const users = [
 ]
 
 const STATE_TREE_DEPTH = 10
-const STATE_TREE_ARITY = 5
 const MESSAGE_TREE_DEPTH = 4
 const MESSAGE_TREE_SUBDEPTH = 2
 
@@ -37,27 +35,18 @@ const treeDepths: TreeDepths = {
 }
 
 const initialVoiceCreditBalance = 100
-let signer: Signer
-const [ pollAbi ] = parseArtifact('Poll')
+
 
 describe('Overflow testing', () => {
     let maciContract: Contract
-    let stateAqContract: Contract
-    let vkRegistryContract: Contract
-    let mpContract: Contract
-    let pollId: number
 
     beforeEach(async () => {
-        signer = await getDefaultSigner()
         const r = await deployTestContracts(
             initialVoiceCreditBalance,
             STATE_TREE_DEPTH,
             true
         )
         maciContract = r.maciContract
-        stateAqContract = r.stateAqContract
-        vkRegistryContract = r.vkRegistryContract
-        mpContract = r.mpContract
     })
 
     it('MACI.stateTreeDepth should be correct', async () => {

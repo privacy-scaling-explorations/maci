@@ -36,7 +36,7 @@ const formatProofForVerifierContract = (
 const deployTestContracts = async (
     initialVoiceCreditBalance: number,
     stateTreeDepth: number,
-    quiet: boolean = false,
+    quiet = false,
     gatekeeperContract?: any
 ) => {
     const mockVerifierContract = await deployMockVerifier(true)
@@ -54,7 +54,7 @@ const deployTestContracts = async (
     const vkRegistryContract = await deployVkRegistry(true)
     const topupCreditContract = await deployTopupCredit(true)
 
-    const {maciContract,stateAqContract,pollFactoryContract,poseidonAddrs} = await deployMaci(
+    const {maciContract,stateAqContract, poseidonAddrs} = await deployMaci(
         gatekeeperContract.address,
         constantIntialVoiceCreditProxyContract.address,
         mockVerifierContract.address,

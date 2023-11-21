@@ -259,7 +259,7 @@ export const genRandomBabyJubValue = (): bigint => {
     let privKey: PrivKey = SNARK_FIELD_SIZE
 
     do {
-        let rand: bigint = BigInt('0x' + randomBytes(32).toString('hex'))
+        const rand = BigInt('0x' + randomBytes(32).toString('hex'))
         if (rand >= min) {
             privKey = rand % SNARK_FIELD_SIZE
         }
@@ -336,9 +336,9 @@ export const genKeypair = (): Keypair => {
     const privKey = genPrivKey()
     const pubKey = genPubKey(privKey)
 
-    const Keypair: Keypair = { privKey, pubKey }
+    const keypair: Keypair = { privKey, pubKey }
 
-    return Keypair
+    return keypair
 }
 
 /**

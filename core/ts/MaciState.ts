@@ -91,7 +91,7 @@ class Poll {
     public perVOSpentVoiceCredits: bigint[] = []
     public numBatchesTallied = 0
 
-    public totalSpentVoiceCredits: bigint = BigInt(0)
+    public totalSpentVoiceCredits = BigInt(0)
 
     // For coefficient and subsidy calculation
     public subsidy: bigint[] = []  // size: M, M is number of vote options
@@ -193,7 +193,7 @@ class Poll {
             assert(d as bigint < SNARK_FIELD_SIZE)
         }
         this.messages.push(_message)
-        let padKey = new PubKey([
+        const padKey = new PubKey([
                 BigInt('10457101036533406547632367118273992217979173478358440826365724437999023779287'),
                 BigInt('19824078218392094440610104313265183977899662750282163392862422243483260492317'),
             ])
@@ -237,12 +237,12 @@ class Poll {
             _encPubKey,
         )
         try {
-            let {command, signature} = PCommand.decrypt(_message, sharedKey)
+            const { command } = PCommand.decrypt(_message, sharedKey)
             this.commands.push(command)
         }  catch(e) {
            //console.log(`error cannot decrypt: ${e.message}`)
-           let keyPair = new Keypair()
-           let command = new PCommand(BigInt(0), keyPair.pubKey,BigInt(0),BigInt(0),BigInt(0),BigInt(0),BigInt(0))
+           const keyPair = new Keypair()
+           const command = new PCommand(BigInt(0), keyPair.pubKey,BigInt(0),BigInt(0),BigInt(0),BigInt(0),BigInt(0))
            this.commands.push(command)
         }
     }
@@ -471,7 +471,7 @@ class Poll {
                         this.stateTree.update(Number(stateIndex), newStateLeaf.hash())
 
                          // we still need them as placeholder for vote command
-                         let currentBallot = this.ballots[Number(stateIndex)].copy()
+                         const currentBallot = this.ballots[Number(stateIndex)].copy()
                          currentBallots.unshift(currentBallot)
                          currentBallotsPathElements.unshift(
                              this.ballotTree.genMerklePath(Number(stateIndex)).pathElements
@@ -493,6 +493,7 @@ class Poll {
                          )
                         
                     } catch(e) {
+                        console.error("An error occurred: ", e.message);
                         throw e
                     }
                     break
@@ -900,7 +901,7 @@ class Poll {
         return
     }
 
-    public previousSubsidyIndexToString = ():string => {
+    public previousSubsidyIndexToString = (): string => {
         const batchSize = this.batchSizes.subsidyBatchSize
         const numBatches = Math.ceil(this.ballots.length/batchSize)
         let cbi = this.cbi
@@ -922,14 +923,14 @@ class Poll {
         for (let p = 0; p < this.maxValues.maxVoteOptions; p++) {
             sum += BigInt(rowBallot.votes[p].valueOf()) * BigInt(colBallot.votes[p].valueOf())
         }
-        let res = BigInt(this.MM * (10 ** this.WW))/(BigInt(this.MM)+BigInt(sum))
+        const res = BigInt(this.MM * (10 ** this.WW))/(BigInt(this.MM)+BigInt(sum))
         return res
     }
 
-    public subsidyCalculation = (rowStartIndex:number, colStartIndex:number): Ballot[][] => {
+    public subsidyCalculation = (rowStartIndex: number, colStartIndex: number): Ballot[][] => {
         const batchSize = this.batchSizes.subsidyBatchSize
-        let ballots1: Ballot[] = [] 
-        let ballots2: Ballot[] = [] 
+        const ballots1: Ballot[] = [] 
+        const ballots2: Ballot[] = [] 
         const emptyBallot = new Ballot(
             this.maxValues.maxVoteOptions,
             this.treeDepths.voteOptionTreeDepth,

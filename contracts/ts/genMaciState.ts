@@ -28,7 +28,7 @@ const genMaciStateFromContract = async (
     address: string,
     coordinatorKeypair: Keypair,
     pollId: number,
-    fromBlock: number = 0,
+    fromBlock = 0,
 ): Promise<MaciState> => {
     pollId = Number(pollId)
     // Verify and sort pollIds
