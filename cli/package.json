@@ -36,6 +36,5 @@
     },
     "devDependencies": {
         "@types/node": "^18.11.9"
-    },
-    "gitHead": "f567a17293114ba2d5e89c711d00a9f4c197f070"
+    }
 }
