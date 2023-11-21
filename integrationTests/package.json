@@ -38,6 +38,5 @@
         "module-alias": "^2.2.2",
         "shelljs": "^0.8.5",
         "ts-mocha": "^10.0.0"
-    },
-    "gitHead": "f567a17293114ba2d5e89c711d00a9f4c197f070"
+    }
 }

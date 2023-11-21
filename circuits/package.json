@@ -22,7 +22,7 @@
         "test-tallyVotes": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit ts/__tests__/TallyVotes.test.ts"
     },
     "dependencies": {
-        "circomlib": "https://github.com/weijiekoh/circomlib#ac85e82c1914d47789e2032fb11ceb2cfdd38a2b",
+        "circomlib": "weijiekoh/circomlib#ac85e82c1914d47789e2032fb11ceb2cfdd38a2b",
         "shelljs": "^0.8.3",
         "snarkjs": "^0.5.0",
         "tmp": "^0.2.1"
@@ -39,6 +39,5 @@
         "mocha": "^10.2.0",
         "ts-mocha": "^10.0.0",
         "typescript": "^4.2.3"
-    },
-    "gitHead": "f567a17293114ba2d5e89c711d00a9f4c197f070"
+    }
 }

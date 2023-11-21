@@ -19,6 +19,5 @@
     },
     "dependencies": {
         "base64url": "^3.0.1"
-    },
-    "gitHead": "f567a17293114ba2d5e89c711d00a9f4c197f070"
+    }
 }
