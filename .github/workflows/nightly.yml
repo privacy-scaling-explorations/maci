@@ -1,40 +1,24 @@
-name: E2E
+name: Nightly
 
 on:
-  workflow_call:
+  schedule:
+    - cron: 0 0 * * *
+
 
 jobs:
-
-  e2e:
+  generate-proving-keys:
     runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: dev
 
       - name: Use Node.js 16
         uses: actions/setup-node@v4
         with:
           node-version: 16
 
-      # Check for changes in the 'circuit' folder
-      - name: Get changed files
-        id: get-changed-files
-        uses: jitterbit/get-changed-files@v1
-        with:
-          format: 'csv'
-
-      - name: Check for changes in 'circuit' folder
-        id: check_changes
-        run: |
-          CHANGED_FILES=${{ steps.get-changed-files.outputs.all }}
-          if echo "$CHANGED_FILES" | grep -q "\.circom"; then
-            echo "CHANGED=true" >> $GITHUB_ENV
-            echo "Circuits have changes."
-          else
-            echo "CHANGED=false" >> $GITHUB_ENV
-            echo "No changes on circuits."
-          fi
-      
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -55,8 +39,6 @@ jobs:
         run: |
           cd contracts
           npm run compileSol
-          npm run hardhat &
-          sleep 5
 
       - name: Download rapidsnark (1c137)
         run: |
@@ -64,14 +46,13 @@ jobs:
           wget -qO ~/rapidsnark/build/prover https://maci-devops-zkeys.s3.ap-northeast-2.amazonaws.com/rapidsnark-linux-amd64-1c137
           chmod +x ~/rapidsnark/build/prover
 
-      - name: Download circom Binary v2.0.8
+      - name: Download circom Binary v2.1.6
         run: |
           mkdir -p /home/runner/work/maci/.local/bin
-          wget -qO /home/runner/work/maci/.local/bin/circom https://github.com/iden3/circom/releases/download/v2.0.8/circom-linux-amd64
+          wget -qO /home/runner/work/maci/.local/bin/circom https://github.com/iden3/circom/releases/download/v2.1.6/circom-linux-amd64
           chmod +x /home/runner/work/maci/.local/bin/circom
 
       - name: Generate zkeys
-        if: ${{ env.CHANGED == 'true' }}
         run: |
           cd cli
           mkdir -p zkeys
@@ -79,11 +60,11 @@ jobs:
           npx zkey-manager compile -c ./zkeys.config.yml
           npx zkey-manager genZkeys -c ./zkeys.config.yml
 
-      - name: Download zkeys
-        if: ${{ env.CHANGED == 'false' }}
+      - name: Start Hardhat
         run: |
-          cd integrationTests
-          npm run download-zkeys
+          cd contracts
+          nohup npm run hardhat > /dev/null 2>&1 &
+          while [[ "$(lsof -i :8545)" -eq '0' ]]; do sleep 1; done
 
       - name: Bespoke Test
         run: ./.github/scripts/run-e2e-tests.sh
@@ -95,3 +76,39 @@ jobs:
 
       - name: Stop Hardhat
         run: kill $(lsof -t -i:8545)
+
+  unit:
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [ 18, 20 ]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+    
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Update npm to latest version
+        run: npm install --global npm@latest
+
+      - name: Download circom Binary v2.1.6
+        run: |
+          wget -qO ${{ github.workspace }}/circom https://github.com/iden3/circom/releases/download/v2.1.6/circom-linux-amd64
+          chmod +x ${{ github.workspace }}/circom
+          sudo mv ${{ github.workspace }}/circom /bin/circom
+
+      - name: Build
+        run: |
+          npm install
+          npm run bootstrap
+          npm run build
+
+      - name: Test
+        run: npm run test
