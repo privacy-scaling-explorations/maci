@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, writeFileSync } from "fs"
-import { GenProofsArgs, asHex, banner, contractExists, doesPathExist, info, logError, logGreen, logYellow, promptPwd, readContractAddress, success } from "../utils/"
+import { asHex, banner, contractExists, doesPathExist, info, logError, logGreen, logYellow, promptPwd, readContractAddress, success } from "../utils/"
 import { Keypair, PrivKey, VerifyingKey } from "maci-domainobjs"
 import { extractVk, genProof, verifyProof } from "maci-circuits"
 import { genMaciStateFromContract, getDefaultSigner, parseArtifact } from "maci-contracts"
@@ -9,29 +9,47 @@ import { join } from "path"
 
 /**
  * Generate proofs for the message processing, tally and subsidy calculations
- * @param param0 - the parameters to this function
+ * @param outputDir - the directory to store the proofs
+ * @param tallyFile - the file to store the tally proof
+ * @param tallyZkey - the path to the tally zkey file
+ * @param processZkey - the path to the process zkey file
+ * @param pollId - the id of the poll
+ * @param subsidyFile - the file to store the subsidy proof
+ * @param subsidyZkey - the path to the subsidy zkey file
+ * @param rapidsnark - the path to the rapidsnark binary
+ * @param processWitgen - the path to the process witnessgen binary
+ * @param tallyWitgen - the path to the tally witnessgen binary
+ * @param subsidyWitgen - the path to the subsidy witnessgen binary
+ * @param coordinatorPrivKey - the coordinator's private key
+ * @param maciAddress - the address of the MACI contract
+ * @param transactionHash - the transaction hash of the first transaction
+ * @param processWasm - the path to the process wasm file
+ * @param tallyWasm - the path to the tally wasm file
+ * @param subsidyWasm - the path to the subsidy wasm file
+ * @param useWasm - whether to use wasm or rapidsnark
+ * @param quiet - whether to log the output
  */
-export const genProofs = async ({
-    outputDir,
-    tallyFile,
-    quiet,
-    rapidsnark,
-    processWitgen,
-    tallyWitgen,
-    processZkey,
-    processWasm,
-    tallyZkey,
-    tallyWasm,
-    subsidyFile,
-    subsidyWasm,
-    subsidyZkey,
-    subsidyWitgen,
-    coordinatorPrivKey,
-    maciAddress,
-    pollId,
-    transactionHash,
-    useWasm
-}: GenProofsArgs) => {
+export const genProofs = async ( 
+    outputDir: string,
+    tallyFile: string,
+    tallyZkey: string,
+    processZkey: string,
+    pollId: number,
+    subsidyFile?: string,
+    subsidyZkey?: string,
+    rapidsnark?: string,
+    processWitgen?: string,
+    tallyWitgen?: string,
+    subsidyWitgen?: string,
+    coordinatorPrivKey?: string,
+    maciAddress?: string, 
+    transactionHash?: string,
+    processWasm?: string,
+    tallyWasm?: string,
+    subsidyWasm?: string,
+    useWasm?: boolean,
+    quiet?: boolean
+) => {
     if(!quiet) banner()
 
     // if we do not have the output directory just create it

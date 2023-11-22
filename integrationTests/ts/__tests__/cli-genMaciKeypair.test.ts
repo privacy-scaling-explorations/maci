@@ -10,8 +10,8 @@ import { expect } from "chai"
 
 describe('genMaciKeypair CLI subcommand', () => {
     it('genMaciKeypair should output a random private key and public key', async () => {
-        const keypair1 = genKeyPair({ quiet: true })
-        const keypair2 = genKeyPair({ quiet: true })
+        const keypair1 = genKeyPair(true)
+        const keypair2 = genKeyPair(true)
 
         // Invoking the same command twice should result in different private keys
         expect(keypair1.privateKey).not.to.eq(keypair2.privateKey)

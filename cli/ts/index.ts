@@ -41,13 +41,13 @@ program
     .option("-g", "--signupGatekeeperAddress <signupGatekeeperAddress>", "the signup gatekeeper contract address")
     .option("-q, --quiet", "whether to print values to the console")
     .action(async (cmdOptions) => { 
-        await deploy({
-            quiet: cmdOptions.quiet,
-            vkRegistryAddress: cmdOptions.vkRegistryAddress,
-            initialVoiceCredits: cmdOptions.initialVoiceCredits,
-            initialVoiceCreditsProxyAddress: cmdOptions.initialVoiceCreditsProxyAddress,
-            signupGatekeeperAddress: cmdOptions.signupGatekeeperAddress,
-        })
+        await deploy(
+            cmdOptions.vkRegistryAddress,
+            cmdOptions.initialVoiceCredits,
+            cmdOptions.initialVoiceCreditsProxyAddress,
+            cmdOptions.signupGatekeeperAddress,
+            cmdOptions.quiet
+        )
     })
 program 
     .command("checkVerifyingKeys")
@@ -62,23 +62,23 @@ program
     .requiredOption("-p, --process-messages-zkey <processMessagesZkeyPath>", "the process messages zkey path")
     .requiredOption("-t, --tally-votes-zkey <tallyVotesZkeyPath>", "the tally votes zkey path")
     .action(async (cmdOptions) => { 
-        await checkVerifyingKeys({
-            quiet: cmdOptions.quiet,
-            maciContract: cmdOptions.maciContract,
-            stateTreeDepth: cmdOptions.stateTreeDepth,
-            intStateTreeDepth: cmdOptions.intStateTreeDepth,
-            messageTreeDepth: cmdOptions.msgTreeDepth,
-            voteOptionTreeDepth: cmdOptions.voteOptionTreeDepth,
-            messageBatchDepth: cmdOptions.msgBatchDepth,
-            processMessagesZkeyPath: cmdOptions.processMessagesZkey,
-            tallyVotesZkeyPath: cmdOptions.tallyVotesZkey
-        })
+        await checkVerifyingKeys(
+            cmdOptions.stateTreeDepth,
+            cmdOptions.intStateTreeDepth,
+            cmdOptions.msgTreeDepth,
+            cmdOptions.voteOptionTreeDepth,
+            cmdOptions.msgBatchDepth,
+            cmdOptions.processMessagesZkey,
+            cmdOptions.tallyVotesZkey,
+            cmdOptions.maciContract,
+            cmdOptions.quiet
+        )
     })
 program
     .command("genMaciPubKey")
     .description("generate a new MACI public key")
     .requiredOption("-sk, --privkey <privkey>", "the private key")
-    .action((cmdObj) => { genMaciPubKey({ privkey: cmdObj.privkey }) })
+    .action((cmdObj) => { genMaciPubKey(cmdObj.privkey) })
 program
     .command("genMaciKeyPair")
     .description("generate a new MACI key pair")
@@ -91,18 +91,18 @@ program
     .option("-o, --poll-id <pollId>", "poll id")
     .option("-t, --token-address <tokenAddress>", "the token address")
     .option("-q, --quiet", "whether to print values to the console")
-    .action(async (cmdObj) => await airdrop({
-        amount: cmdObj.amount,
-        maciAddress: cmdObj.contract,
-        pollId: cmdObj.pollId,
-        contractAddress: cmdObj.tokenAddress,
-        quiet: cmdObj.quiet,
-    }))
+    .action(async (cmdObj) => await airdrop(
+        cmdObj.amount,
+        cmdObj.contract,
+        cmdObj.pollId,
+        cmdObj.tokenAddress,
+        cmdObj.quiet
+    ))
 program
     .command("deployVkRegistry")
     .description("deploy a new verification key registry contract")
     .option("-q, --quiet", "whether to print values to the console")
-    .action(async (cmdObj) => { await deployVkRegistryContract({ quiet: cmdObj.quiet }) })
+    .action(async (cmdObj) => { await deployVkRegistryContract(cmdObj.quiet) })
 program
     .command("show")
     .description("show the deployed contract addresses")
@@ -121,18 +121,18 @@ program
     .option("-x, --maci-address <maciAddress>", "the MACI contract address")
     .option("-q, --quiet", "whether to print values to the console")
     .action(async (cmdObj) => { 
-        await deployPoll({
-            pollDuration: cmdObj.duration,
-            maxMessages: cmdObj.maxMessages,
-            maxVoteOptions: cmdObj.maxVoteOptions,
-            intStateTreeDepth: cmdObj.intStateTreeDepth,
-            messageTreeSubDepth: cmdObj.msgBatchDepth,
-            messageTreeDepth: cmdObj.msgTreeDepth,
-            voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
-            coordinatorPubkey: cmdObj.pubkey,
-            maciAddress: cmdObj.maciAddress,
-            quiet: cmdObj.quiet
-        })
+        await deployPoll(
+            cmdObj.duration,
+            cmdObj.maxMessages,
+            cmdObj.maxVoteOptions,
+            cmdObj.intStateTreeDepth,
+            cmdObj.msgBatchDepth,
+            cmdObj.msgTreeDepth,
+            cmdObj.voteOptionTreeDepth,
+            cmdObj.pubkey,
+            cmdObj.maciAddress,
+            cmdObj.quiet
+        )
     })
 program
     .command("setVerifyingKeys")
@@ -147,18 +147,18 @@ program
     .option("-k, --vk-registry <vkRegistry>", "the vk registry contract address")
     .option("-q, --quiet", "whether to print values to the console")
     .option("-ss, --subsidy-zkey <subsidyZkeyPath>", "the subsidy zkey path")
-    .action(async (cmdObj) => await setVerifyingKeys({
-        stateTreeDepth: cmdObj.stateTreeDepth,
-        intStateTreeDepth: cmdObj.intStateTreeDepth,
-        messageTreeDepth: cmdObj.msgTreeDepth,
-        voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
-        messageBatchDepth: cmdObj.msgBatchDepth,
-        processMessagesZkeyPath: cmdObj.processMessagesZkey,
-        tallyVotesZkeyPath: cmdObj.tallyVotesZkey,
-        vkRegistry: cmdObj.vkRegistry,
-        subsidyZkeyPath: cmdObj.subsidyZkey,
-        quiet: cmdObj.quiet,
-    }))
+    .action(async (cmdObj) => await setVerifyingKeys(
+        cmdObj.stateTreeDepth,
+        cmdObj.intStateTreeDepth,
+        cmdObj.msgTreeDepth,
+        cmdObj.voteOptionTreeDepth,
+        cmdObj.msgBatchDepth,
+        cmdObj.processMessagesZkey,
+        cmdObj.tallyVotesZkey,
+        cmdObj.vkRegistry,
+        cmdObj.subsidyZkey,
+        cmdObj.quiet
+    ))
 program
     .command("publish")
     .description("publish a new message to a MACI Poll contract")
@@ -173,18 +173,18 @@ program
     .requiredOption("-w, --new-vote-weight <newVoteWeight>", "the new vote weight")
     .option("-q, --quiet", "whether to print values to the console")
     .action(async (cmdObj) => {
-            await publish({
-            pubkey: cmdObj.pubkey,
-            maciContractAddress: cmdObj.contract,
-            privateKey: cmdObj.privkey,
-            stateIndex: cmdObj.stateIndex,
-            voteOptionIndex: cmdObj.voteOptionIndex,
-            nonce: cmdObj.nonce,
-            salt: cmdObj.salt,
-            pollId: cmdObj.pollId,
-            newVoteWeight: cmdObj.newVoteWeight,
-            quiet: cmdObj.quiet
-        })
+            await publish(
+            cmdObj.pubkey,
+            cmdObj.stateIndex,
+            cmdObj.voteOptionIndex,
+            cmdObj.nonce,
+            cmdObj.pollId,
+            cmdObj.newVoteWeight,
+            cmdObj.contract,
+            cmdObj.salt,
+            cmdObj.privkey,
+            cmdObj.quiet
+        )
     })
 program
     .command("mergeMessages")
@@ -193,12 +193,12 @@ program
     .option("-x, --maci-contract-address <maciContractAddress>", "the MACI contract address")
     .requiredOption("-o, --poll-id <pollId>", "the poll id")
     .option("-n, --num-queue-ops <numQueueOps>", "the number of queue operations")
-    .action(async (cmdObj) => await mergeMessages({
-        quiet: cmdObj.quiet,
-        maciContractAddress: cmdObj.maciContractAddress,
-        pollId: cmdObj.pollId,
-        numQueueOps: cmdObj.numQueueOps,
-    }))
+    .action(async (cmdObj) => await mergeMessages(
+        cmdObj.pollId,
+        cmdObj.maciContractAddress,
+        cmdObj.numQueueOps,
+        cmdObj.quiet
+    ))
 program
     .command("mergeSignups")
     .description("merge the signups accumulator queue")
@@ -206,23 +206,23 @@ program
     .option("-x, --maci-contract-address <maciContractAddress>", "the MACI contract address")
     .requiredOption("-o, --poll-id <pollId>", "the poll id")
     .option("-n, --num-queue-ops <numQueueOps>", "the number of queue operations")
-    .action(async (cmdObj) => await mergeSignups({
-        quiet: cmdObj.quiet,
-        maciContractAddress: cmdObj.maciContractAddress,
-        pollId: cmdObj.pollId,
-        numQueueOps: cmdObj.numQueueOps,
-    }))
+    .action(async (cmdObj) => await mergeSignups(
+        cmdObj.pollId,
+        cmdObj.maciContractAddress,
+        cmdObj.numQueueOps,
+        cmdObj.quiet
+    ))
 program
     .command("timeTravel")
     .description("fast-forward the time (only works for local hardhat testing")
     .requiredOption("-s, --seconds <seconds>", "the number of seconds to fast-forward")
-    .option("-p, --provider <provider>", "the provider")
     .option("-q, --quiet", "whether to print values to the console")
-    .action(async (cmdObj) => await timeTravel({
-        quiet: cmdObj.quiet,
-        provider: cmdObj.provider,
-        seconds: cmdObj.seconds,
-    }))
+    .action(
+        async (cmdObj) => await timeTravel(
+            cmdObj.quiet,
+            cmdObj.provider
+        )
+    )
 program 
     .command("signup")
     .description("Sign up to a MACI contract")
@@ -231,14 +231,15 @@ program
     .option("-s, --sg-data <sgData>", "the signup gateway data")
     .option("-i, --ivcp-data <ivcpData>", "the initial voice credit proxy data")
     .option("-q, --quiet", "whether to print values to the console")
-    .action(async (cmdObj) => {
-            await signup({
-            maciPubKey: cmdObj.pubkey,
-            maciAddress: cmdObj.maciAddress,
-            sgDataArg: cmdObj.sgData,
-            ivcpDataArg: cmdObj.ivcpData,
-            quiet: cmdObj.quiet,
-        })
+    .action(
+        async (cmdObj) => {
+            await signup(
+            cmdObj.pubkey,
+            cmdObj.maciAddress,
+            cmdObj.sgData,
+            cmdObj.ivcpData,
+            cmdObj.quiet
+        )
     })
 program 
     .command("topup")
@@ -248,24 +249,28 @@ program
     .requiredOption("-i, --state-index <stateIndex>", "state leaf index")
     .requiredOption("-o, --poll-id <pollId>", "poll id")
     .option("-q, --quiet", "whether to print values to the console")
-    .action(async (cmdObj) => await topup({
-        amount: cmdObj.amount,
-        maciAddress: cmdObj.maciAddress,
-        stateIndex: cmdObj.stateIndex,
-        pollId: cmdObj.pollId,
-        quiet: cmdObj.quiet,
-    }))
+    .action(
+        async (cmdObj) => await topup(
+            cmdObj.amount,
+            cmdObj.stateIndex,
+            cmdObj.pollId,
+            cmdObj.maciAddress,
+            cmdObj.quiet,
+        )
+    )
 program 
     .command("fundWallet")
     .description("Fund a wallet with Ether")
     .requiredOption("-a, --amount <amount>", "the amount of Ether")
     .requiredOption("-w, --address <address>", "the address to fund")
     .option("-q, --quiet", "whether to print values to the console")
-    .action(async (cmdObj) => await fundWallet({
-        amount: cmdObj.amount,
-        address: cmdObj.address,
-        quiet: cmdObj.quiet,
-    }))
+    .action(
+        async (cmdObj) => await fundWallet(
+            cmdObj.amount,
+            cmdObj.address,
+            cmdObj.quiet
+        )
+    )
 program
     .command("verify")
     .description("verify the results of a poll and optionally the subsidy results")
@@ -276,15 +281,17 @@ program
     .option("-tc, --tally-contract <tallyContract>", "the tally contract address")
     .option("-sc, --subsidy-contract <subsidyContract>", "the subsidy contract address")
     .option("-q, --quiet", "whether to print values to the console")
-    .action(async (cmdObj) => await verify({
-        pollId: cmdObj.pollId,
-        tallyFile: cmdObj.tallyFile,
-        subsidyFile: cmdObj.subsidyFile,
-        maciAddress: cmdObj.contract,
-        tallyAddress: cmdObj.tallyContract,
-        subsidyAddress: cmdObj.subsidyContract,
-        quiet: cmdObj.quiet
-    }))
+    .action(
+        async (cmdObj) => await verify(
+            cmdObj.pollId,
+            cmdObj.tallyFile,
+            cmdObj.contract,
+            cmdObj.tallyContract,
+            cmdObj.subsidyContract,
+            cmdObj.subsidyFile,
+            cmdObj.quiet
+        )
+    )
 program
     .command("genProofs")
     .description("generate the proofs for a poll")
@@ -308,27 +315,27 @@ program
     .option("-tw, --tally-wasm <tallyWasm>", "the path to the tally witness generation wasm binary")
     .option("-sw, --subsidy-wasm <subsidyWasm>", "the path to the subsidy witness generation wasm binary")
     .action(async (cmdObj) => {
-        await genProofs({
-            coordinatorPrivKey: cmdObj.privkey,
-            maciAddress: cmdObj.contract,
-            pollId: cmdObj.pollId,
-            tallyFile: cmdObj.tallyFile,
-            subsidyFile: cmdObj.subsidyFile,
-            rapidsnark: cmdObj.rapidsnark,
-            processWitgen: cmdObj.processWitnessgen,
-            tallyWitgen: cmdObj.tallyWitnessgen,
-            subsidyWitgen: cmdObj.subsidyWitnessgen,
-            processZkey: cmdObj.processZkey,
-            tallyZkey: cmdObj.tallyZkey,
-            subsidyZkey: cmdObj.subsidyZkey,
-            quiet: cmdObj.quiet,
-            outputDir: cmdObj.output,
-            transactionHash: cmdObj.transactionHash,
-            useWasm: cmdObj.wasm,
-            processWasm: cmdObj.processWasm,
-            tallyWasm: cmdObj.tallyWasm,
-            subsidyWasm: cmdObj.subsidyWasm
-        })
+        await genProofs(
+            cmdObj.output,
+            cmdObj.tallyFile,
+            cmdObj.tallyZkey,
+            cmdObj.processZkey,
+            cmdObj.pollId,
+            cmdObj.subsidyFile,
+            cmdObj.subsidyZkey,
+            cmdObj.rapidsnark,
+            cmdObj.processWitnessgen,
+            cmdObj.tallyWitnessgen,
+            cmdObj.subsidyWitnessgen,
+            cmdObj.privkey,
+            cmdObj.contract,
+            cmdObj.transactionHash,
+            cmdObj.processWasm,
+            cmdObj.tallyWasm,
+            cmdObj.subsidyWasm,
+            cmdObj.wasm,
+            cmdObj.quiet
+        )
     })
 program 
     .command("proveOnChain")
@@ -336,17 +343,21 @@ program
     .requiredOption("-o, --poll-id <pollId>", "the poll id")
     .option("-q, --quiet", "whether to print values to the console")
     .option("-x, --contract <contract>", "the MACI contract address")
+    .option("-p, --message-processor-address <messageProcessorAddress>", "the message processor contract address")
     .option("-t, --tally-contract <tallyContract>", "the tally contract address")
     .option("-s, --subsidy-contract <subsidyContract>", "the subsidy contract address")
     .requiredOption("-f, --proof-dir <proofDir>", "the proof output directory from the genProofs subcommand")
-    .action(async (cmdObj) => await proveOnChain({
-        pollId: cmdObj.pollId,
-        maciAddress: cmdObj.contract,
-        tallyAddress: cmdObj.tallyContract,
-        subsidyAddress: cmdObj.subsidyContract,
-        proofDir: cmdObj.proofDir,
-        quiet: cmdObj.quiet
-    }))
+    .action(
+        async (cmdObj) => await proveOnChain(
+        cmdObj.pollId,
+            cmdObj.proofDir,
+            cmdObj.contract,
+            cmdObj.messageProcessorAddress,
+            cmdObj.tallyContract,
+            cmdObj.subsidyContract,
+            cmdObj.quiet
+        )
+    )
 
 if (require.main === module) {
     program.parseAsync(process.argv)
@@ -376,12 +387,5 @@ export {
 
 export {
     DeployedContracts,
-    DeployArgs,
-    GenProofsArgs,
-    ProveOnChainArgs,
-    VerifyArgs,
-    CheckVerifyingKeysArgs,
-    GenKeyPairArgs,
-    ShowContractsArgs,
     PollContracts
 } from "./utils"

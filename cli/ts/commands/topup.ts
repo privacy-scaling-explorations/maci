@@ -3,20 +3,23 @@ import { readContractAddress } from "../utils/storage"
 import { logError } from "../utils/theme"
 import { contractExists } from "../utils/contracts"
 import { Contract } from "ethers"
-import { TopupArgs } from "../utils/interfaces"
 import { banner } from "../utils/index"
 
 /**
  * Publish a topup message
- * @param param0 - the arguments to this function
+ * @param amount - the amount to topup
+ * @param stateIndex - the state index of the user
+ * @param pollId - the poll ID
+ * @param maciAddress - the address of the MACI contract
+ * @param quiet - whether to log the output
  */
-export const topup = async ({
-    amount,
-    maciAddress,
-    quiet,
-    stateIndex,
-    pollId
-}: TopupArgs) => {
+export const topup = async ( 
+    amount: number,
+    stateIndex: number,
+    pollId: number,
+    maciAddress?: string,
+    quiet?: boolean,
+) => {
     if(!quiet) banner()
     const signer = await getDefaultSigner()
 

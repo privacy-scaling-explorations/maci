@@ -10,8 +10,8 @@ import { expect } from "chai"
 
 describe('genMaciPubkey CLI subcommand', () => {
     it('genMaciPubkey should output a correct public key', async () => {
-        const keypair = genKeyPair({ quiet: true })
-        const pubKey = genMaciPubKey({ privkey: keypair.privateKey, quiet: true })
+        const keypair = genKeyPair(true)
+        const pubKey = genMaciPubKey(keypair.privateKey, true)
      
         expect(pubKey).to.eq(keypair.publicKey)
 

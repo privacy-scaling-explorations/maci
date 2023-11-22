@@ -52,47 +52,54 @@ describe("integration tests", function() {
     let pollId: number 
     const coordinatorKeypair = new Keypair()
 
+    let vkRegistryAddress: string 
+    // the code that we run before all tests
+    before(async () => {
+        // 1. deploy Vk Registry
+        vkRegistryAddress = await deployVkRegistryContract(true)
+
+        // 2. set verifying keys
+        await setVerifyingKeys(
+            STATE_TREE_DEPTH,
+            INT_STATE_TREE_DEPTH,
+            MSG_TREE_DEPTH,
+            VOTE_OPTION_TREE_DEPTH,
+            MSG_BATCH_DEPTH,
+            join(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test.0.zkey"),
+            join(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test.0.zkey"),   
+            vkRegistryAddress,
+            join(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test.0.zkey"),
+            true
+        )
+    })
+
     // the code that we run before each test
     beforeEach(async () => {
         // create a new maci state
         maciState = new MaciState()
 
-        // 1. deploy Vk Registry
-        const vkRegistryAddress = await deployVkRegistryContract({quiet: true})
-
-        // 2. set verifying keys
-        await setVerifyingKeys({
-            vkRegistry: vkRegistryAddress,
-            stateTreeDepth: STATE_TREE_DEPTH,
-            intStateTreeDepth: INT_STATE_TREE_DEPTH,
-            messageTreeDepth: MSG_TREE_DEPTH,
-            voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-            messageBatchDepth: MSG_BATCH_DEPTH,
-            processMessagesZkeyPath: join(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test.0.zkey"),
-            tallyVotesZkeyPath: join(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test.0.zkey"),
-            subsidyZkeyPath: join(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test.0.zkey"),
-            quiet: true
-        })
-
         // 3. deploy maci
-        contracts = await deploy({
-            vkRegistryAddress: vkRegistryAddress,
-            quiet: true
-        })
+        contracts = await deploy(
+            vkRegistryAddress,
+            undefined,
+            undefined,
+            undefined,
+            true
+        )
 
         // 4. create a poll
-        pollContracts = await deployPoll({
-            maciAddress: contracts.maciAddress,
-            pollDuration: duration,
-            intStateTreeDepth: INT_STATE_TREE_DEPTH,
-            messageTreeDepth: MSG_TREE_DEPTH,
-            messageTreeSubDepth: MSG_BATCH_DEPTH,
-            voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-            maxMessages: 25,
-            maxVoteOptions: 25,
-            coordinatorPubkey: coordinatorKeypair.pubKey.serialize(),
-            quiet: true
-        })
+        pollContracts = await deployPoll(
+            duration,
+            25,
+            25,
+            INT_STATE_TREE_DEPTH,
+            MSG_BATCH_DEPTH,
+            MSG_TREE_DEPTH,
+            VOTE_OPTION_TREE_DEPTH,
+            coordinatorKeypair.pubKey.serialize(),
+            contracts.maciAddress,
+            true
+        )
 
         const treeDepths: TreeDepths = {
             intStateTreeDepth: INT_STATE_TREE_DEPTH,
@@ -152,13 +159,13 @@ describe("integration tests", function() {
                 const keypair = new Keypair()
                 const _timestamp = Date.now()
                 // signup 
-                const stateIndex = await signup({
-                    quiet: true,
-                    maciPubKey: keypair.pubKey.serialize(),
-                    maciAddress: contracts.maciAddress,
-                    sgDataArg: SG_DATA,
-                    ivcpDataArg: ivcpData
-                })
+                const stateIndex = await signup(
+                    keypair.pubKey.serialize(),
+                    contracts.maciAddress,
+                    SG_DATA,
+                    ivcpData,
+                    true
+                )
     
                 // signup on local maci state
                 maciState.signUp(
@@ -182,18 +189,18 @@ describe("integration tests", function() {
                     
                     // actually publish it
                     // @todo if key change we also need a new pub key
-                    const encryptionKey = await publish({
-                        quiet: true,
-                        maciContractAddress: contracts.maciAddress,
-                        pubkey: keypair.pubKey.serialize(),
-                        privateKey: userPrivKey.serialize(),
-                        voteOptionIndex: voteOptionIndex,
-                        nonce: nonce,
-                        salt: salt,
-                        newVoteWeight: newVoteWeight,
-                        stateIndex: Number(stateIndex),
-                        pollId: pollId
-                    })
+                    const encryptionKey = await publish(
+                        keypair.pubKey.serialize(),
+                        Number(stateIndex),
+                        voteOptionIndex,
+                        nonce,
+                        pollId,
+                        newVoteWeight,
+                        contracts.maciAddress,
+                        salt,
+                        userPrivKey.serialize(),
+                        true
+                    )
     
                     const encPrivKey = PrivKey.unserialize(encryptionKey)
                     const encPubKey = new PubKey(genPubKey(encPrivKey.rawPrivKey))
@@ -214,34 +221,36 @@ describe("integration tests", function() {
                 }
             }
     
-            await timeTravel({ quiet: true, seconds: duration })
+            await timeTravel(duration, true)
 
             // merge messages
-            await mergeMessages({ quiet: true, pollId: pollId, maciContractAddress: contracts.maciAddress })
+            await mergeMessages(pollId, contracts.maciAddress, undefined, true)
 
             // merge signups
-            await mergeSignups({ quiet: true, pollId: pollId, maciContractAddress: contracts.maciAddress })
+            await mergeSignups(pollId, contracts.maciAddress, undefined, true)
 
             // generate proofs
-            await genProofs({
-                quiet: true, 
-                coordinatorPrivKey: coordinatorKeypair.privKey.serialize(),
-                pollId: pollId,
-                processWitgen: join(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test"),
-                tallyWitgen: join(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test"),
-                subsidyWitgen: subsidyEnabled ? join(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test") : undefined,
-                processZkey: join(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test.0.zkey"),
-                tallyZkey: join(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test.0.zkey"),
-                subsidyZkey: subsidyEnabled ? join(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test.0.zkey") : undefined,
-                tallyFile: join(__dirname, "../../../cli/tally.json"),
-                subsidyFile: subsidyEnabled ? join(__dirname, "../../../cli/subsidy.json") : undefined,
-                tallyWasm: join(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test.wasm"),
-                processWasm: join(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test.wasm"),
-                subsidyWasm: subsidyEnabled ? join(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test.wasm") : undefined,
-                outputDir: join(__dirname, "../../../cli/proofs"),
-                rapidsnark: `${homedir()}/rapidsnark/build/prover`,
-                useWasm
-            })
+            await genProofs(
+                join(__dirname, "../../../cli/proofs"),
+                join(__dirname, "../../../cli/tally.json"),
+                join(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test.0.zkey"),
+                join(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test.0.zkey"),
+                0,
+                join(__dirname, "../../../cli//subsidy.json"),
+                join(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test.0.zkey"),
+                `${homedir()}/rapidsnark/build/prover`,
+                join(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test"),
+                join(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test"),
+                join(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test"),
+                coordinatorKeypair.privKey.serialize(),
+                contracts.maciAddress,
+                undefined,
+                join(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test.wasm"),
+                join(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test.wasm"),
+                join(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test.wasm"),
+                useWasm,
+                true
+            )
 
             // verify that the data stored on the tally file is correct
             const tally = JSON.parse(readFileSync(join(__dirname, "../../../cli/tally.json")).toString())
@@ -253,26 +262,26 @@ describe("integration tests", function() {
             }
             
             // prove on chain if everything matches
-            await proveOnChain({
-                quiet: true,
-                pollId: pollId.toString(),
-                maciAddress: contracts.maciAddress,
-                messageProcessorAddress: pollContracts.messageProcessor,
-                tallyAddress: pollContracts.tally,
-                subsidyAddress: subsidyEnabled ? pollContracts.subsidy : undefined,
-                proofDir: join(__dirname, "../../../cli/proofs")
-            })
+            await proveOnChain(
+                pollId.toString(),
+                join(__dirname, "../../../cli/proofs"),
+                contracts.maciAddress,
+                pollContracts.messageProcessor,
+                pollContracts.tally,
+                pollContracts.subsidy,
+                true
+            )
     
             // verify the proofs
-            await verify({
-                quiet: true,
-                maciAddress: contracts.maciAddress,
-                tallyAddress: pollContracts.tally,
-                subsidyAddress: subsidyEnabled ? pollContracts.subsidy : undefined,
-                pollId: pollId.toString(),
-                tallyFile: join(__dirname, "../../../cli/tally.json"),
-                subsidyFile: subsidyEnabled ? join(__dirname, "../../../cli/subsidy.json") : undefined
-            })
+            await verify(
+                pollId.toString(),
+                join(__dirname, "../../../cli/tally.json"),
+                contracts.maciAddress,
+                pollContracts.tally,
+                pollContracts.subsidy,
+                subsidyEnabled ? join(__dirname, "../../../cli/subsidy.json") : undefined,
+                true
+            )
         })
     }
 })

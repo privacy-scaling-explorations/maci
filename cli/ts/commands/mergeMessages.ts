@@ -2,7 +2,6 @@ import { getDefaultSigner, parseArtifact } from "maci-contracts"
 import { Contract } from "ethers"
 import { 
     DEFAULT_SR_QUEUE_OPS, 
-    MergeMessagesArgs, 
     banner, 
     contractExists, 
     currentBlockTimestamp,  
@@ -16,14 +15,17 @@ import {
 
 /**
  * Merge the message queue on chain
- * @param param0 the required params
+ * @param pollId - the id of the poll
+ * @param quiet - whether to log the output
+ * @param maciContractAddress - the address of the MACI contract
+ * @param numQueueOps - the number of queue operations to merge
  */
-export const mergeMessages = async ({
-    quiet,
-    maciContractAddress,
-    pollId,
-    numQueueOps
-}: MergeMessagesArgs) => {
+export const mergeMessages = async ( 
+    pollId: number,
+    maciContractAddress?: string,
+    numQueueOps?: string,
+    quiet?: boolean
+) => {
     if(!quiet) banner()
     const signer = await getDefaultSigner()
 

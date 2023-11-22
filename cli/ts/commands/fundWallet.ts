@@ -1,6 +1,5 @@
 import { getDefaultSigner } from "maci-contracts"
 import { 
-    FundWalletArgs,
     info, 
     logError, 
     logYellow, 
@@ -11,13 +10,15 @@ import {
 
 /**
  * Fund a new wallet with Ether
- * @param params - The fund wallet arguments
+ * @param amount - the amount of Ether to send
+ * @param address - the address of the wallet to fund
+ * @param quiet - whether to log the output
  */
-export const fundWallet = async ({
-    quiet,
-    amount,
-    address
-}: FundWalletArgs) => {
+export const fundWallet = async (  
+    amount: number,
+    address: string,
+    quiet?: boolean
+) => {
     if(!quiet) banner()
     const signer = await getDefaultSigner()
     

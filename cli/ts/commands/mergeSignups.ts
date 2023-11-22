@@ -3,7 +3,6 @@ import { Contract } from "ethers"
 import { 
     DEFAULT_SR_QUEUE_OPS,
     banner,
-    MergeSignupsArgs,
     contractExists,
     currentBlockTimestamp,
     info,
@@ -16,14 +15,17 @@ import {
 
 /**
  * Command to merge the signups of a MACI contract
- * @param param0 - the merge signups command options
+ * @param pollId - the id of the poll
+ * @param maciContractAddress - the address of the MACI contract
+ * @param numQueueOps - the number of queue operations to perform
+ * @param quiet - whether to log the output
  */
-export const mergeSignups = async ({
-    maciContractAddress,
-    pollId,
-    quiet,
-    numQueueOps
-}: MergeSignupsArgs) => {
+export const mergeSignups = async (  
+    pollId: number,
+    maciContractAddress?: string,
+    numQueueOps?: string,
+    quiet?: boolean 
+) => {
     if(!quiet) banner()
     const signer = await getDefaultSigner()
 

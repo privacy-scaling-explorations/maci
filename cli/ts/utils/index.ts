@@ -20,25 +20,6 @@ export {
     DEFAULT_SR_QUEUE_OPS
 } from "./defaults"
 export {
-    CheckVerifyingKeysArgs,
-    DeployArgs,
-    AirdropArgs,
-    DeployPollArgs,
-    PublishArgs,
-    GenMaciPubKeyArgs,
-    MergeMessagesArgs,
-    MergeSignupsArgs,
-    TimeTravelArgs,
-    SignUpArgs,
-    ShowContractsArgs,
-    TopupArgs,
-    SetVerifyingKeysArgs,
-    FundWalletArgs,
-    VerifyArgs,
-    GenProofsArgs,
-    ProveOnChainArgs,
-    DeployVkRegistryArgs,
-    GenKeyPairArgs,
     DeployedContracts,
     PollContracts
 } from "./interfaces"

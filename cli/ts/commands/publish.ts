@@ -7,26 +7,34 @@ import { promptPwd } from "../utils/prompts"
 import { validateSalt } from "../utils/salt"
 import { genRandomSalt } from "maci-crypto"
 import { Contract } from "ethers"
-import { PublishArgs } from "../utils/interfaces"
 import { banner } from "../utils/banner"
 
 /**
  * Publish a new message to a MACI Poll contract
- * @param options - the publish command options 
+ * @param pubkey - the public key of the user
+ * @param stateIndex - the index of the state leaf
+ * @param voteOptionIndex - the index of the vote option
+ * @param nonce - the nonce of the message
+ * @param pollId - the id of the poll
+ * @param newVoteWeight - the new vote weight
+ * @param maciContractAddress - the address of the MACI contract
+ * @param salt - the salt of the message
+ * @param privateKey - the private key of the user
+ * @param quiet - whether to log the output
  * @returns the ephemeral private key used to encrypt the message
  */
-export const publish = async ({
-    quiet,
-    pubkey,
-    maciContractAddress,
-    privateKey,
-    stateIndex,
-    voteOptionIndex,
-    nonce,
-    salt,
-    pollId,
-    newVoteWeight
-}: PublishArgs): Promise<string> => {
+export const publish = async (
+    pubkey: string,
+    stateIndex: number,
+    voteOptionIndex: number, 
+    nonce: number,
+    pollId: number,
+    newVoteWeight: number,  
+    maciContractAddress?: string,
+    salt?: string,  
+    privateKey?: string, 
+    quiet?: boolean 
+): Promise<string> => {
     if(!quiet) banner()
 
     // validate that the pub key of the user is valid

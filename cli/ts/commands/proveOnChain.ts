@@ -1,5 +1,5 @@
 import { formatProofForVerifierContract, getDefaultSigner, parseArtifact } from "maci-contracts"
-import { ProveOnChainArgs, banner, contractExists, delay, error, info, logError, logGreen, logRed, logYellow, readContractAddress, success } from "../utils/"
+import { banner, contractExists, error, info, logError, logGreen, logRed, logYellow, readContractAddress, success } from "../utils/"
 import { Contract } from "ethers"
 import { readFileSync, readdirSync } from "fs"
 import { join } from "path"
@@ -7,17 +7,23 @@ import { hashLeftRight } from "maci-crypto"
 
 /**
  * Command to prove the result of a poll on-chain
- * @param param0 the arguments passed to the command
+ * @param pollId - the id of the poll
+ * @param proofDir - the directory containing the proofs
+ * @param maciAddress - the address of the MACI contract
+ * @param messageProcessorAddress - the address of the MessageProcessor contract
+ * @param tallyAddress - the address of the Tally contract
+ * @param subsidyAddress - the address of the Subsidy contract
+ * @param quiet - whether to log the output
  */
-export const proveOnChain = async ({
-    quiet,
-    pollId,
-    maciAddress,
-    messageProcessorAddress,
-    tallyAddress,
-    subsidyAddress,
-    proofDir
-}: ProveOnChainArgs) => {
+export const proveOnChain = async (
+    pollId: string,
+    proofDir: string,
+    maciAddress?: string,
+    messageProcessorAddress?: string,
+    tallyAddress?: string,
+    subsidyAddress?: string,
+    quiet?: boolean
+) => {
     if(!quiet) banner()
     const signer = await getDefaultSigner()
     

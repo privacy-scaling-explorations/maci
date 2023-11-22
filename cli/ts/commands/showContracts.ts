@@ -1,17 +1,19 @@
-import { readFileSync } from "fs"
+import { existsSync, readFileSync } from "fs"
 import { contractAddressesStore } from "../utils/constants"
 import { banner } from "../utils/banner"
-import { logGreen, info } from "../utils/theme"
-import { ShowContractsArgs } from "../utils"
+import { logGreen, info, logError } from "../utils/theme"
 
 /**
  * Utility to print all contracts that have been deployed using maci-cli
- * @param param0 - the params to this function
+ * @param quiet - whether to log the output
  */
-export const showContracts = ({
-    quiet
-}: ShowContractsArgs) => {
+export const showContracts = (
+    quiet?: boolean 
+) => {
     if(!quiet) banner() 
+    
+    if (!existsSync(contractAddressesStore)) logError("No contracts have been deployed yet")
+
     const data = JSON.parse(readFileSync(contractAddressesStore, "utf8").toString())
 
     for (const entry of Object.entries(data)) {
