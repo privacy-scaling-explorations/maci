@@ -1,4 +1,4 @@
-import { MaciState, MaxValues, STATE_TREE_DEPTH, TreeDepths } from "maci-core"
+import { MaciState, MaxValues, TreeDepths } from "maci-core"
 import { 
     deploy, 
     deployPoll, 
@@ -21,6 +21,7 @@ import {
     MSG_BATCH_DEPTH, 
     MSG_TREE_DEPTH, 
     SG_DATA, 
+    STATE_TREE_DEPTH, 
     VOTE_OPTION_TREE_DEPTH, 
     duration, 
     initialVoiceCredits, 
@@ -57,7 +58,6 @@ describe("integration tests", function() {
     before(async () => {
         // 1. deploy Vk Registry
         vkRegistryAddress = await deployVkRegistryContract(true)
-
         // 2. set verifying keys
         await setVerifyingKeys(
             STATE_TREE_DEPTH,
@@ -76,12 +76,13 @@ describe("integration tests", function() {
     // the code that we run before each test
     beforeEach(async () => {
         // create a new maci state
-        maciState = new MaciState()
+        maciState = new MaciState(STATE_TREE_DEPTH)
 
         // 3. deploy maci
         contracts = await deploy(
+            STATE_TREE_DEPTH,
             vkRegistryAddress,
-            undefined,
+            initialVoiceCredits,
             undefined,
             undefined,
             true

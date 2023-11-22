@@ -1,5 +1,4 @@
 import {
-    checkVerifyingKeys,
     deploy,
     deployPoll,
     deployVkRegistryContract, 
@@ -22,15 +21,16 @@ import {
     coordinatorPrivKey, 
     coordinatorPubKey
 } from "./utilities/constants"
-import { homedir } from "os"
-import { cleanVanilla } from "./utilities/utils"
+import {
+    homedir
+} from "os"
+import { cleanSubsidy } from "./utilities/utils"
 import { isArm } from "maci-circuits"
 
-describe("Vanilla tests", function() {
+describe("e2e with Subsidy tests", function() {
     const useWasm = isArm() 
     this.timeout(900000)
   
-    // before all tests we deploy the vk registry contract and set the verifying keys
     before(async () => {
         // we deploy the vk registry contract
         await deployVkRegistryContract(true)
@@ -44,18 +44,17 @@ describe("Vanilla tests", function() {
             "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
             "./zkeys/TallyVotes_10-1-2_test.0.zkey",   
             undefined,
-            undefined,
+            "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
             true
         )
     })
-    
     describe("test1", () => {
         after(async () => {
-            cleanVanilla()
+            cleanSubsidy()
         })
         before(async () => {
             // deploy the smart contracts
-            await deploy(undefined, undefined, undefined, undefined, true)
+            await deploy(STATE_TREE_DEPTH, undefined, undefined, undefined, undefined, true)
             // deploy a poll contract
             await deployPoll(
                 90,
@@ -112,18 +111,18 @@ describe("Vanilla tests", function() {
                 "./zkeys/TallyVotes_10-1-2_test.0.zkey",
                 "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
                 0,
-                undefined,
-                undefined,
+                "./subsidy.json",
+                "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
                 `${homedir()}/rapidsnark/build/prover`,
                 "./zkeys/ProcessMessages_10-2-1-2_test",
                 "./zkeys/TallyVotes_10-1-2_test",
-                undefined,
+                "./zkeys/SubsidyPerBatch_10-1-2_test",
                 coordinatorPrivKey,
                 undefined,
                 undefined,
                 "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
                 "./zkeys/TallyVotes_10-1-2_test.wasm",
-                undefined,
+                "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
                 useWasm,
                 true
             )
@@ -144,18 +143,18 @@ describe("Vanilla tests", function() {
                 undefined,
                 undefined,
                 undefined,
-                undefined,
+                "./subsidy.json",
                 true
             )
         })
     })
 
     describe("test2", () => {
-        after (() => cleanVanilla())
+        after (() => cleanSubsidy())
 
         before(async () => {
             // deploy the smart contracts
-            await deploy(undefined, undefined, undefined, undefined, true)
+            await deploy(STATE_TREE_DEPTH, undefined, undefined, undefined, undefined, true)
             // deploy a poll contract
             await deployPoll(
                 90,
@@ -303,18 +302,18 @@ describe("Vanilla tests", function() {
                 "./zkeys/TallyVotes_10-1-2_test.0.zkey",
                 "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
                 0,
-                undefined,
-                undefined,
+                "./subsidy.json",
+                "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
                 `${homedir()}/rapidsnark/build/prover`,
                 "./zkeys/ProcessMessages_10-2-1-2_test",
                 "./zkeys/TallyVotes_10-1-2_test",
-                undefined,
+                "./zkeys/SubsidyPerBatch_10-1-2_test",
                 coordinatorPrivKey,
                 undefined,
                 undefined,
                 "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
                 "./zkeys/TallyVotes_10-1-2_test.wasm",
-                undefined,
+                "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
                 useWasm,
                 true
             )
@@ -335,18 +334,18 @@ describe("Vanilla tests", function() {
                 undefined,
                 undefined,
                 undefined,
-                undefined,
+                "./subsidy.json",
                 true
             )
         })
     })
 
     describe("test3", () => {
-        after (() => cleanVanilla())
+        after (() => cleanSubsidy())
 
         before(async () => {
             // deploy the smart contracts
-            await deploy(undefined, undefined, undefined, undefined, true)
+            await deploy(STATE_TREE_DEPTH, undefined, undefined, undefined, undefined, true)
             // deploy a poll contract
             await deployPoll(
                 90,
@@ -469,18 +468,18 @@ describe("Vanilla tests", function() {
                 "./zkeys/TallyVotes_10-1-2_test.0.zkey",
                 "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
                 0,
-                undefined,
-                undefined,
+                "./subsidy.json",
+                "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
                 `${homedir()}/rapidsnark/build/prover`,
                 "./zkeys/ProcessMessages_10-2-1-2_test",
                 "./zkeys/TallyVotes_10-1-2_test",
-                undefined,
+                "./zkeys/SubsidyPerBatch_10-1-2_test",
                 coordinatorPrivKey,
                 undefined,
                 undefined,
                 "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
                 "./zkeys/TallyVotes_10-1-2_test.wasm",
-                undefined,
+                "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
                 useWasm,
                 true
             )
@@ -501,7 +500,7 @@ describe("Vanilla tests", function() {
                 undefined,
                 undefined,
                 undefined,
-                undefined,
+                "./subsidy.json",
                 true
             )
         })
@@ -509,11 +508,11 @@ describe("Vanilla tests", function() {
     })
 
     describe("test4", () => {
-        after (() => cleanVanilla())
+        after (() => cleanSubsidy())
         
         before(async () => {
             // deploy the smart contracts
-            await deploy(undefined, undefined, undefined, undefined, true)
+            await deploy(STATE_TREE_DEPTH, undefined, undefined, undefined, undefined, true)
             // deploy a poll contract
             await deployPoll(
                 90,
@@ -580,18 +579,18 @@ describe("Vanilla tests", function() {
                 "./zkeys/TallyVotes_10-1-2_test.0.zkey",
                 "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
                 0,
-                undefined,
-                undefined,
+                "./subsidy.json",
+                "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
                 `${homedir()}/rapidsnark/build/prover`,
                 "./zkeys/ProcessMessages_10-2-1-2_test",
                 "./zkeys/TallyVotes_10-1-2_test",
-                undefined,
+                "./zkeys/SubsidyPerBatch_10-1-2_test",
                 coordinatorPrivKey,
                 undefined,
                 undefined,
                 "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
                 "./zkeys/TallyVotes_10-1-2_test.wasm",
-                undefined,
+                "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
                 useWasm,
                 true
             )
@@ -613,17 +612,17 @@ describe("Vanilla tests", function() {
                 undefined,
                 undefined,
                 undefined,
-                undefined,
+                "./subsidy.json",
                 true
             )
         })
     })
 
     describe("test5", () => {
-        after (() => cleanVanilla())
+        after (() => cleanSubsidy())
         before(async () => {
             // deploy the smart contracts
-            await deploy(undefined, undefined, undefined, undefined, true)
+            await deploy(STATE_TREE_DEPTH, undefined, undefined, undefined, undefined, true)
             // deploy a poll contract
             await deployPoll(
                 90,
@@ -747,18 +746,18 @@ describe("Vanilla tests", function() {
                 "./zkeys/TallyVotes_10-1-2_test.0.zkey",
                 "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
                 0,
-                undefined,
-                undefined,
+                "./subsidy.json",
+                "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
                 `${homedir()}/rapidsnark/build/prover`,
                 "./zkeys/ProcessMessages_10-2-1-2_test",
                 "./zkeys/TallyVotes_10-1-2_test",
-                undefined,
+                "./zkeys/SubsidyPerBatch_10-1-2_test",
                 coordinatorPrivKey,
                 undefined,
                 undefined,
                 "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
                 "./zkeys/TallyVotes_10-1-2_test.wasm",
-                undefined,
+                "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
                 useWasm,
                 true
             )
@@ -780,18 +779,18 @@ describe("Vanilla tests", function() {
                 undefined,
                 undefined,
                 undefined,
-                undefined,
+                "./subsidy.json",
                 true
             )
         })
     })
 
     describe("test6", () => {
-        after (() => cleanVanilla())
+        after (() => cleanSubsidy())
 
         before(async () => {
             // deploy the smart contracts
-            await deploy(undefined, undefined, undefined, undefined, true)
+            await deploy(STATE_TREE_DEPTH, undefined, undefined, undefined, undefined, true)
             // deploy a poll contract
             await deployPoll(
                 90,
@@ -934,18 +933,18 @@ describe("Vanilla tests", function() {
                 "./zkeys/TallyVotes_10-1-2_test.0.zkey",
                 "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
                 0,
-                undefined,
-                undefined,
+                "./subsidy.json",
+                "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
                 `${homedir()}/rapidsnark/build/prover`,
                 "./zkeys/ProcessMessages_10-2-1-2_test",
                 "./zkeys/TallyVotes_10-1-2_test",
-                undefined,
+                "./zkeys/SubsidyPerBatch_10-1-2_test",
                 coordinatorPrivKey,
                 undefined,
                 undefined,
                 "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
                 "./zkeys/TallyVotes_10-1-2_test.wasm",
-                undefined,
+                "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
                 useWasm,
                 true
             )
@@ -967,38 +966,122 @@ describe("Vanilla tests", function() {
                 undefined,
                 undefined,
                 undefined,
-                undefined,
+                "./subsidy.json",
                 true
             )
         })
     })
 
-    describe("checkKeys", () => {
-        before(async () => {
-            // deploy maci as we need the address
-            await deploy(undefined, undefined, undefined, undefined, true)
-        })
-        it("should check if the verifying keys have been set correctly", async () => {
-            await checkVerifyingKeys(
-                STATE_TREE_DEPTH,
-                INT_STATE_TREE_DEPTH,
-                MSG_TREE_DEPTH,
-                VOTE_OPTION_TREE_DEPTH,
-                MSG_BATCH_DEPTH,
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                undefined,
-                true,
-            )
-        })
-    })
 
-    describe("keyChange", () => {
-        after (() => cleanVanilla())
+    describe("test7", () => {
+        after(() => { cleanSubsidy() })
+
+        const publishArgs = [
+            {
+                quiet: true,
+                pubkey: "macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391",
+                privateKey: "macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c",
+                stateIndex: 6,
+                voteOptionIndex: 5,
+                nonce: 1,
+                newVoteWeight: 6,
+                pollId: 0
+            },
+            {
+                quiet: true,
+                pubkey: "macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391",
+                privateKey: "macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c",
+                stateIndex: 5,
+                voteOptionIndex: 5,
+                nonce: 2,
+                newVoteWeight: 5,
+                pollId: 0
+            },
+            {
+                quiet: true,
+                pubkey: "macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391",
+                privateKey: "macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c",
+                stateIndex: 5,
+                voteOptionIndex: 4,
+                nonce: 1,
+                pollId: 0,
+                newVoteWeight: 5
+            },
+            {
+                quiet: true,
+                pubkey: "macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391",
+                privateKey: "macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c",
+                stateIndex: 4,
+                voteOptionIndex: 4,
+                nonce: 2,
+                pollId: 0,
+                newVoteWeight: 4
+            },
+            {
+                quiet: true,
+                pubkey: "macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391",
+                privateKey: "macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c",
+                stateIndex: 4,
+                voteOptionIndex: 3,
+                nonce: 1,
+                pollId: 0,
+                newVoteWeight: 4
+            }, 
+            {
+                quiet: true,
+                pubkey: "macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391",
+                privateKey: "macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c",
+                stateIndex: 3,
+                voteOptionIndex: 3,
+                nonce: 2,
+                pollId: 0,
+                newVoteWeight: 3
+            }, 
+            {
+                quiet: true,
+                pubkey: "macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391",
+                privateKey: "macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c",
+                stateIndex: 2,
+                voteOptionIndex: 2,
+                nonce: 2,
+                pollId: 0,
+                newVoteWeight: 2
+            }, 
+            {
+                quiet: true,
+                pubkey: "macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391",
+                privateKey: "macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c",
+                stateIndex: 2,
+                voteOptionIndex: 1,
+                nonce: 1,
+                pollId: 0,
+                newVoteWeight: 2
+            }, 
+            {
+                quiet: true,
+                pubkey: "macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391",
+                privateKey: "macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c",
+                stateIndex: 1,
+                voteOptionIndex: 1,
+                nonce: 2,
+                pollId: 0,
+                newVoteWeight: 1
+            },
+            {
+                quiet: true,
+                pubkey: "macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391",
+                privateKey: "macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c",
+                stateIndex: 1,
+                voteOptionIndex: 0,
+                nonce: 1,
+                pollId: 0,
+                newVoteWeight: 1
+            }, 
+        ]
 
         before(async () => {
             // deploy the smart contracts
-            await deploy(undefined, undefined, undefined, undefined, true)
+            await deploy(STATE_TREE_DEPTH, undefined, undefined, undefined, undefined, true)
             // deploy a poll contract
             await deployPoll(
                 90,
@@ -1012,55 +1095,29 @@ describe("Vanilla tests", function() {
                 undefined,
                 true,
             )
-            // signup a user
-            await signup(
-                "macipk.b8590fdba5e9cde5606dad5db384be4d253d0a2064d1e03f9600ee021a7ebe16", 
-                undefined, 
-                undefined, 
-                undefined, 
-                true
-            )
-            // publish messages
-            await publish(
-                "macipk.b8590fdba5e9cde5606dad5db384be4d253d0a2064d1e03f9600ee021a7ebe16",
-                1,
-                0,
-                1,
-                0,
-                9,
+        })
+
+        it("should signup an user", async () => {
+            for (let i = 0; i < 6; i++) await signup(
+                "macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391",
                 undefined,
                 undefined,
-                "macisk.2ae4f199bf3925a2407f7c775c9261f351ab861d8e9ecbb84622bdd3f6d41b08",
+                undefined,
                 true
             )
         })
 
-        it("should publish a message to change the user maci key", async () => {
-            await publish(
-                "macipk.b42b0da48010682d8c781d403f6b83db00c5e0970094ef3618393e7a3262c320",
-                1,
-                0,
-                1,
-                0,
-                9,
+        it("should publish all messages", async () => {
+            for (const arg of publishArgs) await publish(
+                arg.pubkey,
+                arg.stateIndex,
+                arg.voteOptionIndex,
+                arg.nonce,
+                arg.pollId,
+                arg.newVoteWeight,
                 undefined,
                 undefined,
-                "macisk.2ae4f199bf3925a2407f7c775c9261f351ab861d8e9ecbb84622bdd3f6d41b08",
-                true
-            )
-        })
-
-        it("should vote for a different option using the new key", async () => {
-            await publish(
-                "macipk.b42b0da48010682d8c781d403f6b83db00c5e0970094ef3618393e7a3262c320",
-                1,
-                1,
-                2,
-                0,
-                9,
-                undefined,
-                undefined,
-                "macisk.220b09bca39ddc56deaaecddcdf616529cd2ed3eeda2354795515f17894e1c65",
+                arg.privateKey,
                 true
             )
         })
@@ -1091,18 +1148,18 @@ describe("Vanilla tests", function() {
                 "./zkeys/TallyVotes_10-1-2_test.0.zkey",
                 "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
                 0,
-                undefined,
-                undefined,
+                "./subsidy.json",
+                "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
                 `${homedir()}/rapidsnark/build/prover`,
                 "./zkeys/ProcessMessages_10-2-1-2_test",
                 "./zkeys/TallyVotes_10-1-2_test",
-                undefined,
+                "./zkeys/SubsidyPerBatch_10-1-2_test",
                 coordinatorPrivKey,
                 undefined,
                 undefined,
                 "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
                 "./zkeys/TallyVotes_10-1-2_test.wasm",
-                undefined,
+                "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
                 useWasm,
                 true
             )
@@ -1124,17 +1181,17 @@ describe("Vanilla tests", function() {
                 undefined,
                 undefined,
                 undefined,
-                undefined,
+                "./subsidy.json",
                 true
             )
         })
     })
 
     describe("multiplePolls1", () => {
-        after (() => cleanVanilla())
+        after (() => cleanSubsidy())
         before(async () => {
             // deploy the smart contracts
-            await deploy(undefined, undefined, undefined, undefined, true)
+            await deploy(STATE_TREE_DEPTH, undefined, undefined, undefined, undefined, true)
             // deploy a poll contract
             await deployPoll(
                 90,
@@ -1180,18 +1237,18 @@ describe("Vanilla tests", function() {
                 "./zkeys/TallyVotes_10-1-2_test.0.zkey",
                 "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
                 0,
-                undefined,
-                undefined,
+                "./subsidy.json",
+                "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
                 `${homedir()}/rapidsnark/build/prover`,
                 "./zkeys/ProcessMessages_10-2-1-2_test",
                 "./zkeys/TallyVotes_10-1-2_test",
-                undefined,
+                "./zkeys/SubsidyPerBatch_10-1-2_test",
                 coordinatorPrivKey,
                 undefined,
                 undefined,
                 "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
                 "./zkeys/TallyVotes_10-1-2_test.wasm",
-                undefined,
+                "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
                 useWasm,
                 true
             )
@@ -1211,10 +1268,10 @@ describe("Vanilla tests", function() {
                 undefined,
                 undefined,
                 undefined,
-                undefined,
+                "./subsidy.json",
                 true 
             )
-            cleanVanilla()
+            cleanSubsidy()
         })
 
         it("should deploy a new poll", async () => {
@@ -1255,18 +1312,18 @@ describe("Vanilla tests", function() {
                 "./zkeys/TallyVotes_10-1-2_test.0.zkey",
                 "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
                 1,
-                undefined,
-                undefined,
+                "./subsidy.json",
+                "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
                 `${homedir()}/rapidsnark/build/prover`,
                 "./zkeys/ProcessMessages_10-2-1-2_test",
                 "./zkeys/TallyVotes_10-1-2_test",
-                undefined,
+                "./zkeys/SubsidyPerBatch_10-1-2_test",
                 coordinatorPrivKey,
                 undefined,
                 undefined,
                 "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
                 "./zkeys/TallyVotes_10-1-2_test.wasm",
-                undefined,
+                "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
                 useWasm,
                 true
             )
@@ -1279,7 +1336,7 @@ describe("Vanilla tests", function() {
                 undefined,
                 true
             )
-            await verify('1', './tally.json', undefined, undefined, undefined, undefined, true)
+            await verify('1', './tally.json', undefined, undefined, undefined, "./subsidy.json", true)
         })
     })
 
@@ -1294,11 +1351,11 @@ describe("Vanilla tests", function() {
             "macipk.d354c22572a0b53ced8561f9ab16abe0b8f7f98c2133757e93cdefd45fe1b192"
         ]
 
-        after(() => { cleanVanilla() })
+        after(() => { cleanSubsidy() })
 
         before(async () => {
             // deploy the smart contracts
-            await deploy(undefined, undefined, undefined, undefined, true)
+            await deploy(STATE_TREE_DEPTH, undefined, undefined, undefined, undefined, true)
         })
 
         it("should run the first poll", async () => {
@@ -1347,18 +1404,18 @@ describe("Vanilla tests", function() {
                 "./zkeys/TallyVotes_10-1-2_test.0.zkey",
                 "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
                 0,
-                undefined,
-                undefined,
+                "./subsidy.json",
+                "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
                 `${homedir()}/rapidsnark/build/prover`,
                 "./zkeys/ProcessMessages_10-2-1-2_test",
                 "./zkeys/TallyVotes_10-1-2_test",
-                undefined,
+                "./zkeys/SubsidyPerBatch_10-1-2_test",
                 coordinatorPrivKey,
                 undefined,
                 undefined,
                 "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
                 "./zkeys/TallyVotes_10-1-2_test.wasm",
-                undefined,
+                "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
                 useWasm,
                 true
             )
@@ -1378,10 +1435,10 @@ describe("Vanilla tests", function() {
                 undefined,
                 undefined,
                 undefined,
-                undefined,
+                "./subsidy.json",
                 true 
             )
-            cleanVanilla()
+            cleanSubsidy()
         })
 
         it("should deploy two more polls", async () => {
@@ -1505,18 +1562,18 @@ describe("Vanilla tests", function() {
                 "./zkeys/TallyVotes_10-1-2_test.0.zkey",
                 "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
                 1,
-                undefined,
-                undefined,
+                "./subsidy.json",
+                "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
                 `${homedir()}/rapidsnark/build/prover`,
                 "./zkeys/ProcessMessages_10-2-1-2_test",
                 "./zkeys/TallyVotes_10-1-2_test",
-                undefined,
+                "./zkeys/SubsidyPerBatch_10-1-2_test",
                 coordinatorPrivKey,
                 undefined,
                 undefined,
                 "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
                 "./zkeys/TallyVotes_10-1-2_test.wasm",
-                undefined,
+                "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
                 useWasm,
                 true
             )
@@ -1535,10 +1592,10 @@ describe("Vanilla tests", function() {
                 undefined,
                 undefined,
                 undefined,
-                undefined,
+                "./subsidy.json",
                 true
             )
-            cleanVanilla()
+            cleanSubsidy()
         })
 
         it("should complete the third poll", async () => {
@@ -1550,18 +1607,18 @@ describe("Vanilla tests", function() {
                 "./zkeys/TallyVotes_10-1-2_test.0.zkey",
                 "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
                 2,
-                undefined,
-                undefined,
+                "./subsidy.json",
+                "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
                 `${homedir()}/rapidsnark/build/prover`,
                 "./zkeys/ProcessMessages_10-2-1-2_test",
                 "./zkeys/TallyVotes_10-1-2_test",
-                undefined,
+                "./zkeys/SubsidyPerBatch_10-1-2_test",
                 coordinatorPrivKey,
                 undefined,
                 undefined,
                 "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
                 "./zkeys/TallyVotes_10-1-2_test.wasm",
-                undefined,
+                "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
                 useWasm,
                 true
             )
@@ -1580,9 +1637,10 @@ describe("Vanilla tests", function() {
                 undefined,
                 undefined,
                 undefined,
-                undefined,
+                "./subsidy.json",
                 true
             )
         })
     })
+
 })

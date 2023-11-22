@@ -11,6 +11,7 @@ import { logError, logGreen, success, DEFAULT_INITIAL_VOICE_CREDITS, DeployedCon
 
 /**
  * Deploy MACI and related contracts
+ * @param stateTreeDepth - the depth of the state tree
  * @param vkRegistryAddress - the address of the vkRegistry contract
  * @param initialVoiceCredits - the initial voice credits to be minted
  * @param initialVoiceCreditsProxyAddress - the address of the initialVoiceCreditsProxy contract
@@ -19,6 +20,7 @@ import { logError, logGreen, success, DEFAULT_INITIAL_VOICE_CREDITS, DeployedCon
  * @returns the addresses of the deployed contracts
  */
 export const deploy = async (
+    stateTreeDepth: number,
     vkRegistryAddress?: string,
     initialVoiceCredits?: number,
     initialVoiceCreditsProxyAddress?: string,
@@ -62,6 +64,7 @@ export const deploy = async (
     // topup credit 
     const topUpCredit = await deployTopupCredit(true)
 
+
     // deploy MACI, stateAq, PollFactory and poseidon 
     const {
         maciContract,
@@ -74,6 +77,7 @@ export const deploy = async (
         verifierContract.address,
         vkRegistry,
         topUpCredit.address,
+        stateTreeDepth,
         true
     )
 

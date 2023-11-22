@@ -14,8 +14,8 @@
         "watch": "tsc --watch",
         "build": "tsc",
         "test": "ts-mocha --exit tests/*.test.ts",
-        "test:vanilla": "ts-mocha --exit tests/vanilla.test.ts",
-        "test:subsidy": "ts-mocha --exit tests/subsidy.test.ts"
+        "test:e2e": "ts-mocha --exit tests/e2e.test.ts",
+        "test:e2e-subsidy": "ts-mocha --exit tests/e2e.subsidy.test.ts"
     },
     "dependencies": {
         "@nomiclabs/hardhat-ethers": "^2.0.0",
