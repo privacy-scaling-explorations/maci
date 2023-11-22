@@ -1,7 +1,7 @@
 PKGS="zkeys_10-2-1-2_glibc-211.tar.gz ProcessMessages_10-2-1-2_test.0.zkey TallyVotes_10-1-2_test.0.zkey SubsidyPerBatch_10-1-2_test.0.zkey"
 
 BASE_URL=https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/10-2-1-2
-OUT_DIR=./zkeys
+OUT_DIR=../zkeys
 
 for p in $PKGS
 do
