@@ -7,24 +7,24 @@ import {
     deployMaci,
     deployTopupCredit
  } from "maci-contracts"
-import { logError, logGreen, success, DeployArgs, DEFAULT_INITIAL_VOICE_CREDITS, DeployedContracts } from "../utils/"
+import { logError, logGreen, success, DEFAULT_INITIAL_VOICE_CREDITS, DeployedContracts } from "../utils/"
 
 /**
  * Deploy MACI and related contracts
- * @param vkRegistryAddress 
- * @param initialVoiceCredits 
- * @param initialVoiceCreditsProxyAddress 
- * @param signupGatekeeperAddress
- * @param quiet
+ * @param vkRegistryAddress - the address of the vkRegistry contract
+ * @param initialVoiceCredits - the initial voice credits to be minted
+ * @param initialVoiceCreditsProxyAddress - the address of the initialVoiceCreditsProxy contract
+ * @param signupGatekeeperAddress - the address of the signupGatekeeper contract
+ * @param quiet - whether to log the output
  * @returns the addresses of the deployed contracts
  */
-export const deploy = async ({
-    vkRegistryAddress,
-    initialVoiceCredits,
-    initialVoiceCreditsProxyAddress,
-    signupGatekeeperAddress,
-    quiet
-}: DeployArgs): Promise<DeployedContracts> => {
+export const deploy = async (
+    vkRegistryAddress?: string,
+    initialVoiceCredits?: number,
+    initialVoiceCreditsProxyAddress?: string,
+    signupGatekeeperAddress?: string,
+    quiet?: boolean
+): Promise<DeployedContracts> => {
     if(!quiet) banner()
     // check if we have a vkRegistry already deployed or passed as arg
     const vkRegistryContractAddress = readContractAddress("VkRegistry")

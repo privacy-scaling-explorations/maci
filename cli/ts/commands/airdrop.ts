@@ -3,22 +3,25 @@ import { Contract, constants } from "ethers"
 import { contractExists } from "../utils/contracts"
 import { getDefaultSigner, parseArtifact } from "maci-contracts"
 import { logError, logGreen, success } from "../utils/theme"
-import { AirdropArgs } from "../utils/interfaces"
 import { banner } from "../utils/banner"
 
 /**
  * Utility that can be used to get 
  * topup credits aidropped
  * to the coordinator
- * @param param0 - the parameters to this function 
+ * @param amount the amount of credits to airdrop
+ * @param contractAddress the address of the ERC20 contract
+ * @param pollId the id of the poll
+ * @param maciAddress the address of the MACI contract
+ * @param quiet whether to log the output
  */
-export const airdrop = async ({
-    amount,
-    contractAddress,
-    pollId,
-    maciAddress,
-    quiet
-}: AirdropArgs) => {
+export const airdrop = async (
+    amount: number,
+    contractAddress?: string,
+    pollId?: number,
+    maciAddress?: string,
+    quiet?: boolean
+) => {
     if(!quiet) banner()
 
     // get the topup credit address from storage

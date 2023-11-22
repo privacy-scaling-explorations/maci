@@ -5,25 +5,25 @@ import { info, logError, logGreen } from "../utils/theme"
 import { contractExists } from "../utils/contracts"
 import { PubKey } from "maci-domainobjs"
 import { Contract } from "ethers"
-import { DeployPollArgs, PollContracts } from "../utils/interfaces"
+import { PollContracts } from "../utils/interfaces"
 
 /**
  * Deploy a new Poll for the set of MACI's contracts already deployed
  * @param param0 - the parameters required by the command 
  * @returns the addresses of the deployed contracts
  */
-export const deployPoll = async ({
-    maciAddress,
-    pollDuration,
-    maxMessages,
-    maxVoteOptions,
-    intStateTreeDepth,
-    messageTreeSubDepth,
-    messageTreeDepth,
-    voteOptionTreeDepth,
-    coordinatorPubkey,
-    quiet 
-}: DeployPollArgs): Promise<PollContracts> => {
+export const deployPoll = async (
+    pollDuration: number,
+    maxMessages: number,
+    maxVoteOptions: number,
+    intStateTreeDepth: number, 
+    messageTreeSubDepth: number, 
+    messageTreeDepth: number, 
+    voteOptionTreeDepth: number,
+    coordinatorPubkey: string, 
+    maciAddress?: string, 
+    quiet?: boolean 
+): Promise<PollContracts> => {
     if(!quiet) banner()
 
     let _maciAddress = readContractAddress("MACI")

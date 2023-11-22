@@ -1,22 +1,28 @@
 import { getDefaultSigner, parseArtifact } from "maci-contracts"
-import { banner, contractExists, info, logError, logGreen, logYellow, readContractAddress, success, VerifyArgs } from "../utils/"
+import { banner, contractExists, info, logError, logGreen, logYellow, readContractAddress, success } from "../utils/"
 import { Contract } from "ethers"
 import { existsSync, readFileSync } from "fs"
 import { hash2, hash3, genTreeCommitment } from "maci-crypto"
 
 /**
  * Verify the results of a poll and optionally the subsidy results
- * @param param0 The arguments to the verify command
+ * @param pollId - the id of the poll
+ * @param tallyFile - the path to the tally file
+ * @param maciAddress - the address of the MACI contract
+ * @param tallyAddress - the address of the Tally contract
+ * @param subsidyAddress - the address of the Subsidy contract
+ * @param subsidyFile - the path to the subsidy file
+ * @param quiet - whether to log the output
  */
-export const verify = async ({
-    quiet,
-    pollId,
-    maciAddress,
-    tallyAddress,
-    subsidyAddress,
-    tallyFile,
-    subsidyFile
-}: VerifyArgs) => {
+export const verify = async ( 
+    pollId: string,
+    tallyFile: string,
+    maciAddress?: string, 
+    tallyAddress?: string, 
+    subsidyAddress?: string,
+    subsidyFile?: string,
+    quiet?: boolean
+) => {
     if(!quiet) banner()
     const signer = await getDefaultSigner()
 

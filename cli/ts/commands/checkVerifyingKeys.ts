@@ -1,5 +1,5 @@
 import { getDefaultSigner, parseArtifact } from "maci-contracts";
-import { CheckVerifyingKeysArgs, banner, compareVks, contractExists, info, logError, logGreen, logYellow, readContractAddress, success } from "../utils/";
+import { banner, compareVks, contractExists, info, logError, logGreen, logYellow, readContractAddress, success } from "../utils/";
 import { VerifyingKey } from "maci-domainobjs";
 import { extractVk } from "maci-circuits";
 import { existsSync } from "fs";
@@ -8,20 +8,28 @@ import { Contract } from "ethers";
 /**
  * Command to confirm that the verifying keys in the contract match the
  * local ones
- * @param param0 - an object containing the command line arguments
+ * @param stateTreeDepth the depth of the state tree
+ * @param intStateTreeDepth the depth of the state subtree
+ * @param messageTreeDepth the depth of the message tree
+ * @param voteOptionTreeDepth the depth of the vote option tree
+ * @param messageBatchDepth the depth of the message batch tree
+ * @param processMessagesZkeyPath the path to the process messages zkey
+ * @param tallyVotesZkeyPath the path to the tally votes zkey
+ * @param quiet whether to log the output
+ * @param maciContract the address of the MACI contract
  * @returns whether the verifying keys match or not
  */
-export const checkVerifyingKeys = async ({
-    quiet,
-    maciContract,
-    stateTreeDepth,
-    intStateTreeDepth,
-    messageTreeDepth,
-    voteOptionTreeDepth,
-    messageBatchDepth,
-    processMessagesZkeyPath,
-    tallyVotesZkeyPath,
-}: CheckVerifyingKeysArgs): Promise<boolean> => {
+export const checkVerifyingKeys = async (
+    stateTreeDepth: number,
+    intStateTreeDepth: number,
+    messageTreeDepth: number,
+    voteOptionTreeDepth: number,
+    messageBatchDepth: number,
+    processMessagesZkeyPath: string,
+    tallyVotesZkeyPath: string,
+    maciContract?: string,
+    quiet?: boolean,
+): Promise<boolean> => {
     if (!quiet) banner()
     // get the signer
     const signer = await getDefaultSigner()

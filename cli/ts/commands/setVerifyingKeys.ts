@@ -9,24 +9,32 @@ import { Contract } from "ethers"
 import { genProcessVkSig, genSubsidyVkSig, genTallyVkSig } from "maci-core"
 import { compareVks } from "../utils/"
 import { banner } from "../utils/banner"
-import { SetVerifyingKeysArgs } from "../utils/interfaces"
 
 /**
  * Function that sets the verifying keys in the VkRegistry contract
- * @param param0 - the parameters to this function
+ * @param stateTreeDepth - the depth of the state tree
+ * @param intStateTreeDepth - the depth of the state subtree
+ * @param messageTreeDepth - the depth of the message tree
+ * @param voteOptionTreeDepth - the depth of the vote option tree
+ * @param messageBatchDepth - the depth of the message batch tree
+ * @param processMessagesZkeyPath - the path to the process messages zkey
+ * @param tallyVotesZkeyPath - the path to the tally votes zkey
+ * @param vkRegistry - the address of the vkRegistry contract
+ * @param subsidyZkeyPath - the path to the subsidy zkey
+ * @param quiet - whether to log the output
  */
-export const setVerifyingKeys = async ({
-    vkRegistry,
-    stateTreeDepth,
-    intStateTreeDepth,
-    messageTreeDepth,
-    voteOptionTreeDepth,
-    messageBatchDepth,
-    processMessagesZkeyPath,
-    tallyVotesZkeyPath,
-    subsidyZkeyPath,
-    quiet
-}: SetVerifyingKeysArgs) => {
+export const setVerifyingKeys = async (
+    stateTreeDepth: number,
+    intStateTreeDepth: number, 
+    messageTreeDepth: number,
+    voteOptionTreeDepth: number,
+    messageBatchDepth: number,
+    processMessagesZkeyPath: string, 
+    tallyVotesZkeyPath: string,
+    vkRegistry?: string,
+    subsidyZkeyPath?: string,
+    quiet?: boolean
+) => {
     if(!quiet) banner()
     // we must either have the contract as param or stored to file
     if (!readContractAddress("VkRegistry") && !vkRegistry) {
@@ -193,9 +201,7 @@ export const setVerifyingKeys = async ({
             )
             if (!compareVks(subsidyVk, subsidyVkOnChain)) 
                 logError('subsidyVk mismatch')
-            
         }
-
     } catch (error: any) {
         logError(error.message)
     }

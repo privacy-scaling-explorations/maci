@@ -1,18 +1,17 @@
-import { resetContractAddresses, storeContractAddress } from "../utils/storage"
 import { deployVkRegistry } from "maci-contracts"
 import { existsSync, renameSync } from "fs"
 import { contractAddressesStore, oldContractAddressesStore } from "../utils/constants"
 import { logGreen, success } from "../utils/theme"
 import { banner } from "../utils/banner"
-import { DeployVkRegistryArgs } from "../utils"
+import { resetContractAddresses, storeContractAddress } from "../utils/storage"
 
 /**
  * Deploy the vkRegistry contract
  * @param quiet - whether to print the contract address
  */
-export const deployVkRegistryContract = async ({ 
-    quiet
-}: DeployVkRegistryArgs): Promise<string> => {
+export const deployVkRegistryContract = async (
+    quiet?: boolean
+): Promise<string> => {
     if(!quiet) banner()
     // assume that the vkRegistry contract is the first one to be deployed
     if (existsSync(contractAddressesStore)) {

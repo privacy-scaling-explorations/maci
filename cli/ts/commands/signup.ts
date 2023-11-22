@@ -5,20 +5,26 @@ import { contractExists } from "../utils/contracts"
 import { getDefaultSigner, parseArtifact } from "maci-contracts"
 import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA } from "../utils/defaults"
 import { Contract } from "ethers"
-import { SignUpArgs } from "../utils/interfaces"
+import { banner } from "../utils"
 
 /**
  * Signup a user to the MACI contract
- * @param param0 - the params to this function
+ * @param maciPubKey - the public key of the user
+ * @param maciAddress - the address of the MACI contract
+ * @param sgDataArg - the signup gateway data
+ * @param ivcpDataArg - the initial voice credit proxy data
+ * @param quiet - whether to log the output
  * @returns the state index of the user
  */
-export const signup = async ({
-    maciPubKey,
-    maciAddress,
-    sgDataArg,
-    ivcpDataArg,
-    quiet 
-}: SignUpArgs): Promise<string> => {
+export const signup = async (
+    maciPubKey: string,
+    maciAddress?: string, 
+    sgDataArg?: string,
+    ivcpDataArg?: string,
+    quiet?: boolean 
+): Promise<string> => {
+    if (!quiet) banner()
+    
     const signer = await getDefaultSigner()
     // validate user key
     if (!PubKey.isValidSerializedPubKey(maciPubKey)) logError('Invalid MACI public key')

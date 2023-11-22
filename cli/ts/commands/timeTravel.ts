@@ -1,16 +1,16 @@
 import { logError, logGreen, success } from "../utils/theme"
 import { banner } from "../utils/banner"
-import { TimeTravelArgs } from "../utils/interfaces"
 import { getDefaultSigner } from "maci-contracts"
 
 /**
  * Utility to travel in time when using a local blockchain
- * @param param0 - the params
+ * @param seconds - the number of seconds to travel in time
+ * @param quiet - whether to log the output
  */
-export const timeTravel = async ({
-    quiet, 
-    seconds 
-}: TimeTravelArgs) => {
+export const timeTravel = async (
+    seconds: number,
+    quiet?: boolean
+) => {
     if(!quiet) banner()
     const signer = await getDefaultSigner()
     try {
