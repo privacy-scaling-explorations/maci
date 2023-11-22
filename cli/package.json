@@ -21,6 +21,7 @@
         "@nomiclabs/hardhat-ethers": "^2.0.0",
         "circomlib": "^2.0.5",
         "commander": "^11.1.0",
+        "dotenv": "^16.3.1",
         "ethers": "^5.4.7",
         "maci-circuits": "^1.1.2",
         "maci-common": "^1.1.2",
@@ -30,7 +31,6 @@
         "maci-domainobjs": "^1.1.2",
         "prompt-async": "^0.9.9",
         "snarkjs": "^0.5.0",
-        "source-map-support": "^0.5.19",
         "typescript": "^4.2.3",
         "zkey-manager": "^0.1.1"
     },
