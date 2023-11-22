@@ -6,7 +6,7 @@
     "scripts": {
         "watch": "tsc --watch",
         "build": "tsc",
-        "pretest": "cd node_modules/maci-contracts && npm run compileSol && cd ../..",
+        "pretest": "./node_modules/maci-contracts/scripts/compileSol.sh",
         "test": "ts-mocha --exit ts/__tests__/**.test.ts",
         "test-cli-genMaciKeypair": "ts-mocha --exit  ts/__tests__/cli-genMaciKeypair.test.ts",
         "test-cli-genMaciPubkey": "ts-mocha --exit  ts/__tests__/cli-genMaciPubkey.test.ts",
