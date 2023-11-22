@@ -13,6 +13,7 @@
     "scripts": {
         "watch": "tsc --watch",
         "build": "tsc",
+        "pretest": "cd node_modules/maci-contracts && npm run compileSol && cd ../..",
         "test": "ts-mocha --exit tests/*.test.ts",
         "test:e2e": "ts-mocha --exit tests/e2e.test.ts",
         "test:e2e-subsidy": "ts-mocha --exit tests/e2e.subsidy.test.ts"
