@@ -40,8 +40,10 @@ program
     .option("-p, --initialVoiceCreditsProxyAddress <initialVoiceCreditsProxyAddress>", "the initial voice credits proxy contract address")
     .option("-g", "--signupGatekeeperAddress <signupGatekeeperAddress>", "the signup gatekeeper contract address")
     .option("-q, --quiet", "whether to print values to the console")
+    .requiredOption("-s, --stateTreeDepth <stateTreeDepth>", "the state tree depth")
     .action(async (cmdOptions) => { 
         await deploy(
+            cmdOptions.stateTreeDepth,
             cmdOptions.vkRegistryAddress,
             cmdOptions.initialVoiceCredits,
             cmdOptions.initialVoiceCreditsProxyAddress,
