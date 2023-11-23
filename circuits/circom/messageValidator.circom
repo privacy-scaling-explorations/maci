@@ -2,10 +2,18 @@ pragma circom 2.0.0;
 include "./verifySignature.circom";
 include "./utils.circom";
 
+// template that validates whether a message
+// is valid or not
 template MessageValidator() {
     // a) Whether the state leaf index is valid
     signal input stateTreeIndex;
+    // how many signups we have in the state tree
     signal input numSignUps;
+    // we check that the state tree index is <= than the number of signups
+    // as first validation
+    // it is <= because the state tree index is 1-based
+    // 0 is for blank state leaf then 1 for the first actual user
+    // which is where the numSignUps starts
     component validStateLeafIndex = SafeLessEqThan(252);
     validStateLeafIndex.in[0] <== stateTreeIndex;
     validStateLeafIndex.in[1] <== numSignUps;
@@ -21,6 +29,7 @@ template MessageValidator() {
     signal input originalNonce;
     signal input nonce;
     component validNonce = IsEqual();
+    // the nonce should be previous nonce + 1
     validNonce.in[0] <== originalNonce + 1;
     validNonce.in[1] <== nonce;
 
@@ -60,10 +69,12 @@ template MessageValidator() {
     validVoteWeight.in[1] <== 147946756881789319005730692170996259609;
 
     // Check that currentVoiceCreditBalance + (currentVotesForOption ** 2) >= (voteWeight ** 2)
+    // @note what is the difference between voteWeight and currentVotesForOption?
     component sufficientVoiceCredits = SafeGreaterEqThan(252);
     sufficientVoiceCredits.in[0] <== (currentVotesForOption * currentVotesForOption) + currentVoiceCreditBalance;
     sufficientVoiceCredits.in[1] <== voteWeight * voteWeight;
 
+    // if all 7 checks are correct then is IsValid = 1
     component validUpdate = IsEqual();
     validUpdate.in[0] <== 7;
     validUpdate.in[1] <== validSignature.valid + 
@@ -75,17 +86,4 @@ template MessageValidator() {
                           validVoteOptionIndex.out;
     signal output isValid;
     isValid <== validUpdate.out;
-
-    // For debugging
-    /*signal output isValidSignature;*/
-    /*signal output isValidVc;*/
-    /*signal output isValidNonce;*/
-    /*signal output isValidSli;*/
-    /*signal output isValidVoi;*/
-
-    /*isValidSignature <== validSignature.valid;*/
-    /*isValidVc <== sufficientVoiceCredits.out;*/
-    /*isValidNonce <== validNonce.out;*/
-    /*isValidSli <== validStateLeafIndex.out;*/
-    /*isValidVoi <== validVoteOptionIndex.out;*/
 }

@@ -116,6 +116,7 @@ template EdDSAPoseidonVerifier_patched() {
     valid <== isValid.out;
 }
 
+// verify a EdDSA signature
 template VerifySignature() {
     // Verify the signature of a Command, which has exactly 4 elements in the
     // hash preimage

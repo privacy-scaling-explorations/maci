@@ -8,9 +8,7 @@ include "./trees/incrementalQuinTree.circom";
 include "../node_modules/circomlib/circuits/mux1.circom";
 include "./utils.circom";
 
-/*
- * Proves the correctness of processing a batch of messages.
- */
+// Proves the correctness of processing a batch of messages.
 template ProcessMessages(
     stateTreeDepth,
     msgTreeDepth,
@@ -23,11 +21,13 @@ template ProcessMessages(
     //                  messages in a batch
     // voteOptionTreeDepth: depth of the vote option tree
 
+    // we want to ensure that the params are > 0
     assert(stateTreeDepth > 0);
     assert(msgBatchDepth > 0);
     assert(voteOptionTreeDepth > 0);
     assert(msgTreeDepth >= msgBatchDepth);
 
+    // default to quinary merkle tree
     var TREE_ARITY = 5;
     var batchSize = TREE_ARITY ** msgBatchDepth;
 
@@ -50,14 +50,17 @@ template ProcessMessages(
     // a lot of gas for the verifier at the cost of constraints for the prover.
 
     //  ----------------------------------------------------------------------- 
-    // The only public input, which is the SHA256 hash of a values provided
+    // The only public input, which is the SHA256 hash of values provided
     // by the contract
     signal input inputHash;
     signal input packedVals;
 
+    // how many users signed up
     signal numSignUps;
+    // how many options are there for this poll
     signal maxVoteOptions;
 
+    // when the poll ends
     signal input pollEndTimestamp;
     // The existing message root
     signal input msgRoot;
@@ -124,6 +127,7 @@ template ProcessMessages(
     var msgTreeZeroValue = 8370432830353022751713833565135785980866757267633941821328460903436894336785;
 
     // Verify currentSbCommitment
+    // currentSbCommitment === hash3(currentStateRoot, currentBallotRoot, currentSbSalt)
     component currentSbCommitmentHasher = Hasher3(); 
     currentSbCommitmentHasher.in[0] <== currentStateRoot;
     currentSbCommitmentHasher.in[1] <== currentBallotRoot;
@@ -146,6 +150,7 @@ template ProcessMessages(
     inputHasher.batchStartIndex ==> batchStartIndex;
     inputHasher.batchEndIndex ==> batchEndIndex;
 
+    // constraints that they match
     inputHasher.hash === inputHash;
 
     //  ----------------------------------------------------------------------- 
@@ -155,7 +160,8 @@ template ProcessMessages(
     maxVoValid.in[0] <== maxVoteOptions;
     maxVoValid.in[1] <== TREE_ARITY ** voteOptionTreeDepth;
     maxVoValid.out === 1;
-
+    // we check that the number of signups is less than the max number of users
+    // which is the n of state leaves we can fit in the state tree
     component numSignUpsValid = LessEqThan(32);
     numSignUpsValid.in[0] <== numSignUps;
     numSignUpsValid.in[1] <== TREE_ARITY ** stateTreeDepth;
@@ -263,8 +269,10 @@ template ProcessMessages(
     signal tmpStateRoot2[batchSize];
     signal tmpBallotRoot1[batchSize];
     signal tmpBallotRoot2[batchSize];
-    component processors[batchSize]; // vote type processor
-    component processors2[batchSize]; // topup type processor
+    // vote type processor
+    component processors[batchSize]; 
+    // topup type processor
+    component processors2[batchSize]; 
     for (var i = batchSize - 1; i >= 0; i --) {
         // process it as vote type message
         processors[i] = ProcessOne(stateTreeDepth, voteOptionTreeDepth);
@@ -354,7 +362,9 @@ template ProcessMessages(
     sbCommitmentHasher.hash === newSbCommitment;
 }
 
+// process a topup message
 template ProcessTopup(stateTreeDepth) {
+    // pubKey[0], pubKey[1], voiceCreditBalance, timestamp
     var STATE_LEAF_LENGTH = 4;
     var MSG_LENGTH = 11;
     var TREE_ARITY = 5;
@@ -378,6 +388,7 @@ template ProcessTopup(stateTreeDepth) {
 
     signal amt;
     signal index;
+    // msgType of topup command is 2
     amt <== amount * (msgType - 1); 
     index <== stateTreeIndex * (msgType - 1);
     component validCreditBalance = LessEqThan(252);
@@ -386,6 +397,8 @@ template ProcessTopup(stateTreeDepth) {
     validStateLeafIndex.in[0] <== index;
     validStateLeafIndex.in[1] <== numSignUps;
 
+    // if we passed the wrong state leaf index
+    // then both index and amount will be zero
     component indexMux = Mux1();
     indexMux.s <== validStateLeafIndex.out;
     indexMux.c[0] <== 0;
@@ -396,7 +409,6 @@ template ProcessTopup(stateTreeDepth) {
     amtMux.c[0] <== 0;
     amtMux.c[1] <== amt;
     
-
     // check less than field size
     signal newCreditBalance;
     newCreditBalance <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + amtMux.out;
@@ -424,6 +436,7 @@ template ProcessTopup(stateTreeDepth) {
     newStateRoot <== newStateLeafQip.root;
 }
 
+// process one message
 template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     /*
         transform(currentStateLeaves0, cmd0) -> newStateLeaves0, isValid0

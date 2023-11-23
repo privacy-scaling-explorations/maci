@@ -9,18 +9,18 @@ template SafeLessThan(n) {
     signal output out;
 
     component n2b1 = Num2Bits(n);
-    n2b1.in  <== in[0];
+    n2b1.in <== in[0];
     component n2b2 = Num2Bits(n);
-    n2b2.in  <== in[1];
+    n2b2.in <== in[1];
 
     component n2b = Num2Bits(n+1);
 
-    n2b.in <== in[0]+ (1<<n) - in[1];
+    n2b.in <== in[0] + (1<<n) - in[1];
 
     out <== 1-n2b.out[n];
 }
 
-// N is the number of bits the input  have.
+// N is the number of bits the input have.
 // The MSF is the sign bit.
 template SafeLessEqThan(n) {
     signal input in[2];
@@ -33,7 +33,7 @@ template SafeLessEqThan(n) {
     lt.out ==> out;
 }
 
-// N is the number of bits the input  have.
+// N is the number of bits the input have.
 // The MSF is the sign bit.
 template SafeGreaterThan(n) {
     signal input in[2];
@@ -46,7 +46,7 @@ template SafeGreaterThan(n) {
     lt.out ==> out;
 }
 
-// N is the number of bits the input  have.
+// N is the number of bits the input have.
 // The MSF is the sign bit.
 template SafeGreaterEqThan(n) {
     signal input in[2];
