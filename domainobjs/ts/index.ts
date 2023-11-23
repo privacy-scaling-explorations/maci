@@ -287,6 +287,14 @@ class PubKey {
 
         return correctPrefix && validValue;
     };
+
+    toJSON() {
+        return this.serialize()
+    }
+
+    static fromJSON(json: any): PubKey {
+        return PubKey.unserialize(json)
+    }
 }
 
 class Keypair {

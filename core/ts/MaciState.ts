@@ -1630,6 +1630,8 @@ class MaciState {
                 return false;
             }
         }
+
+        return true 
     }
 
     public static packSubsidySmallVals = (
