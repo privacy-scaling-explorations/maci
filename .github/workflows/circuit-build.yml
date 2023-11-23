@@ -43,9 +43,9 @@ jobs:
 
       - name: Download circom Binary v2.1.6
         run: |
-          mkdir -p /home/runner/work/maci/.local/bin
-          wget -qO /home/runner/work/maci/.local/bin/circom https://github.com/iden3/circom/releases/download/v2.1.6/circom-linux-amd64
-          chmod +x /home/runner/work/maci/.local/bin/circom
+          wget -qO /home/runner/work/circom https://github.com/iden3/circom/releases/download/v2.1.6/circom-linux-amd64
+          chmod +x /home/runner/work/circom
+          sudo mv /home/runner/work/circom /bin/circom
 
       - name: Build circuits
         run: npm run build-test-circuits
