@@ -22,9 +22,21 @@ jobs:
           node-version: 18
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install and Build 🔧
+      - name: Run typedoc
+        run: |
+          npm install 
+          npm run bootstrap
+          npm run build
+          npm run docs
+
+      - name: Fix typedoc links 
         run: |
           npm install
+          npm run setup-typedoc
+        working-directory: website
+
+      - name: Build 🔧
+        run: |
           npm run build
         working-directory: website
 
