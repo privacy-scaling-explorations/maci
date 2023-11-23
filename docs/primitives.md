@@ -49,10 +49,10 @@ Also, SHA256 is used to compress public inputs to a circuit into a single field 
 
 In order to encrypt messages, MACI uses Poseidon in DuplexSponge [mode](https://dusk.network/uploads/Encryption-with-Poseidon.pdf). This provides an encryption function and a decryption function:
 
-* $C$ as $\mathsf{poseidonEncrypt}(k_s[0], k_s[1], N, l, t[])$
-* $\mathsf{poseidonDecrypt}(k_s[0], k_s[1], N, l, C)$
+- $C$ as $\mathsf{poseidonEncrypt}(k_s[0], k_s[1], N, l, t[])$
+- $\mathsf{poseidonDecrypt}(k_s[0], k_s[1], N, l, C)$
 
-In more details, 
+In more details,
 
 - $k_s$ is the shared key, a point on the Baby Jubjub curve
 - $N$ is the nonce, which we hardcode to 0
@@ -62,34 +62,34 @@ The implementation can be found [here](https://github.com/weijiekoh/circomlib/).
 
 ### Shared Key Generation
 
-The ECDH algorithm is used to generate a shared key, which is then used to encrypt each message. This allows to create messages which are only decryptable by the coordinator and the person sending the message. 
+The ECDH algorithm is used to generate a shared key, which is then used to encrypt each message. This allows to create messages which are only decryptable by the coordinator and the person sending the message.
 
 In more details:
 
-* The coordinator's public key $cPk$ is known to all. Their private key $cSk$ is secret.
+- The coordinator's public key $cPk$ is known to all. Their private key $cSk$ is secret.
 
-* When the user publishes a message (i.e. casts a vote), they generate an ephemeral keypair with private key $eSk$ and public key $ePk$.
+- When the user publishes a message (i.e. casts a vote), they generate an ephemeral keypair with private key $eSk$ and public key $ePk$.
 
-* The user generates the shared key $k$ using the coordinator's public key $cPk$ and the user's ephemeral private key $eSk$.
+- The user generates the shared key $k$ using the coordinator's public key $cPk$ and the user's ephemeral private key $eSk$.
 
-* The user encrypts the command and signature with $k$ to form a message.
+- The user encrypts the command and signature with $k$ to form a message.
 
-* The user sends their ephemeral public key $ePk$ along with the ciphertext. The coordinator can recover the same shared key using their private key $cSk$ and the given ephemeral public key $ePk$.
+- The user sends their ephemeral public key $ePk$ along with the ciphertext. The coordinator can recover the same shared key using their private key $cSk$ and the given ephemeral public key $ePk$.
 
 ### Merkle Trees
 
-Rather than using Binary merkle trees, MACI uses Quinary merkle trees (5 leaves per node). This allows for more gas efficient computation using the Poseidon hash function. 
+Rather than using Binary merkle trees, MACI uses Quinary merkle trees (5 leaves per node). This allows for more gas efficient computation using the Poseidon hash function.
 
-#### Accumulator queue 
+#### Accumulator queue
 
 This contract holds user sign-ups and messages. When a leaf is inserted into the `AccQueue`, the merkle root is not updated yet, instead the leaf is updated or the root of a subtree is re-computed. The smart contract exposes three functions:
 
-* `enqueue(leaf)`: Enqueues a leaf into a subtree
-    four out of five times it is invoked, an enqueue operation may or may not require the contract to perform a hash function. When it does, only up to $t_d$ required number of hashes need to be computed
-* `mergeSubRoots()`: Merge all subtree roots into the shortest possible Merkle tree to fit
-    Before computing the main Merkle root, it is necessary to compute the smallSRTroot (the smallest subroot tree root). This is the Merkle root of a tree which is small enough to fit all the subroots
-    function which allows the coordinator to specify the number of queue operations to execute. The entire tree may be merged in a single transaction, or it may not.
-* `merge()`: Calculate the Merkle root of all the leaves at height $d_t$
+- `enqueue(leaf)`: Enqueues a leaf into a subtree
+  four out of five times it is invoked, an enqueue operation may or may not require the contract to perform a hash function. When it does, only up to $t_d$ required number of hashes need to be computed
+- `mergeSubRoots()`: Merge all subtree roots into the shortest possible Merkle tree to fit
+  Before computing the main Merkle root, it is necessary to compute the smallSRTroot (the smallest subroot tree root). This is the Merkle root of a tree which is small enough to fit all the subroots
+  function which allows the coordinator to specify the number of queue operations to execute. The entire tree may be merged in a single transaction, or it may not.
+- `merge()`: Calculate the Merkle root of all the leaves at height $d_t$
 
 ### Domain Objects
 
@@ -105,32 +105,32 @@ A verifying key $vk$ is comprised of the following elements:
 
 A verifying key is used to validate a zk-SNARK proof. Each unique permutation of parameters to a particular circuit has a different verifying key.
 
-#### Private Keys 
+#### Private Keys
 
 MACI's private keys allow users to send and decrypt messages. This key translates to a scalar point on the Baby Jubjub ellpitic curve. All keys are serialized with the prefix `macisk`.
 
-#### Public Keys 
+#### Public Keys
 
-Public keys also translate to a point on the Baby Jubjub elliptic curve, and is derived from the private key $k$. These are serialized with the prefix `macipk`. 
+Public keys also translate to a point on the Baby Jubjub elliptic curve, and is derived from the private key $k$. These are serialized with the prefix `macipk`.
 
-#### Key Pair 
+#### Key Pair
 
 A Key Pair is a private key and its corresponding public key.
 
-#### Command 
+#### Command
 
 A command represents an action that a user may take. Such as casting a vote in a poll or changing their public key if bribed. It is made up of the following parameters:
 
-| Symbol | Name | Size | Description
-|-|-|-|-|
-| $cm_i$ | State index |  50  | State leaf index where the signing key is located |
-| $cm_{p_{x}}$ | Public key x-coordinate | 253  |  If no change is necessary this parameter should reflect the current public key's x-coordinate
-| $cm_{p_{y}}$ | Public key y-coordinate | 253  |  If no change is necessary this parameter should reflect the current public key's y-coordinate
-| $cm_{i_{v}}$ | Vote option index | 50 | Option state leaf index of preference to assign the vote for
-| $cm_w$ | Voting weight | 50 | Voice credit balance allocation, this is an arbitary value dependent on a user's available credits
-| $cm_n$ | Nonce | 50 | State leaf's index of actions committed plus one
-| $cm_{id}$ | Poll id | 50 | The poll's identifier to cast in regard to
-| $cm_s$ | Salt | 253 | An entropy value to inhibit brute force attacks
+| Symbol       | Name                    | Size | Description                                                                                        |
+| ------------ | ----------------------- | ---- | -------------------------------------------------------------------------------------------------- |
+| $cm_i$       | State index             | 50   | State leaf index where the signing key is located                                                  |
+| $cm_{p_{x}}$ | Public key x-coordinate | 253  | If no change is necessary this parameter should reflect the current public key's x-coordinate      |
+| $cm_{p_{y}}$ | Public key y-coordinate | 253  | If no change is necessary this parameter should reflect the current public key's y-coordinate      |
+| $cm_{i_{v}}$ | Vote option index       | 50   | Option state leaf index of preference to assign the vote for                                       |
+| $cm_w$       | Voting weight           | 50   | Voice credit balance allocation, this is an arbitary value dependent on a user's available credits |
+| $cm_n$       | Nonce                   | 50   | State leaf's index of actions committed plus one                                                   |
+| $cm_{id}$    | Poll id                 | 50   | The poll's identifier to cast in regard to                                                         |
+| $cm_s$       | Salt                    | 253  | An entropy value to inhibit brute force attacks                                                    |
 
 #### Message
 
@@ -141,7 +141,6 @@ $t = [p, cm_{p_{x}}, cm_{p_{y}}, cm_s, R8[0], R8[1], S]$
 While the message can be computed with the formula below:
 
 $M$ = $\mathsf{poseidonEncrypt}(k_s[0], k_s[1], cm_n, 7, t)$
-
 
 #### Decrypting a message
 
@@ -160,15 +159,15 @@ To unpack $p$ to it's original five parameters, it must be seperated into 50 bit
 
 A Ballot represents a particular user's votes in a poll, as well as their next valid nonce. It is akin to a voting slip, which belongs to only one voter and contains a list of their choices.
 
-| Symbol | Name | Comments |
-|-|-|-|
-| $blt_{v}$ | An array of vote weights | $blt_{v[i]}$ refers to the vote weights assigned to vote option $i$ |
-| $blt_n$ | The current nonce | Starts from 0 and increments, so the first valid command must have nonce 1 |
-| $blt_d$ | The vote option tree depth | |
+| Symbol    | Name                       | Comments                                                                   |
+| --------- | -------------------------- | -------------------------------------------------------------------------- |
+| $blt_{v}$ | An array of vote weights   | $blt_{v[i]}$ refers to the vote weights assigned to vote option $i$        |
+| $blt_n$   | The current nonce          | Starts from 0 and increments, so the first valid command must have nonce 1 |
+| $blt_d$   | The vote option tree depth |                                                                            |
 
 The hash $blt$ is computed as such:
 
-1. Compute the Merkle root of $blt_v$, arity 5, of a tree of depth $blt_d$; let this value  be $blt_r$
+1. Compute the Merkle root of $blt_v$, arity 5, of a tree of depth $blt_d$; let this value be $blt_r$
 2. Compute $\mathsf{poseidon_2}([blt_n, blt_r])$
 
 ### State leaf
@@ -177,12 +176,12 @@ A state leaf represents a user's participation declared through an identity (the
 
 We define a state leaf $sl$ as the $\mathsf{poseidon_4}$ hash of the following:
 
-| Symbol | Name | Comments |
-|-|-|-|
-| $sl_{P_x}$ | Public key's x-coordinate | |
-| $sl_{P_y}$ | Public key's y-coordinate | |
-| $sl_{v}$ | Voice credit balance | |
-| $sl_{t}$ | Block timestamp | In Unix time (seconds since Jan 1 1970 UTC) |
+| Symbol     | Name                      | Comments                                    |
+| ---------- | ------------------------- | ------------------------------------------- |
+| $sl_{P_x}$ | Public key's x-coordinate |                                             |
+| $sl_{P_y}$ | Public key's y-coordinate |                                             |
+| $sl_{v}$   | Voice credit balance      |                                             |
+| $sl_{t}$   | Block timestamp           | In Unix time (seconds since Jan 1 1970 UTC) |
 
 The hash $sl$ is computed as such:
 

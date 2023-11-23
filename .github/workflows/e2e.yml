@@ -2,15 +2,14 @@ name: CI
 
 on:
   push:
-    branches: [ master, dev ]
+    branches: [master, dev]
   pull_request:
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
-
   e2e:
     uses: ./.github/workflows/reusable-e2e.yml
 
@@ -18,15 +17,15 @@ jobs:
     needs: e2e
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-22.04
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: "https://registry.npmjs.org"
 
       - name: Initialize Project
         run: |

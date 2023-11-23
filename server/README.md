@@ -77,13 +77,13 @@ cd ~/maci/server
 # run any commands for admin, e.g.
 # v1.0
 ./admin.sh deploy
-./admin.sh store 
+./admin.sh store
 # v0.10
 ./admin_v0_10.sh deploy
 ./admin_v0_10.sh store
 
 ### In fourth terminal, user role
-cd server 
+cd server
 # run any commands for user, e.g.
 # v1.0
 ./user.sh signup -p $pk -x $maci

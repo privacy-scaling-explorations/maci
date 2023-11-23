@@ -47,6 +47,7 @@ Message = Encrypt([Command, Signature], Key)
 ```
 
 ## `Ballot`
+
 Represents a User's votes in a Poll, as well as their next valid nonce.
 
 ## `StateLeaf`

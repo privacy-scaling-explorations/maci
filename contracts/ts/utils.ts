@@ -13,13 +13,10 @@ import {
     deployMockVerifier,
     deployFreeForAllSignUpGatekeeper,
     deployConstantInitialVoiceCreditProxy,
-} from './index'
+} from "./index";
 
-const formatProofForVerifierContract = (
-    _proof: SnarkProof,
-) => {
-
-    return ([
+const formatProofForVerifierContract = (_proof: SnarkProof) => {
+    return [
         _proof.pi_a[0],
         _proof.pi_a[1],
 
@@ -30,8 +27,8 @@ const formatProofForVerifierContract = (
 
         _proof.pi_c[0],
         _proof.pi_c[1],
-    ]).map((x) => x.toString())
-}
+    ].map((x) => x.toString());
+};
 
 const deployTestContracts = async (
     initialVoiceCreditBalance: number,
@@ -39,22 +36,23 @@ const deployTestContracts = async (
     quiet = false,
     gatekeeperContract?: any
 ) => {
-    const mockVerifierContract = await deployMockVerifier(true)
+    const mockVerifierContract = await deployMockVerifier(true);
 
     if (!gatekeeperContract) {
-        gatekeeperContract = await deployFreeForAllSignUpGatekeeper(true)
+        gatekeeperContract = await deployFreeForAllSignUpGatekeeper(true);
     }
 
-    const constantIntialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
-        initialVoiceCreditBalance,
-        true 
-    )
+    const constantIntialVoiceCreditProxyContract =
+        await deployConstantInitialVoiceCreditProxy(
+            initialVoiceCreditBalance,
+            true
+        );
 
     // VkRegistry
-    const vkRegistryContract = await deployVkRegistry(true)
-    const topupCreditContract = await deployTopupCredit(true)
+    const vkRegistryContract = await deployVkRegistry(true);
+    const topupCreditContract = await deployTopupCredit(true);
 
-    const {maciContract,stateAqContract, poseidonAddrs} = await deployMaci(
+    const { maciContract, stateAqContract, poseidonAddrs } = await deployMaci(
         gatekeeperContract.address,
         constantIntialVoiceCreditProxyContract.address,
         mockVerifierContract.address,
@@ -62,9 +60,23 @@ const deployTestContracts = async (
         topupCreditContract.address,
         stateTreeDepth,
         quiet
-    )
-    const mpContract = await deployMessageProcessor(mockVerifierContract.address, poseidonAddrs[0],poseidonAddrs[1],poseidonAddrs[2],poseidonAddrs[3], true)
-    const tallyContract = await deployTally(mockVerifierContract.address, poseidonAddrs[0],poseidonAddrs[1],poseidonAddrs[2],poseidonAddrs[3], true)
+    );
+    const mpContract = await deployMessageProcessor(
+        mockVerifierContract.address,
+        poseidonAddrs[0],
+        poseidonAddrs[1],
+        poseidonAddrs[2],
+        poseidonAddrs[3],
+        true
+    );
+    const tallyContract = await deployTally(
+        mockVerifierContract.address,
+        poseidonAddrs[0],
+        poseidonAddrs[1],
+        poseidonAddrs[2],
+        poseidonAddrs[3],
+        true
+    );
 
     return {
         mockVerifierContract,
@@ -75,10 +87,7 @@ const deployTestContracts = async (
         vkRegistryContract,
         mpContract,
         tallyContract,
-    }
-}
+    };
+};
 
-export {
-    deployTestContracts,
-    formatProofForVerifierContract,
-}
+export { deployTestContracts, formatProofForVerifierContract };

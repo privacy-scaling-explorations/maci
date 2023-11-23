@@ -8,18 +8,18 @@ privacy and discourage bribery for public goods funding.
 
 MACI offers the following guarantees:
 
-* **Collusion resistance**: no-one except a trusted coordinator should be
+- **Collusion resistance**: no-one except a trusted coordinator should be
   certain of the validity of a vote, reducing the effectiveness of bribery.
-* **Receipt-freeness**: no voter should be able to prove (besides to the coordinator) which way they voted.
-* **Privacy**: no-one except a trusted coordinator should be able to decrypt a
+- **Receipt-freeness**: no voter should be able to prove (besides to the coordinator) which way they voted.
+- **Privacy**: no-one except a trusted coordinator should be able to decrypt a
   vote.
-* **Uncensorability**: no-one — not even the trusted coordinator — should be
+- **Uncensorability**: no-one — not even the trusted coordinator — should be
   able to censor a vote.
-* **Unforgeability**: only the owner of a user's private key may cast a vote
+- **Unforgeability**: only the owner of a user's private key may cast a vote
   tied to its corresponding public key.
-* **Non-repudiation**: no-one may modify or delete a vote after it is cast,
+- **Non-repudiation**: no-one may modify or delete a vote after it is cast,
   although a user may cast another vote to nullify it.
-* **Correct execution**: no-one — not even the trusted coordinator — should be
+- **Correct execution**: no-one — not even the trusted coordinator — should be
   able to produce a false tally of votes.
 
 Under the hood, MACI uses Ethereum smart contracts and zero-knowledge proofs.

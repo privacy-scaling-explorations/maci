@@ -7,6 +7,5 @@ export {
     genTallyVkSig,
     genSubsidyVkSig,
     MaxValues,
-    TreeDepths
-} from './MaciState'
-
+    TreeDepths,
+} from "./MaciState";

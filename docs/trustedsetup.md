@@ -34,4 +34,3 @@ We don't recommend a browser-based trusted setup (which [Tornado
 Cash](https://ceremony.tornado.cash/) and [Zkopru](https://mpc.zkopru.network/)
 used) for the MACI circuits as they are too large to be feasibly processed in
 the browser.
-

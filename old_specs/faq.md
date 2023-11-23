@@ -3,7 +3,6 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [I: Attacks and mitigations](#i-attacks-and-mitigations)
   - [If the coordinator censors messages](#if-the-coordinator-censors-messages)
   - [If a user submits a message with an invalid signature](#if-a-user-submits-a-message-with-an-invalid-signature)
@@ -32,7 +31,7 @@ The coordinator should verify the message's signature off-chain and if it is inv
 
 This adversary does not know the value of the other leaves of the state tree, so even if the coordinator updates leaf 0 with the adversary's entropy, the adversary cannot tell if the processed commmand is invalid.
 
-### User creates a command that the snark cannot process 
+### User creates a command that the snark cannot process
 
 The the system must be designed and built in a way such that this cannot happen.
 
@@ -40,8 +39,9 @@ The the system must be designed and built in a way such that this cannot happen.
 
 Assuming that the locked key is not the user's initial public key, the briber has no way to tell if the user has not already changed their key. This scenario is therefore the same as that in which the user gives a public key to a briber witout trusted hardware.
 
-> [name=kobi] 
+> [name=kobi]
 > I don't think the reasoning works, for example for a user with trusted hardware:
+>
 > 1. User has trusted hardware that allows a single key change. The user has initial public key $pk$ and public key $pk2$
 > 2. User registers with $pk$
 > 3. User changes to $pk2$, with the trusted hardware attesting this is the second public key and no further key changes are allowed
@@ -57,15 +57,15 @@ Assuming that the locked key is not the user's initial public key, the briber ha
 
 Each user should be allowed to publish at no cost as many messages as there are vote options, plus a small number (e.g. 2). Each subsequent message should cost the user an increasing amount of ETH. When the coordinator processes the message, the contract should return the ETH to the user. As such, the majority of non-malicious users will not have to pay any more than the gas costs to vote, and spammers must put up capital to attack the coordinator.
 
->[barry] there is no way to enforce this limit without allowing for bribary. 
->[name=wei jie] how does this have to do with bribery? i understand this to only be an anti-spam mechanism.
+> [barry] there is no way to enforce this limit without allowing for bribary.
+> [name=wei jie] how does this have to do with bribery? i understand this to only be an anti-spam mechanism.
 
 ## II: Claims / required invariants
 
-1. It is impossible for a coordinator to find a collision in message decryptions. i.e. they cannot decrypt a message to a different command. 
+1. It is impossible for a coordinator to find a collision in message decryptions. i.e. they cannot decrypt a message to a different command.
 2. It is impossible for a user to create a message that the coordinator is not able to process.
 3. It is impossible for a user to create a message such that the coordinator is unable to create a zk-SNARK proof of a state root transition.
-4. No-one but the coordindator can trustlessly bribe someone. 
+4. No-one but the coordindator can trustlessly bribe someone.
 
 ## III: Desired features not described in this specification
 

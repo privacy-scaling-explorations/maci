@@ -1,7 +1,4 @@
-import {
-    Keypair,
-    PrivKey
-} from 'maci-domainobjs'
+import { Keypair, PrivKey } from "maci-domainobjs";
 
 export interface Vote {
     voteOptionIndex: number;
@@ -11,26 +8,28 @@ export interface Vote {
 }
 
 export class UserCommand {
-    public keypair: Keypair
-    public votes: Vote[]
-    public voiceCreditBalance: bigint
+    public keypair: Keypair;
+    public votes: Vote[];
+    public voiceCreditBalance: bigint;
 
     constructor(
         _keypair: Keypair,
         _votes: Vote[],
         _voiceCreditBalance: bigint,
-        _nonce: bigint,
+        _nonce: bigint
     ) {
-        this.keypair = _keypair
-        this.votes = _votes
-        this.voiceCreditBalance = _voiceCreditBalance
+        this.keypair = _keypair;
+        this.votes = _votes;
+        this.voiceCreditBalance = _voiceCreditBalance;
     }
 
     public changeKeypair(): PrivKey {
-        const newUserKeypair = new Keypair()
-        const oldPrivateKey = this.keypair.privKey
-        this.keypair  = !newUserKeypair.equals(this.keypair) ? newUserKeypair : this.keypair
-        return oldPrivateKey
+        const newUserKeypair = new Keypair();
+        const oldPrivateKey = this.keypair.privKey;
+        this.keypair = !newUserKeypair.equals(this.keypair)
+            ? newUserKeypair
+            : this.keypair;
+        return oldPrivateKey;
     }
 
     // public static genBlankUser

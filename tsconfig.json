@@ -1,23 +1,19 @@
 {
-    "compilerOptions": {
-        "experimentalDecorators": true,
-        "alwaysStrict": false,
-        "allowJs": true,
-        "noImplicitAny": false,
-        "forceConsistentCasingInFileNames": true,
-        "noUnusedLocals": false,
-        "noUnusedParameters": false,
-        "noImplicitReturns": true,
-        "noFallthroughCasesInSwitch": true,
-        "sourceMap": true,
-        "strict": false,
-        "outDir": "./build",
-        "declaration": true
-    },
-    "exclude": [
-        "node_modules/**"
-    ],
-    "include": [
-        "./**/ts"
-    ]
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "alwaysStrict": false,
+    "allowJs": true,
+    "noImplicitAny": false,
+    "forceConsistentCasingInFileNames": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "sourceMap": true,
+    "strict": false,
+    "outDir": "./build",
+    "declaration": true
+  },
+  "exclude": ["node_modules/**"],
+  "include": ["./**/ts"]
 }

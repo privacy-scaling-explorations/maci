@@ -7,243 +7,240 @@ const isHardhatConfigExist = () => {
 
     const tsConfigPath = findUp.sync(TS_CONFIG_FILENAME);
     if (tsConfigPath !== null) {
-      return true;
+        return true;
     }
-  
+
     const pathToConfigFile = findUp.sync(JS_CONFIG_FILENAME);
     if (pathToConfigFile === null) {
-        return false
+        return false;
     }
-  
-    return true;
-  }
 
-  
+    return true;
+};
+
 if (!isHardhatConfigExist()) {
-  console.error(`ERROR: File not found: hardhat.config.js
+    console.error(`ERROR: File not found: hardhat.config.js
   
 maci-cli requires a hardhat.config.js file to be present in your project directory in order to function properly. This file is used by hardhat to deploy contracts. Please make sure that the hardhat.config.js file is present in your project directory and try again. If the file is missing, please create one using the Hardhat documentation: https://hardhat.org/hardhat-runner/docs/config`);
-  process.exit(1);
+    process.exit(1);
 }
-  
 
-import 'source-map-support/register'
+import "source-map-support/register";
 
-import * as argparse from 'argparse' 
-import { 
+import * as argparse from "argparse";
+import {
     calcBinaryTreeDepthFromMaxLeaves,
     calcQuinTreeDepthFromMaxLeaves,
-} from './utils'
+} from "./utils";
 
 import {
     timeTravel,
     configureSubparser as configureSubparserForTimeTravel,
-} from './timeTravel'
+} from "./timeTravel";
 
 import {
     genMaciKeypair,
     configureSubparser as configureSubparserForGenMaciKeypair,
-} from './genMaciKeypair'
+} from "./genMaciKeypair";
 
 import {
     genMaciPubkey,
     configureSubparser as configureSubparserForGenMaciPubkey,
-} from './genMaciPubkey'
+} from "./genMaciPubkey";
 
 import {
     deployVkRegistry,
     configureSubparser as configureSubparserForDeployVkRegistry,
-} from './deployVkRegistry'
+} from "./deployVkRegistry";
 
 import {
     setVerifyingKeys,
     configureSubparser as configureSubparserForSetVerifyingKeys,
-} from './setVerifyingKeys'
+} from "./setVerifyingKeys";
 
 import {
     create,
     configureSubparser as configureSubparserForCreate,
-} from './create'
+} from "./create";
 
 import {
     deployPoll,
     configureSubparser as configureSubparserForDeployPoll,
-} from './deployPoll'
+} from "./deployPoll";
 
 import {
     deployPollWithSigner,
     configureSubparser as configureSubparserForDeployPollWithSigner,
-} from './deployPollWithSigner'
+} from "./deployPollWithSigner";
 
 import {
     fundWallet,
-    configureSubparser as configureSubparserForFundWallet
-} from './fundWallet'
+    configureSubparser as configureSubparserForFundWallet,
+} from "./fundWallet";
 
 import {
     airdrop,
     configureSubparser as configureSubparserForAirdrop,
-} from './airdrop'
+} from "./airdrop";
 
 import {
     topup,
     configureSubparser as configureSubparserForTopup,
-} from './topup'
+} from "./topup";
 
 import {
     signup,
     configureSubparser as configureSubparserForSignup,
-} from './signUp'
+} from "./signUp";
 
 import {
     publish,
     configureSubparser as configureSubparserForPublish,
-} from './publish'
+} from "./publish";
 
 import {
     mergeMessages,
     configureSubparser as configureSubparserForMergeMessages,
-} from './mergeMessages'
+} from "./mergeMessages";
 
 import {
     mergeSignups,
     configureSubparser as configureSubparserForMergeSignups,
-} from './mergeSignups'
+} from "./mergeSignups";
 
 import {
     genProofs,
     configureSubparser as configureSubparserForGenProofs,
-} from './genProofs'
+} from "./genProofs";
 
 import {
     proveOnChain,
     configureSubparser as configureSubparserForProveOnChain,
-} from './proveOnChain'
+} from "./proveOnChain";
 
 import {
     verify,
     configureSubparser as configureSubparserForVerify,
-} from './verify'
+} from "./verify";
 
 import {
     checkVerifyingKey,
     configureSubparser as configureSubparserForCheckVerifyKey,
-} from './checkVerifyingKey'
+} from "./checkVerifyingKey";
 
 const main = async () => {
-    const parser = new argparse.ArgumentParser({ 
-        description: 'Minimal Anti-Collusion Infrastructure',
-    })
+    const parser = new argparse.ArgumentParser({
+        description: "Minimal Anti-Collusion Infrastructure",
+    });
 
     const subparsers = parser.addSubparsers({
-        title: 'Subcommands',
-        dest: 'subcommand',
-    })
+        title: "Subcommands",
+        dest: "subcommand",
+    });
 
     // Subcommand: timeTravel
-    configureSubparserForTimeTravel(subparsers)
+    configureSubparserForTimeTravel(subparsers);
 
     // Subcommand: genMaciPubkey
-    configureSubparserForGenMaciPubkey(subparsers)
+    configureSubparserForGenMaciPubkey(subparsers);
 
     // Subcommand: genMaciKeypair
-    configureSubparserForGenMaciKeypair(subparsers)
+    configureSubparserForGenMaciKeypair(subparsers);
 
     // Subcommand: deployVkRegistry
-    configureSubparserForDeployVkRegistry(subparsers)
+    configureSubparserForDeployVkRegistry(subparsers);
 
     // Subcommand: setVerifyingKeys
-    configureSubparserForSetVerifyingKeys(subparsers)
+    configureSubparserForSetVerifyingKeys(subparsers);
 
     // Subcommand: create
-    configureSubparserForCreate(subparsers)
+    configureSubparserForCreate(subparsers);
 
     // Subcommand: deployPoll
-    configureSubparserForDeployPoll(subparsers)
+    configureSubparserForDeployPoll(subparsers);
 
     // Subcommand: deployPollWithSigner
-    configureSubparserForDeployPollWithSigner(subparsers)
+    configureSubparserForDeployPollWithSigner(subparsers);
 
     // Subcommand: fundWallet
-    configureSubparserForFundWallet(subparsers)
+    configureSubparserForFundWallet(subparsers);
 
-    // Subcommand: airdrop 
-    configureSubparserForAirdrop(subparsers)
+    // Subcommand: airdrop
+    configureSubparserForAirdrop(subparsers);
 
-    // Subcommand: topup 
-    configureSubparserForTopup(subparsers)
+    // Subcommand: topup
+    configureSubparserForTopup(subparsers);
 
     // Subcommand: signup
-    configureSubparserForSignup(subparsers)
+    configureSubparserForSignup(subparsers);
 
     // Subcommand: publish
-    configureSubparserForPublish(subparsers)
+    configureSubparserForPublish(subparsers);
 
     // Subcommand: mergeMessages
-    configureSubparserForMergeMessages(subparsers)
+    configureSubparserForMergeMessages(subparsers);
 
     // Subcommand: mergeSignups
-    configureSubparserForMergeSignups(subparsers)
+    configureSubparserForMergeSignups(subparsers);
 
     // Subcommand: genProofs
-    configureSubparserForGenProofs(subparsers)
+    configureSubparserForGenProofs(subparsers);
 
     // Subcommand: proveOnChain
-    configureSubparserForProveOnChain(subparsers)
+    configureSubparserForProveOnChain(subparsers);
 
     // Subcommand: verify
-    configureSubparserForVerify(subparsers)
+    configureSubparserForVerify(subparsers);
 
     // Subcommand: checkVerifyKey
-    configureSubparserForCheckVerifyKey(subparsers)
+    configureSubparserForCheckVerifyKey(subparsers);
 
-    const args = parser.parseArgs()
+    const args = parser.parseArgs();
 
     // Execute the subcommand method
-    if (args.subcommand === 'timeTravel') {
-        await timeTravel(args)
-    } else if (args.subcommand === 'genMaciKeypair') {
-        await genMaciKeypair(args)
-    } else if (args.subcommand === 'genMaciPubkey') {
-        await genMaciPubkey(args)
-    } else if (args.subcommand === 'deployVkRegistry') {
-        await deployVkRegistry(args)
-    } else if (args.subcommand === 'setVerifyingKeys') {
-        await setVerifyingKeys(args)
-    } else if (args.subcommand === 'create') {
-        await create(args)
-    } else if (args.subcommand === 'deployPoll') {
-        await deployPoll(args)
-    } else if (args.subcommand === 'deployPollWithSigner') {
-        await deployPollWithSigner(args)
-    } else if (args.subcommand === 'fundWallet') {
-        await fundWallet(args)
-    } else if (args.subcommand === 'airdrop') {
-        await airdrop(args)
-    } else if (args.subcommand === 'topup') {
-        await topup(args)
-    } else if (args.subcommand === 'signup') {
-        await signup(args)
-    } else if (args.subcommand === 'publish') {
-        await publish(args)
-    } else if (args.subcommand === 'mergeMessages') {
-        await mergeMessages(args)
-    } else if (args.subcommand === 'mergeSignups') {
-        await mergeSignups(args)
-    } else if (args.subcommand === 'genProofs') {
-        await genProofs(args)
-    } else if (args.subcommand === 'proveOnChain') {
-        await proveOnChain(args)
-    } else if (args.subcommand === 'verify') {
-        await verify(args)
-    } 
-    else if (args.subcommand === 'checkVerifyingKey') {
-        await checkVerifyingKey(args)
+    if (args.subcommand === "timeTravel") {
+        await timeTravel(args);
+    } else if (args.subcommand === "genMaciKeypair") {
+        await genMaciKeypair(args);
+    } else if (args.subcommand === "genMaciPubkey") {
+        await genMaciPubkey(args);
+    } else if (args.subcommand === "deployVkRegistry") {
+        await deployVkRegistry(args);
+    } else if (args.subcommand === "setVerifyingKeys") {
+        await setVerifyingKeys(args);
+    } else if (args.subcommand === "create") {
+        await create(args);
+    } else if (args.subcommand === "deployPoll") {
+        await deployPoll(args);
+    } else if (args.subcommand === "deployPollWithSigner") {
+        await deployPollWithSigner(args);
+    } else if (args.subcommand === "fundWallet") {
+        await fundWallet(args);
+    } else if (args.subcommand === "airdrop") {
+        await airdrop(args);
+    } else if (args.subcommand === "topup") {
+        await topup(args);
+    } else if (args.subcommand === "signup") {
+        await signup(args);
+    } else if (args.subcommand === "publish") {
+        await publish(args);
+    } else if (args.subcommand === "mergeMessages") {
+        await mergeMessages(args);
+    } else if (args.subcommand === "mergeSignups") {
+        await mergeSignups(args);
+    } else if (args.subcommand === "genProofs") {
+        await genProofs(args);
+    } else if (args.subcommand === "proveOnChain") {
+        await proveOnChain(args);
+    } else if (args.subcommand === "verify") {
+        await verify(args);
+    } else if (args.subcommand === "checkVerifyingKey") {
+        await checkVerifyingKey(args);
     }
-}
+};
 
 if (require.main === module) {
-    main()
+    main();
 }
 
 export {
@@ -264,5 +261,5 @@ export {
     deployPoll,
     deployVkRegistry,
     airdrop,
-    setVerifyingKeys
-}
+    setVerifyingKeys,
+};

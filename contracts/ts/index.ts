@@ -21,11 +21,11 @@ import {
     deployPoseidonContracts,
     deployVerifier,
     getDefaultSigner,
-} from './deploy'
+} from "./deploy";
 
-import { formatProofForVerifierContract, deployTestContracts } from './utils'
+import { formatProofForVerifierContract, deployTestContracts } from "./utils";
 
-import { genMaciStateFromContract } from './genMaciState'
+import { genMaciStateFromContract } from "./genMaciState";
 
 export {
     abiDir,
@@ -53,4 +53,4 @@ export {
     deployVerifier,
     getDefaultSigner,
     genMaciStateFromContract,
-}
+};

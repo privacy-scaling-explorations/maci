@@ -1,24 +1,24 @@
 {
-    "name": "maci-server",
-    "version": "1.1.2",
-    "description": "",
-    "main": "index.js",
-    "scripts": {
-        "build": "",
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "dependencies": {
-        "argparse": "^1.0.10",
-        "await-to-js": "^3.0.0",
-        "axios": "^0.24.0",
-        "express": "^4.17.1",
-        "maci-common": "1.0.0",
-        "minilog": "^3.1.0",
-        "mongodb": "^4.1.4",
-        "pg": "^8.7.1",
-        "shelljs": "^0.8.3"
-    },
-    "devDependencies": {
-        "@types/node": "^18.11.9"
-    }
+  "name": "maci-server",
+  "version": "1.1.2",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "argparse": "^1.0.10",
+    "await-to-js": "^3.0.0",
+    "axios": "^0.24.0",
+    "express": "^4.17.1",
+    "maci-common": "1.0.0",
+    "minilog": "^3.1.0",
+    "mongodb": "^4.1.4",
+    "pg": "^8.7.1",
+    "shelljs": "^0.8.3"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.9"
+  }
 }
