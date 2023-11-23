@@ -138,12 +138,12 @@
                     <main>
                         <h1 id="integrating-maci"><a class="header" href="#integrating-maci">Integrating MACI</a></h1>
 <p>MACI can be used in any protocol that requires collusion resistance, for instance it has been proven to be quite efficient when integrated in quadratic funding applications such as <a href="https://github.com/clrfund/monorepo">clr.fund</a> and <a href="https://github.com/quadratic-funding/qfi/tree/feat/code-freeze">qfi</a>.</p>
-<p>Here we will be looking at QFI and how it was used. Please note that this will be expanded as QFI is updated to use the newest version of MACI. Should you decide to integrate MACI in the meantime, feel free to open an issue on the GitHub repo. </p>
+<p>Here we will be looking at QFI and how it was used. Please note that this will be expanded as QFI is updated to use the newest version of MACI. Should you decide to integrate MACI in the meantime, feel free to open an issue on the GitHub repo.</p>
 <h2 id="maci-contract"><a class="header" href="#maci-contract">MACI Contract</a></h2>
-<p>The MACI contract is the core of the protocol. Contracts can inherit from MACI and thus expose the signup and topup functions. As with standalone MACI, one would need to deploy a sign up gatekeeper as well as the voice credit proxy. </p>
-<p>As an example, within the quadratic funding infrastructure project, the QFI contract inherits from MACI and allows sign up via the contribute function. </p>
+<p>The MACI contract is the core of the protocol. Contracts can inherit from MACI and thus expose the signup and topup functions. As with standalone MACI, one would need to deploy a sign up gatekeeper as well as the voice credit proxy.</p>
+<p>As an example, within the quadratic funding infrastructure project, the QFI contract inherits from MACI and allows sign up via the contribute function.</p>
 <pre><code class="language-javascript">function contribute(
-    PubKey calldata pubKey, 
+    PubKey calldata pubKey,
     uint256 amount
     ) external {
 
@@ -152,7 +152,7 @@
     uint256 voiceCredits = amount / voiceCreditFactor;
     // The user is marked as registered here upon contribution
     grantRoundToContributors[nextGrantRoundId][msg.sender] = ContributorStatus(voiceCredits, true);
-    
+
     // Increase the number of contributors for this round
     grantRoundToContributorsCount[nextGrantRoundId]++;
 
@@ -162,8 +162,8 @@
     );
 
     signUp(
-        pubKey, 
-        signUpGatekeeperAndInitialVoiceCreditProxyData, 
+        pubKey,
+        signUpGatekeeperAndInitialVoiceCreditProxyData,
         signUpGatekeeperAndInitialVoiceCreditProxyData
     );
 
@@ -173,7 +173,7 @@
 }
 </code></pre>
 <h2 id="poll-contract"><a class="header" href="#poll-contract">Poll Contract</a></h2>
-<p>On the other hand, the Poll contract can be inherited to expose functionality such as top ups and publishing of messages/commands. </p>
+<p>On the other hand, the Poll contract can be inherited to expose functionality such as top ups and publishing of messages/commands.</p>
 <p>For instance, within QFI, the <code>publishMessageBatch</code> function call the <code>publishMessage</code> function of Poll, as shown below:</p>
 <pre><code class="language-javascript">function publishMessageBatch(
     Message[] calldata _messages,
@@ -181,10 +181,10 @@
 ) external {
     // Check that the two arrays have the same length
     require(
-        _messages.length == _encPubKeys.length, 
+        _messages.length == _encPubKeys.length,
         &quot;GrantRound: _messages and _encPubKeys should be the same length&quot;
     );
-    
+
     uint256 batchSize = _messages.length;
     for (uint8 i = 0; i &lt; batchSize; ++i) {
         publishMessage(_messages[i], _encPubKeys[i]);

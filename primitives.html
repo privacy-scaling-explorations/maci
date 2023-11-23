@@ -170,7 +170,7 @@ privKey = rand % p
 <li>$C$ as $\mathsf{poseidonEncrypt}(k_s[0], k_s[1], N, l, t[])$</li>
 <li>$\mathsf{poseidonDecrypt}(k_s[0], k_s[1], N, l, C)$</li>
 </ul>
-<p>In more details, </p>
+<p>In more details,</p>
 <ul>
 <li>$k_s$ is the shared key, a point on the Baby Jubjub curve</li>
 <li>$N$ is the nonce, which we hardcode to 0</li>
@@ -178,7 +178,7 @@ privKey = rand % p
 </ul>
 <p>The implementation can be found <a href="https://github.com/weijiekoh/circomlib/">here</a>.</p>
 <h3 id="shared-key-generation"><a class="header" href="#shared-key-generation">Shared Key Generation</a></h3>
-<p>The ECDH algorithm is used to generate a shared key, which is then used to encrypt each message. This allows to create messages which are only decryptable by the coordinator and the person sending the message. </p>
+<p>The ECDH algorithm is used to generate a shared key, which is then used to encrypt each message. This allows to create messages which are only decryptable by the coordinator and the person sending the message.</p>
 <p>In more details:</p>
 <ul>
 <li>
@@ -198,7 +198,7 @@ privKey = rand % p
 </li>
 </ul>
 <h3 id="merkle-trees"><a class="header" href="#merkle-trees">Merkle Trees</a></h3>
-<p>Rather than using Binary merkle trees, MACI uses Quinary merkle trees (5 leaves per node). This allows for more gas efficient computation using the Poseidon hash function. </p>
+<p>Rather than using Binary merkle trees, MACI uses Quinary merkle trees (5 leaves per node). This allows for more gas efficient computation using the Poseidon hash function.</p>
 <h4 id="accumulator-queue"><a class="header" href="#accumulator-queue">Accumulator queue</a></h4>
 <p>This contract holds user sign-ups and messages. When a leaf is inserted into the <code>AccQueue</code>, the merkle root is not updated yet, instead the leaf is updated or the root of a subtree is re-computed. The smart contract exposes three functions:</p>
 <ul>
@@ -223,7 +223,7 @@ function which allows the coordinator to specify the number of queue operations 
 <h4 id="private-keys"><a class="header" href="#private-keys">Private Keys</a></h4>
 <p>MACI's private keys allow users to send and decrypt messages. This key translates to a scalar point on the Baby Jubjub ellpitic curve. All keys are serialized with the prefix <code>macisk</code>.</p>
 <h4 id="public-keys"><a class="header" href="#public-keys">Public Keys</a></h4>
-<p>Public keys also translate to a point on the Baby Jubjub elliptic curve, and is derived from the private key $k$. These are serialized with the prefix <code>macipk</code>. </p>
+<p>Public keys also translate to a point on the Baby Jubjub elliptic curve, and is derived from the private key $k$. These are serialized with the prefix <code>macipk</code>.</p>
 <h4 id="key-pair"><a class="header" href="#key-pair">Key Pair</a></h4>
 <p>A Key Pair is a private key and its corresponding public key.</p>
 <h4 id="command"><a class="header" href="#command">Command</a></h4>
@@ -262,7 +262,7 @@ function which allows the coordinator to specify the number of queue operations 
 </tbody></table>
 <p>The hash $blt$ is computed as such:</p>
 <ol>
-<li>Compute the Merkle root of $blt_v$, arity 5, of a tree of depth $blt_d$; let this value  be $blt_r$</li>
+<li>Compute the Merkle root of $blt_v$, arity 5, of a tree of depth $blt_d$; let this value be $blt_r$</li>
 <li>Compute $\mathsf{poseidon_2}([blt_n, blt_r])$</li>
 </ol>
 <h3 id="state-leaf"><a class="header" href="#state-leaf">State leaf</a></h3>

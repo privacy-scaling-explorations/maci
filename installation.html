@@ -143,7 +143,7 @@
 <li>An x86-64 system</li>
 <li>A Linux system, preferably a Debian-based distribution like Ubuntu</li>
 <li>Node.js: use <a href="https://github.com/nvm-sh/nvm"><code>nvm</code></a> to install it. MACI has
-been tested with Node 14, 16 and 18. We do however recommend to use Node 18 as Node 14 is deprecated and Node 16 will soon be deprecated too. </li>
+been tested with Node 14, 16 and 18. We do however recommend to use Node 18 as Node 14 is deprecated and Node 16 will soon be deprecated too.</li>
 <li>The <code>libgmp-dev</code> <code>nlohmann-json3-dev</code> <code>nasm</code> and <code>g++</code> Debian/Ubuntu
 packages. They are needed to run <code>circom-helper</code>, which in turn is used to
 develop and test zk-SNARK circuits.</li>
@@ -184,18 +184,16 @@ npm run build
 <p>Edit <code>circuits/circomHelperConfig.json</code> to include the relative path to the
 circom binary.</p>
 <pre><code class="language-json">{
-    &quot;circom&quot;: &quot;RELATIVE_PATH_TO_CIRCOM&quot;,
-    &quot;snarkjs&quot;: &quot;./node_modules/snarkjs/build/cli.cjs&quot;,
-    &quot;circuitDirs&quot;: [
-        &quot;./circom/test/&quot;
-    ]
+  &quot;circom&quot;: &quot;RELATIVE_PATH_TO_CIRCOM&quot;,
+  &quot;snarkjs&quot;: &quot;./node_modules/snarkjs/build/cli.cjs&quot;,
+  &quot;circuitDirs&quot;: [&quot;./circom/test/&quot;]
 }
 </code></pre>
 <p>Edit <code>cli/zkeys.config.yml</code> to include the relative path to the
 circom binary.</p>
-<pre><code class="language-yml">...
+<pre><code class="language-yml">
+---
 circomPath: &quot;RELATIVE_PATH_TO_CIRCOM&quot;
-...
 </code></pre>
 <h3 id="download-zkey-files"><a class="header" href="#download-zkey-files">Download <code>.zkey</code> files</a></h3>
 <p>MACI has two zk-SNARK circuits. Each circuit is parameterised. There should one

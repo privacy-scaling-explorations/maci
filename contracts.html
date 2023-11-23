@@ -140,8 +140,8 @@
 <p>MACI is composed of multiple smart contracts, which together with the zk-SNARK circuits, can be used to carry out on-chain voting.</p>
 <p>The main contracts are presented and explained below.</p>
 <h2 id="macisol"><a class="header" href="#macisol">MACI.sol</a></h2>
-<p><code>MACI.sol</code> is the core contract of the project, as it provides the base layer for user signups and Polls to be created. </p>
-<p>The constructor shown below accepts three arguments, a <code>PollFactory</code> contract, a <code>SignUpGatekeeper</code> contract, and an <code>InitialVoiceCreditProxy</code> contract. </p>
+<p><code>MACI.sol</code> is the core contract of the project, as it provides the base layer for user signups and Polls to be created.</p>
+<p>The constructor shown below accepts three arguments, a <code>PollFactory</code> contract, a <code>SignUpGatekeeper</code> contract, and an <code>InitialVoiceCreditProxy</code> contract.</p>
 <pre><code class="language-javascript">constructor(
     PollFactory _pollFactory,
     SignUpGatekeeper _signUpGatekeeper,
@@ -164,9 +164,9 @@
     );
 }
 </code></pre>
-<p>Upon deployment, the contract will deploy a new <code>AccQueueQuinaryBlankSl</code> contract using the <code>STATE_TREE_SUBDEPTH</code>. By default, this is defined as <code>uint8 internal constant STATE_TREE_SUBDEPTH = 2;</code>. </p>
-<p>Should this be changed, it will be necessary to amend the <code>contracts/ts/genEmptyBallotRootsContract.ts</code> file to reflect the change. The first action on this deployed contract, is to enqueue (add) an empty hash (defined as <code>6769006970205099520508948723718471724660867171122235270773600567925038008762</code>). </p>
-<p>After this, the contracts will be stored to state, the current time taken and then the contract will perform a simple sanity check to ensure that the Poseidon hash libraries were linked successfully. </p>
+<p>Upon deployment, the contract will deploy a new <code>AccQueueQuinaryBlankSl</code> contract using the <code>STATE_TREE_SUBDEPTH</code>. By default, this is defined as <code>uint8 internal constant STATE_TREE_SUBDEPTH = 2;</code>.</p>
+<p>Should this be changed, it will be necessary to amend the <code>contracts/ts/genEmptyBallotRootsContract.ts</code> file to reflect the change. The first action on this deployed contract, is to enqueue (add) an empty hash (defined as <code>6769006970205099520508948723718471724660867171122235270773600567925038008762</code>).</p>
+<p>After this, the contracts will be stored to state, the current time taken and then the contract will perform a simple sanity check to ensure that the Poseidon hash libraries were linked successfully.</p>
 <p>Once the contract is deployed, the owner (set as the deployer address of MACI), is required to call the <code>init</code> function, which is shown below:</p>
 <pre><code class="language-javascript">function init(
     VkRegistry _vkRegistry,
@@ -214,10 +214,10 @@
 </ul>
 <p>In more details, the <code>init</code> function will check/do the following:</p>
 <ol>
-<li>That the <code>PollFactory</code> contract's owner has been set to be the <code>MACI</code> contract </li>
-<li>Set the <code>messageAqFactory</code> contract on the <code>pollFactory</code> contract </li>
-<li>Check that the owner of the <code>messageAqFactory</code> is the <code>pollFactory</code> contract </li>
-<li>Confirm that the <code>vkRegistry</code> owner is the same as the <code>MACI</code> owner </li>
+<li>That the <code>PollFactory</code> contract's owner has been set to be the <code>MACI</code> contract</li>
+<li>Set the <code>messageAqFactory</code> contract on the <code>pollFactory</code> contract</li>
+<li>Check that the owner of the <code>messageAqFactory</code> is the <code>pollFactory</code> contract</li>
+<li>Confirm that the <code>vkRegistry</code> owner is the same as the <code>MACI</code> owner</li>
 </ol>
 <p>Finally, it will emit an event.</p>
 <p>Next, we have the <code>signUp</code> function, which allows users to <code>signUp</code> using a <code>SignUpGatekeeper</code> contract. This contract can use any mean necessary to gatekeep access to MACI's polls. For instance, only wallets with access to a specific ERC721 token can be allowed to sign up. Please note that this function can only be called after the contract is initialized (thanks to the <code>afterInit</code> modifier).</p>
@@ -225,10 +225,10 @@
 <ul>
 <li>checks that the maxium number of signups have not been reached. As of now, this will be $5 ** 10 - 1$ due to circuit limitations.</li>
 <li>checks that the provided public key is within the allowed boundaries</li>
-<li>increases the number of signups </li>
+<li>increases the number of signups</li>
 <li>registers the user using the sign up gatekeeper contract. It is important that whichever gatekeeper is used, it reverts if an user tries to sign up twice.</li>
 <li>calls the voice credit proxy to retrieve the number of allocated voice credits for the calling account</li>
-<li>hashes the voice credits alongside the calling address and the current time </li>
+<li>hashes the voice credits alongside the calling address and the current time</li>
 <li>enqueues this hashed data into the <code>stateAq</code> contract</li>
 </ul>
 <pre><code class="language-javascript">function signUp(
@@ -318,11 +318,11 @@
 <p>The main functions of the contract are as follows:</p>
 <ul>
 <li><code>topup</code> - This function accepts two parameters, a <code>stateIndex</code>, and an <code>amount</code>. It can only be called before the voting deadline.
-After checking whether the deadline has passed or not, it will validate that the contract has not reached the maximum number of messages, if the checks passes, it will increase the number of messages by 1. 
+After checking whether the deadline has passed or not, it will validate that the contract has not reached the maximum number of messages, if the checks passes, it will increase the number of messages by 1.
 It will then try to transfer the amount of <code>topUpCredit</code> tokens.
 Finally, it will create a new Message object that will be hashed and enqueued in the <code>messageAq</code> contract. This messageAq contract is reserved for this one poll only and will only contain its messages.</li>
 <li><code>publishMessage</code> - This function allows anyone to publish a message, and it accepts the message object as well as an ephemeral public key. This key together with the coordinator public key will be used to generate a shared ECDH key that will encrypt the message.
-Before saving the message, the function will check that the voting deadline has not passed, as well as the max number of messages was not reached. </li>
+Before saving the message, the function will check that the voting deadline has not passed, as well as the max number of messages was not reached.</li>
 </ul>
 <p>The <code>mergeMaciStateAqSubRoots</code> function can be called by the contract admin after the voting deadline and looks like the following:</p>
 <pre><code class="language-javascript">function mergeMaciStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId)
@@ -361,7 +361,7 @@ Before saving the message, the function will check that the voting deadline has 
             extContracts.maci.stateAq().subTreesMerged(),
             ERROR_STATE_AQ_SUBTREES_NEED_MERGE
         );
-        
+
         mergedStateRoot = extContracts.maci.mergeStateAq(_pollId);
 
         // Set currentSbCommitment
@@ -376,16 +376,31 @@ Before saving the message, the function will check that the voting deadline has 
 </code></pre>
 <p>This function only accepts one parameter, and can be called by the owner only, and after the voting deadline. The parameter is the pollId for which we want to perform the operation. This function can only be called once per poll, and it will check that the sub trees have been merged on MACI's AccQueue contract. Finally it will merge the whole AccQueue to generate the state root, and store the current commitment comprised of:</p>
 <p>the Poseidon hash of the merkle root, an empty ballot root stored in the emptyBallotRoots mapping (shown below), and a zero.</p>
-<pre><code class="language-javascript">emptyBallotRoots[0] = uint256(6579820437991406069687396372962263845395426835385368878767605633903648955255);
-emptyBallotRoots[1] = uint256(9105453741665960449792281626882014222103501499246287334255160659262747058842);
-emptyBallotRoots[2] = uint256(14830222164980158319423900821611648302565544940504586015002280367515043751869);
-emptyBallotRoots[3] = uint256(12031563002271722465187541954825013132282571927669361737331626664787916495335);
-emptyBallotRoots[4] = uint256(5204612805325639173251450278876337947880680931527922506745154187077640790699);
+<pre><code class="language-javascript">emptyBallotRoots[0] =
+  uint256(
+    6579820437991406069687396372962263845395426835385368878767605633903648955255,
+  );
+emptyBallotRoots[1] =
+  uint256(
+    9105453741665960449792281626882014222103501499246287334255160659262747058842,
+  );
+emptyBallotRoots[2] =
+  uint256(
+    14830222164980158319423900821611648302565544940504586015002280367515043751869,
+  );
+emptyBallotRoots[3] =
+  uint256(
+    12031563002271722465187541954825013132282571927669361737331626664787916495335,
+  );
+emptyBallotRoots[4] =
+  uint256(
+    5204612805325639173251450278876337947880680931527922506745154187077640790699,
+  );
 </code></pre>
 <p>In order for the <code>processMessages</code> circuit to access the message root, the following two functions need to be called (only by the owner):</p>
 <ul>
 <li><code>mergeMessageAqSubRoots</code> - merges the Poll's messages tree subroot</li>
-<li><code>mergeMessageAq</code> - merges the Poll's messages tree </li>
+<li><code>mergeMessageAq</code> - merges the Poll's messages tree</li>
 </ul>
 <h2 id="pollfactorysol"><a class="header" href="#pollfactorysol">PollFactory.sol</a></h2>
 <p><code>PollFactory</code> is a smart contract that is used to deploy new Polls. This is used by MACI inside the <code>deployPoll</code> function. It only contains two functions:</p>
@@ -404,9 +419,9 @@ IMACI _maci,
 TopupCredit _topupCredit,
 address _pollOwner
 </code></pre>
-<p>Upon deployment, the ownership of the messageAq contract will be transferred to the deployed poll, as well as the ownership of the new Poll contract be transferred to the poll owner, which in MACI is set as the owner of MACI. </p>
+<p>Upon deployment, the ownership of the messageAq contract will be transferred to the deployed poll, as well as the ownership of the new Poll contract be transferred to the poll owner, which in MACI is set as the owner of MACI.</p>
 <h2 id="pollprocessorandtallyer"><a class="header" href="#pollprocessorandtallyer">PollProcessorAndTallyer</a></h2>
-<p>This contract is used to prepare parameters for the zk-SNARK circuits as well as for verifying proofs. It should be deployed alongside MACI and ownership assigned to the coordinator. </p>
+<p>This contract is used to prepare parameters for the zk-SNARK circuits as well as for verifying proofs. It should be deployed alongside MACI and ownership assigned to the coordinator.</p>
 <h2 id="messageaqfactory"><a class="header" href="#messageaqfactory">MessageAqFactory</a></h2>
 <p>This is a simple factory contract which allows to deploy new <code>AccQueueQuinaryMaci</code> contracts. It exposes one function, <code>deploy</code>, which can only be called by the contract owner. After deployment of the contract, it will transfer its ownership to the same owner as the factory contract.</p>
 <pre><code class="language-javascript">contract MessageAqFactory is Ownable {
@@ -418,12 +433,12 @@ address _pollOwner
 }
 </code></pre>
 <h2 id="signuptoken"><a class="header" href="#signuptoken">SignUpToken</a></h2>
-<p>This contract should be used by the SignUpGateKeeper to determine whether a user is allowed to register. The default contract provided with MACI is a simple ERC721 token. Coordinators can use this contract to mint a token for each of the participants in the voting process. </p>
+<p>This contract should be used by the SignUpGateKeeper to determine whether a user is allowed to register. The default contract provided with MACI is a simple ERC721 token. Coordinators can use this contract to mint a token for each of the participants in the voting process.</p>
 <h2 id="signupgatekeeper"><a class="header" href="#signupgatekeeper">SignUpGatekeeper</a></h2>
 <p>MACI requires a signup gatekeeper to ensure that only designed users register. It is up to MACI's deployer how they wish to allow sign-ups, therefore they can implement their own GateKeeper. The repository comes with two presets:</p>
 <ul>
 <li><code>FreeForAllSignUpGatekeeper</code> - This allows anyone to signup on MACI.</li>
-<li><code>SignUpTokenGatekeeper</code> - This makes use of a ERC721 token to gatekeep the signup function. </li>
+<li><code>SignUpTokenGatekeeper</code> - This makes use of a ERC721 token to gatekeep the signup function.</li>
 </ul>
 <p>An abstract contract to inherit from is also provided, with two function signatures as shown below:</p>
 <pre><code class="language-javascript">abstract contract SignUpGatekeeper {
@@ -431,13 +446,13 @@ address _pollOwner
     function register(address _user, bytes memory _data) public virtual {}
 }
 </code></pre>
-<p>The MACI contract will need to call <code>register</code> inside the <code>signUp</code> function. </p>
+<p>The MACI contract will need to call <code>register</code> inside the <code>signUp</code> function.</p>
 <h2 id="voicecreditproxy"><a class="header" href="#voicecreditproxy">VoiceCreditProxy</a></h2>
 <p>The VoiceCreditProxy contract is used to assign voice credits to users. Whichever implementation should the MACI deployers use, this must implement a view function that returns the balance for a user, such as the one below:</p>
 <pre><code class="language-javascript">function getVoiceCredits(address _user, bytes memory _data) public virtual view returns (uint256) {}
 </code></pre>
 <h2 id="hasher"><a class="header" href="#hasher">Hasher</a></h2>
-<p>This contract exposes methods to hash different number of parameters with the Poseidon hash. </p>
+<p>This contract exposes methods to hash different number of parameters with the Poseidon hash.</p>
 <h2 id="vkregistry"><a class="header" href="#vkregistry">VkRegistry</a></h2>
 <p>The VkRegistry is a contract that holds the verifying keys for the zk-SNARK circuits. It holds three different sets of keys:</p>
 <ul>
@@ -466,24 +481,39 @@ struct MaxValues {
     uint256 maxVoteOptions;
 }
 </code></pre>
-<p>These are stored separately to avoid a stack overlow error during compilation of the contracts using them. </p>
+<p>These are stored separately to avoid a stack overlow error during compilation of the contracts using them.</p>
 <h2 id="accqueue"><a class="header" href="#accqueue">AccQueue</a></h2>
-<p>The AccQueue contract represents a Merkle Tree where each leaf insertion only updates a subtree. To obtain the main tree root, the subtrees must be merged together by the contract owner. This requires at least two operations, a <code>mergeSubRoots</code> and a <code>merge</code>. </p>
-<p>The contract can be initialized to work as a traditional Merkle Tree (2 leaves per node) or a Quinary Tree (5 leaves per node). This can be achieved by passing either two or five as parameter to the constructor (<code>_hashLength</code>). Any other values should not be accepted. </p>
+<p>The AccQueue contract represents a Merkle Tree where each leaf insertion only updates a subtree. To obtain the main tree root, the subtrees must be merged together by the contract owner. This requires at least two operations, a <code>mergeSubRoots</code> and a <code>merge</code>.</p>
+<p>The contract can be initialized to work as a traditional Merkle Tree (2 leaves per node) or a Quinary Tree (5 leaves per node). This can be achieved by passing either two or five as parameter to the constructor (<code>_hashLength</code>). Any other values should not be accepted.</p>
 <p>Below are presented the most important functions of the smart contract:</p>
 <ul>
 <li><code>enqueue</code> - Allows to add a leaf to the queue for the current subtree. Only one parameter is accepted and that is the leaf to insert.</li>
 <li><code>insertSubTree</code> - Admin only function which allows to insert a full subtree (batch enqueue)</li>
 <li><code>mergeSubRoots</code> - Allows the contract owner to merge all of the subtrees to form the shortest possible tree. The argument <code>_numSrQueueOps</code> can be used to perform the operation in multiple transactions (as this might trigger the block gas limit).</li>
-<li><code>merge</code> - Allows the contract admin to form a main tree with the desired depth. The depth must fit all of the leaves. </li>
+<li><code>merge</code> - Allows the contract admin to form a main tree with the desired depth. The depth must fit all of the leaves.</li>
 </ul>
 <h2 id="emptyballotroots"><a class="header" href="#emptyballotroots">EmptyBallotRoots</a></h2>
-<p>This contract contains the roots of Ballot trees of five leaf configurations. </p>
-<pre><code class="language-javascript">emptyBallotRoots[0] = uint256(6579820437991406069687396372962263845395426835385368878767605633903648955255);
-emptyBallotRoots[1] = uint256(9105453741665960449792281626882014222103501499246287334255160659262747058842);
-emptyBallotRoots[2] = uint256(14830222164980158319423900821611648302565544940504586015002280367515043751869);
-emptyBallotRoots[3] = uint256(12031563002271722465187541954825013132282571927669361737331626664787916495335);
-emptyBallotRoots[4] = uint256(5204612805325639173251450278876337947880680931527922506745154187077640790699);
+<p>This contract contains the roots of Ballot trees of five leaf configurations.</p>
+<pre><code class="language-javascript">emptyBallotRoots[0] =
+  uint256(
+    6579820437991406069687396372962263845395426835385368878767605633903648955255,
+  );
+emptyBallotRoots[1] =
+  uint256(
+    9105453741665960449792281626882014222103501499246287334255160659262747058842,
+  );
+emptyBallotRoots[2] =
+  uint256(
+    14830222164980158319423900821611648302565544940504586015002280367515043751869,
+  );
+emptyBallotRoots[3] =
+  uint256(
+    12031563002271722465187541954825013132282571927669361737331626664787916495335,
+  );
+emptyBallotRoots[4] =
+  uint256(
+    5204612805325639173251450278876337947880680931527922506745154187077640790699,
+  );
 </code></pre>
 
                     </main>
