@@ -1453,12 +1453,11 @@ class Poll {
     static fromJSON(
         json: any, 
         maciState: MaciState, 
-        coordinatorPrivateKey: string
     ): Poll {
         const poll = new Poll(
             json.duration,
             BigInt(json.pollEndTimestamp),
-            new Keypair(PrivKey.unserialize(coordinatorPrivateKey)),
+            new Keypair(),
             json.treeDepths,
             json.batchSizes,
             json.maxValues,
@@ -1498,6 +1497,14 @@ class Poll {
         poll.copyStateFromMaci()
 
         return poll
+    }
+
+    /**
+     * Set the coordinator's keypair
+     * @param serializedPrivateKey - the serialized private key 
+     */
+    public setCoordinatorKeypair = (serializedPrivateKey: string) => {
+        this.coordinatorKeypair = new Keypair(PrivKey.unserialize(serializedPrivateKey))
     }
 }
 
@@ -1716,7 +1723,7 @@ class MaciState {
     }
 
     // create a new object from JSON 
-    static fromJSON(json: any, coordinatorPrivateKey: string) {
+    static fromJSON(json: any) {
         // create new instance
         const maciState = new MaciState(json.stateTreeDepth)
 
@@ -1738,7 +1745,7 @@ class MaciState {
         }
         
         // re-generate the polls and set the maci state ref
-        maciState.polls = json.polls.map((jsonPoll: Poll) => Poll.fromJSON(jsonPoll, maciState, coordinatorPrivateKey))
+        maciState.polls = json.polls.map((jsonPoll: Poll) => Poll.fromJSON(jsonPoll, maciState))
         return maciState 
     }
 }

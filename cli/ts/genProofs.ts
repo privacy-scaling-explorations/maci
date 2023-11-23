@@ -381,7 +381,10 @@ const genProofs = async (args: any) => {
     if (args.state_file) {
         const content = JSON.parse(fs.readFileSync(args.state_file, 'utf-8').toString())
         try {
-            maciState = MaciState.fromJSON(content, serializedPrivkey)
+            maciState = MaciState.fromJSON(content)
+            for (const poll of maciState.polls) {
+                poll.setCoordinatorKeypair(serializedPrivkey)
+            }
         } catch (error: any) {
             console.log('The provided state file is invalid. Please check that the correct path was provided and try again.')
             return 

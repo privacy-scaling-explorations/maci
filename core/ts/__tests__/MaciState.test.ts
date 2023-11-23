@@ -569,7 +569,11 @@ describe("MaciState", function () {
             const json = m1.toJSON()
             writeFileSync(stateFile, JSON.stringify(json, null, 4))
             const content = JSON.parse(readFileSync(stateFile).toString())
-            const state = MaciState.fromJSON(content, coordinatorKeypair.privKey.serialize())
+            const state = MaciState.fromJSON(content)
+            for (const poll of state.polls) {
+                poll.setCoordinatorKeypair(coordinatorKeypair.privKey.serialize())
+                expect(poll.coordinatorKeypair.equals(coordinatorKeypair)).to.be.true
+            }
             expect(state.equals(m1)).to.be.true
         })
     })
