@@ -2,11 +2,10 @@ name: Domainobjs
 
 on:
   push:
-    branches: [ master, dev ]
+    branches: [master, dev]
   pull_request:
 
-
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
@@ -14,15 +13,14 @@ jobs:
   build:
     runs-on: ubuntu-22.04
 
-
     steps:
       - uses: actions/checkout@v4
-    
+
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: "npm"
 
       - name: Update npm to latest version
         run: npm install --global npm@latest

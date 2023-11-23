@@ -18,23 +18,23 @@ npm run hardhat
 
 ## Subcommands
 
-| Role | Action | Subcommand |
-|-|-|-|
-| User | Generate MACI keypair | `genMaciKeypair` |
-| User | Generate MACI public key | `genMaciPubkey` |
-| Coordinator | Deploy VkRegistry | `deployVkRegistry` |
-| Coordinator | Set verifying keys | `setVerifyingKeys` |
-| Coordinator | Create MACI instance | `create `|
-| Coordinator | Deploy a new poll | `deployPoll`|
-| Coordinator | Deploy a new poll processor and tallyer | `deployPpt`|
-| User | Sign up | `signup` |
-| User | Change key / vote | `publish` |
-| Coordinator | Merge state tree | `mergeSignups` |
-| Coordinator | Merge message tree | `mergeMessages` |
-| Coordinator | Generate message processing and vote tallying proofs | `genProofs` |
-| Coordinator | Submit proofs | `proveOnChain` |
-| Coordinator | Process and tally all votes without producing proofs | `processAndTallyWithoutProofs` |
-| Coordinator | Roll back message processing and vote tallying in the MACI contract | `coordinatorReset` |
+| Role        | Action                                                              | Subcommand                     |
+| ----------- | ------------------------------------------------------------------- | ------------------------------ |
+| User        | Generate MACI keypair                                               | `genMaciKeypair`               |
+| User        | Generate MACI public key                                            | `genMaciPubkey`                |
+| Coordinator | Deploy VkRegistry                                                   | `deployVkRegistry`             |
+| Coordinator | Set verifying keys                                                  | `setVerifyingKeys`             |
+| Coordinator | Create MACI instance                                                | `create `                      |
+| Coordinator | Deploy a new poll                                                   | `deployPoll`                   |
+| Coordinator | Deploy a new poll processor and tallyer                             | `deployPpt`                    |
+| User        | Sign up                                                             | `signup`                       |
+| User        | Change key / vote                                                   | `publish`                      |
+| Coordinator | Merge state tree                                                    | `mergeSignups`                 |
+| Coordinator | Merge message tree                                                  | `mergeMessages`                |
+| Coordinator | Generate message processing and vote tallying proofs                | `genProofs`                    |
+| Coordinator | Submit proofs                                                       | `proveOnChain`                 |
+| Coordinator | Process and tally all votes without producing proofs                | `processAndTallyWithoutProofs` |
+| Coordinator | Roll back message processing and vote tallying in the MACI contract | `coordinatorReset`             |
 
 ## Public and private key format
 
@@ -43,7 +43,7 @@ zk-SNARKs, such as decrypting messages or signing commands. As MACI is deployed
 on Ethereum, we seek to avoid confusing BabyJub private keys with Ethereum
 private keys. To that end, users should pass serialized formats of public and
 private keys to this CLI. We use `maci-domainobj`'s `PrivKey.serialize` and
-`PubKey.serialize` functions to do so. 
+`PubKey.serialize` functions to do so.
 
 Examples of serialized public and private keys:
 
@@ -245,6 +245,7 @@ node build/index.js verify \
 ## Demonstration
 
 ### Scenario:
+
 1. Alice votes for Party A
 2. Alice changes her key
 3. Eve tries to bribe Alice to change her vote to Party B
@@ -273,6 +274,7 @@ node build/index.js deployVkRegistry
 ```
 
 Output:
+
 ```bash
 VkRegistry: 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
 ```
@@ -292,6 +294,7 @@ node build/index.js setVerifyingKeys \
 ```
 
 Output:
+
 ```bash
 Setting verifying keys...
 Transaction hash: 0x16236fe5e124f3d0c33ddf20a37ceba9730a659630258a1e858b3e335e057b8e
@@ -305,6 +308,7 @@ node build/index.js create \
 ```
 
 Output:
+
 ```bash
 Deploying InitialVoiceCreditProxy
 Deploying Poseidon contracts
@@ -334,6 +338,7 @@ node ./build/index.js deployPoll \
 ```
 
 Output:
+
 ```bash
 Verifier: 0x0d8cc4b8d15D4c3eF1d70af0071376fb26B5669b
 Poll ID: 0
@@ -350,6 +355,7 @@ node ./build/index.js signup \
 ```
 
 Output:
+
 ```bash
 Transaction hash: 0xcdff1e0cd3021cdc3ba2c65cfd74bac3715c32efdd2052c0e8f3a677a81a758b
 State index: 1
@@ -370,12 +376,14 @@ node build/index.js publish \
 ```
 
 Output:
+
 ```bash
 Transaction hash: 0xc0964069834b171bb698ffc61e31e1be456c740ff1967ccad7d8cd8ed362e545
 Ephemeral private key: macisk.1bf4bba7086c213606bb4a775b1ceaa4c2e7119c329748e675375f0d79c900dc
 ```
 
 ### Alice: submits an invalid vote for Party B (option index 1) with different public key
+
 ```bash
 node build/index.js publish \
     --pubkey macipk.d5788ea6ccf1ec295df99aaef859031fe7bd359e7e03acb80eb6e8a192f2ce19 \
@@ -389,13 +397,14 @@ node build/index.js publish \
 ```
 
 Output:
+
 ```bash
 Transaction hash: 0xc13b97e23b387d8c160e0f8b1bfb33dc0ff4441fe63a37f0fc3ec84a0cfa0600
 Ephemeral private key: macisk.5bc9f217a29c5defad1ca9be3d649add1eca30037589527476e8335b24cf75b
 ```
 
-
 Time Travel
+
 ```
 node build timeTravel -s 1000
 ```
@@ -409,6 +418,7 @@ node build/index.js mergeSignups \
 ```
 
 Output:
+
 ```bash
 Merging state subroots 1 / 1
 Executed mergeMaciStateAqSubRoots(); gas used: 723525
@@ -430,6 +440,7 @@ node build/index.js mergeMessages \
 ```
 
 Output:
+
 ```bash
 Merging message subroots 1 / 1
 Executed mergeMaciStateAqSubRoots(); gas used: 604387
@@ -459,6 +470,7 @@ node build/index.js genProofs \
 ```
 
 Output:
+
 ```bash
 fromBlock = 0
 Generating proofs of message processing...
@@ -483,6 +495,7 @@ node build/index.js proveOnChain \
 ```
 
 Output:
+
 ```bash
 Submitting proofs of message processing...
 Transaction hash: 0x59388e69899612390ef22de235629e9355e14f888bb330b46511cc06d8f2035d
@@ -508,6 +521,7 @@ node build/index.js verify \
 ```
 
 Output:
+
 ```bash
 {
   provider: 'http://localhost:8545',

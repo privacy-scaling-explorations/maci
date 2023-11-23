@@ -1,28 +1,28 @@
 {
-    "name": "maci-crypto",
-    "version": "1.1.2",
-    "description": "A package containing cryptography utilities for MACI",
-    "main": "build/index.js",
-    "scripts": {
-        "watch": "tsc --watch",
-        "build": "tsc",
-        "test": "ts-mocha --exit ts/__tests__/*.test.ts",
-        "test-crypto": "ts-mocha --exit ts/__tests__/Crypto.test.ts",
-        "test-accQueue": "ts-mocha --exit ts/__tests__/AccQueue.test.ts"
-    },
-    "dependencies": {
-        "blake-hash": "^1.1.0",
-        "circomlib": "https://github.com/weijiekoh/circomlib.git#24ed08eee0bb613b8c0135d66c1013bd9f78d50a",
-        "ethers": "^5.4.7",
-        "ffjavascript": "^0.2.62",
-        "optimisedmt": "^0.0.7"
-    },
-    "devDependencies": {
-        "@types/chai": "^4.3.9",
-        "@types/mocha": "^10.0.4",
-        "@types/node": "^18.11.9",
-        "chai": "^4.3.10",
-        "mocha": "^10.2.0",
-        "ts-mocha": "^10.0.0"
-    }
+  "name": "maci-crypto",
+  "version": "1.1.2",
+  "description": "A package containing cryptography utilities for MACI",
+  "main": "build/index.js",
+  "scripts": {
+    "watch": "tsc --watch",
+    "build": "tsc",
+    "test": "ts-mocha --exit ts/__tests__/*.test.ts",
+    "test-crypto": "ts-mocha --exit ts/__tests__/Crypto.test.ts",
+    "test-accQueue": "ts-mocha --exit ts/__tests__/AccQueue.test.ts"
+  },
+  "dependencies": {
+    "blake-hash": "^1.1.0",
+    "circomlib": "https://github.com/weijiekoh/circomlib.git#24ed08eee0bb613b8c0135d66c1013bd9f78d50a",
+    "ethers": "^5.4.7",
+    "ffjavascript": "^0.2.62",
+    "optimisedmt": "^0.0.7"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.9",
+    "@types/mocha": "^10.0.4",
+    "@types/node": "^18.11.9",
+    "chai": "^4.3.10",
+    "mocha": "^10.2.0",
+    "ts-mocha": "^10.0.0"
+  }
 }

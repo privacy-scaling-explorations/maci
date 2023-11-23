@@ -1,12 +1,11 @@
-declare module 'snarkjs' {
-    export type NumericString = `${number}` | string
-    export type PublicSignals = NumericString[]
+declare module "snarkjs" {
+    export type NumericString = `${number}` | string;
+    export type PublicSignals = NumericString[];
 
     export interface FullProveResult {
         proof: Groth16Proof;
         publicSignals: PublicSignals;
     }
-
 
     export interface Groth16Proof {
         pi_a: NumericString[];
@@ -19,8 +18,8 @@ declare module 'snarkjs' {
     export namespace zKey {
         function exportVerificationKey(
             zkeyName: any,
-            logger?: any,
-        ): Promise<any>
+            logger?: any
+        ): Promise<any>;
     }
 
     export namespace groth16 {
@@ -28,14 +27,13 @@ declare module 'snarkjs' {
             _vk_verifier: any,
             _publicSignals: PublicSignals,
             _proof: Groth16Proof,
-            logger?: any,
-        ): Promise<boolean>
+            logger?: any
+        ): Promise<boolean>;
         function fullProve(
             _input: any,
             wasmFile: string,
             zkeyFileName: string,
             logger?: any
-        ): Promise<FullProveResult>
-
+        ): Promise<FullProveResult>;
     }
 }

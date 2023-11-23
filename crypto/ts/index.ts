@@ -1,6 +1,4 @@
-export {
-    AccQueue
-} from "./AccQueue"
+export { AccQueue } from "./AccQueue";
 
 export {
     stringifyBigInts,
@@ -8,14 +6,14 @@ export {
     bigInt2Buffer,
     deepCopyBigIntArray,
     calcDepthFromNumLeaves,
-    genTreeCommitment
-} from "./utils"
+    genTreeCommitment,
+} from "./utils";
 
 export {
     SNARK_FIELD_SIZE,
     NOTHING_UP_MY_SLEEVE,
-    babyJubMaxValue
-} from "./constants"
+    babyJubMaxValue,
+} from "./constants";
 
 export {
     G1Point,
@@ -45,10 +43,10 @@ export {
     verifySignature,
     curveToBit,
     babyJubAddPoint,
-    bitToCurve
-} from "./crypto"
+    bitToCurve,
+} from "./crypto";
 
-export { OptimisedMT as IncrementalQuinTree } from 'optimisedmt'
+export { OptimisedMT as IncrementalQuinTree } from "optimisedmt";
 
 export {
     SnarkBigInt,
@@ -62,5 +60,5 @@ export {
     Keypair,
     Signature,
     PoseidonFuncs,
-    Leaf
-} from "./types"
+    Leaf,
+} from "./types";

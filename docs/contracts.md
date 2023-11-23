@@ -6,9 +6,9 @@ The main contracts are presented and explained below.
 
 ## MACI.sol
 
-`MACI.sol` is the core contract of the project, as it provides the base layer for user signups and Polls to be created. 
+`MACI.sol` is the core contract of the project, as it provides the base layer for user signups and Polls to be created.
 
-The constructor shown below accepts three arguments, a `PollFactory` contract, a `SignUpGatekeeper` contract, and an `InitialVoiceCreditProxy` contract. 
+The constructor shown below accepts three arguments, a `PollFactory` contract, a `SignUpGatekeeper` contract, and an `InitialVoiceCreditProxy` contract.
 
 ```javascript
 constructor(
@@ -34,11 +34,11 @@ constructor(
 }
 ```
 
-Upon deployment, the contract will deploy a new `AccQueueQuinaryBlankSl` contract using the `STATE_TREE_SUBDEPTH`. By default, this is defined as `uint8 internal constant STATE_TREE_SUBDEPTH = 2;`. 
+Upon deployment, the contract will deploy a new `AccQueueQuinaryBlankSl` contract using the `STATE_TREE_SUBDEPTH`. By default, this is defined as `uint8 internal constant STATE_TREE_SUBDEPTH = 2;`.
 
-Should this be changed, it will be necessary to amend the `contracts/ts/genEmptyBallotRootsContract.ts` file to reflect the change. The first action on this deployed contract, is to enqueue (add) an empty hash (defined as `6769006970205099520508948723718471724660867171122235270773600567925038008762`). 
+Should this be changed, it will be necessary to amend the `contracts/ts/genEmptyBallotRootsContract.ts` file to reflect the change. The first action on this deployed contract, is to enqueue (add) an empty hash (defined as `6769006970205099520508948723718471724660867171122235270773600567925038008762`).
 
-After this, the contracts will be stored to state, the current time taken and then the contract will perform a simple sanity check to ensure that the Poseidon hash libraries were linked successfully. 
+After this, the contracts will be stored to state, the current time taken and then the contract will perform a simple sanity check to ensure that the Poseidon hash libraries were linked successfully.
 
 Once the contract is deployed, the owner (set as the deployer address of MACI), is required to call the `init` function, which is shown below:
 
@@ -84,16 +84,16 @@ function init(
 
 This function accepts three arguments:
 
-* `VkRegistry` - the contract holding the verifying keys
-* `MessageAqFactory` - the factory contract for deploying new MessageAq contracts
-* `TopupCredit` - the contract responsible for topping up voting credits
+- `VkRegistry` - the contract holding the verifying keys
+- `MessageAqFactory` - the factory contract for deploying new MessageAq contracts
+- `TopupCredit` - the contract responsible for topping up voting credits
 
 In more details, the `init` function will check/do the following:
 
-1. That the `PollFactory` contract's owner has been set to be the `MACI` contract 
-2. Set the `messageAqFactory` contract on the `pollFactory` contract 
-3. Check that the owner of the `messageAqFactory` is the `pollFactory` contract 
-4. Confirm that the `vkRegistry` owner is the same as the `MACI` owner 
+1. That the `PollFactory` contract's owner has been set to be the `MACI` contract
+2. Set the `messageAqFactory` contract on the `pollFactory` contract
+3. Check that the owner of the `messageAqFactory` is the `pollFactory` contract
+4. Confirm that the `vkRegistry` owner is the same as the `MACI` owner
 
 Finally, it will emit an event.
 
@@ -101,13 +101,13 @@ Next, we have the `signUp` function, which allows users to `signUp` using a `Sig
 
 This function does the following:
 
-* checks that the maxium number of signups have not been reached. As of now, this will be $5 ** 10 - 1$ due to circuit limitations.
-* checks that the provided public key is within the allowed boundaries
-* increases the number of signups 
-* registers the user using the sign up gatekeeper contract. It is important that whichever gatekeeper is used, it reverts if an user tries to sign up twice.
-* calls the voice credit proxy to retrieve the number of allocated voice credits for the calling account
-* hashes the voice credits alongside the calling address and the current time 
-* enqueues this hashed data into the `stateAq` contract
+- checks that the maxium number of signups have not been reached. As of now, this will be $5 ** 10 - 1$ due to circuit limitations.
+- checks that the provided public key is within the allowed boundaries
+- increases the number of signups
+- registers the user using the sign up gatekeeper contract. It is important that whichever gatekeeper is used, it reverts if an user tries to sign up twice.
+- calls the voice credit proxy to retrieve the number of allocated voice credits for the calling account
+- hashes the voice credits alongside the calling address and the current time
+- enqueues this hashed data into the `stateAq` contract
 
 ```javascript
 function signUp(
@@ -196,18 +196,18 @@ function deployPoll(
 }
 ```
 
-## Poll.sol 
+## Poll.sol
 
 This contract allows users to vote on a Poll.
 
 The main functions of the contract are as follows:
 
-* `topup` - This function accepts two parameters, a `stateIndex`, and an `amount`. It can only be called before the voting deadline.
-    After checking whether the deadline has passed or not, it will validate that the contract has not reached the maximum number of messages, if the checks passes, it will increase the number of messages by 1. 
-    It will then try to transfer the amount of `topUpCredit` tokens.
-    Finally, it will create a new Message object that will be hashed and enqueued in the `messageAq` contract. This messageAq contract is reserved for this one poll only and will only contain its messages.
-* `publishMessage` - This function allows anyone to publish a message, and it accepts the message object as well as an ephemeral public key. This key together with the coordinator public key will be used to generate a shared ECDH key that will encrypt the message.
-    Before saving the message, the function will check that the voting deadline has not passed, as well as the max number of messages was not reached. 
+- `topup` - This function accepts two parameters, a `stateIndex`, and an `amount`. It can only be called before the voting deadline.
+  After checking whether the deadline has passed or not, it will validate that the contract has not reached the maximum number of messages, if the checks passes, it will increase the number of messages by 1.
+  It will then try to transfer the amount of `topUpCredit` tokens.
+  Finally, it will create a new Message object that will be hashed and enqueued in the `messageAq` contract. This messageAq contract is reserved for this one poll only and will only contain its messages.
+- `publishMessage` - This function allows anyone to publish a message, and it accepts the message object as well as an ephemeral public key. This key together with the coordinator public key will be used to generate a shared ECDH key that will encrypt the message.
+  Before saving the message, the function will check that the voting deadline has not passed, as well as the max number of messages was not reached.
 
 The `mergeMaciStateAqSubRoots` function can be called by the contract admin after the voting deadline and looks like the following:
 
@@ -230,8 +230,8 @@ function mergeMaciStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId)
 
 If the subtrees have not been merged on the MACI contract's `stateAq`, then it will merge it by calling `mergeStateAqSubroots`. It accets two parameters:
 
-* `_numSrQueueOps` - the number of operations required
-* `_pollId` - the id of the poll
+- `_numSrQueueOps` - the number of operations required
+- `_pollId` - the id of the poll
 
 The next function, is presented below:
 
@@ -251,7 +251,7 @@ function mergeMaciStateAq(uint256 _pollId)
             extContracts.maci.stateAq().subTreesMerged(),
             ERROR_STATE_AQ_SUBTREES_NEED_MERGE
         );
-        
+
         mergedStateRoot = extContracts.maci.mergeStateAq(_pollId);
 
         // Set currentSbCommitment
@@ -270,24 +270,39 @@ This function only accepts one parameter, and can be called by the owner only, a
 the Poseidon hash of the merkle root, an empty ballot root stored in the emptyBallotRoots mapping (shown below), and a zero.
 
 ```javascript
-emptyBallotRoots[0] = uint256(6579820437991406069687396372962263845395426835385368878767605633903648955255);
-emptyBallotRoots[1] = uint256(9105453741665960449792281626882014222103501499246287334255160659262747058842);
-emptyBallotRoots[2] = uint256(14830222164980158319423900821611648302565544940504586015002280367515043751869);
-emptyBallotRoots[3] = uint256(12031563002271722465187541954825013132282571927669361737331626664787916495335);
-emptyBallotRoots[4] = uint256(5204612805325639173251450278876337947880680931527922506745154187077640790699);
+emptyBallotRoots[0] =
+  uint256(
+    6579820437991406069687396372962263845395426835385368878767605633903648955255,
+  );
+emptyBallotRoots[1] =
+  uint256(
+    9105453741665960449792281626882014222103501499246287334255160659262747058842,
+  );
+emptyBallotRoots[2] =
+  uint256(
+    14830222164980158319423900821611648302565544940504586015002280367515043751869,
+  );
+emptyBallotRoots[3] =
+  uint256(
+    12031563002271722465187541954825013132282571927669361737331626664787916495335,
+  );
+emptyBallotRoots[4] =
+  uint256(
+    5204612805325639173251450278876337947880680931527922506745154187077640790699,
+  );
 ```
 
 In order for the `processMessages` circuit to access the message root, the following two functions need to be called (only by the owner):
 
-* `mergeMessageAqSubRoots` - merges the Poll's messages tree subroot
-* `mergeMessageAq` - merges the Poll's messages tree 
+- `mergeMessageAqSubRoots` - merges the Poll's messages tree subroot
+- `mergeMessageAq` - merges the Poll's messages tree
 
-## PollFactory.sol 
+## PollFactory.sol
 
 `PollFactory` is a smart contract that is used to deploy new Polls. This is used by MACI inside the `deployPoll` function. It only contains two functions:
 
-* `setMessageAqFactory` - owner only function which allows to set the address of the `MessageAqFactory` (a contract used to deploy new AccQueue contracts)
-* `deploy` - owner only function which allows to deploy a new Poll
+- `setMessageAqFactory` - owner only function which allows to set the address of the `MessageAqFactory` (a contract used to deploy new AccQueue contracts)
+- `deploy` - owner only function which allows to deploy a new Poll
 
 The arguments required to deploy a new Poll are the following:
 
@@ -303,11 +318,11 @@ TopupCredit _topupCredit,
 address _pollOwner
 ```
 
-Upon deployment, the ownership of the messageAq contract will be transferred to the deployed poll, as well as the ownership of the new Poll contract be transferred to the poll owner, which in MACI is set as the owner of MACI. 
+Upon deployment, the ownership of the messageAq contract will be transferred to the deployed poll, as well as the ownership of the new Poll contract be transferred to the poll owner, which in MACI is set as the owner of MACI.
 
 ## PollProcessorAndTallyer
 
-This contract is used to prepare parameters for the zk-SNARK circuits as well as for verifying proofs. It should be deployed alongside MACI and ownership assigned to the coordinator. 
+This contract is used to prepare parameters for the zk-SNARK circuits as well as for verifying proofs. It should be deployed alongside MACI and ownership assigned to the coordinator.
 
 ## MessageAqFactory
 
@@ -323,16 +338,16 @@ contract MessageAqFactory is Ownable {
 }
 ```
 
-## SignUpToken 
+## SignUpToken
 
-This contract should be used by the SignUpGateKeeper to determine whether a user is allowed to register. The default contract provided with MACI is a simple ERC721 token. Coordinators can use this contract to mint a token for each of the participants in the voting process. 
+This contract should be used by the SignUpGateKeeper to determine whether a user is allowed to register. The default contract provided with MACI is a simple ERC721 token. Coordinators can use this contract to mint a token for each of the participants in the voting process.
 
-## SignUpGatekeeper 
+## SignUpGatekeeper
 
 MACI requires a signup gatekeeper to ensure that only designed users register. It is up to MACI's deployer how they wish to allow sign-ups, therefore they can implement their own GateKeeper. The repository comes with two presets:
 
-* `FreeForAllSignUpGatekeeper` - This allows anyone to signup on MACI.
-* `SignUpTokenGatekeeper` - This makes use of a ERC721 token to gatekeep the signup function. 
+- `FreeForAllSignUpGatekeeper` - This allows anyone to signup on MACI.
+- `SignUpTokenGatekeeper` - This makes use of a ERC721 token to gatekeep the signup function.
 
 An abstract contract to inherit from is also provided, with two function signatures as shown below:
 
@@ -343,7 +358,7 @@ abstract contract SignUpGatekeeper {
 }
 ```
 
-The MACI contract will need to call `register` inside the `signUp` function. 
+The MACI contract will need to call `register` inside the `signUp` function.
 
 ## VoiceCreditProxy
 
@@ -353,21 +368,21 @@ The VoiceCreditProxy contract is used to assign voice credits to users. Whicheve
 function getVoiceCredits(address _user, bytes memory _data) public virtual view returns (uint256) {}
 ```
 
-## Hasher 
+## Hasher
 
-This contract exposes methods to hash different number of parameters with the Poseidon hash. 
+This contract exposes methods to hash different number of parameters with the Poseidon hash.
 
-## VkRegistry 
+## VkRegistry
 
 The VkRegistry is a contract that holds the verifying keys for the zk-SNARK circuits. It holds three different sets of keys:
 
-* `processVks` - The keys for the processMessages circuit
-* `tallyVks` - The keys for the tallyVotes circuit
-* `subsidyVk` - The keys for the subsidy circuit
+- `processVks` - The keys for the processMessages circuit
+- `tallyVks` - The keys for the tallyVotes circuit
+- `subsidyVk` - The keys for the subsidy circuit
 
 Each circuit will have a signature which is its compile-time constants represented as a uint256.
 
-## Params 
+## Params
 
 A contract holding three structs:
 
@@ -391,29 +406,44 @@ struct MaxValues {
 }
 ```
 
-These are stored separately to avoid a stack overlow error during compilation of the contracts using them. 
+These are stored separately to avoid a stack overlow error during compilation of the contracts using them.
 
 ## AccQueue
 
-The AccQueue contract represents a Merkle Tree where each leaf insertion only updates a subtree. To obtain the main tree root, the subtrees must be merged together by the contract owner. This requires at least two operations, a `mergeSubRoots` and a `merge`. 
+The AccQueue contract represents a Merkle Tree where each leaf insertion only updates a subtree. To obtain the main tree root, the subtrees must be merged together by the contract owner. This requires at least two operations, a `mergeSubRoots` and a `merge`.
 
-The contract can be initialized to work as a traditional Merkle Tree (2 leaves per node) or a Quinary Tree (5 leaves per node). This can be achieved by passing either two or five as parameter to the constructor (`_hashLength`). Any other values should not be accepted. 
+The contract can be initialized to work as a traditional Merkle Tree (2 leaves per node) or a Quinary Tree (5 leaves per node). This can be achieved by passing either two or five as parameter to the constructor (`_hashLength`). Any other values should not be accepted.
 
 Below are presented the most important functions of the smart contract:
 
-* `enqueue` - Allows to add a leaf to the queue for the current subtree. Only one parameter is accepted and that is the leaf to insert.
-* `insertSubTree` - Admin only function which allows to insert a full subtree (batch enqueue)
-* `mergeSubRoots` - Allows the contract owner to merge all of the subtrees to form the shortest possible tree. The argument `_numSrQueueOps` can be used to perform the operation in multiple transactions (as this might trigger the block gas limit).
-* `merge` - Allows the contract admin to form a main tree with the desired depth. The depth must fit all of the leaves. 
+- `enqueue` - Allows to add a leaf to the queue for the current subtree. Only one parameter is accepted and that is the leaf to insert.
+- `insertSubTree` - Admin only function which allows to insert a full subtree (batch enqueue)
+- `mergeSubRoots` - Allows the contract owner to merge all of the subtrees to form the shortest possible tree. The argument `_numSrQueueOps` can be used to perform the operation in multiple transactions (as this might trigger the block gas limit).
+- `merge` - Allows the contract admin to form a main tree with the desired depth. The depth must fit all of the leaves.
 
 ## EmptyBallotRoots
 
-This contract contains the roots of Ballot trees of five leaf configurations. 
+This contract contains the roots of Ballot trees of five leaf configurations.
 
 ```javascript
-emptyBallotRoots[0] = uint256(6579820437991406069687396372962263845395426835385368878767605633903648955255);
-emptyBallotRoots[1] = uint256(9105453741665960449792281626882014222103501499246287334255160659262747058842);
-emptyBallotRoots[2] = uint256(14830222164980158319423900821611648302565544940504586015002280367515043751869);
-emptyBallotRoots[3] = uint256(12031563002271722465187541954825013132282571927669361737331626664787916495335);
-emptyBallotRoots[4] = uint256(5204612805325639173251450278876337947880680931527922506745154187077640790699);
+emptyBallotRoots[0] =
+  uint256(
+    6579820437991406069687396372962263845395426835385368878767605633903648955255,
+  );
+emptyBallotRoots[1] =
+  uint256(
+    9105453741665960449792281626882014222103501499246287334255160659262747058842,
+  );
+emptyBallotRoots[2] =
+  uint256(
+    14830222164980158319423900821611648302565544940504586015002280367515043751869,
+  );
+emptyBallotRoots[3] =
+  uint256(
+    12031563002271722465187541954825013132282571927669361737331626664787916495335,
+  );
+emptyBallotRoots[4] =
+  uint256(
+    5204612805325639173251450278876337947880680931527922506745154187077640790699,
+  );
 ```

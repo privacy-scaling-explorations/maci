@@ -1,20 +1,12 @@
-import {
-    Keypair,
-    PubKey,
-    Message,
-} from 'maci-domainobjs'
+import { Keypair, PubKey, Message } from "maci-domainobjs";
 
-import {
-    parseArtifact,
-} from './index'
+import { parseArtifact } from "./index";
 
-import {
-    MaciState,
-} from 'maci-core'
+import { MaciState } from "maci-core";
 
-import { Contract, providers, utils } from 'ethers'
+import { Contract, providers, utils } from "ethers";
 // import { assert } from 'assert'
-import assert = require("assert")
+import assert = require("assert");
 
 interface Action {
     type: string;
@@ -28,87 +20,82 @@ const genMaciStateFromContract = async (
     address: string,
     coordinatorKeypair: Keypair,
     pollId: number,
-    fromBlock = 0,
+    fromBlock = 0
 ): Promise<MaciState> => {
-    pollId = Number(pollId)
+    pollId = Number(pollId);
     // Verify and sort pollIds
-    assert(pollId >= 0)
+    assert(pollId >= 0);
 
-    const [ pollContractAbi, ] = parseArtifact('Poll')
-    const [ maciContractAbi, ] = parseArtifact('MACI')
+    const [pollContractAbi] = parseArtifact("Poll");
+    const [maciContractAbi] = parseArtifact("MACI");
 
-    const maciContract = new Contract(
-        address,
-        maciContractAbi,
-        provider,
-    )
+    const maciContract = new Contract(address, maciContractAbi, provider);
 
-    const maciIface = new utils.Interface(maciContractAbi)
-    const pollIface = new utils.Interface(pollContractAbi)
-
+    const maciIface = new utils.Interface(maciContractAbi);
+    const pollIface = new utils.Interface(pollContractAbi);
 
     // Check stateTreeDepth
-    const stateTreeDepth = await maciContract.stateTreeDepth()
-    
-    // we need to pass the stateTreeDepth 
-    const maciState = new MaciState(stateTreeDepth)
+    const stateTreeDepth = await maciContract.stateTreeDepth();
 
-    assert(stateTreeDepth === maciState.stateTreeDepth)
+    // we need to pass the stateTreeDepth
+    const maciState = new MaciState(stateTreeDepth);
+
+    assert(stateTreeDepth === maciState.stateTreeDepth);
 
     // Fetch event logs
     const initLogs = await provider.getLogs({
         ...maciContract.filters.Init(),
         fromBlock: fromBlock,
-    })
+    });
 
     // init() should only be called up to 1 time
     assert(
-        initLogs.length <= 1, 
-        'More than 1 init() event detected which should not be possible',
-    )
+        initLogs.length <= 1,
+        "More than 1 init() event detected which should not be possible"
+    );
 
     const signUpLogs = await provider.getLogs({
         ...maciContract.filters.SignUp(),
         fromBlock: fromBlock,
-    })
+    });
 
     const mergeStateAqSubRootsLogs = await provider.getLogs({
         ...maciContract.filters.MergeStateAqSubRoots(),
         fromBlock: fromBlock,
-    })
+    });
 
     const mergeStateAqLogs = await provider.getLogs({
         ...maciContract.filters.MergeStateAq(),
         fromBlock: fromBlock,
-    })
+    });
 
     const deployPollLogs = await provider.getLogs({
         ...maciContract.filters.DeployPoll(),
         fromBlock: fromBlock,
-    })
+    });
 
-    let vkRegistryAddress
+    let vkRegistryAddress;
 
     for (const log of initLogs) {
         const mutableLog = {
             ...log,
             topics: [...log.topics],
         };
-        const event = maciIface.parseLog(mutableLog)
-        vkRegistryAddress = event.args._vkRegistry
+        const event = maciIface.parseLog(mutableLog);
+        vkRegistryAddress = event.args._vkRegistry;
     }
 
-    const actions: Action[] = []
+    const actions: Action[] = [];
 
     for (const log of signUpLogs) {
-        assert(log != undefined)
+        assert(log != undefined);
         const mutableLog = {
             ...log,
             topics: [...log.topics],
-        }
-        const event = maciIface.parseLog(mutableLog)
+        };
+        const event = maciIface.parseLog(mutableLog);
         actions.push({
-            type: 'SignUp',
+            type: "SignUp",
             // @ts-ignore
             blockNumber: log.blockNumber,
             // @ts-ignore
@@ -116,32 +103,32 @@ const genMaciStateFromContract = async (
             data: {
                 stateIndex: Number(event.args._stateIndex),
                 pubKey: new PubKey(
-                    event.args._userPubKey.map((x) => BigInt(x)),
+                    event.args._userPubKey.map((x) => BigInt(x))
                 ),
                 voiceCreditBalance: Number(event.args._voiceCreditBalance),
                 timestamp: Number(event.args._timestamp),
-            }
-        })
+            },
+        });
     }
 
     // TODO: consider removing MergeStateAqSubRoots and MergeStateAq as the
     // functions in Poll which call them already have their own events
     for (const log of mergeStateAqSubRootsLogs) {
-        assert(log != undefined)
+        assert(log != undefined);
         const mutableLogs = {
             ...log,
             topics: [...log.topics],
-        }
-        const event = maciIface.parseLog(mutableLogs)
-        const p =  Number(event.args._pollId)
+        };
+        const event = maciIface.parseLog(mutableLogs);
+        const p = Number(event.args._pollId);
 
         //// Skip in favour of Poll.MergeMaciStateAqSubRoots
         //if (p === pollId) {
-            //continue
+        //continue
         //}
 
         actions.push({
-            type: 'MergeStateAqSubRoots',
+            type: "MergeStateAqSubRoots",
             // @ts-ignore
             blockNumber: log.blockNumber,
             // @ts-ignore
@@ -149,161 +136,165 @@ const genMaciStateFromContract = async (
             data: {
                 numSrQueueOps: Number(event.args._numSrQueueOps),
                 pollId: p,
-            }
-        })
+            },
+        });
     }
- 
+
     for (const log of mergeStateAqLogs) {
-        assert(log != undefined)
+        assert(log != undefined);
         const mutableLogs = {
             ...log,
             topics: [...log.topics],
-        }
-        const event = maciIface.parseLog(mutableLogs)
-        const p =  Number(event.args._pollId)
+        };
+        const event = maciIface.parseLog(mutableLogs);
+        const p = Number(event.args._pollId);
 
         //// Skip in favour of Poll.MergeMaciStateAq
         //if (p === pollId) {
-            //continue
+        //continue
         //}
 
         actions.push({
-            type: 'MergeStateAq',
+            type: "MergeStateAq",
             // @ts-ignore
             blockNumber: log.blockNumber,
             // @ts-ignore
             transactionIndex: log.transactionIndex,
-            data: { 
+            data: {
                 pollId: p,
-            }
-        })
+            },
+        });
     }
 
-    let i = 0
-    const foundPollIds: number[] = []
-    const pollContractAddresses: string[] = []
+    let i = 0;
+    const foundPollIds: number[] = [];
+    const pollContractAddresses: string[] = [];
     for (const log of deployPollLogs) {
-        assert(log != undefined)
+        assert(log != undefined);
         const mutableLogs = {
             ...log,
             topics: [...log.topics],
-        }
-        const event = maciIface.parseLog(mutableLogs)
+        };
+        const event = maciIface.parseLog(mutableLogs);
         const pubKey = new PubKey(
             event.args._pubKey.map((x) => BigInt(x.toString()))
-        )
+        );
 
-        const pollId = Number(event.args._pollId)
-        assert(pollId === i)
+        const pollId = Number(event.args._pollId);
+        assert(pollId === i);
 
-        const pollAddr = event.args._pollAddr
+        const pollAddr = event.args._pollAddr;
         actions.push({
-            type: 'DeployPoll',
+            type: "DeployPoll",
             // @ts-ignore
             blockNumber: log.blockNumber,
             // @ts-ignore
             transactionIndex: log.transactionIndex,
-            data: { pollId, pollAddr, pubKey }
-        })
+            data: { pollId, pollAddr, pubKey },
+        });
 
-        foundPollIds.push(Number(pollId))
-        pollContractAddresses.push(pollAddr)
-        i ++
+        foundPollIds.push(Number(pollId));
+        pollContractAddresses.push(pollAddr);
+        i++;
     }
 
     // Check whether each pollId exists
     assert(
         foundPollIds.indexOf(Number(pollId)) > -1,
-        'Error: the specified pollId does not exist on-chain',
-    )
+        "Error: the specified pollId does not exist on-chain"
+    );
 
-    const pollContractAddress = pollContractAddresses[pollId]
+    const pollContractAddress = pollContractAddresses[pollId];
     const pollContract = new Contract(
         pollContractAddress,
         pollContractAbi,
-        provider,
-    )
+        provider
+    );
 
-    const coordinatorPubKeyOnChain = await pollContract.coordinatorPubKey()
-    assert(coordinatorPubKeyOnChain[0].toString() === coordinatorKeypair.pubKey.rawPubKey[0].toString())
-    assert(coordinatorPubKeyOnChain[1].toString() === coordinatorKeypair.pubKey.rawPubKey[1].toString())
+    const coordinatorPubKeyOnChain = await pollContract.coordinatorPubKey();
+    assert(
+        coordinatorPubKeyOnChain[0].toString() ===
+            coordinatorKeypair.pubKey.rawPubKey[0].toString()
+    );
+    assert(
+        coordinatorPubKeyOnChain[1].toString() ===
+            coordinatorKeypair.pubKey.rawPubKey[1].toString()
+    );
 
-    const dd = await pollContract.getDeployTimeAndDuration()
-    const deployTime = Number(dd[0])
-    const duration = Number(dd[1])
-    const onChainMaxValues = await pollContract.maxValues()
-    const onChainTreeDepths = await pollContract.treeDepths()
-    const onChainBatchSizes = await pollContract.batchSizes()
+    const dd = await pollContract.getDeployTimeAndDuration();
+    const deployTime = Number(dd[0]);
+    const duration = Number(dd[1]);
+    const onChainMaxValues = await pollContract.maxValues();
+    const onChainTreeDepths = await pollContract.treeDepths();
+    const onChainBatchSizes = await pollContract.batchSizes();
 
-    assert(vkRegistryAddress === await maciContract.vkRegistry())
+    assert(vkRegistryAddress === (await maciContract.vkRegistry()));
 
     const maxValues = {
         maxMessages: Number(onChainMaxValues.maxMessages.toNumber()),
         maxVoteOptions: Number(onChainMaxValues.maxVoteOptions.toNumber()),
-    }
+    };
     const treeDepths = {
         intStateTreeDepth: Number(onChainTreeDepths.intStateTreeDepth),
         messageTreeDepth: Number(onChainTreeDepths.messageTreeDepth),
         messageTreeSubDepth: Number(onChainTreeDepths.messageTreeSubDepth),
         voteOptionTreeDepth: Number(onChainTreeDepths.voteOptionTreeDepth),
-    }
+    };
     const batchSizes = {
         tallyBatchSize: Number(onChainBatchSizes.tallyBatchSize),
         subsidyBatchSize: Number(onChainBatchSizes.subsidyBatchSize),
         messageBatchSize: Number(onChainBatchSizes.messageBatchSize),
-    }
+    };
 
     const publishMessageLogs = await provider.getLogs({
         ...pollContract.filters.PublishMessage(),
         fromBlock: fromBlock,
-    })
+    });
 
     const topupLogs = await provider.getLogs({
         ...pollContract.filters.TopupMessage(),
         fromBlock: fromBlock,
-    })
-
+    });
 
     const mergeMaciStateAqSubRootsLogs = await provider.getLogs({
         ...pollContract.filters.MergeMaciStateAqSubRoots(),
         fromBlock: fromBlock,
-    })
+    });
 
     const mergeMaciStateAqLogs = await provider.getLogs({
         ...pollContract.filters.MergeMaciStateAq(),
         fromBlock: fromBlock,
-    })
+    });
 
     const mergeMessageAqSubRootsLogs = await provider.getLogs({
         ...pollContract.filters.MergeMessageAqSubRoots(),
         fromBlock: fromBlock,
-    })
+    });
 
     const mergeMessageAqLogs = await provider.getLogs({
         ...pollContract.filters.MergeMessageAq(),
         fromBlock: fromBlock,
-    })
+    });
 
     for (const log of publishMessageLogs) {
-        assert(log != undefined)
+        assert(log != undefined);
         const mutableLogs = {
             ...log,
             topics: [...log.topics],
-        }
-        const event = pollIface.parseLog(mutableLogs)
+        };
+        const event = pollIface.parseLog(mutableLogs);
 
         const message = new Message(
             BigInt(event.args._message[0]),
-            event.args._message[1].map((x) => BigInt(x)), 
-        )
+            event.args._message[1].map((x) => BigInt(x))
+        );
 
         const encPubKey = new PubKey(
             event.args._encPubKey.map((x) => BigInt(x.toString()))
-        )
-
+        );
 
         actions.push({
-            type: 'PublishMessage',
+            type: "PublishMessage",
             // @ts-ignore
             blockNumber: log.blockNumber,
             // @ts-ignore
@@ -311,128 +302,128 @@ const genMaciStateFromContract = async (
             data: {
                 message,
                 encPubKey,
-            }
-        })
+            },
+        });
     }
 
     for (const log of topupLogs) {
-        assert(log != undefined)
+        assert(log != undefined);
         const mutableLog = {
             ...log,
             topics: [...log.topics],
         };
-        const event = pollIface.parseLog(mutableLog)
+        const event = pollIface.parseLog(mutableLog);
         const message = new Message(
             BigInt(event.args._message[0]),
-            event.args._message[1].map((x) => BigInt(x)), 
-        )
+            event.args._message[1].map((x) => BigInt(x))
+        );
 
         actions.push({
-            type: 'TopupMessage',
+            type: "TopupMessage",
             // @ts-ignore
             blockNumber: log.blockNumber,
             // @ts-ignore
             transactionIndex: log.transactionIndex,
             data: {
                 message,
-            }
-        })
+            },
+        });
     }
 
     for (const log of mergeMaciStateAqSubRootsLogs) {
-        assert(log != undefined)
+        assert(log != undefined);
         const mutableLogs = {
             ...log,
             topics: [...log.topics],
-        }
-        const event = pollIface.parseLog(mutableLogs)
+        };
+        const event = pollIface.parseLog(mutableLogs);
 
-        const numSrQueueOps = Number(event.args._numSrQueueOps)
+        const numSrQueueOps = Number(event.args._numSrQueueOps);
         actions.push({
-            type: 'MergeMaciStateAqSubRoots',
+            type: "MergeMaciStateAqSubRoots",
             // @ts-ignore
             blockNumber: log.blockNumber,
             // @ts-ignore
             transactionIndex: log.transactionIndex,
             data: {
                 numSrQueueOps,
-            }
-        })
+            },
+        });
     }
 
     for (const log of mergeMaciStateAqLogs) {
-        assert(log != undefined)
+        assert(log != undefined);
         const mutableLogs = {
             ...log,
             topics: [...log.topics],
-        }
+        };
 
-        const event = pollIface.parseLog(mutableLogs)
+        const event = pollIface.parseLog(mutableLogs);
 
-        const stateRoot = BigInt(event.args._stateRoot)
+        const stateRoot = BigInt(event.args._stateRoot);
         actions.push({
-            type: 'MergeMaciStateAq',
+            type: "MergeMaciStateAq",
             // @ts-ignore
             blockNumber: log.blockNumber,
             // @ts-ignore
             transactionIndex: log.transactionIndex,
-            data: { stateRoot }
-        })
+            data: { stateRoot },
+        });
     }
 
     for (const log of mergeMessageAqSubRootsLogs) {
-        assert(log != undefined)
+        assert(log != undefined);
         const mutableLogs = {
             ...log,
             topics: [...log.topics],
-        }
-        const event = pollIface.parseLog(mutableLogs)
+        };
+        const event = pollIface.parseLog(mutableLogs);
 
-        const numSrQueueOps = Number(event.args._numSrQueueOps)
+        const numSrQueueOps = Number(event.args._numSrQueueOps);
         actions.push({
-            type: 'MergeMessageAqSubRoots',
+            type: "MergeMessageAqSubRoots",
             // @ts-ignore
             blockNumber: log.blockNumber,
             // @ts-ignore
             transactionIndex: log.transactionIndex,
             data: {
                 numSrQueueOps,
-            }
-        })
+            },
+        });
     }
 
     for (const log of mergeMessageAqLogs) {
-        assert(log != undefined)
+        assert(log != undefined);
         const mutableLogs = {
             ...log,
             topics: [...log.topics],
-        }
-        const event = pollIface.parseLog(mutableLogs)
+        };
+        const event = pollIface.parseLog(mutableLogs);
 
-        const messageRoot = BigInt(event.args._messageRoot)
+        const messageRoot = BigInt(event.args._messageRoot);
         actions.push({
-            type: 'MergeMessageAq',
+            type: "MergeMessageAq",
             // @ts-ignore
             blockNumber: log.blockNumber,
             // @ts-ignore
             transactionIndex: log.transactionIndex,
-            data: { messageRoot }
-        })
+            data: { messageRoot },
+        });
     }
 
     // Sort actions
-    sortActions(actions)
+    sortActions(actions);
 
     // Reconstruct MaciState in order
 
     for (const action of actions) {
-        if (action['type'] === 'SignUp') {
+        if (action["type"] === "SignUp") {
             maciState.signUp(
                 action.data.pubKey,
                 action.data.voiceCreditBalance,
-                action.data.timestamp,
-            )
-        } else if (action['type'] === 'DeployPoll') {
+                action.data.timestamp
+            );
+        } else if (action["type"] === "DeployPoll") {
             if (action.data.pollId === pollId) {
                 maciState.deployPoll(
                     duration,
@@ -440,54 +431,50 @@ const genMaciStateFromContract = async (
                     maxValues,
                     treeDepths,
                     batchSizes.messageBatchSize,
-                    coordinatorKeypair,
-                )
+                    coordinatorKeypair
+                );
             } else {
-                maciState.deployNullPoll()
+                maciState.deployNullPoll();
             }
-        } else if (action['type'] === 'PublishMessage') {
+        } else if (action["type"] === "PublishMessage") {
             maciState.polls[pollId].publishMessage(
                 action.data.message,
-                action.data.encPubKey,
-            )
-        } else if (action['type'] === 'TopupMessage') {
-            maciState.polls[pollId].topupMessage(
-                action.data.message,
-            )
-        } else if (action['type'] === 'MergeMaciStateAqSubRoots') {
-            maciState.stateAq.mergeSubRoots(
-                action.data.numSrQueueOps,
-            )
-        } else if (action['type'] === 'MergeMaciStateAq') {
+                action.data.encPubKey
+            );
+        } else if (action["type"] === "TopupMessage") {
+            maciState.polls[pollId].topupMessage(action.data.message);
+        } else if (action["type"] === "MergeMaciStateAqSubRoots") {
+            maciState.stateAq.mergeSubRoots(action.data.numSrQueueOps);
+        } else if (action["type"] === "MergeMaciStateAq") {
             if (pollId == 0) {
-                maciState.stateAq.merge(stateTreeDepth)
+                maciState.stateAq.merge(stateTreeDepth);
             }
-        } else if (action['type'] === 'MergeMessageAqSubRoots') {
+        } else if (action["type"] === "MergeMessageAqSubRoots") {
             maciState.polls[pollId].messageAq.mergeSubRoots(
-                action.data.numSrQueueOps,
-            )
-        } else if (action['type'] === 'MergeMessageAq') {
+                action.data.numSrQueueOps
+            );
+        } else if (action["type"] === "MergeMessageAq") {
             maciState.polls[pollId].messageAq.merge(
-                treeDepths.messageTreeDepth,
-            )
-            const poll = maciState.polls[pollId]
+                treeDepths.messageTreeDepth
+            );
+            const poll = maciState.polls[pollId];
             assert(
                 poll.messageAq.mainRoots[treeDepths.messageTreeDepth] ===
-                action.data.messageRoot
-            )
+                    action.data.messageRoot
+            );
         }
     }
 
     // Set numSignUps
-    const numSignUpsAndMessages = await pollContract.numSignUpsAndMessages()
+    const numSignUpsAndMessages = await pollContract.numSignUpsAndMessages();
 
-    const poll = maciState.polls[pollId]
-    assert(Number(numSignUpsAndMessages[1]) === poll.messages.length)
+    const poll = maciState.polls[pollId];
+    assert(Number(numSignUpsAndMessages[1]) === poll.messages.length);
 
-    maciState.polls[pollId].numSignUps = Number(numSignUpsAndMessages[0])
+    maciState.polls[pollId].numSignUps = Number(numSignUpsAndMessages[0]);
 
-    return maciState
-}
+    return maciState;
+};
 
 /*
  * The comparision function for Actions based on block number and transaction
@@ -495,15 +482,22 @@ const genMaciStateFromContract = async (
  */
 const sortActions = (actions: Action[]) => {
     actions.sort((a, b) => {
-        if (a.blockNumber > b.blockNumber) { return 1 }
-        if (a.blockNumber < b.blockNumber) { return -1 }
+        if (a.blockNumber > b.blockNumber) {
+            return 1;
+        }
+        if (a.blockNumber < b.blockNumber) {
+            return -1;
+        }
 
-        if (a.transactionIndex > b.transactionIndex) { return 1 }
-        if (a.transactionIndex < b.transactionIndex) { return -1 }
-        return 0
-    })
-    return actions
-}
+        if (a.transactionIndex > b.transactionIndex) {
+            return 1;
+        }
+        if (a.transactionIndex < b.transactionIndex) {
+            return -1;
+        }
+        return 0;
+    });
+    return actions;
+};
 
-export { genMaciStateFromContract }
-
+export { genMaciStateFromContract };

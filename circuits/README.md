@@ -7,9 +7,9 @@ This package contains the zk-SNARK circuits written in Circom 2.0.
 
 The main circuits are:
 
-* `processMessages.circom`
-* `tallyVotes.circom`
-* (optional) `subsidy.circom`
+- `processMessages.circom`
+- `tallyVotes.circom`
+- (optional) `subsidy.circom`
 
 The rest of the circuits are utilities templates that are required for the main circuits to work correctly. These include utilities such as float math, conversion of private keys, and Poseidon hashing/encryption.
 
@@ -44,8 +44,8 @@ To test the circuits package, please use `npm run test`. This will run all of th
 
 To run individual tests, you can use the following commands (for all other circuits please refer to the `package.json` scripts section):
 
-* `npm run test-processMessages` to run the tests for the `processMessages` circuit.
-* `npm run test-tallyVotes` to run the tests for the `tallyVotes` circuit.
+- `npm run test-processMessages` to run the tests for the `processMessages` circuit.
+- `npm run test-tallyVotes` to run the tests for the `tallyVotes` circuit.
 
 [circuits-npm-badge]: https://img.shields.io/npm/v/maci-circuits.svg
 [circuits-npm-link]: https://www.npmjs.com/package/maci-circuits

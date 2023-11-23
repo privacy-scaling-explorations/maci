@@ -5,7 +5,6 @@ There is an Ethereum contract (`MACI`) which provides the following interface:
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Merkle trees in storage](#merkle-trees-in-storage)
 - [`signUp(PubKey _pubKey) payable`](#signuppubkey-_pubkey-payable)
 - [`publishMessage(uint256 _msg, PubKey _encPubKey)`](#publishmessageuint256-_msg-pubkey-_encpubkey)
@@ -24,10 +23,10 @@ There is an Ethereum contract (`MACI`) which provides the following interface:
 
 We maintain two Merkle roots in the MACI contract:
 
-| Tree root | Represents |
-|-|-|
-| `messageTree` | Messages ⁠— both valid and invalid ⁠— submitted by users. |
-| `stateTree` | The current mapping between public keys and votes. Leaf 0 is reserved for a random value. |
+| Tree root     | Represents                                                                                |
+| ------------- | ----------------------------------------------------------------------------------------- |
+| `messageTree` | Messages ⁠— both valid and invalid ⁠— submitted by users.                                 |
+| `stateTree`   | The current mapping between public keys and votes. Leaf 0 is reserved for a random value. |
 
 The zero value (for empty leaves) for each tree is a nothing-up-my-sleeve value: the Keccak256 hash of the string 'Maci':
 
@@ -75,7 +74,7 @@ uint256[8] memory _proof
 
 This function accepts a batch update state root transition zk-SNARK proof (`_proof`) and public inputs to the zk-SNARK.
 
-It verifies the proof, updates the processed message counter, and updates the state root in storage with `newStateRoot`. 
+It verifies the proof, updates the processed message counter, and updates the state root in storage with `newStateRoot`.
 
 If the proof is valid, this means that the coordinator has correctly updated the state tree root according to the commands in the given batch of messages.
 
@@ -112,19 +111,19 @@ Each user's public key is associated with exactly one state leaf. This leaf is t
 
 ### Schema
 
-| Data | Bits | Comments |
-|-|-|-|
-| `publicKeyX` | 253 | The public key's x-coordinate. |
-| `publicKeyY` | 253 |  The public key's y-coordinate. |
-| `voteOptionTreeRoot` | 253 | The Merkle root of the tree which represents the options which this particular user voted for. |
-| `voiceCreditBalance` | 32 | The number of remaining voice credits that the user can spend. |
-| `nonce` | 32 | The nonce of the most recently inserted command for this user.
+| Data                 | Bits | Comments                                                                                       |
+| -------------------- | ---- | ---------------------------------------------------------------------------------------------- |
+| `publicKeyX`         | 253  | The public key's x-coordinate.                                                                 |
+| `publicKeyY`         | 253  | The public key's y-coordinate.                                                                 |
+| `voteOptionTreeRoot` | 253  | The Merkle root of the tree which represents the options which this particular user voted for. |
+| `voiceCreditBalance` | 32   | The number of remaining voice credits that the user can spend.                                 |
+| `nonce`              | 32   | The nonce of the most recently inserted command for this user.                                 |
 
-The schema for leaves of the vote option tree, which we dub *vote leaves*, is as such:
+The schema for leaves of the vote option tree, which we dub _vote leaves_, is as such:
 
-| Data | Bits | Comments |
-|-|-|-|
-| `votes` | 32 | In the quadratic voting use case, this is the square root of the voice credits spent for this option. |
+| Data    | Bits | Comments                                                                                              |
+| ------- | ---- | ----------------------------------------------------------------------------------------------------- |
+| `votes` | 32   | In the quadratic voting use case, this is the square root of the voice credits spent for this option. |
 
 ## Commands
 
@@ -134,18 +133,18 @@ Each command may convey a key-change request, a vote, or both. There is only one
 
 Be careful not to confuse the following leaf schema for commands with the state leaf schema. Each user may submit multiple commands, but should only be associated with one state leaf.
 
-| Data | Bits | Comments |
-|-|-|-|
-| `stateIndex`| State tree depth | The index of the leaf in the state tree which contains the public key used to sign the message. This is used to point to the state leaf to update. |
-| `encPublicKeyX` | 253  | The x-coordinate of the ephemeral public key. Its associated private key is used to encrypt the message. |
-| `encPublicKeyY` | 253  | The y-coordinate of the ephemeral public key. (We may use 1 bit, depending on the implementation) |
-| `newPublicKeyX` | 253  | The new public key's x-coordinate. If no change is required, it should be that of the current key. |
-| `newPublicKeyY` | 253  | The new public key's y-coordinate. If no change is required, it should be that of the current key. (We may use 1 bit, depending on the implementation) |
-| `voteOptionIndex` | Vote option tree depth | The index of the leaf in the vote option tree to which this state leaf refers. |
-| `newVoteWeight` | 32 | In the quadratic voting use case, this is the square root of the number of voice credits a user wishes to spend on this vote. |
-| `nonce` | 32 | Prevents replay attacks. Starts from `0` and for each message. A message meant to fool a briber may contain *any nonce necessary* to do so. For more details, see the section on nonces below. |
+| Data              | Bits                   | Comments                                                                                                                                                                                       |
+| ----------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `stateIndex`      | State tree depth       | The index of the leaf in the state tree which contains the public key used to sign the message. This is used to point to the state leaf to update.                                             |
+| `encPublicKeyX`   | 253                    | The x-coordinate of the ephemeral public key. Its associated private key is used to encrypt the message.                                                                                       |
+| `encPublicKeyY`   | 253                    | The y-coordinate of the ephemeral public key. (We may use 1 bit, depending on the implementation)                                                                                              |
+| `newPublicKeyX`   | 253                    | The new public key's x-coordinate. If no change is required, it should be that of the current key.                                                                                             |
+| `newPublicKeyY`   | 253                    | The new public key's y-coordinate. If no change is required, it should be that of the current key. (We may use 1 bit, depending on the implementation)                                         |
+| `voteOptionIndex` | Vote option tree depth | The index of the leaf in the vote option tree to which this state leaf refers.                                                                                                                 |
+| `newVoteWeight`   | 32                     | In the quadratic voting use case, this is the square root of the number of voice credits a user wishes to spend on this vote.                                                                  |
+| `nonce`           | 32                     | Prevents replay attacks. Starts from `0` and for each message. A message meant to fool a briber may contain _any nonce necessary_ to do so. For more details, see the section on nonces below. |
 
-A useful rule of thumb is that the coordinator -- not the user --  should provide information that they know if they possess it. As such, the command does not contain information such as the Merkle path to the root of the vote option tree, since the coordinator should have it.
+A useful rule of thumb is that the coordinator -- not the user -- should provide information that they know if they possess it. As such, the command does not contain information such as the Merkle path to the root of the vote option tree, since the coordinator should have it.
 
 ### About nonces
 
@@ -174,7 +173,7 @@ b. Nonce: 1; vote weight: 10; option: 2
 
 Bob casts vote (a) and shows it to Eve. Later, he secretly casts (c). Since (c) is processed first, it makes (a) invalid, but Eve has no way to tell.
 
-If a user changes their mind, they may have to cast new votes to invalidate their old ones: 
+If a user changes their mind, they may have to cast new votes to invalidate their old ones:
 
 a) Nonce: 2; vote weight: 10; option: 1
 b) Nonce: 1; vote weight: 10; option: 2
@@ -185,14 +184,14 @@ In the above example, if a user changes their mind after casting vote (b), they 
 
 ## Message verification
 
-Given a `command` from a user Alice, we say that the state transition from an `oldStateRoot` to a `newStateRoot` is *valid* if and only if (not in order of processing):
+Given a `command` from a user Alice, we say that the state transition from an `oldStateRoot` to a `newStateRoot` is _valid_ if and only if (not in order of processing):
 
 1. The nonce equals the total number of valid commands from Alice processed by the coordinator in order to produce `oldStateRoot`, minus one. See the section on nonces.
 2. The decrypted message is signed by Alice's current EdDSA private key.
 3. The signature is valid. <!--This includes edge cases such as whether the points of the signature (like `R8`) are valid points.-->
-<!--4. The command has the correct length.-->
-<!--5. Each command field has the correct length.-->
-6. The specified vote option is indeed a choice that the user may make in the system.
-7. The user has enough voice credits left.
-8. Inserting the newly produced state leaf into the current state tree with `oldStateRoot` results in a new state tree with a root equal to `newStateRoot`.
-9. The state leaf index is less or equal to than the maximum state leaf index (2 ** state tree depth) and is not equal to 0.
+   <!--4. The command has the correct length.-->
+   <!--5. Each command field has the correct length.-->
+4. The specified vote option is indeed a choice that the user may make in the system.
+5. The user has enough voice credits left.
+6. Inserting the newly produced state leaf into the current state tree with `oldStateRoot` results in a new state tree with a root equal to `newStateRoot`.
+7. The state leaf index is less or equal to than the maximum state leaf index (2 \*\* state tree depth) and is not equal to 0.

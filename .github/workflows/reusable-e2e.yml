@@ -4,7 +4,6 @@ on:
   workflow_call:
 
 jobs:
-
   e2e:
     runs-on: ubuntu-22.04
 
@@ -21,7 +20,7 @@ jobs:
         id: get-changed-files
         uses: jitterbit/get-changed-files@v1
         with:
-          format: 'csv'
+          format: "csv"
 
       - name: Check for changes in 'circuit' folder
         id: check_changes
@@ -34,7 +33,7 @@ jobs:
             echo "CHANGED=false" >> $GITHUB_ENV
             echo "No changes on circuits."
           fi
-      
+
       - name: Install dependencies
         run: |
           sudo apt-get update

@@ -16,28 +16,28 @@ This config file defines the parameters required for MACI's circuits.
 
 ### Message processing
 
-| # | Parameter | Description |
-|-|-|-|
-| 0 | State tree depth | Should be set to 10. Allows 9,765,625 signups. | 
-| 1 | Message tree depth | Allows $(5^{n})$ votes or key-change messages. | 
-| 2 | Message batch tree depth | Allows $(5^{n})$ messages to be processed per batch. |
-| 3 | Vote option tree depth | Allows $(5^{n})$ vote options. |
+| #   | Parameter                | Description                                          |
+| --- | ------------------------ | ---------------------------------------------------- |
+| 0   | State tree depth         | Should be set to 10. Allows 9,765,625 signups.       |
+| 1   | Message tree depth       | Allows $(5^{n})$ votes or key-change messages.       |
+| 2   | Message batch tree depth | Allows $(5^{n})$ messages to be processed per batch. |
+| 3   | Vote option tree depth   | Allows $(5^{n})$ vote options.                       |
 
 ### Vote tallying
 
-| # | Parameter | Description |
-|-|-|-|
-| 0 | State tree depth | Should be set to 10. Allows 9,765,625 signups. | 
-| 1 | State leaf batch depth | Allows $(5^{n})$ users' votes to be processed per batch. | 
-| 2 | Vote option tree depth | Allows $(5^{n})$ vote options. |
+| #   | Parameter              | Description                                              |
+| --- | ---------------------- | -------------------------------------------------------- |
+| 0   | State tree depth       | Should be set to 10. Allows 9,765,625 signups.           |
+| 1   | State leaf batch depth | Allows $(5^{n})$ users' votes to be processed per batch. |
+| 2   | Vote option tree depth | Allows $(5^{n})$ vote options.                           |
 
-### Subsisdy 
+### Subsisdy
 
-| # | Parameter | Description |
-|-|-|-|
-| 0 | State tree depth | Should be set to 10. Allows 9,765,625 signups. | 
-| 1 | State leaf batch depth | Allows $(5^{n})$ users' votes to be processed per batch. | 
-| 2 | Vote option tree depth | Allows $(5^{n})$ vote options. |
+| #   | Parameter              | Description                                              |
+| --- | ---------------------- | -------------------------------------------------------- |
+| 0   | State tree depth       | Should be set to 10. Allows 9,765,625 signups.           |
+| 1   | State leaf batch depth | Allows $(5^{n})$ users' votes to be processed per batch. |
+| 2   | Vote option tree depth | Allows $(5^{n})$ vote options.                           |
 
 ## Compile circuits
 
@@ -75,7 +75,7 @@ npx zkey-manager downloadPtau -c ./zkeys.config.yml
 ```
 
 `zkey-manager` will select the smallest `.ptau` file that fits the largest
-circuit specified in `zkeys.config.yml`. 
+circuit specified in `zkeys.config.yml`.
 
 ## Generate `.zkey` files
 

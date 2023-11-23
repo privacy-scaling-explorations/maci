@@ -6,7 +6,6 @@ First, compile the contracts.
 
 From the main `maci/` directory, run:
 
-
 ```bash
 cd contracts && \
 npm run compileSol

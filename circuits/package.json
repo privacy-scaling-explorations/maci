@@ -1,43 +1,43 @@
 {
-    "name": "maci-circuits",
-    "version": "1.1.2",
-    "description": "zk-SNARK circuits for MACI",
-    "main": "build/index.js",
-    "scripts": {
-        "build-test-circuits": "bash ./scripts/build.sh",
-        "watch": "tsc --watch",
-        "build": "tsc",
-        "test": "ts-mocha --exit ts/__tests__/*.test.ts",
-        "test-hasher": "ts-mocha --exit Hasher.test.ts",
-        "test-unpackElement": "ts-mocha --exit UnpackElement.test.ts",
-        "test-slAndBallotTransformer": "ts-mocha --exit StateLeafAndBallotTransformer.test.ts",
-        "test-messageToCommand": "ts-mocha --exit MessageToCommand.test.ts",
-        "test-messageValidator": "ts-mocha --exit MessageValidator.test.ts",
-        "test-verifySignature": "ts-mocha --exit VerifySignature.test.ts",
-        "test-splicer": "ts-mocha --exit Splicer.test.ts",
-        "test-ecdh": "ts-mocha --exit Ecdh.test.ts",
-        "test-privToPubKey": "ts-mocha --exit PrivToPubKey.test.ts",
-        "test-calculateTotal": "ts-mocha --exit CalculateTotal.test.ts",
-        "test-processMessages": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit ts/__tests__/ProcessMessages.test.ts",
-        "test-tallyVotes": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit ts/__tests__/TallyVotes.test.ts"
-    },
-    "dependencies": {
-        "circomlib": "weijiekoh/circomlib#ac85e82c1914d47789e2032fb11ceb2cfdd38a2b",
-        "shelljs": "^0.8.3",
-        "snarkjs": "^0.5.0",
-        "tmp": "^0.2.1"
-    },
-    "devDependencies": {
-        "@types/chai": "^4.3.9",
-        "@types/mocha": "^10.0.4",
-        "@types/node": "^18.11.9",
-        "chai": "^4.3.10",
-        "circom_tester": "^0.0.20",
-        "maci-core": "^1.1.2",
-        "maci-crypto": "^1.1.2",
-        "maci-domainobjs": "^1.1.2",
-        "mocha": "^10.2.0",
-        "ts-mocha": "^10.0.0",
-        "typescript": "^4.2.3"
-    }
+  "name": "maci-circuits",
+  "version": "1.1.2",
+  "description": "zk-SNARK circuits for MACI",
+  "main": "build/index.js",
+  "scripts": {
+    "build-test-circuits": "bash ./scripts/build.sh",
+    "watch": "tsc --watch",
+    "build": "tsc",
+    "test": "ts-mocha --exit ts/__tests__/*.test.ts",
+    "test-hasher": "ts-mocha --exit Hasher.test.ts",
+    "test-unpackElement": "ts-mocha --exit UnpackElement.test.ts",
+    "test-slAndBallotTransformer": "ts-mocha --exit StateLeafAndBallotTransformer.test.ts",
+    "test-messageToCommand": "ts-mocha --exit MessageToCommand.test.ts",
+    "test-messageValidator": "ts-mocha --exit MessageValidator.test.ts",
+    "test-verifySignature": "ts-mocha --exit VerifySignature.test.ts",
+    "test-splicer": "ts-mocha --exit Splicer.test.ts",
+    "test-ecdh": "ts-mocha --exit Ecdh.test.ts",
+    "test-privToPubKey": "ts-mocha --exit PrivToPubKey.test.ts",
+    "test-calculateTotal": "ts-mocha --exit CalculateTotal.test.ts",
+    "test-processMessages": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit ts/__tests__/ProcessMessages.test.ts",
+    "test-tallyVotes": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit ts/__tests__/TallyVotes.test.ts"
+  },
+  "dependencies": {
+    "circomlib": "weijiekoh/circomlib#ac85e82c1914d47789e2032fb11ceb2cfdd38a2b",
+    "shelljs": "^0.8.3",
+    "snarkjs": "^0.5.0",
+    "tmp": "^0.2.1"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.9",
+    "@types/mocha": "^10.0.4",
+    "@types/node": "^18.11.9",
+    "chai": "^4.3.10",
+    "circom_tester": "^0.0.20",
+    "maci-core": "^1.1.2",
+    "maci-crypto": "^1.1.2",
+    "maci-domainobjs": "^1.1.2",
+    "mocha": "^10.2.0",
+    "ts-mocha": "^10.0.0",
+    "typescript": "^4.2.3"
+  }
 }

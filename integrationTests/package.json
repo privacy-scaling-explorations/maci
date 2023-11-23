@@ -1,42 +1,42 @@
 {
-    "name": "maci-integrationtests",
-    "version": "1.1.2",
-    "description": "",
-    "main": "build/index.js",
-    "scripts": {
-        "watch": "tsc --watch",
-        "build": "tsc",
-        "test": "ts-mocha --exit ts/__tests__/**.test.ts",
-        "test-cli-genMaciKeypair": "ts-mocha --exit  ts/__tests__/cli-genMaciKeypair.test.ts",
-        "test-cli-genMaciPubkey": "ts-mocha --exit  ts/__tests__/cli-genMaciPubkey.test.ts",
-        "test-suites": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit  ts/__tests__/suites.test.ts",
-        "test-deployPoll": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit  ts/__tests__/deployPollWithRandomSigner.test.ts",
-        "download-zkeys": "./scripts/download_zkeys.sh"
-    },
-    "_moduleAliases": {
-        "@maci-contracts": "../contracts/",
-        "@maci-integrationTests": "./"
-    },
-    "devDependencies": {
-        "@nomiclabs/hardhat-ethers": "^2.0.2",
-        "@types/chai": "^4.3.9",
-        "@types/mocha": "^10.0.4",
-        "@types/node": "^18.11.9",
-        "chai": "^4.3.10",
-        "ethers": "^5.0.32",
-        "hardhat": "^2.0.11",
-        "hardhat-artifactor": "^0.2.0",
-        "hardhat-contract-sizer": "^2.0.3",
-        "js-yaml": "^4.0.0",
-        "maci-circuits": "^1.1.2",
-        "maci-cli": "^1.1.2",
-        "maci-contracts": "^1.1.2",
-        "maci-core": "^1.1.2",
-        "maci-crypto": "^1.1.2",
-        "maci-domainobjs": "^1.1.2",
-        "mocha": "^10.2.0",
-        "module-alias": "^2.2.2",
-        "shelljs": "^0.8.5",
-        "ts-mocha": "^10.0.0"
-    }
+  "name": "maci-integrationtests",
+  "version": "1.1.2",
+  "description": "",
+  "main": "build/index.js",
+  "scripts": {
+    "watch": "tsc --watch",
+    "build": "tsc",
+    "test": "ts-mocha --exit ts/__tests__/**.test.ts",
+    "test-cli-genMaciKeypair": "ts-mocha --exit  ts/__tests__/cli-genMaciKeypair.test.ts",
+    "test-cli-genMaciPubkey": "ts-mocha --exit  ts/__tests__/cli-genMaciPubkey.test.ts",
+    "test-suites": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit  ts/__tests__/suites.test.ts",
+    "test-deployPoll": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit  ts/__tests__/deployPollWithRandomSigner.test.ts",
+    "download-zkeys": "./scripts/download_zkeys.sh"
+  },
+  "_moduleAliases": {
+    "@maci-contracts": "../contracts/",
+    "@maci-integrationTests": "./"
+  },
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@types/chai": "^4.3.9",
+    "@types/mocha": "^10.0.4",
+    "@types/node": "^18.11.9",
+    "chai": "^4.3.10",
+    "ethers": "^5.0.32",
+    "hardhat": "^2.0.11",
+    "hardhat-artifactor": "^0.2.0",
+    "hardhat-contract-sizer": "^2.0.3",
+    "js-yaml": "^4.0.0",
+    "maci-circuits": "^1.1.2",
+    "maci-cli": "^1.1.2",
+    "maci-contracts": "^1.1.2",
+    "maci-core": "^1.1.2",
+    "maci-crypto": "^1.1.2",
+    "maci-domainobjs": "^1.1.2",
+    "mocha": "^10.2.0",
+    "module-alias": "^2.2.2",
+    "shelljs": "^0.8.5",
+    "ts-mocha": "^10.0.0"
+  }
 }

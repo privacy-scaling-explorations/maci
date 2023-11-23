@@ -1,12 +1,10 @@
 name: Release
 
 on:
-  push: 
-    tags: ['*']
-
+  push:
+    tags: ["*"]
 
 jobs:
-
   draft-release:
     runs-on: ubuntu-22.04
 
@@ -24,12 +22,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Use Node.js 18
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: "https://registry.npmjs.org"
 
       - name: Initialize Project
         run: |

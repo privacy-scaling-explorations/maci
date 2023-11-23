@@ -1,10 +1,10 @@
-export type SnarkBigInt = bigint
-export type PrivKey = bigint
-export type PubKey = bigint[]
-export type Point = bigint[]
-export type EcdhSharedKey = bigint[]
-export type Plaintext = bigint[]
-export type Ciphertext = bigint[]
+export type SnarkBigInt = bigint;
+export type PrivKey = bigint;
+export type PubKey = bigint[];
+export type Point = bigint[];
+export type EcdhSharedKey = bigint[];
+export type Plaintext = bigint[];
+export type Ciphertext = bigint[];
 
 /**
  * A acc queue
@@ -43,4 +43,4 @@ export interface PoseidonFuncs {
     5: (inputs: bigint[]) => bigint;
 }
 
-export type Leaf = bigint
+export type Leaf = bigint;

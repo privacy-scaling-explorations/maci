@@ -1,76 +1,66 @@
-import { utils, Contract } from 'ethers'
-import { deployTestContracts } from '../ts/utils'
-import {
-    Keypair,
-} from 'maci-domainobjs'
-import { expect } from 'chai'
-import {
-    MaxValues,
-    TreeDepths,
-} from 'maci-core'
+import { utils, Contract } from "ethers";
+import { deployTestContracts } from "../ts/utils";
+import { Keypair } from "maci-domainobjs";
+import { expect } from "chai";
+import { MaxValues, TreeDepths } from "maci-core";
 
-const coordinator = new Keypair()
-const users = [
-    new Keypair(),
-    new Keypair(),
-    new Keypair(),
-]
+const coordinator = new Keypair();
+const users = [new Keypair(), new Keypair(), new Keypair()];
 
-const STATE_TREE_DEPTH = 10
-const MESSAGE_TREE_DEPTH = 4
-const MESSAGE_TREE_SUBDEPTH = 2
+const STATE_TREE_DEPTH = 10;
+const MESSAGE_TREE_DEPTH = 4;
+const MESSAGE_TREE_SUBDEPTH = 2;
 
 // Poll parameters
-const duration = 15
+const duration = 15;
 const maxValues: MaxValues = {
     maxMessages: 25,
     maxVoteOptions: 25,
-}
+};
 
 const treeDepths: TreeDepths = {
     intStateTreeDepth: 1,
     messageTreeDepth: MESSAGE_TREE_DEPTH,
     messageTreeSubDepth: MESSAGE_TREE_SUBDEPTH,
     voteOptionTreeDepth: 2,
-}
+};
 
-const initialVoiceCreditBalance = 100
+const initialVoiceCreditBalance = 100;
 
-
-describe('Overflow testing', () => {
-    let maciContract: Contract
+describe("Overflow testing", () => {
+    let maciContract: Contract;
 
     beforeEach(async () => {
         const r = await deployTestContracts(
             initialVoiceCreditBalance,
             STATE_TREE_DEPTH,
             true
-        )
-        maciContract = r.maciContract
-    })
+        );
+        maciContract = r.maciContract;
+    });
 
-    it('MACI.stateTreeDepth should be correct', async () => {
-        const std = await maciContract.stateTreeDepth()
-        expect(std.toString()).to.eq(STATE_TREE_DEPTH.toString())
-    })
-    it('SignUps - should not overflow', async () => {
+    it("MACI.stateTreeDepth should be correct", async () => {
+        const std = await maciContract.stateTreeDepth();
+        expect(std.toString()).to.eq(STATE_TREE_DEPTH.toString());
+    });
+    it("SignUps - should not overflow", async () => {
         await maciContract.signUp(
             users[0].pubKey.asContractParam(),
-            utils.defaultAbiCoder.encode(['uint256'], [1]),
-            utils.defaultAbiCoder.encode(['uint256'], [0]),
-        )
-    })
+            utils.defaultAbiCoder.encode(["uint256"], [1]),
+            utils.defaultAbiCoder.encode(["uint256"], [0])
+        );
+    });
 
-    it('Deploy Poll - should not overflow', async () => {
+    it("Deploy Poll - should not overflow", async () => {
         await maciContract.deployPoll(
             duration,
             maxValues,
             treeDepths,
             coordinator.pubKey.asContractParam()
-        )
-    })
+        );
+    });
 
-    it('Deploy Poll - should not overflow with larger values for tree depths', async () => {
+    it("Deploy Poll - should not overflow with larger values for tree depths", async () => {
         /* 
             Poll Contract
             require(
@@ -116,12 +106,12 @@ describe('Overflow testing', () => {
             messageTreeDepth: 5,
             messageTreeSubDepth: 5,
             voteOptionTreeDepth: 2,
-        }
+        };
 
         const _maxValues: MaxValues = {
             maxMessages: 3125,
-            maxVoteOptions: 25
-        }
+            maxVoteOptions: 25,
+        };
 
         // require maxMessages <= treeArity ** messageTreeDepths
         // require 25 <= 5 * 5 Ok
@@ -131,7 +121,7 @@ describe('Overflow testing', () => {
         // require 3125 % 3125
         // require _maxValues.maxVoteOptions <=
         // treeArity**uint256(_treeDepths.voteOptionTreeDepth)
-        // require 25 <= 5 ** 2 
+        // require 25 <= 5 ** 2
         // require _maxValues.maxVoteOptions < (2**50)
         // require 25 < 2 ** 50 -> 25 < 1125899906842624
         const tx = await maciContract.deployPoll(
@@ -139,9 +129,9 @@ describe('Overflow testing', () => {
             _maxValues,
             _treeDepths,
             coordinator.pubKey.asContractParam()
-        )
+        );
 
-        const receipt = await tx.wait()
-        console.log(`Used ${receipt.gasUsed?.toString()} gas`)
-    })
-})
+        const receipt = await tx.wait();
+        console.log(`Used ${receipt.gasUsed?.toString()} gas`);
+    });
+});

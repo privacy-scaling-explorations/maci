@@ -4,7 +4,6 @@ on:
   schedule:
     - cron: 0 0 * * *
 
-
 jobs:
   generate-proving-keys:
     runs-on: ubuntu-22.04
@@ -82,18 +81,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [ 18, 20 ]
+        node-version: [18, 20]
 
     steps:
       - uses: actions/checkout@v4
         with:
           ref: dev
-    
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Update npm to latest version
         run: npm install --global npm@latest
