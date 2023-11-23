@@ -661,6 +661,7 @@ class StateLeaf implements IStateLeaf {
 class Command {
     public cmdType: bigint;
 
+    /* @typescript-eslint/no-empty-function */
     constructor() {}
 
     public copy = (): Command => {
