@@ -16,5 +16,5 @@
     "./circuits/**/*",
     "./integrationTests/**/*"
   ],
-  "out": "./docs/typedoc/"
+  "out": "./website/static/typedoc_output/"
 }

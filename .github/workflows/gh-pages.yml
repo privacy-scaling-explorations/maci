@@ -2,7 +2,7 @@ name: GitHub Pages
 
 on:
   push:
-    branches: [master, dev]
+    branches: [ dev ]
   pull_request:
 
 concurrency:
@@ -16,17 +16,37 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup mdBook
-        uses: peaceiris/actions-mdbook@v1
+      - name: Use Node.js 20
+        uses: actions/setup-node@v3
         with:
-          mdbook-version: "0.4.18"
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
 
-      - name: Build
-        run: mdbook build
+      - name: Run typedoc
+        run: |
+          npm install 
+          npm run bootstrap
+          npm run build
+          npm run typedoc
+
+      - name: Fix typedoc links 
+        run: |
+          npm install
+          npm run setup-typedoc
+        working-directory: website
+
+      - name: Build 🔧
+        run: |
+          npm run build
+        working-directory: website
+
+      - name: Add CNAME
+        run: |
+          echo 'maci.pse.dev' > ./website/build/CNAME
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.ref == 'refs/heads/dev' }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./publish
+          publish_dir: ./website/build

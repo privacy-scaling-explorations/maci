@@ -11,7 +11,7 @@
     "lint": "eslint './**/**/*.ts'",
     "lint-fix": "eslint './**/**/*.ts' --fix",
     "test": "lerna run test --ignore maci-common --ignore maci-server --ignore maci-integrationtests --ignore maci-cli",
-    "docs": "typedoc --options typedoc.json",
+    "typedoc": "typedoc --options typedoc.json",
     "prepare": "is-ci || husky install"
   },
   "author": "PSE",
