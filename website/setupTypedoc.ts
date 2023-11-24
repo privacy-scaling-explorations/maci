@@ -5,10 +5,10 @@ const path = require("path");
 const typedocDir = path.join(__dirname, "static/typedoc_output");
 
 // Define a recursive function to find all HTML files in a directory
-function findHtmlFiles(dir, fileList = []) {
+function findHtmlFiles(dir: string, fileList: string[] = []) {
     const files = fs.readdirSync(dir);
 
-    files.forEach((file) => {
+    files.forEach((file: string) => {
         if (fs.statSync(path.join(dir, file)).isDirectory()) {
             fileList = findHtmlFiles(path.join(dir, file), fileList);
         } else if (file.endsWith(".html")) {
@@ -30,6 +30,11 @@ htmlFiles.forEach((file) => {
     content = content.replace(
         /<a href="http/g,
         '<a target="_parent" href="http'
+    );
+
+    content = content.replace(
+        /<a href="\.\//g,
+        '<a target="_parent" href="https://github.com/privacy-scaling-explorations/maci/tree/dev/'
     );
 
     fs.writeFileSync(file, content);

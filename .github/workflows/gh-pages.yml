@@ -2,7 +2,7 @@ name: GitHub Pages
 
 on:
   push:
-    branches: [ master, dev, feat/revamp-docs ]
+    branches: [ dev ]
   pull_request:
 
 concurrency:
@@ -27,7 +27,7 @@ jobs:
           npm install 
           npm run bootstrap
           npm run build
-          npm run docs
+          npm run typedoc
 
       - name: Fix typedoc links 
         run: |
@@ -46,6 +46,7 @@ jobs:
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.ref == 'refs/heads/dev' }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./website/build
