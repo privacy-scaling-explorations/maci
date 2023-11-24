@@ -21,6 +21,23 @@ Next, navigate to the `cli/` directory and edit `zkeys.config.yml`.
 
 This config file defines the parameters required for MACI's circuits.
 
+## How the circuits work
+
+![TallyVotes](/img/circuits/tallyVotes.png)
+
+![TallyVotesInputHasher](/img/circuits/tallyVotesInputHasher.png)
+
+![ResultsCommitmentVerifier](/img/circuits/resultsCommitmentVerifier.png)
+
+![QuinCheckRoot](/img/circuits/quinCheckRoot.png)
+
+![CalculateTotal](/img/circuits/calculateTotal.png)
+
+![ECDH](/img/circuits/ecdh.png)
+
+![Poseidon13](/img/circuits/poseidon13.png)
+
+
 ### Message processing
 
 | #   | Parameter                | Description                                          |
