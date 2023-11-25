@@ -10,7 +10,7 @@
 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.css" integrity="sha384-odtC+0UGzzFL/6PNoE8rX/SPcQDXBJ+uRepguP4QkPCm2LBxH3FA3y+fKSiJ+AmM" crossorigin="anonymous"><link rel="stylesheet" href="/assets/css/styles.83c44609.css">
-<script src="/assets/js/runtime~main.eb485129.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.1c294788.js" defer="defer"></script>
 <script src="/assets/js/main.84223f98.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -86,22 +86,28 @@
 <p>The last valid message per user should have a nonce of <code>1</code>. Each valid message that comes before it should have an increasing nonce.</p>
 <p><code>0</code> and negative values are invalid nonces.</p>
 <p>For example, Alice publishes 5 messages, all of which vote for the same option:</p>
-<p>a. Nonce: 2; vote weight: 10
-b. Nonce: 1; vote weight: 20
-c. Nonce: 3; vote weight: 10
-d. Nonce: 2; vote weight: 1
-e. Nonce: 1; vote weight: 0</p>
-<p>Since messages are processed in reverse order, messages (e), (d), and (c) are valid, but (b) and (a) are not. As such, her option receives 10 votes.</p>
-<p>(b) is invalid because at the point at which it is processed, the latest nonce is 3, but (b) gives a nonce of (2). The same applies for (a), whose nonce has been seen before.</p>
+<ul>
+<li>(a) Nonce: 2; vote weight: 10</li>
+<li>(b) Nonce: 1; vote weight: 20</li>
+<li>(c) Nonce: 3; vote weight: 10</li>
+<li>(d) Nonce: 2; vote weight: 1</li>
+<li>(e) Nonce: 1; vote weight: 0</li>
+</ul>
+<p>Since messages are processed in reverse order, messages (e), (d), and (c) are valid, but (b) and (a) are not. As such, her option receives 11 votes.</p>
+<p>(b) is invalid because at the point at which it is processed, the latest nonce is 3, but (b) gives a nonce of (1). The same applies for (a), whose nonce has been seen before.</p>
 <p>Take another example, where Eve bribes Bob to vote for option 1, but Bob wants to vote for option 2 instead.</p>
-<p>a. Nonce: 1; vote weight: 10; option: 1
-b. Nonce: 1; vote weight: 10; option: 2</p>
-<p>Bob casts vote (a) and shows it to Eve. Later, he secretly casts (c). Since (c) is processed first, it makes (a) invalid, but Eve has no way to tell.</p>
+<ul>
+<li>(a) Nonce: 1; vote weight: 10; option: 1</li>
+<li>(b) Nonce: 1; vote weight: 10; option: 2</li>
+</ul>
+<p>Bob casts vote (a) and shows it to Eve. Later, he secretly casts (b). Since (b) is processed first, it makes (a) invalid, but Eve has no way to tell.</p>
 <p>If a user changes their mind, they may have to cast new votes to invalidate their old ones:</p>
-<p>a) Nonce: 2; vote weight: 10; option: 1
-b) Nonce: 1; vote weight: 10; option: 2
-c) Nonce: 2; vote weight: 5; option: 1
-d) Nonce: 1; vote weight: 5; option: 1</p>
+<ul>
+<li>(a) Nonce: 2; vote weight: 10; option: 1</li>
+<li>(b) Nonce: 1; vote weight: 10; option: 2</li>
+<li>(c) Nonce: 2; vote weight: 5; option: 1</li>
+<li>(d) Nonce: 1; vote weight: 5; option: 1</li>
+</ul>
 <p>In the above example, if a user changes their mind after casting vote (b), they have to start over.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="message-verification">Message verification<a href="#message-verification" class="hash-link" aria-label="Direct link to Message verification" title="Direct link to Message verification">​</a></h2>
 <p>Given a <code>command</code> from a user Alice, we say that the state transition from an <code>oldStateRoot</code> to a <code>newStateRoot</code> is <em>valid</em> if and only if (not in order of processing):</p>
