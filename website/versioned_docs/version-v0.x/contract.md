@@ -156,29 +156,29 @@ The last valid message per user should have a nonce of `1`. Each valid message t
 
 For example, Alice publishes 5 messages, all of which vote for the same option:
 
-a. Nonce: 2; vote weight: 10
-b. Nonce: 1; vote weight: 20
-c. Nonce: 3; vote weight: 10
-d. Nonce: 2; vote weight: 1
-e. Nonce: 1; vote weight: 0
+- (a) Nonce: 2; vote weight: 10
+- (b) Nonce: 1; vote weight: 20
+- (c) Nonce: 3; vote weight: 10
+- (d) Nonce: 2; vote weight: 1
+- (e) Nonce: 1; vote weight: 0
 
-Since messages are processed in reverse order, messages (e), (d), and (c) are valid, but (b) and (a) are not. As such, her option receives 10 votes.
+Since messages are processed in reverse order, messages (e), (d), and (c) are valid, but (b) and (a) are not. As such, her option receives 11 votes.
 
-(b) is invalid because at the point at which it is processed, the latest nonce is 3, but (b) gives a nonce of (2). The same applies for (a), whose nonce has been seen before.
+(b) is invalid because at the point at which it is processed, the latest nonce is 3, but (b) gives a nonce of (1). The same applies for (a), whose nonce has been seen before.
 
 Take another example, where Eve bribes Bob to vote for option 1, but Bob wants to vote for option 2 instead.
 
-a. Nonce: 1; vote weight: 10; option: 1
-b. Nonce: 1; vote weight: 10; option: 2
+- (a) Nonce: 1; vote weight: 10; option: 1
+- (b) Nonce: 1; vote weight: 10; option: 2
 
-Bob casts vote (a) and shows it to Eve. Later, he secretly casts (c). Since (c) is processed first, it makes (a) invalid, but Eve has no way to tell.
+Bob casts vote (a) and shows it to Eve. Later, he secretly casts (b). Since (b) is processed first, it makes (a) invalid, but Eve has no way to tell.
 
 If a user changes their mind, they may have to cast new votes to invalidate their old ones:
 
-a) Nonce: 2; vote weight: 10; option: 1
-b) Nonce: 1; vote weight: 10; option: 2
-c) Nonce: 2; vote weight: 5; option: 1
-d) Nonce: 1; vote weight: 5; option: 1
+- (a) Nonce: 2; vote weight: 10; option: 1
+- (b) Nonce: 1; vote weight: 10; option: 2
+- (c) Nonce: 2; vote weight: 5; option: 1
+- (d) Nonce: 1; vote weight: 5; option: 1
 
 In the above example, if a user changes their mind after casting vote (b), they have to start over.
 
