@@ -48,7 +48,7 @@ jobs:
           sudo mv /home/runner/work/circom /bin/circom
 
       - name: Build circuits
-        run: npm run build-test-circuits
+        run: npm run build-test-circuits-wasm
         working-directory: circuits
 
       - name: Test circuits
