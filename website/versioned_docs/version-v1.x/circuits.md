@@ -23,21 +23,6 @@ This config file defines the parameters required for MACI's circuits.
 
 ## How the circuits work
 
-![TallyVotes](/img/circuits/tallyVotes.png)
-
-![TallyVotesInputHasher](/img/circuits/tallyVotesInputHasher.png)
-
-![ResultsCommitmentVerifier](/img/circuits/resultsCommitmentVerifier.png)
-
-![QuinCheckRoot](/img/circuits/quinCheckRoot.png)
-
-![CalculateTotal](/img/circuits/calculateTotal.png)
-
-![ECDH](/img/circuits/ecdh.png)
-
-![Poseidon13](/img/circuits/poseidon13.png)
-
-
 ### Message processing
 
 | #   | Parameter                | Description                                          |
@@ -47,13 +32,18 @@ This config file defines the parameters required for MACI's circuits.
 | 2   | Message batch tree depth | Allows $(5^{n})$ messages to be processed per batch. |
 | 3   | Vote option tree depth   | Allows $(5^{n})$ vote options.                       |
 
-### Vote tallying
+
+
+### Tally Votes
 
 | #   | Parameter              | Description                                              |
 | --- | ---------------------- | -------------------------------------------------------- |
 | 0   | State tree depth       | Should be set to 10. Allows 9,765,625 signups.           |
 | 1   | State leaf batch depth | Allows $(5^{n})$ users' votes to be processed per batch. |
 | 2   | Vote option tree depth | Allows $(5^{n})$ vote options.                           |
+
+![TallyVotes](/img/circuits/tallyVotes.png)
+
 
 ### Subsisdy
 
@@ -62,6 +52,52 @@ This config file defines the parameters required for MACI's circuits.
 | 0   | State tree depth       | Should be set to 10. Allows 9,765,625 signups.           |
 | 1   | State leaf batch depth | Allows $(5^{n})$ users' votes to be processed per batch. |
 | 2   | Vote option tree depth | Allows $(5^{n})$ vote options.                           |
+
+### Utility circuits
+
+#### Tally Votes Input Hasher
+
+![TallyVotesInputHasher](/img/circuits/tallyVotesInputHasher.png)
+
+### ResultsCommitmentVerifier
+
+![ResultsCommitmentVerifier](/img/circuits/resultsCommitmentVerifier.png)
+
+#### QuinCheckRoot
+
+![QuinCheckRoot](/img/circuits/quinCheckRoot.png)
+
+#### CalculateTotal
+
+![CalculateTotal](/img/circuits/calculateTotal.png)
+
+#### ECDH
+
+![ECDH](/img/circuits/ecdh.png)
+
+#### Poseidon
+
+![Poseidon13](/img/circuits/poseidon13.png)
+
+#### MessageToCommand
+
+![MessageToCommand](/img/circuits/messageToCommand.png)
+
+#### MessageValidator
+
+![MessageValidator](/img/circuits/messageValidator.png)
+
+#### PrivToPubKey
+
+![PrivToPubKey](/img/circuits/privToPubKey.png)
+
+#### VerifySignature
+
+![VerifySignature](/img/circuits/verifySignature.png)
+
+#### UnpackElement 
+
+![UnpackElement](/img/circuits/unpackElement.png)
 
 ## Compile circuits
 
