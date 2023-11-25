@@ -2,7 +2,7 @@
 out: "./zkeys"
 
 # Make sure that these paths are correct
-circomPath: "/Users/ctrlc03/.cargo/bin/circom"
+circomPath: "../../.local/bin/circom"
 snarkjsPath: "./node_modules/snarkjs/build/cli.cjs"
 
 circuits:
