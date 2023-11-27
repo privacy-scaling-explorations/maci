@@ -1,3 +1,10 @@
+---
+title: Introduction to MACI v0.x
+description: High-level introduction to Minimum Anti-Collusion Infrastructure (MACI) v0.x
+sidebar_label: Introduction
+sidebar_position: 1
+---
+
 # Minimum Anti-Collusion Infrastructure
 
 _Barry WhiteHat, Kendrick Tan, Kobi Gurkan, Chih-Cheng Liang, and Koh Wei Jie_
@@ -5,16 +12,17 @@ _Barry WhiteHat, Kendrick Tan, Kobi Gurkan, Chih-Cheng Liang, and Koh Wei Jie_
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [Introduction](#introduction)
-- [High-level process](#high-level-process)
-- [Technical process](#technical-process)
-- [Availability and visibility of messages](#availability-and-visibility-of-messages)
-- [System components](#system-components)
-  - [Roles](#roles)
-  - [Cryptographic operations](#cryptographic-operations)
-    - [Key generation](#key-generation)
-    - [Command signing and encryption](#command-signing-and-encryption)
-- [Glossary](#glossary)
+- [Minimum Anti-Collusion Infrastructure](#minimum-anti-collusion-infrastructure)
+  - [Introduction](#introduction)
+  - [High-level process](#high-level-process)
+  - [Technical process](#technical-process)
+  - [Availability and visibility of messages](#availability-and-visibility-of-messages)
+  - [System components](#system-components)
+    - [Roles](#roles)
+    - [Cryptographic operations](#cryptographic-operations)
+      - [Key generation](#key-generation)
+      - [Command signing and encryption](#command-signing-and-encryption)
+  - [Glossary](#glossary)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 

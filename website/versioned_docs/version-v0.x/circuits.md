@@ -1,4 +1,10 @@
-**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+---
+title: MACI v0.x Circuits
+sidebar_label: MACI Circuits
+sidebar_position: 3
+---
+
+**Table of Contents** _generated with [DocToc](https://github.com/thlorenz/doctoc)_
 
 - [Circuits](#circuits)
 

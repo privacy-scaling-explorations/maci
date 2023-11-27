@@ -1,3 +1,9 @@
+---
+title: MACI v0.x Contract
+sidebar_label: MACI Contract
+sidebar_position: 2
+---
+
 # Contract
 
 There is an Ethereum contract (`MACI`) which provides the following interface:
@@ -5,17 +11,19 @@ There is an Ethereum contract (`MACI`) which provides the following interface:
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [Merkle trees in storage](#merkle-trees-in-storage)
-- [`signUp(PubKey _pubKey) payable`](#signuppubkey-_pubkey-payable)
-- [`publishMessage(uint256 _msg, PubKey _encPubKey)`](#publishmessageuint256-_msg-pubkey-_encpubkey)
-- [`batchProcessMessage(...)`](#batchprocessmessage)
-- [`proveVoteTallyBatch()`](#provevotetallybatch)
-- [State leaves](#state-leaves)
-  - [Schema](#schema)
-- [Commands](#commands)
-  - [Schema](#schema-1)
-  - [About nonces](#about-nonces)
-- [Message verification](#message-verification)
+- [Contract](#contract)
+  - [Merkle trees in storage](#merkle-trees-in-storage)
+  - [Vote option trees](#vote-option-trees)
+  - [`signUp(PubKey _userPubKey, bytes memory _signUpGatekeeperData, bytes memory _initialVoiceCreditProxyData)`](#signuppubkey-_userpubkey-bytes-memory-_signupgatekeeperdata-bytes-memory-_initialvoicecreditproxydata)
+  - [`publishMessage(uint256 _msg, PubKey _encPubKey)`](#publishmessageuint256-_msg-pubkey-_encpubkey)
+  - [`batchProcessMessage(...)`](#batchprocessmessage)
+  - [`proveVoteTallyBatch()`](#provevotetallybatch)
+  - [State leaves](#state-leaves)
+    - [Schema](#schema)
+  - [Commands](#commands)
+    - [Schema](#schema-1)
+    - [About nonces](#about-nonces)
+  - [Message verification](#message-verification)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
