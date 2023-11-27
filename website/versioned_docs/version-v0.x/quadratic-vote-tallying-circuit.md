@@ -1,13 +1,10 @@
+---
+title: MACI v0.x quadratic vote tallying circuit
+sidebar_label: "Circuit: quadratic vote tallying"
+sidebar_position: 5
+---
+
 # The quadratic vote tallying circuit
-
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
-- [Inputs](#inputs)
-- [Circuit pseudocode](#circuit-pseudocode)
-- [Circuit failure modes](#circuit-failure-modes)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 Quadratic voting is one of many types of vote tallying mechanisms. We chose it for the first version of MACI due to the high amount of interest that the community has shown for it.
 

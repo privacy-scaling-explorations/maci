@@ -1,19 +1,12 @@
+---
+title: MACI v0.x state root transition proof circuit
+sidebar_label: "Circuit: state root transition proof"
+sidebar_position: 4
+---
+
 # The state root transition proof circuit
 
 This circuit proves the correctness of each state root transition.
-
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
-- [Public Inputs](#public-inputs)
-- [Private Inputs](#private-inputs)
-- [Check 1: That the message has been encrypted with the correct key](#check-1-that-the-message-has-been-encrypted-with-the-correct-key)
-- [Check 2: that the message is part of the message tree](#check-2-that-the-message-is-part-of-the-message-tree)
-- [Check 3: that the new state root transition is the correct result of executing the given command — _or_ — that the command is invalid and the no-op flag is set to true.](#check-3-that-the-new-state-root-transition-is-the-correct-result-of-executing-the-given-command--or--that-the-command-is-invalid-and-the-no-op-flag-is-set-to-true)
-- [Circuit logic](#circuit-logic)
-- [Circuit failure modes](#circuit-failure-modes)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Public Inputs
 

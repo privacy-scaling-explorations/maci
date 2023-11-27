@@ -1,18 +1,10 @@
+---
+title: MACI v0.x FAQ
+sidebar_label: FAQ
+sidebar_position: 6
+---
+
 # FAQ
-
-- [I: Attacks and mitigations](#i-attacks-and-mitigations)
-  - [If the coordinator censors messages](#if-the-coordinator-censors-messages)
-  - [If a user submits a message with an invalid signature](#if-a-user-submits-a-message-with-an-invalid-signature)
-  - [If an adversarial miner bribes a user and controls the `randomLeaf` value passed into the state transition snark](#if-an-adversarial-miner-bribes-a-user-and-controls-the-randomleaf-value-passed-into-the-state-transition-snark)
-  - [User creates a command that the snark cannot process](#user-creates-a-command-that-the-snark-cannot-process)
-  - [If a briber locks the user's key in trusted hardware](#if-a-briber-locks-the-users-key-in-trusted-hardware)
-  - [Deposit my public key and i will pay you](#deposit-my-public-key-and-i-will-pay-you)
-  - [If an attacker fills up the message tree with a such a large number of commands that the coordinator cannot afford to generate enough proofs to process them all](#if-an-attacker-fills-up-the-message-tree-with-a-such-a-large-number-of-commands-that-the-coordinator-cannot-afford-to-generate-enough-proofs-to-process-them-all)
-- [II: Claims / required invariants](#ii-claims--required-invariants)
-- [III: Desired features not described in this specification](#iii-desired-features-not-described-in-this-specification)
-- [IV: Quadratic and sybil-resistant million-dollar-homepages](#iv-quadratic-and-sybil-resistant-million-dollar-homepages)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## I: Attacks and mitigations
 
