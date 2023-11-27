@@ -4,10 +4,6 @@ sidebar_label: MACI Circuits
 sidebar_position: 3
 ---
 
-**Table of Contents** _generated with [DocToc](https://github.com/thlorenz/doctoc)_
-
-- [Circuits](#circuits)
-
 # Circuits
 
 There are two zk-SNARK circuits in MACI: one which allows the coordinator to prove the correctness of each state root transition, and the other which proves that they have correctly tallied all the votes.

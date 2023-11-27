@@ -9,23 +9,6 @@ sidebar_position: 1
 
 _Barry WhiteHat, Kendrick Tan, Kobi Gurkan, Chih-Cheng Liang, and Koh Wei Jie_
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
-- [Minimum Anti-Collusion Infrastructure](#minimum-anti-collusion-infrastructure)
-  - [Introduction](#introduction)
-  - [High-level process](#high-level-process)
-  - [Technical process](#technical-process)
-  - [Availability and visibility of messages](#availability-and-visibility-of-messages)
-  - [System components](#system-components)
-    - [Roles](#roles)
-    - [Cryptographic operations](#cryptographic-operations)
-      - [Key generation](#key-generation)
-      - [Command signing and encryption](#command-signing-and-encryption)
-  - [Glossary](#glossary)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
 ## Introduction
 
 This specification is for an implementation of Minimum Anti-Collusion Infrastructure (MACI). Originally proposed by Vitalik Buterin in [this ethresear.ch post](https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413), systems built with MACI make collusion among participants difficult, while retaining the censorship resistance and correct-execution benefits of smart contracts. Although MACI can provide collusion resistance only if the coordinator is honest, a dishonest coordinator can neither censor nor tamper with its execution.

@@ -6,16 +6,6 @@ sidebar_position: 5
 
 # The quadratic vote tallying circuit
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
-- [The quadratic vote tallying circuit](#the-quadratic-vote-tallying-circuit)
-  - [Inputs](#inputs)
-  - [Circuit pseudocode](#circuit-pseudocode)
-  - [Circuit failure modes](#circuit-failure-modes)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
 Quadratic voting is one of many types of vote tallying mechanisms. We chose it for the first version of MACI due to the high amount of interest that the community has shown for it.
 
 Quadratic voting allows users to express the strength of their preferences when they vote for options. Since users are allocated a limited number of _voice credits_, and the number of tallied votes per option is the square root of the number of voice credits spent on said option, quadratic voting [over-privileges neither concentrated nor diffuse interests](https://www.vitalik.ca/general/2019/12/07/quadratic.html).
