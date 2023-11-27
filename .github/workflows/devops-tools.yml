@@ -1,0 +1,37 @@
+name: Devops tools
+
+on:
+  push:
+    branches: [ v1 ]
+  pull_request:
+    branches: [ v1 ]
+
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        node-version: [14, 16, 18]
+
+    steps:
+      - uses: actions/checkout@v3
+    
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Update npm to latest version
+        run: npm install --global npm@latest
+
+      - name: Test poseidon-deployer
+        run: |
+          npm install
+          npm run build
+          npm run test
+        working-directory: devops/poseidon-deployer
