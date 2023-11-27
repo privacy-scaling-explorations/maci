@@ -1,13 +1,11 @@
-import { join } from 'path'
+import { join } from "path";
 const tester = require("circom_tester").wasm;
-import { expect } from 'chai'
-import { 
-    getSignal,
-} from './utils/utils'
+import { expect } from "chai";
+import { getSignal } from "./utils/utils";
 
-describe('CalculateTotal circuit', () => {
-    const circuitPath = join(__dirname, '../../circom/test', `calculateTotal_test.circom`)
-    let circuit: any 
+describe("CalculateTotal circuit", () => {
+  const circuitPath = join(__dirname, "../../circom/test", `calculateTotal_test.circom`);
+  let circuit: any;
 
   before(async () => {
     circuit = await tester(circuitPath);

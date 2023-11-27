@@ -50,9 +50,19 @@ npm run compileSol
 To run Contracts only tests, run:
 
 ```bash
-cd contracts && \
 npm run test
 ```
+
+## Circuits
+
+To test the circuits, from the main `maci/` directory, run:
+
+```bash
+cd circuits && \
+npm run test
+```
+
+Tests are run using [Mocha](https://mochajs.org/) and [`circom_tester`](https://github.com/iden3/circom_tester).
 
 ## CLI
 

@@ -2,8 +2,8 @@ import { stringifyBigInts } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
 import { join } from "path";
 const tester = require("circom_tester").wasm;
-import { expect } from 'chai'
-import { getSignal } from './utils/utils';
+import { expect } from "chai";
+import { getSignal } from "./utils/utils";
 
 describe("Public key derivation circuit", () => {
   const circuitPath = join(__dirname, "../../circom/test", `ecdh_test.circom`);

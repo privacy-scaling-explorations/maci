@@ -385,7 +385,7 @@ template ProcessTopup(stateTreeDepth) {
     signal output newStateRoot;
 
     // skip state leaf verify, because it's checked in ProcessOne 
-
+    
     signal amt;
     signal index;
     // msgType of topup command is 2

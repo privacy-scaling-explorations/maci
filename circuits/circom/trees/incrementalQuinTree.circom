@@ -23,11 +23,9 @@ Note: circom has some particularities which limit the code patterns we can use.
 - You can't use a signal as a list index.
 */
 
-/*
- * Given a list of items and an index, output the item at the position denoted
- * by the index. The number of items must be less than 8, and the index must
- * be less than the number of items.
- */
+// Given a list of items and an index, output the item at the position denoted
+// by the index. The number of items must be less than 8, and the index must
+// be less than the number of items.
 template QuinSelector(choices) {
     signal input in[choices];
     signal input index;
@@ -57,11 +55,9 @@ template QuinSelector(choices) {
     out <== calcTotal.sum;
 }
 
-/*
- * The output array contains the input items, with the the leaf inserted at the
- * specified index. For example, if input = [0, 20, 30, 40], index = 3, and
- * leaf = 10, the output will be [0, 20, 30, 10, 40].
- */
+// The output array contains the input items, with the the leaf inserted at the
+// specified index. For example, if input = [0, 20, 30, 40], index = 3, and
+// leaf = 10, the output will be [0, 20, 30, 10, 40].
 template Splicer(numItems) {
     // Since we only insert one item, the number of output items is 1 +
     // numItems
@@ -119,7 +115,7 @@ template Splicer(numItems) {
         quinSelectors[i] = QuinSelector(numItems + 1);
 
         // Select the value from `in` at index i - greaterThan[i].out.
-        // e.g. if index = 2 and i = 1, greaterThan[i].out = 0, so 1 - 0 = 0
+        // e.g. if index = 2 and i = 1, greaterThan[i].out = 0, so 1 - 0 = 1
         // but if index = 2 and i = 3, greaterThan[i].out = 1, so 3 - 1 = 2
         quinSelectors[i].index <== i - greaterThan[i].out;
 
@@ -216,10 +212,12 @@ template QuinLeafExists(levels){
     root === verifier.root;
 }
 
+// Given a list of leaves, check whether they exist in 
+// a quinary merkle tree
 template QuinBatchLeavesExists(levels, batchLevels) {
     // Compute the root of a subtree of leaves, and then check whether the
     // subroot exists in the main tree
-
+    
     var LEAVES_PER_NODE = 5;
     var LEAVES_PER_PATH_LEVEL = LEAVES_PER_NODE - 1;
     var LEAVES_PER_BATCH = LEAVES_PER_NODE ** batchLevels;
@@ -254,11 +252,10 @@ template QuinBatchLeavesExists(levels, batchLevels) {
     }
 }
 
-/*
- * Given a tree index, generate the indices which QuinTreeInclusionProof and
- * QuinLeafExists require. e.g. if the index is 30 and the number of levels is
- * 4, the output should be [0, 1, 1, 0]
- */
+
+// Given a tree index, generate the indices which QuinTreeInclusionProof and
+// QuinLeafExists require. e.g. if the index is 30 and the number of levels is
+// 4, the output should be [0, 1, 1, 0]
 template QuinGeneratePathIndices(levels) {
     var BASE = 5;
     signal input in; 

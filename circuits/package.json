@@ -4,7 +4,8 @@
   "description": "zk-SNARK circuits for MACI",
   "main": "build/index.js",
   "scripts": {
-    "build-test-circuits": "bash ./scripts/build.sh",
+    "build-test-circuits-c": "bash ./scripts/build_intel.sh",
+    "build-test-circuits-wasm": "bash ./scripts/build_arm.sh",
     "watch": "tsc --watch",
     "build": "tsc",
     "test": "ts-mocha --exit ts/__tests__/*.test.ts",

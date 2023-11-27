@@ -311,7 +311,7 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     newTallyCommitmentHasher.hash === newTallyCommitment;
 }
 
-// tempalte that verifies the input hash is correct
+// template that generates a sha256 hash of the provided tally inputs
 template TallyVotesInputHasher() {
     signal input sbCommitment;
     signal input currentTallyCommitment;
