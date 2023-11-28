@@ -12,7 +12,6 @@ import {Verifier} from "./crypto/Verifier.sol";
 import {VkRegistry} from "./VkRegistry.sol";
 import {CommonUtilities} from "./utilities/Utility.sol";
 
-
 contract Tally is
     Ownable,
     SnarkCommon,

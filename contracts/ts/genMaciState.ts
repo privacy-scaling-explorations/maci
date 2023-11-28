@@ -6,7 +6,8 @@ import { MaciState } from "maci-core";
 
 import { Contract, providers, utils } from "ethers";
 // import { assert } from 'assert'
-import assert = require("assert");
+import assert = require("assert")
+import { sleep } from './utils'
 
 interface Action {
     type: string;
@@ -20,7 +21,10 @@ const genMaciStateFromContract = async (
     address: string,
     coordinatorKeypair: Keypair,
     pollId: number,
-    fromBlock = 0
+    fromBlock: number = 0,
+    blocksPerRequest: number = 50,
+    endBlock?: number,
+    sleepAmount?: number
 ): Promise<MaciState> => {
     pollId = Number(pollId);
     // Verify and sort pollIds
@@ -42,11 +46,61 @@ const genMaciStateFromContract = async (
 
     assert(stateTreeDepth === maciState.stateTreeDepth);
 
-    // Fetch event logs
-    const initLogs = await provider.getLogs({
-        ...maciContract.filters.Init(),
-        fromBlock: fromBlock,
-    });
+    let initLogs: any[] = []
+    let signUpLogs: any[] = []
+    let mergeStateAqSubRootsLogs: any[] = []
+    let mergeStateAqLogs: any[] = []
+    let deployPollLogs: any[] = []
+    
+    const lastBlock = endBlock ? endBlock : await provider.getBlockNumber()
+    
+    // Fetch event logs in batches
+    for (let i = fromBlock; i < lastBlock; i += blocksPerRequest + 1) {
+        const toBlock = (i + blocksPerRequest) >= lastBlock ? undefined : i + blocksPerRequest
+
+        const tmpInitLogs = await provider.getLogs({
+            ...maciContract.filters.Init(),
+            fromBlock: i,
+            toBlock,
+            address: address
+        })
+
+        initLogs = initLogs.concat(tmpInitLogs)
+
+        const tmpSignUpLogs = await provider.getLogs({
+            ...maciContract.filters.SignUp(),
+            fromBlock: i,
+            toBlock,
+            address: address
+        })
+        signUpLogs = signUpLogs.concat(tmpSignUpLogs)
+    
+        const tmpMergeStateAqSubRootsLogs = await provider.getLogs({
+            ...maciContract.filters.MergeStateAqSubRoots(),
+            fromBlock: i,
+            toBlock,
+            address: address
+        })
+        mergeStateAqSubRootsLogs = mergeStateAqSubRootsLogs.concat(tmpMergeStateAqSubRootsLogs)
+    
+        const tmpMergeStateAqLogs = await provider.getLogs({
+            ...maciContract.filters.MergeStateAq(),
+            fromBlock: i,
+            toBlock,
+            address: address
+        })
+        mergeStateAqLogs = mergeStateAqLogs.concat(tmpMergeStateAqLogs)
+    
+        const tmpDeployPollLogs = await provider.getLogs({
+            ...maciContract.filters.DeployPoll(),
+            fromBlock: i,
+            toBlock,
+            address: address
+        })
+        deployPollLogs = deployPollLogs.concat(tmpDeployPollLogs)
+
+        if (sleepAmount) await sleep(sleepAmount)
+    }
 
     // init() should only be called up to 1 time
     assert(
@@ -54,27 +108,7 @@ const genMaciStateFromContract = async (
         "More than 1 init() event detected which should not be possible"
     );
 
-    const signUpLogs = await provider.getLogs({
-        ...maciContract.filters.SignUp(),
-        fromBlock: fromBlock,
-    });
-
-    const mergeStateAqSubRootsLogs = await provider.getLogs({
-        ...maciContract.filters.MergeStateAqSubRoots(),
-        fromBlock: fromBlock,
-    });
-
-    const mergeStateAqLogs = await provider.getLogs({
-        ...maciContract.filters.MergeStateAq(),
-        fromBlock: fromBlock,
-    });
-
-    const deployPollLogs = await provider.getLogs({
-        ...maciContract.filters.DeployPoll(),
-        fromBlock: fromBlock,
-    });
-
-    let vkRegistryAddress;
+    let vkRegistryAddress
 
     for (const log of initLogs) {
         const mutableLog = {
@@ -122,11 +156,6 @@ const genMaciStateFromContract = async (
         const event = maciIface.parseLog(mutableLogs);
         const p = Number(event.args._pollId);
 
-        //// Skip in favour of Poll.MergeMaciStateAqSubRoots
-        //if (p === pollId) {
-        //continue
-        //}
-
         actions.push({
             type: "MergeStateAqSubRoots",
             // @ts-ignore
@@ -148,11 +177,6 @@ const genMaciStateFromContract = async (
         };
         const event = maciIface.parseLog(mutableLogs);
         const p = Number(event.args._pollId);
-
-        //// Skip in favour of Poll.MergeMaciStateAq
-        //if (p === pollId) {
-        //continue
-        //}
 
         actions.push({
             type: "MergeStateAq",
@@ -246,35 +270,66 @@ const genMaciStateFromContract = async (
         messageBatchSize: Number(onChainBatchSizes.messageBatchSize),
     };
 
-    const publishMessageLogs = await provider.getLogs({
-        ...pollContract.filters.PublishMessage(),
-        fromBlock: fromBlock,
-    });
+    // fetch poll contract logs
+    let publishMessageLogs: any[] = []
+    let topupLogs: any[] = []
+    let mergeMaciStateAqSubRootsLogs: any[] = []
+    let mergeMaciStateAqLogs: any[] = []
+    let mergeMessageAqSubRootsLogs: any[] = []
+    let mergeMessageAqLogs: any[] = []
 
-    const topupLogs = await provider.getLogs({
-        ...pollContract.filters.TopupMessage(),
-        fromBlock: fromBlock,
-    });
+    for (let i = fromBlock; i < lastBlock; i += blocksPerRequest + 1) {
+        const toBlock = (i + blocksPerRequest) >= lastBlock ? undefined : i + blocksPerRequest
 
-    const mergeMaciStateAqSubRootsLogs = await provider.getLogs({
-        ...pollContract.filters.MergeMaciStateAqSubRoots(),
-        fromBlock: fromBlock,
-    });
+        const tmpPublishMessageLogs = await provider.getLogs({
+            ...pollContract.filters.PublishMessage(),
+            fromBlock: i,
+            toBlock
+        })
+        publishMessageLogs = publishMessageLogs.concat(tmpPublishMessageLogs)
+    
+        const tmpTopupLogs = await provider.getLogs({
+            ...pollContract.filters.TopupMessage(),
+            fromBlock: i,
+            toBlock,
+            address: pollContract.address
+        })
+        topupLogs = topupLogs.concat(tmpTopupLogs)    
+    
+        const tmpMergeMaciStateAqSubRootsLogs = await provider.getLogs({
+            ...pollContract.filters.MergeMaciStateAqSubRoots(),
+            fromBlock: i,
+            toBlock,
+            address: pollContract.address
+        })
+        mergeMaciStateAqSubRootsLogs = mergeMaciStateAqSubRootsLogs.concat(tmpMergeMaciStateAqSubRootsLogs)
+    
+        const tmpMergeMaciStateAqLogs = await provider.getLogs({
+            ...pollContract.filters.MergeMaciStateAq(),
+            fromBlock: i,
+            toBlock,
+            address: pollContract.address
+        })
+        mergeMaciStateAqLogs = mergeMaciStateAqLogs.concat(tmpMergeMaciStateAqLogs)
+    
+        const tmpMergeMessageAqSubRootsLogs = await provider.getLogs({
+            ...pollContract.filters.MergeMessageAqSubRoots(),
+            fromBlock: i,
+            toBlock,
+            address: pollContract.address
+        })
+        mergeMessageAqSubRootsLogs = mergeMessageAqSubRootsLogs.concat(tmpMergeMessageAqSubRootsLogs)
+    
+        const tmpMergeMessageAqLogs = await provider.getLogs({
+            ...pollContract.filters.MergeMessageAq(),
+            fromBlock: i,
+            toBlock,
+            address: pollContract.address
+        })
+        mergeMessageAqLogs = mergeMessageAqLogs.concat(tmpMergeMessageAqLogs)
 
-    const mergeMaciStateAqLogs = await provider.getLogs({
-        ...pollContract.filters.MergeMaciStateAq(),
-        fromBlock: fromBlock,
-    });
-
-    const mergeMessageAqSubRootsLogs = await provider.getLogs({
-        ...pollContract.filters.MergeMessageAqSubRoots(),
-        fromBlock: fromBlock,
-    });
-
-    const mergeMessageAqLogs = await provider.getLogs({
-        ...pollContract.filters.MergeMessageAq(),
-        fromBlock: fromBlock,
-    });
+        if (sleepAmount) await sleep(sleepAmount)
+    }
 
     for (const log of publishMessageLogs) {
         assert(log != undefined);
@@ -291,7 +346,7 @@ const genMaciStateFromContract = async (
 
         const encPubKey = new PubKey(
             event.args._encPubKey.map((x) => BigInt(x.toString()))
-        );
+        )
 
         actions.push({
             type: "PublishMessage",

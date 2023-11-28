@@ -14,7 +14,8 @@ import {
     G2Point,
     NOTHING_UP_MY_SLEEVE,
     IncrementalQuinTree,
-} from "maci-crypto";
+} from 'maci-crypto'
+import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
 
 const voiceCreditBalance = BigInt(100);
 
@@ -430,10 +431,15 @@ describe("MaciState", function () {
         });
     });
 
-    describe("Deep copy", () => {
-        let pollId;
-        let m1;
-        const userKeypair = new Keypair();
+    describe('Deep copy', () => {
+        let pollId
+        let m1: MaciState 
+        const userKeypair = new Keypair()
+        const stateFile = "./state.json"
+
+        after(() => {
+            if (existsSync(stateFile)) unlinkSync(stateFile)
+        })
 
         before(() => {
             m1 = new MaciState(STATE_TREE_DEPTH);
@@ -448,10 +454,8 @@ describe("MaciState", function () {
                 maxValues,
                 treeDepths,
                 messageBatchSize,
-                coordinatorKeypair,
-                testProcessVk,
-                testTallyVk
-            );
+                coordinatorKeypair
+            )
             const command = new PCommand(
                 BigInt(0),
                 userKeypair.pubKey,
@@ -473,8 +477,8 @@ describe("MaciState", function () {
             m1.polls[pollId].publishMessage(message, encKeypair.pubKey);
         });
 
-        it("should correctly deep-copy a MaciState object", () => {
-            const m2 = m1.copy();
+        it('should correctly deep-copy a MaciState object', () => {
+            const m2 = m1.copy()
 
             // modify stateTreeDepth
             m2.stateTreeDepth = m2.stateTreeDepth + 1;
@@ -556,9 +560,21 @@ describe("MaciState", function () {
             expect(m1.equals(m20)).not.to.be.true;
 
             // modify poll.encPubKeys
-            const m21 = m1.copy();
-            m21.polls[pollId].encPubKeys[0] = new Keypair().pubKey;
-            expect(m1.equals(m21)).not.to.be.true;
-        });
-    });
-});
+            const m21 = m1.copy()
+            m21.polls[pollId].encPubKeys[0] = (new Keypair()).pubKey
+            expect(m1.equals(m21)).not.to.be.true
+        })
+
+        it("should create a JSON object from a MaciState object", () => {
+            const json = m1.toJSON()
+            writeFileSync(stateFile, JSON.stringify(json, null, 4))
+            const content = JSON.parse(readFileSync(stateFile).toString())
+            const state = MaciState.fromJSON(content)
+            for (const poll of state.polls) {
+                poll.setCoordinatorKeypair(coordinatorKeypair.privKey.serialize())
+                expect(poll.coordinatorKeypair.equals(coordinatorKeypair)).to.be.true
+            }
+            expect(state.equals(m1)).to.be.true
+        })
+    })
+})

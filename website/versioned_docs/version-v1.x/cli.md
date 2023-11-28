@@ -208,6 +208,18 @@ ETH_PROVIDER=http://localhost:8545 \
 node build/index.js mergeMessages -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D -o 0
 ```
 
+### Coordinator: generate Maci state offchain
+
+Example usage to generate the state locally from the smart contracts events:
+
+```bash
+node build/index.js genLocalState \
+    --poll-id $1 \
+    --output localState.json \
+    --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
+    --num-blocks-per-request 50
+```
+
 ### Coordinator: generate proofs
 
 Example usage:
@@ -223,6 +235,25 @@ node build/index.js genProofs -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D \
     -wt ./zkeys/TallyVotes_10-1-2_test \
     -zp ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
     -zt ./zkeys/TallyVotes_10-1-2_test.0.zkey \
+```
+
+### Coordinator: generate proofs using a local state file
+
+Example usage to generate the proofs locally from the local state file created with genLocalState:
+
+```bash
+ # Intel parameters
+node/build.js genProofs \
+    --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
+    --poll-id $1 \
+    --rapidsnark ~/rapidsnark/build/prover \
+    --process-witnessgen ./zkeys/ProcessMessages_"$PROCESS_MESSAGES_PARAMS" \
+    --tally-witnessgen ./zkeys/TallyVotes_"$TALLY_VOTES_PARAMS" \
+    --process-zkey "$ZKEYS_DIR"/ProcessMessages_"$PROCESS_MESSAGES_PARAMS".0.zkey \
+    --tally-zkey "$ZKEYS_DIR"/TallyVotes_"$TALLY_VOTES_PARAMS".0.zkey \
+    --tally-file tally.json \
+    --output proofs/ \
+    --state-file localState.json 
 ```
 
 ### Coordinator: prove on chain

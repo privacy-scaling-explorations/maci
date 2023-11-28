@@ -90,4 +90,14 @@ const deployTestContracts = async (
     };
 };
 
-export { deployTestContracts, formatProofForVerifierContract };
+/**
+ * Pause the thread for n milliseconds
+ * @param ms - the amount of time to sleep in milliseconds
+ */
+const sleep = async (ms: number) => { await new Promise(resolve => setTimeout(resolve, ms)) }
+
+export {
+    deployTestContracts,
+    formatProofForVerifierContract,
+    sleep
+}

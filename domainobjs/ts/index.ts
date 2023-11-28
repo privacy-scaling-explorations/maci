@@ -173,6 +173,14 @@ class PrivKey {
         return formatPrivKeyForBabyJub(this.rawPrivKey).toString();
     };
 
+    toJSON() {
+        return this.serialize()
+    }
+
+    static fromJSON(json: any): PrivKey {
+        return PrivKey.unserialize(json)
+    }
+
     public serialize = (): string => {
         return SERIALIZED_PRIV_KEY_PREFIX + this.rawPrivKey.toString(16);
     };
@@ -188,14 +196,14 @@ class PrivKey {
 
         let validValue = false;
         try {
-            const value = BigInt("0x" + x);
-            validValue = value < SNARK_FIELD_SIZE;
+            const value = BigInt('0x' + x)
+            validValue = value < SNARK_FIELD_SIZE
         } catch {
-            // comment to make linter happy
+            // comment to make linter happy 
         }
 
-        return correctPrefix && validValue;
-    };
+        return correctPrefix && validValue
+    }
 }
 
 const SERIALIZED_PUB_KEY_PREFIX = "macipk.";
@@ -279,6 +287,14 @@ class PubKey {
 
         return correctPrefix && validValue;
     };
+
+    toJSON() {
+        return this.serialize()
+    }
+
+    static fromJSON(json: any): PubKey {
+        return PubKey.unserialize(json)
+    }
 }
 
 class Keypair {
@@ -321,6 +337,17 @@ class Keypair {
 
         return equalPrivKey;
     }
+
+    toJSON() {
+        return {
+            privKey: this.privKey.serialize(),
+            pubKey: this.pubKey.serialize(),
+        }
+    }
+
+    static fromJSON(json: any): Keypair {
+        return new Keypair(PrivKey.unserialize(json.privKey))
+    }
 }
 
 interface IStateLeaf {
@@ -352,22 +379,24 @@ class Message {
 
     public asContractParam = () => {
         return {
-            msgType: this.msgType,
-            data: this.data.map((x: BigInt) => x.toString()),
-        };
-    };
+            msgType: this.msgType.toString(),
+            data: this.data.map((x:BigInt) => x.toString()),
+        }
+    }
 
     public asCircuitInputs = (): bigint[] => {
-        return this.asArray();
-    };
+        return this.asArray()
+    }
 
-    public hash = (_encPubKey: PubKey): bigint => {
-        return hash13([
-            ...[this.msgType],
-            ...this.data,
-            ..._encPubKey.rawPubKey,
-        ]);
-    };
+    public hash = (
+        _encPubKey: PubKey,
+    ): bigint => {
+       return hash13([
+           ...[this.msgType],
+           ...this.data,
+           ..._encPubKey.rawPubKey,
+       ])
+    }
 
     public copy = (): Message => {
         return new Message(
@@ -390,8 +419,19 @@ class Message {
             }
         }
 
-        return true;
-    };
+        return true
+    }
+
+    toJSON() {
+        return this.asContractParam()
+    }
+
+    static fromJSON(json: any): Message {
+        return new Message(
+            BigInt(json.msgType),
+            json.data.map((x: any) => BigInt(x)),
+        )
+    }
 }
 
 /*
@@ -478,6 +518,21 @@ class Ballot {
     ) {
         const ballot = new Ballot(_numVoteOptions, _voteOptionTreeDepth);
         return ballot;
+    }
+
+    toJSON() {
+        return {
+            votes: this.votes.map((x) => x.toString()),
+            nonce: this.nonce.toString(),
+            voteOptionTreeDepth: this.voteOptionTreeDepth.toString()
+        }
+    }
+
+    static fromJSON(json: any): Ballot {
+        const ballot = new Ballot(json.votes.length, parseInt(json.voteOptionTreeDepth))
+        ballot.votes = json.votes.map((x: any) => BigInt(x))
+        ballot.nonce = BigInt(json.nonce)
+        return ballot
     }
 }
 
@@ -581,23 +636,53 @@ class StateLeaf implements IStateLeaf {
 
         return new StateLeaf(
             PubKey.unserialize(j[0]),
-            BigInt("0x" + j[1]),
-            BigInt("0x" + j[2])
-        );
-    };
+            BigInt('0x' + j[1]),
+            BigInt('0x' + j[2]),
+        )
+    }
+
+    toJSON() {
+        return {
+            pubKey: this.pubKey.serialize(),
+            voiceCreditBalance: this.voiceCreditBalance.toString(),
+            timestamp: this.timestamp.toString(),
+        }
+    }
+
+    static fromJSON(json: any): StateLeaf {
+        return new StateLeaf(
+            PubKey.unserialize(json.pubKey),
+            BigInt(json.voiceCreditBalance),
+            BigInt(json.timestamp),
+        )
+    }
 }
 
 class Command {
     public cmdType: bigint;
 
-    public copy = (): Command => {
-        throw new Error("Abstract method!");
-    };
+    /* @typescript-eslint/no-empty-function */
+    constructor() {}
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public equals = (command: Command): boolean => {
-        throw new Error("Abstract method!");
-    };
+    public copy = (): Command => {
+        throw new Error("Abstract method!")
+    }
+
+    public equals = (Command): boolean => {
+        throw new Error("Abstract method!")
+    }
+
+    toJSON() {
+        return {
+            cmdType: this.cmdType.toString()
+        }
+    }
+
+    static fromJSON(json: any): Command {
+        const command = new Command()
+        command.cmdType = BigInt(json.cmdType)
+        return command 
+    }
 }
 
 class TCommand extends Command {
@@ -624,8 +709,26 @@ class TCommand extends Command {
         return (
             this.stateIndex === command.stateIndex &&
             this.amount === command.amount
-        );
-    };
+        )
+    }
+
+    toJSON() {
+        return {
+            stateIndex: this.stateIndex.toString(),
+            amount: this.amount.toString(),
+            cmdType: this.cmdType.toString(),
+            pollId: this.pollId.toString()
+        }
+    }
+
+    static fromJSON(json: any): TCommand {
+        const command = new TCommand(
+            BigInt(json.stateIndex),
+            BigInt(json.amount),
+        )
+        command.pollId = BigInt(json.pollId)
+        return command
+    }
 }
 
 /*
@@ -823,8 +926,34 @@ class PCommand extends Command {
             S: decrypted[6],
         };
 
-        return { command, signature };
-    };
+        return { command, signature }
+    }
+
+    toJSON() {
+        return {
+            stateIndex: this.stateIndex.toString(),
+            newPubKey: this.newPubKey.toJSON(),
+            voteOptionIndex: this.voteOptionIndex.toString(),
+            newVoteWeight: this.newVoteWeight.toString(),
+            nonce: this.nonce.toString(),
+            pollId: this.pollId.toString(),
+            salt: this.salt.toString(),
+            cmdType: this.cmdType.toString()
+        }
+    }
+
+    static fromJSON(json: any): PCommand {
+        const command = new PCommand(
+            BigInt(json.stateIndex),
+            PubKey.fromJSON(json.newPubKey),
+            BigInt(json.voteOptionIndex),
+            BigInt(json.newVoteWeight),
+            BigInt(json.nonce),
+            BigInt(json.pollId),
+            BigInt(json.salt),
+        )
+        return command
+    }
 }
 
 export {
