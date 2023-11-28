@@ -19,7 +19,7 @@
     "module-alias": "^2.2.2"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.9",
+    "@types/chai": "^4.3.11",
     "@types/mocha": "^10.0.4",
     "@types/node": "^18.11.9",
     "chai": "^4.3.10",
