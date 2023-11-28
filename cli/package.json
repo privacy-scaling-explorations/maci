@@ -16,8 +16,8 @@
     "circom_runtime": "^0.1.22",
     "circomlib": "^2.0.5",
     "ethers": "^5.4.7",
-    "hardhat": "^2.12.6",
     "ffiasm": "0.1.3",
+    "hardhat": "^2.12.6",
     "js-yaml": "4.0.0",
     "maci-circuits": "^1.1.2",
     "maci-common": "^1.1.2",
@@ -29,12 +29,12 @@
     "shelljs": "^0.8.4",
     "snarkjs": "^0.5.0",
     "source-map-support": "^0.5.19",
-    "typescript": "^4.2.3",
     "web3": "^1.3.4",
     "xmlhttprequest": "1.8.0",
     "zkey-manager": "^0.1.1"
   },
   "devDependencies": {
-    "@types/node": "^18.11.9"
+    "@types/node": "^18.11.9",
+    "typescript": "^5.3.2"
   }
 }

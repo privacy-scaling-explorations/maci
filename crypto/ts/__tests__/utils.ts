@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { AccQueue, IncrementalQuinTree, calcDepthFromNumLeaves } from "../";
+import { AccQueue, IncrementalQuinTree, calcDepthFromNumLeaves } from "..";
 
 /**
  * Test a full merge

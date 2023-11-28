@@ -113,5 +113,5 @@ To test the circuits package, please use `npm run test`. This will run all of th
 
 To run individual tests, you can use the following commands (for all other circuits please refer to the `package.json` scripts section):
 
-* `npm run test-processMessages` to run the tests for the `processMessages` circuit.
-* `npm run test-tallyVotes` to run the tests for the `tallyVotes` circuit.
+- `npm run test-processMessages` to run the tests for the `processMessages` circuit.
+- `npm run test-tallyVotes` to run the tests for the `tallyVotes` circuit.

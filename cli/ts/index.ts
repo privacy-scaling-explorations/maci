@@ -201,11 +201,11 @@ const main = async () => {
     if (args.subcommand === "timeTravel") {
         await timeTravel(args);
     } else if (args.subcommand === "genMaciKeypair") {
-        await genMaciKeypair(args);
+        await genMaciKeypair();
     } else if (args.subcommand === "genMaciPubkey") {
         await genMaciPubkey(args);
     } else if (args.subcommand === "deployVkRegistry") {
-        await deployVkRegistry(args);
+        await deployVkRegistry();
     } else if (args.subcommand === "setVerifyingKeys") {
         await setVerifyingKeys(args);
     } else if (args.subcommand === "create") {

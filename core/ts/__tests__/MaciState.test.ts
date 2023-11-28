@@ -1,4 +1,3 @@
-import { MaciState } from "../";
 import { expect } from "chai";
 import {
     PCommand,
@@ -15,6 +14,8 @@ import {
     NOTHING_UP_MY_SLEEVE,
     IncrementalQuinTree,
 } from "maci-crypto";
+
+import { MaciState } from "..";
 
 const voiceCreditBalance = BigInt(100);
 

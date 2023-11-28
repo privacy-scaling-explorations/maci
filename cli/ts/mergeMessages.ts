@@ -36,7 +36,7 @@ const configureSubparser = (subparsers: any) => {
 };
 
 const mergeMessages = async (args: any) => {
-    let contractAddrs = readJSONFile(contractFilepath);
+    const contractAddrs = readJSONFile(contractFilepath);
     if ((!contractAddrs || !contractAddrs["MACI"]) && !args.contract) {
         console.error("Error: MACI contract address is empty");
         return;

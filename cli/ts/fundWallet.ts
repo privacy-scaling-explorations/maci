@@ -1,12 +1,5 @@
-import { getDefaultSigner, parseArtifact } from "maci-contracts";
-
-import { validateEthAddress, contractExists } from "./utils";
-
-import { readJSONFile } from "maci-common";
-
-const { ethers } = require("hardhat");
-
-import { contractFilepath } from "./config";
+import { ethers } from "hardhat";
+import { getDefaultSigner } from "maci-contracts";
 
 const configureSubparser = (subparsers: any) => {
     const parser = subparsers.addParser("fundWallet", { addHelp: true });

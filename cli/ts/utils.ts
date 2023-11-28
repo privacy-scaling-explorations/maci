@@ -1,11 +1,10 @@
-import * as fs from "fs";
-import * as prompt from "prompt-async";
+import fs from "fs";
+import prompt from "prompt-async";
 import Web3 from "web3";
-const { ethers } = require("hardhat");
+import { ethers } from "hardhat";
 
 import { SNARK_FIELD_SIZE } from "maci-crypto";
 import { genJsonRpcDeployer } from "maci-contracts";
-
 
 prompt.colors = false;
 prompt.message = "";
@@ -101,9 +100,7 @@ const batchTransactionRequests = async (
         batch.add(
             requests[index].call.request(
                 {
-                    from: fromAddress
-                        ? fromAddress
-                        : web3.eth.defaultAccount,
+                    from: fromAddress ? fromAddress : web3.eth.defaultAccount,
                 },
                 cb
             )
@@ -125,7 +122,7 @@ const currentBlockTimestamp = async (provider: any): Promise<number> => {
 };
 
 const delay = (ms: number): Promise<void> => {
-    return new Promise((resolve: Function) => setTimeout(resolve, ms));
+    return new Promise((resolve: () => void) => setTimeout(resolve, ms));
 };
 
 const isPathExist = (paths: Array<string>): [boolean, string] => {

@@ -1,4 +1,4 @@
-import * as assert from "assert";
+import assert from "assert";
 import {
     AccQueue,
     IncrementalQuinTree,
@@ -14,13 +14,13 @@ import {
 } from "maci-crypto";
 import {
     PubKey,
-    Command,
     PCommand,
     TCommand,
     Message,
     Keypair,
     StateLeaf,
     Ballot,
+    Command,
 } from "maci-domainobjs";
 
 interface TreeDepths {
@@ -209,7 +209,7 @@ class Poll {
         this.messageTree.insert(messageLeaf);
 
         const command = new TCommand(_message.data[0], _message.data[1]);
-        this.commands.push(command);
+        this.commands.push(command as unknown as Command);
     };
 
     /*
@@ -240,7 +240,7 @@ class Poll {
         );
         try {
             const { command } = PCommand.decrypt(_message, sharedKey);
-            this.commands.push(command);
+            this.commands.push(command as unknown as Command);
         } catch (e) {
             //console.log(`error cannot decrypt: ${e.message}`)
             const keyPair = new Keypair();
@@ -253,7 +253,7 @@ class Poll {
                 BigInt(0),
                 BigInt(0)
             );
-            this.commands.push(command);
+            this.commands.push(command as unknown as Command);
         }
     };
 
@@ -376,7 +376,7 @@ class Poll {
         for (let i = 0; i < batchSize; i++) {
             const idx = this.currentMessageBatchIndex + batchSize - i - 1;
             assert(idx >= 0);
-            let message;
+            let message: Message;
             if (idx >= this.messages.length) {
                 message = new Message(BigInt(1), Array(10).fill(BigInt(0))); // when idx large than actual size, just use something to pass to switch
             } else {
@@ -407,13 +407,13 @@ class Poll {
                             r.originalBallotPathElements
                         );
 
-                        this.stateLeaves[index] = r.newStateLeaf.copy();
-                        this.stateTree.update(index, r.newStateLeaf.hash());
+                        this.stateLeaves[index] = r.newStateLeaf?.copy();
+                        this.stateTree.update(index, r.newStateLeaf?.hash());
 
                         this.ballots[index] = r.newBallot;
-                        this.ballotTree.update(index, r.newBallot.hash());
+                        this.ballotTree.update(index, r.newBallot?.hash());
                     } catch (e) {
-                        if (e.message === "no-op") {
+                        if ((e as Error).message === "no-op") {
                             // Since the command is invalid, use a blank state leaf
                             currentStateLeaves.unshift(
                                 this.stateLeaves[0].copy()
@@ -519,7 +519,10 @@ class Poll {
                             vt.genMerklePath(0).pathElements
                         );
                     } catch (e) {
-                        console.error("An error occurred: ", e.message);
+                        console.error(
+                            "An error occurred: ",
+                            (e as Error).message
+                        );
                         throw e;
                     }
                     break;
@@ -714,14 +717,10 @@ class Poll {
                 stateLeafIndex < BigInt(1)
             ) {
                 throw Error("no-op");
-                // console.log("invalid state tree index")
-                return {};
             }
 
             if (stateLeafIndex >= BigInt(this.stateTree.nextIndex)) {
-                // console.log("invalid state tree index")
-                //TODO: handle error
-                return {};
+                throw Error("invalid state tree index");
             }
 
             // The user to update (or not)
@@ -734,7 +733,6 @@ class Poll {
             if (!command.verifySignature(signature, stateLeaf.pubKey)) {
                 // console.log('Invalid signature. pubkeyx =', stateLeaf.pubKey.rawPubKey[0], 'sig', signature)
                 throw Error("no-op");
-                return {};
             }
 
             //console.log('Valid signature. pubkeyx =', stateLeaf.pubKey.rawPubKey[0], 'sig', signature)
@@ -743,7 +741,6 @@ class Poll {
             if (command.nonce !== BigInt(`${ballot.nonce}`) + BigInt(1)) {
                 // console.log('Invalid nonce. nonce =', ballot.nonce, 'command.nonce =', command.nonce)
                 throw Error("no-op");
-                return {};
             }
 
             const prevSpentCred = ballot.votes[Number(command.voteOptionIndex)];
@@ -758,7 +755,6 @@ class Poll {
             if (voiceCreditsLeft < BigInt(0)) {
                 // console.log("no op")
                 throw Error("no-op");
-                return {};
             }
 
             // If the vote option index is invalid, do nothing
@@ -768,7 +764,6 @@ class Poll {
             ) {
                 // console.log("no op")
                 throw Error("no-op");
-                return {};
             }
 
             // Deep-copy the state leaf and update its attributes
@@ -822,7 +817,7 @@ class Poll {
             };
         } catch (e) {
             //TODO: throw custom errors for no-ops
-            switch (e.message) {
+            switch ((e as Error).message) {
                 default:
                     throw Error("no-op");
             }
@@ -1332,11 +1327,11 @@ class Poll {
             this.stateTreeDepth
         );
 
-        copied.stateLeaves = this.stateLeaves.map((x: StateLeaf) => x.copy());
-        copied.messages = this.messages.map((x: Message) => x.copy());
-        copied.commands = this.commands.map((x: Command) => x.copy());
-        copied.ballots = this.ballots.map((x: Ballot) => x.copy());
-        copied.encPubKeys = this.encPubKeys.map((x: PubKey) => x.copy());
+        copied.stateLeaves = this.stateLeaves.map((x) => x.copy());
+        copied.messages = this.messages.map((x) => x.copy());
+        copied.commands = this.commands.map((x) => x.copy());
+        copied.ballots = this.ballots.map((x) => x.copy());
+        copied.encPubKeys = this.encPubKeys.map((x) => x.copy());
         if (this.ballotTree) {
             copied.ballotTree = this.ballotTree.copy();
         }
@@ -1517,7 +1512,7 @@ class MaciState {
     }
 
     public deployNullPoll() {
-        // @ts-ignore
+        // @ts-expect-error deploy null poll
         this.polls.push(null);
     }
 
@@ -1671,8 +1666,8 @@ const genSubsidyVkSig = (
 };
 
 export {
-    MaxValues,
-    TreeDepths,
+    type MaxValues,
+    type TreeDepths,
     MaciState,
     Poll,
     genProcessVkSig,

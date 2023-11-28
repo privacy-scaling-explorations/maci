@@ -4,7 +4,7 @@ import { validateEthAddress, contractExists } from "./utils";
 
 import { readJSONFile } from "maci-common";
 
-const { ethers } = require("hardhat");
+import { ethers } from "hardhat";
 
 import { contractFilepath } from "./config";
 
@@ -39,7 +39,7 @@ const configureSubparser = (subparsers: any) => {
 };
 
 const topup = async (args: any) => {
-    let contractAddrs = readJSONFile(contractFilepath);
+    const contractAddrs = readJSONFile(contractFilepath);
     if ((!contractAddrs || !contractAddrs["MACI"]) && !args.contract) {
         console.error("Error: MACI contract address is empty");
         return;
@@ -102,17 +102,17 @@ const topup = async (args: any) => {
         await tx.wait();
         console.log("Transaction hash:", tx.hash);
     } catch (e) {
-        if (e.message) {
-            if (e.message.endsWith("PollE03")) {
+        const { message } = e as Error;
+
+        if (message) {
+            if (message.endsWith("PollE03")) {
                 console.error("Error: the voting period is over.");
             } else {
                 console.error("Error: the transaction failed.");
-                console.error(e.message);
+                console.error(message);
             }
         }
-        return;
     }
-    return;
 };
 
 export { topup, configureSubparser };

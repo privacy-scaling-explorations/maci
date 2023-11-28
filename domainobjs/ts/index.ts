@@ -1,4 +1,4 @@
-import * as assert from "assert";
+import assert from "assert";
 import base64url from "base64url";
 import {
     Ciphertext,
@@ -353,7 +353,7 @@ class Message {
     public asContractParam = () => {
         return {
             msgType: this.msgType,
-            data: this.data.map((x: BigInt) => x.toString()),
+            data: this.data.map((x: bigint) => x.toString()),
         };
     };
 
@@ -587,37 +587,29 @@ class StateLeaf implements IStateLeaf {
     };
 }
 
-class Command {
-    public cmdType: bigint;
-
-    public copy = (): Command => {
-        throw new Error("Abstract method!");
-    };
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public equals = (command: Command): boolean => {
-        throw new Error("Abstract method!");
-    };
+interface Command {
+    cmdType: bigint;
+    copy: () => Command;
+    equals: <T extends this>(command: T) => boolean;
 }
 
-class TCommand extends Command {
+class TCommand implements Command {
     public cmdType: bigint;
     public stateIndex: bigint;
     public amount: bigint;
-    public pollId: bigint;
+    public pollId?: bigint;
 
     constructor(stateIndex: bigint, amount: bigint) {
-        super();
         this.cmdType = BigInt(2);
         this.stateIndex = stateIndex;
         this.amount = amount;
     }
 
-    public copy = (): TCommand => {
+    public copy = (): Command => {
         return new TCommand(
             BigInt(this.stateIndex.toString()),
             BigInt(this.amount.toString())
-        );
+        ) as Command;
     };
 
     public equals = (command: TCommand): boolean => {
@@ -631,7 +623,7 @@ class TCommand extends Command {
 /*
  * Unencrypted data whose fields include the user's public key, vote etc.
  */
-class PCommand extends Command {
+class PCommand implements Command {
     public cmdType: bigint;
     public stateIndex: bigint;
     public newPubKey: PubKey;
@@ -650,7 +642,6 @@ class PCommand extends Command {
         pollId: bigint,
         salt: bigint = genRandomSalt()
     ) {
-        super();
         const limit50Bits = BigInt(2 ** 50);
         assert(limit50Bits >= stateIndex);
         assert(limit50Bits >= voteOptionIndex);
@@ -668,7 +659,7 @@ class PCommand extends Command {
         this.salt = salt;
     }
 
-    public copy = (): PCommand => {
+    public copy = (): Command => {
         return new PCommand(
             BigInt(this.stateIndex.toString()),
             this.newPubKey.copy(),
@@ -677,7 +668,7 @@ class PCommand extends Command {
             BigInt(this.nonce.toString()),
             BigInt(this.pollId.toString()),
             BigInt(this.salt.toString())
-        );
+        ) as Command;
     };
 
     /*
@@ -830,14 +821,14 @@ class PCommand extends Command {
 export {
     StateLeaf,
     Ballot,
-    VoteOptionTreeLeaf,
     PCommand,
     TCommand,
-    Command,
     Message,
     Keypair,
     PubKey,
     PrivKey,
     VerifyingKey,
-    Proof,
+    type VoteOptionTreeLeaf,
+    type Command,
+    type Proof,
 };

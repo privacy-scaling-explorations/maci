@@ -1,9 +1,9 @@
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
-require("@nomiclabs/hardhat-ethers");
+import "@nomiclabs/hardhat-ethers";
 
-const { DEFAULT_ETH_SK, DEFAULT_ETH_PROVIDER } = require("./build/defaults");
+import { DEFAULT_ETH_SK, DEFAULT_ETH_PROVIDER } from "./build/defaults";
 
 const config = {
     defaultNetwork: "localhost",
@@ -20,4 +20,4 @@ const config = {
     },
 };
 
-module.exports = config;
+export default config;

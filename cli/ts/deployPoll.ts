@@ -1,4 +1,4 @@
-const { ethers } = require("hardhat");
+import { ethers } from "hardhat";
 import {
     parseArtifact,
     deployVerifier,
@@ -87,7 +87,7 @@ const configureSubparser = (subparsers: any) => {
 };
 
 const deployPoll = async (args: any) => {
-    let contractAddrs = readJSONFile(contractFilepath);
+    const contractAddrs = readJSONFile(contractFilepath);
     if ((!contractAddrs || !contractAddrs["MACI"]) && !args.maci_address) {
         console.error("Error: MACI contract address is empty");
         return;
@@ -210,12 +210,10 @@ const deployPoll = async (args: any) => {
         contractAddrs["Poll-" + pollId.toString()] = pollAddr;
         writeJSONFile(contractFilepath, contractAddrs);
     } catch (e) {
+        const { message } = e as Error;
         console.error("Error: could not deploy poll");
-        console.error(e.message);
-        return;
+        console.error(message);
     }
-
-    return;
 };
 
 export { deployPoll, configureSubparser };

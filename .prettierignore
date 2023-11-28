@@ -1,0 +1,13 @@
+dist/
+build/
+node_modules/
+coverage/
+tmp/
+contracts/cache/
+contracts/artifacts/
+circuits/input.json
+circuits/witness.json
+package-lock.json
+CHANGELOG.md
+.eslintignore
+

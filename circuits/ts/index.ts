@@ -35,7 +35,7 @@ const genProof = async (
     zkeyPath: string,
     rapidsnarkExePath?: string,
     witnessExePath?: string,
-    wasmPath?: string,
+    wasmPath = "",
     silent = true
 ): Promise<any> => {
     // if we are running on an arm chip we can use snarkjs directly

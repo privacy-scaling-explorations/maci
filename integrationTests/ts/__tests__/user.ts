@@ -11,6 +11,7 @@ export class UserCommand {
     public keypair: Keypair;
     public votes: Vote[];
     public voiceCreditBalance: bigint;
+    public nonce: bigint;
 
     constructor(
         _keypair: Keypair,
@@ -21,6 +22,7 @@ export class UserCommand {
         this.keypair = _keypair;
         this.votes = _votes;
         this.voiceCreditBalance = _voiceCreditBalance;
+        this.nonce = _nonce;
     }
 
     public changeKeypair(): PrivKey {

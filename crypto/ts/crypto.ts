@@ -1,4 +1,4 @@
-import * as assert from "assert";
+import assert from "assert";
 import * as ethers from "ethers";
 import { randomBytes } from "crypto";
 import { SNARK_FIELD_SIZE, bigInt2Buffer } from "./index";

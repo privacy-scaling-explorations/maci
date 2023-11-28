@@ -13,7 +13,7 @@ import {
     genRandomSalt,
     SNARK_FIELD_SIZE,
     genTreeCommitment,
-} from "../";
+} from "..";
 
 describe("Cryptographic operations", function () {
     this.timeout(100000);

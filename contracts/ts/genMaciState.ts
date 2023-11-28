@@ -96,9 +96,7 @@ const genMaciStateFromContract = async (
         const event = maciIface.parseLog(mutableLog);
         actions.push({
             type: "SignUp",
-            // @ts-ignore
             blockNumber: log.blockNumber,
-            // @ts-ignore
             transactionIndex: log.transactionIndex,
             data: {
                 stateIndex: Number(event.args._stateIndex),
@@ -129,9 +127,7 @@ const genMaciStateFromContract = async (
 
         actions.push({
             type: "MergeStateAqSubRoots",
-            // @ts-ignore
             blockNumber: log.blockNumber,
-            // @ts-ignore
             transactionIndex: log.transactionIndex,
             data: {
                 numSrQueueOps: Number(event.args._numSrQueueOps),
@@ -156,9 +152,7 @@ const genMaciStateFromContract = async (
 
         actions.push({
             type: "MergeStateAq",
-            // @ts-ignore
             blockNumber: log.blockNumber,
-            // @ts-ignore
             transactionIndex: log.transactionIndex,
             data: {
                 pollId: p,
@@ -186,9 +180,7 @@ const genMaciStateFromContract = async (
         const pollAddr = event.args._pollAddr;
         actions.push({
             type: "DeployPoll",
-            // @ts-ignore
             blockNumber: log.blockNumber,
-            // @ts-ignore
             transactionIndex: log.transactionIndex,
             data: { pollId, pollAddr, pubKey },
         });
@@ -295,9 +287,7 @@ const genMaciStateFromContract = async (
 
         actions.push({
             type: "PublishMessage",
-            // @ts-ignore
             blockNumber: log.blockNumber,
-            // @ts-ignore
             transactionIndex: log.transactionIndex,
             data: {
                 message,
@@ -320,9 +310,7 @@ const genMaciStateFromContract = async (
 
         actions.push({
             type: "TopupMessage",
-            // @ts-ignore
             blockNumber: log.blockNumber,
-            // @ts-ignore
             transactionIndex: log.transactionIndex,
             data: {
                 message,
@@ -341,9 +329,7 @@ const genMaciStateFromContract = async (
         const numSrQueueOps = Number(event.args._numSrQueueOps);
         actions.push({
             type: "MergeMaciStateAqSubRoots",
-            // @ts-ignore
             blockNumber: log.blockNumber,
-            // @ts-ignore
             transactionIndex: log.transactionIndex,
             data: {
                 numSrQueueOps,
@@ -363,9 +349,7 @@ const genMaciStateFromContract = async (
         const stateRoot = BigInt(event.args._stateRoot);
         actions.push({
             type: "MergeMaciStateAq",
-            // @ts-ignore
             blockNumber: log.blockNumber,
-            // @ts-ignore
             transactionIndex: log.transactionIndex,
             data: { stateRoot },
         });
@@ -382,9 +366,7 @@ const genMaciStateFromContract = async (
         const numSrQueueOps = Number(event.args._numSrQueueOps);
         actions.push({
             type: "MergeMessageAqSubRoots",
-            // @ts-ignore
             blockNumber: log.blockNumber,
-            // @ts-ignore
             transactionIndex: log.transactionIndex,
             data: {
                 numSrQueueOps,
@@ -403,9 +385,7 @@ const genMaciStateFromContract = async (
         const messageRoot = BigInt(event.args._messageRoot);
         actions.push({
             type: "MergeMessageAq",
-            // @ts-ignore
             blockNumber: log.blockNumber,
-            // @ts-ignore
             transactionIndex: log.transactionIndex,
             data: { messageRoot },
         });

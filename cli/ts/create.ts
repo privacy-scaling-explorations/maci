@@ -47,7 +47,7 @@ const configureSubparser = (subparsers: any) => {
 };
 
 const create = async (args: any) => {
-    let contractAddrs = readJSONFile(contractFilepath);
+    const contractAddrs = readJSONFile(contractFilepath);
     if ((!contractAddrs || !contractAddrs["VkRegistry"]) && !args.vk_registry) {
         console.error("Error: vkRegistry contract address is empty");
         return;

@@ -4,5 +4,6 @@
     "outDir": "./build",
     "declaration": true
   },
-  "include": ["./ts"]
+  "include": ["./ts"],
+  "files": ["./hardhat.config.ts"]
 }

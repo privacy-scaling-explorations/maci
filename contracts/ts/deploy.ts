@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
-const { ethers } = require("hardhat");
+// @ts-expect-error need to update hardhat version to get rid of this
+import { ethers } from "hardhat";
 import { Contract, ContractFactory } from "ethers";
 
 const abiDir = join(__dirname, "..", "artifacts");
@@ -62,7 +63,7 @@ export class JSONRPCDeployer {
         this.options = options;
     }
 
-    async deploy(abi: any, bytecode: any, ...args): Promise<any> {
+    async deploy(abi: any, bytecode: any, ...args: any[]): Promise<any> {
         const contractInterface = new ethers.utils.Interface(abi);
         const factory = new ethers.ContractFactory(
             contractInterface,
@@ -108,19 +109,19 @@ const linkPoseidonLibraries = async (
 };
 
 const deployTopupCredit = async (quiet = false) => {
-    return await deployContract("TopupCredit", quiet);
+    return deployContract("TopupCredit", quiet);
 };
 
 const deployVkRegistry = async (quiet = false) => {
-    return await deployContract("VkRegistry", quiet);
+    return deployContract("VkRegistry", quiet);
 };
 
 const deployMockVerifier = async (quiet = false) => {
-    return await deployContract("MockVerifier", quiet);
+    return deployContract("MockVerifier", quiet);
 };
 
 const deployVerifier = async (quiet = false) => {
-    return await deployContract("Verifier", quiet);
+    return deployContract("Verifier", quiet);
 };
 
 const deployConstantInitialVoiceCreditProxy = async (
@@ -230,9 +231,9 @@ const initMaci = async (contract: Contract, quiet = false, ...args: any) => {
 
 const getFeeData = async (): Promise<any> => {
     const signer = await getDefaultSigner();
-    const fee = await signer.provider.getFeeData();
+    const fee = await signer.provider?.getFeeData();
     console.log("fee", fee);
-    return await signer.provider.getFeeData();
+    return signer.provider?.getFeeData();
 };
 
 const deployMessageProcessor = async (
@@ -374,6 +375,7 @@ const deployMaci = async (
 
     log("Transferring ownership of PollFactoryContract to MACI", quiet);
     await transferOwnership(pollFactoryContract, maciContract.address, quiet);
+    log(`Verified contract address: ${verifierContractAddress}`, quiet);
 
     await initMaci(
         maciContract,

@@ -6,6 +6,6 @@ export {
     genProcessVkSig,
     genTallyVkSig,
     genSubsidyVkSig,
-    MaxValues,
-    TreeDepths,
+    type MaxValues,
+    type TreeDepths,
 } from "./MaciState";

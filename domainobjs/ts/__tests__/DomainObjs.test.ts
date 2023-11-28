@@ -280,7 +280,9 @@ describe("Domain objects", function () {
             const c3 = c1.copy();
             c1.nonce = BigInt(8888);
 
-            expect(c1.nonce.toString()).not.to.eq(c3.nonce.toString());
+            expect(c1.nonce.toString()).not.to.eq(
+                (c3 as PCommand).nonce.toString()
+            );
         });
     });
 });

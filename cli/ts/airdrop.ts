@@ -4,7 +4,7 @@ import { validateEthAddress, contractExists } from "./utils";
 
 import { readJSONFile } from "maci-common";
 
-const { ethers } = require("hardhat");
+import { ethers } from "hardhat";
 
 import { contractFilepath } from "./config";
 
@@ -35,7 +35,7 @@ const configureSubparser = (subparsers: any) => {
 };
 
 const airdrop = async (args: any) => {
-    let contractAddrs = readJSONFile(contractFilepath);
+    const contractAddrs = readJSONFile(contractFilepath);
     if (
         (!contractAddrs || !contractAddrs["TopupCredit"]) &&
         !args.erc20_contract
@@ -81,11 +81,12 @@ const airdrop = async (args: any) => {
         await tx.wait();
         console.log("Transaction hash of airdrop:", tx.hash);
     } catch (e) {
+        const { message } = e as Error;
         console.error("Error: the transaction of airdrop failed");
-        if (e.message) {
-            console.error(e.message);
+
+        if (message) {
+            console.error(message);
         }
-        return;
     }
 
     if (typeof args.poll_id !== "undefined") {
@@ -110,7 +111,7 @@ const airdrop = async (args: any) => {
         );
 
         const pollAddr = await maciContract.getPoll(pollId);
-        let MAXIMUM_ALLOWANCE = "10000000000000000000000000";
+        const MAXIMUM_ALLOWANCE = "10000000000000000000000000";
         try {
             tx = await ERC20Contract.approve(pollAddr, MAXIMUM_ALLOWANCE, {
                 gasLimit: 1000000,
@@ -118,14 +119,13 @@ const airdrop = async (args: any) => {
             await tx.wait();
             console.log("Transaction hash of approve:", tx.hash);
         } catch (e) {
+            const { message } = e as Error;
             console.error("Error: the transaction failed");
-            if (e.message) {
-                console.error(e.message);
+            if (message) {
+                console.error(message);
             }
-            return;
         }
     }
-    return;
 };
 
 export { airdrop, configureSubparser };

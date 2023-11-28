@@ -1,46 +1,45 @@
-import clsx from 'clsx';
-import Heading from '@theme/Heading';
-import styles from './styles.module.css';
+import clsx from "clsx";
+import Heading from "@theme/Heading";
+import styles from "./styles.module.css";
 
 type FeatureItem = {
   title: string;
-  Svg: React.ComponentType<React.ComponentProps<'svg'>>;
+  Svg: React.ComponentType<React.ComponentProps<"svg">>;
   description: JSX.Element;
 };
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Easy to Use',
-    Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
+    title: "Easy to Use",
+    Svg: require("@site/static/img/undraw_docusaurus_mountain.svg").default,
+    description: <>MACI was designed to be an easy to use voting solution.</>,
+  },
+  {
+    title: "Ensure privacy is preserved",
+    Svg: require("@site/static/img/undraw_docusaurus_tree.svg").default,
     description: (
       <>
-        MACI was designed to be an easy to use voting solution.
+        With MACI, you can rest assured that your privacy is preserved when
+        participating in a vote.
       </>
     ),
   },
   {
-    title: 'Ensure privacy is preserved',
-    Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
+    title: "Powered by zk-SNARKs",
+    Svg: require("@site/static/img/undraw_docusaurus_react.svg").default,
     description: (
       <>
-        With MACI, you can rest assured that your privacy is preserved when participating in a vote.
-      </>
-    ),
-  },
-  {
-    title: 'Powered by zk-SNARKs',
-    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
-    description: (
-      <>
-        MACI is powered by zk-SNARKs, a cutting edge cryptographic technology that allows for the verification of computations without revealing the inputs or outputs.
+        MACI is powered by zk-SNARKs, a cutting edge cryptographic technology
+        that allows for the verification of computations without revealing the
+        inputs or outputs.
       </>
     ),
   },
 ];
 
-function Feature({title, Svg, description}: FeatureItem) {
+function Feature({ title, Svg, description }: FeatureItem) {
   return (
-    <div className={clsx('col col--4')}>
+    <div className={clsx("col col--4")}>
       <div className="text--center">
         <Svg className={styles.featureSvg} role="img" />
       </div>

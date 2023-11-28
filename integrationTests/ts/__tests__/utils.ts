@@ -12,7 +12,7 @@ const exec = (command: string) => {
 };
 
 const delay = (ms: number): Promise<void> => {
-    return new Promise((resolve: Function) => setTimeout(resolve, ms));
+    return new Promise((resolve: () => void) => setTimeout(resolve, ms));
 };
 
 const loadYaml = () => {
@@ -43,11 +43,9 @@ const genTestAccounts = (numAccounts: number, mnemonic) => {
 
 const genTestUserCommands = (
     numUsers: number,
-    voteCreditBalance: number,
     numVotesPerUser: number,
     bribers?: any,
-    votes?: any,
-    invalidVotes?: any
+    votes?: any
 ) => {
     const getTestVoteValues = (userIndex, voteIndex) => {
         const useVotes = votes && userIndex in votes;

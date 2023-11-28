@@ -4,7 +4,7 @@ const configureSubparser = (subparsers: any) => {
     subparsers.addParser("genMaciKeypair", { addHelp: true });
 };
 
-const genMaciKeypair = async (args: any) => {
+const genMaciKeypair = async () => {
     // eslint-disable-line @typescript-eslint/no-unused-vars
     const keypair = new Keypair();
 

@@ -100,7 +100,7 @@ main root) whenever the MACI contract's `mergeMessageAqSubRoots()` and
 They should contain the same leaves, even if the `messageAq` is not yet merged.
 `messageTree` exists for developer convenience.
 
-## Testing 
+## Testing
 
 For more details about testing please refer to the [tests documentation](https://maci.pse.dev/docs/testing).
 

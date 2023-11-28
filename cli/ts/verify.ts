@@ -56,7 +56,7 @@ const verify = async (args: any) => {
     const pollId = Number(args.poll_id);
 
     // check existence of MACI, Tally and Subsidy contract addresses
-    let contractAddrs = readJSONFile(contractFilepath);
+    const contractAddrs = readJSONFile(contractFilepath);
     if ((!contractAddrs || !contractAddrs["MACI"]) && !args.contract) {
         console.error("Error: MACI contract address is empty");
         return;

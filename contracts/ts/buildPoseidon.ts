@@ -1,8 +1,13 @@
-const { overwriteArtifact } = require("hardhat");
-const { poseidonContract } = require("circomlibjs");
+import * as hardhat from "hardhat";
+import { poseidonContract } from "circomlibjs";
+
+type HRE = typeof hardhat;
+interface ExtendedHRE extends HRE {
+    overwriteArtifact: (name: string, code: unknown) => Promise<void>;
+}
 
 const buildPoseidon = async (numInputs: number) => {
-    await overwriteArtifact(
+    await (hardhat as ExtendedHRE).overwriteArtifact(
         `PoseidonT${numInputs + 1}`,
         poseidonContract.createCode(numInputs)
     );

@@ -60,7 +60,7 @@ const proveOnChain = async (args: any) => {
     const pollId = Number(args.poll_id);
 
     // check existence of contract addresses
-    let contractAddrs = readJSONFile(contractFilepath);
+    const contractAddrs = readJSONFile(contractFilepath);
     if ((!contractAddrs || !contractAddrs["MACI"]) && !args.contract) {
         console.error("Error: MACI contract address is empty");
         return;
@@ -463,10 +463,10 @@ const proveOnChain = async (args: any) => {
     if (Object.keys(data.subsidyProofs).length !== 0) {
         let rbi = Number(await subsidyContract.rbi());
         let cbi = Number(await subsidyContract.cbi());
-        let numLeaves = numSignUps + 1;
-        let num1DBatches = Math.ceil(numLeaves / subsidyBatchSize);
+        const numLeaves = numSignUps + 1;
+        const num1DBatches = Math.ceil(numLeaves / subsidyBatchSize);
         let subsidyBatchNum = rbi * num1DBatches + cbi;
-        let totalBatchNum = (num1DBatches * (num1DBatches + 1)) / 2;
+        const totalBatchNum = (num1DBatches * (num1DBatches + 1)) / 2;
         console.log(
             `number of subsidy batch processed: ${subsidyBatchNum}, numleaf=${numLeaves}`
         );
@@ -554,8 +554,8 @@ const proveOnChain = async (args: any) => {
             console.log(`Transaction hash: ${tx.hash}`);
 
             // Wait for the node to catch up
-            let nrbi = Number(await subsidyContract.rbi());
-            let ncbi = Number(await subsidyContract.cbi());
+            const nrbi = Number(await subsidyContract.rbi());
+            const ncbi = Number(await subsidyContract.cbi());
             let backOff = 1000;
             let numAttempts = 0;
             while (nrbi === rbi && ncbi === cbi) {

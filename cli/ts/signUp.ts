@@ -6,7 +6,7 @@ import { validateEthAddress, contractExists } from "./utils";
 
 import { readJSONFile } from "maci-common";
 
-const { ethers } = require("hardhat");
+import { ethers } from "hardhat";
 
 import { DEFAULT_SG_DATA, DEFAULT_IVCP_DATA } from "./defaults";
 import { contractFilepath } from "./config";
@@ -47,7 +47,7 @@ const signup = async (args: any) => {
 
     const userMaciPubKey = PubKey.unserialize(args.pubkey);
 
-    let contractAddrs = readJSONFile(contractFilepath);
+    const contractAddrs = readJSONFile(contractFilepath);
     if ((!contractAddrs || !contractAddrs["MACI"]) && !args.contract) {
         console.error("Error: MACI contract address is empty");
         return;
@@ -100,11 +100,12 @@ const signup = async (args: any) => {
             { gasLimit: 1000000 }
         );
     } catch (e) {
+        const { message } = e as Error;
         console.error("Error: the transaction failed");
-        if (e.message) {
-            console.error(e.message);
+
+        if (message) {
+            console.error(message);
         }
-        return;
     }
 
     const receipt = await tx.wait();

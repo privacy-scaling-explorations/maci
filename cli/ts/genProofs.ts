@@ -185,7 +185,8 @@ const genProofs = async (args: any) => {
         return;
     }
 
-    let subsidyVk: VerifyingKey;
+    let subsidyVk: VerifyingKey | undefined = undefined;
+
     if (args.subsidy_file) {
         if (fs.existsSync(args.subsidy_file)) {
             console.error(

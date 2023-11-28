@@ -1,3 +1,4 @@
+import { ethers } from "hardhat";
 import { parseArtifact, getDefaultSigner } from "maci-contracts";
 
 import { PubKey, PrivKey, Keypair, PCommand } from "maci-domainobjs";
@@ -14,10 +15,6 @@ import {
 
 import { readJSONFile } from "maci-common";
 import { contractFilepath } from "./config";
-
-import { DEFAULT_ETH_PROVIDER } from "./defaults";
-
-const { ethers } = require("hardhat");
 
 const DEFAULT_SALT = genRandomSalt();
 
@@ -101,7 +98,7 @@ const publish = async (args: any) => {
 
     const userMaciPubKey = PubKey.unserialize(args.pubkey);
 
-    let contractAddrs = readJSONFile(contractFilepath);
+    const contractAddrs = readJSONFile(contractFilepath);
     if ((!contractAddrs || !contractAddrs["MACI"]) && !args.contract) {
         console.error("Error: MACI contract address is empty");
         return;
@@ -113,11 +110,6 @@ const publish = async (args: any) => {
         console.error("Error: invalid MACI contract address");
         return;
     }
-
-    // Ethereum provider
-    const ethProvider = args.eth_provider
-        ? args.eth_provider
-        : DEFAULT_ETH_PROVIDER;
 
     // The user's MACI private key
     let serializedPrivkey;
@@ -282,18 +274,17 @@ const publish = async (args: any) => {
         console.log("Transaction hash:", tx.hash);
         console.log("Ephemeral private key:", encKeypair.privKey.serialize());
     } catch (e) {
-        if (e.message) {
-            if (e.message.endsWith("PollE03")) {
+        const { message } = e as Error;
+
+        if (message) {
+            if (message.endsWith("PollE03")) {
                 console.error("Error: the voting period is over.");
             } else {
                 console.error("Error: the transaction failed.");
-                console.error(e.message);
+                console.error(message);
             }
         }
-        return;
     }
-
-    return;
 };
 
 export { publish, configureSubparser };

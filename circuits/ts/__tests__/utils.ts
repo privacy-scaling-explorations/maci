@@ -1,4 +1,4 @@
-export const str2BigInt = (s: string): BigInt => {
+export const str2BigInt = (s: string): bigint => {
     return BigInt(parseInt(Buffer.from(s).toString("hex"), 16));
 };
 

@@ -1,4 +1,4 @@
-import * as ff from "ffjavascript";
+import { utils } from "ffjavascript";
 import { IncrementalQuinTree, hash5, hashLeftRight } from "./index";
 
 /**
@@ -6,7 +6,7 @@ import { IncrementalQuinTree, hash5, hashLeftRight } from "./index";
  * @param obj - the object to convert
  * @returns the converted object
  */
-export const stringifyBigInts: (obj: object) => any = ff.utils.stringifyBigInts;
+export const stringifyBigInts: (obj: object) => any = utils.stringifyBigInts;
 
 /**
  * Convert a string to a bigint
@@ -14,7 +14,7 @@ export const stringifyBigInts: (obj: object) => any = ff.utils.stringifyBigInts;
  * @returns the converted object
  */
 export const unstringifyBigInts: (obj: object) => any =
-    ff.utils.unstringifyBigInts;
+    utils.unstringifyBigInts;
 
 /**
  * Convert a BigInt to a Buffer

@@ -25,7 +25,7 @@ describe("Splice circuit", () => {
             const witness = await circuit.calculateWitness(circuitInputs);
             await circuit.checkConstraints(witness);
 
-            const output: BigInt[] = [];
+            const output: bigint[] = [];
             for (let i = 0; i < items.length + 1; i++) {
                 const selected = await getSignal(circuit, witness, `out[${i}]`);
                 output.push(BigInt(selected));

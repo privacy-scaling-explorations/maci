@@ -48,7 +48,7 @@ export {
 
 export { OptimisedMT as IncrementalQuinTree } from "optimisedmt";
 
-export {
+export type {
     SnarkBigInt,
     PrivKey,
     PubKey,

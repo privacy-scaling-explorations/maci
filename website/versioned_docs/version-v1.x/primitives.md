@@ -56,8 +56,8 @@ Also, SHA256 is used to compress public inputs to a circuit into a single field 
 
 In order to encrypt messages, MACI uses Poseidon in DuplexSponge [mode](https://dusk.network/uploads/Encryption-with-Poseidon.pdf). This provides an encryption function and a decryption function:
 
-* $C$ as $poseidonEncrypt(k_s[0], k_s[1], N, l, t[])$
-* $poseidonDecrypt(k_s[0], k_s[1], N, l, C)$ 
+- $C$ as $poseidonEncrypt(k_s[0], k_s[1], N, l, t[])$
+- $poseidonDecrypt(k_s[0], k_s[1], N, l, C)$
 
 In more details,
 
@@ -174,7 +174,7 @@ A Ballot represents a particular user's votes in a poll, as well as their next v
 
 The hash $blt$ is computed as such:
 
-1. Compute the Merkle root of $blt_v$, arity 5, of a tree of depth $blt_d$; let this value  be $blt_r$
+1. Compute the Merkle root of $blt_v$, arity 5, of a tree of depth $blt_d$; let this value be $blt_r$
 2. Compute $poseidon_2([blt_n, blt_r])$
 
 ### State leaf
@@ -213,4 +213,4 @@ The code to derive $A_{b_x}$ and $A_{b_y}$ is [here](https://github.com/iden3/ci
 3. Use the method to convert a buffer to a point on the BabyJub curve described in [2.3.2].
 4. Multiply the point by 8. The result is the point with x-value $A_{b_x}$ and y-value $A_{b_y}$
 
-Given the [elliptic curve discrete logarithm problem](https://wstein.org/edu/2007/spring/ent/ent-html/node89.html), we assume that no-one knows the private key $s \in {F}_p$ and by using the public key generation procedure in [1.4], we can derive $A_{b_x}$ and $A_{b_y}$. Furthermore, the string above (`PedersenGenerator...`) acts as a nothing-up-my-sleeve value. 
+Given the [elliptic curve discrete logarithm problem](https://wstein.org/edu/2007/spring/ent/ent-html/node89.html), we assume that no-one knows the private key $s \in {F}_p$ and by using the public key generation procedure in [1.4], we can derive $A_{b_x}$ and $A_{b_y}$. Furthermore, the string above (`PedersenGenerator...`) acts as a nothing-up-my-sleeve value.

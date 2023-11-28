@@ -1,6 +1,5 @@
 import * as fs from "fs";
 import * as ethers from "ethers";
-import * as shelljs from "shelljs";
 import * as path from "path";
 
 import { extractVk } from "maci-circuits";
@@ -79,7 +78,7 @@ const configureSubparser = (subparsers: any) => {
 };
 
 const setVerifyingKeys = async (args: any) => {
-    let contractAddrs = readJSONFile(contractFilepath);
+    const contractAddrs = readJSONFile(contractFilepath);
     if ((!contractAddrs || !contractAddrs["VkRegistry"]) && !args.vk_registry) {
         console.error("Error: vkRegistry contract address is empty");
         return;
@@ -112,8 +111,9 @@ const setVerifyingKeys = async (args: any) => {
         await extractVk(tvZkeyFile)
     );
 
-    let ssZkeyFile: string;
-    let subsidyVk: VerifyingKey;
+    let ssZkeyFile: string | undefined = undefined;
+    let subsidyVk: VerifyingKey | undefined = undefined;
+
     if (args.subsidy_zkey) {
         ssZkeyFile = path.resolve(args.subsidy_zkey);
         if (!fs.existsSync(ssZkeyFile)) {
@@ -230,7 +230,7 @@ const setVerifyingKeys = async (args: any) => {
     }
 
     if (args.subsidy_zkey) {
-        const ssMatch = ssZkeyFile.match(/.+_(\d+)-(\d+)-(\d+)_/);
+        const ssMatch = ssZkeyFile?.match(/.+_(\d+)-(\d+)-(\d+)_/);
         if (ssMatch == null) {
             console.error(`Error: ${ssZkeyFile} has an invalid filename`);
             return;
@@ -310,7 +310,7 @@ const setVerifyingKeys = async (args: any) => {
                 stateTreeDepth,
                 intStateTreeDepth,
                 voteOptionTreeDepth,
-                subsidyVk.asContractParam()
+                subsidyVk?.asContractParam()
             );
 
             const receipt = await tx.wait();
@@ -325,7 +325,8 @@ const setVerifyingKeys = async (args: any) => {
                 intStateTreeDepth,
                 voteOptionTreeDepth
             );
-            if (!compareVks(subsidyVk, subsidyVkOnChain)) {
+
+            if (!compareVks(subsidyVk as VerifyingKey, subsidyVkOnChain)) {
                 console.error("Error: subsidyVk mismatch");
                 return;
             }
@@ -333,8 +334,9 @@ const setVerifyingKeys = async (args: any) => {
 
         return;
     } catch (e) {
+        const { message } = e as Error;
         console.error("Error: transaction failed");
-        console.error(e.message);
+        console.error(message);
         return;
     }
 };
