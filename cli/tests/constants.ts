@@ -21,7 +21,9 @@ export const testProcessMessagesWitnessPath =
 export const testTallyVotesWitnessPath = "./zkeys/TallyVotes_10-1-2_test";
 export const testSubsidyWitnessPath = "./zkeys/SubsidyPerBatch_10-1-2_test";
 export const testProcessMessagesWasmPath =
-    "./zkeys/ProcessMessages_10-2-1-2_test.wasm";
-export const testTallyVotesWasmPath = "./zkeys/TallyVotes_10-1-2_test.wasm";
-export const testSubsidyWasmPath = "./zkeys/SubsidyPerBatch_10-1-2_test.wasm";
+    "./zkeys/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm";
+export const testTallyVotesWasmPath =
+    "./zkeys/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm";
+export const testSubsidyWasmPath =
+    "./zkeys/SubsidyPerBatch_10-1-2_test_js/SubsidyPerBatch_10-1-2_test.wasm";
 export const testRapidsnarkPath = `${homedir()}/rapidsnark/build/prover`;
