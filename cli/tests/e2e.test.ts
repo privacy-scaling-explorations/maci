@@ -21,6 +21,15 @@ import {
     VOTE_OPTION_TREE_DEPTH,
     coordinatorPrivKey,
     coordinatorPubKey,
+    processMessageTestZkeyPath,
+    tallyVotesTestZkeyPath,
+    testProcessMessagesWasmPath,
+    testProcessMessagesWitnessPath,
+    testProofsDirPath,
+    testRapidsnarkPath,
+    testTallyFilePath,
+    testTallyVotesWasmPath,
+    testTallyVotesWitnessPath,
 } from "./utilities/constants";
 import { homedir } from "os";
 import { cleanVanilla } from "./utilities/utils";
@@ -41,8 +50,8 @@ describe("e2e tests", function () {
             MSG_TREE_DEPTH,
             VOTE_OPTION_TREE_DEPTH,
             MSG_BATCH_DEPTH,
-            "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
-            "./zkeys/TallyVotes_10-1-2_test.0.zkey",
+            processMessageTestZkeyPath,
+            tallyVotesTestZkeyPath,
             undefined,
             undefined,
             true
@@ -108,29 +117,29 @@ describe("e2e tests", function () {
             await mergeMessages(0, undefined, undefined, true);
             await mergeSignups(0, undefined, undefined, true);
             await genProofs(
-                "./proofs",
-                "./tally.json",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
                 0,
                 undefined,
                 undefined,
-                `${homedir()}/rapidsnark/build/prover`,
-                "./zkeys/ProcessMessages_10-2-1-2_test",
-                "./zkeys/TallyVotes_10-1-2_test",
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
                 undefined,
                 coordinatorPrivKey,
                 undefined,
                 undefined,
-                "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
-                "./zkeys/TallyVotes_10-1-2_test.wasm",
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
                 undefined,
                 useWasm,
                 true
             );
             await proveOnChain(
                 "0",
-                "./proofs",
+                testProofsDirPath,
                 undefined,
                 undefined,
                 undefined,
@@ -139,7 +148,7 @@ describe("e2e tests", function () {
             );
             await verify(
                 "0",
-                "./tally.json",
+                testTallyFilePath,
                 undefined,
                 undefined,
                 undefined,
@@ -288,29 +297,29 @@ describe("e2e tests", function () {
             await mergeMessages(0, undefined, undefined, true);
             await mergeSignups(0, undefined, undefined, true);
             await genProofs(
-                "./proofs",
-                "./tally.json",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
                 0,
                 undefined,
                 undefined,
-                `${homedir()}/rapidsnark/build/prover`,
-                "./zkeys/ProcessMessages_10-2-1-2_test",
-                "./zkeys/TallyVotes_10-1-2_test",
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
                 undefined,
                 coordinatorPrivKey,
                 undefined,
                 undefined,
-                "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
-                "./zkeys/TallyVotes_10-1-2_test.wasm",
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
                 undefined,
                 useWasm,
                 true
             );
             await proveOnChain(
                 "0",
-                "./proofs",
+                testProofsDirPath,
                 undefined,
                 undefined,
                 undefined,
@@ -319,39 +328,10 @@ describe("e2e tests", function () {
             );
             await verify(
                 "0",
-                "./tally.json",
+                testTallyFilePath,
                 undefined,
                 undefined,
                 undefined,
-                undefined,
-                true
-            );
-        });
-    });
-
-    describe("test3", () => {
-        after(() => cleanVanilla());
-
-        before(async () => {
-            // deploy the smart contracts
-            await deploy(
-                STATE_TREE_DEPTH,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                true
-            );
-            // deploy a poll contract
-            await deployPoll(
-                90,
-                25,
-                25,
-                INT_STATE_TREE_DEPTH,
-                MSG_BATCH_DEPTH,
-                MSG_TREE_DEPTH,
-                VOTE_OPTION_TREE_DEPTH,
-                coordinatorPubKey,
                 undefined,
                 true
             );
@@ -443,29 +423,29 @@ describe("e2e tests", function () {
             await mergeMessages(0, undefined, undefined, true);
             await mergeSignups(0, undefined, undefined, true);
             await genProofs(
-                "./proofs",
-                "./tally.json",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
                 0,
                 undefined,
                 undefined,
-                `${homedir()}/rapidsnark/build/prover`,
-                "./zkeys/ProcessMessages_10-2-1-2_test",
-                "./zkeys/TallyVotes_10-1-2_test",
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
                 undefined,
                 coordinatorPrivKey,
                 undefined,
                 undefined,
-                "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
-                "./zkeys/TallyVotes_10-1-2_test.wasm",
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
                 undefined,
                 useWasm,
                 true
             );
             await proveOnChain(
                 "0",
-                "./proofs",
+                testProofsDirPath,
                 undefined,
                 undefined,
                 undefined,
@@ -474,7 +454,7 @@ describe("e2e tests", function () {
             );
             await verify(
                 "0",
-                "./tally.json",
+                testTallyFilePath,
                 undefined,
                 undefined,
                 undefined,
@@ -544,29 +524,29 @@ describe("e2e tests", function () {
             await mergeMessages(0, undefined, undefined, true);
             await mergeSignups(0, undefined, undefined, true);
             await genProofs(
-                "./proofs",
-                "./tally.json",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
                 0,
                 undefined,
                 undefined,
-                `${homedir()}/rapidsnark/build/prover`,
-                "./zkeys/ProcessMessages_10-2-1-2_test",
-                "./zkeys/TallyVotes_10-1-2_test",
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
                 undefined,
                 coordinatorPrivKey,
                 undefined,
                 undefined,
-                "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
-                "./zkeys/TallyVotes_10-1-2_test.wasm",
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
                 undefined,
                 useWasm,
                 true
             );
             await proveOnChain(
                 "0",
-                "./proofs",
+                testProofsDirPath,
                 undefined,
                 undefined,
                 undefined,
@@ -575,7 +555,7 @@ describe("e2e tests", function () {
             );
             await verify(
                 "0",
-                "./tally.json",
+                testTallyFilePath,
                 undefined,
                 undefined,
                 undefined,
@@ -699,29 +679,29 @@ describe("e2e tests", function () {
             await mergeMessages(0, undefined, undefined, true);
             await mergeSignups(0, undefined, undefined, true);
             await genProofs(
-                "./proofs",
-                "./tally.json",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
                 0,
                 undefined,
                 undefined,
-                `${homedir()}/rapidsnark/build/prover`,
-                "./zkeys/ProcessMessages_10-2-1-2_test",
-                "./zkeys/TallyVotes_10-1-2_test",
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
                 undefined,
                 coordinatorPrivKey,
                 undefined,
                 undefined,
-                "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
-                "./zkeys/TallyVotes_10-1-2_test.wasm",
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
                 undefined,
                 useWasm,
                 true
             );
             await proveOnChain(
                 "0",
-                "./proofs",
+                testProofsDirPath,
                 undefined,
                 undefined,
                 undefined,
@@ -730,7 +710,7 @@ describe("e2e tests", function () {
             );
             await verify(
                 "0",
-                "./tally.json",
+                testTallyFilePath,
                 undefined,
                 undefined,
                 undefined,
@@ -874,29 +854,29 @@ describe("e2e tests", function () {
             await mergeMessages(0, undefined, undefined, true);
             await mergeSignups(0, undefined, undefined, true);
             await genProofs(
-                "./proofs",
-                "./tally.json",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
                 0,
                 undefined,
                 undefined,
-                `${homedir()}/rapidsnark/build/prover`,
-                "./zkeys/ProcessMessages_10-2-1-2_test",
-                "./zkeys/TallyVotes_10-1-2_test",
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
                 undefined,
                 coordinatorPrivKey,
                 undefined,
                 undefined,
-                "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
-                "./zkeys/TallyVotes_10-1-2_test.wasm",
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
                 undefined,
                 useWasm,
                 true
             );
             await proveOnChain(
                 "0",
-                "./proofs",
+                testProofsDirPath,
                 undefined,
                 undefined,
                 undefined,
@@ -905,7 +885,7 @@ describe("e2e tests", function () {
             );
             await verify(
                 "0",
-                "./tally.json",
+                testTallyFilePath,
                 undefined,
                 undefined,
                 undefined,
@@ -934,8 +914,8 @@ describe("e2e tests", function () {
                 MSG_TREE_DEPTH,
                 VOTE_OPTION_TREE_DEPTH,
                 MSG_BATCH_DEPTH,
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
+                processMessageTestZkeyPath,
+                tallyVotesTestZkeyPath,
                 undefined,
                 true
             );
@@ -1026,29 +1006,29 @@ describe("e2e tests", function () {
             await mergeMessages(0, undefined, undefined, true);
             await mergeSignups(0, undefined, undefined, true);
             await genProofs(
-                "./proofs",
-                "./tally.json",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
                 0,
                 undefined,
                 undefined,
-                `${homedir()}/rapidsnark/build/prover`,
-                "./zkeys/ProcessMessages_10-2-1-2_test",
-                "./zkeys/TallyVotes_10-1-2_test",
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
                 undefined,
                 coordinatorPrivKey,
                 undefined,
                 undefined,
-                "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
-                "./zkeys/TallyVotes_10-1-2_test.wasm",
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
                 undefined,
                 useWasm,
                 true
             );
             await proveOnChain(
                 "0",
-                "./proofs",
+                testProofsDirPath,
                 undefined,
                 undefined,
                 undefined,
@@ -1057,7 +1037,7 @@ describe("e2e tests", function () {
             );
             await verify(
                 "0",
-                "./tally.json",
+                testTallyFilePath,
                 undefined,
                 undefined,
                 undefined,
@@ -1119,30 +1099,29 @@ describe("e2e tests", function () {
             await mergeMessages(0, undefined, undefined, true);
             await mergeSignups(0, undefined, undefined, true);
             await genProofs(
-                "./proofs",
-                "./tally.json",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
                 0,
                 undefined,
                 undefined,
-                `${homedir()}/rapidsnark/build/prover`,
-                "./zkeys/ProcessMessages_10-2-1-2_test",
-                "./zkeys/TallyVotes_10-1-2_test",
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
                 undefined,
                 coordinatorPrivKey,
                 undefined,
                 undefined,
-                "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
-                "./zkeys/TallyVotes_10-1-2_test.wasm",
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
                 undefined,
                 useWasm,
                 true
             );
-            // prove and verify
             await proveOnChain(
                 "0",
-                "./proofs",
+                testProofsDirPath,
                 undefined,
                 undefined,
                 undefined,
@@ -1151,7 +1130,7 @@ describe("e2e tests", function () {
             );
             await verify(
                 "0",
-                "./tally.json",
+                testTallyFilePath,
                 undefined,
                 undefined,
                 undefined,
@@ -1194,29 +1173,29 @@ describe("e2e tests", function () {
             await mergeMessages(1, undefined, undefined, true);
             await mergeSignups(1, undefined, undefined, true);
             await genProofs(
-                "./proofs",
-                "./tally.json",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
                 1,
                 undefined,
                 undefined,
-                `${homedir()}/rapidsnark/build/prover`,
-                "./zkeys/ProcessMessages_10-2-1-2_test",
-                "./zkeys/TallyVotes_10-1-2_test",
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
                 undefined,
                 coordinatorPrivKey,
                 undefined,
                 undefined,
-                "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
-                "./zkeys/TallyVotes_10-1-2_test.wasm",
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
                 undefined,
                 useWasm,
                 true
             );
             await proveOnChain(
                 "1",
-                "./proofs",
+                testProofsDirPath,
                 undefined,
                 undefined,
                 undefined,
@@ -1225,7 +1204,7 @@ describe("e2e tests", function () {
             );
             await verify(
                 "1",
-                "./tally.json",
+                testTallyFilePath,
                 undefined,
                 undefined,
                 undefined,
@@ -1304,30 +1283,29 @@ describe("e2e tests", function () {
             await mergeMessages(0, undefined, undefined, true);
             await mergeSignups(0, undefined, undefined, true);
             await genProofs(
-                "./proofs",
-                "./tally.json",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
                 0,
                 undefined,
                 undefined,
-                `${homedir()}/rapidsnark/build/prover`,
-                "./zkeys/ProcessMessages_10-2-1-2_test",
-                "./zkeys/TallyVotes_10-1-2_test",
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
                 undefined,
                 coordinatorPrivKey,
                 undefined,
                 undefined,
-                "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
-                "./zkeys/TallyVotes_10-1-2_test.wasm",
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
                 undefined,
                 useWasm,
                 true
             );
-            // prove and verify
             await proveOnChain(
                 "0",
-                "./proofs",
+                testProofsDirPath,
                 undefined,
                 undefined,
                 undefined,
@@ -1336,7 +1314,7 @@ describe("e2e tests", function () {
             );
             await verify(
                 "0",
-                "./tally.json",
+                testTallyFilePath,
                 undefined,
                 undefined,
                 undefined,
@@ -1459,29 +1437,29 @@ describe("e2e tests", function () {
             await mergeMessages(1, undefined, undefined, true);
             await mergeSignups(1, undefined, undefined, true);
             await genProofs(
-                "./proofs",
-                "./tally.json",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
                 1,
                 undefined,
                 undefined,
-                `${homedir()}/rapidsnark/build/prover`,
-                "./zkeys/ProcessMessages_10-2-1-2_test",
-                "./zkeys/TallyVotes_10-1-2_test",
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
                 undefined,
                 coordinatorPrivKey,
                 undefined,
                 undefined,
-                "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
-                "./zkeys/TallyVotes_10-1-2_test.wasm",
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
                 undefined,
                 useWasm,
                 true
             );
             await proveOnChain(
                 "1",
-                "./proofs",
+                testProofsDirPath,
                 undefined,
                 undefined,
                 undefined,
@@ -1490,7 +1468,7 @@ describe("e2e tests", function () {
             );
             await verify(
                 "1",
-                "./tally.json",
+                testTallyFilePath,
                 undefined,
                 undefined,
                 undefined,
@@ -1504,29 +1482,29 @@ describe("e2e tests", function () {
             await mergeMessages(2, undefined, undefined, true);
             await mergeSignups(2, undefined, undefined, true);
             await genProofs(
-                "./proofs",
-                "./tally.json",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
                 2,
                 undefined,
                 undefined,
-                `${homedir()}/rapidsnark/build/prover`,
-                "./zkeys/ProcessMessages_10-2-1-2_test",
-                "./zkeys/TallyVotes_10-1-2_test",
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
                 undefined,
                 coordinatorPrivKey,
                 undefined,
                 undefined,
-                "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
-                "./zkeys/TallyVotes_10-1-2_test.wasm",
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
                 undefined,
                 useWasm,
                 true
             );
             await proveOnChain(
                 "2",
-                "./proofs",
+                testProofsDirPath,
                 undefined,
                 undefined,
                 undefined,
@@ -1535,7 +1513,7 @@ describe("e2e tests", function () {
             );
             await verify(
                 "2",
-                "./tally.json",
+                testTallyFilePath,
                 undefined,
                 undefined,
                 undefined,
