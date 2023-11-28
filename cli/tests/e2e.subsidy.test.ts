@@ -20,6 +20,19 @@ import {
     VOTE_OPTION_TREE_DEPTH,
     coordinatorPrivKey,
     coordinatorPubKey,
+    processMessageTestZkeyPath,
+    subsidyTestZkeyPath,
+    tallyVotesTestZkeyPath,
+    testProcessMessagesWasmPath,
+    testProcessMessagesWitnessPath,
+    testProofsDirPath,
+    testRapidsnarkPath,
+    testSubsidyFilePath,
+    testSubsidyWasmPath,
+    testSubsidyWitnessPath,
+    testTallyFilePath,
+    testTallyVotesWasmPath,
+    testTallyVotesWitnessPath,
 } from "./utilities/constants";
 import { homedir } from "os";
 import { cleanSubsidy } from "./utilities/utils";
@@ -39,10 +52,10 @@ describe("e2e with Subsidy tests", function () {
             MSG_TREE_DEPTH,
             VOTE_OPTION_TREE_DEPTH,
             MSG_BATCH_DEPTH,
-            "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
-            "./zkeys/TallyVotes_10-1-2_test.0.zkey",
+            processMessageTestZkeyPath,
+            tallyVotesTestZkeyPath,
             undefined,
-            "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
+            subsidyTestZkeyPath,
             true
         );
     });
@@ -105,29 +118,29 @@ describe("e2e with Subsidy tests", function () {
             await mergeMessages(0, undefined, undefined, true);
             await mergeSignups(0, undefined, undefined, true);
             await genProofs(
-                "./proofs",
-                "./tally.json",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
                 0,
-                "./subsidy.json",
-                "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
-                `${homedir()}/rapidsnark/build/prover`,
-                "./zkeys/ProcessMessages_10-2-1-2_test",
-                "./zkeys/TallyVotes_10-1-2_test",
-                "./zkeys/SubsidyPerBatch_10-1-2_test",
+                testSubsidyFilePath,
+                subsidyTestZkeyPath,
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
+                testSubsidyWitnessPath,
                 coordinatorPrivKey,
                 undefined,
                 undefined,
-                "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
-                "./zkeys/TallyVotes_10-1-2_test.wasm",
-                "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
+                testSubsidyWasmPath,
                 useWasm,
                 true
             );
             await proveOnChain(
                 "0",
-                "./proofs",
+                testProofsDirPath,
                 undefined,
                 undefined,
                 undefined,
@@ -136,11 +149,11 @@ describe("e2e with Subsidy tests", function () {
             );
             await verify(
                 "0",
-                "./tally.json",
+                testTallyFilePath,
                 undefined,
                 undefined,
                 undefined,
-                "./subsidy.json",
+                testSubsidyFilePath,
                 true
             );
         });
@@ -285,29 +298,29 @@ describe("e2e with Subsidy tests", function () {
             await mergeMessages(0, undefined, undefined, true);
             await mergeSignups(0, undefined, undefined, true);
             await genProofs(
-                "./proofs",
-                "./tally.json",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
                 0,
-                "./subsidy.json",
-                "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
-                `${homedir()}/rapidsnark/build/prover`,
-                "./zkeys/ProcessMessages_10-2-1-2_test",
-                "./zkeys/TallyVotes_10-1-2_test",
-                "./zkeys/SubsidyPerBatch_10-1-2_test",
+                testSubsidyFilePath,
+                subsidyTestZkeyPath,
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
+                testSubsidyWitnessPath,
                 coordinatorPrivKey,
                 undefined,
                 undefined,
-                "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
-                "./zkeys/TallyVotes_10-1-2_test.wasm",
-                "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
+                testSubsidyWasmPath,
                 useWasm,
                 true
             );
             await proveOnChain(
                 "0",
-                "./proofs",
+                testProofsDirPath,
                 undefined,
                 undefined,
                 undefined,
@@ -316,11 +329,11 @@ describe("e2e with Subsidy tests", function () {
             );
             await verify(
                 "0",
-                "./tally.json",
+                testTallyFilePath,
                 undefined,
                 undefined,
                 undefined,
-                "./subsidy.json",
+                testSubsidyFilePath,
                 true
             );
         });
@@ -440,29 +453,29 @@ describe("e2e with Subsidy tests", function () {
             await mergeMessages(0, undefined, undefined, true);
             await mergeSignups(0, undefined, undefined, true);
             await genProofs(
-                "./proofs",
-                "./tally.json",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
                 0,
-                "./subsidy.json",
-                "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
-                `${homedir()}/rapidsnark/build/prover`,
-                "./zkeys/ProcessMessages_10-2-1-2_test",
-                "./zkeys/TallyVotes_10-1-2_test",
-                "./zkeys/SubsidyPerBatch_10-1-2_test",
+                testSubsidyFilePath,
+                subsidyTestZkeyPath,
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
+                testSubsidyWitnessPath,
                 coordinatorPrivKey,
                 undefined,
                 undefined,
-                "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
-                "./zkeys/TallyVotes_10-1-2_test.wasm",
-                "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
+                testSubsidyWasmPath,
                 useWasm,
                 true
             );
             await proveOnChain(
                 "0",
-                "./proofs",
+                testProofsDirPath,
                 undefined,
                 undefined,
                 undefined,
@@ -471,11 +484,11 @@ describe("e2e with Subsidy tests", function () {
             );
             await verify(
                 "0",
-                "./tally.json",
+                testTallyFilePath,
                 undefined,
                 undefined,
                 undefined,
-                "./subsidy.json",
+                testSubsidyFilePath,
                 true
             );
         });
@@ -541,29 +554,29 @@ describe("e2e with Subsidy tests", function () {
             await mergeMessages(0, undefined, undefined, true);
             await mergeSignups(0, undefined, undefined, true);
             await genProofs(
-                "./proofs",
-                "./tally.json",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
                 0,
-                "./subsidy.json",
-                "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
-                `${homedir()}/rapidsnark/build/prover`,
-                "./zkeys/ProcessMessages_10-2-1-2_test",
-                "./zkeys/TallyVotes_10-1-2_test",
-                "./zkeys/SubsidyPerBatch_10-1-2_test",
+                testSubsidyFilePath,
+                subsidyTestZkeyPath,
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
+                testSubsidyWitnessPath,
                 coordinatorPrivKey,
                 undefined,
                 undefined,
-                "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
-                "./zkeys/TallyVotes_10-1-2_test.wasm",
-                "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
+                testSubsidyWasmPath,
                 useWasm,
                 true
             );
             await proveOnChain(
                 "0",
-                "./proofs",
+                testProofsDirPath,
                 undefined,
                 undefined,
                 undefined,
@@ -572,11 +585,11 @@ describe("e2e with Subsidy tests", function () {
             );
             await verify(
                 "0",
-                "./tally.json",
+                testTallyFilePath,
                 undefined,
                 undefined,
                 undefined,
-                "./subsidy.json",
+                testSubsidyFilePath,
                 true
             );
         });
@@ -696,29 +709,29 @@ describe("e2e with Subsidy tests", function () {
             await mergeMessages(0, undefined, undefined, true);
             await mergeSignups(0, undefined, undefined, true);
             await genProofs(
-                "./proofs",
-                "./tally.json",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
                 0,
-                "./subsidy.json",
-                "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
-                `${homedir()}/rapidsnark/build/prover`,
-                "./zkeys/ProcessMessages_10-2-1-2_test",
-                "./zkeys/TallyVotes_10-1-2_test",
-                "./zkeys/SubsidyPerBatch_10-1-2_test",
+                testSubsidyFilePath,
+                subsidyTestZkeyPath,
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
+                testSubsidyWitnessPath,
                 coordinatorPrivKey,
                 undefined,
                 undefined,
-                "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
-                "./zkeys/TallyVotes_10-1-2_test.wasm",
-                "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
+                testSubsidyWasmPath,
                 useWasm,
                 true
             );
             await proveOnChain(
                 "0",
-                "./proofs",
+                testProofsDirPath,
                 undefined,
                 undefined,
                 undefined,
@@ -727,11 +740,11 @@ describe("e2e with Subsidy tests", function () {
             );
             await verify(
                 "0",
-                "./tally.json",
+                testTallyFilePath,
                 undefined,
                 undefined,
                 undefined,
-                "./subsidy.json",
+                testSubsidyFilePath,
                 true
             );
         });
@@ -871,29 +884,29 @@ describe("e2e with Subsidy tests", function () {
             await mergeMessages(0, undefined, undefined, true);
             await mergeSignups(0, undefined, undefined, true);
             await genProofs(
-                "./proofs",
-                "./tally.json",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
                 0,
-                "./subsidy.json",
-                "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
-                `${homedir()}/rapidsnark/build/prover`,
-                "./zkeys/ProcessMessages_10-2-1-2_test",
-                "./zkeys/TallyVotes_10-1-2_test",
-                "./zkeys/SubsidyPerBatch_10-1-2_test",
+                testSubsidyFilePath,
+                subsidyTestZkeyPath,
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
+                testSubsidyWitnessPath,
                 coordinatorPrivKey,
                 undefined,
                 undefined,
-                "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
-                "./zkeys/TallyVotes_10-1-2_test.wasm",
-                "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
+                testSubsidyWasmPath,
                 useWasm,
                 true
             );
             await proveOnChain(
                 "0",
-                "./proofs",
+                testProofsDirPath,
                 undefined,
                 undefined,
                 undefined,
@@ -902,11 +915,11 @@ describe("e2e with Subsidy tests", function () {
             );
             await verify(
                 "0",
-                "./tally.json",
+                testTallyFilePath,
                 undefined,
                 undefined,
                 undefined,
-                "./subsidy.json",
+                testSubsidyFilePath,
                 true
             );
         });
@@ -1087,29 +1100,29 @@ describe("e2e with Subsidy tests", function () {
             await mergeMessages(0, undefined, undefined, true);
             await mergeSignups(0, undefined, undefined, true);
             await genProofs(
-                "./proofs",
-                "./tally.json",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
                 0,
-                "./subsidy.json",
-                "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
-                `${homedir()}/rapidsnark/build/prover`,
-                "./zkeys/ProcessMessages_10-2-1-2_test",
-                "./zkeys/TallyVotes_10-1-2_test",
-                "./zkeys/SubsidyPerBatch_10-1-2_test",
+                testSubsidyFilePath,
+                subsidyTestZkeyPath,
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
+                testSubsidyWitnessPath,
                 coordinatorPrivKey,
                 undefined,
                 undefined,
-                "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
-                "./zkeys/TallyVotes_10-1-2_test.wasm",
-                "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
+                testSubsidyWasmPath,
                 useWasm,
                 true
             );
             await proveOnChain(
                 "0",
-                "./proofs",
+                testProofsDirPath,
                 undefined,
                 undefined,
                 undefined,
@@ -1118,11 +1131,11 @@ describe("e2e with Subsidy tests", function () {
             );
             await verify(
                 "0",
-                "./tally.json",
+                testTallyFilePath,
                 undefined,
                 undefined,
                 undefined,
-                "./subsidy.json",
+                testSubsidyFilePath,
                 true
             );
         });
@@ -1180,30 +1193,29 @@ describe("e2e with Subsidy tests", function () {
             await mergeMessages(0, undefined, undefined, true);
             await mergeSignups(0, undefined, undefined, true);
             await genProofs(
-                "./proofs",
-                "./tally.json",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
                 0,
-                "./subsidy.json",
-                "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
-                `${homedir()}/rapidsnark/build/prover`,
-                "./zkeys/ProcessMessages_10-2-1-2_test",
-                "./zkeys/TallyVotes_10-1-2_test",
-                "./zkeys/SubsidyPerBatch_10-1-2_test",
+                testSubsidyFilePath,
+                subsidyTestZkeyPath,
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
+                testSubsidyWitnessPath,
                 coordinatorPrivKey,
                 undefined,
                 undefined,
-                "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
-                "./zkeys/TallyVotes_10-1-2_test.wasm",
-                "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
+                testSubsidyWasmPath,
                 useWasm,
                 true
             );
-            // prove and verify
             await proveOnChain(
                 "0",
-                "./proofs",
+                testProofsDirPath,
                 undefined,
                 undefined,
                 undefined,
@@ -1212,11 +1224,11 @@ describe("e2e with Subsidy tests", function () {
             );
             await verify(
                 "0",
-                "./tally.json",
+                testTallyFilePath,
                 undefined,
                 undefined,
                 undefined,
-                "./subsidy.json",
+                testSubsidyFilePath,
                 true
             );
             cleanSubsidy();
@@ -1255,29 +1267,29 @@ describe("e2e with Subsidy tests", function () {
             await mergeMessages(1, undefined, undefined, true);
             await mergeSignups(1, undefined, undefined, true);
             await genProofs(
-                "./proofs",
-                "./tally.json",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
                 1,
-                "./subsidy.json",
-                "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
-                `${homedir()}/rapidsnark/build/prover`,
-                "./zkeys/ProcessMessages_10-2-1-2_test",
-                "./zkeys/TallyVotes_10-1-2_test",
-                "./zkeys/SubsidyPerBatch_10-1-2_test",
+                testSubsidyFilePath,
+                subsidyTestZkeyPath,
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
+                testSubsidyWitnessPath,
                 coordinatorPrivKey,
                 undefined,
                 undefined,
-                "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
-                "./zkeys/TallyVotes_10-1-2_test.wasm",
-                "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
+                testSubsidyWasmPath,
                 useWasm,
                 true
             );
             await proveOnChain(
                 "1",
-                "./proofs",
+                testProofsDirPath,
                 undefined,
                 undefined,
                 undefined,
@@ -1286,11 +1298,11 @@ describe("e2e with Subsidy tests", function () {
             );
             await verify(
                 "1",
-                "./tally.json",
+                testTallyFilePath,
                 undefined,
                 undefined,
                 undefined,
-                "./subsidy.json",
+                testSubsidyFilePath,
                 true
             );
         });
@@ -1365,30 +1377,29 @@ describe("e2e with Subsidy tests", function () {
             await mergeMessages(0, undefined, undefined, true);
             await mergeSignups(0, undefined, undefined, true);
             await genProofs(
-                "./proofs",
-                "./tally.json",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
                 0,
-                "./subsidy.json",
-                "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
-                `${homedir()}/rapidsnark/build/prover`,
-                "./zkeys/ProcessMessages_10-2-1-2_test",
-                "./zkeys/TallyVotes_10-1-2_test",
-                "./zkeys/SubsidyPerBatch_10-1-2_test",
+                testSubsidyFilePath,
+                subsidyTestZkeyPath,
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
+                testSubsidyWitnessPath,
                 coordinatorPrivKey,
                 undefined,
                 undefined,
-                "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
-                "./zkeys/TallyVotes_10-1-2_test.wasm",
-                "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
+                testSubsidyWasmPath,
                 useWasm,
                 true
             );
-            // prove and verify
             await proveOnChain(
                 "0",
-                "./proofs",
+                testProofsDirPath,
                 undefined,
                 undefined,
                 undefined,
@@ -1397,11 +1408,11 @@ describe("e2e with Subsidy tests", function () {
             );
             await verify(
                 "0",
-                "./tally.json",
+                testTallyFilePath,
                 undefined,
                 undefined,
                 undefined,
-                "./subsidy.json",
+                testSubsidyFilePath,
                 true
             );
             cleanSubsidy();
@@ -1520,29 +1531,29 @@ describe("e2e with Subsidy tests", function () {
             await mergeMessages(1, undefined, undefined, true);
             await mergeSignups(1, undefined, undefined, true);
             await genProofs(
-                "./proofs",
-                "./tally.json",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
                 1,
-                "./subsidy.json",
-                "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
-                `${homedir()}/rapidsnark/build/prover`,
-                "./zkeys/ProcessMessages_10-2-1-2_test",
-                "./zkeys/TallyVotes_10-1-2_test",
-                "./zkeys/SubsidyPerBatch_10-1-2_test",
+                testSubsidyFilePath,
+                subsidyTestZkeyPath,
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
+                testSubsidyWitnessPath,
                 coordinatorPrivKey,
                 undefined,
                 undefined,
-                "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
-                "./zkeys/TallyVotes_10-1-2_test.wasm",
-                "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
+                testSubsidyWasmPath,
                 useWasm,
                 true
             );
             await proveOnChain(
                 "1",
-                "./proofs",
+                testProofsDirPath,
                 undefined,
                 undefined,
                 undefined,
@@ -1551,11 +1562,11 @@ describe("e2e with Subsidy tests", function () {
             );
             await verify(
                 "1",
-                "./tally.json",
+                testTallyFilePath,
                 undefined,
                 undefined,
                 undefined,
-                "./subsidy.json",
+                testSubsidyFilePath,
                 true
             );
             cleanSubsidy();
@@ -1565,29 +1576,29 @@ describe("e2e with Subsidy tests", function () {
             await mergeMessages(2, undefined, undefined, true);
             await mergeSignups(2, undefined, undefined, true);
             await genProofs(
-                "./proofs",
-                "./tally.json",
-                "./zkeys/TallyVotes_10-1-2_test.0.zkey",
-                "./zkeys/ProcessMessages_10-2-1-2_test.0.zkey",
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
                 2,
-                "./subsidy.json",
-                "./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey",
-                `${homedir()}/rapidsnark/build/prover`,
-                "./zkeys/ProcessMessages_10-2-1-2_test",
-                "./zkeys/TallyVotes_10-1-2_test",
-                "./zkeys/SubsidyPerBatch_10-1-2_test",
+                testSubsidyFilePath,
+                subsidyTestZkeyPath,
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
+                testSubsidyWitnessPath,
                 coordinatorPrivKey,
                 undefined,
                 undefined,
-                "./zkeys/ProcessMessages_10-2-1-2_test.wasm",
-                "./zkeys/TallyVotes_10-1-2_test.wasm",
-                "./zkeys/SubsidyPerBatch_10-1-2_test.wasm",
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
+                testSubsidyWasmPath,
                 useWasm,
                 true
             );
             await proveOnChain(
                 "2",
-                "./proofs",
+                testProofsDirPath,
                 undefined,
                 undefined,
                 undefined,
@@ -1596,11 +1607,11 @@ describe("e2e with Subsidy tests", function () {
             );
             await verify(
                 "2",
-                "./tally.json",
+                testTallyFilePath,
                 undefined,
                 undefined,
                 undefined,
-                "./subsidy.json",
+                testSubsidyFilePath,
                 true
             );
         });
