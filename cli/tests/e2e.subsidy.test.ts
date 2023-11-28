@@ -33,9 +33,8 @@ import {
     testTallyFilePath,
     testTallyVotesWasmPath,
     testTallyVotesWitnessPath,
-} from "./utilities/constants";
-import { homedir } from "os";
-import { cleanSubsidy } from "./utilities/utils";
+} from "./constants";
+import { cleanSubsidy } from "./utils";
 import { isArm } from "maci-circuits";
 
 describe("e2e with Subsidy tests", function () {

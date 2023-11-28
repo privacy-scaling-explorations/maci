@@ -72,7 +72,7 @@ program
     .description(
         "check that the verifying keys in the contract match the local ones"
     )
-    .option("-q, --quiet", "whether to print values to the console")
+    .option("-q, --quiet", "whether to print values to the console", false)
     .option("-x, --maci-contract <maciContract>", "the MACI contract address")
     .requiredOption(
         "-s, --state-tree-depth <stateTreeDepth>",
@@ -135,7 +135,7 @@ program
     .option("-x, --contract <contract>", "the MACI contract address")
     .option("-o, --poll-id <pollId>", "poll id")
     .option("-t, --token-address <tokenAddress>", "the token address")
-    .option("-q, --quiet", "whether to print values to the console")
+    .option("-q, --quiet", "whether to print values to the console", false)
     .action(
         async (cmdObj) =>
             await airdrop(
@@ -149,14 +149,14 @@ program
 program
     .command("deployVkRegistry")
     .description("deploy a new verification key registry contract")
-    .option("-q, --quiet", "whether to print values to the console")
+    .option("-q, --quiet", "whether to print values to the console", false)
     .action(async (cmdObj) => {
         await deployVkRegistryContract(cmdObj.quiet);
     });
 program
     .command("show")
     .description("show the deployed contract addresses")
-    .option("-q, --quiet", "whether to print values to the console")
+    .option("-q, --quiet", "whether to print values to the console", false)
     .action((cmdObj) => {
         showContracts(cmdObj.quiet);
     });
@@ -190,7 +190,7 @@ program
         "the coordinator public key"
     )
     .option("-x, --maci-address <maciAddress>", "the MACI contract address")
-    .option("-q, --quiet", "whether to print values to the console")
+    .option("-q, --quiet", "whether to print values to the console", false)
     .action(async (cmdObj) => {
         await deployPoll(
             cmdObj.duration,
@@ -240,7 +240,7 @@ program
         "-k, --vk-registry <vkRegistry>",
         "the vk registry contract address"
     )
-    .option("-q, --quiet", "whether to print values to the console")
+    .option("-q, --quiet", "whether to print values to the console", false)
     .option("-ss, --subsidy-zkey <subsidyZkeyPath>", "the subsidy zkey path")
     .action(
         async (cmdObj) =>
@@ -278,7 +278,7 @@ program
         "-w, --new-vote-weight <newVoteWeight>",
         "the new vote weight"
     )
-    .option("-q, --quiet", "whether to print values to the console")
+    .option("-q, --quiet", "whether to print values to the console", false)
     .action(async (cmdObj) => {
         await publish(
             cmdObj.pubkey,
@@ -296,7 +296,7 @@ program
 program
     .command("mergeMessages")
     .description("merge the message accumulator queue")
-    .option("-q, --quiet", "whether to print values to the console")
+    .option("-q, --quiet", "whether to print values to the console", false)
     .option(
         "-x, --maci-contract-address <maciContractAddress>",
         "the MACI contract address"
@@ -318,7 +318,7 @@ program
 program
     .command("mergeSignups")
     .description("merge the signups accumulator queue")
-    .option("-q, --quiet", "whether to print values to the console")
+    .option("-q, --quiet", "whether to print values to the console", false)
     .option(
         "-x, --maci-contract-address <maciContractAddress>",
         "the MACI contract address"
@@ -344,7 +344,7 @@ program
         "-s, --seconds <seconds>",
         "the number of seconds to fast-forward"
     )
-    .option("-q, --quiet", "whether to print values to the console")
+    .option("-q, --quiet", "whether to print values to the console", false)
     .action(async (cmdObj) => await timeTravel(cmdObj.quiet, cmdObj.provider));
 program
     .command("signup")
@@ -353,7 +353,7 @@ program
     .option("-x, --maci-address <maciAddress>", "the MACI contract address")
     .option("-s, --sg-data <sgData>", "the signup gateway data")
     .option("-i, --ivcp-data <ivcpData>", "the initial voice credit proxy data")
-    .option("-q, --quiet", "whether to print values to the console")
+    .option("-q, --quiet", "whether to print values to the console", false)
     .action(async (cmdObj) => {
         await signup(
             cmdObj.pubkey,
@@ -370,7 +370,7 @@ program
     .option("-x, --maci-address <maciAddress>", "the MACI contract address")
     .requiredOption("-i, --state-index <stateIndex>", "state leaf index")
     .requiredOption("-o, --poll-id <pollId>", "poll id")
-    .option("-q, --quiet", "whether to print values to the console")
+    .option("-q, --quiet", "whether to print values to the console", false)
     .action(
         async (cmdObj) =>
             await topup(
@@ -386,7 +386,7 @@ program
     .description("Fund a wallet with Ether")
     .requiredOption("-a, --amount <amount>", "the amount of Ether")
     .requiredOption("-w, --address <address>", "the address to fund")
-    .option("-q, --quiet", "whether to print values to the console")
+    .option("-q, --quiet", "whether to print values to the console", false)
     .action(
         async (cmdObj) =>
             await fundWallet(cmdObj.amount, cmdObj.address, cmdObj.quiet)
@@ -408,7 +408,7 @@ program
         "-sc, --subsidy-contract <subsidyContract>",
         "the subsidy contract address"
     )
-    .option("-q, --quiet", "whether to print values to the console")
+    .option("-q, --quiet", "whether to print values to the console", false)
     .action(
         async (cmdObj) =>
             await verify(
@@ -454,7 +454,7 @@ program
         "the path to the tally zkey"
     )
     .option("-zs, --subsidy-zkey <subsidyZkey>", "the path to the subsidy zkey")
-    .option("-q, --quiet", "whether to print values to the console")
+    .option("-q, --quiet", "whether to print values to the console", false)
     .requiredOption(
         "-f, --output <outputDir>",
         "the output directory for proofs"
@@ -503,7 +503,7 @@ program
     .command("proveOnChain")
     .description("prove the results of a poll on chain")
     .requiredOption("-o, --poll-id <pollId>", "the poll id")
-    .option("-q, --quiet", "whether to print values to the console")
+    .option("-q, --quiet", "whether to print values to the console", false)
     .option("-x, --contract <contract>", "the MACI contract address")
     .option(
         "-p, --message-processor-address <messageProcessorAddress>",
