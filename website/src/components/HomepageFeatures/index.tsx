@@ -10,22 +10,32 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: "Easy to Use",
+    title: "Highly secure",
     Svg: require("@site/static/img/undraw_docusaurus_mountain.svg").default,
-    description: <>MACI was designed to be an easy to use voting solution.</>,
+    description: (
+      <>
+        MACI was designed to be a secure voting system. It is built on top of the Ethereum blockchain which ensures
+        votes cannot faked, censored, or tampered with.
+      </>
+    ),
   },
   {
-    title: "Ensure privacy is preserved",
+    title: "Protects privacy",
     Svg: require("@site/static/img/undraw_docusaurus_tree.svg").default,
-    description: <>With MACI, you can rest assured that your privacy is preserved when participating in a vote.</>,
+    description: (
+      <>
+        With MACI, votes are encrypted before submitting them on-chain, so you can rest assured that your privacy is
+        preserved when participating in a vote.
+      </>
+    ),
   },
   {
     title: "Powered by zk-SNARKs",
     Svg: require("@site/static/img/undraw_docusaurus_react.svg").default,
     description: (
       <>
-        MACI is powered by zk-SNARKs, a cutting edge cryptographic technology that allows for the verification of
-        computations without revealing the inputs or outputs.
+        MACI is powered by zk-SNARKs, a cutting edge cryptographic technology that ensures votes are counted correctly
+        without revealing the individual votes.
       </>
     ),
   },
