@@ -27,8 +27,7 @@ export abstract class Command {
     public copy(): Command {
         return this;
     }
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    public equals(command: Command) {}
+    abstract equals(command: Command): boolean;
 
     /**
      * Serialize into a JSON object

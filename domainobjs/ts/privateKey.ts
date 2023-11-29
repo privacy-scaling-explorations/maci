@@ -62,15 +62,12 @@ export class PrivKey {
         const correctPrefix = s.startsWith(SERIALIZED_PRIV_KEY_PREFIX);
         const x = s.slice(SERIALIZED_PRIV_KEY_PREFIX.length);
 
-        let validValue = false;
         try {
             const value = BigInt(`0x${x}`);
-            validValue = value < SNARK_FIELD_SIZE;
+            return correctPrefix && value < SNARK_FIELD_SIZE;
         } catch {
             return false;
         }
-
-        return correctPrefix && validValue;
     };
 
     /**

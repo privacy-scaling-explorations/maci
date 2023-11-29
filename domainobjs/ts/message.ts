@@ -85,13 +85,7 @@ export class Message {
             return false;
         }
 
-        for (let i = 0; i < this.data.length; i++) {
-            if (this.data[i] !== m.data[i]) {
-                return false;
-            }
-        }
-
-        return true;
+        return this.data.every((data, index) => data === m.data[index]);
     };
 
     /**
