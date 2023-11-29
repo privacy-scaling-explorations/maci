@@ -13,10 +13,10 @@ jobs:
         with:
           ref: dev
 
-      - name: Use Node.js 16
+      - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 20
 
       - name: Install dependencies
         run: |
@@ -59,22 +59,15 @@ jobs:
           npx zkey-manager compile -c ./zkeys.config.yml
           npx zkey-manager genZkeys -c ./zkeys.config.yml
 
-      - name: Start Hardhat
+      - name: e2e Tests
         run: |
-          cd contracts
-          nohup npm run hardhat > /dev/null 2>&1 &
-          while [[ "$(lsof -i :8545)" -eq '0' ]]; do sleep 1; done
+          cd cli 
+          npm run test
 
-      - name: Bespoke Test
-        run: ./.github/scripts/run-e2e-tests.sh
-
-      - name: Integration Test
+      - name: Integration Tests
         run: |
           cd integrationTests
           npm run test
-
-      - name: Stop Hardhat
-        run: kill $(lsof -t -i:8545)
 
   unit:
     runs-on: ubuntu-22.04
