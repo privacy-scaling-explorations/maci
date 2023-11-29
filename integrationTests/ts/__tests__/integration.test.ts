@@ -300,6 +300,10 @@ describe("integration tests", function () {
                     "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test_js/SubsidyPerBatch_10-1-2_test.wasm"
                 ),
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
 

@@ -135,6 +135,10 @@ describe("e2e with Subsidy tests", function () {
                 testTallyVotesWasmPath,
                 testSubsidyWasmPath,
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
             await proveOnChain(
@@ -315,6 +319,10 @@ describe("e2e with Subsidy tests", function () {
                 testTallyVotesWasmPath,
                 testSubsidyWasmPath,
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
             await proveOnChain(
@@ -470,6 +478,10 @@ describe("e2e with Subsidy tests", function () {
                 testTallyVotesWasmPath,
                 testSubsidyWasmPath,
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
             await proveOnChain(
@@ -571,6 +583,10 @@ describe("e2e with Subsidy tests", function () {
                 testTallyVotesWasmPath,
                 testSubsidyWasmPath,
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
             await proveOnChain(
@@ -726,6 +742,10 @@ describe("e2e with Subsidy tests", function () {
                 testTallyVotesWasmPath,
                 testSubsidyWasmPath,
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
             await proveOnChain(
@@ -901,6 +921,10 @@ describe("e2e with Subsidy tests", function () {
                 testTallyVotesWasmPath,
                 testSubsidyWasmPath,
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
             await proveOnChain(
@@ -1117,6 +1141,10 @@ describe("e2e with Subsidy tests", function () {
                 testTallyVotesWasmPath,
                 testSubsidyWasmPath,
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
             await proveOnChain(
@@ -1210,6 +1238,10 @@ describe("e2e with Subsidy tests", function () {
                 testTallyVotesWasmPath,
                 testSubsidyWasmPath,
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
             await proveOnChain(
@@ -1284,6 +1316,10 @@ describe("e2e with Subsidy tests", function () {
                 testTallyVotesWasmPath,
                 testSubsidyWasmPath,
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
             await proveOnChain(
@@ -1394,6 +1430,10 @@ describe("e2e with Subsidy tests", function () {
                 testTallyVotesWasmPath,
                 testSubsidyWasmPath,
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
             await proveOnChain(
@@ -1548,6 +1588,10 @@ describe("e2e with Subsidy tests", function () {
                 testTallyVotesWasmPath,
                 testSubsidyWasmPath,
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
             await proveOnChain(
@@ -1593,6 +1637,10 @@ describe("e2e with Subsidy tests", function () {
                 testTallyVotesWasmPath,
                 testSubsidyWasmPath,
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
             await proveOnChain(
