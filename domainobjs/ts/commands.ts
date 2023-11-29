@@ -42,8 +42,9 @@ export abstract class Command {
      * Deserialize into a Command instance
      * @param json
      */
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    static fromJSON(json: any) {}
+    static fromJSON(json: any) {
+        throw new Error("Not implemented");
+    }
 }
 
 /**

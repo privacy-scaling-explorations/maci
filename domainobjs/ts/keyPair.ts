@@ -60,10 +60,7 @@ export class Keypair {
         // If this assertion fails, something is very wrong and this function
         // should not return anything
         // XOR is equivalent to: (x && !y) || (!x && y )
-        const x = equalPrivKey && equalPubKey;
-        const y = !equalPrivKey && !equalPubKey;
-
-        assert((x && !y) || (!x && y));
+        assert(!(+equalPrivKey ^ +equalPubKey));
 
         return equalPrivKey;
     }
