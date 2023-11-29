@@ -55,14 +55,11 @@ export class Ballot {
      * @returns the ballot as a bigint array
      */
     public asArray = (): bigint[] => {
-        let lastIndexToInsert = this.votes.length - 1;
-        while (lastIndexToInsert > 0) {
-            if (this.votes[lastIndexToInsert] !== BigInt(0)) {
-                break;
-            }
-            lastIndexToInsert--;
-        }
-
+        const lastIndex = this.votes.length - 1;
+        const foundIndex = this.votes.findIndex(
+            (vote, index) => this.votes[lastIndex - index] !== BigInt(0)
+        );
+        const lastIndexToInsert = foundIndex < 0 ? -1 : lastIndex - foundIndex;
         const voTree = new IncrementalQuinTree(
             this.voteOptionTreeDepth,
             BigInt(0),

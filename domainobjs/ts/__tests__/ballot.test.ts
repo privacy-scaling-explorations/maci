@@ -7,6 +7,7 @@ describe("Ballot", () => {
         const h = b.hash();
         expect(h).to.not.be.null;
     });
+
     it("copy should produce a deep copy", () => {
         const b1 = Ballot.genRandomBallot(2, 2);
         const b2 = b1.copy();
