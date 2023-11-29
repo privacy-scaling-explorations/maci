@@ -33,7 +33,7 @@ export const publish = async (
     maciContractAddress?: string,
     salt?: string,
     privateKey?: string,
-    quiet?: boolean
+    quiet = true
 ): Promise<string> => {
     if (!quiet) banner();
 

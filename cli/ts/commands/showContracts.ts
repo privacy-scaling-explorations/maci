@@ -8,7 +8,6 @@ import { logGreen, info, logError } from "../utils/theme";
  * @param quiet - whether to log the output
  */
 export const showContracts = (quiet?: boolean) => {
-    console.log(quiet);
     if (!quiet) banner();
 
     if (!existsSync(contractAddressesStore))

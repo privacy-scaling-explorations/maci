@@ -30,7 +30,7 @@ export const genLocalState = async (
     blockPerBatch?: number,
     transactionHash?: string,
     sleep?: number,
-    quiet?: boolean
+    quiet = true
 ) => {
     if (!quiet) banner();
 

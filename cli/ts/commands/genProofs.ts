@@ -73,7 +73,7 @@ export const genProofs = async (
     startBlock?: number,
     blocksPerBatch?: number,
     endBlock?: number,
-    quiet?: boolean
+    quiet = true
 ) => {
     if (!quiet) banner();
 
