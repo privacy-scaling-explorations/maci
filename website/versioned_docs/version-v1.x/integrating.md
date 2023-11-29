@@ -2,10 +2,10 @@
 title: Integrating MACI
 description: How to integrate MACI into your application
 sidebar_label: Integrating
-sidebar_position: 9
+sidebar_position: 10
 ---
 
-# Integrating MACI 
+# Integrating MACI
 
 MACI can be used in any protocol that requires collusion resistance, for instance it has been proven to be quite efficient when integrated in quadratic funding applications such as [clr.fund](https://github.com/clrfund/monorepo) and [qfi](https://github.com/quadratic-funding/qfi/tree/feat/code-freeze).
 

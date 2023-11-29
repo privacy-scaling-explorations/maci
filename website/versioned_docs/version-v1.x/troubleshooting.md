@@ -2,7 +2,7 @@
 title: Troubleshooting
 description: How to troubleshoot MACI's failures
 sidebar_label: Troubleshooting
-sidebar_position: 13
+sidebar_position: 14
 ---
 
 # Troubleshooting
@@ -45,6 +45,7 @@ Error: Error executing ./zkeys/ProcessMessages_10-2-1-2_test /tmp/tmp-9904-zG0k8
 ```
 
 You can generate the missing `.dat` files using the following command:
+
 ```
 cd cli/
 npx zkey-manager compile -c zkeys.config.yml

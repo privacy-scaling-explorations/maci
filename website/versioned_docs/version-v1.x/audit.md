@@ -2,15 +2,15 @@
 title: MACI Security Audits
 description: In the summer of 2022, MACI v1 was audited by HashCloak. The audit covered both the zk-SNARK circuits and the Solidity smart contracts.
 sidebar_label: Security Assessments
-sidebar_position: 10
+sidebar_position: 11
 ---
 
 # Security Audits
 
 ## Links
 
-* Audit by HashCloak 2022/09 [report](/audit_reports/202220930_Hashcloak_audit_report.pdf)
-* Audit by HashCloak 2021/09 [report](/audit_reports/20210922_Hashcloak_audit_report.pdf)
+- Audit by HashCloak 2022/09 [report](/audit_reports/202220930_Hashcloak_audit_report.pdf)
+- Audit by HashCloak 2021/09 [report](/audit_reports/20210922_Hashcloak_audit_report.pdf)
 
 ## HashCloak audit 2022
 
@@ -20,7 +20,7 @@ This audit revealed a number of high severity issues which have been remediated 
 
 ## Data is not fully verified during a state update
 
-This issue could have allowed a malicious coordinator to change the MACI state arbitrarily, for instance by tampering with the voice credits and the voting public key of any user. 
+This issue could have allowed a malicious coordinator to change the MACI state arbitrarily, for instance by tampering with the voice credits and the voting public key of any user.
 
 In more details, the `processMessages.circom` circuit, did not fully verify that after a state update, the new state was the result of executing an arbitrary number of user messages on the previous state. `topupStateLeaves` and `topupStateLeavesPathElements` were never verified against the current state, and `topupStateIndexes` and `topupAmounts` were not verified against the message root.
 
@@ -44,7 +44,7 @@ function airdrop(uint256 amount) public onlyOwner {
 
 ## Integer overflow problem and improper bit length restriction
 
-This issue within the `float.circom` circuit could have resulted in an overflow on the `IntegerDivision` template. This stemmed from the lack of validation of input size, as well as not preventing a division by zero. Furthemore, it was pointed out that using assert in circuits did not contribute to constraints verification, and could have been bypassed by a malicious coordinator. 
+This issue within the `float.circom` circuit could have resulted in an overflow on the `IntegerDivision` template. This stemmed from the lack of validation of input size, as well as not preventing a division by zero. Furthemore, it was pointed out that using assert in circuits did not contribute to constraints verification, and could have been bypassed by a malicious coordinator.
 
 The issue was rectified with commit [efd4617724e956d2566062c6fe882e1d45cba7c4](https://github.com/privacy-scaling-explorations/maci/pull/523/commits/efd4617724e956d2566062c6fe882e1d45cba7c4)
 
@@ -112,7 +112,7 @@ The rest of the issues were successfully fixed and reflected in the v1.1.1. For 
 
 In March 2023, Veridise responsibly disclosed a number of issues to the MACI team, which were identified using their new [tool](https://twitter.com/VeridiseInc/status/1630806464695791616?s=20) for catching ZK circuit bugs.
 
-Out of five issues disclosed, only three were relevant and have been since fixed by the MACI team. The other two issues were disregarded as they were present in older version of code which is not in use anymore. 
+Out of five issues disclosed, only three were relevant and have been since fixed by the MACI team. The other two issues were disregarded as they were present in older version of code which is not in use anymore.
 
 We would like to thank you the Veridise team for their effort in keeping open source projects safe.
 
@@ -122,7 +122,7 @@ We would like to thank you the Veridise team for their effort in keeping open so
 
 **Description**
 
-In the template `QuinSelector`, if you want to confirm the input signal index is a valid integer less than 2**3, you should add Num2bits(3) to check it.
+In the template `QuinSelector`, if you want to confirm the input signal index is a valid integer less than 2\*\*3, you should add Num2bits(3) to check it.
 
 **Code Location**
 
@@ -139,7 +139,7 @@ component lessThan = SafeLessThan(3);
 
 This was fixed by adding a new Template, `SafeLesThan` which uses `Num2Bits` as further check on the signals:
 
-```javascript 
+```javascript
 // the implicit assumption of LessThan is both inputs are at most n bits
 // so we need add range check for both inputs
 template SafeLessThan(n) {
@@ -159,7 +159,6 @@ template SafeLessThan(n) {
     out <== 1-n2b.out[n];
 }
 ```
-
 
 ### Issue 2
 
@@ -194,7 +193,7 @@ template SafeGreaterThan(n) {
 
 And then used it to constrain the [`index` input signal](https://github.com/chaosma/maci/blob/2d7a3a0efd33dfc3a5f4d3f95bec3adda7abb963/circuits/circom/trees/incrementalQuinTree.circom#L115-L117):
 
-```javascript 
+```javascript
 greaterThan[i] = SafeGreaterThan(3);
 greaterThan[i].in[0] <== i;
 greaterThan[i].in[1] <== index;
@@ -214,7 +213,7 @@ In the template `QuinGeneratePathIndices`, the constrains of the `signal n[level
 
 The [updated code](https://github.com/chaosma/maci/blob/2d7a3a0efd33dfc3a5f4d3f95bec3adda7abb963/circuits/circom/trees/incrementalQuinTree.circom#L285-L290) uses the `SafeLessThen` template, as shown below:
 
-```javascript 
+```javascript
 for (var i = 0; i < levels; i ++) {
     // Check that each output element is less than the base
     leq[i] = SafeLessThan(3);
