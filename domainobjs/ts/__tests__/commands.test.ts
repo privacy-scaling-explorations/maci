@@ -14,7 +14,7 @@ describe("Commands & Messages", () => {
     const random50bitBigInt = (): bigint => {
         return (
             (BigInt(1) << BigInt(50)) - BigInt(1)
-        ) & BigInt(`${genRandomSalt()}`)
+        ) & BigInt(genRandomSalt().toString())
     }
     const command: PCommand = new PCommand(
         random50bitBigInt(),

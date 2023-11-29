@@ -1,4 +1,4 @@
-import { Ballot } from "../"
+import { Ballot } from ".."
 import { expect } from "chai"
 
 describe("Ballot", () => {
