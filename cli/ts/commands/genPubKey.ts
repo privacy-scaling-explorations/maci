@@ -1,7 +1,7 @@
-import { genPubKey } from "maci-crypto"
-import { PrivKey, PubKey } from "maci-domainobjs"
-import { banner } from "../utils/banner"
-import { error, logGreen, logRed, success } from "../utils/theme"
+import { genPubKey } from "maci-crypto";
+import { PrivKey, PubKey } from "maci-domainobjs";
+import { banner } from "../utils/banner";
+import { error, logGreen, logRed, success } from "../utils/theme";
 
 /**
  * Generate a new Maci Public key from a private key
@@ -11,20 +11,20 @@ import { error, logGreen, logRed, success } from "../utils/theme"
  */
 export const genMaciPubKey = (
     privkey: string,
-    quiet?: boolean 
+    quiet = true
 ): string => {
-    if(!quiet) banner()
+    if (!quiet) banner();
 
     // we check that the provided private key is valid
     if (!PrivKey.isValidSerializedPrivKey(privkey)) {
-        logRed(error("Error, invalid private key"))
-        process.exit(1)
+        logRed(error("Error, invalid private key"));
+        process.exit(1);
     }
 
     const unserializedKey = PrivKey.deserialize(privkey)
     const pubKey = new PubKey(genPubKey(unserializedKey.rawPrivKey))
 
-    if (!quiet) logGreen(success(`Public key: ${pubKey.serialize()}`))
+    if (!quiet) logGreen(success(`Public key: ${pubKey.serialize()}`));
     // we give back the serialized public key
-    return pubKey.serialize()
-}
+    return pubKey.serialize();
+};

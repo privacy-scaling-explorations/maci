@@ -39,11 +39,10 @@ export function logMagenta(text: string) {
 
 /**
  * Log an error and throw an error
- * @param text 
+ * @param text
  */
 export function logError(text: string) {
-    logRed(error(text))
-    throw new Error()
+    throw new Error(error(text));
 }
 
 /**
@@ -51,25 +50,25 @@ export function logError(text: string) {
  * @param text - the text to print
  * @returns the text with a prefix
  */
-export const info = (text: string) => `[i] ${text}`
+export const info = (text: string) => `[i] ${text}`;
 
 /**
  * create a success message
  * @param text - the text to print
  * @returns the text with a prefix
  */
-export const success = (text: string) => `[✓] ${text}`
+export const success = (text: string) => `[✓] ${text}`;
 
 /**
  * create a success message
  * @param text - the text to print
  * @returns the text with a prefix
  */
-export const warning = (text: string) => `[!] ${text}`
+export const warning = (text: string) => `[!] ${text}`;
 
 /**
  * create an error message
  * @param text - the text to print
  * @returns the text with a prefix
  */
-export const error = (text: string) => `[✗] ${text}`
+export const error = (text: string) => `[✗] ${text}`;

@@ -93,10 +93,7 @@ describe("integration tests", function () {
         contracts = await deploy(
             STATE_TREE_DEPTH,
             vkRegistryAddress,
-            initialVoiceCredits,
-            undefined,
-            undefined,
-            true
+            initialVoiceCredits
         );
 
         // 4. create a poll
@@ -109,8 +106,7 @@ describe("integration tests", function () {
             MSG_TREE_DEPTH,
             VOTE_OPTION_TREE_DEPTH,
             coordinatorKeypair.pubKey.serialize(),
-            contracts.maciAddress,
-            true
+            contracts.maciAddress
         );
 
         const treeDepths: TreeDepths = {
@@ -269,7 +265,7 @@ describe("integration tests", function () {
                     "../../../cli/zkeys/ProcessMessages_10-2-1-2_test.0.zkey"
                 ),
                 0,
-                join(__dirname, "../../../cli//subsidy.json"),
+                join(__dirname, "../../../cli/subsidy.json"),
                 join(
                     __dirname,
                     "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test.0.zkey"
@@ -299,12 +295,7 @@ describe("integration tests", function () {
                     __dirname,
                     "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test_js/SubsidyPerBatch_10-1-2_test.wasm"
                 ),
-                useWasm,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                true
+                useWasm
             );
 
             // verify that the data stored on the tally file is correct

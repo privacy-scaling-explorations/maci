@@ -1,5 +1,15 @@
 import { getDefaultSigner, parseArtifact } from "maci-contracts";
-import { banner, compareVks, contractExists, info, logError, logGreen, logYellow, readContractAddress, success } from "../utils/";
+import {
+    banner,
+    compareVks,
+    contractExists,
+    info,
+    logError,
+    logGreen,
+    logYellow,
+    readContractAddress,
+    success,
+} from "../utils/";
 import { VerifyingKey } from "maci-domainobjs";
 import { extractVk } from "maci-circuits";
 import { existsSync } from "fs";
@@ -28,58 +38,77 @@ export const checkVerifyingKeys = async (
     processMessagesZkeyPath: string,
     tallyVotesZkeyPath: string,
     maciContract?: string,
-    quiet?: boolean,
+    quiet = true
 ): Promise<boolean> => {
-    if (!quiet) banner()
+    if (!quiet) banner();
     // get the signer
-    const signer = await getDefaultSigner()
+    const signer = await getDefaultSigner();
 
     // ensure we have the contract addresses that we need
-    if (!readContractAddress("MACI") && !maciContract) logError("Please provide a MACI contract address")
-    const maciAddress = maciContract ? maciContract : readContractAddress("MACI")
-    if (!(await contractExists(signer.provider, maciAddress))) logError("MACI contract does not exist")
-    
-    const maciContractInstance = new Contract(maciAddress, await parseArtifact("MACI")[0], signer) 
+    if (!readContractAddress("MACI") && !maciContract)
+        logError("Please provide a MACI contract address");
+    const maciAddress = maciContract
+        ? maciContract
+        : readContractAddress("MACI");
+    if (!(await contractExists(signer.provider, maciAddress)))
+        logError("MACI contract does not exist");
+
+    const maciContractInstance = new Contract(
+        maciAddress,
+        await parseArtifact("MACI")[0],
+        signer
+    );
 
     // we need to ensure that the zkey files exist
-    if (!existsSync(processMessagesZkeyPath)) logError("Process messages zkey does not exist")
-    if (!existsSync(tallyVotesZkeyPath)) logError("Tally votes zkey does not exist")
+    if (!existsSync(processMessagesZkeyPath))
+        logError("Process messages zkey does not exist");
+    if (!existsSync(tallyVotesZkeyPath))
+        logError("Tally votes zkey does not exist");
 
     // extract the verification keys from the zkey files
-    const processVk: VerifyingKey = VerifyingKey.fromObj(await extractVk(processMessagesZkeyPath))
-    const tallyVk: VerifyingKey = VerifyingKey.fromObj(await extractVk(tallyVotesZkeyPath))
+    const processVk: VerifyingKey = VerifyingKey.fromObj(
+        await extractVk(processMessagesZkeyPath)
+    );
+    const tallyVk: VerifyingKey = VerifyingKey.fromObj(
+        await extractVk(tallyVotesZkeyPath)
+    );
 
     try {
-        if (!quiet) logYellow(info("Retrieving verifying keys from the contract..."))
+        if (!quiet)
+            logYellow(info("Retrieving verifying keys from the contract..."));
         // retrieve the verifying keys from the contract
-        const vkRegistryAddress = await maciContractInstance.vkRegistry()
+        const vkRegistryAddress = await maciContractInstance.vkRegistry();
         const vkRegistryContract = new Contract(
             vkRegistryAddress,
             await parseArtifact("VkRegistry")[0],
             signer
-        )
+        );
 
-        const messageBatchSize = 5 ** messageBatchDepth
+        const messageBatchSize = 5 ** messageBatchDepth;
 
         const processVkOnChain = await vkRegistryContract.getProcessVk(
             stateTreeDepth,
             messageTreeDepth,
             voteOptionTreeDepth,
             messageBatchSize
-        )
+        );
 
         const tallyVkOnChain = await vkRegistryContract.getTallyVk(
             stateTreeDepth,
             intStateTreeDepth,
             voteOptionTreeDepth
-        )
+        );
 
         // do the actual validation
-        if (!compareVks(processVk, processVkOnChain)) logError("Process verifying keys do not match")
-        if (!compareVks(tallyVk, tallyVkOnChain)) logError("Tally verifying keys do not match")
-    } catch (error: any) { logError(error.message) }
+        if (!compareVks(processVk, processVkOnChain))
+            logError("Process verifying keys do not match");
+        if (!compareVks(tallyVk, tallyVkOnChain))
+            logError("Tally verifying keys do not match");
+    } catch (error: any) {
+        logError(error.message);
+    }
 
-    if (!quiet) logGreen(success("Verifying keys match"))
+    if (!quiet) logGreen(success("Verifying keys match"));
 
-    return true 
-}
+    return true;
+};

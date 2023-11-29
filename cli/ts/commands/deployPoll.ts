@@ -38,7 +38,7 @@ export const deployPoll = async (
     voteOptionTreeDepth: number,
     coordinatorPubkey: string,
     maciAddress?: string,
-    quiet?: boolean
+    quiet = true
 ): Promise<PollContracts> => {
     if (!quiet) banner();
 

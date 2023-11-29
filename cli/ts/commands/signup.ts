@@ -1,11 +1,11 @@
-import { PubKey } from "maci-domainobjs"
-import { info, logError, logGreen, logYellow, success } from "../utils/theme"
-import { readContractAddress } from "../utils/storage"
-import { contractExists } from "../utils/contracts"
-import { getDefaultSigner, parseArtifact } from "maci-contracts"
-import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA } from "../utils/defaults"
-import { Contract } from "ethers"
-import { banner } from "../utils"
+import { PubKey } from "maci-domainobjs";
+import { info, logError, logGreen, logYellow, success } from "../utils/theme";
+import { readContractAddress } from "../utils/storage";
+import { contractExists } from "../utils/contracts";
+import { getDefaultSigner, parseArtifact } from "maci-contracts";
+import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA } from "../utils/defaults";
+import { Contract } from "ethers";
+import { banner } from "../utils";
 
 /**
  * Signup a user to the MACI contract
@@ -18,42 +18,47 @@ import { banner } from "../utils"
  */
 export const signup = async (
     maciPubKey: string,
-    maciAddress?: string, 
+    maciAddress?: string,
     sgDataArg?: string,
     ivcpDataArg?: string,
-    quiet?: boolean 
+    quiet = true
 ): Promise<string> => {
-    if (!quiet) banner()
-    
-    const signer = await getDefaultSigner()
-    // validate user key
-    if (!PubKey.isValidSerializedPubKey(maciPubKey)) logError('Invalid MACI public key')
+    if (!quiet) banner();
 
-    const userMaciPubKey = PubKey.deserialize(maciPubKey)
+    const signer = await getDefaultSigner();
+    // validate user key
+    if (!PubKey.isValidSerializedPubKey(maciPubKey))
+        logError("Invalid MACI public key");
+    const userMaciPubKey = PubKey.deserialize(maciPubKey);
 
     // ensure we have the contract addresses
-    if (!readContractAddress("MACI") && !maciAddress) logError('Invalid MACI contract address')
+    if (!readContractAddress("MACI") && !maciAddress)
+        logError("Invalid MACI contract address");
 
-    const maciContractAddress = maciAddress ? maciAddress : readContractAddress("MACI")
-    if (!(await contractExists(signer.provider, maciContractAddress))) logError('There is no contract deployed at the specified address')
-    
-    const sgData = sgDataArg ? sgDataArg : DEFAULT_SG_DATA
-    const ivcpData = ivcpDataArg ? ivcpDataArg : DEFAULT_IVCP_DATA
+    const maciContractAddress = maciAddress
+        ? maciAddress
+        : readContractAddress("MACI");
+    if (!(await contractExists(signer.provider, maciContractAddress)))
+        logError("There is no contract deployed at the specified address");
 
-    const regex32ByteHex = /^0x[a-fA-F0-9]{64}$/
+    const sgData = sgDataArg ? sgDataArg : DEFAULT_SG_DATA;
+    const ivcpData = ivcpDataArg ? ivcpDataArg : DEFAULT_IVCP_DATA;
+
+    const regex32ByteHex = /^0x[a-fA-F0-9]{64}$/;
 
     // we validate that the signup data and voice credit data is valid
-    if (!sgData.match(regex32ByteHex)) logError('invalid signup gateway data')
-    if (!ivcpData.match(regex32ByteHex)) logError('invalid initial voice credit proxy data')
+    if (!sgData.match(regex32ByteHex)) logError("invalid signup gateway data");
+    if (!ivcpData.match(regex32ByteHex))
+        logError("invalid initial voice credit proxy data");
 
-    const maciContractAbi = parseArtifact('MACI')[0]
+    const maciContractAbi = parseArtifact("MACI")[0];
     const maciContract = new Contract(
         maciContractAddress,
         maciContractAbi,
-        signer,
-    )
+        signer
+    );
 
-    let stateIndex = ""
+    let stateIndex = "";
     try {
         // sign up to the MACI contract
         const tx = await maciContract.signUp(
@@ -61,21 +66,22 @@ export const signup = async (
             sgData,
             ivcpData,
             { gasLimit: 1000000 }
-        )
-        const receipt = await tx.wait()
-        if (receipt.status !== 1) logError('The transaction failed')
-        const iface = maciContract.interface
+        );
+        const receipt = await tx.wait();
+        if (receipt.status !== 1) logError("The transaction failed");
+        const iface = maciContract.interface;
         // get state index from the event
         if (receipt && receipt.logs) {
-            stateIndex = iface.parseLog(receipt.logs[0]).args[0]
-            if (!quiet) logGreen(success(`State index: ${stateIndex.toString()}`))
+            stateIndex = iface.parseLog(receipt.logs[0]).args[0];
+            if (!quiet)
+                logGreen(success(`State index: ${stateIndex.toString()}`));
         } else {
-            logError('Unable to retrieve the transaction receipt')
+            logError("Unable to retrieve the transaction receipt");
         }
-        if (!quiet) logYellow(info(`Transaction hash: ${tx.hash}`))
+        if (!quiet) logYellow(info(`Transaction hash: ${tx.hash}`));
     } catch (error: any) {
-        logError(error.message)
+        logError(error.message);
     }
 
-    return stateIndex.toString()
-}
+    return stateIndex.toString();
+};
