@@ -1,8 +1,10 @@
+import { existsSync, unlinkSync } from "fs";
 import {
     checkVerifyingKeys,
     deploy,
     deployPoll,
     deployVkRegistryContract,
+    genLocalState,
     genProofs,
     mergeMessages,
     mergeSignups,
@@ -134,6 +136,10 @@ describe("e2e tests", function () {
                 testTallyVotesWasmPath,
                 undefined,
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
             await proveOnChain(
@@ -314,6 +320,10 @@ describe("e2e tests", function () {
                 testTallyVotesWasmPath,
                 undefined,
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
             await proveOnChain(
@@ -331,6 +341,35 @@ describe("e2e tests", function () {
                 undefined,
                 undefined,
                 undefined,
+                undefined,
+                true
+            );
+        });
+    });
+
+    describe("test3", () => {
+        after(() => cleanVanilla());
+
+        before(async () => {
+            // deploy the smart contracts
+            await deploy(
+                STATE_TREE_DEPTH,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                true
+            );
+            // deploy a poll contract
+            await deployPoll(
+                90,
+                25,
+                25,
+                INT_STATE_TREE_DEPTH,
+                MSG_BATCH_DEPTH,
+                MSG_TREE_DEPTH,
+                VOTE_OPTION_TREE_DEPTH,
+                coordinatorPubKey,
                 undefined,
                 true
             );
@@ -440,6 +479,10 @@ describe("e2e tests", function () {
                 testTallyVotesWasmPath,
                 undefined,
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
             await proveOnChain(
@@ -541,6 +584,10 @@ describe("e2e tests", function () {
                 testTallyVotesWasmPath,
                 undefined,
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
             await proveOnChain(
@@ -696,6 +743,10 @@ describe("e2e tests", function () {
                 testTallyVotesWasmPath,
                 undefined,
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
             await proveOnChain(
@@ -871,6 +922,10 @@ describe("e2e tests", function () {
                 testTallyVotesWasmPath,
                 undefined,
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
             await proveOnChain(
@@ -1023,6 +1078,10 @@ describe("e2e tests", function () {
                 testTallyVotesWasmPath,
                 undefined,
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
             await proveOnChain(
@@ -1116,6 +1175,10 @@ describe("e2e tests", function () {
                 testTallyVotesWasmPath,
                 undefined,
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
             await proveOnChain(
@@ -1190,6 +1253,10 @@ describe("e2e tests", function () {
                 testTallyVotesWasmPath,
                 undefined,
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
             await proveOnChain(
@@ -1300,6 +1367,10 @@ describe("e2e tests", function () {
                 testTallyVotesWasmPath,
                 undefined,
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
             await proveOnChain(
@@ -1454,6 +1525,10 @@ describe("e2e tests", function () {
                 testTallyVotesWasmPath,
                 undefined,
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
             await proveOnChain(
@@ -1499,6 +1574,10 @@ describe("e2e tests", function () {
                 testTallyVotesWasmPath,
                 undefined,
                 useWasm,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 true
             );
             await proveOnChain(
@@ -1512,6 +1591,125 @@ describe("e2e tests", function () {
             );
             await verify(
                 "2",
+                testTallyFilePath,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                true
+            );
+        });
+    });
+
+    describe.only("pre fetch logs", () => {
+        const stateOutPath = "./state.json";
+        after(async () => {
+            cleanVanilla();
+            if (existsSync(stateOutPath)) unlinkSync(stateOutPath);
+        });
+        before(async () => {
+            // deploy the smart contracts
+            await deploy(
+                STATE_TREE_DEPTH,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                true
+            );
+            // deploy a poll contract
+            await deployPoll(
+                90,
+                25,
+                25,
+                INT_STATE_TREE_DEPTH,
+                MSG_BATCH_DEPTH,
+                MSG_TREE_DEPTH,
+                VOTE_OPTION_TREE_DEPTH,
+                coordinatorPubKey,
+                undefined,
+                true
+            );
+        });
+
+        it("should signup one user", async () => {
+            await signup(
+                "macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391",
+                undefined,
+                undefined,
+                undefined,
+                true
+            );
+        });
+
+        it("should publish one message", async () => {
+            await publish(
+                "macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391",
+                1,
+                0,
+                1,
+                0,
+                9,
+                undefined,
+                undefined,
+                "macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c",
+                true
+            );
+        });
+
+        it("should generate zk-SNARK proofs and verify them", async () => {
+            await timeTravel(90, true);
+            await mergeMessages(0, undefined, undefined, true);
+            await mergeSignups(0, undefined, undefined, true);
+            await genLocalState(
+                stateOutPath,
+                0,
+                undefined,
+                coordinatorPrivKey,
+                undefined,
+                undefined,
+                undefined,
+                50,
+                undefined,
+                undefined,
+                true
+            );
+            await genProofs(
+                testProofsDirPath,
+                testTallyFilePath,
+                tallyVotesTestZkeyPath,
+                processMessageTestZkeyPath,
+                0,
+                undefined,
+                undefined,
+                testRapidsnarkPath,
+                testProcessMessagesWitnessPath,
+                testTallyVotesWitnessPath,
+                undefined,
+                coordinatorPrivKey,
+                undefined,
+                undefined,
+                testProcessMessagesWasmPath,
+                testTallyVotesWasmPath,
+                undefined,
+                useWasm,
+                stateOutPath,
+                undefined,
+                undefined,
+                undefined,
+                true
+            );
+            await proveOnChain(
+                "0",
+                testProofsDirPath,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                true
+            );
+            await verify(
+                "0",
                 testTallyFilePath,
                 undefined,
                 undefined,

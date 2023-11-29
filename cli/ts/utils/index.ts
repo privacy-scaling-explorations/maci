@@ -35,5 +35,5 @@ export {
     warning,
     error,
 } from "./theme";
-export { promptSensitiveValue as promptPwd } from "./prompts";
+export { promptSensitiveValue } from "./prompts";
 export { asHex } from "./formatting";

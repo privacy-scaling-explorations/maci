@@ -19,6 +19,7 @@ import {
     fundWallet,
     proveOnChain,
     checkVerifyingKeys,
+    genLocalState,
 } from "./commands";
 import { readFileSync } from "fs";
 import { join } from "path";
@@ -476,6 +477,22 @@ program
         "-sw, --subsidy-wasm <subsidyWasm>",
         "the path to the subsidy witness generation wasm binary"
     )
+    .option(
+        "-st, --state-file <stateFile>",
+        "the path to the state file containing the serialized maci state"
+    )
+    .option(
+        "-sb, --start-block <startBlock>",
+        "the block number to start looking for events from"
+    )
+    .option(
+        "-eb, --end-block <endBlock>",
+        "the block number to end looking for events from"
+    )
+    .option(
+        "-bb, --blocks-per-batch <blockPerBatch>",
+        "the number of blocks to process per batch"
+    )
     .action(async (cmdObj) => {
         await genProofs(
             cmdObj.output,
@@ -496,9 +513,44 @@ program
             cmdObj.tallyWasm,
             cmdObj.subsidyWasm,
             cmdObj.wasm,
+            cmdObj.stateFile,
+            cmdObj.startBlock,
+            cmdObj.endBlock,
+            cmdObj.blocksPerBatch,
             cmdObj.quiet
         );
     });
+program
+    .command("genLocalState")
+    .description("generate a local MACI state from the smart contracts events")
+    .requiredOption(
+        "-o, --output <outputPath>",
+        "the path where to write the state"
+    )
+    .option("-p, --poll-id <pollId>", "the id of the poll")
+    .option("-x, --contract <contract>", "the MACI contract address")
+    .option("-sk, --privkey <privkey>", "your serialized MACI private key")
+    .option("-eb, --end-block <endBlock>", "the end block number")
+    .option("-sb, --start-block <startBlock>", "the start block number")
+    .option("-bb, --blocks-per-batch <blockPerBatch>", "the blocks per batch")
+    .option("-tx, --transaction-hash <transactionHash>", "the transaction hash")
+    .option("-s, --sleep <sleep>", "the sleep time between batches")
+    .option("-q, --quiet", "whether to print values to the console", false)
+    .action(
+        async (cmdObj) =>
+            await genLocalState(
+                cmdObj.output,
+                cmdObj.pollId,
+                cmdObj.contract,
+                cmdObj.privkey,
+                cmdObj.endBlock,
+                cmdObj.startBlock,
+                cmdObj.blockPerBatch,
+                cmdObj.transactionHash,
+                cmdObj.sleep,
+                cmdObj.quiet
+            )
+    );
 program
     .command("proveOnChain")
     .description("prove the results of a poll on chain")
