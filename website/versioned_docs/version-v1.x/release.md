@@ -2,7 +2,7 @@
 title: Release process
 description: How MACI's release process works
 sidebar_label: MACI Release process
-sidebar_position: 12
+sidebar_position: 13
 ---
 
 # Maci Release Process
@@ -47,7 +47,6 @@ git commit --message "chore(release): publish 1.2.3"
 
 After the pull request has been merged:
 
-
 8. Retrieve merged commit
 
 9. Add a tag:
@@ -68,12 +67,12 @@ Once the tag is pushed, GitHub Actions will automatically publish the packages t
 
 The following packages will be published on npm.js:
 
-* maci-circuits
-* maci-cli
-* maci-common
-* maci-contracts
-* maci-core
-* maci-crypto
-* maci-domainobjs
-* maci-integrationtests
-* maci-server
+- maci-circuits
+- maci-cli
+- maci-common
+- maci-contracts
+- maci-core
+- maci-crypto
+- maci-domainobjs
+- maci-integrationtests
+- maci-server
