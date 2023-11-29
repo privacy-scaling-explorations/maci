@@ -38,7 +38,7 @@ export class Ballot {
      */
     public hash = (): bigint => {
         const vals = this.asArray();
-        return hashLeftRight(vals[0], vals[1]) as bigint;
+        return hashLeftRight(vals[0], vals[1]);
     };
 
     /**
@@ -55,13 +55,12 @@ export class Ballot {
      * @returns the ballot as a bigint array
      */
     public asArray = (): bigint[] => {
-        let lastIndexToInsert = this.votes.length - 1;
-        while (lastIndexToInsert > 0) {
-            if (this.votes[lastIndexToInsert] !== BigInt(0)) {
-                break;
-            }
-            lastIndexToInsert--;
-        }
+        const lastIndex = this.votes.length - 1;
+        const foundIndex = this.votes.findIndex(
+            (vote, index) => this.votes[lastIndex - index] !== BigInt(0)
+        );
+        const lastIndexToInsert = foundIndex < 0 ? 0 : lastIndex - foundIndex;
+
         const voTree = new IncrementalQuinTree(
             this.voteOptionTreeDepth,
             BigInt(0),
@@ -93,40 +92,40 @@ export class Ballot {
      * @returns whether the two ballots are equal
      */
     public equals(b: Ballot): boolean {
-        for (let i = 0; i < this.votes.length; i++) {
-            if (b.votes[i] !== this.votes[i]) {
-                return false;
-            }
-        }
-        return b.nonce === this.nonce && this.votes.length === b.votes.length;
+        const isEqualVotes = this.votes.every(
+            (vote, index) => vote === b.votes[index]
+        );
+        return isEqualVotes
+            ? b.nonce === this.nonce && this.votes.length === b.votes.length
+            : false;
     }
 
     /**
      * Generate a random ballot
-     * @param _numVoteOptions How many vote options are available
-     * @param _voteOptionTreeDepth How deep is the merkle tree holding the vote options
+     * @param numVoteOptions How many vote options are available
+     * @param voteOptionTreeDepth How deep is the merkle tree holding the vote options
      * @returns a random Ballot
      */
     public static genRandomBallot(
-        _numVoteOptions: number,
-        _voteOptionTreeDepth: number
+        numVoteOptions: number,
+        voteOptionTreeDepth: number
     ) {
-        const ballot = new Ballot(_numVoteOptions, _voteOptionTreeDepth);
+        const ballot = new Ballot(numVoteOptions, voteOptionTreeDepth);
         ballot.nonce = genRandomSalt() as bigint;
         return ballot;
     }
 
     /**
      * Generate a blank ballot
-     * @param _numVoteOptions How many vote options are available
-     * @param _voteOptionTreeDepth How deep is the merkle tree holding the vote options
+     * @param numVoteOptions How many vote options are available
+     * @param voteOptionTreeDepth How deep is the merkle tree holding the vote options
      * @returns a Blank Ballot object
      */
     public static genBlankBallot(
-        _numVoteOptions: number,
-        _voteOptionTreeDepth: number
+        numVoteOptions: number,
+        voteOptionTreeDepth: number
     ) {
-        const ballot = new Ballot(_numVoteOptions, _voteOptionTreeDepth);
+        const ballot = new Ballot(numVoteOptions, voteOptionTreeDepth);
         return ballot;
     }
 

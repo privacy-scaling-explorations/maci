@@ -50,7 +50,7 @@ export class PrivKey {
      */
     public static deserialize = (s: string): PrivKey => {
         const x = s.slice(SERIALIZED_PRIV_KEY_PREFIX.length);
-        return new PrivKey(BigInt("0x" + x));
+        return new PrivKey(BigInt(`0x${x}`));
     };
 
     /**
@@ -64,10 +64,10 @@ export class PrivKey {
 
         let validValue = false;
         try {
-            const value = BigInt("0x" + x);
+            const value = BigInt(`0x${x}`);
             validValue = value < SNARK_FIELD_SIZE;
         } catch {
-            // comment to make linter happy
+            return false;
         }
 
         return correctPrefix && validValue;

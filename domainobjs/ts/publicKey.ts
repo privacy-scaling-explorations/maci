@@ -46,9 +46,10 @@ export class PubKey {
      * @returns the public key as smart contract parameters
      */
     public asContractParam = (): any => {
+        const [x, y] = this.rawPubKey;
         return {
-            x: this.rawPubKey[0].toString(),
-            y: this.rawPubKey[1].toString(),
+            x: x.toString(),
+            y: y.toString(),
         };
     };
 
@@ -73,11 +74,9 @@ export class PubKey {
      * @returns the string representation of a serialized public key
      */
     public serialize = (): string => {
+        const { x, y } = this.asContractParam();
         // Blank leaves have pubkey [0, 0], which packPubKey does not support
-        if (
-            BigInt(`${this.rawPubKey[0]}`) === BigInt(0) &&
-            BigInt(`${this.rawPubKey[1]}`) === BigInt(0)
-        ) {
+        if (BigInt(x) === BigInt(0) && BigInt(y) === BigInt(0)) {
             return SERIALIZED_PUB_KEY_PREFIX + "z";
         }
         const packed = packPubKey(this.rawPubKey).toString("hex");
@@ -130,7 +129,7 @@ export class PubKey {
 
         try {
             PubKey.deserialize(s);
-            return correctPrefix && true;
+            return correctPrefix;
         } catch {
             return false;
         }

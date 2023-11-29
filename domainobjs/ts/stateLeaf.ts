@@ -158,8 +158,8 @@ export class StateLeaf implements IStateLeaf {
 
         return new StateLeaf(
             PubKey.deserialize(j[0]),
-            BigInt("0x" + j[1]),
-            BigInt("0x" + j[2])
+            BigInt(`0x${j[1]}`),
+            BigInt(`0x${j[2]}`)
         );
     };
 

@@ -50,14 +50,14 @@ export class Message {
 
     /**
      * Hash the message data and a public key
-     * @param _encPubKey the public key that is used to encrypt this message
+     * @param encPubKey the public key that is used to encrypt this message
      * @returns the hash of the message data and the public key
      */
-    public hash = (_encPubKey: PubKey): bigint => {
+    public hash = (encPubKey: PubKey): bigint => {
         return hash13([
             ...[this.msgType],
             ...this.data,
-            ..._encPubKey.rawPubKey,
+            ...encPubKey.rawPubKey,
         ]) as bigint;
     };
 
