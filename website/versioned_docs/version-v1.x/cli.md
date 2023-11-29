@@ -597,8 +597,3 @@ Output:
 }
 OK
 ```
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 70832294 (refactoring(cli) - add cli documentation)
