@@ -31,3 +31,17 @@ Zooming in..
 **Vote tallying**
 
 ![vote tallying](/img/voteTallyingLocal.svg)
+
+## What does the process look like when including the zk-SNARK proofs
+
+**Process of completing a Poll**
+
+![processing with proofs](/img/completingAPoll.svg)
+
+**Process of generating proofs**
+
+![generating proofs](/img/generateProofs.svg)
+
+**Tally commitments**
+
+![tally commitments](/img/tallyCommitments.svg)
