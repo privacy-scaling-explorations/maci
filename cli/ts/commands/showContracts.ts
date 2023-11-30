@@ -8,7 +8,7 @@ import { logGreen, info, logError } from "../utils/theme";
  * @param quiet - whether to log the output
  */
 export const showContracts = (quiet?: boolean) => {
-    if (!quiet) banner();
+     banner(quiet);
 
     if (!existsSync(contractAddressesStore))
         logError("No contracts have been deployed yet");
@@ -18,6 +18,6 @@ export const showContracts = (quiet?: boolean) => {
     );
 
     for (const entry of Object.entries(data)) {
-        logGreen(info(`${entry[0]}: ${entry[1]}`));
+        logGreen(quiet, info(`${entry[0]}: ${entry[1]}`));
     }
 };

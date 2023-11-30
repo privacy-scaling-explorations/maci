@@ -75,7 +75,7 @@ export const genProofs = async (
     endBlock?: number,
     quiet = true
 ) => {
-    if (!quiet) banner();
+    banner(quiet);
 
     // if we do not have the output directory just create it
     if (!existsSync(outputDir)) {
@@ -218,8 +218,8 @@ export const genProofs = async (
     fromBlock = transactionHash
         ? (await signer.provider.getTransaction(transactionHash)).blockNumber
         : 0;
-    if (!quiet)
-        logYellow(info(`starting to fetch logs from block ${fromBlock}`));
+    
+    logYellow(quiet, info(`starting to fetch logs from block ${fromBlock}`));
 
     let maciState: MaciState;
     if (stateFile) {
@@ -255,7 +255,7 @@ export const genProofs = async (
     // time how long it takes
     const startTime = Date.now();
 
-    if (!quiet) logYellow(info(`Generating proofs of message processing...`));
+    logYellow(quiet, info(`Generating proofs of message processing...`));
     const messageBatchSize = poll.batchSizes.messageBatchSize;
     const numMessages = poll.messages.length;
     let totalMessageBatches =
@@ -300,43 +300,46 @@ export const genProofs = async (
                 JSON.stringify(thisProof, null, 4)
             );
 
-            if (!quiet)
-                logYellow(
-                    info(
-                        `Progress: ${poll.numBatchesProcessed} / ${totalMessageBatches}`
-                    )
-                );
+            
+            logYellow(
+                quiet,
+                info(
+                    `Progress: ${poll.numBatchesProcessed} / ${totalMessageBatches}`
+                )
+            );
         } catch (error: any) {
             logError(error.message);
         }
     }
 
     const endTime = Date.now();
-    if (!quiet)
-        logYellow(
-            info(
-                `gen processMessage proof took ${
-                    (endTime - startTime) / 1000
-                } seconds\n`
-            )
-        );
+    
+    logYellow(
+        quiet,
+        info(
+            `gen processMessage proof took ${
+                (endTime - startTime) / 1000
+            } seconds\n`
+        )
+    );
 
     // subsidy calculations are not mandatory
     if (subsidyFile) {
         const subsidyStartTime = Date.now();
-        if (!quiet)
-            logYellow(info(`Generating proofs of subsidy calculation...`));
+        
+        logYellow(quiet, info(`Generating proofs of subsidy calculation...`));
 
         const subsidyBatchSize = poll.batchSizes.subsidyBatchSize;
         const numLeaves = poll.stateLeaves.length;
         const totalSubsidyBatches =
             Math.ceil(numLeaves / subsidyBatchSize) ** 2;
-        if (!quiet)
-            logYellow(
-                info(
-                    `subsidyBatchSize=${subsidyBatchSize}, numLeaves=${numLeaves}, totalSubsidyBatch=${totalSubsidyBatches}`
-                )
-            );
+        
+        logYellow(
+            quiet,
+            info(
+                `subsidyBatchSize=${subsidyBatchSize}, numLeaves=${numLeaves}, totalSubsidyBatch=${totalSubsidyBatches}`
+            )
+        );
 
         let numBatchesCalulated = 0;
 
@@ -376,12 +379,13 @@ export const genProofs = async (
                     JSON.stringify(thisProof, null, 4)
                 );
                 numBatchesCalulated++;
-                if (!quiet)
-                    logYellow(
-                        info(
-                            `Progress: ${numBatchesCalulated} / ${totalSubsidyBatches}`
-                        )
-                    );
+                
+                logYellow(
+                    quiet,
+                    info(
+                        `Progress: ${numBatchesCalulated} / ${totalSubsidyBatches}`
+                    )
+                );
             } catch (error: any) {
                 logError(error.message);
             }
@@ -404,18 +408,19 @@ export const genProofs = async (
         writeFileSync(subsidyFile, JSON.stringify(subsidyFileData, null, 4));
 
         const susbsidyEndTime = Date.now();
-        if (!quiet)
-            logYellow(
-                info(
-                    `gen subsidy proof took ${
-                        (susbsidyEndTime - subsidyStartTime) / 1000
-                    } seconds\n`
-                )
-            );
+        
+        logYellow(
+            quiet,
+            info(
+                `gen subsidy proof took ${
+                    (susbsidyEndTime - subsidyStartTime) / 1000
+                } seconds\n`
+            )
+        );
     }
 
     // tallying proofs
-    if (!quiet) logYellow(info(`Generating proofs of vote tallying...`));
+    logYellow(quiet, info(`Generating proofs of vote tallying...`));
     const tallyStartTime = Date.now();
 
     const tallyBatchSize = poll.batchSizes.tallyBatchSize;
@@ -465,12 +470,13 @@ export const genProofs = async (
                 JSON.stringify(thisProof, null, 4)
             );
 
-            if (!quiet)
-                logYellow(
-                    info(
-                        `Progress: ${poll.numBatchesTallied} / ${totalTallyBatches}`
-                    )
-                );
+            
+            logYellow(
+                quiet,
+                info(
+                    `Progress: ${poll.numBatchesTallied} / ${totalTallyBatches}`
+                )
+            );
         } catch (error: any) {
             logError(error.message);
         }
@@ -530,18 +536,19 @@ export const genProofs = async (
         "0x" + newTallyCommitment.toString(16) ===
         tallyFileData.newTallyCommitment
     ) {
-        if (!quiet) logGreen(success("The tally commitment is correct"));
+        logGreen(quiet, success("The tally commitment is correct"));
     } else {
         logError("Error: the newTallyCommitment is invalid.");
     }
 
     const tallyEndTime = Date.now();
-    if (!quiet)
-        logYellow(
-            info(
-                `gen tally proof took ${
-                    (tallyEndTime - tallyStartTime) / 1000
-                } seconds\n`
-            )
-        );
+    
+    logYellow(
+        quiet,
+        info(
+            `gen tally proof took ${
+                (tallyEndTime - tallyStartTime) / 1000
+            } seconds\n`
+        )
+    );
 };

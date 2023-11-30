@@ -1,6 +1,5 @@
 import { getDefaultSigner, genMaciStateFromContract } from "maci-contracts";
 import {
-    DEFAULT_ETH_PROVIDER,
     promptSensitiveValue,
     banner,
     contractExists,
@@ -12,7 +11,6 @@ import {
 import { Keypair, PrivKey } from "maci-domainobjs";
 import { providers } from "ethers";
 import { writeFileSync } from "fs";
-import { JSONRPCDeployer } from "maci-contracts/build/deploy";
 
 /**
  * Generate a local MACI state from the smart contracts events
@@ -32,7 +30,7 @@ export const genLocalState = async (
     sleep?: number,
     quiet = true
 ) => {
-    if (!quiet) banner();
+    banner(quiet);
 
     // validation of the maci contract address
     if (!readContractAddress("MACI") && !maciContractAddress)
@@ -81,12 +79,13 @@ export const genLocalState = async (
         ? new providers.JsonRpcProvider(ethereumProvider)
         : signer.provider;
 
-    if (!quiet)
-        logYellow(
-            info(
-                `Fetching logs from ${fromBlock} till ${endBlockNumber} and generating the offline maci state`
-            )
-        );
+    
+    logYellow(
+        quiet,
+        info(
+            `Fetching logs from ${fromBlock} till ${endBlockNumber} and generating the offline maci state`
+        )
+    );
     const maciState = await genMaciStateFromContract(
         provider,
         maciAddress,

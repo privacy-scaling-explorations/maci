@@ -22,7 +22,7 @@ export const airdrop = async (
     maciAddress?: string,
     quiet = true
 ) => {
-    if (!quiet) banner();
+    banner(quiet);
 
     // get the topup credit address from storage
     const topupCredit = readContractAddress("TopupCredit");
@@ -56,12 +56,12 @@ export const airdrop = async (
         });
         await tx.wait();
 
-        if (!quiet)
-            logGreen(
-                success(
-                    `Airdropped ${amount} credits to ${await signer.getAddress()}`
-                )
-            );
+        logGreen(
+            quiet,
+            success(
+                `Airdropped ${amount} credits to ${await signer.getAddress()}`
+            )
+        );
     } catch (error: any) {
         logError(error.message);
     }
@@ -87,10 +87,11 @@ export const airdrop = async (
             );
             await tx.wait();
 
-            if (!quiet)
-                logGreen(
-                    success(`Approved ${pollAddr} to spend ${amount} credits`)
-                );
+            
+            logGreen(
+                quiet,
+                success(`Approved ${pollAddr} to spend ${amount} credits`)
+            );
         } catch (error: any) {
             logError(error.message);
         }

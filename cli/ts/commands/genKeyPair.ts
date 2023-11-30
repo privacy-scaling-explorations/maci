@@ -8,7 +8,7 @@ import { logGreen, success } from "../utils/theme";
  * @param quiet - whether to log the output
  */
 export const genKeyPair = (quiet = true) => {
-    if (!quiet) banner();
+     banner(quiet);
     // create the new rando keypair
     const keypair = new Keypair();
 
@@ -16,8 +16,8 @@ export const genKeyPair = (quiet = true) => {
     const serializedPubKey = keypair.pubKey.serialize();
     const serializedPrivKey = keypair.privKey.serialize();
 
-    if (!quiet) logGreen(success(`Public key: ${serializedPubKey}`));
-    if (!quiet) logGreen(success(`Private key: ${serializedPrivKey}`));
+    logGreen(quiet, success(`Public key: ${serializedPubKey}`));
+    logGreen(quiet, success(`Private key: ${serializedPrivKey}`));
 
     return {
         publicKey: serializedPubKey,

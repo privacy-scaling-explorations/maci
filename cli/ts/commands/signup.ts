@@ -23,7 +23,7 @@ export const signup = async (
     ivcpDataArg?: string,
     quiet = true
 ): Promise<string> => {
-    if (!quiet) banner();
+    banner(quiet);
 
     const signer = await getDefaultSigner();
     // validate user key
@@ -73,12 +73,12 @@ export const signup = async (
         // get state index from the event
         if (receipt && receipt.logs) {
             stateIndex = iface.parseLog(receipt.logs[0]).args[0];
-            if (!quiet)
-                logGreen(success(`State index: ${stateIndex.toString()}`));
+            
+            logGreen(quiet, success(`State index: ${stateIndex.toString()}`));
         } else {
             logError("Unable to retrieve the transaction receipt");
         }
-        if (!quiet) logYellow(info(`Transaction hash: ${tx.hash}`));
+        logYellow(quiet, info(`Transaction hash: ${tx.hash}`));
     } catch (error: any) {
         logError(error.message);
     }

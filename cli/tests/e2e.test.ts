@@ -36,6 +36,20 @@ import {
 import { cleanVanilla } from "./utils";
 import { isArm } from "maci-circuits";
 
+/**
+ Test scenarios:
+    1 signup, 1 message
+    4 signups, 6 messages
+    5 signups, 1 message
+    8 signups, 10 messages
+    4 signups, 4 messages
+    5 signups, 5 messages
+    test if keys are set correctly given a set of files
+    test if key change works
+    multiple batch: Sign up 6 times, Publish 6 times
+    1 signup and 1 valid message for multiple polls
+    7 signups and 1 message, another polls and 6 messages
+ */
 describe("e2e tests", function () {
     const useWasm = isArm();
     this.timeout(900000);

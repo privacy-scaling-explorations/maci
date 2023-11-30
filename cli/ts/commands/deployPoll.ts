@@ -2,7 +2,6 @@ import {
     deployMessageProcessor,
     deploySubsidy,
     deployTally,
-    deployVerifier,
     getDefaultSigner,
     parseArtifact,
 } from "maci-contracts";
@@ -40,7 +39,7 @@ export const deployPoll = async (
     maciAddress?: string,
     quiet = true
 ): Promise<PollContracts> => {
-    if (!quiet) banner();
+    banner(quiet);
 
     const _maciAddress = readContractAddress("MACI");
     if (!_maciAddress && !maciAddress) {
@@ -149,16 +148,17 @@ export const deployPoll = async (
 
         const pollId = log.args._pollId;
         pollAddr = log.args._pollAddr;
-        if (!quiet) {
-            logGreen(info(`Poll ID: ${pollId.toString()}`));
-            logGreen(info(`Poll contract: ${pollAddr}`));
+         {
+            logGreen(quiet, info(`Poll ID: ${pollId.toString()}`));
+            logGreen(quiet, info(`Poll contract: ${pollAddr}`));
             logGreen(
+                quiet,
                 info(
                     `Message processor contract: ${messageProcessorContract.address}`
                 )
             );
-            logGreen(info(`Tally contract: ${tallyContract.address}`));
-            logGreen(info(`Subsidy contract: ${subsidyContract.address}`));
+            logGreen(quiet, info(`Tally contract: ${tallyContract.address}`));
+            logGreen(quiet, info(`Subsidy contract: ${subsidyContract.address}`));
         }
         // store the addresss
         storeContractAddress(

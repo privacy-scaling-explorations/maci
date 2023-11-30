@@ -26,7 +26,7 @@ export const mergeMessages = async (
     numQueueOps?: string,
     quiet = true
 ) => {
-    if (!quiet) banner();
+    banner(quiet);
     const signer = await getDefaultSigner();
 
     // maci contract validation
@@ -76,8 +76,8 @@ export const mergeMessages = async (
     // infinite loop to merge the sub trees
     while (true) {
         if (await accQueueContract.subTreesMerged()) {
-            if (!quiet)
-                logGreen(success("All message subtrees have been merged."));
+            
+            logGreen(quiet, success("All message subtrees have been merged."));
             break;
         }
 
@@ -85,14 +85,15 @@ export const mergeMessages = async (
             Number(x)
         );
 
-        if (!quiet)
-            logYellow(
-                info(
-                    `Merging message subroots ${indices[0] + 1} / ${
-                        indices[1] + 1
-                    }`
-                )
-            );
+        
+        logYellow(
+            quiet, 
+            info(
+                `Merging message subroots ${indices[0] + 1} / ${
+                    indices[1] + 1
+                }`
+            )
+        );
 
         const tx = await pollContract.mergeMessageAqSubRoots(
             numQueueOps ? numQueueOps : DEFAULT_SR_QUEUE_OPS
@@ -100,14 +101,15 @@ export const mergeMessages = async (
         const receipt = await tx.wait();
         if (receipt.status !== 1) logError("Transaction failed");
 
-        if (!quiet)
-            logGreen(
-                success(
-                    `Executed mergeMessageAqSubRoots(); gas used: ${receipt.gasUsed.toString()}`
-                )
-            );
-        if (!quiet)
-            logYellow(info(`Transaction hash: ${receipt.transactionHash}`));
+        
+        logGreen(
+            quiet, 
+            success(
+                `Executed mergeMessageAqSubRoots(); gas used: ${receipt.gasUsed.toString()}`
+            )
+        );
+    
+        logYellow(quiet, info(`Transaction hash: ${receipt.transactionHash}`));
     }
 
     // check if the message AQ has been fully merged
@@ -121,22 +123,23 @@ export const mergeMessages = async (
     ).toString();
     if (mainRoot === "0") {
         // go and merge the message tree
-        if (!quiet)
-            logYellow(info("Merging subroots to a main message root..."));
+        
+        logYellow(quiet, info("Merging subroots to a main message root..."));
         const tx = await pollContract.mergeMessageAq();
         const receipt = await tx.wait();
         if (receipt.status !== 1) logError("Transaction failed");
 
-        if (!quiet) {
-            logGreen(
-                success(
-                    `Executed mergeMessageAq(); gas used: ${receipt.gasUsed.toString()}`
-                )
-            );
-            logYellow(info(`Transaction hash: ${receipt.transactionHash}`));
-            logGreen(success("The message tree has been merged."));
-        }
+         
+        logGreen(
+            quiet, 
+            success(
+                `Executed mergeMessageAq(); gas used: ${receipt.gasUsed.toString()}`
+            )
+        );
+        logYellow(quiet, info(`Transaction hash: ${receipt.transactionHash}`));
+        logGreen(quiet, success("The message tree has been merged."));
+        
     } else {
-        logYellow(info("The message tree has already been merged."));
+        logYellow(quiet, info("The message tree has already been merged."));
     }
 };

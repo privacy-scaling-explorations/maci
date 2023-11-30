@@ -40,7 +40,7 @@ export const checkVerifyingKeys = async (
     maciContract?: string,
     quiet = true
 ): Promise<boolean> => {
-    if (!quiet) banner();
+    banner(quiet);
     // get the signer
     const signer = await getDefaultSigner();
 
@@ -74,8 +74,8 @@ export const checkVerifyingKeys = async (
     );
 
     try {
-        if (!quiet)
-            logYellow(info("Retrieving verifying keys from the contract..."));
+        
+        logYellow(quiet, info("Retrieving verifying keys from the contract..."));
         // retrieve the verifying keys from the contract
         const vkRegistryAddress = await maciContractInstance.vkRegistry();
         const vkRegistryContract = new Contract(
@@ -108,7 +108,7 @@ export const checkVerifyingKeys = async (
         logError(error.message);
     }
 
-    if (!quiet) logGreen(success("Verifying keys match"));
+    logGreen(quiet, success("Verifying keys match"));
 
     return true;
 };

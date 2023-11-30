@@ -33,7 +33,7 @@ export const deploy = async (
     signupGatekeeperAddress?: string,
     quiet = true
 ): Promise<DeployedContracts> => {
-    if (!quiet) banner();
+    banner(quiet);
     // check if we have a vkRegistry already deployed or passed as arg
     const vkRegistryContractAddress = readContractAddress("VkRegistry");
     if (!vkRegistryContractAddress && !vkRegistryAddress) {
@@ -108,10 +108,8 @@ export const deploy = async (
     storeContractAddress("PoseidonT4", poseidonAddrs[1]);
     storeContractAddress("PoseidonT5", poseidonAddrs[2]);
     storeContractAddress("PoseidonT6", poseidonAddrs[3]);
-
-    if (!quiet) {
-        logGreen(success(`MACI deployed at:  ${maciContract.address}`));
-    }
+     
+    logGreen(quiet, success(`MACI deployed at:  ${maciContract.address}`));
 
     // return all addresses
     return {

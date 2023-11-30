@@ -39,7 +39,7 @@ export const proveOnChain = async (
     subsidyAddress?: string,
     quiet = true
 ) => {
-    if (!quiet) banner();
+    banner(quiet);
     const signer = await getDefaultSigner();
 
     // check existence of contract addresses
@@ -216,9 +216,9 @@ export const proveOnChain = async (
     }
 
     // perform validation
-
     if (numProcessProofs !== totalMessageBatches) {
         logRed(
+            quiet,
             error(
                 `The proof files inside ${proofDir} do not have the correct number of message processign proofs` +
                     `(expected ${totalMessageBatches}, got ${numProcessProofs}.`
@@ -244,8 +244,8 @@ export const proveOnChain = async (
     const pollEndTimestampOnChain = BigInt(dd[0]) + BigInt(dd[1]);
 
     if (numberBatchesProcessed < totalMessageBatches)
-        if (!quiet)
-            logYellow(info("Submitting proofs of message processing..."));
+        
+    logYellow(quiet, info("Submitting proofs of message processing..."));
 
     // process all batches left
     for (let i = numberBatchesProcessed; i < totalMessageBatches; i++) {
@@ -357,29 +357,32 @@ export const proveOnChain = async (
             );
             const receipt = await tx.wait();
             if (receipt.status !== 1) logError("processMessages() failed.");
-            if (!quiet) logYellow(info(`Transaction hash: ${tx.hash}`));
+            logYellow(quiet, info(`Transaction hash: ${tx.hash}`));
 
             // Wait for the node to catch up
             numberBatchesProcessed = Number(
                 await mpContract.numBatchesProcessed()
             );
 
-            if (!quiet)
-                logYellow(
-                    info(
-                        `Progress: ${numberBatchesProcessed} / ${totalMessageBatches}`
-                    )
-                );
+            
+            logYellow(
+                quiet,
+                info(
+                    `Progress: ${numberBatchesProcessed} / ${totalMessageBatches}`
+                )
+            );
         } catch (error: any) {
             logError(`processMessages() failed: ${error}`);
         }
     }
 
-    if (numberBatchesProcessed === totalMessageBatches)
-        if (!quiet)
-            logGreen(
-                success("All message processing proofs have been submitted.")
-            );
+    if (numberBatchesProcessed === totalMessageBatches) {
+        
+        logGreen(
+            quiet,
+            success("All message processing proofs have been submitted.")
+        );
+    }
 
     // subsidy calculations if any subsidy proofs are provided
     if (Object.keys(data.subsidyProofs).length !== 0) {
@@ -389,12 +392,13 @@ export const proveOnChain = async (
         const num1DBatches = Math.ceil(numLeaves / subsidyBatchSize);
         let subsidyBatchNum = rbi * num1DBatches + cbi;
         const totalBatchNum = (num1DBatches * (num1DBatches + 1)) / 2;
-        if (!quiet)
-            logYellow(
-                info(
-                    `number of subsidy batch processed: ${subsidyBatchNum}, numleaf=${numLeaves}`
-                )
-            );
+        
+        logYellow(
+            quiet,
+            info(
+                `number of subsidy batch processed: ${subsidyBatchNum}, numleaf=${numLeaves}`
+            )
+        );
 
         // process all batches
         for (let i = subsidyBatchNum; i < totalBatchNum; i++) {
@@ -452,17 +456,16 @@ export const proveOnChain = async (
                 const receipt = await tx.wait();
                 if (receipt.status !== 1) logError("updateSubsidy() failed.");
 
-                if (!quiet) {
-                    logYellow(info(`Transaction hash: ${tx.hash}`));
-                    logYellow(
-                        info(
-                            `Progress: ${
-                                subsidyBatchNum + 1
-                            } / ${totalBatchNum}`
-                        )
-                    );
-                }
-
+                logYellow(quiet, info(`Transaction hash: ${tx.hash}`));
+                logYellow(
+                    quiet,
+                    info(
+                        `Progress: ${
+                            subsidyBatchNum + 1
+                        } / ${totalBatchNum}`
+                    )
+                );
+                
                 const nrbi = Number(await subsidyContract.rbi());
                 const ncbi = Number(await subsidyContract.cbi());
 
@@ -474,13 +477,14 @@ export const proveOnChain = async (
             }
         }
 
-        if (subsidyBatchNum === totalBatchNum)
-            if (!quiet)
-                logGreen(
-                    success(
-                        "All subsidy calculation proofs have been submitted."
-                    )
-                );
+        if (subsidyBatchNum === totalBatchNum) {
+            logGreen(
+                quiet,
+                success(
+                    "All subsidy calculation proofs have been submitted."
+                )
+            );
+        }
     }
 
     // vote tallying proofs
@@ -491,7 +495,7 @@ export const proveOnChain = async (
     let tallyBatchNum = Number(await tallyContract.tallyBatchNum());
 
     if (tallyBatchNum < totalTallyBatches)
-        if (!quiet) logYellow(info("Submitting proofs of vote tallying..."));
+        logYellow(quiet, info("Submitting proofs of vote tallying..."));
 
     for (let i = tallyBatchNum; i < totalTallyBatches; i++) {
         if (i === 0) await tallyContract.updateSbCommitment(mpContract.address);
@@ -550,14 +554,15 @@ export const proveOnChain = async (
 
             if (receipt.status !== 1) logError("tallyVotes() failed");
 
-            if (!quiet) {
-                logYellow(
-                    info(
-                        `Progress: ${tallyBatchNum + 1} / ${totalTallyBatches}`
-                    )
-                );
-                logYellow(info(`Transaction hash: ${tx.hash}`));
-            }
+            
+            logYellow(
+                quiet,
+                info(
+                    `Progress: ${tallyBatchNum + 1} / ${totalTallyBatches}`
+                )
+            );
+            logYellow(quiet, info(`Transaction hash: ${tx.hash}`));
+                        
 
             tallyBatchNum = Number(await tallyContract.tallyBatchNum());
         } catch (error: any) {
@@ -566,6 +571,5 @@ export const proveOnChain = async (
     }
 
     if (tallyBatchNum === totalTallyBatches)
-        if (!quiet)
-            logGreen(success("All vote tallying proofs have been submitted."));
+        logGreen(quiet, success("All vote tallying proofs have been submitted."));
 };

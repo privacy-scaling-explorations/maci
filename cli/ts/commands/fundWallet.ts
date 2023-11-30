@@ -19,7 +19,7 @@ export const fundWallet = async (
     address: string,
     quiet = true
 ) => {
-    if (!quiet) banner();
+    banner(quiet);
     const signer = await getDefaultSigner();
 
     // fund the wallet by sending Ether to it
@@ -31,12 +31,13 @@ export const fundWallet = async (
         const receipt = await tx.wait();
         if (receipt.status != 1) logError("Transaction failed");
 
-        if (!quiet) {
-            logYellow(info(`Transaction hash: ${tx.hash}`));
-            logGreen(
-                success(`Successfully funded ${address} with ${amount} wei`)
-            );
-        }
+         
+        logYellow(quiet, info(`Transaction hash: ${tx.hash}`));
+        logGreen(
+            quiet, 
+            success(`Successfully funded ${address} with ${amount} wei`)
+        );
+        
     } catch (error: any) {
         logError(error.message);
     }

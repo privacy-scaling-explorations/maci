@@ -26,7 +26,7 @@ export const mergeSignups = async (
     numQueueOps?: string,
     quiet = true
 ) => {
-    if (!quiet) banner();
+    banner(quiet);
     const signer = await getDefaultSigner();
 
     // maci contract validation
@@ -69,8 +69,8 @@ export const mergeSignups = async (
     while (true) {
         const subTreesMerged = await accQueueContract.subTreesMerged();
         if (subTreesMerged) {
-            if (!quiet)
-                logGreen(success("All state subtrees have been merged."));
+            
+            logGreen(quiet, success("All state subtrees have been merged."));
             break;
         }
 
@@ -78,14 +78,15 @@ export const mergeSignups = async (
             Number(x)
         );
 
-        if (!quiet)
-            logYellow(
-                info(
-                    `Merging state subroots ${indices[0] + 1} / ${
-                        indices[1] + 1
-                    }`
-                )
-            );
+        
+        logYellow(
+            quiet,
+            info(
+                `Merging state subroots ${indices[0] + 1} / ${
+                    indices[1] + 1
+                }`
+            )
+        );
 
         // first merge the subroots
         const tx = await pollContract.mergeMaciStateAqSubRoots(
@@ -95,14 +96,14 @@ export const mergeSignups = async (
         const receipt = await tx.wait();
         if (receipt.status !== 1) logError("Error merging state subroots");
 
-        if (!quiet) {
-            logYellow(info(`Transaction hash: ${receipt.transactionHash}`));
-            logGreen(
-                success(
-                    `Executed mergeMaciStateAqSubRoots(); gas used: ${receipt.gasUsed.toString()}`
-                )
-            );
-        }
+        logYellow(quiet, info(`Transaction hash: ${receipt.transactionHash}`));
+        logGreen(
+            quiet,
+            success(
+                `Executed mergeMaciStateAqSubRoots(); gas used: ${receipt.gasUsed.toString()}`
+            )
+        );
+        
     }
 
     // check if the state AQ has been fully merged
@@ -113,20 +114,19 @@ export const mergeSignups = async (
 
     if (mainRoot === "0" || pollId > 0) {
         // go and merge the state tree
-        if (!quiet) logYellow(info("Merging subroots to a main state root..."));
+        logYellow(quiet, info("Merging subroots to a main state root..."));
         const tx = await pollContract.mergeMaciStateAq(pollId.toString());
         const receipt = await tx.wait();
         if (receipt.status !== 1) logError("Error merging state subroots");
 
-        if (!quiet) {
-            logYellow(info(`Transaction hash: ${receipt.transactionHash}`));
-            logGreen(
-                success(
-                    `Executed mergeStateAq(); gas used: ${receipt.gasUsed.toString()}`
-                )
-            );
-        }
+        logYellow(quiet, info(`Transaction hash: ${receipt.transactionHash}`));
+        logGreen(
+            quiet,
+            success(
+                `Executed mergeStateAq(); gas used: ${receipt.gasUsed.toString()}`
+            )
+        );
     } else {
-        if (!quiet) logYellow(info("The state tree has already been merged."));
+        logYellow(quiet, info("The state tree has already been merged."));
     }
 };

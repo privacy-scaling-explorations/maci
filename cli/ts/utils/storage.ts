@@ -1,5 +1,6 @@
 import { contractAddressesStore } from "./constants"
 import { writeFileSync, readFileSync, existsSync } from "fs"
+import { logError } from "./theme"
 
 /**
  * Read a JSON file from disk
@@ -7,6 +8,7 @@ import { writeFileSync, readFileSync, existsSync } from "fs"
  * @returns the JSON object
  */
 export const readJSONFile = (path: string): object => {
+    if (!existsSync(path)) logError(`File ${path} does not exist`)
     return JSON.parse(readFileSync(path).toString())
 }
 
@@ -33,9 +35,9 @@ export const storeContractAddress = (
  */
 export const readContractAddress = (
     contractName: string
-): string | undefined => {
+): string => {
     const contractAddrs = readJSONFile(contractAddressesStore)
-    return contractAddrs[contractName]
+    return contractAddrs[contractName] || ""
 }
 
 /**

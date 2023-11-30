@@ -8,14 +8,14 @@ import { getDefaultSigner } from "maci-contracts";
  * @param quiet - whether to log the output
  */
 export const timeTravel = async (seconds: number, quiet = true) => {
-    if (!quiet) banner();
+    banner(quiet);
     const signer = await getDefaultSigner();
     try {
         // send the instructions to the provider
         await signer.provider.send("evm_increaseTime", [Number(seconds)]);
         await signer.provider.send("evm_mine", []);
 
-        if (!quiet) logGreen(success(`Fast-forwarded ${seconds} seconds`));
+        logGreen(quiet, success(`Fast-forwarded ${seconds} seconds`));
     } catch (error: any) {
         logError(error.message);
     }
