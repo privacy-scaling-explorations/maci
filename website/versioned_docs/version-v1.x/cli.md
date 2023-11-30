@@ -2,7 +2,7 @@
 title: MACI Command-line interface (CLI)
 description: Introduction to the MACI CLI interface that allows for effective deployment and testing
 sidebar_label: Command-line interface
-sidebar_position: 5
+sidebar_position: 4
 ---
 
 # Command-line interface
@@ -253,7 +253,7 @@ node/build.js genProofs \
     --tally-zkey "$ZKEYS_DIR"/TallyVotes_"$TALLY_VOTES_PARAMS".0.zkey \
     --tally-file tally.json \
     --output proofs/ \
-    --state-file localState.json
+    --state-file localState.json 
 ```
 
 ### Coordinator: prove on chain

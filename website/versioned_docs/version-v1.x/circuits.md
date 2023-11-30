@@ -2,7 +2,7 @@
 title: MACI Circuits
 description: Introduction to the core zk-SNARK circuits of MACI
 sidebar_label: Circuits
-sidebar_position: 7
+sidebar_position: 6
 ---
 
 # Circuits
