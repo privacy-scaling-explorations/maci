@@ -71,11 +71,7 @@ assert(decryptedCommand == command);
 ## Check 2: that the message is part of the message tree
 
 ```javascript
-var generatedMsgTreeRoot = generateMerkleRoot(
-  msgTreePathElements,
-  msgTreePathIndex,
-  message,
-);
+var generatedMsgTreeRoot = generateMerkleRoot(msgTreePathElements, msgTreePathIndex, message);
 
 assert(generatedMsgTreeRoot, msgTreeRoot);
 ```

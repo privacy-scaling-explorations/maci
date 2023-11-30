@@ -1,15 +1,5 @@
 {
-  "packages": [
-    "circuits",
-    "cli",
-    "contracts",
-    "core",
-    "crypto",
-    "domainobjs",
-    "integrationTests",
-    "server",
-    "common"
-  ],
+  "packages": ["circuits", "cli", "contracts", "core", "crypto", "domainobjs", "integrationTests", "server", "common"],
   "version": "1.1.2",
   "npmClient": "npm",
   "changelogPreset": {

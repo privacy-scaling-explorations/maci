@@ -18,22 +18,23 @@ MACI, which stands for Minimal Anti-Collusion Infrastructure, is an application 
 MACI counters this by using zk-SNARKs to essentially hide how each person voted while still revealing the final vote result. User’s cannot prove which option they voted for, and therefore bribers cannot reliably trust that a user voted for their preferred option. For example, a voter can tell a briber that they are voting for option A, but in reality they voted for option B. There is no reliable way to prove which option the voter actually voted for, so the briber does not have the incentive to pay voters to vote their way.
 
 ## Background
+
 For a general overview, the history and the importance of MACI, see Release Announcement: MACI 1.0 by Wei Jie, one of the creators. He also created a very helpful youtube video on the overview of MACI. To see the origin of the idea of MACI, see Vitalik’s research post on Minimal Anti-Collusion Infrastructure. Lastly, it is recommended to understand the basic idea behind zk-SNARKs, as these are a core component of MACI. The following articles are great resources:
 
-* Introduction to zk-SNARKs — Consensys
-* What are zk-SNARKs — Zcash
-* An approximate introduction to how zk-SNARKs are possible — Vitalik
-* zkSNARKs in a nutshell — Ethereum.org 
+- Introduction to zk-SNARKs — Consensys
+- What are zk-SNARKs — Zcash
+- An approximate introduction to how zk-SNARKs are possible — Vitalik
+- zkSNARKs in a nutshell — Ethereum.org
 
 This article will go over the general workflow of MACI and how it is capable of providing the following tenets (taken word for word from Wei Jie’s article):
 
-* Collusion Resistance: No one except a trusted coordinator should be certain of the validity of a vote, reducing the effectiveness of bribery
-* Receipt-freeness: No voter may prove (besides to the coordinator) which way they voted
-* Privacy: No one except a trusted coordinator should be able to decrypt a vote
-* Uncensorability: No one (not even the trusted coordinator) should be able to censor a vote
-* Unforgeability: Only the owner of a user’s private key may cast a vote tied to its corresponding public key
-* Non-repudiation: No one may modify or delete a vote after it is cast, although a user may cast another vote to nullify it
-* Correct execution: No one (not even the trusted coordinator) should be able to produce a false tally of votes
+- Collusion Resistance: No one except a trusted coordinator should be certain of the validity of a vote, reducing the effectiveness of bribery
+- Receipt-freeness: No voter may prove (besides to the coordinator) which way they voted
+- Privacy: No one except a trusted coordinator should be able to decrypt a vote
+- Uncensorability: No one (not even the trusted coordinator) should be able to censor a vote
+- Unforgeability: Only the owner of a user’s private key may cast a vote tied to its corresponding public key
+- Non-repudiation: No one may modify or delete a vote after it is cast, although a user may cast another vote to nullify it
+- Correct execution: No one (not even the trusted coordinator) should be able to produce a false tally of votes
 
 ## System Overview
 
@@ -50,6 +51,7 @@ A very simplified illustration of this encryption can be seen below:
 ![Posting a Message](assets/MACI_Simple_Message.png)
 
 ### Vote Overriding and Public Key Switching
+
 Before a user can cast a vote, they must sign up by sending the public key they wish to use to vote to a MACI smart contract. This public key acts as their identity when voting. They can vote from any address, but their message must contain a signature from that public key. When casting an actual vote after signing up, a user will bundle a few variables — including a public key, their vote option, their vote amount, and a few others — into what is called a “command”. Then, the user signs the command with the public key they originally used to sign up. After that, the user encrypts the signature and command together so that it is now considered a message. This more complex description of how a message is constructed is illustrated below:
 
 ![Complex Message](assets/MACI_Complex_Message.png)
@@ -82,6 +84,7 @@ At this point, Bob has successfully voted for option A, and in order to override
 In order to get a good idea of how MACI works, it’s important to know how the zk-SNARKs are able to prove that the coordinator decrypted each message and tallied the votes properly. The next section gives a quick and much oversimplified overview of zk-SNARKs, although the readings listed in the introduction are much more helpful.
 
 ### zk-SNARKs
+
 Essentially, zk-SNARKs allow users to prove they know an answer to a specific mathematical equation, without revealing what that answer is. Take the following equation for example,
 
 > X + Y = 15
@@ -92,7 +95,7 @@ For MACI, the equation is much more complicated but can be summarized as the fol
 
 > encrypt(command1) = message1  
 > encrypt(command2) = message2  
-> encrypt(command3) = message3    
+> encrypt(command3) = message3  
 > …  
 > Command1 from user1 + command2 from user2 + command3 from user3 + … = total tally result
 
@@ -100,11 +103,12 @@ Here, everyone is able to see the messages on the blockchain and the total tally
 
 1. Encrypt to the messages present on the blockchain
 2. Sum to the tally result
-Users can then use the SNARK to prove that the tally result is correct, but cannot use it to prove any individual’s vote choices.
+   Users can then use the SNARK to prove that the tally result is correct, but cannot use it to prove any individual’s vote choices.
 
 Now that the core components of MACI have been covered, it is helpful to dive deeper into the MACI workflow and specific smart contracts.
 
 ## Workflow
+
 The general workflow process can be broken down into 4 different phases:
 
 1. Sign Up
@@ -121,6 +125,7 @@ Finally, the PollProcessorAndTallyer contract is used by the coordinator to prov
 ![MACI Workflow](assets/MACI_Contracts.png)
 
 ### Sign Up
+
 The sign up process for MACI is handled via the MACI.sol smart contract. Users need to send three pieces of information when calling MACI.signUp():
 
 1. Public Key
@@ -142,6 +147,7 @@ Once MACI has checked that the user is valid and retrieved how many voice credit
 ![Signup](assets/MACI_Sign_Up.png)
 
 ### Publish Message
+
 Once it is time to vote, the MACI creator/owner will deploy a Poll smart contract. Then, users will call Poll.publishMessage() and send the following data:
 
 1. Message
@@ -160,6 +166,7 @@ The coordinator must process messages in groups so that proving on chain does no
 The PollProcessorAndTallyer contract will send the proof to a separate verifier contract. The verifier contract is specifically built to read MACI zk-SNARK proofs and tell if they are valid or not. So, if the verifier contract returns true, then everyone can see on-chain that the coordinator correctly processed that batch of messages. The coordinator repeats this process until all messages have been processed.
 
 ### Tally Votes
+
 Finally, once all messages have been processed, the coordinator tallies the votes of the valid messages. The coordinator creates a zk-SNARK proving that the valid messages in the state tree (proved in Process Messages step) contain votes that sum to the given tally result. Then, they call PollProcessorAndTallyer.tallyVotes() with a hash of the correct tally results and the zk-SNARK proof. Similarly to the processMessages function, the tallyVotes function will send the proof to a verifier contract to ensure that it is valid.
 
 The tallyVotes function is only successful if the verifier contract returns that the proof is valid. Therefore, once the tallyVotes function succeeds, users can trust that the coordinator has correctly tallied all of the valid votes. After this step, anyone can see the final tally results and the proof that these results are a correct result of the messages sent to the Poll contract. The users won’t be able to see how any individual voted, but will be able to trust that these votes were properly processed and counted.

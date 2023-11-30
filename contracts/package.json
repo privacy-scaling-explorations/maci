@@ -36,8 +36,7 @@
     "maci-core": "^1.1.2",
     "maci-crypto": "^1.1.2",
     "maci-domainobjs": "^1.1.2",
-    "module-alias": "^2.2.2",
-    "typescript": "^4.2.3"
+    "module-alias": "^2.2.2"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
@@ -46,6 +45,7 @@
     "chai": "^4.3.10",
     "safe-buffer": "^5.2.1",
     "shelljs": "^0.8.4",
-    "ts-node": "^10.9.1"
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.2"
   }
 }

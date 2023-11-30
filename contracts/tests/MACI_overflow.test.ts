@@ -14,54 +14,45 @@ const MESSAGE_TREE_SUBDEPTH = 2;
 // Poll parameters
 const duration = 15;
 const maxValues: MaxValues = {
-    maxMessages: 25,
-    maxVoteOptions: 25,
+  maxMessages: 25,
+  maxVoteOptions: 25,
 };
 
 const treeDepths: TreeDepths = {
-    intStateTreeDepth: 1,
-    messageTreeDepth: MESSAGE_TREE_DEPTH,
-    messageTreeSubDepth: MESSAGE_TREE_SUBDEPTH,
-    voteOptionTreeDepth: 2,
+  intStateTreeDepth: 1,
+  messageTreeDepth: MESSAGE_TREE_DEPTH,
+  messageTreeSubDepth: MESSAGE_TREE_SUBDEPTH,
+  voteOptionTreeDepth: 2,
 };
 
 const initialVoiceCreditBalance = 100;
 
 describe("Overflow testing", () => {
-    let maciContract: Contract;
+  let maciContract: Contract;
 
-    beforeEach(async () => {
-        const r = await deployTestContracts(
-            initialVoiceCreditBalance,
-            STATE_TREE_DEPTH,
-            true
-        );
-        maciContract = r.maciContract;
-    });
+  beforeEach(async () => {
+    const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, true);
+    maciContract = r.maciContract;
+  });
 
-    it("MACI.stateTreeDepth should be correct", async () => {
-        const std = await maciContract.stateTreeDepth();
-        expect(std.toString()).to.eq(STATE_TREE_DEPTH.toString());
-    });
-    it("SignUps - should not overflow", async () => {
-        await maciContract.signUp(
-            users[0].pubKey.asContractParam(),
-            utils.defaultAbiCoder.encode(["uint256"], [1]),
-            utils.defaultAbiCoder.encode(["uint256"], [0])
-        );
-    });
+  it("MACI.stateTreeDepth should be correct", async () => {
+    const std = await maciContract.stateTreeDepth();
+    expect(std.toString()).to.eq(STATE_TREE_DEPTH.toString());
+  });
+  it("SignUps - should not overflow", async () => {
+    await maciContract.signUp(
+      users[0].pubKey.asContractParam(),
+      utils.defaultAbiCoder.encode(["uint256"], [1]),
+      utils.defaultAbiCoder.encode(["uint256"], [0]),
+    );
+  });
 
-    it("Deploy Poll - should not overflow", async () => {
-        await maciContract.deployPoll(
-            duration,
-            maxValues,
-            treeDepths,
-            coordinator.pubKey.asContractParam()
-        );
-    });
+  it("Deploy Poll - should not overflow", async () => {
+    await maciContract.deployPoll(duration, maxValues, treeDepths, coordinator.pubKey.asContractParam());
+  });
 
-    it("Deploy Poll - should not overflow with larger values for tree depths", async () => {
-        /* 
+  it("Deploy Poll - should not overflow with larger values for tree depths", async () => {
+    /* 
             Poll Contract
             require(
                 _maxValues.maxMessages <=
@@ -101,37 +92,32 @@ describe("Overflow testing", () => {
             }
         */
 
-        const _treeDepths: TreeDepths = {
-            intStateTreeDepth: 2,
-            messageTreeDepth: 5,
-            messageTreeSubDepth: 5,
-            voteOptionTreeDepth: 2,
-        };
+    const _treeDepths: TreeDepths = {
+      intStateTreeDepth: 2,
+      messageTreeDepth: 5,
+      messageTreeSubDepth: 5,
+      voteOptionTreeDepth: 2,
+    };
 
-        const _maxValues: MaxValues = {
-            maxMessages: 3125,
-            maxVoteOptions: 25,
-        };
+    const _maxValues: MaxValues = {
+      maxMessages: 3125,
+      maxVoteOptions: 25,
+    };
 
-        // require maxMessages <= treeArity ** messageTreeDepths
-        // require 25 <= 5 * 5 Ok
-        // require maxMessages >= messageBatchSize(5)**(5)
-        // require 3125 >= 3125
-        // require _maxValues.maxMessages % _batchSizes.messageBatchSize == 0
-        // require 3125 % 3125
-        // require _maxValues.maxVoteOptions <=
-        // treeArity**uint256(_treeDepths.voteOptionTreeDepth)
-        // require 25 <= 5 ** 2
-        // require _maxValues.maxVoteOptions < (2**50)
-        // require 25 < 2 ** 50 -> 25 < 1125899906842624
-        const tx = await maciContract.deployPoll(
-            duration,
-            _maxValues,
-            _treeDepths,
-            coordinator.pubKey.asContractParam()
-        );
+    // require maxMessages <= treeArity ** messageTreeDepths
+    // require 25 <= 5 * 5 Ok
+    // require maxMessages >= messageBatchSize(5)**(5)
+    // require 3125 >= 3125
+    // require _maxValues.maxMessages % _batchSizes.messageBatchSize == 0
+    // require 3125 % 3125
+    // require _maxValues.maxVoteOptions <=
+    // treeArity**uint256(_treeDepths.voteOptionTreeDepth)
+    // require 25 <= 5 ** 2
+    // require _maxValues.maxVoteOptions < (2**50)
+    // require 25 < 2 ** 50 -> 25 < 1125899906842624
+    const tx = await maciContract.deployPoll(duration, _maxValues, _treeDepths, coordinator.pubKey.asContractParam());
 
-        const receipt = await tx.wait();
-        console.log(`Used ${receipt.gasUsed?.toString()} gas`);
-    });
+    const receipt = await tx.wait();
+    console.log(`Used ${receipt.gasUsed?.toString()} gas`);
+  });
 });

@@ -11,6 +11,7 @@
     "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
     "strict": false,
+    "esModuleInterop": true,
     "outDir": "./build",
     "declaration": true
   },
