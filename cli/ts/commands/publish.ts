@@ -1,5 +1,5 @@
 import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs";
-import { info, logError, logGreen } from "../utils/theme";
+import { info, logError, logGreen, logYellow } from "../utils/theme";
 import { readContractAddress } from "../utils/storage";
 import { contractExists } from "../utils/contracts";
 import { getDefaultSigner, parseArtifact } from "maci-contracts";
@@ -35,7 +35,7 @@ export const publish = async (
     privateKey?: string,
     quiet = true
 ): Promise<string> => {
-    if (!quiet) banner();
+    banner(quiet);
 
     // validate that the pub key of the user is valid
     if (!PubKey.isValidSerializedPubKey(pubkey))
@@ -130,12 +130,13 @@ export const publish = async (
         const receipt = await tx.wait();
         if (receipt.status !== 1) logError("Transaction failed");
 
-        if (!quiet) {
-            logGreen(info(`Transaction hash: ${tx.hash}`));
-            logGreen(
-                info(`Ephemeral private key: ${encKeypair.privKey.serialize()}`)
-            );
-        }
+         
+        logYellow(quiet, info(`Transaction hash: ${tx.hash}`));
+        logGreen(
+            quiet,
+            info(`Ephemeral private key: ${encKeypair.privKey.serialize()}`)
+        );
+        
     } catch (error: any) {
         logError(error.message);
     }

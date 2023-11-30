@@ -20,7 +20,7 @@ export const topup = async (
     maciAddress?: string,
     quiet = true
 ) => {
-    if (!quiet) banner();
+    banner(quiet);
     const signer = await getDefaultSigner();
 
     // ensure we have a valid MACI contract address

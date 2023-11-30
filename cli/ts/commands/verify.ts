@@ -32,7 +32,7 @@ export const verify = async (
     subsidyFile?: string,
     quiet = true
 ) => {
-    if (!quiet) banner();
+    banner(quiet);
     const signer = await getDefaultSigner();
 
     // check existence of MACI, Tally and Subsidy contract addresses
@@ -96,18 +96,19 @@ export const verify = async (
 
     // verification
     const onChainTallycomment = BigInt(await tallyContract.tallyCommitment());
-    if (!quiet)
-        logYellow(
-            info(
-                `on-chain tally commitment: ${onChainTallycomment.toString(16)}`
-            )
-        );
+    
+    logYellow(
+        quiet,
+        info(
+            `on-chain tally commitment: ${onChainTallycomment.toString(16)}`
+        )
+    );
 
     // read the tally file
     if (!existsSync(tallyFile)) logError(`Unable to open ${tallyFile}`);
     const tallyData = JSON.parse(readFileSync(tallyFile, { encoding: "utf8" }));
 
-    if (!quiet) logYellow(info(`tally file: ${tallyData}`));
+    logYellow(quiet, info(`tally file: ${tallyData}`));
 
     // check the results commitment
     const validResultsCommitment =
@@ -155,21 +156,22 @@ export const verify = async (
 
     if (onChainTallycomment !== newTallyCommitment)
         logError("The on-chain tally commitment does not match.");
-    if (!quiet) logGreen(success("The on-chain tally commitment matches."));
+    logGreen(quiet, success("The on-chain tally commitment matches."));
 
     // verify subsidy result if subsidy file is provided
     if (subsidyFile) {
         const onChainSubsidyCommitment = BigInt(
             await subsidyContract.subsidyCommitment()
         );
-        if (!quiet)
-            logYellow(
-                info(
-                    `on-chain subsidy commitment: ${onChainSubsidyCommitment.toString(
-                        16
-                    )}`
-                )
-            );
+        
+        logYellow(
+            quiet,
+            info(
+                `on-chain subsidy commitment: ${onChainSubsidyCommitment.toString(
+                    16
+                )}`
+            )
+        );
 
         // read the subsidy file
         if (!existsSync(subsidyFile))
@@ -178,7 +180,7 @@ export const verify = async (
             readFileSync(subsidyFile, { encoding: "utf8" })
         );
 
-        if (!quiet) logYellow(info(`subsidy file: ${subsidyData}`));
+        logYellow(quiet, info(`subsidy file: ${subsidyData}`));
 
         // check the results commitment
         const validResultsCommitment =
@@ -200,7 +202,7 @@ export const verify = async (
         if (onChainSubsidyCommitment !== newSubsidyCommitment)
             logError("The on-chain subsidy commitment does not match.");
 
-        if (!quiet)
-            logGreen(success("The on-chain subsidy commitment matches."));
+        
+        logGreen(quiet, success("The on-chain subsidy commitment matches."));
     }
 };

@@ -1,6 +1,6 @@
 import { VerifyingKey } from "maci-domainobjs";
 import { readContractAddress } from "../utils/storage";
-import { info, logError, logYellow } from "../utils/theme";
+import { info, logError, logGreen, logYellow, success } from "../utils/theme";
 import { existsSync } from "fs";
 import { extractVk } from "maci-circuits";
 import { getDefaultSigner, parseArtifact } from "maci-contracts";
@@ -35,7 +35,7 @@ export const setVerifyingKeys = async (
     subsidyZkeyPath?: string,
     quiet = true
 ) => {
-    if (!quiet) banner();
+    banner(quiet);
     // we must either have the contract as param or stored to file
     if (!readContractAddress("VkRegistry") && !vkRegistry) {
         logError("vkRegistry contract address is empty");
@@ -168,7 +168,7 @@ export const setVerifyingKeys = async (
 
     // actually set those values
     try {
-        if (!quiet) logYellow(info("Setting verifying keys..."));
+        logYellow(quiet, info("Setting verifying keys..."));
         // set them onchain
         const tx = await vkRegistryContract.setVerifyingKeys(
             stateTreeDepth,
@@ -184,7 +184,7 @@ export const setVerifyingKeys = async (
         if (receipt.status !== 1)
             logError("Set verifying keys transaction failed");
 
-        if (!quiet) logYellow(info(`Transaction hash: ${tx.hash}`));
+        logYellow(quiet, info(`Transaction hash: ${tx.hash}`));
 
         // confirm that they were actually set correctly
         const processVkOnChain = await vkRegistryContract.getProcessVk(
@@ -221,7 +221,7 @@ export const setVerifyingKeys = async (
             if (receipt.status !== 1)
                 logError("Set subsidy keys transaction failed");
 
-            if (!quiet) logYellow(info(`Transaction hash: ${tx.hash}`));
+            logYellow(quiet, info(`Transaction hash: ${tx.hash}`));
 
             const subsidyVkOnChain = await vkRegistryContract.getSubsidyVk(
                 stateTreeDepth,
@@ -234,4 +234,6 @@ export const setVerifyingKeys = async (
     } catch (error: any) {
         logError(error.message);
     }
+
+    logGreen(quiet, success("Verifying keys set successfully"))
 };

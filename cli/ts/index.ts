@@ -53,7 +53,7 @@ program
         "--signupGatekeeperAddress <signupGatekeeperAddress>",
         "the signup gatekeeper contract address"
     )
-    .option("-q, --quiet", "whether to print values to the console")
+    .option("-q, --quiet", "whether to print values to the console", false)
     .requiredOption(
         "-s, --stateTreeDepth <stateTreeDepth>",
         "the state tree depth"
@@ -120,14 +120,16 @@ program
     .command("genMaciPubKey")
     .description("generate a new MACI public key")
     .requiredOption("-sk, --privkey <privkey>", "the private key")
+    .option("-q, --quiet", "whether to print values to the console", false)
     .action((cmdObj) => {
-        genMaciPubKey(cmdObj.privkey);
+        genMaciPubKey(cmdObj.privkey, cmdObj.quiet);
     });
 program
     .command("genMaciKeyPair")
     .description("generate a new MACI key pair")
-    .action(() => {
-        genKeyPair;
+    .option("-q, --quiet", "whether to print values to the console", false)
+    .action((cmdObj) => {
+        genKeyPair(cmdObj.quiet);
     });
 program
     .command("airdrop")
@@ -346,7 +348,7 @@ program
         "the number of seconds to fast-forward"
     )
     .option("-q, --quiet", "whether to print values to the console", false)
-    .action(async (cmdObj) => await timeTravel(cmdObj.quiet, cmdObj.provider));
+    .action(async (cmdObj) => await timeTravel(cmdObj.seconds, cmdObj.quiet));
 program
     .command("signup")
     .description("Sign up to a MACI contract")

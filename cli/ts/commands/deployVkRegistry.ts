@@ -15,7 +15,7 @@ import { resetContractAddresses, storeContractAddress } from "../utils/storage";
 export const deployVkRegistryContract = async (
     quiet = true
 ): Promise<string> => {
-    if (!quiet) banner();
+    banner(quiet);
     // assume that the vkRegistry contract is the first one to be deployed
     if (existsSync(contractAddressesStore)) {
         renameSync(contractAddressesStore, oldContractAddressesStore);
@@ -25,7 +25,7 @@ export const deployVkRegistryContract = async (
     // deploy and store the address
     const vkRegistry = await deployVkRegistry(true);
     storeContractAddress("VkRegistry", vkRegistry.address);
-    if (!quiet)
-        logGreen(success(`VkRegistry deployed at: ${vkRegistry.address}`));
+    
+    logGreen(quiet, success(`VkRegistry deployed at: ${vkRegistry.address}`));
     return vkRegistry.address;
 };

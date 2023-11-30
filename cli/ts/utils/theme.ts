@@ -7,34 +7,38 @@ const MAGENTA = "\x1b[35m";
 
 /**
  * Print red text to the console (fancy)
+ * @param quiet - whether to print the text or not
  * @param text - the text to print
  */
-export function logRed(text: string) {
-    console.log(RED + text + RESET);
+export function logRed(quiet: boolean, text: string) {
+    if (!quiet) console.log(RED + text + RESET);
 }
 
 /**
  * Print green text to the console (fancy)
+ * @param quiet - whether to print the text or not
  * @param text - the text to print
  */
-export function logGreen(text: string) {
-    console.log(GREEN + text + RESET);
+export function logGreen(quiet: boolean, text: string) {
+    if (!quiet) console.log(GREEN + text + RESET);
 }
 
 /**
  * Print yellow text to the console (fancy)
+ * @param quiet - whether to print the text or not
  * @param text - the text to print
  */
-export function logYellow(text: string) {
-    console.log(YELLOW + text + RESET);
+export function logYellow(quiet: boolean, text: string) {
+    if (!quiet) console.log(YELLOW + text + RESET);
 }
 
 /**
  * Print magenta text to the console (fancy)
+ * @param quiet - whether to print the text or not
  * @param text - the text to print
  */
-export function logMagenta(text: string) {
-    console.log(MAGENTA + text + RESET);
+export function logMagenta(quiet: boolean, text: string) {
+    if (!quiet) console.log(MAGENTA + text + RESET);
 }
 
 /**
