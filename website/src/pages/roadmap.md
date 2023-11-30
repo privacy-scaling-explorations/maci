@@ -1,19 +1,17 @@
 ---
 title: 2024 MACI Product Roadmap
-description: An outline of the 2024 team & product roadmap for MACI & QF initiatives
+description: An outline of the 2024 MACI team & product roadmap
 ---
 
 # 2024 MACI Product Roadmap
 
-_As part of our efforts to make our core team's work more accessible and to foster more collaboration from our open source community, we're seeking feedback on our 2024 product roadmap!_
+**This document aims to outline the 2024 MACI team & product roadmap.**
 
-This document aims to outline the 2024 team & product roadmap for MACI & QF initiatives.
-
-_Note: we've included longer-term plans in order to set context & gather feedback, but the focus here is primarily on our plans for 2024 (particularly the 1st half of 2024). We’ll re-assess our roadmap towards the end of Q1 2024 once we have a clearer picture of our team members & size, resources available, and our velocity as a team._
+_As part of our core team's efforts to make our work more accessible and to foster more collaboration from our open source community, we're publicly publishing our roadmap. We plan to re-assess & iterate on our roadmap over time, and will update this document when we do._
 
 ## Team description
 
-The MACI core team is a small collaborative team building various projects within PSE. Our sustained focus is on MACI: a protocol that allows users to have an on-chain voting process with greatly increased collusion resistance & privacy. Additionally, we allocate a significant portion of our time to support the practical adoption of this technology by grassroots community leaders around the world using it to secure Quadratic Voting (QV) & Quadratic Funding (QF) events.
+The MACI core team is a small collaborative team building various projects within [Privacy & Scaling Explorations (PSE)](https://pse.dev/). Our sustained focus is on MACI: a protocol that allows users to have an on-chain voting process with greatly increased collusion resistance & privacy. Additionally, we allocate a significant portion of our time to support the practical adoption of this technology by grassroots community leaders around the world using it to secure Quadratic Voting (QV) & Quadratic Funding (QF) events.
 
 ## MACI mission & vision
 
@@ -333,4 +331,4 @@ MACI is a complex codebase that was originally built by expert cryptographers, m
 
 Questions? Concerns? Ideas? We’d love to hear from you!
 
-Feel free to comment here or reach out to our team in the [PSE Discord](https://discord.com/invite/sF5CT5rzrR) (`#maci` channel).
+Feel free to [create an issue on our GitHub](https://github.com/privacy-scaling-explorations/maci/issues) or reach out to our team in the [PSE Discord](https://discord.com/invite/sF5CT5rzrR) (`#maci` channel).
