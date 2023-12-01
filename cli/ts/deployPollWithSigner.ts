@@ -149,7 +149,7 @@ const deployPollWithSigner = async (args: any) => {
     return;
   }
 
-  const unserialisedPubkey = PubKey.unserialize(coordinatorPubkey);
+  const unserialisedPubkey = PubKey.deserialize(coordinatorPubkey);
 
   // Deploy a PollProcessorAndTallyer contract
   const verifierContract = await deployVerifier(true);

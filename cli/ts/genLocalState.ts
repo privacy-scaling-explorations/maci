@@ -145,7 +145,7 @@ const genLocalState = async (args: any) => {
     return;
   }
 
-  const maciPrivkey = PrivKey.unserialize(serializedPrivkey);
+  const maciPrivkey = PrivKey.deserialize(serializedPrivkey);
   const coordinatorKeypair = new Keypair(maciPrivkey);
 
   // calculate the end block number

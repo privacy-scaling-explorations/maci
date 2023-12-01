@@ -5,22 +5,22 @@ import { PubKey } from "./publicKey";
  * @notice An interface representing a zk-SNARK proof
  */
 export interface Proof {
-	a: G1Point;
-	b: G2Point;
-	c: G1Point;
+  a: G1Point;
+  b: G2Point;
+  c: G1Point;
 }
 
 /**
- * @notice An interface representing a MACI state lead
+ * @notice An interface representing a MACI state leaf
  */
 export interface IStateLeaf {
-	pubKey: PubKey;
-	voiceCreditBalance: bigint;
+  pubKey: PubKey;
+  voiceCreditBalance: bigint;
 }
 
 /**
- * @notice An interface representing a MACI vote option leaf 
+ * @notice An interface representing a MACI vote option leaf
  */
 export interface VoteOptionTreeLeaf {
-	votes: bigint;
+  votes: bigint;
 }

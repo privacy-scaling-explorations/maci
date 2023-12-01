@@ -134,7 +134,7 @@ const deployPoll = async (args: any) => {
     return;
   }
 
-  const unserialisedPubkey = PubKey.unserialize(coordinatorPubkey);
+  const unserialisedPubkey = PubKey.deserialize(coordinatorPubkey);
 
   // Deploy a MessageProcessor contract
   const verifierContract = await deployVerifier(true);

@@ -179,7 +179,7 @@ const executeSuite = async (data: any, expect: any) => {
 
         // The publish command generates and outputs a random ephemeral private
         // key, so we have to retrieve it from the standard output
-        const encPrivKey = PrivKey.unserialize(publishRegMatch[2]);
+        const encPrivKey = PrivKey.deserialize(publishRegMatch[2]);
         const encPubKey = new PubKey(genPubKey(encPrivKey.rawPrivKey));
 
         const command = new PCommand(
