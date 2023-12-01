@@ -2,7 +2,7 @@
 title: Testing MACI
 description: How to test MACI
 sidebar_label: Testing
-sidebar_position: 9
+sidebar_position: 8
 ---
 
 # Testing
@@ -35,6 +35,7 @@ npm run test-accQueue
 ```
 
 This test command will run `AccQueue.test.ts`
+
 
 ## Contracts
 
@@ -138,146 +139,149 @@ npm run test
 
 The followingcompiled circuits and zkeys are available to download:
 
-- [Prod](#prod-size) (`7-9-3-4`)
-- [Micro](#micro-size) (`10-2-1-2`)
-- [Small](#small-size) (`4-6-3-4`)
-- [Medium](#medium-size) (`7-7-3-3`)
-- [6-8-3-3](#6-8-3-3)
+* [Prod](#prod-size) (`7-9-3-4`)
+* [Micro](#micro-size) (`10-2-1-2`)
+* [Small](#small-size) (`4-6-3-4`)
+* [Medium](#medium-size) (`7-7-3-3`)
+* [6-8-3-3](#6-8-3-3)
 
 ### Dependency (if running on intel chip and using rapidsnark)
 
-- glibc 2.11 (Default of Ubuntu 20.04 LTS)
+* glibc 2.11 (Default of Ubuntu 20.04 LTS)
 
 ## Prod Size
 
-- [zkeys-7-9-3-4.tar.gz](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/7-9-3-4/zkeys_7-9-3-4_glibc-211.tar.gz) (2.8 GB)
-- [ProcessMessages_7-9-3-4_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/7-9-3-4/ProcessMessages_7-9-3-4_test.0.zkey) (3.8 GB)
-  - generated using `powersOfTau28_hez_final_22.ptau`
-- [TallyVotes_7-3-4_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/7-9-3-4/TallyVotes_7-3-4_test.0.zkey) (8.5 GB)
-  - generated using `powersOfTau28_hez_final_23.ptau`
+* [zkeys-7-9-3-4.tar.gz](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/7-9-3-4/zkeys_7-9-3-4_glibc-211.tar.gz) (2.8 GB)
+* [ProcessMessages_7-9-3-4_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/7-9-3-4/ProcessMessages_7-9-3-4_test.0.zkey) (3.8 GB)
+  * generated using `powersOfTau28_hez_final_22.ptau`
+* [TallyVotes_7-3-4_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/7-9-3-4/TallyVotes_7-3-4_test.0.zkey) (8.5 GB)
+  * generated using `powersOfTau28_hez_final_23.ptau`
 
 ### Message processing
 
-| Parameter                | Value | Description                                    |
-| ------------------------ | ----- | ---------------------------------------------- |
-| State tree depth         | 7     | Allows 78,125 signups.                         |
-| Message tree depth       | 9     | Allows 1,953,125 votes or key-change messages. |
-| Message batch tree depth | 3     | Allows 125 messages to be processed per batch. |
-| Vote option tree depth   | 4     | Allows 625 vote options.                       |
+| Parameter | Value | Description |
+|-----------|-------| ----------- |
+| State tree depth | 7 | Allows 78,125 signups. | 
+| Message tree depth | 9 | Allows 1,953,125 votes or key-change messages. | 
+| Message batch tree depth | 3 |  Allows 125 messages to be processed per batch. |
+| Vote option tree depth | 4 | Allows 625 vote options. |
 
 ### Vote tallying
 
-| Parameter                | Value | Description                                        |
-| ------------------------ | ----- | -------------------------------------------------- |
-| State tree depth         | 7     | Allows 78,125 signups.                             |
-| State leaf batch depth   | 3     | Allows 125 user's votes to be processed per batch. |
-| Message batch tree depth | 4     | Allows 625 messages to be processed per batch.     |
+| Parameter | Value | Description |
+|-----------|-------| ----------- |
+| State tree depth | 7 | Allows 78,125 signups. | 
+| State leaf batch depth | 3 | Allows 125 user's votes to be processed per batch. | 
+| Message batch tree depth | 4 |  Allows 625 messages to be processed per batch. |
 
 ## Micro size
 
-- [zkeys_10-2-1-2_glibc-211.tar.gz](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/10-2-1-2/zkeys_10-2-1-2_glibc-211.tar.gz) (403 MB)
-- [ProcessMessages_10-2-1-2_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/10-2-1-2/ProcessMessages_10-2-1-2_test.0.zkey) (190 MB)
-- [TallyVotes_10-1-2_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/10-2-1-2/TallyVotes_10-1-2_test.0.zkey) (71 MB)
-- [SubsidyPerBatch_10-1-2_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/10-2-1-2/SubsidyPerBatch_10-1-2_test.0.zkey) (202 MB)
+* [zkeys_10-2-1-2_glibc-211.tar.gz](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/10-2-1-2/zkeys_10-2-1-2_glibc-211.tar.gz) (403 MB)
+* [ProcessMessages_10-2-1-2_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/10-2-1-2/ProcessMessages_10-2-1-2_test.0.zkey) (190 MB)
+* [TallyVotes_10-1-2_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/10-2-1-2/TallyVotes_10-1-2_test.0.zkey) (71 MB)
+* [SubsidyPerBatch_10-1-2_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/10-2-1-2/SubsidyPerBatch_10-1-2_test.0.zkey) (202 MB)
 
 `*.zkey` files are generated using `powersOfTau28_hez_final_20.ptau`
 
 ### Message processing
 
-| Parameter                | Value | Description                                  |
-| ------------------------ | ----- | -------------------------------------------- |
-| State tree depth         | 10    | Allows 9,765,625 signups.                    |
-| Message tree depth       | 2     | Allows 25 votes or key-change messages.      |
-| Message batch tree depth | 1     | Allows 5 messages to be processed per batch. |
-| Vote option tree depth   | 2     | Allows 25 vote options.                      |
+| Parameter | Value | Description |
+|-----------|-------| ----------- |
+| State tree depth | 10 | Allows 9,765,625 signups. | 
+| Message tree depth | 2 | Allows 25 votes or key-change messages. | 
+| Message batch tree depth | 1 |  Allows 5 messages to be processed per batch. |
+| Vote option tree depth | 2 | Allows 25 vote options. |
 
 ### Vote tallying
 
-| Parameter                | Value | Description                                      |
-| ------------------------ | ----- | ------------------------------------------------ |
-| State tree depth         | 10    | Allows 9,765,625 signups.                        |
-| State leaf batch depth   | 1     | Allows 5 user's votes to be processed per batch. |
-| Message batch tree depth | 2     | Allows 25 messages to be processed per batch.    |
+| Parameter | Value | Description |
+|-----------|-------| ----------- |
+| State tree depth | 10 | Allows 9,765,625 signups. | 
+| State leaf batch depth | 1 | Allows 5 user's votes to be processed per batch. | 
+| Message batch tree depth | 2 |  Allows 25 messages to be processed per batch. |
 
 ## Small size
 
-- [zkeys_4-6-3-4_glibc-211.tar.gz](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/4-6-3-4/zkeys_4-6-3-4_glibc-211.tar.gz) (2.6 GB)
-- [ProcessMessages_4-6-3-4_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/4-6-3-4/ProcessMessages_4-6-3-4_test.0.zkey) (2.9 GB)
-  - generated using `powersOfTau28_hez_final_22.ptau`
-- [TallyVotes_4-3-4_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/4-6-3-4/TallyVotes_4-3-4_test.0.zkey) (8.5 GB)
-  - generated using `powersOfTau28_hez_final_23.ptau`
+* [zkeys_4-6-3-4_glibc-211.tar.gz](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/4-6-3-4/zkeys_4-6-3-4_glibc-211.tar.gz) (2.6 GB)
+* [ProcessMessages_4-6-3-4_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/4-6-3-4/ProcessMessages_4-6-3-4_test.0.zkey) (2.9 GB)
+  * generated using `powersOfTau28_hez_final_22.ptau`
+* [TallyVotes_4-3-4_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/4-6-3-4/TallyVotes_4-3-4_test.0.zkey) (8.5 GB)
+  * generated using `powersOfTau28_hez_final_23.ptau`
+
+
 
 ### Message processing
 
-| Parameter                | Value | Description                                    |
-| ------------------------ | ----- | ---------------------------------------------- |
-| State tree depth         | 4     | Allows 625 signups.                            |
-| Message tree depth       | 6     | Allows 15,625 votes or key-change messages.    |
-| Message batch tree depth | 3     | Allows 125 messages to be processed per batch. |
-| Vote option tree depth   | 4     | Allows 625 vote options.                       |
+| Parameter | Value | Description |
+|-----------|-------| ----------- |
+| State tree depth | 4 | Allows 625 signups. | 
+| Message tree depth | 6 | Allows 15,625 votes or key-change messages. | 
+| Message batch tree depth | 3 |  Allows 125 messages to be processed per batch. |
+| Vote option tree depth | 4 | Allows 625 vote options. |
 
 ### Vote tallying
 
-| Parameter                | Value | Description                                        |
-| ------------------------ | ----- | -------------------------------------------------- |
-| State tree depth         | 4     | Allows 9,765,625 signups.                          |
-| State leaf batch depth   | 3     | Allows 125 user's votes to be processed per batch. |
-| Message batch tree depth | 4     | Allows 625 messages to be processed per batch.     |
+| Parameter | Value | Description |
+|-----------|-------| ----------- |
+| State tree depth | 4 | Allows 9,765,625 signups. | 
+| State leaf batch depth | 3 | Allows 125 user's votes to be processed per batch. | 
+| Message batch tree depth | 4 |  Allows 625 messages to be processed per batch. |
+
 
 ## Medium size
 
-- [zkeys_7-7-3-3_glibc-211.tar.gz](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/7-7-3-3/zkeys_7-7-3-3_glibc-211.tar.gz) (4.9 GB)
-- [ProcessMessages_7-7-3-3_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/7-7-3-3/ProcessMessages_7-7-3-3_test.0.zkey) (2.2 GB)
-  - generated using `powersOfTau28_hez_final_22.ptau`
-- [TallyVotes_7-3-3_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/7-7-3-3/TallyVotes_7-3-3_test.0.zkey) (884 MB)
-  - generated using `powersOfTau28_hez_final_22.ptau`
+* [zkeys_7-7-3-3_glibc-211.tar.gz](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/7-7-3-3/zkeys_7-7-3-3_glibc-211.tar.gz) (4.9 GB)
+* [ProcessMessages_7-7-3-3_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/7-7-3-3/ProcessMessages_7-7-3-3_test.0.zkey) (2.2 GB)
+  * generated using `powersOfTau28_hez_final_22.ptau`
+* [TallyVotes_7-3-3_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/7-7-3-3/TallyVotes_7-3-3_test.0.zkey) (884 MB)
+  * generated using `powersOfTau28_hez_final_22.ptau`
 
 ### Message processing
 
-| Parameter                | Value | Description                                    |
-| ------------------------ | ----- | ---------------------------------------------- |
-| State tree depth         | 7     | Allows 78,125 signups.                         |
-| Message tree depth       | 7     | Allows 78,125 votes or key-change messages.    |
-| Message batch tree depth | 3     | Allows 125 messages to be processed per batch. |
-| Vote option tree depth   | 3     | Allows 125 vote options.                       |
+| Parameter | Value | Description |
+|-----------|-------| ----------- |
+| State tree depth | 7 | Allows 78,125 signups. | 
+| Message tree depth | 7 | Allows 78,125 votes or key-change messages. | 
+| Message batch tree depth | 3 |  Allows 125 messages to be processed per batch. |
+| Vote option tree depth | 3 | Allows 125 vote options. |
 
 ### Vote tallying
 
-| Parameter                | Value | Description                                        |
-| ------------------------ | ----- | -------------------------------------------------- |
-| State tree depth         | 7     | Allows 78,125 signups.                             |
-| State leaf batch depth   | 3     | Allows 125 user's votes to be processed per batch. |
-| Message batch tree depth | 3     | Allows 125 messages to be processed per batch.     |
+| Parameter | Value | Description |
+|-----------|-------| ----------- |
+| State tree depth | 7 | Allows 78,125 signups. | 
+| State leaf batch depth | 3 | Allows 125 user's votes to be processed per batch. | 
+| Message batch tree depth | 3 |  Allows 125 messages to be processed per batch. |
+
 
 ## 6-8-3-3
 
-- [zkeys_6-8-3-3_glibc-211.tar.gz](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/6-8-3-3/zkeys_6-8-3-3_glibc-211.tar.gz) (1.1 GB)
-- [ProcessMessages_6-8-3-3_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/6-8-3-3/ProcessMessages_6-8-3-3_test.0.zkey) (3.4 GB)
-  - generated using `powersOfTau28_hez_final_22.ptau`
-- [TallyVotes_6-3-3_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/6-8-3-3/TallyVotes_6-3-3_test.0.zkey) (1.8 MB)
-  - generated using `powersOfTau28_hez_final_22.ptau`
+* [zkeys_6-8-3-3_glibc-211.tar.gz](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/6-8-3-3/zkeys_6-8-3-3_glibc-211.tar.gz) (1.1 GB)
+* [ProcessMessages_6-8-3-3_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/6-8-3-3/ProcessMessages_6-8-3-3_test.0.zkey) (3.4 GB)
+  * generated using `powersOfTau28_hez_final_22.ptau`
+* [TallyVotes_6-3-3_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/6-8-3-3/TallyVotes_6-3-3_test.0.zkey) (1.8 MB)
+  * generated using `powersOfTau28_hez_final_22.ptau`
 
 ### Message processing
 
-| Parameter                | Value | Description                                    |
-| ------------------------ | ----- | ---------------------------------------------- |
-| State tree depth         | 6     | Allows 15,625 signups.                         |
-| Message tree depth       | 8     | Allows 390,625 votes or key-change messages.   |
-| Message batch tree depth | 3     | Allows 125 messages to be processed per batch. |
-| Vote option tree depth   | 3     | Allows 125 vote options.                       |
+| Parameter | Value | Description |
+|-----------|-------| ----------- |
+| State tree depth | 6 | Allows 15,625 signups. | 
+| Message tree depth | 8 | Allows 390,625 votes or key-change messages. | 
+| Message batch tree depth | 3 |  Allows 125 messages to be processed per batch. |
+| Vote option tree depth | 3 | Allows 125 vote options. |
 
 ### Vote tallying
 
-| Parameter                | Value | Description                                        |
-| ------------------------ | ----- | -------------------------------------------------- |
-| State tree depth         | 7     | Allows 15,625 signups.                             |
-| State leaf batch depth   | 3     | Allows 125 user's votes to be processed per batch. |
-| Message batch tree depth | 3     | Allows 125 messages to be processed per batch.     |
+| Parameter | Value | Description |
+|-----------|-------| ----------- |
+| State tree depth | 7 | Allows 15,625 signups. | 
+| State leaf batch depth | 3 | Allows 125 user's votes to be processed per batch. | 
+| Message batch tree depth | 3 |  Allows 125 messages to be processed per batch. |
 
 ## contents of `*.tar.gz`
 
 It contains compiled result of the circuit:
-
 ```
 zkeys/
 zkeys/ProcessMessages_7-9-3-4_test.sym
@@ -336,15 +340,15 @@ zkeys/TallyVotes_7-3-4_test
 
 ## Contribution Hash
 
-- [ProcessMessages_4-6-3-4_test.0.zkey](#ProcessMessages_4-6-3-4_test0zkey)
-- [TallyVotes_4-3-4_test.0.zkey](#TallyVotes_4-3-4_test0zkey)
-- [ProcessMessages_7-9-3-4_test.0.zkey](#ProcessMessages_7-9-3-4_test0zkey)
-- [TallyVotes_7-3-3_test.0.zkey](#TallyVotes_7-3-4_test0zkey)
-- [ProcessMessages_10-2-1-2_test.0.zkey](#ProcessMessages_10-2-1-2_test0zkey)
-- [TallyVotes_7-3-3_test.0.zkey](#TallyVotes_7-3-3_test0zkey)
-- [SubsidyPerBatch_10-1-2_test.0.zkey](#SubsidyPerBatch_10-1-2_test0zkey)
-- [ProcessMessages_7-7-3-3_test.0.zkey](#ProcessMessages_7-7-3-3_test0zkey)
-- [TallyVotes_7-3-3_test.0.zkey](#TallyVotes_7-3-3_test0zkey)
+* [ProcessMessages_4-6-3-4_test.0.zkey](#ProcessMessages_4-6-3-4_test0zkey)
+* [TallyVotes_4-3-4_test.0.zkey](#TallyVotes_4-3-4_test0zkey)
+* [ProcessMessages_7-9-3-4_test.0.zkey](#ProcessMessages_7-9-3-4_test0zkey)
+* [TallyVotes_7-3-3_test.0.zkey](#TallyVotes_7-3-4_test0zkey)
+* [ProcessMessages_10-2-1-2_test.0.zkey](#ProcessMessages_10-2-1-2_test0zkey)
+* [TallyVotes_7-3-3_test.0.zkey](#TallyVotes_7-3-3_test0zkey)
+* [SubsidyPerBatch_10-1-2_test.0.zkey](#SubsidyPerBatch_10-1-2_test0zkey)
+* [ProcessMessages_7-7-3-3_test.0.zkey](#ProcessMessages_7-7-3-3_test0zkey)
+* [TallyVotes_7-3-3_test.0.zkey](#TallyVotes_7-3-3_test0zkey)
 
 ### ProcessMessages_4-6-3-4_test.0.zkey
 
@@ -354,6 +358,7 @@ zkeys/TallyVotes_7-3-4_test
 55b27b66 db5fec74 c8e01b0a c407b08f
 325cfc06 cb1ac909 38b2e5ff 22b34333
 ```
+
 
 ### TallyVotes_4-3-4_test.0.zkey
 
@@ -373,6 +378,7 @@ f3a8a155 cd338e2c 5f364836 bfd7913d
 b1094e74 b8aaa9a3 9af75b22 0d9229e6
 ```
 
+
 ### TallyVotes_7-3-4_test.0.zkey
 
 ```
@@ -390,6 +396,7 @@ f44cf32e 1709e2c4 c8dbe8dc 5b6de4be
 6fbe4b6f ba7f1f82 566c443d a8f0fec6
 1c2c2662 20e0df3d 12a057f3 2a071937
 ```
+
 
 ### TallyVotes_10-1-2_test.0.zkey
 
@@ -417,6 +424,7 @@ cda175f9 b786c4eb 44453080 369ab861
 590816fe 257c1fe1 e079415b e4e1b626
 a0f752f8 413a81ba f481d335 187e0091
 ```
+
 
 ### TallyVotes_7-3-3_test.0.zkey
 

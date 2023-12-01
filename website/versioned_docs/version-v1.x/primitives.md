@@ -2,7 +2,7 @@
 title: MACI Primitives
 description: A short introduction of the main primitives used by MACI
 sidebar_label: Primitives
-sidebar_position: 4
+sidebar_position: 3
 ---
 
 ## MACI primitives
