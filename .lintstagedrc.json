@@ -1,4 +1,4 @@
 {
   "**/*.ts": ["prettier --ignore-unknown --write", "eslint --fix"],
-  "**/*.{yaml, yml}": "prettier --ignore-unknown --write"
+  "**/*.{sol, yaml, yml, md}": ["prettier --ignore-unknown --write"]
 }

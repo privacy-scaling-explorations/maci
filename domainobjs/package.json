@@ -13,11 +13,11 @@
     "@types/mocha": "^10.0.4",
     "@types/node": "^18.11.9",
     "chai": "^4.3.10",
-    "maci-crypto": "^1.1.2",
     "mocha": "^10.2.0",
     "ts-mocha": "^10.0.0"
   },
   "dependencies": {
-    "base64url": "^3.0.1"
+    "base64url": "^3.0.1",
+    "maci-crypto": "^1.1.2"
   }
 }

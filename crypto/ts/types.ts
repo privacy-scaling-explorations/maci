@@ -10,16 +10,16 @@ export type Ciphertext = bigint[];
  * A acc queue
  */
 export interface Queue {
-    levels: bigint[][];
-    indices: number[];
+  levels: bigint[][];
+  indices: number[];
 }
 
 /**
  * A private key and a public key
  */
 export interface Keypair {
-    privKey: PrivKey;
-    pubKey: PubKey;
+  privKey: PrivKey;
+  pubKey: PubKey;
 }
 
 // An EdDSA signature.
@@ -28,19 +28,19 @@ export interface Keypair {
 // Baby Jubjub: see
 // https://iden3-docs.readthedocs.io/en/latest/_downloads/a04267077fb3fdbf2b608e014706e004/Ed-DSA.pdf
 export interface Signature {
-    R8: bigint[];
-    S: bigint;
+  R8: bigint[];
+  S: bigint;
 }
 
 /**
  * A interface for poseidon hash functions
  */
 export interface PoseidonFuncs {
-    [key: number]: (inputs: bigint[]) => bigint;
-    2: (inputs: bigint[]) => bigint;
-    3: (inputs: bigint[]) => bigint;
-    4: (inputs: bigint[]) => bigint;
-    5: (inputs: bigint[]) => bigint;
+  [key: number]: (inputs: bigint[]) => bigint;
+  2: (inputs: bigint[]) => bigint;
+  3: (inputs: bigint[]) => bigint;
+  4: (inputs: bigint[]) => bigint;
+  5: (inputs: bigint[]) => bigint;
 }
 
 export type Leaf = bigint;

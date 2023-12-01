@@ -2,7 +2,7 @@ name: GitHub Pages
 
 on:
   push:
-    branches: [ dev ]
+    branches: [dev]
   pull_request:
 
 concurrency:
@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 20
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: "https://registry.npmjs.org"
 
       - name: Run typedoc
         run: |
@@ -29,7 +29,7 @@ jobs:
           npm run build
           npm run typedoc
 
-      - name: Fix typedoc links 
+      - name: Fix typedoc links
         run: |
           npm install
           npm run setup-typedoc

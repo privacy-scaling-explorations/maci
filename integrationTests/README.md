@@ -6,7 +6,7 @@
 This submodule contains test suites that span between different submodules.
 
 The current approach is to test each CLI command and also chain
-them together to test the entire flow. 
+them together to test the entire flow.
 
 Please refer to the [tests documentation](https://maci.pse.dev/docs/testing) for more information.
 
