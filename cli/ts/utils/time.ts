@@ -4,5 +4,5 @@
  * @returns a promise that resolves after the specified number of milliseconds
  */
 export const delay = (ms: number): Promise<void> => {
-    return new Promise((resolve: Function) => setTimeout(resolve, ms))
-}
+  return new Promise((resolve: any) => setTimeout(resolve, ms));
+};

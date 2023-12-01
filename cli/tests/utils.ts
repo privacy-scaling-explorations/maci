@@ -6,11 +6,11 @@ import { join } from "path";
  * and the tally.json file
  */
 export const cleanVanilla = () => {
-    const files = readdirSync("./proofs");
-    for (const file of files) {
-        rmSync(join("./proofs", file));
-    }
-    if (existsSync("./tally.json")) rmSync("./tally.json");
+  const files = readdirSync("./proofs");
+  for (const file of files) {
+    rmSync(join("./proofs", file));
+  }
+  if (existsSync("./tally.json")) rmSync("./tally.json");
 };
 
 /**
@@ -18,6 +18,6 @@ export const cleanVanilla = () => {
  * adn the subsidy.json file
  */
 export const cleanSubsidy = () => {
-    cleanVanilla();
-    if (existsSync("./subsidy.json")) rmSync("./subsidy.json");
+  cleanVanilla();
+  if (existsSync("./subsidy.json")) rmSync("./subsidy.json");
 };

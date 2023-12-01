@@ -24,123 +24,104 @@ import { banner } from "../utils/banner";
  * @returns the ephemeral private key used to encrypt the message
  */
 export const publish = async (
-    pubkey: string,
-    stateIndex: number,
-    voteOptionIndex: number,
-    nonce: number,
-    pollId: number,
-    newVoteWeight: number,
-    maciContractAddress?: string,
-    salt?: string,
-    privateKey?: string,
-    quiet = true
+  pubkey: string,
+  stateIndex: number,
+  voteOptionIndex: number,
+  nonce: number,
+  pollId: number,
+  newVoteWeight: number,
+  maciContractAddress?: string,
+  salt?: string,
+  privateKey?: string,
+  quiet = true,
 ): Promise<string> => {
-    banner(quiet);
+  banner(quiet);
 
-    // validate that the pub key of the user is valid
-    if (!PubKey.isValidSerializedPubKey(pubkey))
-        logError("invalid MACI public key");
-    // deserialize
-    const userMaciPubKey = PubKey.deserialize(pubkey)
+  // validate that the pub key of the user is valid
+  if (!PubKey.isValidSerializedPubKey(pubkey)) logError("invalid MACI public key");
+  // deserialize
+  const userMaciPubKey = PubKey.deserialize(pubkey);
 
-    // validation of the maci contract address
-    if (!readContractAddress("MACI") && !maciContractAddress)
-        logError("MACI contract address is empty");
+  // validation of the maci contract address
+  if (!readContractAddress("MACI") && !maciContractAddress) logError("MACI contract address is empty");
 
-    const maciAddress = maciContractAddress
-        ? maciContractAddress
-        : readContractAddress("MACI");
+  const maciAddress = maciContractAddress ? maciContractAddress : readContractAddress("MACI");
 
-    const signer = await getDefaultSigner();
-    if (!(await contractExists(signer.provider, maciAddress)))
-        logError("MACI contract does not exist");
+  const signer = await getDefaultSigner();
+  if (!(await contractExists(signer.provider, maciAddress))) logError("MACI contract does not exist");
 
-    // if no private key is passed we ask it securely
-    const userPrivKey = privateKey
-        ? privateKey
-        : await promptSensitiveValue("Insert your MACI private key");
-    if (!PrivKey.isValidSerializedPrivKey(userPrivKey))
-        logError("Invalid MACI private key");
+  // if no private key is passed we ask it securely
+  const userPrivKey = privateKey ? privateKey : await promptSensitiveValue("Insert your MACI private key");
+  if (!PrivKey.isValidSerializedPrivKey(userPrivKey)) logError("Invalid MACI private key");
 
-    const userMaciPrivKey = PrivKey.deserialize(userPrivKey)
+  const userMaciPrivKey = PrivKey.deserialize(userPrivKey);
 
-    // validate args
-    if (voteOptionIndex < 0) logError("invalid vote option index");
-    // check < 1 cause index zero is a blank state leaf
-    if (stateIndex < 1) logError("invalid state index");
-    if (nonce < 0) logError("invalid nonce");
-    if (salt) if (!validateSalt(salt)) logError("Invalid salt");
-    const userSalt = salt ? BigInt(salt) : genRandomSalt();
-    if (pollId < 0) logError("Invalid poll id");
+  // validate args
+  if (voteOptionIndex < 0) logError("invalid vote option index");
+  // check < 1 cause index zero is a blank state leaf
+  if (stateIndex < 1) logError("invalid state index");
+  if (nonce < 0) logError("invalid nonce");
+  if (salt) if (!validateSalt(salt)) logError("Invalid salt");
+  const userSalt = salt ? BigInt(salt) : genRandomSalt();
+  if (pollId < 0) logError("Invalid poll id");
 
-    const maciContractAbi = parseArtifact("MACI")[0];
-    const pollContractAbi = parseArtifact("Poll")[0];
+  const maciContractAbi = parseArtifact("MACI")[0];
+  const pollContractAbi = parseArtifact("Poll")[0];
 
-    const maciContract = new Contract(maciAddress, maciContractAbi, signer);
+  const maciContract = new Contract(maciAddress, maciContractAbi, signer);
 
-    const pollAddress = await maciContract.getPoll(pollId);
-    if (!(await contractExists(signer.provider, pollAddress)))
-        logError("Poll contract does not exist");
+  const pollAddress = await maciContract.getPoll(pollId);
+  if (!(await contractExists(signer.provider, pollAddress))) logError("Poll contract does not exist");
 
-    const pollContract = new Contract(pollAddress, pollContractAbi, signer);
+  const pollContract = new Contract(pollAddress, pollContractAbi, signer);
 
-    const maxValues = await pollContract.maxValues();
-    const coordinatorPubKeyResult = await pollContract.coordinatorPubKey();
-    const maxVoteOptions = Number(maxValues.maxVoteOptions);
+  const maxValues = await pollContract.maxValues();
+  const coordinatorPubKeyResult = await pollContract.coordinatorPubKey();
+  const maxVoteOptions = Number(maxValues.maxVoteOptions);
 
-    // validate the vote options index against the max leaf index on-chain
-    if (maxVoteOptions < voteOptionIndex) logError("Invalid vote option index");
+  // validate the vote options index against the max leaf index on-chain
+  if (maxVoteOptions < voteOptionIndex) logError("Invalid vote option index");
 
-    const coordinatorPubKey = new PubKey([
-        BigInt(coordinatorPubKeyResult.x.toString()),
-        BigInt(coordinatorPubKeyResult.y.toString()),
-    ]);
+  const coordinatorPubKey = new PubKey([
+    BigInt(coordinatorPubKeyResult.x.toString()),
+    BigInt(coordinatorPubKeyResult.y.toString()),
+  ]);
 
-    const _newVoteWeight = BigInt(newVoteWeight);
+  const _newVoteWeight = BigInt(newVoteWeight);
 
-    const encKeypair = new Keypair();
+  const encKeypair = new Keypair();
 
-    // create the command object
-    const command: PCommand = new PCommand(
-        BigInt(stateIndex),
-        userMaciPubKey,
-        BigInt(voteOptionIndex),
-        _newVoteWeight,
-        BigInt(nonce),
-        BigInt(pollId),
-        userSalt
-    );
+  // create the command object
+  const command: PCommand = new PCommand(
+    BigInt(stateIndex),
+    userMaciPubKey,
+    BigInt(voteOptionIndex),
+    _newVoteWeight,
+    BigInt(nonce),
+    BigInt(pollId),
+    userSalt,
+  );
 
-    // sign the command with the user private key
-    const signature = command.sign(userMaciPrivKey);
-    // encrypt the command using a shared key between the user and the coordinator
-    const message = command.encrypt(
-        signature,
-        Keypair.genEcdhSharedKey(encKeypair.privKey, coordinatorPubKey)
-    );
+  // sign the command with the user private key
+  const signature = command.sign(userMaciPrivKey);
+  // encrypt the command using a shared key between the user and the coordinator
+  const message = command.encrypt(signature, Keypair.genEcdhSharedKey(encKeypair.privKey, coordinatorPubKey));
 
-    try {
-        // submit the message onchain as well as the encryption public key
-        const tx = await pollContract.publishMessage(
-            message.asContractParam(),
-            encKeypair.pubKey.asContractParam(),
-            { gasLimit: 10000000 }
-        );
+  try {
+    // submit the message onchain as well as the encryption public key
+    const tx = await pollContract.publishMessage(message.asContractParam(), encKeypair.pubKey.asContractParam(), {
+      gasLimit: 10000000,
+    });
 
-        const receipt = await tx.wait();
-        if (receipt.status !== 1) logError("Transaction failed");
+    const receipt = await tx.wait();
+    if (receipt.status !== 1) logError("Transaction failed");
 
-         
-        logYellow(quiet, info(`Transaction hash: ${tx.hash}`));
-        logGreen(
-            quiet,
-            info(`Ephemeral private key: ${encKeypair.privKey.serialize()}`)
-        );
-        
-    } catch (error: any) {
-        logError(error.message);
-    }
+    logYellow(quiet, info(`Transaction hash: ${tx.hash}`));
+    logGreen(quiet, info(`Ephemeral private key: ${encKeypair.privKey.serialize()}`));
+  } catch (error: any) {
+    logError(error.message);
+  }
 
-    // we want the user to have the ephemeral private key
-    return encKeypair.privKey.serialize();
+  // we want the user to have the ephemeral private key
+  return encKeypair.privKey.serialize();
 };
