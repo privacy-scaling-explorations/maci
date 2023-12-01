@@ -31,7 +31,6 @@ const { description, version, name } = JSON.parse(
 );
 const program = createCommand();
 program.name(name).description(description).version(version);
-
 // add the commands
 program
     .command("create")
@@ -59,14 +58,18 @@ program
         "the state tree depth"
     )
     .action(async (cmdOptions) => {
-        await deploy(
-            cmdOptions.stateTreeDepth,
-            cmdOptions.vkRegistryAddress,
-            cmdOptions.initialVoiceCredits,
-            cmdOptions.initialVoiceCreditsProxyAddress,
-            cmdOptions.signupGatekeeperAddress,
-            cmdOptions.quiet
-        );
+        try {
+            await deploy(
+                cmdOptions.stateTreeDepth,
+                cmdOptions.vkRegistryAddress,
+                cmdOptions.initialVoiceCredits,
+                cmdOptions.initialVoiceCreditsProxyAddress,
+                cmdOptions.signupGatekeeperAddress,
+                cmdOptions.quiet
+            );
+        } catch (error: any) {
+            console.error(error.message);
+        }
     });
 program
     .command("checkVerifyingKeys")
@@ -104,17 +107,21 @@ program
         "the tally votes zkey path"
     )
     .action(async (cmdOptions) => {
-        await checkVerifyingKeys(
-            cmdOptions.stateTreeDepth,
-            cmdOptions.intStateTreeDepth,
-            cmdOptions.msgTreeDepth,
-            cmdOptions.voteOptionTreeDepth,
-            cmdOptions.msgBatchDepth,
-            cmdOptions.processMessagesZkey,
-            cmdOptions.tallyVotesZkey,
-            cmdOptions.maciContract,
-            cmdOptions.quiet
-        );
+        try {
+            await checkVerifyingKeys(
+                cmdOptions.stateTreeDepth,
+                cmdOptions.intStateTreeDepth,
+                cmdOptions.msgTreeDepth,
+                cmdOptions.voteOptionTreeDepth,
+                cmdOptions.msgBatchDepth,
+                cmdOptions.processMessagesZkey,
+                cmdOptions.tallyVotesZkey,
+                cmdOptions.maciContract,
+                cmdOptions.quiet
+            );
+        } catch (error: any) {
+            console.error(error.message);
+        }
     });
 program
     .command("genMaciPubKey")
@@ -139,29 +146,40 @@ program
     .option("-o, --poll-id <pollId>", "poll id")
     .option("-t, --token-address <tokenAddress>", "the token address")
     .option("-q, --quiet", "whether to print values to the console", false)
-    .action(
-        async (cmdObj) =>
+    .action(async (cmdObj) => {
+        try {
             await airdrop(
                 cmdObj.amount,
                 cmdObj.contract,
                 cmdObj.pollId,
                 cmdObj.tokenAddress,
                 cmdObj.quiet
-            )
-    );
+            );
+        } catch (error: any) {
+            console.error(error.message);
+        }
+    });
 program
     .command("deployVkRegistry")
     .description("deploy a new verification key registry contract")
     .option("-q, --quiet", "whether to print values to the console", false)
     .action(async (cmdObj) => {
-        await deployVkRegistryContract(cmdObj.quiet);
+        try {
+            await deployVkRegistryContract(cmdObj.quiet);
+        } catch (error: any) {
+            console.error(error.message);
+        }
     });
 program
     .command("show")
     .description("show the deployed contract addresses")
     .option("-q, --quiet", "whether to print values to the console", false)
     .action((cmdObj) => {
-        showContracts(cmdObj.quiet);
+        try {
+            showContracts(cmdObj.quiet);
+        } catch (error: any) {
+            console.error(error.message);
+        }
     });
 program
     .command("deployPoll")
@@ -195,18 +213,22 @@ program
     .option("-x, --maci-address <maciAddress>", "the MACI contract address")
     .option("-q, --quiet", "whether to print values to the console", false)
     .action(async (cmdObj) => {
-        await deployPoll(
-            cmdObj.duration,
-            cmdObj.maxMessages,
-            cmdObj.maxVoteOptions,
-            cmdObj.intStateTreeDepth,
-            cmdObj.msgBatchDepth,
-            cmdObj.msgTreeDepth,
-            cmdObj.voteOptionTreeDepth,
-            cmdObj.pubkey,
-            cmdObj.maciAddress,
-            cmdObj.quiet
-        );
+        try {
+            await deployPoll(
+                cmdObj.duration,
+                cmdObj.maxMessages,
+                cmdObj.maxVoteOptions,
+                cmdObj.intStateTreeDepth,
+                cmdObj.msgBatchDepth,
+                cmdObj.msgTreeDepth,
+                cmdObj.voteOptionTreeDepth,
+                cmdObj.pubkey,
+                cmdObj.maciAddress,
+                cmdObj.quiet
+            );
+        } catch (error: any) {
+            console.error(error.message);
+        }
     });
 program
     .command("setVerifyingKeys")
@@ -245,8 +267,8 @@ program
     )
     .option("-q, --quiet", "whether to print values to the console", false)
     .option("-ss, --subsidy-zkey <subsidyZkeyPath>", "the subsidy zkey path")
-    .action(
-        async (cmdObj) =>
+    .action(async (cmdObj) => {
+        try {
             await setVerifyingKeys(
                 cmdObj.stateTreeDepth,
                 cmdObj.intStateTreeDepth,
@@ -258,8 +280,11 @@ program
                 cmdObj.vkRegistry,
                 cmdObj.subsidyZkey,
                 cmdObj.quiet
-            )
-    );
+            );
+        } catch (error: any) {
+            console.error(error.message);
+        }
+    });
 program
     .command("publish")
     .description("publish a new message to a MACI Poll contract")
@@ -283,18 +308,22 @@ program
     )
     .option("-q, --quiet", "whether to print values to the console", false)
     .action(async (cmdObj) => {
-        await publish(
-            cmdObj.pubkey,
-            cmdObj.stateIndex,
-            cmdObj.voteOptionIndex,
-            cmdObj.nonce,
-            cmdObj.pollId,
-            cmdObj.newVoteWeight,
-            cmdObj.contract,
-            cmdObj.salt,
-            cmdObj.privkey,
-            cmdObj.quiet
-        );
+        try {
+            await publish(
+                cmdObj.pubkey,
+                cmdObj.stateIndex,
+                cmdObj.voteOptionIndex,
+                cmdObj.nonce,
+                cmdObj.pollId,
+                cmdObj.newVoteWeight,
+                cmdObj.contract,
+                cmdObj.salt,
+                cmdObj.privkey,
+                cmdObj.quiet
+            );
+        } catch (error: any) {
+            console.error(error.message);
+        }
     });
 program
     .command("mergeMessages")
@@ -309,15 +338,18 @@ program
         "-n, --num-queue-ops <numQueueOps>",
         "the number of queue operations"
     )
-    .action(
-        async (cmdObj) =>
+    .action(async (cmdObj) => {
+        try {
             await mergeMessages(
                 cmdObj.pollId,
                 cmdObj.maciContractAddress,
                 cmdObj.numQueueOps,
                 cmdObj.quiet
-            )
-    );
+            );
+        } catch (error: any) {
+            console.error(error.message);
+        }
+    });
 program
     .command("mergeSignups")
     .description("merge the signups accumulator queue")
@@ -331,15 +363,18 @@ program
         "-n, --num-queue-ops <numQueueOps>",
         "the number of queue operations"
     )
-    .action(
-        async (cmdObj) =>
+    .action(async (cmdObj) => {
+        try {
             await mergeSignups(
                 cmdObj.pollId,
                 cmdObj.maciContractAddress,
                 cmdObj.numQueueOps,
                 cmdObj.quiet
-            )
-    );
+            );
+        } catch (error: any) {
+            console.error(error.message);
+        }
+    });
 program
     .command("timeTravel")
     .description("fast-forward the time (only works for local hardhat testing")
@@ -348,7 +383,13 @@ program
         "the number of seconds to fast-forward"
     )
     .option("-q, --quiet", "whether to print values to the console", false)
-    .action(async (cmdObj) => await timeTravel(cmdObj.seconds, cmdObj.quiet));
+    .action(async (cmdObj) => {
+        try {
+            await timeTravel(cmdObj.seconds, cmdObj.quiet);
+        } catch (error: any) {
+            console.error(error.message);
+        }
+    });
 program
     .command("signup")
     .description("Sign up to a MACI contract")
@@ -358,13 +399,17 @@ program
     .option("-i, --ivcp-data <ivcpData>", "the initial voice credit proxy data")
     .option("-q, --quiet", "whether to print values to the console", false)
     .action(async (cmdObj) => {
-        await signup(
-            cmdObj.pubkey,
-            cmdObj.maciAddress,
-            cmdObj.sgData,
-            cmdObj.ivcpData,
-            cmdObj.quiet
-        );
+        try {
+            await signup(
+                cmdObj.pubkey,
+                cmdObj.maciAddress,
+                cmdObj.sgData,
+                cmdObj.ivcpData,
+                cmdObj.quiet
+            );
+        } catch (error: any) {
+            console.error(error.message);
+        }
     });
 program
     .command("topup")
@@ -374,26 +419,32 @@ program
     .requiredOption("-i, --state-index <stateIndex>", "state leaf index")
     .requiredOption("-o, --poll-id <pollId>", "poll id")
     .option("-q, --quiet", "whether to print values to the console", false)
-    .action(
-        async (cmdObj) =>
+    .action(async (cmdObj) => {
+        try {
             await topup(
                 cmdObj.amount,
                 cmdObj.stateIndex,
                 cmdObj.pollId,
                 cmdObj.maciAddress,
                 cmdObj.quiet
-            )
-    );
+            );
+        } catch (error: any) {
+            console.error(error.message);
+        }
+    });
 program
     .command("fundWallet")
     .description("Fund a wallet with Ether")
     .requiredOption("-a, --amount <amount>", "the amount of Ether")
     .requiredOption("-w, --address <address>", "the address to fund")
     .option("-q, --quiet", "whether to print values to the console", false)
-    .action(
-        async (cmdObj) =>
-            await fundWallet(cmdObj.amount, cmdObj.address, cmdObj.quiet)
-    );
+    .action(async (cmdObj) => {
+        try {
+            await fundWallet(cmdObj.amount, cmdObj.address, cmdObj.quiet);
+        } catch (error: any) {
+            console.error(error.message);
+        }
+    });
 program
     .command("verify")
     .description(
@@ -412,8 +463,8 @@ program
         "the subsidy contract address"
     )
     .option("-q, --quiet", "whether to print values to the console", false)
-    .action(
-        async (cmdObj) =>
+    .action(async (cmdObj) => {
+        try {
             await verify(
                 cmdObj.pollId,
                 cmdObj.tallyFile,
@@ -422,8 +473,11 @@ program
                 cmdObj.subsidyContract,
                 cmdObj.subsidyFile,
                 cmdObj.quiet
-            )
-    );
+            );
+        } catch (error: any) {
+            console.error(error.message);
+        }
+    });
 program
     .command("genProofs")
     .description("generate the proofs for a poll")
@@ -496,31 +550,35 @@ program
         "the number of blocks to process per batch"
     )
     .action(async (cmdObj) => {
-        await genProofs(
-            cmdObj.output,
-            cmdObj.tallyFile,
-            cmdObj.tallyZkey,
-            cmdObj.processZkey,
-            cmdObj.pollId,
-            cmdObj.subsidyFile,
-            cmdObj.subsidyZkey,
-            cmdObj.rapidsnark,
-            cmdObj.processWitnessgen,
-            cmdObj.tallyWitnessgen,
-            cmdObj.subsidyWitnessgen,
-            cmdObj.privkey,
-            cmdObj.contract,
-            cmdObj.transactionHash,
-            cmdObj.processWasm,
-            cmdObj.tallyWasm,
-            cmdObj.subsidyWasm,
-            cmdObj.wasm,
-            cmdObj.stateFile,
-            cmdObj.startBlock,
-            cmdObj.endBlock,
-            cmdObj.blocksPerBatch,
-            cmdObj.quiet
-        );
+        try {
+            await genProofs(
+                cmdObj.output,
+                cmdObj.tallyFile,
+                cmdObj.tallyZkey,
+                cmdObj.processZkey,
+                cmdObj.pollId,
+                cmdObj.subsidyFile,
+                cmdObj.subsidyZkey,
+                cmdObj.rapidsnark,
+                cmdObj.processWitnessgen,
+                cmdObj.tallyWitnessgen,
+                cmdObj.subsidyWitnessgen,
+                cmdObj.privkey,
+                cmdObj.contract,
+                cmdObj.transactionHash,
+                cmdObj.processWasm,
+                cmdObj.tallyWasm,
+                cmdObj.subsidyWasm,
+                cmdObj.wasm,
+                cmdObj.stateFile,
+                cmdObj.startBlock,
+                cmdObj.endBlock,
+                cmdObj.blocksPerBatch,
+                cmdObj.quiet
+            );
+        } catch (error: any) {
+            console.error(error.message);
+        }
     });
 program
     .command("genLocalState")
@@ -538,8 +596,8 @@ program
     .option("-tx, --transaction-hash <transactionHash>", "the transaction hash")
     .option("-s, --sleep <sleep>", "the sleep time between batches")
     .option("-q, --quiet", "whether to print values to the console", false)
-    .action(
-        async (cmdObj) =>
+    .action(async (cmdObj) => {
+        try {
             await genLocalState(
                 cmdObj.output,
                 cmdObj.pollId,
@@ -551,8 +609,11 @@ program
                 cmdObj.transactionHash,
                 cmdObj.sleep,
                 cmdObj.quiet
-            )
-    );
+            );
+        } catch (error: any) {
+            console.error(error.message);
+        }
+    });
 program
     .command("proveOnChain")
     .description("prove the results of a poll on chain")
@@ -575,8 +636,8 @@ program
         "-f, --proof-dir <proofDir>",
         "the proof output directory from the genProofs subcommand"
     )
-    .action(
-        async (cmdObj) =>
+    .action(async (cmdObj) => {
+        try {
             await proveOnChain(
                 cmdObj.pollId,
                 cmdObj.proofDir,
@@ -585,8 +646,11 @@ program
                 cmdObj.tallyContract,
                 cmdObj.subsidyContract,
                 cmdObj.quiet
-            )
-    );
+            );
+        } catch (error: any) {
+            console.error(error.message);
+        }
+    });
 
 if (require.main === module) {
     program.parseAsync(process.argv);
