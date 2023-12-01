@@ -4,7 +4,14 @@ import { parseArtifact, getDefaultSigner } from "../ts/deploy";
 import { deployTestContracts } from "../ts/utils";
 import { PCommand, VerifyingKey, Keypair, PubKey, Message } from "maci-domainobjs";
 
-import { MaciState, genProcessVkSig, MaxValues, TreeDepths } from "maci-core";
+import {
+  MaciState,
+  genProcessVkSig,
+  MaxValues,
+  TreeDepths,
+  packProcessMessageSmallVals,
+  packTallyVotesSmallVals,
+} from "maci-core";
 import { expect } from "chai";
 
 import { G1Point, G2Point, NOTHING_UP_MY_SLEEVE } from "maci-crypto";
@@ -475,7 +482,7 @@ describe("MACI", () => {
     });
 
     it("genProcessMessagesPackedVals() should generate the correct value", async () => {
-      const packedVals = MaciState.packProcessMessageSmallVals(
+      const packedVals = packProcessMessageSmallVals(
         BigInt(maxValues.maxVoteOptions),
         BigInt(users.length),
         0,
@@ -511,7 +518,7 @@ describe("MACI", () => {
   describe("Tally votes", () => {
     it("genTallyVotesPackedVals() should generate the correct value", async () => {
       const onChainPackedVals = BigInt(await tallyContract.genTallyVotesPackedVals(users.length, 0, tallyBatchSize));
-      const packedVals = MaciState.packTallyVotesSmallVals(0, tallyBatchSize, users.length);
+      const packedVals = packTallyVotesSmallVals(0, tallyBatchSize, users.length);
       expect(onChainPackedVals.toString()).to.eq(packedVals.toString());
     });
 

@@ -108,3 +108,9 @@ For more details about testing please refer to the [tests documentation](https:/
 [core-npm-link]: https://www.npmjs.com/package/maci-core
 [core-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/core-build.yml/badge.svg
 [core-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3Acore
+
+## Directory Structure
+
+- `ts/`: The home for our core classes, `MaciState` and `Poll`
+- `ts/utls/`: Contains supporting utilities
+- `ts/__tests__/`: A dedicated test suite directory

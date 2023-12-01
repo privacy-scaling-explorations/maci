@@ -1,4 +1,4 @@
-import { MaciState } from "../";
+import { MaciState, packProcessMessageSmallVals, unpackProcessMessageSmallVals } from "../";
 import { expect } from "chai";
 import { PCommand, Message, Keypair, VerifyingKey, StateLeaf } from "maci-domainobjs";
 
@@ -128,14 +128,9 @@ describe("MaciState", function () {
       const numUsers = BigInt(2);
       const batchStartIndex = 5;
       const batchEndIndex = 10;
-      const packedVals = MaciState.packProcessMessageSmallVals(
-        maxVoteOptions,
-        numUsers,
-        batchStartIndex,
-        batchEndIndex,
-      );
+      const packedVals = packProcessMessageSmallVals(maxVoteOptions, numUsers, batchStartIndex, batchEndIndex);
 
-      const unpacked = MaciState.unpackProcessMessageSmallVals(packedVals);
+      const unpacked = unpackProcessMessageSmallVals(packedVals);
       expect(unpacked.maxVoteOptions.toString()).to.eq(maxVoteOptions.toString());
       expect(unpacked.numUsers.toString()).to.eq(numUsers.toString());
       expect(unpacked.batchStartIndex.toString()).to.eq(batchStartIndex.toString());
