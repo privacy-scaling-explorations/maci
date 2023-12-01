@@ -1,5 +1,5 @@
 import * as ethers from "ethers";
-import * as fs from "fs";
+import fs from "fs";
 
 import { genMaciStateFromContract } from "maci-contracts";
 
