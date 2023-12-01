@@ -38,6 +38,7 @@ jobs:
         run: |
           cd contracts
           npm run compileSol
+          npm run hardhat &
 
       - name: Download rapidsnark (1c137)
         run: |
@@ -68,6 +69,9 @@ jobs:
         run: |
           cd integrationTests
           npm run test
+
+      - name: Stop Hardhat
+        run: kill $(lsof -t -i:8545)
 
   unit:
     runs-on: ubuntu-22.04
