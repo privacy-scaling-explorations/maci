@@ -1,6 +1,6 @@
 import fs from "fs";
 
-import { MaciState } from "maci-core";
+import { MaciState, packProcessMessageSmallVals } from "maci-core";
 
 import { PrivKey, Keypair, PCommand, Message, Ballot } from "maci-domainobjs";
 
@@ -155,7 +155,7 @@ describe("ProcessMessage circuit", function () {
 
       fs.writeFileSync("witness.json", JSON.stringify(witness));
 
-      const packedVals = MaciState.packProcessMessageSmallVals(BigInt(maxValues.maxVoteOptions), poll.numSignUps, 0, 2);
+      const packedVals = packProcessMessageSmallVals(BigInt(maxValues.maxVoteOptions), poll.numSignUps, 0, 2);
 
       // Test the ProcessMessagesInputHasher circuit
       const hasherCircuitInputs = stringifyBigInts({
