@@ -5,13 +5,13 @@ const WALLET_MNEMONIC = "candy maple cake sugar pudding cream honey rich smooth 
 const GAS_LIMIT = 30000000;
 
 const config: HardhatUserConfig = {
-  defaultNetwork: 'hardhat',
+  defaultNetwork: "hardhat",
   networks: {
     hardhat: {
       gas: GAS_LIMIT,
       blockGasLimit: GAS_LIMIT,
-      accounts: { count: 30, mnemonic: WALLET_MNEMONIC }
-    }
+      accounts: { count: 30, mnemonic: WALLET_MNEMONIC },
+    },
   },
   solidity: {
     version: "0.8.10",
@@ -20,16 +20,15 @@ const config: HardhatUserConfig = {
         enabled: true,
         runs: 200,
         details: {
-          yul: true
-        }
+          yul: true,
+        },
       },
-    }, 
+    },
   },
   paths: {
     sources: "./node_modules/maci-contracts/contracts",
-    artifacts: "./node_modules/maci-contracts/artifacts"
-  }
+    artifacts: "./node_modules/maci-contracts/artifacts",
+  },
 };
-
 
 export default config;

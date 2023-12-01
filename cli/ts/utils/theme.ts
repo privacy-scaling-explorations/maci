@@ -11,7 +11,7 @@ const MAGENTA = "\x1b[35m";
  * @param text - the text to print
  */
 export function logRed(quiet: boolean, text: string) {
-    if (!quiet) console.log(RED + text + RESET);
+  if (!quiet) console.log(RED + text + RESET);
 }
 
 /**
@@ -20,7 +20,7 @@ export function logRed(quiet: boolean, text: string) {
  * @param text - the text to print
  */
 export function logGreen(quiet: boolean, text: string) {
-    if (!quiet) console.log(GREEN + text + RESET);
+  if (!quiet) console.log(GREEN + text + RESET);
 }
 
 /**
@@ -29,7 +29,7 @@ export function logGreen(quiet: boolean, text: string) {
  * @param text - the text to print
  */
 export function logYellow(quiet: boolean, text: string) {
-    if (!quiet) console.log(YELLOW + text + RESET);
+  if (!quiet) console.log(YELLOW + text + RESET);
 }
 
 /**
@@ -38,7 +38,7 @@ export function logYellow(quiet: boolean, text: string) {
  * @param text - the text to print
  */
 export function logMagenta(quiet: boolean, text: string) {
-    if (!quiet) console.log(MAGENTA + text + RESET);
+  if (!quiet) console.log(MAGENTA + text + RESET);
 }
 
 /**
@@ -46,7 +46,7 @@ export function logMagenta(quiet: boolean, text: string) {
  * @param text
  */
 export function logError(text: string) {
-    throw new Error(error(text));
+  throw new Error(error(text));
 }
 
 /**

@@ -22,7 +22,7 @@ jobs:
         with:
           format: "csv"
 
-      - name: Check for changes in 'circuit' folder 
+      - name: Check for changes in 'circuit' folder
         id: check_changes
         run: |
           CHANGED_FILES=${{ steps.get-changed-files.outputs.all }}
@@ -93,6 +93,6 @@ jobs:
         run: |
           cd integrationTests
           npm run test
-          
+
       - name: Stop Hardhat
         run: kill $(lsof -t -i:8545)

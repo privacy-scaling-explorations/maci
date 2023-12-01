@@ -9,22 +9,19 @@ import { logError, logGreen, success } from "../utils/theme";
  * @param quiet - whether to log the output
  * @return the public key serialized
  */
-export const genMaciPubKey = (
-    privkey: string,
-    quiet = true
-): string => {
-    banner(quiet);
+export const genMaciPubKey = (privkey: string, quiet = true): string => {
+  banner(quiet);
 
-    // we check that the provided private key is valid
-    if (!PrivKey.isValidSerializedPrivKey(privkey)) {
-        logError("Invalid private key")
-    }
+  // we check that the provided private key is valid
+  if (!PrivKey.isValidSerializedPrivKey(privkey)) {
+    logError("Invalid private key");
+  }
 
-    // de serialize it and generate the public key
-    const unserializedKey = PrivKey.unserialize(privkey);
-    const pubKey = new PubKey(genPubKey(unserializedKey.rawPrivKey));
+  // de serialize it and generate the public key
+  const unserializedKey = PrivKey.unserialize(privkey);
+  const pubKey = new PubKey(genPubKey(unserializedKey.rawPrivKey));
 
-    logGreen(quiet, success(`Public key: ${pubKey.serialize()}`));
-    // we give back the serialized public key
-    return pubKey.serialize();
+  logGreen(quiet, success(`Public key: ${pubKey.serialize()}`));
+  // we give back the serialized public key
+  return pubKey.serialize();
 };

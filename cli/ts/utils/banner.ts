@@ -1,11 +1,13 @@
-import { logRed, logYellow } from "./theme"
+import { logRed, logYellow } from "./theme";
 
 /**
  * Print a nice MACI banner
  * @param quiet - whether to print the text or not
  */
 export const banner = (quiet: boolean) => {
-    logRed(quiet, (`
+  logRed(
+    quiet,
+    `
 
     ███▄ ▄███▓ ▄▄▄       ▄████▄   ██▓
     ▓██▒▀█▀ ██▒▒████▄    ▒██▀ ▀█  ▓██▒
@@ -18,6 +20,7 @@ export const banner = (quiet: boolean) => {
            ░         ░  ░░ ░       ░  
                          ░            
     
-    `))
-    logYellow(quiet, "Welcome to MACI - Minimal Anti Collusion Infrastructure\n\n")
-}
+    `,
+  );
+  logYellow(quiet, "Welcome to MACI - Minimal Anti Collusion Infrastructure\n\n");
+};
