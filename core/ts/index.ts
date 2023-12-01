@@ -1,7 +1,5 @@
 export { MaciState } from "./MaciState";
-export {
-  Poll,
-} from "./Poll";
+export { Poll } from "./Poll";
 export {
   MaxValues,
   TreeDepths,
