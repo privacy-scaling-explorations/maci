@@ -42,7 +42,7 @@ export const genLocalState = async (
     : await promptSensitiveValue("Insert your MACI private key");
   if (!PrivKey.isValidSerializedPrivKey(coordPrivKey)) logError("Invalid MACI private key");
 
-  const coordinatorMaciPrivKey = PrivKey.unserialize(coordPrivKey);
+  const coordinatorMaciPrivKey = PrivKey.deserialize(coordPrivKey);
   const coordinatorKeypair = new Keypair(coordinatorMaciPrivKey);
 
   // calculate the end block number

@@ -21,3 +21,6 @@ export const testProcessMessagesWasmPath =
 export const testTallyVotesWasmPath = "./zkeys/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm";
 export const testSubsidyWasmPath = "./zkeys/SubsidyPerBatch_10-1-2_test_js/SubsidyPerBatch_10-1-2_test.wasm";
 export const testRapidsnarkPath = `${homedir()}/rapidsnark/build/prover`;
+export const pollDuration = 90;
+export const maxMessages = 25;
+export const maxVoteOptions = 25;

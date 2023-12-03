@@ -53,7 +53,7 @@ program
         cmdOptions.quiet,
       );
     } catch (error: any) {
-      console.error(error.message);
+      program.error(error.message, { exitCode: 1 });
     }
   });
 program
@@ -82,7 +82,7 @@ program
         cmdOptions.quiet,
       );
     } catch (error: any) {
-      console.error(error.message);
+      program.error(error.message, { exitCode: 1 });
     }
   });
 program
@@ -112,7 +112,7 @@ program
     try {
       await airdrop(cmdObj.amount, cmdObj.contract, cmdObj.pollId, cmdObj.tokenAddress, cmdObj.quiet);
     } catch (error: any) {
-      console.error(error.message);
+      program.error(error.message, { exitCode: 1 });
     }
   });
 program
@@ -123,7 +123,7 @@ program
     try {
       await deployVkRegistryContract(cmdObj.quiet);
     } catch (error: any) {
-      console.error(error.message);
+      program.error(error.message, { exitCode: 1 });
     }
   });
 program
@@ -134,7 +134,7 @@ program
     try {
       showContracts(cmdObj.quiet);
     } catch (error: any) {
-      console.error(error.message);
+      program.error(error.message, { exitCode: 1 });
     }
   });
 program
@@ -165,7 +165,7 @@ program
         cmdObj.quiet,
       );
     } catch (error: any) {
-      console.error(error.message);
+      program.error(error.message, { exitCode: 1 });
     }
   });
 program
@@ -196,7 +196,7 @@ program
         cmdObj.quiet,
       );
     } catch (error: any) {
-      console.error(error.message);
+      program.error(error.message, { exitCode: 1 });
     }
   });
 program
@@ -230,7 +230,7 @@ program
         cmdObj.quiet,
       );
     } catch (error: any) {
-      console.error(error.message);
+      program.error(error.message, { exitCode: 1 });
     }
   });
 program
@@ -244,7 +244,7 @@ program
     try {
       await mergeMessages(cmdObj.pollId, cmdObj.maciContractAddress, cmdObj.numQueueOps, cmdObj.quiet);
     } catch (error: any) {
-      console.error(error.message);
+      program.error(error.message, { exitCode: 1 });
     }
   });
 program
@@ -258,7 +258,7 @@ program
     try {
       await mergeSignups(cmdObj.pollId, cmdObj.maciContractAddress, cmdObj.numQueueOps, cmdObj.quiet);
     } catch (error: any) {
-      console.error(error.message);
+      program.error(error.message, { exitCode: 1 });
     }
   });
 program
@@ -270,7 +270,7 @@ program
     try {
       await timeTravel(cmdObj.seconds, cmdObj.quiet);
     } catch (error: any) {
-      console.error(error.message);
+      program.error(error.message, { exitCode: 1 });
     }
   });
 program
@@ -285,7 +285,7 @@ program
     try {
       await signup(cmdObj.pubkey, cmdObj.maciAddress, cmdObj.sgData, cmdObj.ivcpData, cmdObj.quiet);
     } catch (error: any) {
-      console.error(error.message);
+      program.error(error.message, { exitCode: 1 });
     }
   });
 program
@@ -300,7 +300,7 @@ program
     try {
       await topup(cmdObj.amount, cmdObj.stateIndex, cmdObj.pollId, cmdObj.maciAddress, cmdObj.quiet);
     } catch (error: any) {
-      console.error(error.message);
+      program.error(error.message, { exitCode: 1 });
     }
   });
 program
@@ -313,7 +313,7 @@ program
     try {
       await fundWallet(cmdObj.amount, cmdObj.address, cmdObj.quiet);
     } catch (error: any) {
-      console.error(error.message);
+      program.error(error.message, { exitCode: 1 });
     }
   });
 program
@@ -338,7 +338,7 @@ program
         cmdObj.quiet,
       );
     } catch (error: any) {
-      console.error(error.message);
+      program.error(error.message, { exitCode: 1 });
     }
   });
 program
@@ -395,7 +395,7 @@ program
         cmdObj.quiet,
       );
     } catch (error: any) {
-      console.error(error.message);
+      program.error(error.message, { exitCode: 1 });
     }
   });
 program
@@ -426,7 +426,7 @@ program
         cmdObj.quiet,
       );
     } catch (error: any) {
-      console.error(error.message);
+      program.error(error.message, { exitCode: 1 });
     }
   });
 program
@@ -451,7 +451,7 @@ program
         cmdObj.quiet,
       );
     } catch (error: any) {
-      console.error(error.message);
+      program.error(error.message, { exitCode: 1 });
     }
   });
 
