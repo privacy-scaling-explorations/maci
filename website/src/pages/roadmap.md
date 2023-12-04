@@ -5,9 +5,13 @@ description: An outline of the 2024 MACI team & product roadmap
 
 # 2024 MACI Product Roadmap
 
-**This document aims to outline the 2024 MACI team & product roadmap.**
+This document aims to outline the 2024 MACI team & product roadmap.
 
 _As part of our core team's efforts to make our work more accessible and to foster more collaboration from our open source community, we're publicly publishing our roadmap. We plan to re-assess & iterate on our roadmap over time, and will update this document when we do._
+
+:::info
+Note: this roadmap is still under active discussion - please join the conversation in our [GitHub roadmap discussion](https://github.com/privacy-scaling-explorations/maci/discussions/859) if you have feedback!
+:::
 
 ## Team description
 
