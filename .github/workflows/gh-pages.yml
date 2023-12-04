@@ -42,13 +42,9 @@ jobs:
           npm install
         working-directory: website
 
-      - name: Fix typedoc links
+      - name: Fix typedoc and solidity docgen links
         run: |
           npm run setup-typedoc
-        working-directory: website
-
-      - name: Fix Solidity Docgen links and create index
-        run: |
           npm run setup-soliditydocs
         working-directory: website
 

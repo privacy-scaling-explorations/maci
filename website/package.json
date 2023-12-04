@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "setup-typedoc": "ts-node src/scripts/setupTypedoc.ts",
-    "setup-soliditydocs": "ts-node src/scripts/setupSoliditydocs.ts",
+    "setup-typedoc": "ts-node ./src/scripts/setupTypedoc.ts",
+    "setup-soliditydocs": "ts-node ./src/scripts/setupSoliditydocs.ts",
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
     "build": "docusaurus build",
