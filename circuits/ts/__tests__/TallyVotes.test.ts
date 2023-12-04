@@ -54,9 +54,6 @@ describe("TallyVotes circuit", function () {
       const userKeypair = new Keypair();
       stateIndex = maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
 
-      maciState.stateAq.mergeSubRoots(0);
-      maciState.stateAq.merge(STATE_TREE_DEPTH);
-
       pollId = maciState.deployPoll(
         duration,
         BigInt(Math.floor(Date.now() / 1000) + duration),
@@ -172,9 +169,6 @@ describe("TallyVotes circuit", function () {
         userKeypairs.push(k);
         maciState.signUp(k.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000) + duration));
       }
-
-      maciState.stateAq.mergeSubRoots(0);
-      maciState.stateAq.merge(STATE_TREE_DEPTH);
 
       const pollId = maciState.deployPoll(
         duration,

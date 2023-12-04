@@ -64,9 +64,6 @@ describe("ProcessMessage circuit", function () {
         BigInt(Math.floor(Date.now() / 1000)),
       );
 
-      maciState.stateAq.mergeSubRoots(0);
-      maciState.stateAq.merge(STATE_TREE_DEPTH);
-
       pollId = maciState.deployPoll(
         duration,
         // BigInt(2 + duration),
@@ -197,9 +194,6 @@ describe("ProcessMessage circuit", function () {
         BigInt(1), //BigInt(Math.floor(Date.now() / 1000)),
       );
 
-      maciState.stateAq.mergeSubRoots(0);
-      maciState.stateAq.merge(STATE_TREE_DEPTH);
-
       pollId = maciState.deployPoll(
         duration,
         BigInt(2 + duration), //BigInt(Math.floor(Date.now() / 1000) + duration),
@@ -287,9 +281,6 @@ describe("ProcessMessage circuit", function () {
         voiceCreditBalance,
         BigInt(1), //BigInt(Math.floor(Date.now() / 1000)),
       );
-
-      maciState.stateAq.mergeSubRoots(0);
-      maciState.stateAq.merge(STATE_TREE_DEPTH);
 
       pollId = maciState.deployPoll(
         duration,
@@ -410,8 +401,6 @@ describe("ProcessMessage circuit", function () {
         BigInt(Math.floor(Date.now() / 1000)),
       );
 
-      maciState.stateAq.mergeSubRoots(0);
-      maciState.stateAq.merge(STATE_TREE_DEPTH);
       // Sign up and publish
       const pollId = maciState.deployPoll(
         duration,

@@ -457,14 +457,11 @@ describe("MACI", () => {
       });
       receipt = await tx.wait();
       expect(receipt.status).to.eq(1);
-
-      maciState.stateAq.mergeSubRoots(0);
-      maciState.stateAq.merge(STATE_TREE_DEPTH);
     });
 
     it("the state root must be correct", async () => {
       const onChainStateRoot = await stateAqContract.getMainRoot(STATE_TREE_DEPTH);
-      expect(onChainStateRoot.toString()).to.eq(maciState.stateAq.mainRoots[STATE_TREE_DEPTH].toString());
+      expect(onChainStateRoot.toString()).to.eq(maciState.stateTree.root.toString());
     });
   });
 

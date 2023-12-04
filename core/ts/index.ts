@@ -13,3 +13,5 @@ export {
   unpackTallyVotesSmallVals,
   packSubsidySmallVals,
 } from "./utils/utils";
+
+export { STATE_TREE_ARITY, STATE_TREE_SUBDEPTH, BlankStateLeaf, BlankStateLeafHash } from "./utils/constants";

@@ -1,9 +1,18 @@
-import { MaciState, packProcessMessageSmallVals, unpackProcessMessageSmallVals } from "../";
-import { expect } from "chai";
-import { PCommand, Message, Keypair, VerifyingKey, StateLeaf } from "maci-domainobjs";
-
-import { hash5, G1Point, G2Point, NOTHING_UP_MY_SLEEVE, IncrementalQuinTree } from "maci-crypto";
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from "fs";
+
+import { expect } from "chai";
+
+import { PCommand, Message, Keypair, VerifyingKey, StateLeaf } from "maci-domainobjs";
+import { hash5, G1Point, G2Point, NOTHING_UP_MY_SLEEVE, IncrementalQuinTree, AccQueue } from "maci-crypto";
+
+import {
+  STATE_TREE_ARITY,
+  STATE_TREE_SUBDEPTH,
+  BlankStateLeafHash,
+  MaciState,
+  packProcessMessageSmallVals,
+  unpackProcessMessageSmallVals,
+} from "../";
 
 const voiceCreditBalance = BigInt(100);
 
@@ -43,15 +52,11 @@ const testTallyVk = new VerifyingKey(
 
 const coordinatorKeypair = new Keypair();
 
-const blankStateLeaf = StateLeaf.genBlankLeaf();
-const blankStateLeafHash = blankStateLeaf.hash();
-
 describe("MaciState", function () {
   this.timeout(100000);
   describe("Process and tally 1 message from 1 user", () => {
     let maciState: MaciState;
     let pollId;
-    let stateTree;
     let msgTree;
     const voteWeight = BigInt(9);
     const voteOptionIndex = BigInt(0);
@@ -60,31 +65,25 @@ describe("MaciState", function () {
 
     before(() => {
       maciState = new MaciState(STATE_TREE_DEPTH);
-      stateTree = new IncrementalQuinTree(STATE_TREE_DEPTH, blankStateLeafHash, 5, hash5);
-
-      stateTree.insert(blankStateLeafHash);
-
       msgTree = new IncrementalQuinTree(treeDepths.messageTreeDepth, NOTHING_UP_MY_SLEEVE, 5, hash5);
     });
 
     // The end result should be that option 0 gets 3 votes
     // because the user spends 9 voice credits on it
     it("the state root should be correct", () => {
+      const accumulatorQueue: AccQueue = new AccQueue(STATE_TREE_SUBDEPTH, STATE_TREE_ARITY, BlankStateLeafHash);
       const timestamp = BigInt(Math.floor(Date.now() / 1000));
-
       const stateLeaf = new StateLeaf(userKeypair.pubKey, voiceCreditBalance, timestamp);
 
-      stateTree.insert(stateLeaf.hash());
+      accumulatorQueue.enqueue(BlankStateLeafHash);
+      accumulatorQueue.enqueue(stateLeaf.hash());
+      accumulatorQueue.mergeSubRoots(0);
+      accumulatorQueue.merge(STATE_TREE_DEPTH);
 
       stateIndex = maciState.signUp(userKeypair.pubKey, voiceCreditBalance, timestamp);
-
       expect(stateIndex.toString()).to.eq("1");
 
-      maciState.stateAq.mergeSubRoots(0);
-      maciState.stateAq.merge(STATE_TREE_DEPTH);
-      console.log(`root=${stateTree.root.toString()}`);
-
-      expect(maciState.stateAq.getRoot(STATE_TREE_DEPTH).toString()).to.eq(stateTree.root.toString());
+      expect(accumulatorQueue.getRoot(STATE_TREE_DEPTH).toString()).to.eq(maciState.stateTree.root.toString());
     });
 
     it("the message root should be correct", () => {
@@ -245,10 +244,6 @@ describe("MaciState", function () {
       expect(() => {
         maciState.polls[pollId].processMessages();
       }).to.throw;
-
-      // Merge the state aq
-      maciState.stateAq.mergeSubRoots(0);
-      maciState.stateAq.merge(STATE_TREE_DEPTH);
 
       expect(() => {
         maciState.polls[pollId].processMessages();
