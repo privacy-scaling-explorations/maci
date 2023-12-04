@@ -4,3 +4,4 @@ coverage
 build
 typechain-types
 .eslintrc.js
+commitlint.config.js
