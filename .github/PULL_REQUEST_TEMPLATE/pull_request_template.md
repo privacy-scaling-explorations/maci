@@ -18,6 +18,6 @@ Please list here with closing keywords any issues that this pull request is rela
 
 ## Confirmation
 
- - [ ] I have read and understood MACI's guidelines and requirements.
- - [ ] I have read MACI's [GitHub processes](https://github.com/privacy-scaling-explorations/maci/discussions/847) documentation.
- - [ ] I have read MACI's [testing guide](https://maci.pse.dev/docs/testing).
+- [ ] I have read and understood MACI's guidelines and requirements.
+- [ ] I have read MACI's [GitHub processes](https://github.com/privacy-scaling-explorations/maci/discussions/847) documentation.
+- [ ] I have read MACI's [testing guide](https://maci.pse.dev/docs/testing).

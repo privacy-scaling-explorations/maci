@@ -7,9 +7,9 @@ about: Report a bug in MACI
 
 Please answer the following questions for yourself before submitting an issue.
 
--   [ ] I am running the latest version
--   [ ] I checked the documentation and found no answer
--   [ ] I checked to make sure that this issue has not already been filed
+- [ ] I am not running a deprecated version
+- [ ] I checked the documentation and found no answer
+- [ ] I checked to make sure that this issue has not already been filed
 
 # Expected Behavior
 
@@ -35,10 +35,11 @@ Please provide detailed steps for reproducing the issue.
 
 Please provide any relevant information about your setup. This is important in case the issue is not reproducible except for under certain conditions.
 
--   Firmware Version:
--   Operating System:
--   SDK version:
--   Toolchain version:
+- MACI version:
+- Firmware Version:
+- Operating System:
+- SDK version:
+- Toolchain version:
 
 ## Failure Logs
 

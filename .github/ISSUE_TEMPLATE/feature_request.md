@@ -7,7 +7,7 @@ about: Suggest an idea for MACI
 
 Please answer the following question for yourself before submitting a feature request.
 
--   [ ] I checked to make sure that this request has not already been filed
+- [ ] I checked to make sure that this request has not already been filed
 
 # Motivation
 
