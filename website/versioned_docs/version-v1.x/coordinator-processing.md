@@ -7,11 +7,11 @@ sidebar_position: 13
 
 # Coordinator local processing
 
-The coordinator is responsible for processing and tallying messages locally, before generating proofs that this was done correctly using the zk-SNARK circuits. 
+The coordinator is responsible for processing and tallying messages locally, before generating proofs that this was done correctly using the zk-SNARK circuits.
 
-To summarize, the coordinator's goal here is to process all of the messages that were submitted by MACI's voters, then tally the votes based on the valid vote messages. Furthermore, each batch processed should be able to be verified by a zk-SNARK proof. 
+To summarize, the coordinator's goal here is to process all of the messages that were submitted by MACI's voters, then tally the votes based on the valid vote messages. Furthermore, each batch processed should be able to be verified by a zk-SNARK proof.
 
-## Which MACI's components are involved 
+## Which MACI's components are involved
 
 The following diagram, shows which components are involved and at which step of the way
 
@@ -26,7 +26,6 @@ Zooming in..
 **Message processing**
 
 ![message processing](/img/messageProcessingLocal.svg)
-
 
 **Vote tallying**
 
