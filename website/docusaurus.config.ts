@@ -107,6 +107,11 @@ const config: Config = {
           position: "left",
         },
         {
+          to: "/solidity-docs",
+          label: "Solidity Docs",
+          position: "left",
+        },
+        {
           type: "docsVersionDropdown",
           position: "right",
           dropdownActiveClassDisabled: true,

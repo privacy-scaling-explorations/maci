@@ -2,7 +2,7 @@ name: GitHub Pages
 
 on:
   push:
-    branches: [dev]
+    branches: [dev, docs/contracts]
   pull_request:
 
 concurrency:
@@ -22,17 +22,34 @@ jobs:
           node-version: 20
           registry-url: "https://registry.npmjs.org"
 
-      - name: Run typedoc
+      - name: Install dependencies and build project
         run: |
-          npm install 
+          npm install
           npm run bootstrap
           npm run build
+
+      - name: Run typedoc
+        run: |
           npm run typedoc
+
+      - name: Run Solidity Docgen
+        run: |
+          npm run docs 
+        working-directory: contracts
+        
+      - name: Install website dependencies
+        run: |
+          npm install
+        working-directory: website
 
       - name: Fix typedoc links
         run: |
-          npm install
           npm run setup-typedoc
+        working-directory: website
+
+      - name: Fix Solidity Docgen links and create index
+        run: |
+          npm run setup-docs
         working-directory: website
 
       - name: Build 🔧
