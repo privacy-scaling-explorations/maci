@@ -6,7 +6,7 @@ import { PubKey } from "./publicKey";
 /**
  * @notice A KeyPair is a pair of public and private keys
  * This is a MACI keypair, which is not to be
- * confused with an EVM keypair.
+ * confused with an Ethereum public and private keypair.
  * A MACI keypair is comprised of a MACI public key and a MACI private key
  */
 export class Keypair {

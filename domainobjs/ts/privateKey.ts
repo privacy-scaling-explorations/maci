@@ -4,7 +4,7 @@ import { SERIALIZED_PRIV_KEY_PREFIX } from "./constants";
 /**
  * @notice PrivKey is a TS Class representing a MACI PrivateKey (on the jubjub curve)
  * This is a MACI private key, which is not to be
- * confused with an EVM private key.
+ * confused with an Ethereum private key.
  * A serialized MACI private key is prefixed by 'macisk.'
  * A raw MACI private key can be thought as a point on the baby jubjub curve
  */

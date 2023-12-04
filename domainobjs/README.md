@@ -19,7 +19,7 @@ easy to use them with said modules.
 A private key. Provides helper functions to do with passing it into a circuit
 in the right format, serialisation and deserialisation, and deep copying.
 
-This is a MACI private key, which is not to be confused with an EVM private key.
+This is a MACI private key, which is not to be confused with an Ethereum private key.
 A serialized MACI private key is prefixed by 'macisk.'
 A raw MACI private key can be thought as a point on the baby jubjub curve.
 
@@ -29,14 +29,14 @@ A public key. Provides helper functions to do with passing it into a contract
 function or circuit in the right format, hashing, serialisation and
 deserialisation, and deep copying.
 
-This is a MACI public key, which is not to be confused with an EVM public key. A serialized MACI public key is prefixed by 'macipk.' A raw MACI public key can be thought as a pair of BigIntegers (x, y) representing a point on the baby jubjub curve.
+This is a MACI public key, which is not to be confused with an Ethereum public key. A serialized MACI public key is prefixed by 'macipk.' A raw MACI public key can be thought as a pair of BigIntegers (x, y) representing a point on the baby jubjub curve.
 
 ## `Keypair`
 
 Encapsulates a `PrivKey` and `PubKey`. Also provides `genEcdhSharedKey` which
 generates an ECDH shared key from a public key and a private key.
 
-This is a MACI keypair, which is not to be confused with an EVM keypair.
+This is a MACI keypair, which is not to be confused with an Ethereum keypair.
 A MACI keypair is comprised of a MACI public key and a MACI private key
 
 ## `Command`

@@ -5,7 +5,7 @@ import { SERIALIZED_PUB_KEY_PREFIX } from "./constants";
 /**
  * @notice A class representing a public key
  * This is a MACI public key, which is not to be
- * confused with an EVM public key.
+ * confused with an Ethereum public key.
  * A serialized MACI public key is prefixed by 'macipk.'
  * A raw MACI public key can be thought as a pair of
  * BigIntegers (x, y) representing a point on the baby jubjub curve
