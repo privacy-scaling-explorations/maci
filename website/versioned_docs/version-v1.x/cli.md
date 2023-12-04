@@ -253,7 +253,7 @@ node/build.js genProofs \
     --tally-zkey "$ZKEYS_DIR"/TallyVotes_"$TALLY_VOTES_PARAMS".0.zkey \
     --tally-file tally.json \
     --output proofs/ \
-    --state-file localState.json 
+    --state-file localState.json
 ```
 
 ### Coordinator: prove on chain
