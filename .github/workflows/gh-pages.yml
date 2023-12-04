@@ -34,9 +34,9 @@ jobs:
 
       - name: Run Solidity Docgen
         run: |
-          npm run docs 
+          npm run docs
         working-directory: contracts
-        
+
       - name: Install website dependencies
         run: |
           npm install
@@ -49,7 +49,7 @@ jobs:
 
       - name: Fix Solidity Docgen links and create index
         run: |
-          npm run setup-docs
+          npm run setup-soliditydocs
         working-directory: website
 
       - name: Build 🔧
