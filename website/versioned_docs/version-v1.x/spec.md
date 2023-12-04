@@ -8,7 +8,7 @@ sidebar_position: 14
 # MACI v1.0 Specification
 
 :::info
-This document is a copy of the [MACI 1.0 Specification (for audit) document](https://hackmd.io/AP6zPSgtThWxx6pjXY7R8A), created in 2021 for one of [MACI's formal audits](/docs/audit).
+This document is a copy of the [MACI 1.0 Specification (for audit) document](https://hackmd.io/AP6zPSgtThWxx6pjXY7R8A), created in July 2021 for one of [MACI's formal audits](/docs/audit).
 
 This historical document is stored here for informational purposes. We do not intend to edit it. As a result, some of the information within this document may be outdated.
 :::
@@ -49,8 +49,6 @@ Through this audit, we wish to challenge the following statements:
    - No one may modify or delete a vote after it is cast, although a user may cast another vote to nullify it
 7. Correct execution
    - No one (not even the trusted coordinator) should be able to produce a false tally of votes
-
-[TOC]
 
 ## 1. Cryptographic primitives
 
