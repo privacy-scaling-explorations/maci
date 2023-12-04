@@ -17,6 +17,16 @@ function generateMarkdownLinks(dir, relativePath = "") {
     } else {
       const contractName = pathX.basename(file, ".md");
       const fileRelativePathWithoutExtension = fileRelativePath.replace(".md", "");
+
+      // Read the content of the file
+      let fileContent = fileS.readFileSync(absolutePath, "utf8");
+
+      // Escape {...} by wrapping them in backticks
+      fileContent = fileContent.replace(/{(.*?)}/g, "`{$1}`");
+
+      // Write the modified content back to the file
+      fileS.writeFileSync(absolutePath, fileContent, "utf8");
+
       content += `- [${contractName}](./${fileRelativePathWithoutExtension})\n`;
     }
   }
