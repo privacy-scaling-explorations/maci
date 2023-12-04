@@ -1,4 +1,4 @@
-import assert = require("assert");
+import assert from "assert";
 import { SNARK_FIELD_SIZE, hashLeftRight, packPubKey, unpackPubKey, PubKey as RawPubKey } from "maci-crypto";
 import { SERIALIZED_PUB_KEY_PREFIX } from "./constants";
 

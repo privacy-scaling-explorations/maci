@@ -9,7 +9,7 @@ import {
   Ciphertext,
   EcdhSharedKey,
 } from "maci-crypto";
-import assert = require("assert");
+import assert from "assert";
 import { PubKey } from "./publicKey";
 import { PrivKey } from "./privateKey";
 import { Message } from "./message";
@@ -267,7 +267,7 @@ export class PCommand extends Command {
   public static decrypt = (message: Message, sharedKey: EcdhSharedKey) => {
     const decrypted = decrypt(message.data, sharedKey, BigInt(0), 7);
 
-    const p = BigInt(`${decrypted[0]}`);
+    const p = BigInt(decrypted[0].toString());
 
     // Returns the value of the 50 bits at position `pos` in `val`
     // create 50 '1' bits
@@ -275,7 +275,7 @@ export class PCommand extends Command {
     // AND with val
     // shift right by pos
     const extract = (val: bigint, pos: number): bigint => {
-      return BigInt((((BigInt(1) << BigInt(50)) - BigInt(1)) << BigInt(pos)) & BigInt(`${val}`)) >> BigInt(pos);
+      return BigInt((((BigInt(1) << BigInt(50)) - BigInt(1)) << BigInt(pos)) & val) >> BigInt(pos);
     };
 
     // p is a packed value

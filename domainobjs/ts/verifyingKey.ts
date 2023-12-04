@@ -12,18 +12,18 @@ export class VerifyingKey {
 
   /**
    * Generate a new VerifyingKey
-   * @param _alpha1 the alpha1 point
-   * @param _beta2 the beta2 point
-   * @param _gamma2 the gamma2 point
-   * @param _delta2 the delta2 point
-   * @param _ic the ic points
+   * @param alpha1 the alpha1 point
+   * @param beta2 the beta2 point
+   * @param gamma2 the gamma2 point
+   * @param delta2 the delta2 point
+   * @param ic the ic points
    */
-  constructor(_alpha1: G1Point, _beta2: G2Point, _gamma2: G2Point, _delta2: G2Point, _ic: G1Point[]) {
-    this.alpha1 = _alpha1;
-    this.beta2 = _beta2;
-    this.gamma2 = _gamma2;
-    this.delta2 = _delta2;
-    this.ic = _ic;
+  constructor(alpha1: G1Point, beta2: G2Point, gamma2: G2Point, delta2: G2Point, ic: G1Point[]) {
+    this.alpha1 = alpha1;
+    this.beta2 = beta2;
+    this.gamma2 = gamma2;
+    this.delta2 = delta2;
+    this.ic = ic;
   }
 
   /**

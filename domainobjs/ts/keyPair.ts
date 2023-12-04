@@ -1,4 +1,4 @@
-import assert = require("assert");
+import assert from "assert";
 import { genEcdhSharedKey, genKeypair, genPubKey } from "maci-crypto";
 import { PrivKey } from "./privateKey";
 import { PubKey } from "./publicKey";
