@@ -2,7 +2,7 @@ name: GitHub Pages
 
 on:
   push:
-    branches: [dev, docs/contracts]
+    branches: [dev]
   pull_request:
 
 concurrency:
