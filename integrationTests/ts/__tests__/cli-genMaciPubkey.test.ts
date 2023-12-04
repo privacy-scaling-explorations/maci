@@ -20,9 +20,9 @@ describe("genMaciPubkey CLI subcommand", function () {
 
     expect(output2).to.eq(pk);
 
-    const unserialisedPrivkey = PrivKey.unserialize(sk);
+    const unserialisedPrivkey = PrivKey.deserialize(sk);
     const pk2 = genPubKey(unserialisedPrivkey.rawPrivKey);
-    const unserializedPk = PubKey.unserialize(pk);
+    const unserializedPk = PubKey.deserialize(pk);
     expect(unserializedPk.rawPubKey[0].toString()).to.eq(pk2[0].toString());
     expect(unserializedPk.rawPubKey[1].toString()).to.eq(pk2[1].toString());
   });

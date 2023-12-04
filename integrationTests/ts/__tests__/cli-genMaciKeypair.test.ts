@@ -19,10 +19,10 @@ describe("genMaciKeypair CLI subcommand", function () {
     // keys
     expect(lines[0]).not.to.eq(lines2[0]);
 
-    const sk = PrivKey.unserialize(lines[0].split(" ")[2]);
+    const sk = PrivKey.deserialize(lines[0].split(" ")[2]);
     expect(sk instanceof PrivKey).to.be.true;
 
-    const pk = PubKey.unserialize(lines[1].split(" ")[3]);
+    const pk = PubKey.deserialize(lines[1].split(" ")[3]);
     expect(pk instanceof PubKey).to.be.true;
 
     const pk2 = genPubKey(sk.rawPrivKey);

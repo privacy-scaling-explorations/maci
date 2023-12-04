@@ -45,7 +45,7 @@ const signup = async (args: any) => {
     return;
   }
 
-  const userMaciPubKey = PubKey.unserialize(args.pubkey);
+  const userMaciPubKey = PubKey.deserialize(args.pubkey);
 
   const contractAddrs = readJSONFile(contractFilepath);
   if ((!contractAddrs || !contractAddrs["MACI"]) && !args.contract) {

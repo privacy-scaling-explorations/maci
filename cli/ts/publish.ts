@@ -91,7 +91,7 @@ const publish = async (args: any) => {
     return;
   }
 
-  const userMaciPubKey = PubKey.unserialize(args.pubkey);
+  const userMaciPubKey = PubKey.deserialize(args.pubkey);
 
   const contractAddrs = readJSONFile(contractFilepath);
   if ((!contractAddrs || !contractAddrs["MACI"]) && !args.contract) {
@@ -119,7 +119,7 @@ const publish = async (args: any) => {
     return;
   }
 
-  const userMaciPrivkey = PrivKey.unserialize(serializedPrivkey);
+  const userMaciPrivkey = PrivKey.deserialize(serializedPrivkey);
 
   // State index
   const stateIndex = BigInt(args.state_index);

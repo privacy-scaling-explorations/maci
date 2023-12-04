@@ -22,7 +22,7 @@ const genMaciPubkey = async (args: any) => {
     return;
   }
 
-  const unserialisedPrivkey = PrivKey.unserialize(args.privkey);
+  const unserialisedPrivkey = PrivKey.deserialize(args.privkey);
   const pubkey = new PubKey(genPubKey(unserialisedPrivkey.rawPrivKey));
   console.log(pubkey.serialize());
 

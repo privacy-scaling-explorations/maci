@@ -323,7 +323,7 @@ class Poll implements IPoll {
     this.messageAq.enqueue(messageLeaf);
     this.messageTree.insert(messageLeaf);
 
-    const command = new TCommand(_message.data[0], _message.data[1]);
+    const command = new TCommand(_message.data[0], _message.data[1], BigInt(this.pollId));
     this.commands.push(command);
   };
 
@@ -1207,7 +1207,7 @@ class Poll implements IPoll {
 
     // set all properties
     poll.ballots = json.ballots.map((ballot: Ballot) => Ballot.fromJSON(ballot));
-    poll.encPubKeys = json.encPubKeys.map((key: string) => PubKey.unserialize(key));
+    poll.encPubKeys = json.encPubKeys.map((key: string) => PubKey.deserialize(key));
     poll.messages = json.messages.map((message: Message) => Message.fromJSON(message));
     poll.commands = json.commands.map((command: any) => {
       switch (command.cmdType) {
@@ -1244,7 +1244,7 @@ class Poll implements IPoll {
    * @param serializedPrivateKey - the serialized private key
    */
   public setCoordinatorKeypair = (serializedPrivateKey: string) => {
-    this.coordinatorKeypair = new Keypair(PrivKey.unserialize(serializedPrivateKey));
+    this.coordinatorKeypair = new Keypair(PrivKey.deserialize(serializedPrivateKey));
   };
 }
 

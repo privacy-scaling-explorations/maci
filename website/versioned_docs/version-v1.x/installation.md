@@ -5,7 +5,6 @@ sidebar_label: Installation
 sidebar_position: 2
 ---
 
-
 # Installation
 
 ## Requirements
@@ -13,7 +12,7 @@ sidebar_position: 2
 You need the following to use MACI:
 
 - Node.js: use [`nvm`](https://github.com/nvm-sh/nvm) to install it. MACI has
-  been tested with Node 14, 16 and 18. We do however recommend to use Node 18 as Node 14 is deprecated and Node 16 will soon be deprecated too. 
+  been tested with Node 14, 16 and 18. We do however recommend to use Node 18 as Node 14 is deprecated and Node 16 will soon be deprecated too.
 - The [`rapidsnark`](https://github.com/iden3/rapidsnark) tool if running on an intel chip (this allows for faster proof generation vs snarkjs).
 
 > Note that MACI works on Linux and MacOS. It has not been tested on Windows, however it should work on Windows Subsystem for Linux (WSL). Keep in mind that when using MACI e2e on a non intel chip, you will not be able to use rapidsnark and will have to use snarkjs instead. This will result in slower proof generation.
@@ -62,6 +61,7 @@ npm run build
 ```
 
 <!--  check if these are needed on a fresh ubuntu VM -->
+
 Install dependencies for and `zkey-manager`:
 
 ```bash
@@ -74,7 +74,6 @@ Edit `cli/zkeys.config.yml` to include the relative path to the
 circom binary.
 
 ```yml
-
 ---
 circomPath: "RELATIVE_PATH_TO_CIRCOM"
 ```
