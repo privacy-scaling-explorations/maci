@@ -2,7 +2,7 @@
 title: MACI Security Audits
 description: In the summer of 2022, MACI v1 was audited by HashCloak. The audit covered both the zk-SNARK circuits and the Solidity smart contracts.
 sidebar_label: Security Assessments
-sidebar_position: 10
+sidebar_position: 11
 ---
 
 # Security Audits

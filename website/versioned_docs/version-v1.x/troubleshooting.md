@@ -2,7 +2,7 @@
 title: Troubleshooting
 description: How to troubleshoot MACI's failures
 sidebar_label: Troubleshooting
-sidebar_position: 13
+sidebar_position: 14
 ---
 
 # Troubleshooting

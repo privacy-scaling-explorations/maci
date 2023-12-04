@@ -2,7 +2,7 @@
 title: MACI Command-line interface (CLI)
 description: Introduction to the MACI CLI interface that allows for effective deployment and testing
 sidebar_label: Command-line interface
-sidebar_position: 4
+sidebar_position: 5
 ---
 
 # Command-line interface

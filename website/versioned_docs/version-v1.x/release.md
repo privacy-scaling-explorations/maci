@@ -2,7 +2,7 @@
 title: Release process
 description: How MACI's release process works
 sidebar_label: MACI Release process
-sidebar_position: 12
+sidebar_position: 13
 ---
 
 # Maci Release Process
