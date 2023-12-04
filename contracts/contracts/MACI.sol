@@ -15,46 +15,42 @@ import { SnarkConstants } from "./crypto/SnarkConstants.sol";
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
-/*
- * Minimum Anti-Collusion Infrastructure
- * Version 1
- */
+/// @title MACI - Minimum Anti-Collusion Infrastructure Version 1
 contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
-  // The state tree depth is fixed. As such it should be as large as feasible
-  // so that there can be as many users as possible.  i.e. 5 ** 10 = 9765625
-  // this should also match the parameter of the circom circuits.
+  /// @notice The state tree depth is fixed. As such it should be as large as feasible
+  /// so that there can be as many users as possible.  i.e. 5 ** 10 = 9765625
+  /// this should also match the parameter of the circom circuits.
   uint8 public immutable stateTreeDepth;
 
-  // IMPORTANT: remember to change the ballot tree depth
-  // in contracts/ts/genEmptyBallotRootsContract.ts file
-  // if we change the state tree depth!
-
+  /// @notice IMPORTANT: remember to change the ballot tree depth
+  /// in contracts/ts/genEmptyBallotRootsContract.ts file
+  /// if we change the state tree depth!
   uint8 internal constant STATE_TREE_SUBDEPTH = 2;
   uint8 internal constant STATE_TREE_ARITY = 5;
   uint8 internal constant MESSAGE_TREE_ARITY = 5;
 
-  //// The hash of a blank state leaf
+  /// @notice The hash of a blank state leaf
   uint256 internal constant BLANK_STATE_LEAF_HASH =
     uint256(6769006970205099520508948723718471724660867171122235270773600567925038008762);
 
-  // Each poll has an incrementing ID
+  /// @notice Each poll has an incrementing ID
   uint256 public nextPollId;
 
-  // A mapping of poll IDs to Poll contracts.
+  /// @notice A mapping of poll IDs to Poll contracts.
   mapping(uint256 => Poll) public polls;
 
-  // The number of signups
+  /// @notice The number of signups
   uint256 public override numSignUps;
 
-  // A mapping of block timestamps to the number of state leaves
+  /// @notice A mapping of block timestamps to the number of state leaves
   mapping(uint256 => uint256) public numStateLeaves;
 
   // The block timestamp at which the state queue subroots were last merged
   //uint256 public mergeSubRootsTimestamp;
 
-  // The verifying key registry. There may be multiple verifying keys stored
-  // on chain, and Poll contracts must select the correct VK based on the
-  // circuit's compile-time parameters, such as tree depths and batch sizes.
+  /// @notice The verifying key registry. There may be multiple verifying keys stored
+  /// on chain, and Poll contracts must select the correct VK based on the
+  /// circuit's compile-time parameters, such as tree depths and batch sizes.
   VkRegistry public override vkRegistry;
 
   // ERC20 contract that hold topup credits
@@ -62,23 +58,23 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
 
   PollFactory public pollFactory;
 
-  // The state AccQueue. Represents a mapping between each user's public key
-  // and their voice credit balance.
+  /// @notice The state AccQueue. Represents a mapping between each user's public key
+  /// @notice and their voice credit balance.
   AccQueue public override stateAq;
 
-  // Whether the init() function has been successfully executed yet.
+  /// @notice Whether the init() function has been successfully executed yet.
   bool public isInitialised;
 
-  // Address of the SignUpGatekeeper, a contract which determines whether a
-  // user may sign up to vote
+  /// @notice Address of the SignUpGatekeeper, a contract which determines whether a
+  /// user may sign up to vote
   SignUpGatekeeper public signUpGatekeeper;
 
-  // The contract which provides the values of the initial voice credit
-  // balance per user
+  /// @notice  The contract which provides the values of the initial voice credit
+  /// balance per user
   InitialVoiceCreditProxy public initialVoiceCreditProxy;
 
-  // When the contract was deployed. We assume that the signup period starts
-  // immediately upon deployment.
+  /// @notice  When the contract was deployed. We assume that the signup period starts
+  /// immediately upon deployment.
   uint256 public signUpTimestamp;
 
   // Events
@@ -92,17 +88,13 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
   event MergeStateAqSubRoots(uint256 _pollId, uint256 _numSrQueueOps);
   event MergeStateAq(uint256 _pollId);
 
-  /*
-   * Ensure certain functions only run after the contract has been initialized
-   */
+  /// @notice Ensure certain functions only run after the contract has been initialized
   modifier afterInit() {
     if (!isInitialised) revert MaciNotInit();
     _;
   }
 
-  /*
-   * Only allow a Poll contract to call the modified function.
-   */
+  /// @notice Only allow a Poll contract to call the modified function.
   modifier onlyPoll(uint256 _pollId) {
     if (msg.sender != address(polls[_pollId])) revert CallerMustBePoll(msg.sender);
     _;
@@ -140,12 +132,10 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     if (hash2([uint256(1), uint256(1)]) == 0) revert PoseidonHashLibrariesNotLinked();
   }
 
-  /*
-   * Initialise the various factory/helper contracts. This should only be run
-   * once and it must be run before deploying the first Poll.
-   * @param _vkRegistry The VkRegistry contract
-   * @param _topupCredit The topupCredit contract
-   */
+  /// @notice Initialise the various factory/helper contracts. This should only be run
+  /// once and it must be run before deploying the first Poll.
+  /// @param _vkRegistry The VkRegistry contract
+  /// @param _topupCredit The topupCredit contract
   function init(VkRegistry _vkRegistry, TopupCredit _topupCredit) public onlyOwner {
     if (isInitialised) revert AlreadyInitialized();
 
@@ -162,20 +152,18 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     emit Init(_vkRegistry, _topupCredit);
   }
 
-  /*
-   * Allows any eligible user sign up. The sign-up gatekeeper should prevent
-   * double sign-ups or ineligible users from doing so.  This function will
-   * only succeed if the sign-up deadline has not passed. It also enqueues a
-   * fresh state leaf into the state AccQueue.
-   * @param _userPubKey The user's desired public key.
-   * @param _signUpGatekeeperData Data to pass to the sign-up gatekeeper's
-   *     register() function. For instance, the POAPGatekeeper or
-   *     SignUpTokenGatekeeper requires this value to be the ABI-encoded
-   *     token ID.
-   * @param _initialVoiceCreditProxyData Data to pass to the
-   *     InitialVoiceCreditProxy, which allows it to determine how many voice
-   *     credits this user should have.
-   */
+  /// @notice Allows any eligible user sign up. The sign-up gatekeeper should prevent
+  /// double sign-ups or ineligible users from doing so.  This function will
+  /// only succeed if the sign-up deadline has not passed. It also enqueues a
+  /// fresh state leaf into the state AccQueue.
+  /// @param _pubKey The user's desired public key.
+  /// @param _signUpGatekeeperData Data to pass to the sign-up gatekeeper's
+  ///     register() function. For instance, the POAPGatekeeper or
+  ///     SignUpTokenGatekeeper requires this value to be the ABI-encoded
+  ///     token ID.
+  /// @param _initialVoiceCreditProxyData Data to pass to the
+  ///     InitialVoiceCreditProxy, which allows it to determine how many voice
+  ///     credits this user should have.
   function signUp(
     PubKey memory _pubKey,
     bytes memory _signUpGatekeeperData,
@@ -209,12 +197,10 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     emit SignUp(stateIndex, _pubKey, voiceCreditBalance, timestamp);
   }
 
-  /*
-   * Deploy a new Poll contract.
-   * @param _duration How long should the Poll last for
-   * @param _treeDepths The depth of the Merkle trees
-   * @returns a new Poll contract address
-   */
+  /// @notice Deploy a new Poll contract.
+  /// @param _duration How long should the Poll last for
+  /// @param _treeDepths The depth of the Merkle trees
+  /// @return a new Poll contract address
   function deployPoll(
     uint256 _duration,
     MaxValues memory _maxValues,
@@ -259,22 +245,18 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     return address(p);
   }
 
-  /**
-   * Allow Poll contracts to merge the state subroots
-   * @param _numSrQueueOps Number of operations
-   * @param _pollId The active Poll ID
-   */
+  /// @notice Allow Poll contracts to merge the state subroots
+  /// @param _numSrQueueOps Number of operations
+  /// @param _pollId The active Poll ID
   function mergeStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId) public override onlyPoll(_pollId) afterInit {
     stateAq.mergeSubRoots(_numSrQueueOps);
 
     emit MergeStateAqSubRoots(_pollId, _numSrQueueOps);
   }
 
-  /*
-    /* Allow Poll contracts to merge the state root
-    /* @param _pollId The active Poll ID
-    /* @returns uint256 The calculated Merkle root
-    */
+  /// @notice Allow Poll contracts to merge the state root
+  /// @param _pollId The active Poll ID
+  /// @return uint256 The calculated Merkle root
   function mergeStateAq(uint256 _pollId) public override onlyPoll(_pollId) afterInit returns (uint256) {
     uint256 root = stateAq.merge(stateTreeDepth);
 
@@ -283,19 +265,15 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
     return root;
   }
 
-  /*
-   * Return the main root of the StateAq contract
-   * @returns uint256 The Merkle root
-   */
+  /// @notice Return the main root of the StateAq contract
+  /// @return uint256 The Merkle root
   function getStateAqRoot() public view override returns (uint256) {
     return stateAq.getMainRoot(stateTreeDepth);
   }
 
-  /*
-   * Get the Poll details
-   * @param _pollId The identifier of the Poll to retrieve
-   * @returns Poll The Poll data
-   */
+  /// @notice Get the Poll details
+  /// @param _pollId The identifier of the Poll to retrieve
+  /// @return Poll The Poll data
   function getPoll(uint256 _pollId) public view returns (Poll) {
     if (_pollId >= nextPollId) revert PollDoesNotExist(_pollId);
     return polls[_pollId];

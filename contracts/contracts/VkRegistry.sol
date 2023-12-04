@@ -4,8 +4,8 @@ pragma solidity ^0.8.10;
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
-/*
- * Stores verifying keys for the circuits.
+/**
+ * @notice Stores verifying keys for the circuits.
  * Each circuit has a signature which is its compile-time constants represented
  * as a uint256.
  */

@@ -30,12 +30,10 @@ contract Verifier is IVerifier, SnarkConstants {
   string constant ERROR_PROOF_Q = "VE1";
   string constant ERROR_INPUT_VAL = "VE2";
 
-  /*
-   * @returns Whether the proof is valid given the verifying key and public
-   *          input. Note that this function only supports one public input.
-   *          Refer to the Semaphore source code for a verifier that supports
-   *          multiple public inputs.
-   */
+  /// @return Whether the proof is valid given the verifying key and public
+  ///          input. Note that this function only supports one public input.
+  ///          Refer to the Semaphore source code for a verifier that supports
+  ///          multiple public inputs.
   function verify(uint256[8] memory _proof, VerifyingKey memory vk, uint256 input) public view override returns (bool) {
     Proof memory proof;
     proof.a = Pairing.G1Point(_proof[0], _proof[1]);
