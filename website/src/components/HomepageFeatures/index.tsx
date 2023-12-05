@@ -14,8 +14,8 @@ const FeatureList: FeatureItem[] = [
     Svg: require("@site/static/img/undraw_docusaurus_mountain.svg").default,
     description: (
       <>
-        MACI was designed to be a secure voting system. It is built on top of the Ethereum blockchain which ensures
-        votes cannot faked, censored, or tampered with.
+        MACI was designed to be a secure voting system. It's built using smart contracts on the Ethereum blockchain
+        which ensures votes cannot faked, censored, or tampered with.
       </>
     ),
   },
