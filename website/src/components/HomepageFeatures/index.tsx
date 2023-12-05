@@ -14,8 +14,8 @@ const FeatureList: FeatureItem[] = [
     Svg: require("@site/static/img/undraw_docusaurus_mountain.svg").default,
     description: (
       <>
-        MACI was designed to be a secure voting system. It's built using smart contracts on the Ethereum blockchain
-        which ensures votes cannot faked, censored, or tampered with.
+        MACI was designed to be a secure voting system. It's built using smart contracts on the Ethereum blockchain,
+        which ensures votes cannot be faked, censored, or tampered with.
       </>
     ),
   },
@@ -24,8 +24,8 @@ const FeatureList: FeatureItem[] = [
     Svg: require("@site/static/img/undraw_docusaurus_tree.svg").default,
     description: (
       <>
-        With MACI, votes are encrypted before submitting them on-chain, so you can rest assured that your privacy is
-        preserved when participating in a vote.
+        With MACI, votes are encrypted before submitting them on-chain to ensure that your privacy is preserved when
+        participating in a vote.
       </>
     ),
   },
