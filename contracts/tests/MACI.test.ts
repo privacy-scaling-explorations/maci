@@ -1,9 +1,7 @@
 import { utils, Contract } from "ethers";
-import { timeTravel } from "./utils";
-import { parseArtifact, getDefaultSigner } from "../ts/deploy";
-import { deployTestContracts } from "../ts/utils";
-import { PCommand, VerifyingKey, Keypair, PubKey, Message } from "maci-domainobjs";
+import { expect } from "chai";
 
+import { PCommand, VerifyingKey, Keypair, PubKey, Message } from "maci-domainobjs";
 import {
   MaciState,
   genProcessVkSig,
@@ -12,9 +10,11 @@ import {
   packProcessMessageSmallVals,
   packTallyVotesSmallVals,
 } from "maci-core";
-import { expect } from "chai";
-
 import { G1Point, G2Point, NOTHING_UP_MY_SLEEVE } from "maci-crypto";
+
+import { timeTravel } from "./utils";
+import { parseArtifact, getDefaultSigner } from "../ts/deploy";
+import { deployTestContracts } from "../ts/utils";
 
 const STATE_TREE_DEPTH = 10;
 const STATE_TREE_ARITY = 5;
@@ -404,17 +404,13 @@ describe("MACI", () => {
       tx = await pollContract.mergeMessageAq({ gasLimit: 4000000 });
       receipt = await tx.wait();
       expect(receipt.status).to.eq(1);
-
-      const poll = maciState.polls[pollId];
-      poll.messageAq.mergeSubRoots(0);
-      poll.messageAq.merge(MESSAGE_TREE_DEPTH);
     });
 
     it("the message root must be correct", async () => {
       const onChainMessageRoot = await messageAqContract.getMainRoot(MESSAGE_TREE_DEPTH);
-      expect(onChainMessageRoot.toString()).to.eq(
-        maciState.polls[pollId].messageAq.mainRoots[MESSAGE_TREE_DEPTH].toString(),
-      );
+      const offChainMessageRoot = maciState.polls[pollId].messageTree.root;
+
+      expect(onChainMessageRoot.toString()).to.eq(offChainMessageRoot.toString());
     });
   });
 

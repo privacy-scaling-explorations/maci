@@ -1,6 +1,5 @@
 import assert from "assert";
 import {
-  AccQueue,
   IncrementalQuinTree,
   genRandomSalt,
   SNARK_FIELD_SIZE,
@@ -15,8 +14,8 @@ import {
 import { PubKey, Command, PCommand, TCommand, Message, Keypair, StateLeaf, Ballot, PrivKey } from "maci-domainobjs";
 
 import { MaciState } from "./MaciState";
-import { TreeDepths, MaxValues, BatchSizes } from "./utils/utils";
-import { packTallyVotesSmallVals, packSubsidySmallVals } from "./utils/utils";
+import { TreeDepths, MaxValues, BatchSizes, packTallyVotesSmallVals, packSubsidySmallVals } from "./utils/utils";
+import { STATE_TREE_ARITY, MESSAGE_TREE_ARITY, VOTE_OPTION_TREE_ARITY } from "./utils/constants";
 
 // todo: organize this in domainobjs
 const blankStateLeaf = StateLeaf.genBlankLeaf();
@@ -31,9 +30,8 @@ const blankStateLeafHash = blankStateLeaf.hash();
 interface IPoll {
   topupMessage(_message: Message): void;
   publishMessage(_message: Message, _encPubKey: PubKey): void;
-  mergeAllMessages(): void;
   hasUnprocessedMessages(): boolean;
-  processMessages(_pollId: number): unknown;
+  processMessages(_pollId: number): any;
   genProcessMessagesCircuitInputsPartial(_index: number): any;
   processAllMessages(): { stateLeaves: StateLeaf[]; ballots: Ballot[] };
   hasUntalliedBallots(): boolean;
@@ -41,7 +39,7 @@ interface IPoll {
   subsidyPerBatch(): bigint[];
   increaseSubsidyIndex(): void;
   previousSubsidyIndexToString(): string;
-  tallyVotes(): void;
+  tallyVotes(): any;
   coefficientCalculation(rowBallot: Ballot, colBallot: Ballot): bigint;
   subsidyCalculation(rowStartIndex: number, colStartIndex: number): Ballot[][];
   genResultsCommitment(_salt: bigint): bigint;
@@ -74,14 +72,10 @@ class Poll implements IPoll {
   public ballotTree: IncrementalQuinTree;
 
   public messages: Message[] = [];
-  public messageAq: AccQueue;
   public messageTree: IncrementalQuinTree;
   public commands: Command[] = [];
 
   public encPubKeys: PubKey[] = [];
-  public STATE_TREE_ARITY = 5;
-  public MESSAGE_TREE_ARITY = 5;
-  public VOTE_OPTION_TREE_ARITY = 5;
 
   public stateCopied = false;
   public stateLeaves: StateLeaf[] = [blankStateLeaf];
@@ -134,14 +128,13 @@ class Poll implements IPoll {
     this.numSignUps = Number(_maciStateRef.numSignUps.toString());
     this.stateTreeDepth = _stateTreeDepth;
 
-    this.stateTree = new IncrementalQuinTree(this.stateTreeDepth, blankStateLeafHash, this.STATE_TREE_ARITY, hash5);
+    this.stateTree = new IncrementalQuinTree(this.stateTreeDepth, blankStateLeafHash, STATE_TREE_ARITY, hash5);
     this.messageTree = new IncrementalQuinTree(
       this.treeDepths.messageTreeDepth,
       NOTHING_UP_MY_SLEEVE,
-      this.MESSAGE_TREE_ARITY,
+      MESSAGE_TREE_ARITY,
       hash5,
     );
-    this.messageAq = new AccQueue(this.treeDepths.messageTreeSubDepth, this.MESSAGE_TREE_ARITY, NOTHING_UP_MY_SLEEVE);
 
     for (let i = 0; i < this.maxValues.maxVoteOptions; i++) {
       this.results.push(BigInt(0));
@@ -163,7 +156,7 @@ class Poll implements IPoll {
     // Create as many ballots as state leaves
     const emptyBallot = new Ballot(this.maxValues.maxVoteOptions, this.treeDepths.voteOptionTreeDepth);
     const emptyBallotHash = emptyBallot.hash();
-    this.ballotTree = new IncrementalQuinTree(this.stateTreeDepth, emptyBallot.hash(), this.STATE_TREE_ARITY, hash5);
+    this.ballotTree = new IncrementalQuinTree(this.stateTreeDepth, emptyBallot.hash(), STATE_TREE_ARITY, hash5);
     this.ballotTree.insert(emptyBallotHash);
 
     while (this.ballots.length < this.stateLeaves.length) {
@@ -302,10 +295,6 @@ class Poll implements IPoll {
     }
   };
 
-  private isMessageAqMerged = (): boolean => {
-    return this.messageAq.getRoot(this.treeDepths.messageTreeDepth) === this.messageTree.root;
-  };
-
   // Insert topup message into commands
   public topupMessage = (_message: Message) => {
     assert(_message.msgType == BigInt(2));
@@ -320,7 +309,6 @@ class Poll implements IPoll {
 
     this.encPubKeys.push(padKey);
     const messageLeaf = _message.hash(padKey);
-    this.messageAq.enqueue(messageLeaf);
     this.messageTree.insert(messageLeaf);
 
     const command = new TCommand(_message.data[0], _message.data[1], BigInt(this.pollId));
@@ -344,7 +332,6 @@ class Poll implements IPoll {
     this.messages.push(_message);
 
     const messageLeaf = _message.hash(_encPubKey);
-    this.messageAq.enqueue(messageLeaf);
     this.messageTree.insert(messageLeaf);
 
     // Decrypt the message and store the Command
@@ -358,18 +345,6 @@ class Poll implements IPoll {
       const command = new PCommand(BigInt(0), keyPair.pubKey, BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0));
       this.commands.push(command);
     }
-  };
-
-  /*
-   * Merge all enqueued messages into a tree.
-   */
-  public mergeAllMessages = () => {
-    this.messageAq.mergeSubRoots(0);
-    this.messageAq.merge(this.treeDepths.messageTreeDepth);
-    assert(this.isMessageAqMerged());
-
-    // TODO: Validate that a tree from this.messages matches the messageAq
-    // main root
   };
 
   public hasUnprocessedMessages = (): boolean => {
@@ -398,10 +373,6 @@ class Poll implements IPoll {
    */
   public processMessages = (_pollId: number): any => {
     assert(this.hasUnprocessedMessages(), "No more messages to process");
-
-    // Require that the message queue has been merged
-    assert(this.isMessageAqMerged());
-    assert(this.messageAq.hasRoot(this.treeDepths.messageTreeDepth));
 
     const batchSize = this.batchSizes.messageBatchSize;
 
@@ -656,8 +627,7 @@ class Poll implements IPoll {
     }
     encPubKeys = encPubKeys.slice(_index, _index + messageBatchSize);
 
-    const msgRoot = this.messageAq.getRoot(this.treeDepths.messageTreeDepth);
-
+    const msgRoot = this.messageTree.root;
     const currentStateRoot = this.stateTree.root;
     const currentBallotRoot = this.ballotTree.root;
     const currentSbCommitment = hash3([
@@ -859,7 +829,7 @@ class Poll implements IPoll {
   /**
    * Tally a batch of Ballots and update this.results
    */
-  public tallyVotes = () => {
+  public tallyVotes = (): any => {
     const batchSize = this.batchSizes.tallyBatchSize;
 
     assert(this.hasUntalliedBallots(), "No more ballots to tally");
@@ -1004,7 +974,7 @@ class Poll implements IPoll {
     const resultsTree = new IncrementalQuinTree(
       this.treeDepths.voteOptionTreeDepth,
       BigInt(0),
-      this.VOTE_OPTION_TREE_ARITY,
+      VOTE_OPTION_TREE_ARITY,
       hash5,
     );
 
@@ -1033,7 +1003,7 @@ class Poll implements IPoll {
     const resultsTree = new IncrementalQuinTree(
       this.treeDepths.voteOptionTreeDepth,
       BigInt(0),
-      this.VOTE_OPTION_TREE_ARITY,
+      VOTE_OPTION_TREE_ARITY,
       hash5,
     );
 
@@ -1094,7 +1064,6 @@ class Poll implements IPoll {
     }
     copied.currentMessageBatchIndex = this.currentMessageBatchIndex;
     copied.maciStateRef = this.maciStateRef;
-    copied.messageAq = this.messageAq.copy();
     copied.messageTree = this.messageTree.copy();
     copied.results = this.results.map((x: bigint) => BigInt(x.toString()));
     copied.perVOSpentVoiceCredits = this.perVOSpentVoiceCredits.map((x: bigint) => BigInt(x.toString()));
@@ -1229,7 +1198,6 @@ class Poll implements IPoll {
     // fill the trees
     for (let i = 0; i < poll.messages.length; i++) {
       const messageLeaf = poll.messages[i].hash(poll.encPubKeys[i]);
-      poll.messageAq.enqueue(messageLeaf);
       poll.messageTree.insert(messageLeaf);
     }
 

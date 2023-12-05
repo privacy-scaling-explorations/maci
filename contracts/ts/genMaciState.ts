@@ -449,12 +449,8 @@ const genMaciStateFromContract = async (
       maciState.polls[pollId].publishMessage(action.data.message, action.data.encPubKey);
     } else if (action["type"] === "TopupMessage") {
       maciState.polls[pollId].topupMessage(action.data.message);
-    } else if (action["type"] === "MergeMessageAqSubRoots") {
-      maciState.polls[pollId].messageAq.mergeSubRoots(action.data.numSrQueueOps);
     } else if (action["type"] === "MergeMessageAq") {
-      maciState.polls[pollId].messageAq.merge(treeDepths.messageTreeDepth);
-      const poll = maciState.polls[pollId];
-      assert(poll.messageAq.mainRoots[treeDepths.messageTreeDepth] === action.data.messageRoot);
+      assert(maciState.polls[pollId].messageTree.root === action.data.messageRoot);
     }
   }
 

@@ -3,11 +3,7 @@ import { PubKey, Keypair, StateLeaf } from "maci-domainobjs";
 
 import { Poll } from "./Poll";
 import { TreeDepths, MaxValues } from "./utils/utils";
-import { STATE_TREE_ARITY } from "./utils/constants";
-
-// todo: organize this in domainobjs
-const blankStateLeaf = StateLeaf.genBlankLeaf();
-const blankStateLeafHash = blankStateLeaf.hash();
+import { STATE_TREE_ARITY, BlankStateLeaf, BlankStateLeafHash } from "./utils/constants";
 
 /*
  * File Overview:
@@ -49,10 +45,10 @@ class MaciState implements IMaciState {
 
   constructor(_stateTreeDepth: number) {
     this.stateTreeDepth = _stateTreeDepth;
-    this.stateTree = new IncrementalQuinTree(this.stateTreeDepth, blankStateLeafHash, STATE_TREE_ARITY, hash5);
+    this.stateTree = new IncrementalQuinTree(this.stateTreeDepth, BlankStateLeafHash, STATE_TREE_ARITY, hash5);
 
-    this.stateLeaves.push(blankStateLeaf);
-    this.stateTree.insert(blankStateLeafHash);
+    this.stateLeaves.push(BlankStateLeaf);
+    this.stateTree.insert(BlankStateLeafHash);
   }
 
   public signUp(_pubKey: PubKey, _initialVoiceCreditBalance: bigint, _timestamp: bigint): number {
