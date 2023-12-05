@@ -35,7 +35,7 @@ const config: HardhatUserConfig = {
     artifacts: "./artifacts",
   },
   docgen: {
-    outputDir: "../website/src/pages/solidity-docs",
+    outputDir: "./docs",
     pages: "files",
     exclude: ["./trees/zeros"],
   },

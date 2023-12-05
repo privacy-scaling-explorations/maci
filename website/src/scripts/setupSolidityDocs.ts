@@ -2,8 +2,41 @@ const fileS = require("fs");
 const pathX = require("path");
 
 const solidityDocDir = pathX.join(__dirname, "../pages/solidity-docs");
+const sourceDir = pathX.resolve(__dirname, "../../../contracts/docs");
 
-function generateMarkdownLinks(dir, relativePath = "") {
+/**
+ * Allow to copy a directory from source to target
+ * @param source - the source directory
+ * @param target - the target directory
+ */
+function copyDirectory(source: string, target: string) {
+  if (!fileS.existsSync(target)) {
+    fileS.mkdirSync(target, { recursive: true });
+  }
+
+  const files = fileS.readdirSync(source);
+
+  for (const file of files) {
+    const sourcePath = pathX.join(source, file);
+    const targetPath = pathX.join(target, file);
+
+    if (fileS.lstatSync(sourcePath).isDirectory()) {
+      copyDirectory(sourcePath, targetPath);
+    } else {
+      fileS.copyFileSync(sourcePath, targetPath);
+    }
+  }
+}
+
+/**
+ * Currently, Solidity docgen does not generate an index file
+ * with links to all of the documentation files. This function
+ * aims to generate this index file.
+ * @param dir - the directory where the documentation files are located
+ * @param relativePath - the relative path to the directory where the documentation files are located
+ * @returns the content of the index file
+ */
+function generateMarkdownLinks(dir, relativePath = ""): string {
   let content = "";
   const files = fileS.readdirSync(dir);
 
@@ -34,5 +67,9 @@ function generateMarkdownLinks(dir, relativePath = "") {
   return content;
 }
 
+// copy over the directory
+copyDirectory(sourceDir, solidityDocDir);
+// generate index.md content
 const content = "# Solidity NatSpec Documentation\n\n" + generateMarkdownLinks(solidityDocDir, "solidity-docs");
+// save the content to index.md
 fileS.writeFileSync(pathX.join(solidityDocDir, "index.md"), content, "utf8");
