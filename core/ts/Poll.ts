@@ -396,7 +396,7 @@ class Poll implements IPoll {
    * @param _pollId The ID of the poll associated with the messages to
    *        process
    */
-  public processMessages = (_pollId: number) => {
+  public processMessages = (_pollId: number): any => {
     assert(this.hasUnprocessedMessages(), "No more messages to process");
 
     // Require that the message queue has been merged

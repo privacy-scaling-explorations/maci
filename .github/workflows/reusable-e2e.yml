@@ -10,10 +10,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use Node.js 16
+      - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 20
 
       # Check for changes in the 'circuit' folder
       - name: Get changed files
@@ -63,10 +63,10 @@ jobs:
           wget -qO ~/rapidsnark/build/prover https://maci-devops-zkeys.s3.ap-northeast-2.amazonaws.com/rapidsnark-linux-amd64-1c137
           chmod +x ~/rapidsnark/build/prover
 
-      - name: Download circom Binary v2.0.8
+      - name: Download circom Binary v2.1.6
         run: |
           mkdir -p /home/runner/work/maci/.local/bin
-          wget -qO /home/runner/work/maci/.local/bin/circom https://github.com/iden3/circom/releases/download/v2.0.8/circom-linux-amd64
+          wget -qO /home/runner/work/maci/.local/bin/circom https://github.com/iden3/circom/releases/download/v2.1.6/circom-linux-amd64
           chmod +x /home/runner/work/maci/.local/bin/circom
 
       - name: Generate zkeys
@@ -85,7 +85,9 @@ jobs:
           npm run download-zkeys
 
       - name: Bespoke Test
-        run: ./.github/scripts/run-e2e-tests.sh
+        run: |
+          cd cli
+          npm run test
 
       - name: Integration Test
         run: |

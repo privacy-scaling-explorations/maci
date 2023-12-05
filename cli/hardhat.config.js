@@ -3,7 +3,7 @@
  */
 require("@nomiclabs/hardhat-ethers");
 
-const { DEFAULT_ETH_SK, DEFAULT_ETH_PROVIDER } = require("./build/defaults");
+const { DEFAULT_ETH_SK, DEFAULT_ETH_PROVIDER } = require("./build/utils/defaults");
 
 const config = {
   defaultNetwork: "localhost",

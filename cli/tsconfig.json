@@ -2,7 +2,7 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "outDir": "./build",
-    "declaration": true
+    "esModuleInterop": true
   },
   "include": ["./ts"]
 }

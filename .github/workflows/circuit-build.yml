@@ -41,9 +41,9 @@ jobs:
           npm run bootstrap
           npm run build
 
-      - name: Download circom Binary v2.1.5
+      - name: Download circom Binary v2.1.6
         run: |
-          wget -qO /home/runner/work/circom https://github.com/iden3/circom/releases/download/v2.1.5/circom-linux-amd64
+          wget -qO /home/runner/work/circom https://github.com/iden3/circom/releases/download/v2.1.6/circom-linux-amd64
           chmod +x /home/runner/work/circom
           sudo mv /home/runner/work/circom /bin/circom
 
