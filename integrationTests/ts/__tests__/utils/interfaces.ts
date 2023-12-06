@@ -9,28 +9,6 @@ export interface Vote {
 }
 
 /**
- * A util interface that represents a tally file
- */
-export interface Tally {
-  provider: string;
-  maci: string;
-  pollId: number;
-  newTallyCommitment: string;
-  results: {
-    tally: string[];
-    salt: string;
-  };
-  totalSpentVoiceCredits: {
-    spent: string;
-    salt: string;
-  };
-  perVOSpentVoiceCredits: {
-    tally: string[];
-    salt: string;
-  };
-}
-
-/**
  * A util interface that represents a subsidy file
  */
 export interface Subsidy {

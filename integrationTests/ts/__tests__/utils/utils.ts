@@ -1,9 +1,10 @@
-import { UserCommand } from "./user";
-import { Subsidy, Tally, Vote } from "./interfaces";
 import { Keypair } from "maci-domainobjs";
-import { defaultVote } from "./constants";
+import { TallyData } from "maci-cli";
 import { expect } from "chai";
 import { arch } from "os";
+import { UserCommand } from "./user";
+import { Subsidy, Vote } from "./interfaces";
+import { defaultVote } from "./constants";
 
 /**
  * Test utility to generate vote objects for integrationt ests
@@ -110,7 +111,7 @@ export const expectTally = (
   expectedTally: number[],
   expectedPerVOSpentVoiceCredits: number[],
   expectedTotalSpentVoiceCredits: number,
-  tallyFile: Tally,
+  tallyFile: TallyData,
 ) => {
   const genTally: string[] = Array(maxMessages).fill("0");
   const genPerVOSpentVoiceCredits: string[] = Array(maxMessages).fill("0");

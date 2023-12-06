@@ -20,6 +20,7 @@ import { Contract } from "ethers";
 import { MaciState } from "maci-core";
 import { hash3, hashLeftRight, genTreeCommitment } from "maci-crypto";
 import { join } from "path";
+import { TallyData } from "../utils/interfaces";
 
 /**
  * Generate proofs for the message processing, tally and subsidy calculations
@@ -46,6 +47,7 @@ import { join } from "path";
  * @param blocksPerBatch - the number of blocks to fetch logs from
  * @param endBlock - the block number to stop fetching logs from
  * @param quiet - whether to log the output
+ * @returns the tally data
  */
 export const genProofs = async (
   outputDir: string,
@@ -71,7 +73,7 @@ export const genProofs = async (
   blocksPerBatch?: number,
   endBlock?: number,
   quiet = true,
-) => {
+): Promise<TallyData> => {
   banner(quiet);
 
   // if we do not have the output directory just create it
@@ -352,43 +354,24 @@ export const genProofs = async (
     }
   }
 
-  // create the tally file data to store for verification later
-  const tallyFileData = {
-    provider: process.env.ETH_PROVIDER || DEFAULT_ETH_PROVIDER,
-    maci: maciAddress,
-    pollId,
-    newTallyCommitment: asHex(tallyCircuitInputs.newTallyCommitment),
-    results: {
-      tally: poll.results.map((x) => x.toString()),
-      salt: asHex(tallyCircuitInputs.newResultsRootSalt),
-    },
-    totalSpentVoiceCredits: {
-      spent: poll.totalSpentVoiceCredits.toString(),
-      salt: asHex(tallyCircuitInputs.newSpentVoiceCreditSubtotalSalt),
-    },
-    perVOSpentVoiceCredits: {
-      tally: poll.perVOSpentVoiceCredits.map((x) => x.toString()),
-      salt: asHex(tallyCircuitInputs.newPerVOSpentVoiceCreditsRootSalt),
-    },
-  };
-
   // verify the results
   // Compute newResultsCommitment
   const newResultsCommitment = genTreeCommitment(
-    tallyFileData.results.tally.map((x) => BigInt(x)),
-    BigInt(tallyFileData.results.salt),
+    poll.results,
+    BigInt(asHex(tallyCircuitInputs.newResultsRootSalt)),
     poll.treeDepths.voteOptionTreeDepth,
   );
+
   // compute newSpentVoiceCreditsCommitment
   const newSpentVoiceCreditsCommitment = hashLeftRight(
-    BigInt(tallyFileData.totalSpentVoiceCredits.spent),
-    BigInt(tallyFileData.totalSpentVoiceCredits.salt),
+    poll.totalSpentVoiceCredits,
+    BigInt(asHex(tallyCircuitInputs.newSpentVoiceCreditSubtotalSalt)),
   );
 
   // Compute newPerVOSpentVoiceCreditsCommitment
   const newPerVOSpentVoiceCreditsCommitment = genTreeCommitment(
-    tallyFileData.perVOSpentVoiceCredits.tally.map((x) => BigInt(x)),
-    BigInt(tallyFileData.perVOSpentVoiceCredits.salt),
+    poll.perVOSpentVoiceCredits,
+    BigInt(asHex(tallyCircuitInputs.newPerVOSpentVoiceCreditsRootSalt)),
     poll.treeDepths.voteOptionTreeDepth,
   );
 
@@ -398,6 +381,29 @@ export const genProofs = async (
     newSpentVoiceCreditsCommitment,
     newPerVOSpentVoiceCreditsCommitment,
   ]);
+
+  // create the tally file data to store for verification later
+  const tallyFileData: TallyData = {
+    provider: "",
+    maci: maciAddress,
+    pollId,
+    newTallyCommitment: asHex(tallyCircuitInputs.newTallyCommitment),
+    results: {
+      tally: poll.results.map((x) => x.toString()),
+      salt: asHex(tallyCircuitInputs.newResultsRootSalt),
+      commitment: asHex(newResultsCommitment),
+    },
+    totalSpentVoiceCredits: {
+      spent: poll.totalSpentVoiceCredits.toString(),
+      salt: asHex(tallyCircuitInputs.newSpentVoiceCreditSubtotalSalt),
+      commitment: asHex(newSpentVoiceCreditsCommitment),
+    },
+    perVOSpentVoiceCredits: {
+      tally: poll.perVOSpentVoiceCredits.map((x) => x.toString()),
+      salt: asHex(tallyCircuitInputs.newPerVOSpentVoiceCreditsRootSalt),
+      commitment: asHex(newPerVOSpentVoiceCreditsCommitment),
+    },
+  };
 
   writeFileSync(tallyFile, JSON.stringify(tallyFileData, null, 4));
 
@@ -411,4 +417,6 @@ export const genProofs = async (
   const tallyEndTime = Date.now();
 
   logYellow(quiet, info(`gen tally proof took ${(tallyEndTime - tallyStartTime) / 1000} seconds\n`));
+
+  return tallyFileData;
 };

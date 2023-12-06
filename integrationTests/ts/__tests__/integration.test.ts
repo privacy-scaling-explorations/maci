@@ -210,40 +210,35 @@ describe("integration tests", function () {
       expect(await mergeSignups(pollId, contracts.maciAddress, undefined, true)).to.not.throw;
 
       // generate proofs
-      expect(
-        await genProofs(
-          path.resolve(__dirname, "../../../cli/proofs"),
-          path.resolve(__dirname, "../../../cli/tally.json"),
-          path.resolve(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test.0.zkey"),
-          path.resolve(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test.0.zkey"),
-          0,
-          path.resolve(__dirname, "../../../cli/subsidy.json"),
-          path.resolve(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test.0.zkey"),
-          `${homedir()}/rapidsnark/build/prover`,
-          path.resolve(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test"),
-          path.resolve(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test"),
-          path.resolve(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test"),
-          coordinatorKeypair.privKey.serialize(),
-          contracts.maciAddress,
-          undefined,
-          path.resolve(
-            __dirname,
-            "../../../cli/zkeys/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm",
-          ),
-          path.resolve(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm"),
-          path.resolve(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test_js/SubsidyPerBatch_10-1-2_test.wasm"),
-          useWasm,
-        ),
-      ).to.not.throw;
+      const tallyData = await genProofs(
+        path.resolve(__dirname, "../../../cli/proofs"),
+        path.resolve(__dirname, "../../../cli/tally.json"),
+        path.resolve(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test.0.zkey"),
+        path.resolve(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test.0.zkey"),
+        pollId,
+        path.resolve(__dirname, "../../../cli/subsidy.json"),
+        path.resolve(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test.0.zkey"),
+        `${homedir()}/rapidsnark/build/prover`,
+        path.resolve(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test"),
+        path.resolve(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test"),
+        path.resolve(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test"),
+        coordinatorKeypair.privKey.serialize(),
+        contracts.maciAddress,
+        undefined,
+        path.resolve(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm"),
+        path.resolve(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm"),
+        path.resolve(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test_js/SubsidyPerBatch_10-1-2_test.wasm"),
+        useWasm,
+      );
+      expect(tallyData).to.not.be.undefined;
 
       // verify that the data stored on the tally file is correct
-      const tally = JSON.parse(readFileSync(path.resolve(__dirname, "../../../cli/tally.json")).toString());
       expectTally(
         maxMessages,
         testCase.expectedTally,
         testCase.expectedSpentVoiceCredits,
         testCase.expectedTotalSpentVoiceCredits,
-        tally,
+        tallyData,
       );
 
       if (subsidyEnabled) {
@@ -269,6 +264,7 @@ describe("integration tests", function () {
         await verify(
           pollId.toString(),
           path.resolve(__dirname, "../../../cli/tally.json"),
+          tallyData,
           contracts.maciAddress,
           pollContracts.tally,
           pollContracts.subsidy,

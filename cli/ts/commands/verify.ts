@@ -3,6 +3,7 @@ import { banner, contractExists, info, logError, logGreen, logYellow, readContra
 import { Contract } from "ethers";
 import { existsSync, readFileSync } from "fs";
 import { hash2, hash3, genTreeCommitment } from "maci-crypto";
+import { TallyData } from "../utils/interfaces";
 
 /**
  * Verify the results of a poll and optionally the subsidy results
@@ -16,7 +17,8 @@ import { hash2, hash3, genTreeCommitment } from "maci-crypto";
  */
 export const verify = async (
   pollId: string,
-  tallyFile: string,
+  tallyFile?: string,
+  tallyFileData?: TallyData,
   maciAddress?: string,
   tallyAddress?: string,
   subsidyAddress?: string,
@@ -59,11 +61,17 @@ export const verify = async (
 
   logYellow(quiet, info(`on-chain tally commitment: ${onChainTallycomment.toString(16)}`));
 
-  // read the tally file
-  if (!existsSync(tallyFile)) logError(`Unable to open ${tallyFile}`);
-  const tallyData = JSON.parse(readFileSync(tallyFile, { encoding: "utf8" }));
-
-  logYellow(quiet, info(`tally file: ${tallyData}`));
+  // ensure we have either tally data or tally file
+  if (!tallyFileData && !tallyFile) logError("No tally data or tally file provided.");
+  // if we have the data as param, then use that
+  let tallyData: TallyData;
+  if (tallyFileData) {
+    tallyData = tallyFileData;
+  } else {
+    // read the tally file
+    if (!existsSync(tallyFile)) logError(`Unable to open ${tallyFile}`);
+    tallyData = JSON.parse(readFileSync(tallyFile, { encoding: "utf8" }));
+  }
 
   // check the results commitment
   const validResultsCommitment = tallyData.newTallyCommitment && tallyData.newTallyCommitment.match(/0x[a-fA-F0-9]+/);
@@ -81,7 +89,7 @@ export const verify = async (
   // compute newResultsCommitment
   const newResultsCommitment = genTreeCommitment(
     tallyData.results.tally.map((x: any) => BigInt(x)),
-    tallyData.results.salt,
+    BigInt(tallyData.results.salt),
     voteOptionTreeDepth,
   );
 
@@ -94,7 +102,7 @@ export const verify = async (
   // compute newPerVOSpentVoiceCreditsCommitment
   const newPerVOSpentVoiceCreditsCommitment = genTreeCommitment(
     tallyData.perVOSpentVoiceCredits.tally.map((x: any) => BigInt(x)),
-    tallyData.perVOSpentVoiceCredits.salt,
+    BigInt(tallyData.perVOSpentVoiceCredits.salt),
     voteOptionTreeDepth,
   );
 

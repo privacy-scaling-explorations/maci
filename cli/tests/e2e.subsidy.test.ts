@@ -109,7 +109,7 @@ describe("e2e with Subsidy tests", function () {
       await timeTravel(pollDuration, true);
       await mergeMessages(0);
       await mergeSignups(0);
-      await genProofs(
+      const tallyData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -133,6 +133,7 @@ describe("e2e with Subsidy tests", function () {
       await verify(
         "0",
         testTallyFilePath,
+        tallyData,
         maciAddresses.maciAddress,
         pollAddresses.tally,
         pollAddresses.subsidy,
@@ -239,7 +240,7 @@ describe("e2e with Subsidy tests", function () {
       await timeTravel(pollDuration, true);
       await mergeMessages(0);
       await mergeSignups(0);
-      await genProofs(
+      const tallyData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -263,6 +264,7 @@ describe("e2e with Subsidy tests", function () {
       await verify(
         "0",
         testTallyFilePath,
+        tallyData,
         maciAddresses.maciAddress,
         pollAddresses.tally,
         pollAddresses.subsidy,
@@ -324,7 +326,7 @@ describe("e2e with Subsidy tests", function () {
       await timeTravel(pollDuration, true);
       await mergeMessages(0);
       await mergeSignups(0);
-      await genProofs(
+      const tallyData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -348,6 +350,7 @@ describe("e2e with Subsidy tests", function () {
       await verify(
         "0",
         testTallyFilePath,
+        tallyData,
         maciAddresses.maciAddress,
         pollAddresses.tally,
         pollAddresses.subsidy,
@@ -400,7 +403,7 @@ describe("e2e with Subsidy tests", function () {
       await timeTravel(pollDuration, true);
       await mergeMessages(0);
       await mergeSignups(0);
-      await genProofs(
+      const tallyData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -424,6 +427,7 @@ describe("e2e with Subsidy tests", function () {
       await verify(
         "0",
         testTallyFilePath,
+        tallyData,
         maciAddresses.maciAddress,
         pollAddresses.tally,
         pollAddresses.subsidy,
@@ -508,7 +512,7 @@ describe("e2e with Subsidy tests", function () {
       await timeTravel(pollDuration, true);
       await mergeMessages(0);
       await mergeSignups(0);
-      await genProofs(
+      const tallyData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -532,6 +536,7 @@ describe("e2e with Subsidy tests", function () {
       await verify(
         "0",
         testTallyFilePath,
+        tallyData,
         maciAddresses.maciAddress,
         pollAddresses.tally,
         pollAddresses.subsidy,
@@ -627,7 +632,7 @@ describe("e2e with Subsidy tests", function () {
       await timeTravel(pollDuration, true);
       await mergeMessages(0);
       await mergeSignups(0);
-      await genProofs(
+      const tallyData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -651,6 +656,7 @@ describe("e2e with Subsidy tests", function () {
       await verify(
         "0",
         testTallyFilePath,
+        tallyData,
         maciAddresses.maciAddress,
         pollAddresses.tally,
         pollAddresses.subsidy,
@@ -808,7 +814,7 @@ describe("e2e with Subsidy tests", function () {
       await timeTravel(pollDuration, true);
       await mergeMessages(0);
       await mergeSignups(0);
-      await genProofs(
+      const tallyData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -832,6 +838,7 @@ describe("e2e with Subsidy tests", function () {
       await verify(
         "0",
         testTallyFilePath,
+        tallyData,
         maciAddresses.maciAddress,
         pollAddresses.tally,
         pollAddresses.subsidy,
@@ -878,7 +885,7 @@ describe("e2e with Subsidy tests", function () {
       // generate proofs
       await mergeMessages(0);
       await mergeSignups(0);
-      await genProofs(
+      const tallyData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -902,6 +909,7 @@ describe("e2e with Subsidy tests", function () {
       await verify(
         "0",
         testTallyFilePath,
+        tallyData,
         maciAddresses.maciAddress,
         pollAddresses.tally,
         pollAddresses.subsidy,
@@ -929,7 +937,7 @@ describe("e2e with Subsidy tests", function () {
       await timeTravel(pollDuration, true);
       await mergeMessages(1);
       await mergeSignups(1);
-      await genProofs(
+      const tallyData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -953,6 +961,7 @@ describe("e2e with Subsidy tests", function () {
       await verify(
         "1",
         testTallyFilePath,
+        tallyData,
         maciAddresses.maciAddress,
         pollAddresses.tally,
         pollAddresses.subsidy,
@@ -1014,7 +1023,7 @@ describe("e2e with Subsidy tests", function () {
       // generate proofs
       await mergeMessages(0);
       await mergeSignups(0);
-      await genProofs(
+      const tallyData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -1038,6 +1047,7 @@ describe("e2e with Subsidy tests", function () {
       await verify(
         "0",
         testTallyFilePath,
+        tallyData,
         maciAddresses.maciAddress,
         pollAddresses.tally,
         pollAddresses.subsidy,
@@ -1148,7 +1158,7 @@ describe("e2e with Subsidy tests", function () {
       await timeTravel(pollDuration, true);
       await mergeMessages(1);
       await mergeSignups(1);
-      await genProofs(
+      const tallyData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -1179,6 +1189,7 @@ describe("e2e with Subsidy tests", function () {
       await verify(
         "1",
         testTallyFilePath,
+        tallyData,
         maciAddresses.maciAddress,
         pollAddresses.tally,
         pollAddresses.subsidy,
@@ -1190,7 +1201,7 @@ describe("e2e with Subsidy tests", function () {
     it("should complete the third poll", async () => {
       await mergeMessages(2);
       await mergeSignups(2);
-      await genProofs(
+      const tallyData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -1221,6 +1232,7 @@ describe("e2e with Subsidy tests", function () {
       await verify(
         "2",
         testTallyFilePath,
+        tallyData,
         maciAddresses.maciAddress,
         secondPollAddresses.tally,
         secondPollAddresses.subsidy,
