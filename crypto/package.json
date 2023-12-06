@@ -15,7 +15,7 @@
     "circomlib": "https://github.com/weijiekoh/circomlib.git#24ed08eee0bb613b8c0135d66c1013bd9f78d50a",
     "ethers": "^5.4.7",
     "ffjavascript": "^0.2.62",
-    "optimisedmt": "^0.0.7"
+    "optimisedmt": "^0.0.9"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.23.3",
