@@ -32,7 +32,7 @@ Now, please navigate to the `/contracts/` directory and generate the Solidity do
 npm run docs
 ```
 
-At this point, we need to copy the generated documentation into the `/website/` directory, as well as generate a local index file for the Solidity documentation. Finally, we need to replace the links of the TypeDoc HTML files to ensure that there are no broken links. To do this, we have two custom scripts to run:
+At this point, we need to copy the generated documentation into the `/website/` directory, as well as generate a fix the headings for the Solidity documentation. Finally, we need to replace the links of the TypeDoc HTML files to ensure that there are no broken links. To do this, we have two custom scripts to run:
 
 ```
 npm run setup-typedoc

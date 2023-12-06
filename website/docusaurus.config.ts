@@ -97,18 +97,13 @@ const config: Config = {
           position: "left",
         },
         {
+          to: "/typedoc",
+          label: "TypeScript Docs",
+          position: "left",
+        },
+        {
           to: "/blog",
           label: "Blog",
-          position: "left",
-        },
-        {
-          to: "/typedoc",
-          label: "Typedoc",
-          position: "left",
-        },
-        {
-          to: "/solidity-docs",
-          label: "Solidity Docs",
           position: "left",
         },
         {

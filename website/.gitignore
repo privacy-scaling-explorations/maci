@@ -20,4 +20,4 @@ yarn-debug.log*
 yarn-error.log*
 
 static/typedoc_output
-src/pages/solidity-docs 
+versioned_docs/version-v1.x/solidity-docs

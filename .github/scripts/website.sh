@@ -2,14 +2,14 @@
 
 set -e
 
-# install and build project
+# install maci dependencies, bootstrap monorepo and build packages
 npm install && npm run bootstrap && npm run build
 
 # run typedoc
 npm run typedoc
 
 # run solidity docgen
-cd contracts && npm run docs && cd ../
+cd contracts && npm run docs 
 
-# fix typedoc links and add solidity natspec index toc 
-cd website && npm install && npm run build
+# fix links in the website and build again
+cd ../website && npm run build 
