@@ -3,6 +3,7 @@
   "version": "1.1.2",
   "description": "",
   "main": "build/index.js",
+  "types": "build/index.d.ts",
   "scripts": {
     "watch": "tsc --watch",
     "build": "tsc",
@@ -10,13 +11,9 @@
     "test-maciState": "ts-mocha --exit ts/__tests__/MaciState.test.ts",
     "test": "ts-mocha --exit ts/__tests__/*.test.ts"
   },
-  "_moduleAliases": {
-    "@maci-contracts": "../contracts"
-  },
   "dependencies": {
     "maci-crypto": "^1.1.2",
-    "maci-domainobjs": "^1.1.2",
-    "module-alias": "^2.2.2"
+    "maci-domainobjs": "^1.1.2"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
