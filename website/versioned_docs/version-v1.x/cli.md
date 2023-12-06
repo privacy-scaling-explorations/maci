@@ -74,8 +74,6 @@ contracts can refer to the same VkRegistry as long as they are all owned (via
 Example usage:
 
 ```bash
-ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
-ETH_PROVIDER=http://localhost:8545 \
 HARDHAT_CONFIG=./build/hardhat.config.js \
 node build/ts/index.js deployVkRegistry
 ```
@@ -83,7 +81,7 @@ node build/ts/index.js deployVkRegistry
 Example output:
 
 ```
-VkRegistry: 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
+[✓] VkRegistry deployed at: 0x6b5A4751307F6751E265c194244552A9995B6B3D
 ```
 
 ### Coordinator: Set verifying keys
@@ -98,22 +96,19 @@ TallyVotes_<STATE_TREE_DEPTH>-<INT_STATE_TREE_DEPTH>-<VOTE_OPTION_TREE_DEPTH>>_t
 Example usage:
 
 ```bash
-ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
-ETH_PROVIDER=http://localhost:8545 \
 HARDHAT_CONFIG=./build/hardhat.config.js \
 node build/ts/index.js setVerifyingKeys \
     -s 10 -i 1 -m 2 -v 2 -b 1 \
     -p ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
     -t ./zkeys/TallyVotes_10-1-2_test.0.zkey \
-    -k 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
 ```
 
 Example output:
 
 ```
-Generating ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey.vk.json, please wait...
-Generating ./zkeys/TallyVotes_10-1-2_test.0.zkey.vk.json, please wait...
-Transaction hash: 0x582631c36a4e21e0b65c3f9100c6343408c8683a36ded36fc02a9be07fa079e8
+[i] Setting verifying keys...
+[i] Transaction hash: 0x6b5b2959ba5161497d5499a0f9d9c69f773cd5f9b82f80a79253797b066863e3
+[✓] Verifying keys set successfully
 ```
 
 ### Coordinator: Create MACI instance
@@ -121,25 +116,14 @@ Transaction hash: 0x582631c36a4e21e0b65c3f9100c6343408c8683a36ded36fc02a9be07fa0
 Example usage:
 
 ```bash
-ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
-ETH_PROVIDER=http://localhost:8545 \
 HARDHAT_CONFIG=./build/hardhat.config.js \
-node build/ts/index.js create -r 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
+node build/ts/index.js create -s 10
 ```
 
 Example output:
 
 ```
-Deploying InitialVoiceCreditProxy
-Deploying Poseidon contracts
-Linking Poseidon libraries to MACI
-Linking Poseidon libraries to PollFactory
-Linking Poseidon libraries to MessageAqFactory
-Deploying MACI
-Transferring PollFactory ownership to MACI
-Transferring MessageAqFactory ownership to PollFactory
-Initialising MACI
-MACI: 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D
+[✓] MACI deployed at:  0xB08CEd0f34940a3E576Cf023b287f9Db2f306a1f
 ```
 
 ### Coordinator: Deploy poll
@@ -147,10 +131,8 @@ MACI: 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D
 Example usage:
 
 ```bash
-ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
-ETH_PROVIDER=http://localhost:8545 \
+HARDHAT_CONFIG=./build/hardhat.config.js \
 node ./build/index.js deployPoll \
-    -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D \
     -pk macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
     -t 30 -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2
 ```
@@ -158,10 +140,11 @@ node ./build/index.js deployPoll \
 Example output:
 
 ```
-Verifier: 0x5E70a420373D6BcB1ca3D08FEeB78a2F80727B29
-Poll ID: 0
-Poll contract: 0x710FA420C3bE4bb0730265d6581BDda11087A901
-PollProcessorAndTallyer contract: 0x62C3204a98bbbd73C8fc3B8bfCDa467CB079dF47
+[i] Poll ID: 0
+[i] Poll contract: 0xB6389Da0285c7B1FC0ba352F5A1D5fb1A492a786
+[i] Message processor contract: 0xE0bF6021e023a197DBb3fABE64efA880E13D3f4b
+[i] Tally contract: 0x3f21BC64076e7c9ed8695d053DCCBE6D8d5E6f43
+[i] Subsidy contract: 0xb848ef765E289762e9BE66a38006DDc4D23AeF24
 ```
 
 ### User: sign up
@@ -169,18 +152,16 @@ PollProcessorAndTallyer contract: 0x62C3204a98bbbd73C8fc3B8bfCDa467CB079dF47
 Example usage:
 
 ```bash
-ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
-ETH_PROVIDER=http://localhost:8545 \
+HARDHAT_CONFIG=./build/hardhat.config.js \
 node ./build/index.js signup \
-    -p macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
-    -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D
+    -p macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330
 ```
 
 Example output:
 
 ```
-Transaction hash: 0xcae04f618a0b45896732632121248c312cbc68584519c1e43932b110da9078bc
-State index: 1
+[i] Transaction hash: 0x4c7c9f65187fcf6e243804b75555bda48cbae4c317bb312f1b9f95ac4b7697b1
+[✓] State index: 1
 ```
 
 ### User: publish message
@@ -188,14 +169,33 @@ State index: 1
 Example usage:
 
 ```bash
-ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
-ETH_PROVIDER=http://localhost:8545 \
 HARDHAT_CONFIG=./build/hardhat.config.js \
 node build/ts/index.js publish \
     -p macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
     -sk macisk.2ae4f199bf3925a2407f7c775c9261f351ab861d8e9ecbb84622bdd3f6d41b08 \
-    -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D \
     -i 1 -v 0 -w 9 -n 1 -o 0
+```
+
+Example output:
+
+```
+[i] Transaction hash: 0xa2ab91c821bf7fa73fedcf19a5371a0f0866ae0747d22f82f1685afca0e5db49
+[i] Ephemeral private key: macisk.2631d585e46f059e4909ab35172451542ed7723a1ace120fcf49d68e27f935b0
+```
+
+### (Testing only) Coordinator: Time travel
+
+Example usage:
+
+```bash
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js timeTravel -s 1000
+```
+
+Example output:
+
+```
+[✓] Fast-forwarded 1000 seconds
 ```
 
 ### Coordinator: merge state tree
@@ -203,10 +203,20 @@ node build/ts/index.js publish \
 Example usage:
 
 ```bash
-ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
-ETH_PROVIDER=http://localhost:8545 \
 HARDHAT_CONFIG=./build/hardhat.config.js \
-node build/ts/index.js mergeSignups -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D -o 0
+node build/ts/index.js mergeSignups -o 0
+```
+
+Example output:
+
+```
+[i] Merging state subroots 1 / 1
+[i] Transaction hash: 0xd7e7312f70831ec05bb23f23f506ef37d6ce0c2056c1b72f7bb989653d1c8a42
+[✓] Executed mergeMaciStateAqSubRoots(); gas used: 720061
+[✓] All state subtrees have been merged.
+[i] Merging subroots to a main state root...
+[i] Transaction hash: 0xb5e98d328b066d91e1b7aa35775fe624be446b540a00bcb4b27a02477636b569
+[✓] Executed mergeStateAq(); gas used: 1004720
 ```
 
 ### Coordinator: merge message tree
@@ -214,10 +224,21 @@ node build/ts/index.js mergeSignups -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4
 Example usage:
 
 ```bash
-ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
-ETH_PROVIDER=http://localhost:8545 \
 HARDHAT_CONFIG=./build/hardhat.config.js \
-node build/ts/index.js mergeMessages -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D -o 0
+node build/ts/index.js mergeMessages -o 0
+```
+
+Example output:
+
+```
+[i] Merging message subroots 1 / 1
+[✓] Executed mergeMessageAqSubRoots(); gas used: 602448
+[i] Transaction hash: 0xdf9d11c6b35fcccff82dafa3aa15f760e3f7694a72b07007fbdb359d44df0bea
+[✓] All message subtrees have been merged.
+[i] Merging subroots to a main message root...
+[✓] Executed mergeMessageAq(); gas used: 173346
+[i] Transaction hash: 0x1f18ec08fd14db90a0d1d02d1ed27c0bfd3bc138701e812c4c3382572fc4d151
+[✓] The message tree has been merged.
 ```
 
 ### Coordinator: generate Maci state offchain
@@ -227,15 +248,24 @@ Example usage to generate the state locally from the smart contracts events:
 ```bash
 HARDHAT_CONFIG=./build/hardhat.config.js \
 node build/ts/index.js genLocalState \
-    --poll-id $1 \
+    --poll-id 0 \
     --output localState.json \
     --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
-    --num-blocks-per-request 50
+    --blocks-per-batch 50
+```
+
+Example output:
+
+```
+[i] Fetching logs from 0 till 228 and generating the offline maci state
+[✓] The state has been written to localState.json
 ```
 
 ### Coordinator: generate proofs
 
 Example usage:
+
+**C++ witness parameters**
 
 ```bash
 HARDHAT_CONFIG=./build/hardhat.config.js \
@@ -243,7 +273,7 @@ node build/ts/index.js genProofs -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D \
     -sk macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
     -o 0 \
     -t tally.json \
-    -f proofs.json \
+    -f proofs \
     -r ~/rapidsnark/build/prover \
     -wp ./zkeys/ProcessMessages_10-2-1-2_test \
     -wt ./zkeys/TallyVotes_10-1-2_test \
@@ -251,23 +281,85 @@ node build/ts/index.js genProofs -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D \
     -zt ./zkeys/TallyVotes_10-1-2_test.0.zkey \
 ```
 
+**WASM Parameters**
+
+```bash
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js genProofs \
+    -sk macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
+    -o 0 \
+    -t tally.json \
+    -f proofs \
+    -zp ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
+    -zt ./zkeys/TallyVotes_10-1-2_test.0.zkey \
+    -tw ./zkeys/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm \
+    -pw ./zkeys/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm \
+    -w true
+```
+
+Example output:
+
+```
+[i] starting to fetch logs from block 0
+[i] Generating proofs of message processing...
+[i] Progress: 1 / 1
+[i] gen processMessage proof took 17.322 seconds
+
+[i] Generating proofs of vote tallying...
+[i] Progress: 1 / 1
+[✓] The tally commitment is correct
+[i] gen tally proof took 4.951 seconds
+```
+
 ### Coordinator: generate proofs using a local state file
 
 Example usage to generate the proofs locally from the local state file created with genLocalState:
 
+**C++ witness parameters**
+
 ```bash
- # Intel parameters
-node/build.js genProofs \
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js genProofs \
     --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
-    --poll-id $1 \
+    --poll-id 0 \
     --rapidsnark ~/rapidsnark/build/prover \
-    --process-witnessgen ./zkeys/ProcessMessages_"$PROCESS_MESSAGES_PARAMS" \
-    --tally-witnessgen ./zkeys/TallyVotes_"$TALLY_VOTES_PARAMS" \
-    --process-zkey "$ZKEYS_DIR"/ProcessMessages_"$PROCESS_MESSAGES_PARAMS".0.zkey \
-    --tally-zkey "$ZKEYS_DIR"/TallyVotes_"$TALLY_VOTES_PARAMS".0.zkey \
+    --process-witnessgen ./zkeys/ProcessMessages_10-2-1-2_test \
+    --tally-witnessgen ./zkeys/TallyVotes_10-1-2_test \
+    --process-zkey /zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
+    --tally-zkey ./zkeys/TallyVotes_10-1-2_test.0.zkey \
     --tally-file tally.json \
     --output proofs/ \
     --state-file localState.json
+```
+
+**WASM Params**
+
+```bash
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js genProofs \
+    --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
+    --poll-id 0 \
+    --process-zkey ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
+    --tally-zkey ./zkeys/TallyVotes_10-1-2_test.0.zkey \
+    --tally-file tally.json \
+    --output proofs/ \
+    --state-file localState.json \
+    -tw ./zkeys/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm \
+    -pw ./zkeys/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm \
+    -w true
+```
+
+Example output:
+
+```
+[i] Generating proofs of message processing...
+[i] Progress: 1 / 1
+[i] gen processMessage proof took 17.053 seconds
+
+[i] Generating proofs of vote tallying...
+[i] Progress: 1 / 1
+[✓] The tally commitment is correct
+[i] gen tally proof took 4.746 seconds
 ```
 
 ### Coordinator: prove on chain
@@ -277,10 +369,21 @@ Example usage:
 ```bash
 HARDHAT_CONFIG=./build/hardhat.config.js \
 node build/ts/index.js proveOnChain \
-    -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D \
     -o 0 \
-    -q 0x62C3204a98bbbd73C8fc3B8bfCDa467CB079dF47 \
     -f proofs/
+```
+
+Example output:
+
+```
+[i] Submitting proofs of message processing...
+[i] Transaction hash: 0xa8acf67d6520ceaf5eef8acbf4cda7f5c2657122e2a72a092b9f4503282d70b9
+[i] Progress: 1 / 1
+[✓] All message processing proofs have been submitted.
+[i] Submitting proofs of vote tallying...
+[i] Progress: 1 / 1
+[i] Transaction hash: 0x691687ab6fb504919859901f297cdb7d8c4d736756d2d4edf345d721bb82365b
+[✓] All vote tallying proofs have been submitted.
 ```
 
 ### Anyone: verify tally
@@ -290,10 +393,16 @@ Example usage:
 ```bash
 HARDHAT_CONFIG=./build/hardhat.config.js \
 node build/ts/index.js verify \
-    -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -o 0 \
-    -t tally.json \
-    -q 0x62C3204a98bbbd73C8fc3B8bfCDa467CB079dF47
+    -t tally.json
+```
+
+Example output:
+
+```
+[i] on-chain tally commitment: 83601b7979c13506317b58e859950e9e92e1e6d326810d89332cc13909833ec
+[✓] The on-chain tally commitment matches.
+[i] The on-chain tally matches the off-chain tally.
 ```
 
 ## Demonstration
@@ -331,7 +440,7 @@ node build/ts/index.js deployVkRegistry
 Output:
 
 ```bash
-VkRegistry: 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
+[✓] VkRegistry deployed at: 0x7607Cfe2fA0d62F725537e55d83C693Cc3C76EF2
 ```
 
 ### Coordinator: Set verifying keys
@@ -339,7 +448,6 @@ VkRegistry: 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
 ```bash
 HARDHAT_CONFIG=./build/hardhat.config.js \
 node build/ts/index.js setVerifyingKeys \
-    --vk_registry 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0 \
     --state-tree-depth 10 \
     --int-state-tree-depth 1 \
     --msg-tree-depth 2 \
@@ -352,70 +460,56 @@ node build/ts/index.js setVerifyingKeys \
 Output:
 
 ```bash
-Setting verifying keys...
-Transaction hash: 0x16236fe5e124f3d0c33ddf20a37ceba9730a659630258a1e858b3e335e057b8e
+[i] Setting verifying keys...
+[i] Transaction hash: 0xbd5d06935537fb59903c27b9bdb19a41d422f75e1dfd6eb61f028bf3a7b82c76
+[✓] Verifying keys set successfully
 ```
 
 ### Coordinator: Create MACI instance
 
 ```bash
 HARDHAT_CONFIG=./build/hardhat.config.js \
-node build/ts/index.js create \
-    --vk-registry 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
+node build/ts/index.js create -s 10
 ```
 
 Output:
 
 ```bash
-Deploying InitialVoiceCreditProxy
-Deploying Poseidon contracts
-Linking Poseidon libraries to MACI
-Linking Poseidon libraries to PollFactory
-Linking Poseidon libraries to MessageAqFactory
-Deploying MACI
-Transferring PollFactory ownership to MACI
-Transferring MessageAqFactory ownership to PollFactory
-Initialising MACI
-MACI: 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
+[✓] MACI deployed at:  0xC131D3eeD9D6D410A7bfc200d81b9795f1bb5ed6
 ```
 
 ### Coordinator: Deploy poll
 
 ```bash
+HARDHAT_CONFIG=./build/hardhat.config.js \
 node ./build/index.js deployPoll \
-    --maci-address 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
-    --pubkey macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
-    --duration 1000 \
-    --max-messages 25 \
-    --max-vote-options 25 \
-    --int-state-tree-depth 1 \
-    --msg-tree-depth 2 \
-    --msg_batch_depth 1 \
-    --vote-option-tree-depth 2
+    -pk macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
+    -t 1000 -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2
 ```
 
 Output:
 
 ```bash
-Verifier: 0x0d8cc4b8d15D4c3eF1d70af0071376fb26B5669b
-Poll ID: 0
-Poll contract: 0x08e8f54262de52fe7Dfd0Bc0C9Ea87689d70e985
-PollProcessorAndTallyer contract: 0xEcFcaB0A285d3380E488A39B4BB21e777f8A4EaC
+[i] Poll ID: 0
+[i] Poll contract: 0x2c3Adf2852788662148038511aD80962aaf631D7
+[i] Message processor contract: 0xd3C3C6530fE4073292D6EAfdEAdEeAbf1A3DC19B
+[i] Tally contract: 0x06c1939F6cBb68D42333F140CAE815cc36D341b0
+[i] Subsidy contract: 0xCB74254716c96B07c812c73A5945e68aa1de4569
 ```
 
 ### Alice: sign up
 
 ```bash
+HARDHAT_CONFIG=./build/hardhat.config.js \
 node ./build/index.js signup \
-    --pubkey macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391 \
-    --contract 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a
+    --pubkey macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391
 ```
 
 Output:
 
 ```bash
-Transaction hash: 0xcdff1e0cd3021cdc3ba2c65cfd74bac3715c32efdd2052c0e8f3a677a81a758b
-State index: 1
+[i] Transaction hash: 0x7ab4c2d23686049432d19bb64c8ee4e8776fff134d971dcf27e1f513b4fdb97f
+[✓] State index: 1
 ```
 
 ### Alice: votes for Party A (option index 0)
@@ -425,7 +519,6 @@ HARDHAT_CONFIG=./build/hardhat.config.js \
 node build/ts/index.js publish \
     --pubkey macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391 \
     --privkey macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c \
-    --contract 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     --state-index 1 \
     --vote-option-index 0 \
     --new-vote-weight 9 \
@@ -436,8 +529,8 @@ node build/ts/index.js publish \
 Output:
 
 ```bash
-Transaction hash: 0xc0964069834b171bb698ffc61e31e1be456c740ff1967ccad7d8cd8ed362e545
-Ephemeral private key: macisk.1bf4bba7086c213606bb4a775b1ceaa4c2e7119c329748e675375f0d79c900dc
+[i] Transaction hash: 0x60936cfb0b25c8618d3cb8d0f5497106d5f6e3776f3212932975442d874eddbd
+[i] Ephemeral private key: macisk.103b8c4c98700d06f47522892032fce54bd03cd197cee495ede3802730409910
 ```
 
 ### Alice: submits an invalid vote for Party B (option index 1) with different public key
@@ -447,7 +540,6 @@ HARDHAT_CONFIG=./build/hardhat.config.js \
 node build/ts/index.js publish \
     --pubkey macipk.d5788ea6ccf1ec295df99aaef859031fe7bd359e7e03acb80eb6e8a192f2ce19 \
     --privkey macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c \
-    --contract 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     --state-index 1 \
     --vote-option-index 1 \
     --new-vote-weight 9 \
@@ -458,60 +550,60 @@ node build/ts/index.js publish \
 Output:
 
 ```bash
-Transaction hash: 0xc13b97e23b387d8c160e0f8b1bfb33dc0ff4441fe63a37f0fc3ec84a0cfa0600
-Ephemeral private key: macisk.5bc9f217a29c5defad1ca9be3d649add1eca30037589527476e8335b24cf75b
+[i] Transaction hash: 0x73f74b13d276cd311ce5421a145debc71e97e48abc8be2f9a0a548b26f7920f9
+[i] Ephemeral private key: macisk.1e490d67477b4c5f08806973fca2bea81e723c60deba6bdeacab56f7a4bd867b
 ```
 
-Time Travel
+### Coordinator: Time Travel
+
+```bash
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js timeTravel -s 1000
+```
+
+Output:
 
 ```
-node build timeTravel -s 1000
+[✓] Fast-forwarded 1000 seconds
 ```
 
 ### Coordinator: merge state tree
 
 ```bash
 HARDHAT_CONFIG=./build/hardhat.config.js \
-node build/ts/index.js mergeSignups \
-    --contract 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
-    --poll-id 0
+node build/ts/index.js mergeSignups --poll-id 0
 ```
 
 Output:
 
 ```bash
-Merging state subroots 1 / 1
-Executed mergeMaciStateAqSubRoots(); gas used: 723525
-Transaction hash: 0x14621b208fdadbf277edf80b393f1a9694099ae9676903e148fa485eecfadd4b
-
-All state subtrees have been merged.
-Merging subroots to a main state root...
-Executed mergeStateAq(); gas used: 1015876
-Transaction hash: 0xf2903b1c3c83b87c551a71f29e07762b464691ca58b0c6849b2f9b8f5783011f
-The state tree has been merged.
+[i] Merging state subroots 1 / 1
+[i] Transaction hash: 0xd01932e8dfad251f9b0d288290ac17f12bc449ea859a6921f63edf6b4b06f4c9
+[✓] Executed mergeMaciStateAqSubRoots(); gas used: 720061
+[✓] All state subtrees have been merged.
+[i] Merging subroots to a main state root...
+[i] Transaction hash: 0x25f60a9b5a24d11b87c41d8a4f681e3fd895b3bdf78ea86755b9800005662ce6
+[✓] Executed mergeStateAq(); gas used: 1004720
 ```
 
 ### Coordinator: merge message tree
 
 ```bash
 HARDHAT_CONFIG=./build/hardhat.config.js \
-node build/ts/index.js mergeMessages \
-    --contract 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
-    --poll-id 0
+node build/ts/index.js mergeMessages --poll-id 0
 ```
 
 Output:
 
 ```bash
-Merging message subroots 1 / 1
-Executed mergeMaciStateAqSubRoots(); gas used: 604387
-Transaction hash: 0xe0c0306b80febe1f6947b6ccbefabef38d01abce0b7611f49ce1cc7e20f196a5
-
-All message subtrees have been merged.
-Merging subroots to a main message root...
-Executed mergeMessageAq(); gas used: 174376
-Transaction hash: 0x424581f08d5f8e9f4fd63b083f9446cc2bff3b8e4b67ebc834076d6e9c34ec20
-The message tree has been merged.
+[i] Merging message subroots 1 / 1
+[✓] Executed mergeMessageAqSubRoots(); gas used: 600520
+[i] Transaction hash: 0xac0e8a01277db1b6282f8fb3763a8a4aeeebb3e12a41dd0dee9fc2804a4c9e81
+[✓] All message subtrees have been merged.
+[i] Merging subroots to a main message root...
+[✓] Executed mergeMessageAq(); gas used: 173346
+[i] Transaction hash: 0x472f0fd515c7cd2a02c430189e4ee92a6843bd6b19807484ce454cb7dab0e931
+[✓] The message tree has been merged.
 ```
 
 ### Coordinator: generate proofs
@@ -519,31 +611,28 @@ The message tree has been merged.
 ```bash
 HARDHAT_CONFIG=./build/hardhat.config.js \
 node build/ts/index.js genProofs \
-    --contract 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
     --poll-id 0 \
-    --tally-file tally.json \
-    --output proofs \
-    --rapidsnark ~/rapidsnark/build/prover \
-    --process-witnessgen ./zkeys/ProcessMessages_10-2-1-2_test \
-    --tally-witnessgen ./zkeys/TallyVotes_10-1-2_test \
     --process-zkey ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
-    --tally-zkey ./zkeys/TallyVotes_10-1-2_test.0.zkey
+    --tally-zkey ./zkeys/TallyVotes_10-1-2_test.0.zkey \
+    --tally-file tally.json \
+    --output proofs/ \
+    -tw ./zkeys/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm \
+    -pw ./zkeys/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm \
+    -w true
 ```
 
 Output:
 
 ```bash
-fromBlock = 0
-Generating proofs of message processing...
+[i] Generating proofs of message processing...
+[i] Progress: 1 / 1
+[i] gen processMessage proof took 16.644 seconds
 
-Progress: 1 / 1
-
-Generating proofs of vote tallying...
-
-Progress: 1 / 1
-
-OK
+[i] Generating proofs of vote tallying...
+[i] Progress: 1 / 1
+[✓] The tally commitment is correct
+[i] gen tally proof took 4.809 seconds
 ```
 
 ### Coordinator: prove on chain
@@ -551,26 +640,21 @@ OK
 ```bash
 HARDHAT_CONFIG=./build/hardhat.config.js \
 node build/ts/index.js proveOnChain \
-    --contract 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     --poll-id 0 \
-    --ppt 0xEcFcaB0A285d3380E488A39B4BB21e777f8A4EaC \
     --proof-dir proofs/
 ```
 
 Output:
 
 ```bash
-Submitting proofs of message processing...
-Transaction hash: 0x59388e69899612390ef22de235629e9355e14f888bb330b46511cc06d8f2035d
-Progress: 1 / 1
-All message processing proofs have been submitted.
-
-Submitting proofs of vote tallying...
-Progress: 1 / 1
-Transaction hash: 0xc90e3bd0618def86b709c995485271f806c60701a3f4246903498f27346b9f5e
-All vote tallying proofs have been submitted.
-
-OK
+[i] Submitting proofs of message processing...
+[i] Transaction hash: 0x9c3280af80de2436f9a886e4cd94218e01fe35ea3d3e671aad97b5aa5d6108ed
+[i] Progress: 1 / 1
+[✓] All message processing proofs have been submitted.
+[i] Submitting proofs of vote tallying...
+[i] Progress: 1 / 1
+[i] Transaction hash: 0x3e82ae3ad04215d4f357455ab5a610eba082796d2abc698aad91b046d16b9350
+[✓] All vote tallying proofs have been submitted.
 ```
 
 ### Anyone: verify
@@ -578,44 +662,13 @@ OK
 ```bash
 HARDHAT_CONFIG=./build/hardhat.config.js \
 node build/ts/index.js verify \
-    --contract 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     --poll-id 0 \
-    --tally-file tally.json \
-    --ppt 0xEcFcaB0A285d3380E488A39B4BB21e777f8A4EaC
+    --tally-file tally.json
 ```
 
 Output:
 
 ```bash
-{
-  provider: 'http://localhost:8545',
-  maci: '0xf204a4Ef082f5c04bB89F7D5E6568B796096735a',
-  pollId: 0,
-  newTallyCommitment: '0x29b47e79c10709047ba9788580c2dc8528f003eab42d30670df78a47b121aa6c',
-  results: {
-    tally: [
-      '9', '0', '0', '0', '0', '0',
-      '0', '0', '0', '0', '0', '0',
-      '0', '0', '0', '0', '0', '0',
-      '0', '0', '0', '0', '0', '0',
-      '0'
-    ],
-    salt: '0x132065c8ad3968008aeb7c114a04de228fa5b3618743ad00f64ad3f773a2e4d2'
-  },
-  totalSpentVoiceCredits: {
-    spent: '81',
-    salt: '0x2940f93e085350a04f6ff85e1ebffbc391fc3498f1cb41ab47f8899dc9c6efc6'
-  },
-  perVOSpentVoiceCredits: {
-    tally: [
-      '81', '0', '0', '0', '0', '0',
-      '0',  '0', '0', '0', '0', '0',
-      '0',  '0', '0', '0', '0', '0',
-      '0',  '0', '0', '0', '0', '0',
-      '0'
-    ],
-    salt: '0x2db5c3d6b015f8e2ea1cf7ffed7a44af0db8a8c09a5077415c076b6ebcee0571'
-  }
-}
-OK
+[i] on-chain tally commitment: 1ed004ac21a5397a512cbe749e7110934a434837f4818265043fd2e2e9cbec91
+[✓] The on-chain tally commitment matches.
 ```

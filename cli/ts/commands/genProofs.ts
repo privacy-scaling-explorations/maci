@@ -94,11 +94,13 @@ export const genProofs = async (
     const processDatFile = processWitgen + ".dat";
     const tallyDatFile = tallyWitgen + ".dat";
     const [ok, path] = doesPathExist([rapidsnark, processWitgen, tallyWitgen, processDatFile, tallyDatFile]);
+
     if (!ok) logError(`Could not find ${path}.`);
   }
 
   // check if zkeys were provided
   const [ok, path] = doesPathExist([processZkey, tallyZkey]);
+
   if (!ok) logError(`Could not find ${path}.`);
 
   // the vk for the subsidy contract (optional)
@@ -113,16 +115,19 @@ export const genProofs = async (
       if (!subsidyWitgen) logError("Please specify the subsidy witnessgen file location");
       const subsidyDatFile = subsidyWitgen + ".dat";
       const [ok, path] = doesPathExist([subsidyWitgen, subsidyDatFile]);
+
       if (!ok) logError(`Could not find ${path}.`);
     } else {
       // we expect to have the wasm file
       if (!subsidyWasm) logError("Please specify the subsidy wasm file location");
       const [ok, path] = doesPathExist([subsidyWasm]);
+
       if (!ok) logError(`Could not find ${path}.`);
     }
 
     // either way we check the subsidy zkey
     const [ok, path] = doesPathExist([subsidyZkey]);
+
     if (!ok) logError(`Could not find ${path}.`);
 
     subsidyVk = await extractVk(subsidyZkey);
@@ -170,12 +175,6 @@ export const genProofs = async (
   if (mainRoot === "0")
     logError("The message tree has not been merged yet. " + "Please use the mergeMessages subcommmand to do so.");
 
-  // build an off-chain representation of the MACI contract using data in the contract storage
-  let fromBlock = startBlock ? Number(startBlock) : 0;
-  fromBlock = transactionHash ? (await signer.provider.getTransaction(transactionHash)).blockNumber : 0;
-
-  logYellow(quiet, info(`starting to fetch logs from block ${fromBlock}`));
-
   let maciState: MaciState;
   if (stateFile) {
     const content = JSON.parse(readFileSync(stateFile).toString());
@@ -188,6 +187,11 @@ export const genProofs = async (
       logError(error.message);
     }
   } else {
+    // build an off-chain representation of the MACI contract using data in the contract storage
+    let fromBlock = startBlock ? Number(startBlock) : 0;
+    fromBlock = transactionHash ? (await signer.provider.getTransaction(transactionHash)).blockNumber : 0;
+
+    logYellow(quiet, info(`starting to fetch logs from block ${fromBlock}`));
     maciState = await genMaciStateFromContract(
       signer.provider,
       await maciContract.getAddress(),
@@ -308,6 +312,7 @@ export const genProofs = async (
 
     // store it
     writeFileSync(subsidyFile, JSON.stringify(subsidyFileData, null, 4));
+    logYellow(quiet, info(`Subsidy file:\n${JSON.stringify(subsidyFileData, null, 4)}\n`));
 
     const susbsidyEndTime = Date.now();
 
@@ -405,6 +410,8 @@ export const genProofs = async (
   };
 
   writeFileSync(tallyFile, JSON.stringify(tallyFileData, null, 4));
+
+  logYellow(quiet, info(`Tally file:\n${JSON.stringify(tallyFileData, null, 4)}\n`));
 
   // compare the commitments
   if ("0x" + newTallyCommitment.toString(16) === tallyFileData.newTallyCommitment) {

@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { createCommand } from "commander";
 import {
   genKeyPair,
@@ -41,7 +42,8 @@ program
     "the initial voice credits proxy contract address",
   )
   .option("-g", "--signupGatekeeperAddress <signupGatekeeperAddress>", "the signup gatekeeper contract address")
-  .option("-q, --quiet", "whether to print values to the console", false)
+  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
+  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .requiredOption("-s, --stateTreeDepth <stateTreeDepth>", "the state tree depth")
   .action(async (cmdOptions) => {
     try {
@@ -60,7 +62,8 @@ program
 program
   .command("checkVerifyingKeys")
   .description("check that the verifying keys in the contract match the local ones")
-  .option("-q, --quiet", "whether to print values to the console", false)
+  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
+  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-x, --maci-contract <maciContract>", "the MACI contract address")
   .requiredOption("-s, --state-tree-depth <stateTreeDepth>", "the state tree depth")
   .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the intermediate state tree depth")
@@ -90,14 +93,16 @@ program
   .command("genMaciPubKey")
   .description("generate a new MACI public key")
   .requiredOption("-sk, --privkey <privkey>", "the private key")
-  .option("-q, --quiet", "whether to print values to the console", false)
+  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
+  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action((cmdObj) => {
     genMaciPubKey(cmdObj.privkey, cmdObj.quiet);
   });
 program
   .command("genMaciKeyPair")
   .description("generate a new MACI key pair")
-  .option("-q, --quiet", "whether to print values to the console", false)
+  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
+  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action((cmdObj) => {
     genKeyPair(cmdObj.quiet);
   });
@@ -108,7 +113,8 @@ program
   .option("-x, --contract <contract>", "the MACI contract address")
   .option("-o, --poll-id <pollId>", "poll id")
   .option("-t, --token-address <tokenAddress>", "the token address")
-  .option("-q, --quiet", "whether to print values to the console", false)
+  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
+  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
       await airdrop(cmdObj.amount, cmdObj.contract, cmdObj.pollId, cmdObj.tokenAddress, cmdObj.quiet);
@@ -119,7 +125,8 @@ program
 program
   .command("deployVkRegistry")
   .description("deploy a new verification key registry contract")
-  .option("-q, --quiet", "whether to print values to the console", false)
+  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
+  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
       await deployVkRegistryContract(cmdObj.quiet);
@@ -130,7 +137,8 @@ program
 program
   .command("show")
   .description("show the deployed contract addresses")
-  .option("-q, --quiet", "whether to print values to the console", false)
+  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
+  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action((cmdObj) => {
     try {
       showContracts(cmdObj.quiet);
@@ -150,7 +158,8 @@ program
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth")
   .requiredOption("-pk, --pubkey <coordinatorPubkey>", "the coordinator public key")
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
-  .option("-q, --quiet", "whether to print values to the console", false)
+  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
+  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
       await deployPoll(
@@ -180,7 +189,8 @@ program
   .requiredOption("-p, --process-messages-zkey <processMessagesZkeyPath>", "the process messages zkey path")
   .requiredOption("-t, --tally-votes-zkey <tallyVotesZkeyPath>", "the tally votes zkey path")
   .option("-k, --vk-registry <vkRegistry>", "the vk registry contract address")
-  .option("-q, --quiet", "whether to print values to the console", false)
+  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
+  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-ss, --subsidy-zkey <subsidyZkeyPath>", "the subsidy zkey path")
   .action(async (cmdObj) => {
     try {
@@ -215,7 +225,8 @@ program
   .option("-s, --salt <salt>", "the message salt")
   .requiredOption("-o, --poll-id <pollId>", "the poll id")
   .requiredOption("-w, --new-vote-weight <newVoteWeight>", "the new vote weight")
-  .option("-q, --quiet", "whether to print values to the console", false)
+  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
+  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
       await publish(
@@ -237,7 +248,8 @@ program
 program
   .command("mergeMessages")
   .description("merge the message accumulator queue")
-  .option("-q, --quiet", "whether to print values to the console", false)
+  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
+  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-x, --maci-contract-address <maciContractAddress>", "the MACI contract address")
   .requiredOption("-o, --poll-id <pollId>", "the poll id")
   .option("-n, --num-queue-ops <numQueueOps>", "the number of queue operations")
@@ -251,7 +263,8 @@ program
 program
   .command("mergeSignups")
   .description("merge the signups accumulator queue")
-  .option("-q, --quiet", "whether to print values to the console", false)
+  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
+  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-x, --maci-contract-address <maciContractAddress>", "the MACI contract address")
   .requiredOption("-o, --poll-id <pollId>", "the poll id")
   .option("-n, --num-queue-ops <numQueueOps>", "the number of queue operations")
@@ -266,7 +279,8 @@ program
   .command("timeTravel")
   .description("fast-forward the time (only works for local hardhat testing")
   .requiredOption("-s, --seconds <seconds>", "the number of seconds to fast-forward")
-  .option("-q, --quiet", "whether to print values to the console", false)
+  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
+  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
       await timeTravel(cmdObj.seconds, cmdObj.quiet);
@@ -281,7 +295,8 @@ program
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .option("-s, --sg-data <sgData>", "the signup gateway data")
   .option("-i, --ivcp-data <ivcpData>", "the initial voice credit proxy data")
-  .option("-q, --quiet", "whether to print values to the console", false)
+  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
+  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
       await signup(cmdObj.pubkey, cmdObj.maciAddress, cmdObj.sgData, cmdObj.ivcpData, cmdObj.quiet);
@@ -296,7 +311,8 @@ program
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .requiredOption("-i, --state-index <stateIndex>", "state leaf index")
   .requiredOption("-o, --poll-id <pollId>", "poll id")
-  .option("-q, --quiet", "whether to print values to the console", false)
+  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
+  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
       await topup(cmdObj.amount, cmdObj.stateIndex, cmdObj.pollId, cmdObj.maciAddress, cmdObj.quiet);
@@ -309,7 +325,8 @@ program
   .description("Fund a wallet with Ether")
   .requiredOption("-a, --amount <amount>", "the amount of Ether")
   .requiredOption("-w, --address <address>", "the address to fund")
-  .option("-q, --quiet", "whether to print values to the console", false)
+  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
+  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
       await fundWallet(cmdObj.amount, cmdObj.address, cmdObj.quiet);
@@ -326,7 +343,8 @@ program
   .option("-x, --contract <contract>", "the MACI contract address")
   .option("-tc, --tally-contract <tallyContract>", "the tally contract address")
   .option("-sc, --subsidy-contract <subsidyContract>", "the subsidy contract address")
-  .option("-q, --quiet", "whether to print values to the console", false)
+  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
+  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
       await verify(
@@ -357,7 +375,8 @@ program
   .requiredOption("-zp, --process-zkey <processZkey>", "the path to the process zkey")
   .requiredOption("-zt, --tally-zkey <tallyZkey>", "the path to the tally zkey")
   .option("-zs, --subsidy-zkey <subsidyZkey>", "the path to the subsidy zkey")
-  .option("-q, --quiet", "whether to print values to the console", false)
+  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
+  .option("-p, --rpc-provider <provider>", "the rpc provider URL")
   .requiredOption("-f, --output <outputDir>", "the output directory for proofs")
   .option("-tx, --transaction-hash <transactionHash>", "transaction hash of MACI contract creation")
   .option("-w, --wasm", "whether to use the wasm binaries")
@@ -411,7 +430,8 @@ program
   .option("-bb, --blocks-per-batch <blockPerBatch>", "the blocks per batch")
   .option("-tx, --transaction-hash <transactionHash>", "the transaction hash")
   .option("-s, --sleep <sleep>", "the sleep time between batches")
-  .option("-q, --quiet", "whether to print values to the console", false)
+  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
+  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
       await genLocalState(
@@ -419,6 +439,7 @@ program
         cmdObj.pollId,
         cmdObj.contract,
         cmdObj.privkey,
+        cmdObj.provider,
         cmdObj.endBlock,
         cmdObj.startBlock,
         cmdObj.blockPerBatch,
@@ -434,7 +455,8 @@ program
   .command("proveOnChain")
   .description("prove the results of a poll on chain")
   .requiredOption("-o, --poll-id <pollId>", "the poll id")
-  .option("-q, --quiet", "whether to print values to the console", false)
+  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
+  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-x, --contract <contract>", "the MACI contract address")
   .option("-p, --message-processor-address <messageProcessorAddress>", "the message processor contract address")
   .option("-t, --tally-contract <tallyContract>", "the tally contract address")

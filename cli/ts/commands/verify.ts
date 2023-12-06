@@ -127,8 +127,6 @@ export const verify = async (
     if (!existsSync(subsidyFile)) logError(`There is no such file: ${subsidyFile}`);
     const subsidyData = JSON.parse(readFileSync(subsidyFile, { encoding: "utf8" }));
 
-    logYellow(quiet, info(`subsidy file: ${subsidyData}`));
-
     // check the results commitment
     const validResultsCommitment =
       subsidyData.newSubsidyCommitment && subsidyData.newSubsidyCommitment.match(/0x[a-fA-F0-9]+/);
