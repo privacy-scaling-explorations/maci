@@ -1,5 +1,6 @@
-import type { HardhatUserConfig } from "hardhat/types";
 import "@nomicfoundation/hardhat-toolbox";
+
+import type { HardhatUserConfig } from "hardhat/types";
 
 const WALLET_MNEMONIC = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
 const GAS_LIMIT = 30000000;

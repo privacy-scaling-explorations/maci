@@ -1,34 +1,38 @@
 import { Keypair, PrivKey } from "maci-domainobjs";
-import { Vote } from "./interfaces";
+
+import { IVote } from "./interfaces";
 
 /**
  * A class representing a user and its votes
  */
 export class UserCommand {
-  public keypair: Keypair;
-  public votes: Vote[];
-  public voiceCreditBalance: bigint;
-  public nonce: bigint;
+  keypair: Keypair;
+
+  votes: IVote[];
+
+  voiceCreditBalance: bigint;
+
+  nonce: bigint;
 
   /**
    * Create a new instance of a UserCommand object
    * @param _keypair the keypair of the user
-   * @param _votes the votes casted by the user
-   * @param _voiceCreditBalance the voice credit balance of the user
-   * @param _nonce the nonce of the user
+   * @param votes the votes casted by the user
+   * @param voiceCreditBalance the voice credit balance of the user
+   * @param nonce the nonce of the user
    */
-  constructor(_keypair: Keypair, _votes: Vote[], _voiceCreditBalance: bigint, _nonce: bigint) {
+  constructor(_keypair: Keypair, votes: IVote[], voiceCreditBalance: bigint, nonce: bigint) {
     this.keypair = _keypair;
-    this.votes = _votes;
-    this.voiceCreditBalance = _voiceCreditBalance;
-    this.nonce = _nonce;
+    this.votes = votes;
+    this.voiceCreditBalance = voiceCreditBalance;
+    this.nonce = nonce;
   }
 
   /**
    * Helper function that can be used to change the keypair of the user
    * @returns
    */
-  public changeKeypair(): PrivKey {
+  changeKeypair(): PrivKey {
     const newUserKeypair = new Keypair();
     const oldPrivateKey = this.keypair.privKey;
     this.keypair = !newUserKeypair.equals(this.keypair) ? newUserKeypair : this.keypair;

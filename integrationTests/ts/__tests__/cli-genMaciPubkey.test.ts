@@ -1,10 +1,10 @@
-import { PubKey, PrivKey } from "maci-domainobjs";
-import { genPubKey } from "maci-crypto";
-import { genKeyPair, genMaciPubKey } from "maci-cli";
 import { expect } from "chai";
+import { genKeyPair, genMaciPubKey } from "maci-cli";
+import { genPubKey } from "maci-crypto";
+import { PubKey, PrivKey } from "maci-domainobjs";
 
 describe("genMaciPubkey CLI subcommand", () => {
-  it("genMaciPubkey should output a correct public key", async () => {
+  it("genMaciPubkey should output a correct public key", () => {
     const keypair = genKeyPair(true);
     const pubKey = genMaciPubKey(keypair.privateKey, true);
 
