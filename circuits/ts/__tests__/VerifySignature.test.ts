@@ -1,17 +1,17 @@
 import { stringifyBigInts, verifySignature, hash4 } from "maci-crypto";
 import { Keypair, PCommand } from "maci-domainobjs";
-import { join } from "path";
+import path from "path";
 import { expect } from "chai";
-const tester = require("circom_tester").wasm;
+import tester from "circom_tester";
 import { getSignal } from "./utils/utils";
 
 describe("Signature verification circuit", function () {
   this.timeout(90000);
 
-  let circuit: any;
+  let circuit: tester.WasmTester;
   before(async () => {
-    const circuitPath = join(__dirname, "../../circom/test", `verifySignature_test.circom`);
-    circuit = await tester(circuitPath);
+    const circuitPath = path.resolve(__dirname, "../../circom/test", `verifySignature_test.circom`);
+    circuit = await tester.wasm(circuitPath);
   });
 
   it("verifies a valid signature", async () => {

@@ -1,15 +1,15 @@
 import { stringifyBigInts, genRandomSalt } from "maci-crypto";
 import { Keypair, PCommand } from "maci-domainobjs";
-import { join } from "path";
+import path from "path";
 import { expect } from "chai";
-const tester = require("circom_tester").wasm;
+import tester from "circom_tester";
 import { getSignal } from "./utils/utils";
 
 describe("MessageToCommand circuit", () => {
-  let circuit: any;
+  let circuit: tester.WasmTester;
   before(async () => {
-    const circuitPath = join(__dirname, "../../circom/test", `messageToCommand_test.circom`);
-    circuit = await tester(circuitPath);
+    const circuitPath = path.resolve(__dirname, "../../circom/test", `messageToCommand_test.circom`);
+    circuit = await tester.wasm(circuitPath);
   });
   it("Should decrypt a Message and output the fields of a Command", async () => {
     const { privKey } = new Keypair();

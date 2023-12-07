@@ -49,8 +49,8 @@ export const setVerifyingKeys = async (
   if (subsidyZkeyPath && !existsSync(subsidyZkeyPath)) logError(`3 ${subsidyZkeyPath} does not exist.`);
 
   // extract the vks
-  const processVk: VerifyingKey = VerifyingKey.fromObj(await extractVk(processMessagesZkeyPath));
-  const tallyVk: VerifyingKey = VerifyingKey.fromObj(await extractVk(tallyVotesZkeyPath));
+  const processVk = VerifyingKey.fromObj(await extractVk(processMessagesZkeyPath));
+  const tallyVk = VerifyingKey.fromObj(await extractVk(tallyVotesZkeyPath));
 
   // validate args
   if (
@@ -166,7 +166,7 @@ export const setVerifyingKeys = async (
 
     // set subsidy keys if any
     if (subsidyZkeyPath) {
-      const subsidyVk: VerifyingKey = VerifyingKey.fromObj(await extractVk(subsidyZkeyPath));
+      const subsidyVk = VerifyingKey.fromObj(await extractVk(subsidyZkeyPath));
 
       const tx = await vkRegistryContract.setSubsidyKeys(
         stateTreeDepth,

@@ -61,11 +61,15 @@ export interface IVkContractParams {
 }
 
 export interface IVkObjectParams {
-  vk_alpha_1: [BigNumberish, BigNumberish];
-  vk_beta_2: [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]];
-  vk_gamma_2: [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]];
-  vk_delta_2: [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]];
-  IC: [BigNumberish, BigNumberish][];
+  protocol: BigNumberish;
+  curve: BigNumberish;
+  nPublic: BigNumberish;
+  vk_alpha_1: BigNumberish[];
+  vk_beta_2: BigNumberish[][];
+  vk_gamma_2: BigNumberish[][];
+  vk_delta_2: BigNumberish[][];
+  vk_alphabeta_12: BigNumberish[][][];
+  IC: BigNumberish[][];
 }
 
 export interface IStateLeafContractParams {

@@ -1,4 +1,4 @@
-import { CircuitT } from "./types";
+import { WasmTester } from "circom_tester";
 
 /**
  * Convert a string to a bigint
@@ -18,15 +18,15 @@ export const str2BigInt = (s: string): bigint => {
  * @param name - the name of the signal
  * @returns the signal value
  */
-export const getSignal = async (circuit: CircuitT, witness: bigint[], name: string): Promise<bigint> => {
+export const getSignal = async (wasmTester: WasmTester, witness: bigint[], name: string): Promise<bigint> => {
   const prefix = "main";
   // E.g. the full name of the signal "root" is "main.root"
   // You can look up the signal names using `circuit.getDecoratedOutput(witness))`
   const signalFullName = `${prefix}.${name}`;
-  await circuit.loadSymbols();
+  await wasmTester.loadSymbols();
 
   // symbols[n] = { labelIdx: 1, varIdx: 1, componentIdx: 142 },
-  const signalMeta = circuit.symbols[signalFullName];
+  const signalMeta = wasmTester.symbols[signalFullName];
 
   // Assigned value of the signal is located in the `varIdx`th position
   // of the witness array

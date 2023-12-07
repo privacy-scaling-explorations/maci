@@ -1,14 +1,14 @@
-import { join } from "path";
-const tester = require("circom_tester").wasm;
+import path from "path";
+import tester from "circom_tester";
 import { expect } from "chai";
 import { getSignal } from "./utils/utils";
 
 describe("CalculateTotal circuit", () => {
-  const circuitPath = join(__dirname, "../../circom/test", `calculateTotal_test.circom`);
-  let circuit: any;
+  const circuitPath = path.resolve(__dirname, "../../circom/test", `calculateTotal_test.circom`);
+  let circuit: tester.WasmTester;
 
   before(async () => {
-    circuit = await tester(circuitPath);
+    circuit = await tester.wasm(circuitPath);
   });
 
   it("should correctly sum a list of values", async () => {

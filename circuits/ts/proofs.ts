@@ -1,10 +1,11 @@
 import { readFileSync, writeFileSync, unlinkSync, existsSync, mkdirSync, rmdirSync } from "fs";
-import { join } from "path";
+import path from "path";
 import { execSync } from "child_process";
 import { tmpdir } from "os";
-import { zKey, groth16 } from "snarkjs";
+import { zKey, groth16, FullProveResult, PublicSignals, Groth16Proof, ISnarkJSVerificationKey } from "snarkjs";
 import { stringifyBigInts } from "maci-crypto";
 import { cleanThreads, isArm } from "./utils";
+import { IGenProofOptions } from "./types";
 
 /**
  * Generate a zk-SNARK proof
@@ -17,16 +18,16 @@ import { cleanThreads, isArm } from "./utils";
  * @param witnessExePath - the path to the compiled witness binary
  * @param wasmPath - the path to the wasm witness
  * @param silent - whether we want to print to the console or not
- * @returns the zk-SNARK proof
+ * @returns the zk-SNARK proof and public signals
  */
-export const genProof = async (
-  inputs: string[],
-  zkeyPath: string,
-  rapidsnarkExePath?: string,
-  witnessExePath?: string,
-  wasmPath?: string,
-  silent = true,
-): Promise<any> => {
+export const genProof = async ({
+  inputs,
+  zkeyPath,
+  rapidsnarkExePath,
+  witnessExePath,
+  wasmPath,
+  silent = false,
+}: IGenProofOptions): Promise<FullProveResult> => {
   // if we are running on an arm chip we can use snarkjs directly
   if (isArm()) {
     const { proof, publicSignals } = await groth16.fullProve(inputs, wasmPath, zkeyPath);
@@ -34,13 +35,13 @@ export const genProof = async (
   }
   // intel chip flow (use rapidnsark)
   // Create tmp directory
-  const tmpPath = join(tmpdir(), `tmp-${Date.now()}`);
+  const tmpPath = path.resolve(tmpdir(), `tmp-${Date.now()}`);
   mkdirSync(tmpPath, { recursive: true });
 
-  const inputJsonPath = join(tmpPath, "input.json");
-  const outputWtnsPath = join(tmpPath, "output.wtns");
-  const proofJsonPath = join(tmpPath, "proof.json");
-  const publicJsonPath = join(tmpPath, "public.json");
+  const inputJsonPath = path.resolve(tmpPath, "input.json");
+  const outputWtnsPath = path.resolve(tmpPath, "output.wtns");
+  const proofJsonPath = path.resolve(tmpPath, "proof.json");
+  const publicJsonPath = path.resolve(tmpPath, "public.json");
 
   // Write input.json
   const jsonData = JSON.stringify(stringifyBigInts(inputs));
@@ -49,31 +50,24 @@ export const genProof = async (
   // Generate the witness
   const witnessGenCmd = `${witnessExePath} ${inputJsonPath} ${outputWtnsPath}`;
 
-  try {
-    execSync(witnessGenCmd, { stdio: silent ? "ignore" : "pipe" });
+  execSync(witnessGenCmd, { stdio: silent ? "ignore" : "pipe" });
 
-    if (!existsSync(outputWtnsPath)) {
-      throw new Error("Error executing " + witnessGenCmd);
-    }
-  } catch (error: any) {
-    throw new Error("Error executing " + witnessGenCmd + " " + error.message);
+  if (!existsSync(outputWtnsPath)) {
+    throw new Error("Error executing " + witnessGenCmd);
   }
 
   // Generate the proof
   const proofGenCmd = `${rapidsnarkExePath} ${zkeyPath} ${outputWtnsPath} ${proofJsonPath} ${publicJsonPath}`;
-  try {
-    execSync(proofGenCmd, { stdio: silent ? "ignore" : "pipe" });
 
-    if (!existsSync(proofJsonPath)) {
-      throw new Error("Error executing " + proofGenCmd);
-    }
-  } catch (error: any) {
-    throw new Error("Error executing " + proofGenCmd + " " + error.message);
+  execSync(proofGenCmd, { stdio: silent ? "ignore" : "pipe" });
+
+  if (!existsSync(proofJsonPath)) {
+    throw new Error("Error executing " + proofGenCmd);
   }
 
   // Read the proof and public inputs
-  const proof = JSON.parse(readFileSync(proofJsonPath).toString());
-  const publicSignals = JSON.parse(readFileSync(publicJsonPath).toString());
+  const proof = JSON.parse(readFileSync(proofJsonPath).toString()) as Groth16Proof;
+  const publicSignals = JSON.parse(readFileSync(publicJsonPath).toString()) as PublicSignals;
 
   // remove all artifacts
   for (const f of [proofJsonPath, publicJsonPath, inputJsonPath, outputWtnsPath]) if (existsSync(f)) unlinkSync(f);
@@ -91,7 +85,11 @@ export const genProof = async (
  * @param vk - the verification key
  * @returns whether the proof is valid or not
  */
-export const verifyProof = async (publicInputs: any, proof: any, vk: any): Promise<boolean> => {
+export const verifyProof = async (
+  publicInputs: PublicSignals,
+  proof: Groth16Proof,
+  vk: ISnarkJSVerificationKey,
+): Promise<boolean> => {
   const isValid = await groth16.verify(vk, publicInputs, proof);
   await cleanThreads();
   return isValid;
@@ -102,7 +100,7 @@ export const verifyProof = async (publicInputs: any, proof: any, vk: any): Promi
  * @param zkeyPath - the path to the zKey
  * @returns the verification key
  */
-export const extractVk = async (zkeyPath: string) => {
+export const extractVk = async (zkeyPath: string): Promise<ISnarkJSVerificationKey> => {
   const vk = await zKey.exportVerificationKey(zkeyPath);
   await cleanThreads();
   return vk;

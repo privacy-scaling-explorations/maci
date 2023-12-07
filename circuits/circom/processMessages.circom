@@ -21,7 +21,7 @@ template ProcessMessages(
     //                  messages in a batch
     // voteOptionTreeDepth: depth of the vote option tree
 
-    // we want to ensure that the params are > 0
+    // we want to ensure that the trees have a valid structure
     assert(stateTreeDepth > 0);
     assert(msgBatchDepth > 0);
     assert(voteOptionTreeDepth > 0);
@@ -682,6 +682,12 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     newBallotRoot <== newBallotQip.root;
 }
 
+// A template which accepts a number of inputs
+// and produces a sha256 hash. 
+// Please note that certain inputs
+// are packed into a single element, and this
+// template will unpack them and ensure their
+// validity.
 template ProcessMessagesInputHasher() {
     // Combine the following into 1 input element:
     // - maxVoteOptions (50 bits)

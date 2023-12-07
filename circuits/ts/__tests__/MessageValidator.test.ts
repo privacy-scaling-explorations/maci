@@ -1,17 +1,17 @@
 import { stringifyBigInts, genRandomSalt } from "maci-crypto";
 import { PCommand, Keypair } from "maci-domainobjs";
-import { join } from "path";
+import path from "path";
 import { expect } from "chai";
-const tester = require("circom_tester").wasm;
+import tester from "circom_tester";
 import { getSignal } from "./utils/utils";
 
 describe("MessageValidator circuit", function () {
   this.timeout(90000);
   let circuitInputs;
-  let circuit: any;
+  let circuit: tester.WasmTester;
   before(async () => {
-    const circuitPath = join(__dirname, "../../circom/test", `messageValidator_test.circom`);
-    circuit = await tester(circuitPath);
+    const circuitPath = path.resolve(__dirname, "../../circom/test", `messageValidator_test.circom`);
+    circuit = await tester.wasm(circuitPath);
   });
 
   before(() => {

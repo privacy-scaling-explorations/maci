@@ -1,6 +1,19 @@
 declare module "snarkjs" {
   export type NumericString = `${number}` | string;
-  export type PublicSignals = NumericString[];
+  export type PublicSignals = Record<string, string | bigint | bigint[] | string[]>;
+  export type BigNumberish = number | string | bigint;
+
+  export interface ISnarkJSVerificationKey {
+    protocol: BigNumberish;
+    curve: BigNumberish;
+    nPublic: BigNumberish;
+    vk_alpha_1: BigNumberish[];
+    vk_beta_2: BigNumberish[][];
+    vk_gamma_2: BigNumberish[][];
+    vk_delta_2: BigNumberish[][];
+    vk_alphabeta_12: BigNumberish[][][];
+    IC: BigNumberish[][];
+  }
 
   export interface FullProveResult {
     proof: Groth16Proof;
@@ -16,16 +29,21 @@ declare module "snarkjs" {
   }
 
   export namespace zKey {
-    function exportVerificationKey(zkeyName: any, logger?: any): Promise<any>;
+    function exportVerificationKey(zkeyName: string, logger?: any): Promise<ISnarkJSVerificationKey>;
   }
 
   export namespace groth16 {
     function verify(
-      _vk_verifier: any,
-      _publicSignals: PublicSignals,
-      _proof: Groth16Proof,
+      vk_verifier: ISnarkJSVerificationKey,
+      publicSignals: PublicSignals,
+      proof: Groth16Proof,
       logger?: any,
     ): Promise<boolean>;
-    function fullProve(_input: any, wasmFile: string, zkeyFileName: string, logger?: any): Promise<FullProveResult>;
+    function fullProve(
+      input: PublicSignals,
+      wasmFile: string,
+      zkeyFileName: string,
+      logger?: any,
+    ): Promise<FullProveResult>;
   }
 }
