@@ -384,7 +384,6 @@ export const genProofs = async (
 
   // create the tally file data to store for verification later
   const tallyFileData: TallyData = {
-    provider: "",
     maci: maciAddress,
     pollId,
     newTallyCommitment: asHex(tallyCircuitInputs.newTallyCommitment),

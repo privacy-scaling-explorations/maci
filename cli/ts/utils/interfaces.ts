@@ -24,11 +24,6 @@ export interface PollContracts {
  */
 export interface TallyData {
   /**
-   * The provider's URL.
-   */
-  provider: string;
-
-  /**
    * The MACI address.
    */
   maci: string;

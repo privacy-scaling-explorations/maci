@@ -225,7 +225,10 @@ describe("integration tests", function () {
         coordinatorKeypair.privKey.serialize(),
         contracts.maciAddress,
         undefined,
-        path.resolve(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm"),
+        path.resolve(
+          __dirname,
+          "../../../cli/zkeys/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm",
+        ),
         path.resolve(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm"),
         path.resolve(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test_js/SubsidyPerBatch_10-1-2_test.wasm"),
         useWasm,

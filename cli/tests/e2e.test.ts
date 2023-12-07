@@ -884,7 +884,7 @@ describe("e2e tests", function () {
       await timeTravel(pollDuration, true);
       await mergeMessages(1);
       await mergeSignups(1);
-      const tallyFileData = await genProofs(
+      await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -905,14 +905,7 @@ describe("e2e tests", function () {
         useWasm,
       );
       await proveOnChain("1", testProofsDirPath);
-      await verify(
-        "1",
-        testTallyFilePath,
-        tallyFileData,
-        maciAddresses.maciAddress,
-        pollAddresses.tally,
-        pollAddresses.subsidy,
-      );
+      await verify("1", testTallyFilePath);
     });
   });
 
@@ -1219,7 +1212,7 @@ describe("e2e tests", function () {
         undefined,
         50,
       );
-      const tallyData = await genProofs(
+      await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -1241,7 +1234,7 @@ describe("e2e tests", function () {
         stateOutPath,
       );
       await proveOnChain("0", testProofsDirPath);
-      await verify("0", testTallyFilePath, tallyData);
+      await verify("0", testTallyFilePath);
     });
   });
 });
