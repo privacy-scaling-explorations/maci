@@ -1,5 +1,6 @@
-import { Keypair, PrivKey } from "../";
 import { expect } from "chai";
+
+import { Keypair, PrivKey } from "..";
 
 describe("privateKey", () => {
   it("PrivKey.serialize() and deserialize() should work correctly", () => {
@@ -7,8 +8,8 @@ describe("privateKey", () => {
     const sk1 = k.privKey;
 
     const s = sk1.serialize();
-    expect(s.startsWith("macisk.")).to.be.true;
-    const d = "0x" + s.slice(7);
+    expect(s.startsWith("macisk.")).to.eq(true);
+    const d = `0x${s.slice(7)}`;
     expect(sk1.rawPrivKey.toString()).to.eq(BigInt(d).toString());
 
     const c = PrivKey.deserialize(s);
@@ -19,8 +20,8 @@ describe("privateKey", () => {
     const k = new Keypair();
     const s = k.privKey.serialize();
 
-    expect(PrivKey.isValidSerializedPrivKey(s)).to.be.true;
-    expect(PrivKey.isValidSerializedPrivKey(s.slice(1))).to.be.false;
+    expect(PrivKey.isValidSerializedPrivKey(s)).to.eq(true);
+    expect(PrivKey.isValidSerializedPrivKey(s.slice(1))).to.eq(false);
   });
 
   it("PrivKey.copy() should produce a deep copy", () => {

@@ -1,14 +1,19 @@
-import assert = require("assert");
 import { genRandomSalt, hash5, hashLeftRight, IncrementalQuinTree } from "maci-crypto";
+
+import assert from "assert";
+
+import type { IJsonBallot } from "./types";
 
 /**
  * A Ballot represents a User's votes in a Poll, as well as their next valid
  * nonce.
  */
 export class Ballot {
-  public votes: bigint[] = [];
-  public nonce = BigInt(0);
-  public voteOptionTreeDepth: number;
+  votes: bigint[] = [];
+
+  nonce = BigInt(0);
+
+  voteOptionTreeDepth: number;
 
   /**
    * Create a new Ballot instance
@@ -19,7 +24,7 @@ export class Ballot {
     this.voteOptionTreeDepth = _voteOptionTreeDepth;
     assert(5 ** _voteOptionTreeDepth >= _numVoteOptions);
     assert(_numVoteOptions >= 0);
-    for (let i = 0; i < _numVoteOptions; i++) {
+    for (let i = 0; i < _numVoteOptions; i += 1) {
       this.votes.push(BigInt(0));
     }
   }
@@ -28,7 +33,7 @@ export class Ballot {
    * Generate an hash of this ballot
    * @returns The hash of the ballot
    */
-  public hash = (): bigint => {
+  hash = (): bigint => {
     const vals = this.asArray();
     return hashLeftRight(vals[0], vals[1]);
   };
@@ -37,21 +42,19 @@ export class Ballot {
    * Convert in a format suitable for the circuit
    * @returns the ballot as a BigInt array
    */
-  public asCircuitInputs = (): bigint[] => {
-    return this.asArray();
-  };
+  asCircuitInputs = (): bigint[] => this.asArray();
 
   /**
    * Convert in a an array of bigints
    * @notice this is the nonce and the root of the vote option tree
    * @returns the ballot as a bigint array
    */
-  public asArray = (): bigint[] => {
+  asArray = (): bigint[] => {
     const lastIndex = this.votes.length - 1;
-    const foundIndex = this.votes.findIndex((vote, index) => this.votes[lastIndex - index] !== BigInt(0));
+    const foundIndex = this.votes.findIndex((_, index) => this.votes[lastIndex - index] !== BigInt(0));
     const lastIndexToInsert = foundIndex < 0 ? -1 : lastIndex - foundIndex;
     const voTree = new IncrementalQuinTree(this.voteOptionTreeDepth, BigInt(0), 5, hash5);
-    for (let i = 0; i <= lastIndexToInsert; i++) {
+    for (let i = 0; i <= lastIndexToInsert; i += 1) {
       voTree.insert(this.votes[i]);
     }
 
@@ -62,7 +65,7 @@ export class Ballot {
    * Create a deep clone of this Ballot
    * @returns a copy of the ballot
    */
-  public copy = (): Ballot => {
+  copy = (): Ballot => {
     const b = new Ballot(this.votes.length, this.voteOptionTreeDepth);
 
     b.votes = this.votes.map((x) => BigInt(x.toString()));
@@ -75,7 +78,7 @@ export class Ballot {
    * @param b - The ballot to compare with
    * @returns whether the two ballots are equal
    */
-  public equals(b: Ballot): boolean {
+  equals(b: Ballot): boolean {
     const isEqualVotes = this.votes.every((vote, index) => vote === b.votes[index]);
     return isEqualVotes ? b.nonce === this.nonce && this.votes.length === b.votes.length : false;
   }
@@ -86,9 +89,9 @@ export class Ballot {
    * @param voteOptionTreeDepth How deep is the merkle tree holding the vote options
    * @returns a random Ballot
    */
-  public static genRandomBallot(numVoteOptions: number, voteOptionTreeDepth: number) {
+  static genRandomBallot(numVoteOptions: number, voteOptionTreeDepth: number): Ballot {
     const ballot = new Ballot(numVoteOptions, voteOptionTreeDepth);
-    ballot.nonce = genRandomSalt() as bigint;
+    ballot.nonce = genRandomSalt();
     return ballot;
   }
 
@@ -98,7 +101,7 @@ export class Ballot {
    * @param voteOptionTreeDepth How deep is the merkle tree holding the vote options
    * @returns a Blank Ballot object
    */
-  public static genBlankBallot(numVoteOptions: number, voteOptionTreeDepth: number) {
+  static genBlankBallot(numVoteOptions: number, voteOptionTreeDepth: number): Ballot {
     const ballot = new Ballot(numVoteOptions, voteOptionTreeDepth);
     return ballot;
   }
@@ -106,7 +109,7 @@ export class Ballot {
   /**
    * Serialize to a JSON object
    */
-  public toJSON() {
+  toJSON(): IJsonBallot {
     return {
       votes: this.votes.map((x) => x.toString()),
       nonce: this.nonce.toString(),
@@ -119,9 +122,9 @@ export class Ballot {
    * @param json - the json representation
    * @returns the deserialized object as a Ballot instance
    */
-  static fromJSON(json: any): Ballot {
-    const ballot = new Ballot(json.votes.length, parseInt(json.voteOptionTreeDepth));
-    ballot.votes = json.votes.map((x: any) => BigInt(x));
+  static fromJSON(json: IJsonBallot): Ballot {
+    const ballot = new Ballot(json.votes.length, Number.parseInt(json.voteOptionTreeDepth.toString(), 10));
+    ballot.votes = json.votes.map((x) => BigInt(x));
     ballot.nonce = BigInt(json.nonce);
     return ballot;
   }

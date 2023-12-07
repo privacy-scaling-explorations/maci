@@ -1,5 +1,9 @@
+import { EcdhSharedKey, genEcdhSharedKey, genKeypair, genPubKey } from "maci-crypto";
+
 import assert from "assert";
-import { genEcdhSharedKey, genKeypair, genPubKey } from "maci-crypto";
+
+import type { IJsonKeyPair } from "./types";
+
 import { PrivKey } from "./privateKey";
 import { PubKey } from "./publicKey";
 
@@ -10,8 +14,9 @@ import { PubKey } from "./publicKey";
  * A MACI keypair is comprised of a MACI public key and a MACI private key
  */
 export class Keypair {
-  public privKey: PrivKey;
-  public pubKey: PubKey;
+  privKey: PrivKey;
+
+  pubKey: PubKey;
 
   /**
    * Create a new instance of a Keypair
@@ -33,9 +38,7 @@ export class Keypair {
    * Create a deep clone of this Keypair
    * @returns a copy of the Keypair
    */
-  public copy = (): Keypair => {
-    return new Keypair(this.privKey.copy());
-  };
+  copy = (): Keypair => new Keypair(this.privKey.copy());
 
   /**
    * Generate a shared key
@@ -43,7 +46,7 @@ export class Keypair {
    * @param pubKey
    * @returns
    */
-  public static genEcdhSharedKey(privKey: PrivKey, pubKey: PubKey) {
+  static genEcdhSharedKey(privKey: PrivKey, pubKey: PubKey): EcdhSharedKey {
     return genEcdhSharedKey(privKey.rawPrivKey, pubKey.rawPubKey);
   }
 
@@ -52,7 +55,7 @@ export class Keypair {
    * @param keypair the keypair to compare with
    * @returns whether they are equal or not
    */
-  public equals(keypair: Keypair): boolean {
+  equals(keypair: Keypair): boolean {
     const equalPrivKey = this.privKey.rawPrivKey === keypair.privKey.rawPrivKey;
     const equalPubKey =
       this.pubKey.rawPubKey[0] === keypair.pubKey.rawPubKey[0] &&
@@ -60,7 +63,7 @@ export class Keypair {
 
     // If this assertion fails, something is very wrong and this function
     // should not return anything
-    // XOR is equivalent to: (x && !y) || (!x && y )
+    // eslint-disable-next-line no-bitwise
     assert(!(+equalPrivKey ^ +equalPubKey));
 
     return equalPrivKey;
@@ -69,7 +72,7 @@ export class Keypair {
   /**
    * Serialize into a JSON object
    */
-  public toJSON() {
+  toJSON(): IJsonKeyPair {
     return {
       privKey: this.privKey.serialize(),
       pubKey: this.pubKey.serialize(),
@@ -81,7 +84,7 @@ export class Keypair {
    * @param json
    * @returns a keypair instance
    */
-  static fromJSON(json: any): Keypair {
+  static fromJSON(json: IJsonKeyPair): Keypair {
     return new Keypair(PrivKey.deserialize(json.privKey));
   }
 }

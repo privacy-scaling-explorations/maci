@@ -1,6 +1,7 @@
-import { Keypair, Message, PCommand, TCommand } from "../";
-import { genRandomSalt } from "maci-crypto";
 import { expect } from "chai";
+import { genRandomSalt } from "maci-crypto";
+
+import { Keypair, Message, PCommand, TCommand } from "..";
 
 describe("Commands & Messages", () => {
   const { privKey, pubKey } = new Keypair();
@@ -11,9 +12,8 @@ describe("Commands & Messages", () => {
   const newPubKey = k.pubKey;
 
   const ecdhSharedKey = Keypair.genEcdhSharedKey(privKey, pubKey1);
-  const random50bitBigInt = (): bigint => {
-    return ((BigInt(1) << BigInt(50)) - BigInt(1)) & BigInt(genRandomSalt().toString());
-  };
+  // eslint-disable-next-line no-bitwise
+  const random50bitBigInt = (): bigint => ((BigInt(1) << BigInt(50)) - BigInt(1)) & BigInt(genRandomSalt().toString());
   const command: PCommand = new PCommand(
     random50bitBigInt(),
     newPubKey,
@@ -21,18 +21,18 @@ describe("Commands & Messages", () => {
     random50bitBigInt(),
     random50bitBigInt(),
     random50bitBigInt(),
-    genRandomSalt() as bigint,
+    genRandomSalt(),
   );
   const signature = command.sign(privKey);
   const message = command.encrypt(signature, ecdhSharedKey);
   const decrypted = PCommand.decrypt(message, ecdhSharedKey);
 
   it("command.sign() should produce a valid signature", () => {
-    expect(command.verifySignature(signature, pubKey)).to.be.true;
+    expect(command.verifySignature(signature, pubKey)).to.eq(true);
   });
 
   it("decrypted message should match the original command", () => {
-    expect(decrypted.command.equals(command)).to.be.true;
+    expect(decrypted.command.equals(command)).to.eq(true);
     expect(decrypted.signature.R8[0].toString()).to.eq(signature.R8[0].toString());
     expect(decrypted.signature.R8[1].toString()).to.eq(signature.R8[1].toString());
     expect(decrypted.signature.S.toString()).to.eq(signature.S.toString());
@@ -40,7 +40,7 @@ describe("Commands & Messages", () => {
 
   it("decrypted message should have a valid signature", () => {
     const isValid = decrypted.command.verifySignature(decrypted.signature, pubKey);
-    expect(isValid).to.be.true;
+    expect(isValid).to.eq(true);
   });
 
   it("Command.copy() should produce a deep copy", () => {
@@ -73,7 +73,7 @@ describe("Commands & Messages", () => {
     ]);
 
     const m2 = m1.copy();
-    expect(m2.equals(m1)).to.be.true;
+    expect(m2.equals(m1)).to.eq(true);
   });
 
   it("message.asCircuitInputs() should return a array", () => {
@@ -114,7 +114,7 @@ describe("Commands & Messages", () => {
 
     it("copy should produce a deep copy", () => {
       const c = tCommand.copy();
-      expect(c.equals(tCommand)).to.be.true;
+      expect(c.equals(tCommand)).to.eq(true);
     });
   });
 });

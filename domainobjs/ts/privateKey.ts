@@ -1,5 +1,8 @@
 import { SNARK_FIELD_SIZE, formatPrivKeyForBabyJub, PrivKey as RawPrivKey } from "maci-crypto";
-import { SERIALIZED_PRIV_KEY_PREFIX } from "./constants";
+
+import type { IJsonPrivateKey } from "./types";
+
+export const SERIALIZED_PRIV_KEY_PREFIX = "macisk.";
 
 /**
  * @notice PrivKey is a TS Class representing a MACI PrivateKey (on the jubjub curve)
@@ -9,7 +12,7 @@ import { SERIALIZED_PRIV_KEY_PREFIX } from "./constants";
  * A raw MACI private key can be thought as a point on the baby jubjub curve
  */
 export class PrivKey {
-  public rawPrivKey: RawPrivKey;
+  rawPrivKey: RawPrivKey;
 
   /**
    * Generate a new Private key object
@@ -23,32 +26,26 @@ export class PrivKey {
    * Create a copy of this Private key
    * @returns a copy of the Private key
    */
-  public copy = (): PrivKey => {
-    return new PrivKey(BigInt(this.rawPrivKey.toString()));
-  };
+  copy = (): PrivKey => new PrivKey(BigInt(this.rawPrivKey.toString()));
 
   /**
    * Return this Private key as a circuit input
    * @returns the Private key as a circuit input
    */
-  public asCircuitInputs = () => {
-    return formatPrivKeyForBabyJub(this.rawPrivKey).toString();
-  };
+  asCircuitInputs = (): string => formatPrivKeyForBabyJub(this.rawPrivKey).toString();
 
   /**
    * Serialize the private key
    * @returns the serialized private key
    */
-  public serialize = (): string => {
-    return SERIALIZED_PRIV_KEY_PREFIX + this.rawPrivKey.toString(16);
-  };
+  serialize = (): string => SERIALIZED_PRIV_KEY_PREFIX + this.rawPrivKey.toString(16);
 
   /**
    * Deserialize the private key
    * @param s the serialized private key
    * @returns the deserialized private key
    */
-  public static deserialize = (s: string): PrivKey => {
+  static deserialize = (s: string): PrivKey => {
     const x = s.slice(SERIALIZED_PRIV_KEY_PREFIX.length);
     return new PrivKey(BigInt(`0x${x}`));
   };
@@ -58,7 +55,7 @@ export class PrivKey {
    * @param s the serialized private key
    * @returns whether it is a valid serialized private key
    */
-  public static isValidSerializedPrivKey = (s: string): boolean => {
+  static isValidSerializedPrivKey = (s: string): boolean => {
     const correctPrefix = s.startsWith(SERIALIZED_PRIV_KEY_PREFIX);
     const x = s.slice(SERIALIZED_PRIV_KEY_PREFIX.length);
 
@@ -73,7 +70,7 @@ export class PrivKey {
   /**
    * Serialize this object
    */
-  public toJSON() {
+  toJSON(): IJsonPrivateKey {
     return {
       privKey: this.serialize(),
     };
@@ -84,7 +81,7 @@ export class PrivKey {
    * @param json - the json object
    * @returns the deserialized object as a PrivKey instance
    */
-  static fromJSON(json: any): PrivKey {
+  static fromJSON(json: IJsonPrivateKey): PrivKey {
     return PrivKey.deserialize(json.privKey);
   }
 }

@@ -1,15 +1,16 @@
-import { Keypair, PubKey } from "../";
-import { unpackPubKey } from "maci-crypto";
 import { expect } from "chai";
+import { unpackPubKey } from "maci-crypto";
+
+import { Keypair, PubKey } from "..";
 
 describe("public key", () => {
   it("isValidSerializedPubKey() should work correctly", () => {
     const k = new Keypair();
     const s = k.pubKey.serialize();
 
-    expect(PubKey.isValidSerializedPubKey(s)).to.be.true;
-    expect(PubKey.isValidSerializedPubKey(s + "ffffffffffffffffffffffffffffff")).to.be.false;
-    expect(PubKey.isValidSerializedPubKey(s.slice(1))).to.be.false;
+    expect(PubKey.isValidSerializedPubKey(s)).to.eq(true);
+    expect(PubKey.isValidSerializedPubKey(`${s}ffffffffffffffffffffffffffffff`)).to.eq(false);
+    expect(PubKey.isValidSerializedPubKey(s.slice(1))).to.eq(false);
   });
 
   it("serialize() and deserialize() should work correctly", () => {
@@ -17,7 +18,7 @@ describe("public key", () => {
     const pk1 = k.pubKey;
 
     const s = pk1.serialize();
-    expect(s.startsWith("macipk.")).to.be.true;
+    expect(s.startsWith("macipk.")).to.eq(true);
 
     const d = s.slice(7);
     const unpacked = unpackPubKey(Buffer.from(d, "hex"));

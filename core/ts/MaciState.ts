@@ -149,7 +149,7 @@ class MaciState implements IMaciState {
     const maciState = new MaciState(json.stateTreeDepth);
 
     // assign the json values to the new instance
-    maciState.stateLeaves = json.stateLeaves.map((leaf: string) => StateLeaf.fromJSON(leaf));
+    maciState.stateLeaves = json.stateLeaves.map((leaf) => StateLeaf.fromJSON(leaf));
     maciState.pollBeingProcessed = json.pollBeingProcessed;
     maciState.currentPollBeingProcessed = json.currentPollBeingProcessed;
     maciState.numSignUps = json.numSignUps;
