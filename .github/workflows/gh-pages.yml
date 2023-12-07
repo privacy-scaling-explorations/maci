@@ -22,36 +22,9 @@ jobs:
           node-version: 20
           registry-url: "https://registry.npmjs.org"
 
-      - name: Install dependencies and build project
+      - name: Build website
         run: |
-          npm install
-          npm run bootstrap
-          npm run build
-
-      - name: Run typedoc
-        run: |
-          npm run typedoc
-
-      - name: Run Solidity Docgen
-        run: |
-          npm run docs
-        working-directory: contracts
-
-      - name: Install website dependencies
-        run: |
-          npm install
-        working-directory: website
-
-      - name: Fix typedoc and solidity docgen links
-        run: |
-          npm run setup-typedoc
-          npm run setup-soliditydocs
-        working-directory: website
-
-      - name: Build 🔧
-        run: |
-          npm run build
-        working-directory: website
+          ./.github/scripts/website.sh
 
       - name: Add CNAME
         run: |
