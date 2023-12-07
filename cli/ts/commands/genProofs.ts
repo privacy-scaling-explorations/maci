@@ -393,7 +393,7 @@ export const genProofs = async (
     pollId,
     newTallyCommitment: asHex(tallyCircuitInputs.newTallyCommitment),
     results: {
-      tally: poll.results.map((x) => x.toString()),
+      tally: poll.tallyResult.map((x) => x.toString()),
       salt: asHex(tallyCircuitInputs.newResultsRootSalt),
       commitment: asHex(newResultsCommitment),
     },

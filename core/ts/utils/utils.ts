@@ -1,6 +1,11 @@
 import assert from "assert";
 
 /**
+ * A circuit inputs for the circom circuit
+ */
+type CircuitInputs = Record<string, string | bigint | bigint[] | string[]>;
+
+/**
  * This interface defines the tree depths.
  * @property intStateTreeDepth - The depth of the intermediate state tree.
  * @property messageTreeDepth - The depth of the message tree.
@@ -186,6 +191,7 @@ const packSubsidySmallVals = (row: number, col: number, numSignUps: number) => {
 };
 
 export {
+  CircuitInputs,
   TreeDepths,
   MaxValues,
   BatchSizes,

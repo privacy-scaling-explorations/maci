@@ -1,6 +1,7 @@
 export { MaciState } from "./MaciState";
 export { Poll } from "./Poll";
 export {
+  CircuitInputs,
   MaxValues,
   TreeDepths,
   BatchSizes,

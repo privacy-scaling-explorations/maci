@@ -5,6 +5,7 @@ import tmp from "tmp";
 import os from "os";
 import { zKey, groth16 } from "snarkjs";
 
+import { CircuitInputs } from "maci-core";
 import { stringifyBigInts } from "maci-crypto";
 
 /*
@@ -29,7 +30,7 @@ const cleanThreads = async () => {
 };
 
 const genProof = async (
-  inputs: string[],
+  inputs: CircuitInputs,
   zkeyPath: string,
   rapidsnarkExePath?: string,
   witnessExePath?: string,

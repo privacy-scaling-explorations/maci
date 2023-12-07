@@ -26,7 +26,14 @@ import {
 } from "maci-domainobjs";
 
 import { MaciState } from "./MaciState";
-import { TreeDepths, MaxValues, BatchSizes, packTallyVotesSmallVals, packSubsidySmallVals } from "./utils/utils";
+import {
+  CircuitInputs,
+  TreeDepths,
+  MaxValues,
+  BatchSizes,
+  packTallyVotesSmallVals,
+  packSubsidySmallVals,
+} from "./utils/utils";
 import { STATE_TREE_ARITY, MESSAGE_TREE_ARITY, VOTE_OPTION_TREE_ARITY } from "./utils/constants";
 
 /*
@@ -40,8 +47,8 @@ interface IPoll {
   publishMessage(_message: Message, _encPubKey: PubKey): void;
   topupMessage(_message: Message): void;
   // These methods are used to generate circuit inputs
-  processMessages(_pollId: number): any;
-  tallyVotes(): any;
+  processMessages(_pollId: number): CircuitInputs;
+  tallyVotes(): CircuitInputs;
   // These methods are helper functions
   hasUnprocessedMessages(): boolean;
   processAllMessages(): { stateLeaves: StateLeaf[]; ballots: Ballot[] };
@@ -396,7 +403,7 @@ class Poll implements IPoll {
    *        process
    * @returns stringified circuit inputs
    */
-  public processMessages = (_pollId: number): any => {
+  public processMessages = (_pollId: number): CircuitInputs => {
     assert(this.hasUnprocessedMessages(), "No more messages to process");
 
     const batchSize = this.batchSizes.messageBatchSize;
@@ -608,7 +615,7 @@ class Poll implements IPoll {
     if (this.numBatchesProcessed * batchSize >= this.messages.length) {
       this.maciStateRef.pollBeingProcessed = false;
     }
-    return stringifyBigInts(circuitInputs);
+    return stringifyBigInts(circuitInputs) as CircuitInputs;
   };
 
   /**
@@ -616,7 +623,7 @@ class Poll implements IPoll {
    * @param _index - The index of the partial batch.
    * @returns stringified partial circuit inputs
    */
-  private genProcessMessagesCircuitInputsPartial = (_index: number): Record<string, bigint | bigint[] | bigint[][]> => {
+  private genProcessMessagesCircuitInputsPartial = (_index: number): CircuitInputs => {
     const messageBatchSize = this.batchSizes.messageBatchSize;
 
     assert(_index <= this.messages.length);
@@ -685,7 +692,7 @@ class Poll implements IPoll {
       currentBallotRoot,
       currentSbCommitment,
       currentSbSalt: this.sbSalts[this.currentMessageBatchIndex],
-    }) as Record<string, bigint | bigint[] | bigint[][]>;
+    }) as CircuitInputs;
   };
 
   /**
@@ -894,7 +901,7 @@ class Poll implements IPoll {
    * This method tallies a ballots and updates the tally results.
    * @returns the circuit inputs for the TallyVotes circuit.
    */
-  public tallyVotes = (): any => {
+  public tallyVotes = (): CircuitInputs => {
     const batchSize = this.batchSizes.tallyBatchSize;
 
     assert(this.hasUntalliedBallots(), "No more ballots to tally");
@@ -1032,7 +1039,7 @@ class Poll implements IPoll {
 
     this.numBatchesTallied++;
 
-    return circuitInputs;
+    return circuitInputs as CircuitInputs;
   };
 
   /**
