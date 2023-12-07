@@ -1,14 +1,14 @@
 import fs from "fs";
+import path from "path";
 
-import { MaciState, packProcessMessageSmallVals } from "maci-core";
+import { expect } from "chai";
 
+import { MaciState, packProcessMessageSmallVals, STATE_TREE_ARITY } from "maci-core";
 import { PrivKey, Keypair, PCommand, Message, Ballot } from "maci-domainobjs";
-
-import { hash5, IncrementalQuinTree, stringifyBigInts, NOTHING_UP_MY_SLEEVE } from "maci-crypto";
+import { AccQueue, hash5, IncrementalQuinTree, stringifyBigInts, NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 
 import { STATE_TREE_DEPTH, getSignal } from "./utils";
-import path from "path";
-import { expect } from "chai";
+
 const tester = require("circom_tester").wasm;
 
 const voiceCreditBalance = BigInt(100);
@@ -64,9 +64,6 @@ describe("ProcessMessage circuit", function () {
         BigInt(Math.floor(Date.now() / 1000)),
       );
 
-      maciState.stateAq.mergeSubRoots(0);
-      maciState.stateAq.merge(STATE_TREE_DEPTH);
-
       pollId = maciState.deployPoll(
         duration,
         // BigInt(2 + duration),
@@ -117,17 +114,27 @@ describe("ProcessMessage circuit", function () {
       commands.push(command2);
       poll.publishMessage(message2, ecdhKeypair2.pubKey);
 
-      poll.messageAq.mergeSubRoots(0);
-      poll.messageAq.merge(treeDepths.messageTreeDepth);
+      // Use the accumulator queue to compare the root of the message tree
+      const accumulatorQueue: AccQueue = new AccQueue(
+        treeDepths.messageTreeSubDepth,
+        STATE_TREE_ARITY,
+        NOTHING_UP_MY_SLEEVE,
+      );
+      accumulatorQueue.enqueue(message.hash(ecdhKeypair.pubKey));
+      accumulatorQueue.enqueue(message2.hash(ecdhKeypair2.pubKey));
+      accumulatorQueue.mergeSubRoots(0);
+      accumulatorQueue.merge(treeDepths.messageTreeDepth);
 
-      expect(poll.messageTree.root.toString()).to.be.eq(poll.messageAq.getRoot(treeDepths.messageTreeDepth).toString());
+      expect(poll.messageTree.root.toString()).to.be.eq(
+        accumulatorQueue.mainRoots[treeDepths.messageTreeDepth].toString(),
+      );
     });
 
     it("should produce the correct state root and ballot root", async () => {
       // The current roots
       const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
       const emptyBallotHash = emptyBallot.hash();
-      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), poll.STATE_TREE_ARITY, hash5);
+      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash5);
 
       ballotTree.insert(emptyBallot.hash());
 
@@ -197,9 +204,6 @@ describe("ProcessMessage circuit", function () {
         BigInt(1), //BigInt(Math.floor(Date.now() / 1000)),
       );
 
-      maciState.stateAq.mergeSubRoots(0);
-      maciState.stateAq.merge(STATE_TREE_DEPTH);
-
       pollId = maciState.deployPoll(
         duration,
         BigInt(2 + duration), //BigInt(Math.floor(Date.now() / 1000) + duration),
@@ -230,18 +234,26 @@ describe("ProcessMessage circuit", function () {
 
       poll.publishMessage(message, ecdhKeypair.pubKey);
 
-      // Merge
-      poll.messageAq.mergeSubRoots(0);
-      poll.messageAq.merge(treeDepths.messageTreeDepth);
+      // Use the accumulator queue to compare the root of the message tree
+      const accumulatorQueue: AccQueue = new AccQueue(
+        treeDepths.messageTreeSubDepth,
+        STATE_TREE_ARITY,
+        NOTHING_UP_MY_SLEEVE,
+      );
+      accumulatorQueue.enqueue(message.hash(ecdhKeypair.pubKey));
+      accumulatorQueue.mergeSubRoots(0);
+      accumulatorQueue.merge(treeDepths.messageTreeDepth);
 
-      expect(poll.messageTree.root.toString()).to.be.eq(poll.messageAq.getRoot(treeDepths.messageTreeDepth).toString());
+      expect(poll.messageTree.root.toString()).to.be.eq(
+        accumulatorQueue.getRoot(treeDepths.messageTreeDepth).toString(),
+      );
     });
 
     it("should produce the correct state root and ballot root", async () => {
       // The current roots
       const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
       const emptyBallotHash = emptyBallot.hash();
-      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), poll.STATE_TREE_ARITY, hash5);
+      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash5);
 
       ballotTree.insert(emptyBallot.hash());
 
@@ -287,9 +299,6 @@ describe("ProcessMessage circuit", function () {
         voiceCreditBalance,
         BigInt(1), //BigInt(Math.floor(Date.now() / 1000)),
       );
-
-      maciState.stateAq.mergeSubRoots(0);
-      maciState.stateAq.merge(STATE_TREE_DEPTH);
 
       pollId = maciState.deployPoll(
         duration,
@@ -362,18 +371,28 @@ describe("ProcessMessage circuit", function () {
       commands.push(command3);
       poll.publishMessage(message3, ecdhKeypair3.pubKey);
 
-      // Merge
-      poll.messageAq.mergeSubRoots(0);
-      poll.messageAq.merge(treeDepths.messageTreeDepth);
+      // Use the accumulator queue to compare the root of the message tree
+      const accumulatorQueue: AccQueue = new AccQueue(
+        treeDepths.messageTreeSubDepth,
+        STATE_TREE_ARITY,
+        NOTHING_UP_MY_SLEEVE,
+      );
+      accumulatorQueue.enqueue(message.hash(ecdhKeypair.pubKey));
+      accumulatorQueue.enqueue(message2.hash(ecdhKeypair2.pubKey));
+      accumulatorQueue.enqueue(message3.hash(ecdhKeypair3.pubKey));
+      accumulatorQueue.mergeSubRoots(0);
+      accumulatorQueue.merge(treeDepths.messageTreeDepth);
 
-      expect(poll.messageTree.root.toString()).to.be.eq(poll.messageAq.getRoot(treeDepths.messageTreeDepth).toString());
+      expect(poll.messageTree.root.toString()).to.be.eq(
+        accumulatorQueue.getRoot(treeDepths.messageTreeDepth).toString(),
+      );
     });
 
     it("should produce the correct state root and ballot root", async () => {
       // The current roots
       const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
       const emptyBallotHash = emptyBallot.hash();
-      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), poll.STATE_TREE_ARITY, hash5);
+      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash5);
 
       ballotTree.insert(NOTHING_UP_MY_SLEEVE);
 
@@ -410,8 +429,6 @@ describe("ProcessMessage circuit", function () {
         BigInt(Math.floor(Date.now() / 1000)),
       );
 
-      maciState.stateAq.mergeSubRoots(0);
-      maciState.stateAq.merge(STATE_TREE_DEPTH);
       // Sign up and publish
       const pollId = maciState.deployPoll(
         duration,
@@ -443,9 +460,6 @@ describe("ProcessMessage circuit", function () {
         const message = command.encrypt(signature, sharedKey);
         poll.publishMessage(message, ecdhKeypair.pubKey);
       }
-
-      poll.messageAq.mergeSubRoots(0);
-      poll.messageAq.merge(treeDepths.messageTreeDepth);
 
       for (let i = 0; i < NUM_BATCHES; i++) {
         const generatedInputs = poll.processMessages(pollId);

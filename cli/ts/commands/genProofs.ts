@@ -16,7 +16,7 @@ import { Keypair, PrivKey, VerifyingKey } from "maci-domainobjs";
 import { extractVk, genProof, verifyProof } from "maci-circuits";
 import { genMaciStateFromContract, getDefaultSigner, parseArtifact } from "maci-contracts";
 import { Contract } from "ethers";
-import { MaciState, Poll } from "maci-core";
+import { MaciState } from "maci-core";
 import { hash3, hashLeftRight, genTreeCommitment } from "maci-crypto";
 import { join } from "path";
 
@@ -184,8 +184,6 @@ export const genProofs = async (
     } catch (error: any) {
       logError(error.message);
     }
-    // ensure we merge all messages
-    maciState.polls.forEach((poll: Poll) => poll.mergeAllMessages());
   } else {
     maciState = await genMaciStateFromContract(
       signer.provider,
