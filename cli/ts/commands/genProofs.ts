@@ -362,7 +362,7 @@ export const genProofs = async (
   // verify the results
   // Compute newResultsCommitment
   const newResultsCommitment = genTreeCommitment(
-    poll.results,
+    poll.tallyResult,
     BigInt(asHex(tallyCircuitInputs.newResultsRootSalt)),
     poll.treeDepths.voteOptionTreeDepth,
   );

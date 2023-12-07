@@ -2,14 +2,13 @@ import { existsSync, readFileSync, unlinkSync, writeFileSync } from "fs";
 
 import { expect } from "chai";
 
-import { PCommand, Message, Keypair, StateLeaf } from "maci-domainobjs";
+import { PCommand, Message, Keypair, StateLeaf, blankStateLeafHash } from "maci-domainobjs";
 import { hash5, NOTHING_UP_MY_SLEEVE, IncrementalQuinTree, AccQueue } from "maci-crypto";
 
 import {
   STATE_TREE_DEPTH,
   STATE_TREE_ARITY,
   STATE_TREE_SUBDEPTH,
-  BlankStateLeafHash,
   MaciState,
   packProcessMessageSmallVals,
   unpackProcessMessageSmallVals,
@@ -36,6 +35,8 @@ const messageBatchSize = 25;
 
 const coordinatorKeypair = new Keypair();
 
+const calculateTotal = (tallyResult: bigint[]): bigint => tallyResult.reduce((acc, v) => acc + v, BigInt(0));
+
 describe("MaciState", function () {
   this.timeout(100000);
   describe("Process and tally 1 message from 1 user", () => {
@@ -56,11 +57,11 @@ describe("MaciState", function () {
     // The end result should be that option 0 gets 3 votes
     // because the user spends 9 voice credits on it
     it("the state root should be correct", () => {
-      const accumulatorQueue: AccQueue = new AccQueue(STATE_TREE_SUBDEPTH, STATE_TREE_ARITY, BlankStateLeafHash);
+      const accumulatorQueue: AccQueue = new AccQueue(STATE_TREE_SUBDEPTH, STATE_TREE_ARITY, blankStateLeafHash);
       const timestamp = BigInt(Math.floor(Date.now() / 1000));
       const stateLeaf = new StateLeaf(userKeypair.pubKey, voiceCreditBalance, timestamp);
 
-      accumulatorQueue.enqueue(BlankStateLeafHash);
+      accumulatorQueue.enqueue(blankStateLeafHash);
       accumulatorQueue.enqueue(stateLeaf.hash());
       accumulatorQueue.mergeSubRoots(0);
       accumulatorQueue.merge(STATE_TREE_DEPTH);
@@ -140,21 +141,15 @@ describe("MaciState", function () {
     });
 
     it("Tally ballots", () => {
-      let total = BigInt(0);
-      for (const v of poll.results) {
-        total = BigInt(Number(total) + Number(v));
-      }
-      expect(total.toString()).to.eq("0");
+      const initialTotal = calculateTotal(maciState.polls[pollId].tallyResult);
+      expect(initialTotal.toString()).to.eq("0");
 
       expect(poll.hasUntalliedBallots()).to.be.true;
 
       poll.tallyVotes();
 
-      total = BigInt(0);
-      for (const v of poll.results) {
-        total = BigInt(Number(total) + Number(v));
-      }
-      expect(total.toString()).to.eq(voteWeight.toString());
+      const finalTotal = calculateTotal(maciState.polls[pollId].tallyResult);
+      expect(finalTotal.toString()).to.eq(voteWeight.toString());
     });
   });
 
@@ -273,11 +268,8 @@ describe("MaciState", function () {
     });
 
     it("should tally ballots correctly", () => {
-      // Start with results = [0...0]
-      let total = BigInt(0);
-      for (const v of poll.results) {
-        total = total + v;
-      }
+      // Start with tallyResult = [0...0]
+      const total = calculateTotal(maciState.polls[pollId].tallyResult);
       expect(total.toString()).to.eq("0");
 
       // Check that there are untallied results
@@ -288,8 +280,8 @@ describe("MaciState", function () {
 
       // Recall that each user `i` cast the same number of votes for
       // their option `i`
-      for (let i = 0; i < poll.results.length - 1; i++) {
-        expect(poll.results[i].toString()).to.eq(voteWeight.toString());
+      for (let i = 0; i < maciState.polls[pollId].tallyResult.length - 1; i++) {
+        expect(maciState.polls[pollId].tallyResult[i].toString()).to.eq(voteWeight.toString());
       }
 
       expect(poll.hasUntalliedBallots()).to.be.false;
