@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://maci.pse.dev/blog</id>
     <title>MACI Blog</title>
-    <updated>2023-12-06T16:57:59.000Z</updated>
+    <updated>2023-12-07T00:09:01.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://maci.pse.dev/blog"/>
     <subtitle>MACI Blog</subtitle>
@@ -11,7 +11,7 @@
         <title type="html"><![CDATA[Welcome to MACI]]></title>
         <id>https://maci.pse.dev/blog/welcome</id>
         <link href="https://maci.pse.dev/blog/welcome"/>
-        <updated>2023-12-06T16:57:59.000Z</updated>
+        <updated>2023-12-07T00:09:01.000Z</updated>
         <summary type="html"><![CDATA[Welcome to the MACI blog! This is where we will post updates on the project, including new releases, new features, and other news.]]></summary>
         <content type="html"><![CDATA[<p>Welcome to the MACI blog! This is where we will post updates on the project, including new releases, new features, and other news.</p>]]></content>
         <author>
@@ -49,7 +49,7 @@
 <p>Another notable security issue was the lack of initialization of the <code>AccQueue</code> contract. This contract is used to store messages (votes or topups) for the different polls. Without inserting a zero value hash into the merkle tree contract as the first message during initialization, a malicious user could have performed a denial of service attack on a poll. This could have resulted in the poll results taking a very long time before being tallied by the coordinator.</p>
 <p>All of these issues have been successfully resolved, on top of fixing minor issues and general code optimizations. The updated product uses a more up to date and secure version of Solidity, and more thorough test cases to verify the correctness of the solution.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="new-features">New Features<a href="https://maci.pse.dev/blog/maci%20v1.1.1#new-features" class="hash-link" aria-label="Direct link to New Features" title="Direct link to New Features">​</a></h2>
-<table><thead><tr><th>Feature</th><th>Description</th></tr></thead><tbody><tr><td><a href="https://hackmd.io/@chaosma/rkyPfI7Iq" target="_blank" rel="noopener noreferrer">Top Up Credit</a></td><td>Users can now top up credits rather than having to sign up with a different MACI key</td></tr><tr><td><a href="https://ethresear.ch/t/pairwise-coordination-subsidies-a-new-quadratic-funding-design/5553" target="_blank" rel="noopener noreferrer">Pairwise Subsidy</a></td><td>Enhanced protection against collusion in quadratic funding</td></tr><tr><td><a href="https://github.com/privacy-scaling-explorations/maci/tree/v1/server" target="_blank" rel="noopener noreferrer">Coordinator Service</a></td><td>Sample coordinator server for easier MACI use</td></tr></tbody></table>
+<table><thead><tr><th>Feature</th><th>Description</th></tr></thead><tbody><tr><td><a href="https://hackmd.io/@chaosma/rkyPfI7Iq" target="_blank" rel="noopener noreferrer">Top Up Credit</a></td><td>Users can now top up credits rather than having to sign up with a different MACI key</td></tr><tr><td><a href="https://ethresear.ch/t/pairwise-coordination-subsidies-a-new-quadratic-funding-design/5553" target="_blank" rel="noopener noreferrer">Pairwise Subsidy</a></td><td>Enhanced protection against collusion in quadratic funding</td></tr><tr><td><a href="https://github.com/privacy-scaling-explorations/maci/tree/v1.1.1/server" target="_blank" rel="noopener noreferrer">Coordinator Service</a></td><td>Sample coordinator server for easier MACI use</td></tr></tbody></table>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="top-up-credit">Top Up Credit<a href="https://maci.pse.dev/blog/maci%20v1.1.1#top-up-credit" class="hash-link" aria-label="Direct link to Top Up Credit" title="Direct link to Top Up Credit">​</a></h3>
 <p>Rather than requring a user to sign up multiple times, it is now possible to top up voice credits by sending a top up message on the Poll contract. Withdrawals are not enabled as this would allow a malicious user to bribe others offline to transfer their keys.</p>
 <p>Now, the Poll contract will hold all the funds deposited from users for the current poll. At the end of a poll, the coordinator can transfer the funds to a hardcoded address which can be used to fund public goods.</p>
@@ -62,7 +62,7 @@
 <p>Please refer to this <a href="https://hackmd.io/@chaosma/H1_9xmT2K" target="_blank" rel="noopener noreferrer">post</a> for a more detailed explaination of the implementation.</p>
 <p>Finally, please note that currently it is not possible to generate the <code>zkeys</code> for the subsidy circuit with with the <code>vote options</code> parameter larger than $5^2$. This issue is documented <a href="https://github.com/privacy-scaling-explorations/maci/issues/584" target="_blank" rel="noopener noreferrer">here</a> and the team will focus on finding a solution to be able to support larger vote options.</p>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="coordinator-service">Coordinator Service<a href="https://maci.pse.dev/blog/maci%20v1.1.1#coordinator-service" class="hash-link" aria-label="Direct link to Coordinator Service" title="Direct link to Coordinator Service">​</a></h3>
-<p>MACI now includes a sample <a href="https://github.com/privacy-scaling-explorations/maci/tree/v1/server" target="_blank" rel="noopener noreferrer">coordinator service</a>.</p>
+<p>MACI now includes a sample <a href="https://github.com/privacy-scaling-explorations/maci/tree/v1.1.1/server" target="_blank" rel="noopener noreferrer">coordinator service</a>.</p>
 <p>There are two roles in the cordinator service: admin (i.e. MACI coordinator) and user (i.e. a voter). The admin's responsibility is to ensure that the code remains updated and that the backend services are live. The user can then simply send HTTP requests to the backend server to interact with MACI, for instance, by signing up and publishing a message on chain.</p>
 <p>The coordinator service has been wrapped into two docker instances: one for the backend server to accept user requests; one for the Mongodb service to store all necessary information on the current state such as smart contract addresses, zero knowledge proof keys and so on.</p>
 <p>For further reading on coordinator services, please refer to this <a href="https://hackmd.io/@chaosma/SJtsfzKnF" target="_blank" rel="noopener noreferrer">doc</a>.</p>
@@ -73,11 +73,11 @@
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="maci-0x">MACI 0.x<a href="https://maci.pse.dev/blog/maci%20v1.1.1#maci-0x" class="hash-link" aria-label="Direct link to MACI 0.x" title="Direct link to MACI 0.x">​</a></h2>
 <p>MACI version 0.x will be discontinued. MACI 1.x has feature parity, more robust code and newest features. Users are encouraged to use the latest version. Starting February 7, 2023, the team will focus solely on resolving issues for MACI 1.x, and will cease to provide support for version 0.x.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="how-to-get-involved">How to get involved<a href="https://maci.pse.dev/blog/maci%20v1.1.1#how-to-get-involved" class="hash-link" aria-label="Direct link to How to get involved" title="Direct link to How to get involved">​</a></h2>
-<p>Should you wish to get involved with MACI or simply report a bug, feel free to visit the <a href="https://github.com/privacy-scaling-explorations/maci/tree/v1" target="_blank" rel="noopener noreferrer">repository</a> and open an issue, or comment under an open issue to notify the team of your intention to work on it.</p>
+<p>Should you wish to get involved with MACI or simply report a bug, feel free to visit the <a href="https://github.com/privacy-scaling-explorations/maci/tree/v1.1.1" target="_blank" rel="noopener noreferrer">repository</a> and open an issue, or comment under an open issue to notify the team of your intention to work on it.</p>
 <p>For any other enquiry, please reach out to us via the Privacy and Scaling Explorations (PSE) <a href="https://discord.gg/bTdZfpc69U" target="_blank" rel="noopener noreferrer">Discord</a>.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="references">References<a href="https://maci.pse.dev/blog/maci%20v1.1.1#references" class="hash-link" aria-label="Direct link to References" title="Direct link to References">​</a></h2>
 <ul>
-<li><a href="https://github.com/privacy-scaling-explorations/maci/tree/v1" target="_blank" rel="noopener noreferrer">MACI GitHub repository</a></li>
+<li><a href="https://github.com/privacy-scaling-explorations/maci/tree/v1.1.1" target="_blank" rel="noopener noreferrer">MACI GitHub repository</a></li>
 <li><a href="https://medium.com/privacy-scaling-explorations/a-technical-introduction-to-maci-1-0-db95c3a9439a" target="_blank" rel="noopener noreferrer">A technical introduction to MACI 1.0 - Kyle Charbonnet</a></li>
 <li><a href="https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413" target="_blank" rel="noopener noreferrer">Minimal anti-collusion infrastructure - Vitalik</a></li>
 <li><a href="https://ethresear.ch/t/pairwise-coordination-subsidies-a-new-quadratic-funding-design/5553" target="_blank" rel="noopener noreferrer">Pairwise Subsidy</a></li>
