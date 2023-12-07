@@ -1,4 +1,17 @@
-import { formatProofForVerifierContract, getDefaultSigner, parseArtifact } from "maci-contracts";
+import {
+  MACI,
+  AccQueue,
+  Subsidy,
+  Tally,
+  MessageProcessor,
+  Poll as PollContract,
+  formatProofForVerifierContract,
+  getDefaultSigner,
+  parseArtifact,
+  VkRegistry,
+  Verifier,
+  IVerifyingKeyStruct,
+} from "maci-contracts";
 import {
   banner,
   contractExists,
@@ -11,10 +24,11 @@ import {
   readContractAddress,
   success,
 } from "../utils/";
-import { Contract } from "ethers";
+import { BaseContract } from "ethers";
 import { readFileSync, readdirSync } from "fs";
 import { join } from "path";
-import { hashLeftRight } from "maci-crypto";
+import { G1Point, G2Point, hashLeftRight } from "maci-crypto";
+import { VerifyingKey } from "maci-domainobjs";
 
 /**
  * Command to prove the result of a poll on-chain
@@ -60,39 +74,56 @@ export const proveOnChain = async (
   if (!(await contractExists(signer.provider, tallyContractAddress))) logError("Tally contract does not exist");
   if (!(await contractExists(signer.provider, subsidyContractAddress))) logError("Subsidy contract does not exist");
 
-  const maciContract = new Contract(maciContractAddress, parseArtifact("MACI")[0], signer);
+  const maciContract = new BaseContract(maciContractAddress, parseArtifact("MACI")[0], signer) as MACI;
 
   const pollAddr = await maciContract.polls(pollId);
   if (!(await contractExists(signer.provider, pollAddr))) {
     logError("There is no Poll contract with this poll ID linked to the specified MACI contract.");
   }
 
-  const pollContract = new Contract(pollAddr, parseArtifact("Poll")[0], signer);
+  const pollContract = new BaseContract(pollAddr, parseArtifact("Poll")[0], signer) as PollContract;
 
-  const mpContract = new Contract(messageProcessorContractAddress, parseArtifact("MessageProcessor")[0], signer);
+  const mpContract = new BaseContract(
+    messageProcessorContractAddress,
+    parseArtifact("MessageProcessor")[0],
+    signer,
+  ) as MessageProcessor;
 
-  const tallyContract = new Contract(tallyContractAddress, parseArtifact("Tally")[0], signer);
+  const tallyContract = new BaseContract(tallyContractAddress, parseArtifact("Tally")[0], signer) as Tally;
 
-  const subsidyContract = new Contract(subsidyContractAddress, parseArtifact("Subsidy")[0], signer);
+  const subsidyContract = new BaseContract(subsidyContractAddress, parseArtifact("Subsidy")[0], signer) as Subsidy;
 
   const messageAqContractAddress = (await pollContract.extContracts()).messageAq;
   if (!(await contractExists(signer.provider, messageAqContractAddress))) {
     logError("There is no MessageAq contract linked to the specified MACI contract.");
   }
 
-  const messageAqContract = new Contract(messageAqContractAddress, parseArtifact("AccQueue")[0], signer);
+  const messageAqContract = new BaseContract(
+    messageAqContractAddress,
+    parseArtifact("AccQueue")[0],
+    signer,
+  ) as AccQueue;
 
   const vkRegistryContractAddress = (await pollContract.extContracts()).vkRegistry;
   if (!(await contractExists(signer.provider, vkRegistryContractAddress))) {
     logError("There is no VkRegistry contract linked to the specified MACI contract.");
   }
-  const vkRegsitryContract = new Contract(vkRegistryContractAddress, parseArtifact("VkRegistry")[0], signer);
+  const vkRegsitryContract = new BaseContract(
+    vkRegistryContractAddress,
+    parseArtifact("VkRegistry")[0],
+    signer,
+  ) as VkRegistry;
 
   const verifierContractAddress = await mpContract.verifier();
   if (!(await contractExists(signer.provider, verifierContractAddress))) {
     logError("There is no Verifier contract linked to the specified MACI contract.");
   }
-  const verifierContract = new Contract(verifierContractAddress, parseArtifact("Verifier")[0], signer);
+  const verifierContract = new BaseContract(verifierContractAddress, parseArtifact("Verifier")[0], signer) as Verifier;
+
+  const [pollContractAddress, mpContractAddress] = await Promise.all([
+    pollContract.getAddress(),
+    mpContract.getAddress(),
+  ]);
 
   const data = {
     processProofs: {},
@@ -207,7 +238,7 @@ export const proveOnChain = async (
       logError("coordPubKey mismatch.");
 
     const packedValsOnChain = BigInt(
-      await mpContract.genProcessMessagesPackedVals(pollContract.address, currentMessageBatchIndex, numSignUps),
+      await mpContract.genProcessMessagesPackedVals(pollContractAddress, currentMessageBatchIndex, numSignUps),
     ).toString();
 
     if (circuitInputs.packedVals !== packedValsOnChain) logError("packedVals mismatch.");
@@ -216,7 +247,7 @@ export const proveOnChain = async (
 
     const publicInputHashOnChain = BigInt(
       await mpContract.genProcessMessagesPublicInputHash(
-        pollContract.address,
+        pollContractAddress,
         currentMessageBatchIndex,
         messageRootOnChain.toString(),
         numSignUps,
@@ -227,10 +258,18 @@ export const proveOnChain = async (
 
     if (publicInputHashOnChain.toString() !== publicInputs[0].toString()) logError("Public input mismatch.");
 
+    const vk = new VerifyingKey(
+      new G1Point(onChainProcessVk.alpha1[0], onChainProcessVk.alpha1[1]),
+      new G2Point(onChainProcessVk.beta2[0], onChainProcessVk.beta2[1]),
+      new G2Point(onChainProcessVk.gamma2[0], onChainProcessVk.gamma2[1]),
+      new G2Point(onChainProcessVk.delta2[0], onChainProcessVk.delta2[1]),
+      onChainProcessVk.ic.map(([x, y]) => new G1Point(x, y)),
+    );
+
     // verify the proof onchain using the verifier contract
     const isValidOnChain = await verifierContract.verify(
       formattedProof,
-      onChainProcessVk,
+      vk.asContractParam() as IVerifyingKeyStruct,
       publicInputHashOnChain.toString(),
     );
     if (!isValidOnChain) logError("The verifier contract found the proof invalid.");
@@ -238,7 +277,7 @@ export const proveOnChain = async (
     try {
       // validate process messaging proof and store the new state and ballot root commitment
       const tx = await mpContract.processMessages(
-        pollContract.address,
+        pollContractAddress,
         "0x" + BigInt(circuitInputs.newSbCommitment).toString(16),
         formattedProof,
       );
@@ -272,7 +311,7 @@ export const proveOnChain = async (
 
     // process all batches
     for (let i = subsidyBatchNum; i < totalBatchNum; i++) {
-      if (i == 0) await subsidyContract.updateSbCommitment(mpContract.address);
+      if (i == 0) await subsidyContract.updateSbCommitment(mpContractAddress);
       const { proof, circuitInputs, publicInputs } = data.subsidyProofs[i];
 
       // ensure the commitment matches
@@ -304,8 +343,8 @@ export const proveOnChain = async (
       try {
         // verify the proof on chain and set the new subsidy commitment
         const tx = await subsidyContract.updateSubsidy(
-          pollContract.address,
-          mpContract.address,
+          pollContractAddress,
+          mpContractAddress,
           circuitInputs.newSubsidyCommitment,
           formattedProof,
         );
@@ -339,7 +378,7 @@ export const proveOnChain = async (
   if (tallyBatchNum < totalTallyBatches) logYellow(quiet, info("Submitting proofs of vote tallying..."));
 
   for (let i = tallyBatchNum; i < totalTallyBatches; i++) {
-    if (i === 0) await tallyContract.updateSbCommitment(mpContract.address);
+    if (i === 0) await tallyContract.updateSbCommitment(mpContractAddress);
     const batchStartIndex = i * tallyBatchSize;
     const { proof, circuitInputs, publicInputs } = data.tallyProofs[i];
 
@@ -373,8 +412,8 @@ export const proveOnChain = async (
     try {
       // verify the proof on chain
       const tx = await tallyContract.tallyVotes(
-        pollContract.address,
-        mpContract.address,
+        pollContractAddress,
+        mpContractAddress,
         "0x" + BigInt(circuitInputs.newTallyCommitment).toString(16),
         formattedProof,
       );

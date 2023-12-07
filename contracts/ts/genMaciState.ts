@@ -1,130 +1,121 @@
+/* eslint-disable no-underscore-dangle */
+import { Provider, Interface, Log, BaseContract } from "ethers";
+import { MaciState } from "maci-core";
 import { Keypair, PubKey, Message } from "maci-domainobjs";
 
-import { parseArtifact } from "./index";
+import assert from "assert";
 
-import { MaciState } from "maci-core";
+import { MACI, Poll } from "../typechain-types";
 
-import { Contract, providers, utils } from "ethers";
-// import { assert } from 'assert'
-import assert = require("assert");
+import { parseArtifact } from "./deploy";
 import { sleep } from "./utils";
 
 interface Action {
   type: string;
-  data: any;
+  data: Partial<{
+    pubKey: PubKey;
+    encPubKey: PubKey;
+    message: Message;
+    voiceCreditBalance: number;
+    timestamp: number;
+    stateIndex: number;
+    numSrQueueOps: number;
+    pollId: number;
+    pollAddr: string;
+    stateRoot: bigint;
+    messageRoot: bigint;
+  }>;
   blockNumber: number;
   transactionIndex: number;
 }
 
 const genMaciStateFromContract = async (
-  provider: providers.Provider,
+  provider: Provider,
   address: string,
   coordinatorKeypair: Keypair,
   pollId: number,
-  fromBlock: number = 0,
-  blocksPerRequest: number = 50,
-  endBlock?: number,
-  sleepAmount?: number,
+  fromBlock = 0,
+  blocksPerRequest = 50,
+  endBlock: number | undefined = undefined,
+  sleepAmount: number | undefined = undefined,
 ): Promise<MaciState> => {
-  pollId = Number(pollId);
   // Verify and sort pollIds
   assert(pollId >= 0);
 
   const [pollContractAbi] = parseArtifact("Poll");
   const [maciContractAbi] = parseArtifact("MACI");
 
-  const maciContract = new Contract(address, maciContractAbi, provider);
+  const maciContract = new BaseContract(address, maciContractAbi, provider) as MACI;
 
-  const maciIface = new utils.Interface(maciContractAbi);
-  const pollIface = new utils.Interface(pollContractAbi);
+  const maciIface = new Interface(maciContractAbi);
+  const pollIface = new Interface(pollContractAbi);
 
   // Check stateTreeDepth
   const stateTreeDepth = await maciContract.stateTreeDepth();
 
   // we need to pass the stateTreeDepth
-  const maciState = new MaciState(stateTreeDepth);
+  const maciState = new MaciState(Number(stateTreeDepth));
 
-  assert(stateTreeDepth === maciState.stateTreeDepth);
+  assert(stateTreeDepth === BigInt(maciState.stateTreeDepth));
 
-  let initLogs: any[] = [];
-  let signUpLogs: any[] = [];
-  let mergeStateAqSubRootsLogs: any[] = [];
-  let mergeStateAqLogs: any[] = [];
-  let deployPollLogs: any[] = [];
+  let initLogs: Log[] = [];
+  let signUpLogs: Log[] = [];
+  let mergeStateAqSubRootsLogs: Log[] = [];
+  let mergeStateAqLogs: Log[] = [];
+  let deployPollLogs: Log[] = [];
 
-  const lastBlock = endBlock ? endBlock : await provider.getBlockNumber();
+  const lastBlock = endBlock || (await provider.getBlockNumber());
 
   // Fetch event logs in batches
   for (let i = fromBlock; i < lastBlock; i += blocksPerRequest + 1) {
     const toBlock = i + blocksPerRequest >= lastBlock ? undefined : i + blocksPerRequest;
 
-    const tmpInitLogs = await provider.getLogs({
-      ...maciContract.filters.Init(),
-      fromBlock: i,
-      toBlock,
-      address: address,
-    });
+    const [tmpInitLogs, tmpSignUpLogs, tmpMergeStateAqSubRootsLogs, tmpMergeStateAqLogs, tmpDeployPollLogs] =
+      // eslint-disable-next-line no-await-in-loop
+      await Promise.all([
+        maciContract.queryFilter(maciContract.filters.Init(), i, toBlock),
+        maciContract.queryFilter(maciContract.filters.SignUp(), i, toBlock),
+        maciContract.queryFilter(maciContract.filters.MergeStateAqSubRoots(), i, toBlock),
+        maciContract.queryFilter(maciContract.filters.MergeStateAq(), i, toBlock),
+        maciContract.queryFilter(maciContract.filters.DeployPoll(), i, toBlock),
+      ]);
 
     initLogs = initLogs.concat(tmpInitLogs);
-
-    const tmpSignUpLogs = await provider.getLogs({
-      ...maciContract.filters.SignUp(),
-      fromBlock: i,
-      toBlock,
-      address: address,
-    });
     signUpLogs = signUpLogs.concat(tmpSignUpLogs);
-
-    const tmpMergeStateAqSubRootsLogs = await provider.getLogs({
-      ...maciContract.filters.MergeStateAqSubRoots(),
-      fromBlock: i,
-      toBlock,
-      address: address,
-    });
     mergeStateAqSubRootsLogs = mergeStateAqSubRootsLogs.concat(tmpMergeStateAqSubRootsLogs);
-
-    const tmpMergeStateAqLogs = await provider.getLogs({
-      ...maciContract.filters.MergeStateAq(),
-      fromBlock: i,
-      toBlock,
-      address: address,
-    });
     mergeStateAqLogs = mergeStateAqLogs.concat(tmpMergeStateAqLogs);
-
-    const tmpDeployPollLogs = await provider.getLogs({
-      ...maciContract.filters.DeployPoll(),
-      fromBlock: i,
-      toBlock,
-      address: address,
-    });
     deployPollLogs = deployPollLogs.concat(tmpDeployPollLogs);
 
-    if (sleepAmount) await sleep(sleepAmount);
+    if (sleepAmount) {
+      // eslint-disable-next-line no-await-in-loop
+      await sleep(sleepAmount);
+    }
   }
 
   // init() should only be called up to 1 time
   assert(initLogs.length <= 1, "More than 1 init() event detected which should not be possible");
 
-  let vkRegistryAddress;
+  let vkRegistryAddress: string | undefined;
 
-  for (const log of initLogs) {
+  initLogs.forEach((log) => {
     const mutableLog = {
       ...log,
       topics: [...log.topics],
     };
-    const event = maciIface.parseLog(mutableLog);
+    const event = maciIface.parseLog(mutableLog) as unknown as { args: { _vkRegistry: string } };
+
     vkRegistryAddress = event.args._vkRegistry;
-  }
+  });
 
-  const actions: Action[] = [];
+  let actions: Action[] = [];
 
-  for (const log of signUpLogs) {
-    assert(log != undefined);
-    const mutableLog = {
-      ...log,
-      topics: [...log.topics],
+  signUpLogs.forEach((log) => {
+    assert(!!log);
+    const mutableLog = { ...log, topics: [...log.topics] };
+    const event = maciIface.parseLog(mutableLog) as unknown as {
+      args: { _stateIndex: number; _userPubKey: string[]; _voiceCreditBalance: number; _timestamp: number };
     };
-    const event = maciIface.parseLog(mutableLog);
+
     actions.push({
       type: "SignUp",
       blockNumber: log.blockNumber,
@@ -136,17 +127,15 @@ const genMaciStateFromContract = async (
         timestamp: Number(event.args._timestamp),
       },
     });
-  }
+  });
 
   // TODO: consider removing MergeStateAqSubRoots and MergeStateAq as the
   // functions in Poll which call them already have their own events
-  for (const log of mergeStateAqSubRootsLogs) {
-    assert(log != undefined);
-    const mutableLogs = {
-      ...log,
-      topics: [...log.topics],
-    };
-    const event = maciIface.parseLog(mutableLogs);
+  mergeStateAqSubRootsLogs.forEach((log) => {
+    assert(!!log);
+    const mutableLogs = { ...log, topics: [...log.topics] };
+    const event = maciIface.parseLog(mutableLogs) as unknown as { args: { _pollId: number; _numSrQueueOps: number } };
+
     const p = Number(event.args._pollId);
 
     actions.push({
@@ -158,15 +147,13 @@ const genMaciStateFromContract = async (
         pollId: p,
       },
     });
-  }
+  });
 
-  for (const log of mergeStateAqLogs) {
-    assert(log != undefined);
-    const mutableLogs = {
-      ...log,
-      topics: [...log.topics],
-    };
-    const event = maciIface.parseLog(mutableLogs);
+  mergeStateAqLogs.forEach((log) => {
+    assert(!!log);
+    const mutableLogs = { ...log, topics: [...log.topics] };
+    const event = maciIface.parseLog(mutableLogs) as unknown as { args: { _pollId: number } };
+
     const p = Number(event.args._pollId);
 
     actions.push({
@@ -177,41 +164,42 @@ const genMaciStateFromContract = async (
         pollId: p,
       },
     });
-  }
+  });
 
-  let i = 0;
+  let index = 0;
   const foundPollIds: number[] = [];
   const pollContractAddresses: string[] = [];
-  for (const log of deployPollLogs) {
-    assert(log != undefined);
-    const mutableLogs = {
-      ...log,
-      topics: [...log.topics],
+
+  deployPollLogs.forEach((log) => {
+    assert(!!log);
+    const mutableLogs = { ...log, topics: [...log.topics] };
+    const event = maciIface.parseLog(mutableLogs) as unknown as {
+      args: { _pubKey: string[]; _pollAddr: string; _pollId: number };
     };
-    const event = maciIface.parseLog(mutableLogs);
+
     const pubKey = new PubKey(event.args._pubKey.map((x) => BigInt(x.toString())));
 
-    const pollId = Number(event.args._pollId);
-    assert(pollId === i);
+    const p = Number(event.args._pollId);
+    assert(p === index);
 
     const pollAddr = event.args._pollAddr;
     actions.push({
       type: "DeployPoll",
       blockNumber: log.blockNumber,
       transactionIndex: log.transactionIndex,
-      data: { pollId, pollAddr, pubKey },
+      data: { pollId: p, pollAddr, pubKey },
     });
 
-    foundPollIds.push(Number(pollId));
+    foundPollIds.push(Number(p));
     pollContractAddresses.push(pollAddr);
-    i++;
-  }
+    index += 1;
+  });
 
   // Check whether each pollId exists
-  assert(foundPollIds.indexOf(Number(pollId)) > -1, "Error: the specified pollId does not exist on-chain");
+  assert(foundPollIds.includes(Number(pollId)), "Error: the specified pollId does not exist on-chain");
 
   const pollContractAddress = pollContractAddresses[pollId];
-  const pollContract = new Contract(pollContractAddress, pollContractAbi, provider);
+  const pollContract = new BaseContract(pollContractAddress, pollContractAbi, provider) as Poll;
 
   const coordinatorPubKeyOnChain = await pollContract.coordinatorPubKey();
   assert(coordinatorPubKeyOnChain[0].toString() === coordinatorKeypair.pubKey.rawPubKey[0].toString());
@@ -227,8 +215,8 @@ const genMaciStateFromContract = async (
   assert(vkRegistryAddress === (await maciContract.vkRegistry()));
 
   const maxValues = {
-    maxMessages: Number(onChainMaxValues.maxMessages.toNumber()),
-    maxVoteOptions: Number(onChainMaxValues.maxVoteOptions.toNumber()),
+    maxMessages: Number(onChainMaxValues.maxMessages),
+    maxVoteOptions: Number(onChainMaxValues.maxVoteOptions),
   };
   const treeDepths = {
     intStateTreeDepth: Number(onChainTreeDepths.intStateTreeDepth),
@@ -243,76 +231,56 @@ const genMaciStateFromContract = async (
   };
 
   // fetch poll contract logs
-  let publishMessageLogs: any[] = [];
-  let topupLogs: any[] = [];
-  let mergeMaciStateAqSubRootsLogs: any[] = [];
-  let mergeMaciStateAqLogs: any[] = [];
-  let mergeMessageAqSubRootsLogs: any[] = [];
-  let mergeMessageAqLogs: any[] = [];
+  let publishMessageLogs: Log[] = [];
+  let topupLogs: Log[] = [];
+  let mergeMaciStateAqSubRootsLogs: Log[] = [];
+  let mergeMaciStateAqLogs: Log[] = [];
+  let mergeMessageAqSubRootsLogs: Log[] = [];
+  let mergeMessageAqLogs: Log[] = [];
 
   for (let i = fromBlock; i < lastBlock; i += blocksPerRequest + 1) {
     const toBlock = i + blocksPerRequest >= lastBlock ? undefined : i + blocksPerRequest;
 
-    const tmpPublishMessageLogs = await provider.getLogs({
-      ...pollContract.filters.PublishMessage(),
-      fromBlock: i,
-      toBlock,
-    });
+    const [
+      tmpPublishMessageLogs,
+      tmpTopupLogs,
+      tmpMergeMaciStateAqSubRootsLogs,
+      tmpMergeMaciStateAqLogs,
+      tmpMergeMessageAqSubRootsLogs,
+      tmpMergeMessageAqLogs,
+      // eslint-disable-next-line no-await-in-loop
+    ] = await Promise.all([
+      pollContract.queryFilter(pollContract.filters.PublishMessage(), i, toBlock),
+      pollContract.queryFilter(pollContract.filters.TopupMessage(), i, toBlock),
+      pollContract.queryFilter(pollContract.filters.MergeMaciStateAqSubRoots(), i, toBlock),
+      pollContract.queryFilter(pollContract.filters.MergeMaciStateAq(), i, toBlock),
+      pollContract.queryFilter(pollContract.filters.MergeMessageAqSubRoots(), i, toBlock),
+      pollContract.queryFilter(pollContract.filters.MergeMessageAq(), i, toBlock),
+    ]);
+
     publishMessageLogs = publishMessageLogs.concat(tmpPublishMessageLogs);
-
-    const tmpTopupLogs = await provider.getLogs({
-      ...pollContract.filters.TopupMessage(),
-      fromBlock: i,
-      toBlock,
-      address: pollContract.address,
-    });
     topupLogs = topupLogs.concat(tmpTopupLogs);
-
-    const tmpMergeMaciStateAqSubRootsLogs = await provider.getLogs({
-      ...pollContract.filters.MergeMaciStateAqSubRoots(),
-      fromBlock: i,
-      toBlock,
-      address: pollContract.address,
-    });
     mergeMaciStateAqSubRootsLogs = mergeMaciStateAqSubRootsLogs.concat(tmpMergeMaciStateAqSubRootsLogs);
-
-    const tmpMergeMaciStateAqLogs = await provider.getLogs({
-      ...pollContract.filters.MergeMaciStateAq(),
-      fromBlock: i,
-      toBlock,
-      address: pollContract.address,
-    });
     mergeMaciStateAqLogs = mergeMaciStateAqLogs.concat(tmpMergeMaciStateAqLogs);
-
-    const tmpMergeMessageAqSubRootsLogs = await provider.getLogs({
-      ...pollContract.filters.MergeMessageAqSubRoots(),
-      fromBlock: i,
-      toBlock,
-      address: pollContract.address,
-    });
     mergeMessageAqSubRootsLogs = mergeMessageAqSubRootsLogs.concat(tmpMergeMessageAqSubRootsLogs);
-
-    const tmpMergeMessageAqLogs = await provider.getLogs({
-      ...pollContract.filters.MergeMessageAq(),
-      fromBlock: i,
-      toBlock,
-      address: pollContract.address,
-    });
     mergeMessageAqLogs = mergeMessageAqLogs.concat(tmpMergeMessageAqLogs);
 
-    if (sleepAmount) await sleep(sleepAmount);
+    if (sleepAmount) {
+      // eslint-disable-next-line no-await-in-loop
+      await sleep(sleepAmount);
+    }
   }
 
-  for (const log of publishMessageLogs) {
-    assert(log != undefined);
-    const mutableLogs = {
-      ...log,
-      topics: [...log.topics],
+  publishMessageLogs.forEach((log) => {
+    assert(!!log);
+    const mutableLogs = { ...log, topics: [...log.topics] };
+    const event = pollIface.parseLog(mutableLogs) as unknown as {
+      args: { _message: [string, string[]]; _encPubKey: string[] };
     };
-    const event = pollIface.parseLog(mutableLogs);
 
     const message = new Message(
       BigInt(event.args._message[0]),
+
       event.args._message[1].map((x) => BigInt(x)),
     );
 
@@ -327,15 +295,14 @@ const genMaciStateFromContract = async (
         encPubKey,
       },
     });
-  }
+  });
 
-  for (const log of topupLogs) {
-    assert(log != undefined);
-    const mutableLog = {
-      ...log,
-      topics: [...log.topics],
+  topupLogs.forEach((log) => {
+    assert(!!log);
+    const mutableLog = { ...log, topics: [...log.topics] };
+    const event = pollIface.parseLog(mutableLog) as unknown as {
+      args: { _message: [string, string[]] };
     };
-    const event = pollIface.parseLog(mutableLog);
     const message = new Message(
       BigInt(event.args._message[0]),
       event.args._message[1].map((x) => BigInt(x)),
@@ -349,15 +316,12 @@ const genMaciStateFromContract = async (
         message,
       },
     });
-  }
+  });
 
-  for (const log of mergeMaciStateAqSubRootsLogs) {
-    assert(log != undefined);
-    const mutableLogs = {
-      ...log,
-      topics: [...log.topics],
-    };
-    const event = pollIface.parseLog(mutableLogs);
+  mergeMaciStateAqSubRootsLogs.forEach((log) => {
+    assert(!!log);
+    const mutableLogs = { ...log, topics: [...log.topics] };
+    const event = pollIface.parseLog(mutableLogs) as unknown as { args: { _numSrQueueOps: string } };
 
     const numSrQueueOps = Number(event.args._numSrQueueOps);
     actions.push({
@@ -368,16 +332,13 @@ const genMaciStateFromContract = async (
         numSrQueueOps,
       },
     });
-  }
+  });
 
-  for (const log of mergeMaciStateAqLogs) {
-    assert(log != undefined);
-    const mutableLogs = {
-      ...log,
-      topics: [...log.topics],
-    };
+  mergeMaciStateAqLogs.forEach((log) => {
+    assert(!!log);
+    const mutableLogs = { ...log, topics: [...log.topics] };
 
-    const event = pollIface.parseLog(mutableLogs);
+    const event = pollIface.parseLog(mutableLogs) as unknown as { args: { _stateRoot: string } };
 
     const stateRoot = BigInt(event.args._stateRoot);
     actions.push({
@@ -386,15 +347,12 @@ const genMaciStateFromContract = async (
       transactionIndex: log.transactionIndex,
       data: { stateRoot },
     });
-  }
+  });
 
-  for (const log of mergeMessageAqSubRootsLogs) {
-    assert(log != undefined);
-    const mutableLogs = {
-      ...log,
-      topics: [...log.topics],
-    };
-    const event = pollIface.parseLog(mutableLogs);
+  mergeMessageAqSubRootsLogs.forEach((log) => {
+    assert(!!log);
+    const mutableLogs = { ...log, topics: [...log.topics] };
+    const event = pollIface.parseLog(mutableLogs) as unknown as { args: { _numSrQueueOps: string } };
 
     const numSrQueueOps = Number(event.args._numSrQueueOps);
     actions.push({
@@ -405,35 +363,37 @@ const genMaciStateFromContract = async (
         numSrQueueOps,
       },
     });
-  }
+  });
 
-  for (const log of mergeMessageAqLogs) {
-    assert(log != undefined);
-    const mutableLogs = {
-      ...log,
-      topics: [...log.topics],
-    };
+  mergeMessageAqLogs.forEach((log) => {
+    assert(!!log);
+    const mutableLogs = { ...log, topics: [...log.topics] };
     const event = pollIface.parseLog(mutableLogs);
 
-    const messageRoot = BigInt(event.args._messageRoot);
+    const messageRoot = BigInt((event?.args as unknown as { _messageRoot: string })._messageRoot);
     actions.push({
       type: "MergeMessageAq",
       blockNumber: log.blockNumber,
       transactionIndex: log.transactionIndex,
       data: { messageRoot },
     });
-  }
+  });
 
   // Sort actions
-  sortActions(actions);
+  actions = sortActions(actions);
 
   // Reconstruct MaciState in order
 
-  for (const action of actions) {
-    if (action["type"] === "SignUp") {
-      maciState.signUp(action.data.pubKey, action.data.voiceCreditBalance, action.data.timestamp);
-    } else if (action["type"] === "DeployPoll") {
-      if (action.data.pollId === pollId) {
+  actions.forEach((action) => {
+    switch (true) {
+      case action.type === "SignUp": {
+        const { pubKey, voiceCreditBalance, timestamp } = action.data;
+
+        maciState.signUp(pubKey!, BigInt(voiceCreditBalance!), BigInt(timestamp!));
+        break;
+      }
+
+      case action.type === "DeployPoll" && action.data.pollId?.toString() === pollId.toString(): {
         maciState.deployPoll(
           duration,
           BigInt(deployTime + duration),
@@ -442,17 +402,35 @@ const genMaciStateFromContract = async (
           batchSizes.messageBatchSize,
           coordinatorKeypair,
         );
-      } else {
-        maciState.deployNullPoll();
+        break;
       }
-    } else if (action["type"] === "PublishMessage") {
-      maciState.polls[pollId].publishMessage(action.data.message, action.data.encPubKey);
-    } else if (action["type"] === "TopupMessage") {
-      maciState.polls[pollId].topupMessage(action.data.message);
-    } else if (action["type"] === "MergeMessageAq") {
-      assert(maciState.polls[pollId].messageTree.root === action.data.messageRoot);
+
+      case action.type === "DeployPoll" && action.data.pollId?.toString() !== pollId.toString(): {
+        maciState.deployNullPoll();
+        break;
+      }
+
+      case action.type === "PublishMessage": {
+        const { encPubKey, message } = action.data;
+        maciState.polls[pollId]?.publishMessage(message!, encPubKey!);
+        break;
+      }
+
+      case action.type === "TopupMessage": {
+        const { message } = action.data;
+        maciState.polls[pollId]?.topupMessage(message!);
+        break;
+      }
+
+      case action.type === "MergeMessageAq": {
+        assert(maciState.polls[pollId]?.messageTree.root.toString() === action.data.messageRoot?.toString());
+        break;
+      }
+
+      default:
+        break;
     }
-  }
+  });
 
   // Set numSignUps
   const numSignUpsAndMessages = await pollContract.numSignUpsAndMessages();
@@ -460,7 +438,8 @@ const genMaciStateFromContract = async (
   const poll = maciState.polls[pollId];
   assert(Number(numSignUpsAndMessages[1]) === poll.messages.length);
 
-  maciState.polls[pollId].numSignUps = Number(numSignUpsAndMessages[0]);
+  poll.numSignUps = Number(numSignUpsAndMessages[0]);
+  maciState.polls[pollId] = poll;
 
   return maciState;
 };
@@ -469,11 +448,12 @@ const genMaciStateFromContract = async (
  * The comparision function for Actions based on block number and transaction
  * index.
  */
-const sortActions = (actions: Action[]) => {
-  actions.sort((a, b) => {
+function sortActions(actions: Action[]): Action[] {
+  return actions.slice().sort((a, b) => {
     if (a.blockNumber > b.blockNumber) {
       return 1;
     }
+
     if (a.blockNumber < b.blockNumber) {
       return -1;
     }
@@ -481,12 +461,13 @@ const sortActions = (actions: Action[]) => {
     if (a.transactionIndex > b.transactionIndex) {
       return 1;
     }
+
     if (a.transactionIndex < b.transactionIndex) {
       return -1;
     }
+
     return 0;
   });
-  return actions;
-};
+}
 
 export { genMaciStateFromContract };

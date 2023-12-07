@@ -1,8 +1,6 @@
-interface SnarkProof {
-  pi_a: bigint[];
-  pi_b: bigint[][];
-  pi_c: bigint[];
-}
+import type { IDeployedTestContracts, SnarkProof } from "./types";
+
+import { FreeForAllGatekeeper } from "../typechain-types";
 
 import {
   deployVkRegistry,
@@ -13,31 +11,31 @@ import {
   deployMockVerifier,
   deployFreeForAllSignUpGatekeeper,
   deployConstantInitialVoiceCreditProxy,
-} from "./index";
+} from "./deploy";
 
-const formatProofForVerifierContract = (_proof: SnarkProof) => {
-  return [
-    _proof.pi_a[0],
-    _proof.pi_a[1],
+const formatProofForVerifierContract = (proof: SnarkProof): string[] =>
+  [
+    proof.pi_a[0],
+    proof.pi_a[1],
 
-    _proof.pi_b[0][1],
-    _proof.pi_b[0][0],
-    _proof.pi_b[1][1],
-    _proof.pi_b[1][0],
+    proof.pi_b[0][1],
+    proof.pi_b[0][0],
+    proof.pi_b[1][1],
+    proof.pi_b[1][0],
 
-    _proof.pi_c[0],
-    _proof.pi_c[1],
+    proof.pi_c[0],
+    proof.pi_c[1],
   ].map((x) => x.toString());
-};
 
 const deployTestContracts = async (
   initialVoiceCreditBalance: number,
   stateTreeDepth: number,
   quiet = false,
-  gatekeeperContract?: any,
-) => {
+  gatekeeper: FreeForAllGatekeeper | undefined = undefined,
+): Promise<IDeployedTestContracts> => {
   const mockVerifierContract = await deployMockVerifier(true);
 
+  let gatekeeperContract = gatekeeper;
   if (!gatekeeperContract) {
     gatekeeperContract = await deployFreeForAllSignUpGatekeeper(true);
   }
@@ -50,18 +48,31 @@ const deployTestContracts = async (
   // VkRegistry
   const vkRegistryContract = await deployVkRegistry(true);
   const topupCreditContract = await deployTopupCredit(true);
+  const [
+    gatekeeperContractAddress,
+    mockVerifierContractAddress,
+    constantIntialVoiceCreditProxyContractAddress,
+    vkRegistryContractAddress,
+    topupCreditContractAddress,
+  ] = await Promise.all([
+    gatekeeperContract.getAddress(),
+    mockVerifierContract.getAddress(),
+    constantIntialVoiceCreditProxyContract.getAddress(),
+    vkRegistryContract.getAddress(),
+    topupCreditContract.getAddress(),
+  ]);
 
   const { maciContract, stateAqContract, poseidonAddrs } = await deployMaci(
-    gatekeeperContract.address,
-    constantIntialVoiceCreditProxyContract.address,
-    mockVerifierContract.address,
-    vkRegistryContract.address,
-    topupCreditContract.address,
+    gatekeeperContractAddress,
+    constantIntialVoiceCreditProxyContractAddress,
+    mockVerifierContractAddress,
+    vkRegistryContractAddress,
+    topupCreditContractAddress,
     stateTreeDepth,
     quiet,
   );
   const mpContract = await deployMessageProcessor(
-    mockVerifierContract.address,
+    mockVerifierContractAddress,
     poseidonAddrs[0],
     poseidonAddrs[1],
     poseidonAddrs[2],
@@ -69,7 +80,7 @@ const deployTestContracts = async (
     true,
   );
   const tallyContract = await deployTally(
-    mockVerifierContract.address,
+    mockVerifierContractAddress,
     poseidonAddrs[0],
     poseidonAddrs[1],
     poseidonAddrs[2],
@@ -93,8 +104,10 @@ const deployTestContracts = async (
  * Pause the thread for n milliseconds
  * @param ms - the amount of time to sleep in milliseconds
  */
-const sleep = async (ms: number) => {
-  await new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = async (ms: number): Promise<void> => {
+  await new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 };
 
-export { deployTestContracts, formatProofForVerifierContract, sleep };
+export { type IDeployedTestContracts, deployTestContracts, formatProofForVerifierContract, sleep };

@@ -27,6 +27,7 @@ contracts/artifacts
 contracts/compiled
 cli/cache
 contracts/cache
+typechain-types/
 
 node_modules
 blake2sdef.json

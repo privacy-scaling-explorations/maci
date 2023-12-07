@@ -21,12 +21,13 @@ import {
   checkVerifyingKeys,
   genLocalState,
 } from "./commands";
-import { readFileSync } from "fs";
-import { join } from "path";
+import fs from "fs";
+import path from "path";
 
-const packagePath = join(__dirname, "..");
 // set the description version and name of the cli tool
-const { description, version, name } = JSON.parse(readFileSync(`${packagePath}/package.json`, "utf8"));
+const { description, version, name } = JSON.parse(
+  fs.readFileSync(path.resolve(__dirname, "..", "package.json"), "utf8"),
+);
 const program = createCommand();
 program.name(name).description(description).version(version);
 // add the commands

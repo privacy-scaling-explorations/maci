@@ -6,7 +6,7 @@ const { whitelist } = require("utils");
 
 const cliPath = path.join(__dirname, "..", "cli");
 
-const cliCmd = `cd ${cliPath} && node build/index.js`;
+const cliCmd = `cd ${cliPath} && npx ts-node --transpileOnly build/ts/index.js`;
 
 async function handler(req, res, dbClient) {
   let output, cmd, query, dbres;

@@ -54,7 +54,8 @@ export const mergeMessages = async (
   // we need to ensure that the signer is the owner of the poll contract
   // this is because only the owner can merge the message AQ
   const pollOwner = await pollContract.owner();
-  if (pollOwner.toLowerCase() !== signer.address.toLowerCase())
+  const signerAddress = await signer.getAddress();
+  if (pollOwner.toLowerCase() !== signerAddress.toLowerCase())
     logError("The signer is not the owner of this Poll contract");
 
   // check if it's time to merge the message AQ
@@ -81,7 +82,7 @@ export const mergeMessages = async (
 
     logGreen(quiet, success(`Executed mergeMessageAqSubRoots(); gas used: ${receipt.gasUsed.toString()}`));
 
-    logYellow(quiet, info(`Transaction hash: ${receipt.transactionHash}`));
+    logYellow(quiet, info(`Transaction hash: ${receipt.hash}`));
   }
 
   // check if the message AQ has been fully merged
@@ -98,7 +99,7 @@ export const mergeMessages = async (
     if (receipt.status !== 1) logError("Transaction failed");
 
     logGreen(quiet, success(`Executed mergeMessageAq(); gas used: ${receipt.gasUsed.toString()}`));
-    logYellow(quiet, info(`Transaction hash: ${receipt.transactionHash}`));
+    logYellow(quiet, info(`Transaction hash: ${receipt.hash}`));
     logGreen(quiet, success("The message tree has been merged."));
   } else {
     logYellow(quiet, info("The message tree has already been merged."));

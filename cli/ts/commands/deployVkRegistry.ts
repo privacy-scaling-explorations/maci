@@ -19,8 +19,9 @@ export const deployVkRegistryContract = async (quiet = true): Promise<string> =>
 
   // deploy and store the address
   const vkRegistry = await deployVkRegistry(true);
-  storeContractAddress("VkRegistry", vkRegistry.address);
+  const vkRegistryAddress = await vkRegistry.getAddress();
+  storeContractAddress("VkRegistry", vkRegistryAddress);
 
-  logGreen(quiet, success(`VkRegistry deployed at: ${vkRegistry.address}`));
-  return vkRegistry.address;
+  logGreen(quiet, success(`VkRegistry deployed at: ${vkRegistryAddress}`));
+  return vkRegistryAddress;
 };

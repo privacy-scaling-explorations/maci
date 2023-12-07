@@ -15,7 +15,7 @@ import {
   DeployedContracts,
   PollContracts,
 } from "maci-cli";
-import { join } from "path";
+import path from "path";
 import {
   INT_STATE_TREE_DEPTH,
   MSG_BATCH_DEPTH,
@@ -66,10 +66,10 @@ describe("integration tests", function () {
       MSG_TREE_DEPTH,
       VOTE_OPTION_TREE_DEPTH,
       MSG_BATCH_DEPTH,
-      join(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test.0.zkey"),
-      join(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test.0.zkey"),
+      path.resolve(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test.0.zkey"),
+      path.resolve(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test.0.zkey"),
       vkRegistryAddress,
-      join(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test.0.zkey"),
+      path.resolve(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test.0.zkey"),
       true,
     );
   });
@@ -121,21 +121,22 @@ describe("integration tests", function () {
 
   // after each test we need to cleanup some files
   afterEach(() => {
-    if (existsSync(join(__dirname, "../../../cli/tally.json"))) unlinkSync(join(__dirname, "../../../cli/tally.json"));
-    if (existsSync(join(__dirname, "../../../cli/subsidy.json")))
-      unlinkSync(join(__dirname, "../../../cli/subsidy.json"));
-    const directory = join(__dirname, "../../../cli/proofs/");
+    if (existsSync(path.resolve(__dirname, "../../../cli/tally.json")))
+      unlinkSync(path.resolve(__dirname, "../../../cli/tally.json"));
+    if (existsSync(path.resolve(__dirname, "../../../cli/subsidy.json")))
+      unlinkSync(path.resolve(__dirname, "../../../cli/subsidy.json"));
+    const directory = path.resolve(__dirname, "../../../cli/proofs/");
     if (!existsSync(directory)) return;
     readdir(directory, (err, files) => {
       if (err) throw err;
       for (const file of files) {
-        unlinkSync(join(directory, file));
+        unlinkSync(path.resolve(directory, file));
       }
     });
   });
 
   // read the test suite data
-  const data = JSON.parse(readFileSync(join(__dirname, `./data/suites.json`)).toString());
+  const data = JSON.parse(readFileSync(path.resolve(__dirname, `./data/suites.json`)).toString());
   for (const testCase of data.suites) {
     it(testCase.description, async () => {
       // check if we have subsidy enabled
@@ -211,29 +212,32 @@ describe("integration tests", function () {
       // generate proofs
       expect(
         await genProofs(
-          join(__dirname, "../../../cli/proofs"),
-          join(__dirname, "../../../cli/tally.json"),
-          join(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test.0.zkey"),
-          join(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test.0.zkey"),
+          path.resolve(__dirname, "../../../cli/proofs"),
+          path.resolve(__dirname, "../../../cli/tally.json"),
+          path.resolve(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test.0.zkey"),
+          path.resolve(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test.0.zkey"),
           0,
-          join(__dirname, "../../../cli/subsidy.json"),
-          join(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test.0.zkey"),
+          path.resolve(__dirname, "../../../cli/subsidy.json"),
+          path.resolve(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test.0.zkey"),
           `${homedir()}/rapidsnark/build/prover`,
-          join(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test"),
-          join(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test"),
-          join(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test"),
+          path.resolve(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test"),
+          path.resolve(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test"),
+          path.resolve(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test"),
           coordinatorKeypair.privKey.serialize(),
           contracts.maciAddress,
           undefined,
-          join(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm"),
-          join(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm"),
-          join(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test_js/SubsidyPerBatch_10-1-2_test.wasm"),
+          path.resolve(
+            __dirname,
+            "../../../cli/zkeys/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm",
+          ),
+          path.resolve(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm"),
+          path.resolve(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test_js/SubsidyPerBatch_10-1-2_test.wasm"),
           useWasm,
         ),
       ).to.not.throw;
 
       // verify that the data stored on the tally file is correct
-      const tally = JSON.parse(readFileSync(join(__dirname, "../../../cli/tally.json")).toString());
+      const tally = JSON.parse(readFileSync(path.resolve(__dirname, "../../../cli/tally.json")).toString());
       expectTally(
         maxMessages,
         testCase.expectedTally,
@@ -243,7 +247,7 @@ describe("integration tests", function () {
       );
 
       if (subsidyEnabled) {
-        const subsidy = JSON.parse(readFileSync(join(__dirname, "../../../cli/subsidy.json")).toString());
+        const subsidy = JSON.parse(readFileSync(path.resolve(__dirname, "../../../cli/subsidy.json")).toString());
         expectSubsidy(maxMessages, testCase.subsidy.expectedSubsidy, subsidy);
       }
 
@@ -251,7 +255,7 @@ describe("integration tests", function () {
       expect(
         await proveOnChain(
           pollId.toString(),
-          join(__dirname, "../../../cli/proofs"),
+          path.resolve(__dirname, "../../../cli/proofs"),
           contracts.maciAddress,
           pollContracts.messageProcessor,
           pollContracts.tally,
@@ -264,11 +268,11 @@ describe("integration tests", function () {
       expect(
         await verify(
           pollId.toString(),
-          join(__dirname, "../../../cli/tally.json"),
+          path.resolve(__dirname, "../../../cli/tally.json"),
           contracts.maciAddress,
           pollContracts.tally,
           pollContracts.subsidy,
-          subsidyEnabled ? join(__dirname, "../../../cli/subsidy.json") : undefined,
+          subsidyEnabled ? path.resolve(__dirname, "../../../cli/subsidy.json") : undefined,
           true,
         ),
       ).to.not.throw;

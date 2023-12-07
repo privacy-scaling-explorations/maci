@@ -1,7 +1,7 @@
 import { getDefaultSigner, genMaciStateFromContract } from "maci-contracts";
 import { promptSensitiveValue, banner, contractExists, logError, logYellow, readContractAddress, info } from "../utils";
 import { Keypair, PrivKey } from "maci-domainobjs";
-import { providers } from "ethers";
+import { JsonRpcProvider } from "ethers";
 import { writeFileSync } from "fs";
 
 /**
@@ -54,7 +54,7 @@ export const genLocalState = async (
     fromBlock = txn.blockNumber;
   }
 
-  const provider = ethereumProvider ? new providers.JsonRpcProvider(ethereumProvider) : signer.provider;
+  const provider = ethereumProvider ? new JsonRpcProvider(ethereumProvider) : signer.provider;
 
   logYellow(
     quiet,

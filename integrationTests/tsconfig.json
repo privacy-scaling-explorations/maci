@@ -1,8 +1,12 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["es2020"],
+    "module": "commonjs",
     "outDir": "./build",
     "esModuleInterop": true
   },
-  "include": ["./ts"]
+  "include": ["./ts"],
+  "files": ["./hardhat.config.ts"]
 }

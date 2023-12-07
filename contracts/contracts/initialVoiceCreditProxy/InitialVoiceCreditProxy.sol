@@ -2,5 +2,5 @@
 pragma solidity ^0.8.10;
 
 abstract contract InitialVoiceCreditProxy {
-    function getVoiceCredits(address _user, bytes memory _data) public virtual view returns (uint256) {}
+  function getVoiceCredits(address _user, bytes memory _data) public view virtual returns (uint256) {}
 }

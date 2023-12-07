@@ -8,6 +8,9 @@ cd ..
 rm -rf ./artifacts/*
 rm -rf ./cache/*
 
+echo 'Generate typechain-types'
+npx hardhat compile
+
 echo 'Writing Merkle zeros contracts'
 ./scripts/writeMerkleZeroesContracts.sh 
 
@@ -18,4 +21,4 @@ echo 'Building contracts with Hardhat'
 npx hardhat compile
 
 # Build the Poseidon contract from bytecode
-node build/buildPoseidon.js
+npx ts-node ts/buildPoseidon.ts

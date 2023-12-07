@@ -10,8 +10,12 @@
     "clean": "lerna exec -- rm -rf node_modules build && rm -rf node_modules",
     "prettier": "prettier -c .",
     "prettier:fix": "prettier -w .",
-    "lint": "eslint './**/**/*.ts'",
-    "lint:fix": "eslint './**/**/*.ts' --fix",
+    "lint:ts": "eslint './**/**/*.ts'",
+    "lint:ts:fix": "npm run lint:ts -- --fix",
+    "lint:sol": "solhint './contracts/**/*.sol'",
+    "lint:sol:fix": "npm run lint:sol -- --fix",
+    "test:cli": "lerna run test --scope \"maci-cli\"",
+    "test:integration": "lerna run test --scope \"maci-integrationtests\"",
     "test": "lerna run test --ignore maci-common --ignore maci-server --ignore maci-integrationtests --ignore maci-cli",
     "typedoc": "typedoc --options typedoc.json",
     "prepare": "is-ci || husky install"
@@ -35,6 +39,8 @@
     "lerna": "^6.0.3",
     "lint-staged": "^15.1.0",
     "prettier": "^3.1.0",
+    "prettier-plugin-solidity": "^1.2.0",
+    "solhint": "^4.0.0",
     "typedoc": "^0.25.4",
     "typescript": "^5.3.2"
   },

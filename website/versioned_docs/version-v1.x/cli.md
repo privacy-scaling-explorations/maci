@@ -76,7 +76,8 @@ Example usage:
 ```bash
 ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 ETH_PROVIDER=http://localhost:8545 \
-node build/index.js deployVkRegistry
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js deployVkRegistry
 ```
 
 Example output:
@@ -99,7 +100,8 @@ Example usage:
 ```bash
 ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 ETH_PROVIDER=http://localhost:8545 \
-node build/index.js setVerifyingKeys \
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js setVerifyingKeys \
     -s 10 -i 1 -m 2 -v 2 -b 1 \
     -p ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
     -t ./zkeys/TallyVotes_10-1-2_test.0.zkey \
@@ -121,7 +123,8 @@ Example usage:
 ```bash
 ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 ETH_PROVIDER=http://localhost:8545 \
-node build/index.js create -r 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js create -r 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
 ```
 
 Example output:
@@ -187,7 +190,8 @@ Example usage:
 ```bash
 ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 ETH_PROVIDER=http://localhost:8545 \
-node build/index.js publish \
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js publish \
     -p macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
     -sk macisk.2ae4f199bf3925a2407f7c775c9261f351ab861d8e9ecbb84622bdd3f6d41b08 \
     -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D \
@@ -201,7 +205,8 @@ Example usage:
 ```bash
 ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 ETH_PROVIDER=http://localhost:8545 \
-node build/index.js mergeSignups -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D -o 0
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js mergeSignups -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D -o 0
 ```
 
 ### Coordinator: merge message tree
@@ -211,7 +216,8 @@ Example usage:
 ```bash
 ETH_SK=0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 \
 ETH_PROVIDER=http://localhost:8545 \
-node build/index.js mergeMessages -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D -o 0
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js mergeMessages -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D -o 0
 ```
 
 ### Coordinator: generate Maci state offchain
@@ -219,7 +225,8 @@ node build/index.js mergeMessages -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D 
 Example usage to generate the state locally from the smart contracts events:
 
 ```bash
-node build/index.js genLocalState \
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js genLocalState \
     --poll-id $1 \
     --output localState.json \
     --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
@@ -231,7 +238,8 @@ node build/index.js genLocalState \
 Example usage:
 
 ```bash
-node build/index.js genProofs -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D \
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js genProofs -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D \
     -sk macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
     -o 0 \
     -t tally.json \
@@ -267,7 +275,8 @@ node/build.js genProofs \
 Example usage:
 
 ```bash
-node build/index.js proveOnChain \
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js proveOnChain \
     -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D \
     -o 0 \
     -q 0x62C3204a98bbbd73C8fc3B8bfCDa467CB079dF47 \
@@ -279,7 +288,8 @@ node build/index.js proveOnChain \
 Example usage:
 
 ```bash
-node build/index.js verify \
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js verify \
     -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     -o 0 \
     -t tally.json \
@@ -314,7 +324,8 @@ Public key:  macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd1291
 ### Coordinator: Deploy VkRegistry
 
 ```bash
-node build/index.js deployVkRegistry
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js deployVkRegistry
 ```
 
 Output:
@@ -326,7 +337,8 @@ VkRegistry: 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
 ### Coordinator: Set verifying keys
 
 ```bash
-node build/index.js setVerifyingKeys \
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js setVerifyingKeys \
     --vk_registry 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0 \
     --state-tree-depth 10 \
     --int-state-tree-depth 1 \
@@ -347,7 +359,8 @@ Transaction hash: 0x16236fe5e124f3d0c33ddf20a37ceba9730a659630258a1e858b3e335e05
 ### Coordinator: Create MACI instance
 
 ```bash
-node build/index.js create \
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js create \
     --vk-registry 0x8CdaF0CD259887258Bc13a92C0a6dA92698644C0
 ```
 
@@ -408,7 +421,8 @@ State index: 1
 ### Alice: votes for Party A (option index 0)
 
 ```bash
-node build/index.js publish \
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js publish \
     --pubkey macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391 \
     --privkey macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c \
     --contract 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
@@ -429,7 +443,8 @@ Ephemeral private key: macisk.1bf4bba7086c213606bb4a775b1ceaa4c2e7119c329748e675
 ### Alice: submits an invalid vote for Party B (option index 1) with different public key
 
 ```bash
-node build/index.js publish \
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js publish \
     --pubkey macipk.d5788ea6ccf1ec295df99aaef859031fe7bd359e7e03acb80eb6e8a192f2ce19 \
     --privkey macisk.fd7aa614ec4a82716ffc219c24fd7e7b52a2b63b5afb17e81c22fe21515539c \
     --contract 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
@@ -456,7 +471,8 @@ node build timeTravel -s 1000
 ### Coordinator: merge state tree
 
 ```bash
-node build/index.js mergeSignups \
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js mergeSignups \
     --contract 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     --poll-id 0
 ```
@@ -478,7 +494,8 @@ The state tree has been merged.
 ### Coordinator: merge message tree
 
 ```bash
-node build/index.js mergeMessages \
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js mergeMessages \
     --contract 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     --poll-id 0
 ```
@@ -500,7 +517,8 @@ The message tree has been merged.
 ### Coordinator: generate proofs
 
 ```bash
-node build/index.js genProofs \
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js genProofs \
     --contract 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
     --poll-id 0 \
@@ -531,7 +549,8 @@ OK
 ### Coordinator: prove on chain
 
 ```bash
-node build/index.js proveOnChain \
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js proveOnChain \
     --contract 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     --poll-id 0 \
     --ppt 0xEcFcaB0A285d3380E488A39B4BB21e777f8A4EaC \
@@ -557,7 +576,8 @@ OK
 ### Anyone: verify
 
 ```bash
-node build/index.js verify \
+HARDHAT_CONFIG=./build/hardhat.config.js \
+node build/ts/index.js verify \
     --contract 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
     --poll-id 0 \
     --tally-file tally.json \

@@ -48,14 +48,14 @@ export const deploy = async (
       true,
     );
 
-    initialVoiceCreditProxyContractAddress = contract.address;
+    initialVoiceCreditProxyContractAddress = await contract.getAddress();
   }
 
   // check if we have a signupGatekeeper already deployed or passed as arg
   let signupGatekeeperContractAddress = readContractAddress("SignUpGatekeeper");
   if (!signupGatekeeperContractAddress && !signupGatekeeperAddress) {
     const contract = await deployFreeForAllSignUpGatekeeper(true);
-    signupGatekeeperContractAddress = contract.address;
+    signupGatekeeperContractAddress = await contract.getAddress();
   }
 
   // deploy a verifier contract
@@ -64,39 +64,50 @@ export const deploy = async (
   // topup credit
   const topUpCredit = await deployTopupCredit(true);
 
+  const [verifierContractAddress, topUpCreditAddress] = await Promise.all([
+    verifierContract.getAddress(),
+    topUpCredit.getAddress(),
+  ]);
+
   // deploy MACI, stateAq, PollFactory and poseidon
   const { maciContract, stateAqContract, pollFactoryContract, poseidonAddrs } = await deployMaci(
     signupGatekeeperContractAddress,
     initialVoiceCreditProxyContractAddress,
-    verifierContract.address,
+    verifierContractAddress,
     vkRegistry,
-    topUpCredit.address,
+    topUpCreditAddress,
     stateTreeDepth,
     true,
   );
 
+  const [maciContractAddress, stateAqContractAddress, pollFactoryContractAddress] = await Promise.all([
+    maciContract.getAddress(),
+    stateAqContract.getAddress(),
+    pollFactoryContract.getAddress(),
+  ]);
+
   // save to the JSON File
   storeContractAddress("InitialVoiceCreditProxy", initialVoiceCreditProxyContractAddress);
   storeContractAddress("SignUpGatekeeper", signupGatekeeperContractAddress);
-  storeContractAddress("Verifier", verifierContract.address);
-  storeContractAddress("MACI", maciContract.address);
-  storeContractAddress("StateAq", stateAqContract.address);
-  storeContractAddress("PollFactory", pollFactoryContract.address);
-  storeContractAddress("TopupCredit", topUpCredit.address);
+  storeContractAddress("Verifier", verifierContractAddress);
+  storeContractAddress("MACI", maciContractAddress);
+  storeContractAddress("StateAq", stateAqContractAddress);
+  storeContractAddress("PollFactory", pollFactoryContractAddress);
+  storeContractAddress("TopupCredit", topUpCreditAddress);
   storeContractAddress("PoseidonT3", poseidonAddrs[0]);
   storeContractAddress("PoseidonT4", poseidonAddrs[1]);
   storeContractAddress("PoseidonT5", poseidonAddrs[2]);
   storeContractAddress("PoseidonT6", poseidonAddrs[3]);
 
-  logGreen(quiet, success(`MACI deployed at:  ${maciContract.address}`));
+  logGreen(quiet, success(`MACI deployed at:  ${maciContractAddress}`));
 
   // return all addresses
   return {
-    maciAddress: maciContract.address,
-    stateAqAddress: stateAqContract.address,
-    pollFactoryAddress: pollFactoryContract.address,
-    verifierAddress: verifierContract.address,
-    topupCreditAddress: topUpCredit.address,
+    maciAddress: maciContractAddress,
+    stateAqAddress: stateAqContractAddress,
+    pollFactoryAddress: pollFactoryContractAddress,
+    verifierAddress: verifierContractAddress,
+    topupCreditAddress: topUpCreditAddress,
     poseidonT3Address: poseidonAddrs[0],
     poseidonT4Address: poseidonAddrs[1],
     poseidonT5Address: poseidonAddrs[2],
