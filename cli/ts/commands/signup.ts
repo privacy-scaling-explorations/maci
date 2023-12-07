@@ -54,17 +54,19 @@ export const signup = async (
     // sign up to the MACI contract
     const tx = await maciContract.signUp(userMaciPubKey.asContractParam(), sgData, ivcpData, { gasLimit: 1000000 });
     const receipt = await tx.wait();
+
+    logYellow(quiet, info(`Transaction hash: ${tx.hash}`));
+
     if (receipt.status !== 1) logError("The transaction failed");
     const iface = maciContract.interface;
+
     // get state index from the event
     if (receipt && receipt.logs) {
       stateIndex = iface.parseLog(receipt.logs[0]).args[0];
-
       logGreen(quiet, success(`State index: ${stateIndex.toString()}`));
     } else {
       logError("Unable to retrieve the transaction receipt");
     }
-    logYellow(quiet, info(`Transaction hash: ${tx.hash}`));
   } catch (error: any) {
     logError(error.message);
   }

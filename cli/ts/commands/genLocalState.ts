@@ -1,5 +1,15 @@
 import { getDefaultSigner, genMaciStateFromContract } from "maci-contracts";
-import { promptSensitiveValue, banner, contractExists, logError, logYellow, readContractAddress, info } from "../utils";
+import {
+  promptSensitiveValue,
+  banner,
+  contractExists,
+  logError,
+  logYellow,
+  readContractAddress,
+  info,
+  logGreen,
+  success,
+} from "../utils";
 import { Keypair, PrivKey } from "maci-domainobjs";
 import { JsonRpcProvider } from "ethers";
 import { writeFileSync } from "fs";
@@ -8,6 +18,15 @@ import { writeFileSync } from "fs";
  * Generate a local MACI state from the smart contracts events
  * @param outputPath - the path where to write the state
  * @param pollId - the id of the poll
+ * @param maciContractAddress - the address of the MACI contract
+ * @param coordinatorPrivateKey - the private key of the MACI coordinator
+ * @param ethereumProvider - the ethereum provider
+ * @param endBlock - the end block number
+ * @param startBlock - the start block number
+ * @param blockPerBatch - the number of blocks to fetch per batch
+ * @param transactionHash - the transaction hash
+ * @param sleep - the sleep time between batches
+ * @param quiet - whether to log the output
  */
 export const genLocalState = async (
   outputPath: string,
@@ -23,7 +42,6 @@ export const genLocalState = async (
   quiet = true,
 ) => {
   banner(quiet);
-
   // validation of the maci contract address
   if (!readContractAddress("MACI") && !maciContractAddress) logError("MACI contract address is empty");
 
@@ -74,4 +92,6 @@ export const genLocalState = async (
   // write the state to a file
   const serializedState = maciState.toJSON();
   writeFileSync(outputPath, JSON.stringify(serializedState, null, 4));
+
+  logGreen(quiet, success(`The state has been written to ${outputPath}`));
 };
