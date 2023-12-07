@@ -9,123 +9,40 @@ import {
   Ciphertext,
   EcdhSharedKey,
 } from "maci-crypto";
+
 import assert from "assert";
-import { PubKey } from "./publicKey";
-import { PrivKey } from "./privateKey";
-import { Message } from "./message";
 
-/**
- * @notice Base class for Commands
- */
-export abstract class Command {
-  public cmdType: bigint;
+import type { ICommand, IJsonPCommand } from "./types";
 
-  constructor(cmdType: bigint) {
-    this.cmdType = cmdType;
-  }
+import { Message } from "../message";
+import { PrivKey } from "../privateKey";
+import { PubKey } from "../publicKey";
 
-  public copy(): Command {
-    return this;
-  }
-  abstract equals(command: Command): boolean;
-
-  /**
-   * Serialize into a JSON object
-   */
-  public toJSON() {
-    return {
-      cmdType: this.cmdType.toString(),
-    };
-  }
-
-  /**
-   * Deserialize into a Command instance
-   * @param json
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static fromJSON(json: any) {
-    throw new Error("Not implemented");
-  }
-}
-
-/**
- * @notice Command for submitting a topup request
- */
-export class TCommand extends Command {
-  public stateIndex: bigint;
-  public amount: bigint;
-  public pollId: bigint;
-
-  /**
-   * Create a new TCommand
-   * @param stateIndex the state index of the user
-   * @param amount the amount of voice credits
-   * @param pollId the poll ID
-   */
-  constructor(stateIndex: bigint, amount: bigint, pollId: bigint) {
-    super(BigInt(2));
-    this.stateIndex = stateIndex;
-    this.amount = amount;
-    this.pollId = pollId;
-  }
-
-  /**
-   * Create a deep clone of this TCommand
-   * @returns a copy of the TCommand
-   */
-  public copy = (): TCommand => {
-    return new TCommand(this.stateIndex, this.amount, this.pollId);
-  };
-
-  /**
-   * Check whether this command has deep equivalence to another command
-   * @param command the command to compare with
-   * @returns whether they are equal or not
-   */
-  public equals = <T extends TCommand>(command: T): boolean => {
-    return (
-      this.stateIndex === command.stateIndex &&
-      this.amount === command.amount &&
-      this.pollId === command.pollId &&
-      this.cmdType === command.cmdType
-    );
-  };
-
-  /**
-   * Serialize into a JSON object
-   */
-  public toJSON() {
-    return {
-      stateIndex: this.stateIndex.toString(),
-      amount: this.amount.toString(),
-      cmdType: this.cmdType.toString(),
-      pollId: this.pollId.toString(),
-    };
-  }
-
-  /**
-   * Deserialize into a TCommand object
-   * @param json - the json representation
-   * @returns the TCommand instance
-   */
-  static fromJSON(json: any): TCommand {
-    const command = new TCommand(BigInt(json.stateIndex), BigInt(json.amount), json.pollId);
-    return command;
-  }
+export interface IDecryptMessage {
+  command: PCommand;
+  signature: Signature;
 }
 
 /**
  * @notice Unencrypted data whose fields include the user's public key, vote etc.
  * This represents a Vote command.
  */
-export class PCommand extends Command {
-  public stateIndex: bigint;
-  public newPubKey: PubKey;
-  public voteOptionIndex: bigint;
-  public newVoteWeight: bigint;
-  public nonce: bigint;
-  public pollId: bigint;
-  public salt: bigint;
+export class PCommand implements ICommand {
+  cmdType: bigint;
+
+  stateIndex: bigint;
+
+  newPubKey: PubKey;
+
+  voteOptionIndex: bigint;
+
+  newVoteWeight: bigint;
+
+  nonce: bigint;
+
+  pollId: bigint;
+
+  salt: bigint;
 
   /**
    * Create a new PCommand
@@ -146,7 +63,8 @@ export class PCommand extends Command {
     pollId: bigint,
     salt: bigint = genRandomSalt(),
   ) {
-    super(BigInt(1));
+    this.cmdType = BigInt(1);
+
     const limit50Bits = BigInt(2 ** 50);
     assert(limit50Bits >= stateIndex);
     assert(limit50Bits >= voteOptionIndex);
@@ -167,8 +85,8 @@ export class PCommand extends Command {
    * Create a deep clone of this PCommand
    * @returns a copy of the PCommand
    */
-  public copy = (): PCommand => {
-    return new PCommand(
+  copy = <T extends PCommand>(): T =>
+    new PCommand(
       BigInt(this.stateIndex.toString()),
       this.newPubKey.copy(),
       BigInt(this.voteOptionIndex.toString()),
@@ -176,8 +94,7 @@ export class PCommand extends Command {
       BigInt(this.nonce.toString()),
       BigInt(this.pollId.toString()),
       BigInt(this.salt.toString()),
-    );
-  };
+    ) as unknown as T;
 
   /**
    * @notice Returns this Command as an array. Note that 5 of the Command's fields
@@ -185,57 +102,50 @@ export class PCommand extends Command {
    * smaller and thereby save gas when the user publishes a message.
    * @returns bigint[] - the command as an array
    */
-  public asArray = (): bigint[] => {
-    const p =
-      BigInt(`${this.stateIndex}`) +
-      (BigInt(`${this.voteOptionIndex}`) << BigInt(50)) +
-      (BigInt(`${this.newVoteWeight}`) << BigInt(100)) +
-      (BigInt(`${this.nonce}`) << BigInt(150)) +
-      (BigInt(`${this.pollId}`) << BigInt(200));
+  asArray = (): bigint[] => {
+    /* eslint-disable no-bitwise */
+    const params =
+      BigInt(this.stateIndex) +
+      (BigInt(this.voteOptionIndex) << BigInt(50)) +
+      (BigInt(this.newVoteWeight) << BigInt(100)) +
+      (BigInt(this.nonce) << BigInt(150)) +
+      (BigInt(this.pollId) << BigInt(200));
+    /* eslint-enable no-bitwise */
 
-    const a = [p, ...this.newPubKey.asArray(), this.salt];
-    assert(a.length === 4);
-    return a;
+    const command = [params, ...this.newPubKey.asArray(), this.salt];
+    assert(command.length === 4);
+
+    return command;
   };
 
-  public asCircuitInputs = (): bigint[] => {
-    return this.asArray();
-  };
+  asCircuitInputs = (): bigint[] => this.asArray();
 
   /*
    * Check whether this command has deep equivalence to another command
    */
-  public equals = (command: PCommand): boolean => {
-    return (
-      this.stateIndex === command.stateIndex &&
-      this.newPubKey.equals(command.newPubKey) &&
-      this.voteOptionIndex === command.voteOptionIndex &&
-      this.newVoteWeight === command.newVoteWeight &&
-      this.nonce === command.nonce &&
-      this.pollId === command.pollId &&
-      this.salt === command.salt
-    );
-  };
+  equals = (command: PCommand): boolean =>
+    this.stateIndex === command.stateIndex &&
+    this.newPubKey.equals(command.newPubKey) &&
+    this.voteOptionIndex === command.voteOptionIndex &&
+    this.newVoteWeight === command.newVoteWeight &&
+    this.nonce === command.nonce &&
+    this.pollId === command.pollId &&
+    this.salt === command.salt;
 
-  public hash = (): bigint => {
-    return hash4(this.asArray()) as bigint;
-  };
+  hash = (): bigint => hash4(this.asArray());
 
   /**
    * @notice Signs this command and returns a Signature.
    */
-  public sign = (privKey: PrivKey): Signature => {
-    return sign(privKey.rawPrivKey, this.hash());
-  };
+  sign = (privKey: PrivKey): Signature => sign(privKey.rawPrivKey, this.hash());
 
   /**
    * @notice Returns true if the given signature is a correct signature of this
    * command and signed by the private key associated with the given public
    * key.
    */
-  public verifySignature = (signature: Signature, pubKey: PubKey): boolean => {
-    return verifySignature(this.hash(), signature, pubKey.rawPubKey);
-  };
+  verifySignature = (signature: Signature, pubKey: PubKey): boolean =>
+    verifySignature(this.hash(), signature, pubKey.rawPubKey);
 
   /**
    * @notice Encrypts this command along with a signature to produce a Message.
@@ -247,7 +157,7 @@ export class PCommand extends Command {
    * 5. nonce
    * 6. poll ID
    */
-  public encrypt = (signature: Signature, sharedKey: EcdhSharedKey): Message => {
+  encrypt = (signature: Signature, sharedKey: EcdhSharedKey): Message => {
     const plaintext = [...this.asArray(), signature.R8[0], signature.R8[1], signature.S];
 
     assert(plaintext.length === 7);
@@ -264,7 +174,7 @@ export class PCommand extends Command {
    * @param {Message} message - the message to decrypt
    * @param {EcdhSharedKey} sharedKey - the shared key to use for decryption
    */
-  public static decrypt = (message: Message, sharedKey: EcdhSharedKey) => {
+  static decrypt = (message: Message, sharedKey: EcdhSharedKey): IDecryptMessage => {
     const decrypted = decrypt(message.data, sharedKey, BigInt(0), 7);
 
     const p = BigInt(decrypted[0].toString());
@@ -274,9 +184,9 @@ export class PCommand extends Command {
     // shift left by pos
     // AND with val
     // shift right by pos
-    const extract = (val: bigint, pos: number): bigint => {
-      return BigInt((((BigInt(1) << BigInt(50)) - BigInt(1)) << BigInt(pos)) & val) >> BigInt(pos);
-    };
+    const extract = (val: bigint, pos: number): bigint =>
+      // eslint-disable-next-line no-bitwise
+      BigInt((((BigInt(1) << BigInt(50)) - BigInt(1)) << BigInt(pos)) & val) >> BigInt(pos);
 
     // p is a packed value
     // bits 0 - 50:    stateIndex
@@ -293,7 +203,7 @@ export class PCommand extends Command {
     const newPubKey = new PubKey([decrypted[1], decrypted[2]]);
     const salt = decrypted[3];
 
-    const command = new PCommand(stateIndex, newPubKey, voteOptionIndex, newVoteWeight, nonce, pollId, salt as bigint);
+    const command = new PCommand(stateIndex, newPubKey, voteOptionIndex, newVoteWeight, nonce, pollId, salt);
 
     const signature = {
       R8: [decrypted[4], decrypted[5]],
@@ -306,7 +216,7 @@ export class PCommand extends Command {
   /**
    * Serialize into a JSON object
    */
-  public toJSON() {
+  toJSON(): IJsonPCommand {
     return {
       stateIndex: this.stateIndex.toString(),
       newPubKey: this.newPubKey.serialize(),
@@ -324,7 +234,7 @@ export class PCommand extends Command {
    * @param json
    * @returns a PComamnd instance
    */
-  static fromJSON(json: any): PCommand {
+  static fromJSON(json: IJsonPCommand): PCommand {
     const command = new PCommand(
       BigInt(json.stateIndex),
       PubKey.deserialize(json.newPubKey),
@@ -334,6 +244,7 @@ export class PCommand extends Command {
       BigInt(json.pollId),
       BigInt(json.salt),
     );
+
     return command;
   }
 }

@@ -6,6 +6,11 @@ on:
 
 jobs:
   generate-proving-keys:
+    strategy:
+      fail-fast: false
+      matrix:
+        command: ["test:cli", "test:integration"]
+
     runs-on: ubuntu-22.04
 
     steps:
@@ -34,10 +39,9 @@ jobs:
           npm run bootstrap
           npm run build
 
-      - name: Compile Contracts
+      - name: Run hardhat fork
         run: |
           cd contracts
-          npm run compileSol
           npm run hardhat &
 
       - name: Download rapidsnark (1c137)
@@ -60,15 +64,8 @@ jobs:
           npx zkey-manager compile -c ./zkeys.config.yml
           npx zkey-manager genZkeys -c ./zkeys.config.yml
 
-      - name: e2e Tests
-        run: |
-          cd cli 
-          npm run test
-
-      - name: Integration Tests
-        run: |
-          cd integrationTests
-          npm run test
+      - name: ${{ matrix.command }}
+        run: npm run ${{ matrix.command }}
 
       - name: Stop Hardhat
         run: kill $(lsof -t -i:8545)

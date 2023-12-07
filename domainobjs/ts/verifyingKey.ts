@@ -1,14 +1,20 @@
 import { G1Point, G2Point } from "maci-crypto";
 
+import type { IVkContractParams, IVkObjectParams } from "./types";
+
 /**
  * @notice A TS Class representing a zk-SNARK VerifyingKey
  */
 export class VerifyingKey {
-  public alpha1: G1Point;
-  public beta2: G2Point;
-  public gamma2: G2Point;
-  public delta2: G2Point;
-  public ic: G1Point[];
+  alpha1: G1Point;
+
+  beta2: G2Point;
+
+  gamma2: G2Point;
+
+  delta2: G2Point;
+
+  ic: G1Point[];
 
   /**
    * Generate a new VerifyingKey
@@ -31,7 +37,7 @@ export class VerifyingKey {
    * to the smart contract
    * @returns the object representation of this
    */
-  public asContractParam() {
+  asContractParam(): IVkContractParams {
     return {
       alpha1: this.alpha1.asContractParam(),
       beta2: this.beta2.asContractParam(),
@@ -46,17 +52,16 @@ export class VerifyingKey {
    * @param data the object representation
    * @returns a new VerifyingKey
    */
-  public static fromContract(data: any): VerifyingKey {
-    const convertG2 = (point: any): G2Point => {
-      return new G2Point([BigInt(point.x[0]), BigInt(point.x[1])], [BigInt(point.y[0]), BigInt(point.y[1])]);
-    };
+  static fromContract(data: IVkContractParams): VerifyingKey {
+    const convertG2 = (point: IVkContractParams["beta2"]): G2Point =>
+      new G2Point([BigInt(point.x[0]), BigInt(point.x[1])], [BigInt(point.y[0]), BigInt(point.y[1])]);
 
     return new VerifyingKey(
       new G1Point(BigInt(data.alpha1.x), BigInt(data.alpha1.y)),
       convertG2(data.beta2),
       convertG2(data.gamma2),
       convertG2(data.delta2),
-      data.ic.map((c: any) => new G1Point(BigInt(c.x), BigInt(c.y))),
+      data.ic.map((c) => new G1Point(BigInt(c.x), BigInt(c.y))),
     );
   }
 
@@ -65,16 +70,13 @@ export class VerifyingKey {
    * @param vk the other verifying key
    * @returns whether this is equal to the other verifying key
    */
-  public equals(vk: VerifyingKey): boolean {
-    let icEqual = this.ic.length === vk.ic.length;
-
+  equals(vk: VerifyingKey): boolean {
     // Immediately return false if the length doesn't match
-    if (!icEqual) return false;
-
-    // Each element in ic must match
-    for (let i = 0; i < this.ic.length; i++) {
-      icEqual = icEqual && this.ic[i].equals(vk.ic[i]);
+    if (this.ic.length !== vk.ic.length) {
+      return false;
     }
+
+    const icEqual = this.ic.every((ic, index) => ic.equals(vk.ic[index]));
 
     return (
       this.alpha1.equals(vk.alpha1) &&
@@ -89,30 +91,29 @@ export class VerifyingKey {
    * Produce a copy of this verifying key
    * @returns the copy
    */
-  public copy(): VerifyingKey {
-    const copyG2 = (point: any): G2Point => {
-      return new G2Point(
+  copy(): VerifyingKey {
+    const copyG2 = (point: G2Point): G2Point =>
+      new G2Point(
         [BigInt(point.x[0].toString()), BigInt(point.x[1].toString())],
         [BigInt(point.y[0].toString()), BigInt(point.y[1].toString())],
       );
-    };
 
     return new VerifyingKey(
       new G1Point(BigInt(this.alpha1.x.toString()), BigInt(this.alpha1.y.toString())),
       copyG2(this.beta2),
       copyG2(this.gamma2),
       copyG2(this.delta2),
-      this.ic.map((c: any) => new G1Point(BigInt(c.x.toString()), BigInt(c.y.toString()))),
+      this.ic.map((c: G1Point) => new G1Point(BigInt(c.x.toString()), BigInt(c.y.toString()))),
     );
   }
 
   /**
    * Deserialize into a VerifyingKey instance
-   * @param j the JSON representation
+   * @param json the JSON representation
    * @returns the VerifyingKey
    */
-  public static fromJSON = (j: string): VerifyingKey => {
-    const data = JSON.parse(j);
+  static fromJSON = (json: string): VerifyingKey => {
+    const data = JSON.parse(json) as IVkObjectParams;
     return VerifyingKey.fromObj(data);
   };
 
@@ -121,7 +122,7 @@ export class VerifyingKey {
    * @param data the object representation
    * @returns the VerifyingKey
    */
-  public static fromObj = (data: any): VerifyingKey => {
+  static fromObj = (data: IVkObjectParams): VerifyingKey => {
     const alpha1 = new G1Point(BigInt(data.vk_alpha_1[0]), BigInt(data.vk_alpha_1[1]));
     const beta2 = new G2Point(
       [BigInt(data.vk_beta_2[0][1]), BigInt(data.vk_beta_2[0][0])],
@@ -135,7 +136,7 @@ export class VerifyingKey {
       [BigInt(data.vk_delta_2[0][1]), BigInt(data.vk_delta_2[0][0])],
       [BigInt(data.vk_delta_2[1][1]), BigInt(data.vk_delta_2[1][0])],
     );
-    const ic = data.IC.map((ic: any) => new G1Point(BigInt(ic[0]), BigInt(ic[1])));
+    const ic = data.IC.map(([x, y]) => new G1Point(BigInt(x), BigInt(y)));
 
     return new VerifyingKey(alpha1, beta2, gamma2, delta2, ic);
   };

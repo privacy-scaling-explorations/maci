@@ -55,7 +55,7 @@ jobs:
           npm run bootstrap
           npm run build
 
-      - name: Compile Contracts
+      - name: Run hardhat fork
         run: |
           cd contracts
           npm run hardhat &

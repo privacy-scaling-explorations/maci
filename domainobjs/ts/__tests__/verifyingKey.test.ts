@@ -1,13 +1,15 @@
-import * as path from "path";
-import * as fs from "fs";
-import { VerifyingKey } from "../";
 import { expect } from "chai";
 
+import fs from "fs";
+import path from "path";
+
+import { IVkObjectParams, VerifyingKey } from "..";
+
 describe("verifyingKey", () => {
-  it("Should convert a JSON file from snarkjs to a VerifyingKey", async () => {
+  it("Should convert a JSON file from snarkjs to a VerifyingKey", () => {
     const file = path.join(__dirname, "./artifacts/test_vk.json");
     const j = fs.readFileSync(file).toString();
-    const d = JSON.parse(j);
+    const d = JSON.parse(j) as IVkObjectParams;
     const vk = VerifyingKey.fromJSON(j);
 
     expect(d.vk_alpha_1[0]).to.eq(vk.alpha1.x.toString());
@@ -29,18 +31,18 @@ describe("verifyingKey", () => {
     expect(d.vk_delta_2[1][1]).to.eq(vk.delta2.y[0].toString());
 
     expect(d.IC.length).to.eq(vk.ic.length);
-    for (let i = 0; i < d.IC.length; i++) {
+    for (let i = 0; i < d.IC.length; i += 1) {
       expect(d.IC[i][0]).to.eq(vk.ic[i].x.toString());
       expect(d.IC[i][1]).to.eq(vk.ic[i].y.toString());
     }
   });
 
-  it("Copy should generate a deep copy", async () => {
-    const file = path.join(__dirname, "artifacts/test_vk.json");
+  it("Copy should generate a deep copy", () => {
+    const file = path.resolve(__dirname, "artifacts/test_vk.json");
     const j = fs.readFileSync(file).toString();
     const vk = VerifyingKey.fromJSON(j);
 
     const vk2 = vk.copy();
-    expect(vk.equals(vk2)).to.be.true;
+    expect(vk.equals(vk2)).to.eq(true);
   });
 });

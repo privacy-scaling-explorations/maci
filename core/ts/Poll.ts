@@ -11,7 +11,7 @@ import {
   stringifyBigInts,
   genTreeCommitment,
 } from "maci-crypto";
-import { PubKey, Command, PCommand, TCommand, Message, Keypair, StateLeaf, Ballot, PrivKey } from "maci-domainobjs";
+import { PubKey, ICommand, PCommand, TCommand, Message, Keypair, StateLeaf, Ballot, PrivKey } from "maci-domainobjs";
 
 import { MaciState } from "./MaciState";
 import { TreeDepths, MaxValues, BatchSizes, packTallyVotesSmallVals, packSubsidySmallVals } from "./utils/utils";
@@ -73,7 +73,7 @@ class Poll implements IPoll {
 
   public messages: Message[] = [];
   public messageTree: IncrementalQuinTree;
-  public commands: Command[] = [];
+  public commands: ICommand[] = [];
 
   public encPubKeys: PubKey[] = [];
 
@@ -312,7 +312,7 @@ class Poll implements IPoll {
     this.messageTree.insert(messageLeaf);
 
     const command = new TCommand(_message.data[0], _message.data[1], BigInt(this.pollId));
-    this.commands.push(command);
+    this.commands.push(command as ICommand);
   };
 
   /*
@@ -338,12 +338,12 @@ class Poll implements IPoll {
     const sharedKey = Keypair.genEcdhSharedKey(this.coordinatorKeypair.privKey, _encPubKey);
     try {
       const { command } = PCommand.decrypt(_message, sharedKey);
-      this.commands.push(command);
+      this.commands.push(command as ICommand);
     } catch (e) {
       //console.log(`error cannot decrypt: ${e.message}`)
       const keyPair = new Keypair();
       const command = new PCommand(BigInt(0), keyPair.pubKey, BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0));
-      this.commands.push(command);
+      this.commands.push(command as ICommand);
     }
   };
 
@@ -1054,19 +1054,19 @@ class Poll implements IPoll {
       this.stateTreeDepth,
     );
 
-    copied.stateLeaves = this.stateLeaves.map((x: StateLeaf) => x.copy());
-    copied.messages = this.messages.map((x: Message) => x.copy());
-    copied.commands = this.commands.map((x: Command) => x.copy());
-    copied.ballots = this.ballots.map((x: Ballot) => x.copy());
-    copied.encPubKeys = this.encPubKeys.map((x: PubKey) => x.copy());
+    copied.stateLeaves = this.stateLeaves.map((x) => x.copy());
+    copied.messages = this.messages.map((x) => x.copy());
+    copied.commands = this.commands.map((x) => x.copy());
+    copied.ballots = this.ballots.map((x) => x.copy());
+    copied.encPubKeys = this.encPubKeys.map((x) => x.copy());
     if (this.ballotTree) {
       copied.ballotTree = this.ballotTree.copy();
     }
     copied.currentMessageBatchIndex = this.currentMessageBatchIndex;
     copied.maciStateRef = this.maciStateRef;
     copied.messageTree = this.messageTree.copy();
-    copied.results = this.results.map((x: bigint) => BigInt(x.toString()));
-    copied.perVOSpentVoiceCredits = this.perVOSpentVoiceCredits.map((x: bigint) => BigInt(x.toString()));
+    copied.results = this.results.map((x) => BigInt(x.toString()));
+    copied.perVOSpentVoiceCredits = this.perVOSpentVoiceCredits.map((x) => BigInt(x.toString()));
 
     copied.numBatchesProcessed = Number(this.numBatchesProcessed.toString());
     copied.numBatchesTallied = Number(this.numBatchesTallied.toString());
@@ -1177,8 +1177,8 @@ class Poll implements IPoll {
     // set all properties
     poll.ballots = json.ballots.map((ballot: Ballot) => Ballot.fromJSON(ballot));
     poll.encPubKeys = json.encPubKeys.map((key: string) => PubKey.deserialize(key));
-    poll.messages = json.messages.map((message: Message) => Message.fromJSON(message));
-    poll.commands = json.commands.map((command: any) => {
+    poll.messages = json.messages.map((message) => Message.fromJSON(message));
+    poll.commands = json.commands.map((command) => {
       switch (command.cmdType) {
         case "1": {
           return PCommand.fromJSON(command);
@@ -1187,7 +1187,7 @@ class Poll implements IPoll {
           return TCommand.fromJSON(command);
         }
         default: {
-          return Command.fromJSON(command);
+          return { cmdType: command.cmdType };
         }
       }
     });

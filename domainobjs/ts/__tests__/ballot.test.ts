@@ -1,17 +1,18 @@
-import { Ballot } from "..";
 import { expect } from "chai";
+
+import { Ballot } from "..";
 
 describe("Ballot", () => {
   it("should create a new ballot and hash it", () => {
     const b = new Ballot(0, 2);
     const h = b.hash();
-    expect(h).to.not.be.null;
+    expect(h).to.not.eq(null);
   });
 
   it("copy should produce a deep copy", () => {
     const b1 = Ballot.genRandomBallot(2, 2);
     const b2 = b1.copy();
-    expect(b1.equals(b2)).to.be.true;
+    expect(b1.equals(b2)).to.eq(true);
   });
 
   it("asCircuitInputs should produce an array", () => {
