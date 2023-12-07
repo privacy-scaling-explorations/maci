@@ -3,6 +3,7 @@ import { banner, contractExists, info, logError, logGreen, logYellow, readContra
 import { Contract } from "ethers";
 import { existsSync, readFileSync } from "fs";
 import { hash2, hash3, genTreeCommitment } from "maci-crypto";
+import { TallyData } from "../utils/interfaces";
 
 /**
  * Verify the results of a poll and optionally the subsidy results
@@ -16,7 +17,8 @@ import { hash2, hash3, genTreeCommitment } from "maci-crypto";
  */
 export const verify = async (
   pollId: string,
-  tallyFile: string,
+  tallyFile?: string,
+  tallyData?: TallyData,
   maciAddress?: string,
   tallyAddress?: string,
   subsidyAddress?: string,
@@ -59,42 +61,49 @@ export const verify = async (
 
   logYellow(quiet, info(`on-chain tally commitment: ${onChainTallycomment.toString(16)}`));
 
-  // read the tally file
-  if (!existsSync(tallyFile)) logError(`Unable to open ${tallyFile}`);
-  const tallyData = JSON.parse(readFileSync(tallyFile, { encoding: "utf8" }));
-
-  logYellow(quiet, info(`tally file: ${tallyData}`));
+  // ensure we have either tally data or tally file
+  if (!(tallyData || tallyFile)) logError("No tally data or tally file provided.");
+  // if we have the data as param, then use that
+  let tallyResults: TallyData;
+  if (tallyData) {
+    tallyResults = tallyData;
+  } else {
+    // read the tally file
+    if (!existsSync(tallyFile)) logError(`Unable to open ${tallyFile}`);
+    tallyResults = JSON.parse(readFileSync(tallyFile, { encoding: "utf8" }));
+  }
 
   // check the results commitment
-  const validResultsCommitment = tallyData.newTallyCommitment && tallyData.newTallyCommitment.match(/0x[a-fA-F0-9]+/);
+  const validResultsCommitment =
+    tallyResults.newTallyCommitment && tallyResults.newTallyCommitment.match(/0x[a-fA-F0-9]+/);
   if (!validResultsCommitment) logError("Invalid results commitment format");
 
   const treeDepths = await pollContract.treeDepths();
   const voteOptionTreeDepth = Number(treeDepths.voteOptionTreeDepth);
   const numVoteOptions = 5 ** voteOptionTreeDepth;
-  if (tallyData.results.tally.length != numVoteOptions) logError("Wrong number of vote options.");
-  if (tallyData.perVOSpentVoiceCredits.tally.length != numVoteOptions) logError("Wrong number of vote options.");
+  if (tallyResults.results.tally.length != numVoteOptions) logError("Wrong number of vote options.");
+  if (tallyResults.perVOSpentVoiceCredits.tally.length != numVoteOptions) logError("Wrong number of vote options.");
 
   // verify that the results commitment matches the output of genTreeCommitment()
 
   // verify the results
   // compute newResultsCommitment
   const newResultsCommitment = genTreeCommitment(
-    tallyData.results.tally.map((x: any) => BigInt(x)),
-    tallyData.results.salt,
+    tallyResults.results.tally.map((x: any) => BigInt(x)),
+    BigInt(tallyResults.results.salt),
     voteOptionTreeDepth,
   );
 
   // compute newSpentVoiceCreditsCommitment
   const newSpentVoiceCreditsCommitment = hash2([
-    BigInt(tallyData.totalSpentVoiceCredits.spent),
-    BigInt(tallyData.totalSpentVoiceCredits.salt),
+    BigInt(tallyResults.totalSpentVoiceCredits.spent),
+    BigInt(tallyResults.totalSpentVoiceCredits.salt),
   ]);
 
   // compute newPerVOSpentVoiceCreditsCommitment
   const newPerVOSpentVoiceCreditsCommitment = genTreeCommitment(
-    tallyData.perVOSpentVoiceCredits.tally.map((x: any) => BigInt(x)),
-    tallyData.perVOSpentVoiceCredits.salt,
+    tallyResults.perVOSpentVoiceCredits.tally.map((x: any) => BigInt(x)),
+    BigInt(tallyResults.perVOSpentVoiceCredits.salt),
     voteOptionTreeDepth,
   );
 

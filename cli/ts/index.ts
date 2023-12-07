@@ -482,4 +482,4 @@ export {
   verify,
 } from "./commands";
 
-export { DeployedContracts, PollContracts } from "./utils";
+export { DeployedContracts, PollContracts, TallyData } from "./utils";

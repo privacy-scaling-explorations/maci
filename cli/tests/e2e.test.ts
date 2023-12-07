@@ -124,7 +124,7 @@ describe("e2e tests", function () {
       await timeTravel(pollDuration);
       await mergeMessages(0, maciAddresses.maciAddress);
       await mergeSignups(0, maciAddresses.maciAddress);
-      await genProofs(
+      const tallyFileData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -145,7 +145,14 @@ describe("e2e tests", function () {
         useWasm,
       );
       await proveOnChain("0", testProofsDirPath);
-      await verify("0", testTallyFilePath, maciAddresses.maciAddress, pollAddresses.tally, pollAddresses.subsidy);
+      await verify(
+        "0",
+        testTallyFilePath,
+        tallyFileData,
+        maciAddresses.maciAddress,
+        pollAddresses.tally,
+        pollAddresses.subsidy,
+      );
     });
   });
 
@@ -247,7 +254,7 @@ describe("e2e tests", function () {
       await timeTravel(pollDuration);
       await mergeMessages(0, maciAddresses.maciAddress);
       await mergeSignups(0, maciAddresses.maciAddress);
-      await genProofs(
+      const tallyFileData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -268,7 +275,14 @@ describe("e2e tests", function () {
         useWasm,
       );
       await proveOnChain("0", testProofsDirPath);
-      await verify("0", testTallyFilePath, maciAddresses.maciAddress, pollAddresses.tally, pollAddresses.subsidy);
+      await verify(
+        "0",
+        testTallyFilePath,
+        tallyFileData,
+        maciAddresses.maciAddress,
+        pollAddresses.tally,
+        pollAddresses.subsidy,
+      );
     });
   });
 
@@ -325,7 +339,7 @@ describe("e2e tests", function () {
       await timeTravel(pollDuration);
       await mergeMessages(0, maciAddresses.maciAddress);
       await mergeSignups(0, maciAddresses.maciAddress);
-      await genProofs(
+      const tallyFileData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -346,7 +360,14 @@ describe("e2e tests", function () {
         useWasm,
       );
       await proveOnChain("0", testProofsDirPath);
-      await verify("0", testTallyFilePath, maciAddresses.maciAddress, pollAddresses.tally, pollAddresses.subsidy);
+      await verify(
+        "0",
+        testTallyFilePath,
+        tallyFileData,
+        maciAddresses.maciAddress,
+        pollAddresses.tally,
+        pollAddresses.subsidy,
+      );
     });
   });
 
@@ -394,7 +415,7 @@ describe("e2e tests", function () {
       await timeTravel(pollDuration);
       await mergeMessages(0, maciAddresses.maciAddress);
       await mergeSignups(0, maciAddresses.maciAddress);
-      await genProofs(
+      const tallyFileData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -415,7 +436,14 @@ describe("e2e tests", function () {
         useWasm,
       );
       await proveOnChain("0", testProofsDirPath);
-      await verify("0", testTallyFilePath, maciAddresses.maciAddress, pollAddresses.tally, pollAddresses.subsidy);
+      await verify(
+        "0",
+        testTallyFilePath,
+        tallyFileData,
+        maciAddresses.maciAddress,
+        pollAddresses.tally,
+        pollAddresses.subsidy,
+      );
     });
   });
 
@@ -495,7 +523,7 @@ describe("e2e tests", function () {
       await timeTravel(pollDuration);
       await mergeMessages(0, maciAddresses.maciAddress);
       await mergeSignups(0, maciAddresses.maciAddress);
-      await genProofs(
+      const tallyFileData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -516,7 +544,14 @@ describe("e2e tests", function () {
         useWasm,
       );
       await proveOnChain("0", testProofsDirPath);
-      await verify("0", testTallyFilePath, maciAddresses.maciAddress, pollAddresses.tally, pollAddresses.subsidy);
+      await verify(
+        "0",
+        testTallyFilePath,
+        tallyFileData,
+        maciAddresses.maciAddress,
+        pollAddresses.tally,
+        pollAddresses.subsidy,
+      );
     });
   });
 
@@ -607,7 +642,7 @@ describe("e2e tests", function () {
       await timeTravel(pollDuration);
       await mergeMessages(0, maciAddresses.maciAddress);
       await mergeSignups(0, maciAddresses.maciAddress);
-      await genProofs(
+      const tallyFileData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -628,7 +663,14 @@ describe("e2e tests", function () {
         useWasm,
       );
       await proveOnChain("0", testProofsDirPath);
-      await verify("0", testTallyFilePath, maciAddresses.maciAddress, pollAddresses.tally, pollAddresses.subsidy);
+      await verify(
+        "0",
+        testTallyFilePath,
+        tallyFileData,
+        maciAddresses.maciAddress,
+        pollAddresses.tally,
+        pollAddresses.subsidy,
+      );
     });
   });
 
@@ -718,7 +760,7 @@ describe("e2e tests", function () {
       await timeTravel(pollDuration);
       await mergeMessages(0, maciAddresses.maciAddress);
       await mergeSignups(0, maciAddresses.maciAddress);
-      await genProofs(
+      const tallyFileData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -739,7 +781,14 @@ describe("e2e tests", function () {
         useWasm,
       );
       await proveOnChain("0", testProofsDirPath);
-      await verify("0", testTallyFilePath, maciAddresses.maciAddress, pollAddresses.tally, pollAddresses.subsidy);
+      await verify(
+        "0",
+        testTallyFilePath,
+        tallyFileData,
+        maciAddresses.maciAddress,
+        pollAddresses.tally,
+        pollAddresses.subsidy,
+      );
     });
   });
 
@@ -781,7 +830,7 @@ describe("e2e tests", function () {
       // generate proofs
       await mergeMessages(0);
       await mergeSignups(0);
-      await genProofs(
+      const tallyFileData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -802,7 +851,7 @@ describe("e2e tests", function () {
         useWasm,
       );
       await proveOnChain("0", testProofsDirPath);
-      await verify("0", testTallyFilePath);
+      await verify("0", testTallyFilePath, tallyFileData);
       cleanVanilla();
     });
 
@@ -855,8 +904,8 @@ describe("e2e tests", function () {
         undefined,
         useWasm,
       );
-      await proveOnChain("1", testProofsDirPath, maciAddresses.maciAddress);
-      await verify("1", testTallyFilePath, maciAddresses.maciAddress, pollAddresses.tally, pollAddresses.subsidy);
+      await proveOnChain("1", testProofsDirPath);
+      await verify("1", testTallyFilePath);
     });
   });
 
@@ -913,7 +962,7 @@ describe("e2e tests", function () {
       // generate proofs
       await mergeMessages(0);
       await mergeSignups(0);
-      await genProofs(
+      const tallyFileData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -934,7 +983,7 @@ describe("e2e tests", function () {
         useWasm,
       );
       await proveOnChain("0", testProofsDirPath);
-      await verify("0", testTallyFilePath);
+      await verify("0", testTallyFilePath, tallyFileData);
       cleanVanilla();
     });
 
@@ -1040,7 +1089,7 @@ describe("e2e tests", function () {
       await timeTravel(pollDuration, true);
       await mergeMessages(1);
       await mergeSignups(1);
-      await genProofs(
+      const tallyData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -1067,14 +1116,14 @@ describe("e2e tests", function () {
         pollAddresses.messageProcessor,
         pollAddresses.tally,
       );
-      await verify("1", testTallyFilePath, maciAddresses.maciAddress, pollAddresses.tally);
+      await verify("1", testTallyFilePath, tallyData, maciAddresses.maciAddress, pollAddresses.tally);
       cleanVanilla();
     });
 
     it("should complete the third poll", async () => {
       await mergeMessages(2);
       await mergeSignups(2);
-      await genProofs(
+      const tallyData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
@@ -1101,7 +1150,7 @@ describe("e2e tests", function () {
         secondPollAddresses.messageProcessor,
         secondPollAddresses.tally,
       );
-      await verify("2", testTallyFilePath, maciAddresses.maciAddress, secondPollAddresses.tally);
+      await verify("2", testTallyFilePath, tallyData, maciAddresses.maciAddress, secondPollAddresses.tally);
     });
   });
 
