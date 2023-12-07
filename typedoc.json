@@ -9,8 +9,7 @@
     "**/artifacts",
     "./contracts/**/*",
     "./circuits/**/*",
-    "./integrationTests/**/*",
-    "./crypto/ts/@types/blake-hash.d.ts"
+    "./integrationTests/**/*"
   ],
   "out": "./website/static/typedoc_output/"
 }

@@ -22,10 +22,8 @@ import {
   deployVerifier,
   getDefaultSigner,
 } from "./deploy";
-
-import { formatProofForVerifierContract, deployTestContracts } from "./utils";
-
 import { genMaciStateFromContract } from "./genMaciState";
+import { formatProofForVerifierContract, deployTestContracts } from "./utils";
 
 export {
   abiDir,
@@ -54,3 +52,6 @@ export {
   getDefaultSigner,
   genMaciStateFromContract,
 };
+
+export type { IVerifyingKeyStruct } from "./types";
+export * from "../typechain-types";

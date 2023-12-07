@@ -5,6 +5,11 @@ on:
 
 jobs:
   e2e:
+    strategy:
+      fail-fast: false
+      matrix:
+        command: ["test:cli", "test:integration"]
+
     runs-on: ubuntu-22.04
 
     steps:
@@ -53,7 +58,6 @@ jobs:
       - name: Compile Contracts
         run: |
           cd contracts
-          npm run compileSol
           npm run hardhat &
           sleep 5
 
@@ -84,15 +88,8 @@ jobs:
           cd integrationTests
           npm run download-zkeys
 
-      - name: Bespoke Test
-        run: |
-          cd cli
-          npm run test
-
-      - name: Integration Test
-        run: |
-          cd integrationTests
-          npm run test
+      - name: ${{ matrix.command }}
+        run: npm run ${{ matrix.command }}
 
       - name: Stop Hardhat
         run: kill $(lsof -t -i:8545)

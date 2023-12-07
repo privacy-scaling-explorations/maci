@@ -113,6 +113,12 @@ export const deployPoll = async (
   // deploy the poll
   let pollAddr = "";
 
+  const [messageProcessorContractAddress, tallyContractAddress, subsidyContractAddress] = await Promise.all([
+    messageProcessorContract.getAddress(),
+    tallyContract.getAddress(),
+    subsidyContract.getAddress(),
+  ]);
+
   try {
     // deploy the poll contract via the maci contract
     const tx = await maciContract.deployPoll(
@@ -141,14 +147,14 @@ export const deployPoll = async (
     {
       logGreen(quiet, info(`Poll ID: ${pollId.toString()}`));
       logGreen(quiet, info(`Poll contract: ${pollAddr}`));
-      logGreen(quiet, info(`Message processor contract: ${messageProcessorContract.address}`));
-      logGreen(quiet, info(`Tally contract: ${tallyContract.address}`));
-      logGreen(quiet, info(`Subsidy contract: ${subsidyContract.address}`));
+      logGreen(quiet, info(`Message processor contract: ${messageProcessorContractAddress}`));
+      logGreen(quiet, info(`Tally contract: ${tallyContractAddress}`));
+      logGreen(quiet, info(`Subsidy contract: ${subsidyContractAddress}`));
     }
     // store the addresss
-    storeContractAddress("MessageProcessor-" + pollId.toString(), messageProcessorContract.address);
-    storeContractAddress("Tally-" + pollId.toString(), tallyContract.address);
-    storeContractAddress("Subsidy-" + pollId.toString(), subsidyContract.address);
+    storeContractAddress("MessageProcessor-" + pollId.toString(), messageProcessorContractAddress);
+    storeContractAddress("Tally-" + pollId.toString(), tallyContractAddress);
+    storeContractAddress("Subsidy-" + pollId.toString(), subsidyContractAddress);
     storeContractAddress("Poll-" + pollId.toString(), pollAddr);
   } catch (error: any) {
     logError(error.message);
@@ -156,9 +162,9 @@ export const deployPoll = async (
 
   // we return all of the addresses
   return {
-    messageProcessor: messageProcessorContract.address,
-    tally: tallyContract.address,
-    subsidy: subsidyContract.address,
+    messageProcessor: messageProcessorContractAddress,
+    tally: tallyContractAddress,
+    subsidy: subsidyContractAddress,
     poll: pollAddr,
   };
 };

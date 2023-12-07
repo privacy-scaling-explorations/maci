@@ -5,8 +5,8 @@ export mongo_uri='mongodb://maci-coordinator:let-me-in@host.docker.internal'
 
 ProgName=$(basename $0)
 DirName=$(dirname $0)
-CMD="cd $DirName/../cli && node build/index.js"
-SCRIPT="node $DirName/admin.js"
+CMD="cd $DirName/../cli && npx ts-node --transpileOnly build/ts/index.js"
+SCRIPT="npx ts-node --transpileOnly $DirName/admin.js"
 
 #params for setVerifyingKey
 state_tree_depth=10

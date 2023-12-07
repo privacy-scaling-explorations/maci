@@ -1,5 +1,5 @@
 import { readContractAddress } from "../utils/storage";
-import { Contract, constants } from "ethers";
+import { Contract, MaxUint256 } from "ethers";
 import { contractExists } from "../utils/contracts";
 import { getDefaultSigner, parseArtifact } from "maci-contracts";
 import { logError, logGreen, success } from "../utils/theme";
@@ -73,7 +73,7 @@ export const airdrop = async (
 
     const pollAddr = await maciContract.getPoll(pollId);
     try {
-      const tx = await tokenContract.approve(pollAddr, constants.MaxUint256, { gasLimit: 1000000 });
+      const tx = await tokenContract.approve(pollAddr, MaxUint256, { gasLimit: 1000000 });
       await tx.wait();
 
       logGreen(quiet, success(`Approved ${pollAddr} to spend ${amount} credits`));

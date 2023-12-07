@@ -76,7 +76,7 @@ export const mergeSignups = async (
     const receipt = await tx.wait();
     if (receipt.status !== 1) logError("Error merging state subroots");
 
-    logYellow(quiet, info(`Transaction hash: ${receipt.transactionHash}`));
+    logYellow(quiet, info(`Transaction hash: ${receipt.hash}`));
     logGreen(quiet, success(`Executed mergeMaciStateAqSubRoots(); gas used: ${receipt.gasUsed.toString()}`));
   }
 
@@ -91,7 +91,7 @@ export const mergeSignups = async (
     const receipt = await tx.wait();
     if (receipt.status !== 1) logError("Error merging state subroots");
 
-    logYellow(quiet, info(`Transaction hash: ${receipt.transactionHash}`));
+    logYellow(quiet, info(`Transaction hash: ${receipt.hash}`));
     logGreen(quiet, success(`Executed mergeStateAq(); gas used: ${receipt.gasUsed.toString()}`));
   } else {
     logYellow(quiet, info("The state tree has already been merged."));

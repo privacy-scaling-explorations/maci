@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import {
+  DEFAULT_ETH_PROVIDER,
   asHex,
   banner,
   contractExists,
@@ -187,7 +188,7 @@ export const genProofs = async (
   } else {
     maciState = await genMaciStateFromContract(
       signer.provider,
-      maciContract.address,
+      await maciContract.getAddress(),
       coordinatorKeypair,
       pollId,
       fromBlock,
@@ -293,7 +294,7 @@ export const genProofs = async (
     }
 
     const subsidyFileData = {
-      provider: signer.provider.connection.url,
+      provider: process.env.ETH_PROVIDER || DEFAULT_ETH_PROVIDER,
       maci: maciAddress,
       pollId,
       newSubsidyCommitment: asHex(subsidyCircuitInputs.newSubsidyCommitment),
@@ -353,7 +354,7 @@ export const genProofs = async (
 
   // create the tally file data to store for verification later
   const tallyFileData = {
-    provider: signer.provider.connection.url,
+    provider: process.env.ETH_PROVIDER || DEFAULT_ETH_PROVIDER,
     maci: maciAddress,
     pollId,
     newTallyCommitment: asHex(tallyCircuitInputs.newTallyCommitment),

@@ -1,7 +1,12 @@
-import { deployVerifier } from "../";
+import { expect } from "chai";
 import { G1Point, G2Point } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
-import { expect } from "chai";
+
+import type { IVerifyingKeyStruct } from "../ts/types";
+import type { BigNumberish } from "ethers";
+
+import { deployVerifier } from "../ts/deploy";
+import { Verifier } from "../typechain-types";
 
 const vk = new VerifyingKey(
   new G1Point(
@@ -50,7 +55,7 @@ const vk = new VerifyingKey(
   ],
 );
 
-const proof = [
+const proof: BigNumberish[] = [
   "1165825367733124312792381812275119057681245770152620921258630875255505370924",
   "1326527658843314194011957286833609405197138989276710702270523657454496479584",
 
@@ -64,23 +69,25 @@ const proof = [
   "14054172703456858179866637245926478995167764402990898943219235085496257747260",
 ];
 
-const publicInputs = ["17771946183498688010237928397719449956849198402702324449167227661291280245514"];
+const publicInputs: BigNumberish[] = ["17771946183498688010237928397719449956849198402702324449167227661291280245514"];
 
 describe("DomainObjs", () => {
-  let verifierContract;
+  let verifierContract: Verifier;
+
   describe("Deployment", () => {
     before(async () => {
-      console.log("Deploying Verifier");
-
       verifierContract = await deployVerifier(true);
     });
 
     it("should correctly verify a proof", async () => {
-      const isValid = await verifierContract.verify(proof, vk.asContractParam(), publicInputs[0], {
-        gasLimit: 1000000,
-      });
-      debugger;
-      expect(isValid).to.be.true;
+      const isValid = await verifierContract.verify(
+        proof,
+        vk.asContractParam() as IVerifyingKeyStruct,
+        publicInputs[0],
+        { gasLimit: 1000000 },
+      );
+
+      expect(isValid).to.eq(true);
     });
   });
 });
