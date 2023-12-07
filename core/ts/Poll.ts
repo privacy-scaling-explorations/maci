@@ -1059,9 +1059,11 @@ class Poll implements IPoll {
     copied.commands = this.commands.map((x) => x.copy());
     copied.ballots = this.ballots.map((x) => x.copy());
     copied.encPubKeys = this.encPubKeys.map((x) => x.copy());
+
     if (this.ballotTree) {
       copied.ballotTree = this.ballotTree.copy();
     }
+
     copied.currentMessageBatchIndex = this.currentMessageBatchIndex;
     copied.maciStateRef = this.maciStateRef;
     copied.messageTree = this.messageTree.copy();

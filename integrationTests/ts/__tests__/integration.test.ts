@@ -1,4 +1,6 @@
-import { MaciState, MaxValues, TreeDepths } from "maci-core";
+/* eslint-disable no-await-in-loop */
+import chai from "chai";
+import chaiAsPromised from "chai-as-promised";
 import {
   deploy,
   deployPoll,
@@ -15,7 +17,14 @@ import {
   DeployedContracts,
   PollContracts,
 } from "maci-cli";
+import { MaciState, MaxValues, TreeDepths } from "maci-core";
+import { genPubKey, genRandomSalt } from "maci-crypto";
+import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs";
+
+import { existsSync, readFileSync, readdir, unlinkSync } from "fs";
+import { homedir } from "os";
 import path from "path";
+
 import {
   INT_STATE_TREE_DEPTH,
   MSG_BATCH_DEPTH,
@@ -29,19 +38,19 @@ import {
   maxMessages,
   messageBatchDepth,
 } from "./utils/constants";
-import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs";
-import { homedir } from "os";
+import { ITestSuite, Subsidy } from "./utils/interfaces";
 import { expectSubsidy, expectTally, genTestUserCommands, isArm } from "./utils/utils";
-import { genPubKey, genRandomSalt } from "maci-crypto";
-import { existsSync, readFileSync, readdir, unlinkSync } from "fs";
-import { expect } from "chai";
+
+chai.use(chaiAsPromised);
+
+const { expect } = chai;
 
 /**
  * MACI Integration tests
  * @dev These tests use the cli code to perform full testing of the
  * protocol.
  */
-describe("integration tests", function () {
+describe("integration tests", function test() {
   this.timeout(10000000);
 
   // check on which system we are running
@@ -121,50 +130,64 @@ describe("integration tests", function () {
 
   // after each test we need to cleanup some files
   afterEach(() => {
-    if (existsSync(path.resolve(__dirname, "../../../cli/tally.json")))
+    if (existsSync(path.resolve(__dirname, "../../../cli/tally.json"))) {
       unlinkSync(path.resolve(__dirname, "../../../cli/tally.json"));
-    if (existsSync(path.resolve(__dirname, "../../../cli/subsidy.json")))
+    }
+
+    if (existsSync(path.resolve(__dirname, "../../../cli/subsidy.json"))) {
       unlinkSync(path.resolve(__dirname, "../../../cli/subsidy.json"));
+    }
+
     const directory = path.resolve(__dirname, "../../../cli/proofs/");
-    if (!existsSync(directory)) return;
+
+    if (!existsSync(directory)) {
+      return;
+    }
+
     readdir(directory, (err, files) => {
-      if (err) throw err;
-      for (const file of files) {
-        unlinkSync(path.resolve(directory, file));
+      if (err) {
+        throw err;
       }
+
+      files.forEach((file) => {
+        unlinkSync(path.resolve(directory, file));
+      });
     });
   });
 
   // read the test suite data
-  const data = JSON.parse(readFileSync(path.resolve(__dirname, `./data/suites.json`)).toString());
-  for (const testCase of data.suites) {
+  const data = JSON.parse(readFileSync(path.resolve(__dirname, `./data/suites.json`)).toString()) as {
+    suites: ITestSuite[];
+  };
+
+  data.suites.forEach((testCase) => {
     it(testCase.description, async () => {
       // check if we have subsidy enabled
-      const subsidyEnabled = testCase.subsidy && testCase.subsidy.enabled;
+      const subsidyEnabled = Boolean(testCase.subsidy?.enabled);
 
       const users = genTestUserCommands(testCase.numUsers, testCase.numVotesPerUser, testCase.bribers, testCase.votes);
 
       // loop through all users and generate keypair + signup
-      for (let i = 0; i < users.length; i++) {
+      for (let i = 0; i < users.length; i += 1) {
         // generate a keypair
         const keypair = new Keypair();
-        const _timestamp = Date.now();
+        const timestamp = Date.now();
         // signup
         const stateIndex = await signup(keypair.pubKey.serialize(), contracts.maciAddress, SG_DATA, ivcpData, true);
 
         // signup on local maci state
-        maciState.signUp(keypair.pubKey, BigInt(initialVoiceCredits), BigInt(_timestamp));
+        maciState.signUp(keypair.pubKey, BigInt(initialVoiceCredits), BigInt(timestamp));
 
         // publish messages
-        for (let j = 0; j < users[i].votes.length; j++) {
+        for (let j = 0; j < users[i].votes.length; j += 1) {
           const user = users[i];
           const isKeyChange = testCase.changeUsersKeys && j in testCase.changeUsersKeys[i];
           const voteOptionIndex = isKeyChange
-            ? testCase.changeUsersKeys[i][j].voteOptionIndex
+            ? testCase.changeUsersKeys?.[i][j].voteOptionIndex
             : user.votes[j].voteOptionIndex;
-          const newVoteWeight = isKeyChange ? testCase.changeUsersKeys[i][j].voteWeight : user.votes[j].voteWeight;
-          const nonce = user.votes[j].nonce;
-          const salt = "0x" + genRandomSalt().toString(16);
+          const newVoteWeight = isKeyChange ? testCase.changeUsersKeys?.[i][j].voteWeight : user.votes[j].voteWeight;
+          const { nonce } = user.votes[j];
+          const salt = `0x${genRandomSalt().toString(16)}`;
           const userPrivKey = isKeyChange ? user.changeKeypair() : keypair.privKey;
 
           // actually publish it
@@ -172,10 +195,10 @@ describe("integration tests", function () {
           const encryptionKey = await publish(
             keypair.pubKey.serialize(),
             Number(stateIndex),
-            voteOptionIndex,
+            voteOptionIndex!,
             nonce,
             pollId,
-            newVoteWeight,
+            newVoteWeight!,
             contracts.maciAddress,
             salt,
             userPrivKey.serialize(),
@@ -189,8 +212,8 @@ describe("integration tests", function () {
           const command = new PCommand(
             BigInt(stateIndex),
             keypair.pubKey,
-            BigInt(voteOptionIndex),
-            BigInt(newVoteWeight),
+            BigInt(voteOptionIndex!),
+            BigInt(newVoteWeight!),
             BigInt(nonce),
             BigInt(pollId),
             BigInt(salt),
@@ -204,10 +227,10 @@ describe("integration tests", function () {
       await timeTravel(duration, true);
 
       // merge messages
-      expect(await mergeMessages(pollId, contracts.maciAddress, undefined, true)).to.not.throw;
+      await expect(mergeMessages(pollId, contracts.maciAddress, undefined, true)).to.eventually.not.be.rejectedWith();
 
       // merge signups
-      expect(await mergeSignups(pollId, contracts.maciAddress, undefined, true)).to.not.throw;
+      await expect(mergeSignups(pollId, contracts.maciAddress, undefined, true)).to.eventually.not.be.rejectedWith();
 
       // generate proofs
       const tallyData = await genProofs(
@@ -233,7 +256,7 @@ describe("integration tests", function () {
         path.resolve(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test_js/SubsidyPerBatch_10-1-2_test.wasm"),
         useWasm,
       );
-      expect(tallyData).to.not.be.undefined;
+      expect(tallyData).to.not.eq(undefined);
 
       // verify that the data stored on the tally file is correct
       expectTally(
@@ -245,13 +268,15 @@ describe("integration tests", function () {
       );
 
       if (subsidyEnabled) {
-        const subsidy = JSON.parse(readFileSync(path.resolve(__dirname, "../../../cli/subsidy.json")).toString());
-        expectSubsidy(maxMessages, testCase.subsidy.expectedSubsidy, subsidy);
+        const subsidy = JSON.parse(
+          readFileSync(path.resolve(__dirname, "../../../cli/subsidy.json")).toString(),
+        ) as Subsidy;
+        expectSubsidy(maxMessages, testCase.subsidy?.expectedSubsidy ?? [], subsidy);
       }
 
       // prove on chain if everything matches
-      expect(
-        await proveOnChain(
+      await expect(
+        proveOnChain(
           pollId.toString(),
           path.resolve(__dirname, "../../../cli/proofs"),
           contracts.maciAddress,
@@ -260,11 +285,11 @@ describe("integration tests", function () {
           pollContracts.subsidy,
           true,
         ),
-      ).to.not.throw;
+      ).to.eventually.not.rejectedWith();
 
       // verify the proofs
-      expect(
-        await verify(
+      await expect(
+        verify(
           pollId.toString(),
           path.resolve(__dirname, "../../../cli/tally.json"),
           tallyData,
@@ -274,7 +299,7 @@ describe("integration tests", function () {
           subsidyEnabled ? path.resolve(__dirname, "../../../cli/subsidy.json") : undefined,
           true,
         ),
-      ).to.not.throw;
+      ).to.eventually.not.rejectedWith();
     });
-  }
+  });
 });

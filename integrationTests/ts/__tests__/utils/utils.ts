@@ -1,10 +1,14 @@
-import { Keypair } from "maci-domainobjs";
-import { TallyData } from "maci-cli";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { expect } from "chai";
+import { Keypair } from "maci-domainobjs";
+
 import { arch } from "os";
-import { UserCommand } from "./user";
-import { Subsidy, Vote } from "./interfaces";
+
+import type { TallyData } from "maci-cli";
+
 import { defaultVote } from "./constants";
+import { Subsidy, IVote, IBriber } from "./interfaces";
+import { UserCommand } from "./user";
 
 /**
  * Test utility to generate vote objects for integrationt ests
@@ -19,32 +23,32 @@ const getTestVoteValues = (
   userIndex: number,
   voteIndex: number,
   numVotesPerUser: number,
-  votes?: any,
-  bribers?: any,
+  votes?: IVote[][],
+  bribers?: IBriber[],
 ) => {
   // check if we have specific votes
   const useVotes = votes && userIndex in votes;
-  let voteOptionIndex = defaultVote.voteOptionIndex;
-  let voteWeight = defaultVote.voteWeight;
+  let { voteOptionIndex } = defaultVote;
+  let { voteWeight } = defaultVote;
   let valid = true;
 
   // if we have bribers
   if (bribers && userIndex in bribers) {
-    if (!(bribers[userIndex].voteOptionIndices.length == numVotesPerUser)) {
+    if (!(bribers[userIndex].voteOptionIndices.length === numVotesPerUser)) {
       throw new Error("failed generating user commands: more bribes than votes set per user");
     }
 
     // if we were provided specific votes
     if (useVotes) {
-      if (bribers[userIndex].voteOptionIndices[voteIndex] != votes[userIndex][voteIndex].voteOptionIndex) {
+      if (bribers[userIndex].voteOptionIndices[voteIndex] !== votes[userIndex][voteIndex].voteOptionIndex) {
         throw new Error(
           "failed generating user commands: conflict between bribers voteOptionIndex and the one set by voters",
         );
       }
     }
     voteOptionIndex = bribers[userIndex].voteOptionIndices[voteIndex];
-  } else {
-    if (useVotes) voteOptionIndex = votes[userIndex][voteIndex].voteOptionIndex;
+  } else if (useVotes) {
+    voteOptionIndex = votes[userIndex][voteIndex].voteOptionIndex;
   }
 
   if (useVotes) {
@@ -66,17 +70,17 @@ const getTestVoteValues = (
 export const genTestUserCommands = (
   numUsers: number,
   numVotesPerUser: number,
-  bribers?: any,
-  presetVotes?: any,
+  bribers?: IBriber[],
+  presetVotes?: IVote[][],
 ): UserCommand[] => {
   const usersCommands: UserCommand[] = [];
-  for (let i = 0; i < numUsers; i++) {
+  for (let i = 0; i < numUsers; i += 1) {
     const userKeypair = new Keypair();
-    const votes: Vote[] = [];
+    const votes: IVote[] = [];
 
-    for (let j = 0; j < numVotesPerUser; j++) {
+    for (let j = 0; j < numVotesPerUser; j += 1) {
       const { voteOptionIndex, voteWeight, valid } = getTestVoteValues(i, j, numVotesPerUser, presetVotes, bribers);
-      const vote: Vote = {
+      const vote = {
         voteOptionIndex,
         voteWeight,
         nonce: j + 1,
@@ -112,17 +116,18 @@ export const expectTally = (
   expectedPerVOSpentVoiceCredits: number[],
   expectedTotalSpentVoiceCredits: number,
   tallyFile: TallyData,
-) => {
-  const genTally: string[] = Array(maxMessages).fill("0");
-  const genPerVOSpentVoiceCredits: string[] = Array(maxMessages).fill("0");
-  expectedTally.map((voteWeight, voteOption) => {
-    if (voteWeight != 0) {
+): void => {
+  const genTally = Array(maxMessages).fill("0");
+  const genPerVOSpentVoiceCredits = Array(maxMessages).fill("0");
+
+  expectedTally.forEach((voteWeight, voteOption) => {
+    if (voteWeight !== 0) {
       genTally[voteOption] = voteWeight.toString();
     }
   });
 
-  expectedPerVOSpentVoiceCredits.map((spentCredit, index) => {
-    if (spentCredit != 0) {
+  expectedPerVOSpentVoiceCredits.forEach((spentCredit, index) => {
+    if (spentCredit !== 0) {
       genPerVOSpentVoiceCredits[index] = spentCredit.toString();
     }
   });
@@ -138,10 +143,11 @@ export const expectTally = (
  * @param expectedSubsidy - the expected subsidy values
  * @param SubsidyFile - the subsidy file itself as an object
  */
-export const expectSubsidy = (maxMessages: number, expectedSubsidy: number[], subsidyFile: Subsidy) => {
-  const genSubsidy: string[] = Array(maxMessages).fill("0");
-  expectedSubsidy.map((value, index) => {
-    if (value != 0) {
+export const expectSubsidy = (maxMessages: number, expectedSubsidy: number[], subsidyFile: Subsidy): void => {
+  const genSubsidy = Array(maxMessages).fill("0");
+
+  expectedSubsidy.forEach((value, index) => {
+    if (value !== 0) {
       genSubsidy[index] = value.toString();
     }
   });
@@ -153,10 +159,13 @@ export const expectSubsidy = (maxMessages: number, expectedSubsidy: number[], su
  * Stop the current thread for x seconds
  * @param ms - the number of ms to sleep for
  */
-export const sleep = async (ms: number) => await new Promise((resolve) => setTimeout(resolve, ms));
+export const sleep = async (ms: number): Promise<void> =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 
 /**
  * Check whether we are running on an arm chip
  * @returns whether we are running on an arm chip
  */
-export const isArm = () => arch().includes("arm");
+export const isArm = (): boolean => arch().includes("arm");
