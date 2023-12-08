@@ -105,7 +105,7 @@ describe("TallyVotes circuit", function () {
 
     it("should produce the correct result commitments", async () => {
       const generatedInputs = poll.tallyVotes();
-      const newResults = poll.results;
+      const newResults = poll.tallyResult;
 
       expect(newResults[Number(voteOptionIndex)]).to.be.eq(voteWeight);
 

@@ -1,19 +1,17 @@
 import { IncrementalQuinTree, hash5 } from "maci-crypto";
-import { PubKey, Keypair, StateLeaf } from "maci-domainobjs";
+import { PubKey, Keypair, StateLeaf, blankStateLeaf, blankStateLeafHash } from "maci-domainobjs";
 
 import { Poll } from "./Poll";
 import { TreeDepths, MaxValues } from "./utils/utils";
-import { STATE_TREE_ARITY, BlankStateLeaf, BlankStateLeafHash } from "./utils/constants";
+import { STATE_TREE_ARITY } from "./utils/constants";
 
-/*
- * File Overview:
- * - IMaciState: Interface detailing `MaciState`'s public API.
- * - MaciState: Core class implementing the above interface.
+/**
+ * Represents the public API of the MaciState class.
  */
-
 interface IMaciState {
+  // This method is used for signing up users to the state tree.
   signUp(_pubKey: PubKey, _initialVoiceCreditBalance: bigint, _timestamp: bigint): number;
-
+  // This method is used for deploying poll.
   deployPoll(
     _duration: number,
     _pollEndTimestamp: bigint,
@@ -22,14 +20,16 @@ interface IMaciState {
     _messageBatchSize: number,
     _coordinatorKeypair: Keypair,
   ): number;
+  // These methods are helper functions.
   deployNullPoll(): void;
   copy(): MaciState;
   equals(m: MaciState): boolean;
   toJSON(): any;
 }
 
-// A representation of the MACI contract
-// Also see MACI.sol
+/**
+ * A representation of the MACI contract.
+ */
 class MaciState implements IMaciState {
   public polls: Poll[] = [];
 
@@ -43,25 +43,44 @@ class MaciState implements IMaciState {
   public pollBeingProcessed: boolean;
   public currentPollBeingProcessed: number;
 
+  /**
+   * Constructs a new MaciState object.
+   * @param _stateTreeDepth - The depth of the state tree.
+   */
   constructor(_stateTreeDepth: number) {
     this.stateTreeDepth = _stateTreeDepth;
-    this.stateTree = new IncrementalQuinTree(this.stateTreeDepth, BlankStateLeafHash, STATE_TREE_ARITY, hash5);
+    this.stateTree = new IncrementalQuinTree(this.stateTreeDepth, blankStateLeafHash, STATE_TREE_ARITY, hash5);
 
-    this.stateLeaves.push(BlankStateLeaf);
-    this.stateTree.insert(BlankStateLeafHash);
+    this.stateLeaves.push(blankStateLeaf);
+    this.stateTree.insert(blankStateLeafHash);
   }
 
+  /**
+   * Sign up a user with the given public key, initial voice credit balance, and timestamp.
+   * @param _pubKey - The public key of the user.
+   * @param _initialVoiceCreditBalance - The initial voice credit balance of the user.
+   * @param _timestamp - The timestamp of the sign-up.
+   * @returns The index of the newly signed-up user in the state tree.
+   */
   public signUp(_pubKey: PubKey, _initialVoiceCreditBalance: bigint, _timestamp: bigint): number {
     this.numSignUps++;
     const stateLeaf = new StateLeaf(_pubKey, _initialVoiceCreditBalance, _timestamp);
-    const h = stateLeaf.hash();
+    const hash = stateLeaf.hash();
+    this.stateTree.insert(hash);
 
-    this.stateTree.insert(h);
-    const arrayLength = this.stateLeaves.push(stateLeaf.copy());
-    const leafIndex = arrayLength - 1;
-    return leafIndex;
+    return this.stateLeaves.push(stateLeaf.copy()) - 1;
   }
 
+  /**
+   * Deploy a new poll with the given parameters.
+   * @param _duration - The duration of the poll in seconds.
+   * @param _pollEndTimestamp - The Unix timestamp at which the poll ends.
+   * @param _maxValues - The maximum number of values for each vote option.
+   * @param _treeDepths - The depths of the tree.
+   * @param _messageBatchSize - The batch size for processing messages.
+   * @param _coordinatorKeypair - The keypair of the MACI round coordinator.
+   * @returns The index of the newly deployed poll.
+   */
   public deployPoll(
     _duration: number,
     _pollEndTimestamp: bigint,
@@ -90,12 +109,16 @@ class MaciState implements IMaciState {
     return this.polls.length - 1;
   }
 
+  /**
+   * Deploy a null poll.
+   */
   public deployNullPoll() {
     this.polls.push(null);
   }
 
-  /*
-   * Deep-copy this object
+  /**
+   * Create a deep copy of the MaciState object.
+   * @returns A new instance of the MaciState object with the same properties.
    */
   public copy = (): MaciState => {
     const copied = new MaciState(this.stateTreeDepth);
@@ -106,6 +129,11 @@ class MaciState implements IMaciState {
     return copied;
   };
 
+  /**
+   * Check if the MaciState object is equal to another MaciState object.
+   * @param m - The MaciState object to compare.
+   * @returns True if the two MaciState objects are equal, false otherwise.
+   */
   public equals = (m: MaciState): boolean => {
     const result =
       this.stateTreeDepth === m.stateTreeDepth &&
@@ -129,8 +157,8 @@ class MaciState implements IMaciState {
   };
 
   /**
-   * Serialize the MaciState object to a JSON object
-   * @returns a JSON object
+   * Serialize the MaciState object to a JSON object.
+   * @returns A JSON object representing the MaciState object.
    */
   toJSON() {
     return {
@@ -143,9 +171,12 @@ class MaciState implements IMaciState {
     };
   }
 
-  // create a new object from JSON
+  /**
+   * Create a new MaciState object from a JSON object.
+   * @param json - The JSON object representing the MaciState object.
+   * @returns A new instance of the MaciState object with the properties from the JSON object.
+   */
   static fromJSON(json: any) {
-    // create new instance
     const maciState = new MaciState(json.stateTreeDepth);
 
     // assign the json values to the new instance
@@ -167,5 +198,4 @@ class MaciState implements IMaciState {
   }
 }
 
-// todo: remove re-export `IncrementalQuinTree` it's originally exported by `maci-crypto`
-export { IncrementalQuinTree, MaciState };
+export { MaciState };
