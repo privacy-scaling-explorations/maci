@@ -1,8 +1,9 @@
 import { themes as prismThemes } from "prism-react-renderer";
-import type { Config } from "@docusaurus/types";
-import type * as Preset from "@docusaurus/preset-classic";
-import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
+import remarkMath from "remark-math";
+
+import type * as Preset from "@docusaurus/preset-classic";
+import type { Config } from "@docusaurus/types";
 
 const GITHUB_URL = "https://github.com/privacy-scaling-explorations/maci";
 
@@ -40,9 +41,8 @@ const config: Config = {
         docs: {
           routeBasePath: "docs/",
           sidebarPath: "./sidebars.ts",
-          editUrl: ({ versionDocsDirPath, docPath }) => {
-            return `${GITHUB_URL}/edit/dev/website/${versionDocsDirPath}/${docPath}`;
-          },
+          editUrl: ({ versionDocsDirPath, docPath }) =>
+            `${GITHUB_URL}/edit/dev/website/${versionDocsDirPath}/${docPath}`,
           remarkPlugins: [remarkMath],
           rehypePlugins: [rehypeKatex],
           includeCurrentVersion: false,
@@ -50,9 +50,7 @@ const config: Config = {
         blog: {
           showReadingTime: true,
 
-          editUrl: ({ blogDirPath, blogPath }) => {
-            return `${GITHUB_URL}/edit/dev/website/${blogDirPath}/${blogPath}`;
-          },
+          editUrl: ({ blogDirPath, blogPath }) => `${GITHUB_URL}/edit/dev/website/${blogDirPath}/${blogPath}`,
         },
         theme: {
           customCss: "./src/css/custom.css",

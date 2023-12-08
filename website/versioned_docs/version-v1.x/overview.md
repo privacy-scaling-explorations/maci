@@ -41,9 +41,7 @@ The TypeScript libraries manage the business logic between the smart contracts a
 The MACI [TypeScript](https://www.typescriptlang.org/) libraries are released through the following NPM packages:
 
 - [`@maci-cli`](https://www.npmjs.com/package/maci-cli)
-- [`@maci-common`](https://www.npmjs.com/package/maci-common)
 - [`@maci-core`](https://www.npmjs.com/package/maci-core)
 - [`@maci-crypto`](https://www.npmjs.com/package/maci-crypto)
 - [`@maci-domainobjs`](https://www.npmjs.com/package/maci-domainobjs)
 - [`@maci-integrationtests`](https://www.npmjs.com/package/maci-integrationtests)
-- [`@maci-server`](https://www.npmjs.com/package/maci-server)
