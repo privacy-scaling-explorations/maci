@@ -4,6 +4,7 @@ import { Contract } from "ethers";
 import { existsSync, readFileSync } from "fs";
 import { hash2, hash3, genTreeCommitment } from "maci-crypto";
 import { TallyData } from "../utils/interfaces";
+import { verifyPerVOSpentVoiceCredits, verifyTallyResults } from "../utils/verifiers";
 
 /**
  * Verify the results of a poll and optionally the subsidy results
@@ -116,6 +117,51 @@ export const verify = async (
 
   if (onChainTallycomment !== newTallyCommitment) logError("The on-chain tally commitment does not match.");
   logGreen(quiet, success("The on-chain tally commitment matches."));
+
+  // verify total spent voice credits on-chain
+  const isValid = await tallyContract.verifySpentVoiceCredits(
+    tallyResults.totalSpentVoiceCredits.spent,
+    tallyResults.totalSpentVoiceCredits.salt,
+    newResultsCommitment,
+    newPerVOSpentVoiceCreditsCommitment,
+  );
+  if (isValid) {
+    logGreen(quiet, success("The on-chain verification of total spent voice credits passed."));
+  } else {
+    logError("The on-chain verification of total spent voice credits failed.");
+  }
+
+  // verify per vote option voice credits on-chain
+  const failedSpentCredits = await verifyPerVOSpentVoiceCredits(
+    tallyContract,
+    tallyResults,
+    voteOptionTreeDepth,
+    newSpentVoiceCreditsCommitment,
+    newResultsCommitment,
+  );
+  if (failedSpentCredits.length === 0) {
+    logGreen(quiet, success("The on-chain verification of per vote option spent voice credits passed"));
+  } else {
+    logError(
+      `At least one tally result failed the on-chain verification. Please check your Tally data at these indexes: ${failedSpentCredits}`,
+    );
+  }
+
+  // verify tally result on-chain for each vote option
+  const failedPerVOSpentCredits = await verifyTallyResults(
+    tallyContract,
+    tallyResults,
+    voteOptionTreeDepth,
+    newSpentVoiceCreditsCommitment,
+    newPerVOSpentVoiceCreditsCommitment,
+  );
+  if (failedPerVOSpentCredits.length === 0) {
+    logGreen(quiet, success("The on-chain verification of tally results passed"));
+  } else {
+    logError(
+      `At least one spent voice credits entry in the tally results failed the on-chain verification. Please check your tally results at these indexes: ${failedPerVOSpentCredits}`,
+    );
+  }
 
   // verify subsidy result if subsidy file is provided
   if (subsidyFile) {
