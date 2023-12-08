@@ -120,8 +120,8 @@ export const verify = async (
 
   // verify total spent voice credits on-chain
   const isValid = await tallyContract.verifySpentVoiceCredits(
-    tallyData.totalSpentVoiceCredits.spent,
-    tallyData.totalSpentVoiceCredits.salt,
+    tallyResults.totalSpentVoiceCredits.spent,
+    tallyResults.totalSpentVoiceCredits.salt,
     newResultsCommitment,
     newPerVOSpentVoiceCreditsCommitment,
   );
@@ -134,7 +134,7 @@ export const verify = async (
   // verify per vote option voice credits on-chain
   const failedSpentCredits = await verifyPerVOSpentVoiceCredits(
     tallyContract,
-    tallyData,
+    tallyResults,
     voteOptionTreeDepth,
     newSpentVoiceCreditsCommitment,
     newResultsCommitment,
@@ -148,7 +148,7 @@ export const verify = async (
   // verify tally result on-chain for each vote option
   const failedTallyResults = await verifyTallyResults(
     tallyContract,
-    tallyData,
+    tallyResults,
     voteOptionTreeDepth,
     newSpentVoiceCreditsCommitment,
     newPerVOSpentVoiceCreditsCommitment,
