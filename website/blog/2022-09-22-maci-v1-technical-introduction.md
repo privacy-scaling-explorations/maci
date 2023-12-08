@@ -116,7 +116,7 @@ The general workflow process can be broken down into 4 different phases:
 3. Process Messages
 4. Tally Results
 
-These phases make use of 3 main smart contracts — MACI, Poll and ​​PollProcessorAndTallyer. These contracts can be found on the MACI github page. The MACI contract is responsible for keeping track of all the user sign ups by recording the initial public key for each user. When a vote is going to take place, users can deploy a Poll smart contract via MACI.deployPoll().
+These phases make use of 3 main smart contracts — MACI, Poll and ​​PollProcessorAndTallyer. These contracts can be found on the MACI github page. The MACI contract is responsible for keeping track of all the user signups by recording the initial public key for each user. When a vote is going to take place, users can deploy a Poll smart contract via MACI.deployPoll().
 
 The Poll smart contract is where users submit their messages. One MACI contract can be used for multiple polls. In other words, the users that signed up to the MACI contract can vote on multiple issues, with each issue represented by a distinct Poll contract.
 

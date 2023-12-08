@@ -1,97 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import { IMACI } from "./IMACI.sol";
-import { Params } from "./Params.sol";
+import { Params } from "./utilities/Params.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
-import { DomainObjs, IPubKey, IMessage } from "./DomainObjs.sol";
+import { DomainObjs } from "./utilities/DomainObjs.sol";
 import { AccQueue, AccQueueQuinaryMaci } from "./trees/AccQueue.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import { VkRegistry } from "./VkRegistry.sol";
 import { Verifier } from "./crypto/Verifier.sol";
 import { EmptyBallotRoots } from "./trees/EmptyBallotRoots.sol";
 import { TopupCredit } from "./TopupCredit.sol";
-import { Utilities } from "./utilities/Utility.sol";
+import { Utilities } from "./utilities/Utilities.sol";
 import { MessageProcessor } from "./MessageProcessor.sol";
 
-contract PollDeploymentParams {
-  struct ExtContracts {
-    VkRegistry vkRegistry;
-    IMACI maci;
-    AccQueue messageAq;
-    TopupCredit topupCredit;
-  }
-}
-
-/// @title PollFactory
-/// A factory contract which deploys Poll contracts. It allows the MACI contract
-/// size to stay within the limit set by EIP-170.
-contract PollFactory is Params, IPubKey, Ownable, PollDeploymentParams {
-  error InvalidMaxValues();
-
-  /// @notice Deploy a new Poll contract and AccQueue contract for messages.
-  function deploy(
-    uint256 _duration,
-    MaxValues memory _maxValues,
-    TreeDepths memory _treeDepths,
-    BatchSizes memory _batchSizes,
-    PubKey memory _coordinatorPubKey,
-    VkRegistry _vkRegistry,
-    IMACI _maci,
-    TopupCredit _topupCredit,
-    address _pollOwner
-  ) public onlyOwner returns (Poll) {
-    uint256 treeArity = 5;
-
-    // Validate _maxValues
-    // NOTE: these checks may not be necessary. Removing them will save
-    // 0.28 Kb of bytecode.
-
-    // maxVoteOptions must be less than 2 ** 50 due to circuit limitations;
-    // it will be packed as a 50-bit value along with other values as one
-    // of the inputs (aka packedVal)
-    if (
-      _maxValues.maxMessages > treeArity ** uint256(_treeDepths.messageTreeDepth) ||
-      _maxValues.maxMessages < _batchSizes.messageBatchSize ||
-      _maxValues.maxMessages % _batchSizes.messageBatchSize != 0 ||
-      _maxValues.maxVoteOptions > treeArity ** uint256(_treeDepths.voteOptionTreeDepth) ||
-      _maxValues.maxVoteOptions >= (2 ** 50)
-    ) {
-      revert InvalidMaxValues();
-    }
-
-    AccQueue messageAq = new AccQueueQuinaryMaci(_treeDepths.messageTreeSubDepth);
-
-    ExtContracts memory extContracts;
-
-    // TODO: remove _vkRegistry; only PollProcessorAndTallyer needs it
-    extContracts.vkRegistry = _vkRegistry;
-    extContracts.maci = _maci;
-    extContracts.messageAq = messageAq;
-    extContracts.topupCredit = _topupCredit;
-
-    Poll poll = new Poll(_duration, _maxValues, _treeDepths, _batchSizes, _coordinatorPubKey, extContracts);
-
-    // Make the Poll contract own the messageAq contract, so only it can
-    // run enqueue/merge
-    messageAq.transferOwnership(address(poll));
-
-    // init messageAq
-    poll.init();
-
-    // TODO: should this be _maci.owner() instead?
-    poll.transferOwnership(_pollOwner);
-
-    return poll;
-  }
-}
-
 /// @title Poll
+/// @notice A Poll contract allows voters to submit encrypted messages
+/// which can be either votes, key change messages or topup messages.
 /// @dev Do not deploy this directly. Use PollFactory.deploy() which performs some
 /// checks on the Poll constructor arguments.
-contract Poll is Params, Utilities, SnarkCommon, Ownable, PollDeploymentParams, EmptyBallotRoots {
+contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots {
   using SafeERC20 for ERC20;
 
   bool internal isInit = false;
@@ -110,10 +38,6 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, PollDeploymentParams, 
   // The duration of the polling period, in seconds
   uint256 internal duration;
 
-  function getDeployTimeAndDuration() public view returns (uint256, uint256) {
-    return (deployTime, duration);
-  }
-
   // Whether the MACI contract's stateAq has been merged by this contract
   bool public stateAqMerged;
 
@@ -128,9 +52,13 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, PollDeploymentParams, 
 
   uint256 internal numMessages;
 
-  function numSignUpsAndMessages() public view returns (uint256, uint256) {
-    uint256 numSignUps = extContracts.maci.numSignUps();
-    return (numSignUps, numMessages);
+  /// @notice The number of messages which have been processed and the number of
+  /// signups
+  /// @return numSignups The number of signups
+  /// @return numMsgs The number of messages sent by voters
+  function numSignUpsAndMessages() public view returns (uint256 numSignups, uint256 numMsgs) {
+    numSignups = extContracts.maci.numSignUps();
+    numMsgs = numMessages;
   }
 
   MaxValues public maxValues;
@@ -157,6 +85,12 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, PollDeploymentParams, 
 
   /// @notice Each MACI instance can have multiple Polls.
   /// When a Poll is deployed, its voting period starts immediately.
+  /// @param _duration The duration of the voting period, in seconds
+  /// @param _maxValues The maximum number of signups and messages
+  /// @param _treeDepths The depths of the merkle trees
+  /// @param _batchSizes The batch sizes for processing
+  /// @param _coordinatorPubKey The coordinator's public key
+  /// @param _extContracts The external contracts
   constructor(
     uint256 _duration,
     MaxValues memory _maxValues,
@@ -186,13 +120,16 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, PollDeploymentParams, 
     _;
   }
 
+  /// @notice A modifier that causes the function to revert if the voting period is
+  /// over
   modifier isWithinVotingDeadline() {
     uint256 secondsPassed = block.timestamp - deployTime;
     if (secondsPassed >= duration) revert VotingPeriodOver();
     _;
   }
 
-  /// @notice Should be called immediately after Poll creation
+  /// @notice The initialization function.
+  /// @dev Should be called immediately after Poll creation
   /// and messageAq ownership transferred
   function init() public {
     if (isInit) revert PollAlreadyInit();
@@ -309,5 +246,13 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, PollDeploymentParams, 
   function mergeMessageAq() public onlyOwner isAfterVotingDeadline {
     uint256 root = extContracts.messageAq.merge(treeDepths.messageTreeDepth);
     emit MergeMessageAq(root);
+  }
+
+  /// @notice Returns the Poll's deploy time and duration
+  /// @return _deployTime The deployment timestamp
+  /// @return _duration The duration of the poll
+  function getDeployTimeAndDuration() public view returns (uint256 _deployTime, uint256 _duration) {
+    _deployTime = deployTime;
+    _duration = duration;
   }
 }

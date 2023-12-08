@@ -20,13 +20,13 @@ abstract contract AccQueue is Ownable, Hasher {
   // The maximum tree depth
   uint256 constant MAX_DEPTH = 32;
 
-  // A Queue is a 2D array of Merkle roots and indices which represents nodes
-  // in a Merkle tree while it is progressively updated.
+  /// @notice A Queue is a 2D array of Merkle roots and indices which represents nodes
+  /// in a Merkle tree while it is progressively updated.
   struct Queue {
-    // IMPORTANT: the following declares an array of b elements of type T: T[b]
-    // And the following declares an array of b elements of type T[a]: T[a][b]
-    // As such, the following declares an array of MAX_DEPTH+1 arrays of
-    // uint256[4] arrays, **not the other way round**:
+    /// @notice IMPORTANT: the following declares an array of b elements of type T: T[b]
+    /// And the following declares an array of b elements of type T[a]: T[a][b]
+    /// As such, the following declares an array of MAX_DEPTH+1 arrays of
+    /// uint256[4] arrays, **not the other way round**:
     uint256[4][MAX_DEPTH + 1] levels;
     uint256[MAX_DEPTH + 1] indices;
   }
@@ -78,6 +78,7 @@ abstract contract AccQueue is Ownable, Hasher {
   // The number of leaves inserted across all subtrees so far
   uint256 public numLeaves;
 
+  /// @notice custom errors
   error SubDepthCannotBeZero();
   error SubdepthTooLarge(uint256 _subDepth, uint256 max);
   error InvalidHashLength();
@@ -89,7 +90,11 @@ abstract contract AccQueue is Ownable, Hasher {
   error DepthTooSmall(uint256 _depth, uint256 min);
   error InvalidIndex(uint256 _index);
 
+  /// @notice Create a new AccQueue
+  /// @param _subDepth The depth of each subtree.
+  /// @param _hashLength The number of leaves per node (2 or 5).
   constructor(uint256 _subDepth, uint256 _hashLength) {
+    /// validation
     if (_subDepth == 0) revert SubDepthCannotBeZero();
     if (_subDepth > MAX_DEPTH) revert SubdepthTooLarge(_subDepth, MAX_DEPTH);
     if (_hashLength != 2 && _hashLength != 5) revert InvalidHashLength();
@@ -106,10 +111,17 @@ abstract contract AccQueue is Ownable, Hasher {
   /// different input array lengths.
   /// @param _level The level to hash.
   /// @param _leaf The leaf include with the level.
-  /// @return The hash of the level and leaf.
-  function hashLevel(uint256 _level, uint256 _leaf) internal virtual returns (uint256) {}
+  /// @return _hash The hash of the level and leaf.
+  function hashLevel(uint256 _level, uint256 _leaf) internal virtual returns (uint256 _hash) {}
 
-  function hashLevelLeaf(uint256 _level, uint256 _leaf) public view virtual returns (uint256) {}
+  /// @notice Hash the contents of the specified level and the specified leaf.
+  /// This is a virtual function as the hash function which the overriding
+  /// contract uses will be either hashLeftRight or hash5, which require
+  /// different input array lengths.
+  /// @param _level The level to hash.
+  /// @param _leaf The leaf include with the level.
+  /// @return _hash The hash of the level and leaf.
+  function hashLevelLeaf(uint256 _level, uint256 _leaf) public view virtual returns (uint256 _hash) {}
 
   /// @notice Returns the zero leaf at a specified level.
   /// This is a virtual function as the hash function which the overriding
@@ -117,12 +129,15 @@ abstract contract AccQueue is Ownable, Hasher {
   /// different zero values (e.g. hashLeftRight(0, 0) vs
   /// hash5([0, 0, 0, 0, 0]). Moreover, the zero value may be a
   /// nothing-up-my-sleeve value.
-  function getZero(uint256 _level) internal virtual returns (uint256) {}
+  /// @param _level The level at which to return the zero leaf.
+  /// @return zero The zero leaf at the specified level.
+  function getZero(uint256 _level) internal virtual returns (uint256 zero) {}
 
-  /// Add a leaf to the queue for the current subtree.
+  /// @notice Add a leaf to the queue for the current subtree.
   /// @param _leaf The leaf to add.
-  function enqueue(uint256 _leaf) public onlyOwner returns (uint256) {
-    uint256 leafIndex = numLeaves;
+  /// @return leafIndex The index of the leaf in the queue.
+  function enqueue(uint256 _leaf) public onlyOwner returns (uint256 leafIndex) {
+    leafIndex = numLeaves;
     // Recursively queue the leaf
     _enqueue(_leaf, 0);
 
@@ -147,12 +162,10 @@ abstract contract AccQueue is Ownable, Hasher {
       delete leafQueue.levels[subDepth][0];
       delete leafQueue.indices;
     }
-
-    return leafIndex;
   }
 
-  /// Updates the queue at a given level and hashes any subroots that need to
-  /// be hashed.
+  /// @notice Updates the queue at a given level and hashes any subroots
+  /// that need to be hashed.
   /// @param _leaf The leaf to add.
   /// @param _level The level at which to queue the leaf.
   function _enqueue(uint256 _leaf, uint256 _level) internal {
@@ -239,34 +252,31 @@ abstract contract AccQueue is Ownable, Hasher {
     subTreesMerged = false;
   }
 
-  /// @notice Calculate the lowest possible height of a tree with all the subroots
-  /// merged together.
-  function calcMinHeight() public view returns (uint256) {
-    uint256 depth = 1;
+  /// @notice Calculate the lowest possible height of a tree with
+  /// all the subroots merged together.
+  /// @return depth The lowest possible height of a tree with all the
+  function calcMinHeight() public view returns (uint256 depth) {
+    depth = 1;
     while (true) {
       if (hashLength ** depth >= currentSubtreeIndex) {
         break;
       }
       depth++;
     }
-
-    return depth;
   }
 
   /// @notice Merge all subtrees to form the shortest possible tree.
   /// This function can be called either once to merge all subtrees in a
   /// single transaction, or multiple times to do the same in multiple
-  /// transactions. If _numSrQueueOps is set to 0, this function will attempt
-  /// to merge all subtrees in one go. If it is set to a number greater than
-  /// 0, it will perform up to that number of queueSubRoot() operations.
+  /// transactions.
   /// @param _numSrQueueOps The number of times this function will call
   ///                       queueSubRoot(), up to the maximum number of times
-  ///                       is necessary. If it is set to 0, it will call
-  ///                      queueSubRoot() as many times as is necessary. Set
-  ///                      this to a low number and call this function
-  ///                      multiple times if there are many subroots to
-  ///                      merge, or a single transaction would run out of
-  ///                      gas.
+  ///                       necessary. If it is set to 0, it will call
+  ///                       queueSubRoot() as many times as is necessary. Set
+  ///                       this to a low number and call this function
+  ///                       multiple times if there are many subroots to
+  ///                       merge, or a single transaction could run out of
+  ///                       gas.
   function mergeSubRoots(uint256 _numSrQueueOps) public onlyOwner {
     // This function can only be called once unless a new subtree is created
     if (subTreesMerged) revert SubTreesAlreadyMerged();
@@ -364,7 +374,8 @@ abstract contract AccQueue is Ownable, Hasher {
   /// @notice Merge all subtrees to form a main tree with a desired depth.
   /// @param _depth The depth of the main tree. It must fit all the leaves or
   ///               this function will revert.
-  function merge(uint256 _depth) public onlyOwner returns (uint256) {
+  /// @return root The root of the main tree.
+  function merge(uint256 _depth) public onlyOwner returns (uint256 root) {
     // The tree depth must be more than 0
     if (_depth == 0) revert DepthCannotBeZero();
 
@@ -391,7 +402,7 @@ abstract contract AccQueue is Ownable, Hasher {
       treeMerged = true;
       return smallSRTroot;
     } else {
-      uint256 root = smallSRTroot;
+      root = smallSRTroot;
 
       // Calculate the main root
 
@@ -416,57 +427,73 @@ abstract contract AccQueue is Ownable, Hasher {
 
       mainRoots[_depth] = root;
       treeMerged = true;
-      return root;
     }
   }
 
   /// @notice Returns the subroot at the specified index. Reverts if the index refers
   /// to a subtree which has not been filled yet.
   /// @param _index The subroot index.
-  function getSubRoot(uint256 _index) public view returns (uint256) {
+  /// @return subRoot The subroot at the specified index.
+  function getSubRoot(uint256 _index) public view returns (uint256 subRoot) {
     if (currentSubtreeIndex <= _index) revert InvalidIndex(_index);
-    return subRoots[_index];
+    subRoot = subRoots[_index];
   }
 
   /// @notice Returns the subroot tree (SRT) root. Its value must first be computed
   /// using mergeSubRoots.
-  function getSmallSRTroot() public view returns (uint256) {
+  /// @return smallSubTreeRoot The SRT root.
+  function getSmallSRTroot() public view returns (uint256 smallSubTreeRoot) {
     if (!subTreesMerged) revert SubTreesNotMerged();
-    return smallSRTroot;
+    smallSubTreeRoot = smallSRTroot;
   }
 
   /// @notice Return the merged Merkle root of all the leaves at a desired depth.
-  /// merge() or merged(_depth) must be called first.
+  /// @dev merge() or merged(_depth) must be called first.
   /// @param _depth The depth of the main tree. It must first be computed
   ///               using mergeSubRoots() and merge().
-  function getMainRoot(uint256 _depth) public view returns (uint256) {
+  /// @return mainRoot The root of the main tree.
+  function getMainRoot(uint256 _depth) public view returns (uint256 mainRoot) {
     if (hashLength ** _depth < numLeaves) revert DepthTooSmall(_depth, numLeaves);
 
-    return mainRoots[_depth];
+    mainRoot = mainRoots[_depth];
   }
 
-  function getSrIndices() public view returns (uint256, uint256) {
-    return (nextSubRootIndex, currentSubtreeIndex);
+  /// @notice Get the next subroot index and the current subtree index.
+  function getSrIndices() public view returns (uint256 next, uint256 current) {
+    next = nextSubRootIndex;
+    current = currentSubtreeIndex;
   }
 }
 
+/// @title AccQueueBinary
+/// @notice This contract defines a Merkle tree where each leaf insertion only updates a
+/// subtree. To obtain the main tree root, the contract owner must merge the
+/// subtrees together. Merging subtrees requires at least 2 operations:
+/// mergeSubRoots(), and merge(). To get around the gas limit,
+/// the mergeSubRoots() can be performed in multiple transactions.
+/// @dev This contract is for a binary tree (2 leaves per node)
 abstract contract AccQueueBinary is AccQueue {
+  /// @notice Create a new AccQueueBinary
   constructor(uint256 _subDepth) AccQueue(_subDepth, 2) {}
 
-  function hashLevel(uint256 _level, uint256 _leaf) internal override returns (uint256) {
-    uint256 hashed = hashLeftRight(leafQueue.levels[_level][0], _leaf);
+  /// @notice Hash the contents of the specified level and the specified leaf.
+  /// @param _level The level to hash.
+  /// @param _leaf The leaf include with the level.
+  /// @return hashed The hash of the level and leaf.
+  function hashLevel(uint256 _level, uint256 _leaf) internal override returns (uint256 hashed) {
+    hashed = hashLeftRight(leafQueue.levels[_level][0], _leaf);
 
     // Free up storage slots to refund gas.
     delete leafQueue.levels[_level][0];
-
-    return hashed;
   }
 
-  function hashLevelLeaf(uint256 _level, uint256 _leaf) public view override returns (uint256) {
-    uint256 hashed = hashLeftRight(leafQueue.levels[_level][0], _leaf);
-    return hashed;
+  /// @notice Hash the contents of the specified level and the specified leaf.
+  function hashLevelLeaf(uint256 _level, uint256 _leaf) public view override returns (uint256 hashed) {
+    hashed = hashLeftRight(leafQueue.levels[_level][0], _leaf);
   }
 
+  /// @notice An internal function which fills a subtree.
+  /// @param _level The level at which to fill the subtree.
   function _fill(uint256 _level) internal override {
     while (_level < subDepth) {
       uint256 n = leafQueue.indices[_level];
@@ -493,37 +520,52 @@ abstract contract AccQueueBinary is AccQueue {
   }
 }
 
+/// @title AccQueueQuinary
+/// @notice This contract defines a Merkle tree where each leaf insertion only updates a
+/// subtree. To obtain the main tree root, the contract owner must merge the
+/// subtrees together. Merging subtrees requires at least 2 operations:
+/// mergeSubRoots(), and merge(). To get around the gas limit,
+/// the mergeSubRoots() can be performed in multiple transactions.
+/// @dev This contract is for a quinary tree (5 leaves per node)
 abstract contract AccQueueQuinary is AccQueue {
+  /// @notice Create a new AccQueueQuinary instance
   constructor(uint256 _subDepth) AccQueue(_subDepth, 5) {}
 
-  function hashLevel(uint256 _level, uint256 _leaf) internal override returns (uint256) {
+  /// @notice Hash the contents of the specified level and the specified leaf.
+  /// @dev it also frees up storage slots to refund gas.
+  /// @param _level The level to hash.
+  /// @param _leaf The leaf include with the level.
+  /// @return hashed The hash of the level and leaf.
+  function hashLevel(uint256 _level, uint256 _leaf) internal override returns (uint256 hashed) {
     uint256[5] memory inputs;
     inputs[0] = leafQueue.levels[_level][0];
     inputs[1] = leafQueue.levels[_level][1];
     inputs[2] = leafQueue.levels[_level][2];
     inputs[3] = leafQueue.levels[_level][3];
     inputs[4] = _leaf;
-    uint256 hashed = hash5(inputs);
+    hashed = hash5(inputs);
 
     // Free up storage slots to refund gas. Note that using a loop here
     // would result in lower gas savings.
     delete leafQueue.levels[_level];
-
-    return hashed;
   }
 
-  function hashLevelLeaf(uint256 _level, uint256 _leaf) public view override returns (uint256) {
+  /// @notice Hash the contents of the specified level and the specified leaf.
+  /// @param _level The level to hash.
+  /// @param _leaf The leaf include with the level.
+  /// @return hashed The hash of the level and leaf.
+  function hashLevelLeaf(uint256 _level, uint256 _leaf) public view override returns (uint256 hashed) {
     uint256[5] memory inputs;
     inputs[0] = leafQueue.levels[_level][0];
     inputs[1] = leafQueue.levels[_level][1];
     inputs[2] = leafQueue.levels[_level][2];
     inputs[3] = leafQueue.levels[_level][3];
     inputs[4] = _leaf;
-    uint256 hashed = hash5(inputs);
-
-    return hashed;
+    hashed = hash5(inputs);
   }
 
+  /// @notice An internal function which fills a subtree
+  /// @param _level The level at which to fill the subtree
   function _fill(uint256 _level) internal override {
     while (_level < subDepth) {
       uint256 n = leafQueue.indices[_level];
@@ -556,42 +598,86 @@ abstract contract AccQueueQuinary is AccQueue {
   }
 }
 
+/// @title AccQueueBinary0
+/// @notice This contract extends AccQueueBinary and MerkleBinary0
+/// @dev This contract is used for creating a
+/// Merkle tree with binary (2 leaves per node) structure
 contract AccQueueBinary0 is AccQueueBinary, MerkleBinary0 {
+  /// @notice Constructor for creating AccQueueBinary0 contract
+  /// @param _subDepth The depth of each subtree
   constructor(uint256 _subDepth) AccQueueBinary(_subDepth) {}
 
-  function getZero(uint256 _level) internal view override returns (uint256) {
-    return zeros[_level];
+  /// @notice Returns the zero leaf at a specified level
+  /// @param _level The level at which to return the zero leaf
+  /// @return zero The zero leaf at the specified level
+  function getZero(uint256 _level) internal view override returns (uint256 zero) {
+    zero = zeros[_level];
   }
 }
 
+/// @title AccQueueBinaryMaci
+/// @notice This contract extends AccQueueBinary and MerkleBinaryMaci
+/// @dev This contract is used for creating a
+/// Merkle tree with binary (2 leaves per node) structure
 contract AccQueueBinaryMaci is AccQueueBinary, MerkleBinaryMaci {
+  /// @notice Constructor for creating AccQueueBinaryMaci contract
+  /// @param _subDepth The depth of each subtree
   constructor(uint256 _subDepth) AccQueueBinary(_subDepth) {}
 
-  function getZero(uint256 _level) internal view override returns (uint256) {
-    return zeros[_level];
+  /// @notice Returns the zero leaf at a specified level
+  /// @param _level The level at which to return the zero leaf
+  function getZero(uint256 _level) internal view override returns (uint256 zero) {
+    zero = zeros[_level];
   }
 }
 
+/// @title AccQueueQuinary0
+/// @notice This contract extends AccQueueQuinary and MerkleQuinary0
+/// @dev This contract is used for creating a
+/// Merkle tree with quinary (5 leaves per node) structure
 contract AccQueueQuinary0 is AccQueueQuinary, MerkleQuinary0 {
+  /// @notice Constructor for creating AccQueueQuinary0 contract
+  /// @param _subDepth The depth of each subtree
   constructor(uint256 _subDepth) AccQueueQuinary(_subDepth) {}
 
-  function getZero(uint256 _level) internal view override returns (uint256) {
-    return zeros[_level];
+  /// @notice Returns the zero leaf at a specified level
+  /// @param _level The level at which to return the zero leaf
+  /// @return zero The zero leaf at the specified level
+  function getZero(uint256 _level) internal view override returns (uint256 zero) {
+    zero = zeros[_level];
   }
 }
 
+/// @title AccQueueQuinaryMaci
+/// @notice This contract extends AccQueueQuinary and MerkleQuinaryMaci
+/// @dev This contract is used for creating a
+/// Merkle tree with quinary (5 leaves per node) structure
 contract AccQueueQuinaryMaci is AccQueueQuinary, MerkleQuinaryMaci {
+  /// @notice Constructor for creating AccQueueQuinaryMaci contract
+  /// @param _subDepth The depth of each subtree
   constructor(uint256 _subDepth) AccQueueQuinary(_subDepth) {}
 
-  function getZero(uint256 _level) internal view override returns (uint256) {
-    return zeros[_level];
+  /// @notice Returns the zero leaf at a specified level
+  /// @param _level The level at which to return the zero leaf
+  /// @return zero The zero leaf at the specified level
+  function getZero(uint256 _level) internal view override returns (uint256 zero) {
+    zero = zeros[_level];
   }
 }
 
+/// @title AccQueueQuinaryBlankSl
+/// @notice This contract extends AccQueueQuinary and MerkleQuinaryBlankSl
+/// @dev This contract is used for creating a
+/// Merkle tree with quinary (5 leaves per node) structure
 contract AccQueueQuinaryBlankSl is AccQueueQuinary, MerkleQuinaryBlankSl {
+  /// @notice Constructor for creating AccQueueQuinaryBlankSl contract
+  /// @param _subDepth The depth of each subtree
   constructor(uint256 _subDepth) AccQueueQuinary(_subDepth) {}
 
-  function getZero(uint256 _level) internal view override returns (uint256) {
-    return zeros[_level];
+  /// @notice Returns the zero leaf at a specified level
+  /// @param _level The level at which to return the zero leaf
+  /// @return zero The zero leaf at the specified level
+  function getZero(uint256 _level) internal view override returns (uint256 zero) {
+    zero = zeros[_level];
   }
 }

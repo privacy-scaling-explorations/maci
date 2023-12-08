@@ -2,10 +2,10 @@ import { expect } from "chai";
 import { StateLeaf, Keypair } from "maci-domainobjs";
 
 import { deployPoseidonContracts, linkPoseidonLibraries } from "../ts/deploy";
-import { DomainObjs } from "../typechain-types";
+import { Utilities } from "../typechain-types";
 
 describe("DomainObjs", () => {
-  let doContract: DomainObjs;
+  let utilitiesContract: Utilities;
 
   describe("Deployment", () => {
     before(async () => {
@@ -25,8 +25,8 @@ describe("DomainObjs", () => {
       ]);
 
       // Link Poseidon contracts
-      const doContractFactory = await linkPoseidonLibraries(
-        "DomainObjs",
+      const utilitiesContractFactory = await linkPoseidonLibraries(
+        "Utilities",
         poseidonT3ContractAddress,
         poseidonT4ContractAddress,
         poseidonT5ContractAddress,
@@ -34,15 +34,15 @@ describe("DomainObjs", () => {
         true,
       );
 
-      doContract = (await doContractFactory.deploy()) as typeof doContract;
-      await doContract.deploymentTransaction()?.wait();
+      utilitiesContract = (await utilitiesContractFactory.deploy()) as Utilities;
+      await utilitiesContract.deploymentTransaction()?.wait();
     });
 
     it("should correctly hash a StateLeaf", async () => {
       const keypair = new Keypair();
       const voiceCreditBalance = BigInt(1234);
       const stateLeaf = new StateLeaf(keypair.pubKey, voiceCreditBalance, BigInt(456546345));
-      const onChainHash = await doContract.hashStateLeaf(stateLeaf.asContractParam());
+      const onChainHash = await utilitiesContract.hashStateLeaf(stateLeaf.asContractParam());
       const expectedHash = stateLeaf.hash();
 
       expect(onChainHash.toString()).to.eq(expectedHash.toString());

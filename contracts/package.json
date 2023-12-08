@@ -15,7 +15,7 @@
     "test": "hardhat test",
     "test-maci": "hardhat test ./tests/MACI.test.ts",
     "test-hasher": "hardhat test ./tests/Hasher.test.ts",
-    "test-domainObjs": "hardhat test ./tests/DomainObjs.test.ts",
+    "test-utilities": "hardhat test ./tests/Utilities.test.ts",
     "test-signupGatekeeper": "hardhat test ./tests/SignUpGatekeeper.test.ts",
     "test-verifier": "hardhat test ./tests/Verifier.test.ts",
     "test-accQueue": "hardhat test ./tests/AccQueue.test.ts",
