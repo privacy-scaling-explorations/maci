@@ -142,21 +142,25 @@ export const verify = async (
   if (failedSpentCredits.length === 0) {
     logGreen(quiet, success("The on-chain verification of per vote option spent voice credits passed"));
   } else {
-    logError(`These spent voice credits failed on-chain verifications ${failedSpentCredits}`);
+    logError(
+      `At least one tally result failed the on-chain verification. Please check your Tally data at these indexes: ${failedSpentCredits}`,
+    );
   }
 
   // verify tally result on-chain for each vote option
-  const failedTallyResults = await verifyTallyResults(
+  const failedPerVOSpentCredits = await verifyTallyResults(
     tallyContract,
     tallyResults,
     voteOptionTreeDepth,
     newSpentVoiceCreditsCommitment,
     newPerVOSpentVoiceCreditsCommitment,
   );
-  if (failedTallyResults.length === 0) {
+  if (failedPerVOSpentCredits.length === 0) {
     logGreen(quiet, success("The on-chain verification of tally results passed"));
   } else {
-    logError(`These tally results failed on-chain verifications ${failedTallyResults}`);
+    logError(
+      `At least one spent voice credits entry in the tally results failed the on-chain verification. Please check your tally results at these indexes: ${failedPerVOSpentCredits}`,
+    );
   }
 
   // verify subsidy result if subsidy file is provided

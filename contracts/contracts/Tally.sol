@@ -200,4 +200,91 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
     }
     return current;
   }
+
+  /**
+   * @notice Verify the number of spent voice credits from the tally.json
+   * @param _totalSpent spent field retrieved in the totalSpentVoiceCredits object
+   * @param _totalSpentSalt the corresponding salt in the totalSpentVoiceCredit object
+   * @param _resultCommitment hashLeftRight(merkle root of the results.tally, results.salt) in tally.json file
+   * @param _perVOSpentVoiceCreditsHash hashLeftRight(merkle root of the no spent voice credits per vote option, perVOSpentVoiceCredits salt)
+   * @return a boolean representing the status of the verification (could be either true or false)
+   */
+  function verifySpentVoiceCredits(
+    uint256 _totalSpent,
+    uint256 _totalSpentSalt,
+    uint256 _resultCommitment,
+    uint256 _perVOSpentVoiceCreditsHash
+  ) public view returns (bool) {
+    uint256[3] memory tally;
+    tally[0] = _resultCommitment;
+    tally[1] = hashLeftRight(_totalSpent, _totalSpentSalt);
+    tally[2] = _perVOSpentVoiceCreditsHash;
+
+    return hash3(tally) == tallyCommitment;
+  }
+
+  /**
+   * @notice Verify the number of spent voice credits per vote option from the tally.json
+   * @param _voteOptionIndex the index of the vote option where credits were spent
+   * @param _spent the spent voice credits for a given vote option index
+   * @param _spentProof proof generated for the perVOSpentVoiceCredits
+   * @param _spentSalt the corresponding salt given in the tally perVOSpentVoiceCredits object
+   * @param _voteOptionTreeDepth depth of the vote option tree
+   * @param _spentVoiceCreditsHash hashLeftRight(number of spent voice credits, spent salt)
+   * @param _resultCommitment hashLeftRight(merkle root of the results.tally, results.salt) in tally.json file
+   * @return a boolean representing the status of the verification (could be either true or false)
+   */
+  function verifyPerVOSpentVoiceCredits(
+    uint256 _voteOptionIndex,
+    uint256 _spent,
+    uint256[][] memory _spentProof,
+    uint256 _spentSalt,
+    uint8 _voteOptionTreeDepth,
+    uint256 _spentVoiceCreditsHash,
+    uint256 _resultCommitment
+  ) public view returns (bool) {
+    uint256 computedRoot = computeMerkleRootFromPath(_voteOptionTreeDepth, _voteOptionIndex, _spent, _spentProof);
+
+    uint256[3] memory tally;
+    tally[0] = _resultCommitment;
+    tally[1] = _spentVoiceCreditsHash;
+    tally[2] = hashLeftRight(computedRoot, _spentSalt);
+
+    return hash3(tally) == tallyCommitment;
+  }
+
+  /**
+   * @notice Verify the result generated from the tally.json
+   * @param _voteOptionIndex the index of the vote option to verify the correctness of the tally
+   * @param _tallyResult Flattened array of the tally
+   * @param _tallyResultProof Corresponding proof of the tally result
+   * @param _tallyResultSalt the respective salt in the results object in the tally.json
+   * @param _voteOptionTreeDepth depth of the vote option tree
+   * @param _spentVoiceCreditsHash hashLeftRight(number of spent voice credits, spent salt)
+   * @param _perVOSpentVoiceCreditsHash hashLeftRight(merkle root of the no spent voice credits per vote option, perVOSpentVoiceCredits salt)
+   * @return a boolean representing the status of the verification (could be either true or false)
+   */
+  function verifyTallyResult(
+    uint256 _voteOptionIndex,
+    uint256 _tallyResult,
+    uint256[][] memory _tallyResultProof,
+    uint256 _tallyResultSalt,
+    uint8 _voteOptionTreeDepth,
+    uint256 _spentVoiceCreditsHash,
+    uint256 _perVOSpentVoiceCreditsHash
+  ) public view returns (bool) {
+    uint256 computedRoot = computeMerkleRootFromPath(
+      _voteOptionTreeDepth,
+      _voteOptionIndex,
+      _tallyResult,
+      _tallyResultProof
+    );
+
+    uint256[3] memory tally;
+    tally[0] = hashLeftRight(computedRoot, _tallyResultSalt);
+    tally[1] = _spentVoiceCreditsHash;
+    tally[2] = _perVOSpentVoiceCreditsHash;
+
+    return hash3(tally) == tallyCommitment;
+  }
 }
