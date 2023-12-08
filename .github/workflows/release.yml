@@ -36,11 +36,6 @@ jobs:
           npx lerna bootstrap
           npm run build
 
-      - name: Compile Contracts
-        run: |
-          cd contracts
-          npm run compileSol
-
       - name: Publish NPM
         run: |
           npx lerna publish from-git --yes
