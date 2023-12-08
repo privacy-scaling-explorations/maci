@@ -1,7 +1,34 @@
 {
   // This file is not used in compilation. It is here just for a nice editor experience.
-  "extends": "@docusaurus/tsconfig",
+  "extends": "./node_modules/@docusaurus/tsconfig/tsconfig.json",
   "compilerOptions": {
-    "baseUrl": "."
-  }
+    "baseUrl": ".",
+    "declaration": true,
+    "allowJs": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "target": "ES2020",
+    "lib": ["es2020", "DOM"],
+    "experimentalDecorators": true,
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "strictPropertyInitialization": true,
+    "strictNullChecks": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
+    "composite": true,
+    "incremental": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "stripInternal": true
+  },
+  "include": ["./src", "./docusaurus.config.ts", "./setupTypedoc.ts"]
 }

@@ -1,22 +1,23 @@
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
 
 // Define the directory where the Typedoc HTML files are located
-const typedocDir = path.join(__dirname, "static/typedoc_output");
+const typedocDir = path.resolve(__dirname, "static/typedoc_output");
 
 // Define a recursive function to find all HTML files in a directory
-function findHtmlFiles(dir: string, fileList: string[] = []) {
+function findHtmlFiles(dir: string) {
   const files = fs.readdirSync(dir);
+  const list: string[] = [];
 
   files.forEach((file: string) => {
-    if (fs.statSync(path.join(dir, file)).isDirectory()) {
-      fileList = findHtmlFiles(path.join(dir, file), fileList);
+    if (fs.statSync(path.resolve(dir, file)).isDirectory()) {
+      list.concat(findHtmlFiles(path.resolve(dir, file)));
     } else if (file.endsWith(".html")) {
-      fileList.push(path.join(dir, file));
+      list.push(path.resolve(dir, file));
     }
   });
 
-  return fileList;
+  return list;
 }
 
 // Find all HTML files in the Typedoc directory

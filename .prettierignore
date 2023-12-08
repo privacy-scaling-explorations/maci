@@ -9,3 +9,4 @@ package-lock.json
 CHANGELOG.md
 .eslintignore
 circuits/ts/verifier_groth16.sol
+website/.docusaurus/

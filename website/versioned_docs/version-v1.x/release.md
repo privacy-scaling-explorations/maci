@@ -69,10 +69,8 @@ The following packages will be published on npm.js:
 
 - maci-circuits
 - maci-cli
-- maci-common
 - maci-contracts
 - maci-core
 - maci-crypto
 - maci-domainobjs
 - maci-integrationtests
-- maci-server
