@@ -4,6 +4,7 @@ import { Contract } from "ethers";
 import { existsSync, readFileSync } from "fs";
 import { hash2, hash3, genTreeCommitment } from "maci-crypto";
 import { TallyData } from "../utils/interfaces";
+import { verifyPerVOSpentVoiceCredits, verifyTallyResults } from "../utils/verifiers";
 
 /**
  * Verify the results of a poll and optionally the subsidy results
@@ -116,6 +117,47 @@ export const verify = async (
 
   if (onChainTallycomment !== newTallyCommitment) logError("The on-chain tally commitment does not match.");
   logGreen(quiet, success("The on-chain tally commitment matches."));
+
+  // verify total spent voice credits on-chain
+  const isValid = await tallyContract.verifySpentVoiceCredits(
+    tallyData.totalSpentVoiceCredits.spent,
+    tallyData.totalSpentVoiceCredits.salt,
+    newResultsCommitment,
+    newPerVOSpentVoiceCreditsCommitment,
+  );
+  if (isValid) {
+    logGreen(quiet, success("The on-chain verification of total spent voice credits passed."));
+  } else {
+    logError("The on-chain verification of total spent voice credits failed.");
+  }
+
+  // verify per vote option voice credits on-chain
+  const failedSpentCredits = await verifyPerVOSpentVoiceCredits(
+    tallyContract,
+    tallyData,
+    voteOptionTreeDepth,
+    newSpentVoiceCreditsCommitment,
+    newResultsCommitment,
+  );
+  if (failedSpentCredits.length === 0) {
+    logGreen(quiet, success("The on-chain verification of per vote option spent voice credits passed"));
+  } else {
+    logError(`These spent voice credits failed on-chain verifications ${failedSpentCredits}`);
+  }
+
+  // verify tally result on-chain for each vote option
+  const failedTallyResults = await verifyTallyResults(
+    tallyContract,
+    tallyData,
+    voteOptionTreeDepth,
+    newSpentVoiceCreditsCommitment,
+    newPerVOSpentVoiceCreditsCommitment,
+  );
+  if (failedTallyResults.length === 0) {
+    logGreen(quiet, success("The on-chain verification of tally results passed"));
+  } else {
+    logError(`These tally results failed on-chain verifications ${failedTallyResults}`);
+  }
 
   // verify subsidy result if subsidy file is provided
   if (subsidyFile) {
