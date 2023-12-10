@@ -35,7 +35,7 @@ program.name(name).description(description).version(version);
 program
   .command("create")
   .description("deploy the contracts")
-  .option("-i, --initialVoiceCredits <initialVoiceCredits>", "the initial voice credits")
+  .option("-i, --initialVoiceCredits <initialVoiceCredits>", "the initial voice credits", parseInt)
   .option(
     "-p, --initialVoiceCreditsProxyAddress <initialVoiceCreditsProxyAddress>",
     "the initial voice credits proxy contract address",
@@ -63,13 +63,14 @@ program
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-vk, --vk-contract <vkContract>", "the VkRegistry contract address")
-  .requiredOption("-s, --state-tree-depth <stateTreeDepth>", "the state tree depth")
-  .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the intermediate state tree depth")
-  .requiredOption("-m, --msg-tree-depth <messageTreeDepth>", "the message tree depth")
-  .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth")
-  .requiredOption("-b, --msg-batch-depth <messageBatchDepth>", "the message batch depth")
+  .requiredOption("-s, --state-tree-depth <stateTreeDepth>", "the state tree depth", parseInt)
+  .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the intermediate state tree depth", parseInt)
+  .requiredOption("-m, --msg-tree-depth <messageTreeDepth>", "the message tree depth", parseInt)
+  .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
+  .requiredOption("-b, --msg-batch-depth <messageBatchDepth>", "the message batch depth", parseInt)
   .requiredOption("-p, --process-messages-zkey <processMessagesZkeyPath>", "the process messages zkey path")
   .requiredOption("-t, --tally-votes-zkey <tallyVotesZkeyPath>", "the tally votes zkey path")
+  .option("-ss, --subsidy-zkey <subsidyZkeyPath>", "the subsidy zkey path")
   .action(async (cmdOptions) => {
     try {
       await checkVerifyingKeys(
@@ -81,6 +82,7 @@ program
         cmdOptions.processMessagesZkey,
         cmdOptions.tallyVotesZkey,
         cmdOptions.vkContract,
+        cmdOptions.subsidyZkey,
         cmdOptions.quiet,
       );
     } catch (error: any) {
@@ -109,7 +111,7 @@ program
   .description("airdrop topup credits to the coordinator")
   .requiredOption("-a, --amount <amount>", "the amount of topup")
   .option("-x, --contract <contract>", "the MACI contract address")
-  .option("-o, --poll-id <pollId>", "poll id")
+  .option("-o, --poll-id <pollId>", "poll id", parseInt)
   .option("-t, --token-address <tokenAddress>", "the token address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
@@ -148,13 +150,13 @@ program
   .command("deployPoll")
   .description("deploy a new poll")
   .option("-vk, --vkRegistryAddress <vkRegistryAddress>", "the vk registry contract address")
-  .requiredOption("-t, --duration <pollDuration>", "the poll duration")
-  .requiredOption("-g, --max-messages <maxMessages>", "the max messages")
-  .requiredOption("-mv, --max-vote-options <maxVoteOptions>", "the max vote options")
-  .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the int state tree depth")
-  .requiredOption("-b, --msg-batch-depth <messageTreeSubDepth>", "the message tree sub depth")
-  .requiredOption("-m, --msg-tree-depth <messageTreeDepth>", "the message tree depth")
-  .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth")
+  .requiredOption("-t, --duration <pollDuration>", "the poll duration", parseInt)
+  .requiredOption("-g, --max-messages <maxMessages>", "the max messages", parseInt)
+  .requiredOption("-mv, --max-vote-options <maxVoteOptions>", "the max vote options", parseInt)
+  .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the int state tree depth", parseInt)
+  .requiredOption("-b, --msg-batch-depth <messageTreeSubDepth>", "the message tree sub depth", parseInt)
+  .requiredOption("-m, --msg-tree-depth <messageTreeDepth>", "the message tree depth", parseInt)
+  .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
   .requiredOption("-pk, --pubkey <coordinatorPubkey>", "the coordinator public key")
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
@@ -181,11 +183,11 @@ program
 program
   .command("setVerifyingKeys")
   .description("set the verifying keys")
-  .requiredOption("-s, --state-tree-depth <stateTreeDepth>", "the state tree depth")
-  .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the intermediate state tree depth")
-  .requiredOption("-m, --msg-tree-depth <messageTreeDepth>", "the message tree depth")
-  .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth")
-  .requiredOption("-b, --msg-batch-depth <messageBatchDepth>", "the message batch depth")
+  .requiredOption("-s, --state-tree-depth <stateTreeDepth>", "the state tree depth", parseInt)
+  .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the intermediate state tree depth", parseInt)
+  .requiredOption("-m, --msg-tree-depth <messageTreeDepth>", "the message tree depth", parseInt)
+  .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
+  .requiredOption("-b, --msg-batch-depth <messageBatchDepth>", "the message batch depth", parseInt)
   .requiredOption("-p, --process-messages-zkey <processMessagesZkeyPath>", "the process messages zkey path")
   .requiredOption("-t, --tally-votes-zkey <tallyVotesZkeyPath>", "the tally votes zkey path")
   .option("-k, --vk-registry <vkRegistry>", "the vk registry contract address")
@@ -219,12 +221,12 @@ program
   )
   .option("-x, --contract <contract>", "the MACI contract address")
   .option("-sk, --privkey <privkey>", "your serialized MACI private key")
-  .requiredOption("-i, --state-index <stateIndex>", "the user's state index")
-  .requiredOption("-v, --vote-option-index <voteOptionIndex>", "the vote option index")
-  .requiredOption("-n, --nonce <nonce>", "the message nonce")
+  .requiredOption("-i, --state-index <stateIndex>", "the user's state index", parseInt)
+  .requiredOption("-v, --vote-option-index <voteOptionIndex>", "the vote option index", parseInt)
+  .requiredOption("-n, --nonce <nonce>", "the message nonce", parseInt)
   .option("-s, --salt <salt>", "the message salt")
-  .requiredOption("-o, --poll-id <pollId>", "the poll id")
-  .requiredOption("-w, --new-vote-weight <newVoteWeight>", "the new vote weight")
+  .requiredOption("-o, --poll-id <pollId>", "the poll id", parseInt)
+  .requiredOption("-w, --new-vote-weight <newVoteWeight>", "the new vote weight", parseInt)
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
@@ -251,8 +253,8 @@ program
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-x, --maci-contract-address <maciContractAddress>", "the MACI contract address")
-  .requiredOption("-o, --poll-id <pollId>", "the poll id")
-  .option("-n, --num-queue-ops <numQueueOps>", "the number of queue operations")
+  .requiredOption("-o, --poll-id <pollId>", "the poll id", parseInt)
+  .option("-n, --num-queue-ops <numQueueOps>", "the number of queue operations", parseInt)
   .action(async (cmdObj) => {
     try {
       await mergeMessages(cmdObj.pollId, cmdObj.maciContractAddress, cmdObj.numQueueOps, cmdObj.quiet);
@@ -267,7 +269,7 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-x, --maci-contract-address <maciContractAddress>", "the MACI contract address")
   .requiredOption("-o, --poll-id <pollId>", "the poll id")
-  .option("-n, --num-queue-ops <numQueueOps>", "the number of queue operations")
+  .option("-n, --num-queue-ops <numQueueOps>", "the number of queue operations", parseInt)
   .action(async (cmdObj) => {
     try {
       await mergeSignups(cmdObj.pollId, cmdObj.maciContractAddress, cmdObj.numQueueOps, cmdObj.quiet);
@@ -278,7 +280,7 @@ program
 program
   .command("timeTravel")
   .description("fast-forward the time (only works for local hardhat testing")
-  .requiredOption("-s, --seconds <seconds>", "the number of seconds to fast-forward")
+  .requiredOption("-s, --seconds <seconds>", "the number of seconds to fast-forward", parseInt)
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
@@ -307,10 +309,10 @@ program
 program
   .command("topup")
   .description("Top up an account with voice credits")
-  .requiredOption("-a, --amount <amount>", "the amount of topup")
+  .requiredOption("-a, --amount <amount>", "the amount of topup", parseInt)
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
-  .requiredOption("-i, --state-index <stateIndex>", "state leaf index")
-  .requiredOption("-o, --poll-id <pollId>", "poll id")
+  .requiredOption("-i, --state-index <stateIndex>", "state leaf index", parseInt)
+  .requiredOption("-o, --poll-id <pollId>", "poll id", parseInt)
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
@@ -323,7 +325,7 @@ program
 program
   .command("fundWallet")
   .description("Fund a wallet with Ether")
-  .requiredOption("-a, --amount <amount>", "the amount of Ether")
+  .requiredOption("-a, --amount <amount>", "the amount of Ether", parseInt)
   .requiredOption("-w, --address <address>", "the address to fund")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
@@ -337,7 +339,7 @@ program
 program
   .command("verify")
   .description("verify the results of a poll and optionally the subsidy results")
-  .requiredOption("-o, --poll-id <pollId>", "the poll id")
+  .requiredOption("-o, --poll-id <pollId>", "the poll id", parseInt)
   .requiredOption("-t, --tally-file <tallyFile>", "the tally file")
   .option("-s, --subsidy-file <subsidyFile>", "the subsidy file")
   .option("-x, --contract <contract>", "the MACI contract address")
@@ -365,7 +367,7 @@ program
   .description("generate the proofs for a poll")
   .option("-sk, --privkey <privkey>", "your serialized MACI private key")
   .option("-x, --contract <contract>", "the MACI contract address")
-  .requiredOption("-o, --poll-id <pollId>", "the poll id")
+  .requiredOption("-o, --poll-id <pollId>", "the poll id", parseInt)
   .option("-t, --tally-file <tallyFile>", "the tally file")
   .option("-s, --subsidy-file <subsidyFile>", "the subsidy file")
   .option("-r, --rapidsnark <rapidsnark>", "the path to the rapidsnark binary")
@@ -384,8 +386,8 @@ program
   .option("-tw, --tally-wasm <tallyWasm>", "the path to the tally witness generation wasm binary")
   .option("-sw, --subsidy-wasm <subsidyWasm>", "the path to the subsidy witness generation wasm binary")
   .option("-st, --state-file <stateFile>", "the path to the state file containing the serialized maci state")
-  .option("-sb, --start-block <startBlock>", "the block number to start looking for events from")
-  .option("-eb, --end-block <endBlock>", "the block number to end looking for events from")
+  .option("-sb, --start-block <startBlock>", "the block number to start looking for events from", parseInt)
+  .option("-eb, --end-block <endBlock>", "the block number to end looking for events from", parseInt)
   .option("-bb, --blocks-per-batch <blockPerBatch>", "the number of blocks to process per batch")
   .action(async (cmdObj) => {
     try {
@@ -421,15 +423,15 @@ program
 program
   .command("genLocalState")
   .description("generate a local MACI state from the smart contracts events")
-  .requiredOption("-o, --output <outputPath>", "the path where to write the state")
-  .option("-p, --poll-id <pollId>", "the id of the poll")
+  .requiredOption("-o, --output <outputPath>", "the path where to write the state", parseInt)
+  .option("-p, --poll-id <pollId>", "the id of the poll", parseInt)
   .option("-x, --contract <contract>", "the MACI contract address")
   .option("-sk, --privkey <privkey>", "your serialized MACI private key")
-  .option("-eb, --end-block <endBlock>", "the end block number")
-  .option("-sb, --start-block <startBlock>", "the start block number")
-  .option("-bb, --blocks-per-batch <blockPerBatch>", "the blocks per batch")
+  .option("-eb, --end-block <endBlock>", "the end block number", parseInt)
+  .option("-sb, --start-block <startBlock>", "the start block number", parseInt)
+  .option("-bb, --blocks-per-batch <blockPerBatch>", "the blocks per batch", parseInt)
   .option("-tx, --transaction-hash <transactionHash>", "the transaction hash")
-  .option("-s, --sleep <sleep>", "the sleep time between batches")
+  .option("-s, --sleep <sleep>", "the sleep time between batches", parseInt)
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
@@ -454,7 +456,7 @@ program
 program
   .command("proveOnChain")
   .description("prove the results of a poll on chain")
-  .requiredOption("-o, --poll-id <pollId>", "the poll id")
+  .requiredOption("-o, --poll-id <pollId>", "the poll id", parseInt)
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-x, --contract <contract>", "the MACI contract address")
