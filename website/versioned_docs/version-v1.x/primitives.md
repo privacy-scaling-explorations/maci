@@ -128,16 +128,16 @@ A Key Pair is a private key and its corresponding public key.
 
 A command represents an action that a user may take. Such as casting a vote in a poll or changing their public key if bribed. It is made up of the following parameters:
 
-| Symbol       | Name                    | Size | Description                                                                                        |
-| ------------ | ----------------------- | ---- | -------------------------------------------------------------------------------------------------- |
-| $cm_i$       | State index             | 50   | State leaf index where the signing key is located                                                  |
-| $cm_{p_{x}}$ | Public key x-coordinate | 253  | If no change is necessary this parameter should reflect the current public key's x-coordinate      |
-| $cm_{p_{y}}$ | Public key y-coordinate | 253  | If no change is necessary this parameter should reflect the current public key's y-coordinate      |
-| $cm_{i_{v}}$ | Vote option index       | 50   | Option state leaf index of preference to assign the vote for                                       |
-| $cm_w$       | Voting weight           | 50   | Voice credit balance allocation, this is an arbitary value dependent on a user's available credits |
-| $cm_n$       | Nonce                   | 50   | State leaf's index of actions committed plus one                                                   |
-| $cm_{id}$    | Poll id                 | 50   | The poll's identifier to cast in regard to                                                         |
-| $cm_s$       | Salt                    | 253  | An entropy value to inhibit brute force attacks                                                    |
+| Symbol       | Name                    | Size | Description                                                                                         |
+| ------------ | ----------------------- | ---- | --------------------------------------------------------------------------------------------------- |
+| $cm_i$       | State index             | 50   | State leaf index where the signing key is located                                                   |
+| $cm_{p_{x}}$ | Public key x-coordinate | 253  | If no change is necessary this parameter should reflect the current public key's x-coordinate       |
+| $cm_{p_{y}}$ | Public key y-coordinate | 253  | If no change is necessary this parameter should reflect the current public key's y-coordinate       |
+| $cm_{i_{v}}$ | Vote option index       | 50   | Option state leaf index of preference to assign the vote for                                        |
+| $cm_w$       | Voting weight           | 50   | Voice credit balance allocation, this is an arbitrary value dependent on a user's available credits |
+| $cm_n$       | Nonce                   | 50   | State leaf's index of actions committed plus one                                                    |
+| $cm_{id}$    | Poll id                 | 50   | The poll's identifier to cast in regard to                                                          |
+| $cm_s$       | Salt                    | 253  | An entropy value to inhibit brute force attacks                                                     |
 
 #### Message
 
