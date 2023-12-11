@@ -29,7 +29,15 @@ Below you can find a list of the packages included in this repository.
 | [maci-domainobjs][domainobjs-package]             | [![NPM Package][domainobjs-npm-badge]][domainobjs-npm-link]             | [![Actions Status][domainobjs-actions-badge]][domainobjs-actions-link]             |
 | [maci-integrationTests][integrationTests-package] | [![NPM Package][integrationTests-npm-badge]][integrationTests-npm-link] | [![Actions Status][integrationTests-actions-badge]][integrationTests-actions-link] |
 
-## Local Development and testing
+## Development and testing
+
+### Branches
+
+The base branch of the project is `dev`, which is used for ongoing development.
+
+This project uses tags for releases. [View all MACI releases](https://github.com/privacy-scaling-explorations/maci/releases).
+
+To contribute to MACI, create feature/fix branches, then open PRs into `dev`. [Learn more about contributing](/CONTRIBUTING.md).
 
 ### Local development
 
@@ -49,8 +57,6 @@ own unit tests.
   an instance of MACI.
 - `integrationTests`: Integration tests which use the command-line interface
   to perform end-to-end tests.
-
-### Testing
 
 ### Testing
 
