@@ -2,18 +2,14 @@
 
 [![CI][cli-actions-badge]][cli-actions-link]
 ![License](https://img.shields.io/badge/license-MIT-green)
-[![Telegram][telegram-badge]][telegram-link]
 
-Please refer to
-the original [ethresear.ch
-post](https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413) for a
-high-level view.
+Minimal Anti-Collusion Infrastructure (MACI) is an on-chain voting protocol which protects privacy and minimizes the risk of collusion and bribery.
 
-Documentation for developers and integrators can be found here:
+MACI blog, resources, and documentation for developers and integrators can be found here:
 https://maci.pse.dev/
 
 We welcome contributions to this project. Please join our
-[Telegram group][telegram-link] to discuss.
+[Discord server][https://discord.com/invite/sF5CT5rzrR] (in the `#🗳️-maci` channel) to discuss.
 
 ## Packages
 
