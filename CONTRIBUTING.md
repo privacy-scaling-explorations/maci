@@ -1,6 +1,6 @@
 # Contributing
 
-:tada: Thank you for being interested in contributing to MACI! :tada:
+🎉 Thank you for being interested in contributing to MACI! 🎉
 
 Feel welcome and read the following sections in order to know how to ask questions and how to work on something.
 
