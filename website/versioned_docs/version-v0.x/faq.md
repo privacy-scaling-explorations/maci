@@ -54,7 +54,7 @@ Each user should be allowed to publish at no cost as many messages as there are 
 1. It is impossible for a coordinator to find a collision in message decryptions. i.e. they cannot decrypt a message to a different command.
 2. It is impossible for a user to create a message that the coordinator is not able to process.
 3. It is impossible for a user to create a message such that the coordinator is unable to create a zk-SNARK proof of a state root transition.
-4. No-one but the coordinator can trustlessly bribe someone. 
+4. No-one but the coordinator can trustlessly bribe someone.
 
 ## III: Desired features not described in this specification
 
