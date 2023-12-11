@@ -1,7 +1,7 @@
 ---
-title: Release process
-description: How MACI's release process works
-sidebar_label: MACI Release process
+title: MACI versioning and release process
+description: How MACI's versioning and release process works
+sidebar_label: MACI versioning
 sidebar_position: 13
 ---
 
