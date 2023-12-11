@@ -4,7 +4,7 @@
 
 ## Additional Notes
 
-<!-- If there are any additional notes, requirements or special instructions related to this ceremony, please specify them here. -->
+<!-- If there are any additional notes, requirements or special instructions related to this PR, please specify them here. -->
 
 ## Related issue(s)
 
