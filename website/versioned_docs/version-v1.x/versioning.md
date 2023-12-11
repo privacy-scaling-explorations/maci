@@ -5,11 +5,27 @@ sidebar_label: MACI versioning
 sidebar_position: 13
 ---
 
-# Maci Release Process
+# MACI versioning and release process
 
-To release a new version of maci v1, the following steps can be taken:
+This document outlines the approach to versioning and releasing the MACI project. The primary goal here is to set clear expectations and provide a consistent user experience for developers integrating MACI and its packages.
 
-> you have to replace version number 1.2.3 with the version number you are planning to release
+## MACI code
+
+MACI code consists 3 core parts: Circom circuits, Solidity contracts and JS (TS) libraries, from which we release a total of 7 NPM packages. See the [codebase overview](/docs/overview) for more details.
+
+## MACI versioning
+
+All MACI packages are organized in our monorepo and follow a global release approach, meaning that all packages have the same version.
+
+Currently, MACI core team manually decides when to release and what the version should be. Packages are released [automatically via CI](https://github.com/privacy-scaling-explorations/maci/blob/dev/.github/workflows/release.yml) when a new tag is created in GitHub. [You can view our releases and tags in GitHub](https://github.com/privacy-scaling-explorations/maci/releases).
+
+## MACI Release Process
+
+To release a new version of MACI, follow these steps:
+
+:::warning
+Version number '1.2.3' is used here as an example. You should replace the version number '1.2.3' with the version number you are planning to release
+:::
 
 1. Verify that tests have passed on GitHub Actions
 
@@ -65,12 +81,12 @@ Once the tag is pushed, GitHub Actions will automatically publish the packages t
 
 ---
 
-The following packages will be published on npm.js:
+The following packages will be published on NPM:
 
-- maci-circuits
-- maci-cli
-- maci-contracts
-- maci-core
-- maci-crypto
-- maci-domainobjs
-- maci-integrationtests
+- [`@maci-circuits`](https://www.npmjs.com/package/maci-circuits)
+- [`@maci-contracts`](https://www.npmjs.com/package/maci-contracts)
+- [`@maci-cli`](https://www.npmjs.com/package/maci-cli)
+- [`@maci-core`](https://www.npmjs.com/package/maci-core)
+- [`@maci-crypto`](https://www.npmjs.com/package/maci-crypto)
+- [`@maci-domainobjs`](https://www.npmjs.com/package/maci-domainobjs)
+- [`@maci-integrationtests`](https://www.npmjs.com/package/maci-integrationtests)
