@@ -1,20 +1,7 @@
-import {
-  type Contract,
-  type ContractFactory,
-  type Signer,
-  type FeeData,
-  BaseContract,
-  JsonRpcProvider,
-  Interface,
-} from "ethers";
+import { type Contract, type ContractFactory, BaseContract, Signer } from "ethers";
 // eslint-disable-next-line
 // @ts-ignore typedoc doesn't want to get types from toolbox
 import { ethers } from "hardhat";
-
-import { readFileSync, writeFileSync } from "fs";
-import path from "path";
-
-import type { Fragment, JsonFragment } from "@ethersproject/abi";
 
 import {
   AccQueueQuinaryMaci,
@@ -23,7 +10,6 @@ import {
   MACI,
   MessageProcessor,
   MockVerifier,
-  Ownable,
   PollFactory,
   PoseidonT3,
   PoseidonT4,
@@ -38,106 +24,33 @@ import {
   VkRegistry,
 } from "../typechain-types";
 
-const abiDir = path.resolve(__dirname, "..", "artifacts");
-const solDir = path.resolve(__dirname, "..", "contracts");
+import { parseArtifact } from "./abi";
+import { IDeployedMaci, IDeployedPoseidonContracts } from "./types";
+import { getDefaultSigner, getFeeData, log } from "./utils";
 
-type TAbi = string | readonly (string | Fragment | JsonFragment)[];
-
-const getDefaultSigner = async (): Promise<Signer> => {
-  const signers = await ethers.getSigners();
-  return signers[0];
-};
-
-const parseArtifact = (filename: string): [TAbi, string] => {
-  let filePath = "contracts/";
-  if (filename.includes("Gatekeeper")) {
-    filePath += "gatekeepers/";
-    filePath += `${filename}.sol`;
-  }
-
-  if (filename.includes("VoiceCredit")) {
-    filePath += "initialVoiceCreditProxy/";
-    filePath += `${filename}.sol`;
-  }
-
-  if (filename.includes("Verifier")) {
-    filePath += "crypto/Verifier.sol/";
-  }
-
-  if (filename.includes("AccQueue")) {
-    filePath += "trees/AccQueue.sol/";
-  }
-
-  if (filename.includes("Poll") || filename.includes("MessageAq")) {
-    filePath += "Poll.sol";
-  }
-
-  if (!filePath.includes(".sol")) {
-    filePath += `${filename}.sol`;
-  }
-
-  const contractArtifact = JSON.parse(readFileSync(path.resolve(abiDir, filePath, `${filename}.json`)).toString()) as {
-    abi: TAbi;
-    bytecode: string;
-  };
-
-  return [contractArtifact.abi, contractArtifact.bytecode];
-};
-
-const getInitialVoiceCreditProxyAbi = (): TAbi => {
-  const [abi] = parseArtifact("InitialVoiceCreditProxy.abi");
-  return abi;
-};
-
-export class JSONRPCDeployer {
-  provider: JsonRpcProvider;
-
-  signer: Signer;
-
-  options?: Record<string, unknown>;
-
-  constructor(privateKey: string, providerUrl: string, options?: Record<string, unknown>) {
-    this.provider = new JsonRpcProvider(providerUrl);
-    this.signer = new ethers.Wallet(privateKey, this.provider);
-    this.options = options;
-  }
-
-  async deploy(abi: TAbi, bytecode: string, ...args: unknown[]): Promise<Contract> {
-    const contractInterface = new Interface(abi);
-    const factory = new ethers.ContractFactory(contractInterface, bytecode, this.signer);
-    const contract = await factory.deploy(...args);
-
-    return contract as Contract;
-  }
-}
-
-const genJsonRpcDeployer = (privateKey: string, url: string): JSONRPCDeployer => new JSONRPCDeployer(privateKey, url);
-
-const log = (msg: string, quiet: boolean) => {
-  if (!quiet) {
-    // eslint-disable-next-line no-console
-    console.log(msg);
-  }
-};
-
-const getFeeData = async (): Promise<FeeData | undefined> => {
-  const signer = await getDefaultSigner();
-  return signer.provider?.getFeeData();
-};
-
-const linkPoseidonLibraries = async (
+/**
+ * Link Poseidon libraries to a Smart Contract
+ * @param solFileToLink - the name of the contract to link the libraries to
+ * @param poseidonT3Address - the address of the PoseidonT3 contract
+ * @param poseidonT4Address - the address of the PoseidonT4 contract
+ * @param poseidonT5Address - the address of the PoseidonT5 contract
+ * @param poseidonT6Address - the address of the PoseidonT6 contract
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns a contract factory with the libraries linked
+ */
+export const linkPoseidonLibraries = async (
   solFileToLink: string,
   poseidonT3Address: string,
   poseidonT4Address: string,
   poseidonT5Address: string,
   poseidonT6Address: string,
+  signer?: Signer,
   quiet = false,
 ): Promise<ContractFactory> => {
-  const signer = await getDefaultSigner();
-
   log(`Linking Poseidon libraries to ${solFileToLink}`, quiet);
   const contractFactory = await ethers.getContractFactory(solFileToLink, {
-    signer,
+    signer: signer || (await getDefaultSigner()),
     libraries: {
       PoseidonT3: poseidonT3Address,
       PoseidonT4: poseidonT4Address,
@@ -149,15 +62,21 @@ const linkPoseidonLibraries = async (
   return contractFactory;
 };
 
-// Deploy a contract given a name and args
-const deployContract = async <T extends BaseContract>(
+/**
+ * Deploy a Smart Contract given a name and some arguments
+ * @param contractName - the name of the contract
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @param args - the constructor arguments of the contract
+ */
+export const deployContract = async <T extends BaseContract>(
   contractName: string,
+  signer?: Signer,
   quiet = false,
   ...args: unknown[]
 ): Promise<T> => {
   log(`Deploying ${contractName}`, quiet);
-  const signer = await getDefaultSigner();
-  const contractFactory = await ethers.getContractFactory(contractName, signer);
+  const contractFactory = await ethers.getContractFactory(contractName, signer || (await getDefaultSigner()));
   const contract = await contractFactory.deploy(...args, {
     maxFeePerGas: await getFeeData().then((res) => res?.maxFeePerGas),
   });
@@ -166,43 +85,99 @@ const deployContract = async <T extends BaseContract>(
   return contract as unknown as T;
 };
 
-const deployTopupCredit = async (quiet = false): Promise<TopupCredit> =>
-  deployContract<TopupCredit>("TopupCredit", quiet);
+/**
+ * Deploy a TopupCredit contract
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns the deployed TopupCredit contract
+ */
+export const deployTopupCredit = async (signer?: Signer, quiet = false): Promise<TopupCredit> =>
+  deployContract<TopupCredit>("TopupCredit", signer, quiet);
 
-const deployVkRegistry = async (quiet = false): Promise<VkRegistry> => deployContract<VkRegistry>("VkRegistry", quiet);
+/**
+ * Deploy a VkRegistry contract
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns the deployed VkRegistry contract
+ */
+export const deployVkRegistry = async (signer?: Signer, quiet = false): Promise<VkRegistry> =>
+  deployContract<VkRegistry>("VkRegistry", signer, quiet);
 
-const deployMockVerifier = async (quiet = false): Promise<MockVerifier> =>
-  deployContract<MockVerifier>("MockVerifier", quiet);
+/**
+ * Deploy a MockVerifier contract (testing only)
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns the deployed MockVerifier contract
+ */
+export const deployMockVerifier = async (signer?: Signer, quiet = false): Promise<MockVerifier> =>
+  deployContract<MockVerifier>("MockVerifier", signer, quiet);
 
-const deployVerifier = async (quiet = false): Promise<Verifier> => deployContract<Verifier>("Verifier", quiet);
+/**
+ * Deploy a Verifier contract
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns the deployed Verifier contract
+ */
+export const deployVerifier = async (signer?: Signer, quiet = false): Promise<Verifier> =>
+  deployContract<Verifier>("Verifier", signer, quiet);
 
-const deployConstantInitialVoiceCreditProxy = async (
+/**
+ * Deploy a constant initial voice credit proxy contract
+ * @param signer - the signer to use to deploy the contract
+ * @param amount - the amount of initial voice credit to give to each user
+ * @param quiet - whether to suppress console output
+ * @returns the deployed ConstantInitialVoiceCreditProxy contract
+ */
+export const deployConstantInitialVoiceCreditProxy = async (
   amount: number,
+  signer?: Signer,
   quiet = false,
 ): Promise<ConstantInitialVoiceCreditProxy> =>
-  deployContract<ConstantInitialVoiceCreditProxy>("ConstantInitialVoiceCreditProxy", quiet, amount.toString());
+  deployContract<ConstantInitialVoiceCreditProxy>("ConstantInitialVoiceCreditProxy", signer, quiet, amount.toString());
 
-const deploySignupToken = async (quiet = false): Promise<SignUpToken> =>
-  deployContract<SignUpToken>("SignUpToken", quiet);
+/**
+ * Deploy a SignUpToken contract
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns the deployed SignUpToken contract
+ */
+export const deploySignupToken = async (signer?: Signer, quiet = false): Promise<SignUpToken> =>
+  deployContract<SignUpToken>("SignUpToken", signer, quiet);
 
-const deploySignupTokenGatekeeper = async (signUpTokenAddress: string, quiet = false): Promise<SignUpTokenGatekeeper> =>
-  deployContract<SignUpTokenGatekeeper>("SignUpTokenGatekeeper", quiet, signUpTokenAddress);
+/**
+ * Deploy a SignUpTokenGatekeeper contract
+ * @param signUpTokenAddress - the address of the SignUpToken contract
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns a SignUpTokenGatekeeper contract
+ */
+export const deploySignupTokenGatekeeper = async (
+  signUpTokenAddress: string,
+  signer?: Signer,
+  quiet = false,
+): Promise<SignUpTokenGatekeeper> =>
+  deployContract<SignUpTokenGatekeeper>("SignUpTokenGatekeeper", signer, quiet, signUpTokenAddress);
 
-const deployFreeForAllSignUpGatekeeper = async (quiet = false): Promise<FreeForAllGatekeeper> =>
-  deployContract<FreeForAllGatekeeper>("FreeForAllGatekeeper", quiet);
+/**
+ * Deploy a FreeForAllGatekeeper contract
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns the deployed FreeForAllGatekeeper contract
+ */
+export const deployFreeForAllSignUpGatekeeper = async (signer?: Signer, quiet = false): Promise<FreeForAllGatekeeper> =>
+  deployContract<FreeForAllGatekeeper>("FreeForAllGatekeeper", signer, quiet);
 
-interface IDeployedPoseidonContracts {
-  PoseidonT3Contract: PoseidonT3;
-  PoseidonT4Contract: PoseidonT4;
-  PoseidonT5Contract: PoseidonT5;
-  PoseidonT6Contract: PoseidonT6;
-}
-
-const deployPoseidonContracts = async (quiet = false): Promise<IDeployedPoseidonContracts> => {
-  const PoseidonT3Contract = await deployContract<PoseidonT3>("PoseidonT3", quiet);
-  const PoseidonT4Contract = await deployContract<PoseidonT4>("PoseidonT4", quiet);
-  const PoseidonT5Contract = await deployContract<PoseidonT5>("PoseidonT5", quiet);
-  const PoseidonT6Contract = await deployContract<PoseidonT6>("PoseidonT6", quiet);
+/**
+ * Deploy Poseidon contracts
+ * @param signer - the signer to use to deploy the contracts
+ * @param quiet - whether to suppress console output
+ * @returns the deployed Poseidon contracts
+ */
+export const deployPoseidonContracts = async (signer?: Signer, quiet = false): Promise<IDeployedPoseidonContracts> => {
+  const PoseidonT3Contract = await deployContract<PoseidonT3>("PoseidonT3", signer, quiet);
+  const PoseidonT4Contract = await deployContract<PoseidonT4>("PoseidonT4", signer, quiet);
+  const PoseidonT5Contract = await deployContract<PoseidonT5>("PoseidonT5", signer, quiet);
+  const PoseidonT6Contract = await deployContract<PoseidonT6>("PoseidonT6", signer, quiet);
 
   return {
     PoseidonT3Contract,
@@ -212,10 +187,24 @@ const deployPoseidonContracts = async (quiet = false): Promise<IDeployedPoseidon
   };
 };
 
-const deployPollFactory = async (quiet = false): Promise<Contract> => deployContract("PollFactory", quiet);
+/**
+ * Deploy a PollFactory contract
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns the deployed PollFactory contract
+ */
+export const deployPollFactory = async (signer?: Signer, quiet = false): Promise<Contract> =>
+  deployContract("PollFactory", signer, quiet);
 
-// deploy a contract with linked libraries
-const deployContractWithLinkedLibraries = async <T extends BaseContract>(
+/**
+ * Deploy a contract with linked libraries
+ * @param contractFactory - the contract factory to use
+ * @param name - the name of the contract
+ * @param quiet - whether to suppress console output
+ * @param args - the constructor arguments of the contract
+ * @returns the deployed contract instance
+ */
+export const deployContractWithLinkedLibraries = async <T extends BaseContract>(
   contractFactory: ContractFactory,
   name: string,
   quiet = false,
@@ -230,22 +219,25 @@ const deployContractWithLinkedLibraries = async <T extends BaseContract>(
   return contract as T;
 };
 
-const transferOwnership = async <T extends Ownable>(contract: T, newOwner: string, quiet = false): Promise<void> => {
-  log(`Transferring ownership of ${await contract.getAddress()} to ${newOwner}`, quiet);
-  const tx = await contract.transferOwnership(newOwner, {
-    maxFeePerGas: await getFeeData().then((res) => res?.maxFeePerGas),
-  });
-
-  await tx.wait();
-};
-
-const deployMessageProcessor = async (
+/**
+ * Deploy a MessageProcessor contract
+ * @param verifierAddress - the address of the Verifier contract
+ * @param poseidonT3Address - the address of the PoseidonT3 contract
+ * @param poseidonT4Address - the address of the PoseidonT4 contract
+ * @param poseidonT5Address - the address of the PoseidonT5 contract
+ * @param poseidonT6Address - the address of the PoseidonT6 contract
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns the deployed MessageProcessor contract
+ */
+export const deployMessageProcessor = async (
   verifierAddress: string,
   vkRegistryAddress: string,
   poseidonT3Address: string,
   poseidonT4Address: string,
   poseidonT5Address: string,
   poseidonT6Address: string,
+  signer?: Signer,
   quiet = false,
 ): Promise<MessageProcessor> => {
   // Link Poseidon contracts to MessageProcessor
@@ -255,6 +247,7 @@ const deployMessageProcessor = async (
     poseidonT4Address,
     poseidonT5Address,
     poseidonT6Address,
+    signer,
     quiet,
   );
 
@@ -267,13 +260,25 @@ const deployMessageProcessor = async (
   );
 };
 
-const deployTally = async (
+/**
+ * Deploy a Tally contract
+ * @param verifierAddress - the address of the Verifier contract
+ * @param poseidonT3Address - the address of the PoseidonT3 contract
+ * @param poseidonT4Address - the address of the PoseidonT4 contract
+ * @param poseidonT5Address - the address of the PoseidonT5 contract
+ * @param poseidonT6Address - the address of the PoseidonT6 contract
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns the deployed Tally contract
+ */
+export const deployTally = async (
   verifierAddress: string,
   vkRegistryAddress: string,
   poseidonT3Address: string,
   poseidonT4Address: string,
   poseidonT5Address: string,
   poseidonT6Address: string,
+  signer?: Signer,
   quiet = false,
 ): Promise<Tally> => {
   // Link Poseidon contracts to Tally
@@ -283,19 +288,31 @@ const deployTally = async (
     poseidonT4Address,
     poseidonT5Address,
     poseidonT6Address,
+    signer,
     quiet,
   );
 
   return deployContractWithLinkedLibraries<Tally>(tallyFactory, "Tally", quiet, verifierAddress, vkRegistryAddress);
 };
 
-const deploySubsidy = async (
+/**
+ * Depoloy a Subsidy contract
+ * @param verifierAddress - the address of the Verifier contract
+ * @param poseidonT3Address - the address of the PoseidonT3 contract
+ * @param poseidonT4Address - the address of the PoseidonT4 contract
+ * @param poseidonT5Address - the address of the PoseidonT5 contract
+ * @param poseidonT6Address - the address of the PoseidonT6 contract
+ * @param quiet - whether to suppress console output
+ * @returns the deployed Subsidy contract
+ */
+export const deploySubsidy = async (
   verifierAddress: string,
   vkRegistryAddress: string,
   poseidonT3Address: string,
   poseidonT4Address: string,
   poseidonT5Address: string,
   poseidonT6Address: string,
+  signer?: Signer,
   quiet = false,
 ): Promise<Subsidy> => {
   // Link Poseidon contracts to Subsidy
@@ -305,6 +322,7 @@ const deploySubsidy = async (
     poseidonT4Address,
     poseidonT5Address,
     poseidonT6Address,
+    signer,
     quiet,
   );
 
@@ -317,23 +335,29 @@ const deploySubsidy = async (
   );
 };
 
-interface IDeployedMaci {
-  maciContract: MACI;
-  stateAqContract: AccQueueQuinaryMaci;
-  pollFactoryContract: PollFactory;
-  poseidonAddrs: string[];
-}
-
-const deployMaci = async (
+/**
+ * Deploy a MACI contract
+ * @param signUpTokenGatekeeperContractAddress - the address of the SignUpTokenGatekeeper contract
+ * @param initialVoiceCreditBalanceAddress - the address of the ConstantInitialVoiceCreditProxy contract
+ * @param verifierContractAddress - the address of the Verifier contract
+ * @param vkRegistryContractAddress - the address of the VkRegistry contract
+ * @param topupCreditContractAddress - the address of the TopupCredit contract
+ * @param stateTreeDepth - the depth of the state tree
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns the deployed MACI contract
+ */
+export const deployMaci = async (
   signUpTokenGatekeeperContractAddress: string,
   initialVoiceCreditBalanceAddress: string,
   verifierContractAddress: string,
   topupCreditContractAddress: string,
+  signer?: Signer,
   stateTreeDepth = 10,
   quiet = false,
 ): Promise<IDeployedMaci> => {
   const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } =
-    await deployPoseidonContracts(quiet);
+    await deployPoseidonContracts(signer, quiet);
 
   const poseidonAddrs = await Promise.all([
     PoseidonT3Contract.getAddress(),
@@ -353,6 +377,7 @@ const deployMaci = async (
         poseidonAddrs[1],
         poseidonAddrs[2],
         poseidonAddrs[3],
+        signer,
         quiet,
       ),
     ),
@@ -393,55 +418,4 @@ const deployMaci = async (
     pollFactoryContract,
     poseidonAddrs,
   };
-};
-
-const writeContractAddresses = (
-  maciContractAddress: string,
-  vkRegistryContractAddress: string,
-  stateAqContractAddress: string,
-  signUpTokenAddress: string,
-  outputAddressFile: string,
-): void => {
-  const addresses = {
-    MaciContract: maciContractAddress,
-    VkRegistry: vkRegistryContractAddress,
-    StateAqContract: stateAqContractAddress,
-    SignUpToken: signUpTokenAddress,
-  };
-
-  const addressJsonPath = path.resolve(__dirname, "..", outputAddressFile);
-  writeFileSync(addressJsonPath, JSON.stringify(addresses));
-
-  // eslint-disable-next-line no-console
-  console.log(addresses);
-};
-
-export {
-  type IDeployedPoseidonContracts,
-  type IDeployedMaci,
-  deployContract,
-  deployContractWithLinkedLibraries,
-  deployTopupCredit,
-  deployVkRegistry,
-  deployMaci,
-  deployMessageProcessor,
-  deployTally,
-  deploySubsidy,
-  deploySignupToken,
-  deploySignupTokenGatekeeper,
-  deployConstantInitialVoiceCreditProxy,
-  deployFreeForAllSignUpGatekeeper,
-  deployMockVerifier,
-  deployVerifier,
-  deployPollFactory,
-  genJsonRpcDeployer,
-  getInitialVoiceCreditProxyAbi,
-  transferOwnership,
-  abiDir,
-  solDir,
-  parseArtifact,
-  linkPoseidonLibraries,
-  deployPoseidonContracts,
-  getDefaultSigner,
-  writeContractAddresses,
 };

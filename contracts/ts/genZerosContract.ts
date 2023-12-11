@@ -15,7 +15,7 @@ const genZerosContract = (
 ): string => {
   assert(hashLength === 2 || hashLength === 5);
 
-  const template = fs.readFileSync(path.resolve(__dirname, "MerkleZeros.sol.template")).toString();
+  const template = fs.readFileSync(path.resolve(__dirname, "..", "templates", "MerkleZeros.sol.template")).toString();
 
   const zeros: bigint[] = [zeroVal];
   for (let i = 1; i < numZeros; i += 1) {

@@ -1,13 +1,26 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { expect } from "chai";
-import { BaseContract } from "ethers";
+import { BaseContract, Signer } from "ethers";
 import { IncrementalQuinTree, AccQueue, calcDepthFromNumLeaves, hash2, hash5 } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
 import type { EthereumProvider } from "hardhat/types";
 
-import { deployPoseidonContracts, linkPoseidonLibraries } from "../ts/deploy";
-import { AccQueue as AccQueueContract } from "../typechain-types";
+import { getDefaultSigner } from "../ts";
+import {
+  deployConstantInitialVoiceCreditProxy,
+  deployFreeForAllSignUpGatekeeper,
+  deployMaci,
+  deployMessageProcessor,
+  deployMockVerifier,
+  deployPoseidonContracts,
+  deployTally,
+  deployTopupCredit,
+  deployVkRegistry,
+  linkPoseidonLibraries,
+} from "../ts/deploy";
+import { IDeployedTestContracts } from "../ts/types";
+import { AccQueue as AccQueueContract, FreeForAllGatekeeper } from "../typechain-types";
 
 export const insertSubTreeGasLimit = { gasLimit: 300000 };
 export const enqueueGasLimit = { gasLimit: 500000 };
@@ -65,7 +78,7 @@ export const deployTestAccQueues = async (
   ZERO: bigint,
 ): Promise<{ aq: AccQueue; aqContract: BaseContract }> => {
   const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } =
-    await deployPoseidonContracts(true);
+    await deployPoseidonContracts(await getDefaultSigner(), true);
 
   const [poseidonT3ContractAddress, poseidonT4ContractAddress, poseidonT5ContractAddress, poseidonT6ContractAddress] =
     await Promise.all([
@@ -81,6 +94,7 @@ export const deployTestAccQueues = async (
     poseidonT4ContractAddress,
     poseidonT5ContractAddress,
     poseidonT6ContractAddress,
+    await getDefaultSigner(),
     true,
   );
 
@@ -110,18 +124,18 @@ export const testEmptySubtree = async (aq: AccQueue, aqContract: AccQueueContrac
 /**
  * Insert one leaf and compute the subroot
  * @param aq - the AccQueue class instance
- * @param contract - the AccQueue contract
+ * @param aqContract - the AccQueue contract
  */
-export const testIncompleteSubtree = async (aq: AccQueue, contract: AccQueueContract): Promise<void> => {
+export const testIncompleteSubtree = async (aq: AccQueue, aqContract: AccQueueContract): Promise<void> => {
   const leaf = BigInt(1);
 
   aq.enqueue(leaf);
-  await contract.enqueue(leaf.toString(), enqueueGasLimit).then((tx) => tx.wait());
+  await aqContract.enqueue(leaf.toString(), enqueueGasLimit).then((tx) => tx.wait());
 
   aq.fill();
-  await contract.fill(fillGasLimit).then((tx) => tx.wait());
+  await aqContract.fill(fillGasLimit).then((tx) => tx.wait());
 
-  const subRoot = await contract.getSubRoot(1);
+  const subRoot = await aqContract.getSubRoot(1);
   expect(subRoot.toString()).to.equal(aq.getSubRoot(1).toString());
 };
 
@@ -155,24 +169,24 @@ export const testFillForAllIncompletes = async (
 
 /**
  * Test whether the AccQueue is empty upon deployment
- * @param contract - the AccQueue contract
+ * @param aqContract - the AccQueue contract
  */
-export const testEmptyUponDeployment = async (contract: AccQueueContract): Promise<void> => {
-  const numLeaves = await contract.numLeaves();
+export const testEmptyUponDeployment = async (aqContract: AccQueueContract): Promise<void> => {
+  const numLeaves = await aqContract.numLeaves();
   expect(numLeaves.toString()).to.equal("0");
 
-  await expect(contract.getSubRoot(0)).to.be.revertedWithCustomError(contract, "InvalidIndex");
+  await expect(aqContract.getSubRoot(0)).to.be.revertedWithCustomError(aqContract, "InvalidIndex");
 };
 
 /**
  * Enqueue leaves and check their subroots
- * @param contract - the AccQueue contract
+ * @param aqContract - the AccQueue contract
  * @param HASH_LENGTH - the number of leaves in each subtree
  * @param SUB_DEPTH - the depth of the subtrees
  * @param ZERO - the zero value to be used as leaf
  */
 export const testEnqueue = async (
-  contract: AccQueueContract,
+  aqContract: AccQueueContract,
   HASH_LENGTH: number,
   SUB_DEPTH: number,
   ZERO: bigint,
@@ -187,13 +201,13 @@ export const testEnqueue = async (
     tree0.insert(leaf);
 
     // eslint-disable-next-line no-await-in-loop
-    await contract.enqueue(leaf.toString(), enqueueGasLimit).then((tx) => tx.wait());
+    await aqContract.enqueue(leaf.toString(), enqueueGasLimit).then((tx) => tx.wait());
   }
 
-  let numLeaves = await contract.numLeaves();
+  let numLeaves = await aqContract.numLeaves();
   expect(numLeaves.toString()).to.eq(subtreeCapacity.toString());
 
-  const r = await contract.getSubRoot(0);
+  const r = await aqContract.getSubRoot(0);
   expect(r.toString()).to.eq(tree0.root.toString());
 
   const tree1 = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, hashFunc);
@@ -204,25 +218,25 @@ export const testEnqueue = async (
     tree1.insert(leaf);
 
     // eslint-disable-next-line no-await-in-loop
-    await contract.enqueue(leaf.toString(), enqueueGasLimit).then((tx) => tx.wait());
+    await aqContract.enqueue(leaf.toString(), enqueueGasLimit).then((tx) => tx.wait());
   }
 
-  numLeaves = await contract.numLeaves();
+  numLeaves = await aqContract.numLeaves();
   expect(numLeaves.toString()).to.eq((subtreeCapacity * 2).toString());
 
-  const subroot1 = await contract.getSubRoot(1);
+  const subroot1 = await aqContract.getSubRoot(1);
   expect(subroot1.toString()).to.eq(tree1.root.toString());
 };
 
 /**
  * Insert subtrees directly
  * @param aq - the AccQueue class instance
- * @param contract - the AccQueue contract
+ * @param aqContract - the AccQueue contract
  * @param NUM_SUBTREES - the number of subtrees to insert
  */
 export const testInsertSubTrees = async (
   aq: AccQueue,
-  contract: AccQueueContract,
+  aqContract: AccQueueContract,
   NUM_SUBTREES: number,
   MAIN_DEPTH: number,
 ): Promise<void> => {
@@ -236,7 +250,7 @@ export const testInsertSubTrees = async (
     // insert the subtree root
     aq.insertSubTree(subTree.root);
     // eslint-disable-next-line no-await-in-loop
-    await contract.insertSubTree(subTree.root.toString(), insertSubTreeGasLimit).then((tx) => tx.wait());
+    await aqContract.insertSubTree(subTree.root.toString(), insertSubTreeGasLimit).then((tx) => tx.wait());
   }
 
   let correctRoot: string;
@@ -255,21 +269,21 @@ export const testInsertSubTrees = async (
 
   // Check whether mergeSubRoots() works
   aq.mergeSubRoots(0);
-  await contract.mergeSubRoots(0, { gasLimit: 8000000 }).then((tx) => tx.wait());
+  await aqContract.mergeSubRoots(0, { gasLimit: 8000000 }).then((tx) => tx.wait());
 
   const expectedSmallSRTroot = aq.smallSRTroot.toString();
 
   expect(correctRoot).to.eq(expectedSmallSRTroot);
 
-  const contractSmallSRTroot = await contract.getSmallSRTroot();
+  const contractSmallSRTroot = await aqContract.getSmallSRTroot();
   expect(expectedSmallSRTroot.toString()).to.eq(contractSmallSRTroot.toString());
 
   // Check whether merge() works
   aq.merge(MAIN_DEPTH);
-  await contract.merge(MAIN_DEPTH, { gasLimit: 8000000 }).then((tx) => tx.wait());
+  await aqContract.merge(MAIN_DEPTH, { gasLimit: 8000000 }).then((tx) => tx.wait());
 
   const expectedMainRoot = aq.mainRoots[MAIN_DEPTH];
-  const contractMainRoot = await contract.getMainRoot(MAIN_DEPTH);
+  const contractMainRoot = await aqContract.getMainRoot(MAIN_DEPTH);
 
   expect(expectedMainRoot.toString()).to.eq(contractMainRoot.toString());
 };
@@ -277,9 +291,9 @@ export const testInsertSubTrees = async (
 /**
  * The order of leaves when using enqueue() and insertSubTree() should be correct.
  * @param aq - the AccQueue class instance
- * @param contract - the AccQueue contract
+ * @param aqContract - the AccQueue contract
  */
-export const testEnqueueAndInsertSubTree = async (aq: AccQueue, contract: AccQueueContract): Promise<void> => {
+export const testEnqueueAndInsertSubTree = async (aq: AccQueue, aqContract: AccQueueContract): Promise<void> => {
   const z = aq.zeros[0];
   const n = BigInt(1);
 
@@ -304,31 +318,31 @@ export const testEnqueueAndInsertSubTree = async (aq: AccQueue, contract: AccQue
   const expectedRoot = tree.root.toString();
 
   aq.enqueue(n);
-  await contract.enqueue(n.toString(), enqueueGasLimit).then((tx) => tx.wait());
+  await aqContract.enqueue(n.toString(), enqueueGasLimit).then((tx) => tx.wait());
 
   aq.insertSubTree(subTree.root);
-  await contract.insertSubTree(subTree.root.toString(), insertSubTreeGasLimit).then((tx) => tx.wait());
+  await aqContract.insertSubTree(subTree.root.toString(), insertSubTreeGasLimit).then((tx) => tx.wait());
 
   aq.fill();
-  await contract.fill(fillGasLimit).then((tx) => tx.wait());
+  await aqContract.fill(fillGasLimit).then((tx) => tx.wait());
 
   aq.mergeSubRoots(0);
-  await contract.mergeSubRoots(0, { gasLimit: 8000000 }).then((tx) => tx.wait());
+  await aqContract.mergeSubRoots(0, { gasLimit: 8000000 }).then((tx) => tx.wait());
 
   expect(expectedRoot).to.eq(aq.smallSRTroot.toString());
 
-  const contractSmallSRTroot = await contract.getSmallSRTroot();
+  const contractSmallSRTroot = await aqContract.getSmallSRTroot();
   expect(expectedRoot).to.eq(contractSmallSRTroot.toString());
 };
 
 /**
  * Insert a number of subtrees and merge them all into a main tree
  * @param aq - the AccQueue class instance
- * @param contract - the AccQueue contract
+ * @param aqContract - the AccQueue contract
  */
 export const testMerge = async (
   aq: AccQueue,
-  contract: AccQueueContract,
+  aqContract: AccQueueContract,
   NUM_SUBTREES: number,
   MAIN_DEPTH: number,
 ): Promise<void> => {
@@ -340,9 +354,9 @@ export const testMerge = async (
     aq.enqueue(leaf);
     aq.fill();
     // eslint-disable-next-line no-await-in-loop
-    await contract.enqueue(leaf.toString(), enqueueGasLimit).then((tx) => tx.wait());
+    await aqContract.enqueue(leaf.toString(), enqueueGasLimit).then((tx) => tx.wait());
     // eslint-disable-next-line no-await-in-loop
-    await contract.fill(fillGasLimit).then((tx) => tx.wait());
+    await aqContract.fill(fillGasLimit).then((tx) => tx.wait());
 
     leaves.push(leaf);
 
@@ -359,16 +373,16 @@ export const testMerge = async (
   });
 
   // minHeight should be the small SRT height
-  const minHeight = await contract.calcMinHeight();
+  const minHeight = await aqContract.calcMinHeight();
   const c = calcDepthFromNumLeaves(aq.hashLength, NUM_SUBTREES);
   expect(minHeight.toString()).to.eq(c.toString());
 
   // Check whether mergeSubRoots() works
   aq.mergeSubRoots(0);
-  await (await contract.mergeSubRoots(0, { gasLimit: 8000000 })).wait();
+  await (await aqContract.mergeSubRoots(0, { gasLimit: 8000000 })).wait();
 
   const expectedSmallSRTroot = aq.smallSRTroot.toString();
-  const contractSmallSRTroot = (await contract.getSmallSRTroot()).toString();
+  const contractSmallSRTroot = (await aqContract.getSmallSRTroot()).toString();
 
   expect(expectedSmallSRTroot).to.eq(contractSmallSRTroot);
 
@@ -401,35 +415,35 @@ export const testMerge = async (
   expect(expectedMainRoot).to.eq(directlyMergedRoot);
 
   // Check whether on-chain merge() works
-  await (await contract.merge(MAIN_DEPTH, { gasLimit: 8000000 })).wait();
-  const contractMainRoot = (await contract.getMainRoot(MAIN_DEPTH)).toString();
+  await (await aqContract.merge(MAIN_DEPTH, { gasLimit: 8000000 })).wait();
+  const contractMainRoot = (await aqContract.getMainRoot(MAIN_DEPTH)).toString();
   expect(expectedMainRoot).to.eq(contractMainRoot);
 };
 
 /**
  * Enqueue, merge, enqueue, and merge again
  * @param aq - the AccQueue class instance
- * @param contract - the AccQueue contract
+ * @param aqContract - the AccQueue contract
  */
-export const testMergeAgain = async (aq: AccQueue, contract: AccQueueContract, MAIN_DEPTH: number): Promise<void> => {
+export const testMergeAgain = async (aq: AccQueue, aqContract: AccQueueContract, MAIN_DEPTH: number): Promise<void> => {
   const tree = new IncrementalQuinTree(MAIN_DEPTH, aq.zeros[0], aq.hashLength, aq.hashFunc);
   const leaf = BigInt(123);
 
   // Enqueue
   aq.enqueue(leaf);
-  await contract.enqueue(leaf.toString()).then((tx) => tx.wait());
+  await aqContract.enqueue(leaf.toString()).then((tx) => tx.wait());
   tree.insert(leaf);
 
   // Merge
   aq.mergeDirect(MAIN_DEPTH);
-  await contract.mergeSubRoots(0, { gasLimit: 8000000 }).then((tx) => tx.wait());
-  await contract.merge(MAIN_DEPTH, { gasLimit: 8000000 }).then((tx) => tx.wait());
+  await aqContract.mergeSubRoots(0, { gasLimit: 8000000 }).then((tx) => tx.wait());
+  await aqContract.merge(MAIN_DEPTH, { gasLimit: 8000000 }).then((tx) => tx.wait());
 
   for (let i = 1; i < aq.hashLength ** aq.subDepth; i += 1) {
     tree.insert(aq.zeros[0]);
   }
 
-  const mainRoot = (await contract.getMainRoot(MAIN_DEPTH)).toString();
+  const mainRoot = (await aqContract.getMainRoot(MAIN_DEPTH)).toString();
   const expectedMainRoot = aq.mainRoots[MAIN_DEPTH].toString();
   expect(expectedMainRoot).to.eq(mainRoot);
   expect(expectedMainRoot).to.eq(tree.root.toString());
@@ -438,22 +452,110 @@ export const testMergeAgain = async (aq: AccQueue, contract: AccQueueContract, M
 
   // Enqueue
   aq.enqueue(leaf2);
-  await contract.enqueue(leaf2.toString()).then((tx) => tx.wait());
+  await aqContract.enqueue(leaf2.toString()).then((tx) => tx.wait());
   tree.insert(leaf2);
 
   // Merge
   aq.mergeDirect(MAIN_DEPTH);
-  await contract.mergeSubRoots(0, { gasLimit: 8000000 }).then((tx) => tx.wait());
-  await contract.merge(MAIN_DEPTH, { gasLimit: 8000000 }).then((tx) => tx.wait());
+  await aqContract.mergeSubRoots(0, { gasLimit: 8000000 }).then((tx) => tx.wait());
+  await aqContract.merge(MAIN_DEPTH, { gasLimit: 8000000 }).then((tx) => tx.wait());
 
   for (let i = 1; i < aq.hashLength ** aq.subDepth; i += 1) {
     tree.insert(aq.zeros[0]);
   }
 
-  const mainRoot2 = (await contract.getMainRoot(MAIN_DEPTH)).toString();
+  const mainRoot2 = (await aqContract.getMainRoot(MAIN_DEPTH)).toString();
   const expectedMainRoot2 = aq.mainRoots[MAIN_DEPTH].toString();
   expect(expectedMainRoot2).to.eq(tree.root.toString());
 
   expect(expectedMainRoot2).not.to.eq(expectedMainRoot);
   expect(expectedMainRoot2).to.eq(mainRoot2);
+};
+
+/**
+ * Deploy a set of smart contracts that can be used for testing.
+ * @param initialVoiceCreditBalance - the initial voice credit balance for each user
+ * @param stateTreeDepth - the depth of the state tree
+ * @param signer - the signer to use
+ * @param quiet - whether to suppress console output
+ * @param gatekeeper - the gatekeeper contract to use
+ * @returns the deployed contracts
+ */
+export const deployTestContracts = async (
+  initialVoiceCreditBalance: number,
+  stateTreeDepth: number,
+  signer?: Signer,
+  quiet = false,
+  gatekeeper: FreeForAllGatekeeper | undefined = undefined,
+): Promise<IDeployedTestContracts> => {
+  const mockVerifierContract = await deployMockVerifier(signer, true);
+
+  let gatekeeperContract = gatekeeper;
+  if (!gatekeeperContract) {
+    gatekeeperContract = await deployFreeForAllSignUpGatekeeper(signer, true);
+  }
+
+  const constantIntialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
+    initialVoiceCreditBalance,
+    signer,
+    true,
+  );
+
+  // VkRegistry
+  const vkRegistryContract = await deployVkRegistry(signer, true);
+  const topupCreditContract = await deployTopupCredit(signer, true);
+  const [
+    gatekeeperContractAddress,
+    mockVerifierContractAddress,
+    constantIntialVoiceCreditProxyContractAddress,
+    vkRegistryContractAddress,
+    topupCreditContractAddress,
+  ] = await Promise.all([
+    gatekeeperContract.getAddress(),
+    mockVerifierContract.getAddress(),
+    constantIntialVoiceCreditProxyContract.getAddress(),
+    vkRegistryContract.getAddress(),
+    topupCreditContract.getAddress(),
+  ]);
+
+  const { maciContract, stateAqContract, poseidonAddrs } = await deployMaci(
+    gatekeeperContractAddress,
+    constantIntialVoiceCreditProxyContractAddress,
+    mockVerifierContractAddress,
+    topupCreditContractAddress,
+    signer,
+    stateTreeDepth,
+    quiet,
+  );
+  const mpContract = await deployMessageProcessor(
+    mockVerifierContractAddress,
+    vkRegistryContractAddress,
+    poseidonAddrs[0],
+    poseidonAddrs[1],
+    poseidonAddrs[2],
+    poseidonAddrs[3],
+    signer,
+    true,
+  );
+  const tallyContract = await deployTally(
+    mockVerifierContractAddress,
+    vkRegistryContractAddress,
+    poseidonAddrs[0],
+    poseidonAddrs[1],
+    poseidonAddrs[2],
+    poseidonAddrs[3],
+    signer,
+    true,
+  );
+
+  return {
+    mockVerifierContract,
+    gatekeeperContract,
+    constantIntialVoiceCreditProxyContract,
+    maciContract,
+    stateAqContract,
+    vkRegistryContract,
+    mpContract,
+    tallyContract,
+  };
 };

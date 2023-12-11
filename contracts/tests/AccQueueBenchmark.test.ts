@@ -2,15 +2,14 @@ import { expect } from "chai";
 import { AccQueue, NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 
 import { deployPoseidonContracts, linkPoseidonLibraries } from "../ts/deploy";
+import { getDefaultSigner } from "../ts/utils";
 import { AccQueue as AccQueueContract } from "../typechain-types";
-
-require("module-alias/register");
 
 let aqContract: AccQueueContract;
 
 const deploy = async (contractName: string, SUB_DEPTH: number, HASH_LENGTH: number, ZERO: bigint) => {
   const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } =
-    await deployPoseidonContracts(true);
+    await deployPoseidonContracts(await getDefaultSigner(), true);
   const [poseidonT3ContractAddress, poseidonT4ContractAddress, poseidonT5ContractAddress, poseidonT6ContractAddress] =
     await Promise.all([
       PoseidonT3Contract.getAddress(),
@@ -26,6 +25,7 @@ const deploy = async (contractName: string, SUB_DEPTH: number, HASH_LENGTH: numb
     poseidonT4ContractAddress,
     poseidonT5ContractAddress,
     poseidonT6ContractAddress,
+    await getDefaultSigner(),
     true,
   );
 

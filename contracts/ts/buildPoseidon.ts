@@ -7,10 +7,10 @@ const buildPoseidon = async (numInputs: number) => {
   await (hre as ExtendedHre).overwriteArtifact(`PoseidonT${numInputs + 1}`, poseidonContract.createCode(numInputs));
 };
 
-const buildPoseidonT3 = (): Promise<void> => buildPoseidon(2);
-const buildPoseidonT4 = (): Promise<void> => buildPoseidon(3);
-const buildPoseidonT5 = (): Promise<void> => buildPoseidon(4);
-const buildPoseidonT6 = (): Promise<void> => buildPoseidon(5);
+export const buildPoseidonT3 = (): Promise<void> => buildPoseidon(2);
+export const buildPoseidonT4 = (): Promise<void> => buildPoseidon(3);
+export const buildPoseidonT5 = (): Promise<void> => buildPoseidon(4);
+export const buildPoseidonT6 = (): Promise<void> => buildPoseidon(5);
 
 if (require.main === module) {
   buildPoseidonT3();
@@ -18,5 +18,3 @@ if (require.main === module) {
   buildPoseidonT5();
   buildPoseidonT6();
 }
-
-export { buildPoseidonT3, buildPoseidonT4, buildPoseidonT5, buildPoseidonT6 };

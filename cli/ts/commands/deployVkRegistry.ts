@@ -1,4 +1,4 @@
-import { deployVkRegistry } from "maci-contracts";
+import { deployVkRegistry, getDefaultSigner } from "maci-contracts";
 import { existsSync, renameSync } from "fs";
 import { contractAddressesStore, oldContractAddressesStore } from "../utils/constants";
 import { logGreen, success } from "../utils/theme";
@@ -18,7 +18,7 @@ export const deployVkRegistryContract = async (quiet = true): Promise<string> =>
   }
 
   // deploy and store the address
-  const vkRegistry = await deployVkRegistry(true);
+  const vkRegistry = await deployVkRegistry(await getDefaultSigner(), true);
   const vkRegistryAddress = await vkRegistry.getAddress();
   storeContractAddress("VkRegistry", vkRegistryAddress);
 

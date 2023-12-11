@@ -1,35 +1,5 @@
-import {
-  genJsonRpcDeployer,
-  deployMockVerifier,
-  deployTopupCredit,
-  deployVkRegistry,
-  deployMaci,
-  deployMessageProcessor,
-  deployTally,
-  deploySubsidy,
-  deployContract,
-  deploySignupToken,
-  deploySignupTokenGatekeeper,
-  deployConstantInitialVoiceCreditProxy,
-  deployFreeForAllSignUpGatekeeper,
-  deployPollFactory,
-  getInitialVoiceCreditProxyAbi,
-  abiDir,
-  parseArtifact,
-  solDir,
-  linkPoseidonLibraries,
-  deployPoseidonContracts,
-  deployVerifier,
-  getDefaultSigner,
-} from "./deploy";
-import { genMaciStateFromContract } from "./genMaciState";
-import { formatProofForVerifierContract, deployTestContracts } from "./utils";
-
 export {
-  abiDir,
-  solDir,
-  parseArtifact,
-  genJsonRpcDeployer,
+  deployMockVerifier,
   deployTopupCredit,
   deployVkRegistry,
   deployMaci,
@@ -37,21 +7,20 @@ export {
   deployTally,
   deploySubsidy,
   deployContract,
-  deployMockVerifier,
   deploySignupToken,
   deploySignupTokenGatekeeper,
-  deployFreeForAllSignUpGatekeeper,
   deployConstantInitialVoiceCreditProxy,
+  deployFreeForAllSignUpGatekeeper,
   deployPollFactory,
-  deployTestContracts,
-  getInitialVoiceCreditProxyAbi,
-  formatProofForVerifierContract,
   linkPoseidonLibraries,
   deployPoseidonContracts,
   deployVerifier,
-  getDefaultSigner,
-  genMaciStateFromContract,
-};
+} from "./deploy";
+export { genJsonRpcDeployer } from "./deployer";
+export { genMaciStateFromContract } from "./genMaciState";
+export { formatProofForVerifierContract, getDefaultSigner, getSigners } from "./utils";
+export { abiDir, solDir } from "./constants";
+export { parseArtifact } from "./abi";
 
 export type { IVerifyingKeyStruct } from "./types";
 export * from "../typechain-types";

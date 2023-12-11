@@ -6,6 +6,7 @@ import type { IVerifyingKeyStruct } from "../ts/types";
 import type { BigNumberish } from "ethers";
 
 import { deployVerifier } from "../ts/deploy";
+import { getDefaultSigner } from "../ts/utils";
 import { Verifier } from "../typechain-types";
 
 describe("DomainObjs", () => {
@@ -78,7 +79,7 @@ describe("DomainObjs", () => {
 
   describe("Deployment", () => {
     before(async () => {
-      verifierContract = await deployVerifier(true);
+      verifierContract = await deployVerifier(await getDefaultSigner(), true);
     });
 
     it("should correctly verify a proof", async () => {

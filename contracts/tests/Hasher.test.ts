@@ -3,6 +3,7 @@ import { BigNumberish } from "ethers";
 import { sha256Hash, hashLeftRight, hash3, hash4, hash5, genRandomSalt } from "maci-crypto";
 
 import { deployPoseidonContracts, linkPoseidonLibraries } from "../ts/deploy";
+import { getDefaultSigner } from "../ts/utils";
 import { Hasher } from "../typechain-types";
 
 describe("Hasher", () => {
@@ -10,7 +11,7 @@ describe("Hasher", () => {
 
   before(async () => {
     const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } =
-      await deployPoseidonContracts(true);
+      await deployPoseidonContracts(await getDefaultSigner(), true);
     const [poseidonT3ContractAddress, poseidonT4ContractAddress, poseidonT5ContractAddress, poseidonT6ContractAddress] =
       await Promise.all([
         PoseidonT3Contract.getAddress(),
@@ -25,6 +26,7 @@ describe("Hasher", () => {
       poseidonT4ContractAddress,
       poseidonT5ContractAddress,
       poseidonT6ContractAddress,
+      await getDefaultSigner(),
       true,
     );
 

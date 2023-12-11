@@ -1,19 +1,19 @@
-import type { IDeployedTestContracts, SnarkProof } from "./types";
+import { FeeData, Signer } from "ethers";
+// eslint-disable-next-line
+// @ts-ignore typedoc doesn't want to get types from toolbox
+import { ethers } from "hardhat";
 
-import { FreeForAllGatekeeper } from "../typechain-types";
+import type { Action, SnarkProof } from "./types";
 
-import {
-  deployVkRegistry,
-  deployTopupCredit,
-  deployMaci,
-  deployMessageProcessor,
-  deployTally,
-  deployMockVerifier,
-  deployFreeForAllSignUpGatekeeper,
-  deployConstantInitialVoiceCreditProxy,
-} from "./deploy";
+import { Ownable } from "../typechain-types";
 
-const formatProofForVerifierContract = (proof: SnarkProof): string[] =>
+/**
+ * Format a SnarkProof type to an array of strings
+ * which can be passed to the Groth16 verifier contract.
+ * @param proof the SnarkProof to format
+ * @returns an array of strings
+ */
+export const formatProofForVerifierContract = (proof: SnarkProof): string[] =>
   [
     proof.pi_a[0],
     proof.pi_a[1],
@@ -27,88 +27,97 @@ const formatProofForVerifierContract = (proof: SnarkProof): string[] =>
     proof.pi_c[1],
   ].map((x) => x.toString());
 
-const deployTestContracts = async (
-  initialVoiceCreditBalance: number,
-  stateTreeDepth: number,
-  quiet = false,
-  gatekeeper: FreeForAllGatekeeper | undefined = undefined,
-): Promise<IDeployedTestContracts> => {
-  const mockVerifierContract = await deployMockVerifier(true);
-
-  let gatekeeperContract = gatekeeper;
-  if (!gatekeeperContract) {
-    gatekeeperContract = await deployFreeForAllSignUpGatekeeper(true);
-  }
-
-  const constantIntialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
-    initialVoiceCreditBalance,
-    true,
-  );
-
-  // VkRegistry
-  const vkRegistryContract = await deployVkRegistry(true);
-  const topupCreditContract = await deployTopupCredit(true);
-  const [
-    gatekeeperContractAddress,
-    mockVerifierContractAddress,
-    constantIntialVoiceCreditProxyContractAddress,
-    vkRegistryContractAddress,
-    topupCreditContractAddress,
-  ] = await Promise.all([
-    gatekeeperContract.getAddress(),
-    mockVerifierContract.getAddress(),
-    constantIntialVoiceCreditProxyContract.getAddress(),
-    vkRegistryContract.getAddress(),
-    topupCreditContract.getAddress(),
-  ]);
-
-  const { maciContract, stateAqContract, poseidonAddrs } = await deployMaci(
-    gatekeeperContractAddress,
-    constantIntialVoiceCreditProxyContractAddress,
-    mockVerifierContractAddress,
-    topupCreditContractAddress,
-    stateTreeDepth,
-    quiet,
-  );
-  const mpContract = await deployMessageProcessor(
-    mockVerifierContractAddress,
-    vkRegistryContractAddress,
-    poseidonAddrs[0],
-    poseidonAddrs[1],
-    poseidonAddrs[2],
-    poseidonAddrs[3],
-    true,
-  );
-  const tallyContract = await deployTally(
-    mockVerifierContractAddress,
-    vkRegistryContractAddress,
-    poseidonAddrs[0],
-    poseidonAddrs[1],
-    poseidonAddrs[2],
-    poseidonAddrs[3],
-    true,
-  );
-
-  return {
-    mockVerifierContract,
-    gatekeeperContract,
-    constantIntialVoiceCreditProxyContract,
-    maciContract,
-    stateAqContract,
-    vkRegistryContract,
-    mpContract,
-    tallyContract,
-  };
-};
-
 /**
  * Pause the thread for n milliseconds
  * @param ms - the amount of time to sleep in milliseconds
  */
-const sleep = async (ms: number): Promise<void> => {
+export const sleep = async (ms: number): Promise<void> => {
   await new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
 };
 
-export { type IDeployedTestContracts, deployTestContracts, formatProofForVerifierContract, sleep };
+/**
+ * The comparision function for Actions based on block number and transaction
+ * index.
+ * @param actions - the array of actions to sort
+ * @returns the sorted array of actions
+ */
+export function sortActions(actions: Action[]): Action[] {
+  return actions.slice().sort((a, b) => {
+    if (a.blockNumber > b.blockNumber) {
+      return 1;
+    }
+
+    if (a.blockNumber < b.blockNumber) {
+      return -1;
+    }
+
+    if (a.transactionIndex > b.transactionIndex) {
+      return 1;
+    }
+
+    if (a.transactionIndex < b.transactionIndex) {
+      return -1;
+    }
+
+    return 0;
+  });
+}
+
+/**
+ * Print to the console
+ * @param msg - the message to print
+ * @param quiet - whether to suppress console output
+ */
+export const log = (msg: string, quiet: boolean): void => {
+  if (!quiet) {
+    // eslint-disable-next-line no-console
+    console.log(msg);
+  }
+};
+
+/**
+ * Get the default signer from the hardhat node
+ * @returns the default signer
+ */
+export const getDefaultSigner = async (): Promise<Signer> => {
+  const signers = await ethers.getSigners();
+  return signers[0];
+};
+
+/**
+ * Get all of the available signers from the hardhat node
+ * @dev to be used while testing
+ * @returns the signers
+ */
+export const getSigners = async (): Promise<Signer[]> => ethers.getSigners();
+
+/**
+ * Get the current fee data from the blockchain node.
+ * This is needed to ensure transaction go through in busy times
+ * @returns - the fee data
+ */
+export const getFeeData = async (): Promise<FeeData | undefined> => {
+  const signer = await getDefaultSigner();
+  return signer.provider?.getFeeData();
+};
+
+/**
+ * Transfer ownership of a contract (using Ownable from OpenZeppelin)
+ * @param contract - the contract to transfer ownership of
+ * @param newOwner - the address of the new owner
+ * @param quiet - whether to suppress console output
+ */
+export const transferOwnership = async <T extends Ownable>(
+  contract: T,
+  newOwner: string,
+  quiet = false,
+): Promise<void> => {
+  log(`Transferring ownership of ${await contract.getAddress()} to ${newOwner}`, quiet);
+  const tx = await contract.transferOwnership(newOwner, {
+    maxFeePerGas: await getFeeData().then((res) => res?.maxFeePerGas),
+  });
+
+  await tx.wait();
+};

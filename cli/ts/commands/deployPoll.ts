@@ -95,6 +95,7 @@ export const deployPoll = async (
     poseidonT4,
     poseidonT5,
     poseidonT6,
+    signer,
     true,
   );
 
@@ -106,6 +107,7 @@ export const deployPoll = async (
     poseidonT4,
     poseidonT5,
     poseidonT6,
+    signer,
     true,
   );
 
@@ -117,6 +119,7 @@ export const deployPoll = async (
     poseidonT4,
     poseidonT5,
     poseidonT6,
+    signer,
     true,
   );
 
