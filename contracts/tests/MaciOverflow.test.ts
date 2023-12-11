@@ -1,36 +1,18 @@
 import { expect } from "chai";
 import { AbiCoder, BigNumberish } from "ethers";
-import { MaxValues, TreeDepths } from "maci-core";
+import { MaxValues, STATE_TREE_DEPTH, TreeDepths } from "maci-core";
 import { Keypair } from "maci-domainobjs";
 
 import { deployTestContracts } from "../ts/utils";
 import { MACI } from "../typechain-types";
 
-const coordinator = new Keypair();
-const users = [new Keypair(), new Keypair(), new Keypair()];
-
-const STATE_TREE_DEPTH = 10;
-const MESSAGE_TREE_DEPTH = 4;
-const MESSAGE_TREE_SUBDEPTH = 2;
-
-// Poll parameters
-const duration = 15;
-const maxValues: MaxValues = {
-  maxMessages: 25,
-  maxVoteOptions: 25,
-};
-
-const treeDepths: TreeDepths = {
-  intStateTreeDepth: 1,
-  messageTreeDepth: MESSAGE_TREE_DEPTH,
-  messageTreeSubDepth: MESSAGE_TREE_SUBDEPTH,
-  voteOptionTreeDepth: 2,
-};
-
-const initialVoiceCreditBalance = 100;
+import { duration, initialVoiceCreditBalance, maxValues, treeDepths } from "./constants";
 
 describe("Overflow testing", () => {
   let maciContract: MACI;
+
+  const coordinator = new Keypair();
+  const users = [new Keypair(), new Keypair(), new Keypair()];
 
   beforeEach(async () => {
     const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, true);
