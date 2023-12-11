@@ -10,7 +10,7 @@ const GITHUB_URL = "https://github.com/privacy-scaling-explorations/maci";
 const config: Config = {
   title: "MACI",
   tagline: "Minimal Anti-Collusion Infrastructure",
-  favicon: "img/maci-logo-2.png",
+  favicon: "img/maci-favicon.png",
 
   // Set the production url of your site here
   url: "https://maci.pse.dev",
