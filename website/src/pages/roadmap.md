@@ -46,7 +46,9 @@ We’re building technical infrastructure, operational expertise & a network of 
 
 **Long term, our vision is to build the most widely adopted QF solution in the world, powered by MACI.**
 
-Our vision to eventually enable QF rounds, running e.g. every quarter, at the local, municipal, national and global scale. We want QF rounds to become the “default” place where projects are contributing funds to public goods
+Our vision to eventually enable QF rounds, running e.g. every quarter, at the local, municipal, national and global scale. We want QF rounds to become the “default” place where projects are contributing funds to public goods.
+
+[Learn more about our QF initiatives here](https://qf.pse.dev/about).
 
 ### High-level QF ecosystem goals
 
@@ -119,7 +121,7 @@ The hope here is that close interactions with integration developers & Ethereum 
 
 _~30% of team’s total bandwidth_
 
-[Read context on on our QF initiative here](https://qf.super.site/about).
+[Read context on on our QF initiative here](https://qf.pse.dev/about).
 
 ### 2024 goal
 
@@ -129,14 +131,14 @@ _~30% of team’s total bandwidth_
 
 - Build an evaluation framework of QF rounds, to increase our sophistication around how we measure success
 - Landscape analysis of QF & capital-allocation projects to better understand how our efforts fit in within the broader ecosystem
-- Update & expand our [QF website](https://qf.super.site/), with public launch to generate inbound interest
+- Update & expand our [QF website](https://qf.pse.dev/), with public launch to generate inbound interest
 - Explore community collaboration opportunities (running QF rounds)
 - Exploring project collaboration opportunities (supporting MACI/QF integrations)
 
 **References**
 
 - [GitHub](https://github.com/privacy-scaling-explorations/qf)
-- [Website](https://qf.super.site/)
+- [Website](https://qf.pse.dev/)
 
 ## 4) P0tion support & handoff
 
