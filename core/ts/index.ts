@@ -1,10 +1,6 @@
 export { MaciState } from "./MaciState";
 export { Poll } from "./Poll";
 export {
-  CircuitInputs,
-  MaxValues,
-  TreeDepths,
-  BatchSizes,
   genProcessVkSig,
   genTallyVkSig,
   genSubsidyVkSig,
@@ -15,6 +11,7 @@ export {
   packSubsidySmallVals,
 } from "./utils/utils";
 
+export { CircuitInputs, MaxValues, TreeDepths, BatchSizes } from "./utils/types";
 export {
   STATE_TREE_DEPTH,
   STATE_TREE_ARITY,
