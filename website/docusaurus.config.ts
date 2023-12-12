@@ -107,6 +107,11 @@ const config: Config = {
           position: "left",
         },
         {
+          to: "/roadmap",
+          label: "Roadmap",
+          position: "left",
+        },
+        {
           type: "docsVersionDropdown",
           position: "right",
           dropdownActiveClassDisabled: true,
