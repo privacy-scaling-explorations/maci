@@ -98,7 +98,7 @@ const config: Config = {
         },
         {
           to: "/typedoc",
-          label: "Typedoc",
+          label: "TypeScript Docs",
           position: "left",
         },
         {

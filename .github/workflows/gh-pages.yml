@@ -22,23 +22,9 @@ jobs:
           node-version: 20
           registry-url: "https://registry.npmjs.org"
 
-      - name: Run typedoc
+      - name: Build website
         run: |
-          npm install 
-          npm run bootstrap
-          npm run build
-          npm run typedoc
-
-      - name: Fix typedoc links
-        run: |
-          npm install
-          npm run setup-typedoc
-        working-directory: website
-
-      - name: Build 🔧
-        run: |
-          npm run build
-        working-directory: website
+          ./.github/scripts/website.sh
 
       - name: Add CNAME
         run: |

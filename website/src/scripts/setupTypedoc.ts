@@ -2,10 +2,13 @@ import fs from "fs";
 import path from "path";
 
 // Define the directory where the Typedoc HTML files are located
-const typedocDir = path.resolve(__dirname, "static/typedoc_output");
+const typedocDir = path.resolve(__dirname, "../../static/typedoc_output");
 
 // Define a recursive function to find all HTML files in a directory
-function findHtmlFiles(dir: string) {
+function findHtmlFiles(dir: string): string[] {
+  if (!fs.existsSync(dir)) {
+    return [];
+  }
   const files = fs.readdirSync(dir);
   const list: string[] = [];
 
@@ -24,7 +27,7 @@ function findHtmlFiles(dir: string) {
 const htmlFiles = findHtmlFiles(typedocDir);
 
 // Go through each HTML file and add the target="_parent" attribute to the external links
-htmlFiles.forEach((file) => {
+htmlFiles.forEach((file: string) => {
   let content = fs.readFileSync(file, "utf8");
 
   // Add the target="_parent" attribute to the external links

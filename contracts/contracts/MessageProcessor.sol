@@ -11,12 +11,10 @@ import { CommonUtilities } from "./utilities/Utility.sol";
 import { Verifier } from "./crypto/Verifier.sol";
 import { VkRegistry } from "./VkRegistry.sol";
 
-/**
- * @title MessageProcessor
- * @dev MessageProcessor is used to process messages published by signup users
- * it will process message by batch due to large size of messages
- * after it finishes processing, the sbCommitment will be used for Tally and Subsidy contracts
- */
+/// @title MessageProcessor
+/// @dev MessageProcessor is used to process messages published by signup users
+/// it will process message by batch due to large size of messages
+/// after it finishes processing, the sbCommitment will be used for Tally and Subsidy contracts
 contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
   error NoMoreMessages();
   error StateAqNotMerged();
@@ -28,15 +26,15 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
   error CurrentMessageBatchIndexTooLarge();
   error BatchEndIndexTooLarge();
 
-  // Whether there are unprocessed messages left
+  /// @notice Whether there are unprocessed messages left
   bool public processingComplete;
-  // The number of batches processed
+  /// @notice  The number of batches processed
   uint256 public numBatchesProcessed;
-  // The current message batch index. When the coordinator runs
-  // processMessages(), this action relates to messages
-  // currentMessageBatchIndex to currentMessageBatchIndex + messageBatchSize.
+  /// @notice  The current message batch index. When the coordinator runs
+  /// processMessages(), this action relates to messages
+  /// currentMessageBatchIndex to currentMessageBatchIndex + messageBatchSize.
   uint256 public currentMessageBatchIndex;
-  // The commitment to the state and ballot roots
+  /// @notice The commitment to the state and ballot roots
   uint256 public sbCommitment;
 
   Verifier public verifier;
@@ -45,13 +43,11 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     verifier = _verifier;
   }
 
-  /**
-   * Update the Poll's currentSbCommitment if the proof is valid.
-   * @param _poll The poll to update
-   * @param _newSbCommitment The new state root and ballot root commitment
-   *                         after all messages are processed
-   * @param _proof The zk-SNARK proof
-   */
+  /// @notice Update the Poll's currentSbCommitment if the proof is valid.
+  /// @param _poll The poll to update
+  /// @param _newSbCommitment The new state root and ballot root commitment
+  ///                         after all messages are processed
+  /// @param _proof The zk-SNARK proof
   function processMessages(Poll _poll, uint256 _newSbCommitment, uint256[8] memory _proof) external onlyOwner {
     _votingPeriodOver(_poll);
     // There must be unprocessed messages
@@ -166,21 +162,19 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     return verifier.verify(_proof, vk, publicInputHash);
   }
 
-  /**
-   * @notice Returns the SHA256 hash of the packed values (see
-   * genProcessMessagesPackedVals), the hash of the coordinator's public key,
-   * the message root, and the commitment to the current state root and
-   * ballot root. By passing the SHA256 hash of these values to the circuit
-   * as a single public input and the preimage as private inputs, we reduce
-   * its verification gas cost though the number of constraints will be
-   * higher and proving time will be higher.
-   * @param _poll: contract address
-   * @param _currentMessageBatchIndex: batch index of current message batch
-   * @param _numSignUps: number of users that signup
-   * @param _currentSbCommitment: current sbCommitment
-   * @param _newSbCommitment: new sbCommitment after we update this message batch
-   * @return returns the SHA256 hash of the packed values
-   */
+  /// @notice Returns the SHA256 hash of the packed values (see
+  /// genProcessMessagesPackedVals), the hash of the coordinator's public key,
+  /// the message root, and the commitment to the current state root and
+  /// ballot root. By passing the SHA256 hash of these values to the circuit
+  /// as a single public input and the preimage as private inputs, we reduce
+  /// its verification gas cost though the number of constraints will be
+  /// higher and proving time will be higher.
+  /// @param _poll: contract address
+  /// @param _currentMessageBatchIndex: batch index of current message batch
+  /// @param _numSignUps: number of users that signup
+  /// @param _currentSbCommitment: current sbCommitment
+  /// @param _newSbCommitment: new sbCommitment after we update this message batch
+  /// @return returns the SHA256 hash of the packed values
   function genProcessMessagesPublicInputHash(
     Poll _poll,
     uint256 _currentMessageBatchIndex,
@@ -207,16 +201,14 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     return inputHash;
   }
 
-  /**
-   * One of the inputs to the ProcessMessages circuit is a 250-bit
-   * representation of four 50-bit values. This function generates this
-   * 250-bit value, which consists of the maximum number of vote options, the
-   * number of signups, the current message batch index, and the end index of
-   * the current batch.
-   * @param _poll: the poll contract
-   * @param _currentMessageBatchIndex: batch index of current message batch
-   * @param _numSignUps: number of users that signup
-   */
+  /// @notice One of the inputs to the ProcessMessages circuit is a 250-bit
+  /// representation of four 50-bit values. This function generates this
+  /// 250-bit value, which consists of the maximum number of vote options, the
+  /// number of signups, the current message batch index, and the end index of
+  /// the current batch.
+  /// @param _poll: the poll contract
+  /// @param _currentMessageBatchIndex: batch index of current message batch
+  /// @param _numSignUps: number of users that signup
   function genProcessMessagesPackedVals(
     Poll _poll,
     uint256 _currentMessageBatchIndex,
@@ -242,12 +234,10 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     return result;
   }
 
-  /**
-   * @notice update message processing state variables
-   * @param _newSbCommitment: sbCommitment to be updated
-   * @param _currentMessageBatchIndex: currentMessageBatchIndex to be updated
-   * @param _processingComplete: update flag that indicate processing is finished or not
-   */
+  /// @notice update message processing state variables
+  /// @param _newSbCommitment: sbCommitment to be updated
+  /// @param _currentMessageBatchIndex: currentMessageBatchIndex to be updated
+  /// @param _processingComplete: update flag that indicate processing is finished or not
   function updateMessageProcessingData(
     uint256 _newSbCommitment,
     uint256 _currentMessageBatchIndex,

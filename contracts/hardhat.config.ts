@@ -2,6 +2,7 @@
 import "@nomicfoundation/hardhat-toolbox";
 import "hardhat-artifactor";
 import "hardhat-contract-sizer";
+import "solidity-docgen";
 
 import type { HardhatUserConfig } from "hardhat/config";
 
@@ -32,6 +33,11 @@ const config: HardhatUserConfig = {
   paths: {
     tests: "./tests",
     artifacts: "./artifacts",
+  },
+  docgen: {
+    outputDir: "./docs",
+    pages: "files",
+    exclude: ["./trees/zeros"],
   },
 };
 

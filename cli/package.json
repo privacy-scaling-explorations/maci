@@ -16,7 +16,8 @@
     "postbuild": "cp package.json ./build",
     "test": "ts-mocha --exit tests/*.test.ts",
     "test:e2e": "ts-mocha --exit tests/e2e.test.ts",
-    "test:e2e-subsidy": "ts-mocha --exit tests/e2e.subsidy.test.ts"
+    "test:e2e-subsidy": "ts-mocha --exit tests/e2e.subsidy.test.ts",
+    "test:keyChange": "ts-mocha --exit tests/keyChange.test.ts"
   },
   "dependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",

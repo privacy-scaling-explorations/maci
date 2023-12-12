@@ -1,6 +1,6 @@
 # Contributing
 
-:tada: Thank you for being interested in contributing to MACI! :tada:
+🎉 Thank you for being interested in contributing to MACI! 🎉
 
 Feel welcome and read the following sections in order to know how to ask questions and how to work on something.
 
@@ -98,13 +98,13 @@ Just as in the subject, use the imperative, present tense: "change" not "changed
 
 ### Branch rules
 
-- There must be a `main` branch.
-- Avoid long descriptive names for long-lived branches.
-- Use kebab-case (no CamelCase).
-- Use grouping tokens (words) at the beginning of your branch names (in a similar way to the `type` of commit).
-- Define and use short lead tokens to differentiate branches in a way that is meaningful to your workflow.
-- Use slashes to separate parts of your branch names.
-- Remove branch after merge if it is not important.
+- Branches should generally be created off of the base branch (`dev` )
+- Avoid long descriptive names for long-lived branches
+- Use kebab-case (no CamelCase)
+- Use grouping tokens (words) at the beginning of your branch names (in a similar way to the `type` of commit)
+- Define and use short lead tokens to differentiate branches in a way that is meaningful to your workflow
+- Use slashes to separate parts of your branch names
+- Remove branch after merge if it is not important
 
 Examples:
 
