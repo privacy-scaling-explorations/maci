@@ -11,6 +11,7 @@
     "prebuild": "npm run compileSol",
     "build": "tsc",
     "postbuild": "cp -r ./artifacts ./build",
+    "docs": "hardhat docgen",
     "test": "hardhat test",
     "test-maci": "hardhat test ./tests/MACI.test.ts",
     "test-hasher": "hardhat test ./tests/Hasher.test.ts",
@@ -34,7 +35,8 @@
     "maci-core": "^1.1.2",
     "maci-crypto": "^1.1.2",
     "maci-domainobjs": "^1.1.2",
-    "module-alias": "^2.2.2"
+    "module-alias": "^2.2.2",
+    "solidity-docgen": "^0.6.0-beta.36"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",

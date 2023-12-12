@@ -25,16 +25,13 @@ contract PollDeploymentParams {
   }
 }
 
-/*
- * A factory contract which deploys Poll contracts. It allows the MACI contract
- * size to stay within the limit set by EIP-170.
- */
+/// @title PollFactory
+/// A factory contract which deploys Poll contracts. It allows the MACI contract
+/// size to stay within the limit set by EIP-170.
 contract PollFactory is Params, IPubKey, Ownable, PollDeploymentParams {
   error InvalidMaxValues();
 
-  /*
-   * Deploy a new Poll contract and AccQueue contract for messages.
-   */
+  /// @notice Deploy a new Poll contract and AccQueue contract for messages.
   function deploy(
     uint256 _duration,
     MaxValues memory _maxValues,
@@ -91,10 +88,9 @@ contract PollFactory is Params, IPubKey, Ownable, PollDeploymentParams {
   }
 }
 
-/*
- * Do not deploy this directly. Use PollFactory.deploy() which performs some
- * checks on the Poll constructor arguments.
- */
+/// @title Poll
+/// @dev Do not deploy this directly. Use PollFactory.deploy() which performs some
+/// checks on the Poll constructor arguments.
 contract Poll is Params, Utilities, SnarkCommon, Ownable, PollDeploymentParams, EmptyBallotRoots {
   using SafeERC20 for ERC20;
 
@@ -159,10 +155,8 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, PollDeploymentParams, 
 
   ExtContracts public extContracts;
 
-  /*
-   * Each MACI instance can have multiple Polls.
-   * When a Poll is deployed, its voting period starts immediately.
-   */
+  /// @notice Each MACI instance can have multiple Polls.
+  /// When a Poll is deployed, its voting period starts immediately.
   constructor(
     uint256 _duration,
     MaxValues memory _maxValues,
@@ -184,10 +178,8 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, PollDeploymentParams, 
     deployTime = block.timestamp;
   }
 
-  /*
-   * A modifier that causes the function to revert if the voting period is
-   * not over.
-   */
+  /// @notice A modifier that causes the function to revert if the voting period is
+  /// not over.
   modifier isAfterVotingDeadline() {
     uint256 secondsPassed = block.timestamp - deployTime;
     if (secondsPassed <= duration) revert VotingPeriodNotOver();
@@ -200,7 +192,8 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, PollDeploymentParams, 
     _;
   }
 
-  // should be called immediately after Poll creation and messageAq ownership transferred
+  /// @notice Should be called immediately after Poll creation
+  /// and messageAq ownership transferred
   function init() public {
     if (isInit) revert PollAlreadyInit();
     // set to true so it cannot be called again
@@ -220,11 +213,9 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, PollDeploymentParams, 
     emit PublishMessage(_message, _padKey);
   }
 
-  /*
-   * Allows to publish a Topup message
-   * @param stateIndex The index of user in the state queue
-   * @param amount The amount of credits to topup
-   */
+  /// @notice Allows to publish a Topup message
+  /// @param stateIndex The index of user in the state queue
+  /// @param amount The amount of credits to topup
   function topup(uint256 stateIndex, uint256 amount) public isWithinVotingDeadline {
     if (numMessages > maxValues.maxMessages) revert TooManyMessages();
 
@@ -242,14 +233,12 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, PollDeploymentParams, 
     emit TopupMessage(_message);
   }
 
-  /*
-   * Allows anyone to publish a message (an encrypted command and signature).
-   * This function also enqueues the message.
-   * @param _message The message to publish
-   * @param _encPubKey An epheremal public key which can be combined with the
-   *     coordinator's private key to generate an ECDH shared key with which
-   *     to encrypt the message.
-   */
+  /// @notice Allows anyone to publish a message (an encrypted command and signature).
+  /// This function also enqueues the message.
+  /// @param _message The message to publish
+  /// @param _encPubKey An epheremal public key which can be combined with the
+  /// coordinator's private key to generate an ECDH shared key with which
+  /// to encrypt the message.
   function publishMessage(Message memory _message, PubKey memory _encPubKey) public isWithinVotingDeadline {
     if (numMessages == maxValues.maxMessages) revert TooManyMessages();
 
@@ -268,11 +257,9 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, PollDeploymentParams, 
     emit PublishMessage(_message, _encPubKey);
   }
 
-  /*
-   * The first step of merging the MACI state AccQueue. This allows the
-   * ProcessMessages circuit to access the latest state tree and ballots via
-   * currentSbCommitment.
-   */
+  /// @notice The first step of merging the MACI state AccQueue. This allows the
+  /// ProcessMessages circuit to access the latest state tree and ballots via
+  /// currentSbCommitment.
   function mergeMaciStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId) public onlyOwner isAfterVotingDeadline {
     // This function cannot be called after the stateAq was merged
     if (stateAqMerged) revert StateAqAlreadyMerged();
@@ -284,12 +271,10 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, PollDeploymentParams, 
     emit MergeMaciStateAqSubRoots(_numSrQueueOps);
   }
 
-  /*
-   * The second step of merging the MACI state AccQueue. This allows the
-   * ProcessMessages circuit to access the latest state tree and ballots via
-   * currentSbCommitment.
-   * @param _pollId The ID of the Poll
-   */
+  /// @notice The second step of merging the MACI state AccQueue. This allows the
+  /// ProcessMessages circuit to access the latest state tree and ballots via
+  /// currentSbCommitment.
+  /// @param _pollId The ID of the Poll
   function mergeMaciStateAq(uint256 _pollId) public onlyOwner isAfterVotingDeadline {
     // This function can only be called once per Poll after the voting
     // deadline
@@ -311,19 +296,16 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, PollDeploymentParams, 
     emit MergeMaciStateAq(mergedStateRoot);
   }
 
-  /*
-   * The first step in merging the message AccQueue so that the
-   * ProcessMessages circuit can access the message root.
-   */
+  /// @notice The first step in merging the message AccQueue so that the
+  /// ProcessMessages circuit can access the message root.
+  /// @param _numSrQueueOps The number of subroot queue operations to perform
   function mergeMessageAqSubRoots(uint256 _numSrQueueOps) public onlyOwner isAfterVotingDeadline {
     extContracts.messageAq.mergeSubRoots(_numSrQueueOps);
     emit MergeMessageAqSubRoots(_numSrQueueOps);
   }
 
-  /*
-   * The second step in merging the message AccQueue so that the
-   * ProcessMessages circuit can access the message root.
-   */
+  /// @notice The second step in merging the message AccQueue so that the
+  /// ProcessMessages circuit can access the message root.
   function mergeMessageAq() public onlyOwner isAfterVotingDeadline {
     uint256 root = extContracts.messageAq.merge(treeDepths.messageTreeDepth);
     emit MergeMessageAq(root);

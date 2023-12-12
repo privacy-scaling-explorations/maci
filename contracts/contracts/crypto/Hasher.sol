@@ -19,10 +19,8 @@ library PoseidonT6 {
   function poseidon(uint256[5] memory input) public pure returns (uint256) {}
 }
 
-/*
- * A SHA256 hash function for any number of input elements, and Poseidon hash
- * functions for 2, 3, 4, 5, and 12 input elements.
- */
+/// @notice A SHA256 hash function for any number of input elements, and Poseidon hash
+/// functions for 2, 3, 4, 5, and 12 input elements.
 contract Hasher is SnarkConstants {
   function sha256Hash(uint256[] memory array) public pure returns (uint256) {
     return uint256(sha256(abi.encodePacked(array))) % SNARK_SCALAR_FIELD;

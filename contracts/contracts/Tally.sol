@@ -12,6 +12,7 @@ import { Verifier } from "./crypto/Verifier.sol";
 import { VkRegistry } from "./VkRegistry.sol";
 import { CommonUtilities } from "./utilities/Utility.sol";
 
+/// @title Tally
 contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   // custom errors
   error ProcessingNotComplete();
@@ -23,18 +24,18 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
 
   uint8 private constant LEAVES_PER_NODE = 5;
 
-  // The commitment to the tally results. Its initial value is 0, but after
-  // the tally of each batch is proven on-chain via a zk-SNARK, it should be
-  // updated to:
-  //
-  // hash3(
-  //   hashLeftRight(merkle root of current results, salt0)
-  //   hashLeftRight(number of spent voice credits, salt1),
-  //   hashLeftRight(merkle root of the no. of spent voice credits per vote option, salt2)
-  // )
-  //
-  // Where each salt is unique and the merkle roots are of arrays of leaves
-  // TREE_ARITY ** voteOptionTreeDepth long.
+  /// @notice The commitment to the tally results. Its initial value is 0, but after
+  /// the tally of each batch is proven on-chain via a zk-SNARK, it should be
+  /// updated to:
+  ///
+  /// hash3(
+  ///   hashLeftRight(merkle root of current results, salt0)
+  ///   hashLeftRight(number of spent voice credits, salt1),
+  ///   hashLeftRight(merkle root of the no. of spent voice credits per vote option, salt2)
+  /// )
+  ///
+  /// Where each salt is unique and the merkle roots are of arrays of leaves
+  /// TREE_ARITY ** voteOptionTreeDepth long.
   uint256 public tallyCommitment;
 
   uint256 public tallyBatchNum;
@@ -48,13 +49,11 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
     verifier = _verifier;
   }
 
-  /*
-   * @notice Pack the batch start index and number of signups into a 100-bit value.
-   * @param _numSignUps: number of signups
-   * @param _batchStartIndex: the start index of given batch
-   * @param _tallyBatchSize: size of batch
-   * @return an uint256 representing 3 inputs together
-   */
+  /// @notice Pack the batch start index and number of signups into a 100-bit value.
+  /// @param _numSignUps: number of signups
+  /// @param _batchStartIndex: the start index of given batch
+  /// @param _tallyBatchSize: size of batch
+  /// @return an uint256 representing 3 inputs together
   function genTallyVotesPackedVals(
     uint256 _numSignUps,
     uint256 _batchStartIndex,
@@ -69,14 +68,12 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
     return result;
   }
 
-  /*
-   * @notice generate hash of public inputs for tally circuit
-   * @param _numSignUps: number of signups
-   * @param _batchStartIndex: the start index of given batch
-   * @param _tallyBatchSize: size of batch
-   * @param _newTallyCommitment: the new tally commitment to be updated
-   * @return hash of public inputs
-   */
+  /// @notice generate hash of public inputs for tally circuit
+  /// @param _numSignUps: number of signups
+  /// @param _batchStartIndex: the start index of given batch
+  /// @param _tallyBatchSize: size of batch
+  /// @param _newTallyCommitment: the new tally commitment to be updated
+  /// @return hash of public inputs
   function genTallyVotesPublicInputHash(
     uint256 _numSignUps,
     uint256 _batchStartIndex,
@@ -131,16 +128,14 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
     tallyBatchNum++;
   }
 
-  /*
-   * @notice Verify the tally proof using the verifiying key
-   * @param _poll contract address of the poll proof to be verified
-   * @param _proof the proof generated after processing all messages
-   * @param _numSignUps number of signups for a given poll
-   * @param _batchStartIndex the number of batches multiplied by the size of the batch
-   * @param _tallyBatchSize batch size for the tally
-   * @param _newTallyCommitment the tally commitment to be verified at a given batch index
-   * @return valid a boolean representing successful verification
-   */
+  /// @notice Verify the tally proof using the verifiying key
+  /// @param _poll contract address of the poll proof to be verified
+  /// @param _proof the proof generated after processing all messages
+  /// @param _numSignUps number of signups for a given poll
+  /// @param _batchStartIndex the number of batches multiplied by the size of the batch
+  /// @param _tallyBatchSize batch size for the tally
+  /// @param _newTallyCommitment the tally commitment to be verified at a given batch index
+  /// @return valid a boolean representing successful verification
   function verifyTallyProof(
     Poll _poll,
     uint256[8] memory _proof,

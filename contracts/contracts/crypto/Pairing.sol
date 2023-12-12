@@ -34,9 +34,7 @@ library Pairing {
     uint256[2] y;
   }
 
-  /*
-   * @return The negation of p, i.e. p.plus(p.negate()) should be zero.
-   */
+  /// @notice The negation of p, i.e. p.plus(p.negate()) should be zero.
   function negate(G1Point memory p) internal pure returns (G1Point memory) {
     // The prime q in the base field F_q for G1
     if (p.x == 0 && p.y == 0) {
@@ -46,9 +44,7 @@ library Pairing {
     }
   }
 
-  /*
-   * @return The sum of two points of G1
-   */
+  /// @notice Returns the sum of two points of G1
   function plus(G1Point memory p1, G1Point memory p2) internal view returns (G1Point memory r) {
     uint256[4] memory input;
     input[0] = p1.x;
@@ -70,11 +66,9 @@ library Pairing {
     require(success, "pairing-add-failed");
   }
 
-  /*
-   * @return The product of a point on G1 and a scalar, i.e.
-   *         p == p.scalar_mul(1) and p.plus(p) == p.scalar_mul(2) for all
-   *         points p.
-   */
+  /// @notice Return te product of a point on G1 and a scalar, i.e.
+  ///         p == p.scalar_mul(1) and p.plus(p) == p.scalar_mul(2) for all
+  ///         points p.
   function scalar_mul(G1Point memory p, uint256 s) internal view returns (G1Point memory r) {
     uint256[3] memory input;
     input[0] = p.x;
@@ -93,11 +87,10 @@ library Pairing {
     require(success, "pairing-mul-failed");
   }
 
-  /* @return The result of computing the pairing check
-   *         e(p1[0], p2[0]) *  .... * e(p1[n], p2[n]) == 1
-   *         For example,
-   *         pairing([P1(), P1().negate()], [P2(), P2()]) should return true.
-   */
+  /// @return The result of computing the pairing check
+  ///         e(p1[0], p2[0]) *  .... * e(p1[n], p2[n]) == 1
+  ///        For example,
+  ///        pairing([P1(), P1().negate()], [P2(), P2()]) should return true.
   function pairing(
     G1Point memory a1,
     G2Point memory a2,

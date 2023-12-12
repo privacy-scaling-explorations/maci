@@ -94,15 +94,12 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
     increaseSubsidyIndex(subsidyBatchSize, numLeaves);
   }
 
-  /*
-   * @notice increase subsidy batch index (rbi, cbi) to next,
-   * it will try to cbi++ if the whole batch can fit into numLeaves
-   * otherwise it will increase row index: rbi++
-   * @param batchSize: the size of 1 dimensional batch over the signup users,
-   * notice each batch for subsidy calculation is 2 dimenional: batchSize*batchSize
-   * @param numLeaves: total number of leaves in stateTree, i.e. number of signup users
-   * @return None
-   */
+  /// @notice increase subsidy batch index (rbi, cbi) to next,
+  /// it will try to cbi++ if the whole batch can fit into numLeaves
+  /// otherwise it will increase row index: rbi++
+  /// @param batchSize: the size of 1 dimensional batch over the signup users,
+  /// @notice each batch for subsidy calculation is 2 dimenional: batchSize*batchSize
+  /// @param numLeaves: total number of leaves in stateTree, i.e. number of signup users
   function increaseSubsidyIndex(uint256 batchSize, uint256 numLeaves) internal {
     if (cbi * batchSize + batchSize < numLeaves) {
       cbi++;

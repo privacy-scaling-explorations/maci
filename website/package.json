@@ -3,9 +3,11 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "setup-typedoc": "ts-node setupTypedoc.ts",
+    "setup-typedoc": "ts-node ./src/scripts/setupTypedoc.ts",
+    "setup-soliditydocs": "ts-node ./src/scripts/setupSolidityDocs.ts",
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
+    "prebuild": "npm run setup-typedoc && npm run setup-soliditydocs",
     "build": "docusaurus build",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
