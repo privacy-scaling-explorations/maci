@@ -4,7 +4,7 @@
         <title>MACI Blog</title>
         <link>https://maci.pse.dev/blog</link>
         <description>MACI Blog</description>
-        <lastBuildDate>Tue, 12 Dec 2023 11:55:06 GMT</lastBuildDate>
+        <lastBuildDate>Tue, 12 Dec 2023 12:57:13 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
@@ -12,7 +12,7 @@
             <title><![CDATA[Welcome to MACI]]></title>
             <link>https://maci.pse.dev/blog/welcome</link>
             <guid>https://maci.pse.dev/blog/welcome</guid>
-            <pubDate>Tue, 12 Dec 2023 11:55:06 GMT</pubDate>
+            <pubDate>Tue, 12 Dec 2023 12:57:13 GMT</pubDate>
             <description><![CDATA[Welcome to the MACI blog! This is where we will post updates on the project, including new releases, new features, and other news.]]></description>
             <content:encoded><![CDATA[<p>Welcome to the MACI blog! This is where we will post updates on the project, including new releases, new features, and other news.</p>]]></content:encoded>
             <category>maci</category>
