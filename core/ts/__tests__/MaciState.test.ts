@@ -421,4 +421,338 @@ describe("MaciState", function () {
       expect(state.equals(m1)).to.be.true;
     });
   });
+
+  describe("key changes", () => {
+    const user1Keypair = new Keypair();
+    const user2Keypair = new Keypair();
+    const user1SecondKeypair = new Keypair();
+    const user2SecondKeypair = new Keypair();
+    let pollId: number;
+    let user1StateIndex: number;
+    let user2StateIndex: number;
+    const user1VoteOptionIndex = BigInt(0);
+    const user2VoteOptionIndex = BigInt(1);
+    const user1VoteWeight = BigInt(9);
+    const user2VoteWeight = BigInt(3);
+    const user1NewVoteWeight = BigInt(5);
+    const user2NewVoteWeight = BigInt(7);
+
+    describe("only user 1 changes key", () => {
+      const maciState: MaciState = new MaciState(STATE_TREE_DEPTH);
+
+      before(() => {
+        // Sign up
+        user1StateIndex = maciState.signUp(
+          user1Keypair.pubKey,
+          voiceCreditBalance,
+          BigInt(Math.floor(Date.now() / 1000)),
+        );
+        user2StateIndex = maciState.signUp(
+          user2Keypair.pubKey,
+          voiceCreditBalance,
+          BigInt(Math.floor(Date.now() / 1000)),
+        );
+
+        // deploy a poll
+        pollId = maciState.deployPoll(
+          duration,
+          BigInt(Math.floor(Date.now() / 1000) + duration),
+          maxValues,
+          treeDepths,
+          messageBatchSize,
+          coordinatorKeypair,
+        );
+      });
+      it("should submit a vote for each user", () => {
+        const poll = maciState.polls[pollId];
+        const command1 = new PCommand(
+          BigInt(user1StateIndex),
+          user1Keypair.pubKey,
+          user1VoteOptionIndex,
+          user1VoteWeight,
+          BigInt(1),
+          BigInt(pollId),
+        );
+
+        const signature1 = command1.sign(user1Keypair.privKey);
+
+        const ecdhKeypair1 = new Keypair();
+        const sharedKey1 = Keypair.genEcdhSharedKey(ecdhKeypair1.privKey, coordinatorKeypair.pubKey);
+
+        const message1 = command1.encrypt(signature1, sharedKey1);
+        poll.publishMessage(message1, ecdhKeypair1.pubKey);
+
+        const command2 = new PCommand(
+          BigInt(user2StateIndex),
+          user2Keypair.pubKey,
+          user2VoteOptionIndex,
+          user2VoteWeight,
+          BigInt(1),
+          BigInt(pollId),
+        );
+
+        const signature2 = command2.sign(user2Keypair.privKey);
+
+        const ecdhKeypair2 = new Keypair();
+        const sharedKey2 = Keypair.genEcdhSharedKey(ecdhKeypair2.privKey, coordinatorKeypair.pubKey);
+
+        const message2 = command2.encrypt(signature2, sharedKey2);
+        poll.publishMessage(message2, ecdhKeypair2.pubKey);
+      });
+
+      it("user1 sends a keychange message with a new vote", () => {
+        const poll = maciState.polls[pollId];
+        const command = new PCommand(
+          BigInt(user1StateIndex),
+          user1SecondKeypair.pubKey,
+          user1VoteOptionIndex,
+          user1NewVoteWeight,
+          BigInt(1),
+          BigInt(pollId),
+        );
+
+        const signature = command.sign(user1Keypair.privKey);
+
+        const ecdhKeypair = new Keypair();
+        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+
+        const message = command.encrypt(signature, sharedKey);
+        poll.publishMessage(message, ecdhKeypair.pubKey);
+      });
+
+      it("should perform the processing and tallying correctly", () => {
+        const poll = maciState.polls[pollId];
+        poll.processMessages(pollId);
+        poll.tallyVotes();
+        expect(poll.perVOSpentVoiceCredits[0].toString()).to.eq((user1NewVoteWeight * user1NewVoteWeight).toString());
+        expect(poll.perVOSpentVoiceCredits[1].toString()).to.eq((user2VoteWeight * user2VoteWeight).toString());
+      });
+
+      it("should confirm that the user key pair was changed (user's 2 one has not)", () => {
+        const poll = maciState.polls[pollId];
+        const stateLeaf1 = poll.stateLeaves[user1StateIndex];
+        const stateLeaf2 = poll.stateLeaves[user2StateIndex];
+        expect(stateLeaf1.pubKey.equals(user1SecondKeypair.pubKey)).to.eq(true);
+        expect(stateLeaf2.pubKey.equals(user2Keypair.pubKey)).to.eq(true);
+      });
+    });
+
+    describe("both users change key", () => {
+      const maciState: MaciState = new MaciState(STATE_TREE_DEPTH);
+
+      before(() => {
+        // Sign up
+        user1StateIndex = maciState.signUp(
+          user1Keypair.pubKey,
+          voiceCreditBalance,
+          BigInt(Math.floor(Date.now() / 1000)),
+        );
+        user2StateIndex = maciState.signUp(
+          user2Keypair.pubKey,
+          voiceCreditBalance,
+          BigInt(Math.floor(Date.now() / 1000)),
+        );
+
+        // deploy a poll
+        pollId = maciState.deployPoll(
+          duration,
+          BigInt(Math.floor(Date.now() / 1000) + duration),
+          maxValues,
+          treeDepths,
+          messageBatchSize,
+          coordinatorKeypair,
+        );
+      });
+      it("should submit a vote for each user", () => {
+        const poll = maciState.polls[pollId];
+        const command1 = new PCommand(
+          BigInt(user1StateIndex),
+          user1Keypair.pubKey,
+          user1VoteOptionIndex,
+          user1VoteWeight,
+          BigInt(1),
+          BigInt(pollId),
+        );
+
+        const signature1 = command1.sign(user1Keypair.privKey);
+
+        const ecdhKeypair1 = new Keypair();
+        const sharedKey1 = Keypair.genEcdhSharedKey(ecdhKeypair1.privKey, coordinatorKeypair.pubKey);
+
+        const message1 = command1.encrypt(signature1, sharedKey1);
+        poll.publishMessage(message1, ecdhKeypair1.pubKey);
+
+        const command2 = new PCommand(
+          BigInt(user2StateIndex),
+          user2Keypair.pubKey,
+          user2VoteOptionIndex,
+          user2VoteWeight,
+          BigInt(1),
+          BigInt(pollId),
+        );
+
+        const signature2 = command2.sign(user2Keypair.privKey);
+
+        const ecdhKeypair2 = new Keypair();
+        const sharedKey2 = Keypair.genEcdhSharedKey(ecdhKeypair2.privKey, coordinatorKeypair.pubKey);
+
+        const message2 = command2.encrypt(signature2, sharedKey2);
+        poll.publishMessage(message2, ecdhKeypair2.pubKey);
+      });
+
+      it("user1 sends a keychange message with a new vote", () => {
+        const poll = maciState.polls[pollId];
+        const command = new PCommand(
+          BigInt(user1StateIndex),
+          user1SecondKeypair.pubKey,
+          user1VoteOptionIndex,
+          user1NewVoteWeight,
+          BigInt(1),
+          BigInt(pollId),
+        );
+
+        const signature = command.sign(user1Keypair.privKey);
+
+        const ecdhKeypair = new Keypair();
+        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+
+        const message = command.encrypt(signature, sharedKey);
+        poll.publishMessage(message, ecdhKeypair.pubKey);
+      });
+
+      it("user2 sends a keychange message with a new vote", () => {
+        const poll = maciState.polls[pollId];
+        const command = new PCommand(
+          BigInt(user2StateIndex),
+          user2SecondKeypair.pubKey,
+          user2VoteOptionIndex,
+          user2NewVoteWeight,
+          BigInt(1),
+          BigInt(pollId),
+        );
+
+        const signature = command.sign(user2Keypair.privKey);
+
+        const ecdhKeypair = new Keypair();
+        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+
+        const message = command.encrypt(signature, sharedKey);
+        poll.publishMessage(message, ecdhKeypair.pubKey);
+      });
+
+      it("should perform the processing and tallying correctly", () => {
+        const poll = maciState.polls[pollId];
+        poll.processMessages(pollId);
+        poll.tallyVotes();
+        expect(poll.perVOSpentVoiceCredits[0].toString()).to.eq((user1NewVoteWeight * user1NewVoteWeight).toString());
+        expect(poll.perVOSpentVoiceCredits[1].toString()).to.eq((user2NewVoteWeight * user2NewVoteWeight).toString());
+      });
+
+      it("should confirm that the users key pairs were changed", () => {
+        const poll = maciState.polls[pollId];
+        const stateLeaf1 = poll.stateLeaves[user1StateIndex];
+        const stateLeaf2 = poll.stateLeaves[user2StateIndex];
+        expect(stateLeaf1.pubKey.equals(user1SecondKeypair.pubKey)).to.eq(true);
+        expect(stateLeaf2.pubKey.equals(user2SecondKeypair.pubKey)).to.eq(true);
+      });
+    });
+
+    describe("user1 changes key, but messages are in different batches", () => {
+      const maciState = new MaciState(STATE_TREE_DEPTH);
+
+      before(() => {
+        // Sign up
+        user1StateIndex = maciState.signUp(
+          user1Keypair.pubKey,
+          voiceCreditBalance,
+          BigInt(Math.floor(Date.now() / 1000)),
+        );
+
+        // deploy a poll
+        pollId = maciState.deployPoll(
+          duration,
+          BigInt(Math.floor(Date.now() / 1000) + duration),
+          maxValues,
+          treeDepths,
+          messageBatchSize,
+          coordinatorKeypair,
+        );
+      });
+
+      it("should submit a vote for one user in one batch", () => {
+        const poll = maciState.polls[pollId];
+        const command1 = new PCommand(
+          BigInt(user1StateIndex),
+          user1Keypair.pubKey,
+          user1VoteOptionIndex,
+          user1VoteWeight,
+          BigInt(1),
+          BigInt(pollId),
+        );
+
+        const signature1 = command1.sign(user1Keypair.privKey);
+
+        const ecdhKeypair1 = new Keypair();
+        const sharedKey1 = Keypair.genEcdhSharedKey(ecdhKeypair1.privKey, coordinatorKeypair.pubKey);
+
+        const message1 = command1.encrypt(signature1, sharedKey1);
+        poll.publishMessage(message1, ecdhKeypair1.pubKey);
+      });
+
+      it("should fill the batch with random messages", () => {
+        const poll = maciState.polls[pollId];
+        for (let i = 0; i < messageBatchSize - 1; i++) {
+          const command = new PCommand(
+            BigInt(1),
+            user1Keypair.pubKey,
+            user1VoteOptionIndex,
+            user1VoteWeight,
+            BigInt(2),
+            BigInt(pollId),
+          );
+
+          const signature = command.sign(user1Keypair.privKey);
+
+          const ecdhKeypair = new Keypair();
+          const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+
+          const message = command.encrypt(signature, sharedKey);
+          poll.publishMessage(message, ecdhKeypair.pubKey);
+        }
+      });
+
+      it("should submit a new message in a new batch", () => {
+        const poll = maciState.polls[pollId];
+        const command1 = new PCommand(
+          BigInt(user1StateIndex),
+          user1SecondKeypair.pubKey,
+          user1VoteOptionIndex,
+          user1NewVoteWeight,
+          BigInt(1),
+          BigInt(pollId),
+        );
+
+        const signature1 = command1.sign(user1Keypair.privKey);
+
+        const ecdhKeypair1 = new Keypair();
+        const sharedKey1 = Keypair.genEcdhSharedKey(ecdhKeypair1.privKey, coordinatorKeypair.pubKey);
+
+        const message1 = command1.encrypt(signature1, sharedKey1);
+        poll.publishMessage(message1, ecdhKeypair1.pubKey);
+      });
+
+      it("should perform the processing and tallying correctly", () => {
+        const poll = maciState.polls[pollId];
+        poll.processAllMessages();
+        poll.tallyVotes();
+        expect(poll.perVOSpentVoiceCredits[0].toString()).to.eq((user1NewVoteWeight * user1NewVoteWeight).toString());
+      });
+
+      it("should confirm that the user key pair was changed", () => {
+        const poll = maciState.polls[pollId];
+        const stateLeaf1 = poll.stateLeaves[user1StateIndex];
+        expect(stateLeaf1.pubKey.equals(user1SecondKeypair.pubKey)).to.eq(true);
+      });
+    });
+  });
 });
