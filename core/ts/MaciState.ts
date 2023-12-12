@@ -2,35 +2,13 @@ import { IncrementalQuinTree, hash5 } from "maci-crypto";
 import { PubKey, Keypair, StateLeaf, blankStateLeaf, blankStateLeafHash } from "maci-domainobjs";
 
 import { Poll } from "./Poll";
-import { TreeDepths, MaxValues } from "./utils/utils";
 import { STATE_TREE_ARITY } from "./utils/constants";
-
-/**
- * Represents the public API of the MaciState class.
- */
-interface IMaciState {
-  // This method is used for signing up users to the state tree.
-  signUp(_pubKey: PubKey, _initialVoiceCreditBalance: bigint, _timestamp: bigint): number;
-  // This method is used for deploying poll.
-  deployPoll(
-    _duration: number,
-    _pollEndTimestamp: bigint,
-    _maxValues: MaxValues,
-    _treeDepths: TreeDepths,
-    _messageBatchSize: number,
-    _coordinatorKeypair: Keypair,
-  ): number;
-  // These methods are helper functions.
-  deployNullPoll(): void;
-  copy(): MaciState;
-  equals(m: MaciState): boolean;
-  toJSON(): any;
-}
+import { IJsonMaciState, IJsonPoll, IMaciState, MaxValues, TreeDepths } from "./utils/types";
 
 /**
  * A representation of the MACI contract.
  */
-class MaciState implements IMaciState {
+export class MaciState implements IMaciState {
   public polls: Poll[] = [];
 
   public stateTree: IncrementalQuinTree;
@@ -45,10 +23,10 @@ class MaciState implements IMaciState {
 
   /**
    * Constructs a new MaciState object.
-   * @param _stateTreeDepth - The depth of the state tree.
+   * @param stateTreeDepth - The depth of the state tree.
    */
-  constructor(_stateTreeDepth: number) {
-    this.stateTreeDepth = _stateTreeDepth;
+  constructor(stateTreeDepth: number) {
+    this.stateTreeDepth = stateTreeDepth;
     this.stateTree = new IncrementalQuinTree(this.stateTreeDepth, blankStateLeafHash, STATE_TREE_ARITY, hash5);
 
     this.stateLeaves.push(blankStateLeaf);
@@ -57,14 +35,14 @@ class MaciState implements IMaciState {
 
   /**
    * Sign up a user with the given public key, initial voice credit balance, and timestamp.
-   * @param _pubKey - The public key of the user.
-   * @param _initialVoiceCreditBalance - The initial voice credit balance of the user.
-   * @param _timestamp - The timestamp of the sign-up.
+   * @param pubKey - The public key of the user.
+   * @param initialVoiceCreditBalance - The initial voice credit balance of the user.
+   * @param timestamp - The timestamp of the sign-up.
    * @returns The index of the newly signed-up user in the state tree.
    */
-  public signUp(_pubKey: PubKey, _initialVoiceCreditBalance: bigint, _timestamp: bigint): number {
+  public signUp(pubKey: PubKey, initialVoiceCreditBalance: bigint, timestamp: bigint): number {
     this.numSignUps++;
-    const stateLeaf = new StateLeaf(_pubKey, _initialVoiceCreditBalance, _timestamp);
+    const stateLeaf = new StateLeaf(pubKey, initialVoiceCreditBalance, timestamp);
     const hash = stateLeaf.hash();
     this.stateTree.insert(hash);
 
@@ -73,34 +51,34 @@ class MaciState implements IMaciState {
 
   /**
    * Deploy a new poll with the given parameters.
-   * @param _duration - The duration of the poll in seconds.
-   * @param _pollEndTimestamp - The Unix timestamp at which the poll ends.
-   * @param _maxValues - The maximum number of values for each vote option.
-   * @param _treeDepths - The depths of the tree.
-   * @param _messageBatchSize - The batch size for processing messages.
-   * @param _coordinatorKeypair - The keypair of the MACI round coordinator.
+   * @param duration - The duration of the poll in seconds.
+   * @param pollEndTimestamp - The Unix timestamp at which the poll ends.
+   * @param maxValues - The maximum number of values for each vote option.
+   * @param treeDepths - The depths of the tree.
+   * @param messageBatchSize - The batch size for processing messages.
+   * @param coordinatorKeypair - The keypair of the MACI round coordinator.
    * @returns The index of the newly deployed poll.
    */
   public deployPoll(
-    _duration: number,
-    _pollEndTimestamp: bigint,
-    _maxValues: MaxValues,
-    _treeDepths: TreeDepths,
-    _messageBatchSize: number,
-    _coordinatorKeypair: Keypair,
+    duration: number,
+    pollEndTimestamp: bigint,
+    maxValues: MaxValues,
+    treeDepths: TreeDepths,
+    messageBatchSize: number,
+    coordinatorKeypair: Keypair,
   ): number {
     // TODO: fix the order of the arguments
     const poll: Poll = new Poll(
-      _duration,
-      _pollEndTimestamp,
-      _coordinatorKeypair,
-      _treeDepths,
+      duration,
+      pollEndTimestamp,
+      coordinatorKeypair,
+      treeDepths,
       {
-        messageBatchSize: _messageBatchSize,
-        subsidyBatchSize: STATE_TREE_ARITY ** _treeDepths.intStateTreeDepth,
-        tallyBatchSize: STATE_TREE_ARITY ** _treeDepths.intStateTreeDepth,
+        messageBatchSize: messageBatchSize,
+        subsidyBatchSize: STATE_TREE_ARITY ** treeDepths.intStateTreeDepth,
+        tallyBatchSize: STATE_TREE_ARITY ** treeDepths.intStateTreeDepth,
       },
-      _maxValues,
+      maxValues,
       this,
       this.stateTreeDepth,
     );
@@ -112,7 +90,7 @@ class MaciState implements IMaciState {
   /**
    * Deploy a null poll.
    */
-  public deployNullPoll() {
+  public deployNullPoll(): void {
     this.polls.push(null);
   }
 
@@ -160,7 +138,7 @@ class MaciState implements IMaciState {
    * Serialize the MaciState object to a JSON object.
    * @returns A JSON object representing the MaciState object.
    */
-  toJSON() {
+  toJSON(): IJsonMaciState {
     return {
       stateTreeDepth: this.stateTreeDepth,
       polls: this.polls.map((poll) => poll.toJSON()),
@@ -176,13 +154,13 @@ class MaciState implements IMaciState {
    * @param json - The JSON object representing the MaciState object.
    * @returns A new instance of the MaciState object with the properties from the JSON object.
    */
-  static fromJSON(json: any) {
+  static fromJSON(json: IJsonMaciState): MaciState {
     const maciState = new MaciState(json.stateTreeDepth);
 
     // assign the json values to the new instance
     maciState.stateLeaves = json.stateLeaves.map((leaf) => StateLeaf.fromJSON(leaf));
     maciState.pollBeingProcessed = json.pollBeingProcessed;
-    maciState.currentPollBeingProcessed = json.currentPollBeingProcessed;
+    maciState.currentPollBeingProcessed = parseInt(json.currentPollBeingProcessed);
     maciState.numSignUps = json.numSignUps;
 
     // re create the state tree (start from index 1 as in the constructor we already add the blank leaf)
@@ -193,9 +171,7 @@ class MaciState implements IMaciState {
     }
 
     // re-generate the polls and set the maci state ref
-    maciState.polls = json.polls.map((jsonPoll: Poll) => Poll.fromJSON(jsonPoll, maciState));
+    maciState.polls = json.polls.map((jsonPoll: IJsonPoll) => Poll.fromJSON(jsonPoll, maciState));
     return maciState;
   }
 }
-
-export { MaciState };
