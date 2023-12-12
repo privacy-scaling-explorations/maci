@@ -131,8 +131,8 @@ The team took on several ambitious areas of research & development (particularly
 
 - We had grantees working on [ElGamal research & development](https://github.com/privacy-scaling-explorations/maci/issues/796) but they were not closely supervised & their work is largely WIP that hasn’t been integrated into the project
 - We kicked off work on the [MACI coordinator service](https://github.com/privacy-scaling-explorations/maci-coordinator). We implemented an API to assist with coordinator proof generation. Work began on a frontend React app but progress stalled & the work has not been completed:
-- Research on [Group Wise Matching in Quadratic Funding](https://hackmd.io/@daodesigner/Hy23WkCY2#Progress-Update-Group-Wise-Matching-in-Quadratic-Funding)
-- Reasearch on [Nova Integration with MACI](https://hackmd.io/@daodesigner/Hy23WkCY2#Progress-Update-Nova-Integration-with-MACI)
+- Research on [Group Wise Matching in Quadratic Funding](https://github.com/privacy-scaling-explorations/maci/issues/905)
+- Research on [Nova Integration with MACI](https://github.com/privacy-scaling-explorations/maci/issues/904)
 
 It seems team members were mostly assigned to their own independent initiatives, which led to these isolated workstreams. Individuals found it hard to gain feedback & support from the team. Moving forward, we want to align individual goals with larger team goals in order to encourage closer collaboration on the projects we push forward.
 
@@ -261,9 +261,9 @@ While not prioritized as an upcoming workstream, we think it’s worth calling o
     - POC with Maze and other solutions to benchmark on MACI V1 circuits
     - aggregate many proofs together and make a solidity verifier for the aggregation circuit, this could offset the need for direct circom optimization
 - Different matching mechanisms
-  - e.g. [Group Wise Matching in Quadratic Funding](https://hackmd.io/@daodesigner/Hy23WkCY2#Progress-Update-Group-Wise-Matching-in-Quadratic-Funding)
+  - e.g. [Group Wise Matching in Quadratic Funding](https://github.com/privacy-scaling-explorations/maci/issues/905)
 - Scaling explorations
-  - e.g SNARK Folding Schemes ([Nova integration](https://hackmd.io/@daodesigner/Hy23WkCY2#Progress-Update-Nova-Integration-with-MACI))
+  - e.g SNARK Folding Schemes ([Nova integration](https://github.com/privacy-scaling-explorations/maci/issues/904))
 
 # Resource requirements
 
