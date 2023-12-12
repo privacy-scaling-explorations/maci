@@ -1,12 +1,11 @@
-/**
- * @type import('hardhat/config').HardhatUserConfig
- */
-require("hardhat-contract-sizer");
-require("@nomiclabs/hardhat-ethers");
-require("hardhat-artifactor");
-require("@nomicfoundation/hardhat-chai-matchers");
+/* eslint-disable import/no-extraneous-dependencies */
+import "@nomicfoundation/hardhat-toolbox";
+import "hardhat-artifactor";
+import "hardhat-contract-sizer";
 
-module.exports = {
+import type { HardhatUserConfig } from "hardhat/config";
+
+const config: HardhatUserConfig = {
   solidity: {
     version: "0.8.10",
     settings: {
@@ -35,3 +34,5 @@ module.exports = {
     artifacts: "./artifacts",
   },
 };
+
+export default config;

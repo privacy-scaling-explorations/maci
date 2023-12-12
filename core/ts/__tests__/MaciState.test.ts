@@ -1,9 +1,19 @@
-import { MaciState, packProcessMessageSmallVals, unpackProcessMessageSmallVals } from "../";
-import { expect } from "chai";
-import { PCommand, Message, Keypair, VerifyingKey, StateLeaf } from "maci-domainobjs";
-
-import { hash5, G1Point, G2Point, NOTHING_UP_MY_SLEEVE, IncrementalQuinTree } from "maci-crypto";
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from "fs";
+
+import { expect } from "chai";
+
+import { PCommand, Message, Keypair, StateLeaf, blankStateLeafHash } from "maci-domainobjs";
+import { hash5, NOTHING_UP_MY_SLEEVE, IncrementalQuinTree, AccQueue } from "maci-crypto";
+
+import {
+  STATE_TREE_DEPTH,
+  STATE_TREE_ARITY,
+  STATE_TREE_SUBDEPTH,
+  MaciState,
+  packProcessMessageSmallVals,
+  unpackProcessMessageSmallVals,
+  Poll,
+} from "../";
 
 const voiceCreditBalance = BigInt(100);
 
@@ -23,68 +33,43 @@ const treeDepths = {
 
 const messageBatchSize = 25;
 
-const STATE_TREE_DEPTH = 10;
-
-const testProcessVk = new VerifyingKey(
-  new G1Point(BigInt(0), BigInt(1)),
-  new G2Point([BigInt(0), BigInt(0)], [BigInt(1), BigInt(1)]),
-  new G2Point([BigInt(3), BigInt(0)], [BigInt(1), BigInt(1)]),
-  new G2Point([BigInt(4), BigInt(0)], [BigInt(1), BigInt(1)]),
-  [new G1Point(BigInt(5), BigInt(1)), new G1Point(BigInt(6), BigInt(1))],
-);
-
-const testTallyVk = new VerifyingKey(
-  new G1Point(BigInt(2), BigInt(3)),
-  new G2Point([BigInt(3), BigInt(0)], [BigInt(3), BigInt(1)]),
-  new G2Point([BigInt(4), BigInt(0)], [BigInt(3), BigInt(1)]),
-  new G2Point([BigInt(5), BigInt(0)], [BigInt(4), BigInt(1)]),
-  [new G1Point(BigInt(6), BigInt(1)), new G1Point(BigInt(7), BigInt(1))],
-);
-
 const coordinatorKeypair = new Keypair();
 
-const blankStateLeaf = StateLeaf.genBlankLeaf();
-const blankStateLeafHash = blankStateLeaf.hash();
+const calculateTotal = (tallyResult: bigint[]): bigint => tallyResult.reduce((acc, v) => acc + v, BigInt(0));
 
 describe("MaciState", function () {
   this.timeout(100000);
   describe("Process and tally 1 message from 1 user", () => {
     let maciState: MaciState;
-    let pollId;
-    let stateTree;
-    let msgTree;
+    let pollId: number;
+    let poll: Poll;
+    let msgTree: IncrementalQuinTree;
     const voteWeight = BigInt(9);
     const voteOptionIndex = BigInt(0);
-    let stateIndex;
+    let stateIndex: number;
     const userKeypair = new Keypair();
 
     before(() => {
       maciState = new MaciState(STATE_TREE_DEPTH);
-      stateTree = new IncrementalQuinTree(STATE_TREE_DEPTH, blankStateLeafHash, 5, hash5);
-
-      stateTree.insert(blankStateLeafHash);
-
       msgTree = new IncrementalQuinTree(treeDepths.messageTreeDepth, NOTHING_UP_MY_SLEEVE, 5, hash5);
     });
 
     // The end result should be that option 0 gets 3 votes
     // because the user spends 9 voice credits on it
     it("the state root should be correct", () => {
+      const accumulatorQueue: AccQueue = new AccQueue(STATE_TREE_SUBDEPTH, STATE_TREE_ARITY, blankStateLeafHash);
       const timestamp = BigInt(Math.floor(Date.now() / 1000));
-
       const stateLeaf = new StateLeaf(userKeypair.pubKey, voiceCreditBalance, timestamp);
 
-      stateTree.insert(stateLeaf.hash());
+      accumulatorQueue.enqueue(blankStateLeafHash);
+      accumulatorQueue.enqueue(stateLeaf.hash());
+      accumulatorQueue.mergeSubRoots(0);
+      accumulatorQueue.merge(STATE_TREE_DEPTH);
 
       stateIndex = maciState.signUp(userKeypair.pubKey, voiceCreditBalance, timestamp);
-
       expect(stateIndex.toString()).to.eq("1");
 
-      maciState.stateAq.mergeSubRoots(0);
-      maciState.stateAq.merge(STATE_TREE_DEPTH);
-      console.log(`root=${stateTree.root.toString()}`);
-
-      expect(maciState.stateAq.getRoot(STATE_TREE_DEPTH).toString()).to.eq(stateTree.root.toString());
+      expect(accumulatorQueue.getRoot(STATE_TREE_DEPTH).toString()).to.eq(maciState.stateTree.root.toString());
     });
 
     it("the message root should be correct", () => {
@@ -97,8 +82,10 @@ describe("MaciState", function () {
         coordinatorKeypair,
       );
 
+      poll = maciState.polls[pollId];
+
       const command = new PCommand(
-        stateIndex,
+        BigInt(stateIndex),
         userKeypair.pubKey,
         voteOptionIndex,
         voteWeight,
@@ -112,15 +99,20 @@ describe("MaciState", function () {
       const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
       const message = command.encrypt(signature, sharedKey);
 
-      maciState.polls[pollId].publishMessage(message, ecdhKeypair.pubKey);
+      poll.publishMessage(message, ecdhKeypair.pubKey);
       msgTree.insert(message.hash(ecdhKeypair.pubKey));
 
-      maciState.polls[pollId].messageAq.mergeSubRoots(0);
-      maciState.polls[pollId].messageAq.merge(treeDepths.messageTreeDepth);
-
-      expect(maciState.polls[pollId].messageAq.getRoot(treeDepths.messageTreeDepth).toString()).to.eq(
-        msgTree.root.toString(),
+      // Use the accumulator queue to compare the root of the message tree
+      const accumulatorQueue: AccQueue = new AccQueue(
+        treeDepths.messageTreeSubDepth,
+        STATE_TREE_ARITY,
+        NOTHING_UP_MY_SLEEVE,
       );
+      accumulatorQueue.enqueue(message.hash(ecdhKeypair.pubKey));
+      accumulatorQueue.mergeSubRoots(0);
+      accumulatorQueue.merge(treeDepths.messageTreeDepth);
+
+      expect(accumulatorQueue.getRoot(treeDepths.messageTreeDepth).toString()).to.eq(msgTree.root.toString());
     });
 
     it("packProcessMessageSmallVals and unpackProcessMessageSmallVals", () => {
@@ -138,38 +130,33 @@ describe("MaciState", function () {
     });
 
     it("Process a batch of messages (though only 1 message is in the batch)", () => {
-      maciState.polls[pollId].processMessages(pollId);
+      poll.processMessages(pollId);
 
       // Check the ballot
-      expect(maciState.polls[pollId].ballots[1].votes[Number(voteOptionIndex)].toString()).to.eq(voteWeight.toString());
+      expect(poll.ballots[1].votes[Number(voteOptionIndex)].toString()).to.eq(voteWeight.toString());
       // Check the state leaf in the poll
-      expect(maciState.polls[pollId].stateLeaves[1].voiceCreditBalance.toString()).to.eq(
+      expect(poll.stateLeaves[1].voiceCreditBalance.toString()).to.eq(
         (voiceCreditBalance - voteWeight * voteWeight).toString(),
       );
     });
 
     it("Tally ballots", () => {
-      let total = BigInt(0);
-      for (const v of maciState.polls[pollId].results) {
-        total = BigInt(Number(total) + Number(v));
-      }
-      expect(total.toString()).to.eq("0");
+      const initialTotal = calculateTotal(maciState.polls[pollId].tallyResult);
+      expect(initialTotal.toString()).to.eq("0");
 
-      expect(maciState.polls[pollId].hasUntalliedBallots()).to.be.true;
+      expect(poll.hasUntalliedBallots()).to.be.true;
 
-      maciState.polls[pollId].tallyVotes();
+      poll.tallyVotes();
 
-      total = BigInt(0);
-      for (const v of maciState.polls[pollId].results) {
-        total = BigInt(Number(total) + Number(v));
-      }
-      expect(total.toString()).to.eq(voteWeight.toString());
+      const finalTotal = calculateTotal(maciState.polls[pollId].tallyResult);
+      expect(finalTotal.toString()).to.eq(voteWeight.toString());
     });
   });
 
   describe(`Process and tally ${messageBatchSize * 2} messages from ${messageBatchSize} users`, () => {
-    let maciState;
-    let pollId;
+    let maciState: MaciState;
+    let pollId: number;
+    let poll: Poll;
     const voteWeight = BigInt(9);
 
     const users: Keypair[] = [];
@@ -191,9 +178,8 @@ describe("MaciState", function () {
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
-        testProcessVk,
-        testTallyVk,
       );
+      poll = maciState.polls[pollId];
     });
 
     it("should process votes correctly", () => {
@@ -215,10 +201,10 @@ describe("MaciState", function () {
         const ecdhKeypair = new Keypair();
         const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
         const message = command.encrypt(signature, sharedKey);
-        maciState.polls[pollId].publishMessage(message, ecdhKeypair.pubKey);
+        poll.publishMessage(message, ecdhKeypair.pubKey);
       }
 
-      expect(maciState.polls[pollId].messageAq.numLeaves).to.eq(messageBatchSize - 1);
+      expect(poll.messages.length).to.eq(messageBatchSize - 1);
 
       // 24 invalid votes
       for (let i = 0; i < messageBatchSize - 1; i++) {
@@ -237,98 +223,71 @@ describe("MaciState", function () {
         const ecdhKeypair = new Keypair();
         const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
         const message = command.encrypt(signature, sharedKey);
-        maciState.polls[pollId].publishMessage(message, ecdhKeypair.pubKey);
+        poll.publishMessage(message, ecdhKeypair.pubKey);
       }
 
-      // processMessages() should fail if the state and message AQs are
-      // not merged yet
-      expect(() => {
-        maciState.polls[pollId].processMessages();
-      }).to.throw;
+      // 48 messages in total
+      expect(poll.messages.length).to.eq(2 * (messageBatchSize - 1));
 
-      // Merge the state aq
-      maciState.stateAq.mergeSubRoots(0);
-      maciState.stateAq.merge(STATE_TREE_DEPTH);
-
-      expect(() => {
-        maciState.polls[pollId].processMessages();
-      }).to.throw;
-
-      // Merge the message aq
-      maciState.polls[pollId].messageAq.mergeSubRoots(0);
-      maciState.polls[pollId].messageAq.merge(treeDepths.messageTreeDepth);
-
-      expect(maciState.polls[pollId].messageAq.numLeaves).to.eq(messageBatchSize * 2);
-
-      expect(maciState.polls[pollId].currentMessageBatchIndex).to.eq(undefined);
-      expect(maciState.polls[pollId].numBatchesProcessed).to.eq(0);
+      expect(poll.currentMessageBatchIndex).to.eq(undefined);
+      expect(poll.numBatchesProcessed).to.eq(0);
 
       // Process messages
-      maciState.polls[pollId].processMessages();
+      poll.processMessages(pollId);
 
       // currentMessageBatchIndex is 0 because the current batch starts
       // with index 0.
-      expect(maciState.polls[pollId].currentMessageBatchIndex).to.eq(0);
-      expect(maciState.polls[pollId].numBatchesProcessed).to.eq(1);
+      expect(poll.currentMessageBatchIndex).to.eq(0);
+      expect(poll.numBatchesProcessed).to.eq(1);
 
       // Process messages
-      maciState.polls[pollId].processMessages();
+      poll.processMessages(pollId);
 
-      expect(maciState.polls[pollId].currentMessageBatchIndex).to.eq(0);
-      expect(maciState.polls[pollId].numBatchesProcessed).to.eq(2);
-
-      // Attempt to process messages, but this should fail as there are
-      // no more messages to process
-      // TODO: use VError to test for specific errors
-      expect(() => {
-        maciState.polls[pollId].processMessages();
-      }).to.throw;
+      expect(poll.currentMessageBatchIndex).to.eq(0);
+      expect(poll.numBatchesProcessed).to.eq(2);
 
       for (let i = 1; i < messageBatchSize; i++) {
-        const leaf = maciState.polls[pollId].ballots[i].votes[i - 1];
+        const leaf = poll.ballots[i].votes[i - 1];
         expect(leaf.toString()).to.eq(voteWeight.toString());
       }
 
       // Test processAllMessages
-      const r = maciState.polls[pollId].processAllMessages();
+      const r = poll.processAllMessages();
 
-      expect(r.stateLeaves.length).to.eq(maciState.polls[pollId].stateLeaves.length);
+      expect(r.stateLeaves.length).to.eq(poll.stateLeaves.length);
 
-      expect(r.ballots.length).to.eq(maciState.polls[pollId].ballots.length);
+      expect(r.ballots.length).to.eq(poll.ballots.length);
 
       expect(r.ballots.length).to.eq(r.stateLeaves.length);
 
       for (let i = 0; i < r.stateLeaves.length; i++) {
-        expect(r.stateLeaves[i].equals(maciState.polls[pollId].stateLeaves[i])).to.be.true;
+        expect(r.stateLeaves[i].equals(poll.stateLeaves[i])).to.be.true;
 
-        expect(r.ballots[i].equals(maciState.polls[pollId].ballots[i])).to.be.true;
+        expect(r.ballots[i].equals(poll.ballots[i])).to.be.true;
       }
     });
 
     it("should tally ballots correctly", () => {
-      // Start with results = [0...0]
-      let total = BigInt(0);
-      for (const v of maciState.polls[pollId].results) {
-        total = total + v;
-      }
+      // Start with tallyResult = [0...0]
+      const total = calculateTotal(maciState.polls[pollId].tallyResult);
       expect(total.toString()).to.eq("0");
 
       // Check that there are untallied results
-      expect(maciState.polls[pollId].hasUntalliedBallots()).to.be.true;
+      expect(poll.hasUntalliedBallots()).to.be.true;
 
       // First batch tally
-      maciState.polls[pollId].tallyVotes();
+      poll.tallyVotes();
 
       // Recall that each user `i` cast the same number of votes for
       // their option `i`
-      for (let i = 0; i < maciState.polls[pollId].results.length - 1; i++) {
-        expect(maciState.polls[pollId].results[i].toString()).to.eq(voteWeight.toString());
+      for (let i = 0; i < maciState.polls[pollId].tallyResult.length - 1; i++) {
+        expect(maciState.polls[pollId].tallyResult[i].toString()).to.eq(voteWeight.toString());
       }
 
-      expect(maciState.polls[pollId].hasUntalliedBallots()).to.be.false;
+      expect(poll.hasUntalliedBallots()).to.be.false;
 
       expect(() => {
-        maciState.polls[pollId].tallyVotes();
+        poll.tallyVotes();
       }).to.throw;
     });
   });

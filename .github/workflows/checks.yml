@@ -2,7 +2,7 @@ name: Checks
 
 on:
   push:
-    branches: [master, dev]
+    branches: [dev]
   pull_request:
 
 concurrency:
@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        command: ["prettier", "lint"]
+        command: ["prettier", "lint:ts"]
 
     runs-on: ubuntu-22.04
 

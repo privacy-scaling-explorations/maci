@@ -2,7 +2,7 @@
   "name": "maci-domainobjs",
   "version": "1.1.2",
   "description": "",
-  "main": "build/index.js",
+  "main": "build/ts/index.js",
   "scripts": {
     "watch": "tsc --watch",
     "build": "tsc",
@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
-    "@types/mocha": "^10.0.4",
+    "@types/mocha": "^10.0.6",
     "@types/node": "^18.11.9",
     "chai": "^4.3.10",
     "mocha": "^10.2.0",

@@ -1,5 +1,7 @@
 import { genRandomSalt, hash4 } from "maci-crypto";
-import { IStateLeaf } from "./types";
+
+import type { IJsonStateLeaf, IStateLeaf, IStateLeafContractParams } from "./types";
+
 import { Keypair } from "./keyPair";
 import { PubKey } from "./publicKey";
 
@@ -8,9 +10,11 @@ import { PubKey } from "./publicKey";
  * public keys to voice credit balances
  */
 export class StateLeaf implements IStateLeaf {
-  public pubKey: PubKey;
-  public voiceCreditBalance: bigint;
-  public timestamp: bigint;
+  pubKey: PubKey;
+
+  voiceCreditBalance: bigint;
+
+  timestamp: bigint;
 
   /**
    * Create a new instance of a state leaf
@@ -28,7 +32,7 @@ export class StateLeaf implements IStateLeaf {
    * Crate a deep copy of the object
    * @returns a copy of the state leaf
    */
-  public copy(): StateLeaf {
+  copy(): StateLeaf {
     return new StateLeaf(
       this.pubKey.copy(),
       BigInt(this.voiceCreditBalance.toString()),
@@ -40,7 +44,7 @@ export class StateLeaf implements IStateLeaf {
    * Generate a blank state leaf
    * @returns a blank state leaf
    */
-  public static genBlankLeaf(): StateLeaf {
+  static genBlankLeaf(): StateLeaf {
     // The public key for a blank state leaf is the first Pedersen base
     // point from iden3's circomlib implementation of the Pedersen hash.
     // Since it is generated using a hash-to-curve function, we are
@@ -63,40 +67,34 @@ export class StateLeaf implements IStateLeaf {
    * Generate a random leaf (random salt and random key pair)
    * @returns a random state leaf
    */
-  public static genRandomLeaf() {
+  static genRandomLeaf(): StateLeaf {
     const keypair = new Keypair();
-    return new StateLeaf(keypair.pubKey, genRandomSalt() as bigint, BigInt(0));
+    return new StateLeaf(keypair.pubKey, genRandomSalt(), BigInt(0));
   }
 
   /**
    * Return this state leaf as an array of bigints
    * @returns the state leaf as an array of bigints
    */
-  private asArray = (): bigint[] => {
-    return [...this.pubKey.asArray(), this.voiceCreditBalance, this.timestamp];
-  };
+  private asArray = (): bigint[] => [...this.pubKey.asArray(), this.voiceCreditBalance, this.timestamp];
 
   /**
    * Return this state leaf as an array of bigints
    * @returns the state leaf as an array of bigints
    */
-  public asCircuitInputs = (): bigint[] => {
-    return this.asArray();
-  };
+  asCircuitInputs = (): bigint[] => this.asArray();
 
   /**
    * Hash this state leaf (first convert as array)
    * @returns the has of the state leaf elements
    */
-  public hash = (): bigint => {
-    return hash4(this.asArray()) as bigint;
-  };
+  hash = (): bigint => hash4(this.asArray());
 
   /**
    * Return this state leaf as a contract param
    * @returns the state leaf as a contract param (object)
    */
-  public asContractParam() {
+  asContractParam(): IStateLeafContractParams {
     return {
       pubKey: this.pubKey.asContractParam(),
       voiceCreditBalance: this.voiceCreditBalance.toString(),
@@ -109,7 +107,7 @@ export class StateLeaf implements IStateLeaf {
    * @param s the state leaf to compare with
    * @returns whether they are equal or not
    */
-  public equals(s: StateLeaf): boolean {
+  equals(s: StateLeaf): boolean {
     return (
       this.pubKey.equals(s.pubKey) && this.voiceCreditBalance === s.voiceCreditBalance && this.timestamp === s.timestamp
     );
@@ -121,7 +119,7 @@ export class StateLeaf implements IStateLeaf {
    * @notice convert the voice credit balance and timestamp to a hex string
    * @returns
    */
-  public serialize = (): string => {
+  serialize = (): string => {
     const j = [this.pubKey.serialize(), this.voiceCreditBalance.toString(16), this.timestamp.toString(16)];
 
     return Buffer.from(JSON.stringify(j, null, 0), "utf8").toString("base64url");
@@ -134,15 +132,15 @@ export class StateLeaf implements IStateLeaf {
    */
   static deserialize = (serialized: string): StateLeaf => {
     const base64 = serialized.replace(/-/g, "+").replace(/_/g, "/");
-    const j = JSON.parse(Buffer.from(base64, "base64").toString("utf8"));
+    const json = JSON.parse(Buffer.from(base64, "base64").toString("utf8")) as [string, string, string];
 
-    return new StateLeaf(PubKey.deserialize(j[0]), BigInt(`0x${j[1]}`), BigInt(`0x${j[2]}`));
+    return new StateLeaf(PubKey.deserialize(json[0]), BigInt(`0x${json[1]}`), BigInt(`0x${json[2]}`));
   };
 
   /**
    * Serialize to a JSON object
    */
-  public toJSON() {
+  toJSON(): IJsonStateLeaf {
     return {
       pubKey: this.pubKey.serialize(),
       voiceCreditBalance: this.voiceCreditBalance.toString(),
@@ -155,7 +153,7 @@ export class StateLeaf implements IStateLeaf {
    * @param json - the json representation
    * @returns the deserialized object as a StateLeaf instance
    */
-  static fromJSON(json: any): StateLeaf {
+  static fromJSON(json: IJsonStateLeaf): StateLeaf {
     return new StateLeaf(PubKey.deserialize(json.pubKey), BigInt(json.voiceCreditBalance), BigInt(json.timestamp));
   }
 }

@@ -15,12 +15,12 @@
     "circomlib": "https://github.com/weijiekoh/circomlib.git#24ed08eee0bb613b8c0135d66c1013bd9f78d50a",
     "ethers": "^5.4.7",
     "ffjavascript": "^0.2.62",
-    "optimisedmt": "^0.0.7"
+    "optimisedmt": "^0.0.9"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.23.3",
     "@types/chai": "^4.3.11",
-    "@types/mocha": "^10.0.4",
+    "@types/mocha": "^10.0.6",
     "@types/node": "^18.11.9",
     "chai": "^4.3.10",
     "mocha": "^10.2.0",

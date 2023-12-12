@@ -2,10 +2,10 @@
 pragma solidity ^0.8.10;
 
 abstract contract MerkleZeros {
-    uint256[<% NUM_ZEROS %>] internal zeros;
+  uint256[<% NUM_ZEROS %>] internal zeros;
 
-    // <% COMMENT %>
-    constructor() {
+  // <% COMMENT %>
+  constructor() {
 <% ZEROS %>
-    }
+  }
 }

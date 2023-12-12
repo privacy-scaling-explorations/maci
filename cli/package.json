@@ -2,39 +2,46 @@
   "name": "maci-cli",
   "version": "1.1.2",
   "description": "CLI utilities for MACI",
-  "main": "build/index.js",
+  "main": "build/ts/index.js",
   "bin": {
-    "maci-cli": "./build/index.js"
+    "maci-cli": "./build/ts/index.js"
   },
+  "files": [
+    "ts",
+    "package.json"
+  ],
   "scripts": {
     "watch": "tsc --watch",
-    "build": "tsc"
+    "build": "tsc",
+    "postbuild": "cp package.json ./build",
+    "test": "ts-mocha --exit tests/*.test.ts",
+    "test:e2e": "ts-mocha --exit tests/e2e.test.ts",
+    "test:e2e-subsidy": "ts-mocha --exit tests/e2e.subsidy.test.ts"
   },
   "dependencies": {
-    "@nomiclabs/hardhat-ethers": "^2.0.2",
-    "argparse": "^1.0.10",
-    "circom_runtime": "^0.1.22",
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
     "circomlib": "^2.0.5",
-    "ethers": "^5.4.7",
-    "ffiasm": "0.1.3",
-    "hardhat": "^2.12.6",
-    "js-yaml": "4.0.0",
+    "commander": "^11.1.0",
+    "dotenv": "^16.3.1",
+    "ethers": "^6.9.0",
+    "hardhat": "^2.19.2",
     "maci-circuits": "^1.1.2",
-    "maci-common": "^1.1.2",
     "maci-contracts": "^1.1.2",
     "maci-core": "^1.1.2",
     "maci-crypto": "^1.1.2",
     "maci-domainobjs": "^1.1.2",
     "prompt-async": "^0.9.9",
-    "shelljs": "^0.8.4",
     "snarkjs": "^0.5.0",
-    "source-map-support": "^0.5.19",
-    "web3": "^1.3.4",
-    "xmlhttprequest": "1.8.0",
     "zkey-manager": "^0.1.1"
   },
   "devDependencies": {
+    "@types/chai": "^4.3.9",
+    "@types/mocha": "^10.0.6",
     "@types/node": "^18.11.9",
+    "chai": "^4.3.10",
+    "mocha": "^10.2.0",
+    "ts-mocha": "^10.0.0",
     "typescript": "^5.3.2"
-  }
+  },
+  "gitHead": "f567a17293114ba2d5e89c711d00a9f4c197f070"
 }

@@ -23,13 +23,11 @@ Below you can find a list of the packages included in this repository.
 | ------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | [maci-circuits][circuits-package]                 | [![NPM Package][circuits-npm-badge]][circuits-npm-link]                 | [![Actions Status][circuits-actions-badge]][circuits-actions-link]                 |
 | [maci-cli][cli-package]                           | [![NPM Package][cli-npm-badge]][cli-npm-link]                           | [![Actions Status][cli-actions-badge]][cli-actions-link]                           |
-| [maci-common][common-package]                     | [![NPM Package][common-npm-badge]][common-npm-link]                     | [![Actions Status][common-actions-badge]][common-actions-link]                     |
 | [maci-contracts][contracts-package]               | [![NPM Package][contracts-npm-badge]][contracts-npm-link]               | [![Actions Status][contracts-actions-badge]][contracts-actions-link]               |
 | [maci-core][core-package]                         | [![NPM Package][core-npm-badge]][core-npm-link]                         | [![Actions Status][core-actions-badge]][core-actions-link]                         |
 | [maci-crypto][crypto-package]                     | [![NPM Package][crypto-npm-badge]][crypto-npm-link]                     | [![Actions Status][crypto-actions-badge]][crypto-actions-link]                     |
 | [maci-domainobjs][domainobjs-package]             | [![NPM Package][domainobjs-npm-badge]][domainobjs-npm-link]             | [![Actions Status][domainobjs-actions-badge]][domainobjs-actions-link]             |
 | [maci-integrationTests][integrationTests-package] | [![NPM Package][integrationTests-npm-badge]][integrationTests-npm-link] | [![Actions Status][integrationTests-actions-badge]][integrationTests-actions-link] |
-| [maci-server][server-package]                     | [![NPM Package][server-npm-badge]][server-npm-link]                     | [![Actions Status][server-actions-badge]][server-actions-link]                     |
 
 ## Local Development and testing
 
@@ -81,11 +79,6 @@ CI pipeline ensures that we have automated tests that constantly validate. For m
 [cli-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/e2e.yml/badge.svg
 [cli-npm-link]: https://www.npmjs.com/package/maci-cli
 [cli-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3ACI
-[common-package]: ./common
-[common-npm-badge]: https://img.shields.io/npm/v/maci-common.svg
-[common-npm-link]: https://www.npmjs.com/package/maci-common
-[common-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/build.yml/badge.svg
-[common-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3Acommon
 [contracts-package]: ./contracts
 [contracts-npm-badge]: https://img.shields.io/npm/v/maci-contracts.svg
 [contracts-npm-link]: https://www.npmjs.com/package/maci-contracts
@@ -111,8 +104,3 @@ CI pipeline ensures that we have automated tests that constantly validate. For m
 [integrationTests-npm-link]: https://www.npmjs.com/package/maci-integrationtests
 [integrationTests-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/e2e.yml/badge.svg
 [integrationTests-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3ACI
-[server-package]: ./server
-[server-npm-badge]: https://img.shields.io/npm/v/maci-server.svg
-[server-npm-link]: https://www.npmjs.com/package/maci-server
-[server-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/build.yml/badge.svg
-[server-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3Aserver

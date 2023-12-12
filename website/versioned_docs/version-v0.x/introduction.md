@@ -106,7 +106,7 @@ The following steps are needed to sign and encrypt a message:
 
 ## Glossary
 
-Some terms in this specification are similar to one another but should not be used interchangably. This glossary should help to resolve such ambiguities.
+Some terms in this specification are similar to one another but should not be used interchangeably. This glossary should help to resolve such ambiguities.
 
 | Term             | Meaning                                                                                                                                                                                                                    |
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

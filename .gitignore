@@ -27,6 +27,7 @@ contracts/artifacts
 contracts/compiled
 cli/cache
 contracts/cache
+typechain-types/
 
 node_modules
 blake2sdef.json
@@ -145,8 +146,8 @@ typings/
 cli/output.json
 cli/processinput.json
 cli/tallyinput.json
-**/contractAddress.txt
-**/contractAddress.old
+cli/contractAddresses.json
+cli/contractAddresses.old.json
 
 # mdBook rendered files
 publish

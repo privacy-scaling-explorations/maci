@@ -1,12 +1,13 @@
-import { STATE_TREE_DEPTH } from "./utils";
-
-import { MaciState } from "maci-core";
-
-import { Keypair, PCommand, Message } from "maci-domainobjs";
-
 import path from "path";
 import { expect } from "chai";
 import { beforeEach } from "mocha";
+
+import { Keypair, PCommand, Message } from "maci-domainobjs";
+import { MaciState, STATE_TREE_ARITY } from "maci-core";
+import { AccQueue, NOTHING_UP_MY_SLEEVE } from "maci-crypto";
+
+import { STATE_TREE_DEPTH } from "./utils";
+
 const tester = require("circom_tester").wasm;
 
 const voiceCreditBalance = BigInt(100);
@@ -54,9 +55,6 @@ describe("TallyVotes circuit", function () {
       const userKeypair = new Keypair();
       stateIndex = maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
 
-      maciState.stateAq.mergeSubRoots(0);
-      maciState.stateAq.merge(STATE_TREE_DEPTH);
-
       pollId = maciState.deployPoll(
         duration,
         BigInt(Math.floor(Date.now() / 1000) + duration),
@@ -88,17 +86,26 @@ describe("TallyVotes circuit", function () {
 
       poll.publishMessage(message, ecdhKeypair.pubKey);
 
-      poll.messageAq.mergeSubRoots(0);
-      poll.messageAq.merge(treeDepths.messageTreeDepth);
+      // Use the accumulator queue to compare the root of the message tree
+      const accumulatorQueue: AccQueue = new AccQueue(
+        treeDepths.messageTreeSubDepth,
+        STATE_TREE_ARITY,
+        NOTHING_UP_MY_SLEEVE,
+      );
+      accumulatorQueue.enqueue(message.hash(ecdhKeypair.pubKey));
+      accumulatorQueue.mergeSubRoots(0);
+      accumulatorQueue.merge(treeDepths.messageTreeDepth);
 
-      expect(poll.messageTree.root.toString()).to.be.eq(poll.messageAq.getRoot(treeDepths.messageTreeDepth).toString());
+      expect(poll.messageTree.root.toString()).to.be.eq(
+        accumulatorQueue.mainRoots[treeDepths.messageTreeDepth].toString(),
+      );
       // Process messages
       poll.processMessages();
     });
 
     it("should produce the correct result commitments", async () => {
       const generatedInputs = poll.tallyVotes();
-      const newResults = poll.results;
+      const newResults = poll.tallyResult;
 
       expect(newResults[Number(voteOptionIndex)]).to.be.eq(voteWeight);
 
@@ -173,9 +180,6 @@ describe("TallyVotes circuit", function () {
         maciState.signUp(k.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000) + duration));
       }
 
-      maciState.stateAq.mergeSubRoots(0);
-      maciState.stateAq.merge(STATE_TREE_DEPTH);
-
       const pollId = maciState.deployPoll(
         duration,
         BigInt(Math.floor(Date.now() / 1000) + duration),
@@ -205,9 +209,6 @@ describe("TallyVotes circuit", function () {
         const message = command.encrypt(signature, sharedKey);
         poll.publishMessage(message, ecdhKeypair.pubKey);
       }
-
-      poll.messageAq.mergeSubRoots(0);
-      poll.messageAq.merge(treeDepths.messageTreeDepth);
 
       for (let i = 0; i < NUM_BATCHES; i++) {
         poll.processMessages(pollId);

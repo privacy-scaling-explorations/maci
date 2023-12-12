@@ -1,5 +1,5 @@
 ---
-slug: MACI 1.0 Technical Introduction
+slug: maci-1-0-technical-introduction
 title: A Technical Introduction to MACI 1.0
 authors:
   name: Kyle Charbonnet

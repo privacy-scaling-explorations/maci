@@ -116,10 +116,22 @@ Next, ensure that the `prover` binary of `rapidsnark` is in
 
 You can find the tests in `maci/cli/tests`.
 
-e.g. In `maci/cli/tests/vanilla`:
+To run all tests:
 
 ```bash
-./test1.sh
+npm run test
+```
+
+To run e2e without subsidy:
+
+```bash
+npm run test:e2e
+```
+
+To run e2e with subsidy:
+
+```bash
+npm run test:e2e-subsidy
 ```
 
 > Please note that these require a hardhat node running in the background for local testing. You can start one with `npm run hardhat` within the **contracts** folder.

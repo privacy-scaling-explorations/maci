@@ -52,14 +52,9 @@ A function that deep-copies an object.
 
 ### Key data structures
 
-#### **`stateAq`**, **`stateTree`**
+#### **`stateTree`**
 
-The Merkle tree of state leaves. `stateAq` must be merged (subroots and/or main
-root) whenever the MACI contract's `mergeStateAqSubRoots()` and
-`mergeStateAq()` are invoked.
-
-They should contain the same leaves, even if the `stateAq` is not yet merged.
-`stateTree` exists for developer convenience.
+`stateTree` is a quinary Merkle tree, chosen over a binary tree due to the gas and circuit constraints associated with the Poseidon hash function ([details here][ethresearch-link]). Each leaf in this tree represents a participant's public key, their voice credit balance and the block timestamp at which they signed up. The tree features a configurable depth and an arity of five, with insertions starting at index 1. The zeroth leaf is reserved as a security measure against denial-of-service attacks.
 
 ## **`Poll`**
 
@@ -91,14 +86,9 @@ Deep-copies and returns this object.
 
 ### Key data structures
 
-#### **`messageAq`**, **`messageTree`**
+#### **`messageTree`**
 
-The Merkle tree of message leaves. `messageAq` must be merged (subroots and/or
-main root) whenever the MACI contract's `mergeMessageAqSubRoots()` and
-`mergeMessageAq()` are invoked.
-
-They should contain the same leaves, even if the `messageAq` is not yet merged.
-`messageTree` exists for developer convenience.
+`messageTree` is also a quinary Merkle tree. Each message in this tree represents an encrypted command, such as a user casting a vote in a poll or changing their public key.
 
 ## Testing
 
@@ -108,6 +98,7 @@ For more details about testing please refer to the [tests documentation](https:/
 [core-npm-link]: https://www.npmjs.com/package/maci-core
 [core-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/core-build.yml/badge.svg
 [core-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3Acore
+[ethresearch-link]: https://ethresear.ch/t/gas-and-circuit-constraint-benchmarks-of-binary-and-quinary-incremental-merkle-trees-using-the-poseidon-hash-function/7446
 
 ## Directory Structure
 

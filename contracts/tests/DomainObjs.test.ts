@@ -1,29 +1,41 @@
+import { expect } from "chai";
 import { StateLeaf, Keypair } from "maci-domainobjs";
 
-import { deployPoseidonContracts, linkPoseidonLibraries } from "../";
-import { expect } from "chai";
-import { Contract } from "ethers";
+import { deployPoseidonContracts, linkPoseidonLibraries } from "../ts/deploy";
+import { DomainObjs } from "../typechain-types";
 
 describe("DomainObjs", () => {
-  let doContract: Contract;
+  let doContract: DomainObjs;
 
   describe("Deployment", () => {
     before(async () => {
       const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } =
         await deployPoseidonContracts(true);
 
+      const [
+        poseidonT3ContractAddress,
+        poseidonT4ContractAddress,
+        poseidonT5ContractAddress,
+        poseidonT6ContractAddress,
+      ] = await Promise.all([
+        PoseidonT3Contract.getAddress(),
+        PoseidonT4Contract.getAddress(),
+        PoseidonT5Contract.getAddress(),
+        PoseidonT6Contract.getAddress(),
+      ]);
+
       // Link Poseidon contracts
       const doContractFactory = await linkPoseidonLibraries(
         "DomainObjs",
-        PoseidonT3Contract.address,
-        PoseidonT4Contract.address,
-        PoseidonT5Contract.address,
-        PoseidonT6Contract.address,
+        poseidonT3ContractAddress,
+        poseidonT4ContractAddress,
+        poseidonT5ContractAddress,
+        poseidonT6ContractAddress,
         true,
       );
 
-      doContract = await doContractFactory.deploy();
-      await doContract.deployTransaction.wait();
+      doContract = (await doContractFactory.deploy()) as typeof doContract;
+      await doContract.deploymentTransaction()?.wait();
     });
 
     it("should correctly hash a StateLeaf", async () => {

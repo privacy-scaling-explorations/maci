@@ -214,7 +214,7 @@ In the template `QuinGeneratePathIndices`, the constrains of the `signal n[level
 The [updated code](https://github.com/chaosma/maci/blob/2d7a3a0efd33dfc3a5f4d3f95bec3adda7abb963/circuits/circom/trees/incrementalQuinTree.circom#L285-L290) uses the `SafeLessThen` template, as shown below:
 
 ```javascript
-for (var i = 0; i < levels; i ++) {
+for (var i = 0; i < levels; i++) {
     // Check that each output element is less than the base
     leq[i] = SafeLessThan(3);
     leq[i].in[0] <== out[i];

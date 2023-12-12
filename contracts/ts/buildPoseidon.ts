@@ -1,14 +1,16 @@
-const { overwriteArtifact } = require("hardhat");
-const { poseidonContract } = require("circomlibjs");
+import { poseidonContract } from "circomlibjs";
+import hre from "hardhat";
+
+type ExtendedHre = typeof hre & { overwriteArtifact: (name: string, code: unknown) => Promise<void> };
 
 const buildPoseidon = async (numInputs: number) => {
-  await overwriteArtifact(`PoseidonT${numInputs + 1}`, poseidonContract.createCode(numInputs));
+  await (hre as ExtendedHre).overwriteArtifact(`PoseidonT${numInputs + 1}`, poseidonContract.createCode(numInputs));
 };
 
-const buildPoseidonT3 = () => buildPoseidon(2);
-const buildPoseidonT4 = () => buildPoseidon(3);
-const buildPoseidonT5 = () => buildPoseidon(4);
-const buildPoseidonT6 = () => buildPoseidon(5);
+const buildPoseidonT3 = (): Promise<void> => buildPoseidon(2);
+const buildPoseidonT4 = (): Promise<void> => buildPoseidon(3);
+const buildPoseidonT5 = (): Promise<void> => buildPoseidon(4);
+const buildPoseidonT6 = (): Promise<void> => buildPoseidon(5);
 
 if (require.main === module) {
   buildPoseidonT3();

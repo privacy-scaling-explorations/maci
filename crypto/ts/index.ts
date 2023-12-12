@@ -1,3 +1,5 @@
+import "./@types";
+
 export { AccQueue } from "./AccQueue";
 
 export {
@@ -6,6 +8,7 @@ export {
   deepCopyBigIntArray,
   calcDepthFromNumLeaves,
   genTreeCommitment,
+  genTreeProof,
 } from "./utils";
 
 export { SNARK_FIELD_SIZE, NOTHING_UP_MY_SLEEVE, babyJubMaxValue } from "./constants";

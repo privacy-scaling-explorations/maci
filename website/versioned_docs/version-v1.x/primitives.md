@@ -114,7 +114,7 @@ A verifying key is used to validate a zk-SNARK proof. Each unique permutation of
 
 #### Private Keys
 
-MACI's private keys allow users to send and decrypt messages. This key translates to a scalar point on the Baby Jubjub ellpitic curve. All keys are serialized with the prefix `macisk`.
+MACI's private keys allow users to send and decrypt messages. This key translates to a scalar point on the Baby Jubjub elliptic curve. All keys are serialized with the prefix `macisk`.
 
 #### Public Keys
 
@@ -155,7 +155,7 @@ To decrypt a message using $k_s$ is expressed as
 
 $[p, R8[0], R8[1], cm_s]$ = ${poseidonDecrypt}(M, k_s[0], k_s[1], cm_n, 7)$
 
-To unpack $p$ to it's original five parameters, it must be seperated into 50 bit values from the parent 250 bit value. To extract 50 bits at byte $n$, we:
+To unpack $p$ to its original five parameters, it must be separated into 50 bit values from the parent 250 bit value. To extract 50 bits at byte $n$, we:
 
 1. initialise 50 bits
 2. shift left by $n$ bits

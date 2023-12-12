@@ -58,3 +58,20 @@ export const genTreeCommitment = (leaves: bigint[], salt: bigint, depth: number)
 
   return hashLeftRight(tree.root, salt);
 };
+
+/**
+ * A helper function to generate the tree proof for the value at the given index in the leaves
+ * @param index The index of the value to generate the proof for
+ * @param leaves A list of values
+ * @param depth The tree depth
+ * @returns The proof
+ */
+export const genTreeProof = (index: number, leaves: bigint[], depth: number): bigint[][] => {
+  const tree = new IncrementalQuinTree(depth, BigInt(0), 5, hash5);
+  leaves.forEach((leaf) => {
+    tree.insert(leaf);
+  });
+
+  const proof = tree.genMerklePath(index);
+  return proof.pathElements;
+};

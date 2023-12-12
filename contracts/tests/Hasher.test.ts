@@ -1,33 +1,46 @@
-require("module-alias/register");
-import { sha256Hash, hashLeftRight, hash3, hash4, hash5, genRandomSalt } from "maci-crypto";
 import { expect } from "chai";
-import { deployPoseidonContracts, linkPoseidonLibraries } from "../";
+import { BigNumberish } from "ethers";
+import { sha256Hash, hashLeftRight, hash3, hash4, hash5, genRandomSalt } from "maci-crypto";
 
-let hasherContract;
+import { deployPoseidonContracts, linkPoseidonLibraries } from "../ts/deploy";
+import { Hasher } from "../typechain-types";
+
+require("module-alias/register");
 
 describe("Hasher", () => {
+  let hasherContract: Hasher;
+
   before(async () => {
     const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } =
       await deployPoseidonContracts(true);
+    const [poseidonT3ContractAddress, poseidonT4ContractAddress, poseidonT5ContractAddress, poseidonT6ContractAddress] =
+      await Promise.all([
+        PoseidonT3Contract.getAddress(),
+        PoseidonT4Contract.getAddress(),
+        PoseidonT5Contract.getAddress(),
+        PoseidonT6Contract.getAddress(),
+      ]);
+    // Link Poseidon contracts
     const hasherContractFactory = await linkPoseidonLibraries(
       "Hasher",
-      PoseidonT3Contract.address,
-      PoseidonT4Contract.address,
-      PoseidonT5Contract.address,
-      PoseidonT6Contract.address,
+      poseidonT3ContractAddress,
+      poseidonT4ContractAddress,
+      poseidonT5ContractAddress,
+      poseidonT6ContractAddress,
       true,
     );
 
-    hasherContract = await hasherContractFactory.deploy();
-    await hasherContract.deployTransaction.wait();
+    hasherContract = (await hasherContractFactory.deploy()) as Hasher;
+    await hasherContract.deploymentTransaction()?.wait();
   });
 
   it("maci-crypto.sha256Hash should match hasher.sha256Hash", async () => {
     const values: string[] = [];
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 5; i += 1) {
       values.push(genRandomSalt().toString());
       const hashed = sha256Hash(values.map(BigInt));
 
+      // eslint-disable-next-line no-await-in-loop
       const onChainHash = await hasherContract.sha256Hash(values);
       expect(onChainHash.toString()).to.eq(hashed.toString());
     }
@@ -43,35 +56,39 @@ describe("Hasher", () => {
   });
 
   it("maci-crypto.hash3 should match hasher.hash3", async () => {
-    const values: string[] = [];
-    for (let i = 0; i < 3; i++) {
+    const values: BigNumberish[] = [];
+    for (let i = 0; i < 3; i += 1) {
       values.push(genRandomSalt().toString());
     }
     const hashed = hash3(values.map(BigInt));
 
-    const onChainHash = await hasherContract.hash3(values);
+    const onChainHash = await hasherContract.hash3(values as [BigNumberish, BigNumberish, BigNumberish]);
     expect(onChainHash.toString()).to.eq(hashed.toString());
   });
 
   it("maci-crypto.hash4 should match hasher.hash4", async () => {
-    const values: string[] = [];
-    for (let i = 0; i < 4; i++) {
+    const values: BigNumberish[] = [];
+
+    for (let i = 0; i < 4; i += 1) {
       values.push(genRandomSalt().toString());
     }
     const hashed = hash4(values.map(BigInt));
 
-    const onChainHash = await hasherContract.hash4(values);
+    const onChainHash = await hasherContract.hash4(values as [BigNumberish, BigNumberish, BigNumberish, BigNumberish]);
     expect(onChainHash.toString()).to.eq(hashed.toString());
   });
 
   it("maci-crypto.hash5 should match hasher.hash5", async () => {
-    const values: string[] = [];
-    for (let i = 0; i < 5; i++) {
+    const values: BigNumberish[] = [];
+
+    for (let i = 0; i < 5; i += 1) {
       values.push(genRandomSalt().toString());
     }
     const hashed = hash5(values.map(BigInt));
 
-    const onChainHash = await hasherContract.hash5(values);
+    const onChainHash = await hasherContract.hash5(
+      values as [BigNumberish, BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+    );
     expect(onChainHash.toString()).to.eq(hashed.toString());
   });
 });
