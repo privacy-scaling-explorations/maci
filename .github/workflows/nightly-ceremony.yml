@@ -1,0 +1,54 @@
+name: Nightly Ceremony
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-with-ceremony-keys:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes \
+            build-essential \
+            libgmp-dev \
+            libsodium-dev \
+            nasm \
+            nlohmann-json3-dev
+
+      - name: Initialize Project
+        run: |
+          npm install
+          npm run bootstrap
+          npm run build
+
+      - name: Compile contracts with ceremony params and run hardhat fork
+        run: |
+          cd contracts
+          npm run compileSol 6
+          npm run hardhat &
+
+      - name: Download rapidsnark (1c137)
+        run: |
+          mkdir -p ~/rapidsnark/build
+          wget -qO ~/rapidsnark/build/prover https://maci-devops-zkeys.s3.ap-northeast-2.amazonaws.com/rapidsnark-linux-amd64-1c137
+          chmod +x ~/rapidsnark/build/prover
+
+      - name: Download ceremony artifacts
+        run: ./.github/scripts/download-ceremony-artifacts.sh
+
+      - name: Run tests
+        run: ./.github/scripts/ceremony-param-tests.sh
+
+      - name: Stop Hardhat
+        run: kill $(lsof -t -i:8545)
