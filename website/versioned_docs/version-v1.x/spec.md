@@ -290,7 +290,7 @@ is serialised as:
 
 #### 2.2.2. Deserialisation
 
-To revert a serialised key back to its unserialised form $k$, the string is manipulated to isolate the hexdecimal value by removing the prefix (through the Node.js operation [`String.slice()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/slice)) and is prepended `0x` for conversion from hexdecimal back to its big-endian primitive.
+To revert a serialised key back to its unserialised form $k$, the string is manipulated to isolate the hexadecimal value by removing the prefix (through the Node.js operation [`String.slice()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/slice)) and is prepended `0x` for conversion from hexadecimal back to its big-endian primitive.
 
 ### 2.3. Public key
 
@@ -303,11 +303,11 @@ To get a serialised public key from public key coordinates, the variable $u$ is 
 1. assign the result of a bitwise [`AND (&)`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Bitwise_AND) operation between values $u$ and $255$ to byte $n$
 2. shift $u$ right by 8 bits ([`>>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Right_shift))
 
-The result $v$ is a hexdecimal big-endian value which is prendend its prefix to declare it as a serialised key.
+The result $v$ is a hexadecimal big-endian value which is prendend its prefix to declare it as a serialised key.
 
 #### 2.3.2. Deserialisation
 
-To reverse the effects of serialisation and return the unpacked public key, we must remove the prefix (using the method defined in [2.2.2]) and convert back to a buffer from hexdecimal. A return variable $y$ is initialised and the buffer is then iterated over each byte to:
+To reverse the effects of serialisation and return the unpacked public key, we must remove the prefix (using the method defined in [2.2.2]) and convert back to a buffer from hexadecimal. A return variable $y$ is initialised and the buffer is then iterated over each byte to:
 
 1. shift $u$ left by the result of $8$ multiplied by $n$ bits ([`<<`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Left_shift))
 2. assign $y$ the result of addition between $y$ and $u$
