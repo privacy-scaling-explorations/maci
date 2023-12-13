@@ -9,7 +9,6 @@ require("module-alias/register");
 
 describe("Hasher", () => {
   let hasherContract: HasherBenchmarks;
-
   before(async () => {
     const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } =
       await deployPoseidonContracts(true);

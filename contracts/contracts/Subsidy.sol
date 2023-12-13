@@ -1,16 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import { IMACI } from "./IMACI.sol";
+import { IMACI } from "./interfaces/IMACI.sol";
 import { MessageProcessor } from "./MessageProcessor.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Poll } from "./Poll.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { Hasher } from "./crypto/Hasher.sol";
-import { CommonUtilities } from "./utilities/Utility.sol";
+import { CommonUtilities } from "./utilities/Utilities.sol";
 import { Verifier } from "./crypto/Verifier.sol";
 import { VkRegistry } from "./VkRegistry.sol";
 
+/// @title Subsidy
+/// @notice This contract is used to verify that the subsidy calculations
+/// are correct. It is also used to update the subsidy commitment if the
+/// proof is valid.
 contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
   uint256 public rbi; // row batch index
   uint256 public cbi; // column batch index
@@ -31,10 +35,15 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
 
   Verifier public verifier;
 
+  /// @notice Create a new Subsidy contract
+  /// @param _verifier The Verifier contract
   constructor(Verifier _verifier) {
     verifier = _verifier;
   }
 
+  /// @notice Update the currentSbCommitment if the proof is valid.
+  /// @dev currentSbCommitment is the commitment to the state and ballot roots
+  /// @param _mp The MessageProcessor contract
   function updateSbCommitment(MessageProcessor _mp) public onlyOwner {
     // Require that all messages have been processed
     if (!_mp.processingComplete()) {
@@ -45,26 +54,38 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
     }
   }
 
-  function genSubsidyPackedVals(uint256 _numSignUps) public view returns (uint256) {
+  /// @notice Generate the packed values for the subsidy proof
+  /// @param _numSignUps The number of signups
+  /// @return result The packed values
+  function genSubsidyPackedVals(uint256 _numSignUps) public view returns (uint256 result) {
     if (_numSignUps >= 2 ** 50) revert NumSignUpsTooLarge();
     if (rbi >= 2 ** 50) revert RbiTooLarge();
     if (cbi >= 2 ** 50) revert CbiTooLarge();
-    uint256 result = (_numSignUps << 100) + (rbi << 50) + cbi;
-
-    return result;
+    result = (_numSignUps << 100) + (rbi << 50) + cbi;
   }
 
-  function genSubsidyPublicInputHash(uint256 _numSignUps, uint256 _newSubsidyCommitment) public view returns (uint256) {
+  /// @notice Generate the public input hash for the subsidy proof
+  /// @param _numSignUps The number of signups
+  /// @param _newSubsidyCommitment The new subsidy commitment
+  /// @return inputHash The public input hash
+  function genSubsidyPublicInputHash(
+    uint256 _numSignUps,
+    uint256 _newSubsidyCommitment
+  ) public view returns (uint256 inputHash) {
     uint256 packedVals = genSubsidyPackedVals(_numSignUps);
     uint256[] memory input = new uint256[](4);
     input[0] = packedVals;
     input[1] = sbCommitment;
     input[2] = subsidyCommitment;
     input[3] = _newSubsidyCommitment;
-    uint256 inputHash = sha256Hash(input);
-    return inputHash;
+    inputHash = sha256Hash(input);
   }
 
+  /// @notice Update the subsidy commitment if the proof is valid
+  /// @param _poll The Poll contract
+  /// @param _mp The MessageProcessor contract
+  /// @param _newSubsidyCommitment The new subsidy commitment
+  /// @param _proof The proof
   function updateSubsidy(
     Poll _poll,
     MessageProcessor _mp,
@@ -94,12 +115,12 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
     increaseSubsidyIndex(subsidyBatchSize, numLeaves);
   }
 
-  /// @notice increase subsidy batch index (rbi, cbi) to next,
+  /// @notice Increase the subsidy batch index (rbi, cbi) to next,
   /// it will try to cbi++ if the whole batch can fit into numLeaves
-  /// otherwise it will increase row index: rbi++
-  /// @param batchSize: the size of 1 dimensional batch over the signup users,
-  /// @notice each batch for subsidy calculation is 2 dimenional: batchSize*batchSize
-  /// @param numLeaves: total number of leaves in stateTree, i.e. number of signup users
+  /// otherwise it will increase row index: rbi++.
+  /// Each batch for subsidy calculation is 2 dimensional: batchSize*batchSize
+  /// @param batchSize the size of 1 dimensional batch over the signup users
+  /// @param numLeaves total number of leaves in stateTree, i.e. number of signup users
   function increaseSubsidyIndex(uint256 batchSize, uint256 numLeaves) internal {
     if (cbi * batchSize + batchSize < numLeaves) {
       cbi++;
@@ -109,12 +130,18 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
     }
   }
 
+  /// @notice Verify the subsidy proof using the Groth16 on chain verifier
+  /// @param _poll The Poll contract
+  /// @param _proof The proof
+  /// @param _numSignUps The number of signups
+  /// @param _newSubsidyCommitment The new subsidy commitment
+  /// @return isValid True if the proof is valid
   function verifySubsidyProof(
     Poll _poll,
     uint256[8] memory _proof,
     uint256 _numSignUps,
     uint256 _newSubsidyCommitment
-  ) public view returns (bool) {
+  ) public view returns (bool isValid) {
     (uint8 intStateTreeDepth, , , uint8 voteOptionTreeDepth) = _poll.treeDepths();
     (VkRegistry vkRegistry, IMACI maci, , ) = _poll.extContracts();
 
@@ -129,6 +156,6 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
     uint256 publicInputHash = genSubsidyPublicInputHash(_numSignUps, _newSubsidyCommitment);
 
     // Verify the proof
-    return verifier.verify(_proof, vk, publicInputHash);
+    isValid = verifier.verify(_proof, vk, publicInputHash);
   }
 }

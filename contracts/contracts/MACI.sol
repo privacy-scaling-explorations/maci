@@ -1,22 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import { Poll, PollFactory } from "./Poll.sol";
+import { Poll } from "./Poll.sol";
+import { PollFactory } from "./PollFactory.sol";
 import { InitialVoiceCreditProxy } from "./initialVoiceCreditProxy/InitialVoiceCreditProxy.sol";
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
 import { AccQueue, AccQueueQuinaryBlankSl } from "./trees/AccQueue.sol";
-import { IMACI } from "./IMACI.sol";
-import { Params } from "./Params.sol";
-import { DomainObjs } from "./DomainObjs.sol";
+import { IMACI } from "./interfaces/IMACI.sol";
+import { Params } from "./utilities/Params.sol";
+import { DomainObjs } from "./utilities/DomainObjs.sol";
 import { VkRegistry } from "./VkRegistry.sol";
 import { TopupCredit } from "./TopupCredit.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { SnarkConstants } from "./crypto/SnarkConstants.sol";
-
+import { Hasher } from "./crypto/Hasher.sol";
+import { Utilities } from "./utilities/Utilities.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @title MACI - Minimum Anti-Collusion Infrastructure Version 1
-contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
+/// @notice A contract which allows users to sign up, and deploy new polls
+contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable {
   /// @notice The state tree depth is fixed. As such it should be as large as feasible
   /// so that there can be as many users as possible.  i.e. 5 ** 10 = 9765625
   /// this should also match the parameter of the circom circuits.
@@ -59,7 +62,7 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
   PollFactory public pollFactory;
 
   /// @notice The state AccQueue. Represents a mapping between each user's public key
-  /// @notice and their voice credit balance.
+  /// and their voice credit balance.
   AccQueue public override stateAq;
 
   /// @notice Whether the init() function has been successfully executed yet.
@@ -111,6 +114,11 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
   error PreviousPollNotCompleted(uint256 pollId);
   error PollDoesNotExist(uint256 pollId);
 
+  /// @notice Create a new instance of the MACI contract.
+  /// @param _pollFactory The PollFactory contract
+  /// @param _signUpGatekeeper The SignUpGatekeeper contract
+  /// @param _initialVoiceCreditProxy The InitialVoiceCreditProxy contract
+  /// @param _stateTreeDepth The depth of the state tree
   constructor(
     PollFactory _pollFactory,
     SignUpGatekeeper _signUpGatekeeper,
@@ -199,14 +207,16 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
 
   /// @notice Deploy a new Poll contract.
   /// @param _duration How long should the Poll last for
+  /// @param _maxValues The maximum number of vote options, and messages
   /// @param _treeDepths The depth of the Merkle trees
-  /// @return a new Poll contract address
+  /// @param _coordinatorPubKey The coordinator's public key
+  /// @return pollAddr a new Poll contract address
   function deployPoll(
     uint256 _duration,
     MaxValues memory _maxValues,
     TreeDepths memory _treeDepths,
     PubKey memory _coordinatorPubKey
-  ) public afterInit onlyOwner returns (address) {
+  ) public afterInit onlyOwner returns (address pollAddr) {
     uint256 pollId = nextPollId;
 
     // Increment the poll ID for the next poll
@@ -240,9 +250,9 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
 
     polls[pollId] = p;
 
-    emit DeployPoll(pollId, address(p), _coordinatorPubKey);
+    pollAddr = address(p);
 
-    return address(p);
+    emit DeployPoll(pollId, pollAddr, _coordinatorPubKey);
   }
 
   /// @notice Allow Poll contracts to merge the state subroots
@@ -256,26 +266,24 @@ contract MACI is IMACI, DomainObjs, Params, SnarkCommon, Ownable {
 
   /// @notice Allow Poll contracts to merge the state root
   /// @param _pollId The active Poll ID
-  /// @return uint256 The calculated Merkle root
-  function mergeStateAq(uint256 _pollId) public override onlyPoll(_pollId) afterInit returns (uint256) {
-    uint256 root = stateAq.merge(stateTreeDepth);
+  /// @return root The calculated Merkle root
+  function mergeStateAq(uint256 _pollId) public override onlyPoll(_pollId) afterInit returns (uint256 root) {
+    root = stateAq.merge(stateTreeDepth);
 
     emit MergeStateAq(_pollId);
-
-    return root;
   }
 
   /// @notice Return the main root of the StateAq contract
-  /// @return uint256 The Merkle root
-  function getStateAqRoot() public view override returns (uint256) {
-    return stateAq.getMainRoot(stateTreeDepth);
+  /// @return root The Merkle root
+  function getStateAqRoot() public view override returns (uint256 root) {
+    root = stateAq.getMainRoot(stateTreeDepth);
   }
 
   /// @notice Get the Poll details
   /// @param _pollId The identifier of the Poll to retrieve
-  /// @return Poll The Poll data
-  function getPoll(uint256 _pollId) public view returns (Poll) {
+  /// @return poll The Poll contract object
+  function getPoll(uint256 _pollId) public view returns (Poll poll) {
     if (_pollId >= nextPollId) revert PollDoesNotExist(_pollId);
-    return polls[_pollId];
+    poll = polls[_pollId];
   }
 }

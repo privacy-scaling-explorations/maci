@@ -116,7 +116,7 @@ export const unpackProcessMessageSmallVals = (packedVals: bigint) => {
  * This function packs it's parameters into a single bigint.
  * @param batchStartIndex - The start index of the batch.
  * @param batchSize - The size of the batch.
- * @param numSignUps - The number of sign ups.
+ * @param numSignUps - The number of signups.
  * @returns Returns a single bigint that contains the packed values.
  */
 export const packTallyVotesSmallVals = (batchStartIndex: number, batchSize: number, numSignUps: number): bigint => {
@@ -147,7 +147,7 @@ export const unpackTallyVotesSmallVals = (packedVals: bigint) => {
  * This function packs it's parameters into a single bigint.
  * @param row - The row.
  * @param col - The column.
- * @param numSignUps - The number of sign ups.
+ * @param numSignUps - The number of signups.
  * @returns Returns a single bigint that contains the packed values.
  */
 export const packSubsidySmallVals = (row: number, col: number, numSignUps: number) => {

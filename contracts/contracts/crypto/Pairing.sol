@@ -20,6 +20,8 @@
 
 pragma solidity ^0.8.10;
 
+/// @title Pairing
+/// @notice A library implementing the alt_bn128 elliptic curve operations.
 library Pairing {
   uint256 constant PRIME_Q = 21888242871839275222246405745257275088696311157297823662689037894645226208583;
 
@@ -44,7 +46,7 @@ library Pairing {
     }
   }
 
-  /// @notice Returns the sum of two points of G1
+  /// @notice r Returns the sum of two points of G1.
   function plus(G1Point memory p1, G1Point memory p2) internal view returns (G1Point memory r) {
     uint256[4] memory input;
     input[0] = p1.x;
@@ -66,7 +68,7 @@ library Pairing {
     require(success, "pairing-add-failed");
   }
 
-  /// @notice Return te product of a point on G1 and a scalar, i.e.
+  /// @notice r Return the product of a point on G1 and a scalar, i.e.
   ///         p == p.scalar_mul(1) and p.plus(p) == p.scalar_mul(2) for all
   ///         points p.
   function scalar_mul(G1Point memory p, uint256 s) internal view returns (G1Point memory r) {
@@ -87,7 +89,7 @@ library Pairing {
     require(success, "pairing-mul-failed");
   }
 
-  /// @return The result of computing the pairing check
+  /// @return isValid The result of computing the pairing check
   ///         e(p1[0], p2[0]) *  .... * e(p1[n], p2[n]) == 1
   ///        For example,
   ///        pairing([P1(), P1().negate()], [P2(), P2()]) should return true.
@@ -100,7 +102,7 @@ library Pairing {
     G2Point memory c2,
     G1Point memory d1,
     G2Point memory d2
-  ) internal view returns (bool) {
+  ) internal view returns (bool isValid) {
     G1Point[4] memory p1 = [a1, b1, c1, d1];
     G2Point[4] memory p2 = [a2, b2, c2, d2];
 
@@ -132,6 +134,6 @@ library Pairing {
 
     require(success, "pairing-opcode-failed");
 
-    return out[0] != 0;
+    isValid = out[0] != 0;
   }
 }
