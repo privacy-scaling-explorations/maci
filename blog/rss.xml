@@ -4,7 +4,7 @@
         <title>MACI Blog</title>
         <link>https://maci.pse.dev/blog</link>
         <description>MACI Blog</description>
-        <lastBuildDate>Tue, 12 Dec 2023 20:14:02 GMT</lastBuildDate>
+        <lastBuildDate>Wed, 13 Dec 2023 09:32:32 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
@@ -12,7 +12,7 @@
             <title><![CDATA[Welcome to MACI]]></title>
             <link>https://maci.pse.dev/blog/welcome</link>
             <guid>https://maci.pse.dev/blog/welcome</guid>
-            <pubDate>Tue, 12 Dec 2023 20:14:02 GMT</pubDate>
+            <pubDate>Wed, 13 Dec 2023 09:32:32 GMT</pubDate>
             <description><![CDATA[Welcome to the MACI blog! This is where we will post updates on the project, including new releases, new features, and other news.]]></description>
             <content:encoded><![CDATA[<p>Welcome to the MACI blog! This is where we will post updates on the project, including new releases, new features, and other news.</p>]]></content:encoded>
             <category>maci</category>
@@ -176,7 +176,7 @@ Users can then use the SNARK to prove that the tally result is correct, but cann
 <li>Process Messages</li>
 <li>Tally Results</li>
 </ol>
-<p>These phases make use of 3 main smart contracts — MACI, Poll and ​​PollProcessorAndTallyer. These contracts can be found on the MACI github page. The MACI contract is responsible for keeping track of all the user sign ups by recording the initial public key for each user. When a vote is going to take place, users can deploy a Poll smart contract via MACI.deployPoll().</p>
+<p>These phases make use of 3 main smart contracts — MACI, Poll and ​​PollProcessorAndTallyer. These contracts can be found on the MACI github page. The MACI contract is responsible for keeping track of all the user signups by recording the initial public key for each user. When a vote is going to take place, users can deploy a Poll smart contract via MACI.deployPoll().</p>
 <p>The Poll smart contract is where users submit their messages. One MACI contract can be used for multiple polls. In other words, the users that signed up to the MACI contract can vote on multiple issues, with each issue represented by a distinct Poll contract.</p>
 <p>Finally, the PollProcessorAndTallyer contract is used by the coordinator to prove on-chain that they are correctly tallying each vote. This process is explained in more detail in the Process Messages and Tally Results sections below.</p>
 <p><img loading="lazy" alt="MACI Workflow" src="https://maci.pse.dev/assets/images/MACI_Contracts-48ece9d758b096623f02b0195e29aaf2.png" width="1100" height="575" class="img_wQsy"></p>
