@@ -71,14 +71,7 @@ describe("MessageProcessor", () => {
     const deployTime = block!.timestamp;
 
     // deploy local poll
-    const p = maciState.deployPoll(
-      duration,
-      BigInt(deployTime + duration),
-      maxValues,
-      treeDepths,
-      messageBatchSize,
-      coordinator,
-    );
+    const p = maciState.deployPoll(BigInt(deployTime + duration), maxValues, treeDepths, messageBatchSize, coordinator);
     expect(p.toString()).to.eq(pollId.toString());
 
     // publish the NOTHING_UP_MY_SLEEVE message

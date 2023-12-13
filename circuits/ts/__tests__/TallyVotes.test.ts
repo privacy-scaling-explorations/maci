@@ -56,7 +56,6 @@ describe("TallyVotes circuit", function () {
       );
 
       pollId = maciState.deployPoll(
-        duration,
         BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,
@@ -137,7 +136,6 @@ describe("TallyVotes circuit", function () {
       }
 
       const pollId = maciState.deployPoll(
-        duration,
         BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,

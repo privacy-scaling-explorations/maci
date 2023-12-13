@@ -217,7 +217,6 @@ describe("MACI", () => {
       pollId = event.args._pollId;
 
       const p = maciState.deployPoll(
-        duration,
         BigInt(deployTime + duration),
         maxValues,
         treeDepths,

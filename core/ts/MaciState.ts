@@ -9,15 +9,19 @@ import { IJsonMaciState, IJsonPoll, IMaciState, MaxValues, TreeDepths } from "./
  * A representation of the MACI contract.
  */
 export class MaciState implements IMaciState {
+  // a MaciState can hold multiple polls
   public polls: Poll[] = [];
 
+  // in this quinary tree we hold all signups (hash of a state leaf)
   public stateTree: IncrementalQuinTree;
+  // the leaves of the state tree
   public stateLeaves: StateLeaf[] = [];
+  // how deep the state tree is
+  public stateTreeDepth: number;
 
   public numSignUps = 0;
 
-  public stateTreeDepth: number;
-
+  // to keep track if a poll is currently being processed
   public pollBeingProcessed: boolean;
   public currentPollBeingProcessed: number;
 
@@ -29,6 +33,7 @@ export class MaciState implements IMaciState {
     this.stateTreeDepth = stateTreeDepth;
     this.stateTree = new IncrementalQuinTree(this.stateTreeDepth, blankStateLeafHash, STATE_TREE_ARITY, hash5);
 
+    // we put a blank state leaf to prevent a DoS attack
     this.stateLeaves.push(blankStateLeaf);
     this.stateTree.insert(blankStateLeafHash);
   }
@@ -51,7 +56,6 @@ export class MaciState implements IMaciState {
 
   /**
    * Deploy a new poll with the given parameters.
-   * @param duration - The duration of the poll in seconds.
    * @param pollEndTimestamp - The Unix timestamp at which the poll ends.
    * @param maxValues - The maximum number of values for each vote option.
    * @param treeDepths - The depths of the tree.
@@ -60,16 +64,13 @@ export class MaciState implements IMaciState {
    * @returns The index of the newly deployed poll.
    */
   public deployPoll(
-    duration: number,
     pollEndTimestamp: bigint,
     maxValues: MaxValues,
     treeDepths: TreeDepths,
     messageBatchSize: number,
     coordinatorKeypair: Keypair,
   ): number {
-    // TODO: fix the order of the arguments
     const poll: Poll = new Poll(
-      duration,
       pollEndTimestamp,
       coordinatorKeypair,
       treeDepths,
@@ -80,7 +81,6 @@ export class MaciState implements IMaciState {
       },
       maxValues,
       this,
-      this.stateTreeDepth,
     );
 
     this.polls.push(poll);

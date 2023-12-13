@@ -74,7 +74,6 @@ describe("MaciState", function () {
 
     it("the message root should be correct", () => {
       pollId = maciState.deployPoll(
-        duration,
         BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,
@@ -172,7 +171,6 @@ describe("MaciState", function () {
       }
 
       pollId = maciState.deployPoll(
-        duration,
         BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,
@@ -306,7 +304,6 @@ describe("MaciState", function () {
       m1 = new MaciState(STATE_TREE_DEPTH);
       m1.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
       pollId = m1.deployPoll(
-        duration,
         BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,
@@ -347,11 +344,6 @@ describe("MaciState", function () {
       const m4 = m1.copy();
       m4.stateLeaves[0].voiceCreditBalance = BigInt(m4.stateLeaves[0].voiceCreditBalance) + BigInt(1);
       expect(m1.equals(m4)).not.to.be.true;
-
-      // modify poll.duration
-      const m5 = m1.copy();
-      m5.polls[pollId].duration = m5.polls[pollId].duration + 1;
-      expect(m1.equals(m5)).not.to.be.true;
 
       // modify poll.coordinatorKeypair
       const m6 = m1.copy();
@@ -455,7 +447,6 @@ describe("MaciState", function () {
 
         // deploy a poll
         pollId = maciState.deployPoll(
-          duration,
           BigInt(Math.floor(Date.now() / 1000) + duration),
           maxValues,
           treeDepths,
@@ -555,7 +546,6 @@ describe("MaciState", function () {
 
         // deploy a poll
         pollId = maciState.deployPoll(
-          duration,
           BigInt(Math.floor(Date.now() / 1000) + duration),
           maxValues,
           treeDepths,
@@ -670,7 +660,6 @@ describe("MaciState", function () {
 
         // deploy a poll
         pollId = maciState.deployPoll(
-          duration,
           BigInt(Math.floor(Date.now() / 1000) + duration),
           maxValues,
           treeDepths,

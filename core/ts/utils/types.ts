@@ -19,7 +19,7 @@ import { PathElements } from "optimisedmt";
 /**
  * A circuit inputs for the circom circuit
  */
-export type CircuitInputs = Record<string, string | bigint | bigint[] | string[]>;
+export type CircuitInputs = Record<string, string | bigint | bigint[] | bigint[][] | string[] | bigint[][][]>;
 
 /**
  * This interface defines the tree depths.
@@ -65,7 +65,6 @@ export interface IMaciState {
   signUp(pubKey: PubKey, initialVoiceCreditBalance: bigint, timestamp: bigint): number;
   // This method is used for deploying poll.
   deployPoll(
-    duration: number,
     pollEndTimestamp: bigint,
     maxValues: MaxValues,
     treeDepths: TreeDepths,
@@ -76,7 +75,7 @@ export interface IMaciState {
   deployNullPoll(): void;
   copy(): MaciState;
   equals(m: MaciState): boolean;
-  toJSON(): any;
+  toJSON(): IJsonMaciState;
 }
 
 /**
@@ -97,7 +96,7 @@ export interface IPoll {
   subsidyPerBatch(): CircuitInputs;
   copy(): Poll;
   equals(p: Poll): boolean;
-  toJSON(): any;
+  toJSON(): IJsonPoll;
   setCoordinatorKeypair(serializedPrivateKey: string): void;
 }
 
@@ -105,7 +104,6 @@ export interface IPoll {
  * This interface defines the JSON representation of a Poll
  */
 export interface IJsonPoll {
-  duration: number;
   pollEndTimestamp: string;
   treeDepths: TreeDepths;
   batchSizes: BatchSizes;

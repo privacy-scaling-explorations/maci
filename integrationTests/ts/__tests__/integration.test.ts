@@ -118,7 +118,6 @@ describe("integration tests", function test() {
     const messageBatchSize = 5 ** messageBatchDepth;
 
     pollId = maciState.deployPoll(
-      duration,
       BigInt(Date.now() + duration * 60000),
       maxValues,
       treeDepths,
