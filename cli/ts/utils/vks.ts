@@ -1,4 +1,4 @@
-import { VerifyingKey } from "maci-domainobjs";
+import { IVkContractParams, VerifyingKey } from "maci-domainobjs";
 
 /**
  * Compare two verifying keys
@@ -6,7 +6,7 @@ import { VerifyingKey } from "maci-domainobjs";
  * @param vkOnChain - the verifying key on chain
  * @returns whether they are equal or not
  */
-export const compareVks = (vk: VerifyingKey, vkOnChain: any): boolean => {
+export const compareVks = (vk: VerifyingKey, vkOnChain: IVkContractParams): boolean => {
   let isEqual = vk.ic.length === vkOnChain.ic.length;
   for (let i = 0; i < vk.ic.length; i++) {
     isEqual = isEqual && vk.ic[i].x.toString() === vkOnChain.ic[i].x.toString();

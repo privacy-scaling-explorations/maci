@@ -258,21 +258,21 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     currentTallyCommitmentHasher.in[2] <== currentPerVOSpentVoiceCreditsCommitment.hash;
 
     /*currentTallyCommitmentHasher.hash === currentTallyCommitment;*/
-     // Check if the current tally commitment is correct only if this is not the first batch
-     component iz = IsZero();
-     iz.in <== isFirstBatch;
-     // iz.out is 1 if this is not the first batch
-     // iz.out is 0 if this is the first batch
- 
-     // hz is 0 if this is the first batch
-     // currentTallyCommitment should be 0 if this is the first batch
- 
-     // hz is 1 if this is not the first batch
-     // currentTallyCommitment should not be 0 if this is the first batch
-     signal hz;
-     hz <== iz.out * currentTallyCommitmentHasher.hash;
- 
-     hz === currentTallyCommitment;
+    // Check if the current tally commitment is correct only if this is not the first batch
+    component iz = IsZero();
+    iz.in <== isFirstBatch;
+    // iz.out is 1 if this is not the first batch
+    // iz.out is 0 if this is the first batch
+
+    // hz is 0 if this is the first batch
+    // currentTallyCommitment should be 0 if this is the first batch
+
+    // hz is 1 if this is not the first batch
+    // currentTallyCommitment should not be 0 if this is the first batch
+    signal hz;
+    hz <== iz.out * currentTallyCommitmentHasher.hash;
+
+    hz === currentTallyCommitment;
 
     // Compute the root of the new results
     component newResultsRoot = QuinCheckRoot(voteOptionTreeDepth);
@@ -311,6 +311,7 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     newTallyCommitmentHasher.hash === newTallyCommitment;
 }
 
+// template that generates a sha256 hash of the provided tally inputs
 template TallyVotesInputHasher() {
     signal input sbCommitment;
     signal input currentTallyCommitment;

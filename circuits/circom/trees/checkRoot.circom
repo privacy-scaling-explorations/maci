@@ -33,11 +33,10 @@ include "../hasherPoseidon.circom";
 
 /*}*/
 
+// Given a quin Merkle root and a list of leaves, check if the root is the
+// correct result of inserting all the leaves into the tree in the given
+// order.
 template QuinCheckRoot(levels) {
-    // Given a quin Merkle root and a list of leaves, check if the root is the
-    // correct result of inserting all the leaves into the tree in the given
-    // order.
-
     var LEAVES_PER_NODE = 5;
 
     // The total number of leaves

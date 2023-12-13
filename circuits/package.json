@@ -4,7 +4,8 @@
   "description": "zk-SNARK circuits for MACI",
   "main": "build/index.js",
   "scripts": {
-    "build-test-circuits": "bash ./scripts/build.sh",
+    "build-test-circuits-c": "bash ./scripts/build_intel.sh",
+    "build-test-circuits-wasm": "bash ./scripts/build_arm.sh",
     "watch": "tsc --watch",
     "build": "tsc",
     "test": "ts-mocha --exit ts/__tests__/*.test.ts",
@@ -22,10 +23,8 @@
     "test-tallyVotes": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit ts/__tests__/TallyVotes.test.ts"
   },
   "dependencies": {
-    "circomlib": "weijiekoh/circomlib#ac85e82c1914d47789e2032fb11ceb2cfdd38a2b",
-    "shelljs": "^0.8.3",
-    "snarkjs": "^0.5.0",
-    "tmp": "^0.2.1"
+    "circomlib": "https://github.com/weijiekoh/circomlib#ac85e82c1914d47789e2032fb11ceb2cfdd38a2b",
+    "snarkjs": "^0.5.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",

@@ -1,15 +1,14 @@
-import { getSignal } from "./utils";
-
 import { stringifyBigInts } from "maci-crypto";
 import path from "path";
 import { expect } from "chai";
-const tester = require("circom_tester").wasm;
+import tester from "circom_tester";
+import { getSignal } from "./utils/utils";
 
 describe("Splice circuit", () => {
-  let circuit: any;
+  let circuit: tester.WasmTester;
   before(async () => {
-    const circuitPath = path.join(__dirname, "../../circom/test", `splicer_test.circom`);
-    circuit = await tester(circuitPath);
+    const circuitPath = path.resolve(__dirname, "../../circom/test", `splicer_test.circom`);
+    circuit = await tester.wasm(circuitPath);
   });
 
   it("Should output the correct reconstructed level", async () => {

@@ -1,43 +1,42 @@
-import { getSignal } from "./utils";
-
 import { stringifyBigInts, genRandomSalt } from "maci-crypto";
-
 import { PCommand, Keypair } from "maci-domainobjs";
-
 import path from "path";
 import { expect } from "chai";
-const tester = require("circom_tester").wasm;
-
-const keypair = new Keypair();
-const stateIndex = BigInt(1);
-const newPubKey = keypair.pubKey;
-const voteOptionIndex = BigInt(0);
-const newVoteWeight = BigInt(9);
-const nonce = BigInt(1);
-const pollId = BigInt(0);
-const salt = genRandomSalt();
-const numSignUps = 25;
-const maxVoteOptions = 25;
-
-const slKeypair = new Keypair();
-const slPubKey = slKeypair.pubKey;
-
-const slVoiceCreditBalance = BigInt(100);
-const ballotNonce = BigInt(0);
-const ballotCurrentVotesForOption = BigInt(0);
-const slTimestamp = 1;
-const pollEndTimestamp = 2;
-
-const command: PCommand = new PCommand(stateIndex, newPubKey, voteOptionIndex, newVoteWeight, nonce, pollId, salt);
-
-const signature = command.sign(slKeypair.privKey);
+import tester from "circom_tester";
+import { getSignal } from "./utils/utils";
 
 describe("StateLeafAndBallotTransformer circuit", function () {
   this.timeout(90000);
-  let circuit: any;
+
+  // variables needed for testing
+  const keypair = new Keypair();
+  const stateIndex = BigInt(1);
+  const newPubKey = keypair.pubKey;
+  const voteOptionIndex = BigInt(0);
+  const newVoteWeight = BigInt(9);
+  const nonce = BigInt(1);
+  const pollId = BigInt(0);
+  const salt = genRandomSalt();
+  const numSignUps = 25;
+  const maxVoteOptions = 25;
+
+  const slKeypair = new Keypair();
+  const slPubKey = slKeypair.pubKey;
+
+  const slVoiceCreditBalance = BigInt(100);
+  const ballotNonce = BigInt(0);
+  const ballotCurrentVotesForOption = BigInt(0);
+  const slTimestamp = 1;
+  const pollEndTimestamp = 2;
+
+  const command: PCommand = new PCommand(stateIndex, newPubKey, voteOptionIndex, newVoteWeight, nonce, pollId, salt);
+
+  const signature = command.sign(slKeypair.privKey);
+
+  let circuit: tester.WasmTester;
   before(async () => {
-    const circuitPath = path.join(__dirname, "../../circom/test", `stateLeafAndBallotTransformer_test.circom`);
-    circuit = await tester(circuitPath);
+    const circuitPath = path.resolve(__dirname, "../../circom/test", `stateLeafAndBallotTransformer_test.circom`);
+    circuit = await tester.wasm(circuitPath);
   });
   it("Should output new state leaf and ballot values if the command is valid", async () => {
     const circuitInputs = stringifyBigInts({

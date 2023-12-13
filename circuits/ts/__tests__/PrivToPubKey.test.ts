@@ -1,18 +1,16 @@
 import { Keypair } from "maci-domainobjs";
-
 import { stringifyBigInts } from "maci-crypto";
-
-import { getSignal } from "./utils";
 import path from "path";
 import { expect } from "chai";
-const tester = require("circom_tester").wasm;
+import tester from "circom_tester";
+import { getSignal } from "./utils/utils";
 
 describe("Public key derivation circuit", function () {
   this.timeout(90000);
-  let circuit: any;
+  let circuit: tester.WasmTester;
   before(async () => {
-    const circuitPath = path.join(__dirname, "../../circom/test", `privToPubKey_test.circom`);
-    circuit = await tester(circuitPath);
+    const circuitPath = path.resolve(__dirname, "../../circom/test", `privToPubKey_test.circom`);
+    circuit = await tester.wasm(circuitPath);
   });
 
   it("correctly computes a public key", async () => {

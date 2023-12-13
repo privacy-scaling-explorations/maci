@@ -1,17 +1,16 @@
-import { getSignal } from "./utils";
-
 import { genRandomSalt, stringifyBigInts } from "maci-crypto";
-import path from "path";
 import { expect } from "chai";
-const tester = require("circom_tester").wasm;
+import tester from "circom_tester";
+import path from "path";
+import { getSignal } from "./utils/utils";
 
 describe("UnpackElement circuit", () => {
-  let circuit: any;
+  let circuit: tester.WasmTester;
 
   describe("UnpackElement", () => {
     before(async () => {
-      const circuitPath = path.join(__dirname, "../../circom/test", `unpackElement_test.circom`);
-      circuit = await tester(circuitPath);
+      const circuitPath = path.resolve(__dirname, "../../circom/test", `unpackElement_test.circom`);
+      circuit = await tester.wasm(circuitPath);
     });
 
     it("Should unpack a field element with 5 packed values correctly", async () => {
@@ -40,8 +39,8 @@ describe("UnpackElement circuit", () => {
 
   describe("unpackElement4", () => {
     before(async () => {
-      const circuitPath = path.join(__dirname, "../../circom/test", `unpackElement4_test.circom`);
-      circuit = await tester(circuitPath);
+      const circuitPath = path.resolve(__dirname, "../../circom/test", `unpackElement4_test.circom`);
+      circuit = await tester.wasm(circuitPath);
     });
 
     it("Should unpack a field element with 4 packed values correctly", async () => {

@@ -1,22 +1,20 @@
-import { getSignal } from "./utils";
-
 import { PCommand, Keypair } from "maci-domainobjs";
-const tester = require("circom_tester").wasm;
-
+import tester from "circom_tester";
 import { stringifyBigInts, genRandomSalt, sha256Hash, hashLeftRight, hash13, hash5, hash4, hash3 } from "maci-crypto";
 import path from "path";
 import { expect } from "chai";
+import { getSignal } from "./utils/utils";
 
 describe("Poseidon hash circuits", function () {
   this.timeout(30000);
 
-  let circuit: any;
+  let circuit: tester.WasmTester;
 
   describe("SHA256", () => {
     describe("Sha256HashLeftRight", () => {
       before(async () => {
-        const circuitPath = path.join(__dirname, "../../circom/test", `sha256HashLeftRight_test.circom`);
-        circuit = await tester(circuitPath);
+        const circuitPath = path.resolve(__dirname, "../../circom/test", `sha256HashLeftRight_test.circom`);
+        circuit = await tester.wasm(circuitPath);
       });
 
       it("correctly hashes two random values", async () => {
@@ -37,8 +35,8 @@ describe("Poseidon hash circuits", function () {
 
     describe("Sha256Hasher4", () => {
       before(async () => {
-        const circuitPath = path.join(__dirname, "../../circom/test", `sha256Hasher4_test.circom`);
-        circuit = await tester(circuitPath);
+        const circuitPath = path.resolve(__dirname, "../../circom/test", `sha256Hasher4_test.circom`);
+        circuit = await tester.wasm(circuitPath);
       });
 
       it("correctly hashes 4 random values", async () => {
@@ -63,8 +61,8 @@ describe("Poseidon hash circuits", function () {
 
     describe("Sha256Hasher6", () => {
       before(async () => {
-        const circuitPath = path.join(__dirname, "../../circom/test", `sha256Hasher6_test.circom`);
-        circuit = await tester(circuitPath);
+        const circuitPath = path.resolve(__dirname, "../../circom/test", `sha256Hasher6_test.circom`);
+        circuit = await tester.wasm(circuitPath);
       });
       it("correctly hashes 6 random values", async () => {
         const preImages: any = [];
@@ -90,8 +88,8 @@ describe("Poseidon hash circuits", function () {
   describe("Poseidon", () => {
     describe("Hasher5", () => {
       before(async () => {
-        const circuitPath = path.join(__dirname, "../../circom/test", `hasher5_test.circom`);
-        circuit = await tester(circuitPath);
+        const circuitPath = path.resolve(__dirname, "../../circom/test", `hasher5_test.circom`);
+        circuit = await tester.wasm(circuitPath);
       });
       it("correctly hashes 5 random values", async () => {
         const preImages: any = [];
@@ -115,8 +113,8 @@ describe("Poseidon hash circuits", function () {
 
     describe("Hasher4", () => {
       before(async () => {
-        const circuitPath = path.join(__dirname, "../../circom/test", `hasher4_test.circom`);
-        circuit = await tester(circuitPath);
+        const circuitPath = path.resolve(__dirname, "../../circom/test", `hasher4_test.circom`);
+        circuit = await tester.wasm(circuitPath);
       });
       it("correctly hashes 4 random values", async () => {
         const preImages: any = [];
@@ -140,8 +138,8 @@ describe("Poseidon hash circuits", function () {
 
     describe("Hasher3", () => {
       before(async () => {
-        const circuitPath = path.join(__dirname, "../../circom/test", `hasher3_test.circom`);
-        circuit = await tester(circuitPath);
+        const circuitPath = path.resolve(__dirname, "../../circom/test", `hasher3_test.circom`);
+        circuit = await tester.wasm(circuitPath);
       });
 
       it("correctly hashes 3 random values", async () => {
@@ -166,8 +164,8 @@ describe("Poseidon hash circuits", function () {
 
     describe("Hasher13", () => {
       before(async () => {
-        const circuitPath = path.join(__dirname, "../../circom/test", `hasher13_test.circom`);
-        circuit = await tester(circuitPath);
+        const circuitPath = path.resolve(__dirname, "../../circom/test", `hasher13_test.circom`);
+        circuit = await tester.wasm(circuitPath);
       });
       it("correctly hashes 13 random values", async () => {
         const preImages: any = [];
@@ -190,8 +188,8 @@ describe("Poseidon hash circuits", function () {
 
     describe("HashLeftRight", () => {
       before(async () => {
-        const circuitPath = path.join(__dirname, "../../circom/test", `hashleftright_test.circom`);
-        circuit = await tester(circuitPath);
+        const circuitPath = path.resolve(__dirname, "../../circom/test", `hashleftright_test.circom`);
+        circuit = await tester.wasm(circuitPath);
       });
       it("correctly hashes two random values", async () => {
         const left = genRandomSalt();
@@ -212,8 +210,8 @@ describe("Poseidon hash circuits", function () {
 
   describe("MessageHasher", () => {
     before(async () => {
-      const circuitPath = path.join(__dirname, "../../circom/test", `messageHasher_test.circom`);
-      circuit = await tester(circuitPath);
+      const circuitPath = path.resolve(__dirname, "../../circom/test", `messageHasher_test.circom`);
+      circuit = await tester.wasm(circuitPath);
     });
     it("correctly hashes a message", async () => {
       const k = new Keypair();

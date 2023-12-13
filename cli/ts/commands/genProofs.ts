@@ -13,7 +13,7 @@ import {
   readContractAddress,
   success,
 } from "../utils/";
-import { Keypair, PrivKey, VerifyingKey } from "maci-domainobjs";
+import { Keypair, PrivKey } from "maci-domainobjs";
 import { extractVk, genProof, verifyProof } from "maci-circuits";
 import { genMaciStateFromContract, getDefaultSigner, parseArtifact } from "maci-contracts";
 import { Contract } from "ethers";
@@ -21,6 +21,7 @@ import { MaciState } from "maci-core";
 import { hash3, hashLeftRight, genTreeCommitment } from "maci-crypto";
 import { join } from "path";
 import { TallyData } from "../utils/interfaces";
+import { ISnarkJSVerificationKey } from "snarkjs";
 
 /**
  * Generate proofs for the message processing, tally and subsidy calculations
@@ -104,7 +105,7 @@ export const genProofs = async (
   if (!ok) logError(`Could not find ${path}.`);
 
   // the vk for the subsidy contract (optional)
-  let subsidyVk: VerifyingKey;
+  let subsidyVk: ISnarkJSVerificationKey;
   if (subsidyFile) {
     if (existsSync(subsidyFile)) logError(`${subsidyFile} exists. Please specify a different filepath.`);
     if (!subsidyZkey) logError("Please specify the subsidy zkey file location");
@@ -225,10 +226,15 @@ export const genProofs = async (
 
     try {
       // generate the proof for this batch
-      const r = await genProof(circuitInputs, processZkey, rapidsnark, processWitgen, processWasm);
+      const r = await genProof({
+        inputs: circuitInputs,
+        zkeyPath: processZkey,
+        rapidsnarkExePath: rapidsnark,
+        witnessExePath: processWitgen,
+        wasmPath: processWasm,
+      });
       // verify it
       const isValid = await verifyProof(r.publicSignals, r.proof, processVk);
-
       if (!isValid) logError("Error: generated an invalid proof");
 
       const thisProof = {
@@ -279,7 +285,13 @@ export const genProofs = async (
       subsidyCircuitInputs = poll.subsidyPerBatch();
       try {
         // generate proof for this batch
-        const r = await genProof(subsidyCircuitInputs, subsidyZkey, rapidsnark, subsidyWitgen, subsidyWasm);
+        const r = await genProof({
+          inputs: subsidyCircuitInputs,
+          zkeyPath: subsidyZkey,
+          rapidsnarkExePath: rapidsnark,
+          witnessExePath: subsidyWitgen,
+          wasmPath: subsidyWasm,
+        });
         // check validity of it
         const isValid = await verifyProof(r.publicSignals, r.proof, subsidyVk);
         if (!isValid) logError("Error: generated an invalid subsidy calc proof");
@@ -336,7 +348,13 @@ export const genProofs = async (
 
     try {
       // generate the proof
-      const r = await genProof(tallyCircuitInputs, tallyZkey, rapidsnark, tallyWitgen, tallyWasm);
+      const r = await genProof({
+        inputs: tallyCircuitInputs,
+        zkeyPath: tallyZkey,
+        rapidsnarkExePath: rapidsnark,
+        witnessExePath: tallyWitgen,
+        wasmPath: tallyWasm,
+      });
 
       // verify it
       const isValid = await verifyProof(r.publicSignals, r.proof, tallyVk);
