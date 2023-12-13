@@ -46,7 +46,9 @@ We’re building technical infrastructure, operational expertise & a network of 
 
 **Long term, our vision is to build the most widely adopted QF solution in the world, powered by MACI.**
 
-Our vision to eventually enable QF rounds, running e.g. every quarter, at the local, municipal, national and global scale. We want QF rounds to become the “default” place where projects are contributing funds to public goods
+Our vision to eventually enable QF rounds, running e.g. every quarter, at the local, municipal, national and global scale. We want QF rounds to become the “default” place where projects are contributing funds to public goods.
+
+[Learn more about our QF initiatives here](https://qf.pse.dev/about).
 
 ### High-level QF ecosystem goals
 
@@ -61,84 +63,6 @@ Our vision to eventually enable QF rounds, running e.g. every quarter, at the lo
 3. 2024/5: implement additional functionality (key-switching, gas-less voting)
 4. 2025: support additional QF mechanisms
 5. 2025 & beyond: TBD
-
-# Where are we now?
-
-Despite the MACI project existing in some form for 4+ years now, we still see MACI & QF largely at the “research & development” stage. We’ve built an MVP and have shipped a production product to market (starting with [MACI v1.0](https://mirror.xyz/privacy-scaling-explorations.eth/V0QkCAtsYUd5y7RO7L5OAwmawhY9LTJ7jlOZ4KW1J7M)) but we’re still very much in the stage of testing, iterating & refining. We’re looking to gain adoption from projects, whether experimental or in production, in order to gain product feedback & quickly iterate on improvements. We still have lots of potential research areas to explore in order to make MACI usable from the mass market.
-
-## 2023 year in review
-
-Overall, 2023 has been a turbulent year on the MACI team with up & downs.
-
-A few major initiatives & themes worth calling out, which influence our 2024 roadmap strategy.
-
-## Successes in 2023
-
-### P0tion v1.0 release & early traction
-
-Originally planned as tooling to support MACI’s trusted setup ceremony, eventually we generalized this project & codebase to provide infrastructure that supports any Groth16 Phase 2 Trusted Setup ceremony.
-
-The project was publicly launched in August & has already seen early traction in the community. 4 ceremonies have already been run, including the **[MACI v1 Setup Ceremony](https://ceremony.pse.dev/projects/Maci%20v1%20Trusted%20Setup%20Ceremony)**! More projects continue to indicate interest, both by running ceremonies on our hosted infrastructure ([ceremony.pse.dev](https://ceremony.pse.dev/)) as well as forking the project to run their own ceremonies, which has attracted ~260s of contributions.
-
-**References**
-
-- [Github](https://github.com/privacy-scaling-explorations/p0tion)
-- [Website](https://ceremony.pse.dev/)
-- [Wiki](https://p0tion.super.site/)
-- [v1.0 release post](https://mirror.xyz/privacy-scaling-explorations.eth/TuLZRdgCQsydC8JJgCNH4F7GzifRBQ6fr31DHGLFVWM)
-
-### Community QF rounds
-
-The goal of our QF project has been to serve as a reference implementation on how to integrate MACI as well as support the practical adoption of this community-funding technology.
-
-This year we continued to build out our [fork-able QF stack](https://github.com/privacy-scaling-explorations/qf) & partnered with a variety of Ethereum community organizers to run 6 successful QF/QV rounds, with a total of $58,000 of matching pool funds disbursed to community projects:
-
-1. [ETH Porto](https://eth.movimentotransformers.org/#/): $10,000
-2. [ETH Dam](https://qf.super.site/case-studies/ethdam): $15,000
-3. [ETH Honduras](https://qf.super.site/case-studies/eth-honduras-23): $10,000
-4. [ETH Argentina](https://qf.super.site/case-studies/eth-argentina-23): $20,000
-5. [EthCon Korea](https://qf.ethcon.kr/): $0 (completely community-run!)
-6. [ETH Taiwan](https://www.zkpvoting.tw/#/): $3,000
-
-[Learn more about some of community QF rounds in our case studies](https://qf.super.site/case-studies).
-
-We also connected with tens of other grassroots Ethereum communities. Although other rounds “failed” to launch in 2023, we established relationships & opened doors to potential future rounds. We learned valuable insights about what makes a successful community partner, what level of skill & participation is required to make a round work. Other orgs we explored rounds with included ETH Rome, ETH Mexico, ETH Brasil, ETH Colombia & ETH Gunu.
-
-**References**
-
-- [GitHub](https://github.com/privacy-scaling-explorations/qf)
-- [Website](https://qf.super.site/)
-
-## Challenges in 2023
-
-### Lack of MACI adoption
-
-Despite publishing the [MACI v1.0 release](https://medium.com/privacy-scaling-explorations/release-announcement-maci-1-0-c032bddd2157) over 2 years ago, not a single project has integrated MACI v1.x in a production environment (aside from [QFI](https://github.com/privacy-scaling-explorations/qf), the internal PSE project).
-
-While attempts have not been well documented, we’re aware of a handful of anecdotal accounts of developer teams demonstrating interest in MACI, attempting to integrate it, but eventually giving up after weeks of effort due to a variety of issues (steep learning curve, poor documentation, lack of code commenting or readability, limited support from the MACI team).
-
-### MACI repo & community neglect
-
-Although our core team has been working hard on various initiatives, our communication, priorities & activities have not been visible to the community. Most communication has been in private TG groups & collaboration on core team development has primarily been in closed GH project boards. This creates a lack of certainty around the investment in & maintenance of the project.
-
-The [MACI repo](https://github.com/privacy-scaling-explorations/maci) has been largely neglected in 2023. As of early October, there were >90 open issues & >30 opens PRs, many of which are months or years old, and most of which had no response from our core team. This does not inspire confidence from the community that this project is actively maintained, or that the core team is open to community contributions.
-
-While we’ve had a public TG group (with >250 people), there’s not much activity from the core team there & we haven't reliably responded to questions or inquiries from the community.
-
-### Half-baked research & development
-
-The team took on several ambitious areas of research & development (particularly research). While we made progress in areas, most of these projects have not come to fruition in terms of being published or integrated into the MACI product:
-
-- We had grantees working on [ElGamal research & development](https://github.com/privacy-scaling-explorations/maci/issues/796) but they were not closely supervised & their work is largely WIP that hasn’t been integrated into the project
-- We kicked off work on the [MACI coordinator service](https://github.com/privacy-scaling-explorations/maci-coordinator). We implemented an API to assist with coordinator proof generation. Work began on a frontend React app but progress stalled & the work has not been completed:
-- Research on [Group Wise Matching in Quadratic Funding](https://github.com/privacy-scaling-explorations/maci/issues/905)
-- Research on [Nova Integration with MACI](https://github.com/privacy-scaling-explorations/maci/issues/904)
-
-It seems team members were mostly assigned to their own independent initiatives, which led to these isolated workstreams. Individuals found it hard to gain feedback & support from the team. Moving forward, we want to align individual goals with larger team goals in order to encourage closer collaboration on the projects we push forward.
-
-### Team turnover
-
-In 2023 we lost some core team members which contributed to resource constraints, stalled projects, & general confusion within team around priorities. This also led to morale issues with productivity, frustrations & uncertainty of the future direction. Yet ultimately the team & project perseveres! We’re hopeful with the new structure & growth opportunities, we can achieve an impactful 2024.
 
 # 2024 workstreams
 
@@ -197,7 +121,7 @@ The hope here is that close interactions with integration developers & Ethereum 
 
 _~30% of team’s total bandwidth_
 
-[Read context on on our QF initiative here](https://qf.super.site/about).
+[Read context on on our QF initiative here](https://qf.pse.dev/about).
 
 ### 2024 goal
 
@@ -207,14 +131,14 @@ _~30% of team’s total bandwidth_
 
 - Build an evaluation framework of QF rounds, to increase our sophistication around how we measure success
 - Landscape analysis of QF & capital-allocation projects to better understand how our efforts fit in within the broader ecosystem
-- Update & expand our [QF website](https://qf.super.site/), with public launch to generate inbound interest
+- Update & expand our [QF website](https://qf.pse.dev/), with public launch to generate inbound interest
 - Explore community collaboration opportunities (running QF rounds)
 - Exploring project collaboration opportunities (supporting MACI/QF integrations)
 
 **References**
 
 - [GitHub](https://github.com/privacy-scaling-explorations/qf)
-- [Website](https://qf.super.site/)
+- [Website](https://qf.pse.dev/)
 
 ## 4) P0tion support & handoff
 
@@ -264,72 +188,6 @@ While not prioritized as an upcoming workstream, we think it’s worth calling o
   - e.g. [Group Wise Matching in Quadratic Funding](https://github.com/privacy-scaling-explorations/maci/issues/905)
 - Scaling explorations
   - e.g SNARK Folding Schemes ([Nova integration](https://github.com/privacy-scaling-explorations/maci/issues/904))
-
-# Resource requirements
-
-### Hiring
-
-- **ASAP**
-
-  - 2 engineers to drive MACI development
-    - JavaScript/TypeScript is a must, Solidity & Circom knowledge nice-to-have
-    - Could be full-stack devs, or specialists (e.g. 1 frontend dev, 1 backend / smart contract dev)
-
-- **Soon™ (2nd half of 2024?)**
-  - As we begin to tackle “future areas of research & development”… additional roles we’d potentially like to hire for:
-    - Full-stack engineer (QF stack: frontend & smart contract development)
-    - Cryptography/circuit engineer (ElGamal work, Nova integration)
-    - Researcher (MACI scalability, mechanism design, QF research)
-
-### Audit
-
-- Given we plan to release a v1.2 in Q1 2024 (& potentially another version later in the year!), we’ll want auditing resources for this (via either internal or external security team)
-
-### Design
-
-- MACI identity & branding workshop to assist with user personas & messaging
-- Nice-to-have: website design help & logo design
-
-### QF matching funds
-
-- If we hit our goal of 12 QF rounds, we expect matching pool amounts totaling ~$350,000
-
-### Event budget
-
-- ~$25,000 budget to run hackathon bounties & workshops
-
-# Major decision points
-
-_Initiatives & potential events in 2024 that will influence our priorities & progress_
-
-### 1) QF landscape analysis
-
-The results from this upcoming research initiative will influence our strategic direction in terms of
-
-- A) exploring MACI integrations with other projects
-- B) building the user-facing application(s) ourselves
-
-### 2) Ability to grow our team
-
-Our success with recruiting & hiring will obviously influence our bandwidth & ability to execute
-
-Our ambitious goals require the need for certain expert knowledge & skillsets
-
-# Major risks
-
-_Potential hurdles or challenges that would prevent our team from completing our priorities_
-
-### 1) Integration risks
-
-While projects have already expressed interest (e.g. Gitcoin, Gnosis Guild), we have limited control over the ultimate decisions on community integrations. Projects may re-prioritize or determine they don’t have the internal engineering resources to push these initiatives forward.
-
-### 2) QF event risk
-
-Ultimately there’s macro events beyond our control that could cancel IRL events & QF rounds. As we continue to subtract ourselves in terms of the influence & control we exercise over QF rounds, we naturally will have less decision-making power over the outcomes of these rounds.
-
-### 3) Technical complexity
-
-MACI is a complex codebase that was originally built by expert cryptographers, most of which who are no longer with the project. Some of the research & development improvements we intend to make have some unknown technical complexity. Not all problem spaces are completely understood, which pose a risk of delaying or obstructing progress as we learn more.
 
 # Feedback
 
