@@ -18,6 +18,7 @@ import { PollContracts } from "../utils/interfaces";
  * @param voteOptionTreeDepth - the depth of the vote option tree
  * @param coordinatorPubkey - the coordinator's public key
  * @param maciAddress - the MACI contract address
+ * @param vkRegistryAddress - the vkRegistry contract address
  * @param quiet - whether to log the output to the console
  * @returns the addresses of the deployed contracts
  */
@@ -31,9 +32,18 @@ export const deployPoll = async (
   voteOptionTreeDepth: number,
   coordinatorPubkey: string,
   maciAddress?: string,
+  vkRegistryAddress?: string,
   quiet = true,
 ): Promise<PollContracts> => {
   banner(quiet);
+
+  // check if we have a vkRegistry already deployed or passed as arg
+  const vkRegistryContractAddress = readContractAddress("VkRegistry");
+  if (!vkRegistryContractAddress && !vkRegistryAddress) {
+    logError("Please provide a VkRegistry contract address");
+  }
+
+  const vkRegistry = vkRegistryAddress ? vkRegistryAddress : vkRegistryContractAddress;
 
   const _maciAddress = readContractAddress("MACI");
   if (!_maciAddress && !maciAddress) {
@@ -80,6 +90,7 @@ export const deployPoll = async (
   // deploy the message processor
   const messageProcessorContract = await deployMessageProcessor(
     verifierContractAddress,
+    vkRegistry,
     poseidonT3,
     poseidonT4,
     poseidonT5,
@@ -90,6 +101,7 @@ export const deployPoll = async (
   // deploy the tally contract
   const tallyContract = await deployTally(
     verifierContractAddress,
+    vkRegistry,
     poseidonT3,
     poseidonT4,
     poseidonT5,
@@ -100,6 +112,7 @@ export const deployPoll = async (
   // deploy the subsidy contract
   const subsidyContract = await deploySubsidy(
     verifierContractAddress,
+    vkRegistry,
     poseidonT3,
     poseidonT4,
     poseidonT5,

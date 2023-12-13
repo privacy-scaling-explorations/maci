@@ -21,20 +21,12 @@ import { logError, logGreen, success, DEFAULT_INITIAL_VOICE_CREDITS, DeployedCon
  */
 export const deploy = async (
   stateTreeDepth: number,
-  vkRegistryAddress?: string,
   initialVoiceCredits?: number,
   initialVoiceCreditsProxyAddress?: string,
   signupGatekeeperAddress?: string,
   quiet = true,
 ): Promise<DeployedContracts> => {
   banner(quiet);
-  // check if we have a vkRegistry already deployed or passed as arg
-  const vkRegistryContractAddress = readContractAddress("VkRegistry");
-  if (!vkRegistryContractAddress && !vkRegistryAddress) {
-    logError("Please provide a VkRegistry contract address");
-  }
-
-  const vkRegistry = vkRegistryAddress ? vkRegistryAddress : vkRegistryContractAddress;
 
   if (initialVoiceCreditsProxyAddress && initialVoiceCredits) {
     logError("Please provide either an initialVoiceCreditProxyAddress or initialVoiceCredits, not both");
@@ -74,7 +66,6 @@ export const deploy = async (
     signupGatekeeperContractAddress,
     initialVoiceCreditProxyContractAddress,
     verifierContractAddress,
-    vkRegistry,
     topUpCreditAddress,
     stateTreeDepth,
     true,

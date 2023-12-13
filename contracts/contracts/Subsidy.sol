@@ -34,11 +34,14 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
   error CbiTooLarge();
 
   Verifier public verifier;
+  VkRegistry public vkRegistry;
 
   /// @notice Create a new Subsidy contract
   /// @param _verifier The Verifier contract
-  constructor(Verifier _verifier) {
+  /// @param _vkRegistry The VkRegistry contract
+  constructor(Verifier _verifier, VkRegistry _vkRegistry) {
     verifier = _verifier;
+    vkRegistry = _vkRegistry;
   }
 
   /// @notice Update the currentSbCommitment if the proof is valid.
@@ -143,11 +146,7 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
     uint256 _newSubsidyCommitment
   ) public view returns (bool isValid) {
     (uint8 intStateTreeDepth, , , uint8 voteOptionTreeDepth) = _poll.treeDepths();
-    (VkRegistry vkRegistry, IMACI maci, , ) = _poll.extContracts();
-
-    if (address(vkRegistry) == address(0)) {
-      revert VkNotSet();
-    }
+    (IMACI maci, , ) = _poll.extContracts();
 
     // Get the verifying key
     VerifyingKey memory vk = vkRegistry.getSubsidyVk(maci.stateTreeDepth(), intStateTreeDepth, voteOptionTreeDepth);

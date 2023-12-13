@@ -46,9 +46,14 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   uint256 public sbCommitment;
 
   Verifier public verifier;
+  VkRegistry public vkRegistry;
 
-  constructor(Verifier _verifier) {
+  /// @notice Create a new Tally contract
+  /// @param _verifier The Verifier contract
+  /// @param _vkRegistry The VkRegistry contract
+  constructor(Verifier _verifier, VkRegistry _vkRegistry) {
     verifier = _verifier;
+    vkRegistry = _vkRegistry;
   }
 
   /// @notice Pack the batch start index and number of signups into a 100-bit value.
@@ -152,7 +157,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   ) public view returns (bool isValid) {
     (uint8 intStateTreeDepth, , , uint8 voteOptionTreeDepth) = _poll.treeDepths();
 
-    (VkRegistry vkRegistry, IMACI maci, , ) = _poll.extContracts();
+    (IMACI maci, , ) = _poll.extContracts();
 
     // Get the verifying key
     VerifyingKey memory vk = vkRegistry.getTallyVk(maci.stateTreeDepth(), intStateTreeDepth, voteOptionTreeDepth);

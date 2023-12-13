@@ -22,15 +22,12 @@ import { MessageProcessor } from "./MessageProcessor.sol";
 contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots {
   using SafeERC20 for ERC20;
 
-  bool internal isInit = false;
+  bool internal isInit;
   // The coordinator's public key
   PubKey public coordinatorPubKey;
 
   uint256 public mergedStateRoot;
   uint256 public coordinatorPubKeyHash;
-
-  // TODO: to reduce the Poll bytecode size, consider storing deployTime and
-  // duration in a mapping in the MACI contract
 
   // The timestamp of the block at which the Poll was deployed
   uint256 internal deployTime;

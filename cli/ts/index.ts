@@ -35,7 +35,6 @@ program.name(name).description(description).version(version);
 program
   .command("create")
   .description("deploy the contracts")
-  .option("-v, --vkRegistryAddress <vkRegistryAddress>", "the vk registry contract address")
   .option("-i, --initialVoiceCredits <initialVoiceCredits>", "the initial voice credits")
   .option(
     "-p, --initialVoiceCreditsProxyAddress <initialVoiceCreditsProxyAddress>",
@@ -49,7 +48,6 @@ program
     try {
       await deploy(
         cmdOptions.stateTreeDepth,
-        cmdOptions.vkRegistryAddress,
         cmdOptions.initialVoiceCredits,
         cmdOptions.initialVoiceCreditsProxyAddress,
         cmdOptions.signupGatekeeperAddress,
@@ -64,7 +62,7 @@ program
   .description("check that the verifying keys in the contract match the local ones")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .option("-x, --maci-contract <maciContract>", "the MACI contract address")
+  .option("-vk, --vk-contract <vkContract>", "the VkRegistry contract address")
   .requiredOption("-s, --state-tree-depth <stateTreeDepth>", "the state tree depth")
   .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the intermediate state tree depth")
   .requiredOption("-m, --msg-tree-depth <messageTreeDepth>", "the message tree depth")
@@ -82,7 +80,7 @@ program
         cmdOptions.msgBatchDepth,
         cmdOptions.processMessagesZkey,
         cmdOptions.tallyVotesZkey,
-        cmdOptions.maciContract,
+        cmdOptions.vkContract,
         cmdOptions.quiet,
       );
     } catch (error: any) {
@@ -149,6 +147,7 @@ program
 program
   .command("deployPoll")
   .description("deploy a new poll")
+  .option("-vk, --vkRegistryAddress <vkRegistryAddress>", "the vk registry contract address")
   .requiredOption("-t, --duration <pollDuration>", "the poll duration")
   .requiredOption("-g, --max-messages <maxMessages>", "the max messages")
   .requiredOption("-mv, --max-vote-options <maxVoteOptions>", "the max vote options")
@@ -172,6 +171,7 @@ program
         cmdObj.voteOptionTreeDepth,
         cmdObj.pubkey,
         cmdObj.maciAddress,
+        cmdObj.vkRegistryAddress,
         cmdObj.quiet,
       );
     } catch (error: any) {

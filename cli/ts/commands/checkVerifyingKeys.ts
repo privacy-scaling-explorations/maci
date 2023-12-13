@@ -26,7 +26,7 @@ import { Contract } from "ethers";
  * @param processMessagesZkeyPath the path to the process messages zkey
  * @param tallyVotesZkeyPath the path to the tally votes zkey
  * @param quiet whether to log the output
- * @param maciContract the address of the MACI contract
+ * @param vkRegistry the address of the VkRegistry contract
  * @returns whether the verifying keys match or not
  */
 export const checkVerifyingKeys = async (
@@ -37,7 +37,7 @@ export const checkVerifyingKeys = async (
   messageBatchDepth: number,
   processMessagesZkeyPath: string,
   tallyVotesZkeyPath: string,
-  maciContract?: string,
+  vkRegistry?: string,
   quiet = true,
 ): Promise<boolean> => {
   banner(quiet);
@@ -45,11 +45,11 @@ export const checkVerifyingKeys = async (
   const signer = await getDefaultSigner();
 
   // ensure we have the contract addresses that we need
-  if (!readContractAddress("MACI") && !maciContract) logError("Please provide a MACI contract address");
-  const maciAddress = maciContract ? maciContract : readContractAddress("MACI");
-  if (!(await contractExists(signer.provider, maciAddress))) logError("MACI contract does not exist");
+  if (!readContractAddress("VkRegistry") && !vkRegistry) logError("Please provide a VkRegistry contract address");
+  const vkContractAddress = vkRegistry ? vkRegistry : readContractAddress("VkRegistry");
+  if (!(await contractExists(signer.provider, vkContractAddress))) logError("The VkRegistry contract does not exist");
 
-  const maciContractInstance = new Contract(maciAddress, parseArtifact("MACI")[0], signer);
+  const vkRegistryContractInstance = new Contract(vkContractAddress, parseArtifact("VkRegistry")[0], signer);
 
   // we need to ensure that the zkey files exist
   if (!existsSync(processMessagesZkeyPath)) logError("Process messages zkey does not exist");
@@ -62,19 +62,20 @@ export const checkVerifyingKeys = async (
   try {
     logYellow(quiet, info("Retrieving verifying keys from the contract..."));
     // retrieve the verifying keys from the contract
-    const vkRegistryAddress = await maciContractInstance.vkRegistry();
-    const vkRegistryContract = new Contract(vkRegistryAddress, parseArtifact("VkRegistry")[0], signer);
-
     const messageBatchSize = 5 ** messageBatchDepth;
 
-    const processVkOnChain = await vkRegistryContract.getProcessVk(
+    const processVkOnChain = await vkRegistryContractInstance.getProcessVk(
       stateTreeDepth,
       messageTreeDepth,
       voteOptionTreeDepth,
       messageBatchSize,
     );
 
-    const tallyVkOnChain = await vkRegistryContract.getTallyVk(stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth);
+    const tallyVkOnChain = await vkRegistryContractInstance.getTallyVk(
+      stateTreeDepth,
+      intStateTreeDepth,
+      voteOptionTreeDepth,
+    );
 
     // do the actual validation
     if (!compareVks(processVk, processVkOnChain)) logError("Process verifying keys do not match");

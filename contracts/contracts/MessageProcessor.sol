@@ -39,11 +39,14 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
   uint256 public sbCommitment;
 
   Verifier public verifier;
+  VkRegistry public vkRegistry;
 
   /// @notice Create a new instance
   /// @param _verifier The Verifier contract address
-  constructor(Verifier _verifier) {
+  /// @param _vkRegistry The VkRegistry contract address
+  constructor(Verifier _verifier, VkRegistry _vkRegistry) {
     verifier = _verifier;
+    vkRegistry = _vkRegistry;
   }
 
   /// @notice Update the Poll's currentSbCommitment if the proof is valid.
@@ -68,7 +71,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     (uint256 messageBatchSize, , ) = _poll.batchSizes();
 
     AccQueue messageAq;
-    (, , messageAq, ) = _poll.extContracts();
+    (, messageAq, ) = _poll.extContracts();
 
     // Require that the message queue has been merged
     uint256 messageRoot = messageAq.getMainRoot(messageTreeDepth);
@@ -147,11 +150,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
     (, , uint8 messageTreeDepth, uint8 voteOptionTreeDepth) = _poll.treeDepths();
     (uint256 messageBatchSize, , ) = _poll.batchSizes();
     (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
-    (VkRegistry vkRegistry, IMACI maci, , ) = _poll.extContracts();
-
-    if (address(vkRegistry) == address(0)) {
-      revert VkNotSet();
-    }
+    (IMACI maci, , ) = _poll.extContracts();
 
     // Calculate the public input hash (a SHA256 hash of several values)
     uint256 publicInputHash = genProcessMessagesPublicInputHash(

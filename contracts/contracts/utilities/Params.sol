@@ -37,7 +37,6 @@ contract Params {
   /// that are to be passed to a Poll contract on
   /// deployment
   struct ExtContracts {
-    VkRegistry vkRegistry;
     IMACI maci;
     AccQueue messageAq;
     TopupCredit topupCredit;

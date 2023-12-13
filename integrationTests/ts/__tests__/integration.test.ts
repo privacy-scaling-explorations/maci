@@ -63,11 +63,10 @@ describe("integration tests", function test() {
   let pollId: number;
   const coordinatorKeypair = new Keypair();
 
-  let vkRegistryAddress: string;
   // the code that we run before all tests
   before(async () => {
     // 1. deploy Vk Registry
-    vkRegistryAddress = await deployVkRegistryContract(true);
+    const vkRegistryAddress = await deployVkRegistryContract(true);
     // 2. set verifying keys
     await setVerifyingKeys(
       STATE_TREE_DEPTH,
@@ -89,7 +88,7 @@ describe("integration tests", function test() {
     maciState = new MaciState(STATE_TREE_DEPTH);
 
     // 3. deploy maci
-    contracts = await deploy(STATE_TREE_DEPTH, vkRegistryAddress, initialVoiceCredits);
+    contracts = await deploy(STATE_TREE_DEPTH, initialVoiceCredits);
 
     // 4. create a poll
     pollContracts = await deployPoll(

@@ -9,7 +9,6 @@ import { AccQueue, AccQueueQuinaryBlankSl } from "./trees/AccQueue.sol";
 import { IMACI } from "./interfaces/IMACI.sol";
 import { Params } from "./utilities/Params.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
-import { VkRegistry } from "./VkRegistry.sol";
 import { TopupCredit } from "./TopupCredit.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { SnarkConstants } from "./crypto/SnarkConstants.sol";
@@ -48,14 +47,6 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable {
   /// @notice A mapping of block timestamps to the number of state leaves
   mapping(uint256 => uint256) public numStateLeaves;
 
-  // The block timestamp at which the state queue subroots were last merged
-  //uint256 public mergeSubRootsTimestamp;
-
-  /// @notice The verifying key registry. There may be multiple verifying keys stored
-  /// on chain, and Poll contracts must select the correct VK based on the
-  /// circuit's compile-time parameters, such as tree depths and batch sizes.
-  VkRegistry public override vkRegistry;
-
   // ERC20 contract that hold topup credits
   TopupCredit public topupCredit;
 
@@ -64,9 +55,6 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable {
   /// @notice The state AccQueue. Represents a mapping between each user's public key
   /// and their voice credit balance.
   AccQueue public override stateAq;
-
-  /// @notice Whether the init() function has been successfully executed yet.
-  bool public isInitialised;
 
   /// @notice Address of the SignUpGatekeeper, a contract which determines whether a
   /// user may sign up to vote
@@ -81,21 +69,8 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable {
   uint256 public signUpTimestamp;
 
   // Events
-  event Init(VkRegistry _vkRegistry, TopupCredit _topupCredit);
   event SignUp(uint256 _stateIndex, PubKey _userPubKey, uint256 _voiceCreditBalance, uint256 _timestamp);
-
   event DeployPoll(uint256 _pollId, address _pollAddr, PubKey _pubKey);
-
-  // TODO: consider removing MergeStateAqSubRoots and MergeStateAq as the
-  // functions in Poll which call them already have their own events
-  event MergeStateAqSubRoots(uint256 _pollId, uint256 _numSrQueueOps);
-  event MergeStateAq(uint256 _pollId);
-
-  /// @notice Ensure certain functions only run after the contract has been initialized
-  modifier afterInit() {
-    if (!isInitialised) revert MaciNotInit();
-    _;
-  }
 
   /// @notice Only allow a Poll contract to call the modified function.
   modifier onlyPoll(uint256 _pollId) {
@@ -103,12 +78,10 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable {
     _;
   }
 
-  error MaciNotInit();
   error CallerMustBePoll(address _caller);
   error AlreadyInitialized();
   error PoseidonHashLibrariesNotLinked();
   error WrongPollOwner();
-  error WrongVkRegistryOwner();
   error TooManySignups();
   error MaciPubKeyLargerThanSnarkFieldSize();
   error PreviousPollNotCompleted(uint256 pollId);
@@ -123,6 +96,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable {
     PollFactory _pollFactory,
     SignUpGatekeeper _signUpGatekeeper,
     InitialVoiceCreditProxy _initialVoiceCreditProxy,
+    TopupCredit _topupCredit,
     uint8 _stateTreeDepth
   ) {
     // Deploy the state AccQueue
@@ -130,6 +104,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable {
     stateAq.enqueue(BLANK_STATE_LEAF_HASH);
 
     pollFactory = _pollFactory;
+    topupCredit = _topupCredit;
     signUpGatekeeper = _signUpGatekeeper;
     initialVoiceCreditProxy = _initialVoiceCreditProxy;
     stateTreeDepth = _stateTreeDepth;
@@ -138,26 +113,6 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable {
 
     // Verify linked poseidon libraries
     if (hash2([uint256(1), uint256(1)]) == 0) revert PoseidonHashLibrariesNotLinked();
-  }
-
-  /// @notice Initialise the various factory/helper contracts. This should only be run
-  /// once and it must be run before deploying the first Poll.
-  /// @param _vkRegistry The VkRegistry contract
-  /// @param _topupCredit The topupCredit contract
-  function init(VkRegistry _vkRegistry, TopupCredit _topupCredit) public onlyOwner {
-    if (isInitialised) revert AlreadyInitialized();
-
-    isInitialised = true;
-
-    vkRegistry = _vkRegistry;
-    topupCredit = _topupCredit;
-
-    // Check that the factory contracts have correct access controls before
-    // allowing any functions in MACI to run (via the afterInit modifier)
-    if (pollFactory.owner() != address(this)) revert WrongPollOwner();
-    if (vkRegistry.owner() != owner()) revert WrongVkRegistryOwner();
-
-    emit Init(_vkRegistry, _topupCredit);
   }
 
   /// @notice Allows any eligible user sign up. The sign-up gatekeeper should prevent
@@ -176,7 +131,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable {
     PubKey memory _pubKey,
     bytes memory _signUpGatekeeperData,
     bytes memory _initialVoiceCreditProxyData
-  ) public afterInit {
+  ) public {
     // ensure we do not have more signups than what the circuits support
     if (numSignUps == uint256(STATE_TREE_ARITY) ** uint256(stateTreeDepth)) revert TooManySignups();
 
@@ -216,7 +171,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable {
     MaxValues memory _maxValues,
     TreeDepths memory _treeDepths,
     PubKey memory _coordinatorPubKey
-  ) public afterInit onlyOwner returns (address pollAddr) {
+  ) public onlyOwner returns (address pollAddr) {
     uint256 pollId = nextPollId;
 
     // Increment the poll ID for the next poll
@@ -242,7 +197,6 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable {
       _treeDepths,
       batchSizes,
       _coordinatorPubKey,
-      vkRegistry,
       this,
       topupCredit,
       owner()
@@ -258,19 +212,17 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable {
   /// @notice Allow Poll contracts to merge the state subroots
   /// @param _numSrQueueOps Number of operations
   /// @param _pollId The active Poll ID
-  function mergeStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId) public override onlyPoll(_pollId) afterInit {
+  function mergeStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId) public override onlyPoll(_pollId) {
     stateAq.mergeSubRoots(_numSrQueueOps);
-
-    emit MergeStateAqSubRoots(_pollId, _numSrQueueOps);
   }
 
   /// @notice Allow Poll contracts to merge the state root
   /// @param _pollId The active Poll ID
   /// @return root The calculated Merkle root
-  function mergeStateAq(uint256 _pollId) public override onlyPoll(_pollId) afterInit returns (uint256 root) {
+  function mergeStateAq(uint256 _pollId) public override onlyPoll(_pollId) returns (uint256 root) {
     root = stateAq.merge(stateTreeDepth);
 
-    emit MergeStateAq(_pollId);
+    return root;
   }
 
   /// @notice Return the main root of the StateAq contract

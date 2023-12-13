@@ -239,17 +239,9 @@ const transferOwnership = async <T extends Ownable>(contract: T, newOwner: strin
   await tx.wait();
 };
 
-const initMaci = async (contract: MACI, quiet = false, ...args: string[]): Promise<void> => {
-  log("Initializing MACI", quiet);
-  const tx = await contract.init(args[0], args[1], {
-    maxFeePerGas: await getFeeData().then((res) => res?.maxFeePerGas),
-  });
-
-  await tx.wait();
-};
-
 const deployMessageProcessor = async (
   verifierAddress: string,
+  vkRegistryAddress: string,
   poseidonT3Address: string,
   poseidonT4Address: string,
   poseidonT5Address: string,
@@ -266,11 +258,18 @@ const deployMessageProcessor = async (
     quiet,
   );
 
-  return deployContractWithLinkedLibraries<MessageProcessor>(mpFactory, "MessageProcessor", quiet, verifierAddress);
+  return deployContractWithLinkedLibraries<MessageProcessor>(
+    mpFactory,
+    "MessageProcessor",
+    quiet,
+    verifierAddress,
+    vkRegistryAddress,
+  );
 };
 
 const deployTally = async (
   verifierAddress: string,
+  vkRegistryAddress: string,
   poseidonT3Address: string,
   poseidonT4Address: string,
   poseidonT5Address: string,
@@ -287,11 +286,12 @@ const deployTally = async (
     quiet,
   );
 
-  return deployContractWithLinkedLibraries<Tally>(tallyFactory, "Tally", quiet, verifierAddress);
+  return deployContractWithLinkedLibraries<Tally>(tallyFactory, "Tally", quiet, verifierAddress, vkRegistryAddress);
 };
 
 const deploySubsidy = async (
   verifierAddress: string,
+  vkRegistryAddress: string,
   poseidonT3Address: string,
   poseidonT4Address: string,
   poseidonT5Address: string,
@@ -308,7 +308,13 @@ const deploySubsidy = async (
     quiet,
   );
 
-  return deployContractWithLinkedLibraries<Subsidy>(subsidyFactory, "Subsidy", quiet, verifierAddress);
+  return deployContractWithLinkedLibraries<Subsidy>(
+    subsidyFactory,
+    "Subsidy",
+    quiet,
+    verifierAddress,
+    vkRegistryAddress,
+  );
 };
 
 interface IDeployedMaci {
@@ -322,7 +328,6 @@ const deployMaci = async (
   signUpTokenGatekeeperContractAddress: string,
   initialVoiceCreditBalanceAddress: string,
   verifierContractAddress: string,
-  vkRegistryContractAddress: string,
   topupCreditContractAddress: string,
   stateTreeDepth = 10,
   quiet = false,
@@ -368,13 +373,9 @@ const deployMaci = async (
     await pollFactoryContract.getAddress(),
     signUpTokenGatekeeperContractAddress,
     initialVoiceCreditBalanceAddress,
+    topupCreditContractAddress,
     stateTreeDepth,
   );
-
-  log("Transferring ownership of PollFactoryContract to MACI", quiet);
-  await transferOwnership<PollFactory>(pollFactoryContract, await maciContract.getAddress(), quiet);
-
-  await initMaci(maciContract, quiet, vkRegistryContractAddress, topupCreditContractAddress);
 
   const [AccQueueQuinaryMaciAbi] = parseArtifact("AccQueue");
   const stateAqContractAddress = await maciContract.stateAq();
@@ -435,7 +436,6 @@ export {
   deployPollFactory,
   genJsonRpcDeployer,
   getInitialVoiceCreditProxyAbi,
-  initMaci,
   transferOwnership,
   abiDir,
   solDir,

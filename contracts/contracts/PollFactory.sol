@@ -9,12 +9,10 @@ import { DomainObjs } from "./utilities/DomainObjs.sol";
 import { VkRegistry } from "./VkRegistry.sol";
 import { Poll } from "./Poll.sol";
 
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-
 /// @title PollFactory
 /// @notice A factory contract which deploys Poll contracts. It allows the MACI contract
 /// size to stay within the limit set by EIP-170.
-contract PollFactory is Params, DomainObjs, Ownable {
+contract PollFactory is Params, DomainObjs {
   // The number of children each node in the message tree has
   uint256 public constant TREE_ARITY = 5;
   // custom error
@@ -26,7 +24,6 @@ contract PollFactory is Params, DomainObjs, Ownable {
   /// @param _treeDepths The depths of the merkle trees
   /// @param _batchSizes The batch sizes for processing
   /// @param _coordinatorPubKey The coordinator's public key
-  /// @param _vkRegistry The vkRegistry contract
   /// @param _maci The MACI contract interface reference
   /// @param _topupCredit The TopupCredit contract
   /// @param _pollOwner The owner of the poll
@@ -37,11 +34,10 @@ contract PollFactory is Params, DomainObjs, Ownable {
     TreeDepths memory _treeDepths,
     BatchSizes memory _batchSizes,
     PubKey memory _coordinatorPubKey,
-    VkRegistry _vkRegistry,
     IMACI _maci,
     TopupCredit _topupCredit,
     address _pollOwner
-  ) public onlyOwner returns (Poll poll) {
+  ) public returns (Poll poll) {
     /// @notice Validate _maxValues
     /// maxVoteOptions must be less than 2 ** 50 due to circuit limitations;
     /// it will be packed as a 50-bit value along with other values as one
@@ -60,12 +56,7 @@ contract PollFactory is Params, DomainObjs, Ownable {
     AccQueue messageAq = new AccQueueQuinaryMaci(_treeDepths.messageTreeSubDepth);
 
     /// @notice the smart contracts that a Poll would interact with
-    ExtContracts memory extContracts = ExtContracts({
-      vkRegistry: _vkRegistry,
-      maci: _maci,
-      messageAq: messageAq,
-      topupCredit: _topupCredit
-    });
+    ExtContracts memory extContracts = ExtContracts({ maci: _maci, messageAq: messageAq, topupCredit: _topupCredit });
 
     // deploy the poll
     poll = new Poll(_duration, _maxValues, _treeDepths, _batchSizes, _coordinatorPubKey, extContracts);
@@ -77,7 +68,6 @@ contract PollFactory is Params, DomainObjs, Ownable {
     // init Poll
     poll.init();
 
-    // TODO: should this be _maci.owner() instead?
     poll.transferOwnership(_pollOwner);
 
     return poll;
