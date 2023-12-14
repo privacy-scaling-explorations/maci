@@ -5,8 +5,6 @@ import { sha256Hash, hashLeftRight, hash3, hash4, hash5, genRandomSalt } from "m
 import { deployPoseidonContracts, linkPoseidonLibraries } from "../ts/deploy";
 import { Hasher } from "../typechain-types";
 
-require("module-alias/register");
-
 describe("Hasher", () => {
   let hasherContract: Hasher;
 
