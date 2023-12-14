@@ -12,13 +12,20 @@ HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js setVerifyingKeys
     --msg-tree-depth 8 \
     --vote-option-tree-depth 3 \
     --msg-batch-depth 2 \
-    --process-messages-zkey ./zkeys/processmessages_6-8-2-3_final.zkey \
-    --tally-votes-zkey ./zkeys/tallyvotes_6-2-3_final.zkey \
+    --process-messages-zkey ./zkeys/processMessages_6-8-2-3.zkey \
+    --tally-votes-zkey ./zkeys/tallyVotes_6-2-3.zkey \
     -q true
 HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js create -s 6 -q true
 HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js deployPoll \
     -pk macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
-    -t 30 -g 25 -mv 25 -i 2 -m 8 -b 2 -v 3 -q true
+    --duration 30 \
+    --max-messages 390625 \
+    --max-vote-options 125 \
+    --int-state-tree-depth 2 \
+    --msg-tree-depth 8 \
+    --msg-batch-depth 2 \
+    --vote-option-tree-depth 3 \
+    -q true 
 HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js signup \
     --pubkey macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391 \
     -q true
@@ -47,8 +54,8 @@ HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js genProofs \
     --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
     --poll-id 0 \
     --rapidsnark ~/rapidsnark/build/prover \
-    --process-zkey ./zkeys/processmessages_6-8-2-3_final.zkey \
-    --tally-zkey ./zkeys/tallyvotes_6-2-3_final.zkey \
+    --process-zkey ./zkeys/processMessages_6-8-2-3.zkey \
+    --tally-zkey ./zkeys/tallyVotes_6-2-3.zkey \
     --tally-file tally.json \
     --output proofs/ \
     --tally-witnessgen ./zkeys/tallyVotes_6-2-3 \

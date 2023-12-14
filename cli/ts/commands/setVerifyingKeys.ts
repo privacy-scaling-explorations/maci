@@ -65,7 +65,7 @@ export const setVerifyingKeys = async (
   if (stateTreeDepth < intStateTreeDepth) logError("Invalid state tree depth or intermediate state tree depth");
 
   // Check the pm zkey filename against specified params
-  const pmMatch = processMessagesZkeyPath.match(/.+_(\d+)-(\d+)-(\d+)-(\d+)_/);
+  const pmMatch = processMessagesZkeyPath.match(/.+_(\d+)-(\d+)-(\d+)-(\d+)/);
   if (!pmMatch) logError(`${processMessagesZkeyPath} has an invalid filename`);
 
   const pmStateTreeDepth = Number(pmMatch[1]);
@@ -73,7 +73,7 @@ export const setVerifyingKeys = async (
   const pmMsgBatchDepth = Number(pmMatch[3]);
   const pmVoteOptionTreeDepth = Number(pmMatch[4]);
 
-  const tvMatch = tallyVotesZkeyPath.match(/.+_(\d+)-(\d+)-(\d+)_/);
+  const tvMatch = tallyVotesZkeyPath.match(/.+_(\d+)-(\d+)-(\d+)/);
   if (!tvMatch) logError(`${tallyVotesZkeyPath} has an invalid filename`);
 
   const tvStateTreeDepth = Number(tvMatch[1]);
@@ -114,7 +114,7 @@ export const setVerifyingKeys = async (
 
   // do the same for the subsidy vk if any
   if (subsidyZkeyPath) {
-    const ssMatch = subsidyZkeyPath.match(/.+_(\d+)-(\d+)-(\d+)_/);
+    const ssMatch = subsidyZkeyPath.match(/.+_(\d+)-(\d+)-(\d+)/);
     if (!ssMatch) logError(`${subsidyZkeyPath} has an invalid filename`);
 
     const ssStateTreeDepth = Number(ssMatch[1]);

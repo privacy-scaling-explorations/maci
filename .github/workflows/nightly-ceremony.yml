@@ -1,8 +1,8 @@
 name: Nightly Ceremony
 
 on:
-  push:
-  pull_request:
+  schedule:
+    - cron: 0 0 * * *
 
 jobs:
   test-with-ceremony-keys:
@@ -10,6 +10,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: dev
 
       - name: Use Node.js 20
         uses: actions/setup-node@v4
@@ -47,8 +49,8 @@ jobs:
       - name: Download ceremony artifacts
         run: ./.github/scripts/download-ceremony-artifacts.sh
 
-      - name: Run tests
-        run: ./.github/scripts/ceremony-param-tests.sh
+      - name: Run e2e tests
+        run: ./.github/scripts/ceremony-param-tests-c-witness.sh
 
       - name: Stop Hardhat
         run: kill $(lsof -t -i:8545)
