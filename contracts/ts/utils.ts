@@ -66,13 +66,13 @@ const deployTestContracts = async (
     gatekeeperContractAddress,
     constantIntialVoiceCreditProxyContractAddress,
     mockVerifierContractAddress,
-    vkRegistryContractAddress,
     topupCreditContractAddress,
     stateTreeDepth,
     quiet,
   );
   const mpContract = await deployMessageProcessor(
     mockVerifierContractAddress,
+    vkRegistryContractAddress,
     poseidonAddrs[0],
     poseidonAddrs[1],
     poseidonAddrs[2],
@@ -81,6 +81,7 @@ const deployTestContracts = async (
   );
   const tallyContract = await deployTally(
     mockVerifierContractAddress,
+    vkRegistryContractAddress,
     poseidonAddrs[0],
     poseidonAddrs[1],
     poseidonAddrs[2],

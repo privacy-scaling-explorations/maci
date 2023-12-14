@@ -11,6 +11,7 @@ contract ConstantInitialVoiceCreditProxy is InitialVoiceCreditProxy {
   uint256 internal balance;
 
   /// @notice creates a new ConstantInitialVoiceCreditProxy
+  /// @param _balance the balance to be returned by getVoiceCredits
   constructor(uint256 _balance) {
     balance = _balance;
   }

@@ -10,10 +10,6 @@ interface IMACI {
   /// @return The depth of the state tree
   function stateTreeDepth() external view returns (uint8);
 
-  /// @notice Get the VkRegistry
-  /// @return The VkRegistry instance
-  function vkRegistry() external view returns (VkRegistry);
-
   /// @notice Get the root of the state accumulator queue
   /// @return The root of the state accumulator queue
   function getStateAqRoot() external view returns (uint256);

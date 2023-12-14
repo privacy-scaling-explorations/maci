@@ -104,7 +104,7 @@ export const proveOnChain = async (
     signer,
   ) as AccQueue;
 
-  const vkRegistryContractAddress = (await pollContract.extContracts()).vkRegistry;
+  const vkRegistryContractAddress = await tallyContract.vkRegistry();
   if (!(await contractExists(signer.provider, vkRegistryContractAddress))) {
     logError("There is no VkRegistry contract linked to the specified MACI contract.");
   }

@@ -58,10 +58,7 @@ const genMaciStateFromContract = async (
 
   assert(stateTreeDepth === BigInt(maciState.stateTreeDepth));
 
-  let initLogs: Log[] = [];
   let signUpLogs: Log[] = [];
-  let mergeStateAqSubRootsLogs: Log[] = [];
-  let mergeStateAqLogs: Log[] = [];
   let deployPollLogs: Log[] = [];
 
   const lastBlock = endBlock || (await provider.getBlockNumber());
@@ -70,20 +67,14 @@ const genMaciStateFromContract = async (
   for (let i = fromBlock; i < lastBlock; i += blocksPerRequest + 1) {
     const toBlock = i + blocksPerRequest >= lastBlock ? undefined : i + blocksPerRequest;
 
-    const [tmpInitLogs, tmpSignUpLogs, tmpMergeStateAqSubRootsLogs, tmpMergeStateAqLogs, tmpDeployPollLogs] =
+    const [tmpSignUpLogs, tmpDeployPollLogs] =
       // eslint-disable-next-line no-await-in-loop
       await Promise.all([
-        maciContract.queryFilter(maciContract.filters.Init(), i, toBlock),
         maciContract.queryFilter(maciContract.filters.SignUp(), i, toBlock),
-        maciContract.queryFilter(maciContract.filters.MergeStateAqSubRoots(), i, toBlock),
-        maciContract.queryFilter(maciContract.filters.MergeStateAq(), i, toBlock),
         maciContract.queryFilter(maciContract.filters.DeployPoll(), i, toBlock),
       ]);
 
-    initLogs = initLogs.concat(tmpInitLogs);
     signUpLogs = signUpLogs.concat(tmpSignUpLogs);
-    mergeStateAqSubRootsLogs = mergeStateAqSubRootsLogs.concat(tmpMergeStateAqSubRootsLogs);
-    mergeStateAqLogs = mergeStateAqLogs.concat(tmpMergeStateAqLogs);
     deployPollLogs = deployPollLogs.concat(tmpDeployPollLogs);
 
     if (sleepAmount) {
@@ -91,21 +82,6 @@ const genMaciStateFromContract = async (
       await sleep(sleepAmount);
     }
   }
-
-  // init() should only be called up to 1 time
-  assert(initLogs.length <= 1, "More than 1 init() event detected which should not be possible");
-
-  let vkRegistryAddress: string | undefined;
-
-  initLogs.forEach((log) => {
-    const mutableLog = {
-      ...log,
-      topics: [...log.topics],
-    };
-    const event = maciIface.parseLog(mutableLog) as unknown as { args: { _vkRegistry: string } };
-
-    vkRegistryAddress = event.args._vkRegistry;
-  });
 
   let actions: Action[] = [];
 
@@ -125,43 +101,6 @@ const genMaciStateFromContract = async (
         pubKey: new PubKey(event.args._userPubKey.map((x) => BigInt(x))),
         voiceCreditBalance: Number(event.args._voiceCreditBalance),
         timestamp: Number(event.args._timestamp),
-      },
-    });
-  });
-
-  // TODO: consider removing MergeStateAqSubRoots and MergeStateAq as the
-  // functions in Poll which call them already have their own events
-  mergeStateAqSubRootsLogs.forEach((log) => {
-    assert(!!log);
-    const mutableLogs = { ...log, topics: [...log.topics] };
-    const event = maciIface.parseLog(mutableLogs) as unknown as { args: { _pollId: number; _numSrQueueOps: number } };
-
-    const p = Number(event.args._pollId);
-
-    actions.push({
-      type: "MergeStateAqSubRoots",
-      blockNumber: log.blockNumber,
-      transactionIndex: log.transactionIndex,
-      data: {
-        numSrQueueOps: Number(event.args._numSrQueueOps),
-        pollId: p,
-      },
-    });
-  });
-
-  mergeStateAqLogs.forEach((log) => {
-    assert(!!log);
-    const mutableLogs = { ...log, topics: [...log.topics] };
-    const event = maciIface.parseLog(mutableLogs) as unknown as { args: { _pollId: number } };
-
-    const p = Number(event.args._pollId);
-
-    actions.push({
-      type: "MergeStateAq",
-      blockNumber: log.blockNumber,
-      transactionIndex: log.transactionIndex,
-      data: {
-        pollId: p,
       },
     });
   });
@@ -211,8 +150,6 @@ const genMaciStateFromContract = async (
   const onChainMaxValues = await pollContract.maxValues();
   const onChainTreeDepths = await pollContract.treeDepths();
   const onChainBatchSizes = await pollContract.batchSizes();
-
-  assert(vkRegistryAddress === (await maciContract.vkRegistry()));
 
   const maxValues = {
     maxMessages: Number(onChainMaxValues.maxMessages),
@@ -315,37 +252,6 @@ const genMaciStateFromContract = async (
       data: {
         message,
       },
-    });
-  });
-
-  mergeMaciStateAqSubRootsLogs.forEach((log) => {
-    assert(!!log);
-    const mutableLogs = { ...log, topics: [...log.topics] };
-    const event = pollIface.parseLog(mutableLogs) as unknown as { args: { _numSrQueueOps: string } };
-
-    const numSrQueueOps = Number(event.args._numSrQueueOps);
-    actions.push({
-      type: "MergeMaciStateAqSubRoots",
-      blockNumber: log.blockNumber,
-      transactionIndex: log.transactionIndex,
-      data: {
-        numSrQueueOps,
-      },
-    });
-  });
-
-  mergeMaciStateAqLogs.forEach((log) => {
-    assert(!!log);
-    const mutableLogs = { ...log, topics: [...log.topics] };
-
-    const event = pollIface.parseLog(mutableLogs) as unknown as { args: { _stateRoot: string } };
-
-    const stateRoot = BigInt(event.args._stateRoot);
-    actions.push({
-      type: "MergeMaciStateAq",
-      blockNumber: log.blockNumber,
-      transactionIndex: log.transactionIndex,
-      data: { stateRoot },
     });
   });
 
