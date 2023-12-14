@@ -9,7 +9,7 @@ MACI blog, resources, and documentation for developers and integrators can be fo
 https://maci.pse.dev/
 
 We welcome contributions to this project. Please join our
-[Discord server][https://discord.com/invite/sF5CT5rzrR] (in the `#🗳️-maci` channel) to discuss.
+[Discord server](https://discord.com/invite/sF5CT5rzrR) (in the `#🗳️-maci` channel) to discuss.
 
 ## Packages
 
