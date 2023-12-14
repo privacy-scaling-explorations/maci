@@ -19,5 +19,5 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-static/typedoc_output
 versioned_docs/version-v1.x/solidity-docs
+versioned_docs/version-v1.x/typedoc

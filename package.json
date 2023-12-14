@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "bootstrap": "lerna bootstrap",
-    "build": "lerna run build",
+    "build": "lerna run build --ignore=website",
     "clean": "lerna exec -- rm -rf node_modules build && rm -rf node_modules",
     "commit": "git cz",
     "prettier": "prettier -c .",
@@ -18,7 +18,7 @@
     "test:cli": "lerna run test --scope \"maci-cli\"",
     "test:integration": "lerna run test --scope \"maci-integrationtests\"",
     "test": "lerna run test --ignore maci-integrationtests --ignore maci-cli",
-    "typedoc": "typedoc --options typedoc.json",
+    "typedoc": "typedoc --plugin typedoc-plugin-markdown --options typedoc.json",
     "prepare": "is-ci || husky install"
   },
   "author": "PSE",
@@ -48,6 +48,7 @@
     "prettier-plugin-solidity": "^1.2.0",
     "solhint": "^4.0.0",
     "typedoc": "^0.25.4",
+    "typedoc-plugin-markdown": "^3.17.1",
     "typescript": "^5.3.2"
   },
   "config": {

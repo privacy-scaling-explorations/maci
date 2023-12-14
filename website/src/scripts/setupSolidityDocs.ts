@@ -1,38 +1,12 @@
 import fs from "fs";
 import path from "path";
 
+import { copyDirectory } from "./utils";
+
 // where to move the solidity doc files over
 const solidityDocDir = path.resolve(__dirname, "../../versioned_docs/version-v1.x/solidity-docs");
 // the origin folder (from the contracts package)
 const sourceDir = path.resolve(__dirname, "../../../contracts/docs");
-
-/**
- * Allow to copy a directory from source to target
- * @param source - the source directory
- * @param target - the target directory
- */
-function copyDirectory(source: string, target: string) {
-  if (!fs.existsSync(target)) {
-    fs.mkdirSync(target, { recursive: true });
-  }
-
-  if (!fs.existsSync(source)) {
-    return;
-  }
-
-  const files = fs.readdirSync(source);
-
-  files.forEach((file: string) => {
-    const sourcePath = path.join(source, file);
-    const targetPath = path.join(target, file);
-
-    if (fs.lstatSync(sourcePath).isDirectory()) {
-      copyDirectory(sourcePath, targetPath);
-    } else {
-      fs.copyFileSync(sourcePath, targetPath);
-    }
-  });
-}
 
 /**
  * Currently, Solidity docgen generates the same heading for all files.
