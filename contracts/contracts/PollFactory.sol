@@ -13,9 +13,13 @@ import { Poll } from "./Poll.sol";
 /// size to stay within the limit set by EIP-170.
 contract PollFactory is Params, DomainObjs {
   // The number of children each node in the message tree has
-  uint256 public constant TREE_ARITY = 5;
+  uint256 internal constant TREE_ARITY = 5;
+
   // custom error
   error InvalidMaxValues();
+
+  /// @notice The PollFactory constructor
+  constructor() payable {}
 
   /// @notice Deploy a new Poll contract and AccQueue contract for messages.
   /// @param _duration The duration of the poll
@@ -29,10 +33,10 @@ contract PollFactory is Params, DomainObjs {
   /// @return poll The deployed Poll contract
   function deploy(
     uint256 _duration,
-    MaxValues memory _maxValues,
-    TreeDepths memory _treeDepths,
-    BatchSizes memory _batchSizes,
-    PubKey memory _coordinatorPubKey,
+    MaxValues calldata _maxValues,
+    TreeDepths calldata _treeDepths,
+    BatchSizes calldata _batchSizes,
+    PubKey calldata _coordinatorPubKey,
     IMACI _maci,
     TopupCredit _topupCredit,
     address _pollOwner

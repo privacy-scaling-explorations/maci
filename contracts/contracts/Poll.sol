@@ -49,20 +49,11 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots {
 
   uint256 public numMessages;
 
-  /// @notice The number of messages which have been processed and the number of
-  /// signups
-  /// @return numSignups The number of signups
-  /// @return numMsgs The number of messages sent by voters
-  function numSignUpsAndMessages() public view returns (uint256 numSignups, uint256 numMsgs) {
-    numSignups = extContracts.maci.numSignUps();
-    numMsgs = numMessages;
-  }
-
   MaxValues public maxValues;
   TreeDepths public treeDepths;
   BatchSizes public batchSizes;
 
-  // errors
+  /// @notice custom errors
   error VotingPeriodOver();
   error VotingPeriodNotOver();
   error PollAlreadyInit();
@@ -95,7 +86,7 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots {
     BatchSizes memory _batchSizes,
     PubKey memory _coordinatorPubKey,
     ExtContracts memory _extContracts
-  ) {
+  ) payable {
     extContracts = _extContracts;
 
     coordinatorPubKey = _coordinatorPubKey;
@@ -151,7 +142,8 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots {
   /// @param stateIndex The index of user in the state queue
   /// @param amount The amount of credits to topup
   function topup(uint256 stateIndex, uint256 amount) public isWithinVotingDeadline {
-    if (numMessages > maxValues.maxMessages) revert TooManyMessages();
+    // we check that we do not exceed the max number of messages
+    if (numMessages == maxValues.maxMessages) revert TooManyMessages();
 
     unchecked {
       numMessages++;
@@ -173,9 +165,11 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots {
   /// @param _encPubKey An epheremal public key which can be combined with the
   /// coordinator's private key to generate an ECDH shared key with which
   /// to encrypt the message.
-  function publishMessage(Message memory _message, PubKey memory _encPubKey) public isWithinVotingDeadline {
+  function publishMessage(Message memory _message, PubKey calldata _encPubKey) public isWithinVotingDeadline {
+    // we check that we do not exceed the max number of messages
     if (numMessages == maxValues.maxMessages) revert TooManyMessages();
 
+    // validate that the public key is valid
     if (_encPubKey.x >= SNARK_SCALAR_FIELD || _encPubKey.y >= SNARK_SCALAR_FIELD) {
       revert MaciPubKeyLargerThanSnarkFieldSize();
     }
@@ -184,6 +178,7 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots {
       numMessages++;
     }
 
+    // force the message to have type 1
     _message.msgType = 1;
     uint256 messageLeaf = hashMessageAndEncPubKey(_message, _encPubKey);
     extContracts.messageAq.enqueue(messageLeaf);
@@ -251,5 +246,14 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots {
   function getDeployTimeAndDuration() public view returns (uint256 _deployTime, uint256 _duration) {
     _deployTime = deployTime;
     _duration = duration;
+  }
+
+  /// @notice The number of messages which have been processed and the number of
+  /// signups
+  /// @return numSignups The number of signups
+  /// @return numMsgs The number of messages sent by voters
+  function numSignUpsAndMessages() public view returns (uint256 numSignups, uint256 numMsgs) {
+    numSignups = extContracts.maci.numSignUps();
+    numMsgs = numMessages;
   }
 }

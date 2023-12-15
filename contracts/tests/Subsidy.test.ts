@@ -118,7 +118,7 @@ describe("Subsidy", () => {
         0,
         [0, 0, 0, 0, 0, 0, 0, 0],
       ),
-    ).to.be.revertedWithCustomError(subsidyContract, "VOTING_PERIOD_NOT_PASSED");
+    ).to.be.revertedWithCustomError(subsidyContract, "VotingPeriodNotPassed");
   });
 
   it("genSubsidyPackedVals() should generate the correct value", async () => {

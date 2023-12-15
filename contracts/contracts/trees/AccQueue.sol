@@ -93,7 +93,7 @@ abstract contract AccQueue is Ownable, Hasher {
   /// @notice Create a new AccQueue
   /// @param _subDepth The depth of each subtree.
   /// @param _hashLength The number of leaves per node (2 or 5).
-  constructor(uint256 _subDepth, uint256 _hashLength) {
+  constructor(uint256 _subDepth, uint256 _hashLength) payable {
     /// validation
     if (_subDepth == 0) revert SubDepthCannotBeZero();
     if (_subDepth > MAX_DEPTH) revert SubdepthTooLarge(_subDepth, MAX_DEPTH);

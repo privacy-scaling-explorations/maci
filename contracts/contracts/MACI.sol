@@ -18,7 +18,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @title MACI - Minimum Anti-Collusion Infrastructure Version 1
 /// @notice A contract which allows users to sign up, and deploy new polls
-contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable {
+contract MACI is IMACI, Params, Utilities, Ownable {
   /// @notice The state tree depth is fixed. As such it should be as large as feasible
   /// so that there can be as many users as possible.  i.e. 5 ** 10 = 9765625
   /// this should also match the parameter of the circom circuits.
@@ -28,8 +28,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable {
   /// in contracts/ts/genEmptyBallotRootsContract.ts file
   /// if we change the state tree depth!
   uint8 internal constant STATE_TREE_SUBDEPTH = 2;
-  uint8 internal constant STATE_TREE_ARITY = 5;
-  uint8 internal constant MESSAGE_TREE_ARITY = 5;
+  uint8 internal constant TREE_ARITY = 5;
 
   /// @notice The hash of a blank state leaf
   uint256 internal constant BLANK_STATE_LEAF_HASH =
@@ -78,6 +77,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable {
     _;
   }
 
+  /// @notice custom errors
   error CallerMustBePoll(address _caller);
   error PoseidonHashLibrariesNotLinked();
   error TooManySignups();
@@ -96,7 +96,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable {
     InitialVoiceCreditProxy _initialVoiceCreditProxy,
     TopupCredit _topupCredit,
     uint8 _stateTreeDepth
-  ) {
+  ) payable {
     // Deploy the state AccQueue
     stateAq = new AccQueueQuinaryBlankSl(STATE_TREE_SUBDEPTH);
     stateAq.enqueue(BLANK_STATE_LEAF_HASH);
@@ -137,14 +137,15 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable {
     bytes memory _initialVoiceCreditProxyData
   ) public {
     // ensure we do not have more signups than what the circuits support
-    if (numSignUps == uint256(STATE_TREE_ARITY) ** uint256(stateTreeDepth)) revert TooManySignups();
+    if (numSignUps == uint256(TREE_ARITY) ** uint256(stateTreeDepth)) revert TooManySignups();
 
     if (_pubKey.x >= SNARK_SCALAR_FIELD || _pubKey.y >= SNARK_SCALAR_FIELD) {
       revert MaciPubKeyLargerThanSnarkFieldSize();
     }
 
     // Increment the number of signups
-    // cannot overflow as numSignUps < 5 ** 10 -1
+    // cannot overflow with realistic stateTreeDepth
+    // values as numSignUps < 5 ** stateTreeDepth -1
     unchecked {
       numSignUps++;
     }
@@ -176,6 +177,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable {
     TreeDepths memory _treeDepths,
     PubKey memory _coordinatorPubKey
   ) public onlyOwner returns (address pollAddr) {
+    // cache the poll to a local variable so we can increment it
     uint256 pollId = nextPollId;
 
     // Increment the poll ID for the next poll
@@ -190,9 +192,9 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable {
 
     // The message batch size and the tally batch size
     BatchSizes memory batchSizes = BatchSizes(
-      uint24(MESSAGE_TREE_ARITY) ** _treeDepths.messageTreeSubDepth,
-      uint24(STATE_TREE_ARITY) ** _treeDepths.intStateTreeDepth,
-      uint24(STATE_TREE_ARITY) ** _treeDepths.intStateTreeDepth
+      uint24(TREE_ARITY) ** _treeDepths.messageTreeSubDepth,
+      uint24(TREE_ARITY) ** _treeDepths.intStateTreeDepth,
+      uint24(TREE_ARITY) ** _treeDepths.intStateTreeDepth
     );
 
     Poll p = pollFactory.deploy(

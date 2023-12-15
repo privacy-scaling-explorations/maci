@@ -113,7 +113,7 @@ describe("TallyVotes", () => {
         0,
         [0, 0, 0, 0, 0, 0, 0, 0],
       ),
-    ).to.be.revertedWithCustomError(tallyContract, "VOTING_PERIOD_NOT_PASSED");
+    ).to.be.revertedWithCustomError(tallyContract, "VotingPeriodNotPassed");
   });
 
   it("genTallyVotesPackedVals() should generate the correct value", async () => {

@@ -10,7 +10,7 @@ import { Poll } from "../Poll.sol";
 /// which are to be used by multiple contracts
 /// namely Subsidy, Tally and MessageProcessor
 contract CommonUtilities {
-  error VOTING_PERIOD_NOT_PASSED();
+  error VotingPeriodNotPassed();
 
   /// @notice common function for MessageProcessor, Tally and Subsidy
   /// @param _poll the poll to be checked
@@ -19,7 +19,7 @@ contract CommonUtilities {
     // Require that the voting period is over
     uint256 secondsPassed = block.timestamp - deployTime;
     if (secondsPassed <= duration) {
-      revert VOTING_PERIOD_NOT_PASSED();
+      revert VotingPeriodNotPassed();
     }
   }
 }
