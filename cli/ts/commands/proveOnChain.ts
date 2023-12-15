@@ -13,6 +13,7 @@ import {
   IVerifyingKeyStruct,
 } from "maci-contracts";
 import {
+  asHex,
   banner,
   contractExists,
   error,
@@ -278,7 +279,7 @@ export const proveOnChain = async (
       // validate process messaging proof and store the new state and ballot root commitment
       const tx = await mpContract.processMessages(
         pollContractAddress,
-        "0x" + BigInt(circuitInputs.newSbCommitment).toString(16),
+        asHex(circuitInputs.newSbCommitment),
         formattedProof,
       );
       const receipt = await tx.wait();
@@ -414,7 +415,7 @@ export const proveOnChain = async (
       const tx = await tallyContract.tallyVotes(
         pollContractAddress,
         mpContractAddress,
-        "0x" + BigInt(circuitInputs.newTallyCommitment).toString(16),
+        asHex(circuitInputs.newTallyCommitment),
         formattedProof,
       );
       const receipt = await tx.wait();

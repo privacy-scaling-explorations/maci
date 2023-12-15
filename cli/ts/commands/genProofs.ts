@@ -432,7 +432,7 @@ export const genProofs = async (
   logYellow(quiet, info(`Tally file:\n${JSON.stringify(tallyFileData, null, 4)}\n`));
 
   // compare the commitments
-  if ("0x" + newTallyCommitment.toString(16) === tallyFileData.newTallyCommitment) {
+  if (asHex(newTallyCommitment) === tallyFileData.newTallyCommitment) {
     logGreen(quiet, success("The tally commitment is correct"));
   } else {
     logError("Error: the newTallyCommitment is invalid.");
