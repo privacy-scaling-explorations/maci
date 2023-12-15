@@ -5,37 +5,12 @@ import { expect } from "chai";
 import { PCommand, Message, Keypair, StateLeaf, blankStateLeafHash } from "maci-domainobjs";
 import { hash5, NOTHING_UP_MY_SLEEVE, IncrementalQuinTree, AccQueue } from "maci-crypto";
 
-import {
-  STATE_TREE_DEPTH,
-  STATE_TREE_ARITY,
-  STATE_TREE_SUBDEPTH,
-  MaciState,
-  packProcessMessageSmallVals,
-  unpackProcessMessageSmallVals,
-  Poll,
-} from "../";
-
-const voiceCreditBalance = BigInt(100);
-
-const duration = 30;
-const maxValues = {
-  maxUsers: 25,
-  maxMessages: 25,
-  maxVoteOptions: 25,
-};
-
-const treeDepths = {
-  intStateTreeDepth: 2,
-  messageTreeDepth: 3,
-  messageTreeSubDepth: 2,
-  voteOptionTreeDepth: 4,
-};
-
-const messageBatchSize = 25;
-
-const coordinatorKeypair = new Keypair();
-
-const calculateTotal = (tallyResult: bigint[]): bigint => tallyResult.reduce((acc, v) => acc + v, BigInt(0));
+import { STATE_TREE_DEPTH, STATE_TREE_ARITY, STATE_TREE_SUBDEPTH } from "../utils/constants";
+import { MaciState } from "../MaciState";
+import { packProcessMessageSmallVals, unpackProcessMessageSmallVals } from "../utils/utils";
+import { Poll } from "../Poll";
+import { calculateTotal } from "./utils";
+import { coordinatorKeypair, duration, maxValues, messageBatchSize, treeDepths, voiceCreditBalance } from "./constants";
 
 describe("MaciState", function () {
   this.timeout(100000);
