@@ -5,6 +5,10 @@ import { copyDirectory } from "./utils";
 
 const TYPEDOC_DIR = path.resolve(__dirname, "../../typedoc");
 
+/**
+ * The Typedoc tool automatically generates related documentation links in each file. The link for the introduction of MACI is initially set to `README.md` of the entire project, but this should be changed to `introduction.md`. Simultaneously, references to `modules.md` should be updated to `index.md` since it is slated to be renamed as Typedoc's homepage.
+ * @param dirName - the name of the typedoc directory
+ */
 function updateMentionFiles(dirName: string) {
   const dir = path.join(TYPEDOC_DIR, dirName);
   const files = fs.readdirSync(dir);
@@ -43,7 +47,7 @@ let versionDir = "";
 try {
   const versionContent = fs.readFileSync(versionFile, "utf8");
   if (versionContent) {
-    const versionContentJson: string[] = JSON.parse(versionContent) as string[];
+    const versionContentJson = JSON.parse(versionContent) as string[];
     versionDir = path.resolve(__dirname, `../../versioned_docs/version-${versionContentJson[0]}/typedoc`);
   }
 } catch (e) {

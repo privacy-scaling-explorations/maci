@@ -21,3 +21,4 @@ yarn-error.log*
 
 versioned_docs/version-v1.x/solidity-docs
 versioned_docs/version-v1.x/typedoc
+typedoc
