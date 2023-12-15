@@ -1,5 +1,6 @@
 import { Keypair } from "maci-domainobjs";
 import {
+  checkVerifyingKeys,
   deploy,
   deployPoll,
   deployVkRegistryContract,
@@ -49,10 +50,11 @@ describe("e2e with Subsidy tests", function () {
 
   let maciAddresses: DeployedContracts;
   let pollAddresses: PollContracts;
+  let vkRegistryContractAddress: string;
 
   before(async () => {
     // we deploy the vk registry contract
-    await deployVkRegistryContract(true);
+    vkRegistryContractAddress = await deployVkRegistryContract(true);
     // we set the verifying keys
     await setVerifyingKeys(
       STATE_TREE_DEPTH,
@@ -1237,6 +1239,26 @@ describe("e2e with Subsidy tests", function () {
         secondPollAddresses.tally,
         secondPollAddresses.subsidy,
         testSubsidyFilePath,
+      );
+    });
+  });
+
+  describe("checkKeys", () => {
+    before(async () => {
+      // deploy maci as we need the address
+      await deploy(STATE_TREE_DEPTH);
+    });
+    it("should check if the verifying keys have been set correctly", async () => {
+      await checkVerifyingKeys(
+        STATE_TREE_DEPTH,
+        INT_STATE_TREE_DEPTH,
+        MSG_TREE_DEPTH,
+        VOTE_OPTION_TREE_DEPTH,
+        MSG_BATCH_DEPTH,
+        processMessageTestZkeyPath,
+        tallyVotesTestZkeyPath,
+        vkRegistryContractAddress,
+        subsidyTestZkeyPath,
       );
     });
   });

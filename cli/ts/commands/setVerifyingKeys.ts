@@ -81,13 +81,13 @@ export const setVerifyingKeys = async (
   const tvVoteOptionTreeDepth = Number(tvMatch[3]);
 
   if (
-    Number(stateTreeDepth) !== pmStateTreeDepth ||
-    Number(messageTreeDepth) !== pmMsgTreeDepth ||
-    Number(messageBatchDepth) !== pmMsgBatchDepth ||
-    Number(voteOptionTreeDepth) !== pmVoteOptionTreeDepth ||
-    Number(stateTreeDepth) !== tvStateTreeDepth ||
-    Number(intStateTreeDepth) !== tvIntStateTreeDepth ||
-    Number(voteOptionTreeDepth) !== tvVoteOptionTreeDepth
+    stateTreeDepth !== pmStateTreeDepth ||
+    messageTreeDepth !== pmMsgTreeDepth ||
+    messageBatchDepth !== pmMsgBatchDepth ||
+    voteOptionTreeDepth !== pmVoteOptionTreeDepth ||
+    stateTreeDepth !== tvStateTreeDepth ||
+    intStateTreeDepth !== tvIntStateTreeDepth ||
+    voteOptionTreeDepth !== tvVoteOptionTreeDepth
   )
     logError("Incorrect .zkey file; please check the circuit params");
 
@@ -120,6 +120,7 @@ export const setVerifyingKeys = async (
     const ssStateTreeDepth = Number(ssMatch[1]);
     const ssIntStateTreeDepth = Number(ssMatch[2]);
     const ssVoteOptionTreeDepth = Number(ssMatch[3]);
+
     if (
       stateTreeDepth !== ssStateTreeDepth ||
       intStateTreeDepth !== ssIntStateTreeDepth ||
@@ -129,7 +130,7 @@ export const setVerifyingKeys = async (
 
     const subsidyVkSig = genSubsidyVkSig(stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth);
     if (await vkRegistryContract.isSubsidyVkSet(subsidyVkSig))
-      logError("This subsidy verifying key is already set in the contract");
+      info("This subsidy verifying key is already set in the contract");
   }
 
   // actually set those values

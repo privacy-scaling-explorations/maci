@@ -38,6 +38,7 @@ export const checkVerifyingKeys = async (
   processMessagesZkeyPath: string,
   tallyVotesZkeyPath: string,
   vkRegistry?: string,
+  subsidyZkeyPath?: string,
   quiet = true,
 ): Promise<boolean> => {
   banner(quiet);
@@ -52,12 +53,19 @@ export const checkVerifyingKeys = async (
   const vkRegistryContractInstance = new Contract(vkContractAddress, parseArtifact("VkRegistry")[0], signer);
 
   // we need to ensure that the zkey files exist
-  if (!existsSync(processMessagesZkeyPath)) logError("Process messages zkey does not exist");
-  if (!existsSync(tallyVotesZkeyPath)) logError("Tally votes zkey does not exist");
+  if (!existsSync(processMessagesZkeyPath)) logError("The provided Process messages zkey does not exist");
+  if (!existsSync(tallyVotesZkeyPath)) logError("The provided Tally votes zkey does not exist");
 
   // extract the verification keys from the zkey files
   const processVk = VerifyingKey.fromObj(await extractVk(processMessagesZkeyPath));
   const tallyVk = VerifyingKey.fromObj(await extractVk(tallyVotesZkeyPath));
+
+  // check the subsidy key
+  let subsidyVk: VerifyingKey;
+  if (subsidyZkeyPath) {
+    if (!existsSync(subsidyZkeyPath)) logError("The provided Subsidy zkey does not exist");
+    subsidyVk = VerifyingKey.fromObj(await extractVk(subsidyZkeyPath));
+  }
 
   try {
     logYellow(quiet, info("Retrieving verifying keys from the contract..."));
@@ -77,9 +85,18 @@ export const checkVerifyingKeys = async (
       voteOptionTreeDepth,
     );
 
+    let subsidyVkOnChain: VerifyingKey;
+    if (subsidyVk)
+      subsidyVkOnChain = await vkRegistryContractInstance.getSubsidyVk(
+        stateTreeDepth,
+        intStateTreeDepth,
+        voteOptionTreeDepth,
+      );
+
     // do the actual validation
     if (!compareVks(processVk, processVkOnChain)) logError("Process verifying keys do not match");
     if (!compareVks(tallyVk, tallyVkOnChain)) logError("Tally verifying keys do not match");
+    if (subsidyVk && !compareVks(subsidyVk, subsidyVkOnChain)) logError("Subsidy verifying keys do not match");
   } catch (error: any) {
     logError(error.message);
   }
