@@ -1,42 +1,60 @@
 import fs from "fs";
 import path from "path";
 
-// Define the directory where the Typedoc HTML files are located
-const typedocDir = path.resolve(__dirname, "../../static/typedoc_output");
+import { copyDirectory } from "./utils";
 
-// Define a recursive function to find all HTML files in a directory
-function findHtmlFiles(dir: string): string[] {
-  if (!fs.existsSync(dir)) {
-    return [];
-  }
+const TYPEDOC_DIR = path.resolve(__dirname, "../../typedoc");
+
+/**
+ * The Typedoc tool automatically generates related documentation links in each file. The link for the introduction of MACI is initially set to `README.md` of the entire project, but this should be changed to `introduction.md`. Simultaneously, references to `modules.md` should be updated to `index.md` since it is slated to be renamed as Typedoc's homepage.
+ * @param dirName - the name of the typedoc directory
+ */
+function updateMentionFiles(dirName: string) {
+  const dir = path.join(TYPEDOC_DIR, dirName);
   const files = fs.readdirSync(dir);
-  const list: string[] = [];
-
-  files.forEach((file: string) => {
-    if (fs.statSync(path.resolve(dir, file)).isDirectory()) {
-      list.concat(findHtmlFiles(path.resolve(dir, file)));
-    } else if (file.endsWith(".html")) {
-      list.push(path.resolve(dir, file));
-    }
+  files.forEach((file) => {
+    const filename = path.join(dir, file);
+    let content = fs.readFileSync(filename, "utf8");
+    content = content.replaceAll("../README.md", "../../introduction.md");
+    content = content.replaceAll("../modules.md", "../index.md");
+    fs.writeFileSync(filename, content);
   });
-
-  return list;
 }
 
-// Find all HTML files in the Typedoc directory
-const htmlFiles = findHtmlFiles(typedocDir);
+// Remove the README.md file if exists
+const readmeFile = path.join(TYPEDOC_DIR, "README.md");
+if (fs.existsSync(readmeFile)) {
+  fs.unlinkSync(readmeFile);
+}
 
-// Go through each HTML file and add the target="_parent" attribute to the external links
-htmlFiles.forEach((file: string) => {
-  let content = fs.readFileSync(file, "utf8");
+// Rename modules.md to index.md, and change the README.md mention to ../introduction.md
+const modulesFile = path.join(TYPEDOC_DIR, "modules.md");
+if (fs.existsSync(modulesFile)) {
+  let content = fs.readFileSync(modulesFile, "utf8");
+  content = content.replaceAll("README.md", "../introduction.md");
+  fs.writeFileSync(modulesFile, content);
+  fs.renameSync(modulesFile, path.join(TYPEDOC_DIR, "index.md"));
+}
 
-  // Add the target="_parent" attribute to the external links
-  content = content.replace(/<a href="http/g, '<a target="_parent" href="http');
+// Change all ../README.md mention to ../../introduction.md, and change all ../modeuls.md mention to ../index.md
+updateMentionFiles("classes");
+updateMentionFiles("interfaces");
+updateMentionFiles("modules");
 
-  content = content.replace(
-    /<a href="\.\//g,
-    '<a target="_parent" href="https://github.com/privacy-scaling-explorations/maci/tree/dev/',
-  );
+// find the target moving directory
+const versionFile = path.resolve(__dirname, "../../versions.json");
+let versionDir = "";
+try {
+  const versionContent = fs.readFileSync(versionFile, "utf8");
+  if (versionContent) {
+    const versionContentJson = JSON.parse(versionContent) as string[];
+    versionDir = path.resolve(__dirname, `../../versioned_docs/version-${versionContentJson[0]}/typedoc`);
+  }
+} catch (e) {
+  versionDir = path.resolve(__dirname, "../../docs/typedoc");
+}
 
-  fs.writeFileSync(file, content);
-});
+// move the typedoc/ directory to target directory
+copyDirectory(TYPEDOC_DIR, versionDir);
+
+fs.rmSync(TYPEDOC_DIR, { recursive: true, force: true });

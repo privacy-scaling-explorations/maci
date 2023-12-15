@@ -97,11 +97,6 @@ const config: Config = {
           position: "left",
         },
         {
-          to: "/typedoc",
-          label: "TypeScript Docs",
-          position: "left",
-        },
-        {
           to: "/blog",
           label: "Blog",
           position: "left",
