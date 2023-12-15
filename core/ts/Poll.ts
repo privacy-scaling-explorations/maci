@@ -148,7 +148,7 @@ export class Poll implements IPoll {
   /**
    * Copy the state from the MaciState instance.
    */
-  private copyStateFromMaci = (): void => {
+  public copyStateFromMaci = (): void => {
     // Copy the state tree, ballot tree, state leaves, and ballot leaves
     assert(this.maciStateRef.stateLeaves.length === this.maciStateRef.stateTree.nextIndex);
 
