@@ -16,6 +16,7 @@ import { cleanThreads, isArm } from "./utils";
  * snark and a WASM witness
  * @param inputs - the inputs to the circuit
  * @param zkeyPath - the path to the zkey
+ * @param useWasm - whether we want to use the wasm witness or not
  * @param rapidsnarkExePath - the path to the rapidnsark binary
  * @param witnessExePath - the path to the compiled witness binary
  * @param wasmPath - the path to the wasm witness
@@ -25,16 +26,30 @@ import { cleanThreads, isArm } from "./utils";
 export const genProof = async ({
   inputs,
   zkeyPath,
+  useWasm,
   rapidsnarkExePath,
   witnessExePath,
   wasmPath,
   silent = false,
 }: IGenProofOptions): Promise<FullProveResult> => {
-  // if we are running on an arm chip we can use snarkjs directly
-  if (isArm()) {
-    const { proof, publicSignals } = await groth16.fullProve(inputs, wasmPath!, zkeyPath);
+  // if we want to use a wasm witness we use snarkjs
+  if (useWasm) {
+    if (!wasmPath) {
+      throw new Error("wasmPath must be specified");
+    }
+
+    if (!fs.existsSync(wasmPath)) {
+      throw new Error(`wasmPath ${wasmPath} does not exist`);
+    }
+
+    const { proof, publicSignals } = await groth16.fullProve(inputs, wasmPath, zkeyPath);
     return { proof, publicSignals };
   }
+
+  if (isArm()) {
+    throw new Error("To use rapidnsnark you currently need to be running on an intel chip");
+  }
+
   // intel chip flow (use rapidnsark)
   // Create tmp directory
   const tmpPath = path.resolve(tmpdir(), `tmp-${Date.now()}`);

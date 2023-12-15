@@ -1,5 +1,7 @@
 import { existsSync, readdirSync, rmSync } from "fs";
-import { join } from "path";
+import { arch } from "os";
+
+import path from "path";
 
 /**
  * Test utility to clean up the proofs directory
@@ -8,7 +10,7 @@ import { join } from "path";
 export const cleanVanilla = () => {
   const files = readdirSync("./proofs");
   for (const file of files) {
-    rmSync(join("./proofs", file));
+    rmSync(path.join("./proofs", file));
   }
   if (existsSync("./tally.json")) rmSync("./tally.json");
 };
@@ -20,4 +22,12 @@ export const cleanVanilla = () => {
 export const cleanSubsidy = () => {
   cleanVanilla();
   if (existsSync("./subsidy.json")) rmSync("./subsidy.json");
+};
+
+/**
+ * Check if we are running on an arm chip
+ * @returns whether we are running on an arm chip
+ */
+export const isArm = (): boolean => {
+  return arch().includes("arm");
 };

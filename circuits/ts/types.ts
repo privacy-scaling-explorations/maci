@@ -6,6 +6,7 @@ import type { CircuitInputs } from "maci-core";
 export interface IGenProofOptions {
   inputs: CircuitInputs;
   zkeyPath: string;
+  useWasm?: boolean;
   rapidsnarkExePath?: string;
   witnessExePath?: string;
   wasmPath?: string;
