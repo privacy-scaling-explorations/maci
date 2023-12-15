@@ -195,4 +195,15 @@ describe("Cryptographic operations", function test() {
       expect(commitment).to.eq(commitment2);
     });
   });
+
+  describe("genKeypair", () => {
+    it("should consistently generate a valid keypair (500 runs)", () => {
+      for (let i = 0; i < 500; i += 1) {
+        const key = genKeypair();
+        expect(key.privKey < SNARK_FIELD_SIZE).to.eq(true);
+        expect(key.pubKey[0] < SNARK_FIELD_SIZE).to.eq(true);
+        expect(key.pubKey[1] < SNARK_FIELD_SIZE).to.eq(true);
+      }
+    });
+  });
 });
