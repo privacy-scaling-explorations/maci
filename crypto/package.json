@@ -7,8 +7,8 @@
     "watch": "tsc --watch",
     "build": "tsc",
     "test": "nyc ts-mocha --exit ts/__tests__/*.test.ts",
-    "test-crypto": "ts-mocha --exit ts/__tests__/Crypto.test.ts",
-    "test-accQueue": "ts-mocha --exit ts/__tests__/AccQueue.test.ts"
+    "test:crypto": "ts-mocha --exit ts/__tests__/Crypto.test.ts",
+    "test:accQueue": "ts-mocha --exit ts/__tests__/AccQueue.test.ts"
   },
   "dependencies": {
     "blake-hash": "^1.1.0",
@@ -40,7 +40,8 @@
     "exclude": [
       "**/__tests__/*.ts",
       "**/*.js",
-      "**/*.d.ts"
+      "**/*.d.ts",
+      "ts/index.ts"
     ],
     "branches": ">50%",
     "lines": ">50%",
