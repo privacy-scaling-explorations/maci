@@ -17,7 +17,7 @@ HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js setVerifyingKeys
     -q true
 HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js create -s 6 -q true
 HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js deployPoll \
-    -pk macipk.4d9929621583dd9b8cac251fdc7bf58050330f37e1f407b327e711d5e32ba3a9 \
+    -pk macipk.ea638a3366ed91f2e955110888573861f7c0fc0bb5fb8b8dca9cd7a08d7d6b93 \
     --duration 30 \
     --max-messages 390625 \
     --max-vote-options 125 \
@@ -27,11 +27,11 @@ HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js deployPoll \
     --vote-option-tree-depth 3 \
     -q true 
 HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js signup \
-    --pubkey macipk.5e304c40fbf7f84fe09b8a21b6d0454a9606fca1d34977e0b68b8e5fe1c9460a \
+    --pubkey macipk.e743ffb5298ef0f5c1f63b6464a48fea19ea7ee5a885c67ae1b24a1d04f03f07 \
     -q true
 HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js publish \
-    --pubkey macipk.5e304c40fbf7f84fe09b8a21b6d0454a9606fca1d34977e0b68b8e5fe1c9460a \
-    --privkey macisk.251a97d4d2ffde8673102572e530d0293afdc3394e2db8fd5b3029ec00c7c739 \
+    --pubkey macipk.e743ffb5298ef0f5c1f63b6464a48fea19ea7ee5a885c67ae1b24a1d04f03f07 \
+    --privkey macisk.0ab0281365e01cff60afc62310daec765e590487bf989a7c4986ebc3fd49895e \
     --state-index 1 \
     --vote-option-index 0 \
     --new-vote-weight 9 \
@@ -39,8 +39,8 @@ HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js publish \
     --poll-id 0 \
     -q true
 HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js publish \
-    --pubkey macipk.5e304c40fbf7f84fe09b8a21b6d0454a9606fca1d34977e0b68b8e5fe1c9460a \
-    --privkey macisk.251a97d4d2ffde8673102572e530d0293afdc3394e2db8fd5b3029ec00c7c739 \
+    --pubkey macipk.e743ffb5298ef0f5c1f63b6464a48fea19ea7ee5a885c67ae1b24a1d04f03f07 \
+    --privkey macisk.0ab0281365e01cff60afc62310daec765e590487bf989a7c4986ebc3fd49895e \
     --state-index 1 \
     --vote-option-index 1 \
     --new-vote-weight 9 \
@@ -51,7 +51,7 @@ HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js timeTravel -s 10
 HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js mergeSignups --poll-id 0 -q true
 HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js mergeMessages --poll-id 0 -q true
 HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js genProofs \
-    --privkey macisk.02115a4e210f81195aec6e6e9375bd1028f89dd873e6ee62bc5af298e13fd2e7 \
+    --privkey macisk.1751146b59d32e3c0d7426de411218172428263f93b2fc4d981c036047a4d8c0 \
     --poll-id 0 \
     --rapidsnark ~/rapidsnark/build/prover \
     --process-zkey ./zkeys/processMessages_6-8-2-3.zkey \
