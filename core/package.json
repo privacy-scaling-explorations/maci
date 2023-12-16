@@ -9,7 +9,7 @@
     "build": "tsc",
     "test-processMessage": "ts-mocha --exit ts/__tests__/ProcessMessage.test.ts",
     "test-maciState": "ts-mocha --exit ts/__tests__/MaciState.test.ts",
-    "test": "ts-mocha --exit ts/__tests__/*.test.ts"
+    "test": "nyc ts-mocha --exit ts/__tests__/*.test.ts"
   },
   "dependencies": {
     "maci-crypto": "^1.1.2",
@@ -21,6 +21,26 @@
     "@types/node": "^18.11.9",
     "chai": "^4.3.10",
     "mocha": "^10.2.0",
+    "nyc": "^15.1.0",
     "ts-mocha": "^10.0.0"
+  },
+  "nyc": {
+    "reporter": [
+      "text",
+      "lcov"
+    ],
+    "extensions": [
+      ".ts"
+    ],
+    "all": true,
+    "exclude": [
+      "**/__tests__/*.ts",
+      "**/*.js",
+      "**/*.d.ts"
+    ],
+    "branches": ">50%",
+    "lines": ">50%",
+    "functions": ">50%",
+    "statements": ">50%"
   }
 }
