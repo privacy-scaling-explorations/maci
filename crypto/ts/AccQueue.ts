@@ -2,9 +2,10 @@ import { OptimisedMT as IncrementalQuinTree } from "optimisedmt";
 
 import assert from "assert";
 
+import type { Leaf, Queue, StringifiedBigInts } from "./types";
+
 import { deepCopyBigIntArray, stringifyBigInts, unstringifyBigInts } from "./bigIntUtils";
-import { sha256Hash, hashLeftRight, hash5 } from "./crypto";
-import { Leaf, Queue, StringifiedBigInts } from "./types";
+import { sha256Hash, hashLeftRight, hash5 } from "./hashing";
 import { calcDepthFromNumLeaves } from "./utils";
 
 /**

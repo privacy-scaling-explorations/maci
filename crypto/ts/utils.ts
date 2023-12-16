@@ -1,6 +1,6 @@
 import { OptimisedMT as IncrementalQuinTree } from "optimisedmt";
 
-import { hash5, hashLeftRight } from "./crypto";
+import { hash5, hashLeftRight } from "./hashing";
 
 /**
  * Calculate the depth of a tree given the number of leaves
