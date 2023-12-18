@@ -1,6 +1,6 @@
 import { Keypair } from "maci-domainobjs";
 
-export const voiceCreditBalance = BigInt(100);
+export const voiceCreditBalance = 100n;
 export const duration = 30;
 export const messageBatchSize = 25;
 export const coordinatorKeypair = new Keypair();

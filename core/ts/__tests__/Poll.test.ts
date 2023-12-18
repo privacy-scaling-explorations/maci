@@ -5,7 +5,14 @@ import { MaciState } from "../MaciState";
 import { Poll } from "../Poll";
 import { STATE_TREE_DEPTH } from "../utils/constants";
 
-import { coordinatorKeypair, duration, maxValues, messageBatchSize, treeDepths, voiceCreditBalance } from "./constants";
+import {
+  coordinatorKeypair,
+  duration,
+  maxValues,
+  messageBatchSize,
+  treeDepths,
+  voiceCreditBalance,
+} from "./utils/constants";
 
 describe("Poll", function test() {
   this.timeout(90000);
@@ -38,9 +45,9 @@ describe("Poll", function test() {
         // invalid state index as it is one more than the number of state leaves
         BigInt(user1StateIndex + 1),
         user1Keypair.pubKey,
-        BigInt(0),
-        BigInt(1),
-        BigInt(0),
+        0n,
+        1n,
+        0n,
         BigInt(pollId),
       );
 
@@ -57,14 +64,7 @@ describe("Poll", function test() {
     });
 
     it("should throw if a message has an invalid nonce", () => {
-      const command = new PCommand(
-        BigInt(user1StateIndex),
-        user1Keypair.pubKey,
-        BigInt(0),
-        BigInt(0),
-        BigInt(0),
-        BigInt(pollId),
-      );
+      const command = new PCommand(BigInt(user1StateIndex), user1Keypair.pubKey, 0n, 0n, 0n, BigInt(pollId));
 
       const signature = command.sign(user1Keypair.privKey);
 
@@ -80,16 +80,9 @@ describe("Poll", function test() {
     });
 
     it("should throw if a message has an invalid signature", () => {
-      const command = new PCommand(
-        BigInt(user1StateIndex),
-        user1Keypair.pubKey,
-        BigInt(0),
-        BigInt(0),
-        BigInt(0),
-        BigInt(pollId),
-      );
+      const command = new PCommand(BigInt(user1StateIndex), user1Keypair.pubKey, 0n, 0n, 0n, BigInt(pollId));
 
-      const signature = command.sign(new PrivKey(BigInt(0)));
+      const signature = command.sign(new PrivKey(0n));
       const ecdhKeypair = new Keypair();
       const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
 
@@ -105,10 +98,10 @@ describe("Poll", function test() {
       const command = new PCommand(
         BigInt(user1StateIndex),
         user1Keypair.pubKey,
-        BigInt(0),
+        0n,
         // voice credits spent would be this value ** this value
         BigInt(Math.sqrt(Number.parseInt(voiceCreditBalance.toString(), 10)) + 1),
-        BigInt(1),
+        1n,
         BigInt(pollId),
       );
 
@@ -131,8 +124,8 @@ describe("Poll", function test() {
         user1Keypair.pubKey,
         BigInt(maxValues.maxVoteOptions),
         // voice credits spent would be this value ** this value
-        BigInt(1),
-        BigInt(1),
+        1n,
+        1n,
         BigInt(pollId),
       );
 
@@ -150,14 +143,7 @@ describe("Poll", function test() {
     });
 
     it("should throw if a message has an invalid vote option index (< 0)", () => {
-      const command = new PCommand(
-        BigInt(user1StateIndex),
-        user1Keypair.pubKey,
-        BigInt(-1),
-        BigInt(1),
-        BigInt(1),
-        BigInt(pollId),
-      );
+      const command = new PCommand(BigInt(user1StateIndex), user1Keypair.pubKey, -1n, 1n, 1n, BigInt(pollId));
 
       const signature = command.sign(user1Keypair.privKey);
 
@@ -173,14 +159,7 @@ describe("Poll", function test() {
     });
 
     it("should throw when passed a message that cannot be decrypted (wrong encPubKey)", () => {
-      const command = new PCommand(
-        BigInt(user1StateIndex),
-        user1Keypair.pubKey,
-        BigInt(0),
-        BigInt(1),
-        BigInt(1),
-        BigInt(pollId),
-      );
+      const command = new PCommand(BigInt(user1StateIndex), user1Keypair.pubKey, 0n, 1n, 1n, BigInt(pollId));
 
       const signature = command.sign(user1Keypair.privKey);
 
@@ -196,14 +175,7 @@ describe("Poll", function test() {
     });
 
     it("should throw when passed a corrupted message", () => {
-      const command = new PCommand(
-        BigInt(user1StateIndex),
-        user1Keypair.pubKey,
-        BigInt(0),
-        BigInt(1),
-        BigInt(1),
-        BigInt(pollId),
-      );
+      const command = new PCommand(BigInt(user1StateIndex), user1Keypair.pubKey, 0n, 1n, 1n, BigInt(pollId));
 
       const signature = command.sign(user1Keypair.privKey);
 
@@ -213,7 +185,7 @@ describe("Poll", function test() {
       const message = command.encrypt(signature, sharedKey);
       poll.publishMessage(message, ecdhKeypair.pubKey);
 
-      message.data[0] = BigInt(0);
+      message.data[0] = 0n;
 
       expect(() => {
         poll.processMessage(message, user1Keypair.pubKey);
@@ -242,14 +214,7 @@ describe("Poll", function test() {
     );
 
     it("should throw if this is the first batch and currentMessageBatchIndex is defined", () => {
-      const command = new PCommand(
-        BigInt(user1StateIndex),
-        user1Keypair.pubKey,
-        BigInt(0),
-        BigInt(1),
-        BigInt(0),
-        BigInt(pollId),
-      );
+      const command = new PCommand(BigInt(user1StateIndex), user1Keypair.pubKey, 0n, 1n, 0n, BigInt(pollId));
 
       const signature = command.sign(user1Keypair.privKey);
 
@@ -273,9 +238,9 @@ describe("Poll", function test() {
         // we only signed up one user so the state index is invalid
         BigInt(user1StateIndex + 1),
         user1Keypair.pubKey,
-        BigInt(0),
-        BigInt(1),
-        BigInt(0),
+        0n,
+        1n,
+        0n,
         BigInt(pollId),
       );
 
@@ -340,9 +305,9 @@ describe("Poll", function test() {
         // we only signed up one user so the state index is invalid
         BigInt(user1StateIndex + 1),
         user1Keypair.pubKey,
-        BigInt(0),
-        BigInt(1),
-        BigInt(0),
+        0n,
+        1n,
+        0n,
         BigInt(pollId),
       );
 
@@ -361,14 +326,7 @@ describe("Poll", function test() {
     });
 
     it("should return the correct state leaves and ballots", () => {
-      const command = new PCommand(
-        BigInt(user1StateIndex + 1),
-        user1Keypair.pubKey,
-        BigInt(0),
-        BigInt(1),
-        BigInt(0),
-        BigInt(pollId),
-      );
+      const command = new PCommand(BigInt(user1StateIndex + 1), user1Keypair.pubKey, 0n, 1n, 0n, BigInt(pollId));
 
       const signature = command.sign(user1Keypair.privKey);
 
@@ -388,14 +346,7 @@ describe("Poll", function test() {
     });
 
     it("should have processed all messages", () => {
-      const command = new PCommand(
-        BigInt(user1StateIndex + 1),
-        user1Keypair.pubKey,
-        BigInt(0),
-        BigInt(1),
-        BigInt(0),
-        BigInt(pollId),
-      );
+      const command = new PCommand(BigInt(user1StateIndex + 1), user1Keypair.pubKey, 0n, 1n, 0n, BigInt(pollId));
 
       const signature = command.sign(user1Keypair.privKey);
 

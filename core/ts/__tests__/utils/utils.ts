@@ -1,29 +1,33 @@
 import { Signature } from "maci-crypto";
 import { PCommand, Message, Keypair, PubKey } from "maci-domainobjs";
 
+import { MaciState } from "../../MaciState";
+import { Poll } from "../../Poll";
+import { STATE_TREE_DEPTH } from "../../utils/constants";
+
 import { duration, maxValues, messageBatchSize, treeDepths, voiceCreditBalance } from "./constants";
-
-import { Poll } from "../Poll";
-import { MaciState } from "../MaciState";
-
-import { STATE_TREE_DEPTH } from "../utils/constants"
 
 /**
  * Calculates the total of a tally result
  * @param tallyResult - the tally result
  * @returns the total of the tally result
  */
-export const calculateTotal = (tallyResult: bigint[]): bigint => tallyResult.reduce((acc, v) => acc + v, BigInt(0));
+export const calculateTotal = (tallyResult: bigint[]): bigint => tallyResult.reduce((acc, v) => acc + v, 0n);
 
 /**
  * A test harness for the MACI contract.
  */
 export class TestHarness {
   maciState = new MaciState(STATE_TREE_DEPTH);
+
   coordinatorKeypair = new Keypair();
+
   poll: Poll;
+
   pollId: number;
+
   users: Keypair[] = [];
+
   stateIndices = new Map<Keypair, number>();
 
   /**
@@ -46,7 +50,7 @@ export class TestHarness {
    * @returns The keypairs of the newly created users.
    */
   createUsers = (numUsers: number): Keypair[] => {
-    for (let i = 0; i < numUsers; i++) {
+    for (let i = 0; i < numUsers; i += 1) {
       const user = new Keypair();
       this.users.push(user);
       const stateIndex = this.signup(user);
@@ -145,7 +149,5 @@ export class TestHarness {
    * @param user - The keypair of the user.
    * @returns The state index of the user.
    */
-  getStateIndex = (user: Keypair): number => {
-    return this.stateIndices.get(user)!;
-  };
+  getStateIndex = (user: Keypair): number => this.stateIndices.get(user) || -1;
 }

@@ -109,7 +109,7 @@ export class Poll implements IPoll {
 
   numBatchesTallied = 0;
 
-  totalSpentVoiceCredits = BigInt(0);
+  totalSpentVoiceCredits = 0n;
 
   // For coefficient and subsidy calculation
   subsidy: bigint[] = []; // size: M, M is number of vote options
@@ -163,9 +163,9 @@ export class Poll implements IPoll {
       hash5,
     );
 
-    this.tallyResult = new Array(this.maxValues.maxVoteOptions).fill(BigInt(0)) as bigint[];
-    this.perVOSpentVoiceCredits = new Array(this.maxValues.maxVoteOptions).fill(BigInt(0)) as bigint[];
-    this.subsidy = new Array(this.maxValues.maxVoteOptions).fill(BigInt(0)) as bigint[];
+    this.tallyResult = new Array(this.maxValues.maxVoteOptions).fill(0n) as bigint[];
+    this.perVOSpentVoiceCredits = new Array(this.maxValues.maxVoteOptions).fill(0n) as bigint[];
+    this.subsidy = new Array(this.maxValues.maxVoteOptions).fill(0n) as bigint[];
 
     // we put a blank state leaf to prevent a DoS attack
     this.emptyBallot = Ballot.genBlankBallot(this.maxValues.maxVoteOptions, treeDepths.voteOptionTreeDepth);
@@ -214,7 +214,7 @@ export class Poll implements IPoll {
       // If the state tree index in the command is invalid, do nothing
       if (
         stateLeafIndex >= BigInt(this.ballots.length) ||
-        stateLeafIndex < BigInt(1) ||
+        stateLeafIndex < 1n ||
         stateLeafIndex >= BigInt(this.stateTree?.nextIndex || -1)
       ) {
         throw new ProcessMessageError(ProcessMessageErrors.InvalidStateLeafIndex);
@@ -232,12 +232,12 @@ export class Poll implements IPoll {
       }
 
       // If the nonce is invalid, do nothing
-      if (command.nonce !== BigInt(`${ballot.nonce}`) + BigInt(1)) {
+      if (command.nonce !== BigInt(`${ballot.nonce}`) + 1n) {
         throw new ProcessMessageError(ProcessMessageErrors.InvalidNonce);
       }
 
       // If the vote option index is invalid, do nothing
-      if (command.voteOptionIndex < BigInt(0) || command.voteOptionIndex >= BigInt(this.maxValues.maxVoteOptions)) {
+      if (command.voteOptionIndex < 0n || command.voteOptionIndex >= BigInt(this.maxValues.maxVoteOptions)) {
         throw new ProcessMessageError(ProcessMessageErrors.InvalidVoteOptionIndex);
       }
 
@@ -257,7 +257,7 @@ export class Poll implements IPoll {
         BigInt(command.newVoteWeight) * BigInt(command.newVoteWeight);
 
       // If the remaining voice credits is insufficient, do nothing
-      if (voiceCreditsLeft < BigInt(0)) {
+      if (voiceCreditsLeft < 0n) {
         throw new ProcessMessageError(ProcessMessageErrors.InsufficientVoiceCredits);
       }
 
@@ -270,7 +270,7 @@ export class Poll implements IPoll {
       // Deep-copy the ballot and update its attributes
       const newBallot = ballot.copy();
       // increase the nonce
-      newBallot.nonce = BigInt(`${newBallot.nonce}`) + BigInt(1);
+      newBallot.nonce = BigInt(`${newBallot.nonce}`) + 1n;
       // we change the vote for this exact vote option
       newBallot.votes[voteOptionIndex] = command.newVoteWeight;
 
@@ -283,7 +283,7 @@ export class Poll implements IPoll {
       const originalBallotPathElements = this.ballotTree?.genMerklePath(Number(stateLeafIndex)).pathElements;
 
       // create a new quinary tree where we insert the votes of the origin (up until this message is processed) ballot
-      const vt = new IncrementalQuinTree(this.treeDepths.voteOptionTreeDepth, BigInt(0), STATE_TREE_ARITY, hash5);
+      const vt = new IncrementalQuinTree(this.treeDepths.voteOptionTreeDepth, 0n, STATE_TREE_ARITY, hash5);
       for (let i = 0; i < this.ballots[0].votes.length; i += 1) {
         vt.insert(ballot.votes[i]);
       }
@@ -317,7 +317,7 @@ export class Poll implements IPoll {
    * @param message - The message to top up the voice credit balance
    */
   topupMessage = (message: Message): void => {
-    assert(message.msgType === BigInt(2), "A Topup message must have msgType 2");
+    assert(message.msgType === 2n, "A Topup message must have msgType 2");
 
     message.data.forEach((d) => {
       assert(d < SNARK_FIELD_SIZE, "The message data is not in the correct range");
@@ -347,7 +347,7 @@ export class Poll implements IPoll {
    * @param encPubKey - The public key used to encrypt the message
    */
   publishMessage = (message: Message, encPubKey: PubKey): void => {
-    assert(message.msgType === BigInt(1), "A vote or key change message must have msgType 1");
+    assert(message.msgType === 1n, "A vote or key change message must have msgType 1");
     assert(
       encPubKey.rawPubKey[0] < SNARK_FIELD_SIZE && encPubKey.rawPubKey[1] < SNARK_FIELD_SIZE,
       "The public key is not in the correct range",
@@ -375,7 +375,7 @@ export class Poll implements IPoll {
     } catch (e) {
       // if there is an error we store an empty command
       const keyPair = new Keypair();
-      const command = new PCommand(BigInt(0), keyPair.pubKey, BigInt(0), BigInt(0), BigInt(0), BigInt(0), BigInt(0));
+      const command = new PCommand(0n, keyPair.pubKey, 0n, 0n, 0n, 0n, 0n);
       this.commands.push(command as ICommand);
     }
   };
@@ -449,7 +449,7 @@ export class Poll implements IPoll {
         }
       }
 
-      this.sbSalts[this.currentMessageBatchIndex] = BigInt(0);
+      this.sbSalts[this.currentMessageBatchIndex] = 0n;
     }
 
     // The starting index must be valid
@@ -495,7 +495,7 @@ export class Poll implements IPoll {
 
         // based on the message type we have to process it differently
         switch (message.msgType) {
-          case BigInt(1):
+          case 1n:
             try {
               // check if the command is valid
               const r = this.processMessage(message, encPubKey);
@@ -542,12 +542,12 @@ export class Poll implements IPoll {
               }
             }
             break;
-          case BigInt(2):
+          case 2n:
             try {
               // --------------------------------------
               // generate topup circuit inputs
-              const stateIndex = Number(message.data[0] >= BigInt(this.ballots.length) ? BigInt(0) : message.data[0]);
-              const amount = message.data[0] >= BigInt(this.ballots.length) ? BigInt(0) : message.data[1];
+              const stateIndex = Number(message.data[0] >= BigInt(this.ballots.length) ? 0n : message.data[0]);
+              const amount = message.data[0] >= BigInt(this.ballots.length) ? 0n : message.data[1];
 
               currentStateLeaves.unshift(this.stateLeaves[stateIndex].copy());
               currentStateLeavesPathElements.unshift(this.stateTree!.genMerklePath(stateIndex).pathElements);
@@ -597,7 +597,7 @@ export class Poll implements IPoll {
         currentVoteWeights.unshift(this.ballots[0].votes[0]);
 
         // create a new quinary tree and add an empty vote
-        const vt = new IncrementalQuinTree(this.treeDepths.voteOptionTreeDepth, BigInt(0), STATE_TREE_ARITY, hash5);
+        const vt = new IncrementalQuinTree(this.treeDepths.voteOptionTreeDepth, 0n, STATE_TREE_ARITY, hash5);
         vt.insert(this.ballots[0].votes[0]);
 
         // get the path elements for this empty vote weight leaf
@@ -728,9 +728,9 @@ export class Poll implements IPoll {
     /* eslint-disable no-bitwise */
     const packedVals =
       BigInt(this.maxValues.maxVoteOptions) +
-      (BigInt(this.maciStateRef.numSignUps) << BigInt(50)) +
-      (BigInt(index) << BigInt(100)) +
-      (BigInt(batchEndIndex) << BigInt(150));
+      (BigInt(this.maciStateRef.numSignUps) << 50n) +
+      (BigInt(index) << 100n) +
+      (BigInt(batchEndIndex) << 150n);
     /* eslint-enable no-bitwise */
 
     return stringifyBigInts({
@@ -800,8 +800,8 @@ export class Poll implements IPoll {
     const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt]);
 
     const currentSubsidy = this.subsidy.map((x) => BigInt(x.toString()));
-    let currentSubsidyCommitment = BigInt(0);
-    let currentSubsidySalt = BigInt(0);
+    let currentSubsidyCommitment = 0n;
+    let currentSubsidySalt = 0n;
     let saltIndex = this.previousSubsidyIndexToString();
 
     if (this.rbi !== 0 || this.cbi !== 0) {
@@ -900,7 +900,7 @@ export class Poll implements IPoll {
    * @returns Returns the calculated coefficient.
    */
   private coefficientCalculation = (rowBallot: Ballot, colBallot: Ballot): bigint => {
-    let sum = BigInt(0);
+    let sum = 0n;
     for (let p = 0; p < this.maxValues.maxVoteOptions; p += 1) {
       sum += BigInt(rowBallot.votes[p].valueOf()) * colBallot.votes[p];
     }
@@ -965,10 +965,10 @@ export class Poll implements IPoll {
     const currentResultsRootSalt = batchStartIndex === 0 ? 0n : this.resultRootSalts[batchStartIndex - batchSize];
 
     const currentPerVOSpentVoiceCreditsRootSalt =
-      batchStartIndex === 0 ? BigInt(0) : this.preVOSpentVoiceCreditsRootSalts[batchStartIndex - batchSize];
+      batchStartIndex === 0 ? 0n : this.preVOSpentVoiceCreditsRootSalts[batchStartIndex - batchSize];
 
     const currentSpentVoiceCreditSubtotalSalt =
-      batchStartIndex === 0 ? BigInt(0) : this.spentVoiceCreditSubtotalSalts[batchStartIndex - batchSize];
+      batchStartIndex === 0 ? 0n : this.spentVoiceCreditSubtotalSalts[batchStartIndex - batchSize];
 
     // generate a commitment to the current results
     const currentResultsCommitment = genTreeCommitment(
@@ -998,7 +998,7 @@ export class Poll implements IPoll {
     // ])
     const currentTallyCommitment =
       batchStartIndex === 0
-        ? BigInt(0)
+        ? 0n
         : hash3([
             currentResultsCommitment,
             currentSpentVoiceCreditsCommitment,
@@ -1128,7 +1128,7 @@ export class Poll implements IPoll {
    * @returns Returns the hash of the total spent voice credits and a salt, computed as Poseidon([totalCredits, _salt]).
    */
   private genSpentVoiceCreditSubtotalCommitment = (salt: bigint, numBallotsToCount: number): bigint => {
-    let subtotal = BigInt(0);
+    let subtotal = 0n;
     for (let i = 0; i < numBallotsToCount; i += 1) {
       if (this.ballots.length <= i) {
         break;

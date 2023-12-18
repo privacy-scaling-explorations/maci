@@ -17,9 +17,9 @@ export const genProcessVkSig = (
   voteOptionTreeDepth: number,
   batchSize: number,
 ): bigint =>
-  (BigInt(batchSize) << BigInt(192)) +
-  (BigInt(stateTreeDepth) << BigInt(128)) +
-  (BigInt(messageTreeDepth) << BigInt(64)) +
+  (BigInt(batchSize) << 192n) +
+  (BigInt(stateTreeDepth) << 128n) +
+  (BigInt(messageTreeDepth) << 64n) +
   BigInt(voteOptionTreeDepth);
 
 /**
@@ -71,9 +71,9 @@ export const packProcessMessageSmallVals = (
   const packedVals =
     // Note: the << operator has lower precedence than +
     BigInt(`${maxVoteOptions}`) +
-    (BigInt(`${numUsers}`) << BigInt(50)) +
-    (BigInt(batchStartIndex) << BigInt(100)) +
-    (BigInt(batchEndIndex) << BigInt(150));
+    (BigInt(`${numUsers}`) << 50n) +
+    (BigInt(batchStartIndex) << 100n) +
+    (BigInt(batchEndIndex) << 150n);
 
   return packedVals;
 };
@@ -118,7 +118,7 @@ export const unpackProcessMessageSmallVals = (
  */
 export const packTallyVotesSmallVals = (batchStartIndex: number, batchSize: number, numSignUps: number): bigint => {
   // Note: the << operator has lower precedence than +
-  const packedVals = BigInt(batchStartIndex) / BigInt(batchSize) + (BigInt(numSignUps) << BigInt(50));
+  const packedVals = BigInt(batchStartIndex) / BigInt(batchSize) + (BigInt(numSignUps) << 50n);
 
   return packedVals;
 };
@@ -149,7 +149,7 @@ export const unpackTallyVotesSmallVals = (packedVals: bigint): { numSignUps: big
  */
 export const packSubsidySmallVals = (row: number, col: number, numSignUps: number): bigint => {
   // Note: the << operator has lower precedence than +
-  const packedVals = (BigInt(numSignUps) << BigInt(100)) + (BigInt(row) << BigInt(50)) + BigInt(col);
+  const packedVals = (BigInt(numSignUps) << 100n) + (BigInt(row) << 50n) + BigInt(col);
 
   return packedVals;
 };
