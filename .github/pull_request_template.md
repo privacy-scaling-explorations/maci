@@ -12,6 +12,6 @@
 
 ## Confirmation
 
-- [ ] I have read and understand MACI's [contributor guidelines](../CONTRIBUTING.md) and [code of conduct requirements](../CODE_OF_CONDUCT.md).
-- [ ] I have read and understand MACI's [GitHub processes](https://github.com/privacy-scaling-explorations/maci/discussions/847) documentation.
+- [ ] I have read and understand MACI's [contributor guidelines](https://github.com/privacy-scaling-explorations/maci/blob/dev/CONTRIBUTING.md) and [code of conduct](https://github.com/privacy-scaling-explorations/maci/blob/dev/CODE_OF_CONDUCT.md).
+- [ ] I have read and understand MACI's [GitHub processes](https://github.com/privacy-scaling-explorations/maci/discussions/847).
 - [ ] I have read and understand MACI's [testing guide](https://maci.pse.dev/docs/testing).
