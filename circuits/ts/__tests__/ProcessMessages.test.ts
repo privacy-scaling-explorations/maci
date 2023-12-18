@@ -1,4 +1,3 @@
-import { writeFileSync } from "fs";
 import { MaciState, Poll, packProcessMessageSmallVals, STATE_TREE_ARITY } from "maci-core";
 import { PrivKey, Keypair, PCommand, Message, Ballot } from "maci-domainobjs";
 import { hash5, IncrementalQuinTree, stringifyBigInts, NOTHING_UP_MY_SLEEVE, AccQueue } from "maci-crypto";
@@ -153,10 +152,6 @@ describe("ProcessMessage circuit", function () {
 
       expect(newStateRoot.toString()).not.to.be.eq(currentStateRoot.toString());
       expect(newBallotRoot.toString()).not.to.be.eq(currentBallotRoot.toString());
-
-      writeFileSync("input.json", JSON.stringify(generatedInputs));
-
-      writeFileSync("witness.json", JSON.stringify(witness));
 
       const packedVals = packProcessMessageSmallVals(BigInt(maxValues.maxVoteOptions), BigInt(poll.numSignUps), 0, 2);
 

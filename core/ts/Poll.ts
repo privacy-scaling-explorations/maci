@@ -727,7 +727,7 @@ export class Poll implements IPoll {
     let currentSubsidyCommitment = BigInt(0);
     let currentSubsidySalt = BigInt(0);
     let saltIndex = this.previousSubsidyIndexToString();
-    console.log(`prevIdx=${saltIndex}, curIdx=${this.rbi}-${this.cbi}`);
+
     if (this.rbi !== 0 || this.cbi !== 0) {
       currentSubsidySalt = BigInt(this.subsidySalts[saltIndex]);
       currentSubsidyCommitment = BigInt(
