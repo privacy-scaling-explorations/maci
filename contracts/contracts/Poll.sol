@@ -47,7 +47,7 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots {
   // the case that none of the messages are valid.
   uint256 public currentSbCommitment;
 
-  uint256 internal numMessages;
+  uint256 public numMessages;
 
   /// @notice The number of messages which have been processed and the number of
   /// signups

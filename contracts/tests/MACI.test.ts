@@ -1,33 +1,21 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from "chai";
-import { AbiCoder, BaseContract, BigNumberish, Signer } from "ethers";
+import { AbiCoder, BaseContract, BigNumberish, Contract, Signer } from "ethers";
 import { EthereumProvider } from "hardhat/types";
-import { MaciState, genProcessVkSig, STATE_TREE_DEPTH } from "maci-core";
+import { MaciState, STATE_TREE_DEPTH } from "maci-core";
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
-import { VerifyingKey, Keypair, PubKey, Message } from "maci-domainobjs";
-
-import type { IVerifyingKeyStruct } from "../ts/types";
+import { Keypair, PubKey, Message } from "maci-domainobjs";
 
 import { parseArtifact } from "../ts/abi";
-import { getDefaultSigner } from "../ts/utils";
-import { AccQueueQuinaryMaci, MACI, VkRegistry, Poll as PollContract } from "../typechain-types";
+import { getDefaultSigner, getSigners } from "../ts/utils";
+import { AccQueueQuinaryMaci, MACI, Poll as PollContract } from "../typechain-types";
 
-import {
-  duration,
-  initialVoiceCreditBalance,
-  maxValues,
-  messageBatchSize,
-  tallyBatchSize,
-  testProcessVk,
-  testTallyVk,
-  treeDepths,
-} from "./constants";
-import { compareVks, timeTravel, deployTestContracts } from "./utils";
+import { duration, initialVoiceCreditBalance, maxValues, messageBatchSize, treeDepths } from "./constants";
+import { timeTravel, deployTestContracts } from "./utils";
 
 describe("MACI", () => {
   let maciContract: MACI;
   let stateAqContract: AccQueueQuinaryMaci;
-  let vkRegistryContract: VkRegistry;
   let pollId: number;
 
   const coordinator = new Keypair();
@@ -37,7 +25,7 @@ describe("MACI", () => {
   let signer: Signer;
 
   const maciState = new MaciState(STATE_TREE_DEPTH);
-  const signUpTxOpts = { gasLimit: 300000 };
+  const signUpTxOpts = { gasLimit: 400000 };
 
   describe("Deployment", () => {
     before(async () => {
@@ -46,23 +34,45 @@ describe("MACI", () => {
 
       maciContract = r.maciContract;
       stateAqContract = r.stateAqContract;
-      vkRegistryContract = r.vkRegistryContract;
     });
 
-    it("MACI.stateTreeDepth should be correct", async () => {
+    it("should have set the correct stateTreeDepth", async () => {
       const std = await maciContract.stateTreeDepth();
       expect(std.toString()).to.eq(STATE_TREE_DEPTH.toString());
+    });
+
+    it("should be the owner of the stateAqContract", async () => {
+      const stateAqAddr = await maciContract.stateAq();
+      const stateAq = new Contract(stateAqAddr, parseArtifact("AccQueueQuinaryBlankSl")[0], signer);
+
+      expect(await stateAq.owner()).to.eq(await maciContract.getAddress());
+    });
+
+    it("should be possible to deploy Maci contracts with different state tree depth values", async () => {
+      const checkStateTreeDepth = async (stateTreeDepthTest: number): Promise<void> => {
+        const { maciContract: testMaci } = await deployTestContracts(
+          initialVoiceCreditBalance,
+          stateTreeDepthTest,
+          signer,
+          true,
+        );
+        expect(await testMaci.stateTreeDepth()).to.eq(stateTreeDepthTest);
+      };
+
+      await checkStateTreeDepth(1);
+      await checkStateTreeDepth(2);
+      await checkStateTreeDepth(3);
     });
   });
 
   describe("Signups", () => {
-    it("should sign up users", async () => {
+    it("should sign up multiple users", async () => {
       const iface = maciContract.interface;
 
       await Promise.all(
         users.map(async (user, index) => {
           const tx = await maciContract.signUp(
-            user.pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
+            user.pubKey.asContractParam(),
             AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
             AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
             signUpTxOpts,
@@ -91,7 +101,7 @@ describe("MACI", () => {
       );
     });
 
-    it("signUp() should fail when given an invalid pubkey", async () => {
+    it("should fail when given an invalid pubkey", async () => {
       await expect(
         maciContract.signUp(
           {
@@ -134,76 +144,12 @@ describe("MACI", () => {
   describe("Deploy a Poll", () => {
     let deployTime: number | undefined;
 
-    it("should set VKs and deploy a poll", async () => {
-      const std = await maciContract.stateTreeDepth();
-
-      // Set VKs
-      let tx = await vkRegistryContract.setVerifyingKeys(
-        std.toString(),
-        treeDepths.intStateTreeDepth,
-        treeDepths.messageTreeDepth,
-        treeDepths.voteOptionTreeDepth,
-        messageBatchSize,
-        testProcessVk.asContractParam() as IVerifyingKeyStruct,
-        testTallyVk.asContractParam() as IVerifyingKeyStruct,
-        { gasLimit: 1000000 },
-      );
-      let receipt = await tx.wait();
-      expect(receipt?.status).to.eq(1);
-
-      const pSig = await vkRegistryContract.genProcessVkSig(
-        std.toString(),
-        treeDepths.messageTreeDepth,
-        treeDepths.voteOptionTreeDepth,
-        messageBatchSize,
-      );
-
-      expect(pSig.toString()).to.eq(
-        genProcessVkSig(
-          Number(std),
-          treeDepths.messageTreeDepth,
-          treeDepths.voteOptionTreeDepth,
-          messageBatchSize,
-        ).toString(),
-      );
-
-      const isPSigSet = await vkRegistryContract.isProcessVkSet(pSig);
-      expect(isPSigSet).to.eq(true);
-
-      const tSig = await vkRegistryContract.genTallyVkSig(
-        std.toString(),
-        treeDepths.intStateTreeDepth,
-        treeDepths.voteOptionTreeDepth,
-      );
-      const isTSigSet = await vkRegistryContract.isTallyVkSet(tSig);
-      expect(isTSigSet).to.eq(true);
-
-      // Check that the VKs are set
-      const processVkOnChain = await vkRegistryContract.getProcessVk(
-        std,
-        treeDepths.messageTreeDepth,
-        treeDepths.voteOptionTreeDepth,
-        messageBatchSize,
-      );
-
-      const tallyVkOnChain = await vkRegistryContract.getTallyVk(
-        std.toString(),
-        treeDepths.intStateTreeDepth,
-        treeDepths.voteOptionTreeDepth,
-      );
-
-      compareVks(testProcessVk, processVkOnChain as unknown as VerifyingKey);
-      compareVks(testTallyVk, tallyVkOnChain as unknown as VerifyingKey);
-
+    it("should deploy a poll", async () => {
       // Create the poll and get the poll ID from the tx event logs
-      tx = await maciContract.deployPoll(
-        duration,
-        maxValues,
-        treeDepths,
-        coordinator.pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
-        { gasLimit: 8000000 },
-      );
-      receipt = await tx.wait();
+      const tx = await maciContract.deployPoll(duration, maxValues, treeDepths, coordinator.pubKey.asContractParam(), {
+        gasLimit: 8000000,
+      });
+      const receipt = await tx.wait();
 
       const block = await signer.provider!.getBlock(receipt!.blockHash);
       deployTime = block!.timestamp;
@@ -226,8 +172,8 @@ describe("MACI", () => {
       expect(p.toString()).to.eq(pollId.toString());
 
       // publish the NOTHING_UP_MY_SLEEVE message
-      const messageData = [NOTHING_UP_MY_SLEEVE, BigInt(0)];
-      for (let i = 2; i < 10; i += 1) {
+      const messageData = [NOTHING_UP_MY_SLEEVE];
+      for (let i = 1; i < 10; i += 1) {
         messageData.push(BigInt(0));
       }
       const message = new Message(BigInt(1), messageData);
@@ -236,52 +182,6 @@ describe("MACI", () => {
         BigInt("19824078218392094440610104313265183977899662750282163392862422243483260492317"),
       ]);
       maciState.polls[pollId].publishMessage(message, padKey);
-    });
-
-    it("should fail when attempting to init twice a Poll", async () => {
-      const pollContractAddress = await maciContract.getPoll(pollId);
-      const pollContract = new BaseContract(pollContractAddress, pollAbi, signer) as PollContract;
-
-      await expect(pollContract.init()).to.be.reverted;
-    });
-
-    it("should set correct storage values", async () => {
-      // Retrieve the Poll state and check that each value is correct
-      const pollContractAddress = await maciContract.getPoll(pollId);
-      const pollContract = new BaseContract(pollContractAddress, pollAbi, signer) as PollContract;
-
-      const dd = await pollContract.getDeployTimeAndDuration();
-
-      expect(Number(dd[0])).to.eq(deployTime);
-      expect(Number(dd[1])).to.eq(duration);
-
-      expect(await pollContract.stateAqMerged()).to.eq(false);
-
-      const sb = await pollContract.currentSbCommitment();
-      expect(sb.toString()).to.eq("0");
-
-      const sm = await pollContract.numSignUpsAndMessages();
-      // There are 3 signups via the MACI instance
-      expect(Number(sm[0])).to.eq(3);
-
-      // There are 1 messages until a user publishes a message
-      // As we enqueue the NOTHING_UP_MY_SLEEVE hash
-      expect(Number(sm[1])).to.eq(1);
-
-      const onChainMaxValues = await pollContract.maxValues();
-
-      expect(Number(onChainMaxValues.maxMessages)).to.eq(maxValues.maxMessages);
-      expect(Number(onChainMaxValues.maxVoteOptions)).to.eq(maxValues.maxVoteOptions);
-
-      const onChainTreeDepths = await pollContract.treeDepths();
-      expect(Number(onChainTreeDepths.intStateTreeDepth)).to.eq(treeDepths.intStateTreeDepth);
-      expect(Number(onChainTreeDepths.messageTreeDepth)).to.eq(treeDepths.messageTreeDepth);
-      expect(Number(onChainTreeDepths.messageTreeSubDepth)).to.eq(treeDepths.messageTreeSubDepth);
-      expect(Number(onChainTreeDepths.voteOptionTreeDepth)).to.eq(treeDepths.voteOptionTreeDepth);
-
-      const onChainBatchSizes = await pollContract.batchSizes();
-      expect(Number(onChainBatchSizes.messageBatchSize)).to.eq(messageBatchSize);
-      expect(Number(onChainBatchSizes.tallyBatchSize)).to.eq(tallyBatchSize);
     });
 
     it("should prevent deploying a second poll before the first has finished", async () => {
@@ -303,7 +203,7 @@ describe("MACI", () => {
       pollContract = new BaseContract(pollContractAddress, pollAbi, signer) as PollContract;
     });
 
-    it("coordinator should not be able to merge the signUp AccQueue", async () => {
+    it("should not allow the coordinator to merge the signUp AccQueue", async () => {
       await expect(maciContract.mergeStateAqSubRoots(0, 0, { gasLimit: 3000000 })).to.be.revertedWithCustomError(
         maciContract,
         "CallerMustBePoll",
@@ -315,7 +215,14 @@ describe("MACI", () => {
       );
     });
 
-    it("The Poll should be able to merge the signUp AccQueue", async () => {
+    it("should not allow a user to merge the signUp AccQueue", async () => {
+      const nonAdminUser = (await getSigners())[1];
+      await expect(
+        maciContract.connect(nonAdminUser).mergeStateAqSubRoots(0, 0, { gasLimit: 3000000 }),
+      ).to.be.revertedWithCustomError(maciContract, "CallerMustBePoll");
+    });
+
+    it("should allow a Poll contract to merge the signUp AccQueue", async () => {
       await timeTravel(signer.provider as unknown as EthereumProvider, Number(duration) + 1);
       let tx = await pollContract.mergeMaciStateAqSubRoots(0, pollId, {
         gasLimit: 3000000,
@@ -330,9 +237,26 @@ describe("MACI", () => {
       expect(receipt?.status).to.eq(1);
     });
 
-    it("the state root must be correct", async () => {
+    it("should have the correct state root on chain after merging the acc queue", async () => {
       const onChainStateRoot = await stateAqContract.getMainRoot(STATE_TREE_DEPTH);
       expect(onChainStateRoot.toString()).to.eq(maciState.stateTree.root.toString());
+    });
+  });
+
+  describe("getStateAqRoot", () => {
+    it("should return the correct state root", async () => {
+      const onChainStateRoot = await maciContract.getStateAqRoot();
+      expect(onChainStateRoot.toString()).to.eq(maciState.stateTree.root.toString());
+    });
+  });
+
+  describe("getPoll", () => {
+    it("should return an address for a valid id", async () => {
+      expect(await maciContract.getPoll(pollId)).to.not.eq(0);
+    });
+
+    it("should throw when given an invalid poll id", async () => {
+      await expect(maciContract.getPoll(5)).to.be.revertedWithCustomError(maciContract, "PollDoesNotExist").withArgs(5);
     });
   });
 });

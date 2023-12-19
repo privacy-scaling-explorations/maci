@@ -2,36 +2,34 @@
 import { expect } from "chai";
 import { BaseContract, Signer } from "ethers";
 import { EthereumProvider } from "hardhat/types";
-import { MaciState, Poll, packTallyVotesSmallVals } from "maci-core";
+import { MaciState, Poll, packSubsidySmallVals } from "maci-core";
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, Message, PubKey } from "maci-domainobjs";
 
 import { parseArtifact } from "../ts/abi";
 import { IVerifyingKeyStruct } from "../ts/types";
 import { getDefaultSigner } from "../ts/utils";
-import { Tally, MACI, Poll as PollContract, MessageProcessor } from "../typechain-types";
+import { MACI, Poll as PollContract, MessageProcessor, Subsidy } from "../typechain-types";
 
 import {
   STATE_TREE_DEPTH,
   duration,
   maxValues,
   messageBatchSize,
-  tallyBatchSize,
   testProcessVk,
   testTallyVk,
   treeDepths,
 } from "./constants";
 import { timeTravel, deployTestContracts } from "./utils";
 
-describe("TallyVotes", () => {
+describe("Subsidy", () => {
   let signer: Signer;
   let maciContract: MACI;
   let pollContract: PollContract;
-  let tallyContract: Tally;
+  let subsidyContract: Subsidy;
   let mpContract: MessageProcessor;
 
   const coordinator = new Keypair();
-  const users = [new Keypair(), new Keypair()];
   const maciState = new MaciState(STATE_TREE_DEPTH);
 
   const [pollAbi] = parseArtifact("Poll");
@@ -47,7 +45,7 @@ describe("TallyVotes", () => {
     const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, true);
     maciContract = r.maciContract;
     mpContract = r.mpContract;
-    tallyContract = r.tallyContract;
+    subsidyContract = r.subsidyContract!;
 
     // deploy a poll
     // deploy on chain poll
@@ -74,8 +72,8 @@ describe("TallyVotes", () => {
     const p = maciState.deployPoll(BigInt(deployTime + duration), maxValues, treeDepths, messageBatchSize, coordinator);
     expect(p.toString()).to.eq(pollId.toString());
     // publish the NOTHING_UP_MY_SLEEVE message
-    const messageData = [NOTHING_UP_MY_SLEEVE];
-    for (let i = 1; i < 10; i += 1) {
+    const messageData = [NOTHING_UP_MY_SLEEVE, BigInt(0)];
+    for (let i = 2; i < 10; i += 1) {
       messageData.push(BigInt(0));
     }
     const message = new Message(BigInt(1), messageData);
@@ -103,22 +101,29 @@ describe("TallyVotes", () => {
       testTallyVk.asContractParam() as IVerifyingKeyStruct,
       { gasLimit: 1000000 },
     );
+    await vkContract.setSubsidyKeys(
+      STATE_TREE_DEPTH,
+      treeDepths.intStateTreeDepth,
+      treeDepths.voteOptionTreeDepth,
+      testProcessVk.asContractParam() as IVerifyingKeyStruct,
+      { gasLimit: 1000000 },
+    );
   });
 
   it("should not be possible to tally votes before the poll has ended", async () => {
     await expect(
-      tallyContract.tallyVotes(
+      subsidyContract.updateSubsidy(
         await pollContract.getAddress(),
         await mpContract.getAddress(),
         0,
         [0, 0, 0, 0, 0, 0, 0, 0],
       ),
-    ).to.be.revertedWithCustomError(tallyContract, "VOTING_PERIOD_NOT_PASSED");
+    ).to.be.revertedWithCustomError(subsidyContract, "VOTING_PERIOD_NOT_PASSED");
   });
 
-  it("genTallyVotesPackedVals() should generate the correct value", async () => {
-    const onChainPackedVals = BigInt(await tallyContract.genTallyVotesPackedVals(users.length, 0, tallyBatchSize));
-    const packedVals = packTallyVotesSmallVals(0, tallyBatchSize, users.length);
+  it("genSubsidyPackedVals() should generate the correct value", async () => {
+    const onChainPackedVals = BigInt(await subsidyContract.genSubsidyPackedVals(0));
+    const packedVals = packSubsidySmallVals(0, 0, 0);
     expect(onChainPackedVals.toString()).to.eq(packedVals.toString());
   });
 
@@ -126,30 +131,30 @@ describe("TallyVotes", () => {
     // go forward in time
     await timeTravel(signer.provider! as unknown as EthereumProvider, duration + 1);
 
-    await expect(tallyContract.updateSbCommitment(await mpContract.getAddress())).to.be.revertedWithCustomError(
-      tallyContract,
+    await expect(subsidyContract.updateSbCommitment(await mpContract.getAddress())).to.be.revertedWithCustomError(
+      subsidyContract,
       "ProcessingNotComplete",
     );
   });
 
-  it("tallyVotes() should fail as the messages have not been processed yet", async () => {
+  it("updateSubsidy() should fail as the messages have not been processed yet", async () => {
     const pollContractAddress = await maciContract.getPoll(pollId);
     await expect(
-      tallyContract.tallyVotes(pollContractAddress, await mpContract.getAddress(), 0, [0, 0, 0, 0, 0, 0, 0, 0]),
-    ).to.be.revertedWithCustomError(tallyContract, "ProcessingNotComplete");
+      subsidyContract.updateSubsidy(pollContractAddress, await mpContract.getAddress(), 0, [0, 0, 0, 0, 0, 0, 0, 0]),
+    ).to.be.revertedWithCustomError(subsidyContract, "ProcessingNotComplete");
   });
 
   describe("after merging acc queues", () => {
-    let tallyGeneratedInputs: { newTallyCommitment: bigint };
+    let subsidyGeneratedInputs: { newSubsidyCommitment: bigint };
     before(async () => {
       await pollContract.mergeMaciStateAqSubRoots(0, pollId);
       await pollContract.mergeMaciStateAq(0);
 
       await pollContract.mergeMessageAqSubRoots(0);
       await pollContract.mergeMessageAq();
-      tallyGeneratedInputs = poll.tallyVotes() as { newTallyCommitment: bigint };
+      subsidyGeneratedInputs = poll.subsidyPerBatch() as { newSubsidyCommitment: bigint };
     });
-    it("tallyVotes() should update the tally commitment", async () => {
+    it("updateSubsidy() should update the tally commitment", async () => {
       // do the processing on the message processor contract
       await mpContract.processMessages(
         await pollContract.getAddress(),
@@ -157,29 +162,29 @@ describe("TallyVotes", () => {
         [0, 0, 0, 0, 0, 0, 0, 0],
       );
 
-      const tx = await tallyContract.tallyVotes(
+      const tx = await subsidyContract.updateSubsidy(
         await pollContract.getAddress(),
         await mpContract.getAddress(),
-        tallyGeneratedInputs.newTallyCommitment,
+        subsidyGeneratedInputs.newSubsidyCommitment,
         [0, 0, 0, 0, 0, 0, 0, 0],
       );
 
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
 
-      const onChainNewTallyCommitment = await tallyContract.tallyCommitment();
+      const onChainNewTallyCommitment = await subsidyContract.subsidyCommitment();
 
-      expect(tallyGeneratedInputs.newTallyCommitment).to.eq(onChainNewTallyCommitment.toString());
+      expect(subsidyGeneratedInputs.newSubsidyCommitment).to.eq(onChainNewTallyCommitment.toString());
     });
-    it("tallyVotes() should revert when votes have already been tallied", async () => {
+    it("updateSubsidy() should revert when votes have already been tallied", async () => {
       await expect(
-        tallyContract.tallyVotes(
+        subsidyContract.updateSubsidy(
           await pollContract.getAddress(),
           await mpContract.getAddress(),
-          tallyGeneratedInputs.newTallyCommitment,
+          subsidyGeneratedInputs.newSubsidyCommitment,
           [0, 0, 0, 0, 0, 0, 0, 0],
         ),
-      ).to.be.revertedWithCustomError(tallyContract, "AllBallotsTallied");
+      ).to.be.revertedWithCustomError(subsidyContract, "AllSubsidyCalculated");
     });
   });
 });

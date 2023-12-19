@@ -12,6 +12,7 @@ import type {
   PoseidonT4,
   PoseidonT5,
   PoseidonT6,
+  Subsidy,
   Tally,
   VkRegistry,
 } from "../typechain-types";
@@ -67,6 +68,7 @@ export interface IDeployedTestContracts {
   vkRegistryContract: VkRegistry;
   mpContract: MessageProcessor;
   tallyContract: Tally;
+  subsidyContract?: Subsidy;
 }
 
 /**

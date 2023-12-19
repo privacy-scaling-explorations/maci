@@ -13,21 +13,20 @@
     "postbuild": "cp -r ./artifacts ./build",
     "docs": "hardhat docgen",
     "test": "hardhat test",
-    "test-maci": "hardhat test ./tests/MACI.test.ts",
-    "test-poll": "hardhat test ./tests/Poll.test.ts",
-    "test-messageProcessor": "hardhat test ./tests/MessageProcessor.test.ts",
-    "test-tally": "hardhat test ./tests/Tally.test.ts",
-    "test-hasher": "hardhat test ./tests/Hasher.test.ts",
-    "test-utilities": "hardhat test ./tests/Utilities.test.ts",
-    "test-signupGatekeeper": "hardhat test ./tests/SignUpGatekeeper.test.ts",
-    "test-verifier": "hardhat test ./tests/Verifier.test.ts",
-    "test-accQueue": "hardhat test ./tests/AccQueue.test.ts",
-    "test-accQueueBenchmark": "hardhat test ./tests/AccQueueBenchmark.test.ts",
-    "test-maciOverflow": "hardhat test ./tests/MaciOverflow.test.ts",
-    "test-hasherBenchmarks": "hardhat test ./tests/HasherBenchmarks.test.ts"
-  },
-  "_moduleAliases": {
-    "@maci-contracts": "."
+    "test:maci": "hardhat test ./tests/MACI.test.ts",
+    "test:poll": "hardhat test ./tests/Poll.test.ts",
+    "test:messageProcessor": "hardhat test ./tests/MessageProcessor.test.ts",
+    "test:tally": "hardhat test ./tests/Tally.test.ts",
+    "test:hasher": "hardhat test ./tests/Hasher.test.ts",
+    "test:utilities": "hardhat test ./tests/Utilities.test.ts",
+    "test:signupGatekeeper": "hardhat test ./tests/SignUpGatekeeper.test.ts",
+    "test:verifier": "hardhat test ./tests/Verifier.test.ts",
+    "test:accQueue": "hardhat test ./tests/AccQueue.test.ts",
+    "test:accQueueBenchmark": "hardhat test ./tests/AccQueueBenchmark.test.ts",
+    "test:hasherBenchmarks": "hardhat test ./tests/HasherBenchmarks.test.ts",
+    "test:vkRegistry": "hardhat test ./tests/VkRegistry.test.ts",
+    "test:pollFactory": "hardhat test ./tests/PollFactory.test.ts",
+    "test:subsidy": "hardhat test ./tests/Subsidy.test.ts"
   },
   "dependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
@@ -40,7 +39,6 @@
     "maci-core": "^1.1.2",
     "maci-crypto": "^1.1.2",
     "maci-domainobjs": "^1.1.2",
-    "module-alias": "^2.2.2",
     "solidity-docgen": "^0.6.0-beta.36"
   },
   "devDependencies": {

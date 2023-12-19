@@ -92,5 +92,15 @@ describe("DomainObjs", () => {
 
       expect(isValid).to.eq(true);
     });
+    it("should return false for a proof that is not valid", async () => {
+      const isValid = await verifierContract.verify(
+        proof,
+        vk.asContractParam() as IVerifyingKeyStruct,
+        BigInt(publicInputs[0]) + BigInt(1),
+        { gasLimit: 1000000 },
+      );
+
+      expect(isValid).to.eq(false);
+    });
   });
 });

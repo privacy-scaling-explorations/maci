@@ -2,7 +2,7 @@
 import { expect } from "chai";
 import { BaseContract, Signer } from "ethers";
 import { IncrementalQuinTree, AccQueue, calcDepthFromNumLeaves, hash2, hash5 } from "maci-crypto";
-import { VerifyingKey } from "maci-domainobjs";
+import { IVkContractParams, VerifyingKey } from "maci-domainobjs";
 
 import type { EthereumProvider } from "hardhat/types";
 
@@ -14,6 +14,7 @@ import {
   deployMessageProcessor,
   deployMockVerifier,
   deployPoseidonContracts,
+  deploySubsidy,
   deployTally,
   deployTopupCredit,
   deployVkRegistry,
@@ -41,7 +42,7 @@ export async function timeTravel(provider: EthereumProvider, seconds: number): P
  * @param vk - the off chain vk
  * @param vkOnChain - the on chain vk
  */
-export const compareVks = (vk: VerifyingKey, vkOnChain: VerifyingKey): void => {
+export const compareVks = (vk: VerifyingKey, vkOnChain: IVkContractParams): void => {
   expect(vk.ic.length).to.eq(vkOnChain.ic.length);
   for (let i = 0; i < vk.ic.length; i += 1) {
     expect(vk.ic[i].x.toString()).to.eq(vkOnChain.ic[i].x.toString());
@@ -548,6 +549,17 @@ export const deployTestContracts = async (
     true,
   );
 
+  const subsidyContract = await deploySubsidy(
+    mockVerifierContractAddress,
+    vkRegistryContractAddress,
+    poseidonAddrs[0],
+    poseidonAddrs[1],
+    poseidonAddrs[2],
+    poseidonAddrs[3],
+    signer,
+    true,
+  );
+
   return {
     mockVerifierContract,
     gatekeeperContract,
@@ -557,5 +569,6 @@ export const deployTestContracts = async (
     vkRegistryContract,
     mpContract,
     tallyContract,
+    subsidyContract,
   };
 };

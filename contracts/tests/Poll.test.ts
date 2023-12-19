@@ -17,6 +17,7 @@ import {
   initialVoiceCreditBalance,
   maxValues,
   messageBatchSize,
+  tallyBatchSize,
   treeDepths,
 } from "./constants";
 import { timeTravel, deployTestContracts } from "./utils";
@@ -33,52 +34,99 @@ describe("Poll", () => {
 
   const maciState = new MaciState(STATE_TREE_DEPTH);
 
-  before(async () => {
-    signer = await getDefaultSigner();
-    const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, signer, true);
-    maciContract = r.maciContract;
+  describe("deployment", () => {
+    before(async () => {
+      signer = await getDefaultSigner();
+      const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, signer, true);
+      maciContract = r.maciContract;
 
-    // deploy on chain poll
-    const tx = await maciContract.deployPoll(duration, maxValues, treeDepths, coordinator.pubKey.asContractParam(), {
-      gasLimit: 8000000,
+      // deploy on chain poll
+      const tx = await maciContract.deployPoll(duration, maxValues, treeDepths, coordinator.pubKey.asContractParam(), {
+        gasLimit: 8000000,
+      });
+      const receipt = await tx.wait();
+
+      const block = await signer.provider!.getBlock(receipt!.blockHash);
+      deployTime = block!.timestamp;
+
+      expect(receipt?.status).to.eq(1);
+      const iface = maciContract.interface;
+      const logs = receipt!.logs[receipt!.logs.length - 1];
+      const event = iface.parseLog(logs as unknown as { topics: string[]; data: string }) as unknown as {
+        args: { _pollId: number };
+      };
+      pollId = event.args._pollId;
+
+      const pollContractAddress = await maciContract.getPoll(pollId);
+      pollContract = new BaseContract(pollContractAddress, pollAbi, signer) as PollContract;
+
+      // deploy local poll
+      const p = maciState.deployPoll(
+        BigInt(deployTime + duration),
+        maxValues,
+        treeDepths,
+        messageBatchSize,
+        coordinator,
+      );
+      expect(p.toString()).to.eq(pollId.toString());
+      // publish the NOTHING_UP_MY_SLEEVE message
+      const messageData = [NOTHING_UP_MY_SLEEVE];
+      for (let i = 1; i < 10; i += 1) {
+        messageData.push(BigInt(0));
+      }
+      const message = new Message(BigInt(1), messageData);
+      const padKey = new PubKey([
+        BigInt("10457101036533406547632367118273992217979173478358440826365724437999023779287"),
+        BigInt("19824078218392094440610104313265183977899662750282163392862422243483260492317"),
+      ]);
+      maciState.polls[pollId].publishMessage(message, padKey);
     });
-    const receipt = await tx.wait();
 
-    const block = await signer.provider!.getBlock(receipt!.blockHash);
-    deployTime = block!.timestamp;
+    it("should not be possible to init the Poll contract twice", async () => {
+      await expect(pollContract.init()).to.be.revertedWithCustomError(pollContract, "PollAlreadyInit");
+    });
 
-    expect(receipt?.status).to.eq(1);
-    const iface = maciContract.interface;
-    const logs = receipt!.logs[receipt!.logs.length - 1];
-    const event = iface.parseLog(logs as unknown as { topics: string[]; data: string }) as unknown as {
-      args: { _pollId: number };
-    };
-    pollId = event.args._pollId;
+    it("should have the correct coordinator public key set", async () => {
+      const coordinatorPubKey = await pollContract.coordinatorPubKey();
+      expect(coordinatorPubKey[0].toString()).to.eq(coordinator.pubKey.rawPubKey[0].toString());
+      expect(coordinatorPubKey[1].toString()).to.eq(coordinator.pubKey.rawPubKey[1].toString());
 
-    const pollContractAddress = await maciContract.getPoll(pollId);
-    pollContract = new BaseContract(pollContractAddress, pollAbi, signer) as PollContract;
+      const coordinatorPubKeyHash = await pollContract.coordinatorPubKeyHash();
+      expect(coordinatorPubKeyHash.toString()).to.eq(coordinator.pubKey.hash().toString());
+    });
 
-    // deploy local poll
-    const p = maciState.deployPoll(BigInt(deployTime + duration), maxValues, treeDepths, messageBatchSize, coordinator);
-    expect(p.toString()).to.eq(pollId.toString());
-    // publish the NOTHING_UP_MY_SLEEVE message
-    const messageData = [NOTHING_UP_MY_SLEEVE, BigInt(0)];
-    for (let i = 2; i < 10; i += 1) {
-      messageData.push(BigInt(0));
-    }
-    const message = new Message(BigInt(1), messageData);
-    const padKey = new PubKey([
-      BigInt("10457101036533406547632367118273992217979173478358440826365724437999023779287"),
-      BigInt("19824078218392094440610104313265183977899662750282163392862422243483260492317"),
-    ]);
-    maciState.polls[pollId].publishMessage(message, padKey);
+    it("should have the correct duration set", async () => {
+      const dd = await pollContract.getDeployTimeAndDuration();
+      expect(dd[1].toString()).to.eq(duration.toString());
+    });
+
+    it("should have the correct max values set", async () => {
+      const mv = await pollContract.maxValues();
+      expect(mv[0].toString()).to.eq(maxValues.maxMessages.toString());
+      expect(mv[1].toString()).to.eq(maxValues.maxVoteOptions.toString());
+    });
+
+    it("should have the correct tree depths set", async () => {
+      const td = await pollContract.treeDepths();
+      expect(td[0].toString()).to.eq(treeDepths.intStateTreeDepth.toString());
+      expect(td[1].toString()).to.eq(treeDepths.messageTreeSubDepth.toString());
+      expect(td[2].toString()).to.eq(treeDepths.messageTreeDepth.toString());
+      expect(td[3].toString()).to.eq(treeDepths.voteOptionTreeDepth.toString());
+    });
+
+    it("should have the correct batch values set", async () => {
+      const batchSizes = await pollContract.batchSizes();
+      expect(batchSizes[0].toString()).to.eq(messageBatchSize.toString());
+      expect(batchSizes[1].toString()).to.eq(tallyBatchSize.toString());
+    });
+
+    it("should have numMessages set to 1 (blank message)", async () => {
+      const numMessages = await pollContract.numMessages();
+      expect(numMessages.toString()).to.eq("1");
+    });
   });
 
-  it("should not be possible to init the Poll contract twice", async () => {
-    await expect(pollContract.init()).to.be.revertedWithCustomError(pollContract, "PollAlreadyInit");
-  });
-
-  describe("Publish messages (vote + key-change)", () => {
+  describe("publishMessage", () => {
     it("should publish a message to the Poll contract", async () => {
       const keypair = new Keypair();
 
@@ -102,7 +150,30 @@ describe("Poll", () => {
       maciState.polls[pollId].publishMessage(message, keypair.pubKey);
     });
 
-    it("should not publish a message after the voting period", async () => {
+    it("should emit an event when publishing a message", async () => {
+      const keypair = new Keypair();
+
+      const command = new PCommand(
+        BigInt(1),
+        keypair.pubKey,
+        BigInt(0),
+        BigInt(9),
+        BigInt(1),
+        BigInt(pollId),
+        BigInt(0),
+      );
+
+      const signature = command.sign(keypair.privKey);
+      const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey);
+      const message = command.encrypt(signature, sharedKey);
+      expect(await pollContract.publishMessage(message.asContractParam(), keypair.pubKey.asContractParam()))
+        .to.emit(pollContract, "PublishMessage")
+        .withArgs(message.asContractParam(), keypair.pubKey.asContractParam());
+
+      maciState.polls[pollId].publishMessage(message, keypair.pubKey);
+    });
+
+    it("shold not allow to publish a message after the voting period ends", async () => {
       const dd = await pollContract.getDeployTimeAndDuration();
       await timeTravel(signer.provider as unknown as EthereumProvider, Number(dd[0]) + 1);
 
@@ -137,14 +208,14 @@ describe("Poll", () => {
       messageAqContract = new BaseContract(messageAqAddress, accQueueQuinaryMaciAbi, signer) as AccQueue;
     });
 
-    it("should revert if subtrees are not merged for StateAq", async () => {
+    it("should revert if the subtrees are not merged for StateAq", async () => {
       await expect(pollContract.mergeMaciStateAq(0, { gasLimit: 4000000 })).to.be.revertedWithCustomError(
         pollContract,
         "StateAqSubtreesNeedMerge",
       );
     });
 
-    it("coordinator should be able to merge the message AccQueue", async () => {
+    it("should allow the coordinator to merge the message AccQueue", async () => {
       let tx = await pollContract.mergeMessageAqSubRoots(0, {
         gasLimit: 3000000,
       });
@@ -156,7 +227,7 @@ describe("Poll", () => {
       expect(receipt?.status).to.eq(1);
     });
 
-    it("the message root must be correct", async () => {
+    it("should have the correct message root set", async () => {
       const onChainMessageRoot = await messageAqContract.getMainRoot(MESSAGE_TREE_DEPTH);
       const offChainMessageRoot = maciState.polls[pollId].messageTree.root;
 

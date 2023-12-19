@@ -35,7 +35,7 @@ describe("AccQueues", () => {
     });
 
     it("Should not be able to get a subroot that does not exist", async () => {
-      await expect(aqContract.getSubRoot(0)).to.be.revertedWithCustomError(aqContract, "InvalidIndex");
+      await expect(aqContract.getSubRoot(5)).to.be.revertedWithCustomError(aqContract, "InvalidIndex");
     });
 
     it("Should enqueue leaves", async () => {
@@ -59,7 +59,7 @@ describe("AccQueues", () => {
     });
 
     it("Should not be able to get a subroot that does not exist", async () => {
-      await expect(aqContract.getSubRoot(0)).to.be.revertedWithCustomError(aqContract, "InvalidIndex");
+      await expect(aqContract.getSubRoot(5)).to.be.revertedWithCustomError(aqContract, "InvalidIndex");
     });
 
     it("Should enqueue leaves", async () => {
@@ -203,15 +203,6 @@ describe("AccQueues", () => {
     const SUB_DEPTH = 2;
     const HASH_LENGTH = 2;
     const ZERO = BigInt(0);
-
-    it("Should not be possible to merge if empty", async () => {
-      const r = await deployTestAccQueues("AccQueueBinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
-      const aqContract = r.aqContract as AccQueueContract;
-      await expect(aqContract.mergeSubRoots(0, { gasLimit: 1000000 })).to.be.revertedWithCustomError(
-        aqContract,
-        "NothingToMerge",
-      );
-    });
 
     it("Should not be possible to merge into a tree of depth 0", async () => {
       const r = await deployTestAccQueues("AccQueueBinary0", SUB_DEPTH, HASH_LENGTH, ZERO);

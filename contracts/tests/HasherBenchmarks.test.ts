@@ -6,8 +6,6 @@ import { deployPoseidonContracts, linkPoseidonLibraries } from "../ts/deploy";
 import { getDefaultSigner } from "../ts/utils";
 import { HasherBenchmarks } from "../typechain-types";
 
-require("module-alias/register");
-
 describe("Hasher", () => {
   let hasherContract: HasherBenchmarks;
   before(async () => {

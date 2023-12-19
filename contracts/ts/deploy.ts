@@ -188,15 +188,6 @@ export const deployPoseidonContracts = async (signer?: Signer, quiet = false): P
 };
 
 /**
- * Deploy a PollFactory contract
- * @param signer - the signer to use to deploy the contract
- * @param quiet - whether to suppress console output
- * @returns the deployed PollFactory contract
- */
-export const deployPollFactory = async (signer?: Signer, quiet = false): Promise<Contract> =>
-  deployContract("PollFactory", signer, quiet);
-
-/**
  * Deploy a contract with linked libraries
  * @param contractFactory - the contract factory to use
  * @param name - the name of the contract
@@ -217,6 +208,32 @@ export const deployContractWithLinkedLibraries = async <T extends BaseContract>(
   await contract.deploymentTransaction()!.wait();
 
   return contract as T;
+};
+
+/**
+ * Deploy a Poll Factory contract
+ * @param signer - the signer object to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns the deployed Poll Factory contract
+ */
+export const deployPollFactory = async (signer: Signer, quiet = false): Promise<Contract> => {
+  const poseidonContracts = await deployPoseidonContracts(signer, quiet);
+  const [poseidonT3Contract, poseidonT4Contract, poseidonT5Contract, poseidonT6Contract] = await Promise.all([
+    poseidonContracts.PoseidonT3Contract.getAddress(),
+    poseidonContracts.PoseidonT4Contract.getAddress(),
+    poseidonContracts.PoseidonT5Contract.getAddress(),
+    poseidonContracts.PoseidonT6Contract.getAddress(),
+  ]);
+  const contractFactory = await linkPoseidonLibraries(
+    "PollFactory",
+    poseidonT3Contract,
+    poseidonT4Contract,
+    poseidonT5Contract,
+    poseidonT6Contract,
+    signer,
+    quiet,
+  );
+  return deployContractWithLinkedLibraries(contractFactory, "PollFactory", quiet);
 };
 
 /**

@@ -79,9 +79,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable {
   }
 
   error CallerMustBePoll(address _caller);
-  error AlreadyInitialized();
   error PoseidonHashLibrariesNotLinked();
-  error WrongPollOwner();
   error TooManySignups();
   error MaciPubKeyLargerThanSnarkFieldSize();
   error PreviousPollNotCompleted(uint256 pollId);
@@ -221,8 +219,6 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable {
   /// @return root The calculated Merkle root
   function mergeStateAq(uint256 _pollId) public override onlyPoll(_pollId) returns (uint256 root) {
     root = stateAq.merge(stateTreeDepth);
-
-    return root;
   }
 
   /// @notice Return the main root of the StateAq contract
