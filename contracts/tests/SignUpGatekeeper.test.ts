@@ -1,27 +1,25 @@
 import { expect } from "chai";
-import { AbiCoder, BigNumberish } from "ethers";
+import { AbiCoder, BigNumberish, Signer } from "ethers";
+import { STATE_TREE_DEPTH } from "maci-core";
 import { Keypair } from "maci-domainobjs";
 
-import {
-  getDefaultSigner,
-  deploySignupToken,
-  deploySignupTokenGatekeeper,
-  deployFreeForAllSignUpGatekeeper,
-} from "../ts/deploy";
-import { deployTestContracts } from "../ts/utils";
+import { deploySignupToken, deploySignupTokenGatekeeper, deployFreeForAllSignUpGatekeeper } from "../ts/deploy";
+import { getDefaultSigner } from "../ts/utils";
 import { FreeForAllGatekeeper, MACI, SignUpToken, SignUpTokenGatekeeper } from "../typechain-types";
 
-const initialVoiceCreditBalance = 100;
-const STATE_TREE_DEPTH = 10;
+import { initialVoiceCreditBalance } from "./constants";
+import { deployTestContracts } from "./utils";
 
 describe("SignUpGatekeeper", () => {
   let signUpToken: SignUpToken;
   let freeForAllContract: FreeForAllGatekeeper;
   let signUpTokenGatekeeperContract: SignUpTokenGatekeeper;
+  let signer: Signer;
 
   before(async () => {
-    freeForAllContract = await deployFreeForAllSignUpGatekeeper(true);
-    signUpToken = await deploySignupToken(true);
+    signer = await getDefaultSigner();
+    freeForAllContract = await deployFreeForAllSignUpGatekeeper(signer, true);
+    signUpToken = await deploySignupToken(signer, true);
     signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(await signUpToken.getAddress());
   });
 
@@ -41,13 +39,14 @@ describe("SignUpGatekeeper", () => {
     let maciContract: MACI;
 
     beforeEach(async () => {
-      freeForAllContract = await deployFreeForAllSignUpGatekeeper(true);
-      signUpToken = await deploySignupToken(true);
-      signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(await signUpToken.getAddress(), true);
+      freeForAllContract = await deployFreeForAllSignUpGatekeeper(signer, true);
+      signUpToken = await deploySignupToken(signer, true);
+      signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(await signUpToken.getAddress(), signer, true);
 
       const r = await deployTestContracts(
         initialVoiceCreditBalance,
         STATE_TREE_DEPTH,
+        signer,
         true,
         signUpTokenGatekeeperContract,
       );
@@ -65,7 +64,6 @@ describe("SignUpGatekeeper", () => {
 
     it("Reverts if address provided is not a MACI instance", async () => {
       const user = new Keypair();
-      const signer = await getDefaultSigner();
 
       const tx = await signUpToken.giveToken(await signer.getAddress(), 0);
       await tx.wait();

@@ -5,7 +5,9 @@ import fs from "fs";
 import path from "path";
 
 const genEmptyBallotRootsContract = (): string => {
-  const template = fs.readFileSync(path.resolve(__dirname, "EmptyBallotRoots.sol.template")).toString();
+  const template = fs
+    .readFileSync(path.resolve(__dirname, "..", "templates", "EmptyBallotRoots.sol.template"))
+    .toString();
 
   // This hard-coded value should be consistent with the value of `stateTreeDepth` of MACI.sol
   const stateTreeDepth = process.argv[2] ? Number.parseInt(process.argv[2], 10) : 10;

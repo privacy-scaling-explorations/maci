@@ -6,7 +6,9 @@ import { MaciState, Poll, STATE_TREE_DEPTH, packProcessMessageSmallVals } from "
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, Message, PubKey } from "maci-domainobjs";
 
-import { IVerifyingKeyStruct, deployTestContracts, getDefaultSigner, parseArtifact } from "../ts";
+import { parseArtifact } from "../ts/abi";
+import { IVerifyingKeyStruct } from "../ts/types";
+import { getDefaultSigner } from "../ts/utils";
 import { MACI, MessageProcessor, Poll as PollContract } from "../typechain-types";
 
 import {
@@ -18,7 +20,7 @@ import {
   testTallyVk,
   treeDepths,
 } from "./constants";
-import { timeTravel } from "./utils";
+import { timeTravel, deployTestContracts } from "./utils";
 
 describe("MessageProcessor", () => {
   // contracts
@@ -40,8 +42,9 @@ describe("MessageProcessor", () => {
   const users = [new Keypair(), new Keypair()];
 
   before(async () => {
+    signer = await getDefaultSigner();
     // deploy test contracts
-    const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, true);
+    const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, signer, true);
     maciContract = r.maciContract;
     signer = await getDefaultSigner();
     mpContract = r.mpContract;

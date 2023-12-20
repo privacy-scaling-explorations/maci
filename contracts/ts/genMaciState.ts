@@ -7,29 +7,23 @@ import assert from "assert";
 
 import { MACI, Poll } from "../typechain-types";
 
-import { parseArtifact } from "./deploy";
-import { sleep } from "./utils";
+import { parseArtifact } from "./abi";
+import { Action } from "./types";
+import { sleep, sortActions } from "./utils";
 
-interface Action {
-  type: string;
-  data: Partial<{
-    pubKey: PubKey;
-    encPubKey: PubKey;
-    message: Message;
-    voiceCreditBalance: number;
-    timestamp: number;
-    stateIndex: number;
-    numSrQueueOps: number;
-    pollId: number;
-    pollAddr: string;
-    stateRoot: bigint;
-    messageRoot: bigint;
-  }>;
-  blockNumber: number;
-  transactionIndex: number;
-}
-
-const genMaciStateFromContract = async (
+/**
+ * Generate a MaciState object from the events of a MACI and Poll smart contracts
+ * @param provider - the ethereum provider
+ * @param address - the address of the MACI contract
+ * @param coordinatorKeypair - the keypair of the coordinator
+ * @param pollId - the id of the poll for which we are fetching events
+ * @param fromBlock - the block number from which to start fetching events
+ * @param blocksPerRequest - the number of blocks to fetch in each request
+ * @param endBlock - the block number at which to stop fetching events
+ * @param sleepAmount - the amount of time to sleep between each request
+ * @returns an instance of MaciState
+ */
+export const genMaciStateFromContract = async (
   provider: Provider,
   address: string,
   coordinatorKeypair: Keypair,
@@ -39,7 +33,7 @@ const genMaciStateFromContract = async (
   endBlock: number | undefined = undefined,
   sleepAmount: number | undefined = undefined,
 ): Promise<MaciState> => {
-  // Verify and sort pollIds
+  // ensure the pollId is valid
   assert(pollId >= 0);
 
   const [pollContractAbi] = parseArtifact("Poll");
@@ -55,12 +49,13 @@ const genMaciStateFromContract = async (
 
   // we need to pass the stateTreeDepth
   const maciState = new MaciState(Number(stateTreeDepth));
-
+  // ensure it is set correctly
   assert(stateTreeDepth === BigInt(maciState.stateTreeDepth));
 
   let signUpLogs: Log[] = [];
   let deployPollLogs: Log[] = [];
 
+  // if no last block is set then we fetch until the current block number
   const lastBlock = endBlock || (await provider.getBlockNumber());
 
   // Fetch event logs in batches
@@ -289,7 +284,6 @@ const genMaciStateFromContract = async (
   actions = sortActions(actions);
 
   // Reconstruct MaciState in order
-
   actions.forEach((action) => {
     switch (true) {
       case action.type === "SignUp": {
@@ -328,6 +322,7 @@ const genMaciStateFromContract = async (
         break;
       }
 
+      // ensure that the message root is correct (i.e. all messages have been published offchain)
       case action.type === "MergeMessageAq": {
         assert(maciState.polls[pollId]?.messageTree.root.toString() === action.data.messageRoot?.toString());
         break;
@@ -345,35 +340,11 @@ const genMaciStateFromContract = async (
   assert(Number(numSignUpsAndMessages[1]) === poll.messages.length);
 
   poll.numSignUps = Number(numSignUpsAndMessages[0]);
+
+  // we need to ensure that the stateRoot is correct
+  assert(maciState.stateTree.root.toString() === (await maciContract.getStateAqRoot()).toString());
+
   maciState.polls[pollId] = poll;
 
   return maciState;
 };
-
-/*
- * The comparision function for Actions based on block number and transaction
- * index.
- */
-function sortActions(actions: Action[]): Action[] {
-  return actions.slice().sort((a, b) => {
-    if (a.blockNumber > b.blockNumber) {
-      return 1;
-    }
-
-    if (a.blockNumber < b.blockNumber) {
-      return -1;
-    }
-
-    if (a.transactionIndex > b.transactionIndex) {
-      return 1;
-    }
-
-    if (a.transactionIndex < b.transactionIndex) {
-      return -1;
-    }
-
-    return 0;
-  });
-}
-
-export { genMaciStateFromContract };

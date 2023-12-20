@@ -6,6 +6,7 @@ import {
   deployVerifier,
   deployMaci,
   deployTopupCredit,
+  getDefaultSigner,
 } from "maci-contracts";
 import { logError, logGreen, success, DEFAULT_INITIAL_VOICE_CREDITS, DeployedContracts } from "../utils/";
 
@@ -32,11 +33,14 @@ export const deploy = async (
     logError("Please provide either an initialVoiceCreditProxyAddress or initialVoiceCredits, not both");
   }
 
+  const signer = await getDefaultSigner();
+
   // if we did not deploy it before, then deploy it now
   let initialVoiceCreditProxyContractAddress: string;
   if (!initialVoiceCreditsProxyAddress) {
     const contract = await deployConstantInitialVoiceCreditProxy(
       initialVoiceCredits ? initialVoiceCredits : DEFAULT_INITIAL_VOICE_CREDITS,
+      signer,
       true,
     );
 
@@ -46,15 +50,15 @@ export const deploy = async (
   // check if we have a signupGatekeeper already deployed or passed as arg
   let signupGatekeeperContractAddress = readContractAddress("SignUpGatekeeper");
   if (!signupGatekeeperContractAddress && !signupGatekeeperAddress) {
-    const contract = await deployFreeForAllSignUpGatekeeper(true);
+    const contract = await deployFreeForAllSignUpGatekeeper(signer, true);
     signupGatekeeperContractAddress = await contract.getAddress();
   }
 
   // deploy a verifier contract
-  const verifierContract = await deployVerifier(true);
+  const verifierContract = await deployVerifier(signer, true);
 
   // topup credit
-  const topUpCredit = await deployTopupCredit(true);
+  const topUpCredit = await deployTopupCredit(signer, true);
 
   const [verifierContractAddress, topUpCreditAddress] = await Promise.all([
     verifierContract.getAddress(),
@@ -67,6 +71,7 @@ export const deploy = async (
     initialVoiceCreditProxyContractAddress,
     verifierContractAddress,
     topUpCreditAddress,
+    signer,
     stateTreeDepth,
     true,
   );

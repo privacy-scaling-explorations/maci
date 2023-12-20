@@ -5,7 +5,7 @@
   "main": "build/ts/index.js",
   "scripts": {
     "watch": "tsc --watch",
-    "hardhat": "./scripts/runHardhat.sh",
+    "hardhat": "hardhat node --hostname 0.0.0.0 --port 8545",
     "compileSol": "./scripts/compileSol.sh $1",
     "moveIntegrationArtifacts": "cp -r artifacts/ ../integrationTests/artifacts",
     "prebuild": "npm run compileSol",
@@ -22,7 +22,9 @@
     "test-signupGatekeeper": "hardhat test ./tests/SignUpGatekeeper.test.ts",
     "test-verifier": "hardhat test ./tests/Verifier.test.ts",
     "test-accQueue": "hardhat test ./tests/AccQueue.test.ts",
-    "test-accQueueBenchmark": "hardhat test ./tests/AccQueueBenchmark.test.ts"
+    "test-accQueueBenchmark": "hardhat test ./tests/AccQueueBenchmark.test.ts",
+    "test-maciOverflow": "hardhat test ./tests/MaciOverflow.test.ts",
+    "test-hasherBenchmarks": "hardhat test ./tests/HasherBenchmarks.test.ts"
   },
   "_moduleAliases": {
     "@maci-contracts": "."

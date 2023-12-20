@@ -3,10 +3,11 @@ import { AbiCoder, BigNumberish } from "ethers";
 import { MaxValues, STATE_TREE_DEPTH, TreeDepths } from "maci-core";
 import { Keypair } from "maci-domainobjs";
 
-import { deployTestContracts } from "../ts/utils";
+import { getDefaultSigner } from "../ts/utils";
 import { MACI } from "../typechain-types";
 
 import { duration, initialVoiceCreditBalance, maxValues, treeDepths } from "./constants";
+import { deployTestContracts } from "./utils";
 
 describe("Overflow testing", () => {
   let maciContract: MACI;
@@ -15,7 +16,7 @@ describe("Overflow testing", () => {
   const users = [new Keypair(), new Keypair(), new Keypair()];
 
   beforeEach(async () => {
-    const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, true);
+    const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, await getDefaultSigner(), true);
     maciContract = r.maciContract;
   });
 

@@ -6,7 +6,8 @@ import { MaciState } from "maci-core";
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, Message, PCommand, PubKey } from "maci-domainobjs";
 
-import { deployTestContracts, getDefaultSigner, parseArtifact } from "../ts";
+import { parseArtifact } from "../ts/abi";
+import { getDefaultSigner } from "../ts/utils";
 import { AccQueue, MACI, Poll as PollContract } from "../typechain-types";
 
 import {
@@ -18,7 +19,7 @@ import {
   messageBatchSize,
   treeDepths,
 } from "./constants";
-import { timeTravel } from "./utils";
+import { timeTravel, deployTestContracts } from "./utils";
 
 describe("Poll", () => {
   let maciContract: MACI;
@@ -34,7 +35,7 @@ describe("Poll", () => {
 
   before(async () => {
     signer = await getDefaultSigner();
-    const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, true);
+    const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, signer, true);
     maciContract = r.maciContract;
 
     // deploy on chain poll
@@ -108,7 +109,7 @@ describe("Poll", () => {
       maciState.polls[pollId].publishMessage(message, keypair.pubKey);
     });
 
-    it("shold not publish a message after the voting period", async () => {
+    it("should not publish a message after the voting period", async () => {
       const dd = await pollContract.getDeployTimeAndDuration();
       await timeTravel(signer.provider as unknown as EthereumProvider, Number(dd[0]) + 1);
 

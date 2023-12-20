@@ -8,8 +8,8 @@ import { VerifyingKey, Keypair, PubKey, Message } from "maci-domainobjs";
 
 import type { IVerifyingKeyStruct } from "../ts/types";
 
-import { parseArtifact, getDefaultSigner } from "../ts/deploy";
-import { deployTestContracts } from "../ts/utils";
+import { parseArtifact } from "../ts/abi";
+import { getDefaultSigner } from "../ts/utils";
 import { AccQueueQuinaryMaci, MACI, VkRegistry, Poll as PollContract } from "../typechain-types";
 
 import {
@@ -22,7 +22,7 @@ import {
   testTallyVk,
   treeDepths,
 } from "./constants";
-import { compareVks, timeTravel } from "./utils";
+import { compareVks, timeTravel, deployTestContracts } from "./utils";
 
 describe("MACI", () => {
   let maciContract: MACI;
@@ -42,7 +42,7 @@ describe("MACI", () => {
   describe("Deployment", () => {
     before(async () => {
       signer = await getDefaultSigner();
-      const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, true);
+      const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, signer, true);
 
       maciContract = r.maciContract;
       stateAqContract = r.stateAqContract;
@@ -108,7 +108,8 @@ describe("MACI", () => {
     it("should not allow to sign up more than the supported amount of users (5 ** stateTreeDepth)", async () => {
       const stateTreeDepthTest = 1;
       const maxUsers = 5 ** stateTreeDepthTest;
-      const maci = (await deployTestContracts(initialVoiceCreditBalance, stateTreeDepthTest, true)).maciContract;
+      const maci = (await deployTestContracts(initialVoiceCreditBalance, stateTreeDepthTest, signer, true))
+        .maciContract;
       const keypair = new Keypair();
       for (let i = 0; i < maxUsers; i += 1) {
         // eslint-disable-next-line no-await-in-loop

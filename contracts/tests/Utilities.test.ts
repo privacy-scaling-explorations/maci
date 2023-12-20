@@ -2,15 +2,16 @@ import { expect } from "chai";
 import { StateLeaf, Keypair } from "maci-domainobjs";
 
 import { deployPoseidonContracts, linkPoseidonLibraries } from "../ts/deploy";
+import { getDefaultSigner } from "../ts/utils";
 import { Utilities } from "../typechain-types";
 
-describe("DomainObjs", () => {
+describe("Utilities", () => {
   let utilitiesContract: Utilities;
 
   describe("Deployment", () => {
     before(async () => {
       const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } =
-        await deployPoseidonContracts(true);
+        await deployPoseidonContracts(await getDefaultSigner(), true);
 
       const [
         poseidonT3ContractAddress,
@@ -31,6 +32,7 @@ describe("DomainObjs", () => {
         poseidonT4ContractAddress,
         poseidonT5ContractAddress,
         poseidonT6ContractAddress,
+        await getDefaultSigner(),
         true,
       );
 

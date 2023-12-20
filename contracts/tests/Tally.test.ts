@@ -6,7 +6,9 @@ import { MaciState, Poll, packTallyVotesSmallVals } from "maci-core";
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, Message, PubKey } from "maci-domainobjs";
 
-import { IVerifyingKeyStruct, deployTestContracts, getDefaultSigner, parseArtifact } from "../ts";
+import { parseArtifact } from "../ts/abi";
+import { IVerifyingKeyStruct } from "../ts/types";
+import { getDefaultSigner } from "../ts/utils";
 import { Tally, MACI, Poll as PollContract, MessageProcessor } from "../typechain-types";
 
 import {
@@ -19,7 +21,7 @@ import {
   testTallyVk,
   treeDepths,
 } from "./constants";
-import { timeTravel } from "./utils";
+import { timeTravel, deployTestContracts } from "./utils";
 
 describe("TallyVotes", () => {
   let signer: Signer;
@@ -42,7 +44,7 @@ describe("TallyVotes", () => {
   before(async () => {
     signer = await getDefaultSigner();
 
-    const r = await deployTestContracts(100, STATE_TREE_DEPTH, true);
+    const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, true);
     maciContract = r.maciContract;
     mpContract = r.mpContract;
     tallyContract = r.tallyContract;
@@ -178,7 +180,7 @@ describe("TallyVotes", () => {
 
       expect(tallyGeneratedInputs.newTallyCommitment).to.eq(onChainNewTallyCommitment.toString());
     });
-    it("tallyVotes() shuold revert when votes have already been tallied", async () => {
+    it("tallyVotes() should revert when votes have already been tallied", async () => {
       await expect(
         tallyContract.tallyVotes(
           await pollContract.getAddress(),
