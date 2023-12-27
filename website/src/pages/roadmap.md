@@ -28,7 +28,7 @@ Short term, our vision is to empower developers to build with MACI to create col
 ### High-level MACI ecosystem goals
 
 1. ~~2021: MACI integrated by an ecosystem project~~ (✅, [clr.fund](https://github.com/clrfund/monorepo/))
-2. ~~2023: MACI integrated by a PSE project~~ (✅, [QFI](https://github.com/privacy-scaling-explorations/qf))
+2. ~~2023: MACI integrated by a PSE project~~ (✅, [QF](https://github.com/privacy-scaling-explorations/qf))
 3. 2024: MACI integrated by an additional external project
 4. 2025: MACI used by multiple DAOs for governance applications & QF integrations
 5. 2028: MACI used in smaller municipal elections (counties, provinces, etc)
@@ -123,7 +123,7 @@ While not prioritized as an upcoming workstream, we think it’s worth calling o
 
 - The primary responsibility of the Coordinator Service will be to:
   - offload and automate the tasks performed by the human coordinator
-  - minimize proving time by parallelizing SNARK proof generation and making MACI and QFI easier to adopt
+  - minimize proving time by parallelizing SNARK proof generation and making MACI easier to adopt
 - [GitHub repo](https://github.com/privacy-scaling-explorations/maci-coordinator)
 
 ### QF stack
