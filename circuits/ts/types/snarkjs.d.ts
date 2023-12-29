@@ -1,6 +1,6 @@
 declare module "snarkjs" {
   export type NumericString = `${number}` | string;
-  export type PublicSignals = Record<string, string | bigint | bigint[] | string[]>;
+  export type PublicSignals = Record<string, string | bigint | bigint[] | string[] | bigint[][] | bigint[][][]>;
   export type BigNumberish = number | string | bigint;
 
   export interface ISnarkJSVerificationKey {

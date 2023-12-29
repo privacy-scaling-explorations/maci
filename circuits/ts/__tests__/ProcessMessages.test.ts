@@ -61,8 +61,6 @@ describe("ProcessMessage circuit", function () {
       );
 
       pollId = maciState.deployPoll(
-        duration,
-        // BigInt(2 + duration),
         BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,
@@ -153,7 +151,12 @@ describe("ProcessMessage circuit", function () {
       expect(newStateRoot.toString()).not.to.be.eq(currentStateRoot.toString());
       expect(newBallotRoot.toString()).not.to.be.eq(currentBallotRoot.toString());
 
-      const packedVals = packProcessMessageSmallVals(BigInt(maxValues.maxVoteOptions), BigInt(poll.numSignUps), 0, 2);
+      const packedVals = packProcessMessageSmallVals(
+        BigInt(maxValues.maxVoteOptions),
+        BigInt(poll.maciStateRef.numSignUps),
+        0,
+        2,
+      );
 
       // Test the ProcessMessagesInputHasher circuit
       const hasherCircuitInputs = stringifyBigInts({
@@ -196,7 +199,6 @@ describe("ProcessMessage circuit", function () {
       );
 
       pollId = maciState.deployPoll(
-        duration,
         BigInt(2 + duration), //BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,
@@ -291,7 +293,6 @@ describe("ProcessMessage circuit", function () {
       );
 
       pollId = maciState.deployPoll(
-        duration,
         BigInt(2 + duration), //BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,
@@ -387,7 +388,6 @@ describe("ProcessMessage circuit", function () {
 
         // Sign up and publish
         const pollId = maciState.deployPoll(
-          duration,
           BigInt(Math.floor(Date.now() / 1000) + duration),
           maxValues,
           treeDepths,

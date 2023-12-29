@@ -295,7 +295,6 @@ export const genMaciStateFromContract = async (
 
       case action.type === "DeployPoll" && action.data.pollId?.toString() === pollId.toString(): {
         maciState.deployPoll(
-          duration,
           BigInt(deployTime + duration),
           maxValues,
           treeDepths,
@@ -338,8 +337,7 @@ export const genMaciStateFromContract = async (
 
   const poll = maciState.polls[pollId];
   assert(Number(numSignUpsAndMessages[1]) === poll.messages.length);
-
-  poll.numSignUps = Number(numSignUpsAndMessages[0]);
+  assert(Number(numSignUpsAndMessages[0]) === maciState.numSignUps);
 
   // we need to ensure that the stateRoot is correct
   assert(maciState.stateTree.root.toString() === (await maciContract.getStateAqRoot()).toString());
