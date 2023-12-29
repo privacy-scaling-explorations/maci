@@ -21,15 +21,19 @@ The constructor shown below accepts three arguments, a `PollFactory` contract, a
 constructor(
     PollFactory _pollFactory,
     SignUpGatekeeper _signUpGatekeeper,
-    InitialVoiceCreditProxy _initialVoiceCreditProxy
+    InitialVoiceCreditProxy _initialVoiceCreditProxy,
+    TopupCredit _topupCredit,
+    uint8 _stateTreeDepth
 ) {
     // Deploy the state AccQueue
     stateAq = new AccQueueQuinaryBlankSl(STATE_TREE_SUBDEPTH);
     stateAq.enqueue(BLANK_STATE_LEAF_HASH);
 
     pollFactory = _pollFactory;
+    topupCredit = _topupCredit;
     signUpGatekeeper = _signUpGatekeeper;
     initialVoiceCreditProxy = _initialVoiceCreditProxy;
+    stateTreeDepth = _stateTreeDepth;
 
     // Verify linked poseidon libraries
     require(
@@ -44,63 +48,6 @@ Upon deployment, the contract will deploy a new `AccQueueQuinaryBlankSl` contrac
 Should this be changed, it will be necessary to amend the `contracts/ts/genEmptyBallotRootsContract.ts` file to reflect the change. The first action on this deployed contract, is to enqueue (add) an empty hash (defined as `6769006970205099520508948723718471724660867171122235270773600567925038008762`).
 
 After this, the contracts will be stored to state, the current time taken and then the contract will perform a simple sanity check to ensure that the Poseidon hash libraries were linked successfully.
-
-Once the contract is deployed, the owner (set as the deployer address of MACI), is required to call the `init` function, which is shown below:
-
-```javascript
-function init(
-    VkRegistry _vkRegistry,
-    MessageAqFactory _messageAqFactory,
-    TopupCredit _topupCredit
-    ) public onlyOwner {
-    require(!isInitialised, "MACI: already initialised");
-
-    isInitialised = true;
-
-    vkRegistry = _vkRegistry;
-    messageAqFactory = _messageAqFactory;
-    topupCredit = _topupCredit;
-
-    // Check that the factory contracts have correct access controls before
-    // allowing any functions in MACI to run (via the afterInit modifier)
-    require(
-        pollFactory.owner() == address(this),
-        "MACI: PollFactory owner incorrectly set"
-    );
-
-    // The PollFactory needs to store the MessageAqFactory address
-    pollFactory.setMessageAqFactory(messageAqFactory);
-
-    // The MessageAQFactory owner must be the PollFactory contract
-    require(
-        messageAqFactory.owner() == address(pollFactory),
-        "MACI: MessageAqFactory owner incorrectly set"
-    );
-
-    // The VkRegistry owner must be the owner of this contract
-    require(
-        vkRegistry.owner() == owner(),
-        "MACI: VkRegistry owner incorrectly set"
-    );
-
-    emit Init(_vkRegistry, _messageAqFactory);
-}
-```
-
-This function accepts three arguments:
-
-- `VkRegistry` - the contract holding the verifying keys
-- `MessageAqFactory` - the factory contract for deploying new MessageAq contracts
-- `TopupCredit` - the contract responsible for topping up voting credits
-
-In more details, the `init` function will check/do the following:
-
-1. That the `PollFactory` contract's owner has been set to be the `MACI` contract
-2. Set the `messageAqFactory` contract on the `pollFactory` contract
-3. Check that the owner of the `messageAqFactory` is the `pollFactory` contract
-4. Confirm that the `vkRegistry` owner is the same as the `MACI` owner
-
-Finally, it will emit an event.
 
 Next, we have the `signUp` function, which allows users to `signUp` using a `SignUpGatekeeper` contract. This contract can use any mean necessary to gatekeep access to MACI's polls. For instance, only wallets with access to a specific ERC721 token can be allowed to sign up. Please note that this function can only be called after the contract is initialized (thanks to the `afterInit` modifier).
 
@@ -163,7 +110,7 @@ function deployPoll(
     MaxValues memory _maxValues,
     TreeDepths memory _treeDepths,
     PubKey memory _coordinatorPubKey
-) public afterInit {
+) public onlyOwner returns (address pollAddr) {
     uint256 pollId = nextPollId;
 
     // Increment the poll ID for the next poll
@@ -291,8 +238,7 @@ In order for the `processMessages` circuit to access the message root, the follo
 
 `PollFactory` is a smart contract that is used to deploy new Polls. This is used by MACI inside the `deployPoll` function. It only contains two functions:
 
-- `setMessageAqFactory` - owner only function which allows to set the address of the `MessageAqFactory` (a contract used to deploy new AccQueue contracts)
-- `deploy` - owner only function which allows to deploy a new Poll
+- `deploy` - owner only function which allows to deploy a new Poll, also deploys a messageAq
 
 The arguments required to deploy a new Poll are the following:
 
@@ -310,23 +256,19 @@ address _pollOwner
 
 Upon deployment, the ownership of the messageAq contract will be transferred to the deployed poll, as well as the ownership of the new Poll contract be transferred to the poll owner, which in MACI is set as the owner of MACI.
 
-## PollProcessorAndTallyer
+## MessageProcessor
 
 This contract is used to prepare parameters for the zk-SNARK circuits as well as for verifying proofs. It should be deployed alongside MACI and ownership assigned to the coordinator.
+It will process message by batch due to large size of messages.
+After it finishes processing, the sbCommitment will be used for Tally and Subsidy contracts.
 
-## MessageAqFactory
+## Tally
 
-This is a simple factory contract which allows to deploy new `AccQueueQuinaryMaci` contracts. It exposes one function, `deploy`, which can only be called by the contract owner. After deployment of the contract, it will transfer its ownership to the same owner as the factory contract.
+The Tally contract is used during votes tallying and by users to verify the tally results.
 
-```javascript
-contract MessageAqFactory is Ownable {
-    function deploy(uint256 _subDepth) public onlyOwner returns (AccQueue) {
-        AccQueue aq = new AccQueueQuinaryMaci(_subDepth);
-        aq.transferOwnership(owner());
-        return aq;
-    }
-}
-```
+## Subsidy
+
+This contract is used to verify that the subsidy calculations are correct. It is also used to update the subsidy commitment if the proof is valid.
 
 ## SignUpToken
 

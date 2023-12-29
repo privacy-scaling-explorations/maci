@@ -32,7 +32,7 @@ Let's take as an example the following:
 
 If messages were processed in the same order as they were submitted, Alice's vote would not be valid, due to it being signed with a private key $priv1$ - which now would not be valid.
 
-On the other hand, due to messages being processed in reverse order, Alice's last message would be counted as valid as the key change would have not been processed yet. Then, Bob's vote would not be counted as valid as the current key for Alice would be $pub2$.
+On the other hand, due to messages being processed in reverse order, Alice's last message would be counted as valid as the key change would have not been processed yet. Then, Bob's vote would not be counted as valid as the current key for Alice would be $pub1$.
 
 > Note that a key change message should have the nonce set to 1 in order for it to be valid. We'll see it a code example in the next sections.
 

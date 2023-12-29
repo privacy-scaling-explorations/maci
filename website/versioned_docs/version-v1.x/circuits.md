@@ -229,7 +229,7 @@ The hash is computed using the `sha256` Solidity function and is then subject to
 | 4th 50 bits | `numSignUps`      |
 | 5th 50 bits | `batchStartIndex` |
 
-`numSignUps`, a value provided by the contract, is the number of users who have signed up. This is one less than the number of leaves inserted in the state tree (since the 0th state leaf is a blank state leaf [2.8.1]). `batchStartIndex` is the ballot tree index at which the batch begins.
+`numSignUps`, a value provided by the contract, is the number of users who have signed up. This is one less than the number of leaves inserted in the state tree (since the 0th state leaf is a [blank state leaf](./primitives#state-leaf)). `batchStartIndex` is the ballot tree index at which the batch begins.
 
 For instance, if `numSignUps` is 25 and the batch index is `5`, and all other values are 0, the following is the `packedVals` representation in hexadecimal:
 
@@ -241,11 +241,11 @@ The commitment to `stateRoot`, `ballotRoot`, and `sbSalt`:
 
 $poseidon_3([stateRoot, ballotRoot, sbSalt])$
 
-Proving preimage of `sbCommitment` is one out of the several steps required to prove that the votes were tallied correctly. By establishing that the coordinator knows `ballotRoot`, the coordinator can (using other parts of the circuit) prove that that they know the preimage of the ballot leaves in the batch being tallied.
+Proving preimage of `sbCommitment` is one out of the several steps required to prove that the votes were tallied correctly. By establishing that the coordinator knows `ballotRoot`, the coordinator can (using other parts of the circuit) prove that they know the preimage of the ballot leaves in the batch being tallied.
 
 ##### `currentTallyCommitment` and `newTallyCommitment`
 
-A tally is represented by a _tally commitment_, which is the poseidon_3$ hash of:
+A tally is represented by a _tally commitment_, which is the $poseidon_3$ hash of:
 
 1. $tc_r$: a commitment to the votes per option
    - This is the hash of the Merkle root $r_r$ of the votes and a salt $r_s$, computed as $poseidon_2([r_r, r_s])$
@@ -354,7 +354,7 @@ Utility circuit used to validate a message. This performs several checks:
 - `stateTreeIndex` is valid
 - `voteOptionIndex` is valid
 - `nonce` is valid
-- the signatuer is valid
+- the signature is valid
 - the user signed up before poll end timestamp
 - the user had enough voice credits
 
