@@ -839,25 +839,21 @@ export class Poll implements IPoll {
     const circuitInputs = stringifyBigInts({
       stateRoot,
       ballotRoot,
-
       sbSalt,
       currentSubsidySalt,
       newSubsidySalt,
-
       sbCommitment,
       currentSubsidyCommitment,
       newSubsidyCommitment,
       currentSubsidy,
-
       packedVals,
       inputHash,
-
       ballots1: ballots1.map((x) => x.asCircuitInputs()),
       ballots2: ballots2.map((x) => x.asCircuitInputs()),
       votes1: ballots1.map((x) => x.votes),
       votes2: ballots2.map((x) => x.votes),
-      ballotPathElements1: ballotSubrootProof1?.pathElements,
-      ballotPathElements2: ballotSubrootProof2?.pathElements,
+      ballotPathElements1: ballotSubrootProof1!.pathElements,
+      ballotPathElements2: ballotSubrootProof2!.pathElements,
     });
 
     this.increaseSubsidyIndex();
@@ -1071,27 +1067,20 @@ export class Poll implements IPoll {
       stateRoot,
       ballotRoot,
       sbSalt,
-
       sbCommitment,
       currentTallyCommitment,
       newTallyCommitment,
-
       packedVals, // contains numSignUps and batchStartIndex
       inputHash,
-
       ballots: ballots.map((x) => x.asCircuitInputs()),
-      ballotPathElements: ballotSubrootProof?.pathElements,
+      ballotPathElements: ballotSubrootProof!.pathElements,
       votes,
-
       currentResults,
       currentResultsRootSalt,
-
       currentSpentVoiceCreditSubtotal,
       currentSpentVoiceCreditSubtotalSalt,
-
       currentPerVOSpentVoiceCredits,
       currentPerVOSpentVoiceCreditsRootSalt,
-
       newResultsRootSalt,
       newPerVOSpentVoiceCreditsRootSalt,
       newSpentVoiceCreditSubtotalSalt,

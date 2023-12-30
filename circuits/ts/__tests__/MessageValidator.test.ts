@@ -36,21 +36,21 @@ describe("MessageValidator circuit", function test() {
     const signature = command.sign(privKey);
 
     circuitInputs = stringifyBigInts({
-      stateTreeIndex: 0,
-      numSignUps: 1,
-      voteOptionIndex: 0,
-      maxVoteOptions: 1,
-      originalNonce: 1,
-      nonce: 2,
+      stateTreeIndex: 0n,
+      numSignUps: 1n,
+      voteOptionIndex: 0n,
+      maxVoteOptions: 1n,
+      originalNonce: 1n,
+      nonce: 2n,
       cmd: command.asCircuitInputs(),
       pubKey: pubKey.asCircuitInputs(),
       sigR8: signature.R8,
       sigS: signature.S,
-      currentVoiceCreditBalance: 100,
-      currentVotesForOption: 0,
-      voteWeight: 9,
-      slTimestamp: 1,
-      pollEndTimestamp: 2,
+      currentVoiceCreditBalance: 100n,
+      currentVotesForOption: 0n,
+      voteWeight: 9n,
+      slTimestamp: 1n,
+      pollEndTimestamp: 2n,
     }) as CircuitInputs;
   });
 

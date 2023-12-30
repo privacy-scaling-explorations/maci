@@ -1,28 +1,6 @@
-import ff from "ffjavascript";
 import { OptimisedMT as IncrementalQuinTree } from "optimisedmt";
 
 import { hash5, hashLeftRight } from "./crypto";
-
-/**
- * Convert a bigint to a string
- * @param obj - the object to convert
- * @returns the converted object
- */
-export const stringifyBigInts = (obj: unknown): unknown => ff.utils.stringifyBigInts(obj);
-
-/**
- * Convert a string to a bigint
- * @param obj - the object to convert
- * @returns the converted object
- */
-export const unstringifyBigInts = (obj: unknown): unknown => ff.utils.unstringifyBigInts(obj);
-
-/**
- * Create a copy of a bigint array
- * @param arr - the array of bigints to copy
- * @returns a deep copy of the array
- */
-export const deepCopyBigIntArray = (arr: bigint[]): bigint[] => arr.map((x) => BigInt(x.toString()));
 
 /**
  * Calculate the depth of a tree given the number of leaves

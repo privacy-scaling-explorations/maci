@@ -24,6 +24,14 @@ describe("privateKey", () => {
     expect(PrivKey.isValidSerializedPrivKey(s.slice(1))).to.eq(false);
   });
 
+  it("PrivKey.serialize() should always return a key with the same length", () => {
+    for (let i = 100; i < 100; i += 1) {
+      const k = new Keypair();
+      const s = k.privKey.serialize();
+      expect(s.length).to.eq(54);
+    }
+  });
+
   it("PrivKey.copy() should produce a deep copy", () => {
     const k = new Keypair();
     const sk1 = k.privKey;

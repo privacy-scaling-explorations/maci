@@ -1,7 +1,6 @@
 import createBlakeHash from "blake-hash";
 import { babyJub, poseidon, poseidonEncrypt, poseidonDecrypt, eddsa } from "circomlib";
 import * as ethers from "ethers";
-import { utils, Scalar } from "ffjavascript";
 
 import assert from "assert";
 import { randomBytes } from "crypto";
@@ -18,6 +17,7 @@ import type {
   Signature,
 } from "./types";
 
+import { bigInt2Buffer, leBufferToBigint, shiftRight } from "./bigIntUtils";
 import { SNARK_FIELD_SIZE } from "./constants";
 
 /**
@@ -242,13 +242,6 @@ export const hash13 = (elements: Plaintext): bigint => {
 export const hashOne = (preImage: bigint): bigint => poseidonT3([preImage, BigInt(0)]);
 
 /**
- * Convert a BigInt to a Buffer
- * @param i - the bigint to convert
- * @returns the buffer
- */
-export const bigInt2Buffer = (i: bigint): Buffer => Buffer.from(i.toString(16), "hex");
-
-/**
  * Returns a BabyJub-compatible random value. We create it by first generating
  * a random value (initially 256 bits large) modulo the snark field size as
  * described in EIP197. This results in a key size of roughly 253 bits and no
@@ -295,11 +288,11 @@ export const genRandomSalt = (): bigint => genRandomBabyJubValue();
  * @param privKey A private key generated using genPrivKey()
  * @returns A BabyJub-compatible private key.
  */
-export const formatPrivKeyForBabyJub = (privKey: PrivKey): bigint[] => {
+export const formatPrivKeyForBabyJub = (privKey: PrivKey): bigint => {
   const sBuff = eddsa.pruneBuffer(createBlakeHash("blake512").update(bigInt2Buffer(privKey)).digest().subarray(0, 32));
-  const s = utils.leBuff2int(sBuff);
+  const s = leBufferToBigint(sBuff);
 
-  return Scalar.shr(s, 3);
+  return shiftRight(s, BigInt(3));
 };
 
 /**
