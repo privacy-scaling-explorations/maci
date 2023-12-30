@@ -1,6 +1,6 @@
 import { expect } from "chai";
 
-import { bigInt2Buffer, fromRprLE, fromString, stringifyBigInts, unstringifyBigInts } from "../bigIntUtils";
+import { bigInt2Buffer, fromRprLE, fromString, shiftRight, stringifyBigInts, unstringifyBigInts } from "../bigIntUtils";
 import { SNARK_FIELD_SIZE } from "../constants";
 import { genTreeCommitment, genTreeProof } from "../utils";
 
@@ -150,6 +150,14 @@ describe("Utils", () => {
       const expectedBuffer = Buffer.from(hex, "hex");
       expect(buffer.equals(expectedBuffer)).to.eq(true);
     });
+
+    it("should produce a Buffer with the correct value even if not even length", () => {
+      const bigInt = BigInt(15);
+      const buffer = bigInt2Buffer(bigInt);
+
+      const expectedBuffer = Buffer.from("0f", "hex");
+      expect(buffer.equals(expectedBuffer)).to.eq(true);
+    });
   });
 
   describe("genTreeCommitment", () => {
@@ -222,6 +230,12 @@ describe("Utils", () => {
       const view = new DataView(buffer);
       const expected = fromString("04030201", 16).toString();
       expect(fromRprLE(view, 0, 4)).to.eq(expected);
+    });
+  });
+
+  describe("shiftRight", () => {
+    it("should shift a bigint to the right by n bits", () => {
+      expect(shiftRight(16n, 2n)).to.eq(4n);
     });
   });
 });

@@ -110,13 +110,6 @@ export const stringifyBigInts = (input: BigIntVariants): StringifiedBigInts => {
 export const deepCopyBigIntArray = (arr: bigint[]): bigint[] => arr.map((x) => BigInt(x.toString()));
 
 /**
- * Convert a buffer to a bigint
- * @param buffer - The buffer to convert
- * @returns The buffer as a bigint
- */
-export const leBufferToBigint = (buffer: Buffer): bigint => BigInt(`0x${buffer.reverse().toString("hex")}`);
-
-/**
  * Sihft a left by n bits
  * @param a - The first bigint
  * @param n - The second bigint

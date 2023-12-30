@@ -1,10 +1,24 @@
-export type SnarkBigInt = bigint;
-export type PrivKey = bigint;
-export type PubKey = bigint[];
-export type Point = bigint[];
-export type EcdhSharedKey = bigint[];
-export type Plaintext = bigint[];
-export type Ciphertext = bigint[];
+// we define a bignumber as either a bigint or a string
+// which is what we use the most in MACI
+export type SnarkBigNumber = bigint | string;
+
+// a private key is a single BigNumber
+export type PrivKey = SnarkBigNumber;
+
+// a public key is a pair of BigNumbers
+export type PubKey<N = bigint> = [N, N];
+
+// a shared key is a pair of BigNumbers
+export type EcdhSharedKey<N = bigint> = [N, N];
+
+// a point is a pair of BigNumbers
+export type Point<N = SnarkBigNumber> = [N, N];
+
+// a plaintext is an array of BigNumbers
+export type Plaintext<N = bigint> = N[];
+
+// a ciphertext is an array of BigNumbers
+export type Ciphertext<N = bigint> = N[];
 
 /**
  * A acc queue
@@ -27,9 +41,9 @@ export interface Keypair {
 // field of order `l` where `l` is the large prime number dividing the order of
 // Baby Jubjub: see
 // https://iden3-docs.readthedocs.io/en/latest/_downloads/a04267077fb3fdbf2b608e014706e004/Ed-DSA.pdf
-export interface Signature {
-  R8: bigint[];
-  S: bigint;
+export interface Signature<N = SnarkBigNumber> {
+  R8: Point<N>;
+  S: N;
 }
 
 /**
@@ -43,6 +57,7 @@ export interface PoseidonFuncs {
   5: (inputs: bigint[]) => bigint;
 }
 
+// a leaf is a single BigNumber
 export type Leaf = bigint;
 
 export type StringifiedBigInts =

@@ -7,10 +7,10 @@
     "watch": "tsc --watch",
     "build": "tsc",
     "test": "ts-mocha --exit ./ts/__tests__/**.test.ts",
-    "test-cli-genMaciKeypair": "ts-mocha --exit  ./ts/__tests__/cli-genMaciKeypair.test.ts",
-    "test-cli-genMaciPubkey": "ts-mocha --exit  ./ts/__tests__/cli-genMaciPubkey.test.ts",
-    "test-suites": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit  ./ts/__tests__/suites.test.ts",
-    "test-deployPoll": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit  ./ts/__tests__/deployPollWithRandomSigner.test.ts",
+    "test:genMaciKeypair": "ts-mocha --exit  ./ts/__tests__/cli-genMaciKeypair.test.ts",
+    "test:genMaciPubkey": "ts-mocha --exit  ./ts/__tests__/cli-genMaciPubkey.test.ts",
+    "test:suites": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit  ./ts/__tests__/suites.test.ts",
+    "test:maciKeys": "ts-mocha --exit ./ts/__tests__/maci-keys.test.ts",
     "download-zkeys": "./scripts/download_zkeys.sh"
   },
   "devDependencies": {
@@ -21,7 +21,6 @@
     "@types/node": "^18.11.9",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
-    "ethers": "^6.9.0",
     "hardhat": "^2.19.2",
     "hardhat-artifactor": "^0.2.0",
     "hardhat-contract-sizer": "^2.0.3",
@@ -31,6 +30,7 @@
   },
   "dependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "ethers": "^6.9.0",
     "maci-circuits": "^1.1.2",
     "maci-cli": "^1.1.2",
     "maci-contracts": "^1.1.2",

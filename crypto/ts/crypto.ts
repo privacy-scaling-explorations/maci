@@ -1,23 +1,13 @@
-import createBlakeHash from "blake-hash";
-import { babyJub, poseidon, poseidonEncrypt, poseidonDecrypt, eddsa } from "circomlib";
-import * as ethers from "ethers";
+import { mulPointEscalar, Point } from "@zk-kit/baby-jubjub";
+import { deriveSecretScalar, derivePublicKey, packPublicKey, unpackPublicKey } from "@zk-kit/eddsa-poseidon";
+import { poseidonPerm } from "@zk-kit/poseidon-cipher";
+import { utils } from "ethers";
 
 import assert from "assert";
 import { randomBytes } from "crypto";
 
-import type {
-  Ciphertext,
-  EcdhSharedKey,
-  Plaintext,
-  Point,
-  PrivKey,
-  PubKey,
-  PoseidonFuncs,
-  Keypair,
-  Signature,
-} from "./types";
+import type { EcdhSharedKey, PrivKey, PubKey, PoseidonFuncs, Keypair } from "./types";
 
-import { bigInt2Buffer, leBufferToBigint, shiftRight } from "./bigIntUtils";
 import { SNARK_FIELD_SIZE } from "./constants";
 
 /**
@@ -117,13 +107,20 @@ export const sha256Hash = (input: bigint[]): bigint => {
 
   return (
     BigInt(
-      ethers.utils.soliditySha256(
+      utils.soliditySha256(
         types,
         input.map((x) => x.toString()),
       ),
     ) % SNARK_FIELD_SIZE
   );
 };
+
+/**
+ * Generate the poseidon hash of the inputs provided
+ * @param inputs The inputs to hash
+ * @returns the hash of the inputs
+ */
+export const poseidon = (inputs: bigint[]): bigint => poseidonPerm([BigInt(0), ...inputs.map((x) => BigInt(x))])[0];
 
 /**
  * Hash up to 2 elements
@@ -173,13 +170,20 @@ export const poseidonT6 = (inputs: bigint[]): bigint => {
  */
 export const hashLeftRight = (left: bigint, right: bigint): bigint => poseidonT3([left, right]);
 
+const funcs: PoseidonFuncs = {
+  2: poseidonT3,
+  3: poseidonT4,
+  4: poseidonT5,
+  5: poseidonT6,
+};
+
 /**
  * Hash up to N elements
  * @param numElements The number of elements to hash
  * @param elements The elements to hash
  * @returns The hash of the elements
  */
-export const hashN = (numElements: number, elements: Plaintext): bigint => {
+export const hashN = (numElements: number, elements: bigint[]): bigint => {
   const elementLength = elements.length;
   if (elements.length > numElements) {
     throw new TypeError(`the length of the elements array should be at most ${numElements}; got ${elements.length}`);
@@ -191,21 +195,14 @@ export const hashN = (numElements: number, elements: Plaintext): bigint => {
     }
   }
 
-  const funcs: PoseidonFuncs = {
-    2: poseidonT3,
-    3: poseidonT4,
-    4: poseidonT5,
-    5: poseidonT6,
-  };
-
   return funcs[numElements](elementsPadded);
 };
 
 // hash functions
-export const hash2 = (elements: Plaintext): bigint => hashN(2, elements);
-export const hash3 = (elements: Plaintext): bigint => hashN(3, elements);
-export const hash4 = (elements: Plaintext): bigint => hashN(4, elements);
-export const hash5 = (elements: Plaintext): bigint => hashN(5, elements);
+export const hash2 = (elements: bigint[]): bigint => hashN(2, elements);
+export const hash3 = (elements: bigint[]): bigint => hashN(3, elements);
+export const hash4 = (elements: bigint[]): bigint => hashN(4, elements);
+export const hash5 = (elements: bigint[]): bigint => hashN(5, elements);
 
 /**
  * A convenience function to use Poseidon to hash a Plaintext with
@@ -213,7 +210,7 @@ export const hash5 = (elements: Plaintext): bigint => hashN(5, elements);
  * @param elements The elements to hash
  * @returns The hash of the elements
  */
-export const hash13 = (elements: Plaintext): bigint => {
+export const hash13 = (elements: bigint[]): bigint => {
   const max = 13;
   const elementLength = elements.length;
   if (elementLength > max) {
@@ -256,7 +253,7 @@ export const genRandomBabyJubValue = (): bigint => {
   // const min = (lim - SNARK_FIELD_SIZE) % SNARK_FIELD_SIZE
   const min = BigInt("6350874878119819312338956282401532410528162663560392320966563075034087161851");
 
-  let privKey: PrivKey = SNARK_FIELD_SIZE;
+  let privKey = SNARK_FIELD_SIZE;
 
   do {
     const rand = BigInt(`0x${randomBytes(32).toString("hex")}`);
@@ -288,26 +285,7 @@ export const genRandomSalt = (): bigint => genRandomBabyJubValue();
  * @param privKey A private key generated using genPrivKey()
  * @returns A BabyJub-compatible private key.
  */
-export const formatPrivKeyForBabyJub = (privKey: PrivKey): bigint => {
-  const sBuff = eddsa.pruneBuffer(createBlakeHash("blake512").update(bigInt2Buffer(privKey)).digest().subarray(0, 32));
-  const s = leBufferToBigint(sBuff);
-
-  return shiftRight(s, BigInt(3));
-};
-
-/**
- * Losslessly reduces the size of the representation of a public key
- * @param pubKey The public key to pack
- * @returns A packed public key
- */
-export const packPubKey = (pubKey: PubKey): Buffer => babyJub.packPoint(pubKey);
-
-/**
- * Restores the original PubKey from its packed representation
- * @param packed The value to unpack
- * @returns The unpacked public key
- */
-export const unpackPubKey = (packed: Buffer): PubKey => babyJub.unpackPoint(packed);
+export const formatPrivKeyForBabyJub = (privKey: PrivKey): bigint => BigInt(deriveSecretScalar(privKey));
 
 /**
  * @param privKey A private key generated using genPrivKey()
@@ -315,9 +293,10 @@ export const unpackPubKey = (packed: Buffer): PubKey => babyJub.unpackPoint(pack
  */
 export const genPubKey = (privKey: PrivKey): PubKey => {
   // Check whether privKey is a field element
-  assert(privKey < SNARK_FIELD_SIZE);
+  assert(BigInt(privKey) < SNARK_FIELD_SIZE);
 
-  return eddsa.prv2pub(bigInt2Buffer(privKey));
+  const key = derivePublicKey(privKey);
+  return [BigInt(key[0]), BigInt(key[1])];
 };
 
 /**
@@ -341,86 +320,21 @@ export const genKeypair = (): Keypair => {
  * @returns The ECDH shared key.
  */
 export const genEcdhSharedKey = (privKey: PrivKey, pubKey: PubKey): EcdhSharedKey =>
-  babyJub.mulPointEscalar(pubKey, formatPrivKeyForBabyJub(privKey));
+  mulPointEscalar(pubKey as Point<bigint>, formatPrivKeyForBabyJub(privKey));
 
 /**
- * Encrypts a plaintext using a given key.
- * @param plaintext The plaintext to encrypt.
- * @param sharedKey The shared key to use for encryption.
- * @param nonce The nonce to use for encryption.
- * @returns The ciphertext.
+ * Losslessly reduces the size of the representation of a public key
+ * @param pubKey The public key to pack
+ * @returns A packed public key
  */
-export const encrypt = (plaintext: Plaintext, sharedKey: EcdhSharedKey, nonce = BigInt(0)): Ciphertext => {
-  const ciphertext = poseidonEncrypt(plaintext, sharedKey, nonce);
-  return ciphertext;
+export const packPubKey = (pubKey: PubKey): bigint => BigInt(packPublicKey(pubKey));
+
+/**
+ * Restores the original PubKey from its packed representation
+ * @param packed The value to unpack
+ * @returns The unpacked public key
+ */
+export const unpackPubKey = (packed: bigint): PubKey => {
+  const pubKey = unpackPublicKey(packed);
+  return pubKey.map((x: string) => BigInt(x)) as PubKey;
 };
-
-/**
- * Decrypts a ciphertext using a given key.
- * @param ciphertext The ciphertext to decrypt.
- * @param sharedKey The shared key to use for decryption.
- * @param nonce The nonce to use for decryption.
- * @param length The length of the plaintext.
- * @returns The plaintext.
- */
-export const decrypt = (ciphertext: Ciphertext, sharedKey: EcdhSharedKey, nonce: bigint, length: number): Plaintext =>
-  poseidonDecrypt(ciphertext, sharedKey, nonce, length);
-
-/**
- * Generates a signature given a private key and plaintext.
- * @param privKey A private key generated using genPrivKey()
- * @param msg The plaintext to sign.
- * @returns The signature.
- */
-export const sign = (privKey: PrivKey, msg: bigint): Signature => eddsa.signPoseidon(bigInt2Buffer(privKey), msg);
-
-/**
- * Checks whether the signature of the given plaintext was created using the
- * private key associated with the given public key.
- * @param msg The plaintext to verify.
- * @param signature The signature to verify.
- * @param pubKey The public key to use for verification.
- * @returns True if the signature is valid, and false otherwise.
- */
-export const verifySignature = (msg: bigint, signature: Signature, pubKey: PubKey): boolean =>
-  eddsa.verifyPoseidon(msg, signature, pubKey);
-
-/**
- * Maps bit to a point on the curve
- * @returns the point.
- */
-export const bitToCurve = (bit: bigint): Point => {
-  switch (bit) {
-    case BigInt(0):
-      return [BigInt(0), BigInt(1)];
-    case BigInt(1):
-      return babyJub.Base8;
-    default:
-      throw new Error("Invalid bit value");
-  }
-};
-
-/**
- * Maps curve point to bit
- * @param p The point to map.
- * @returns the bit value.
- */
-export const curveToBit = (p: Point): bigint => {
-  if (p[0] === BigInt(0) && p[1] === BigInt(1)) {
-    return BigInt(0);
-  }
-
-  if (p[0] === babyJub.Base8[0] && p[1] === babyJub.Base8[1]) {
-    return BigInt(1);
-  }
-
-  throw new Error("Invalid point value");
-};
-
-/**
- * Sums two points on the jubjub curve
- * @param a The first point
- * @param b The second point
- * @returns the sum of the two points
- */
-export const babyJubAddPoint = (a: bigint, b: bigint): bigint => babyJub.addPoint(a, b);

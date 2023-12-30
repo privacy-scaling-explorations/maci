@@ -31,7 +31,6 @@
   "dependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
     "@openzeppelin/contracts": "^4.8.0",
-    "circomlib": "^2.0.5",
     "circomlibjs": "^0.1.7",
     "ethers": "^6.9.0",
     "hardhat": "^2.19.1",
