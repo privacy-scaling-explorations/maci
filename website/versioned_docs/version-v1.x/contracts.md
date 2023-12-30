@@ -259,7 +259,7 @@ Upon deployment, the ownership of the messageAq contract will be transferred to 
 ## MessageProcessor
 
 This contract is used to prepare parameters for the zk-SNARK circuits as well as for verifying proofs. It should be deployed alongside MACI and ownership assigned to the coordinator.
-It will process message by batch due to large size of messages.
+It will process messages in batches, to increase performance and stay within the block gas limit.
 After it finishes processing, the sbCommitment will be used for Tally and Subsidy contracts.
 
 ## Tally
