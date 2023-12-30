@@ -352,6 +352,7 @@ program
       await verify(
         cmdObj.pollId,
         cmdObj.tallyFile,
+        undefined,
         cmdObj.contract,
         cmdObj.tallyContract,
         cmdObj.subsidyContract,

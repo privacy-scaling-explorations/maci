@@ -174,7 +174,7 @@ export const genProofs = async (
   // check that the main root is set
   const mainRoot = (await messageAqContract.getMainRoot(messageTreeDepth.toString())).toString();
   if (mainRoot === "0")
-    logError("The message tree has not been merged yet. " + "Please use the mergeMessages subcommmand to do so.");
+    logError("The message tree has not been merged yet. Please use the mergeMessages subcommmand to do so.");
 
   let maciState: MaciState;
   if (stateFile) {
@@ -223,7 +223,6 @@ export const genProofs = async (
   while (poll.hasUnprocessedMessages()) {
     // process messages in batches
     const circuitInputs = poll.processMessages(pollId);
-
     try {
       // generate the proof for this batch
       const r = await genProof({
