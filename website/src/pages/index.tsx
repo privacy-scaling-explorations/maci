@@ -19,7 +19,10 @@ const Home = (): JSX.Element => {
   const { siteConfig } = useDocusaurusContext();
 
   return (
-    <Layout description="Description will go into a meta tag in <head />" title={`Hello from ${siteConfig.title}`}>
+    <Layout
+      description="Minimal Anti-Collusion Infrastructure (MACI) is an on-chain voting platform which protects privacy and minimizes the risk of collusion and bribery"
+      title={`Minimal Anti-Collusion Infrastructure (${siteConfig.title})`}
+    >
       <HomepageHeader />
 
       <main>
