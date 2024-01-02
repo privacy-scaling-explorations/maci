@@ -3,7 +3,7 @@ import { existsSync, readFileSync, unlinkSync, writeFileSync } from "fs";
 import { expect } from "chai";
 
 import { PCommand, Message, Keypair, StateLeaf, blankStateLeafHash } from "maci-domainobjs";
-import { hash5, NOTHING_UP_MY_SLEEVE, IncrementalQuinTree, AccQueue } from "maci-crypto";
+import { NOTHING_UP_MY_SLEEVE, AccQueue } from "maci-crypto";
 
 import {
   STATE_TREE_DEPTH,
@@ -43,7 +43,6 @@ describe("MaciState", function () {
     let maciState: MaciState;
     let pollId: number;
     let poll: Poll;
-    let msgTree: IncrementalQuinTree;
     const voteWeight = BigInt(9);
     const voteOptionIndex = BigInt(0);
     let stateIndex: number;
@@ -51,7 +50,6 @@ describe("MaciState", function () {
 
     before(() => {
       maciState = new MaciState(STATE_TREE_DEPTH);
-      msgTree = new IncrementalQuinTree(treeDepths.messageTreeDepth, NOTHING_UP_MY_SLEEVE, 5, hash5);
     });
 
     // The end result should be that option 0 gets 3 votes
@@ -99,7 +97,6 @@ describe("MaciState", function () {
       const message = command.encrypt(signature, sharedKey);
 
       poll.publishMessage(message, ecdhKeypair.pubKey);
-      msgTree.insert(message.hash(ecdhKeypair.pubKey));
 
       // Use the accumulator queue to compare the root of the message tree
       const accumulatorQueue: AccQueue = new AccQueue(
@@ -111,7 +108,7 @@ describe("MaciState", function () {
       accumulatorQueue.mergeSubRoots(0);
       accumulatorQueue.merge(treeDepths.messageTreeDepth);
 
-      expect(accumulatorQueue.getRoot(treeDepths.messageTreeDepth).toString()).to.eq(msgTree.root.toString());
+      expect(accumulatorQueue.getRoot(treeDepths.messageTreeDepth).toString()).to.eq(poll.messageTree.root.toString());
     });
 
     it("packProcessMessageSmallVals and unpackProcessMessageSmallVals", () => {
