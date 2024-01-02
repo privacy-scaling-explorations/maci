@@ -1,13 +1,11 @@
-import { WasmTester } from "circom_tester";
+import type { WasmTester } from "circom_tester";
 
 /**
  * Convert a string to a bigint
  * @param s - the string to convert
  * @returns the bigint representation of the string
  */
-export const str2BigInt = (s: string): bigint => {
-  return BigInt(parseInt(Buffer.from(s).toString("hex"), 16));
-};
+export const str2BigInt = (s: string): bigint => BigInt(parseInt(Buffer.from(s).toString("hex"), 16));
 
 // @note thanks https://github.com/Rate-Limiting-Nullifier/circom-rln/blob/main/test/utils.ts
 // for the code below
@@ -39,6 +37,4 @@ export const getSignal = async (wasmTester: WasmTester, witness: bigint[], name:
  * @param upper - the upper bound
  * @returns the random index
  */
-export const generateRandomIndex = (upper: number): number => {
-  return Math.floor(Math.random() * (upper - 1));
-};
+export const generateRandomIndex = (upper: number): number => Math.floor(Math.random() * (upper - 1));

@@ -1,12 +1,14 @@
-import { MaciState, Poll, packProcessMessageSmallVals, STATE_TREE_ARITY } from "maci-core";
-import { PrivKey, Keypair, PCommand, Message, Ballot } from "maci-domainobjs";
-import { hash5, IncrementalQuinTree, stringifyBigInts, NOTHING_UP_MY_SLEEVE, AccQueue } from "maci-crypto";
-import path from "path";
 import { expect } from "chai";
 import tester from "circom_tester";
+import { MaciState, Poll, packProcessMessageSmallVals, STATE_TREE_ARITY } from "maci-core";
+import { hash5, IncrementalQuinTree, stringifyBigInts, NOTHING_UP_MY_SLEEVE, AccQueue } from "maci-crypto";
+import { PrivKey, Keypair, PCommand, Message, Ballot } from "maci-domainobjs";
+
+import path from "path";
+
 import { generateRandomIndex, getSignal } from "./utils/utils";
 
-describe("Ceremony param tests", function () {
+describe("Ceremony param tests", () => {
   const params = {
     // processMessages and Tally
     stateTreeDepth: 6,
@@ -40,7 +42,7 @@ describe("Ceremony param tests", function () {
 
   const coordinatorKeypair = new Keypair();
 
-  describe("ProcessMessage circuit", function () {
+  describe("ProcessMessage circuit", function test() {
     this.timeout(900000);
 
     let circuit: tester.WasmTester;
@@ -63,7 +65,7 @@ describe("Ceremony param tests", function () {
       const messages: Message[] = [];
       const commands: PCommand[] = [];
 
-      before(async () => {
+      before(() => {
         // Sign up and publish
         const userKeypair = new Keypair(new PrivKey(BigInt(1)));
         stateIndex = BigInt(
@@ -82,7 +84,7 @@ describe("Ceremony param tests", function () {
 
         // First command (valid)
         const command = new PCommand(
-          stateIndex, //BigInt(1),
+          stateIndex, // BigInt(1),
           userKeypair.pubKey,
           voteOptionIndex, // voteOptionIndex,
           voteWeight, // vote weight
@@ -141,9 +143,9 @@ describe("Ceremony param tests", function () {
         const ballotTree = new IncrementalQuinTree(params.stateTreeDepth, emptyBallot.hash(), STATE_TREE_ARITY, hash5);
         ballotTree.insert(emptyBallot.hash());
 
-        for (let i = 0; i < poll.stateLeaves.length; i++) {
+        poll.stateLeaves.forEach(() => {
           ballotTree.insert(emptyBallotHash);
-        }
+        });
 
         const currentStateRoot = maciState.stateTree.root;
         const currentBallotRoot = ballotTree.root;
@@ -186,14 +188,14 @@ describe("Ceremony param tests", function () {
       });
     });
 
-    describe("TallyVotes circuit", function () {
+    describe("TallyVotes circuit", function test() {
       this.timeout(900000);
 
-      let circuit: tester.WasmTester;
+      let testCircuit: tester.WasmTester;
 
       before(async () => {
         const circuitPath = path.resolve(__dirname, "../../circom/test/ceremonyParams", `tallyVotes_test.circom`);
-        circuit = await tester.wasm(circuitPath);
+        testCircuit = await tester.wasm(circuitPath);
       });
 
       describe("1 user, 2 messages", () => {
@@ -204,7 +206,7 @@ describe("Ceremony param tests", function () {
         const voteWeight = BigInt(9);
         const voteOptionIndex = BigInt(0);
 
-        beforeEach(async () => {
+        beforeEach(() => {
           maciState = new MaciState(params.stateTreeDepth);
           const messages: Message[] = [];
           const commands: PCommand[] = [];
@@ -262,8 +264,8 @@ describe("Ceremony param tests", function () {
 
         it("should produce the correct result commitments", async () => {
           const generatedInputs = poll.tallyVotes();
-          const witness = await circuit.calculateWitness(generatedInputs);
-          await circuit.checkConstraints(witness);
+          const witness = await testCircuit.calculateWitness(generatedInputs);
+          await testCircuit.checkConstraints(witness);
         });
 
         it("should produce the correct result if the inital tally is not zero", async () => {
@@ -275,9 +277,9 @@ describe("Ceremony param tests", function () {
             randIdx = generateRandomIndex(Object.keys(generatedInputs).length);
           }
 
-          generatedInputs.currentResults[randIdx] = "1";
-          const witness = await circuit.calculateWitness(generatedInputs);
-          await circuit.checkConstraints(witness);
+          (generatedInputs.currentResults as string[])[randIdx] = "1";
+          const witness = await testCircuit.calculateWitness(generatedInputs);
+          await testCircuit.checkConstraints(witness);
         });
       });
     });

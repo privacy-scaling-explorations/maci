@@ -1,11 +1,13 @@
-import { readFileSync, writeFileSync, unlinkSync, existsSync, mkdirSync, rmdirSync } from "fs";
-import path from "path";
-import { execSync } from "child_process";
-import { tmpdir } from "os";
-import { zKey, groth16, FullProveResult, PublicSignals, Groth16Proof, ISnarkJSVerificationKey } from "snarkjs";
 import { stringifyBigInts } from "maci-crypto";
-import { cleanThreads, isArm } from "./utils";
+import { zKey, groth16, FullProveResult, PublicSignals, Groth16Proof, ISnarkJSVerificationKey } from "snarkjs";
+
+import { execSync } from "child_process";
+import fs from "fs";
+import { tmpdir } from "os";
+import path from "path";
+
 import { IGenProofOptions } from "./types";
+import { cleanThreads, isArm } from "./utils";
 
 /**
  * Generate a zk-SNARK proof
@@ -30,13 +32,13 @@ export const genProof = async ({
 }: IGenProofOptions): Promise<FullProveResult> => {
   // if we are running on an arm chip we can use snarkjs directly
   if (isArm()) {
-    const { proof, publicSignals } = await groth16.fullProve(inputs, wasmPath, zkeyPath);
+    const { proof, publicSignals } = await groth16.fullProve(inputs, wasmPath!, zkeyPath);
     return { proof, publicSignals };
   }
   // intel chip flow (use rapidnsark)
   // Create tmp directory
   const tmpPath = path.resolve(tmpdir(), `tmp-${Date.now()}`);
-  mkdirSync(tmpPath, { recursive: true });
+  fs.mkdirSync(tmpPath, { recursive: true });
 
   const inputJsonPath = path.resolve(tmpPath, "input.json");
   const outputWtnsPath = path.resolve(tmpPath, "output.wtns");
@@ -45,15 +47,15 @@ export const genProof = async ({
 
   // Write input.json
   const jsonData = JSON.stringify(stringifyBigInts(inputs));
-  writeFileSync(inputJsonPath, jsonData);
+  fs.writeFileSync(inputJsonPath, jsonData);
 
   // Generate the witness
   const witnessGenCmd = `${witnessExePath} ${inputJsonPath} ${outputWtnsPath}`;
 
   execSync(witnessGenCmd, { stdio: silent ? "ignore" : "pipe" });
 
-  if (!existsSync(outputWtnsPath)) {
-    throw new Error("Error executing " + witnessGenCmd);
+  if (!fs.existsSync(outputWtnsPath)) {
+    throw new Error(`Error executing ${witnessGenCmd}`);
   }
 
   // Generate the proof
@@ -61,19 +63,23 @@ export const genProof = async ({
 
   execSync(proofGenCmd, { stdio: silent ? "ignore" : "pipe" });
 
-  if (!existsSync(proofJsonPath)) {
-    throw new Error("Error executing " + proofGenCmd);
+  if (!fs.existsSync(proofJsonPath)) {
+    throw new Error(`Error executing ${proofGenCmd}`);
   }
 
   // Read the proof and public inputs
-  const proof = JSON.parse(readFileSync(proofJsonPath).toString()) as Groth16Proof;
-  const publicSignals = JSON.parse(readFileSync(publicJsonPath).toString()) as PublicSignals;
+  const proof = JSON.parse(fs.readFileSync(proofJsonPath).toString()) as Groth16Proof;
+  const publicSignals = JSON.parse(fs.readFileSync(publicJsonPath).toString()) as PublicSignals;
 
   // remove all artifacts
-  for (const f of [proofJsonPath, publicJsonPath, inputJsonPath, outputWtnsPath]) if (existsSync(f)) unlinkSync(f);
+  [proofJsonPath, publicJsonPath, inputJsonPath, outputWtnsPath].forEach((f) => {
+    if (fs.existsSync(f)) {
+      fs.unlinkSync(f);
+    }
+  });
 
   // remove tmp directory
-  rmdirSync(tmpPath);
+  fs.rmdirSync(tmpPath);
 
   return { proof, publicSignals };
 };

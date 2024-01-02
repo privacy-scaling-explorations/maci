@@ -1,11 +1,13 @@
-import { stringifyBigInts, genRandomSalt } from "maci-crypto";
-import { PCommand, Keypair } from "maci-domainobjs";
-import path from "path";
 import { expect } from "chai";
 import tester from "circom_tester";
+import { stringifyBigInts, genRandomSalt } from "maci-crypto";
+import { PCommand, Keypair } from "maci-domainobjs";
+
+import path from "path";
+
 import { getSignal } from "./utils/utils";
 
-describe("StateLeafAndBallotTransformer circuit", function () {
+describe("StateLeafAndBallotTransformer circuit", function test() {
   this.timeout(90000);
 
   // variables needed for testing

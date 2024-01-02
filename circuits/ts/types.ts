@@ -1,4 +1,4 @@
-import { CircuitInputs } from "maci-core";
+import type { CircuitInputs } from "maci-core";
 
 /**
  * Parameters for the genProof function

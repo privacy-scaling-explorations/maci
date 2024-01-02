@@ -1,5 +1,5 @@
 declare module "snarkjs" {
-  export type NumericString = `${number}` | string;
+  export type NumericString = string;
   export type PublicSignals = Record<string, string | bigint | bigint[] | string[] | bigint[][] | bigint[][][]>;
   export type BigNumberish = number | string | bigint;
 
@@ -29,7 +29,7 @@ declare module "snarkjs" {
   }
 
   export namespace zKey {
-    function exportVerificationKey(zkeyName: string, logger?: any): Promise<ISnarkJSVerificationKey>;
+    function exportVerificationKey(zkeyName: string, logger?: unknown): Promise<ISnarkJSVerificationKey>;
   }
 
   export namespace groth16 {
@@ -37,13 +37,14 @@ declare module "snarkjs" {
       vk_verifier: ISnarkJSVerificationKey,
       publicSignals: PublicSignals,
       proof: Groth16Proof,
-      logger?: any,
+      logger?: unknown,
     ): Promise<boolean>;
+
     function fullProve(
       input: PublicSignals,
       wasmFile: string,
       zkeyFileName: string,
-      logger?: any,
+      logger?: unknown,
     ): Promise<FullProveResult>;
   }
 }

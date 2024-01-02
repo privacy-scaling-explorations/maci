@@ -1,7 +1,9 @@
-import { stringifyBigInts } from "maci-crypto";
-import path from "path";
 import { expect } from "chai";
 import tester from "circom_tester";
+import { stringifyBigInts } from "maci-crypto";
+
+import path from "path";
+
 import { getSignal } from "./utils/utils";
 
 describe("Splice circuit", () => {
@@ -12,16 +14,19 @@ describe("Splice circuit", () => {
   });
 
   it("Should output the correct reconstructed level", async () => {
-    for (let index = 0; index < 5; index++) {
+    for (let index = 0; index < 5; index += 1) {
       const items = [0, 20, 30, 40];
       const leaf = 10;
       const circuitInputs = stringifyBigInts({ in: items, leaf, index });
 
+      // eslint-disable-next-line no-await-in-loop
       const witness = await circuit.calculateWitness(circuitInputs);
+      // eslint-disable-next-line no-await-in-loop
       await circuit.checkConstraints(witness);
 
       const output: bigint[] = [];
-      for (let i = 0; i < items.length + 1; i++) {
+      for (let i = 0; i < items.length + 1; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
         const selected = await getSignal(circuit, witness, `out[${i}]`);
         output.push(BigInt(selected));
       }

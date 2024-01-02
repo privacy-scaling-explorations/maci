@@ -1,14 +1,15 @@
-import { MaciState, Poll, STATE_TREE_ARITY } from "maci-core";
-import { Keypair, PCommand, Message } from "maci-domainobjs";
-import path from "path";
 import { expect } from "chai";
-import { beforeEach } from "mocha";
 import tester from "circom_tester";
+import { MaciState, Poll, STATE_TREE_ARITY } from "maci-core";
+import { AccQueue, NOTHING_UP_MY_SLEEVE } from "maci-crypto";
+import { Keypair, PCommand, Message } from "maci-domainobjs";
+
+import path from "path";
+
 import { STATE_TREE_DEPTH } from "./utils/constants";
 import { generateRandomIndex } from "./utils/utils";
-import { AccQueue, NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 
-describe("TallyVotes circuit", function () {
+describe("TallyVotes circuit", function test() {
   this.timeout(900000);
 
   const voiceCreditBalance = BigInt(100);
@@ -45,7 +46,7 @@ describe("TallyVotes circuit", function () {
     const voteWeight = BigInt(9);
     const voteOptionIndex = BigInt(0);
 
-    beforeEach(async () => {
+    beforeEach(() => {
       maciState = new MaciState(STATE_TREE_DEPTH);
       const messages: Message[] = [];
       const commands: PCommand[] = [];
@@ -116,7 +117,7 @@ describe("TallyVotes circuit", function () {
         randIdx = generateRandomIndex(Object.keys(generatedInputs).length);
       }
 
-      generatedInputs.currentResults[randIdx] = "1";
+      (generatedInputs.currentResults as string[])[randIdx] = "1";
       const witness = await circuit.calculateWitness(generatedInputs);
       await circuit.checkConstraints(witness);
     });
@@ -129,7 +130,7 @@ describe("TallyVotes circuit", function () {
     it("should produce the correct state root and ballot root", async () => {
       const maciState = new MaciState(STATE_TREE_DEPTH);
       const userKeypairs: Keypair[] = [];
-      for (let i = 0; i < x; i++) {
+      for (let i = 0; i < x; i += 1) {
         const k = new Keypair();
         userKeypairs.push(k);
         maciState.signUp(k.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000) + duration));
@@ -146,11 +147,11 @@ describe("TallyVotes circuit", function () {
       const poll = maciState.polls[pollId];
 
       const numMessages = messageBatchSize * NUM_BATCHES;
-      for (let i = 0; i < numMessages; i++) {
+      for (let i = 0; i < numMessages; i += 1) {
         const command = new PCommand(
           BigInt(i),
           userKeypairs[i].pubKey,
-          BigInt(i), //vote option index
+          BigInt(i), // vote option index
           BigInt(1), // vote weight
           BigInt(1), // nonce
           BigInt(pollId),
@@ -164,21 +165,25 @@ describe("TallyVotes circuit", function () {
         poll.publishMessage(message, ecdhKeypair.pubKey);
       }
 
-      for (let i = 0; i < NUM_BATCHES; i++) poll.processMessages(pollId);
+      for (let i = 0; i < NUM_BATCHES; i += 1) {
+        poll.processMessages(pollId);
+      }
 
-      for (let i = 0; i < NUM_BATCHES; i++) {
+      for (let i = 0; i < NUM_BATCHES; i += 1) {
         const generatedInputs = poll.tallyVotes();
 
         // For the 0th batch, the circuit should ignore currentResults,
         // currentSpentVoiceCreditSubtotal, and
         // currentPerVOSpentVoiceCredits
         if (i === 0) {
-          generatedInputs.currentResults[0] = "123";
+          (generatedInputs.currentResults as string[])[0] = "123";
           generatedInputs.currentSpentVoiceCreditSubtotal = "456";
-          generatedInputs.currentPerVOSpentVoiceCredits[0] = "789";
+          (generatedInputs.currentPerVOSpentVoiceCredits as string[])[0] = "789";
         }
 
+        // eslint-disable-next-line no-await-in-loop
         const witness = await circuit.calculateWitness(generatedInputs);
+        // eslint-disable-next-line no-await-in-loop
         await circuit.checkConstraints(witness);
       }
     });
