@@ -158,11 +158,11 @@ describe("Ceremony param tests", () => {
 
         // The new roots, which should differ, since at least one of the
         // messages modified a Ballot or State Leaf
-        const newStateRoot = poll.stateTree.root;
-        const newBallotRoot = poll.ballotTree.root;
+        const newStateRoot = poll.stateTree?.root;
+        const newBallotRoot = poll.ballotTree?.root;
 
-        expect(newStateRoot.toString()).not.to.be.eq(currentStateRoot.toString());
-        expect(newBallotRoot.toString()).not.to.be.eq(currentBallotRoot.toString());
+        expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot.toString());
+        expect(newBallotRoot?.toString()).not.to.be.eq(currentBallotRoot.toString());
 
         const packedVals = packProcessMessageSmallVals(
           BigInt(maxValues.maxVoteOptions),

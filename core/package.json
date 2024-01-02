@@ -2,8 +2,8 @@
   "name": "maci-core",
   "version": "1.1.2",
   "description": "",
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
+  "main": "build/ts/index.js",
+  "types": "build/ts/index.d.ts",
   "scripts": {
     "watch": "tsc --watch",
     "build": "tsc",
@@ -13,7 +13,8 @@
   },
   "dependencies": {
     "maci-crypto": "^1.1.2",
-    "maci-domainobjs": "^1.1.2"
+    "maci-domainobjs": "^1.1.2",
+    "optimisedmt": "^0.0.9"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",

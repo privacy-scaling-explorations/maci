@@ -1,18 +1,19 @@
+import { expect } from "chai";
+import { hash5, NOTHING_UP_MY_SLEEVE, IncrementalQuinTree, AccQueue } from "maci-crypto";
+import { PCommand, Message, Keypair, StateLeaf, blankStateLeafHash, PrivKey, Ballot } from "maci-domainobjs";
+
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from "fs";
 
-import { expect } from "chai";
-
-import { PCommand, Message, Keypair, StateLeaf, blankStateLeafHash, PrivKey, Ballot } from "maci-domainobjs";
-import { hash5, NOTHING_UP_MY_SLEEVE, IncrementalQuinTree, AccQueue } from "maci-crypto";
-
-import { STATE_TREE_DEPTH, STATE_TREE_ARITY, STATE_TREE_SUBDEPTH } from "../utils/constants";
 import { MaciState } from "../MaciState";
-import { packProcessMessageSmallVals, unpackProcessMessageSmallVals } from "../utils/utils";
 import { Poll } from "../Poll";
-import { calculateTotal } from "./utils";
-import { coordinatorKeypair, duration, maxValues, messageBatchSize, treeDepths, voiceCreditBalance } from "./constants";
+import { STATE_TREE_DEPTH, STATE_TREE_ARITY, STATE_TREE_SUBDEPTH } from "../utils/constants";
+import { IJsonMaciState } from "../utils/types";
+import { packProcessMessageSmallVals, unpackProcessMessageSmallVals } from "../utils/utils";
 
-describe("MaciState", function () {
+import { coordinatorKeypair, duration, maxValues, messageBatchSize, treeDepths, voiceCreditBalance } from "./constants";
+import { calculateTotal } from "./utils";
+
+describe("MaciState", function test() {
   this.timeout(100000);
 
   describe("Process and tally 1 message from 1 user", () => {
@@ -45,7 +46,7 @@ describe("MaciState", function () {
       stateIndex = maciState.signUp(userKeypair.pubKey, voiceCreditBalance, timestamp);
       expect(stateIndex.toString()).to.eq("1");
 
-      expect(accumulatorQueue.getRoot(STATE_TREE_DEPTH).toString()).to.eq(maciState.stateTree.root.toString());
+      expect(accumulatorQueue.getRoot(STATE_TREE_DEPTH)?.toString()).to.eq(maciState.stateTree.root.toString());
     });
 
     it("the message root should be correct", () => {
@@ -87,7 +88,7 @@ describe("MaciState", function () {
       accumulatorQueue.mergeSubRoots(0);
       accumulatorQueue.merge(treeDepths.messageTreeDepth);
 
-      expect(accumulatorQueue.getRoot(treeDepths.messageTreeDepth).toString()).to.eq(msgTree.root.toString());
+      expect(accumulatorQueue.getRoot(treeDepths.messageTreeDepth)?.toString()).to.eq(msgTree.root.toString());
     });
 
     it("packProcessMessageSmallVals and unpackProcessMessageSmallVals", () => {
@@ -119,7 +120,7 @@ describe("MaciState", function () {
       const initialTotal = calculateTotal(maciState.polls[pollId].tallyResult);
       expect(initialTotal.toString()).to.eq("0");
 
-      expect(poll.hasUntalliedBallots()).to.be.true;
+      expect(poll.hasUntalliedBallots()).to.eq(true);
 
       poll.tallyVotes();
 
@@ -139,7 +140,7 @@ describe("MaciState", function () {
     before(() => {
       maciState = new MaciState(STATE_TREE_DEPTH);
       // Sign up and vote
-      for (let i = 0; i < messageBatchSize - 1; i++) {
+      for (let i = 0; i < messageBatchSize - 1; i += 1) {
         const userKeypair = new Keypair();
         users.push(userKeypair);
 
@@ -158,7 +159,7 @@ describe("MaciState", function () {
 
     it("should process votes correctly", () => {
       // 24 valid votes
-      for (let i = 0; i < messageBatchSize - 1; i++) {
+      for (let i = 0; i < messageBatchSize - 1; i += 1) {
         const userKeypair = users[i];
 
         const command = new PCommand(
@@ -181,7 +182,7 @@ describe("MaciState", function () {
       expect(poll.messages.length).to.eq(messageBatchSize - 1);
 
       // 24 invalid votes
-      for (let i = 0; i < messageBatchSize - 1; i++) {
+      for (let i = 0; i < messageBatchSize - 1; i += 1) {
         const userKeypair = users[i];
         const command = new PCommand(
           BigInt(i + 1),
@@ -220,7 +221,7 @@ describe("MaciState", function () {
       expect(poll.currentMessageBatchIndex).to.eq(0);
       expect(poll.numBatchesProcessed).to.eq(2);
 
-      for (let i = 1; i < messageBatchSize; i++) {
+      for (let i = 1; i < messageBatchSize; i += 1) {
         const leaf = poll.ballots[i].votes[i - 1];
         expect(leaf.toString()).to.eq(voteWeight.toString());
       }
@@ -234,10 +235,10 @@ describe("MaciState", function () {
 
       expect(r.ballots.length).to.eq(r.stateLeaves.length);
 
-      for (let i = 0; i < r.stateLeaves.length; i++) {
-        expect(r.stateLeaves[i].equals(poll.stateLeaves[i])).to.be.true;
+      for (let i = 0; i < r.stateLeaves.length; i += 1) {
+        expect(r.stateLeaves[i].equals(poll.stateLeaves[i])).to.eq(true);
 
-        expect(r.ballots[i].equals(poll.ballots[i])).to.be.true;
+        expect(r.ballots[i].equals(poll.ballots[i])).to.eq(true);
       }
     });
 
@@ -247,33 +248,35 @@ describe("MaciState", function () {
       expect(total.toString()).to.eq("0");
 
       // Check that there are untallied results
-      expect(poll.hasUntalliedBallots()).to.be.true;
+      expect(poll.hasUntalliedBallots()).to.eq(true);
 
       // First batch tally
       poll.tallyVotes();
 
       // Recall that each user `i` cast the same number of votes for
       // their option `i`
-      for (let i = 0; i < maciState.polls[pollId].tallyResult.length - 1; i++) {
+      for (let i = 0; i < maciState.polls[pollId].tallyResult.length - 1; i += 1) {
         expect(maciState.polls[pollId].tallyResult[i].toString()).to.eq(voteWeight.toString());
       }
 
-      expect(poll.hasUntalliedBallots()).to.be.false;
+      expect(poll.hasUntalliedBallots()).to.eq(false);
 
       expect(() => {
         poll.tallyVotes();
-      }).to.throw;
+      }).to.throw();
     });
   });
 
   describe("Deep copy", () => {
-    let pollId;
+    let pollId: number;
     let m1: MaciState;
     const userKeypair = new Keypair();
     const stateFile = "./state.json";
 
     after(() => {
-      if (existsSync(stateFile)) unlinkSync(stateFile);
+      if (existsSync(stateFile)) {
+        unlinkSync(stateFile);
+      }
     });
 
     before(() => {
@@ -308,85 +311,86 @@ describe("MaciState", function () {
       const m2 = m1.copy();
 
       // modify stateTreeDepth
-      m2.stateTreeDepth = m2.stateTreeDepth + 1;
-      expect(m1.equals(m2)).not.to.be.true;
+      m2.stateTreeDepth += 1;
+      expect(m1.equals(m2)).not.to.eq(true);
 
       // modify user.pubKey
       const m3 = m1.copy();
       m3.stateLeaves[0].pubKey = new Keypair().pubKey;
-      expect(m1.equals(m3)).not.to.be.true;
+      expect(m1.equals(m3)).not.to.eq(true);
 
       // modify user.voiceCreditBalance
       const m4 = m1.copy();
       m4.stateLeaves[0].voiceCreditBalance = BigInt(m4.stateLeaves[0].voiceCreditBalance) + BigInt(1);
-      expect(m1.equals(m4)).not.to.be.true;
+      expect(m1.equals(m4)).not.to.eq(true);
 
       // modify poll.coordinatorKeypair
       const m6 = m1.copy();
       m6.polls[pollId].coordinatorKeypair = new Keypair();
-      expect(m1.equals(m6)).not.to.be.true;
+      expect(m1.equals(m6)).not.to.eq(true);
 
       // modify poll.treeDepths.intStateTreeDepth
       const m9 = m1.copy();
-      m9.polls[pollId].treeDepths.intStateTreeDepth = m9.polls[pollId].treeDepths.intStateTreeDepth + 1;
-      expect(m1.equals(m9)).not.to.be.true;
+      m9.polls[pollId].treeDepths.intStateTreeDepth += 1;
+      expect(m1.equals(m9)).not.to.eq(true);
 
       // modify poll.treeDepths.messageTreeDepth
       const m10 = m1.copy();
-      m10.polls[pollId].treeDepths.messageTreeDepth = m10.polls[pollId].treeDepths.messageTreeDepth + 1;
-      expect(m1.equals(m10)).not.to.be.true;
+      m10.polls[pollId].treeDepths.messageTreeDepth += 1;
+      expect(m1.equals(m10)).not.to.eq(true);
 
       // modify poll.treeDepths.messageTreeSubDepth
       const m11 = m1.copy();
-      m11.polls[pollId].treeDepths.messageTreeSubDepth = m11.polls[pollId].treeDepths.messageTreeSubDepth + 1;
-      expect(m1.equals(m11)).not.to.be.true;
+      m11.polls[pollId].treeDepths.messageTreeSubDepth += 1;
+      expect(m1.equals(m11)).not.to.eq(true);
 
       // modify poll.treeDepths.voteOptionTreeDepth
       const m12 = m1.copy();
-      m12.polls[pollId].treeDepths.voteOptionTreeDepth = m12.polls[pollId].treeDepths.voteOptionTreeDepth + 1;
-      expect(m1.equals(m12)).not.to.be.true;
+      m12.polls[pollId].treeDepths.voteOptionTreeDepth += 1;
+      expect(m1.equals(m12)).not.to.eq(true);
 
       // modify poll.batchSizes.tallyBatchSize
       const m13 = m1.copy();
-      m13.polls[pollId].batchSizes.tallyBatchSize = m13.polls[pollId].batchSizes.tallyBatchSize + 1;
-      expect(m1.equals(m13)).not.to.be.true;
+      m13.polls[pollId].batchSizes.tallyBatchSize += 1;
+      expect(m1.equals(m13)).not.to.eq(true);
 
       // modify poll.batchSizes.messageBatchSize
       const m14 = m1.copy();
-      m14.polls[pollId].batchSizes.messageBatchSize = m14.polls[pollId].batchSizes.messageBatchSize + 1;
-      expect(m1.equals(m14)).not.to.be.true;
+      m14.polls[pollId].batchSizes.messageBatchSize += 1;
+      expect(m1.equals(m14)).not.to.eq(true);
 
       // modify poll.maxValues.maxMessages
       const m16 = m1.copy();
-      m16.polls[pollId].maxValues.maxMessages = m16.polls[pollId].maxValues.maxMessages + 1;
-      expect(m1.equals(m16)).not.to.be.true;
+      m16.polls[pollId].maxValues.maxMessages += 1;
+      expect(m1.equals(m16)).not.to.eq(true);
 
       // modify poll.maxValues.maxVoteOptions
       const m17 = m1.copy();
-      m17.polls[pollId].maxValues.maxVoteOptions = m17.polls[pollId].maxValues.maxVoteOptions + 1;
-      expect(m1.equals(m17)).not.to.be.true;
+      m17.polls[pollId].maxValues.maxVoteOptions += 1;
+      expect(m1.equals(m17)).not.to.eq(true);
 
       // modify poll.messages
       const m20 = m1.copy();
       m20.polls[pollId].messages[0].data[0] = BigInt(m20.polls[pollId].messages[0].data[0]) + BigInt(1);
-      expect(m1.equals(m20)).not.to.be.true;
+      expect(m1.equals(m20)).not.to.eq(true);
 
       // modify poll.encPubKeys
       const m21 = m1.copy();
       m21.polls[pollId].encPubKeys[0] = new Keypair().pubKey;
-      expect(m1.equals(m21)).not.to.be.true;
+      expect(m1.equals(m21)).not.to.eq(true);
     });
 
     it("should create a JSON object from a MaciState object", () => {
       const json = m1.toJSON();
       writeFileSync(stateFile, JSON.stringify(json, null, 4));
-      const content = JSON.parse(readFileSync(stateFile).toString());
+      const content = JSON.parse(readFileSync(stateFile).toString()) as IJsonMaciState;
       const state = MaciState.fromJSON(content);
-      for (const poll of state.polls) {
+      state.polls.forEach((poll) => {
         poll.setCoordinatorKeypair(coordinatorKeypair.privKey.serialize());
-        expect(poll.coordinatorKeypair.equals(coordinatorKeypair)).to.be.true;
-      }
-      expect(state.equals(m1)).to.be.true;
+        expect(poll.coordinatorKeypair.equals(coordinatorKeypair)).to.eq(true);
+      });
+
+      expect(state.equals(m1)).to.eq(true);
     });
   });
 
@@ -666,7 +670,7 @@ describe("MaciState", function () {
 
       it("should fill the batch with random messages", () => {
         const poll = maciState.polls[pollId];
-        for (let i = 0; i < messageBatchSize - 1; i++) {
+        for (let i = 0; i < messageBatchSize - 1; i += 1) {
           const command = new PCommand(
             BigInt(1),
             user1Keypair.pubKey,
@@ -818,7 +822,7 @@ describe("MaciState", function () {
         user1Keypair.pubKey,
         BigInt(0),
         // voice credits spent would be this value ** this value
-        BigInt(Math.sqrt(parseInt(voiceCreditBalance.toString())) + 1),
+        BigInt(Math.sqrt(Number.parseInt(voiceCreditBalance.toString(), 10)) + 1),
         BigInt(1),
         BigInt(pollId),
       );
@@ -1003,6 +1007,8 @@ describe("MaciState", function () {
         poll.processMessage(message, ecdhKeypair.pubKey);
       }).to.throw("invalid state leaf index");
 
+      // keep this call to complete processing
+      // eslint-disable-next-line no-unused-expressions
       expect(() => poll.processMessages(pollId)).to.not.throw;
     });
 
@@ -1073,7 +1079,7 @@ describe("MaciState", function () {
         poll.processMessage(message, ecdhKeypair.pubKey);
       }).to.throw("invalid state leaf index");
 
-      expect(() => poll.processAllMessages()).to.not.throw;
+      expect(() => poll.processAllMessages()).to.not.throw();
     });
 
     it("should return the correct state leaves and ballots", () => {
