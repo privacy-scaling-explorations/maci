@@ -23,7 +23,6 @@ export {
   hash3,
   hash4,
   hash5,
-  hash9,
   hash13,
   hashOne,
   genRandomBabyJubValue,

@@ -198,7 +198,7 @@ export const hashN = (numElements: number, elements: Plaintext): bigint => {
     5: poseidonT6,
   };
 
-  return funcs[numElements](elements);
+  return funcs[numElements](elementsPadded);
 };
 
 // hash functions
@@ -206,8 +206,6 @@ export const hash2 = (elements: Plaintext): bigint => hashN(2, elements);
 export const hash3 = (elements: Plaintext): bigint => hashN(3, elements);
 export const hash4 = (elements: Plaintext): bigint => hashN(4, elements);
 export const hash5 = (elements: Plaintext): bigint => hashN(5, elements);
-// @todo look to make this work
-export const hash9 = (elements: Plaintext): bigint => hashN(9, elements);
 
 /**
  * A convenience function to use Poseidon to hash a Plaintext with
