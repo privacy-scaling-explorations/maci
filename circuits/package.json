@@ -2,7 +2,7 @@
   "name": "maci-circuits",
   "version": "1.1.2",
   "description": "zk-SNARK circuits for MACI",
-  "main": "build/index.js",
+  "main": "build/ts/index.js",
   "scripts": {
     "build-test-circuits-c": "bash ./scripts/build_intel.sh",
     "build-test-circuits-wasm": "bash ./scripts/build_arm.sh",
@@ -25,6 +25,9 @@
   },
   "dependencies": {
     "circomlib": "https://github.com/weijiekoh/circomlib#ac85e82c1914d47789e2032fb11ceb2cfdd38a2b",
+    "maci-core": "^1.1.2",
+    "maci-crypto": "^1.1.2",
+    "maci-domainobjs": "^1.1.2",
     "snarkjs": "^0.5.0"
   },
   "devDependencies": {
@@ -33,9 +36,6 @@
     "@types/node": "^18.11.9",
     "chai": "^4.3.10",
     "circom_tester": "^0.0.20",
-    "maci-core": "^1.1.2",
-    "maci-crypto": "^1.1.2",
-    "maci-domainobjs": "^1.1.2",
     "mocha": "^10.2.0",
     "ts-mocha": "^10.0.0",
     "typescript": "^5.3.2"

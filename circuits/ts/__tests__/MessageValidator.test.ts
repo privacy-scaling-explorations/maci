@@ -1,14 +1,19 @@
-import { stringifyBigInts, genRandomSalt } from "maci-crypto";
-import { PCommand, Keypair } from "maci-domainobjs";
-import path from "path";
 import { expect } from "chai";
 import tester from "circom_tester";
+import { stringifyBigInts, genRandomSalt } from "maci-crypto";
+import { PCommand, Keypair } from "maci-domainobjs";
+
+import path from "path";
+
+import type { CircuitInputs } from "maci-core";
+
 import { getSignal } from "./utils/utils";
 
-describe("MessageValidator circuit", function () {
+describe("MessageValidator circuit", function test() {
   this.timeout(90000);
-  let circuitInputs;
+  let circuitInputs: CircuitInputs;
   let circuit: tester.WasmTester;
+
   before(async () => {
     const circuitPath = path.resolve(__dirname, "../../circom/test", `messageValidator_test.circom`);
     circuit = await tester.wasm(circuitPath);
@@ -46,7 +51,7 @@ describe("MessageValidator circuit", function () {
       voteWeight: 9,
       slTimestamp: 1,
       pollEndTimestamp: 2,
-    });
+    }) as CircuitInputs;
   });
 
   it("Should pass if all inputs are valid", async () => {
@@ -67,7 +72,7 @@ describe("MessageValidator circuit", function () {
 
   it("Should be invalid if the pubkey is invalid", async () => {
     const circuitInputs2 = circuitInputs;
-    circuitInputs2.pubKey = [0, 1];
+    circuitInputs2.pubKey = [0n, 1n];
     const witness = await circuit.calculateWitness(circuitInputs2, true);
     await circuit.checkConstraints(witness);
     const isValid = await getSignal(circuit, witness, "isValid");
@@ -76,7 +81,7 @@ describe("MessageValidator circuit", function () {
 
   it("Should be invalid if there are insufficient voice credits", async () => {
     const circuitInputs2 = circuitInputs;
-    circuitInputs2.voteWeight = 11;
+    circuitInputs2.voteWeight = 11n;
     const witness = await circuit.calculateWitness(circuitInputs2, true);
     await circuit.checkConstraints(witness);
     const isValid = await getSignal(circuit, witness, "isValid");
@@ -85,7 +90,7 @@ describe("MessageValidator circuit", function () {
 
   it("Should be invalid if the nonce is invalid", async () => {
     const circuitInputs2 = circuitInputs;
-    circuitInputs2.nonce = 3;
+    circuitInputs2.nonce = 3n;
     const witness = await circuit.calculateWitness(circuitInputs2, true);
     await circuit.checkConstraints(witness);
     const isValid = await getSignal(circuit, witness, "isValid");
@@ -94,7 +99,7 @@ describe("MessageValidator circuit", function () {
 
   it("Should be invalid if the state leaf index is invalid", async () => {
     const circuitInputs2 = circuitInputs;
-    circuitInputs2.stateTreeIndex = 2;
+    circuitInputs2.stateTreeIndex = 2n;
     const witness = await circuit.calculateWitness(circuitInputs2, true);
     await circuit.checkConstraints(witness);
     const isValid = await getSignal(circuit, witness, "isValid");
@@ -103,7 +108,7 @@ describe("MessageValidator circuit", function () {
 
   it("Should be invalid if the vote option index is invalid", async () => {
     const circuitInputs2 = circuitInputs;
-    circuitInputs2.voteOptionIndex = 1;
+    circuitInputs2.voteOptionIndex = 1n;
     const witness = await circuit.calculateWitness(circuitInputs2, true);
     await circuit.checkConstraints(witness);
     const isValid = await getSignal(circuit, witness, "isValid");

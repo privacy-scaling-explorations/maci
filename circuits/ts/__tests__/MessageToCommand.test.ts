@@ -1,16 +1,20 @@
-import { stringifyBigInts, genRandomSalt } from "maci-crypto";
-import { Keypair, PCommand } from "maci-domainobjs";
-import path from "path";
 import { expect } from "chai";
 import tester from "circom_tester";
+import { stringifyBigInts, genRandomSalt } from "maci-crypto";
+import { Keypair, PCommand } from "maci-domainobjs";
+
+import path from "path";
+
 import { getSignal } from "./utils/utils";
 
 describe("MessageToCommand circuit", () => {
   let circuit: tester.WasmTester;
+
   before(async () => {
     const circuitPath = path.resolve(__dirname, "../../circom/test", `messageToCommand_test.circom`);
     circuit = await tester.wasm(circuitPath);
   });
+
   it("Should decrypt a Message and output the fields of a Command", async () => {
     const { privKey } = new Keypair();
     const k = new Keypair();
@@ -20,9 +24,9 @@ describe("MessageToCommand circuit", () => {
     const newPubKey = k.pubKey;
 
     const ecdhSharedKey = Keypair.genEcdhSharedKey(privKey, pubKey1);
-    const random50bitBigInt = (): bigint => {
-      return ((BigInt(1) << BigInt(50)) - BigInt(1)) & BigInt(genRandomSalt().toString());
-    };
+    const random50bitBigInt = (): bigint =>
+      // eslint-disable-next-line no-bitwise
+      ((BigInt(1) << BigInt(50)) - BigInt(1)) & BigInt(genRandomSalt().toString());
 
     const command: PCommand = new PCommand(
       random50bitBigInt(),
@@ -31,7 +35,7 @@ describe("MessageToCommand circuit", () => {
       random50bitBigInt(),
       random50bitBigInt(),
       random50bitBigInt(),
-      //genRandomSalt(),
+      // genRandomSalt(),
       BigInt(123),
     );
     const signature = command.sign(privKey);

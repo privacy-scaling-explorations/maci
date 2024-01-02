@@ -1,13 +1,15 @@
-import { MaciState, Poll, packProcessMessageSmallVals, STATE_TREE_ARITY } from "maci-core";
-import { PrivKey, Keypair, PCommand, Message, Ballot } from "maci-domainobjs";
-import { hash5, IncrementalQuinTree, stringifyBigInts, NOTHING_UP_MY_SLEEVE, AccQueue } from "maci-crypto";
-import path from "path";
 import { expect } from "chai";
 import tester from "circom_tester";
-import { getSignal } from "./utils/utils";
-import { STATE_TREE_DEPTH } from "./utils/constants";
+import { MaciState, Poll, packProcessMessageSmallVals, STATE_TREE_ARITY } from "maci-core";
+import { hash5, IncrementalQuinTree, stringifyBigInts, NOTHING_UP_MY_SLEEVE, AccQueue } from "maci-crypto";
+import { PrivKey, Keypair, PCommand, Message, Ballot } from "maci-domainobjs";
 
-describe("ProcessMessage circuit", function () {
+import path from "path";
+
+import { STATE_TREE_DEPTH } from "./utils/constants";
+import { getSignal } from "./utils/utils";
+
+describe("ProcessMessage circuit", function test() {
   this.timeout(900000);
 
   const voiceCreditBalance = BigInt(100);
@@ -48,7 +50,7 @@ describe("ProcessMessage circuit", function () {
     const messages: Message[] = [];
     const commands: PCommand[] = [];
 
-    before(async () => {
+    before(() => {
       // Sign up and publish
       const userKeypair = new Keypair(new PrivKey(BigInt(1)));
       stateIndex = BigInt(
@@ -72,7 +74,7 @@ describe("ProcessMessage circuit", function () {
 
       // First command (valid)
       const command = new PCommand(
-        stateIndex, //BigInt(1),
+        stateIndex, // BigInt(1),
         userKeypair.pubKey,
         voteOptionIndex, // voteOptionIndex,
         voteWeight, // vote weight
@@ -131,9 +133,10 @@ describe("ProcessMessage circuit", function () {
 
       ballotTree.insert(emptyBallot.hash());
 
-      for (let i = 0; i < poll.stateLeaves.length; i++) {
+      poll.stateLeaves.forEach(() => {
         ballotTree.insert(emptyBallotHash);
-      }
+      });
+
       const currentStateRoot = maciState.stateTree.root;
       const currentBallotRoot = ballotTree.root;
 
@@ -182,7 +185,7 @@ describe("ProcessMessage circuit", function () {
     const messages: Message[] = [];
     const commands: PCommand[] = [];
 
-    before(async () => {
+    before(() => {
       // Sign up and publish
       const userKeypair = new Keypair(new PrivKey(BigInt(123)));
       const userKeypair2 = new Keypair(new PrivKey(BigInt(456)));
@@ -190,16 +193,16 @@ describe("ProcessMessage circuit", function () {
       maciState.signUp(
         userKeypair.pubKey,
         voiceCreditBalance,
-        BigInt(1), //BigInt(Math.floor(Date.now() / 1000)),
+        BigInt(1), // BigInt(Math.floor(Date.now() / 1000)),
       );
       maciState.signUp(
         userKeypair2.pubKey,
         voiceCreditBalance,
-        BigInt(1), //BigInt(Math.floor(Date.now() / 1000)),
+        BigInt(1), // BigInt(Math.floor(Date.now() / 1000)),
       );
 
       pollId = maciState.deployPoll(
-        BigInt(2 + duration), //BigInt(Math.floor(Date.now() / 1000) + duration),
+        BigInt(2 + duration), // BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,
         messageBatchSize,
@@ -238,7 +241,7 @@ describe("ProcessMessage circuit", function () {
       accumulatorQueue.merge(treeDepths.messageTreeDepth);
 
       expect(poll.messageTree.root.toString()).to.be.eq(
-        accumulatorQueue.getRoot(treeDepths.messageTreeDepth).toString(),
+        accumulatorQueue.getRoot(treeDepths.messageTreeDepth)?.toString(),
       );
     });
 
@@ -250,9 +253,10 @@ describe("ProcessMessage circuit", function () {
 
       ballotTree.insert(emptyBallot.hash());
 
-      for (let i = 0; i < poll.stateLeaves.length; i++) {
+      poll.stateLeaves.forEach(() => {
         ballotTree.insert(emptyBallotHash);
-      }
+      });
+
       const currentStateRoot = maciState.stateTree.root;
       const currentBallotRoot = ballotTree.root;
 
@@ -281,7 +285,7 @@ describe("ProcessMessage circuit", function () {
     const messages: Message[] = [];
     const commands: PCommand[] = [];
 
-    before(async () => {
+    before(() => {
       // Sign up and publish
       const userKeypair = new Keypair(new PrivKey(BigInt(123)));
       const userKeypair2 = new Keypair(new PrivKey(BigInt(456)));
@@ -289,11 +293,11 @@ describe("ProcessMessage circuit", function () {
       stateIndex = maciState.signUp(
         userKeypair.pubKey,
         voiceCreditBalance,
-        BigInt(1), //BigInt(Math.floor(Date.now() / 1000)),
+        BigInt(1), // BigInt(Math.floor(Date.now() / 1000)),
       );
 
       pollId = maciState.deployPoll(
-        BigInt(2 + duration), //BigInt(Math.floor(Date.now() / 1000) + duration),
+        BigInt(2 + duration), // BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,
         messageBatchSize,
@@ -304,7 +308,7 @@ describe("ProcessMessage circuit", function () {
 
       // Vote for option 0
       const command = new PCommand(
-        stateIndex, //BigInt(1),
+        BigInt(stateIndex), // BigInt(1),
         userKeypair.pubKey,
         BigInt(0), // voteOptionIndex,
         voteWeight, // vote weight
@@ -324,7 +328,7 @@ describe("ProcessMessage circuit", function () {
 
       // Vote for option 1
       const command2 = new PCommand(
-        stateIndex,
+        BigInt(stateIndex),
         userKeypair2.pubKey,
         BigInt(1), // voteOptionIndex,
         voteWeight, // vote weight
@@ -342,7 +346,7 @@ describe("ProcessMessage circuit", function () {
 
       // Change key
       const command3 = new PCommand(
-        stateIndex, //BigInt(1),
+        BigInt(stateIndex), // BigInt(1),
         userKeypair2.pubKey,
         BigInt(1), // voteOptionIndex,
         BigInt(0), // vote weight
@@ -371,23 +375,19 @@ describe("ProcessMessage circuit", function () {
       accumulatorQueue.merge(treeDepths.messageTreeDepth);
 
       expect(poll.messageTree.root.toString()).to.be.eq(
-        accumulatorQueue.getRoot(treeDepths.messageTreeDepth).toString(),
+        accumulatorQueue.getRoot(treeDepths.messageTreeDepth)?.toString(),
       );
     });
 
     const NUM_BATCHES = 2;
     describe(`1 user, ${messageBatchSize * NUM_BATCHES} messages`, () => {
       it("should produce the correct state root and ballot root", async () => {
-        const maciState = new MaciState(STATE_TREE_DEPTH);
+        const state = new MaciState(STATE_TREE_DEPTH);
         const userKeypair = new Keypair();
-        const stateIndex = maciState.signUp(
-          userKeypair.pubKey,
-          voiceCreditBalance,
-          BigInt(Math.floor(Date.now() / 1000)),
-        );
+        const index = state.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
 
         // Sign up and publish
-        const pollId = maciState.deployPoll(
+        const id = state.deployPoll(
           BigInt(Math.floor(Date.now() / 1000) + duration),
           maxValues,
           treeDepths,
@@ -395,18 +395,18 @@ describe("ProcessMessage circuit", function () {
           coordinatorKeypair,
         );
 
-        const poll = maciState.polls[pollId];
+        const selectedPoll = state.polls[id];
 
         // Second batch is not a full batch
         const numMessages = messageBatchSize * NUM_BATCHES - 1;
-        for (let i = 0; i < numMessages; i++) {
+        for (let i = 0; i < numMessages; i += 1) {
           const command = new PCommand(
-            BigInt(stateIndex),
+            BigInt(index),
             userKeypair.pubKey,
-            BigInt(i), //vote option index
+            BigInt(i), // vote option index
             BigInt(1), // vote weight
             BigInt(numMessages - i), // nonce
-            BigInt(pollId),
+            BigInt(id),
           );
 
           const signature = command.sign(userKeypair.privKey);
@@ -414,12 +414,14 @@ describe("ProcessMessage circuit", function () {
           const ecdhKeypair = new Keypair();
           const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
           const message = command.encrypt(signature, sharedKey);
-          poll.publishMessage(message, ecdhKeypair.pubKey);
+          selectedPoll.publishMessage(message, ecdhKeypair.pubKey);
         }
 
-        for (let i = 0; i < NUM_BATCHES; i++) {
-          const generatedInputs = poll.processMessages(pollId);
+        for (let i = 0; i < NUM_BATCHES; i += 1) {
+          const generatedInputs = selectedPoll.processMessages(id);
+          // eslint-disable-next-line no-await-in-loop
           const witness = await circuit.calculateWitness(generatedInputs, true);
+          // eslint-disable-next-line no-await-in-loop
           await circuit.checkConstraints(witness);
         }
       });

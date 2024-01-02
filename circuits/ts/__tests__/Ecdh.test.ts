@@ -1,8 +1,10 @@
+import { expect } from "chai";
+import tester from "circom_tester";
 import { stringifyBigInts } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
+
 import path from "path";
-import tester from "circom_tester";
-import { expect } from "chai";
+
 import { getSignal } from "./utils/utils";
 
 describe("Public key derivation circuit", () => {

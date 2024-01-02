@@ -1,11 +1,13 @@
-import { PCommand, Keypair } from "maci-domainobjs";
+import { expect } from "chai";
 import tester from "circom_tester";
 import { stringifyBigInts, genRandomSalt, sha256Hash, hashLeftRight, hash13, hash5, hash4, hash3 } from "maci-crypto";
+import { PCommand, Keypair } from "maci-domainobjs";
+
 import path from "path";
-import { expect } from "chai";
+
 import { getSignal } from "./utils/utils";
 
-describe("Poseidon hash circuits", function () {
+describe("Poseidon hash circuits", function test() {
   this.timeout(30000);
 
   let circuit: tester.WasmTester;
@@ -40,8 +42,8 @@ describe("Poseidon hash circuits", function () {
       });
 
       it("correctly hashes 4 random values", async () => {
-        const preImages: any = [];
-        for (let i = 0; i < 4; i++) {
+        const preImages: bigint[] = [];
+        for (let i = 0; i < 4; i += 1) {
           preImages.push(genRandomSalt());
         }
 
@@ -65,8 +67,8 @@ describe("Poseidon hash circuits", function () {
         circuit = await tester.wasm(circuitPath);
       });
       it("correctly hashes 6 random values", async () => {
-        const preImages: any = [];
-        for (let i = 0; i < 6; i++) {
+        const preImages: bigint[] = [];
+        for (let i = 0; i < 6; i += 1) {
           preImages.push(genRandomSalt());
         }
 
@@ -92,8 +94,8 @@ describe("Poseidon hash circuits", function () {
         circuit = await tester.wasm(circuitPath);
       });
       it("correctly hashes 5 random values", async () => {
-        const preImages: any = [];
-        for (let i = 0; i < 5; i++) {
+        const preImages: bigint[] = [];
+        for (let i = 0; i < 5; i += 1) {
           preImages.push(genRandomSalt());
         }
 
@@ -116,9 +118,10 @@ describe("Poseidon hash circuits", function () {
         const circuitPath = path.resolve(__dirname, "../../circom/test", `hasher4_test.circom`);
         circuit = await tester.wasm(circuitPath);
       });
+
       it("correctly hashes 4 random values", async () => {
-        const preImages: any = [];
-        for (let i = 0; i < 4; i++) {
+        const preImages: bigint[] = [];
+        for (let i = 0; i < 4; i += 1) {
           preImages.push(genRandomSalt());
         }
 
@@ -143,8 +146,8 @@ describe("Poseidon hash circuits", function () {
       });
 
       it("correctly hashes 3 random values", async () => {
-        const preImages: any = [];
-        for (let i = 0; i < 3; i++) {
+        const preImages: bigint[] = [];
+        for (let i = 0; i < 3; i += 1) {
           preImages.push(genRandomSalt());
         }
 
@@ -167,9 +170,10 @@ describe("Poseidon hash circuits", function () {
         const circuitPath = path.resolve(__dirname, "../../circom/test", `hasher13_test.circom`);
         circuit = await tester.wasm(circuitPath);
       });
+
       it("correctly hashes 13 random values", async () => {
-        const preImages: any = [];
-        for (let i = 0; i < 13; i++) {
+        const preImages: bigint[] = [];
+        for (let i = 0; i < 13; i += 1) {
           preImages.push(genRandomSalt());
         }
         const circuitInputs = stringifyBigInts({
@@ -191,6 +195,7 @@ describe("Poseidon hash circuits", function () {
         const circuitPath = path.resolve(__dirname, "../../circom/test", `hashleftright_test.circom`);
         circuit = await tester.wasm(circuitPath);
       });
+
       it("correctly hashes two random values", async () => {
         const left = genRandomSalt();
         const right = genRandomSalt();
@@ -213,11 +218,12 @@ describe("Poseidon hash circuits", function () {
       const circuitPath = path.resolve(__dirname, "../../circom/test", `messageHasher_test.circom`);
       circuit = await tester.wasm(circuitPath);
     });
+
     it("correctly hashes a message", async () => {
       const k = new Keypair();
-      const random50bitBigInt = (): bigint => {
-        return ((BigInt(1) << BigInt(50)) - BigInt(1)) & BigInt(genRandomSalt().toString());
-      };
+      const random50bitBigInt = (): bigint =>
+        // eslint-disable-next-line no-bitwise
+        ((BigInt(1) << BigInt(50)) - BigInt(1)) & BigInt(genRandomSalt().toString());
 
       const command: PCommand = new PCommand(
         random50bitBigInt(),

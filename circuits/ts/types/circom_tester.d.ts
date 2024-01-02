@@ -21,21 +21,23 @@ declare module "circom_tester" {
     componentIdx: number;
   }
 
-  interface Symbols {
-    [key: string]: CircuitSymbol;
-  }
+  type Symbols = Record<string, CircuitSymbol>;
 
   interface WitnessCalculator {
-    calculateWitness(input: any, sanityCheck?: boolean): Promise<any[]>;
+    calculateWitness(input: unknown, sanityCheck?: boolean): Promise<bigint[]>;
   }
 
   class WasmTester {
     constructor(dir: string, baseName: string, witnessCalculator: WitnessCalculator);
+
     symbols: Symbols;
+
     calculateWitness(input: unknown, sanityCheck?: boolean): Promise<bigint[]>;
+
     loadSymbols(): Promise<void>;
+
     checkConstraints(witness: bigint[]): Promise<void>;
   }
 
-  export function wasm(circomInput: string, _options?: Options): Promise<WasmTester>;
+  export function wasm(circomInput: string, options?: Options): Promise<WasmTester>;
 }

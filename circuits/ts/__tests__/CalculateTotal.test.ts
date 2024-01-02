@@ -1,6 +1,8 @@
-import path from "path";
-import tester from "circom_tester";
 import { expect } from "chai";
+import tester from "circom_tester";
+
+import path from "path";
+
 import { getSignal } from "./utils/utils";
 
 describe("CalculateTotal circuit", () => {
@@ -13,9 +15,10 @@ describe("CalculateTotal circuit", () => {
 
   it("should correctly sum a list of values", async () => {
     const nums: number[] = [];
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 6; i += 1) {
       nums.push(Math.floor(Math.random() * 100));
     }
+
     const sum = nums.reduce((a, b) => a + b, 0);
 
     const circuitInputs = {

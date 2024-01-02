@@ -1,11 +1,13 @@
-import { stringifyBigInts, verifySignature, hash4 } from "maci-crypto";
-import { Keypair, PCommand } from "maci-domainobjs";
-import path from "path";
 import { expect } from "chai";
 import tester from "circom_tester";
+import { stringifyBigInts, verifySignature, hash4 } from "maci-crypto";
+import { Keypair, PCommand } from "maci-domainobjs";
+
+import path from "path";
+
 import { getSignal } from "./utils/utils";
 
-describe("Signature verification circuit", function () {
+describe("Signature verification circuit", function test() {
   this.timeout(90000);
 
   let circuit: tester.WasmTester;
@@ -22,7 +24,7 @@ describe("Signature verification circuit", function () {
     const sig = command.sign(signer.privKey);
     const plaintext = hash4(command.asArray());
 
-    expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).to.be.true;
+    expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).to.eq(true);
 
     const circuitInputs = stringifyBigInts({
       pubKey: signer.pubKey.asCircuitInputs(),
@@ -51,10 +53,10 @@ describe("Signature verification circuit", function () {
     const plaintext = hash4(command.asArray());
 
     // The signature is signed by `signer`
-    expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).to.be.true;
+    expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).to.eq(true);
 
     // The signature is not signed by `wrongSigner`
-    expect(verifySignature(plaintext, sig, wrongSigner.pubKey.rawPubKey)).to.be.false;
+    expect(verifySignature(plaintext, sig, wrongSigner.pubKey.rawPubKey)).to.eq(false);
 
     const circuitInputs = stringifyBigInts({
       pubKey: wrongSigner.pubKey.asCircuitInputs(),
@@ -78,7 +80,7 @@ describe("Signature verification circuit", function () {
     const sig = command.sign(signer.privKey);
     const plaintext = hash4(command.asArray());
 
-    expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).to.be.true;
+    expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).to.eq(true);
 
     const circuitInputs = stringifyBigInts({
       pubKey: signer.pubKey.asCircuitInputs(),
@@ -87,7 +89,7 @@ describe("Signature verification circuit", function () {
       preimage: command.asCircuitInputs(),
     });
 
-    expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).to.be.true;
+    expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).to.eq(true);
 
     const witness = await circuit.calculateWitness(circuitInputs);
     await circuit.checkConstraints(witness);
