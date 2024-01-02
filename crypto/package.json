@@ -6,7 +6,7 @@
   "scripts": {
     "watch": "tsc --watch",
     "build": "tsc",
-    "test": "ts-mocha --exit ts/__tests__/*.test.ts",
+    "test": "nyc ts-mocha --exit ts/__tests__/*.test.ts",
     "test-crypto": "ts-mocha --exit ts/__tests__/Crypto.test.ts",
     "test-accQueue": "ts-mocha --exit ts/__tests__/AccQueue.test.ts"
   },
@@ -24,7 +24,27 @@
     "@types/node": "^18.11.9",
     "chai": "^4.3.10",
     "mocha": "^10.2.0",
+    "nyc": "^15.1.0",
     "ts-mocha": "^10.0.0",
     "typescript": "^5.3.2"
+  },
+  "nyc": {
+    "reporter": [
+      "text",
+      "lcov"
+    ],
+    "extensions": [
+      ".ts"
+    ],
+    "all": true,
+    "exclude": [
+      "**/__tests__/*.ts",
+      "**/*.js",
+      "**/*.d.ts"
+    ],
+    "branches": ">50%",
+    "lines": ">50%",
+    "functions": ">50%",
+    "statements": ">50%"
   }
 }
