@@ -15,9 +15,9 @@ describe("Splice circuit", () => {
 
   it("Should output the correct reconstructed level", async () => {
     for (let index = 0; index < 5; index += 1) {
-      const items = [0, 20, 30, 40];
-      const leaf = 10;
-      const circuitInputs = stringifyBigInts({ in: items, leaf, index });
+      const items = [0n, 20n, 30n, 40n];
+      const leaf = 10n;
+      const circuitInputs = stringifyBigInts({ in: items, leaf, index: BigInt(index) });
 
       // eslint-disable-next-line no-await-in-loop
       const witness = await circuit.calculateWitness(circuitInputs);

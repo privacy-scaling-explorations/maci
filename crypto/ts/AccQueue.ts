@@ -2,9 +2,10 @@ import { OptimisedMT as IncrementalQuinTree } from "optimisedmt";
 
 import assert from "assert";
 
+import { deepCopyBigIntArray, stringifyBigInts, unstringifyBigInts } from "./bigIntUtils";
 import { sha256Hash, hashLeftRight, hash5 } from "./crypto";
-import { Leaf, Queue } from "./types";
-import { calcDepthFromNumLeaves, deepCopyBigIntArray, stringifyBigInts, unstringifyBigInts } from "./utils";
+import { Leaf, Queue, StringifiedBigInts } from "./types";
+import { calcDepthFromNumLeaves } from "./utils";
 
 /**
  * An Accumulator Queue which conforms to the implementation in AccQueue.sol.
@@ -512,7 +513,7 @@ export class AccQueue {
     newAccQueue.currentSubtreeIndex = JSON.parse(JSON.stringify(this.currentSubtreeIndex)) as number;
     newAccQueue.numLeaves = JSON.parse(JSON.stringify(this.numLeaves)) as number;
     newAccQueue.leafQueue.levels = unstringifyBigInts(
-      JSON.parse(JSON.stringify(stringifyBigInts(this.leafQueue.levels))) as bigint[][],
+      JSON.parse(JSON.stringify(stringifyBigInts(this.leafQueue.levels))) as StringifiedBigInts,
     ) as bigint[][];
     newAccQueue.leafQueue.indices = JSON.parse(JSON.stringify(this.leafQueue.indices)) as number[];
     newAccQueue.subRoots = deepCopyBigIntArray(this.subRoots);
@@ -523,7 +524,7 @@ export class AccQueue {
     newAccQueue.smallSRTroot = BigInt(this.smallSRTroot.toString());
     newAccQueue.subRootQueue.indices = JSON.parse(JSON.stringify(this.subRootQueue.indices)) as number[];
     newAccQueue.subRootQueue.levels = unstringifyBigInts(
-      JSON.parse(JSON.stringify(stringifyBigInts(this.subRootQueue.levels))) as bigint[][],
+      JSON.parse(JSON.stringify(stringifyBigInts(this.subRootQueue.levels))) as StringifiedBigInts,
     ) as bigint[][];
 
     return newAccQueue;

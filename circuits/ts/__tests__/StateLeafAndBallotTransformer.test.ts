@@ -19,8 +19,8 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
   const nonce = BigInt(1);
   const pollId = BigInt(0);
   const salt = genRandomSalt();
-  const numSignUps = 25;
-  const maxVoteOptions = 25;
+  const numSignUps = 25n;
+  const maxVoteOptions = 25n;
 
   const slKeypair = new Keypair();
   const slPubKey = slKeypair.pubKey;
@@ -28,8 +28,8 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
   const slVoiceCreditBalance = BigInt(100);
   const ballotNonce = BigInt(0);
   const ballotCurrentVotesForOption = BigInt(0);
-  const slTimestamp = 1;
-  const pollEndTimestamp = 2;
+  const slTimestamp = 1n;
+  const pollEndTimestamp = 2n;
 
   const command: PCommand = new PCommand(stateIndex, newPubKey, voteOptionIndex, newVoteWeight, nonce, pollId, salt);
 
@@ -91,7 +91,7 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
       cmdNewPubKey: command.newPubKey.asCircuitInputs(),
       cmdVoteOptionIndex: command.voteOptionIndex,
       cmdNewVoteWeight: command.newVoteWeight,
-      cmdNonce: 2, // invalid
+      cmdNonce: 2n, // invalid
       cmdPollId: command.pollId,
       cmdSalt: command.salt,
       cmdSigR8: signature.R8,

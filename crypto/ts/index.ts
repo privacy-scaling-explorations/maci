@@ -2,14 +2,9 @@ import "./@types";
 
 export { AccQueue } from "./AccQueue";
 
-export {
-  stringifyBigInts,
-  unstringifyBigInts,
-  deepCopyBigIntArray,
-  calcDepthFromNumLeaves,
-  genTreeCommitment,
-  genTreeProof,
-} from "./utils";
+export { calcDepthFromNumLeaves, genTreeCommitment, genTreeProof } from "./utils";
+
+export { bigInt2Buffer, stringifyBigInts, unstringifyBigInts, deepCopyBigIntArray } from "./bigIntUtils";
 
 export { SNARK_FIELD_SIZE, NOTHING_UP_MY_SLEEVE, babyJubMaxValue } from "./constants";
 
@@ -41,7 +36,6 @@ export {
   curveToBit,
   babyJubAddPoint,
   bitToCurve,
-  bigInt2Buffer,
 } from "./crypto";
 
 export { OptimisedMT as IncrementalQuinTree, type PathElements } from "optimisedmt";

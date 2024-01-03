@@ -26,7 +26,6 @@ import {
   G1Point,
   G2Point,
   hashOne,
-  bigInt2Buffer,
   genRandomBabyJubValue,
   genPrivKey,
   packPubKey,
@@ -34,7 +33,6 @@ import {
   bitToCurve,
   curveToBit,
 } from "../crypto";
-import { genTreeCommitment } from "../utils";
 
 describe("Crypto", function test() {
   this.timeout(100000);
@@ -481,41 +479,7 @@ describe("Crypto", function test() {
         expect(salt).to.not.eq(BigInt(0));
       });
     });
-    describe("bigInt2Buffer", () => {
-      it("should convert a BigInt to a Buffer", () => {
-        const bigInt = BigInt(123456789);
-        const buffer = bigInt2Buffer(bigInt);
-        expect(buffer).to.be.instanceOf(Buffer);
-      });
 
-      it("should produce a Buffer with the correct value", () => {
-        const bigInt = BigInt(123456789);
-        const buffer = bigInt2Buffer(bigInt);
-        const expectedBuffer = Buffer.from(bigInt.toString(16), "hex");
-        expect(buffer.equals(expectedBuffer)).to.eq(true);
-      });
-    });
-    describe("genTreeCommitment", () => {
-      const leaves = [BigInt(1), BigInt(2), BigInt(3), BigInt(4), BigInt(5)];
-      const salt = BigInt(6);
-      const depth = 3;
-      it("should generate a commitment to the tree root using the provided salt", () => {
-        const commitment = genTreeCommitment(leaves, salt, depth);
-        expect(commitment).to.satisfy((num: bigint) => num > 0);
-        expect(commitment).to.satisfy((num: bigint) => num < SNARK_FIELD_SIZE);
-      });
-
-      it("should always generate the same commitment for the same inputs", () => {
-        const commitment = genTreeCommitment(leaves, salt, depth);
-        expect(commitment).to.satisfy((num: bigint) => num > 0);
-        expect(commitment).to.satisfy((num: bigint) => num < SNARK_FIELD_SIZE);
-
-        const commitment2 = genTreeCommitment(leaves, salt, depth);
-        expect(commitment2).to.satisfy((num: bigint) => num > 0);
-        expect(commitment2).to.satisfy((num: bigint) => num < SNARK_FIELD_SIZE);
-        expect(commitment).to.eq(commitment2);
-      });
-    });
     describe("bitToCurve", () => {
       it("should map bit 0 to point [0, 1] on the curve", () => {
         const point = bitToCurve(BigInt(0));
@@ -684,6 +648,17 @@ describe("Crypto", function test() {
         expect(ciphertext).to.be.instanceOf(Array);
         expect(ciphertext.length).to.eq(4);
       });
+
+      it("should encrypt a ciphertext without passing a nonce (default to 0)", () => {
+        const { privKey } = genKeypair();
+        const pubKey = genPubKey(genPrivKey());
+        const sharedKey = genEcdhSharedKey(privKey, pubKey);
+        const plaintext = [BigInt(1), BigInt(2), BigInt(3)];
+        const ciphertext = encrypt(plaintext, sharedKey);
+        expect(ciphertext).to.be.instanceOf(Array);
+        expect(ciphertext.length).to.eq(4);
+      });
+
       it("should produce a cihertext that is different from the plaintext", () => {
         const { privKey } = genKeypair();
         const pubKey = genPubKey(genPrivKey());
