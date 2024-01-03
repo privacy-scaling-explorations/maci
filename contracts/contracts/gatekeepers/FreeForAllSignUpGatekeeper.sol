@@ -7,10 +7,6 @@ import { MACI } from "../MACI.sol";
 /// @title FreeForAllGatekeeper
 /// @notice A SignUpGatekeeper which allows anyone to sign up.
 contract FreeForAllGatekeeper is SignUpGatekeeper {
-  /// @notice setMaciInstance does nothing in this gatekeeper
-  /// @param _maci The MACI contract
-  function setMaciInstance(MACI _maci) public override {}
-
   /// @notice Registers the user without any restrictions.
   /// @param _address The address of the user
   /// @param _data memory additional data

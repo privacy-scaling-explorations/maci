@@ -75,8 +75,8 @@ describe("MessageProcessor", () => {
     expect(p.toString()).to.eq(pollId.toString());
 
     // publish the NOTHING_UP_MY_SLEEVE message
-    const messageData = [NOTHING_UP_MY_SLEEVE, BigInt(0)];
-    for (let i = 2; i < 10; i += 1) {
+    const messageData = [NOTHING_UP_MY_SLEEVE];
+    for (let i = 1; i < 10; i += 1) {
       messageData.push(BigInt(0));
     }
     const message = new Message(BigInt(1), messageData);
@@ -138,7 +138,7 @@ describe("MessageProcessor", () => {
       const onChainPackedVals = BigInt(
         await mpContract.genProcessMessagesPackedVals(await pollContract.getAddress(), 0, users.length),
       );
-      expect(packedVals.toString(16)).to.eq(onChainPackedVals.toString(16));
+      expect(packedVals.toString()).to.eq(onChainPackedVals.toString());
     });
 
     it("processMessages() should update the state and ballot root commitment", async () => {

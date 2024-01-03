@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import { Hasher } from "../crypto/Hasher.sol";
-
 /// @title DomainObjs
 /// @notice An utility contract that holds
 /// a number of domain objects and functions

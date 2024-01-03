@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { AbiCoder, BigNumberish, Signer } from "ethers";
+import { AbiCoder, ZeroAddress, Signer } from "ethers";
 import { STATE_TREE_DEPTH } from "maci-core";
 import { Keypair } from "maci-domainobjs";
 
@@ -20,7 +20,7 @@ describe("SignUpGatekeeper", () => {
     signer = await getDefaultSigner();
     freeForAllContract = await deployFreeForAllSignUpGatekeeper(signer, true);
     signUpToken = await deploySignupToken(signer, true);
-    signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(await signUpToken.getAddress());
+    signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(await signUpToken.getAddress(), signer, true);
   });
 
   describe("Deployment", () => {
@@ -39,7 +39,6 @@ describe("SignUpGatekeeper", () => {
     let maciContract: MACI;
 
     beforeEach(async () => {
-      freeForAllContract = await deployFreeForAllSignUpGatekeeper(signer, true);
       signUpToken = await deploySignupToken(signer, true);
       signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(await signUpToken.getAddress(), signer, true);
 
@@ -62,20 +61,43 @@ describe("SignUpGatekeeper", () => {
       expect(await signUpTokenGatekeeperContract.maci()).to.eq(maciAddress);
     });
 
-    it("Reverts if address provided is not a MACI instance", async () => {
+    it("it should revert if the register function is called by a non registered maci instance", async () => {
       const user = new Keypair();
 
-      const tx = await signUpToken.giveToken(await signer.getAddress(), 0);
-      await tx.wait();
+      await signUpToken.giveToken(await signer.getAddress(), 0);
 
       await expect(
         maciContract.signUp(
-          user.pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
+          user.pubKey.asContractParam(),
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
           AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
-          { gasLimit: 300000 },
         ),
       ).to.be.revertedWithCustomError(signUpTokenGatekeeperContract, "OnlyMACI");
+    });
+
+    it("should register a user if the register function is called by a registered maci instance", async () => {
+      const user = new Keypair();
+
+      await signUpToken.giveToken(await signer.getAddress(), 0);
+
+      await signUpTokenGatekeeperContract.setMaciInstance(await maciContract.getAddress());
+
+      const tx = await maciContract.signUp(
+        user.pubKey.asContractParam(),
+        AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
+        AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
+      );
+      const receipt = await tx.wait();
+
+      expect(receipt?.status).to.eq(1);
+    });
+  });
+
+  describe("FreeForAllSignUpGatekeeper", () => {
+    it("should always complete successfully", async () => {
+      const tx = await freeForAllContract.register(ZeroAddress, AbiCoder.defaultAbiCoder().encode(["uint256"], [1]));
+      const receipt = await tx.wait();
+      expect(receipt?.status).to.eq(1);
     });
   });
 });

@@ -6,7 +6,6 @@ import { AccQueue, AccQueueQuinaryMaci } from "./trees/AccQueue.sol";
 import { TopupCredit } from "./TopupCredit.sol";
 import { Params } from "./utilities/Params.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
-import { VkRegistry } from "./VkRegistry.sol";
 import { Poll } from "./Poll.sol";
 
 /// @title PollFactory
@@ -69,7 +68,5 @@ contract PollFactory is Params, DomainObjs {
     poll.init();
 
     poll.transferOwnership(_pollOwner);
-
-    return poll;
   }
 }
