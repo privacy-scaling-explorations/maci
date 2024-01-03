@@ -39,6 +39,9 @@ export class MaciState implements IMaciState {
     // we put a blank state leaf to prevent a DoS attack
     this.stateLeaves.push(blankStateLeaf);
     this.stateTree.insert(blankStateLeafHash);
+    // we need to increase the number of signups by one given
+    // that we already added the blank leaf
+    this.numSignUps += 1;
   }
 
   /**

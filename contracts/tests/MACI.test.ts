@@ -121,7 +121,8 @@ describe("MACI", () => {
       const maci = (await deployTestContracts(initialVoiceCreditBalance, stateTreeDepthTest, signer, true))
         .maciContract;
       const keypair = new Keypair();
-      for (let i = 0; i < maxUsers; i += 1) {
+      // start from one as we already have one signup (blank state leaf)
+      for (let i = 1; i < maxUsers; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         await maci.signUp(
           keypair.pubKey.asContractParam(),
