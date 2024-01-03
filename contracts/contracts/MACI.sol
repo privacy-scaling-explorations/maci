@@ -101,6 +101,12 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable {
     stateAq = new AccQueueQuinaryBlankSl(STATE_TREE_SUBDEPTH);
     stateAq.enqueue(BLANK_STATE_LEAF_HASH);
 
+    // because we add a blank leaf we need to count one signup
+    // so we don't allow max + 1
+    unchecked {
+      numSignUps++;
+    }
+
     pollFactory = _pollFactory;
     topupCredit = _topupCredit;
     signUpGatekeeper = _signUpGatekeeper;

@@ -103,10 +103,9 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
     uint256 subsidyBatchSize = uint256(treeArity) ** intStateTreeDepth;
 
     (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
-    uint256 numLeaves = numSignUps + 1;
 
     // Require that there are unfinished ballots left
-    if (rbi * subsidyBatchSize > numLeaves) {
+    if (rbi * subsidyBatchSize > numSignUps) {
       revert AllSubsidyCalculated();
     }
 
@@ -115,7 +114,7 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
       revert InvalidSubsidyProof();
     }
     subsidyCommitment = _newSubsidyCommitment;
-    increaseSubsidyIndex(subsidyBatchSize, numLeaves);
+    increaseSubsidyIndex(subsidyBatchSize, numSignUps);
   }
 
   /// @notice Increase the subsidy batch index (rbi, cbi) to next,

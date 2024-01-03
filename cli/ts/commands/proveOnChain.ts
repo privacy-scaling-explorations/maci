@@ -303,12 +303,11 @@ export const proveOnChain = async (
   if (Object.keys(data.subsidyProofs).length !== 0) {
     let rbi = Number(await subsidyContract.rbi());
     let cbi = Number(await subsidyContract.cbi());
-    const numLeaves = numSignUps + 1;
-    const num1DBatches = Math.ceil(numLeaves / subsidyBatchSize);
+    const num1DBatches = Math.ceil(numSignUps / subsidyBatchSize);
     let subsidyBatchNum = rbi * num1DBatches + cbi;
     const totalBatchNum = (num1DBatches * (num1DBatches + 1)) / 2;
 
-    logYellow(quiet, info(`number of subsidy batch processed: ${subsidyBatchNum}, numleaf=${numLeaves}`));
+    logYellow(quiet, info(`number of subsidy batch processed: ${subsidyBatchNum}, numleaf=${numSignUps}`));
 
     // process all batches
     for (let i = subsidyBatchNum; i < totalBatchNum; i++) {
@@ -373,7 +372,11 @@ export const proveOnChain = async (
   }
 
   // vote tallying proofs
-  const totalTallyBatches = numSignUps < tallyBatchSize ? 1 : Math.floor(numSignUps / tallyBatchSize) + 1;
+  const totalTallyBatches =
+    numSignUps % tallyBatchSize === 0
+      ? Math.floor(numSignUps / tallyBatchSize)
+      : Math.floor(numSignUps / tallyBatchSize) + 1;
+
   let tallyBatchNum = Number(await tallyContract.tallyBatchNum());
 
   if (tallyBatchNum < totalTallyBatches) logYellow(quiet, info("Submitting proofs of vote tallying..."));
