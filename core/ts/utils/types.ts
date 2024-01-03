@@ -1,4 +1,7 @@
-import {
+import type { MaciState } from "../MaciState";
+import type { Poll } from "../Poll";
+import type { PathElements } from "maci-crypto";
+import type {
   Ballot,
   IJsonBallot,
   IJsonCommand,
@@ -12,9 +15,6 @@ import {
   StateLeaf,
   TCommand,
 } from "maci-domainobjs";
-import { MaciState } from "../MaciState";
-import { Poll } from "../Poll";
-import { PathElements } from "optimisedmt";
 
 /**
  * A circuit inputs for the circom circuit
