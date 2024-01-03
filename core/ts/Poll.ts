@@ -30,7 +30,7 @@ import {
 import assert from "assert";
 
 import type { MaciState } from "./MaciState";
-import type { PathElements } from "optimisedmt";
+import type { PathElements } from "maci-crypto";
 
 import { STATE_TREE_ARITY, MESSAGE_TREE_ARITY, VOTE_OPTION_TREE_ARITY } from "./utils/constants";
 import { ProcessMessageErrors, ProcessMessageError } from "./utils/errors";

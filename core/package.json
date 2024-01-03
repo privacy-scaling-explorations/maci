@@ -13,8 +13,7 @@
   },
   "dependencies": {
     "maci-crypto": "^1.1.2",
-    "maci-domainobjs": "^1.1.2",
-    "optimisedmt": "^0.0.9"
+    "maci-domainobjs": "^1.1.2"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",

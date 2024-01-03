@@ -44,7 +44,7 @@ export {
   bigInt2Buffer,
 } from "./crypto";
 
-export { OptimisedMT as IncrementalQuinTree } from "optimisedmt";
+export { OptimisedMT as IncrementalQuinTree, type PathElements } from "optimisedmt";
 
 export type {
   SnarkBigInt,
