@@ -1,5 +1,15 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { expect } from "chai";
+import { Signer } from "ethers";
+import {
+  FreeForAllGatekeeper,
+  MACI,
+  deployConstantInitialVoiceCreditProxy,
+  deployFreeForAllSignUpGatekeeper,
+  deployMaci,
+  deployMockVerifier,
+  deployTopupCredit,
+} from "maci-contracts";
 import { Keypair } from "maci-domainobjs";
 
 import { arch } from "os";
@@ -169,3 +179,59 @@ export const sleep = async (ms: number): Promise<void> =>
  * @returns whether we are running on an arm chip
  */
 export const isArm = (): boolean => arch().includes("arm");
+
+/**
+ * Deploy a set of smart contracts that can be used for testing.
+ * @param initialVoiceCreditBalance - the initial voice credit balance for each user
+ * @param stateTreeDepth - the depth of the state tree
+ * @param signer - the signer to use
+ * @param quiet - whether to suppress console output
+ * @param gatekeeper - the gatekeeper contract to use
+ * @returns the deployed contracts
+ */
+export const deployTestContracts = async (
+  initialVoiceCreditBalance: number,
+  stateTreeDepth: number,
+  signer?: Signer,
+  quiet = false,
+  gatekeeper: FreeForAllGatekeeper | undefined = undefined,
+): Promise<MACI> => {
+  const mockVerifierContract = await deployMockVerifier(signer, true);
+
+  let gatekeeperContract = gatekeeper;
+  if (!gatekeeperContract) {
+    gatekeeperContract = await deployFreeForAllSignUpGatekeeper(signer, true);
+  }
+
+  const constantIntialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
+    initialVoiceCreditBalance,
+    signer,
+    true,
+  );
+
+  // VkRegistry
+  const topupCreditContract = await deployTopupCredit(signer, true);
+  const [
+    gatekeeperContractAddress,
+    mockVerifierContractAddress,
+    constantIntialVoiceCreditProxyContractAddress,
+    topupCreditContractAddress,
+  ] = await Promise.all([
+    gatekeeperContract.getAddress(),
+    mockVerifierContract.getAddress(),
+    constantIntialVoiceCreditProxyContract.getAddress(),
+    topupCreditContract.getAddress(),
+  ]);
+
+  const { maciContract } = await deployMaci(
+    gatekeeperContractAddress,
+    constantIntialVoiceCreditProxyContractAddress,
+    mockVerifierContractAddress,
+    topupCreditContractAddress,
+    signer,
+    stateTreeDepth,
+    quiet,
+  );
+
+  return maciContract;
+};

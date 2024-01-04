@@ -93,7 +93,7 @@ export const genMaciStateFromContract = async (
       transactionIndex: log.transactionIndex,
       data: {
         stateIndex: Number(event.args._stateIndex),
-        pubKey: new PubKey(event.args._userPubKey.map((x) => BigInt(x))),
+        pubKey: new PubKey(event.args._userPubKey.map((x) => BigInt(x)) as [bigint, bigint]),
         voiceCreditBalance: Number(event.args._voiceCreditBalance),
         timestamp: Number(event.args._timestamp),
       },
@@ -111,7 +111,7 @@ export const genMaciStateFromContract = async (
       args: { _pubKey: string[]; _pollAddr: string; _pollId: number };
     };
 
-    const pubKey = new PubKey(event.args._pubKey.map((x) => BigInt(x.toString())));
+    const pubKey = new PubKey(event.args._pubKey.map((x) => BigInt(x.toString())) as [bigint, bigint]);
 
     const p = Number(event.args._pollId);
     assert(p === index);
@@ -216,7 +216,7 @@ export const genMaciStateFromContract = async (
       event.args._message[1].map((x) => BigInt(x)),
     );
 
-    const encPubKey = new PubKey(event.args._encPubKey.map((x) => BigInt(x.toString())));
+    const encPubKey = new PubKey(event.args._encPubKey.map((x) => BigInt(x.toString())) as [bigint, bigint]);
 
     actions.push({
       type: "PublishMessage",

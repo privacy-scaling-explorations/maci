@@ -6,7 +6,7 @@ export { calcDepthFromNumLeaves, genTreeCommitment, genTreeProof } from "./utils
 
 export { bigInt2Buffer, stringifyBigInts, unstringifyBigInts, deepCopyBigIntArray } from "./bigIntUtils";
 
-export { SNARK_FIELD_SIZE, NOTHING_UP_MY_SLEEVE, babyJubMaxValue } from "./constants";
+export { NOTHING_UP_MY_SLEEVE, SNARK_FIELD_SIZE } from "./constants";
 
 export {
   G1Point,
@@ -24,24 +24,20 @@ export {
   genPrivKey,
   genRandomSalt,
   formatPrivKeyForBabyJub,
-  packPubKey,
-  unpackPubKey,
   genPubKey,
   genKeypair,
   genEcdhSharedKey,
-  encrypt,
-  decrypt,
-  sign,
-  verifySignature,
-  curveToBit,
-  babyJubAddPoint,
-  bitToCurve,
+  packPubKey,
+  unpackPubKey,
 } from "./crypto";
 
 export { OptimisedMT as IncrementalQuinTree, type PathElements } from "optimisedmt";
 
+export { poseidonDecrypt, poseidonEncrypt } from "@zk-kit/poseidon-cipher";
+
+export { verifySignature, signMessage as sign } from "@zk-kit/eddsa-poseidon";
+
 export type {
-  SnarkBigInt,
   PrivKey,
   PubKey,
   Point,

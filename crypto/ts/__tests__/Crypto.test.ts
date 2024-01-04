@@ -1,14 +1,10 @@
 import { expect } from "chai";
-import { babyJub } from "circomlib";
 
 import { SNARK_FIELD_SIZE } from "../constants";
 import {
   genPubKey,
   genKeypair,
   genEcdhSharedKey,
-  encrypt,
-  decrypt,
-  sign,
   sha256Hash,
   hash2,
   hash3,
@@ -21,7 +17,6 @@ import {
   poseidonT4,
   poseidonT5,
   poseidonT6,
-  verifySignature,
   genRandomSalt,
   G1Point,
   G2Point,
@@ -30,8 +25,6 @@ import {
   genPrivKey,
   packPubKey,
   unpackPubKey,
-  bitToCurve,
-  curveToBit,
 } from "../crypto";
 
 describe("Crypto", function test() {
@@ -462,7 +455,6 @@ describe("Crypto", function test() {
       });
     });
   });
-
   describe("utils", () => {
     describe("genRandomSalt", () => {
       it("should produce a random salt", () => {
@@ -479,40 +471,7 @@ describe("Crypto", function test() {
         expect(salt).to.not.eq(BigInt(0));
       });
     });
-
-    describe("bitToCurve", () => {
-      it("should map bit 0 to point [0, 1] on the curve", () => {
-        const point = bitToCurve(BigInt(0));
-        expect(point).to.deep.eq([BigInt(0), BigInt(1)]);
-      });
-
-      it("should map bit 1 to the base point of the curve", () => {
-        const point = bitToCurve(BigInt(1));
-        expect(point).to.eq(babyJub.Base8);
-      });
-
-      it("should throw error for bit values other than 0 or 1", () => {
-        expect(() => bitToCurve(BigInt(2))).to.throw("Invalid bit value");
-        expect(() => bitToCurve(BigInt(-1))).to.throw("Invalid bit value");
-      });
-    });
-    describe("curveToBit", () => {
-      it("should map point [0, 1] on the curve to bit 0", () => {
-        const bit = curveToBit([BigInt(0), BigInt(1)]);
-        expect(bit).to.eq(BigInt(0));
-      });
-
-      it("should map the base point of the curve to bit 1", () => {
-        const bit = curveToBit(babyJub.Base8);
-        expect(bit).to.eq(BigInt(1));
-      });
-
-      it("should throw error for points not on the curve", () => {
-        expect(() => curveToBit([BigInt(1), BigInt(2)])).to.throw("Invalid point");
-      });
-    });
   });
-
   describe("babyjub", () => {
     describe("genRandomBabyJubValue", () => {
       it("should generate a value what is < SNARK_FIELD_SIZE", () => {
@@ -560,10 +519,10 @@ describe("Crypto", function test() {
       });
     });
     describe("packPubKey", () => {
-      it("should pack a public key into a Buffer", () => {
+      it("should pack a public key into a bigint", () => {
         const pk = genPubKey(genPrivKey());
         const pkBuff = packPubKey(pk);
-        expect(pkBuff).to.be.instanceOf(Buffer);
+        expect(typeof pkBuff).to.eq("bigint");
       });
     });
     describe("unpackPubKey", () => {
@@ -599,7 +558,7 @@ describe("Crypto", function test() {
       });
       it("should produce a private key which is < SNARK_FIELD_SIZE", () => {
         const { privKey } = genKeypair();
-        expect(privKey < SNARK_FIELD_SIZE).to.eq(true);
+        expect(BigInt(privKey) < SNARK_FIELD_SIZE).to.eq(true);
       });
     });
     describe("genEcdhSharedKey", () => {
@@ -633,119 +592,6 @@ describe("Crypto", function test() {
         expect(sharedKey1[0]).to.eq(sharedKey2[0]);
         expect(sharedKey1[1]).to.eq(sharedKey2[1]);
       });
-    });
-  });
-  describe("encryption/decryption", () => {
-    const nonce = BigInt(123);
-
-    describe("encrypt", () => {
-      it("should encrypt a plaintext", () => {
-        const { privKey } = genKeypair();
-        const pubKey = genPubKey(genPrivKey());
-        const sharedKey = genEcdhSharedKey(privKey, pubKey);
-        const plaintext = [BigInt(1), BigInt(2), BigInt(3)];
-        const ciphertext = encrypt(plaintext, sharedKey, nonce);
-        expect(ciphertext).to.be.instanceOf(Array);
-        expect(ciphertext.length).to.eq(4);
-      });
-
-      it("should encrypt a ciphertext without passing a nonce (default to 0)", () => {
-        const { privKey } = genKeypair();
-        const pubKey = genPubKey(genPrivKey());
-        const sharedKey = genEcdhSharedKey(privKey, pubKey);
-        const plaintext = [BigInt(1), BigInt(2), BigInt(3)];
-        const ciphertext = encrypt(plaintext, sharedKey);
-        expect(ciphertext).to.be.instanceOf(Array);
-        expect(ciphertext.length).to.eq(4);
-      });
-
-      it("should produce a cihertext that is different from the plaintext", () => {
-        const { privKey } = genKeypair();
-        const pubKey = genPubKey(genPrivKey());
-        const sharedKey = genEcdhSharedKey(privKey, pubKey);
-        const plaintext = [BigInt(1), BigInt(2), BigInt(3)];
-        const ciphertext = encrypt(plaintext, sharedKey, nonce);
-        for (let i = 0; i < plaintext.length; i += 1) {
-          expect(plaintext[i] !== ciphertext[i + 1]).to.eq(true);
-        }
-      });
-      it("should produce ciphertext that is < SNARK_FIELD_SIZE", () => {
-        const { privKey } = genKeypair();
-        const pubKey = genPubKey(genPrivKey());
-        const sharedKey = genEcdhSharedKey(privKey, pubKey);
-        const plaintext = [BigInt(1), BigInt(2), BigInt(3)];
-        const ciphertext = encrypt(plaintext, sharedKey, nonce);
-        ciphertext.forEach((c) => {
-          expect(c < SNARK_FIELD_SIZE).to.eq(true);
-        });
-      });
-    });
-    describe("decrypt", () => {
-      it("should decrypt a ciphertext", () => {
-        const { privKey } = genKeypair();
-        const pubKey = genPubKey(genPrivKey());
-        const sharedKey = genEcdhSharedKey(privKey, pubKey);
-        const plaintext = [BigInt(1), BigInt(2), BigInt(3)];
-        const ciphertext = encrypt(plaintext, sharedKey, nonce);
-        const decryptedCiphertext = decrypt(ciphertext, sharedKey, nonce, plaintext.length);
-        expect(decryptedCiphertext).to.be.instanceOf(Array);
-        expect(decryptedCiphertext.length).to.eq(3);
-        expect(plaintext).to.deep.eq(decryptedCiphertext);
-      });
-      it("should fail to decrypt if given the wrong key", () => {
-        const { privKey } = genKeypair();
-        const pubKey = genPubKey(genPrivKey());
-        const sharedKey = genEcdhSharedKey(privKey, pubKey);
-        const plaintext = [BigInt(1), BigInt(2), BigInt(3)];
-        const ciphertext = encrypt(plaintext, sharedKey, nonce);
-        const differentKey = genEcdhSharedKey(BigInt(1), pubKey);
-
-        expect(() => {
-          decrypt(ciphertext, differentKey, nonce, plaintext.length);
-        }).to.throw();
-      });
-    });
-  });
-
-  describe("signatures", () => {
-    const { privKey, pubKey } = genKeypair();
-    const message = BigInt(Math.floor(Math.random() * 1000000000));
-    const signature = sign(privKey, message);
-
-    it("should have the correct format and its constituent parts should be smaller than the snark field size", () => {
-      expect(signature).to.haveOwnProperty("R8");
-      expect(signature).to.haveOwnProperty("S");
-      expect(signature.R8[0] < SNARK_FIELD_SIZE).to.eq(true);
-      expect(signature.R8[1] < SNARK_FIELD_SIZE).to.eq(true);
-      expect(signature.S < SNARK_FIELD_SIZE).to.eq(true);
-    });
-
-    it("should be valid", () => {
-      const valid = verifySignature(message, signature, pubKey);
-      expect(valid).to.eq(true);
-    });
-
-    it("should be invalid for a different message", () => {
-      const valid = verifySignature(message + BigInt(1), signature, pubKey);
-      expect(valid).to.eq(false);
-    });
-
-    it("should be invalid if tampered with", () => {
-      const valid = verifySignature(
-        message,
-        {
-          R8: signature.R8,
-          S: BigInt(1),
-        },
-        pubKey,
-      );
-      expect(valid).to.eq(false);
-    });
-
-    it("should be invalid for a different public key", () => {
-      const pubKey1 = genPubKey(genPrivKey());
-      const valid = verifySignature(message, signature, pubKey1);
-      expect(valid).to.eq(false);
     });
   });
 });

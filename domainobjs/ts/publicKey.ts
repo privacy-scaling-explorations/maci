@@ -21,7 +21,6 @@ export class PubKey {
    * @param rawPubKey the raw public key
    */
   constructor(rawPubKey: RawPubKey) {
-    assert(rawPubKey.length === 2);
     assert(rawPubKey[0] < SNARK_FIELD_SIZE);
     assert(rawPubKey[1] < SNARK_FIELD_SIZE);
     this.rawPubKey = rawPubKey;
@@ -68,8 +67,14 @@ export class PubKey {
     if (BigInt(x) === BigInt(0) && BigInt(y) === BigInt(0)) {
       return `${SERIALIZED_PUB_KEY_PREFIX}z`;
     }
-    const packed = packPubKey(this.rawPubKey).toString("hex");
-    return SERIALIZED_PUB_KEY_PREFIX + packed.toString();
+
+    const packed = packPubKey(this.rawPubKey).toString(16);
+
+    if (packed.length % 2 !== 0) {
+      return `${SERIALIZED_PUB_KEY_PREFIX}0${packed}`;
+    }
+
+    return `${SERIALIZED_PUB_KEY_PREFIX}${packed}`;
   };
 
   /**
@@ -97,8 +102,7 @@ export class PubKey {
     }
 
     const len = SERIALIZED_PUB_KEY_PREFIX.length;
-    const packed = Buffer.from(s.slice(len), "hex");
-    return new PubKey(unpackPubKey(packed));
+    return new PubKey(unpackPubKey(BigInt(`0x${s.slice(len).toString()}`)));
   };
 
   /**

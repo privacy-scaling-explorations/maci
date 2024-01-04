@@ -38,7 +38,13 @@ export class PrivKey {
    * Serialize the private key
    * @returns the serialized private key
    */
-  serialize = (): string => SERIALIZED_PRIV_KEY_PREFIX + this.rawPrivKey.toString(16);
+  serialize = (): string => {
+    const x = this.rawPrivKey.toString(16);
+    if (x.length % 2 !== 0) {
+      return `${SERIALIZED_PRIV_KEY_PREFIX}0${x}`;
+    }
+    return `${SERIALIZED_PRIV_KEY_PREFIX}${x}`;
+  };
 
   /**
    * Deserialize the private key

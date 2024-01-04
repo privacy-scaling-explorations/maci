@@ -1,6 +1,6 @@
 import {
-  decrypt,
-  encrypt,
+  poseidonDecrypt,
+  poseidonEncrypt,
   genRandomSalt,
   hash4,
   sign,
@@ -8,6 +8,7 @@ import {
   Signature,
   Ciphertext,
   EcdhSharedKey,
+  Point,
 } from "maci-crypto";
 
 import assert from "assert";
@@ -158,11 +159,11 @@ export class PCommand implements ICommand {
    * 6. poll ID
    */
   encrypt = (signature: Signature, sharedKey: EcdhSharedKey): Message => {
-    const plaintext = [...this.asArray(), signature.R8[0], signature.R8[1], signature.S];
+    const plaintext = [...this.asArray(), BigInt(signature.R8[0]), BigInt(signature.R8[1]), BigInt(signature.S)];
 
     assert(plaintext.length === 7);
 
-    const ciphertext: Ciphertext = encrypt(plaintext, sharedKey, BigInt(0));
+    const ciphertext: Ciphertext = poseidonEncrypt(plaintext, sharedKey, BigInt(0));
 
     const message = new Message(BigInt(1), ciphertext as bigint[]);
 
@@ -175,7 +176,7 @@ export class PCommand implements ICommand {
    * @param {EcdhSharedKey} sharedKey - the shared key to use for decryption
    */
   static decrypt = (message: Message, sharedKey: EcdhSharedKey): IDecryptMessage => {
-    const decrypted = decrypt(message.data, sharedKey, BigInt(0), 7);
+    const decrypted = poseidonDecrypt(message.data, sharedKey, BigInt(0), 7);
 
     const p = BigInt(decrypted[0].toString());
 
@@ -206,7 +207,7 @@ export class PCommand implements ICommand {
     const command = new PCommand(stateIndex, newPubKey, voteOptionIndex, newVoteWeight, nonce, pollId, salt);
 
     const signature = {
-      R8: [decrypted[4], decrypted[5]],
+      R8: [decrypted[4], decrypted[5]] as Point,
       S: decrypted[6],
     };
 
