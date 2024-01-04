@@ -228,6 +228,7 @@ export const genProofs = async (
       const r = await genProof({
         inputs: circuitInputs,
         zkeyPath: processZkey,
+        useWasm,
         rapidsnarkExePath: rapidsnark,
         witnessExePath: processWitgen,
         wasmPath: processWasm,
@@ -287,6 +288,7 @@ export const genProofs = async (
         const r = await genProof({
           inputs: subsidyCircuitInputs,
           zkeyPath: subsidyZkey,
+          useWasm,
           rapidsnarkExePath: rapidsnark,
           witnessExePath: subsidyWitgen,
           wasmPath: subsidyWasm,
@@ -350,6 +352,7 @@ export const genProofs = async (
       const r = await genProof({
         inputs: tallyCircuitInputs,
         zkeyPath: tallyZkey,
+        useWasm,
         rapidsnarkExePath: rapidsnark,
         witnessExePath: tallyWitgen,
         wasmPath: tallyWasm,

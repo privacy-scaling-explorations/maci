@@ -39,8 +39,7 @@ import {
   testTallyVotesWasmPath,
   testTallyVotesWitnessPath,
 } from "./constants";
-import { cleanSubsidy } from "./utils";
-import { isArm } from "maci-circuits";
+import { cleanSubsidy, isArm } from "./utils";
 import { genRandomSalt } from "maci-crypto";
 import { DeployedContracts, PollContracts } from "../ts/utils";
 

@@ -1,4 +1,3 @@
-import { isArm } from "maci-circuits";
 import {
   deploy,
   deployPoll,
@@ -32,7 +31,7 @@ import {
   testTallyVotesWitnessPath,
 } from "./constants";
 import { Keypair } from "maci-domainobjs";
-import { cleanVanilla } from "./utils";
+import { cleanVanilla, isArm } from "./utils";
 import { readFileSync } from "fs";
 import { expect } from "chai";
 import { genRandomSalt } from "maci-crypto";
