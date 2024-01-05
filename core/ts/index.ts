@@ -1,5 +1,7 @@
 export { MaciState } from "./MaciState";
+
 export { Poll } from "./Poll";
+
 export {
   genProcessVkSig,
   genTallyVkSig,
@@ -11,7 +13,17 @@ export {
   packSubsidySmallVals,
 } from "./utils/utils";
 
-export type { CircuitInputs, MaxValues, TreeDepths, BatchSizes, IJsonMaciState } from "./utils/types";
+export type {
+  ITallyCircuitInputs,
+  IProcessMessagesCircuitInputs,
+  ISubsidyCircuitInputs,
+  CircuitInputs,
+  MaxValues,
+  TreeDepths,
+  BatchSizes,
+  IJsonMaciState,
+} from "./utils/types";
+
 export {
   STATE_TREE_DEPTH,
   STATE_TREE_ARITY,

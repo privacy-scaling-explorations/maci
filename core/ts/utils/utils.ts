@@ -36,8 +36,7 @@ export const genTallyVkSig = (
   _stateTreeDepth: number,
   _intStateTreeDepth: number,
   _voteOptionTreeDepth: number,
-): bigint =>
-  (BigInt(_stateTreeDepth) << BigInt(128)) + (BigInt(_intStateTreeDepth) << BigInt(64)) + BigInt(_voteOptionTreeDepth);
+): bigint => (BigInt(_stateTreeDepth) << 128n) + (BigInt(_intStateTreeDepth) << 64n) + BigInt(_voteOptionTreeDepth);
 
 /**
  * This function generates the signature of a Subsidy Verifying Key(VK).
@@ -53,8 +52,7 @@ export const genSubsidyVkSig = (
   _stateTreeDepth: number,
   _intStateTreeDepth: number,
   _voteOptionTreeDepth: number,
-): bigint =>
-  (BigInt(_stateTreeDepth) << BigInt(128)) + (BigInt(_intStateTreeDepth) << BigInt(64)) + BigInt(_voteOptionTreeDepth);
+): bigint => (BigInt(_stateTreeDepth) << 128n) + (BigInt(_intStateTreeDepth) << 64n) + BigInt(_voteOptionTreeDepth);
 
 /**
  * This function packs it's parameters into a single bigint.

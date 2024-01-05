@@ -2,7 +2,13 @@
 import { expect } from "chai";
 import { BaseContract, Signer } from "ethers";
 import { EthereumProvider } from "hardhat/types";
-import { MaciState, Poll, STATE_TREE_DEPTH, packProcessMessageSmallVals } from "maci-core";
+import {
+  MaciState,
+  Poll,
+  STATE_TREE_DEPTH,
+  packProcessMessageSmallVals,
+  IProcessMessagesCircuitInputs,
+} from "maci-core";
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, Message, PubKey } from "maci-domainobjs";
 
@@ -36,7 +42,7 @@ describe("MessageProcessor", () => {
   const maciState = new MaciState(STATE_TREE_DEPTH);
 
   let signer: Signer;
-  let generatedInputs: { newSbCommitment: bigint };
+  let generatedInputs: IProcessMessagesCircuitInputs;
   const coordinator = new Keypair();
 
   const users = [new Keypair(), new Keypair()];
@@ -87,7 +93,7 @@ describe("MessageProcessor", () => {
     maciState.polls[pollId].publishMessage(message, padKey);
 
     poll = maciState.polls[pollId];
-    generatedInputs = poll.processMessages(pollId) as typeof generatedInputs;
+    generatedInputs = poll.processMessages(pollId);
 
     // set the verification keys on the vk smart contract
     const vkContract = r.vkRegistryContract;
