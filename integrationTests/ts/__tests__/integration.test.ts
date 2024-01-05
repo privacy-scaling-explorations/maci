@@ -21,7 +21,7 @@ import { MaciState, MaxValues, TreeDepths } from "maci-core";
 import { genPubKey, genRandomSalt } from "maci-crypto";
 import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs";
 
-import { existsSync, readFileSync, readdir, unlinkSync } from "fs";
+import fs from "fs";
 import { homedir } from "os";
 import path from "path";
 
@@ -128,33 +128,33 @@ describe("integration tests", function test() {
 
   // after each test we need to cleanup some files
   afterEach(() => {
-    if (existsSync(path.resolve(__dirname, "../../../cli/tally.json"))) {
-      unlinkSync(path.resolve(__dirname, "../../../cli/tally.json"));
+    if (fs.existsSync(path.resolve(__dirname, "../../../cli/tally.json"))) {
+      fs.unlinkSync(path.resolve(__dirname, "../../../cli/tally.json"));
     }
 
-    if (existsSync(path.resolve(__dirname, "../../../cli/subsidy.json"))) {
-      unlinkSync(path.resolve(__dirname, "../../../cli/subsidy.json"));
+    if (fs.existsSync(path.resolve(__dirname, "../../../cli/subsidy.json"))) {
+      fs.unlinkSync(path.resolve(__dirname, "../../../cli/subsidy.json"));
     }
 
     const directory = path.resolve(__dirname, "../../../cli/proofs/");
 
-    if (!existsSync(directory)) {
+    if (!fs.existsSync(directory)) {
       return;
     }
 
-    readdir(directory, (err, files) => {
+    fs.readdir(directory, (err, files) => {
       if (err) {
         throw err;
       }
 
       files.forEach((file) => {
-        unlinkSync(path.resolve(directory, file));
+        fs.unlinkSync(path.resolve(directory, file));
       });
     });
   });
 
   // read the test suite data
-  const data = JSON.parse(readFileSync(path.resolve(__dirname, `./data/suites.json`)).toString()) as {
+  const data = JSON.parse(fs.readFileSync(path.resolve(__dirname, `./data/suites.json`)).toString()) as {
     suites: ITestSuite[];
   };
 
@@ -267,7 +267,7 @@ describe("integration tests", function test() {
 
       if (subsidyEnabled) {
         const subsidy = JSON.parse(
-          readFileSync(path.resolve(__dirname, "../../../cli/subsidy.json")).toString(),
+          fs.readFileSync(path.resolve(__dirname, "../../../cli/subsidy.json")).toString(),
         ) as Subsidy;
         expectSubsidy(maxMessages, testCase.subsidy?.expectedSubsidy ?? [], subsidy);
       }

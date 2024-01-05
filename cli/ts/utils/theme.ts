@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // Description: This file contains the theme for the CLI
 const RESET = "\x1b[0m";
 const RED = "\x1b[31m";
@@ -10,8 +11,10 @@ const MAGENTA = "\x1b[35m";
  * @param quiet - whether to print the text or not
  * @param text - the text to print
  */
-export function logRed(quiet: boolean, text: string) {
-  if (!quiet) console.log(RED + text + RESET);
+export function logRed(quiet: boolean, text: string): void {
+  if (!quiet) {
+    console.log(RED + text + RESET);
+  }
 }
 
 /**
@@ -19,8 +22,10 @@ export function logRed(quiet: boolean, text: string) {
  * @param quiet - whether to print the text or not
  * @param text - the text to print
  */
-export function logGreen(quiet: boolean, text: string) {
-  if (!quiet) console.log(GREEN + text + RESET);
+export function logGreen(quiet: boolean, text: string): void {
+  if (!quiet) {
+    console.log(GREEN + text + RESET);
+  }
 }
 
 /**
@@ -28,8 +33,10 @@ export function logGreen(quiet: boolean, text: string) {
  * @param quiet - whether to print the text or not
  * @param text - the text to print
  */
-export function logYellow(quiet: boolean, text: string) {
-  if (!quiet) console.log(YELLOW + text + RESET);
+export function logYellow(quiet: boolean, text: string): void {
+  if (!quiet) {
+    console.log(YELLOW + text + RESET);
+  }
 }
 
 /**
@@ -37,16 +44,10 @@ export function logYellow(quiet: boolean, text: string) {
  * @param quiet - whether to print the text or not
  * @param text - the text to print
  */
-export function logMagenta(quiet: boolean, text: string) {
-  if (!quiet) console.log(MAGENTA + text + RESET);
-}
-
-/**
- * Log an error and throw an error
- * @param text
- */
-export function logError(text: string) {
-  throw new Error(error(text));
+export function logMagenta(quiet: boolean, text: string): void {
+  if (!quiet) {
+    console.log(MAGENTA + text + RESET);
+  }
 }
 
 /**
@@ -54,25 +55,33 @@ export function logError(text: string) {
  * @param text - the text to print
  * @returns the text with a prefix
  */
-export const info = (text: string) => `[i] ${text}`;
+export const info = (text: string): string => `[i] ${text}`;
 
 /**
  * create a success message
  * @param text - the text to print
  * @returns the text with a prefix
  */
-export const success = (text: string) => `[✓] ${text}`;
+export const success = (text: string): string => `[✓] ${text}`;
 
 /**
  * create a success message
  * @param text - the text to print
  * @returns the text with a prefix
  */
-export const warning = (text: string) => `[!] ${text}`;
+export const warning = (text: string): string => `[!] ${text}`;
 
 /**
  * create an error message
  * @param text - the text to print
  * @returns the text with a prefix
  */
-export const error = (text: string) => `[✗] ${text}`;
+export const error = (text: string): string => `[✗] ${text}`;
+
+/**
+ * Log an error and throw an error
+ * @param text
+ */
+export function logError(text: string): void {
+  throw new Error(error(text));
+}

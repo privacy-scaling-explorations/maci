@@ -1,4 +1,5 @@
 import { Keypair } from "maci-domainobjs";
+
 import { homedir } from "os";
 
 export const STATE_TREE_DEPTH = 10;

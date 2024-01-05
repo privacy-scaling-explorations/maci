@@ -11,7 +11,7 @@ export {
   packSubsidySmallVals,
 } from "./utils/utils";
 
-export type { CircuitInputs, MaxValues, TreeDepths, BatchSizes } from "./utils/types";
+export type { CircuitInputs, MaxValues, TreeDepths, BatchSizes, IJsonMaciState } from "./utils/types";
 export {
   STATE_TREE_DEPTH,
   STATE_TREE_ARITY,

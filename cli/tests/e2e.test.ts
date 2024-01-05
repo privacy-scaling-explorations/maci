@@ -1,4 +1,8 @@
-import { existsSync, unlinkSync } from "fs";
+import { genRandomSalt } from "maci-crypto";
+import { Keypair } from "maci-domainobjs";
+
+import fs from "fs";
+
 import {
   airdrop,
   checkVerifyingKeys,
@@ -17,6 +21,8 @@ import {
   topup,
   verify,
 } from "../ts/commands";
+import { DeployedContracts, PollContracts } from "../ts/utils";
+
 import {
   INT_STATE_TREE_DEPTH,
   MSG_BATCH_DEPTH,
@@ -39,9 +45,6 @@ import {
   testTallyVotesWitnessPath,
 } from "./constants";
 import { cleanVanilla, isArm } from "./utils";
-import { DeployedContracts, PollContracts } from "../ts/utils";
-import { Keypair } from "maci-domainobjs";
-import { genRandomSalt } from "maci-crypto";
 
 /**
  Test scenarios:
@@ -57,7 +60,7 @@ import { genRandomSalt } from "maci-crypto";
     1 signup and 1 valid message for multiple polls
     7 signups and 1 message, another polls and 6 messages
  */
-describe("e2e tests", function () {
+describe("e2e tests", function test() {
   const useWasm = isArm();
   this.timeout(900000);
 
@@ -81,7 +84,7 @@ describe("e2e tests", function () {
   });
 
   describe("test1", () => {
-    after(async () => {
+    after(() => {
       cleanVanilla();
     });
 
@@ -158,7 +161,9 @@ describe("e2e tests", function () {
   });
 
   describe("test2", () => {
-    after(() => cleanVanilla());
+    after(() => {
+      cleanVanilla();
+    });
 
     const users = [new Keypair(), new Keypair(), new Keypair(), new Keypair()];
 
@@ -178,8 +183,10 @@ describe("e2e tests", function () {
       );
     });
 
-    it("should signup four users", async () => {
-      for (const user of users) await signup(user.pubKey.serialize());
+    it("should signup four users", () => {
+      users.forEach(async (user) => {
+        await signup(user.pubKey.serialize());
+      });
     });
 
     it("should publish six messages", async () => {
@@ -288,7 +295,9 @@ describe("e2e tests", function () {
   });
 
   describe("test3", () => {
-    after(() => cleanVanilla());
+    after(() => {
+      cleanVanilla();
+    });
 
     const users = [
       new Keypair(),
@@ -318,8 +327,10 @@ describe("e2e tests", function () {
       );
     });
 
-    it("should signup nine users", async () => {
-      for (const user of users) await signup(user.pubKey.serialize());
+    it("should signup nine users", () => {
+      users.forEach(async (user) => {
+        await signup(user.pubKey.serialize());
+      });
     });
 
     it("should publish one message", async () => {
@@ -373,7 +384,9 @@ describe("e2e tests", function () {
   });
 
   describe("test4", () => {
-    after(() => cleanVanilla());
+    after(() => {
+      cleanVanilla();
+    });
 
     const user = new Keypair();
 
@@ -394,11 +407,15 @@ describe("e2e tests", function () {
     });
 
     it("should signup eight users (same pub key)", async () => {
-      for (let i = 0; i < 8; i++) await signup(user.pubKey.serialize());
+      for (let i = 0; i < 8; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await signup(user.pubKey.serialize());
+      }
     });
 
     it("should publish 12 messages with the same nonce", async () => {
-      for (let i = 0; i < 12; i++)
+      for (let i = 0; i < 12; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
         await publish(
           user.pubKey.serialize(),
           1,
@@ -410,6 +427,7 @@ describe("e2e tests", function () {
           genRandomSalt().toString(),
           user.privKey.serialize(),
         );
+      }
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
@@ -449,7 +467,9 @@ describe("e2e tests", function () {
   });
 
   describe("test5", () => {
-    after(() => cleanVanilla());
+    after(() => {
+      cleanVanilla();
+    });
 
     const users = [new Keypair(), new Keypair(), new Keypair(), new Keypair()];
 
@@ -469,8 +489,10 @@ describe("e2e tests", function () {
       );
     });
 
-    it("should signup four users", async () => {
-      for (const user of users) await signup(user.pubKey.serialize());
+    it("should signup four users", () => {
+      users.forEach(async (user) => {
+        await signup(user.pubKey.serialize());
+      });
     });
 
     it("should publish four messages", async () => {
@@ -557,7 +579,9 @@ describe("e2e tests", function () {
   });
 
   describe("test6", () => {
-    after(() => cleanVanilla());
+    after(() => {
+      cleanVanilla();
+    });
 
     const users = [new Keypair(), new Keypair(), new Keypair(), new Keypair(), new Keypair()];
 
@@ -577,8 +601,10 @@ describe("e2e tests", function () {
       );
     });
 
-    it("should signup five users", async () => {
-      for (const user of users) await signup(user.pubKey.serialize());
+    it("should signup five users", () => {
+      users.forEach(async (user) => {
+        await signup(user.pubKey.serialize());
+      });
     });
 
     it("should publish five messages", async () => {
@@ -694,7 +720,9 @@ describe("e2e tests", function () {
   });
 
   describe("keyChange", () => {
-    after(() => cleanVanilla());
+    after(() => {
+      cleanVanilla();
+    });
 
     const key1 = new Keypair();
     const key2 = new Keypair();
@@ -794,7 +822,9 @@ describe("e2e tests", function () {
   });
 
   describe("multiplePolls1", () => {
-    after(() => cleanVanilla());
+    after(() => {
+      cleanVanilla();
+    });
 
     const user = new Keypair();
 
@@ -945,7 +975,10 @@ describe("e2e tests", function () {
         coordinatorPubKey,
       );
       // signup
-      for (const user of users) await signup(user.pubKey.serialize());
+      users.forEach(async (user) => {
+        await signup(user.pubKey.serialize());
+      });
+
       // publish
       await publish(
         users[0].pubKey.serialize(),
@@ -1160,9 +1193,12 @@ describe("e2e tests", function () {
 
     const user = new Keypair();
 
-    after(async () => {
+    after(() => {
       cleanVanilla();
-      if (existsSync(stateOutPath)) unlinkSync(stateOutPath);
+
+      if (fs.existsSync(stateOutPath)) {
+        fs.unlinkSync(stateOutPath);
+      }
     });
 
     before(async () => {

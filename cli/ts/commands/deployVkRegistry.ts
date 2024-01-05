@@ -1,9 +1,11 @@
 import { deployVkRegistry, getDefaultSigner } from "maci-contracts";
-import { existsSync, renameSync } from "fs";
-import { contractAddressesStore, oldContractAddressesStore } from "../utils/constants";
-import { logGreen, success } from "../utils/theme";
+
+import fs from "fs";
+
 import { banner } from "../utils/banner";
+import { contractAddressesStore, oldContractAddressesStore } from "../utils/constants";
 import { resetContractAddresses, storeContractAddress } from "../utils/storage";
+import { logGreen, success } from "../utils/theme";
 
 /**
  * Deploy the vkRegistry contract
@@ -12,8 +14,8 @@ import { resetContractAddresses, storeContractAddress } from "../utils/storage";
 export const deployVkRegistryContract = async (quiet = true): Promise<string> => {
   banner(quiet);
   // assume that the vkRegistry contract is the first one to be deployed
-  if (existsSync(contractAddressesStore)) {
-    renameSync(contractAddressesStore, oldContractAddressesStore);
+  if (fs.existsSync(contractAddressesStore)) {
+    fs.renameSync(contractAddressesStore, oldContractAddressesStore);
     resetContractAddresses();
   }
 

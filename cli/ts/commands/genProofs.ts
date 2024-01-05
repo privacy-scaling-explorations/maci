@@ -1,4 +1,15 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import { BaseContract, BigNumberish } from "ethers";
+import { extractVk, genProof, verifyProof } from "maci-circuits";
+import { MACI, AccQueue, Poll, genMaciStateFromContract, getDefaultSigner, parseArtifact } from "maci-contracts";
+import { CircuitInputs, IJsonMaciState, MaciState } from "maci-core";
+import { hash3, hashLeftRight, genTreeCommitment } from "maci-crypto";
+import { Keypair, PrivKey } from "maci-domainobjs";
+
+import fs from "fs";
+import path from "path";
+
+import type { ISnarkJSVerificationKey } from "snarkjs";
+
 import {
   DEFAULT_ETH_PROVIDER,
   asHex,
@@ -12,16 +23,8 @@ import {
   promptSensitiveValue,
   readContractAddress,
   success,
-} from "../utils/";
-import { Keypair, PrivKey } from "maci-domainobjs";
-import { extractVk, genProof, verifyProof } from "maci-circuits";
-import { genMaciStateFromContract, getDefaultSigner, parseArtifact } from "maci-contracts";
-import { Contract } from "ethers";
-import { MaciState } from "maci-core";
-import { hash3, hashLeftRight, genTreeCommitment } from "maci-crypto";
-import { join } from "path";
-import { TallyData } from "../utils/interfaces";
-import { ISnarkJSVerificationKey } from "snarkjs";
+} from "../utils";
+import { Proof, TallyData } from "../utils/interfaces";
 
 /**
  * Generate proofs for the message processing, tally and subsidy calculations
@@ -78,60 +81,105 @@ export const genProofs = async (
   banner(quiet);
 
   // if we do not have the output directory just create it
-  if (!existsSync(outputDir)) {
+  if (!fs.existsSync(outputDir)) {
     // Create the directory
-    mkdirSync(outputDir);
+    fs.mkdirSync(outputDir);
   }
 
   // differentiate whether we are using wasm or rapidsnark
   if (useWasm) {
     // if no rapidsnark then we assume we go with wasm
     // so we expect those arguments
-    if (!processWasm) logError("Please specify the process wasm file location");
-    if (!tallyWasm) logError("Please specify the tally wasm file location");
-    const [ok, path] = doesPathExist([processWasm, tallyWasm]);
-    if (!ok) logError(`Could not find ${path}.`);
-  } else {
-    const processDatFile = processWitgen + ".dat";
-    const tallyDatFile = tallyWitgen + ".dat";
-    const [ok, path] = doesPathExist([rapidsnark, processWitgen, tallyWitgen, processDatFile, tallyDatFile]);
+    if (!processWasm) {
+      logError("Please specify the process wasm file location");
+    }
 
-    if (!ok) logError(`Could not find ${path}.`);
+    if (!tallyWasm) {
+      logError("Please specify the tally wasm file location");
+    }
+
+    const wasmResult = doesPathExist([processWasm!, tallyWasm!]);
+
+    if (!wasmResult[0]) {
+      logError(`Could not find ${wasmResult[1]}.`);
+    }
+  } else {
+    if (!rapidsnark) {
+      logError("Please specify the rapidsnark file location");
+    }
+
+    if (!processWitgen) {
+      logError("Please specify the process witgen file location");
+    }
+
+    if (!tallyWitgen) {
+      logError("Please specify the tally witgen file location");
+    }
+
+    const processDatFile = `${processWitgen}.dat`;
+    const tallyDatFile = `${tallyWitgen}.dat`;
+    const witgenResult = doesPathExist([rapidsnark!, processWitgen!, tallyWitgen!, processDatFile, tallyDatFile]);
+
+    if (!witgenResult[0]) {
+      logError(`Could not find ${witgenResult[1]}.`);
+    }
   }
 
   // check if zkeys were provided
-  const [ok, path] = doesPathExist([processZkey, tallyZkey]);
+  const zkResult = doesPathExist([processZkey, tallyZkey]);
 
-  if (!ok) logError(`Could not find ${path}.`);
+  if (!zkResult[0]) {
+    logError(`Could not find ${zkResult[1]}.`);
+  }
 
   // the vk for the subsidy contract (optional)
   let subsidyVk: ISnarkJSVerificationKey;
   if (subsidyFile) {
-    if (existsSync(subsidyFile)) logError(`${subsidyFile} exists. Please specify a different filepath.`);
-    if (!subsidyZkey) logError("Please specify the subsidy zkey file location");
-    if (!subsidyWitgen) logError("Please specify the subsidy witnessgen file location");
+    if (fs.existsSync(subsidyFile)) {
+      logError(`${subsidyFile} exists. Please specify a different filepath.`);
+    }
+
+    if (!subsidyZkey) {
+      logError("Please specify the subsidy zkey file location");
+    }
+
+    if (!subsidyWitgen) {
+      logError("Please specify the subsidy witnessgen file location");
+    }
 
     // we need different artifacts if using wasm or rapidsnark
     if (!useWasm) {
-      if (!subsidyWitgen) logError("Please specify the subsidy witnessgen file location");
-      const subsidyDatFile = subsidyWitgen + ".dat";
-      const [ok, path] = doesPathExist([subsidyWitgen, subsidyDatFile]);
+      if (!subsidyWitgen) {
+        logError("Please specify the subsidy witnessgen file location");
+      }
 
-      if (!ok) logError(`Could not find ${path}.`);
+      const subsidyDatFile = `${subsidyWitgen}.dat`;
+      const subsidyWitgenResult = doesPathExist([subsidyWitgen!, subsidyDatFile]);
+
+      if (!subsidyWitgenResult[0]) {
+        logError(`Could not find ${subsidyWitgenResult[1]}.`);
+      }
     } else {
       // we expect to have the wasm file
-      if (!subsidyWasm) logError("Please specify the subsidy wasm file location");
-      const [ok, path] = doesPathExist([subsidyWasm]);
+      if (!subsidyWasm) {
+        logError("Please specify the subsidy wasm file location");
+      }
 
-      if (!ok) logError(`Could not find ${path}.`);
+      const subsidyWasmResult = doesPathExist([subsidyWasm!]);
+
+      if (!subsidyWasmResult[0]) {
+        logError(`Could not find ${subsidyWasmResult[1]}.`);
+      }
     }
 
     // either way we check the subsidy zkey
-    const [ok, path] = doesPathExist([subsidyZkey]);
+    const subsidyZkeyResult = doesPathExist([subsidyZkey!]);
 
-    if (!ok) logError(`Could not find ${path}.`);
+    if (!subsidyZkeyResult[0]) {
+      logError(`Could not find ${subsidyZkeyResult[1]}.`);
+    }
 
-    subsidyVk = await extractVk(subsidyZkey);
+    subsidyVk = await extractVk(subsidyZkey!);
   }
 
   // extract the rest of the verifying keys
@@ -139,62 +187,77 @@ export const genProofs = async (
   const tallyVk = await extractVk(tallyZkey);
 
   // the coordinator's MACI private key
-  const privateKey = coordinatorPrivKey
-    ? coordinatorPrivKey
-    : await promptSensitiveValue("Insert your MACI private key");
-  if (!PrivKey.isValidSerializedPrivKey(privateKey)) logError("Invalid MACI private key");
+  const privateKey = coordinatorPrivKey || (await promptSensitiveValue("Insert your MACI private key"));
+  if (!PrivKey.isValidSerializedPrivKey(privateKey)) {
+    logError("Invalid MACI private key");
+  }
   const maciPrivKey = PrivKey.deserialize(privateKey);
   const coordinatorKeypair = new Keypair(maciPrivKey);
 
   const signer = await getDefaultSigner();
   // contracts
-  if (!readContractAddress("MACI") && !maciAddress) logError("MACI contract address is empty");
-  const maciContractAddress = maciAddress ? maciAddress : readContractAddress("MACI");
+  if (!readContractAddress("MACI") && !maciAddress) {
+    logError("MACI contract address is empty");
+  }
+  const maciContractAddress = maciAddress || readContractAddress("MACI");
 
-  if (!(await contractExists(signer.provider, maciContractAddress))) logError("MACI contract does not exist");
+  if (!(await contractExists(signer.provider!, maciContractAddress))) {
+    logError("MACI contract does not exist");
+  }
 
-  if (pollId < 0) logError("Invalid poll id");
+  if (pollId < 0) {
+    logError("Invalid poll id");
+  }
 
-  const maciContract = new Contract(maciContractAddress, parseArtifact("MACI")[0], signer);
+  const maciContract = new BaseContract(maciContractAddress, parseArtifact("MACI")[0], signer) as MACI;
 
   const pollAddr = await maciContract.polls(pollId);
-  if (!(await contractExists(signer.provider, pollAddr))) logError("Poll contract does not exist");
-  const pollContract = new Contract(pollAddr, parseArtifact("Poll")[0], signer);
+  if (!(await contractExists(signer.provider!, pollAddr))) {
+    logError("Poll contract does not exist");
+  }
+  const pollContract = new BaseContract(pollAddr, parseArtifact("Poll")[0], signer) as Poll;
 
   const extContracts = await pollContract.extContracts();
   const messageAqContractAddr = extContracts.messageAq;
-  const messageAqContract = new Contract(messageAqContractAddr, parseArtifact("AccQueue")[0], signer);
+  const messageAqContract = new BaseContract(messageAqContractAddr, parseArtifact("AccQueue")[0], signer) as AccQueue;
 
   // Check that the state and message trees have been merged for at least the first poll
-  if (!(await pollContract.stateAqMerged()) && pollId == 0)
-    logError("The state tree has not been merged yet. " + "Please use the mergeSignups subcommmand to do so.");
+  if (!(await pollContract.stateAqMerged()) && pollId.toString() === "0") {
+    logError("The state tree has not been merged yet. Please use the mergeSignups subcommmand to do so.");
+  }
 
   const messageTreeDepth = Number((await pollContract.treeDepths()).messageTreeDepth);
 
   // check that the main root is set
   const mainRoot = (await messageAqContract.getMainRoot(messageTreeDepth.toString())).toString();
-  if (mainRoot === "0")
+  if (mainRoot === "0") {
     logError("The message tree has not been merged yet. Please use the mergeMessages subcommmand to do so.");
+  }
 
-  let maciState: MaciState;
+  let maciState: MaciState | undefined;
   if (stateFile) {
-    const content = JSON.parse(readFileSync(stateFile).toString());
+    const content = JSON.parse(fs.readFileSync(stateFile).toString()) as IJsonMaciState;
+    const serializedPrivateKey = maciPrivKey.serialize();
+
     try {
       maciState = MaciState.fromJSON(content);
-      for (const poll of maciState.polls) {
-        poll.setCoordinatorKeypair(maciPrivKey.serialize());
-      }
-    } catch (error: any) {
-      logError(error.message);
+
+      maciState.polls.forEach((poll) => {
+        poll.setCoordinatorKeypair(serializedPrivateKey);
+      });
+    } catch (error) {
+      logError((error as Error).message);
     }
   } else {
     // build an off-chain representation of the MACI contract using data in the contract storage
     let fromBlock = startBlock ? Number(startBlock) : 0;
-    fromBlock = transactionHash ? (await signer.provider.getTransaction(transactionHash)).blockNumber : 0;
+    fromBlock = transactionHash
+      ? await signer.provider!.getTransaction(transactionHash).then((tx) => tx?.blockNumber ?? 0)
+      : 0;
 
     logYellow(quiet, info(`starting to fetch logs from block ${fromBlock}`));
     maciState = await genMaciStateFromContract(
-      signer.provider,
+      signer.provider!,
       await maciContract.getAddress(),
       coordinatorKeypair,
       pollId,
@@ -204,20 +267,22 @@ export const genProofs = async (
     );
   }
 
-  const poll = maciState.polls[pollId];
+  const poll = maciState!.polls[pollId];
 
-  const processProofs: any[] = [];
-  const tallyProofs: any[] = [];
-  const subsidyProofs: any[] = [];
+  const processProofs: Proof[] = [];
+  const tallyProofs: Proof[] = [];
+  const subsidyProofs: Proof[] = [];
 
   // time how long it takes
   const startTime = Date.now();
 
   logYellow(quiet, info(`Generating proofs of message processing...`));
-  const messageBatchSize = poll.batchSizes.messageBatchSize;
+  const { messageBatchSize } = poll.batchSizes;
   const numMessages = poll.messages.length;
   let totalMessageBatches = numMessages <= messageBatchSize ? 1 : Math.floor(numMessages / messageBatchSize);
-  if (numMessages > messageBatchSize && numMessages % messageBatchSize > 0) totalMessageBatches++;
+  if (numMessages > messageBatchSize && numMessages % messageBatchSize > 0) {
+    totalMessageBatches += 1;
+  }
 
   // while we have unprocessed messages, process them
   while (poll.hasUnprocessedMessages()) {
@@ -225,6 +290,7 @@ export const genProofs = async (
     const circuitInputs = poll.processMessages(pollId);
     try {
       // generate the proof for this batch
+      // eslint-disable-next-line no-await-in-loop
       const r = await genProof({
         inputs: circuitInputs,
         zkeyPath: processZkey,
@@ -234,8 +300,11 @@ export const genProofs = async (
         wasmPath: processWasm,
       });
       // verify it
+      // eslint-disable-next-line no-await-in-loop
       const isValid = await verifyProof(r.publicSignals, r.proof, processVk);
-      if (!isValid) logError("Error: generated an invalid proof");
+      if (!isValid) {
+        logError("Error: generated an invalid proof");
+      }
 
       const thisProof = {
         circuitInputs,
@@ -244,14 +313,14 @@ export const genProofs = async (
       };
       // save the proof
       processProofs.push(thisProof);
-      writeFileSync(
-        join(outputDir, `process_${poll.numBatchesProcessed - 1}.json`),
+      fs.writeFileSync(
+        path.resolve(outputDir, `process_${poll.numBatchesProcessed - 1}.json`),
         JSON.stringify(thisProof, null, 4),
       );
 
       logYellow(quiet, info(`Progress: ${poll.numBatchesProcessed} / ${totalMessageBatches}`));
-    } catch (error: any) {
-      logError(error.message);
+    } catch (error) {
+      logError((error as Error).message);
     }
   }
 
@@ -265,7 +334,7 @@ export const genProofs = async (
 
     logYellow(quiet, info(`Generating proofs of subsidy calculation...`));
 
-    const subsidyBatchSize = poll.batchSizes.subsidyBatchSize;
+    const { subsidyBatchSize } = poll.batchSizes;
     const numLeaves = poll.stateLeaves.length;
     const totalSubsidyBatches = Math.ceil(numLeaves / subsidyBatchSize) ** 2;
 
@@ -278,24 +347,28 @@ export const genProofs = async (
 
     // @todo fix types in the circuits package
     // @todo why this next part works
-    let subsidyCircuitInputs: any;
+    let subsidyCircuitInputs: CircuitInputs;
     // calculate the subsidy for each batch
     while (poll.hasUnfinishedSubsidyCalculation()) {
       // calculate subsidy in batches
       subsidyCircuitInputs = poll.subsidyPerBatch();
       try {
         // generate proof for this batch
+        // eslint-disable-next-line no-await-in-loop
         const r = await genProof({
           inputs: subsidyCircuitInputs,
-          zkeyPath: subsidyZkey,
+          zkeyPath: subsidyZkey!,
           useWasm,
           rapidsnarkExePath: rapidsnark,
           witnessExePath: subsidyWitgen,
           wasmPath: subsidyWasm,
         });
         // check validity of it
-        const isValid = await verifyProof(r.publicSignals, r.proof, subsidyVk);
-        if (!isValid) logError("Error: generated an invalid subsidy calc proof");
+        // eslint-disable-next-line no-await-in-loop
+        const isValid = await verifyProof(r.publicSignals, r.proof, subsidyVk!);
+        if (!isValid) {
+          logError("Error: generated an invalid subsidy calc proof");
+        }
 
         const thisProof = {
           circuitInputs: subsidyCircuitInputs,
@@ -303,12 +376,15 @@ export const genProofs = async (
           publicInputs: r.publicSignals,
         };
         subsidyProofs.push(thisProof);
-        writeFileSync(join(outputDir, `subsidy_${numBatchesCalulated}.json`), JSON.stringify(thisProof, null, 4));
-        numBatchesCalulated++;
+        fs.writeFileSync(
+          path.resolve(outputDir, `subsidy_${numBatchesCalulated}.json`),
+          JSON.stringify(thisProof, null, 4),
+        );
+        numBatchesCalulated += 1;
 
         logYellow(quiet, info(`Progress: ${numBatchesCalulated} / ${totalSubsidyBatches}`));
-      } catch (error: any) {
-        logError(error.message);
+      } catch (error) {
+        logError((error as Error).message);
       }
     }
 
@@ -316,15 +392,15 @@ export const genProofs = async (
       provider: process.env.ETH_PROVIDER || DEFAULT_ETH_PROVIDER,
       maci: maciAddress,
       pollId,
-      newSubsidyCommitment: asHex(subsidyCircuitInputs.newSubsidyCommitment),
+      newSubsidyCommitment: asHex(subsidyCircuitInputs!.newSubsidyCommitment as BigNumberish),
       results: {
         subsidy: poll.subsidy.map((x) => x.toString()),
-        salt: asHex(subsidyCircuitInputs.newSubsidySalt),
+        salt: asHex(subsidyCircuitInputs!.newSubsidySalt as BigNumberish),
       },
     };
 
     // store it
-    writeFileSync(subsidyFile, JSON.stringify(subsidyFileData, null, 4));
+    fs.writeFileSync(subsidyFile, JSON.stringify(subsidyFileData, null, 4));
     logYellow(quiet, info(`Subsidy file:\n${JSON.stringify(subsidyFileData, null, 4)}\n`));
 
     const susbsidyEndTime = Date.now();
@@ -336,12 +412,14 @@ export const genProofs = async (
   logYellow(quiet, info(`Generating proofs of vote tallying...`));
   const tallyStartTime = Date.now();
 
-  const tallyBatchSize = poll.batchSizes.tallyBatchSize;
+  const { tallyBatchSize } = poll.batchSizes;
   const numStateLeaves = poll.stateLeaves.length;
   let totalTallyBatches = numStateLeaves <= tallyBatchSize ? 1 : Math.floor(numStateLeaves / tallyBatchSize);
-  if (numStateLeaves > tallyBatchSize && numStateLeaves % tallyBatchSize > 0) totalTallyBatches++;
+  if (numStateLeaves > tallyBatchSize && numStateLeaves % tallyBatchSize > 0) {
+    totalTallyBatches += 1;
+  }
 
-  let tallyCircuitInputs: any;
+  let tallyCircuitInputs: CircuitInputs;
   // tally all ballots for this poll
   while (poll.hasUntalliedBallots()) {
     // tally votes in batches
@@ -349,6 +427,7 @@ export const genProofs = async (
 
     try {
       // generate the proof
+      // eslint-disable-next-line no-await-in-loop
       const r = await genProof({
         inputs: tallyCircuitInputs,
         zkeyPath: tallyZkey,
@@ -359,9 +438,12 @@ export const genProofs = async (
       });
 
       // verify it
+      // eslint-disable-next-line no-await-in-loop
       const isValid = await verifyProof(r.publicSignals, r.proof, tallyVk);
 
-      if (!isValid) logError("Generated an invalid tally proof");
+      if (!isValid) {
+        logError("Generated an invalid tally proof");
+      }
 
       const thisProof = {
         circuitInputs: tallyCircuitInputs,
@@ -371,11 +453,14 @@ export const genProofs = async (
 
       // save it
       tallyProofs.push(thisProof);
-      writeFileSync(join(outputDir, `tally_${poll.numBatchesTallied - 1}.json`), JSON.stringify(thisProof, null, 4));
+      fs.writeFileSync(
+        path.resolve(outputDir, `tally_${poll.numBatchesTallied - 1}.json`),
+        JSON.stringify(thisProof, null, 4),
+      );
 
       logYellow(quiet, info(`Progress: ${poll.numBatchesTallied} / ${totalTallyBatches}`));
-    } catch (error: any) {
-      logError(error.message);
+    } catch (error) {
+      logError((error as Error).message);
     }
   }
 
@@ -383,20 +468,20 @@ export const genProofs = async (
   // Compute newResultsCommitment
   const newResultsCommitment = genTreeCommitment(
     poll.tallyResult,
-    BigInt(asHex(tallyCircuitInputs.newResultsRootSalt)),
+    BigInt(asHex(tallyCircuitInputs!.newResultsRootSalt as BigNumberish)),
     poll.treeDepths.voteOptionTreeDepth,
   );
 
   // compute newSpentVoiceCreditsCommitment
   const newSpentVoiceCreditsCommitment = hashLeftRight(
     poll.totalSpentVoiceCredits,
-    BigInt(asHex(tallyCircuitInputs.newSpentVoiceCreditSubtotalSalt)),
+    BigInt(asHex(tallyCircuitInputs!.newSpentVoiceCreditSubtotalSalt as BigNumberish)),
   );
 
   // Compute newPerVOSpentVoiceCreditsCommitment
   const newPerVOSpentVoiceCreditsCommitment = genTreeCommitment(
     poll.perVOSpentVoiceCredits,
-    BigInt(asHex(tallyCircuitInputs.newPerVOSpentVoiceCreditsRootSalt)),
+    BigInt(asHex(tallyCircuitInputs!.newPerVOSpentVoiceCreditsRootSalt as BigNumberish)),
     poll.treeDepths.voteOptionTreeDepth,
   );
 
@@ -409,27 +494,27 @@ export const genProofs = async (
 
   // create the tally file data to store for verification later
   const tallyFileData: TallyData = {
-    maci: maciAddress,
+    maci: maciAddress!,
     pollId,
-    newTallyCommitment: asHex(tallyCircuitInputs.newTallyCommitment),
+    newTallyCommitment: asHex(tallyCircuitInputs!.newTallyCommitment as BigNumberish),
     results: {
       tally: poll.tallyResult.map((x) => x.toString()),
-      salt: asHex(tallyCircuitInputs.newResultsRootSalt),
+      salt: asHex(tallyCircuitInputs!.newResultsRootSalt as BigNumberish),
       commitment: asHex(newResultsCommitment),
     },
     totalSpentVoiceCredits: {
       spent: poll.totalSpentVoiceCredits.toString(),
-      salt: asHex(tallyCircuitInputs.newSpentVoiceCreditSubtotalSalt),
+      salt: asHex(tallyCircuitInputs!.newSpentVoiceCreditSubtotalSalt as BigNumberish),
       commitment: asHex(newSpentVoiceCreditsCommitment),
     },
     perVOSpentVoiceCredits: {
       tally: poll.perVOSpentVoiceCredits.map((x) => x.toString()),
-      salt: asHex(tallyCircuitInputs.newPerVOSpentVoiceCreditsRootSalt),
+      salt: asHex(tallyCircuitInputs!.newPerVOSpentVoiceCreditsRootSalt as BigNumberish),
       commitment: asHex(newPerVOSpentVoiceCreditsCommitment),
     },
   };
 
-  writeFileSync(tallyFile, JSON.stringify(tallyFileData, null, 4));
+  fs.writeFileSync(tallyFile, JSON.stringify(tallyFileData, null, 4));
 
   logYellow(quiet, info(`Tally file:\n${JSON.stringify(tallyFileData, null, 4)}\n`));
 

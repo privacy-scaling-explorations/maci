@@ -1,5 +1,3 @@
-import { banner } from "../utils/banner";
-import { readContractAddress, storeContractAddress } from "../utils/storage";
 import {
   deployConstantInitialVoiceCreditProxy,
   deployFreeForAllSignUpGatekeeper,
@@ -8,7 +6,10 @@ import {
   deployTopupCredit,
   getDefaultSigner,
 } from "maci-contracts";
-import { logError, logGreen, success, DEFAULT_INITIAL_VOICE_CREDITS, DeployedContracts } from "../utils/";
+
+import { logError, logGreen, success, DEFAULT_INITIAL_VOICE_CREDITS, DeployedContracts } from "../utils";
+import { banner } from "../utils/banner";
+import { readContractAddress, storeContractAddress } from "../utils/storage";
 
 /**
  * Deploy MACI and related contracts
@@ -36,10 +37,11 @@ export const deploy = async (
   const signer = await getDefaultSigner();
 
   // if we did not deploy it before, then deploy it now
-  let initialVoiceCreditProxyContractAddress: string;
+  let initialVoiceCreditProxyContractAddress: string | undefined;
+
   if (!initialVoiceCreditsProxyAddress) {
     const contract = await deployConstantInitialVoiceCreditProxy(
-      initialVoiceCredits ? initialVoiceCredits : DEFAULT_INITIAL_VOICE_CREDITS,
+      initialVoiceCredits || DEFAULT_INITIAL_VOICE_CREDITS,
       signer,
       true,
     );
@@ -68,7 +70,7 @@ export const deploy = async (
   // deploy MACI, stateAq, PollFactory and poseidon
   const { maciContract, stateAqContract, pollFactoryContract, poseidonAddrs } = await deployMaci(
     signupGatekeeperContractAddress,
-    initialVoiceCreditProxyContractAddress,
+    initialVoiceCreditProxyContractAddress!,
     verifierContractAddress,
     topUpCreditAddress,
     signer,
@@ -83,7 +85,7 @@ export const deploy = async (
   ]);
 
   // save to the JSON File
-  storeContractAddress("InitialVoiceCreditProxy", initialVoiceCreditProxyContractAddress);
+  storeContractAddress("InitialVoiceCreditProxy", initialVoiceCreditProxyContractAddress!);
   storeContractAddress("SignUpGatekeeper", signupGatekeeperContractAddress);
   storeContractAddress("Verifier", verifierContractAddress);
   storeContractAddress("MACI", maciContractAddress);
@@ -109,6 +111,6 @@ export const deploy = async (
     poseidonT5Address: poseidonAddrs[2],
     poseidonT6Address: poseidonAddrs[3],
     signUpGatekeeperAddress: signupGatekeeperContractAddress,
-    initialVoiceCreditProxyAddress: initialVoiceCreditProxyContractAddress,
+    initialVoiceCreditProxyAddress: initialVoiceCreditProxyContractAddress!,
   };
 };

@@ -1,5 +1,6 @@
+import fs from "fs";
+
 import { contractAddressesStore } from "./constants";
-import { writeFileSync, readFileSync, existsSync } from "fs";
 import { logError } from "./theme";
 
 /**
@@ -7,9 +8,12 @@ import { logError } from "./theme";
  * @param path - the path of the file
  * @returns the JSON object
  */
-export const readJSONFile = (path: string): object => {
-  if (!existsSync(path)) logError(`File ${path} does not exist`);
-  return JSON.parse(readFileSync(path).toString());
+export const readJSONFile = (path: string): Record<string, string> => {
+  if (!fs.existsSync(path)) {
+    logError(`File ${path} does not exist`);
+  }
+
+  return JSON.parse(fs.readFileSync(path).toString()) as Record<string, string>;
 };
 
 /**
@@ -17,12 +21,15 @@ export const readJSONFile = (path: string): object => {
  * @param contractName - the name of the contract
  * @param address - the address of the contract
  */
-export const storeContractAddress = (contractName: string, address: string) => {
+export const storeContractAddress = (contractName: string, address: string): void => {
   // if it does not exist yet, then create it
-  if (!existsSync(contractAddressesStore)) writeFileSync(contractAddressesStore, "{}");
+  if (!fs.existsSync(contractAddressesStore)) {
+    fs.writeFileSync(contractAddressesStore, "{}");
+  }
+
   const contractAddrs = readJSONFile(contractAddressesStore);
   contractAddrs[contractName] = address;
-  writeFileSync(contractAddressesStore, JSON.stringify(contractAddrs, null, 4));
+  fs.writeFileSync(contractAddressesStore, JSON.stringify(contractAddrs, null, 4));
 };
 
 /**
@@ -38,8 +45,8 @@ export const readContractAddress = (contractName: string): string => {
 /**
  * Delete the content of the contract address file file
  */
-export const resetContractAddresses = () => {
-  writeFileSync(contractAddressesStore, JSON.stringify({}, null, 4));
+export const resetContractAddresses = (): void => {
+  fs.writeFileSync(contractAddressesStore, JSON.stringify({}, null, 4));
 };
 
 /**
@@ -49,11 +56,8 @@ export const resetContractAddresses = () => {
  * where the boolean indicates whether all paths exist, and the string
  * is the path that does not exist
  */
-export const doesPathExist = (paths: Array<string>): [boolean, string] => {
-  for (const path of paths) {
-    if (!existsSync(path)) {
-      return [false, path];
-    }
-  }
-  return [true, null];
+export const doesPathExist = (paths: string[]): [boolean, string | null] => {
+  const notFoundPath = paths.find((path) => !fs.existsSync(path));
+
+  return notFoundPath ? [false, notFoundPath] : [true, null];
 };

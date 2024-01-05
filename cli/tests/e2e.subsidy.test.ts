@@ -1,4 +1,6 @@
+import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
+
 import {
   checkVerifyingKeys,
   deploy,
@@ -14,6 +16,8 @@ import {
   timeTravel,
   verify,
 } from "../ts/commands";
+import { DeployedContracts, PollContracts } from "../ts/utils";
+
 import {
   INT_STATE_TREE_DEPTH,
   MSG_BATCH_DEPTH,
@@ -40,10 +44,8 @@ import {
   testTallyVotesWitnessPath,
 } from "./constants";
 import { cleanSubsidy, isArm } from "./utils";
-import { genRandomSalt } from "maci-crypto";
-import { DeployedContracts, PollContracts } from "../ts/utils";
 
-describe("e2e with Subsidy tests", function () {
+describe("e2e with Subsidy tests", function test() {
   const useWasm = isArm();
   this.timeout(900000);
 
@@ -69,9 +71,11 @@ describe("e2e with Subsidy tests", function () {
   });
   describe("test1", () => {
     const user1Key = new Keypair();
-    after(async () => {
+
+    after(() => {
       cleanSubsidy();
     });
+
     before(async () => {
       // deploy the smart contracts
       maciAddresses = await deploy(STATE_TREE_DEPTH);
@@ -144,7 +148,9 @@ describe("e2e with Subsidy tests", function () {
   });
 
   describe("test2", () => {
-    after(() => cleanSubsidy());
+    after(() => {
+      cleanSubsidy();
+    });
 
     const users = [new Keypair(), new Keypair(), new Keypair(), new Keypair()];
 
@@ -164,8 +170,10 @@ describe("e2e with Subsidy tests", function () {
       );
     });
 
-    it("should signup four users", async () => {
-      for (const user of users) await signup(user.pubKey.serialize());
+    it("should signup four users", () => {
+      users.forEach(async (user) => {
+        await signup(user.pubKey.serialize());
+      });
     });
 
     it("should publish six messages", async () => {
@@ -275,7 +283,9 @@ describe("e2e with Subsidy tests", function () {
   });
 
   describe("test3", () => {
-    after(() => cleanSubsidy());
+    after(() => {
+      cleanSubsidy();
+    });
 
     const users = [
       new Keypair(),
@@ -305,8 +315,10 @@ describe("e2e with Subsidy tests", function () {
       );
     });
 
-    it("should signup nine users", async () => {
-      for (const user of users) await signup(user.pubKey.serialize());
+    it("should signup nine users", () => {
+      users.forEach(async (user) => {
+        await signup(user.pubKey.serialize());
+      });
     });
 
     it("should publish one message", async () => {
@@ -361,7 +373,9 @@ describe("e2e with Subsidy tests", function () {
   });
 
   describe("test4", () => {
-    after(() => cleanSubsidy());
+    after(() => {
+      cleanSubsidy();
+    });
 
     const user = new Keypair();
 
@@ -382,11 +396,15 @@ describe("e2e with Subsidy tests", function () {
     });
 
     it("should signup eight users (same pub key)", async () => {
-      for (let i = 0; i < 8; i++) await signup(user.pubKey.serialize());
+      for (let i = 0; i < 8; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await signup(user.pubKey.serialize());
+      }
     });
 
     it("should publish 12 messages with the same nonce", async () => {
-      for (let i = 0; i < 12; i++)
+      for (let i = 0; i < 12; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
         await publish(
           user.pubKey.serialize(),
           1,
@@ -398,6 +416,7 @@ describe("e2e with Subsidy tests", function () {
           genRandomSalt().toString(),
           user.privKey.serialize(),
         );
+      }
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
@@ -438,7 +457,9 @@ describe("e2e with Subsidy tests", function () {
   });
 
   describe("test5", () => {
-    after(() => cleanSubsidy());
+    after(() => {
+      cleanSubsidy();
+    });
 
     const users = [new Keypair(), new Keypair(), new Keypair(), new Keypair()];
 
@@ -458,8 +479,10 @@ describe("e2e with Subsidy tests", function () {
       );
     });
 
-    it("should signup four users", async () => {
-      for (const user of users) await signup(user.pubKey.serialize());
+    it("should signup four users", () => {
+      users.forEach(async (user) => {
+        await signup(user.pubKey.serialize());
+      });
     });
 
     it("should publish four messages", async () => {
@@ -547,7 +570,9 @@ describe("e2e with Subsidy tests", function () {
   });
 
   describe("test6", () => {
-    after(() => cleanSubsidy());
+    after(() => {
+      cleanSubsidy();
+    });
 
     const users = [new Keypair(), new Keypair(), new Keypair(), new Keypair(), new Keypair()];
 
@@ -567,8 +592,10 @@ describe("e2e with Subsidy tests", function () {
       );
     });
 
-    it("should signup five users", async () => {
-      for (const user of users) await signup(user.pubKey.serialize());
+    it("should signup five users", () => {
+      users.forEach(async (user) => {
+        await signup(user.pubKey.serialize());
+      });
     });
 
     it("should publish five messages", async () => {
@@ -793,11 +820,14 @@ describe("e2e with Subsidy tests", function () {
     });
 
     it("should signup an user", async () => {
-      for (let i = 0; i < 6; i++) await signup(publishArgs[i].pubkey);
+      for (let i = 0; i < 6; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await signup(publishArgs[i].pubkey);
+      }
     });
 
-    it("should publish all messages", async () => {
-      for (const arg of publishArgs)
+    it("should publish all messages", () => {
+      publishArgs.forEach(async (arg) => {
         await publish(
           arg.pubkey,
           arg.stateIndex,
@@ -809,6 +839,7 @@ describe("e2e with Subsidy tests", function () {
           genRandomSalt().toString(),
           arg.privateKey,
         );
+      });
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
@@ -849,7 +880,9 @@ describe("e2e with Subsidy tests", function () {
   });
 
   describe("multiplePolls1", () => {
-    after(() => cleanSubsidy());
+    after(() => {
+      cleanSubsidy();
+    });
 
     const user = new Keypair();
 
@@ -1006,7 +1039,10 @@ describe("e2e with Subsidy tests", function () {
         coordinatorPubKey,
       );
       // signup
-      for (let i = 0; i < 7; i++) await signup(users[i].pubKey.serialize());
+      for (let i = 0; i < 7; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await signup(users[i].pubKey.serialize());
+      }
       // publish
       await publish(
         users[0].pubKey.serialize(),

@@ -3,11 +3,13 @@
  * @param maxLeaves - the number of leaves in the tree
  * @returns the depth of the tree
  */
-export const calcBinaryTreeDepthFromMaxLeaves = (maxLeaves: number) => {
+export const calcBinaryTreeDepthFromMaxLeaves = (maxLeaves: number): number => {
   let result = 0;
+
   while (2 ** result < maxLeaves) {
-    result++;
+    result += 1;
   }
+
   return result;
 };
 
@@ -16,10 +18,12 @@ export const calcBinaryTreeDepthFromMaxLeaves = (maxLeaves: number) => {
  * @param maxLeaves the number of leaves in the tree
  * @returns the depth of the tree
  */
-export const calcQuinTreeDepthFromMaxLeaves = (maxLeaves: number) => {
+export const calcQuinTreeDepthFromMaxLeaves = (maxLeaves: number): number => {
   let result = 0;
+
   while (5 ** result < maxLeaves) {
-    result++;
+    result += 1;
   }
+
   return result;
 };

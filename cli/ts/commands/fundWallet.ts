@@ -1,5 +1,6 @@
 import { getDefaultSigner } from "maci-contracts";
-import { info, logError, logYellow, logGreen, success, banner } from "../utils/";
+
+import { info, logError, logYellow, logGreen, success, banner } from "../utils";
 
 /**
  * Fund a new wallet with Ether
@@ -7,7 +8,7 @@ import { info, logError, logYellow, logGreen, success, banner } from "../utils/"
  * @param address - the address of the wallet to fund
  * @param quiet - whether to log the output
  */
-export const fundWallet = async (amount: number, address: string, quiet = true) => {
+export const fundWallet = async (amount: number, address: string, quiet = true): Promise<void> => {
   banner(quiet);
   const signer = await getDefaultSigner();
 
@@ -18,11 +19,14 @@ export const fundWallet = async (amount: number, address: string, quiet = true) 
       value: amount.toString(),
     });
     const receipt = await tx.wait();
-    if (receipt.status != 1) logError("Transaction failed");
+
+    if (receipt?.status !== 1) {
+      logError("Transaction failed");
+    }
 
     logYellow(quiet, info(`Transaction hash: ${tx.hash}`));
     logGreen(quiet, success(`Successfully funded ${address} with ${amount} wei`));
-  } catch (error: any) {
-    logError(error.message);
+  } catch (error) {
+    logError((error as Error).message);
   }
 };

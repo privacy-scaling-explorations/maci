@@ -1,4 +1,11 @@
-import { getDefaultSigner, parseArtifact } from "maci-contracts";
+import { BaseContract } from "ethers";
+import { extractVk } from "maci-circuits";
+import { VkRegistry, getDefaultSigner, parseArtifact } from "maci-contracts";
+import { G1Point, G2Point } from "maci-crypto";
+import { VerifyingKey } from "maci-domainobjs";
+
+import fs from "fs";
+
 import {
   banner,
   compareVks,
@@ -9,11 +16,7 @@ import {
   logYellow,
   readContractAddress,
   success,
-} from "../utils/";
-import { VerifyingKey } from "maci-domainobjs";
-import { extractVk } from "maci-circuits";
-import { existsSync } from "fs";
-import { Contract } from "ethers";
+} from "../utils";
 
 /**
  * Command to confirm that the verifying keys in the contract match the
@@ -46,24 +49,40 @@ export const checkVerifyingKeys = async (
   const signer = await getDefaultSigner();
 
   // ensure we have the contract addresses that we need
-  if (!readContractAddress("VkRegistry") && !vkRegistry) logError("Please provide a VkRegistry contract address");
-  const vkContractAddress = vkRegistry ? vkRegistry : readContractAddress("VkRegistry");
-  if (!(await contractExists(signer.provider, vkContractAddress))) logError("The VkRegistry contract does not exist");
+  if (!readContractAddress("VkRegistry") && !vkRegistry) {
+    logError("Please provide a VkRegistry contract address");
+  }
+  const vkContractAddress = vkRegistry || readContractAddress("VkRegistry");
 
-  const vkRegistryContractInstance = new Contract(vkContractAddress, parseArtifact("VkRegistry")[0], signer);
+  if (!(await contractExists(signer.provider!, vkContractAddress))) {
+    logError("The VkRegistry contract does not exist");
+  }
+
+  const vkRegistryContractInstance = new BaseContract(
+    vkContractAddress,
+    parseArtifact("VkRegistry")[0],
+    signer,
+  ) as VkRegistry;
 
   // we need to ensure that the zkey files exist
-  if (!existsSync(processMessagesZkeyPath)) logError("The provided Process messages zkey does not exist");
-  if (!existsSync(tallyVotesZkeyPath)) logError("The provided Tally votes zkey does not exist");
+  if (!fs.existsSync(processMessagesZkeyPath)) {
+    logError("The provided Process messages zkey does not exist");
+  }
+
+  if (!fs.existsSync(tallyVotesZkeyPath)) {
+    logError("The provided Tally votes zkey does not exist");
+  }
 
   // extract the verification keys from the zkey files
   const processVk = VerifyingKey.fromObj(await extractVk(processMessagesZkeyPath));
   const tallyVk = VerifyingKey.fromObj(await extractVk(tallyVotesZkeyPath));
 
   // check the subsidy key
-  let subsidyVk: VerifyingKey;
+  let subsidyVk: VerifyingKey | undefined;
   if (subsidyZkeyPath) {
-    if (!existsSync(subsidyZkeyPath)) logError("The provided Subsidy zkey does not exist");
+    if (!fs.existsSync(subsidyZkeyPath)) {
+      logError("The provided Subsidy zkey does not exist");
+    }
     subsidyVk = VerifyingKey.fromObj(await extractVk(subsidyZkeyPath));
   }
 
@@ -85,20 +104,37 @@ export const checkVerifyingKeys = async (
       voteOptionTreeDepth,
     );
 
-    let subsidyVkOnChain: VerifyingKey;
-    if (subsidyVk)
-      subsidyVkOnChain = await vkRegistryContractInstance.getSubsidyVk(
-        stateTreeDepth,
-        intStateTreeDepth,
-        voteOptionTreeDepth,
-      );
+    let subsidyVkOnChain: VerifyingKey | undefined;
+
+    if (subsidyVk) {
+      subsidyVkOnChain = await vkRegistryContractInstance
+        .getSubsidyVk(stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth)
+        .then(
+          ({ alpha1, beta2, gamma2, delta2, ic }) =>
+            new VerifyingKey(
+              new G1Point(alpha1.x, alpha1.y),
+              new G2Point(beta2.x, beta2.y),
+              new G2Point(gamma2.x, gamma2.y),
+              new G2Point(delta2.x, delta2.y),
+              ic.map(({ x, y }) => new G1Point(x, y)),
+            ),
+        );
+    }
 
     // do the actual validation
-    if (!compareVks(processVk, processVkOnChain)) logError("Process verifying keys do not match");
-    if (!compareVks(tallyVk, tallyVkOnChain)) logError("Tally verifying keys do not match");
-    if (subsidyVk && !compareVks(subsidyVk, subsidyVkOnChain)) logError("Subsidy verifying keys do not match");
-  } catch (error: any) {
-    logError(error.message);
+    if (!compareVks(processVk, processVkOnChain)) {
+      logError("Process verifying keys do not match");
+    }
+
+    if (!compareVks(tallyVk, tallyVkOnChain)) {
+      logError("Tally verifying keys do not match");
+    }
+
+    if (subsidyVk && !compareVks(subsidyVk, subsidyVkOnChain!)) {
+      logError("Subsidy verifying keys do not match");
+    }
+  } catch (error) {
+    logError((error as Error).message);
   }
 
   logGreen(quiet, success("Verifying keys match"));

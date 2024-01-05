@@ -1,4 +1,4 @@
-import { start, get } from "prompt-async";
+import { start, get } from "prompt";
 
 /**
  * Ask for a sensitive value
@@ -7,12 +7,7 @@ import { start, get } from "prompt-async";
  */
 export const promptSensitiveValue = async (name: string): Promise<string> => {
   start();
-  const input = await get([
-    {
-      name,
-      hidden: true,
-    },
-  ]);
+  const input = await get([{ name, hidden: true }]);
 
-  return input[name];
+  return input[name] as string;
 };

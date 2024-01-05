@@ -38,6 +38,7 @@
     "maci-core": "^1.1.2",
     "maci-crypto": "^1.1.2",
     "maci-domainobjs": "^1.1.2",
+    "snarkjs": "^0.7.2",
     "solidity-docgen": "^0.6.0-beta.36"
   },
   "devDependencies": {
@@ -45,6 +46,7 @@
     "@types/circomlibjs": "^0.1.6",
     "@types/mocha": "^10.0.6",
     "@types/node": "^18.11.9",
+    "@types/snarkjs": "^0.7.7",
     "chai": "^4.3.10",
     "hardhat-artifactor": "^0.2.0",
     "hardhat-contract-sizer": "^2.10.0",

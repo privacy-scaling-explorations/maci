@@ -1,9 +1,10 @@
-import { readContractAddress } from "../utils/storage";
-import { Contract } from "ethers";
-import { contractExists } from "../utils/contracts";
-import { getDefaultSigner, parseArtifact } from "maci-contracts";
-import { logError, logGreen, success } from "../utils/theme";
+import { BaseContract } from "ethers";
+import { MACI, TopupCredit, getDefaultSigner, parseArtifact } from "maci-contracts";
+
 import { banner } from "../utils/banner";
+import { contractExists } from "../utils/contracts";
+import { readContractAddress } from "../utils/storage";
+import { logError, logGreen, success } from "../utils/theme";
 
 /**
  * Utility that can be used to get
@@ -21,7 +22,7 @@ export const airdrop = async (
   pollId?: number,
   maciAddress?: string,
   quiet = true,
-) => {
+): Promise<void> => {
   banner(quiet);
 
   // get the topup credit address from storage
@@ -33,21 +34,23 @@ export const airdrop = async (
     logError("Please provide an ERC20 contract address");
   }
 
-  const ERC20Address = contractAddress ? contractAddress : topupCredit;
+  const ERC20Address = contractAddress || topupCredit;
 
   // get the signer
   const signer = await getDefaultSigner();
   // check if the contract exists
-  if (!(await contractExists(signer.provider, ERC20Address))) {
+  if (!(await contractExists(signer.provider!, ERC20Address))) {
     logError("Invalid ERC20 contract address");
   }
 
   const tokenAbi = parseArtifact("TopupCredit")[0];
 
   // create the contract instance
-  const tokenContract = new Contract(ERC20Address, tokenAbi, signer);
+  const tokenContract = new BaseContract(ERC20Address, tokenAbi, signer) as TopupCredit;
 
-  if (amount < 0) logError("Invalid amount");
+  if (amount < 0) {
+    logError("Invalid amount");
+  }
 
   // try to get the tokens airdropped
   try {
@@ -57,29 +60,30 @@ export const airdrop = async (
     await tx.wait();
 
     logGreen(quiet, success(`Airdropped ${amount} credits to ${await signer.getAddress()}`));
-  } catch (error: any) {
-    logError(error.message);
+  } catch (error) {
+    logError((error as Error).message);
   }
 
   // if there is a poll id provided, we can pre-approve all of the tokens
   // so there is no need to do it afterwards
   if (pollId !== undefined) {
-    maciAddress = readContractAddress("MACI") ? readContractAddress("MACI") : maciAddress;
-    if (!maciAddress) logError("Please provide a MACI contract address");
+    const maciContractAddress = readContractAddress("MACI") ? readContractAddress("MACI") : maciAddress;
+
+    if (!maciAddress) {
+      logError("Please provide a MACI contract address");
+    }
 
     const maciAbi = parseArtifact("MACI")[0];
-
-    const maciContract = new Contract(maciAddress, maciAbi, signer);
+    const maciContract = new BaseContract(maciContractAddress!, maciAbi, signer) as MACI;
 
     const pollAddr = await maciContract.getPoll(pollId);
     try {
       const tx = await tokenContract.approve(pollAddr, amount, { gasLimit: 1000000 });
-
       await tx.wait();
 
       logGreen(quiet, success(`Approved ${pollAddr} to spend ${amount} credits`));
-    } catch (error: any) {
-      logError(error.message);
+    } catch (error) {
+      logError((error as Error).message);
     }
   }
 };
