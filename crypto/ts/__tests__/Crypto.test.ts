@@ -1,10 +1,8 @@
 import { expect } from "chai";
 
+import { G1Point, G2Point, genRandomBabyJubValue } from "../babyjub";
 import { SNARK_FIELD_SIZE } from "../constants";
 import {
-  genPubKey,
-  genKeypair,
-  genEcdhSharedKey,
   sha256Hash,
   hash2,
   hash3,
@@ -13,19 +11,13 @@ import {
   hash13,
   hashLeftRight,
   hashN,
+  hashOne,
   poseidonT3,
   poseidonT4,
   poseidonT5,
   poseidonT6,
-  genRandomSalt,
-  G1Point,
-  G2Point,
-  hashOne,
-  genRandomBabyJubValue,
-  genPrivKey,
-  packPubKey,
-  unpackPubKey,
-} from "../crypto";
+} from "../hashing";
+import { genPubKey, genKeypair, genEcdhSharedKey, genRandomSalt, genPrivKey, packPubKey, unpackPubKey } from "../keys";
 
 describe("Crypto", function test() {
   this.timeout(100000);

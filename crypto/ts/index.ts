@@ -9,18 +9,6 @@ export { bigInt2Buffer, stringifyBigInts, unstringifyBigInts, deepCopyBigIntArra
 export { NOTHING_UP_MY_SLEEVE, SNARK_FIELD_SIZE } from "./constants";
 
 export {
-  G1Point,
-  G2Point,
-  sha256Hash,
-  hashLeftRight,
-  hashN,
-  hash2,
-  hash3,
-  hash4,
-  hash5,
-  hash13,
-  hashOne,
-  genRandomBabyJubValue,
   genPrivKey,
   genRandomSalt,
   formatPrivKeyForBabyJub,
@@ -29,7 +17,11 @@ export {
   genEcdhSharedKey,
   packPubKey,
   unpackPubKey,
-} from "./crypto";
+} from "./keys";
+
+export { G1Point, G2Point, genRandomBabyJubValue } from "./babyjub";
+
+export { sha256Hash, hashLeftRight, hashN, hash2, hash3, hash4, hash5, hash13, hashOne } from "./hashing";
 
 export { OptimisedMT as IncrementalQuinTree, type PathElements } from "optimisedmt";
 
