@@ -1,5 +1,6 @@
 import { existsSync, unlinkSync } from "fs";
 import {
+  airdrop,
   checkVerifyingKeys,
   deploy,
   deployPoll,
@@ -13,6 +14,7 @@ import {
   setVerifyingKeys,
   signup,
   timeTravel,
+  topup,
   verify,
 } from "../ts/commands";
 import {
@@ -1231,6 +1233,86 @@ describe("e2e tests", function () {
         undefined,
         useWasm,
         stateOutPath,
+      );
+      await proveOnChain("0", testProofsDirPath);
+      await verify("0", testTallyFilePath);
+    });
+  });
+
+  describe("topup message", () => {
+    const user = new Keypair();
+    const tokenAmount = 100;
+    let stateIndex: number | undefined;
+
+    after(() => {
+      cleanVanilla();
+    });
+
+    before(async () => {
+      // deploy the smart contracts
+      maciAddresses = await deploy(STATE_TREE_DEPTH);
+      // deploy a poll contract
+      pollAddresses = await deployPoll(
+        pollDuration,
+        maxMessages,
+        maxVoteOptions,
+        INT_STATE_TREE_DEPTH,
+        MSG_BATCH_DEPTH,
+        MSG_TREE_DEPTH,
+        VOTE_OPTION_TREE_DEPTH,
+        coordinatorPubKey,
+      );
+    });
+
+    it("should signup one user", async () => {
+      stateIndex = Number.parseInt(await signup(user.pubKey.serialize()), 10);
+    });
+
+    it("should airdrop topup tokens to the coordinator user", async () => {
+      await airdrop(tokenAmount, maciAddresses.topupCreditAddress, 0, maciAddresses.maciAddress, true);
+    });
+
+    it("should publish one topup message", async () => {
+      await topup(tokenAmount, stateIndex!, 0, maciAddresses.maciAddress, true);
+    });
+
+    it("should publish one vote message", async () => {
+      await publish(
+        user.pubKey.serialize(),
+        1,
+        0,
+        1,
+        0,
+        9,
+        maciAddresses.maciAddress,
+        genRandomSalt().toString(),
+        user.privKey.serialize(),
+      );
+    });
+
+    it("should generate proofs and verify them", async () => {
+      await timeTravel(pollDuration, true);
+      await mergeMessages(0);
+      await mergeSignups(0);
+      await genProofs(
+        testProofsDirPath,
+        testTallyFilePath,
+        tallyVotesTestZkeyPath,
+        processMessageTestZkeyPath,
+        0,
+        undefined,
+        undefined,
+        testRapidsnarkPath,
+        testProcessMessagesWitnessPath,
+        testTallyVotesWitnessPath,
+        undefined,
+        coordinatorPrivKey,
+        undefined,
+        undefined,
+        testProcessMessagesWasmPath,
+        testTallyVotesWasmPath,
+        undefined,
+        useWasm,
       );
       await proveOnChain("0", testProofsDirPath);
       await verify("0", testTallyFilePath);

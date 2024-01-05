@@ -14,6 +14,7 @@ import type {
   PoseidonT6,
   Subsidy,
   Tally,
+  TopupCredit,
   VkRegistry,
 } from "../typechain-types";
 import type { BigNumberish, Fragment, JsonFragment } from "ethers";
@@ -68,6 +69,7 @@ export interface IDeployedTestContracts {
   vkRegistryContract: VkRegistry;
   mpContract: MessageProcessor;
   tallyContract: Tally;
+  topupCreditContract: TopupCredit;
   subsidyContract?: Subsidy;
 }
 
