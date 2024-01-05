@@ -1,4 +1,5 @@
 {
   "**/*.{ts,js}": ["prettier --ignore-unknown --write", "eslint --fix"],
+  "**/*.sol": ["prettier --ignore-unknown --write", "solhint --fix --noPrompt"],
   "*": ["prettier --ignore-unknown --write"]
 }

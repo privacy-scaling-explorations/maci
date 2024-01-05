@@ -7,7 +7,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Poll } from "./Poll.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { Hasher } from "./crypto/Hasher.sol";
-import { CommonUtilities } from "./utilities/Utilities.sol";
+import { CommonUtilities } from "./utilities/CommonUtilities.sol";
 import { Verifier } from "./crypto/Verifier.sol";
 import { VkRegistry } from "./VkRegistry.sol";
 

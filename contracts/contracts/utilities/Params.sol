@@ -4,7 +4,6 @@ pragma solidity ^0.8.10;
 import { IMACI } from "../interfaces/IMACI.sol";
 import { AccQueue } from "../trees/AccQueue.sol";
 import { TopupCredit } from "../TopupCredit.sol";
-import { VkRegistry } from "../VkRegistry.sol";
 
 /// @title Params
 /// @notice This contracts contains a number of structures

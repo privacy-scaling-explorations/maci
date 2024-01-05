@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import { AccQueue } from "./trees/AccQueue.sol";
 import { IMACI } from "./interfaces/IMACI.sol";
 import { Hasher } from "./crypto/Hasher.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
@@ -10,7 +9,7 @@ import { MessageProcessor } from "./MessageProcessor.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { Verifier } from "./crypto/Verifier.sol";
 import { VkRegistry } from "./VkRegistry.sol";
-import { CommonUtilities } from "./utilities/Utilities.sol";
+import { CommonUtilities } from "./utilities/CommonUtilities.sol";
 
 /// @title Tally
 /// @notice The Tally contract is used during votes tallying
@@ -217,7 +216,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   /// @param _totalSpent spent field retrieved in the totalSpentVoiceCredits object
   /// @param _totalSpentSalt the corresponding salt in the totalSpentVoiceCredit object
   /// @param _resultCommitment hashLeftRight(merkle root of the results.tally, results.salt) in tally.json file
-  /// @param _perVOSpentVoiceCreditsHash hashLeftRight(merkle root of the no spent voice credits per vote option, perVOSpentVoiceCredits salt)
+  /// @param _perVOSpentVoiceCreditsHash hashLeftRight(merkle root of the no spent voice credits per vote option, salt)
   /// @return isValid Whether the provided values are valid
   function verifySpentVoiceCredits(
     uint256 _totalSpent,

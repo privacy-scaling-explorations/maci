@@ -3,26 +3,6 @@ pragma solidity ^0.8.10;
 import { DomainObjs } from "./DomainObjs.sol";
 import { Hasher } from "../crypto/Hasher.sol";
 import { SnarkConstants } from "../crypto/SnarkConstants.sol";
-import { Poll } from "../Poll.sol";
-
-/// @title CommonUtilities
-/// @notice A contract that holds common utilities
-/// which are to be used by multiple contracts
-/// namely Subsidy, Tally and MessageProcessor
-contract CommonUtilities {
-  error VotingPeriodNotPassed();
-
-  /// @notice common function for MessageProcessor, Tally and Subsidy
-  /// @param _poll the poll to be checked
-  function _votingPeriodOver(Poll _poll) internal view {
-    (uint256 deployTime, uint256 duration) = _poll.getDeployTimeAndDuration();
-    // Require that the voting period is over
-    uint256 secondsPassed = block.timestamp - deployTime;
-    if (secondsPassed <= duration) {
-      revert VotingPeriodNotPassed();
-    }
-  }
-}
 
 /// @title Utilities
 /// @notice An utility contract that can be used to:
@@ -30,6 +10,9 @@ contract CommonUtilities {
 /// * pad and hash a MACI message
 /// * hash a MACI message and an encryption public key
 contract Utilities is SnarkConstants, DomainObjs, Hasher {
+  /// @notice custom errors
+  error InvalidMessage();
+
   /// @notice An utility function used to hash a state leaf
   /// @param _stateLeaf the state leaf to be hashed
   /// @return ciphertext The hash of the state leaf
@@ -56,7 +39,7 @@ contract Utilities is SnarkConstants, DomainObjs, Hasher {
     uint256[10] memory dat;
     dat[0] = dataToPad[0];
     dat[1] = dataToPad[1];
-    for (uint i = 2; i < 10; ) {
+    for (uint256 i = 2; i < 10; ) {
       dat[i] = 0;
       unchecked {
         ++i;
@@ -75,7 +58,10 @@ contract Utilities is SnarkConstants, DomainObjs, Hasher {
     Message memory _message,
     PubKey memory _encPubKey
   ) public pure returns (uint256 msgHash) {
-    require(_message.data.length == 10, "Invalid message");
+    if (_message.data.length != 10) {
+      revert InvalidMessage();
+    }
+
     uint256[5] memory n;
     n[0] = _message.data[0];
     n[1] = _message.data[1];
