@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { PCommand, Message, Keypair, StateLeaf, PrivKey, Ballot } from "maci-domainobjs";
 
-import { existsSync, readFileSync, unlinkSync, writeFileSync } from "fs";
+import fs from "fs";
 
 import { MaciState } from "../MaciState";
 import { STATE_TREE_DEPTH } from "../utils/constants";
@@ -19,8 +19,8 @@ describe("MaciState", function test() {
     const stateFile = "./state.json";
 
     after(() => {
-      if (existsSync(stateFile)) {
-        unlinkSync(stateFile);
+      if (fs.existsSync(stateFile)) {
+        fs.unlinkSync(stateFile);
       }
     });
 
@@ -127,8 +127,8 @@ describe("MaciState", function test() {
 
     it("should create a JSON object from a MaciState object", () => {
       const json = m1.toJSON();
-      writeFileSync(stateFile, JSON.stringify(json, null, 4));
-      const content = JSON.parse(readFileSync(stateFile).toString()) as IJsonMaciState;
+      fs.writeFileSync(stateFile, JSON.stringify(json, null, 4));
+      const content = JSON.parse(fs.readFileSync(stateFile).toString()) as IJsonMaciState;
       const state = MaciState.fromJSON(content);
       state.polls.forEach((poll) => {
         poll.setCoordinatorKeypair(coordinatorKeypair.privKey.serialize());

@@ -1,3 +1,7 @@
+import type { SnarkProof } from "maci-contracts";
+import type { CircuitInputs } from "maci-core";
+import type { Groth16Proof, PublicSignals } from "snarkjs";
+
 export interface DeployedContracts {
   maciAddress: string;
   stateAqAddress: string;
@@ -97,4 +101,27 @@ export interface TallyData {
      */
     commitment: string;
   };
+}
+
+/**
+ * A util interface that represents a subsidy file
+ */
+export interface SubsidyData {
+  provider: string;
+  maci: string;
+  pollId: number;
+  newSubsidyCommitment: string;
+  results: {
+    subsidy: string[];
+    salt: string;
+  };
+}
+
+/**
+ * Proof interface for cli commands
+ */
+export interface Proof {
+  proof: SnarkProof | Groth16Proof;
+  circuitInputs: CircuitInputs;
+  publicInputs: PublicSignals;
 }

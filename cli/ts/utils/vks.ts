@@ -1,4 +1,4 @@
-import { IVkContractParams, VerifyingKey } from "maci-domainobjs";
+import type { IVkContractParams, VerifyingKey } from "maci-domainobjs";
 
 /**
  * Compare two verifying keys
@@ -8,10 +8,11 @@ import { IVkContractParams, VerifyingKey } from "maci-domainobjs";
  */
 export const compareVks = (vk: VerifyingKey, vkOnChain: IVkContractParams): boolean => {
   let isEqual = vk.ic.length === vkOnChain.ic.length;
-  for (let i = 0; i < vk.ic.length; i++) {
+  for (let i = 0; i < vk.ic.length; i += 1) {
     isEqual = isEqual && vk.ic[i].x.toString() === vkOnChain.ic[i].x.toString();
     isEqual = isEqual && vk.ic[i].y.toString() === vkOnChain.ic[i].y.toString();
   }
+
   isEqual = isEqual && vk.alpha1.x.toString() === vkOnChain.alpha1.x.toString();
   isEqual = isEqual && vk.alpha1.y.toString() === vkOnChain.alpha1.y.toString();
   isEqual = isEqual && vk.beta2.x[0].toString() === vkOnChain.beta2.x[0].toString();

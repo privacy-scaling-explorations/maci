@@ -1,11 +1,19 @@
-import { deployMessageProcessor, deploySubsidy, deployTally, getDefaultSigner, parseArtifact } from "maci-contracts";
+import { BaseContract } from "ethers";
+import {
+  MACI,
+  deployMessageProcessor,
+  deploySubsidy,
+  deployTally,
+  getDefaultSigner,
+  parseArtifact,
+} from "maci-contracts";
+import { PubKey } from "maci-domainobjs";
+
 import { banner } from "../utils/banner";
+import { contractExists } from "../utils/contracts";
+import { PollContracts } from "../utils/interfaces";
 import { readContractAddress, storeContractAddress } from "../utils/storage";
 import { info, logError, logGreen } from "../utils/theme";
-import { contractExists } from "../utils/contracts";
-import { PubKey } from "maci-domainobjs";
-import { Contract } from "ethers";
-import { PollContracts } from "../utils/interfaces";
 
 /**
  * Deploy a new Poll for the set of MACI's contracts already deployed
@@ -43,38 +51,56 @@ export const deployPoll = async (
     logError("Please provide a VkRegistry contract address");
   }
 
-  const vkRegistry = vkRegistryAddress ? vkRegistryAddress : vkRegistryContractAddress;
+  const vkRegistry = vkRegistryAddress || vkRegistryContractAddress;
 
-  const _maciAddress = readContractAddress("MACI");
-  if (!_maciAddress && !maciAddress) {
+  const maciContractAddress = readContractAddress("MACI");
+  if (!maciContractAddress && !maciAddress) {
     logError("Please provide a MACI contract address");
   }
 
-  const _maci = maciAddress ? maciAddress : _maciAddress;
+  const maci = maciAddress || maciContractAddress;
 
   // required arg -> poll duration
-  if (pollDuration <= 0) logError("Duration cannot be <= 0");
+  if (pollDuration <= 0) {
+    logError("Duration cannot be <= 0");
+  }
   // require arg -> max messages
-  if (maxMessages <= 0) logError("Max messages cannot be <= 0");
+  if (maxMessages <= 0) {
+    logError("Max messages cannot be <= 0");
+  }
   // required arg -> max vote options
-  if (maxVoteOptions <= 0) logError("Max vote options cannot be <= 0");
+  if (maxVoteOptions <= 0) {
+    logError("Max vote options cannot be <= 0");
+  }
 
   // required arg -> int state tree depth
-  if (intStateTreeDepth <= 0) logError("Int state tree depth cannot be <= 0");
+  if (intStateTreeDepth <= 0) {
+    logError("Int state tree depth cannot be <= 0");
+  }
   // required arg -> message tree sub depth
-  if (messageTreeSubDepth <= 0) logError("Message tree sub depth cannot be <= 0");
+  if (messageTreeSubDepth <= 0) {
+    logError("Message tree sub depth cannot be <= 0");
+  }
   // required arg -> message tree depth
-  if (messageTreeDepth <= 0) logError("Message tree depth cannot be <= 0");
+  if (messageTreeDepth <= 0) {
+    logError("Message tree depth cannot be <= 0");
+  }
   // required arg -> vote option tree depth
-  if (voteOptionTreeDepth <= 0) logError("Vote option tree depth cannot be <= 0");
+  if (voteOptionTreeDepth <= 0) {
+    logError("Vote option tree depth cannot be <= 0");
+  }
 
   const signer = await getDefaultSigner();
 
   // we check that the contract is deployed
-  if (!(await contractExists(signer.provider, _maci))) logError("MACI contract does not exist");
+  if (!(await contractExists(signer.provider!, maci))) {
+    logError("MACI contract does not exist");
+  }
 
   // we check that the coordinator's public key is valid
-  if (!PubKey.isValidSerializedPubKey(coordinatorPubkey)) logError("Invalid MACI public key");
+  if (!PubKey.isValidSerializedPubKey(coordinatorPubkey)) {
+    logError("Invalid MACI public key");
+  }
 
   const unserializedKey = PubKey.deserialize(coordinatorPubkey);
 
@@ -124,7 +150,7 @@ export const deployPoll = async (
   );
 
   const maciAbi = parseArtifact("MACI")[0];
-  const maciContract = new Contract(_maci, maciAbi, signer);
+  const maciContract = new BaseContract(maci, maciAbi, signer) as MACI;
 
   // deploy the poll
   let pollAddr = "";
@@ -151,29 +177,37 @@ export const deployPoll = async (
     );
 
     const receipt = await tx.wait();
+
+    if (receipt?.status !== 1) {
+      logError("Deploy poll transaction is failed");
+    }
+
     const iface = maciContract.interface;
-    const log = iface.parseLog(receipt.logs[receipt.logs.length - 1]);
-    const name = log.name;
+    const receiptLog = receipt!.logs[receipt!.logs.length - 1];
+    const log = iface.parseLog(receiptLog as unknown as { topics: string[]; data: string });
     // we are trying to get the poll id from the event logs
     // if we do not find this log then we throw
-    if (name !== "DeployPoll") logError("Invalid event log");
-
-    const pollId = log.args._pollId;
-    pollAddr = log.args._pollAddr;
-    {
-      logGreen(quiet, info(`Poll ID: ${pollId.toString()}`));
-      logGreen(quiet, info(`Poll contract: ${pollAddr}`));
-      logGreen(quiet, info(`Message processor contract: ${messageProcessorContractAddress}`));
-      logGreen(quiet, info(`Tally contract: ${tallyContractAddress}`));
-      logGreen(quiet, info(`Subsidy contract: ${subsidyContractAddress}`));
+    if (log?.name !== "DeployPoll") {
+      logError("Invalid event log");
     }
+
+    // eslint-disable-next-line no-underscore-dangle
+    const pollId = log!.args._pollId as number;
+    // eslint-disable-next-line no-underscore-dangle
+    pollAddr = log!.args._pollAddr as string;
+
+    logGreen(quiet, info(`Poll ID: ${pollId.toString()}`));
+    logGreen(quiet, info(`Poll contract: ${pollAddr}`));
+    logGreen(quiet, info(`Message processor contract: ${messageProcessorContractAddress}`));
+    logGreen(quiet, info(`Tally contract: ${tallyContractAddress}`));
+    logGreen(quiet, info(`Subsidy contract: ${subsidyContractAddress}`));
     // store the addresss
-    storeContractAddress("MessageProcessor-" + pollId.toString(), messageProcessorContractAddress);
-    storeContractAddress("Tally-" + pollId.toString(), tallyContractAddress);
-    storeContractAddress("Subsidy-" + pollId.toString(), subsidyContractAddress);
-    storeContractAddress("Poll-" + pollId.toString(), pollAddr);
-  } catch (error: any) {
-    logError(error.message);
+    storeContractAddress(`MessageProcessor-${pollId.toString()}`, messageProcessorContractAddress);
+    storeContractAddress(`Tally-${pollId.toString()}`, tallyContractAddress);
+    storeContractAddress(`Subsidy-${pollId.toString()}`, subsidyContractAddress);
+    storeContractAddress(`Poll-${pollId.toString()}`, pollAddr);
+  } catch (error) {
+    logError((error as Error).message);
   }
 
   // we return all of the addresses

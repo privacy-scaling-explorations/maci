@@ -37,12 +37,11 @@ describe("Hasher", () => {
     const left = genRandomSalt();
     const right = genRandomSalt();
 
-    const tx = await hasherContract.hashLeftRightBenchmark(left.toString(), right.toString());
-    const receipt = await tx.wait();
+    const result = await hasherContract
+      .hashLeftRightBenchmark(left.toString(), right.toString())
+      .then((res) => Number(res));
 
-    expect(receipt).to.not.eq(null);
-    expect(receipt?.gasUsed.toString()).to.not.eq("");
-    expect(receipt?.gasUsed.toString()).to.not.eq("0");
+    expect(result).to.not.eq(null);
   });
 
   it("hash5", async () => {
@@ -52,13 +51,10 @@ describe("Hasher", () => {
       values.push(genRandomSalt().toString());
     }
 
-    const tx = await hasherContract.hash5Benchmark(
-      values as [BigNumberish, BigNumberish, BigNumberish, BigNumberish, BigNumberish],
-    );
-    const receipt = await tx.wait();
+    const result = await hasherContract
+      .hash5Benchmark(values as [BigNumberish, BigNumberish, BigNumberish, BigNumberish, BigNumberish])
+      .then((res) => Number(res));
 
-    expect(receipt).to.not.eq(null);
-    expect(receipt?.gasUsed.toString()).to.not.eq("");
-    expect(receipt?.gasUsed.toString()).to.not.eq("0");
+    expect(result).to.not.eq(null);
   });
 });

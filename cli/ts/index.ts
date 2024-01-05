@@ -1,5 +1,9 @@
 #!/usr/bin/env node
-import { createCommand } from "commander";
+import { Command } from "@commander-js/extra-typings";
+
+import fs from "fs";
+import path from "path";
+
 import {
   genKeyPair,
   genMaciPubKey,
@@ -22,14 +26,12 @@ import {
   checkVerifyingKeys,
   genLocalState,
 } from "./commands";
-import fs from "fs";
-import path from "path";
 
 // set the description version and name of the cli tool
 const { description, version, name } = JSON.parse(
   fs.readFileSync(path.resolve(__dirname, "..", "package.json"), "utf8"),
-);
-const program = createCommand();
+) as { description: string; version: string; name: string };
+const program = new Command();
 program.name(name).description(description).version(version);
 // add the commands
 program
@@ -40,10 +42,10 @@ program
     "-p, --initialVoiceCreditsProxyAddress <initialVoiceCreditsProxyAddress>",
     "the initial voice credits proxy contract address",
   )
-  .option("-g", "--signupGatekeeperAddress <signupGatekeeperAddress>", "the signup gatekeeper contract address")
+  .option("-g, --signupGatekeeperAddress <signupGatekeeperAddress>", "the signup gatekeeper contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .requiredOption("-s, --stateTreeDepth <stateTreeDepth>", "the state tree depth")
+  .requiredOption("-s, --stateTreeDepth <stateTreeDepth>", "the state tree depth", parseInt)
   .action(async (cmdOptions) => {
     try {
       await deploy(
@@ -53,8 +55,8 @@ program
         cmdOptions.signupGatekeeperAddress,
         cmdOptions.quiet,
       );
-    } catch (error: any) {
-      program.error(error.message, { exitCode: 1 });
+    } catch (error) {
+      program.error((error as Error).message, { exitCode: 1 });
     }
   });
 program
@@ -85,8 +87,8 @@ program
         cmdOptions.subsidyZkey,
         cmdOptions.quiet,
       );
-    } catch (error: any) {
-      program.error(error.message, { exitCode: 1 });
+    } catch (error) {
+      program.error((error as Error).message, { exitCode: 1 });
     }
   });
 program
@@ -109,7 +111,7 @@ program
 program
   .command("airdrop")
   .description("airdrop topup credits to the coordinator")
-  .requiredOption("-a, --amount <amount>", "the amount of topup")
+  .requiredOption("-a, --amount <amount>", "the amount of topup", parseInt)
   .option("-x, --contract <contract>", "the MACI contract address")
   .option("-o, --poll-id <pollId>", "poll id", parseInt)
   .option("-t, --token-address <tokenAddress>", "the token address")
@@ -118,8 +120,8 @@ program
   .action(async (cmdObj) => {
     try {
       await airdrop(cmdObj.amount, cmdObj.contract, cmdObj.pollId, cmdObj.tokenAddress, cmdObj.quiet);
-    } catch (error: any) {
-      program.error(error.message, { exitCode: 1 });
+    } catch (error) {
+      program.error((error as Error).message, { exitCode: 1 });
     }
   });
 program
@@ -130,8 +132,8 @@ program
   .action(async (cmdObj) => {
     try {
       await deployVkRegistryContract(cmdObj.quiet);
-    } catch (error: any) {
-      program.error(error.message, { exitCode: 1 });
+    } catch (error) {
+      program.error((error as Error).message, { exitCode: 1 });
     }
   });
 program
@@ -142,8 +144,8 @@ program
   .action((cmdObj) => {
     try {
       showContracts(cmdObj.quiet);
-    } catch (error: any) {
-      program.error(error.message, { exitCode: 1 });
+    } catch (error) {
+      program.error((error as Error).message, { exitCode: 1 });
     }
   });
 program
@@ -176,8 +178,8 @@ program
         cmdObj.vkRegistryAddress,
         cmdObj.quiet,
       );
-    } catch (error: any) {
-      program.error(error.message, { exitCode: 1 });
+    } catch (error) {
+      program.error((error as Error).message, { exitCode: 1 });
     }
   });
 program
@@ -208,8 +210,8 @@ program
         cmdObj.subsidyZkey,
         cmdObj.quiet,
       );
-    } catch (error: any) {
-      program.error(error.message, { exitCode: 1 });
+    } catch (error) {
+      program.error((error as Error).message, { exitCode: 1 });
     }
   });
 program
@@ -243,8 +245,8 @@ program
         cmdObj.privkey,
         cmdObj.quiet,
       );
-    } catch (error: any) {
-      program.error(error.message, { exitCode: 1 });
+    } catch (error) {
+      program.error((error as Error).message, { exitCode: 1 });
     }
   });
 program
@@ -257,9 +259,9 @@ program
   .option("-n, --num-queue-ops <numQueueOps>", "the number of queue operations", parseInt)
   .action(async (cmdObj) => {
     try {
-      await mergeMessages(cmdObj.pollId, cmdObj.maciContractAddress, cmdObj.numQueueOps, cmdObj.quiet);
-    } catch (error: any) {
-      program.error(error.message, { exitCode: 1 });
+      await mergeMessages(cmdObj.pollId, cmdObj.maciContractAddress, cmdObj.numQueueOps?.toString(), cmdObj.quiet);
+    } catch (error) {
+      program.error((error as Error).message, { exitCode: 1 });
     }
   });
 program
@@ -268,13 +270,13 @@ program
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-x, --maci-contract-address <maciContractAddress>", "the MACI contract address")
-  .requiredOption("-o, --poll-id <pollId>", "the poll id")
+  .requiredOption("-o, --poll-id <pollId>", "the poll id", parseInt)
   .option("-n, --num-queue-ops <numQueueOps>", "the number of queue operations", parseInt)
   .action(async (cmdObj) => {
     try {
-      await mergeSignups(cmdObj.pollId, cmdObj.maciContractAddress, cmdObj.numQueueOps, cmdObj.quiet);
-    } catch (error: any) {
-      program.error(error.message, { exitCode: 1 });
+      await mergeSignups(cmdObj.pollId, cmdObj.maciContractAddress, cmdObj.numQueueOps?.toString(), cmdObj.quiet);
+    } catch (error) {
+      program.error((error as Error).message, { exitCode: 1 });
     }
   });
 program
@@ -286,8 +288,8 @@ program
   .action(async (cmdObj) => {
     try {
       await timeTravel(cmdObj.seconds, cmdObj.quiet);
-    } catch (error: any) {
-      program.error(error.message, { exitCode: 1 });
+    } catch (error) {
+      program.error((error as Error).message, { exitCode: 1 });
     }
   });
 program
@@ -302,8 +304,8 @@ program
   .action(async (cmdObj) => {
     try {
       await signup(cmdObj.pubkey, cmdObj.maciAddress, cmdObj.sgData, cmdObj.ivcpData, cmdObj.quiet);
-    } catch (error: any) {
-      program.error(error.message, { exitCode: 1 });
+    } catch (error) {
+      program.error((error as Error).message, { exitCode: 1 });
     }
   });
 program
@@ -318,8 +320,8 @@ program
   .action(async (cmdObj) => {
     try {
       await topup(cmdObj.amount, cmdObj.stateIndex, cmdObj.pollId, cmdObj.maciAddress, cmdObj.quiet);
-    } catch (error: any) {
-      program.error(error.message, { exitCode: 1 });
+    } catch (error) {
+      program.error((error as Error).message, { exitCode: 1 });
     }
   });
 program
@@ -332,8 +334,8 @@ program
   .action(async (cmdObj) => {
     try {
       await fundWallet(cmdObj.amount, cmdObj.address, cmdObj.quiet);
-    } catch (error: any) {
-      program.error(error.message, { exitCode: 1 });
+    } catch (error) {
+      program.error((error as Error).message, { exitCode: 1 });
     }
   });
 program
@@ -350,7 +352,7 @@ program
   .action(async (cmdObj) => {
     try {
       await verify(
-        cmdObj.pollId,
+        cmdObj.pollId.toString(),
         cmdObj.tallyFile,
         undefined,
         cmdObj.contract,
@@ -359,8 +361,8 @@ program
         cmdObj.subsidyFile,
         cmdObj.quiet,
       );
-    } catch (error: any) {
-      program.error(error.message, { exitCode: 1 });
+    } catch (error) {
+      program.error((error as Error).message, { exitCode: 1 });
     }
   });
 program
@@ -369,7 +371,7 @@ program
   .option("-sk, --privkey <privkey>", "your serialized MACI private key")
   .option("-x, --contract <contract>", "the MACI contract address")
   .requiredOption("-o, --poll-id <pollId>", "the poll id", parseInt)
-  .option("-t, --tally-file <tallyFile>", "the tally file")
+  .requiredOption("-t, --tally-file <tallyFile>", "the tally file")
   .option("-s, --subsidy-file <subsidyFile>", "the subsidy file")
   .option("-r, --rapidsnark <rapidsnark>", "the path to the rapidsnark binary")
   .option("-wp, --process-witnessgen <processWitnessgen>", "the path to the process witness generation binary")
@@ -389,7 +391,7 @@ program
   .option("-st, --state-file <stateFile>", "the path to the state file containing the serialized maci state")
   .option("-sb, --start-block <startBlock>", "the block number to start looking for events from", parseInt)
   .option("-eb, --end-block <endBlock>", "the block number to end looking for events from", parseInt)
-  .option("-bb, --blocks-per-batch <blockPerBatch>", "the number of blocks to process per batch")
+  .option("-bb, --blocks-per-batch <blockPerBatch>", "the number of blocks to process per batch", parseInt)
   .action(async (cmdObj) => {
     try {
       await genProofs(
@@ -417,15 +419,15 @@ program
         cmdObj.blocksPerBatch,
         cmdObj.quiet,
       );
-    } catch (error: any) {
-      program.error(error.message, { exitCode: 1 });
+    } catch (error) {
+      program.error((error as Error).message, { exitCode: 1 });
     }
   });
 program
   .command("genLocalState")
   .description("generate a local MACI state from the smart contracts events")
   .requiredOption("-o, --output <outputPath>", "the path where to write the state", parseInt)
-  .option("-p, --poll-id <pollId>", "the id of the poll", parseInt)
+  .requiredOption("-p, --poll-id <pollId>", "the id of the poll", parseInt)
   .option("-x, --contract <contract>", "the MACI contract address")
   .option("-sk, --privkey <privkey>", "your serialized MACI private key")
   .option("-eb, --end-block <endBlock>", "the end block number", parseInt)
@@ -438,20 +440,20 @@ program
   .action(async (cmdObj) => {
     try {
       await genLocalState(
-        cmdObj.output,
+        cmdObj.output.toString(),
         cmdObj.pollId,
         cmdObj.contract,
         cmdObj.privkey,
-        cmdObj.provider,
+        cmdObj.rpcProvider,
         cmdObj.endBlock,
         cmdObj.startBlock,
-        cmdObj.blockPerBatch,
+        cmdObj.blocksPerBatch,
         cmdObj.transactionHash,
         cmdObj.sleep,
         cmdObj.quiet,
       );
-    } catch (error: any) {
-      program.error(error.message, { exitCode: 1 });
+    } catch (error) {
+      program.error((error as Error).message, { exitCode: 1 });
     }
   });
 program
@@ -468,7 +470,7 @@ program
   .action(async (cmdObj) => {
     try {
       await proveOnChain(
-        cmdObj.pollId,
+        cmdObj.pollId.toString(),
         cmdObj.proofDir,
         cmdObj.contract,
         cmdObj.messageProcessorAddress,
@@ -476,8 +478,8 @@ program
         cmdObj.subsidyContract,
         cmdObj.quiet,
       );
-    } catch (error: any) {
-      program.error(error.message, { exitCode: 1 });
+    } catch (error) {
+      program.error((error as Error).message, { exitCode: 1 });
     }
   });
 
@@ -507,4 +509,4 @@ export {
   verify,
 } from "./commands";
 
-export { DeployedContracts, PollContracts, TallyData } from "./utils";
+export type { DeployedContracts, PollContracts, TallyData } from "./utils";

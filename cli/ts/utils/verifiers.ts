@@ -1,6 +1,7 @@
-import { Contract } from "ethers";
 import { genTreeProof } from "maci-crypto";
-import { TallyData } from "./interfaces";
+
+import type { TallyData } from "./interfaces";
+import type { Tally } from "maci-contracts";
 
 /**
  * Loop through each per vote option spent voice credits and verify it on-chain
@@ -14,7 +15,7 @@ import { TallyData } from "./interfaces";
  * @returns list of the indexes of the tally result that failed on-chain verification
  */
 export const verifyPerVOSpentVoiceCredits = async (
-  tallyContract: Contract,
+  tallyContract: Tally,
   tallyData: TallyData,
   voteOptionTreeDepth: number,
   newSpentVoiceCreditsCommitment: bigint,
@@ -29,6 +30,7 @@ export const verifyPerVOSpentVoiceCredits = async (
       voteOptionTreeDepth,
     );
 
+    // eslint-disable-next-line no-await-in-loop
     const isValid = await tallyContract.verifyPerVOSpentVoiceCredits(
       i,
       tallyData.perVOSpentVoiceCredits.tally[i],
@@ -56,7 +58,7 @@ export const verifyPerVOSpentVoiceCredits = async (
  * @returns list of the indexes of the tally result that failed on-chain verification
  */
 export const verifyTallyResults = async (
-  tallyContract: Contract,
+  tallyContract: Tally,
   tallyData: TallyData,
   voteOptionTreeDepth: number,
   newSpentVoiceCreditsCommitment: bigint,
@@ -71,6 +73,7 @@ export const verifyTallyResults = async (
       voteOptionTreeDepth,
     );
 
+    // eslint-disable-next-line no-await-in-loop
     const isValid = await tallyContract.verifyTallyResult(
       i,
       tallyData.results.tally[i],

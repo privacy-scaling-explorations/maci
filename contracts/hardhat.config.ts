@@ -23,6 +23,10 @@ const config: HardhatUserConfig = {
       },
       loggingEnabled: false,
       allowUnlimitedContractSize: true,
+      mining: {
+        auto: true,
+        interval: 100,
+      },
     },
   },
   contractSizer: {

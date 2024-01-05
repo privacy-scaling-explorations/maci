@@ -1,5 +1,6 @@
-import type { JsonRpcProvider } from "ethers";
 import { getDefaultSigner } from "maci-contracts";
+
+import type { JsonRpcProvider } from "ethers";
 
 import { banner } from "../utils/banner";
 import { logError, logGreen, success } from "../utils/theme";
@@ -9,7 +10,7 @@ import { logError, logGreen, success } from "../utils/theme";
  * @param seconds - the number of seconds to travel in time
  * @param quiet - whether to log the output
  */
-export const timeTravel = async (seconds: number, quiet = true) => {
+export const timeTravel = async (seconds: number, quiet = true): Promise<void> => {
   banner(quiet);
   const signer = await getDefaultSigner();
 
@@ -19,7 +20,7 @@ export const timeTravel = async (seconds: number, quiet = true) => {
     await (signer.provider as JsonRpcProvider).send("evm_mine", []);
 
     logGreen(quiet, success(`Fast-forwarded ${seconds} seconds`));
-  } catch (error: any) {
-    logError(error.message);
+  } catch (error) {
+    logError((error as Error).message);
   }
 };

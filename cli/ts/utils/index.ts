@@ -14,7 +14,7 @@ export {
   DEFAULT_IVCP_DATA,
   DEFAULT_SR_QUEUE_OPS,
 } from "./defaults";
-export { DeployedContracts, PollContracts, TallyData } from "./interfaces";
+export type { DeployedContracts, PollContracts, TallyData } from "./interfaces";
 export { compareVks } from "./vks";
 export { delay } from "./time";
 export {

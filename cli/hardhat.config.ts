@@ -1,7 +1,8 @@
-import type { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 
 import path from "path";
+
+import type { HardhatUserConfig } from "hardhat/config";
 
 import { DEFAULT_ETH_SK, DEFAULT_ETH_PROVIDER } from "./ts/utils/defaults";
 

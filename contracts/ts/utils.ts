@@ -4,6 +4,7 @@ import { FeeData, Signer } from "ethers";
 import { ethers } from "hardhat";
 
 import type { Action, SnarkProof } from "./types";
+import type { Groth16Proof } from "snarkjs";
 
 import { Ownable } from "../typechain-types";
 
@@ -13,7 +14,7 @@ import { Ownable } from "../typechain-types";
  * @param proof the SnarkProof to format
  * @returns an array of strings
  */
-export const formatProofForVerifierContract = (proof: SnarkProof): string[] =>
+export const formatProofForVerifierContract = (proof: SnarkProof | Groth16Proof): string[] =>
   [
     proof.pi_a[0],
     proof.pi_a[1],

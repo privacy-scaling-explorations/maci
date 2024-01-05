@@ -1,4 +1,5 @@
 import { Keypair } from "maci-domainobjs";
+
 import { banner } from "../utils/banner";
 import { logGreen, success } from "../utils/theme";
 
@@ -7,7 +8,7 @@ import { logGreen, success } from "../utils/theme";
  * and print it to the screen
  * @param quiet - whether to log the output
  */
-export const genKeyPair = (quiet = true) => {
+export const genKeyPair = (quiet = true): { publicKey: string; privateKey: string } => {
   banner(quiet);
   // create the new rando keypair
   const keypair = new Keypair();

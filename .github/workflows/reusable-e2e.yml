@@ -92,4 +92,5 @@ jobs:
         run: npm run ${{ matrix.command }}
 
       - name: Stop Hardhat
+        if: always()
         run: kill $(lsof -t -i:8545)
