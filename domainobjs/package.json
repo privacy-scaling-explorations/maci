@@ -33,7 +33,8 @@
     "exclude": [
       "**/__tests__/*.ts",
       "**/*.js",
-      "**/*.d.ts"
+      "**/*.d.ts",
+      "ts/index.ts"
     ],
     "branches": ">50%",
     "lines": ">50%",
