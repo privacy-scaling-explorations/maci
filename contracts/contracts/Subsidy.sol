@@ -16,13 +16,16 @@ import { VkRegistry } from "./VkRegistry.sol";
 /// are correct. It is also used to update the subsidy commitment if the
 /// proof is valid.
 contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
-  uint256 public rbi; // row batch index
-  uint256 public cbi; // column batch index
+  // row batch index
+  uint256 public rbi;
+  // column batch index
+  uint256 public cbi;
+
   // The final commitment to the state and ballot roots
   uint256 public sbCommitment;
   uint256 public subsidyCommitment;
 
-  uint8 public constant treeArity = 5;
+  uint8 internal constant TREE_ARITY = 5;
 
   // Error codes
   error ProcessingNotComplete();
@@ -39,7 +42,7 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
   /// @notice Create a new Subsidy contract
   /// @param _verifier The Verifier contract
   /// @param _vkRegistry The VkRegistry contract
-  constructor(Verifier _verifier, VkRegistry _vkRegistry) {
+  constructor(Verifier _verifier, VkRegistry _vkRegistry) payable {
     verifier = _verifier;
     vkRegistry = _vkRegistry;
   }
@@ -93,14 +96,14 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
     Poll _poll,
     MessageProcessor _mp,
     uint256 _newSubsidyCommitment,
-    uint256[8] memory _proof
+    uint256[8] calldata _proof
   ) external onlyOwner {
     _votingPeriodOver(_poll);
     updateSbCommitment(_mp);
 
     (uint8 intStateTreeDepth, , , ) = _poll.treeDepths();
 
-    uint256 subsidyBatchSize = uint256(treeArity) ** intStateTreeDepth;
+    uint256 subsidyBatchSize = uint256(TREE_ARITY) ** intStateTreeDepth;
 
     (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
 
@@ -140,7 +143,7 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
   /// @return isValid True if the proof is valid
   function verifySubsidyProof(
     Poll _poll,
-    uint256[8] memory _proof,
+    uint256[8] calldata _proof,
     uint256 _numSignUps,
     uint256 _newSubsidyCommitment
   ) public view returns (bool isValid) {

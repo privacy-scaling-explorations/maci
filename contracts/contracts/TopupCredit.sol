@@ -12,7 +12,7 @@ contract TopupCredit is ERC20, Ownable {
   uint256 public constant MAXIMUM_AIRDROP_AMOUNT = 100000 * 10 ** _decimals;
 
   /// @notice create  a new TopupCredit token
-  constructor() ERC20("TopupCredit", "TopupCredit") {}
+  constructor() payable ERC20("TopupCredit", "TopupCredit") {}
 
   /// @notice mint tokens to an account
   /// @param account the account to mint tokens to

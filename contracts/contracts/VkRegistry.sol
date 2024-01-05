@@ -30,6 +30,9 @@ contract VkRegistry is Ownable, SnarkCommon {
   error TallyVkNotSet();
   error SubsidyVkNotSet();
 
+  /// @notice Create a new instance of the VkRegistry contract
+  constructor() payable {}
+
   /// @notice Check if the process verifying key is set
   /// @param _sig The signature
   /// @return isSet whether the verifying key is set
@@ -106,8 +109,8 @@ contract VkRegistry is Ownable, SnarkCommon {
     uint256 _messageTreeDepth,
     uint256 _voteOptionTreeDepth,
     uint256 _messageBatchSize,
-    VerifyingKey memory _processVk,
-    VerifyingKey memory _tallyVk
+    VerifyingKey calldata _processVk,
+    VerifyingKey calldata _tallyVk
   ) public onlyOwner {
     uint256 processVkSig = genProcessVkSig(_stateTreeDepth, _messageTreeDepth, _voteOptionTreeDepth, _messageBatchSize);
 
@@ -152,7 +155,7 @@ contract VkRegistry is Ownable, SnarkCommon {
     uint256 _stateTreeDepth,
     uint256 _intStateTreeDepth,
     uint256 _voteOptionTreeDepth,
-    VerifyingKey memory _subsidyVk
+    VerifyingKey calldata _subsidyVk
   ) public onlyOwner {
     uint256 subsidyVkSig = genSubsidyVkSig(_stateTreeDepth, _intStateTreeDepth, _voteOptionTreeDepth);
 

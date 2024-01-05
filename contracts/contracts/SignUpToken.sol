@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /// can be used to allow users to sign up for a poll.
 contract SignUpToken is ERC721, Ownable {
   /// @notice The constructor which calls the ERC721 constructor
-  constructor() ERC721("SignUpToken", "SignUpToken") {}
+  constructor() payable ERC721("SignUpToken", "SignUpToken") {}
 
   /// @notice Gives an ERC721 token to an address
   /// @param to The address to give the token to

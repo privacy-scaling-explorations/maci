@@ -27,7 +27,7 @@ contract SignUpTokenGatekeeper is SignUpGatekeeper, Ownable {
 
   /// @notice creates a new SignUpTokenGatekeeper
   /// @param _token the address of the SignUpToken contract
-  constructor(SignUpToken _token) Ownable() {
+  constructor(SignUpToken _token) payable Ownable() {
     token = _token;
   }
 

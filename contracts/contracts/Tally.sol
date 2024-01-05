@@ -24,7 +24,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   error BatchStartIndexTooLarge();
   error TallyBatchSizeTooLarge();
 
-  uint8 private constant LEAVES_PER_NODE = 5;
+  uint8 private constant TREE_ARITY = 5;
 
   /// @notice The commitment to the tally results. Its initial value is 0, but after
   /// the tally of each batch is proven on-chain via a zk-SNARK, it should be
@@ -51,7 +51,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   /// @notice Create a new Tally contract
   /// @param _verifier The Verifier contract
   /// @param _vkRegistry The VkRegistry contract
-  constructor(Verifier _verifier, VkRegistry _vkRegistry) {
+  constructor(Verifier _verifier, VkRegistry _vkRegistry) payable {
     verifier = _verifier;
     vkRegistry = _vkRegistry;
   }
@@ -115,7 +115,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
     Poll _poll,
     MessageProcessor _mp,
     uint256 _newTallyCommitment,
-    uint256[8] memory _proof
+    uint256[8] calldata _proof
   ) public onlyOwner {
     _votingPeriodOver(_poll);
     updateSbCommitment(_mp);
@@ -149,7 +149,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   /// @return isValid whether the proof is valid
   function verifyTallyProof(
     Poll _poll,
-    uint256[8] memory _proof,
+    uint256[8] calldata _proof,
     uint256 _numSignUps,
     uint256 _batchStartIndex,
     uint256 _tallyBatchSize,
@@ -185,16 +185,16 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
     uint8 _depth,
     uint256 _index,
     uint256 _leaf,
-    uint256[][] memory _pathElements
+    uint256[][] calldata _pathElements
   ) internal pure returns (uint256 current) {
-    uint256 pos = _index % LEAVES_PER_NODE;
+    uint256 pos = _index % TREE_ARITY;
     current = _leaf;
     uint8 k;
 
-    uint256[LEAVES_PER_NODE] memory level;
+    uint256[TREE_ARITY] memory level;
 
     for (uint8 i = 0; i < _depth; ++i) {
-      for (uint8 j = 0; j < LEAVES_PER_NODE; ++j) {
+      for (uint8 j = 0; j < TREE_ARITY; ++j) {
         if (j == pos) {
           level[j] = current;
         } else {
@@ -207,8 +207,8 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
         }
       }
 
-      _index /= LEAVES_PER_NODE;
-      pos = _index % LEAVES_PER_NODE;
+      _index /= TREE_ARITY;
+      pos = _index % TREE_ARITY;
       current = hash5(level);
     }
   }
@@ -246,7 +246,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   function verifyPerVOSpentVoiceCredits(
     uint256 _voteOptionIndex,
     uint256 _spent,
-    uint256[][] memory _spentProof,
+    uint256[][] calldata _spentProof,
     uint256 _spentSalt,
     uint8 _voteOptionTreeDepth,
     uint256 _spentVoiceCreditsHash,
@@ -275,7 +275,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   function verifyTallyResult(
     uint256 _voteOptionIndex,
     uint256 _tallyResult,
-    uint256[][] memory _tallyResultProof,
+    uint256[][] calldata _tallyResultProof,
     uint256 _tallyResultSalt,
     uint8 _voteOptionTreeDepth,
     uint256 _spentVoiceCreditsHash,

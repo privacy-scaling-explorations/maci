@@ -44,7 +44,7 @@ contract MessageProcessor is Ownable, SnarkCommon, CommonUtilities, Hasher {
   /// @notice Create a new instance
   /// @param _verifier The Verifier contract address
   /// @param _vkRegistry The VkRegistry contract address
-  constructor(Verifier _verifier, VkRegistry _vkRegistry) {
+  constructor(Verifier _verifier, VkRegistry _vkRegistry) payable {
     verifier = _verifier;
     vkRegistry = _vkRegistry;
   }
