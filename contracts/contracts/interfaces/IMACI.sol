@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import { VkRegistry } from "../VkRegistry.sol";
 import { AccQueue } from "../trees/AccQueue.sol";
 
 /// @title IMACI interface

@@ -5,14 +5,12 @@ import { Poll } from "./Poll.sol";
 import { PollFactory } from "./PollFactory.sol";
 import { InitialVoiceCreditProxy } from "./initialVoiceCreditProxy/InitialVoiceCreditProxy.sol";
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
-import { AccQueue, AccQueueQuinaryBlankSl } from "./trees/AccQueue.sol";
+import { AccQueue } from "./trees/AccQueue.sol";
+import { AccQueueQuinaryBlankSl } from "./trees/AccQueueQuinaryBlankSl.sol";
 import { IMACI } from "./interfaces/IMACI.sol";
 import { Params } from "./utilities/Params.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
 import { TopupCredit } from "./TopupCredit.sol";
-import { SnarkCommon } from "./crypto/SnarkCommon.sol";
-import { SnarkConstants } from "./crypto/SnarkConstants.sol";
-import { Hasher } from "./crypto/Hasher.sol";
 import { Utilities } from "./utilities/Utilities.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -22,7 +20,7 @@ contract MACI is IMACI, Params, Utilities, Ownable {
   /// @notice The state tree depth is fixed. As such it should be as large as feasible
   /// so that there can be as many users as possible.  i.e. 5 ** 10 = 9765625
   /// this should also match the parameter of the circom circuits.
-  uint8 public immutable stateTreeDepth;
+  uint8 public immutable STATE_TREE_DEPTH;
 
   /// @notice IMPORTANT: remember to change the ballot tree depth
   /// in contracts/ts/genEmptyBallotRootsContract.ts file
@@ -111,12 +109,18 @@ contract MACI is IMACI, Params, Utilities, Ownable {
     topupCredit = _topupCredit;
     signUpGatekeeper = _signUpGatekeeper;
     initialVoiceCreditProxy = _initialVoiceCreditProxy;
-    stateTreeDepth = _stateTreeDepth;
+    STATE_TREE_DEPTH = _stateTreeDepth;
 
     signUpTimestamp = block.timestamp;
 
     // Verify linked poseidon libraries
     if (hash2([uint256(1), uint256(1)]) == 0) revert PoseidonHashLibrariesNotLinked();
+  }
+
+  /// @notice Get the depth of the state tree
+  /// @return The depth of the state tree
+  function stateTreeDepth() external view returns (uint8) {
+    return STATE_TREE_DEPTH;
   }
 
   /// @notice Allows any eligible user sign up. The sign-up gatekeeper should prevent
@@ -137,15 +141,15 @@ contract MACI is IMACI, Params, Utilities, Ownable {
     bytes memory _initialVoiceCreditProxyData
   ) public {
     // ensure we do not have more signups than what the circuits support
-    if (numSignUps == uint256(TREE_ARITY) ** uint256(stateTreeDepth)) revert TooManySignups();
+    if (numSignUps == uint256(TREE_ARITY) ** uint256(STATE_TREE_DEPTH)) revert TooManySignups();
 
     if (_pubKey.x >= SNARK_SCALAR_FIELD || _pubKey.y >= SNARK_SCALAR_FIELD) {
       revert MaciPubKeyLargerThanSnarkFieldSize();
     }
 
     // Increment the number of signups
-    // cannot overflow with realistic stateTreeDepth
-    // values as numSignUps < 5 ** stateTreeDepth -1
+    // cannot overflow with realistic STATE_TREE_DEPTH
+    // values as numSignUps < 5 ** STATE_TREE_DEPTH -1
     unchecked {
       numSignUps++;
     }
@@ -226,13 +230,13 @@ contract MACI is IMACI, Params, Utilities, Ownable {
   /// @param _pollId The active Poll ID
   /// @return root The calculated Merkle root
   function mergeStateAq(uint256 _pollId) public override onlyPoll(_pollId) returns (uint256 root) {
-    root = stateAq.merge(stateTreeDepth);
+    root = stateAq.merge(STATE_TREE_DEPTH);
   }
 
   /// @notice Return the main root of the StateAq contract
   /// @return root The Merkle root
   function getStateAqRoot() public view override returns (uint256 root) {
-    root = stateAq.getMainRoot(stateTreeDepth);
+    root = stateAq.getMainRoot(STATE_TREE_DEPTH);
   }
 
   /// @notice Get the Poll details

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import { SignUpGatekeeper } from "./SignUpGatekeeper.sol";
 import { MACI } from "../MACI.sol";
+import { SignUpGatekeeper } from "./SignUpGatekeeper.sol";
 
 /// @title FreeForAllGatekeeper
 /// @notice A SignUpGatekeeper which allows anyone to sign up.
@@ -17,5 +17,6 @@ contract FreeForAllGatekeeper is SignUpGatekeeper {
   /// @notice Registers the user without any restrictions.
   /// @param _address The address of the user
   /// @param _data memory additional data
+  // solhint-disable-next-line no-empty-blocks
   function register(address _address, bytes memory _data) public override {}
 }

@@ -2,7 +2,8 @@
 pragma solidity ^0.8.10;
 
 import { IMACI } from "./interfaces/IMACI.sol";
-import { AccQueue, AccQueueQuinaryMaci } from "./trees/AccQueue.sol";
+import { AccQueue } from "./trees/AccQueue.sol";
+import { AccQueueQuinaryMaci } from "./trees/AccQueueQuinaryMaci.sol";
 import { TopupCredit } from "./TopupCredit.sol";
 import { Params } from "./utilities/Params.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";

@@ -10,5 +10,6 @@ abstract contract InitialVoiceCreditProxy {
   /// @param _user the address of the voter
   /// @param _data additional data
   /// @return the balance
+  // solhint-disable-next-line no-empty-blocks
   function getVoiceCredits(address _user, bytes memory _data) public view virtual returns (uint256) {}
 }

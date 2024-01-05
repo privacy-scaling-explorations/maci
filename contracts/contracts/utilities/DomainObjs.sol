@@ -6,7 +6,7 @@ pragma solidity ^0.8.10;
 /// a number of domain objects and functions
 contract DomainObjs {
   /// @notice the length of a MACI message
-  uint8 constant MESSAGE_DATA_LENGTH = 10;
+  uint8 public constant MESSAGE_DATA_LENGTH = 10;
 
   /// @title Message
   /// @notice this struct represents a MACI message

@@ -26,7 +26,7 @@ export const parseArtifact = (filename: string): [TAbi, string] => {
   }
 
   if (filename.includes("AccQueue")) {
-    filePath += "trees/AccQueue.sol/";
+    filePath += `trees/${filename}.sol/`;
   }
 
   if (filename.includes("Poll") || filename.includes("MessageAq")) {

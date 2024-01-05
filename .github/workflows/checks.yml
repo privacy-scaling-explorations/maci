@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        command: ["prettier", "lint:ts"]
+        command: ["prettier", "lint:ts", "lint:sol"]
 
     runs-on: ubuntu-22.04
 

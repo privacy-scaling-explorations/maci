@@ -423,6 +423,7 @@ export const proveOnChain = async (
         );
 
         const receipt = await tx.wait();
+
         if (receipt?.status !== 1) {
           logError("updateSubsidy() failed.");
         }

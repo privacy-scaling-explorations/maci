@@ -17,10 +17,8 @@ contract ConstantInitialVoiceCreditProxy is InitialVoiceCreditProxy {
   }
 
   /// @notice Returns the constant balance for any new MACI's voter
-  /// @param _address the address of the voter
-  /// @param _data additional data
-  /// @return the balance
-  function getVoiceCredits(address _address, bytes memory _data) public view override returns (uint256) {
+  /// @return balance
+  function getVoiceCredits(address, bytes memory) public view override returns (uint256) {
     return balance;
   }
 }

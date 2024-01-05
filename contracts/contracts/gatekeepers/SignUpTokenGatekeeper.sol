@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 import { SignUpGatekeeper } from "./SignUpGatekeeper.sol";
 import { SignUpToken } from "../SignUpToken.sol";

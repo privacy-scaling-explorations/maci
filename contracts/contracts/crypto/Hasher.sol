@@ -2,26 +2,10 @@
 pragma solidity ^0.8.10;
 
 import { SnarkConstants } from "./SnarkConstants.sol";
-
-/// @notice A library which provides functions for computing Pedersen hashes.
-library PoseidonT3 {
-  function poseidon(uint256[2] memory input) public pure returns (uint256) {}
-}
-
-/// @notice A library which provides functions for computing Pedersen hashes.
-library PoseidonT4 {
-  function poseidon(uint256[3] memory input) public pure returns (uint256) {}
-}
-
-/// @notice A library which provides functions for computing Pedersen hashes.
-library PoseidonT5 {
-  function poseidon(uint256[4] memory input) public pure returns (uint256) {}
-}
-
-/// @notice A library which provides functions for computing Pedersen hashes.
-library PoseidonT6 {
-  function poseidon(uint256[5] memory input) public pure returns (uint256) {}
-}
+import { PoseidonT3 } from "./PoseidonT3.sol";
+import { PoseidonT4 } from "./PoseidonT4.sol";
+import { PoseidonT5 } from "./PoseidonT5.sol";
+import { PoseidonT6 } from "./PoseidonT6.sol";
 
 /// @notice A SHA256 hash function for any number of input elements, and Poseidon hash
 /// functions for 2, 3, 4, 5, and 12 input elements.

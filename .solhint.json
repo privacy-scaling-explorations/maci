@@ -4,7 +4,7 @@
     "avoid-suicide": "error",
     "avoid-sha3": "warn",
     "max-line-length": ["warn", 120],
-    "quotes": ["error", "single"],
+    "quotes": ["error", "double"],
     "func-visibility": ["error", { "ignoreConstructors": true }],
     "state-visibility": "error"
   }
