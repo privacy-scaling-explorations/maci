@@ -570,5 +570,6 @@ export const deployTestContracts = async (
     mpContract,
     tallyContract,
     subsidyContract,
+    topupCreditContract,
   };
 };

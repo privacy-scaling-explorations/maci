@@ -1,5 +1,5 @@
 import { readContractAddress } from "../utils/storage";
-import { Contract, MaxUint256 } from "ethers";
+import { Contract } from "ethers";
 import { contractExists } from "../utils/contracts";
 import { getDefaultSigner, parseArtifact } from "maci-contracts";
 import { logError, logGreen, success } from "../utils/theme";
@@ -63,7 +63,7 @@ export const airdrop = async (
 
   // if there is a poll id provided, we can pre-approve all of the tokens
   // so there is no need to do it afterwards
-  if (pollId) {
+  if (pollId !== undefined) {
     maciAddress = readContractAddress("MACI") ? readContractAddress("MACI") : maciAddress;
     if (!maciAddress) logError("Please provide a MACI contract address");
 
@@ -73,7 +73,8 @@ export const airdrop = async (
 
     const pollAddr = await maciContract.getPoll(pollId);
     try {
-      const tx = await tokenContract.approve(pollAddr, MaxUint256, { gasLimit: 1000000 });
+      const tx = await tokenContract.approve(pollAddr, amount, { gasLimit: 1000000 });
+
       await tx.wait();
 
       logGreen(quiet, success(`Approved ${pollAddr} to spend ${amount} credits`));

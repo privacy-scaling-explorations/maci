@@ -7,8 +7,8 @@ import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, Message, PCommand, PubKey } from "maci-domainobjs";
 
 import { parseArtifact } from "../ts/abi";
-import { getDefaultSigner } from "../ts/utils";
-import { AccQueue, MACI, Poll as PollContract } from "../typechain-types";
+import { getDefaultSigner, getSigners } from "../ts/utils";
+import { AccQueue, MACI, Poll as PollContract, TopupCredit } from "../typechain-types";
 
 import {
   MESSAGE_TREE_DEPTH,
@@ -26,6 +26,7 @@ describe("Poll", () => {
   let maciContract: MACI;
   let pollId: number;
   let pollContract: PollContract;
+  let topupCreditContract: TopupCredit;
   let signer: Signer;
   let deployTime: number;
   const coordinator = new Keypair();
@@ -39,6 +40,7 @@ describe("Poll", () => {
       signer = await getDefaultSigner();
       const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, signer, true);
       maciContract = r.maciContract;
+      topupCreditContract = r.topupCreditContract;
 
       // deploy on chain poll
       const tx = await maciContract.deployPoll(duration, maxValues, treeDepths, coordinator.pubKey.asContractParam(), {
@@ -123,6 +125,46 @@ describe("Poll", () => {
     it("should have numMessages set to 1 (blank message)", async () => {
       const numMessages = await pollContract.numMessages();
       expect(numMessages.toString()).to.eq("1");
+    });
+  });
+
+  describe("topup", () => {
+    let voter: Signer;
+
+    before(async () => {
+      // transfer tokens to a user and pre-approve
+      [, voter] = await getSigners();
+      await topupCreditContract.airdropTo(voter.getAddress(), 200n);
+      await topupCreditContract.connect(voter).approve(await pollContract.getAddress(), 1000n);
+    });
+
+    it("should allow to publish a topup message when the caller has enough topup tokens", async () => {
+      const tx = await pollContract.connect(voter).topup(1n, 50n);
+      const receipt = await tx.wait();
+      expect(receipt?.status).to.eq(1);
+
+      // publish on local maci state
+      maciState.polls[pollId].topupMessage(new Message(2n, [1n, 50n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n]));
+    });
+
+    it("should throw when the user does not have enough tokens", async () => {
+      await expect(pollContract.connect(signer).topup(1n, 50n)).to.be.revertedWith("ERC20: insufficient allowance");
+    });
+
+    it("should emit an event when publishing a topup message", async () => {
+      expect(await pollContract.connect(voter).topup(1n, 50n)).to.emit(pollContract, "TopupMessage");
+      // publish on local maci state
+      maciState.polls[pollId].topupMessage(new Message(2n, [1n, 50n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n]));
+    });
+
+    it("should successfully increase the number of messages", async () => {
+      const numMessages = await pollContract.numMessages();
+      await pollContract.connect(voter).topup(1n, 50n);
+      const newNumMessages = await pollContract.numMessages();
+      expect(newNumMessages.toString()).to.eq((numMessages + 1n).toString());
+
+      // publish on local maci state
+      maciState.polls[pollId].topupMessage(new Message(2n, [1n, 50n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n]));
     });
   });
 
