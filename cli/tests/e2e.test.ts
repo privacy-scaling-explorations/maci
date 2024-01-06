@@ -183,10 +183,12 @@ describe("e2e tests", function test() {
       );
     });
 
-    it("should signup four users", () => {
-      users.forEach(async (user) => {
-        await signup(user.pubKey.serialize());
-      });
+    it("should signup four users", async () => {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < users.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await signup(users[i].pubKey.serialize());
+      }
     });
 
     it("should publish six messages", async () => {
@@ -327,10 +329,12 @@ describe("e2e tests", function test() {
       );
     });
 
-    it("should signup nine users", () => {
-      users.forEach(async (user) => {
-        await signup(user.pubKey.serialize());
-      });
+    it("should signup nine users", async () => {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < users.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await signup(users[i].pubKey.serialize());
+      }
     });
 
     it("should publish one message", async () => {
@@ -489,10 +493,12 @@ describe("e2e tests", function test() {
       );
     });
 
-    it("should signup four users", () => {
-      users.forEach(async (user) => {
-        await signup(user.pubKey.serialize());
-      });
+    it("should signup four users", async () => {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < users.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await signup(users[i].pubKey.serialize());
+      }
     });
 
     it("should publish four messages", async () => {
@@ -601,10 +607,12 @@ describe("e2e tests", function test() {
       );
     });
 
-    it("should signup five users", () => {
-      users.forEach(async (user) => {
-        await signup(user.pubKey.serialize());
-      });
+    it("should signup five users", async () => {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < users.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await signup(users[i].pubKey.serialize());
+      }
     });
 
     it("should publish five messages", async () => {
@@ -974,10 +982,13 @@ describe("e2e tests", function test() {
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
       );
+
       // signup
-      users.forEach(async (user) => {
-        await signup(user.pubKey.serialize());
-      });
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < users.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await signup(users[i].pubKey.serialize());
+      }
 
       // publish
       await publish(
