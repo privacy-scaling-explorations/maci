@@ -170,10 +170,12 @@ describe("e2e with Subsidy tests", function test() {
       );
     });
 
-    it("should signup four users", () => {
-      users.forEach(async (user) => {
-        await signup(user.pubKey.serialize());
-      });
+    it("should signup four users", async () => {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < users.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await signup(users[i].pubKey.serialize());
+      }
     });
 
     it("should publish six messages", async () => {
@@ -315,10 +317,12 @@ describe("e2e with Subsidy tests", function test() {
       );
     });
 
-    it("should signup nine users", () => {
-      users.forEach(async (user) => {
-        await signup(user.pubKey.serialize());
-      });
+    it("should signup nine users", async () => {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < users.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await signup(users[i].pubKey.serialize());
+      }
     });
 
     it("should publish one message", async () => {
@@ -479,10 +483,12 @@ describe("e2e with Subsidy tests", function test() {
       );
     });
 
-    it("should signup four users", () => {
-      users.forEach(async (user) => {
-        await signup(user.pubKey.serialize());
-      });
+    it("should signup four users", async () => {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < users.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await signup(users[i].pubKey.serialize());
+      }
     });
 
     it("should publish four messages", async () => {
@@ -592,10 +598,12 @@ describe("e2e with Subsidy tests", function test() {
       );
     });
 
-    it("should signup five users", () => {
-      users.forEach(async (user) => {
-        await signup(user.pubKey.serialize());
-      });
+    it("should signup five users", async () => {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < users.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await signup(users[i].pubKey.serialize());
+      }
     });
 
     it("should publish five messages", async () => {
@@ -820,26 +828,29 @@ describe("e2e with Subsidy tests", function test() {
     });
 
     it("should signup an user", async () => {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < 6; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         await signup(publishArgs[i].pubkey);
       }
     });
 
-    it("should publish all messages", () => {
-      publishArgs.forEach(async (arg) => {
+    it("should publish all messages", async () => {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < publishArgs.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
         await publish(
-          arg.pubkey,
-          arg.stateIndex,
-          arg.voteOptionIndex,
-          arg.nonce,
-          arg.pollId,
-          arg.newVoteWeight,
+          publishArgs[i].pubkey,
+          publishArgs[i].stateIndex,
+          publishArgs[i].voteOptionIndex,
+          publishArgs[i].nonce,
+          publishArgs[i].pollId,
+          publishArgs[i].newVoteWeight,
           maciAddresses.maciAddress,
           genRandomSalt().toString(),
-          arg.privateKey,
+          publishArgs[i].privateKey,
         );
-      });
+      }
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
@@ -1039,7 +1050,8 @@ describe("e2e with Subsidy tests", function test() {
         coordinatorPubKey,
       );
       // signup
-      for (let i = 0; i < 7; i += 1) {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         await signup(users[i].pubKey.serialize());
       }
