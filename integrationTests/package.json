@@ -7,9 +7,7 @@
     "watch": "tsc --watch",
     "build": "tsc",
     "test": "ts-mocha --exit ./ts/__tests__/**.test.ts",
-    "test:genMaciKeypair": "ts-mocha --exit  ./ts/__tests__/cli-genMaciKeypair.test.ts",
-    "test:genMaciPubkey": "ts-mocha --exit  ./ts/__tests__/cli-genMaciPubkey.test.ts",
-    "test:integration": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit  ./ts/__tests__/integration.test.ts",
+    "test:suites": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit  ./ts/__tests__/suites.test.ts",
     "test:maciKeys": "ts-mocha --exit ./ts/__tests__/maci-keys.test.ts",
     "download-zkeys": "./scripts/download_zkeys.sh"
   },

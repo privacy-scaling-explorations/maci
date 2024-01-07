@@ -4,7 +4,7 @@ import { Keypair } from "maci-domainobjs";
 
 import fs from "fs";
 
-import { DeployedContracts, TallyData } from "../ts";
+import { DeployedContracts, TallyData } from "../../ts";
 import {
   deploy,
   deployPoll,
@@ -18,8 +18,7 @@ import {
   signup,
   timeTravel,
   verify,
-} from "../ts/commands";
-
+} from "../../ts/commands";
 import {
   INT_STATE_TREE_DEPTH,
   MSG_BATCH_DEPTH,
@@ -37,8 +36,8 @@ import {
   testTallyFilePath,
   testTallyVotesWasmPath,
   testTallyVotesWitnessPath,
-} from "./constants";
-import { cleanVanilla, isArm } from "./utils";
+} from "../constants";
+import { cleanVanilla, isArm } from "../utils";
 
 describe("keyChange tests", function test() {
   const useWasm = isArm();
