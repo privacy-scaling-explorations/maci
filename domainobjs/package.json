@@ -6,6 +6,7 @@
   "scripts": {
     "watch": "tsc --watch",
     "build": "tsc",
+    "types": "tsc -p tsconfig.json --noEmit",
     "test": "nyc ts-mocha --exit ts/__tests__/**.test.ts"
   },
   "devDependencies": {
