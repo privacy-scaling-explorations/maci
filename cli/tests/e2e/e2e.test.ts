@@ -1,11 +1,15 @@
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
 
+import fs from "fs";
+
 import {
+  airdrop,
   checkVerifyingKeys,
   deploy,
   deployPoll,
   deployVkRegistryContract,
+  genLocalState,
   genProofs,
   mergeMessages,
   mergeSignups,
@@ -14,10 +18,10 @@ import {
   setVerifyingKeys,
   signup,
   timeTravel,
+  topup,
   verify,
-} from "../ts/commands";
-import { DeployedContracts, PollContracts } from "../ts/utils";
-
+} from "../../ts/commands";
+import { DeployedContracts, PollContracts } from "../../ts/utils";
 import {
   INT_STATE_TREE_DEPTH,
   MSG_BATCH_DEPTH,
@@ -30,32 +34,40 @@ import {
   maxVoteOptions,
   pollDuration,
   processMessageTestZkeyPath,
-  subsidyTestZkeyPath,
   tallyVotesTestZkeyPath,
   testProcessMessagesWasmPath,
   testProcessMessagesWitnessPath,
   testProofsDirPath,
   testRapidsnarkPath,
-  testSubsidyFilePath,
-  testSubsidyWasmPath,
-  testSubsidyWitnessPath,
   testTallyFilePath,
   testTallyVotesWasmPath,
   testTallyVotesWitnessPath,
-} from "./constants";
-import { cleanSubsidy, isArm } from "./utils";
+} from "../constants";
+import { cleanVanilla, isArm } from "../utils";
 
-describe("e2e with Subsidy tests", function test() {
+/**
+ Test scenarios:
+    1 signup, 1 message
+    4 signups, 6 messages
+    5 signups, 1 message
+    8 signups, 10 messages
+    4 signups, 4 messages
+    test if keys are set correctly given a set of files
+    1 signup and 1 valid message for multiple polls
+    7 signups and 1 message, another polls and 6 messages
+    1 signup, 1 topup message and 1 vote message
+ */
+describe("e2e tests", function test() {
   const useWasm = isArm();
   this.timeout(900000);
 
   let maciAddresses: DeployedContracts;
   let pollAddresses: PollContracts;
-  let vkRegistryContractAddress: string;
 
+  // before all tests we deploy the vk registry contract and set the verifying keys
   before(async () => {
     // we deploy the vk registry contract
-    vkRegistryContractAddress = await deployVkRegistryContract(true);
+    await deployVkRegistryContract(true);
     // we set the verifying keys
     await setVerifyingKeys(
       STATE_TREE_DEPTH,
@@ -65,16 +77,15 @@ describe("e2e with Subsidy tests", function test() {
       MSG_BATCH_DEPTH,
       processMessageTestZkeyPath,
       tallyVotesTestZkeyPath,
-      undefined,
-      subsidyTestZkeyPath,
     );
   });
-  describe("test1", () => {
-    const user1Key = new Keypair();
 
+  describe("1 signup, 1 message", () => {
     after(() => {
-      cleanSubsidy();
+      cleanVanilla();
     });
+
+    const user = new Keypair();
 
     before(async () => {
       // deploy the smart contracts
@@ -93,12 +104,12 @@ describe("e2e with Subsidy tests", function test() {
     });
 
     it("should signup one user", async () => {
-      await signup(user1Key.pubKey.serialize());
+      await signup(user.pubKey.serialize());
     });
 
     it("should publish one message", async () => {
       await publish(
-        user1Key.pubKey.serialize(),
+        user.pubKey.serialize(),
         1,
         0,
         1,
@@ -106,50 +117,163 @@ describe("e2e with Subsidy tests", function test() {
         9,
         maciAddresses.maciAddress,
         genRandomSalt().toString(),
-        user1Key.privKey.serialize(),
+        user.privKey.serialize(),
       );
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(pollDuration, true);
-      await mergeMessages(0);
-      await mergeSignups(0);
-      const tallyData = await genProofs(
+      await timeTravel(pollDuration);
+      await mergeMessages(0, maciAddresses.maciAddress);
+      await mergeSignups(0, maciAddresses.maciAddress);
+      const tallyFileData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
         processMessageTestZkeyPath,
         0,
-        testSubsidyFilePath,
-        subsidyTestZkeyPath,
+        undefined,
+        undefined,
         testRapidsnarkPath,
         testProcessMessagesWitnessPath,
         testTallyVotesWitnessPath,
-        testSubsidyWitnessPath,
+        undefined,
         coordinatorPrivKey,
         maciAddresses.maciAddress,
         undefined,
         testProcessMessagesWasmPath,
         testTallyVotesWasmPath,
-        testSubsidyWasmPath,
+        undefined,
         useWasm,
       );
       await proveOnChain("0", testProofsDirPath);
       await verify(
         "0",
         testTallyFilePath,
-        tallyData,
+        tallyFileData,
         maciAddresses.maciAddress,
         pollAddresses.tally,
         pollAddresses.subsidy,
-        testSubsidyFilePath,
       );
     });
   });
 
-  describe("test2", () => {
+  describe("4 signups, 4 messages", () => {
     after(() => {
-      cleanSubsidy();
+      cleanVanilla();
+    });
+
+    const users = [new Keypair(), new Keypair(), new Keypair(), new Keypair()];
+
+    before(async () => {
+      // deploy the smart contracts
+      maciAddresses = await deploy(STATE_TREE_DEPTH);
+      // deploy a poll contract
+      pollAddresses = await deployPoll(
+        pollDuration,
+        25,
+        25,
+        INT_STATE_TREE_DEPTH,
+        MSG_BATCH_DEPTH,
+        MSG_TREE_DEPTH,
+        VOTE_OPTION_TREE_DEPTH,
+        coordinatorPubKey,
+      );
+    });
+
+    it("should signup four users", async () => {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < users.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await signup(users[i].pubKey.serialize());
+      }
+    });
+
+    it("should publish four messages", async () => {
+      await publish(
+        users[0].pubKey.serialize(),
+        1,
+        0,
+        1,
+        0,
+        9,
+        maciAddresses.maciAddress,
+        genRandomSalt().toString(),
+        users[0].privKey.serialize(),
+      );
+      await publish(
+        users[1].pubKey.serialize(),
+        2,
+        1,
+        1,
+        0,
+        9,
+        maciAddresses.maciAddress,
+        genRandomSalt().toString(),
+        users[1].privKey.serialize(),
+      );
+      await publish(
+        users[2].pubKey.serialize(),
+        3,
+        2,
+        1,
+        0,
+        9,
+        maciAddresses.maciAddress,
+        genRandomSalt().toString(),
+        users[2].privKey.serialize(),
+      );
+      await publish(
+        users[3].pubKey.serialize(),
+        4,
+        3,
+        1,
+        0,
+        9,
+        maciAddresses.maciAddress,
+        genRandomSalt().toString(),
+        users[0].privKey.serialize(),
+      );
+    });
+
+    it("should generate zk-SNARK proofs and verify them", async () => {
+      await timeTravel(pollDuration);
+      await mergeMessages(0, maciAddresses.maciAddress);
+      await mergeSignups(0, maciAddresses.maciAddress);
+      const tallyFileData = await genProofs(
+        testProofsDirPath,
+        testTallyFilePath,
+        tallyVotesTestZkeyPath,
+        processMessageTestZkeyPath,
+        0,
+        undefined,
+        undefined,
+        testRapidsnarkPath,
+        testProcessMessagesWitnessPath,
+        testTallyVotesWitnessPath,
+        undefined,
+        coordinatorPrivKey,
+        maciAddresses.maciAddress,
+        undefined,
+        testProcessMessagesWasmPath,
+        testTallyVotesWasmPath,
+        undefined,
+        useWasm,
+      );
+      await proveOnChain("0", testProofsDirPath);
+      await verify(
+        "0",
+        testTallyFilePath,
+        tallyFileData,
+        maciAddresses.maciAddress,
+        pollAddresses.tally,
+        pollAddresses.subsidy,
+      );
+    });
+  });
+
+  describe("4 signups, 6 messages", () => {
+    after(() => {
+      cleanVanilla();
     });
 
     const users = [new Keypair(), new Keypair(), new Keypair(), new Keypair()];
@@ -248,45 +372,44 @@ describe("e2e with Subsidy tests", function test() {
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(pollDuration, true);
-      await mergeMessages(0);
-      await mergeSignups(0);
-      const tallyData = await genProofs(
+      await timeTravel(pollDuration);
+      await mergeMessages(0, maciAddresses.maciAddress);
+      await mergeSignups(0, maciAddresses.maciAddress);
+      const tallyFileData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
         processMessageTestZkeyPath,
         0,
-        testSubsidyFilePath,
-        subsidyTestZkeyPath,
+        undefined,
+        undefined,
         testRapidsnarkPath,
         testProcessMessagesWitnessPath,
         testTallyVotesWitnessPath,
-        testSubsidyWitnessPath,
+        undefined,
         coordinatorPrivKey,
         maciAddresses.maciAddress,
         undefined,
         testProcessMessagesWasmPath,
         testTallyVotesWasmPath,
-        testSubsidyWasmPath,
+        undefined,
         useWasm,
       );
       await proveOnChain("0", testProofsDirPath);
       await verify(
         "0",
         testTallyFilePath,
-        tallyData,
+        tallyFileData,
         maciAddresses.maciAddress,
         pollAddresses.tally,
         pollAddresses.subsidy,
-        testSubsidyFilePath,
       );
     });
   });
 
-  describe("test3", () => {
+  describe("5 signups, 1 message", () => {
     after(() => {
-      cleanSubsidy();
+      cleanVanilla();
     });
 
     const users = [
@@ -307,8 +430,8 @@ describe("e2e with Subsidy tests", function test() {
       // deploy a poll contract
       pollAddresses = await deployPoll(
         pollDuration,
-        maxMessages,
-        maxVoteOptions,
+        25,
+        25,
         INT_STATE_TREE_DEPTH,
         MSG_BATCH_DEPTH,
         MSG_TREE_DEPTH,
@@ -340,45 +463,44 @@ describe("e2e with Subsidy tests", function test() {
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(pollDuration, true);
-      await mergeMessages(0);
-      await mergeSignups(0);
-      const tallyData = await genProofs(
+      await timeTravel(pollDuration);
+      await mergeMessages(0, maciAddresses.maciAddress);
+      await mergeSignups(0, maciAddresses.maciAddress);
+      const tallyFileData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
         processMessageTestZkeyPath,
         0,
-        testSubsidyFilePath,
-        subsidyTestZkeyPath,
+        undefined,
+        undefined,
         testRapidsnarkPath,
         testProcessMessagesWitnessPath,
         testTallyVotesWitnessPath,
-        testSubsidyWitnessPath,
+        undefined,
         coordinatorPrivKey,
         maciAddresses.maciAddress,
         undefined,
         testProcessMessagesWasmPath,
         testTallyVotesWasmPath,
-        testSubsidyWasmPath,
+        undefined,
         useWasm,
       );
       await proveOnChain("0", testProofsDirPath);
       await verify(
         "0",
         testTallyFilePath,
-        tallyData,
+        tallyFileData,
         maciAddresses.maciAddress,
         pollAddresses.tally,
         pollAddresses.subsidy,
-        testSubsidyFilePath,
       );
     });
   });
 
-  describe("test4", () => {
+  describe("8 signups (same key), 12 messages (same message)", () => {
     after(() => {
-      cleanSubsidy();
+      cleanVanilla();
     });
 
     const user = new Keypair();
@@ -389,8 +511,8 @@ describe("e2e with Subsidy tests", function test() {
       // deploy a poll contract
       pollAddresses = await deployPoll(
         pollDuration,
-        maxMessages,
-        maxVoteOptions,
+        25,
+        25,
         INT_STATE_TREE_DEPTH,
         MSG_BATCH_DEPTH,
         MSG_TREE_DEPTH,
@@ -424,475 +546,62 @@ describe("e2e with Subsidy tests", function test() {
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(pollDuration, true);
-      await mergeMessages(0);
-      await mergeSignups(0);
-      const tallyData = await genProofs(
+      await timeTravel(pollDuration);
+      await mergeMessages(0, maciAddresses.maciAddress);
+      await mergeSignups(0, maciAddresses.maciAddress);
+      const tallyFileData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
         processMessageTestZkeyPath,
         0,
-        testSubsidyFilePath,
-        subsidyTestZkeyPath,
+        undefined,
+        undefined,
         testRapidsnarkPath,
         testProcessMessagesWitnessPath,
         testTallyVotesWitnessPath,
-        testSubsidyWitnessPath,
+        undefined,
         coordinatorPrivKey,
         maciAddresses.maciAddress,
         undefined,
         testProcessMessagesWasmPath,
         testTallyVotesWasmPath,
-        testSubsidyWasmPath,
+        undefined,
         useWasm,
       );
       await proveOnChain("0", testProofsDirPath);
       await verify(
         "0",
         testTallyFilePath,
-        tallyData,
+        tallyFileData,
         maciAddresses.maciAddress,
         pollAddresses.tally,
         pollAddresses.subsidy,
-        testSubsidyFilePath,
       );
     });
   });
 
-  describe("test5", () => {
-    after(() => {
-      cleanSubsidy();
-    });
-
-    const users = [new Keypair(), new Keypair(), new Keypair(), new Keypair()];
-
+  describe("checkKeys", () => {
     before(async () => {
-      // deploy the smart contracts
-      maciAddresses = await deploy(STATE_TREE_DEPTH);
-      // deploy a poll contract
-      pollAddresses = await deployPoll(
-        pollDuration,
-        maxMessages,
-        maxVoteOptions,
+      // deploy maci as we need the address
+      await deploy(STATE_TREE_DEPTH);
+    });
+    it("should check if the verifying keys have been set correctly", async () => {
+      await checkVerifyingKeys(
+        STATE_TREE_DEPTH,
         INT_STATE_TREE_DEPTH,
-        MSG_BATCH_DEPTH,
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
-        coordinatorPubKey,
-      );
-    });
-
-    it("should signup four users", async () => {
-      // eslint-disable-next-line @typescript-eslint/prefer-for-of
-      for (let i = 0; i < users.length; i += 1) {
-        // eslint-disable-next-line no-await-in-loop
-        await signup(users[i].pubKey.serialize());
-      }
-    });
-
-    it("should publish four messages", async () => {
-      await publish(
-        users[0].pubKey.serialize(),
-        1,
-        0,
-        1,
-        0,
-        9,
-        maciAddresses.maciAddress,
-        genRandomSalt().toString(),
-        users[0].privKey.serialize(),
-      );
-      await publish(
-        users[1].pubKey.serialize(),
-        2,
-        1,
-        1,
-        0,
-        9,
-        maciAddresses.maciAddress,
-        genRandomSalt().toString(),
-        users[1].privKey.serialize(),
-      );
-      await publish(
-        users[2].pubKey.serialize(),
-        3,
-        2,
-        1,
-        0,
-        9,
-        maciAddresses.maciAddress,
-        genRandomSalt().toString(),
-        users[2].privKey.serialize(),
-      );
-      await publish(
-        users[3].pubKey.serialize(),
-        4,
-        3,
-        1,
-        0,
-        9,
-        maciAddresses.maciAddress,
-        genRandomSalt().toString(),
-        users[0].privKey.serialize(),
-      );
-    });
-
-    it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(pollDuration, true);
-      await mergeMessages(0);
-      await mergeSignups(0);
-      const tallyData = await genProofs(
-        testProofsDirPath,
-        testTallyFilePath,
-        tallyVotesTestZkeyPath,
-        processMessageTestZkeyPath,
-        0,
-        testSubsidyFilePath,
-        subsidyTestZkeyPath,
-        testRapidsnarkPath,
-        testProcessMessagesWitnessPath,
-        testTallyVotesWitnessPath,
-        testSubsidyWitnessPath,
-        coordinatorPrivKey,
-        maciAddresses.maciAddress,
-        undefined,
-        testProcessMessagesWasmPath,
-        testTallyVotesWasmPath,
-        testSubsidyWasmPath,
-        useWasm,
-      );
-      await proveOnChain("0", testProofsDirPath);
-      await verify(
-        "0",
-        testTallyFilePath,
-        tallyData,
-        maciAddresses.maciAddress,
-        pollAddresses.tally,
-        pollAddresses.subsidy,
-        testSubsidyFilePath,
-      );
-    });
-  });
-
-  describe("test6", () => {
-    after(() => {
-      cleanSubsidy();
-    });
-
-    const users = [new Keypair(), new Keypair(), new Keypair(), new Keypair(), new Keypair()];
-
-    before(async () => {
-      // deploy the smart contracts
-      maciAddresses = await deploy(STATE_TREE_DEPTH);
-      // deploy a poll contract
-      pollAddresses = await deployPoll(
-        pollDuration,
-        maxMessages,
-        maxVoteOptions,
-        INT_STATE_TREE_DEPTH,
         MSG_BATCH_DEPTH,
-        MSG_TREE_DEPTH,
-        VOTE_OPTION_TREE_DEPTH,
-        coordinatorPubKey,
-      );
-    });
-
-    it("should signup five users", async () => {
-      // eslint-disable-next-line @typescript-eslint/prefer-for-of
-      for (let i = 0; i < users.length; i += 1) {
-        // eslint-disable-next-line no-await-in-loop
-        await signup(users[i].pubKey.serialize());
-      }
-    });
-
-    it("should publish five messages", async () => {
-      await publish(
-        users[0].pubKey.serialize(),
-        1,
-        0,
-        1,
-        0,
-        9,
-        maciAddresses.maciAddress,
-        genRandomSalt().toString(),
-        users[0].privKey.serialize(),
-      );
-      await publish(
-        users[1].pubKey.serialize(),
-        2,
-        1,
-        1,
-        0,
-        9,
-        maciAddresses.maciAddress,
-        genRandomSalt().toString(),
-        users[1].privKey.serialize(),
-      );
-      await publish(
-        users[2].pubKey.serialize(),
-        3,
-        2,
-        1,
-        0,
-        9,
-        maciAddresses.maciAddress,
-        genRandomSalt().toString(),
-        users[2].privKey.serialize(),
-      );
-      await publish(
-        users[3].pubKey.serialize(),
-        4,
-        3,
-        1,
-        0,
-        9,
-        maciAddresses.maciAddress,
-        genRandomSalt().toString(),
-        users[3].privKey.serialize(),
-      );
-      await publish(
-        users[4].pubKey.serialize(),
-        5,
-        4,
-        1,
-        0,
-        9,
-        maciAddresses.maciAddress,
-        genRandomSalt().toString(),
-        users[4].privKey.serialize(),
-      );
-    });
-
-    it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(pollDuration, true);
-      await mergeMessages(0);
-      await mergeSignups(0);
-      const tallyData = await genProofs(
-        testProofsDirPath,
-        testTallyFilePath,
-        tallyVotesTestZkeyPath,
         processMessageTestZkeyPath,
-        0,
-        testSubsidyFilePath,
-        subsidyTestZkeyPath,
-        testRapidsnarkPath,
-        testProcessMessagesWitnessPath,
-        testTallyVotesWitnessPath,
-        testSubsidyWitnessPath,
-        coordinatorPrivKey,
-        maciAddresses.maciAddress,
-        undefined,
-        testProcessMessagesWasmPath,
-        testTallyVotesWasmPath,
-        testSubsidyWasmPath,
-        useWasm,
-      );
-      await proveOnChain("0", testProofsDirPath);
-      await verify(
-        "0",
-        testTallyFilePath,
-        tallyData,
-        maciAddresses.maciAddress,
-        pollAddresses.tally,
-        pollAddresses.subsidy,
-        testSubsidyFilePath,
-      );
-    });
-  });
-
-  describe("test7", () => {
-    after(() => {
-      cleanSubsidy();
-    });
-
-    const user = new Keypair();
-
-    const publishArgs = [
-      {
-        quiet: true,
-        pubkey: user.pubKey.serialize(),
-        privateKey: user.privKey.serialize(),
-        stateIndex: 6,
-        voteOptionIndex: 5,
-        nonce: 1,
-        newVoteWeight: 6,
-        pollId: 0,
-      },
-      {
-        quiet: true,
-        pubkey: user.pubKey.serialize(),
-        privateKey: user.privKey.serialize(),
-        stateIndex: 5,
-        voteOptionIndex: 5,
-        nonce: 2,
-        newVoteWeight: 5,
-        pollId: 0,
-      },
-      {
-        quiet: true,
-        pubkey: user.pubKey.serialize(),
-        privateKey: user.privKey.serialize(),
-        stateIndex: 5,
-        voteOptionIndex: 4,
-        nonce: 1,
-        pollId: 0,
-        newVoteWeight: 5,
-      },
-      {
-        quiet: true,
-        pubkey: user.pubKey.serialize(),
-        privateKey: user.privKey.serialize(),
-        stateIndex: 4,
-        voteOptionIndex: 4,
-        nonce: 2,
-        pollId: 0,
-        newVoteWeight: 4,
-      },
-      {
-        quiet: true,
-        pubkey: user.pubKey.serialize(),
-        privateKey: user.privKey.serialize(),
-        stateIndex: 4,
-        voteOptionIndex: 3,
-        nonce: 1,
-        pollId: 0,
-        newVoteWeight: 4,
-      },
-      {
-        quiet: true,
-        pubkey: user.pubKey.serialize(),
-        privateKey: user.privKey.serialize(),
-        stateIndex: 3,
-        voteOptionIndex: 3,
-        nonce: 2,
-        pollId: 0,
-        newVoteWeight: 3,
-      },
-      {
-        quiet: true,
-        pubkey: user.pubKey.serialize(),
-        privateKey: user.privKey.serialize(),
-        stateIndex: 2,
-        voteOptionIndex: 2,
-        nonce: 2,
-        pollId: 0,
-        newVoteWeight: 2,
-      },
-      {
-        quiet: true,
-        pubkey: user.pubKey.serialize(),
-        privateKey: user.privKey.serialize(),
-        stateIndex: 2,
-        voteOptionIndex: 1,
-        nonce: 1,
-        pollId: 0,
-        newVoteWeight: 2,
-      },
-      {
-        quiet: true,
-        pubkey: user.pubKey.serialize(),
-        privateKey: user.privKey.serialize(),
-        stateIndex: 1,
-        voteOptionIndex: 1,
-        nonce: 2,
-        pollId: 0,
-        newVoteWeight: 1,
-      },
-      {
-        quiet: true,
-        pubkey: user.pubKey.serialize(),
-        privateKey: user.privKey.serialize(),
-        stateIndex: 1,
-        voteOptionIndex: 0,
-        nonce: 1,
-        pollId: 0,
-        newVoteWeight: 1,
-      },
-    ];
-
-    before(async () => {
-      // deploy the smart contracts
-      maciAddresses = await deploy(STATE_TREE_DEPTH);
-      // deploy a poll contract
-      pollAddresses = await deployPoll(
-        pollDuration,
-        maxMessages,
-        maxVoteOptions,
-        INT_STATE_TREE_DEPTH,
-        MSG_BATCH_DEPTH,
-        MSG_TREE_DEPTH,
-        VOTE_OPTION_TREE_DEPTH,
-        coordinatorPubKey,
-      );
-    });
-
-    it("should signup an user", async () => {
-      // eslint-disable-next-line @typescript-eslint/prefer-for-of
-      for (let i = 0; i < 6; i += 1) {
-        // eslint-disable-next-line no-await-in-loop
-        await signup(publishArgs[i].pubkey);
-      }
-    });
-
-    it("should publish all messages", async () => {
-      // eslint-disable-next-line @typescript-eslint/prefer-for-of
-      for (let i = 0; i < publishArgs.length; i += 1) {
-        // eslint-disable-next-line no-await-in-loop
-        await publish(
-          publishArgs[i].pubkey,
-          publishArgs[i].stateIndex,
-          publishArgs[i].voteOptionIndex,
-          publishArgs[i].nonce,
-          publishArgs[i].pollId,
-          publishArgs[i].newVoteWeight,
-          maciAddresses.maciAddress,
-          genRandomSalt().toString(),
-          publishArgs[i].privateKey,
-        );
-      }
-    });
-
-    it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(pollDuration, true);
-      await mergeMessages(0);
-      await mergeSignups(0);
-      const tallyData = await genProofs(
-        testProofsDirPath,
-        testTallyFilePath,
         tallyVotesTestZkeyPath,
-        processMessageTestZkeyPath,
-        0,
-        testSubsidyFilePath,
-        subsidyTestZkeyPath,
-        testRapidsnarkPath,
-        testProcessMessagesWitnessPath,
-        testTallyVotesWitnessPath,
-        testSubsidyWitnessPath,
-        coordinatorPrivKey,
-        maciAddresses.maciAddress,
-        undefined,
-        testProcessMessagesWasmPath,
-        testTallyVotesWasmPath,
-        testSubsidyWasmPath,
-        useWasm,
-      );
-      await proveOnChain("0", testProofsDirPath);
-      await verify(
-        "0",
-        testTallyFilePath,
-        tallyData,
-        maciAddresses.maciAddress,
-        pollAddresses.tally,
-        pollAddresses.subsidy,
-        testSubsidyFilePath,
       );
     });
   });
 
   describe("multiplePolls1", () => {
     after(() => {
-      cleanSubsidy();
+      cleanVanilla();
     });
 
     const user = new Keypair();
@@ -903,8 +612,8 @@ describe("e2e with Subsidy tests", function test() {
       // deploy a poll contract
       pollAddresses = await deployPoll(
         pollDuration,
-        25,
-        25,
+        maxMessages,
+        maxVoteOptions,
         INT_STATE_TREE_DEPTH,
         MSG_BATCH_DEPTH,
         MSG_TREE_DEPTH,
@@ -930,44 +639,36 @@ describe("e2e with Subsidy tests", function test() {
       // generate proofs
       await mergeMessages(0);
       await mergeSignups(0);
-      const tallyData = await genProofs(
+      const tallyFileData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
         processMessageTestZkeyPath,
         0,
-        testSubsidyFilePath,
-        subsidyTestZkeyPath,
+        undefined,
+        undefined,
         testRapidsnarkPath,
         testProcessMessagesWitnessPath,
         testTallyVotesWitnessPath,
-        testSubsidyWitnessPath,
+        undefined,
         coordinatorPrivKey,
-        maciAddresses.maciAddress,
+        undefined,
         undefined,
         testProcessMessagesWasmPath,
         testTallyVotesWasmPath,
-        testSubsidyWasmPath,
+        undefined,
         useWasm,
       );
       await proveOnChain("0", testProofsDirPath);
-      await verify(
-        "0",
-        testTallyFilePath,
-        tallyData,
-        maciAddresses.maciAddress,
-        pollAddresses.tally,
-        pollAddresses.subsidy,
-        testSubsidyFilePath,
-      );
-      cleanSubsidy();
+      await verify("0", testTallyFilePath, tallyFileData);
+      cleanVanilla();
     });
 
     it("should deploy a new poll", async () => {
       pollAddresses = await deployPoll(
         pollDuration,
-        maxMessages,
-        maxVoteOptions,
+        25,
+        25,
         INT_STATE_TREE_DEPTH,
         MSG_BATCH_DEPTH,
         MSG_TREE_DEPTH,
@@ -976,42 +677,44 @@ describe("e2e with Subsidy tests", function test() {
       );
     });
     it("should publish a new message", async () => {
-      await publish(user.pubKey.serialize(), 1, 0, 1, 1, 7, undefined, undefined, user.privKey.serialize());
+      await publish(
+        user.pubKey.serialize(),
+        1,
+        0,
+        1,
+        1,
+        7,
+        maciAddresses.maciAddress,
+        genRandomSalt().toString(),
+        user.privKey.serialize(),
+      );
     });
     it("should generate proofs and verify them", async () => {
       await timeTravel(pollDuration, true);
       await mergeMessages(1);
       await mergeSignups(1);
-      const tallyData = await genProofs(
+      await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
         processMessageTestZkeyPath,
         1,
-        testSubsidyFilePath,
-        subsidyTestZkeyPath,
+        undefined,
+        undefined,
         testRapidsnarkPath,
         testProcessMessagesWitnessPath,
         testTallyVotesWitnessPath,
-        testSubsidyWitnessPath,
+        undefined,
         coordinatorPrivKey,
-        maciAddresses.maciAddress,
+        undefined,
         undefined,
         testProcessMessagesWasmPath,
         testTallyVotesWasmPath,
-        testSubsidyWasmPath,
+        undefined,
         useWasm,
       );
       await proveOnChain("1", testProofsDirPath);
-      await verify(
-        "1",
-        testTallyFilePath,
-        tallyData,
-        maciAddresses.maciAddress,
-        pollAddresses.tally,
-        pollAddresses.subsidy,
-        testSubsidyFilePath,
-      );
+      await verify("1", testTallyFilePath);
     });
   });
 
@@ -1029,7 +732,7 @@ describe("e2e with Subsidy tests", function test() {
     let secondPollAddresses: PollContracts;
 
     after(() => {
-      cleanSubsidy();
+      cleanVanilla();
     });
 
     before(async () => {
@@ -1049,12 +752,14 @@ describe("e2e with Subsidy tests", function test() {
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
       );
+
       // signup
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         await signup(users[i].pubKey.serialize());
       }
+
       // publish
       await publish(
         users[0].pubKey.serialize(),
@@ -1072,37 +777,29 @@ describe("e2e with Subsidy tests", function test() {
       // generate proofs
       await mergeMessages(0);
       await mergeSignups(0);
-      const tallyData = await genProofs(
+      const tallyFileData = await genProofs(
         testProofsDirPath,
         testTallyFilePath,
         tallyVotesTestZkeyPath,
         processMessageTestZkeyPath,
         0,
-        testSubsidyFilePath,
-        subsidyTestZkeyPath,
+        undefined,
+        undefined,
         testRapidsnarkPath,
         testProcessMessagesWitnessPath,
         testTallyVotesWitnessPath,
-        testSubsidyWitnessPath,
+        undefined,
         coordinatorPrivKey,
-        maciAddresses.maciAddress,
+        undefined,
         undefined,
         testProcessMessagesWasmPath,
         testTallyVotesWasmPath,
-        testSubsidyWasmPath,
+        undefined,
         useWasm,
       );
       await proveOnChain("0", testProofsDirPath);
-      await verify(
-        "0",
-        testTallyFilePath,
-        tallyData,
-        maciAddresses.maciAddress,
-        pollAddresses.tally,
-        pollAddresses.subsidy,
-        testSubsidyFilePath,
-      );
-      cleanSubsidy();
+      await verify("0", testTallyFilePath, tallyFileData);
+      cleanVanilla();
     });
 
     it("should deploy two more polls", async () => {
@@ -1213,18 +910,18 @@ describe("e2e with Subsidy tests", function test() {
         tallyVotesTestZkeyPath,
         processMessageTestZkeyPath,
         1,
-        testSubsidyFilePath,
-        subsidyTestZkeyPath,
+        undefined,
+        undefined,
         testRapidsnarkPath,
         testProcessMessagesWitnessPath,
         testTallyVotesWitnessPath,
-        testSubsidyWitnessPath,
+        undefined,
         coordinatorPrivKey,
         maciAddresses.maciAddress,
         undefined,
         testProcessMessagesWasmPath,
         testTallyVotesWasmPath,
-        testSubsidyWasmPath,
+        undefined,
         useWasm,
       );
       await proveOnChain(
@@ -1233,18 +930,9 @@ describe("e2e with Subsidy tests", function test() {
         maciAddresses.maciAddress,
         pollAddresses.messageProcessor,
         pollAddresses.tally,
-        pollAddresses.subsidy,
       );
-      await verify(
-        "1",
-        testTallyFilePath,
-        tallyData,
-        maciAddresses.maciAddress,
-        pollAddresses.tally,
-        pollAddresses.subsidy,
-        testSubsidyFilePath,
-      );
-      cleanSubsidy();
+      await verify("1", testTallyFilePath, tallyData, maciAddresses.maciAddress, pollAddresses.tally);
+      cleanVanilla();
     });
 
     it("should complete the third poll", async () => {
@@ -1256,18 +944,18 @@ describe("e2e with Subsidy tests", function test() {
         tallyVotesTestZkeyPath,
         processMessageTestZkeyPath,
         2,
-        testSubsidyFilePath,
-        subsidyTestZkeyPath,
+        undefined,
+        undefined,
         testRapidsnarkPath,
         testProcessMessagesWitnessPath,
         testTallyVotesWitnessPath,
-        testSubsidyWitnessPath,
+        undefined,
         coordinatorPrivKey,
-        maciAddresses.maciAddress,
+        undefined,
         undefined,
         testProcessMessagesWasmPath,
         testTallyVotesWasmPath,
-        testSubsidyWasmPath,
+        undefined,
         useWasm,
       );
       await proveOnChain(
@@ -1276,37 +964,175 @@ describe("e2e with Subsidy tests", function test() {
         maciAddresses.maciAddress,
         secondPollAddresses.messageProcessor,
         secondPollAddresses.tally,
-        secondPollAddresses.subsidy,
       );
-      await verify(
-        "2",
-        testTallyFilePath,
-        tallyData,
-        maciAddresses.maciAddress,
-        secondPollAddresses.tally,
-        secondPollAddresses.subsidy,
-        testSubsidyFilePath,
-      );
+      await verify("2", testTallyFilePath, tallyData, maciAddresses.maciAddress, secondPollAddresses.tally);
     });
   });
 
-  describe("checkKeys", () => {
-    before(async () => {
-      // deploy maci as we need the address
-      await deploy(STATE_TREE_DEPTH);
+  describe("pre fetch logs", () => {
+    const stateOutPath = "./state.json";
+
+    const user = new Keypair();
+
+    after(() => {
+      cleanVanilla();
+
+      if (fs.existsSync(stateOutPath)) {
+        fs.unlinkSync(stateOutPath);
+      }
     });
-    it("should check if the verifying keys have been set correctly", async () => {
-      await checkVerifyingKeys(
-        STATE_TREE_DEPTH,
+
+    before(async () => {
+      // deploy the smart contracts
+      maciAddresses = await deploy(STATE_TREE_DEPTH);
+      // deploy a poll contract
+      pollAddresses = await deployPoll(
+        pollDuration,
+        maxMessages,
+        maxVoteOptions,
         INT_STATE_TREE_DEPTH,
+        MSG_BATCH_DEPTH,
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
-        MSG_BATCH_DEPTH,
-        processMessageTestZkeyPath,
-        tallyVotesTestZkeyPath,
-        vkRegistryContractAddress,
-        subsidyTestZkeyPath,
+        coordinatorPubKey,
       );
+    });
+
+    it("should signup one user", async () => {
+      await signup(user.pubKey.serialize());
+    });
+
+    it("should publish one message", async () => {
+      await publish(
+        user.pubKey.serialize(),
+        1,
+        0,
+        1,
+        0,
+        9,
+        maciAddresses.maciAddress,
+        genRandomSalt().toString(),
+        user.privKey.serialize(),
+      );
+    });
+
+    it("should generate zk-SNARK proofs and verify them", async () => {
+      await timeTravel(pollDuration, true);
+      await mergeMessages(0);
+      await mergeSignups(0);
+      await genLocalState(
+        stateOutPath,
+        0,
+        maciAddresses.maciAddress,
+        coordinatorPrivKey,
+        undefined,
+        undefined,
+        undefined,
+        50,
+      );
+      await genProofs(
+        testProofsDirPath,
+        testTallyFilePath,
+        tallyVotesTestZkeyPath,
+        processMessageTestZkeyPath,
+        0,
+        undefined,
+        undefined,
+        testRapidsnarkPath,
+        testProcessMessagesWitnessPath,
+        testTallyVotesWitnessPath,
+        undefined,
+        coordinatorPrivKey,
+        maciAddresses.maciAddress,
+        undefined,
+        testProcessMessagesWasmPath,
+        testTallyVotesWasmPath,
+        undefined,
+        useWasm,
+        stateOutPath,
+      );
+      await proveOnChain("0", testProofsDirPath);
+      await verify("0", testTallyFilePath);
+    });
+  });
+
+  describe("topup message", () => {
+    const user = new Keypair();
+    const tokenAmount = 100;
+    let stateIndex: number | undefined;
+
+    after(() => {
+      cleanVanilla();
+    });
+
+    before(async () => {
+      // deploy the smart contracts
+      maciAddresses = await deploy(STATE_TREE_DEPTH);
+      // deploy a poll contract
+      pollAddresses = await deployPoll(
+        pollDuration,
+        maxMessages,
+        maxVoteOptions,
+        INT_STATE_TREE_DEPTH,
+        MSG_BATCH_DEPTH,
+        MSG_TREE_DEPTH,
+        VOTE_OPTION_TREE_DEPTH,
+        coordinatorPubKey,
+      );
+    });
+
+    it("should signup one user", async () => {
+      stateIndex = Number.parseInt(await signup(user.pubKey.serialize()), 10);
+    });
+
+    it("should airdrop topup tokens to the coordinator user", async () => {
+      await airdrop(tokenAmount, maciAddresses.topupCreditAddress, 0, maciAddresses.maciAddress, true);
+    });
+
+    it("should publish one topup message", async () => {
+      await topup(tokenAmount, stateIndex!, 0, maciAddresses.maciAddress, true);
+    });
+
+    it("should publish one vote message", async () => {
+      await publish(
+        user.pubKey.serialize(),
+        1,
+        0,
+        1,
+        0,
+        9,
+        maciAddresses.maciAddress,
+        genRandomSalt().toString(),
+        user.privKey.serialize(),
+      );
+    });
+
+    it("should generate proofs and verify them", async () => {
+      await timeTravel(pollDuration, true);
+      await mergeMessages(0);
+      await mergeSignups(0);
+      await genProofs(
+        testProofsDirPath,
+        testTallyFilePath,
+        tallyVotesTestZkeyPath,
+        processMessageTestZkeyPath,
+        0,
+        undefined,
+        undefined,
+        testRapidsnarkPath,
+        testProcessMessagesWitnessPath,
+        testTallyVotesWitnessPath,
+        undefined,
+        coordinatorPrivKey,
+        undefined,
+        undefined,
+        testProcessMessagesWasmPath,
+        testTallyVotesWasmPath,
+        undefined,
+        useWasm,
+      );
+      await proveOnChain("0", testProofsDirPath);
+      await verify("0", testTallyFilePath);
     });
   });
 });

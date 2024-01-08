@@ -20,6 +20,7 @@ const config: HardhatUserConfig = {
     hardhat: {
       accounts: {
         mnemonic: "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
+        count: 20,
       },
       loggingEnabled: false,
       allowUnlimitedContractSize: true,

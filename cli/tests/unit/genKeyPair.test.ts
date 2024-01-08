@@ -1,7 +1,8 @@
 import { expect } from "chai";
-import { genKeyPair } from "maci-cli";
 import { genPubKey } from "maci-crypto";
 import { PubKey, PrivKey } from "maci-domainobjs";
+
+import { genKeyPair } from "../../ts";
 
 describe("genMaciKeypair CLI subcommand", () => {
   it("genMaciKeypair should output a random private key and public key", () => {
