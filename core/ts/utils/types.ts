@@ -86,14 +86,14 @@ export interface IPoll {
   publishMessage(message: Message, encPubKey: PubKey): void;
   topupMessage(message: Message): void;
   // These methods are used to generate circuit inputs
-  processMessages(pollId: number): CircuitInputs;
-  tallyVotes(): CircuitInputs;
+  processMessages(pollId: number): IProcessMessagesCircuitInputs;
+  tallyVotes(): ITallyCircuitInputs;
   // These methods are helper functions
   hasUnprocessedMessages(): boolean;
   processAllMessages(): { stateLeaves: StateLeaf[]; ballots: Ballot[] };
   hasUntalliedBallots(): boolean;
   hasUnfinishedSubsidyCalculation(): boolean;
-  subsidyPerBatch(): CircuitInputs;
+  subsidyPerBatch(): ISubsidyCircuitInputs;
   copy(): Poll;
   equals(p: Poll): boolean;
   toJSON(): IJsonPoll;
@@ -144,4 +144,80 @@ export interface IProcessMessagesOutput {
   originalBallot?: Ballot;
   originalBallotPathElements?: PathElements;
   command?: PCommand | TCommand;
+}
+
+/**
+ * An interface describing the circuit inputs to the ProcessMessage circuit
+ */
+export interface IProcessMessagesCircuitInputs {
+  pollEndTimestamp: string;
+  packedVals: string;
+  msgRoot: string;
+  msgs: string[];
+  msgSubrootPathElements: string[][];
+  coordPrivKey: string;
+  coordPubKey: string;
+  encPubKeys: string[];
+  currentStateRoot: string;
+  currentBallotRoot: string;
+  currentSbCommitment: string;
+  currentSbSalt: string;
+  currentStateLeaves: string[];
+  currentStateLeavesPathElements: string[][];
+  currentBallots: string[];
+  currentBallotsPathElements: string[][];
+  currentVoteWeights: string[];
+  currentVoteWeightsPathElements: string[][];
+  inputHash: string;
+  newSbSalt: string;
+  newSbCommitment: string;
+}
+
+/**
+ * An interface describing the circuit inputs to the TallyVotes circuit
+ */
+export interface ITallyCircuitInputs {
+  stateRoot: string;
+  ballotRoot: string;
+  sbSalt: string;
+  sbCommitment: string;
+  currentTallyCommitment: string;
+  newTallyCommitment: string;
+  packedVals: string;
+  inputHash: string;
+  ballots: string[];
+  ballotPathElements: PathElements;
+  votes: string[][];
+  currentResults: string[];
+  currentResultsRootSalt: string;
+  currentSpentVoiceCreditSubtotal: string;
+  currentSpentVoiceCreditSubtotalSalt: string;
+  currentPerVOSpentVoiceCredits: string[];
+  currentPerVOSpentVoiceCreditsRootSalt: string;
+  newResultsRootSalt: string;
+  newPerVOSpentVoiceCreditsRootSalt: string;
+  newSpentVoiceCreditSubtotalSalt: string;
+}
+
+/**
+ * An interface describing the circuit inputs to the Subsidy circuit
+ */
+export interface ISubsidyCircuitInputs {
+  stateRoot: string;
+  ballotRoot: string;
+  sbSalt: string;
+  currentSubsidySalt: string;
+  newSubsidySalt: string;
+  sbCommitment: string;
+  currentSubsidyCommitment: string;
+  newSubsidyCommitment: string;
+  currentSubsidy: string[];
+  packedVals: string;
+  inputHash: string;
+  ballots1: string[];
+  ballots2: string[];
+  votes1: number[];
+  votes2: number[];
+  ballotPathElements1: string[];
+  ballotPathElements2: string[];
 }

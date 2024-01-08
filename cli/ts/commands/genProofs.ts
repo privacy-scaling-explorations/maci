@@ -236,7 +236,7 @@ export const genProofs = async (
 
   let maciState: MaciState | undefined;
   if (stateFile) {
-    const content = JSON.parse(fs.readFileSync(stateFile).toString()) as IJsonMaciState;
+    const content = JSON.parse(fs.readFileSync(stateFile).toString()) as unknown as IJsonMaciState;
     const serializedPrivateKey = maciPrivKey.serialize();
 
     try {
@@ -287,7 +287,7 @@ export const genProofs = async (
   // while we have unprocessed messages, process them
   while (poll.hasUnprocessedMessages()) {
     // process messages in batches
-    const circuitInputs = poll.processMessages(pollId);
+    const circuitInputs = poll.processMessages(pollId) as unknown as CircuitInputs;
     try {
       // generate the proof for this batch
       // eslint-disable-next-line no-await-in-loop
@@ -345,13 +345,11 @@ export const genProofs = async (
 
     let numBatchesCalulated = 0;
 
-    // @todo fix types in the circuits package
-    // @todo why this next part works
     let subsidyCircuitInputs: CircuitInputs;
     // calculate the subsidy for each batch
     while (poll.hasUnfinishedSubsidyCalculation()) {
       // calculate subsidy in batches
-      subsidyCircuitInputs = poll.subsidyPerBatch();
+      subsidyCircuitInputs = poll.subsidyPerBatch() as unknown as CircuitInputs;
       try {
         // generate proof for this batch
         // eslint-disable-next-line no-await-in-loop
@@ -423,7 +421,7 @@ export const genProofs = async (
   // tally all ballots for this poll
   while (poll.hasUntalliedBallots()) {
     // tally votes in batches
-    tallyCircuitInputs = poll.tallyVotes();
+    tallyCircuitInputs = poll.tallyVotes() as unknown as CircuitInputs;
 
     try {
       // generate the proof

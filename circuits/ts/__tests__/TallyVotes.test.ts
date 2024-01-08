@@ -117,7 +117,7 @@ describe("TallyVotes circuit", function test() {
         randIdx = generateRandomIndex(Object.keys(generatedInputs).length);
       }
 
-      (generatedInputs.currentResults as string[])[randIdx] = "1";
+      generatedInputs.currentResults[randIdx] = "1";
       const witness = await circuit.calculateWitness(generatedInputs);
       await circuit.checkConstraints(witness);
     });
@@ -176,9 +176,9 @@ describe("TallyVotes circuit", function test() {
         // currentSpentVoiceCreditSubtotal, and
         // currentPerVOSpentVoiceCredits
         if (i === 0) {
-          (generatedInputs.currentResults as string[])[0] = "123";
+          generatedInputs.currentResults[0] = "123";
           generatedInputs.currentSpentVoiceCreditSubtotal = "456";
-          (generatedInputs.currentPerVOSpentVoiceCredits as string[])[0] = "789";
+          generatedInputs.currentPerVOSpentVoiceCredits[0] = "789";
         }
 
         // eslint-disable-next-line no-await-in-loop

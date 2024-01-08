@@ -2,7 +2,13 @@
 import { expect } from "chai";
 import { BaseContract, Signer } from "ethers";
 import { EthereumProvider } from "hardhat/types";
-import { MaciState, Poll, packTallyVotesSmallVals } from "maci-core";
+import {
+  MaciState,
+  Poll,
+  packTallyVotesSmallVals,
+  IProcessMessagesCircuitInputs,
+  ITallyCircuitInputs,
+} from "maci-core";
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, Message, PubKey } from "maci-domainobjs";
 
@@ -39,7 +45,7 @@ describe("TallyVotes", () => {
   let pollId: number;
   let poll: Poll;
 
-  let generatedInputs: { newSbCommitment: bigint };
+  let generatedInputs: IProcessMessagesCircuitInputs;
 
   before(async () => {
     signer = await getDefaultSigner();
@@ -89,7 +95,7 @@ describe("TallyVotes", () => {
     poll = maciState.polls[pollId];
 
     // process messages locally
-    generatedInputs = poll.processMessages(pollId) as typeof generatedInputs;
+    generatedInputs = poll.processMessages(pollId);
 
     // set the verification keys on the vk smart contract
     const vkContract = r.vkRegistryContract;
@@ -140,14 +146,14 @@ describe("TallyVotes", () => {
   });
 
   describe("after merging acc queues", () => {
-    let tallyGeneratedInputs: { newTallyCommitment: bigint };
+    let tallyGeneratedInputs: ITallyCircuitInputs;
     before(async () => {
       await pollContract.mergeMaciStateAqSubRoots(0, pollId);
       await pollContract.mergeMaciStateAq(0);
 
       await pollContract.mergeMessageAqSubRoots(0);
       await pollContract.mergeMessageAq();
-      tallyGeneratedInputs = poll.tallyVotes() as { newTallyCommitment: bigint };
+      tallyGeneratedInputs = poll.tallyVotes();
     });
     it("tallyVotes() should update the tally commitment", async () => {
       // do the processing on the message processor contract

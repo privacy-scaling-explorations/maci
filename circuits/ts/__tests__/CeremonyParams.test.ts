@@ -277,7 +277,7 @@ describe("Ceremony param tests", () => {
             randIdx = generateRandomIndex(Object.keys(generatedInputs).length);
           }
 
-          (generatedInputs.currentResults as string[])[randIdx] = "1";
+          generatedInputs.currentResults[randIdx] = "1";
           const witness = await testCircuit.calculateWitness(generatedInputs);
           await testCircuit.checkConstraints(witness);
         });
