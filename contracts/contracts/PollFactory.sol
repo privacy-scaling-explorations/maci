@@ -20,6 +20,7 @@ contract PollFactory is Params, DomainObjs {
   error InvalidMaxValues();
 
   /// @notice The PollFactory constructor
+  // solhint-disable-next-line no-empty-blocks
   constructor() payable {}
 
   /// @notice Deploy a new Poll contract and AccQueue contract for messages.

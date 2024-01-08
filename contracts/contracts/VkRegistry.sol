@@ -31,6 +31,7 @@ contract VkRegistry is Ownable, SnarkCommon {
   error SubsidyVkNotSet();
 
   /// @notice Create a new instance of the VkRegistry contract
+  // solhint-disable-next-line no-empty-blocks
   constructor() payable {}
 
   /// @notice Check if the process verifying key is set

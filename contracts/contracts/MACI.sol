@@ -9,7 +9,6 @@ import { AccQueue } from "./trees/AccQueue.sol";
 import { AccQueueQuinaryBlankSl } from "./trees/AccQueueQuinaryBlankSl.sol";
 import { IMACI } from "./interfaces/IMACI.sol";
 import { Params } from "./utilities/Params.sol";
-import { DomainObjs } from "./utilities/DomainObjs.sol";
 import { TopupCredit } from "./TopupCredit.sol";
 import { Utilities } from "./utilities/Utilities.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
