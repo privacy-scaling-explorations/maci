@@ -7,8 +7,11 @@
   "scripts": {
     "watch": "tsc --watch",
     "build": "tsc",
+    "test:processMessage": "ts-mocha --exit ts/__tests__/ProcessMessage.test.ts",
+    "test:maciState": "ts-mocha --exit ts/__tests__/MaciState.test.ts",
     "test:e2e": "ts-mocha --exit ts/__tests__/e2e.test.ts",
-    "test:unit": "ts-mocha --exit ts/__tests__/MaciState.test.ts",
+    "test:utils": "ts-mocha --exit ts/__tests__/utils.test.ts",
+    "test:poll": "ts-mocha --exit ts/__tests__/Poll.test.ts",
     "test": "nyc ts-mocha --exit ts/__tests__/*.test.ts"
   },
   "dependencies": {
