@@ -14,6 +14,7 @@
     "watch": "tsc --watch",
     "build": "tsc",
     "postbuild": "cp package.json ./build",
+    "types": "tsc -p tsconfig.json --noEmit",
     "test": "nyc ts-mocha --exit tests/**/*.test.ts",
     "test:e2e": "ts-mocha --exit tests/e2e.test.ts",
     "test:e2e-subsidy": "ts-mocha --exit tests/e2e.subsidy.test.ts",

@@ -11,6 +11,7 @@
     "prebuild": "npm run compileSol",
     "build": "tsc",
     "postbuild": "cp -r ./artifacts ./build",
+    "types": "tsc -p tsconfig.json --noEmit",
     "docs": "hardhat docgen",
     "test": "hardhat test",
     "test:maci": "hardhat test ./tests/MACI.test.ts",

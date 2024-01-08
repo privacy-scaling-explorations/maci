@@ -6,6 +6,7 @@
   "scripts": {
     "watch": "tsc --watch",
     "build": "tsc",
+    "types": "tsc -p tsconfig.json --noEmit",
     "test": "nyc ts-mocha --exit ts/__tests__/*.test.ts",
     "test:crypto": "ts-mocha --exit ts/__tests__/Crypto.test.ts",
     "test:accQueue": "ts-mocha --exit ts/__tests__/AccQueue.test.ts",
