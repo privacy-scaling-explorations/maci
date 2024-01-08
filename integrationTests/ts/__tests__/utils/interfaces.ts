@@ -5,7 +5,6 @@ export interface IVote {
   voteOptionIndex: number;
   voteWeight: number;
   nonce: number;
-  valid: boolean;
 }
 
 /**
