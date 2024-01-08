@@ -1,9 +1,10 @@
-import { type Contract, type ContractFactory, BaseContract, Signer } from "ethers";
+import { type Contract, type ContractFactory, type Signer, BaseContract } from "ethers";
 // eslint-disable-next-line
 // @ts-ignore typedoc doesn't want to get types from toolbox
 import { ethers } from "hardhat";
 
-import {
+import type { IDeployedMaci, IDeployedPoseidonContracts } from "./types";
+import type {
   AccQueueQuinaryMaci,
   ConstantInitialVoiceCreditProxy,
   FreeForAllGatekeeper,
@@ -25,7 +26,6 @@ import {
 } from "../typechain-types";
 
 import { parseArtifact } from "./abi";
-import { IDeployedMaci, IDeployedPoseidonContracts } from "./types";
 import { getDefaultSigner, getFeeData, log } from "./utils";
 
 /**

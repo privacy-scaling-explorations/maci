@@ -1,12 +1,20 @@
 import { stringifyBigInts } from "maci-crypto";
-import { zKey, groth16, FullProveResult, PublicSignals, Groth16Proof, ISnarkJSVerificationKey } from "snarkjs";
+import {
+  zKey,
+  groth16,
+  type FullProveResult,
+  type PublicSignals,
+  type Groth16Proof,
+  type ISnarkJSVerificationKey,
+} from "snarkjs";
 
 import { execSync } from "child_process";
 import fs from "fs";
 import { tmpdir } from "os";
 import path from "path";
 
-import { IGenProofOptions } from "./types";
+import type { IGenProofOptions } from "./types";
+
 import { cleanThreads, isArm } from "./utils";
 
 /**

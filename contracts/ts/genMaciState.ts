@@ -1,14 +1,14 @@
 /* eslint-disable no-underscore-dangle */
-import { Provider, Interface, Log, BaseContract } from "ethers";
+import { type Provider, type Log, Interface, BaseContract } from "ethers";
 import { MaciState } from "maci-core";
-import { Keypair, PubKey, Message } from "maci-domainobjs";
+import { type Keypair, PubKey, Message } from "maci-domainobjs";
 
 import assert from "assert";
 
-import { MACI, Poll } from "../typechain-types";
+import type { Action } from "./types";
+import type { MACI, Poll } from "../typechain-types";
 
 import { parseArtifact } from "./abi";
-import { Action } from "./types";
 import { sleep, sortActions } from "./utils";
 
 /**

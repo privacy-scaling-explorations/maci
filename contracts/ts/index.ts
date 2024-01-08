@@ -22,5 +22,5 @@ export { formatProofForVerifierContract, getDefaultSigner, getSigners } from "./
 export { abiDir, solDir } from "./constants";
 export { parseArtifact } from "./abi";
 
-export type { IVerifyingKeyStruct, SnarkProof } from "./types";
+export type { IVerifyingKeyStruct, SnarkProof, Groth16Proof } from "./types";
 export * from "../typechain-types";

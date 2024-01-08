@@ -1,4 +1,4 @@
-import { BigIntVariants, StringifiedBigInts } from "./types";
+import type { BigIntVariants, StringifiedBigInts } from "./types";
 
 /**
  * Given an input containing string values, convert them

@@ -11,30 +11,26 @@ import {
   genTreeCommitment,
 } from "maci-crypto";
 import {
-  PubKey,
-  ICommand,
   PCommand,
   TCommand,
-  Message,
   Keypair,
-  StateLeaf,
   Ballot,
+  PubKey,
   PrivKey,
+  Message,
   blankStateLeaf,
-  IMessageContractParams,
-  IJsonCommand,
-  IJsonPCommand,
-  IJsonTCommand,
+  type ICommand,
+  type StateLeaf,
+  type IMessageContractParams,
+  type IJsonCommand,
+  type IJsonPCommand,
+  type IJsonTCommand,
 } from "maci-domainobjs";
 
 import assert from "assert";
 
 import type { MaciState } from "./MaciState";
-import type { PathElements } from "maci-crypto";
-
-import { STATE_TREE_ARITY, MESSAGE_TREE_ARITY } from "./utils/constants";
-import { ProcessMessageErrors, ProcessMessageError } from "./utils/errors";
-import {
+import type {
   CircuitInputs,
   TreeDepths,
   MaxValues,
@@ -46,6 +42,10 @@ import {
   ISubsidyCircuitInputs,
   IProcessMessagesCircuitInputs,
 } from "./utils/types";
+import type { PathElements } from "maci-crypto";
+
+import { STATE_TREE_ARITY, MESSAGE_TREE_ARITY } from "./utils/constants";
+import { ProcessMessageErrors, ProcessMessageError } from "./utils/errors";
 import { packTallyVotesSmallVals, packSubsidySmallVals } from "./utils/utils";
 
 /**

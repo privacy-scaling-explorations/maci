@@ -19,7 +19,6 @@
     "ts-mocha": "^10.0.0"
   },
   "dependencies": {
-    "base64url": "^3.0.1",
     "maci-crypto": "^1.1.2"
   },
   "nyc": {

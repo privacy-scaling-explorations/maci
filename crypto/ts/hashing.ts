@@ -1,5 +1,5 @@
 import { poseidonPerm } from "@zk-kit/poseidon-cipher";
-import { utils } from "ethers";
+import { solidityPackedSha256 } from "ethers";
 
 import assert from "assert";
 
@@ -21,7 +21,7 @@ export const sha256Hash = (input: bigint[]): bigint => {
 
   return (
     BigInt(
-      utils.soliditySha256(
+      solidityPackedSha256(
         types,
         input.map((x) => x.toString()),
       ),

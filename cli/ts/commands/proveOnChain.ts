@@ -1,18 +1,18 @@
 /* eslint-disable no-await-in-loop */
-import { BaseContract, BigNumberish } from "ethers";
+import { BaseContract, type BigNumberish } from "ethers";
 import {
-  MACI,
-  AccQueue,
-  Subsidy,
-  Tally,
-  MessageProcessor,
-  Poll as PollContract,
+  type MACI,
+  type AccQueue,
+  type Subsidy,
+  type Tally,
+  type MessageProcessor,
+  type Poll as PollContract,
+  type VkRegistry,
+  type Verifier,
+  type IVerifyingKeyStruct,
   formatProofForVerifierContract,
   getDefaultSigner,
   parseArtifact,
-  VkRegistry,
-  Verifier,
-  IVerifyingKeyStruct,
 } from "maci-contracts";
 import { G1Point, G2Point, hashLeftRight } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";

@@ -5,18 +5,18 @@ import {
   hash4,
   sign,
   verifySignature,
-  Signature,
-  Ciphertext,
-  EcdhSharedKey,
-  Point,
+  type Signature,
+  type Ciphertext,
+  type EcdhSharedKey,
+  type Point,
 } from "maci-crypto";
 
 import assert from "assert";
 
 import type { ICommand, IJsonPCommand } from "./types";
+import type { PrivKey } from "../privateKey";
 
 import { Message } from "../message";
-import { PrivKey } from "../privateKey";
 import { PubKey } from "../publicKey";
 
 export interface IDecryptMessage {

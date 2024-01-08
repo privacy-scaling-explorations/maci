@@ -1,6 +1,6 @@
 import { BaseContract } from "ethers";
 import {
-  MACI,
+  type MACI,
   deployMessageProcessor,
   deploySubsidy,
   deployTally,
@@ -9,9 +9,10 @@ import {
 } from "maci-contracts";
 import { PubKey } from "maci-domainobjs";
 
+import type { PollContracts } from "../utils/interfaces";
+
 import { banner } from "../utils/banner";
 import { contractExists } from "../utils/contracts";
-import { PollContracts } from "../utils/interfaces";
 import { readContractAddress, storeContractAddress } from "../utils/storage";
 import { info, logError, logGreen } from "../utils/theme";
 

@@ -1,5 +1,5 @@
 import { BaseContract } from "ethers";
-import { MACI, Poll, getDefaultSigner, parseArtifact } from "maci-contracts";
+import { type MACI, type Poll, getDefaultSigner, parseArtifact } from "maci-contracts";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs";
 

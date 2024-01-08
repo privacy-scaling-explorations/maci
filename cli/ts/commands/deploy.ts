@@ -7,7 +7,7 @@ import {
   getDefaultSigner,
 } from "maci-contracts";
 
-import { logError, logGreen, success, DEFAULT_INITIAL_VOICE_CREDITS, DeployedContracts } from "../utils";
+import { logError, logGreen, success, DEFAULT_INITIAL_VOICE_CREDITS, type DeployedContracts } from "../utils";
 import { banner } from "../utils/banner";
 import { readContractAddress, storeContractAddress } from "../utils/storage";
 
