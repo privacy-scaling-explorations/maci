@@ -2,7 +2,7 @@
 title: Integrating MACI
 description: How to integrate MACI into your application
 sidebar_label: Integrating
-sidebar_position: 10
+sidebar_position: 11
 ---
 
 # Integrating MACI

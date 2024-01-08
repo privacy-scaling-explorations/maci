@@ -40,7 +40,6 @@ const getTestVoteValues = (
   const useVotes = votes && userIndex in votes;
   let { voteOptionIndex } = defaultVote;
   let { voteWeight } = defaultVote;
-  let valid = true;
 
   // if we have bribers
   if (bribers && userIndex in bribers) {
@@ -63,10 +62,9 @@ const getTestVoteValues = (
 
   if (useVotes) {
     voteWeight = votes[userIndex][voteIndex].voteWeight;
-    valid = votes[userIndex][voteIndex].valid;
   }
 
-  return { voteOptionIndex, voteWeight, valid };
+  return { voteOptionIndex, voteWeight };
 };
 
 /**
@@ -89,12 +87,11 @@ export const genTestUserCommands = (
     const votes: IVote[] = [];
 
     for (let j = 0; j < numVotesPerUser; j += 1) {
-      const { voteOptionIndex, voteWeight, valid } = getTestVoteValues(i, j, numVotesPerUser, presetVotes, bribers);
+      const { voteOptionIndex, voteWeight } = getTestVoteValues(i, j, numVotesPerUser, presetVotes, bribers);
       const vote = {
         voteOptionIndex,
         voteWeight,
         nonce: j + 1,
-        valid,
       };
 
       votes.push(vote);
