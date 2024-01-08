@@ -167,18 +167,22 @@ describe("integration tests", function test() {
 
       // loop through all users and generate keypair + signup
       for (let i = 0; i < users.length; i += 1) {
-        // generate a keypair
-        const keypair = new Keypair();
+        const user = users[i];
         const timestamp = Date.now();
         // signup
-        const stateIndex = await signup(keypair.pubKey.serialize(), contracts.maciAddress, SG_DATA, ivcpData, true);
+        const stateIndex = await signup(
+          user.keypair.pubKey.serialize(),
+          contracts.maciAddress,
+          SG_DATA,
+          ivcpData,
+          true,
+        );
 
         // signup on local maci state
-        maciState.signUp(keypair.pubKey, BigInt(initialVoiceCredits), BigInt(timestamp));
+        maciState.signUp(user.keypair.pubKey, BigInt(initialVoiceCredits), BigInt(timestamp));
 
         // publish messages
-        for (let j = 0; j < users[i].votes.length; j += 1) {
-          const user = users[i];
+        for (let j = 0; j < user.votes.length; j += 1) {
           const isKeyChange = testCase.changeUsersKeys && j in testCase.changeUsersKeys[i];
           const voteOptionIndex = isKeyChange
             ? testCase.changeUsersKeys?.[i][j].voteOptionIndex
@@ -186,12 +190,17 @@ describe("integration tests", function test() {
           const newVoteWeight = isKeyChange ? testCase.changeUsersKeys?.[i][j].voteWeight : user.votes[j].voteWeight;
           const { nonce } = user.votes[j];
           const salt = `0x${genRandomSalt().toString(16)}`;
-          const userPrivKey = isKeyChange ? user.changeKeypair() : keypair.privKey;
+
+          // store the previous keypair
+          const oldKeypair = user.keypair;
+          // change
+          if (isKeyChange) {
+            user.changeKeypair();
+          }
 
           // actually publish it
-          // @todo if key change we also need a new pub key
           const encryptionKey = await publish(
-            keypair.pubKey.serialize(),
+            user.keypair.pubKey.serialize(),
             Number(stateIndex),
             voteOptionIndex!,
             nonce,
@@ -199,7 +208,8 @@ describe("integration tests", function test() {
             newVoteWeight!,
             contracts.maciAddress,
             salt,
-            userPrivKey.serialize(),
+            // if it's a key change command, then we pass the old private key otherwise just pass the current
+            isKeyChange ? oldKeypair.privKey.serialize() : user.keypair.privKey.serialize(),
             true,
           );
 
@@ -209,14 +219,14 @@ describe("integration tests", function test() {
           // create the command to add to the local state
           const command = new PCommand(
             BigInt(stateIndex),
-            keypair.pubKey,
+            user.keypair.pubKey,
             BigInt(voteOptionIndex!),
             BigInt(newVoteWeight!),
             BigInt(nonce),
             BigInt(pollId),
             BigInt(salt),
           );
-          const signature = command.sign(keypair.privKey);
+          const signature = command.sign(isKeyChange ? oldKeypair.privKey : user.keypair.privKey);
           const message = command.encrypt(signature, Keypair.genEcdhSharedKey(encPrivKey, coordinatorKeypair.pubKey));
           maciState.polls[pollId].publishMessage(message, encPubKey);
         }
