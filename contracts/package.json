@@ -9,7 +9,7 @@
     "compileSol": "./scripts/compileSol.sh $1",
     "moveIntegrationArtifacts": "cp -r artifacts/ ../integrationTests/artifacts",
     "prebuild": "npm run compileSol",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "postbuild": "cp -r ./artifacts ./build",
     "types": "tsc -p tsconfig.json --noEmit",
     "docs": "hardhat docgen",

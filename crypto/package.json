@@ -5,7 +5,7 @@
   "main": "build/ts/index.js",
   "scripts": {
     "watch": "tsc --watch",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "types": "tsc -p tsconfig.json --noEmit",
     "test": "nyc ts-mocha --exit ts/__tests__/*.test.ts",
     "test:crypto": "ts-mocha --exit ts/__tests__/Crypto.test.ts",

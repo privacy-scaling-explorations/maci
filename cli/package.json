@@ -7,12 +7,11 @@
     "maci-cli": "./build/ts/index.js"
   },
   "files": [
-    "ts",
     "package.json"
   ],
   "scripts": {
     "watch": "tsc --watch",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "postbuild": "cp package.json ./build",
     "types": "tsc -p tsconfig.json --noEmit",
     "test": "nyc ts-mocha --exit tests/**/*.test.ts",
