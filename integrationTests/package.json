@@ -13,7 +13,6 @@
     "download-zkeys": "./scripts/download_zkeys.sh"
   },
   "devDependencies": {
-    "@fastify/busboy": "^2.0.0",
     "@types/chai": "^4.3.11",
     "@types/chai-as-promised": "^7.1.8",
     "@types/mocha": "^10.0.6",
@@ -23,7 +22,6 @@
     "hardhat": "^2.19.2",
     "hardhat-artifactor": "^0.2.0",
     "hardhat-contract-sizer": "^2.0.3",
-    "js-yaml": "^4.0.0",
     "mocha": "^10.2.0",
     "ts-mocha": "^10.0.0"
   },
