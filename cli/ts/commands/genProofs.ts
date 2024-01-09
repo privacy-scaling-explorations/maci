@@ -15,7 +15,7 @@ import { Keypair, PrivKey } from "maci-domainobjs";
 import fs from "fs";
 import path from "path";
 
-import type { ISnarkJSVerificationKey } from "snarkjs";
+import type { ISnarkJSVerificationKey } from "../utils/interfaces";
 
 import {
   DEFAULT_ETH_PROVIDER,

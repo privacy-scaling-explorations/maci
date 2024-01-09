@@ -29,7 +29,7 @@
     "maci-core": "^1.1.2",
     "maci-crypto": "^1.1.2",
     "maci-domainobjs": "^1.1.2",
-    "snarkjs": "^0.5.0"
+    "snarkjs": "^0.7.2"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",

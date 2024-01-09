@@ -125,3 +125,18 @@ export interface Proof {
   circuitInputs: CircuitInputs;
   publicInputs: PublicSignals;
 }
+
+// snark js related interfaces
+export type BigNumberish = number | string | bigint;
+
+export interface ISnarkJSVerificationKey {
+  protocol: BigNumberish;
+  curve: BigNumberish;
+  nPublic: BigNumberish;
+  vk_alpha_1: BigNumberish[];
+  vk_beta_2: BigNumberish[][];
+  vk_gamma_2: BigNumberish[][];
+  vk_delta_2: BigNumberish[][];
+  vk_alphabeta_12: BigNumberish[][][];
+  IC: BigNumberish[][];
+}

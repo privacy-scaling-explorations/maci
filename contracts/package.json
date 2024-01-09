@@ -50,8 +50,6 @@
     "chai": "^4.3.10",
     "hardhat-artifactor": "^0.2.0",
     "hardhat-contract-sizer": "^2.10.0",
-    "safe-buffer": "^5.2.1",
-    "shelljs": "^0.8.4",
     "ts-node": "^10.9.1",
     "typescript": "^5.3.2"
   }
