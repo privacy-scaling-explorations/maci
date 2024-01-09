@@ -7,7 +7,7 @@
     "build-test-circuits-c": "bash ./scripts/build_intel.sh",
     "build-test-circuits-wasm": "bash ./scripts/build_arm.sh",
     "watch": "tsc --watch",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "types": "tsc -p tsconfig.json --noEmit",
     "test": "ts-mocha --exit ts/__tests__/*.test.ts",
     "test:hasher": "ts-mocha --exit ts/__tests__/Hasher.test.ts",
