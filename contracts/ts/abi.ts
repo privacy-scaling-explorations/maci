@@ -1,8 +1,9 @@
 import fs from "fs";
 import path from "path";
 
+import type { TAbi } from "./types";
+
 import { abiDir } from "./constants";
-import { TAbi } from "./types";
 
 /**
  * Parse a contract artifact and return its ABI and bytecode.

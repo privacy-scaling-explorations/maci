@@ -1,4 +1,4 @@
-import { SNARK_FIELD_SIZE, hashLeftRight, packPubKey, unpackPubKey, PubKey as RawPubKey } from "maci-crypto";
+import { SNARK_FIELD_SIZE, hashLeftRight, packPubKey, unpackPubKey, type PubKey as RawPubKey } from "maci-crypto";
 
 import assert from "assert";
 

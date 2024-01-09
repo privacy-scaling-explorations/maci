@@ -1,5 +1,3 @@
-import { Message, PubKey } from "maci-domainobjs";
-
 import type {
   AccQueueQuinaryMaci,
   ConstantInitialVoiceCreditProxy,
@@ -18,6 +16,7 @@ import type {
   VkRegistry,
 } from "../typechain-types";
 import type { BigNumberish, Fragment, JsonFragment } from "ethers";
+import type { Message, PubKey } from "maci-domainobjs";
 
 // a type representing the ABI of a contract
 export type TAbi = string | readonly (string | Fragment | JsonFragment)[];
@@ -55,6 +54,17 @@ export interface SnarkProof {
   pi_a: bigint[];
   pi_b: bigint[][];
   pi_c: bigint[];
+}
+
+/**
+ * The data structure representing a Groth16 proof.
+ */
+export interface Groth16Proof {
+  pi_a: string[];
+  pi_b: string[][];
+  pi_c: string[];
+  protocol: string;
+  curve: string;
 }
 
 /**

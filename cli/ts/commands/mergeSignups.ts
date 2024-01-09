@@ -1,5 +1,5 @@
 import { BaseContract } from "ethers";
-import { AccQueue, MACI, Poll, getDefaultSigner, parseArtifact } from "maci-contracts";
+import { type AccQueue, type MACI, type Poll, getDefaultSigner, parseArtifact } from "maci-contracts";
 
 import {
   DEFAULT_SR_QUEUE_OPS,

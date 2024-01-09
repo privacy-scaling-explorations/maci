@@ -1,5 +1,5 @@
 import { BaseContract } from "ethers";
-import { MACI, getDefaultSigner, parseArtifact } from "maci-contracts";
+import { type MACI, getDefaultSigner, parseArtifact } from "maci-contracts";
 import { PubKey } from "maci-domainobjs";
 
 import { banner } from "../utils";

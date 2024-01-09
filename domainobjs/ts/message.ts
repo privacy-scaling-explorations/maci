@@ -2,9 +2,8 @@ import { hash13 } from "maci-crypto";
 
 import assert from "assert";
 
+import type { PubKey } from "./publicKey";
 import type { IMessageContractParams } from "./types";
-
-import { PubKey } from "./publicKey";
 
 /**
  * @notice An encrypted command and signature.

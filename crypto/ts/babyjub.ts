@@ -1,8 +1,9 @@
 import assert from "assert";
 import { randomBytes } from "crypto";
 
+import type { PrivKey } from "./types";
+
 import { SNARK_FIELD_SIZE } from "./constants";
-import { PrivKey } from "./types";
 
 /**
  * @notice A class representing a point on the first group (G1)

@@ -1,9 +1,10 @@
 import { IncrementalQuinTree, hash5 } from "maci-crypto";
-import { PubKey, Keypair, StateLeaf, blankStateLeaf, blankStateLeafHash } from "maci-domainobjs";
+import { type PubKey, type Keypair, StateLeaf, blankStateLeaf, blankStateLeafHash } from "maci-domainobjs";
+
+import type { IJsonMaciState, IJsonPoll, IMaciState, MaxValues, TreeDepths } from "./utils/types";
 
 import { Poll } from "./Poll";
 import { STATE_TREE_ARITY } from "./utils/constants";
-import { IJsonMaciState, IJsonPoll, IMaciState, MaxValues, TreeDepths } from "./utils/types";
 
 /**
  * A representation of the MACI contract.

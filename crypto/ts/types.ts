@@ -68,6 +68,7 @@ export type StringifiedBigInts =
   | string[][][]
   | { [key: string]: StringifiedBigInts }
   | null;
+
 export type BigIntVariants =
   | BigIntVariants[]
   | StringifiedBigInts

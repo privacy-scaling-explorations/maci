@@ -1,11 +1,12 @@
 import { BaseContract } from "ethers";
-import { Tally, MACI, getDefaultSigner, parseArtifact, Subsidy, Poll } from "maci-contracts";
+import { type Tally, type MACI, type Subsidy, type Poll, getDefaultSigner, parseArtifact } from "maci-contracts";
 import { hash2, hash3, genTreeCommitment } from "maci-crypto";
 
 import fs from "fs";
 
+import type { SubsidyData, TallyData } from "../utils/interfaces";
+
 import { banner, contractExists, info, logError, logGreen, logYellow, readContractAddress, success } from "../utils";
-import { SubsidyData, TallyData } from "../utils/interfaces";
 import { verifyPerVOSpentVoiceCredits, verifyTallyResults } from "../utils/verifiers";
 
 /**

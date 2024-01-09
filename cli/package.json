@@ -33,7 +33,7 @@
     "circomlib": "^2.0.5",
     "commander": "^11.1.0",
     "dotenv": "^16.3.1",
-    "ethers": "^6.9.0",
+    "ethers": "^6.9.2",
     "hardhat": "^2.19.2",
     "maci-circuits": "^1.1.2",
     "maci-contracts": "^1.1.2",

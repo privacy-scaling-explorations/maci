@@ -1,5 +1,5 @@
 import { BaseContract } from "ethers";
-import { MACI, TopupCredit, getDefaultSigner, parseArtifact } from "maci-contracts";
+import { type MACI, type TopupCredit, getDefaultSigner, parseArtifact } from "maci-contracts";
 
 import { banner } from "../utils/banner";
 import { contractExists } from "../utils/contracts";

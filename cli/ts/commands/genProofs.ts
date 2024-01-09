@@ -1,7 +1,14 @@
-import { BaseContract, BigNumberish } from "ethers";
+import { BaseContract, type BigNumberish } from "ethers";
 import { extractVk, genProof, verifyProof } from "maci-circuits";
-import { MACI, AccQueue, Poll, genMaciStateFromContract, getDefaultSigner, parseArtifact } from "maci-contracts";
-import { CircuitInputs, IJsonMaciState, MaciState } from "maci-core";
+import {
+  type MACI,
+  type AccQueue,
+  type Poll,
+  genMaciStateFromContract,
+  getDefaultSigner,
+  parseArtifact,
+} from "maci-contracts";
+import { type CircuitInputs, type IJsonMaciState, MaciState } from "maci-core";
 import { hash3, hashLeftRight, genTreeCommitment } from "maci-crypto";
 import { Keypair, PrivKey } from "maci-domainobjs";
 

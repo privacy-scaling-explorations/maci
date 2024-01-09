@@ -1,6 +1,6 @@
 import { BaseContract } from "ethers";
 import { extractVk } from "maci-circuits";
-import { VkRegistry, getDefaultSigner, parseArtifact } from "maci-contracts";
+import { type VkRegistry, getDefaultSigner, parseArtifact } from "maci-contracts";
 import { G1Point, G2Point } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 

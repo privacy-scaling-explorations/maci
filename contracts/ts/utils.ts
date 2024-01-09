@@ -1,12 +1,10 @@
-import { FeeData, Signer } from "ethers";
 // eslint-disable-next-line
 // @ts-ignore typedoc doesn't want to get types from toolbox
 import { ethers } from "hardhat";
 
-import type { Action, SnarkProof } from "./types";
-import type { Groth16Proof } from "snarkjs";
-
-import { Ownable } from "../typechain-types";
+import type { Action, SnarkProof, Groth16Proof } from "./types";
+import type { Ownable } from "../typechain-types";
+import type { FeeData, Signer } from "ethers";
 
 /**
  * Format a SnarkProof type to an array of strings

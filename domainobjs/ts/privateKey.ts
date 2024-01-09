@@ -1,4 +1,4 @@
-import { SNARK_FIELD_SIZE, formatPrivKeyForBabyJub, PrivKey as RawPrivKey } from "maci-crypto";
+import { SNARK_FIELD_SIZE, formatPrivKeyForBabyJub, type PrivKey as RawPrivKey } from "maci-crypto";
 
 import type { IJsonPrivateKey } from "./types";
 

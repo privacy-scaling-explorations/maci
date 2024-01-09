@@ -8,10 +8,12 @@ import { SignUpGatekeeper } from "./SignUpGatekeeper.sol";
 /// @notice A SignUpGatekeeper which allows anyone to sign up.
 contract FreeForAllGatekeeper is SignUpGatekeeper {
   /// @notice Create a new instance of FreeForAllGatekeeper
+  // solhint-disable-next-line no-empty-blocks
   constructor() payable {}
 
   /// @notice setMaciInstance does nothing in this gatekeeper
   /// @param _maci The MACI contract
+  // solhint-disable-next-line no-empty-blocks
   function setMaciInstance(MACI _maci) public override {}
 
   /// @notice Registers the user without any restrictions.
