@@ -33,8 +33,10 @@ jobs:
         run: |
           git config --global url."https://github.com/".insteadOf git://github.com/
           npm install
-          npx lerna bootstrap
+          npm run bootstrap
           npm run build
+        env:
+          STATE_TREE_DEPTH: ${{ vars.STATE_TREE_DEPTH }}
 
       - name: Publish NPM
         run: |

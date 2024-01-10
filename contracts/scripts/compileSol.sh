@@ -15,7 +15,7 @@ echo 'Writing Merkle zeros contracts'
 ./scripts/writeMerkleZeroesContracts.sh 
 
 echo 'Writing empty ballot tree root contract'
-./scripts/writeEmptyBallotRoots.sh $1
+./scripts/writeEmptyBallotRoots.sh
 
 echo 'Building contracts with Hardhat'
 npx hardhat compile
