@@ -10,7 +10,7 @@ const genEmptyBallotRootsContract = (): string => {
     .toString();
 
   // This hard-coded value should be consistent with the value of `stateTreeDepth` of MACI.sol
-  const stateTreeDepth = process.argv[2] ? Number.parseInt(process.argv[2], 10) : 10;
+  const stateTreeDepth = process.env.STATE_TREE_DEPTH ? Number.parseInt(process.env.STATE_TREE_DEPTH, 10) : 10;
 
   let r = "";
   for (let i = 1; i < 6; i += 1) {

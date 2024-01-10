@@ -33,11 +33,12 @@ jobs:
           npm install
           npm run bootstrap
           npm run build
+        env:
+          STATE_TREE_DEPTH: 6
 
-      - name: Compile contracts with ceremony params and run hardhat fork
+      - name: Run hardhat fork
         run: |
           cd contracts
-          npm run compileSol 6
           npm run hardhat &
 
       - name: Download rapidsnark (1c137)
@@ -53,4 +54,5 @@ jobs:
         run: ./.github/scripts/ceremony-param-tests-c-witness.sh
 
       - name: Stop Hardhat
+        if: always()
         run: kill $(lsof -t -i:8545)

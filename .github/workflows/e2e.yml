@@ -30,8 +30,10 @@ jobs:
       - name: Initialize Project
         run: |
           npm install
-          npx lerna bootstrap
+          npm run bootstrap
           npm run build
+        env:
+          STATE_TREE_DEPTH: ${{ vars.STATE_TREE_DEPTH }}
 
       - name: Compile Contracts
         run: |
