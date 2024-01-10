@@ -18,7 +18,7 @@ HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js setVerifyingKeys
 HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js create -s 6 -q true
 HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js deployPoll \
     -pk macipk.ea638a3366ed91f2e955110888573861f7c0fc0bb5fb8b8dca9cd7a08d7d6b93 \
-    --duration 30 \
+    --duration 300 \
     --max-messages 390625 \
     --max-vote-options 125 \
     --int-state-tree-depth 2 \
@@ -47,7 +47,7 @@ HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js publish \
     --nonce 2 \
     --poll-id 0 \
     -q true
-HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js timeTravel -s 100 -q true
+HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js timeTravel -s 300 -q true
 HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js mergeSignups --poll-id 0 -q true
 HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js mergeMessages --poll-id 0 -q true
 HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js genProofs \

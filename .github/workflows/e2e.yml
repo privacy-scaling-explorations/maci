@@ -41,7 +41,7 @@ jobs:
       - name: Publish Project
         run: |
           # Prevent `git commit error` when running `lerna version`
-          # It will not pushed to GitHub. It is ephemeral
+          # It creates an ephemeral commit that will not be pushed to GitHub
           git config --global user.email "you@example.com"
           git config --global user.name "Your Name"
 
