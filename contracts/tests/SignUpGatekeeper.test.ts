@@ -1,13 +1,12 @@
 import { expect } from "chai";
 import { AbiCoder, ZeroAddress, Signer } from "ethers";
-import { STATE_TREE_DEPTH } from "maci-core";
 import { Keypair } from "maci-domainobjs";
 
 import { deploySignupToken, deploySignupTokenGatekeeper, deployFreeForAllSignUpGatekeeper } from "../ts/deploy";
 import { getDefaultSigner } from "../ts/utils";
 import { FreeForAllGatekeeper, MACI, SignUpToken, SignUpTokenGatekeeper } from "../typechain-types";
 
-import { initialVoiceCreditBalance } from "./constants";
+import { STATE_TREE_DEPTH, initialVoiceCreditBalance } from "./constants";
 import { deployTestContracts } from "./utils";
 
 describe("SignUpGatekeeper", () => {

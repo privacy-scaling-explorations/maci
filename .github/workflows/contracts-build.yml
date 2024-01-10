@@ -31,10 +31,6 @@ jobs:
           npm run bootstrap
           npm run build
 
-      - name: Compile Solidity
-        run: npm run compileSol
-        working-directory: contracts
-
       - name: Test
         run: npm run test
         working-directory: contracts

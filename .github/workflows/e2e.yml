@@ -5,6 +5,9 @@ on:
     branches: [master, dev]
   pull_request:
 
+env:
+  STATE_TREE_DEPTH: ${{ vars.STATE_TREE_DEPTH }}
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
@@ -32,13 +35,6 @@ jobs:
           npm install
           npm run bootstrap
           npm run build
-        env:
-          STATE_TREE_DEPTH: ${{ vars.STATE_TREE_DEPTH }}
-
-      - name: Compile Contracts
-        run: |
-          cd contracts
-          npm run compileSol
 
       - name: Publish Project
         run: |

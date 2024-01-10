@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: 0 0 * * *
 
+env:
+  STATE_TREE_DEPTH: ${{ vars.STATE_TREE_DEPTH }}
+
 jobs:
   test-with-ceremony-keys:
     runs-on: ubuntu-22.04
@@ -33,8 +36,6 @@ jobs:
           npm install
           npm run bootstrap
           npm run build
-        env:
-          STATE_TREE_DEPTH: 6
 
       - name: Run hardhat fork
         run: |
