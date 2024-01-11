@@ -6,27 +6,18 @@ import { PrivKey, Keypair, PCommand, Message, Ballot } from "maci-domainobjs";
 
 import path from "path";
 
-import { STATE_TREE_DEPTH } from "./utils/constants";
+import {
+  STATE_TREE_DEPTH,
+  duration,
+  maxValues,
+  messageBatchSize,
+  treeDepths,
+  voiceCreditBalance,
+} from "./utils/constants";
 import { getSignal } from "./utils/utils";
 
 describe("ProcessMessage circuit", function test() {
   this.timeout(900000);
-
-  const voiceCreditBalance = BigInt(100);
-  const duration = 30;
-  const maxValues = {
-    maxUsers: 25,
-    maxMessages: 25,
-    maxVoteOptions: 25,
-  };
-
-  const treeDepths = {
-    intStateTreeDepth: 2,
-    messageTreeDepth: 2,
-    messageTreeSubDepth: 1,
-    voteOptionTreeDepth: 2,
-  };
-  const messageBatchSize = 5;
 
   const coordinatorKeypair = new Keypair();
 
@@ -54,12 +45,7 @@ describe("ProcessMessage circuit", function test() {
       // Sign up and publish
       const userKeypair = new Keypair(new PrivKey(BigInt(1)));
       stateIndex = BigInt(
-        maciState.signUp(
-          userKeypair.pubKey,
-          voiceCreditBalance,
-          // BigInt(1),
-          BigInt(Math.floor(Date.now() / 1000)),
-        ),
+        maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000))),
       );
 
       pollId = maciState.deployPoll(
@@ -279,11 +265,13 @@ describe("ProcessMessage circuit", function test() {
   describe("1 user, key-change", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const voteWeight = BigInt(9);
-    let stateIndex;
-    let pollId;
-    let poll;
+    let stateIndex: number;
+    let pollId: number;
+    let poll: Poll;
     const messages: Message[] = [];
     const commands: PCommand[] = [];
+
+    const NUM_BATCHES = 2;
 
     before(() => {
       // Sign up and publish
@@ -379,7 +367,6 @@ describe("ProcessMessage circuit", function test() {
       );
     });
 
-    const NUM_BATCHES = 2;
     describe(`1 user, ${messageBatchSize * NUM_BATCHES} messages`, () => {
       it("should produce the correct state root and ballot root", async () => {
         const state = new MaciState(STATE_TREE_DEPTH);

@@ -13,7 +13,7 @@ describe("Splice circuit", () => {
     circuit = await tester.wasm(circuitPath);
   });
 
-  it("Should output the correct reconstructed level", async () => {
+  it("should output the correct reconstructed level", async () => {
     for (let index = 0; index < 5; index += 1) {
       const items = [0n, 20n, 30n, 40n];
       const leaf = 10n;

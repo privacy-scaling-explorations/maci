@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import tester from "circom_tester";
-import { stringifyBigInts, genRandomSalt } from "maci-crypto";
-import { Keypair, PCommand } from "maci-domainobjs";
+import { stringifyBigInts, genRandomSalt, genPrivKey } from "maci-crypto";
+import { Keypair, PCommand, PrivKey } from "maci-domainobjs";
 
 import path from "path";
 
@@ -15,7 +15,7 @@ describe("MessageToCommand circuit", () => {
     circuit = await tester.wasm(circuitPath);
   });
 
-  it("Should decrypt a Message and output the fields of a Command", async () => {
+  it("should decrypt a Message and output the fields of a Command", async () => {
     const { privKey } = new Keypair();
     const k = new Keypair();
 
@@ -82,5 +82,42 @@ describe("MessageToCommand circuit", () => {
 
     const sigS = await getSignal(circuit, witness, "sigS");
     expect(signature.S.toString()).to.be.eq(sigS.toString());
+  });
+
+  it("should not throw when given an invalid key which cannot decrypt a Message", async () => {
+    const { privKey } = new Keypair();
+    const k = new Keypair();
+
+    const pubKey1 = k.pubKey;
+
+    const newPubKey = k.pubKey;
+
+    const ecdhSharedKey = Keypair.genEcdhSharedKey(privKey, pubKey1);
+    const random50bitBigInt = (): bigint =>
+      // eslint-disable-next-line no-bitwise
+      ((BigInt(1) << BigInt(50)) - BigInt(1)) & BigInt(genRandomSalt().toString());
+
+    const command: PCommand = new PCommand(
+      random50bitBigInt(),
+      newPubKey,
+      random50bitBigInt(),
+      random50bitBigInt(),
+      random50bitBigInt(),
+      random50bitBigInt(),
+      // genRandomSalt(),
+      BigInt(123),
+    );
+    const signature = command.sign(privKey);
+    const message = command.encrypt(signature, ecdhSharedKey);
+
+    const circuitInputs = stringifyBigInts({
+      message: message.asCircuitInputs(),
+      // invalid private key
+      encPrivKey: new PrivKey(genPrivKey()).asCircuitInputs(),
+      encPubKey: pubKey1.asCircuitInputs(),
+    });
+
+    const witness = await circuit.calculateWitness(circuitInputs, true);
+    await circuit.checkConstraints(witness);
   });
 });

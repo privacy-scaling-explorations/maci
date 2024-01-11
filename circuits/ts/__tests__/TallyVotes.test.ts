@@ -6,19 +6,11 @@ import { Keypair, PCommand, Message } from "maci-domainobjs";
 
 import path from "path";
 
-import { STATE_TREE_DEPTH } from "./utils/constants";
+import { STATE_TREE_DEPTH, duration, maxValues, messageBatchSize, voiceCreditBalance } from "./utils/constants";
 import { generateRandomIndex } from "./utils/utils";
 
 describe("TallyVotes circuit", function test() {
   this.timeout(900000);
-
-  const voiceCreditBalance = BigInt(100);
-  const duration = 30;
-  const maxValues = {
-    maxUsers: 25,
-    maxMessages: 25,
-    maxVoteOptions: 25,
-  };
 
   const treeDepths = {
     intStateTreeDepth: 1,
@@ -26,8 +18,6 @@ describe("TallyVotes circuit", function test() {
     messageTreeSubDepth: 1,
     voteOptionTreeDepth: 2,
   };
-
-  const messageBatchSize = 5;
 
   const coordinatorKeypair = new Keypair();
 

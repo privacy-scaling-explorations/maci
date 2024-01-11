@@ -15,7 +15,7 @@ describe("UnpackElement circuit", () => {
       circuit = await tester.wasm(circuitPath);
     });
 
-    it("Should unpack a field element with 5 packed values correctly", async () => {
+    it("should unpack a field element with 5 packed values correctly", async () => {
       const elements: string[] = [];
       for (let i = 0; i < 5; i += 1) {
         let e = (BigInt(genRandomSalt().toString()) % BigInt(2 ** 50)).toString(2);
@@ -46,7 +46,7 @@ describe("UnpackElement circuit", () => {
       circuit = await tester.wasm(circuitPath);
     });
 
-    it("Should unpack a field element with 4 packed values correctly", async () => {
+    it("should unpack a field element with 4 packed values correctly", async () => {
       const elements: string[] = [];
       for (let i = 0; i < 4; i += 1) {
         let e = (BigInt(genRandomSalt().toString()) % BigInt(2 ** 50)).toString(2);

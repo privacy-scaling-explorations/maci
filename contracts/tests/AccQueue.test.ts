@@ -30,15 +30,15 @@ describe("AccQueues", () => {
       aqContract = r.aqContract as AccQueueContract;
     });
 
-    it("Should be empty upon deployment", async () => {
+    it("should be empty upon deployment", async () => {
       await testEmptyUponDeployment(aqContract);
     });
 
-    it("Should not be able to get a subroot that does not exist", async () => {
+    it("should not be able to get a subroot that does not exist", async () => {
       await expect(aqContract.getSubRoot(5)).to.be.revertedWithCustomError(aqContract, "InvalidIndex");
     });
 
-    it("Should enqueue leaves", async () => {
+    it("should enqueue leaves", async () => {
       await testEnqueue(aqContract, HASH_LENGTH, SUB_DEPTH, ZERO);
     });
   });
@@ -54,15 +54,15 @@ describe("AccQueues", () => {
       aqContract = r.aqContract as AccQueueContract;
     });
 
-    it("Should be empty upon deployment", async () => {
+    it("should be empty upon deployment", async () => {
       await testEmptyUponDeployment(aqContract);
     });
 
-    it("Should not be able to get a subroot that does not exist", async () => {
+    it("should not be able to get a subroot that does not exist", async () => {
       await expect(aqContract.getSubRoot(5)).to.be.revertedWithCustomError(aqContract, "InvalidIndex");
     });
 
-    it("Should enqueue leaves", async () => {
+    it("should enqueue leaves", async () => {
       await testEnqueue(aqContract, HASH_LENGTH, SUB_DEPTH, ZERO);
     });
   });
@@ -80,11 +80,11 @@ describe("AccQueues", () => {
       aqContract = r.aqContract as AccQueueContract;
     });
 
-    it("Should fill an empty subtree", async () => {
+    it("should fill an empty subtree", async () => {
       await testEmptySubtree(aq, aqContract, 0);
     });
 
-    it("Should fill an incomplete subtree", async () => {
+    it("should fill an incomplete subtree", async () => {
       await testIncompleteSubtree(aq, aqContract);
     });
 
@@ -110,11 +110,11 @@ describe("AccQueues", () => {
       aqContract = r.aqContract as AccQueueContract;
     });
 
-    it("Should fill an empty subtree", async () => {
+    it("should fill an empty subtree", async () => {
       await testEmptySubtree(aq, aqContract, 0);
     });
 
-    it("Should fill an incomplete subtree", async () => {
+    it("should fill an incomplete subtree", async () => {
       await testIncompleteSubtree(aq, aqContract);
     });
 
@@ -140,11 +140,11 @@ describe("AccQueues", () => {
       aqContract = r.aqContract as AccQueueContract;
     });
 
-    it("Should fill an empty subtree", async () => {
+    it("should fill an empty subtree", async () => {
       await testEmptySubtree(aq, aqContract, 0);
     });
 
-    it("Should fill an incomplete subtree", async () => {
+    it("should fill an incomplete subtree", async () => {
       await testIncompleteSubtree(aq, aqContract);
     });
 
@@ -170,11 +170,11 @@ describe("AccQueues", () => {
       aqContract = r.aqContract as AccQueueContract;
     });
 
-    it("Should fill an empty subtree", async () => {
+    it("should fill an empty subtree", async () => {
       await testEmptySubtree(aq, aqContract, 0);
     });
 
-    it("Should fill an incomplete subtree", async () => {
+    it("should fill an incomplete subtree", async () => {
       await testIncompleteSubtree(aq, aqContract);
     });
 
@@ -193,7 +193,7 @@ describe("AccQueues", () => {
     const ZERO = BigInt(0);
     const MAIN_DEPTH = 3;
 
-    it("Should produce the correct main roots", async () => {
+    it("should produce the correct main roots", async () => {
       const r = await deployTestAccQueues("AccQueueBinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
       await testMergeAgain(r.aq, r.aqContract as AccQueueContract, MAIN_DEPTH);
     });
@@ -204,7 +204,7 @@ describe("AccQueues", () => {
     const HASH_LENGTH = 2;
     const ZERO = BigInt(0);
 
-    it("Should not be possible to merge into a tree of depth 0", async () => {
+    it("should not be possible to merge into a tree of depth 0", async () => {
       const r = await deployTestAccQueues("AccQueueBinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
 
       const aqContract = r.aqContract as AccQueueContract;
@@ -227,7 +227,7 @@ describe("AccQueues", () => {
       expect(srtRoot.toString()).to.eq(expectedRoot.toString());
     });
 
-    it("Should not be possible to merge subroots into a tree shorter than the SRT depth", async () => {
+    it("should not be possible to merge subroots into a tree shorter than the SRT depth", async () => {
       const r = await deployTestAccQueues("AccQueueBinary0", 1, HASH_LENGTH, ZERO);
       const aqContract = r.aqContract as AccQueueContract;
       for (let i = 0; i < 4; i += 1) {
@@ -271,7 +271,7 @@ describe("AccQueues", () => {
 
     const testParams = [1, 2, 3, 4];
     testParams.forEach((testParam) => {
-      it(`Should merge ${testParam} subtrees`, async () => {
+      it(`should merge ${testParam} subtrees`, async () => {
         const r = await deployTestAccQueues("AccQueueBinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
         const { aq } = r;
         const aqContract = r.aqContract as AccQueueContract;
@@ -288,7 +288,7 @@ describe("AccQueues", () => {
 
     const testParams = [1, 5, 26];
     testParams.forEach((testParam) => {
-      it(`Should merge ${testParam} subtrees`, async () => {
+      it(`should merge ${testParam} subtrees`, async () => {
         const r = await deployTestAccQueues("AccQueueQuinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
         const { aq } = r;
         const aqContract = r.aqContract as AccQueueContract;
@@ -312,7 +312,7 @@ describe("AccQueues", () => {
 
     const testParams = [1, 2, 3, 9];
     testParams.forEach((testParam) => {
-      it(`Should insert ${testParam} subtrees`, async () => {
+      it(`should insert ${testParam} subtrees`, async () => {
         const r = await deployTestAccQueues("AccQueueBinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
         const { aq } = r;
         const aqContract = r.aqContract as AccQueueContract;
@@ -336,7 +336,7 @@ describe("AccQueues", () => {
 
     const testParams = [1, 4, 9, 26];
     testParams.forEach((testParam) => {
-      it(`Should insert ${testParam} subtrees`, async () => {
+      it(`should insert ${testParam} subtrees`, async () => {
         const r = await deployTestAccQueues("AccQueueQuinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
         const { aq } = r;
         const aqContract = r.aqContract as AccQueueContract;
@@ -360,7 +360,7 @@ describe("AccQueues", () => {
       aqContract = r.aqContract as AccQueueContract;
     });
 
-    it(`Should progressively merge ${NUM_SUBTREES} subtrees`, async () => {
+    it(`should progressively merge ${NUM_SUBTREES} subtrees`, async () => {
       for (let i = 0; i < NUM_SUBTREES; i += 1) {
         const leaf = BigInt(123);
         // eslint-disable-next-line no-await-in-loop
@@ -409,7 +409,7 @@ describe("AccQueues", () => {
       aqContract = r.aqContract as AccQueueContract;
     });
 
-    it(`Should progressively merge ${NUM_SUBTREES} subtrees`, async () => {
+    it(`should progressively merge ${NUM_SUBTREES} subtrees`, async () => {
       for (let i = 0; i < NUM_SUBTREES; i += 1) {
         const leaf = BigInt(123);
         // eslint-disable-next-line no-await-in-loop

@@ -6,15 +6,15 @@ import { genTreeCommitment, genTreeProof } from "../utils";
 
 describe("Utils", () => {
   describe("stringifyBigInts", () => {
-    it("Should work on a BigInt input", () => {
+    it("should work on a BigInt input", () => {
       expect(stringifyBigInts(BigInt(1))).to.eq("1");
     });
 
-    it("Should work on a BigInt[] input", () => {
+    it("should work on a BigInt[] input", () => {
       expect(stringifyBigInts([BigInt(1), BigInt(2)])).to.deep.eq(["1", "2"]);
     });
 
-    it("Should work on a BigInt[][] input", () => {
+    it("should work on a BigInt[][] input", () => {
       expect(
         stringifyBigInts([
           [BigInt(1), BigInt(2)],
@@ -26,7 +26,7 @@ describe("Utils", () => {
       ]);
     });
 
-    it("Should work on a BigInt[][][] input", () => {
+    it("should work on a BigInt[][][] input", () => {
       expect(
         stringifyBigInts([
           [
@@ -50,15 +50,15 @@ describe("Utils", () => {
       ]);
     });
 
-    it("Should work on a { [key: string]: BigInt } input", () => {
+    it("should work on a { [key: string]: BigInt } input", () => {
       expect(stringifyBigInts({ a: BigInt(1), b: BigInt(2) })).to.deep.eq({ a: "1", b: "2" });
     });
 
-    it("Should work on a null input", () => {
+    it("should work on a null input", () => {
       expect(stringifyBigInts(null)).to.eq(null);
     });
 
-    it("Should return the input if it is not a valid value", () => {
+    it("should return the input if it is not a valid value", () => {
       expect(stringifyBigInts("A")).to.eq("A");
     });
 
@@ -69,19 +69,19 @@ describe("Utils", () => {
   });
 
   describe("unstringifyBigInts", () => {
-    it("Should work on a string input with decimal numbers", () => {
+    it("should work on a string input with decimal numbers", () => {
       expect(unstringifyBigInts("1")).to.eq(BigInt(1));
     });
 
-    it("Should work on a string input with hex number", () => {
+    it("should work on a string input with hex number", () => {
       expect(unstringifyBigInts("0xA")).to.eq(BigInt(10));
     });
 
-    it("Should work on a string[] input", () => {
+    it("should work on a string[] input", () => {
       expect(unstringifyBigInts(["1", "2"])).to.deep.eq([BigInt(1), BigInt(2)]);
     });
 
-    it("Should work on a string[][] input", () => {
+    it("should work on a string[][] input", () => {
       expect(
         unstringifyBigInts([
           ["1", "2"],
@@ -93,7 +93,7 @@ describe("Utils", () => {
       ]);
     });
 
-    it("Should work on a string[][][] input", () => {
+    it("should work on a string[][][] input", () => {
       expect(
         unstringifyBigInts([
           [
@@ -117,15 +117,15 @@ describe("Utils", () => {
       ]);
     });
 
-    it("Should work on a { [key: string]: string } input", () => {
+    it("should work on a { [key: string]: string } input", () => {
       expect(unstringifyBigInts({ a: "1", b: "2" })).to.deep.eq({ a: BigInt(1), b: BigInt(2) });
     });
 
-    it("Should work on a null input", () => {
+    it("should work on a null input", () => {
       expect(unstringifyBigInts(null)).to.eq(null);
     });
 
-    it("Should return the input if it is not a valid value", () => {
+    it("should return the input if it is not a valid value", () => {
       expect(unstringifyBigInts("A")).to.eq("A");
     });
   });

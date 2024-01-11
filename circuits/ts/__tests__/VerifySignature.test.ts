@@ -16,7 +16,7 @@ describe("Signature verification circuit", function test() {
     circuit = await tester.wasm(circuitPath);
   });
 
-  it("verifies a valid signature", async () => {
+  it("should verify a valid signature", async () => {
     const keypair = new Keypair();
     const command = new PCommand(BigInt(0), keypair.pubKey, BigInt(123), BigInt(123), BigInt(1), BigInt(2), BigInt(3));
 
@@ -39,7 +39,7 @@ describe("Signature verification circuit", function test() {
     expect(isValid.toString()).to.be.eq("1");
   });
 
-  it("rejects an invalid signature (wrong signer)", async () => {
+  it("should reject an invalid signature (wrong signer)", async () => {
     const keypair = new Keypair();
     const command = new PCommand(BigInt(0), keypair.pubKey, BigInt(123), BigInt(123), BigInt(1), BigInt(2), BigInt(3));
 
@@ -72,7 +72,7 @@ describe("Signature verification circuit", function test() {
     expect((await getSignal(circuit, witness, "verifier.isCcZero.out")).toString()).to.be.eq("1");
   });
 
-  it("rejects an invalid signature", async () => {
+  it("should reject an invalid signature (wrong S)", async () => {
     const keypair = new Keypair();
     const command = new PCommand(BigInt(0), keypair.pubKey, BigInt(123), BigInt(123), BigInt(1), BigInt(2), BigInt(3));
 

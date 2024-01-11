@@ -52,14 +52,14 @@ describe("verifyingKey", () => {
   });
 
   describe("equals", () => {
-    it("Should return true for equal verifying keys", () => {
+    it("should return true for equal verifying keys", () => {
       const file = path.join(__dirname, "./artifacts/test_vk.json");
       const j = fs.readFileSync(file).toString();
       const vk = VerifyingKey.fromJSON(j);
       const vk2 = vk.copy();
       expect(vk.equals(vk2)).to.eq(true);
     });
-    it("Should return false for unequal verifying keys", () => {
+    it("should return false for unequal verifying keys", () => {
       const file = path.join(__dirname, "./artifacts/test_vk.json");
       const j = fs.readFileSync(file).toString();
       const vk = VerifyingKey.fromJSON(j);
@@ -78,7 +78,7 @@ describe("verifyingKey", () => {
   });
 
   describe("fromObj", () => {
-    it("Should convert an object to a VerifyingKey", () => {
+    it("should convert an object to a VerifyingKey", () => {
       const file = path.join(__dirname, "./artifacts/test_vk.json");
       const j = fs.readFileSync(file).toString();
       const d = JSON.parse(j) as IVkObjectParams;
@@ -111,7 +111,7 @@ describe("verifyingKey", () => {
   });
 
   describe("asContractParam", () => {
-    it("Should produce an object with the correct properties", () => {
+    it("should produce an object with the correct properties", () => {
       const file = path.join(__dirname, "./artifacts/test_vk.json");
       const j = fs.readFileSync(file).toString();
       const vk = VerifyingKey.fromJSON(j);
@@ -122,7 +122,7 @@ describe("verifyingKey", () => {
   });
 
   describe("fromContract", () => {
-    it("Should produce a VerifyingKey from a contract object", () => {
+    it("should produce a VerifyingKey from a contract object", () => {
       const file = path.join(__dirname, "./artifacts/test_vk.json");
       const j = fs.readFileSync(file).toString();
       const vk = VerifyingKey.fromJSON(j);

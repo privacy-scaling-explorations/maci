@@ -7,9 +7,7 @@ include "./hasherSha256.circom";
 include "./hasherPoseidon.circom";
 include "./unpackElement.circom";
 
-/*
- * Tally votes in the ballots, batch by batch.
- */
+// Tally votes in the ballots, batch by batch.
 template TallyVotes(
     stateTreeDepth,
     intStateTreeDepth,
@@ -192,10 +190,8 @@ template TallyVotes(
     }
 }
 
-/*
- * Verifies the commitment to the current results. Also computes and outputs a
- * commitment to the new results.
- */
+// Verifies the commitment to the current results. Also computes and outputs a
+// commitment to the new results.
 template ResultCommitmentVerifier(voteOptionTreeDepth) {
     var TREE_ARITY = 5;
     var numVoteOptions = TREE_ARITY ** voteOptionTreeDepth;
@@ -257,7 +253,7 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     currentTallyCommitmentHasher.in[1] <== currentSpentVoiceCreditsCommitment.hash;
     currentTallyCommitmentHasher.in[2] <== currentPerVOSpentVoiceCreditsCommitment.hash;
 
-    /*currentTallyCommitmentHasher.hash === currentTallyCommitment;*/
+    // currentTallyCommitmentHasher.hash === currentTallyCommitment
     // Check if the current tally commitment is correct only if this is not the first batch
     component iz = IsZero();
     iz.in <== isFirstBatch;
@@ -305,9 +301,6 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     newTallyCommitmentHasher.in[1] <== newSpentVoiceCreditsCommitment.hash;
     newTallyCommitmentHasher.in[2] <== newPerVOSpentVoiceCreditsCommitment.hash;
 
-    /*log(newResultsCommitment.hash);*/
-    /*log(newSpentVoiceCreditsCommitment.hash);*/
-    /*log(newPerVOSpentVoiceCreditsCommitment.hash);*/
     newTallyCommitmentHasher.hash === newTallyCommitment;
 }
 

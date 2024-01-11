@@ -120,7 +120,7 @@ describe("AccQueue gas benchmarks", () => {
       aqContract = r.aqContract;
     });
 
-    it(`Should enqueue to a subtree of depth ${SUB_DEPTH}`, async () => {
+    it(`should enqueue to a subtree of depth ${SUB_DEPTH}`, async () => {
       for (let i = 0; i < HASH_LENGTH ** SUB_DEPTH; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         const receipt = await aqContract.enqueue(i, { gasLimit: 400000 }).then((tx) => tx.wait());
@@ -141,7 +141,7 @@ describe("AccQueue gas benchmarks", () => {
       aqContract = r.aqContract;
     });
 
-    it(`Should fill to a subtree of depth ${SUB_DEPTH}`, async () => {
+    it(`should fill to a subtree of depth ${SUB_DEPTH}`, async () => {
       for (let i = 0; i < 2; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         await aqContract.enqueue(i, { gasLimit: 800000 }).then((tx) => tx.wait());
@@ -164,7 +164,7 @@ describe("AccQueue gas benchmarks", () => {
       aqContract = r.aqContract;
     });
 
-    it(`Should enqueue to a subtree of depth ${SUB_DEPTH}`, async () => {
+    it(`should enqueue to a subtree of depth ${SUB_DEPTH}`, async () => {
       for (let i = 0; i < HASH_LENGTH ** SUB_DEPTH; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         const receipt = await aqContract.enqueue(i, { gasLimit: 800000 }).then((tx) => tx.wait());
@@ -185,7 +185,7 @@ describe("AccQueue gas benchmarks", () => {
       aqContract = r.aqContract;
     });
 
-    it(`Should fill a subtree of depth ${SUB_DEPTH}`, async () => {
+    it(`should fill a subtree of depth ${SUB_DEPTH}`, async () => {
       for (let i = 0; i < 2; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         await aqContract.enqueue(i, { gasLimit: 800000 }).then((tx) => tx.wait());
@@ -212,7 +212,7 @@ describe("AccQueue gas benchmarks", () => {
       aqContract = r.aqContract;
     });
 
-    it(`Should merge ${NUM_SUBTREES} subtrees`, async () => {
+    it(`should merge ${NUM_SUBTREES} subtrees`, async () => {
       await testOneShot(aq, aqContract, NUM_SUBTREES, MAIN_DEPTH);
     });
   });
@@ -231,7 +231,7 @@ describe("AccQueue gas benchmarks", () => {
       aqContract = r.aqContract;
     });
 
-    it(`Should merge ${NUM_SUBTREES} subtrees in ${NUM_MERGES}`, async () => {
+    it(`should merge ${NUM_SUBTREES} subtrees in ${NUM_MERGES}`, async () => {
       await testMultiShot(aq, aqContract, NUM_SUBTREES, MAIN_DEPTH, NUM_MERGES);
     });
   });
@@ -249,7 +249,7 @@ describe("AccQueue gas benchmarks", () => {
       aqContract = r.aqContract;
     });
 
-    it(`Should merge ${NUM_SUBTREES} subtrees`, async () => {
+    it(`should merge ${NUM_SUBTREES} subtrees`, async () => {
       await testOneShot(aq, aqContract, NUM_SUBTREES, MAIN_DEPTH);
     });
   });
@@ -269,7 +269,7 @@ describe("AccQueue gas benchmarks", () => {
       aqContract = r.aqContract;
     });
 
-    it(`Should merge ${NUM_SUBTREES} subtrees in ${NUM_MERGES}`, async () => {
+    it(`should merge ${NUM_SUBTREES} subtrees in ${NUM_MERGES}`, async () => {
       await testMultiShot(aq, aqContract, NUM_SUBTREES, MAIN_DEPTH, NUM_MERGES);
     });
   });

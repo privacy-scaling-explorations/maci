@@ -36,11 +36,13 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
   const signature = command.sign(slKeypair.privKey);
 
   let circuit: tester.WasmTester;
+
   before(async () => {
     const circuitPath = path.resolve(__dirname, "../../circom/test", `stateLeafAndBallotTransformer_test.circom`);
     circuit = await tester.wasm(circuitPath);
   });
-  it("Should output new state leaf and ballot values if the command is valid", async () => {
+
+  it("should output new state leaf and ballot values if the command is valid", async () => {
     const circuitInputs = stringifyBigInts({
       numSignUps,
       maxVoteOptions,
@@ -77,7 +79,7 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
     expect(isValid.toString()).to.be.eq("1");
   });
 
-  it("Should output existing state leaf and ballot values if the command is invalid", async () => {
+  it("should output existing state leaf and ballot values if the command is invalid", async () => {
     const circuitInputs = stringifyBigInts({
       numSignUps,
       maxVoteOptions,
