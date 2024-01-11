@@ -1,10 +1,13 @@
 import "@nomicfoundation/hardhat-toolbox";
+import { config as envConfig } from "dotenv";
 
 import path from "path";
 
 import type { HardhatUserConfig } from "hardhat/config";
 
 import { DEFAULT_ETH_SK, DEFAULT_ETH_PROVIDER } from "./ts/utils/defaults";
+
+envConfig();
 
 const parentDir = __dirname.includes("build") ? ".." : "";
 
