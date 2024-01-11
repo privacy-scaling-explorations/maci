@@ -36,10 +36,10 @@
     "circomlibjs": "^0.1.7",
     "ethers": "^6.9.2",
     "hardhat": "^2.19.4",
-    "maci-circuits": "workspace:^",
-    "maci-core": "workspace:^",
-    "maci-crypto": "workspace:^",
-    "maci-domainobjs": "workspace:^",
+    "maci-circuits": "^1.1.2",
+    "maci-core": "^1.1.2",
+    "maci-crypto": "^1.1.2",
+    "maci-domainobjs": "^1.1.2",
     "solidity-docgen": "^0.6.0-beta.36"
   },
   "devDependencies": {

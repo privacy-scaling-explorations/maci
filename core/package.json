@@ -16,8 +16,8 @@
     "test": "nyc ts-mocha --exit ts/__tests__/*.test.ts"
   },
   "dependencies": {
-    "maci-crypto": "workspace:^",
-    "maci-domainobjs": "workspace:^"
+    "maci-crypto": "^1.1.2",
+    "maci-domainobjs": "^1.1.2"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",

@@ -28,9 +28,9 @@
   },
   "dependencies": {
     "circomlib": "https://github.com/weijiekoh/circomlib#ac85e82c1914d47789e2032fb11ceb2cfdd38a2b",
-    "maci-core": "workspace:^",
-    "maci-crypto": "workspace:^",
-    "maci-domainobjs": "workspace:^",
+    "maci-core": "^1.1.2",
+    "maci-crypto": "^1.1.2",
+    "maci-domainobjs": "^1.1.2",
     "snarkjs": "^0.7.2"
   },
   "devDependencies": {

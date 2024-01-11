@@ -95,13 +95,13 @@ importers:
         specifier: https://github.com/weijiekoh/circomlib#ac85e82c1914d47789e2032fb11ceb2cfdd38a2b
         version: github.com/weijiekoh/circomlib/ac85e82c1914d47789e2032fb11ceb2cfdd38a2b
       maci-core:
-        specifier: workspace:^
+        specifier: ^1.1.2
         version: link:../core
       maci-crypto:
-        specifier: workspace:^
+        specifier: ^1.1.2
         version: link:../crypto
       maci-domainobjs:
-        specifier: workspace:^
+        specifier: ^1.1.2
         version: link:../domainobjs
       snarkjs:
         specifier: ^0.7.2
@@ -162,19 +162,19 @@ importers:
         specifier: ^2.19.2
         version: 2.19.4(ts-node@10.9.2)(typescript@5.3.3)
       maci-circuits:
-        specifier: workspace:^
+        specifier: ^1.1.2
         version: link:../circuits
       maci-contracts:
-        specifier: workspace:^
+        specifier: ^1.1.2
         version: link:../contracts
       maci-core:
-        specifier: workspace:^
+        specifier: ^1.1.2
         version: link:../core
       maci-crypto:
-        specifier: workspace:^
+        specifier: ^1.1.2
         version: link:../crypto
       maci-domainobjs:
-        specifier: workspace:^
+        specifier: ^1.1.2
         version: link:../domainobjs
       prompt:
         specifier: ^1.3.0
@@ -241,16 +241,16 @@ importers:
         specifier: ^2.19.4
         version: 2.19.4(ts-node@10.9.2)(typescript@5.3.3)
       maci-circuits:
-        specifier: workspace:^
+        specifier: ^1.1.2
         version: link:../circuits
       maci-core:
-        specifier: workspace:^
+        specifier: ^1.1.2
         version: link:../core
       maci-crypto:
-        specifier: workspace:^
+        specifier: ^1.1.2
         version: link:../crypto
       maci-domainobjs:
-        specifier: workspace:^
+        specifier: ^1.1.2
         version: link:../domainobjs
       solidity-docgen:
         specifier: ^0.6.0-beta.36
@@ -290,10 +290,10 @@ importers:
   core:
     dependencies:
       maci-crypto:
-        specifier: workspace:^
+        specifier: ^1.1.2
         version: link:../crypto
       maci-domainobjs:
-        specifier: workspace:^
+        specifier: ^1.1.2
         version: link:../domainobjs
     devDependencies:
       "@types/chai":
@@ -364,7 +364,7 @@ importers:
   domainobjs:
     dependencies:
       maci-crypto:
-        specifier: workspace:^
+        specifier: ^1.1.2
         version: link:../crypto
     devDependencies:
       "@types/chai":
@@ -398,22 +398,22 @@ importers:
         specifier: ^6.9.2
         version: 6.9.2
       maci-circuits:
-        specifier: workspace:^
+        specifier: ^1.1.2
         version: link:../circuits
       maci-cli:
-        specifier: workspace:^
+        specifier: ^1.1.2
         version: link:../cli
       maci-contracts:
-        specifier: workspace:^
+        specifier: ^1.1.2
         version: link:../contracts
       maci-core:
-        specifier: workspace:^
+        specifier: ^1.1.2
         version: link:../core
       maci-crypto:
-        specifier: workspace:^
+        specifier: ^1.1.2
         version: link:../crypto
       maci-domainobjs:
-        specifier: workspace:^
+        specifier: ^1.1.2
         version: link:../domainobjs
     devDependencies:
       "@types/chai":
