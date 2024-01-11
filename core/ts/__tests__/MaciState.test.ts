@@ -7,7 +7,14 @@ import { MaciState } from "../MaciState";
 import { STATE_TREE_DEPTH } from "../utils/constants";
 import { IJsonMaciState } from "../utils/types";
 
-import { coordinatorKeypair, duration, maxValues, messageBatchSize, treeDepths, voiceCreditBalance } from "./constants";
+import {
+  coordinatorKeypair,
+  duration,
+  maxValues,
+  messageBatchSize,
+  treeDepths,
+  voiceCreditBalance,
+} from "./utils/constants";
 
 describe("MaciState", function test() {
   this.timeout(100000);
@@ -34,15 +41,7 @@ describe("MaciState", function test() {
         messageBatchSize,
         coordinatorKeypair,
       );
-      const command = new PCommand(
-        BigInt(0),
-        userKeypair.pubKey,
-        BigInt(0),
-        BigInt(0),
-        BigInt(0),
-        BigInt(pollId),
-        BigInt(0),
-      );
+      const command = new PCommand(0n, userKeypair.pubKey, 0n, 0n, 0n, BigInt(pollId), 0n);
 
       const encKeypair = new Keypair();
       const signature = command.sign(encKeypair.privKey);
@@ -67,7 +66,7 @@ describe("MaciState", function test() {
 
       // modify user.voiceCreditBalance
       const m4 = m1.copy();
-      m4.stateLeaves[0].voiceCreditBalance = BigInt(m4.stateLeaves[0].voiceCreditBalance) + BigInt(1);
+      m4.stateLeaves[0].voiceCreditBalance = BigInt(m4.stateLeaves[0].voiceCreditBalance) + 1n;
       expect(m1.equals(m4)).not.to.eq(true);
 
       // modify poll.coordinatorKeypair
@@ -117,7 +116,7 @@ describe("MaciState", function test() {
 
       // modify poll.messages
       const m20 = m1.copy();
-      m20.polls[pollId].messages[0].data[0] = BigInt(m20.polls[pollId].messages[0].data[0]) + BigInt(1);
+      m20.polls[pollId].messages[0].data[0] = BigInt(m20.polls[pollId].messages[0].data[0]) + 1n;
       expect(m1.equals(m20)).not.to.eq(true);
 
       // modify poll.encPubKeys

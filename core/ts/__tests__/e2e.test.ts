@@ -7,10 +7,17 @@ import { Poll } from "../Poll";
 import { STATE_TREE_DEPTH, STATE_TREE_ARITY, STATE_TREE_SUBDEPTH } from "../utils/constants";
 import { packProcessMessageSmallVals, unpackProcessMessageSmallVals } from "../utils/utils";
 
-import { coordinatorKeypair, duration, maxValues, messageBatchSize, treeDepths, voiceCreditBalance } from "./constants";
-import { calculateTotal } from "./utils";
+import {
+  coordinatorKeypair,
+  duration,
+  maxValues,
+  messageBatchSize,
+  treeDepths,
+  voiceCreditBalance,
+} from "./utils/constants";
+import { TestHarness, calculateTotal } from "./utils/utils";
 
-describe("MaciState e2e", function test() {
+describe("MaciState/Poll e2e", function test() {
   this.timeout(300000);
 
   describe("key changes", () => {
@@ -21,12 +28,12 @@ describe("MaciState e2e", function test() {
     let pollId: number;
     let user1StateIndex: number;
     let user2StateIndex: number;
-    const user1VoteOptionIndex = BigInt(0);
-    const user2VoteOptionIndex = BigInt(1);
-    const user1VoteWeight = BigInt(9);
-    const user2VoteWeight = BigInt(3);
-    const user1NewVoteWeight = BigInt(5);
-    const user2NewVoteWeight = BigInt(7);
+    const user1VoteOptionIndex = 0n;
+    const user2VoteOptionIndex = 1n;
+    const user1VoteWeight = 9n;
+    const user2VoteWeight = 3n;
+    const user1NewVoteWeight = 5n;
+    const user2NewVoteWeight = 7n;
 
     describe("only user 1 changes key", () => {
       const maciState: MaciState = new MaciState(STATE_TREE_DEPTH);
@@ -60,7 +67,7 @@ describe("MaciState e2e", function test() {
           user1Keypair.pubKey,
           user1VoteOptionIndex,
           user1VoteWeight,
-          BigInt(1),
+          1n,
           BigInt(pollId),
         );
 
@@ -77,7 +84,7 @@ describe("MaciState e2e", function test() {
           user2Keypair.pubKey,
           user2VoteOptionIndex,
           user2VoteWeight,
-          BigInt(1),
+          1n,
           BigInt(pollId),
         );
 
@@ -97,7 +104,7 @@ describe("MaciState e2e", function test() {
           user1SecondKeypair.pubKey,
           user1VoteOptionIndex,
           user1NewVoteWeight,
-          BigInt(1),
+          1n,
           BigInt(pollId),
         );
 
@@ -159,7 +166,7 @@ describe("MaciState e2e", function test() {
           user1Keypair.pubKey,
           user1VoteOptionIndex,
           user1VoteWeight,
-          BigInt(1),
+          1n,
           BigInt(pollId),
         );
 
@@ -176,7 +183,7 @@ describe("MaciState e2e", function test() {
           user2Keypair.pubKey,
           user2VoteOptionIndex,
           user2VoteWeight,
-          BigInt(1),
+          1n,
           BigInt(pollId),
         );
 
@@ -196,7 +203,7 @@ describe("MaciState e2e", function test() {
           user1SecondKeypair.pubKey,
           user1VoteOptionIndex,
           user1NewVoteWeight,
-          BigInt(1),
+          1n,
           BigInt(pollId),
         );
 
@@ -216,7 +223,7 @@ describe("MaciState e2e", function test() {
           user2SecondKeypair.pubKey,
           user2VoteOptionIndex,
           user2NewVoteWeight,
-          BigInt(1),
+          1n,
           BigInt(pollId),
         );
 
@@ -274,7 +281,7 @@ describe("MaciState e2e", function test() {
           user1Keypair.pubKey,
           user1VoteOptionIndex,
           user1VoteWeight,
-          BigInt(1),
+          1n,
           BigInt(pollId),
         );
 
@@ -291,11 +298,11 @@ describe("MaciState e2e", function test() {
         const poll = maciState.polls[pollId];
         for (let i = 0; i < messageBatchSize - 1; i += 1) {
           const command = new PCommand(
-            BigInt(1),
+            1n,
             user1Keypair.pubKey,
             user1VoteOptionIndex,
             user1VoteWeight,
-            BigInt(2),
+            2n,
             BigInt(pollId),
           );
 
@@ -316,7 +323,7 @@ describe("MaciState e2e", function test() {
           user1SecondKeypair.pubKey,
           user1VoteOptionIndex,
           user1NewVoteWeight,
-          BigInt(1),
+          1n,
           BigInt(pollId),
         );
 
@@ -349,8 +356,8 @@ describe("MaciState e2e", function test() {
     let pollId: number;
     let poll: Poll;
     let msgTree: IncrementalQuinTree;
-    const voteWeight = BigInt(9);
-    const voteOptionIndex = BigInt(0);
+    const voteWeight = 9n;
+    const voteOptionIndex = 0n;
     let stateIndex: number;
     const userKeypair = new Keypair();
 
@@ -393,7 +400,7 @@ describe("MaciState e2e", function test() {
         userKeypair.pubKey,
         voteOptionIndex,
         voteWeight,
-        BigInt(1),
+        1n,
         BigInt(pollId),
       );
 
@@ -420,8 +427,8 @@ describe("MaciState e2e", function test() {
     });
 
     it("packProcessMessageSmallVals and unpackProcessMessageSmallVals", () => {
-      const maxVoteOptions = BigInt(1);
-      const numUsers = BigInt(2);
+      const maxVoteOptions = 1n;
+      const numUsers = 2n;
       const batchStartIndex = 5;
       const batchEndIndex = 10;
       const packedVals = packProcessMessageSmallVals(maxVoteOptions, numUsers, batchStartIndex, batchEndIndex);
@@ -461,7 +468,7 @@ describe("MaciState e2e", function test() {
     let maciState: MaciState;
     let pollId: number;
     let poll: Poll;
-    const voteWeight = BigInt(9);
+    const voteWeight = 9n;
 
     const users: Keypair[] = [];
 
@@ -495,7 +502,7 @@ describe("MaciState e2e", function test() {
           userKeypair.pubKey,
           BigInt(i), // vote option index
           voteWeight,
-          BigInt(1),
+          1n,
           BigInt(pollId),
         );
 
@@ -516,8 +523,8 @@ describe("MaciState e2e", function test() {
           BigInt(i + 1),
           userKeypair.pubKey,
           BigInt(i), // vote option index
-          voiceCreditBalance * BigInt(2), // invalid vote weight
-          BigInt(1),
+          voiceCreditBalance * 2n, // invalid vote weight
+          1n,
           BigInt(pollId),
         );
 
@@ -592,6 +599,212 @@ describe("MaciState e2e", function test() {
       expect(() => {
         poll.tallyVotes();
       }).to.throw();
+    });
+  });
+
+  describe("Sanity checks", () => {
+    let testHarness: TestHarness;
+    let poll: Poll;
+
+    beforeEach(() => {
+      testHarness = new TestHarness();
+
+      poll = testHarness.poll;
+    });
+
+    it("should process a valid message", () => {
+      const voteOptionIndex = 0n;
+      const voteWeight = 9n;
+      const nonce = 1n;
+
+      const users = testHarness.createUsers(1);
+      testHarness.vote(users[0], testHarness.getStateIndex(users[0]), voteOptionIndex, voteWeight, nonce);
+      testHarness.finalizePoll();
+
+      const messageLengthResult = poll.messages.length;
+      const expectedNumVotes = users.length;
+      expect(messageLengthResult).to.eq(expectedNumVotes);
+
+      const tallyResult = poll.tallyResult[0];
+      const expectedTallyResult = 9n;
+      expect(tallyResult).to.eq(expectedTallyResult);
+    });
+
+    it("should not process messages twice", () => {
+      const voteOptionIndex = 0n;
+      const voteWeight = 9n;
+      const nonce = 1n;
+
+      const users = testHarness.createUsers(1);
+      testHarness.vote(users[0], testHarness.getStateIndex(users[0]), voteOptionIndex, voteWeight, nonce);
+      poll.processMessages(testHarness.pollId);
+
+      expect(() => {
+        poll.processMessages(testHarness.pollId);
+      }).to.throw("No more messages to process");
+
+      poll.tallyVotes();
+
+      const messageLengthResult = poll.messages.length;
+      const expectedNumVotes = users.length;
+      expect(messageLengthResult).to.eq(expectedNumVotes);
+
+      const tallyResult = poll.tallyResult[0];
+      const expectedTallyResult = 9n;
+      expect(tallyResult).to.eq(expectedTallyResult);
+    });
+
+    it("should not process a message with an incorrect nonce", () => {
+      const voteOptionIndex = 0n;
+      const voteWeight = 9n;
+
+      const users = testHarness.createUsers(5);
+      // generate a bunch of invalid votes with nonces that are not 1
+      let nonce: bigint;
+      users.forEach((user) => {
+        do {
+          nonce = BigInt(Math.floor(Math.random() * 100) - 50);
+        } while (nonce === 1n);
+
+        testHarness.vote(user, testHarness.getStateIndex(user), voteOptionIndex, voteWeight, nonce);
+      });
+
+      testHarness.finalizePoll();
+
+      const messageLengthResult = poll.messages.length;
+      const expectedNumVotes = users.length;
+      expect(messageLengthResult).to.eq(expectedNumVotes);
+
+      const tallyResult = poll.tallyResult[0];
+      const expectedTallyResult = 0n;
+      expect(tallyResult).to.eq(expectedTallyResult);
+    });
+
+    // note: When voting, the voice credit is used. The amount of voice credit used is
+    // the square of the vote weight. Since the maximum voice credit is 100 here,
+    // the vote weight can only be a value between 1 and 10
+    // (as these are the square roots of numbers up to 100).
+    it("should not process a message with an incorrect vote weight", () => {
+      const voteOptionIndex = 0n;
+      const nonce = 1n;
+
+      const users = testHarness.createUsers(5);
+
+      // generate a bunch of invalid votes with vote weights that are not between 1 and 10
+      let voteWeight: bigint;
+      users.forEach((user) => {
+        do {
+          voteWeight = BigInt(Math.floor(Math.random() * 100) - 50);
+        } while (voteWeight >= 1n && voteWeight <= 10n);
+
+        testHarness.vote(user, testHarness.getStateIndex(user), voteOptionIndex, voteWeight, nonce);
+      });
+
+      testHarness.finalizePoll();
+
+      const messageLengthResult = poll.messages.length;
+      const expectedNumVotes = users.length;
+      expect(messageLengthResult).to.eq(expectedNumVotes);
+
+      const tallyResult = poll.tallyResult[0];
+      const expectedTallyResult = 0n;
+      expect(tallyResult).to.eq(expectedTallyResult);
+    });
+
+    it("should not process a message with an incorrect state tree index", () => {
+      const voteOptionIndex = 0n;
+      const nonce = 1n;
+      const voteWeight = 9n;
+      const numVotes = 5;
+
+      const users = testHarness.createUsers(5);
+
+      users.forEach((user) => {
+        // generate a bunch of invalid votes with incorrect state tree index
+        testHarness.vote(user, testHarness.getStateIndex(user) + 1, voteOptionIndex, voteWeight, nonce);
+      });
+
+      testHarness.finalizePoll();
+
+      const messageLengthResult = poll.messages.length;
+      const expectedNumVotes = numVotes;
+      expect(messageLengthResult).to.eq(expectedNumVotes);
+
+      const tallyResult = poll.tallyResult[0];
+      const expectedTallyResult = 0n;
+      expect(tallyResult).to.eq(expectedTallyResult);
+    });
+
+    it("should not process a message with an incorrect signature", () => {
+      const voteOptionIndex = 0n;
+      const voteWeight = 9n;
+      const nonce = 1n;
+
+      const users = testHarness.createUsers(2);
+
+      const { command } = testHarness.createCommand(
+        users[0],
+        testHarness.getStateIndex(users[0]),
+        voteOptionIndex,
+        voteWeight,
+        nonce,
+      );
+
+      // create an invalid signature
+      const { signature: invalidSignature } = testHarness.createCommand(
+        users[1],
+        testHarness.getStateIndex(users[0]),
+        voteOptionIndex,
+        voteWeight,
+        nonce,
+      );
+
+      // sign the command with the invalid signature
+      const { message, encPubKey } = testHarness.createMessage(
+        command,
+        invalidSignature,
+        testHarness.coordinatorKeypair,
+      );
+
+      testHarness.poll.publishMessage(message, encPubKey);
+      testHarness.finalizePoll();
+
+      const messageLengthResult = poll.messages.length;
+      const expectedNumVotes = users.length - 1;
+      expect(messageLengthResult).to.eq(expectedNumVotes);
+
+      const tallyResult = poll.tallyResult[0];
+      const expectedTallyResult = 0n;
+      expect(tallyResult).to.eq(expectedTallyResult);
+    });
+
+    it("should not process a message with an invalid coordinator key", () => {
+      const voteOptionIndex = 0n;
+      const voteWeight = 9n;
+      const nonce = 1n;
+
+      const users = testHarness.createUsers(1);
+
+      const { command, signature } = testHarness.createCommand(
+        users[0],
+        testHarness.getStateIndex(users[0]),
+        voteOptionIndex,
+        voteWeight,
+        nonce,
+      );
+
+      const { message, encPubKey } = testHarness.createMessage(command, signature, new Keypair());
+
+      testHarness.poll.publishMessage(message, encPubKey);
+      testHarness.finalizePoll();
+
+      const messageLengthResult = poll.messages.length;
+      const expectedNumVotes = users.length;
+      expect(messageLengthResult).to.eq(expectedNumVotes);
+
+      const tallyResult = poll.tallyResult[0];
+      const expectedTallyResult = 0n;
+      expect(tallyResult).to.eq(expectedTallyResult);
     });
   });
 });
