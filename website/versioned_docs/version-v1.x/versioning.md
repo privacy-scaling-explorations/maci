@@ -46,13 +46,13 @@ git checkout master
 4. Install required dependencies:
 
 ```
-npm install
+pnpm install
 ```
 
 5. Run `lerna version` to update CHANGELOG and version numbers of sub-packages:
 
 ```
-npx lerna version --no-push --no-git-tag-version --conventional-commits 1.2.3
+pnpm exec lerna version --no-push --no-git-tag-version --conventional-commits 1.2.3
 ```
 
 6. Commit changes:

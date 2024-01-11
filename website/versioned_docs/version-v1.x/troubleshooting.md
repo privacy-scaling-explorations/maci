@@ -49,5 +49,5 @@ You can generate the missing `.dat` files using the following command:
 
 ```
 cd cli/
-npx zkey-manager compile -c zkeys.config.yml
+pnpm exec zkey-manager compile -c zkeys.config.yml
 ```

@@ -20,7 +20,7 @@ For testing purposes, you can run:
 
 ```bash
 # in maci/contracts
-npm run hardhat
+pnpm run hardhat
 ```
 
 > Note that you will need a hardhat.config file in your current directory to be able to run the cli.

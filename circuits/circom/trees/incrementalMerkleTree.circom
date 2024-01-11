@@ -3,7 +3,7 @@ pragma circom 2.0.0;
 // https://github.com/peppersec/tornado-mixer/blob/master/circuits/merkleTree.circom
 // https://github.com/semaphore-protocol/semaphore/blob/audited/circuits/circom/semaphore-base.circom
 
-include "../../../node_modules/circomlib/circuits/mux1.circom";
+include "../../node_modules/circomlib/circuits/mux1.circom";
 include "../hasherPoseidon.circom";
 
 // recompute a merkle root from a leaf and a path

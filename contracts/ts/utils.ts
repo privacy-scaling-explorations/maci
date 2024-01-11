@@ -81,8 +81,9 @@ export const log = (msg: string, quiet: boolean): void => {
  * @returns the default signer
  */
 export const getDefaultSigner = async (): Promise<Signer> => {
-  const signers = await ethers.getSigners();
-  return signers[0];
+  const [signer] = await ethers.getSigners();
+
+  return signer;
 };
 
 /**

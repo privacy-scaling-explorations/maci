@@ -19,6 +19,7 @@ RUN . "$NVM_DIR/nvm.sh" && nvm install ${NODE_VERSION}
 RUN . "$NVM_DIR/nvm.sh" && nvm use v${NODE_VERSION}
 RUN . "$NVM_DIR/nvm.sh" && nvm alias default v${NODE_VERSION}
 RUN . "$NVM_DIR/nvm.sh" && nvm install-latest-npm
+RUN npm i -g pnpm
 ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
 
 # add metadata
@@ -32,20 +33,19 @@ RUN cd ~ \
     && git clone https://github.com/iden3/rapidsnark.git \
     && cd rapidsnark \
     && git checkout 1c13721de4a316b0b254c310ccec9341f5e2208e \
-    && npm install \
+    && pnpm install \
     && git submodule init \
     && git submodule update \
-    && npx task createFieldSources \
-    && npx task buildProver
+    && pnpm exec task createFieldSources \
+    && pnpm exec task buildProver
 
 # install maci 
 RUN cd ~ \
     && git clone $REPO_NAME \
     && cd maci \
     && git checkout ${BRANCH_NAME} \
-    && npm i 
-RUN cd ~/maci && npm run build
-RUN cd ~/maci/contracts && npm run compileSol
+    && pnpm i 
+RUN cd ~/maci && pnpm run build
 
 # HTTP port
 EXPOSE 8080

@@ -19,7 +19,7 @@
     "ts-mocha": "^10.0.0"
   },
   "dependencies": {
-    "maci-crypto": "^1.1.2"
+    "maci-crypto": "workspace:^"
   },
   "nyc": {
     "reporter": [

@@ -23,14 +23,14 @@ Various cryptographic utilities, which can be used to hash values with the Posei
 To run the tests, execute the following command:
 
 ```bash
-npm run test
+pnpm run test
 ```
 
 To run tests on the individual files, you can execute the following commands:
 
 ```bash
-npm run test-crypto
-npm run test-accQueue
+pnpm run test-crypto
+pnpm run test-accQueue
 ```
 
 For more details about testing please refer to the [tests documentation](https://maci.pse.dev/docs/testing).

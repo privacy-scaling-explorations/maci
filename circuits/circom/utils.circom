@@ -1,5 +1,5 @@
 pragma circom 2.0.0;
-include "../../node_modules/circomlib/circuits/bitify.circom";
+include "../node_modules/circomlib/circuits/bitify.circom";
 
 // the implicit assumption of LessThan is both inputs are at most n bits
 // so we need add range check for both inputs

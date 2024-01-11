@@ -14,11 +14,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
 
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: "pnpm"
 
       # Check for changes in the 'circuit' folder
       - name: Get changed files
@@ -49,15 +53,18 @@ jobs:
             nasm \
             nlohmann-json3-dev
 
-      - name: Initialize Project
+      - name: Install
         run: |
-          npm install
-          npm run build
+          pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Build
+        run: |
+          pnpm run build
 
       - name: Run hardhat fork
         run: |
           cd contracts
-          npm run hardhat &
+          pnpm run hardhat &
           sleep 5
 
       - name: Download rapidsnark (1c137)
@@ -78,17 +85,17 @@ jobs:
           cd cli
           mkdir -p zkeys
           wget -qO zkeys/powersOfTau28_hez_final_20.ptau https://maci-devops-zkeys.s3.ap-northeast-2.amazonaws.com/powersOfTau28_hez_final_20.ptau
-          npx zkey-manager compile -c ./zkeys.config.yml
-          npx zkey-manager genZkeys -c ./zkeys.config.yml
+          pnpm exec zkey-manager compile -c ./zkeys.config.yml
+          pnpm exec zkey-manager genZkeys -c ./zkeys.config.yml
 
       - name: Download zkeys
         if: ${{ env.CHANGED == 'false' }}
         run: |
           cd integrationTests
-          npm run download-zkeys
+          pnpm run download-zkeys
 
       - name: ${{ matrix.command }}
-        run: npm run ${{ matrix.command }}
+        run: pnpm run ${{ matrix.command }}
 
       - name: Stop Hardhat
         if: always()

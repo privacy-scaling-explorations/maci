@@ -15,11 +15,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: dev
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
 
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: "pnpm"
 
       - name: Install dependencies
         run: |
@@ -31,15 +35,18 @@ jobs:
             nasm \
             nlohmann-json3-dev
 
-      - name: Initialize Project
+      - name: Install
         run: |
-          npm install
-          npm run build
+          pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Build
+        run: |
+          pnpm run build
 
       - name: Run hardhat fork
         run: |
           cd contracts
-          npm run hardhat &
+          pnpm run hardhat &
 
       - name: Download rapidsnark (1c137)
         run: |

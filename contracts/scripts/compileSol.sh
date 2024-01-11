@@ -12,10 +12,10 @@ echo 'Writing Merkle zeros contracts'
 ./scripts/writeMerkleZeroesContracts.sh 
 
 echo 'Writing empty ballot tree root contract'
-npx ts-node ts/genEmptyBallotRootsContract.ts
+pnpm exec ts-node ts/genEmptyBallotRootsContract.ts
 
 echo 'Building contracts with Hardhat'
-npx hardhat compile
+pnpm exec hardhat compile
 
 echo 'Building Poseidon libraries from bytecode' 
-npx ts-node ts/buildPoseidon.ts
+pnpm exec ts-node ts/buildPoseidon.ts

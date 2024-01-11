@@ -1,8 +1,11 @@
-import { expect } from "chai";
+import chai, { expect } from "chai";
+import chaiAsPromised from "chai-as-promised";
 import { ZeroAddress } from "ethers";
 import { deployTopupCredit } from "maci-contracts";
 
 import { airdrop } from "../../ts";
+
+chai.use(chaiAsPromised);
 
 describe("airdrop", () => {
   let topupContractAddress: string | undefined;
