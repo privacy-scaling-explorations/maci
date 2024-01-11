@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://maci.pse.dev/blog</id>
     <title>MACI Blog</title>
-    <updated>2024-01-11T19:20:38.000Z</updated>
+    <updated>2024-01-11T19:35:37.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://maci.pse.dev/blog"/>
     <subtitle>MACI Blog</subtitle>
@@ -11,7 +11,7 @@
         <title type="html"><![CDATA[Welcome to MACI]]></title>
         <id>https://maci.pse.dev/blog/welcome</id>
         <link href="https://maci.pse.dev/blog/welcome"/>
-        <updated>2024-01-11T19:20:38.000Z</updated>
+        <updated>2024-01-11T19:35:37.000Z</updated>
         <summary type="html"><![CDATA[Welcome to the MACI blog! This is where we will post updates on the project, including new releases, new features, and other news.]]></summary>
         <content type="html"><![CDATA[<p>Welcome to the MACI blog! This is where we will post updates on the project, including new releases, new features, and other news.</p>]]></content>
         <author>
@@ -284,8 +284,8 @@ Users can then use the SNARK to prove that the tally result is correct, but cann
 <p>A suggested upgrade to MACI is to use ElGamal re-randomisation for anonymity of voters. While all votes are encrypted, currently the coordinator is able to decrypt and read them. With re-randomisation, the coordinator would not be able to tell which user took which action.</p>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="coordinator-tooling">Coordinator tooling<a href="https://maci.pse.dev/blog/maci-1-0-release#coordinator-tooling" class="hash-link" aria-label="Direct link to Coordinator tooling" title="Direct link to Coordinator tooling">​</a></h3>
 <p>We are working on tooling that makes it easier for coordinators to interface with deployed contracts and manage tallies for multiple polls. This will allow users to generate proofs and query inputs and outputs from existing circuits through an easy-to-use API. We hope that this will drive more adoption of MACI and offload the need for bespoke infrastructure.</p>
-<p>###Trusted setup
-Unlike other ZKP projects, MACI does not have an official trusted setup. Instead, we hope to assist teams implementing MACI in their applications to run their own trusted setup. For instance, clr.fund recently completed a trusted setup (on a previous version of MACI) for a specific set of circuit parameters. Other teams may wish to use a different set of parameters on MACI 1.0, which calls for a different trusted setup.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="trusted-setup">Trusted setup<a href="https://maci.pse.dev/blog/maci-1-0-release#trusted-setup" class="hash-link" aria-label="Direct link to Trusted setup" title="Direct link to Trusted setup">​</a></h3>
+<p>Unlike other ZKP projects, MACI does not have an official trusted setup. Instead, we hope to assist teams implementing MACI in their applications to run their own trusted setup. For instance, clr.fund recently completed a trusted setup (on a previous version of MACI) for a specific set of circuit parameters. Other teams may wish to use a different set of parameters on MACI 1.0, which calls for a different trusted setup.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="conclusion">Conclusion<a href="https://maci.pse.dev/blog/maci-1-0-release#conclusion" class="hash-link" aria-label="Direct link to Conclusion" title="Direct link to Conclusion">​</a></h2>
 <p>This release marks a step towards the hard problem of preventing collusion in decentralised voting and quadratic funding systems. We are excited to share our work and please get in touch if you are a developer and are interested in getting involved in any way.</p>]]></content>
         <author>
