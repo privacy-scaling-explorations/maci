@@ -25,7 +25,7 @@
   "author": "PSE",
   "devDependencies": {
     "@commitlint/cli": "^18.4.4",
-    "@commitlint/config-conventional": "^18.4.3",
+    "@commitlint/config-conventional": "^18.4.4",
     "@typescript-eslint/eslint-plugin": "^6.18.1",
     "@typescript-eslint/parser": "^6.18.1",
     "conventional-changelog-conventionalcommits": "^7.0.2",
