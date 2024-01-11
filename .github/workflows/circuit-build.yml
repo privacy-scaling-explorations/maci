@@ -15,15 +15,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
 
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "npm"
-
-      - name: Update npm to latest version
-        run: npm install --global npm@latest
+          cache: "pnpm"
 
       - name: Install dependencies
         run: |
@@ -35,11 +35,13 @@ jobs:
             nasm \
             nlohmann-json3-dev
 
-      - name: Build maci-circuits package
+      - name: Install
         run: |
-          npm install
-          npm run bootstrap
-          npm run build
+          pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Build
+        run: |
+          pnpm run build
 
       - name: Download circom Binary v2.1.6
         run: |
@@ -48,9 +50,9 @@ jobs:
           sudo mv /home/runner/work/circom /bin/circom
 
       - name: Build circuits
-        run: npm run build-test-circuits-wasm
+        run: pnpm run build-test-circuits-wasm
         working-directory: circuits
 
       - name: Test circuits
-        run: npm run test
+        run: pnpm run test
         working-directory: circuits

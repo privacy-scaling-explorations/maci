@@ -48,7 +48,7 @@ Please refer to our [testing guide](https://maci.pse.dev/docs/testing) for more 
 
 ### Code rules
 
-We always use ESLint and Prettier. To check that your code follows the rules, simply run the npm script `npm run lint` and `npm run prettier`. When committing, `eslint` is run automatically, so you will be required to fix any error before being able to push a commit. We highly recommend to tackle warnings as well.
+We always use ESLint and Prettier. To check that your code follows the rules, simply run the pnpm script `pnpm run lint` and `pnpm run prettier`. When committing, `eslint` is run automatically, so you will be required to fix any error before being able to push a commit. We highly recommend to tackle warnings as well.
 
 ### Commits rules
 

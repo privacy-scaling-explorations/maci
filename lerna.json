@@ -1,7 +1,7 @@
 {
   "packages": ["circuits", "cli", "contracts", "core", "crypto", "domainobjs", "integrationTests", "website"],
   "version": "1.1.2",
-  "npmClient": "npm",
+  "npmClient": "pnpm",
   "changelogPreset": {
     "name": "conventionalcommits",
     "types": [

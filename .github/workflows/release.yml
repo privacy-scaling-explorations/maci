@@ -25,19 +25,25 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
 
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
           registry-url: "https://registry.npmjs.org"
+          cache: "pnpm"
 
-      - name: Initialize Project
+      - name: Install
         run: |
           git config --global url."https://github.com/".insteadOf git://github.com/
-          npm install
-          npm run bootstrap
-          npm run build
+          pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Build
+        run: |
+          pnpm run build
 
       - name: Publish NPM
         run: |

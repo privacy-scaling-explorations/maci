@@ -34,11 +34,11 @@ git clone https://github.com/iden3/rapidsnark.git && \
 cd rapidsnark && \
 git checkout 1c13721de4a316b0b254c310ccec9341f5e2208e
 
-npm install && \
+pnpm install && \
 git submodule init && \
 git submodule update && \
-npx task createFieldSources && \
-npx task buildProver
+pnpm exec task createFieldSources && \
+pnpm exec task buildProver
 ```
 
 Note the location of the `rapidsnark` binary (e.g.
@@ -55,9 +55,8 @@ Note the location of the `circom` binary (e.g. `$HOME/.cargo/bin/circom`), as yo
 ```bash
 git clone https://github.com/privacy-scaling-explorations/maci.git && \
 cd maci && \
-npm i && \
-npm run bootstrap && \
-npm run build
+pnpm i && \
+pnpm run build
 ```
 
 #### On intel chips
@@ -99,19 +98,19 @@ and edit `zkeys.config.yml`. Set the parameters you need.
 Next, run the following to compile the circuits with parameters you specified:
 
 ```bash
-npx zkey-manager compile -c zkeys.config.yml
+pnpm exec zkey-manager compile -c zkeys.config.yml
 ```
 
 Next, download the `.ptau` file:
 
 ```bash
-npx zkey-manager downloadPtau -c zkeys.config.yml
+pnpm exec zkey-manager downloadPtau -c zkeys.config.yml
 ```
 
 Finally, generate the `.zkey` files. This may require a lot of memory and time.
 
 ```bash
-npx zkey-manager genZkeys -c zkeys.config.yml
+pnpm exec zkey-manager genZkeys -c zkeys.config.yml
 ```
 
 > If on a ARM64 chip, the above will work, though it will show errors for the c++ witness generator. You can ignore these errors.
