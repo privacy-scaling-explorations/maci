@@ -37,10 +37,10 @@ Version number '1.2.3' is used here as an example. You should replace the versio
 git clone https://github.com/privacy-scaling-explorations/maci
 ```
 
-3. Switch to the `master` branch:
+3. Switch to the `dev` branch:
 
 ```
-git checkout master
+git checkout dev
 ```
 
 4. Install required dependencies:
