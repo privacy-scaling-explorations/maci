@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkwebsite=self.webpackChunkwebsite||[]).push([[4691],{831:(e,t,i)=>{i.r(t),i.d(t,{default:()=>p});var s=i(6777),c=(i(7294),i(5893));const p=()=>(0,c.jsx)(s.Z,{description:"Description for your Typedoc page",title:"Typedoc",children:(0,c.jsx)("iframe",{src:"/typedoc_output/index.html",style:{width:"100%",height:"100vh"},title:"typedoc"})})}}]);
