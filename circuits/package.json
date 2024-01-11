@@ -22,7 +22,9 @@
     "test:calculateTotal": "ts-mocha --exit ts/__tests__/CalculateTotal.test.ts",
     "test:processMessages": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit ts/__tests__/ProcessMessages.test.ts",
     "test:tallyVotes": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit ts/__tests__/TallyVotes.test.ts",
-    "test:ceremonyParams": "ts-mocha --exit ts/__tests__/CeremonyParams.test.ts"
+    "test:ceremonyParams": "ts-mocha --exit ts/__tests__/CeremonyParams.test.ts",
+    "test:quinCheckRoot": "ts-mocha --exit ts/__tests__/QuinCheckRoot.test.ts",
+    "test:incrementalQuinTree": "ts-mocha --exit ts/__tests__/IncrementalQuinTree.test.ts"
   },
   "dependencies": {
     "circomlib": "https://github.com/weijiekoh/circomlib#ac85e82c1914d47789e2032fb11ceb2cfdd38a2b",
@@ -33,9 +35,11 @@
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
+    "@types/chai-as-promised": "^7.1.8",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.11.0",
     "chai": "^4.3.10",
+    "chai-as-promised": "^7.1.1",
     "circom_tester": "^0.0.20",
     "mocha": "^10.2.0",
     "ts-mocha": "^10.0.0",

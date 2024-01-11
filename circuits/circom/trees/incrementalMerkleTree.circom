@@ -6,6 +6,7 @@ pragma circom 2.0.0;
 include "../../node_modules/circomlib/circuits/mux1.circom";
 include "../hasherPoseidon.circom";
 
+// recompute a merkle root from a leaf and a path
 template MerkleTreeInclusionProof(n_levels) {
     signal input leaf;
     signal input path_index[n_levels];
@@ -41,8 +42,8 @@ template MerkleTreeInclusionProof(n_levels) {
     root <== levelHashes[n_levels];
 }
 
+// Ensures that a leaf exists within a merkletree with given `root`
 template LeafExists(levels){
-  // Ensures that a leaf exists within a merkletree with given `root`
 
   // levels is depth of tree
   signal input leaf;
@@ -62,11 +63,10 @@ template LeafExists(levels){
   root === merkletree.root;
 }
 
+// Given a Merkle root and a list of leaves, check if the root is the
+// correct result of inserting all the leaves into the tree (in the given
+// order)
 template CheckRoot(levels) {
-    // Given a Merkle root and a list of leaves, check if the root is the
-    // correct result of inserting all the leaves into the tree (in the given
-    // order)
-
     // Circom has some perticularities which limit the code patterns we can
     // use.
 

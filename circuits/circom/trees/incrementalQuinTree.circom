@@ -11,16 +11,16 @@ include "../utils.circom";
 // circuit to hash leaves, which supports up to 5 input elements.
 
 /*
-Note: circom has some particularities which limit the code patterns we can use.
+    Note: circom has some particularities which limit the code patterns we can use.
 
-- You can only assign a value to a signal once.
-- A component's input signal must only be wired to another component's output
-  signal.
-- Variables can store linear combinations, and can also be used for loops,
-  declaring sizes of things, and anything that is not related to inputs of a
-  circuit.
-- The compiler fails whenever you try to mix invalid elements.
-- You can't use a signal as a list index.
+    - You can only assign a value to a signal once.
+    - A component's input signal must only be wired to another component's output
+    signal.
+    - Variables can store linear combinations, and can also be used for loops,
+    declaring sizes of things, and anything that is not related to inputs of a
+    circuit.
+    - The compiler fails whenever you try to mix invalid elements.
+    - You can't use a signal as a list index.
 */
 
 // Given a list of items and an index, output the item at the position denoted
@@ -137,6 +137,8 @@ template Splicer(numItems) {
     }
 }
 
+// Given a list of leaves, as well as the path to the root,
+// compute the root
 template QuinTreeInclusionProof(levels) {
     // Each node has 5 leaves
     var LEAVES_PER_NODE = 5;
@@ -185,9 +187,8 @@ template QuinTreeInclusionProof(levels) {
     root <== hashers[levels - 1].hash;
 }
 
+// Ensures that a leaf exists within a quintree with given `root`
 template QuinLeafExists(levels){
-    // Ensures that a leaf exists within a quintree with given `root`
-
     var LEAVES_PER_NODE = 5;
     var LEAVES_PER_PATH_LEVEL = LEAVES_PER_NODE - 1;
 

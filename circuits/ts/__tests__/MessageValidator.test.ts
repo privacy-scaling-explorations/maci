@@ -54,14 +54,14 @@ describe("MessageValidator circuit", function test() {
     }) as CircuitInputs;
   });
 
-  it("Should pass if all inputs are valid", async () => {
+  it("should pass if all inputs are valid", async () => {
     const witness = await circuit.calculateWitness(circuitInputs, true);
     await circuit.checkConstraints(witness);
     const isValid = await getSignal(circuit, witness, "isValid");
     expect(isValid.toString()).to.be.eq("1");
   });
 
-  it("Should be invalid if the signature is invalid", async () => {
+  it("should be invalid if the signature is invalid", async () => {
     const circuitInputs2 = circuitInputs;
     circuitInputs2.sigS = "0";
     const witness = await circuit.calculateWitness(circuitInputs2, true);
@@ -70,7 +70,7 @@ describe("MessageValidator circuit", function test() {
     expect(isValid.toString()).to.be.eq("0");
   });
 
-  it("Should be invalid if the pubkey is invalid", async () => {
+  it("should be invalid if the pubkey is invalid", async () => {
     const circuitInputs2 = circuitInputs;
     circuitInputs2.pubKey = [0n, 1n];
     const witness = await circuit.calculateWitness(circuitInputs2, true);
@@ -79,7 +79,7 @@ describe("MessageValidator circuit", function test() {
     expect(isValid.toString()).to.be.eq("0");
   });
 
-  it("Should be invalid if there are insufficient voice credits", async () => {
+  it("should be invalid if there are insufficient voice credits", async () => {
     const circuitInputs2 = circuitInputs;
     circuitInputs2.voteWeight = 11n;
     const witness = await circuit.calculateWitness(circuitInputs2, true);
@@ -88,7 +88,7 @@ describe("MessageValidator circuit", function test() {
     expect(isValid.toString()).to.be.eq("0");
   });
 
-  it("Should be invalid if the nonce is invalid", async () => {
+  it("should be invalid if the nonce is invalid", async () => {
     const circuitInputs2 = circuitInputs;
     circuitInputs2.nonce = 3n;
     const witness = await circuit.calculateWitness(circuitInputs2, true);
@@ -97,7 +97,7 @@ describe("MessageValidator circuit", function test() {
     expect(isValid.toString()).to.be.eq("0");
   });
 
-  it("Should be invalid if the state leaf index is invalid", async () => {
+  it("should be invalid if the state leaf index is invalid", async () => {
     const circuitInputs2 = circuitInputs;
     circuitInputs2.stateTreeIndex = 2n;
     const witness = await circuit.calculateWitness(circuitInputs2, true);
@@ -106,7 +106,7 @@ describe("MessageValidator circuit", function test() {
     expect(isValid.toString()).to.be.eq("0");
   });
 
-  it("Should be invalid if the vote option index is invalid", async () => {
+  it("should be invalid if the vote option index is invalid", async () => {
     const circuitInputs2 = circuitInputs;
     circuitInputs2.voteOptionIndex = 1n;
     const witness = await circuit.calculateWitness(circuitInputs2, true);
@@ -115,7 +115,7 @@ describe("MessageValidator circuit", function test() {
     expect(isValid.toString()).to.be.eq("0");
   });
 
-  it("Should be invalid if the vote option index is invalid", async () => {
+  it("should be invalid if the vote option index is invalid", async () => {
     const circuitInputs2 = circuitInputs;
     circuitInputs2.voteOptionIndex = "6049261729";
     const witness = await circuit.calculateWitness(circuitInputs2, true);
@@ -124,7 +124,7 @@ describe("MessageValidator circuit", function test() {
     expect(isValid.toString()).to.be.eq("0");
   });
 
-  it("Should be invalid if the state leaf timestamp is too high", async () => {
+  it("should be invalid if the state leaf timestamp is too high", async () => {
     const circuitInputs2 = circuitInputs;
     circuitInputs2.slTimestamp = "3";
     const witness = await circuit.calculateWitness(circuitInputs2, true);

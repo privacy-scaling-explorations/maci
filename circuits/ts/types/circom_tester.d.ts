@@ -37,6 +37,8 @@ declare module "circom_tester" {
     loadSymbols(): Promise<void>;
 
     checkConstraints(witness: bigint[]): Promise<void>;
+
+    assertOut(actual: unknown, expected: unknown): Promise<void>;
   }
 
   export function wasm(circomInput: string, options?: Options): Promise<WasmTester>;

@@ -19,7 +19,7 @@ describe("Poseidon hash circuits", function test() {
         circuit = await tester.wasm(circuitPath);
       });
 
-      it("correctly hashes two random values", async () => {
+      it("should correctly hash two random values", async () => {
         const left = genRandomSalt();
         const right = genRandomSalt();
 
@@ -41,7 +41,7 @@ describe("Poseidon hash circuits", function test() {
         circuit = await tester.wasm(circuitPath);
       });
 
-      it("correctly hashes 4 random values", async () => {
+      it("should correctly hash 4 random values", async () => {
         const preImages: bigint[] = [];
         for (let i = 0; i < 4; i += 1) {
           preImages.push(genRandomSalt());
@@ -66,7 +66,8 @@ describe("Poseidon hash circuits", function test() {
         const circuitPath = path.resolve(__dirname, "../../circom/test", `sha256Hasher6_test.circom`);
         circuit = await tester.wasm(circuitPath);
       });
-      it("correctly hashes 6 random values", async () => {
+
+      it("should correctly hash 6 random values", async () => {
         const preImages: bigint[] = [];
         for (let i = 0; i < 6; i += 1) {
           preImages.push(genRandomSalt());
@@ -93,6 +94,7 @@ describe("Poseidon hash circuits", function test() {
         const circuitPath = path.resolve(__dirname, "../../circom/test", `hasher5_test.circom`);
         circuit = await tester.wasm(circuitPath);
       });
+
       it("correctly hashes 5 random values", async () => {
         const preImages: bigint[] = [];
         for (let i = 0; i < 5; i += 1) {
@@ -171,7 +173,7 @@ describe("Poseidon hash circuits", function test() {
         circuit = await tester.wasm(circuitPath);
       });
 
-      it("correctly hashes 13 random values", async () => {
+      it("should correctly hash 13 random values", async () => {
         const preImages: bigint[] = [];
         for (let i = 0; i < 13; i += 1) {
           preImages.push(genRandomSalt());
@@ -196,7 +198,7 @@ describe("Poseidon hash circuits", function test() {
         circuit = await tester.wasm(circuitPath);
       });
 
-      it("correctly hashes two random values", async () => {
+      it("should correctly hash two random values", async () => {
         const left = genRandomSalt();
         const right = genRandomSalt();
 
@@ -210,6 +212,23 @@ describe("Poseidon hash circuits", function test() {
 
         expect(output.toString()).to.be.eq(outputJS.toString());
       });
+
+      it("should produce consistent results", async () => {
+        const left = genRandomSalt();
+        const right = genRandomSalt();
+
+        const circuitInputs = stringifyBigInts({ left, right });
+
+        let witness = await circuit.calculateWitness(circuitInputs, true);
+        await circuit.checkConstraints(witness);
+        const output = await getSignal(circuit, witness, "hash");
+
+        witness = await circuit.calculateWitness(circuitInputs, true);
+        await circuit.checkConstraints(witness);
+        const output2 = await getSignal(circuit, witness, "hash");
+
+        expect(output.toString()).to.be.eq(output2.toString());
+      });
     });
   });
 
@@ -219,7 +238,7 @@ describe("Poseidon hash circuits", function test() {
       circuit = await tester.wasm(circuitPath);
     });
 
-    it("correctly hashes a message", async () => {
+    it("should correctly hash a message", async () => {
       const k = new Keypair();
       const random50bitBigInt = (): bigint =>
         // eslint-disable-next-line no-bitwise

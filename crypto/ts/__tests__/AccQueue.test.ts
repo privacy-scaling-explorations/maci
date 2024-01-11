@@ -15,7 +15,7 @@ describe("AccQueue", function test() {
 
       const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO);
 
-      it("Should enqueue leaves into a subtree", () => {
+      it("should enqueue leaves into a subtree", () => {
         const tree0 = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, aq.hashFunc);
 
         const subtreeCapacity = HASH_LENGTH ** SUB_DEPTH;
@@ -27,7 +27,7 @@ describe("AccQueue", function test() {
         expect(aq.getSubRoot(0).toString()).to.eq(tree0.root.toString());
       });
 
-      it("Should enqueue another subtree", () => {
+      it("should enqueue another subtree", () => {
         const tree1 = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, aq.hashFunc);
 
         const subtreeCapacity = HASH_LENGTH ** SUB_DEPTH;
@@ -47,7 +47,7 @@ describe("AccQueue", function test() {
 
       const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO);
 
-      it("Should enqueue leaves into a subtree", () => {
+      it("should enqueue leaves into a subtree", () => {
         const tree0 = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, aq.hashFunc);
 
         const subtreeCapacity = HASH_LENGTH ** SUB_DEPTH;
@@ -83,7 +83,7 @@ describe("AccQueue", function test() {
         expect(aq.getSubRoot(0).toString()).to.eq(tree.root.toString());
       });
 
-      it("Should fill an incomplete subtree", () => {
+      it("should fill an incomplete subtree", () => {
         const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO);
         const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, aq.hashFunc);
 
@@ -138,7 +138,7 @@ describe("AccQueue", function test() {
         expect(aq.getSubRoot(0).toString()).to.eq(tree.root.toString());
       });
 
-      it("Should fill one incomplete subtree", () => {
+      it("should fill one incomplete subtree", () => {
         const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO);
         const tree = new IncrementalQuinTree(SUB_DEPTH, ZERO, HASH_LENGTH, aq.hashFunc);
 
@@ -193,24 +193,24 @@ describe("AccQueue", function test() {
       const HASH_LENGTH = 2;
 
       describe("merge()", () => {
-        it("Should produce the correct main root", () => {
+        it("should produce the correct main root", () => {
           testMerge(SUB_DEPTH, HASH_LENGTH, ZERO, NUM_SUBTREES, MAIN_DEPTH);
         });
       });
 
       describe("mergeSubRoots()", () => {
-        it("Should work progressively", () => {
+        it("should work progressively", () => {
           testMergeShortest(SUB_DEPTH, HASH_LENGTH, ZERO, NUM_SUBTREES);
         });
 
-        it("Should fail if there are 0 leaves", () => {
+        it("should fail if there are 0 leaves", () => {
           const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO);
           expect(() => {
             aq.mergeSubRoots(0);
           }).to.throw();
         });
 
-        it("Should a generate the same smallMainTreeRoot root from 1 subroot", () => {
+        it("should a generate the same smallMainTreeRoot root from 1 subroot", () => {
           testMergeShortestOne(SUB_DEPTH, HASH_LENGTH, ZERO);
         });
 
@@ -225,24 +225,24 @@ describe("AccQueue", function test() {
       const HASH_LENGTH = 5;
 
       describe("merge()", () => {
-        it("Should produce the correct main root", () => {
+        it("should produce the correct main root", () => {
           testMerge(SUB_DEPTH, HASH_LENGTH, ZERO, NUM_SUBTREES, MAIN_DEPTH);
         });
       });
 
       describe("mergeSubRoots()", () => {
-        it("Should work progressively", () => {
+        it("should work progressively", () => {
           testMergeShortest(SUB_DEPTH, HASH_LENGTH, ZERO, NUM_SUBTREES);
         });
 
-        it("Should fail if there are 0 leaves", () => {
+        it("should fail if there are 0 leaves", () => {
           const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO);
           expect(() => {
             aq.mergeSubRoots(0);
           }).to.throw();
         });
 
-        it("Should a generate the same smallMainTreeRoot root from 1 subroot", () => {
+        it("should a generate the same smallMainTreeRoot root from 1 subroot", () => {
           testMergeShortestOne(SUB_DEPTH, HASH_LENGTH, ZERO);
         });
 
