@@ -27,7 +27,12 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
 
   uint8 internal constant TREE_ARITY = 5;
 
-  // Error codes
+  IVerifier public immutable verifier;
+  IVkRegistry public immutable vkRegistry;
+  IPoll public immutable poll;
+  IMessageProcessor public immutable mp;
+
+  // Custom errors
   error ProcessingNotComplete();
   error InvalidSubsidyProof();
   error AllSubsidyCalculated();
@@ -35,11 +40,6 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
   error NumSignUpsTooLarge();
   error RbiTooLarge();
   error CbiTooLarge();
-
-  IVerifier public verifier;
-  IVkRegistry public vkRegistry;
-  IPoll public poll;
-  IMessageProcessor public mp;
 
   /// @notice Create a new Subsidy contract
   /// @param _verifier The Verifier contract
@@ -60,6 +60,8 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
     if (!mp.processingComplete()) {
       revert ProcessingNotComplete();
     }
+
+    // only update it once
     if (sbCommitment == 0) {
       sbCommitment = mp.sbCommitment();
     }

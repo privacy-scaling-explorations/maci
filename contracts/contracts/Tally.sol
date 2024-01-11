@@ -15,14 +15,6 @@ import { CommonUtilities } from "./utilities/CommonUtilities.sol";
 /// @notice The Tally contract is used during votes tallying
 /// and by users to verify the tally results.
 contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
-  // custom errors
-  error ProcessingNotComplete();
-  error InvalidTallyVotesProof();
-  error AllBallotsTallied();
-  error NumSignUpsTooLarge();
-  error BatchStartIndexTooLarge();
-  error TallyBatchSizeTooLarge();
-
   uint8 private constant TREE_ARITY = 5;
 
   /// @notice The commitment to the tally results. Its initial value is 0, but after
@@ -44,10 +36,18 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   // The final commitment to the state and ballot roots
   uint256 public sbCommitment;
 
-  IVerifier public verifier;
-  IVkRegistry public vkRegistry;
-  IPoll public poll;
-  IMessageProcessor public mp;
+  IVerifier public immutable verifier;
+  IVkRegistry public immutable vkRegistry;
+  IPoll public immutable poll;
+  IMessageProcessor public immutable mp;
+
+  /// @notice custom errors
+  error ProcessingNotComplete();
+  error InvalidTallyVotesProof();
+  error AllBallotsTallied();
+  error NumSignUpsTooLarge();
+  error BatchStartIndexTooLarge();
+  error TallyBatchSizeTooLarge();
 
   /// @notice Create a new Tally contract
   /// @param _verifier The Verifier contract
@@ -105,6 +105,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
     if (!mp.processingComplete()) {
       revert ProcessingNotComplete();
     }
+
     if (sbCommitment == 0) {
       sbCommitment = mp.sbCommitment();
     }

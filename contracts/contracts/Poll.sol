@@ -19,19 +19,20 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
   using SafeERC20 for ERC20;
 
   bool internal isInit;
+
   // The coordinator's public key
   PubKey public coordinatorPubKey;
 
   /// @notice Hash of the coordinator's public key
-  uint256 public coordinatorPubKeyHash;
+  uint256 public immutable coordinatorPubKeyHash;
 
   uint256 public mergedStateRoot;
 
   // The timestamp of the block at which the Poll was deployed
-  uint256 internal deployTime;
+  uint256 internal immutable deployTime;
 
   // The duration of the polling period, in seconds
-  uint256 internal duration;
+  uint256 internal immutable duration;
 
   /// @notice Whether the MACI contract's stateAq has been merged by this contract
   bool public stateAqMerged;
@@ -55,6 +56,8 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
 
   /// @notice Batch sizes for processing
   BatchSizes public batchSizes;
+  /// @notice The contracts used by the Poll
+  ExtContracts public extContracts;
 
   error VotingPeriodOver();
   error VotingPeriodNotOver();
@@ -70,9 +73,6 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
   event MergeMaciStateAq(uint256 _stateRoot);
   event MergeMessageAqSubRoots(uint256 _numSrQueueOps);
   event MergeMessageAq(uint256 _messageRoot);
-
-  /// @notice External contracts
-  ExtContracts public extContracts;
 
   /// @notice Each MACI instance can have multiple Polls.
   /// When a Poll is deployed, its voting period starts immediately.
@@ -91,14 +91,13 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
     ExtContracts memory _extContracts
   ) payable {
     extContracts = _extContracts;
-
     coordinatorPubKey = _coordinatorPubKey;
+    // we hash it ourselves to ensure we record the correct value
     coordinatorPubKeyHash = hashLeftRight(_coordinatorPubKey.x, _coordinatorPubKey.y);
     duration = _duration;
     maxValues = _maxValues;
     batchSizes = _batchSizes;
     treeDepths = _treeDepths;
-
     // Record the current timestamp
     deployTime = block.timestamp;
   }
@@ -146,10 +145,12 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
     // we check that we do not exceed the max number of messages
     if (numMessages == maxValues.maxMessages) revert TooManyMessages();
 
+    // cannot realistically overflow
     unchecked {
       numMessages++;
     }
 
+    /// @notice topupCredit is a trusted token contract which reverts if the transfer fails
     extContracts.topupCredit.transferFrom(msg.sender, address(this), amount);
     uint256[2] memory dat;
     dat[0] = stateIndex;
@@ -170,11 +171,12 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
       revert MaciPubKeyLargerThanSnarkFieldSize();
     }
 
+    // cannot realistically overflow
     unchecked {
       numMessages++;
     }
 
-    // force the message to have type 1
+    // force the message to have type 1 just to be safe
     _message.msgType = 1;
     uint256 messageLeaf = hashMessageAndEncPubKey(_message, _encPubKey);
     extContracts.messageAq.enqueue(messageLeaf);
@@ -187,9 +189,8 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
     // This function cannot be called after the stateAq was merged
     if (stateAqMerged) revert StateAqAlreadyMerged();
 
-    if (!extContracts.maci.stateAq().subTreesMerged()) {
-      extContracts.maci.mergeStateAqSubRoots(_numSrQueueOps, _pollId);
-    }
+    // merge subroots
+    extContracts.maci.mergeStateAqSubRoots(_numSrQueueOps, _pollId);
 
     emit MergeMaciStateAqSubRoots(_numSrQueueOps);
   }
@@ -202,6 +203,7 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
 
     stateAqMerged = true;
 
+    // the subtrees must have been merged first
     if (!extContracts.maci.stateAq().subTreesMerged()) revert StateAqSubtreesNeedMerge();
 
     mergedStateRoot = extContracts.maci.mergeStateAq(_pollId);

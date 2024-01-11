@@ -42,9 +42,9 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   /// @inheritdoc IMessageProcessor
   uint256 public sbCommitment;
 
-  IPoll public poll;
-  IVerifier public verifier;
-  IVkRegistry public vkRegistry;
+  IPoll public immutable poll;
+  IVerifier public immutable verifier;
+  IVkRegistry public immutable vkRegistry;
 
   /// @notice Create a new instance
   /// @param _verifier The Verifier contract address
