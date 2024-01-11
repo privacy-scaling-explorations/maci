@@ -44,7 +44,7 @@
   "devDependencies": {
     "@types/chai": "^4.3.9",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.10.8",
+    "@types/node": "^20.11.0",
     "@types/prompt": "^1.1.8",
     "chai": "^4.3.10",
     "mocha": "^10.2.0",
