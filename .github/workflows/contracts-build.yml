@@ -2,7 +2,7 @@ name: Contracts
 
 on:
   push:
-    branches: [master, dev]
+    branches: [dev]
   pull_request:
 
 concurrency:
