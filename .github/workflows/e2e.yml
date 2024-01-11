@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [master, dev]
+    branches: [dev]
   pull_request:
 
 env:
@@ -42,6 +42,11 @@ jobs:
           # It creates an ephemeral commit that will not be pushed to GitHub
           git config --global user.email "you@example.com"
           git config --global user.name "Your Name"
+
+          # Depending on the STATE_TREE_DEPTH param, there 
+          # might be changes in the EmptyBallotRoots.sol file
+          git add contracts/contracts/trees/EmptyBallotRoots.sol
+          git diff --staged --quiet || git commit -m "Commit changes before publishing"
 
           lerna version 0.0.0-ci.$(git rev-parse --short HEAD) --no-push --yes
           lerna publish from-git --dist-tag ci --yes
