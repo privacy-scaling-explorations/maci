@@ -7,7 +7,7 @@
     "setup-soliditydocs": "ts-node ./src/scripts/setupSolidityDocs.ts",
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
-    "prebuild": "npm run setup-typedoc && npm run setup-soliditydocs",
+    "prebuild": "pnpm run setup-typedoc && pnpm run setup-soliditydocs",
     "build": "docusaurus build",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
@@ -34,6 +34,7 @@
     "@docusaurus/module-type-aliases": "3.1.0",
     "@docusaurus/tsconfig": "^3.0.0",
     "@docusaurus/types": "3.1.0",
+    "@types/node": "^20.10.8",
     "ts-node": "^10.9.1",
     "typescript": "~5.3.3"
   },

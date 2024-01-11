@@ -23,6 +23,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
 
       - name: Use Node.js 20
         uses: actions/setup-node@v4
@@ -30,11 +33,13 @@ jobs:
           node-version: 20
           registry-url: "https://registry.npmjs.org"
 
-      - name: Initialize Project
+      - name: Install
         run: |
-          npm install
-          npm run bootstrap
-          npm run build
+          pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Build
+        run: |
+          pnpm run build
 
       - name: Publish Project
         run: |

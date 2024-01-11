@@ -17,21 +17,21 @@ The following submodules contain unit tests: `core`, `crypto`, `circuits`,
 You can run all unit tests from the root directory of the repo by running:
 
 ```bash
-npm run test
+pnpm run test
 ```
 
 Or you can run unit tests within each submodule. for example to run the `crypto` tests:
 
 ```bash
 cd crypto
-npm run test
+pnpm run test
 ```
 
 You can also run individual tests within submodules, for example:
 
 ```bash
 cd contracts
-npm run test:accQueue
+pnpm run test:accQueue
 ```
 
 This test command will run `AccQueue.test.ts`
@@ -44,13 +44,13 @@ From the main `maci/` directory, run:
 
 ```bash
 cd contracts && \
-npm run compileSol
+pnpm run compileSol
 ```
 
 To run Contracts only tests, run:
 
 ```bash
-npm run test
+pnpm run test
 ```
 
 ### Circuits
@@ -59,7 +59,7 @@ To test the circuits, from the main `maci/` directory, run:
 
 ```bash
 cd circuits && \
-npm run test
+pnpm run test
 ```
 
 Tests are run using [Mocha](https://mochajs.org/) and [`circom_tester`](https://github.com/iden3/circom_tester).
@@ -84,14 +84,14 @@ Note the locations of the `.zkey` files as the CLI requires them as
 command-line flags.
 
 For testing purposes you can download the required artifacts using the [`download_zkeys``](https://github.com/privacy-scaling-explorations/maci/blob/dev/integrationTests/scripts/download_zkeys.sh) script inside the `integrationTests/scripts` folder. The script will place all required artifacts inside the `cli/zkeys` folder.
-You can run the script directly with bash or use npm: `npm run download-zkeys`.
+You can run the script directly with bash or use pnpm: `pnpm run download-zkeys`.
 
 ### Compile the witness generation binaries (if generating from scratch)
 
 From the main `maci/cli` directory, run:
 
 ```
-npx zkey-manager compile -c ./zkeys.config.yml
+pnpm exec zkey-manager compile -c ./zkeys.config.yml
 ```
 
 You should see the following files in `maci/cli/zkeys/`:
@@ -137,26 +137,26 @@ To run the tests first start a hardhat node in the background:
 
 ```bash
 cd contracts
-npm run hardhat &
+pnpm run hardhat &
 cd ../cli
 ```
 
 Then run the tests (this will run all tests):
 
 ```bash
-npm run test
+pnpm run test
 ```
 
 To run e2e without subsidy:
 
 ```bash
-npm run test:e2e
+pnpm run test:e2e
 ```
 
 To run e2e with subsidy:
 
 ```bash
-npm run test:e2e-subsidy
+pnpm run test:e2e-subsidy
 ```
 
 ### Run integration tests
@@ -166,7 +166,7 @@ You can find the tests in `maci/integrationTests/`.
 You can run them with:
 
 ```bash
-npm run test
+pnpm run test
 ```
 
 ## Pre-Compiled Artifacts for testing

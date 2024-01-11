@@ -438,7 +438,7 @@ Please note that the circuit is configured with testing purpose parameters, whic
 Run:
 
 ```bash
-npx zkey-manager compile -c ./zkeys.config.yml
+pnpm exec zkey-manager compile -c ./zkeys.config.yml
 ```
 
 The larger the trees, the more time this process may take. You may also need a
@@ -455,7 +455,7 @@ perform phase 2 contributions.
 Run this command to measure a circuit:
 
 ```bash
-npx snarkjs r1cs info CIRCUIT_NAME.circom
+pnpm exec snarkjs r1cs info CIRCUIT_NAME.circom
 ```
 
 #### Download the `.ptau` file
@@ -467,7 +467,7 @@ selected](https://blog.hermez.io/hermez-cryptographic-setup/).
 Run:
 
 ```bash
-npx zkey-manager downloadPtau -c ./zkeys.config.yml
+pnpm exec zkey-manager downloadPtau -c ./zkeys.config.yml
 ```
 
 `zkey-manager` will select the smallest `.ptau` file that fits the largest
@@ -479,11 +479,11 @@ To generate and validate ZK proofs from the artifacts produced by `circom`, you 
 
 ## Testing
 
-To test the circuits package, please use `npm run test`. This will run all of the tests inside the tests folder.
+To test the circuits package, please use `pnpm run test`. This will run all of the tests inside the tests folder.
 
 To run individual tests, you can use the following commands (for all other circuits please refer to the `package.json` scripts section):
 
-- `npm run test-processMessages` to run the tests for the `processMessages` circuit.
-- `npm run test-tallyVotes` to run the tests for the `tallyVotes` circuit.
+- `pnpm run test-processMessages` to run the tests for the `processMessages` circuit.
+- `pnpm run test-tallyVotes` to run the tests for the `tallyVotes` circuit.
 
 More details on testing are provided in the [testing section](https://maci.pse.dev/docs/testing) of the documentation.

@@ -5,16 +5,15 @@
   "repository": "https://github.com/privacy-scaling-explorations/maci",
   "license": "MIT",
   "scripts": {
-    "bootstrap": "lerna bootstrap",
     "build": "lerna run build --ignore=website",
     "clean": "lerna exec -- rm -rf node_modules build && rm -rf node_modules",
     "commit": "git cz",
     "prettier": "prettier -c .",
     "prettier:fix": "prettier -w .",
     "lint:ts": "eslint './**/**/*.ts' './**/**/*.tsx'",
-    "lint:ts:fix": "npm run lint:ts -- --fix",
+    "lint:ts:fix": "pnpm run lint:ts -- --fix",
     "lint:sol": "solhint './contracts/contracts/**/*.sol'",
-    "lint:sol:fix": "npm run lint:sol -- --fix --noPrompt",
+    "lint:sol:fix": "pnpm run lint:sol -- --fix --noPrompt",
     "test:cli": "lerna run test --scope \"maci-cli\"",
     "test:integration": "lerna run test --scope \"maci-integrationtests\"",
     "test": "lerna run test --ignore maci-integrationtests --ignore maci-cli",
@@ -43,7 +42,7 @@
     "eslint-plugin-unused-imports": "^3.0.0",
     "husky": "^8.0.0",
     "is-ci": "^3.0.1",
-    "lerna": "^6.6.2",
+    "lerna": "^8.0.2",
     "lint-staged": "^15.1.0",
     "prettier": "^3.1.1",
     "prettier-plugin-solidity": "^1.3.1",
@@ -56,5 +55,9 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
+  },
+  "engines": {
+    "node": "20",
+    "pnpm": "8"
   }
 }

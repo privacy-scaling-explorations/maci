@@ -1,0 +1,9 @@
+packages:
+  - "circuits"
+  - "cli"
+  - "contracts"
+  - "core"
+  - "crypto"
+  - "domainobjs"
+  - "integrationTests"
+  - "website"

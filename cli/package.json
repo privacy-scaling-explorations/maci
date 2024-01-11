@@ -43,10 +43,12 @@
   },
   "devDependencies": {
     "@types/chai": "^4.3.9",
+    "@types/chai-as-promised": "^7.1.8",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.11.0",
     "@types/prompt": "^1.1.8",
     "chai": "^4.3.10",
+    "chai-as-promised": "^7.1.1",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "snarkjs": "^0.7.2",

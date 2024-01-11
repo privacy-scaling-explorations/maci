@@ -3,13 +3,13 @@
 set -e
 
 # install maci dependencies, bootstrap monorepo and build packages
-npm install && npm run bootstrap && npm run build
+pnpm install && pnpm run build
 
 # run typedoc
-npm run typedoc
+pnpm run typedoc
 
 # run solidity docgen
-cd contracts && npm run docs 
+cd contracts && pnpm run docs 
 
 # fix links in the website and build again
-cd ../website && npm run build 
+cd ../website && pnpm run build 

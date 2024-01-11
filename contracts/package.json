@@ -8,7 +8,7 @@
     "hardhat": "hardhat node --hostname 0.0.0.0 --port 8545",
     "compileSol": "./scripts/compileSol.sh $1",
     "moveIntegrationArtifacts": "cp -r artifacts/ ../integrationTests/artifacts",
-    "prebuild": "npm run compileSol",
+    "prebuild": "pnpm run compileSol",
     "build": "tsc -p tsconfig.build.json",
     "postbuild": "cp -r ./artifacts ./build",
     "types": "tsc -p tsconfig.json --noEmit",
@@ -30,11 +30,12 @@
     "test:subsidy": "hardhat test ./tests/Subsidy.test.ts"
   },
   "dependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.0.5",
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
     "@openzeppelin/contracts": "^4.8.0",
     "circomlibjs": "^0.1.7",
     "ethers": "^6.9.2",
-    "hardhat": "^2.19.1",
+    "hardhat": "^2.19.4",
     "maci-circuits": "^1.1.2",
     "maci-core": "^1.1.2",
     "maci-crypto": "^1.1.2",

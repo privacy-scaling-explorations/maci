@@ -1,5 +1,4 @@
 import Layout from "@theme/Layout";
-import React from "react";
 
 const TypedocPage = (): JSX.Element => (
   <Layout description="Description for your Typedoc page" title="Typedoc">
