@@ -2,7 +2,7 @@
 import { expect } from "chai";
 import { AbiCoder, BaseContract, BigNumberish, Contract, Signer } from "ethers";
 import { EthereumProvider } from "hardhat/types";
-import { MaciState, STATE_TREE_DEPTH } from "maci-core";
+import { MaciState } from "maci-core";
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, PubKey, Message } from "maci-domainobjs";
 
@@ -10,7 +10,14 @@ import { parseArtifact } from "../ts/abi";
 import { getDefaultSigner, getSigners } from "../ts/utils";
 import { AccQueueQuinaryMaci, MACI, Poll as PollContract } from "../typechain-types";
 
-import { duration, initialVoiceCreditBalance, maxValues, messageBatchSize, treeDepths } from "./constants";
+import {
+  STATE_TREE_DEPTH,
+  duration,
+  initialVoiceCreditBalance,
+  maxValues,
+  messageBatchSize,
+  treeDepths,
+} from "./constants";
 import { timeTravel, deployTestContracts } from "./utils";
 
 describe("MACI", () => {

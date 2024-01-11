@@ -2,13 +2,7 @@
 import { expect } from "chai";
 import { BaseContract, Signer } from "ethers";
 import { EthereumProvider } from "hardhat/types";
-import {
-  MaciState,
-  Poll,
-  STATE_TREE_DEPTH,
-  packProcessMessageSmallVals,
-  IProcessMessagesCircuitInputs,
-} from "maci-core";
+import { MaciState, Poll, packProcessMessageSmallVals, IProcessMessagesCircuitInputs } from "maci-core";
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, Message, PubKey } from "maci-domainobjs";
 
@@ -18,6 +12,7 @@ import { getDefaultSigner } from "../ts/utils";
 import { MACI, MessageProcessor, Poll as PollContract } from "../typechain-types";
 
 import {
+  STATE_TREE_DEPTH,
   duration,
   initialVoiceCreditBalance,
   maxValues,

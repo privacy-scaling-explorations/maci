@@ -28,8 +28,7 @@ const genEmptyBallotRootsContract = (): string => {
 
 if (require.main === module) {
   const generated = genEmptyBallotRootsContract();
-  // eslint-disable-next-line no-console
-  console.log(generated);
+  fs.writeFileSync(path.resolve(__dirname, "..", "contracts", "trees", "EmptyBallotRoots.sol"), `${generated}\n`);
 }
 
 export { genEmptyBallotRootsContract };

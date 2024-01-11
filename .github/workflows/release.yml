@@ -4,6 +4,9 @@ on:
   push:
     tags: ["*"]
 
+env:
+  STATE_TREE_DEPTH: ${{ vars.STATE_TREE_DEPTH }}
+
 jobs:
   draft-release:
     runs-on: ubuntu-22.04
@@ -35,8 +38,6 @@ jobs:
           npm install
           npm run bootstrap
           npm run build
-        env:
-          STATE_TREE_DEPTH: ${{ vars.STATE_TREE_DEPTH }}
 
       - name: Publish NPM
         run: |
