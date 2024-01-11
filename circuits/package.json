@@ -34,7 +34,7 @@
   "devDependencies": {
     "@types/chai": "^4.3.11",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.10.8",
+    "@types/node": "^20.11.0",
     "chai": "^4.3.10",
     "circom_tester": "^0.0.20",
     "mocha": "^10.2.0",
