@@ -1,4 +1,4 @@
 #!/bin/bash
 
-npm i && npm run bootstrap && npm run build
+npm i && npm run build
 

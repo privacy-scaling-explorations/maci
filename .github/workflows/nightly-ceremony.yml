@@ -34,7 +34,6 @@ jobs:
       - name: Initialize Project
         run: |
           npm install
-          npm run bootstrap
           npm run build
 
       - name: Run hardhat fork

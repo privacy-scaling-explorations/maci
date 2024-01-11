@@ -56,7 +56,6 @@ Note the location of the `circom` binary (e.g. `$HOME/.cargo/bin/circom`), as yo
 git clone https://github.com/privacy-scaling-explorations/maci.git && \
 cd maci && \
 npm i && \
-npm run bootstrap && \
 npm run build
 ```
 

@@ -38,7 +38,6 @@ jobs:
       - name: Build maci-circuits package
         run: |
           npm install
-          npm run bootstrap
           npm run build
 
       - name: Download circom Binary v2.1.6

@@ -3,7 +3,7 @@
 set -e
 
 # install maci dependencies, bootstrap monorepo and build packages
-npm install && npm run bootstrap && npm run build
+npm install && npm run build
 
 # run typedoc
 npm run typedoc

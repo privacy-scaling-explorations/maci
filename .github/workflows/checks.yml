@@ -33,7 +33,6 @@ jobs:
       - name: Build
         run: |
           npm install
-          npm run bootstrap
           npm run build
 
       - name: ${{ matrix.command }}

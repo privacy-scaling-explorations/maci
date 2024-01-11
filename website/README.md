@@ -17,7 +17,7 @@ First, ensure you have setup MACI.
 From the root of the project (not within this `/website/` directory), run:
 
 ```
-npm install && npm run bootstrap && npm run build
+npm install && npm run build
 ```
 
 Then, generate the TypeDoc documentation:

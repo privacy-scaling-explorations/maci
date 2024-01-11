@@ -36,7 +36,6 @@ jobs:
         run: |
           git config --global url."https://github.com/".insteadOf git://github.com/
           npm install
-          npm run bootstrap
           npm run build
 
       - name: Publish NPM

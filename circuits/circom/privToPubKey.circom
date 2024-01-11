@@ -1,6 +1,6 @@
 pragma circom 2.0.0;
-include "../node_modules/circomlib/circuits/bitify.circom";
-include "../node_modules/circomlib/circuits/escalarmulfix.circom";
+include "../../node_modules/circomlib/circuits/bitify.circom";
+include "../../node_modules/circomlib/circuits/escalarmulfix.circom";
 
 // convert a private key to a public key
 // @note the basepoint is the base point of the baby jubjub curve
