@@ -47,7 +47,7 @@ HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js genProofs \
     -w true 
 HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js proveOnChain \
     --poll-id 0 \
-    --proof-dir proofs/
+    --proof-dir proofs/ \
     --subsidy-enabled false
 HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js verify \
     --poll-id 0 \

@@ -79,14 +79,24 @@ jobs:
           wget -qO /home/runner/work/maci/.local/bin/circom https://github.com/iden3/circom/releases/download/v2.1.6/circom-linux-amd64
           chmod +x /home/runner/work/maci/.local/bin/circom
 
-      - name: Generate zkeys
+      - name: Create zkeys folder
         if: ${{ env.CHANGED == 'true' }}
         run: |
           cd cli
           mkdir -p zkeys
+
+      - name: Compile Circuits And Generate zkeys
+        if: ${{ env.CHANGED == 'true' }}
+        run: |
+          cd circuits
+          export PATH=$PATH:/home/runner/work/maci/.local/bin
+          pnpm build-test-circuits-c
+          mv ./build/test/* ../cli/zkeys/
+          cd ../cli
           wget -qO zkeys/powersOfTau28_hez_final_20.ptau https://maci-devops-zkeys.s3.ap-northeast-2.amazonaws.com/powersOfTau28_hez_final_20.ptau
-          pnpm exec zkey-manager compile -c ./zkeys.config.yml
-          pnpm exec zkey-manager genZkeys -c ./zkeys.config.yml
+          pnpm snarkjs groth16 setup ./zkeys/ProcessMessages_10-2-1-2_test.r1cs ./zkeys/powersOfTau28_hez_final_20.ptau ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey
+          pnpm snarkjs groth16 setup ./zkeys/TallyVotes_10-1-2_test.r1cs ./zkeys/powersOfTau28_hez_final_20.ptau ./zkeys/TallyVotes_10-1-2_test.0.zkey
+          pnpm snarkjs groth16 setup ./zkeys/SubsidyPerBatch_10-1-2_test.r1cs ./zkeys/powersOfTau28_hez_final_20.ptau ./zkeys/SubsidyPerBatch_10-1-2_test.0.zkey
 
       - name: Download zkeys
         if: ${{ env.CHANGED == 'false' }}

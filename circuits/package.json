@@ -8,6 +8,8 @@
     "build-test-circuits-wasm": "bash ./scripts/build_arm.sh",
     "watch": "tsc --watch",
     "build": "tsc -p tsconfig.build.json",
+    "circom:build": "NODE_OPTIONS=--max-old-space-size=4096 circomkit compile",
+    "circom:setup": "NODE_OPTIONS=--max-old-space-size=4096 circomkit setup",
     "types": "tsc -p tsconfig.json --noEmit",
     "test": "ts-mocha --exit ts/__tests__/*.test.ts",
     "test:hasher": "ts-mocha --exit ts/__tests__/Hasher.test.ts",
@@ -27,7 +29,9 @@
     "test:incrementalQuinTree": "ts-mocha --exit ts/__tests__/IncrementalQuinTree.test.ts"
   },
   "dependencies": {
-    "circomlib": "https://github.com/weijiekoh/circomlib#ac85e82c1914d47789e2032fb11ceb2cfdd38a2b",
+    "@zk-kit/circuits": "^0.3.0",
+    "circomkit": "^0.0.20",
+    "circomlib": "^2.0.5",
     "maci-core": "^1.1.2",
     "maci-crypto": "^1.1.2",
     "maci-domainobjs": "^1.1.2",
@@ -40,7 +44,6 @@
     "@types/node": "^20.11.0",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
-    "circom_tester": "^0.0.20",
     "mocha": "^10.2.0",
     "ts-mocha": "^10.0.0",
     "typescript": "^5.3.3"

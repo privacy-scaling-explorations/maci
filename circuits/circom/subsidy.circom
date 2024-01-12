@@ -1,12 +1,15 @@
 pragma circom 2.0.0;
-include "../node_modules/circomlib/circuits/comparators.circom";
+
+// circomlib import
+include "./comparators.circom";
+
+// local imports
 include "./trees/incrementalQuinTree.circom";
 include "./trees/calculateTotal.circom";
 include "./trees/checkRoot.circom";
 include "./hasherSha256.circom";
 include "./hasherPoseidon.circom";
 include "./unpackElement.circom";
-
 include "./float.circom";
 
 /*

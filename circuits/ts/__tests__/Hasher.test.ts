@@ -1,32 +1,32 @@
 import { expect } from "chai";
-import tester from "circom_tester";
-import { stringifyBigInts, genRandomSalt, sha256Hash, hashLeftRight, hash13, hash5, hash4, hash3 } from "maci-crypto";
+import { type WitnessTester } from "circomkit";
+import { genRandomSalt, sha256Hash, hashLeftRight, hash13, hash5, hash4, hash3 } from "maci-crypto";
 import { PCommand, Keypair } from "maci-domainobjs";
 
-import path from "path";
-
-import { getSignal } from "./utils/utils";
+import { getSignal, circomkitInstance } from "./utils/utils";
 
 describe("Poseidon hash circuits", function test() {
   this.timeout(30000);
 
-  let circuit: tester.WasmTester;
-
   describe("SHA256", () => {
     describe("Sha256HashLeftRight", () => {
+      let circuit: WitnessTester<["left", "right"], ["hash"]>;
+
       before(async () => {
-        const circuitPath = path.resolve(__dirname, "../../circom/test", `sha256HashLeftRight_test.circom`);
-        circuit = await tester.wasm(circuitPath);
+        circuit = await circomkitInstance.WitnessTester("sha256HashLeftRight", {
+          file: "hasherSha256",
+          template: "Sha256HashLeftRight",
+        });
       });
 
       it("should correctly hash two random values", async () => {
         const left = genRandomSalt();
         const right = genRandomSalt();
 
-        const circuitInputs = stringifyBigInts({ left, right });
+        const circuitInputs = { left, right };
 
-        const witness = await circuit.calculateWitness(circuitInputs, true);
-        await circuit.checkConstraints(witness);
+        const witness = await circuit.calculateWitness(circuitInputs);
+        await circuit.expectConstraintPass(witness);
         const output = await getSignal(circuit, witness, "hash");
 
         const outputJS = sha256Hash([left, right]);
@@ -36,9 +36,13 @@ describe("Poseidon hash circuits", function test() {
     });
 
     describe("Sha256Hasher4", () => {
+      let circuit: WitnessTester<["in"], ["hash"]>;
+
       before(async () => {
-        const circuitPath = path.resolve(__dirname, "../../circom/test", `sha256Hasher4_test.circom`);
-        circuit = await tester.wasm(circuitPath);
+        circuit = await circomkitInstance.WitnessTester("sha256Hasher4", {
+          file: "hasherSha256",
+          template: "Sha256Hasher4",
+        });
       });
 
       it("should correctly hash 4 random values", async () => {
@@ -47,12 +51,12 @@ describe("Poseidon hash circuits", function test() {
           preImages.push(genRandomSalt());
         }
 
-        const circuitInputs = stringifyBigInts({
+        const circuitInputs = {
           in: preImages,
-        });
+        };
 
-        const witness = await circuit.calculateWitness(circuitInputs, true);
-        await circuit.checkConstraints(witness);
+        const witness = await circuit.calculateWitness(circuitInputs);
+        await circuit.expectConstraintPass(witness);
         const output = await getSignal(circuit, witness, "hash");
 
         const outputJS = sha256Hash(preImages);
@@ -62,9 +66,13 @@ describe("Poseidon hash circuits", function test() {
     });
 
     describe("Sha256Hasher6", () => {
+      let circuit: WitnessTester<["in"], ["hash"]>;
+
       before(async () => {
-        const circuitPath = path.resolve(__dirname, "../../circom/test", `sha256Hasher6_test.circom`);
-        circuit = await tester.wasm(circuitPath);
+        circuit = await circomkitInstance.WitnessTester("sha256Hasher6", {
+          file: "hasherSha256",
+          template: "Sha256Hasher6",
+        });
       });
 
       it("should correctly hash 6 random values", async () => {
@@ -73,12 +81,12 @@ describe("Poseidon hash circuits", function test() {
           preImages.push(genRandomSalt());
         }
 
-        const circuitInputs = stringifyBigInts({
+        const circuitInputs = {
           in: preImages,
-        });
+        };
 
-        const witness = await circuit.calculateWitness(circuitInputs, true);
-        await circuit.checkConstraints(witness);
+        const witness = await circuit.calculateWitness(circuitInputs);
+        await circuit.expectConstraintPass(witness);
         const output = await getSignal(circuit, witness, "hash");
 
         const outputJS = sha256Hash(preImages);
@@ -90,9 +98,13 @@ describe("Poseidon hash circuits", function test() {
 
   describe("Poseidon", () => {
     describe("Hasher5", () => {
+      let circuit: WitnessTester<["in"], ["hash"]>;
+
       before(async () => {
-        const circuitPath = path.resolve(__dirname, "../../circom/test", `hasher5_test.circom`);
-        circuit = await tester.wasm(circuitPath);
+        circuit = await circomkitInstance.WitnessTester("hasher5", {
+          file: "hasherPoseidon",
+          template: "Hasher5",
+        });
       });
 
       it("correctly hashes 5 random values", async () => {
@@ -101,12 +113,12 @@ describe("Poseidon hash circuits", function test() {
           preImages.push(genRandomSalt());
         }
 
-        const circuitInputs = stringifyBigInts({
+        const circuitInputs = {
           in: preImages,
-        });
+        };
 
-        const witness = await circuit.calculateWitness(circuitInputs, true);
-        await circuit.checkConstraints(witness);
+        const witness = await circuit.calculateWitness(circuitInputs);
+        await circuit.expectConstraintPass(witness);
         const output = await getSignal(circuit, witness, "hash");
 
         const outputJS = hash5(preImages);
@@ -116,9 +128,13 @@ describe("Poseidon hash circuits", function test() {
     });
 
     describe("Hasher4", () => {
+      let circuit: WitnessTester<["in"], ["hash"]>;
+
       before(async () => {
-        const circuitPath = path.resolve(__dirname, "../../circom/test", `hasher4_test.circom`);
-        circuit = await tester.wasm(circuitPath);
+        circuit = await circomkitInstance.WitnessTester("hasher4", {
+          file: "hasherPoseidon",
+          template: "Hasher4",
+        });
       });
 
       it("correctly hashes 4 random values", async () => {
@@ -127,12 +143,12 @@ describe("Poseidon hash circuits", function test() {
           preImages.push(genRandomSalt());
         }
 
-        const circuitInputs = stringifyBigInts({
+        const circuitInputs = {
           in: preImages,
-        });
+        };
 
-        const witness = await circuit.calculateWitness(circuitInputs, true);
-        await circuit.checkConstraints(witness);
+        const witness = await circuit.calculateWitness(circuitInputs);
+        await circuit.expectConstraintPass(witness);
         const output = await getSignal(circuit, witness, "hash");
 
         const outputJS = hash4(preImages);
@@ -142,9 +158,13 @@ describe("Poseidon hash circuits", function test() {
     });
 
     describe("Hasher3", () => {
+      let circuit: WitnessTester<["in"], ["hash"]>;
+
       before(async () => {
-        const circuitPath = path.resolve(__dirname, "../../circom/test", `hasher3_test.circom`);
-        circuit = await tester.wasm(circuitPath);
+        circuit = await circomkitInstance.WitnessTester("hasher3", {
+          file: "hasherPoseidon",
+          template: "Hasher3",
+        });
       });
 
       it("correctly hashes 3 random values", async () => {
@@ -153,12 +173,12 @@ describe("Poseidon hash circuits", function test() {
           preImages.push(genRandomSalt());
         }
 
-        const circuitInputs = stringifyBigInts({
+        const circuitInputs = {
           in: preImages,
-        });
+        };
 
-        const witness = await circuit.calculateWitness(circuitInputs, true);
-        await circuit.checkConstraints(witness);
+        const witness = await circuit.calculateWitness(circuitInputs);
+        await circuit.expectConstraintPass(witness);
         const output = await getSignal(circuit, witness, "hash");
 
         const outputJS = hash3(preImages);
@@ -168,9 +188,13 @@ describe("Poseidon hash circuits", function test() {
     });
 
     describe("Hasher13", () => {
+      let circuit: WitnessTester<["in"], ["hash"]>;
+
       before(async () => {
-        const circuitPath = path.resolve(__dirname, "../../circom/test", `hasher13_test.circom`);
-        circuit = await tester.wasm(circuitPath);
+        circuit = await circomkitInstance.WitnessTester("hasher13", {
+          file: "hasherPoseidon",
+          template: "Hasher13",
+        });
       });
 
       it("should correctly hash 13 random values", async () => {
@@ -178,12 +202,12 @@ describe("Poseidon hash circuits", function test() {
         for (let i = 0; i < 13; i += 1) {
           preImages.push(genRandomSalt());
         }
-        const circuitInputs = stringifyBigInts({
+        const circuitInputs = {
           in: preImages,
-        });
+        };
 
-        const witness = await circuit.calculateWitness(circuitInputs, true);
-        await circuit.checkConstraints(witness);
+        const witness = await circuit.calculateWitness(circuitInputs);
+        await circuit.expectConstraintPass(witness);
         const output = await getSignal(circuit, witness, "hash");
 
         const outputJS = hash13(preImages);
@@ -193,19 +217,23 @@ describe("Poseidon hash circuits", function test() {
     });
 
     describe("HashLeftRight", () => {
+      let circuit: WitnessTester<["left", "right"], ["hash"]>;
+
       before(async () => {
-        const circuitPath = path.resolve(__dirname, "../../circom/test", `hashleftright_test.circom`);
-        circuit = await tester.wasm(circuitPath);
+        circuit = await circomkitInstance.WitnessTester("hashLeftRight", {
+          file: "hasherPoseidon",
+          template: "HashLeftRight",
+        });
       });
 
       it("should correctly hash two random values", async () => {
         const left = genRandomSalt();
         const right = genRandomSalt();
 
-        const circuitInputs = stringifyBigInts({ left, right });
+        const circuitInputs = { left, right };
 
-        const witness = await circuit.calculateWitness(circuitInputs, true);
-        await circuit.checkConstraints(witness);
+        const witness = await circuit.calculateWitness(circuitInputs);
+        await circuit.expectConstraintPass(witness);
         const output = await getSignal(circuit, witness, "hash");
 
         const outputJS = hashLeftRight(left, right);
@@ -217,14 +245,14 @@ describe("Poseidon hash circuits", function test() {
         const left = genRandomSalt();
         const right = genRandomSalt();
 
-        const circuitInputs = stringifyBigInts({ left, right });
+        const circuitInputs = { left, right };
 
-        let witness = await circuit.calculateWitness(circuitInputs, true);
-        await circuit.checkConstraints(witness);
+        let witness = await circuit.calculateWitness(circuitInputs);
+        await circuit.expectConstraintPass(witness);
         const output = await getSignal(circuit, witness, "hash");
 
-        witness = await circuit.calculateWitness(circuitInputs, true);
-        await circuit.checkConstraints(witness);
+        witness = await circuit.calculateWitness(circuitInputs);
+        await circuit.expectConstraintPass(witness);
         const output2 = await getSignal(circuit, witness, "hash");
 
         expect(output.toString()).to.be.eq(output2.toString());
@@ -233,9 +261,13 @@ describe("Poseidon hash circuits", function test() {
   });
 
   describe("MessageHasher", () => {
+    let circuit: WitnessTester<["in", "encPubKey"], ["hash"]>;
+
     before(async () => {
-      const circuitPath = path.resolve(__dirname, "../../circom/test", `messageHasher_test.circom`);
-      circuit = await tester.wasm(circuitPath);
+      circuit = await circomkitInstance.WitnessTester("messageHasher", {
+        file: "messageHasher",
+        template: "MessageHasher",
+      });
     });
 
     it("should correctly hash a message", async () => {
@@ -259,12 +291,12 @@ describe("Poseidon hash circuits", function test() {
       const signature = command.sign(privKey);
       const message = command.encrypt(signature, ecdhSharedKey);
       const messageHash = message.hash(k.pubKey);
-      const circuitInputs = stringifyBigInts({
+      const circuitInputs = {
         in: message.asCircuitInputs(),
-        encPubKey: k.pubKey.asCircuitInputs(),
-      });
-      const witness = await circuit.calculateWitness(circuitInputs, true);
-      await circuit.checkConstraints(witness);
+        encPubKey: k.pubKey.asCircuitInputs() as unknown as [bigint, bigint],
+      };
+      const witness = await circuit.calculateWitness(circuitInputs);
+      await circuit.expectConstraintPass(witness);
       const output = await getSignal(circuit, witness, "hash");
       expect(output.toString()).to.be.eq(messageHash.toString());
     });

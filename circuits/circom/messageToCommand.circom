@@ -1,8 +1,13 @@
 pragma circom 2.0.0;
+
+// circomlib import
+include "./bitify.circom";
+// @zk-kit import
+include "./poseidon-cipher.circom";
+
+// local imports
 include "./ecdh.circom";
 include "./unpackElement.circom";
-include "../node_modules/circomlib/circuits/bitify.circom";
-include "../node_modules/circomlib/circuits/poseidon.circom";
 
 // template that converts a MACI message
 // to a command (decrypts it)

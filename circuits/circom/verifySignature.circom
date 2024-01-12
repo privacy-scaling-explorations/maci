@@ -1,12 +1,16 @@
 pragma circom 2.0.0;
-include "../node_modules/circomlib/circuits/compconstant.circom";
-include "../node_modules/circomlib/circuits/comparators.circom";
-include "../node_modules/circomlib/circuits/pointbits.circom";
-include "./poseidon/poseidonHashT6.circom";
-include "../node_modules/circomlib/circuits/bitify.circom";
-include "../node_modules/circomlib/circuits/escalarmulany.circom";
-include "../node_modules/circomlib/circuits/escalarmulfix.circom";
+
+// circomlib imports
+include "./compconstant.circom";
+include "./comparators.circom";
+include "./pointbits.circom";
+include "./bitify.circom";
+include "./escalarmulany.circom";
+include "./escalarmulfix.circom";
+
+// local imports
 include "./hasherPoseidon.circom";
+include "./poseidon/poseidonHashT6.circom";
 
 template EdDSAPoseidonVerifier_patched() {
     signal input Ax;

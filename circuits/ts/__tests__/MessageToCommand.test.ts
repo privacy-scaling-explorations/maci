@@ -1,18 +1,32 @@
 import { expect } from "chai";
-import tester from "circom_tester";
-import { stringifyBigInts, genRandomSalt, genPrivKey } from "maci-crypto";
+import { type WitnessTester } from "circomkit";
+import { genRandomSalt, genPrivKey } from "maci-crypto";
 import { Keypair, PCommand, PrivKey } from "maci-domainobjs";
 
-import path from "path";
-
-import { getSignal } from "./utils/utils";
+import { circomkitInstance, getSignal } from "./utils/utils";
 
 describe("MessageToCommand circuit", () => {
-  let circuit: tester.WasmTester;
+  let circuit: WitnessTester<
+    ["message", "encPubKey", "encPubKey"],
+    [
+      "stateIndex",
+      "newPubKey",
+      "voteOptionIndex",
+      "newVoteWeight",
+      "nonce",
+      "pollId",
+      "salt",
+      "sigR8",
+      "sigS",
+      "packedCommandOut",
+    ]
+  >;
 
   before(async () => {
-    const circuitPath = path.resolve(__dirname, "../../circom/test", `messageToCommand_test.circom`);
-    circuit = await tester.wasm(circuitPath);
+    circuit = await circomkitInstance.WitnessTester("messageToCommand", {
+      file: "messageToCommand",
+      template: "MessageToCommand",
+    });
   });
 
   it("should decrypt a Message and output the fields of a Command", async () => {
@@ -41,14 +55,14 @@ describe("MessageToCommand circuit", () => {
     const signature = command.sign(privKey);
     const message = command.encrypt(signature, ecdhSharedKey);
 
-    const circuitInputs = stringifyBigInts({
+    const circuitInputs = {
       message: message.asCircuitInputs(),
-      encPrivKey: privKey.asCircuitInputs(),
-      encPubKey: pubKey1.asCircuitInputs(),
-    });
+      encPrivKey: privKey.asCircuitInputs() as unknown as bigint,
+      encPubKey: pubKey1.asCircuitInputs() as unknown as bigint[],
+    };
 
-    const witness = await circuit.calculateWitness(circuitInputs, true);
-    await circuit.checkConstraints(witness);
+    const witness = await circuit.calculateWitness(circuitInputs);
+    await circuit.expectConstraintPass(witness);
 
     const stateIndexOut = await getSignal(circuit, witness, "stateIndex");
     expect(command.stateIndex.toString()).to.be.eq(stateIndexOut.toString());
@@ -110,14 +124,14 @@ describe("MessageToCommand circuit", () => {
     const signature = command.sign(privKey);
     const message = command.encrypt(signature, ecdhSharedKey);
 
-    const circuitInputs = stringifyBigInts({
+    const circuitInputs = {
       message: message.asCircuitInputs(),
       // invalid private key
-      encPrivKey: new PrivKey(genPrivKey()).asCircuitInputs(),
-      encPubKey: pubKey1.asCircuitInputs(),
-    });
+      encPrivKey: new PrivKey(genPrivKey()).asCircuitInputs() as unknown as bigint,
+      encPubKey: pubKey1.asCircuitInputs() as unknown as [bigint, bigint],
+    };
 
-    const witness = await circuit.calculateWitness(circuitInputs, true);
-    await circuit.checkConstraints(witness);
+    const witness = await circuit.calculateWitness(circuitInputs);
+    await circuit.expectConstraintPass(witness);
   });
 });

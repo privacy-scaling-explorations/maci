@@ -1,21 +1,20 @@
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import tester from "circom_tester";
-import { stringifyBigInts } from "maci-crypto";
+import { type WitnessTester } from "circomkit";
 import { Keypair } from "maci-domainobjs";
 
-import path from "path";
-
-import { getSignal } from "./utils/utils";
+import { circomkitInstance } from "./utils/utils";
 
 chai.use(chaiAsPromised);
 
 describe("Public key derivation circuit", () => {
-  const circuitPath = path.resolve(__dirname, "../../circom/test", `ecdh_test.circom`);
-  let circuit: tester.WasmTester;
+  let circuit: WitnessTester<["privKey", "pubKey"], ["sharedKey"]>;
 
   before(async () => {
-    circuit = await tester.wasm(circuitPath);
+    circuit = await circomkitInstance.WitnessTester("ecdh", {
+      file: "ecdh",
+      template: "Ecdh",
+    });
   });
 
   it("correctly computes a public key", async () => {
@@ -24,55 +23,44 @@ describe("Public key derivation circuit", () => {
 
     const ecdhSharedKey = Keypair.genEcdhSharedKey(keypair.privKey, keypair2.pubKey);
 
-    const circuitInputs = stringifyBigInts({
-      privKey: keypair.privKey.asCircuitInputs(),
-      pubKey: keypair2.pubKey.asCircuitInputs(),
-    });
+    const circuitInputs = {
+      privKey: BigInt(keypair.privKey.asCircuitInputs()),
+      pubKey: keypair2.pubKey.rawPubKey as [bigint, bigint],
+    };
 
-    const witness = await circuit.calculateWitness(circuitInputs, true);
-    await circuit.checkConstraints(witness);
-
-    const circuitEcdhSharedKey0 = await getSignal(circuit, witness, "sharedKey[0]");
-    const circuitEcdhSharedKey1 = await getSignal(circuit, witness, "sharedKey[1]");
-    expect(circuitEcdhSharedKey0.toString()).to.be.eq(ecdhSharedKey[0].toString());
-    expect(circuitEcdhSharedKey1.toString()).to.be.eq(ecdhSharedKey[1].toString());
+    await circuit.expectPass(circuitInputs, { sharedKey: [ecdhSharedKey[0], ecdhSharedKey[1]] });
   });
 
   it("should generate the same ECDH key given the same inputs", async () => {
     const keypair = new Keypair();
     const keypair2 = new Keypair();
 
-    const circuitInputs = stringifyBigInts({
-      privKey: keypair.privKey.asCircuitInputs(),
-      pubKey: keypair2.pubKey.asCircuitInputs(),
-    });
+    const circuitInputs = {
+      privKey: BigInt(keypair.privKey.asCircuitInputs()),
+      pubKey: keypair2.pubKey.asCircuitInputs() as unknown as bigint[],
+    };
 
-    let witness = await circuit.calculateWitness(circuitInputs, true);
-    await circuit.checkConstraints(witness);
+    // calculate first time witness and check contraints
+    const witness = await circuit.calculateWitness(circuitInputs);
+    await circuit.expectConstraintPass(witness);
 
-    const circuitEcdhSharedKey0 = await getSignal(circuit, witness, "sharedKey[0]");
-    const circuitEcdhSharedKey1 = await getSignal(circuit, witness, "sharedKey[1]");
+    // read out
+    const out = await circuit.readWitnessSignals(witness, ["sharedKey"]);
 
-    witness = await circuit.calculateWitness(circuitInputs, true);
-    await circuit.checkConstraints(witness);
-
-    const circuitEcdhSharedKey02 = await getSignal(circuit, witness, "sharedKey[0]");
-    const circuitEcdhSharedKey12 = await getSignal(circuit, witness, "sharedKey[1]");
-
-    expect(circuitEcdhSharedKey0.toString()).to.be.eq(circuitEcdhSharedKey02.toString());
-    expect(circuitEcdhSharedKey1.toString()).to.be.eq(circuitEcdhSharedKey12.toString());
+    // calculate again
+    await circuit.expectPass(circuitInputs, { sharedKey: out.sharedKey });
   });
 
   it("should throw when given invalid inputs (pubKey too short)", async () => {
     const keypair = new Keypair();
     const keypair2 = new Keypair();
 
-    const circuitInputs = stringifyBigInts({
-      privKey: keypair.privKey.asCircuitInputs(),
-      pubKey: keypair2.pubKey.asCircuitInputs().slice(0, 1),
-    });
+    const circuitInputs = {
+      privKey: BigInt(keypair.privKey.asCircuitInputs()),
+      pubKey: keypair2.pubKey.asCircuitInputs().slice(0, 1) as unknown as [bigint, bigint],
+    };
 
-    await expect(circuit.calculateWitness(circuitInputs, true)).to.be.rejectedWith(
+    await expect(circuit.calculateWitness(circuitInputs)).to.be.rejectedWith(
       "Not enough values for input signal pubKey",
     );
   });

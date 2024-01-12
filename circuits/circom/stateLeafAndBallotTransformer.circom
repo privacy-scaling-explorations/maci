@@ -1,6 +1,10 @@
 pragma circom 2.0.0;
+
+// circomlib import
+include "./mux1.circom";
+
+// local import
 include "./messageValidator.circom";
-include "../node_modules/circomlib/circuits/mux1.circom";
 
 // Apply a command to a state leaf and ballot.
 template StateLeafAndBallotTransformer() {

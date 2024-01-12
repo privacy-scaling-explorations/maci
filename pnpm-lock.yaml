@@ -91,9 +91,15 @@ importers:
 
   circuits:
     dependencies:
+      "@zk-kit/circuits":
+        specifier: ^0.3.0
+        version: 0.3.0
+      circomkit:
+        specifier: ^0.0.20
+        version: 0.0.20
       circomlib:
-        specifier: https://github.com/weijiekoh/circomlib#ac85e82c1914d47789e2032fb11ceb2cfdd38a2b
-        version: github.com/weijiekoh/circomlib/ac85e82c1914d47789e2032fb11ceb2cfdd38a2b
+        specifier: ^2.0.5
+        version: 2.0.5
       maci-core:
         specifier: ^1.1.2
         version: link:../core
@@ -125,9 +131,6 @@ importers:
       chai-as-promised:
         specifier: ^7.1.1
         version: 7.1.1(chai@4.4.0)
-      circom_tester:
-        specifier: ^0.0.20
-        version: 0.0.20
       mocha:
         specifier: ^10.2.0
         version: 10.2.0
@@ -5640,6 +5643,7 @@ packages:
   /@types/json5@0.0.29:
     resolution:
       { integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ== }
+    requiresBuild: true
     dev: true
 
   /@types/katex@0.16.7:
@@ -6211,6 +6215,13 @@ packages:
       { integrity: sha512-eWpUSpKKpllGZXE6mdS1IVuegRjY2Yu+3Qccyfg0+gMI8+p0ruioMM/MCK3tg2lRIUJTVd+16UghVcK0145yWg== }
     dependencies:
       "@zk-kit/utils": 0.1.0
+    dev: false
+
+  /@zk-kit/circuits@0.3.0:
+    resolution:
+      { integrity: sha512-v46KHC3sBRXUJbYi8d5PTAm3zCdBeArvWw3de+A2LcW/C9beYqBo8QJ/h6NWKZWOgpwqvCHzJa5HvyG6x3lIZQ== }
+    dependencies:
+      circomlib: 2.0.5
     dev: false
 
   /@zk-kit/eddsa-poseidon@0.5.1:
@@ -7635,6 +7646,11 @@ packages:
       parse5-htmlparser2-tree-adapter: 7.0.0
     dev: false
 
+  /child_process@1.0.2:
+    resolution:
+      { integrity: sha512-Wmza/JzL0SiWz7kl6MhIKT5ceIlnFPJX+lwUGj7Clhy5MMldsSoJR0+uvRzOS5Kv45Mq7t1PoE8TsOA9bzvb6g== }
+    dev: false
+
   /chokidar@3.5.3:
     resolution:
       { integrity: sha512-Dr3sfKRP6oTcjf2JmUmFJfeVMvXBdegxB0iVQ5eb2V10uFJUCAS8OByZdVAyVb8xXNz3GjjTgj9kLWsZTqE6kw== }
@@ -7704,6 +7720,14 @@ packages:
       fnv-plus: 1.3.1
     dev: true
 
+  /circom_runtime@0.1.21:
+    resolution:
+      { integrity: sha512-qTkud630B/GK8y76hnOaaS1aNuF6prfV0dTrkeRsiJKnlP1ryQbP2FWLgDOPqn6aKyaPlam+Z+DTbBhkEzh8dA== }
+    hasBin: true
+    dependencies:
+      ffjavascript: 0.2.56
+    dev: false
+
   /circom_runtime@0.1.24:
     resolution:
       { integrity: sha512-H7/7I2J/cBmRnZm9docOCGhfxzS61BEm4TMCWcrZGsWNBQhePNfQq88Oj2XpUfzmBTCd8pRvRb3Mvazt3TMrJw== }
@@ -7711,18 +7735,31 @@ packages:
     dependencies:
       ffjavascript: 0.2.60
 
-  /circom_tester@0.0.20:
+  /circom_tester@0.0.19:
     resolution:
-      { integrity: sha512-hhtqh3z1+/4RqhbAQxQTzekDvANFNd0M0+D8OdpxM1Ud4yQXoM+1n06AhJ7sULfCUD+LQrmnSjK5GD783KRSxg== }
+      { integrity: sha512-SNHaBsGxcBH6XsVWfsRbRPA7NF8m8AMKJI9dtJJCFGUtOTT2+zsoIqAwi50z6XCnO4TtjyXq7AeXa1PLHqT0tw== }
     dependencies:
       chai: 4.4.0
+      child_process: 1.0.2
       ffjavascript: 0.2.62
       fnv-plus: 1.3.1
-      r1csfile: 0.0.47
-      snarkjs: 0.7.2
+      r1csfile: 0.0.41
+      snarkjs: 0.5.0
       tmp-promise: 3.0.3
       util: 0.12.5
-    dev: true
+    dev: false
+
+  /circomkit@0.0.20:
+    resolution:
+      { integrity: sha512-rzCJFV1WNshAhOrlSW1rnz3tTRoVjsQ3gkO4T0sNcrYa3mNRQxc02O4d7pUS7mKhAGDFgo2VpIkz3zfPcoLhrA== }
+    engines: { node: ">=12.0.0" }
+    hasBin: true
+    dependencies:
+      chai: 4.4.0
+      circom_tester: 0.0.19
+      loglevel: 1.8.1
+      snarkjs: 0.7.2
+    dev: false
 
   /circomlib@2.0.5:
     resolution:
@@ -10502,6 +10539,15 @@ packages:
       web-worker: 1.3.0
     dev: true
 
+  /ffjavascript@0.2.56:
+    resolution:
+      { integrity: sha512-em6G5Lrj7ucIqj4TYEgyoHs/j99Urwwqa4+YxEVY2hggnpRimVj+noX5pZQTxI1pvtiekZI4rG65JBf0xraXrg== }
+    dependencies:
+      wasmbuilder: 0.0.16
+      wasmcurves: 0.2.0
+      web-worker: 1.3.0
+    dev: false
+
   /ffjavascript@0.2.60:
     resolution:
       { integrity: sha512-T/9bnEL5xAZRDbQoEMf+pM9nrhK+C3JyZNmqiWub26EQorW7Jt+jR54gpqDhceA4Nj0YctPQwYnl8xa52/A26A== }
@@ -10693,7 +10739,6 @@ packages:
   /fnv-plus@1.3.1:
     resolution:
       { integrity: sha512-Gz1EvfOneuFfk4yG458dJ3TLJ7gV19q3OM/vVvvHf7eT02Hm1DleB4edsia6ahbKgAYxO9gvyQ1ioWZR+a00Yw== }
-    dev: true
 
   /follow-redirects@1.15.4(debug@4.3.4):
     resolution:
@@ -12563,6 +12608,7 @@ packages:
     dependencies:
       call-bind: 1.0.5
       has-tostringtag: 1.0.0
+    dev: false
 
   /is-array-buffer@3.0.2:
     resolution:
@@ -13300,6 +13346,7 @@ packages:
     resolution:
       { integrity: sha512-g1MWMLBiz8FKi1e4w0UyVL3w+iJceWAFBAaBnnGKOpNa5f8TLktkbre1+s6oICydWAm+HRUGTmI+//xv2hvXYA== }
     hasBin: true
+    requiresBuild: true
     dependencies:
       minimist: 1.2.8
     dev: true
@@ -13859,6 +13906,12 @@ packages:
       strip-ansi: 7.1.0
       wrap-ansi: 9.0.0
     dev: true
+
+  /loglevel@1.8.1:
+    resolution:
+      { integrity: sha512-tCRIJM51SHjAayKwC+QAg8hT8vg6z7GSgLJKGvzuPb1Wc+hLzqtuVLxp6/HzSPOozuK+8ErAhy7U/sVzw8Dgfg== }
+    engines: { node: ">= 0.6.0" }
+    dev: false
 
   /logplease@1.2.15:
     resolution:
@@ -17272,6 +17325,16 @@ packages:
       ffjavascript: 0.2.35
     dev: true
 
+  /r1csfile@0.0.41:
+    resolution:
+      { integrity: sha512-Q1WDF3u1vYeAwjHo4YuddkA8Aq0TulbKjmGm99+Atn13Lf5fTsMZBnBV9T741w8iSyPFG6Uh6sapQby77sREqA== }
+    dependencies:
+      "@iden3/bigarray": 0.0.2
+      "@iden3/binfileutils": 0.0.11
+      fastfile: 0.0.20
+      ffjavascript: 0.2.56
+    dev: false
+
   /r1csfile@0.0.47:
     resolution:
       { integrity: sha512-oI4mAwuh1WwuFg95eJDNDDL8hCaZkwnPuNZrQdLBWvDoRU7EG+L/MOHL7SwPW2Y+ZuYcTLpj3rBkgllBQZN/JA== }
@@ -18711,6 +18774,23 @@ packages:
       readline: 1.3.0
     dev: true
 
+  /snarkjs@0.5.0:
+    resolution:
+      { integrity: sha512-KWz8mZ2Y+6wvn6GGkQo6/ZlKwETdAGohd40Lzpwp5TUZCn6N6O4Az1SuX1rw/qREGL6Im+ycb19suCFE8/xaKA== }
+    hasBin: true
+    dependencies:
+      "@iden3/binfileutils": 0.0.11
+      bfj: 7.1.0
+      blake2b-wasm: 2.4.0
+      circom_runtime: 0.1.21
+      ejs: 3.1.9
+      fastfile: 0.0.20
+      ffjavascript: 0.2.56
+      js-sha3: 0.8.0
+      logplease: 1.2.15
+      r1csfile: 0.0.41
+    dev: false
+
   /snarkjs@0.7.2:
     resolution:
       { integrity: sha512-A8yPFm9pRnZ7XYXfPSjSFnugEV1rsHGjb8W7c0Qk7nzXl5h3WANTkpVC5FYxakmw/GKWekz7wjjHaOFtPp823Q== }
@@ -19247,6 +19327,7 @@ packages:
     resolution:
       { integrity: sha512-vavAMRXOgBVNF6nyEEmL3DBK19iRpDcoIwW+swQ+CbGiu7lju6t+JklA1MHweoWtadgt4ISVUsXLyDq34ddcwA== }
     engines: { node: ">=4" }
+    requiresBuild: true
     dev: true
 
   /strip-bom@4.0.0:
@@ -19642,7 +19723,7 @@ packages:
       { integrity: sha512-RwM7MoPojPxsOBYnyd2hy0bxtIlVrihNs9pj5SUvY8Zz1sQcQG2tG1hSr8PDxfgEB8RNKDhqbIlroIarSNDNsQ== }
     dependencies:
       tmp: 0.2.1
-    dev: true
+    dev: false
 
   /tmp@0.0.33:
     resolution:
@@ -19657,7 +19738,6 @@ packages:
     engines: { node: ">=8.17.0" }
     dependencies:
       rimraf: 3.0.2
-    dev: true
 
   /to-fast-properties@2.0.0:
     resolution:
@@ -19807,6 +19887,7 @@ packages:
   /tsconfig-paths@3.15.0:
     resolution:
       { integrity: sha512-2Ac2RgzDe/cn48GvOe3M+o82pEFewD3UPbyoUHHdKasHwJKjds4fLXWf/Ux5kATBKN20oaFGu+jbElp1pos0mg== }
+    requiresBuild: true
     dependencies:
       "@types/json5": 0.0.29
       json5: 1.0.2
@@ -20367,6 +20448,7 @@ packages:
       is-generator-function: 1.0.10
       is-typed-array: 1.1.12
       which-typed-array: 1.1.13
+    dev: false
 
   /utila@0.4.0:
     resolution:
@@ -20529,6 +20611,13 @@ packages:
       big-integer: 1.6.52
       blakejs: 1.2.1
     dev: true
+
+  /wasmcurves@0.2.0:
+    resolution:
+      { integrity: sha512-3e2rbxdujOwaod657gxgmdhZNn+i1qKdHO3Y/bK+8E7bV8ttV/fu5FO4/WLBACF375cK0QDLOP+65Na63qYuWA== }
+    dependencies:
+      wasmbuilder: 0.0.16
+    dev: false
 
   /wasmcurves@0.2.2:
     resolution:
@@ -21561,10 +21650,3 @@ packages:
   /zwitch@2.0.4:
     resolution:
       { integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A== }
-
-  github.com/weijiekoh/circomlib/ac85e82c1914d47789e2032fb11ceb2cfdd38a2b:
-    resolution:
-      { tarball: https://codeload.github.com/weijiekoh/circomlib/tar.gz/ac85e82c1914d47789e2032fb11ceb2cfdd38a2b }
-    name: circomlib
-    version: 1.0.0
-    dev: false
