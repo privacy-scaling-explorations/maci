@@ -4,7 +4,6 @@ import {
   deployConstantInitialVoiceCreditProxy,
   deployFreeForAllSignUpGatekeeper,
   deployMaci,
-  deployMockVerifier,
   deployTopupCredit,
   getDefaultSigner,
 } from "maci-contracts";
@@ -18,13 +17,11 @@ describe("topup", () => {
   before(async () => {
     signer = await getDefaultSigner();
     const signupGatekepper = await deployFreeForAllSignUpGatekeeper(signer, true);
-    const verifier = await deployMockVerifier(signer, true);
     const topupCredit = await deployTopupCredit(signer, true);
     const initialVoiceCreditProxyAddress = await deployConstantInitialVoiceCreditProxy(100, signer, true);
     const maciContracts = await deployMaci(
       await signupGatekepper.getAddress(),
       await initialVoiceCreditProxyAddress.getAddress(),
-      await verifier.getAddress(),
       await topupCredit.getAddress(),
       signer,
       10,

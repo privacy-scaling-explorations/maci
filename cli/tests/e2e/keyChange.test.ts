@@ -45,6 +45,8 @@ describe("keyChange tests", function test() {
 
   let maciAddresses: DeployedContracts;
 
+  const subsidyEnabled = false;
+
   // before all tests we deploy the vk registry contract and set the verifying keys
   before(async () => {
     // we deploy the vk registry contract
@@ -89,6 +91,7 @@ describe("keyChange tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        subsidyEnabled,
       );
       stateIndex = Number.parseInt(await signup(keypair1.pubKey.serialize()), 10);
       await publish(
@@ -142,8 +145,8 @@ describe("keyChange tests", function test() {
         undefined,
         useWasm,
       );
-      await proveOnChain("0", testProofsDirPath);
-      await verify("0", testTallyFilePath);
+      await proveOnChain("0", testProofsDirPath, subsidyEnabled);
+      await verify("0", subsidyEnabled, testTallyFilePath);
     });
 
     it("should confirm the tally is correct", () => {
@@ -181,6 +184,7 @@ describe("keyChange tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        subsidyEnabled,
       );
       stateIndex = Number.parseInt(await signup(keypair1.pubKey.serialize()), 10);
       await publish(
@@ -234,8 +238,8 @@ describe("keyChange tests", function test() {
         undefined,
         useWasm,
       );
-      await proveOnChain("0", testProofsDirPath);
-      await verify("0", testTallyFilePath);
+      await proveOnChain("0", testProofsDirPath, subsidyEnabled);
+      await verify("0", subsidyEnabled, testTallyFilePath);
     });
 
     it("should confirm the tally is correct", () => {
@@ -273,6 +277,7 @@ describe("keyChange tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        subsidyEnabled,
       );
       stateIndex = Number.parseInt(await signup(keypair1.pubKey.serialize()), 10);
       await publish(
@@ -326,8 +331,8 @@ describe("keyChange tests", function test() {
         undefined,
         useWasm,
       );
-      await proveOnChain("0", testProofsDirPath);
-      await verify("0", testTallyFilePath);
+      await proveOnChain("0", testProofsDirPath, subsidyEnabled);
+      await verify("0", subsidyEnabled, testTallyFilePath);
     });
 
     it("should confirm the tally is correct", () => {

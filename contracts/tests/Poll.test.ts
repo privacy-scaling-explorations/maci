@@ -8,7 +8,7 @@ import { Keypair, Message, PCommand, PubKey } from "maci-domainobjs";
 
 import { parseArtifact } from "../ts/abi";
 import { getDefaultSigner, getSigners } from "../ts/utils";
-import { AccQueue, MACI, Poll as PollContract, TopupCredit } from "../typechain-types";
+import { AccQueue, MACI, Poll as PollContract, TopupCredit, Verifier, VkRegistry } from "../typechain-types";
 
 import {
   MESSAGE_TREE_DEPTH,
@@ -26,6 +26,8 @@ describe("Poll", () => {
   let maciContract: MACI;
   let pollId: number;
   let pollContract: PollContract;
+  let verifierContract: Verifier;
+  let vkRegistryContract: VkRegistry;
   let topupCreditContract: TopupCredit;
   let signer: Signer;
   let deployTime: number;
@@ -40,12 +42,23 @@ describe("Poll", () => {
       signer = await getDefaultSigner();
       const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, signer, true);
       maciContract = r.maciContract;
+      verifierContract = r.mockVerifierContract as Verifier;
+      vkRegistryContract = r.vkRegistryContract;
       topupCreditContract = r.topupCreditContract;
 
       // deploy on chain poll
-      const tx = await maciContract.deployPoll(duration, maxValues, treeDepths, coordinator.pubKey.asContractParam(), {
-        gasLimit: 8000000,
-      });
+      const tx = await maciContract.deployPoll(
+        duration,
+        maxValues,
+        treeDepths,
+        coordinator.pubKey.asContractParam(),
+        verifierContract,
+        vkRegistryContract,
+        false,
+        {
+          gasLimit: 10000000,
+        },
+      );
       const receipt = await tx.wait();
 
       const block = await signer.provider!.getBlock(receipt!.blockHash);

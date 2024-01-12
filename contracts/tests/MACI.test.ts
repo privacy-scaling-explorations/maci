@@ -8,7 +8,7 @@ import { Keypair, PubKey, Message } from "maci-domainobjs";
 
 import { parseArtifact } from "../ts/abi";
 import { getDefaultSigner, getSigners } from "../ts/utils";
-import { AccQueueQuinaryMaci, MACI, Poll as PollContract } from "../typechain-types";
+import { AccQueueQuinaryMaci, MACI, Poll as PollContract, Verifier, VkRegistry } from "../typechain-types";
 
 import {
   STATE_TREE_DEPTH,
@@ -23,6 +23,8 @@ import { timeTravel, deployTestContracts } from "./utils";
 describe("MACI", () => {
   let maciContract: MACI;
   let stateAqContract: AccQueueQuinaryMaci;
+  let vkRegistryContract: VkRegistry;
+  let verifierContract: Verifier;
   let pollId: number;
 
   const coordinator = new Keypair();
@@ -41,6 +43,8 @@ describe("MACI", () => {
 
       maciContract = r.maciContract;
       stateAqContract = r.stateAqContract;
+      vkRegistryContract = r.vkRegistryContract;
+      verifierContract = r.mockVerifierContract as Verifier;
     });
 
     it("should have set the correct stateTreeDepth", async () => {
@@ -154,9 +158,16 @@ describe("MACI", () => {
 
     it("should deploy a poll", async () => {
       // Create the poll and get the poll ID from the tx event logs
-      const tx = await maciContract.deployPoll(duration, maxValues, treeDepths, coordinator.pubKey.asContractParam(), {
-        gasLimit: 8000000,
-      });
+      const tx = await maciContract.deployPoll(
+        duration,
+        maxValues,
+        treeDepths,
+        coordinator.pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
+        verifierContract,
+        vkRegistryContract,
+        false,
+        { gasLimit: 10000000 },
+      );
       const receipt = await tx.wait();
 
       const block = await signer.provider!.getBlock(receipt!.blockHash);
@@ -194,9 +205,18 @@ describe("MACI", () => {
 
     it("should prevent deploying a second poll before the first has finished", async () => {
       await expect(
-        maciContract.deployPoll(duration, maxValues, treeDepths, coordinator.pubKey.asContractParam(), {
-          gasLimit: 8000000,
-        }),
+        maciContract.deployPoll(
+          duration,
+          maxValues,
+          treeDepths,
+          coordinator.pubKey.asContractParam(),
+          verifierContract,
+          vkRegistryContract,
+          false,
+          {
+            gasLimit: 10000000,
+          },
+        ),
       )
         .to.be.revertedWithCustomError(maciContract, "PreviousPollNotCompleted")
         .withArgs(1);

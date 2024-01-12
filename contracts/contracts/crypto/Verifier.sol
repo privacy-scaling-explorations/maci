@@ -3,11 +3,12 @@ pragma solidity ^0.8.10;
 
 import { Pairing } from "./Pairing.sol";
 import { SnarkConstants } from "./SnarkConstants.sol";
-import { IVerifier } from "./IVerifier.sol";
+import { SnarkCommon } from "./SnarkCommon.sol";
+import { IVerifier } from "../interfaces/IVerifier.sol";
 
 /// @title Verifier
 /// @notice a Groth16 verifier contract
-contract Verifier is IVerifier, SnarkConstants {
+contract Verifier is IVerifier, SnarkConstants, SnarkCommon {
   struct Proof {
     Pairing.G1Point a;
     Pairing.G2Point b;

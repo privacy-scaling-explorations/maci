@@ -2,14 +2,14 @@
 pragma solidity ^0.8.10;
 
 import { IMACI } from "./interfaces/IMACI.sol";
-import { MessageProcessor } from "./MessageProcessor.sol";
+import { IMessageProcessor } from "./interfaces/IMessageProcessor.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { Poll } from "./Poll.sol";
+import { IPoll } from "./interfaces/IPoll.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { Hasher } from "./crypto/Hasher.sol";
 import { CommonUtilities } from "./utilities/CommonUtilities.sol";
-import { Verifier } from "./crypto/Verifier.sol";
-import { VkRegistry } from "./VkRegistry.sol";
+import { IVerifier } from "./interfaces/IVerifier.sol";
+import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
 
 /// @title Subsidy
 /// @notice This contract is used to verify that the subsidy calculations
@@ -36,27 +36,32 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
   error RbiTooLarge();
   error CbiTooLarge();
 
-  Verifier public verifier;
-  VkRegistry public vkRegistry;
+  IVerifier public verifier;
+  IVkRegistry public vkRegistry;
+  IPoll public poll;
+  IMessageProcessor public mp;
 
   /// @notice Create a new Subsidy contract
   /// @param _verifier The Verifier contract
   /// @param _vkRegistry The VkRegistry contract
-  constructor(Verifier _verifier, VkRegistry _vkRegistry) payable {
-    verifier = _verifier;
-    vkRegistry = _vkRegistry;
+  /// @param _poll The Poll contract
+  /// @param _mp The MessageProcessor contract
+  constructor(address _verifier, address _vkRegistry, address _poll, address _mp) payable {
+    verifier = IVerifier(_verifier);
+    vkRegistry = IVkRegistry(_vkRegistry);
+    poll = IPoll(_poll);
+    mp = IMessageProcessor(_mp);
   }
 
   /// @notice Update the currentSbCommitment if the proof is valid.
   /// @dev currentSbCommitment is the commitment to the state and ballot roots
-  /// @param _mp The MessageProcessor contract
-  function updateSbCommitment(MessageProcessor _mp) public onlyOwner {
+  function updateSbCommitment() public onlyOwner {
     // Require that all messages have been processed
-    if (!_mp.processingComplete()) {
+    if (!mp.processingComplete()) {
       revert ProcessingNotComplete();
     }
     if (sbCommitment == 0) {
-      sbCommitment = _mp.sbCommitment();
+      sbCommitment = mp.sbCommitment();
     }
   }
 
@@ -88,31 +93,24 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
   }
 
   /// @notice Update the subsidy commitment if the proof is valid
-  /// @param _poll The Poll contract
-  /// @param _mp The MessageProcessor contract
   /// @param _newSubsidyCommitment The new subsidy commitment
   /// @param _proof The proof
-  function updateSubsidy(
-    Poll _poll,
-    MessageProcessor _mp,
-    uint256 _newSubsidyCommitment,
-    uint256[8] calldata _proof
-  ) external onlyOwner {
-    _votingPeriodOver(_poll);
-    updateSbCommitment(_mp);
+  function updateSubsidy(uint256 _newSubsidyCommitment, uint256[8] calldata _proof) external onlyOwner {
+    _votingPeriodOver(poll);
+    updateSbCommitment();
 
-    (uint8 intStateTreeDepth, , , ) = _poll.treeDepths();
+    (uint8 intStateTreeDepth, , , ) = poll.treeDepths();
 
     uint256 subsidyBatchSize = uint256(TREE_ARITY) ** intStateTreeDepth;
 
-    (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
+    (uint256 numSignUps, ) = poll.numSignUpsAndMessages();
 
     // Require that there are unfinished ballots left
     if (rbi * subsidyBatchSize > numSignUps) {
       revert AllSubsidyCalculated();
     }
 
-    bool isValid = verifySubsidyProof(_poll, _proof, numSignUps, _newSubsidyCommitment);
+    bool isValid = verifySubsidyProof(_proof, numSignUps, _newSubsidyCommitment);
     if (!isValid) {
       revert InvalidSubsidyProof();
     }
@@ -136,19 +134,17 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
   }
 
   /// @notice Verify the subsidy proof using the Groth16 on chain verifier
-  /// @param _poll The Poll contract
   /// @param _proof The proof
   /// @param _numSignUps The number of signups
   /// @param _newSubsidyCommitment The new subsidy commitment
   /// @return isValid True if the proof is valid
   function verifySubsidyProof(
-    Poll _poll,
     uint256[8] calldata _proof,
     uint256 _numSignUps,
     uint256 _newSubsidyCommitment
   ) public view returns (bool isValid) {
-    (uint8 intStateTreeDepth, , , uint8 voteOptionTreeDepth) = _poll.treeDepths();
-    (IMACI maci, , ) = _poll.extContracts();
+    (uint8 intStateTreeDepth, , , uint8 voteOptionTreeDepth) = poll.treeDepths();
+    (IMACI maci, , ) = poll.extContracts();
 
     // Get the verifying key
     VerifyingKey memory vk = vkRegistry.getSubsidyVk(maci.stateTreeDepth(), intStateTreeDepth, voteOptionTreeDepth);

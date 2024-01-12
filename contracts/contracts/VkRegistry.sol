@@ -2,14 +2,14 @@
 pragma solidity ^0.8.10;
 
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
-
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
 
 /// @title VkRegistry
 /// @notice Stores verifying keys for the circuits.
 /// Each circuit has a signature which is its compile-time constants represented
 /// as a uint256.
-contract VkRegistry is Ownable, SnarkCommon {
+contract VkRegistry is Ownable, SnarkCommon, IVkRegistry {
   mapping(uint256 => VerifyingKey) internal processVks;
   mapping(uint256 => bool) internal processVkSet;
 
@@ -200,12 +200,7 @@ contract VkRegistry is Ownable, SnarkCommon {
     vk = processVks[_sig];
   }
 
-  /// @notice Get the process verifying key
-  /// @param _stateTreeDepth The state tree depth
-  /// @param _messageTreeDepth The message tree depth
-  /// @param _voteOptionTreeDepth The vote option tree depth
-  /// @param _messageBatchSize The message batch size
-  /// @return vk The verifying key
+  /// @inheritdoc IVkRegistry
   function getProcessVk(
     uint256 _stateTreeDepth,
     uint256 _messageTreeDepth,
@@ -241,11 +236,7 @@ contract VkRegistry is Ownable, SnarkCommon {
     vk = tallyVks[_sig];
   }
 
-  /// @notice Get the tally verifying key
-  /// @param _stateTreeDepth The state tree depth
-  /// @param _intStateTreeDepth The intermediate state tree depth
-  /// @param _voteOptionTreeDepth The vote option tree depth
-  /// @return vk The verifying key
+  /// @inheritdoc IVkRegistry
   function getTallyVk(
     uint256 _stateTreeDepth,
     uint256 _intStateTreeDepth,
@@ -280,11 +271,7 @@ contract VkRegistry is Ownable, SnarkCommon {
     vk = subsidyVks[_sig];
   }
 
-  /// @notice Get the subsidy verifying key
-  /// @param _stateTreeDepth The state tree depth
-  /// @param _intStateTreeDepth The intermediate state tree depth
-  /// @param _voteOptionTreeDepth The vote option tree depth
-  /// @return vk The verifying key
+  /// @inheritdoc IVkRegistry
   function getSubsidyVk(
     uint256 _stateTreeDepth,
     uint256 _intStateTreeDepth,

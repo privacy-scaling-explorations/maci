@@ -71,7 +71,6 @@ export const deploy = async (
   const { maciContract, stateAqContract, pollFactoryContract, poseidonAddrs } = await deployMaci(
     signupGatekeeperContractAddress,
     initialVoiceCreditProxyContractAddress!,
-    verifierContractAddress,
     topUpCreditAddress,
     signer,
     stateTreeDepth,

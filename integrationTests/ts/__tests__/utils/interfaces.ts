@@ -1,3 +1,5 @@
+import { MACI, Verifier, VkRegistry } from "maci-contracts";
+
 /**
  * A util interface that represents a vote object
  */
@@ -51,4 +53,13 @@ export interface ITestSuite {
   bribers?: IBriber[];
   votes?: IVote[][];
   changeUsersKeys?: IChangeUsersKeys[][];
+}
+
+/**
+ * A util interface that represents deployed test contracts
+ */
+export interface IDeployedTestContracts {
+  maci: MACI;
+  verifier: Verifier;
+  vkRegistry: VkRegistry;
 }

@@ -25,6 +25,7 @@ HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js deployPoll \
     --msg-tree-depth 8 \
     --msg-batch-depth 2 \
     --vote-option-tree-depth 3 \
+    --subsidy-enabled false \
     -q true 
 HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js signup \
     --pubkey macipk.e743ffb5298ef0f5c1f63b6464a48fea19ea7ee5a885c67ae1b24a1d04f03f07 \
@@ -64,8 +65,10 @@ HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js genProofs \
 HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js proveOnChain \
     --poll-id 0 \
     --proof-dir proofs/ \
+    --subsidy-enabled false \
     -q true
 HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js verify \
     --poll-id 0 \
+    --subsidy-enabled false \
     --tally-file tally.json \
     -q true

@@ -3,12 +3,13 @@ import { expect } from "chai";
 import { Signer } from "ethers";
 import {
   FreeForAllGatekeeper,
-  MACI,
   deployConstantInitialVoiceCreditProxy,
   deployFreeForAllSignUpGatekeeper,
   deployMaci,
   deployMockVerifier,
   deployTopupCredit,
+  deployVkRegistry,
+  Verifier,
 } from "maci-contracts";
 import { Keypair } from "maci-domainobjs";
 
@@ -17,7 +18,7 @@ import { arch } from "os";
 import type { TallyData } from "maci-cli";
 
 import { defaultVote } from "./constants";
-import { Subsidy, IVote, IBriber } from "./interfaces";
+import { Subsidy, IVote, IBriber, IDeployedTestContracts } from "./interfaces";
 import { UserCommand } from "./user";
 
 /**
@@ -192,7 +193,7 @@ export const deployTestContracts = async (
   signer?: Signer,
   quiet = false,
   gatekeeper: FreeForAllGatekeeper | undefined = undefined,
-): Promise<MACI> => {
+): Promise<IDeployedTestContracts> => {
   const mockVerifierContract = await deployMockVerifier(signer, true);
 
   let gatekeeperContract = gatekeeper;
@@ -207,28 +208,23 @@ export const deployTestContracts = async (
   );
 
   // VkRegistry
+  const vkRegistryContract = await deployVkRegistry(signer, true);
   const topupCreditContract = await deployTopupCredit(signer, true);
-  const [
-    gatekeeperContractAddress,
-    mockVerifierContractAddress,
-    constantIntialVoiceCreditProxyContractAddress,
-    topupCreditContractAddress,
-  ] = await Promise.all([
-    gatekeeperContract.getAddress(),
-    mockVerifierContract.getAddress(),
-    constantIntialVoiceCreditProxyContract.getAddress(),
-    topupCreditContract.getAddress(),
-  ]);
+  const [gatekeeperContractAddress, constantIntialVoiceCreditProxyContractAddress, topupCreditContractAddress] =
+    await Promise.all([
+      gatekeeperContract.getAddress(),
+      constantIntialVoiceCreditProxyContract.getAddress(),
+      topupCreditContract.getAddress(),
+    ]);
 
   const { maciContract } = await deployMaci(
     gatekeeperContractAddress,
     constantIntialVoiceCreditProxyContractAddress,
-    mockVerifierContractAddress,
     topupCreditContractAddress,
     signer,
     stateTreeDepth,
     quiet,
   );
 
-  return maciContract;
+  return { maci: maciContract, verifier: mockVerifierContract as Verifier, vkRegistry: vkRegistryContract };
 };
