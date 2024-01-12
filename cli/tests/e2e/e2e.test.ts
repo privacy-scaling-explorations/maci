@@ -64,6 +64,8 @@ describe("e2e tests", function test() {
   let maciAddresses: DeployedContracts;
   let pollAddresses: PollContracts;
 
+  const subsidyEnabled = false;
+
   // before all tests we deploy the vk registry contract and set the verifying keys
   before(async () => {
     // we deploy the vk registry contract
@@ -100,6 +102,7 @@ describe("e2e tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        subsidyEnabled,
       );
     });
 
@@ -145,14 +148,14 @@ describe("e2e tests", function test() {
         undefined,
         useWasm,
       );
-      await proveOnChain("0", testProofsDirPath);
+      await proveOnChain("0", testProofsDirPath, subsidyEnabled);
       await verify(
         "0",
+        subsidyEnabled,
         testTallyFilePath,
         tallyFileData,
         maciAddresses.maciAddress,
         pollAddresses.tally,
-        pollAddresses.subsidy,
       );
     });
   });
@@ -177,6 +180,7 @@ describe("e2e tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        subsidyEnabled,
       );
     });
 
@@ -259,14 +263,14 @@ describe("e2e tests", function test() {
         undefined,
         useWasm,
       );
-      await proveOnChain("0", testProofsDirPath);
+      await proveOnChain("0", testProofsDirPath, subsidyEnabled);
       await verify(
         "0",
+        subsidyEnabled,
         testTallyFilePath,
         tallyFileData,
         maciAddresses.maciAddress,
         pollAddresses.tally,
-        pollAddresses.subsidy,
       );
     });
   });
@@ -291,6 +295,7 @@ describe("e2e tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        subsidyEnabled,
       );
     });
 
@@ -395,14 +400,14 @@ describe("e2e tests", function test() {
         undefined,
         useWasm,
       );
-      await proveOnChain("0", testProofsDirPath);
+      await proveOnChain("0", testProofsDirPath, subsidyEnabled);
       await verify(
         "0",
+        subsidyEnabled,
         testTallyFilePath,
         tallyFileData,
         maciAddresses.maciAddress,
         pollAddresses.tally,
-        pollAddresses.subsidy,
       );
     });
   });
@@ -437,6 +442,7 @@ describe("e2e tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        subsidyEnabled,
       );
     });
 
@@ -486,14 +492,14 @@ describe("e2e tests", function test() {
         undefined,
         useWasm,
       );
-      await proveOnChain("0", testProofsDirPath);
+      await proveOnChain("0", testProofsDirPath, subsidyEnabled);
       await verify(
         "0",
+        subsidyEnabled,
         testTallyFilePath,
         tallyFileData,
         maciAddresses.maciAddress,
         pollAddresses.tally,
-        pollAddresses.subsidy,
       );
     });
   });
@@ -518,6 +524,7 @@ describe("e2e tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        subsidyEnabled,
       );
     });
 
@@ -569,14 +576,14 @@ describe("e2e tests", function test() {
         undefined,
         useWasm,
       );
-      await proveOnChain("0", testProofsDirPath);
+      await proveOnChain("0", testProofsDirPath, subsidyEnabled);
       await verify(
         "0",
+        subsidyEnabled,
         testTallyFilePath,
         tallyFileData,
         maciAddresses.maciAddress,
         pollAddresses.tally,
-        pollAddresses.subsidy,
       );
     });
   });
@@ -619,6 +626,7 @@ describe("e2e tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        subsidyEnabled,
       );
       // signup
       await signup(user.pubKey.serialize());
@@ -659,8 +667,8 @@ describe("e2e tests", function test() {
         undefined,
         useWasm,
       );
-      await proveOnChain("0", testProofsDirPath);
-      await verify("0", testTallyFilePath, tallyFileData);
+      await proveOnChain("0", testProofsDirPath, subsidyEnabled);
+      await verify("0", subsidyEnabled, testTallyFilePath, tallyFileData);
       cleanVanilla();
     });
 
@@ -674,6 +682,7 @@ describe("e2e tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        subsidyEnabled,
       );
     });
     it("should publish a new message", async () => {
@@ -713,8 +722,8 @@ describe("e2e tests", function test() {
         undefined,
         useWasm,
       );
-      await proveOnChain("1", testProofsDirPath);
-      await verify("1", testTallyFilePath);
+      await proveOnChain("1", testProofsDirPath, subsidyEnabled);
+      await verify("1", subsidyEnabled, testTallyFilePath);
     });
   });
 
@@ -751,6 +760,7 @@ describe("e2e tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        subsidyEnabled,
       );
 
       // signup
@@ -797,8 +807,8 @@ describe("e2e tests", function test() {
         undefined,
         useWasm,
       );
-      await proveOnChain("0", testProofsDirPath);
-      await verify("0", testTallyFilePath, tallyFileData);
+      await proveOnChain("0", testProofsDirPath, subsidyEnabled);
+      await verify("0", subsidyEnabled, testTallyFilePath, tallyFileData);
       cleanVanilla();
     });
 
@@ -813,6 +823,7 @@ describe("e2e tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        subsidyEnabled,
       );
       secondPollAddresses = await deployPoll(
         pollDuration,
@@ -823,6 +834,7 @@ describe("e2e tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        subsidyEnabled,
       );
     });
 
@@ -927,11 +939,12 @@ describe("e2e tests", function test() {
       await proveOnChain(
         "1",
         testProofsDirPath,
+        subsidyEnabled,
         maciAddresses.maciAddress,
         pollAddresses.messageProcessor,
         pollAddresses.tally,
       );
-      await verify("1", testTallyFilePath, tallyData, maciAddresses.maciAddress, pollAddresses.tally);
+      await verify("1", subsidyEnabled, testTallyFilePath, tallyData, maciAddresses.maciAddress, pollAddresses.tally);
       cleanVanilla();
     });
 
@@ -961,11 +974,19 @@ describe("e2e tests", function test() {
       await proveOnChain(
         "2",
         testProofsDirPath,
+        subsidyEnabled,
         maciAddresses.maciAddress,
         secondPollAddresses.messageProcessor,
         secondPollAddresses.tally,
       );
-      await verify("2", testTallyFilePath, tallyData, maciAddresses.maciAddress, secondPollAddresses.tally);
+      await verify(
+        "2",
+        subsidyEnabled,
+        testTallyFilePath,
+        tallyData,
+        maciAddresses.maciAddress,
+        secondPollAddresses.tally,
+      );
     });
   });
 
@@ -995,6 +1016,7 @@ describe("e2e tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        subsidyEnabled,
       );
     });
 
@@ -1051,8 +1073,8 @@ describe("e2e tests", function test() {
         useWasm,
         stateOutPath,
       );
-      await proveOnChain("0", testProofsDirPath);
-      await verify("0", testTallyFilePath);
+      await proveOnChain("0", testProofsDirPath, subsidyEnabled);
+      await verify("0", subsidyEnabled, testTallyFilePath);
     });
   });
 
@@ -1078,6 +1100,7 @@ describe("e2e tests", function test() {
         MSG_TREE_DEPTH,
         VOTE_OPTION_TREE_DEPTH,
         coordinatorPubKey,
+        subsidyEnabled,
       );
     });
 
@@ -1131,8 +1154,8 @@ describe("e2e tests", function test() {
         undefined,
         useWasm,
       );
-      await proveOnChain("0", testProofsDirPath);
-      await verify("0", testTallyFilePath);
+      await proveOnChain("0", testProofsDirPath, subsidyEnabled);
+      await verify("0", subsidyEnabled, testTallyFilePath);
     });
   });
 });

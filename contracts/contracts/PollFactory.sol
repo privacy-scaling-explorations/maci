@@ -8,11 +8,12 @@ import { TopupCredit } from "./TopupCredit.sol";
 import { Params } from "./utilities/Params.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
 import { Poll } from "./Poll.sol";
+import { IPollFactory } from "./interfaces/IPollFactory.sol";
 
 /// @title PollFactory
 /// @notice A factory contract which deploys Poll contracts. It allows the MACI contract
 /// size to stay within the limit set by EIP-170.
-contract PollFactory is Params, DomainObjs {
+contract PollFactory is Params, DomainObjs, IPollFactory {
   // The number of children each node in the message tree has
   uint256 internal constant TREE_ARITY = 5;
 
@@ -23,16 +24,7 @@ contract PollFactory is Params, DomainObjs {
   // solhint-disable-next-line no-empty-blocks
   constructor() payable {}
 
-  /// @notice Deploy a new Poll contract and AccQueue contract for messages.
-  /// @param _duration The duration of the poll
-  /// @param _maxValues The max values for the poll
-  /// @param _treeDepths The depths of the merkle trees
-  /// @param _batchSizes The batch sizes for processing
-  /// @param _coordinatorPubKey The coordinator's public key
-  /// @param _maci The MACI contract interface reference
-  /// @param _topupCredit The TopupCredit contract
-  /// @param _pollOwner The owner of the poll
-  /// @return poll The deployed Poll contract
+  /// @inheritdoc IPollFactory
   function deploy(
     uint256 _duration,
     MaxValues calldata _maxValues,
@@ -42,7 +34,7 @@ contract PollFactory is Params, DomainObjs {
     IMACI _maci,
     TopupCredit _topupCredit,
     address _pollOwner
-  ) public returns (Poll poll) {
+  ) public returns (address pollAddr) {
     /// @notice Validate _maxValues
     /// maxVoteOptions must be less than 2 ** 50 due to circuit limitations;
     /// it will be packed as a 50-bit value along with other values as one
@@ -64,7 +56,7 @@ contract PollFactory is Params, DomainObjs {
     ExtContracts memory extContracts = ExtContracts({ maci: _maci, messageAq: messageAq, topupCredit: _topupCredit });
 
     // deploy the poll
-    poll = new Poll(_duration, _maxValues, _treeDepths, _batchSizes, _coordinatorPubKey, extContracts);
+    Poll poll = new Poll(_duration, _maxValues, _treeDepths, _batchSizes, _coordinatorPubKey, extContracts);
 
     // Make the Poll contract own the messageAq contract, so only it can
     // run enqueue/merge
@@ -74,5 +66,7 @@ contract PollFactory is Params, DomainObjs {
     poll.init();
 
     poll.transferOwnership(_pollOwner);
+
+    pollAddr = address(poll);
   }
 }

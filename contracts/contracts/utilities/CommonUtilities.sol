@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import { Poll } from "../Poll.sol";
+import { IPoll } from "../interfaces/IPoll.sol";
 
 /// @title CommonUtilities
 /// @notice A contract that holds common utilities
@@ -12,7 +12,7 @@ contract CommonUtilities {
 
   /// @notice common function for MessageProcessor, Tally and Subsidy
   /// @param _poll the poll to be checked
-  function _votingPeriodOver(Poll _poll) internal view {
+  function _votingPeriodOver(IPoll _poll) internal view {
     (uint256 deployTime, uint256 duration) = _poll.getDeployTimeAndDuration();
     // Require that the voting period is over
     uint256 secondsPassed = block.timestamp - deployTime;

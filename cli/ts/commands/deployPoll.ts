@@ -1,12 +1,5 @@
 import { BaseContract } from "ethers";
-import {
-  type MACI,
-  deployMessageProcessor,
-  deploySubsidy,
-  deployTally,
-  getDefaultSigner,
-  parseArtifact,
-} from "maci-contracts";
+import { type MACI, getDefaultSigner, parseArtifact } from "maci-contracts";
 import { PubKey } from "maci-domainobjs";
 
 import type { PollContracts } from "../utils/interfaces";
@@ -26,6 +19,7 @@ import { info, logError, logGreen } from "../utils/theme";
  * @param messageTreeDepth - the depth of the message tree
  * @param voteOptionTreeDepth - the depth of the vote option tree
  * @param coordinatorPubkey - the coordinator's public key
+ * @param subsidyEnabled - whether to deploy subsidy contract
  * @param maciAddress - the MACI contract address
  * @param vkRegistryAddress - the vkRegistry contract address
  * @param quiet - whether to log the output to the console
@@ -40,6 +34,7 @@ export const deployPoll = async (
   messageTreeDepth: number,
   voteOptionTreeDepth: number,
   coordinatorPubkey: string,
+  subsidyEnabled: boolean,
   maciAddress?: string,
   vkRegistryAddress?: string,
   quiet = true,
@@ -105,62 +100,17 @@ export const deployPoll = async (
 
   const unserializedKey = PubKey.deserialize(coordinatorPubkey);
 
-  // get the poseidon contracts addresses
-  const poseidonT3 = readContractAddress("PoseidonT3");
-  const poseidonT4 = readContractAddress("PoseidonT4");
-  const poseidonT5 = readContractAddress("PoseidonT5");
-  const poseidonT6 = readContractAddress("PoseidonT6");
-
   // get the verifier contract
   const verifierContractAddress = readContractAddress("Verifier");
-
-  // deploy the message processor
-  const messageProcessorContract = await deployMessageProcessor(
-    verifierContractAddress,
-    vkRegistry,
-    poseidonT3,
-    poseidonT4,
-    poseidonT5,
-    poseidonT6,
-    signer,
-    true,
-  );
-
-  // deploy the tally contract
-  const tallyContract = await deployTally(
-    verifierContractAddress,
-    vkRegistry,
-    poseidonT3,
-    poseidonT4,
-    poseidonT5,
-    poseidonT6,
-    signer,
-    true,
-  );
-
-  // deploy the subsidy contract
-  const subsidyContract = await deploySubsidy(
-    verifierContractAddress,
-    vkRegistry,
-    poseidonT3,
-    poseidonT4,
-    poseidonT5,
-    poseidonT6,
-    signer,
-    true,
-  );
 
   const maciAbi = parseArtifact("MACI")[0];
   const maciContract = new BaseContract(maci, maciAbi, signer) as MACI;
 
   // deploy the poll
   let pollAddr = "";
-
-  const [messageProcessorContractAddress, tallyContractAddress, subsidyContractAddress] = await Promise.all([
-    messageProcessorContract.getAddress(),
-    tallyContract.getAddress(),
-    subsidyContract.getAddress(),
-  ]);
+  let messageProcessorContractAddress = "";
+  let tallyContractAddress = "";
+  let subsidyContractAddress;
 
   try {
     // deploy the poll contract via the maci contract
@@ -174,6 +124,9 @@ export const deployPoll = async (
         voteOptionTreeDepth,
       },
       unserializedKey.asContractParam(),
+      verifierContractAddress,
+      vkRegistry,
+      subsidyEnabled,
       { gasLimit: 10000000 },
     );
 
@@ -196,16 +149,32 @@ export const deployPoll = async (
     const pollId = log!.args._pollId as number;
     // eslint-disable-next-line no-underscore-dangle
     pollAddr = log!.args._pollAddr as string;
+    // eslint-disable-next-line no-underscore-dangle
+    messageProcessorContractAddress = log!.args._mpAddr as string;
+    // eslint-disable-next-line no-underscore-dangle
+    tallyContractAddress = log!.args._tallyAddr as string;
+
+    if (subsidyEnabled) {
+      const receiptLogSubsidy = receipt!.logs[receipt!.logs.length - 2];
+      const logSubsidy = iface.parseLog(receiptLogSubsidy as unknown as { topics: string[]; data: string });
+      if (logSubsidy?.name !== "DeploySubsidy") {
+        logError("Invalid event log");
+      }
+      // eslint-disable-next-line no-underscore-dangle
+      subsidyContractAddress = logSubsidy!.args._subsidyAddr as string;
+    }
 
     logGreen(quiet, info(`Poll ID: ${pollId.toString()}`));
     logGreen(quiet, info(`Poll contract: ${pollAddr}`));
-    logGreen(quiet, info(`Message processor contract: ${messageProcessorContractAddress}`));
+    logGreen(quiet, info(`Message Processor contract: ${messageProcessorContractAddress}`));
     logGreen(quiet, info(`Tally contract: ${tallyContractAddress}`));
-    logGreen(quiet, info(`Subsidy contract: ${subsidyContractAddress}`));
+    if (subsidyEnabled && subsidyContractAddress) {
+      logGreen(quiet, info(`Subsidy contract: ${subsidyContractAddress}`));
+      storeContractAddress(`Subsidy-${pollId.toString()}`, subsidyContractAddress);
+    }
     // store the addresss
     storeContractAddress(`MessageProcessor-${pollId.toString()}`, messageProcessorContractAddress);
     storeContractAddress(`Tally-${pollId.toString()}`, tallyContractAddress);
-    storeContractAddress(`Subsidy-${pollId.toString()}`, subsidyContractAddress);
     storeContractAddress(`Poll-${pollId.toString()}`, pollAddr);
   } catch (error) {
     logError((error as Error).message);

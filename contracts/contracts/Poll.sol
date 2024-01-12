@@ -7,6 +7,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { EmptyBallotRoots } from "./trees/EmptyBallotRoots.sol";
+import { IPoll } from "./interfaces/IPoll.sol";
 import { Utilities } from "./utilities/Utilities.sol";
 
 /// @title Poll
@@ -14,15 +15,17 @@ import { Utilities } from "./utilities/Utilities.sol";
 /// which can be either votes, key change messages or topup messages.
 /// @dev Do not deploy this directly. Use PollFactory.deploy() which performs some
 /// checks on the Poll constructor arguments.
-contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots {
+contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPoll {
   using SafeERC20 for ERC20;
 
   bool internal isInit;
   // The coordinator's public key
   PubKey public coordinatorPubKey;
 
-  uint256 public mergedStateRoot;
+  /// @notice Hash of the coordinator's public key
   uint256 public coordinatorPubKeyHash;
+
+  uint256 public mergedStateRoot;
 
   // The timestamp of the block at which the Poll was deployed
   uint256 internal deployTime;
@@ -30,25 +33,29 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots {
   // The duration of the polling period, in seconds
   uint256 internal duration;
 
-  // Whether the MACI contract's stateAq has been merged by this contract
+  /// @notice Whether the MACI contract's stateAq has been merged by this contract
   bool public stateAqMerged;
 
-  // The commitment to the state leaves and the ballots. This is
-  // hash3(stateRoot, ballotRoot, salt).
-  // Its initial value should be
-  // hash(maciStateRootSnapshot, emptyBallotRoot, 0)
-  // Each successful invocation of processMessages() should use a different
-  // salt to update this value, so that an external observer cannot tell in
-  // the case that none of the messages are valid.
+  /// @notice Get the commitment to the state leaves and the ballots. This is
+  /// hash3(stateRoot, ballotRoot, salt).
+  /// Its initial value should be
+  /// hash(maciStateRootSnapshot, emptyBallotRoot, 0)
+  /// Each successful invocation of processMessages() should use a different
+  /// salt to update this value, so that an external observer cannot tell in
+  /// the case that none of the messages are valid.
   uint256 public currentSbCommitment;
 
   uint256 public numMessages;
 
+  /// @notice Max values for the poll
   MaxValues public maxValues;
+
+  /// @notice Depths of the merkle trees
   TreeDepths public treeDepths;
+
+  /// @notice Batch sizes for processing
   BatchSizes public batchSizes;
 
-  /// @notice custom errors
   error VotingPeriodOver();
   error VotingPeriodNotOver();
   error PollAlreadyInit();
@@ -64,12 +71,13 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots {
   event MergeMessageAqSubRoots(uint256 _numSrQueueOps);
   event MergeMessageAq(uint256 _messageRoot);
 
+  /// @notice External contracts
   ExtContracts public extContracts;
 
   /// @notice Each MACI instance can have multiple Polls.
   /// When a Poll is deployed, its voting period starts immediately.
   /// @param _duration The duration of the voting period, in seconds
-  /// @param _maxValues The maximum number of signups and messages
+  /// @param _maxValues The maximum number of messages and vote options
   /// @param _treeDepths The depths of the merkle trees
   /// @param _batchSizes The batch sizes for processing
   /// @param _coordinatorPubKey The coordinator's public key
@@ -133,9 +141,7 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots {
     emit PublishMessage(_message, _padKey);
   }
 
-  /// @notice Allows to publish a Topup message
-  /// @param stateIndex The index of user in the state queue
-  /// @param amount The amount of credits to topup
+  /// @inheritdoc IPoll
   function topup(uint256 stateIndex, uint256 amount) public isWithinVotingDeadline {
     // we check that we do not exceed the max number of messages
     if (numMessages == maxValues.maxMessages) revert TooManyMessages();
@@ -154,12 +160,7 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots {
     emit TopupMessage(_message);
   }
 
-  /// @notice Allows anyone to publish a message (an encrypted command and signature).
-  /// This function also enqueues the message.
-  /// @param _message The message to publish
-  /// @param _encPubKey An epheremal public key which can be combined with the
-  /// coordinator's private key to generate an ECDH shared key with which
-  /// to encrypt the message.
+  /// @inheritdoc IPoll
   function publishMessage(Message memory _message, PubKey calldata _encPubKey) public isWithinVotingDeadline {
     // we check that we do not exceed the max number of messages
     if (numMessages == maxValues.maxMessages) revert TooManyMessages();
@@ -181,9 +182,7 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots {
     emit PublishMessage(_message, _encPubKey);
   }
 
-  /// @notice The first step of merging the MACI state AccQueue. This allows the
-  /// ProcessMessages circuit to access the latest state tree and ballots via
-  /// currentSbCommitment.
+  /// @inheritdoc IPoll
   function mergeMaciStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId) public onlyOwner isAfterVotingDeadline {
     // This function cannot be called after the stateAq was merged
     if (stateAqMerged) revert StateAqAlreadyMerged();
@@ -195,10 +194,7 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots {
     emit MergeMaciStateAqSubRoots(_numSrQueueOps);
   }
 
-  /// @notice The second step of merging the MACI state AccQueue. This allows the
-  /// ProcessMessages circuit to access the latest state tree and ballots via
-  /// currentSbCommitment.
-  /// @param _pollId The ID of the Poll
+  /// @inheritdoc IPoll
   function mergeMaciStateAq(uint256 _pollId) public onlyOwner isAfterVotingDeadline {
     // This function can only be called once per Poll after the voting
     // deadline
@@ -220,33 +216,25 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots {
     emit MergeMaciStateAq(mergedStateRoot);
   }
 
-  /// @notice The first step in merging the message AccQueue so that the
-  /// ProcessMessages circuit can access the message root.
-  /// @param _numSrQueueOps The number of subroot queue operations to perform
+  /// @inheritdoc IPoll
   function mergeMessageAqSubRoots(uint256 _numSrQueueOps) public onlyOwner isAfterVotingDeadline {
     extContracts.messageAq.mergeSubRoots(_numSrQueueOps);
     emit MergeMessageAqSubRoots(_numSrQueueOps);
   }
 
-  /// @notice The second step in merging the message AccQueue so that the
-  /// ProcessMessages circuit can access the message root.
+  /// @inheritdoc IPoll
   function mergeMessageAq() public onlyOwner isAfterVotingDeadline {
     uint256 root = extContracts.messageAq.merge(treeDepths.messageTreeDepth);
     emit MergeMessageAq(root);
   }
 
-  /// @notice Returns the Poll's deploy time and duration
-  /// @return _deployTime The deployment timestamp
-  /// @return _duration The duration of the poll
+  /// @inheritdoc IPoll
   function getDeployTimeAndDuration() public view returns (uint256 _deployTime, uint256 _duration) {
     _deployTime = deployTime;
     _duration = duration;
   }
 
-  /// @notice The number of messages which have been processed and the number of
-  /// signups
-  /// @return numSignups The number of signups
-  /// @return numMsgs The number of messages sent by voters
+  /// @inheritdoc IPoll
   function numSignUpsAndMessages() public view returns (uint256 numSignups, uint256 numMsgs) {
     numSignups = extContracts.maci.numSignUps();
     numMsgs = numMessages;

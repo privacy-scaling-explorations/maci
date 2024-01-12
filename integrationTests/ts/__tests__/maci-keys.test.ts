@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { BaseContract, Signer } from "ethers";
-import { MACI, Poll, getDefaultSigner, parseArtifact } from "maci-contracts";
+import { Poll, getDefaultSigner, parseArtifact } from "maci-contracts";
 import { genPrivKey, genPubKey } from "maci-crypto";
 import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
 
@@ -67,8 +67,6 @@ describe("integration tests private/public/keypair", () => {
   });
 
   describe("crypto/domainobjs/contracts", () => {
-    // deploy maci
-    let maciContract: MACI;
     let pollContract: Poll;
 
     let signer: Signer;
@@ -76,10 +74,15 @@ describe("integration tests private/public/keypair", () => {
 
     before(async () => {
       signer = await getDefaultSigner();
-      maciContract = await deployTestContracts(initialVoiceCredits, STATE_TREE_DEPTH, signer, true);
+      const { maci, verifier, vkRegistry } = await deployTestContracts(
+        initialVoiceCredits,
+        STATE_TREE_DEPTH,
+        signer,
+        true,
+      );
 
       // deploy a poll
-      await maciContract.deployPoll(
+      await maci.deployPoll(
         BigInt(duration),
         {
           maxMessages,
@@ -92,10 +95,13 @@ describe("integration tests private/public/keypair", () => {
           voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
         },
         coordinatorKeypair.pubKey.asContractParam(),
+        verifier,
+        vkRegistry,
+        false,
       );
 
       // we know it's the first poll so id is 0
-      pollContract = new BaseContract(await maciContract.polls(0), parseArtifact("Poll")[0], signer) as Poll;
+      pollContract = new BaseContract(await maci.polls(0), parseArtifact("Poll")[0], signer) as Poll;
     });
 
     it("should have the correct coordinator pub key set on chain", async () => {

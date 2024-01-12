@@ -17,10 +17,10 @@ export interface DeployedContracts {
 }
 
 export interface PollContracts {
+  poll: string;
   messageProcessor: string;
   tally: string;
-  subsidy: string;
-  poll: string;
+  subsidy?: string;
 }
 
 /**

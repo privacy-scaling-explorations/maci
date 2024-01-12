@@ -9,7 +9,7 @@ import { Keypair, Message, PubKey } from "maci-domainobjs";
 import { parseArtifact } from "../ts/abi";
 import { IVerifyingKeyStruct } from "../ts/types";
 import { getDefaultSigner } from "../ts/utils";
-import { MACI, MessageProcessor, Poll as PollContract } from "../typechain-types";
+import { MACI, MessageProcessor, Poll as PollContract, Verifier, VkRegistry } from "../typechain-types";
 
 import {
   STATE_TREE_DEPTH,
@@ -27,8 +27,12 @@ describe("MessageProcessor", () => {
   // contracts
   let maciContract: MACI;
   let pollContract: PollContract;
+  let verifierContract: Verifier;
+  let vkRegistryContract: VkRegistry;
   let mpContract: MessageProcessor;
+
   const [pollAbi] = parseArtifact("Poll");
+  const [mpAbi] = parseArtifact("MessageProcessor");
 
   let pollId: number;
 
@@ -48,12 +52,22 @@ describe("MessageProcessor", () => {
     const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, signer, true);
     maciContract = r.maciContract;
     signer = await getDefaultSigner();
-    mpContract = r.mpContract;
+    verifierContract = r.mockVerifierContract as Verifier;
+    vkRegistryContract = r.vkRegistryContract;
 
     // deploy on chain poll
-    const tx = await maciContract.deployPoll(duration, maxValues, treeDepths, coordinator.pubKey.asContractParam(), {
-      gasLimit: 8000000,
-    });
+    const tx = await maciContract.deployPoll(
+      duration,
+      maxValues,
+      treeDepths,
+      coordinator.pubKey.asContractParam(),
+      verifierContract,
+      vkRegistryContract,
+      false,
+      {
+        gasLimit: 10000000,
+      },
+    );
     let receipt = await tx.wait();
 
     // extract poll id
@@ -61,12 +75,14 @@ describe("MessageProcessor", () => {
     const iface = maciContract.interface;
     const logs = receipt!.logs[receipt!.logs.length - 1];
     const event = iface.parseLog(logs as unknown as { topics: string[]; data: string }) as unknown as {
-      args: { _pollId: number };
+      args: { _pollId: number; _mpAddr: string };
     };
     pollId = event.args._pollId;
 
     const pollContractAddress = await maciContract.getPoll(pollId);
     pollContract = new BaseContract(pollContractAddress, pollAbi, signer) as PollContract;
+
+    mpContract = new BaseContract(event.args._mpAddr, mpAbi, signer) as MessageProcessor;
 
     const block = await signer.provider!.getBlock(receipt!.blockHash);
     const deployTime = block!.timestamp;
@@ -91,8 +107,7 @@ describe("MessageProcessor", () => {
     generatedInputs = poll.processMessages(pollId);
 
     // set the verification keys on the vk smart contract
-    const vkContract = r.vkRegistryContract;
-    await vkContract.setVerifyingKeys(
+    vkRegistryContract.setVerifyingKeys(
       STATE_TREE_DEPTH,
       treeDepths.intStateTreeDepth,
       treeDepths.messageTreeDepth,
@@ -112,11 +127,10 @@ describe("MessageProcessor", () => {
     });
 
     it("processMessages() should fail if the state AQ has not been merged", async () => {
-      const pollContractAddress = await maciContract.getPoll(pollId);
-
-      await expect(
-        mpContract.processMessages(pollContractAddress, 0, [0, 0, 0, 0, 0, 0, 0, 0]),
-      ).to.be.revertedWithCustomError(mpContract, "StateAqNotMerged");
+      await expect(mpContract.processMessages(0, [0, 0, 0, 0, 0, 0, 0, 0])).to.be.revertedWithCustomError(
+        mpContract,
+        "StateAqNotMerged",
+      );
     });
   });
 
@@ -136,21 +150,13 @@ describe("MessageProcessor", () => {
         0,
         poll.messages.length,
       );
-      const onChainPackedVals = BigInt(
-        await mpContract.genProcessMessagesPackedVals(await pollContract.getAddress(), 0, users.length),
-      );
+      const onChainPackedVals = BigInt(await mpContract.genProcessMessagesPackedVals(0, users.length));
       expect(packedVals.toString()).to.eq(onChainPackedVals.toString());
     });
 
     it("processMessages() should update the state and ballot root commitment", async () => {
-      const pollContractAddress = await maciContract.getPoll(pollId);
-
       // Submit the proof
-      const tx = await mpContract.processMessages(
-        pollContractAddress,
-        generatedInputs.newSbCommitment,
-        [0, 0, 0, 0, 0, 0, 0, 0],
-      );
+      const tx = await mpContract.processMessages(generatedInputs.newSbCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
 
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);

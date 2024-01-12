@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import { Poll } from "./Poll.sol";
-import { PollFactory } from "./PollFactory.sol";
+import { IPollFactory } from "./interfaces/IPollFactory.sol";
+import { IMessageProcessorFactory } from "./interfaces/IMPFactory.sol";
+import { ITallySubsidyFactory } from "./interfaces/ITallySubsidyFactory.sol";
 import { InitialVoiceCreditProxy } from "./initialVoiceCreditProxy/InitialVoiceCreditProxy.sol";
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
 import { AccQueue } from "./trees/AccQueue.sol";
@@ -35,7 +36,7 @@ contract MACI is IMACI, Params, Utilities, Ownable {
   uint256 public nextPollId;
 
   /// @notice A mapping of poll IDs to Poll contracts.
-  mapping(uint256 => Poll) public polls;
+  mapping(uint256 => address) public polls;
 
   /// @notice The number of signups
   uint256 public override numSignUps;
@@ -43,10 +44,20 @@ contract MACI is IMACI, Params, Utilities, Ownable {
   /// @notice A mapping of block timestamps to the number of state leaves
   mapping(uint256 => uint256) public numStateLeaves;
 
-  // ERC20 contract that hold topup credits
+  /// @notice ERC20 contract that hold topup credits
   TopupCredit public topupCredit;
 
-  PollFactory public pollFactory;
+  /// @notice Factory contract that deploy a Poll contract
+  IPollFactory public pollFactory;
+
+  /// @notice Factory contract that deploy a MessageProcessor contract
+  IMessageProcessorFactory public messageProcessorFactory;
+
+  /// @notice Factory contract that deploy a Tally contract
+  ITallySubsidyFactory public tallyFactory;
+
+  /// @notice Factory contract that deploy a Subsidy contract
+  ITallySubsidyFactory public subsidyFactory;
 
   /// @notice The state AccQueue. Represents a mapping between each user's public key
   /// and their voice credit balance.
@@ -66,7 +77,8 @@ contract MACI is IMACI, Params, Utilities, Ownable {
 
   // Events
   event SignUp(uint256 _stateIndex, PubKey _userPubKey, uint256 _voiceCreditBalance, uint256 _timestamp);
-  event DeployPoll(uint256 _pollId, address _pollAddr, PubKey _pubKey);
+  event DeployPoll(uint256 _pollId, address _pollAddr, PubKey _pubKey, address _mpAddr, address _tallyAddr);
+  event DeploySubsidy(address _subsidyAddr);
 
   /// @notice Only allow a Poll contract to call the modified function.
   modifier onlyPoll(uint256 _pollId) {
@@ -84,11 +96,17 @@ contract MACI is IMACI, Params, Utilities, Ownable {
 
   /// @notice Create a new instance of the MACI contract.
   /// @param _pollFactory The PollFactory contract
+  /// @param _messageProcessorFactory The MessageProcessorFactory contract
+  /// @param _tallyFactory The TallyFactory contract
+  /// @param _subsidyFactory The SubsidyFactory contract
   /// @param _signUpGatekeeper The SignUpGatekeeper contract
   /// @param _initialVoiceCreditProxy The InitialVoiceCreditProxy contract
   /// @param _stateTreeDepth The depth of the state tree
   constructor(
-    PollFactory _pollFactory,
+    IPollFactory _pollFactory,
+    IMessageProcessorFactory _messageProcessorFactory,
+    ITallySubsidyFactory _tallyFactory,
+    ITallySubsidyFactory _subsidyFactory,
     SignUpGatekeeper _signUpGatekeeper,
     InitialVoiceCreditProxy _initialVoiceCreditProxy,
     TopupCredit _topupCredit,
@@ -105,6 +123,9 @@ contract MACI is IMACI, Params, Utilities, Ownable {
     }
 
     pollFactory = _pollFactory;
+    messageProcessorFactory = _messageProcessorFactory;
+    tallyFactory = _tallyFactory;
+    subsidyFactory = _subsidyFactory;
     topupCredit = _topupCredit;
     signUpGatekeeper = _signUpGatekeeper;
     initialVoiceCreditProxy = _initialVoiceCreditProxy;
@@ -116,8 +137,7 @@ contract MACI is IMACI, Params, Utilities, Ownable {
     if (hash2([uint256(1), uint256(1)]) == 0) revert PoseidonHashLibrariesNotLinked();
   }
 
-  /// @notice Get the depth of the state tree
-  /// @return The depth of the state tree
+  /// @inheritdoc IMACI
   function stateTreeDepth() external view returns (uint8) {
     return STATE_TREE_DEPTH;
   }
@@ -173,12 +193,18 @@ contract MACI is IMACI, Params, Utilities, Ownable {
   /// @param _maxValues The maximum number of vote options, and messages
   /// @param _treeDepths The depth of the Merkle trees
   /// @param _coordinatorPubKey The coordinator's public key
+  /// @param _verifier The Verifier Contract
+  /// @param _vkRegistry The VkRegistry Contract
+  /// @param useSubsidy If true, the Poll will use the Subsidy contract
   /// @return pollAddr a new Poll contract address
   function deployPoll(
     uint256 _duration,
     MaxValues memory _maxValues,
     TreeDepths memory _treeDepths,
-    PubKey memory _coordinatorPubKey
+    PubKey memory _coordinatorPubKey,
+    address _verifier,
+    address _vkRegistry,
+    bool useSubsidy
   ) public onlyOwner returns (address pollAddr) {
     // cache the poll to a local variable so we can increment it
     uint256 pollId = nextPollId;
@@ -200,7 +226,9 @@ contract MACI is IMACI, Params, Utilities, Ownable {
       uint24(TREE_ARITY) ** _treeDepths.intStateTreeDepth
     );
 
-    Poll p = pollFactory.deploy(
+    address _owner = owner();
+
+    address p = pollFactory.deploy(
       _duration,
       _maxValues,
       _treeDepths,
@@ -208,32 +236,35 @@ contract MACI is IMACI, Params, Utilities, Ownable {
       _coordinatorPubKey,
       this,
       topupCredit,
-      owner()
+      _owner
     );
+
+    address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, _owner);
+    address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, _owner);
+
+    if (useSubsidy) {
+      address subsidy = subsidyFactory.deploy(_verifier, _vkRegistry, p, mp, _owner);
+      emit DeploySubsidy(subsidy);
+    }
 
     polls[pollId] = p;
 
     pollAddr = address(p);
 
-    emit DeployPoll(pollId, pollAddr, _coordinatorPubKey);
+    emit DeployPoll(pollId, pollAddr, _coordinatorPubKey, mp, tally);
   }
 
-  /// @notice Allow Poll contracts to merge the state subroots
-  /// @param _numSrQueueOps Number of operations
-  /// @param _pollId The active Poll ID
+  /// @inheritdoc IMACI
   function mergeStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId) public override onlyPoll(_pollId) {
     stateAq.mergeSubRoots(_numSrQueueOps);
   }
 
-  /// @notice Allow Poll contracts to merge the state root
-  /// @param _pollId The active Poll ID
-  /// @return root The calculated Merkle root
+  /// @inheritdoc IMACI
   function mergeStateAq(uint256 _pollId) public override onlyPoll(_pollId) returns (uint256 root) {
     root = stateAq.merge(STATE_TREE_DEPTH);
   }
 
-  /// @notice Return the main root of the StateAq contract
-  /// @return root The Merkle root
+  /// @inheritdoc IMACI
   function getStateAqRoot() public view override returns (uint256 root) {
     root = stateAq.getMainRoot(STATE_TREE_DEPTH);
   }
@@ -241,7 +272,7 @@ contract MACI is IMACI, Params, Utilities, Ownable {
   /// @notice Get the Poll details
   /// @param _pollId The identifier of the Poll to retrieve
   /// @return poll The Poll contract object
-  function getPoll(uint256 _pollId) public view returns (Poll poll) {
+  function getPoll(uint256 _pollId) public view returns (address poll) {
     if (_pollId >= nextPollId) revert PollDoesNotExist(_pollId);
     poll = polls[_pollId];
   }

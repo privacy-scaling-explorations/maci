@@ -100,6 +100,7 @@ describe("integration tests", function test() {
       MSG_TREE_DEPTH,
       VOTE_OPTION_TREE_DEPTH,
       coordinatorKeypair.pubKey.serialize(),
+      true,
       contracts.maciAddress,
     );
 
@@ -287,6 +288,7 @@ describe("integration tests", function test() {
         proveOnChain(
           pollId.toString(),
           path.resolve(__dirname, "../../../cli/proofs"),
+          subsidyEnabled,
           contracts.maciAddress,
           pollContracts.messageProcessor,
           pollContracts.tally,
@@ -299,6 +301,7 @@ describe("integration tests", function test() {
       await expect(
         verify(
           pollId.toString(),
+          subsidyEnabled,
           path.resolve(__dirname, "../../../cli/tally.json"),
           tallyData,
           contracts.maciAddress,

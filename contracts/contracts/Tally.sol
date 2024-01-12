@@ -4,11 +4,11 @@ pragma solidity ^0.8.10;
 import { IMACI } from "./interfaces/IMACI.sol";
 import { Hasher } from "./crypto/Hasher.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { Poll } from "./Poll.sol";
-import { MessageProcessor } from "./MessageProcessor.sol";
+import { IPoll } from "./interfaces/IPoll.sol";
+import { IMessageProcessor } from "./interfaces/IMessageProcessor.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
-import { Verifier } from "./crypto/Verifier.sol";
-import { VkRegistry } from "./VkRegistry.sol";
+import { IVerifier } from "./interfaces/IVerifier.sol";
+import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
 import { CommonUtilities } from "./utilities/CommonUtilities.sol";
 
 /// @title Tally
@@ -44,15 +44,21 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   // The final commitment to the state and ballot roots
   uint256 public sbCommitment;
 
-  Verifier public verifier;
-  VkRegistry public vkRegistry;
+  IVerifier public verifier;
+  IVkRegistry public vkRegistry;
+  IPoll public poll;
+  IMessageProcessor public mp;
 
   /// @notice Create a new Tally contract
   /// @param _verifier The Verifier contract
   /// @param _vkRegistry The VkRegistry contract
-  constructor(Verifier _verifier, VkRegistry _vkRegistry) payable {
-    verifier = _verifier;
-    vkRegistry = _vkRegistry;
+  /// @param _poll The Poll contract
+  /// @param _mp The MessageProcessor contract
+  constructor(address _verifier, address _vkRegistry, address _poll, address _mp) payable {
+    verifier = IVerifier(_verifier);
+    vkRegistry = IVkRegistry(_vkRegistry);
+    poll = IPoll(_poll);
+    mp = IMessageProcessor(_mp);
   }
 
   /// @notice Pack the batch start index and number of signups into a 100-bit value.
@@ -94,41 +100,33 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   }
 
   /// @notice Update the state and ballot root commitment
-  /// @param _mp the address of the MessageProcessor contract
-  function updateSbCommitment(MessageProcessor _mp) public onlyOwner {
+  function updateSbCommitment() public onlyOwner {
     // Require that all messages have been processed
-    if (!_mp.processingComplete()) {
+    if (!mp.processingComplete()) {
       revert ProcessingNotComplete();
     }
     if (sbCommitment == 0) {
-      sbCommitment = _mp.sbCommitment();
+      sbCommitment = mp.sbCommitment();
     }
   }
 
   /// @notice Verify the result of a tally batch
-  /// @param _poll contract address of the poll proof to be verified
-  /// @param _mp the address of the MessageProcessor contract
   /// @param _newTallyCommitment the new tally commitment to be verified
   /// @param _proof the proof generated after tallying this batch
-  function tallyVotes(
-    Poll _poll,
-    MessageProcessor _mp,
-    uint256 _newTallyCommitment,
-    uint256[8] calldata _proof
-  ) public onlyOwner {
-    _votingPeriodOver(_poll);
-    updateSbCommitment(_mp);
+  function tallyVotes(uint256 _newTallyCommitment, uint256[8] calldata _proof) public onlyOwner {
+    _votingPeriodOver(poll);
+    updateSbCommitment();
 
-    (, uint256 tallyBatchSize, ) = _poll.batchSizes();
+    (, uint256 tallyBatchSize, ) = poll.batchSizes();
     uint256 batchStartIndex = tallyBatchNum * tallyBatchSize;
-    (uint256 numSignUps, ) = _poll.numSignUpsAndMessages();
+    (uint256 numSignUps, ) = poll.numSignUpsAndMessages();
 
     // Require that there are untalied ballots left
     if (batchStartIndex > numSignUps) {
       revert AllBallotsTallied();
     }
 
-    bool isValid = verifyTallyProof(_poll, _proof, numSignUps, batchStartIndex, tallyBatchSize, _newTallyCommitment);
+    bool isValid = verifyTallyProof(_proof, numSignUps, batchStartIndex, tallyBatchSize, _newTallyCommitment);
     if (!isValid) {
       revert InvalidTallyVotesProof();
     }
@@ -139,7 +137,6 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   }
 
   /// @notice Verify the tally proof using the verifying key
-  /// @param _poll contract address of the poll proof to be verified
   /// @param _proof the proof generated after processing all messages
   /// @param _numSignUps number of signups for a given poll
   /// @param _batchStartIndex the number of batches multiplied by the size of the batch
@@ -147,16 +144,15 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   /// @param _newTallyCommitment the tally commitment to be verified at a given batch index
   /// @return isValid whether the proof is valid
   function verifyTallyProof(
-    Poll _poll,
     uint256[8] calldata _proof,
     uint256 _numSignUps,
     uint256 _batchStartIndex,
     uint256 _tallyBatchSize,
     uint256 _newTallyCommitment
   ) public view returns (bool isValid) {
-    (uint8 intStateTreeDepth, , , uint8 voteOptionTreeDepth) = _poll.treeDepths();
+    (uint8 intStateTreeDepth, , , uint8 voteOptionTreeDepth) = poll.treeDepths();
 
-    (IMACI maci, , ) = _poll.extContracts();
+    (IMACI maci, , ) = poll.extContracts();
 
     // Get the verifying key
     VerifyingKey memory vk = vkRegistry.getTallyVk(maci.stateTreeDepth(), intStateTreeDepth, voteOptionTreeDepth);
