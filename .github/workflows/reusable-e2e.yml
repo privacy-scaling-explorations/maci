@@ -10,6 +10,7 @@ jobs:
       matrix:
         command: ["test:cli", "test:integration"]
 
+    timeout-minutes: 240
     runs-on: ubuntu-22.04
 
     steps:

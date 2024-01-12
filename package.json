@@ -23,6 +23,7 @@
     "test:cli": "lerna run test --scope \"maci-cli\"",
     "test:integration": "lerna run test --scope \"maci-integrationtests\"",
     "test": "lerna run test --ignore maci-integrationtests --ignore maci-cli",
+    "test:stress": "lerna run test:stress --scope \"maci-cli\"",
     "types": "lerna run types",
     "typedoc": "typedoc --plugin typedoc-plugin-markdown --options typedoc.json",
     "prepare": "is-ci || husky install"

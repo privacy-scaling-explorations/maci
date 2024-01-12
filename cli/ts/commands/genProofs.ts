@@ -66,6 +66,7 @@ export const genProofs = async ({
   startBlock,
   blocksPerBatch,
   endBlock,
+  sleepFetch,
   quiet = true,
 }: GenProofsArgs): Promise<TallyData> => {
   banner(quiet);
@@ -252,6 +253,7 @@ export const genProofs = async ({
       fromBlock,
       blocksPerBatch,
       endBlock,
+      sleepFetch,
     );
   }
 

@@ -512,6 +512,11 @@ export interface GenProofsArgs {
   endBlock?: number;
 
   /**
+   * How long to sleep in between each rpc node request
+   */
+  sleepFetch?: number;
+
+  /**
    * Whether to log the output
    */
   quiet?: boolean;

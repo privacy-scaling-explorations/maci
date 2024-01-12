@@ -462,6 +462,7 @@ program
   .option("-sb, --start-block <startBlock>", "the block number to start looking for events from", parseInt)
   .option("-eb, --end-block <endBlock>", "the block number to end looking for events from", parseInt)
   .option("-bb, --blocks-per-batch <blockPerBatch>", "the number of blocks to process per batch", parseInt)
+  .option("-sf, --sleep-fetch <sleepFetch>", "the sleep time between fetching batches", parseInt)
   .action(async (cmdObj) => {
     try {
       await genProofs({
@@ -490,6 +491,7 @@ program
         startBlock: cmdObj.startBlock,
         endBlock: cmdObj.endBlock,
         blocksPerBatch: cmdObj.blocksPerBatch,
+        sleepFetch: cmdObj.sleepFetch,
         quiet: cmdObj.quiet,
       });
     } catch (error) {
