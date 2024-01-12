@@ -39,41 +39,37 @@ contract MACI is IMACI, Params, Utilities, Ownable {
   mapping(uint256 => address) public polls;
 
   /// @notice The number of signups
-  uint256 public override numSignUps;
+  uint256 public numSignUps;
 
   /// @notice A mapping of block timestamps to the number of state leaves
   mapping(uint256 => uint256) public numStateLeaves;
 
   /// @notice ERC20 contract that hold topup credits
-  TopupCredit public topupCredit;
+  TopupCredit public immutable topupCredit;
 
   /// @notice Factory contract that deploy a Poll contract
-  IPollFactory public pollFactory;
+  IPollFactory public immutable pollFactory;
 
   /// @notice Factory contract that deploy a MessageProcessor contract
-  IMessageProcessorFactory public messageProcessorFactory;
+  IMessageProcessorFactory public immutable messageProcessorFactory;
 
   /// @notice Factory contract that deploy a Tally contract
-  ITallySubsidyFactory public tallyFactory;
+  ITallySubsidyFactory public immutable tallyFactory;
 
   /// @notice Factory contract that deploy a Subsidy contract
-  ITallySubsidyFactory public subsidyFactory;
+  ITallySubsidyFactory public immutable subsidyFactory;
 
   /// @notice The state AccQueue. Represents a mapping between each user's public key
   /// and their voice credit balance.
-  AccQueue public override stateAq;
+  AccQueue public immutable stateAq;
 
   /// @notice Address of the SignUpGatekeeper, a contract which determines whether a
   /// user may sign up to vote
-  SignUpGatekeeper public signUpGatekeeper;
+  SignUpGatekeeper public immutable signUpGatekeeper;
 
   /// @notice  The contract which provides the values of the initial voice credit
   /// balance per user
-  InitialVoiceCreditProxy public initialVoiceCreditProxy;
-
-  /// @notice  When the contract was deployed. We assume that the signup period starts
-  /// immediately upon deployment.
-  uint256 public signUpTimestamp;
+  InitialVoiceCreditProxy public immutable initialVoiceCreditProxy;
 
   // Events
   event SignUp(uint256 _stateIndex, PubKey _userPubKey, uint256 _voiceCreditBalance, uint256 _timestamp);
@@ -130,8 +126,6 @@ contract MACI is IMACI, Params, Utilities, Ownable {
     signUpGatekeeper = _signUpGatekeeper;
     initialVoiceCreditProxy = _initialVoiceCreditProxy;
     STATE_TREE_DEPTH = _stateTreeDepth;
-
-    signUpTimestamp = block.timestamp;
 
     // Verify linked poseidon libraries
     if (hash2([uint256(1), uint256(1)]) == 0) revert PoseidonHashLibrariesNotLinked();

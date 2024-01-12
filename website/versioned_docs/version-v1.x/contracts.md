@@ -31,8 +31,6 @@ constructor(
     signUpGatekeeper = _signUpGatekeeper;
     initialVoiceCreditProxy = _initialVoiceCreditProxy;
 
-    signUpTimestamp = block.timestamp;
-
     // Verify linked poseidon libraries
     require(
         hash2([uint256(1), uint256(1)]) != 0,
