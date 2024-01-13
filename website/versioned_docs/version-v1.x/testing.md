@@ -169,7 +169,7 @@ You can run them with:
 pnpm run test
 ```
 
-## Pre-Compiled Artifacts for testing
+## Pre-Compiled Artifacts for testing
 
 The followingcompiled circuits and zkeys are available to download:
 
