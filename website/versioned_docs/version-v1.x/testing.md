@@ -183,7 +183,7 @@ The followingcompiled circuits and zkeys are available to download:
 
 - glibc 2.11 (Default of Ubuntu 20.04 LTS)
 
-#### Prod Size
+### Prod Size
 
 - [zkeys-7-9-3-4.tar.gz](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/7-9-3-4/zkeys_7-9-3-4_glibc-211.tar.gz) (2.8 GB)
 - [ProcessMessages_7-9-3-4_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/7-9-3-4/ProcessMessages_7-9-3-4_test.0.zkey) (3.8 GB)
@@ -191,7 +191,7 @@ The followingcompiled circuits and zkeys are available to download:
 - [TallyVotes_7-3-4_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/7-9-3-4/TallyVotes_7-3-4_test.0.zkey) (8.5 GB)
   - generated using `powersOfTau28_hez_final_23.ptau`
 
-##### Message processing
+#### Message processing
 
 | Parameter                | Value | Description                                    |
 | ------------------------ | ----- | ---------------------------------------------- |
@@ -200,7 +200,7 @@ The followingcompiled circuits and zkeys are available to download:
 | Message batch tree depth | 3     | Allows 125 messages to be processed per batch. |
 | Vote option tree depth   | 4     | Allows 625 vote options.                       |
 
-##### Vote tallying
+#### Vote tallying
 
 | Parameter                | Value | Description                                        |
 | ------------------------ | ----- | -------------------------------------------------- |
@@ -217,7 +217,7 @@ The followingcompiled circuits and zkeys are available to download:
 
 `*.zkey` files are generated using `powersOfTau28_hez_final_20.ptau`
 
-##### Message processing
+#### Message processing
 
 | Parameter                | Value | Description                                  |
 | ------------------------ | ----- | -------------------------------------------- |
@@ -226,7 +226,7 @@ The followingcompiled circuits and zkeys are available to download:
 | Message batch tree depth | 1     | Allows 5 messages to be processed per batch. |
 | Vote option tree depth   | 2     | Allows 25 vote options.                      |
 
-##### Vote tallying
+#### Vote tallying
 
 | Parameter                | Value | Description                                      |
 | ------------------------ | ----- | ------------------------------------------------ |
@@ -234,7 +234,7 @@ The followingcompiled circuits and zkeys are available to download:
 | State leaf batch depth   | 1     | Allows 5 user's votes to be processed per batch. |
 | Message batch tree depth | 2     | Allows 25 messages to be processed per batch.    |
 
-#### Small size
+### Small size
 
 - [zkeys_4-6-3-4_glibc-211.tar.gz](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/4-6-3-4/zkeys_4-6-3-4_glibc-211.tar.gz) (2.6 GB)
 - [ProcessMessages_4-6-3-4_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/4-6-3-4/ProcessMessages_4-6-3-4_test.0.zkey) (2.9 GB)
@@ -242,7 +242,7 @@ The followingcompiled circuits and zkeys are available to download:
 - [TallyVotes_4-3-4_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/4-6-3-4/TallyVotes_4-3-4_test.0.zkey) (8.5 GB)
   - generated using `powersOfTau28_hez_final_23.ptau`
 
-##### Message processing
+#### Message processing
 
 | Parameter                | Value | Description                                    |
 | ------------------------ | ----- | ---------------------------------------------- |
@@ -251,7 +251,7 @@ The followingcompiled circuits and zkeys are available to download:
 | Message batch tree depth | 3     | Allows 125 messages to be processed per batch. |
 | Vote option tree depth   | 4     | Allows 625 vote options.                       |
 
-##### Vote tallying
+#### Vote tallying
 
 | Parameter                | Value | Description                                        |
 | ------------------------ | ----- | -------------------------------------------------- |
@@ -259,7 +259,7 @@ The followingcompiled circuits and zkeys are available to download:
 | State leaf batch depth   | 3     | Allows 125 user's votes to be processed per batch. |
 | Message batch tree depth | 4     | Allows 625 messages to be processed per batch.     |
 
-#### Medium size
+### Medium size
 
 - [zkeys_7-7-3-3_glibc-211.tar.gz](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/7-7-3-3/zkeys_7-7-3-3_glibc-211.tar.gz) (4.9 GB)
 - [ProcessMessages_7-7-3-3_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/7-7-3-3/ProcessMessages_7-7-3-3_test.0.zkey) (2.2 GB)
@@ -267,7 +267,7 @@ The followingcompiled circuits and zkeys are available to download:
 - [TallyVotes_7-3-3_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/7-7-3-3/TallyVotes_7-3-3_test.0.zkey) (884 MB)
   - generated using `powersOfTau28_hez_final_22.ptau`
 
-##### Message processing
+#### Message processing
 
 | Parameter                | Value | Description                                    |
 | ------------------------ | ----- | ---------------------------------------------- |
@@ -276,7 +276,7 @@ The followingcompiled circuits and zkeys are available to download:
 | Message batch tree depth | 3     | Allows 125 messages to be processed per batch. |
 | Vote option tree depth   | 3     | Allows 125 vote options.                       |
 
-##### Vote tallying
+#### Vote tallying
 
 | Parameter                | Value | Description                                        |
 | ------------------------ | ----- | -------------------------------------------------- |
@@ -284,7 +284,7 @@ The followingcompiled circuits and zkeys are available to download:
 | State leaf batch depth   | 3     | Allows 125 user's votes to be processed per batch. |
 | Message batch tree depth | 3     | Allows 125 messages to be processed per batch.     |
 
-#### 6-8-3-3
+### 6-8-3-3
 
 - [zkeys_6-8-3-3_glibc-211.tar.gz](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/6-8-3-3/zkeys_6-8-3-3_glibc-211.tar.gz) (1.1 GB)
 - [ProcessMessages_6-8-3-3_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/6-8-3-3/ProcessMessages_6-8-3-3_test.0.zkey) (3.4 GB)
@@ -309,7 +309,7 @@ The followingcompiled circuits and zkeys are available to download:
 | State leaf batch depth   | 3     | Allows 125 user's votes to be processed per batch. |
 | Message batch tree depth | 3     | Allows 125 messages to be processed per batch.     |
 
-#### contents of `*.tar.gz`
+### contents of `*.tar.gz`
 
 It contains compiled result of the circuit:
 
@@ -369,7 +369,7 @@ zkeys/TallyVotes_7-3-4_test
 
 ---
 
-##### Contribution Hash
+### Contribution Hash
 
 - [ProcessMessages_4-6-3-4_test.0.zkey](#ProcessMessages_4-6-3-4_test0zkey)
 - [TallyVotes_4-3-4_test.0.zkey](#TallyVotes_4-3-4_test0zkey)
@@ -381,7 +381,7 @@ zkeys/TallyVotes_7-3-4_test
 - [ProcessMessages_7-7-3-3_test.0.zkey](#ProcessMessages_7-7-3-3_test0zkey)
 - [TallyVotes_7-3-3_test.0.zkey](#TallyVotes_7-3-3_test0zkey)
 
-###### ProcessMessages_4-6-3-4_test.0.zkey
+#### ProcessMessages_4-6-3-4_test.0.zkey
 
 ```
 2d29ddba 11e5292e b20f681d 3ade88cd
@@ -390,7 +390,7 @@ zkeys/TallyVotes_7-3-4_test
 325cfc06 cb1ac909 38b2e5ff 22b34333
 ```
 
-##### TallyVotes_4-3-4_test.0.zkey
+#### TallyVotes_4-3-4_test.0.zkey
 
 ```
 d2d88532 c2e1e7bd 3c7be3fb f85da2e2
@@ -399,7 +399,7 @@ d2d88532 c2e1e7bd 3c7be3fb f85da2e2
 f3a8a155 cd338e2c 5f364836 bfd7913d
 ```
 
-##### ProcessMessages_7-9-3-4_test.0.zkey
+#### ProcessMessages_7-9-3-4_test.0.zkey
 
 ```
 75256709 6e8a034e a067ea67 16192fb2
@@ -408,7 +408,7 @@ f3a8a155 cd338e2c 5f364836 bfd7913d
 b1094e74 b8aaa9a3 9af75b22 0d9229e6
 ```
 
-##### TallyVotes_7-3-4_test.0.zkey
+#### TallyVotes_7-3-4_test.0.zkey
 
 ```
 f44cf32e 1709e2c4 c8dbe8dc 5b6de4be
@@ -417,7 +417,7 @@ f44cf32e 1709e2c4 c8dbe8dc 5b6de4be
 9b6ced66 c970a87d 745d35e4 5f47d7f9
 ```
 
-##### ProcessMessages_10-2-1-2_test.0.zkey
+#### ProcessMessages_10-2-1-2_test.0.zkey
 
 ```
 23eb4980 d584c7ef 647478b9 dea49a6d
@@ -426,7 +426,7 @@ f44cf32e 1709e2c4 c8dbe8dc 5b6de4be
 1c2c2662 20e0df3d 12a057f3 2a071937
 ```
 
-##### TallyVotes_10-1-2_test.0.zkey
+#### TallyVotes_10-1-2_test.0.zkey
 
 ```
 ae12edd2 6f7f1d25 530177ab 27483fe0
@@ -435,7 +435,7 @@ ce9a8c26 9f015c49 203376da 911e295c
 61be4031 56220ca7 06ed3b9f e8504f11
 ```
 
-##### SubsidyPerBatch_10-1-2_test.0.zkey
+#### SubsidyPerBatch_10-1-2_test.0.zkey
 
 ```
 16dfc388 eda0bfd7 ff529e42 505ed6b7
@@ -444,7 +444,7 @@ cbffbb79 9218b09b cfa2fe29 0806097a
 c84bb980 a1346082 fb00a947 3c97d99e
 ```
 
-##### ProcessMessages_7-7-3-3_test.0.zkey
+#### ProcessMessages_7-7-3-3_test.0.zkey
 
 ```
 e688264b e1326553 b58492d4 7c2028bc
@@ -453,7 +453,7 @@ cda175f9 b786c4eb 44453080 369ab861
 a0f752f8 413a81ba f481d335 187e0091
 ```
 
-##### TallyVotes_7-3-3_test.0.zkey
+#### TallyVotes_7-3-3_test.0.zkey
 
 ```
 6869646d 1faf2aec d8c70c85 0021858f
