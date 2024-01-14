@@ -44,6 +44,10 @@ const config: HardhatUserConfig = {
     pages: "files",
     exclude: ["./trees/zeros"],
   },
+  gasReporter: {
+    currency: "USD",
+    enabled: true,
+  },
 };
 
 export default config;
