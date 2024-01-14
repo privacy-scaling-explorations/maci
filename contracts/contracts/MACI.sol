@@ -67,14 +67,21 @@ contract MACI is IMACI, Params, Utilities, Ownable {
   /// user may sign up to vote
   SignUpGatekeeper public immutable signUpGatekeeper;
 
-  /// @notice  The contract which provides the values of the initial voice credit
+  /// @notice The contract which provides the values of the initial voice credit
   /// balance per user
   InitialVoiceCreditProxy public immutable initialVoiceCreditProxy;
 
+  /// @notice A struct holding the addresses of poll, mp and tally
+  struct PollContracts {
+    address poll;
+    address messageProcessor;
+    address tally;
+    address subsidy;
+  }
+
   // Events
   event SignUp(uint256 _stateIndex, PubKey _userPubKey, uint256 _voiceCreditBalance, uint256 _timestamp);
-  event DeployPoll(uint256 _pollId, address _pollAddr, PubKey _pubKey, address _mpAddr, address _tallyAddr);
-  event DeploySubsidy(address _subsidyAddr);
+  event DeployPoll(uint256 _pollId, PubKey _pubKey, PollContracts pollAddr);
 
   /// @notice Only allow a Poll contract to call the modified function.
   modifier onlyPoll(uint256 _pollId) {
@@ -199,7 +206,7 @@ contract MACI is IMACI, Params, Utilities, Ownable {
     address _verifier,
     address _vkRegistry,
     bool useSubsidy
-  ) public onlyOwner returns (address pollAddr) {
+  ) public onlyOwner returns (PollContracts memory pollAddr) {
     // cache the poll to a local variable so we can increment it
     uint256 pollId = nextPollId;
 
@@ -236,16 +243,17 @@ contract MACI is IMACI, Params, Utilities, Ownable {
     address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, _owner);
     address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, _owner);
 
+    address subsidy;
     if (useSubsidy) {
-      address subsidy = subsidyFactory.deploy(_verifier, _vkRegistry, p, mp, _owner);
-      emit DeploySubsidy(subsidy);
+      subsidy = subsidyFactory.deploy(_verifier, _vkRegistry, p, mp, _owner);
     }
 
     polls[pollId] = p;
 
-    pollAddr = address(p);
+    // store the addresses in a struct so they can be returned
+    pollAddr = PollContracts({ poll: p, messageProcessor: mp, tally: tally, subsidy: subsidy });
 
-    emit DeployPoll(pollId, pollAddr, _coordinatorPubKey, mp, tally);
+    emit DeployPoll(pollId, _coordinatorPubKey, pollAddr);
   }
 
   /// @inheritdoc IMACI

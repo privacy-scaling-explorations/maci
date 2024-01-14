@@ -73,18 +73,18 @@ describe("Subsidy", () => {
     expect(receipt?.status).to.eq(1);
     const iface = maciContract.interface;
 
-    // parse DeploySubsidy log
-    const logSubsidy = receipt!.logs[receipt!.logs.length - 2];
-    const subsidyEvent = iface.parseLog(logSubsidy as unknown as { topics: string[]; data: string }) as unknown as {
-      args: { _subsidyAddr: string };
-      name: string;
-    };
-    expect(subsidyEvent.name).to.eq("DeploySubsidy");
-
     // parse DeployPoll log
     const logMPTally = receipt!.logs[receipt!.logs.length - 1];
     const MPTallyEvent = iface.parseLog(logMPTally as unknown as { topics: string[]; data: string }) as unknown as {
-      args: { _pollId: number; _mpAddr: string; _tallyAddr: string };
+      args: {
+        _pollId: number;
+        pollAddr: {
+          poll: string;
+          messageProcessor: string;
+          tally: string;
+          subsidy: string;
+        };
+      };
       name: string;
     };
     expect(MPTallyEvent.name).to.eq("DeployPoll");
@@ -93,9 +93,9 @@ describe("Subsidy", () => {
 
     const pollContractAddress = await maciContract.getPoll(pollId);
     pollContract = new BaseContract(pollContractAddress, pollAbi, signer) as PollContract;
-    const mpContractAddress = MPTallyEvent.args._mpAddr;
+    const mpContractAddress = MPTallyEvent.args.pollAddr.messageProcessor;
     mpContract = new BaseContract(mpContractAddress, mpAbi, signer) as MessageProcessor;
-    const subsidyContractAddress = subsidyEvent.args._subsidyAddr;
+    const subsidyContractAddress = MPTallyEvent.args.pollAddr.subsidy;
     subsidyContract = new BaseContract(subsidyContractAddress, subsidyAbi, signer) as Subsidy;
 
     // deploy local poll

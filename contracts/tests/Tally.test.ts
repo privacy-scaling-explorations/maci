@@ -82,7 +82,14 @@ describe("TallyVotes", () => {
     const iface = maciContract.interface;
     const logs = receipt!.logs[receipt!.logs.length - 1];
     const event = iface.parseLog(logs as unknown as { topics: string[]; data: string }) as unknown as {
-      args: { _pollId: number; _mpAddr: string; _tallyAddr: string };
+      args: {
+        _pollId: number;
+        pollAddr: {
+          poll: string;
+          messageProcessor: string;
+          tally: string;
+        };
+      };
       name: string;
     };
     expect(event.name).to.eq("DeployPoll");
@@ -91,8 +98,8 @@ describe("TallyVotes", () => {
 
     const pollContractAddress = await maciContract.getPoll(pollId);
     pollContract = new BaseContract(pollContractAddress, pollAbi, signer) as PollContract;
-    mpContract = new BaseContract(event.args._mpAddr, mpAbi, signer) as MessageProcessor;
-    tallyContract = new BaseContract(event.args._tallyAddr, tallyAbi, signer) as Tally;
+    mpContract = new BaseContract(event.args.pollAddr.messageProcessor, mpAbi, signer) as MessageProcessor;
+    tallyContract = new BaseContract(event.args.pollAddr.tally, tallyAbi, signer) as Tally;
 
     // deploy local poll
     const p = maciState.deployPoll(BigInt(deployTime + duration), maxValues, treeDepths, messageBatchSize, coordinator);
