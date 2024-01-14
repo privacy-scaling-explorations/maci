@@ -1,13 +1,13 @@
 ---
-title: MACI Testing in Details
-description: How MACI tests work in details
-sidebar_label: How Our Test Suites Work
+title: MACI Testing in Detail
+description: How MACI tests work in detail
+sidebar_label: Testing in detail
 sidebar_position: 10
 ---
 
-# Testing
+# Testing in detail
 
-This doc extends on the [Testing](https://maci.pse.dev/docs/testing.md) doc and explains how MACI tests work in details. This information should be used by MACI's maintainers as well as contributors.
+This doc expands on our [introduction to testing](/docs/testing) doc and explains how MACI tests work in greater detail. This information should be used by MACI's maintainers as well as contributors.
 
 ## Automated Tests
 
@@ -171,7 +171,7 @@ Within the circuits folder, there are a number of tests that are used to verify 
 
 These tests often use mock data from the `core` package. For instance, when testing the `processMessages` circuit, we are required to generate the parameters from the `core` packing, using the `Poll:processMessages` function. The same applies to vote tallying, where we need the `Poll:tally` function to be run first with mock users and vote messages.
 
-All of the tests run using test parameters, usually `10, 2, 1, 2`, aside from the tests inside: [`ceremonyParam`](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/ts/__tests__/CeremonyParams.test.ts) which use the parameters of the latest MACI ceremony. More details on the trusted setup can be found [here](https://maci.pse.dev/docs/trusted-setup).
+All of the tests run using test parameters, usually `10, 2, 1, 2`, aside from the tests inside: [`ceremonyParam`](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/ts/__tests__/CeremonyParams.test.ts) which use the parameters of the latest MACI ceremony. More details on the trusted setup can be found [here](/docs/trusted-setup).
 
 ### Core
 

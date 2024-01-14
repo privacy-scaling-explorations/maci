@@ -1,11 +1,11 @@
 ---
 title: Testing MACI
-description: How to test MACI
+description: An introduction on how to test MACI
 sidebar_label: Testing
 sidebar_position: 9
 ---
 
-# Testing
+# Testing introduction
 
 ## Unit tests
 

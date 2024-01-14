@@ -431,7 +431,7 @@ circom --r1cs --sym --wasm --output ./build circom/test/processMessages_test.cir
 circom --r1cs --sym --wasm --output ./build circom/test/tallyVotes_test.circom
 ```
 
-Please note that the circuit is configured with testing purpose parameters, which means it can only handle a limited amount of messages (up to 25 messages). For more information on the parameters and how to configure them, refer to [this page](https://maci.pse.dev/docs/circuits.html#compile-circuits).
+Please note that the circuit is configured with testing purpose parameters, which means it can only handle a limited amount of messages (up to 25 messages). For more information on the parameters and how to configure them, refer to [this page](/docs/circuits/#compile-circuits).
 
 ### Generating zKeys
 
@@ -486,4 +486,4 @@ To run individual tests, you can use the following commands (for all other circu
 - `pnpm run test-processMessages` to run the tests for the `processMessages` circuit.
 - `pnpm run test-tallyVotes` to run the tests for the `tallyVotes` circuit.
 
-More details on testing are provided in the [testing section](https://maci.pse.dev/docs/testing) of the documentation.
+More details on testing are provided in the [testing section](/docs/testing) of the documentation.
