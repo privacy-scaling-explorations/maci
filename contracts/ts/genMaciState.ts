@@ -108,7 +108,15 @@ export const genMaciStateFromContract = async (
     assert(!!log);
     const mutableLogs = { ...log, topics: [...log.topics] };
     const event = maciIface.parseLog(mutableLogs) as unknown as {
-      args: { _pubKey: string[]; _pollAddr: string; _pollId: number };
+      args: {
+        _pubKey: string[];
+        _pollId: number;
+        pollAddr: {
+          poll: string;
+          messageProcessor: string;
+          tally: string;
+        };
+      };
     };
 
     const pubKey = new PubKey(event.args._pubKey.map((x) => BigInt(x.toString())) as [bigint, bigint]);
@@ -116,7 +124,7 @@ export const genMaciStateFromContract = async (
     const p = Number(event.args._pollId);
     assert(p === index);
 
-    const pollAddr = event.args._pollAddr;
+    const pollAddr = event.args.pollAddr.poll;
     actions.push({
       type: "DeployPoll",
       blockNumber: log.blockNumber,

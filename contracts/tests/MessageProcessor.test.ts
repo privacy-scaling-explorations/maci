@@ -75,14 +75,21 @@ describe("MessageProcessor", () => {
     const iface = maciContract.interface;
     const logs = receipt!.logs[receipt!.logs.length - 1];
     const event = iface.parseLog(logs as unknown as { topics: string[]; data: string }) as unknown as {
-      args: { _pollId: number; _mpAddr: string };
+      args: {
+        _pollId: number;
+        pollAddr: {
+          poll: string;
+          messageProcessor: string;
+          tally: string;
+        };
+      };
     };
     pollId = event.args._pollId;
 
     const pollContractAddress = await maciContract.getPoll(pollId);
     pollContract = new BaseContract(pollContractAddress, pollAbi, signer) as PollContract;
 
-    mpContract = new BaseContract(event.args._mpAddr, mpAbi, signer) as MessageProcessor;
+    mpContract = new BaseContract(event.args.pollAddr.messageProcessor, mpAbi, signer) as MessageProcessor;
 
     const block = await signer.provider!.getBlock(receipt!.blockHash);
     const deployTime = block!.timestamp;

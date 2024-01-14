@@ -138,30 +138,35 @@ export const deployPoll = async (
 
     const iface = maciContract.interface;
     const receiptLog = receipt!.logs[receipt!.logs.length - 1];
-    const log = iface.parseLog(receiptLog as unknown as { topics: string[]; data: string });
+
+    // parse DeployPoll log
+    const log = iface.parseLog(receiptLog as unknown as { topics: string[]; data: string }) as unknown as {
+      args: {
+        _pollId: number;
+        pollAddr: {
+          poll: string;
+          messageProcessor: string;
+          tally: string;
+          subsidy: string;
+        };
+      };
+      name: string;
+    };
+
     // we are trying to get the poll id from the event logs
     // if we do not find this log then we throw
-    if (log?.name !== "DeployPoll") {
+    if (log.name !== "DeployPoll") {
       logError("Invalid event log");
     }
 
     // eslint-disable-next-line no-underscore-dangle
-    const pollId = log!.args._pollId as number;
-    // eslint-disable-next-line no-underscore-dangle
-    pollAddr = log!.args._pollAddr as string;
-    // eslint-disable-next-line no-underscore-dangle
-    messageProcessorContractAddress = log!.args._mpAddr as string;
-    // eslint-disable-next-line no-underscore-dangle
-    tallyContractAddress = log!.args._tallyAddr as string;
+    const pollId = log.args._pollId;
+    pollAddr = log.args.pollAddr.poll;
+    messageProcessorContractAddress = log.args.pollAddr.messageProcessor;
+    tallyContractAddress = log.args.pollAddr.tally;
 
     if (subsidyEnabled) {
-      const receiptLogSubsidy = receipt!.logs[receipt!.logs.length - 2];
-      const logSubsidy = iface.parseLog(receiptLogSubsidy as unknown as { topics: string[]; data: string });
-      if (logSubsidy?.name !== "DeploySubsidy") {
-        logError("Invalid event log");
-      }
-      // eslint-disable-next-line no-underscore-dangle
-      subsidyContractAddress = logSubsidy!.args._subsidyAddr as string;
+      subsidyContractAddress = log.args.pollAddr.subsidy;
     }
 
     logGreen(quiet, info(`Poll ID: ${pollId.toString()}`));
