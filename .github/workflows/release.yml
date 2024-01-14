@@ -52,6 +52,6 @@ jobs:
           git add contracts/contracts/trees/EmptyBallotRoots.sol
           git diff --staged --quiet || git commit -m "Commit changes before publishing"
 
-          npx lerna publish from-git --yes
+          pnpm exec lerna publish from-git --yes
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
