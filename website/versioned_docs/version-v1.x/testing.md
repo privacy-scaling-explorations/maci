@@ -83,41 +83,52 @@ circuits.
 Note the locations of the `.zkey` files as the CLI requires them as
 command-line flags.
 
-For testing purposes you can download the required artifacts using the [`download_zkeys``](https://github.com/privacy-scaling-explorations/maci/blob/dev/integrationTests/scripts/download_zkeys.sh) script inside the `integrationTests/scripts` folder. The script will place all required artifacts inside the `cli/zkeys` folder.
-You can run the script directly with bash or use pnpm: `pnpm run download-zkeys`.
+For testing purposes you can download the required artifacts using the [`download_zkeys`](https://github.com/privacy-scaling-explorations/maci/blob/dev/integrationTests/scripts/download_zkeys.sh) script inside the `integrationTests/scripts` folder. The script will place all required artifacts inside the `cli/zkeys` folder.
+You can run the script directly with bash or use pnpm: `pnpm run download:test-zkeys` from the monorepo root.
 
-### Compile the witness generation binaries (if generating from scratch)
+### Compile the circuits and generate zkeys (if decided to generate from scratch)
 
-From the main `maci/cli` directory, run:
+From the root folder, run:
 
+**for c++ witness generator**
+
+```bash
+pnpm build:circuits-c
 ```
-pnpm exec zkey-manager compile -c ./zkeys.config.yml
+
+**for wasm witness generator**
+
+```bash
+pnpm build:circuits-wasm
 ```
 
 You should see the following files in `maci/cli/zkeys/`:
 
+```bash
+ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_cpp/ProcessMessages_10-2-1-2_test
+ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_cpp/ProcessMessages_10-2-1-2_test.dat
+ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.sym
+# either cpp or js
+ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_cpp
+ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_js
+SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test_cpp/SubsidyPerBatch_10-1-2_test
+SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test_cppSubsidyPerBatch_10-1-2_test.dat
+SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test.sym
+# either cpp or js
+SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test_cpp
+SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test_js
+TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_cpp/TallyVotes_10-1-2_test
+TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_cpp/TallyVotes_10-1-2_test.dat
+TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.sym
+# either cpp or js
+TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_cpp
+TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_js
 ```
-ProcessMessages_10-2-1-2_test
-ProcessMessages_10-2-1-2_test.circom
-ProcessMessages_10-2-1-2_test.dat
-ProcessMessages_10-2-1-2_test.r1cs
-ProcessMessages_10-2-1-2_test.sym
-ProcessMessages_10-2-1-2_test_cpp
-ProcessMessages_10-2-1-2_test_js
-SubsidyPerBatch_10-1-2_test
-SubsidyPerBatch_10-1-2_test.circom
-SubsidyPerBatch_10-1-2_test.dat
-SubsidyPerBatch_10-1-2_test.r1cs
-SubsidyPerBatch_10-1-2_test.sym
-SubsidyPerBatch_10-1-2_test_cpp
-SubsidyPerBatch_10-1-2_test_js
-TallyVotes_10-1-2_test
-TallyVotes_10-1-2_test.circom
-TallyVotes_10-1-2_test.dat
-TallyVotes_10-1-2_test.r1cs
-TallyVotes_10-1-2_test.sym
-TallyVotes_10-1-2_test_cpp
-TallyVotes_10-1-2_test_js
+
+**generate zkeys**
+
+```bash
+pnpm setup:zkeys
 ```
 
 ### Check the Rapidsnark binary

@@ -74,10 +74,10 @@ describe("integration tests", function test() {
       MSG_TREE_DEPTH,
       VOTE_OPTION_TREE_DEPTH,
       MSG_BATCH_DEPTH,
-      path.resolve(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test.0.zkey"),
-      path.resolve(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test.0.zkey"),
+      path.resolve(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey"),
+      path.resolve(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey"),
       vkRegistryAddress,
-      path.resolve(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test.0.zkey"),
+      path.resolve(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test.0.zkey"),
       true,
     );
   });
@@ -245,24 +245,54 @@ describe("integration tests", function test() {
       const tallyData = await genProofs(
         path.resolve(__dirname, "../../../cli/proofs"),
         path.resolve(__dirname, "../../../cli/tally.json"),
-        path.resolve(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test.0.zkey"),
-        path.resolve(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test.0.zkey"),
+        path.resolve(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey"),
+        path.resolve(
+          __dirname,
+          "../../../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey",
+        ),
         pollId,
         path.resolve(__dirname, "../../../cli/subsidy.json"),
-        path.resolve(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test.0.zkey"),
+        path.resolve(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test.0.zkey"),
         `${homedir()}/rapidsnark/build/prover`,
-        path.resolve(__dirname, "../../../cli/zkeys/ProcessMessages_10-2-1-2_test"),
-        path.resolve(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test"),
-        path.resolve(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test"),
+        path.resolve(
+          __dirname,
+          "../../../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_cpp/ProcessMessages_10-2-1-2_test",
+        ),
+        path.resolve(
+          __dirname,
+          "../../../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_cpp/ProcessMessages_10-2-1-2_test.dat",
+        ),
+        path.resolve(
+          __dirname,
+          "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_cpp/TallyVotes_10-1-2_test",
+        ),
+        path.resolve(
+          __dirname,
+          "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_cpp/TallyVotes_10-1-2_test.dat",
+        ),
+        path.resolve(
+          __dirname,
+          "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test_cpp/SubsidyPerBatch_10-1-2_test",
+        ),
+        path.resolve(
+          __dirname,
+          "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test_cpp/SubsidyPerBatch_10-1-2_test.dat",
+        ),
         coordinatorKeypair.privKey.serialize(),
         contracts.maciAddress,
         undefined,
         path.resolve(
           __dirname,
-          "../../../cli/zkeys/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm",
+          "../../../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm",
         ),
-        path.resolve(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm"),
-        path.resolve(__dirname, "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test_js/SubsidyPerBatch_10-1-2_test.wasm"),
+        path.resolve(
+          __dirname,
+          "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm",
+        ),
+        path.resolve(
+          __dirname,
+          "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test_js/SubsidyPerBatch_10-1-2_test.wasm",
+        ),
         useWasm,
       );
       expect(tallyData).to.not.eq(undefined);

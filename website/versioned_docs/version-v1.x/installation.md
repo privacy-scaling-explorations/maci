@@ -61,7 +61,7 @@ pnpm run build
 
 #### On intel chips
 
-Install dependencies for and `zkey-manager`:
+Install dependencies to compile the c++ witness generator:
 
 ```bash
 sudo apt-get install libgmp-dev nlohmann-json3-dev nasm g++
@@ -69,17 +69,34 @@ sudo apt-get install libgmp-dev nlohmann-json3-dev nasm g++
 
 > Note that on an ARM macbook you won't need the above. However, you will not be able to compile the c++ witness generator.
 
-### Configure zkey-manager
+### Configure circomkit
 
-Edit `cli/zkeys.config.yml` to include the relative path to the
-circom binary.
+Edit `circuits/circom/circuits` to include the circuits you would like to compile. This comes already configured with the three main circuits and with testing parameters:
 
-```yml
----
-circomPath: "RELATIVE_PATH_TO_CIRCOM"
+```json
+{
+  "ProcessMessages_10-2-1-2_test": {
+    "file": "processMessages",
+    "template": "ProcessMessages",
+    "params": [10, 2, 1, 2],
+    "pubs": ["inputHash"]
+  },
+  "TallyVotes_10-1-2_test": {
+    "file": "tallyVotes",
+    "template": "TallyVotes",
+    "params": [10, 1, 2],
+    "pubs": ["inputHash"]
+  },
+  "SubsidyPerBatch_10-1-2_test": {
+    "file": "subsidy",
+    "template": "SubsidyPerBatch",
+    "params": [10, 1, 2],
+    "pubs": ["inputHash"]
+  }
+}
 ```
 
-### Download `.zkey` files
+### Download `.zkey` files (if you would like to use the default parameters or the trusted setup artifacts)
 
 MACI has two main zk-SNARK circuits (plus an optional Subsidy circuit). Each circuit is parameterised. There should one
 `.zkey` file for each circuit and set of parameters.
@@ -90,32 +107,46 @@ circuits. For more details on which artifacts have undergone a trusted setup, pl
 
 Note the locations of the `.zkey` files as the CLI requires them as command-line flags.
 
+**Download test artifacts**
+
+```bash
+pnpm download:test-zkeys
+```
+
+**Download ceremony artifacts**
+
+```bash
+pnpm download:ceremony-zkeys
+```
+
 ### Generate `.zkey` files
 
-If you wish to generate `.zkey` files from scratch, first navigate to `cli/`
-and edit `zkeys.config.yml`. Set the parameters you need.
+If you wish to generate `.zkey` files from scratch, first navigate to `circuits/circom`
+and edit `circuits.json`. Set the parameters you need.
 
 Next, run the following to compile the circuits with parameters you specified:
 
+**for the c++ witness generator**
+
 ```bash
-pnpm exec zkey-manager compile -c zkeys.config.yml
+pnpm test:circuits-c
 ```
 
-Next, download the `.ptau` file:
+**for the wasm witness generator**
 
 ```bash
-pnpm exec zkey-manager downloadPtau -c zkeys.config.yml
+pnpm build:circuits-wasm
 ```
 
 Finally, generate the `.zkey` files. This may require a lot of memory and time.
 
 ```bash
-pnpm exec zkey-manager genZkeys -c zkeys.config.yml
+pnpm setup:zkeys
 ```
 
-> If on a ARM64 chip, the above will work, though it will show errors for the c++ witness generator. You can ignore these errors.
+> If on a ARM64 chip, the above will work with the wasm witness only. The errors you will get for the c++ witness are:
 >
-> ```
+> ```bash
 > main.cpp:9:10: fatal error: 'nlohmann/json.hpp' file not found
 > #include <nlohmann/json.hpp>
 >        ^~~~~~~~~~~~~~~~~~~
