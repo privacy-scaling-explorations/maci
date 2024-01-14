@@ -1,13 +1,13 @@
 ---
-title: MACI Testing in Details
-description: How MACI tests work in details
-sidebar_label: How Our Test Suites Work
+title: MACI Testing in Detail
+description: How MACI tests work in detail
+sidebar_label: Testing in detail
 sidebar_position: 10
 ---
 
-# Testing
+# Testing in detail
 
-This doc extends on the [Testing](https://maci.pse.dev/docs/testing.md) doc and explains how MACI tests work in details. This information should be used by MACI's maintainers as well as contributors.
+This doc expands on our [introduction to testing](https://maci.pse.dev/docs/testing.md) doc and explains how MACI tests work in greater detail. This information should be used by MACI's maintainers as well as contributors.
 
 ## Automated Tests
 
