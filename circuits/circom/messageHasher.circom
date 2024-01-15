@@ -1,4 +1,6 @@
 pragma circom 2.0.0;
+
+// local import
 include "./hasherPoseidon.circom";
 
 // hash a MACI message together with the public key

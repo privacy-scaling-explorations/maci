@@ -1,16 +1,16 @@
-import { expect } from "chai";
-import tester from "circom_tester";
+import { type WitnessTester } from "circomkit";
 
-import path from "path";
-
-import { getSignal } from "./utils/utils";
+import { circomkitInstance } from "./utils/utils";
 
 describe("CalculateTotal circuit", () => {
-  const circuitPath = path.resolve(__dirname, "../../circom/test", `calculateTotal_test.circom`);
-  let circuit: tester.WasmTester;
+  let circuit: WitnessTester<["nums"], ["sum"]>;
 
   before(async () => {
-    circuit = await tester.wasm(circuitPath);
+    circuit = await circomkitInstance.WitnessTester("calculateTotal", {
+      file: "trees/calculateTotal",
+      template: "CalculateTotal",
+      params: [6],
+    });
   });
 
   it("should correctly sum a list of values", async () => {
@@ -25,9 +25,6 @@ describe("CalculateTotal circuit", () => {
       nums,
     };
 
-    const witness = await circuit.calculateWitness(circuitInputs, true);
-    await circuit.checkConstraints(witness);
-    const result = await getSignal(circuit, witness, "sum");
-    expect(result.toString()).to.be.eq(sum.toString());
+    await circuit.expectPass(circuitInputs, { sum });
   });
 });

@@ -1,19 +1,20 @@
 import { expect } from "chai";
-import tester from "circom_tester";
-import { stringifyBigInts, verifySignature, hash4 } from "maci-crypto";
+import { type WitnessTester } from "circomkit";
+import { verifySignature, hash4 } from "maci-crypto";
 import { Keypair, PCommand } from "maci-domainobjs";
 
-import path from "path";
-
-import { getSignal } from "./utils/utils";
+import { getSignal, circomkitInstance } from "./utils/utils";
 
 describe("Signature verification circuit", function test() {
   this.timeout(90000);
 
-  let circuit: tester.WasmTester;
+  let circuit: WitnessTester<["pubKey", "R8", "S", "preimage"], ["valid"]>;
+
   before(async () => {
-    const circuitPath = path.resolve(__dirname, "../../circom/test", `verifySignature_test.circom`);
-    circuit = await tester.wasm(circuitPath);
+    circuit = await circomkitInstance.WitnessTester("verifySignature", {
+      file: "verifySignature",
+      template: "VerifySignature",
+    });
   });
 
   it("should verify a valid signature", async () => {
@@ -26,15 +27,15 @@ describe("Signature verification circuit", function test() {
 
     expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).to.eq(true);
 
-    const circuitInputs = stringifyBigInts({
-      pubKey: signer.pubKey.asCircuitInputs(),
-      R8: sig.R8,
-      S: sig.S,
+    const circuitInputs = {
+      pubKey: signer.pubKey.asCircuitInputs() as unknown as [bigint, bigint],
+      R8: sig.R8 as [bigint, bigint],
+      S: sig.S as bigint,
       preimage: command.asCircuitInputs(),
-    });
+    };
 
     const witness = await circuit.calculateWitness(circuitInputs);
-    await circuit.checkConstraints(witness);
+    await circuit.expectConstraintPass(witness);
     const isValid = await getSignal(circuit, witness, "valid");
     expect(isValid.toString()).to.be.eq("1");
   });
@@ -58,15 +59,15 @@ describe("Signature verification circuit", function test() {
     // The signature is not signed by `wrongSigner`
     expect(verifySignature(plaintext, sig, wrongSigner.pubKey.rawPubKey)).to.eq(false);
 
-    const circuitInputs = stringifyBigInts({
-      pubKey: wrongSigner.pubKey.asCircuitInputs(),
-      R8: sig.R8,
-      S: sig.S,
+    const circuitInputs = {
+      pubKey: wrongSigner.pubKey.asCircuitInputs() as unknown as [bigint, bigint],
+      R8: sig.R8 as [bigint, bigint],
+      S: sig.S as bigint,
       preimage: command.asCircuitInputs(),
-    });
+    };
 
     const witness = await circuit.calculateWitness(circuitInputs);
-    await circuit.checkConstraints(witness);
+    await circuit.expectConstraintPass(witness);
     const isValid = await getSignal(circuit, witness, "valid");
     expect(isValid.toString()).to.be.eq("0");
     expect((await getSignal(circuit, witness, "verifier.isCcZero.out")).toString()).to.be.eq("1");
@@ -82,17 +83,17 @@ describe("Signature verification circuit", function test() {
 
     expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).to.eq(true);
 
-    const circuitInputs = stringifyBigInts({
-      pubKey: signer.pubKey.asCircuitInputs(),
-      R8: sig.R8,
+    const circuitInputs = {
+      pubKey: signer.pubKey.asCircuitInputs() as unknown as [bigint, bigint],
+      R8: sig.R8 as [bigint, bigint],
       S: BigInt("2736030358979909402780800718157159386076813972158567259200215660948447373040") + BigInt(1),
       preimage: command.asCircuitInputs(),
-    });
+    };
 
     expect(verifySignature(plaintext, sig, signer.pubKey.rawPubKey)).to.eq(true);
 
     const witness = await circuit.calculateWitness(circuitInputs);
-    await circuit.checkConstraints(witness);
+    await circuit.expectConstraintPass(witness);
     const isValid = await getSignal(circuit, witness, "valid");
     expect(isValid.toString()).to.be.eq("0");
     expect((await getSignal(circuit, witness, "verifier.isCcZero.out")).toString()).to.be.eq("0");

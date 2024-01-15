@@ -1,4 +1,6 @@
 pragma circom 2.0.0;
+
+// local import
 include "../hasherPoseidon.circom";
 
 // Given a list of leaves, compute the root of the merkle tree

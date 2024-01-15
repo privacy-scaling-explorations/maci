@@ -1,4 +1,15 @@
-import type { WasmTester } from "circom_tester";
+import { Circomkit, type WitnessTester, type CircomkitConfig } from "circomkit";
+
+import fs from "fs";
+import path from "path";
+
+const configFilePath = path.resolve(__dirname, "..", "..", "..", "circomkit.json");
+const config = JSON.parse(fs.readFileSync(configFilePath, "utf-8")) as CircomkitConfig;
+
+export const circomkitInstance = new Circomkit({
+  ...config,
+  verbose: false,
+});
 
 /**
  * Convert a string to a bigint
@@ -7,8 +18,15 @@ import type { WasmTester } from "circom_tester";
  */
 export const str2BigInt = (s: string): bigint => BigInt(parseInt(Buffer.from(s).toString("hex"), 16));
 
+/**
+ * Generate a random number within a certain threshold
+ * @param upper - the upper bound
+ * @returns the random index
+ */
+export const generateRandomIndex = (upper: number): number => Math.floor(Math.random() * (upper - 1));
+
 // @note thanks https://github.com/Rate-Limiting-Nullifier/circom-rln/blob/main/test/utils.ts
-// for the code below
+// for the code below (modified version)
 /**
  * Get a signal from the circuit
  * @param circuit - the circuit object
@@ -16,25 +34,12 @@ export const str2BigInt = (s: string): bigint => BigInt(parseInt(Buffer.from(s).
  * @param name - the name of the signal
  * @returns the signal value
  */
-export const getSignal = async (wasmTester: WasmTester, witness: bigint[], name: string): Promise<bigint> => {
+export const getSignal = async (tester: WitnessTester, witness: bigint[], name: string): Promise<bigint> => {
   const prefix = "main";
   // E.g. the full name of the signal "root" is "main.root"
   // You can look up the signal names using `circuit.getDecoratedOutput(witness))`
   const signalFullName = `${prefix}.${name}`;
-  await wasmTester.loadSymbols();
 
-  // symbols[n] = { labelIdx: 1, varIdx: 1, componentIdx: 142 },
-  const signalMeta = wasmTester.symbols[signalFullName];
-
-  // Assigned value of the signal is located in the `varIdx`th position
-  // of the witness array
-  const indexInWitness = signalMeta.varIdx;
-  return BigInt(witness[indexInWitness]);
+  const out = await tester.readWitness(witness, [signalFullName]);
+  return BigInt(out[signalFullName]);
 };
-
-/**
- * Generate a random number within a certain threshold
- * @param upper - the upper bound
- * @returns the random index
- */
-export const generateRandomIndex = (upper: number): number => Math.floor(Math.random() * (upper - 1));

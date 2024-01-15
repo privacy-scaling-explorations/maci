@@ -1,4 +1,6 @@
 pragma circom 2.0.0;
+
+// local imports
 include "./poseidon/poseidonHashT3.circom";
 include "./poseidon/poseidonHashT4.circom";
 include "./poseidon/poseidonHashT5.circom";

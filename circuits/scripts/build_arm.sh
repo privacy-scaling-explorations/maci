@@ -10,7 +10,7 @@ for circuit in "$CIRCUITS_PATH"/*.circom
 do  
     # Compile circuit
     echo "#### Compile Circuit: "$circuit""
-    circom --O0 --wasm --r1cs --sym --output "$OUTPUT_PATH" "$circuit"
+    circom --O2 --wasm --r1cs --sym --output "$OUTPUT_PATH" -l ./node_modules/circomlib/circuits -l ./node_modules/@zk-kit/circuits/circom "$circuit"
 
     cd "$CWD"
 done

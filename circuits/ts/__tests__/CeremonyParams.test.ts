@@ -1,12 +1,12 @@
 import { expect } from "chai";
-import tester from "circom_tester";
+import { type WitnessTester } from "circomkit";
 import { MaciState, Poll, packProcessMessageSmallVals, STATE_TREE_ARITY } from "maci-core";
-import { hash5, IncrementalQuinTree, stringifyBigInts, NOTHING_UP_MY_SLEEVE, AccQueue } from "maci-crypto";
+import { hash5, IncrementalQuinTree, NOTHING_UP_MY_SLEEVE, AccQueue } from "maci-crypto";
 import { PrivKey, Keypair, PCommand, Message, Ballot } from "maci-domainobjs";
 
-import path from "path";
+import { IProcessMessagesInputs, ITallyVotesInputs } from "../types";
 
-import { generateRandomIndex, getSignal } from "./utils/utils";
+import { generateRandomIndex, getSignal, circomkitInstance } from "./utils/utils";
 
 describe("Ceremony param tests", () => {
   const params = {
@@ -45,14 +45,48 @@ describe("Ceremony param tests", () => {
   describe("ProcessMessage circuit", function test() {
     this.timeout(900000);
 
-    let circuit: tester.WasmTester;
-    let hasherCircuit: tester.WasmTester;
+    let circuit: WitnessTester<
+      [
+        "inputHash",
+        "packedVals",
+        "pollEndTimestamp",
+        "msgRoot",
+        "msgs",
+        "msgSubrootPathElements",
+        "coordPrivKey",
+        "coordPubKey",
+        "encPubKeys",
+        "currentStateRoot",
+        "currentStateLeaves",
+        "currentStateLeavesPathElements",
+        "currentSbCommitment",
+        "currentSbSalt",
+        "newSbCommitment",
+        "newSbSalt",
+        "currentBallotRoot",
+        "currentBallots",
+        "currentBallotsPathElements",
+        "currentVoteWeights",
+        "currentVoteWeightsPathElements",
+      ]
+    >;
+
+    let hasherCircuit: WitnessTester<
+      ["packedVals", "coordPubKey", "msgRoot", "currentSbCommitment", "newSbCommitment", "pollEndTimestamp"],
+      ["maxVoteOptions", "numSignUps", "batchStartIndex", "batchEndIndex", "hash"]
+    >;
 
     before(async () => {
-      const circuitPath = path.resolve(__dirname, "../../circom/test/ceremonyParams", `processMessages_test.circom`);
-      circuit = await tester.wasm(circuitPath);
-      const hasherCircuitPath = path.resolve(__dirname, "../../circom/test/", `processMessagesInputHasher_test.circom`);
-      hasherCircuit = await tester.wasm(hasherCircuitPath);
+      circuit = await circomkitInstance.WitnessTester("processMessages", {
+        file: "processMessages",
+        template: "ProcessMessages",
+        params: [6, 8, 2, 3],
+      });
+
+      hasherCircuit = await circomkitInstance.WitnessTester("processMessageInputHasher", {
+        file: "processMessages",
+        template: "ProcessMessagesInputHasher",
+      });
     });
 
     describe("1 user, 2 messages", () => {
@@ -150,11 +184,11 @@ describe("Ceremony param tests", () => {
         const currentStateRoot = maciState.stateTree.root;
         const currentBallotRoot = ballotTree.root;
 
-        const generatedInputs = poll.processMessages(pollId);
+        const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
 
         // Calculate the witness
-        const witness = await circuit.calculateWitness(generatedInputs, true);
-        await circuit.checkConstraints(witness);
+        const witness = await circuit.calculateWitness(inputs);
+        await circuit.expectConstraintPass(witness);
 
         // The new roots, which should differ, since at least one of the
         // messages modified a Ballot or State Leaf
@@ -172,30 +206,56 @@ describe("Ceremony param tests", () => {
         );
 
         // Test the ProcessMessagesInputHasher circuit
-        const hasherCircuitInputs = stringifyBigInts({
+        const hasherCircuitInputs = {
           packedVals,
-          coordPubKey: generatedInputs.coordPubKey,
-          msgRoot: generatedInputs.msgRoot,
-          currentSbCommitment: generatedInputs.currentSbCommitment,
-          newSbCommitment: generatedInputs.newSbCommitment,
-          pollEndTimestamp: generatedInputs.pollEndTimestamp,
-        });
+          coordPubKey: inputs.coordPubKey,
+          msgRoot: inputs.msgRoot,
+          currentSbCommitment: inputs.currentSbCommitment,
+          newSbCommitment: inputs.newSbCommitment,
+          pollEndTimestamp: inputs.pollEndTimestamp,
+        };
 
-        const hasherWitness = await hasherCircuit.calculateWitness(hasherCircuitInputs, true);
-        await hasherCircuit.checkConstraints(hasherWitness);
+        const hasherWitness = await hasherCircuit.calculateWitness(hasherCircuitInputs);
+        await hasherCircuit.expectConstraintPass(hasherWitness);
         const hash = await getSignal(hasherCircuit, hasherWitness, "hash");
-        expect(hash.toString()).to.be.eq(generatedInputs.inputHash.toString());
+        expect(hash.toString()).to.be.eq(inputs.inputHash.toString());
       });
     });
 
     describe("TallyVotes circuit", function test() {
       this.timeout(900000);
 
-      let testCircuit: tester.WasmTester;
+      let testCircuit: WitnessTester<
+        [
+          "stateRoot",
+          "ballotRoot",
+          "sbSalt",
+          "packedVals",
+          "sbCommitment",
+          "currentTallyCommitment",
+          "newTallyCommitment",
+          "inputHash",
+          "ballots",
+          "ballotPathElements",
+          "votes",
+          "currentResults",
+          "currentResultsRootSalt",
+          "currentSpentVoiceCreditSubtotal",
+          "currentSpentVoiceCreditSubtotalSalt",
+          "currentPerVOSpentVoiceCredits",
+          "currentPerVOSpentVoiceCreditsRootSalt",
+          "newResultsRootSalt",
+          "newPerVOSpentVoiceCreditsRootSalt",
+          "newSpentVoiceCreditSubtotalSalt",
+        ]
+      >;
 
       before(async () => {
-        const circuitPath = path.resolve(__dirname, "../../circom/test/ceremonyParams", `tallyVotes_test.circom`);
-        testCircuit = await tester.wasm(circuitPath);
+        testCircuit = await circomkitInstance.WitnessTester("tallyVotes", {
+          file: "tallyVotes",
+          template: "TallyVotes",
+          params: [6, 2, 3],
+        });
       });
 
       describe("1 user, 2 messages", () => {
@@ -263,13 +323,13 @@ describe("Ceremony param tests", () => {
         });
 
         it("should produce the correct result commitments", async () => {
-          const generatedInputs = poll.tallyVotes();
+          const generatedInputs = poll.tallyVotes() as unknown as ITallyVotesInputs;
           const witness = await testCircuit.calculateWitness(generatedInputs);
-          await testCircuit.checkConstraints(witness);
+          await testCircuit.expectConstraintPass(witness);
         });
 
         it("should produce the correct result if the inital tally is not zero", async () => {
-          const generatedInputs = poll.tallyVotes();
+          const generatedInputs = poll.tallyVotes() as unknown as ITallyVotesInputs;
 
           // Start the tally from non-zero value
           let randIdx = generateRandomIndex(Object.keys(generatedInputs).length);
@@ -277,9 +337,10 @@ describe("Ceremony param tests", () => {
             randIdx = generateRandomIndex(Object.keys(generatedInputs).length);
           }
 
-          generatedInputs.currentResults[randIdx] = "1";
+          generatedInputs.currentResults[randIdx] = 1n;
+
           const witness = await testCircuit.calculateWitness(generatedInputs);
-          await testCircuit.checkConstraints(witness);
+          await testCircuit.expectConstraintPass(witness);
         });
       });
     });

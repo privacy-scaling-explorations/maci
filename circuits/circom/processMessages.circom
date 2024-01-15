@@ -1,11 +1,15 @@
 pragma circom 2.0.0;
+
+// circomlib import
+include "./mux1.circom";
+
+// local imports
 include "./hasherSha256.circom";
 include "./messageHasher.circom";
 include "./messageToCommand.circom";
 include "./privToPubKey.circom";
 include "./stateLeafAndBallotTransformer.circom";
 include "./trees/incrementalQuinTree.circom";
-include "../node_modules/circomlib/circuits/mux1.circom";
 include "./utils.circom";
 
 // Proves the correctness of processing a batch of messages.

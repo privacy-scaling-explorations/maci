@@ -1,10 +1,10 @@
 import { expect } from "chai";
-import tester from "circom_tester";
+import { type WitnessTester } from "circomkit";
 import { MaciState, Poll, packProcessMessageSmallVals, STATE_TREE_ARITY } from "maci-core";
-import { hash5, IncrementalQuinTree, stringifyBigInts, NOTHING_UP_MY_SLEEVE, AccQueue } from "maci-crypto";
+import { hash5, IncrementalQuinTree, NOTHING_UP_MY_SLEEVE, AccQueue } from "maci-crypto";
 import { PrivKey, Keypair, PCommand, Message, Ballot } from "maci-domainobjs";
 
-import path from "path";
+import { IProcessMessagesInputs } from "../types";
 
 import {
   STATE_TREE_DEPTH,
@@ -14,21 +14,55 @@ import {
   treeDepths,
   voiceCreditBalance,
 } from "./utils/constants";
-import { getSignal } from "./utils/utils";
+import { getSignal, circomkitInstance } from "./utils/utils";
 
 describe("ProcessMessage circuit", function test() {
   this.timeout(900000);
 
   const coordinatorKeypair = new Keypair();
 
-  let circuit: tester.WasmTester;
-  let hasherCircuit: tester.WasmTester;
+  let circuit: WitnessTester<
+    [
+      "inputHash",
+      "packedVals",
+      "pollEndTimestamp",
+      "msgRoot",
+      "msgs",
+      "msgSubrootPathElements",
+      "coordPrivKey",
+      "coordPubKey",
+      "encPubKeys",
+      "currentStateRoot",
+      "currentStateLeaves",
+      "currentStateLeavesPathElements",
+      "currentSbCommitment",
+      "currentSbSalt",
+      "newSbCommitment",
+      "newSbSalt",
+      "currentBallotRoot",
+      "currentBallots",
+      "currentBallotsPathElements",
+      "currentVoteWeights",
+      "currentVoteWeightsPathElements",
+    ]
+  >;
+
+  let hasherCircuit: WitnessTester<
+    ["packedVals", "coordPubKey", "msgRoot", "currentSbCommitment", "newSbCommitment", "pollEndTimestamp"],
+    ["maxVoteOptions", "numSignUps", "batchStartIndex", "batchEndIndex", "hash"]
+  >;
 
   before(async () => {
-    const circuitPath = path.resolve(__dirname, "../../circom/test", `processMessages_test.circom`);
-    circuit = await tester.wasm(circuitPath);
-    const hasherCircuitPath = path.resolve(__dirname, "../../circom/test", `processMessagesInputHasher_test.circom`);
-    hasherCircuit = await tester.wasm(hasherCircuitPath);
+    circuit = await circomkitInstance.WitnessTester("processMessages", {
+      file: "processMessages",
+      template: "ProcessMessages",
+      params: [10, 2, 1, 2],
+    });
+
+    hasherCircuit = await circomkitInstance.WitnessTester("processMessageInputHasher", {
+      file: "processMessages",
+      template: "ProcessMessagesInputHasher",
+    });
   });
 
   describe("1 user, 2 messages", () => {
@@ -126,11 +160,11 @@ describe("ProcessMessage circuit", function test() {
       const currentStateRoot = maciState.stateTree.root;
       const currentBallotRoot = ballotTree.root;
 
-      const generatedInputs = poll.processMessages(pollId);
+      const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
 
       // Calculate the witness
-      const witness = await circuit.calculateWitness(generatedInputs, true);
-      await circuit.checkConstraints(witness);
+      const witness = await circuit.calculateWitness(inputs);
+      await circuit.expectConstraintPass(witness);
 
       // The new roots, which should differ, since at least one of the
       // messages modified a Ballot or State Leaf
@@ -148,19 +182,19 @@ describe("ProcessMessage circuit", function test() {
       );
 
       // Test the ProcessMessagesInputHasher circuit
-      const hasherCircuitInputs = stringifyBigInts({
+      const hasherCircuitInputs = {
         packedVals,
-        coordPubKey: generatedInputs.coordPubKey,
-        msgRoot: generatedInputs.msgRoot,
-        currentSbCommitment: generatedInputs.currentSbCommitment,
-        newSbCommitment: generatedInputs.newSbCommitment,
-        pollEndTimestamp: generatedInputs.pollEndTimestamp,
-      });
+        coordPubKey: inputs.coordPubKey,
+        msgRoot: inputs.msgRoot,
+        currentSbCommitment: inputs.currentSbCommitment,
+        newSbCommitment: inputs.newSbCommitment,
+        pollEndTimestamp: inputs.pollEndTimestamp,
+      };
 
-      const hasherWitness = await hasherCircuit.calculateWitness(hasherCircuitInputs, true);
-      await circuit.checkConstraints(witness);
+      const hasherWitness = await hasherCircuit.calculateWitness(hasherCircuitInputs);
+      await hasherCircuit.expectConstraintPass(hasherWitness);
       const hash = await getSignal(hasherCircuit, hasherWitness, "hash");
-      expect(hash.toString()).to.be.eq(generatedInputs.inputHash.toString());
+      expect(hash.toString()).to.be.eq(inputs.inputHash.toString());
     });
   });
 
@@ -246,11 +280,10 @@ describe("ProcessMessage circuit", function test() {
       const currentStateRoot = maciState.stateTree.root;
       const currentBallotRoot = ballotTree.root;
 
-      const generatedInputs = poll.processMessages(pollId);
-
+      const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
       // Calculate the witness
-      const witness = await circuit.calculateWitness(generatedInputs);
-      await circuit.checkConstraints(witness);
+      const witness = await circuit.calculateWitness(inputs);
+      await circuit.expectConstraintPass(witness);
 
       // The new roots, which should differ, since at least one of the
       // messages modified a Ballot or State Leaf
@@ -405,11 +438,11 @@ describe("ProcessMessage circuit", function test() {
         }
 
         for (let i = 0; i < NUM_BATCHES; i += 1) {
-          const generatedInputs = selectedPoll.processMessages(id);
+          const inputs = selectedPoll.processMessages(id) as unknown as IProcessMessagesInputs;
           // eslint-disable-next-line no-await-in-loop
-          const witness = await circuit.calculateWitness(generatedInputs, true);
+          const witness = await circuit.calculateWitness(inputs);
           // eslint-disable-next-line no-await-in-loop
-          await circuit.checkConstraints(witness);
+          await circuit.expectConstraintPass(witness);
         }
       });
     });
@@ -479,9 +512,9 @@ describe("ProcessMessage circuit", function test() {
 
       poll.publishMessage(message, ecdhKeypair.pubKey);
 
-      const inputs = poll.processMessages(pollId);
-      const witness = await circuit.calculateWitness(inputs, true);
-      await circuit.checkConstraints(witness);
+      const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
+      const witness = await circuit.calculateWitness(inputs);
+      await circuit.expectConstraintPass(witness);
     });
   });
 });

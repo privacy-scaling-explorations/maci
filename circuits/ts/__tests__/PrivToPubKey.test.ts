@@ -1,30 +1,31 @@
 import { expect } from "chai";
-import tester from "circom_tester";
-import { SNARK_FIELD_SIZE, stringifyBigInts } from "maci-crypto";
+import { type WitnessTester } from "circomkit";
+import { SNARK_FIELD_SIZE } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
 
-import path from "path";
-
-import { getSignal } from "./utils/utils";
+import { circomkitInstance, getSignal } from "./utils/utils";
 
 describe("Public key derivation circuit", function test() {
   this.timeout(90000);
-  let circuit: tester.WasmTester;
+
+  let circuit: WitnessTester<["privKey"], ["pubKey"]>;
 
   before(async () => {
-    const circuitPath = path.resolve(__dirname, "../../circom/test", `privToPubKey_test.circom`);
-    circuit = await tester.wasm(circuitPath);
+    circuit = await circomkitInstance.WitnessTester("privToPubKey", {
+      file: "privToPubKey",
+      template: "PrivToPubKey",
+    });
   });
 
   it("should correctly compute a public key", async () => {
     const keypair = new Keypair();
 
-    const circuitInputs = stringifyBigInts({
-      privKey: keypair.privKey.asCircuitInputs(),
-    });
+    const circuitInputs = {
+      privKey: keypair.privKey.asCircuitInputs() as unknown as bigint,
+    };
 
-    const witness = await circuit.calculateWitness(circuitInputs, true);
-    await circuit.checkConstraints(witness);
+    const witness = await circuit.calculateWitness(circuitInputs);
+    await circuit.expectConstraintPass(witness);
 
     const derivedPubkey0 = await getSignal(circuit, witness, "pubKey[0]");
     const derivedPubkey1 = await getSignal(circuit, witness, "pubKey[1]");
@@ -35,12 +36,12 @@ describe("Public key derivation circuit", function test() {
   it("should produce an output that is within the baby jubjub curve", async () => {
     const keypair = new Keypair();
 
-    const circuitInputs = stringifyBigInts({
-      privKey: keypair.privKey.asCircuitInputs(),
-    });
+    const circuitInputs = {
+      privKey: keypair.privKey.asCircuitInputs() as unknown as bigint,
+    };
 
-    const witness = await circuit.calculateWitness(circuitInputs, true);
-    await circuit.checkConstraints(witness);
+    const witness = await circuit.calculateWitness(circuitInputs);
+    await circuit.expectConstraintPass(witness);
 
     const derivedPubkey0 = await getSignal(circuit, witness, "pubKey[0]");
     const derivedPubkey1 = await getSignal(circuit, witness, "pubKey[1]");

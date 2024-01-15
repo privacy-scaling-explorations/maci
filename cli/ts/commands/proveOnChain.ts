@@ -77,7 +77,11 @@ export const proveOnChain = async (
   const maciContractAddress = maciAddress || readContractAddress("MACI");
   const messageProcessorContractAddress = messageProcessorAddress || readContractAddress(`MessageProcessor-${pollId}`);
   const tallyContractAddress = tallyAddress || readContractAddress(`Tally-${pollId}`);
-  const subsidyContractAddress = subsidyAddress || readContractAddress(`Subsidy-${pollId}`);
+
+  let subsidyContractAddress;
+  if (subsidyEnabled) {
+    subsidyContractAddress = subsidyAddress || readContractAddress(`Subsidy-${pollId}`);
+  }
 
   // check contracts are deployed on chain
   if (!(await contractExists(signer.provider!, maciContractAddress))) {
@@ -92,7 +96,7 @@ export const proveOnChain = async (
     logError("Tally contract does not exist");
   }
 
-  if (subsidyEnabled && !(await contractExists(signer.provider!, subsidyContractAddress))) {
+  if (subsidyEnabled && subsidyContractAddress && !(await contractExists(signer.provider!, subsidyContractAddress))) {
     logError("Subsidy contract does not exist");
   }
 
@@ -114,7 +118,10 @@ export const proveOnChain = async (
 
   const tallyContract = new BaseContract(tallyContractAddress, parseArtifact("Tally")[0], signer) as Tally;
 
-  const subsidyContract = new BaseContract(subsidyContractAddress, parseArtifact("Subsidy")[0], signer) as Subsidy;
+  let subsidyContract: Subsidy | undefined;
+  if (subsidyEnabled && subsidyContractAddress) {
+    subsidyContract = new BaseContract(subsidyContractAddress, parseArtifact("Subsidy")[0], signer) as Subsidy;
+  }
 
   const messageAqContractAddress = (await pollContract.extContracts()).messageAq;
 
@@ -356,9 +363,9 @@ export const proveOnChain = async (
   }
 
   // subsidy calculations if any subsidy proofs are provided
-  if (subsidyEnabled && Object.keys(data.subsidyProofs).length !== 0) {
-    let rbi = Number(await subsidyContract.rbi());
-    let cbi = Number(await subsidyContract.cbi());
+  if (subsidyEnabled && subsidyContractAddress && Object.keys(data.subsidyProofs).length !== 0) {
+    let rbi = Number(await subsidyContract!.rbi());
+    let cbi = Number(await subsidyContract!.cbi());
     const num1DBatches = Math.ceil(numSignUps / subsidyBatchSize);
     let subsidyBatchNum = rbi * num1DBatches + cbi;
     const totalBatchNum = (num1DBatches * (num1DBatches + 1)) / 2;
@@ -368,33 +375,33 @@ export const proveOnChain = async (
     // process all batches
     for (let i = subsidyBatchNum; i < totalBatchNum; i += 1) {
       if (i === 0) {
-        await subsidyContract.updateSbCommitment();
+        await subsidyContract!.updateSbCommitment();
       }
 
       const { proof, circuitInputs, publicInputs } = data.subsidyProofs[i];
 
       // ensure the commitment matches
 
-      const subsidyCommitmentOnChain = await subsidyContract.subsidyCommitment();
+      const subsidyCommitmentOnChain = await subsidyContract!.subsidyCommitment();
 
       if (subsidyCommitmentOnChain.toString() !== circuitInputs.currentSubsidyCommitment) {
         logError(`subsidycommitment mismatch`);
       }
 
-      const packedValsOnChain = BigInt(await subsidyContract.genSubsidyPackedVals(numSignUps));
+      const packedValsOnChain = BigInt(await subsidyContract!.genSubsidyPackedVals(numSignUps));
 
       if (circuitInputs.packedVals !== packedValsOnChain.toString()) {
         logError("subsidy packedVals mismatch.");
       }
       // ensure the state and ballot root commitment matches
 
-      const currentSbCommitmentOnChain = await subsidyContract.sbCommitment();
+      const currentSbCommitmentOnChain = await subsidyContract!.sbCommitment();
 
       if (currentSbCommitmentOnChain.toString() !== circuitInputs.sbCommitment) {
         logError("currentSbCommitment mismatch.");
       }
 
-      const publicInputHashOnChain = await subsidyContract.genSubsidyPublicInputHash(
+      const publicInputHashOnChain = await subsidyContract!.genSubsidyPublicInputHash(
         numSignUps,
         circuitInputs.newSubsidyCommitment as BigNumberish,
       );
@@ -409,7 +416,7 @@ export const proveOnChain = async (
       try {
         // verify the proof on chain and set the new subsidy commitment
 
-        const tx = await subsidyContract.updateSubsidy(
+        const tx = await subsidyContract!.updateSubsidy(
           circuitInputs.newSubsidyCommitment as BigNumberish,
           formattedProof,
         );
@@ -424,8 +431,8 @@ export const proveOnChain = async (
         logYellow(quiet, info(`Progress: ${subsidyBatchNum + 1} / ${totalBatchNum}`));
 
         const [nrbi, ncbi] = await Promise.all([
-          subsidyContract.rbi().then(Number),
-          subsidyContract.cbi().then(Number),
+          subsidyContract!.rbi().then(Number),
+          subsidyContract!.cbi().then(Number),
         ]);
 
         rbi = nrbi;

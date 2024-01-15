@@ -1,4 +1,6 @@
 pragma circom 2.0.0;
+
+// local imports
 include "./verifySignature.circom";
 include "./utils.circom";
 

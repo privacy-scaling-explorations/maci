@@ -1,9 +1,13 @@
 pragma circom 2.0.0;
-include "../../node_modules/circomlib/circuits/bitify.circom";
-include "../../node_modules/circomlib/circuits/mux1.circom";
-include "../hasherPoseidon.circom";
+
+// circomlib imports
+include "./bitify.circom";
+include "./mux1.circom";
+
+// local imports
 include "./calculateTotal.circom";
 include "./checkRoot.circom";
+include "../hasherPoseidon.circom";
 include "../utils.circom";
 
 // This file contains circuits for quintary Merkle tree verifcation.

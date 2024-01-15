@@ -1,11 +1,9 @@
 import { expect } from "chai";
-import tester from "circom_tester";
-import { stringifyBigInts, genRandomSalt } from "maci-crypto";
+import { type WitnessTester } from "circomkit";
+import { genRandomSalt } from "maci-crypto";
 import { PCommand, Keypair } from "maci-domainobjs";
 
-import path from "path";
-
-import { getSignal } from "./utils/utils";
+import { getSignal, circomkitInstance } from "./utils/utils";
 
 describe("StateLeafAndBallotTransformer circuit", function test() {
   this.timeout(90000);
@@ -35,37 +33,61 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
 
   const signature = command.sign(slKeypair.privKey);
 
-  let circuit: tester.WasmTester;
+  let circuit: WitnessTester<
+    [
+      "numSignUps",
+      "maxVoteOptions",
+      "slPubKey",
+      "slVoiceCreditBalance",
+      "slTimestamp",
+      "pollEndTimestamp",
+      "ballotNonce",
+      "ballotCurrentVotesForOption",
+      "cmdStateIndex",
+      "cmdNewPubKey",
+      "cmdVoteOptionIndex",
+      "cmdNewVoteWeight",
+      "cmdNonce",
+      "cmdPollId",
+      "cmdSalt",
+      "cmdSigR8",
+      "cmdSigS",
+      "packedCommand",
+    ],
+    ["newSlPubKey", "newBallotNonce", "isValid"]
+  >;
 
   before(async () => {
-    const circuitPath = path.resolve(__dirname, "../../circom/test", `stateLeafAndBallotTransformer_test.circom`);
-    circuit = await tester.wasm(circuitPath);
+    circuit = await circomkitInstance.WitnessTester("stateLeafAndBallotTransformer", {
+      file: "stateLeafAndBallotTransformer",
+      template: "StateLeafAndBallotTransformer",
+    });
   });
 
   it("should output new state leaf and ballot values if the command is valid", async () => {
-    const circuitInputs = stringifyBigInts({
+    const circuitInputs = {
       numSignUps,
       maxVoteOptions,
-      slPubKey: slPubKey.asCircuitInputs(),
+      slPubKey: slPubKey.asCircuitInputs() as unknown as [bigint, bigint],
       slVoiceCreditBalance,
       slTimestamp,
       pollEndTimestamp,
       ballotNonce,
       ballotCurrentVotesForOption,
       cmdStateIndex: command.stateIndex,
-      cmdNewPubKey: command.newPubKey.asCircuitInputs(),
+      cmdNewPubKey: command.newPubKey.asCircuitInputs() as unknown as [bigint, bigint],
       cmdVoteOptionIndex: command.voteOptionIndex,
       cmdNewVoteWeight: command.newVoteWeight,
       cmdNonce: command.nonce,
       cmdPollId: command.pollId,
       cmdSalt: command.salt,
-      cmdSigR8: signature.R8,
-      cmdSigS: signature.S,
+      cmdSigR8: signature.R8 as [bigint, bigint],
+      cmdSigS: signature.S as bigint,
       packedCommand: command.asCircuitInputs(),
-    });
+    };
 
     const witness = await circuit.calculateWitness(circuitInputs);
-    await circuit.checkConstraints(witness);
+    await circuit.expectConstraintPass(witness);
 
     const newSlPubKey0 = await getSignal(circuit, witness, "newSlPubKey[0]");
     const newSlPubKey1 = await getSignal(circuit, witness, "newSlPubKey[1]");
@@ -80,29 +102,29 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
   });
 
   it("should output existing state leaf and ballot values if the command is invalid", async () => {
-    const circuitInputs = stringifyBigInts({
+    const circuitInputs = {
       numSignUps,
       maxVoteOptions,
-      slPubKey: slPubKey.asCircuitInputs(),
+      slPubKey: slPubKey.asCircuitInputs() as unknown as [bigint, bigint],
       slVoiceCreditBalance,
       slTimestamp,
       pollEndTimestamp,
       ballotNonce,
       ballotCurrentVotesForOption,
       cmdStateIndex: command.stateIndex,
-      cmdNewPubKey: command.newPubKey.asCircuitInputs(),
+      cmdNewPubKey: command.newPubKey.asCircuitInputs() as unknown as [bigint, bigint],
       cmdVoteOptionIndex: command.voteOptionIndex,
       cmdNewVoteWeight: command.newVoteWeight,
       cmdNonce: 2n, // invalid
       cmdPollId: command.pollId,
       cmdSalt: command.salt,
-      cmdSigR8: signature.R8,
-      cmdSigS: signature.S,
+      cmdSigR8: signature.R8 as [bigint, bigint],
+      cmdSigS: signature.S as bigint,
       packedCommand: command.asCircuitInputs(),
-    });
+    };
 
     const witness = await circuit.calculateWitness(circuitInputs);
-    await circuit.checkConstraints(witness);
+    await circuit.expectConstraintPass(witness);
 
     const newSlPubKey0 = await getSignal(circuit, witness, "newSlPubKey[0]");
     const newSlPubKey1 = await getSignal(circuit, witness, "newSlPubKey[1]");

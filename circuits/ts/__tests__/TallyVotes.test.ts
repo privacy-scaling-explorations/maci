@@ -1,13 +1,13 @@
 import { expect } from "chai";
-import tester from "circom_tester";
+import { type WitnessTester } from "circomkit";
 import { MaciState, Poll, STATE_TREE_ARITY } from "maci-core";
 import { AccQueue, NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, PCommand, Message } from "maci-domainobjs";
 
-import path from "path";
+import { ITallyVotesInputs } from "../types";
 
 import { STATE_TREE_DEPTH, duration, maxValues, messageBatchSize, voiceCreditBalance } from "./utils/constants";
-import { generateRandomIndex } from "./utils/utils";
+import { generateRandomIndex, circomkitInstance } from "./utils/utils";
 
 describe("TallyVotes circuit", function test() {
   this.timeout(900000);
@@ -21,11 +21,37 @@ describe("TallyVotes circuit", function test() {
 
   const coordinatorKeypair = new Keypair();
 
-  let circuit: tester.WasmTester;
+  let circuit: WitnessTester<
+    [
+      "stateRoot",
+      "ballotRoot",
+      "sbSalt",
+      "packedVals",
+      "sbCommitment",
+      "currentTallyCommitment",
+      "newTallyCommitment",
+      "inputHash",
+      "ballots",
+      "ballotPathElements",
+      "votes",
+      "currentResults",
+      "currentResultsRootSalt",
+      "currentSpentVoiceCreditSubtotal",
+      "currentSpentVoiceCreditSubtotalSalt",
+      "currentPerVOSpentVoiceCredits",
+      "currentPerVOSpentVoiceCreditsRootSalt",
+      "newResultsRootSalt",
+      "newPerVOSpentVoiceCreditsRootSalt",
+      "newSpentVoiceCreditSubtotalSalt",
+    ]
+  >;
 
   before(async () => {
-    const circuitPath = path.resolve(__dirname, "../../circom/test", `tallyVotes_test.circom`);
-    circuit = await tester.wasm(circuitPath);
+    circuit = await circomkitInstance.WitnessTester("tallyVotes", {
+      file: "tallyVotes",
+      template: "TallyVotes",
+      params: [10, 1, 2],
+    });
   });
 
   describe("1 user, 2 messages", () => {
@@ -93,13 +119,13 @@ describe("TallyVotes circuit", function test() {
     });
 
     it("should produce the correct result commitments", async () => {
-      const generatedInputs = poll.tallyVotes();
+      const generatedInputs = poll.tallyVotes() as unknown as ITallyVotesInputs;
       const witness = await circuit.calculateWitness(generatedInputs);
-      await circuit.checkConstraints(witness);
+      await circuit.expectConstraintPass(witness);
     });
 
     it("should produce the correct result if the inital tally is not zero", async () => {
-      const generatedInputs = poll.tallyVotes();
+      const generatedInputs = poll.tallyVotes() as unknown as ITallyVotesInputs;
 
       // Start the tally from non-zero value
       let randIdx = generateRandomIndex(Object.keys(generatedInputs).length);
@@ -107,9 +133,9 @@ describe("TallyVotes circuit", function test() {
         randIdx = generateRandomIndex(Object.keys(generatedInputs).length);
       }
 
-      generatedInputs.currentResults[randIdx] = "1";
+      generatedInputs.currentResults[randIdx] = 1n;
       const witness = await circuit.calculateWitness(generatedInputs);
-      await circuit.checkConstraints(witness);
+      await circuit.expectConstraintPass(witness);
     });
   });
 
@@ -160,21 +186,21 @@ describe("TallyVotes circuit", function test() {
       }
 
       for (let i = 0; i < NUM_BATCHES; i += 1) {
-        const generatedInputs = poll.tallyVotes();
+        const generatedInputs = poll.tallyVotes() as unknown as ITallyVotesInputs;
 
         // For the 0th batch, the circuit should ignore currentResults,
         // currentSpentVoiceCreditSubtotal, and
         // currentPerVOSpentVoiceCredits
         if (i === 0) {
-          generatedInputs.currentResults[0] = "123";
-          generatedInputs.currentSpentVoiceCreditSubtotal = "456";
-          generatedInputs.currentPerVOSpentVoiceCredits[0] = "789";
+          generatedInputs.currentResults[0] = 123n;
+          generatedInputs.currentSpentVoiceCreditSubtotal = 456n;
+          generatedInputs.currentPerVOSpentVoiceCredits[0] = 789n;
         }
 
         // eslint-disable-next-line no-await-in-loop
         const witness = await circuit.calculateWitness(generatedInputs);
         // eslint-disable-next-line no-await-in-loop
-        await circuit.checkConstraints(witness);
+        await circuit.expectConstraintPass(witness);
       }
     });
   });

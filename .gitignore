@@ -149,6 +149,8 @@ cli/tallyinput.json
 cli/contractAddresses.json
 cli/contractAddresses.old.json
 
+circuits/circom/test
+
 # mdBook rendered files
 publish
 
