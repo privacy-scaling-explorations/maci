@@ -29,7 +29,7 @@
   "dependencies": {
     "@commander-js/extra-typings": "^11.1.0",
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
-    "circomlib": "^2.0.5",
+    "big-integer": "^1.6.52",
     "commander": "^11.1.0",
     "dotenv": "^16.3.1",
     "ethers": "^6.9.2",
