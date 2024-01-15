@@ -1,6 +1,5 @@
-import { OptimisedMT as IncrementalQuinTree } from "optimisedmt";
-
 import { hash5, hashLeftRight } from "./hashing";
+import { IncrementalQuinTree } from "./quinTree";
 
 /**
  * Calculate the depth of a tree given the number of leaves
@@ -29,7 +28,7 @@ export const calcDepthFromNumLeaves = (hashLength: number, numLeaves: number): n
  * @returns The hash of the leaves and the salt, with the salt last
  */
 export const genTreeCommitment = (leaves: bigint[], salt: bigint, depth: number): bigint => {
-  const tree = new IncrementalQuinTree(depth, BigInt(0), 5, hash5);
+  const tree = new IncrementalQuinTree(depth, 0n, 5, hash5);
 
   leaves.forEach((leaf) => {
     tree.insert(leaf);
@@ -46,11 +45,11 @@ export const genTreeCommitment = (leaves: bigint[], salt: bigint, depth: number)
  * @returns The proof
  */
 export const genTreeProof = (index: number, leaves: bigint[], depth: number): bigint[][] => {
-  const tree = new IncrementalQuinTree(depth, BigInt(0), 5, hash5);
+  const tree = new IncrementalQuinTree(depth, 0n, 5, hash5);
   leaves.forEach((leaf) => {
     tree.insert(leaf);
   });
 
-  const proof = tree.genMerklePath(index);
+  const proof = tree.genProof(index);
   return proof.pathElements;
 };

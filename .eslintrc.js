@@ -59,7 +59,7 @@ module.exports = {
     "import/no-extraneous-dependencies": [
       "error",
       {
-        devDependencies: ["**/*.test.ts"],
+        devDependencies: ["**/*.test.ts", "**/__benchmarks__/**"],
       },
     ],
     "no-debugger": isProduction ? "error" : "off",

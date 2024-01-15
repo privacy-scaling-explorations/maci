@@ -5,6 +5,7 @@
   "repository": "https://github.com/privacy-scaling-explorations/maci",
   "license": "MIT",
   "scripts": {
+    "benchmarks": "lerna run benchmarks",
     "build": "lerna run build --ignore=website",
     "build:circuits-c": "lerna run build-test-circuits-c -- --outPath ../cli/zkeys --scope \"maci-circuits\"",
     "build:circuits-wasm": "lerna run build-test-circuits-wasm -- --outPath ../cli/zkeys --scope \"maci-circuits\"",

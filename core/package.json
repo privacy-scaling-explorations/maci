@@ -7,8 +7,8 @@
   "scripts": {
     "watch": "tsc --watch",
     "build": "tsc -p tsconfig.build.json",
+    "benchmarks": "ts-node ts/__benchmarks__/index.ts",
     "types": "tsc -p tsconfig.json --noEmit",
-    "test:processMessage": "ts-mocha --exit ts/__tests__/ProcessMessage.test.ts",
     "test:maciState": "ts-mocha --exit ts/__tests__/MaciState.test.ts",
     "test:e2e": "ts-mocha --exit ts/__tests__/e2e.test.ts",
     "test:utils": "ts-mocha --exit ts/__tests__/utils.test.ts",
@@ -23,10 +23,12 @@
     "@types/chai": "^4.3.11",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.11.2",
+    "benny": "^3.7.1",
     "chai": "^4.3.10",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
-    "ts-mocha": "^10.0.0"
+    "ts-mocha": "^10.0.0",
+    "ts-node": "^10.9.1"
   },
   "nyc": {
     "reporter": [
@@ -38,6 +40,8 @@
     ],
     "all": true,
     "exclude": [
+      "__benchmarks__/**",
+      "**/__tests__/**",
       "**/__tests__/*.ts",
       "**/*.js",
       "**/*.d.ts"
