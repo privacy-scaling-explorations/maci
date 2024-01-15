@@ -17,7 +17,7 @@
     "@zk-kit/eddsa-poseidon": "^0.5.1",
     "@zk-kit/poseidon-cipher": "^0.1.1",
     "big-integer": "^1.6.52",
-    "ethers": "^6.9.2",
+    "ethers": "^6.10.0",
     "optimisedmt": "^0.0.9"
   },
   "devDependencies": {
