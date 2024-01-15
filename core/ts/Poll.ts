@@ -177,8 +177,6 @@ export class Poll implements IPoll {
    */
   copyStateFromMaci = (): void => {
     // Copy the state tree, ballot tree, state leaves, and ballot leaves
-    assert(this.maciStateRef.stateLeaves.length === this.maciStateRef.stateTree.nextIndex);
-
     this.stateLeaves = this.maciStateRef.stateLeaves.map((x) => x.copy());
     this.stateTree = this.maciStateRef.stateTree.copy();
 
@@ -277,10 +275,10 @@ export class Poll implements IPoll {
       // calculate the path elements for the state tree given the original state tree (before any changes)
       // changes could effectively be made by this new vote - either a key change or vote change
       // would result in a different state leaf
-      const originalStateLeafPathElements = this.stateTree?.genMerklePath(Number(stateLeafIndex)).pathElements;
+      const originalStateLeafPathElements = this.stateTree?.genProof(Number(stateLeafIndex)).pathElements;
       // calculate the path elements for the ballot tree given the original ballot tree (before any changes)
       // changes could effectively be made by this new ballot
-      const originalBallotPathElements = this.ballotTree?.genMerklePath(Number(stateLeafIndex)).pathElements;
+      const originalBallotPathElements = this.ballotTree?.genProof(Number(stateLeafIndex)).pathElements;
 
       // create a new quinary tree where we insert the votes of the origin (up until this message is processed) ballot
       const vt = new IncrementalQuinTree(this.treeDepths.voteOptionTreeDepth, 0n, STATE_TREE_ARITY, hash5);
@@ -288,7 +286,7 @@ export class Poll implements IPoll {
         vt.insert(ballot.votes[i]);
       }
       // calculate the path elements for the vote option tree given the original vote option tree (before any changes)
-      const originalVoteWeightsPathElements = vt.genMerklePath(voteOptionIndex).pathElements;
+      const originalVoteWeightsPathElements = vt.genProof(voteOptionIndex).pathElements;
       // we return the data which is then to be used in the processMessage circuit
       // to generate a proof of processing
       return {
@@ -524,10 +522,10 @@ export class Poll implements IPoll {
               if (e instanceof ProcessMessageError) {
                 // Since the command is invalid, use a blank state leaf
                 currentStateLeaves.unshift(this.stateLeaves[0].copy());
-                currentStateLeavesPathElements.unshift(this.stateTree!.genMerklePath(0).pathElements);
+                currentStateLeavesPathElements.unshift(this.stateTree!.genProof(0).pathElements);
                 // since the command is invliad we use the blank ballot
                 currentBallots.unshift(this.ballots[0].copy());
-                currentBallotsPathElements.unshift(this.ballotTree!.genMerklePath(0).pathElements);
+                currentBallotsPathElements.unshift(this.ballotTree!.genProof(0).pathElements);
 
                 // Since the command is invalid, we use a zero vote weight
                 currentVoteWeights.unshift(this.ballots[0].votes[0]);
@@ -536,7 +534,7 @@ export class Poll implements IPoll {
                 const vt = new IncrementalQuinTree(this.treeDepths.voteOptionTreeDepth, 0n, STATE_TREE_ARITY, hash5);
                 vt.insert(this.ballots[0].votes[0]);
                 // get the path elements for this empty vote weight leaf
-                currentVoteWeightsPathElements.unshift(vt.genMerklePath(0).pathElements);
+                currentVoteWeightsPathElements.unshift(vt.genProof(0).pathElements);
               } else {
                 throw e;
               }
@@ -550,7 +548,7 @@ export class Poll implements IPoll {
               const amount = message.data[0] >= BigInt(this.ballots.length) ? 0n : message.data[1];
 
               currentStateLeaves.unshift(this.stateLeaves[stateIndex].copy());
-              currentStateLeavesPathElements.unshift(this.stateTree!.genMerklePath(stateIndex).pathElements);
+              currentStateLeavesPathElements.unshift(this.stateTree!.genProof(stateIndex).pathElements);
 
               // create a copy of the state leaf
               const newStateLeaf = this.stateLeaves[stateIndex].copy();
@@ -564,7 +562,7 @@ export class Poll implements IPoll {
               // we still need them as placeholder for vote command
               const currentBallot = this.ballots[stateIndex].copy();
               currentBallots.unshift(currentBallot);
-              currentBallotsPathElements.unshift(this.ballotTree!.genMerklePath(Number(stateIndex)).pathElements);
+              currentBallotsPathElements.unshift(this.ballotTree!.genProof(Number(stateIndex)).pathElements);
               currentVoteWeights.unshift(currentBallot.votes[0]);
 
               // create a quinary tree to fill with the votes of the current ballot
@@ -575,7 +573,7 @@ export class Poll implements IPoll {
               }
 
               // add to the first position the path elements of the vote weight tree
-              currentVoteWeightsPathElements.unshift(vt.genMerklePath(0).pathElements);
+              currentVoteWeightsPathElements.unshift(vt.genProof(0).pathElements);
             } catch (e) {
               // eslint-disable-next-line no-console
               console.log("Error processing topup message: ", (e as Error).message);
@@ -588,10 +586,10 @@ export class Poll implements IPoll {
       } else {
         // Since we don't have a command at that position, use a blank state leaf
         currentStateLeaves.unshift(this.stateLeaves[0].copy());
-        currentStateLeavesPathElements.unshift(this.stateTree!.genMerklePath(0).pathElements);
+        currentStateLeavesPathElements.unshift(this.stateTree!.genProof(0).pathElements);
         // since the command is invliad we use the blank ballot
         currentBallots.unshift(this.ballots[0].copy());
-        currentBallotsPathElements.unshift(this.ballotTree!.genMerklePath(0).pathElements);
+        currentBallotsPathElements.unshift(this.ballotTree!.genProof(0).pathElements);
 
         // Since the command is invalid, we use a zero vote weight
         currentVoteWeights.unshift(this.ballots[0].votes[0]);
@@ -601,7 +599,7 @@ export class Poll implements IPoll {
         vt.insert(this.ballots[0].votes[0]);
 
         // get the path elements for this empty vote weight leaf
-        currentVoteWeightsPathElements.unshift(vt.genMerklePath(0).pathElements);
+        currentVoteWeightsPathElements.unshift(vt.genProof(0).pathElements);
       }
     }
 
@@ -690,12 +688,9 @@ export class Poll implements IPoll {
     }
 
     // generate the path to the subroot of the message tree for this batch
-    const messageSubrootPath = this.messageTree.genMerkleSubrootPath(index, index + messageBatchSize);
+    const messageSubrootPath = this.messageTree.genSubrootProof(index, index + messageBatchSize);
 
-    assert(
-      IncrementalQuinTree.verifyMerklePath(messageSubrootPath, this.messageTree.hashFunc),
-      "The message subroot path is invalid",
-    );
+    assert(this.messageTree.verifyProof(messageSubrootPath), "The message subroot path is invalid");
 
     // validate that the batch index is correct, if not fix it
     // this means that the end will be the last message
@@ -815,8 +810,8 @@ export class Poll implements IPoll {
     const colStartIndex = this.cbi * batchSize;
     const [ballots1, ballots2] = this.subsidyCalculation(rowStartIndex, colStartIndex);
 
-    const ballotSubrootProof1 = this.ballotTree?.genMerkleSubrootPath(rowStartIndex, rowStartIndex + batchSize);
-    const ballotSubrootProof2 = this.ballotTree?.genMerkleSubrootPath(colStartIndex, colStartIndex + batchSize);
+    const ballotSubrootProof1 = this.ballotTree?.genSubrootProof(rowStartIndex, rowStartIndex + batchSize);
+    const ballotSubrootProof2 = this.ballotTree?.genSubrootProof(colStartIndex, colStartIndex + batchSize);
 
     const newSubsidySalt = genRandomSalt();
     saltIndex = `${this.rbi.toString()}-${this.cbi.toString()}`;
@@ -1087,7 +1082,7 @@ export class Poll implements IPoll {
     const packedVals = packTallyVotesSmallVals(batchStartIndex, batchSize, this.maciStateRef.numSignUps);
     const inputHash = sha256Hash([packedVals, sbCommitment, currentTallyCommitment, newTallyCommitment]);
 
-    const ballotSubrootProof = this.ballotTree?.genMerkleSubrootPath(batchStartIndex, batchStartIndex + batchSize);
+    const ballotSubrootProof = this.ballotTree?.genSubrootProof(batchStartIndex, batchStartIndex + batchSize);
 
     const votes = ballots.map((x) => x.votes);
 
