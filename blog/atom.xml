@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://maci.pse.dev/blog</id>
     <title>MACI Blog</title>
-    <updated>2024-01-15T18:15:45.000Z</updated>
+    <updated>2024-01-15T18:33:55.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://maci.pse.dev/blog"/>
     <subtitle>MACI Blog</subtitle>
@@ -11,7 +11,7 @@
         <title type="html"><![CDATA[Welcome to MACI]]></title>
         <id>https://maci.pse.dev/blog/welcome</id>
         <link href="https://maci.pse.dev/blog/welcome"/>
-        <updated>2024-01-15T18:15:45.000Z</updated>
+        <updated>2024-01-15T18:33:55.000Z</updated>
         <summary type="html"><![CDATA[Welcome to the MACI blog! This is where we will post updates on the project, including new releases, new features, and other news.]]></summary>
         <content type="html"><![CDATA[<p>Welcome to the MACI blog! This is where we will post updates on the project, including new releases, new features, and other news.</p>]]></content>
         <author>
