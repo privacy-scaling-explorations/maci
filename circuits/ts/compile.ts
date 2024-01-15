@@ -1,6 +1,6 @@
 import { type CircomkitConfig, type CircuitConfig, Circomkit } from "circomkit";
 
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 import fs from "fs";
 import path from "path";
 
@@ -60,7 +60,8 @@ export const compileCircuits = async (cWitness?: boolean, outputPath?: string): 
     if (cWitness) {
       try {
         // build
-        execSync(`cd ${outPath}/${circuit.name}_cpp && make`);
+        execFileSync("cd", [`${outPath}/${circuit.name}_cpp`]);
+        execFileSync("make");
       } catch (error) {
         throw new Error(`Failed to compile the c witness for ${circuit.name}`);
       }

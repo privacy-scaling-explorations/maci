@@ -8,7 +8,7 @@ import {
   type ISnarkJSVerificationKey,
 } from "snarkjs";
 
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 import fs from "fs";
 import { tmpdir } from "os";
 import path from "path";
@@ -73,21 +73,21 @@ export const genProof = async ({
   fs.writeFileSync(inputJsonPath, jsonData);
 
   // Generate the witness
-  const witnessGenCmd = `${witnessExePath} ${inputJsonPath} ${outputWtnsPath}`;
-
-  execSync(witnessGenCmd, { stdio: silent ? "ignore" : "pipe" });
+  execFileSync(witnessExePath!, [inputJsonPath, outputWtnsPath], { stdio: silent ? "ignore" : "pipe" });
 
   if (!fs.existsSync(outputWtnsPath)) {
-    throw new Error(`Error executing ${witnessGenCmd}`);
+    throw new Error(`Error executing ${witnessExePath} ${inputJsonPath} ${outputWtnsPath}`);
   }
 
   // Generate the proof
-  const proofGenCmd = `${rapidsnarkExePath} ${zkeyPath} ${outputWtnsPath} ${proofJsonPath} ${publicJsonPath}`;
-
-  execSync(proofGenCmd, { stdio: silent ? "ignore" : "pipe" });
+  execFileSync(rapidsnarkExePath!, [zkeyPath, outputWtnsPath, proofJsonPath, publicJsonPath], {
+    stdio: silent ? "ignore" : "pipe",
+  });
 
   if (!fs.existsSync(proofJsonPath)) {
-    throw new Error(`Error executing ${proofGenCmd}`);
+    throw new Error(
+      `Error executing ${rapidsnarkExePath} ${zkeyPath} ${outputWtnsPath} ${proofJsonPath} ${publicJsonPath}`,
+    );
   }
 
   // Read the proof and public inputs
