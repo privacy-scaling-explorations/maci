@@ -10,7 +10,7 @@ on:
 
 jobs:
   analyze:
-    name: Analyze
+    name: analyze
     runs-on: ubuntu-22.04
     permissions:
       actions: read
@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: ["javascript", "typeScript"]
+        language: ["javascript-typescript"]
         # Learn more about CodeQL language support at https://git.io/codeql-language-support
 
     steps:

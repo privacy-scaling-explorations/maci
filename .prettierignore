@@ -5,6 +5,7 @@ tmp/
 artifacts/
 cache/
 package-lock.json
+pnpm-lock.yaml
 **/package-lock.json
 CHANGELOG.md
 CODEOWNERS

@@ -16,6 +16,7 @@
     "@zk-kit/baby-jubjub": "^0.1.1",
     "@zk-kit/eddsa-poseidon": "^0.5.1",
     "@zk-kit/poseidon-cipher": "^0.1.1",
+    "big-integer": "^1.6.52",
     "ethers": "^6.9.2",
     "optimisedmt": "^0.0.9"
   },
@@ -23,7 +24,6 @@
     "@types/chai": "^4.3.11",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.11.0",
-    "big-integer": "^1.6.52",
     "chai": "^4.3.10",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
