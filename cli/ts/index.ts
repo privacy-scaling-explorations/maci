@@ -1,9 +1,11 @@
 #!/usr/bin/env node
+
 import { Command } from "@commander-js/extra-typings";
 
 import fs from "fs";
 import path from "path";
 
+import "./cliInit";
 import {
   genKeyPair,
   genMaciPubKey,
