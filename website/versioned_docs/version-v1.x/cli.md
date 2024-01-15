@@ -99,8 +99,8 @@ Example usage:
 HARDHAT_CONFIG=./build/hardhat.config.js \
 node build/ts/index.js setVerifyingKeys \
     -s 10 -i 1 -m 2 -v 2 -b 1 \
-    -p ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
-    -t ./zkeys/TallyVotes_10-1-2_test.0.zkey \
+    -p ./zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey \
+    -t ./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey \
 ```
 
 Example output:
@@ -323,10 +323,10 @@ node build/ts/index.js genProofs \
     --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
     --poll-id 0 \
     --rapidsnark ~/rapidsnark/build/prover \
-    --process-witnessgen ./zkeys/ProcessMessages_10-2-1-2_test \
-    --tally-witnessgen ./zkeys/TallyVotes_10-1-2_test \
-    --process-zkey /zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
-    --tally-zkey ./zkeys/TallyVotes_10-1-2_test.0.zkey \
+    --process-witnessgen ./zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test \
+    --tally-witnessgen ./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test \
+    --process-zkey /zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey \
+    --tally-zkey ./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey \
     --tally-file tally.json \
     --output proofs/ \
     --state-file localState.json
@@ -339,13 +339,13 @@ HARDHAT_CONFIG=./build/hardhat.config.js \
 node build/ts/index.js genProofs \
     --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
     --poll-id 0 \
-    --process-zkey ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
-    --tally-zkey ./zkeys/TallyVotes_10-1-2_test.0.zkey \
+    --process-zkey ./zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey \
+    --tally-zkey ./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey \
     --tally-file tally.json \
     --output proofs/ \
     --state-file localState.json \
-    -tw ./zkeys/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm \
-    -pw ./zkeys/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm \
+    -tw ./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm \
+    -pw ./zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm \
     -w true
 ```
 
@@ -453,8 +453,8 @@ node build/ts/index.js setVerifyingKeys \
     --msg-tree-depth 2 \
     --vote-option-tree-depth 2 \
     --msg-batch-depth 1 \
-    --process-messages-zkey ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
-    --tally-votes-zkey ./zkeys/TallyVotes_10-1-2_test.0.zkey
+    --process-messages-zkey ./zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey \
+    --tally-votes-zkey ./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey
 ```
 
 Output:
@@ -613,12 +613,12 @@ HARDHAT_CONFIG=./build/hardhat.config.js \
 node build/ts/index.js genProofs \
     --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
     --poll-id 0 \
-    --process-zkey ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
-    --tally-zkey ./zkeys/TallyVotes_10-1-2_test.0.zkey \
+    --process-zkey ./zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey \
+    --tally-zkey ./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey \
     --tally-file tally.json \
     --output proofs/ \
-    -tw ./zkeys/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm \
-    -pw ./zkeys/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm \
+    -tw ./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm \
+    -pw ./zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm \
     -w true
 ```
 

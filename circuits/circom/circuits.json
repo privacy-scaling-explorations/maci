@@ -1,20 +1,8 @@
 {
-  "processMessages": {
-    "file": "processMessages",
-    "template": "ProcessMessages",
-    "params": [6, 8, 2, 3],
-    "pubs": ["inputHash"]
-  },
   "ProcessMessages_10-2-1-2_test": {
     "file": "processMessages",
     "template": "ProcessMessages",
     "params": [10, 2, 1, 2],
-    "pubs": ["inputHash"]
-  },
-  "tallyVotes": {
-    "file": "tallyVotes",
-    "template": "TallyVotes",
-    "params": [6, 2, 3],
     "pubs": ["inputHash"]
   },
   "TallyVotes_10-1-2_test": {

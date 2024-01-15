@@ -12,5 +12,3 @@ OUT_DIR=../cli/
 echo "downloading $URL"
 curl $URL -o "$OUT_DIR/$DIR_NAME"
 tar -xvf "$OUT_DIR/$DIR_NAME" -C "$OUT_DIR"
-
-

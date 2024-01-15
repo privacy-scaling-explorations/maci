@@ -70,8 +70,11 @@ export const genProofs = async (
   subsidyZkey?: string,
   rapidsnark?: string,
   processWitgen?: string,
+  processDatFile?: string,
   tallyWitgen?: string,
+  tallyDatFile?: string,
   subsidyWitgen?: string,
+  subsidyDatFile?: string,
   coordinatorPrivKey?: string,
   maciAddress?: string,
   transactionHash?: string,
@@ -123,9 +126,7 @@ export const genProofs = async (
       logError("Please specify the tally witgen file location");
     }
 
-    const processDatFile = `${processWitgen}.dat`;
-    const tallyDatFile = `${tallyWitgen}.dat`;
-    const witgenResult = doesPathExist([rapidsnark!, processWitgen!, tallyWitgen!, processDatFile, tallyDatFile]);
+    const witgenResult = doesPathExist([rapidsnark!, processWitgen!, tallyWitgen!, processDatFile!, tallyDatFile!]);
 
     if (!witgenResult[0]) {
       logError(`Could not find ${witgenResult[1]}.`);
@@ -160,8 +161,7 @@ export const genProofs = async (
         logError("Please specify the subsidy witnessgen file location");
       }
 
-      const subsidyDatFile = `${subsidyWitgen}.dat`;
-      const subsidyWitgenResult = doesPathExist([subsidyWitgen!, subsidyDatFile]);
+      const subsidyWitgenResult = doesPathExist([subsidyWitgen!, subsidyDatFile!]);
 
       if (!subsidyWitgenResult[0]) {
         logError(`Could not find ${subsidyWitgenResult[1]}.`);

@@ -12,8 +12,8 @@ HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js setVerifyingKeys
     --msg-tree-depth 8 \
     --vote-option-tree-depth 3 \
     --msg-batch-depth 2 \
-    --process-messages-zkey ./zkeys/processMessages_6-8-2-3.zkey \
-    --tally-votes-zkey ./zkeys/tallyVotes_6-2-3.zkey \
+    --process-messages-zkey ./zkeys/processMessages_6-8-2-3/processMessages_6-8-2-3.zkey \
+    --tally-votes-zkey ./zkeys/tallyVotes_6-2-3/tallyVotes_6-2-3.zkey \
     -q true
 HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js create -s 6 -q true
 HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js deployPoll \
@@ -55,12 +55,14 @@ HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js genProofs \
     --privkey macisk.1751146b59d32e3c0d7426de411218172428263f93b2fc4d981c036047a4d8c0 \
     --poll-id 0 \
     --rapidsnark ~/rapidsnark/build/prover \
-    --process-zkey ./zkeys/processMessages_6-8-2-3.zkey \
-    --tally-zkey ./zkeys/tallyVotes_6-2-3.zkey \
+    --process-zkey ./zkeys/processMessages_6-8-2-3/processMessages_6-8-2-3.zkey \
+    --tally-zkey ./zkeys/tallyVotes_6-2-3/tallyVotes_6-2-3.zkey \
     --tally-file tally.json \
     --output proofs/ \
-    --tally-witnessgen ./zkeys/tallyVotes_6-2-3 \
-    --process-witnessgen ./zkeys/processMessages_6-8-2-3 \
+    --tally-witnessgen ./zkeys/tallyVotes_6-2-3/tallyVotes_6-2-3_cpp/tallyVotes_6-2-3 \
+    --tally-witnessdat ./zkeys/tallyVotes_6-2-3/tallyVotes_6-2-3_cpp/tallyVotes_6-2-3.dat \
+    --process-witnessgen ./zkeys/processMessages_6-8-2-3/processMessages_6-8-2-3_cpp/processMessages_6-8-2-3 \
+    --process-witnessdat ./zkeys/processMessages_6-8-2-3/processMessages_6-8-2-3_cpp/processMessages_6-8-2-3.dat \
     -q true
 HARDHAT_CONFIG=./build/hardhat.config.js node build/ts/index.js proveOnChain \
     --poll-id 0 \

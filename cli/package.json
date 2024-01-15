@@ -12,7 +12,7 @@
   "scripts": {
     "watch": "tsc --watch",
     "build": "tsc -p tsconfig.build.json",
-    "postbuild": "cp package.json ./build",
+    "postbuild": "cp package.json ./build && mkdir -p ./zkeys",
     "types": "tsc -p tsconfig.json --noEmit",
     "test": "nyc ts-mocha --exit tests/**/*.test.ts",
     "test:e2e": "ts-mocha --exit tests/e2e/e2e.test.ts",
@@ -53,8 +53,7 @@
     "nyc": "^15.1.0",
     "snarkjs": "^0.7.2",
     "ts-mocha": "^10.0.0",
-    "typescript": "^5.3.3",
-    "zkey-manager": "^0.1.2"
+    "typescript": "^5.3.3"
   },
   "nyc": {
     "reporter": [

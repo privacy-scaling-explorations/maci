@@ -389,8 +389,11 @@ program
   .option("-s, --subsidy-file <subsidyFile>", "the subsidy file")
   .option("-r, --rapidsnark <rapidsnark>", "the path to the rapidsnark binary")
   .option("-wp, --process-witnessgen <processWitnessgen>", "the path to the process witness generation binary")
+  .option("-pd, --process-witnessdat <processWitnessdat>", "the path to the process witness dat file")
   .option("-wt, --tally-witnessgen <tallyWitnessgen>", "the path to the tally witness generation binary")
+  .option("-td, --tally-witnessdat <tallyWitnessdat>", "the path to the tally witness dat file")
   .option("-ws, --subsidy-witnessgen <subsidyWitnessgen>", "the path to the subsidy witness generation binary")
+  .option("-sd, --subsidy-witnessdat <subsidyWitnessdat>", "the path to the subsidy witness dat file")
   .requiredOption("-zp, --process-zkey <processZkey>", "the path to the process zkey")
   .requiredOption("-zt, --tally-zkey <tallyZkey>", "the path to the tally zkey")
   .option("-zs, --subsidy-zkey <subsidyZkey>", "the path to the subsidy zkey")
@@ -418,8 +421,11 @@ program
         cmdObj.subsidyZkey,
         cmdObj.rapidsnark,
         cmdObj.processWitnessgen,
+        cmdObj.processWitnessdat,
         cmdObj.tallyWitnessgen,
+        cmdObj.tallyWitnessdat,
         cmdObj.subsidyWitnessgen,
+        cmdObj.subsidyWitnessdat,
         cmdObj.privkey,
         cmdObj.contract,
         cmdObj.transactionHash,

@@ -1,3 +1,4 @@
+import type { CircuitConfig } from "circomkit";
 import type { CircuitInputs } from "maci-core";
 
 /**
@@ -64,4 +65,11 @@ export interface ITallyVotesInputs {
   newResultsRootSalt: bigint;
   newPerVOSpentVoiceCreditsRootSalt: bigint;
   newSpentVoiceCreditSubtotalSalt: bigint;
+}
+
+/**
+ * Extend CircuitConfig type to include the name of the circuit
+ */
+export interface CircuitConfigWithName extends CircuitConfig {
+  name: string;
 }

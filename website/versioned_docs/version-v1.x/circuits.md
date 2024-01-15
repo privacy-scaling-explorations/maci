@@ -427,24 +427,30 @@ Before building the project, make sure you have the following dependencies insta
 To build the two main circuits of MACI, run the following commands:
 
 ```
-circom --r1cs --sym --wasm --output ./build circom/test/processMessages_test.circom
-circom --r1cs --sym --wasm --output ./build circom/test/tallyVotes_test.circom
+circom --r1cs --sym --wasm --output ./build circom/test/processMessages_10-2-1-2_test.circom
+circom --r1cs --sym --wasm --output ./build circom/test/tallyVotes_10-1-2_test.circom
 ```
 
 Please note that the circuit is configured with testing purpose parameters, which means it can only handle a limited amount of messages (up to 25 messages). For more information on the parameters and how to configure them, refer to [this page](/docs/circuits/#compile-circuits).
 
 ### Generating zKeys
 
-Run:
+Run from the root directory to save to the `cli/zkeys` folder:
 
 ```bash
-pnpm exec zkey-manager compile -c ./zkeys.config.yml
+pnpm setup:zkeys
+```
+
+Run from the circuits folder with `--outPath` to save to a custom folder:
+
+```bash
+cd circuits && pnpm gen-zkeys --outPath ./CUSTOM_FOLDER_NAME
 ```
 
 The larger the trees, the more time this process may take. You may also need a
 machine with a very large amount of memory.
 
-> Note that you will have to modify the parameters inside the `zkeys.config.yml` file to match your use case. For example, if you want to support up to 3125 messages, the message tree depth parameter should be set to `5` (as $5^5 = 3125$).
+> Note that you will have to modify the parameters inside the `./circuits/circom/circuits.json` file to match your use case. For example, if you want to support up to 3125 messages, the message tree depth parameter should be set to `5` (as $5^5 = 3125$).
 
 #### Measure the circuit sizes
 
@@ -464,14 +470,7 @@ This file should be the result of the Perpetual Powers of Tau trusted setup
 contribution which [Hermez Network
 selected](https://blog.hermez.io/hermez-cryptographic-setup/).
 
-Run:
-
-```bash
-pnpm exec zkey-manager downloadPtau -c ./zkeys.config.yml
-```
-
-`zkey-manager` will select the smallest `.ptau` file that fits the largest
-circuit specified in `zkeys.config.yml`.
+When running the `setup:zkeys` command, the `.ptau` file will be downloaded automatically.
 
 ### Generating and Validating ZK Proofs
 
@@ -483,7 +482,7 @@ To test the circuits package, please use `pnpm run test`. This will run all of t
 
 To run individual tests, you can use the following commands (for all other circuits please refer to the `package.json` scripts section):
 
-- `pnpm run test-processMessages` to run the tests for the `processMessages` circuit.
-- `pnpm run test-tallyVotes` to run the tests for the `tallyVotes` circuit.
+- `pnpm run test:processMessages` to run the tests for the `processMessages` circuit.
+- `pnpm run test:tallyVotes` to run the tests for the `tallyVotes` circuit.
 
 More details on testing are provided in the [testing section](/docs/testing) of the documentation.
