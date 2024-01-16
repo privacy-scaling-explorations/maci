@@ -4,16 +4,27 @@
  */
 
 .heroBanner {
-  padding: 4rem 0;
-  text-align: center;
   position: relative;
+  height: 427px;
   overflow: hidden;
+  background-image: url("../../static/img/hero.svg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  flex-direction: column;
+  justify-content: center;
+  align-items: start;
+  padding: 8rem;
 }
 
-@media screen and (max-width: 996px) {
-  .heroBanner {
-    padding: 2rem;
-  }
+.heroTitle {
+  border: 2px solid white;
+  border-radius: 4px;
+  padding: 0rem 0.5rem;
+}
+
+.heroColor {
+  color: var(--ifm-color-hero);
 }
 
 .buttons {
@@ -27,4 +38,24 @@
   align-items: center;
   padding: 4rem;
   width: 100%;
+}
+
+.blue {
+  color: var(--ifm-link-color);
+}
+
+.borderBlue {
+  width: max-content;
+  border-bottom: 3px solid var(--ifm-link-color);
+  box-sizing: content-box;
+}
+
+@media screen and (max-width: 996px) {
+  .heroBanner {
+    padding: 1.5rem;
+  }
+
+  .introduction {
+    padding: 1.5rem;
+  }
 }
