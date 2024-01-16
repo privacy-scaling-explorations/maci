@@ -10,10 +10,10 @@ import { banner, contractExists, info, logError, logGreen, logYellow, readContra
 import { verifyPerVOSpentVoiceCredits, verifyTallyResults } from "../utils/verifiers";
 
 /**
- * Verify the results of a poll and optionally the subsidy results
+ * Verify the results of a poll and optionally the subsidy results on-chain
  * @param pollId - the id of the poll
  * @param subsidyEnabled - whether to deploy subsidy contract
- * @param tallyFile - the path to the tally file
+ * @param tallyFile - the path to the tally file with results, per vote option spent credits, spent voice credits total
  * @param maciAddress - the address of the MACI contract
  * @param tallyAddress - the address of the Tally contract
  * @param subsidyAddress - the address of the Subsidy contract
@@ -51,6 +51,7 @@ export const verify = async (
   const tallyContractAddress = tallyAddress || readContractAddress(`Tally-${pollId}`);
 
   let subsidyContractAddress = "";
+
   if (subsidyEnabled) {
     subsidyContractAddress = subsidyAddress || readContractAddress(`Subsidy-${pollId}`);
   }
@@ -79,9 +80,9 @@ export const verify = async (
     : undefined;
 
   // verification
-  const onChainTallycomment = BigInt(await tallyContract.tallyCommitment());
+  const onChainTallyCommitment = BigInt(await tallyContract.tallyCommitment());
 
-  logYellow(quiet, info(`on-chain tally commitment: ${onChainTallycomment.toString(16)}`));
+  logYellow(quiet, info(`on-chain tally commitment: ${onChainTallyCommitment.toString(16)}`));
 
   // ensure we have either tally data or tally file
   if (!(tallyData || tallyFile)) {
@@ -89,6 +90,7 @@ export const verify = async (
   }
   // if we have the data as param, then use that
   let tallyResults: TallyData;
+
   if (tallyData) {
     tallyResults = tallyData;
   } else {
@@ -149,7 +151,7 @@ export const verify = async (
     newPerVOSpentVoiceCreditsCommitment,
   ]);
 
-  if (onChainTallycomment !== newTallyCommitment) {
+  if (onChainTallyCommitment !== newTallyCommitment) {
     logError("The on-chain tally commitment does not match.");
   }
   logGreen(quiet, success("The on-chain tally commitment matches."));
@@ -161,6 +163,7 @@ export const verify = async (
     newResultsCommitment,
     newPerVOSpentVoiceCreditsCommitment,
   );
+
   if (isValid) {
     logGreen(quiet, success("The on-chain verification of total spent voice credits passed."));
   } else {
@@ -175,6 +178,7 @@ export const verify = async (
     newSpentVoiceCreditsCommitment,
     newResultsCommitment,
   );
+
   if (failedSpentCredits.length === 0) {
     logGreen(quiet, success("The on-chain verification of per vote option spent voice credits passed"));
   } else {

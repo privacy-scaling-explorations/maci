@@ -35,6 +35,7 @@ import { Proof, TallyData } from "../utils/interfaces";
 
 /**
  * Generate proofs for the message processing, tally and subsidy calculations
+ * @note see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing
  * @param outputDir - the directory to store the proofs
  * @param tallyFile - the file to store the tally proof
  * @param tallyZkey - the path to the tally zkey file
