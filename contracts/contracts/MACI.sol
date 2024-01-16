@@ -104,6 +104,7 @@ contract MACI is IMACI, Params, Utilities, Ownable {
   /// @param _subsidyFactory The SubsidyFactory contract
   /// @param _signUpGatekeeper The SignUpGatekeeper contract
   /// @param _initialVoiceCreditProxy The InitialVoiceCreditProxy contract
+  /// @param _topupCredit The TopupCredit contract
   /// @param _stateTreeDepth The depth of the state tree
   constructor(
     IPollFactory _pollFactory,
