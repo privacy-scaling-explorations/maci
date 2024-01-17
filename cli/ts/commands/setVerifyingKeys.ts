@@ -14,6 +14,7 @@ import { info, logError, logGreen, logYellow, success } from "../utils/theme";
 
 /**
  * Function that sets the verifying keys in the VkRegistry contract
+ * @note see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing
  * @param stateTreeDepth - the depth of the state tree
  * @param intStateTreeDepth - the depth of the state subtree
  * @param messageTreeDepth - the depth of the message tree

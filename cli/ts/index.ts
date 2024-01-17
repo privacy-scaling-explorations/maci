@@ -72,9 +72,18 @@ program
   .requiredOption("-m, --msg-tree-depth <messageTreeDepth>", "the message tree depth", parseInt)
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
   .requiredOption("-b, --msg-batch-depth <messageBatchDepth>", "the message batch depth", parseInt)
-  .requiredOption("-p, --process-messages-zkey <processMessagesZkeyPath>", "the process messages zkey path")
-  .requiredOption("-t, --tally-votes-zkey <tallyVotesZkeyPath>", "the tally votes zkey path")
-  .option("-ss, --subsidy-zkey <subsidyZkeyPath>", "the subsidy zkey path")
+  .requiredOption(
+    "-p, --process-messages-zkey <processMessagesZkeyPath>",
+    "the process messages zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  )
+  .requiredOption(
+    "-t, --tally-votes-zkey <tallyVotesZkeyPath>",
+    "the tally votes zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  )
+  .option(
+    "-ss, --subsidy-zkey <subsidyZkeyPath>",
+    "the subsidy zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  )
   .action(async (cmdOptions) => {
     try {
       await checkVerifyingKeys(
@@ -199,12 +208,21 @@ program
   .requiredOption("-m, --msg-tree-depth <messageTreeDepth>", "the message tree depth", parseInt)
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
   .requiredOption("-b, --msg-batch-depth <messageBatchDepth>", "the message batch depth", parseInt)
-  .requiredOption("-p, --process-messages-zkey <processMessagesZkeyPath>", "the process messages zkey path")
-  .requiredOption("-t, --tally-votes-zkey <tallyVotesZkeyPath>", "the tally votes zkey path")
+  .requiredOption(
+    "-p, --process-messages-zkey <processMessagesZkeyPath>",
+    "the process messages zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  )
+  .requiredOption(
+    "-t, --tally-votes-zkey <tallyVotesZkeyPath>",
+    "the tally votes zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  )
   .option("-k, --vk-registry <vkRegistry>", "the vk registry contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .option("-ss, --subsidy-zkey <subsidyZkeyPath>", "the subsidy zkey path")
+  .option(
+    "-ss, --subsidy-zkey <subsidyZkeyPath>",
+    "the subsidy zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  )
   .action(async (cmdObj) => {
     try {
       await setVerifyingKeys(
@@ -351,7 +369,10 @@ program
   .command("verify")
   .description("verify the results of a poll and optionally the subsidy results")
   .requiredOption("-o, --poll-id <pollId>", "the poll id", parseInt)
-  .requiredOption("-t, --tally-file <tallyFile>", "the tally file")
+  .requiredOption(
+    "-t, --tally-file <tallyFile>",
+    "the tally file with results, per vote option spent credits, spent voice credits total",
+  )
   .requiredOption(
     "-se, --subsidy-enabled <subsidyEnabled>",
     "whether to deploy subsidy contract",
@@ -387,7 +408,10 @@ program
   .option("-sk, --privkey <privkey>", "your serialized MACI private key")
   .option("-x, --contract <contract>", "the MACI contract address")
   .requiredOption("-o, --poll-id <pollId>", "the poll id", parseInt)
-  .requiredOption("-t, --tally-file <tallyFile>", "the tally file")
+  .requiredOption(
+    "-t, --tally-file <tallyFile>",
+    "the tally file with results, per vote option spent credits, spent voice credits total",
+  )
   .option("-s, --subsidy-file <subsidyFile>", "the subsidy file")
   .option("-r, --rapidsnark <rapidsnark>", "the path to the rapidsnark binary")
   .option("-wp, --process-witnessgen <processWitnessgen>", "the path to the process witness generation binary")
