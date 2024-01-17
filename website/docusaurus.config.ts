@@ -86,7 +86,7 @@ const config: Config = {
     },
   ],
   themeConfig: {
-    image: "img/maci.jpeg",
+    image: "img/maci-card.png",
     navbar: {
       title: "MACI",
       items: [
