@@ -2,16 +2,26 @@ import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import Layout from "@theme/Layout";
 import clsx from "clsx";
 
-import Logo from "../../static/img/maci.svg";
 import HomepageFeatures from "../components/HomepageFeatures";
 
 import styles from "./index.module.css";
 
-const HomepageHeader = () => (
-  <header className={clsx("hero hero--primary", styles.heroBanner)}>
-    <div className="container">
-      <Logo height="50%" width="50%" />
+interface HomepageHeaderProps {
+  tagline: string;
+  title: string;
+}
+
+const HomepageHeader = ({ tagline, title }: HomepageHeaderProps) => (
+  <header className={clsx("hero hero--dark", styles.heroBanner)}>
+    <div className={styles.heroTitle}>
+      <h2 className={styles.heroColor}>{title}</h2>
     </div>
+
+    <h1 className={styles.heroColor}>
+      {tagline}
+
+      <span className={styles.blue}>.</span>
+    </h1>
   </header>
 );
 
@@ -23,26 +33,23 @@ const Home = (): JSX.Element => {
       description="Minimal Anti-Collusion Infrastructure (MACI) is an on-chain voting platform which protects privacy and minimizes the risk of collusion and bribery"
       title={`Minimal Anti-Collusion Infrastructure (${siteConfig.title})`}
     >
-      <HomepageHeader />
+      <HomepageHeader tagline={siteConfig.tagline} title={siteConfig.title} />
 
       <main>
         <section className={styles.introduction}>
           <div className="container">
-            <div>
-              <h1>What is MACI?</h1>
+            <h1 className={styles.borderBlue}>What is MACI?</h1>
 
-              <p>Minimal Anti-Collusion Infrastructure (MACI) is a private, on-chain, voting system.</p>
+            <p>Minimal Anti-Collusion Infrastructure (MACI) is a private, on-chain, voting system.</p>
 
-              <p>
-                MACI is a protocol designed to provide a highly secure e-voting solution. It enables organizations to
-                conduct on-chain voting processes with a significantly reduced risk of cheating, such as bribery or
-                collusion. MACI uses zero-knowledge proofs to implement a receipt-free voting scheme, making it
-                impossible for anyone other than the vote coordinator to verify how a specific user voted. This ensures
-                the correct execution of votes and allows anyone to verify the results. It is particularly beneficial
-                for governance and funding events, where its anti-collusion mechanisms help ensure fair and transparent
-                outcomes.
-              </p>
-            </div>
+            <p>
+              MACI is a protocol designed to provide a highly secure e-voting solution. It enables organizations to
+              conduct on-chain voting processes with a significantly reduced risk of cheating, such as bribery or
+              collusion. MACI uses zero-knowledge proofs to implement a receipt-free voting scheme, making it
+              coordinator to verify how a specific user voted. This ensures the correct the correct execution of votes
+              and allows anyone to verify the results. It is particularly beneficial for governance and funding and
+              funding events, where its anti-collusion mechanisms help ensure fair and transparent outcomes.
+            </p>
           </div>
         </section>
 

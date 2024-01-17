@@ -1,22 +1,22 @@
 import Heading from "@theme/Heading";
 import clsx from "clsx";
 
-import mountainSvgImage from "../../../static/img/undraw_docusaurus_mountain.svg";
-import reactSvgImage from "../../../static/img/undraw_docusaurus_react.svg";
-import treeSvgImage from "../../../static/img/undraw_docusaurus_tree.svg";
+import boxImage from "../../../static/img/box.png";
+import chainImage from "../../../static/img/chain.png";
+import chartImage from "../../../static/img/chart.png";
 
 import styles from "./styles.module.css";
 
 interface FeatureItem {
   title: string;
-  Svg: React.ComponentType<React.ComponentProps<"svg">>;
+  img: string;
   description: JSX.Element;
 }
 
 const FeatureList: FeatureItem[] = [
   {
     title: "Highly secure",
-    Svg: mountainSvgImage,
+    img: boxImage as string,
     description: (
       <>
         MACI was designed to be a secure voting system. It is built using smart contracts on the Ethereum blockchain,
@@ -26,7 +26,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: "Protects privacy",
-    Svg: treeSvgImage,
+    img: chainImage as string,
     description: (
       <>
         With MACI, votes are encrypted before submitting them on-chain to ensure that your privacy is preserved when
@@ -36,7 +36,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: "Powered by zk-SNARKs",
-    Svg: reactSvgImage,
+    img: chartImage as string,
     description: (
       <>
         MACI is powered by zk-SNARKs, a cutting edge cryptographic technology that ensures votes are counted correctly
@@ -46,10 +46,10 @@ const FeatureList: FeatureItem[] = [
   },
 ];
 
-const Feature = ({ title, Svg, description }: FeatureItem) => (
+const Feature = ({ title, img, description }: FeatureItem) => (
   <div className={clsx("col col--4")}>
     <div className="text--center">
-      <Svg className={styles.featureSvg} role="img" />
+      <img alt={title} className={styles.featureSvg} src={img} />
     </div>
 
     <div className="text--center padding-horiz--md">
