@@ -7,7 +7,6 @@ sidebar_position: 1
 
 # Welcome to MACI
 
-<<<<<<< HEAD
 ![MACI card](/img/maci-card.png)
 
 ## Introduction
@@ -16,13 +15,7 @@ sidebar_position: 1
 
 MACI is an application that allows users to have an on-chain voting process with greatly increased collusion resistance. A common problem among today’s on-chain voting (or public good funding) processes is how easy it is to bribe voters into voting for a particular option. Since all transactions on the blockchain are public by default, without MACI, voters can easily prove to the briber which option they voted for and therefore receive the bribe rewards.
 
-# MACI counters this problem by using encryption and zero-knowledge proofs (zk-SNARKs) to essentially hide how each person voted while still publicly revealing the final vote result. User’s cannot prove which option they voted for, and therefore bribers cannot reliably trust that a user voted for their preferred option. For example, a voter can tell a briber that they are voting for option A, but in reality they voted for option B. There is no reliable way to prove which option the voter actually voted for, so the briber has less incentive to pay voters to vote their way.
-
-MACI, which stands for Minimal Anti-Collusion Infrastructure, is an application that allows users to have an on-chain voting process with greatly increased collusion resistance. A common problem among today’s on-chain voting processes is how easy it is to bribe voters into voting for a particular option. Oftentimes this bribery takes the form of “join our pool (vote our way) and we will give you a cut of the rewards (the bribe)”. Since all transactions on the blockchain are public, without MACI, voters can easily prove to the briber which option they voted for and therefore receive the bribe rewards.
-
-MACI counters this problem by using encryption and zk-SNARKs to essentially hide how each person voted while still publicly revealing the final vote result. User’s cannot prove which option they voted for, and therefore bribers cannot reliably trust that a user voted for their preferred option. For example, a voter can tell a briber that they are voting for option A, but in reality they voted for option B. There is no reliable way to prove which option the voter actually voted for, so the briber has less incentive to pay voters to vote their way.
-
-> > > > > > > 5588d26e5 (feat: expand intro page with description & credits)
+MACI counters this problem by using encryption and zero-knowledge proofs (zk-SNARKs) to essentially hide how each person voted while still publicly revealing the final vote result. User’s cannot prove which option they voted for, and therefore bribers cannot reliably trust that a user voted for their preferred option. For example, a voter can tell a briber that they are voting for option A, but in reality they voted for option B. There is no reliable way to prove which option the voter actually voted for, so the briber has less incentive to pay voters to vote their way.
 
 Applications like [clr.fund](https://clr.fund/) build atop MACI to increase
 user privacy and discourage collusion or bribery for public goods funding.
