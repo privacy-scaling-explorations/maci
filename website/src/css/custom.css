@@ -14,15 +14,15 @@
 }
 
 @font-face {
-  font-family: DMMono;
-  src: url("../../static/fonts/DM_Mono.woff2");
+  font-family: DMSans;
+  src: url("../../static/fonts/DM_Sans.woff2");
   font-weight: normal;
   font-style: normal;
 }
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #5e5e5e;
+  --ifm-color-primary: #0b0b0b;
   --ifm-background-color: #ffffff;
   --ifm-navbar-background-color: #ffffff;
   --ifm-footer-background-color: #020203;
@@ -31,9 +31,8 @@
   --ifm-footer-link-hover-color: #ffffff;
   --ifm-link-color: #579bea;
   --ifm-color-hero: #fcfcfc;
-  /* TODO: discuss if we want to use this or not */
-  /* --ifm-font-family-base: DMMono; */
-  --ifm-font-color-base: #0b0b0b;
+  --ifm-font-family-base: DMSans;
+  --ifm-font-color-base: #5e5e5e;
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
 }
@@ -48,15 +47,13 @@
 }
 
 h1 {
-  /* TODO: discuss if we want to use this or not */
-  /* font-family: ShareTechMono; */
+  font-family: ShareTechMono;
   font-size: 4rem;
   color: var(--ifm-color-primary);
 }
 
 h2 {
-  /* TODO: discuss if we want to use this or not */
-  /* font-family: ShareTechMono; */
+  font-family: ShareTechMono;
   font-size: 3rem;
   margin: 0;
   color: var(--ifm-color-primary);
