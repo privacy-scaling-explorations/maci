@@ -4,5 +4,5 @@
     "outDir": "./build"
   },
   "include": ["./ts"],
-  "exclude": ["**/__tests__/**", "**/__tests__/**/*.test.ts"]
+  "exclude": ["**/__tests__/**", "**/__tests__/**/*.test.ts", "**/__benchmarks__/**"]
 }

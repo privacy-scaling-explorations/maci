@@ -121,13 +121,13 @@ describe("IncrementalQuinTree circuit", function test() {
         tree.insert(leaf);
       });
 
-      const proof = tree.genMerklePath(2);
+      const proof = tree.genProof(2);
 
       const circuitInputs = {
         root: tree.root,
         leaf: 3n,
         path_elements: proof.pathElements,
-        path_index: proof.indices,
+        path_index: proof.pathIndices,
       };
 
       const witness = await circuitLeafExists.calculateWitness(circuitInputs);

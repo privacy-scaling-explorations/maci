@@ -20,6 +20,9 @@ export type Plaintext<N = bigint> = N[];
 // a ciphertext is an array of BigNumbers
 export type Ciphertext<N = bigint> = N[];
 
+// a merkle tree path elements
+export type PathElements = bigint[][];
+
 /**
  * A acc queue
  */
@@ -59,6 +62,17 @@ export interface PoseidonFuncs {
 
 // a leaf is a single BigNumber
 export type Leaf = bigint;
+
+// a node is a leaf or subroot in a quinary merkle tree
+export type Node = Record<number, Leaf>;
+
+// a merkle proof is a set of path elements, path indices, and a root
+export interface IMerkleProof {
+  pathElements: Leaf[][];
+  pathIndices: number[];
+  root: Leaf;
+  leaf: Leaf;
+}
 
 export type StringifiedBigInts =
   | StringifiedBigInts[]
