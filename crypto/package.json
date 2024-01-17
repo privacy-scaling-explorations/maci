@@ -3,6 +3,11 @@
   "version": "1.1.2",
   "description": "A package containing cryptography utilities for MACI",
   "main": "build/ts/index.js",
+  "files": [
+    "build",
+    "README.md",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "watch": "tsc --watch",
     "benchmarks": "ts-node ts/__benchmarks__/index.ts",
