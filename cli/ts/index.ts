@@ -550,6 +550,7 @@ export {
   fundWallet,
   genKeyPair,
   genMaciPubKey,
+  genLocalState,
   genProofs,
   mergeMessages,
   mergeSignups,
