@@ -548,6 +548,7 @@ export {
   deployPoll,
   deployVkRegistryContract,
   fundWallet,
+  genLocalState,
   genKeyPair,
   genMaciPubKey,
   genProofs,
