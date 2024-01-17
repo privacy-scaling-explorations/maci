@@ -5,6 +5,7 @@
  */
 
 /* imported fonts */
+/* TODO: discuss if we want to use these or not */
 @font-face {
   font-family: ShareTechMono;
   src: url("../../static/fonts/Share_Tech_Mono.woff2");
@@ -30,7 +31,8 @@
   --ifm-footer-link-hover-color: #ffffff;
   --ifm-link-color: #579bea;
   --ifm-color-hero: #fcfcfc;
-  --ifm-font-family-base: DMMono;
+  /* TODO: discuss if we want to use this or not */
+  /* --ifm-font-family-base: DMMono; */
   --ifm-font-color-base: #0b0b0b;
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
@@ -46,13 +48,15 @@
 }
 
 h1 {
-  font-family: ShareTechMono;
+  /* TODO: discuss if we want to use this or not */
+  /* font-family: ShareTechMono; */
   font-size: 4rem;
   color: var(--ifm-color-primary);
 }
 
 h2 {
-  font-family: ShareTechMono;
+  /* TODO: discuss if we want to use this or not */
+  /* font-family: ShareTechMono; */
   font-size: 3rem;
   margin: 0;
   color: var(--ifm-color-primary);
