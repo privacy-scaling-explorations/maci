@@ -1,8 +1,8 @@
-import "./@types";
-
 export { AccQueue } from "./AccQueue";
 
 export { calcDepthFromNumLeaves, genTreeCommitment, genTreeProof } from "./utils";
+
+export { IncrementalQuinTree } from "./quinTree";
 
 export { bigInt2Buffer, stringifyBigInts, unstringifyBigInts, deepCopyBigIntArray } from "./bigIntUtils";
 
@@ -23,8 +23,6 @@ export { G1Point, G2Point, genRandomBabyJubValue } from "./babyjub";
 
 export { sha256Hash, hashLeftRight, hashN, hash2, hash3, hash4, hash5, hash13, hashOne } from "./hashing";
 
-export { OptimisedMT as IncrementalQuinTree, type PathElements } from "optimisedmt";
-
 export { poseidonDecrypt, poseidonEncrypt } from "@zk-kit/poseidon-cipher";
 
 export { verifySignature, signMessage as sign } from "@zk-kit/eddsa-poseidon";
@@ -41,4 +39,5 @@ export type {
   Signature,
   PoseidonFuncs,
   Leaf,
+  PathElements,
 } from "./types";

@@ -156,3 +156,5 @@ publish
 
 # typedoc
 docs/typedoc/*
+
+**/ts/__benchmarks__/results/**
