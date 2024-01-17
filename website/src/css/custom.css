@@ -21,12 +21,13 @@
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #fcfcfc;
+  --ifm-color-primary: #5e5e5e;
   --ifm-background-color: #ffffff;
   --ifm-navbar-background-color: #ffffff;
   --ifm-footer-background-color: #020203;
   --ifm-footer-color: #ffffff;
   --ifm-footer-link-color: #ffffff;
+  --ifm-footer-link-hover-color: #ffffff;
   --ifm-link-color: #579bea;
   --ifm-color-hero: #fcfcfc;
   --ifm-font-family-base: DMMono;
@@ -37,6 +38,7 @@
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme="dark"]:root {
+  --ifm-color-primary: #fcfcfc;
   --ifm-background-color: #0b0b0b;
   --ifm-navbar-background-color: #0b0b0b;
   --ifm-font-color-base: #cdcdcd;
