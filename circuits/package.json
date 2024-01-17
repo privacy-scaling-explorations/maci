@@ -3,6 +3,14 @@
   "version": "1.1.2",
   "description": "zk-SNARK circuits for MACI",
   "main": "build/ts/index.js",
+  "files": [
+    "build",
+    "circom",
+    "circomkit.json",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "build-test-circuits-c": "ts-node ./ts/compile.ts --cWitness",
     "build-test-circuits-wasm": "ts-node ./ts/compile.ts",

@@ -7,7 +7,9 @@
     "maci-cli": "./build/ts/index.js"
   },
   "files": [
-    "build"
+    "build",
+    "CHANGELOG.md",
+    "README.md"
   ],
   "scripts": {
     "watch": "tsc --watch",
