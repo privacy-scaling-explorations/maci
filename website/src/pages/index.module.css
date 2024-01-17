@@ -49,6 +49,7 @@
   width: max-content;
   border-bottom: 3px solid var(--ifm-link-color);
   box-sizing: content-box;
+  margin-bottom: 1rem;
 }
 
 @media screen and (max-width: 996px) {

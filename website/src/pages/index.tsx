@@ -38,7 +38,7 @@ const Home = (): JSX.Element => {
       <main>
         <section className={styles.introduction}>
           <div className="container">
-            <h1 className={styles.borderBlue}>What is MACI?</h1>
+            <h2 className={styles.borderBlue}>What is MACI?</h2>
 
             <p>Minimal Anti-Collusion Infrastructure (MACI) is a private, on-chain, voting system.</p>
 
