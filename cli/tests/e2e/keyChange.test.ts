@@ -19,15 +19,15 @@ import {
   timeTravel,
   verify,
 } from "../../ts/commands";
+import { GenProofsArgs } from "../../ts/utils";
 import {
-  INT_STATE_TREE_DEPTH,
-  MSG_BATCH_DEPTH,
-  MSG_TREE_DEPTH,
-  STATE_TREE_DEPTH,
-  VOTE_OPTION_TREE_DEPTH,
   coordinatorPrivKey,
-  coordinatorPubKey,
+  deployArgs,
+  deployPollArgs,
   processMessageTestZkeyPath,
+  mergeMessagesArgs,
+  mergeSignupsArgs,
+  setVerifyingKeysArgs,
   tallyVotesTestZkeyPath,
   testProcessMessagesWasmPath,
   testProcessMessagesWitnessDatPath,
@@ -38,6 +38,8 @@ import {
   testTallyVotesWasmPath,
   testTallyVotesWitnessDatPath,
   testTallyVotesWitnessPath,
+  proveOnChainArgs,
+  verifyArgs,
 } from "../constants";
 import { cleanVanilla, isArm } from "../utils";
 
@@ -47,22 +49,31 @@ describe("keyChange tests", function test() {
 
   let maciAddresses: DeployedContracts;
 
-  const subsidyEnabled = false;
+  deployPollArgs.pollDuration = 90;
+
+  const genProofsArgs: GenProofsArgs = {
+    outputDir: testProofsDirPath,
+    tallyFile: testTallyFilePath,
+    tallyZkey: tallyVotesTestZkeyPath,
+    processZkey: processMessageTestZkeyPath,
+    pollId: 0,
+    rapidsnark: testRapidsnarkPath,
+    processWitgen: testProcessMessagesWitnessPath,
+    processDatFile: testProcessMessagesWitnessDatPath,
+    tallyWitgen: testTallyVotesWitnessPath,
+    tallyDatFile: testTallyVotesWitnessDatPath,
+    coordinatorPrivKey,
+    processWasm: testProcessMessagesWasmPath,
+    tallyWasm: testTallyVotesWasmPath,
+    useWasm,
+  };
 
   // before all tests we deploy the vk registry contract and set the verifying keys
   before(async () => {
     // we deploy the vk registry contract
     await deployVkRegistryContract(true);
     // we set the verifying keys
-    await setVerifyingKeys(
-      STATE_TREE_DEPTH,
-      INT_STATE_TREE_DEPTH,
-      MSG_TREE_DEPTH,
-      VOTE_OPTION_TREE_DEPTH,
-      MSG_BATCH_DEPTH,
-      processMessageTestZkeyPath,
-      tallyVotesTestZkeyPath,
-    );
+    await setVerifyingKeys(setVerifyingKeysArgs);
   });
 
   describe("keyChange and new vote (new vote has same nonce)", () => {
@@ -82,76 +93,44 @@ describe("keyChange tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy(STATE_TREE_DEPTH);
+      maciAddresses = await deploy(deployArgs);
       // deploy a poll contract
-      await deployPoll(
-        90,
-        25,
-        25,
-        INT_STATE_TREE_DEPTH,
-        MSG_BATCH_DEPTH,
-        MSG_TREE_DEPTH,
-        VOTE_OPTION_TREE_DEPTH,
-        coordinatorPubKey,
-        subsidyEnabled,
-      );
-      stateIndex = Number.parseInt(await signup(keypair1.pubKey.serialize()), 10);
-      await publish(
-        keypair1.pubKey.serialize(),
+      await deployPoll(deployPollArgs);
+      stateIndex = Number.parseInt(await signup({ maciPubKey: keypair1.pubKey.serialize() }), 10);
+      await publish({
+        pubkey: keypair1.pubKey.serialize(),
         stateIndex,
-        initialVoteOption,
-        initialNonce,
+        voteOptionIndex: initialVoteOption,
+        nonce: initialNonce,
         pollId,
-        initialVoteAmount,
-        maciAddresses.maciAddress,
-        genRandomSalt().toString(),
-        keypair1.privKey.serialize(),
-      );
+        newVoteWeight: initialVoteAmount,
+        maciContractAddress: maciAddresses.maciAddress,
+        salt: genRandomSalt().toString(),
+        privateKey: keypair1.privKey.serialize(),
+      });
     });
 
     it("should publish a message to change the user maci key and cast a new vote", async () => {
-      await publish(
-        keypair2.pubKey.serialize(),
+      await publish({
+        pubkey: keypair2.pubKey.serialize(),
         stateIndex,
-        initialVoteOption,
-        initialNonce,
+        voteOptionIndex: initialVoteOption,
+        nonce: initialNonce,
         pollId,
-        initialVoteAmount - 1,
-        maciAddresses.maciAddress,
-        genRandomSalt().toString(),
-        keypair1.privKey.serialize(),
-      );
+        newVoteWeight: initialVoteAmount - 1,
+        maciContractAddress: maciAddresses.maciAddress,
+        salt: genRandomSalt().toString(),
+        privateKey: keypair1.privKey.serialize(),
+      });
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel(90, true);
-      await mergeMessages(0);
-      await mergeSignups(0);
-      await genProofs(
-        testProofsDirPath,
-        testTallyFilePath,
-        tallyVotesTestZkeyPath,
-        processMessageTestZkeyPath,
-        0,
-        undefined,
-        undefined,
-        testRapidsnarkPath,
-        testProcessMessagesWitnessPath,
-        testProcessMessagesWitnessDatPath,
-        testTallyVotesWitnessPath,
-        testTallyVotesWitnessDatPath,
-        undefined,
-        undefined,
-        coordinatorPrivKey,
-        maciAddresses.maciAddress,
-        undefined,
-        testProcessMessagesWasmPath,
-        testTallyVotesWasmPath,
-        undefined,
-        useWasm,
-      );
-      await proveOnChain("0", testProofsDirPath, subsidyEnabled);
-      await verify("0", subsidyEnabled, testTallyFilePath);
+      await mergeMessages(mergeMessagesArgs);
+      await mergeSignups(mergeSignupsArgs);
+      await genProofs(genProofsArgs);
+      await proveOnChain(proveOnChainArgs);
+      await verify(verifyArgs);
     });
 
     it("should confirm the tally is correct", () => {
@@ -178,76 +157,44 @@ describe("keyChange tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy(STATE_TREE_DEPTH);
+      maciAddresses = await deploy(deployArgs);
       // deploy a poll contract
-      await deployPoll(
-        90,
-        25,
-        25,
-        INT_STATE_TREE_DEPTH,
-        MSG_BATCH_DEPTH,
-        MSG_TREE_DEPTH,
-        VOTE_OPTION_TREE_DEPTH,
-        coordinatorPubKey,
-        subsidyEnabled,
-      );
-      stateIndex = Number.parseInt(await signup(keypair1.pubKey.serialize()), 10);
-      await publish(
-        keypair1.pubKey.serialize(),
+      await deployPoll(deployPollArgs);
+      stateIndex = Number.parseInt(await signup({ maciPubKey: keypair1.pubKey.serialize() }), 10);
+      await publish({
+        pubkey: keypair1.pubKey.serialize(),
         stateIndex,
-        initialVoteOption,
-        initialNonce,
+        voteOptionIndex: initialVoteOption,
+        nonce: initialNonce,
         pollId,
-        initialVoteAmount,
-        maciAddresses.maciAddress,
-        genRandomSalt().toString(),
-        keypair1.privKey.serialize(),
-      );
+        newVoteWeight: initialVoteAmount,
+        maciContractAddress: maciAddresses.maciAddress,
+        salt: genRandomSalt().toString(),
+        privateKey: keypair1.privKey.serialize(),
+      });
     });
 
     it("should publish a message to change the user maci key and cast a new vote", async () => {
-      await publish(
-        keypair2.pubKey.serialize(),
+      await publish({
+        pubkey: keypair2.pubKey.serialize(),
         stateIndex,
-        initialVoteOption + 1,
-        initialNonce + 1,
+        voteOptionIndex: initialVoteOption + 1,
+        nonce: initialNonce + 1,
         pollId,
-        initialVoteAmount - 1,
-        maciAddresses.maciAddress,
-        genRandomSalt().toString(),
-        keypair1.privKey.serialize(),
-      );
+        newVoteWeight: initialVoteAmount - 1,
+        maciContractAddress: maciAddresses.maciAddress,
+        salt: genRandomSalt().toString(),
+        privateKey: keypair1.privKey.serialize(),
+      });
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel(90, true);
-      await mergeMessages(0);
-      await mergeSignups(0);
-      await genProofs(
-        testProofsDirPath,
-        testTallyFilePath,
-        tallyVotesTestZkeyPath,
-        processMessageTestZkeyPath,
-        0,
-        undefined,
-        undefined,
-        testRapidsnarkPath,
-        testProcessMessagesWitnessPath,
-        testProcessMessagesWitnessDatPath,
-        testTallyVotesWitnessPath,
-        testTallyVotesWitnessDatPath,
-        undefined,
-        undefined,
-        coordinatorPrivKey,
-        maciAddresses.maciAddress,
-        undefined,
-        testProcessMessagesWasmPath,
-        testTallyVotesWasmPath,
-        undefined,
-        useWasm,
-      );
-      await proveOnChain("0", testProofsDirPath, subsidyEnabled);
-      await verify("0", subsidyEnabled, testTallyFilePath);
+      await mergeMessages(mergeMessagesArgs);
+      await mergeSignups(mergeSignupsArgs);
+      await genProofs(genProofsArgs);
+      await proveOnChain(proveOnChainArgs);
+      await verify(verifyArgs);
     });
 
     it("should confirm the tally is correct", () => {
@@ -274,76 +221,44 @@ describe("keyChange tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy(STATE_TREE_DEPTH);
+      maciAddresses = await deploy(deployArgs);
       // deploy a poll contract
-      await deployPoll(
-        90,
-        25,
-        25,
-        INT_STATE_TREE_DEPTH,
-        MSG_BATCH_DEPTH,
-        MSG_TREE_DEPTH,
-        VOTE_OPTION_TREE_DEPTH,
-        coordinatorPubKey,
-        subsidyEnabled,
-      );
-      stateIndex = Number.parseInt(await signup(keypair1.pubKey.serialize()), 10);
-      await publish(
-        keypair1.pubKey.serialize(),
+      await deployPoll(deployPollArgs);
+      stateIndex = Number.parseInt(await signup({ maciPubKey: keypair1.pubKey.serialize() }), 10);
+      await publish({
+        pubkey: keypair1.pubKey.serialize(),
         stateIndex,
-        initialVoteOption,
-        initialNonce,
+        voteOptionIndex: initialVoteOption,
+        nonce: initialNonce,
         pollId,
-        initialVoteAmount,
-        maciAddresses.maciAddress,
-        genRandomSalt().toString(),
-        keypair1.privKey.serialize(),
-      );
+        newVoteWeight: initialVoteAmount,
+        maciContractAddress: maciAddresses.maciAddress,
+        salt: genRandomSalt().toString(),
+        privateKey: keypair1.privKey.serialize(),
+      });
     });
 
     it("should publish a message to change the user maci key, and a new vote", async () => {
-      await publish(
-        keypair2.pubKey.serialize(),
+      await publish({
+        pubkey: keypair2.pubKey.serialize(),
         stateIndex,
-        initialVoteOption + 2,
-        initialNonce,
+        voteOptionIndex: initialVoteOption + 2,
+        nonce: initialNonce,
         pollId,
-        initialVoteAmount - 3,
-        maciAddresses.maciAddress,
-        genRandomSalt().toString(),
-        keypair1.privKey.serialize(),
-      );
+        newVoteWeight: initialVoteAmount - 3,
+        maciContractAddress: maciAddresses.maciAddress,
+        salt: genRandomSalt().toString(),
+        privateKey: keypair1.privKey.serialize(),
+      });
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel(90, true);
-      await mergeMessages(0);
-      await mergeSignups(0);
-      await genProofs(
-        testProofsDirPath,
-        testTallyFilePath,
-        tallyVotesTestZkeyPath,
-        processMessageTestZkeyPath,
-        0,
-        undefined,
-        undefined,
-        testRapidsnarkPath,
-        testProcessMessagesWitnessPath,
-        testProcessMessagesWitnessDatPath,
-        testTallyVotesWitnessPath,
-        testTallyVotesWitnessDatPath,
-        undefined,
-        undefined,
-        coordinatorPrivKey,
-        maciAddresses.maciAddress,
-        undefined,
-        testProcessMessagesWasmPath,
-        testTallyVotesWasmPath,
-        undefined,
-        useWasm,
-      );
-      await proveOnChain("0", testProofsDirPath, subsidyEnabled);
-      await verify("0", subsidyEnabled, testTallyFilePath);
+      await mergeMessages(mergeMessagesArgs);
+      await mergeSignups(mergeSignupsArgs);
+      await genProofs(genProofsArgs);
+      await proveOnChain(proveOnChainArgs);
+      await verify(verifyArgs);
     });
 
     it("should confirm the tally is correct", () => {

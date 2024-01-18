@@ -1,26 +1,13 @@
 import { BaseContract } from "ethers";
 import { type MACI, type Poll, getDefaultSigner, parseArtifact } from "maci-contracts";
 
-import { contractExists } from "../utils/contracts";
-import { banner } from "../utils/index";
-import { readContractAddress } from "../utils/storage";
-import { logError } from "../utils/theme";
+import { type TopupArgs, logError, readContractAddress, contractExists, banner } from "../utils";
 
 /**
  * Publish a topup message
- * @param amount - the amount to topup
- * @param stateIndex - the state index of the user
- * @param pollId - the poll ID
- * @param maciAddress - the address of the MACI contract
- * @param quiet - whether to log the output
+ * @param TopupArgs - The arguments for the topup command
  */
-export const topup = async (
-  amount: number,
-  stateIndex: number,
-  pollId: number,
-  maciAddress?: string,
-  quiet = true,
-): Promise<void> => {
+export const topup = async ({ amount, stateIndex, pollId, maciAddress, quiet = true }: TopupArgs): Promise<void> => {
   banner(quiet);
   const signer = await getDefaultSigner();
 

@@ -7,6 +7,7 @@ import { VerifyingKey } from "maci-domainobjs";
 import fs from "fs";
 
 import {
+  CheckVerifyingKeysArgs,
   banner,
   compareVks,
   contractExists,
@@ -22,29 +23,21 @@ import {
  * Command to confirm that the verifying keys in the contract match the
  * local ones
  * @note see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing
- * @param stateTreeDepth the depth of the state tree
- * @param intStateTreeDepth the depth of the state subtree
- * @param messageTreeDepth the depth of the message tree
- * @param voteOptionTreeDepth the depth of the vote option tree
- * @param messageBatchDepth the depth of the message batch tree
- * @param processMessagesZkeyPath the path to the process messages zkey
- * @param tallyVotesZkeyPath the path to the tally votes zkey
- * @param quiet whether to log the output
- * @param vkRegistry the address of the VkRegistry contract
- * @returns whether the verifying keys match or not
+ * @param CheckVerifyingKeysArgs - The arguments for the checkVerifyingKeys command
+ * @returns Whether the verifying keys match or not
  */
-export const checkVerifyingKeys = async (
-  stateTreeDepth: number,
-  intStateTreeDepth: number,
-  messageTreeDepth: number,
-  voteOptionTreeDepth: number,
-  messageBatchDepth: number,
-  processMessagesZkeyPath: string,
-  tallyVotesZkeyPath: string,
-  vkRegistry?: string,
-  subsidyZkeyPath?: string,
+export const checkVerifyingKeys = async ({
+  stateTreeDepth,
+  intStateTreeDepth,
+  messageTreeDepth,
+  voteOptionTreeDepth,
+  messageBatchDepth,
+  processMessagesZkeyPath,
+  tallyVotesZkeyPath,
+  vkRegistry,
+  subsidyZkeyPath,
   quiet = true,
-): Promise<boolean> => {
+}: CheckVerifyingKeysArgs): Promise<boolean> => {
   banner(quiet);
   // get the signer
   const signer = await getDefaultSigner();

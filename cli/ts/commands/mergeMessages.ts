@@ -12,21 +12,19 @@ import {
   logYellow,
   success,
   readContractAddress,
+  type MergeMessagesArgs,
 } from "../utils";
 
 /**
  * Merge the message queue on chain
- * @param pollId - the id of the poll
- * @param quiet - whether to log the output
- * @param maciContractAddress - the address of the MACI contract
- * @param numQueueOps - the number of queue operations to merge
+ * @param MergeMessagesArgs - The arguments for the mergeMessages command
  */
-export const mergeMessages = async (
-  pollId: number,
-  maciContractAddress?: string,
-  numQueueOps?: string,
+export const mergeMessages = async ({
+  pollId,
   quiet = true,
-): Promise<void> => {
+  maciContractAddress,
+  numQueueOps,
+}: MergeMessagesArgs): Promise<void> => {
   banner(quiet);
   const signer = await getDefaultSigner();
 

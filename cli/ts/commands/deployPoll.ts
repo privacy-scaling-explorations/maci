@@ -2,43 +2,37 @@ import { BaseContract } from "ethers";
 import { type MACI, getDefaultSigner, parseArtifact } from "maci-contracts";
 import { PubKey } from "maci-domainobjs";
 
-import type { PollContracts } from "../utils/interfaces";
-
-import { banner } from "../utils/banner";
-import { contractExists } from "../utils/contracts";
-import { readContractAddress, storeContractAddress } from "../utils/storage";
-import { info, logError, logGreen } from "../utils/theme";
+import {
+  banner,
+  contractExists,
+  readContractAddress,
+  storeContractAddress,
+  info,
+  logError,
+  logGreen,
+  type DeployPollArgs,
+  type PollContracts,
+} from "../utils";
 
 /**
  * Deploy a new Poll for the set of MACI's contracts already deployed
- * @param pollDuration - the duration of the poll in seconds
- * @param maxMessages - the maximum number of messages that can be submitted
- * @param maxVoteOptions - the maximum number of vote options
- * @param intStateTreeDepth - the depth of the intermediate state tree
- * @param messageTreeSubDepth - the depth of the message tree sublevels
- * @param messageTreeDepth - the depth of the message tree
- * @param voteOptionTreeDepth - the depth of the vote option tree
- * @param coordinatorPubkey - the coordinator's public key
- * @param subsidyEnabled - whether to deploy subsidy contract
- * @param maciAddress - the MACI contract address
- * @param vkRegistryAddress - the vkRegistry contract address
- * @param quiet - whether to log the output to the console
- * @returns the addresses of the deployed contracts
+ * @param DeployPollArgs - The arguments for the deployPoll command
+ * @returns The addresses of the deployed contracts
  */
-export const deployPoll = async (
-  pollDuration: number,
-  maxMessages: number,
-  maxVoteOptions: number,
-  intStateTreeDepth: number,
-  messageTreeSubDepth: number,
-  messageTreeDepth: number,
-  voteOptionTreeDepth: number,
-  coordinatorPubkey: string,
-  subsidyEnabled: boolean,
-  maciAddress?: string,
-  vkRegistryAddress?: string,
+export const deployPoll = async ({
+  pollDuration,
+  maxMessages,
+  maxVoteOptions,
+  intStateTreeDepth,
+  messageTreeSubDepth,
+  messageTreeDepth,
+  voteOptionTreeDepth,
+  coordinatorPubkey,
+  subsidyEnabled,
+  maciAddress,
+  vkRegistryAddress,
   quiet = true,
-): Promise<PollContracts> => {
+}: DeployPollArgs): Promise<PollContracts> => {
   banner(quiet);
 
   // check if we have a vkRegistry already deployed or passed as arg

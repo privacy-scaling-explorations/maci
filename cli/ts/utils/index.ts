@@ -14,7 +14,28 @@ export {
   DEFAULT_IVCP_DATA,
   DEFAULT_SR_QUEUE_OPS,
 } from "./defaults";
-export type { DeployedContracts, PollContracts, TallyData } from "./interfaces";
+export type {
+  AirdropArgs,
+  CheckVerifyingKeysArgs,
+  DeployArgs,
+  DeployedContracts,
+  GenLocalStateArgs,
+  GenProofsArgs,
+  Proof,
+  ISnarkJSVerificationKey,
+  SignupArgs,
+  SetVerifyingKeysArgs,
+  MergeMessagesArgs,
+  MergeSignupsArgs,
+  ProveOnChainArgs,
+  PublishArgs,
+  DeployPollArgs,
+  PollContracts,
+  TallyData,
+  TopupArgs,
+  VerifyArgs,
+  SubsidyData,
+} from "./interfaces";
 export { compareVks } from "./vks";
 export { delay } from "./time";
 export {
@@ -27,3 +48,5 @@ export {
 export { logRed, logGreen, logYellow, logMagenta, logError, info, success, warning, error } from "./theme";
 export { promptSensitiveValue } from "./prompts";
 export { asHex } from "./formatting";
+export { validateSalt } from "./salt";
+export { verifyPerVOSpentVoiceCredits, verifyTallyResults } from "./verifiers";

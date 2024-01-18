@@ -14,35 +14,26 @@ import {
   info,
   logGreen,
   success,
+  type GenLocalStateArgs,
 } from "../utils";
 
 /**
  * Generate a local MACI state from the smart contracts events
- * @param outputPath - the path where to write the state
- * @param pollId - the id of the poll
- * @param maciContractAddress - the address of the MACI contract
- * @param coordinatorPrivateKey - the private key of the MACI coordinator
- * @param ethereumProvider - the ethereum provider
- * @param endBlock - the end block number
- * @param startBlock - the start block number
- * @param blockPerBatch - the number of blocks to fetch per batch
- * @param transactionHash - the transaction hash
- * @param sleep - the sleep time between batches
- * @param quiet - whether to log the output
+ * @param GenLocalStateArgs - The arguments for the genLocalState command
  */
-export const genLocalState = async (
-  outputPath: string,
-  pollId: number,
-  maciContractAddress?: string,
-  coordinatorPrivateKey?: string,
-  ethereumProvider?: string,
-  endBlock?: number,
-  startBlock?: number,
-  blockPerBatch?: number,
-  transactionHash?: string,
-  sleep?: number,
+export const genLocalState = async ({
+  outputPath,
+  pollId,
+  maciContractAddress,
+  coordinatorPrivateKey,
+  ethereumProvider,
+  endBlock,
+  startBlock,
+  blockPerBatch,
+  transactionHash,
+  sleep,
   quiet = true,
-): Promise<void> => {
+}: GenLocalStateArgs): Promise<void> => {
   banner(quiet);
   // validation of the maci contract address
   if (!readContractAddress("MACI") && !maciContractAddress) {

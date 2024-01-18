@@ -15,8 +15,6 @@ import { Keypair, PrivKey } from "maci-domainobjs";
 import fs from "fs";
 import path from "path";
 
-import type { ISnarkJSVerificationKey } from "../utils/interfaces";
-
 import {
   DEFAULT_ETH_PROVIDER,
   asHex,
@@ -30,65 +28,46 @@ import {
   promptSensitiveValue,
   readContractAddress,
   success,
+  type Proof,
+  type TallyData,
+  type GenProofsArgs,
+  type ISnarkJSVerificationKey,
 } from "../utils";
-import { Proof, TallyData } from "../utils/interfaces";
 
 /**
  * Generate proofs for the message processing, tally and subsidy calculations
  * @note see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing
- * @param outputDir - the directory to store the proofs
- * @param tallyFile - the file to store the tally proof
- * @param tallyZkey - the path to the tally zkey file
- * @param processZkey - the path to the process zkey file
- * @param pollId - the id of the poll
- * @param subsidyFile - the file to store the subsidy proof
- * @param subsidyZkey - the path to the subsidy zkey file
- * @param rapidsnark - the path to the rapidsnark binary
- * @param processWitgen - the path to the process witnessgen binary
- * @param tallyWitgen - the path to the tally witnessgen binary
- * @param subsidyWitgen - the path to the subsidy witnessgen binary
- * @param coordinatorPrivKey - the coordinator's private key
- * @param maciAddress - the address of the MACI contract
- * @param transactionHash - the transaction hash of the first transaction
- * @param processWasm - the path to the process wasm file
- * @param tallyWasm - the path to the tally wasm file
- * @param subsidyWasm - the path to the subsidy wasm file
- * @param useWasm - whether to use wasm or rapidsnark
- * @param stateFile - the file with the serialized maci state
- * @param startBlock - the block number to start fetching logs from
- * @param blocksPerBatch - the number of blocks to fetch logs from
- * @param endBlock - the block number to stop fetching logs from
- * @param quiet - whether to log the output
- * @returns the tally data
+ * @param GenProofsArgs - The arguments for the genProofs command
+ * @returns The tally data
  */
-export const genProofs = async (
-  outputDir: string,
-  tallyFile: string,
-  tallyZkey: string,
-  processZkey: string,
-  pollId: number,
-  subsidyFile?: string,
-  subsidyZkey?: string,
-  rapidsnark?: string,
-  processWitgen?: string,
-  processDatFile?: string,
-  tallyWitgen?: string,
-  tallyDatFile?: string,
-  subsidyWitgen?: string,
-  subsidyDatFile?: string,
-  coordinatorPrivKey?: string,
-  maciAddress?: string,
-  transactionHash?: string,
-  processWasm?: string,
-  tallyWasm?: string,
-  subsidyWasm?: string,
-  useWasm?: boolean,
-  stateFile?: string,
-  startBlock?: number,
-  blocksPerBatch?: number,
-  endBlock?: number,
+export const genProofs = async ({
+  outputDir,
+  tallyFile,
+  tallyZkey,
+  processZkey,
+  pollId,
+  subsidyFile,
+  subsidyZkey,
+  rapidsnark,
+  processWitgen,
+  processDatFile,
+  tallyWitgen,
+  tallyDatFile,
+  subsidyWitgen,
+  subsidyDatFile,
+  coordinatorPrivKey,
+  maciAddress,
+  transactionHash,
+  processWasm,
+  tallyWasm,
+  subsidyWasm,
+  useWasm,
+  stateFile,
+  startBlock,
+  blocksPerBatch,
+  endBlock,
   quiet = true,
-): Promise<TallyData> => {
+}: GenProofsArgs): Promise<TallyData> => {
   banner(quiet);
 
   // if we do not have the output directory just create it

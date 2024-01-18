@@ -11,7 +11,6 @@ import type { Tally } from "maci-contracts";
  * @param voteOptionTreeDepth The vote option tree depth
  * @param newSpentVoiceCreditsCommitment The total spent voice credits commitment
  * @param newResultsCommitment The tally result commitment
- *
  * @returns list of the indexes of the tally result that failed on-chain verification
  */
 export const verifyPerVOSpentVoiceCredits = async (

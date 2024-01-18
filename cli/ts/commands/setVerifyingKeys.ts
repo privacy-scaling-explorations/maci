@@ -6,38 +6,36 @@ import { VerifyingKey } from "maci-domainobjs";
 
 import fs from "fs";
 
-import { compareVks } from "../utils";
-import { banner } from "../utils/banner";
-import { contractExists } from "../utils/contracts";
-import { readContractAddress } from "../utils/storage";
-import { info, logError, logGreen, logYellow, success } from "../utils/theme";
+import {
+  type SetVerifyingKeysArgs,
+  info,
+  logError,
+  logGreen,
+  logYellow,
+  success,
+  readContractAddress,
+  contractExists,
+  banner,
+  compareVks,
+} from "../utils";
 
 /**
  * Function that sets the verifying keys in the VkRegistry contract
  * @note see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing
- * @param stateTreeDepth - the depth of the state tree
- * @param intStateTreeDepth - the depth of the state subtree
- * @param messageTreeDepth - the depth of the message tree
- * @param voteOptionTreeDepth - the depth of the vote option tree
- * @param messageBatchDepth - the depth of the message batch tree
- * @param processMessagesZkeyPath - the path to the process messages zkey
- * @param tallyVotesZkeyPath - the path to the tally votes zkey
- * @param vkRegistry - the address of the vkRegistry contract
- * @param subsidyZkeyPath - the path to the subsidy zkey
- * @param quiet - whether to log the output
+ * @param SetVerifyingKeysArgs - The arguments for the setVerifyingKeys command
  */
-export const setVerifyingKeys = async (
-  stateTreeDepth: number,
-  intStateTreeDepth: number,
-  messageTreeDepth: number,
-  voteOptionTreeDepth: number,
-  messageBatchDepth: number,
-  processMessagesZkeyPath: string,
-  tallyVotesZkeyPath: string,
-  vkRegistry?: string,
-  subsidyZkeyPath?: string,
+export const setVerifyingKeys = async ({
+  stateTreeDepth,
+  intStateTreeDepth,
+  messageTreeDepth,
+  voteOptionTreeDepth,
+  messageBatchDepth,
+  processMessagesZkeyPath,
+  tallyVotesZkeyPath,
+  vkRegistry,
+  subsidyZkeyPath,
   quiet = true,
-): Promise<void> => {
+}: SetVerifyingKeysArgs): Promise<void> => {
   banner(quiet);
   // we must either have the contract as param or stored to file
   if (!readContractAddress("VkRegistry") && !vkRegistry) {

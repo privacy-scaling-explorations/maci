@@ -32,30 +32,24 @@ import {
   logYellow,
   readContractAddress,
   success,
+  type Proof,
+  type ProveOnChainArgs,
 } from "../utils";
-import { Proof } from "../utils/interfaces";
 
 /**
  * Command to prove the result of a poll on-chain
- * @param pollId - the id of the poll
- * @param proofDir - the directory containing the proofs
- * @param subsidyEnabled - whether to deploy subsidy contract
- * @param maciAddress - the address of the MACI contract
- * @param messageProcessorAddress - the address of the MessageProcessor contract
- * @param tallyAddress - the address of the Tally contract
- * @param subsidyAddress - the address of the Subsidy contract
- * @param quiet - whether to log the output
+ * @param ProveOnChainArgs - The arguments for the proveOnChain command
  */
-export const proveOnChain = async (
-  pollId: string,
-  proofDir: string,
-  subsidyEnabled: boolean,
-  maciAddress?: string,
-  messageProcessorAddress?: string,
-  tallyAddress?: string,
-  subsidyAddress?: string,
+export const proveOnChain = async ({
+  pollId,
+  proofDir,
+  subsidyEnabled,
+  maciAddress,
+  messageProcessorAddress,
+  tallyAddress,
+  subsidyAddress,
   quiet = true,
-): Promise<void> => {
+}: ProveOnChainArgs): Promise<void> => {
   banner(quiet);
   const signer = await getDefaultSigner();
 

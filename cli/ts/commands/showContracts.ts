@@ -1,8 +1,6 @@
 import fs from "fs";
 
-import { banner } from "../utils/banner";
-import { contractAddressesStore } from "../utils/constants";
-import { logGreen, info, logError } from "../utils/theme";
+import { banner, contractAddressesStore, logGreen, info, logError } from "../utils";
 
 /**
  * Utility to print all contracts that have been deployed using maci-cli

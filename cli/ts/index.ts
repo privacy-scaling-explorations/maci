@@ -50,13 +50,13 @@ program
   .requiredOption("-s, --stateTreeDepth <stateTreeDepth>", "the state tree depth", parseInt)
   .action(async (cmdOptions) => {
     try {
-      await deploy(
-        cmdOptions.stateTreeDepth,
-        cmdOptions.initialVoiceCredits,
-        cmdOptions.initialVoiceCreditsProxyAddress,
-        cmdOptions.signupGatekeeperAddress,
-        cmdOptions.quiet,
-      );
+      await deploy({
+        stateTreeDepth: cmdOptions.stateTreeDepth,
+        initialVoiceCredits: cmdOptions.initialVoiceCredits,
+        initialVoiceCreditsProxyAddress: cmdOptions.initialVoiceCreditsProxyAddress,
+        signupGatekeeperAddress: cmdOptions.signupGatekeeperAddress,
+        quiet: cmdOptions.quiet,
+      });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -86,18 +86,18 @@ program
   )
   .action(async (cmdOptions) => {
     try {
-      await checkVerifyingKeys(
-        cmdOptions.stateTreeDepth,
-        cmdOptions.intStateTreeDepth,
-        cmdOptions.msgTreeDepth,
-        cmdOptions.voteOptionTreeDepth,
-        cmdOptions.msgBatchDepth,
-        cmdOptions.processMessagesZkey,
-        cmdOptions.tallyVotesZkey,
-        cmdOptions.vkContract,
-        cmdOptions.subsidyZkey,
-        cmdOptions.quiet,
-      );
+      await checkVerifyingKeys({
+        stateTreeDepth: cmdOptions.stateTreeDepth,
+        intStateTreeDepth: cmdOptions.intStateTreeDepth,
+        messageTreeDepth: cmdOptions.msgTreeDepth,
+        voteOptionTreeDepth: cmdOptions.voteOptionTreeDepth,
+        messageBatchDepth: cmdOptions.msgBatchDepth,
+        processMessagesZkeyPath: cmdOptions.processMessagesZkey,
+        tallyVotesZkeyPath: cmdOptions.tallyVotesZkey,
+        vkRegistry: cmdOptions.vkContract,
+        subsidyZkeyPath: cmdOptions.subsidyZkey,
+        quiet: cmdOptions.quiet,
+      });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -130,7 +130,13 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
-      await airdrop(cmdObj.amount, cmdObj.contract, cmdObj.pollId, cmdObj.tokenAddress, cmdObj.quiet);
+      await airdrop({
+        amount: cmdObj.amount,
+        maciAddress: cmdObj.contract,
+        pollId: cmdObj.pollId,
+        contractAddress: cmdObj.tokenAddress,
+        quiet: cmdObj.quiet,
+      });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -182,20 +188,20 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
-      await deployPoll(
-        cmdObj.duration,
-        cmdObj.maxMessages,
-        cmdObj.maxVoteOptions,
-        cmdObj.intStateTreeDepth,
-        cmdObj.msgBatchDepth,
-        cmdObj.msgTreeDepth,
-        cmdObj.voteOptionTreeDepth,
-        cmdObj.pubkey,
-        cmdObj.subsidyEnabled,
-        cmdObj.maciAddress,
-        cmdObj.vkRegistryAddress,
-        cmdObj.quiet,
-      );
+      await deployPoll({
+        pollDuration: cmdObj.duration,
+        maxMessages: cmdObj.maxMessages,
+        maxVoteOptions: cmdObj.maxVoteOptions,
+        intStateTreeDepth: cmdObj.intStateTreeDepth,
+        messageTreeSubDepth: cmdObj.msgBatchDepth,
+        messageTreeDepth: cmdObj.msgTreeDepth,
+        voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
+        coordinatorPubkey: cmdObj.pubkey,
+        subsidyEnabled: cmdObj.subsidyEnabled,
+        maciAddress: cmdObj.maciAddress,
+        vkRegistryAddress: cmdObj.vkRegistryAddress,
+        quiet: cmdObj.quiet,
+      });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -225,18 +231,18 @@ program
   )
   .action(async (cmdObj) => {
     try {
-      await setVerifyingKeys(
-        cmdObj.stateTreeDepth,
-        cmdObj.intStateTreeDepth,
-        cmdObj.msgTreeDepth,
-        cmdObj.voteOptionTreeDepth,
-        cmdObj.msgBatchDepth,
-        cmdObj.processMessagesZkey,
-        cmdObj.tallyVotesZkey,
-        cmdObj.vkRegistry,
-        cmdObj.subsidyZkey,
-        cmdObj.quiet,
-      );
+      await setVerifyingKeys({
+        stateTreeDepth: cmdObj.stateTreeDepth,
+        intStateTreeDepth: cmdObj.intStateTreeDepth,
+        messageTreeDepth: cmdObj.msgTreeDepth,
+        voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
+        messageBatchDepth: cmdObj.msgBatchDepth,
+        processMessagesZkeyPath: cmdObj.processMessagesZkey,
+        tallyVotesZkeyPath: cmdObj.tallyVotesZkey,
+        vkRegistry: cmdObj.vkRegistry,
+        subsidyZkeyPath: cmdObj.subsidyZkey,
+        quiet: cmdObj.quiet,
+      });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -260,18 +266,18 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
-      await publish(
-        cmdObj.pubkey,
-        cmdObj.stateIndex,
-        cmdObj.voteOptionIndex,
-        cmdObj.nonce,
-        cmdObj.pollId,
-        cmdObj.newVoteWeight,
-        cmdObj.contract,
-        cmdObj.salt,
-        cmdObj.privkey,
-        cmdObj.quiet,
-      );
+      await publish({
+        pubkey: cmdObj.pubkey,
+        stateIndex: cmdObj.stateIndex,
+        voteOptionIndex: cmdObj.voteOptionIndex,
+        nonce: cmdObj.nonce,
+        pollId: cmdObj.pollId,
+        newVoteWeight: cmdObj.newVoteWeight,
+        maciContractAddress: cmdObj.contract,
+        salt: cmdObj.salt,
+        privateKey: cmdObj.privkey,
+        quiet: cmdObj.quiet,
+      });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -286,7 +292,12 @@ program
   .option("-n, --num-queue-ops <numQueueOps>", "the number of queue operations", parseInt)
   .action(async (cmdObj) => {
     try {
-      await mergeMessages(cmdObj.pollId, cmdObj.maciContractAddress, cmdObj.numQueueOps?.toString(), cmdObj.quiet);
+      await mergeMessages({
+        pollId: cmdObj.pollId,
+        maciContractAddress: cmdObj.maciContractAddress,
+        numQueueOps: cmdObj.numQueueOps?.toString(),
+        quiet: cmdObj.quiet,
+      });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -301,7 +312,12 @@ program
   .option("-n, --num-queue-ops <numQueueOps>", "the number of queue operations", parseInt)
   .action(async (cmdObj) => {
     try {
-      await mergeSignups(cmdObj.pollId, cmdObj.maciContractAddress, cmdObj.numQueueOps?.toString(), cmdObj.quiet);
+      await mergeSignups({
+        pollId: cmdObj.pollId,
+        maciContractAddress: cmdObj.maciContractAddress,
+        numQueueOps: cmdObj.numQueueOps?.toString(),
+        quiet: cmdObj.quiet,
+      });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -330,7 +346,13 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
-      await signup(cmdObj.pubkey, cmdObj.maciAddress, cmdObj.sgData, cmdObj.ivcpData, cmdObj.quiet);
+      await signup({
+        maciPubKey: cmdObj.pubkey,
+        maciAddress: cmdObj.maciAddress,
+        sgDataArg: cmdObj.sgData,
+        ivcpDataArg: cmdObj.ivcpData,
+        quiet: cmdObj.quiet,
+      });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -346,7 +368,13 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
-      await topup(cmdObj.amount, cmdObj.stateIndex, cmdObj.pollId, cmdObj.maciAddress, cmdObj.quiet);
+      await topup({
+        amount: cmdObj.amount,
+        stateIndex: cmdObj.stateIndex,
+        pollId: cmdObj.pollId,
+        maciAddress: cmdObj.maciAddress,
+        quiet: cmdObj.quiet,
+      });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -387,17 +415,16 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
-      await verify(
-        cmdObj.pollId.toString(),
-        cmdObj.subsidyEnabled,
-        cmdObj.tallyFile,
-        undefined,
-        cmdObj.contract,
-        cmdObj.tallyContract,
-        cmdObj.subsidyContract,
-        cmdObj.subsidyFile,
-        cmdObj.quiet,
-      );
+      await verify({
+        pollId: cmdObj.pollId.toString(),
+        subsidyEnabled: cmdObj.subsidyEnabled,
+        tallyFile: cmdObj.tallyFile,
+        maciAddress: cmdObj.contract,
+        tallyAddress: cmdObj.tallyContract,
+        subsidyAddress: cmdObj.subsidyContract,
+        subsidyFile: cmdObj.subsidyFile,
+        quiet: cmdObj.quiet,
+      });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -437,34 +464,34 @@ program
   .option("-bb, --blocks-per-batch <blockPerBatch>", "the number of blocks to process per batch", parseInt)
   .action(async (cmdObj) => {
     try {
-      await genProofs(
-        cmdObj.output,
-        cmdObj.tallyFile,
-        cmdObj.tallyZkey,
-        cmdObj.processZkey,
-        cmdObj.pollId,
-        cmdObj.subsidyFile,
-        cmdObj.subsidyZkey,
-        cmdObj.rapidsnark,
-        cmdObj.processWitnessgen,
-        cmdObj.processWitnessdat,
-        cmdObj.tallyWitnessgen,
-        cmdObj.tallyWitnessdat,
-        cmdObj.subsidyWitnessgen,
-        cmdObj.subsidyWitnessdat,
-        cmdObj.privkey,
-        cmdObj.contract,
-        cmdObj.transactionHash,
-        cmdObj.processWasm,
-        cmdObj.tallyWasm,
-        cmdObj.subsidyWasm,
-        cmdObj.wasm,
-        cmdObj.stateFile,
-        cmdObj.startBlock,
-        cmdObj.endBlock,
-        cmdObj.blocksPerBatch,
-        cmdObj.quiet,
-      );
+      await genProofs({
+        outputDir: cmdObj.output,
+        tallyFile: cmdObj.tallyFile,
+        tallyZkey: cmdObj.tallyZkey,
+        processZkey: cmdObj.processZkey,
+        pollId: cmdObj.pollId,
+        subsidyFile: cmdObj.subsidyFile,
+        subsidyZkey: cmdObj.subsidyZkey,
+        rapidsnark: cmdObj.rapidsnark,
+        processWitgen: cmdObj.processWitnessgen,
+        processDatFile: cmdObj.processWitnessdat,
+        tallyWitgen: cmdObj.tallyWitnessgen,
+        tallyDatFile: cmdObj.tallyWitnessdat,
+        subsidyWitgen: cmdObj.subsidyWitnessgen,
+        subsidyDatFile: cmdObj.subsidyWitnessdat,
+        coordinatorPrivKey: cmdObj.privkey,
+        maciAddress: cmdObj.contract,
+        transactionHash: cmdObj.transactionHash,
+        processWasm: cmdObj.processWasm,
+        tallyWasm: cmdObj.tallyWasm,
+        subsidyWasm: cmdObj.subsidyWasm,
+        useWasm: cmdObj.wasm,
+        stateFile: cmdObj.stateFile,
+        startBlock: cmdObj.startBlock,
+        endBlock: cmdObj.endBlock,
+        blocksPerBatch: cmdObj.blocksPerBatch,
+        quiet: cmdObj.quiet,
+      });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -485,19 +512,19 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
-      await genLocalState(
-        cmdObj.output.toString(),
-        cmdObj.pollId,
-        cmdObj.contract,
-        cmdObj.privkey,
-        cmdObj.rpcProvider,
-        cmdObj.endBlock,
-        cmdObj.startBlock,
-        cmdObj.blocksPerBatch,
-        cmdObj.transactionHash,
-        cmdObj.sleep,
-        cmdObj.quiet,
-      );
+      await genLocalState({
+        outputPath: cmdObj.output.toString(),
+        pollId: cmdObj.pollId,
+        maciContractAddress: cmdObj.contract,
+        coordinatorPrivateKey: cmdObj.privkey,
+        ethereumProvider: cmdObj.rpcProvider,
+        endBlock: cmdObj.endBlock,
+        startBlock: cmdObj.startBlock,
+        blockPerBatch: cmdObj.blocksPerBatch,
+        transactionHash: cmdObj.transactionHash,
+        sleep: cmdObj.sleep,
+        quiet: cmdObj.quiet,
+      });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -521,16 +548,16 @@ program
   .requiredOption("-f, --proof-dir <proofDir>", "the proof output directory from the genProofs subcommand")
   .action(async (cmdObj) => {
     try {
-      await proveOnChain(
-        cmdObj.pollId.toString(),
-        cmdObj.proofDir,
-        cmdObj.subsidyEnabled,
-        cmdObj.contract,
-        cmdObj.messageProcessorAddress,
-        cmdObj.tallyContract,
-        cmdObj.subsidyContract,
-        cmdObj.quiet,
-      );
+      await proveOnChain({
+        pollId: cmdObj.pollId.toString(),
+        proofDir: cmdObj.proofDir,
+        subsidyEnabled: cmdObj.subsidyEnabled,
+        maciAddress: cmdObj.contract,
+        messageProcessorAddress: cmdObj.messageProcessorAddress,
+        tallyAddress: cmdObj.tallyContract,
+        subsidyAddress: cmdObj.subsidyContract,
+        quiet: cmdObj.quiet,
+      });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -563,4 +590,20 @@ export {
   verify,
 } from "./commands";
 
-export type { DeployedContracts, PollContracts, TallyData } from "./utils";
+export type {
+  DeployedContracts,
+  PollContracts,
+  TallyData,
+  DeployPollArgs,
+  GenLocalStateArgs,
+  GenProofsArgs,
+  PublishArgs,
+  SignupArgs,
+  MergeMessagesArgs,
+  MergeSignupsArgs,
+  AirdropArgs,
+  TopupArgs,
+  VerifyArgs,
+  ProveOnChainArgs,
+  DeployArgs,
+} from "./utils";

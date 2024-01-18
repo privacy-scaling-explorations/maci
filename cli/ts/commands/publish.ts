@@ -3,39 +3,36 @@ import { type MACI, type Poll, getDefaultSigner, parseArtifact } from "maci-cont
 import { genRandomSalt } from "maci-crypto";
 import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs";
 
-import { banner } from "../utils/banner";
-import { contractExists } from "../utils/contracts";
-import { promptSensitiveValue } from "../utils/prompts";
-import { validateSalt } from "../utils/salt";
-import { readContractAddress } from "../utils/storage";
-import { info, logError, logGreen, logYellow } from "../utils/theme";
+import {
+  type PublishArgs,
+  info,
+  logError,
+  logGreen,
+  logYellow,
+  readContractAddress,
+  validateSalt,
+  promptSensitiveValue,
+  contractExists,
+  banner,
+} from "../utils";
 
 /**
  * Publish a new message to a MACI Poll contract
- * @param pubkey - the public key of the user
- * @param stateIndex - the index of the state leaf
- * @param voteOptionIndex - the index of the vote option
- * @param nonce - the nonce of the message
- * @param pollId - the id of the poll
- * @param newVoteWeight - the new vote weight
- * @param maciContractAddress - the address of the MACI contract
- * @param salt - the salt of the message
- * @param privateKey - the private key of the user
- * @param quiet - whether to log the output
- * @returns the ephemeral private key used to encrypt the message
+ * @param PublishArgs - The arguments for the publish command
+ * @returns The ephemeral private key used to encrypt the message
  */
-export const publish = async (
-  pubkey: string,
-  stateIndex: number,
-  voteOptionIndex: number,
-  nonce: number,
-  pollId: number,
-  newVoteWeight: number,
-  maciContractAddress?: string,
-  salt?: string,
-  privateKey?: string,
+export const publish = async ({
+  pubkey,
+  stateIndex,
+  voteOptionIndex,
+  nonce,
+  pollId,
+  newVoteWeight,
+  maciContractAddress,
+  salt,
+  privateKey,
   quiet = true,
-): Promise<string> => {
+}: PublishArgs): Promise<string> => {
   banner(quiet);
 
   // validate that the pub key of the user is valid
