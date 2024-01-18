@@ -38,8 +38,11 @@ export const storeContractAddress = (contractName: string, address: string): voi
  * @returns the contract address or a undefined it it does not exist
  */
 export const readContractAddress = (contractName: string): string => {
-  const contractAddrs = readJSONFile(contractAddressesStore);
-  return contractAddrs[contractName] || "";
+  try {
+    return readJSONFile(contractAddressesStore)[contractName] || "";
+  } catch (error) {
+    return "";
+  }
 };
 
 /**
