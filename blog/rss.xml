@@ -4,23 +4,79 @@
         <title>MACI Blog</title>
         <link>https://maci.pse.dev/blog</link>
         <description>MACI Blog</description>
-        <lastBuildDate>Thu, 18 Jan 2024 16:45:07 GMT</lastBuildDate>
+        <lastBuildDate>Thu, 18 Jan 2024 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>en</language>
         <item>
-            <title><![CDATA[Welcome to MACI]]></title>
-            <link>https://maci.pse.dev/blog/welcome</link>
-            <guid>https://maci.pse.dev/blog/welcome</guid>
-            <pubDate>Thu, 18 Jan 2024 16:45:07 GMT</pubDate>
-            <description><![CDATA[Welcome to the MACI blog! This is where we will post updates on the project, including new releases, new features, and other news.]]></description>
-            <content:encoded><![CDATA[<p>Welcome to the MACI blog! This is where we will post updates on the project, including new releases, new features, and other news.</p>]]></content:encoded>
+            <title><![CDATA[New year, new MACI]]></title>
+            <link>https://maci.pse.dev/blog/2024-team-roadmap</link>
+            <guid>https://maci.pse.dev/blog/2024-team-roadmap</guid>
+            <pubDate>Thu, 18 Jan 2024 00:00:00 GMT</pubDate>
+            <description><![CDATA[Greetings anons,]]></description>
+            <content:encoded><![CDATA[<p>Greetings anons,</p>
+<p>Happy 2024 and welcome to the new MACI documentation website and blog! Moving forward, we’ll post our latest project news and development updates here.</p>
+<p>We have a few exciting announcements to share, but first, a quick review:</p>
+<h2 class="anchor anchorWithStickyNavbar_m7eB" id="overview-of-maci">Overview of MACI<a href="https://maci.pse.dev/blog/2024-team-roadmap#overview-of-maci" class="hash-link" aria-label="Direct link to Overview of MACI" title="Direct link to Overview of MACI">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="wtf-is-maci">WTF is MACI?<a href="https://maci.pse.dev/blog/2024-team-roadmap#wtf-is-maci" class="hash-link" aria-label="Direct link to WTF is MACI?" title="Direct link to WTF is MACI?">​</a></h3>
+<p><strong>Minimal Anti-Collusion Infrastructure (MACI) is an on-chain voting system which protects privacy and minimizes the risk of collusion and bribery.</strong></p>
+<p>MACI is a set of smart contracts and zero-knowledge circuits upon which developers can build applications, such as voting applications or quadratic funding platforms. It was originally <a href="https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413" target="_blank" rel="noopener noreferrer">proposed by Vitalik Buterin</a> in 2019, then implemented and maintained by community members with support from the <a href="https://ethereum.foundation/" target="_blank" rel="noopener noreferrer">Ethereum Foundation</a>. It's now actively maintained within <a href="https://pse.dev/" target="_blank" rel="noopener noreferrer">Privacy &amp; Scaling Explorations (PSE)</a>.</p>
+<p>Using MACI, <strong>voting is private</strong>, yet <strong>voting results are public</strong>. On-chain votes are encrypted, and no voter can prove how they voted, but final results are published publicly and verified on-chain with cryptographic proofs to prevent censorship, bribery, collusion, fraud, and other nefarious acts common in public polling processes.</p>
+<p>To understand the promise of on-chain voting, start with <a href="https://vitalik.eth.limo/general/2021/05/25/voting2.html" target="_blank" rel="noopener noreferrer">Vitalik's post on blockchain voting</a>. For a general overview, brief history, and context on the importance of MACI, check out the <a href="https://maci.pse.dev/blog/maci-1-0-release">Release Announcement: MACI 1.0</a> by Wei Jie, one of the creators. He also created a helpful <a href="https://www.youtube.com/watch?v=sKuNj_IQVYI" target="_blank" rel="noopener noreferrer">overview of MACI video</a>. Kyle Charbonnet wrote a great <a href="https://maci.pse.dev/blog/maci-1-0-technical-introduction">Technical Introduction to MACI 1.0</a> that provides a walkthrough on how MACI operates. I also recently presented an <a href="https://app.streameth.org/zuzalu/zuconnect_hackathon/session/maci_workshop" target="_blank" rel="noopener noreferrer">introduction to MACI</a> at Devconnect 2023.</p>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="maci-vision">MACI Vision<a href="https://maci.pse.dev/blog/2024-team-roadmap#maci-vision" class="hash-link" aria-label="Direct link to MACI Vision" title="Direct link to MACI Vision">​</a></h3>
+<p>MACI is a public good that is quickly becoming a core piece of infrastructure for Ethereum-based applications to support on-chain voting while protecting user privacy.</p>
+<p><strong>Our MACI team’s vision is to build the most secure e-voting solution in the world.</strong></p>
+<p>Let's hop in to our updates to see how we plan to execute on this bold vision.</p>
+<h2 class="anchor anchorWithStickyNavbar_m7eB" id="project-updates">Project updates<a href="https://maci.pse.dev/blog/2024-team-roadmap#project-updates" class="hash-link" aria-label="Direct link to Project updates" title="Direct link to Project updates">​</a></h2>
+<p>New year, new team, new roadmap!</p>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="1-new-team">1) New team<a href="https://maci.pse.dev/blog/2024-team-roadmap#1-new-team" class="hash-link" aria-label="Direct link to 1) New team" title="Direct link to 1) New team">​</a></h3>
+<p>Over the past few months we've undergone a lot of changes within MACI's core team. I'd like to take this chance to introduce and welcome our new core members!</p>
+<p>MACI is now maintained and will be continuously be improved by our core team, which consists of:</p>
+<ul>
+<li><a href="https://github.com/ctrlc03" target="_blank" rel="noopener noreferrer">ctrlc03</a></li>
+<li><a href="https://github.com/samajammin" target="_blank" rel="noopener noreferrer">Sam Richards</a></li>
+<li><a href="https://github.com/0xmad" target="_blank" rel="noopener noreferrer">0xmad</a></li>
+<li><a href="https://github.com/kittybest" target="_blank" rel="noopener noreferrer">kittybest</a></li>
+<li><a href="https://github.com/crisgarner" target="_blank" rel="noopener noreferrer">crisgarner</a></li>
+<li><a href="https://github.com/aguzmant103" target="_blank" rel="noopener noreferrer">aguzmant103</a></li>
+<li><a href="https://github.com/Vee-18" target="_blank" rel="noopener noreferrer">Vee</a></li>
+</ul>
+<p>Now is a great time to mention that <strong>we stand on the shoulders of giants</strong>. Many gigabrains have made heroic advancements in this project - a big "thank you" to all those who have contributed to date! There are too many people to list here, but calling out a few notable players:</p>
+<ul>
+<li>Vitalik, Barry, Wei Jei for the original idea, architecture, initial implementation, and ongoing guidance</li>
+<li>Recent team members that helped launched our <a href="https://maci.pse.dev/blog/maci-v1-1-1-release">v1.1.1 release</a> and have since moved on: Q, Jei, Chao, and Daehyun</li>
+</ul>
+<p>We're excited to carry the baton forward to bring the vision of MACI to reality!</p>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="2-new-roadmap">2) New roadmap<a href="https://maci.pse.dev/blog/2024-team-roadmap#2-new-roadmap" class="hash-link" aria-label="Direct link to 2) New roadmap" title="Direct link to 2) New roadmap">​</a></h3>
+<p>As a team building in the open source space, we're taking a concerted effort to make our work more accessible and to foster more collaboration and feedback from our community. As part of this work, we're making our core team's roadmap public and will continue to do so.</p>
+<p><a href="https://maci.pse.dev/roadmap">Read our full 2024 roadmap here</a>.</p>
+<p>TL;DR: We'll be focusing most of our time on:</p>
+<ol>
+<li><strong>Developer experience</strong> (documentation, tooling, refactoring) so that MACI is easier for projects to integrate and use</li>
+<li><strong>Community engagement</strong> (integration support, hackathon bounties, conference presentations) to more quickly iterate and improve based off feedback</li>
+<li><a href="https://qf.pse.dev/" target="_blank" rel="noopener noreferrer"><strong>Quadratic Funding Experiments</strong></a> to advance real-world adoption of this technology</li>
+</ol>
+<p>We're happy to share that these efforts are already underway. We expect to release a new and improved version of MACI within the next month. We're exploring MACI integrations and are in discussions with projects including <a href="https://www.gitcoin.co/grants-stack" target="_blank" rel="noopener noreferrer">Gitcoin Grants Stack</a> and <a href="https://community.optimism.io/docs/governance/retropgf-3/#" target="_blank" rel="noopener noreferrer">Optimism RetroPFG</a> on how MACI could provide collusion resistance to those systems. Major shoutout to <a href="https://clr.fund/#/" target="_blank" rel="noopener noreferrer">clr.fund</a> (who became the first production project to integrate MACI back in 2020)! We're actively working with clr.fund to help them upgrade their stack to the latest version of MACI. Expect to see announcements of upcoming MACI-enabled quadratic funding rounds soon!</p>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="3-new-documentation">3) New documentation<a href="https://maci.pse.dev/blog/2024-team-roadmap#3-new-documentation" class="hash-link" aria-label="Direct link to 3) New documentation" title="Direct link to 3) New documentation">​</a></h3>
+<p>MACI now has a fresh new website, with <a href="https://maci.pse.dev/docs/introduction">revamped documentation</a>!</p>
+<p>We immediately recognized the need for improved educational content about MACI, as it's a complex project with several core components (ZK circuits, Ethereum smart contracts, TypeScript libraries). Whether you're a developer looking to integrate MACI into your application, an open-source developer interested in contributing, or a product manager seeking to understand the high-level mechanics of MACI, we want to hear from you in order to continuously improve your onboarding experience.</p>
+<p><a href="https://maci.pse.dev/docs/introduction">Please take a look and let us know what you think</a>.</p>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="4-new-community-access">4) New community access<a href="https://maci.pse.dev/blog/2024-team-roadmap#4-new-community-access" class="hash-link" aria-label="Direct link to 4) New community access" title="Direct link to 4) New community access">​</a></h3>
+<p>Whether you're interested in contributing to MACI or looking to stay up-to-date on the latest happenings, it's now much easier to stay connected with us and the community. Here are some ways you can keep in touch:</p>
+<ul>
+<li><a href="https://github.com/privacy-scaling-explorations/maci" target="_blank" rel="noopener noreferrer">GitHub</a>: open an issue or PR or <a href="https://github.com/privacy-scaling-explorations/maci/discussions" target="_blank" rel="noopener noreferrer">join our discussions</a></li>
+<li><a href="https://discord.com/invite/sF5CT5rzrR" target="_blank" rel="noopener noreferrer">Discord</a>: join the <a href="https://discord.com/invite/sF5CT5rzrR" target="_blank" rel="noopener noreferrer">PSE server</a> and hop in the <code>#🗳️-maci</code>&nbsp;channel to chat with our core team</li>
+<li><a href="https://twitter.com/zkmaci" target="_blank" rel="noopener noreferrer">Twitter/X</a>: follow our new handle <a href="https://twitter.com/zkmaci" target="_blank" rel="noopener noreferrer">@zkMACI</a> for updates or to hit us up with feedback</li>
+<li>This website: we'll continue to post updates here (at least 1 blog post every quarter, we promise 🤞)!</li>
+</ul>
+<p>Expect to see announcements around new MACI releases, integrations, event participation (quadratic funding rounds, conferences, hackathons), and grant RFPs.</p>
+<p>We look forward to collaborating closely with our open source community this year!</p>
+<h2 class="anchor anchorWithStickyNavbar_m7eB" id="how-does-that-sound">How does that sound?<a href="https://maci.pse.dev/blog/2024-team-roadmap#how-does-that-sound" class="hash-link" aria-label="Direct link to How does that sound?" title="Direct link to How does that sound?">​</a></h2>
+<p>Questions? Concerns? Ideas? We’d love to hear from you!</p>
+<p>If there is a feature you think we should work on, or an initiative you'd like to collaborate with us on, please let us know! We welcome input from anyone in the community.</p>
+<p>Onward and upward 🚀</p>]]></content:encoded>
             <category>maci</category>
-            <category>ef</category>
-            <category>pse</category>
-            <category>zk</category>
-            <category>voting</category>
-            <category>privacy</category>
+            <category>roadmap</category>
         </item>
         <item>
             <title><![CDATA[Maci v1.1.1 Release]]></title>
