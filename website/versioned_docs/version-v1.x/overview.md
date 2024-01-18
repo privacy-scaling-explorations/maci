@@ -7,7 +7,7 @@ sidebar_position: 2
 
 # MACI Overview
 
-To implement an on-chain, privacy-preserving, voting system, the MACI protocol consists of three subsystems in different programming languages:
+The MACI codebase consists of three subsystems in different programming languages:
 
 1. Circom circuits
 2. Solidity smart contracts
