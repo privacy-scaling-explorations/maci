@@ -7,27 +7,30 @@ import {
   getDefaultSigner,
 } from "maci-contracts";
 
-import { logError, logGreen, success, DEFAULT_INITIAL_VOICE_CREDITS, type DeployedContracts } from "../utils";
-import { banner } from "../utils/banner";
-import { readContractAddress, storeContractAddress } from "../utils/storage";
+import {
+  banner,
+  logError,
+  logGreen,
+  success,
+  readContractAddress,
+  storeContractAddress,
+  DEFAULT_INITIAL_VOICE_CREDITS,
+  type DeployedContracts,
+  type DeployArgs,
+} from "../utils";
 
 /**
  * Deploy MACI and related contracts
- * @param stateTreeDepth - the depth of the state tree
- * @param vkRegistryAddress - the address of the vkRegistry contract
- * @param initialVoiceCredits - the initial voice credits to be minted
- * @param initialVoiceCreditsProxyAddress - the address of the initialVoiceCreditsProxy contract
- * @param signupGatekeeperAddress - the address of the signupGatekeeper contract
- * @param quiet - whether to log the output
- * @returns the addresses of the deployed contracts
+ * @param DeployArgs - The arguments for the deploy command
+ * @returns The addresses of the deployed contracts
  */
-export const deploy = async (
-  stateTreeDepth: number,
-  initialVoiceCredits?: number,
-  initialVoiceCreditsProxyAddress?: string,
-  signupGatekeeperAddress?: string,
+export const deploy = async ({
+  stateTreeDepth,
+  initialVoiceCredits,
+  initialVoiceCreditsProxyAddress,
+  signupGatekeeperAddress,
   quiet = true,
-): Promise<DeployedContracts> => {
+}: DeployArgs): Promise<DeployedContracts> => {
   banner(quiet);
 
   if (initialVoiceCreditsProxyAddress && initialVoiceCredits) {

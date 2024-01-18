@@ -140,3 +140,694 @@ export interface ISnarkJSVerificationKey {
   vk_alphabeta_12: BigNumberish[][][];
   IC: BigNumberish[][];
 }
+
+/**
+ * Interface for the arguments to the airdrop command
+ */
+export interface AirdropArgs {
+  /**
+   * The amount of credits to airdrop
+   */
+  amount: number;
+
+  /**
+   * The address of the ERC20 contract
+   */
+  contractAddress?: string;
+
+  /**
+   * The id of the poll
+   */
+  pollId?: number;
+
+  /**
+   * The address of the MACI contract
+   */
+  maciAddress?: string;
+
+  /**
+   * Whether to log the output
+   */
+  quiet?: boolean;
+}
+
+/**
+ * Interface for the arguments to the checkVerifyingKeys command
+ */
+export interface CheckVerifyingKeysArgs {
+  /**
+   * The depth of the state tree
+   */
+  stateTreeDepth: number;
+
+  /**
+   * The depth of the state subtree
+   */
+  intStateTreeDepth: number;
+
+  /**
+   * The depth of the message tree
+   */
+  messageTreeDepth: number;
+
+  /**
+   * The depth of the vote option tree
+   */
+  voteOptionTreeDepth: number;
+
+  /**
+   * The depth of the message batch tree
+   */
+  messageBatchDepth: number;
+
+  /**
+   * The path to the process messages zkey
+   */
+  processMessagesZkeyPath: string;
+
+  /**
+   * The path to the tally votes zkey
+   */
+  tallyVotesZkeyPath: string;
+
+  /**
+   * The address of the VkRegistry contract
+   */
+  vkRegistry?: string;
+
+  /**
+   * The path to the subsidy zkey
+   */
+  subsidyZkeyPath?: string;
+
+  /**
+   * Whether to log the output
+   */
+  quiet?: boolean;
+}
+
+/**
+ * Interface for the arguments to the deploy command
+ */
+export interface DeployArgs {
+  /**
+   * The depth of the state tree
+   */
+  stateTreeDepth: number;
+
+  /**
+   * The initial voice credits to be minted
+   */
+  initialVoiceCredits?: number;
+
+  /**
+   * The address of the initialVoiceCreditsProxy contract
+   */
+  initialVoiceCreditsProxyAddress?: string;
+
+  /**
+   * The address of the signupGatekeeper contract
+   */
+  signupGatekeeperAddress?: string;
+
+  /**
+   * Whether to log the output
+   */
+  quiet?: boolean;
+}
+
+/**
+ * Interface for the arguments to the deployPoll command
+ */
+export interface DeployPollArgs {
+  /**
+   * The duration of the poll in seconds
+   */
+  pollDuration: number;
+
+  /**
+   * The maximum number of messages that can be submitted
+   */
+  maxMessages: number;
+
+  /**
+   * The maximum number of vote options
+   */
+  maxVoteOptions: number;
+
+  /**
+   * The depth of the intermediate state tree
+   */
+  intStateTreeDepth: number;
+
+  /**
+   * The depth of the message tree sublevels
+   */
+  messageTreeSubDepth: number;
+
+  /**
+   * The depth of the message tree
+   */
+  messageTreeDepth: number;
+
+  /**
+   * The depth of the vote option tree
+   */
+  voteOptionTreeDepth: number;
+
+  /**
+   * The coordinator's public key
+   */
+  coordinatorPubkey: string;
+
+  /**
+   * Whether to deploy subsidy contract
+   */
+  subsidyEnabled: boolean;
+
+  /**
+   * The MACI contract address
+   */
+  maciAddress?: string;
+
+  /**
+   * The vkRegistry contract address
+   */
+  vkRegistryAddress?: string;
+
+  /**
+   * Whether to log the output to the console
+   */
+  quiet?: boolean;
+}
+
+/**
+ * Interface for the arguments to the genLocalState command
+ * Generate a local MACI state from the smart contracts events
+ */
+export interface GenLocalStateArgs {
+  /**
+   * The path where to write the state
+   */
+  outputPath: string;
+
+  /**
+   * The id of the poll
+   */
+  pollId: number;
+
+  /**
+   * The address of the MACI contract
+   */
+  maciContractAddress?: string;
+
+  /**
+   * The private key of the MACI coordinator
+   */
+  coordinatorPrivateKey?: string;
+
+  /**
+   * The ethereum provider
+   */
+  ethereumProvider?: string;
+
+  /**
+   * The end block number
+   */
+  endBlock?: number;
+
+  /**
+   * The start block number
+   */
+  startBlock?: number;
+
+  /**
+   * The number of blocks to fetch per batch
+   */
+  blockPerBatch?: number;
+
+  /**
+   * The transaction hash
+   */
+  transactionHash?: string;
+
+  /**
+   * The sleep time between batches
+   */
+  sleep?: number;
+
+  /**
+   * Whether to log the output
+   */
+  quiet?: boolean;
+}
+
+/**
+ * Interface for the arguments to the genProof command
+ */
+export interface GenProofsArgs {
+  /**
+   * The directory to store the proofs
+   */
+  outputDir: string;
+
+  /**
+   * The file to store the tally proof
+   */
+  tallyFile: string;
+
+  /**
+   * The path to the tally zkey file
+   */
+  tallyZkey: string;
+
+  /**
+   * The path to the process zkey file
+   */
+  processZkey: string;
+
+  /**
+   * The id of the poll
+   */
+  pollId: number;
+
+  /**
+   * The file to store the subsidy proof
+   */
+  subsidyFile?: string;
+
+  /**
+   * The path to the subsidy zkey file
+   */
+  subsidyZkey?: string;
+
+  /**
+   * The path to the rapidsnark binary
+   */
+  rapidsnark?: string;
+
+  /**
+   * The path to the process witnessgen binary
+   */
+  processWitgen?: string;
+
+  /**
+   * The path to the process dat file
+   */
+  processDatFile?: string;
+
+  /**
+   * The path to the tally witnessgen binary
+   */
+  tallyWitgen?: string;
+
+  /**
+   * The path to the tally dat file
+   */
+  tallyDatFile?: string;
+
+  /**
+   * The path to the subsidy witnessgen binary
+   */
+  subsidyWitgen?: string;
+
+  /**
+   * The path to the subsidy dat file
+   */
+  subsidyDatFile?: string;
+
+  /**
+   * The coordinator's private key
+   */
+  coordinatorPrivKey?: string;
+
+  /**
+   * The address of the MACI contract
+   */
+  maciAddress?: string;
+
+  /**
+   * The transaction hash of the first transaction
+   */
+  transactionHash?: string;
+
+  /**
+   * The path to the process wasm file
+   */
+  processWasm?: string;
+
+  /**
+   * The path to the tally wasm file
+   */
+  tallyWasm?: string;
+
+  /**
+   * The path to the subsidy wasm file
+   */
+  subsidyWasm?: string;
+
+  /**
+   * Whether to use wasm or rapidsnark
+   */
+  useWasm?: boolean;
+
+  /**
+   * The file with the serialized maci state
+   */
+  stateFile?: string;
+
+  /**
+   * The block number to start fetching logs from
+   */
+  startBlock?: number;
+
+  /**
+   * The number of blocks to fetch logs from
+   */
+  blocksPerBatch?: number;
+
+  /**
+   * The block number to stop fetching logs from
+   */
+  endBlock?: number;
+
+  /**
+   * Whether to log the output
+   */
+  quiet?: boolean;
+}
+
+/**
+ * Interface for the arguments to the mergeMessages command
+ */
+export interface MergeMessagesArgs {
+  /**
+   * The id of the poll
+   */
+  pollId: number;
+
+  /**
+   * Whether to log the output
+   */
+  quiet?: boolean;
+
+  /**
+   * The address of the MACI contract
+   */
+  maciContractAddress?: string;
+
+  /**
+   * The number of queue operations to merge
+   */
+  numQueueOps?: string;
+}
+
+/**
+ * Interface for the arguments to the mergeSignups command
+ */
+export interface MergeSignupsArgs {
+  /**
+   * The id of the poll
+   */
+  pollId: number;
+
+  /**
+   * The address of the MACI contract
+   */
+  maciContractAddress?: string;
+
+  /**
+   * The number of queue operations to perform
+   */
+  numQueueOps?: string;
+
+  /**
+   * Whether to log the output
+   */
+  quiet?: boolean;
+}
+
+/**
+ * Interface for the arguments to the ProveOnChainArgs command
+ */
+export interface ProveOnChainArgs {
+  /**
+   * The id of the poll
+   */
+  pollId: string;
+
+  /**
+   * The directory containing the proofs
+   */
+  proofDir: string;
+
+  /**
+   * Whether to deploy subsidy contract
+   */
+  subsidyEnabled: boolean;
+
+  /**
+   * The address of the MACI contract
+   */
+  maciAddress?: string;
+
+  /**
+   * The address of the MessageProcessor contract
+   */
+  messageProcessorAddress?: string;
+
+  /**
+   * The address of the Tally contract
+   */
+  tallyAddress?: string;
+
+  /**
+   * The address of the Subsidy contract
+   */
+  subsidyAddress?: string;
+
+  /**
+   * Whether to log the output
+   */
+  quiet?: boolean;
+}
+
+/**
+ * Interface for the arguments to the publish command
+ */
+export interface PublishArgs {
+  /**
+   * The public key of the user
+   */
+  pubkey: string;
+
+  /**
+   * The index of the state leaf
+   */
+  stateIndex: number;
+
+  /**
+   * The index of the vote option
+   */
+  voteOptionIndex: number;
+
+  /**
+   * The nonce of the message
+   */
+  nonce: number;
+
+  /**
+   * The id of the poll
+   */
+  pollId: number;
+
+  /**
+   * The new vote weight
+   */
+  newVoteWeight: number;
+
+  /**
+   * The address of the MACI contract
+   */
+  maciContractAddress?: string;
+
+  /**
+   * The salt of the message
+   */
+  salt?: string;
+
+  /**
+   * The private key of the user
+   */
+  privateKey?: string;
+
+  /**
+   * Whether to log the output
+   */
+  quiet?: boolean;
+}
+
+/**
+ * Interface for the arguments to the setVerifyingKeys command
+ */
+export interface SetVerifyingKeysArgs {
+  /**
+   * The depth of the state tree
+   */
+  stateTreeDepth: number;
+
+  /**
+   * The depth of the state subtree
+   */
+  intStateTreeDepth: number;
+
+  /**
+   * The depth of the message tree
+   */
+  messageTreeDepth: number;
+
+  /**
+   * The depth of the vote option tree
+   */
+  voteOptionTreeDepth: number;
+
+  /**
+   * The depth of the message batch tree
+   */
+  messageBatchDepth: number;
+
+  /**
+   * The path to the process messages zkey
+   */
+  processMessagesZkeyPath: string;
+
+  /**
+   * The path to the tally votes zkey
+   */
+  tallyVotesZkeyPath: string;
+
+  /**
+   * The address of the vkRegistry contract
+   */
+  vkRegistry?: string;
+
+  /**
+   * The path to the subsidy zkey
+   */
+  subsidyZkeyPath?: string;
+
+  /**
+   * Whether to log the output
+   */
+  quiet?: boolean;
+}
+
+/**
+ * Interface for the arguments to the signup command
+ */
+export interface SignupArgs {
+  /**
+   * The public key of the user
+   */
+  maciPubKey: string;
+
+  /**
+   * The address of the MACI contract
+   */
+  maciAddress?: string;
+
+  /**
+   * The signup gateway data
+   */
+  sgDataArg?: string;
+
+  /**
+   * The initial voice credit proxy data
+   */
+  ivcpDataArg?: string;
+
+  /**
+   * Whether to log the output
+   */
+  quiet?: boolean;
+}
+
+/**
+ * Interface for the arguments to the topup command
+ */
+export interface TopupArgs {
+  /**
+   * The amount to topup
+   */
+  amount: number;
+
+  /**
+   * The state index of the user
+   */
+  stateIndex: number;
+
+  /**
+   * The poll ID
+   */
+  pollId: number;
+
+  /**
+   * The address of the MACI contract
+   */
+  maciAddress?: string;
+
+  /**
+   * Whether to log the output
+   */
+  quiet?: boolean;
+}
+
+/**
+ * Interface for the arguments to the verifyProof command
+ */
+export interface VerifyArgs {
+  /**
+   * The id of the poll
+   */
+  pollId: string;
+
+  /**
+   * Whether to deploy subsidy contract
+   */
+  subsidyEnabled: boolean;
+
+  /**
+   * The path to the tally file with results, per vote option spent credits, spent voice credits total
+   */
+  tallyFile?: string;
+
+  /**
+   * The tally data
+   */
+  tallyData?: TallyData;
+
+  /**
+   * The address of the MACI contract
+   */
+  maciAddress?: string;
+
+  /**
+   * The address of the Tally contract
+   */
+  tallyAddress?: string;
+
+  /**
+   * The address of the Subsidy contract
+   */
+  subsidyAddress?: string;
+
+  /**
+   * The path to the subsidy file
+   */
+  subsidyFile?: string;
+
+  /**
+   * Whether to log the output
+   */
+  quiet?: boolean;
+}

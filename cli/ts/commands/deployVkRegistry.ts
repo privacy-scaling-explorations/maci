@@ -2,10 +2,15 @@ import { deployVkRegistry, getDefaultSigner } from "maci-contracts";
 
 import fs from "fs";
 
-import { banner } from "../utils/banner";
-import { contractAddressesStore, oldContractAddressesStore } from "../utils/constants";
-import { resetContractAddresses, storeContractAddress } from "../utils/storage";
-import { logGreen, success } from "../utils/theme";
+import {
+  banner,
+  contractAddressesStore,
+  logGreen,
+  oldContractAddressesStore,
+  success,
+  storeContractAddress,
+  resetContractAddresses,
+} from "../utils";
 
 /**
  * Deploy the vkRegistry contract

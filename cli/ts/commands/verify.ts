@@ -4,33 +4,37 @@ import { hash2, hash3, genTreeCommitment } from "maci-crypto";
 
 import fs from "fs";
 
-import type { SubsidyData, TallyData } from "../utils/interfaces";
-
-import { banner, contractExists, info, logError, logGreen, logYellow, readContractAddress, success } from "../utils";
-import { verifyPerVOSpentVoiceCredits, verifyTallyResults } from "../utils/verifiers";
+import {
+  type SubsidyData,
+  type TallyData,
+  type VerifyArgs,
+  banner,
+  contractExists,
+  info,
+  logError,
+  logGreen,
+  logYellow,
+  verifyPerVOSpentVoiceCredits,
+  verifyTallyResults,
+  readContractAddress,
+  success,
+} from "../utils";
 
 /**
  * Verify the results of a poll and optionally the subsidy results on-chain
- * @param pollId - the id of the poll
- * @param subsidyEnabled - whether to deploy subsidy contract
- * @param tallyFile - the path to the tally file with results, per vote option spent credits, spent voice credits total
- * @param maciAddress - the address of the MACI contract
- * @param tallyAddress - the address of the Tally contract
- * @param subsidyAddress - the address of the Subsidy contract
- * @param subsidyFile - the path to the subsidy file
- * @param quiet - whether to log the output
+ * @param VerifyArgs - The arguments for the verify command
  */
-export const verify = async (
-  pollId: string,
-  subsidyEnabled: boolean,
-  tallyFile?: string,
-  tallyData?: TallyData,
-  maciAddress?: string,
-  tallyAddress?: string,
-  subsidyAddress?: string,
-  subsidyFile?: string,
+export const verify = async ({
+  pollId,
+  subsidyEnabled,
+  tallyFile,
+  tallyData,
+  maciAddress,
+  tallyAddress,
+  subsidyAddress,
+  subsidyFile,
   quiet = true,
-): Promise<void> => {
+}: VerifyArgs): Promise<void> => {
   banner(quiet);
   const signer = await getDefaultSigner();
 

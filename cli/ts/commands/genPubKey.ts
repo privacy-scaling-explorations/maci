@@ -1,8 +1,7 @@
 import { genPubKey } from "maci-crypto";
 import { PrivKey, PubKey } from "maci-domainobjs";
 
-import { banner } from "../utils/banner";
-import { logError, logGreen, success } from "../utils/theme";
+import { banner, logError, logGreen, success } from "../utils";
 
 /**
  * Generate a new Maci Public key from a private key

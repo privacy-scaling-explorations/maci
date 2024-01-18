@@ -31,14 +31,20 @@ describe("topup", () => {
   });
 
   it("should throw when the state index is invalid", async () => {
-    await expect(topup(100, 0, 0, maciAddress)).to.be.rejectedWith("State index must be greater than 0");
+    await expect(topup({ amount: 100, pollId: 0, stateIndex: 0, maciAddress })).to.be.rejectedWith(
+      "State index must be greater than 0",
+    );
   });
 
   it("should throw when the poll ID is invalid", async () => {
-    await expect(topup(100, 1, -1, maciAddress)).to.be.rejectedWith("Poll ID must be a positive integer");
+    await expect(topup({ amount: 100, pollId: -1, stateIndex: 1, maciAddress })).to.be.rejectedWith(
+      "Poll ID must be a positive integer",
+    );
   });
 
   it("should throw when the amount is invalid", async () => {
-    await expect(topup(0, 1, 0, maciAddress)).to.be.rejectedWith("Topup amount must be greater than 0");
+    await expect(topup({ amount: 0, pollId: 0, stateIndex: 1, maciAddress })).to.be.rejectedWith(
+      "Topup amount must be greater than 0",
+    );
   });
 });

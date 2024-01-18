@@ -13,7 +13,7 @@
     "build": "tsc",
     "types": "tsc -p tsconfig.json --noEmit",
     "test": "ts-mocha --exit ./ts/__tests__/**.test.ts",
-    "test:suites": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit  ./ts/__tests__/suites.test.ts",
+    "test:integration": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit  ./ts/__tests__/integration.test.ts",
     "test:maciKeys": "ts-mocha --exit ./ts/__tests__/maci-keys.test.ts",
     "download-zkeys": "./scripts/download_zkeys.sh"
   },

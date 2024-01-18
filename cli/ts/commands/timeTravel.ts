@@ -2,8 +2,7 @@ import { getDefaultSigner } from "maci-contracts";
 
 import type { JsonRpcProvider } from "ethers";
 
-import { banner } from "../utils/banner";
-import { logError, logGreen, success } from "../utils/theme";
+import { banner, logError, logGreen, success } from "../utils";
 
 /**
  * Utility to travel in time when using a local blockchain

@@ -1,28 +1,21 @@
 import { BaseContract } from "ethers";
 import { type MACI, type TopupCredit, getDefaultSigner, parseArtifact } from "maci-contracts";
 
-import { banner } from "../utils/banner";
-import { contractExists } from "../utils/contracts";
-import { readContractAddress } from "../utils/storage";
-import { logError, logGreen, success } from "../utils/theme";
+import { type AirdropArgs, logError, logGreen, success, readContractAddress, contractExists, banner } from "../utils";
 
 /**
  * Utility that can be used to get
  * topup credits aidropped
  * to the coordinator
- * @param amount the amount of credits to airdrop
- * @param contractAddress the address of the ERC20 contract
- * @param pollId the id of the poll
- * @param maciAddress the address of the MACI contract
- * @param quiet whether to log the output
+ * @param AirdropArgs - The arguments for the airdrop command
  */
-export const airdrop = async (
-  amount: number,
-  contractAddress?: string,
-  pollId?: number,
-  maciAddress?: string,
+export const airdrop = async ({
+  amount,
+  contractAddress,
+  pollId,
+  maciAddress,
   quiet = true,
-): Promise<void> => {
+}: AirdropArgs): Promise<void> => {
   banner(quiet);
 
   // get the topup credit address from storage

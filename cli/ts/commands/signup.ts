@@ -2,28 +2,32 @@ import { BaseContract } from "ethers";
 import { type MACI, getDefaultSigner, parseArtifact } from "maci-contracts";
 import { PubKey } from "maci-domainobjs";
 
-import { banner } from "../utils";
-import { contractExists } from "../utils/contracts";
-import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA } from "../utils/defaults";
-import { readContractAddress } from "../utils/storage";
-import { info, logError, logGreen, logYellow, success } from "../utils/theme";
+import {
+  type SignupArgs,
+  banner,
+  contractExists,
+  DEFAULT_IVCP_DATA,
+  DEFAULT_SG_DATA,
+  readContractAddress,
+  info,
+  logError,
+  logGreen,
+  logYellow,
+  success,
+} from "../utils";
 
 /**
  * Signup a user to the MACI contract
- * @param maciPubKey - the public key of the user
- * @param maciAddress - the address of the MACI contract
- * @param sgDataArg - the signup gateway data
- * @param ivcpDataArg - the initial voice credit proxy data
- * @param quiet - whether to log the output
- * @returns the state index of the user
+ * @param SignupArgs - The arguments for the signup command
+ * @returns The state index of the user
  */
-export const signup = async (
-  maciPubKey: string,
-  maciAddress?: string,
-  sgDataArg?: string,
-  ivcpDataArg?: string,
+export const signup = async ({
+  maciPubKey,
+  maciAddress,
+  sgDataArg,
+  ivcpDataArg,
   quiet = true,
-): Promise<string> => {
+}: SignupArgs): Promise<string> => {
   banner(quiet);
 
   const signer = await getDefaultSigner();
