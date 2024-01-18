@@ -58,9 +58,11 @@ export const genMaciStateFromContract = async (
   // if no last block is set then we fetch until the current block number
   const lastBlock = endBlock || (await provider.getBlockNumber());
 
-  // Fetch event logs in batches
-  for (let i = fromBlock; i < lastBlock; i += blocksPerRequest + 1) {
-    const toBlock = i + blocksPerRequest >= lastBlock ? undefined : i + blocksPerRequest;
+  // Fetch event logs in batches (lastBlock inclusive)
+  for (let i = fromBlock; i <= lastBlock; i += blocksPerRequest + 1) {
+    // the last block batch will be either current iteration block + blockPerRequest
+    // or the end block if it is set
+    const toBlock = i + blocksPerRequest >= lastBlock ? lastBlock : i + blocksPerRequest;
 
     const [tmpSignUpLogs, tmpDeployPollLogs] =
       // eslint-disable-next-line no-await-in-loop
@@ -178,8 +180,8 @@ export const genMaciStateFromContract = async (
   let mergeMessageAqSubRootsLogs: Log[] = [];
   let mergeMessageAqLogs: Log[] = [];
 
-  for (let i = fromBlock; i < lastBlock; i += blocksPerRequest + 1) {
-    const toBlock = i + blocksPerRequest >= lastBlock ? undefined : i + blocksPerRequest;
+  for (let i = fromBlock; i <= lastBlock; i += blocksPerRequest + 1) {
+    const toBlock = i + blocksPerRequest >= lastBlock ? lastBlock : i + blocksPerRequest;
 
     const [
       tmpPublishMessageLogs,

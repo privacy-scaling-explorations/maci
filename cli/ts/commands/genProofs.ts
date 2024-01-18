@@ -259,9 +259,10 @@ export const genProofs = async (
   } else {
     // build an off-chain representation of the MACI contract using data in the contract storage
     let fromBlock = startBlock ? Number(startBlock) : 0;
-    fromBlock = transactionHash
-      ? await signer.provider!.getTransaction(transactionHash).then((tx) => tx?.blockNumber ?? 0)
-      : 0;
+    if (transactionHash) {
+      const tx = await signer.provider!.getTransaction(transactionHash);
+      fromBlock = tx?.blockNumber ?? 0;
+    }
 
     logYellow(quiet, info(`starting to fetch logs from block ${fromBlock}`));
     maciState = await genMaciStateFromContract(
