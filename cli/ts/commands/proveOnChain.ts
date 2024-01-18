@@ -210,7 +210,7 @@ export const proveOnChain = async (
       quiet,
       error(
         `The proof files inside ${proofDir} do not have the correct number of message processign proofs` +
-          `(expected ${totalMessageBatches}, got ${numProcessProofs}.`,
+          `(expected ${totalMessageBatches}, got ${numProcessProofs}).`,
       ),
     );
   }
