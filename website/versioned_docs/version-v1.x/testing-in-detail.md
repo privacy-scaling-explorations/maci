@@ -165,7 +165,7 @@ Within the contracts folder, there are a number of tests that are used to verify
 
 These tests interact with all other packages, such as crypto, domainobjs and core, where mock data comes from. Their main goal is to ensure that the smart contracts have the correct parameters when deployed, privileged functions cannot be called by non-privileged users, and that the contract state is as expected after a series of operations.
 
-### Circuits tests
+### Circuits tests
 
 Within the circuits folder, there are a number of tests that are used to verify that the circuits work as expected. These tests are written in TypeScript and use the `circom_tester` (which runs on top of `mocha` and `chai`).
 
