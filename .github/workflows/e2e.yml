@@ -53,7 +53,7 @@ jobs:
           git add contracts/contracts/trees/EmptyBallotRoots.sol
           git diff --staged --quiet || git commit -m "Commit changes before publishing"
 
-          lerna version 0.0.0-ci.$(git rev-parse --short HEAD) --no-push --yes
+          lerna version 0.0.0-ci.$(git rev-parse --short HEAD) --no-push --yes --exact
           lerna publish from-git --dist-tag ci --yes
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
