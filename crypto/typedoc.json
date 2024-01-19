@@ -1,0 +1,5 @@
+{
+  "extends": ["../typedoc.base.json"],
+  "entryPoints": ["ts/index.ts"],
+  "out": "../website/typedoc/crypto"
+}

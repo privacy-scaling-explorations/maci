@@ -28,3 +28,60 @@ export function copyDirectory(source: string, target: string): void {
     }
   });
 }
+
+/**
+ * A function that forces the first letter to be capital,
+ * while the rest of the string must be lower case.
+ * @param str - the string being transformed
+ */
+export function fitFormat(str: string): string {
+  return `${str[0].toUpperCase()}${str.slice(1, str.length).toLowerCase()}`;
+}
+
+/**
+ * Sidebar Parameters
+ */
+interface SidebarProps {
+  title?: string;
+  description?: string;
+  label?: string;
+  position?: number;
+}
+
+/**
+ * A function that forces the first letter to be capital,
+ * while the rest of the string must be lower case.
+ * @param sidebarProps - including title, description, label, and position
+ */
+export function generateSidebarString({ title, description, label, position }: SidebarProps): string {
+  let ret = "---\n";
+
+  if (title) {
+    ret = `${ret}title: ${title}\n`;
+  }
+
+  if (description) {
+    ret = `${ret}description: ${description}\n`;
+  }
+
+  if (label) {
+    ret = `${ret}sidebar_label: ${label}\n`;
+  }
+
+  if (position) {
+    ret = `${ret}sidebar_position: ${position}\n`;
+  }
+
+  ret = `${ret}---\n`;
+
+  return ret;
+}
+
+/**
+ * A function that insert a index page
+ * @param dir - the directory to insert an index page
+ * @param sidebarProps - including title, description, label, and position
+ */
+export function insertIndexPage(dir: string, { title, description, label, position }: SidebarProps): void {
+  fs.writeFileSync(`${dir}/index.md`, generateSidebarString({ title, description, label, position }));
+}
