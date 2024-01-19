@@ -92,7 +92,7 @@ export class Poll implements IPoll {
 
   maciStateRef: MaciState;
 
-  pollId: number;
+  pollId: bigint;
 
   sbSalts: Record<number | string, bigint> = {};
 
@@ -153,7 +153,7 @@ export class Poll implements IPoll {
     this.batchSizes = batchSizes;
     this.maxValues = maxValues;
     this.maciStateRef = maciStateRef;
-    this.pollId = maciStateRef.polls.length;
+    this.pollId = BigInt(maciStateRef.polls.size);
     this.stateTreeDepth = maciStateRef.stateTreeDepth;
 
     this.messageTree = new IncrementalQuinTree(
@@ -408,7 +408,7 @@ export class Poll implements IPoll {
    *        process
    * @returns stringified circuit inputs
    */
-  processMessages = (pollId: number): IProcessMessagesCircuitInputs => {
+  processMessages = (pollId: bigint): IProcessMessagesCircuitInputs => {
     assert(this.hasUnprocessedMessages(), "No more messages to process");
 
     const batchSize = this.batchSizes.messageBatchSize;
@@ -1208,7 +1208,7 @@ export class Poll implements IPoll {
 
     copied.numBatchesProcessed = Number(this.numBatchesProcessed.toString());
     copied.numBatchesTallied = Number(this.numBatchesTallied.toString());
-    copied.pollId = Number(this.pollId.toString());
+    copied.pollId = this.pollId;
     copied.totalSpentVoiceCredits = BigInt(this.totalSpentVoiceCredits.toString());
 
     copied.sbSalts = {};

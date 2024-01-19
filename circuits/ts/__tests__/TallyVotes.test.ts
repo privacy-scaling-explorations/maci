@@ -56,7 +56,7 @@ describe("TallyVotes circuit", function test() {
 
   describe("1 user, 2 messages", () => {
     let stateIndex: bigint;
-    let pollId: number;
+    let pollId: bigint;
     let poll: Poll;
     let maciState: MaciState;
     const voteWeight = BigInt(9);
@@ -80,7 +80,7 @@ describe("TallyVotes circuit", function test() {
         coordinatorKeypair,
       );
 
-      poll = maciState.polls[pollId];
+      poll = maciState.polls.get(pollId)!;
 
       // First command (valid)
       const command = new PCommand(
@@ -160,7 +160,7 @@ describe("TallyVotes circuit", function test() {
         coordinatorKeypair,
       );
 
-      const poll = maciState.polls[pollId];
+      const poll = maciState.polls.get(pollId)!;
 
       const numMessages = messageBatchSize * NUM_BATCHES;
       for (let i = 0; i < numMessages; i += 1) {

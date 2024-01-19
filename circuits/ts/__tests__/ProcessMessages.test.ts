@@ -70,7 +70,7 @@ describe("ProcessMessage circuit", function test() {
     const voteWeight = BigInt(9);
     const voteOptionIndex = BigInt(0);
     let stateIndex: bigint;
-    let pollId: number;
+    let pollId: bigint;
     let poll: Poll;
     const messages: Message[] = [];
     const commands: PCommand[] = [];
@@ -90,7 +90,7 @@ describe("ProcessMessage circuit", function test() {
         coordinatorKeypair,
       );
 
-      poll = maciState.polls[pollId];
+      poll = maciState.polls.get(pollId)!;
 
       // First command (valid)
       const command = new PCommand(
@@ -200,7 +200,7 @@ describe("ProcessMessage circuit", function test() {
 
   describe("2 users, 1 message", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
-    let pollId: number;
+    let pollId: bigint;
     let poll: Poll;
     const messages: Message[] = [];
     const commands: PCommand[] = [];
@@ -229,7 +229,7 @@ describe("ProcessMessage circuit", function test() {
         coordinatorKeypair,
       );
 
-      poll = maciState.polls[pollId];
+      poll = maciState.polls.get(pollId)!;
 
       const command = new PCommand(
         BigInt(1),
@@ -299,7 +299,7 @@ describe("ProcessMessage circuit", function test() {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const voteWeight = BigInt(9);
     let stateIndex: number;
-    let pollId: number;
+    let pollId: bigint;
     let poll: Poll;
     const messages: Message[] = [];
     const commands: PCommand[] = [];
@@ -325,7 +325,7 @@ describe("ProcessMessage circuit", function test() {
         coordinatorKeypair,
       );
 
-      poll = maciState.polls[pollId];
+      poll = maciState.polls.get(pollId)!;
 
       // Vote for option 0
       const command = new PCommand(
@@ -415,7 +415,7 @@ describe("ProcessMessage circuit", function test() {
           coordinatorKeypair,
         );
 
-        const selectedPoll = state.polls[id];
+        const selectedPoll = state.polls.get(id);
 
         // Second batch is not a full batch
         const numMessages = messageBatchSize * NUM_BATCHES - 1;
@@ -434,11 +434,11 @@ describe("ProcessMessage circuit", function test() {
           const ecdhKeypair = new Keypair();
           const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
           const message = command.encrypt(signature, sharedKey);
-          selectedPoll.publishMessage(message, ecdhKeypair.pubKey);
+          selectedPoll?.publishMessage(message, ecdhKeypair.pubKey);
         }
 
         for (let i = 0; i < NUM_BATCHES; i += 1) {
-          const inputs = selectedPoll.processMessages(id) as unknown as IProcessMessagesInputs;
+          const inputs = selectedPoll?.processMessages(id) as unknown as IProcessMessagesInputs;
           // eslint-disable-next-line no-await-in-loop
           const witness = await circuit.calculateWitness(inputs);
           // eslint-disable-next-line no-await-in-loop
@@ -452,7 +452,7 @@ describe("ProcessMessage circuit", function test() {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const voteOptionIndex = BigInt(0);
     let stateIndex: bigint;
-    let pollId: number;
+    let pollId: bigint;
     let poll: Poll;
     const userKeypair = new Keypair();
 
@@ -470,7 +470,7 @@ describe("ProcessMessage circuit", function test() {
         coordinatorKeypair,
       );
 
-      poll = maciState.polls[pollId];
+      poll = maciState.polls.get(pollId)!;
     });
 
     it("should work when publishing 2 vote messages and a topup (the second vote uses more than initial voice credit balance)", async () => {

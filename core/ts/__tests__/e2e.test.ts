@@ -25,7 +25,7 @@ describe("MaciState/Poll e2e", function test() {
     const user2Keypair = new Keypair();
     const user1SecondKeypair = new Keypair();
     const user2SecondKeypair = new Keypair();
-    let pollId: number;
+    let pollId: bigint;
     let user1StateIndex: number;
     let user2StateIndex: number;
     const user1VoteOptionIndex = 0n;
@@ -61,7 +61,7 @@ describe("MaciState/Poll e2e", function test() {
         );
       });
       it("should submit a vote for each user", () => {
-        const poll = maciState.polls[pollId];
+        const poll = maciState.polls.get(pollId)!;
         const command1 = new PCommand(
           BigInt(user1StateIndex),
           user1Keypair.pubKey,
@@ -98,7 +98,7 @@ describe("MaciState/Poll e2e", function test() {
       });
 
       it("user1 sends a keychange message with a new vote", () => {
-        const poll = maciState.polls[pollId];
+        const poll = maciState.polls.get(pollId)!;
         const command = new PCommand(
           BigInt(user1StateIndex),
           user1SecondKeypair.pubKey,
@@ -118,7 +118,7 @@ describe("MaciState/Poll e2e", function test() {
       });
 
       it("should perform the processing and tallying correctly", () => {
-        const poll = maciState.polls[pollId];
+        const poll = maciState.polls.get(pollId)!;
         poll.processMessages(pollId);
         poll.tallyVotes();
         expect(poll.perVOSpentVoiceCredits[0].toString()).to.eq((user1NewVoteWeight * user1NewVoteWeight).toString());
@@ -126,7 +126,7 @@ describe("MaciState/Poll e2e", function test() {
       });
 
       it("should confirm that the user key pair was changed (user's 2 one has not)", () => {
-        const poll = maciState.polls[pollId];
+        const poll = maciState.polls.get(pollId)!;
         const stateLeaf1 = poll.stateLeaves[user1StateIndex];
         const stateLeaf2 = poll.stateLeaves[user2StateIndex];
         expect(stateLeaf1.pubKey.equals(user1SecondKeypair.pubKey)).to.eq(true);
@@ -136,6 +136,7 @@ describe("MaciState/Poll e2e", function test() {
 
     describe("both users change key", () => {
       const maciState: MaciState = new MaciState(STATE_TREE_DEPTH);
+      let poll: Poll;
 
       before(() => {
         // Sign up
@@ -158,9 +159,10 @@ describe("MaciState/Poll e2e", function test() {
           messageBatchSize,
           coordinatorKeypair,
         );
+
+        poll = maciState.polls.get(pollId)!;
       });
       it("should submit a vote for each user", () => {
-        const poll = maciState.polls[pollId];
         const command1 = new PCommand(
           BigInt(user1StateIndex),
           user1Keypair.pubKey,
@@ -197,7 +199,6 @@ describe("MaciState/Poll e2e", function test() {
       });
 
       it("user1 sends a keychange message with a new vote", () => {
-        const poll = maciState.polls[pollId];
         const command = new PCommand(
           BigInt(user1StateIndex),
           user1SecondKeypair.pubKey,
@@ -217,7 +218,6 @@ describe("MaciState/Poll e2e", function test() {
       });
 
       it("user2 sends a keychange message with a new vote", () => {
-        const poll = maciState.polls[pollId];
         const command = new PCommand(
           BigInt(user2StateIndex),
           user2SecondKeypair.pubKey,
@@ -237,7 +237,6 @@ describe("MaciState/Poll e2e", function test() {
       });
 
       it("should perform the processing and tallying correctly", () => {
-        const poll = maciState.polls[pollId];
         poll.processMessages(pollId);
         poll.tallyVotes();
         expect(poll.perVOSpentVoiceCredits[0].toString()).to.eq((user1NewVoteWeight * user1NewVoteWeight).toString());
@@ -245,7 +244,6 @@ describe("MaciState/Poll e2e", function test() {
       });
 
       it("should confirm that the users key pairs were changed", () => {
-        const poll = maciState.polls[pollId];
         const stateLeaf1 = poll.stateLeaves[user1StateIndex];
         const stateLeaf2 = poll.stateLeaves[user2StateIndex];
         expect(stateLeaf1.pubKey.equals(user1SecondKeypair.pubKey)).to.eq(true);
@@ -255,6 +253,7 @@ describe("MaciState/Poll e2e", function test() {
 
     describe("user1 changes key, but messages are in different batches", () => {
       const maciState = new MaciState(STATE_TREE_DEPTH);
+      let poll: Poll;
 
       before(() => {
         // Sign up
@@ -272,10 +271,11 @@ describe("MaciState/Poll e2e", function test() {
           messageBatchSize,
           coordinatorKeypair,
         );
+
+        poll = maciState.polls.get(pollId)!;
       });
 
       it("should submit a vote for one user in one batch", () => {
-        const poll = maciState.polls[pollId];
         const command1 = new PCommand(
           BigInt(user1StateIndex),
           user1Keypair.pubKey,
@@ -295,7 +295,6 @@ describe("MaciState/Poll e2e", function test() {
       });
 
       it("should fill the batch with random messages", () => {
-        const poll = maciState.polls[pollId];
         for (let i = 0; i < messageBatchSize - 1; i += 1) {
           const command = new PCommand(
             1n,
@@ -317,7 +316,6 @@ describe("MaciState/Poll e2e", function test() {
       });
 
       it("should submit a new message in a new batch", () => {
-        const poll = maciState.polls[pollId];
         const command1 = new PCommand(
           BigInt(user1StateIndex),
           user1SecondKeypair.pubKey,
@@ -337,14 +335,12 @@ describe("MaciState/Poll e2e", function test() {
       });
 
       it("should perform the processing and tallying correctly", () => {
-        const poll = maciState.polls[pollId];
         poll.processAllMessages();
         poll.tallyVotes();
         expect(poll.perVOSpentVoiceCredits[0].toString()).to.eq((user1NewVoteWeight * user1NewVoteWeight).toString());
       });
 
       it("should confirm that the user key pair was changed", () => {
-        const poll = maciState.polls[pollId];
         const stateLeaf1 = poll.stateLeaves[user1StateIndex];
         expect(stateLeaf1.pubKey.equals(user1SecondKeypair.pubKey)).to.eq(true);
       });
@@ -353,7 +349,7 @@ describe("MaciState/Poll e2e", function test() {
 
   describe("Process and tally 1 message from 1 user", () => {
     let maciState: MaciState;
-    let pollId: number;
+    let pollId: bigint;
     let poll: Poll;
     let msgTree: IncrementalQuinTree;
     const voteWeight = 9n;
@@ -393,7 +389,7 @@ describe("MaciState/Poll e2e", function test() {
         coordinatorKeypair,
       );
 
-      poll = maciState.polls[pollId];
+      poll = maciState.polls.get(pollId)!;
 
       const command = new PCommand(
         BigInt(stateIndex),
@@ -452,21 +448,21 @@ describe("MaciState/Poll e2e", function test() {
     });
 
     it("Tally ballots", () => {
-      const initialTotal = calculateTotal(maciState.polls[pollId].tallyResult);
+      const initialTotal = calculateTotal(poll.tallyResult);
       expect(initialTotal.toString()).to.eq("0");
 
       expect(poll.hasUntalliedBallots()).to.eq(true);
 
       poll.tallyVotes();
 
-      const finalTotal = calculateTotal(maciState.polls[pollId].tallyResult);
+      const finalTotal = calculateTotal(poll.tallyResult);
       expect(finalTotal.toString()).to.eq(voteWeight.toString());
     });
   });
 
   describe(`Process and tally ${messageBatchSize * 2} messages from ${messageBatchSize} users`, () => {
     let maciState: MaciState;
-    let pollId: number;
+    let pollId: bigint;
     let poll: Poll;
     const voteWeight = 9n;
 
@@ -489,7 +485,7 @@ describe("MaciState/Poll e2e", function test() {
         messageBatchSize,
         coordinatorKeypair,
       );
-      poll = maciState.polls[pollId];
+      poll = maciState.polls.get(pollId)!;
     });
 
     it("should process votes correctly", () => {
@@ -579,7 +575,7 @@ describe("MaciState/Poll e2e", function test() {
 
     it("should tally ballots correctly", () => {
       // Start with tallyResult = [0...0]
-      const total = calculateTotal(maciState.polls[pollId].tallyResult);
+      const total = calculateTotal(poll.tallyResult);
       expect(total.toString()).to.eq("0");
 
       // Check that there are untallied results
@@ -590,8 +586,8 @@ describe("MaciState/Poll e2e", function test() {
 
       // Recall that each user `i` cast the same number of votes for
       // their option `i`
-      for (let i = 0; i < maciState.polls[pollId].tallyResult.length - 1; i += 1) {
-        expect(maciState.polls[pollId].tallyResult[i].toString()).to.eq(voteWeight.toString());
+      for (let i = 0; i < poll.tallyResult.length - 1; i += 1) {
+        expect(poll.tallyResult[i].toString()).to.eq(voteWeight.toString());
       }
 
       expect(poll.hasUntalliedBallots()).to.eq(false);

@@ -124,7 +124,7 @@ program
   .description("airdrop topup credits to the coordinator")
   .requiredOption("-a, --amount <amount>", "the amount of topup", parseInt)
   .option("-x, --contract <contract>", "the MACI contract address")
-  .option("-o, --poll-id <pollId>", "poll id", parseInt)
+  .option("-o, --poll-id <pollId>", "poll id", BigInt)
   .option("-t, --token-address <tokenAddress>", "the token address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
@@ -260,7 +260,7 @@ program
   .requiredOption("-v, --vote-option-index <voteOptionIndex>", "the vote option index", BigInt)
   .requiredOption("-n, --nonce <nonce>", "the message nonce", BigInt)
   .option("-s, --salt <salt>", "the message salt", BigInt)
-  .requiredOption("-o, --poll-id <pollId>", "the poll id", parseInt)
+  .requiredOption("-o, --poll-id <pollId>", "the poll id", BigInt)
   .requiredOption("-w, --new-vote-weight <newVoteWeight>", "the new vote weight", BigInt)
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
@@ -288,7 +288,7 @@ program
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-x, --maci-contract-address <maciContractAddress>", "the MACI contract address")
-  .requiredOption("-o, --poll-id <pollId>", "the poll id", parseInt)
+  .requiredOption("-o, --poll-id <pollId>", "the poll id", BigInt)
   .option("-n, --num-queue-ops <numQueueOps>", "the number of queue operations", parseInt)
   .action(async (cmdObj) => {
     try {
@@ -308,7 +308,7 @@ program
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-x, --maci-contract-address <maciContractAddress>", "the MACI contract address")
-  .requiredOption("-o, --poll-id <pollId>", "the poll id", parseInt)
+  .requiredOption("-o, --poll-id <pollId>", "the poll id", BigInt)
   .option("-n, --num-queue-ops <numQueueOps>", "the number of queue operations", parseInt)
   .action(async (cmdObj) => {
     try {
@@ -363,7 +363,7 @@ program
   .requiredOption("-a, --amount <amount>", "the amount of topup", parseInt)
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .requiredOption("-i, --state-index <stateIndex>", "state leaf index", parseInt)
-  .requiredOption("-o, --poll-id <pollId>", "poll id", parseInt)
+  .requiredOption("-o, --poll-id <pollId>", "poll id", BigInt)
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
@@ -396,7 +396,7 @@ program
 program
   .command("verify")
   .description("verify the results of a poll and optionally the subsidy results")
-  .requiredOption("-o, --poll-id <pollId>", "the poll id", parseInt)
+  .requiredOption("-o, --poll-id <pollId>", "the poll id", BigInt)
   .requiredOption(
     "-t, --tally-file <tallyFile>",
     "the tally file with results, per vote option spent credits, spent voice credits total",
@@ -416,7 +416,7 @@ program
   .action(async (cmdObj) => {
     try {
       await verify({
-        pollId: cmdObj.pollId.toString(),
+        pollId: cmdObj.pollId,
         subsidyEnabled: cmdObj.subsidyEnabled,
         tallyFile: cmdObj.tallyFile,
         maciAddress: cmdObj.contract,
@@ -434,7 +434,7 @@ program
   .description("generate the proofs for a poll")
   .option("-sk, --privkey <privkey>", "your serialized MACI private key")
   .option("-x, --contract <contract>", "the MACI contract address")
-  .requiredOption("-o, --poll-id <pollId>", "the poll id", parseInt)
+  .requiredOption("-o, --poll-id <pollId>", "the poll id", BigInt)
   .requiredOption(
     "-t, --tally-file <tallyFile>",
     "the tally file with results, per vote option spent credits, spent voice credits total",
@@ -500,7 +500,7 @@ program
   .command("genLocalState")
   .description("generate a local MACI state from the smart contracts events")
   .requiredOption("-o, --output <outputPath>", "the path where to write the state", parseInt)
-  .requiredOption("-p, --poll-id <pollId>", "the id of the poll", parseInt)
+  .requiredOption("-p, --poll-id <pollId>", "the id of the poll", BigInt)
   .option("-x, --contract <contract>", "the MACI contract address")
   .option("-sk, --privkey <privkey>", "your serialized MACI private key")
   .option("-eb, --end-block <endBlock>", "the end block number", parseInt)
@@ -532,7 +532,7 @@ program
 program
   .command("proveOnChain")
   .description("prove the results of a poll on chain")
-  .requiredOption("-o, --poll-id <pollId>", "the poll id", parseInt)
+  .requiredOption("-o, --poll-id <pollId>", "the poll id", BigInt)
   .requiredOption(
     "-se, --subsidy-enabled <subsidyEnabled>",
     "whether to deploy subsidy contract",
@@ -549,7 +549,7 @@ program
   .action(async (cmdObj) => {
     try {
       await proveOnChain({
-        pollId: cmdObj.pollId.toString(),
+        pollId: cmdObj.pollId,
         proofDir: cmdObj.proofDir,
         subsidyEnabled: cmdObj.subsidyEnabled,
         maciAddress: cmdObj.contract,

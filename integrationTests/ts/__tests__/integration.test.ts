@@ -60,7 +60,7 @@ describe("Integration tests", function test() {
   let maciState: MaciState;
   let contracts: DeployedContracts;
   let pollContracts: PollContracts;
-  let pollId: number;
+  let pollId: bigint;
   const coordinatorKeypair = new Keypair();
 
   // the code that we run before all tests
@@ -179,12 +179,14 @@ describe("Integration tests", function test() {
         const user = users[i];
         const timestamp = Date.now();
         // signup
-        const stateIndex = await signup({
-          maciPubKey: user.keypair.pubKey.serialize(),
-          maciAddress: contracts.maciAddress,
-          sgDataArg: SG_DATA,
-          ivcpDataArg: ivcpData,
-        });
+        const stateIndex = BigInt(
+          await signup({
+            maciPubKey: user.keypair.pubKey.serialize(),
+            maciAddress: contracts.maciAddress,
+            sgDataArg: SG_DATA,
+            ivcpDataArg: ivcpData,
+          }),
+        );
 
         // signup on local maci state
         maciState.signUp(user.keypair.pubKey, BigInt(initialVoiceCredits), BigInt(timestamp));
@@ -209,7 +211,7 @@ describe("Integration tests", function test() {
           // actually publish it
           const encryptionKey = await publish({
             pubkey: user.keypair.pubKey.serialize(),
-            stateIndex: BigInt(stateIndex),
+            stateIndex,
             voteOptionIndex: voteOptionIndex!,
             nonce,
             pollId,
@@ -225,17 +227,17 @@ describe("Integration tests", function test() {
 
           // create the command to add to the local state
           const command = new PCommand(
-            BigInt(stateIndex),
+            stateIndex,
             user.keypair.pubKey,
-            BigInt(voteOptionIndex!),
-            BigInt(newVoteWeight!),
-            BigInt(nonce),
-            BigInt(pollId),
-            BigInt(salt),
+            voteOptionIndex!,
+            newVoteWeight!,
+            nonce,
+            pollId,
+            salt,
           );
           const signature = command.sign(isKeyChange ? oldKeypair.privKey : user.keypair.privKey);
           const message = command.encrypt(signature, Keypair.genEcdhSharedKey(encPrivKey, coordinatorKeypair.pubKey));
-          maciState.polls[pollId].publishMessage(message, encPubKey);
+          maciState.polls.get(pollId)?.publishMessage(message, encPubKey);
         }
       }
 
@@ -328,7 +330,7 @@ describe("Integration tests", function test() {
       // prove on chain if everything matches
       await expect(
         proveOnChain({
-          pollId: pollId.toString(),
+          pollId,
           proofDir: path.resolve(__dirname, "../../../cli/proofs"),
           subsidyEnabled,
           maciAddress: contracts.maciAddress,
@@ -341,7 +343,7 @@ describe("Integration tests", function test() {
       // verify the proofs
       await expect(
         verify({
-          pollId: pollId.toString(),
+          pollId,
           subsidyEnabled,
           tallyData,
           maciAddress: contracts.maciAddress,

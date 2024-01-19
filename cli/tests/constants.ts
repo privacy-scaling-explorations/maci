@@ -72,21 +72,21 @@ export const checkVerifyingKeysArgs: CheckVerifyingKeysArgs = {
 };
 
 export const mergeMessagesArgs: MergeMessagesArgs = {
-  pollId: 0,
+  pollId: 0n,
 };
 
 export const mergeSignupsArgs: MergeSignupsArgs = {
-  pollId: 0,
+  pollId: 0n,
 };
 
 export const proveOnChainArgs: ProveOnChainArgs = {
-  pollId: "0",
+  pollId: 0n,
   proofDir: testProofsDirPath,
   subsidyEnabled: false,
 };
 
 export const verifyArgs: VerifyArgs = {
-  pollId: "0",
+  pollId: 0n,
   subsidyEnabled: false,
   tallyFile: testTallyFilePath,
 };

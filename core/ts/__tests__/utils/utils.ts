@@ -24,7 +24,7 @@ export class TestHarness {
 
   poll: Poll;
 
-  pollId: number;
+  pollId: bigint;
 
   users: Keypair[] = [];
 
@@ -41,7 +41,7 @@ export class TestHarness {
       messageBatchSize,
       this.coordinatorKeypair,
     );
-    this.poll = this.maciState.polls[this.pollId];
+    this.poll = this.maciState.polls.get(this.pollId)!;
   }
 
   /**

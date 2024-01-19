@@ -46,7 +46,7 @@ describe("TallyVotes", () => {
   const [mpAbi] = parseArtifact("MessageProcessor");
   const [tallyAbi] = parseArtifact("Tally");
 
-  let pollId: number;
+  let pollId: bigint;
   let poll: Poll;
 
   let generatedInputs: IProcessMessagesCircuitInputs;
@@ -83,7 +83,7 @@ describe("TallyVotes", () => {
     const logs = receipt!.logs[receipt!.logs.length - 1];
     const event = iface.parseLog(logs as unknown as { topics: string[]; data: string }) as unknown as {
       args: {
-        _pollId: number;
+        _pollId: bigint;
         pollAddr: {
           poll: string;
           messageProcessor: string;
@@ -114,10 +114,11 @@ describe("TallyVotes", () => {
       BigInt("10457101036533406547632367118273992217979173478358440826365724437999023779287"),
       BigInt("19824078218392094440610104313265183977899662750282163392862422243483260492317"),
     ]);
-    maciState.polls[pollId].publishMessage(message, padKey);
 
     // save the poll
-    poll = maciState.polls[pollId];
+    poll = maciState.polls.get(pollId)!;
+
+    poll.publishMessage(message, padKey);
 
     // process messages locally
     generatedInputs = poll.processMessages(pollId);
@@ -175,6 +176,7 @@ describe("TallyVotes", () => {
       await pollContract.mergeMessageAq();
       tallyGeneratedInputs = poll.tallyVotes();
     });
+
     it("tallyVotes() should update the tally commitment", async () => {
       // do the processing on the message processor contract
       await mpContract.processMessages(generatedInputs.newSbCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
@@ -188,6 +190,7 @@ describe("TallyVotes", () => {
 
       expect(tallyGeneratedInputs.newTallyCommitment).to.eq(onChainNewTallyCommitment.toString());
     });
+
     it("tallyVotes() should revert when votes have already been tallied", async () => {
       await expect(
         tallyContract.tallyVotes(tallyGeneratedInputs.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]),

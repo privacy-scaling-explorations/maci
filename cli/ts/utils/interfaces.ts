@@ -35,7 +35,7 @@ export interface TallyData {
   /**
    * The ID of the poll.
    */
-  pollId: number;
+  pollId: string;
 
   /**
    * The new tally commitment.
@@ -109,7 +109,7 @@ export interface TallyData {
 export interface SubsidyData {
   provider: string;
   maci: string;
-  pollId: number;
+  pollId: bigint;
   newSubsidyCommitment: string;
   results: {
     subsidy: string[];
@@ -158,7 +158,7 @@ export interface AirdropArgs {
   /**
    * The id of the poll
    */
-  pollId?: number;
+  pollId?: bigint;
 
   /**
    * The address of the MACI contract
@@ -334,7 +334,7 @@ export interface GenLocalStateArgs {
   /**
    * The id of the poll
    */
-  pollId: number;
+  pollId: bigint;
 
   /**
    * The address of the MACI contract
@@ -409,7 +409,7 @@ export interface GenProofsArgs {
   /**
    * The id of the poll
    */
-  pollId: number;
+  pollId: bigint;
 
   /**
    * The file to store the subsidy proof
@@ -524,7 +524,7 @@ export interface MergeMessagesArgs {
   /**
    * The id of the poll
    */
-  pollId: number;
+  pollId: bigint;
 
   /**
    * Whether to log the output
@@ -549,7 +549,7 @@ export interface MergeSignupsArgs {
   /**
    * The id of the poll
    */
-  pollId: number;
+  pollId: bigint;
 
   /**
    * The address of the MACI contract
@@ -574,7 +574,7 @@ export interface ProveOnChainArgs {
   /**
    * The id of the poll
    */
-  pollId: string;
+  pollId: bigint;
 
   /**
    * The directory containing the proofs
@@ -639,7 +639,7 @@ export interface PublishArgs {
   /**
    * The id of the poll
    */
-  pollId: number;
+  pollId: bigint;
 
   /**
    * The new vote weight
@@ -769,7 +769,7 @@ export interface TopupArgs {
   /**
    * The poll ID
    */
-  pollId: number;
+  pollId: bigint;
 
   /**
    * The address of the MACI contract
@@ -789,7 +789,7 @@ export interface VerifyArgs {
   /**
    * The id of the poll
    */
-  pollId: string;
+  pollId: bigint;
 
   /**
    * Whether to deploy subsidy contract

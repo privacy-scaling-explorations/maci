@@ -136,7 +136,7 @@ export const deployPoll = async ({
     // parse DeployPoll log
     const log = iface.parseLog(receiptLog as unknown as { topics: string[]; data: string }) as unknown as {
       args: {
-        _pollId: number;
+        _pollId: bigint;
         pollAddr: {
           poll: string;
           messageProcessor: string;

@@ -24,7 +24,7 @@ import { timeTravel, deployTestContracts } from "./utils";
 
 describe("Poll", () => {
   let maciContract: MACI;
-  let pollId: number;
+  let pollId: bigint;
   let pollContract: PollContract;
   let verifierContract: Verifier;
   let vkRegistryContract: VkRegistry;
@@ -68,7 +68,7 @@ describe("Poll", () => {
       const iface = maciContract.interface;
       const logs = receipt!.logs[receipt!.logs.length - 1];
       const event = iface.parseLog(logs as unknown as { topics: string[]; data: string }) as unknown as {
-        args: { _pollId: number };
+        args: { _pollId: bigint };
       };
       pollId = event.args._pollId;
 
@@ -94,7 +94,7 @@ describe("Poll", () => {
         BigInt("10457101036533406547632367118273992217979173478358440826365724437999023779287"),
         BigInt("19824078218392094440610104313265183977899662750282163392862422243483260492317"),
       ]);
-      maciState.polls[pollId].publishMessage(message, padKey);
+      maciState.polls.get(pollId)?.publishMessage(message, padKey);
     });
 
     it("should not be possible to init the Poll contract twice", async () => {
@@ -157,7 +157,7 @@ describe("Poll", () => {
       expect(receipt?.status).to.eq(1);
 
       // publish on local maci state
-      maciState.polls[pollId].topupMessage(new Message(2n, [1n, 50n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n]));
+      maciState.polls.get(pollId)?.topupMessage(new Message(2n, [1n, 50n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n]));
     });
 
     it("should throw when the user does not have enough tokens", async () => {
@@ -167,7 +167,7 @@ describe("Poll", () => {
     it("should emit an event when publishing a topup message", async () => {
       expect(await pollContract.connect(voter).topup(1n, 50n)).to.emit(pollContract, "TopupMessage");
       // publish on local maci state
-      maciState.polls[pollId].topupMessage(new Message(2n, [1n, 50n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n]));
+      maciState.polls.get(pollId)?.topupMessage(new Message(2n, [1n, 50n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n]));
     });
 
     it("should successfully increase the number of messages", async () => {
@@ -177,7 +177,7 @@ describe("Poll", () => {
       expect(newNumMessages.toString()).to.eq((numMessages + 1n).toString());
 
       // publish on local maci state
-      maciState.polls[pollId].topupMessage(new Message(2n, [1n, 50n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n]));
+      maciState.polls.get(pollId)?.topupMessage(new Message(2n, [1n, 50n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n]));
     });
   });
 
@@ -185,15 +185,7 @@ describe("Poll", () => {
     it("should publish a message to the Poll contract", async () => {
       const keypair = new Keypair();
 
-      const command = new PCommand(
-        BigInt(1),
-        keypair.pubKey,
-        BigInt(0),
-        BigInt(9),
-        BigInt(1),
-        BigInt(pollId),
-        BigInt(0),
-      );
+      const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
 
       const signature = command.sign(keypair.privKey);
       const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey);
@@ -202,21 +194,13 @@ describe("Poll", () => {
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
 
-      maciState.polls[pollId].publishMessage(message, keypair.pubKey);
+      maciState.polls.get(pollId)?.publishMessage(message, keypair.pubKey);
     });
 
     it("should emit an event when publishing a message", async () => {
       const keypair = new Keypair();
 
-      const command = new PCommand(
-        BigInt(1),
-        keypair.pubKey,
-        BigInt(0),
-        BigInt(9),
-        BigInt(1),
-        BigInt(pollId),
-        BigInt(0),
-      );
+      const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
 
       const signature = command.sign(keypair.privKey);
       const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey);
@@ -225,7 +209,7 @@ describe("Poll", () => {
         .to.emit(pollContract, "PublishMessage")
         .withArgs(message.asContractParam(), keypair.pubKey.asContractParam());
 
-      maciState.polls[pollId].publishMessage(message, keypair.pubKey);
+      maciState.polls.get(pollId)?.publishMessage(message, keypair.pubKey);
     });
 
     it("shold not allow to publish a message after the voting period ends", async () => {
@@ -233,15 +217,7 @@ describe("Poll", () => {
       await timeTravel(signer.provider as unknown as EthereumProvider, Number(dd[0]) + 1);
 
       const keypair = new Keypair();
-      const command = new PCommand(
-        BigInt(0),
-        keypair.pubKey,
-        BigInt(0),
-        BigInt(0),
-        BigInt(0),
-        BigInt(pollId),
-        BigInt(0),
-      );
+      const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
 
       const signature = command.sign(keypair.privKey);
       const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey);
@@ -284,7 +260,7 @@ describe("Poll", () => {
 
     it("should have the correct message root set", async () => {
       const onChainMessageRoot = await messageAqContract.getMainRoot(MESSAGE_TREE_DEPTH);
-      const offChainMessageRoot = maciState.polls[pollId].messageTree.root;
+      const offChainMessageRoot = maciState.polls.get(pollId)!.messageTree.root;
 
       expect(onChainMessageRoot.toString()).to.eq(offChainMessageRoot.toString());
     });

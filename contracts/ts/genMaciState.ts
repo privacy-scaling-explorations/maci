@@ -27,7 +27,7 @@ export const genMaciStateFromContract = async (
   provider: Provider,
   address: string,
   coordinatorKeypair: Keypair,
-  pollId: number,
+  pollId: bigint,
   fromBlock = 0,
   blocksPerRequest = 50,
   endBlock: number | undefined = undefined,
@@ -102,9 +102,9 @@ export const genMaciStateFromContract = async (
     });
   });
 
-  let index = 0;
+  let index = 0n;
   const foundPollIds: number[] = [];
-  const pollContractAddresses: string[] = [];
+  const pollContractAddresses = new Map<bigint, string>();
 
   deployPollLogs.forEach((log) => {
     assert(!!log);
@@ -112,7 +112,7 @@ export const genMaciStateFromContract = async (
     const event = maciIface.parseLog(mutableLogs) as unknown as {
       args: {
         _pubKey: string[];
-        _pollId: number;
+        _pollId: bigint;
         pollAddr: {
           poll: string;
           messageProcessor: string;
@@ -123,7 +123,7 @@ export const genMaciStateFromContract = async (
 
     const pubKey = new PubKey(event.args._pubKey.map((x) => BigInt(x.toString())) as [bigint, bigint]);
 
-    const p = Number(event.args._pollId);
+    const p = event.args._pollId;
     assert(p === index);
 
     const pollAddr = event.args.pollAddr.poll;
@@ -135,14 +135,14 @@ export const genMaciStateFromContract = async (
     });
 
     foundPollIds.push(Number(p));
-    pollContractAddresses.push(pollAddr);
-    index += 1;
+    pollContractAddresses.set(BigInt(p), pollAddr);
+    index += 1n;
   });
 
   // Check whether each pollId exists
   assert(foundPollIds.includes(Number(pollId)), "Error: the specified pollId does not exist on-chain");
 
-  const pollContractAddress = pollContractAddresses[pollId];
+  const pollContractAddress = pollContractAddresses.get(pollId)!;
   const pollContract = new BaseContract(pollContractAddress, pollContractAbi, provider) as Poll;
 
   const coordinatorPubKeyOnChain = await pollContract.coordinatorPubKey();
@@ -321,19 +321,19 @@ export const genMaciStateFromContract = async (
 
       case action.type === "PublishMessage": {
         const { encPubKey, message } = action.data;
-        maciState.polls[pollId]?.publishMessage(message!, encPubKey!);
+        maciState.polls.get(pollId)?.publishMessage(message!, encPubKey!);
         break;
       }
 
       case action.type === "TopupMessage": {
         const { message } = action.data;
-        maciState.polls[pollId]?.topupMessage(message!);
+        maciState.polls.get(pollId)?.topupMessage(message!);
         break;
       }
 
       // ensure that the message root is correct (i.e. all messages have been published offchain)
       case action.type === "MergeMessageAq": {
-        assert(maciState.polls[pollId]?.messageTree.root.toString() === action.data.messageRoot?.toString());
+        assert(maciState.polls.get(pollId)?.messageTree.root.toString() === action.data.messageRoot?.toString());
         break;
       }
 
@@ -345,14 +345,15 @@ export const genMaciStateFromContract = async (
   // Set numSignUps
   const numSignUpsAndMessages = await pollContract.numSignUpsAndMessages();
 
-  const poll = maciState.polls[pollId];
-  assert(Number(numSignUpsAndMessages[1]) === poll.messages.length);
+  const poll = maciState.polls.get(pollId);
+
+  assert(Number(numSignUpsAndMessages[1]) === poll?.messages.length);
   assert(Number(numSignUpsAndMessages[0]) === maciState.numSignUps);
 
   // we need to ensure that the stateRoot is correct
   assert(maciState.stateTree.root.toString() === (await maciContract.getStateAqRoot()).toString());
 
-  maciState.polls[pollId] = poll;
+  maciState.polls.set(pollId, poll);
 
   return maciState;
 };

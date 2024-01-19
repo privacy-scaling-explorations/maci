@@ -11,7 +11,7 @@ import { STATE_TREE_ARITY } from "./utils/constants";
  */
 export class MaciState implements IMaciState {
   // a MaciState can hold multiple polls
-  polls: Poll[] = [];
+  polls: Map<bigint, Poll> = new Map<bigint, Poll>();
 
   // in this quinary tree we hold all signups (hash of a state leaf)
   stateTree: IncrementalQuinTree;
@@ -27,7 +27,7 @@ export class MaciState implements IMaciState {
   // to keep track if a poll is currently being processed
   pollBeingProcessed?: boolean;
 
-  currentPollBeingProcessed?: number;
+  currentPollBeingProcessed?: bigint;
 
   /**
    * Constructs a new MaciState object.
@@ -76,7 +76,7 @@ export class MaciState implements IMaciState {
     treeDepths: TreeDepths,
     messageBatchSize: number,
     coordinatorKeypair: Keypair,
-  ): number {
+  ): bigint {
     const poll: Poll = new Poll(
       pollEndTimestamp,
       coordinatorKeypair,
@@ -90,15 +90,15 @@ export class MaciState implements IMaciState {
       this,
     );
 
-    this.polls.push(poll);
-    return this.polls.length - 1;
+    this.polls.set(BigInt(this.polls.size), poll);
+    return BigInt(this.polls.size - 1);
   }
 
   /**
    * Deploy a null poll.
    */
   deployNullPoll(): void {
-    this.polls.push(null as unknown as Poll);
+    this.polls.set(BigInt(this.polls.size), null as unknown as Poll);
   }
 
   /**
@@ -109,7 +109,8 @@ export class MaciState implements IMaciState {
     const copied = new MaciState(this.stateTreeDepth);
 
     copied.stateLeaves = this.stateLeaves.map((x: StateLeaf) => x.copy());
-    copied.polls = this.polls.map((x) => x.copy());
+
+    copied.polls = new Map(Array.from(this.polls, ([key, value]) => [key, value.copy()]));
 
     return copied;
   };
@@ -122,15 +123,15 @@ export class MaciState implements IMaciState {
   equals = (m: MaciState): boolean => {
     const result =
       this.stateTreeDepth === m.stateTreeDepth &&
-      this.polls.length === m.polls.length &&
+      this.polls.size === m.polls.size &&
       this.stateLeaves.length === m.stateLeaves.length;
 
     if (!result) {
       return false;
     }
 
-    for (let i = 0; i < this.polls.length; i += 1) {
-      if (!this.polls[i].equals(m.polls[i])) {
+    for (let i = 0; i < this.polls.size; i += 1) {
+      if (!this.polls.get(BigInt(i))?.equals(m.polls.get(BigInt(i))!)) {
         return false;
       }
     }
@@ -150,7 +151,7 @@ export class MaciState implements IMaciState {
   toJSON(): IJsonMaciState {
     return {
       stateTreeDepth: this.stateTreeDepth,
-      polls: this.polls.map((poll) => poll.toJSON()),
+      polls: Array.from(this.polls.values()).map((poll) => poll.toJSON()),
       stateLeaves: this.stateLeaves.map((leaf) => leaf.toJSON()),
       pollBeingProcessed: Boolean(this.pollBeingProcessed),
       currentPollBeingProcessed: this.currentPollBeingProcessed ? this.currentPollBeingProcessed.toString() : "",
@@ -169,7 +170,7 @@ export class MaciState implements IMaciState {
     // assign the json values to the new instance
     maciState.stateLeaves = json.stateLeaves.map((leaf) => StateLeaf.fromJSON(leaf));
     maciState.pollBeingProcessed = json.pollBeingProcessed;
-    maciState.currentPollBeingProcessed = Number.parseInt(json.currentPollBeingProcessed, 10);
+    maciState.currentPollBeingProcessed = BigInt(json.currentPollBeingProcessed);
     maciState.numSignUps = json.numSignUps;
 
     // re create the state tree (start from index 1 as in the constructor we already add the blank leaf)
@@ -179,8 +180,11 @@ export class MaciState implements IMaciState {
       maciState.stateTree.insert(leafHash);
     }
 
-    // re-generate the polls and set the maci state ref
-    maciState.polls = json.polls.map((jsonPoll: IJsonPoll) => Poll.fromJSON(jsonPoll, maciState));
+    // re-generate the polls and set the maci state reference
+    maciState.polls = new Map(
+      json.polls.map((jsonPoll: IJsonPoll, index) => [BigInt(index), Poll.fromJSON(jsonPoll, maciState)]),
+    );
+
     return maciState;
   }
 }
