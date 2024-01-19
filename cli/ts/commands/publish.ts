@@ -115,17 +115,15 @@ export const publish = async ({
     BigInt(coordinatorPubKeyResult.y.toString()),
   ]);
 
-  const weight = BigInt(newVoteWeight);
-
   const encKeypair = new Keypair();
 
   // create the command object
   const command: PCommand = new PCommand(
-    BigInt(stateIndex),
+    stateIndex,
     userMaciPubKey,
-    BigInt(voteOptionIndex),
-    weight,
-    BigInt(nonce),
+    voteOptionIndex,
+    newVoteWeight,
+    nonce,
     BigInt(pollId),
     userSalt,
   );

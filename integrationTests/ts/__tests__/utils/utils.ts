@@ -92,18 +92,13 @@ export const genTestUserCommands = (
       const vote = {
         voteOptionIndex,
         voteWeight,
-        nonce: j + 1,
+        nonce: BigInt(j + 1),
       };
 
       votes.push(vote);
     }
 
-    const userCommand = new UserCommand(
-      userKeypair,
-      votes,
-      BigInt(defaultVote.maxVoteWeight),
-      BigInt(defaultVote.nonce),
-    );
+    const userCommand = new UserCommand(userKeypair, votes, defaultVote.maxVoteWeight, defaultVote.nonce);
     usersCommands.push(userCommand);
   }
 

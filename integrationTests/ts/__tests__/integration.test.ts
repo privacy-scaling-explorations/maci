@@ -197,7 +197,7 @@ describe("Integration tests", function test() {
             : user.votes[j].voteOptionIndex;
           const newVoteWeight = isKeyChange ? testCase.changeUsersKeys?.[i][j].voteWeight : user.votes[j].voteWeight;
           const { nonce } = user.votes[j];
-          const salt = `0x${genRandomSalt().toString(16)}`;
+          const salt = genRandomSalt();
 
           // store the previous keypair
           const oldKeypair = user.keypair;
@@ -209,7 +209,7 @@ describe("Integration tests", function test() {
           // actually publish it
           const encryptionKey = await publish({
             pubkey: user.keypair.pubKey.serialize(),
-            stateIndex: Number(stateIndex),
+            stateIndex: BigInt(stateIndex),
             voteOptionIndex: voteOptionIndex!,
             nonce,
             pollId,

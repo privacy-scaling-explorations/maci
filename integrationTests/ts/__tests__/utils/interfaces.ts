@@ -4,24 +4,24 @@ import { MACI, Verifier, VkRegistry } from "maci-contracts";
  * A util interface that represents a vote object
  */
 export interface IVote {
-  voteOptionIndex: number;
-  voteWeight: number;
-  nonce: number;
+  voteOptionIndex: bigint;
+  voteWeight: bigint;
+  nonce: bigint;
 }
 
 /**
  * A util interface that represents a briber object
  */
 export interface IBriber {
-  voteOptionIndices: number[];
+  voteOptionIndices: bigint[];
 }
 
 /**
  * A util interface that represents a change user keys object
  */
 export interface IChangeUsersKeys {
-  voteOptionIndex: number;
-  voteWeight: number;
+  voteOptionIndex: bigint;
+  voteWeight: bigint;
 }
 
 /**

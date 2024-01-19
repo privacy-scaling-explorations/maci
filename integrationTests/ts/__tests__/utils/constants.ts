@@ -1,16 +1,16 @@
 // this file contains all of the constants used in the integration tests
 export const invalidVote = {
-  voteWeight: 2,
-  nonce: 0,
-  maxVoteWeight: 1,
-  voteCreditBalance: 1,
+  voteWeight: 2n,
+  nonce: 0n,
+  maxVoteWeight: 1n,
+  voteCreditBalance: 1n,
 };
 export const defaultVote = {
-  voteWeight: 1,
-  nonce: 1,
-  maxVoteWeight: 25,
-  voteCreditBalance: 1,
-  voteOptionIndex: 0,
+  voteWeight: 1n,
+  nonce: 1n,
+  maxVoteWeight: 25n,
+  voteCreditBalance: 1n,
+  voteOptionIndex: 0n,
 };
 export const SG_DATA = "0x0000000000000000000000000000000000000000000000000000000000000000";
 export const QUINARY_HASH_LENGTH = 5;

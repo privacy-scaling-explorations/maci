@@ -112,13 +112,13 @@ describe("e2e tests", function test() {
     it("should publish one message", async () => {
       await publish({
         pubkey: user.pubKey.serialize(),
-        stateIndex: 1,
-        voteOptionIndex: 0,
-        nonce: 1,
+        stateIndex: 1n,
+        voteOptionIndex: 0n,
+        nonce: 1n,
         pollId: 0,
-        newVoteWeight: 9,
+        newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: user.privKey.serialize(),
       });
     });
@@ -161,45 +161,45 @@ describe("e2e tests", function test() {
     it("should publish four messages", async () => {
       await publish({
         pubkey: users[0].pubKey.serialize(),
-        stateIndex: 1,
-        voteOptionIndex: 0,
-        nonce: 1,
+        stateIndex: 1n,
+        voteOptionIndex: 0n,
+        nonce: 1n,
         pollId: 0,
-        newVoteWeight: 9,
-        salt: genRandomSalt().toString(),
+        newVoteWeight: 9n,
+        salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
       });
 
       await publish({
         pubkey: users[1].pubKey.serialize(),
-        stateIndex: 2,
-        voteOptionIndex: 1,
-        nonce: 1,
+        stateIndex: 2n,
+        voteOptionIndex: 1n,
+        nonce: 1n,
         pollId: 0,
-        newVoteWeight: 9,
-        salt: genRandomSalt().toString(),
+        newVoteWeight: 9n,
+        salt: genRandomSalt(),
         privateKey: users[1].privKey.serialize(),
       });
 
       await publish({
         pubkey: users[2].pubKey.serialize(),
-        stateIndex: 3,
-        voteOptionIndex: 2,
-        nonce: 1,
+        stateIndex: 3n,
+        voteOptionIndex: 2n,
+        nonce: 1n,
         pollId: 0,
-        newVoteWeight: 9,
-        salt: genRandomSalt().toString(),
+        newVoteWeight: 9n,
+        salt: genRandomSalt(),
         privateKey: users[2].privKey.serialize(),
       });
 
       await publish({
         pubkey: users[3].pubKey.serialize(),
-        stateIndex: 4,
-        voteOptionIndex: 3,
-        nonce: 1,
+        stateIndex: 4n,
+        voteOptionIndex: 3n,
+        nonce: 1n,
         pollId: 0,
-        newVoteWeight: 9,
-        salt: genRandomSalt().toString(),
+        newVoteWeight: 9n,
+        salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
       });
     });
@@ -239,68 +239,68 @@ describe("e2e tests", function test() {
     it("should publish six messages", async () => {
       await publish({
         pubkey: users[0].pubKey.serialize(),
-        stateIndex: 1,
-        voteOptionIndex: 0,
-        nonce: 1,
+        stateIndex: 1n,
+        voteOptionIndex: 0n,
+        nonce: 1n,
         pollId: 0,
-        newVoteWeight: 9,
+        newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
       });
       await publish({
         pubkey: users[1].pubKey.serialize(),
-        stateIndex: 2,
-        voteOptionIndex: 0,
-        nonce: 1,
+        stateIndex: 2n,
+        voteOptionIndex: 0n,
+        nonce: 1n,
         pollId: 0,
-        newVoteWeight: 9,
+        newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: users[1].privKey.serialize(),
       });
       await publish({
         pubkey: users[2].pubKey.serialize(),
-        stateIndex: 3,
-        voteOptionIndex: 0,
-        nonce: 1,
+        stateIndex: 3n,
+        voteOptionIndex: 0n,
+        nonce: 1n,
         pollId: 0,
-        newVoteWeight: 9,
+        newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: users[2].privKey.serialize(),
       });
       await publish({
         pubkey: users[3].pubKey.serialize(),
-        stateIndex: 4,
-        voteOptionIndex: 0,
-        nonce: 1,
+        stateIndex: 4n,
+        voteOptionIndex: 0n,
+        nonce: 1n,
         pollId: 0,
-        newVoteWeight: 9,
+        newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
       });
       await publish({
         pubkey: users[3].pubKey.serialize(),
-        stateIndex: 4,
-        voteOptionIndex: 0,
-        nonce: 1,
+        stateIndex: 4n,
+        voteOptionIndex: 0n,
+        nonce: 1n,
         pollId: 0,
-        newVoteWeight: 9,
+        newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
       });
       await publish({
         pubkey: users[3].pubKey.serialize(),
-        stateIndex: 4,
-        voteOptionIndex: 0,
-        nonce: 1,
+        stateIndex: 4n,
+        voteOptionIndex: 0n,
+        nonce: 1n,
         pollId: 0,
-        newVoteWeight: 9,
+        newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
       });
     });
@@ -350,13 +350,13 @@ describe("e2e tests", function test() {
     it("should publish one message", async () => {
       await publish({
         pubkey: users[0].pubKey.serialize(),
-        stateIndex: 1,
-        voteOptionIndex: 0,
-        nonce: 1,
+        stateIndex: 1n,
+        voteOptionIndex: 0n,
+        nonce: 1n,
         pollId: 0,
-        newVoteWeight: 9,
+        newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
       });
     });
@@ -397,13 +397,13 @@ describe("e2e tests", function test() {
         // eslint-disable-next-line no-await-in-loop
         await publish({
           pubkey: user.pubKey.serialize(),
-          stateIndex: 1,
-          voteOptionIndex: 0,
-          nonce: 1,
+          stateIndex: 1n,
+          voteOptionIndex: 0n,
+          nonce: 1n,
           pollId: 0,
-          newVoteWeight: 9,
+          newVoteWeight: 9n,
           maciContractAddress: maciAddresses.maciAddress,
-          salt: genRandomSalt().toString(),
+          salt: genRandomSalt(),
           privateKey: user.privKey.serialize(),
         });
       }
@@ -446,13 +446,13 @@ describe("e2e tests", function test() {
       // publish
       await publish({
         pubkey: user.pubKey.serialize(),
-        stateIndex: 1,
-        voteOptionIndex: 0,
-        nonce: 1,
+        stateIndex: 1n,
+        voteOptionIndex: 0n,
+        nonce: 1n,
         pollId: 0,
-        newVoteWeight: 9,
+        newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: user.privKey.serialize(),
       });
       // time travel
@@ -473,13 +473,13 @@ describe("e2e tests", function test() {
     it("should publish a new message", async () => {
       await publish({
         pubkey: user.pubKey.serialize(),
-        stateIndex: 1,
-        voteOptionIndex: 0,
-        nonce: 1,
+        stateIndex: 1n,
+        voteOptionIndex: 0n,
+        nonce: 1n,
         pollId: 1,
-        newVoteWeight: 7,
+        newVoteWeight: 7n,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: user.privKey.serialize(),
       });
     });
@@ -530,13 +530,13 @@ describe("e2e tests", function test() {
       // publish
       await publish({
         pubkey: users[0].pubKey.serialize(),
-        stateIndex: 1,
-        voteOptionIndex: 0,
-        nonce: 1,
+        stateIndex: 1n,
+        voteOptionIndex: 0n,
+        nonce: 1n,
         pollId: 0,
-        newVoteWeight: 9,
+        newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
       });
 
@@ -560,37 +560,37 @@ describe("e2e tests", function test() {
     it("should publish messages to the second poll", async () => {
       await publish({
         pubkey: users[0].pubKey.serialize(),
-        stateIndex: 1,
-        voteOptionIndex: 0,
-        nonce: 1,
+        stateIndex: 1n,
+        voteOptionIndex: 0n,
+        nonce: 1n,
         pollId: 1,
-        newVoteWeight: 9,
+        newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
       });
 
       await publish({
         pubkey: users[1].pubKey.serialize(),
-        stateIndex: 2,
-        voteOptionIndex: 3,
-        nonce: 1,
+        stateIndex: 2n,
+        voteOptionIndex: 3n,
+        nonce: 1n,
         pollId: 1,
-        newVoteWeight: 1,
+        newVoteWeight: 1n,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: users[1].privKey.serialize(),
       });
 
       await publish({
         pubkey: users[2].pubKey.serialize(),
-        stateIndex: 3,
-        voteOptionIndex: 5,
-        nonce: 1,
+        stateIndex: 3n,
+        voteOptionIndex: 5n,
+        nonce: 1n,
         pollId: 1,
-        newVoteWeight: 3,
+        newVoteWeight: 3n,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: users[2].privKey.serialize(),
       });
     });
@@ -598,37 +598,37 @@ describe("e2e tests", function test() {
     it("should publish messages to the third poll", async () => {
       await publish({
         pubkey: users[3].pubKey.serialize(),
-        stateIndex: 3,
-        voteOptionIndex: 5,
-        nonce: 1,
+        stateIndex: 3n,
+        voteOptionIndex: 5n,
+        nonce: 1n,
         pollId: 2,
-        newVoteWeight: 3,
+        newVoteWeight: 3n,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
       });
 
       await publish({
         pubkey: users[4].pubKey.serialize(),
-        stateIndex: 4,
-        voteOptionIndex: 7,
-        nonce: 1,
+        stateIndex: 4n,
+        voteOptionIndex: 7n,
+        nonce: 1n,
         pollId: 2,
-        newVoteWeight: 2,
+        newVoteWeight: 2n,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: users[4].privKey.serialize(),
       });
 
       await publish({
         pubkey: users[5].pubKey.serialize(),
-        stateIndex: 5,
-        voteOptionIndex: 5,
-        nonce: 1,
+        stateIndex: 5n,
+        voteOptionIndex: 5n,
+        nonce: 1n,
         pollId: 2,
-        newVoteWeight: 9,
+        newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: users[5].privKey.serialize(),
       });
     });
@@ -703,13 +703,13 @@ describe("e2e tests", function test() {
     it("should publish one message", async () => {
       await publish({
         pubkey: user.pubKey.serialize(),
-        stateIndex: 1,
-        voteOptionIndex: 5,
-        nonce: 1,
+        stateIndex: 1n,
+        voteOptionIndex: 5n,
+        nonce: 1n,
         pollId: 0,
-        newVoteWeight: 3,
+        newVoteWeight: 3n,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: user.privKey.serialize(),
       });
     });
@@ -737,7 +737,7 @@ describe("e2e tests", function test() {
   describe("topup message", () => {
     const user = new Keypair();
     const tokenAmount = 100;
-    let stateIndex: number | undefined;
+    let stateIndex: bigint | undefined;
 
     after(() => {
       cleanVanilla();
@@ -751,7 +751,7 @@ describe("e2e tests", function test() {
     });
 
     it("should signup one user", async () => {
-      stateIndex = Number.parseInt(await signup({ maciPubKey: user.pubKey.serialize() }), 10);
+      stateIndex = BigInt(await signup({ maciPubKey: user.pubKey.serialize() }));
     });
 
     it("should airdrop topup tokens to the coordinator user", async () => {
@@ -764,19 +764,24 @@ describe("e2e tests", function test() {
     });
 
     it("should publish one topup message", async () => {
-      await topup({ amount: tokenAmount, stateIndex: stateIndex!, pollId: 0, maciAddress: maciAddresses.maciAddress });
+      await topup({
+        amount: tokenAmount,
+        stateIndex: Number(stateIndex!),
+        pollId: 0,
+        maciAddress: maciAddresses.maciAddress,
+      });
     });
 
     it("should publish one vote message", async () => {
       await publish({
         pubkey: user.pubKey.serialize(),
         stateIndex: stateIndex!,
-        voteOptionIndex: 5,
-        nonce: 1,
+        voteOptionIndex: 5n,
+        nonce: 1n,
         pollId: 0,
-        newVoteWeight: 3,
+        newVoteWeight: 3n,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: user.privKey.serialize(),
       });
     });

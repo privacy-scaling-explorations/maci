@@ -83,20 +83,20 @@ describe("keyChange tests", function test() {
 
     const keypair1 = new Keypair();
     const keypair2 = new Keypair();
-    const initialNonce = 1;
-    const initialVoteOption = 0;
-    const initialVoteAmount = 9;
+    const initialNonce = 1n;
+    const initialVoteOption = 0n;
+    const initialVoteAmount = 9n;
     const pollId = 0;
-    let stateIndex = 0;
-    const expectedTally = initialVoteAmount - 1;
-    const expectedPerVoteOptionTally = (initialVoteAmount - 1) ** 2;
+    let stateIndex = 0n;
+    const expectedTally = initialVoteAmount - 1n;
+    const expectedPerVoteOptionTally = (initialVoteAmount - 1n) ** 2n;
 
     before(async () => {
       // deploy the smart contracts
       maciAddresses = await deploy(deployArgs);
       // deploy a poll contract
       await deployPoll(deployPollArgs);
-      stateIndex = Number.parseInt(await signup({ maciPubKey: keypair1.pubKey.serialize() }), 10);
+      stateIndex = BigInt(await signup({ maciPubKey: keypair1.pubKey.serialize() }));
       await publish({
         pubkey: keypair1.pubKey.serialize(),
         stateIndex,
@@ -105,7 +105,7 @@ describe("keyChange tests", function test() {
         pollId,
         newVoteWeight: initialVoteAmount,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: keypair1.privKey.serialize(),
       });
     });
@@ -117,9 +117,9 @@ describe("keyChange tests", function test() {
         voteOptionIndex: initialVoteOption,
         nonce: initialNonce,
         pollId,
-        newVoteWeight: initialVoteAmount - 1,
+        newVoteWeight: initialVoteAmount - 1n,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: keypair1.privKey.serialize(),
       });
     });
@@ -147,20 +147,20 @@ describe("keyChange tests", function test() {
 
     const keypair1 = new Keypair();
     const keypair2 = new Keypair();
-    const initialNonce = 1;
-    const initialVoteOption = 0;
-    const initialVoteAmount = 9;
+    const initialNonce = 1n;
+    const initialVoteOption = 0n;
+    const initialVoteAmount = 9n;
     const pollId = 0;
-    let stateIndex = 0;
+    let stateIndex = 0n;
     const expectedTally = initialVoteAmount;
-    const expectedPerVoteOptionTally = initialVoteAmount ** 2;
+    const expectedPerVoteOptionTally = initialVoteAmount ** 2n;
 
     before(async () => {
       // deploy the smart contracts
       maciAddresses = await deploy(deployArgs);
       // deploy a poll contract
       await deployPoll(deployPollArgs);
-      stateIndex = Number.parseInt(await signup({ maciPubKey: keypair1.pubKey.serialize() }), 10);
+      stateIndex = BigInt(await signup({ maciPubKey: keypair1.pubKey.serialize() }));
       await publish({
         pubkey: keypair1.pubKey.serialize(),
         stateIndex,
@@ -169,7 +169,7 @@ describe("keyChange tests", function test() {
         pollId,
         newVoteWeight: initialVoteAmount,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: keypair1.privKey.serialize(),
       });
     });
@@ -178,12 +178,12 @@ describe("keyChange tests", function test() {
       await publish({
         pubkey: keypair2.pubKey.serialize(),
         stateIndex,
-        voteOptionIndex: initialVoteOption + 1,
-        nonce: initialNonce + 1,
+        voteOptionIndex: initialVoteOption + 1n,
+        nonce: initialNonce + 1n,
         pollId,
-        newVoteWeight: initialVoteAmount - 1,
+        newVoteWeight: initialVoteAmount - 1n,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: keypair1.privKey.serialize(),
       });
     });
@@ -211,20 +211,20 @@ describe("keyChange tests", function test() {
 
     const keypair1 = new Keypair();
     const keypair2 = new Keypair();
-    const initialNonce = 1;
-    const initialVoteOption = 0;
-    const initialVoteAmount = 9;
+    const initialNonce = 1n;
+    const initialVoteOption = 0n;
+    const initialVoteAmount = 9n;
     const pollId = 0;
-    let stateIndex = 0;
-    const expectedTally = initialVoteAmount - 3;
-    const expectedPerVoteOptionTally = (initialVoteAmount - 3) ** 2;
+    let stateIndex = 0n;
+    const expectedTally = initialVoteAmount - 3n;
+    const expectedPerVoteOptionTally = (initialVoteAmount - 3n) ** 2n;
 
     before(async () => {
       // deploy the smart contracts
       maciAddresses = await deploy(deployArgs);
       // deploy a poll contract
       await deployPoll(deployPollArgs);
-      stateIndex = Number.parseInt(await signup({ maciPubKey: keypair1.pubKey.serialize() }), 10);
+      stateIndex = BigInt(await signup({ maciPubKey: keypair1.pubKey.serialize() }));
       await publish({
         pubkey: keypair1.pubKey.serialize(),
         stateIndex,
@@ -233,7 +233,7 @@ describe("keyChange tests", function test() {
         pollId,
         newVoteWeight: initialVoteAmount,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: keypair1.privKey.serialize(),
       });
     });
@@ -242,12 +242,12 @@ describe("keyChange tests", function test() {
       await publish({
         pubkey: keypair2.pubKey.serialize(),
         stateIndex,
-        voteOptionIndex: initialVoteOption + 2,
+        voteOptionIndex: initialVoteOption + 2n,
         nonce: initialNonce,
         pollId,
-        newVoteWeight: initialVoteAmount - 3,
+        newVoteWeight: initialVoteAmount - 3n,
         maciContractAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt().toString(),
+        salt: genRandomSalt(),
         privateKey: keypair1.privKey.serialize(),
       });
     });
