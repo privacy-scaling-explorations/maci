@@ -5,4 +5,4 @@ import { SNARK_FIELD_SIZE } from "maci-crypto";
  * @param salt the salt to validate
  * @returns whether it is valid or not
  */
-export const validateSalt = (salt: string): boolean => BigInt(salt) < SNARK_FIELD_SIZE;
+export const validateSalt = (salt: bigint): boolean => salt < SNARK_FIELD_SIZE;

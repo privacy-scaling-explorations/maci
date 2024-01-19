@@ -26,11 +26,11 @@ describe("utils", () => {
 
   describe("validateSalt", () => {
     it("should return true for a valid salt", () => {
-      expect(validateSalt(genRandomSalt().toString())).to.eq(true);
+      expect(validateSalt(genRandomSalt())).to.eq(true);
     });
 
     it("should return false for an invalid salt", () => {
-      expect(validateSalt(SNARK_FIELD_SIZE.toString())).to.eq(false);
+      expect(validateSalt(SNARK_FIELD_SIZE)).to.eq(false);
     });
   });
 });

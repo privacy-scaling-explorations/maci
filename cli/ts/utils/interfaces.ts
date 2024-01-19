@@ -624,17 +624,17 @@ export interface PublishArgs {
   /**
    * The index of the state leaf
    */
-  stateIndex: number;
+  stateIndex: bigint;
 
   /**
    * The index of the vote option
    */
-  voteOptionIndex: number;
+  voteOptionIndex: bigint;
 
   /**
    * The nonce of the message
    */
-  nonce: number;
+  nonce: bigint;
 
   /**
    * The id of the poll
@@ -644,7 +644,7 @@ export interface PublishArgs {
   /**
    * The new vote weight
    */
-  newVoteWeight: number;
+  newVoteWeight: bigint;
 
   /**
    * The address of the MACI contract
@@ -654,7 +654,7 @@ export interface PublishArgs {
   /**
    * The salt of the message
    */
-  salt?: string;
+  salt?: bigint;
 
   /**
    * The private key of the user
