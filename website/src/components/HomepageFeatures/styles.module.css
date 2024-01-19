@@ -5,6 +5,12 @@
   width: 100%;
 }
 
-.featureSvg {
+.featureImg {
   width: 200px;
+}
+
+.featureTitle {
+  text-decoration: underline;
+  text-decoration-color: var(--ifm-link-color);
+  text-underline-offset: 0.5rem;
 }

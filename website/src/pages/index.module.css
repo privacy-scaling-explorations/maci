@@ -9,23 +9,30 @@
   overflow: hidden;
   background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.3) 100%),
     url("../../static/img/hero.svg");
-  background-position: center;
+  background-position: 0% 75%;
   background-repeat: no-repeat;
   background-size: cover;
   flex-direction: column;
   justify-content: center;
   align-items: start;
   padding: 8rem;
+  color: var(--ifm-color-hero);
+  font-family: ShareTechMono;
+  gap: 1rem;
 }
 
 .heroTitle {
   border: 2px solid white;
   border-radius: 4px;
-  padding: 0rem 0.5rem;
+  padding: 0rem 0.75rem;
+  font-size: 2.5rem;
+  line-height: 3.5rem;
+  letter-spacing: -0.1rem;
 }
 
-.heroColor {
-  color: var(--ifm-color-hero);
+.heroTagline {
+  font-size: 4.5rem;
+  line-height: 5rem;
 }
 
 .buttons {
@@ -46,9 +53,9 @@
 }
 
 .borderBlue {
-  width: max-content;
-  border-bottom: 3px solid var(--ifm-link-color);
-  box-sizing: content-box;
+  text-decoration: underline;
+  text-decoration-color: var(--ifm-link-color);
+  text-underline-offset: 0.5rem;
   margin-bottom: 1rem;
 }
 
@@ -59,5 +66,16 @@
 
   .introduction {
     padding: 1.5rem;
+  }
+
+  .heroTitle {
+    font-size: 1.5rem;
+    line-height: 2.25rem;
+    padding: 0rem 0.5rem;
+  }
+
+  .heroTagline {
+    font-size: 2.5rem;
+    line-height: 3rem;
   }
 }

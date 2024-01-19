@@ -471,6 +471,9 @@ importers:
       '@docusaurus/theme-classic':
         specifier: 3.1.0
         version: 3.1.0(@types/react@18.2.47)(eslint@8.56.0)(react-dom@18.2.0)(react@18.2.0)(typescript@5.3.3)
+      '@docusaurus/theme-common':
+        specifier: ^3.1.0
+        version: 3.1.0(@docusaurus/types@3.1.0)(eslint@8.56.0)(react-dom@18.2.0)(react@18.2.0)(typescript@5.3.3)
       '@easyops-cn/docusaurus-search-local':
         specifier: ^0.40.1
         version: 0.40.1(@docusaurus/theme-common@3.1.0)(@docusaurus/types@3.1.0)(eslint@8.56.0)(quill-delta@5.1.0)(react-dom@18.2.0)(react@18.2.0)(rxjs@7.8.1)(typescript@5.3.3)

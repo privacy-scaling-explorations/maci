@@ -28,7 +28,7 @@
   --ifm-footer-background-color: #020203;
   --ifm-footer-color: #ffffff;
   --ifm-footer-link-color: #ffffff;
-  --ifm-footer-link-hover-color: #ffffff;
+  --ifm-footer-link-hover-color: #579bea;
   --ifm-link-color: #579bea;
   --ifm-color-hero: #fcfcfc;
   --ifm-font-family-base: DMSans;
@@ -57,6 +57,21 @@ h2 {
   font-size: 3rem;
   margin: 0;
   color: var(--ifm-color-primary);
+}
+
+h3 {
+  font-family: ShareTechMono;
+  color: var(--ifm-color-primary);
+}
+
+h4 {
+  font-family: ShareTechMono;
+  color: var(--ifm-color-primary);
+  font-size: 1.25rem;
+}
+
+nav {
+  font-family: ShareTechMono;
 }
 
 @media screen and (max-width: 996px) {
