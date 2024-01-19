@@ -184,7 +184,8 @@ pnpm run test
 
 The following compiled circuits and zkeys are available to download:
 
-- [Prod](#prod-size) (`7-9-3-4`)
+- [Prod && Ceremony](#prod-size-ceremony) (`6-8-2-3`)
+- [Large](#large-size) (`7-9-3-4`)
 - [Micro](#micro-size) (`10-2-1-2`)
 - [Small](#small-size) (`4-6-3-4`)
 - [Medium](#medium-size) (`7-7-3-3`)
@@ -194,7 +195,19 @@ The following compiled circuits and zkeys are available to download:
 
 - glibc 2.11 (Default of Ubuntu 20.04 LTS)
 
-### Prod Size
+### Prod Size Ceremony
+
+:::info
+These artifacts have undergong a trusted setup and can be used in production. Subsidy is not included.
+:::
+
+- [maci-ceremony-artifacts-v1.2.0.tar.gz](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.2.0/maci-ceremony-artifacts-v1.2.0.tar.gz) (0.76 GB)
+
+### Large Size
+
+:::danger
+Please do not use in production. These artifacts have not undergone a trusted setup.
+:::
 
 - [zkeys-7-9-3-4.tar.gz](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/7-9-3-4/zkeys_7-9-3-4_glibc-211.tar.gz) (2.8 GB)
 - [ProcessMessages_7-9-3-4_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/7-9-3-4/ProcessMessages_7-9-3-4_test.0.zkey) (3.8 GB)
@@ -213,11 +226,11 @@ The following compiled circuits and zkeys are available to download:
 
 #### Vote tallying
 
-| Parameter                | Value | Description                                        |
-| ------------------------ | ----- | -------------------------------------------------- |
-| State tree depth         | 7     | Allows 78,125 signups.                             |
-| State leaf batch depth   | 3     | Allows 125 user's votes to be processed per batch. |
-| Message batch tree depth | 4     | Allows 625 messages to be processed per batch.     |
+| Parameter              | Value | Description                                        |
+| ---------------------- | ----- | -------------------------------------------------- |
+| State tree depth       | 7     | Allows 78,125 signups.                             |
+| State leaf batch depth | 3     | Allows 125 user's votes to be processed per batch. |
+| Vote option tree depth | 4     | Allows 625 vote options.                           |
 
 #### Micro size
 
@@ -239,13 +252,17 @@ The following compiled circuits and zkeys are available to download:
 
 #### Vote tallying
 
-| Parameter                | Value | Description                                      |
-| ------------------------ | ----- | ------------------------------------------------ |
-| State tree depth         | 10    | Allows 9,765,625 signups.                        |
-| State leaf batch depth   | 1     | Allows 5 user's votes to be processed per batch. |
-| Message batch tree depth | 2     | Allows 25 messages to be processed per batch.    |
+| Parameter              | Value | Description                                      |
+| ---------------------- | ----- | ------------------------------------------------ |
+| State tree depth       | 10    | Allows 9,765,625 signups.                        |
+| State leaf batch depth | 1     | Allows 5 user's votes to be processed per batch. |
+| Vote option tree depth | 2     | Allows 25 vote options.                          |
 
 ### Small size
+
+:::danger
+Please do not use in production. These artifacts have not undergone a trusted setup.
+:::
 
 - [zkeys_4-6-3-4_glibc-211.tar.gz](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/4-6-3-4/zkeys_4-6-3-4_glibc-211.tar.gz) (2.6 GB)
 - [ProcessMessages_4-6-3-4_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/4-6-3-4/ProcessMessages_4-6-3-4_test.0.zkey) (2.9 GB)
@@ -264,13 +281,17 @@ The following compiled circuits and zkeys are available to download:
 
 #### Vote tallying
 
-| Parameter                | Value | Description                                        |
-| ------------------------ | ----- | -------------------------------------------------- |
-| State tree depth         | 4     | Allows 9,765,625 signups.                          |
-| State leaf batch depth   | 3     | Allows 125 user's votes to be processed per batch. |
-| Message batch tree depth | 4     | Allows 625 messages to be processed per batch.     |
+| Parameter              | Value | Description                                        |
+| ---------------------- | ----- | -------------------------------------------------- |
+| State tree depth       | 4     | Allows 9,765,625 signups.                          |
+| State leaf batch depth | 3     | Allows 125 user's votes to be processed per batch. |
+| Vote option tree depth | 2     | Allows 25 vote options.                            |
 
 ### Medium size
+
+:::danger
+Please do not use in production. These artifacts have not undergone a trusted setup.
+:::
 
 - [zkeys_7-7-3-3_glibc-211.tar.gz](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/7-7-3-3/zkeys_7-7-3-3_glibc-211.tar.gz) (4.9 GB)
 - [ProcessMessages_7-7-3-3_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/7-7-3-3/ProcessMessages_7-7-3-3_test.0.zkey) (2.2 GB)
@@ -289,13 +310,17 @@ The following compiled circuits and zkeys are available to download:
 
 #### Vote tallying
 
-| Parameter                | Value | Description                                        |
-| ------------------------ | ----- | -------------------------------------------------- |
-| State tree depth         | 7     | Allows 78,125 signups.                             |
-| State leaf batch depth   | 3     | Allows 125 user's votes to be processed per batch. |
-| Message batch tree depth | 3     | Allows 125 messages to be processed per batch.     |
+| Parameter              | Value | Description                                        |
+| ---------------------- | ----- | -------------------------------------------------- |
+| State tree depth       | 7     | Allows 78,125 signups.                             |
+| State leaf batch depth | 3     | Allows 125 user's votes to be processed per batch. |
+| Vote option tree depth | 2     | Allows 25 vote options.                            |
 
 ### 6-8-3-3
+
+:::danger
+Please do not use in production. These artifacts have not undergone a trusted setup.
+:::
 
 - [zkeys_6-8-3-3_glibc-211.tar.gz](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/6-8-3-3/zkeys_6-8-3-3_glibc-211.tar.gz) (1.1 GB)
 - [ProcessMessages_6-8-3-3_test.0.zkey](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.1.1-aa4ba27/6-8-3-3/ProcessMessages_6-8-3-3_test.0.zkey) (3.4 GB)
@@ -314,11 +339,11 @@ The following compiled circuits and zkeys are available to download:
 
 #### Vote tallying
 
-| Parameter                | Value | Description                                        |
-| ------------------------ | ----- | -------------------------------------------------- |
-| State tree depth         | 7     | Allows 15,625 signups.                             |
-| State leaf batch depth   | 3     | Allows 125 user's votes to be processed per batch. |
-| Message batch tree depth | 3     | Allows 125 messages to be processed per batch.     |
+| Parameter              | Value | Description                                        |
+| ---------------------- | ----- | -------------------------------------------------- |
+| State tree depth       | 6     | Allows 15,625 signups.                             |
+| State leaf batch depth | 3     | Allows 125 user's votes to be processed per batch. |
+| Vote option tree depth | 2     | Allows 25 vote options.                            |
 
 ### contents of `*.tar.gz`
 
@@ -387,7 +412,7 @@ zkeys/TallyVotes_7-3-4_test
 - [ProcessMessages_7-9-3-4_test.0.zkey](#ProcessMessages_7-9-3-4_test0zkey)
 - [TallyVotes_7-3-3_test.0.zkey](#TallyVotes_7-3-4_test0zkey)
 - [ProcessMessages_10-2-1-2_test.0.zkey](#ProcessMessages_10-2-1-2_test0zkey)
-- [TallyVotes_7-3-3_test.0.zkey](#TallyVotes_7-3-3_test0zkey)
+- [TallyVotes_10-1-2_test.0.zkey](#TallyVotes_10-1-2_test0zkey)
 - [SubsidyPerBatch_10-1-2_test.0.zkey](#SubsidyPerBatch_10-1-2_test0zkey)
 - [ProcessMessages_7-7-3-3_test.0.zkey](#ProcessMessages_7-7-3-3_test0zkey)
 - [TallyVotes_7-3-3_test.0.zkey](#TallyVotes_7-3-3_test0zkey)
