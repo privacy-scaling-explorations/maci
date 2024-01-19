@@ -92,7 +92,7 @@ export interface Action {
     timestamp: number;
     stateIndex: number;
     numSrQueueOps: number;
-    pollId: number;
+    pollId: bigint;
     pollAddr: string;
     stateRoot: bigint;
     messageRoot: bigint;

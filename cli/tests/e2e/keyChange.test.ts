@@ -56,7 +56,7 @@ describe("keyChange tests", function test() {
     tallyFile: testTallyFilePath,
     tallyZkey: tallyVotesTestZkeyPath,
     processZkey: processMessageTestZkeyPath,
-    pollId: 0,
+    pollId: 0n,
     rapidsnark: testRapidsnarkPath,
     processWitgen: testProcessMessagesWitnessPath,
     processDatFile: testProcessMessagesWitnessDatPath,
@@ -86,7 +86,7 @@ describe("keyChange tests", function test() {
     const initialNonce = 1n;
     const initialVoteOption = 0n;
     const initialVoteAmount = 9n;
-    const pollId = 0;
+    const pollId = 0n;
     let stateIndex = 0n;
     const expectedTally = initialVoteAmount - 1n;
     const expectedPerVoteOptionTally = (initialVoteAmount - 1n) ** 2n;
@@ -150,7 +150,7 @@ describe("keyChange tests", function test() {
     const initialNonce = 1n;
     const initialVoteOption = 0n;
     const initialVoteAmount = 9n;
-    const pollId = 0;
+    const pollId = 0n;
     let stateIndex = 0n;
     const expectedTally = initialVoteAmount;
     const expectedPerVoteOptionTally = initialVoteAmount ** 2n;
@@ -214,7 +214,7 @@ describe("keyChange tests", function test() {
     const initialNonce = 1n;
     const initialVoteOption = 0n;
     const initialVoteAmount = 9n;
-    const pollId = 0;
+    const pollId = 0n;
     let stateIndex = 0n;
     const expectedTally = initialVoteAmount - 3n;
     const expectedPerVoteOptionTally = (initialVoteAmount - 3n) ** 2n;

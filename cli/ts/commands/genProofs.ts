@@ -255,7 +255,7 @@ export const genProofs = async ({
     );
   }
 
-  const poll = maciState!.polls[pollId];
+  const poll = maciState!.polls.get(pollId)!;
 
   const processProofs: Proof[] = [];
   const tallyProofs: Proof[] = [];
@@ -377,7 +377,7 @@ export const genProofs = async ({
     const subsidyFileData = {
       provider: process.env.ETH_PROVIDER || DEFAULT_ETH_PROVIDER,
       maci: maciAddress,
-      pollId,
+      pollId: pollId.toString(),
       newSubsidyCommitment: asHex(subsidyCircuitInputs!.newSubsidyCommitment as BigNumberish),
       results: {
         subsidy: poll.subsidy.map((x) => x.toString()),
@@ -481,7 +481,7 @@ export const genProofs = async ({
   // create the tally file data to store for verification later
   const tallyFileData: TallyData = {
     maci: maciAddress!,
-    pollId,
+    pollId: pollId.toString(),
     newTallyCommitment: asHex(tallyCircuitInputs!.newTallyCommitment as BigNumberish),
     results: {
       tally: poll.tallyResult.map((x) => x.toString()),

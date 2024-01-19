@@ -94,7 +94,7 @@ describe("Ceremony param tests", () => {
       const voteWeight = BigInt(9);
       const voteOptionIndex = BigInt(0);
       let stateIndex: bigint;
-      let pollId: number;
+      let pollId: bigint;
       let poll: Poll;
       const messages: Message[] = [];
       const commands: PCommand[] = [];
@@ -114,7 +114,7 @@ describe("Ceremony param tests", () => {
           coordinatorKeypair,
         );
 
-        poll = maciState.polls[pollId];
+        poll = maciState.polls.get(pollId)!;
 
         // First command (valid)
         const command = new PCommand(
@@ -260,7 +260,7 @@ describe("Ceremony param tests", () => {
 
       describe("1 user, 2 messages", () => {
         let stateIndex: bigint;
-        let pollId: number;
+        let pollId: bigint;
         let poll: Poll;
         let maciState: MaciState;
         const voteWeight = BigInt(9);
@@ -284,7 +284,7 @@ describe("Ceremony param tests", () => {
             coordinatorKeypair,
           );
 
-          poll = maciState.polls[pollId];
+          poll = maciState.polls.get(pollId)!;
 
           // First command (valid)
           const command = new PCommand(

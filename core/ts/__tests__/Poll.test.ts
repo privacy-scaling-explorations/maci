@@ -27,7 +27,7 @@ describe("Poll", function test() {
       coordinatorKeypair,
     );
 
-    const poll = maciState.polls[pollId];
+    const poll = maciState.polls.get(pollId)!;
 
     const user1Keypair = new Keypair();
     // signup the user
@@ -203,7 +203,7 @@ describe("Poll", function test() {
       coordinatorKeypair,
     );
 
-    const poll = maciState.polls[pollId];
+    const poll = maciState.polls.get(pollId)!;
 
     const user1Keypair = new Keypair();
     // signup the user
@@ -290,7 +290,7 @@ describe("Poll", function test() {
       coordinatorKeypair,
     );
 
-    const poll = maciState.polls[pollId];
+    const poll = maciState.polls.get(pollId)!;
 
     const user1Keypair = new Keypair();
     // signup the user
@@ -376,7 +376,7 @@ describe("Poll", function test() {
       coordinatorKeypair,
     );
 
-    const poll = maciState.polls[pollId];
+    const poll = maciState.polls.get(pollId)!;
 
     const user1Keypair = new Keypair();
     // signup the user
@@ -435,7 +435,7 @@ describe("Poll", function test() {
       coordinatorKeypair,
     );
 
-    const poll = maciState.polls[pollId];
+    const poll = maciState.polls.get(pollId)!;
 
     const user1Keypair = new Keypair();
     // signup the user
@@ -491,7 +491,7 @@ describe("Poll", function test() {
         coordinatorKeypair,
       );
 
-      const poll = maciState.polls[pollId];
+      const poll = maciState.polls.get(pollId)!;
       const newCoordinatorKeypair = new Keypair();
       poll.setCoordinatorKeypair(newCoordinatorKeypair.privKey.serialize());
       expect(poll.coordinatorKeypair.privKey.serialize()).to.deep.eq(newCoordinatorKeypair.privKey.serialize());
@@ -510,7 +510,7 @@ describe("Poll", function test() {
         coordinatorKeypair,
       );
 
-      const poll = maciState.polls[pollId];
+      const poll = maciState.polls.get(pollId)!;
       const json = poll.toJSON();
 
       const pollFromJson = Poll.fromJSON(json, maciState);

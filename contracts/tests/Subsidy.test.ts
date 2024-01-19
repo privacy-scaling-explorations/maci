@@ -38,7 +38,7 @@ describe("Subsidy", () => {
   const [mpAbi] = parseArtifact("MessageProcessor");
   const [subsidyAbi] = parseArtifact("Subsidy");
 
-  let pollId: number;
+  let pollId: bigint;
   let poll: Poll;
 
   let generatedInputs: IProcessMessagesCircuitInputs;
@@ -77,7 +77,7 @@ describe("Subsidy", () => {
     const logMPTally = receipt!.logs[receipt!.logs.length - 1];
     const MPTallyEvent = iface.parseLog(logMPTally as unknown as { topics: string[]; data: string }) as unknown as {
       args: {
-        _pollId: number;
+        _pollId: bigint;
         pollAddr: {
           poll: string;
           messageProcessor: string;
@@ -111,10 +111,11 @@ describe("Subsidy", () => {
       BigInt("10457101036533406547632367118273992217979173478358440826365724437999023779287"),
       BigInt("19824078218392094440610104313265183977899662750282163392862422243483260492317"),
     ]);
-    maciState.polls[pollId].publishMessage(message, padKey);
 
     // save the poll
-    poll = maciState.polls[pollId];
+    poll = maciState.polls.get(pollId)!;
+
+    poll.publishMessage(message, padKey);
 
     // process messages locally
     generatedInputs = poll.processMessages(pollId);

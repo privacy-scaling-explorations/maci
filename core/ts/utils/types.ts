@@ -70,7 +70,7 @@ export interface IMaciState {
     treeDepths: TreeDepths,
     messageBatchSize: number,
     coordinatorKeypair: Keypair,
-  ): number;
+  ): bigint;
   // These methods are helper functions.
   deployNullPoll(): void;
   copy(): MaciState;
@@ -86,7 +86,7 @@ export interface IPoll {
   publishMessage(message: Message, encPubKey: PubKey): void;
   topupMessage(message: Message): void;
   // These methods are used to generate circuit inputs
-  processMessages(pollId: number): IProcessMessagesCircuitInputs;
+  processMessages(pollId: bigint): IProcessMessagesCircuitInputs;
   tallyVotes(): ITallyCircuitInputs;
   // These methods are helper functions
   hasUnprocessedMessages(): boolean;

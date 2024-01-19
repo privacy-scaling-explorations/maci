@@ -63,7 +63,7 @@ describe("e2e with Subsidy tests", function test() {
     tallyFile: testTallyFilePath,
     tallyZkey: tallyVotesTestZkeyPath,
     processZkey: processMessageTestZkeyPath,
-    pollId: 0,
+    pollId: 0n,
     rapidsnark: testRapidsnarkPath,
     processWitgen: testProcessMessagesWitnessPath,
     processDatFile: testProcessMessagesWitnessDatPath,
@@ -115,7 +115,7 @@ describe("e2e with Subsidy tests", function test() {
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
-        pollId: 0,
+        pollId: 0n,
         newVoteWeight: 9n,
         salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
@@ -126,7 +126,7 @@ describe("e2e with Subsidy tests", function test() {
         stateIndex: 2n,
         voteOptionIndex: 1n,
         nonce: 1n,
-        pollId: 0,
+        pollId: 0n,
         newVoteWeight: 9n,
         salt: genRandomSalt(),
         privateKey: users[1].privKey.serialize(),
@@ -137,7 +137,7 @@ describe("e2e with Subsidy tests", function test() {
         stateIndex: 3n,
         voteOptionIndex: 2n,
         nonce: 1n,
-        pollId: 0,
+        pollId: 0n,
         newVoteWeight: 9n,
         salt: genRandomSalt(),
         privateKey: users[2].privKey.serialize(),
@@ -148,7 +148,7 @@ describe("e2e with Subsidy tests", function test() {
         stateIndex: 4n,
         voteOptionIndex: 3n,
         nonce: 1n,
-        pollId: 0,
+        pollId: 0n,
         newVoteWeight: 9n,
         salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
@@ -159,7 +159,7 @@ describe("e2e with Subsidy tests", function test() {
         stateIndex: 4n,
         voteOptionIndex: 3n,
         nonce: 2n,
-        pollId: 0,
+        pollId: 0n,
         newVoteWeight: 9n,
         salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
@@ -170,7 +170,7 @@ describe("e2e with Subsidy tests", function test() {
         stateIndex: 4n,
         voteOptionIndex: 3n,
         nonce: 3n,
-        pollId: 0,
+        pollId: 0n,
         newVoteWeight: 9n,
         salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
@@ -225,7 +225,7 @@ describe("e2e with Subsidy tests", function test() {
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
-        pollId: 0,
+        pollId: 0n,
         newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -272,7 +272,7 @@ describe("e2e with Subsidy tests", function test() {
           stateIndex: 1n,
           voteOptionIndex: 0n,
           nonce: 1n,
-          pollId: 0,
+          pollId: 0n,
           newVoteWeight: 9n,
           maciContractAddress: maciAddresses.maciAddress,
           salt: genRandomSalt(),
@@ -328,7 +328,7 @@ describe("e2e with Subsidy tests", function test() {
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
-        pollId: 0,
+        pollId: 0n,
         newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -357,7 +357,7 @@ describe("e2e with Subsidy tests", function test() {
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
-        pollId: 1,
+        pollId: 1n,
         newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -369,7 +369,7 @@ describe("e2e with Subsidy tests", function test() {
         stateIndex: 2n,
         voteOptionIndex: 3n,
         nonce: 1n,
-        pollId: 1,
+        pollId: 1n,
         newVoteWeight: 1n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -381,7 +381,7 @@ describe("e2e with Subsidy tests", function test() {
         stateIndex: 3n,
         voteOptionIndex: 5n,
         nonce: 1n,
-        pollId: 1,
+        pollId: 1n,
         newVoteWeight: 3n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -395,7 +395,7 @@ describe("e2e with Subsidy tests", function test() {
         stateIndex: 3n,
         voteOptionIndex: 5n,
         nonce: 1n,
-        pollId: 2,
+        pollId: 2n,
         newVoteWeight: 3n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -407,7 +407,7 @@ describe("e2e with Subsidy tests", function test() {
         stateIndex: 4n,
         voteOptionIndex: 7n,
         nonce: 1n,
-        pollId: 2,
+        pollId: 2n,
         newVoteWeight: 2n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -419,7 +419,7 @@ describe("e2e with Subsidy tests", function test() {
         stateIndex: 5n,
         voteOptionIndex: 5n,
         nonce: 1n,
-        pollId: 2,
+        pollId: 2n,
         newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -429,19 +429,19 @@ describe("e2e with Subsidy tests", function test() {
 
     it("should complete the second poll", async () => {
       await timeTravel(pollDuration, true);
-      await mergeMessages({ pollId: 1 });
-      await mergeSignups({ pollId: 1 });
+      await mergeMessages({ pollId: 1n });
+      await mergeSignups({ pollId: 1n });
       const tallyData = await genProofs({
         ...genProofsArgs,
-        pollId: 1,
+        pollId: 1n,
       });
       await proveOnChain({
         ...proveOnChainArgs,
-        pollId: "1",
+        pollId: 1n,
       });
       await verify({
         ...verifyArgs,
-        pollId: "1",
+        pollId: 1n,
         tallyData,
         tallyAddress: pollAddresses.tally,
       });
@@ -449,19 +449,19 @@ describe("e2e with Subsidy tests", function test() {
     });
 
     it("should complete the third poll", async () => {
-      await mergeMessages({ pollId: 2 });
-      await mergeSignups({ pollId: 2 });
+      await mergeMessages({ pollId: 2n });
+      await mergeSignups({ pollId: 2n });
       const tallyData = await genProofs({
         ...genProofsArgs,
-        pollId: 2,
+        pollId: 2n,
       });
       await proveOnChain({
         ...proveOnChainArgs,
-        pollId: "2",
+        pollId: 2n,
       });
       await verify({
         ...verifyArgs,
-        pollId: "2",
+        pollId: 2n,
         tallyData,
         tallyAddress: secondPollAddresses.tally,
       });

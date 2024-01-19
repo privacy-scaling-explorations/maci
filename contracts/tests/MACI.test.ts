@@ -25,7 +25,7 @@ describe("MACI", () => {
   let stateAqContract: AccQueueQuinaryMaci;
   let vkRegistryContract: VkRegistry;
   let verifierContract: Verifier;
-  let pollId: number;
+  let pollId: bigint;
 
   const coordinator = new Keypair();
   const [pollAbi] = parseArtifact("Poll");
@@ -177,7 +177,7 @@ describe("MACI", () => {
       const iface = maciContract.interface;
       const logs = receipt!.logs[receipt!.logs.length - 1];
       const event = iface.parseLog(logs as unknown as { topics: string[]; data: string }) as unknown as {
-        args: { _pollId: number };
+        args: { _pollId: bigint };
       };
       pollId = event.args._pollId;
 
@@ -200,7 +200,7 @@ describe("MACI", () => {
         BigInt("10457101036533406547632367118273992217979173478358440826365724437999023779287"),
         BigInt("19824078218392094440610104313265183977899662750282163392862422243483260492317"),
       ]);
-      maciState.polls[pollId].publishMessage(message, padKey);
+      maciState.polls.get(pollId)?.publishMessage(message, padKey);
     });
 
     it("should prevent deploying a second poll before the first has finished", async () => {

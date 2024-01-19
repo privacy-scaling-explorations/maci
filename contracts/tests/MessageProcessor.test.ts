@@ -34,7 +34,7 @@ describe("MessageProcessor", () => {
   const [pollAbi] = parseArtifact("Poll");
   const [mpAbi] = parseArtifact("MessageProcessor");
 
-  let pollId: number;
+  let pollId: bigint;
 
   // local poll and maci state
   let poll: Poll;
@@ -76,7 +76,7 @@ describe("MessageProcessor", () => {
     const logs = receipt!.logs[receipt!.logs.length - 1];
     const event = iface.parseLog(logs as unknown as { topics: string[]; data: string }) as unknown as {
       args: {
-        _pollId: number;
+        _pollId: bigint;
         pollAddr: {
           poll: string;
           messageProcessor: string;
@@ -108,9 +108,11 @@ describe("MessageProcessor", () => {
       BigInt("10457101036533406547632367118273992217979173478358440826365724437999023779287"),
       BigInt("19824078218392094440610104313265183977899662750282163392862422243483260492317"),
     ]);
-    maciState.polls[pollId].publishMessage(message, padKey);
 
-    poll = maciState.polls[pollId];
+    poll = maciState.polls.get(pollId)!;
+
+    poll.publishMessage(message, padKey);
+
     generatedInputs = poll.processMessages(pollId);
 
     // set the verification keys on the vk smart contract

@@ -71,7 +71,7 @@ describe("e2e tests", function test() {
     tallyFile: testTallyFilePath,
     tallyZkey: tallyVotesTestZkeyPath,
     processZkey: processMessageTestZkeyPath,
-    pollId: 0,
+    pollId: 0n,
     rapidsnark: testRapidsnarkPath,
     processWitgen: testProcessMessagesWitnessPath,
     processDatFile: testProcessMessagesWitnessDatPath,
@@ -115,7 +115,7 @@ describe("e2e tests", function test() {
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
-        pollId: 0,
+        pollId: 0n,
         newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -164,7 +164,7 @@ describe("e2e tests", function test() {
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
-        pollId: 0,
+        pollId: 0n,
         newVoteWeight: 9n,
         salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
@@ -175,7 +175,7 @@ describe("e2e tests", function test() {
         stateIndex: 2n,
         voteOptionIndex: 1n,
         nonce: 1n,
-        pollId: 0,
+        pollId: 0n,
         newVoteWeight: 9n,
         salt: genRandomSalt(),
         privateKey: users[1].privKey.serialize(),
@@ -186,7 +186,7 @@ describe("e2e tests", function test() {
         stateIndex: 3n,
         voteOptionIndex: 2n,
         nonce: 1n,
-        pollId: 0,
+        pollId: 0n,
         newVoteWeight: 9n,
         salt: genRandomSalt(),
         privateKey: users[2].privKey.serialize(),
@@ -197,7 +197,7 @@ describe("e2e tests", function test() {
         stateIndex: 4n,
         voteOptionIndex: 3n,
         nonce: 1n,
-        pollId: 0,
+        pollId: 0n,
         newVoteWeight: 9n,
         salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
@@ -242,7 +242,7 @@ describe("e2e tests", function test() {
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
-        pollId: 0,
+        pollId: 0n,
         newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -253,7 +253,7 @@ describe("e2e tests", function test() {
         stateIndex: 2n,
         voteOptionIndex: 0n,
         nonce: 1n,
-        pollId: 0,
+        pollId: 0n,
         newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -264,7 +264,7 @@ describe("e2e tests", function test() {
         stateIndex: 3n,
         voteOptionIndex: 0n,
         nonce: 1n,
-        pollId: 0,
+        pollId: 0n,
         newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -275,7 +275,7 @@ describe("e2e tests", function test() {
         stateIndex: 4n,
         voteOptionIndex: 0n,
         nonce: 1n,
-        pollId: 0,
+        pollId: 0n,
         newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -286,7 +286,7 @@ describe("e2e tests", function test() {
         stateIndex: 4n,
         voteOptionIndex: 0n,
         nonce: 1n,
-        pollId: 0,
+        pollId: 0n,
         newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -297,7 +297,7 @@ describe("e2e tests", function test() {
         stateIndex: 4n,
         voteOptionIndex: 0n,
         nonce: 1n,
-        pollId: 0,
+        pollId: 0n,
         newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -353,7 +353,7 @@ describe("e2e tests", function test() {
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
-        pollId: 0,
+        pollId: 0n,
         newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -400,7 +400,7 @@ describe("e2e tests", function test() {
           stateIndex: 1n,
           voteOptionIndex: 0n,
           nonce: 1n,
-          pollId: 0,
+          pollId: 0n,
           newVoteWeight: 9n,
           maciContractAddress: maciAddresses.maciAddress,
           salt: genRandomSalt(),
@@ -449,7 +449,7 @@ describe("e2e tests", function test() {
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
-        pollId: 0,
+        pollId: 0n,
         newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -476,7 +476,7 @@ describe("e2e tests", function test() {
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
-        pollId: 1,
+        pollId: 1n,
         newVoteWeight: 7n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -486,11 +486,11 @@ describe("e2e tests", function test() {
 
     it("should generate proofs and verify them", async () => {
       await timeTravel(pollDuration, true);
-      await mergeMessages({ pollId: 1 });
-      await mergeSignups({ pollId: 1 });
-      await genProofs({ ...genProofsArgs, pollId: 1 });
-      await proveOnChain({ ...proveOnChainArgs, pollId: "1" });
-      await verify({ ...verifyArgs, pollId: "1" });
+      await mergeMessages({ pollId: 1n });
+      await mergeSignups({ pollId: 1n });
+      await genProofs({ ...genProofsArgs, pollId: 1n });
+      await proveOnChain({ ...proveOnChainArgs, pollId: 1n });
+      await verify({ ...verifyArgs, pollId: 1n });
     });
   });
 
@@ -533,7 +533,7 @@ describe("e2e tests", function test() {
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
-        pollId: 0,
+        pollId: 0n,
         newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -563,7 +563,7 @@ describe("e2e tests", function test() {
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
-        pollId: 1,
+        pollId: 1n,
         newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -575,7 +575,7 @@ describe("e2e tests", function test() {
         stateIndex: 2n,
         voteOptionIndex: 3n,
         nonce: 1n,
-        pollId: 1,
+        pollId: 1n,
         newVoteWeight: 1n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -587,7 +587,7 @@ describe("e2e tests", function test() {
         stateIndex: 3n,
         voteOptionIndex: 5n,
         nonce: 1n,
-        pollId: 1,
+        pollId: 1n,
         newVoteWeight: 3n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -601,7 +601,7 @@ describe("e2e tests", function test() {
         stateIndex: 3n,
         voteOptionIndex: 5n,
         nonce: 1n,
-        pollId: 2,
+        pollId: 2n,
         newVoteWeight: 3n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -613,7 +613,7 @@ describe("e2e tests", function test() {
         stateIndex: 4n,
         voteOptionIndex: 7n,
         nonce: 1n,
-        pollId: 2,
+        pollId: 2n,
         newVoteWeight: 2n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -625,7 +625,7 @@ describe("e2e tests", function test() {
         stateIndex: 5n,
         voteOptionIndex: 5n,
         nonce: 1n,
-        pollId: 2,
+        pollId: 2n,
         newVoteWeight: 9n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -635,19 +635,19 @@ describe("e2e tests", function test() {
 
     it("should complete the second poll", async () => {
       await timeTravel(pollDuration, true);
-      await mergeMessages({ pollId: 1 });
-      await mergeSignups({ pollId: 1 });
-      const tallyData = await genProofs({ ...genProofsArgs, pollId: 1 });
+      await mergeMessages({ pollId: 1n });
+      await mergeSignups({ pollId: 1n });
+      const tallyData = await genProofs({ ...genProofsArgs, pollId: 1n });
       await proveOnChain({
         ...proveOnChainArgs,
-        pollId: "1",
+        pollId: 1n,
         maciAddress: maciAddresses.maciAddress,
         messageProcessorAddress: pollAddresses.messageProcessor,
         tallyAddress: pollAddresses.tally,
       });
       await verify({
         ...verifyArgs,
-        pollId: "1",
+        pollId: 1n,
         tallyData,
         maciAddress: maciAddresses.maciAddress,
         tallyAddress: pollAddresses.tally,
@@ -656,19 +656,19 @@ describe("e2e tests", function test() {
     });
 
     it("should complete the third poll", async () => {
-      await mergeMessages({ pollId: 2 });
-      await mergeSignups({ pollId: 2 });
-      const tallyData = await genProofs({ ...genProofsArgs, pollId: 2 });
+      await mergeMessages({ pollId: 2n });
+      await mergeSignups({ pollId: 2n });
+      const tallyData = await genProofs({ ...genProofsArgs, pollId: 2n });
       await proveOnChain({
         ...proveOnChainArgs,
-        pollId: "2",
+        pollId: 2n,
         maciAddress: maciAddresses.maciAddress,
         messageProcessorAddress: secondPollAddresses.messageProcessor,
         tallyAddress: secondPollAddresses.tally,
       });
       await verify({
         ...verifyArgs,
-        pollId: "2",
+        pollId: 2n,
         tallyData,
         maciAddress: maciAddresses.maciAddress,
         tallyAddress: secondPollAddresses.tally,
@@ -706,7 +706,7 @@ describe("e2e tests", function test() {
         stateIndex: 1n,
         voteOptionIndex: 5n,
         nonce: 1n,
-        pollId: 0,
+        pollId: 0n,
         newVoteWeight: 3n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
@@ -723,7 +723,7 @@ describe("e2e tests", function test() {
         startBlock: 0,
         coordinatorPrivateKey: coordinatorPrivKey,
         blockPerBatch: 50,
-        pollId: 0,
+        pollId: 0n,
       });
       await genProofs({
         ...genProofsArgs,
@@ -757,7 +757,7 @@ describe("e2e tests", function test() {
     it("should airdrop topup tokens to the coordinator user", async () => {
       await airdrop({
         amount: tokenAmount,
-        pollId: 0,
+        pollId: 0n,
         contractAddress: maciAddresses.topupCreditAddress,
         maciAddress: maciAddresses.maciAddress,
       });
@@ -767,7 +767,7 @@ describe("e2e tests", function test() {
       await topup({
         amount: tokenAmount,
         stateIndex: Number(stateIndex!),
-        pollId: 0,
+        pollId: 0n,
         maciAddress: maciAddresses.maciAddress,
       });
     });
@@ -778,7 +778,7 @@ describe("e2e tests", function test() {
         stateIndex: stateIndex!,
         voteOptionIndex: 5n,
         nonce: 1n,
-        pollId: 0,
+        pollId: 0n,
         newVoteWeight: 3n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),

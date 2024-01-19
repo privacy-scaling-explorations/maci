@@ -40,7 +40,7 @@ export default function runCore(): void {
         MESSAGE_BATCH_SIZE,
         COORDINATOR_KEYPAIR,
       );
-      const poll = maciState.polls[pollId];
+      const poll = maciState.polls.get(pollId)!;
 
       // 24 valid votes
       for (let i = 0; i < MESSAGE_BATCH_SIZE - 1; i += 1) {
