@@ -33,7 +33,7 @@ The base branch of the project is `dev`, which is used for ongoing development.
 
 This project uses tags for releases. [View all MACI releases](https://github.com/privacy-scaling-explorations/maci/releases).
 
-To contribute to MACI, create feature/fix branches, then open PRs into `dev`. [Learn more about contributing](/CONTRIBUTING.md).
+To contribute to MACI, create feature/fix branches, then open PRs into `dev`. [Learn more about contributing](https://maci.pse.dev/docs/contributing).
 
 ### Local development
 
@@ -69,7 +69,7 @@ Note: a cached version of `builder` job must be on your system prior as it relie
 
 ### CI pipeline
 
-CI pipeline ensures that we have automated tests that constantly validate. For more information about pipeline workflows, see https://github.com/privacy-scaling-explorations/maci/wiki/MACI-CI-pipeline.
+CI pipeline ensures that we have automated tests that constantly validate. For more information about pipeline workflows, [read our CI documentation](https://maci.pse.dev/docs/ci-pipeline).
 
 [telegram-badge]: https://badges.aleen42.com/src/telegram.svg
 [telegram-link]: https://t.me/joinchat/LUgOpE7J2gstRcZqdERyvw

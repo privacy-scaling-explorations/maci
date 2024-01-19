@@ -17,4 +17,4 @@ Is your feature request related to a specific problem? Is it just a crazy idea? 
 
 Please describe your feature request in detail.
 
-Make sure that you have reviewed [MACI's Contributor Guidelines](https://github.com/privacy-scaling-explorations/maci/blob/dev/CONTRIBUTING.md)
+Make sure that you have reviewed [MACI's Contributor Guidelines](https://maci.pse.dev/docs/contributing)
