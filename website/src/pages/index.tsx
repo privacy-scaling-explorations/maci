@@ -13,15 +13,13 @@ interface HomepageHeaderProps {
 
 const HomepageHeader = ({ tagline, title }: HomepageHeaderProps) => (
   <header className={clsx("hero hero--dark", styles.heroBanner)}>
-    <div className={styles.heroTitle}>
-      <h2 className={styles.heroColor}>{title}</h2>
-    </div>
+    <div className={styles.heroTitle}>{title}</div>
 
-    <h1 className={styles.heroColor}>
+    <div className={styles.heroTagline}>
       {tagline}
 
       <span className={styles.blue}>.</span>
-    </h1>
+    </div>
   </header>
 );
 
