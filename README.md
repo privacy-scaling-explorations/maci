@@ -5,8 +5,8 @@
 
 Minimal Anti-Collusion Infrastructure (MACI) is an on-chain voting protocol which protects privacy and minimizes the risk of collusion and bribery.
 
-MACI blog, resources, and documentation for developers and integrators can be found here:
-https://maci.pse.dev/
+**MACI blog, resources, and documentation for developers and integrators can be found here:
+https://maci.pse.dev/**
 
 We welcome contributions to this project. Please join our
 [Discord server](https://discord.com/invite/sF5CT5rzrR) (in the `#🗳️-maci` channel) to discuss.
@@ -37,7 +37,9 @@ To contribute to MACI, create feature/fix branches, then open PRs into `dev`. [L
 
 ### Local development
 
-This repository is organised as Lerna submodules. Each submodule contains its
+For installation and local development instructions, please see our [installation docs](https://maci.pse.dev/docs/installation/).
+
+This repository is organized as Lerna submodules. Each submodule contains its
 own unit tests.
 
 - `audit`: Documentation surrounding the audit performed on v1
