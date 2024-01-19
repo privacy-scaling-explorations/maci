@@ -1,7 +1,7 @@
 # Minimal Anti-Collusion Infrastructure
 
 [![CI][cli-actions-badge]][cli-actions-link]
-![License](https://img.shields.io/badge/license-MIT-green)
+[![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/privacy-scaling-explorations/maci/blob/dev/LICENSE)
 
 Minimal Anti-Collusion Infrastructure (MACI) is an on-chain voting protocol which protects privacy and minimizes the risk of collusion and bribery.
 
