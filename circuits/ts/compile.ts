@@ -60,8 +60,7 @@ export const compileCircuits = async (cWitness?: boolean, outputPath?: string): 
     if (cWitness) {
       try {
         // build
-        execFileSync("cd", [`${outPath}/${circuit.name}_cpp`]);
-        execFileSync("make");
+        execFileSync("bash", ["-c", `cd ${outPath}/${circuit.name}_cpp && make`]);
       } catch (error) {
         throw new Error(`Failed to compile the c witness for ${circuit.name}`);
       }
