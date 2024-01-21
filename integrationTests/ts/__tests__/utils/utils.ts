@@ -17,7 +17,7 @@ import { arch } from "os";
 
 import type { TallyData } from "maci-cli";
 
-import { defaultVote } from "./constants";
+import { DEFAULT_VOTE } from "./constants";
 import { Subsidy, IVote, IBriber, IDeployedTestContracts } from "./interfaces";
 import { UserCommand } from "./user";
 
@@ -39,8 +39,8 @@ const getTestVoteValues = (
 ) => {
   // check if we have specific votes
   const useVotes = votes && userIndex in votes;
-  let { voteOptionIndex } = defaultVote;
-  let { voteWeight } = defaultVote;
+  let { voteOptionIndex } = DEFAULT_VOTE;
+  let { voteWeight } = DEFAULT_VOTE;
 
   // if we have bribers
   if (bribers && userIndex in bribers) {
@@ -98,7 +98,7 @@ export const genTestUserCommands = (
       votes.push(vote);
     }
 
-    const userCommand = new UserCommand(userKeypair, votes, defaultVote.maxVoteWeight, defaultVote.nonce);
+    const userCommand = new UserCommand(userKeypair, votes, DEFAULT_VOTE.maxVoteWeight, DEFAULT_VOTE.nonce);
     usersCommands.push(userCommand);
   }
 

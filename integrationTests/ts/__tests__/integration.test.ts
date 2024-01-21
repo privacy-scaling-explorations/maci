@@ -32,11 +32,10 @@ import {
   SG_DATA,
   STATE_TREE_DEPTH,
   VOTE_OPTION_TREE_DEPTH,
-  duration,
-  initialVoiceCredits,
-  ivcpData,
-  maxMessages,
-  messageBatchDepth,
+  DURATION,
+  INITIAL_VOICE_CREDITS,
+  IVCP_DATA,
+  MAX_MESSAGES,
 } from "./utils/constants";
 import { ITestSuite, Subsidy } from "./utils/interfaces";
 import { expectSubsidy, expectTally, genTestUserCommands, isArm } from "./utils/utils";
@@ -96,7 +95,7 @@ describe("Integration tests", function test() {
     maciState = new MaciState(STATE_TREE_DEPTH);
 
     // 3. deploy maci
-    contracts = await deploy({ stateTreeDepth: STATE_TREE_DEPTH, initialVoiceCredits });
+    contracts = await deploy({ stateTreeDepth: STATE_TREE_DEPTH, initialVoiceCredits: INITIAL_VOICE_CREDITS });
 
     const maxValues: MaxValues = {
       maxMessages: 25,
@@ -105,7 +104,7 @@ describe("Integration tests", function test() {
 
     // 4. create a poll
     pollContracts = await deployPoll({
-      pollDuration: duration,
+      pollDuration: DURATION,
       maxMessages: maxValues.maxMessages,
       maxVoteOptions: maxValues.maxVoteOptions,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
@@ -124,10 +123,10 @@ describe("Integration tests", function test() {
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
     };
 
-    const messageBatchSize = 5 ** messageBatchDepth;
+    const messageBatchSize = 5 ** MSG_BATCH_DEPTH;
 
     pollId = maciState.deployPoll(
-      BigInt(Date.now() + duration * 60000),
+      BigInt(Date.now() + DURATION * 60000),
       maxValues,
       treeDepths,
       messageBatchSize,
@@ -184,12 +183,12 @@ describe("Integration tests", function test() {
             maciPubKey: user.keypair.pubKey.serialize(),
             maciAddress: contracts.maciAddress,
             sgDataArg: SG_DATA,
-            ivcpDataArg: ivcpData,
+            ivcpDataArg: IVCP_DATA,
           }),
         );
 
         // signup on local maci state
-        maciState.signUp(user.keypair.pubKey, BigInt(initialVoiceCredits), BigInt(timestamp));
+        maciState.signUp(user.keypair.pubKey, BigInt(INITIAL_VOICE_CREDITS), BigInt(timestamp));
 
         // publish messages
         for (let j = 0; j < user.votes.length; j += 1) {
@@ -241,7 +240,7 @@ describe("Integration tests", function test() {
         }
       }
 
-      await timeTravel(duration, true);
+      await timeTravel(DURATION, true);
 
       // merge messages
       await expect(
@@ -313,7 +312,7 @@ describe("Integration tests", function test() {
 
       // verify that the data stored on the tally file is correct
       expectTally(
-        maxMessages,
+        MAX_MESSAGES,
         testCase.expectedTally,
         testCase.expectedSpentVoiceCredits,
         testCase.expectedTotalSpentVoiceCredits,
@@ -324,7 +323,7 @@ describe("Integration tests", function test() {
         const subsidy = JSON.parse(
           fs.readFileSync(path.resolve(__dirname, "../../../cli/subsidy.json")).toString(),
         ) as Subsidy;
-        expectSubsidy(maxMessages, testCase.subsidy?.expectedSubsidy ?? [], subsidy);
+        expectSubsidy(MAX_MESSAGES, testCase.subsidy?.expectedSubsidy ?? [], subsidy);
       }
 
       // prove on chain if everything matches

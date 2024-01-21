@@ -315,7 +315,7 @@ describe("e2e tests", function test() {
     });
   });
 
-  describe("5 signups, 1 message", () => {
+  describe("9 signups, 1 message", () => {
     after(() => {
       cleanVanilla();
     });

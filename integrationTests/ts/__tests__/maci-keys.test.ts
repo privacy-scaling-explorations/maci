@@ -8,12 +8,12 @@ import {
   INT_STATE_TREE_DEPTH,
   STATE_TREE_DEPTH,
   VOTE_OPTION_TREE_DEPTH,
-  duration,
-  initialVoiceCredits,
-  maxMessages,
-  maxVoteOptions,
-  messageBatchDepth,
-  messageTreeDepth,
+  DURATION,
+  INITIAL_VOICE_CREDITS,
+  MAX_MESSAGES,
+  MAX_VOTE_OPTIONS,
+  MSG_BATCH_DEPTH,
+  MSG_TREE_DEPTH,
 } from "./utils/constants";
 import { deployTestContracts } from "./utils/utils";
 
@@ -75,7 +75,7 @@ describe("integration tests private/public/keypair", () => {
     before(async () => {
       signer = await getDefaultSigner();
       const { maci, verifier, vkRegistry } = await deployTestContracts(
-        initialVoiceCredits,
+        INITIAL_VOICE_CREDITS,
         STATE_TREE_DEPTH,
         signer,
         true,
@@ -83,15 +83,15 @@ describe("integration tests private/public/keypair", () => {
 
       // deploy a poll
       await maci.deployPoll(
-        BigInt(duration),
+        BigInt(DURATION),
         {
-          maxMessages,
-          maxVoteOptions,
+          maxMessages: MAX_MESSAGES,
+          maxVoteOptions: MAX_VOTE_OPTIONS,
         },
         {
           intStateTreeDepth: INT_STATE_TREE_DEPTH,
-          messageTreeDepth,
-          messageTreeSubDepth: messageBatchDepth,
+          messageTreeDepth: MSG_TREE_DEPTH,
+          messageTreeSubDepth: MSG_BATCH_DEPTH,
           voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
         },
         coordinatorKeypair.pubKey.asContractParam(),

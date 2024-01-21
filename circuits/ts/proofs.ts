@@ -51,6 +51,10 @@ export const genProof = async ({
     }
 
     const { proof, publicSignals } = await groth16.fullProve(inputs, wasmPath, zkeyPath);
+
+    // ensure we clean up all threads spawned by snarkjs
+    await cleanThreads();
+
     return { proof, publicSignals };
   }
 
