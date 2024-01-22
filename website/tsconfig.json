@@ -28,7 +28,7 @@
     "incremental": true,
     "declarationMap": true,
     "sourceMap": true,
-    "stripInternal": true
+    "stripInternal": true,
   },
-  "include": ["./src", "./docusaurus.config.ts"]
+  "include": ["./src", "./docusaurus.config.ts"],
 }
