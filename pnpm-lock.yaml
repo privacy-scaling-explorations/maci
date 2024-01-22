@@ -270,8 +270,8 @@ importers:
         specifier: ^20.11.5
         version: 20.11.5
       '@types/snarkjs':
-        specifier: ^0.7.7
-        version: 0.7.7
+        specifier: ^0.7.8
+        version: 0.7.8
       chai:
         specifier: ^4.3.10
         version: 4.4.0
@@ -5392,8 +5392,8 @@ packages:
       '@types/node': 20.11.5
     dev: false
 
-  /@types/snarkjs@0.7.7:
-    resolution: {integrity: sha512-t/fYLdqUDM7W/XP+CKh4kvo9SS2ejtqHJz/2LQf/UsrrCsDYRjQ85DQFdvIJ6FvJjUvtEEPpTSCPk9gDDjcBWQ==}
+  /@types/snarkjs@0.7.8:
+    resolution: {integrity: sha512-x37Jsv1vx6I6RMJdfvYEmDUOLYgzYMecwlk13gniDOcN20xLVe9hy9DlQxWeCPirqpDY/jwugQSqCi2RxehU3g==}
     dev: true
 
   /@types/sockjs@0.3.36:
