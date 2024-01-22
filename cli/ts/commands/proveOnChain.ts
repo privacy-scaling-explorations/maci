@@ -234,11 +234,7 @@ export const proveOnChain = async ({
     if (numberBatchesProcessed === 0) {
       const r = numMessages % messageBatchSize;
 
-      if (r === 0) {
-        currentMessageBatchIndex = Math.floor(numMessages / messageBatchSize) * messageBatchSize;
-      } else {
-        currentMessageBatchIndex = numMessages;
-      }
+      currentMessageBatchIndex = numMessages;
 
       if (currentMessageBatchIndex > 0) {
         if (r === 0) {
