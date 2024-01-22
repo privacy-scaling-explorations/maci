@@ -1,8 +1,8 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "outDir": "./build"
+    "outDir": "./build",
   },
   "include": ["./ts", "./tests", "./typechain-types"],
-  "files": ["./hardhat.config.ts"]
+  "files": ["./hardhat.config.ts"],
 }
