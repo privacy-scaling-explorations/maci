@@ -135,9 +135,7 @@ export const publish = async ({
 
   try {
     // submit the message onchain as well as the encryption public key
-    const tx = await pollContract.publishMessage(message.asContractParam(), encKeypair.pubKey.asContractParam(), {
-      gasLimit: 10000000,
-    });
+    const tx = await pollContract.publishMessage(message.asContractParam(), encKeypair.pubKey.asContractParam());
     const receipt = await tx.wait();
 
     if (receipt?.status !== 1) {
