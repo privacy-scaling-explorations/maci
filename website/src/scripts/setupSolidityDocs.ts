@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-import { copyDirectory } from "./utils";
+import { copyDirectory, insertIndexPage } from "./utils";
 
 // where to move the solidity doc files over
 const solidityDocDir = path.resolve(__dirname, "../../versioned_docs/version-v1.x/solidity-docs");
@@ -45,3 +45,5 @@ function updateHeadings(dir: string) {
 copyDirectory(sourceDir, solidityDocDir);
 // update the headings
 updateHeadings(solidityDocDir);
+// insert index page
+insertIndexPage(solidityDocDir, { title: "Solidity Docs", label: "Solidity Docs" });

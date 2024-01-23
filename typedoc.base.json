@@ -1,0 +1,9 @@
+{
+  "name": "Minimal Anti Collusion Infrastructure (MACI)",
+  "$schema": "https://typedoc.org/schema.json",
+  "includeVersion": true,
+  "navigation": {
+    "includeFolders": false
+  },
+  "exclude": ["**/emitter", "**/eslint-config-custom", "**/tsconfig"]
+}

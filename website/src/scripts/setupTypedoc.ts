@@ -1,45 +1,72 @@
 import fs from "fs";
 import path from "path";
 
-import { copyDirectory } from "./utils";
+import { copyDirectory, fitFormat, generateSidebarString, insertIndexPage } from "./utils";
 
 const TYPEDOC_DIR = path.resolve(__dirname, "../../typedoc");
 
 /**
- * The Typedoc tool automatically generates related documentation links in each file. The link for the introduction of MACI is initially set to `README.md` of the entire project, but this should be changed to `introduction.md`. Simultaneously, references to `modules.md` should be updated to `index.md` since it is slated to be renamed as Typedoc's homepage.
- * @param dirName - the name of the typedoc directory
+ * A function that remove the auto-genrated navigator
+ * and the title at the top of the page,
+ * meanwhile adding sidebar configurations above the content.
+ * @param file - the file being updated
+ * @param sidebarInfo - sidebar infos, passed in as a string
  */
-function updateMentionFiles(dirName: string) {
-  const dir = path.join(TYPEDOC_DIR, dirName);
-  const files = fs.readdirSync(dir);
-  files.forEach((file) => {
-    const filename = path.join(dir, file);
-    let content = fs.readFileSync(filename, "utf8");
-    content = content.replaceAll("../README.md", "../../introduction.md");
-    content = content.replaceAll("../modules.md", "../index.md");
-    fs.writeFileSync(filename, content);
-  });
+function updateMdFiles(file: string, sidebarInfo: string) {
+  const content = fs.readFileSync(file).toString().split("\n");
+
+  if (content.length > 3) {
+    content.shift();
+    content.shift();
+    content.shift();
+  }
+
+  const writtenContent = content.join("\n").replaceAll("README.md", "index.md");
+  fs.writeFileSync(file, `${sidebarInfo}\n${writtenContent}`);
 }
 
-// Remove the README.md file if exists
-const readmeFile = path.join(TYPEDOC_DIR, "README.md");
-if (fs.existsSync(readmeFile)) {
-  fs.unlinkSync(readmeFile);
-}
+// read all dir in typedoc/ -> rename README.md as index.md -> remove upper navigations
+const directories = fs.readdirSync(TYPEDOC_DIR);
+directories.forEach((dir) => {
+  const dirname = path.resolve(TYPEDOC_DIR, dir);
+  const label = fitFormat(dir);
 
-// Rename modules.md to index.md, and change the README.md mention to ../introduction.md
-const modulesFile = path.join(TYPEDOC_DIR, "modules.md");
-if (fs.existsSync(modulesFile)) {
-  let content = fs.readFileSync(modulesFile, "utf8");
-  content = content.replaceAll("README.md", "../introduction.md");
-  fs.writeFileSync(modulesFile, content);
-  fs.renameSync(modulesFile, path.join(TYPEDOC_DIR, "index.md"));
-}
+  // only do things if it's a directory
+  if (fs.statSync(dirname).isDirectory()) {
+    const readmeFile = path.resolve(dirname, "README.md");
 
-// Change all ../README.md mention to ../../introduction.md, and change all ../modeuls.md mention to ../index.md
-updateMentionFiles("classes");
-updateMentionFiles("interfaces");
-updateMentionFiles("modules");
+    if (fs.existsSync(readmeFile)) {
+      updateMdFiles(readmeFile, generateSidebarString({ title: label, label }));
+      fs.renameSync(readmeFile, path.resolve(dirname, "index.md"));
+    }
+
+    // remove the first two lines of navigator
+    const modulesFile = path.resolve(dirname, "modules.md");
+
+    if (fs.existsSync(modulesFile)) {
+      updateMdFiles(modulesFile, generateSidebarString({ title: `${label} Module`, label: "module", position: 1 }));
+    }
+
+    const innerDirs = fs.readdirSync(dirname);
+    innerDirs.forEach((innerDir) => {
+      const innerDirname = path.resolve(dirname, innerDir);
+
+      if (fs.statSync(innerDirname).isDirectory()) {
+        const innerFiles = fs.readdirSync(innerDirname);
+        innerFiles.forEach((innerFile) => {
+          const innerLabel = innerFile.split(".")[0];
+          updateMdFiles(
+            path.resolve(innerDirname, innerFile),
+            generateSidebarString({ title: innerLabel, label: innerLabel }),
+          );
+        });
+      }
+    });
+  }
+});
+
+// insert index page
+insertIndexPage(TYPEDOC_DIR, { title: "Typedoc", label: "Typedoc" });
 
 // find the target moving directory
 const versionFile = path.resolve(__dirname, "../../versions.json");

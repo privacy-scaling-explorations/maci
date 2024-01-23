@@ -12,7 +12,8 @@
     "watch": "tsc --watch",
     "build": "tsc -p tsconfig.build.json",
     "types": "tsc -p tsconfig.json --noEmit",
-    "test": "nyc ts-mocha --exit ts/__tests__/**.test.ts"
+    "test": "nyc ts-mocha --exit ts/__tests__/**.test.ts",
+    "typedoc": "typedoc --plugin typedoc-plugin-markdown --options ./typedoc.json"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",

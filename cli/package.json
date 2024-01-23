@@ -26,7 +26,8 @@
     "test:genKeypair": "ts-mocha --exit tests/unit/genKeyPair.test.ts",
     "test:timeTravel": "ts-mocha --exit tests/unit/timeTravel.test.ts",
     "test:fundWallet": "ts-mocha --exit tests/unit/fundWallet.test.ts",
-    "test:utils": "ts-mocha --exit tests/unit/utils.test.ts"
+    "test:utils": "ts-mocha --exit tests/unit/utils.test.ts",
+    "typedoc": "typedoc --plugin typedoc-plugin-markdown --options ./typedoc.json"
   },
   "dependencies": {
     "@commander-js/extra-typings": "^11.1.0",
