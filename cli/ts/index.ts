@@ -44,6 +44,10 @@ program
     "-p, --initialVoiceCreditsProxyAddress <initialVoiceCreditsProxyAddress>",
     "the initial voice credits proxy contract address",
   )
+  .option("-ph3, --poseidonT3Address <poseidonT3Address>", "PoseidonT3 contract address")
+  .option("-ph4, --poseidonT4Address <poseidonT4Address>", "PoseidonT4 contract address")
+  .option("-ph5, --poseidonT5Address <poseidonT5Address>", "PoseidonT5 contract address")
+  .option("-ph6, --poseidonT6Address <poseidonT6Address>", "PoseidonT6 contract address")
   .option("-g, --signupGatekeeperAddress <signupGatekeeperAddress>", "the signup gatekeeper contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
@@ -55,6 +59,10 @@ program
         initialVoiceCredits: cmdOptions.initialVoiceCredits,
         initialVoiceCreditsProxyAddress: cmdOptions.initialVoiceCreditsProxyAddress,
         signupGatekeeperAddress: cmdOptions.signupGatekeeperAddress,
+        poseidonT3Address: cmdOptions.poseidonT3Address,
+        poseidonT4Address: cmdOptions.poseidonT4Address,
+        poseidonT5Address: cmdOptions.poseidonT5Address,
+        poseidonT6Address: cmdOptions.poseidonT6Address,
         quiet: cmdOptions.quiet,
       });
     } catch (error) {

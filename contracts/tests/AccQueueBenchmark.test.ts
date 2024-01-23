@@ -9,7 +9,7 @@ let aqContract: AccQueueContract;
 
 const deploy = async (contractName: string, SUB_DEPTH: number, HASH_LENGTH: number, ZERO: bigint) => {
   const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } =
-    await deployPoseidonContracts(await getDefaultSigner(), true);
+    await deployPoseidonContracts(await getDefaultSigner(), {}, true);
   const [poseidonT3ContractAddress, poseidonT4ContractAddress, poseidonT5ContractAddress, poseidonT6ContractAddress] =
     await Promise.all([
       PoseidonT3Contract.getAddress(),

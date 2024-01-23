@@ -19,15 +19,23 @@ describe("topup", () => {
     const signupGatekepper = await deployFreeForAllSignUpGatekeeper(signer, true);
     const topupCredit = await deployTopupCredit(signer, true);
     const initialVoiceCreditProxyAddress = await deployConstantInitialVoiceCreditProxy(100, signer, true);
-    const maciContracts = await deployMaci(
-      await signupGatekepper.getAddress(),
-      await initialVoiceCreditProxyAddress.getAddress(),
-      await topupCredit.getAddress(),
+    const [signUpTokenGatekeeperContractAddress, initialVoiceCreditBalanceAddress, topupCreditContractAddress] =
+      await Promise.all([
+        signupGatekepper.getAddress(),
+        initialVoiceCreditProxyAddress.getAddress(),
+        topupCredit.getAddress(),
+      ]);
+
+    const { maciContract } = await deployMaci({
+      signUpTokenGatekeeperContractAddress,
+      initialVoiceCreditBalanceAddress,
+      topupCreditContractAddress,
       signer,
-      10,
-      true,
-    );
-    maciAddress = await maciContracts.maciContract.getAddress();
+      stateTreeDepth: 10,
+      quiet: true,
+    });
+
+    maciAddress = await maciContract.getAddress();
   });
 
   it("should throw when the state index is invalid", async () => {

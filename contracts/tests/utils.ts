@@ -76,7 +76,7 @@ export const deployTestAccQueues = async (
   ZERO: bigint,
 ): Promise<{ aq: AccQueue; aqContract: BaseContract }> => {
   const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } =
-    await deployPoseidonContracts(await getDefaultSigner(), true);
+    await deployPoseidonContracts(await getDefaultSigner(), {}, true);
 
   const [poseidonT3ContractAddress, poseidonT4ContractAddress, poseidonT5ContractAddress, poseidonT6ContractAddress] =
     await Promise.all([
@@ -509,14 +509,14 @@ export const deployTestContracts = async (
       topupCreditContract.getAddress(),
     ]);
 
-  const { maciContract, stateAqContract } = await deployMaci(
-    gatekeeperContractAddress,
-    constantIntialVoiceCreditProxyContractAddress,
+  const { maciContract, stateAqContract } = await deployMaci({
+    signUpTokenGatekeeperContractAddress: gatekeeperContractAddress,
+    initialVoiceCreditBalanceAddress: constantIntialVoiceCreditProxyContractAddress,
     topupCreditContractAddress,
     signer,
     stateTreeDepth,
     quiet,
-  );
+  });
 
   return {
     mockVerifierContract,

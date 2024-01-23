@@ -39,7 +39,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   IVerifier public immutable verifier;
   IVkRegistry public immutable vkRegistry;
   IPoll public immutable poll;
-  IMessageProcessor public immutable mp;
+  IMessageProcessor public immutable messageProcessor;
 
   /// @notice custom errors
   error ProcessingNotComplete();
@@ -48,6 +48,9 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   error NumSignUpsTooLarge();
   error BatchStartIndexTooLarge();
   error TallyBatchSizeTooLarge();
+
+  /// @notice events
+  event BallotsTallied(address poll);
 
   /// @notice Create a new Tally contract
   /// @param _verifier The Verifier contract
@@ -58,7 +61,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
     verifier = IVerifier(_verifier);
     vkRegistry = IVkRegistry(_vkRegistry);
     poll = IPoll(_poll);
-    mp = IMessageProcessor(_mp);
+    messageProcessor = IMessageProcessor(_mp);
   }
 
   /// @notice Pack the batch start index and number of signups into a 100-bit value.
@@ -102,12 +105,12 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   /// @notice Update the state and ballot root commitment
   function updateSbCommitment() public onlyOwner {
     // Require that all messages have been processed
-    if (!mp.processingComplete()) {
+    if (!messageProcessor.processingComplete()) {
       revert ProcessingNotComplete();
     }
 
     if (sbCommitment == 0) {
-      sbCommitment = mp.sbCommitment();
+      sbCommitment = messageProcessor.sbCommitment();
     }
   }
 
@@ -118,8 +121,14 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
     _votingPeriodOver(poll);
     updateSbCommitment();
 
+    uint256 cachedBatchNum = tallyBatchNum;
+    // save some gas because we won't overflow uint256
+    unchecked {
+      tallyBatchNum++;
+    }
+
     (, uint256 tallyBatchSize, ) = poll.batchSizes();
-    uint256 batchStartIndex = tallyBatchNum * tallyBatchSize;
+    uint256 batchStartIndex = cachedBatchNum * tallyBatchSize;
     (uint256 numSignUps, ) = poll.numSignUpsAndMessages();
 
     // Require that there are untalied ballots left
@@ -128,13 +137,17 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
     }
 
     bool isValid = verifyTallyProof(_proof, numSignUps, batchStartIndex, tallyBatchSize, _newTallyCommitment);
+
     if (!isValid) {
       revert InvalidTallyVotesProof();
     }
 
     // Update the tally commitment and the tally batch num
     tallyCommitment = _newTallyCommitment;
-    tallyBatchNum++;
+
+    if ((cachedBatchNum + 1) * tallyBatchSize > numSignUps) {
+      emit BallotsTallied(address(poll));
+    }
   }
 
   /// @notice Verify the tally proof using the verifying key

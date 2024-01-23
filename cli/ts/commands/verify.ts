@@ -1,5 +1,13 @@
 import { BaseContract } from "ethers";
-import { type Tally, type MACI, type Subsidy, type Poll, getDefaultSigner, parseArtifact } from "maci-contracts";
+import {
+  type Tally,
+  type MACI,
+  type Subsidy,
+  type Poll,
+  getDefaultSigner,
+  getDefaultNetwork,
+  parseArtifact,
+} from "maci-contracts";
 import { hash2, hash3, genTreeCommitment } from "maci-crypto";
 
 import fs from "fs";
@@ -37,27 +45,28 @@ export const verify = async ({
 }: VerifyArgs): Promise<void> => {
   banner(quiet);
   const signer = await getDefaultSigner();
+  const network = await getDefaultNetwork();
 
   // check existence of MACI, Tally and Subsidy contract addresses
-  if (!readContractAddress("MACI") && !maciAddress) {
+  if (!readContractAddress("MACI", network?.name) && !maciAddress) {
     logError("MACI contract address is empty");
   }
 
-  if (!readContractAddress(`Tally-${pollId}`) && !tallyAddress) {
+  if (!readContractAddress(`Tally-${pollId}`, network?.name) && !tallyAddress) {
     logError("Tally contract address is empty");
   }
 
-  if (subsidyEnabled && !readContractAddress(`Subsidy-${pollId}`) && !subsidyAddress) {
+  if (subsidyEnabled && !readContractAddress(`Subsidy-${pollId}`, network?.name) && !subsidyAddress) {
     logError("Subsidy contract address is empty");
   }
 
-  const maciContractAddress = maciAddress || readContractAddress("MACI");
-  const tallyContractAddress = tallyAddress || readContractAddress(`Tally-${pollId}`);
+  const maciContractAddress = maciAddress || readContractAddress("MACI", network?.name);
+  const tallyContractAddress = tallyAddress || readContractAddress(`Tally-${pollId}`, network?.name);
 
   let subsidyContractAddress = "";
 
   if (subsidyEnabled) {
-    subsidyContractAddress = subsidyAddress || readContractAddress(`Subsidy-${pollId}`);
+    subsidyContractAddress = subsidyAddress || readContractAddress(`Subsidy-${pollId}`, network?.name);
   }
 
   if (!(await contractExists(signer.provider!, maciContractAddress))) {

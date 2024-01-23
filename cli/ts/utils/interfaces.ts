@@ -251,6 +251,26 @@ export interface DeployArgs {
   signupGatekeeperAddress?: string;
 
   /**
+   * The address of the PoseidonT3 contract
+   */
+  poseidonT3Address?: string;
+
+  /**
+   * The address of the PoseidonT4 contract
+   */
+  poseidonT4Address?: string;
+
+  /**
+   * The address of the PoseidonT5 contract
+   */
+  poseidonT5Address?: string;
+
+  /**
+   * The address of the PoseidonT6 contract
+   */
+  poseidonT6Address?: string;
+
+  /**
    * Whether to log the output
    */
   quiet?: boolean;

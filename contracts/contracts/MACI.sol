@@ -20,7 +20,7 @@ contract MACI is IMACI, Params, Utilities, Ownable {
   /// @notice The state tree depth is fixed. As such it should be as large as feasible
   /// so that there can be as many users as possible.  i.e. 5 ** 10 = 9765625
   /// this should also match the parameter of the circom circuits.
-  uint8 public immutable STATE_TREE_DEPTH;
+  uint8 public immutable stateTreeDepth;
 
   /// @notice IMPORTANT: remember to change the ballot tree depth
   /// in contracts/ts/genEmptyBallotRootsContract.ts file
@@ -133,15 +133,10 @@ contract MACI is IMACI, Params, Utilities, Ownable {
     topupCredit = _topupCredit;
     signUpGatekeeper = _signUpGatekeeper;
     initialVoiceCreditProxy = _initialVoiceCreditProxy;
-    STATE_TREE_DEPTH = _stateTreeDepth;
+    stateTreeDepth = _stateTreeDepth;
 
     // Verify linked poseidon libraries
     if (hash2([uint256(1), uint256(1)]) == 0) revert PoseidonHashLibrariesNotLinked();
-  }
-
-  /// @inheritdoc IMACI
-  function stateTreeDepth() external view returns (uint8) {
-    return STATE_TREE_DEPTH;
   }
 
   /// @notice Allows any eligible user sign up. The sign-up gatekeeper should prevent
@@ -162,7 +157,7 @@ contract MACI is IMACI, Params, Utilities, Ownable {
     bytes memory _initialVoiceCreditProxyData
   ) public {
     // ensure we do not have more signups than what the circuits support
-    if (numSignUps == uint256(TREE_ARITY) ** uint256(STATE_TREE_DEPTH)) revert TooManySignups();
+    if (numSignUps == uint256(TREE_ARITY) ** uint256(stateTreeDepth)) revert TooManySignups();
 
     if (_pubKey.x >= SNARK_SCALAR_FIELD || _pubKey.y >= SNARK_SCALAR_FIELD) {
       revert MaciPubKeyLargerThanSnarkFieldSize();
@@ -264,12 +259,12 @@ contract MACI is IMACI, Params, Utilities, Ownable {
 
   /// @inheritdoc IMACI
   function mergeStateAq(uint256 _pollId) public override onlyPoll(_pollId) returns (uint256 root) {
-    root = stateAq.merge(STATE_TREE_DEPTH);
+    root = stateAq.merge(stateTreeDepth);
   }
 
   /// @inheritdoc IMACI
   function getStateAqRoot() public view override returns (uint256 root) {
-    root = stateAq.getMainRoot(STATE_TREE_DEPTH);
+    root = stateAq.getMainRoot(stateTreeDepth);
   }
 
   /// @notice Get the Poll details

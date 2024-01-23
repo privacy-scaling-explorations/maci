@@ -181,13 +181,11 @@ describe("TallyVotes", () => {
       // do the processing on the message processor contract
       await mpContract.processMessages(generatedInputs.newSbCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
 
-      const tx = await tallyContract.tallyVotes(tallyGeneratedInputs.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
-
-      const receipt = await tx.wait();
-      expect(receipt?.status).to.eq(1);
+      await expect(tallyContract.tallyVotes(tallyGeneratedInputs.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]))
+        .to.emit(tallyContract, "BallotsTallied")
+        .withArgs(await pollContract.getAddress());
 
       const onChainNewTallyCommitment = await tallyContract.tallyCommitment();
-
       expect(tallyGeneratedInputs.newTallyCommitment).to.eq(onChainNewTallyCommitment.toString());
     });
 

@@ -1,6 +1,12 @@
 import { BaseContract } from "ethers";
 import { extractVk } from "maci-circuits";
-import { type IVerifyingKeyStruct, type VkRegistry, getDefaultSigner, parseArtifact } from "maci-contracts";
+import {
+  type IVerifyingKeyStruct,
+  type VkRegistry,
+  getDefaultSigner,
+  getDefaultNetwork,
+  parseArtifact,
+} from "maci-contracts";
 import { genProcessVkSig, genSubsidyVkSig, genTallyVkSig } from "maci-core";
 import { VerifyingKey } from "maci-domainobjs";
 
@@ -37,12 +43,16 @@ export const setVerifyingKeys = async ({
   quiet = true,
 }: SetVerifyingKeysArgs): Promise<void> => {
   banner(quiet);
+
+  const signer = await getDefaultSigner();
+  const network = await getDefaultNetwork();
+
   // we must either have the contract as param or stored to file
-  if (!readContractAddress("VkRegistry") && !vkRegistry) {
+  if (!readContractAddress("VkRegistry", network?.name) && !vkRegistry) {
     logError("vkRegistry contract address is empty");
   }
 
-  const vkRegistryAddress = vkRegistry || readContractAddress("VkRegistry");
+  const vkRegistryAddress = vkRegistry || readContractAddress("VkRegistry", network?.name);
 
   // check if zKey files exist
   if (!fs.existsSync(processMessagesZkeyPath)) {
@@ -113,8 +123,6 @@ export const setVerifyingKeys = async ({
   }
 
   // ensure we have a contract deployed at the provided address
-  const signer = await getDefaultSigner();
-
   if (!(await contractExists(signer.provider!, vkRegistryAddress))) {
     logError(`A VkRegistry contract is not deployed at ${vkRegistryAddress}`);
   }

@@ -13,6 +13,7 @@ import {
   formatProofForVerifierContract,
   getDefaultSigner,
   parseArtifact,
+  getDefaultNetwork,
 } from "maci-contracts";
 import { G1Point, G2Point, hashLeftRight } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
@@ -52,29 +53,31 @@ export const proveOnChain = async ({
 }: ProveOnChainArgs): Promise<void> => {
   banner(quiet);
   const signer = await getDefaultSigner();
+  const network = await getDefaultNetwork();
 
   // check existence of contract addresses
-  if (!readContractAddress("MACI") && !maciAddress) {
+  if (!readContractAddress("MACI", network?.name) && !maciAddress) {
     logError("MACI contract address is empty");
   }
-  if (!readContractAddress(`MessageProcessor-${pollId}`) && !messageProcessorAddress) {
+  if (!readContractAddress(`MessageProcessor-${pollId}`, network?.name) && !messageProcessorAddress) {
     logError("MessageProcessor contract address is empty");
   }
-  if (!readContractAddress(`Tally-${pollId}`) && !tallyAddress) {
+  if (!readContractAddress(`Tally-${pollId}`, network?.name) && !tallyAddress) {
     logError("Tally contract address is empty");
   }
-  if (subsidyEnabled && !readContractAddress(`Subsidy-${pollId}`) && !subsidyAddress) {
+  if (subsidyEnabled && !readContractAddress(`Subsidy-${pollId}`, network?.name) && !subsidyAddress) {
     logError("Subsidy contract address is empty");
   }
 
   // check validity of contract addresses
-  const maciContractAddress = maciAddress || readContractAddress("MACI");
-  const messageProcessorContractAddress = messageProcessorAddress || readContractAddress(`MessageProcessor-${pollId}`);
-  const tallyContractAddress = tallyAddress || readContractAddress(`Tally-${pollId}`);
+  const maciContractAddress = maciAddress || readContractAddress("MACI", network?.name);
+  const messageProcessorContractAddress =
+    messageProcessorAddress || readContractAddress(`MessageProcessor-${pollId}`, network?.name);
+  const tallyContractAddress = tallyAddress || readContractAddress(`Tally-${pollId}`, network?.name);
 
   let subsidyContractAddress;
   if (subsidyEnabled) {
-    subsidyContractAddress = subsidyAddress || readContractAddress(`Subsidy-${pollId}`);
+    subsidyContractAddress = subsidyAddress || readContractAddress(`Subsidy-${pollId}`, network?.name);
   }
 
   // check contracts are deployed on chain

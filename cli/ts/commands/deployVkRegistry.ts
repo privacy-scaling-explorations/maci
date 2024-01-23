@@ -1,4 +1,4 @@
-import { deployVkRegistry, getDefaultSigner } from "maci-contracts";
+import { deployVkRegistry, getDefaultSigner, getDefaultNetwork } from "maci-contracts";
 
 import fs from "fs";
 
@@ -24,10 +24,12 @@ export const deployVkRegistryContract = async (quiet = true): Promise<string> =>
     resetContractAddresses();
   }
 
+  const signer = await getDefaultSigner();
+  const network = await getDefaultNetwork();
   // deploy and store the address
-  const vkRegistry = await deployVkRegistry(await getDefaultSigner(), true);
+  const vkRegistry = await deployVkRegistry(signer, true);
   const vkRegistryAddress = await vkRegistry.getAddress();
-  storeContractAddress("VkRegistry", vkRegistryAddress);
+  storeContractAddress("VkRegistry", vkRegistryAddress, network?.name);
 
   logGreen(quiet, success(`VkRegistry deployed at: ${vkRegistryAddress}`));
   return vkRegistryAddress;

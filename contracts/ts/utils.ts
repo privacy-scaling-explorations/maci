@@ -4,7 +4,7 @@ import { ethers } from "hardhat";
 
 import type { Action, SnarkProof, Groth16Proof } from "./types";
 import type { Ownable } from "../typechain-types";
-import type { FeeData, Signer } from "ethers";
+import type { FeeData, Network, Signer } from "ethers";
 
 /**
  * Format a SnarkProof type to an array of strings
@@ -84,6 +84,16 @@ export const getDefaultSigner = async (): Promise<Signer> => {
   const [signer] = await ethers.getSigners();
 
   return signer;
+};
+
+/**
+ * Get the default signer network from the hardhat node
+ * @returns the default network
+ */
+export const getDefaultNetwork = async (): Promise<Network | undefined> => {
+  const signer = await getDefaultSigner();
+
+  return signer.provider?.getNetwork();
 };
 
 /**

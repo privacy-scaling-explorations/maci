@@ -1,5 +1,5 @@
 import { BaseContract } from "ethers";
-import { type MACI, type TopupCredit, getDefaultSigner, parseArtifact } from "maci-contracts";
+import { type MACI, type TopupCredit, getDefaultSigner, getDefaultNetwork, parseArtifact } from "maci-contracts";
 
 import { type AirdropArgs, logError, logGreen, success, readContractAddress, contractExists, banner } from "../utils";
 
@@ -18,8 +18,12 @@ export const airdrop = async ({
 }: AirdropArgs): Promise<void> => {
   banner(quiet);
 
+  // get the signer
+  const signer = await getDefaultSigner();
+  const network = await getDefaultNetwork();
+
   // get the topup credit address from storage
-  const topupCredit = readContractAddress("TopupCredit");
+  const topupCredit = readContractAddress("TopupCredit", network?.name);
 
   // we want to ensure that we have either the address stored
   // or that it was passed as a paramter
@@ -29,8 +33,6 @@ export const airdrop = async ({
 
   const ERC20Address = contractAddress || topupCredit;
 
-  // get the signer
-  const signer = await getDefaultSigner();
   // check if the contract exists
   if (!(await contractExists(signer.provider!, ERC20Address))) {
     logError("Invalid ERC20 contract address");
@@ -60,7 +62,9 @@ export const airdrop = async ({
   // if there is a poll id provided, we can pre-approve all of the tokens
   // so there is no need to do it afterwards
   if (pollId !== undefined) {
-    const maciContractAddress = readContractAddress("MACI") ? readContractAddress("MACI") : maciAddress;
+    const maciContractAddress = readContractAddress("MACI", network?.name)
+      ? readContractAddress("MACI", network?.name)
+      : maciAddress;
 
     if (!maciAddress) {
       logError("Please provide a MACI contract address");

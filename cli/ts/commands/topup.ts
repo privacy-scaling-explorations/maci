@@ -1,5 +1,5 @@
 import { BaseContract } from "ethers";
-import { type MACI, type Poll, getDefaultSigner, parseArtifact } from "maci-contracts";
+import { type MACI, type Poll, getDefaultSigner, getDefaultNetwork, parseArtifact } from "maci-contracts";
 
 import { type TopupArgs, logError, readContractAddress, contractExists, banner } from "../utils";
 
@@ -10,14 +10,15 @@ import { type TopupArgs, logError, readContractAddress, contractExists, banner }
 export const topup = async ({ amount, stateIndex, pollId, maciAddress, quiet = true }: TopupArgs): Promise<void> => {
   banner(quiet);
   const signer = await getDefaultSigner();
+  const network = await getDefaultNetwork();
 
   // ensure we have a valid MACI contract address
-  if (!maciAddress && !readContractAddress(maciAddress!)) {
+  if (!maciAddress && !readContractAddress(maciAddress!, network?.name)) {
     logError("Invalid MACI contract address");
     return;
   }
 
-  const maciContractAddress = maciAddress || readContractAddress(maciAddress!);
+  const maciContractAddress = maciAddress || readContractAddress(maciAddress!, network?.name);
 
   if (!(await contractExists(signer.provider!, maciContractAddress))) {
     logError("There is no contract deployed at the specified address");

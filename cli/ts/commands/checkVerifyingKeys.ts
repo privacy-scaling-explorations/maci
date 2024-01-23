@@ -1,6 +1,6 @@
 import { BaseContract } from "ethers";
 import { extractVk } from "maci-circuits";
-import { type VkRegistry, getDefaultSigner, parseArtifact } from "maci-contracts";
+import { type VkRegistry, getDefaultSigner, getDefaultNetwork, parseArtifact } from "maci-contracts";
 import { G1Point, G2Point } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
@@ -41,12 +41,14 @@ export const checkVerifyingKeys = async ({
   banner(quiet);
   // get the signer
   const signer = await getDefaultSigner();
+  const network = await getDefaultNetwork();
 
   // ensure we have the contract addresses that we need
-  if (!readContractAddress("VkRegistry") && !vkRegistry) {
+  if (!readContractAddress("VkRegistry", network?.name) && !vkRegistry) {
     logError("Please provide a VkRegistry contract address");
   }
-  const vkContractAddress = vkRegistry || readContractAddress("VkRegistry");
+
+  const vkContractAddress = vkRegistry || readContractAddress("VkRegistry", network?.name);
 
   if (!(await contractExists(signer.provider!, vkContractAddress))) {
     logError("The VkRegistry contract does not exist");
