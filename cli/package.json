@@ -16,17 +16,18 @@
     "build": "tsc -p tsconfig.build.json",
     "postbuild": "cp package.json ./build && mkdir -p ./zkeys",
     "types": "tsc -p tsconfig.json --noEmit",
-    "test": "nyc ts-mocha --exit tests/**/*.test.ts",
-    "test:e2e": "ts-mocha --exit tests/e2e/e2e.test.ts",
-    "test:e2e-subsidy": "ts-mocha --exit tests/e2e/e2e.subsidy.test.ts",
-    "test:keyChange": "ts-mocha --exit tests/e2e/keyChange.test.ts",
+    "test": "nyc ts-mocha --exit tests/e2e/*.test.ts tests/unit/*.test.ts",
+    "test:e2e": "ts-mocha --exit tests/e2e.test.ts",
+    "test:e2e-subsidy": "ts-mocha --exit tests/e2e.subsidy.test.ts",
+    "test:keyChange": "ts-mocha --exit tests/keyChange.test.ts",
     "test:unit": "nyc ts-mocha --exit tests/unit/*.test.ts",
     "test:airdrop": "nyc ts-mocha --exit tests/unit/airdrop.test.ts",
     "test:genPubKey": "ts-mocha --exit tests/unit/genPubKey.test.ts",
     "test:genKeypair": "ts-mocha --exit tests/unit/genKeyPair.test.ts",
     "test:timeTravel": "ts-mocha --exit tests/unit/timeTravel.test.ts",
     "test:fundWallet": "ts-mocha --exit tests/unit/fundWallet.test.ts",
-    "test:utils": "ts-mocha --exit tests/unit/utils.test.ts"
+    "test:utils": "ts-mocha --exit tests/unit/utils.test.ts",
+    "test:stress": "ts-mocha --exit tests/stress/*.test.ts"
   },
   "dependencies": {
     "@commander-js/extra-typings": "^11.1.0",
